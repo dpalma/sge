@@ -39,8 +39,8 @@ CFG=engine - Win32 StaticDebug
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "..\Build\Release"
-# PROP Intermediate_Dir "..\Build\Release\engine"
+# PROP Output_Dir "..\Build.vc6\Release"
+# PROP Intermediate_Dir "..\Build.vc6\Release\engine"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 F90=df.exe
@@ -59,7 +59,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winmm.lib opengl32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib /nologo /dll /map:"..\Build\Release/engine.map" /machine:I386 /opt:ref
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winmm.lib opengl32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib /nologo /dll /map:"..\Build.vc6\Release/engine.map" /machine:I386 /opt:ref
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "engine - Win32 Debug"
@@ -71,8 +71,8 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "..\Build\Debug"
-# PROP Intermediate_Dir "..\Build\Debug\engine"
+# PROP Output_Dir "..\Build.vc6\Debug"
+# PROP Intermediate_Dir "..\Build.vc6\Debug\engine"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 F90=df.exe
@@ -91,7 +91,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 $(OutDir)\cppunit.lib kernel32.lib user32.lib gdi32.lib winmm.lib opengl32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib /nologo /dll /map:"..\Build\Debug/engine.map" /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 $(OutDir)\cppunit.lib kernel32.lib user32.lib gdi32.lib winmm.lib opengl32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib /nologo /dll /map:"..\Build.vc6\Debug/engine.map" /debug /machine:I386 /pdbtype:sept
 # SUBTRACT LINK32 /profile
 
 !ELSEIF  "$(CFG)" == "engine - Win32 Opt"
@@ -104,8 +104,8 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "..\Build\Opt"
-# PROP Intermediate_Dir "..\Build\Opt\engine"
+# PROP Output_Dir "..\Build.vc6\Opt"
+# PROP Intermediate_Dir "..\Build.vc6\Opt\engine"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 F90=df.exe
@@ -125,7 +125,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winmm.lib /nologo /dll /debug /machine:I386 /pdbtype:sept /libpath:"..\..\3rdparty\dx7sdk\lib"
 # SUBTRACT BASE LINK32 /profile
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winmm.lib opengl32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib /nologo /dll /profile /map:"..\Build\Opt/engine.map" /debug /machine:I386
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winmm.lib opengl32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib /nologo /dll /profile /map:"..\Build.vc6\Opt/engine.map" /debug /machine:I386
 
 !ELSEIF  "$(CFG)" == "engine - Win32 StaticDebug"
 
@@ -137,8 +137,8 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "..\Build\StaticDebug"
-# PROP Intermediate_Dir "..\Build\StaticDebug\engine"
+# PROP Output_Dir "..\Build.vc6\StaticDebug"
+# PROP Intermediate_Dir "..\Build.vc6\StaticDebug\engine"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 LINK32=link.exe
@@ -170,8 +170,8 @@ LIB32=link.exe -lib
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "..\Build\StaticRelease"
-# PROP Intermediate_Dir "..\Build\StaticRelease\engine"
+# PROP Output_Dir "..\Build.vc6\StaticRelease"
+# PROP Intermediate_Dir "..\Build.vc6\StaticRelease\engine"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 LINK32=link.exe

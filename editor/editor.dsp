@@ -41,8 +41,8 @@ RSC=rc.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 6
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "..\Build\Release"
-# PROP Intermediate_Dir "..\Build\Release\editor"
+# PROP Output_Dir "..\Build.vc6\Release"
+# PROP Intermediate_Dir "..\Build.vc6\Release\editor"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AFXDLL" /Yu"stdhdr.h" /FD /c
@@ -67,8 +67,8 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 6
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "..\Build\Debug"
-# PROP Intermediate_Dir "..\Build\Debug\editor"
+# PROP Output_Dir "..\Build.vc6\Debug"
+# PROP Intermediate_Dir "..\Build.vc6\Debug\editor"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /Yu"stdhdr.h" /FD /GZ /c
@@ -94,8 +94,8 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 6
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "..\Build\Opt"
-# PROP Intermediate_Dir "..\Build\Opt\editor"
+# PROP Output_Dir "..\Build.vc6\Opt"
+# PROP Intermediate_Dir "..\Build.vc6\Opt\editor"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /I "..\tech\include" /I "..\engine\include" /I "..\render\include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /Yu"stdhdr.h" /FD /c
@@ -121,8 +121,8 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 5
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "..\Build\StaticDebug"
-# PROP Intermediate_Dir "..\Build\StaticDebug\editor"
+# PROP Output_Dir "..\Build.vc6\StaticDebug"
+# PROP Intermediate_Dir "..\Build.vc6\StaticDebug\editor"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\tech\include" /I "..\engine\include" /I "..\render\include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /Yu"stdhdr.h" /FD /GZ /c
@@ -148,8 +148,8 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 5
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "..\Build\StaticRelease"
-# PROP Intermediate_Dir "..\Build\StaticRelease\editor"
+# PROP Output_Dir "..\Build.vc6\StaticRelease"
+# PROP Intermediate_Dir "..\Build.vc6\StaticRelease\editor"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /I "..\tech\include" /I "..\engine\include" /I "..\render\include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /Yu"stdhdr.h" /FD /c

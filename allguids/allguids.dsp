@@ -40,8 +40,8 @@ RSC=rc.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "..\Build\Release"
-# PROP Intermediate_Dir "..\Build\Release\allguids"
+# PROP Output_Dir "..\Build.vc6\Release"
+# PROP Intermediate_Dir "..\Build.vc6\Release\allguids"
 # PROP Target_Dir ""
 F90=df.exe
 MTL=midl.exe
@@ -67,8 +67,8 @@ LIB32=link.exe -lib
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "..\Build\Debug"
-# PROP Intermediate_Dir "..\Build\Debug\allguids"
+# PROP Output_Dir "..\Build.vc6\Debug"
+# PROP Intermediate_Dir "..\Build.vc6\Debug\allguids"
 # PROP Target_Dir ""
 F90=df.exe
 MTL=midl.exe
@@ -94,8 +94,8 @@ LIB32=link.exe -lib
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "..\Build\Opt"
-# PROP Intermediate_Dir "..\Build\Opt\allguids"
+# PROP Output_Dir "..\Build.vc6\Opt"
+# PROP Intermediate_Dir "..\Build.vc6\Opt\allguids"
 # PROP Target_Dir ""
 F90=df.exe
 MTL=midl.exe
@@ -122,8 +122,8 @@ LIB32=link.exe -lib
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "..\Build\StaticDebug"
-# PROP Intermediate_Dir "..\Build\StaticDebug\allguids"
+# PROP Output_Dir "..\Build.vc6\StaticDebug"
+# PROP Intermediate_Dir "..\Build.vc6\StaticDebug\allguids"
 # PROP Target_Dir ""
 F90=df.exe
 MTL=midl.exe
@@ -150,8 +150,8 @@ LIB32=link.exe -lib
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "..\Build\StaticRelease"
-# PROP Intermediate_Dir "..\Build\StaticRelease\allguids"
+# PROP Output_Dir "..\Build.vc6\StaticRelease"
+# PROP Intermediate_Dir "..\Build.vc6\StaticRelease\allguids"
 # PROP Target_Dir ""
 F90=df.exe
 MTL=midl.exe

@@ -37,8 +37,8 @@ RSC=rc.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "..\..\Build\Release"
-# PROP Intermediate_Dir "..\..\Build\Release\network"
+# PROP Output_Dir "..\..\Build.vc6\Release"
+# PROP Intermediate_Dir "..\..\Build.vc6\Release\network"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
@@ -61,8 +61,8 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "..\..\Build\Debug"
-# PROP Intermediate_Dir "..\..\Build\Debug\network"
+# PROP Output_Dir "..\..\Build.vc6\Debug"
+# PROP Intermediate_Dir "..\..\Build.vc6\Debug\network"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
