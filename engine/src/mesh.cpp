@@ -324,21 +324,7 @@ uint cMesh::GetVertexCount() const
 
 tResult cMesh::GetVertexBuffer(IVertexBuffer * * ppVertexBuffer)
 {
-   if (ppVertexBuffer == NULL)
-   {
-      return E_FAIL;
-   }
-
-   if (!m_pVertexBuffer)
-   {
-      return S_FALSE;
-   }
-   else
-   {
-      *ppVertexBuffer = m_pVertexBuffer;
-      (*ppVertexBuffer)->AddRef();
-      return S_OK;
-   }
+   return m_pVertexBuffer.GetPointer(ppVertexBuffer);
 }
 
 ///////////////////////////////////////

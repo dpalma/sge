@@ -152,13 +152,7 @@ void cSubMesh::SetMaterialName(const char * pszMaterialName)
 
 tResult cSubMesh::GetMaterial(IMaterial * * ppMaterial)
 {
-   if (ppMaterial != NULL && !!m_pMaterial)
-   {
-      *ppMaterial = m_pMaterial;
-      (*ppMaterial)->AddRef();
-      return S_OK;
-   }
-   return E_FAIL;
+   return m_pMaterial.GetPointer(ppMaterial);
 }
 
 ///////////////////////////////////////
@@ -180,16 +174,7 @@ tResult cSubMesh::SetMaterial(IMaterial * pMaterial)
 
 tResult cSubMesh::GetVertexBuffer(IVertexBuffer * * ppVertexBuffer)
 {
-   if (!m_pVertexBuffer || ppVertexBuffer == NULL)
-   {
-      return E_FAIL;
-   }
-   else
-   {
-      *ppVertexBuffer = AccessVertexBuffer();
-      (*ppVertexBuffer)->AddRef();
-      return S_OK;
-   }
+   return m_pVertexBuffer.GetPointer(ppVertexBuffer);
 }
 
 ///////////////////////////////////////
@@ -224,16 +209,7 @@ tResult cSubMesh::UnlockVertexBuffer()
 
 tResult cSubMesh::GetIndexBuffer(IIndexBuffer * * ppIndexBuffer)
 {
-   if (!m_pIndexBuffer || ppIndexBuffer == NULL)
-   {
-      return E_FAIL;
-   }
-   else
-   {
-      *ppIndexBuffer = AccessIndexBuffer();
-      (*ppIndexBuffer)->AddRef();
-      return S_OK;
-   }
+   return m_pIndexBuffer.GetPointer(ppIndexBuffer);
 }
 
 ///////////////////////////////////////

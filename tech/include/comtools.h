@@ -276,6 +276,9 @@ public:
    bool operator !() const;
    bool operator !=(NullType) const; // if (p != NULL) ...
 
+   INTRFC * AccessPointer() const;
+   tResult GetPointer(INTRFC * * ppInterface) const;
+
 private:
    INTRFC * m_pInterface;
 };
@@ -413,6 +416,28 @@ inline bool cAutoIPtr<INTRFC>::operator !=(NullType null) const
 {
    Assert(null == NULL);
    return (m_pInterface != NULL);
+}
+
+///////////////////////////////////////
+
+template <class INTRFC>
+inline INTRFC * cAutoIPtr<INTRFC>::AccessPointer() const
+{
+   return m_pInterface;
+}
+
+///////////////////////////////////////
+
+template <class INTRFC>
+inline tResult cAutoIPtr<INTRFC>::GetPointer(INTRFC * * ppInterface) const
+{
+   if (ppInterface == NULL)
+      return E_POINTER;
+   if (m_pInterface == NULL)
+      return S_FALSE;
+   *ppInterface = m_pInterface;
+   m_pInterface->AddRef();
+   return S_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
