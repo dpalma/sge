@@ -9,7 +9,6 @@
 #include "sceneapi.h"
 
 #include "globalobj.h"
-#include "vec2.h"
 #include "vec3.h"
 #include "quat.h"
 #include "matrix4.h"
@@ -46,7 +45,11 @@ public:
    virtual tResult SetModel(ITerrainModel * pTerrainModel);
    virtual tResult GetModel(ITerrainModel * * ppTerrainModel);
 
+   virtual tResult EnableBlending(bool bEnable);
+
 private:
+   bool IsBlendingEnabled() const;
+
    void RegenerateChunks();
    ITerrainModel * AccessModel() { return m_pModel; }
 
@@ -107,8 +110,17 @@ private:
    uint m_nChunksX, m_nChunksZ; // # of chunks in the x,z directions
    typedef std::vector<cTerrainChunk *> tChunks;
    tChunks m_chunks;
+
+   bool m_bEnableBlending;
+   bool m_bTerrainChanged; // terrain changed while blending disabled?
 };
 
+////////////////////////////////////////
+
+bool cTerrainRenderer::IsBlendingEnabled() const
+{
+   return m_bEnableBlending;
+}
 
 
 /////////////////////////////////////////////////////////////////////////////

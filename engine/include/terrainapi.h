@@ -16,6 +16,8 @@
 
 #define TERRAIN_API // temporary
 
+/////////////////////////////////////////////////////////////////////////////
+
 F_DECLARE_INTERFACE(IEditorTileSet);
 
 F_DECLARE_INTERFACE(ITerrainRenderer);
@@ -50,6 +52,8 @@ interface ITerrainRenderer : IUnknown
 {
    virtual tResult SetModel(ITerrainModel * pTerrainModel) = 0;
    virtual tResult GetModel(ITerrainModel * * ppTerrainModel) = 0;
+
+   virtual tResult EnableBlending(bool bEnable) = 0;
 };
 
 ////////////////////////////////////////

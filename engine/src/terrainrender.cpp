@@ -52,7 +52,9 @@ cTerrainRenderer::cTerrainRenderer()
    m_sceneEntity(this),
    m_tml(this),
    m_nChunksX(0),
-   m_nChunksZ(0)
+   m_nChunksZ(0),
+   m_bEnableBlending(true),
+   m_bTerrainChanged(false)
 {
 }
 
@@ -116,8 +118,27 @@ tResult cTerrainRenderer::GetModel(ITerrainModel * * ppTerrainModel)
 
 ////////////////////////////////////////
 
+tResult cTerrainRenderer::EnableBlending(bool bEnable)
+{
+   m_bEnableBlending = bEnable;
+   if (bEnable && m_bTerrainChanged)
+   {
+      RegenerateChunks();
+   }
+   return S_OK;
+}
+
+////////////////////////////////////////
+
 void cTerrainRenderer::RegenerateChunks()
 {
+   m_bTerrainChanged = true;
+   
+   if (!m_bEnableBlending)
+   {
+      return;
+   }
+
    if (!m_pModel)
    {
       return;
@@ -148,78 +169,83 @@ void cTerrainRenderer::RegenerateChunks()
          }
       }
    }
+
+   m_bTerrainChanged = false;
 }
 
 ////////////////////////////////////////
 
 tResult cTerrainRenderer::Render(IRenderDevice * pRenderDevice)
 {
-   if (!m_chunks.empty())
+   if (m_bEnableBlending)
    {
-      tChunks::iterator iter = m_chunks.begin();
-      tChunks::iterator end = m_chunks.end();
+      if (!m_chunks.empty())
+      {
+         tChunks::iterator iter = m_chunks.begin();
+         tChunks::iterator end = m_chunks.end();
+         for (; iter != end; iter++)
+         {
+            (*iter)->Render(pRenderDevice);
+         }
+         return S_OK;
+      }
+
+      return E_FAIL;
+   }
+   else
+   {
+      glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
+
+      glEnable(GL_COLOR_MATERIAL);
+
+      tTerrainQuads::const_iterator iter = m_pModel->GetTerrainQuads().begin();
+      tTerrainQuads::const_iterator end = m_pModel->GetTerrainQuads().end();
       for (; iter != end; iter++)
       {
-         (*iter)->Render(pRenderDevice);
-      }
-      return S_OK;
-   }
+         const sTerrainVertex * pVertices = iter->verts;
 
-   return E_FAIL;
-
-   /*
-   glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
-
-   glEnable(GL_COLOR_MATERIAL);
-
-   tTerrainQuads::iterator iter = m_terrainQuads.begin();
-   tTerrainQuads::iterator end = m_terrainQuads.end();
-   for (; iter != end; iter++)
-   {
-      const sTerrainVertex * pVertices = iter->verts;
-
-      cAutoIPtr<IEditorTile> pEditorTile;
-      if (m_pTileSet->GetTile(iter->tile, &pEditorTile) == S_OK)
-      {
-         cAutoIPtr<ITexture> pTexture;
-         if (pEditorTile->GetTexture(&pTexture) == S_OK)
+         cAutoIPtr<IEditorTileSet> pEditorTileSet;
+         if (m_pModel->GetTileSet(&pEditorTileSet) == S_OK)
          {
-            HANDLE tex;
-            if (pTexture->GetTextureHandle(&tex) == S_OK)
+            cAutoIPtr<ITexture> pTexture;
+            if (pEditorTileSet->GetTileTexture(iter->tile, &pTexture) == S_OK)
             {
-               glEnable(GL_TEXTURE_2D);
-               glBindTexture(GL_TEXTURE_2D, (uint)tex);
+               HANDLE tex;
+               if (pTexture->GetTextureHandle(&tex) == S_OK)
+               {
+                  glEnable(GL_TEXTURE_2D);
+                  glBindTexture(GL_TEXTURE_2D, (uint)tex);
+               }
             }
          }
+
+         glBegin(GL_QUADS);
+
+         glNormal3f(1,1,1);
+
+         glColor4ubv((const byte *)&pVertices[0].color);
+         glTexCoord2fv(pVertices[0].uv1.v);
+         glVertex3fv(pVertices[0].pos.v);
+
+         glColor4ubv((const byte *)&pVertices[3].color);
+         glTexCoord2fv(pVertices[3].uv1.v);
+         glVertex3fv(pVertices[3].pos.v);
+
+         glColor4ubv((const byte *)&pVertices[2].color);
+         glTexCoord2fv(pVertices[2].uv1.v);
+         glVertex3fv(pVertices[2].pos.v);
+
+         glColor4ubv((const byte *)&pVertices[1].color);
+         glTexCoord2fv(pVertices[1].uv1.v);
+         glVertex3fv(pVertices[1].pos.v);
+
+         glEnd();
       }
 
-      glBegin(GL_QUADS);
+      glPopAttrib();
 
-      glNormal3f(1,1,1);
-
-      glColor4ubv((const byte *)&pVertices[0].color);
-      glTexCoord2fv(pVertices[0].uv1.v);
-      glVertex3fv(pVertices[0].pos.v);
-
-      glColor4ubv((const byte *)&pVertices[3].color);
-      glTexCoord2fv(pVertices[3].uv1.v);
-      glVertex3fv(pVertices[3].pos.v);
-
-      glColor4ubv((const byte *)&pVertices[2].color);
-      glTexCoord2fv(pVertices[2].uv1.v);
-      glVertex3fv(pVertices[2].pos.v);
-
-      glColor4ubv((const byte *)&pVertices[1].color);
-      glTexCoord2fv(pVertices[1].uv1.v);
-      glVertex3fv(pVertices[1].pos.v);
-
-      glEnd();
+      return S_OK;
    }
-
-   glPopAttrib();
-
-   return S_OK;
-   */
 }
 
 ////////////////////////////////////////

@@ -10,6 +10,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+F_DECLARE_INTERFACE(ITerrainModel);
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -99,6 +100,7 @@ private:
    uint m_iLastHitX, m_iLastHitZ;
    uint m_tile;
    ulong m_currentStamp;
+   cAutoIPtr<ITerrainModel> m_pTerrainModel;
 };
 
 /////////////////////////////////////////////////////////////////////////////

@@ -347,6 +347,18 @@ tResult cTerrainTileTool::OnMouseMove(const cEditorMouseEvent & mouseEvent, IEdi
 
 tResult cTerrainTileTool::OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
 {
+   Assert(!m_pTerrainModel);
+
+   cAutoIPtr<IEditorModel> pEditModel;
+   if (pView->GetModel(&pEditModel) != S_OK
+      || pEditModel->GetTerrainModel(&m_pTerrainModel) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   UseGlobal(TerrainRenderer);
+   pTerrainRenderer->EnableBlending(false);
+
    m_currentStamp = GetNextStamp();
    return S_EDITOR_TOOL_CONTINUE;
 }
@@ -357,6 +369,12 @@ tResult cTerrainTileTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEdito
 {
    // Do what is done on a move
    tResult result = OnDragMove(mouseEvent, pView);
+
+   UseGlobal(TerrainRenderer);
+   pTerrainRenderer->EnableBlending(true);
+
+   SafeRelease(m_pTerrainModel);
+
    m_currentStamp = 0;
    return result;
 }
@@ -365,7 +383,7 @@ tResult cTerrainTileTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEdito
 
 tResult cTerrainTileTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
 {
-   if (pView != NULL)
+   if (pView != NULL && !!m_pTerrainModel)
    {
       uint ix, iz;
       if (GetHitTile(mouseEvent.GetPoint(), pView, &ix, &iz))
@@ -375,16 +393,14 @@ tResult cTerrainTileTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEdit
             m_iLastHitX = ix;
             m_iLastHitZ = iz;
 
-            cAutoIPtr<IEditorModel> pEditModel;
-            cAutoIPtr<ITerrainModel> pTerrModel;
-            if (pView->GetModel(&pEditModel) == S_OK
-               && pEditModel->GetTerrainModel(&pTerrModel) == S_OK)
+            cAutoIPtr<IEditorCommand> pCommand(new cTerrainTileCommand(
+               m_pTerrainModel, ix, iz, m_tile, m_currentStamp));
+            if (!!pCommand)
             {
-               cAutoIPtr<IEditorCommand> pCommand(new cTerrainTileCommand(
-                  pTerrModel, ix, iz, m_tile, m_currentStamp));
-               if (!!pCommand)
+               cAutoIPtr<IEditorModel> pEM;
+               if (pView->GetModel(&pEM) == S_OK)
                {
-                  pEditModel->AddCommand(pCommand);
+                  pEM->AddCommand(pCommand);
                }
             }
          }
