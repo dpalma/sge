@@ -72,6 +72,7 @@ class cHashTableTests : public CppUnit::TestCase
    CPPUNIT_TEST_SUITE(cHashTableTests);
       CPPUNIT_TEST(TestLookup);
       CPPUNIT_TEST(TestIteration);
+      CPPUNIT_TEST(TestCustomKey);
    CPPUNIT_TEST_SUITE_END();
 
    char testStrings[kNumTests][kTestStringLength];
@@ -80,6 +81,7 @@ class cHashTableTests : public CppUnit::TestCase
 
    void TestLookup();
    void TestIteration();
+   void TestCustomKey();
 
 public:
    virtual void setUp();
@@ -127,6 +129,64 @@ void cHashTableTests::TestIteration()
 
    LocalMsgIf2(nIterated != kNumTests, "Iterated %d items in hash table; expected %d\n", nIterated, kNumTests);
    CPPUNIT_ASSERT(nIterated == kNumTests);
+}
+
+////////////////////////////////////////
+
+class cCustomKey
+{
+public:
+   cCustomKey() : m_a(0), m_b(0), m_c(0) {}
+   cCustomKey(uint a, uint b, uint c) : m_a(a), m_b(b), m_c(c) {}
+   cCustomKey(const cCustomKey & other) : m_a(other.m_a), m_b(other.m_b), m_c(other.m_c) {}
+   const uint * GetAPtr() const { return &m_a; }
+   const uint * GetBPtr() const { return &m_b; }
+   const uint * GetCPtr() const { return &m_c; }
+   bool IsEqual(const cCustomKey & other) const { return (m_a == other.m_a) && (m_b == other.m_b) && (m_c == other.m_c); }
+   ulong GetProduct() const { return m_a*m_b*m_c; }
+private:
+   uint m_a, m_b, m_c;
+};
+
+template <>
+inline uint cHashFunction<cCustomKey>::Hash(const cCustomKey & k, uint initVal)
+{
+   uint h = initVal;
+   h = hash((byte *)k.GetAPtr(), sizeof(uint), h);
+   h = hash((byte *)k.GetBPtr(), sizeof(uint), h);
+   h = hash((byte *)k.GetCPtr(), sizeof(uint), h);
+   return h;
+}
+
+template <>
+inline bool cHashFunction<cCustomKey>::Equal(const cCustomKey & a, const cCustomKey & b)
+{
+   return a.IsEqual(b);
+}
+
+void cHashTableTests::TestCustomKey()
+{
+   cHashTable<cCustomKey, ulong> ckHashTable;
+
+   for (int i = 0; i < 500; i++)
+   {
+      uint a = rand();
+      uint b = rand();
+      uint c = rand();
+      ulong d = a*b*c;
+      CPPUNIT_ASSERT(ckHashTable.Insert(cCustomKey(a,b,c), d));
+   }
+
+   cCustomKey key;
+   ulong value;
+
+   HANDLE h;
+   ckHashTable.IterBegin(&h);
+   while (ckHashTable.IterNext(&h, &key, &value))
+   {
+      CPPUNIT_ASSERT(key.GetProduct() == value);
+   }
+   ckHashTable.IterEnd(&h);
 }
 
 ////////////////////////////////////////

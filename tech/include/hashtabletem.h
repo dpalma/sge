@@ -16,16 +16,51 @@
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
+// Explicit template instantiations for basic types
+
+///////////////////////////////////////
+
+#define HASHFUNCTION_FOR_SIMPLE_TYPE(type) \
+template <> inline uint cHashFunction<type>::Hash(const type & a, uint initHash) \
+{ return hash((byte *)&a, sizeof(a), initHash); } \
+template <> inline bool cHashFunction<type>::Equal(const type & a, const type & b) \
+{ return (a == b); }
+
+HASHFUNCTION_FOR_SIMPLE_TYPE(int)
+HASHFUNCTION_FOR_SIMPLE_TYPE(uint)
+HASHFUNCTION_FOR_SIMPLE_TYPE(long)
+HASHFUNCTION_FOR_SIMPLE_TYPE(ulong)
+HASHFUNCTION_FOR_SIMPLE_TYPE(short)
+HASHFUNCTION_FOR_SIMPLE_TYPE(ushort)
+
+///////////////////////////////////////
+
+typedef const char * tPCSTR;
+
+template <>
+inline uint cHashFunction<tPCSTR>::Hash(const tPCSTR & a, uint initVal)
+{
+   return hash((byte *)a, strlen(a), initVal);
+}
+
+template <>
+inline bool cHashFunction<tPCSTR>::Equal(const tPCSTR & a, const tPCSTR & b)
+{
+   return (stricmp(a, b) == 0);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 //
 // TEMPLATE: cHashTable
 //
 
 // for constructors/destructor
 #define HASHTABLE_TEMPLATE \
-   template <typename KEY, typename VALUE, class ALLOCATOR> cHashTable<KEY, VALUE, ALLOCATOR>
+   template <typename KEY, typename VALUE, typename HASHFN, class ALLOCATOR> cHashTable<KEY, VALUE, HASHFN, ALLOCATOR>
 // for methods
 #define HASHTABLE_TEMPLATE_(RetType) \
-   template <typename KEY, typename VALUE, class ALLOCATOR> RetType cHashTable<KEY, VALUE, ALLOCATOR>
+   template <typename KEY, typename VALUE, typename HASHFN, class ALLOCATOR> RetType cHashTable<KEY, VALUE, HASHFN, ALLOCATOR>
 
 ///////////////////////////////////////
 
@@ -189,7 +224,7 @@ HASHTABLE_TEMPLATE_(void)::IterEnd(HANDLE * phIter) const
 HASHTABLE_TEMPLATE_(uint)::Probe(const KEY & k) const
 {
    Assert(IsPowerOfTwo(m_size));
-   uint h = Hash(k) & (m_size - 1);
+   uint h = HASHFN::Hash(k) & (m_size - 1);
 
 #ifdef _DEBUG
    uint start = h;
@@ -270,7 +305,7 @@ HASHTABLE_TEMPLATE_(void)::Grow(uint newSize)
 
 HASHTABLE_TEMPLATE_(bool)::Equal(const KEY & k1, const KEY & k2) const
 {
-   return k1 == k2;
+   return HASHFN::Equal(k1, k2);
 }
 
 ///////////////////////////////////////

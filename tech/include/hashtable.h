@@ -12,6 +12,28 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// TEMPLATE: cHashFunction
+//
+
+template <typename T>
+class cHashFunction
+{
+public:
+   static uint Hash(const T & a, uint initHash = 0xDEADBEEF)
+   {
+      Assert(!"Cannot use default cHashFunction<>::Hash()!");
+      return ~0;
+   }
+
+   static bool Equal(const T & a, const T & b)
+   {
+      Assert(!"Cannot use default cHashFunction<>::Equal()!");
+      return false;
+   }
+};
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // TEMPLATE: cHashTable
 //
 
@@ -36,6 +58,7 @@ sHashElement<KEY, VALUE>::sHashElement()
 ////////////////////////////////////////
 
 template <typename KEY, typename VALUE,
+          typename HASHFN = cHashFunction<KEY>,
           class ALLOCATOR = std::allocator< sHashElement<KEY, VALUE> > >
 class cHashTable
 {
