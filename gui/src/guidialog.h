@@ -51,7 +51,7 @@ public:
    virtual tResult SetCaptionHeight(uint height);
 
    virtual tResult SetModal(bool bModal);
-   virtual tResult IsModal();
+   virtual bool IsModal();
 
 private:
    tGUIRect GetCaptionRectAbsolute();

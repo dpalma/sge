@@ -4,6 +4,10 @@
 #ifndef INCLUDED_GUIAPI_H
 #define INCLUDED_GUIAPI_H
 
+/// @file guiapi.h
+/// Interface definitions for graphical user interface elements plus the 
+/// core system itself
+
 #include "enginedll.h"
 
 #include "comtools.h"
@@ -46,6 +50,9 @@ class TiXmlElement;
 //
 // INTERFACE: IGUIElement
 //
+/// @interface IGUIElement
+/// @brief The base GUI element interface provides access to properties and 
+/// methods common to all GUI widgets.
 
 interface IGUIElement : IUnknown
 {
@@ -67,7 +74,14 @@ interface IGUIElement : IUnknown
    virtual tResult GetParent(IGUIElement * * ppParent) = 0;
    virtual tResult SetParent(IGUIElement * pParent) = 0;
 
+   /// @return The element's position relative to it's parent element.
+   /// @remarks Use GUIElementAbsolutePosition to calculate the element's 
+   /// position in screen coordinates.
+   /// @see GUIElementAbsolutePosition
    virtual tGUIPoint GetPosition() const = 0;
+   /// @remarks Element positions are set by the GUI system using parameters 
+   /// from the style along with context information from the parent 
+   /// element, if any. Use caution when calling SetPosition directly.
    virtual void SetPosition(const tGUIPoint & point) = 0;
 
    virtual tGUISize GetSize() const = 0;
@@ -151,11 +165,15 @@ interface IGUIStyle : IUnknown
 };
 
 ///////////////////////////////////////
+/// Attempt to parse a color value from the given string. Valid strings are
+/// of the form "(R,G,B,A)". The alpha component is optional. Color components 
+/// can be in the range [0,255] or [0,1]. Certain standard colors are 
+/// supported, too. For example, "red", "green", "blue", etc.
 
 ENGINE_API tResult GUIStyleParseColor(const char * psz, tGUIColor * pColor);
 
 ///////////////////////////////////////
-// Parse a CSS-like string to produce a GUI style object
+/// Parse a CSS-like string to produce a GUI style object.
 
 ENGINE_API tResult GUIStyleParse(const char * pszStyle, IGUIStyle * * ppStyle);
 
@@ -245,6 +263,8 @@ interface IGUIEvent : IUnknown
    virtual tResult GetKeyCode(long * pKeyCode) = 0;
    virtual tResult GetSourceElement(IGUIElement * * ppElement) = 0;
 
+   virtual bool IsCancellable() const = 0;
+
    virtual tResult GetCancelBubble() = 0;
    virtual tResult SetCancelBubble(bool bCancel) = 0;
 };
@@ -255,6 +275,7 @@ ENGINE_API tResult GUIEventCreate(tGUIEventCode eventCode,
                                   tGUIPoint mousePos, 
                                   long keyCode, 
                                   IGUIElement * pSource, 
+                                  bool bCancellable, 
                                   IGUIEvent * * ppEvent);
 
 
@@ -346,7 +367,7 @@ interface IGUIDialogElement : IGUIContainerElement
    virtual tResult SetCaptionHeight(uint height) = 0;
 
    virtual tResult SetModal(bool bModal) = 0;
-   virtual tResult IsModal() = 0;
+   virtual bool IsModal() = 0;
 };
 
 

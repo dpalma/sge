@@ -137,17 +137,24 @@ cGUIEvent::cGUIEvent()
  : m_eventCode(kGUIEventNone),
    m_mousePos(),
    m_keyCode(-1),
-   m_pSource()
+   m_pSource(),
+   m_bCancellable(false),
+   m_bCancelBubble(false)
 {
 }
 
 ///////////////////////////////////////
 
-cGUIEvent::cGUIEvent(tGUIEventCode eventCode, const tGUIPoint & mousePos, long keyCode, IGUIElement * pSource)
+cGUIEvent::cGUIEvent(tGUIEventCode eventCode, 
+                     const tGUIPoint & mousePos, 
+                     long keyCode, 
+                     IGUIElement * pSource,
+                     bool bCancellable)
  : m_eventCode(eventCode),
    m_mousePos(mousePos),
    m_keyCode(keyCode),
    m_pSource(CTAddRef(pSource)),
+   m_bCancellable(bCancellable),
    m_bCancelBubble(false)
 {
 }
@@ -158,11 +165,12 @@ tResult GUIEventCreate(tGUIEventCode eventCode,
                        tGUIPoint mousePos, 
                        long keyCode, 
                        IGUIElement * pSource, 
+                       bool bCancellable, 
                        IGUIEvent * * ppEvent)
 {
    if (ppEvent == NULL)
       return E_POINTER;
-   cGUIEvent * pGUIEvent = new cGUIEvent(eventCode, mousePos, keyCode, pSource);
+   cGUIEvent * pGUIEvent = new cGUIEvent(eventCode, mousePos, keyCode, pSource, bCancellable);
    if (pGUIEvent == NULL)
       return E_OUTOFMEMORY;
    *ppEvent = pGUIEvent;
@@ -208,6 +216,13 @@ tResult cGUIEvent::GetSourceElement(IGUIElement * * ppElement)
 
 ///////////////////////////////////////
 
+bool cGUIEvent::IsCancellable() const
+{
+   return m_bCancellable;
+}
+
+///////////////////////////////////////
+
 tResult cGUIEvent::GetCancelBubble()
 {
    return m_bCancelBubble ? S_OK : S_FALSE;
@@ -217,6 +232,10 @@ tResult cGUIEvent::GetCancelBubble()
 
 tResult cGUIEvent::SetCancelBubble(bool bCancel)
 {
+   if (bCancel && !IsCancellable())
+   {
+      return E_FAIL;
+   }
    m_bCancelBubble = bCancel;
    return S_OK;
 }

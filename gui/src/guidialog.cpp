@@ -25,6 +25,10 @@ LOG_DEFINE_CHANNEL(GUIDialogEvents);
 #define LocalMsg1(msg,a1) DebugMsgEx1(GUIDialogEvents, (msg), (a1))
 #define LocalMsg2(msg,a1,a2) DebugMsgEx2(GUIDialogEvents, (msg), (a1), (a2))
 
+#define LocalMsgIf(cond,msg) DebugMsgIfEx(GUIDialogEvents, (cond), (msg))
+#define LocalMsgIf1(cond,msg,a1) DebugMsgIfEx1(GUIDialogEvents, (cond), (msg), (a1))
+#define LocalMsgIf2(cond,msg,a1,a2) DebugMsgIfEx2(GUIDialogEvents, (cond), (msg), (a1), (a2))
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUIDialogElement
@@ -83,36 +87,44 @@ tResult cGUIDialogElement::OnEvent(IGUIEvent * pEvent)
    tGUIPoint mousePos;
    Verify(pEvent->GetMousePosition(&mousePos) == S_OK);
 
-   if (eventCode == kGUIEventMouseMove)
+   LocalMsgIf(eventCode == kGUIEventClick, "Dialog clicked\n");
+   LocalMsgIf(eventCode == kGUIEventMouseEnter, "Mouse enter dialog\n");
+   LocalMsgIf(eventCode == kGUIEventMouseLeave, "Mouse leave dialog\n");
+
+   switch (eventCode)
    {
-      LocalMsg("Mouse move dialog\n");
-      if (m_bDragging)
+      case kGUIEventDragStart:
       {
+         LocalMsg("Dialog drag start\n");
+         tGUIRect captionRect = GetCaptionRectAbsolute();
+         if (captionRect.PtInside(Round(mousePos.x), Round(mousePos.y)))
+         {
+            m_bDragging = true;
+            m_dragOffset = mousePos - tGUIPoint(captionRect.left, captionRect.top);
+            pEvent->SetCancelBubble(true);
+         }
+         break;
+      }
+
+      case kGUIEventDragMove:
+      {
+         LocalMsg("Dialog drag move\n");
+         Assert(m_bDragging);
          SetPosition(mousePos - m_dragOffset);
+         pEvent->SetCancelBubble(true);
+         break;
       }
-   }
-   else if (eventCode == kGUIEventMouseDown)
-   {
-      LocalMsg("Mouse down dialog\n");
-      tGUIRect captionRect = GetCaptionRectAbsolute();
-      if (captionRect.PtInside(Round(mousePos.x), Round(mousePos.y)))
+
+      case kGUIEventDragEnd:
       {
-         m_bDragging = true;
-         m_dragOffset = mousePos - tGUIPoint(captionRect.left, captionRect.top);
-         result = S_FALSE; // now eat this event
+         LocalMsg("Dialog drag end\n");
+         m_bDragging = false;
+         pEvent->SetCancelBubble(true);
+         break;
       }
    }
-   else if (eventCode == kGUIEventMouseUp)
-   {
-      LocalMsg("Mouse up dialog\n");
-      m_bDragging = false;
-      result = S_FALSE; // now eat this event
-   }
-   else if (eventCode == kGUIEventClick)
-   {
-      LocalMsg("Mouse click dialog\n");
-   }
-   else if (eventCode == kGUIEventKeyUp)
+
+   if (eventCode == kGUIEventKeyUp)
    {
       LocalMsg("Key up dialog\n");
       if (keyCode == kEnter)
@@ -128,17 +140,6 @@ tResult cGUIDialogElement::OnEvent(IGUIEvent * pEvent)
          LocalMsg("ESC KEY --> Cancel\n");
       }
    }
-
-#ifdef _DEBUG
-   if (eventCode == kGUIEventMouseEnter)
-   {
-      LocalMsg("Mouse enter dialog\n");
-   }
-   else if (eventCode == kGUIEventMouseLeave)
-   {
-      LocalMsg("Mouse leave dialog\n");
-   }
-#endif
 
    return result;
 }
@@ -234,9 +235,9 @@ tResult cGUIDialogElement::SetModal(bool bModal)
 
 ///////////////////////////////////////
 
-tResult cGUIDialogElement::IsModal()
+bool cGUIDialogElement::IsModal()
 {
-   return m_bModal ? S_OK : S_FALSE;
+   return m_bModal;
 }
 
 ///////////////////////////////////////

@@ -21,6 +21,12 @@
 LOG_DEFINE_CHANNEL(GUIButtonEvents);
 
 #define LocalMsg(msg) DebugMsgEx(GUIButtonEvents, (msg))
+#define LocalMsg1(msg,a1) DebugMsgEx1(GUIButtonEvents, (msg), (a1))
+#define LocalMsg2(msg,a1,a2) DebugMsgEx2(GUIButtonEvents, (msg), (a1), (a2))
+
+#define LocalMsgIf(cond,msg) DebugMsgIfEx(GUIButtonEvents, (cond), (msg))
+#define LocalMsgIf1(cond,msg,a1) DebugMsgIfEx1(GUIButtonEvents, (cond), (msg), (a1))
+#define LocalMsgIf2(cond,msg,a1,a2) DebugMsgIfEx2(GUIButtonEvents, (cond), (msg), (a1), (a2))
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -52,22 +58,30 @@ tResult cGUIButtonElement::OnEvent(IGUIEvent * pEvent)
    tGUIEventCode eventCode;
    Verify(pEvent->GetEventCode(&eventCode) == S_OK);
 
+   LocalMsgIf(eventCode == kGUIEventMouseEnter, "Mouse enter button\n");
+   LocalMsgIf(eventCode == kGUIEventMouseLeave, "Mouse leave button\n");
+
    if (eventCode == kGUIEventDragStart)
    {
       SetArmed(true);
-      pEvent->SetCancelBubble(true);
-      result = S_FALSE;
+      Verify(pEvent->SetCancelBubble(true) == S_OK);
+      LocalMsg("Button drag start\n");
    }
    else if (eventCode == kGUIEventDragEnd)
    {
       SetArmed(false);
-      pEvent->SetCancelBubble(true);
-      result = S_FALSE;
+      Verify(pEvent->SetCancelBubble(true) == S_OK);
+      LocalMsg("Button drag end\n");
+   }
+   else if (eventCode == kGUIEventDragMove)
+   {
+      Verify(pEvent->SetCancelBubble(true) == S_OK);
+      LocalMsg("Button drag move\n");
    }
    else if (eventCode == kGUIEventClick)
    {
       SetArmed(false);
-      LocalMsg("Mouse click button\n");
+      LocalMsg("Button click\n");
       tGUIString onClick;
       if (GetOnClick(&onClick) == S_OK)
       {
@@ -76,17 +90,6 @@ tResult cGUIButtonElement::OnEvent(IGUIEvent * pEvent)
          result = S_FALSE;
       }
    }
-
-#ifdef _DEBUG
-   if (eventCode == kGUIEventMouseEnter)
-   {
-      LocalMsg("Mouse enter button\n");
-   }
-   else if (eventCode == kGUIEventMouseLeave)
-   {
-      LocalMsg("Mouse leave button\n");
-   }
-#endif
 
    return result;
 }

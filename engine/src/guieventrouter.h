@@ -27,6 +27,9 @@ struct sInputEvent;
 //
 // The template parameter INTRFC is a derivative of IGUIEventRouter
 // (e.g., IGUIContext, which inherits from IGUIEventRouter)
+//
+/// @class cGUIEventRouter
+/// @brief Template base class that implements the IGUIEventRouter methods.
 
 template <typename INTRFC>
 class cGUIEventRouter : public cConnectionPoint<INTRFC, IGUIEventListener>
@@ -83,9 +86,7 @@ protected:
 
    bool GetActiveModalDialog(IGUIDialogElement * * ppModalDialog);
 
-   //bool GetEventTarget(const sInputEvent * pInputEvent, IGUIElement * * ppElement);
    void DoMouseEnterExit(const sInputEvent * pInputEvent, IGUIElement * pMouseOver, IGUIElement * pRestrictTo);
-   //bool DispatchToCapture(const sInputEvent * pInputEvent);
 
    bool HandleInputEvent(const sInputEvent * pInputEvent);
 
@@ -96,7 +97,7 @@ private:
    typedef std::list<IGUIDialogElement *> tGUIDialogList;
    tGUIDialogList m_dialogs;
 
-   cAutoIPtr<IGUIElement> m_pFocus, m_pCapture, m_pMouseOver, m_pDrag;
+   cAutoIPtr<IGUIElement> m_pFocus, m_pMouseOver, m_pDrag;
 };
 
 ///////////////////////////////////////
