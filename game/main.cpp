@@ -6,7 +6,6 @@
 #include "ggl.h"
 #include "gcommon.h"
 #include "uimgr.h"
-#include "uirender.h"
 #include "sim.h"
 #include "groundtiled.h"
 #include "input.h"
@@ -20,10 +19,8 @@
 #include "cameracontroller.h"
 
 #include "render.h"
-#include "font.h"
 
 #include "techmath.h"
-#include "techtime.h"
 #include "window.h"
 #include "resmgr.h"
 #include "configapi.h"
@@ -32,6 +29,7 @@
 #include "matrix4.h"
 #include "str.h"
 #include "globalobj.h"
+#include "vec2.h"
 
 #include <ctime>
 
@@ -402,13 +400,9 @@ public:
    virtual ~cUIManagerSceneNode();
 
    virtual void Render();
-
-private:
-   cAutoIPtr<IRenderFont> m_pFont;
 };
 
 cUIManagerSceneNode::cUIManagerSceneNode()
- : m_pFont(FontCreateDefault())
 {
    g_pUIManager = UIManagerCreate();
 }
@@ -429,13 +423,6 @@ void cUIManagerSceneNode::Render()
    }
 
    glPopAttrib();
-
-   if (m_pFont != NULL)
-   {
-      char szStats[30];
-      sprintf(szStats, "%.2f FPS\n", CalcFramesPerSec());
-      m_pFont->DrawText(50, 50, szStats, strlen(szStats));
-   }
 }
 
 
@@ -556,7 +543,7 @@ bool MainInit(int argc, char * argv[])
       return false;
    }
 
-   if (RenderDeviceCreate(&g_pRenderDevice) != S_OK)
+   if (RenderDeviceCreate(kRDO_ShowStatistics, &g_pRenderDevice) != S_OK)
       return false;
 
    cAutoIPtr<IWindowFullScreen> pWindowFullScreen;
