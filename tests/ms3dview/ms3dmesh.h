@@ -5,7 +5,6 @@
 #define INCLUDED_MS3DMESH_H
 
 #include "mesh.h"
-#include "skeleton.h"
 
 #include "readwriteapi.h"
 #include "matrix4.h"
@@ -17,10 +16,9 @@
 #pragma once
 #endif
 
-F_DECLARE_INTERFACE(IKeyFrameInterpolator);
-F_DECLARE_INTERFACE(IMaterial);
 F_DECLARE_INTERFACE(IResourceManager);
 F_DECLARE_INTERFACE(IRenderDevice);
+F_DECLARE_INTERFACE(ISkeleton);
 
 typedef struct _CGprogram * CGprogram;
 typedef struct _CGparameter * CGparameter;
@@ -93,7 +91,9 @@ class cMs3dGroup
    friend class cReadWriteOps<cMs3dGroup>;
 
 public:
-   cMs3dGroup();
+   cMs3dGroup()
+   {
+   }
 
    const char * GetName() const { return name; }
 
@@ -144,7 +144,7 @@ public:
    virtual tResult AttachSkeleton(ISkeleton * pSkeleton);
    virtual tResult GetSkeleton(ISkeleton * * ppSkeleton);
 
-   tResult Read(IReader * pReader, IRenderDevice * pRenderDevice, IResourceManager * pResourceManager);
+   tResult Load(const char * pszMesh, IRenderDevice * pRenderDevice, IResourceManager * pResourceManager);
 
    tResult PostRead();
 
@@ -153,31 +153,15 @@ public:
    // using software or vertex program rendering?
    bool IsRenderingSoftware() const;
 
-   int GetGroupCount() const { return m_groups.size(); }
-   const cMs3dGroup & GetGroup(int index) const { return m_groups[index]; }
+   int GetGroupCount() const { return 0; }
+   cMs3dGroup GetGroup(int index) const { return cMs3dGroup(); }
 
 private:
-   typedef void (cMs3dMesh:: * tRenderMethod)() const;
-
-   tRenderMethod m_pfnRender;
-
-   void RenderSoftware() const;
    void RenderVertexProgram() const;
-
-   typedef std::vector<ms3d_vertex_t> tVertices;
-   typedef std::vector<ms3d_triangle_t> tTriangles;
-   typedef std::vector<cMs3dGroup> tGroups;
-
-   tVertices m_vertices;
-   tTriangles m_triangles;
-   tGroups m_groups;
 
    cAutoIPtr<IMesh> m_pInnerMesh;
 
-   mutable tVec3 m_maxs, m_mins;
-   mutable bool m_bCalculatedAABB;
-
-   tMatrices m_boneMatrices;
+   std::vector<tMatrix4> m_boneMatrices;
 
    CGprogram m_program;
    CGparameter m_modelViewProjParam;
@@ -185,7 +169,7 @@ private:
 
 inline bool cMs3dMesh::IsRenderingSoftware() const
 {
-   return m_pfnRender == RenderSoftware;
+   return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

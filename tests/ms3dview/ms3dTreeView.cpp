@@ -6,10 +6,11 @@
 #include "ms3dTreeView.h"
 #include "ms3dviewDoc.h"
 
+#include "skeleton.h"
+#include "animation.h"
+
 #include "material.h"
 #include "color.h"
-
-#include "animation.h"
 
 #include <vector>
 

@@ -119,24 +119,17 @@ BOOL CMs3dviewDoc::OnOpenDocument(LPCTSTR lpszPathName)
    cFileSpec file(lpszPathName);
 
    UseGlobal(ResourceManager);
-
    pResourceManager->AddSearchPath(file.GetPath().GetPath());
 
-   cAutoIPtr<IReader> pReader = pResourceManager->Find(file.GetFileName());
-
    SafeRelease(m_pMesh);
-
-   if (!!pReader)
+   m_pMesh = new cMs3dMesh;
+   if (m_pMesh->Load(file.GetFileName(), pMs3dView->AccessRenderDevice(), pResourceManager) != S_OK)
    {
-      m_pMesh = new cMs3dMesh;
-      if (m_pMesh->Read(pReader, pMs3dView->AccessRenderDevice(), pResourceManager) == S_OK)
-      {
-      	return TRUE;
-      }
       SafeRelease(m_pMesh);
+      return FALSE;
    }
 
-   return FALSE;
+   return TRUE;
 }
 
 void CMs3dviewDoc::DeleteContents() 

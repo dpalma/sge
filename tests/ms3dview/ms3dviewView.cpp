@@ -89,10 +89,14 @@ void CMs3dviewView::OnDraw(CDC* pDC)
 
    glTranslatef(m_center.x, m_center.y, m_center.z);
 
+   AccessRenderDevice()->BeginScene();
+
    if (pDoc->GetModel() != NULL)
    {
-      pDoc->GetModel()->Render(NULL);
+      pDoc->GetModel()->Render(AccessRenderDevice());
    }
+
+   AccessRenderDevice()->EndScene();
 
    glPopMatrix();
 
