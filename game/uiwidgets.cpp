@@ -409,9 +409,9 @@ bool cUIBitmapButton::SetBitmap(const char * pszName)
          m_pMat->SetTexture(0, pTex);
       }
 
-      if (AccessRenderDevice()->CreateIndexBuffer(kUIBitmapButtonIndices, kMP_Auto, &m_pIB) == S_OK)
+      if (AccessRenderDevice()->CreateIndexBuffer(kUIBitmapButtonIndices, kIBF_16Bit, kMP_Auto, &m_pIB) == S_OK)
       {
-         uint * pIndexData;
+         uint16 * pIndexData;
          if (m_pIB->Lock((void * *)&pIndexData) == S_OK)
          {
             pIndexData[0] = 0;

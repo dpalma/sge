@@ -143,7 +143,7 @@ bool cTiledGround::Init(cHeightMap * pHeightMap)
       return false;
    }
 
-   if (AccessRenderDevice()->CreateIndexBuffer(kNumIndices, kMP_Auto, &m_pIndexBuffer) != S_OK)
+   if (AccessRenderDevice()->CreateIndexBuffer(kNumIndices, kIBF_32Bit, kMP_Auto, &m_pIndexBuffer) != S_OK)
    {
       return false;
    }
