@@ -3,7 +3,9 @@
 
 #include "stdhdr.h"
 
-#include "TechTime.h"
+#include "techtime.h"
+#include "globalobj.h"
+#include "connptimpl.h"
 
 #include "sim.h"
 
@@ -11,13 +13,39 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cSim
+// CLASS: cSimGlobalObj
 //
+
+class cSimGlobalObj : public cGlobalObject<IMPLEMENTSCP(ISim, ISimClient)>
+{
+public:
+   cSimGlobalObj();
+
+   virtual void Go();
+   virtual void Stop();
+   virtual void Reset();
+   virtual bool IsRunning() const;
+
+   virtual double GetTime() const;
+   virtual double GetFrameTime() const;
+
+   virtual double GetTimeScale() const;
+   virtual void SetTimeScale(double scale);
+
+   virtual void NextFrame();
+
+private:
+   int m_nStopCount;
+   double m_lastFrameTime, m_frameTime;
+   double m_totalTime;
+   double m_timeScale;
+};
 
 ///////////////////////////////////////
 
-cSim::cSim()
- : m_nStopCount(1),
+cSimGlobalObj::cSimGlobalObj()
+ : cGlobalObject<IMPLEMENTSCP(ISim, ISimClient)>(kSimObjName),
+   m_nStopCount(1),
    m_lastFrameTime(0), m_frameTime(0),
    m_totalTime(0),
    m_timeScale(1)
@@ -26,14 +54,14 @@ cSim::cSim()
 
 ///////////////////////////////////////
 
-void cSim::Go()
+void cSimGlobalObj::Go()
 {
    m_nStopCount--;
 }
 
 ///////////////////////////////////////
 
-void cSim::Stop()
+void cSimGlobalObj::Stop()
 {
    m_lastFrameTime = 0.0;
    m_nStopCount++;
@@ -41,7 +69,7 @@ void cSim::Stop()
 
 ///////////////////////////////////////
 
-void cSim::Reset()
+void cSimGlobalObj::Reset()
 {
    m_frameTime = 0;
    m_totalTime = 0;
@@ -49,42 +77,42 @@ void cSim::Reset()
 
 ///////////////////////////////////////
 
-bool cSim::IsRunning() const
+bool cSimGlobalObj::IsRunning() const
 {
    return m_nStopCount == 0;
 }
 
 ///////////////////////////////////////
 
-double cSim::GetTime() const
+double cSimGlobalObj::GetTime() const
 {
    return m_totalTime;
 }
 
 ///////////////////////////////////////
 
-double cSim::GetFrameTime() const
+double cSimGlobalObj::GetFrameTime() const
 {
    return m_frameTime;
 }
 
 ///////////////////////////////////////
 
-double cSim::GetTimeScale() const
+double cSimGlobalObj::GetTimeScale() const
 {
    return m_timeScale;
 }
 
 ///////////////////////////////////////
 
-void cSim::SetTimeScale(double scale)
+void cSimGlobalObj::SetTimeScale(double scale)
 {
    m_timeScale = scale;
 }
 
 ///////////////////////////////////////
 
-void cSim::NextFrame()
+void cSimGlobalObj::NextFrame()
 {
    if (IsRunning())
    {
@@ -105,6 +133,13 @@ void cSim::NextFrame()
 
       ForEachConnection(&ISimClient::OnFrame, m_frameTime);
    }
+}
+
+///////////////////////////////////////
+
+void SimCreate()
+{
+   cAutoIPtr<ISim> p(new cSimGlobalObj);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

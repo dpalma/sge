@@ -5,13 +5,43 @@
 #define INCLUDED_SIM_H
 
 #include "comtools.h"
-#include "ConnPtImpl.h"
+#include "connpt.h"
 
 #ifdef _MSC_VER
 #pragma once
 #endif
 
+F_DECLARE_INTERFACE(ISim);
 F_DECLARE_INTERFACE(ISimClient);
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: ISim
+//
+
+interface ISim : IUnknown
+{
+   DECLARE_CONNECTION_POINT(ISimClient);
+
+   virtual void Go() = 0;
+   virtual void Stop() = 0;
+   virtual void Reset() = 0;
+   virtual bool IsRunning() const = 0;
+
+   virtual double GetTime() const = 0;
+   virtual double GetFrameTime() const = 0;
+
+   virtual double GetTimeScale() const = 0;
+   virtual void SetTimeScale(double scale) = 0;
+
+   virtual void NextFrame() = 0;
+};
+
+///////////////////////////////////////
+
+#define kSimObjName "Sim"
+
+void SimCreate();
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -21,37 +51,6 @@ F_DECLARE_INTERFACE(ISimClient);
 interface ISimClient : IUnknown
 {
    virtual void OnFrame(double elapsedTime) = 0;
-};
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cSim
-//
-
-class cSimBASE {};
-class cSim : public cConnectionPoint<cSimBASE, ISimClient>
-{
-public:
-   cSim();
-
-   void Go();
-   void Stop();
-   void Reset();
-   bool IsRunning() const;
-
-   double GetTime() const;
-   double GetFrameTime() const;
-
-   double GetTimeScale() const;
-   void SetTimeScale(double scale);
-
-   void NextFrame();
-
-private:
-   int m_nStopCount;
-   double m_lastFrameTime, m_frameTime;
-   double m_totalTime;
-   double m_timeScale;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

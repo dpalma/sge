@@ -35,6 +35,7 @@
 #include "vec4.h"
 #include "str.h"
 #include "keys.h"
+#include "globalobj.h"
 
 #include <ctime>
 
@@ -81,8 +82,6 @@ cAutoIPtr<IRenderDevice> g_pRenderDevice;
 cAutoIPtr<IWindow> g_pWindow;
 
 cAutoIPtr<IResourceManager> g_pResourceManager;
-
-cSim g_sim;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -246,7 +245,8 @@ cGameCameraController::~cGameCameraController()
 
 void cGameCameraController::Connect()
 {
-   g_sim.Connect(this);
+   UseGlobal(Sim);
+   pSim->Connect(this);
    InputAddListener(this);
 }
 
@@ -255,7 +255,8 @@ void cGameCameraController::Connect()
 void cGameCameraController::Disconnect()
 {
    InputRemoveListener(this);
-   g_sim.Disconnect(this);
+   UseGlobal(Sim);
+   pSim->Disconnect(this);
 }
 
 ///////////////////////////////////////
@@ -685,6 +686,13 @@ static bool RunUnitTests()
 
 ///////////////////////////////////////////////////////////////////////////////
 
+static void RegisterGlobalObjects()
+{
+   SimCreate();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 bool MainInit(int argc, char * argv[])
 {
    Assert(argc > 0);
@@ -715,6 +723,13 @@ bool MainInit(int argc, char * argv[])
    SeedRand(time(NULL));
 
    ScriptInit();
+
+   RegisterGlobalObjects();
+   if (FAILED(StartGlobalObjects()))
+   {
+      DebugMsg("One or more application-level services failed to start!\n");
+      return false;
+   }
 
    cStr autoExecScript(kAutoExecScript);
    ConfigGet("autoexec_script", &autoExecScript);
@@ -795,7 +810,8 @@ bool MainInit(int argc, char * argv[])
 
    ScriptCallFunction("GameInit");
 
-   g_sim.Go();
+   UseGlobal(Sim);
+   pSim->Go();
 
 #ifdef HAVE_CPPUNIT
    if (!RunUnitTests())
@@ -811,7 +827,9 @@ bool MainInit(int argc, char * argv[])
 
 void MainTerm()
 {
-   g_sim.Stop();
+   UseGlobal(Sim);
+   pSim->Stop();
+
    InputTerm();
    ScriptTerm();
    SafeRelease(g_pRenderDevice);
@@ -829,11 +847,14 @@ void MainTerm()
 
    SafeRelease(g_pResourceManager);
 
-   g_pGameCameraController->Disconnect();
+   if (g_pGameCameraController)
+      g_pGameCameraController->Disconnect();
 
    delete g_pGameCamera, g_pGameCamera = NULL;
 
    delete g_pUICamera, g_pUICamera = NULL;
+
+   StopGlobalObjects();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -841,13 +862,16 @@ void MainTerm()
 class cUpdateVisitor : public cSceneNodeVisitor
 {
 public:
+   cUpdateVisitor(double frameTime) : m_frameTime(frameTime) {}
    virtual void VisitSceneNode(cSceneNode * pNode);
+private:
+   double m_frameTime;
 };
 
 void cUpdateVisitor::VisitSceneNode(cSceneNode * pNode)
 {
    Assert(pNode != NULL);
-   pNode->Update(g_sim.GetFrameTime());
+   pNode->Update(m_frameTime);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -856,9 +880,10 @@ void MainFrame()
 {
    Assert(g_pRenderDevice != NULL);
 
-   g_sim.NextFrame();
+   UseGlobal(Sim);
+   pSim->NextFrame();
 
-   cUpdateVisitor updateVisitor;
+   cUpdateVisitor updateVisitor(pSim->GetFrameTime());
    g_pGameCamera->Traverse(&updateVisitor);
 
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

@@ -9,6 +9,8 @@
 #include "constraints.h"
 #include "globalobjreg.h"
 
+#include <vector>
+
 #include "dbgalloc.h" // must be last header
 
 #ifdef _MSC_VER
@@ -31,11 +33,6 @@ inline tResult StopGlobalObjects()
    return AccessGlobalObjectRegistry()->TermAll();
 }
 
-inline tResult RegisterGlobalObject(REFIID iid, IUnknown * pUnk)
-{
-   return AccessGlobalObjectRegistry()->Register(iid, pUnk);
-}
-
 inline IUnknown * FindGlobalObject(REFIID iid)
 {
    return AccessGlobalObjectRegistry()->Lookup(iid);
@@ -52,20 +49,13 @@ inline IUnknown * FindGlobalObject(REFIID iid)
 // INTERFACE: IGlobalObject
 //
 
-const int kMaxGlobalObjName = 150; // should be big enough for a GUID if necessary
-
-struct sGlobalObjDesc
-{
-   tChar name[kMaxGlobalObjName];
-   sConstraint * constraints;
-};
-
 interface IGlobalObject : IUnknown
 {
    virtual tResult Init() = 0;
    virtual tResult Term() = 0;
-   
-   virtual const sGlobalObjDesc * GetGlobalObjDesc() const = 0;
+
+   virtual const char * GetName() const = 0;
+   virtual int GetConstraints(std::vector<sConstraint> * pConstraints) const = 0;
 };
 
 
@@ -77,7 +67,7 @@ interface IGlobalObject : IUnknown
 
 template <class INTERFACE, const IID * PIID, class SERVICES = cDefaultComServices>
 class cGlobalObject : public cComObject2<INTERFACE, PIID,
-                                         IGlobalObject, &IID_IGlobalObject,
+                                         IMPLEMENTS(IGlobalObject),
                                          SERVICES>
 {
 public:
@@ -90,10 +80,13 @@ public:
    virtual tResult Init();
    virtual tResult Term();
 
-   virtual const sGlobalObjDesc * GetGlobalObjDesc() const { return &m_desc; }
+   virtual const char * GetName() const;
+   virtual int GetConstraints(std::vector<sConstraint> * pConstraints) const;
 
 private:
-   sGlobalObjDesc m_desc;
+   enum { kMaxGlobalObjName = 150 }; // should be big enough for a GUID if necessary
+   tChar m_szName[kMaxGlobalObjName];
+   std::vector<sConstraint> m_constraints;
 };
 
 ///////////////////////////////////////
@@ -112,30 +105,34 @@ GLOBALOBJECT_TEMPLATE::cGlobalObject(const tChar * pszName,
                                      int nConstraints,
                                      IGlobalObjectRegistry * pRegistry)
 {
-   memset(&m_desc, 0, sizeof(m_desc));
+   m_szName[0] = 0;
 
-   tChar szGUID[kGuidStringLength];
-   if (pszName == NULL)
+   if (pszName != NULL)
    {
-      Verify(GUIDToString(*PIID, szGUID, _countof(szGUID)));
-      pszName = szGUID;
+      strncpy(m_szName, pszName, _countof(m_szName) - 1);
+      m_szName[_countof(m_szName) - 1] = 0;
+   }
+   else
+   {
+      Verify(GUIDToString(*PIID, m_szName, _countof(m_szName)));
    }
 
-   _tcscpy(m_desc.name, pszName);
+   if (pConstraints != NULL && nConstraints > 0)
+   {
+      for (int i = 0; i < nConstraints; ++i)
+      {
+         m_constraints.push_back(pConstraints[i]);
+      }
+   }
 
    if (pRegistry == NULL)
+   {
       pRegistry = AccessGlobalObjectRegistry();
+   }
 
    if (pRegistry != NULL)
    {
       Verify(SUCCEEDED(pRegistry->Register(*PIID, static_cast<INTERFACE *>(this))));
-   }
-
-   if (pConstraints != NULL)
-   {
-      m_desc.constraints = new sConstraint[nConstraints + 1];
-      memcpy(m_desc.constraints, pConstraints, nConstraints * sizeof(sConstraint));
-      memset(&m_desc.constraints[nConstraints], 0, sizeof(sConstraint));
    }
 }
 
@@ -143,11 +140,6 @@ GLOBALOBJECT_TEMPLATE::cGlobalObject(const tChar * pszName,
 
 GLOBALOBJECT_TEMPLATE::~cGlobalObject()
 {
-   if (m_desc.constraints != NULL)
-   {
-      delete [] m_desc.constraints;
-      m_desc.constraints = NULL;
-   }
 }
 
 ///////////////////////////////////////
@@ -164,6 +156,31 @@ GLOBALOBJECT_TEMPLATE_(tResult)::Term()
 {
    // Derived classes may do something here
    return S_OK;
+}
+
+///////////////////////////////////////
+
+GLOBALOBJECT_TEMPLATE_(const char *)::GetName() const
+{
+   return m_szName;
+}
+
+///////////////////////////////////////
+
+GLOBALOBJECT_TEMPLATE_(int)::GetConstraints(std::vector<sConstraint> * pConstraints) const
+{
+   Assert(pConstraints != NULL);
+   if (pConstraints == NULL)
+   {
+      return m_constraints.size();
+   }
+   pConstraints->clear();
+   if (!m_constraints.empty())
+   {
+      pConstraints->resize(m_constraints.size());
+      std::copy(m_constraints.begin(), m_constraints.end(), pConstraints->begin());
+   }
+   return pConstraints->size();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
