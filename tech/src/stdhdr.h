@@ -4,8 +4,8 @@
 // Generates pre-compiled header file.  Included often used but rarely changed
 // header files here.
 
-#ifndef INCLUDED_STDPCH_H
-#define INCLUDED_STDPCH_H
+#ifndef INCLUDED_STDHDR_H
+#define INCLUDED_STDHDR_H
 
 #ifdef _MSC_VER
 #pragma once
@@ -18,4 +18,4 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // !INCLUDED_STDPCH_H
+#endif // !INCLUDED_STDHDR_H
