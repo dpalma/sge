@@ -5,6 +5,10 @@
 
 #include "outputbar.h"
 
+#include "editorCtrlBars.h"
+
+#include "resource.h"       // main symbols
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -29,6 +33,10 @@ void OutputBarLogCallback(eLogSeverity severity, const tChar * pszMsg, size_t ms
 //
 // CLASS: cOutputBar
 //
+
+AUTO_REGISTER_CONTROLBAR(IDS_OUTPUT_BAR_TITLE, RUNTIME_CLASS(cOutputBar), kCBP_Bottom);
+
+IMPLEMENT_DYNCREATE(cOutputBar, CSizingControlBarG);
 
 cOutputBar::cOutputBar()
  : m_nextLogCallback(NULL)

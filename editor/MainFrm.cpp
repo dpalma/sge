@@ -6,6 +6,7 @@
 #include "MainFrm.h"
 
 #include "editorView.h"
+#include "editorCtrlBars.h"
 
 #include <afxcview.h>
 
@@ -51,6 +52,12 @@ CMainFrame::CMainFrame()
 
 CMainFrame::~CMainFrame()
 {
+   std::vector<CControlBar *>::iterator iter;
+   for (iter = m_ctrlBars.begin(); iter != m_ctrlBars.end(); iter++)
+   {
+      delete *iter;
+   }
+   m_ctrlBars.clear();
 }
 
 int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
@@ -74,23 +81,74 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;      // fail to create
 	}
 
-   CString title;
-   Verify(title.LoadString(IDS_OUTPUT_BAR_TITLE));
-   if (!m_wndLogBar.Create(title, this, AFX_IDW_CONTROLBAR_FIRST + 32))
-	{
-		TRACE0("Failed to create log bar\n");
-		return -1;		// fail to create
-	}
-   m_wndLogBar.SetBarStyle(m_wndLogBar.GetBarStyle() |
-      CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
+   static const uint ctrlBarPlacementMap[] =
+   {
+      AFX_IDW_DOCKBAR_TOP, // kCBP_Top
+      AFX_IDW_DOCKBAR_LEFT, // kCBP_Left
+      AFX_IDW_DOCKBAR_RIGHT, //kCBP_Right
+      AFX_IDW_DOCKBAR_BOTTOM, //kCBP_Bottom
+      AFX_IDW_DOCKBAR_FLOAT, //kCBP_Float
+   };
 
-	// TODO: Delete these three lines if you don't want the toolbar to
-	//  be dockable
-	m_wndLogBar.EnableDocking(CBRS_ALIGN_TOP | CBRS_ALIGN_BOTTOM);
+   uint titleStringId;
+   CRuntimeClass * pRuntimeClass;
+   eControlBarPlacement placement;
+
+   uint ctrlBarId = AFX_IDW_CONTROLBAR_FIRST + 32;
+
+   const CRect rect(0,0,0,0);
+
+   static const DWORD ctrlBarStyle = WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN;
+
+   const CString ctrlBarWndClass = AfxRegisterWndClass(CS_DBLCLKS,
+      LoadCursor(NULL, IDC_ARROW), GetSysColorBrush(COLOR_BTNFACE), 0);
+
+   std::vector<uint> dockBars;
+   HANDLE hIter;
+   IterCtrlBarsBegin(&hIter);
+   while (IterNextCtrlBar(&hIter, &titleStringId, &pRuntimeClass, &placement))
+   {
+      CString title;
+      if (!title.LoadString(titleStringId))
+      {
+         title.Format("ControlBar%d", titleStringId);
+      }
+
+      if (pRuntimeClass != NULL && pRuntimeClass->m_pfnCreateObject != NULL)
+      {
+         CControlBar * pCtrlBar = DYNAMIC_DOWNCAST(CControlBar, pRuntimeClass->CreateObject());
+         if (pCtrlBar != NULL)
+         {
+            if (pCtrlBar->Create(ctrlBarWndClass, title, ctrlBarStyle, rect, this, ctrlBarId))
+            {
+               pCtrlBar->EnableDocking(CBRS_ALIGN_ANY);
+               pCtrlBar->SetBarStyle(pCtrlBar->GetBarStyle() |
+                  CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
+
+               ctrlBarId++;
+               m_ctrlBars.push_back(pCtrlBar);
+               dockBars.push_back(ctrlBarPlacementMap[placement]);
+            }
+            else
+            {
+               DebugMsg1("Error creating control bar of type %s\n", pRuntimeClass->m_lpszClassName);
+               delete pCtrlBar;
+            }
+         }
+      }
+   }
+   IterCtrlBarsEnd(hIter);
+
 	m_wndToolBar.EnableDocking(CBRS_ALIGN_ANY);
 	EnableDocking(CBRS_ALIGN_ANY);
-	DockControlBar(&m_wndLogBar, AFX_IDW_DOCKBAR_BOTTOM);
 	DockControlBar(&m_wndToolBar);
+
+   Assert(m_ctrlBars.size() == dockBars.size());
+
+   for (uint i = 0; i < m_ctrlBars.size(); i++)
+   {
+	   DockControlBar(m_ctrlBars[i], dockBars[i]);
+   }
 
 	return 0;
 }

@@ -4,7 +4,7 @@
 #if !defined(INCLUDED_MAINFRM_H)
 #define INCLUDED_MAINFRM_H
 
-#include "OutputBar.h"
+#include <vector>
 
 #if _MSC_VER > 1000
 #pragma once
@@ -40,7 +40,6 @@ public:
 #endif
 
 protected:  // control bar embedded members
-   cOutputBar m_wndLogBar;
 	CStatusBar  m_wndStatusBar;
 	CToolBar    m_wndToolBar;
    CSplitterWnd m_wndSplitter;
@@ -53,6 +52,9 @@ protected:
 		//    DO NOT EDIT what you see in these blocks of generated code!
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+
+private:
+   std::vector<CControlBar *> m_ctrlBars;
 };
 
 /////////////////////////////////////////////////////////////////////////////

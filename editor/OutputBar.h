@@ -17,6 +17,8 @@
 
 class cOutputBar : public CSizingControlBarG
 {
+   DECLARE_DYNCREATE(cOutputBar)
+
 // Construction
 public:
    cOutputBar();
