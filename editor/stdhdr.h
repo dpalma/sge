@@ -10,45 +10,35 @@
 
 #include "techtypes.h"
 #include "techdebug.h"
+
+#define QI_TEMPLATE_METHOD_FOR_ATL
+
 #include "combase.h"
 
-#define VC_EXTRALEAN		// Exclude rarely-used stuff from Windows headers
+#define _WTL_USE_CSTRING
 
-#include <afxwin.h>         // MFC core and standard components
-#include <afxext.h>         // MFC extensions
-#ifndef _AFX_NO_AFXCMN_SUPPORT
-#include <afxcmn.h>			// MFC support for Windows Common Controls
-#endif // _AFX_NO_AFXCMN_SUPPORT
-
-// The sizeable control bar files sometimes contain only "stdafx.h"
-// so the headers are included here to minimize changing the (3rd party)
-// source. See http://www.datamekanix.com/sizecbar/ for more info.
-#include "sizecbar.h"
-#include "scbarg.h"
-#include "scbarcf.h"
-
-// TODO HACK required only for using WTL and MFC at the same time
-#include <objidl.h>
-WINCOMMCTRLAPI HIMAGELIST WINAPI ImageList_Read(LPSTREAM pstm);
-WINCOMMCTRLAPI BOOL       WINAPI ImageList_Write(HIMAGELIST himl, LPSTREAM pstm);
-
-#define _WTL_NO_AUTOMATIC_NAMESPACE
 #include <atlbase.h>
 #include <atlapp.h>
 
 extern WTL::CAppModule _Module;
 
+#include <atlcom.h>
 #include <atlwin.h>
-//#include <atlctrls.h>
-//#include <atlctrlw.h>
-//#include <atlctrlx.h>
+#include <atlgdi.h>
+#include <atlmisc.h>
+#include <atlctrls.h>
+#include <atlctrlw.h>
+#include <atlctrlx.h>
 #include <atlcrack.h>
 
 #pragma warning(disable:4355) // 'this' : used in base member initializer list
 
-/////////////////////////////////////////////////////////////////////////////
+// MFC stand-in hacks
+class CArchive {};
+class CDumpContext {};
+class CCmdUI {};
+#define afx_msg
 
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
+/////////////////////////////////////////////////////////////////////////////
 
 #endif // !defined(INCLUDED_STDHDR_H)

@@ -5,7 +5,6 @@
 #define INCLUDED_EDITORDOC_H
 
 #include "comtools.h"
-#include "afxcomtools.h"
 #include "editorapi.h"
 
 #include <stack>
@@ -27,15 +26,15 @@ typedef std::stack<IEditorCommand *> tCommandStack;
 // CLASS: cEditorDoc
 //
 
-class cEditorDoc : public CDocument,
-                   public cComObject<IMPLEMENTS(IEditorModel), cAfxComServices<cEditorDoc> >
+class cEditorDoc : public cComObject<IMPLEMENTS(IEditorModel)>
 {
 protected: // create from serialization only
-	cEditorDoc();
-	DECLARE_DYNCREATE(cEditorDoc)
 
 // Attributes
 public:
+	cEditorDoc();
+	virtual ~cEditorDoc();
+
    const sTerrainVertex * GetVertexPointer() const;
    size_t GetVertexCount() const;
 
@@ -61,7 +60,6 @@ public:
 
 // Implementation
 public:
-	virtual ~cEditorDoc();
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;
@@ -75,7 +73,6 @@ protected:
 	afx_msg void OnEditRedo();
 	afx_msg void OnUpdateEditRedo(CCmdUI* pCmdUI);
 	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
 
 private:
    cHeightMap * m_pHeightMap;

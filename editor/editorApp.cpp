@@ -9,7 +9,6 @@
 #include "editorTypes.h"
 #include "MainFrm.h"
 #include "aboutdlg.h"
-#include "splashwnd.h"
 #include "BitmapUtils.h"
 #include "MapSettingsDlg.h"
 
@@ -48,11 +47,7 @@
 
 #include "resource.h"       // main symbols
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include "dbgalloc.h" // must be last header
 
 extern sScriptReg g_editorCmds[];
 extern uint g_nEditorCmds;
@@ -129,14 +124,16 @@ cEditorApp::cEditorApp()
 	// Place all significant initialization in InitInstance
 }
 
+cEditorApp::~cEditorApp()
+{
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // The one and only cEditorApp object
 
-cEditorApp theApp;
-
-IEditorApp * AccessEditorApp()
+void EditorAppCreate()
 {
-   return static_cast<IEditorApp *>(&theApp);
+   cAutoIPtr<IEditorApp>(new cEditorApp);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -222,6 +219,7 @@ static void RegisterGlobalObjects()
 //   GUIRenderingToolsCreate();
    EditorTileManagerCreate();
    ThreadCallerCreate();
+   EditorAppCreate();
 }
 
 ////////////////////////////////////////
@@ -800,7 +798,7 @@ tResult cEditorApp::ReleaseToolCapture()
 
 ////////////////////////////////////////
 
-void cEditorApp::OnToolsUnitTestRunner() 
+void RunUnitTests()
 {
 #ifdef HAVE_CPPUNIT
 #ifdef USE_MFC_TESTRUNNER
@@ -832,6 +830,11 @@ void cEditorApp::OnToolsUnitTestRunner()
 #else
    AfxMessageBox(IDS_NO_UNIT_TESTS);
 #endif
+}
+
+void cEditorApp::OnToolsUnitTestRunner() 
+{
+   RunUnitTests();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

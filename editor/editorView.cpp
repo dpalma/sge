@@ -19,12 +19,9 @@
 #include "techtime.h"
 
 #include <GL/gl.h>
+#include <zmouse.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include "dbgalloc.h" // must be last header
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -51,23 +48,6 @@ static tVec3 CalcEyePoint(const tVec3 & center,
 
 ////////////////////////////////////////
 
-IMPLEMENT_DYNCREATE(cEditorView, CView)
-
-////////////////////////////////////////
-
-BEGIN_MESSAGE_MAP(cEditorView, cGLView)
-	//{{AFX_MSG_MAP(cEditorView)
-	ON_WM_CREATE()
-	ON_WM_DESTROY()
-	ON_WM_SIZE()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// cEditorView construction/destruction
-
-////////////////////////////////////////
-
 cEditorView::cEditorView()
  : m_cameraElevation(kDefaultCameraElevation),
    m_center(0,0,0),
@@ -85,9 +65,6 @@ cEditorView::cEditorView()
 cEditorView::~cEditorView()
 {
 }
-
-/////////////////////////////////////////////////////////////////////////////
-// cEditorView operations
 
 ////////////////////////////////////////
 
@@ -234,43 +211,69 @@ void cEditorView::RenderScene()
    AccessRenderDevice()->EndScene();
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// cEditorView drawing
-
-void cEditorView::OnDraw(CDC * pDC)
-{
-//	cEditorDoc * pDoc = GetDocument();
-//	ASSERT_VALID(pDoc);
-
-   RenderScene();
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// cEditorView diagnostics
-
-#ifdef _DEBUG
 ////////////////////////////////////////
 
-void cEditorView::AssertValid() const
+LRESULT cEditorView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
-	cGLView::AssertValid();
+   if (RenderDeviceCreate(static_cast<IWindow *>(this), &m_pRenderDevice) != S_OK)
+   {
+      ErrorMsg("Failed to create rendering device\n");
+      return -1;
+   }
+
+   m_pCamera = SceneCameraCreate();
+   if (!m_pCamera)
+   {
+      ErrorMsg("Failed to create camera\n");
+      return -1;
+   }
+
+   UseGlobal(Scene);
+   pScene->SetCamera(kSL_Terrain, m_pCamera);
+
+   pScene->AddEntity(kSL_Terrain, &m_sceneEntity);
+
+   UseGlobal(EditorApp);
+   Verify(pEditorApp->AddLoopClient(this) == S_OK);
+
+   pEditorApp->SetDefaultTool(cAutoIPtr<IEditorTool>(new cMoveCameraTool));
+
+	return 0;
 }
 
 ////////////////////////////////////////
 
-void cEditorView::Dump(CDumpContext& dc) const
+void cEditorView::OnDestroy() 
 {
-	cGLView::Dump(dc);
+   UseGlobal(Scene);
+   pScene->RemoveEntity(kSL_Terrain, &m_sceneEntity);
+
+   UseGlobal(EditorApp);
+   pEditorApp->RemoveLoopClient(this);
+
+   SafeRelease(m_pCamera);
+   SafeRelease(m_pRenderDevice);
+
+   SafeRelease(m_pVertexBuffer);
+   SafeRelease(m_pIndexBuffer);
 }
 
 ////////////////////////////////////////
 
-cEditorDoc* cEditorView::GetDocument() // non-debug version is inline
+void cEditorView::OnSize(UINT nType, CSize size) 
 {
-	ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(cEditorDoc)));
-	return (cEditorDoc*)m_pDocument;
+   float aspect = (float)size.cx / size.cy;
+
+   if (AccessRenderDevice() != NULL)
+   {
+      AccessRenderDevice()->SetViewportSize(size.cx, size.cy);
+   }
+
+   if (!!m_pCamera)
+   {
+      m_pCamera->SetPerspective(kFov, aspect, kZNear, kZFar);
+   }
 }
-#endif //_DEBUG
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -297,7 +300,7 @@ void cEditorView::cSceneEntity::Render(IRenderDevice * pRenderDevice)
    Assert(m_pOuter != NULL);
 
 	cEditorDoc * pDoc = m_pOuter->GetDocument();
-	ASSERT_VALID(pDoc);
+	Assert(pDoc != NULL);
 
    tResult renderResult = S_FALSE;
 
@@ -348,93 +351,18 @@ void cEditorView::cSceneEntity::Render(IRenderDevice * pRenderDevice)
    }
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// cEditorView message handlers
-
 ////////////////////////////////////////
 
-int cEditorView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
-{
-	if (cGLView::OnCreate(lpCreateStruct) == -1)
-		return -1;
-
-   if (RenderDeviceCreate(static_cast<IWindow *>(this), &m_pRenderDevice) != S_OK)
-   {
-      DebugMsg("Failed to create rendering device\n");
-      return -1;
-   }
-
-   m_pCamera = SceneCameraCreate();
-   if (!m_pCamera)
-   {
-      DebugMsg("ERROR: Failed to create camera\n");
-      return -1;
-   }
-
-   UseGlobal(Scene);
-   pScene->SetCamera(kSL_Terrain, m_pCamera);
-
-   pScene->AddEntity(kSL_Terrain, &m_sceneEntity);
-
-   Assert(AccessEditorApp() != NULL);
-   Verify(AccessEditorApp()->AddLoopClient(this) == S_OK);
-
-   AccessEditorApp()->SetDefaultTool(cAutoIPtr<IEditorTool>(new cMoveCameraTool));
-
-	return 0;
-}
-
-////////////////////////////////////////
-
-void cEditorView::OnDestroy() 
-{
-	cGLView::OnDestroy();
-
-   UseGlobal(Scene);
-   pScene->RemoveEntity(kSL_Terrain, &m_sceneEntity);
-
-   Assert(AccessEditorApp() != NULL);
-   AccessEditorApp()->RemoveLoopClient(this);
-
-   SafeRelease(m_pCamera);
-   SafeRelease(m_pRenderDevice);
-
-   SafeRelease(m_pVertexBuffer);
-   SafeRelease(m_pIndexBuffer);
-}
-
-////////////////////////////////////////
-
-void cEditorView::OnSize(UINT nType, int cx, int cy) 
-{
-	cGLView::OnSize(nType, cx, cy);
-
-   float aspect = (float)cx / cy;
-
-   if (AccessRenderDevice() != NULL)
-   {
-      AccessRenderDevice()->SetViewportSize(cx, cy);
-   }
-
-   if (!!m_pCamera)
-   {
-      m_pCamera->SetPerspective(kFov, aspect, kZNear, kZFar);
-   }
-}
-
-////////////////////////////////////////
-
-void cEditorView::OnInitialUpdate() 
+void cEditorView::InitialUpdate() 
 {
    SafeRelease(m_pVertexBuffer);
    SafeRelease(m_pIndexBuffer);
 
    CRect rect;
    GetClientRect(rect);
-   SetScaleToFitSize(rect.Size());
 
 	cEditorDoc * pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
+	Assert(pDoc != NULL);
 
    if (pDoc->AccessTerrain() == NULL)
    {
@@ -476,16 +404,14 @@ void cEditorView::OnInitialUpdate()
    pDoc->AccessTerrain()->GetExtents(&xExt, &zExt);
 
    PlaceCamera((float)xExt / 2, (float)zExt / 2);
-
-	CView::OnInitialUpdate();
 }
 
 ////////////////////////////////////////
 
-void cEditorView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
+void cEditorView::Update() 
 {
 	cEditorDoc * pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
+	Assert(pDoc != NULL);
 
    if (!!m_pVertexBuffer)
    {
@@ -655,5 +581,5 @@ LRESULT cEditorView::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
       }
    }
 
-	return cGLView::WindowProc(message, wParam, lParam);
+   return 0;
 }

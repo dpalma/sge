@@ -9,14 +9,12 @@
 
 #include "globalobj.h"
 
+#include <atldlgs.h>
+
 #include <algorithm>
 #include <functional>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include "dbgalloc.h" // must be last header
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -27,21 +25,16 @@ static char THIS_FILE[] = __FILE__;
 
 cMapSettingsDlg::cMapSettingsDlg(const SIZE * pSizes, size_t nSizes, int sizeSelectIndex,
                                  const std::vector<cStr> & tileSets, int tileSetSelectIndex,
-                                 eHeightData heightData,
-                                 CWnd* pParent /*=NULL*/)
- : CDialog(cMapSettingsDlg::IDD, pParent)
+                                 eHeightData heightData)
+ :	m_tileSetIndex(-1),
+	m_heightData(-1),
+	m_heightMapFile(_T("")),
+	m_mapHeightIndex(-1),
+	m_mapWidthIndex(-1)
 {
-	//{{AFX_DATA_INIT(cMapSettingsDlg)
-	m_tileSetIndex = -1;
-	m_heightData = -1;
-	m_heightMapFile = _T("");
-	m_mapHeightIndex = -1;
-	m_mapWidthIndex = -1;
-	//}}AFX_DATA_INIT
-
    if (pSizes != NULL && nSizes > 0)
    {
-      Assert(AfxIsValidAddress(pSizes, nSizes * sizeof(SIZE), FALSE));
+      Assert(!IsBadReadPtr(pSizes, nSizes * sizeof(SIZE)));
       m_mapSizes.resize(nSizes);
       for (uint i = 0; i < nSizes; i++)
       {
@@ -64,22 +57,7 @@ cMapSettingsDlg::cMapSettingsDlg(const SIZE * pSizes, size_t nSizes, int sizeSel
 
 ////////////////////////////////////////
 
-void cMapSettingsDlg::DoDataExchange(CDataExchange* pDX)
-{
-	CDialog::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(cMapSettingsDlg)
-	DDX_Control(pDX, IDC_MAP_INITIAL_TILE, m_initialTileComboBox);
-	DDX_CBIndex(pDX, IDC_MAP_TILESET, m_tileSetIndex);
-	DDX_Radio(pDX, IDC_HEIGHT_NONE, m_heightData);
-	DDX_Text(pDX, IDC_HEIGHT_MAP_FILE, m_heightMapFile);
-	DDV_MaxChars(pDX, m_heightMapFile, MAX_PATH);
-	DDX_CBIndex(pDX, IDC_MAP_HEIGHT, m_mapHeightIndex);
-	DDX_CBIndex(pDX, IDC_MAP_WIDTH, m_mapWidthIndex);
-	//}}AFX_DATA_MAP
-}
-
-////////////////////////////////////////
-
+#if 0
 BEGIN_MESSAGE_MAP(cMapSettingsDlg, CDialog)
 	//{{AFX_MSG_MAP(cMapSettingsDlg)
 	ON_BN_CLICKED(IDC_BROWSE_HEIGHT_MAP, OnBrowseHeightMap)
@@ -89,6 +67,7 @@ BEGIN_MESSAGE_MAP(cMapSettingsDlg, CDialog)
    ON_BN_CLICKED(IDC_IMPORT_HEIGHT_MAP, DoRadioButtonEnabling)
    ON_CBN_SELCHANGE(IDC_MAP_TILESET, OnSelectTileSet)
 END_MESSAGE_MAP()
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // cMapSettingsDlg message handlers
@@ -165,18 +144,16 @@ void cMapSettingsDlg::OnCancel()
 
 ////////////////////////////////////////
 
-BOOL cMapSettingsDlg::OnInitDialog() 
+LRESULT cMapSettingsDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/)
 {
-	CDialog::OnInitDialog();
-	
    // Don't sort the drop-lists because selection is defined and
    // returned as indices into the lists given in the constructor
-   ASSERT_VALID(GetDlgItem(IDC_MAP_WIDTH));
-   ASSERT_VALID(GetDlgItem(IDC_MAP_HEIGHT));
-   ASSERT_VALID(GetDlgItem(IDC_MAP_TILESET));
-   GetDlgItem(IDC_MAP_WIDTH)->ModifyStyle(CBS_SORT, 0);
-   GetDlgItem(IDC_MAP_HEIGHT)->ModifyStyle(CBS_SORT, 0);
-   GetDlgItem(IDC_MAP_TILESET)->ModifyStyle(CBS_SORT, 0);
+   Assert(::IsWindow(GetDlgItem(IDC_MAP_WIDTH)));
+   Assert(::IsWindow(GetDlgItem(IDC_MAP_HEIGHT)));
+   Assert(::IsWindow(GetDlgItem(IDC_MAP_TILESET)));
+   CWindow(GetDlgItem(IDC_MAP_WIDTH)).ModifyStyle(CBS_SORT, 0);
+   CWindow(GetDlgItem(IDC_MAP_HEIGHT)).ModifyStyle(CBS_SORT, 0);
+   CWindow(GetDlgItem(IDC_MAP_TILESET)).ModifyStyle(CBS_SORT, 0);
 
    if (!m_mapSizes.empty())
    {
@@ -202,7 +179,7 @@ BOOL cMapSettingsDlg::OnInitDialog()
 
    // Update the dialog controls from the member variables again
    // after populating drop-lists, etc.
-   UpdateData(FALSE);
+   DoDataExchange(FALSE);
 
    DoRadioButtonEnabling();
    PopulateInitialTileComboBox(true);
@@ -216,15 +193,15 @@ BOOL cMapSettingsDlg::OnInitDialog()
 void cMapSettingsDlg::OnBrowseHeightMap() 
 {
    // Force the m_heightData member variable to match the state of the radio buttons
-   UpdateData(TRUE);
+   DoDataExchange(TRUE);
 
    CString filter;
    Verify(filter.LoadString(IDS_HEIGHT_MAP_FILTER));
 	CFileDialog dlg(TRUE, NULL, NULL, OFN_HIDEREADONLY, filter);
    if (dlg.DoModal() == IDOK)
    {
-      m_heightMapFile = dlg.GetPathName();
-      UpdateData(FALSE);
+      m_heightMapFile = dlg.m_szFileName;
+      DoDataExchange(FALSE);
    }
 }
 
@@ -232,20 +209,13 @@ void cMapSettingsDlg::OnBrowseHeightMap()
 
 void cMapSettingsDlg::DoRadioButtonEnabling()
 {
-   ASSERT_VALID(GetDlgItem(IDC_IMPORT_HEIGHT_MAP));
-   ASSERT_VALID(GetDlgItem(IDC_BROWSE_HEIGHT_MAP));
-   ASSERT_VALID(GetDlgItem(IDC_HEIGHT_MAP_FILE));
+   Assert(::IsWindow(GetDlgItem(IDC_IMPORT_HEIGHT_MAP)));
+   Assert(::IsWindow(GetDlgItem(IDC_BROWSE_HEIGHT_MAP)));
+   Assert(::IsWindow(GetDlgItem(IDC_HEIGHT_MAP_FILE)));
 
-   if (IsDlgButtonChecked(IDC_IMPORT_HEIGHT_MAP) == BST_CHECKED)
-   {
-      GetDlgItem(IDC_BROWSE_HEIGHT_MAP)->EnableWindow(TRUE);
-      GetDlgItem(IDC_HEIGHT_MAP_FILE)->EnableWindow(TRUE);
-   }
-   else
-   {
-      GetDlgItem(IDC_BROWSE_HEIGHT_MAP)->EnableWindow(FALSE);
-      GetDlgItem(IDC_HEIGHT_MAP_FILE)->EnableWindow(FALSE);
-   }
+   BOOL bEnable = (IsDlgButtonChecked(IDC_IMPORT_HEIGHT_MAP) == BST_CHECKED);
+   ::EnableWindow(GetDlgItem(IDC_BROWSE_HEIGHT_MAP), bEnable);
+   ::EnableWindow(GetDlgItem(IDC_HEIGHT_MAP_FILE), bEnable);
 }
 
 ////////////////////////////////////////
@@ -280,7 +250,7 @@ void cMapSettingsDlg::PopulateInitialTileComboBox(bool bForce)
             HIMAGELIST hImageList = NULL;
             if (pTileSet->GetImageList(imageSize, &hImageList) == S_OK)
             {
-               m_initialTileComboBox.SetImageList(CImageList::FromHandle(hImageList));
+               m_initialTileComboBox.SetImageList(hImageList);
             }
 
             uint nTiles = 0;

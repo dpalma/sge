@@ -16,7 +16,7 @@
 //
 
 template <class T>
-class cGLContext : public T
+class cGLContext
 {
 public:
    cGLContext() : m_hDC(NULL), m_hRC(NULL)
@@ -35,14 +35,17 @@ public:
 
    LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & /*bHandled*/)
 	{
-      LPCREATESTRUCT lpCreateStruct = reinterpret_cast<>(lParam);
+      T * pT = static_cast<T*>(this);
+
+      LPCREATESTRUCT lpCreateStruct = reinterpret_cast<LPCREATESTRUCT>(lParam);
 
       if (!(lpCreateStruct->style & (WS_CLIPCHILDREN | WS_CLIPSIBLINGS)))
       {
+         ErrorMsg("WS_CLIPCHILDREN and WS_CLIPSIBLINGS styles are required\n");
          return -1;
       }
 
-      m_hDC = ::GetDC(m_hWnd);
+      m_hDC = ::GetDC(pT->m_hWnd);
       if (m_hDC == NULL)
       {
          return -1;
@@ -65,7 +68,7 @@ public:
 
       if (pfd.dwFlags & PFD_NEED_PALETTE)
       {
-         AtlMessageBox("Needs palette");
+         ErrorMsg("Needs palette\n");
          return -1;
       }
 
@@ -85,8 +88,10 @@ public:
       return 0;
    }
 
-   LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & /*bHandled*/)
+   LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled)
 	{
+      T * pT = static_cast<T*>(this);
+
       wglMakeCurrent(NULL, NULL);
 
       if (m_hRC != NULL)
@@ -97,7 +102,7 @@ public:
 
       if (m_hDC != NULL)
       {
-         ::ReleaseDC(m_hWnd, m_hDC);
+         ::ReleaseDC(pT->m_hWnd, m_hDC);
          m_hDC = NULL;
       }
 

@@ -9,11 +9,7 @@
 
 #include "resource.h"       // main symbols
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include "dbgalloc.h" // must be last header
 
 const uint kChildId = 256;
 
@@ -34,9 +30,22 @@ void OutputBarLogCallback(eLogSeverity severity, const tChar * pszMsg, size_t ms
 // CLASS: cOutputBar
 //
 
-AUTO_REGISTER_CONTROLBAR(IDS_OUTPUT_BAR_TITLE, RUNTIME_CLASS(cOutputBar), kCBP_Bottom);
+AUTO_REGISTER_CONTROLBAR(IDS_OUTPUT_BAR_TITLE, cOutputBar::Factory, kCBP_Bottom);
 
-IMPLEMENT_DYNCREATE(cOutputBar, CSizingControlBarG);
+tResult cOutputBar::Factory(cDockingWindow * * ppDockingWindow)
+{
+   if (ppDockingWindow == NULL)
+   {
+      return E_POINTER;
+   }
+   cOutputBar * pOutputBar = new cOutputBar;
+   if (pOutputBar == NULL)
+   {
+      return E_OUTOFMEMORY;
+   }
+   *ppDockingWindow = static_cast<cDockingWindow *>(pOutputBar);
+   return S_OK;
+}
 
 cOutputBar::cOutputBar()
  : m_nextLogCallback(NULL)
@@ -57,24 +66,9 @@ void cOutputBar::HandleLogCallback(eLogSeverity severity, const tChar * pszMsg, 
    }
 }
 
-BEGIN_MESSAGE_MAP(cOutputBar, CSizingControlBarG)
-   //{{AFX_MSG_MAP(cOutputBar)
-   ON_WM_CREATE()
-	ON_WM_DESTROY()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// cOutputBar message handlers
-
-int cOutputBar::OnCreate(LPCREATESTRUCT lpCreateStruct) 
+LRESULT cOutputBar::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled)
 {
-   if (CSizingControlBarG::OnCreate(lpCreateStruct) == -1)
-      return -1;
-
-   SetSCBStyle(GetSCBStyle() | SCBS_SIZECHILD);
-
-   if (m_logWnd.Create(GetSafeHwnd(), CWindow::rcDefault, NULL, WS_CHILD | WS_VISIBLE, 0, kChildId) == NULL)
+   if (m_logWnd.Create(m_hWnd, CWindow::rcDefault, NULL, WS_CHILD | WS_VISIBLE, 0, kChildId) == NULL)
    {
       DebugMsg("Error creating child window\n");
       return -1;
@@ -82,6 +76,7 @@ int cOutputBar::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
    m_logWnd.ModifyStyleEx(0, WS_EX_CLIENTEDGE);
 
+#if 0
    CFont font;
    if (!font.CreateStockObject(DEFAULT_GUI_FONT))
    {
@@ -92,7 +87,6 @@ int cOutputBar::OnCreate(LPCREATESTRUCT lpCreateStruct)
       }
    }
 
-#if 0
    if (!m_wndChild.Create(NULL, NULL, WS_CHILD | WS_VISIBLE, CRect(0,0,0,0), this, kChildId))
    {
       return -1;
@@ -109,10 +103,9 @@ int cOutputBar::OnCreate(LPCREATESTRUCT lpCreateStruct)
    return 0;
 }
 
-void cOutputBar::OnDestroy() 
+LRESULT cOutputBar::OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled)
 {
-   CSizingControlBarG::OnDestroy();
-
    techlog.SetCallback(m_nextLogCallback);
    g_pOutputBar = NULL;
+   return NULL;
 }

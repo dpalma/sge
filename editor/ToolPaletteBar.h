@@ -4,9 +4,9 @@
 #ifndef INCLUDED_TOOLPALETTEBAR_H
 #define INCLUDED_TOOLPALETTEBAR_H
 
-#include "afxcomtools.h"
 #include "editorapi.h"
 #include "editorTools.h"
+#include "editorCtrlBars.h"
 
 #include <vector>
 
@@ -49,46 +49,38 @@ private:
 // CLASS: cToolPaletteBar
 //
 
-class cToolPaletteBar : public CSizingControlBarG,
-                        public cComObject<IMPLEMENTS(IEditorTileManagerListener),
-                                          cAfxComServices<cToolPaletteBar> >
+class cToolPaletteBar : public cDockingWindow,
+                        public CMessageFilter,
+                        public cComObject<IMPLEMENTS(IEditorTileManagerListener)>
 {
-   DECLARE_DYNCREATE(cToolPaletteBar)
+   enum
+   {
+      kButtonIdFirst = 1000,
+      kButtonIdLast = 1100,
+   };
 
-// Construction
 public:
+   static tResult Factory(cDockingWindow * * ppDockingWindow);
+
    cToolPaletteBar();
-
-// Attributes
-public:
-
-// Operations
-public:
-
-// Overrides
-   // ClassWizard generated virtual function overrides
-   //{{AFX_VIRTUAL(cToolPaletteBar)
-	public:
-	virtual BOOL PreTranslateMessage(MSG* pMsg);
-	//}}AFX_VIRTUAL
-
-// Implementation
-public:
    virtual ~cToolPaletteBar();
 
    virtual void OnDefaultTileSetChange(IEditorTileSet * pTileSet);
 
-protected:
+   BEGIN_MSG_MAP(cToolPaletteBar)
+      MESSAGE_HANDLER(WM_CREATE, OnCreate)
+      MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
+      MESSAGE_HANDLER(WM_SIZE, OnSize)
+      COMMAND_RANGE_HANDLER(kButtonIdFirst, kButtonIdLast, OnButtonClicked)
+      CHAIN_MSG_MAP(cDockingWindow)
+   END_MSG_MAP()
 
-   // Generated message map functions
-protected:
-   //{{AFX_MSG(cToolPaletteBar)
-   afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-	afx_msg void OnDestroy();
-	afx_msg void OnSize(UINT nType, int cx, int cy);
-	//}}AFX_MSG
-   afx_msg void OnButtonClicked(uint buttonId);
-   DECLARE_MESSAGE_MAP()
+   LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
+   LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
+   LRESULT OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
+   LRESULT OnButtonClicked(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL & bHandled);
+
+	virtual BOOL PreTranslateMessage(MSG * pMsg);
 
    void ClearButtons();
    void RepositionButtons(BOOL bRepaint = TRUE);

@@ -5,9 +5,8 @@
 #define INCLUDED_EDITORAPP_H
 
 #include "editorapi.h"
-#include "afxcomtools.h"
 
-#include <afxdisp.h>
+#include "globalobj.h"
 
 #include <vector>
 
@@ -15,20 +14,16 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#ifndef __AFXWIN_H__
-	#error include 'stdafx.h' before including this file for PCH
-#endif
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cEditorApp
 //
 
-class cEditorApp : public CWinApp, 
-                   public cComObject<IMPLEMENTS(IEditorApp), cAfxComServices<cEditorApp> >
+class cEditorApp : public cGlobalObject<IMPLEMENTS(IEditorApp)>
 {
 public:
 	cEditorApp();
+   ~cEditorApp();
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -40,13 +35,6 @@ public:
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual BOOL OnIdle(LONG lCount);
 	//}}AFX_VIRTUAL
-
-// Implementation
-	//{{AFX_MSG(cEditorApp)
-	afx_msg void OnAppAbout();
-	afx_msg void OnToolsUnitTestRunner();
-	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
 
    virtual tResult AddLoopClient(IEditorLoopClient * pLoopClient);
    virtual tResult RemoveLoopClient(IEditorLoopClient * pLoopClient);
@@ -89,7 +77,7 @@ private:
    cAutoIPtr<IEditorTool> m_pDefaultTool;
    cAutoIPtr<IEditorTool> m_pToolCapture;
 
-   WTL::CMessageLoop m_messageLoop;
+   CMessageLoop m_messageLoop;
 };
 
 ////////////////////////////////////////
@@ -114,8 +102,5 @@ IEditorTool * cEditorApp::AccessToolCapture()
 }
 
 /////////////////////////////////////////////////////////////////////////////
-
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
 #endif // !defined(INCLUDED_EDITORAPP_H)

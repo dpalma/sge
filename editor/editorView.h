@@ -4,9 +4,8 @@
 #if !defined(INCLUDED_EDITORVIEW_H)
 #define INCLUDED_EDITORVIEW_H
 
-#include "glView.h"
 #include "editorapi.h"
-#include "afxcomtools.h"
+#include "GLContext.h"
 
 #include "sceneapi.h"
 
@@ -34,18 +33,21 @@ class cEditorDoc;
 // CLASS: cEditorView
 //
 
-class cEditorView : public cGLView,
-                    public cComObject3<IMPLEMENTSCP(IWindow, IWindowSink),
-                                       IMPLEMENTS(IEditorView),
-                                       IMPLEMENTS(IEditorLoopClient),
-                                       cAfxComServices<cEditorView> >
+class cEditorView : public CWindowImpl<cEditorView>,
+                    public cGLContext<cEditorView>,
+                    public CComObjectRoot,
+                    public cConnectionPoint<IWindow, IWindowSink>,
+                    public IEditorView,
+                    public IEditorLoopClient
 {
-protected: // create from serialization only
+   typedef CWindowImpl<cEditorView> tWindowBase;
+   typedef cGLContext<cEditorView> tGLBase;
+
+public:
 	cEditorView();
-	DECLARE_DYNCREATE(cEditorView)
+	~cEditorView();
 
 // Attributes
-public:
 	cEditorDoc * GetDocument();
 
 // Operations
@@ -72,24 +74,34 @@ public:
 
    void RenderScene();
 
+   BEGIN_MSG_MAP_EX(cEditorView)
+      // TODO: Why getting the ProcessWindowMessage does not take 5 parameters error?
+      CHAIN_MSG_MAP_ALT(tWindowBase, 0)
+      CHAIN_MSG_MAP(tGLBase)
+	   MSG_WM_CREATE(OnCreate)
+	   MSG_WM_DESTROY(OnDestroy)
+	   MSG_WM_SIZE(OnSize)
+   END_MSG_MAP()
+
+   LRESULT OnCreate(LPCREATESTRUCT lpCreateStruct);
+   void OnDestroy();
+   void OnSize(UINT nType, CSize size);
+
+   BEGIN_COM_MAP(cEditorView)
+      COM_INTERFACE_ENTRY_IID(IID_IWindow, IWindow)
+      COM_INTERFACE_ENTRY_IID(IID_IEditorView, IEditorView)
+      COM_INTERFACE_ENTRY_IID(IID_IEditorLoopClient, IEditorLoopClient)
+   END_COM_MAP()
+
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(cEditorView)
-	public:
-	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
-	virtual void OnInitialUpdate();
 	protected:
 	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
-	virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
 	//}}AFX_VIRTUAL
 
-// Implementation
-public:
-	virtual ~cEditorView();
-#ifdef _DEBUG
-	virtual void AssertValid() const;
-	virtual void Dump(CDumpContext& dc) const;
-#endif
+	void InitialUpdate();
+	void Update();
 
 protected:
    class cSceneEntity : public cComObject<IMPLEMENTS(ISceneEntity)>
@@ -127,16 +139,9 @@ protected:
    };
    friend class cSceneEntity;
 
-// Generated message map functions
-protected:
-	//{{AFX_MSG(cEditorView)
-	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-	afx_msg void OnDestroy();
-	afx_msg void OnSize(UINT nType, int cx, int cy);
-	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
-
 private:
+   cEditorDoc * m_pDocument;
+
    cAutoIPtr<IRenderDevice> m_pRenderDevice;
 
    float m_cameraElevation;
@@ -154,14 +159,13 @@ private:
    int m_highlitTileX, m_highlitTileZ;
 };
 
-#ifndef _DEBUG  // debug version in editorView.cpp
-inline cEditorDoc* cEditorView::GetDocument()
-   { return (cEditorDoc*)m_pDocument; }
-#endif
+////////////////////////////////////////
+
+inline cEditorDoc * cEditorView::GetDocument()
+{
+   return m_pDocument;
+}
 
 /////////////////////////////////////////////////////////////////////////////
-
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
 #endif // !defined(INCLUDED_EDITORVIEW_H)

@@ -9,77 +9,83 @@
 
 /////////////////////////////////////////////////////////////////////////////
 
-struct sControlBarDesc
+struct sDockingWindowDesc
 {
    uint titleStringId;
-   CRuntimeClass * pRuntimeClass;
+   tDockingWindowFactoryFn pFactoryFn;
    eControlBarPlacement placement;
-   struct sControlBarDesc * pNext;
+   struct sDockingWindowDesc * pNext;
 };
 
-static bool operator ==(const struct sControlBarDesc & cb1,
-                        const struct sControlBarDesc & cb2)
+static bool operator ==(const struct sDockingWindowDesc & cb1,
+                        const struct sDockingWindowDesc & cb2)
 {
    return
       (cb1.titleStringId == cb2.titleStringId) &&
-      (cb1.pRuntimeClass == cb2.pRuntimeClass) &&
+      (cb1.pFactoryFn == cb2.pFactoryFn) &&
       (cb1.placement == cb2.placement);
 }
 
-struct sControlBarDesc * g_pCtrlBars = NULL;
+/////////////////////////////////////////////////////////////////////////////
 
-struct sAutoDeleteCtrlBars
+struct sDockingWindowDesc * g_pDockingWindowDescs = NULL;
+
+struct sAutoDeleteDockingWindowDescs
 {
-   ~sAutoDeleteCtrlBars();
+   ~sAutoDeleteDockingWindowDescs();
 };
 
-sAutoDeleteCtrlBars::~sAutoDeleteCtrlBars()
+sAutoDeleteDockingWindowDescs::~sAutoDeleteDockingWindowDescs()
 {
-   while (g_pCtrlBars != NULL)
+   while (g_pDockingWindowDescs != NULL)
    {
-      struct sControlBarDesc * p = g_pCtrlBars;
-      g_pCtrlBars = g_pCtrlBars->pNext;
+      struct sDockingWindowDesc * p = g_pDockingWindowDescs;
+      g_pDockingWindowDescs = g_pDockingWindowDescs->pNext;
       delete p;
    }
 }
 
-sAutoDeleteCtrlBars g_autoDeleteCtrlBars;
+sAutoDeleteDockingWindowDescs g_autoDeleteDockingWindowDescs;
 
-tResult RegisterControlBar(uint titleStringId,
-                           CRuntimeClass * pRuntimeClass,
-                           eControlBarPlacement placement)
+/////////////////////////////////////////////////////////////////////////////
+
+tResult RegisterDockingWindow(uint titleStringId,
+                              tDockingWindowFactoryFn pFactoryFn,
+                              eControlBarPlacement placement)
 {
-   struct sControlBarDesc * pcb = new struct sControlBarDesc;
+   struct sDockingWindowDesc * pcb = new struct sDockingWindowDesc;
    pcb->titleStringId = titleStringId;
-   pcb->pRuntimeClass = pRuntimeClass;
+   pcb->pFactoryFn = pFactoryFn;
    pcb->placement = placement;
-   pcb->pNext = g_pCtrlBars;
-   g_pCtrlBars = pcb;
+   pcb->pNext = g_pDockingWindowDescs;
+   g_pDockingWindowDescs = pcb;
    return S_OK;
 }
+
+/////////////////////////////////////////////////////////////////////////////
 
 void IterCtrlBarsBegin(HANDLE * phIter)
 {
    Assert(phIter != NULL);
-   *phIter = (HANDLE)g_pCtrlBars;
+   *phIter = (HANDLE)g_pDockingWindowDescs;
 }
 
 bool IterNextCtrlBar(HANDLE * phIter,
                      uint * pTitleStringId,
-                     CRuntimeClass * * ppRuntimeClass,
+                     tDockingWindowFactoryFn * ppFactoryFn,
                      eControlBarPlacement * pPlacement)
 {
    if (phIter != NULL && *phIter != NULL)
    {
-      struct sControlBarDesc * & pCtrlBar = (struct sControlBarDesc * &)*phIter;
+      struct sDockingWindowDesc * & pCtrlBar = (struct sDockingWindowDesc * &)*phIter;
 
       if (pTitleStringId != NULL)
       {
          *pTitleStringId = pCtrlBar->titleStringId;
       }
-      if (ppRuntimeClass != NULL)
+      if (ppFactoryFn != NULL)
       {
-         *ppRuntimeClass = pCtrlBar->pRuntimeClass;
+         *ppFactoryFn = pCtrlBar->pFactoryFn;
       }
       if (pPlacement != NULL)
       {

@@ -11,15 +11,9 @@
 
 #include "resource.h"       // main symbols
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include "dbgalloc.h" // must be last header
 
-static const uint kMaxButtons = 100; // arbitrary - used only for ON_CONTROL_RANGE
 static const uint kButtonSize = 32;
-static const uint kButtonFirstId = 1000;
 static const CRect buttonMargins(5,5,5,5);
 
 /////////////////////////////////////////////////////////////////////////////
@@ -46,7 +40,7 @@ cButtonPanel::~cButtonPanel()
 
 void cButtonPanel::AddButton(CButton * pButton)
 {
-   ASSERT_VALID(pButton);
+   Assert(pButton != NULL);
    m_buttons.push_back(pButton);
 }
 
@@ -76,7 +70,7 @@ void cButtonPanel::Reposition(LPCRECT pRect, BOOL bRepaint)
    tButtons::iterator iter;
    for (iter = m_buttons.begin(); iter != m_buttons.end(); iter++)
    {
-      if (((*iter) != NULL) && IsWindow((*iter)->GetSafeHwnd()))
+      if (((*iter) != NULL) && IsWindow((*iter)->m_hWnd))
       {
          (*iter)->MoveWindow(buttonRect, bRepaint);
 
@@ -100,7 +94,8 @@ void cButtonPanel::HandleClick(uint buttonId)
 {
    Assert(!!m_pTool);
 
-   AccessEditorApp()->SetActiveTool(m_pTool);
+   UseGlobal(EditorApp);
+   pEditorApp->SetActiveTool(m_pTool);
 
    m_pTool->SetTile(buttonId - m_buttons[0]->GetDlgCtrlID());
 
@@ -109,7 +104,7 @@ void cButtonPanel::HandleClick(uint buttonId)
    tButtons::iterator iter;
    for (iter = m_buttons.begin(); iter != m_buttons.end(); iter++)
    {
-      if (((*iter) != NULL) && IsWindow((*iter)->GetSafeHwnd()) && (*iter)->GetDlgCtrlID() != buttonId)
+      if (((*iter) != NULL) && IsWindow((*iter)->m_hWnd) && (*iter)->GetDlgCtrlID() != buttonId)
       {
          (*iter)->SendMessage(BM_SETSTATE, FALSE);
       }
@@ -120,7 +115,7 @@ void cButtonPanel::HandleClick(uint buttonId)
       }
    }
 
-   ASSERT_VALID(pClickedButton);
+   Assert(pClickedButton != NULL);
    pClickedButton->SendMessage(BM_SETSTATE, TRUE);
 }
 
@@ -140,28 +135,40 @@ void cButtonPanel::SetMargins(LPCRECT pMargins)
 // CLASS: cToolPaletteBar
 //
 
-AUTO_REGISTER_CONTROLBAR(IDS_TOOL_PALETTE_BAR_TITLE, RUNTIME_CLASS(cToolPaletteBar), kCBP_Right);
+////////////////////////////////////////
 
-IMPLEMENT_DYNCREATE(cToolPaletteBar, CSizingControlBarG);
+AUTO_REGISTER_CONTROLBAR(IDS_TOOL_PALETTE_BAR_TITLE, cToolPaletteBar::Factory, kCBP_Right);
+
+////////////////////////////////////////
+
+tResult cToolPaletteBar::Factory(cDockingWindow * * ppDockingWindow)
+{
+   if (ppDockingWindow == NULL)
+   {
+      return E_POINTER;
+   }
+   cToolPaletteBar * pToolPaletteBar = new cToolPaletteBar;
+   if (pToolPaletteBar == NULL)
+   {
+      return E_OUTOFMEMORY;
+   }
+   *ppDockingWindow = static_cast<cDockingWindow *>(pToolPaletteBar);
+   return S_OK;
+}
+
+////////////////////////////////////////
 
 cToolPaletteBar::cToolPaletteBar()
 {
 }
 
+////////////////////////////////////////
+
 cToolPaletteBar::~cToolPaletteBar()
 {
 }
 
-BEGIN_MESSAGE_MAP(cToolPaletteBar, CSizingControlBarG)
-   //{{AFX_MSG_MAP(cToolPaletteBar)
-   ON_WM_CREATE()
-	ON_WM_DESTROY()
-	ON_WM_SIZE()
-	//}}AFX_MSG_MAP
-   ON_CONTROL_RANGE(BN_CLICKED, kButtonFirstId, kButtonFirstId+kMaxButtons, OnButtonClicked)
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////
 
 void cToolPaletteBar::OnDefaultTileSetChange(IEditorTileSet * pTileSet)
 {
@@ -185,13 +192,11 @@ void cToolPaletteBar::OnDefaultTileSetChange(IEditorTileSet * pTileSet)
                   CButton * pButton = new CButton();
                   if (pButton != NULL)
                   {
-                     if (pButton->Create(NULL, WS_CHILD | WS_VISIBLE | BS_BITMAP,
-                        CRect(CW_USEDEFAULT,CW_USEDEFAULT,CW_USEDEFAULT,CW_USEDEFAULT),
-                        this, kButtonFirstId + i))
+                     if (pButton->Create(m_hWnd, rcDefault, "", WS_CHILD | WS_VISIBLE | BS_BITMAP, 0, kButtonIdFirst + i, this))
                      {
                         pButton->SendMessage(BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmap);
 
-                        m_tooltip.AddTool(pButton, tileName.c_str());
+                        m_tooltip.AddTool(pButton->m_hWnd, tileName.c_str());
 
                         m_buttonPanel.AddButton(pButton);
                      }
@@ -209,64 +214,78 @@ void cToolPaletteBar::OnDefaultTileSetChange(IEditorTileSet * pTileSet)
    }
 }
 
+////////////////////////////////////////
+
 void cToolPaletteBar::ClearButtons()
 {
    m_buttonPanel.Clear();
 }
 
+////////////////////////////////////////
+
 void cToolPaletteBar::RepositionButtons(BOOL bRepaint)
 {
    CRect rect;
    GetClientRect(rect);
-
    m_buttonPanel.Reposition(rect, bRepaint);
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// cToolPaletteBar message handlers
+////////////////////////////////////////
 
-int cToolPaletteBar::OnCreate(LPCREATESTRUCT lpCreateStruct) 
+LRESULT cToolPaletteBar::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled)
 {
-   if (CSizingControlBarG::OnCreate(lpCreateStruct) == -1)
-      return -1;
-
-   if (!m_tooltip.Create(this))
+   if (!m_tooltip.Create(m_hWnd))
    {
-      DebugMsg1("Unable to create tooltip control (error %d)\n", GetLastError());
+      ErrorMsg1("Unable to create tooltip control (error %d)\n", GetLastError());
       return -1;
    }
 
    UseGlobal(EditorTileManager);
    pEditorTileManager->Connect(this);
 
+   CMessageLoop * pMessageLoop = _Module.GetMessageLoop();
+   pMessageLoop->AddMessageFilter(this);
+
    return 0;
 }
 
-void cToolPaletteBar::OnDestroy() 
+////////////////////////////////////////
+
+LRESULT cToolPaletteBar::OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled)
 {
-   CSizingControlBarG::OnDestroy();
+   CMessageLoop * pMessageLoop = _Module.GetMessageLoop();
+   pMessageLoop->RemoveMessageFilter(this);
 
    UseGlobal(EditorTileManager);
    pEditorTileManager->Disconnect(this);
-
    ClearButtons();
+   return 0;
 }
 
-void cToolPaletteBar::OnSize(UINT nType, int cx, int cy) 
+////////////////////////////////////////
+
+LRESULT cToolPaletteBar::OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled)
 {
-	CSizingControlBarG::OnSize(nType, cx, cy);
-	
    RepositionButtons();
+   return 0;
 }
 
-void cToolPaletteBar::OnButtonClicked(uint buttonId)
+////////////////////////////////////////
+
+LRESULT cToolPaletteBar::OnButtonClicked(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL & bHandled)
 {
-   m_buttonPanel.HandleClick(buttonId);
+   if (wNotifyCode == BN_CLICKED)
+   {
+      m_buttonPanel.HandleClick(wID);
+   }
+   return 0;
 }
+
+////////////////////////////////////////
 
 BOOL cToolPaletteBar::PreTranslateMessage(MSG* pMsg) 
 {
-   if (IsWindow(m_tooltip.GetSafeHwnd()))
+   if (m_tooltip.IsWindow())
    {
       if (pMsg->message == WM_LBUTTONDOWN || pMsg->message == WM_LBUTTONUP || pMsg->message == WM_MOUSEMOVE)
       {
@@ -274,5 +293,7 @@ BOOL cToolPaletteBar::PreTranslateMessage(MSG* pMsg)
       }
    }
 
-   return CSizingControlBarG::PreTranslateMessage(pMsg);
+   return FALSE;
 }
+
+/////////////////////////////////////////////////////////////////////////////

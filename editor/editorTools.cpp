@@ -14,8 +14,10 @@
 #include "matrix4.h"
 #include "vec3.h"
 #include "vec4.h"
+#include "globalobj.h"
 
 #include <GL/gl.h>
+#include <zmouse.h>
 
 #include "dbgalloc.h" // must be last header
 
@@ -58,7 +60,8 @@ tResult cDragTool::OnLButtonDown(const cEditorMouseEvent & mouseEvent, IEditorVi
    if (pView != NULL)
    {
       m_pView = CTAddRef(pView);
-      AccessEditorApp()->SetToolCapture(this);
+      UseGlobal(EditorApp);
+      pEditorApp->SetToolCapture(this);
       return OnDragStart(mouseEvent, pView);
    }
 
@@ -73,7 +76,8 @@ tResult cDragTool::OnLButtonUp(const cEditorMouseEvent & mouseEvent, IEditorView
    {
       tResult result = OnDragEnd(mouseEvent, pView);
       SafeRelease(m_pView);
-      AccessEditorApp()->ReleaseToolCapture();
+      UseGlobal(EditorApp);
+      pEditorApp->ReleaseToolCapture();
       return result;
    }
 
@@ -342,8 +346,9 @@ tResult cTerrainTileTool::Activate()
 
 tResult cTerrainTileTool::Deactivate()
 {
+   UseGlobal(EditorApp);
    cAutoIPtr<IEditorView> pView;
-   if (AccessEditorApp()->GetActiveView(&pView) == S_OK)
+   if (pEditorApp->GetActiveView(&pView) == S_OK)
    {
       pView->ClearTileHighlight();
    }

@@ -174,8 +174,7 @@ interface IUnknown
 
    virtual ulong STDMETHODCALLTYPE Release() PURE;
 
-   // For Visual C++ 7.0 and later when using ATL
-#if _MSC_VER >= 1300
+#ifdef QI_TEMPLATE_METHOD_FOR_ATL
    template<class Q>
    tResult STDMETHODCALLTYPE QueryInterface(Q** pp)
    {

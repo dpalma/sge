@@ -9,11 +9,7 @@
 #include "imagedata.h"
 #include "globalobj.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include "dbgalloc.h" // must be last header
 
 #define ALIGN4BYTE(w) (((w) + 3) & ~3)
 
@@ -70,11 +66,8 @@ bool LoadBitmap(const cImageData * pImageData, HBITMAP * phBitmap)
                pSrc += srcScanLineSize;
             }
 
-            HBITMAP hBitmap = CreateCompatibleBitmap(dc.GetSafeHdc(),
-                                                     pImageData->GetWidth(),
-                                                     pImageData->GetHeight());
-
-            if (hBitmap != NULL)
+            CBitmap bitmap;
+            if (bitmap.CreateCompatibleBitmap(dc, pImageData->GetWidth(), pImageData->GetHeight()))
             {
                BITMAPINFOHEADER bmInfo = {0};
                bmInfo.biSize = sizeof(BITMAPINFOHEADER);
@@ -84,8 +77,8 @@ bool LoadBitmap(const cImageData * pImageData, HBITMAP * phBitmap)
                bmInfo.biBitCount = bitCount; 
                bmInfo.biCompression = BI_RGB;
 
-               int nScanLines = SetDIBits(dc.GetSafeHdc(),
-                                          hBitmap,
+               int nScanLines = SetDIBits(dc,
+                                          bitmap,
                                           0,
                                           pImageData->GetHeight(),
                                           pImageBits,
@@ -94,7 +87,7 @@ bool LoadBitmap(const cImageData * pImageData, HBITMAP * phBitmap)
 
                if (nScanLines > 0)
                {
-                  *phBitmap = hBitmap;
+                  *phBitmap = bitmap.Detach();
                   bResult = true;
                }
             }
@@ -140,7 +133,7 @@ bool LoadBitmap(const tChar * pszBitmap, HBITMAP * phBitmap)
 
       if (hBitmap == NULL)
       {
-         hBitmap = (HBITMAP)LoadImage(AfxGetResourceHandle(),
+         hBitmap = (HBITMAP)LoadImage(GetModuleHandle(NULL),
                                       pszBitmap,
                                       IMAGE_BITMAP,
                                       0, 0,

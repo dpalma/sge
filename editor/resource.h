@@ -22,6 +22,7 @@
 #define IDS_UNDO_TEXT                   5004
 #define IDS_REDO_TEXT                   5005
 #define IDS_TERRAIN_TILE_COMMAND_LABEL  5006
+#define IDS_APP_TITLE                   5007
 #define ID_TOOLS_UNITTESTRUNNER         32771
 #define ID_EDIT_DELETE                  32773
 #define ID_VIEW_CONTROL_BAR_FIRST       0xC100
@@ -42,6 +43,13 @@
 #define ID_VIEW_CONTROL_BAR15           0xC10E
 #define ID_VIEW_CONTROL_BAR16           0xC10F
 #define ID_VIEW_CONTROL_BAR_LAST        0xC10F
+#define ID_INDICATOR_EXT                0xE700  // extended selection indicator
+#define ID_INDICATOR_CAPS               0xE701  // cap lock indicator
+#define ID_INDICATOR_NUM                0xE702  // num lock indicator
+#define ID_INDICATOR_SCRL               0xE703  // scroll lock indicator
+#define ID_INDICATOR_OVR                0xE704  // overtype mode indicator
+#define ID_INDICATOR_REC                0xE705  // record mode indicator
+#define ID_INDICATOR_KANA               0xE706  // kana lock indicator
 
 // Next default values for new objects
 // 

@@ -9,24 +9,9 @@
 #include "editorCtrlBars.h"
 #include "aboutdlg.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <DockMisc.h>
 
-/////////////////////////////////////////////////////////////////////////////
-// CMainFrame
-
-IMPLEMENT_DYNCREATE(CMainFrame, CFrameWnd)
-
-BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
-	//{{AFX_MSG_MAP(CMainFrame)
-	ON_WM_CREATE()
-	ON_UPDATE_COMMAND_UI(ID_VIEW_CONTROL_BAR1, OnUpdateViewControlBarMenu)
-	//}}AFX_MSG_MAP
-	ON_COMMAND_EX_RANGE(ID_VIEW_CONTROL_BAR1, ID_VIEW_CONTROL_BAR16, OnViewControlBar)
-END_MESSAGE_MAP()
+#include "dbgalloc.h" // must be last header
 
 static UINT indicators[] =
 {
@@ -37,142 +22,9 @@ static UINT indicators[] =
 };
 
 /////////////////////////////////////////////////////////////////////////////
-// CMainFrame construction/destruction
-
-CMainFrame::CMainFrame()
-{
-	// TODO: add member initialization code here
-	
-}
-
-CMainFrame::~CMainFrame()
-{
-   std::vector<CControlBar *>::iterator iter;
-   for (iter = m_ctrlBars.begin(); iter != m_ctrlBars.end(); iter++)
-   {
-      delete *iter;
-   }
-   m_ctrlBars.clear();
-}
-
-int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
-{
-	if (CFrameWnd::OnCreate(lpCreateStruct) == -1)
-		return -1;
-	
-	if (!m_wndToolBar.CreateEx(this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP
-		| CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC) ||
-		!m_wndToolBar.LoadToolBar(IDR_MAINFRAME))
-	{
-		TRACE0("Failed to create toolbar\n");
-		return -1;      // fail to create
-	}
-
-	if (!m_wndStatusBar.Create(this) ||
-		!m_wndStatusBar.SetIndicators(indicators,
-		  sizeof(indicators)/sizeof(UINT)))
-	{
-		TRACE0("Failed to create status bar\n");
-		return -1;      // fail to create
-	}
-
-   static const uint ctrlBarPlacementMap[] =
-   {
-      AFX_IDW_DOCKBAR_TOP, // kCBP_Top
-      AFX_IDW_DOCKBAR_LEFT, // kCBP_Left
-      AFX_IDW_DOCKBAR_RIGHT, //kCBP_Right
-      AFX_IDW_DOCKBAR_BOTTOM, //kCBP_Bottom
-      AFX_IDW_DOCKBAR_FLOAT, //kCBP_Float
-   };
-
-   uint titleStringId;
-   CRuntimeClass * pRuntimeClass;
-   eControlBarPlacement placement;
-
-   uint ctrlBarId = AFX_IDW_CONTROLBAR_FIRST + 32;
-
-   const CRect rect(0,0,0,0);
-
-   static const DWORD ctrlBarStyle = WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN;
-
-   const CString ctrlBarWndClass = AfxRegisterWndClass(CS_DBLCLKS,
-      LoadCursor(NULL, IDC_ARROW), GetSysColorBrush(COLOR_BTNFACE), 0);
-
-   std::vector<uint> dockBars;
-   HANDLE hIter;
-   IterCtrlBarsBegin(&hIter);
-   while (IterNextCtrlBar(&hIter, &titleStringId, &pRuntimeClass, &placement))
-   {
-      CString title;
-      if (!title.LoadString(titleStringId))
-      {
-         title.Format("ControlBar%d", titleStringId);
-      }
-
-      if (pRuntimeClass != NULL && pRuntimeClass->m_pfnCreateObject != NULL)
-      {
-         CControlBar * pCtrlBar = DYNAMIC_DOWNCAST(CControlBar, pRuntimeClass->CreateObject());
-         if (pCtrlBar != NULL)
-         {
-            if (pCtrlBar->Create(ctrlBarWndClass, title, ctrlBarStyle, rect, this, ctrlBarId))
-            {
-               pCtrlBar->EnableDocking(CBRS_ALIGN_ANY);
-#if _MFC_VER < 0x0700
-               pCtrlBar->SetBarStyle(pCtrlBar->GetBarStyle() |
-                  CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
-#endif
-
-               ctrlBarId++;
-               m_ctrlBars.push_back(pCtrlBar);
-               dockBars.push_back(ctrlBarPlacementMap[placement]);
-            }
-            else
-            {
-               DebugMsg1("Error creating control bar of type %s\n", pRuntimeClass->m_lpszClassName);
-               delete pCtrlBar;
-            }
-         }
-      }
-   }
-   IterCtrlBarsEnd(hIter);
-
-	m_wndToolBar.EnableDocking(CBRS_ALIGN_ANY);
-	EnableDocking(CBRS_ALIGN_ANY);
-	DockControlBar(&m_wndToolBar);
-
-   Assert(m_ctrlBars.size() == dockBars.size());
-
-   for (uint i = 0; i < m_ctrlBars.size(); i++)
-   {
-	   DockControlBar(m_ctrlBars[i], dockBars[i]);
-   }
-
-	return 0;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CMainFrame diagnostics
-
-#ifdef _DEBUG
-void CMainFrame::AssertValid() const
-{
-	CFrameWnd::AssertValid();
-   for (uint i = 0; i < m_ctrlBars.size(); i++)
-   {
-      ASSERT_VALID(m_ctrlBars[i]);
-   }
-}
-
-void CMainFrame::Dump(CDumpContext& dc) const
-{
-	CFrameWnd::Dump(dc);
-}
-
-#endif //_DEBUG
-
-/////////////////////////////////////////////////////////////////////////////
 // CMainFrame message handlers
 
+#if 0
 void CMainFrame::OnUpdateViewControlBarMenu(CCmdUI* pCmdUI) 
 {
    if (m_ctrlBarViewMenuText.IsEmpty() && pCmdUI->m_pMenu != NULL)
@@ -243,18 +95,7 @@ void CMainFrame::OnUpdateViewControlBarMenu(CCmdUI* pCmdUI)
 
    pCmdUI->m_bEnableChanged = TRUE; // all the added items are enabled
 }
-
-BOOL CMainFrame::OnViewControlBar(UINT nID)
-{
-   ASSERT_VALID(this);
-   Assert(nID >= ID_VIEW_CONTROL_BAR1);
-   Assert(nID < (ID_VIEW_CONTROL_BAR1 + m_ctrlBars.size()));
-   int index = nID - ID_VIEW_CONTROL_BAR1;
-   ASSERT_VALID(m_ctrlBars[index]);
-   CControlBar * pCtrlBar = m_ctrlBars[index];
-   ShowControlBar(pCtrlBar, !pCtrlBar->IsWindowVisible(), FALSE);
-   return TRUE;
-}
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -263,24 +104,147 @@ BOOL CMainFrame::OnViewControlBar(UINT nID)
 
 ////////////////////////////////////////
 
+void cMainFrame::CreateDockingWindows()
+{
+   static const uint ctrlBarPlacementMap[] =
+   {
+      dockwins::CDockingSide::sTop, // kCBP_Top
+      dockwins::CDockingSide::sLeft, // kCBP_Left
+      dockwins::CDockingSide::sRight, //kCBP_Right
+      dockwins::CDockingSide::sBottom, //kCBP_Bottom
+      dockwins::CDockingSide::sInvalid, //kCBP_Float
+   };
+
+   uint titleStringId;
+   tDockingWindowFactoryFn factoryFn;
+   eControlBarPlacement placement;
+
+   uint ctrlBarId = IDW_DOCKINGWINDOW_FIRST + 32;
+
+   const CRect rect(0,0,0,0);
+
+   static const DWORD ctrlBarStyle = WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN;
+
+//   const CString ctrlBarWndClass = AfxRegisterWndClass(CS_DBLCLKS,
+//      LoadCursor(NULL, IDC_ARROW), GetSysColorBrush(COLOR_BTNFACE), 0);
+
+   std::vector<uint> dockBars;
+   HANDLE hIter;
+   IterCtrlBarsBegin(&hIter);
+   while (IterNextCtrlBar(&hIter, &titleStringId, &factoryFn, &placement))
+   {
+      CString title;
+      if (!title.LoadString(titleStringId))
+      {
+         title.Format("DockingWindow%d", titleStringId);
+      }
+
+      if (factoryFn != NULL && !IsBadCodePtr(reinterpret_cast<FARPROC>(factoryFn)))
+      {
+         cDockingWindow * pCtrlBar = NULL;
+         if (((*factoryFn)(&pCtrlBar) == S_OK) && (pCtrlBar != NULL))
+         {
+            // TODO: use ctrlBarId
+		      if (pCtrlBar->Create(m_hWnd, rcDefault, title, ctrlBarStyle))
+            {
+		         DockWindow(*pCtrlBar, dockwins::CDockingSide(ctrlBarPlacementMap[placement]),
+						         0/*nBar*/,float(0.0)/*fPctPos*/,100/*nWidth*/,100/* nHeight*/);
+               ctrlBarId++;
+               m_dockingWindows.push_back(pCtrlBar);
+            }
+            else
+            {
+               WarnMsg("Error creating docking window\n");
+               delete pCtrlBar;
+            }
+
+//            if (pCtrlBar->Create(ctrlBarWndClass, title, ctrlBarStyle, rect, this, ctrlBarId))
+//            {
+//               pCtrlBar->EnableDocking(CBRS_ALIGN_ANY);
+//#if _MFC_VER < 0x0700
+//               pCtrlBar->SetBarStyle(pCtrlBar->GetBarStyle() |
+//                  CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
+//#endif
+//
+//               ctrlBarId++;
+//               m_ctrlBars.push_back(pCtrlBar);
+//               dockBars.push_back(ctrlBarPlacementMap[placement]);
+//            }
+//            else
+//            {
+//               DebugMsg1("Error creating control bar of type %s\n", pRuntimeClass->m_lpszClassName);
+//               delete pCtrlBar;
+//            }
+         }
+      }
+   }
+   IterCtrlBarsEnd(hIter);
+
+//	m_wndToolBar.EnableDocking(CBRS_ALIGN_ANY);
+//	EnableDocking(CBRS_ALIGN_ANY);
+//	DockControlBar(&m_wndToolBar);
+//
+//   Assert(m_ctrlBars.size() == dockBars.size());
+//
+//   for (uint i = 0; i < m_ctrlBars.size(); i++)
+//   {
+//	   DockControlBar(m_ctrlBars[i], dockBars[i]);
+//   }
+}
+
+////////////////////////////////////////
+
 LRESULT cMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/)
 {
-//   HWND hWndCmdBar = m_cmdBar.Create(m_hWnd, rcDefault, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE);
-//   if (hWndCmdBar != NULL)
-//   {
-//      m_cmdBar.AttachMenu(GetMenu());
-//      m_cmdBar.LoadImages(IDR_MAINFRAME);
-//      SetMenu(NULL);
-//   }
- 
-   if (!CreateSimpleStatusBar())
+   HWND hWndCmdBar = m_cmdBar.Create(m_hWnd, rcDefault, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE);
+   if (hWndCmdBar == NULL)
    {
+      ErrorMsg("Error creating command bar\n");
       return -1;
    }
 
-   WTL::CMessageLoop * pMessageLoop = _Module.GetMessageLoop();
+   m_cmdBar.AttachMenu(GetMenu());
+   m_cmdBar.LoadImages(IDR_MAINFRAME);
+   SetMenu(NULL);
+
+   if (!CreateSimpleStatusBar())
+   {
+      ErrorMsg("Error creating status bar\n");
+      return -1;
+   }
+
+   HWND hWndToolBar = CreateSimpleToolBarCtrl(m_hWnd, IDR_MAINFRAME, FALSE, ATL_SIMPLE_TOOLBAR_PANE_STYLE);
+   if (hWndToolBar == NULL)
+   {
+      ErrorMsg("Error creating toolbar\n");
+      return -1;
+   }
+
+   UIAddToolBar(hWndToolBar);
+
+   CMessageLoop * pMessageLoop = _Module.GetMessageLoop();
    pMessageLoop->AddIdleHandler(this);
    pMessageLoop->AddMessageFilter(this);
+
+   InitializeDockingFrame();
+
+   CreateDockingWindows();
+
+   return 0;
+}
+
+////////////////////////////////////////
+
+LRESULT cMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/)
+{
+   tDockingWindows::iterator iter = m_dockingWindows.begin();
+   tDockingWindows::iterator end = m_dockingWindows.end();
+   for (; iter != end; iter++)
+   {
+      delete *iter;
+   }
+
+   m_dockingWindows.clear();
 
    return 0;
 }
@@ -351,9 +315,32 @@ LRESULT cMainFrame::OnViewStatusBar(WORD notifyCode, WORD id, HWND hWndCtl, BOOL
 
 ////////////////////////////////////////
 
+extern void RunUnitTests(); // editorApp.cpp
+LRESULT cMainFrame::OnToolsUnitTestRunner(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled)
+{
+   RunUnitTests();
+   return 0;
+}
+
+////////////////////////////////////////
+
 LRESULT cMainFrame::OnAppAbout(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled)
 {
 	cAboutDlg().DoModal();
+   return 0;
+}
+
+////////////////////////////////////////
+
+LRESULT cMainFrame::OnViewControlBar(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled)
+{
+   Assert(id >= ID_VIEW_CONTROL_BAR1);
+   Assert(id < (ID_VIEW_CONTROL_BAR1 + m_dockingWindows.size()));
+   int index = id - ID_VIEW_CONTROL_BAR1;
+   Assert(m_dockingWindows[index] != NULL);
+   // TODO
+//   CControlBar * pCtrlBar = m_ctrlBars[index];
+//   ShowControlBar(pCtrlBar, !pCtrlBar->IsWindowVisible(), FALSE);
    return 0;
 }
 
