@@ -11,6 +11,7 @@
 #include "parse.h"
 
 #include <cstring>
+#include <locale>
 
 #ifdef HAVE_CPPUNIT
 #include <cppunit/extensions/HelperMacros.h>
