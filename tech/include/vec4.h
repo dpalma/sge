@@ -4,7 +4,7 @@
 #ifndef INCLUDED_VEC4_H
 #define INCLUDED_VEC4_H
 
-#include <cmath>
+#include "techmath.h"
 
 #ifdef _MSC_VER
 #pragma once

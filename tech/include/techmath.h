@@ -6,6 +6,8 @@
 
 #include "techdll.h"
 
+#include <cmath>
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -21,6 +23,20 @@ TECH_API void SeedRand(uint seed);
 TECH_API uint Rand();
 
 ///////////////////////////////////////////////////////////////////////////////
+
+#ifdef _WIN32_WCE
+#define sqrtf(x)  ((float)sqrt((double)(x)))
+#define sinf(x)   ((float)sin((double)(x)))
+#define cosf(x)   ((float)cos((double)(x)))
+#define tanf(x)   ((float)tan((double)(x)))
+#define asinf(x)  ((float)asin((double)(x)))
+#define acosf(x)  ((float)acos((double)(x)))
+#define atanf(x)  ((float)atan((double)(x)))
+#endif
+
+#ifndef sqr
+#define sqr(x) ((x)*(x))
+#endif
 
 const float kPi = 3.1415926535897932384626433832795f;
 const float kRadiansPerDegree = 0.017453292519943295769236907684886f; // pi / 180

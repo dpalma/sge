@@ -4,7 +4,7 @@
 #ifndef INCLUDED_VEC3_H
 #define INCLUDED_VEC3_H
 
-#include <cmath>
+#include "techmath.h"
 
 #ifdef _MSC_VER
 #pragma once
@@ -19,10 +19,6 @@ typedef class cVec3<float> tVec3;
 //
 // CLASS: cVec3
 //
-
-#ifndef sqr
-#define sqr(x) ((x)*(x))
-#endif
 
 template <typename T>
 class cVec3
