@@ -23,7 +23,7 @@ interface IResourceManager : IUnknown
 {
    virtual IReader * Find(const char * pszName) = 0;
 
-   virtual void AddSearchPath(const char * pszPath, bool bRecurse) = 0;
+   virtual void AddSearchPath(const char * pszPath) = 0;
 };
 
 #define kResourceManagerName "ResourceManager"
