@@ -4,6 +4,7 @@
 #ifndef INCLUDED_MESH_H
 #define INCLUDED_MESH_H
 
+#include "enginedll.h"
 #include "combase.h"
 
 #ifdef _MSC_VER
@@ -14,6 +15,7 @@
 template <typename T> class cVec3;
 typedef class cVec3<float> tVec3;
 F_DECLARE_INTERFACE(IResourceManager);
+F_DECLARE_INTERFACE(IRenderDevice);
 
 F_DECLARE_INTERFACE(IMesh);
 
@@ -26,12 +28,12 @@ interface IMesh : IUnknown
 {
    virtual void GetAABB(tVec3 * pMaxs, tVec3 * pMins) const = 0;
 
-   virtual void Render() const = 0;
+   virtual void Render(IRenderDevice * pRenderDevice) const = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
-IMesh * MeshLoad(IResourceManager * pResMgr, const char * pszMesh);
+ENGINE_API IMesh * MeshLoad(IResourceManager * pResMgr, IRenderDevice * pRenderDevice, const char * pszMesh);
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -3,8 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "ggl.h"
-#include "gcommon.h"
+#include "minigl.h"
 
 #include "ms3d.h"
 #include "mesh.h"
@@ -253,9 +252,9 @@ public:
    virtual ~cMs3dMesh();
 
    virtual void GetAABB(tVec3 * pMaxs, tVec3 * pMins) const;
-   virtual void Render() const;
+   virtual void Render(IRenderDevice * pRenderDevice) const;
 
-   tResult Read(IReader * pReader);
+   tResult Read(IRenderDevice * pRenderDevice, IReader * pReader);
 
 private:
    typedef std::vector<ms3d_vertex_t> tVertices;
@@ -323,7 +322,7 @@ void cMs3dMesh::GetAABB(tVec3 * pMaxs, tVec3 * pMins) const
    *pMins = m_mins;
 }
 
-void cMs3dMesh::Render() const
+void cMs3dMesh::Render(IRenderDevice * pRenderDevice) const
 {
    tGroups::const_iterator iter;
    for (iter = m_groups.begin(); iter != m_groups.end(); iter++)
@@ -363,7 +362,7 @@ void cMs3dMesh::Render() const
    }
 }
 
-tResult cMs3dMesh::Read(IReader * pReader)
+tResult cMs3dMesh::Read(IRenderDevice * pRenderDevice, IReader * pReader)
 {
    Assert(m_vertices.empty());
    Assert(m_triangles.empty());
@@ -426,7 +425,7 @@ tResult cMs3dMesh::Read(IReader * pReader)
          cImage texture;
          if (ImageLoad(pResourceManager, material.texture, &texture))
          {
-            AccessRenderDevice()->CreateTexture(&texture, &pTexture);
+            pRenderDevice->CreateTexture(&texture, &pTexture);
          }
       }
 
@@ -473,7 +472,7 @@ tResult cMs3dMesh::Read(IReader * pReader)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-IMesh * LoadMs3d(IReader * pReader)
+IMesh * LoadMs3d(IRenderDevice * pRenderDevice, IReader * pReader)
 {
    Assert(pReader != NULL);
 
@@ -481,7 +480,7 @@ IMesh * LoadMs3d(IReader * pReader)
 
    if (pMesh != NULL)
    {
-      if (pMesh->Read(pReader) != S_OK)
+      if (pMesh->Read(pRenderDevice, pReader) != S_OK)
       {
          delete pMesh;
          return NULL;

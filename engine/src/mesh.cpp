@@ -12,14 +12,14 @@
 
 #include "dbgalloc.h" // must be last header
 
-IMesh * Load3ds(IReader * pReader);
-IMesh * LoadMs3d(IReader * pReader);
+IMesh * Load3ds(IRenderDevice * pRenderDevice, IReader * pReader);
+IMesh * LoadMs3d(IRenderDevice * pRenderDevice, IReader * pReader);
 
 ///////////////////////////////////////////////////////////////////////////////
 
-IMesh * MeshLoad(IResourceManager * pResMgr, const char * pszMesh)
+IMesh * MeshLoad(IResourceManager * pResMgr, IRenderDevice * pRenderDevice, const char * pszMesh)
 {
-   typedef IMesh * (* tMeshLoadFn)(IReader *);
+   typedef IMesh * (* tMeshLoadFn)(IRenderDevice *, IReader *);
 
    static const struct
    {
@@ -44,7 +44,7 @@ IMesh * MeshLoad(IResourceManager * pResMgr, const char * pszMesh)
             return NULL;
          }
 
-         IMesh * pMesh = (*meshFileLoaders[i].pfn)(pReader);
+         IMesh * pMesh = (*meshFileLoaders[i].pfn)(pRenderDevice, pReader);
          if (pMesh != NULL)
          {
             return pMesh;
