@@ -24,9 +24,34 @@ typedef tVec2 tGUIPoint;
 template <typename T> class cGUISize;
 typedef class cGUISize<float> tGUISize;
 
-typedef cColor tGUIColor;
-
 typedef tRectf tGUIRect;
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cGUIColor
+//
+
+class cGUIColor : public cColor
+{
+public:
+   cGUIColor() : cColor() {}
+   cGUIColor(float r, float g, float b) : cColor(r, g, b) {}
+   cGUIColor(float r, float g, float b, float a) : cColor(r, g, b, a) {}
+   cGUIColor(const float rgba[4]) : cColor(rgba) {}
+   cGUIColor(const cGUIColor & other) : cColor(other) {}
+
+   static const cGUIColor Black;
+   static const cGUIColor Red;
+   static const cGUIColor Green;
+   static const cGUIColor Yellow;
+   static const cGUIColor Blue;
+   static const cGUIColor Magenta;
+   static const cGUIColor Cyan;
+   static const cGUIColor White;
+};
+
+typedef cGUIColor tGUIColor;
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //

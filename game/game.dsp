@@ -227,6 +227,10 @@ SOURCE=.\guistyle.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\guitypes.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\heightmap.cpp
 # End Source File
 # Begin Source File
