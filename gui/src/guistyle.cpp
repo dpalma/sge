@@ -40,6 +40,10 @@ cGUIStyle::cGUIStyle()
    m_textVerticalAlignment(kGUIVertAlignTop),
    m_fontName(""),
    m_fontPointSize(0),
+   m_bFontBold(false),
+   m_bFontItalic(false),
+   m_bFontShadow(false),
+   m_bFontOutline(false),
    m_pFont(NULL),
    m_width(NO_DIMENSION), 
    m_height(NO_DIMENSION),
@@ -363,6 +367,116 @@ tResult cGUIStyle::SetFontPointSize(uint fontPointSize)
 
 ///////////////////////////////////////
 
+tResult cGUIStyle::GetFontBold(uint * pB)
+{
+   if (pB == NULL)
+   {
+      return E_POINTER;
+   }
+   *pB = m_bFontBold;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIStyle::SetFontBold(bool b)
+{
+   m_bFontBold = b;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIStyle::GetFontItalic(uint * pB)
+{
+   if (pB == NULL)
+   {
+      return E_POINTER;
+   }
+   *pB = m_bFontItalic;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIStyle::SetFontItalic(bool b)
+{
+   m_bFontItalic = b;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIStyle::GetFontShadow(uint * pB)
+{
+   if (pB == NULL)
+   {
+      return E_POINTER;
+   }
+   *pB = m_bFontShadow;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIStyle::SetFontShadow(bool b)
+{
+   m_bFontShadow = b;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIStyle::GetFontOutline(uint * pB)
+{
+   if (pB == NULL)
+   {
+      return E_POINTER;
+   }
+   *pB = m_bFontOutline;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIStyle::SetFontOutline(bool b)
+{
+   m_bFontOutline = b;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIStyle::GetFontDesc(cFontDesc * pFontDesc)
+{
+   if (pFontDesc == NULL)
+   {
+      return E_POINTER;
+   }
+   uint effects = kFE_None;
+   if (m_bFontBold)
+   {
+      effects |= kFE_Bold;
+   }
+   if (m_bFontItalic)
+   {
+      effects |= kFE_Italic;
+   }
+   if (m_bFontShadow)
+   {
+      effects |= kFE_Shadow;
+   }
+   if (m_bFontOutline)
+   {
+      effects |= kFE_Outline;
+   }
+   *pFontDesc = cFontDesc(m_fontName.c_str(), m_fontPointSize,
+      effects, kDefaultGlyphFirst, kDefaultGlyphLast);
+   return S_OK;
+}
+
+///////////////////////////////////////
+
 tResult cGUIStyle::GetFont(IRenderFont * * ppFont)
 {
    if (!m_pFont)
@@ -371,8 +485,8 @@ tResult cGUIStyle::GetFont(IRenderFont * * ppFont)
       {
          return E_FAIL;
       }
-      cFontDesc fontDesc(m_fontName.c_str(), m_fontPointSize, kDefaultGlyphFirst, kDefaultGlyphLast);
-      if (FontCreate(fontDesc, &m_pFont) != S_OK)
+      cFontDesc fontDesc;
+      if ((GetFontDesc(&fontDesc) != S_OK) && (FontCreate(fontDesc, &m_pFont) != S_OK))
       {
          return E_FAIL;
       }
@@ -566,6 +680,42 @@ tResult GUIStyleParseColor(const char * psz, tGUIColor * pColor)
 
 ///////////////////////////////////////
 
+tResult GUIStyleParseBool(const char * psz, bool * pBool)
+{
+   if (psz == NULL || pBool == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (*psz == 0)
+   {
+      *pBool = false;
+      return S_OK;
+   }
+
+   int n;
+   if (sscanf(psz, "%d", &n) == 1)
+   {
+      *pBool = (n != 0);
+      return S_OK;
+   }
+
+   if (stricmp(psz, "true") == 0)
+   {
+      *pBool = true;
+      return S_OK;
+   }
+   else if (stricmp(psz, "false") == 0)
+   {
+      *pBool = false;
+      return S_OK;
+   }
+
+   return E_INVALIDARG;
+}
+
+///////////////////////////////////////
+
 static tResult GUIStyleParseDimension(const char * psz, uint * pDimension, uint * pSpec)
 {
    Assert(psz != NULL);
@@ -660,6 +810,38 @@ static tResult GUIStyleParseAndSetAttribute(const char * pszAttrib, IGUIStyle * 
          return pStyle->SetFontPointSize(pointSize);
       }
    }
+   else if (strcmp(pszAttribName, kAttribFontBold) == 0)
+   {
+      bool b;
+      if (GUIStyleParseBool(pszValue, &b) == S_OK)
+      {
+         return pStyle->SetFontBold(b);
+      }
+   }
+   else if (strcmp(pszAttribName, kAttribFontItalic) == 0)
+   {
+      bool b;
+      if (GUIStyleParseBool(pszValue, &b) == S_OK)
+      {
+         return pStyle->SetFontItalic(b);
+      }
+   }
+   else if (strcmp(pszAttribName, kAttribFontShadow) == 0)
+   {
+      bool b;
+      if (GUIStyleParseBool(pszValue, &b) == S_OK)
+      {
+         return pStyle->SetFontShadow(b);
+      }
+   }
+   else if (strcmp(pszAttribName, kAttribFontOutline) == 0)
+   {
+      bool b;
+      if (GUIStyleParseBool(pszValue, &b) == S_OK)
+      {
+         return pStyle->SetFontOutline(b);
+      }
+   }
    else if (strcmp(pszAttribName, kAttribWidth) == 0)
    {
       uint width, spec;
@@ -741,12 +923,14 @@ class cGUIStyleTests : public CppUnit::TestCase
       CPPUNIT_TEST(TestParseDimension);
       CPPUNIT_TEST(TestCustomAttributes);
       CPPUNIT_TEST(TestParseColor);
+      CPPUNIT_TEST(TestParseBool);
    CPPUNIT_TEST_SUITE_END();
 
    void TestFactoryFunction();
    void TestParseDimension();
    void TestCustomAttributes();
    void TestParseColor();
+   void TestParseBool();
 };
 
 ///////////////////////////////////////
@@ -892,6 +1076,30 @@ void cGUIStyleTests::TestParseColor()
    CPPUNIT_ASSERT(color == tGUIColor::LightGray);
    CPPUNIT_ASSERT(GUIStyleParseColor("white", &color) == S_OK);
    CPPUNIT_ASSERT(color == tGUIColor::White);
+}
+
+///////////////////////////////////////
+
+void cGUIStyleTests::TestParseBool()
+{
+   bool b;
+   CPPUNIT_ASSERT(GUIStyleParseBool("1", NULL) == E_POINTER);
+   CPPUNIT_ASSERT(GUIStyleParseBool(NULL, &b) == E_POINTER);
+   CPPUNIT_ASSERT(GUIStyleParseBool("", &b) == S_OK);
+   CPPUNIT_ASSERT(!b);
+   CPPUNIT_ASSERT(GUIStyleParseBool("1", &b) == S_OK);
+   CPPUNIT_ASSERT(b);
+   CPPUNIT_ASSERT(GUIStyleParseBool("0", &b) == S_OK);
+   CPPUNIT_ASSERT(!b);
+   CPPUNIT_ASSERT(GUIStyleParseBool("true", &b) == S_OK);
+   CPPUNIT_ASSERT(b);
+   CPPUNIT_ASSERT(GUIStyleParseBool("tRuE", &b) == S_OK);
+   CPPUNIT_ASSERT(b);
+   CPPUNIT_ASSERT(GUIStyleParseBool("false", &b) == S_OK);
+   CPPUNIT_ASSERT(!b);
+   CPPUNIT_ASSERT(GUIStyleParseBool("fAlSe", &b) == S_OK);
+   CPPUNIT_ASSERT(!b);
+   CPPUNIT_ASSERT(GUIStyleParseBool("arbitrary string", &b) == E_INVALIDARG);
 }
 
 #endif // HAVE_CPPUNIT

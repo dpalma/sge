@@ -54,6 +54,19 @@ public:
    virtual tResult GetFontPointSize(uint * pFontPointSize);
    virtual tResult SetFontPointSize(uint fontPointSize);
 
+   virtual tResult GetFontBold(uint * pB);
+   virtual tResult SetFontBold(bool b);
+
+   virtual tResult GetFontItalic(uint * pB);
+   virtual tResult SetFontItalic(bool b);
+
+   virtual tResult GetFontShadow(uint * pB);
+   virtual tResult SetFontShadow(bool b);
+
+   virtual tResult GetFontOutline(uint * pB);
+   virtual tResult SetFontOutline(bool b);
+
+   virtual tResult GetFontDesc(cFontDesc * pFontDesc);
    virtual tResult GetFont(IRenderFont * * ppFont);
 
    virtual tResult GetWidth(uint * pWidth, uint * pSpec);
@@ -70,6 +83,7 @@ private:
    uint m_textAlignment, m_textVerticalAlignment;
    tGUIString m_fontName;
    uint m_fontPointSize;
+   bool m_bFontBold, m_bFontItalic, m_bFontShadow, m_bFontOutline;
    cAutoIPtr<IRenderFont> m_pFont;
    uint m_width, m_widthSpec;
    uint m_height, m_heightSpec;

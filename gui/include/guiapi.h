@@ -45,6 +45,7 @@ F_DECLARE_INTERFACE(IVertexDeclaration);
 F_DECLARE_INTERFACE(IVertexBuffer);
 F_DECLARE_INTERFACE(IIndexBuffer);
 class TiXmlElement;
+class cFontDesc;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -173,6 +174,19 @@ interface IGUIStyle : IUnknown
    virtual tResult GetFontPointSize(uint * pFontPointSize) = 0;
    virtual tResult SetFontPointSize(uint fontPointSize) = 0;
 
+   virtual tResult GetFontBold(uint * pB) = 0;
+   virtual tResult SetFontBold(bool b) = 0;
+
+   virtual tResult GetFontItalic(uint * pB) = 0;
+   virtual tResult SetFontItalic(bool b) = 0;
+
+   virtual tResult GetFontShadow(uint * pB) = 0;
+   virtual tResult SetFontShadow(bool b) = 0;
+
+   virtual tResult GetFontOutline(uint * pB) = 0;
+   virtual tResult SetFontOutline(bool b) = 0;
+
+   virtual tResult GetFontDesc(cFontDesc * pFontDesc) = 0;
    virtual tResult GetFont(IRenderFont * * ppFont) = 0;
 
    virtual tResult GetWidth(uint * pWidth, uint * pSpec) = 0;
