@@ -15,7 +15,7 @@
 			OutputDirectory=".\..\..\Build.vc7\Release"
 			IntermediateDirectory=".\..\..\Build.vc7\Release\editor"
 			ConfigurationType="1"
-			UseOfMFC="0"
+			UseOfMFC="2"
 			UseOfATL="2"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
@@ -76,7 +76,7 @@
 			OutputDirectory=".\..\..\Build.vc7\Debug"
 			IntermediateDirectory=".\..\..\Build.vc7\Debug\editor"
 			ConfigurationType="1"
-			UseOfMFC="0"
+			UseOfMFC="2"
 			UseOfATL="2"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
@@ -139,7 +139,7 @@
 			OutputDirectory=".\..\..\Build.vc7\StaticDebug"
 			IntermediateDirectory=".\..\..\Build.vc7\StaticDebug\editor"
 			ConfigurationType="1"
-			UseOfMFC="0"
+			UseOfMFC="1"
 			UseOfATL="1"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
@@ -201,7 +201,7 @@
 			OutputDirectory=".\..\..\Build.vc7\Opt"
 			IntermediateDirectory=".\..\..\Build.vc7\Opt\editor"
 			ConfigurationType="1"
-			UseOfMFC="0"
+			UseOfMFC="2"
 			UseOfATL="2"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
@@ -265,7 +265,7 @@
 			OutputDirectory=".\..\..\Build.vc7\StaticRelease"
 			IntermediateDirectory=".\..\..\Build.vc7\StaticRelease\editor"
 			ConfigurationType="1"
-			UseOfMFC="0"
+			UseOfMFC="1"
 			UseOfATL="1"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
@@ -334,9 +334,6 @@
 				RelativePath="..\..\editor\DynamicLink.cpp">
 			</File>
 			<File
-				RelativePath="..\..\editor\LogWnd.cpp">
-			</File>
-			<File
 				RelativePath="..\..\editor\MainFrm.cpp">
 			</File>
 			<File
@@ -359,6 +356,36 @@
 			</File>
 			<File
 				RelativePath="..\..\editor\editor.rc">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCResourceCompilerTool"
+						AdditionalIncludeDirectories=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCResourceCompilerTool"
+						AdditionalIncludeDirectories=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="StaticDebug|Win32">
+					<Tool
+						Name="VCResourceCompilerTool"
+						AdditionalIncludeDirectories=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Opt|Win32">
+					<Tool
+						Name="VCResourceCompilerTool"
+						AdditionalIncludeDirectories=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="StaticRelease|Win32">
+					<Tool
+						Name="VCResourceCompilerTool"
+						AdditionalIncludeDirectories=""/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\editor\editorApp.cpp">
@@ -367,16 +394,10 @@
 				RelativePath="..\..\editor\editorCommands.cpp">
 			</File>
 			<File
+				RelativePath="..\..\editor\editorCtrlBars.cpp">
+			</File>
+			<File
 				RelativePath="..\..\editor\editorDoc.cpp">
-			</File>
-			<File
-				RelativePath="..\..\editor\editorDockingWindows.cpp">
-			</File>
-			<File
-				RelativePath="..\..\editor\editorMain.cpp">
-			</File>
-			<File
-				RelativePath="..\..\editor\editorMessageLoop.cpp">
 			</File>
 			<File
 				RelativePath="..\..\editor\editorTile.cpp">
@@ -395,6 +416,27 @@
 			</File>
 			<File
 				RelativePath="..\..\editor\editorView.cpp">
+			</File>
+			<File
+				RelativePath="..\..\editor\glView.cpp">
+			</File>
+			<File
+				RelativePath="..\..\editor\historywnd.cpp">
+			</File>
+			<File
+				RelativePath="..\..\editor\scbarcf.cpp">
+			</File>
+			<File
+				RelativePath="..\..\editor\scbarg.cpp">
+			</File>
+			<File
+				RelativePath="..\..\editor\scrollwnd.cpp">
+			</File>
+			<File
+				RelativePath="..\..\editor\sizecbar.cpp">
+			</File>
+			<File
+				RelativePath="..\..\editor\splashwnd.cpp">
 			</File>
 			<File
 				RelativePath="..\..\editor\stdhdr.cpp">
@@ -446,19 +488,10 @@
 				RelativePath="..\..\editor\DynamicLink.h">
 			</File>
 			<File
-				RelativePath="..\..\editor\GLContext.h">
-			</File>
-			<File
-				RelativePath="..\..\editor\LogWnd.h">
-			</File>
-			<File
 				RelativePath="..\..\editor\MainFrm.h">
 			</File>
 			<File
 				RelativePath="..\..\editor\MapSettingsDlg.h">
-			</File>
-			<File
-				RelativePath="..\..\editor\MenuItemInfo.h">
 			</File>
 			<File
 				RelativePath="..\..\editor\OutputBar.h">
@@ -476,7 +509,7 @@
 				RelativePath="..\..\editor\aboutdlg.h">
 			</File>
 			<File
-				RelativePath="..\..\editor\ddxext.h">
+				RelativePath="..\..\editor\afxcomtools.h">
 			</File>
 			<File
 				RelativePath="..\..\editor\editorApp.h">
@@ -485,13 +518,10 @@
 				RelativePath="..\..\editor\editorCommands.h">
 			</File>
 			<File
+				RelativePath="..\..\editor\editorCtrlBars.h">
+			</File>
+			<File
 				RelativePath="..\..\editor\editorDoc.h">
-			</File>
-			<File
-				RelativePath="..\..\editor\editorDockingWindows.h">
-			</File>
-			<File
-				RelativePath="..\..\editor\editorMessageLoop.h">
 			</File>
 			<File
 				RelativePath="..\..\editor\editorTile.h">
@@ -518,7 +548,28 @@
 				RelativePath="..\..\editor\editorguids.h">
 			</File>
 			<File
+				RelativePath="..\..\editor\glView.h">
+			</File>
+			<File
+				RelativePath="..\..\editor\historywnd.h">
+			</File>
+			<File
 				RelativePath="..\..\editor\resource.h">
+			</File>
+			<File
+				RelativePath="..\..\editor\scbarcf.h">
+			</File>
+			<File
+				RelativePath="..\..\editor\scbarg.h">
+			</File>
+			<File
+				RelativePath="..\..\editor\scrollwnd.h">
+			</File>
+			<File
+				RelativePath="..\..\editor\sizecbar.h">
+			</File>
+			<File
+				RelativePath="..\..\editor\splashwnd.h">
 			</File>
 			<File
 				RelativePath="..\..\editor\stdhdr.h">

@@ -77,7 +77,8 @@ cEditorView::cEditorView()
    m_eye(0,0,0),
    m_bRecalcEye(true),
    m_highlitTileX(-1),
-   m_highlitTileZ(-1)
+   m_highlitTileZ(-1),
+   m_bInPostNcDestroy(false)
 {
 }
 
@@ -188,18 +189,6 @@ tResult cEditorView::GetModel(IEditorModel * * ppModel)
 
    *ppModel = CTAddRef(static_cast<IEditorModel *>(pDoc));
    return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cEditorView::SetModel(IEditorModel * pModel)
-{
-   //SafeRelease(m_pModel);
-   //m_pModel = CTAddRef(pModel);
-   //InitialUpdate();
-   //ClearTileHighlight();
-   //return S_OK;
-   return E_NOTIMPL;
 }
 
 ////////////////////////////////////////
@@ -366,10 +355,8 @@ int cEditorView::OnCreate(LPCREATESTRUCT lpCreateStruct)
    UseGlobal(Scene);
    pScene->SetCamera(kSL_Terrain, m_pCamera);
 
-   Assert(AccessEditorApp() != NULL);
-   Verify(AccessEditorApp()->AddLoopClient(this) == S_OK);
-
-   AccessEditorApp()->SetDefaultTool(cAutoIPtr<IEditorTool>(new cMoveCameraTool));
+   UseGlobal(EditorApp);
+   Verify(pEditorApp->AddLoopClient(this) == S_OK);
 
 	return 0;
 }
@@ -380,8 +367,8 @@ void cEditorView::OnDestroy()
 {
 	cGLView::OnDestroy();
 
-   Assert(AccessEditorApp() != NULL);
-   AccessEditorApp()->RemoveLoopClient(this);
+   UseGlobal(EditorApp);
+   pEditorApp->RemoveLoopClient(this);
 
    SafeRelease(m_pCamera);
    SafeRelease(m_pRenderDevice);
@@ -431,6 +418,13 @@ void cEditorView::OnInitialUpdate()
 
 ////////////////////////////////////////
 
+void cEditorView::OnFinalRelease()
+{
+   delete this;
+}
+
+////////////////////////////////////////
+
 void cEditorView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
 {
 	cEditorDoc * pDoc = GetDocument();
@@ -438,133 +432,14 @@ void cEditorView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// The characters mapped here should be handled in WM_KEYDOWN, else in WM_CHAR
-
-static const long g_keyMap[128] =
-{
-   /*   0 */ 0, kEscape, 0, 0, 0, 0, 0, 0,
-   /*   8 */ 0, 0, 0, 0, 0, 0, kBackspace, kTab,
-   /*  16 */ 0, 0, 0, 0, 0, 0, 0, 0,
-   /*  24 */ 0, 0, 0, 0, kEnter, kCtrl, 0, 0,
-   /*  32 */ 0, 0, 0, 0, 0, 0, 0, 0,
-   /*  40 */ 0, 0, kLShift, 0, 0, 0, 0, 0,
-   /*  48 */ 0, 0, 0, 0, 0, 0, kRShift, 0,
-   /*  56 */ kAlt, kSpace, 0, kF1, kF2, kF3, kF4, kF5,
-   /*  64 */ kF6, kF7, kF8, kF9, kF10, kPause, 0, kHome,
-   /*  72 */ kUp, kPageUp, 0, kLeft, 0, kRight, 0, kEnd,
-   /*  80 */ kDown, kPageDown, kInsert, kDelete, 0, 0, 0, kF11,
-   /*  88 */ kF12, 0, 0, 0, 0, 0, 0, 0,
-   /*  96 */ 0, 0, 0, 0, 0, 0, 0, 0,
-   /* 104 */ 0, 0, 0, 0, 0, 0, 0, 0,
-   /* 112 */ 0, 0, 0, 0, 0, 0, 0, 0,
-   /* 120 */ 0, 0, 0, 0, 0, 0, 0, 0,
-};
-
-///////////////////////////////////////////////////////////////////////////////
-// The keydata parameter is the LPARAM from a Windows key message
-
-static long MapKey(long keydata)
-{
-   //int repeatCount = keydata & 0xFFFF;
-
-   int scanCode = (keydata >> 16) & 0xFF;
-
-   //bool isExtended = false;
-   //if (keydata & (1 << 24))
-   //   isExtended = true;
-
-   return g_keyMap[scanCode];
-}
-
 ////////////////////////////////////////
 
-LRESULT cEditorView::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) 
+void cEditorView::PostNcDestroy()
 {
-   double msgTime = TimeGetSecs();
-
-   switch (message)
-   {
-      case WM_DESTROY:
-      {
-         ForEachConnection(&IWindowSink::OnDestroy, msgTime);
-         break;
-      }
-
-      case WM_SIZE:
-      {
-         ForEachConnection(&IWindowSink::OnResize, (int)LOWORD(lParam), (int)HIWORD(lParam), msgTime);
-         break;
-      }
-
-      case WM_ACTIVATEAPP:
-      {
-         ForEachConnection(&IWindowSink::OnActivateApp, wParam ? true : false, msgTime);
-         break;
-      }
-
-      case WM_SYSKEYDOWN:
-      case WM_KEYDOWN:
-      {
-         long mapped = MapKey(lParam);
-         if (mapped != 0)
-         {
-            ForEachConnection(&IWindowSink::OnKeyEvent, mapped, true, msgTime);
-         }
-         break;
-      }
-
-      case WM_SYSCHAR:
-      case WM_CHAR:
-      {
-         long mapped = MapKey(lParam);
-         if (mapped == 0)
-         {
-            ForEachConnection(&IWindowSink::OnKeyEvent, (long)wParam, true, msgTime);
-         }
-         break;
-      }
-
-      case WM_SYSKEYUP:
-      case WM_KEYUP:
-      {
-         long mapped = MapKey(lParam);
-         if (mapped == 0)
-         {
-            mapped = wParam;
-         }
-         ForEachConnection(&IWindowSink::OnKeyEvent, mapped, false, msgTime);
-         break;
-      }
-
-      case WM_MOUSEWHEEL:
-      {
-         short zDelta = (short)HIWORD(wParam);
-         long key = (zDelta < 0) ? kMouseWheelDown : kMouseWheelUp;
-         ForEachConnection(&IWindowSink::OnKeyEvent, key, true, msgTime);
-         ForEachConnection(&IWindowSink::OnKeyEvent, key, false, msgTime);
-         break;
-      }
-
-      case WM_LBUTTONDOWN:
-      case WM_LBUTTONUP:
-      case WM_RBUTTONDOWN:
-      case WM_RBUTTONUP:
-      case WM_MBUTTONDOWN:
-      case WM_MBUTTONUP:
-      case WM_MOUSEMOVE:
-      {
-         uint mouseState = 0;
-         if (wParam & MK_LBUTTON)
-            mouseState |= kLMouseDown;
-         if (wParam & MK_RBUTTON)
-            mouseState |= kRMouseDown;
-         if (wParam & MK_MBUTTON)
-            mouseState |= kMMouseDown;
-         ForEachConnection(&IWindowSink::OnMouseEvent, (int)LOWORD(lParam), (int)HIWORD(lParam), mouseState, msgTime);
-         break;
-      }
-   }
-
-	return cGLView::WindowProc(message, wParam, lParam);
+   // Do not call the base class method which calls "delete this"
+   Assert(!m_bInPostNcDestroy);
+   m_bInPostNcDestroy = true;
+   Release();
 }
+
+///////////////////////////////////////////////////////////////////////////////

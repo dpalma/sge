@@ -38,7 +38,7 @@ public:
 
 #if defined(_DEBUG)
    void * PASCAL operator new(size_t nSize, int type, LPCSTR lpszFileName, int nLine);
-#if _MSC_VER > 1200
+#if _MSC_VER > 1300
    void PASCAL operator delete(void *p, int type, LPCSTR lpszFileName, int nLine);
 #endif
 #endif
@@ -63,15 +63,15 @@ inline cEditorSingleDocTemplate::~cEditorSingleDocTemplate()
 ////////////////////////////////////////
 
 #if defined(_DEBUG)
-inline void * PASCAL cEditorSingleDocTemplate::operator new(size_t nSize, int type, LPCSTR lpszFileName, int nLine)
+inline void * PASCAL cEditorSingleDocTemplate::operator new(size_t nSize, int /*type*/, LPCSTR lpszFileName, int nLine)
 {
-   return ::operator new(nSize, type, lpszFileName, nLine);
+   return ::operator new(nSize, _AFX_CLIENT_BLOCK, lpszFileName, nLine);
 }
 #endif
 
 ////////////////////////////////////////
 
-#if defined(_DEBUG) && (_MSC_VER > 1200)
+#if defined(_DEBUG) && (_MSC_VER > 1300)
 inline void PASCAL cEditorSingleDocTemplate::operator delete(void *p, int type, LPCSTR lpszFileName, int nLine)
 {
    ::operator delete(p);
@@ -118,16 +118,12 @@ public:
    virtual tResult GetActiveTool(IEditorTool * * ppTool);
    virtual tResult SetActiveTool(IEditorTool * pTool);
 
-   virtual tResult GetDefaultTool(IEditorTool * * ppTool);
-   virtual tResult SetDefaultTool(IEditorTool * pTool);
-
    virtual tResult GetToolCapture(IEditorTool * * ppTool);
    virtual tResult SetToolCapture(IEditorTool * pTool);
    virtual tResult ReleaseToolCapture();
 
 private:
    IEditorTool * AccessActiveTool();
-   IEditorTool * AccessDefaultTool();
    IEditorTool * AccessToolCapture();
 
    typedef std::vector<IEditorLoopClient *> tEditorLoopClients;
@@ -140,7 +136,6 @@ private:
    HWND m_hCurrentToolWnd; // the HWND of the view above
 
    cAutoIPtr<IEditorTool> m_pActiveTool;
-   cAutoIPtr<IEditorTool> m_pDefaultTool;
    cAutoIPtr<IEditorTool> m_pToolCapture;
 };
 
@@ -149,13 +144,6 @@ private:
 IEditorTool * cEditorApp::AccessActiveTool()
 {
    return static_cast<IEditorTool *>(m_pActiveTool);
-}
-
-////////////////////////////////////////
-
-IEditorTool * cEditorApp::AccessDefaultTool()
-{
-   return static_cast<IEditorTool *>(m_pDefaultTool);
 }
 
 ////////////////////////////////////////

@@ -62,17 +62,12 @@ interface UUID("2A04E541-6BA1-41e9-92FA-E7B3D493F1A2") IEditorApp : IUnknown
    virtual tResult GetActiveTool(IEditorTool * * ppTool) = 0;
    virtual tResult SetActiveTool(IEditorTool * pTool) = 0;
 
-   virtual tResult GetDefaultTool(IEditorTool * * ppTool) = 0;
-   virtual tResult SetDefaultTool(IEditorTool * pTool) = 0;
-
    virtual tResult GetToolCapture(IEditorTool * * ppTool) = 0;
    virtual tResult SetToolCapture(IEditorTool * pTool) = 0;
    virtual tResult ReleaseToolCapture() = 0;
 };
 
 ////////////////////////////////////////
-
-IEditorApp * AccessEditorApp();
 
 void EditorAppCreate();
 
@@ -188,7 +183,6 @@ interface UUID("78C29790-865D-4f81-9AF1-26EC23BB5FAC") IEditorView : IUnknown
    virtual tResult SetCameraElevation(float elevation) = 0;
 
    virtual tResult GetModel(IEditorModel * * ppModel) = 0;
-   virtual tResult SetModel(IEditorModel * pModel) = 0;
 
    virtual tResult GetHighlightTile(int * piTileX, int * piTileZ) const = 0;
    virtual tResult HighlightTile(int iTileX, int iTileZ) = 0;

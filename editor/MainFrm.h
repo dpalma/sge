@@ -50,6 +50,7 @@ protected:  // control bar embedded members
 protected:
 	//{{AFX_MSG(CMainFrame)
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+   afx_msg void OnDestroy();
 	afx_msg void OnUpdateViewControlBarMenu(CCmdUI* pCmdUI);
 	//}}AFX_MSG
    afx_msg BOOL OnViewControlBar(UINT nID);

@@ -10,7 +10,6 @@
 
 #include "matrix4.h"
 #include "window.h"
-#include "connptimpl.h"
 
 #if _MSC_VER > 1000
 #pragma once
@@ -28,7 +27,7 @@ class cEditorDoc;
 //
 
 class cEditorView : public cGLView,
-                    public cComObject3<IMPLEMENTSCP(IWindow, IWindowSink),
+                    public cComObject3<IMPLEMENTS(IWindow),
                                        IMPLEMENTS(IEditorView),
                                        IMPLEMENTS(IEditorLoopClient),
                                        cAfxComServices<cEditorView> >
@@ -46,6 +45,8 @@ public:
    inline IRenderDevice * AccessRenderDevice() { return m_pRenderDevice; }
 
    // IWindow
+   virtual tResult Connect(IWindowSink *) { Assert(!"DON'T CALL THIS!"); return E_NOTIMPL; }
+   virtual tResult Disconnect(IWindowSink *) { Assert(!"DON'T CALL THIS!"); return E_NOTIMPL; }
    virtual tResult Create(const sWindowCreateParams * pParams);
    virtual tResult SwapBuffers();
 
@@ -57,7 +58,6 @@ public:
    virtual tResult GetCameraElevation(float * pElevation);
    virtual tResult SetCameraElevation(float elevation);
    virtual tResult GetModel(IEditorModel * * ppModel);
-   virtual tResult SetModel(IEditorModel * pModel);
    virtual tResult GetHighlightTile(int * piTileX, int * piTileZ) const;
    virtual tResult HighlightTile(int iTileX, int iTileZ);
    virtual tResult ClearTileHighlight();
@@ -73,9 +73,10 @@ public:
 	public:
 	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
 	virtual void OnInitialUpdate();
+   virtual void OnFinalRelease();
 	protected:
-	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
 	virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+   virtual void PostNcDestroy();
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -105,6 +106,8 @@ private:
    cAutoIPtr<ISceneCamera> m_pCamera;
 
    int m_highlitTileX, m_highlitTileZ;
+
+   bool m_bInPostNcDestroy;
 };
 
 #ifndef _DEBUG  // debug version in editorView.cpp

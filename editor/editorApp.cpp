@@ -93,11 +93,6 @@ cEditorApp::cEditorApp()
 
 cEditorApp theApp;
 
-IEditorApp * AccessEditorApp()
-{
-   return static_cast<IEditorApp *>(&theApp);
-}
-
 /////////////////////////////////////////////////////////////////////////////
 // cEditorApp initialization
 
@@ -612,29 +607,6 @@ tResult cEditorApp::SetActiveTool(IEditorTool * pTool)
       pTool->Activate();
       m_pActiveTool = CTAddRef(pTool);
    }
-
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cEditorApp::GetDefaultTool(IEditorTool * * ppTool)
-{
-   return m_pDefaultTool.GetPointer(ppTool);
-}
-
-////////////////////////////////////////
-
-tResult cEditorApp::SetDefaultTool(IEditorTool * pTool)
-{
-   if (pTool == NULL)
-   {
-      return E_POINTER;
-   }
-
-   SafeRelease(m_pDefaultTool);
-
-   m_pDefaultTool = CTAddRef(pTool);
 
    return S_OK;
 }

@@ -28,6 +28,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_CONTROL_BAR1, OnUpdateViewControlBarMenu)
 	//}}AFX_MSG_MAP
 	ON_COMMAND_EX_RANGE(ID_VIEW_CONTROL_BAR1, ID_VIEW_CONTROL_BAR16, OnViewControlBar)
+   ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -49,12 +50,7 @@ CMainFrame::CMainFrame()
 
 CMainFrame::~CMainFrame()
 {
-   std::vector<CControlBar *>::iterator iter;
-   for (iter = m_ctrlBars.begin(); iter != m_ctrlBars.end(); iter++)
-   {
-      delete *iter;
-   }
-   m_ctrlBars.clear();
+   Assert(m_ctrlBars.empty());
 }
 
 int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
@@ -150,6 +146,20 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
    }
 
 	return 0;
+}
+
+void CMainFrame::OnDestroy()
+{
+   CFrameWnd::OnDestroy();
+
+   std::vector<CControlBar *>::iterator iter = m_ctrlBars.begin();
+   std::vector<CControlBar *>::iterator end = m_ctrlBars.end();
+   for (; iter != end; iter++)
+   {
+      (*iter)->DestroyWindow();
+      delete *iter;
+   }
+   m_ctrlBars.clear();
 }
 
 /////////////////////////////////////////////////////////////////////////////
