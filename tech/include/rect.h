@@ -4,6 +4,8 @@
 #ifndef INCLUDED_RECT_H
 #define INCLUDED_RECT_H
 
+#include "vec2.h"
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -20,12 +22,50 @@ public:
    cRect();
    cRect(T l, T t, T r, T b);
    cRect(const cRect & other);
+   ~cRect();
+
    const cRect & operator =(const cRect & other);
+
    bool operator ==(const cRect & other);
+
    bool PtInside(T x, T y) const;
    void Offset(T x, T y);
+
    T GetWidth() const;
    T GetHeight() const;
+
+   template <typename U>
+   inline cVec2<U> GetTopLeft(cVec2<U> * pVec = NULL) const
+   {
+      return (pVec != NULL)
+         ? (*pVec = cVec2<U>(static_cast<U>(left), static_cast<U>(top)))
+         : cVec2<U>(static_cast<U>(left), static_cast<U>(top));
+   }
+
+   template <typename U>
+   inline cVec2<U> GetTopRight(cVec2<U> * pVec = NULL) const
+   {
+      return (pVec != NULL)
+         ? (*pVec = cVec2<U>(static_cast<U>(right), static_cast<U>(top)))
+         : cVec2<U>(static_cast<U>(right), static_cast<U>(top));
+   }
+
+   template <typename U>
+   inline cVec2<U> GetBottomLeft(cVec2<U> * pVec = NULL) const
+   {
+      return (pVec != NULL)
+         ? (*pVec = cVec2<U>(static_cast<U>(left), static_cast<U>(bottom)))
+         : cVec2<U>(static_cast<U>(left), static_cast<U>(bottom));
+   }
+
+   template <typename U>
+   inline cVec2<U> GetBottomRight(cVec2<U> * pVec = NULL) const
+   {
+      return (pVec != NULL)
+         ? (*pVec = cVec2<U>(static_cast<U>(right), static_cast<U>(bottom)))
+         : cVec2<U>(static_cast<U>(right), static_cast<U>(bottom));
+   }
+
    T left, top, right, bottom;
 };
 
@@ -57,6 +97,12 @@ inline cRect<T>::cRect(const cRect & other)
 {
 }
 
+///////////////////////////////////////
+
+template <typename T>
+inline cRect<T>::~cRect()
+{
+}
 ///////////////////////////////////////
 
 template <typename T>

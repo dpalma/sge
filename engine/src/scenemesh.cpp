@@ -76,7 +76,9 @@ void cSceneMesh::Animate(double elapsedTime)
       tTime period = pAnimation->GetPeriod();
       m_animationTime += elapsedTime;
       while (m_animationTime > period)
+      {
          m_animationTime -= period;
+      }
       pSkeleton->GetBoneMatrices(m_animationTime, &m_boneMatrices);
    }
 }

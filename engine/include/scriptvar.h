@@ -45,11 +45,19 @@ public:
    cScriptVar(const cScriptVar & other);
    ~cScriptVar();
 
+   int ToInt() const;
+   uint ToUint() const;
+   float ToFloat() const;
+   double ToDouble() const;
+
    const cScriptVar & operator =(double _d);
    const cScriptVar & operator =(char * _psz);
    const cScriptVar & operator =(IUnknown * _pUnk);
    const cScriptVar & operator =(const cScriptVar & other);
 
+   operator int() const;
+   operator uint() const;
+   operator float() const;
    operator double() const;
    operator const char *() const;
    operator IUnknown *() const;
@@ -57,6 +65,34 @@ public:
 private:
    void Clear();
 };
+
+///////////////////////////////////////
+
+inline cScriptVar::operator int() const
+{
+   return ToInt();
+}
+
+///////////////////////////////////////
+
+inline cScriptVar::operator uint() const
+{
+   return ToUint();
+}
+
+///////////////////////////////////////
+
+inline cScriptVar::operator float() const
+{
+   return ToFloat();
+}
+
+///////////////////////////////////////
+
+inline cScriptVar::operator double() const
+{
+   return ToDouble();
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -842,7 +842,7 @@ tResult cRNG::Invoke(const char * pszMethodName,
    if (strcmp(pszMethodName, "Seed") == 0
       && nArgs == 1)
    {
-      m_a = pArgs[0].d;
+      m_a = pArgs[0];
       return 0;
    }
    else if (strcmp(pszMethodName, "Rand") == 0

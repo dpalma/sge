@@ -474,7 +474,7 @@ bool cGUITextEditElement::HitTest(const tGUIPoint & point, int * pIndex)
    }
 
    float charPos = 0;
-   for (int i = 0; i < m_text.length(); ++i)
+   for (uint i = 0; i < m_text.length(); ++i)
    {
       tRect charRect(0,0,0,0);
       pFont->DrawText(&(m_text.at(i)), 1, kDT_CalcRect, &charRect, tGUIColor::White);

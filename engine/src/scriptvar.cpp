@@ -4,6 +4,8 @@
 #include "stdhdr.h"
 #include "scriptvar.h"
 
+#include "techmath.h"
+
 #include <cstdio>
 #include <cstdlib>
 
@@ -65,6 +67,46 @@ cScriptVar::~cScriptVar()
 
 ///////////////////////////////////////
 
+int cScriptVar::ToInt() const
+{
+   return Round(ToFloat());
+}
+
+///////////////////////////////////////
+
+uint cScriptVar::ToUint() const
+{
+   return Round(ToFloat());
+}
+
+///////////////////////////////////////
+
+float cScriptVar::ToFloat() const
+{
+   return static_cast<float>(ToDouble());
+}
+
+///////////////////////////////////////
+
+double cScriptVar::ToDouble() const
+{
+   if (type == kString)
+   {
+      return strtod(psz, NULL);
+   }
+   else if (type == kNumber)
+   {
+      return d;
+   }
+   else
+   {
+      ErrorMsg("Attempt to access incompatible ScriptVar as a double\n");
+      return 0;
+   }
+}
+
+///////////////////////////////////////
+
 const cScriptVar & cScriptVar::operator =(double _d)
 {
    Clear();
@@ -116,25 +158,6 @@ const cScriptVar & cScriptVar::operator =(const cScriptVar & other)
 
 ///////////////////////////////////////
 
-cScriptVar::operator double() const
-{
-   if (type == kString)
-   {
-      return strtod(psz, NULL);
-   }
-   else if (type == kNumber)
-   {
-      return d;
-   }
-   else
-   {
-      DebugMsg("WARNING: attempt to access %d scriptvar as double\n");
-      return 0;
-   }
-}
-
-///////////////////////////////////////
-
 cScriptVar::operator const char *() const
 {
    static const char kBufferSize = 50;
@@ -152,7 +175,7 @@ cScriptVar::operator const char *() const
    }
    else
    {
-      DebugMsg("WARNING: attempt to access %d scriptvar as string\n");
+      ErrorMsg("Attempt to access incompatible ScriptVar as a string\n");
       return NULL;
    }
 }
