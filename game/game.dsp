@@ -248,10 +248,6 @@ SOURCE=.\stdhdr.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\stripify.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\syslinux.cpp
 # PROP Exclude_From_Build 1
 # End Source File
@@ -362,10 +358,6 @@ SOURCE=.\sim.h
 # Begin Source File
 
 SOURCE=.\stdhdr.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\stripify.h
 # End Source File
 # Begin Source File
 
