@@ -5,9 +5,9 @@ bind("q", "quit();");
 --bind("escape", [[ShowModalDialog("maindlg.xml");]]);
 bind("escape", [[ConfirmedQuit("quitdlg.xml");]]);
 
-bind("d", "ToggleGUIDebugInfo();");
+bind("d", [[ToggleGUIDebugInfo(5, 200, "yellow");]]);
 
---LogEnableChannel([[GUIButtonEvents]]);
+LogEnableChannel([[GUIButtonEvents]]);
 --LogEnableChannel([[GUIDialogEvents]]);
 
 gameMeshes = 

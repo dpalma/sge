@@ -5,9 +5,11 @@
 
 #include "sys.h"
 #include "script.h"
+
 #include "scriptvar.h"
 #include "guiapi.h"
 #include "inputapi.h"
+
 #include "keys.h"
 #include "globalobj.h"
 
@@ -198,11 +200,40 @@ SCRIPT_DEFINE_FUNCTION(LoadGUI)
 
 SCRIPT_DEFINE_FUNCTION(ToggleGUIDebugInfo)
 {
+   tGUIPoint placement(0,0);
+   tGUIColor color(tGUIColor::White);
+
+   if (ScriptArgc() == 2 
+      && ScriptArgIsNumber(0) 
+      && ScriptArgIsNumber(1))
+   {
+      placement = tGUIPoint(ScriptArgAsNumber(0), ScriptArgAsNumber(1));
+   }
+   else if (ScriptArgc() == 3 
+      && ScriptArgIsNumber(0) 
+      && ScriptArgIsNumber(1) 
+      && ScriptArgIsString(2))
+   {
+      placement = tGUIPoint(ScriptArgAsNumber(0), ScriptArgAsNumber(1));
+      GUIStyleParseColor(ScriptArgAsString(2), &color);
+   }
+   else if (ScriptArgc() == 5 
+      && ScriptArgIsNumber(0) 
+      && ScriptArgIsNumber(1) 
+      && ScriptArgIsNumber(2) 
+      && ScriptArgIsNumber(3) 
+      && ScriptArgIsNumber(4))
+   {
+      placement = tGUIPoint(ScriptArgAsNumber(0), ScriptArgAsNumber(1));
+      color = tGUIColor(ScriptArgAsNumber(2), ScriptArgAsNumber(3), ScriptArgAsNumber(4));
+   }
+
    UseGlobal(GUIContext);
-   if (pGUIContext->ShowDebugInfo(tGUIPoint(0,0), tGUIColor::White) == S_FALSE)
+   if (pGUIContext->ShowDebugInfo(placement, color) == S_FALSE)
    {
       pGUIContext->HideDebugInfo();
    }
+
    return 0;
 }
 
