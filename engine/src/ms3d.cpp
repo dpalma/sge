@@ -353,17 +353,26 @@ tResult cMs3dFileReader::CreateMesh(IRenderDevice * pRenderDevice, IMesh * * ppM
       }
 
       cAutoIPtr<ISkeleton> pSkeleton;
-      if (SkeletonCreate(&m_bones[0], m_bones.size(), &pSkeleton) == S_OK)
+      if (!m_bones.empty())
       {
-         pMesh->AttachSkeleton(pSkeleton);
+         if (SkeletonCreate(&m_bones[0], m_bones.size(), &pSkeleton) == S_OK)
+         {
+            pMesh->AttachSkeleton(pSkeleton);
+         }
       }
 
-      cAutoIPtr<IKeyFrameAnimation> pAnimation;
-      if (KeyFrameAnimationCreate(const_cast<IKeyFrameInterpolator * *>(&m_interpolators[0]), 
-                                  m_interpolators.size(), 
-                                  &pAnimation) == S_OK)
+      if (!m_interpolators.empty())
       {
-         pSkeleton->SetAnimation(pAnimation);
+         cAutoIPtr<IKeyFrameAnimation> pAnimation;
+         if (KeyFrameAnimationCreate(const_cast<IKeyFrameInterpolator * *>(&m_interpolators[0]), 
+                                    m_interpolators.size(), 
+                                    &pAnimation) == S_OK)
+         {
+            if (!!pSkeleton)
+            {
+               pSkeleton->SetAnimation(pAnimation);
+            }
+         }
       }
 
       if (ppMesh != NULL)

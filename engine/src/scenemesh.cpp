@@ -201,7 +201,10 @@ void cSceneMesh::Render(IRenderDevice * pRenderDevice)
 {
    if (m_pMesh != NULL)
    {
-      pRenderDevice->SetBlendMatrices(m_boneMatrices.size(), &m_boneMatrices[0]);
+      if (!m_boneMatrices.empty())
+      {
+         pRenderDevice->SetBlendMatrices(m_boneMatrices.size(), &m_boneMatrices[0]);
+      }
       m_pMesh->Render(pRenderDevice);
    }
 }

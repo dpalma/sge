@@ -164,12 +164,6 @@ inline typename cVec3<T>::value_type cVec3<T>::Length() const
    return sqrt(LengthSqr());
 }
 
-template <>
-inline cVec3<float>::value_type cVec3<float>::Length() const
-{
-   return sqrtf(LengthSqr());
-}
-
 ///////////////////////////////////////
 
 template <typename T>

@@ -13,8 +13,8 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\..\Build.vc7\Release"
-			IntermediateDirectory=".\..\Build.vc7\Release\editor"
+			OutputDirectory=".\..\Build.vc8\Release"
+			IntermediateDirectory=".\..\Build.vc8\Release\editor"
 			ConfigurationType="1"
 			UseOfMFC="2"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -29,10 +29,10 @@
 				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdhdr.h"
-				PrecompiledHeaderFile=".\..\Build.vc7\Release\editor/editor.pch"
-				AssemblerListingLocation=".\..\Build.vc7\Release\editor/"
-				ObjectFile=".\..\Build.vc7\Release\editor/"
-				ProgramDataBaseFileName=".\..\Build.vc7\Release\editor/"
+				PrecompiledHeaderFile=".\..\Build.vc8\Release\editor/editor.pch"
+				AssemblerListingLocation=".\..\Build.vc8\Release\editor/"
+				ObjectFile=".\..\Build.vc8\Release\editor/"
+				ProgramDataBaseFileName=".\..\Build.vc8\Release\editor/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				CompileAs="0"/>
@@ -42,10 +42,10 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib $(OutDir)\lua.lib"
-				OutputFile=".\..\Build.vc7\Release/editor.exe"
+				OutputFile=".\..\Build.vc8\Release/editor.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
-				ProgramDatabaseFile=".\..\Build.vc7\Release/editor.pdb"
+				ProgramDatabaseFile=".\..\Build.vc8\Release/editor.pdb"
 				SubSystem="2"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -53,7 +53,7 @@
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\Build.vc7\Release/editor.tlb"/>
+				TypeLibraryName=".\..\Build.vc8\Release/editor.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -71,8 +71,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\..\Build.vc7\Debug"
-			IntermediateDirectory=".\..\Build.vc7\Debug\editor"
+			OutputDirectory=".\..\Build.vc8\Debug"
+			IntermediateDirectory=".\..\Build.vc8\Debug\editor"
 			ConfigurationType="1"
 			UseOfMFC="2"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -86,10 +86,10 @@
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdhdr.h"
-				PrecompiledHeaderFile=".\..\Build.vc7\Debug\editor/editor.pch"
-				AssemblerListingLocation=".\..\Build.vc7\Debug\editor/"
-				ObjectFile=".\..\Build.vc7\Debug\editor/"
-				ProgramDataBaseFileName=".\..\Build.vc7\Debug\editor/"
+				PrecompiledHeaderFile=".\..\Build.vc8\Debug\editor/editor.pch"
+				AssemblerListingLocation=".\..\Build.vc8\Debug\editor/"
+				ObjectFile=".\..\Build.vc8\Debug\editor/"
+				ProgramDataBaseFileName=".\..\Build.vc8\Debug\editor/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="4"
@@ -100,11 +100,11 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="$(OutDir)\cppunit.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\lua.lib"
-				OutputFile=".\..\Build.vc7\Debug/editor.exe"
+				OutputFile=".\..\Build.vc8\Debug/editor.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\..\Build.vc7\Debug/editor.pdb"
+				ProgramDatabaseFile=".\..\Build.vc8\Debug/editor.pdb"
 				SubSystem="2"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -112,7 +112,7 @@
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\Build.vc7\Debug/editor.tlb"/>
+				TypeLibraryName=".\..\Build.vc8\Debug/editor.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -130,8 +130,8 @@
 		</Configuration>
 		<Configuration
 			Name="StaticDebug|Win32"
-			OutputDirectory=".\..\Build.vc7\StaticDebug"
-			IntermediateDirectory=".\..\Build.vc7\StaticDebug\editor"
+			OutputDirectory=".\..\Build.vc8\StaticDebug"
+			IntermediateDirectory=".\..\Build.vc8\StaticDebug\editor"
 			ConfigurationType="1"
 			UseOfMFC="1"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -145,10 +145,10 @@
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdhdr.h"
-				PrecompiledHeaderFile=".\..\Build.vc7\StaticDebug\editor/editor.pch"
-				AssemblerListingLocation=".\..\Build.vc7\StaticDebug\editor/"
-				ObjectFile=".\..\Build.vc7\StaticDebug\editor/"
-				ProgramDataBaseFileName=".\..\Build.vc7\StaticDebug\editor/"
+				PrecompiledHeaderFile=".\..\Build.vc8\StaticDebug\editor/editor.pch"
+				AssemblerListingLocation=".\..\Build.vc8\StaticDebug\editor/"
+				ObjectFile=".\..\Build.vc8\StaticDebug\editor/"
+				ProgramDataBaseFileName=".\..\Build.vc8\StaticDebug\editor/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="4"
@@ -159,11 +159,11 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="$(OutDir)\cppunit.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\lua.lib"
-				OutputFile=".\..\Build.vc7\StaticDebug/editor.exe"
+				OutputFile=".\..\Build.vc8\StaticDebug/editor.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\..\Build.vc7\StaticDebug/editor.pdb"
+				ProgramDatabaseFile=".\..\Build.vc8\StaticDebug/editor.pdb"
 				SubSystem="2"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -171,7 +171,7 @@
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\Build.vc7\StaticDebug/editor.tlb"/>
+				TypeLibraryName=".\..\Build.vc8\StaticDebug/editor.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -189,8 +189,8 @@
 		</Configuration>
 		<Configuration
 			Name="Opt|Win32"
-			OutputDirectory=".\..\Build.vc7\Opt"
-			IntermediateDirectory=".\..\Build.vc7\Opt\editor"
+			OutputDirectory=".\..\Build.vc8\Opt"
+			IntermediateDirectory=".\..\Build.vc8\Opt\editor"
 			ConfigurationType="1"
 			UseOfMFC="2"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -205,10 +205,10 @@
 				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdhdr.h"
-				PrecompiledHeaderFile=".\..\Build.vc7\Opt\editor/editor.pch"
-				AssemblerListingLocation=".\..\Build.vc7\Opt\editor/"
-				ObjectFile=".\..\Build.vc7\Opt\editor/"
-				ProgramDataBaseFileName=".\..\Build.vc7\Opt\editor/"
+				PrecompiledHeaderFile=".\..\Build.vc8\Opt\editor/editor.pch"
+				AssemblerListingLocation=".\..\Build.vc8\Opt\editor/"
+				ObjectFile=".\..\Build.vc8\Opt\editor/"
+				ProgramDataBaseFileName=".\..\Build.vc8\Opt\editor/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				CompileAs="0"/>
@@ -218,10 +218,10 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib $(OutDir)\lua.lib"
-				OutputFile=".\..\Build.vc7\Opt/editor.exe"
+				OutputFile=".\..\Build.vc8\Opt/editor.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
-				ProgramDatabaseFile=".\..\Build.vc7\Opt/editor.pdb"
+				ProgramDatabaseFile=".\..\Build.vc8\Opt/editor.pdb"
 				SubSystem="2"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -229,7 +229,7 @@
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\Build.vc7\Opt/editor.tlb"/>
+				TypeLibraryName=".\..\Build.vc8\Opt/editor.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -247,8 +247,8 @@
 		</Configuration>
 		<Configuration
 			Name="StaticRelease|Win32"
-			OutputDirectory=".\..\Build.vc7\StaticRelease"
-			IntermediateDirectory=".\..\Build.vc7\StaticRelease\editor"
+			OutputDirectory=".\..\Build.vc8\StaticRelease"
+			IntermediateDirectory=".\..\Build.vc8\StaticRelease\editor"
 			ConfigurationType="1"
 			UseOfMFC="1"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -263,10 +263,10 @@
 				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdhdr.h"
-				PrecompiledHeaderFile=".\..\Build.vc7\StaticRelease\editor/editor.pch"
-				AssemblerListingLocation=".\..\Build.vc7\StaticRelease\editor/"
-				ObjectFile=".\..\Build.vc7\StaticRelease\editor/"
-				ProgramDataBaseFileName=".\..\Build.vc7\StaticRelease\editor/"
+				PrecompiledHeaderFile=".\..\Build.vc8\StaticRelease\editor/editor.pch"
+				AssemblerListingLocation=".\..\Build.vc8\StaticRelease\editor/"
+				ObjectFile=".\..\Build.vc8\StaticRelease\editor/"
+				ProgramDataBaseFileName=".\..\Build.vc8\StaticRelease\editor/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				CompileAs="0"/>
@@ -276,10 +276,10 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib $(OutDir)\lua.lib"
-				OutputFile=".\..\Build.vc7\StaticRelease/editor.exe"
+				OutputFile=".\..\Build.vc8\StaticRelease/editor.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
-				ProgramDatabaseFile=".\..\Build.vc7\StaticRelease/editor.pdb"
+				ProgramDatabaseFile=".\..\Build.vc8\StaticRelease/editor.pdb"
 				SubSystem="2"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -287,7 +287,7 @@
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\Build.vc7\StaticRelease/editor.tlb"/>
+				TypeLibraryName=".\..\Build.vc8\StaticRelease/editor.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
