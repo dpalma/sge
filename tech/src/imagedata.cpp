@@ -4,13 +4,18 @@
 #include "stdhdr.h"
 
 #include "imagedata.h"
-#include "resmgr.h"
+#include "resourceapi.h"
 #include "readwriteapi.h"
 #include "filespec.h"
 
 #include <cstring>
 
 #include "dbgalloc.h" // must be last header
+
+///////////////////////////////////////////////////////////////////////////////
+
+REFERENCE_RESOURCEFORMAT(tga);
+REFERENCE_RESOURCEFORMAT(bmp);
 
 ///////////////////////////////////////////////////////////////////////////////
 

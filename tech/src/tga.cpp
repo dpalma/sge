@@ -529,7 +529,7 @@ tResult cImageFormatTarga::Load(const tResKey & key, IReader * pReader, IResourc
 
 ////////////////////////////////////////
 
-AUTOREGISTER_RESOURCEFORMAT(kRC_Image, "tga", cImageFormatTarga);
+AUTOREGISTER_RESOURCEFORMAT(kRC_Image, tga, cImageFormatTarga);
 
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -154,10 +154,14 @@ struct sAutoRegisterResourceFormat
    }
 };
 
-#define AUTOREGISTER_RESOURCEFORMAT(resClass, ext, resFormatClass) \
-   static sAutoRegisterResourceFormat MAKE_UNIQUE(g_autoRegResFormat)( \
-      resClass, ext, static_cast<IResourceFormat *>(new (resFormatClass)))
+#define REFERENCE_RESOURCEFORMAT(ext) \
+   extern void * ReferenceSymbol##ext(); \
+   void * MAKE_UNIQUE(g_pReference##ext) = (void *)&ReferenceSymbol##ext
 
+#define AUTOREGISTER_RESOURCEFORMAT(resClass, ext, resFormatClass) \
+   void * ReferenceSymbol##ext() { return NULL; } \
+   static sAutoRegisterResourceFormat MAKE_UNIQUE(g_autoRegResFormat)( \
+      resClass, #ext, static_cast<IResourceFormat *>(new (resFormatClass)))
 
 ///////////////////////////////////////////////////////////////////////////////
 //

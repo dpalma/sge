@@ -297,7 +297,7 @@ tResult cImageFormatBmp::Load(const tResKey & key, IReader * pReader, IResource 
 
 ////////////////////////////////////////
 
-AUTOREGISTER_RESOURCEFORMAT(kRC_Image, "bmp", cImageFormatBmp);
+AUTOREGISTER_RESOURCEFORMAT(kRC_Image, bmp, cImageFormatBmp);
 
 
 ////////////////////////////////////////////////////////////////////////////////
