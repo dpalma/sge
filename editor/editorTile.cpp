@@ -177,7 +177,10 @@ void cEditorTile::LazyInit()
 
          m_pImageData = ImageLoad(pResourceManager, m_texture.c_str());
 
-         Verify(LoadBitmap(m_pImageData, &m_hBitmap));
+         if (m_pImageData != NULL)
+         {
+            Verify(LoadBitmap(m_pImageData, &m_hBitmap));
+         }
       }
    }
 }

@@ -16,7 +16,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #if !defined(NDEBUG) && defined(_MSC_VER)
-EXTERN_C DECLSPEC_DLLIMPORT int CDECL _CrtIsValidHeapPointer(const void * userData);
+EXTERN_C CRT_IMPORT int CDECL _CrtIsValidHeapPointer(const void * userData);
 #else
 #define _CrtIsValidHeapPointer(userData) ((int)1)
 #endif

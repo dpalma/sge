@@ -3,7 +3,40 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
-Project: "allguids"=..\allguids\allguids.dsp - Package Owner=<4>
+Project: "AllTargets"=.\AllTargets.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name allguids
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name editor
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name engine
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name game
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name msPlugIn
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name render
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name tech
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "allguids"=.\allguids\allguids.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -15,7 +48,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "editor"=.\editor.dsp - Package Owner=<4>
+Project: "editor"=.\editor\editor.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -39,7 +72,43 @@ Package=<4>
 
 ###############################################################################
 
-Project: "engine"=..\engine\engine.dsp - Package Owner=<4>
+Project: "engine"=.\engine\engine.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "game"=.\game\game.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name allguids
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name engine
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name render
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name tech
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "msPlugIn"=.\MilkShapeExporter\msPlugIn.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -56,11 +125,14 @@ Package=<4>
     Begin Project Dependency
     Project_Dep_Name tech
     End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name engine
+    End Project Dependency
 }}}
 
 ###############################################################################
 
-Project: "render"=..\render\render.dsp - Package Owner=<4>
+Project: "render"=.\render\render.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -68,17 +140,11 @@ Package=<5>
 
 Package=<4>
 {{{
-    Begin Project Dependency
-    Project_Dep_Name allguids
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name tech
-    End Project Dependency
 }}}
 
 ###############################################################################
 
-Project: "tech"=..\tech\tech.dsp - Package Owner=<4>
+Project: "tech"=.\tech\tech.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -86,9 +152,6 @@ Package=<5>
 
 Package=<4>
 {{{
-    Begin Project Dependency
-    Project_Dep_Name allguids
-    End Project Dependency
 }}}
 
 ###############################################################################

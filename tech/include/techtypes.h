@@ -126,16 +126,22 @@ typedef int    BOOL;
 #define EXTERN_C extern "C"
 #endif
 
-#if !defined(DECLSPEC_DLLIMPORT) && defined(_MSC_VER) && !defined(STATIC_BUILD) && defined(_DLL)
+#if !defined(DECLSPEC_DLLIMPORT) && defined(_MSC_VER)
 #define DECLSPEC_DLLIMPORT __declspec(dllimport)
 #else
 #define DECLSPEC_DLLIMPORT
 #endif
 
-#if !defined(DECLSPEC_DLLEXPORT) && defined(_MSC_VER) && !defined(STATIC_BUILD)
+#if !defined(DECLSPEC_DLLEXPORT) && defined(_MSC_VER)
 #define DECLSPEC_DLLEXPORT __declspec(dllexport)
 #else
 #define DECLSPEC_DLLEXPORT
+#endif
+
+#ifdef _DLL
+#define CRT_IMPORT DECLSPEC_DLLIMPORT
+#else
+#define CRT_IMPORT
 #endif
 
 typedef void * HANDLE;
@@ -171,8 +177,8 @@ typedef void * HANDLE;
 #ifdef _MSC_VER
 #define snprintf _snprintf
 #define vsnprintf _vsnprintf
-EXTERN_C DECLSPEC_DLLIMPORT int CDECL _snprintf(char *, size_t, const char * , ...);
-EXTERN_C DECLSPEC_DLLIMPORT int CDECL _vsnprintf(char *, size_t, const char *, va_list);
+EXTERN_C CRT_IMPORT int CDECL _snprintf(char *, size_t, const char * , ...);
+EXTERN_C CRT_IMPORT int CDECL _vsnprintf(char *, size_t, const char *, va_list);
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
