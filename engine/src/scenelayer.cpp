@@ -223,11 +223,20 @@ void cFrustumCull::operator()(ISceneEntity * pEntity)
 
 ///////////////////////////////////////
 
-tResult cSceneLayer::Cull(const cFrustum & frustum, tSceneEntityList * pEntities)
+void cSceneLayer::Cull(const cFrustum & frustum, tSceneEntityList * pEntities)
 {
    Assert(pEntities != NULL);
    std::for_each(m_entities.begin(), m_entities.end(), cFrustumCull(frustum, pEntities));
-   return pEntities->empty() ? S_FALSE : S_OK;
+}
+
+///////////////////////////////////////
+
+void cSceneLayer::GetAll(tSceneEntityList * pEntities)
+{
+   Assert(pEntities != NULL);
+   pEntities->resize(m_entities.size());
+   std::copy(m_entities.begin(), m_entities.end(), pEntities->begin());
+   std::for_each(pEntities->begin(), pEntities->end(), CTInterfaceMethodRef(&::IUnknown::AddRef));
 }
 
 ///////////////////////////////////////

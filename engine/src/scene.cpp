@@ -168,6 +168,8 @@ void cRenderEntity::operator()(ISceneEntity * pEntity)
 tResult cScene::Render(IRenderDevice * pRenderDevice)
 {
    cFrustum frustum;
+   bool bHaveFrustum = false;
+
    for (int i = 0; i < _countof(m_layers); i++)
    {
       cAutoIPtr<ISceneCamera> pCamera;
@@ -175,15 +177,36 @@ tResult cScene::Render(IRenderDevice * pRenderDevice)
       {
          pRenderDevice->SetProjectionMatrix(pCamera->GetProjectionMatrix());
          pRenderDevice->SetViewMatrix(pCamera->GetViewMatrix());
-         frustum.ExtractPlanes(pCamera->GetViewProjectionMatrix());
+         if (pCamera->GetProjectionType() == kPT_Perspective)
+         {
+            frustum.ExtractPlanes(pCamera->GetViewProjectionMatrix());
+            bHaveFrustum = true;
+         }
+         else
+         {
+            // Don't frustum-cull orthographically projected stuff like UI
+            bHaveFrustum = false;
+         }
       }
-      tSceneEntityList culledEntities;
-      if (m_layers[i].Cull(frustum, &culledEntities) == S_OK)
+
+      tSceneEntityList entities;
+
+      if (bHaveFrustum)
       {
-         std::for_each(culledEntities.begin(), culledEntities.end(), cRenderEntity(pRenderDevice));
-         std::for_each(culledEntities.begin(), culledEntities.end(), CTInterfaceMethodRef(&::IUnknown::Release));
+         m_layers[i].Cull(frustum, &entities);
+      }
+      else
+      {
+         m_layers[i].GetAll(&entities);
+      }
+
+      if (!entities.empty())
+      {
+         std::for_each(entities.begin(), entities.end(), cRenderEntity(pRenderDevice));
+         std::for_each(entities.begin(), entities.end(), CTInterfaceMethodRef(&::IUnknown::Release));
       }
    }
+
    return S_OK;
 }
 

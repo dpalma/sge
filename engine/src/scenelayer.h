@@ -43,7 +43,9 @@ public:
 
    tResult Query(const cRay & ray, tSceneEntityList * pEntities);
 
-   tResult Cull(const cFrustum & frustum, tSceneEntityList * pEntities);
+   void Cull(const cFrustum & frustum, tSceneEntityList * pEntities);
+
+   void GetAll(tSceneEntityList * pEntities);
 
    bool HandleInputEvent(const sInputEvent * pEvent);
 
