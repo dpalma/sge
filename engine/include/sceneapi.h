@@ -146,6 +146,8 @@ interface ISceneCamera : IUnknown
 
    virtual const tMatrix4 & GetViewProjectionMatrix() const = 0;
    virtual const tMatrix4 & GetViewProjectionInverseMatrix() const = 0;
+
+   virtual tResult GeneratePickRay(float ndx, float ndy, cRay * pRay) const = 0;
 };
 
 ///////////////////////////////////////

@@ -15,6 +15,7 @@
 
 #include "globalobj.h"
 
+#include <algorithm>
 #include <GL/gl.h>
 #include <zmouse.h>
 
@@ -27,6 +28,8 @@ const uint WM_GET_IEDITORVIEW = RegisterWindowMessage("WM_GET_IEDITORVIEW");
 const float kFov = 70;
 const float kZNear = 1;
 const float kZFar = 5000;
+
+static const GLfloat kHighlightTileColor[] = { 0, 1, 0, 0.25f };
 
 const float kDefaultCameraElevation = 100;
 const float kDefaultCameraPitch = 70;
@@ -277,13 +280,11 @@ void cEditorView::RenderScene()
                verts[2].y += kOffsetY;
                verts[3].y += kOffsetY;
 
-               static const GLfloat highlitTileColor[] = { 0,1,0,.25f };
-
                glPushAttrib(GL_ENABLE_BIT);
                glEnable(GL_BLEND);
                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                glBegin(GL_QUADS);
-                  glColor4fv(highlitTileColor);
+                  glColor4fv(kHighlightTileColor);
                   glNormal3f(0, 1, 0);
                   glVertex3fv(verts[0].v);
                   glVertex3fv(verts[3].v);
@@ -321,8 +322,6 @@ LRESULT cEditorView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
    UseGlobal(EditorApp);
    Verify(pEditorApp->AddLoopClient(this) == S_OK);
-
-   pEditorApp->SetDefaultTool(cAutoIPtr<IEditorTool>(new cMoveCameraTool));
 
 	return 0;
 }
@@ -402,12 +401,18 @@ void cEditorView::InitialUpdate()
 
    PlaceCamera((float)xExt / 2, (float)zExt / 2);
 
-   cAutoIPtr<ISceneEntity> pSE;
-   if (pModel->AccessTerrain()->GetSceneEntity(&pSE) == S_OK)
+   std::vector<ISceneEntity *> entities;
+   if (pModel->AccessTerrain()->GetSceneEntities(&entities) == S_OK)
    {
       UseGlobal(Scene);
-      pScene->AddEntity(kSL_Terrain, pSE);
+      std::vector<ISceneEntity *>::iterator iter = entities.begin();
+      std::vector<ISceneEntity *>::iterator end = entities.end();
+      for (; iter != end; iter++)
+      {
+         pScene->AddEntity(kSL_Terrain, *iter);
+      }
    }
+   std::for_each(entities.begin(), entities.end(), CTInterfaceMethod(&IUnknown::Release));
 }
 
 /////////////////////////////////////////////////////////////////////////////

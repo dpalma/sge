@@ -39,11 +39,7 @@ public:
 
    void LookAtPoint(float x, float z);
 
-   const tVec3 & GetEyePosition() const { return m_eye; }
-
 private:
-   bool BuildPickRay(int x, int y, tVec3 * pRay);
-
    float m_pitch, m_oneOverTangentPitch, m_elevation;
    tVec3 m_eye, m_focus, m_velocity;
 

@@ -444,6 +444,17 @@ LRESULT cMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 ////////////////////////////////////////
 
+LRESULT cMainFrame::OnSetFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/)
+{
+   if (::IsWindow(m_hWndClient))
+   {
+      ::SetFocus(m_hWndClient);
+   }
+   return 0;
+}
+
+////////////////////////////////////////
+
 LRESULT cMainFrame::OnFileNew(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled)
 {
    std::vector<cStr> tileSets;

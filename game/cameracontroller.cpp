@@ -9,7 +9,6 @@
 #include "ggl.h"
 #include "sceneapi.h"
 
-#include "vec4.h"
 #include "configapi.h"
 #include "keys.h"
 #include "globalobj.h"
@@ -26,6 +25,27 @@ static const float kDefaultElevation = 100;
 static const float kDefaultPitch = 70;
 static const float kDefaultSpeed = 50;
 
+/////////////////////////////////////////////////////////////////////////////
+
+static void ScreenToNormalizedDeviceCoords(int sx, int sy,
+                                           float * pndx, float * pndy)
+{
+   Assert(pndx != NULL);
+   Assert(pndy != NULL);
+
+   int viewport[4];
+   glGetIntegerv(GL_VIEWPORT, viewport);
+
+   sy = viewport[3] - sy;
+
+   // convert screen coords to normalized (origin at center, [-1..1])
+   float normx = (float)(sx - viewport[0]) * 2.f / viewport[2] - 1.f;
+   float normy = (float)(sy - viewport[1]) * 2.f / viewport[3] - 1.f;
+
+   *pndx = normx;
+   *pndy = normy;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGameCameraController
@@ -39,10 +59,8 @@ cGameCameraController::cGameCameraController(ISceneCamera * pCamera)
    m_elevation(kDefaultElevation),
    m_focus(0,0,0),
    m_velocity(0,0,0),
-   m_pCamera(pCamera)
+   m_pCamera(CTAddRef(pCamera))
 {
-   if (pCamera != NULL)
-      pCamera->AddRef();
    ConfigGet("view_elevation", &m_elevation);
    ConfigGet("view_pitch", &m_pitch);
    MatrixRotateX(m_pitch, &m_rotation);
@@ -101,11 +119,14 @@ bool cGameCameraController::OnInputEvent(const sInputEvent * pEvent)
 {
    if ((pEvent->key == kMouseLeft) && pEvent->down)
    {
-      tVec3 dir;
-      if (BuildPickRay(Round(pEvent->point.x), Round(pEvent->point.y), &dir))
-      {
-         cRay ray(GetEyePosition(), dir);
+      float ndx, ndy;
+      ScreenToNormalizedDeviceCoords(Round(pEvent->point.x), Round(pEvent->point.y), &ndx, &ndy);
 
+      Assert(m_pCamera != NULL);
+
+      cRay ray;
+      if (m_pCamera->GeneratePickRay(ndx, ndy, &ray) == S_OK)
+      {
          cAutoIPtr<ISceneEntityEnum> pHits;
 
          UseGlobal(Scene);
@@ -182,46 +203,6 @@ bool cGameCameraController::OnInputEvent(const sInputEvent * pEvent)
 void cGameCameraController::LookAtPoint(float x, float z)
 {
    m_focus = tVec3(x, 0, z);
-}
-
-///////////////////////////////////////
-
-bool cGameCameraController::BuildPickRay(int x, int y, tVec3 * pRay)
-{
-   Assert(m_pCamera != NULL);
-
-   int viewport[4];
-   glGetIntegerv(GL_VIEWPORT, viewport);
-
-   y = viewport[3] - y;
-
-   // convert screen coords to normalized (origin at center, [-1..1])
-   float normx = (float)(x - viewport[0]) * 2.f / viewport[2] - 1.f;
-   float normy = (float)(y - viewport[1]) * 2.f / viewport[3] - 1.f;
-
-   const tMatrix4 & m = m_pCamera->GetViewProjectionInverseMatrix();
-
-   tVec4 n;
-   m.Transform(tVec4(normx, normy, -1, 1), &n);
-   if (n.w == 0.0f)
-      return false;
-   n.x /= n.w;
-   n.y /= n.w;
-   n.z /= n.w;
-
-   tVec4 f;
-   m.Transform(tVec4(normx, normy, 1, 1), &f);
-   if (f.w == 0.0f)
-      return false;
-   f.x /= f.w;
-   f.y /= f.w;
-   f.z /= f.w;
-
-   Assert(pRay != NULL);
-   *pRay = tVec3(f.x - n.x, f.y - n.y, f.z - n.z);
-   pRay->Normalize();
-
-   return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

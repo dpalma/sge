@@ -40,6 +40,8 @@ public:
    const tMatrix4 & GetViewProjectionMatrix() const;
    const tMatrix4 & GetViewProjectionInverseMatrix() const;
 
+   virtual tResult GeneratePickRay(float ndx, float ndy, cRay * pRay) const;
+
 private:
    void UpdateCompositeMatrices();
 

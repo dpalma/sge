@@ -154,6 +154,20 @@ extern TECH_API cLog techlog;
 #define WarnMsg4(fmt,arg1,arg2,arg3,arg4)                   WarnMsgIf4(1,fmt,arg1,arg2,arg3,arg4)
 #define WarnMsg5(fmt,arg1,arg2,arg3,arg4,arg5)              WarnMsgIf5(1,fmt,arg1,arg2,arg3,arg4,arg5)
 
+#define InfoMsgIf(expr,fmt)                                 do { if (expr) { techlog.Print(__FILE__,__LINE__,kInfo,(fmt)); } } while(0)
+#define InfoMsgIf1(expr,fmt,arg1)                           do { if (expr) { techlog.Print(__FILE__,__LINE__,kInfo,(fmt),(arg1)); } } while(0)
+#define InfoMsgIf2(expr,fmt,arg1,arg2)                      do { if (expr) { techlog.Print(__FILE__,__LINE__,kInfo,(fmt),(arg1),(arg2)); } } while(0)
+#define InfoMsgIf3(expr,fmt,arg1,arg2,arg3)                 do { if (expr) { techlog.Print(__FILE__,__LINE__,kInfo,(fmt),(arg1),(arg2),(arg3)); } } while(0)
+#define InfoMsgIf4(expr,fmt,arg1,arg2,arg3,arg4)            do { if (expr) { techlog.Print(__FILE__,__LINE__,kInfo,(fmt),(arg1),(arg2),(arg3),(arg4)); } } while(0)
+#define InfoMsgIf5(expr,fmt,arg1,arg2,arg3,arg4,arg5)       do { if (expr) { techlog.Print(__FILE__,__LINE__,kInfo,(fmt),(arg1),(arg2),(arg3),(arg4),(arg5)); } } while(0)
+
+#define InfoMsg(fmt)                                        InfoMsgIf(1,fmt)
+#define InfoMsg1(fmt,arg1)                                  InfoMsgIf1(1,fmt,arg1)
+#define InfoMsg2(fmt,arg1,arg2)                             InfoMsgIf2(1,fmt,arg1,arg2)
+#define InfoMsg3(fmt,arg1,arg2,arg3)                        InfoMsgIf3(1,fmt,arg1,arg2,arg3)
+#define InfoMsg4(fmt,arg1,arg2,arg3,arg4)                   InfoMsgIf4(1,fmt,arg1,arg2,arg3,arg4)
+#define InfoMsg5(fmt,arg1,arg2,arg3,arg4,arg5)              InfoMsgIf5(1,fmt,arg1,arg2,arg3,arg4,arg5)
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #endif // !INCLUDED_TECHLOG_H

@@ -20,6 +20,12 @@
 
 ///////////////////////////////////////
 
+cRay::cRay()
+{
+}
+
+///////////////////////////////////////
+
 cRay::cRay(const tVec3 & origin, const tVec3 & direction)
  : m_origin(origin),
    m_direction(direction)

@@ -11,9 +11,6 @@
 #include "sceneapi.h"
 #include "ray.h"
 
-#include "matrix4.h"
-#include "vec3.h"
-#include "vec4.h"
 #include "globalobj.h"
 
 #include <GL/gl.h>
@@ -208,7 +205,7 @@ tResult cMoveCameraTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditor
       float camPlaceX, camPlaceZ;
       if ((pView != NULL) && pView->GetCameraPlacement(&camPlaceX, &camPlaceZ) == S_OK)
       {
-         techlog.Print(kInfo, "Looking at point (%.2f, 0, %.2f)\n", camPlaceX, camPlaceZ);
+         InfoMsg2("Looking at point (%.2f, 0, %.2f)\n", camPlaceX, camPlaceZ);
       }
 
       return S_EDITOR_TOOL_HANDLED;
@@ -271,42 +268,6 @@ static void ScreenToNormalizedDeviceCoords(int sx, int sy,
    *pndy = normy;
 }
 
-/////////////////////////////////////////////////////////////////////////////
-
-static bool GetPickVector(ISceneCamera * pCamera, float ndx, float ndy, tVec3 * pPickDir)
-{
-   Assert(pCamera != NULL);
-
-   const tMatrix4 & m = pCamera->GetViewProjectionInverseMatrix();
-
-   tVec4 n;
-   m.Transform(tVec4(ndx, ndy, -1, 1), &n);
-   if (n.w == 0.0f)
-   {
-      return false;
-   }
-   n.x /= n.w;
-   n.y /= n.w;
-   n.z /= n.w;
-
-   tVec4 f;
-   m.Transform(tVec4(ndx, ndy, 1, 1), &f);
-   if (f.w == 0.0f)
-   {
-      return false;
-   }
-   f.x /= f.w;
-   f.y /= f.w;
-   f.z /= f.w;
-
-   if (pPickDir != NULL)
-   {
-      *pPickDir = tVec3(f.x - n.x, f.y - n.y, f.z - n.z);
-      pPickDir->Normalize();
-   }
-
-   return true;
-}
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -438,11 +399,9 @@ bool cTerrainTileTool::GetHitTile(CPoint point, IEditorView * pView, uint * pix,
          float ndx, ndy;
          ScreenToNormalizedDeviceCoords(point.x, point.y, &ndx, &ndy);
 
-         tVec3 pickDir;
-         if (GetPickVector(pCamera, ndx, ndy, &pickDir))
+         cRay pickRay;
+         if (pCamera->GeneratePickRay(ndx, ndy, &pickRay) == S_OK)
          {
-            cRay pickRay(pView->GetCameraEyePosition(), pickDir);
-
             tVec3 pointOnPlane;
             if (pickRay.IntersectsPlane(tVec3(0,1,0), 0, &pointOnPlane))
             {

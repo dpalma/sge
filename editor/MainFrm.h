@@ -78,6 +78,7 @@ public:
    BEGIN_MSG_MAP_EX(cMainFrame)
       MESSAGE_HANDLER(WM_CREATE, OnCreate)
       MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
+      MESSAGE_HANDLER(WM_SETFOCUS, OnSetFocus)
       COMMAND_ID_HANDLER(ID_FILE_NEW, OnFileNew)
       COMMAND_ID_HANDLER(ID_FILE_OPEN, OnFileOpen)
       COMMAND_ID_HANDLER(ID_FILE_SAVE, OnFileSave)
@@ -110,6 +111,7 @@ public:
 
    LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
    LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
+   LRESULT OnSetFocus(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
 
    LRESULT OnFileNew(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled);
    LRESULT OnFileOpen(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled);

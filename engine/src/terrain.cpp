@@ -464,13 +464,13 @@ tResult cTerrain::GetTileVertices(uint tx, uint tz, tVec3 vertices[4]) const
 
 ////////////////////////////////////////
 
-tResult cTerrain::GetSceneEntity(ISceneEntity * * ppSceneEntity)
+tResult cTerrain::GetSceneEntities(std::vector<ISceneEntity *> * pSceneEntities)
 {
-   if (ppSceneEntity == NULL)
+   if (pSceneEntities == NULL)
    {
       return E_POINTER;
    }
-   *ppSceneEntity = &m_sceneEntity;
+   pSceneEntities->push_back(&m_sceneEntity);
    return S_OK;
 }
 

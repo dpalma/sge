@@ -78,7 +78,7 @@ public:
    uint SetTileTerrain(uint tx, uint tz, uint terrain);
    tResult GetTileVertices(uint tx, uint tz, tVec3 vertices[4]) const;
 
-   tResult GetSceneEntity(ISceneEntity * * ppSceneEntity);
+   tResult GetSceneEntities(std::vector<ISceneEntity *> * pSceneEntities);
 
 protected:
    class cSceneEntity : public cComObject<IMPLEMENTS(ISceneEntity)>

@@ -20,6 +20,7 @@
 class ENGINE_API cRay
 {
 public:
+   cRay();
    cRay(const tVec3 & origin, const tVec3 & direction);
    cRay(const cRay & ray);
    const cRay & operator =(const cRay & ray);
