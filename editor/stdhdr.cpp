@@ -2,3 +2,5 @@
 // $Id$
 
 #include "stdhdr.h"
+
+IMPLEMENT_DYNCREATE(cEditorControlBar, CSizingControlBarG)

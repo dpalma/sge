@@ -35,6 +35,7 @@
 
 class cEditorControlBar : public CSizingControlBarG
 {
+   DECLARE_DYNCREATE(cEditorControlBar)
 };
 
 #define _WTL_NO_AUTOMATIC_NAMESPACE
