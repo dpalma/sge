@@ -4,7 +4,6 @@
 #include "stdhdr.h"
 
 #include "config.h"
-#include "str.h"
 
 #include <cstdio>
 
@@ -32,7 +31,7 @@ IConfig * g_pConfig = static_cast<IConfig *>(&g_config);
 
 ///////////////////////////////////////
 
-bool cConfig::sStringLessNoCase::operator()(const tString lhs, const tString rhs) const
+bool cConfig::cStringLessNoCase::operator()(const cStr & lhs, const cStr & rhs) const
 {
    return (stricmp(lhs.c_str(), rhs.c_str()) < 0) ? true : false;
 }
@@ -123,12 +122,8 @@ tResult cConfig::Set(const char * name, int val)
 {
    char buffer[32];
    m_vars.erase(name);
-#ifndef __GNUC__   
-   m_vars.insert(std::make_pair(name, itoa(val, buffer, 10)));
-#else
-   sprintf(buffer, "%d", val);
+   snprintf(buffer, _countof(buffer), "%d", val);
    m_vars.insert(std::make_pair(name, (const char *)buffer));
-#endif   
    return S_OK;
 }
 

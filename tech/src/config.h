@@ -6,8 +6,8 @@
 
 #include "configapi.h"
 
+#include "str.h"
 #include <map>
-#include <string>
 
 #ifdef _MSC_VER
 #pragma once
@@ -45,14 +45,13 @@ public:
    virtual tResult ParseCmdLine(int argc, char *argv[]);
 
 private:
-   typedef std::basic_string<tChar> tString;
-
-   struct sStringLessNoCase
+   class cStringLessNoCase
    {
-      bool operator()(const tString lhs, const tString rhs) const;
+   public:
+      bool operator()(const cStr & lhs, const cStr & rhs) const;
    };
 
-   typedef std::map<tString, tString, sStringLessNoCase> tMap;
+   typedef std::map<cStr, cStr, cStringLessNoCase> tMap;
    tMap m_vars;
 };
 
