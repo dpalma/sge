@@ -505,6 +505,7 @@ LRESULT cMainFrame::OnFileNew(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHa
    if (CreateNewModel(&pModel) != S_OK || pModel->New(&mapSettings) != S_OK)
    {
       ErrorMsg("Error creating new document\n");
+      AtlMessageBox(m_hWnd, "Error creating new document", (LPCTSTR)NULL, MB_OK | MB_ICONERROR);
    }
    else
    {

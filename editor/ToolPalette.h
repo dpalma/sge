@@ -4,6 +4,8 @@
 #if !defined(INCLUDED_TOOLPALETTE_H)
 #define INCLUDED_TOOLPALETTE_H
 
+#include "TrackMouseEvent.h"
+
 #include <atlscrl.h>
 
 #include <string>
@@ -13,6 +15,9 @@
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
+
+class cToolItem;
+class cToolGroup;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -30,18 +35,27 @@ class cToolItem
    const cToolItem & operator =(const cToolItem &);
 
 public:
-   cToolItem(const tChar * pszName, int iImage, void * pUserData);
+   cToolItem(cToolGroup * pGroup, const tChar * pszName, int iImage, void * pUserData);
    ~cToolItem();
 
+   cToolGroup * GetGroup() const;
    const tChar * GetName() const;
    int GetImageIndex() const;
    void * GetUserData() const;
 
 private:
+   cToolGroup * m_pGroup;
    std::string m_name;
    int m_iImage;
    void * m_pUserData;
 };
+
+////////////////////////////////////////
+
+inline cToolGroup * cToolItem::GetGroup() const
+{
+   return m_pGroup;
+}
 
 ////////////////////////////////////////
 
@@ -84,6 +98,9 @@ public:
    uint GetToolCount() const;
    cToolItem * GetTool(uint index) const;
 
+   bool IsCollapsed() const;
+   void ToggleExpandCollapse();
+
    HTOOLITEM AddTool(const tChar * pszTool, int iImage, void * pUserData);
    bool RemoveTool(HTOOLITEM hTool);
    HTOOLITEM FindTool(const tChar * pszTool);
@@ -96,6 +113,8 @@ private:
 
    typedef std::vector<cToolItem *> tTools;
    tTools m_tools;
+
+   bool m_bCollapsed;
 };
 
 ////////////////////////////////////////
@@ -134,6 +153,20 @@ inline cToolItem * cToolGroup::GetTool(uint index) const
    return NULL;
 }
 
+////////////////////////////////////////
+
+inline bool cToolGroup::IsCollapsed() const
+{
+   return m_bCollapsed;
+}
+
+////////////////////////////////////////
+
+inline void cToolGroup::ToggleExpandCollapse()
+{
+   m_bCollapsed = !m_bCollapsed;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -164,7 +197,7 @@ public:
    inline void operator ()(const cToolGroup * pGroup) { Render(pGroup); }
 
 private:
-   int RenderGroupHeading(const cToolGroup * pGroup);
+   static int RenderGroupHeading(CDCHandle dc, LPRECT pRect, const cToolGroup * pGroup);
 
    typedef std::map<HANDLE, CRect> tCachedRects;
    tCachedRects m_cachedRects;
@@ -174,6 +207,7 @@ private:
    CRect m_rect;
    CPoint m_mousePos;
    bool m_bHaveMousePos;
+   int m_totalHeight;
 };
 
 
@@ -182,7 +216,8 @@ private:
 // CLASS: cToolPalette
 //
 
-class cToolPalette : public CScrollWindowImpl<cToolPalette>
+class cToolPalette : public CScrollWindowImpl<cToolPalette>,
+                     public cTrackMouseEvent<cToolPalette>
 {
    typedef CScrollWindowImpl<cToolPalette> tToolPaletteBase;
 
@@ -193,6 +228,7 @@ public:
    DECLARE_WND_CLASS("ToolPalette")
 
    BEGIN_MSG_MAP_EX(cToolPalette)
+      CHAIN_MSG_MAP(cTrackMouseEvent<cToolPalette>)
       MSG_WM_CREATE(OnCreate)
       MSG_WM_DESTROY(OnDestroy)
       MSG_WM_SIZE(OnSize)
@@ -228,6 +264,7 @@ public:
 
 private:
    void SetMouseOverItem(HANDLE hItem);
+   void DoClick(HANDLE hItem);
 
    tGroups m_groups;
 
@@ -235,8 +272,8 @@ private:
 
    CFont m_font;
 
-   bool m_bTrackingMouseLeave;
    HANDLE m_hMouseOverItem;
+   HANDLE m_hClickCandidateItem;
 };
 
 /////////////////////////////////////////////////////////////////////////////

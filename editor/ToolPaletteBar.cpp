@@ -282,15 +282,21 @@ LRESULT cToolPaletteBar::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL 
    ////////////////////////////////////////
    // TESTING
    ////////////////////////////////////////
-#if 0
-   HTOOLGROUP hToolGroup = m_toolPalette.AddGroup("Tool Group", NULL);
-   if (hToolGroup != NULL)
+#if 1
+   for (int i = 0; i < 3; i++)
    {
-      for (int i = 0; i < 5; i++)
+      tChar szTemp[200];
+      wsprintf(szTemp, "Group %c", 'A' + i);
+      HTOOLGROUP hToolGroup = m_toolPalette.AddGroup(szTemp, NULL);
+      if (hToolGroup != NULL)
       {
-         tChar szTool[200];
-         wsprintf(szTool, "Tool Item %d", i);
-         HTOOLITEM hTool = m_toolPalette.AddTool(hToolGroup, szTool, -1);
+         int nTools = 3 + (rand() & 3);
+         DebugMsg2("%s has %d tools\n", szTemp, nTools);
+         for (int j = 0; j < nTools; j++)
+         {
+            wsprintf(szTemp, "Tool %d", j);
+            HTOOLITEM hTool = m_toolPalette.AddTool(hToolGroup, szTemp, -1);
+         }
       }
    }
 #endif

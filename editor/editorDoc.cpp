@@ -117,10 +117,6 @@ tResult cEditorDoc::New(const cMapSettings * pMapSettings)
          }
       }
    }
-   else
-   {
-      bResult = TRUE;
-   }
 
    return bResult ? S_OK : E_FAIL;
 }

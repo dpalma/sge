@@ -461,6 +461,9 @@
 				RelativePath="..\..\editor\ToolPaletteBar.h">
 			</File>
 			<File
+				RelativePath="..\..\editor\TrackMouseEvent.h">
+			</File>
+			<File
 				RelativePath="..\..\editor\aboutdlg.h">
 			</File>
 			<File

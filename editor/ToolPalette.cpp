@@ -140,8 +140,9 @@ BOOL WINAPI DynamicGradientFill(HDC hdc,
 
 ////////////////////////////////////////
 
-cToolItem::cToolItem(const tChar * pszName, int iImage, void * pUserData)
- : m_name(pszName != NULL ? pszName : ""),
+cToolItem::cToolItem(cToolGroup * pGroup, const tChar * pszName, int iImage, void * pUserData)
+ : m_pGroup(pGroup),
+   m_name(pszName != NULL ? pszName : ""),
    m_iImage(iImage),
    m_pUserData(pUserData)
 {
@@ -163,7 +164,8 @@ cToolItem::~cToolItem()
 
 cToolGroup::cToolGroup(const tChar * pszName, HIMAGELIST hImageList)
  : m_name(pszName != NULL ? pszName : ""),
-   m_hImageList(hImageList)
+   m_hImageList(hImageList),
+   m_bCollapsed(false)
 {
 }
 
@@ -192,7 +194,7 @@ HTOOLITEM cToolGroup::AddTool(const tChar * pszTool, int iImage, void * pUserDat
          return hTool;
       }
 
-      cToolItem * pTool = new cToolItem(pszTool, iImage, pUserData);
+      cToolItem * pTool = new cToolItem(this, pszTool, iImage, pUserData);
       if (pTool != NULL)
       {
          m_tools.push_back(pTool);
@@ -286,7 +288,8 @@ void cToolGroup::Clear()
 ////////////////////////////////////////
 
 cToolPaletteRenderer::cToolPaletteRenderer()
- : m_bHaveMousePos(false)
+ : m_bHaveMousePos(false),
+   m_totalHeight(0)
 {
 }
 
@@ -296,7 +299,8 @@ cToolPaletteRenderer::cToolPaletteRenderer(const cToolPaletteRenderer & other)
  : m_dc(other.m_dc),
    m_rect(other.m_rect),
    m_mousePos(other.m_mousePos),
-   m_bHaveMousePos(other.m_bHaveMousePos)
+   m_bHaveMousePos(other.m_bHaveMousePos),
+   m_totalHeight(other.m_totalHeight)
 {
 }
 
@@ -314,6 +318,7 @@ const cToolPaletteRenderer & cToolPaletteRenderer::operator =(const cToolPalette
    m_rect = other.m_rect;
    m_mousePos = other.m_mousePos;
    m_bHaveMousePos = other.m_bHaveMousePos;
+   m_totalHeight = other.m_totalHeight;
    return *this;
 }
 
@@ -334,6 +339,7 @@ bool cToolPaletteRenderer::Begin(HDC hDC, LPCRECT pRect, const POINT * pMousePos
       {
          m_bHaveMousePos = false;
       }
+      m_totalHeight = 0;
       return true;
    }
    return false;
@@ -417,12 +423,28 @@ void cToolPaletteRenderer::Render(const cToolGroup * pGroup)
       return;
    }
 
-   int headingHeight = RenderGroupHeading(pGroup);
+   CRect r(m_rect);
+   r.top += m_totalHeight;
+
+   int headingHeight = RenderGroupHeading(m_dc, &r, pGroup);
+
+   if (headingHeight <= 0)
+   {
+      return;
+   }
+
+   m_cachedRects[reinterpret_cast<HANDLE>(const_cast<cToolGroup *>(pGroup))] = r;
+
+   if (pGroup->IsCollapsed())
+   {
+      m_totalHeight += r.Height();
+      return;
+   }
 
    HIMAGELIST hImageList = pGroup->GetImageList();
 
    CRect toolRect(m_rect);
-   toolRect.top += headingHeight;
+   toolRect.top += m_totalHeight + headingHeight;
 
    uint nTools = pGroup->GetToolCount();
    for (uint i = 0; i < nTools; i++)
@@ -489,45 +511,49 @@ void cToolPaletteRenderer::Render(const cToolGroup * pGroup)
          toolRect.OffsetRect(0, toolRect.Height());
       }
    }
+
+   m_totalHeight = toolRect.top;
 }
 
 ////////////////////////////////////////
 
-int cToolPaletteRenderer::RenderGroupHeading(const cToolGroup * pGroup)
+int cToolPaletteRenderer::RenderGroupHeading(CDCHandle dc, LPRECT pRect,
+                                             const cToolGroup * pGroup)
 {
    if ((pGroup == NULL) || (lstrlen(pGroup->GetName()) == 0))
    {
       return 0;
    }
 
-   Assert(!m_dc.IsNull());
+   Assert(!dc.IsNull());
+   Assert(pRect != NULL);
 
    CSize extent;
-   m_dc.GetTextExtent(pGroup->GetName(), -1, &extent);
+   dc.GetTextExtent(pGroup->GetName(), -1, &extent);
 
    extent.cy += (2 * kTextGap);
 
-   CRect r(m_rect);
-   r.bottom = r.top + extent.cy;
+   pRect->bottom = pRect->top + extent.cy;
 
-   m_dc.Draw3dRect(r, GetSysColor(COLOR_3DHILIGHT), GetSysColor(COLOR_3DSHADOW));
+   dc.Draw3dRect(pRect, GetSysColor(COLOR_3DHILIGHT), GetSysColor(COLOR_3DSHADOW));
 
-   r.DeflateRect(1, 1);
+   CRect textRect(*pRect);
+   textRect.DeflateRect(1, 1);
 
-   int halfWidth = r.Width() / 2;
+   int halfWidth = textRect.Width() / 2;
 
    COLORREF leftColor = GetSysColor(COLOR_3DSHADOW);
    COLORREF rightColor = GetSysColor(COLOR_3DFACE);
 
    TRIVERTEX gv[2];
-   gv[0].x = r.left;
-   gv[0].y = r.top;
+   gv[0].x = textRect.left;
+   gv[0].y = textRect.top;
    gv[0].Red = GetRValue16(leftColor);
    gv[0].Green = GetGValue16(leftColor);
    gv[0].Blue = GetBValue16(leftColor);
    gv[0].Alpha = 0;
-   gv[1].x = r.left + halfWidth;
-   gv[1].y = r.bottom; 
+   gv[1].x = textRect.left + halfWidth;
+   gv[1].y = textRect.bottom; 
    gv[1].Red = GetRValue16(rightColor);
    gv[1].Green = GetGValue16(rightColor);
    gv[1].Blue = GetBValue16(rightColor);
@@ -536,15 +562,15 @@ int cToolPaletteRenderer::RenderGroupHeading(const cToolGroup * pGroup)
    GRADIENT_RECT gr;
    gr.UpperLeft = 0;
    gr.LowerRight = 1;
-   DynamicGradientFill(m_dc, gv, _countof(gv), &gr, 1, GRADIENT_FILL_RECT_H);
+   DynamicGradientFill(dc, gv, _countof(gv), &gr, 1, GRADIENT_FILL_RECT_H);
 
-   m_dc.FillSolidRect(r.left + halfWidth, r.top, halfWidth, r.Height(), rightColor);
+   dc.FillSolidRect(textRect.left + halfWidth, textRect.top, halfWidth, textRect.Height(), rightColor);
 
-   r.left += kTextGap;
+   textRect.left += kTextGap;
 
-   m_dc.SetTextColor(GetSysColor(COLOR_WINDOWTEXT));
-   m_dc.SetBkMode(TRANSPARENT);
-   m_dc.DrawText(pGroup->GetName(), -1, &r, DT_SINGLELINE | DT_LEFT | DT_VCENTER | DT_END_ELLIPSIS);
+   dc.SetTextColor(GetSysColor(COLOR_WINDOWTEXT));
+   dc.SetBkMode(TRANSPARENT);
+   dc.DrawText(pGroup->GetName(), -1, &textRect, DT_SINGLELINE | DT_LEFT | DT_VCENTER | DT_END_ELLIPSIS);
 
    return extent.cy;
 }
@@ -558,8 +584,8 @@ int cToolPaletteRenderer::RenderGroupHeading(const cToolGroup * pGroup)
 ////////////////////////////////////////
 
 cToolPalette::cToolPalette()
- : m_bTrackingMouseLeave(false),
-   m_hMouseOverItem(NULL)
+ : m_hMouseOverItem(NULL),
+   m_hClickCandidateItem(NULL)
 {
 }
 
@@ -663,8 +689,6 @@ void cToolPalette::OnPaint(CDCHandle dc)
 
 void cToolPalette::OnMouseLeave()
 {
-   m_bTrackingMouseLeave = false;
-
    SetMouseOverItem(NULL);
 }
 
@@ -672,20 +696,6 @@ void cToolPalette::OnMouseLeave()
 
 void cToolPalette::OnMouseMove(UINT flags, CPoint point)
 {
-   // TODO: refactor use of TrackMouseEvent out into a "mix-in" class
-   // see cGLContext
-   if (!m_bTrackingMouseLeave)
-   {
-      TRACKMOUSEEVENT tme = {0};
-      tme.cbSize = sizeof(TRACKMOUSEEVENT);
-      tme.dwFlags = TME_LEAVE;
-      tme.hwndTrack = m_hWnd;
-      if (_TrackMouseEvent(&tme))
-      {
-         m_bTrackingMouseLeave = true;
-      }
-   }
-
    SetMouseOverItem(m_renderer.GetHitItem(point));
 }
 
@@ -693,12 +703,27 @@ void cToolPalette::OnMouseMove(UINT flags, CPoint point)
 
 void cToolPalette::OnLButtonDown(UINT flags, CPoint point)
 {
+   Assert(m_hClickCandidateItem == NULL);
+   m_hClickCandidateItem = m_renderer.GetHitItem(point);
+   if (m_hClickCandidateItem != NULL)
+   {
+      SetCapture();
+   }
 }
 
 ////////////////////////////////////////
 
 void cToolPalette::OnLButtonUp(UINT flags, CPoint point)
 {
+   if (m_hClickCandidateItem != NULL)
+   {
+      ReleaseCapture();
+      if (m_hClickCandidateItem == m_renderer.GetHitItem(point))
+      {
+         DoClick(m_hClickCandidateItem);
+      }
+      m_hClickCandidateItem = NULL;
+   }
 }
 
 ////////////////////////////////////////
@@ -850,6 +875,28 @@ void cToolPalette::SetMouseOverItem(HANDLE hItem)
       if ((hItem != NULL) && m_renderer.GetItemRect(hItem, &itemRect))
       {
          InvalidateRect(itemRect, FALSE);
+      }
+   }
+}
+
+////////////////////////////////////////
+
+void cToolPalette::DoClick(HANDLE hItem)
+{
+   if (hItem != NULL)
+   {
+      if (IsGroup(reinterpret_cast<HTOOLGROUP>(hItem)))
+      {
+         cToolGroup * pGroup = reinterpret_cast<cToolGroup *>(hItem);
+         pGroup->ToggleExpandCollapse();
+         m_renderer.FlushCachedRects();
+         Invalidate();
+      }
+      else
+      {
+         cToolItem * pTool = reinterpret_cast<cToolItem *>(hItem);
+         Assert(IsGroup(reinterpret_cast<HTOOLGROUP>(pTool->GetGroup())));
+         DebugMsg1("Tool \"%s\" clicked\n", pTool->GetName());
       }
    }
 }
