@@ -44,7 +44,8 @@ libengine_la_LIBADD = $(GL_LIBS) \
                       $(CORE_LIBS) \
                       -L$(top_builddir)/3rdparty/lua/src \
                       -L$(top_builddir)/3rdparty/lua/src/lib \
-                      -llua -llualib
+                      -L$(top_builddir)/3rdparty/tinyxml \
+                      -llua -llualib -ltinyxml
 
 INCLUDES = $(GL_CFLAGS) \
            -DENGINE_EXPORTS \
