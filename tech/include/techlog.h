@@ -74,12 +74,12 @@ extern TECH_API cLog techlog;
 #define ErrorMsg4(fmt,arg1,arg2,arg3,arg4)                  ErrorMsgIf4(1,fmt,arg1,arg2,arg3,arg4)
 #define ErrorMsg5(fmt,arg1,arg2,arg3,arg4,arg5)             ErrorMsgIf5(1,fmt,arg1,arg2,arg3,arg4,arg5)
 
-#define WarnMsgIf(expr,fmt)                                 do { if (expr) { techlog.Print(__FILE__,__LINE__,kWarn,(fmt)); } } while(0)
-#define WarnMsgIf1(expr,fmt,arg1)                           do { if (expr) { techlog.Print(__FILE__,__LINE__,kWarn,(fmt),(arg1)); } } while(0)
-#define WarnMsgIf2(expr,fmt,arg1,arg2)                      do { if (expr) { techlog.Print(__FILE__,__LINE__,kWarn,(fmt),(arg1),(arg2)); } } while(0)
-#define WarnMsgIf3(expr,fmt,arg1,arg2,arg3)                 do { if (expr) { techlog.Print(__FILE__,__LINE__,kWarn,(fmt),(arg1),(arg2),(arg3)); } } while(0)
-#define WarnMsgIf4(expr,fmt,arg1,arg2,arg3,arg4)            do { if (expr) { techlog.Print(__FILE__,__LINE__,kWarn,(fmt),(arg1),(arg2),(arg3),(arg4)); } } while(0)
-#define WarnMsgIf5(expr,fmt,arg1,arg2,arg3,arg4,arg5)       do { if (expr) { techlog.Print(__FILE__,__LINE__,kWarn,(fmt),(arg1),(arg2),(arg3),(arg4),(arg5)); } } while(0)
+#define WarnMsgIf(expr,fmt)                                 do { if (expr) { techlog.Print(__FILE__,__LINE__,kWarning,(fmt)); } } while(0)
+#define WarnMsgIf1(expr,fmt,arg1)                           do { if (expr) { techlog.Print(__FILE__,__LINE__,kWarning,(fmt),(arg1)); } } while(0)
+#define WarnMsgIf2(expr,fmt,arg1,arg2)                      do { if (expr) { techlog.Print(__FILE__,__LINE__,kWarning,(fmt),(arg1),(arg2)); } } while(0)
+#define WarnMsgIf3(expr,fmt,arg1,arg2,arg3)                 do { if (expr) { techlog.Print(__FILE__,__LINE__,kWarning,(fmt),(arg1),(arg2),(arg3)); } } while(0)
+#define WarnMsgIf4(expr,fmt,arg1,arg2,arg3,arg4)            do { if (expr) { techlog.Print(__FILE__,__LINE__,kWarning,(fmt),(arg1),(arg2),(arg3),(arg4)); } } while(0)
+#define WarnMsgIf5(expr,fmt,arg1,arg2,arg3,arg4,arg5)       do { if (expr) { techlog.Print(__FILE__,__LINE__,kWarning,(fmt),(arg1),(arg2),(arg3),(arg4),(arg5)); } } while(0)
 
 #define WarnMsg(fmt)                                        WarnMsgIf(1,fmt)
 #define WarnMsg1(fmt,arg1)                                  WarnMsgIf1(1,fmt,arg1)
