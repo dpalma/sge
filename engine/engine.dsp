@@ -214,6 +214,10 @@ SOURCE=.\src\3ds.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\animation.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\mesh.cpp
 # End Source File
 # Begin Source File
@@ -223,6 +227,10 @@ SOURCE=.\src\ms3d.cpp
 # Begin Source File
 
 SOURCE=.\src\ms3dread.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sim.cpp
 # End Source File
 # Begin Source File
 
@@ -272,6 +280,10 @@ SOURCE=.\src\stripify.h
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
+SOURCE=.\include\animation.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\include\enginedll.h
 # End Source File
 # Begin Source File
@@ -281,6 +293,10 @@ SOURCE=.\include\engineguids.h
 # Begin Source File
 
 SOURCE=.\include\mesh.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\sim.h
 # End Source File
 # Begin Source File
 

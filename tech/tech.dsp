@@ -210,10 +210,6 @@ LIB32=link.exe -lib
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\src\animation.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\comtools.cpp
 # End Source File
 # Begin Source File
@@ -343,10 +339,6 @@ SOURCE=.\src\stdhdr.h
 # Begin Group ".\include"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
-# Begin Source File
-
-SOURCE=.\include\animation.h
-# End Source File
 # Begin Source File
 
 SOURCE=.\include\combase.h

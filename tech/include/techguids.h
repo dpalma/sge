@@ -24,7 +24,6 @@ DEFINE_TECH_GUID(IID_IWindowSink, 0xC);
 DEFINE_TECH_GUID(IID_IWindowX11, 0xD);
 DEFINE_TECH_GUID(IID_IResourceManager, 0xE);
 DEFINE_TECH_GUID(IID_IWindowFullScreen, 0xF);
-DEFINE_TECH_GUID(IID_IKeyFrameInterpolator, 0x10);
 
 ///////////////////////////////////////////////////////////////////////////////
 

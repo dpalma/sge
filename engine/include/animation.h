@@ -4,7 +4,7 @@
 #ifndef INCLUDED_ANIMATION_H
 #define INCLUDED_ANIMATION_H
 
-#include "techdll.h"
+#include "enginedll.h"
 #include "combase.h"
 
 #include "quat.h"
@@ -48,11 +48,11 @@ interface IKeyFrameInterpolator : IUnknown
 
 ///////////////////////////////////////
 
-TECH_API tResult KeyFrameInterpolatorCreate(const char * pszName,
-                                            const sKeyFrameVec3 * pScaleKeys, uint nScaleKeys,
-                                            const sKeyFrameQuat * pRotationKeys, uint nRotationKeys,
-                                            const sKeyFrameVec3 * pTranslationKeys, uint nTranslationKeys,
-                                            IKeyFrameInterpolator * * ppInterpolator);
+ENGINE_API tResult KeyFrameInterpolatorCreate(const char * pszName,
+                                              const sKeyFrameVec3 * pScaleKeys, uint nScaleKeys,
+                                              const sKeyFrameQuat * pRotationKeys, uint nRotationKeys,
+                                              const sKeyFrameVec3 * pTranslationKeys, uint nTranslationKeys,
+                                              IKeyFrameInterpolator * * ppInterpolator);
 
 ///////////////////////////////////////////////////////////////////////////////
 

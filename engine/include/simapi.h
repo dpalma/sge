@@ -4,6 +4,7 @@
 #ifndef INCLUDED_SIM_H
 #define INCLUDED_SIM_H
 
+#include "enginedll.h"
 #include "comtools.h"
 #include "connpt.h"
 
@@ -41,7 +42,7 @@ interface ISim : IUnknown
 
 #define kSimObjName "Sim"
 
-void SimCreate();
+ENGINE_API void SimCreate();
 
 ///////////////////////////////////////////////////////////////////////////////
 //

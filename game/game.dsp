@@ -239,10 +239,6 @@ SOURCE=.\scriptvm.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\sim.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\stdhdr.cpp
 # ADD CPP /Yc"stdhdr.h"
 # End Source File
@@ -350,10 +346,6 @@ SOURCE=.\script.h
 # Begin Source File
 
 SOURCE=.\scriptvm.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\sim.h
 # End Source File
 # Begin Source File
 
