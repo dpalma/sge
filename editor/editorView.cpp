@@ -279,9 +279,9 @@ cEditorDoc* cEditorView::GetDocument() // non-debug version is inline
 cEditorView::cSceneEntity::cSceneEntity(cEditorView * pOuter)
  : m_pOuter(pOuter),
    m_translation(0,0,0),
-   m_rotation(0,0,0,1)
+   m_rotation(0,0,0,1),
+   m_transform(tMatrix4::GetIdentity())
 {
-   m_transform.Identity();
 }
 
 ////////////////////////////////////////

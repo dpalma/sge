@@ -275,7 +275,8 @@ static bool GetPickVector(ISceneCamera * pCamera, float ndx, float ndy, tVec3 * 
 
    const tMatrix4 & m = pCamera->GetViewProjectionInverseMatrix();
 
-   tVec4 n = m.Transform(tVec4(ndx, ndy, -1, 1));
+   tVec4 n;
+   m.Transform(tVec4(ndx, ndy, -1, 1), &n);
    if (n.w == 0.0f)
    {
       return false;
@@ -284,7 +285,8 @@ static bool GetPickVector(ISceneCamera * pCamera, float ndx, float ndy, tVec3 * 
    n.y /= n.w;
    n.z /= n.w;
 
-   tVec4 f = m.Transform(tVec4(ndx, ndy, 1, 1));
+   tVec4 f;
+   m.Transform(tVec4(ndx, ndy, 1, 1), &f);
    if (f.w == 0.0f)
    {
       return false;
