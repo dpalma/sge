@@ -5,7 +5,7 @@
 
 #include "meshapi.h"
 #include "skeleton.h"
-#include "render.h"
+#include "renderapi.h"
 #include "material.h"
 #include "vec3.h"
 #include "resmgr.h"

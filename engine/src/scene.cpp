@@ -6,7 +6,7 @@
 #include "scene.h"
 #include "frustum.h"
 
-#include "render.h"
+#include "renderapi.h"
 
 #include "matrix4.h"
 

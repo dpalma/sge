@@ -10,7 +10,7 @@
 
 #include "sceneapi.h"
 
-#include "render.h"
+#include "renderapi.h"
 
 #ifdef _DEBUG
 #include "font.h"

@@ -4,7 +4,7 @@
 #include "stdhdr.h"
 
 #include "meshapi.h"
-#include "render.h"
+#include "renderapi.h"
 #include "material.h"
 #include "comtools.h"
 #include "str.h"

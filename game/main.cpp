@@ -16,7 +16,7 @@
 #include "inputapi.h"
 #include "engineapi.h"
 
-#include "render.h"
+#include "renderapi.h"
 #include "textureapi.h"
 
 #include "scriptvar.h"

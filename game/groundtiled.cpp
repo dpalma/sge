@@ -8,7 +8,7 @@
 
 #include "ray.h"
 
-#include "render.h"
+#include "renderapi.h"
 #include "material.h"
 #include "textureapi.h"
 #include "color.h"

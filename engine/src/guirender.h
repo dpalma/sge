@@ -6,7 +6,7 @@
 
 #include "guiapi.h"
 
-#include "render.h"
+#include "renderapi.h"
 
 #include "globalobj.h"
 

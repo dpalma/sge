@@ -7,7 +7,7 @@
 #include "guiapi.h"
 #include "scriptapi.h"
 
-#include "render.h"
+#include "renderapi.h"
 
 #include "resmgr.h"
 #include "readwriteapi.h"

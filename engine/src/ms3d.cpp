@@ -12,7 +12,7 @@
 #include "vec3.h"
 #include "imagedata.h"
 #include "color.h"
-#include "render.h"
+#include "renderapi.h"
 #include "resmgr.h"
 #include "globalobj.h"
 #include "animation.h"

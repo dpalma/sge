@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "render.h"
+#include "renderapi.h"
 #include "scenecamera.h"
 
 #include "dbgalloc.h" // must be last header
