@@ -67,7 +67,8 @@ class cMainFrame : public dockwins::CDockingFrameImpl<cMainFrame>,
    {
       IDW_DOCKINGWINDOW_FIRST = 0xE800,
       IDW_DOCKINGWINDOW_LAST = 0xE8FF,
-      WM_POST_CREATE = WMDF_LAST + 1
+      WM_POST_CREATE = WMDF_LAST + 1,
+      kStandardToolbarBandId = ATL_IDW_BAND_FIRST + 1, // plus 1 because it's after the menu bar
    };
 
 public:
@@ -96,6 +97,12 @@ public:
    END_MSG_MAP()
 
    BEGIN_UPDATE_UI_MAP(cMainFrame)
+      UPDATE_ELEMENT(ID_EDIT_UNDO, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
+      UPDATE_ELEMENT(ID_EDIT_REDO, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
+      UPDATE_ELEMENT(ID_EDIT_CUT, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
+      UPDATE_ELEMENT(ID_EDIT_COPY, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
+      UPDATE_ELEMENT(ID_EDIT_PASTE, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
+      UPDATE_ELEMENT(ID_EDIT_DELETE, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
       UPDATE_ELEMENT(ID_VIEW_TOOLBAR, UPDUI_MENUPOPUP)
       UPDATE_ELEMENT(ID_VIEW_STATUS_BAR, UPDUI_MENUPOPUP)
    END_UPDATE_UI_MAP()
@@ -124,6 +131,9 @@ public:
 
    tResult SetModel(IEditorModel * pModel);
    tResult GetModel(IEditorModel * * ppModel);
+
+   bool IsToolbarVisible() const;
+   void ToggleToolbar();
 
 private:
    bool m_bPromptForMapSettings;

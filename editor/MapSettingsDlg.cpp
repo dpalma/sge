@@ -162,6 +162,8 @@ LRESULT cMapSettingsDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
    DoRadioButtonEnabling(0,0,NULL,unused);
    PopulateInitialTileComboBox(true);
 
+   CenterWindow(GetParent());
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }

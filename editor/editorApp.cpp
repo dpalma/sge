@@ -654,7 +654,7 @@ void RunUnitTests()
    }
 #endif
 #else
-   AtlMessageBox(IDS_NO_UNIT_TESTS, NULL);
+   AtlMessageBox(GetFocus(), IDS_NO_UNIT_TESTS, IDR_MAINFRAME);
 #endif
 }
 

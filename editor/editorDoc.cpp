@@ -40,7 +40,9 @@ void FlushCommandStack(std::stack<IEditorCommand *> * pCommandStack)
 
 ////////////////////////////////////////
 
+#if _ATL_VER >= 0x0700
 OBJECT_ENTRY_AUTO(CLSID_EditorDoc, cEditorDoc)
+#endif
 
 ////////////////////////////////////////
 

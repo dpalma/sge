@@ -48,7 +48,9 @@ static tVec3 CalcEyePoint(const tVec3 & center,
 
 ////////////////////////////////////////
 
+#if _ATL_VER >= 0x0700
 OBJECT_ENTRY_AUTO(CLSID_EditorView, cEditorView)
+#endif
 
 ////////////////////////////////////////
 
@@ -94,13 +96,13 @@ tResult cEditorView::Create(HWND hWndParent, HWND * phWnd)
       return E_POINTER;
    }
 
-   if (tWindowImplBase::Create(hWndParent))
+   if (!tWindowImplBase::Create(hWndParent, rcDefault))
    {
-      *phWnd = m_hWnd;
-      return S_OK;
+      return E_FAIL;
    }
 
-   return E_FAIL;
+   *phWnd = m_hWnd;
+   return S_OK;
 }
 
 ////////////////////////////////////////

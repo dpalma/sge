@@ -4,7 +4,7 @@
 #include "stdhdr.h"
 
 #include "MainFrm.h"
-
+#include "MenuItemInfo.h"
 #include "editorView.h"
 #include "editorCtrlBars.h"
 #include "aboutdlg.h"
@@ -214,13 +214,8 @@ bool cDockingWindowMenu::UpdateMenu()
    {
       if (!m_originalText.IsEmpty())
       {
-         CMenuItemInfo mii;
-         mii.fMask = MIIM_ID | MIIM_STRING | MIIM_STATE;
-         mii.wID = m_idFirst;
-         mii.fState = MFS_DISABLED;
-         mii.dwTypeData = const_cast<LPSTR>((LPCTSTR)m_originalText);
-         mii.cch = m_originalText.GetLength();
-         if (m_menu.InsertMenuItem(insertPoint, TRUE, &mii))
+         cMenuItemInfoEx menuItem(m_idFirst, m_originalText, MFS_DISABLED);
+         if (m_menu.InsertMenuItem(insertPoint, TRUE, &menuItem))
          {
             return true;
          }
@@ -238,17 +233,9 @@ bool cDockingWindowMenu::UpdateMenu()
 
          FixAmpersands(title, &title);
 
-         CMenuItemInfo mii;
-         mii.fMask = MIIM_ID | MIIM_STRING;
-         mii.wID = m_idFirst + index;
-         mii.dwTypeData = const_cast<LPSTR>((LPCTSTR)title);
-         mii.cch = title.GetLength();
-         if ((*iter)->IsWindowVisible())
-         {
-            mii.fMask |= MIIM_STATE;
-            mii.fState |= MFS_CHECKED;
-         }
-         if (!m_menu.InsertMenuItem(insertPoint + index, TRUE, &mii))
+         cMenuItemInfoEx menuItem(m_idFirst + index, title, (*iter)->IsWindowVisible() ? MFS_CHECKED : MFS_UNCHECKED);
+
+         if (!m_menu.InsertMenuItem(insertPoint + index, TRUE, &menuItem))
          {
             return false;
          }
@@ -381,9 +368,13 @@ LRESULT cMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
       return -1;
    }
 
-   CreateSimpleReBar(ATL_SIMPLE_REBAR_NOBORDER_STYLE);
-   AddSimpleReBarBand(hWndCmdBar);
-   AddSimpleReBarBand(hWndToolBar, NULL, TRUE);
+   if (!CreateSimpleReBar(ATL_SIMPLE_REBAR_NOBORDER_STYLE)
+      || !AddSimpleReBarBand(hWndCmdBar)
+      || !AddSimpleReBarBandCtrl(m_hWndToolBar, hWndToolBar, kStandardToolbarBandId, NULL, TRUE))
+   {
+      ErrorMsg("Error creating main window\n");
+      return -1;
+   }
 
    UIAddToolBar(hWndToolBar);
 
@@ -404,7 +395,14 @@ LRESULT cMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
    CreateDockingWindows();
 
-   // App starts of with a File->New command
+   UIEnable(ID_EDIT_UNDO, FALSE);
+   UIEnable(ID_EDIT_REDO, FALSE);
+   UIEnable(ID_EDIT_CUT, FALSE);
+   UIEnable(ID_EDIT_COPY, FALSE);
+   UIEnable(ID_EDIT_PASTE, FALSE);
+   UIEnable(ID_EDIT_DELETE, FALSE);
+
+   // App starts off with a File->New command
    SendMessage(WM_COMMAND, ID_FILE_NEW);
 
    // Once the app starts, every File->New should prompt for map settings
@@ -584,7 +582,7 @@ LRESULT cMainFrame::OnFileExit(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bH
 
 LRESULT cMainFrame::OnViewToolBar(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled)
 {
-   // TODO
+   ToggleToolbar();
    return 0;
 }
 
@@ -592,7 +590,9 @@ LRESULT cMainFrame::OnViewToolBar(WORD notifyCode, WORD id, HWND hWndCtl, BOOL &
 
 LRESULT cMainFrame::OnViewStatusBar(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled)
 {
-   // TODO
+	BOOL bShow = !::IsWindowVisible(m_hWndStatusBar);
+	::ShowWindow(m_hWndStatusBar, bShow ? SW_SHOWNOACTIVATE : SW_HIDE);
+	UpdateLayout();
    return 0;
 }
 
@@ -609,7 +609,7 @@ LRESULT cMainFrame::OnToolsUnitTestRunner(WORD notifyCode, WORD id, HWND hWndCtl
 
 LRESULT cMainFrame::OnAppAbout(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled)
 {
-	cAboutDlg().DoModal();
+	cAboutDlg().DoModal(m_hWnd);
    return 0;
 }
 
@@ -647,10 +647,43 @@ BOOL cMainFrame::PreTranslateMessage(MSG * pMsg)
 BOOL cMainFrame::OnIdle()
 {
    UIUpdateToolBar();
-   //UISetCheck(ID_VIEW_TOOLBAR, IsToolbarVisible());
+   UISetCheck(ID_VIEW_TOOLBAR, IsToolbarVisible());
    UISetCheck(ID_VIEW_STATUS_BAR, ::IsWindowVisible(m_hWndStatusBar));
    m_dockingWindowMenu.UpdateMenu();
    return FALSE;
+}
+
+////////////////////////////////////////
+
+bool cMainFrame::IsToolbarVisible() const
+{
+   CReBarCtrl rebar(m_hWndToolBar);
+   int iBand = rebar.IdToIndex(kStandardToolbarBandId);
+   if (iBand == -1)
+   {
+      WarnMsg1("Failed to get index of rebar band with ID %x\n", kStandardToolbarBandId);
+      return false;
+   }
+   REBARBANDINFO bandInfo = {0};
+   bandInfo.cbSize = sizeof(REBARBANDINFO);
+   bandInfo.fMask = ~0;
+   rebar.GetBandInfo(iBand, &bandInfo);
+   return (::IsWindow(bandInfo.hwndChild) && ::IsWindowVisible(bandInfo.hwndChild));
+}
+
+////////////////////////////////////////
+
+void cMainFrame::ToggleToolbar()
+{
+   CReBarCtrl rebar(m_hWndToolBar);
+   int iBand = rebar.IdToIndex(kStandardToolbarBandId);
+   if (iBand == -1)
+   {
+      WarnMsg1("Failed to get index of rebar band with ID %x\n", kStandardToolbarBandId);
+      return;
+   }
+   rebar.ShowBand(iBand, !IsToolbarVisible());
+   UpdateLayout();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

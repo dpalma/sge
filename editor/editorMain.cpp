@@ -9,6 +9,12 @@
 #include "inputapi.h"
 #include "scriptapi.h"
 
+#if _ATL_VER < 0x0700
+// header files required to build ATL 3.0 object map
+#include "editorDoc.h"
+#include "editorView.h"
+#endif
+
 #include "textureapi.h"
 
 #include "resmgr.h"
@@ -25,6 +31,15 @@
 /////////////////////////////////////////////////////////////////////////////
 
 CAppModule _Module;
+
+/////////////////////////////////////////////////////////////////////////////
+
+#if _ATL_VER < 0x0700
+BEGIN_OBJECT_MAP(g_objectMap)
+   OBJECT_ENTRY(CLSID_EditorDoc, cEditorDoc)
+   OBJECT_ENTRY(CLSID_EditorView, cEditorView)
+END_OBJECT_MAP()
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -56,15 +71,25 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/,
 
    AtlInitCommonControls(ICC_COOL_CLASSES | ICC_BAR_CLASSES);
 
+#if _ATL_VER < 0x0700
+   if (FAILED(_Module.Init(g_objectMap, hInstance)))
+#else
    if (FAILED(_Module.Init(NULL, hInstance)))
+#endif
    {
       ErrorMsg("ATL module failed to start!\n");
       return -1;
    }
 
-   if (FAILED(_Module.RegisterClassObjects(CLSCTX_INPROC_SERVER, REGCLS_MULTIPLEUSE)))
+   if (FAILED(_Module.RegisterClassObjects(CLSCTX_LOCAL_SERVER, REGCLS_MULTIPLEUSE | REGCLS_SUSPENDED)))
    {
       ErrorMsg("ATL module failed to register class objects!\n");
+      return -1;
+   }
+
+   if (FAILED(CoResumeClassObjects()))
+   {
+      ErrorMsg("Failed to resume class objects!\n");
       return -1;
    }
 
