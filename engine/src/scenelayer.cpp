@@ -230,8 +230,8 @@ tResult cSceneLayer::Query(const cRay & ray, tSceneEntityList * pEntities)
 
 bool cSceneLayer::HandleMouseEvent(int x, int y, uint mouseState, double time)
 {
-   tInputListeners::iterator iter;
-   for (iter = m_inputListeners.begin(); iter != m_inputListeners.end(); iter++)
+   tInputListeners::reverse_iterator iter;
+   for (iter = m_inputListeners.rbegin(); iter != m_inputListeners.rend(); iter++)
    {
       if ((*iter)->OnMouseEvent(x, y, mouseState, time))
       {
@@ -246,8 +246,8 @@ bool cSceneLayer::HandleMouseEvent(int x, int y, uint mouseState, double time)
 
 bool cSceneLayer::HandleKeyEvent(long key, bool down, double time)
 {
-   tInputListeners::iterator iter;
-   for (iter = m_inputListeners.begin(); iter != m_inputListeners.end(); iter++)
+   tInputListeners::reverse_iterator iter;
+   for (iter = m_inputListeners.rbegin(); iter != m_inputListeners.rend(); iter++)
    {
       if ((*iter)->OnKeyEvent(key, down, time))
       {
