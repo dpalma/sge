@@ -233,7 +233,7 @@ inline cVec3<T> operator /(const cVec3<T> & a, typename cVec3<T>::value_type div
 ///////////////////////////////////////
 
 template <typename T>
-inline typename T Vec3DistanceSqr(const cVec3<T> & v1, const cVec3<T> & v2)
+inline T Vec3DistanceSqr(const cVec3<T> & v1, const cVec3<T> & v2)
 {
    return sqr(v2.x - v1.x) + sqr(v2.y - v1.y) + sqr(v2.z - v1.z);
 }
@@ -241,7 +241,7 @@ inline typename T Vec3DistanceSqr(const cVec3<T> & v1, const cVec3<T> & v2)
 ///////////////////////////////////////
 
 template <typename T>
-inline typename T Vec3Distance(const cVec3<T> & v1, const cVec3<T> & v2)
+inline T Vec3Distance(const cVec3<T> & v1, const cVec3<T> & v2)
 {
    Assert(!"Don't use default version of Vec3Distance");
    return 0;
@@ -263,7 +263,7 @@ inline float Vec3Distance(const cVec3<float> & v1, const cVec3<float> & v2)
 // Assumes 'u' is in the range [0..1]
 
 template <typename T>
-inline cVec3<T> Vec3Lerp(const cVec3<T> & v1, const cVec3<T> & v2, typename T u)
+inline cVec3<T> Vec3Lerp(const cVec3<T> & v1, const cVec3<T> & v2, T u)
 {
    return (v1 * (1 - u)) + (v2 * u);
 }

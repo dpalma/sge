@@ -212,7 +212,7 @@ inline typename cVec2<T>::value_type Vec2DistanceSqr(const cVec2<T> & v1, const 
 ///////////////////////////////////////
 
 template <typename T>
-inline typename T Vec2Distance(const cVec2<T> & v1, const cVec2<T> & v2)
+inline T Vec2Distance(const cVec2<T> & v1, const cVec2<T> & v2)
 {
    Assert(!"Don't use default version of Vec2Distance");
    return 0;
@@ -234,7 +234,7 @@ inline float Vec2Distance(const cVec2<float> & v1, const cVec2<float> & v2)
 // Assumes 'u' is in the range [0..1]
 
 template <typename T>
-inline cVec2<T> Vec2Lerp(const cVec2<T> & v1, const cVec2<T> & v2, typename cVec2<T>::value_type u)
+inline cVec2<T> Vec2Lerp(const cVec2<T> & v1, const cVec2<T> & v2, T u)
 {
    return (v1 * (1 - u)) + (v2 * u);
 }

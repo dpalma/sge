@@ -218,7 +218,7 @@ inline cVec4<T> operator /(const cVec4<T> & a, typename cVec4<T>::value_type div
 ///////////////////////////////////////
 
 template <typename T>
-inline typename T Dot(const cVec4<T> & a, const cVec4<T> & b)
+inline T Dot(const cVec4<T> & a, const cVec4<T> & b)
 {
    return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
 }
