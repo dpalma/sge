@@ -4,11 +4,14 @@
 #if !defined(INCLUDED_EDITORVIEW_H)
 #define INCLUDED_EDITORVIEW_H
 
+#include "glView.h"
 #include "editorapi.h"
 #include "afxcomtools.h"
+#include "groundtiled.h"
 
 #include "vec3.h"
 #include "window.h"
+#include "connptimpl.h"
 
 #if _MSC_VER > 1000
 #pragma once
@@ -25,8 +28,10 @@ class cEditorDoc;
 // CLASS: cEditorView
 //
 
-class cEditorView : public CView,
-                    public cComObject<IMPLEMENTS(IEditorLoopClient), cAfxComServices<cEditorView> >
+class cEditorView : public cGLView,
+                    public cComObject2<IMPLEMENTSCP(IWindow, IWindowSink),
+                                       IMPLEMENTS(IEditorLoopClient),
+                                       cAfxComServices<cEditorView> >
 {
 protected: // create from serialization only
 	cEditorView();
@@ -40,15 +45,22 @@ public:
 public:
    inline IRenderDevice * AccessRenderDevice() { return m_pRenderDevice; }
 
+   virtual tResult Create(int width, int height, int bpp, const char * pszTitle = NULL);
+   virtual tResult GetWindowInfo(sWindowInfo * pInfo) const;
+   virtual tResult SwapBuffers();
+
    virtual void OnFrame(double time, double elapsed);
+
+   void RenderScene();
 
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(cEditorView)
 	public:
 	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
-	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	virtual void OnInitialUpdate();
+	protected:
+	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -67,18 +79,16 @@ protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnDestroy();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
-	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
 private:
-   HDC m_hDC;
-   HGLRC	m_hRC;
-
    cAutoIPtr<IRenderDevice> m_pRenderDevice;
 
    tVec3 m_center, m_eye;
    cAutoIPtr<ISceneCamera> m_pCamera;
+
+   cAutoIPtr<cTerrainNode> m_pTerrainRoot;
 };
 
 #ifndef _DEBUG  // debug version in editorView.cpp

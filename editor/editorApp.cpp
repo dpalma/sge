@@ -11,11 +11,19 @@
 
 #include "sceneapi.h"
 #include "inputapi.h"
+#include "scriptapi.h"
+
+#include "textureapi.h"
 
 #include "resmgr.h"
+#include "configapi.h"
 #include "globalobj.h"
 #include "techtime.h"
 #include "connptimpl.h"
+#include "readwriteapi.h"
+#include "filespec.h"
+#include "filepath.h"
+#include "str.h"
 
 #include "resource.h"       // main symbols
 
@@ -61,14 +69,70 @@ IEditorApp * AccessEditorApp()
 /////////////////////////////////////////////////////////////////////////////
 // cEditorApp initialization
 
+static bool ScriptExecFile(const char * pszFile)
+{
+   UseGlobal(ScriptInterpreter);
+   return pScriptInterpreter->ExecFile(pszFile) == S_OK;
+}
+
+static bool ScriptExecString(const char * pszCode)
+{
+   UseGlobal(ScriptInterpreter);
+   return pScriptInterpreter->ExecString(pszCode) == S_OK;
+}
+
+static void ScriptCallFunction(const char * pszName, const char * pszArgDesc, ...)
+{
+   UseGlobal(ScriptInterpreter);
+   va_list args;
+   va_start(args, pszArgDesc);
+   pScriptInterpreter->CallFunction(pszName, pszArgDesc, args);
+   va_end(args);
+}
+
+static char * GetEntireContents(IReader * pReader)
+{
+   Assert(pReader != NULL);
+
+   pReader->Seek(0, kSO_End);
+   int length = pReader->Tell();
+   pReader->Seek(0, kSO_Set);
+
+   char * pszContents = new char[length + 1];
+
+   if (pReader->Read(pszContents, length) != S_OK)
+   {
+      delete [] pszContents;
+      return NULL;
+   }
+
+   pszContents[length] = 0;
+
+   return pszContents;
+}
+
+static bool ScriptExecResource(const char * pszResource)
+{
+   UseGlobal(ResourceManager);
+   cAutoIPtr<IReader> pReader = pResourceManager->Find(pszResource);
+   if (!pReader)
+      return false;
+   char * pszCode = GetEntireContents(pReader);
+   if (pszCode == NULL)
+      return false;
+   bool result = ScriptExecString(pszCode);
+   delete [] pszCode;
+   return result;
+}
+
 static void RegisterGlobalObjects()
 {
    InputCreate();
 //   SimCreate();
    ResourceManagerCreate();
    SceneCreate();
-//   ScriptInterpreterCreate();
-//   TextureManagerCreate();
+   ScriptInterpreterCreate();
+   TextureManagerCreate();
 //   GUIContextCreate();
 //   GUIFactoryCreate();
 //   GUIRenderingToolsCreate();
@@ -97,7 +161,11 @@ BOOL cEditorApp::InitInstance()
 	LoadStdProfileSettings();  // Load standard INI file options (including MRU)
 
    RegisterGlobalObjects();
-   StartGlobalObjects();
+   if (FAILED(StartGlobalObjects()))
+   {
+      DebugMsg("One or more application-level services failed to start!\n");
+      return FALSE;
+   }
 
 	// Register the application's document templates.  Document templates
 	//  serve as the connection between documents, frame windows and views.
@@ -108,6 +176,34 @@ BOOL cEditorApp::InitInstance()
 		RUNTIME_CLASS(CMainFrame),       // main SDI frame window
 		RUNTIME_CLASS(cEditorView));
 	AddDocTemplate(pDocTemplate);
+
+   cFileSpec file(__argv[0]);
+   file.SetPath(cFilePath());
+   file.SetFileExt("cfg");
+
+   cAutoIPtr<IConfigStore> pConfigStore = CreateTextConfigStore(file);
+   pConfigStore->Load(g_pConfig);
+
+   g_pConfig->ParseCmdLine(__argc, __argv);
+
+   cStr temp;
+   if (ConfigGet("data", &temp) == S_OK)
+   {
+      UseGlobal(ResourceManager);
+      pResourceManager->AddSearchPath(temp);
+   }
+
+   cStr autoExecScript("editor.lua");
+   ConfigGet("editor_autoexec_script", &autoExecScript);
+
+   if (!ScriptExecFile(autoExecScript))
+   {
+      if (!ScriptExecResource(autoExecScript))
+      {
+         DebugMsg1("Error parsing or executing %s\n", autoExecScript.c_str());
+         return FALSE;
+      }
+   }
 
 	// Parse command line for standard shell commands, DDE, file open
 	CCommandLineInfo cmdInfo;
@@ -137,8 +233,7 @@ int cEditorApp::ExitInstance()
 // App command to run the dialog
 void cEditorApp::OnAppAbout()
 {
-	CAboutDlg aboutDlg;
-	aboutDlg.DoModal();
+	CAboutDlg().DoModal();
 }
 
 int cEditorApp::Run() 
@@ -146,7 +241,7 @@ int cEditorApp::Run()
    ASSERT_VALID(this);
 
    // for tracking the idle time state
-   BOOL bIdle = TRUE;
+   bool bIdle = true;
    long lIdleCount = 0;
 
    double timeLastFrame = TimeGetSecs();
@@ -163,7 +258,7 @@ int cEditorApp::Run()
       {
          // call OnIdle while in bIdle state
          if (!OnIdle(lIdleCount++))
-            bIdle = FALSE; // assume "no idle" state
+            bIdle = false; // assume "no idle" state
       }
 
 #if _MFC_VER >= 0x0700
@@ -183,7 +278,7 @@ int cEditorApp::Run()
          // reset "no idle" state after pumping "normal" message
          if (IsIdleMessage(pMsg))
          {
-            bIdle = TRUE;
+            bIdle = true;
             lIdleCount = 0;
          }
       }
@@ -200,7 +295,7 @@ int cEditorApp::Run()
       time = TimeGetSecs();
    }
 
-   Assert(!"Should never reach this point!");  // not reachable
+   Assert(!"Should never reach this point!"); // not reachable
 }
 
 tResult cEditorApp::AddLoopClient(IEditorLoopClient * pLoopClient)

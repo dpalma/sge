@@ -1,8 +1,8 @@
 /////////////////////////////////////////////////////////////////////////////
 // $Id$
 
-#if !defined(INCLUDED_EDITORDOC_H)
-#define INCLUDED_EDITORDOC_H
+#if !defined(INCLUDED_GLVIEW_H)
+#define INCLUDED_GLVIEW_H
 
 #if _MSC_VER > 1000
 #pragma once
@@ -10,14 +10,13 @@
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cEditorDoc
+// CLASS: cGLView
 //
 
-class cEditorDoc : public CDocument
+class cGLView : public CView
 {
-protected: // create from serialization only
-	cEditorDoc();
-	DECLARE_DYNCREATE(cEditorDoc)
+protected:
+	cGLView();
 
 // Attributes
 public:
@@ -27,33 +26,35 @@ public:
 
 // Overrides
 	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(cEditorDoc)
+	//{{AFX_VIRTUAL(cGLView)
 	public:
-	virtual BOOL OnNewDocument();
-	virtual void Serialize(CArchive& ar);
-	virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
-	virtual void DeleteContents();
+	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	//}}AFX_VIRTUAL
 
 // Implementation
 public:
-	virtual ~cEditorDoc();
+	virtual ~cGLView();
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;
 #endif
 
 protected:
+   HDC GetSafeHdc() const { return (this == NULL) ? NULL : m_hDC; }
+   HGLRC GetSafeHglrc() const { return (this == NULL) ? NULL : m_hRC; }
 
 // Generated message map functions
 protected:
-	//{{AFX_MSG(cEditorDoc)
-		// NOTE - the ClassWizard will add and remove member functions here.
-		//    DO NOT EDIT what you see in these blocks of generated code !
+	//{{AFX_MSG(cGLView)
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg void OnDestroy();
+	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
 private:
+   HDC m_hDC;
+   HGLRC	m_hRC;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -61,4 +62,4 @@ private:
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#endif // !defined(INCLUDED_EDITORDOC_H)
+#endif // !defined(INCLUDED_GLVIEW_H)

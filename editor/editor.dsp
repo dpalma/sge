@@ -56,7 +56,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /machine:I386
-# ADD LINK32 opengl32.lib glu32.lib winmm.lib /nologo /subsystem:windows /machine:I386
+# ADD LINK32 opengl32.lib glu32.lib winmm.lib $(OutDir)\lua.lib /nologo /subsystem:windows /machine:I386
 
 !ELSEIF  "$(CFG)" == "editor - Win32 Debug"
 
@@ -82,7 +82,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 opengl32.lib glu32.lib winmm.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 $(OutDir)\cppunit.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\lua.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
 
 !ELSEIF  "$(CFG)" == "editor - Win32 Opt"
 
@@ -109,7 +109,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 opengl32.lib glu32.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 opengl32.lib glu32.lib winmm.lib /nologo /subsystem:windows /machine:I386
+# ADD LINK32 opengl32.lib glu32.lib winmm.lib $(OutDir)\lua.lib /nologo /subsystem:windows /machine:I386
 
 !ELSEIF  "$(CFG)" == "editor - Win32 StaticDebug"
 
@@ -136,7 +136,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 opengl32.lib glu32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 opengl32.lib glu32.lib winmm.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 $(OutDir)\cppunit.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\lua.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
 
 !ELSEIF  "$(CFG)" == "editor - Win32 StaticRelease"
 
@@ -163,7 +163,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 opengl32.lib glu32.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 opengl32.lib glu32.lib winmm.lib /nologo /subsystem:windows /machine:I386
+# ADD LINK32 opengl32.lib glu32.lib winmm.lib $(OutDir)\lua.lib /nologo /subsystem:windows /machine:I386
 
 !ENDIF 
 
@@ -196,6 +196,18 @@ SOURCE=.\editorDoc.cpp
 # Begin Source File
 
 SOURCE=.\editorView.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\glView.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\groundtiled.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\heightmap.cpp
 # End Source File
 # Begin Source File
 
@@ -237,6 +249,18 @@ SOURCE=.\editorguids.h
 # Begin Source File
 
 SOURCE=.\editorView.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\glView.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\groundtiled.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\heightmap.h
 # End Source File
 # Begin Source File
 
