@@ -21,7 +21,7 @@ EXTERN_C DECLSPEC_DLLIMPORT int CDECL _CrtIsValidHeapPointer(const void * userDa
 #define _CrtIsValidHeapPointer(userData) ((int)1)
 #endif
 
-LOG_DEFINE_CHANNEL(KeyEvent);
+LOG_DEFINE_CHANNEL(InputEvents);
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -241,10 +241,14 @@ bool cInput::DispatchInputEvent(int x, int y, long key, bool down, double time)
 {
 #ifndef NDEBUG
    const char * pszKey = Key2Name(key);
-   if (pszKey)
-      DebugMsgEx2(KeyEvent, "Key%s: %s\n", down ? "Down" : "Up", pszKey);
+   if (pszKey != NULL)
+   {
+      DebugMsgEx3(InputEvents, "%s %s %f\n", pszKey, down ? "down" : "up", time);
+   }
    else
-      DebugMsgEx2(KeyEvent, "Key%s: %d\n", down ? "Down" : "Up", key);
+   {
+      DebugMsgEx3(InputEvents, "%d %s %f\n", key, down ? "down" : "up", time);
+   }
 #endif
 
    Assert((key >= 0) && (key < kMaxKeys));
