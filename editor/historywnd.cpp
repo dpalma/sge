@@ -692,7 +692,11 @@ void cHistoryWnd::OnPaint()
    int start, end;
    GetVisibleRange(&start, &end);
 
-   CRect r(0, start * m_nCharHeight, m_totalDev.cx, m_totalDev.cy);
+   CRect client;
+   GetClientRect(client);
+
+//   CRect r(0, start * m_nCharHeight, m_totalDev.cx, m_totalDev.cy);
+   CRect r(client.left, start * m_nCharHeight, client.right, 0);
 
    r.bottom = r.top + m_nCharHeight;
 

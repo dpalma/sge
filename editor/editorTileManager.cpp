@@ -4,6 +4,7 @@
 #include "stdhdr.h"
 
 #include "editorTileManager.h"
+#include "editorTileSet.h"
 
 #include "dbgalloc.h" // must be last header
 
@@ -33,6 +34,13 @@ tResult cEditorTileManager::Init()
 
 tResult cEditorTileManager::Term()
 {
+   tTileSetMap::iterator iter;
+   for (iter = m_tileSetMap.begin(); iter != m_tileSetMap.end(); iter++)
+   {
+      iter->second->Release();
+   }
+   m_tileSetMap.clear();
+
    return S_OK;
 }
 
@@ -53,7 +61,17 @@ tResult cEditorTileManager::CreateTileSet(const tChar * pszName, IEditorTileSet 
       return S_FALSE;
    }
 
-   return E_NOTIMPL;
+   cAutoIPtr<IEditorTileSet> pTileSet(new cEditorTileSet(pszName));
+
+   if (!pTileSet)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   m_tileSetMap[cStr(pszName)] = CTAddRef(static_cast<IEditorTileSet *>(pTileSet));
+
+   *ppTileSet = CTAddRef(static_cast<IEditorTileSet *>(pTileSet));
+   return S_OK;
 }
 
 ///////////////////////////////////////

@@ -88,14 +88,24 @@ int LoadTiles(int argc, const cScriptVar * argv,
 
                if (!doc.Error())
                {
+                  UseGlobal(EditorTileManager);
+
                   TiXmlElement * pXmlElement;
                   for (pXmlElement = doc.FirstChildElement();
                        pXmlElement != NULL;
                        pXmlElement = pXmlElement->NextSiblingElement())
                   {
-                     if (pXmlElement->Type() == TiXmlNode::ELEMENT)
+                     if (pXmlElement->Type() == TiXmlNode::ELEMENT
+                        && strcmp(pXmlElement->Value(), "tileset") == 0)
                      {
-                        DebugMsg1("XML element %s\n", pXmlElement->Value());
+                        const char * pszName = NULL;
+                        if ((pszName = pXmlElement->Attribute("name")) != NULL)
+                        {
+                           cAutoIPtr<IEditorTileSet> pTileSet;
+                           if (SUCCEEDED(pEditorTileManager->CreateTileSet(pszName, &pTileSet)))
+                           {
+                           }
+                        }
                      }
                   }
                }

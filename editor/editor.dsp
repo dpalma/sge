@@ -199,11 +199,19 @@ SOURCE=.\editorApp.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\editorCtrlBars.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\editorDoc.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\editorTileManager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\editorTileSet.cpp
 # End Source File
 # Begin Source File
 
@@ -287,6 +295,10 @@ SOURCE=.\editorApp.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\editorCtrlBars.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\editorDoc.h
 # End Source File
 # Begin Source File
@@ -296,6 +308,10 @@ SOURCE=.\editorguids.h
 # Begin Source File
 
 SOURCE=.\editorTileManager.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\editorTileSet.h
 # End Source File
 # Begin Source File
 
