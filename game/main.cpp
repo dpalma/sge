@@ -379,7 +379,7 @@ static bool ScriptExecResource(const char * pszResource)
    cAutoIPtr<IReader> pReader = pResourceManager->Find(pszResource);
    if (!pReader)
       return false;
-   const char * pszCode = GetEntireContents(pReader);
+   char * pszCode = GetEntireContents(pReader);
    if (pszCode == NULL)
       return false;
    bool result = ScriptExecString(pszCode);
