@@ -99,7 +99,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /I "..\tech\include" /I "..\engine\include" /I "..\render\include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /Yu"stdhdr.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I "..\tech\include" /I "..\engine\include" /I "..\render\include" /I "..\3rdparty\tinyxml" /D "NDEBUG" /D "_AFXDLL" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "TIXML_USE_STL" /Yu"stdhdr.h" /FD /c
+# ADD CPP /nologo /MDd /W3 /GX /Zi /O2 /I "..\tech\include" /I "..\engine\include" /I "..\render\include" /I "..\3rdparty\tinyxml" /D "NDEBUG" /D "_AFXDLL" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "TIXML_USE_STL" /Yu"stdhdr.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG" /d "_AFXDLL"
@@ -109,7 +109,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 opengl32.lib glu32.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 opengl32.lib glu32.lib winmm.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib /nologo /subsystem:windows /machine:I386
+# ADD LINK32 opengl32.lib glu32.lib winmm.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib /nologo /subsystem:windows /profile /map:"..\Build.vc6\Opt\editor.map" /debug /machine:I386
 
 !ELSEIF  "$(CFG)" == "editor - Win32 StaticDebug"
 
@@ -163,7 +163,8 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 opengl32.lib glu32.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib /nologo /subsystem:windows /machine:I386
+# ADD LINK32 opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib /nologo /subsystem:windows /map:"..\Build.vc6\StaticRelease\editor.map" /machine:I386
+# SUBTRACT LINK32 /pdb:none
 
 !ENDIF 
 
