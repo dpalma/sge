@@ -6,14 +6,34 @@
 
 #include "comtools.h"
 
+#include "vec2.h"
+#include "vec3.h"
+
+#include <vector>
+
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
 
-class cTiledGround;
 class cHeightMap;
+struct sVertexElement;
+
+F_DECLARE_INTERFACE(IEditorTileSet);
 
 F_DECLARE_INTERFACE(IRenderDevice);
+F_DECLARE_INTERFACE(IMaterial);
+
+/////////////////////////////////////////////////////////////////////////////
+
+struct sMapVertex
+{
+   tVec2 uv1;
+   tVec3 rgb;
+   tVec3 pos;
+};
+
+extern sVertexElement g_mapVertexDecl[];
+extern uint g_nMapVertexMembers;
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -28,12 +48,16 @@ protected: // create from serialization only
 
 // Attributes
 public:
-   cTiledGround * AccessTiledGround() { return m_pGround; }
+   const sMapVertex * GetVertexPointer() const;
+   size_t GetVertexCount() const;
+
+   IMaterial * AccessMaterial();
 
 // Operations
 public:
    float GetElevation(float nx, float nz) const;
-   bool GetDimensions(uint * pxd, uint * pzd) const;
+   void GetMapDimensions(uint * pxd, uint * pzd) const;
+   void GetMapExtents(uint * px, uint * pz) const;
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -54,6 +78,8 @@ public:
 #endif
 
 protected:
+   bool InitializeVertices(uint xDim, uint zDim, IEditorTileSet * pTileSet,
+      uint defaultTile, cHeightMap * pHeightMap);
 
 // Generated message map functions
 protected:
@@ -65,8 +91,34 @@ protected:
 
 private:
    cHeightMap * m_pHeightMap;
-   cTiledGround * m_pGround;
+
+   uint m_xDim, m_zDim;
+
+   cAutoIPtr<IMaterial> m_pMaterial;
+
+   std::vector<sMapVertex> m_vertices;
 };
+
+////////////////////////////////////////
+
+inline const sMapVertex * cEditorDoc::GetVertexPointer() const
+{
+   return &m_vertices[0];
+}
+
+////////////////////////////////////////
+
+inline size_t cEditorDoc::GetVertexCount() const
+{
+   return m_vertices.size();
+}
+
+////////////////////////////////////////
+
+inline IMaterial * cEditorDoc::AccessMaterial()
+{
+   return m_pMaterial;
+}
 
 /////////////////////////////////////////////////////////////////////////////
 

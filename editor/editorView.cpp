@@ -5,7 +5,6 @@
 
 #include "editorDoc.h"
 #include "editorView.h"
-#include "tiledground.h"
 
 #include "sceneapi.h"
 
@@ -30,7 +29,11 @@ const float kZFar = 5000;
 /////////////////////////////////////////////////////////////////////////////
 // cEditorView
 
+////////////////////////////////////////
+
 IMPLEMENT_DYNCREATE(cEditorView, CView)
+
+////////////////////////////////////////
 
 BEGIN_MESSAGE_MAP(cEditorView, cGLView)
 	//{{AFX_MSG_MAP(cEditorView)
@@ -48,12 +51,17 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // cEditorView construction/destruction
 
+////////////////////////////////////////
+
 cEditorView::cEditorView()
  : m_mouseAction(kNone),
    m_center(0,0,0),
-   m_eye(0,0,0)
+   m_eye(0,0,0),
+   m_nIndices(0)
 {
 }
+
+////////////////////////////////////////
 
 cEditorView::~cEditorView()
 {
@@ -62,11 +70,15 @@ cEditorView::~cEditorView()
 /////////////////////////////////////////////////////////////////////////////
 // cEditorView operations
 
+////////////////////////////////////////
+
 tResult cEditorView::Create(int width, int height, int bpp, const char * pszTitle)
 {
    Assert(!"This should never be called");
    return E_FAIL;
 }
+
+////////////////////////////////////////
 
 tResult cEditorView::GetWindowInfo(sWindowInfo * pInfo) const
 {
@@ -91,10 +103,14 @@ tResult cEditorView::GetWindowInfo(sWindowInfo * pInfo) const
    return S_OK;
 }
 
+////////////////////////////////////////
+
 tResult cEditorView::SwapBuffers()
 {
    return ::SwapBuffers(GetSafeHdc()) ? S_OK : E_FAIL;
 }
+
+////////////////////////////////////////
 
 void cEditorView::OnFrame(double time, double elapsed)
 {
@@ -109,6 +125,8 @@ void cEditorView::OnFrame(double time, double elapsed)
 
    RenderScene();
 }
+
+////////////////////////////////////////
 
 void cEditorView::RenderScene()
 {
@@ -138,15 +156,21 @@ void cEditorView::OnDraw(CDC * pDC)
 // cEditorView diagnostics
 
 #ifdef _DEBUG
+////////////////////////////////////////
+
 void cEditorView::AssertValid() const
 {
 	cGLView::AssertValid();
 }
 
+////////////////////////////////////////
+
 void cEditorView::Dump(CDumpContext& dc) const
 {
 	cGLView::Dump(dc);
 }
+
+////////////////////////////////////////
 
 cEditorDoc* cEditorView::GetDocument() // non-debug version is inline
 {
@@ -157,6 +181,8 @@ cEditorDoc* cEditorView::GetDocument() // non-debug version is inline
 
 /////////////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////
+
 cEditorView::cSceneEntity::cSceneEntity()
  : m_translation(0,0,0),
    m_rotation(0,0,0,1)
@@ -164,9 +190,13 @@ cEditorView::cSceneEntity::cSceneEntity()
    m_transform.Identity();
 }
 
+////////////////////////////////////////
+
 cEditorView::cSceneEntity::~cSceneEntity()
 {
 }
+
+////////////////////////////////////////
 
 void cEditorView::cSceneEntity::Render(IRenderDevice * pRenderDevice)
 {
@@ -175,21 +205,19 @@ void cEditorView::cSceneEntity::Render(IRenderDevice * pRenderDevice)
 	cEditorDoc * pDoc = pEditorView->GetDocument();
 	ASSERT_VALID(pDoc);
 
-   cTiledGround * pTG = pDoc->AccessTiledGround();
-   if (pTG != NULL)
-   {
-      pRenderDevice->Render(
-         kRP_Triangles, 
-         pTG->AccessMaterial(), 
-         pTG->GetIndexCount(), 
-         pTG->AccessIndexBuffer(), 
-         0, 
-         pTG->AccessVertexBuffer());
-   }
+   pRenderDevice->Render(
+      kRP_Triangles, 
+      pDoc->AccessMaterial(), 
+      pEditorView->m_nIndices, 
+      pEditorView->m_pIndexBuffer,
+      0, 
+      pEditorView->m_pVertexBuffer);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // cEditorView message handlers
+
+////////////////////////////////////////
 
 int cEditorView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
@@ -220,6 +248,8 @@ int cEditorView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	return 0;
 }
 
+////////////////////////////////////////
+
 void cEditorView::OnDestroy() 
 {
 	cGLView::OnDestroy();
@@ -232,7 +262,12 @@ void cEditorView::OnDestroy()
 
    SafeRelease(m_pCamera);
    SafeRelease(m_pRenderDevice);
+
+   SafeRelease(m_pVertexBuffer);
+   SafeRelease(m_pIndexBuffer);
 }
+
+////////////////////////////////////////
 
 void cEditorView::OnSize(UINT nType, int cx, int cy) 
 {
@@ -251,6 +286,8 @@ void cEditorView::OnSize(UINT nType, int cx, int cy)
    }
 }
 
+////////////////////////////////////////
+
 static tVec3 CalcEyePoint(const tVec3 & lookAt,
                           tVec3::value_type elevation = 100,
                           tVec3::value_type pitch = 70)
@@ -258,20 +295,102 @@ static tVec3 CalcEyePoint(const tVec3 & lookAt,
    return lookAt + tVec3(0, elevation, elevation / tanf(pitch));
 }
 
+////////////////////////////////////////
+
 void cEditorView::OnInitialUpdate() 
 {
-	CView::OnInitialUpdate();
+   SafeRelease(m_pVertexBuffer);
+   SafeRelease(m_pIndexBuffer);
 
 	cEditorDoc * pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-   Verify(pDoc->AccessTiledGround()->CreateBuffers(m_pRenderDevice));
+   cAutoIPtr<IVertexDeclaration> pVertexDecl;
+   if (AccessRenderDevice()->CreateVertexDeclaration(g_mapVertexDecl,
+      g_nMapVertexMembers, &pVertexDecl) == S_OK)
+   {
+      if (AccessRenderDevice()->CreateVertexBuffer(pDoc->GetVertexCount(),
+         kBU_Default, pVertexDecl, kBP_Auto, &m_pVertexBuffer) == S_OK)
+      {
+         void * pVertexData = NULL;
+         if (m_pVertexBuffer->Lock(kBL_Discard, (void * *)&pVertexData) == S_OK)
+         {
+            memset(pVertexData, 0, pDoc->GetVertexCount() * sizeof(sMapVertex));
+            m_pVertexBuffer->Unlock();
+         }
+      }
+   }
 
-   uint xd, zd;
-   pDoc->GetDimensions(&xd, &zd);
+   uint xDim, zDim;
+   pDoc->GetMapDimensions(&xDim, &zDim);
 
-   m_center = tVec3((tVec3::value_type)xd / 2, 0, (tVec3::value_type)zd / 2);
+   m_nIndices = xDim * zDim * 6;
+
+   if (AccessRenderDevice()->CreateIndexBuffer(m_nIndices,
+      kBU_Default, kIBF_16Bit, kBP_System, &m_pIndexBuffer) == S_OK)
+   {
+      void * pIndexData = NULL;
+      if (m_pIndexBuffer->Lock(kBL_Discard, (void * *)&pIndexData) == S_OK)
+      {
+         memset(pIndexData, 0, m_nIndices * sizeof(uint16));
+         m_pIndexBuffer->Unlock();
+      }
+   }
+
+   uint xExt, zExt;
+   pDoc->GetMapExtents(&xExt, &zExt);
+
+   m_center = tVec3((tVec3::value_type)xExt / 2, 0, (tVec3::value_type)zExt / 2);
    m_eye = CalcEyePoint(m_center);
+
+	CView::OnInitialUpdate();
+}
+
+////////////////////////////////////////
+
+void cEditorView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
+{
+	cEditorDoc * pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+
+   if (!!m_pVertexBuffer)
+   {
+      void * pVertexData = NULL;
+      if (m_pVertexBuffer->Lock(kBL_Discard, (void * *)&pVertexData) == S_OK)
+      {
+         memcpy(pVertexData, pDoc->GetVertexPointer(),
+            pDoc->GetVertexCount() * sizeof(sMapVertex));
+         m_pVertexBuffer->Unlock();
+      }
+   }
+
+   if (!!m_pIndexBuffer)
+   {
+      uint16 * pIndexData = NULL;
+      if (m_pIndexBuffer->Lock(kBL_Discard, (void * *)&pIndexData) == S_OK)
+      {
+         int iQuad = 0;
+
+         uint xDim, zDim;
+         pDoc->GetMapDimensions(&xDim, &zDim);
+
+         for (int iz = 0; iz < zDim; iz++)
+         {
+            for (int ix = 0; ix < xDim; ix++, iQuad++)
+            {
+               pIndexData[(iQuad * 6) + 0] = (iQuad * 4) + 0;
+               pIndexData[(iQuad * 6) + 1] = (iQuad * 4) + 3;
+               pIndexData[(iQuad * 6) + 2] = (iQuad * 4) + 2;
+
+               pIndexData[(iQuad * 6) + 3] = (iQuad * 4) + 2;
+               pIndexData[(iQuad * 6) + 4] = (iQuad * 4) + 1;
+               pIndexData[(iQuad * 6) + 5] = (iQuad * 4) + 0;
+            }
+         }
+
+         m_pIndexBuffer->Unlock();
+      }
+   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -312,6 +431,8 @@ static long MapKey(long keydata)
 
    return g_keyMap[scanCode];
 }
+
+////////////////////////////////////////
 
 LRESULT cEditorView::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) 
 {
@@ -403,6 +524,8 @@ LRESULT cEditorView::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 	return CView::WindowProc(message, wParam, lParam);
 }
 
+////////////////////////////////////////
+
 void cEditorView::OnLButtonDown(UINT nFlags, CPoint point) 
 {
 	// TODO: Add your message handler code here and/or call default
@@ -410,12 +533,16 @@ void cEditorView::OnLButtonDown(UINT nFlags, CPoint point)
 	cGLView::OnLButtonDown(nFlags, point);
 }
 
+////////////////////////////////////////
+
 void cEditorView::OnLButtonUp(UINT nFlags, CPoint point) 
 {
 	// TODO: Add your message handler code here and/or call default
 	
 	cGLView::OnLButtonUp(nFlags, point);
 }
+
+////////////////////////////////////////
 
 void cEditorView::OnRButtonDown(UINT nFlags, CPoint point) 
 {
@@ -427,6 +554,8 @@ void cEditorView::OnRButtonDown(UINT nFlags, CPoint point)
 	cGLView::OnRButtonDown(nFlags, point);
 }
 
+////////////////////////////////////////
+
 void cEditorView::OnRButtonUp(UINT nFlags, CPoint point) 
 {
 	// TODO: Add your message handler code here and/or call default
@@ -435,6 +564,8 @@ void cEditorView::OnRButtonUp(UINT nFlags, CPoint point)
 	
 	cGLView::OnRButtonUp(nFlags, point);
 }
+
+////////////////////////////////////////
 
 void cEditorView::OnMouseMove(UINT nFlags, CPoint point) 
 {

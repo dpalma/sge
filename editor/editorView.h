@@ -21,6 +21,9 @@
 #endif // _MSC_VER > 1000
 
 F_DECLARE_INTERFACE(IRenderDevice);
+F_DECLARE_INTERFACE(IVertexDeclaration);
+F_DECLARE_INTERFACE(IVertexBuffer);
+F_DECLARE_INTERFACE(IIndexBuffer);
 
 F_DECLARE_INTERFACE(ISceneCamera);
 
@@ -64,6 +67,7 @@ public:
 	virtual void OnInitialUpdate();
 	protected:
 	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
+	virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -140,6 +144,10 @@ private:
    cAutoIPtr<ISceneCamera> m_pCamera;
 
    cSceneEntity m_sceneEntity;
+
+   cAutoIPtr<IVertexBuffer> m_pVertexBuffer;
+   cAutoIPtr<IIndexBuffer> m_pIndexBuffer;
+   uint m_nIndices;
 };
 
 #ifndef _DEBUG  // debug version in editorView.cpp

@@ -275,10 +275,6 @@ SOURCE=.\stdhdr.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\tiledground.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\ToolPaletteBar.cpp
 # End Source File
 # End Group
@@ -384,10 +380,6 @@ SOURCE=.\splashwnd.h
 # Begin Source File
 
 SOURCE=.\stdhdr.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\tiledground.h
 # End Source File
 # Begin Source File
 
