@@ -8,8 +8,10 @@
 
 #include "font.h"
 #include "color.h"
+#include "renderapi.h"
 
 #include "parse.h"
+#include "globalobj.h"
 
 #include <cstring>
 #include <locale>
@@ -481,16 +483,22 @@ tResult cGUIStyle::GetFont(IRenderFont * * ppFont)
 {
    if (!m_pFont)
    {
-      if ((m_fontName.length() == 0) || (m_fontPointSize == 0))
-      {
-         return E_FAIL;
-      }
       cFontDesc fontDesc;
-      if ((GetFontDesc(&fontDesc) != S_OK) && (FontCreate(fontDesc, &m_pFont) != S_OK))
+      if (GetFontDesc(&fontDesc) == S_OK)
       {
-         return E_FAIL;
+         UseGlobal(GUIRenderingTools);
+
+         cAutoIPtr<IRenderDevice> pRenderDevice;
+         if (pGUIRenderingTools->GetRenderDevice(&pRenderDevice) == S_OK)
+         {
+            if (FontCreate(pRenderDevice, fontDesc, &m_pFont) != S_OK)
+            {
+               pGUIRenderingTools->GetDefaultFont(&m_pFont);
+            }
+         }
       }
    }
+
    return m_pFont.GetPointer(ppFont);
 }
 

@@ -96,7 +96,13 @@ tResult cGUIRenderingTools::GetDefaultFont(IRenderFont * * ppFont)
 {
    if (!m_pFont)
    {
-      FontCreateDefault(&m_pFont);
+      if (!!m_pRenderDevice)
+      {
+         if (FAILED(FontCreateDefault(m_pRenderDevice, &m_pFont)))
+         {
+            return E_FAIL;
+         }
+      }
    }
    return m_pFont.GetPointer(ppFont);
 }

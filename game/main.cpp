@@ -16,8 +16,10 @@
 #include "inputapi.h"
 #include "engineapi.h"
 
-#include "renderapi.h"
+#include "font.h"
 #include "textureapi.h"
+#include "renderapi.h"
+#include "rendertypes.h"
 
 #include "scriptvar.h"
 #include "techmath.h"
@@ -58,6 +60,10 @@ const float kZFar = 2000;
 
 static const float kGroundScaleY = 0.25f;
 
+static const float kDefStatsX = 25;
+static const float kDefStatsY = 25;
+static const cColor kDefStatsColor(1,1,1,1);
+
 ///////////////////////////////////////////////////////////////////////////////
 
 cAutoIPtr<cGameCameraController> g_pGameCameraController;
@@ -66,6 +72,8 @@ cAutoIPtr<ISceneCamera> g_pGameCamera;
 cAutoIPtr<ISceneCamera> g_pUICamera;
 
 cAutoIPtr<cTerrainNode> g_pTerrainRoot;
+
+cAutoIPtr<IRenderFont> g_pFont;
 
 double g_fov;
 
@@ -374,7 +382,7 @@ tResult cEngineConfiguration::GetRenderDeviceParameters(sRenderDeviceParameters 
    pParams->height = height;
    pParams->bpp = bpp;
    pParams->bFullScreen = ConfigIsTrue("full_screen") && !IsDebuggerPresent();
-   pParams->options = kRDO_ShowStatistics;
+   pParams->options = kRDO_None;
 
    return S_OK;
 }
@@ -458,6 +466,12 @@ bool MainInit(int argc, char * argv[])
 
    g_pRenderDevice->GetWindow(&g_pWindow);
 
+   if (FAILED(FontCreateDefault(g_pRenderDevice, &g_pFont)))
+   {
+      WarnMsg("Failed to create default font for rendering frame stats\n");
+      return false;
+   }
+
    SysAppActivate(true);
 
    cWindowInputBroker * pSink = new cWindowInputBroker;
@@ -507,6 +521,8 @@ void MainTerm()
 
    SafeRelease(g_pWindow);
 
+   SafeRelease(g_pFont);
+
    SafeRelease(g_pRenderDevice);
 
    if (g_pGameCameraController)
@@ -537,6 +553,29 @@ void MainFrame()
 
    UseGlobal(GUIContext);
    pGUIContext->RenderGUI(g_pRenderDevice);
+
+   if (!!g_pFont)
+   {
+      sFrameStats frameStats;
+      if (g_pRenderDevice->GetFrameStats(&frameStats) == S_OK)
+      {
+         char szStats[100];
+         snprintf(szStats, _countof(szStats),
+            "%.2f fps\n"
+            "%.2f worst\n"
+            "%.2f best\n"
+            "%.2f average\n"
+            "%d triangles", 
+            frameStats.fps, 
+            frameStats.worst,
+            frameStats.best, 
+            frameStats.average,
+            frameStats.nTriangles);
+
+         tRect rect(kDefStatsX, kDefStatsY, 0, 0);
+         g_pFont->DrawText(szStats, strlen(szStats), kDT_NoClip | kDT_DropShadow, &rect, kDefStatsColor);
+      }
+   }
 
    g_pRenderDevice->EndScene();
 }

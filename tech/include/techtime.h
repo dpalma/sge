@@ -12,26 +12,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-struct TECH_API sFrameStats
-{
-   double fps;
-   double worst;
-   double best;
-   double average;
-
-   sFrameStats();
-
-   void Update();
-
-private:
-   double lastTime;
-   ulong frameCount;
-};
-
-TECH_API double CalcFramesPerSec();
-
-///////////////////////////////////////////////////////////////////////////////
-
 TECH_API double TimeGetSecs();
 
 #if defined(_MSC_VER)

@@ -18,60 +18,6 @@
 #include "dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// STRUCT: sFrameStats
-//
-
-///////////////////////////////////////
-
-sFrameStats::sFrameStats()
- : fps(0),
-   worst(999999),
-   best(0),
-   average(0),
-   lastTime(0),
-   frameCount(0)
-{
-}
-
-///////////////////////////////////////
-
-void sFrameStats::Update()
-{
-   double time = TimeGetSecs();
-   double elapsed = time - lastTime;
-   frameCount++;
-
-   if (elapsed >= 1.0)
-   {
-      if (lastTime != 0)
-      {
-         double fpsNew = (double)frameCount / elapsed;
-         if (average == 0)
-            average = fpsNew;
-         else
-            average = (fpsNew + fps) * 0.5;
-         fps = fpsNew;
-         if (fps > best)
-            best = fps;
-         if (fps < worst)
-            worst = fps;
-      }
-      lastTime = time;
-      frameCount = 0;
-   }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-double CalcFramesPerSec()
-{
-   static sFrameStats stats;
-   stats.Update();
-   return stats.fps;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 
 double TimeGetSecs()
 {
