@@ -59,7 +59,7 @@ protected:
    cSplashThread();
    virtual ~cSplashThread();
 
-   DECLARE_DYNCREATE(cSplashThread)
+   DECLARE_DYNCREATE_EX(cSplashThread)
 
    //{{AFX_VIRTUAL(cSplashThread)
    virtual BOOL InitInstance();

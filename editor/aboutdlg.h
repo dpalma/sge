@@ -12,22 +12,31 @@
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cAboutDlg
+// CLASS: CAboutDlg
 //
 
-class cAboutDlg : public CDialogImpl<cAboutDlg>
+class CAboutDlg : public CDialog
 {
 public:
-   enum { IDD = IDD_ABOUTBOX };
+	CAboutDlg();
 
-   BEGIN_MSG_MAP(cAboutDlg)
-      MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
-      COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
-      COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
-   END_MSG_MAP()
+// Dialog Data
+	//{{AFX_DATA(CAboutDlg)
+	enum { IDD = IDD_ABOUTBOX };
+	//}}AFX_DATA
 
-   LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/);
-   LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
+	// ClassWizard generated virtual function overrides
+	//{{AFX_VIRTUAL(CAboutDlg)
+	protected:
+	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	//}}AFX_VIRTUAL
+
+// Implementation
+protected:
+	//{{AFX_MSG(CAboutDlg)
+		// No message handlers
+	//}}AFX_MSG
+	DECLARE_MESSAGE_MAP()
 };
 
 /////////////////////////////////////////////////////////////////////////////

@@ -7,6 +7,11 @@
 
 #include "dbgalloc.h" // must be last header
 
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cDynamicLink

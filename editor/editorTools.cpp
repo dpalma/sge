@@ -6,7 +6,7 @@
 #include "editorTools.h"
 #include "editorTypes.h"
 #include "editorCommands.h"
-#include "terrain.h"
+#include "terrainapi.h"
 
 #include "sceneapi.h"
 #include "ray.h"
@@ -14,9 +14,15 @@
 #include "globalobj.h"
 
 #include <GL/gl.h>
-#include <zmouse.h>
 
 #include "dbgalloc.h" // must be last header
+
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
 
 LOG_DEFINE_CHANNEL(EditorTools);
 #define LocalMsg(msg)            DebugMsgEx(EditorTools,(msg))
@@ -309,10 +315,10 @@ tResult cTerrainTileTool::Deactivate()
 {
    UseGlobal(EditorApp);
    cAutoIPtr<IEditorView> pView;
-//   if (pEditorApp->GetActiveView(&pView) == S_OK)
-//   {
-//      pView->ClearTileHighlight();
-//   }
+   if (pEditorApp->GetActiveView(&pView) == S_OK)
+   {
+      pView->ClearTileHighlight();
+   }
 
    return S_OK;
 }

@@ -4,8 +4,7 @@
 #ifndef INCLUDED_OUTPUTBAR_H
 #define INCLUDED_OUTPUTBAR_H
 
-#include "LogWnd.h"
-#include "editorDockingWindows.h"
+#include "historywnd.h"
 
 #if _MSC_VER >= 1000
 #pragma once
@@ -16,29 +15,42 @@
 // CLASS: cOutputBar
 //
 
-class cOutputBar : public cDockingWindow
+class cOutputBar : public CSizingControlBarG
 {
+   DECLARE_DYNCREATE_EX(cOutputBar)
+
+// Construction
 public:
-   static tResult Factory(cDockingWindow * * ppDockingWindow);
-
    cOutputBar();
-   ~cOutputBar();
 
+// Attributes
+public:
+
+// Operations
+public:
    void HandleLogCallback(eLogSeverity severity, const tChar * pszMsg, size_t msgLen);
 
-   BEGIN_MSG_MAP(cOutputBar)
-      MESSAGE_HANDLER(WM_CREATE, OnCreate)
-      MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
-      MESSAGE_HANDLER(WM_SIZE, OnSize)
-      CHAIN_MSG_MAP(cDockingWindow)
-   END_MSG_MAP()
+// Overrides
+   // ClassWizard generated virtual function overrides
+   //{{AFX_VIRTUAL(cOutputBar)
+   //}}AFX_VIRTUAL
 
-   LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
-   LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
-   LRESULT OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
+// Implementation
+public:
+   virtual ~cOutputBar();
+
+protected:
+   cHistoryWnd m_wndChild;
+
+   // Generated message map functions
+protected:
+   //{{AFX_MSG(cOutputBar)
+   afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg void OnDestroy();
+	//}}AFX_MSG
+   DECLARE_MESSAGE_MAP()
 
 private:
-   cLogWnd m_logWnd;
    tLogCallbackFn m_nextLogCallback;
 };
 

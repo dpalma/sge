@@ -80,14 +80,4 @@ DEFINE_GUID(IID_IHeightMap,
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// {2F74A56F-2E8D-40d4-BCCA-D4D5FBD1831C}
-DEFINE_GUID(CLSID_EditorDoc, 
-0x2f74a56f, 0x2e8d, 0x40d4, 0xbc, 0xca, 0xd4, 0xd5, 0xfb, 0xd1, 0x83, 0x1c);
-
-// {043C26D3-7C58-467a-8194-8F20D2CE5687}
-DEFINE_GUID(CLSID_EditorView, 
-0x43c26d3, 0x7c58, 0x467a, 0x81, 0x94, 0x8f, 0x20, 0xd2, 0xce, 0x56, 0x87);
-
-///////////////////////////////////////////////////////////////////////////////
-
 #endif // !INCLUDED_EDITORGUIDS_H

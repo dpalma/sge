@@ -6,6 +6,8 @@
 
 #include "TrackMouseEvent.h"
 
+#include <atlgdi.h>
+#include <atlcrack.h>
 #include <atlscrl.h>
 
 #include <string>
@@ -280,15 +282,15 @@ public:
    inline void operator ()(const cToolGroup * pGroup) { Render(pGroup); }
 
 private:
-   static int RenderGroupHeading(CDCHandle dc, LPRECT pRect, const cToolGroup * pGroup);
+   static int RenderGroupHeading(WTL::CDCHandle dc, LPRECT pRect, const cToolGroup * pGroup);
 
    typedef std::map<HANDLE, CRect> tCachedRects;
    tCachedRects m_cachedRects;
 
-   CBrush m_checkedItemBrush;
+   WTL::CBrush m_checkedItemBrush;
 
    // These member variables valid only between Begin() and End() calls
-   CDCHandle m_dc;
+   WTL::CDCHandle m_dc;
    CRect m_rect;
    CPoint m_mousePos;
    bool m_bHaveMousePos;
@@ -303,10 +305,11 @@ private:
 
 typedef CWinTraitsOR<kTPS_ExclusiveCheck, 0> tToolPaleteWinTraits;
 
-class cToolPalette : public CScrollWindowImpl<cToolPalette, CWindow, tToolPaleteWinTraits>,
+class cToolPalette : public WTL::CScrollWindowImpl<cToolPalette, CWindow, tToolPaleteWinTraits>,
                      public cTrackMouseEvent<cToolPalette>
 {
-   typedef CScrollWindowImpl<cToolPalette, CWindow, tToolPaleteWinTraits> tBase;
+   typedef WTL::CScrollWindowImpl<cToolPalette, CWindow, tToolPaleteWinTraits> tBase;
+
 public:
    cToolPalette();
    ~cToolPalette();
@@ -338,7 +341,7 @@ public:
    void OnDestroy();
    void OnSize(UINT nType, CSize size);
    void OnSetFont(HFONT hFont, BOOL bRedraw);
-   LRESULT OnEraseBkgnd(CDCHandle dc);
+   LRESULT OnEraseBkgnd(WTL::CDCHandle dc);
    void OnMouseLeave();
    void OnMouseMove(UINT flags, CPoint point);
    void OnLButtonDown(UINT flags, CPoint point);
@@ -347,7 +350,7 @@ public:
    bool GetMousePos(LPPOINT pMousePos) const;
 
    // CScrollWindowImpl handles WM_PAINT and delegates to this method
-   void DoPaint(CDCHandle dc);
+   void DoPaint(WTL::CDCHandle dc);
 
    bool ExclusiveCheck() const;
 
@@ -379,7 +382,7 @@ private:
 
    bool m_bUpdateScrollInfo;
 
-   CFont m_font;
+   WTL::CFont m_font;
 
    HANDLE m_hMouseOverItem;
    HANDLE m_hClickCandidateItem;

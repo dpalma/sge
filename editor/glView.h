@@ -1,12 +1,8 @@
 /////////////////////////////////////////////////////////////////////////////
 // $Id$
 
-#if !defined(INCLUDED_MAINFRM_H)
-#define INCLUDED_MAINFRM_H
-
-#include <vector>
-
-#include "resource.h"       // main symbols
+#if !defined(INCLUDED_GLVIEW_H)
+#define INCLUDED_GLVIEW_H
 
 #if _MSC_VER > 1000
 #pragma once
@@ -14,14 +10,14 @@
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: CMainFrame
+// CLASS: cGLView
 //
 
-class CMainFrame : public CFrameWnd
+class cGLView : public CScrollView
 {
-protected: // create from serialization only
-	CMainFrame();
-	DECLARE_DYNCREATE_EX(CMainFrame)
+protected:
+	cGLView();
+   DECLARE_DYNAMIC(cGLView)
 
 // Attributes
 public:
@@ -31,33 +27,35 @@ public:
 
 // Overrides
 	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CMainFrame)
+	//{{AFX_VIRTUAL(cGLView)
+	public:
+	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	//}}AFX_VIRTUAL
 
 // Implementation
 public:
-	virtual ~CMainFrame();
+	virtual ~cGLView();
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;
 #endif
 
-protected:  // control bar embedded members
-	CStatusBar  m_wndStatusBar;
-	CToolBar    m_wndToolBar;
+protected:
+   HDC GetSafeHdc() const { return (this == NULL) ? NULL : m_hDC; }
+   HGLRC GetSafeHglrc() const { return (this == NULL) ? NULL : m_hRC; }
 
 // Generated message map functions
 protected:
-	//{{AFX_MSG(CMainFrame)
+	//{{AFX_MSG(cGLView)
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-	afx_msg void OnUpdateViewControlBarMenu(CCmdUI* pCmdUI);
+	afx_msg void OnDestroy();
+	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	//}}AFX_MSG
-   afx_msg BOOL OnViewControlBar(UINT nID);
 	DECLARE_MESSAGE_MAP()
 
 private:
-   std::vector<CControlBar *> m_ctrlBars;
-   CString m_ctrlBarViewMenuText;
+   HDC m_hDC;
+   HGLRC	m_hRC;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -65,4 +63,4 @@ private:
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#endif // !defined(INCLUDED_MAINFRM_H)
+#endif // !defined(INCLUDED_GLVIEW_H)

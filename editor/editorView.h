@@ -4,11 +4,13 @@
 #if !defined(INCLUDED_EDITORVIEW_H)
 #define INCLUDED_EDITORVIEW_H
 
+#include "glView.h"
 #include "editorapi.h"
-#include "GLContext.h"
+#include "afxcomtools.h"
 
-#include "vec3.h"
+#include "matrix4.h"
 #include "window.h"
+#include "connptimpl.h"
 
 #if _MSC_VER > 1000
 #pragma once
@@ -18,53 +20,36 @@ F_DECLARE_INTERFACE(IRenderDevice);
 
 F_DECLARE_INTERFACE(ISceneCamera);
 
+class cEditorDoc;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cEditorView
 //
 
-extern const uint WM_GET_IEDITORVIEW;
-
-typedef CWinTraitsOR<0, WS_EX_CLIENTEDGE> tEditorViewTraits;
-
-class cEditorView : public CComObjectRoot,
-                    public CComCoClass<cEditorView, &CLSID_EditorView>,
-                    public CWindowImpl<cEditorView, CWindow, tEditorViewTraits>,
-                    public cGLContext<cEditorView>,
-                    public IWindow,
-                    public IEditorView,
-                    public IEditorLoopClient
+class cEditorView : public cGLView,
+                    public cComObject3<IMPLEMENTSCP(IWindow, IWindowSink),
+                                       IMPLEMENTS(IEditorView),
+                                       IMPLEMENTS(IEditorLoopClient),
+                                       cAfxComServices<cEditorView> >
 {
-   typedef cGLContext<cEditorView> tGLBase;
-   typedef CWindowImpl<cEditorView, CWindow, tEditorViewTraits> tWindowImplBase;
-
-public:
+protected: // create from serialization only
 	cEditorView();
-	~cEditorView();
+	DECLARE_DYNCREATE_EX(cEditorView)
 
-   DECLARE_WND_CLASS("EditorView")
+// Attributes
+public:
+	cEditorDoc * GetDocument();
 
-   DECLARE_NO_REGISTRY()
-   DECLARE_NOT_AGGREGATABLE(cEditorView)
-
-   BEGIN_COM_MAP(cEditorView)
-      COM_INTERFACE_ENTRY_IID(IID_IWindow, IWindow)
-      COM_INTERFACE_ENTRY(IEditorView)
-      COM_INTERFACE_ENTRY(IEditorLoopClient)
-   END_COM_MAP()
-
-   IRenderDevice * AccessRenderDevice();
+// Operations
+public:
+   inline IRenderDevice * AccessRenderDevice() { return m_pRenderDevice; }
 
    // IWindow
-   virtual tResult Connect(IWindowSink *) { return E_NOTIMPL; }
-   virtual tResult Disconnect(IWindowSink *) { return E_NOTIMPL; }
    virtual tResult Create(const sWindowCreateParams * pParams);
    virtual tResult SwapBuffers();
 
    // IEditorView
-   virtual tResult Create(HWND hWndParent, HWND * phWnd);
-   virtual tResult Destroy();
-   virtual tResult Move(int x, int y, int width, int height);
    virtual tResult GetCamera(ISceneCamera * * ppCamera);
    virtual tVec3 GetCameraEyePosition() const;
    virtual tResult GetCameraPlacement(float * px, float * pz);
@@ -82,26 +67,35 @@ public:
 
    void RenderScene();
 
-   BEGIN_MSG_MAP_EX(cEditorView)
-      CHAIN_MSG_MAP(tGLBase)
-	   MSG_WM_CREATE(OnCreate)
-	   MSG_WM_DESTROY(OnDestroy)
-	   MSG_WM_SIZE(OnSize)
-      MSG_WM_PAINT(OnPaint)
-      MESSAGE_HANDLER(WM_GET_IEDITORVIEW, OnGetIEditorView)
-   END_MSG_MAP()
+// Overrides
+	// ClassWizard generated virtual function overrides
+	//{{AFX_VIRTUAL(cEditorView)
+	public:
+	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
+	virtual void OnInitialUpdate();
+	protected:
+	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
+	virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+	//}}AFX_VIRTUAL
 
-   LRESULT OnCreate(LPCREATESTRUCT lpCreateStruct);
-   void OnDestroy();
-   void OnSize(UINT nType, CSize size);
-   void OnPaint(HDC hDc);
-   LRESULT OnGetIEditorView(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
+// Implementation
+public:
+	virtual ~cEditorView();
+#ifdef _DEBUG
+	virtual void AssertValid() const;
+	virtual void Dump(CDumpContext& dc) const;
+#endif
 
-	void InitialUpdate();
+// Generated message map functions
+protected:
+	//{{AFX_MSG(cEditorView)
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg void OnDestroy();
+	afx_msg void OnSize(UINT nType, int cx, int cy);
+	//}}AFX_MSG
+	DECLARE_MESSAGE_MAP()
 
 private:
-   cAutoIPtr<IEditorModel> m_pModel;
-
    cAutoIPtr<IRenderDevice> m_pRenderDevice;
 
    float m_cameraElevation;
@@ -113,13 +107,14 @@ private:
    int m_highlitTileX, m_highlitTileZ;
 };
 
-////////////////////////////////////////
-
-inline IRenderDevice * cEditorView::AccessRenderDevice()
-{
-   return m_pRenderDevice;
-}
+#ifndef _DEBUG  // debug version in editorView.cpp
+inline cEditorDoc* cEditorView::GetDocument()
+   { return (cEditorDoc*)m_pDocument; }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
+
+//{{AFX_INSERT_LOCATION}}
+// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
 #endif // !defined(INCLUDED_EDITORVIEW_H)

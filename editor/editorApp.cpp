@@ -7,19 +7,30 @@
 #include "editorDoc.h"
 #include "editorView.h"
 #include "editorTypes.h"
+#include "MainFrm.h"
+#include "aboutdlg.h"
+#include "splashwnd.h"
+#include "BitmapUtils.h"
+#include "terrainapi.h"
 
+#include "sceneapi.h"
+#include "inputapi.h"
 #include "scriptapi.h"
 
-#include "resourceapi.h"
+#include "textureapi.h"
+
 #include "resmgr.h"
 #include "configapi.h"
+#include "globalobj.h"
 #include "techtime.h"
 #include "connptimpl.h"
 #include "readwriteapi.h"
+#include "filespec.h"
+#include "filepath.h"
 #include "str.h"
+#include "threadcallapi.h"
 
 #include <algorithm>
-#include <zmouse.h>
 
 #ifdef HAVE_CPPUNIT
 #ifdef USE_MFC_TESTRUNNER
@@ -39,6 +50,11 @@
 
 #include "dbgalloc.h" // must be last header
 
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
 extern sScriptReg g_editorCmds[];
 extern uint g_nEditorCmds;
 
@@ -46,45 +62,115 @@ static const tChar g_szRegistryKey[] = _T("SGE");
 
 /////////////////////////////////////////////////////////////////////////////
 
-static const SIZE g_mapSizes[] =
-{
-   { 64, 64 },
-   { 128, 128 },
-   { 192, 192 },
-   { 256, 256 },
-};
-
-static const uint kDefaultMapSizeIndex = 0;
+WTL::CAppModule _Module;
 
 /////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cEditorSingleDocTemplate
+//
 
-template <typename CONTAINER>
-void ListTileSets(CONTAINER * pContainer)
+class cEditorSingleDocTemplate : public CSingleDocTemplate
 {
-   UseGlobal(EditorTileManager);
+public:
+	cEditorSingleDocTemplate(UINT nIDResource, CRuntimeClass * pDocClass,
+		CRuntimeClass * pFrameClass, CRuntimeClass * pViewClass);
+   ~cEditorSingleDocTemplate();
 
-   uint nTileSets = 0;
-   if (pEditorTileManager->GetTileSetCount(&nTileSets) == S_OK && nTileSets > 0)
-   {
-      for (uint i = 0; i < nTileSets; i++)
-      {
-         cAutoIPtr<IEditorTileSet> pTileSet;
-         if (pEditorTileManager->GetTileSet(i, &pTileSet) == S_OK)
-         {
-            Assert(!!pTileSet);
-            cStr name;
-            Verify(pTileSet->GetName(&name) == S_OK);
-            pContainer->push_back(name);
-         }
-         else
-         {
-            WarnMsg1("Error getting tile set %d\n", i);
-         }
-      }
-   }
+   void * operator new(size_t nSize, int type, LPCSTR lpszFileName, int nLine);
+   void operator delete(void *p, int type, LPCSTR lpszFileName, int nLine);
+};
+
+////////////////////////////////////////
+
+cEditorSingleDocTemplate::cEditorSingleDocTemplate(UINT nIDResource, CRuntimeClass * pDocClass,
+                                                   CRuntimeClass * pFrameClass, CRuntimeClass * pViewClass)
+ : CSingleDocTemplate(nIDResource, pDocClass, pFrameClass, pViewClass)
+{
+}
+
+////////////////////////////////////////
+
+cEditorSingleDocTemplate::~cEditorSingleDocTemplate()
+{
+}
+
+////////////////////////////////////////
+
+void * cEditorSingleDocTemplate::operator new(size_t nSize, int type, LPCSTR lpszFileName, int nLine)
+{
+   return ::operator new(nSize, type, lpszFileName, nLine);
+}
+
+////////////////////////////////////////
+
+void cEditorSingleDocTemplate::operator delete(void *p, int type, LPCSTR lpszFileName, int nLine)
+{
+   ::operator delete(p);
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cEditorApp
+//
+
+BEGIN_MESSAGE_MAP(cEditorApp, CWinApp)
+	//{{AFX_MSG_MAP(cEditorApp)
+	ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
+	ON_COMMAND(ID_TOOLS_UNITTESTRUNNER, OnToolsUnitTestRunner)
+	//}}AFX_MSG_MAP
+	// Standard file based document commands
+	ON_COMMAND(ID_FILE_NEW, CWinApp::OnFileNew)
+	ON_COMMAND(ID_FILE_OPEN, CWinApp::OnFileOpen)
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// cEditorApp construction
+
+cEditorApp::cEditorApp()
+ : m_hCurrentToolWnd(NULL)
+{
+	// TODO: add construction code here,
+	// Place all significant initialization in InitInstance
 }
 
 /////////////////////////////////////////////////////////////////////////////
+// The one and only cEditorApp object
+
+cEditorApp theApp;
+
+IEditorApp * AccessEditorApp()
+{
+   return static_cast<IEditorApp *>(&theApp);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// cEditorApp initialization
+
+static bool ScriptExecFile(const char * pszFile)
+{
+   UseGlobal(ScriptInterpreter);
+   return pScriptInterpreter->ExecFile(pszFile) == S_OK;
+}
+
+////////////////////////////////////////
+
+static bool ScriptExecString(const char * pszCode)
+{
+   UseGlobal(ScriptInterpreter);
+   return pScriptInterpreter->ExecString(pszCode) == S_OK;
+}
+
+////////////////////////////////////////
+
+static void ScriptCallFunction(const char * pszName, const char * pszArgDesc, ...)
+{
+   UseGlobal(ScriptInterpreter);
+   va_list args;
+   va_start(args, pszArgDesc);
+   pScriptInterpreter->CallFunction(pszName, pszArgDesc, args);
+   va_end(args);
+}
 
 ////////////////////////////////////////
 
@@ -112,62 +198,91 @@ static char * GetEntireContents(IReader * pReader)
 
 ////////////////////////////////////////
 
-static bool ScriptExecResource(IScriptInterpreter * pInterpreter, const char * pszResource)
+static bool ScriptExecResource(const char * pszResource)
 {
-   bool bResult = false;
+   UseGlobal(ResourceManager);
+   cAutoIPtr<IReader> pReader = pResourceManager->Find(pszResource);
+   if (!pReader)
+      return false;
+   char * pszCode = GetEntireContents(pReader);
+   if (pszCode == NULL)
+      return false;
+   bool result = ScriptExecString(pszCode);
+   delete [] pszCode;
+   return result;
+}
 
-   cAutoIPtr<IResource> pResource;
-   UseGlobal(ResourceManager2);
-   if (pResourceManager2->Load(tResKey(pszResource, kRC_Text), &pResource) == S_OK)
+////////////////////////////////////////
+
+static void RegisterGlobalObjects()
+{
+   InputCreate();
+//   SimCreate();
+   ResourceManagerCreate();
+   SceneCreate();
+   ScriptInterpreterCreate();
+   TextureManagerCreate();
+//   GUIContextCreate();
+//   GUIFactoryCreate();
+//   GUIRenderingToolsCreate();
+   EditorTileManagerCreate();
+   ThreadCallerCreate();
+   TerrainRendererCreate();
+}
+
+////////////////////////////////////////
+
+BOOL cEditorApp::InitInstance()
+{
+   if (FAILED(_Module.Init(NULL, AfxGetInstanceHandle())))
    {
-      char * pszCode;
-      if (pResource->GetData((void**)&pszCode) == S_OK)
-      {
-         bResult = SUCCEEDED(pInterpreter->ExecString(pszCode));
-         delete [] pszCode;
-      }
+      DebugMsg("Error initializing main ATL module object\n");
+      return FALSE;
    }
 
-   return bResult;
-}
+	// Standard initialization
+	// If you are not using these features and wish to reduce the size
+	//  of your final executable, you should remove from the following
+	//  the specific initialization routines you do not need.
 
-/////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cEditorApp
-//
+#if _MFC_VER < 0x0700
+#ifdef _AFXDLL
+	Enable3dControls();			// Call this when using MFC in a shared DLL
+#else
+	Enable3dControlsStatic();	// Call this when linking to MFC statically
+#endif
+#endif
 
-////////////////////////////////////////
+	// Change the registry key under which our settings are stored.
+	// TODO: You should modify this string to be something appropriate
+	// such as the name of your company or organization.
+	SetRegistryKey(g_szRegistryKey);
 
-BEGIN_CONSTRAINTS()
-   AFTER_GUID(IID_IResourceManager)
-   AFTER_GUID(IID_IResourceManager2)
-   AFTER_GUID(IID_IScriptInterpreter)
-END_CONSTRAINTS()
+	LoadStdProfileSettings();  // Load standard INI file options (including MRU)
 
-////////////////////////////////////////
-
-cEditorApp::cEditorApp()
- : cGlobalObject<IMPLEMENTS(IEditorApp)>("EditorApp", CONSTRAINTS()),
-   m_hCurrentToolWnd(NULL)
-{
-}
-
-////////////////////////////////////////
-
-cEditorApp::~cEditorApp()
-{
-}
-
-////////////////////////////////////////
-
-tResult cEditorApp::Init()
-{
-   if (!m_mainWnd.CreateEx())
+   RegisterGlobalObjects();
+   if (FAILED(StartGlobalObjects()))
    {
-      return E_FAIL;
+      DebugMsg("One or more application-level services failed to start!\n");
+      return FALSE;
    }
+
+   UseGlobal(ThreadCaller);
+   pThreadCaller->ThreadInit();
 
    ScriptAddFunctions(g_editorCmds, g_nEditorCmds);
+
+   cFileSpec file(__argv[0]);
+   file.SetPath(cFilePath());
+   file.SetFileExt("cfg");
+
+   cAutoIPtr<IDictionaryStore> pStore = DictionaryStoreCreate(file);
+   if (pStore->Load(g_pConfig) != S_OK)
+   {
+      DebugMsg1("Error loading settings from %s\n", file.GetName());
+   }
+
+   ::ParseCommandLine(__argc, __argv, g_pConfig);
 
    cStr temp;
    if (ConfigGet("data", &temp) == S_OK)
@@ -176,52 +291,153 @@ tResult cEditorApp::Init()
       pResourceManager->AddSearchPath(temp);
    }
 
+   cSplashThread * pSplashThread = NULL;
+   HBITMAP hSplashBitmap = NULL;
+   if (ConfigGet("splash_image", &temp) == S_OK
+      && ::LoadBitmap(temp.c_str(), &hSplashBitmap))
+   {
+      pSplashThread = (cSplashThread *)AfxBeginThread(
+         RUNTIME_CLASS(cSplashThread),
+         THREAD_PRIORITY_NORMAL,
+         CREATE_SUSPENDED);
+      ASSERT_VALID(pSplashThread);
+
+      pSplashThread->SetBitmap(hSplashBitmap);
+      pSplashThread->ResumeThread();
+
+      int splashDelay = 0;
+      if (ConfigGet("splash_delay_ms", &splashDelay) == S_OK
+         && splashDelay > 0)
+      {
+         Sleep(splashDelay);
+      }
+   }
+
+	// Register the application's document templates.  Document templates
+	//  serve as the connection between documents, frame windows and views.
+
+   cEditorSingleDocTemplate * pDocTemplate = new cEditorSingleDocTemplate(
+		IDR_MAINFRAME,
+		RUNTIME_CLASS(cEditorDoc),
+		RUNTIME_CLASS(CMainFrame),       // main SDI frame window
+		RUNTIME_CLASS(cEditorView));
+	AddDocTemplate(pDocTemplate);
+
    cStr autoexecScript("editor.lua");
    ConfigGet("editor_autoexec_script", &autoexecScript);
 
-   UseGlobal(ScriptInterpreter);
-   if (pScriptInterpreter->ExecFile(autoexecScript) != S_OK)
+   if (!ScriptExecFile(autoexecScript))
    {
-      if (!ScriptExecResource(pScriptInterpreter, autoexecScript))
+      if (!ScriptExecResource(autoexecScript))
       {
          WarnMsg1("Error parsing or executing %s\n", autoexecScript.c_str());
       }
    }
 
-   if (pScriptInterpreter->CallFunction("EditorInit") != S_OK)
+   ScriptCallFunction("EditorInit", NULL);
+
+	// Parse command line for standard shell commands, DDE, file open
+	CCommandLineInfo cmdInfo;
+//	ParseCommandLine(cmdInfo);
+
+	// Dispatch commands specified on the command line
+	if (!ProcessShellCommand(cmdInfo))
+		return FALSE;
+
+	// The one and only window has been initialized, so show and update it.
+	m_pMainWnd->ShowWindow(SW_SHOW);
+	m_pMainWnd->UpdateWindow();
+
+   if (pSplashThread != NULL)
    {
-      ErrorMsg("An error occured calling EditorInit()\n");
+      pSplashThread->HideSplash();
    }
 
-   CMessageLoop * pMessageLoop = _Module.GetMessageLoop();
-   pMessageLoop->AddMessageFilter(this);
-
-	m_mainWnd.ShowWindow(SW_SHOW);
-	m_mainWnd.UpdateWindow();
-
-   return S_OK;
+	return TRUE;
 }
 
 ////////////////////////////////////////
 
-tResult cEditorApp::Term()
+int cEditorApp::ExitInstance() 
 {
-	if (m_mainWnd.IsWindow())
-   {
-      m_mainWnd.DestroyWindow();
-   }
+	StopGlobalObjects();
 
-   CMessageLoop * pMessageLoop = _Module.GetMessageLoop();
-   pMessageLoop->RemoveMessageFilter(this);
+   _Module.Term();
 
-   return S_OK;
+	return CWinApp::ExitInstance();
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// cEditorApp message handlers
+
+// App command to run the dialog
+void cEditorApp::OnAppAbout()
+{
+	CAboutDlg().DoModal();
 }
 
 ////////////////////////////////////////
 
-void EditorAppCreate()
+int cEditorApp::Run() 
 {
-   cAutoIPtr<IEditorApp>(new cEditorApp);
+   ASSERT_VALID(this);
+
+   // for tracking the idle time state
+   bool bIdle = true;
+   long lIdleCount = 0;
+
+   double timeLastFrame = TimeGetSecs();
+   double time = timeLastFrame;
+
+   // acquire and dispatch messages until a WM_QUIT message is received.
+   for (;;)
+   {
+      // phase1: check to see if we can do idle work
+      double timeEnterIdle = TimeGetSecs();
+      while (bIdle &&
+         (TimeGetSecs() - timeEnterIdle) < 0.05)
+//         !::PeekMessage(&m_msgCur, NULL, NULL, NULL, PM_NOREMOVE))
+      {
+         // call OnIdle while in bIdle state
+         if (!OnIdle(lIdleCount++))
+            bIdle = false; // assume "no idle" state
+      }
+
+#if _MFC_VER >= 0x0700
+	   _AFX_THREAD_STATE * pState = AfxGetThreadState();
+      MSG * pMsg = &(pState->m_msgCur);
+#else
+      MSG * pMsg = &m_msgCur;
+#endif
+
+      // phase2: pump messages while available
+      while (::PeekMessage(pMsg, NULL, NULL, NULL, PM_NOREMOVE))
+      {
+         // pump message, but quit on WM_QUIT
+         if (!PumpMessage())
+            return ExitInstance();
+
+         // reset "no idle" state after pumping "normal" message
+         if (IsIdleMessage(pMsg))
+         {
+            bIdle = true;
+            lIdleCount = 0;
+         }
+      }
+
+      double elapsed = time - timeLastFrame;
+
+      tEditorLoopClients::iterator iter;
+      for (iter = m_loopClients.begin(); iter != m_loopClients.end(); iter++)
+      {
+         (*iter)->OnFrame(time, elapsed);
+      }
+
+      timeLastFrame = time;
+      time = TimeGetSecs();
+   }
+
+   Assert(!"Should never reach this point!"); // not reachable
 }
 
 ////////////////////////////////////////
@@ -237,16 +453,15 @@ BOOL cEditorApp::PreTranslateMessage(MSG * pMsg)
    {
       pTool = CTAddRef(AccessActiveTool());
    }
-//   else if (AccessDefaultTool() != NULL)
-//   {
-//      pTool = CTAddRef(AccessDefaultTool());
-//   }
+   else if (AccessDefaultTool() != NULL)
+   {
+      pTool = CTAddRef(AccessDefaultTool());
+   }
 
    if (!!pTool)
    {
       m_hCurrentToolWnd = pMsg->hwnd;
 
-#if 0 // TODO
       Assert(!m_pCurrentToolView);
       CWnd * pWnd = CWnd::FromHandlePermanent(pMsg->hwnd);
       if (pWnd != NULL)
@@ -257,13 +472,6 @@ BOOL cEditorApp::PreTranslateMessage(MSG * pMsg)
             m_pCurrentToolView = CTAddRef(static_cast<IEditorView *>(pEditorView));
          }
       }
-#else
-      cAutoIPtr<IEditorView> pView;
-      if (SendMessage(pMsg->hwnd, WM_GET_IEDITORVIEW, 0, (LPARAM)&pView) == 0)
-      {
-         m_pCurrentToolView = pView;
-      }
-#endif
 
       tResult toolResult = S_EDITOR_TOOL_CONTINUE;
 
@@ -344,7 +552,7 @@ BOOL cEditorApp::PreTranslateMessage(MSG * pMsg)
       }
    }
 
-   return FALSE;
+   return CWinApp::PreTranslateMessage(pMsg);
 }
 
 ////////////////////////////////////////
@@ -363,19 +571,6 @@ tResult cEditorApp::RemoveLoopClient(IEditorLoopClient * pLoopClient)
 
 ////////////////////////////////////////
 
-tResult cEditorApp::CallLoopClients(double time, double elapsed)
-{
-   tEditorLoopClients::iterator iter = m_loopClients.begin();
-   tEditorLoopClients::iterator end = m_loopClients.end();
-   for (; iter != end; iter++)
-   {
-      (*iter)->OnFrame(time, elapsed);
-   }
-   return S_OK;
-}
-
-////////////////////////////////////////
-
 tResult cEditorApp::AddEditorAppListener(IEditorAppListener * pListener)
 {
    return add_interface(m_editorAppListeners, pListener) ? S_OK : E_FAIL;
@@ -386,6 +581,52 @@ tResult cEditorApp::AddEditorAppListener(IEditorAppListener * pListener)
 tResult cEditorApp::RemoveEditorAppListener(IEditorAppListener * pListener)
 {
    return remove_interface(m_editorAppListeners, pListener) ? S_OK : E_FAIL;
+}
+
+////////////////////////////////////////
+
+tResult cEditorApp::GetActiveView(IEditorView * * ppView)
+{
+   if (ppView == NULL)
+   {
+      return E_POINTER;
+   }
+
+   CFrameWnd * pMainFrm = DYNAMIC_DOWNCAST(CFrameWnd, GetMainWnd());
+   if (pMainFrm != NULL)
+   {
+      cEditorView * pEditorView = DYNAMIC_DOWNCAST(cEditorView, pMainFrm->GetActiveView());
+      if (pEditorView != NULL)
+      {
+         *ppView = CTAddRef(static_cast<IEditorView *>(pEditorView));
+         return S_OK;
+      }
+   }
+
+   return E_FAIL;
+}
+
+////////////////////////////////////////
+
+tResult cEditorApp::GetActiveModel(IEditorModel * * ppModel)
+{
+   if (ppModel == NULL)
+   {
+      return E_POINTER;
+   }
+
+   CFrameWnd * pMainFrm = DYNAMIC_DOWNCAST(CFrameWnd, GetMainWnd());
+   if (pMainFrm != NULL)
+   {
+      cEditorDoc * pEditorDoc = DYNAMIC_DOWNCAST(cEditorDoc, pMainFrm->GetActiveDocument());
+      if (pEditorDoc != NULL)
+      {
+         *ppModel = CTAddRef(static_cast<IEditorModel *>(pEditorDoc));
+         return S_OK;
+      }
+   }
+
+   return E_FAIL;
 }
 
 ////////////////////////////////////////
@@ -493,7 +734,7 @@ tResult cEditorApp::ReleaseToolCapture()
 
 ////////////////////////////////////////
 
-void RunUnitTests()
+void cEditorApp::OnToolsUnitTestRunner() 
 {
 #ifdef HAVE_CPPUNIT
 #ifdef USE_MFC_TESTRUNNER
@@ -523,7 +764,7 @@ void RunUnitTests()
    }
 #endif
 #else
-   AtlMessageBox(GetFocus(), IDS_NO_UNIT_TESTS, IDR_MAINFRAME);
+   AfxMessageBox(IDS_NO_UNIT_TESTS);
 #endif
 }
 

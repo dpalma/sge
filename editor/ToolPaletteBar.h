@@ -4,9 +4,9 @@
 #ifndef INCLUDED_TOOLPALETTEBAR_H
 #define INCLUDED_TOOLPALETTEBAR_H
 
+#include "afxcomtools.h"
 #include "editorapi.h"
 #include "editorTools.h"
-#include "editorDockingWindows.h"
 #include "ToolPalette.h"
 
 #include <vector>
@@ -20,40 +20,50 @@
 // CLASS: cToolPaletteBar
 //
 
-class cToolPaletteBar : public cDockingWindow,
-                        public cComObject<IMPLEMENTS(IEditorTileManagerListener)>
+class cToolPaletteBar : public CSizingControlBarG,
+                        public cComObject<IMPLEMENTS(IEditorTileManagerListener),
+                                          cAfxComServices<cToolPaletteBar> >
 {
-   enum
-   {
-      kToolPaletteId = 1500
-   };
+   DECLARE_DYNCREATE_EX(cToolPaletteBar)
 
+// Construction
 public:
-   static tResult Factory(cDockingWindow * * ppDockingWindow);
-
    cToolPaletteBar();
-   ~cToolPaletteBar();
+
+// Attributes
+public:
+
+// Operations
+public:
+
+// Overrides
+   // ClassWizard generated virtual function overrides
+   //{{AFX_VIRTUAL(cToolPaletteBar)
+	public:
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	//}}AFX_VIRTUAL
+
+// Implementation
+public:
+   virtual ~cToolPaletteBar();
 
    virtual void OnDefaultTileSetChange(IEditorTileSet * pTileSet);
 
-   BEGIN_MSG_MAP(cToolPaletteBar)
-      MESSAGE_HANDLER(WM_CREATE, OnCreate)
-      MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
-      MESSAGE_HANDLER(WM_SIZE, OnSize)
-      NOTIFY_ID_HANDLER(kToolPaletteId, OnToolPaletteNotify)
-      CHAIN_MSG_MAP(cDockingWindow)
-   END_MSG_MAP()
-
-   LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
-   LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
-   LRESULT OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
-   LRESULT OnToolPaletteNotify(int idCtrl, LPNMHDR pnmh, BOOL & bHandled);
+   // Generated message map functions
+protected:
+   //{{AFX_MSG(cToolPaletteBar)
+   afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg void OnDestroy();
+	afx_msg void OnSize(UINT nType, int cx, int cy);
+	//}}AFX_MSG
+   afx_msg void OnToolPaletteItemCheck(NMHDR * pNmhdr, LRESULT * pResult);
+   afx_msg void OnToolPaletteItemDestroy(NMHDR * pNmhdr, LRESULT * pResult);
+   DECLARE_MESSAGE_MAP()
 
 private:
+   CToolTipCtrl m_tooltip;
    cToolPalette m_toolPalette;
-
    typedef std::vector<HTOOLGROUP> tToolGroups;
-
    tToolGroups m_terrainTileGroups;
 };
 

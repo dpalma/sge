@@ -13,6 +13,11 @@
 
 #include "dbgalloc.h" // must be last header
 
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 
 static const int kTextGap = 2;
@@ -509,7 +514,7 @@ void cToolPaletteRenderer::Render(const cToolGroup * pGroup)
 
 ////////////////////////////////////////
 
-int cToolPaletteRenderer::RenderGroupHeading(CDCHandle dc, LPRECT pRect,
+int cToolPaletteRenderer::RenderGroupHeading(WTL::CDCHandle dc, LPRECT pRect,
                                              const cToolGroup * pGroup)
 {
    if ((pGroup == NULL) || (lstrlen(pGroup->GetName()) == 0))
@@ -644,7 +649,7 @@ void cToolPalette::OnSetFont(HFONT hFont, BOOL bRedraw)
 
 ////////////////////////////////////////
 
-LRESULT cToolPalette::OnEraseBkgnd(CDCHandle dc)
+LRESULT cToolPalette::OnEraseBkgnd(WTL::CDCHandle dc)
 {
    return TRUE;
 }
@@ -706,7 +711,7 @@ bool cToolPalette::GetMousePos(LPPOINT pMousePos) const
 
 ////////////////////////////////////////
 
-void cToolPalette::DoPaint(CDCHandle dc)
+void cToolPalette::DoPaint(WTL::CDCHandle dc)
 {
    CRect rect;
    GetClientRect(rect);
@@ -718,7 +723,7 @@ void cToolPalette::DoPaint(CDCHandle dc)
       pMousePos = &mousePos;
    }
 
-   HFONT hOldFont = dc.SelectFont(!m_font.IsNull() ? m_font : AtlGetDefaultGuiFont());
+   HFONT hOldFont = dc.SelectFont(!m_font.IsNull() ? m_font : WTL::AtlGetDefaultGuiFont());
 
    Verify(m_renderer.Begin(dc, rect, pMousePos));
    m_renderer.Render(m_groups.begin(), m_groups.end());

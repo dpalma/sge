@@ -4,7 +4,8 @@
 	Version="7.10"
 	Name="editor"
 	SccProjectName=""
-	SccLocalPath="">
+	SccLocalPath=""
+	Keyword="MFCProj">
 	<Platforms>
 		<Platform
 			Name="Win32"/>
@@ -15,14 +16,13 @@
 			OutputDirectory=".\..\..\Build.vc71\Release"
 			IntermediateDirectory=".\..\..\Build.vc71\Release\editor"
 			ConfigurationType="1"
-			UseOfMFC="0"
-			UseOfATL="2"
+			UseOfMFC="2"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\wtl\include,..\..\3rdparty\WTLDockingWindows\include"
+				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\wtl\include"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;TIXML_USE_STL"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="atl.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib"
+				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib"
 				OutputFile=".\..\..\Build.vc71\Release/editor.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -62,10 +62,8 @@
 				Name="VCPreLinkEventTool"/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1033"
-				AdditionalIncludeDirectories="..\..\3rdparty\wtl\include"
-				IgnoreStandardIncludePath="FALSE"/>
+				PreprocessorDefinitions="_AFXDLL;NDEBUG"
+				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
@@ -82,14 +80,13 @@
 			OutputDirectory=".\..\..\Build.vc71\Debug"
 			IntermediateDirectory=".\..\..\Build.vc71\Debug\editor"
 			ConfigurationType="1"
-			UseOfMFC="0"
-			UseOfATL="2"
+			UseOfMFC="2"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\wtl\include,..\..\3rdparty\WTLDockingWindows\include"
+				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\wtl\include"
 				PreprocessorDefinitions="_DEBUG;HAVE_CPPUNIT;WIN32;_WINDOWS;TIXML_USE_STL"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -109,7 +106,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="atl.lib $(OutDir)\cppunit.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib"
+				AdditionalDependencies="$(OutDir)\cppunit.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib"
 				OutputFile=".\..\..\Build.vc71\Debug/editor.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -131,10 +128,8 @@
 				Name="VCPreLinkEventTool"/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"
-				AdditionalIncludeDirectories="..\..\3rdparty\wtl\include"
-				IgnoreStandardIncludePath="FALSE"/>
+				PreprocessorDefinitions="_AFXDLL;_DEBUG"
+				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
@@ -151,14 +146,13 @@
 			OutputDirectory=".\..\..\Build.vc71\StaticDebug"
 			IntermediateDirectory=".\..\..\Build.vc71\StaticDebug\editor"
 			ConfigurationType="1"
-			UseOfMFC="0"
-			UseOfATL="1"
+			UseOfMFC="1"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\wtl\include,..\..\3rdparty\WTLDockingWindows\include"
+				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\wtl\include"
 				PreprocessorDefinitions="STATIC_BUILD,_DEBUG,WIN32,_WINDOWS,TIXML_USE_STL"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -177,7 +171,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="atl.lib $(OutDir)\cppunit.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib"
+				AdditionalDependencies="$(OutDir)\cppunit.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib"
 				OutputFile=".\..\..\Build.vc71\StaticDebug/editor.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -200,9 +194,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"
-				AdditionalIncludeDirectories="..\..\3rdparty\wtl\include"
-				IgnoreStandardIncludePath="FALSE"/>
+				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
@@ -219,14 +211,13 @@
 			OutputDirectory=".\..\..\Build.vc71\Opt"
 			IntermediateDirectory=".\..\..\Build.vc71\Opt\editor"
 			ConfigurationType="1"
-			UseOfMFC="0"
-			UseOfATL="2"
+			UseOfMFC="2"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\wtl\include,..\..\3rdparty\WTLDockingWindows\include"
+				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\wtl\include"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;TIXML_USE_STL"
 				StringPooling="TRUE"
 				RuntimeLibrary="3"
@@ -246,7 +237,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="atl.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib"
+				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib"
 				OutputFile=".\..\..\Build.vc71\Opt/editor.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -269,10 +260,8 @@
 				Name="VCPreLinkEventTool"/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1033"
-				AdditionalIncludeDirectories="..\..\3rdparty\wtl\include"
-				IgnoreStandardIncludePath="FALSE"/>
+				PreprocessorDefinitions="_AFXDLL;NDEBUG"
+				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
@@ -289,14 +278,13 @@
 			OutputDirectory=".\..\..\Build.vc71\StaticRelease"
 			IntermediateDirectory=".\..\..\Build.vc71\StaticRelease\editor"
 			ConfigurationType="1"
-			UseOfMFC="0"
-			UseOfATL="1"
+			UseOfMFC="1"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\wtl\include,..\..\3rdparty\WTLDockingWindows\include"
+				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\wtl\include"
 				PreprocessorDefinitions="STATIC_BUILD,NDEBUG,WIN32,_WINDOWS,TIXML_USE_STL"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -315,7 +303,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="atl.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib"
+				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib"
 				OutputFile=".\..\..\Build.vc71\StaticRelease/editor.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -338,9 +326,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
-				Culture="1033"
-				AdditionalIncludeDirectories="..\..\3rdparty\wtl\include"
-				IgnoreStandardIncludePath="FALSE"/>
+				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
@@ -373,6 +359,36 @@
 			</File>
 			<File
 				RelativePath="..\..\editor\editor.rc">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCResourceCompilerTool"
+						AdditionalIncludeDirectories=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCResourceCompilerTool"
+						AdditionalIncludeDirectories=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="StaticDebug|Win32">
+					<Tool
+						Name="VCResourceCompilerTool"
+						AdditionalIncludeDirectories=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Opt|Win32">
+					<Tool
+						Name="VCResourceCompilerTool"
+						AdditionalIncludeDirectories=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="StaticRelease|Win32">
+					<Tool
+						Name="VCResourceCompilerTool"
+						AdditionalIncludeDirectories=""/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\editor\editorApp.cpp">
@@ -381,16 +397,10 @@
 				RelativePath="..\..\editor\editorCommands.cpp">
 			</File>
 			<File
+				RelativePath="..\..\editor\editorCtrlBars.cpp">
+			</File>
+			<File
 				RelativePath="..\..\editor\editorDoc.cpp">
-			</File>
-			<File
-				RelativePath="..\..\editor\editorDockingWindows.cpp">
-			</File>
-			<File
-				RelativePath="..\..\editor\editorMain.cpp">
-			</File>
-			<File
-				RelativePath="..\..\editor\editorMessageLoop.cpp">
 			</File>
 			<File
 				RelativePath="..\..\editor\editorTile.cpp">
@@ -411,7 +421,10 @@
 				RelativePath="..\..\editor\editorView.cpp">
 			</File>
 			<File
-				RelativePath="..\..\editor\LogWnd.cpp">
+				RelativePath="..\..\editor\glView.cpp">
+			</File>
+			<File
+				RelativePath="..\..\editor\historywnd.cpp">
 			</File>
 			<File
 				RelativePath="..\..\editor\MainFrm.cpp">
@@ -421,6 +434,21 @@
 			</File>
 			<File
 				RelativePath="..\..\editor\OutputBar.cpp">
+			</File>
+			<File
+				RelativePath="..\..\editor\scbarcf.cpp">
+			</File>
+			<File
+				RelativePath="..\..\editor\scbarg.cpp">
+			</File>
+			<File
+				RelativePath="..\..\editor\scrollwnd.cpp">
+			</File>
+			<File
+				RelativePath="..\..\editor\sizecbar.cpp">
+			</File>
+			<File
+				RelativePath="..\..\editor\splashwnd.cpp">
 			</File>
 			<File
 				RelativePath="..\..\editor\stdhdr.cpp">
@@ -475,10 +503,10 @@
 				RelativePath="..\..\editor\aboutdlg.h">
 			</File>
 			<File
-				RelativePath="..\..\editor\BitmapUtils.h">
+				RelativePath="..\..\editor\afxcomtools.h">
 			</File>
 			<File
-				RelativePath="..\..\editor\ddxext.h">
+				RelativePath="..\..\editor\BitmapUtils.h">
 			</File>
 			<File
 				RelativePath="..\..\editor\DynamicLink.h">
@@ -493,16 +521,13 @@
 				RelativePath="..\..\editor\editorCommands.h">
 			</File>
 			<File
+				RelativePath="..\..\editor\editorCtrlBars.h">
+			</File>
+			<File
 				RelativePath="..\..\editor\editorDoc.h">
 			</File>
 			<File
-				RelativePath="..\..\editor\editorDockingWindows.h">
-			</File>
-			<File
 				RelativePath="..\..\editor\editorguids.h">
-			</File>
-			<File
-				RelativePath="..\..\editor\editorMessageLoop.h">
 			</File>
 			<File
 				RelativePath="..\..\editor\editorTile.h">
@@ -523,10 +548,10 @@
 				RelativePath="..\..\editor\editorView.h">
 			</File>
 			<File
-				RelativePath="..\..\editor\GLContext.h">
+				RelativePath="..\..\editor\glView.h">
 			</File>
 			<File
-				RelativePath="..\..\editor\LogWnd.h">
+				RelativePath="..\..\editor\historywnd.h">
 			</File>
 			<File
 				RelativePath="..\..\editor\MainFrm.h">
@@ -535,13 +560,25 @@
 				RelativePath="..\..\editor\MapSettingsDlg.h">
 			</File>
 			<File
-				RelativePath="..\..\editor\MenuItemInfo.h">
-			</File>
-			<File
 				RelativePath="..\..\editor\OutputBar.h">
 			</File>
 			<File
 				RelativePath="..\..\editor\resource.h">
+			</File>
+			<File
+				RelativePath="..\..\editor\scbarcf.h">
+			</File>
+			<File
+				RelativePath="..\..\editor\scbarg.h">
+			</File>
+			<File
+				RelativePath="..\..\editor\scrollwnd.h">
+			</File>
+			<File
+				RelativePath="..\..\editor\sizecbar.h">
+			</File>
+			<File
+				RelativePath="..\..\editor\splashwnd.h">
 			</File>
 			<File
 				RelativePath="..\..\editor\stdhdr.h">
@@ -583,5 +620,8 @@
 		</Filter>
 	</Files>
 	<Globals>
+		<Global
+			Name="RESOURCE_FILE"
+			Value="\prj\sge\editor\editor.rc"/>
 	</Globals>
 </VisualStudioProject>

@@ -7,8 +7,9 @@
 
 #include <afxole.h>
 
+#include "dbgalloc.h" // must be last header
+
 #ifdef _DEBUG
-#define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
@@ -67,7 +68,7 @@ bool cTextDataSource::SetText(const tChar * pszText)
 
 ///////////////////////////////////////
 
-IMPLEMENT_DYNCREATE(cHistoryWnd, CScrollWnd)
+IMPLEMENT_DYNCREATE_EX(cHistoryWnd, CScrollWnd)
 
 BEGIN_MESSAGE_MAP(cHistoryWnd, CScrollWnd)
    //{{AFX_MSG_MAP(cHistoryWnd)

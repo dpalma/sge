@@ -27,9 +27,6 @@ F_DECLARE_INTERFACE(IEditorCommand);
 F_DECLARE_INTERFACE(IEditorTerrainTileCommand);
 F_DECLARE_INTERFACE(IEditorTool);
 
-F_DECLARE_GUID(CLSID_EditorDoc);
-F_DECLARE_GUID(CLSID_EditorView);
-
 F_DECLARE_INTERFACE(ITerrainModel);
 
 F_DECLARE_INTERFACE(ISceneCamera);
@@ -56,11 +53,11 @@ interface UUID("2A04E541-6BA1-41e9-92FA-E7B3D493F1A2") IEditorApp : IUnknown
    virtual tResult AddLoopClient(IEditorLoopClient * pLoopClient) = 0;
    virtual tResult RemoveLoopClient(IEditorLoopClient * pLoopClient) = 0;
 
-   // HACK
-   virtual tResult CallLoopClients(double time, double elapsed) = 0;
-
    virtual tResult AddEditorAppListener(IEditorAppListener * pListener) = 0;
    virtual tResult RemoveEditorAppListener(IEditorAppListener * pListener) = 0;
+
+   virtual tResult GetActiveView(IEditorView * * ppView) = 0;
+   virtual tResult GetActiveModel(IEditorModel * * ppModel) = 0;
 
    virtual tResult GetActiveTool(IEditorTool * * ppTool) = 0;
    virtual tResult SetActiveTool(IEditorTool * pTool) = 0;
@@ -74,6 +71,8 @@ interface UUID("2A04E541-6BA1-41e9-92FA-E7B3D493F1A2") IEditorApp : IUnknown
 };
 
 ////////////////////////////////////////
+
+IEditorApp * AccessEditorApp();
 
 void EditorAppCreate();
 
@@ -181,10 +180,6 @@ interface UUID("CDEB5694-56D2-4750-BEF8-85F286364C23") IEditorTile : IUnknown
 
 interface UUID("78C29790-865D-4f81-9AF1-26EC23BB5FAC") IEditorView : IUnknown
 {
-   virtual tResult Create(HWND hWndParent, HWND * phWnd) = 0;
-   virtual tResult Destroy() = 0;
-   virtual tResult Move(int x, int y, int width, int height) = 0;
-
    virtual tResult GetCamera(ISceneCamera * * ppCamera) = 0;
    virtual tVec3 GetCameraEyePosition() const = 0;
    virtual tResult GetCameraPlacement(float * px, float * pz) = 0;
@@ -208,17 +203,6 @@ interface UUID("78C29790-865D-4f81-9AF1-26EC23BB5FAC") IEditorView : IUnknown
 
 interface UUID("F131D72E-30A7-4758-A094-830F00A50D91") IEditorModel : IUnknown
 {
-   virtual tResult New() = 0;
-   virtual tResult Open(IReader * pReader) = 0;
-   virtual tResult Save(IWriter * pWriter) = 0;
-   virtual tResult Reset() = 0;
-   virtual tResult IsModified() = 0;
-
-   virtual tResult CanUndo(cStr * pLabel) = 0;
-   virtual tResult Undo() = 0;
-   virtual tResult CanRedo(cStr * pLabel) = 0;
-   virtual tResult Redo() = 0;
-
    virtual tResult SetTerrainModel(ITerrainModel * pTerrainModel) = 0;
    virtual tResult GetTerrainModel(ITerrainModel * * ppTerrainModel) = 0;
 

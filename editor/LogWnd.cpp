@@ -11,15 +11,15 @@
 
 static const COLORREF g_logColors[] =
 {
-   RGB(255,0,0),                    // kError
-   GetSysColor(COLOR_WINDOWTEXT),   // kWarning
-   GetSysColor(COLOR_WINDOWTEXT),   // kInfo
-   RGB(0,0,255),                    // kDebug
+   RGB(255,0,0),     // kError
+   RGB(0,255,255),   // kWarning
+   GetSysColor(COLOR_WINDOWTEXT), // kInfo
+   RGB(0,0,255),     // kDebug
 };
 
 static const int kLeftColumnMargin = 1;
-static const COLORREF kLeftColumnColor = GetSysColor(COLOR_3DFACE);
-static const COLORREF kLeftColumnBorderColor = GetSysColor(COLOR_3DDKSHADOW);
+static const COLORREF kLeftColumnColor = RGB(192,192,192);
+static const COLORREF kLeftColumnBorderColor = RGB(128,128,128);
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -101,19 +101,25 @@ const tChar * cLogWndItem::GetString() const
 
 ////////////////////////////////////////
 
-cLogWndItemRender::cLogWndItemRender(HDC hDC, const CRect & startRect,
-                                     bool bCalcOnly)
- : m_dc(hDC),
+cLogWndItemRender::cLogWndItemRender(WTL::CDCHandle dc, const CRect & startRect,
+                                     HFONT hFont, bool bCalcOnly)
+ : m_dc(dc),
    m_rect(startRect),
+   m_hOldFont(NULL),
    m_bCalcOnly(bCalcOnly),
    m_rightSide(startRect.right),
    m_totalHeight(0)
 {
+   if (hFont != NULL)
+   {
+      m_hOldFont = m_dc.SelectFont(hFont);
+   }
 }
 
 ////////////////////////////////////////
 
 cLogWndItemRender::cLogWndItemRender(const cLogWndItemRender & other)
+ : m_hOldFont(NULL)
 {
    operator =(other);
 }
@@ -122,27 +128,40 @@ cLogWndItemRender::cLogWndItemRender(const cLogWndItemRender & other)
 
 cLogWndItemRender::~cLogWndItemRender()
 {
+   if (m_hOldFont != NULL)
+   {
+      m_dc.SelectFont(m_hOldFont);
+      m_hOldFont = NULL;
+   }
 }
 
 ////////////////////////////////////////
 
 const cLogWndItemRender & cLogWndItemRender::operator =(const cLogWndItemRender & other)
 {
+   // Do not copy m_hOldFont
    m_dc = other.m_dc;
    m_rect = other.m_rect;
    m_bCalcOnly = other.m_bCalcOnly;
    m_rightSide = other.m_rightSide;
+   m_rects.resize(other.m_rects.size());
+   std::copy(other.m_rects.begin(), other.m_rects.end(), m_rects.begin());
    m_totalHeight = other.m_totalHeight;
    return *this;
 }
 
 ////////////////////////////////////////
 
-void cLogWndItemRender::Render(const cLogWndItem & item)
+void cLogWndItemRender::operator ()(const cLogWndItem & item)
 {
-   static const uint kDrawTextFlags = DT_LEFT | DT_TOP | DT_WORDBREAK;
+   Invoke(item);
+}
 
-   m_dc.DrawText(item.GetString(), -1, &m_rect, kDrawTextFlags | DT_CALCRECT);
+////////////////////////////////////////
+
+void cLogWndItemRender::Invoke(const cLogWndItem & item)
+{
+   m_dc.DrawText(item.GetString(), -1, &m_rect, DT_FLAGS | DT_CALCRECT);
 
    if (!m_bCalcOnly)
    {
@@ -154,11 +173,13 @@ void cLogWndItemRender::Render(const cLogWndItem & item)
       rect.OffsetRect(kLeftColumnWidth + kLeftColumnMargin, 0);
 
       COLORREF oldTextColor = m_dc.SetTextColor(g_logColors[item.GetSeverity()]);
-      m_dc.DrawText(item.GetString(), -1, &rect, kDrawTextFlags);
+      m_dc.DrawText(item.GetString(), -1, &rect, DT_FLAGS);
       m_dc.SetTextColor(oldTextColor);
    }
 
    m_totalHeight += m_rect.Height();
+
+   m_rects.push_back(m_rect);
 
    m_rect.top = m_rect.bottom;
    m_rect.right = m_rightSide;
@@ -181,6 +202,13 @@ void cLogWndItemRender::RenderLeftColumn(const CRect & rect)
 
 ////////////////////////////////////////
 
+const std::vector<CRect> & cLogWndItemRender::GetRects() const
+{
+   return m_rects;
+}
+
+////////////////////////////////////////
+
 int cLogWndItemRender::GetTotalHeight() const
 {
    return m_totalHeight;
@@ -194,12 +222,6 @@ int cLogWndItemRender::GetTotalHeight() const
 ////////////////////////////////////////
 
 cLogWnd::cLogWnd()
-{
-}
-
-////////////////////////////////////////
-
-cLogWnd::~cLogWnd()
 {
 }
 
@@ -250,92 +272,30 @@ tResult cLogWnd::Clear()
 
 ////////////////////////////////////////
 
-void cLogWnd::DoPaint(CDCHandle dc)
+BOOL cLogWnd::PreTranslateMessage(MSG * pMsg)
+{
+   return FALSE;
+}
+
+////////////////////////////////////////
+
+void cLogWnd::DoPaint(WTL::CDCHandle dc)
 {
    CRect rect;
    Verify(GetClientRect(&rect));
 
-   HFONT hOldFont = dc.SelectFont(m_font.IsNull() ? AtlGetDefaultGuiFont() : m_font);
+   cLogWndItemRender renderer(dc, rect, WTL::AtlGetDefaultGuiFont());
 
-   cLogWndItemRender renderer(dc, rect);
+   cLogWndItemRender result = std::for_each(m_items.begin(), m_items.end(), renderer);
 
-   tItems::const_iterator iter = m_items.begin();
-   tItems::const_iterator end = m_items.end();
-   for (; iter != end; iter++)
-   {
-      renderer.Render(*iter);
-   }
-
-   if (renderer.GetTotalHeight() < rect.Height())
+   if (result.GetTotalHeight() < rect.Height())
    {
       renderer.RenderLeftColumn(
          CRect(rect.left,
-               renderer.GetTotalHeight(),
+               result.GetTotalHeight(),
                rect.left + cLogWndItemRender::kLeftColumnWidth,
                rect.bottom));
    }
-
-   dc.SelectFont(hOldFont);
-}
-
-////////////////////////////////////////
-
-void cLogWnd::OnDestroy()
-{
-   SetFont(NULL, FALSE);
-
-   m_items.clear();
-}
-
-////////////////////////////////////////
-
-void cLogWnd::OnSetFont(HFONT hFont, BOOL bRedraw)
-{
-   if (!m_font.IsNull())
-   {
-      m_font.DeleteObject();
-   }
-
-   if (hFont != NULL)
-   {
-      LOGFONT logFont = {0};
-      if (GetObject(hFont, sizeof(LOGFONT), &logFont))
-      {
-         m_font.CreateFontIndirect(&logFont);
-      }
-   }
-}
-
-////////////////////////////////////////
-
-LRESULT cLogWnd::OnSetCursor(HWND hWnd, UINT hitTest, UINT message)
-{
-   if (hitTest == HTCLIENT)
-   {
-      SetCursor(LoadCursor(NULL, IDC_IBEAM));
-      return TRUE;
-   }
-
-   SetMsgHandled(FALSE);
-   return 0;
-}
-
-////////////////////////////////////////
-
-void cLogWnd::OnMouseMove(UINT flags, CPoint point)
-{
-}
-
-////////////////////////////////////////
-
-void cLogWnd::OnLButtonDown(UINT flags, CPoint point)
-{
-}
-
-////////////////////////////////////////
-
-void cLogWnd::OnLButtonUp(UINT flags, CPoint point)
-{
 }
 
 ////////////////////////////////////////
@@ -345,22 +305,13 @@ void cLogWnd::UpdateScrollInfo()
    CRect rect;
    Verify(GetClientRect(&rect));
 
-   CDC dc(GetDC());
+   WTL::CDC dc(GetDC());
 
-   HFONT hOldFont = dc.SelectFont(m_font.IsNull() ? AtlGetDefaultGuiFont() : m_font);
+   cLogWndItemRender renderer(WTL::CDCHandle(dc), rect, WTL::AtlGetDefaultGuiFont(), true);
 
-   cLogWndItemRender renderer(dc, rect, true);
+   cLogWndItemRender result = std::for_each(m_items.begin(), m_items.end(), renderer);
 
-   tItems::const_iterator iter = m_items.begin();
-   tItems::const_iterator end = m_items.end();
-   for (; iter != end; iter++)
-   {
-      renderer.Render(*iter);
-   }
-
-   SetScrollSize(1, renderer.GetTotalHeight());
-
-   dc.SelectFont(hOldFont);
+   SetScrollSize(1, result.GetTotalHeight());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

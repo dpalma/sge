@@ -7,6 +7,11 @@
 
 #include "dbgalloc.h" // must be last header
 
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
 // REFERENCES
 // http://www.codeproject.com/dialog/splasher.asp
 
@@ -162,7 +167,7 @@ END_MESSAGE_MAP()
 
 ///////////////////////////////////////
 
-IMPLEMENT_DYNCREATE(cSplashThread, CWinThread)
+IMPLEMENT_DYNCREATE_EX(cSplashThread, CWinThread)
 
 ///////////////////////////////////////
 

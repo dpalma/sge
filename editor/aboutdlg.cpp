@@ -9,6 +9,11 @@
 
 #include "dbgalloc.h" // must be last header
 
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cThirdPartyCredit
@@ -88,50 +93,31 @@ static cThirdPartyCredit g_thirdPartyCredits[] =
    cThirdPartyCredit("CppUnit", "(various)", "http://cppunit.sourceforge.net/"),
    cThirdPartyCredit("TinyXml", "Lee Thomason", "http://www.grinninglizard.com/tinyxml/"),
    cThirdPartyCredit("Lua", "PUC-Rio", "http://www.lua.org/"),
-   cThirdPartyCredit("WTL Docking Windows", "Sergey Klimov", "http://www.codeproject.com/wtl/wtldockingwindows.asp"),
+   cThirdPartyCredit("Sizing Control Bars", "Cristi Posea", "http://www.datamekanix.com"),
+   //cThirdPartyCredit("WTL Docking Windows", "Sergey Klimov", "http://www.codeproject.com/wtl/wtldockingwindows.asp"),
    cThirdPartyCredit("zlib", "Jean-loup Gailly and Mark Adler", "http://www.gzip.org/zlib/"),
 };
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cAboutDlg
+// CLASS: CAboutDlg
 //
 
-////////////////////////////////////////
-
-LRESULT cAboutDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/)
+CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
 {
-   CEdit credits(GetDlgItem(IDC_CREDITS));
-   if (credits)
-   {
-      for (int i = 0; i < _countof(g_thirdPartyCredits); i++)
-      {
-         const cThirdPartyCredit & c = g_thirdPartyCredits[i];
-
-         CString s;
-         s += c.GetTitle();
-         s += ", ";
-         s += c.GetAuthor();
-         s += "\r\n";
-         s += c.GetUrl();
-         s += "\r\n\r\n";
-
-         credits.AppendText(s);
-      }
-   }
-
-   CenterWindow(GetParent());
-
-	return TRUE;  // return TRUE unless you set the focus to a control
-	              // EXCEPTION: OCX Property Pages should return FALSE
+	//{{AFX_DATA_INIT(CAboutDlg)
+	//}}AFX_DATA_INIT
 }
 
-////////////////////////////////////////
-
-LRESULT cAboutDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL & /*bHandled*/)
+void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 {
-   EndDialog(wID);
-   return 0;
+	CDialog::DoDataExchange(pDX);
+	//{{AFX_DATA_MAP(CAboutDlg)
+	//}}AFX_DATA_MAP
 }
 
-/////////////////////////////////////////////////////////////////////////////
+BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
+	//{{AFX_MSG_MAP(CAboutDlg)
+		// No message handlers
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()

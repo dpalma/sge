@@ -19,7 +19,7 @@
 
 class cHistoryWnd : public CScrollWnd
 {
-   DECLARE_DYNCREATE(cHistoryWnd)
+   DECLARE_DYNCREATE_EX(cHistoryWnd)
 
 public:
    cHistoryWnd();

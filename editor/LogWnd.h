@@ -4,10 +4,12 @@
 #ifndef INCLUDED_LOGWND_H
 #define INCLUDED_LOGWND_H
 
+#include <atlgdi.h>
 #include <atlscrl.h>
 
 #include <vector>
 #include <string>
+#include <algorithm>
 
 #if _MSC_VER > 1000
 #pragma once
@@ -22,7 +24,7 @@ class cLogWndItem
 {
 public:
    cLogWndItem();
-   cLogWndItem(eLogSeverity severity, const std::string & string);
+   explicit cLogWndItem(eLogSeverity severity, const std::string & string);
    cLogWndItem(const cLogWndItem & other);
 
    ~cLogWndItem();
@@ -48,26 +50,31 @@ class cLogWndItemRender
 public:
    enum
    {
+      DT_FLAGS = DT_LEFT | DT_TOP | DT_WORDBREAK,
       kLeftColumnWidth = 18,
    };
 
-   cLogWndItemRender(HDC hDC, const CRect & startRect, bool bCalcOnly = false);
+   cLogWndItemRender(WTL::CDCHandle dc, const CRect & startRect, HFONT hFont = NULL, bool bCalcOnly = false);
    cLogWndItemRender(const cLogWndItemRender & other);
    ~cLogWndItemRender();
 
    const cLogWndItemRender & operator =(const cLogWndItemRender & other);
 
-   void Render(const cLogWndItem & item);
+   void operator ()(const cLogWndItem & item);
+   void Invoke(const cLogWndItem & item);
 
    void RenderLeftColumn(const CRect & rect);
 
+   const std::vector<CRect> & GetRects() const;
    int GetTotalHeight() const;
 
 private:
-   CDCHandle m_dc;
+   WTL::CDCHandle m_dc;
+   HFONT m_hOldFont;
    CRect m_rect;
    bool m_bCalcOnly;
    int m_rightSide;
+   std::vector<CRect> m_rects;
    int m_totalHeight;
 };
 
@@ -77,42 +84,28 @@ private:
 // CLASS: cLogWnd
 //
 
-typedef CWinTraitsOR<0, WS_EX_CLIENTEDGE> tLogWndTraits;
-
-class cLogWnd : public CScrollWindowImpl<cLogWnd, CWindow, tLogWndTraits>
+class cLogWnd : public WTL::CScrollWindowImpl<cLogWnd>
 {
-   typedef CScrollWindowImpl<cLogWnd, CWindow, tLogWndTraits> tBase;
+   typedef WTL::CScrollWindowImpl<cLogWnd> tBase;
 
    enum { kMaxItems = 1000 };
 
 public:
-   DECLARE_WND_CLASS("LogWnd")
+   DECLARE_WND_CLASS(NULL)
 
    cLogWnd();
-   ~cLogWnd();
 
    tResult AddString(const tChar * pszString, size_t length = -1);
    tResult AddString(eLogSeverity severity, const tChar * pszString, size_t length = -1);
    tResult Clear();
 
-   BEGIN_MSG_MAP_EX(cLogWnd)
+   BOOL PreTranslateMessage(MSG * pMsg);
+
+   BEGIN_MSG_MAP(cLogWnd)
       CHAIN_MSG_MAP(tBase)
-      MSG_WM_DESTROY(OnDestroy)
-      MSG_WM_SETFONT(OnSetFont)
-      MSG_WM_SETCURSOR(OnSetCursor)
-      MSG_WM_MOUSEMOVE(OnMouseMove)
-      MSG_WM_LBUTTONDOWN(OnLButtonDown)
-      MSG_WM_LBUTTONUP(OnLButtonUp)
    END_MSG_MAP()
 
-   void DoPaint(CDCHandle dc);
-
-   void OnDestroy();
-   void OnSetFont(HFONT hFont, BOOL bRedraw);
-   LRESULT OnSetCursor(HWND hWnd, UINT hitTest, UINT message);
-   void OnMouseMove(UINT flags, CPoint point);
-   void OnLButtonDown(UINT flags, CPoint point);
-   void OnLButtonUp(UINT flags, CPoint point);
+   void DoPaint(WTL::CDCHandle dc);
 
 protected:
    void UpdateScrollInfo();
@@ -120,8 +113,6 @@ protected:
 private:
    typedef std::vector<cLogWndItem> tItems;
    tItems m_items;
-
-   CFont m_font;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

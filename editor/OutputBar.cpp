@@ -3,11 +3,20 @@
 
 #include "stdhdr.h"
 
-#include "OutputBar.h"
+#include "outputbar.h"
+
+#include "editorCtrlBars.h"
 
 #include "resource.h"       // main symbols
 
 #include "dbgalloc.h" // must be last header
+
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+const uint kChildId = 256;
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -26,45 +35,30 @@ void OutputBarLogCallback(eLogSeverity severity, const tChar * pszMsg, size_t ms
 // CLASS: cOutputBar
 //
 
-////////////////////////////////////////
+AUTO_REGISTER_CONTROLBAR(IDS_OUTPUT_BAR_TITLE, RUNTIME_CLASS(cOutputBar), kCBP_Bottom);
 
-AUTO_REGISTER_DOCKINGWINDOW_SIZED(IDS_OUTPUT_BAR_TITLE, cOutputBar::Factory, kDWP_Bottom, 150, 0);
-
-////////////////////////////////////////
-
-tResult cOutputBar::Factory(cDockingWindow * * ppDockingWindow)
-{
-   if (ppDockingWindow == NULL)
-   {
-      return E_POINTER;
-   }
-   cOutputBar * pOutputBar = new cOutputBar;
-   if (pOutputBar == NULL)
-   {
-      return E_OUTOFMEMORY;
-   }
-   *ppDockingWindow = static_cast<cDockingWindow *>(pOutputBar);
-   return S_OK;
-}
-
-////////////////////////////////////////
+IMPLEMENT_DYNCREATE_EX(cOutputBar, CSizingControlBarG);
 
 cOutputBar::cOutputBar()
  : m_nextLogCallback(NULL)
 {
 }
 
-////////////////////////////////////////
-
 cOutputBar::~cOutputBar()
 {
 }
 
-////////////////////////////////////////
-
 void cOutputBar::HandleLogCallback(eLogSeverity severity, const tChar * pszMsg, size_t msgLen)
 {
-   m_logWnd.AddString(severity, pszMsg, msgLen);
+   static const COLORREF colors[] =
+   {
+      RGB(255,0,0),     // kError
+      RGB(0,255,255),   // kWarning
+      RGB(0,0,0),       // kInfo
+      RGB(0,0,255),     // kDebug
+   };
+
+   m_wndChild.AddText(pszMsg, msgLen, colors[severity]);
 
    if (m_nextLogCallback != NULL)
    {
@@ -72,15 +66,41 @@ void cOutputBar::HandleLogCallback(eLogSeverity severity, const tChar * pszMsg, 
    }
 }
 
-////////////////////////////////////////
+BEGIN_MESSAGE_MAP(cOutputBar, CSizingControlBarG)
+   //{{AFX_MSG_MAP(cOutputBar)
+   ON_WM_CREATE()
+	ON_WM_DESTROY()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
 
-LRESULT cOutputBar::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled)
+/////////////////////////////////////////////////////////////////////////////
+// cOutputBar message handlers
+
+int cOutputBar::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
-   if (!m_logWnd.Create(m_hWnd, CWindow::rcDefault))
+   if (CSizingControlBarG::OnCreate(lpCreateStruct) == -1)
+      return -1;
+
+   SetSCBStyle(GetSCBStyle() | SCBS_SIZECHILD);
+
+   CFont font;
+   if (!font.CreateStockObject(DEFAULT_GUI_FONT))
    {
-      ErrorMsg("Error creating child window\n");
+      if (!font.CreatePointFont(80, "MS Sans Serif"))
+      {
+         DebugMsg("Unable to create font\n");
+         return -1;
+      }
+   }
+
+   if (!m_wndChild.Create(NULL, NULL, WS_CHILD | WS_VISIBLE, CRect(0,0,0,0), this, kChildId))
+   {
       return -1;
    }
+
+   m_wndChild.ModifyStyleEx(0, WS_EX_CLIENTEDGE);
+
+   m_wndChild.SetFont(&font);
 
    g_pOutputBar = this;
    m_nextLogCallback = techlog.SetCallback(OutputBarLogCallback);
@@ -88,21 +108,10 @@ LRESULT cOutputBar::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHa
    return 0;
 }
 
-////////////////////////////////////////
-
-LRESULT cOutputBar::OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled)
+void cOutputBar::OnDestroy() 
 {
+   CSizingControlBarG::OnDestroy();
+
    techlog.SetCallback(m_nextLogCallback);
    g_pOutputBar = NULL;
-   return NULL;
 }
-
-////////////////////////////////////////
-
-LRESULT cOutputBar::OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled)
-{
-   m_logWnd.MoveWindow(CRect(CPoint(0,0), CSize(lParam)));
-   return 0;
-}
-
-/////////////////////////////////////////////////////////////////////////////
