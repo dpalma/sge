@@ -128,7 +128,8 @@ inline bool AssertFail(const char *, int, const char *) { return false; }
 
 #define LOG_DEFINE_ENABLE_CHANNEL(channel, enable) \
    bool g_bLogChannel##channel = (enable); \
-   bool MAKE_UNIQUE(log##channel) = techlog.DefineChannel(#channel, &(g_bLogChannel##channel))
+   static cLogInitializer MAKE_UNIQUE(g_##channel##Initializer); \
+   bool MAKE_UNIQUE(g_##channel##DefineResult) = techlog.DefineChannel(#channel, &(g_bLogChannel##channel))
 
 #define LOG_DEFINE_CHANNEL(channel) \
    LOG_DEFINE_ENABLE_CHANNEL(channel, false)

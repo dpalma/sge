@@ -13,7 +13,7 @@
 
 #ifdef _WIN32
 extern "C" uint STDCALL OutputDebugStringA(const char *);
-extern "C" uint STDCALL OutputDebugStringW(const tChar *);
+extern "C" uint STDCALL OutputDebugStringW(const wchar_t *);
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -27,24 +27,48 @@ TECH_API cLog techlog;
 
 ///////////////////////////////////////
 
-tChar cLog::gm_szBuffer[0x400];
+cLog::cLogChannel::cLogChannel(const tChar * pszName, bool * pbEnabled, cLogChannel * pNext)
+ : m_pszName(pszName),
+   m_pbEnabled(pbEnabled),
+   m_pNext(pNext)
+{
+}
 
 ///////////////////////////////////////
 
 cLog::cLog()
- : m_pChannels(NULL),
-   m_callback(NULL)
 {
+   // No initialization is done in the constructor for a reason.
+   // DefineChannel() may be called at static initialization time,
+   // possibly before the constructor for techlog is called.
+   // Initializing member variables here would mess up work done
+   // by DefineChannel() in this case. Instances of cLogInitializer
+   // will call Initialize(). All initialization should be done there
+   // instead.
 }
 
 ///////////////////////////////////////
 
 cLog::~cLog()
 {
-   sChannel * p = m_pChannels;
+}
+
+///////////////////////////////////////
+
+void cLog::Initialize()
+{
+   m_pChannels = NULL;
+   m_callback = NULL;
+}
+
+///////////////////////////////////////
+
+void cLog::Shutdown()
+{
+   cLogChannel * p = m_pChannels;
    while (p != NULL)
    {
-      m_pChannels = m_pChannels->pNext;
+      m_pChannels = m_pChannels->GetNext();
       delete p;
       p = m_pChannels;
    }
@@ -57,17 +81,22 @@ bool cLog::DefineChannel(const tChar * pszChannel, bool * pEnableFlag)
    Assert(pszChannel != NULL && *pszChannel != 0);
    Assert(pEnableFlag != NULL);
 
+   bool bResult = false;
+
    bool * pb = FindChannel(pszChannel);
    if (pb == NULL)
    {
 #ifdef _MSC_VER
       int crtDbgFlag = _CrtSetDbgFlag(0);
 #endif
-      sChannel * p = new sChannel;
-      p->pszName = pszChannel;
-      p->pbEnabled = pEnableFlag;
-      p->pNext = m_pChannels;
-      m_pChannels = p;
+
+      cLogChannel * pLogChannel = new cLogChannel(pszChannel, pEnableFlag, m_pChannels);
+      if (pLogChannel != NULL)
+      {
+         m_pChannels = pLogChannel;
+         bResult = true;
+      }
+
 #ifdef _MSC_VER
       _CrtSetDbgFlag(crtDbgFlag);
 #endif
@@ -78,7 +107,7 @@ bool cLog::DefineChannel(const tChar * pszChannel, bool * pEnableFlag)
       Assert(pb == pEnableFlag);
    }
 
-   return *pEnableFlag;
+   return bResult;
 }
 
 ///////////////////////////////////////
@@ -104,48 +133,48 @@ void cLog::Print(eLogSeverity severity, const tChar * pszFormat, ...)
 {
    va_list args;
    va_start(args, pszFormat);
-   vsnprintf(gm_szBuffer, _countof(gm_szBuffer), pszFormat, args);
+   vsnprintf(m_szBuffer, _countof(m_szBuffer), pszFormat, args);
    va_end(args);
 
    if (m_callback != NULL)
    {
-      (*m_callback)(severity, gm_szBuffer, strlen(gm_szBuffer));
+      (*m_callback)(severity, m_szBuffer, strlen(m_szBuffer));
    }
 
 #ifdef _WIN32
 #ifdef _UNICODE
-   OutputDebugStringW(gm_szBuffer);
+   OutputDebugStringW(m_szBuffer);
 #else
-   OutputDebugStringA(gm_szBuffer);
+   OutputDebugStringA(m_szBuffer);
 #endif
 #endif
 }
 
 ///////////////////////////////////////
 
-void cLog::Print(const char * pszFile, int line, eLogSeverity severity, const tChar * pszFormat, ...)
+void cLog::Print(const tChar * pszFile, int line, eLogSeverity severity, const tChar * pszFormat, ...)
 {
    size_t len = 0;
    if (pszFile && line)
    {
-      len = snprintf(gm_szBuffer, _countof(gm_szBuffer), "%s(%d) : ", pszFile, line);
+      len = snprintf(m_szBuffer, _countof(m_szBuffer), "%s(%d) : ", pszFile, line);
    }
 
    va_list args;
    va_start(args, pszFormat);
-   vsnprintf(gm_szBuffer + len, _countof(gm_szBuffer) - len, pszFormat, args);
+   vsnprintf(m_szBuffer + len, _countof(m_szBuffer) - len, pszFormat, args);
    va_end(args);
 
    if (m_callback != NULL)
    {
-      (*m_callback)(severity, gm_szBuffer, strlen(gm_szBuffer));
+      (*m_callback)(severity, m_szBuffer, strlen(m_szBuffer));
    }
 
 #ifdef _WIN32
 #ifdef _UNICODE
-   OutputDebugStringW(gm_szBuffer);
+   OutputDebugStringW(m_szBuffer);
 #else
-   OutputDebugStringA(gm_szBuffer);
+   OutputDebugStringA(m_szBuffer);
 #endif
 #endif
 }
@@ -161,20 +190,52 @@ tLogCallbackFn cLog::SetCallback(tLogCallbackFn pfn)
 
 ///////////////////////////////////////
 
-bool * cLog::FindChannel(const tChar * pszChannel)
+bool * cLog::FindChannel(const tChar * pszChannel) const
 {
    Assert(pszChannel != NULL && *pszChannel != 0);
 
-   sChannel * p = m_pChannels;
-   for (; p != NULL; p = p->pNext)
+   cLogChannel * pLogChannel = m_pChannels;
+   while (pLogChannel != NULL)
    {
-      if (strcmp(p->pszName, pszChannel) == 0)
+      if (strcmp(pLogChannel->GetName(), pszChannel) == 0)
       {
-         return p->pbEnabled;
+         return pLogChannel->GetEnabledPointer();
       }
+      pLogChannel = pLogChannel->GetNext();
    }
 
    return NULL;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cLogInitializer
+//
+
+///////////////////////////////////////
+
+long cLogInitializer::gm_initCount = 0;
+
+///////////////////////////////////////
+
+cLogInitializer::cLogInitializer()
+{
+   if (gm_initCount == 0)
+   {
+      techlog.Initialize();
+   }
+   gm_initCount++;
+}
+
+///////////////////////////////////////
+
+cLogInitializer::~cLogInitializer()
+{
+   gm_initCount--;
+   if (gm_initCount == 0)
+   {
+      techlog.Shutdown();
+   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

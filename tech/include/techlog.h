@@ -6,6 +6,8 @@
 
 #include "techdll.h"
 
+#include <map>
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -15,6 +17,8 @@
 // CLASS: cLog
 //
 
+////////////////////////////////////////
+
 enum eLogSeverity
 {
    kError,
@@ -23,38 +27,100 @@ enum eLogSeverity
    kDebug,
 };
 
+////////////////////////////////////////
+
 typedef void (* tLogCallbackFn)(eLogSeverity severity, const tChar * pszMsg, size_t msgLen);
+
+////////////////////////////////////////
 
 class TECH_API cLog
 {
+   cLog(const cLog &);
+   const cLog & operator =(const cLog &);
+
 public:
    cLog();
    ~cLog();
+
+   void Initialize();
+   void Shutdown();
 
    bool DefineChannel(const tChar * pszChannel, bool * pEnableFlag);
    bool EnableChannel(const tChar * pszChannel, bool bEnable);
 
    void Print(eLogSeverity severity, const tChar * pszFormat, ...);
-   void Print(const char * pszFile, int line, eLogSeverity severity, const tChar * pszFormat, ...);
+   void Print(const tChar * pszFile, int line, eLogSeverity severity, const tChar * pszFormat, ...);
 
    tLogCallbackFn SetCallback(tLogCallbackFn pfn);
 
 private:
-   bool * FindChannel(const tChar * pszChannel);
+   bool * FindChannel(const tChar * pszChannel) const;
 
-   struct sChannel
+   class cLogChannel
    {
-      const tChar * pszName;
-      bool * pbEnabled;
-      struct sChannel * pNext;
+   public:
+      cLogChannel(const tChar * pszName, bool * pbEnabled, cLogChannel * pNext);
+      const tChar * GetName() const;
+      bool * GetEnabledPointer() const;
+      cLogChannel * GetNext() const;
+   private:
+      const tChar * m_pszName;
+      bool * m_pbEnabled;
+      cLogChannel * m_pNext;
    };
 
-   struct sChannel * m_pChannels;
+   cLogChannel * m_pChannels;
 
    tLogCallbackFn m_callback;
 
-   static tChar gm_szBuffer[0x400];
+   enum
+   {
+      kBufferSize = 0x400
+   };
+
+   tChar m_szBuffer[kBufferSize];
 };
+
+////////////////////////////////////////
+
+inline const tChar * cLog::cLogChannel::GetName() const
+{
+   return m_pszName;
+}
+
+////////////////////////////////////////
+
+inline bool * cLog::cLogChannel::GetEnabledPointer() const
+{
+   return m_pbEnabled;
+}
+
+////////////////////////////////////////
+
+inline cLog::cLogChannel * cLog::cLogChannel::GetNext() const
+{
+   return m_pNext;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cLogInitializer
+//
+
+class TECH_API cLogInitializer
+{
+   cLogInitializer(const cLogInitializer &);
+   const cLogInitializer & operator =(const cLogInitializer &);
+
+public:
+   cLogInitializer();
+   ~cLogInitializer();
+
+private:
+   static long gm_initCount;
+};
+
+///////////////////////////////////////////////////////////////////////////////
 
 extern TECH_API cLog techlog;
 
