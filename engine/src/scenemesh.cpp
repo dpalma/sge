@@ -5,7 +5,6 @@
 
 #include "scenemesh.h"
 #include "gcommon.h"
-#include "ggl.h"
 
 #include "mesh.h"
 #include "skeleton.h"
@@ -208,25 +207,14 @@ void cSceneMesh::Render()
 {
    if (m_pMesh != NULL)
    {
-      glPushMatrix();
-      glMultMatrixf(GetLocalTransform().m);
-
       AccessRenderDevice()->SetBlendMatrices(m_boneMatrices.size(), &m_boneMatrices[0]);
       m_pMesh->Render(AccessRenderDevice());
-
-      tChildren::iterator iter;
-      for (iter = m_children.begin(); iter != m_children.end(); iter++)
-      {
-         (*iter)->Render();
-      }
-      
-      glPopMatrix();
    }
 }
 
 ///////////////////////////////////////
 
-float cSceneMesh::GetBoundingSphereRadius() const
+float cSceneMesh::GetBoundingRadius() const
 {
    return m_boundingSphereRadius;
 }

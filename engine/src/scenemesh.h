@@ -34,8 +34,7 @@ public:
    IMesh * AccessMesh();
 
    virtual void Render();
-
-   virtual float GetBoundingSphereRadius() const;
+   virtual float GetBoundingRadius() const;
 
 private:
    tResult PostRead();

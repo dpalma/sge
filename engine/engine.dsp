@@ -234,6 +234,10 @@ SOURCE=.\src\ray.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\scene.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\sim.cpp
 # End Source File
 # Begin Source File
@@ -271,6 +275,10 @@ SOURCE=.\src\ms3dread.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\scene.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\stdhdr.h
 # End Source File
 # Begin Source File
@@ -301,6 +309,10 @@ SOURCE=.\include\mesh.h
 # Begin Source File
 
 SOURCE=.\include\ray.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\sceneapi.h
 # End Source File
 # Begin Source File
 

@@ -5,20 +5,21 @@
 
 #include "ggl.h"
 #include "uimgr.h"
-#include "sim.h"
 #include "groundtiled.h"
 #include "input.h"
 #include "sys.h"
-#include "mesh.h"
-#include "scenenode.h"
 #include "scenecamera.h"
 #include "scenemesh.h"
 #include "script.h"
-#include "scriptvar.h"
 #include "cameracontroller.h"
+
+#include "sceneapi.h"
+#include "mesh.h"
+#include "sim.h"
 
 #include "render.h"
 
+#include "scriptvar.h"
 #include "techmath.h"
 #include "window.h"
 #include "resmgr.h"
@@ -67,11 +68,9 @@ static const char kszSelIndicatorMesh[] = "arrow.ms3d";
 cAutoIPtr<cGameCameraController> g_pGameCameraController;
 
 cSceneCamera * g_pGameCamera = NULL;
-cSceneNode * g_pGameGroup = NULL;
 cSceneCamera * g_pUICamera = NULL;
-cSceneNode * g_pUIGroup = NULL;
 
-cTerrainNode * g_pTerrainRoot = NULL;
+cAutoIPtr<cTerrainNode> g_pTerrainRoot;
 
 double g_fov;
 
@@ -197,144 +196,59 @@ SCRIPT_DEFINE_FUNCTION(LogEnableChannel)
 }
 
 
-///////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+////
+//// CLASS: cSpinner
+////
 //
-// CLASS: cSpinner
+//class cSpinner : public cComObject<IMPLEMENTS(ISimClient)>
+//{
+//   cSpinner(const cSpinner &);
+//   const cSpinner & operator =(const cSpinner &);
 //
-
-class cSpinner : public cComObject<IMPLEMENTS(ISimClient)>
-{
-   cSpinner(const cSpinner &);
-   const cSpinner & operator =(const cSpinner &);
-
-public:
-   cSpinner(cSceneNode * pGroup, float degreesPerSec);
-   ~cSpinner();
-
-   virtual void OnFrame(double elapsedTime);
-
-   virtual void DeleteThis() {}
-
-private:
-   cSceneNode * m_pNode;
-   float m_radiansPerSec;
-};
-
-///////////////////////////////////////
-
-cSpinner::cSpinner(cSceneNode * pGroup, float degreesPerSec)
- : m_pNode(pGroup),
-   m_radiansPerSec(Deg2Rad(degreesPerSec))
-{
-   Assert(pGroup != NULL);
-
-   UseGlobal(Sim);
-   pSim->Connect(this);
-}
-
-///////////////////////////////////////
-
-cSpinner::~cSpinner()
-{
-   UseGlobal(Sim);
-   pSim->Disconnect(this);
-
-   m_pNode = NULL;
-}
-
-///////////////////////////////////////
-
-void cSpinner::OnFrame(double elapsedTime)
-{
-   Assert(m_pNode != NULL);
-   tQuat q = QuatFromEulerAngles(tVec3(0, m_radiansPerSec * elapsedTime, 0));
-   m_pNode->SetLocalRotation(m_pNode->GetLocalRotation() * q);
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
+//public:
+//   cSpinner(cSceneNode * pGroup, float degreesPerSec);
+//   ~cSpinner();
 //
-// CLASS: cSelectionIndicatorNode
+//   virtual void OnFrame(double elapsedTime);
 //
-
-class cSelectionIndicatorNode : public cSceneMesh
-{
-public:
-   cSelectionIndicatorNode(float y);
-   ~cSelectionIndicatorNode();
-
-private:
-   cAutoIPtr<IMesh> m_pMesh;
-   cSpinner * m_pSpinner;
-};
-
-cSelectionIndicatorNode::cSelectionIndicatorNode(float y)
- : m_pSpinner(new cSpinner(this, kRotateDegreesPerSec))
-{
-   SetPickable(false);
-   SetLocalTranslation(tVec3(0, y, 0));
-}
-
-cSelectionIndicatorNode::~cSelectionIndicatorNode()
-{
-   delete m_pSpinner, m_pSpinner = NULL;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
+//   virtual void DeleteThis() {}
 //
-// CLASS: cSelectableSceneNode
+//private:
+//   cSceneNode * m_pNode;
+//   float m_radiansPerSec;
+//};
 //
-
-class cSelectableSceneNode : public cSceneMesh
-{
-public:
-   cSelectableSceneNode();
-   ~cSelectableSceneNode();
-
-   virtual void Hit();
-   virtual void ClearHitState();
-
-private:
-   cSelectionIndicatorNode * m_pSel;
-   cSpinner * m_pSpinner;
-};
-
-cSelectableSceneNode::cSelectableSceneNode()
- : m_pSel(NULL),
-   m_pSpinner(new cSpinner(this, kRotateDegreesPerSec))
-{
-}
-
-cSelectableSceneNode::~cSelectableSceneNode()
-{
-   delete m_pSpinner, m_pSpinner = NULL;
-}
-
-void cSelectableSceneNode::Hit()
-{
-   if (m_pSel == NULL)
-   {
-      // TODO: As currently configured, this will code create/destroy 
-      // the selection-indicator mesh with every selection
-      m_pSel = new cSelectionIndicatorNode(2 * GetBoundingSphereRadius());
-      m_pSel->SetMesh(kszSelIndicatorMesh);
-      AddChild(m_pSel);
-   }
-   else
-   {
-      ClearHitState();
-   }
-}
-
-void cSelectableSceneNode::ClearHitState()
-{
-   if (m_pSel != NULL)
-   {
-      RemoveChild(m_pSel);
-      delete m_pSel, m_pSel = NULL;
-   }
-}
+/////////////////////////////////////////
+//
+//cSpinner::cSpinner(cSceneNode * pGroup, float degreesPerSec)
+// : m_pNode(pGroup),
+//   m_radiansPerSec(Deg2Rad(degreesPerSec))
+//{
+//   Assert(pGroup != NULL);
+//
+//   UseGlobal(Sim);
+//   pSim->Connect(this);
+//}
+//
+/////////////////////////////////////////
+//
+//cSpinner::~cSpinner()
+//{
+//   UseGlobal(Sim);
+//   pSim->Disconnect(this);
+//
+//   m_pNode = NULL;
+//}
+//
+/////////////////////////////////////////
+//
+//void cSpinner::OnFrame(double elapsedTime)
+//{
+//   Assert(m_pNode != NULL);
+//   tQuat q = QuatFromEulerAngles(tVec3(0, m_radiansPerSec * elapsedTime, 0));
+//   m_pNode->SetLocalRotation(m_pNode->GetLocalRotation() * q);
+//}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -360,13 +274,13 @@ SCRIPT_DEFINE_FUNCTION(EntitySpawnTest)
             x *= groundDims.x;
             z *= groundDims.y;
 
-            cSelectableSceneNode * pNode = new cSelectableSceneNode;
+            cAutoIPtr<cSceneMesh> pNode = new cSceneMesh;
 
             pNode->SetMesh(ScriptArgAsString(0));
             pNode->SetLocalTranslation(tVec3(x,y,z));
 
-            Assert(g_pGameGroup != NULL);
-            g_pGameGroup->AddChild(pNode);
+            UseGlobal(Scene);
+            pScene->AddEntity(kSL_Object, pNode);
          }
       }
       else
@@ -463,6 +377,7 @@ static void RegisterGlobalObjects()
 {
    SimCreate();
    ResourceManagerCreate();
+   SceneCreate();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -559,15 +474,14 @@ bool MainInit(int argc, char * argv[])
    // display is created so that there is a gl context
    InputInit();
 
-   g_pGameGroup = new cSceneNode;
-
    g_pGameCamera = new cSceneCamera;
    g_pGameCamera->SetPerspective(g_fov, (float)width / height, kZNear, kZFar);
 
    if (ConfigGet("terrain", &temp) == S_OK)
    {
       g_pTerrainRoot = TerrainNodeCreate(temp, kGroundScaleY);
-      g_pGameGroup->AddChild(g_pTerrainRoot);
+      UseGlobal(Scene);
+      pScene->AddEntity(kSL_Terrain, g_pTerrainRoot);
    }
    else
    {
@@ -581,8 +495,8 @@ bool MainInit(int argc, char * argv[])
    g_pUICamera = new cSceneCamera;
    g_pUICamera->SetOrtho(0, width, height, 0, -99999, 99999);
 
-   g_pUIGroup = new cSceneNode;
-   g_pUIGroup->AddChild(new cUIManagerSceneNode);
+   UseGlobal(Scene);
+   pScene->AddEntity(kSL_InGameUI, cAutoIPtr<ISceneEntity>(new cUIManagerSceneNode));
 
    ScriptCallFunction("GameInit");
 
@@ -624,10 +538,8 @@ void MainTerm()
    if (g_pGameCameraController)
       g_pGameCameraController->Disconnect();
 
-   delete g_pGameGroup, g_pGameGroup = NULL;
    delete g_pGameCamera, g_pGameCamera = NULL;
 
-   delete g_pUIGroup, g_pUIGroup= NULL;
    delete g_pUICamera, g_pUICamera = NULL;
 
    StopGlobalObjects();
@@ -647,12 +559,13 @@ void MainFrame()
    g_pRenderDevice->Clear();
 
    g_pRenderDevice->SetProjectionMatrix(g_pGameCamera->GetProjectionMatrix());
-   g_pRenderDevice->SetViewMatrix(g_pGameCamera->GetModelViewMatrix());
-   g_pGameGroup->Render();
+   g_pRenderDevice->SetViewMatrix(g_pGameCamera->GetViewMatrix());
+   UseGlobal(Scene);
+   pScene->Render(g_pRenderDevice);
 
    g_pRenderDevice->SetProjectionMatrix(g_pUICamera->GetProjectionMatrix());
-   g_pRenderDevice->SetViewMatrix(g_pUICamera->GetModelViewMatrix());
-   g_pUIGroup->Render();
+   g_pRenderDevice->SetViewMatrix(g_pUICamera->GetViewMatrix());
+   // TODO: render UI
 
    g_pRenderDevice->EndScene();
 

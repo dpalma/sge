@@ -18,7 +18,7 @@
 cSceneCamera::cSceneCamera()
 {
    m_projection.Identity();
-   m_modelView.Identity();
+   m_view.Identity();
 }
 
 ///////////////////////////////////////
@@ -47,9 +47,9 @@ void cSceneCamera::SetOrtho(float left, float right, float bottom, float top, fl
 
 void cSceneCamera::UpdateCompositeMatrices()
 {
-   m_modelViewProjection = GetProjectionMatrix() * GetModelViewMatrix();
-   MatrixInvert(GetModelViewProjectionMatrix(), &m_modelViewProjectionInverse);
-   m_frustum.ExtractPlanes(GetModelViewProjectionMatrix());
+   m_viewProjection = GetProjectionMatrix() * GetViewMatrix();
+   MatrixInvert(GetViewProjectionMatrix(), &m_viewProjectionInverse);
+   m_frustum.ExtractPlanes(GetViewProjectionMatrix());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

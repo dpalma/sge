@@ -28,52 +28,52 @@ public:
    void SetPerspective(float fov, float aspect, float znear, float zfar);
    void SetOrtho(float left, float right, float bottom, float top, float znear, float zfar);
 
-   const sMatrix4 & GetModelViewMatrix() const;
-   void SetModelViewMatrix(const sMatrix4 & modelview);
+   const tMatrix4 & GetViewMatrix() const;
+   void SetViewMatrix(const tMatrix4 & view);
 
-   const sMatrix4 & GetProjectionMatrix() const;
-   void SetProjectionMatrix(const sMatrix4 & projection);
+   const tMatrix4 & GetProjectionMatrix() const;
+   void SetProjectionMatrix(const tMatrix4 & projection);
 
-   const sMatrix4 & GetModelViewProjectionMatrix() const;
-   const sMatrix4 & GetModelViewProjectionInverseMatrix() const;
+   const tMatrix4 & GetViewProjectionMatrix() const;
+   const tMatrix4 & GetViewProjectionInverseMatrix() const;
 
 private:
    void UpdateCompositeMatrices();
 
-   sMatrix4 m_projection;
-   sMatrix4 m_modelView;
+   tMatrix4 m_projection;
+   tMatrix4 m_view;
 
-   sMatrix4 m_modelViewProjection;
-   sMatrix4 m_modelViewProjectionInverse;
+   tMatrix4 m_viewProjection;
+   tMatrix4 m_viewProjectionInverse;
 
    cFrustum m_frustum;
 };
 
 ///////////////////////////////////////
 
-inline const sMatrix4 & cSceneCamera::GetModelViewMatrix() const
+inline const tMatrix4 & cSceneCamera::GetViewMatrix() const
 {
-   return m_modelView;
+   return m_view;
 }
 
 ///////////////////////////////////////
 
-inline void cSceneCamera::SetModelViewMatrix(const sMatrix4 & modelView)
+inline void cSceneCamera::SetViewMatrix(const tMatrix4 & view)
 {
-   m_modelView = modelView;
+   m_view = view;
    UpdateCompositeMatrices();
 }
 
 ///////////////////////////////////////
 
-inline const sMatrix4 & cSceneCamera::GetProjectionMatrix() const
+inline const tMatrix4 & cSceneCamera::GetProjectionMatrix() const
 {
    return m_projection;
 }
 
 ///////////////////////////////////////
 
-inline void cSceneCamera::SetProjectionMatrix(const sMatrix4 & projection)
+inline void cSceneCamera::SetProjectionMatrix(const tMatrix4 & projection)
 {
    m_projection = projection;
    UpdateCompositeMatrices();
@@ -81,16 +81,16 @@ inline void cSceneCamera::SetProjectionMatrix(const sMatrix4 & projection)
 
 ///////////////////////////////////////
 
-inline const sMatrix4 & cSceneCamera::GetModelViewProjectionMatrix() const
+inline const tMatrix4 & cSceneCamera::GetViewProjectionMatrix() const
 {
-   return m_modelViewProjection;
+   return m_viewProjection;
 }
 
 ///////////////////////////////////////
 
-inline const sMatrix4 & cSceneCamera::GetModelViewProjectionInverseMatrix() const
+inline const tMatrix4 & cSceneCamera::GetViewProjectionInverseMatrix() const
 {
-   return m_modelViewProjectionInverse;
+   return m_viewProjectionInverse;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -4,7 +4,8 @@
 #include "stdhdr.h"
 
 #include "scenenode.h"
-#include "ggl.h"
+
+#include <algorithm>
 
 #include "dbgalloc.h" // must be last header
 
@@ -13,14 +14,10 @@
 // CLASS: cSceneNode
 //
 
-static const int kDefaultCaps = kSNC_Pickable;
-
 ///////////////////////////////////////
 
 cSceneNode::cSceneNode()
  : m_pParent(NULL),
-   m_caps(kDefaultCaps),
-   m_state(0),
    m_localTranslation(0,0,0),
    m_localRotation(0,0,0,1),
    m_bHaveLocalTransform(false),
@@ -35,12 +32,81 @@ cSceneNode::cSceneNode()
 
 cSceneNode::~cSceneNode()
 {
-   tChildren::iterator iter;
+   std::for_each(m_children.begin(), m_children.end(), CTInterfaceMethodRef(&IUnknown::Release));
+   m_children.clear();
+}
+
+///////////////////////////////////////
+
+ISceneEntity * cSceneNode::AccessParent()
+{
+   return m_pParent;
+}
+
+///////////////////////////////////////
+
+tResult cSceneNode::SetParent(ISceneEntity * pEntity)
+{
+   if (pEntity != NULL)
+   {
+      Assert(pEntity->IsChild(this) == S_OK);
+   }
+   m_pParent = pEntity;
+   m_bHaveWorldTranslation = false;
+   m_bHaveWorldRotation = false;
+   m_bHaveWorldTransform = false;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cSceneNode::IsChild(ISceneEntity * pEntity) const
+{
+   // TODO: Use some sort of lookup to do this, instead of a linear search
+   Assert(pEntity != NULL);
+   tSceneEntityList::const_iterator iter;
    for (iter = m_children.begin(); iter != m_children.end(); iter++)
    {
-      delete *iter;
+      if (CTIsSameObject(*iter, pEntity))
+      {
+         return S_OK;
+      }
    }
-   m_children.clear();
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
+tResult cSceneNode::AddChild(ISceneEntity * pEntity)
+{
+   if (pEntity != NULL)
+   {
+      Assert(IsChild(pEntity) == S_FALSE);
+      m_children.push_back(pEntity);
+      pEntity->AddRef();
+      pEntity->SetParent(this);
+      return S_OK;
+   }
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
+tResult cSceneNode::RemoveChild(ISceneEntity * pEntity)
+{
+   Assert(pEntity != NULL);
+   tSceneEntityList::iterator iter;
+   for (iter = m_children.begin(); iter != m_children.end(); iter++)
+   {
+      if (CTIsSameObject(*iter, pEntity))
+      {
+         Assert(CTIsSameObject(pEntity->AccessParent(), this));
+         pEntity->SetParent(NULL);
+         m_children.erase(iter);
+         return S_OK;
+      }
+   }
+   return S_FALSE;
 }
 
 ///////////////////////////////////////
@@ -52,7 +118,7 @@ const tMatrix4 & cSceneNode::GetLocalTransform() const
       const tVec3 & t = GetLocalTranslation();
       const tQuat & r = GetLocalRotation();
 
-      sMatrix4 mt, mr;
+      tMatrix4 mt, mr;
       MatrixTranslate(t.x, t.y, t.z, &mt);
       r.ToMatrix(&mr);
 
@@ -70,10 +136,9 @@ const tVec3 & cSceneNode::GetWorldTranslation() const
 {
    if (!m_bHaveWorldTranslation)
    {
-      const cSceneNode * pParent = GetParent();
-      if (pParent != NULL)
+      if (m_pParent != NULL)
       {
-         m_worldTranslation = GetLocalTranslation() + pParent->GetWorldTranslation();
+         m_worldTranslation = GetLocalTranslation() + m_pParent->GetWorldTranslation();
       }
       else
       {
@@ -92,10 +157,9 @@ const tQuat & cSceneNode::GetWorldRotation() const
 {
    if (!m_bHaveWorldRotation)
    {
-      const cSceneNode * pParent = GetParent();
-      if (pParent != NULL)
+      if (m_pParent != NULL)
       {
-         m_worldRotation = GetLocalRotation() * pParent->GetWorldRotation();
+         m_worldRotation = GetLocalRotation() * m_pParent->GetWorldRotation();
       }
       else
       {
@@ -117,7 +181,7 @@ const tMatrix4 & cSceneNode::GetWorldTransform() const
       const tVec3 & t = GetWorldTranslation();
       const tQuat & r = GetWorldRotation();
 
-      sMatrix4 mt, mr;
+      tMatrix4 mt, mr;
       MatrixTranslate(t.x, t.y, t.z, &mt);
       r.ToMatrix(&mr);
 
@@ -131,81 +195,15 @@ const tMatrix4 & cSceneNode::GetWorldTransform() const
 
 ///////////////////////////////////////
 
-bool cSceneNode::AddChild(cSceneNode * pNode)
-{
-   if (pNode != NULL)
-   {
-      m_children.push_back(pNode);
-      pNode->m_pParent = this;
-      pNode->m_bHaveWorldTranslation = false;
-      pNode->m_bHaveWorldRotation = false;
-      pNode->m_bHaveWorldTransform = false;
-      return true;
-   }
-   return false;
-}
-
-///////////////////////////////////////
-
-bool cSceneNode::RemoveChild(cSceneNode * pNode)
-{
-   Assert(pNode != NULL);
-   tChildren::iterator iter;
-   for (iter = m_children.begin(); iter != m_children.end(); iter++)
-   {
-      if (*iter == pNode)
-      {
-         Assert(pNode->m_pParent == this);
-         pNode->m_pParent = NULL;
-         pNode->m_bHaveWorldTranslation = false;
-         pNode->m_bHaveWorldRotation = false;
-         pNode->m_bHaveWorldTransform = false;
-         m_children.erase(iter);
-         return true;
-      }
-   }
-   return false;
-}
-
-///////////////////////////////////////
-
-void cSceneNode::Traverse(cSceneNodeVisitor * pVisitor)
-{
-   Assert(pVisitor != NULL);
-   tChildren::iterator iter;
-   for (iter = m_children.begin(); iter != m_children.end(); iter++)
-   {
-      pVisitor->VisitSceneNode(*iter);
-
-      (*iter)->Traverse(pVisitor);
-   }
-}
-
-///////////////////////////////////////
-
 void cSceneNode::Render()
 {
-   glPushMatrix();
-   glMultMatrixf(GetLocalTransform().m);
-
-   tChildren::iterator iter;
-   for (iter = m_children.begin(); iter != m_children.end(); iter++)
-   {
-      (*iter)->Render();
-   }
-
-   glPopMatrix();
 }
 
+///////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cSceneNodeVisitor
-//
-
-cSceneNodeVisitor::~cSceneNodeVisitor()
+float cSceneNode::GetBoundingRadius() const
 {
+   return 0;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////

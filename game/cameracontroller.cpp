@@ -8,11 +8,14 @@
 #include "globalobj.h"
 #include "ray.h"
 #include "ggl.h"
-#include "scenenode.h"
+#include "sceneapi.h"
 
 #include "vec4.h"
 #include "configapi.h"
 #include "keys.h"
+#include "globalobj.h"
+
+#include <algorithm>
 
 #ifdef HAVE_CPPUNIT
 #include <cppunit/extensions/HelperMacros.h>
@@ -20,47 +23,9 @@
 
 #include "dbgalloc.h" // must be last header
 
-extern cSceneNode * g_pGameGroup; // HACK
-
 static const float kDefaultElevation = 100;
 static const float kDefaultPitch = 70;
 static const float kDefaultSpeed = 50;
-
-///////////////////////////////////////////////////////////////////////////////
-
-class cPickNodeVisitor : public cSceneNodeVisitor
-{
-public:
-   cPickNodeVisitor(const cRay & ray);
-
-   virtual void VisitSceneNode(cSceneNode * pNode);
-
-   const cRay m_ray;
-   std::vector<cSceneNode *> m_hitNodes;
-};
-
-cPickNodeVisitor::cPickNodeVisitor(const cRay & ray)
- : m_ray(ray)
-{
-}
-
-void cPickNodeVisitor::VisitSceneNode(cSceneNode * pNode)
-{
-   Assert(pNode != NULL);
-
-   if (pNode->IsPickable())
-   {
-      if (m_ray.IntersectsSphere(pNode->GetWorldTranslation(), pNode->GetBoundingSphereRadius()))
-      {
-         pNode->Hit();
-         m_hitNodes.push_back(pNode);
-      }
-      else
-      {
-         pNode->ClearHitState();
-      }
-   }
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -119,11 +84,11 @@ void cGameCameraController::OnFrame(double elapsedTime)
 
    // Very simple third-person camera model. Always looking down the -z axis
    // and slightly pitched over the x axis.
-   sMatrix4 mt;
+   tMatrix4 mt;
    MatrixTranslate(-m_eye.x, -m_eye.y, -m_eye.z, &mt);
 
-   sMatrix4 newModelView = m_rotation * mt;
-   m_pCamera->SetModelViewMatrix(newModelView);
+   tMatrix4 newModelView = m_rotation * mt;
+   m_pCamera->SetViewMatrix(newModelView);
 }
 
 ///////////////////////////////////////
@@ -136,10 +101,11 @@ bool cGameCameraController::OnMouseEvent(int x, int y, uint mouseState, double t
       if (BuildPickRay(x, y, &dir))
       {
          cRay ray(GetEyePosition(), dir);
-         cPickNodeVisitor pickVisitor(ray);
-         g_pGameGroup->Traverse(&pickVisitor);
 
-         if (pickVisitor.m_hitNodes.empty())
+         tSceneEntityList hits;
+
+         UseGlobal(Scene);
+         if (pScene->Query(ray, &hits) == S_FALSE)
          {
             tVec3 intersect;
             if (ray.IntersectsPlane(tVec3(0,1,0), 0, &intersect))
@@ -148,6 +114,8 @@ bool cGameCameraController::OnMouseEvent(int x, int y, uint mouseState, double t
                   intersect.x, intersect.y, intersect.z);
             }
          }
+
+         std::for_each(hits.begin(), hits.end(), CTInterfaceMethodRef(&::IUnknown::Release));
       }
 
       return true;
@@ -232,7 +200,7 @@ bool cGameCameraController::BuildPickRay(int x, int y, tVec3 * pRay)
    float normx = (float)(x - viewport[0]) * 2.f / viewport[2] - 1.f;
    float normy = (float)(y - viewport[1]) * 2.f / viewport[3] - 1.f;
 
-   const sMatrix4 & m = m_pCamera->GetModelViewProjectionInverseMatrix();
+   const tMatrix4 & m = m_pCamera->GetViewProjectionInverseMatrix();
 
    tVec4 n = m.Transform(tVec4(normx, normy, -1, 1));
    if (n.w == 0.0f)

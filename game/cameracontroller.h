@@ -48,7 +48,7 @@ private:
    float m_pitch, m_oneOverTangentPitch, m_elevation;
    tVec3 m_eye, m_focus, m_velocity;
 
-   sMatrix4 m_rotation;
+   tMatrix4 m_rotation;
 
    cSceneCamera * m_pCamera;
 };
