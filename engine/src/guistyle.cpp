@@ -507,7 +507,7 @@ static eGUIVerticalAlignment GUIStyleParseVertAlignment(const char * psz)
 
 ///////////////////////////////////////
 
-static tResult GUIStyleParseColor(const char * psz, tGUIColor * pColor)
+tResult GUIStyleParseColor(const char * psz, tGUIColor * pColor)
 {
    static const struct sNamedColor
    {

@@ -148,6 +148,10 @@ interface IGUIStyle : IUnknown
 };
 
 ///////////////////////////////////////
+
+ENGINE_API tResult GUIStyleParseColor(const char * psz, tGUIColor * pColor);
+
+///////////////////////////////////////
 // Parse a CSS-like string to produce a GUI style object
 
 ENGINE_API tResult GUIStyleParse(const char * pszStyle, IGUIStyle * * ppStyle);

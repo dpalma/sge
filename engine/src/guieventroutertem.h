@@ -140,7 +140,8 @@ void cGUIEventRouter<INTRFC>::RemoveAllElements()
 ///////////////////////////////////////
 
 template <typename INTRFC>
-tResult cGUIEventRouter<INTRFC>::GetHitElement(const tGUIPoint & point, IGUIElement * * ppElement) const
+tResult cGUIEventRouter<INTRFC>::GetHitElement(const tGUIPoint & screenPoint, 
+                                               IGUIElement * * ppElement) const
 {
    if (ppElement == NULL)
    {
@@ -150,12 +151,14 @@ tResult cGUIEventRouter<INTRFC>::GetHitElement(const tGUIPoint & point, IGUIElem
    tGUIElementList::const_iterator iter;
    for (iter = m_elements.begin(); iter != m_elements.end(); iter++)
    {
-      if ((*iter)->Contains(point))
+      tGUIPoint relative(screenPoint - (*iter)->GetPosition());
+
+      if ((*iter)->Contains(relative))
       {
          cAutoIPtr<IGUIContainerElement> pContainer;
          if ((*iter)->QueryInterface(IID_IGUIContainerElement, (void**)&pContainer) == S_OK)
          {
-            if (GetHitChild(point - (*iter)->GetPosition(), pContainer, ppElement) == S_OK)
+            if (GetHitChild(relative, pContainer, ppElement) == S_OK)
             {
                return S_OK;
             }
@@ -172,7 +175,7 @@ tResult cGUIEventRouter<INTRFC>::GetHitElement(const tGUIPoint & point, IGUIElem
 ///////////////////////////////////////
 
 template <typename INTRFC>
-tResult cGUIEventRouter<INTRFC>::GetHitChild(const tGUIPoint & point, 
+tResult cGUIEventRouter<INTRFC>::GetHitChild(const tGUIPoint & containerPoint, 
                                              IGUIContainerElement * pContainer, 
                                              IGUIElement * * ppElement) const
 {
@@ -187,12 +190,14 @@ tResult cGUIEventRouter<INTRFC>::GetHitChild(const tGUIPoint & point,
 
       while ((pEnum->Next(1, &pChild, &count) == S_OK) && (count == 1))
       {
-         if (pChild->Contains(point))
+         tGUIPoint childRelative(containerPoint - pChild->GetPosition());
+
+         if (pChild->Contains(childRelative))
          {
             cAutoIPtr<IGUIContainerElement> pChildContainer;
             if (pChild->QueryInterface(IID_IGUIContainerElement, (void**)&pChildContainer) == S_OK)
             {
-               if (GetHitChild(point - pChild->GetPosition(), pChildContainer, ppElement) == S_OK)
+               if (GetHitChild(childRelative, pChildContainer, ppElement) == S_OK)
                {
                   return S_OK;
                }
@@ -295,6 +300,9 @@ bool cGUIEventRouter<INTRFC>::HandleInputEvent(const sInputEvent * pInputEvent)
 
    if (eventCode == kGUIEventMouseMove)
    {
+      // TODO BUG: This code doesn't handle MouseEnter/MouseLeave 
+      // for child elements properly
+
       cAutoIPtr<IGUIElement> pMouseOver;
       if ((GetMouseOver(&pMouseOver) == S_OK) 
          && !pMouseOver->Contains(ScreenToElement(pMouseOver, pInputEvent->point)))

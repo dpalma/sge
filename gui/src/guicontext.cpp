@@ -172,6 +172,70 @@ struct sRenderElement
 
 ///////////////////////////////////////
 
+tResult cGUIContext::RenderGUI(IRenderDevice * pRenderDevice)
+{
+   Assert(pRenderDevice != NULL);
+
+   tResult result = S_OK;
+
+   if (m_bNeedLayout)
+   {
+      m_bNeedLayout = false;
+
+      uint vpWidth, vpHeight;
+      Verify(pRenderDevice->GetViewportSize(&vpWidth, &vpHeight) == S_OK);
+
+      cSizeAndPlaceElement sizeAndPlaceFunctor(tGUIRect(0,0,vpWidth,vpHeight));
+      ForEachElement(sizeAndPlaceFunctor);
+   }
+
+   pRenderDevice->SetRenderState(kRS_EnableDepthBuffer, FALSE);
+
+   sRenderElement renderElementFunctor;
+   renderElementFunctor.m_pRenderDevice = CTAddRef(pRenderDevice);
+   ForEachElement(renderElementFunctor);
+
+   pRenderDevice->SetRenderState(kRS_EnableDepthBuffer, TRUE);
+
+#ifdef _DEBUG
+   RenderDebugInfo(pRenderDevice);
+#endif
+
+   return result;
+}
+
+///////////////////////////////////////
+
+tResult cGUIContext::ShowDebugInfo(const tGUIPoint & placement, const tGUIColor & textColor)
+{
+#ifdef _DEBUG
+   if (!m_bShowDebugInfo)
+   {
+      m_bShowDebugInfo = true;
+      m_debugInfoPlacement = placement;
+      m_debugInfoTextColor = textColor;
+      return S_OK;
+   }
+#endif
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
+tResult cGUIContext::HideDebugInfo()
+{
+#ifdef _DEBUG
+   if (m_bShowDebugInfo)
+   {
+      m_bShowDebugInfo = false;
+      return S_OK;
+   }
+#endif
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
 #ifdef _DEBUG
 static void DescribeElement(IGUIElement * pElement, char * psz, uint maxLength)
 {
@@ -222,94 +286,92 @@ static void DescribeElement(IGUIElement * pElement, char * psz, uint maxLength)
 
 ///////////////////////////////////////
 
-tResult cGUIContext::RenderGUI(IRenderDevice * pRenderDevice)
+#ifdef _DEBUG
+template <typename CTYPE, const int SIZE>
+class cTextBuffer
 {
-   Assert(pRenderDevice != NULL);
-
-   tResult result = S_OK;
-
-   if (m_bNeedLayout)
+public:
+   cTextBuffer() : m_length(0)
    {
-      m_bNeedLayout = false;
-
-      uint vpWidth, vpHeight;
-      Verify(pRenderDevice->GetViewportSize(&vpWidth, &vpHeight) == S_OK);
-
-      cSizeAndPlaceElement sizeAndPlaceFunctor(tGUIRect(0,0,vpWidth,vpHeight));
-      ForEachElement(sizeAndPlaceFunctor);
+      m_buffer[0] = 0;
    }
 
-   pRenderDevice->SetRenderState(kRS_EnableDepthBuffer, FALSE);
-
-   sRenderElement renderElementFunctor;
-   renderElementFunctor.m_pRenderDevice = CTAddRef(pRenderDevice);
-   ForEachElement(renderElementFunctor);
-
-   pRenderDevice->SetRenderState(kRS_EnableDepthBuffer, TRUE);
-
-#ifdef _DEBUG
-   if (m_bShowDebugInfo)
+   const CTYPE * GetBuffer() const
    {
-      cAutoIPtr<IRenderFont> pFont;
-      UseGlobal(GUIRenderingTools);
-      if (pGUIRenderingTools->GetDefaultFont(&pFont) == S_OK)
+      return m_buffer;
+   }
+
+   CTYPE * NextPointer()
+   {
+      m_length = strlen(m_buffer);
+      if (m_length > 0)
       {
-         char szText[200];
-         sprintf(szText, "Mouse: (%d, %d)", Round(m_lastMousePos.x), Round(m_lastMousePos.y));
-
-         cAutoIPtr<IGUIElement> pHitElement;
-         if (GetHitElement(m_lastMousePos, &pHitElement) == S_OK)
-         {
-            char szHit[100] = {0};
-            DescribeElement(pHitElement, szHit, _countof(szHit));
-
-            if (strlen(szHit) > 0)
-            {
-               strcat(szText, "\n");
-               uint len = strlen(szText);
-               strncpy(szText + len, szHit, _countof(szText) - len);
-               szText[_countof(szText) - 1] = 0;
-            }
-         }
-
-         tGUIRect rect(m_debugInfoPlacement.x, m_debugInfoPlacement.y, 0, 0);
-         pFont->DrawText(szText, -1, kDT_NoClip, &rect, m_debugInfoTextColor);
+         strncat(m_buffer, "\n", _countof(m_buffer));
+         m_length += 1;
       }
+      return m_buffer + m_length;
    }
-#endif
 
-   return result;
-}
+   uint MaxLength() const
+   {
+      return SIZE - m_length;
+   }
 
-///////////////////////////////////////
+   void NullTerminate()
+   {
+      m_buffer[SIZE - 1] = 0;
+   }
 
-tResult cGUIContext::ShowDebugInfo(const tGUIPoint & placement, const tGUIColor & textColor)
+private:
+   uint m_length;
+   CTYPE m_buffer[SIZE];
+};
+
+void cGUIContext::RenderDebugInfo(IRenderDevice * pRenderDevice)
 {
-#ifdef _DEBUG
    if (!m_bShowDebugInfo)
    {
-      m_bShowDebugInfo = true;
-      m_debugInfoPlacement = placement;
-      m_debugInfoTextColor = textColor;
-      return S_OK;
+      return;
    }
-#endif
-   return S_FALSE;
-}
 
-///////////////////////////////////////
-
-tResult cGUIContext::HideDebugInfo()
-{
-#ifdef _DEBUG
-   if (m_bShowDebugInfo)
+   cAutoIPtr<IRenderFont> pFont;
+   UseGlobal(GUIRenderingTools);
+   if (pGUIRenderingTools->GetDefaultFont(&pFont) == S_OK)
    {
-      m_bShowDebugInfo = false;
-      return S_OK;
+      cTextBuffer<char, 200> text;
+
+      _snprintf(text.NextPointer(), text.MaxLength(), "Mouse: (%d, %d)", 
+         Round(m_lastMousePos.x), Round(m_lastMousePos.y));
+
+      cAutoIPtr<IGUIElement> pHitElement;
+      if (GetHitElement(m_lastMousePos, &pHitElement) == S_OK)
+      {
+         DescribeElement(pHitElement, text.NextPointer(), text.MaxLength());
+
+         tGUIPoint pos = pHitElement->GetPosition();
+         _snprintf(text.NextPointer(), text.MaxLength(), "Position: (%d, %d)", 
+            Round(pos.x), Round(pos.y));
+
+         tGUIPoint absPos = GUIElementAbsolutePosition(pHitElement);
+         _snprintf(text.NextPointer(), text.MaxLength(), "Absolute Position: (%d, %d)",
+            Round(absPos.x), Round(absPos.y));
+
+         tGUIPoint relPoint(m_lastMousePos - absPos);
+         bool bContainsResult = pHitElement->Contains(relPoint);
+         _snprintf(text.NextPointer(), text.MaxLength(), "Contains() returns %s",
+            bContainsResult ? "true" : "false");
+
+         _snprintf(text.NextPointer(), text.MaxLength(), "Mouse (relative): (%d, %d)",
+            Round(relPoint.x), Round(relPoint.y));
+
+         text.NullTerminate();
+      }
+
+      tGUIRect rect(m_debugInfoPlacement.x, m_debugInfoPlacement.y, 0, 0);
+      pFont->DrawText(text.GetBuffer(), -1, kDT_NoClip, &rect, m_debugInfoTextColor);
    }
-#endif
-   return S_FALSE;
 }
+#endif
 
 ///////////////////////////////////////
 

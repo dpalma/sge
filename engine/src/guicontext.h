@@ -43,6 +43,8 @@ public:
 
 private:
 #ifdef _DEBUG
+   void RenderDebugInfo(IRenderDevice * pRenderDevice);
+
    // Over-riding the cGUIEventRouter method even though it isn't virtual.
    // OK because it is only called through a cGUIContext* pointer in 
    // cInputListener::OnInputEvent

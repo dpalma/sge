@@ -168,16 +168,8 @@ void cGUIElementBase<INTRFC>::SetSize(const tGUISize & size)
 template <typename INTRFC>
 bool cGUIElementBase<INTRFC>::Contains(const tGUIPoint & point) const
 {
-   tGUIPoint absPos = GetPosition();
    tGUISize size = GetSize();
-   return tRectf(
-      absPos.x, 
-      absPos.y, 
-      absPos.x + size.width, 
-      absPos.y + size.height)
-      .PtInside(
-         point.x,
-         point.y);
+   return tRectf(0,0,size.width,size.height).PtInside(point.x,point.y);
 }
 
 ///////////////////////////////////////
