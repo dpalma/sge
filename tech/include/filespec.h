@@ -22,18 +22,18 @@ class TECH_API cFileSpec
 {
 public:
    cFileSpec();
-   cFileSpec(const char * pszFilePath);
+   explicit cFileSpec(const char * pszFile);
    cFileSpec(const cFileSpec & other);
-   cFileSpec(const cFilePath & path, const char * pszFileName);
 
-   const cFileSpec & operator=(const cFileSpec & other);
+   const cFileSpec & operator =(const char * pszFile);
 
-   int operator==(const cFileSpec & other) const;
+   int Compare(const cFileSpec & other) const;
+   int CompareNoCase(const cFileSpec & other) const;
 
    const char * GetName() const;
    const char * GetFileName() const;
    const char * GetFileExt() const;
-   BOOL SetFileExt(const char * pszExt);
+   bool SetFileExt(const char * pszExt);
 
    void SetPath(const cFilePath & path);
    cFilePath GetPath() const;

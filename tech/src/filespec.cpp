@@ -33,39 +33,64 @@ cFileSpec::cFileSpec()
 
 ///////////////////////////////////////
 
-cFileSpec::cFileSpec(const char * pszFilePath)
+cFileSpec::cFileSpec(const char * pszFile)
 {
-   strcpy(m_szFullName, pszFilePath);
+   strncpy(m_szFullName, pszFile, _countof(m_szFullName));
+   m_szFullName[_countof(m_szFullName) - 1] = 0;
 }
 
 ///////////////////////////////////////
 
 cFileSpec::cFileSpec(const cFileSpec & other)
 {
-   operator=(other);
+   operator =(other);
 }
 
 ///////////////////////////////////////
 
-cFileSpec::cFileSpec(const cFilePath & path, const char * pszFileName)
+const cFileSpec & cFileSpec::operator =(const char * pszFile)
 {
-   strcpy(m_szFullName, pszFileName);
-   SetPath(path);
-}
-
-///////////////////////////////////////
-
-const cFileSpec & cFileSpec::operator=(const cFileSpec & other)
-{
-   strcpy(m_szFullName, other.m_szFullName);
+   strncpy(m_szFullName, pszFile, _countof(m_szFullName));
+   m_szFullName[_countof(m_szFullName) - 1] = 0;
    return *this;
 }
 
 ///////////////////////////////////////
 
-int cFileSpec::operator==(const cFileSpec & other) const
+static void StrCpyExcl(char * pDest, const char * pSrc, const char * pExcl)
 {
-   return stricmp(m_szFullName, other.m_szFullName) == 0;
+   for (; *pSrc; pSrc++)
+   {
+      if (!strchr(pExcl, *pSrc))
+      {
+         *pDest++ = *pSrc;
+      }
+   }
+   *pDest = 0;
+}
+
+///////////////////////////////////////
+
+int cFileSpec::Compare(const cFileSpec & other) const
+{
+   char szTemp1[kMaxPath], szTemp2[kMaxPath];
+
+   StrCpyExcl(szTemp1, GetName(), kPathSeps);
+   StrCpyExcl(szTemp2, other.GetName(), kPathSeps);
+
+   return strcmp(szTemp1, szTemp2);
+}
+
+///////////////////////////////////////
+
+int cFileSpec::CompareNoCase(const cFileSpec & other) const
+{
+   char szTemp1[kMaxPath], szTemp2[kMaxPath];
+
+   StrCpyExcl(szTemp1, GetName(), kPathSeps);
+   StrCpyExcl(szTemp2, other.GetName(), kPathSeps);
+
+   return stricmp(szTemp1, szTemp2);
 }
 
 ///////////////////////////////////////
@@ -117,7 +142,7 @@ const char * cFileSpec::GetFileExt() const
 
 ///////////////////////////////////////
 
-BOOL cFileSpec::SetFileExt(const char * pszExt)
+bool cFileSpec::SetFileExt(const char * pszExt)
 {
    if (strlen(GetName()) > 0)
    {
@@ -131,9 +156,9 @@ BOOL cFileSpec::SetFileExt(const char * pszExt)
          strcat(m_szFullName, szExtensionSep);
          strcat(m_szFullName, pszExt);
       }
-      return TRUE;
+      return true;
    }
-   return FALSE;
+   return false;
 }
 
 ///////////////////////////////////////
@@ -183,77 +208,76 @@ bool cFileSpec::Exists() const
 class cFileSpecTests : public CppUnit::TestCase
 {
    CPPUNIT_TEST_SUITE(cFileSpecTests);
-      CPPUNIT_TEST(TestAssignment);
-      CPPUNIT_TEST(TestComparison);
-      CPPUNIT_TEST(TestGetName);
       CPPUNIT_TEST(TestGetFileName);
       CPPUNIT_TEST(TestGetSetFileExt);
       CPPUNIT_TEST(TestSetPath);
       CPPUNIT_TEST(TestGetPath);
+      CPPUNIT_TEST(TestCompare);
    CPPUNIT_TEST_SUITE_END();
 
-public:
-   void TestAssignment()
-   {
-      // @TODO
-   }
-
-   void TestComparison()
-   {
-      // @TODO
-   }
-
-   void TestGetName()
-   {
-      // @TODO
-   }
-
-   void TestGetFileName()
-   {
-      // @TODO
-   }
-
-   void TestGetSetFileExt()
-   {
-      {
-         cFileSpec fs("c:\\path1\\path2\\file");
-         CPPUNIT_ASSERT(strlen(fs.GetFileExt()) == 0);
-         CPPUNIT_ASSERT(fs.SetFileExt("ext"));
-         CPPUNIT_ASSERT(strcmp(fs.GetFileExt(), "ext") == 0);
-         CPPUNIT_ASSERT(strcmp(fs.GetName(), "c:\\path1\\path2\\file.ext") == 0);
-      }
-
-      {
-         cFileSpec fs("c:\\path1\\path2\\file.TST");
-         CPPUNIT_ASSERT(strcmp(fs.GetFileExt(), "TST") == 0);
-         CPPUNIT_ASSERT(fs.SetFileExt("ext"));
-         CPPUNIT_ASSERT(strcmp(fs.GetFileExt(), "ext") == 0);
-         CPPUNIT_ASSERT(strcmp(fs.GetName(), "c:\\path1\\path2\\file.ext") == 0);
-      }
-   }
-
-   void TestSetPath()
-   {
-      {
-         cFileSpec fs1("c:\\p1\\p2\\p3\\p4\\file.ext");
-         fs1.SetPath(cFilePath());
-         CPPUNIT_ASSERT(strcmp(fs1.GetName(), "file.ext") == 0);
-      }
-
-      {
-         cFileSpec fs1("c:\\p1\\p2\\p3\\p4\\file.ext");
-         fs1.SetPath(cFilePath("D:\\path"));
-         CPPUNIT_ASSERT(strcmp(fs1.GetName(), "D:\\path\\file.ext") == 0);
-      }
-   }
-
-   void TestGetPath()
-   {
-      CPPUNIT_ASSERT(strcmp(cFileSpec("c:\\p1\\p2\\p3\\p4\\file.ext").GetPath().GetPath(), "c:\\p1\\p2\\p3\\p4") == 0);
-   }
+   void TestGetFileName();
+   void TestGetSetFileExt();
+   void TestSetPath();
+   void TestGetPath();
+   void TestCompare();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(cFileSpecTests);
+
+void cFileSpecTests::TestGetFileName()
+{
+   CPPUNIT_ASSERT(strcmp(cFileSpec("c:\\p1\\p2\\p3.ext").GetFileName(), "p3.ext") == 0);
+   CPPUNIT_ASSERT(strcmp(cFileSpec("C:\\P1\\P2\\P3.EXT").GetFileName(), "P3.EXT") == 0);
+   CPPUNIT_ASSERT(strcmp(cFileSpec("c:\\p1\\p2.p3").GetFileName(), "p2.p3") == 0);
+   CPPUNIT_ASSERT(strcmp(cFileSpec("c:\\foo\\bar").GetFileName(), "bar") == 0);
+}
+
+void cFileSpecTests::TestGetSetFileExt()
+{
+   {
+      cFileSpec fs("c:\\path1\\path2\\file");
+      CPPUNIT_ASSERT(strlen(fs.GetFileExt()) == 0);
+      CPPUNIT_ASSERT(fs.SetFileExt("ext"));
+      CPPUNIT_ASSERT(strcmp(fs.GetFileExt(), "ext") == 0);
+      CPPUNIT_ASSERT(strcmp(fs.GetName(), "c:\\path1\\path2\\file.ext") == 0);
+   }
+
+   {
+      cFileSpec fs("c:\\path1\\path2\\file.TST");
+      CPPUNIT_ASSERT(strcmp(fs.GetFileExt(), "TST") == 0);
+      CPPUNIT_ASSERT(fs.SetFileExt("ext"));
+      CPPUNIT_ASSERT(strcmp(fs.GetFileExt(), "ext") == 0);
+      CPPUNIT_ASSERT(strcmp(fs.GetName(), "c:\\path1\\path2\\file.ext") == 0);
+   }
+}
+
+void cFileSpecTests::TestSetPath()
+{
+   {
+      cFileSpec fs1("c:\\p1\\p2\\p3\\p4\\file.ext");
+      fs1.SetPath(cFilePath());
+      CPPUNIT_ASSERT(strcmp(fs1.GetName(), "file.ext") == 0);
+   }
+
+   {
+      cFileSpec fs1("c:\\p1\\p2\\p3\\p4\\file.ext");
+      fs1.SetPath(cFilePath("D:\\path"));
+      CPPUNIT_ASSERT(strcmp(fs1.GetName(), "D:\\path\\file.ext") == 0);
+   }
+}
+
+void cFileSpecTests::TestGetPath()
+{
+   CPPUNIT_ASSERT(strcmp(cFileSpec("c:\\p1\\p2\\p3\\p4\\file.ext").GetPath().GetPath(), "c:\\p1\\p2\\p3\\p4") == 0);
+}
+
+void cFileSpecTests::TestCompare()
+{
+   CPPUNIT_ASSERT(cFileSpec("c:\\p1\\p2\\p3.ext").Compare(cFileSpec("c:/p1/p2/p3.ext")) == 0);
+   CPPUNIT_ASSERT(cFileSpec("C:\\P1\\P2\\P3.EXT").Compare(cFileSpec("c:/p1/p2/p3.ext")) != 0);
+   CPPUNIT_ASSERT(cFileSpec("C:\\P1\\P2\\P3.EXT").CompareNoCase(cFileSpec("c:/p1/p2/p3.ext")) == 0);
+   CPPUNIT_ASSERT(cFileSpec("c:\\p1\\p2.p3").Compare(cFileSpec("c:\\p4\\p5.p6")) < 0);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
