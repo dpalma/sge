@@ -9,6 +9,8 @@
 #include <excpt.h>
 #endif
 
+#include <cstring>
+
 #ifdef HAVE_CPPUNIT
 #include <cppunit/extensions/HelperMacros.h>
 #endif
@@ -17,6 +19,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifdef _MSC_VER
 bool GetCpuFeatures(sCpuFeatures * pCpuFeatures)
 {
    Assert(pCpuFeatures != NULL);
@@ -69,6 +72,44 @@ End:
 
    return true;
 }
+#else
+bool GetCpuFeatures(sCpuFeatures * pCpuFeatures)
+{
+   Assert(pCpuFeatures != NULL);
+
+   uint vs1, vs2, vs3;
+   uint version, info, features;
+
+   asm(
+      "xor %%eax, %%eax\t\n"
+      "cpuid\t\n"
+      "mov vs1, %%ebx\t\n"
+      "mov vs2, %%edx\t\n"
+      "mov vs3, %%ecx\t\n"
+      "test %%eax, 1\t\n"
+      "jl End\t\n"
+      "mov %%eax, 1\t\n"
+      "cpuid\t\n"
+      "mov version, %%eax\t\n"
+      "mov info, %%ebx\t\n"
+      "mov features, %%edx\t\n"
+"End:\t\n"
+      : "=m"(vs1), "=m"(vs2), "=m"(vs3), "=m"(version), "=m"(info), "=m"(features)
+      :
+      : "%ebx", "%ecx", "%edx");
+
+   memset(pCpuFeatures, 0, sizeof(sCpuFeatures));
+
+   memcpy(pCpuFeatures->szVendor, &vs1, 4);
+   memcpy(pCpuFeatures->szVendor+4, &vs2, 4);
+   memcpy(pCpuFeatures->szVendor+8, &vs3, 4);
+   pCpuFeatures->szVendor[kMaxVendorName-1] = 0;
+
+   pCpuFeatures->features = features;
+
+   return true;
+}
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
