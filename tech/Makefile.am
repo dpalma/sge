@@ -35,4 +35,8 @@ libtech_la_SOURCES = src/comtools.cpp \
 
 libtech_la_LIBADD = $(GL_LIBS) $(CORE_LIBS)
 
-INCLUDES = $(GL_CFLAGS) -DTECH_EXPORTS -I ./include -I ./src
+INCLUDES = $(GL_CFLAGS) \
+           -DTECH_EXPORTS \
+           -I ./include \
+           -I ./src \
+           -I @top_srcdir@/3rdparty/zlib/include
