@@ -6,6 +6,11 @@
 
 #include "comtools.h"
 
+#include "vec2.h"
+#include "vec3.h"
+
+#include <vector>
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -22,16 +27,25 @@ F_DECLARE_INTERFACE(IMaterial);
 // CLASS: cTiledGround
 //
 
+struct sTerrainVertex
+{
+   tVec2 uv;
+   tVec3 rgb;
+   tVec3 pos;
+};
+
 class cTiledGround
 {
 public:
    cTiledGround();
    ~cTiledGround();
 
-   bool Init(IRenderDevice * pRenderDevice, cHeightMap * pHeightMap, const char * pszTexture);
+   bool SetTexture(const char * pszTexture);
+   bool Init(cHeightMap * pHeightMap);
+   bool CreateBuffers(IRenderDevice * pRenderDevice);
 
-   int GetVertexCount() const { return m_nVerts; }
-   int GetIndexCount() const { return m_nIndices; }
+   size_t GetVertexCount() const { return m_vertices.size(); }
+   size_t GetIndexCount() const { return m_nIndices; }
 
    IVertexBuffer * AccessVertexBuffer() { return m_pVertexBuffer; }
    IIndexBuffer * AccessIndexBuffer() { return m_pIndexBuffer; }
@@ -41,7 +55,9 @@ private:
    cAutoIPtr<IVertexBuffer> m_pVertexBuffer;
    cAutoIPtr<IIndexBuffer> m_pIndexBuffer;
    cAutoIPtr<IMaterial> m_pMaterial;
-   int m_nVerts, m_nIndices;
+   int m_nIndices;
+   std::vector<sTerrainVertex> m_vertices;
+   bool m_bInitialized;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -10,8 +10,6 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-class cHeightMap;
-
 class cTiledGround;
 class cHeightMap;
 

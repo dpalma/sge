@@ -11,20 +11,11 @@
 #include "textureapi.h"
 
 #include "imagedata.h"
-#include "vec2.h"
-#include "vec3.h"
 #include "globalobj.h"
 
 #include "dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
-
-struct sTerrainVertex
-{
-   tVec2 uv;
-   tVec3 rgb;
-   tVec3 pos;
-};
 
 VERTEXDECL_BEGIN(g_terrainVertexDecl)
    VERTEXDECL_ELEMENT(kVDU_TexCoord, kVDT_Float2)
@@ -40,8 +31,8 @@ VERTEXDECL_END()
 ///////////////////////////////////////
 
 cTiledGround::cTiledGround()
- : m_nVerts(0),
-   m_nIndices(0)
+ : m_nIndices(0),
+   m_bInitialized(false)
 {
 }
 
@@ -53,40 +44,94 @@ cTiledGround::~cTiledGround()
 
 ///////////////////////////////////////
 
-bool cTiledGround::Init(IRenderDevice * pRenderDevice, cHeightMap * pHeightMap, const char * pszTexture)
+bool cTiledGround::SetTexture(const char * pszTexture)
 {
-   const int kStepSize = 16;
-   const int kGroundSize = 1024;
-   const int kNumQuadsPerSide = kGroundSize / kStepSize;
-   const int kNumQuads = kNumQuadsPerSide * kNumQuadsPerSide;
-   const int kNumVerts = kNumQuads * 4;
-   const int kNumIndices = kNumQuads * 6;
+   bool result = false;
 
-   float kRed = 1, kGreen = 1, kBlue = 1;
-
-   m_nVerts = kNumVerts;
-   m_nIndices = kNumIndices;
-
-   m_pMaterial = MaterialCreate();
-   if (!m_pMaterial)
+   cAutoIPtr<IMaterial> pNewMaterial = MaterialCreate();
+   if (!!pNewMaterial)
    {
-      return false;
-   }
-
-   if (pszTexture != NULL)
-   {
-      UseGlobal(TextureManager);
-      cAutoIPtr<ITexture> pTexture;
-      if (pTextureManager->GetTexture(pszTexture, &pTexture) == S_OK)
+      if (pszTexture != NULL)
       {
-         m_pMaterial->SetTexture(0, pTexture);
+         UseGlobal(TextureManager);
+         cAutoIPtr<ITexture> pTexture;
+         if (pTextureManager->GetTexture(pszTexture, &pTexture) == S_OK)
+         {
+            if (pNewMaterial->SetTexture(0, pTexture) == S_OK)
+            {
+               SafeRelease(m_pMaterial);
+               m_pMaterial = CTAddRef(pNewMaterial);
+               result = true;
+            }
+         }
       }
    }
-   else
+
+   return result;
+}
+
+///////////////////////////////////////
+
+static const int kStepSize = 16;
+static const int kGroundSize = 1024;
+static const int kNumQuadsPerSide = kGroundSize / kStepSize;
+static const int kNumQuads = kNumQuadsPerSide * kNumQuadsPerSide;
+static const int kNumVerts = kNumQuads * 4;
+static const int kNumIndices = kNumQuads * 6;
+static const float kRed = 1, kGreen = 1, kBlue = 1;
+
+static const float kTileTexWidth = 0.125f;
+static const float kTileTexHeight = 0.25f;
+
+bool cTiledGround::Init(cHeightMap * pHeightMap)
+{
+   m_vertices.resize(kNumVerts);
+
+   int index = 0;
+
+   float z1 = 0;
+   float z2 = kStepSize;
+
+   for (int iz = 0; iz < kNumQuadsPerSide; iz++, z1 += kStepSize, z2 += kStepSize)
    {
-      kGreen = 0.5f;
-      kRed = kBlue = 0;
+      float x1 = 0;
+      float x2 = kStepSize;
+
+      for (int ix = 0; ix < kNumQuadsPerSide; ix++, x1 += kStepSize, x2 += kStepSize)
+      {
+         uint tile = rand() & 15;
+         uint tileRow = tile % 4;
+         uint tileCol = tile / 4;
+
+         m_vertices[index].uv = tVec2(tileCol * kTileTexWidth, tileRow * kTileTexHeight);
+         m_vertices[index].rgb = tVec3(kRed,kGreen,kBlue);
+         m_vertices[index++].pos = tVec3(x1, pHeightMap->Height(Round(x1),Round(z1)), z1);
+
+         m_vertices[index].uv = tVec2((tileCol + 1) * kTileTexWidth, tileRow * kTileTexHeight);
+         m_vertices[index].rgb = tVec3(kRed,kGreen,kBlue);
+         m_vertices[index++].pos = tVec3(x2, pHeightMap->Height(Round(x2),Round(z1)), z1);
+
+         m_vertices[index].uv = tVec2((tileCol + 1) * kTileTexWidth, (tileRow + 1) * kTileTexHeight);
+         m_vertices[index].rgb = tVec3(kRed,kGreen,kBlue);
+         m_vertices[index++].pos = tVec3(x2, pHeightMap->Height(Round(x2),Round(z2)), z2);
+
+         m_vertices[index].uv = tVec2(tileCol * kTileTexWidth, (tileRow + 1) * kTileTexHeight);
+         m_vertices[index].rgb = tVec3(kRed,kGreen,kBlue);
+         m_vertices[index++].pos = tVec3(x1, pHeightMap->Height(Round(x1),Round(z2)), z2);
+      }
    }
+
+   m_bInitialized = true;
+
+   return true;
+}
+
+///////////////////////////////////////
+
+bool cTiledGround::CreateBuffers(IRenderDevice * pRenderDevice)
+{
+   Assert(!m_pVertexBuffer);
+   Assert(!m_pIndexBuffer);
 
    cAutoIPtr<IVertexDeclaration> pVertexDecl;
    if (pRenderDevice->CreateVertexDeclaration(g_terrainVertexDecl,
@@ -101,46 +146,10 @@ bool cTiledGround::Init(IRenderDevice * pRenderDevice, cHeightMap * pHeightMap, 
       return false;
    }
 
-   sTerrainVertex * pVertexData = NULL;
+   void * pVertexData = NULL;
    if (m_pVertexBuffer->Lock(kBL_Discard, (void * *)&pVertexData) == S_OK)
    {
-      int index = 0;
-
-      float z1 = 0;
-      float z2 = kStepSize;
-
-      static const float kTileTexWidth = 0.125f;
-      static const float kTileTexHeight = 0.25f;
-
-      for (int iz = 0; iz < kNumQuadsPerSide; iz++, z1 += kStepSize, z2 += kStepSize)
-      {
-         float x1 = 0;
-         float x2 = kStepSize;
-
-         for (int ix = 0; ix < kNumQuadsPerSide; ix++, x1 += kStepSize, x2 += kStepSize)
-         {
-            uint tile = rand() & 15;
-            uint tileRow = tile % 4;
-            uint tileCol = tile / 4;
-
-            pVertexData[index].uv = tVec2(tileCol * kTileTexWidth, tileRow * kTileTexHeight);
-            pVertexData[index].rgb = tVec3(kRed,kGreen,kBlue);
-            pVertexData[index++].pos = tVec3(x1, pHeightMap->Height(Round(x1),Round(z1)), z1);
-
-            pVertexData[index].uv = tVec2((tileCol + 1) * kTileTexWidth, tileRow * kTileTexHeight);
-            pVertexData[index].rgb = tVec3(kRed,kGreen,kBlue);
-            pVertexData[index++].pos = tVec3(x2, pHeightMap->Height(Round(x2),Round(z1)), z1);
-
-            pVertexData[index].uv = tVec2((tileCol + 1) * kTileTexWidth, (tileRow + 1) * kTileTexHeight);
-            pVertexData[index].rgb = tVec3(kRed,kGreen,kBlue);
-            pVertexData[index++].pos = tVec3(x2, pHeightMap->Height(Round(x2),Round(z2)), z2);
-
-            pVertexData[index].uv = tVec2(tileCol * kTileTexWidth, (tileRow + 1) * kTileTexHeight);
-            pVertexData[index].rgb = tVec3(kRed,kGreen,kBlue);
-            pVertexData[index++].pos = tVec3(x1, pHeightMap->Height(Round(x1),Round(z2)), z2);
-         }
-      }
-
+      memcpy(pVertexData, &m_vertices[0], m_vertices.size() * sizeof(sTerrainVertex));
       m_pVertexBuffer->Unlock();
    }
    else
@@ -152,6 +161,8 @@ bool cTiledGround::Init(IRenderDevice * pRenderDevice, cHeightMap * pHeightMap, 
    {
       return false;
    }
+
+   m_nIndices = kNumIndices;
 
    uint16 * pIndexData = NULL;
    if (m_pIndexBuffer->Lock(kBL_Discard, (void * *)&pIndexData) == S_OK)
@@ -173,13 +184,11 @@ bool cTiledGround::Init(IRenderDevice * pRenderDevice, cHeightMap * pHeightMap, 
       }
 
       m_pIndexBuffer->Unlock();
-   }
-   else
-   {
-      return false;
+
+      return true;
    }
 
-   return true;
+   return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

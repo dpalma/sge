@@ -112,7 +112,13 @@ bool cEditorDoc::SetTerrain(IRenderDevice * pRenderDevice,
          m_pGround = new cTiledGround();
          if (m_pGround != NULL)
          {
-            return m_pGround->Init(pRenderDevice, m_pHeightMap, pszTexture);
+            if (m_pGround->SetTexture(pszTexture))
+            {
+               if (m_pGround->Init(m_pHeightMap))
+               {
+                  return m_pGround->CreateBuffers(pRenderDevice);
+               }
+            }
          }
       }
    }

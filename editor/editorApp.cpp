@@ -25,6 +25,12 @@
 #include "filepath.h"
 #include "str.h"
 
+#ifdef HAVE_CPPUNIT
+#include <cppunit/ui/mfc/TestRunner.h>
+#include <cppunit/extensions/HelperMacros.h>
+#include <cppunit/extensions/TestFactoryRegistry.h>
+#endif
+
 #include "resource.h"       // main symbols
 
 #ifdef _DEBUG
@@ -39,8 +45,7 @@ static char THIS_FILE[] = __FILE__;
 BEGIN_MESSAGE_MAP(cEditorApp, CWinApp)
 	//{{AFX_MSG_MAP(cEditorApp)
 	ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
-		// NOTE - the ClassWizard will add and remove mapping macros here.
-		//    DO NOT EDIT what you see in these blocks of generated code!
+	ON_COMMAND(ID_TOOLS_UNITTESTRUNNER, OnToolsUnitTestRunner)
 	//}}AFX_MSG_MAP
 	// Standard file based document commands
 	ON_COMMAND(ID_FILE_NEW, CWinApp::OnFileNew)
@@ -182,7 +187,10 @@ BOOL cEditorApp::InitInstance()
    file.SetFileExt("cfg");
 
    cAutoIPtr<IConfigStore> pConfigStore = CreateTextConfigStore(file);
-   pConfigStore->Load(g_pConfig);
+   if (pConfigStore->Load(g_pConfig) != S_OK)
+   {
+      DebugMsg1("Error loading settings from %s\n", file.GetName());
+   }
 
    g_pConfig->ParseCmdLine(__argc, __argv);
 
@@ -193,17 +201,19 @@ BOOL cEditorApp::InitInstance()
       pResourceManager->AddSearchPath(temp);
    }
 
-   cStr autoExecScript("editor.lua");
-   ConfigGet("editor_autoexec_script", &autoExecScript);
+   cStr autoexecScript("editor.lua");
+   ConfigGet("editor_autoexec_script", &autoexecScript);
 
-   if (!ScriptExecFile(autoExecScript))
+   if (!ScriptExecFile(autoexecScript))
    {
-      if (!ScriptExecResource(autoExecScript))
+      if (!ScriptExecResource(autoexecScript))
       {
-         DebugMsg1("Error parsing or executing %s\n", autoExecScript.c_str());
+         DebugMsg1("Error parsing or executing %s\n", autoexecScript.c_str());
          return FALSE;
       }
    }
+
+   ScriptCallFunction("EditorInit", NULL);
 
 	// Parse command line for standard shell commands, DDE, file open
 	CCommandLineInfo cmdInfo;
@@ -307,3 +317,38 @@ tResult cEditorApp::RemoveLoopClient(IEditorLoopClient * pLoopClient)
 {
    return remove_interface(m_loopClients, pLoopClient) ? S_OK : E_FAIL;
 }
+
+void cEditorApp::OnToolsUnitTestRunner() 
+{
+#ifdef HAVE_CPPUNIT
+   CppUnit::MfcUi::TestRunner runner;
+   runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
+   runner.run();    
+#else
+   AfxMessageBox(IDS_NO_UNIT_TESTS);
+#endif
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_CPPUNIT
+
+class cEditorAppTests : public CppUnit::TestCase
+{
+   CPPUNIT_TEST_SUITE(cEditorAppTests);
+      CPPUNIT_TEST(Test);
+   CPPUNIT_TEST_SUITE_END();
+
+   void Test();
+};
+
+CPPUNIT_TEST_SUITE_REGISTRATION(cEditorAppTests);
+
+void cEditorAppTests::Test()
+{
+   CPPUNIT_ASSERT(true);
+}
+
+#endif // HAVE_CPPUNIT
+
+///////////////////////////////////////////////////////////////////////////////
