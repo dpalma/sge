@@ -455,7 +455,7 @@ bool Load3dsTriangleMesh(IReader * pReader, long stop, IRenderDevice * pRenderDe
                   memcpy(pVertexData, &vertices[0], vertices.size() * sizeof(s3dsVertex));
                   pSubMesh->UnlockVertexBuffer();
 
-                  int * pFaces = NULL;
+                  uint16 * pFaces = NULL;
                   if (pSubMesh->LockIndexBuffer((void**)&pFaces) == S_OK)
                   {
                      for (int i = 0; i < nGroupFaces; i++)

@@ -96,7 +96,7 @@ ISubMesh * SubMeshCreate(uint nFaces, uint nVertices,
       return NULL;
 
    cAutoIPtr<IIndexBuffer> pIndexBuffer;
-   if (pRenderDevice->CreateIndexBuffer(3 * nFaces, kIBF_32Bit, kMP_Auto, &pIndexBuffer) == S_OK)
+   if (pRenderDevice->CreateIndexBuffer(3 * nFaces, kIBF_16Bit, kMP_Auto, &pIndexBuffer) == S_OK)
    {
       cAutoIPtr<IVertexBuffer> pVertexBuffer;
       if (pRenderDevice->CreateVertexBuffer(nVertices, pVertexDecl, kMP_Auto, &pVertexBuffer) == S_OK)
