@@ -53,6 +53,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+static const tChar g_szRegistryKey[] = _T("SGE");
+
 /////////////////////////////////////////////////////////////////////////////
 
 static const SIZE g_mapSizes[] =
@@ -230,7 +232,7 @@ BOOL cEditorApp::InitInstance()
 	// Change the registry key under which our settings are stored.
 	// TODO: You should modify this string to be something appropriate
 	// such as the name of your company or organization.
-	SetRegistryKey(_T("Local AppWizard-Generated Applications"));
+	SetRegistryKey(g_szRegistryKey);
 
 	LoadStdProfileSettings();  // Load standard INI file options (including MRU)
 
@@ -450,6 +452,11 @@ BOOL cEditorApp::PreTranslateMessage(MSG * pMsg)
          case WM_KEYDOWN:
          {
             toolResult = pTool->OnKeyDown(cEditorKeyEvent(pMsg->wParam, pMsg->lParam), m_pCurrentToolView);
+
+            if ((toolResult == S_EDITOR_TOOL_CONTINUE) && (pMsg->wParam == VK_ESCAPE))
+            {
+               SetActiveTool(NULL);
+            }
             break;
          }
 
@@ -658,20 +665,24 @@ tResult cEditorApp::GetActiveTool(IEditorTool * * ppTool)
 
 tResult cEditorApp::SetActiveTool(IEditorTool * pTool)
 {
-   if (pTool == NULL)
-   {
-      return E_POINTER;
-   }
-
    tEditorAppListeners::iterator iter;
    for (iter = m_editorAppListeners.begin(); iter != m_editorAppListeners.end(); iter++)
    {
       (*iter)->OnActiveToolChange(pTool, m_pActiveTool);
    }
 
+   if (!!m_pActiveTool)
+   {
+      m_pActiveTool->Deactivate();
+   }
+
    SafeRelease(m_pActiveTool);
 
-   m_pActiveTool = CTAddRef(pTool);
+   if (pTool != NULL)
+   {
+      pTool->Activate();
+      m_pActiveTool = CTAddRef(pTool);
+   }
 
    return S_OK;
 }

@@ -228,6 +228,9 @@ enum eEditorToolResult
 
 interface UUID("AFAD398E-14D6-4eed-B503-AFE44C6989C0") IEditorTool : IUnknown
 {
+   virtual tResult Activate() = 0;
+   virtual tResult Deactivate() = 0;
+
    virtual tResult OnKeyDown(const cEditorKeyEvent & keyEvent, IEditorView * pView) = 0;
    virtual tResult OnKeyUp(const cEditorKeyEvent & keyEvent, IEditorView * pView) = 0;
    virtual tResult OnLButtonDblClk(const cEditorMouseEvent & mouseEvent, IEditorView * pView) = 0;
@@ -245,6 +248,9 @@ interface UUID("AFAD398E-14D6-4eed-B503-AFE44C6989C0") IEditorTool : IUnknown
 class cDefaultEditorTool : public IEditorTool
 {
 public:
+   virtual tResult Activate() { return S_OK; }
+   virtual tResult Deactivate() { return S_OK; }
+
    virtual tResult OnKeyDown(const cEditorKeyEvent & keyEvent, IEditorView * pView) { return S_EDITOR_TOOL_CONTINUE; }
    virtual tResult OnKeyUp(const cEditorKeyEvent & keyEvent, IEditorView * pView) { return S_EDITOR_TOOL_CONTINUE; }
    virtual tResult OnLButtonDblClk(const cEditorMouseEvent & mouseEvent, IEditorView * pView) { return S_EDITOR_TOOL_CONTINUE; }

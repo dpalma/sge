@@ -356,6 +356,12 @@
 				RelativePath=".\editorTileSet.cpp">
 			</File>
 			<File
+				RelativePath="editorTools.cpp">
+			</File>
+			<File
+				RelativePath="editorTypes.cpp">
+			</File>
+			<File
 				RelativePath=".\editorView.cpp">
 			</File>
 			<File
@@ -460,6 +466,12 @@
 			</File>
 			<File
 				RelativePath=".\editorTileSet.h">
+			</File>
+			<File
+				RelativePath="editorTools.h">
+			</File>
+			<File
+				RelativePath="editorTypes.h">
 			</File>
 			<File
 				RelativePath=".\editorView.h">

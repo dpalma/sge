@@ -320,29 +320,22 @@ void cTerrainTileTool::SetTile(uint tile)
 
 ////////////////////////////////////////
 
-tResult cTerrainTileTool::OnLButtonDown(const cEditorMouseEvent & mouseEvent,
-                                        IEditorView * pView)
+tResult cTerrainTileTool::Activate()
 {
-   if (pView == NULL)
-   {
-      return S_EDITOR_TOOL_CONTINUE;
-   }
-
-   int ix, iz;
-   cTerrainTile * pTile;
-   if (GetHitTile(mouseEvent.GetPoint(), pView, &ix, &iz, &pTile))
-   {
-      pTile->SetTile(m_tile);
-   }
-
-   return S_EDITOR_TOOL_CONTINUE;
+   return S_OK;
 }
 
 ////////////////////////////////////////
 
-tResult cTerrainTileTool::OnLButtonUp(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+tResult cTerrainTileTool::Deactivate()
 {
-   return S_EDITOR_TOOL_CONTINUE;
+   cAutoIPtr<IEditorView> pView;
+   if (AccessEditorApp()->GetActiveView(&pView) == S_OK)
+   {
+      pView->ClearTileHighlight();
+   }
+
+   return S_OK;
 }
 
 ////////////////////////////////////////
@@ -363,7 +356,38 @@ tResult cTerrainTileTool::OnMouseMove(const cEditorMouseEvent & mouseEvent, IEdi
       }
    }
 
+   return cDragTool::OnMouseMove(mouseEvent, pView);
+}
+
+////////////////////////////////////////
+
+tResult cTerrainTileTool::OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+{
    return S_EDITOR_TOOL_CONTINUE;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainTileTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+{
+   return S_EDITOR_TOOL_CONTINUE;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainTileTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+{
+   if (pView != NULL)
+   {
+      int ix, iz;
+      cTerrainTile * pTile;
+      if (GetHitTile(mouseEvent.GetPoint(), pView, &ix, &iz, &pTile))
+      {
+         pTile->SetTile(m_tile);
+      }
+   }
+
+   return S_EDITOR_TOOL_HANDLED;
 }
 
 ////////////////////////////////////////

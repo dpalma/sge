@@ -65,7 +65,6 @@ protected:
    void MoveCamera(IEditorView * pView, CPoint delta);
 
 private:
-   cAutoIPtr<IEditorView> m_pView;
    CPoint m_lastMousePoint;
 };
 
@@ -75,7 +74,7 @@ private:
 // CLASS: cTerrainTileTool
 //
 
-class cTerrainTileTool : public cComObject<cDefaultEditorTool, &IID_IEditorTool>
+class cTerrainTileTool : public cComObject<cDragTool, &IID_IEditorTool>
 {
 public:
    cTerrainTileTool();
@@ -83,11 +82,16 @@ public:
 
    void SetTile(uint tile);
 
-   virtual tResult OnLButtonDown(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
-	virtual tResult OnLButtonUp(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+   virtual tResult Activate();
+   virtual tResult Deactivate();
+
 	virtual tResult OnMouseMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
 
 protected:
+   virtual tResult OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+   virtual tResult OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+   virtual tResult OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+
    bool GetHitTile(CPoint point, IEditorView * pView, int * pix, int * piz, cTerrainTile * * ppTile);
 
 private:
