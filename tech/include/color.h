@@ -23,6 +23,9 @@ public:
    cColor(const cColor & other);
    const cColor & operator =(const cColor & other);
 
+   bool operator !=(const cColor & other);
+   bool operator ==(const cColor & other);
+
    float GetRed() const;
    float GetGreen() const;
    float GetBlue() const;
@@ -89,6 +92,28 @@ inline const cColor & cColor::operator =(const cColor & other)
    m_rgba[2] = other.m_rgba[2];
    m_rgba[3] = other.m_rgba[3];
    return *this;
+}
+
+///////////////////////////////////////
+
+inline bool cColor::operator !=(const cColor & other)
+{
+   return
+      (m_rgba[0] != other.m_rgba[0]) &&
+      (m_rgba[1] != other.m_rgba[1]) &&
+      (m_rgba[2] != other.m_rgba[2]) &&
+      (m_rgba[3] != other.m_rgba[3]);
+}
+
+///////////////////////////////////////
+
+inline bool cColor::operator ==(const cColor & other)
+{
+   return
+      (m_rgba[0] == other.m_rgba[0]) &&
+      (m_rgba[1] == other.m_rgba[1]) &&
+      (m_rgba[2] == other.m_rgba[2]) &&
+      (m_rgba[3] == other.m_rgba[3]);
 }
 
 ///////////////////////////////////////
