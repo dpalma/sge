@@ -15,11 +15,8 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define ScriptArgIsString(iArg) (argv[iArg].type == kString)
-#define ScriptArgIsNumber(iArg) (argv[iArg].type == kNumber)
-
-#define ScriptArgAsString(iArg) (argv[iArg].psz)
-#define ScriptArgAsNumber(iArg) (argv[iArg].d)
+#define ScriptArgIsString(iArg) (argv[iArg].IsString())
+#define ScriptArgIsNumber(iArg) (argv[iArg].IsNumber())
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -116,14 +113,29 @@ int BindKey(int argc, const cScriptVar * argv,
 
    if (argc == 2)
    {
-      pszKeyName = ScriptArgIsString(0) ? ScriptArgAsString(0) : NULL;
-      pszDownCmd = ScriptArgIsString(1) ? ScriptArgAsString(1) : NULL;
+      if (ScriptArgIsString(0))
+      {
+         pszKeyName = argv[0];
+      }
+      if (ScriptArgIsString(1))
+      {
+         pszDownCmd = argv[1];
+      }
    }
    else if (argc == 3)
    {
-      pszKeyName = ScriptArgIsString(0) ? ScriptArgAsString(0) : NULL;
-      pszDownCmd = ScriptArgIsString(1) ? ScriptArgAsString(1) : NULL;
-      pszUpCmd = ScriptArgIsString(2) ? ScriptArgAsString(2) : NULL;
+      if (ScriptArgIsString(0))
+      {
+         pszKeyName = argv[0];
+      }
+      if (ScriptArgIsString(1))
+      {
+         pszDownCmd = argv[1];
+      }
+      if (ScriptArgIsString(2))
+      {
+         pszUpCmd = argv[2];
+      }
    }
 
    if (pszKeyName != NULL && (pszDownCmd != NULL || pszUpCmd != NULL))
@@ -150,7 +162,7 @@ int UnbindKey(int argc, const cScriptVar * argv,
       UseGlobal(Input);
       if (!!pInput)
       {
-         pInput->KeyUnbind(Name2Key(ScriptArgAsString(0)));
+         pInput->KeyUnbind(Name2Key(argv[0]));
       }
    }
 
@@ -166,11 +178,11 @@ int LogEnableChannel(int argc, const cScriptVar * argv,
 {
    if (argc == 1 && ScriptArgIsString(0))
    {
-      techlog.EnableChannel(ScriptArgAsString(0), true);
+      techlog.EnableChannel(argv[0], true);
    }
    else if (argc == 2 && ScriptArgIsString(0) && ScriptArgIsNumber(1))
    {
-      techlog.EnableChannel(ScriptArgAsString(0), ScriptArgAsNumber(1) ? true : false);
+      techlog.EnableChannel(argv[0], ((int)argv[1] != 0) ? true : false);
    }
    return 0;
 }
@@ -187,11 +199,11 @@ int LoadGUI(int argc, const cScriptVar * argv,
       UseGlobal(GUIContext);
       if (!!pGUIContext)
       {
-         if (pGUIContext->LoadFromString(ScriptArgAsString(0)) == 0)
+         if (pGUIContext->LoadFromString(argv[0]) == 0)
          {
-            if (pGUIContext->LoadFromResource(ScriptArgAsString(0)) == 0)
+            if (pGUIContext->LoadFromResource(argv[0]) == 0)
             {
-               DebugMsg1("Loading GUI definitions from %s\n", ScriptArgAsString(0));
+               DebugMsg1("Loading GUI definitions from %s\n", argv[0]);
             }
          }
       }
@@ -214,15 +226,15 @@ int ToggleGUIDebugInfo(int argc, const cScriptVar * argv,
       && ScriptArgIsNumber(0) 
       && ScriptArgIsNumber(1))
    {
-      placement = tGUIPoint(ScriptArgAsNumber(0), ScriptArgAsNumber(1));
+      placement = tGUIPoint(argv[0], argv[1]);
    }
    else if (argc == 3 
       && ScriptArgIsNumber(0) 
       && ScriptArgIsNumber(1) 
       && ScriptArgIsString(2))
    {
-      placement = tGUIPoint(ScriptArgAsNumber(0), ScriptArgAsNumber(1));
-      GUIStyleParseColor(ScriptArgAsString(2), &color);
+      placement = tGUIPoint(argv[0], argv[1]);
+      GUIStyleParseColor(argv[2], &color);
    }
    else if (argc == 5 
       && ScriptArgIsNumber(0) 
@@ -231,8 +243,8 @@ int ToggleGUIDebugInfo(int argc, const cScriptVar * argv,
       && ScriptArgIsNumber(3) 
       && ScriptArgIsNumber(4))
    {
-      placement = tGUIPoint(ScriptArgAsNumber(0), ScriptArgAsNumber(1));
-      color = tGUIColor(ScriptArgAsNumber(2), ScriptArgAsNumber(3), ScriptArgAsNumber(4));
+      placement = tGUIPoint(argv[0], argv[1]);
+      color = tGUIColor(argv[2], argv[3], argv[4]);
    }
 
    UseGlobal(GUIContext);

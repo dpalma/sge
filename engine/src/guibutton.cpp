@@ -237,7 +237,8 @@ tResult cGUIButtonRenderer::Render(IGUIElement * pElement, IRenderDevice * pRend
       return E_POINTER;
    }
 
-   static const float g_bevel = 2;
+   static const int g_bevel = 2;
+   static const float g_bevelf = static_cast<float>(g_bevel);
 
    cAutoIPtr<IGUIButtonElement> pButton;
    if (pElement->QueryInterface(IID_IGUIButtonElement, (void**)&pButton) == S_OK)
@@ -255,7 +256,7 @@ tResult cGUIButtonRenderer::Render(IGUIElement * pElement, IRenderDevice * pRend
       {
          pGUIRenderingTools->Render3dRect(rect2, g_bevel, 
             tGUIColor::DarkGray, tGUIColor::LightGray, tGUIColor::Gray);
-         textOffset = tVec2(g_bevel, g_bevel);
+         textOffset = tVec2(g_bevelf, g_bevelf);
       }
       else
       {
@@ -305,7 +306,8 @@ tGUISize cGUIButtonRenderer::GetPreferredSize(IGUIElement * pElement)
             tRect rect(0,0,0,0);
             pFont->DrawText(pButton->GetText(), -1, kDT_CalcRect, &rect, tGUIColor::White);
 
-            return tGUISize(rect.GetWidth() + rect.GetHeight(), rect.GetHeight() * 1.5f);
+            return tGUISize(static_cast<tGUISizeType>(rect.GetWidth() + rect.GetHeight()),
+                            rect.GetHeight() * 1.5f);
          }
       }
    }

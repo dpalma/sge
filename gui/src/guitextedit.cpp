@@ -694,8 +694,8 @@ tGUISize cGUITextEditStatelessRenderer::GetPreferredSize(IGUIElement * pElement)
             tRect rect(0,0,0,0);
             pFont->DrawText(psz, editSize, kDT_CalcRect | kDT_SingleLine, &rect, tGUIColor::White);
 
-            return tGUISize(rect.GetWidth() + (kHorzInset * 2), 
-                            rect.GetHeight() + (kVertInset * 2));
+            return tGUISize(static_cast<tGUISizeType>(rect.GetWidth() + (kHorzInset * 2)),
+                            static_cast<tGUISizeType>(rect.GetHeight() + (kVertInset * 2)));
          }
 
       }

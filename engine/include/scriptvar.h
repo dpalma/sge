@@ -45,12 +45,20 @@ public:
    cScriptVar(const cScriptVar & other);
    ~cScriptVar();
 
+   void Assign(int value);
+   void Assign(uint value);
+   void Assign(float value);
+   void Assign(double value);
+
    int ToInt() const;
    uint ToUint() const;
    float ToFloat() const;
    double ToDouble() const;
 
-   const cScriptVar & operator =(double _d);
+   const cScriptVar & operator =(int value);
+   const cScriptVar & operator =(uint value);
+   const cScriptVar & operator =(float value);
+   const cScriptVar & operator =(double value);
    const cScriptVar & operator =(char * _psz);
    const cScriptVar & operator =(IUnknown * _pUnk);
    const cScriptVar & operator =(const cScriptVar & other);
@@ -62,9 +70,44 @@ public:
    operator const char *() const;
    operator IUnknown *() const;
 
+   bool IsNumber() const;
+   bool IsString() const;
+
 private:
    void Clear();
 };
+
+///////////////////////////////////////
+
+inline const cScriptVar & cScriptVar::operator =(int value)
+{
+   Assign(value);
+   return *this;
+}
+
+///////////////////////////////////////
+
+inline const cScriptVar & cScriptVar::operator =(uint value)
+{
+   Assign(value);
+   return *this;
+}
+
+///////////////////////////////////////
+
+inline const cScriptVar & cScriptVar::operator =(float value)
+{
+   Assign(value);
+   return *this;
+}
+
+///////////////////////////////////////
+
+inline const cScriptVar & cScriptVar::operator =(double value)
+{
+   Assign(value);
+   return *this;
+}
 
 ///////////////////////////////////////
 
@@ -92,6 +135,20 @@ inline cScriptVar::operator float() const
 inline cScriptVar::operator double() const
 {
    return ToDouble();
+}
+
+///////////////////////////////////////
+
+inline bool cScriptVar::IsNumber() const
+{
+   return (type == kNumber);
+}
+
+///////////////////////////////////////
+
+inline bool cScriptVar::IsString() const
+{
+   return (type == kString);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

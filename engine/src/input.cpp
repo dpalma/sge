@@ -193,7 +193,7 @@ bool cInput::DispatchInputEvent(int x, int y, long key, bool down, double time)
    sInputEvent event;
    event.key = key;
    event.down = down;
-   event.point = tVec2(x,y);
+   event.point = tVec2(static_cast<float>(x), static_cast<float>(y));
    event.time = time;
 
    // iterate in reverse order so the most recently added listener gets first crack

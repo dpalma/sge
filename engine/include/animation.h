@@ -28,7 +28,7 @@ interface IKeyFrameAnimation : IUnknown
 {
    virtual tTime GetPeriod() const = 0;
 
-   virtual tResult GetInterpolator(int index, IKeyFrameInterpolator * * ppInterpolator) const = 0;
+   virtual tResult GetInterpolator(uint index, IKeyFrameInterpolator * * ppInterpolator) const = 0;
 };
 
 ENGINE_API tResult KeyFrameAnimationCreate(IKeyFrameInterpolator * * ppInterpolators, uint nInterpolators,

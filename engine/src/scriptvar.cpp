@@ -67,6 +67,42 @@ cScriptVar::~cScriptVar()
 
 ///////////////////////////////////////
 
+void cScriptVar::Assign(int value)
+{
+   Clear();
+   type = kNumber;
+   d = value;
+}
+
+///////////////////////////////////////
+
+void cScriptVar::Assign(uint value)
+{
+   Clear();
+   type = kNumber;
+   d = value;
+}
+
+///////////////////////////////////////
+
+void cScriptVar::Assign(float value)
+{
+   Clear();
+   type = kNumber;
+   d = value;
+}
+
+///////////////////////////////////////
+
+void cScriptVar::Assign(double value)
+{
+   Clear();
+   type = kNumber;
+   d = value;
+}
+
+///////////////////////////////////////
+
 int cScriptVar::ToInt() const
 {
    return Round(ToFloat());
@@ -103,16 +139,6 @@ double cScriptVar::ToDouble() const
       ErrorMsg("Attempt to access incompatible ScriptVar as a double\n");
       return 0;
    }
-}
-
-///////////////////////////////////////
-
-const cScriptVar & cScriptVar::operator =(double _d)
-{
-   Clear();
-   type = kNumber;
-   d = _d;
-   return *this;
 }
 
 ///////////////////////////////////////

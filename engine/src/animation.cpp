@@ -32,7 +32,7 @@ public:
 
    virtual tTime GetPeriod() const;
 
-   virtual tResult GetInterpolator(int index, IKeyFrameInterpolator * * ppInterpolator) const;
+   virtual tResult GetInterpolator(uint index, IKeyFrameInterpolator * * ppInterpolator) const;
 
 private:
    tTime m_period;
@@ -93,7 +93,7 @@ tTime cKeyFrameAnimation::GetPeriod() const
 
 ///////////////////////////////////////
 
-tResult cKeyFrameAnimation::GetInterpolator(int index, IKeyFrameInterpolator * * ppInterpolator) const
+tResult cKeyFrameAnimation::GetInterpolator(uint index, IKeyFrameInterpolator * * ppInterpolator) const
 {
    if (index >= 0 && index < m_interpolators.size() && ppInterpolator != NULL)
    {

@@ -128,11 +128,11 @@ void GUISizeElement(const tGUIRect & field, IGUIElement * pGUIElement)
       {
          if (widthSpec == kGUIDimensionPixels)
          {
-            size.width = width;
+            size.width = static_cast<tGUISizeType>(width);
          }
          else if (widthSpec == kGUIDimensionPercent)
          {
-            size.width = (width * field.GetWidth()) / 100;
+            size.width = static_cast<tGUISizeType>((width * field.GetWidth()) / 100);
          }
       }
 
@@ -141,11 +141,11 @@ void GUISizeElement(const tGUIRect & field, IGUIElement * pGUIElement)
       {
          if (heightSpec == kGUIDimensionPixels)
          {
-            size.height = height;
+            size.height = static_cast<tGUISizeType>(height);
          }
          else if (heightSpec == kGUIDimensionPercent)
          {
-            size.height = (height * field.GetHeight()) / 100;
+            size.height = static_cast<tGUISizeType>((height * field.GetHeight()) / 100);
          }
       }
    }
@@ -161,7 +161,7 @@ void GUIPlaceElement(const tGUIRect & field, IGUIElement * pGUIElement)
 
    tGUISize size = pGUIElement->GetSize();
 
-   tGUIPoint pos(field.left, field.top);
+   tGUIPoint pos(static_cast<float>(field.left), static_cast<float>(field.top));
 
    cAutoIPtr<IGUIStyle> pStyle;
    if (pGUIElement->GetStyle(&pStyle) == S_OK)
@@ -171,15 +171,15 @@ void GUIPlaceElement(const tGUIRect & field, IGUIElement * pGUIElement)
       {
          if (align == kGUIAlignLeft)
          {
-            pos.x = field.left;
+            pos.x = static_cast<float>(field.left);
          }
          else if (align == kGUIAlignRight)
          {
-            pos.x = field.left + field.GetWidth() - size.width;
+            pos.x = static_cast<float>(field.left + field.GetWidth() - size.width);
          }
          else if (align == kGUIAlignCenter)
          {
-            pos.x = field.left + ((field.GetWidth() - size.width) / 2);
+            pos.x = static_cast<float>(field.left + ((field.GetWidth() - size.width) / 2));
          }
       }
 
@@ -188,7 +188,7 @@ void GUIPlaceElement(const tGUIRect & field, IGUIElement * pGUIElement)
       {
          if (vertAlign == kGUIVertAlignTop)
          {
-            pos.y = field.top;
+            pos.y = static_cast<float>(field.top);
          }
          else if (vertAlign == kGUIVertAlignBottom)
          {
