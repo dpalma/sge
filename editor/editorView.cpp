@@ -37,6 +37,11 @@ BEGIN_MESSAGE_MAP(cEditorView, cGLView)
 	ON_WM_CREATE()
 	ON_WM_DESTROY()
 	ON_WM_SIZE()
+	ON_WM_LBUTTONDOWN()
+	ON_WM_LBUTTONUP()
+	ON_WM_RBUTTONDOWN()
+	ON_WM_RBUTTONUP()
+	ON_WM_MOUSEMOVE()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -44,7 +49,8 @@ END_MESSAGE_MAP()
 // cEditorView construction/destruction
 
 cEditorView::cEditorView()
- : m_center(0,0,0),
+ : m_mouseAction(kNone),
+   m_center(0,0,0),
    m_eye(0,0,0)
 {
 }
@@ -401,4 +407,58 @@ LRESULT cEditorView::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
    }
 	
 	return CView::WindowProc(message, wParam, lParam);
+}
+
+void cEditorView::OnLButtonDown(UINT nFlags, CPoint point) 
+{
+	// TODO: Add your message handler code here and/or call default
+	
+	cGLView::OnLButtonDown(nFlags, point);
+}
+
+void cEditorView::OnLButtonUp(UINT nFlags, CPoint point) 
+{
+	// TODO: Add your message handler code here and/or call default
+	
+	cGLView::OnLButtonUp(nFlags, point);
+}
+
+void cEditorView::OnRButtonDown(UINT nFlags, CPoint point) 
+{
+	// TODO: Add your message handler code here and/or call default
+   SetCapture();
+   m_mouseAction = kMoveCamera;
+   m_lastMousePoint = point;
+	
+	cGLView::OnRButtonDown(nFlags, point);
+}
+
+void cEditorView::OnRButtonUp(UINT nFlags, CPoint point) 
+{
+	// TODO: Add your message handler code here and/or call default
+   Verify(ReleaseCapture());
+   m_mouseAction = kNone;
+	
+	cGLView::OnRButtonUp(nFlags, point);
+}
+
+void cEditorView::OnMouseMove(UINT nFlags, CPoint point) 
+{
+	// TODO: Add your message handler code here and/or call default
+
+   if (GetCapture() == this)
+   {
+      if (m_mouseAction == kMoveCamera)
+      {
+         CPoint delta = point - m_lastMousePoint;
+         m_eye.x += delta.x;
+         m_eye.z += delta.y;
+         m_center.x += delta.x;
+         m_center.z += delta.y;
+      }
+
+      m_lastMousePoint = point;
+   }
+	
+	cGLView::OnMouseMove(nFlags, point);
 }
