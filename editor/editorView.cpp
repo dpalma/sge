@@ -20,9 +20,8 @@
 
 #include <GL/gl.h>
 
-#include "dbgalloc.h" // must be last header
-
 #ifdef _DEBUG
+#define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
@@ -54,7 +53,7 @@ static tVec3 CalcEyePoint(const tVec3 & center,
 
 ////////////////////////////////////////
 
-IMPLEMENT_DYNCREATE_EX(cEditorView, CView)
+IMPLEMENT_DYNCREATE(cEditorView, CView)
 
 ////////////////////////////////////////
 

@@ -34,7 +34,7 @@ class cEditorView : public cGLView,
 {
 protected: // create from serialization only
 	cEditorView();
-	DECLARE_DYNCREATE_EX(cEditorView)
+	DECLARE_DYNCREATE(cEditorView)
 
 // Attributes
 public:

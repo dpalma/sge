@@ -11,9 +11,8 @@
 
 #include "resource.h"       // main symbols
 
-#include "dbgalloc.h" // must be last header
-
 #ifdef _DEBUG
+#define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
@@ -27,7 +26,7 @@ static const int kToolPaletteId = 1234;
 
 AUTO_REGISTER_CONTROLBAR(IDS_TOOL_PALETTE_BAR_TITLE, RUNTIME_CLASS(cToolPaletteBar), kCBP_Right);
 
-IMPLEMENT_DYNCREATE_EX(cToolPaletteBar, CSizingControlBarG);
+IMPLEMENT_DYNCREATE(cToolPaletteBar, cEditorControlBar);
 
 cToolPaletteBar::cToolPaletteBar()
 {
@@ -37,7 +36,7 @@ cToolPaletteBar::~cToolPaletteBar()
 {
 }
 
-BEGIN_MESSAGE_MAP(cToolPaletteBar, CSizingControlBarG)
+BEGIN_MESSAGE_MAP(cToolPaletteBar, cEditorControlBar)
    //{{AFX_MSG_MAP(cToolPaletteBar)
    ON_WM_CREATE()
 	ON_WM_DESTROY()
@@ -120,7 +119,7 @@ void cToolPaletteBar::OnDefaultTileSetChange(IEditorTileSet * pTileSet)
 
 int cToolPaletteBar::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
-   if (CSizingControlBarG::OnCreate(lpCreateStruct) == -1)
+   if (cEditorControlBar::OnCreate(lpCreateStruct) == -1)
       return -1;
 
    if (!m_tooltip.Create(this))
@@ -165,7 +164,7 @@ int cToolPaletteBar::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 void cToolPaletteBar::OnDestroy() 
 {
-   CSizingControlBarG::OnDestroy();
+   cEditorControlBar::OnDestroy();
 
    UseGlobal(EditorTileManager);
    pEditorTileManager->Disconnect(this);
@@ -175,7 +174,7 @@ void cToolPaletteBar::OnDestroy()
 
 void cToolPaletteBar::OnSize(UINT nType, int cx, int cy) 
 {
-	CSizingControlBarG::OnSize(nType, cx, cy);
+	cEditorControlBar::OnSize(nType, cx, cy);
    if (m_toolPalette.IsWindow())
    {
       CRect rect;
@@ -236,5 +235,5 @@ BOOL cToolPaletteBar::PreTranslateMessage(MSG* pMsg)
       }
    }
 
-   return CSizingControlBarG::PreTranslateMessage(pMsg);
+   return cEditorControlBar::PreTranslateMessage(pMsg);
 }

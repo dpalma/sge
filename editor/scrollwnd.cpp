@@ -7,9 +7,8 @@
 
 #include <afxpriv.h>
 
-#include "dbgalloc.h" // must be last header
-
 #ifdef _DEBUG
+#define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif

@@ -9,9 +9,8 @@
 
 #include "resource.h"       // main symbols
 
-#include "dbgalloc.h" // must be last header
-
 #ifdef _DEBUG
+#define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
@@ -37,7 +36,7 @@ void OutputBarLogCallback(eLogSeverity severity, const tChar * pszMsg, size_t ms
 
 AUTO_REGISTER_CONTROLBAR(IDS_OUTPUT_BAR_TITLE, RUNTIME_CLASS(cOutputBar), kCBP_Bottom);
 
-IMPLEMENT_DYNCREATE_EX(cOutputBar, CSizingControlBarG);
+IMPLEMENT_DYNCREATE(cOutputBar, cEditorControlBar);
 
 cOutputBar::cOutputBar()
  : m_nextLogCallback(NULL)
@@ -66,7 +65,7 @@ void cOutputBar::HandleLogCallback(eLogSeverity severity, const tChar * pszMsg, 
    }
 }
 
-BEGIN_MESSAGE_MAP(cOutputBar, CSizingControlBarG)
+BEGIN_MESSAGE_MAP(cOutputBar, cEditorControlBar)
    //{{AFX_MSG_MAP(cOutputBar)
    ON_WM_CREATE()
 	ON_WM_DESTROY()
@@ -78,7 +77,7 @@ END_MESSAGE_MAP()
 
 int cOutputBar::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
-   if (CSizingControlBarG::OnCreate(lpCreateStruct) == -1)
+   if (cEditorControlBar::OnCreate(lpCreateStruct) == -1)
       return -1;
 
    SetSCBStyle(GetSCBStyle() | SCBS_SIZECHILD);
@@ -110,7 +109,7 @@ int cOutputBar::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 void cOutputBar::OnDestroy() 
 {
-   CSizingControlBarG::OnDestroy();
+   cEditorControlBar::OnDestroy();
 
    techlog.SetCallback(m_nextLogCallback);
    g_pOutputBar = NULL;

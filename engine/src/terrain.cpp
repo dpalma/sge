@@ -21,14 +21,15 @@
 #include <algorithm>
 #include <map>
 
-#include "dbgalloc.h" // must be last header
-
 #ifdef _DEBUG
+#define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
+
+const int kDefaultStepSize = 32;
 
 static const uint kMaxTerrainHeight = 30;
 

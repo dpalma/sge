@@ -35,13 +35,6 @@ public:
    cEditorSingleDocTemplate(UINT nIDResource, CRuntimeClass * pDocClass,
       CRuntimeClass * pFrameClass, CRuntimeClass * pViewClass);
    ~cEditorSingleDocTemplate();
-
-#if defined(_DEBUG)
-   void * PASCAL operator new(size_t nSize, int type, LPCSTR lpszFileName, int nLine);
-#if _MSC_VER > 1300
-   void PASCAL operator delete(void *p, int type, LPCSTR lpszFileName, int nLine);
-#endif
-#endif
 };
 
 ////////////////////////////////////////
@@ -60,23 +53,6 @@ inline cEditorSingleDocTemplate::~cEditorSingleDocTemplate()
 {
 }
 
-////////////////////////////////////////
-
-#if defined(_DEBUG)
-inline void * PASCAL cEditorSingleDocTemplate::operator new(size_t nSize, int /*type*/, LPCSTR lpszFileName, int nLine)
-{
-   return ::operator new(nSize, _AFX_CLIENT_BLOCK, lpszFileName, nLine);
-}
-#endif
-
-////////////////////////////////////////
-
-#if defined(_DEBUG) && (_MSC_VER > 1300)
-inline void PASCAL cEditorSingleDocTemplate::operator delete(void *p, int type, LPCSTR lpszFileName, int nLine)
-{
-   ::operator delete(p);
-}
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 //

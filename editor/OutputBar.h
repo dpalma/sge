@@ -15,9 +15,9 @@
 // CLASS: cOutputBar
 //
 
-class cOutputBar : public CSizingControlBarG
+class cOutputBar : public cEditorControlBar
 {
-   DECLARE_DYNCREATE_EX(cOutputBar)
+   DECLARE_DYNCREATE(cOutputBar)
 
 // Construction
 public:

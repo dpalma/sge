@@ -33,6 +33,10 @@
 #include "scbarg.h"
 #include "scbarcf.h"
 
+class cEditorControlBar : public CSizingControlBarG
+{
+};
+
 #define _WTL_NO_AUTOMATIC_NAMESPACE
 #include <atlbase.h>
 #include <atlapp.h>
@@ -45,28 +49,10 @@ extern WTL::CAppModule _Module;
 #define _AFX_CLIENT_BLOCK _CLIENT_BLOCK
 #endif
 
-#ifdef _DEBUG
-#if _MSC_VER > 1300
-#define DECLARE_DYNCREATE_EX(classname) \
-   DECLARE_DYNCREATE(classname) \
-   void * PASCAL operator new(size_t nSize, int /*type*/, LPCSTR lpszFileName, int nLine) \
-   { return ::operator new(nSize, _AFX_CLIENT_BLOCK, lpszFileName, nLine); } \
-   void PASCAL operator delete(void *p, int type, LPCSTR lpszFileName, int nLine) \
-   { ::operator delete(p); }
-#else
-#define DECLARE_DYNCREATE_EX(classname) \
-   DECLARE_DYNCREATE(classname) \
-   void * PASCAL operator new(size_t nSize, int /*type*/, LPCSTR lpszFileName, int nLine) \
-   { return ::operator new(nSize, _AFX_CLIENT_BLOCK, lpszFileName, nLine); }
-#endif
-#define IMPLEMENT_DYNCREATE_EX(classname, baseclassname) \
-   IMPLEMENT_DYNCREATE(classname, baseclassname)
-#else
 #define DECLARE_DYNCREATE_EX(classname) \
    DECLARE_DYNCREATE(classname)
 #define IMPLEMENT_DYNCREATE_EX(classname, baseclassname) \
    IMPLEMENT_DYNCREATE(classname, baseclassname)
-#endif
 
 #pragma warning(disable:4355) // 'this' : used in base member initializer list
 

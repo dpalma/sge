@@ -20,11 +20,11 @@
 // CLASS: cToolPaletteBar
 //
 
-class cToolPaletteBar : public CSizingControlBarG,
+class cToolPaletteBar : public cEditorControlBar,
                         public cComObject<IMPLEMENTS(IEditorTileManagerListener),
                                           cAfxComServices<cToolPaletteBar> >
 {
-   DECLARE_DYNCREATE_EX(cToolPaletteBar)
+   DECLARE_DYNCREATE(cToolPaletteBar)
 
 // Construction
 public:
