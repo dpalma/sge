@@ -98,10 +98,6 @@ SOURCE=.\socket.cpp
 SOURCE=.\stdhdr.cpp
 # ADD CPP /Yc"stdhdr.h"
 # End Source File
-# Begin Source File
-
-SOURCE=.\thread.cpp
-# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -113,10 +109,6 @@ SOURCE=.\socket.h
 # Begin Source File
 
 SOURCE=.\stdhdr.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\thread.h
 # End Source File
 # End Group
 # End Target

@@ -3,7 +3,7 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
-Project: "allguids"=..\..\allguids\allguids.dsp - Package Owner=<4>
+Project: "allguids"=..\..\vcproj\vc6\allguids.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -33,7 +33,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "tech"=..\..\tech\tech.dsp - Package Owner=<4>
+Project: "tech"=..\..\vcproj\vc6\tech.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
