@@ -130,6 +130,10 @@ public:
 
    virtual void GetAABB(tVec3 * pMaxs, tVec3 * pMins) const;
    virtual void Render(IRenderDevice * pRenderDevice) const;
+   virtual uint GetVertexCount() const;
+   virtual tResult GetVertexBuffer(IVertexBuffer * * ppVertexBuffer);
+   virtual tResult LockVertexBuffer(void * * ppData);
+   virtual tResult UnlockVertexBuffer();
    virtual tResult AddMaterial(IMaterial * pMaterial);
    virtual tResult FindMaterial(const char * pszName, IMaterial * * ppMaterial) const;
    virtual uint GetMaterialCount() const;
@@ -141,6 +145,8 @@ public:
    virtual tResult GetSkeleton(ISkeleton * * ppSkeleton);
 
    tResult Read(IReader * pReader, IRenderDevice * pRenderDevice, IResourceManager * pResourceManager);
+
+   tResult PostRead();
 
    void SetFrame(float percent);
 

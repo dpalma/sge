@@ -460,6 +460,26 @@ void cMs3dMesh::Render(IRenderDevice * pRenderDevice) const
    (this->*m_pfnRender)();
 }
 
+uint cMs3dMesh::GetVertexCount() const
+{
+   return m_pInnerMesh->GetVertexCount();
+}
+
+tResult cMs3dMesh::GetVertexBuffer(IVertexBuffer * * ppVertexBuffer)
+{
+   return m_pInnerMesh->GetVertexBuffer(ppVertexBuffer);
+}
+
+tResult cMs3dMesh::LockVertexBuffer(void * * ppData)
+{
+   return m_pInnerMesh->LockVertexBuffer(ppData);
+}
+
+tResult cMs3dMesh::UnlockVertexBuffer()
+{
+   return m_pInnerMesh->UnlockVertexBuffer();
+}
+
 tResult cMs3dMesh::AddMaterial(IMaterial * pMaterial)
 {
    return m_pInnerMesh->AddMaterial(pMaterial);
@@ -557,27 +577,6 @@ tResult cMs3dMesh::Read(IReader * pReader, IRenderDevice * pRenderDevice, IResou
       if (pReader->Read(&material, sizeof(material)) != S_OK)
          return E_FAIL;
 
-      cAutoIPtr<ITexture> pTexture;
-
-      if (material.texture[0] != 0)
-      {
-         cImage * pTextureImage = ImageLoad(pResourceManager, material.texture);
-         if (pTextureImage == NULL)
-         {
-            DebugMsg1("Could not load texture image %s\n", material.texture);
-            return E_FAIL;
-         }
-
-         if (pRenderDevice->CreateTexture(pTextureImage, &pTexture) != S_OK)
-         {
-            DebugMsg1("Could not create device texture for %s\n", material.texture);
-            delete pTextureImage;
-            return E_FAIL;
-         }
-
-         delete pTextureImage;
-      }
-
       cAutoIPtr<IMaterial> pMaterial = MaterialCreate();
 
       if (pMaterial != NULL)
@@ -588,7 +587,28 @@ tResult cMs3dMesh::Read(IReader * pReader, IRenderDevice * pRenderDevice, IResou
          pMaterial->SetSpecular(cColor(material.specular));
          pMaterial->SetEmissive(cColor(material.emissive));
          pMaterial->SetShininess(material.shininess);
-         pMaterial->SetTexture(0, pTexture);
+
+         if (material.texture[0] != 0)
+         {
+            cImage * pTextureImage = ImageLoad(pResourceManager, material.texture);
+            if (pTextureImage == NULL)
+            {
+               DebugMsg1("Could not load texture image %s\n", material.texture);
+               return E_FAIL;
+            }
+
+            cAutoIPtr<ITexture> pTexture;
+            if (pRenderDevice->CreateTexture(pTextureImage, &pTexture) != S_OK)
+            {
+               DebugMsg1("Could not create device texture for %s\n", material.texture);
+               delete pTextureImage;
+               return E_FAIL;
+            }
+
+            delete pTextureImage;
+
+            pMaterial->SetTexture(0, pTexture);
+         }
 
          AddMaterial(pMaterial);
       }
@@ -606,7 +626,19 @@ tResult cMs3dMesh::Read(IReader * pReader, IRenderDevice * pRenderDevice, IResou
    if (SkeletonCreate(&bones[0], bones.size(), &interpolators[0], interpolators.size(), &pSkeleton) == S_OK)
    {
       AttachSkeleton(pSkeleton);
+   }
 
+   if (PostRead() != S_OK)
+      return S_OK;
+
+   return S_OK;
+}
+
+tResult cMs3dMesh::PostRead()
+{
+   cAutoIPtr<ISkeleton> pSkeleton;
+   if (GetSkeleton(&pSkeleton) == S_OK)
+   {
       m_boneMatrices.resize(pSkeleton->GetBoneCount());
 
       tMatrices inverses(pSkeleton->GetBoneCount());
