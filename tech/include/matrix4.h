@@ -75,8 +75,7 @@ cMatrix4<T>::cMatrix4()
 template <typename T>
 cMatrix4<T>::cMatrix4(const cMatrix4 & other)
 {
-   for (int i = 0; i < _countof(m); i++)
-      m[i] = other.m[i];
+   operator =(other);
 }
 
 ///////////////////////////////////////
@@ -85,7 +84,9 @@ template <typename T>
 const cMatrix4<T> & cMatrix4<T>::operator =(const cMatrix4 & other)
 {
    for (int i = 0; i < _countof(m); i++)
+   {
       m[i] = other.m[i];
+   }
    return *this;
 }
 
@@ -105,15 +106,16 @@ void cMatrix4<T>::Identity()
 template <typename T>
 void cMatrix4<T>::Transpose()
 {
-   Swap(m10, m01);
-   Swap(m12, m21);
-   Swap(m13, m31);
-   Swap(m20, m02);
-   Swap(m21, m12);
-   Swap(m23, m32);
-   Swap(m30, m03);
-   Swap(m31, m13);
-   Swap(m32, m23);
+   T temp;
+   temp = m10, m10 = m01, m01 = temp;
+   temp = m12, m12 = m21, m21 = temp;
+   temp = m13, m13 = m31, m31 = temp;
+   temp = m20, m20 = m02, m02 = temp;
+   temp = m21, m21 = m12, m12 = temp;
+   temp = m23, m23 = m32, m32 = temp;
+   temp = m30, m30 = m03, m03 = temp;
+   temp = m31, m31 = m13, m13 = temp;
+   temp = m32, m32 = m23, m23 = temp;
 }
 
 ///////////////////////////////////////
