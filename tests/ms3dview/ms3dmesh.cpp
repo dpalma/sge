@@ -6,6 +6,7 @@
 #include "ms3dmesh.h"
 
 #include "skeleton.h"
+#include "animation.h"
 
 #include "render.h"
 #include "material.h"
@@ -357,7 +358,11 @@ void cMs3dMesh::SetFrame(float percent)
    cAutoIPtr<ISkeleton> pSkeleton;
    if (GetSkeleton(&pSkeleton) == S_OK)
    {
-      pSkeleton->GetBoneMatrices(percent, &m_boneMatrices);
+      cAutoIPtr<IKeyFrameAnimation> pAnimation;
+      if (pSkeleton->GetAnimation(&pAnimation) == S_OK)
+      {
+         pSkeleton->GetBoneMatrices(pAnimation->GetPeriod() * percent, &m_boneMatrices);
+      }
    }
 }
 
