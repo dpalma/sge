@@ -6,7 +6,7 @@
 #include "socket.h"
 
 #ifdef _WIN32
-#include <winsock.h>
+#include <winsock2.h>
 #else
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -101,8 +101,39 @@ cSocket::~cSocket()
 bool cSocket::Init()
 {
 #ifdef _WIN32
+   WORD wsVersion = MAKEWORD(1,1);
+
    WSADATA wsaData;
-   return (WSAStartup(MAKEWORD(1,1), &wsaData) == 0);
+   if (WSAStartup(wsVersion, &wsaData) != 0)
+   {
+      return false;
+   }
+
+   DWORD bufferSize = 0;
+   int nProtocols = WSAEnumProtocols(NULL, NULL, &bufferSize);
+   if ((nProtocols != SOCKET_ERROR) && (WSAGetLastError() != WSAENOBUFS))
+   {
+      return false; 
+   }
+
+   LPWSAPROTOCOL_INFO pProtocolInfo = (LPWSAPROTOCOL_INFO)malloc(bufferSize);
+   if (pProtocolInfo == NULL)
+   {
+      return false;
+   }
+
+   int protocols[] = { IPPROTO_TCP, IPPROTO_UDP };
+
+   nProtocols = WSAEnumProtocols(protocols, pProtocolInfo, &bufferSize);
+
+   free(pProtocolInfo), pProtocolInfo = NULL;
+
+   if (nProtocols == SOCKET_ERROR)
+   {
+      return false;
+   }
+
+   return true;
 #else
    return true;
 #endif
