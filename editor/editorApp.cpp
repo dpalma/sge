@@ -29,7 +29,15 @@
 #include "str.h"
 
 #ifdef HAVE_CPPUNIT
+#ifdef USE_MFC_TESTRUNNER
 #include <cppunit/ui/mfc/TestRunner.h>
+#else
+#include <cppunit/ui/text/TestRunner.h>
+#include <cppunit/TestResultCollector.h>
+#include <cppunit/TestFailure.h>
+#include <cppunit/SourceLine.h>
+#include <cppunit/Exception.h>
+#endif
 #include <cppunit/extensions/HelperMacros.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #endif
@@ -470,9 +478,32 @@ tResult cEditorApp::GetMapSettings(cMapSettings * pMapSettings)
 void cEditorApp::OnToolsUnitTestRunner() 
 {
 #ifdef HAVE_CPPUNIT
+#ifdef USE_MFC_TESTRUNNER
    CppUnit::MfcUi::TestRunner runner;
    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-   runner.run();    
+   runner.run();
+#else
+   CppUnit::TextUi::TestRunner runner;
+   runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
+   runner.run();
+   if (runner.result().testFailuresTotal() > 0)
+   {
+      techlog.Print(kError, "%d UNIT TESTS FAILED!\n", runner.result().testFailuresTotal());
+      CppUnit::TestResultCollector::TestFailures::const_iterator iter;
+      for (iter = runner.result().failures().begin(); iter != runner.result().failures().end(); iter++)
+      {
+         techlog.Print(kError, "%s(%d) : %s : %s\n",
+            (*iter)->sourceLine().fileName().c_str(),
+            (*iter)->sourceLine().isValid() ? (*iter)->sourceLine().lineNumber() : -1,
+            (*iter)->failedTestName().c_str(),
+            (*iter)->thrownException()->what());
+      }
+   }
+   else
+   {
+      techlog.Print(kInfo, "%d unit tests succeeded\n", runner.result().tests().size());
+   }
+#endif
 #else
    AfxMessageBox(IDS_NO_UNIT_TESTS);
 #endif

@@ -82,7 +82,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 $(OutDir)\cppunit.lib $(OutDir)\testrunner.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 $(OutDir)\cppunit.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
 
 !ELSEIF  "$(CFG)" == "editor - Win32 Opt"
 
