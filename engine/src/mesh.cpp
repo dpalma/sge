@@ -123,7 +123,8 @@ class cMesh : public cComObject<IMPLEMENTS(IMesh)>
 
 public:
    cMesh();
-   ~cMesh();
+   cMesh(uint nVertices, IVertexBuffer * pVertexBuffer);
+   virtual ~cMesh();
 
    virtual void GetAABB(tVec3 * pMaxs, tVec3 * pMins) const;
    virtual void Render(IRenderDevice * pRenderDevice) const;
@@ -163,6 +164,18 @@ cMesh::cMesh()
 
 ///////////////////////////////////////
 
+cMesh::cMesh(uint nVertices, IVertexBuffer * pVertexBuffer)
+ : m_nVerts(nVertices)
+{
+   if (pVertexBuffer != NULL)
+   {
+      m_pVertexBuffer = pVertexBuffer;
+      m_pVertexBuffer->AddRef();
+   }
+}
+
+///////////////////////////////////////
+
 cMesh::~cMesh()
 {
    std::for_each(m_materials.begin(), m_materials.end(), CTInterfaceMethodRef(&IUnknown::Release));
@@ -179,33 +192,42 @@ void cMesh::GetAABB(tVec3 * pMax, tVec3 * pMin) const
    tVec3 max(FLT_MIN, FLT_MIN, FLT_MIN);
    tVec3 min(FLT_MAX, FLT_MAX, FLT_MAX);
 
-   tSubMeshes::const_iterator iter;
-   for (iter = m_subMeshes.begin(); iter != m_subMeshes.end(); iter++)
+   if (!m_pVertexBuffer)
    {
-      tVec3 maxSub, minSub;
-
-      cAutoIPtr<IVertexBuffer> pVertexBuffer;
-      if ((*iter)->GetVertexBuffer(&pVertexBuffer) == S_OK)
+      tSubMeshes::const_iterator iter;
+      for (iter = m_subMeshes.begin(); iter != m_subMeshes.end(); iter++)
       {
-         if (CalculateAABB((*iter)->GetVertexCount(), pVertexBuffer,
-                           &maxSub, &minSub) == S_OK)
+         tVec3 maxSub, minSub;
+
+         cAutoIPtr<IVertexBuffer> pVertexBuffer;
+         if ((*iter)->GetVertexBuffer(&pVertexBuffer) == S_OK)
          {
-            if (max.x < maxSub.x)
-               max.x = maxSub.x;
-            if (min.x > minSub.x)
-               min.x = minSub.x;
+            if (CalculateAABB((*iter)->GetVertexCount(), pVertexBuffer,
+                              &maxSub, &minSub) == S_OK)
+            {
+               if (max.x < maxSub.x)
+                  max.x = maxSub.x;
+               if (min.x > minSub.x)
+                  min.x = minSub.x;
 
-            if (max.y < maxSub.y)
-               max.y = maxSub.y;
-            if (min.y > minSub.y)
-               min.y = minSub.y;
+               if (max.y < maxSub.y)
+                  max.y = maxSub.y;
+               if (min.y > minSub.y)
+                  min.y = minSub.y;
 
-            if (max.z < maxSub.z)
-               max.z = maxSub.z;
-            if (min.z > minSub.z)
-               min.z = minSub.z;
+               if (max.z < maxSub.z)
+                  max.z = maxSub.z;
+               if (min.z > minSub.z)
+                  min.z = minSub.z;
+            }
          }
       }
+   }
+   else
+   {
+      CalculateAABB(GetVertexCount(), 
+         const_cast<IVertexBuffer *>(m_pVertexBuffer.operator->()), 
+         &max, &min);
    }
 
    if (pMax != NULL)
@@ -271,36 +293,93 @@ void cRenderSubMesh::operator()(ISubMesh * pSubMesh)
 
 void cMesh::Render(IRenderDevice * pRenderDevice) const
 {
-   std::for_each(m_subMeshes.begin(), m_subMeshes.end(),
-      cRenderSubMesh(const_cast<cMesh *>(this), pRenderDevice));
+   // No shared vertex buffer, render each sub-mesh with its own vertex buffer
+   if (!m_pVertexBuffer)
+   {
+      std::for_each(m_subMeshes.begin(), m_subMeshes.end(),
+         cRenderSubMesh(const_cast<cMesh *>(this), pRenderDevice));
+   }
+   else
+   {
+      tSubMeshes::const_iterator iter;
+      for (iter = m_subMeshes.begin(); iter != m_subMeshes.end(); iter++)
+      {
+         cAutoIPtr<IMaterial> pMaterial;
+         if ((*iter)->GetMaterial(&pMaterial) != S_OK || !pMaterial)
+         {
+            if (FindMaterial((*iter)->GetMaterialName(), &pMaterial) == S_OK)
+            {
+               (*iter)->SetMaterial(pMaterial);
+            }
+         }
+
+         AssertMsg(!!pMaterial, "SubMesh object has an invalid material!");
+
+         cAutoIPtr<IIndexBuffer> pIndexBuffer;
+         if ((*iter)->GetIndexBuffer(&pIndexBuffer) == S_OK)
+         {
+            pRenderDevice->Render(kRP_Triangles, pMaterial, 
+               (*iter)->GetIndexCount(), pIndexBuffer,
+               0, const_cast<IVertexBuffer *>(m_pVertexBuffer.operator->()));
+         }
+      }
+   }
 }
 
 ///////////////////////////////////////
 
 uint cMesh::GetVertexCount() const
 {
-   return 0;
+   return m_nVerts;
 }
 
 ///////////////////////////////////////
 
 tResult cMesh::GetVertexBuffer(IVertexBuffer * * ppVertexBuffer)
 {
-   return E_NOTIMPL;
+   if (ppVertexBuffer == NULL)
+   {
+      return E_FAIL;
+   }
+
+   if (!m_pVertexBuffer)
+   {
+      return S_FALSE;
+   }
+   else
+   {
+      *ppVertexBuffer = m_pVertexBuffer;
+      (*ppVertexBuffer)->AddRef();
+      return S_OK;
+   }
 }
 
 ///////////////////////////////////////
 
 tResult cMesh::LockVertexBuffer(void * * ppData)
 {
-   return E_NOTIMPL;
+   if (!!m_pVertexBuffer)
+   {
+      return m_pVertexBuffer->Lock(ppData);
+   }
+   else
+   {
+      return S_FALSE;
+   }
 }
 
 ///////////////////////////////////////
 
 tResult cMesh::UnlockVertexBuffer()
 {
-   return E_NOTIMPL;
+   if (!!m_pVertexBuffer)
+   {
+      return m_pVertexBuffer->Unlock();
+   }
+   else
+   {
+      return S_FALSE;
+   }
 }
 
 ///////////////////////////////////////
@@ -427,6 +506,23 @@ tResult cMesh::GetSkeleton(ISkeleton * * ppSkeleton)
 IMesh * MeshCreate()
 {
    return static_cast<IMesh *>(new cMesh);
+}
+
+///////////////////////////////////////
+
+IMesh * MeshCreate(uint nVertices, 
+                   IVertexDeclaration * pVertexDecl, 
+                   IRenderDevice * pRenderDevice)
+{
+   if ((nVertices > 0) && (pVertexDecl != NULL) && (pRenderDevice != NULL))
+   {
+      cAutoIPtr<IVertexBuffer> pVertexBuffer;
+      if (pRenderDevice->CreateVertexBuffer(nVertices, pVertexDecl, kMP_Auto, &pVertexBuffer) == S_OK)
+      {
+         return static_cast<IMesh *>(new cMesh(nVertices, pVertexBuffer));
+      }
+   }
+   return NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -305,80 +305,77 @@ tResult cMs3dFileReader::CreateMesh(IRenderDevice * pRenderDevice, IMesh * * ppM
       }
    }
 
-   cAutoIPtr<IMesh> pMesh = MeshCreate();
-   if (!pMesh)
-   {
-      return E_FAIL;
-   }
-
    cAutoIPtr<IVertexDeclaration> pVertexDecl;
    if (pRenderDevice->CreateVertexDeclaration(g_ms3dVertexDecl, 
       _countof(g_ms3dVertexDecl), &pVertexDecl) == S_OK)
    {
+      cAutoIPtr<IMesh> pMesh = MeshCreate(vertexList.GetVertexCount(), pVertexDecl, pRenderDevice);
+      if (!pMesh)
+      {
+         return E_FAIL;
+      }
+
+      sMs3dVertex * pVertexData = NULL;
+      if (pMesh->LockVertexBuffer((void * *)&pVertexData) == S_OK)
+      {
+         memcpy(pVertexData, vertexList.GetVertexData(), vertexList.GetVertexCount() * sizeof(sMs3dVertex));
+         pMesh->UnlockVertexBuffer();
+      }
+
       std::vector<cMs3dGroup>::const_iterator iter;
       for (iter = m_groups.begin(); iter != m_groups.end(); iter++)
       {
-         cAutoIPtr<ISubMesh> pSubMesh = SubMeshCreate(iter->GetNumTriangles(),
-            vertexList.GetVertexCount(), pVertexDecl, pRenderDevice);
+         cAutoIPtr<ISubMesh> pSubMesh = SubMeshCreate(iter->GetNumTriangles(), pRenderDevice);
          if (!!pSubMesh)
          {
             pSubMesh->SetMaterialName(m_materials[iter->GetMaterialIndex()].name);
 
-            sMs3dVertex * pVertexData = NULL;
-            if (pSubMesh->LockVertexBuffer((void * *)&pVertexData) == S_OK)
+            uint16 * pFaces = NULL;
+            if (pSubMesh->LockIndexBuffer((void**)&pFaces) == S_OK)
             {
-               // TODO: This gives every sub-mesh a copy of the entire top-level
-               // vertex array. Should either be a single shared vertex array,
-               // or each sub-mesh should be given an array of only its relevant 
-               // vertices.
-               memcpy(pVertexData, vertexList.GetVertexData(), vertexList.GetVertexCount() * sizeof(sMs3dVertex));
-               pSubMesh->UnlockVertexBuffer();
-
-               uint16 * pFaces = NULL;
-               if (pSubMesh->LockIndexBuffer((void**)&pFaces) == S_OK)
+               for (int i = 0; i < iter->GetNumTriangles(); i++)
                {
-                  for (int i = 0; i < iter->GetNumTriangles(); i++)
+                  const ms3d_triangle_t & tri = m_triangles[iter->GetTriangle(i)];
+                  for (int k = 0; k < 3; k++)
                   {
-                     const ms3d_triangle_t & tri = m_triangles[iter->GetTriangle(i)];
-                     for (int k = 0; k < 3; k++)
-                     {
-                        pFaces[i * 3 + k] = vertexList.MapVertex(
-                           tri.vertexIndices[k], 
-                           tri.vertexNormals[k], 
-                           tri.s[k], 
-                           tri.t[k]);
-                     }
+                     pFaces[i * 3 + k] = vertexList.MapVertex(
+                        tri.vertexIndices[k], 
+                        tri.vertexNormals[k], 
+                        tri.s[k], 
+                        tri.t[k]);
                   }
-                  pSubMesh->UnlockIndexBuffer();
-
-                  pMesh->AddSubMesh(pSubMesh);
                }
+               pSubMesh->UnlockIndexBuffer();
+
+               pMesh->AddSubMesh(pSubMesh);
             }
          }
       }
+
+      if (CreateMaterials(pRenderDevice, pMesh) != S_OK)
+      {
+         return E_FAIL;
+      }
+
+      cAutoIPtr<ISkeleton> pSkeleton;
+      if (SkeletonCreate(&m_bones[0], m_bones.size(), 
+                         const_cast<IKeyFrameInterpolator * *>(&m_interpolators[0]), 
+                         m_interpolators.size(), 
+                         &pSkeleton) == S_OK)
+      {
+         pMesh->AttachSkeleton(pSkeleton);
+      }
+
+      if (ppMesh != NULL)
+      {
+         *ppMesh = pMesh;
+         pMesh->AddRef();
+      }
+
+      return S_OK;
    }
 
-   if (CreateMaterials(pRenderDevice, pMesh) != S_OK)
-   {
-      return E_FAIL;
-   }
-
-   cAutoIPtr<ISkeleton> pSkeleton;
-   if (SkeletonCreate(&m_bones[0], m_bones.size(), 
-                      const_cast<IKeyFrameInterpolator * *>(&m_interpolators[0]), 
-                      m_interpolators.size(), 
-                      &pSkeleton) == S_OK)
-   {
-      pMesh->AttachSkeleton(pSkeleton);
-   }
-
-   if (ppMesh != NULL)
-   {
-      *ppMesh = pMesh;
-      pMesh->AddRef();
-   }
-
-   return S_OK;
+   return E_FAIL;
 }
 
 ///////////////////////////////////////

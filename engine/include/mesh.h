@@ -59,6 +59,10 @@ interface IMesh : IUnknown
 
 ENGINE_API IMesh * MeshCreate();
 
+ENGINE_API IMesh * MeshCreate(uint nVertices, 
+                              IVertexDeclaration * pVertexDecl, 
+                              IRenderDevice * pRenderDevice);
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // INTERFACE: ISubMesh
@@ -93,9 +97,7 @@ ENGINE_API ISubMesh * SubMeshCreate(uint nFaces, uint nVertices,
                                     IVertexDeclaration * pVertexDecl, 
                                     IRenderDevice * pRenderDevice);
 
-ENGINE_API ISubMesh * SubMeshCreate(uint nFaces, uint nVertices, 
-                                    IVertexBuffer * pVertexBuffer, 
-                                    IRenderDevice * pRenderDevice);
+ENGINE_API ISubMesh * SubMeshCreate(uint nFaces, IRenderDevice * pRenderDevice);
 
 ///////////////////////////////////////////////////////////////////////////////
 
