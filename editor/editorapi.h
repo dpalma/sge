@@ -197,6 +197,8 @@ interface UUID("78C29790-865D-4f81-9AF1-26EC23BB5FAC") IEditorView : IUnknown
 interface UUID("F131D72E-30A7-4758-A094-830F00A50D91") IEditorModel : IUnknown
 {
    virtual cTerrain * AccessTerrain() = 0;
+
+   virtual tResult AddCommand(IEditorCommand * pCommand) = 0;
 };
 
 
@@ -207,7 +209,13 @@ interface UUID("F131D72E-30A7-4758-A094-830F00A50D91") IEditorModel : IUnknown
 
 interface UUID("936BD53E-35B5-4f72-AFA4-AE304122E7D4") IEditorCommand : IUnknown
 {
-   virtual tResult Execute() = 0;
+   virtual tResult Do() = 0;
+
+   virtual tResult CanUndo() = 0;
+
+   virtual tResult Undo() = 0;
+
+   virtual tResult GetLabel(cStr * pLabel) = 0;
 };
 
 

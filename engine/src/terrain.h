@@ -65,6 +65,8 @@ public:
    void GetDimensions(uint * pxd, uint * pzd) const;
    void GetExtents(uint * px, uint * pz) const;
 
+   void GetTileIndices(float x, float z, uint * pix, uint * piz);
+
    const sTerrainVertex * GetVertexPointer() const;
    size_t GetVertexCount() const;
 
@@ -78,7 +80,7 @@ protected:
 
 private:
    uint m_xDim, m_zDim;
-   uint m_tileSize;
+   uint m_tileSize; // dimensions of a single tile in terrain space
 
    uint m_xChunks, m_zChunks; // # of terrain chunks in the x, z directions
 

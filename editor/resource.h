@@ -19,6 +19,8 @@
 #define IDS_OUTPUT_BAR_TITLE            5001
 #define IDS_TOOL_PALETTE_BAR_TITLE      5002
 #define IDS_HEIGHT_MAP_FILTER           5003
+#define IDS_UNDO_TEXT                   5004
+#define IDS_REDO_TEXT                   5005
 #define ID_TOOLS_UNITTESTRUNNER         32771
 #define ID_EDIT_DELETE                  32773
 #define ID_VIEW_CONTROL_BAR_FIRST       0xC100

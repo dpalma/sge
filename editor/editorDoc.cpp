@@ -9,6 +9,8 @@
 #include "terrain.h"
 #include "editorTypes.h"
 
+#include "resource.h"
+
 #include "render.h"
 #include "material.h"
 
@@ -23,6 +25,21 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+
+/////////////////////////////////////////////////////////////////////////////
+
+void FlushCommandStack(std::stack<IEditorCommand *> * pCommandStack)
+{
+   if (pCommandStack != NULL)
+   {
+      while (!pCommandStack->empty())
+      {
+         pCommandStack->top()->Release();
+         pCommandStack->pop();
+      }
+   }
+}
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cEditorDoc
@@ -32,8 +49,10 @@ IMPLEMENT_DYNCREATE(cEditorDoc, CDocument)
 
 BEGIN_MESSAGE_MAP(cEditorDoc, CDocument)
 	//{{AFX_MSG_MAP(cEditorDoc)
-		// NOTE - the ClassWizard will add and remove mapping macros here.
-		//    DO NOT EDIT what you see in these blocks of generated code!
+	ON_COMMAND(ID_EDIT_UNDO, OnEditUndo)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_UNDO, OnUpdateEditUndo)
+	ON_COMMAND(ID_EDIT_REDO, OnEditRedo)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_REDO, OnUpdateEditRedo)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -157,6 +176,32 @@ size_t cEditorDoc::GetVertexCount() const
 /////////////////////////////////////////////////////////////////////////////
 // cEditorDoc commands
 
+tResult cEditorDoc::AddCommand(IEditorCommand * pCommand)
+{
+   if (pCommand == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (pCommand->Do() == S_OK)
+   {
+      if (pCommand->CanUndo() == S_OK)
+      {
+         m_undoStack.push(CTAddRef(pCommand));
+      }
+      else
+      {
+         FlushCommandStack(&m_undoStack);
+      }
+
+      FlushCommandStack(&m_redoStack);
+
+      return S_OK;
+   }
+
+   return E_FAIL;
+}
+
 BOOL cEditorDoc::OnOpenDocument(LPCTSTR lpszPathName) 
 {
    DeleteContents();
@@ -206,6 +251,9 @@ BOOL cEditorDoc::OnSaveDocument(LPCTSTR lpszPathName)
       }
    }
 
+   FlushCommandStack(&m_undoStack);
+   FlushCommandStack(&m_redoStack);
+
    SetModifiedFlag(FALSE); // not modified anymore
 
    return TRUE;
@@ -219,5 +267,82 @@ void cEditorDoc::DeleteContents()
 
    SafeRelease(m_pMaterial);
 
+   FlushCommandStack(&m_undoStack);
+   FlushCommandStack(&m_redoStack);
+
    CDocument::DeleteContents();
+}
+
+void cEditorDoc::OnEditUndo() 
+{
+   Assert(!m_undoStack.empty());
+   IEditorCommand * pCommand = m_undoStack.top();
+   if (pCommand->Undo() == S_OK)
+   {
+      m_undoStack.pop();
+      m_redoStack.push(pCommand);
+   }
+}
+
+void cEditorDoc::OnUpdateEditUndo(CCmdUI* pCmdUI) 
+{
+   if (m_originalUndoText.IsEmpty() && (pCmdUI->m_pMenu != NULL))
+   {
+      pCmdUI->m_pMenu->GetMenuString(pCmdUI->m_nID, m_originalUndoText, MF_BYCOMMAND);
+   }
+
+   if (m_undoStack.empty())
+   {
+      pCmdUI->Enable(FALSE);
+      pCmdUI->SetText(m_originalUndoText);
+   }
+   else
+   {
+      pCmdUI->Enable(TRUE);
+
+      cStr label;
+      if (m_undoStack.top()->GetLabel(&label) == S_OK)
+      {
+         CString menuText;
+         menuText.Format(IDS_UNDO_TEXT, label.c_str());
+         pCmdUI->SetText(menuText);
+      }
+   }
+}
+
+void cEditorDoc::OnEditRedo() 
+{
+   Assert(!m_redoStack.empty());
+   IEditorCommand * pCommand = m_redoStack.top();
+   if (pCommand->Do() == S_OK)
+   {
+      m_redoStack.pop();
+      m_undoStack.push(pCommand);
+   }
+}
+
+void cEditorDoc::OnUpdateEditRedo(CCmdUI* pCmdUI) 
+{
+   if (m_originalRedoText.IsEmpty() && (pCmdUI->m_pMenu != NULL))
+   {
+      pCmdUI->m_pMenu->GetMenuString(pCmdUI->m_nID, m_originalRedoText, MF_BYCOMMAND);
+   }
+
+   if (m_redoStack.empty())
+   {
+      pCmdUI->Enable(FALSE);
+      pCmdUI->SetText(m_originalRedoText);
+   }
+   else
+   {
+      pCmdUI->Enable(TRUE);
+
+      cStr label;
+      if (m_redoStack.top()->GetLabel(&label) == S_OK)
+      {
+         CString menuText;
+         menuText.Format(IDS_REDO_TEXT, label.c_str());
+         pCmdUI->SetText(menuText);
+      }
+   }
 }

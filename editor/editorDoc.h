@@ -8,6 +8,8 @@
 #include "afxcomtools.h"
 #include "editorapi.h"
 
+#include <stack>
+
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
@@ -39,6 +41,8 @@ public:
 
    cTerrain * AccessTerrain();
 
+   virtual tResult AddCommand(IEditorCommand * pCommand);
+
 // Operations
 public:
 
@@ -64,8 +68,10 @@ public:
 // Generated message map functions
 protected:
 	//{{AFX_MSG(cEditorDoc)
-		// NOTE - the ClassWizard will add and remove member functions here.
-		//    DO NOT EDIT what you see in these blocks of generated code !
+	afx_msg void OnEditUndo();
+	afx_msg void OnUpdateEditUndo(CCmdUI* pCmdUI);
+	afx_msg void OnEditRedo();
+	afx_msg void OnUpdateEditRedo(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
@@ -75,6 +81,12 @@ private:
    cAutoIPtr<IMaterial> m_pMaterial;
 
    cTerrain * m_pTerrain;
+
+   typedef std::stack<IEditorCommand *> tCommandStack;
+
+   tCommandStack m_undoStack, m_redoStack;
+
+   CString m_originalUndoText, m_originalRedoText;
 };
 
 ////////////////////////////////////////

@@ -5,6 +5,7 @@
 
 #include "editorTools.h"
 #include "editorTypes.h"
+#include "editorCommands.h"
 #include "terrain.h"
 
 #include "sceneapi.h"
@@ -301,7 +302,9 @@ static bool GetPickVector(ISceneCamera * pCamera, float ndx, float ndy, tVec3 * 
 ////////////////////////////////////////
 
 cTerrainTileTool::cTerrainTileTool()
- : m_tile(0)
+ : m_iLastHitX(~0),
+   m_iLastHitZ(~0),
+   m_tile(0)
 {
 }
 
@@ -344,7 +347,7 @@ tResult cTerrainTileTool::OnMouseMove(const cEditorMouseEvent & mouseEvent, IEdi
 {
    if (pView != NULL)
    {
-      int ix, iz;
+      uint ix, iz;
       cTerrainTile * pTile;
       if (GetHitTile(mouseEvent.GetPoint(), pView, &ix, &iz, &pTile))
       {
@@ -370,7 +373,8 @@ tResult cTerrainTileTool::OnDragStart(const cEditorMouseEvent & mouseEvent, IEdi
 
 tResult cTerrainTileTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
 {
-   return S_EDITOR_TOOL_CONTINUE;
+   // Do what is done on a move
+   return OnDragMove(mouseEvent, pView);
 }
 
 ////////////////////////////////////////
@@ -379,11 +383,24 @@ tResult cTerrainTileTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEdit
 {
    if (pView != NULL)
    {
-      int ix, iz;
-      cTerrainTile * pTile;
-      if (GetHitTile(mouseEvent.GetPoint(), pView, &ix, &iz, &pTile))
+      uint ix, iz;
+      if (GetHitTile(mouseEvent.GetPoint(), pView, &ix, &iz, NULL))
       {
-         pTile->SetTile(m_tile);
+         if ((m_iLastHitX != ix) || (m_iLastHitZ != iz))
+         {
+            m_iLastHitX = ix;
+            m_iLastHitZ = iz;
+
+            cAutoIPtr<IEditorModel> pModel;
+            if (pView->GetModel(&pModel) == S_OK)
+            {
+               cAutoIPtr<IEditorCommand> pCommand(new cTerrainTileCommand(pModel->AccessTerrain(), ix, iz, m_tile));
+               if (!!pCommand)
+               {
+                  pModel->AddCommand(pCommand);
+               }
+            }
+         }
       }
    }
 
@@ -392,7 +409,7 @@ tResult cTerrainTileTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEdit
 
 ////////////////////////////////////////
 
-bool cTerrainTileTool::GetHitTile(CPoint point, IEditorView * pView, int * pix, int * piz, cTerrainTile * * ppTile)
+bool cTerrainTileTool::GetHitTile(CPoint point, IEditorView * pView, uint * pix, uint * piz, cTerrainTile * * ppTile)
 {
    cAutoIPtr<IEditorModel> pModel;
    if (pView->GetModel(&pModel) == S_OK)
@@ -417,15 +434,8 @@ bool cTerrainTileTool::GetHitTile(CPoint point, IEditorView * pView, int * pix, 
                cTerrain * pTerrain = pModel->AccessTerrain();
                if (pTerrain != NULL)
                {
-                  uint mapDimX, mapDimZ, mapExtX, mapExtZ;
-                  pTerrain->GetDimensions(&mapDimX, &mapDimZ);
-                  pTerrain->GetExtents(&mapExtX, &mapExtZ);
-
-                  uint tileWidth = mapExtX / mapDimX;
-                  uint tileDepth = mapExtZ / mapDimZ;
-
-                  int ix = Round(pointOnPlane.x / tileWidth);
-                  int iz = Round(pointOnPlane.z / tileDepth);
+                  uint ix, iz;
+                  pTerrain->GetTileIndices(pointOnPlane.x, pointOnPlane.z, &ix, &iz);
 
                   LocalMsg2("Hit tile (%d, %d)\n", ix, iz);
 

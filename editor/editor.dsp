@@ -199,6 +199,10 @@ SOURCE=.\editorApp.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\editorCommands.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\editorCtrlBars.cpp
 # End Source File
 # Begin Source File
@@ -312,6 +316,10 @@ SOURCE=.\editorapi.h
 # Begin Source File
 
 SOURCE=.\editorApp.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\editorCommands.h
 # End Source File
 # Begin Source File
 

@@ -413,6 +413,8 @@ BEGIN
     IDS_OUTPUT_BAR_TITLE    "Output"
     IDS_TOOL_PALETTE_BAR_TITLE "Tool Palette"
     IDS_HEIGHT_MAP_FILTER   "Targa Files (*.tga)|*.tga|BMP Files (*.bmp)|*.bmp|All Files (*.*)|*.*||"
+    IDS_UNDO_TEXT           "Undo %s\tCtrl+Z"
+    IDS_REDO_TEXT           "Redo %s\tCtrl+Y"
 END
 
 STRINGTABLE DISCARDABLE 

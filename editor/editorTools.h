@@ -92,9 +92,10 @@ protected:
    virtual tResult OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
    virtual tResult OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
 
-   bool GetHitTile(CPoint point, IEditorView * pView, int * pix, int * piz, cTerrainTile * * ppTile);
+   bool GetHitTile(CPoint point, IEditorView * pView, uint * pix, uint * piz, cTerrainTile * * ppTile);
 
 private:
+   uint m_iLastHitX, m_iLastHitZ;
    uint m_tile;
 };
 

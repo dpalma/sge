@@ -339,6 +339,23 @@ void cTerrain::GetExtents(uint * px, uint * pz) const
 
 ////////////////////////////////////////
 
+void cTerrain::GetTileIndices(float x, float z, uint * pix, uint * piz)
+{
+   uint halfTile = m_tileSize >> 1;
+
+   if (pix != NULL)
+   {
+      *pix = Round((x - halfTile) / m_tileSize);
+   }
+
+   if (piz != NULL)
+   {
+      *piz = Round((z - halfTile) / m_tileSize);
+   }
+}
+
+////////////////////////////////////////
+
 const sTerrainVertex * cTerrain::GetVertexPointer() const
 {
    return &m_vertices[0];
