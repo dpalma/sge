@@ -371,7 +371,11 @@ tResult cGUIStyle::GetFont(IRenderFont * * ppFont)
       {
          return E_FAIL;
       }
-      m_pFont = FontCreate(m_fontName.c_str(), m_fontPointSize);
+      cFontDesc fontDesc(m_fontName.c_str(), m_fontPointSize, kDefaultGlyphFirst, kDefaultGlyphLast);
+      if (FontCreate(fontDesc, &m_pFont) != S_OK)
+      {
+         return E_FAIL;
+      }
    }
    return m_pFont.GetPointer(ppFont);
 }

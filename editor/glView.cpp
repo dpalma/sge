@@ -16,7 +16,9 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // cGLView
 
-BEGIN_MESSAGE_MAP(cGLView, CView)
+IMPLEMENT_DYNAMIC(cGLView, CScrollView)
+
+BEGIN_MESSAGE_MAP(cGLView, CScrollView)
 	//{{AFX_MSG_MAP(cGLView)
 	ON_WM_CREATE()
 	ON_WM_DESTROY()
@@ -40,7 +42,7 @@ BOOL cGLView::PreCreateWindow(CREATESTRUCT & cs)
    // Style bits required by OpenGL
    cs.style |= (WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
 
-	return CView::PreCreateWindow(cs);
+	return CScrollView::PreCreateWindow(cs);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -57,12 +59,12 @@ BOOL cGLView::PreCreateWindow(CREATESTRUCT & cs)
 #ifdef _DEBUG
 void cGLView::AssertValid() const
 {
-	CView::AssertValid();
+	CScrollView::AssertValid();
 }
 
 void cGLView::Dump(CDumpContext& dc) const
 {
-	CView::Dump(dc);
+	CScrollView::Dump(dc);
 }
 #endif //_DEBUG
 
@@ -71,7 +73,7 @@ void cGLView::Dump(CDumpContext& dc) const
 
 int cGLView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
-	if (CView::OnCreate(lpCreateStruct) == -1)
+	if (CScrollView::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
    m_hDC = ::GetDC(m_hWnd);
@@ -117,7 +119,7 @@ int cGLView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 void cGLView::OnDestroy() 
 {
-	CView::OnDestroy();
+	CScrollView::OnDestroy();
 
    wglMakeCurrent(NULL, NULL);
 

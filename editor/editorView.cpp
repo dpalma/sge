@@ -429,6 +429,10 @@ void cEditorView::OnInitialUpdate()
    SafeRelease(m_pVertexBuffer);
    SafeRelease(m_pIndexBuffer);
 
+   CRect rect;
+   GetClientRect(rect);
+   SetScaleToFitSize(rect.Size());
+
 	cEditorDoc * pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 

@@ -13,10 +13,11 @@
 // CLASS: cGLView
 //
 
-class cGLView : public CView
+class cGLView : public CScrollView
 {
 protected:
 	cGLView();
+   DECLARE_DYNAMIC(cGLView)
 
 // Attributes
 public:
