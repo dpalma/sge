@@ -7,10 +7,14 @@
 #include "enginedll.h"
 #include "comtools.h"
 #include "connpt.h"
+#include "vec2.h"
 
 #ifdef _MSC_VER
 #pragma once
 #endif
+
+template <typename T> class cVec2;
+typedef class cVec2<float> tVec2;
 
 F_DECLARE_INTERFACE(IInput);
 F_DECLARE_INTERFACE(IInputListener);
@@ -42,16 +46,26 @@ ENGINE_API void InputCreate();
 // INTERFACE: IInputListener
 //
 
+struct sInputEvent
+{
+   long key;
+   bool down;
+   tVec2 point;
+   double time;
+};
+
 interface IInputListener : IUnknown
 {
    virtual bool OnMouseEvent(int x, int y, uint mouseState, double time) = 0;
    virtual bool OnKeyEvent(long key, bool down, double time) = 0;
+   virtual bool OnInputEvent(const sInputEvent * pEvent) = 0;
 };
 
 class cDefaultInputListener : public IInputListener
 {
    virtual bool OnMouseEvent(int x, int y, uint mouseState, double time) { return false; }
    virtual bool OnKeyEvent(long key, bool down, double time) { return false; }
+   virtual bool OnInputEvent(const sInputEvent * pEvent) { return false; }
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -11,7 +11,8 @@
 #pragma once
 #endif
 
-class cRay;
+template <typename T> class cVec2;
+typedef class cVec2<float> tVec2;
 template <typename T> class cVec3;
 typedef class cVec3<float> tVec3;
 template <typename T> class cMatrix4;
@@ -21,6 +22,7 @@ typedef class cQuat tQuat;
 F_DECLARE_INTERFACE(IRenderDevice);
 F_DECLARE_INTERFACE(IMesh);
 
+class cRay;
 F_DECLARE_INTERFACE(IInputListener);
 F_DECLARE_INTERFACE(IScene);
 F_DECLARE_INTERFACE(ISceneEntity);

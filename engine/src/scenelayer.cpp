@@ -258,4 +258,20 @@ bool cSceneLayer::HandleKeyEvent(long key, bool down, double time)
    return false;
 }
 
+///////////////////////////////////////
+
+bool cSceneLayer::HandleInputEvent(const sInputEvent * pEvent)
+{
+   tInputListeners::reverse_iterator iter;
+   for (iter = m_inputListeners.rbegin(); iter != m_inputListeners.rend(); iter++)
+   {
+      if ((*iter)->OnInputEvent(pEvent))
+      {
+         return true;
+      }
+   }
+
+   return false;
+}
+
 ///////////////////////////////////////////////////////////////////////////////

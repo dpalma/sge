@@ -45,12 +45,13 @@ public:
    virtual tResult Query(const cRay & ray, ISceneEntityEnum * * ppEnum);
 
 private:
-   class cInputListener : public cComObject<IMPLEMENTS(IInputListener)>
+   class cInputListener : public cComObject<cDefaultInputListener, &IID_IInputListener>
    {
       void CDECL operator delete(void *) { Assert(!"Should never be called"); }
    public:
       virtual bool OnMouseEvent(int x, int y, uint mouseState, double time);
       virtual bool OnKeyEvent(long key, bool down, double time);
+      virtual bool OnInputEvent(const sInputEvent * pEvent);
    };
 
    friend class cInputListener;

@@ -6,12 +6,16 @@
 #include "uimgr.h"
 #include "uievent.h"
 #include "uirender.h"
+#include "ggl.h"
 #include "sceneapi.h"
 #include "globalobj.h"
+#include "keys.h"
 
 #include "dbgalloc.h" // must be last header
 
 bool IsEventPertinent(const cUIEvent *, const cUIComponent *); // from ui.cpp
+
+LOG_DEFINE_CHANNEL(UIMgr);
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -39,7 +43,8 @@ static void Center(cUIComponent * pComponent)
 ///////////////////////////////////////
 
 cUIManager::cUIManager()
- : m_pLastMouseOver(NULL)
+ : m_pLastMouseOver(NULL),
+   m_pSceneEntity(SceneEntityCreate())
 {
    UseGlobal(Scene);
    pScene->AddInputListener(kSL_InGameUI, &m_inputListener);
@@ -78,9 +83,12 @@ void cUIManager::ShowModalDialog(const char * pszXmlFile)
 ///////////////////////////////////////
 // assumes renderer is already set up for orthographic (2D) projection and stuff
 
-void cUIManager::Render()
+void cUIManager::Render(IRenderDevice * pRenderDevice)
 {
+   glPushAttrib(GL_ENABLE_BIT);
+   glDisable(GL_DEPTH_TEST);
    tContainerBase::Render();
+   glPopAttrib();
 }
 
 ///////////////////////////////////////
@@ -178,6 +186,17 @@ bool cUIManager::cInputListener::OnKeyEvent(long key, bool down, double time)
       return UIBubbleEvent(pTarget, &event, &result);
    }
 
+   return false;
+}
+
+bool cUIManager::cInputListener::OnInputEvent(const sInputEvent * pEvent)
+{
+   cUIManager * pUIManager = GetOuter(cUIManager, m_inputListener);
+   if (KeyIsMouse(pEvent->key))
+   {
+      cUIComponent * pTarget = pUIManager->HitTest(pEvent->point);
+      DebugMsgIfEx1(UIMgr, pTarget != NULL, "Hit UI element %s\n", pTarget->GetId());
+   }
    return false;
 }
 

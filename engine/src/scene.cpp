@@ -209,6 +209,23 @@ bool cScene::cInputListener::OnKeyEvent(long key, bool down, double time)
 
 ///////////////////////////////////////
 
+bool cScene::cInputListener::OnInputEvent(const sInputEvent * pEvent)
+{
+   cScene * pScene = GetOuter(cScene, m_inputListener);
+
+   for (int i = _countof(pScene->m_layers) - 1; i >= 0; i--)
+   {
+      if (pScene->m_layers[i].HandleInputEvent(pEvent))
+      {
+         return true;
+      }
+   }
+
+   return false;
+}
+
+///////////////////////////////////////
+
 void SceneCreate()
 {
    cAutoIPtr<IScene>(new cScene);

@@ -12,6 +12,8 @@
 #pragma once
 #endif
 
+struct sInputEvent;
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cSceneLayer
@@ -43,6 +45,7 @@ public:
 
    bool HandleMouseEvent(int x, int y, uint mouseState, double time);
    bool HandleKeyEvent(long key, bool down, double time);
+   bool HandleInputEvent(const sInputEvent * pEvent);
 
 private:
    tSceneEntityList m_entities;

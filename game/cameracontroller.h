@@ -21,7 +21,7 @@ F_DECLARE_INTERFACE(ISceneCamera);
 // CLASS: cGameCameraController
 //
 
-class cGameCameraController : public cComObject2<IMPLEMENTS(ISimClient), IMPLEMENTS(IInputListener)>
+class cGameCameraController : public cComObject2<IMPLEMENTS(ISimClient), cDefaultInputListener, &IID_IInputListener>
 {
    cGameCameraController(const cGameCameraController &);
    const cGameCameraController & operator =(const cGameCameraController &);

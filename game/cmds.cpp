@@ -17,7 +17,7 @@
 static const struct
 {
    const char * pszKeyName;
-   eKeyCode keyCode;
+   uint keyCode;
 }
 g_keyNames[] =
 {

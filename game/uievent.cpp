@@ -6,6 +6,7 @@
 #include "uievent.h"
 #include "ui.h"
 #include "keys.h"
+#include "inputapi.h"
 
 #include "dbgalloc.h" // must be last header
 

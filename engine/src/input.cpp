@@ -51,7 +51,7 @@ inline long KeyGetBindable(long key)
 static const struct
 {
    const char * pszKeyName;
-   eKeyCode keyCode;
+   uint keyCode;
 }
 g_keyNames[] =
 {
@@ -132,6 +132,7 @@ static long Name2Key(const char * pszKeyName)
 ///////////////////////////////////////
 
 cInput::cInput()
+ : m_oldMouseState(0)
 {
    memset(m_keyRepeats, 0, sizeof(m_keyRepeats));
    memset(m_keyDownBindings, 0, sizeof(m_keyDownBindings));
@@ -236,7 +237,7 @@ tResult cInput::RemoveWindow(IWindow * pWindow)
 
 ///////////////////////////////////////
 
-void cInput::DispatchKeyEvent(long key, bool down, double time)
+bool cInput::DispatchInputEvent(int x, int y, long key, bool down, double time)
 {
 #ifndef NDEBUG
    const char * pszKey = Key2Name(key);
@@ -246,12 +247,7 @@ void cInput::DispatchKeyEvent(long key, bool down, double time)
       DebugMsgEx2(KeyEvent, "Key%s: %d\n", down ? "Down" : "Up", key);
 #endif
 
-   if (key < 0 || key >= kMaxKeys)
-   {
-      DebugMsg2("WARNING: out of range key %d %s\n",
-         key, down ? "pressed" : "released");
-      return;
-   }
+   Assert((key >= 0) && (key < kMaxKeys));
 
    if (down)
    {
@@ -260,6 +256,35 @@ void cInput::DispatchKeyEvent(long key, bool down, double time)
    else
    {
       m_keyRepeats[key] = 0;
+   }
+
+   sInputEvent event;
+   event.key = key;
+   event.down = down;
+   event.point = tVec2(0,0);
+   event.time = time;
+
+   // iterate in reverse order so the most recently added listener gets first crack
+   tSinks::reverse_iterator iter;
+   for (iter = AccessSinks().rbegin(); iter != AccessSinks().rend(); iter++)
+   {
+      if ((*iter)->OnInputEvent(&event))
+      {
+         return true; // do no further processing for this key event
+      }
+   }
+
+   return false;
+}
+
+///////////////////////////////////////
+
+void cInput::DispatchKeyEvent(long key, bool down, double time)
+{
+   // TODO: Provide mouse position even for key events
+   if (DispatchInputEvent(0, 0, key, down, time))
+   {
+      return;
    }
 
    // iterate in reverse order so the most recently added listener gets first crack
@@ -296,8 +321,6 @@ void cInput::DispatchKeyEvent(long key, bool down, double time)
 
 void cInput::DispatchMouseEvent(int x, int y, uint mouseState, double time)
 {
-   static uint oldMouseState = 0;
-
    bool bListenerShortCircuit = false;
 
    // iterate in reverse order so the most recently added listener gets first crack
@@ -315,25 +338,25 @@ void cInput::DispatchMouseEvent(int x, int y, uint mouseState, double time)
    {
       // Up/down doesn't matter for mouse motion. Use false so that the
       // repeat count doesn't get incremented wildly.
-      DispatchKeyEvent(kMouseMove, false, time);
+      DispatchInputEvent(x, y, kMouseMove, false, time);
 
-      if ((mouseState & kLMouseDown) && !(oldMouseState & kLMouseDown))
-         DispatchKeyEvent(kMouseLeft, true, time);
-      else if (!(mouseState & kLMouseDown) && (oldMouseState & kLMouseDown))
-         DispatchKeyEvent(kMouseLeft, false, time);
+      if ((mouseState & kLMouseDown) && !(m_oldMouseState & kLMouseDown))
+         DispatchInputEvent(x, y, kMouseLeft, true, time);
+      else if (!(mouseState & kLMouseDown) && (m_oldMouseState & kLMouseDown))
+         DispatchInputEvent(x, y, kMouseLeft, false, time);
 
-      if ((mouseState & kRMouseDown) && !(oldMouseState & kRMouseDown))
-         DispatchKeyEvent(kMouseRight, true, time);
-      else if (!(mouseState & kRMouseDown) && (oldMouseState & kRMouseDown))
-         DispatchKeyEvent(kMouseRight, false, time);
+      if ((mouseState & kRMouseDown) && !(m_oldMouseState & kRMouseDown))
+         DispatchInputEvent(x, y, kMouseRight, true, time);
+      else if (!(mouseState & kRMouseDown) && (m_oldMouseState & kRMouseDown))
+         DispatchInputEvent(x, y, kMouseRight, false, time);
 
-      if ((mouseState & kMMouseDown) && !(oldMouseState & kMMouseDown))
-         DispatchKeyEvent(kMouseMiddle, true, time);
-      else if (!(mouseState & kMMouseDown) && (oldMouseState & kMMouseDown))
-         DispatchKeyEvent(kMouseMiddle, false, time);
+      if ((mouseState & kMMouseDown) && !(m_oldMouseState & kMMouseDown))
+         DispatchInputEvent(x, y, kMouseMiddle, true, time);
+      else if (!(mouseState & kMMouseDown) && (m_oldMouseState & kMMouseDown))
+         DispatchInputEvent(x, y, kMouseMiddle, false, time);
    }
 
-   oldMouseState = mouseState;
+   m_oldMouseState = mouseState;
 }
 
 ///////////////////////////////////////

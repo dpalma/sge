@@ -35,6 +35,7 @@ public:
    virtual tResult RemoveWindow(IWindow * pWindow);
 
 private:
+   bool DispatchInputEvent(int x, int y, long key, bool down, double time);
    void DispatchKeyEvent(long key, bool down, double time);
    void DispatchMouseEvent(int x, int y, uint mouseState, double time);
 
@@ -43,7 +44,7 @@ private:
 
    class cWindowSink : public cComObject<IMPLEMENTS(IWindowSink)>
    {
-      virtual void DeleteThis() { /* do not delete */ }
+      virtual void DeleteThis() { Assert(!"Should never be called"); }
    public:
       virtual void OnKeyEvent(long key, bool down, double time);
       virtual void OnMouseEvent(int x, int y, uint mouseState, double time);
@@ -60,6 +61,8 @@ private:
    ulong m_keyRepeats[kMaxKeys];
    char * m_keyDownBindings[kMaxKeys];
    char * m_keyUpBindings[kMaxKeys];
+
+   uint m_oldMouseState;
 };
 
 ///////////////////////////////////////

@@ -68,7 +68,7 @@ cAutoIPtr<cTerrainNode> g_pTerrainRoot;
 
 double g_fov;
 
-cUIManager * g_pUIManager;
+cAutoIPtr<cUIManager> g_pUIManager;
 
 cAutoIPtr<IRenderDevice> g_pRenderDevice;
 cAutoIPtr<IWindow> g_pWindow;
@@ -311,64 +311,6 @@ SCRIPT_DEFINE_FUNCTION(EntitySpawnTest)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cUIManagerSceneNode
-//
-
-class cUIManagerSceneNode : public cComObject<IMPLEMENTS(ISceneEntity)>
-{
-public:
-   cUIManagerSceneNode();
-   virtual ~cUIManagerSceneNode();
-
-   virtual ISceneEntity * AccessParent() { return m_pSceneEntity->AccessParent(); }
-   virtual tResult SetParent(ISceneEntity * pEntity) { return m_pSceneEntity->SetParent(pEntity); }
-   virtual tResult IsChild(ISceneEntity * pEntity) const { return m_pSceneEntity->IsChild(pEntity); }
-   virtual tResult AddChild(ISceneEntity * pEntity) { return m_pSceneEntity->AddChild(pEntity); }
-   virtual tResult RemoveChild(ISceneEntity * pEntity) { return m_pSceneEntity->RemoveChild(pEntity); }
-
-   virtual const tVec3 & GetLocalTranslation() const { return m_pSceneEntity->GetLocalTranslation(); }
-   virtual void SetLocalTranslation(const tVec3 & translation) { m_pSceneEntity->SetLocalTranslation(translation); }
-   virtual const tQuat & GetLocalRotation() const { return m_pSceneEntity->GetLocalRotation(); }
-   virtual void SetLocalRotation(const tQuat & rotation) { m_pSceneEntity->SetLocalRotation(rotation); }
-   virtual const tMatrix4 & GetLocalTransform() const { return m_pSceneEntity->GetLocalTransform(); }
-
-   virtual const tVec3 & GetWorldTranslation() const { return m_pSceneEntity->GetWorldTranslation(); }
-   virtual const tQuat & GetWorldRotation() const { return m_pSceneEntity->GetWorldRotation(); }
-   virtual const tMatrix4 & GetWorldTransform() const { return m_pSceneEntity->GetWorldTransform(); }
-
-   virtual void Render(IRenderDevice * pRenderDevice);
-   virtual float GetBoundingRadius() const { return m_pSceneEntity->GetBoundingRadius(); }
-
-private:
-   cAutoIPtr<ISceneEntity> m_pSceneEntity;
-};
-
-cUIManagerSceneNode::cUIManagerSceneNode()
- : m_pSceneEntity(SceneEntityCreate())
-{
-   g_pUIManager = new cUIManager();
-}
-
-cUIManagerSceneNode::~cUIManagerSceneNode()
-{
-   delete g_pUIManager;
-   g_pUIManager = NULL;
-}
-
-void cUIManagerSceneNode::Render(IRenderDevice * pRenderDevice)
-{
-   if (g_pUIManager != NULL)
-   {
-      glPushAttrib(GL_ENABLE_BIT);
-      glDisable(GL_DEPTH_TEST);
-      g_pUIManager->Render();
-      glPopAttrib();
-   }
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
 
 #ifdef HAVE_CPPUNIT
 static bool RunUnitTests()
@@ -506,8 +448,10 @@ bool MainInit(int argc, char * argv[])
    g_pUICamera = SceneCameraCreate();
    g_pUICamera->SetOrtho(0, width, height, 0, -99999, 99999);
 
+   g_pUIManager = new cUIManager();
+
    UseGlobal(Scene);
-   pScene->AddEntity(kSL_InGameUI, cAutoIPtr<ISceneEntity>(new cUIManagerSceneNode));
+   pScene->AddEntity(kSL_InGameUI, g_pUIManager);
 
    g_pGameCamera = SceneCameraCreate();
    g_pGameCamera->SetPerspective(g_fov, (float)width / height, kZNear, kZFar);
@@ -537,6 +481,8 @@ bool MainInit(int argc, char * argv[])
 
 void MainTerm()
 {
+   SafeRelease(g_pUIManager);
+
    UseGlobal(Sim);
    pSim->Stop();
 
