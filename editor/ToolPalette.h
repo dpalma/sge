@@ -43,12 +43,20 @@ struct sToolPaletteItem
    void * pUserData;
 };
 
+enum eToolPaletteStyle
+{
+   kTPS_None = 0,
+   kTPS_ExclusiveCheck = (1<<0), // only one item checked at a time
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 
 enum eToolPaletteNotifyCodes
 {
-   kTPN_ItemClick = 0xD100,
-   kTPN_ItemDestroy = 0xD101,
+   kTPN_ItemClick       = 0xD100,
+   kTPN_ItemDestroy     = 0xD101,
+   kTPN_ItemCheck       = 0xD102,
+   kTPN_ItemUncheck     = 0xD103,
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -291,11 +299,12 @@ private:
 // CLASS: cToolPalette
 //
 
-class cToolPalette : public CScrollWindowImpl<cToolPalette>,
+typedef CWinTraitsOR<kTPS_ExclusiveCheck, 0> tToolPaleteWinTraits;
+
+class cToolPalette : public CScrollWindowImpl<cToolPalette, CWindow, tToolPaleteWinTraits>,
                      public cTrackMouseEvent<cToolPalette>
 {
-   typedef CScrollWindowImpl<cToolPalette> tToolPaletteBase;
-
+   typedef CScrollWindowImpl<cToolPalette, CWindow, tToolPaleteWinTraits> tBase;
 public:
    cToolPalette();
    ~cToolPalette();
@@ -314,7 +323,7 @@ public:
       MSG_WM_MOUSEMOVE(OnMouseMove)
       MSG_WM_LBUTTONDOWN(OnLButtonDown)
       MSG_WM_LBUTTONUP(OnLButtonUp)
-      CHAIN_MSG_MAP(tToolPaletteBase)
+      CHAIN_MSG_MAP(tBase)
    END_MSG_MAP()
 
    LRESULT OnCreate(LPCREATESTRUCT lpCreateStruct);
@@ -327,6 +336,8 @@ public:
    void OnMouseMove(UINT flags, CPoint point);
    void OnLButtonDown(UINT flags, CPoint point);
    void OnLButtonUp(UINT flags, CPoint point);
+
+   bool ExclusiveCheck() const;
 
    HTOOLGROUP AddGroup(const tChar * pszGroup, HIMAGELIST hImageList);
    bool RemoveGroup(HTOOLGROUP hGroup);
@@ -343,7 +354,11 @@ public:
 
 private:
    void SetMouseOverItem(HANDLE hItem);
+   void GetCheckedItems(std::vector<HTOOLITEM> * pCheckedItems);
    void DoClick(HANDLE hItem, CPoint point);
+   void DoGroupClick(HTOOLGROUP hGroup, CPoint point);
+   void DoItemClick(HTOOLITEM hTool, CPoint point);
+   LRESULT DoNotify(cToolItem * pTool, int code, CPoint point = CPoint());
 
    tGroups m_groups;
 

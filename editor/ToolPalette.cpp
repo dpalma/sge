@@ -718,6 +718,13 @@ void cToolPalette::OnLButtonUp(UINT flags, CPoint point)
 
 ////////////////////////////////////////
 
+bool cToolPalette::ExclusiveCheck() const
+{
+   return (GetStyle() & kTPS_ExclusiveCheck) == kTPS_ExclusiveCheck;
+}
+
+////////////////////////////////////////
+
 HTOOLGROUP cToolPalette::AddGroup(const tChar * pszGroup, HIMAGELIST hImageList)
 {
    if (pszGroup != NULL)
@@ -752,24 +759,10 @@ bool cToolPalette::RemoveGroup(HTOOLGROUP hGroup)
       {
          if (*iter == pRmGroup)
          {
-            HWND hWndParent = GetParent();
-            if (::IsWindow(hWndParent))
+            uint nTools = pRmGroup->GetToolCount();
+            for (uint i = 0; i < nTools; i++)
             {
-               sNMToolPaletteItemDestroy nm = {0};
-               nm.hdr.hwndFrom = m_hWnd;
-               nm.hdr.code = kTPN_ItemDestroy;
-               nm.hdr.idFrom = GetDlgCtrlID();
-               uint nTools = pRmGroup->GetToolCount();
-               for (uint i = 0; i < nTools; i++)
-               {
-                  cToolItem * pRmTool = pRmGroup->GetTool(i);
-                  if (pRmTool != NULL)
-                  {
-                     nm.hTool = reinterpret_cast<HTOOLITEM>(pRmTool);
-                     nm.pUserData = pRmTool->GetUserData();
-                     ::SendMessage(hWndParent, WM_NOTIFY, nm.hdr.idFrom, reinterpret_cast<LPARAM>(&nm));
-                  }
-               }
+               DoNotify(pRmGroup->GetTool(i), kTPN_ItemDestroy);
             }
             delete pRmGroup;
             m_groups.erase(iter);
@@ -848,6 +841,9 @@ void cToolPalette::Clear()
    {
       RemoveGroup(reinterpret_cast<HTOOLGROUP>(m_groups.front()));
    }
+
+   // Still important to let the STL container do any internal cleanup
+   m_groups.clear();
 }
 
 ////////////////////////////////////////
@@ -979,60 +975,148 @@ void cToolPalette::SetMouseOverItem(HANDLE hItem)
 
 ////////////////////////////////////////
 
+void cToolPalette::GetCheckedItems(std::vector<HTOOLITEM> * pCheckedItems)
+{
+   if (pCheckedItems != NULL)
+   {
+      pCheckedItems->clear();
+
+      tGroups::iterator iter = m_groups.begin();
+      tGroups::iterator end = m_groups.end();
+      for (; iter != end; iter++)
+      {
+         uint nTools = (*iter)->GetToolCount();
+         for (uint i = 0; i < nTools; i++)
+         {
+            cToolItem * pTool = (*iter)->GetTool(i);
+            if (pTool->IsChecked())
+            {
+               pCheckedItems->push_back(reinterpret_cast<HTOOLITEM>(pTool));
+            }
+         }
+      }
+   }
+}
+
+////////////////////////////////////////
+
 void cToolPalette::DoClick(HANDLE hItem, CPoint point)
 {
    if (hItem != NULL)
    {
       if (IsGroup(reinterpret_cast<HTOOLGROUP>(hItem)))
       {
-         cToolGroup * pGroup = reinterpret_cast<cToolGroup *>(hItem);
-         pGroup->ToggleExpandCollapse();
-         RECT rg;
-         if (m_renderer.GetItemRect(hItem, &rg))
+         DoGroupClick(reinterpret_cast<HTOOLGROUP>(hItem), point);
+      }
+      else
+      {
+         DoItemClick(reinterpret_cast<HTOOLITEM>(hItem), point);
+      }
+   }
+}
+
+////////////////////////////////////////
+
+void cToolPalette::DoGroupClick(HTOOLGROUP hGroup, CPoint point)
+{
+   cToolGroup * pGroup = reinterpret_cast<cToolGroup *>(hGroup);
+   pGroup->ToggleExpandCollapse();
+   RECT rg;
+   if (m_renderer.GetItemRect(hGroup, &rg))
+   {
+      m_renderer.FlushCachedRects();
+      RECT rc;
+      GetClientRect(&rc);
+      rg.bottom = rc.bottom;
+      InvalidateRect(&rg);
+   }
+   else
+   {
+      m_renderer.FlushCachedRects();
+      Invalidate();
+   }
+}
+
+////////////////////////////////////////
+
+void cToolPalette::DoItemClick(HTOOLITEM hTool, CPoint point)
+{
+   cToolItem * pTool = reinterpret_cast<cToolItem *>(hTool);
+   Assert(IsGroup(reinterpret_cast<HTOOLGROUP>(pTool->GetGroup())));
+   if (!pTool->IsDisabled())
+   {
+      DoNotify(pTool, kTPN_ItemClick, point);
+      if (ExclusiveCheck())
+      {
+         std::vector<HTOOLITEM> checkedItems;
+         GetCheckedItems(&checkedItems);
+         Assert(checkedItems.size() <= 1);
+         if (!checkedItems.empty())
          {
-            m_renderer.FlushCachedRects();
-            RECT rc;
-            GetClientRect(&rc);
-            rg.bottom = rc.bottom;
-            InvalidateRect(&rg);
+            if (checkedItems[0] != hTool)
+            {
+               cToolItem * pUncheckTool = reinterpret_cast<cToolItem *>(checkedItems[0]);
+
+               DoNotify(pUncheckTool, kTPN_ItemUncheck);
+               pUncheckTool->SetState(kTPTS_Checked, 0);
+
+               RECT r;
+               if (m_renderer.GetItemRect(checkedItems[0], &r))
+               {
+                  InvalidateRect(&r);
+               }
+               else
+               {
+                  Invalidate();
+               }
+            }
          }
-         else
+
+         if (!pTool->IsChecked())
          {
-            m_renderer.FlushCachedRects();
-            Invalidate();
+            DoNotify(pTool, kTPN_ItemCheck);
+            pTool->SetState(kTPTS_Checked, kTPTS_Checked);
          }
       }
       else
       {
-         cToolItem * pTool = reinterpret_cast<cToolItem *>(hItem);
-         Assert(IsGroup(reinterpret_cast<HTOOLGROUP>(pTool->GetGroup())));
-         if (!pTool->IsDisabled())
-         {
-            HWND hWndParent = GetParent();
-            if (::IsWindow(hWndParent))
-            {
-               sNMToolPaletteItemClick nm = {0};
-               nm.hdr.hwndFrom = m_hWnd;
-               nm.hdr.code = kTPN_ItemClick;
-               nm.hdr.idFrom = GetDlgCtrlID();
-               nm.pt = point;
-               nm.hTool = reinterpret_cast<HTOOLITEM>(hItem);
-               nm.pUserData = pTool->GetUserData();
-               ::SendMessage(hWndParent, WM_NOTIFY, GetDlgCtrlID(), reinterpret_cast<LPARAM>(&nm));
-            }
-            pTool->ToggleChecked();
-            RECT rt;
-            if (m_renderer.GetItemRect(hItem, &rt))
-            {
-               InvalidateRect(&rt);
-            }
-            else
-            {
-               Invalidate();
-            }
-         }
+         DoNotify(pTool, pTool->IsChecked()? kTPN_ItemUncheck : kTPN_ItemCheck);
+         pTool->ToggleChecked();
+      }
+      RECT rt;
+      if (m_renderer.GetItemRect(hTool, &rt))
+      {
+         InvalidateRect(&rt);
+      }
+      else
+      {
+         Invalidate();
       }
    }
+}
+
+////////////////////////////////////////
+
+LRESULT cToolPalette::DoNotify(cToolItem * pTool, int code, CPoint point)
+{
+   Assert(code == kTPN_ItemClick || code == kTPN_ItemDestroy
+      || code == kTPN_ItemCheck || code == kTPN_ItemUncheck);
+   if (pTool != NULL)
+   {
+      HWND hWndParent = GetParent();
+      if (::IsWindow(hWndParent))
+      {
+         sNMToolPaletteItem nm = {0};
+         nm.hdr.hwndFrom = m_hWnd;
+         nm.hdr.code = code;
+         nm.hdr.idFrom = GetDlgCtrlID();
+         nm.pt = point;
+         nm.hTool = reinterpret_cast<HTOOLITEM>(pTool);
+         nm.pUserData = pTool->GetUserData();
+         return ::SendMessage(hWndParent, WM_NOTIFY, nm.hdr.idFrom, reinterpret_cast<LPARAM>(&nm));
+      }
+   }
+   return -1;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -329,11 +329,22 @@ LRESULT cToolPaletteBar::OnToolPaletteNotify(int idCtrl, LPNMHDR pnmh, BOOL & bH
    Assert(pnmh != NULL);
 
    sToolPaletteItem tpi;
-
    if (m_toolPalette.GetTool(((sNMToolPaletteItemClick *)pnmh)->hTool, &tpi))
    {
       switch (pnmh->code)
       {
+         case kTPN_ItemCheck:
+         {
+            DebugMsg1("Tool \"%s\" checked\n", tpi.szName);
+            break;
+         }
+
+         case kTPN_ItemUncheck:
+         {
+            DebugMsg1("Tool \"%s\" un-checked\n", tpi.szName);
+            break;
+         }
+
          case kTPN_ItemClick:
          {
             DebugMsg1("Tool \"%s\" clicked\n", tpi.szName);
