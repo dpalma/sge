@@ -53,7 +53,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /machine:I386
-# ADD LINK32 opengl32.lib glu32.lib cg.lib cgGL.lib /nologo /subsystem:windows /machine:I386 /libpath:"..\..\3rdparty\Cg\lib"
+# ADD LINK32 opengl32.lib glu32.lib /nologo /subsystem:windows /machine:I386 /libpath:"..\..\3rdparty\Cg\lib"
 
 !ELSEIF  "$(CFG)" == "ms3dview - Win32 Debug"
 
@@ -79,7 +79,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 opengl32.lib glu32.lib cg.lib cgGL.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept /libpath:"..\..\3rdparty\Cg\lib"
+# ADD LINK32 opengl32.lib glu32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept /libpath:"..\..\3rdparty\Cg\lib"
 
 !ENDIF 
 
@@ -90,6 +90,11 @@ LINK32=link.exe
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+# Begin Source File
+
+SOURCE=.\cgwrapper.cpp
+# PROP Exclude_From_Build 1
+# End Source File
 # Begin Source File
 
 SOURCE=.\MainFrm.cpp
@@ -135,6 +140,10 @@ SOURCE=.\TreeUtils.cpp
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Source File
+
+SOURCE=.\cgwrapper.h
+# End Source File
 # Begin Source File
 
 SOURCE=.\MainFrm.h

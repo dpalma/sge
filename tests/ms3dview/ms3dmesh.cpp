@@ -17,88 +17,20 @@
 #include <GL/gl.h>
 #include "GL/glext.h"
 
-#include <Cg/cg.h>
-#include <Cg/cgGL.h>
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
 
+///////////////////////////////////////////////////////////////////////////////
+
 // REFERENCES
 // http://nehe.gamedev.net/data/lessons/lesson.asp?lesson=31
 // http://rsn.gamedev.net/tutorials/ms3danim.asp
 
-///////////////////////////////////////////////////////////////////////////////
-
 // used as the 4th dimension when a 3D vector is passed to a 4D function
 static const tVec4::value_type k4thDimension = 1;
-
-CGcontext g_cgContext = NULL;
-ulong g_nCgContextRefs = 0;
-
-CGprofile g_cgProfile = CG_PROFILE_UNKNOWN;
-
-static CGcontext GetCgContext()
-{
-   if (g_cgContext == NULL)
-   {
-      g_cgContext = cgCreateContext();
-   }
-   ++g_nCgContextRefs;
-   return g_cgContext;
-}
-
-static void ReleaseCgContext()
-{
-   if (--g_nCgContextRefs == 0)
-   {
-      cgDestroyContext(g_cgContext);
-      g_cgContext = NULL;
-   }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void cgErrorCallback()
-{
-   CGerror lastError = cgGetError();
-
-   if (lastError)
-   {
-      DebugMsg(cgGetErrorString(lastError));
-
-      const char * pszListing = cgGetLastListing(g_cgContext);
-      if (pszListing != NULL)
-      {
-         DebugMsg1("   %s\n", pszListing);
-      }
-   }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-static char * GetResource(const char * pResId, const char * pResType)
-{
-   HRSRC hR = FindResource(AfxGetInstanceHandle(), pResId, pResType);
-   if (hR)
-   {
-      uint resSize = SizeofResource(AfxGetInstanceHandle(), hR);
-      HGLOBAL hG = LoadResource(AfxGetInstanceHandle(), hR);
-      if (hG)
-      {
-         void * pResData = LockResource(hG);
-         if (pResData)
-         {
-            char * pszContents = new char[resSize + 1];
-            strcpy(pszContents, (const char *)pResData);
-            return pszContents;
-         }
-      }
-   }
-   return NULL;
-}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -108,21 +40,12 @@ static char * GetResource(const char * pResId, const char * pResType)
 
 cMs3dMesh::cMs3dMesh()
  : m_pInnerMesh(MeshCreate()),
-   m_bPrepared(false),
-   m_program(NULL),
-   m_modelViewProjParam(NULL)
+   m_bPrepared(false)
 {
 }
 
 cMs3dMesh::~cMs3dMesh()
 {
-   if (m_program != NULL)
-   {
-      cgDestroyProgram(m_program);
-      m_program = NULL;
-   }
-
-   ReleaseCgContext();
 }
 
 void cMs3dMesh::GetAABB(tVec3 * pMaxs, tVec3 * pMins) const
@@ -320,30 +243,6 @@ void cMs3dMesh::Prepare()
       }
 
       SetFrame(0);
-
-      cgSetErrorCallback(cgErrorCallback);
-
-      g_cgProfile = cgGLGetLatestProfile(CG_GL_VERTEX);
-
-      if (g_cgProfile != CG_PROFILE_UNKNOWN)
-      {
-         char * pszProgram = GetResource("ms3dmeshanim.cg", "CG");
-
-         if (pszProgram != NULL)
-         {
-            m_program = cgCreateProgram(GetCgContext(), CG_SOURCE, pszProgram,
-               g_cgProfile, NULL, NULL);
-
-            delete [] pszProgram;
-
-            if (m_program != NULL)
-            {
-               cgGLLoadProgram(m_program);
-
-               m_modelViewProjParam = cgGetNamedParameter(m_program, "modelViewProj");
-            }
-         }
-      }
    }
 }
 
@@ -358,56 +257,6 @@ void cMs3dMesh::SetFrame(float percent)
          pSkeleton->GetBoneMatrices(pAnimation->GetPeriod() * percent, &m_boneMatrices);
       }
    }
-}
-
-void cMs3dMesh::RenderVertexProgram() const
-{
-   cgGLBindProgram(m_program);
-
-   cgGLEnableProfile(g_cgProfile);
-
-   cgGLSetStateMatrixParameter(m_modelViewProjParam, CG_GL_MODELVIEW_PROJECTION_MATRIX, CG_GL_MATRIX_IDENTITY);
-
-//   tGroups::const_iterator iter;
-//   for (iter = m_groups.begin(); iter != m_groups.end(); iter++)
-//   {
-//      glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
-//
-//      cAutoIPtr<IMaterial> pMaterial;
-//      if ((iter->GetMaterialIndex() > -1) 
-//         && (GetMaterial(iter->GetMaterialIndex(), &pMaterial) == S_OK))
-//      {
-//         GlMaterial(pMaterial);
-//      }
-//
-//      glBegin(GL_TRIANGLES);
-//
-//      const std::vector<uint16> & tris = iter->GetTriangleIndices();
-//      std::vector<uint16>::const_iterator iterTris;
-//      for (iterTris = tris.begin(); iterTris != tris.end(); iterTris++)
-//      {
-//         const ms3d_triangle_t & tri = m_triangles[*iterTris];
-//
-//         for (int k = 0; k < 3; k++)
-//         {
-//            const ms3d_vertex_t & vk = m_vertices[tri.vertexIndices[k]];
-//            if (vk.boneId != -1)
-//            {
-//               //const tMatrix4 & m = m_joints[vk.boneId].GetFinalMatrix();
-//
-//               glTexCoord2f(tri.s[k], 1.0f - tri.t[k]);
-//               glNormal3fv(tri.vertexNormals[k]);
-//               glVertex3fv(vk.vertex);
-//            }
-//         }
-//      }
-//
-//      glEnd();
-//
-//      glPopAttrib();
-//   }
-
-   cgGLDisableProfile(g_cgProfile);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

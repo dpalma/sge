@@ -20,9 +20,6 @@ F_DECLARE_INTERFACE(IResourceManager);
 F_DECLARE_INTERFACE(IRenderDevice);
 F_DECLARE_INTERFACE(ISkeleton);
 
-typedef struct _CGprogram * CGprogram;
-typedef struct _CGparameter * CGparameter;
-
 //////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cMs3dMesh
@@ -63,16 +60,11 @@ public:
 private:
    void Prepare();
 
-   void RenderVertexProgram() const;
-
    cAutoIPtr<IMesh> m_pInnerMesh;
 
    mutable bool m_bPrepared;
 
    std::vector<tMatrix4> m_boneMatrices;
-
-   CGprogram m_program;
-   CGparameter m_modelViewProjParam;
 };
 
 inline bool cMs3dMesh::IsRenderingSoftware() const
