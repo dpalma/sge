@@ -315,6 +315,8 @@ void cSelectableSceneNode::Hit()
 {
    if (m_pSel == NULL)
    {
+      // TODO: As currently configured, this will code create/destroy 
+      // the selection-indicator mesh with every selection
       m_pSel = new cSelectionIndicatorNode(2 * GetBoundingSphereRadius());
       m_pSel->SetMesh(kszSelIndicatorMesh);
       AddChild(m_pSel);
