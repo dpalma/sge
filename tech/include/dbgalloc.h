@@ -18,17 +18,13 @@
    #define _msize(p)          _msize_dbg(p, _NORMAL_BLOCK)
 
    #ifdef __cplusplus
-      #if defined(__AFX_H__) && defined(DEBUG_NEW)
-         #define new DEBUG_NEW
-      #else
-         #undef new
-         #define DebugNew new(_NORMAL_BLOCK, __FILE__, __LINE__)
-         #define new DebugNew
-      #endif
+      #undef new
+      #define DebugNew new(_NORMAL_BLOCK, __FILE__, __LINE__)
+      #define new DebugNew
    #endif
 
 #endif
 
-#endif // _MSC_VER
+#endif // defined(_WIN32) && !defined(_WIN32_WCE)
 
 ///////////////////////////////////////////////////////////////////////////////
