@@ -3,7 +3,7 @@
 
 bin_PROGRAMS=game
 
-EXTRA_DIST = *.h *.lua game.rc game.ico game.dsp game.dsw game.vcproj game.sln
+EXTRA_DIST = *.h *.lua *.rc *.ico *.dsp *.dsw *.vcproj *.sln
 
 if NO_X
 game_PLATFORM_SOURCES = syswin.cpp
@@ -12,6 +12,7 @@ game_PLATFORM_SOURCES = syslinux.cpp
 endif
 
 game_SOURCES = cameracontroller.cpp \
+               cmds.cpp \
                groundtiled.cpp \
                heightmap.cpp \
                main.cpp \
