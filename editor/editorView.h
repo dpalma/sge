@@ -75,12 +75,13 @@ public:
    void RenderScene();
 
    BEGIN_MSG_MAP_EX(cEditorView)
-      // TODO: Why getting the ProcessWindowMessage does not take 5 parameters error?
-      CHAIN_MSG_MAP_ALT(tWindowBase, 0)
-      CHAIN_MSG_MAP(tGLBase)
 	   MSG_WM_CREATE(OnCreate)
 	   MSG_WM_DESTROY(OnDestroy)
 	   MSG_WM_SIZE(OnSize)
+      CHAIN_MSG_MAP(tGLBase)
+      // TODO: Why getting the ProcessWindowMessage does not take 5 parameters error?
+//      CHAIN_MSG_MAP_ALT(tWindowBase, 0)
+      CHAIN_MSG_MAP(tWindowBase)
    END_MSG_MAP()
 
    LRESULT OnCreate(LPCREATESTRUCT lpCreateStruct);
