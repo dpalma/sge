@@ -1,6 +1,6 @@
 dnl $Id$
 
-#AC_PREREQ(2.54)
+AC_PREREQ(2.53)
 AC_INIT(Makefile.am)
 
 AC_ARG_PROGRAM
@@ -14,7 +14,7 @@ AC_CONFIG_AUX_DIR(config)
 AM_CONFIG_HEADER(config/config.h)
 AM_INIT_AUTOMAKE(foe, $FOE_VERSION)
 
-AC_CONFIG_SUBDIRS(3rdparty/cppunit 3rdparty/zlib)
+AC_CONFIG_SUBDIRS(3rdparty/lua)
 
 dnl Check for programs.
 AC_PROG_CC
@@ -54,6 +54,7 @@ AC_PATH_XTRA
 AM_CONDITIONAL(NO_X, test "$no_x" = "yes")
 
 MDL_HAVE_OPENGL
+CHECK_ZLIB
 
-AC_CONFIG_FILES([Makefile 3rdparty/Makefile 3rdparty/tinyxml/Makefile allguids/Makefile tech/Makefile render/Makefile engine/Makefile game/Makefile tests/Makefile tests/network/Makefile])
+AC_CONFIG_FILES([Makefile 3rdparty/Makefile 3rdparty/tinyxml/Makefile allguids/Makefile tech/Makefile render/Makefile engine/Makefile game/Makefile])
 AC_OUTPUT
