@@ -20,6 +20,12 @@
 #define IDS_FLAGS_AVERAGED              1015
 #define IDS_FLAGS_UNUSED                1016
 #define IDS_FLAGS_NONE                  1017
+#define IDS_VERTICES                    1018
+#define IDS_VERTEX_I                    1019
+#define IDS_POSITION                    1020
+#define IDS_NORMAL                      1021
+#define IDS_EXPORT_FILTER               1022
+#define IDS_EXPORT_DEFAULT_EXTENSION    1023
 #define IDD_EXPORT                      2004
 #define IDC_FILENAME                    2010
 #define IDC_BROWSE                      2011

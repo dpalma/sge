@@ -10,6 +10,8 @@
 
 class cModelTreeInfo;
 
+BOOL ChooseExportFileName(CString * pFileName);
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cMsPlugInExportDlg

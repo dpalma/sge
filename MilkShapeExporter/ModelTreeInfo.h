@@ -27,6 +27,7 @@ protected:
    BOOL DisplayMaterials(CTreeCtrl * pTreeCtrl, HTREEITEM hParent = TVI_ROOT);
    BOOL DisplayMeshes(CTreeCtrl * pTreeCtrl, HTREEITEM hParent = TVI_ROOT);
    BOOL DisplayMeshVertices(msMesh * pMsMesh, CTreeCtrl * pTreeCtrl, HTREEITEM hParent = TVI_ROOT);
+   BOOL DisplayBones(CTreeCtrl * pTreeCtrl, HTREEITEM hParent = TVI_ROOT);
 
 private:
    msModel * m_pModel;

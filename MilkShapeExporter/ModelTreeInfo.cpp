@@ -37,7 +37,8 @@ BOOL cModelTreeInfo::DisplayModelInfo(CTreeCtrl * pTreeCtrl)
    }
 
    if (!DisplayMaterials(pTreeCtrl)
-      || !DisplayMeshes(pTreeCtrl))
+      || !DisplayMeshes(pTreeCtrl)
+      || !DisplayBones(pTreeCtrl))
    {
       return FALSE;
    }
@@ -109,6 +110,63 @@ BOOL cModelTreeInfo::DisplayMaterials(CTreeCtrl * pTreeCtrl, HTREEITEM hParent)
 
 ////////////////////////////////////////
 
+static BOOL DisplayFlags(byte flags, CTreeCtrl * pTreeCtrl, HTREEITEM hParent)
+{
+   ASSERT_VALID(pTreeCtrl);
+
+   CString str;
+   VERIFY(str.LoadString(IDS_FLAGS));
+   HTREEITEM hFlagsItem = pTreeCtrl->InsertItem(str, hParent);
+   if (hFlagsItem != NULL)
+   {
+      if (flags == 0)
+      {
+         VERIFY(str.LoadString(IDS_FLAGS_NONE));
+         pTreeCtrl->InsertItem(str, hFlagsItem);
+      }
+
+      if (flags & eSelected)
+      {
+         VERIFY(str.LoadString(IDS_FLAGS_SELECTED));
+         pTreeCtrl->InsertItem(str, hFlagsItem);
+      }
+
+      if (flags & eSelected2)
+      {
+         VERIFY(str.LoadString(IDS_FLAGS_SELECTED2));
+         pTreeCtrl->InsertItem(str, hFlagsItem);
+      }
+
+      if (flags & eHidden)
+      {
+         VERIFY(str.LoadString(IDS_FLAGS_HIDDEN));
+         pTreeCtrl->InsertItem(str, hFlagsItem);
+      }
+
+      if (flags & eDirty)
+      {
+         VERIFY(str.LoadString(IDS_FLAGS_DIRTY));
+         pTreeCtrl->InsertItem(str, hFlagsItem);
+      }
+
+      if (flags & eAveraged)
+      {
+         VERIFY(str.LoadString(IDS_FLAGS_AVERAGED));
+         pTreeCtrl->InsertItem(str, hFlagsItem);
+      }
+
+      if (flags & eUnused)
+      {
+         VERIFY(str.LoadString(IDS_FLAGS_UNUSED));
+         pTreeCtrl->InsertItem(str, hFlagsItem);
+      }
+   }
+
+   return TRUE;
+}
+
+////////////////////////////////////////
+
 BOOL cModelTreeInfo::DisplayMeshes(CTreeCtrl * pTreeCtrl, HTREEITEM hParent)
 {
    ASSERT_VALID(pTreeCtrl);
@@ -134,53 +192,7 @@ BOOL cModelTreeInfo::DisplayMeshes(CTreeCtrl * pTreeCtrl, HTREEITEM hParent)
                if (hItem != NULL)
                {
                   byte flags = msMesh_GetFlags(pMsMesh);
-                  VERIFY(str.LoadString(IDS_FLAGS));
-                  HTREEITEM hFlagsItem = pTreeCtrl->InsertItem(str, hItem);
-                  if (hFlagsItem != NULL)
-                  {
-                     if (flags == 0)
-                     {
-                        VERIFY(str.LoadString(IDS_FLAGS_NONE));
-                        pTreeCtrl->InsertItem(str, hFlagsItem);
-                     }
-
-                     if (flags & eSelected)
-                     {
-                        VERIFY(str.LoadString(IDS_FLAGS_SELECTED));
-                        pTreeCtrl->InsertItem(str, hFlagsItem);
-                     }
-
-                     if (flags & eSelected2)
-                     {
-                        VERIFY(str.LoadString(IDS_FLAGS_SELECTED2));
-                        pTreeCtrl->InsertItem(str, hFlagsItem);
-                     }
-
-                     if (flags & eHidden)
-                     {
-                        VERIFY(str.LoadString(IDS_FLAGS_HIDDEN));
-                        pTreeCtrl->InsertItem(str, hFlagsItem);
-                     }
-
-                     if (flags & eDirty)
-                     {
-                        VERIFY(str.LoadString(IDS_FLAGS_DIRTY));
-                        pTreeCtrl->InsertItem(str, hFlagsItem);
-                     }
-
-                     if (flags & eAveraged)
-                     {
-                        VERIFY(str.LoadString(IDS_FLAGS_AVERAGED));
-                        pTreeCtrl->InsertItem(str, hFlagsItem);
-                     }
-
-                     if (flags & eUnused)
-                     {
-                        VERIFY(str.LoadString(IDS_FLAGS_UNUSED));
-                        pTreeCtrl->InsertItem(str, hFlagsItem);
-                     }
-                  }
-
+                  DisplayFlags(flags, pTreeCtrl, hItem);
                   DisplayMeshVertices(pMsMesh, pTreeCtrl, hItem);
                }
             }
@@ -195,6 +207,45 @@ BOOL cModelTreeInfo::DisplayMeshes(CTreeCtrl * pTreeCtrl, HTREEITEM hParent)
 
 BOOL cModelTreeInfo::DisplayMeshVertices(msMesh * pMsMesh, CTreeCtrl * pTreeCtrl, HTREEITEM hParent)
 {
+   Assert(pMsMesh != NULL);
+   ASSERT_VALID(pTreeCtrl);
+
+   int nVertices = msMesh_GetVertexCount(pMsMesh);
+   int nNormals = msMesh_GetVertexNormalCount(pMsMesh);
+
+   if ((nVertices > 0) && (nVertices == nNormals))
+   {
+      CString str;
+      VERIFY(str.LoadString(IDS_VERTICES));
+
+      HTREEITEM hVertsItem = pTreeCtrl->InsertItem(str, hParent);
+      if (hVertsItem != NULL)
+      {
+         for (int i = 0; i < nVertices; i++)
+         {
+            msVertex * pVertex = msMesh_GetVertexAt(pMsMesh, i);
+
+            msVec3 normal;
+            msMesh_GetVertexNormalAt(pMsMesh, i, normal);
+
+            str.Format(IDS_VERTEX_I, i);
+            HTREEITEM hVertItem = pTreeCtrl->InsertItem(str, hVertsItem);
+            if (hVertItem != NULL)
+            {
+            }
+         }
+      }
+   }
+
+   return TRUE;
+}
+
+////////////////////////////////////////
+
+BOOL cModelTreeInfo::DisplayBones(CTreeCtrl * pTreeCtrl, HTREEITEM hParent)
+{
+   ASSERT_VALID(pTreeCtrl);
+
    return TRUE;
 }
 

@@ -129,6 +129,12 @@ BEGIN
     IDS_FLAGS_AVERAGED      "Averaged"
     IDS_FLAGS_UNUSED        "Unused"
     IDS_FLAGS_NONE          "None"
+    IDS_VERTICES            "Vertices"
+    IDS_VERTEX_I            "Vertex %d"
+    IDS_POSITION            "Position"
+    IDS_NORMAL              "Normal"
+    IDS_EXPORT_FILTER       "SGE Mesh Files (*.sgem)|*.sgem||"
+    IDS_EXPORT_DEFAULT_EXTENSION "sgem"
 END
 
 #endif    // English (U.S.) resources

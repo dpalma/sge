@@ -61,12 +61,30 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // cMsPlugInExportDlg message handlers
 
-void cMsPlugInExportDlg::OnBrowse() 
+BOOL ChooseExportFileName(CString * pFileName)
 {
-	CFileDialog dlg(FALSE);
+   Assert(pFileName != NULL);
+
+   CString defaultExt;
+   VERIFY(defaultExt.LoadString(IDS_EXPORT_DEFAULT_EXTENSION));
+
+   CString filter;
+   VERIFY(filter.LoadString(IDS_EXPORT_FILTER));
+
+	CFileDialog dlg(FALSE, defaultExt, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, filter);
    if (dlg.DoModal() == IDOK)
    {
-      m_exportFileName = dlg.GetPathName();
+      *pFileName = dlg.GetPathName();
+      return TRUE;
+   }
+
+   return FALSE;
+}
+
+void cMsPlugInExportDlg::OnBrowse() 
+{
+   if (ChooseExportFileName(&m_exportFileName))
+   {
       UpdateData(FALSE);
    }
 }
