@@ -5,6 +5,7 @@
 #define INCLUDED_EDITORAPI_H
 
 #include "comtools.h"
+#include "connpt.h"
 #include "str.h"
 
 #if _MSC_VER > 1000
@@ -14,6 +15,7 @@
 F_DECLARE_INTERFACE(IEditorApp);
 F_DECLARE_INTERFACE(IEditorLoopClient);
 F_DECLARE_INTERFACE(IEditorTileManager);
+F_DECLARE_INTERFACE(IEditorTileManagerListener);
 F_DECLARE_INTERFACE(IEditorTileSet);
 F_DECLARE_INTERFACE(IEditorTile);
 
@@ -90,6 +92,7 @@ interface UUID("ED1B3A1A-E2D8-4eec-AABD-648A548729E8") IEditorLoopClient : IUnkn
 
 interface UUID("CA3DFC7D-CF34-43cd-AE46-FA1AF6A34F27") IEditorTileManager : IUnknown
 {
+   DECLARE_CONNECTION_POINT(IEditorTileManagerListener);
    virtual tResult CreateTileSet(const tChar * pszName, IEditorTileSet * * ppTileSet) = 0;
    virtual tResult GetTileSet(const tChar * pszName, IEditorTileSet * * ppTileSet) = 0;
    virtual tResult GetDefaultTileSet(IEditorTileSet * * ppTileSet) = 0;
@@ -99,6 +102,16 @@ interface UUID("CA3DFC7D-CF34-43cd-AE46-FA1AF6A34F27") IEditorTileManager : IUnk
 };
 
 void EditorTileManagerCreate();
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IEditorTileManagerListener
+//
+
+interface UUID("8EA33056-3151-4090-8F38-BA8B9CB08F77") IEditorTileManagerListener : IUnknown
+{
+   virtual void OnDefaultTileSetChange(IEditorTileSet * pTileSet) = 0;
+};
 
 /////////////////////////////////////////////////////////////////////////////
 //

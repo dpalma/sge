@@ -5,6 +5,7 @@
 #define INCLUDED_EDITORTILEMANAGER_H
 
 #include "editorapi.h"
+#include "connptimpl.h"
 #include "globalobj.h"
 #include "str.h"
 
@@ -19,7 +20,7 @@
 // CLASS: cEditorTileManager
 //
 
-class cEditorTileManager : public cGlobalObject<IMPLEMENTS(IEditorTileManager)>
+class cEditorTileManager : public cGlobalObject<IMPLEMENTSCP(IEditorTileManager, IEditorTileManagerListener)>
 {
 public:
    cEditorTileManager();
@@ -38,6 +39,8 @@ public:
 private:
    typedef std::map<cStr, IEditorTileSet *> tTileSetMap;
    tTileSetMap m_tileSetMap;
+
+   cStr m_defaultTileSet;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

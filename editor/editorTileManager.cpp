@@ -71,6 +71,7 @@ tResult cEditorTileManager::CreateTileSet(const tChar * pszName, IEditorTileSet 
    m_tileSetMap[cStr(pszName)] = CTAddRef(static_cast<IEditorTileSet *>(pTileSet));
 
    *ppTileSet = CTAddRef(static_cast<IEditorTileSet *>(pTileSet));
+
    return S_OK;
 }
 
@@ -98,14 +99,33 @@ tResult cEditorTileManager::GetTileSet(const tChar * pszName, IEditorTileSet * *
 
 tResult cEditorTileManager::GetDefaultTileSet(IEditorTileSet * * ppTileSet)
 {
-   return E_NOTIMPL; // TODO
+   return GetTileSet(m_defaultTileSet.c_str(), ppTileSet);
 }
 
 ///////////////////////////////////////
 
 tResult cEditorTileManager::SetDefaultTileSet(const tChar * pszName)
 {
-   return E_NOTIMPL; // TODO
+   if (pszName != NULL)
+   {
+      m_defaultTileSet = pszName;
+
+      cAutoIPtr<IEditorTileSet> pTileSet;
+      if (GetTileSet(pszName, &pTileSet) == S_OK)
+      {
+         ForEachConnection(&IEditorTileManagerListener::OnDefaultTileSetChange,
+            static_cast<IEditorTileSet *>(pTileSet));
+      }
+   }
+   else
+   {
+      m_defaultTileSet.erase();
+
+      ForEachConnection(&IEditorTileManagerListener::OnDefaultTileSetChange,
+         static_cast<IEditorTileSet *>(NULL));
+   }
+
+   return S_OK;
 }
 
 ///////////////////////////////////////

@@ -7,6 +7,8 @@
 
 #include "editorCtrlBars.h"
 
+#include "globalobj.h"
+
 #include "resource.h"       // main symbols
 
 #ifdef _DEBUG
@@ -42,6 +44,12 @@ BEGIN_MESSAGE_MAP(cToolPaletteBar, CSizingControlBarG)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
+
+void cToolPaletteBar::OnDefaultTileSetChange(IEditorTileSet * pTileSet)
+{
+}
+
+/////////////////////////////////////////////////////////////////////////////
 // cToolPaletteBar message handlers
 
 int cToolPaletteBar::OnCreate(LPCREATESTRUCT lpCreateStruct) 
@@ -51,24 +59,8 @@ int cToolPaletteBar::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
    SetSCBStyle(GetSCBStyle() | SCBS_SIZECHILD);
 
-//   if (!m_wndChild.Create(NULL, NULL, WS_CHILD | WS_VISIBLE, CRect(0,0,0,0), this, kChildId))
-//   {
-//      return -1;
-//   }
-//
-//   m_wndChild.ModifyStyleEx(0, WS_EX_CLIENTEDGE);
-
-   CFont font;
-   if (!font.CreateStockObject(DEFAULT_GUI_FONT))
-   {
-      if (!font.CreatePointFont(80, "MS Sans Serif"))
-      {
-         DebugMsg("Unable to create font\n");
-         return -1;
-      }
-   }
-
-//   m_wndChild.SetFont(&font);
+   UseGlobal(EditorTileManager);
+   pEditorTileManager->Connect(this);
 
    return 0;
 }
@@ -76,4 +68,7 @@ int cToolPaletteBar::OnCreate(LPCREATESTRUCT lpCreateStruct)
 void cToolPaletteBar::OnDestroy() 
 {
    CSizingControlBarG::OnDestroy();
+
+   UseGlobal(EditorTileManager);
+   pEditorTileManager->Disconnect(this);
 }

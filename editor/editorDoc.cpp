@@ -72,6 +72,8 @@ BOOL cEditorDoc::OnNewDocument()
 
    Assert(AccessEditorApp() != NULL);
 
+   SafeRelease(m_pMaterial);
+
    delete m_pHeightMap, m_pHeightMap = NULL;
 
    m_xDim = 0;
@@ -102,7 +104,10 @@ BOOL cEditorDoc::OnNewDocument()
       cAutoIPtr<IEditorTileSet> pTileSet;
 
       UseGlobal(EditorTileManager);
-      pEditorTileManager->GetTileSet(mapSettings.GetTileSet(), &pTileSet);
+      if (pEditorTileManager->GetTileSet(mapSettings.GetTileSet(), &pTileSet) == S_OK)
+      {
+         pEditorTileManager->SetDefaultTileSet(mapSettings.GetTileSet());
+      }
 
       m_xDim = mapSettings.GetXDimension();
       m_zDim = mapSettings.GetZDimension();
@@ -111,14 +116,6 @@ BOOL cEditorDoc::OnNewDocument()
       {
          bResult = TRUE;
       }
-//      m_pGround = new cTiledGround();
-//      if (m_pGround != NULL)
-//      {
-//         if (m_pGround->Init(m_xDim, m_zDim, pTileSet, 0, pHeightMap))
-//         {
-//            bResult = TRUE;
-//         }
-//      }
    }
 
 	return bResult;

@@ -4,6 +4,9 @@
 #ifndef INCLUDED_TOOLPALETTEBAR_H
 #define INCLUDED_TOOLPALETTEBAR_H
 
+#include "afxcomtools.h"
+#include "editorapi.h"
+
 #if _MSC_VER >= 1000
 #pragma once
 #endif // _MSC_VER >= 1000
@@ -13,7 +16,9 @@
 // CLASS: cToolPaletteBar
 //
 
-class cToolPaletteBar : public CSizingControlBarG
+class cToolPaletteBar : public CSizingControlBarG,
+                        public cComObject<IMPLEMENTS(IEditorTileManagerListener),
+                                          cAfxComServices<cToolPaletteBar> >
 {
    DECLARE_DYNCREATE(cToolPaletteBar)
 
@@ -35,6 +40,8 @@ public:
 // Implementation
 public:
    virtual ~cToolPaletteBar();
+
+   virtual void OnDefaultTileSetChange(IEditorTileSet * pTileSet);
 
 protected:
 
