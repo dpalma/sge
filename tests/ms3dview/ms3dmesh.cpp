@@ -9,7 +9,7 @@
 #include "animation.h"
 
 #include "renderapi.h"
-#include "material.h"
+#include "materialapi.h"
 
 #include "techmath.h"
 #include "vec4.h"
