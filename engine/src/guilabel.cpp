@@ -161,7 +161,10 @@ tResult cGUILabelStatelessRenderer::Render(IGUIElement * pElement, IRenderDevice
       if (!pFont)
       {
          UseGlobal(GUIRenderingTools);
-         pGUIRenderingTools->GetDefaultFont(&pFont);
+         if (pGUIRenderingTools->GetDefaultFont(&pFont) != S_OK)
+         {
+            return E_FAIL;
+         }
       }
 
       tGUIString text;

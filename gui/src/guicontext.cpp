@@ -212,10 +212,10 @@ tResult cGUIContext::RenderGUI(IRenderDevice * pRenderDevice)
       m_bNeedLayout = false;
 
       uint vpWidth, vpHeight;
-      Verify(pRenderDevice->GetViewportSize(&vpWidth, &vpHeight) == S_OK);
-
-      cSizeAndPlaceElement sizeAndPlaceFunctor(tGUIRect(0,0,vpWidth,vpHeight));
-      ForEachElement(sizeAndPlaceFunctor);
+      if (pRenderDevice->GetViewportSize(&vpWidth, &vpHeight) == S_OK)
+      {
+         ForEachElement(cSizeAndPlaceElement(tGUIRect(0,0,vpWidth,vpHeight)));
+      }
    }
 
    pRenderDevice->SetRenderState(kRS_EnableDepthBuffer, FALSE);

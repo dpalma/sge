@@ -120,6 +120,11 @@ static IMaterial * MaterialFrom3ds(const c3dsMaterial * p3dsMaterial,
 
    IMaterial * pMaterial = MaterialCreate();
 
+   if (pMaterial == NULL)
+   {
+      return NULL;
+   }
+
    if (p3dsMaterial->szTexture[0] != 0)
    {
       UseGlobal(TextureManager);
@@ -457,27 +462,30 @@ bool Load3dsTriangleMesh(IReader * pReader, long stop, IRenderDevice * pRenderDe
                cAutoIPtr<ISubMesh> pSubMesh = SubMeshCreate(faces.size() / 3,
                   vertices.size(), pVertexDecl, pRenderDevice);
 
-               pSubMesh->SetMaterialName(materialName);
-
-               s3dsVertex * pVertexData = NULL;
-               if (pSubMesh->LockVertexBuffer(kBL_Discard, (void * *)&pVertexData) == S_OK)
+               if (!!pSubMesh)
                {
-                  memcpy(pVertexData, &vertices[0], vertices.size() * sizeof(s3dsVertex));
-                  pSubMesh->UnlockVertexBuffer();
+                  pSubMesh->SetMaterialName(materialName);
 
-                  uint16 * pFaces = NULL;
-                  if (pSubMesh->LockIndexBuffer(kBL_Discard, (void**)&pFaces) == S_OK)
+                  s3dsVertex * pVertexData = NULL;
+                  if (pSubMesh->LockVertexBuffer(kBL_Discard, (void * *)&pVertexData) == S_OK)
                   {
-                     for (int i = 0; i < nGroupFaces; i++)
-                     {
-                        pFaces[i * 3 + 0] = faces[groupFaces[i] * 3 + 0];
-                        pFaces[i * 3 + 1] = faces[groupFaces[i] * 3 + 1];
-                        pFaces[i * 3 + 2] = faces[groupFaces[i] * 3 + 2];
-                     }
-                     pSubMesh->UnlockIndexBuffer();
+                     memcpy(pVertexData, &vertices[0], vertices.size() * sizeof(s3dsVertex));
+                     pSubMesh->UnlockVertexBuffer();
 
-                     pMesh->AddSubMesh(pSubMesh);
-                     bResult = true;
+                     uint16 * pFaces = NULL;
+                     if (pSubMesh->LockIndexBuffer(kBL_Discard, (void**)&pFaces) == S_OK)
+                     {
+                        for (int i = 0; i < nGroupFaces; i++)
+                        {
+                           pFaces[i * 3 + 0] = faces[groupFaces[i] * 3 + 0];
+                           pFaces[i * 3 + 1] = faces[groupFaces[i] * 3 + 1];
+                           pFaces[i * 3 + 2] = faces[groupFaces[i] * 3 + 2];
+                        }
+                        pSubMesh->UnlockIndexBuffer();
+
+                        pMesh->AddSubMesh(pSubMesh);
+                        bResult = true;
+                     }
                   }
                }
             }
