@@ -26,7 +26,9 @@
 // cristi@datamekanix.com or post them at the message board at the site.
 /////////////////////////////////////////////////////////////////////////
 
-#include <stdafx.h>
+// dpalma 2004-09-14: include my precompiled header file instead
+//#include <stdafx.h>
+#include "stdhdr.h"
 #include "scbarcf.h"
 
 /////////////////////////////////////////////////////////////////////////

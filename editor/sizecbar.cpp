@@ -55,7 +55,9 @@
 // sizecbar.cpp : implementation file
 //
 
-#include "stdafx.h"
+// dpalma 2004-09-14: include my precompiled header file instead
+//#include "stdafx.h"
+#include "stdhdr.h"
 #include "sizecbar.h"
 
 #ifdef _DEBUG
