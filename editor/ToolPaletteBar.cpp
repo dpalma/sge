@@ -91,6 +91,8 @@ void cToolPaletteBar::OnDefaultTileSetChange(IEditorTileSet * pTileSet)
             }
          }
       }
+
+      RepositionButtons();
    }
 }
 
