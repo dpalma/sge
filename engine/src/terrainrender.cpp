@@ -119,6 +119,7 @@ void cTerrainRenderer::RegenerateChunks()
    }
 
    std::for_each(m_chunks.begin(), m_chunks.end(), CTInterfaceMethod(&cTerrainChunk::Release));
+   m_chunks.clear();
 
    uint nTilesX, nTilesZ;
    m_pModel->GetDimensions(&nTilesX, &nTilesZ);
