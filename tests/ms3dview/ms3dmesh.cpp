@@ -445,18 +445,21 @@ tResult cMs3dMesh::Read(IReader * pReader, IRenderDevice * pRenderDevice, IResou
 
       if (material.texture[0] != 0)
       {
-         cImage texture;
-         if (!ImageLoad(pResourceManager, material.texture, &texture))
+         cImage * pTextureImage = ImageLoad(pResourceManager, material.texture);
+         if (pTextureImage == NULL)
          {
             DebugMsg1("Could not load texture image %s\n", material.texture);
             return E_FAIL;
          }
 
-         if (pRenderDevice->CreateTexture(&texture, &pTexture) != S_OK)
+         if (pRenderDevice->CreateTexture(pTextureImage, &pTexture) != S_OK)
          {
             DebugMsg1("Could not create device texture for %s\n", material.texture);
+            delete pTextureImage;
             return E_FAIL;
          }
+
+         delete pTextureImage;
       }
 
       IMaterial * pMaterial = MaterialCreate();
