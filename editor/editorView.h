@@ -26,35 +26,39 @@ F_DECLARE_INTERFACE(IIndexBuffer);
 
 F_DECLARE_INTERFACE(ISceneCamera);
 
-class cEditorDoc;
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cEditorView
 //
 
-class cEditorView : public CWindowImpl<cEditorView>,
+typedef CWinTraitsOR<0, WS_EX_CLIENTEDGE> tEditorViewTraits;
+
+class cEditorView : public CComObjectRoot,
+                    public CComCoClass<cEditorView, &CLSID_EditorView>,
+                    public CWindowImpl<cEditorView, CWindow, tEditorViewTraits>,
                     public cGLContext<cEditorView>,
-                    public CComObjectRoot,
                     public cConnectionPoint<IWindow, IWindowSink>,
                     public IEditorView,
                     public IEditorLoopClient
 {
    typedef cGLContext<cEditorView> tGLBase;
+   typedef CWindowImpl<cEditorView, CWindow, tEditorViewTraits> tWindowImplBase;
 
 public:
 	cEditorView();
 	~cEditorView();
 
-   DECLARE_WND_CLASS(NULL)
+   DECLARE_WND_CLASS("EditorView")
 
+   DECLARE_NO_REGISTRY()
    DECLARE_NOT_AGGREGATABLE(cEditorView)
 
-// Attributes
-	cEditorDoc * GetDocument();
+   BEGIN_COM_MAP(cEditorView)
+      COM_INTERFACE_ENTRY_IID(IID_IWindow, IWindow)
+      COM_INTERFACE_ENTRY(IEditorView)
+      COM_INTERFACE_ENTRY(IEditorLoopClient)
+   END_COM_MAP()
 
-// Operations
-public:
    IRenderDevice * AccessRenderDevice();
 
    // IWindow
@@ -62,6 +66,9 @@ public:
    virtual tResult SwapBuffers();
 
    // IEditorView
+   virtual tResult Create(HWND hWndParent, HWND * phWnd);
+   virtual tResult Destroy();
+   virtual tResult Move(int x, int y, int width, int height);
    virtual tResult GetCamera(ISceneCamera * * ppCamera);
    virtual tVec3 GetCameraEyePosition() const;
    virtual tResult GetCameraPlacement(float * px, float * pz);
@@ -69,6 +76,7 @@ public:
    virtual tResult GetCameraElevation(float * pElevation);
    virtual tResult SetCameraElevation(float elevation);
    virtual tResult GetModel(IEditorModel * * ppModel);
+   virtual tResult SetModel(IEditorModel * pModel);
    virtual tResult HighlightTile(int iTileX, int iTileZ);
    virtual tResult ClearTileHighlight();
 
@@ -89,12 +97,6 @@ public:
    void OnDestroy();
    void OnSize(UINT nType, CSize size);
    void OnPaint(HDC hDc);
-
-   BEGIN_COM_MAP(cEditorView)
-      COM_INTERFACE_ENTRY_IID(IID_IWindow, IWindow)
-      COM_INTERFACE_ENTRY_IID(IID_IEditorView, IEditorView)
-      COM_INTERFACE_ENTRY_IID(IID_IEditorLoopClient, IEditorLoopClient)
-   END_COM_MAP()
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -143,7 +145,7 @@ protected:
    friend class cSceneEntity;
 
 private:
-   cEditorDoc * m_pDocument;
+   cAutoIPtr<IEditorModel> m_pModel;
 
    cAutoIPtr<IRenderDevice> m_pRenderDevice;
 
@@ -161,13 +163,6 @@ private:
 
    int m_highlitTileX, m_highlitTileZ;
 };
-
-////////////////////////////////////////
-
-inline cEditorDoc * cEditorView::GetDocument()
-{
-   return m_pDocument;
-}
 
 ////////////////////////////////////////
 

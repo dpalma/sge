@@ -28,11 +28,6 @@ CAppModule _Module;
 
 /////////////////////////////////////////////////////////////////////////////
 
-BEGIN_OBJECT_MAP(g_objectMap)
-END_OBJECT_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-
 static void RegisterGlobalObjects()
 {
    InputCreate();
@@ -61,9 +56,15 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/,
 
    AtlInitCommonControls(ICC_COOL_CLASSES | ICC_BAR_CLASSES);
 
-   if (FAILED(_Module.Init(g_objectMap, hInstance)))
+   if (FAILED(_Module.Init(NULL, hInstance)))
    {
       ErrorMsg("ATL module failed to start!\n");
+      return -1;
+   }
+
+   if (FAILED(_Module.RegisterClassObjects(CLSCTX_INPROC_SERVER, REGCLS_MULTIPLEUSE)))
+   {
+      ErrorMsg("ATL module failed to register class objects!\n");
       return -1;
    }
 
@@ -98,6 +99,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/,
 	StopGlobalObjects();
 
    _Module.RemoveMessageLoop();
+   _Module.RevokeClassObjects();
    _Module.Term();
    CoUninitialize();
 

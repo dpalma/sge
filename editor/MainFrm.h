@@ -5,6 +5,7 @@
 #define INCLUDED_MAINFRM_H
 
 #include "GLContext.h"
+#include "editorapi.h"
 
 #include <DockingFrame.h>
 #include <sstate.h>
@@ -19,6 +20,8 @@
 
 class cDockingWindow;
 
+F_DECLARE_INTERFACE(IEditorModel);
+
 typedef std::vector<cDockingWindow *> tDockingWindows;
 
 /////////////////////////////////////////////////////////////////////////////
@@ -32,8 +35,8 @@ class cClientWnd : public CWindowImpl<cClientWnd, CWindow, tClientWndTraits>,
                    public cGLContext<cClientWnd>
 {
    typedef cGLContext<cClientWnd> tClientWndGLContext;
-public:
 
+public:
    BEGIN_MSG_MAP_EX(cClientWnd)
       CHAIN_MSG_MAP(tClientWndGLContext)
       MSG_WM_PAINT(OnPaint)
@@ -148,7 +151,12 @@ public:
 
    virtual BOOL OnIdle();
 
+   tResult SetModel(IEditorModel * pModel);
+   tResult GetModel(IEditorModel * * ppModel);
+
 private:
+   bool m_bPromptForMapSettings;
+
    CCommandBarCtrl m_cmdBar;
    CRecentDocumentList m_recentDocuments;
 
@@ -156,8 +164,25 @@ private:
    tDockingWindows m_dockingWindows;
    sstate::CWindowStateMgr	m_dockingWindowStateMgr;
 
-   cClientWnd m_clientWnd;
+   cAutoIPtr<IEditorView> m_pMainView;
+   cAutoIPtr<IEditorModel> m_pModel;
 };
+
+////////////////////////////////////////
+
+inline tResult cMainFrame::SetModel(IEditorModel * pModel)
+{
+   SafeRelease(m_pModel);
+   m_pModel = CTAddRef(pModel);
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+inline tResult cMainFrame::GetModel(IEditorModel * * ppModel)
+{
+   return m_pModel.GetPointer(ppModel);
+}
 
 /////////////////////////////////////////////////////////////////////////////
 

@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -27,18 +27,18 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE MOVEABLE PURE 
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE MOVEABLE PURE 
+2 TEXTINCLUDE 
 BEGIN
     "#include <atlres.h>\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE MOVEABLE PURE 
+3 TEXTINCLUDE 
 BEGIN
     "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
     "#ifdef _WIN32\r\n"
@@ -60,22 +60,22 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_MAINFRAME           ICON    DISCARDABLE     "res\\editor.ico"
-IDR_EDITOTYPE           ICON    DISCARDABLE     "res\\editorDoc.ico"
+IDR_MAINFRAME           ICON                    "res\\editor.ico"
+IDR_EDITOTYPE           ICON                    "res\\editorDoc.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Bitmap
 //
 
-IDR_MAINFRAME           BITMAP  MOVEABLE PURE   "res\\toolbar.bmp"
+IDR_MAINFRAME           BITMAP                  "res\\toolbar.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Toolbar
 //
 
-IDR_MAINFRAME TOOLBAR DISCARDABLE  16, 15
+IDR_MAINFRAME TOOLBAR  16, 15
 BEGIN
     BUTTON      ID_FILE_NEW
     BUTTON      ID_FILE_OPEN
@@ -99,7 +99,7 @@ END
 // Menu
 //
 
-IDR_MAINFRAME MENU DISCARDABLE 
+IDR_MAINFRAME MENU 
 BEGIN
     POPUP "&File"
     BEGIN
@@ -146,7 +146,7 @@ END
 // Accelerator
 //
 
-IDR_MAINFRAME ACCELERATORS MOVEABLE PURE 
+IDR_MAINFRAME ACCELERATORS 
 BEGIN
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
@@ -174,23 +174,28 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 235, 55
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_ABOUTBOX DIALOGEX 0, 0, 235, 159
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
 CAPTION "About editor"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
+    ICON            IDR_MAINFRAME,IDC_STATIC,11,17,21,20
     LTEXT           "editor Version 1.0",IDC_STATIC,40,10,119,8,SS_NOPREFIX
     LTEXT           "Copyright (C) 2004-2005",IDC_STATIC,40,25,119,8
     DEFPUSHBUTTON   "OK",IDOK,178,7,50,14,WS_GROUP
+    EDITTEXT        IDC_CREDITS,40,63,137,89,ES_MULTILINE | ES_AUTOHSCROLL | 
+                    ES_READONLY
+    LTEXT           "The SGE project uses the following third party libraries:",
+                    IDC_STATIC,40,42,137,17
 END
 
-IDD_MAPSETTINGS DIALOG DISCARDABLE  0, 0, 225, 202
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
+IDD_MAPSETTINGS DIALOGEX 0, 0, 226, 201
+STYLE DS_SETFONT | DS_CENTER | WS_POPUP | WS_CAPTION | WS_THICKFRAME
 CAPTION "New Map Settings"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,168,181,50,14
+    DEFPUSHBUTTON   "OK",IDOK,169,180,50,14
     LTEXT           "Width",IDC_STATIC,7,20,20,8
     COMBOBOX        IDC_MAP_WIDTH,40,18,52,59,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
@@ -212,11 +217,10 @@ BEGIN
                     BS_AUTORADIOBUTTON,40,138,74,10
     EDITTEXT        IDC_HEIGHT_MAP_FILE,53,152,108,14,ES_AUTOHSCROLL | 
                     WS_GROUP
-    PUSHBUTTON      "&Browse...",IDC_BROWSE_HEIGHT_MAP,168,152,50,14
+    PUSHBUTTON      "&Browse...",IDC_BROWSE_HEIGHT_MAP,169,152,50,14
 END
 
 
-#ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
@@ -239,18 +243,13 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "Comments", "\0"
-            VALUE "CompanyName", "\0"
-            VALUE "FileDescription", "editor Application\0"
-            VALUE "FileVersion", "1, 0, 0, 1\0"
-            VALUE "InternalName", "editor\0"
-            VALUE "LegalCopyright", "Copyright (C) 2004-2005\0"
-            VALUE "LegalTrademarks", "\0"
-            VALUE "OriginalFilename", "editor.EXE\0"
-            VALUE "PrivateBuild", "\0"
-            VALUE "ProductName", "editor Application\0"
-            VALUE "ProductVersion", "1, 0, 0, 1\0"
-            VALUE "SpecialBuild", "\0"
+            VALUE "FileDescription", "editor Application"
+            VALUE "FileVersion", "1, 0, 0, 1"
+            VALUE "InternalName", "editor"
+            VALUE "LegalCopyright", "Copyright (C) 2004-2005"
+            VALUE "OriginalFilename", "editor.EXE"
+            VALUE "ProductName", "editor Application"
+            VALUE "ProductVersion", "1, 0, 0, 1"
         END
     END
     BLOCK "VarFileInfo"
@@ -259,8 +258,6 @@ BEGIN
     END
 END
 
-#endif    // !_MAC
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -268,24 +265,26 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO MOVEABLE PURE 
+GUIDELINES DESIGNINFO 
 BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 228
+        VERTGUIDE, 40
+        VERTGUIDE, 177
         TOPMARGIN, 7
-        BOTTOMMARGIN, 48
+        BOTTOMMARGIN, 152
     END
 
     IDD_MAPSETTINGS, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 218
+        RIGHTMARGIN, 219
         VERTGUIDE, 40
         VERTGUIDE, 53
         TOPMARGIN, 7
-        BOTTOMMARGIN, 195
+        BOTTOMMARGIN, 194
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -296,12 +295,12 @@ END
 // String Table
 //
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
-    IDR_MAINFRAME           "editor\n\nxxx\nSGE Editor Files (*.sgm)\n.sgm\nSGE.Editor.Document\nSGE Editor Document"
+    IDR_MAINFRAME           "editor"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_NO_UNIT_TESTS       "Unit tests not available in this build"
     IDS_OUTPUT_BAR_TITLE    "Output"
@@ -313,12 +312,12 @@ BEGIN
     IDS_APP_TITLE           "editor"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ATL_IDS_IDLEMESSAGE     "Ready"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_INDICATOR_EXT        "EXT"
     ID_INDICATOR_CAPS       "CAP"
@@ -328,7 +327,7 @@ BEGIN
     ID_INDICATOR_REC        "REC"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_FILE_NEW             "Create a new document\nNew"
     ID_FILE_OPEN            "Open an existing document\nOpen"
@@ -337,13 +336,13 @@ BEGIN
     ID_FILE_SAVE_AS         "Save the active document with a new name\nSave As"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_APP_ABOUT            "Display program information, version number and copyright\nAbout"
     ID_APP_EXIT             "Quit the application; prompts to save documents\nExit"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_FILE_MRU_FILE1       "Open this document"
     ID_FILE_MRU_FILE2       "Open this document"
@@ -363,18 +362,18 @@ BEGIN
     ID_FILE_MRU_FILE16      "Open this document"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_NEXT_PANE            "Switch to the next window pane\nNext Pane"
     ID_PREV_PANE            "Switch back to the previous window pane\nPrevious Pane"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_WINDOW_SPLIT         "Split the active window into panes\nSplit"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_EDIT_CLEAR           "Erase the selection\nErase"
     ID_EDIT_CLEAR_ALL       "Erase everything\nErase All"
@@ -389,13 +388,13 @@ BEGIN
     ID_EDIT_REDO            "Redo the previously undone action\nRedo"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_VIEW_TOOLBAR         "Show or hide the toolbar\nToggle ToolBar"
     ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle StatusBar"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ATL_IDS_SCSIZE          "Change the window size"
     ATL_IDS_SCMOVE          "Change the window position"
@@ -406,19 +405,19 @@ BEGIN
     ATL_IDS_SCCLOSE         "Close the active window and prompts to save the documents"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ATL_IDS_SCRESTORE       "Restore the window to normal size"
     ATL_IDS_SCTASKLIST      "Activate Task List"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_TOOLS_UNITTESTRUNNER "Bring up the CPPUnit test runner dialog box\nUnit Tests"
     ID_EDIT_DELETE          "Delete the selection\nDelete"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_VIEW_DOCKING_WINDOW1 "Show or hide this docking window"
     ID_VIEW_DOCKING_WINDOW2 "Show or hide this docking window"
@@ -436,6 +435,11 @@ BEGIN
     ID_VIEW_DOCKING_WINDOW14 "Show or hide this docking window"
     ID_VIEW_DOCKING_WINDOW15 "Show or hide this docking window"
     ID_VIEW_DOCKING_WINDOW16 "Show or hide this docking window"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_FILTER              "SGE Editor Files (*.sge)|*.sge|All Files (*.*)|*.*||"
 END
 
 #endif    // English (U.S.) resources

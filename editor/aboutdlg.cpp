@@ -101,7 +101,24 @@ static cThirdPartyCredit g_thirdPartyCredits[] =
 
 LRESULT cAboutDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/)
 {
-   CenterWindow(GetParent());
+   CEdit credits(GetDlgItem(IDC_CREDITS));
+   if (credits)
+   {
+      for (int i = 0; i < _countof(g_thirdPartyCredits); i++)
+      {
+         const cThirdPartyCredit & c = g_thirdPartyCredits[i];
+
+         CString s;
+         s += c.GetTitle();
+         s += ", ";
+         s += c.GetAuthor();
+         s += "\r\n";
+         s += c.GetUrl();
+         s += "\r\n\r\n";
+
+         credits.AppendText(s);
+      }
+   }
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE

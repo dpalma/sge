@@ -31,7 +31,7 @@ class cMapSettings
 public:
    cMapSettings();
    cMapSettings(uint xDimension, uint zDimension, const tChar * pszTileSet,
-      eHeightData heightData, const tChar * pszHeightMapFile);
+      eHeightData heightData = kHeightData_None, const tChar * pszHeightMapFile = NULL);
    cMapSettings(const cMapSettings & mapSettings);
    const cMapSettings & operator=(const cMapSettings & mapSettings);
 

@@ -22,19 +22,27 @@ F_DECLARE_INTERFACE(IEditorTileSet);
 F_DECLARE_INTERFACE(IEditorTile);
 F_DECLARE_INTERFACE(IEditorView);
 F_DECLARE_INTERFACE(IEditorModel);
+F_DECLARE_INTERFACE(IEditorModelListener);
 F_DECLARE_INTERFACE(IEditorCommand);
 F_DECLARE_INTERFACE(IEditorTerrainTileCommand);
 F_DECLARE_INTERFACE(IEditorTool);
 
+F_DECLARE_GUID(CLSID_EditorDoc);
+F_DECLARE_GUID(CLSID_EditorView);
+
 F_DECLARE_INTERFACE(ISceneCamera);
 F_DECLARE_INTERFACE(ITexture);
 F_DECLARE_INTERFACE(IMaterial);
+
+F_DECLARE_INTERFACE(IReader);
+F_DECLARE_INTERFACE(IWriter);
 
 class cMapSettings;
 class cEditorKeyEvent;
 class cEditorMouseEvent;
 class cEditorMouseWheelEvent;
 
+struct sTerrainVertex;
 class cTerrain;
 
 #define UUID(uuidstr) __declspec(uuid(uuidstr))
@@ -176,6 +184,10 @@ interface UUID("CDEB5694-56D2-4750-BEF8-85F286364C23") IEditorTile : IUnknown
 
 interface UUID("78C29790-865D-4f81-9AF1-26EC23BB5FAC") IEditorView : IUnknown
 {
+   virtual tResult Create(HWND hWndParent, HWND * phWnd) = 0;
+   virtual tResult Destroy() = 0;
+   virtual tResult Move(int x, int y, int width, int height) = 0;
+
    virtual tResult GetCamera(ISceneCamera * * ppCamera) = 0;
    virtual tVec3 GetCameraEyePosition() const = 0;
    virtual tResult GetCameraPlacement(float * px, float * pz) = 0;
@@ -184,6 +196,7 @@ interface UUID("78C29790-865D-4f81-9AF1-26EC23BB5FAC") IEditorView : IUnknown
    virtual tResult SetCameraElevation(float elevation) = 0;
 
    virtual tResult GetModel(IEditorModel * * ppModel) = 0;
+   virtual tResult SetModel(IEditorModel * pModel) = 0;
 
    virtual tResult HighlightTile(int iTileX, int iTileZ) = 0;
    virtual tResult ClearTileHighlight() = 0;
@@ -197,9 +210,30 @@ interface UUID("78C29790-865D-4f81-9AF1-26EC23BB5FAC") IEditorView : IUnknown
 
 interface UUID("F131D72E-30A7-4758-A094-830F00A50D91") IEditorModel : IUnknown
 {
+   virtual tResult New(const cMapSettings * pMapSettings) = 0;
+   virtual tResult Open(IReader * pReader) = 0;
+   virtual tResult Save(IWriter * pWriter) = 0;
+
    virtual cTerrain * AccessTerrain() = 0;
+   virtual IMaterial * AccessMaterial() = 0;
+
+   virtual const sTerrainVertex * GetVertexPointer() const = 0;
+   virtual size_t GetVertexCount() const = 0;
 
    virtual tResult AddCommand(IEditorCommand * pCommand) = 0;
+
+   virtual tResult AddEditorModelListener(IEditorModelListener * pListener) = 0;
+   virtual tResult RemoveEditorModelListener(IEditorModelListener * pListener) = 0;
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IEditorModelListener
+//
+
+interface UUID("A0F96E27-9D96-424b-96AB-139704087F13") IEditorModelListener : IUnknown
+{
 };
 
 

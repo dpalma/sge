@@ -35,7 +35,9 @@ public:
       {
          Assert(!bValidate || index >= minIndex && index <= maxIndex);
          int result = ::SendDlgItemMessage(pT->m_hWnd, id, CB_SETCURSEL, index, 0);
-         bSuccess = (result != CB_ERR);
+         // Return value of CB_ERR just means the selection was cleared which
+         // is not really an error, so bSuccess is TRUE always.
+         bSuccess = TRUE;
       }
 
       if (!bSuccess)

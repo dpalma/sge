@@ -57,23 +57,6 @@ cMapSettingsDlg::cMapSettingsDlg(const SIZE * pSizes, size_t nSizes, int sizeSel
 
 ////////////////////////////////////////
 
-#if 0
-BEGIN_MESSAGE_MAP(cMapSettingsDlg, CDialog)
-	//{{AFX_MSG_MAP(cMapSettingsDlg)
-	ON_BN_CLICKED(IDC_BROWSE_HEIGHT_MAP, OnBrowseHeightMap)
-	//}}AFX_MSG_MAP
-   ON_BN_CLICKED(IDC_HEIGHT_NONE, DoRadioButtonEnabling)
-   ON_BN_CLICKED(IDC_HEIGHT_NOISE, DoRadioButtonEnabling)
-   ON_BN_CLICKED(IDC_IMPORT_HEIGHT_MAP, DoRadioButtonEnabling)
-   ON_CBN_SELCHANGE(IDC_MAP_TILESET, OnSelectTileSet)
-END_MESSAGE_MAP()
-#endif
-
-/////////////////////////////////////////////////////////////////////////////
-// cMapSettingsDlg message handlers
-
-////////////////////////////////////////
-
 bool cMapSettingsDlg::GetSelectedSize(SIZE * pSize) const
 {
    Assert(pSize != NULL);
@@ -138,6 +121,8 @@ bool cMapSettingsDlg::GetHeightDataFile(cStr * pHeightData) const
 
 LRESULT cMapSettingsDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/)
 {
+   DlgResize_Init();
+
    // Don't sort the drop-lists because selection is defined and
    // returned as indices into the lists given in the constructor
    Assert(::IsWindow(GetDlgItem(IDC_MAP_WIDTH)));
@@ -169,11 +154,12 @@ LRESULT cMapSettingsDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
       }
    }
 
-   // Update the dialog controls from the member variables again
+   // Update the dialog controls from the member variables
    // after populating drop-lists, etc.
    DoDataExchange(FALSE);
 
-   DoRadioButtonEnabling();
+   BOOL unused;
+   DoRadioButtonEnabling(0,0,NULL,unused);
    PopulateInitialTileComboBox(true);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -182,24 +168,30 @@ LRESULT cMapSettingsDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 
 ////////////////////////////////////////
 
-LRESULT cMapSettingsDlg::OnOK(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL & /*bHandled*/)
+LRESULT cMapSettingsDlg::DoRadioButtonEnabling(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL & bHandled)
 {
-   EndDialog(IDOK);
+   Assert(::IsWindow(GetDlgItem(IDC_IMPORT_HEIGHT_MAP)));
+   Assert(::IsWindow(GetDlgItem(IDC_BROWSE_HEIGHT_MAP)));
+   Assert(::IsWindow(GetDlgItem(IDC_HEIGHT_MAP_FILE)));
+
+   BOOL bEnable = (IsDlgButtonChecked(IDC_IMPORT_HEIGHT_MAP) == BST_CHECKED);
+   ::EnableWindow(GetDlgItem(IDC_BROWSE_HEIGHT_MAP), bEnable);
+   ::EnableWindow(GetDlgItem(IDC_HEIGHT_MAP_FILE), bEnable);
+
    return 0;
 }
 
 ////////////////////////////////////////
 
-LRESULT cMapSettingsDlg::OnCancel(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL & /*bHandled*/)
+LRESULT cMapSettingsDlg::OnSelectTileSet(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL & bHandled)
 {
-   // Don't call the base class method so that the dialog
-   // can never be cancelled (no Cancel button, ESC key, etc.)
+   PopulateInitialTileComboBox(false);
    return 0;
 }
 
 ////////////////////////////////////////
 
-void cMapSettingsDlg::OnBrowseHeightMap() 
+LRESULT cMapSettingsDlg::OnBrowseHeightMap(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL & bHandled)
 {
    // Force the m_heightData member variable to match the state of the radio buttons
    DoDataExchange(TRUE);
@@ -212,26 +204,25 @@ void cMapSettingsDlg::OnBrowseHeightMap()
       m_heightMapFile = dlg.m_szFileName;
       DoDataExchange(FALSE);
    }
+
+   return 0;
 }
 
 ////////////////////////////////////////
 
-void cMapSettingsDlg::DoRadioButtonEnabling()
+LRESULT cMapSettingsDlg::OnOK(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL & /*bHandled*/)
 {
-   Assert(::IsWindow(GetDlgItem(IDC_IMPORT_HEIGHT_MAP)));
-   Assert(::IsWindow(GetDlgItem(IDC_BROWSE_HEIGHT_MAP)));
-   Assert(::IsWindow(GetDlgItem(IDC_HEIGHT_MAP_FILE)));
-
-   BOOL bEnable = (IsDlgButtonChecked(IDC_IMPORT_HEIGHT_MAP) == BST_CHECKED);
-   ::EnableWindow(GetDlgItem(IDC_BROWSE_HEIGHT_MAP), bEnable);
-   ::EnableWindow(GetDlgItem(IDC_HEIGHT_MAP_FILE), bEnable);
+   EndDialog(IDOK);
+   return 0;
 }
 
 ////////////////////////////////////////
 
-void cMapSettingsDlg::OnSelectTileSet()
+LRESULT cMapSettingsDlg::OnCancel(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL & bHandled)
 {
-   PopulateInitialTileComboBox(false);
+   // Don't allow the dialog to be cancelled (no Cancel button, ESC key, etc.)
+   bHandled = TRUE;
+   return 0;
 }
 
 ////////////////////////////////////////

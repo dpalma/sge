@@ -8,9 +8,17 @@
 #include "editorView.h"
 #include "editorCtrlBars.h"
 #include "aboutdlg.h"
+#include "MapSettingsDlg.h"
+#include "editorTypes.h"
+
+#include "globalobj.h"
 
 #include <DockMisc.h>
 #include <dwstate.h>
+
+#ifdef HAVE_CPPUNIT
+#include <cppunit/extensions/HelperMacros.h>
+#endif
 
 #include "dbgalloc.h" // must be last header
 
@@ -21,6 +29,87 @@ static UINT indicators[] =
 	ID_INDICATOR_NUM,
 	ID_INDICATOR_SCRL,
 };
+
+//////////////////////////////////////////////////////////////////////////////
+
+static const SIZE g_mapSizes[] =
+{
+   { 64, 64 },
+   { 128, 128 },
+   { 192, 192 },
+   { 256, 256 },
+};
+
+static const uint kDefaultMapSizeIndex = 0;
+
+//////////////////////////////////////////////////////////////////////////////
+
+template <typename CONTAINER>
+void ListTileSets(CONTAINER * pContainer)
+{
+   UseGlobal(EditorTileManager);
+
+   uint nTileSets = 0;
+   if (pEditorTileManager->GetTileSetCount(&nTileSets) == S_OK && nTileSets > 0)
+   {
+      for (uint i = 0; i < nTileSets; i++)
+      {
+         cAutoIPtr<IEditorTileSet> pTileSet;
+         if (pEditorTileManager->GetTileSet(i, &pTileSet) == S_OK)
+         {
+            Assert(!!pTileSet);
+            cStr name;
+            Verify(pTileSet->GetName(&name) == S_OK);
+            pContainer->push_back(name);
+         }
+         else
+         {
+            WarnMsg1("Error getting tile set %d\n", i);
+         }
+      }
+   }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// double up any '&' characters so they do not get underlined in menus
+
+static int FixAmpersands(const tChar * pszIn, CString * pOut)
+{
+   Assert(pszIn && pOut);
+
+   int nAmpersands = 0;
+
+   const tChar * p = pszIn;
+   while (*p++)
+   {
+      if (*p == '&')
+      {
+         nAmpersands++;
+      }
+   }
+
+   tChar * pszTemp = static_cast<tChar *>(alloca(strlen(pszIn) + nAmpersands + 1));
+   while (*pszIn)
+   {
+      if (*pszIn == '&')
+      {
+         // Add an extra ampersand for every one found
+         *pszTemp++ = '&';
+      }
+
+      if (_istlead(*pszIn))
+      {
+         *pszTemp++ = *pszIn++;
+      }
+
+      *pszTemp++ = *pszIn++;
+   }
+
+   *pszTemp = 0;
+   *pOut = pszTemp;
+
+   return nAmpersands;
+}
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -137,7 +226,7 @@ bool cDockingWindowMenu::UpdateMenu()
          CString title;
          (*iter)->GetWindowText(title.GetBuffer(len), len);
 
-         // TODO: double up all '&' characters so they don't appear underlined
+         FixAmpersands(title, &title);
 
          CMenuItemInfo mii;
          mii.fMask = MIIM_ID | MIIM_STRING;
@@ -160,82 +249,6 @@ bool cDockingWindowMenu::UpdateMenu()
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// CMainFrame message handlers
-
-#if 0
-void CMainFrame::OnUpdateViewControlBarMenu(CCmdUI* pCmdUI) 
-{
-   if (m_ctrlBarViewMenuText.IsEmpty() && pCmdUI->m_pMenu != NULL)
-   {
-      pCmdUI->m_pMenu->GetMenuString(pCmdUI->m_nID, m_ctrlBarViewMenuText, MF_BYCOMMAND);
-   }
-
-   if (m_ctrlBars.empty())
-   {
-      if (!m_ctrlBarViewMenuText.IsEmpty())
-      {
-         pCmdUI->SetText(m_ctrlBarViewMenuText);
-      }
-      pCmdUI->Enable(FALSE);
-      return;
-   }
-
-   if (pCmdUI->m_pMenu == NULL)
-   {
-      return;
-   }
-
-   for (uint i = 0; i < m_ctrlBars.size(); i++)
-   {
-      pCmdUI->m_pMenu->DeleteMenu(pCmdUI->m_nID + i, MF_BYCOMMAND);
-   }
-
-   CString strName;
-   CString strTemp;
-   for (i = 0; i < m_ctrlBars.size(); i++)
-   {
-      ASSERT_VALID(m_ctrlBars[i]);
-
-      CString title, temp;
-      m_ctrlBars[i]->GetWindowText(title);
-
-      // double up any '&' characters so they are not underlined
-      LPCTSTR lpszSrc = title;
-      LPTSTR lpszDest = temp.GetBuffer(title.GetLength()*2);
-      while (*lpszSrc != 0)
-      {
-         if (*lpszSrc == '&')
-         {
-            *lpszDest++ = '&';
-         }
-         if (_istlead(*lpszSrc))
-         {
-            *lpszDest++ = *lpszSrc++;
-         }
-         *lpszDest++ = *lpszSrc++;
-      }
-      *lpszDest = 0;
-      temp.ReleaseBuffer();
-
-      uint menuFlags = MF_STRING | MF_BYPOSITION;
-
-      if (m_ctrlBars[i]->IsWindowVisible())
-      {
-         menuFlags |= MF_CHECKED;
-      }
-
-      pCmdUI->m_pMenu->InsertMenu(pCmdUI->m_nIndex++, menuFlags, pCmdUI->m_nID++, temp);
-   }
-
-   // update end menu count
-   pCmdUI->m_nIndex--; // point to last menu added
-   pCmdUI->m_nIndexMax = pCmdUI->m_pMenu->GetMenuItemCount();
-
-   pCmdUI->m_bEnableChanged = TRUE; // all the added items are enabled
-}
-#endif
-
-/////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cMainFrame
 //
@@ -243,7 +256,8 @@ void CMainFrame::OnUpdateViewControlBarMenu(CCmdUI* pCmdUI)
 ////////////////////////////////////////
 
 cMainFrame::cMainFrame()
- : m_dockingWindowMenu(m_dockingWindows, ID_VIEW_DOCKING_WINDOW_FIRST, ID_VIEW_DOCKING_WINDOW_LAST)
+ : m_bPromptForMapSettings(false),
+   m_dockingWindowMenu(m_dockingWindows, ID_VIEW_DOCKING_WINDOW_FIRST, ID_VIEW_DOCKING_WINDOW_LAST)
 {
 }
 
@@ -355,10 +369,12 @@ LRESULT cMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
    UIAddToolBar(hWndToolBar);
 
-   m_hWndClient = m_clientWnd.Create(m_hWnd, rcDefault, NULL, 0, 0, ATL_IDW_CLIENT);
-   if (m_hWndClient == NULL)
+   Assert(!m_pMainView);
+   Assert(m_hWndClient == NULL);
+   if (CoCreateInstance(CLSID_EditorView, NULL, CLSCTX_ALL, IID_IEditorView, (void**)&m_pMainView) != S_OK
+      || m_pMainView->Create(m_hWnd, &m_hWndClient) != S_OK)
    {
-      ErrorMsg("Error creating view window\n");
+      ErrorMsg("Error creating main view\n");
       return -1;
    }
 
@@ -369,6 +385,12 @@ LRESULT cMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
    InitializeDockingFrame();
 
    CreateDockingWindows();
+
+   // App starts of with a File->New command
+   SendMessage(WM_COMMAND, ID_FILE_NEW);
+
+   // Once the app starts, every File->New should prompt for map settings
+   m_bPromptForMapSettings = true;
 
    PostMessage(WM_POST_CREATE);
 
@@ -402,6 +424,12 @@ LRESULT cMainFrame::OnPostCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 
 LRESULT cMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/)
 {
+   if (!!m_pMainView)
+   {
+      m_pMainView->Destroy();
+      SafeRelease(m_pMainView);
+   }
+
    tDockingWindows::iterator iter = m_dockingWindows.begin();
    tDockingWindows::iterator end = m_dockingWindows.end();
    for (; iter != end; iter++)
@@ -421,6 +449,46 @@ LRESULT cMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 LRESULT cMainFrame::OnFileNew(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled)
 {
+   CComPtr<IEditorModel> pModel;
+   if (CoCreateInstance(CLSID_EditorDoc, NULL, CLSCTX_ALL, IID_IEditorModel, (void**)&pModel) != S_OK)
+   {
+      ErrorMsg("Failed to create document object\n");
+      return -1;
+   }
+
+   std::vector<cStr> tileSets;
+   ListTileSets(&tileSets);
+
+   cMapSettings mapSettings(
+      g_mapSizes[kDefaultMapSizeIndex].cx,
+      g_mapSizes[kDefaultMapSizeIndex].cy,
+      tileSets.empty() ? "" : tileSets[0]);
+
+   if (m_bPromptForMapSettings)
+   {
+      cMapSettingsDlg dlg(g_mapSizes, _countof(g_mapSizes), kDefaultMapSizeIndex,
+         tileSets, 0, kHeightData_None);
+
+      // Shouldn't be allowed to cancel the dialog
+      Verify(dlg.DoModal(m_hWnd) == IDOK);
+
+      SIZE mapSize;
+      cStr tileSet, heightMap;
+
+      Verify(dlg.GetSelectedSize(&mapSize));
+      Verify(dlg.GetSelectedTileSet(&tileSet));
+      Verify(dlg.GetHeightDataFile(&heightMap));
+
+      mapSettings = cMapSettings(
+         mapSize.cx,
+         mapSize.cy,
+         tileSet,
+         dlg.GetHeightData(),
+         heightMap.empty() ? NULL : heightMap.c_str());
+   }
+
+   Verify(SetModel(pModel) == S_OK);
+
    // TODO
    return 0;
 }
@@ -537,5 +605,47 @@ BOOL cMainFrame::OnIdle()
    m_dockingWindowMenu.UpdateMenu();
    return FALSE;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_CPPUNIT
+
+class cMainFrameTests : public CppUnit::TestCase
+{
+   CPPUNIT_TEST_SUITE(cMainFrameTests);
+      CPPUNIT_TEST(TestFixAmpersands);
+   CPPUNIT_TEST_SUITE_END();
+
+   void TestFixAmpersands();
+};
+
+////////////////////////////////////////
+
+CPPUNIT_TEST_SUITE_REGISTRATION(cMainFrameTests);
+
+////////////////////////////////////////
+
+void cMainFrameTests::TestFixAmpersands()
+{
+   static const struct
+   {
+      const tChar * pszTest;
+      const tChar * pszExpected;
+   }
+   tests[] =
+   {
+      { "", "" },
+      { "test", "test" },
+      { "te&st", "te&&st" },
+   };
+   for (int i = 0; i < _countof(tests); i++)
+   {
+      CString out;
+      FixAmpersands(tests[i].pszTest, &out);
+      CPPUNIT_ASSERT(out.Compare(tests[i].pszExpected) == 0);
+   }
+}
+
+#endif // HAVE_CPPUNIT
 
 /////////////////////////////////////////////////////////////////////////////

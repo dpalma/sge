@@ -4,8 +4,8 @@
 #if !defined(INCLUDED_EDITORDOC_H)
 #define INCLUDED_EDITORDOC_H
 
-#include "comtools.h"
 #include "editorapi.h"
+#include "connptimpl.h"
 
 #include <stack>
 
@@ -26,16 +26,26 @@ typedef std::stack<IEditorCommand *> tCommandStack;
 // CLASS: cEditorDoc
 //
 
-class cEditorDoc : public cComObject<IMPLEMENTS(IEditorModel)>,
-                   public CUpdateUI<cEditorDoc>,
-                   public CIdleHandler
+class cEditorDoc : public CComObjectRoot,
+                   public CComCoClass<cEditorDoc, &CLSID_EditorDoc>,
+                   public cConnectionPoint<IEditorModel, IEditorModelListener>,
+                   public CUpdateUI<cEditorDoc>
 {
-protected: // create from serialization only
-
-// Attributes
 public:
 	cEditorDoc();
 	virtual ~cEditorDoc();
+
+   DECLARE_NO_REGISTRY()
+   DECLARE_NOT_AGGREGATABLE(cEditorDoc)
+
+   BEGIN_COM_MAP(cEditorDoc)
+      COM_INTERFACE_ENTRY(IEditorModel)
+   END_COM_MAP()
+
+   // IEditorModel methods
+   virtual tResult New(const cMapSettings * pMapSettings);
+   virtual tResult Open(IReader * pReader);
+   virtual tResult Save(IWriter * pWriter);
 
    const sTerrainVertex * GetVertexPointer() const;
    size_t GetVertexCount() const;
@@ -46,8 +56,8 @@ public:
 
    virtual tResult AddCommand(IEditorCommand * pCommand);
 
-// Operations
-public:
+   virtual tResult AddEditorModelListener(IEditorModelListener * pListener);
+   virtual tResult RemoveEditorModelListener(IEditorModelListener * pListener);
 
 // Overrides
 	// ClassWizard generated virtual function overrides

@@ -5,6 +5,8 @@
 
 #include "LogWnd.h"
 
+#include <algorithm>
+
 #include "dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -101,7 +103,7 @@ const tChar * cLogWndItem::GetString() const
 
 ////////////////////////////////////////
 
-cLogWndItemRender::cLogWndItemRender(WTL::CDCHandle dc, const CRect & startRect,
+cLogWndItemRender::cLogWndItemRender(CDCHandle dc, const CRect & startRect,
                                      HFONT hFont, bool bCalcOnly)
  : m_dc(dc),
    m_rect(startRect),
@@ -272,19 +274,12 @@ tResult cLogWnd::Clear()
 
 ////////////////////////////////////////
 
-BOOL cLogWnd::PreTranslateMessage(MSG * pMsg)
-{
-   return FALSE;
-}
-
-////////////////////////////////////////
-
-void cLogWnd::DoPaint(WTL::CDCHandle dc)
+void cLogWnd::DoPaint(CDCHandle dc)
 {
    CRect rect;
    Verify(GetClientRect(&rect));
 
-   cLogWndItemRender renderer(dc, rect, WTL::AtlGetDefaultGuiFont());
+   cLogWndItemRender renderer(dc, rect, AtlGetDefaultGuiFont());
 
    cLogWndItemRender result = std::for_each(m_items.begin(), m_items.end(), renderer);
 
@@ -305,9 +300,9 @@ void cLogWnd::UpdateScrollInfo()
    CRect rect;
    Verify(GetClientRect(&rect));
 
-   WTL::CDC dc(GetDC());
+   CDC dc(GetDC());
 
-   cLogWndItemRender renderer(WTL::CDCHandle(dc), rect, WTL::AtlGetDefaultGuiFont(), true);
+   cLogWndItemRender renderer(CDCHandle(dc), rect, AtlGetDefaultGuiFont(), true);
 
    cLogWndItemRender result = std::for_each(m_items.begin(), m_items.end(), renderer);
 

@@ -5,13 +5,11 @@
 
 #include "editorDoc.h"
 #include "heightmap.h"
-#include "editorapi.h"
 #include "terrain.h"
 #include "editorTypes.h"
 
 #include "resource.h"
 
-#include "renderapi.h"
 #include "materialapi.h"
 
 #include "readwriteapi.h"
@@ -20,7 +18,6 @@
 #include "globalobj.h"
 
 #include "dbgalloc.h" // must be last header
-
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -43,6 +40,10 @@ void FlushCommandStack(std::stack<IEditorCommand *> * pCommandStack)
 
 ////////////////////////////////////////
 
+OBJECT_ENTRY_AUTO(CLSID_EditorDoc, cEditorDoc)
+
+////////////////////////////////////////
+
 cEditorDoc::cEditorDoc()
  : m_pHeightMap(NULL),
    m_pTerrain(NULL)
@@ -54,6 +55,27 @@ cEditorDoc::cEditorDoc()
 cEditorDoc::~cEditorDoc()
 {
    Assert(m_pHeightMap == NULL);
+}
+
+////////////////////////////////////////
+
+tResult cEditorDoc::New(const cMapSettings * pMapSettings)
+{
+   return E_NOTIMPL; // TODO
+}
+
+////////////////////////////////////////
+
+tResult cEditorDoc::Open(IReader * pReader)
+{
+   return E_NOTIMPL; // TODO
+}
+
+////////////////////////////////////////
+
+tResult cEditorDoc::Save(IWriter * pWriter)
+{
+   return E_NOTIMPL; // TODO
 }
 
 ////////////////////////////////////////
@@ -164,6 +186,22 @@ tResult cEditorDoc::AddCommand(IEditorCommand * pCommand)
 
    return E_FAIL;
 }
+
+////////////////////////////////////////
+
+tResult cEditorDoc::AddEditorModelListener(IEditorModelListener * pListener)
+{
+   return Connect(pListener);
+}
+
+////////////////////////////////////////
+
+tResult cEditorDoc::RemoveEditorModelListener(IEditorModelListener * pListener)
+{
+   return Disconnect(pListener);
+}
+
+////////////////////////////////////////
 
 BOOL cEditorDoc::OnOpenDocument(LPCTSTR lpszPathName) 
 {

@@ -4,12 +4,10 @@
 #ifndef INCLUDED_LOGWND_H
 #define INCLUDED_LOGWND_H
 
-#include <atlgdi.h>
 #include <atlscrl.h>
 
 #include <vector>
 #include <string>
-#include <algorithm>
 
 #if _MSC_VER > 1000
 #pragma once
@@ -54,7 +52,7 @@ public:
       kLeftColumnWidth = 18,
    };
 
-   cLogWndItemRender(WTL::CDCHandle dc, const CRect & startRect, HFONT hFont = NULL, bool bCalcOnly = false);
+   cLogWndItemRender(CDCHandle dc, const CRect & startRect, HFONT hFont = NULL, bool bCalcOnly = false);
    cLogWndItemRender(const cLogWndItemRender & other);
    ~cLogWndItemRender();
 
@@ -69,7 +67,7 @@ public:
    int GetTotalHeight() const;
 
 private:
-   WTL::CDCHandle m_dc;
+   CDCHandle m_dc;
    HFONT m_hOldFont;
    CRect m_rect;
    bool m_bCalcOnly;
@@ -84,14 +82,16 @@ private:
 // CLASS: cLogWnd
 //
 
-class cLogWnd : public WTL::CScrollWindowImpl<cLogWnd>
+typedef CWinTraitsOR<0, WS_EX_CLIENTEDGE> tLogWndTraits;
+
+class cLogWnd : public CScrollWindowImpl<cLogWnd, CWindow, tLogWndTraits>
 {
-   typedef WTL::CScrollWindowImpl<cLogWnd> tBase;
+   typedef CScrollWindowImpl<cLogWnd, CWindow, tLogWndTraits> tBase;
 
    enum { kMaxItems = 1000 };
 
 public:
-   DECLARE_WND_CLASS(NULL)
+   DECLARE_WND_CLASS("LogWnd")
 
    cLogWnd();
 
@@ -99,13 +99,11 @@ public:
    tResult AddString(eLogSeverity severity, const tChar * pszString, size_t length = -1);
    tResult Clear();
 
-   BOOL PreTranslateMessage(MSG * pMsg);
-
    BEGIN_MSG_MAP_EX(cLogWnd)
       CHAIN_MSG_MAP(tBase)
    END_MSG_MAP()
 
-   void DoPaint(WTL::CDCHandle dc);
+   void DoPaint(CDCHandle dc);
 
 protected:
    void UpdateScrollInfo();

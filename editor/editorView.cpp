@@ -48,9 +48,12 @@ static tVec3 CalcEyePoint(const tVec3 & center,
 
 ////////////////////////////////////////
 
+OBJECT_ENTRY_AUTO(CLSID_EditorView, cEditorView)
+
+////////////////////////////////////////
+
 cEditorView::cEditorView()
- : m_pDocument(NULL),
-   m_cameraElevation(kDefaultCameraElevation),
+ : m_cameraElevation(kDefaultCameraElevation),
    m_center(0,0,0),
    m_eye(0,0,0),
    m_bRecalcEye(true),
@@ -80,6 +83,38 @@ tResult cEditorView::Create(const sWindowCreateParams * /*pParams*/)
 tResult cEditorView::SwapBuffers()
 {
    return ::SwapBuffers(GetSafeHdc()) ? S_OK : E_FAIL;
+}
+
+////////////////////////////////////////
+
+tResult cEditorView::Create(HWND hWndParent, HWND * phWnd)
+{
+   if (phWnd == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (tWindowImplBase::Create(hWndParent))
+   {
+      *phWnd = m_hWnd;
+      return S_OK;
+   }
+
+   return E_FAIL;
+}
+
+////////////////////////////////////////
+
+tResult cEditorView::Destroy()
+{
+   return DestroyWindow() ? S_OK : S_FALSE;
+}
+
+////////////////////////////////////////
+
+tResult cEditorView::Move(int x, int y, int width, int height)
+{
+   return MoveWindow(x, y, width, height) ? S_OK : E_FAIL;
 }
 
 ////////////////////////////////////////
@@ -150,20 +185,16 @@ tResult cEditorView::SetCameraElevation(float elevation)
 
 tResult cEditorView::GetModel(IEditorModel * * ppModel)
 {
-   if (ppModel == NULL)
-   {
-      return E_POINTER;
-   }
+   return m_pModel.GetPointer(ppModel);
+}
 
-   cEditorDoc * pDoc = GetDocument();
+////////////////////////////////////////
 
-   if (pDoc == NULL)
-   {
-      *ppModel = NULL;
-      return S_FALSE;
-   }
-
-   *ppModel = CTAddRef(static_cast<IEditorModel *>(pDoc));
+tResult cEditorView::SetModel(IEditorModel * pModel)
+{
+   SafeRelease(m_pModel);
+   m_pModel = CTAddRef(pModel);
+   InitialUpdate();
    return S_OK;
 }
 
@@ -316,24 +347,24 @@ void cEditorView::cSceneEntity::Render(IRenderDevice * pRenderDevice)
 {
    Assert(m_pOuter != NULL);
 
-	cEditorDoc * pDoc = m_pOuter->GetDocument();
-	if (pDoc == NULL)
+   cAutoIPtr<IEditorModel> pModel;
+   if (m_pOuter->GetModel(&pModel) != S_OK)
    {
       return;
    }
 
    tResult renderResult = S_FALSE;
 
-   if (pDoc->AccessTerrain() != NULL)
+   if (pModel->AccessTerrain() != NULL)
    {
-      renderResult = pDoc->AccessTerrain()->Render(pRenderDevice);
+      renderResult = pModel->AccessTerrain()->Render(pRenderDevice);
    }
 
    if (renderResult != S_OK)
    {
       pRenderDevice->Render(
          kRP_Triangles, 
-         pDoc->AccessMaterial(), 
+         pModel->AccessMaterial(), 
          m_pOuter->m_nIndices, 
          m_pOuter->m_pIndexBuffer,
          0, 
@@ -342,7 +373,7 @@ void cEditorView::cSceneEntity::Render(IRenderDevice * pRenderDevice)
 
    if ((m_pOuter->m_highlitTileX != -1) && (m_pOuter->m_highlitTileZ != -1))
    {
-      cTerrainTile * pTile = pDoc->AccessTerrain()->GetTile(m_pOuter->m_highlitTileX, m_pOuter->m_highlitTileZ);
+      cTerrainTile * pTile = pModel->AccessTerrain()->GetTile(m_pOuter->m_highlitTileX, m_pOuter->m_highlitTileZ);
       if (pTile != NULL)
       {
          sTerrainVertex verts[4];
@@ -378,11 +409,8 @@ void cEditorView::InitialUpdate()
    SafeRelease(m_pVertexBuffer);
    SafeRelease(m_pIndexBuffer);
 
-   CRect rect;
-   GetClientRect(rect);
-
-	cEditorDoc * pDoc = GetDocument();
-   if (pDoc == NULL || pDoc->AccessTerrain() == NULL)
+   cAutoIPtr<IEditorModel> pModel;
+   if (GetModel(&pModel) != S_OK || pModel->AccessTerrain() == NULL)
    {
       return;
    }
@@ -390,20 +418,20 @@ void cEditorView::InitialUpdate()
    cAutoIPtr<IVertexDeclaration> pVertexDecl;
    if (TerrainVertexDeclarationCreate(AccessRenderDevice(), &pVertexDecl) == S_OK)
    {
-      if (AccessRenderDevice()->CreateVertexBuffer(pDoc->GetVertexCount(),
+      if (AccessRenderDevice()->CreateVertexBuffer(pModel->GetVertexCount(),
          kBU_Default, pVertexDecl, kBP_Auto, &m_pVertexBuffer) == S_OK)
       {
          void * pVertexData = NULL;
          if (m_pVertexBuffer->Lock(kBL_Discard, (void * *)&pVertexData) == S_OK)
          {
-            memset(pVertexData, 0, pDoc->GetVertexCount() * sizeof(sTerrainVertex));
+            memset(pVertexData, 0, pModel->GetVertexCount() * sizeof(sTerrainVertex));
             m_pVertexBuffer->Unlock();
          }
       }
    }
 
    uint xDim, zDim;
-   pDoc->AccessTerrain()->GetDimensions(&xDim, &zDim);
+   pModel->AccessTerrain()->GetDimensions(&xDim, &zDim);
 
    m_nIndices = xDim * zDim * 6;
 
@@ -419,7 +447,7 @@ void cEditorView::InitialUpdate()
    }
 
    uint xExt, zExt;
-   pDoc->AccessTerrain()->GetExtents(&xExt, &zExt);
+   pModel->AccessTerrain()->GetExtents(&xExt, &zExt);
 
    PlaceCamera((float)xExt / 2, (float)zExt / 2);
 }
@@ -428,16 +456,19 @@ void cEditorView::InitialUpdate()
 
 void cEditorView::Update() 
 {
-	cEditorDoc * pDoc = GetDocument();
-	Assert(pDoc != NULL);
+   cAutoIPtr<IEditorModel> pModel;
+   if (GetModel(&pModel) != S_OK)
+   {
+      return;
+   }
 
    if (!!m_pVertexBuffer)
    {
       void * pVertexData = NULL;
       if (m_pVertexBuffer->Lock(kBL_Discard, (void * *)&pVertexData) == S_OK)
       {
-         memcpy(pVertexData, pDoc->GetVertexPointer(),
-            pDoc->GetVertexCount() * sizeof(sTerrainVertex));
+         memcpy(pVertexData, pModel->GetVertexPointer(),
+            pModel->GetVertexCount() * sizeof(sTerrainVertex));
          m_pVertexBuffer->Unlock();
       }
    }
@@ -450,7 +481,7 @@ void cEditorView::Update()
          int iQuad = 0;
 
          uint xDim, zDim;
-         pDoc->AccessTerrain()->GetDimensions(&xDim, &zDim);
+         pModel->AccessTerrain()->GetDimensions(&xDim, &zDim);
 
          for (uint iz = 0; iz < zDim; iz++)
          {
