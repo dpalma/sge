@@ -4,7 +4,7 @@
 #ifndef INCLUDED_MS3DMESH_H
 #define INCLUDED_MS3DMESH_H
 
-#include "mesh.h"
+#include "meshapi.h"
 
 #include "readwriteapi.h"
 #include "matrix4.h"

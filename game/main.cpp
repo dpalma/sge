@@ -11,7 +11,7 @@
 #include "guiapi.h"
 
 #include "sceneapi.h"
-#include "mesh.h"
+#include "meshapi.h"
 #include "sim.h"
 #include "inputapi.h"
 

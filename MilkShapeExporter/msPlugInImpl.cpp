@@ -8,7 +8,7 @@
 #include "msPlugInExportDlg.h"
 #include "ModelTreeInfo.h"
 
-#include "mesh.h"
+#include "meshapi.h"
 #include "material.h"
 #include "render.h"
 #include "color.h"

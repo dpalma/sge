@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "mesh.h"
+#include "meshapi.h"
 #include "render.h"
 #include "material.h"
 #include "comtools.h"

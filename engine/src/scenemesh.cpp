@@ -5,7 +5,7 @@
 
 #include "scenemesh.h"
 
-#include "mesh.h"
+#include "meshapi.h"
 #include "skeleton.h"
 #include "animation.h"
 

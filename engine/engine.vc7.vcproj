@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.00"
 	Name="engine"
+	ProjectGUID="{6809D886-C80B-4B36-BD07-F4BCEF03F8DF}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -592,7 +593,7 @@
 				RelativePath=".\include\inputapi.h">
 			</File>
 			<File
-				RelativePath=".\include\mesh.h">
+				RelativePath="include\meshapi.h">
 			</File>
 			<File
 				RelativePath=".\include\ray.h">

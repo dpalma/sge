@@ -524,7 +524,7 @@ SOURCE=.\include\inputapi.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\include\mesh.h
+SOURCE=.\include\meshapi.h
 # End Source File
 # Begin Source File
 

@@ -3,7 +3,7 @@
 
 #include "stdafx.h"
 
-#include "mesh.h"
+#include "meshapi.h"
 
 #include "render.h"
 

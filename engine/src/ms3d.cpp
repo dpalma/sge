@@ -5,7 +5,7 @@
 
 #include "ms3dread.h"
 #include "ms3d.h"
-#include "mesh.h"
+#include "meshapi.h"
 #include "material.h"
 #include "textureapi.h"
 #include "readwriteapi.h"
