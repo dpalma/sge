@@ -299,9 +299,6 @@
 				Name="Source Files"
 				Filter="">
 				<File
-					RelativePath=".\src\animation.cpp">
-				</File>
-				<File
 					RelativePath=".\src\comtools.cpp">
 				</File>
 				<File

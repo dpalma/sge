@@ -302,6 +302,9 @@
 					RelativePath=".\src\3ds.cpp">
 				</File>
 				<File
+					RelativePath="src\animation.cpp">
+				</File>
+				<File
 					RelativePath=".\src\mesh.cpp">
 				</File>
 				<File
@@ -309,6 +312,12 @@
 				</File>
 				<File
 					RelativePath="src\ms3dread.cpp">
+				</File>
+				<File
+					RelativePath="src\sim.cpp">
+				</File>
+				<File
+					RelativePath="src\skeleton.cpp">
 				</File>
 				<File
 					RelativePath=".\src\stdhdr.cpp">
@@ -371,6 +380,9 @@
 			Name=".\include"
 			Filter="h;hpp;hxx;hm;inl">
 			<File
+				RelativePath="include\animation.h">
+			</File>
+			<File
 				RelativePath=".\include\enginedll.h">
 			</File>
 			<File
@@ -378,6 +390,12 @@
 			</File>
 			<File
 				RelativePath=".\include\mesh.h">
+			</File>
+			<File
+				RelativePath="include\sim.h">
+			</File>
+			<File
+				RelativePath="include\skeleton.h">
 			</File>
 		</Filter>
 	</Files>
