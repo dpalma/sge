@@ -7,8 +7,6 @@
 #include "enginedll.h"
 #include "comtools.h"
 
-#include <list>
-
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -25,14 +23,13 @@ F_DECLARE_INTERFACE(IMesh);
 
 F_DECLARE_INTERFACE(IScene);
 F_DECLARE_INTERFACE(ISceneEntity);
+F_DECLARE_INTERFACE(ISceneEntityEnum);
 F_DECLARE_INTERFACE(ISceneCamera);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
 // INTERFACE: IScene
 //
-
-typedef std::list<ISceneEntity *> tSceneEntityList;
 
 enum eSceneLayer
 {
@@ -54,7 +51,7 @@ interface IScene : IUnknown
    virtual void Clear(eSceneLayer layer) = 0;
    virtual void Clear() = 0;
 
-   virtual tResult Query(const cRay & ray, tSceneEntityList * pEntities) = 0;
+   virtual tResult Query(const cRay & ray, ISceneEntityEnum * * ppEnum) = 0;
 
    virtual tResult Render(IRenderDevice * pRenderDevice) = 0;
 };
@@ -96,6 +93,20 @@ interface ISceneEntity : IUnknown
 
 ENGINE_API ISceneEntity * SceneEntityCreate();
 ENGINE_API ISceneEntity * SceneEntityCreate(IMesh * pMesh);
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: ISceneEntityEnum
+//
+
+interface ISceneEntityEnum : IUnknown
+{
+   virtual tResult Next(ulong count, ISceneEntity * * ppEntities, ulong * pnEntities) = 0;
+   virtual tResult Skip(ulong count) = 0;
+   virtual tResult Reset() = 0;
+   virtual tResult Clone(ISceneEntityEnum * * ppEnum) = 0;
+};
 
 
 ///////////////////////////////////////////////////////////////////////////////

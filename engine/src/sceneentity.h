@@ -10,6 +10,8 @@
 #include "quat.h"
 #include "matrix4.h"
 
+#include <list>
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -18,6 +20,8 @@
 //
 // CLASS: cSceneEntity
 //
+
+typedef std::list<ISceneEntity *> tSceneEntityList;
 
 class cSceneEntity : public cComObject<IMPLEMENTS(ISceneEntity)>
 {

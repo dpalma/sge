@@ -254,6 +254,10 @@ SOURCE=.\src\sceneentity.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\sceneentityenum.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\scenelayer.cpp
 # End Source File
 # Begin Source File
@@ -316,6 +320,10 @@ SOURCE=.\src\scenecamera.h
 # Begin Source File
 
 SOURCE=.\src\sceneentity.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sceneentityenum.h
 # End Source File
 # Begin Source File
 

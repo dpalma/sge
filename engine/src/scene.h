@@ -35,6 +35,7 @@ public:
    virtual tResult Render(IRenderDevice * pRenderDevice);
 
    virtual tResult Query(const cRay & ray, tSceneEntityList * pEntities);
+   virtual tResult Query(const cRay & ray, ISceneEntityEnum * * ppEnum);
 
 private:
    tSceneEntityList m_entities;

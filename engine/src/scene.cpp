@@ -7,7 +7,11 @@
 
 #include "render.h"
 
+#include <algorithm>
+
 #include "dbgalloc.h" // must be last header
+
+extern ISceneEntityEnum * SceneEntityEnumCreate(const tSceneEntityList & entities);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -101,6 +105,29 @@ tResult cScene::Query(const cRay & ray, tSceneEntityList * pEntities)
       m_layers[i].Query(ray, pEntities);
    }
    return pEntities->empty() ? S_FALSE : S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cScene::Query(const cRay & ray, ISceneEntityEnum * * ppEnum)
+{
+   tSceneEntityList entities;
+   for (int i = 0; i < _countof(m_layers); i++)
+   {
+      m_layers[i].Query(ray, &entities);
+   }
+
+   tResult result = S_FALSE;
+
+   if (!entities.empty())
+   {
+      *ppEnum = SceneEntityEnumCreate(entities);
+      result = S_OK;
+   }
+
+   std::for_each(entities.begin(), entities.end(), CTInterfaceMethodRef(&::IUnknown::Release));
+
+   return result;
 }
 
 ///////////////////////////////////////

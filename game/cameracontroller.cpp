@@ -105,10 +105,10 @@ bool cGameCameraController::OnMouseEvent(int x, int y, uint mouseState, double t
       {
          cRay ray(GetEyePosition(), dir);
 
-         tSceneEntityList hits;
+         cAutoIPtr<ISceneEntityEnum> pHits;
 
          UseGlobal(Scene);
-         if (pScene->Query(ray, &hits) == S_FALSE)
+         if (pScene->Query(ray, &pHits) == S_FALSE)
          {
             tVec3 intersect;
             if (ray.IntersectsPlane(tVec3(0,1,0), 0, &intersect))
@@ -117,8 +117,6 @@ bool cGameCameraController::OnMouseEvent(int x, int y, uint mouseState, double t
                   intersect.x, intersect.y, intersect.z);
             }
          }
-
-         std::for_each(hits.begin(), hits.end(), CTInterfaceMethodRef(&::IUnknown::Release));
       }
 
       return true;
