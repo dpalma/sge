@@ -29,6 +29,7 @@ public:
 	//{{AFX_VIRTUAL(CMs3dviewApp)
 	public:
 	virtual BOOL InitInstance();
+	virtual int ExitInstance();
 	//}}AFX_VIRTUAL
 
 // Implementation

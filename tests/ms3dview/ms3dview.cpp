@@ -4,6 +4,9 @@
 #include "stdafx.h"
 #include "ms3dview.h"
 
+#include "resmgr.h"
+#include "globalobj.h"
+
 #include "MainFrm.h"
 #include "ms3dviewDoc.h"
 #include "ms3dviewView.h"
@@ -65,6 +68,9 @@ BOOL CMs3dviewApp::InitInstance()
 
 	LoadStdProfileSettings();  // Load standard INI file options (including MRU)
 
+   ResourceManagerCreate();
+   StartGlobalObjects();
+
 	// Register the application's document templates.  Document templates
 	//  serve as the connection between documents, frame windows and views.
 
@@ -89,6 +95,13 @@ BOOL CMs3dviewApp::InitInstance()
 	m_pMainWnd->UpdateWindow();
 
 	return TRUE;
+}
+
+int CMs3dviewApp::ExitInstance() 
+{
+	StopGlobalObjects();
+	
+	return CWinApp::ExitInstance();
 }
 
 

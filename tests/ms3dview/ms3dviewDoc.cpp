@@ -9,8 +9,9 @@
 #include "ms3dviewView.h" // @HACK: really need to access the view?
 
 #include "resmgr.h"
-#include "ReadWriteAPI.h"
-#include "FileSpec.h"
+#include "readwriteapi.h"
+#include "filespec.h"
+#include "globalobj.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -34,7 +35,7 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CMs3dviewDoc construction/destruction
 
-CMs3dviewDoc::CMs3dviewDoc() : m_pResourceManager(ResourceManagerCreate())
+CMs3dviewDoc::CMs3dviewDoc()
 {
 	// TODO: add one-time construction code here
 
@@ -115,8 +116,10 @@ BOOL CMs3dviewDoc::OnOpenDocument(LPCTSTR lpszPathName)
 
    cAutoIPtr<IReader> pReader = FileCreateReader(cFileSpec(lpszPathName));
 
+   UseGlobal(ResourceManager);
+
    if (!pReader
-      || m_mesh.Read(pReader, pMs3dView->AccessRenderDevice(), m_pResourceManager) != S_OK)
+      || m_mesh.Read(pReader, pMs3dView->AccessRenderDevice(), pResourceManager) != S_OK)
    {
       m_mesh.Reset();
       return FALSE;

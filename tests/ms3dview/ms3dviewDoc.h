@@ -5,14 +5,11 @@
 #if !defined(AFX_MS3DVIEWDOC_H__FA1FD203_9798_4816_B288_5BDCA368C118__INCLUDED_)
 #define AFX_MS3DVIEWDOC_H__FA1FD203_9798_4816_B288_5BDCA368C118__INCLUDED_
 
-#include "ComTools.h"
 #include "ms3dmesh.h"
 
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
-
-F_DECLARE_INTERFACE(IResourceManager);
 
 class CMs3dviewDoc : public CDocument
 {
@@ -58,8 +55,6 @@ protected:
    afx_msg void OnUpdateRendering(CCmdUI * pCmdUI);
 
 private:
-   cAutoIPtr<IResourceManager> m_pResourceManager;
-
    cMs3dMesh m_mesh;
 };
 
