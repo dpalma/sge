@@ -14,7 +14,7 @@
 #pragma once
 #endif
 
-F_DECLARE_INTERFACE(IKeyFrameInterpolator);
+F_DECLARE_INTERFACE(IKeyFrameAnimation);
 
 F_DECLARE_INTERFACE(ISkeleton);
 
@@ -33,9 +33,11 @@ interface ISkeleton : IUnknown
    virtual const char * GetBoneName(int index) const = 0;
    virtual const tMatrix4 & GetBoneWorldTransform(int index) const = 0;
 
+   virtual tResult SetAnimation(IKeyFrameAnimation * pAnimation) = 0;
+   virtual tResult GetAnimation(IKeyFrameAnimation * * ppAnimation) = 0;
+
    // TODO: Pull out animation-related methods into separate interfaces
    virtual void GetBoneMatrices(float percent, tMatrices * pBoneMatrices) const = 0;
-   virtual tResult GetInterpolator(int index, IKeyFrameInterpolator * * ppInterpolator) const = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -50,7 +52,6 @@ struct sBoneInfo
 ///////////////////////////////////////
 
 ENGINE_API tResult SkeletonCreate(const sBoneInfo * pBones, uint nBones, 
-   IKeyFrameInterpolator * * pInterpolators, uint nInterpolators,
    ISkeleton * * ppSkeleton);
 
 ///////////////////////////////////////////////////////////////////////////////

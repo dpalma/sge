@@ -234,28 +234,27 @@ public:
    cSkeleton();
    ~cSkeleton();
 
-   bool Create(const sBoneInfo * pBones, uint nBones, 
-      IKeyFrameInterpolator * * pInterpolators, uint nInterpolators);
+   bool Create(const sBoneInfo * pBones, uint nBones);
 
    int GetBoneCount() const;
 
    const char * GetBoneName(int index) const;
    const tMatrix4 & GetBoneWorldTransform(int index) const;
 
-   void GetBoneMatrices(float percent, tMatrices * pBoneMatrices) const;
+   virtual tResult SetAnimation(IKeyFrameAnimation * pAnimation);
+   virtual tResult GetAnimation(IKeyFrameAnimation * * ppAnimation);
 
-   tResult GetInterpolator(int index, IKeyFrameInterpolator * * ppInterpolator) const;
+   void GetBoneMatrices(float percent, tMatrices * pBoneMatrices) const;
 
 private:
    const cBone & GetBone(int index) const;
 
-   void SetupJoints();
+   void SetBoneParentChildRelationships();
 
    typedef std::vector<cBone> tBones;
    tBones m_bones;
 
-   typedef std::vector<IKeyFrameInterpolator *> tInterpolators;
-   tInterpolators m_interpolators;
+   cAutoIPtr<IKeyFrameAnimation> m_pAnimation;
 };
 
 ///////////////////////////////////////
@@ -269,27 +268,13 @@ cSkeleton::cSkeleton()
 cSkeleton::~cSkeleton()
 {
    m_bones.clear();
-   std::for_each(m_interpolators.begin(), m_interpolators.end(), CTInterfaceMethodRef(&IUnknown::Release));
-   m_interpolators.clear();
 }
 
 ///////////////////////////////////////
 
-bool cSkeleton::Create(const sBoneInfo * pBones, uint nBones, 
-                       IKeyFrameInterpolator * * pInterpolators, uint nInterpolators)
+bool cSkeleton::Create(const sBoneInfo * pBones, uint nBones)
 {
    Assert(m_bones.empty());
-   Assert(m_interpolators.empty());
-
-   if ((pInterpolators != NULL) && (nInterpolators > 0))
-   {
-      m_interpolators.resize(nInterpolators);
-      for (uint i = 0; i < nBones; i++)
-      {
-         m_interpolators[i] = pInterpolators[i];
-         m_interpolators[i]->AddRef();
-      }
-   }
 
    if ((pBones != NULL) && (nBones > 0))
    {
@@ -300,7 +285,7 @@ bool cSkeleton::Create(const sBoneInfo * pBones, uint nBones,
          m_bones[i].SetIndex(i);
       }
 
-      SetupJoints();
+      SetBoneParentChildRelationships();
 
       return true;
    }
@@ -338,65 +323,87 @@ inline const cBone & cSkeleton::GetBone(int index) const
 
 ///////////////////////////////////////
 
-void cSkeleton::GetBoneMatrices(float percent, tMatrices * pBoneMatrices) const
+tResult cSkeleton::SetAnimation(IKeyFrameAnimation * pAnimation)
 {
-   Assert(percent >= 0 && percent <= 1);
-   Assert(pBoneMatrices != NULL);
-   Assert(pBoneMatrices->size() == GetBoneCount());
-
-   for (int i = 0; i < GetBoneCount(); i++)
+   SafeRelease(m_pAnimation);
+   m_pAnimation = pAnimation;
+   if (pAnimation != NULL)
    {
-      tQuat rotation;
-      tVec3 translation;
-
-      IKeyFrameInterpolator * pInterpolator = m_interpolators[i];
-
-      if (pInterpolator->Interpolate(
-         percent * pInterpolator->GetPeriod(),
-         NULL, &rotation, &translation) == S_OK)
-      {
-         tMatrix4 mt;
-         MatrixTranslate(translation.x, translation.y, translation.z, &mt);
-
-         tMatrix4 mr;
-         rotation.ToMatrix(&mr);
-
-         tMatrix4 temp = mt * mr;
-
-         const cBone & bone = GetBone(i);
-
-         tMatrix4 mf = bone.GetLocalTransform() * temp;
-
-         if (bone.GetParentIndex() < 0)
-         {
-            temp = mf;
-         }
-         else
-         {
-            temp = (*pBoneMatrices)[bone.GetParentIndex()] * mf;
-         }
-
-         (*pBoneMatrices)[i] = temp;
-      }
+      pAnimation->AddRef();
    }
+   return S_OK;
 }
 
 ///////////////////////////////////////
 
-tResult cSkeleton::GetInterpolator(int index, IKeyFrameInterpolator * * ppInterpolator) const
+tResult cSkeleton::GetAnimation(IKeyFrameAnimation * * ppAnimation)
 {
-   if (index >= 0 && index < m_interpolators.size() && ppInterpolator != NULL)
+   if (ppAnimation != NULL)
    {
-      *ppInterpolator = m_interpolators[index];
-      (*ppInterpolator)->AddRef();
-      return S_OK;
+      if (!m_pAnimation)
+      {
+         return S_FALSE;
+      }
+      else
+      {
+         *ppAnimation = m_pAnimation;
+         (*ppAnimation)->AddRef();
+         return S_OK;
+      }
    }
    return E_FAIL;
 }
 
 ///////////////////////////////////////
 
-void cSkeleton::SetupJoints()
+void cSkeleton::GetBoneMatrices(float percent, tMatrices * pBoneMatrices) const
+{
+   Assert(percent >= 0 && percent <= 1);
+   Assert(pBoneMatrices != NULL);
+   Assert(pBoneMatrices->size() == GetBoneCount());
+
+   if (!m_pAnimation)
+   {
+      return;
+   }
+
+   for (int i = 0; i < GetBoneCount(); i++)
+   {
+      cAutoIPtr<IKeyFrameInterpolator> pInterp;
+      if (m_pAnimation->GetInterpolator(i, &pInterp) == S_OK)
+      {
+         sKeyFrame frame;
+         if (pInterp->Interpolate(percent * pInterp->GetPeriod(), &frame) == S_OK)
+         {
+            tMatrix4 mt, mr;
+
+            frame.rotation.ToMatrix(&mr);
+            MatrixTranslate(frame.translation.x, frame.translation.y, frame.translation.z, &mt);
+
+            tMatrix4 temp = mt * mr;
+
+            const cBone & bone = GetBone(i);
+
+            tMatrix4 mf = bone.GetLocalTransform() * temp;
+
+            if (bone.GetParentIndex() < 0)
+            {
+               temp = mf;
+            }
+            else
+            {
+               temp = (*pBoneMatrices)[bone.GetParentIndex()] * mf;
+            }
+
+            (*pBoneMatrices)[i] = temp;
+         }
+      }
+   }
+}
+
+///////////////////////////////////////
+
+void cSkeleton::SetBoneParentChildRelationships()
 {
    tBones::iterator iter;
    for (iter = m_bones.begin(); iter != m_bones.end(); iter++)
@@ -417,13 +424,12 @@ void cSkeleton::SetupJoints()
 ///////////////////////////////////////
 
 tResult SkeletonCreate(const sBoneInfo * pBones, uint nBones, 
-   IKeyFrameInterpolator * * pInterpolators, uint nInterpolators,
    ISkeleton * * ppSkeleton)
 {
    if (ppSkeleton != NULL && pBones != NULL && nBones > 0)
    {
       cSkeleton * pSkeleton = new cSkeleton;
-      if (!pSkeleton->Create(pBones, nBones, pInterpolators, nInterpolators))
+      if (!pSkeleton->Create(pBones, nBones))
       {
          delete pSkeleton;
          pSkeleton = NULL;

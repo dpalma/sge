@@ -14,8 +14,21 @@
 #pragma once
 #endif
 
+F_DECLARE_INTERFACE(IKeyFrameAnimation);
 F_DECLARE_INTERFACE(IKeyFrameInterpolator);
-F_DECLARE_INTERFACE(IKeyFrameInterpolator2);
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IKeyFrameAnimation
+//
+
+interface IKeyFrameAnimation : IUnknown
+{
+   virtual tResult GetInterpolator(int index, IKeyFrameInterpolator * * ppInterpolator) const = 0;
+};
+
+ENGINE_API tResult KeyFrameAnimationCreate(IKeyFrameInterpolator * * ppInterpolators, uint nInterpolators,
+                                           IKeyFrameAnimation * * ppAnimation);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -24,42 +37,6 @@ F_DECLARE_INTERFACE(IKeyFrameInterpolator2);
 
 typedef double tTime;
 
-struct sKeyFrameVec3
-{
-   tTime time;
-   tVec3 value;
-};
-
-struct sKeyFrameQuat
-{
-   tTime time;
-   tQuat value;
-};
-
-interface IKeyFrameInterpolator : IUnknown
-{
-   virtual tTime GetPeriod() const = 0;
-
-   virtual tResult GetScaleKeys(sKeyFrameVec3 * pScaleKeys, uint * pnScaleKeys) const = 0;
-   virtual tResult GetRotationKeys(sKeyFrameQuat * pRotationKeys, uint * pnRotationKeys) const = 0;
-   virtual tResult GetTranslationKeys(sKeyFrameVec3 * pTranslationKeys, uint * pnTranslationKeys) const = 0;
-
-   virtual tResult Interpolate(tTime time, tVec3 * pScale, tQuat * pRotation, tVec3 * pTranslation) = 0;
-};
-
-///////////////////////////////////////
-
-ENGINE_API tResult KeyFrameInterpolatorCreate(const char * pszName,
-                                              const sKeyFrameVec3 * pScaleKeys, uint nScaleKeys,
-                                              const sKeyFrameQuat * pRotationKeys, uint nRotationKeys,
-                                              const sKeyFrameVec3 * pTranslationKeys, uint nTranslationKeys,
-                                              IKeyFrameInterpolator * * ppInterpolator);
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// INTERFACE: IKeyFrameInterpolator2
-//
-
 struct sKeyFrame
 {
    tTime time;
@@ -67,7 +44,7 @@ struct sKeyFrame
    tQuat rotation;
 };
 
-interface IKeyFrameInterpolator2 : IUnknown
+interface IKeyFrameInterpolator : IUnknown
 {
    virtual tTime GetPeriod() const = 0;
 
@@ -80,7 +57,7 @@ interface IKeyFrameInterpolator2 : IUnknown
 
 ENGINE_API tResult KeyFrameInterpolatorCreate(const char * pszName,
                                               const sKeyFrame * pKeys, uint nKeys,
-                                              IKeyFrameInterpolator2 * * ppInterpolator);
+                                              IKeyFrameInterpolator * * ppInterpolator);
 
 ///////////////////////////////////////////////////////////////////////////////
 

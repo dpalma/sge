@@ -87,13 +87,11 @@ tResult cReadWriteOps<sMs3dBoneInfo>::Read(IReader * pReader, sMs3dBoneInfo * pB
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static tResult ReadKeyFrames(IReader * pReader, 
-                             std::vector<sKeyFrameVec3> * pTranslationFrames,
-                             std::vector<sKeyFrameQuat> * pRotationFrames)
+static tResult ReadKeyFrames(IReader * pReader, uint * pnKeyFrames, sKeyFrame * pKeyFrames)
 {
    Assert(pReader != NULL);
-   Assert(pTranslationFrames != NULL);
-   Assert(pRotationFrames != NULL);
+   Assert(pnKeyFrames != NULL);
+   Assert(pKeyFrames != NULL);
 
    tResult result = E_FAIL;
 
@@ -113,6 +111,8 @@ static tResult ReadKeyFrames(IReader * pReader,
          break;
       }
 
+      uint nKeyFrames = Min(*pnKeyFrames, nKeyFramesRot);
+
       ms3d_keyframe_rot_t rotationKeys[MAX_KEYFRAMES];
       if (pReader->Read(rotationKeys, nKeyFramesRot * sizeof(ms3d_keyframe_rot_t)) != S_OK)
          break;
@@ -121,19 +121,14 @@ static tResult ReadKeyFrames(IReader * pReader,
       if (pReader->Read(translationKeys, nKeyFramesTrans * sizeof(ms3d_keyframe_pos_t)) != S_OK)
          break;
 
-      pTranslationFrames->resize(nKeyFramesTrans);
-      for (i = 0; i < nKeyFramesTrans; i++)
+      for (i = 0; i < nKeyFrames; i++)
       {
-         (*pTranslationFrames)[i].time = translationKeys[i].time;
-         (*pTranslationFrames)[i].value = tVec3(translationKeys[i].position);
+         pKeyFrames[i].time = translationKeys[i].time;
+         pKeyFrames[i].translation = tVec3(translationKeys[i].position);
+         pKeyFrames[i].rotation = QuatFromEulerAngles(tVec3(rotationKeys[i].rotation));
       }
 
-      pRotationFrames->resize(nKeyFramesRot);
-      for (i = 0; i < nKeyFramesRot; i++)
-      {
-         (*pRotationFrames)[i].time = rotationKeys[i].time;
-         (*pRotationFrames)[i].value = QuatFromEulerAngles(tVec3(rotationKeys[i].rotation));
-      }
+      *pnKeyFrames = nKeyFrames;
 
       result = S_OK;
    }
@@ -195,18 +190,15 @@ tResult ReadSkeleton(IReader * pReader,
 
          boneNames.insert(std::make_pair(cStr(boneInfo[i].name), i));
 
-         std::vector<sKeyFrameVec3> translationFrames;
-         std::vector<sKeyFrameQuat> rotationFrames;
-         if (ReadKeyFrames(pReader, &translationFrames, &rotationFrames) != S_OK)
+         sKeyFrame keyFrames[MAX_KEYFRAMES];
+         uint nKeyFrames = _countof(keyFrames);
+         if (ReadKeyFrames(pReader, &nKeyFrames, keyFrames) != S_OK)
          {
             break;
          }
 
          IKeyFrameInterpolator * pInterpolator = NULL;
-         if (KeyFrameInterpolatorCreate(boneInfo[i].name, NULL, 0,
-            &rotationFrames[0], rotationFrames.size(),
-            &translationFrames[0], rotationFrames.size(),
-            &pInterpolator) != S_OK)
+         if (KeyFrameInterpolatorCreate(boneInfo[i].name, keyFrames, nKeyFrames, &pInterpolator) != S_OK)
          {
             SafeRelease(pInterpolator);
             break;
