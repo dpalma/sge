@@ -5,31 +5,9 @@
 
 #include "scenecamera.h"
 
-#include "render.h"
 #include "ggl.h"
 
 #include "dbgalloc.h" // must be last header
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cSceneCameraGroupRenderVisitor
-//
-
-class cSceneCameraGroupRenderVisitor : public cSceneNodeVisitor
-{
-public:
-   virtual void VisitSceneNode(cSceneNode * pNode);
-};
-
-///////////////////////////////////////
-
-void cSceneCameraGroupRenderVisitor::VisitSceneNode(cSceneNode * pNode)
-{
-   Assert(pNode != NULL);
-   pNode->Render();
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -48,23 +26,6 @@ cSceneCameraGroup::cSceneCameraGroup()
 
 cSceneCameraGroup::~cSceneCameraGroup()
 {
-}
-
-///////////////////////////////////////
-
-void cSceneCameraGroup::Render(IRenderDevice * pDevice, cSceneNode * pScene)
-{
-   Assert(pDevice != NULL);
-   Assert(pScene != NULL);
-
-   glMatrixMode(GL_PROJECTION);
-   glLoadMatrixf(GetProjectionMatrix().m);
-
-   glMatrixMode(GL_MODELVIEW);
-   glLoadMatrixf(GetModelViewMatrix().m);
-
-   cSceneCameraGroupRenderVisitor renderVisitor;
-   pScene->Traverse(&renderVisitor);
 }
 
 ///////////////////////////////////////

@@ -4,18 +4,15 @@
 #ifndef INCLUDED_SCENECAMERA_H
 #define INCLUDED_SCENECAMERA_H
 
-#include "frustum.h"
 #include "scenegroup.h"
-
+#include "frustum.h"
 #include "matrix4.h"
-#include "comtools.h"
 
 #ifdef _MSC_VER
 #pragma once
 #endif
 
 class cSceneNode;
-F_DECLARE_INTERFACE(IRenderDevice);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -30,8 +27,6 @@ class cSceneCameraGroup : public cSceneGroup
 public:
    cSceneCameraGroup();
    virtual ~cSceneCameraGroup();
-
-   void Render(IRenderDevice * pDevice, cSceneNode * pScene);
 
    void SetPerspective(float fov, float aspect, float znear, float zfar);
    void SetOrtho(float left, float right, float bottom, float top, float znear, float zfar);

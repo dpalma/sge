@@ -36,7 +36,6 @@ class cSceneNode
    cSceneNode(const cSceneNode &);
    const cSceneNode & operator =(const cSceneNode &);
 
-   const tVec3 & GetTranslation() const;
 public:
    cSceneNode();
    virtual ~cSceneNode() = 0;
@@ -51,8 +50,6 @@ public:
    void SetSelected(bool selected);
 
    virtual void Traverse(cSceneNodeVisitor * pVisitor);
-
-   void SetTranslation(const tVec3 & translation);
 
    // TODO: refactor this out of the scene graph class hierarchy
    virtual void Update(float timeDelta);

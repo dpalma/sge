@@ -4,44 +4,47 @@
 #ifndef INCLUDED_GROUNDTILED_H
 #define INCLUDED_GROUNDTILED_H
 
+#include "scenenode.h"
+
 #ifdef _MSC_VER
 #pragma once
 #endif
 
 class cHeightMap;
-class cSceneNode;
 
 template <typename T> class cVec2;
 typedef class cVec2<float> tVec2;
 
+class cTiledGround;
+
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cTerrainData
+// CLASS: cTerrainNode
 //
 
-class cTerrainData
+class cTerrainNode : public cSceneNode
 {
-public:
-   cTerrainData(ulong sizeX, ulong sizeZ, float heightScale);
-   ~cTerrainData();
+   cTerrainNode(const cTerrainNode &);
+   const cTerrainNode & operator =(const cTerrainNode &);
 
-   bool LoadHeightMap(const tChar * pszHeightMapFile);
+public:
+   cTerrainNode(cHeightMap * pHeightMap);
+   virtual ~cTerrainNode();
 
    float GetElevation(float nx, float nz) const;
 
-   cVec2<float> GetDimensions() const;
+   tVec2 GetDimensions() const;
+
+   virtual void Render();
 
 private:
-   ulong m_sizeX, m_sizeZ;
-   float m_heightScale;
    cHeightMap * m_pHeightMap;
+   cTiledGround * m_pGround;
 };
 
-extern cTerrainData g_terrainData;
+///////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////////
-
-cSceneNode * TerrainRootNodeCreate();
+cTerrainNode * TerrainNodeCreate(const char * pszHeightData, float heightScale);
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -63,10 +63,6 @@ public:
 
    const sMatrix4 & GetTransform() const;
 
-//   void CalcWorldRT(tQuat * pR, tVec3 * pT) const;
-//
-//   const sMatrix4 & GetWorldTransform() const;
-
    virtual void Render();
 
 private:
@@ -75,9 +71,6 @@ private:
 
    mutable bool m_bUpdateLocalTransform;
    mutable sMatrix4 m_localTransform;
-
-//   mutable bool m_bUpdateWorldTransform;
-//   mutable sMatrix4 m_worldTransform;
 };
 
 ///////////////////////////////////////
@@ -93,7 +86,6 @@ inline void cSceneTransformGroup::SetTranslation(const tVec3 & translation)
 {
    m_translation = translation;
    m_bUpdateLocalTransform = true;
-//   m_bUpdateWorldTransform = true;
 }
 
 ///////////////////////////////////////
@@ -109,7 +101,6 @@ inline void cSceneTransformGroup::SetRotation(const tQuat & rotation)
 {
    m_rotation = rotation;
    m_bUpdateLocalTransform = true;
-//   m_bUpdateWorldTransform = true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -60,6 +60,8 @@
 const float kZNear = 1;
 const float kZFar = 2000;
 
+static const float kGroundScaleY = 0.25f;
+
 static const float kRotateDegreesPerSec = 20;
 
 static const char kszSelIndicatorMesh[] = "arrow.ms3d";
@@ -68,6 +70,8 @@ static const char kszSelIndicatorMesh[] = "arrow.ms3d";
 
 cSceneCameraGroup * g_pGameCamera = NULL;
 cSceneCameraGroup * g_pUICamera = NULL;
+
+cTerrainNode * g_pTerrainRoot = NULL;
 
 double g_fov;
 
@@ -385,12 +389,15 @@ SCRIPT_DEFINE_FUNCTION(ViewSetPos)
 
       if (x >= 0 && x <= 1 && z >= 0 && z <= 1)
       {
-         tVec2 groundDims = g_terrainData.GetDimensions();
+         if (g_pTerrainRoot != NULL)
+         {
+            tVec2 groundDims = g_pTerrainRoot->GetDimensions();
 
-         x *= groundDims.x;
-         z *= groundDims.y;
+            x *= groundDims.x;
+            z *= groundDims.y;
 
-         g_pGameCameraController->LookAtPoint(x, z);
+            g_pGameCameraController->LookAtPoint(x, z);
+         }
       }
       else
       {
@@ -569,20 +576,23 @@ SCRIPT_DEFINE_FUNCTION(EntitySpawnTest)
 
       if (x >= 0 && x <= 1 && z >= 0 && z <= 1)
       {
-         float y = g_terrainData.GetElevation(Round(x), Round(z));
+         if (g_pTerrainRoot != NULL)
+         {
+            float y = g_pTerrainRoot->GetElevation(Round(x), Round(z));
 
-         tVec2 groundDims = g_terrainData.GetDimensions();
+            tVec2 groundDims = g_pTerrainRoot->GetDimensions();
 
-         x *= groundDims.x;
-         z *= groundDims.y;
+            x *= groundDims.x;
+            z *= groundDims.y;
 
-         cSimpleSceneNode * pNode = new cSimpleSceneNode;
+            cSimpleSceneNode * pNode = new cSimpleSceneNode;
 
-         pNode->SetMesh(ScriptArgAsString(0));
-         pNode->SetTranslation(tVec3(x,y,z));
+            pNode->SetMesh(ScriptArgAsString(0));
+            pNode->SetTranslation(tVec3(x,y,z));
 
-         Assert(g_pGameCamera != NULL);
-         g_pGameCamera->AddChild(pNode);
+            Assert(g_pGameCamera != NULL);
+            g_pGameCamera->AddChild(pNode);
+         }
       }
       else
       {
@@ -609,12 +619,19 @@ class cUIManagerSceneNode : public cSceneNode
 {
 public:
    cUIManagerSceneNode();
+   virtual ~cUIManagerSceneNode();
 
    virtual void Render();
 };
 
 cUIManagerSceneNode::cUIManagerSceneNode()
 {
+   g_pUIManager = UIManagerCreate();
+}
+
+cUIManagerSceneNode::~cUIManagerSceneNode()
+{
+   SafeRelease(g_pUIManager);
 }
 
 void cUIManagerSceneNode::Render()
@@ -757,7 +774,16 @@ bool MainInit(int argc, char * argv[])
    g_pGameCamera = new cSceneCameraGroup;
    g_pGameCamera->SetPerspective(g_fov, (float)width / height, kZNear, kZFar);
 
-   g_pGameCamera->AddChild(TerrainRootNodeCreate());
+   if (ConfigGet("terrain", &temp) == S_OK)
+   {
+      g_pTerrainRoot = TerrainNodeCreate(temp, kGroundScaleY);
+      g_pGameCamera->AddChild(g_pTerrainRoot);
+   }
+   else
+   {
+      DebugMsg("No terrain data\n");
+      return false;
+   }
 
    g_pGameCameraController = new cGameCameraController(g_pGameCamera);
    g_pGameCameraController->Connect();
@@ -765,18 +791,7 @@ bool MainInit(int argc, char * argv[])
    g_pUICamera = new cSceneCameraGroup;
    g_pUICamera->SetOrtho(0, width, height, 0, -99999, 99999);
 
-   g_pUIManager = UIManagerCreate();
    g_pUICamera->AddChild(new cUIManagerSceneNode);
-
-   if (ConfigGet("terrain", &temp) == S_OK)
-   {
-      g_terrainData.LoadHeightMap(temp);
-   }
-   else
-   {
-      DebugMsg("No terrain data\n");
-      return false;
-   }
 
    ScriptCallFunction("GameInit");
 
@@ -797,7 +812,6 @@ bool MainInit(int argc, char * argv[])
 void MainTerm()
 {
    g_sim.Stop();
-   SafeRelease(g_pUIManager);
    InputTerm();
    ScriptTerm();
    SafeRelease(g_pRenderDevice);

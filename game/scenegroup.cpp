@@ -6,7 +6,6 @@
 #include "scenegroup.h"
 
 #include "ggl.h"
-#include "render.h"
 
 #include "dbgalloc.h" // must be last header
 
@@ -103,7 +102,6 @@ cSceneTransformGroup::cSceneTransformGroup()
    m_translation(0,0,0),
    m_rotation(0,0,0,1),
    m_bUpdateLocalTransform(false)
-//   m_bUpdateWorldTransform(false)
 {
 }
 
@@ -132,46 +130,6 @@ const sMatrix4 & cSceneTransformGroup::GetTransform() const
 
    return m_localTransform;
 }
-
-/////////////////////////////////////////
-//
-//void cSceneTransformGroup::CalcWorldRT(tQuat * pR, tVec3 * pT) const
-//{
-//   tVec3 t = GetTranslation();
-//   tQuat r = GetRotation();
-//   const cSceneNode * pParent = GetParent();
-//   while (pParent != NULL)
-//   {
-//      r = r * pParent->GetRotation();
-//      t += pParent->GetTranslation();
-//      pParent = pParent->GetParent();
-//   }
-//   if (pR != NULL)
-//      *pR = r;
-//   if (pT != NULL)
-//      *pT = t;
-//}
-//
-/////////////////////////////////////////
-//
-//const sMatrix4 & cSceneTransformGroup::GetWorldTransform() const
-//{
-//   if (m_bUpdateWorldTransform)
-//   {
-//      tVec3 worldT;
-//      tQuat worldR;
-//      CalcWorldRT(&worldR, &worldT);
-//
-//      sMatrix4 mt, mr;
-//      MatrixTranslate(worldT.x, worldT.y, worldT.z, &mt);
-//      worldR.ToMatrix(&mr);
-//
-//      m_worldTransform = mt * mr;
-//      m_bUpdateWorldTransform = false;
-//   }
-//
-//   return m_worldTransform;
-//}
 
 ///////////////////////////////////////
 
