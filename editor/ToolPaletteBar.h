@@ -39,6 +39,23 @@ private:
    tButtons m_buttons;
 
    CRect m_margins;
+
+   cAutoIPtr<IEditorTool> m_pTool;
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cTerrainTileTool
+//
+
+class cTerrainTileTool : public cComObject<cDefaultEditorTool, &IID_IEditorTool>
+{
+public:
+   cTerrainTileTool();
+   ~cTerrainTileTool();
+
+   virtual tResult OnLButtonDown(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
 };
 
 /////////////////////////////////////////////////////////////////////////////

@@ -14,15 +14,24 @@
 
 F_DECLARE_INTERFACE(IEditorApp);
 F_DECLARE_INTERFACE(IEditorLoopClient);
+F_DECLARE_INTERFACE(IEditorAppListener);
 F_DECLARE_INTERFACE(IEditorTileManager);
 F_DECLARE_INTERFACE(IEditorTileManagerListener);
 F_DECLARE_INTERFACE(IEditorTileSet);
 F_DECLARE_INTERFACE(IEditorTile);
+F_DECLARE_INTERFACE(IEditorView);
+F_DECLARE_INTERFACE(IEditorModel);
+F_DECLARE_INTERFACE(IEditorCommand);
+F_DECLARE_INTERFACE(IEditorTool);
 
 F_DECLARE_INTERFACE(ITexture);
 F_DECLARE_INTERFACE(IMaterial);
 
+class cTerrain;
+
 #define UUID(uuidstr) __declspec(uuid(uuidstr))
+
+typedef CPoint tPoint;
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -60,6 +69,7 @@ private:
    cStr m_heightMapFile;
 };
 
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // INTERFACE: IEditorApp
@@ -70,10 +80,22 @@ interface UUID("2A04E541-6BA1-41e9-92FA-E7B3D493F1A2") IEditorApp : IUnknown
    virtual tResult AddLoopClient(IEditorLoopClient * pLoopClient) = 0;
    virtual tResult RemoveLoopClient(IEditorLoopClient * pLoopClient) = 0;
 
+   virtual tResult AddEditorAppListener(IEditorAppListener * pListener) = 0;
+   virtual tResult RemoveEditorAppListener(IEditorAppListener * pListener) = 0;
+
    virtual tResult GetMapSettings(cMapSettings * pMapSettings) = 0;
+
+   virtual tResult GetActiveView(IEditorView * * ppView) = 0;
+   virtual tResult GetActiveModel(IEditorModel * * ppModel) = 0;
+
+   virtual tResult GetActiveTool(IEditorTool * * ppTool) = 0;
+   virtual tResult SetActiveTool(IEditorTool * pTool) = 0;
 };
 
+////////////////////////////////////////
+
 IEditorApp * AccessEditorApp();
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -84,6 +106,18 @@ interface UUID("ED1B3A1A-E2D8-4eec-AABD-648A548729E8") IEditorLoopClient : IUnkn
 {
    virtual void OnFrame(double time, double elapsed) = 0;
 };
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IEditorAppListener
+//
+
+interface UUID("14E9EE21-4E6F-4b04-8F5C-742DFFA955BE") IEditorAppListener : IUnknown
+{
+   virtual tResult OnActiveToolChange(IEditorTool * pNewTool, IEditorTool * pFormerTool) = 0;
+};
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -101,7 +135,10 @@ interface UUID("CA3DFC7D-CF34-43cd-AE46-FA1AF6A34F27") IEditorTileManager : IUnk
    virtual tResult GetTileSet(uint index, IEditorTileSet * * ppTileSet) = 0;
 };
 
+////////////////////////////////////////
+
 void EditorTileManagerCreate();
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -112,6 +149,7 @@ interface UUID("8EA33056-3151-4090-8F38-BA8B9CB08F77") IEditorTileManagerListene
 {
    virtual void OnDefaultTileSetChange(IEditorTileSet * pTileSet) = 0;
 };
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -135,6 +173,7 @@ interface UUID("61B488AA-AB50-41c5-AA42-45F07C982F6A") IEditorTileSet : IUnknown
    virtual tResult GetImageList(uint dimension, HIMAGELIST * phImageList) = 0;
 };
 
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // INTERFACE: IEditorTile
@@ -151,6 +190,148 @@ interface UUID("CDEB5694-56D2-4750-BEF8-85F286364C23") IEditorTile : IUnknown
    virtual tResult GetTexture(ITexture * * ppTexture) = 0;
 
    virtual tResult GetBitmap(uint dimension, bool bEntire, HBITMAP * phBitmap) = 0;
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IEditorView
+//
+
+interface UUID("78C29790-865D-4f81-9AF1-26EC23BB5FAC") IEditorView : IUnknown
+{
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IEditorModel
+//
+
+interface UUID("F131D72E-30A7-4758-A094-830F00A50D91") IEditorModel : IUnknown
+{
+   virtual cTerrain * AccessTerrain() = 0;
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IEditorCommand
+//
+
+interface UUID("936BD53E-35B5-4f72-AFA4-AE304122E7D4") IEditorCommand : IUnknown
+{
+   virtual tResult Execute() = 0;
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cEditorKeyEvent
+//
+
+class cEditorKeyEvent
+{
+public:
+   cEditorKeyEvent(WPARAM wParam, LPARAM lParam)
+    : m_char(wParam), m_repeats(LOWORD(lParam)), m_flags(HIWORD(lParam))
+   {
+   }
+
+   uint GetChar() const { return m_char; }
+   uint GetRepeatCount() const { return m_repeats; }
+   uint GetFlags() const { return m_flags; }
+
+private:
+   uint m_char, m_repeats, m_flags;
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cEditorMouseEvent
+//
+
+class cEditorMouseEvent
+{
+public:
+   cEditorMouseEvent(WPARAM wParam, LPARAM lParam)
+    : m_flags(wParam), m_point(lParam)
+   {
+   }
+
+   uint GetFlags() const { return m_flags; }
+   CPoint GetPoint() const { return m_point; }
+
+private:
+   uint m_flags;
+   CPoint m_point;
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cEditorMouseWheelEvent
+//
+
+class cEditorMouseWheelEvent : public cEditorMouseEvent
+{
+public:
+   cEditorMouseWheelEvent(WPARAM wParam, LPARAM lParam)
+    : cEditorMouseEvent(LOWORD(wParam), lParam), m_zDelta(HIWORD(wParam))
+   {
+   }
+
+   short GetZDelta() const { return m_zDelta; }
+
+private:
+   short m_zDelta;
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IEditorTool
+//
+
+////////////////////////////////////////
+
+enum eEditorToolResult
+{
+   S_EDITOR_TOOL_HANDLED   = S_OK,
+   S_EDITOR_TOOL_CONTINUE  = S_FALSE,
+};
+
+////////////////////////////////////////
+
+interface UUID("AFAD398E-14D6-4eed-B503-AFE44C6989C0") IEditorTool : IUnknown
+{
+   virtual tResult OnKeyDown(const cEditorKeyEvent & keyEvent, IEditorView * pView) = 0;
+   virtual tResult OnKeyUp(const cEditorKeyEvent & keyEvent, IEditorView * pView) = 0;
+   virtual tResult OnLButtonDblClk(const cEditorMouseEvent & mouseEvent, IEditorView * pView) = 0;
+   virtual tResult OnLButtonDown(const cEditorMouseEvent & mouseEvent, IEditorView * pView) = 0;
+	virtual tResult OnLButtonUp(const cEditorMouseEvent & mouseEvent, IEditorView * pView) = 0;
+   virtual tResult OnRButtonDblClk(const cEditorMouseEvent & mouseEvent, IEditorView * pView) = 0;
+	virtual tResult OnRButtonDown(const cEditorMouseEvent & mouseEvent, IEditorView * pView) = 0;
+	virtual tResult OnRButtonUp(const cEditorMouseEvent & mouseEvent, IEditorView * pView) = 0;
+	virtual tResult OnMouseMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView) = 0;
+   virtual tResult OnMouseWheel(const cEditorMouseWheelEvent & mouseWheelEvent, IEditorView * pView) = 0;
+};
+
+////////////////////////////////////////
+
+class cDefaultEditorTool : public IEditorTool
+{
+   virtual tResult OnKeyDown(const cEditorKeyEvent & keyEvent, IEditorView * pView) { return S_EDITOR_TOOL_CONTINUE; }
+   virtual tResult OnKeyUp(const cEditorKeyEvent & keyEvent, IEditorView * pView) { return S_EDITOR_TOOL_CONTINUE; }
+   virtual tResult OnLButtonDblClk(const cEditorMouseEvent & mouseEvent, IEditorView * pView) { return S_EDITOR_TOOL_CONTINUE; }
+   virtual tResult OnLButtonDown(const cEditorMouseEvent & mouseEvent, IEditorView * pView) { return S_EDITOR_TOOL_CONTINUE; }
+	virtual tResult OnLButtonUp(const cEditorMouseEvent & mouseEvent, IEditorView * pView) { return S_EDITOR_TOOL_CONTINUE; }
+   virtual tResult OnRButtonDblClk(const cEditorMouseEvent & mouseEvent, IEditorView * pView) { return S_EDITOR_TOOL_CONTINUE; }
+	virtual tResult OnRButtonDown(const cEditorMouseEvent & mouseEvent, IEditorView * pView) { return S_EDITOR_TOOL_CONTINUE; }
+	virtual tResult OnRButtonUp(const cEditorMouseEvent & mouseEvent, IEditorView * pView) { return S_EDITOR_TOOL_CONTINUE; }
+	virtual tResult OnMouseMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView) { return S_EDITOR_TOOL_CONTINUE; }
+   virtual tResult OnMouseWheel(const cEditorMouseWheelEvent & mouseWheelEvent, IEditorView * pView) { return S_EDITOR_TOOL_CONTINUE; }
 };
 
 /////////////////////////////////////////////////////////////////////////////

@@ -5,6 +5,8 @@
 #define INCLUDED_EDITORDOC_H
 
 #include "comtools.h"
+#include "afxcomtools.h"
+#include "editorapi.h"
 
 #if _MSC_VER > 1000
 #pragma once
@@ -21,7 +23,8 @@ F_DECLARE_INTERFACE(IMaterial);
 // CLASS: cEditorDoc
 //
 
-class cEditorDoc : public CDocument
+class cEditorDoc : public CDocument,
+                   public cComObject<IMPLEMENTS(IEditorModel), cAfxComServices<cEditorDoc> >
 {
 protected: // create from serialization only
 	cEditorDoc();

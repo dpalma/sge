@@ -37,6 +37,7 @@ public:
 	virtual BOOL InitInstance();
 	virtual int ExitInstance();
 	virtual int Run();
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -49,14 +50,37 @@ public:
    virtual tResult AddLoopClient(IEditorLoopClient * pLoopClient);
    virtual tResult RemoveLoopClient(IEditorLoopClient * pLoopClient);
 
+   virtual tResult AddEditorAppListener(IEditorAppListener * pListener);
+   virtual tResult RemoveEditorAppListener(IEditorAppListener * pListener);
+
    virtual tResult GetMapSettings(cMapSettings * pMapSettings);
 
+   virtual tResult GetActiveView(IEditorView * * ppView);
+   virtual tResult GetActiveModel(IEditorModel * * ppModel);
+
+   virtual tResult GetActiveTool(IEditorTool * * ppTool);
+   virtual tResult SetActiveTool(IEditorTool * pTool);
+
 private:
+   IEditorTool * AccessActiveTool();
+
    typedef std::vector<IEditorLoopClient *> tEditorLoopClients;
    tEditorLoopClients m_loopClients;
 
+   typedef std::vector<IEditorAppListener *> tEditorAppListeners;
+   tEditorAppListeners m_editorAppListeners;
+
    bool m_bPromptMapSettings;
+
+   cAutoIPtr<IEditorTool> m_pActiveTool;
 };
+
+////////////////////////////////////////
+
+IEditorTool * cEditorApp::AccessActiveTool()
+{
+   return static_cast<IEditorTool *>(m_pActiveTool);
+}
 
 /////////////////////////////////////////////////////////////////////////////
 

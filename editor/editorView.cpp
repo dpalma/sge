@@ -6,6 +6,7 @@
 #include "editorDoc.h"
 #include "editorView.h"
 #include "terrain.h"
+#include "editorapi.h"
 
 #include "sceneapi.h"
 #include "ray.h"
@@ -103,7 +104,6 @@ BEGIN_MESSAGE_MAP(cEditorView, cGLView)
 	ON_WM_DESTROY()
 	ON_WM_SIZE()
 	ON_WM_LBUTTONDOWN()
-	ON_WM_LBUTTONUP()
 	ON_WM_RBUTTONDOWN()
 	ON_WM_RBUTTONUP()
 	ON_WM_MOUSEMOVE()
@@ -641,15 +641,6 @@ void cEditorView::OnLButtonDown(UINT nFlags, CPoint point)
 
 ////////////////////////////////////////
 
-void cEditorView::OnLButtonUp(UINT nFlags, CPoint point) 
-{
-	// TODO: Add your message handler code here and/or call default
-	
-	cGLView::OnLButtonUp(nFlags, point);
-}
-
-////////////////////////////////////////
-
 void cEditorView::OnRButtonDown(UINT nFlags, CPoint point) 
 {
    SetCapture();
@@ -678,8 +669,6 @@ void cEditorView::OnRButtonUp(UINT nFlags, CPoint point)
 
 void cEditorView::OnMouseMove(UINT nFlags, CPoint point) 
 {
-	// TODO: Add your message handler code here and/or call default
-
    if (GetCapture() == this)
    {
       if (m_mouseAction == kMoveCamera)

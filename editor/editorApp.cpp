@@ -28,6 +28,8 @@
 #include "filepath.h"
 #include "str.h"
 
+#include <algorithm>
+
 #ifdef HAVE_CPPUNIT
 #ifdef USE_MFC_TESTRUNNER
 #include <cppunit/ui/mfc/TestRunner.h>
@@ -408,6 +410,99 @@ int cEditorApp::Run()
 
 ////////////////////////////////////////
 
+BOOL cEditorApp::PreTranslateMessage(MSG * pMsg) 
+{
+   if (AccessActiveTool() != NULL)
+   {
+      cAutoIPtr<IEditorTool> pTool(CTAddRef(AccessActiveTool()));
+
+      cAutoIPtr<IEditorView> pView;
+      CWnd * pWnd = CWnd::FromHandlePermanent(pMsg->hwnd);
+      if (pWnd != NULL)
+      {
+         cEditorView * pEditorView = DYNAMIC_DOWNCAST(cEditorView, pWnd);
+         if (pEditorView != NULL)
+         {
+            pView = CTAddRef(static_cast<IEditorView *>(pEditorView));
+         }
+      }
+
+      tResult toolResult = S_EDITOR_TOOL_CONTINUE;
+
+      switch (pMsg->message)
+      {
+         case WM_KEYDOWN:
+         {
+            toolResult = pTool->OnKeyDown(cEditorKeyEvent(pMsg->wParam, pMsg->lParam), pView);
+            break;
+         }
+
+         case WM_KEYUP:
+         {
+            toolResult = pTool->OnKeyUp(cEditorKeyEvent(pMsg->wParam, pMsg->lParam), pView);
+            break;
+         }
+
+         case WM_LBUTTONDBLCLK:
+         {
+            toolResult = pTool->OnLButtonDblClk(cEditorMouseEvent(pMsg->wParam, pMsg->lParam), pView);
+            break;
+         }
+
+         case WM_LBUTTONDOWN:
+         {
+            toolResult = pTool->OnLButtonDown(cEditorMouseEvent(pMsg->wParam, pMsg->lParam), pView);
+            break;
+         }
+
+         case WM_LBUTTONUP:
+         {
+            toolResult = pTool->OnLButtonUp(cEditorMouseEvent(pMsg->wParam, pMsg->lParam), pView);
+            break;
+         }
+
+         case WM_RBUTTONDBLCLK:
+         {
+            toolResult = pTool->OnRButtonDblClk(cEditorMouseEvent(pMsg->wParam, pMsg->lParam), pView);
+            break;
+         }
+
+         case WM_RBUTTONDOWN:
+         {
+            toolResult = pTool->OnRButtonDown(cEditorMouseEvent(pMsg->wParam, pMsg->lParam), pView);
+            break;
+         }
+
+         case WM_RBUTTONUP:
+         {
+            toolResult = pTool->OnRButtonUp(cEditorMouseEvent(pMsg->wParam, pMsg->lParam), pView);
+            break;
+         }
+
+         case WM_MOUSEMOVE:
+         {
+            toolResult = pTool->OnMouseMove(cEditorMouseEvent(pMsg->wParam, pMsg->lParam), pView);
+            break;
+         }
+
+         case WM_MOUSEWHEEL:
+         {
+            toolResult = pTool->OnMouseWheel(cEditorMouseWheelEvent(pMsg->wParam, pMsg->lParam), pView);
+            break;
+         }
+
+         if (toolResult == S_EDITOR_TOOL_HANDLED)
+         {
+            return TRUE;
+         }
+      }
+   }
+
+   return CWinApp::PreTranslateMessage(pMsg);
+}
+
+////////////////////////////////////////
+
 tResult cEditorApp::AddLoopClient(IEditorLoopClient * pLoopClient)
 {
    return add_interface(m_loopClients, pLoopClient) ? S_OK : E_FAIL;
@@ -418,6 +513,20 @@ tResult cEditorApp::AddLoopClient(IEditorLoopClient * pLoopClient)
 tResult cEditorApp::RemoveLoopClient(IEditorLoopClient * pLoopClient)
 {
    return remove_interface(m_loopClients, pLoopClient) ? S_OK : E_FAIL;
+}
+
+////////////////////////////////////////
+
+tResult cEditorApp::AddEditorAppListener(IEditorAppListener * pListener)
+{
+   return add_interface(m_editorAppListeners, pListener) ? S_OK : E_FAIL;
+}
+
+////////////////////////////////////////
+
+tResult cEditorApp::RemoveEditorAppListener(IEditorAppListener * pListener)
+{
+   return remove_interface(m_editorAppListeners, pListener) ? S_OK : E_FAIL;
 }
 
 ////////////////////////////////////////
@@ -469,6 +578,81 @@ tResult cEditorApp::GetMapSettings(cMapSettings * pMapSettings)
          kHeightData_None,
          NULL);
    }
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cEditorApp::GetActiveView(IEditorView * * ppView)
+{
+   if (ppView == NULL)
+   {
+      return E_POINTER;
+   }
+
+   CFrameWnd * pMainFrm = DYNAMIC_DOWNCAST(CFrameWnd, GetMainWnd());
+   if (pMainFrm != NULL)
+   {
+      cEditorView * pEditorView = DYNAMIC_DOWNCAST(cEditorView, pMainFrm->GetActiveView());
+      if (pEditorView != NULL)
+      {
+         *ppView = CTAddRef(static_cast<IEditorView *>(pEditorView));
+         return S_OK;
+      }
+   }
+
+   return E_FAIL;
+}
+
+////////////////////////////////////////
+
+tResult cEditorApp::GetActiveModel(IEditorModel * * ppModel)
+{
+   if (ppModel == NULL)
+   {
+      return E_POINTER;
+   }
+
+   CFrameWnd * pMainFrm = DYNAMIC_DOWNCAST(CFrameWnd, GetMainWnd());
+   if (pMainFrm != NULL)
+   {
+      cEditorDoc * pEditorDoc = DYNAMIC_DOWNCAST(cEditorDoc, pMainFrm->GetActiveDocument());
+      if (pEditorDoc != NULL)
+      {
+         *ppModel = CTAddRef(static_cast<IEditorModel *>(pEditorDoc));
+         return S_OK;
+      }
+   }
+
+   return E_FAIL;
+}
+
+////////////////////////////////////////
+
+tResult cEditorApp::GetActiveTool(IEditorTool * * ppTool)
+{
+   return m_pActiveTool.GetPointer(ppTool);
+}
+
+////////////////////////////////////////
+
+tResult cEditorApp::SetActiveTool(IEditorTool * pTool)
+{
+   if (pTool == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tEditorAppListeners::iterator iter;
+   for (iter = m_editorAppListeners.begin(); iter != m_editorAppListeners.end(); iter++)
+   {
+      (*iter)->OnActiveToolChange(pTool, m_pActiveTool);
+   }
+
+   SafeRelease(m_pActiveTool);
+
+   m_pActiveTool = CTAddRef(pTool);
 
    return S_OK;
 }

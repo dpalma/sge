@@ -30,7 +30,8 @@ static const CRect buttonMargins(5,5,5,5);
 ////////////////////////////////////////
 
 cButtonPanel::cButtonPanel()
- : m_margins(buttonMargins)
+ : m_margins(buttonMargins),
+   m_pTool(new cTerrainTileTool)
 {
 }
 
@@ -97,6 +98,10 @@ void cButtonPanel::Reposition(LPCRECT pRect, BOOL bRepaint)
 
 void cButtonPanel::HandleClick(uint buttonId)
 {
+   Assert(!!m_pTool);
+
+   AccessEditorApp()->SetActiveTool(m_pTool);
+
    CButton * pClickedButton = NULL;
 
    tButtons::iterator iter;
@@ -125,6 +130,31 @@ void cButtonPanel::SetMargins(LPCRECT pMargins)
    {
       m_margins = *pMargins;
    }
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cTerrainTileTool
+//
+
+////////////////////////////////////////
+
+cTerrainTileTool::cTerrainTileTool()
+{
+}
+
+////////////////////////////////////////
+
+cTerrainTileTool::~cTerrainTileTool()
+{
+}
+
+////////////////////////////////////////
+
+tResult cTerrainTileTool::OnLButtonDown(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+{
+   return S_EDITOR_TOOL_CONTINUE;
 }
 
 
