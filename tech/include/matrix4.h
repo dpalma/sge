@@ -5,15 +5,12 @@
 #define INCLUDED_MATRIX4_H
 
 #include "techdll.h"
+#include "vec3.h"
+#include "vec4.h"
 
 #ifdef _MSC_VER
 #pragma once
 #endif
-
-template <typename T> class cVec3;
-typedef cVec3<float> tVec3;
-template <typename T> class cVec4;
-typedef cVec4<float> tVec4;
 
 #ifndef NO_DEFAULT_MATRIX4
 template <typename T> class cMatrix4;
@@ -42,26 +39,11 @@ public:
 
    void Multiply(const cMatrix4 & other, cMatrix4 * pResult) const;
 
-   template <typename VT>
-   cVec3<VT> Transform(const cVec3<VT> & v) const
-   {
-      return cVec3<VT>(
-         v.x*m00 + v.y*m01 + v.z*m02 + m03,
-         v.x*m10 + v.y*m11 + v.z*m12 + m13,
-         v.x*m20 + v.y*m21 + v.z*m22 + m23);
-   }
+   void Transform(const cVec3<T> & v, cVec3<T> * pResult) const;
+   void Transform(const cVec4<T> & v, cVec4<T> * pResult) const;
 
-   template <typename VT>
-   cVec4<VT> Transform(const cVec4<VT> & v) const
-   {
-      return cVec4<VT>(
-         v.x*m00 + v.y*m01 + v.z*m02 + v.w*m03,
-         v.x*m10 + v.y*m11 + v.z*m12 + v.w*m13,
-         v.x*m20 + v.y*m21 + v.z*m22 + v.w*m23,
-         v.x*m30 + v.y*m31 + v.z*m32 + v.w*m33);
-   }
-
-   void Transform(const float * pSource, float * pDest) const;
+   void Transform3(const float * pV, float * pDest) const;
+   void Transform4(const float * pV, float * pDest) const;
 
    union
    {
@@ -170,11 +152,49 @@ void cMatrix4<T>::Multiply(const cMatrix4 & other, cMatrix4 * pResult) const
 ///////////////////////////////////////
 
 template <typename T>
-inline void cMatrix4<T>::Transform(const float * pSource, float * pDest) const
+void cMatrix4<T>::Transform(const cVec3<T> & v, cVec3<T> * pResult) const
 {
-   pDest[0] = (pSource[0] * m00) + (pSource[1] * m01) + (pSource[2] * m02) + m03;
-   pDest[1] = (pSource[0] * m10) + (pSource[1] * m11) + (pSource[2] * m12) + m13;
-   pDest[2] = (pSource[0] * m20) + (pSource[1] * m21) + (pSource[2] * m22) + m23;
+   Assert(pResult != NULL);
+   pResult->x = (v.x * m00) + (v.y * m01) + (v.z * m02) + m03;
+   pResult->y = (v.x * m10) + (v.y * m11) + (v.z * m12) + m13;
+   pResult->z = (v.x * m20) + (v.y * m21) + (v.z * m22) + m23;
+}
+
+///////////////////////////////////////
+
+template <typename T>
+void cMatrix4<T>::Transform(const cVec4<T> & v, cVec4<T> * pResult) const
+{
+   Assert(pResult != NULL);
+   pResult->x = (v.x * m00) + (v.y * m01) + (v.z * m02) + (v.w * m03);
+   pResult->y = (v.x * m10) + (v.y * m11) + (v.z * m12) + (v.w * m13);
+   pResult->z = (v.x * m20) + (v.y * m21) + (v.z * m22) + (v.w * m23);
+   pResult->w = (v.x * m30) + (v.y * m31) + (v.z * m32) + (v.w * m33);
+}
+
+///////////////////////////////////////
+
+template <typename T>
+inline void cMatrix4<T>::Transform3(const float * pV, float * pDest) const
+{
+   Assert(pV != NULL);
+   Assert(pDest != NULL);
+   pDest[0] = (pV[0] * m00) + (pV[1] * m01) + (pV[2] * m02) + m03;
+   pDest[1] = (pV[0] * m10) + (pV[1] * m11) + (pV[2] * m12) + m13;
+   pDest[2] = (pV[0] * m20) + (pV[1] * m21) + (pV[2] * m22) + m23;
+}
+
+///////////////////////////////////////
+
+template <typename T>
+inline void cMatrix4<T>::Transform4(const float * pV, float * pDest) const
+{
+   Assert(pV != NULL);
+   Assert(pDest != NULL);
+   pDest[0] = (pV[0] * m00) + (pV[1] * m01) + (pV[2] * m02) + (pV[3] * m03);
+   pDest[1] = (pV[0] * m10) + (pV[1] * m11) + (pV[2] * m12) + (pV[3] * m13);
+   pDest[2] = (pV[0] * m20) + (pV[1] * m21) + (pV[2] * m22) + (pV[3] * m23);
+   pDest[3] = (pV[0] * m30) + (pV[1] * m31) + (pV[2] * m32) + (pV[3] * m33);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

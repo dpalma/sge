@@ -201,14 +201,16 @@ bool cGameCameraController::BuildPickRay(int x, int y, tVec3 * pRay)
 
    const tMatrix4 & m = m_pCamera->GetViewProjectionInverseMatrix();
 
-   tVec4 n = m.Transform(tVec4(normx, normy, -1, 1));
+   tVec4 n;
+   m.Transform(tVec4(normx, normy, -1, 1), &n);
    if (n.w == 0.0f)
       return false;
    n.x /= n.w;
    n.y /= n.w;
    n.z /= n.w;
 
-   tVec4 f = m.Transform(tVec4(normx, normy, 1, 1));
+   tVec4 f;
+   m.Transform(tVec4(normx, normy, 1, 1), &f);
    if (f.w == 0.0f)
       return false;
    f.x /= f.w;
