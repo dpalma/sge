@@ -307,26 +307,44 @@ tGUISize cGUIButtonRenderer::GetPreferredSize(IGUIElement * pElement)
       if (pElement->QueryInterface(IID_IGUIButtonElement, (void**)&pButton) == S_OK)
       {
          cAutoIPtr<IRenderFont> pFont;
-
-         cAutoIPtr<IGUIStyle> pStyle;
-         if (pElement->GetStyle(&pStyle) == S_OK)
+         if (GetFont(pButton, &pFont) == S_OK)
          {
-            pStyle->GetFont(&pFont);
+            tRect rect(0,0,0,0);
+            pFont->DrawText(pButton->GetText(), -1, kDT_CalcRect, &rect, tGUIColor::White);
+
+            return tGUISize(rect.GetWidth() + rect.GetHeight(), rect.GetHeight() * 1.5f);
          }
-
-         if (!pFont)
-         {
-            UseGlobal(GUIRenderingTools);
-            pGUIRenderingTools->GetDefaultFont(&pFont);
-         }
-
-         tRect rect(0,0,0,0);
-         pFont->DrawText(pButton->GetText(), -1, kDT_CalcRect, &rect, tGUIColor::White);
-
-         return tGUISize(rect.GetWidth() + rect.GetHeight(), rect.GetHeight() * 1.5f);
       }
    }
    return tGUISize(0,0);
+}
+
+///////////////////////////////////////
+
+tResult cGUIButtonRenderer::GetFont(IGUIButtonElement * pButtonElement,
+                                    IRenderFont * * ppFont)
+{
+   if (pButtonElement == NULL || ppFont == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cAutoIPtr<IGUIStyle> pStyle;
+   if (pButtonElement->GetStyle(&pStyle) == S_OK)
+   {
+      if (pStyle->GetFont(ppFont) == S_OK)
+      {
+         return S_OK;
+      }
+   }
+
+   UseGlobal(GUIRenderingTools);
+   if (pGUIRenderingTools->GetDefaultFont(ppFont) == S_OK)
+   {
+      return S_OK;
+   }
+
+   return E_FAIL;
 }
 
 

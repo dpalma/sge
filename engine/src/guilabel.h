@@ -55,6 +55,9 @@ public:
    virtual tResult Render(IGUIElement * pElement, IRenderDevice * pRenderDevice);
 
    virtual tGUISize GetPreferredSize(IGUIElement * pElement);
+
+private:
+   tResult GetFont(IGUILabelElement * pLabelElement, IRenderFont * * ppFont);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

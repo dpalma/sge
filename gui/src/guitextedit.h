@@ -150,6 +150,8 @@ public:
    virtual tGUISize GetPreferredSize(IGUIElement * pElement);
 
 private:
+   tResult GetFont(IGUITextEditElement * pTextEditElement, IRenderFont * * ppFont);
+
    class cInputListener : public cComObject<IMPLEMENTS(IInputListener)>
    {
       friend class cGUITextEditStatelessRenderer;

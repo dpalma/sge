@@ -189,30 +189,48 @@ tGUISize cGUILabelStatelessRenderer::GetPreferredSize(IGUIElement * pElement)
       if (pElement->QueryInterface(IID_IGUILabelElement, (void**)&pLabel) == S_OK)
       {
          cAutoIPtr<IRenderFont> pFont;
-
-         cAutoIPtr<IGUIStyle> pStyle;
-         if (pElement->GetStyle(&pStyle) == S_OK)
+         if (GetFont(pLabel, &pFont) == S_OK)
          {
-            pStyle->GetFont(&pFont);
-         }
+            tGUIString text;
+            if (pLabel->GetText(&text) == S_OK)
+            {
+               tRect rect(0,0,0,0);
+               pFont->DrawText(text, text.length(), kDT_CalcRect, &rect, tGUIColor::White);
 
-         if (!pFont)
-         {
-            UseGlobal(GUIRenderingTools);
-            pGUIRenderingTools->GetDefaultFont(&pFont);
-         }
-
-         tGUIString text;
-         if (pLabel->GetText(&text) == S_OK)
-         {
-            tRect rect(0,0,0,0);
-            pFont->DrawText(text, text.length(), kDT_CalcRect, &rect, tGUIColor::White);
-
-            return tGUISize((tGUISizeType)rect.GetWidth(), (tGUISizeType)rect.GetHeight());
+               return tGUISize((tGUISizeType)rect.GetWidth(), (tGUISizeType)rect.GetHeight());
+            }
          }
       }
    }
    return tGUISize(0,0);
+}
+
+///////////////////////////////////////
+
+tResult cGUILabelStatelessRenderer::GetFont(IGUILabelElement * pLabelElement,
+                                            IRenderFont * * ppFont)
+{
+   if (pLabelElement == NULL || ppFont == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cAutoIPtr<IGUIStyle> pStyle;
+   if (pLabelElement->GetStyle(&pStyle) == S_OK)
+   {
+      if (pStyle->GetFont(ppFont) == S_OK)
+      {
+         return S_OK;
+      }
+   }
+
+   UseGlobal(GUIRenderingTools);
+   if (pGUIRenderingTools->GetDefaultFont(ppFont) == S_OK)
+   {
+      return S_OK;
+   }
+
+   return E_FAIL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

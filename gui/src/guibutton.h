@@ -67,6 +67,9 @@ public:
    virtual tResult Render(IGUIElement * pElement, IRenderDevice * pRenderDevice);
 
    virtual tGUISize GetPreferredSize(IGUIElement * pElement);
+
+private:
+   tResult GetFont(IGUIButtonElement * pButtonElement, IRenderFont * * ppFont);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

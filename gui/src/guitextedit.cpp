@@ -679,40 +679,57 @@ tGUISize cGUITextEditStatelessRenderer::GetPreferredSize(IGUIElement * pElement)
       cAutoIPtr<IGUITextEditElement> pTextEdit;
       if (pElement->QueryInterface(IID_IGUITextEditElement, (void**)&pTextEdit) == S_OK)
       {
-         cAutoIPtr<IRenderFont> pFont;
-
-         cAutoIPtr<IGUIStyle> pStyle;
-         if (pTextEdit->GetStyle(&pStyle) == S_OK)
-         {
-            pStyle->GetFont(&pFont);
-         }
-
-         if (!pFont)
-         {
-            UseGlobal(GUIRenderingTools);
-            pGUIRenderingTools->GetDefaultFont(&pFont);
-         }
-
-         Assert(!!pFont);
-
          uint editSize;
          if (pTextEdit->GetEditSize(&editSize) != S_OK)
          {
             editSize = kDefaultEditSize;
          }
 
-         char * psz = reinterpret_cast<char *>(alloca(editSize * sizeof(char)));
-         memset(psz, 'M', editSize * sizeof(char));
+         cAutoIPtr<IRenderFont> pFont;
+         if (GetFont(pTextEdit, &pFont) == S_OK)
+         {
+            char * psz = reinterpret_cast<char *>(alloca(editSize * sizeof(char)));
+            memset(psz, 'M', editSize * sizeof(char));
 
-         tRect rect(0,0,0,0);
-         pFont->DrawText(psz, editSize, kDT_CalcRect | kDT_SingleLine, &rect, tGUIColor::White);
+            tRect rect(0,0,0,0);
+            pFont->DrawText(psz, editSize, kDT_CalcRect | kDT_SingleLine, &rect, tGUIColor::White);
 
-         return tGUISize(rect.GetWidth() + (kHorzInset * 2), 
-                         rect.GetHeight() + (kVertInset * 2));
+            return tGUISize(rect.GetWidth() + (kHorzInset * 2), 
+                            rect.GetHeight() + (kVertInset * 2));
+         }
+
       }
    }
 
    return tGUISize(0,0);
+}
+
+///////////////////////////////////////
+
+tResult cGUITextEditStatelessRenderer::GetFont(IGUITextEditElement * pTextEditElement,
+                                               IRenderFont * * ppFont)
+{
+   if (pTextEditElement == NULL || ppFont == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cAutoIPtr<IGUIStyle> pStyle;
+   if (pTextEditElement->GetStyle(&pStyle) == S_OK)
+   {
+      if (pStyle->GetFont(ppFont) == S_OK)
+      {
+         return S_OK;
+      }
+   }
+
+   UseGlobal(GUIRenderingTools);
+   if (pGUIRenderingTools->GetDefaultFont(ppFont) == S_OK)
+   {
+      return S_OK;
+   }
+
+   return E_FAIL;
 }
 
 ///////////////////////////////////////
