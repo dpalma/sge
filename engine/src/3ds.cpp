@@ -38,8 +38,23 @@ LOG_DEFINE_CHANNEL(3DSLoad);
 
 ///////////////////////////////////////////////////////////////////////////////
 
+struct s3dsVertex
+{
+   tVec3::value_type u, v;
+   tVec3 normal;
+   tVec3 pos;
+};
+
+sVertexElement g_3dsVertexDecl[] =
+{
+   { kVDU_TexCoord, kVDT_Float2 },
+   { kVDU_Normal, kVDT_Float3 },
+   { kVDU_Position, kVDT_Float3 }
+};
+
 struct s3dsMaterial
 {
+   cStr name;
    char szTexture[256];
    float ambient[3];
    float diffuse[3];
@@ -49,10 +64,75 @@ struct s3dsMaterial
    float masterScale;
 };
 
-static IMaterial * MaterialFrom3ds(const char * pszMaterial, const s3dsMaterial * p3dsMaterial,
+static void CalcAABB(const s3dsVertex * pVertices, int nVertices, tVec3 * pMax, tVec3 * pMin)
+{
+   Assert(pMax && pMin);
+
+   tVec3 max(FLT_MIN, FLT_MIN, FLT_MIN);
+   tVec3 min(FLT_MAX, FLT_MAX, FLT_MAX);
+
+   for (int i = 0; i < nVertices; i++)
+   {
+      if (max.x < pVertices[i].pos.x)
+         max.x = pVertices[i].pos.x;
+      if (min.x > pVertices[i].pos.x)
+         min.x = pVertices[i].pos.x;
+
+      if (max.y < pVertices[i].pos.y)
+         max.y = pVertices[i].pos.y;
+      if (min.y > pVertices[i].pos.y)
+         min.y = pVertices[i].pos.y;
+
+      if (max.z < pVertices[i].pos.z)
+         max.z = pVertices[i].pos.z;
+      if (min.z > pVertices[i].pos.z)
+         min.z = pVertices[i].pos.z;
+   }
+
+   if (pMax != NULL) *pMax = max;
+   if (pMin != NULL) *pMin = min;
+}
+
+static void CalcVertexNormals(int * pFaces, int nFaces, s3dsVertex * pVerts, int nVerts)
+{
+   int i;
+
+   std::vector<tVec3> faceNormals(nFaces);
+
+   for (i = 0; i < nFaces; i++)
+   {
+      tVec3 v1 = pVerts[pFaces[i * 3 + 1]].pos - pVerts[pFaces[i * 3 + 2]].pos;
+      tVec3 v2 = pVerts[pFaces[i * 3 + 2]].pos - pVerts[pFaces[i * 3 + 0]].pos;
+      faceNormals[i] = v1.Cross(v2);
+   }
+
+   for (i = 0; i < nVerts; i++)
+   {
+      tVec3 sum(0,0,0);
+      int nSharedBy = 0;
+
+      // look for faces that share this vertex
+      for (int j = 0; j < nFaces; j++)
+      {
+         if (pFaces[j * 3 + 0] == i
+            || pFaces[j * 3 + 1] == i
+            || pFaces[j * 3 + 2] == i)
+         {
+            sum += faceNormals[j];
+            nSharedBy++;
+         }
+      }
+
+      sum /= (float)nSharedBy;
+      sum.Normalize();
+
+      pVerts[i].normal = sum;
+   }
+}
+
+static IMaterial * MaterialFrom3ds(const s3dsMaterial * p3dsMaterial,
                                    IRenderDevice * pRenderDevice)
 {
-   Assert(pszMaterial != NULL);
    Assert(p3dsMaterial != NULL);
 
    cAutoIPtr<ITexture> pTexture;
@@ -73,7 +153,7 @@ static IMaterial * MaterialFrom3ds(const char * pszMaterial, const s3dsMaterial 
    if (pTexture != NULL)
       pMaterial->SetTexture(0, pTexture);
 
-   pMaterial->SetName(pszMaterial);
+   pMaterial->SetName(p3dsMaterial->name);
    pMaterial->SetAmbient(cColor(p3dsMaterial->ambient[0],p3dsMaterial->ambient[1],p3dsMaterial->ambient[2]));
    pMaterial->SetDiffuse(cColor(p3dsMaterial->diffuse[0],p3dsMaterial->diffuse[1],p3dsMaterial->diffuse[2]));
    pMaterial->SetSpecular(cColor(p3dsMaterial->specular[0],p3dsMaterial->specular[1],p3dsMaterial->specular[2]));
@@ -166,8 +246,7 @@ public:
 
    void Render(IRenderDevice * pRenderDevice);
 
-   bool AddVertexPositions(const float * pVertexData, int nVerts);
-   bool AddVertexTexCoords(const float * pVertexData, int nVerts);
+   tResult SetVertexData(const s3dsVertex * pVertices, int nVertices);
    bool AddFaces(const int * pFaceData, int nFaces);
    bool AddGroup(const char * pszMaterialName, const short * pFaceIndices, int nFaces);
 
@@ -186,9 +265,6 @@ public:
 private:
    c3dsMesh * GetParent() { return m_pParent; }
 
-   bool CreateVertexBuffer(int nVerts);
-   void CalcVertexNormals();
-
    struct sGroup
    {
       char szMaterial[100];
@@ -203,23 +279,6 @@ private:
    std::vector<sGroup> m_groups;
    tVec3 m_max, m_min;
 };
-
-///////////////////////////////////////
-
-struct s3dsVertex
-{
-   tVec3::value_type u, v;
-   tVec3 normal;
-   tVec3 pos;
-};
-
-sVertexElement g_3dsVertexDecl[] =
-{
-   { kVDU_TexCoord, kVDT_Float2 },
-   { kVDU_Normal, kVDT_Float3 },
-   { kVDU_Position, kVDT_Float3 }
-};
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -261,78 +320,28 @@ void c3dsSubMesh::Render(IRenderDevice * pRenderDevice)
 
 ///////////////////////////////////////
 
-bool c3dsSubMesh::AddVertexPositions(const float * pVertexData, int nVerts)
+tResult c3dsSubMesh::SetVertexData(const s3dsVertex * pVertices, int nVertices)
 {
-   if (!CreateVertexBuffer(nVerts))
-   {
-      return false;
-   }
+   SafeRelease(m_pVB);
 
-   s3dsVertex * pVerts = NULL;
-   if (m_pVB->Lock((void * *)&pVerts) == S_OK)
+   cAutoIPtr<IVertexDeclaration> pVertexDecl;
+   if (GetParent()->AccessRenderDevice()->CreateVertexDeclaration(g_3dsVertexDecl, _countof(g_3dsVertexDecl), &pVertexDecl) == S_OK)
    {
-      tVec3 max(FLT_MIN, FLT_MIN, FLT_MIN);
-      tVec3 min(FLT_MAX, FLT_MAX, FLT_MAX);
-
-      const float * pVertexPos = pVertexData;
-      for (int i = 0; i < nVerts; i++, pVertexPos += 3)
+      if (GetParent()->AccessRenderDevice()->CreateVertexBuffer(nVertices, pVertexDecl, kMP_Auto, &m_pVB) == S_OK)
       {
-         pVerts[i].pos = tVec3(pVertexPos[0], pVertexPos[1], pVertexPos[2]);
-
-         if (max.x < pVerts[i].pos.x)
-            max.x = pVerts[i].pos.x;
-         if (min.x > pVerts[i].pos.x)
-            min.x = pVerts[i].pos.x;
-
-         if (max.y < pVerts[i].pos.y)
-            max.y = pVerts[i].pos.y;
-         if (min.y > pVerts[i].pos.y)
-            min.y = pVerts[i].pos.y;
-
-         if (max.z < pVerts[i].pos.z)
-            max.z = pVerts[i].pos.z;
-         if (min.z > pVerts[i].pos.z)
-            min.z = pVerts[i].pos.z;
+         m_nVerts = nVertices;
+         s3dsVertex * pVertexData = NULL;
+         if (m_pVB->Lock((void * *)&pVertexData) == S_OK)
+         {
+            memcpy(pVertexData, pVertices, nVertices * sizeof(s3dsVertex));
+            CalcAABB(pVertexData, nVertices, &m_max, &m_min);
+            m_pVB->Unlock();
+            return S_OK;
+         }
       }
-
-      m_max = max;
-      m_min = min;
-
-      m_pVB->Unlock();
-
-      CalcVertexNormals();
-
-      return true;
    }
 
-   return false;
-}
-
-///////////////////////////////////////
-
-bool c3dsSubMesh::AddVertexTexCoords(const float * pVertexData, int nVerts)
-{
-   if (!CreateVertexBuffer(nVerts))
-   {
-      return false;
-   }
-
-   s3dsVertex * pVerts = NULL;
-   if (m_pVB->Lock((void * *)&pVerts) == S_OK)
-   {
-      const float * pVertexPos = pVertexData;
-      for (int i = 0; i < nVerts; i++, pVertexPos += 2)
-      {
-         pVerts[i].u = pVertexPos[0];
-         pVerts[i].v = pVertexPos[1];
-      }
-
-      m_pVB->Unlock();
-
-      return true;
-   }
-
-   return false;
+   return E_FAIL;
 }
 
 ///////////////////////////////////////
@@ -353,8 +362,6 @@ bool c3dsSubMesh::AddFaces(const int * pFaceData, int nFaces)
       m_faceData[i * 3 + 1] = pFaceData[i * 3 + 1];
       m_faceData[i * 3 + 2] = pFaceData[i * 3 + 2];
    }
-
-   CalcVertexNormals();
 
    return true;
 }
@@ -391,87 +398,6 @@ bool c3dsSubMesh::AddGroup(const char * pszMaterialName, const short * pFaceIndi
    }
 
    return false;
-}
-
-///////////////////////////////////////
-
-bool c3dsSubMesh::CreateVertexBuffer(int nVerts)
-{
-   if (m_nVerts > 0 && m_nVerts != nVerts)
-   {
-      Assert(m_pVB != NULL);
-      DebugMsg("Already have vertex data and number of vertices in call doesn't match\n");
-      return false;
-   }
-
-   if (!m_pVB)
-   {
-      cAutoIPtr<IVertexDeclaration> pVertexDecl;
-      if (GetParent()->AccessRenderDevice()->CreateVertexDeclaration(g_3dsVertexDecl, _countof(g_3dsVertexDecl), &pVertexDecl) != S_OK)
-      {
-         return false;
-      }
-
-      if (GetParent()->AccessRenderDevice()->CreateVertexBuffer(nVerts, pVertexDecl, kMP_Auto, &m_pVB) != S_OK)
-      {
-         return false;
-      }
-
-      m_nVerts = nVerts;
-   }
-
-   return true;
-}
-
-///////////////////////////////////////
-
-void c3dsSubMesh::CalcVertexNormals()
-{
-   if (!m_faceData.empty() && m_pVB != NULL)
-   {
-      const int nFaces = m_faceData.size() / 3;
-
-      std::vector<tVec3> faceNormals;
-      faceNormals.resize(nFaces);
-
-      s3dsVertex * pVerts = NULL;
-      if (m_pVB->Lock((void * *)&pVerts) == S_OK)
-      {
-         int i;
-
-         for (i = 0; i < nFaces; i++)
-         {
-            tVec3 v1 = pVerts[m_faceData[i * 3 + 1]].pos - pVerts[m_faceData[i * 3 + 2]].pos;
-            tVec3 v2 = pVerts[m_faceData[i * 3 + 2]].pos - pVerts[m_faceData[i * 3 + 0]].pos;
-            faceNormals[i] = v1.Cross(v2);
-         }
-
-         for (i = 0; i < m_nVerts; i++)
-         {
-            tVec3 sum(0,0,0);
-            int nSharedBy = 0;
-
-            // look for faces that share this vertex
-            for (int j = 0; j < nFaces; j++)
-            {
-               if (m_faceData[j * 3 + 0] == i
-                  || m_faceData[j * 3 + 1] == i
-                  || m_faceData[j * 3 + 2] == i)
-               {
-                  sum += faceNormals[j];
-                  nSharedBy++;
-               }
-            }
-
-            sum *= 1.0f / nSharedBy;
-            sum.Normalize();
-
-            pVerts[i].normal = sum;
-         }
-
-         m_pVB->Unlock();
-      }
-   }
 }
 
 
@@ -689,7 +615,7 @@ static void Load3dsTexMap(IReader * pReader, long stop, s3dsMaterial * pMaterial
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static void Load3dsMaterial(IReader * pReader, long stop, cStr * pName, s3dsMaterial * pMaterial)
+static void Load3dsMaterial(IReader * pReader, long stop, s3dsMaterial * pMaterial)
 {
    s3dsChunkHeader chunk;
 
@@ -700,11 +626,8 @@ static void Load3dsMaterial(IReader * pReader, long stop, cStr * pName, s3dsMate
       {
          case MAT_NAME:
          {
-            cStr name;
-            pReader->Read(&name, 0);
-            if (pName != NULL)
-               *pName = name;
-            LocalMsg1("Reading material %s\n", name.c_str());
+            pReader->Read(&pMaterial->name, 0);
+            LocalMsg1("Reading material %s\n", pMaterial->name.c_str());
             break;
          }
 
@@ -764,20 +687,14 @@ static void Load3dsMaterial(IReader * pReader, long stop, cStr * pName, s3dsMate
 
 bool c3dsMesh::Load3dsMaterial(IReader * pReader, long stop, c3dsMesh * pMesh)
 {
-   cStr matName;
-
    s3dsMaterial mat;
    memset(&mat, 0, sizeof(mat));
 
-   ::Load3dsMaterial(pReader, stop, &matName, &mat);
+   ::Load3dsMaterial(pReader, stop, &mat);
 
-   if (!matName.empty())
-   {
-      pMesh->AddMaterial(cAutoIPtr<IMaterial>(MaterialFrom3ds(matName, &mat, pMesh->AccessRenderDevice())));
-      return true;
-   }
+   cAutoIPtr<IMaterial> pMaterial(MaterialFrom3ds(&mat, pMesh->AccessRenderDevice()));
 
-   return false;
+   return (pMesh->AddMaterial(pMaterial) == S_OK);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -785,6 +702,11 @@ bool c3dsMesh::Load3dsMaterial(IReader * pReader, long stop, c3dsMesh * pMesh)
 bool c3dsMesh::Load3dsTriangleMesh(IReader * pReader, long stop, c3dsMesh * pMesh)
 {
    c3dsSubMesh * pSubMesh = new c3dsSubMesh(pMesh);
+
+   bool bHavePoints = false, bHaveTexCoords = false;
+   std::vector<s3dsVertex> vertices;
+
+   std::vector<int> faces;
 
    s3dsChunkHeader chunk;
 
@@ -798,6 +720,9 @@ bool c3dsMesh::Load3dsTriangleMesh(IReader * pReader, long stop, c3dsMesh * pMes
             short count;
             pReader->Read(&count);
 
+            Assert(!bHavePoints && vertices.empty());
+            vertices.resize(count);
+
             float * pVertexData = (float *)alloca(3 * count * sizeof(float));
             pReader->Read(pVertexData, 3 * count * sizeof(float));
 
@@ -807,12 +732,11 @@ bool c3dsMesh::Load3dsTriangleMesh(IReader * pReader, long stop, c3dsMesh * pMes
                // swap the y and z because in Max, z points up
                std::swap(pVertexPos[1], pVertexPos[2]);
                pVertexPos[2] = -pVertexPos[2];
+
+               vertices[i].pos = tVec3(pVertexPos);
             }
 
-            if (!pSubMesh->AddVertexPositions(pVertexData, count))
-            {
-               return false;
-            }
+            bHavePoints = true;
 
             break;
          }
@@ -822,13 +746,19 @@ bool c3dsMesh::Load3dsTriangleMesh(IReader * pReader, long stop, c3dsMesh * pMes
             short nTexCoords;
             pReader->Read(&nTexCoords);
 
-            float * pVertexData = (float *)alloca(2 * nTexCoords * sizeof(float));
-            pReader->Read(pVertexData, 2 * nTexCoords * sizeof(float));
+            Assert(bHavePoints && vertices.size() == nTexCoords);
 
-            if (!pSubMesh->AddVertexTexCoords(pVertexData, nTexCoords))
+            float * pTexCoordData = (float *)alloca(2 * nTexCoords * sizeof(float));
+            pReader->Read(pTexCoordData, 2 * nTexCoords * sizeof(float));
+
+            float * pData = pTexCoordData;
+            for (int i = 0; i < nTexCoords; i++, pData += 2)
             {
-               return false;
+               vertices[i].u = pData[0];
+               vertices[i].v = pData[1];
             }
+
+            bHaveTexCoords = true;
 
             break;
          }
@@ -855,7 +785,8 @@ bool c3dsMesh::Load3dsTriangleMesh(IReader * pReader, long stop, c3dsMesh * pMes
             s3dsFace * pFaces = (s3dsFace *)alloca(nFaces * sizeof(s3dsFace));
             pReader->Read(pFaces, nFaces * sizeof(s3dsFace));
 
-            std::vector<int> faces(nFaces * 3);
+            AssertMsg(faces.empty(), "Expecting faces array to be empty");
+            faces.resize(nFaces * 3);
 
             for (int i = 0; i < nFaces; i++)
             {
@@ -864,7 +795,14 @@ bool c3dsMesh::Load3dsTriangleMesh(IReader * pReader, long stop, c3dsMesh * pMes
                faces[i * 3 + 2] = pFaces[i].verts[2];
             }
 
-            if (!pSubMesh->AddFaces(&faces[0], nFaces))
+            if (bHavePoints)
+            {
+               Assert(!vertices.empty());
+               CalcVertexNormals(&faces[0], nFaces, &vertices[0], vertices.size());
+            }
+
+            if (FAILED(pSubMesh->SetVertexData(&vertices[0], vertices.size()))
+               || !pSubMesh->AddFaces(&faces[0], nFaces))
             {
                return false;
             }
@@ -877,13 +815,15 @@ bool c3dsMesh::Load3dsTriangleMesh(IReader * pReader, long stop, c3dsMesh * pMes
             cStr materialName;
             pReader->Read(&materialName, 0);
 
-            short nFaces;
-            pReader->Read(&nFaces);
+            Assert(!faces.empty() && !vertices.empty() && bHavePoints && bHaveTexCoords);
 
-            std::vector<short> faces(nFaces);
-            pReader->Read(&faces[0], nFaces * sizeof(short));
+            short nGroupFaces;
+            pReader->Read(&nGroupFaces);
 
-            pSubMesh->AddGroup(materialName, &faces[0], nFaces);
+            std::vector<short> groupFaces(nGroupFaces);
+            pReader->Read(&groupFaces[0], nGroupFaces * sizeof(short));
+
+            pSubMesh->AddGroup(materialName, &groupFaces[0], nGroupFaces);
 
             break;
          }

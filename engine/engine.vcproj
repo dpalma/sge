@@ -308,6 +308,9 @@
 					RelativePath=".\src\ms3d.cpp">
 				</File>
 				<File
+					RelativePath="src\ms3dread.cpp">
+				</File>
+				<File
 					RelativePath=".\src\stdhdr.cpp">
 					<FileConfiguration
 						Name="Opt|Win32">
@@ -352,6 +355,9 @@
 				</File>
 				<File
 					RelativePath=".\src\ms3d.h">
+				</File>
+				<File
+					RelativePath="src\ms3dread.h">
 				</File>
 				<File
 					RelativePath=".\src\stdhdr.h">
