@@ -38,8 +38,12 @@ interface IMesh : IUnknown
 
    virtual tResult AddMaterial(IMaterial * pMaterial) = 0;
    virtual tResult FindMaterial(const char * pszName, IMaterial * * ppMaterial) const = 0;
+   virtual uint GetMaterialCount() const = 0;
+   virtual tResult GetMaterial(uint index, IMaterial * * ppMaterial) const = 0;
 
    virtual tResult AddSubMesh(ISubMesh * pSubMesh) = 0;
+   virtual uint GetSubMeshCount() const = 0;
+   virtual tResult GetSubMesh(uint index, ISubMesh * * ppSubMesh) const = 0;
 
    virtual tResult AttachSkeleton(ISkeleton * pSkeleton) = 0;
    virtual tResult GetSkeleton(ISkeleton * * ppSkeleton) = 0;

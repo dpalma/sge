@@ -132,7 +132,11 @@ public:
    virtual void Render(IRenderDevice * pRenderDevice) const;
    virtual tResult AddMaterial(IMaterial * pMaterial);
    virtual tResult FindMaterial(const char * pszName, IMaterial * * ppMaterial) const;
+   virtual uint GetMaterialCount() const;
+   virtual tResult GetMaterial(uint index, IMaterial * * ppMaterial) const;
    virtual tResult AddSubMesh(ISubMesh * pSubMesh);
+   virtual uint GetSubMeshCount() const;
+   virtual tResult GetSubMesh(uint index, ISubMesh * * ppSubMesh) const;
    virtual tResult AttachSkeleton(ISkeleton * pSkeleton);
    virtual tResult GetSkeleton(ISkeleton * * ppSkeleton);
 
@@ -142,9 +146,6 @@ public:
 
    // using software or vertex program rendering?
    bool IsRenderingSoftware() const;
-
-   int GetMaterialCount() const { return m_materials.size(); }
-   IMaterial * AccessMaterial(int index) { return m_materials[index]; }
 
    int GetGroupCount() const { return m_groups.size(); }
    const cMs3dGroup & GetGroup(int index) const { return m_groups[index]; }
@@ -160,17 +161,15 @@ private:
    typedef std::vector<ms3d_vertex_t> tVertices;
    typedef std::vector<ms3d_triangle_t> tTriangles;
    typedef std::vector<cMs3dGroup> tGroups;
-   typedef std::vector<IMaterial *> tMaterials;
 
    tVertices m_vertices;
    tTriangles m_triangles;
    tGroups m_groups;
-   tMaterials m_materials;
+
+   cAutoIPtr<IMesh> m_pInnerMesh;
 
    mutable tVec3 m_maxs, m_mins;
    mutable bool m_bCalculatedAABB;
-
-   cAutoIPtr<ISkeleton> m_pSkeleton;
 
    tMatrices m_boneMatrices;
 

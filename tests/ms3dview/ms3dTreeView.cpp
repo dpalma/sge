@@ -95,8 +95,8 @@ void cMs3dTreeView::OnInitialUpdate()
          {
             for (int i = 0; i < nMaterials; i++)
             {
-               IMaterial * pMaterial = pDoc->GetModel()->AccessMaterial(i);
-               if (pMaterial != NULL)
+               cAutoIPtr<IMaterial> pMaterial;
+               if ((pDoc->GetModel()->GetMaterial(i, &pMaterial) == S_OK) && (pMaterial != NULL))
                {
                   HTREEITEM hMaterial = GetTreeCtrl().InsertItem(pMaterial->GetName(), hMaterials);
                   if (hMaterial != NULL)

@@ -397,22 +397,17 @@ static tResult ReadSkeleton(IReader * pReader,
 cMs3dMesh::cMs3dMesh()
  : m_pfnRender(RenderSoftware),
    m_bCalculatedAABB(false),
+   m_pInnerMesh(MeshCreate()),
    m_program(NULL),
-   m_modelViewProjParam(NULL),
-   m_pSkeleton(NULL)
+   m_modelViewProjParam(NULL)
 {
 }
 
 cMs3dMesh::~cMs3dMesh()
 {
-   SafeRelease(m_pSkeleton);
-
    m_vertices.clear();
    m_triangles.clear();
    m_groups.clear();
-
-   std::for_each(m_materials.begin(), m_materials.end(), CTInterfaceMethodRef(&IUnknown::Release));
-   m_materials.clear();
 
    m_bCalculatedAABB = false;
 
@@ -467,46 +462,47 @@ void cMs3dMesh::Render(IRenderDevice * pRenderDevice) const
 
 tResult cMs3dMesh::AddMaterial(IMaterial * pMaterial)
 {
-   return E_NOTIMPL;
+   return m_pInnerMesh->AddMaterial(pMaterial);
 }
 
 tResult cMs3dMesh::FindMaterial(const char * pszName, IMaterial * * ppMaterial) const
 {
-   return E_NOTIMPL;
+   return m_pInnerMesh->FindMaterial(pszName, ppMaterial);
+}
+
+uint cMs3dMesh::GetMaterialCount() const
+{
+   return m_pInnerMesh->GetMaterialCount();
+}
+
+tResult cMs3dMesh::GetMaterial(uint index, IMaterial * * ppMaterial) const
+{
+   return m_pInnerMesh->GetMaterial(index, ppMaterial);
 }
 
 tResult cMs3dMesh::AddSubMesh(ISubMesh * pSubMesh)
 {
-   return E_NOTIMPL;
+   return m_pInnerMesh->AddSubMesh(pSubMesh);
+}
+
+uint cMs3dMesh::GetSubMeshCount() const
+{
+   return m_pInnerMesh->GetSubMeshCount();
+}
+
+tResult cMs3dMesh::GetSubMesh(uint index, ISubMesh * * ppSubMesh) const
+{
+   return m_pInnerMesh->GetSubMesh(index, ppSubMesh);
 }
 
 tResult cMs3dMesh::AttachSkeleton(ISkeleton * pSkeleton)
 {
-   SafeRelease(m_pSkeleton);
-   m_pSkeleton = pSkeleton;
-   if (m_pSkeleton)
-   {
-      m_pSkeleton->AddRef();
-   }
-   return S_OK;
+   return m_pInnerMesh->AttachSkeleton(pSkeleton);
 }
 
 tResult cMs3dMesh::GetSkeleton(ISkeleton * * ppSkeleton)
 {
-   if (ppSkeleton != NULL)
-   {
-      *ppSkeleton = static_cast<ISkeleton *>(m_pSkeleton);
-      if (*ppSkeleton != NULL)
-      {
-         (*ppSkeleton)->AddRef();
-         return S_OK;
-      }
-      else
-      {
-         return S_FALSE;
-      }
-   }
-   return E_FAIL;
+   return m_pInnerMesh->GetSkeleton(ppSkeleton);
 }
 
 tResult cMs3dMesh::Read(IReader * pReader, IRenderDevice * pRenderDevice, IResourceManager * pResourceManager)
@@ -514,8 +510,6 @@ tResult cMs3dMesh::Read(IReader * pReader, IRenderDevice * pRenderDevice, IResou
    Assert(m_vertices.empty());
    Assert(m_triangles.empty());
    Assert(m_groups.empty());
-   Assert(m_materials.empty());
-   Assert(!m_pSkeleton);
 
    ms3d_header_t header;
    if (pReader->Read(&header, sizeof(header)) != S_OK ||
@@ -584,7 +578,7 @@ tResult cMs3dMesh::Read(IReader * pReader, IRenderDevice * pRenderDevice, IResou
          delete pTextureImage;
       }
 
-      IMaterial * pMaterial = MaterialCreate();
+      cAutoIPtr<IMaterial> pMaterial = MaterialCreate();
 
       if (pMaterial != NULL)
       {
@@ -596,11 +590,11 @@ tResult cMs3dMesh::Read(IReader * pReader, IRenderDevice * pRenderDevice, IResou
          pMaterial->SetShininess(material.shininess);
          pMaterial->SetTexture(0, pTexture);
 
-         m_materials.push_back(pMaterial);
+         AddMaterial(pMaterial);
       }
    }
 
-   Assert(m_materials.size() == nMaterials);
+   Assert(GetMaterialCount() == nMaterials);
 
    std::vector<sBoneInfo> bones;
    std::vector<IKeyFrameInterpolator *> interpolators;
@@ -695,9 +689,10 @@ tResult cMs3dMesh::Read(IReader * pReader, IRenderDevice * pRenderDevice, IResou
 
 void cMs3dMesh::SetFrame(float percent)
 {
-   if (!!m_pSkeleton)
+   cAutoIPtr<ISkeleton> pSkeleton;
+   if (GetSkeleton(&pSkeleton) == S_OK)
    {
-      m_pSkeleton->GetBoneMatrices(percent, &m_boneMatrices);
+      pSkeleton->GetBoneMatrices(percent, &m_boneMatrices);
    }
 }
 
@@ -708,9 +703,10 @@ void cMs3dMesh::RenderSoftware() const
    {
       glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
 
-      if (iter->GetMaterialIndex() > -1)
+      cAutoIPtr<IMaterial> pMaterial;
+      if ((iter->GetMaterialIndex() > -1) 
+         && (GetMaterial(iter->GetMaterialIndex(), &pMaterial) == S_OK))
       {
-         IMaterial * pMaterial = const_cast<IMaterial *>(m_materials[iter->GetMaterialIndex()]);
          GlMaterial(pMaterial);
       }
 
@@ -765,9 +761,10 @@ void cMs3dMesh::RenderVertexProgram() const
    {
       glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
 
-      if (iter->GetMaterialIndex() > -1)
+      cAutoIPtr<IMaterial> pMaterial;
+      if ((iter->GetMaterialIndex() > -1) 
+         && (GetMaterial(iter->GetMaterialIndex(), &pMaterial) == S_OK))
       {
-         IMaterial * pMaterial = const_cast<IMaterial *>(m_materials[iter->GetMaterialIndex()]);
          GlMaterial(pMaterial);
       }
 

@@ -129,7 +129,11 @@ public:
    virtual void Render(IRenderDevice * pRenderDevice) const;
    virtual tResult AddMaterial(IMaterial * pMaterial);
    virtual tResult FindMaterial(const char * pszName, IMaterial * * ppMaterial) const;
+   virtual uint GetMaterialCount() const;
+   virtual tResult GetMaterial(uint index, IMaterial * * ppMaterial) const;
    virtual tResult AddSubMesh(ISubMesh * pSubMesh);
+   virtual uint GetSubMeshCount() const;
+   virtual tResult GetSubMesh(uint index, ISubMesh * * ppSubMesh) const;
    virtual tResult AttachSkeleton(ISkeleton * pSkeleton);
    virtual tResult GetSkeleton(ISkeleton * * ppSkeleton);
 
@@ -299,12 +303,52 @@ tResult cMesh::FindMaterial(const char * pszName, IMaterial * * ppMaterial) cons
 
 ///////////////////////////////////////
 
+uint cMesh::GetMaterialCount() const
+{
+   return m_materials.size();
+}
+
+///////////////////////////////////////
+
+tResult cMesh::GetMaterial(uint index, IMaterial * * ppMaterial) const
+{
+   if ((index < m_materials.size()) && (ppMaterial != NULL))
+   {
+      *ppMaterial = m_materials[index];
+      (*ppMaterial)->AddRef();
+      return S_OK;
+   }
+   return E_FAIL;
+}
+
+///////////////////////////////////////
+
 tResult cMesh::AddSubMesh(ISubMesh * pSubMesh)
 {
    if (pSubMesh != NULL)
    {
       m_subMeshes.push_back(pSubMesh);
       pSubMesh->AddRef();
+      return S_OK;
+   }
+   return E_FAIL;
+}
+
+///////////////////////////////////////
+
+uint cMesh::GetSubMeshCount() const
+{
+   return m_subMeshes.size();
+}
+
+///////////////////////////////////////
+
+tResult cMesh::GetSubMesh(uint index, ISubMesh * * ppSubMesh) const
+{
+   if ((index < m_subMeshes.size()) && (ppSubMesh != NULL))
+   {
+      *ppSubMesh = m_subMeshes[index];
+      (*ppSubMesh)->AddRef();
       return S_OK;
    }
    return E_FAIL;
