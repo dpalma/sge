@@ -120,11 +120,32 @@ void cSceneLayer::Clear()
 
 ///////////////////////////////////////
 
-void DoRender(ISceneEntity * pEntity)
+class cRenderEntity
+{
+public:
+   cRenderEntity(IRenderDevice * pRenderDevice);
+
+   void operator()(ISceneEntity * pEntity);
+
+private:
+   cAutoIPtr<IRenderDevice> m_pRenderDevice;
+};
+
+cRenderEntity::cRenderEntity(IRenderDevice * pRenderDevice)
+ : m_pRenderDevice(pRenderDevice)
+{
+   Assert(m_pRenderDevice != NULL);
+   if (m_pRenderDevice != NULL)
+   {
+      m_pRenderDevice->AddRef();
+   }
+}
+
+void cRenderEntity::operator()(ISceneEntity * pEntity)
 {
    glPushMatrix();
    glMultMatrixf(pEntity->GetWorldTransform().m);
-   pEntity->Render();
+   pEntity->Render(m_pRenderDevice);
    glPopMatrix();
 }
 
@@ -132,7 +153,7 @@ void DoRender(ISceneEntity * pEntity)
 
 tResult cSceneLayer::Render(IRenderDevice * pRenderDevice)
 {
-   std::for_each(m_entities.begin(), m_entities.end(), DoRender);
+   std::for_each(m_entities.begin(), m_entities.end(), cRenderEntity(pRenderDevice));
    return S_OK;
 }
 

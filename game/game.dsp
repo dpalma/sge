@@ -203,10 +203,6 @@ SOURCE=.\main.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\scenemesh.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\script.cpp
 # End Source File
 # Begin Source File
@@ -286,10 +282,6 @@ SOURCE=.\heightmap.h
 # Begin Source File
 
 SOURCE=.\input.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\scenemesh.h
 # End Source File
 # Begin Source File
 

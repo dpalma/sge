@@ -44,7 +44,7 @@ public:
    virtual const tQuat & GetWorldRotation() const;
    virtual const tMatrix4 & GetWorldTransform() const;
 
-   virtual void Render();
+   virtual void Render(IRenderDevice * pRenderDevice);
    virtual float GetBoundingRadius() const;
 
 private:

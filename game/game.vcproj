@@ -337,9 +337,6 @@
 				RelativePath=".\main.cpp">
 			</File>
 			<File
-				RelativePath=".\scenemesh.cpp">
-			</File>
-			<File
 				RelativePath=".\script.cpp">
 			</File>
 			<File
@@ -459,9 +456,6 @@
 			</File>
 			<File
 				RelativePath=".\input.h">
-			</File>
-			<File
-				RelativePath=".\scenemesh.h">
 			</File>
 			<File
 				RelativePath=".\script.h">

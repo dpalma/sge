@@ -4,7 +4,6 @@
 #include "stdhdr.h"
 
 #include "scenemesh.h"
-#include "gcommon.h"
 
 #include "mesh.h"
 #include "skeleton.h"
@@ -24,13 +23,34 @@
 // CLASS: cSceneMesh
 //
 
+ISceneEntity * SceneEntityCreate(IMesh * pMesh)
+{
+   return static_cast<ISceneEntity *>(new cSceneMesh(pMesh));
+}
+
 ///////////////////////////////////////
 
-cSceneMesh::cSceneMesh()
+cSceneMesh::cSceneMesh(IMesh * pMesh)
  : m_animationTime(0),
    m_boundingSphereRadius(0),
-   m_pSceneEntity(SceneEntityCreate())
+   m_pSceneEntity(SceneEntityCreate()),
+   m_pMesh(pMesh)
 {
+   Assert(pMesh != NULL);
+   if (pMesh != NULL)
+   {
+      pMesh->AddRef();
+   }
+
+   PostRead();
+
+   tVec3 maxs, mins;
+   m_pMesh->GetAABB(&maxs, &mins);
+
+   tVec3 diff = maxs - mins;
+
+   m_boundingSphereRadius = 0.5f * Max(diff.x, Max(diff.y, diff.z));
+
    UseGlobal(Sim);
    pSim->Connect(&m_simClient);
 }
@@ -41,33 +61,6 @@ cSceneMesh::~cSceneMesh()
 {
    UseGlobal(Sim);
    pSim->Disconnect(&m_simClient);
-}
-
-///////////////////////////////////////
-
-bool cSceneMesh::SetMesh(const char * pszMesh)
-{
-   SafeRelease(m_pMesh);
-
-   UseGlobal(ResourceManager);
-
-   m_pMesh = MeshLoad(pResourceManager, AccessRenderDevice(), pszMesh);
-
-   if (m_pMesh != NULL)
-   {
-      PostRead();
-
-      tVec3 maxs, mins;
-      m_pMesh->GetAABB(&maxs, &mins);
-
-      tVec3 diff = maxs - mins;
-
-      m_boundingSphereRadius = 0.5f * Max(diff.x, Max(diff.y, diff.z));
-
-      return true;
-   }
-   
-   return false;
 }
 
 ///////////////////////////////////////
@@ -108,7 +101,7 @@ tResult cSceneMesh::PostRead()
 
       tMatrices inverses(pSkeleton->GetBoneCount());
 
-      for (int i = 0; i < inverses.size(); i++)
+      for (uint i = 0; i < inverses.size(); i++)
       {
          MatrixInvert(pSkeleton->GetBoneWorldTransform(i), &inverses[i]);
       }
@@ -204,12 +197,12 @@ IMesh * cSceneMesh::AccessMesh()
 
 ///////////////////////////////////////
 
-void cSceneMesh::Render()
+void cSceneMesh::Render(IRenderDevice * pRenderDevice)
 {
    if (m_pMesh != NULL)
    {
-      AccessRenderDevice()->SetBlendMatrices(m_boneMatrices.size(), &m_boneMatrices[0]);
-      m_pMesh->Render(AccessRenderDevice());
+      pRenderDevice->SetBlendMatrices(m_boneMatrices.size(), &m_boneMatrices[0]);
+      m_pMesh->Render(pRenderDevice);
    }
 }
 

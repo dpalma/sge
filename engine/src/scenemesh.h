@@ -26,7 +26,7 @@ class cSceneMesh : public cComObject<IMPLEMENTS(ISceneEntity)>
    const cSceneMesh & operator =(const cSceneMesh &);
 
 public:
-   cSceneMesh();
+   cSceneMesh(IMesh * pMesh);
    virtual ~cSceneMesh();
 
    virtual ISceneEntity * AccessParent() { return m_pSceneEntity->AccessParent(); }
@@ -45,10 +45,9 @@ public:
    virtual const tQuat & GetWorldRotation() const { return m_pSceneEntity->GetWorldRotation(); }
    virtual const tMatrix4 & GetWorldTransform() const { return m_pSceneEntity->GetWorldTransform(); }
 
-   virtual void Render();
+   virtual void Render(IRenderDevice * pRenderDevice);
    virtual float GetBoundingRadius() const;
 
-   bool SetMesh(const char * pszMesh);
    IMesh * AccessMesh();
 
 private:

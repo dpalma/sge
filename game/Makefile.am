@@ -16,8 +16,6 @@ game_SOURCES = cameracontroller.cpp \
                heightmap.cpp \
                input.cpp \
                main.cpp \
-               scenemesh.cpp \
-               scenenode.cpp \
                script.cpp \
                scriptvm.cpp \
                ui.cpp \

@@ -51,7 +51,7 @@ public:
    virtual const tQuat & GetWorldRotation() const { return m_pSceneEntity->GetWorldRotation(); }
    virtual const tMatrix4 & GetWorldTransform() const { return m_pSceneEntity->GetWorldTransform(); }
 
-   virtual void Render();
+   virtual void Render(IRenderDevice * pRenderDevice);
    virtual float GetBoundingRadius() const { return m_pSceneEntity->GetBoundingRadius(); }
 
 private:

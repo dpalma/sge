@@ -200,7 +200,7 @@ const tMatrix4 & cSceneEntity::GetWorldTransform() const
 
 ///////////////////////////////////////
 
-void cSceneEntity::Render()
+void cSceneEntity::Render(IRenderDevice * pRenderDevice)
 {
 }
 

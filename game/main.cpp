@@ -8,7 +8,6 @@
 #include "groundtiled.h"
 #include "input.h"
 #include "sys.h"
-#include "scenemesh.h"
 #include "script.h"
 #include "cameracontroller.h"
 
@@ -57,10 +56,6 @@ const float kZNear = 1;
 const float kZFar = 2000;
 
 static const float kGroundScaleY = 0.25f;
-
-static const float kRotateDegreesPerSec = 20;
-
-static const char kszSelIndicatorMesh[] = "arrow.ms3d";
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -273,13 +268,14 @@ SCRIPT_DEFINE_FUNCTION(EntitySpawnTest)
             x *= groundDims.x;
             z *= groundDims.y;
 
-            cAutoIPtr<cSceneMesh> pNode = new cSceneMesh;
+            UseGlobal(ResourceManager);
+            cAutoIPtr<IMesh> pMesh = MeshLoad(pResourceManager, AccessRenderDevice(), ScriptArgAsString(0));
 
-            pNode->SetMesh(ScriptArgAsString(0));
-            pNode->SetLocalTranslation(tVec3(x,y,z));
+            cAutoIPtr<ISceneEntity> pEntity = SceneEntityCreate(pMesh);
+            pEntity->SetLocalTranslation(tVec3(x,y,z));
 
             UseGlobal(Scene);
-            pScene->AddEntity(kSL_Object, pNode);
+            pScene->AddEntity(kSL_Object, pEntity);
          }
       }
       else
@@ -328,7 +324,7 @@ public:
    virtual const tQuat & GetWorldRotation() const { return m_pSceneEntity->GetWorldRotation(); }
    virtual const tMatrix4 & GetWorldTransform() const { return m_pSceneEntity->GetWorldTransform(); }
 
-   virtual void Render();
+   virtual void Render(IRenderDevice * pRenderDevice);
    virtual float GetBoundingRadius() const { return m_pSceneEntity->GetBoundingRadius(); }
 
 private:
@@ -346,7 +342,7 @@ cUIManagerSceneNode::~cUIManagerSceneNode()
    SafeRelease(g_pUIManager);
 }
 
-void cUIManagerSceneNode::Render()
+void cUIManagerSceneNode::Render(IRenderDevice * pRenderDevice)
 {
    glPushAttrib(GL_ENABLE_BIT);
    glDisable(GL_DEPTH_TEST);

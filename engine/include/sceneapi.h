@@ -21,6 +21,7 @@ typedef cMatrix4<float> tMatrix4;
 typedef class cQuat tQuat;
 
 F_DECLARE_INTERFACE(IRenderDevice);
+F_DECLARE_INTERFACE(IMesh);
 
 F_DECLARE_INTERFACE(IScene);
 F_DECLARE_INTERFACE(ISceneEntity);
@@ -87,13 +88,14 @@ interface ISceneEntity : IUnknown
    virtual const tQuat & GetWorldRotation() const = 0;
    virtual const tMatrix4 & GetWorldTransform() const = 0;
 
-   virtual void Render() = 0;
+   virtual void Render(IRenderDevice * pRenderDevice) = 0;
    virtual float GetBoundingRadius() const = 0;
 };
 
 ///////////////////////////////////////
 
 ENGINE_API ISceneEntity * SceneEntityCreate();
+ENGINE_API ISceneEntity * SceneEntityCreate(IMesh * pMesh);
 
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -46,7 +46,7 @@ public:
 
    bool Init(cHeightMap * pHeightMap);
 
-   virtual void Render();
+   void Render(IRenderDevice * pRenderDevice);
 
 private:
    cAutoIPtr<IVertexBuffer> m_pVertexBuffer;
@@ -189,9 +189,9 @@ bool cTiledGround::Init(cHeightMap * pHeightMap)
 
 ///////////////////////////////////////
 
-void cTiledGround::Render()
+void cTiledGround::Render(IRenderDevice * pRenderDevice)
 {
-   AccessRenderDevice()->Render(kRP_Triangles, m_pMaterial, m_nIndices, m_pIndexBuffer, 0, m_pVertexBuffer);
+   pRenderDevice->Render(kRP_Triangles, m_pMaterial, m_nIndices, m_pIndexBuffer, 0, m_pVertexBuffer);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -237,11 +237,11 @@ tVec2 cTerrainNode::GetDimensions() const
 
 ///////////////////////////////////////
 
-void cTerrainNode::Render()
+void cTerrainNode::Render(IRenderDevice * pRenderDevice)
 {
    if (m_pGround != NULL)
    {
-      m_pGround->Render();
+      m_pGround->Render(pRenderDevice);
    }
 }
 
