@@ -6,6 +6,7 @@
 #include "editorDoc.h"
 #include "terrain.h"
 #include "editorTypes.h"
+#include "terrainapi.h"
 
 #include "resource.h"
 
@@ -20,7 +21,7 @@
 
 /////////////////////////////////////////////////////////////////////////////
 
-void FlushCommandStack(std::stack<IEditorCommand *> * pCommandStack)
+void FlushCommandStack(tCommandStack * pCommandStack)
 {
    if (pCommandStack != NULL)
    {
@@ -55,6 +56,7 @@ cEditorDoc::cEditorDoc()
 
 cEditorDoc::~cEditorDoc()
 {
+   Reset();
 }
 
 ////////////////////////////////////////
@@ -70,8 +72,22 @@ tResult cEditorDoc::New(const cMapSettings * pMapSettings)
    }
    else
    {
-      return m_pTerrain->Init(pMapSettings);
+      UseGlobal(EditorTileManager);
+      cAutoIPtr<IEditorTileSet> pTileSet;
+      if (pEditorTileManager->GetTileSet(pMapSettings->GetTileSet(), &pTileSet) == S_OK)
+      {
+         cAutoIPtr<IHeightMap> pHeightMap;
+         if (pMapSettings->GetHeightMap(&pHeightMap) == S_OK)
+         {
+            return m_pTerrain->Init(pMapSettings->GetXDimension(),
+                                    pMapSettings->GetZDimension(),
+                                    pTileSet,
+                                    pHeightMap);
+         }
+      }
    }
+
+   return E_FAIL;
 }
 
 ////////////////////////////////////////
@@ -134,8 +150,6 @@ tResult cEditorDoc::Save(IWriter * pWriter)
 tResult cEditorDoc::Reset()
 {
    delete m_pTerrain, m_pTerrain = NULL;
-
-   SafeRelease(m_pMaterial);
 
    FlushCommandStack(&m_undoStack);
    FlushCommandStack(&m_redoStack);

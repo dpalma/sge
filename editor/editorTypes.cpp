@@ -4,11 +4,7 @@
 #include "stdhdr.h"
 
 #include "editorTypes.h"
-
-#include "resourceapi.h"
-#include "imagedata.h"
-#include "globalobj.h"
-#include "techmath.h"
+#include "terrainapi.h"
 
 #include "dbgalloc.h" // must be last header
 
@@ -24,8 +20,7 @@ cMapSettings::cMapSettings()
    m_zDimension(0),
    m_tileSet(""),
    m_heightData(kHeightData_None),
-   m_heightMapFile(""),
-   m_pHeightImageData(NULL)
+   m_heightMapFile("")
 {
 }
 
@@ -40,8 +35,7 @@ cMapSettings::cMapSettings(uint xDimension,
    m_zDimension(zDimension),
    m_tileSet(pszTileSet != NULL ? pszTileSet : ""),
    m_heightData(heightData),
-   m_heightMapFile(pszHeightMapFile != NULL ? pszHeightMapFile : ""),
-   m_pHeightImageData(NULL)
+   m_heightMapFile(pszHeightMapFile != NULL ? pszHeightMapFile : "")
 {
 }
 
@@ -52,8 +46,7 @@ cMapSettings::cMapSettings(const cMapSettings & mapSettings)
    m_zDimension(mapSettings.m_zDimension),
    m_tileSet(mapSettings.m_tileSet),
    m_heightData(mapSettings.m_heightData),
-   m_heightMapFile(mapSettings.m_heightMapFile),
-   m_pHeightImageData(NULL)
+   m_heightMapFile(mapSettings.m_heightMapFile)
 {
 }
 
@@ -61,7 +54,6 @@ cMapSettings::cMapSettings(const cMapSettings & mapSettings)
 
 cMapSettings::~cMapSettings()
 {
-   delete m_pHeightImageData, m_pHeightImageData = NULL;
 }
 
 ////////////////////////////////////////
@@ -78,49 +70,18 @@ const cMapSettings & cMapSettings::operator =(const cMapSettings & mapSettings)
 
 ////////////////////////////////////////
 
-float cMapSettings::GetNormalizedHeight(float nx, float nz) const
+tResult cMapSettings::GetHeightMap(IHeightMap * * ppHeightMap) const
 {
-   if (GetHeightData() != kHeightData_HeightMap)
+   if (GetHeightData() == kHeightData_HeightMap)
    {
-      return 0;
+      return HeightMapLoad(GetHeightMap(), ppHeightMap);
    }
-
-   if (m_pHeightImageData == NULL)
+   else
    {
-      cAutoIPtr<IResource> pRes;
-      UseGlobal(ResourceManager2);
-      if (pResourceManager2->Load(tResKey(GetHeightMap(), kRC_Image), &pRes) == S_OK)
-      {
-         if ((pRes->GetData((void**)&m_pHeightImageData) != S_OK)
-            || (m_pHeightImageData == NULL))
-         {
-            return 0;
-         }
-      }
+      return HeightMapCreateSimple(0, ppHeightMap);
    }
-
-   Assert(m_pHeightImageData != NULL);
-
-   // support only grayscale images for now
-   if (m_pHeightImageData->GetPixelFormat() != kPF_Grayscale)
-   {
-      return 0;
-   }
-
-   if ((nx < 0) || (nx > 1) || (nz < 0) || (nz > 1))
-   {
-      return 0;
-   }
-
-   uint x = Round(nx * m_pHeightImageData->GetWidth());
-   uint z = Round(nz * m_pHeightImageData->GetHeight());
-
-   uint8 * pData = reinterpret_cast<uint8 *>(m_pHeightImageData);
-
-   uint8 sample = pData[(z * m_pHeightImageData->GetWidth()) + x];
-
-   return static_cast<float>(sample) / 255.0f;
 }
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

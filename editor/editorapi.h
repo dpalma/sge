@@ -195,6 +195,7 @@ interface UUID("78C29790-865D-4f81-9AF1-26EC23BB5FAC") IEditorView : IUnknown
    virtual tResult GetModel(IEditorModel * * ppModel) = 0;
    virtual tResult SetModel(IEditorModel * pModel) = 0;
 
+   virtual tResult GetHighlightTile(int * piTileX, int * piTileZ) const = 0;
    virtual tResult HighlightTile(int iTileX, int iTileZ) = 0;
    virtual tResult ClearTileHighlight() = 0;
 };
@@ -219,7 +220,6 @@ interface UUID("F131D72E-30A7-4758-A094-830F00A50D91") IEditorModel : IUnknown
    virtual tResult Redo() = 0;
 
    virtual cTerrain * AccessTerrain() = 0;
-   virtual IMaterial * AccessMaterial() = 0;
 
    virtual tResult AddCommand(IEditorCommand * pCommand) = 0;
 

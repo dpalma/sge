@@ -12,7 +12,7 @@
 
 typedef CPoint tPoint;
 
-class cImageData;
+F_DECLARE_INTERFACE(IHeightMap);
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -45,16 +45,15 @@ public:
    inline eHeightData GetHeightData() const { return m_heightData; }
    inline const tChar * GetHeightMap() const { return m_heightMapFile.c_str(); }
 
-   float GetNormalizedHeight(float nx, float nz) const;
+   tResult GetHeightMap(IHeightMap * * ppHeightMap) const;
 
 private:
    uint m_xDimension, m_zDimension;
    cStr m_tileSet;
    eHeightData m_heightData;
    cStr m_heightMapFile;
-
-   mutable cImageData * m_pHeightImageData;
 };
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

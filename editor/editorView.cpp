@@ -3,20 +3,17 @@
 
 #include "stdhdr.h"
 
-#include "editorDoc.h"
 #include "editorView.h"
+#include "editorDoc.h"
 #include "terrain.h"
 #include "editorapi.h"
 #include "editorTools.h"
 
 #include "sceneapi.h"
-#include "ray.h"
 
 #include "renderapi.h"
 
 #include "globalobj.h"
-#include "keys.h"
-#include "techtime.h"
 
 #include <GL/gl.h>
 #include <zmouse.h>
@@ -61,7 +58,6 @@ cEditorView::cEditorView()
    m_center(0,0,0),
    m_eye(0,0,0),
    m_bRecalcEye(true),
-   m_sceneEntity(this),
    m_highlitTileX(-1),
    m_highlitTileZ(-1)
 {
@@ -110,6 +106,7 @@ tResult cEditorView::Create(HWND hWndParent, HWND * phWnd)
 
 tResult cEditorView::Destroy()
 {
+   Verify(SetModel(NULL) == S_OK);
    return DestroyWindow() ? S_OK : S_FALSE;
 }
 
@@ -198,6 +195,24 @@ tResult cEditorView::SetModel(IEditorModel * pModel)
    SafeRelease(m_pModel);
    m_pModel = CTAddRef(pModel);
    InitialUpdate();
+   ClearTileHighlight();
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cEditorView::GetHighlightTile(int * piTileX, int * piTileZ) const
+{
+   if (piTileX == NULL || piTileZ == NULL)
+   {
+      return E_POINTER;
+   }
+   if (m_highlitTileX < 0 || m_highlitTileZ < 0)
+   {
+      return S_FALSE;
+   }
+   *piTileX = m_highlitTileX;
+   *piTileZ = m_highlitTileZ;
    return S_OK;
 }
 
@@ -246,6 +261,40 @@ void cEditorView::RenderScene()
       UseGlobal(Scene);
       pScene->Render(pDevice);
 
+      cAutoIPtr<IEditorModel> pModel;
+      if (GetModel(&pModel) == S_OK
+         && pModel->AccessTerrain() != NULL)
+      {
+         int iHlx, iHlz;
+         if (GetHighlightTile(&iHlx, &iHlz) == S_OK)
+         {
+            tVec3 verts[4];
+            if (pModel->AccessTerrain()->GetTileVertices(iHlx, iHlz, verts) == S_OK)
+            {
+               static const float kOffsetY = 0.5f;
+               verts[0].y += kOffsetY;
+               verts[1].y += kOffsetY;
+               verts[2].y += kOffsetY;
+               verts[3].y += kOffsetY;
+
+               static const GLfloat highlitTileColor[] = { 0,1,0,.25f };
+
+               glPushAttrib(GL_ENABLE_BIT);
+               glEnable(GL_BLEND);
+               glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+               glBegin(GL_QUADS);
+                  glColor4fv(highlitTileColor);
+                  glNormal3f(0, 1, 0);
+                  glVertex3fv(verts[0].v);
+                  glVertex3fv(verts[3].v);
+                  glVertex3fv(verts[2].v);
+                  glVertex3fv(verts[1].v);
+               glEnd();
+               glPopAttrib();
+            }
+         }
+      }
+
       pDevice->EndScene();
    }
 }
@@ -270,8 +319,6 @@ LRESULT cEditorView::OnCreate(LPCREATESTRUCT lpCreateStruct)
    UseGlobal(Scene);
    pScene->SetCamera(kSL_Terrain, m_pCamera);
 
-   pScene->AddEntity(kSL_Terrain, &m_sceneEntity);
-
    UseGlobal(EditorApp);
    Verify(pEditorApp->AddLoopClient(this) == S_OK);
 
@@ -284,11 +331,11 @@ LRESULT cEditorView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 void cEditorView::OnDestroy() 
 {
-   UseGlobal(Scene);
-   pScene->RemoveEntity(kSL_Terrain, &m_sceneEntity);
-
    UseGlobal(EditorApp);
    pEditorApp->RemoveLoopClient(this);
+
+   UseGlobal(Scene);
+   pScene->Clear(kSL_Terrain);
 
    SafeRelease(m_pCamera);
    SafeRelease(m_pRenderDevice);
@@ -337,68 +384,6 @@ LRESULT cEditorView::OnGetIEditorView(UINT uMsg, WPARAM wParam, LPARAM lParam, B
    return -1;
 }
 
-/////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////
-
-cEditorView::cSceneEntity::cSceneEntity(cEditorView * pOuter)
- : m_pOuter(pOuter),
-   m_translation(0,0,0),
-   m_rotation(0,0,0,1),
-   m_transform(tMatrix4::GetIdentity())
-{
-}
-
-////////////////////////////////////////
-
-cEditorView::cSceneEntity::~cSceneEntity()
-{
-}
-
-////////////////////////////////////////
-
-void cEditorView::cSceneEntity::Render(IRenderDevice * pRenderDevice)
-{
-   Assert(m_pOuter != NULL);
-
-   cAutoIPtr<IEditorModel> pModel;
-   if (m_pOuter->GetModel(&pModel) == S_OK)
-   {
-      if (pModel->AccessTerrain() != NULL)
-      {
-         pModel->AccessTerrain()->Render(pRenderDevice);
-      }
-   }
-
-   if ((m_pOuter->m_highlitTileX != -1) && (m_pOuter->m_highlitTileZ != -1))
-   {
-      tVec3 verts[4];
-      if (pModel->AccessTerrain()->GetTileVertices(m_pOuter->m_highlitTileX, m_pOuter->m_highlitTileZ, verts) == S_OK)
-      {
-         static const float kOffsetY = 0.5f;
-         verts[0].y += kOffsetY;
-         verts[1].y += kOffsetY;
-         verts[2].y += kOffsetY;
-         verts[3].y += kOffsetY;
-
-         static const GLfloat highlitTileColor[] = { 0,1,0,.25f };
-
-         glPushAttrib(GL_ENABLE_BIT);
-         glEnable(GL_BLEND);
-         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-         glBegin(GL_QUADS);
-            glColor4fv(highlitTileColor);
-            glNormal3f(0, 1, 0);
-            glVertex3fv(verts[0].v);
-            glVertex3fv(verts[3].v);
-            glVertex3fv(verts[2].v);
-            glVertex3fv(verts[1].v);
-         glEnd();
-         glPopAttrib();
-      }
-   }
-}
-
 ////////////////////////////////////////
 
 void cEditorView::InitialUpdate() 
@@ -417,142 +402,12 @@ void cEditorView::InitialUpdate()
 
    PlaceCamera((float)xExt / 2, (float)zExt / 2);
 
-   Update();
-}
-
-////////////////////////////////////////
-
-void cEditorView::Update() 
-{
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// The characters mapped here should be handled in WM_KEYDOWN, else in WM_CHAR
-
-static const long g_keyMap[128] =
-{
-   /*   0 */ 0, kEscape, 0, 0, 0, 0, 0, 0,
-   /*   8 */ 0, 0, 0, 0, 0, 0, kBackspace, kTab,
-   /*  16 */ 0, 0, 0, 0, 0, 0, 0, 0,
-   /*  24 */ 0, 0, 0, 0, kEnter, kCtrl, 0, 0,
-   /*  32 */ 0, 0, 0, 0, 0, 0, 0, 0,
-   /*  40 */ 0, 0, kLShift, 0, 0, 0, 0, 0,
-   /*  48 */ 0, 0, 0, 0, 0, 0, kRShift, 0,
-   /*  56 */ kAlt, kSpace, 0, kF1, kF2, kF3, kF4, kF5,
-   /*  64 */ kF6, kF7, kF8, kF9, kF10, kPause, 0, kHome,
-   /*  72 */ kUp, kPageUp, 0, kLeft, 0, kRight, 0, kEnd,
-   /*  80 */ kDown, kPageDown, kInsert, kDelete, 0, 0, 0, kF11,
-   /*  88 */ kF12, 0, 0, 0, 0, 0, 0, 0,
-   /*  96 */ 0, 0, 0, 0, 0, 0, 0, 0,
-   /* 104 */ 0, 0, 0, 0, 0, 0, 0, 0,
-   /* 112 */ 0, 0, 0, 0, 0, 0, 0, 0,
-   /* 120 */ 0, 0, 0, 0, 0, 0, 0, 0,
-};
-
-///////////////////////////////////////////////////////////////////////////////
-// The keydata parameter is the LPARAM from a Windows key message
-
-static long MapKey(long keydata)
-{
-   //int repeatCount = keydata & 0xFFFF;
-
-   int scanCode = (keydata >> 16) & 0xFF;
-
-   //bool isExtended = false;
-   //if (keydata & (1 << 24))
-   //   isExtended = true;
-
-   return g_keyMap[scanCode];
-}
-
-////////////////////////////////////////
-
-LRESULT cEditorView::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) 
-{
-   double msgTime = TimeGetSecs();
-
-   switch (message)
+   cAutoIPtr<ISceneEntity> pSE;
+   if (pModel->AccessTerrain()->GetSceneEntity(&pSE) == S_OK)
    {
-      case WM_DESTROY:
-      {
-         ForEachConnection(&IWindowSink::OnDestroy, msgTime);
-         break;
-      }
-
-      case WM_SIZE:
-      {
-         ForEachConnection(&IWindowSink::OnResize, (int)LOWORD(lParam), (int)HIWORD(lParam), msgTime);
-         break;
-      }
-
-      case WM_ACTIVATEAPP:
-      {
-         ForEachConnection(&IWindowSink::OnActivateApp, wParam ? true : false, msgTime);
-         break;
-      }
-
-      case WM_SYSKEYDOWN:
-      case WM_KEYDOWN:
-      {
-         long mapped = MapKey(lParam);
-         if (mapped != 0)
-         {
-            ForEachConnection(&IWindowSink::OnKeyEvent, mapped, true, msgTime);
-         }
-         break;
-      }
-
-      case WM_SYSCHAR:
-      case WM_CHAR:
-      {
-         long mapped = MapKey(lParam);
-         if (mapped == 0)
-         {
-            ForEachConnection(&IWindowSink::OnKeyEvent, (long)wParam, true, msgTime);
-         }
-         break;
-      }
-
-      case WM_SYSKEYUP:
-      case WM_KEYUP:
-      {
-         long mapped = MapKey(lParam);
-         if (mapped == 0)
-         {
-            mapped = wParam;
-         }
-         ForEachConnection(&IWindowSink::OnKeyEvent, mapped, false, msgTime);
-         break;
-      }
-
-      case WM_MOUSEWHEEL:
-      {
-         short zDelta = (short)HIWORD(wParam);
-         long key = (zDelta < 0) ? kMouseWheelDown : kMouseWheelUp;
-         ForEachConnection(&IWindowSink::OnKeyEvent, key, true, msgTime);
-         ForEachConnection(&IWindowSink::OnKeyEvent, key, false, msgTime);
-         break;
-      }
-
-      case WM_LBUTTONDOWN:
-      case WM_LBUTTONUP:
-      case WM_RBUTTONDOWN:
-      case WM_RBUTTONUP:
-      case WM_MBUTTONDOWN:
-      case WM_MBUTTONUP:
-      case WM_MOUSEMOVE:
-      {
-         uint mouseState = 0;
-         if (wParam & MK_LBUTTON)
-            mouseState |= kLMouseDown;
-         if (wParam & MK_RBUTTON)
-            mouseState |= kRMouseDown;
-         if (wParam & MK_MBUTTON)
-            mouseState |= kMMouseDown;
-         ForEachConnection(&IWindowSink::OnMouseEvent, (int)LOWORD(lParam), (int)HIWORD(lParam), mouseState, msgTime);
-         break;
-      }
+      UseGlobal(Scene);
+      pScene->AddEntity(kSL_Terrain, pSE);
    }
-
-   return 0;
 }
+
+/////////////////////////////////////////////////////////////////////////////

@@ -4,9 +4,13 @@
 #if !defined(INCLUDED_TERRAIN_H)
 #define INCLUDED_TERRAIN_H
 
+#include "sceneapi.h"
+
 #include "comtools.h"
 #include "vec2.h"
 #include "vec3.h"
+#include "quat.h"
+#include "matrix4.h"
 #include "str.h"
 
 #include <vector>
@@ -16,11 +20,11 @@
 #endif // _MSC_VER > 1000
 
 F_DECLARE_INTERFACE(IEditorTileSet);
+F_DECLARE_INTERFACE(IHeightMap);
 F_DECLARE_INTERFACE(IMaterial);
 F_DECLARE_INTERFACE(IRenderDevice);
 F_DECLARE_INTERFACE(IReader);
 F_DECLARE_INTERFACE(IWriter);
-class cMapSettings;
 
 class cTerrain;
 class cTerrainChunk;
@@ -40,9 +44,6 @@ struct sTerrainVertex
 //
 // CLASS: cTerrain
 //
-// Simple terrain data class. For rendering tile-based terrain with artist-
-// generated transition tiles. Not a LOD terrain renderer implementing the
-// ROAM algorithm or anything like that.
 
 const int kDefaultStepSize = 32;
 const int kTilesPerChunk = 32;
@@ -64,8 +65,8 @@ public:
    tResult Read(IReader * pReader);
    tResult Write(IWriter * pWriter);
 
-   tResult Init(const cMapSettings * pMapSettings);
-   static tResult InitQuads(const cMapSettings * pMapSettings, tTerrainQuads * pQuads);
+   tResult Init(uint nTilesX, uint nTilesZ, IEditorTileSet * pTileSet, IHeightMap * pHeightMap);
+   static tResult InitQuads(uint nTilesX, uint nTilesZ, IHeightMap * pHeightMap, tTerrainQuads * pQuads);
 
    void GetDimensions(uint * pxd, uint * pzd) const;
    void GetExtents(uint * px, uint * pz) const;
@@ -77,6 +78,46 @@ public:
    uint SetTileTerrain(uint tx, uint tz, uint terrain);
    tResult GetTileVertices(uint tx, uint tz, tVec3 vertices[4]) const;
 
+   tResult GetSceneEntity(ISceneEntity * * ppSceneEntity);
+
+protected:
+   class cSceneEntity : public cComObject<IMPLEMENTS(ISceneEntity)>
+   {
+   public:
+      cSceneEntity(cTerrain * pOuter);
+      virtual ~cSceneEntity();
+
+      virtual void DeleteThis() {}
+
+      virtual ISceneEntity * AccessParent() { return NULL; }
+      virtual tResult SetParent(ISceneEntity * pEntity) { return E_FAIL; }
+      virtual tResult IsChild(ISceneEntity * pEntity) const { return E_FAIL; }
+      virtual tResult AddChild(ISceneEntity * pEntity) { return E_FAIL; }
+      virtual tResult RemoveChild(ISceneEntity * pEntity) { return E_FAIL; }
+
+      virtual const tVec3 & GetLocalTranslation() const { return m_translation; }
+      virtual void SetLocalTranslation(const tVec3 & translation) { m_translation = translation; }
+      virtual const tQuat & GetLocalRotation() const { return m_rotation; }
+      virtual void SetLocalRotation(const tQuat & rotation) { m_rotation = rotation; }
+      virtual const tMatrix4 & GetLocalTransform() const { return m_transform; }
+
+      virtual const tVec3 & GetWorldTranslation() const { return GetLocalTranslation(); }
+      virtual const tQuat & GetWorldRotation() const { return GetLocalRotation(); }
+      virtual const tMatrix4 & GetWorldTransform() const { return GetLocalTransform(); }
+
+      virtual void Render(IRenderDevice * pRenderDevice);
+      virtual float GetBoundingRadius() const { return 9999999; }
+
+      virtual tResult Intersects(const cRay & ray) { return E_NOTIMPL; }
+
+   private:
+      cTerrain * m_pOuter;
+      tVec3 m_translation;
+      tQuat m_rotation;
+      tMatrix4 m_transform;
+   };
+   friend class cSceneEntity;
+
 private:
    uint m_tileSize; // dimensions of a single tile in terrain space
    uint m_nTilesX, m_nTilesZ; // # of tiles in the x,z directions
@@ -86,6 +127,8 @@ private:
 
    cStr m_tileSetName;
    cAutoIPtr<IEditorTileSet> m_pTileSet;
+
+   cSceneEntity m_sceneEntity;
 };
 
 

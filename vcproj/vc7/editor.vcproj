@@ -523,6 +523,9 @@
 			<File
 				RelativePath="..\..\editor\terrain.h">
 			</File>
+			<File
+				RelativePath="..\..\editor\terrainapi.h">
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"

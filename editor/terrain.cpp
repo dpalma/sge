@@ -5,13 +5,15 @@
 
 #include "terrain.h"
 #include "editorapi.h"
-#include "editorTypes.h"
+#include "terrainapi.h"
 
 #include "materialapi.h"
 #include "renderapi.h"
 #include "textureapi.h"
 #include "color.h"
 
+#include "resourceapi.h"
+#include "imagedata.h"
 #include "readwriteapi.h"
 #include "globalobj.h"
 
@@ -142,7 +144,8 @@ cTerrain::cTerrain()
    m_nTilesX(0),
    m_nTilesZ(0),
    m_nChunksX(0),
-   m_nChunksZ(0)
+   m_nChunksZ(0),
+   m_sceneEntity(this)
 {
 }
 
@@ -224,28 +227,32 @@ tResult cTerrain::Write(IWriter * pWriter)
 
 ////////////////////////////////////////
 
-tResult cTerrain::Init(const cMapSettings * pMapSettings)
+tResult cTerrain::Init(uint nTilesX, uint nTilesZ, IEditorTileSet * pTileSet, IHeightMap * pHeightMap)
 {
-   if (pMapSettings == NULL)
+   if (nTilesX == 0 || nTilesZ == 0)
+   {
+      return E_INVALIDARG;
+   }
+
+   if (pTileSet == NULL || pHeightMap == NULL)
    {
       return E_POINTER;
    }
 
-   if (FAILED(InitQuads(pMapSettings, &m_terrainQuads)))
+   if (FAILED(InitQuads(nTilesX, nTilesZ, pHeightMap, &m_terrainQuads)))
    {
       return E_FAIL;
    }
 
    m_tileSize = kDefaultStepSize;
-   m_nTilesX = pMapSettings->GetXDimension();
-   m_nTilesZ = pMapSettings->GetZDimension();
+   m_nTilesX = nTilesX;
+   m_nTilesZ = nTilesZ;
 
    Assert(!m_pTileSet);
    Assert(m_tileSetName.empty());
 
-   UseGlobal(EditorTileManager);
-   if (pEditorTileManager->GetTileSet(pMapSettings->GetTileSet(), &m_pTileSet) != S_OK
-      || m_pTileSet->GetName(&m_tileSetName) != S_OK)
+   m_pTileSet = CTAddRef(pTileSet);
+   if (pTileSet->GetName(&m_tileSetName) != S_OK)
    {
       return E_FAIL;
    }
@@ -255,29 +262,34 @@ tResult cTerrain::Init(const cMapSettings * pMapSettings)
 
 ////////////////////////////////////////
 
-tResult cTerrain::InitQuads(const cMapSettings * pMapSettings, tTerrainQuads * pQuads)
+tResult cTerrain::InitQuads(uint nTilesX, uint nTilesZ, IHeightMap * pHeightMap, tTerrainQuads * pQuads)
 {
-   if (pMapSettings == NULL || pQuads == NULL)
+   if (nTilesX == 0 || nTilesZ == 0)
+   {
+      return E_INVALIDARG;
+   }
+
+   if (pHeightMap == NULL || pQuads == NULL)
    {
       return E_POINTER;
    }
 
-   uint nQuads = pMapSettings->GetXDimension() * pMapSettings->GetZDimension();
+   uint nQuads = nTilesX * nTilesZ;
    pQuads->resize(nQuads);
 
    static const uint stepSize = kDefaultStepSize;
 
-   uint extentX = pMapSettings->GetXDimension() * stepSize;
-   uint extentZ = pMapSettings->GetZDimension() * stepSize;
+   uint extentX = nTilesX * stepSize;
+   uint extentZ = nTilesZ * stepSize;
 
    int iQuad = 0;
    float z = 0;
    float z2 = static_cast<float>(stepSize);
-   for (uint iz = 0; iz < pMapSettings->GetZDimension(); iz++, z += stepSize, z2 += stepSize)
+   for (uint iz = 0; iz < nTilesZ; iz++, z += stepSize, z2 += stepSize)
    {
       float x = 0;
       float x2 = static_cast<float>(stepSize);
-      for (uint ix = 0; ix < pMapSettings->GetXDimension(); ix++, x += stepSize, x2 += stepSize, iQuad++)
+      for (uint ix = 0; ix < nTilesX; ix++, x += stepSize, x2 += stepSize, iQuad++)
       {
          sTerrainQuad & tq = pQuads->at(iQuad);
 
@@ -293,7 +305,7 @@ tResult cTerrain::InitQuads(const cMapSettings * pMapSettings, tTerrainQuads * p
          tq.verts[2].uv1 = tVec2(1,1);
          tq.verts[3].uv1 = tVec2(0,1);
 
-#define Height(xx,zz) (pMapSettings->GetNormalizedHeight((xx)/extentX,(zz)/extentZ)*kMaxTerrainHeight)
+#define Height(xx,zz) (pHeightMap->GetNormalizedHeight((xx)/extentX,(zz)/extentZ)*kMaxTerrainHeight)
          tq.verts[0].pos = tVec3(x, Height(x,z), z);
          tq.verts[1].pos = tVec3(x2, Height(x2,z), z);
          tq.verts[2].pos = tVec3(x2, Height(x2,z2), z2);
@@ -450,6 +462,44 @@ tResult cTerrain::GetTileVertices(uint tx, uint tz, tVec3 vertices[4]) const
    return E_FAIL;
 }
 
+////////////////////////////////////////
+
+tResult cTerrain::GetSceneEntity(ISceneEntity * * ppSceneEntity)
+{
+   if (ppSceneEntity == NULL)
+   {
+      return E_POINTER;
+   }
+   *ppSceneEntity = &m_sceneEntity;
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+cTerrain::cSceneEntity::cSceneEntity(cTerrain * pOuter)
+ : m_pOuter(pOuter),
+   m_translation(0,0,0),
+   m_rotation(0,0,0,1),
+   m_transform(tMatrix4::GetIdentity())
+{
+}
+
+////////////////////////////////////////
+
+cTerrain::cSceneEntity::~cSceneEntity()
+{
+}
+
+////////////////////////////////////////
+
+void cTerrain::cSceneEntity::Render(IRenderDevice * pRenderDevice)
+{
+   Assert(m_pOuter != NULL);
+   if (m_pOuter->Render(pRenderDevice) == S_OK)
+   {
+   }
+}
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -466,6 +516,114 @@ cTerrainChunk::cTerrainChunk()
 
 cTerrainChunk::~cTerrainChunk()
 {
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+tResult HeightMapCreateSimple(float heightValue, IHeightMap * * ppHeightMap)
+{
+   if (ppHeightMap == NULL)
+   {
+      return E_POINTER;
+   }
+
+   class cSimpleHeightMap : public cComObject<IMPLEMENTS(IHeightMap)>
+   {
+   public:
+      cSimpleHeightMap(float heightValue) : m_heightValue(heightValue)
+      {
+      }
+
+      virtual float GetNormalizedHeight(float /*nx*/, float /*nz*/) const
+      {
+         return m_heightValue;
+      }
+
+   private:
+      float m_heightValue;
+   };
+
+   *ppHeightMap = static_cast<IHeightMap *>(new cSimpleHeightMap(heightValue));
+   if (*ppHeightMap == NULL)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   return S_OK;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+tResult HeightMapLoad(const tChar * pszHeightData, IHeightMap * * ppHeightMap)
+{
+   if (pszHeightData == NULL || ppHeightMap == NULL)
+   {
+      return E_POINTER;
+   }
+
+   class cHeightMap : public cComObject<IMPLEMENTS(IHeightMap)>
+   {
+   public:
+      cHeightMap(cImageData * pHeightData)
+       : m_pHeightData(pHeightData)
+      {
+         Assert(pHeightData != NULL);
+      }
+
+      ~cHeightMap()
+      {
+         delete m_pHeightData;
+         m_pHeightData = NULL;
+      }
+
+      virtual float GetNormalizedHeight(float nx, float nz) const
+      {
+         Assert(m_pHeightData != NULL);
+
+         // support only grayscale images for now
+         if (m_pHeightData->GetPixelFormat() != kPF_Grayscale)
+         {
+            return 0;
+         }
+
+         if ((nx < 0) || (nx > 1) || (nz < 0) || (nz > 1))
+         {
+            return 0;
+         }
+
+         uint x = Round(nx * m_pHeightData->GetWidth());
+         uint z = Round(nz * m_pHeightData->GetHeight());
+
+         uint8 * pData = reinterpret_cast<uint8 *>(m_pHeightData);
+
+         uint8 sample = pData[(z * m_pHeightData->GetWidth()) + x];
+
+         return static_cast<float>(sample) / 255.0f;
+      }
+
+   private:
+      cImageData * m_pHeightData;
+   };
+
+   cImageData * pHeightData = NULL;
+   cAutoIPtr<IResource> pRes;
+   UseGlobal(ResourceManager2);
+   if (pResourceManager2->Load(tResKey(pszHeightData, kRC_Image), &pRes) == S_OK)
+   {
+      if ((pRes->GetData((void**)&pHeightData) != S_OK)
+         || (pHeightData == NULL))
+      {
+         return E_FAIL;
+      }
+   }
+
+   *ppHeightMap = static_cast<IHeightMap *>(new cHeightMap(pHeightData));
+   if (*ppHeightMap == NULL)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   return S_OK;
 }
 
 /////////////////////////////////////////////////////////////////////////////

@@ -62,6 +62,10 @@ DEFINE_GUID(IID_IEditorTerrainTileCommand,
 DEFINE_GUID(IID_IEditorTool, 
 0xafad398e, 0x14d6, 0x4eed, 0xb5, 0x3, 0xaf, 0xe4, 0x4c, 0x69, 0x89, 0xc0);
 
+// {B92B9D13-FA3C-48a7-B93A-A466FB8E2C4D}
+DEFINE_GUID(IID_IHeightMap, 
+0xb92b9d13, 0xfa3c, 0x48a7, 0xb9, 0x3a, 0xa4, 0x66, 0xfb, 0x8e, 0x2c, 0x4d);
+
 ///////////////////////////////////////////////////////////////////////////////
 
 // {2F74A56F-2E8D-40d4-BCCA-D4D5FBD1831C}

@@ -14,9 +14,6 @@
 #endif // _MSC_VER > 1000
 
 class cTerrain;
-struct sTerrainVertex;
-
-F_DECLARE_INTERFACE(IMaterial);
 
 typedef std::stack<IEditorCommand *> tCommandStack;
 
@@ -52,8 +49,6 @@ public:
    virtual tResult CanRedo(cStr * pLabel);
    virtual tResult Redo();
 
-   IMaterial * AccessMaterial();
-
    cTerrain * AccessTerrain();
 
    virtual tResult AddCommand(IEditorCommand * pCommand);
@@ -64,19 +59,10 @@ public:
 private:
    bool m_bModified;
 
-   cAutoIPtr<IMaterial> m_pMaterial;
-
    cTerrain * m_pTerrain;
 
    tCommandStack m_undoStack, m_redoStack;
 };
-
-////////////////////////////////////////
-
-inline IMaterial * cEditorDoc::AccessMaterial()
-{
-   return m_pMaterial;
-}
 
 ////////////////////////////////////////
 
