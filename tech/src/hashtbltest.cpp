@@ -20,6 +20,16 @@
 
 LOG_DEFINE_CHANNEL(HashTableTest);
 
+#define LocalMsg(msg)            DebugMsgEx(HashTableTest,(msg))
+#define LocalMsg1(msg,a)         DebugMsgEx1(HashTableTest,(msg),(a))
+#define LocalMsg2(msg,a,b)       DebugMsgEx2(HashTableTest,(msg),(a),(b))
+#define LocalMsg3(msg,a,b,c)     DebugMsgEx3(HashTableTest,(msg),(a),(b),(c))
+#define LocalMsg4(msg,a,b,c,d)   DebugMsgEx4(HashTableTest,(msg),(a),(b),(c),(d))
+
+#define LocalMsgIf(cond,msg)     DebugMsgIfEx(HashTableTest,(cond),(msg))
+#define LocalMsgIf1(cond,msg,a)  DebugMsgIfEx1(HashTableTest,(cond),(msg),(a))
+#define LocalMsgIf2(cond,msg,a,b) DebugMsgIfEx2(HashTableTest,(cond),(msg),(a),(b))
+
 ///////////////////////////////////////////////////////////////////////////////
 
 static bool coin_flip(void)
@@ -76,6 +86,8 @@ public:
    virtual void tearDown();
 };
 
+////////////////////////////////////////
+
 void cHashTableTests::TestLookup()
 {
    int nFailures = 0;
@@ -93,9 +105,11 @@ void cHashTableTests::TestLookup()
       }
    }
 
-   DebugMsgIfEx1(HashTableTest, nFailures > 0, "%d lookups failed\n", nFailures);
+   LocalMsgIf1(nFailures > 0, "%d lookups failed\n", nFailures);
    CPPUNIT_ASSERT(nFailures == 0);
 }
+
+////////////////////////////////////////
 
 void cHashTableTests::TestIteration()
 {
@@ -111,9 +125,11 @@ void cHashTableTests::TestIteration()
    }
    m_hashTable.IterEnd(&h);
 
-   DebugMsgIfEx2(HashTableTest, nIterated != kNumTests, "Iterated %d items in hash table; expected %d\n", nIterated, kNumTests);
+   LocalMsgIf2(nIterated != kNumTests, "Iterated %d items in hash table; expected %d\n", nIterated, kNumTests);
    CPPUNIT_ASSERT(nIterated == kNumTests);
 }
+
+////////////////////////////////////////
 
 void cHashTableTests::setUp()
 {
@@ -124,6 +140,8 @@ void cHashTableTests::setUp()
       CPPUNIT_ASSERT(m_hashTable.Insert(testStrings[i], i));
    }
 }
+
+////////////////////////////////////////
 
 void cHashTableTests::tearDown()
 {
@@ -144,7 +162,13 @@ class cHashTableSpeedTests : public CppUnit::TestCase
    cHashTable<const char *, int> m_hashTable;
    std::map<const char *, int> m_map;
 
-   void RunInsertSpeedTest(int64 * pHashTableResult, int64 * pMapResult);
+   struct sTiming
+   {
+      int64 clockTicks;
+      double seconds;
+   };
+
+   void RunInsertSpeedTest(sTiming * pHashTableResult, sTiming * pMapResult);
    void TestInsertSpeed();
    void RunLookupSpeedTest(int nLookups, double * pHashTableResult, double * pMapResult);
    void TestLookupSpeed();
@@ -154,61 +178,82 @@ public:
    virtual void tearDown();
 };
 
+////////////////////////////////////////
+
 CPPUNIT_TEST_SUITE_REGISTRATION(cHashTableTests);
 CPPUNIT_TEST_SUITE_REGISTRATION(cHashTableSpeedTests);
 
-void cHashTableSpeedTests::RunInsertSpeedTest(int64 * pHashTableResult, int64 * pMapResult)
+////////////////////////////////////////
+
+void cHashTableSpeedTests::RunInsertSpeedTest(sTiming * pHashTableResult, sTiming * pMapResult)
 {
    CPPUNIT_ASSERT(pHashTableResult != NULL);
    CPPUNIT_ASSERT(pMapResult != NULL);
 
-   int64 start;
+   int64 startTicks;
+   double startSecs;
 
    m_hashTable.Clear();
    m_map.clear();
 
    {
-      start = ReadTSC();
+      startTicks = ReadTSC();
+      startSecs = TimeGetSecs();
 
       for (int i = 0; i < kNumTests; i++)
       {
          CPPUNIT_ASSERT(m_hashTable.Insert(m_testStrings[i], i));
       }
 
-      *pHashTableResult = ReadTSC() - start;
+      pHashTableResult->clockTicks = ReadTSC() - startTicks;
+      pHashTableResult->seconds = TimeGetSecs() - startSecs;
    }
 
    {
-      start = ReadTSC();
+      startTicks = ReadTSC();
+      startSecs = TimeGetSecs();
 
       for (int i = 0; i < kNumTests; i++)
       {
          CPPUNIT_ASSERT(m_map.insert(std::make_pair((const char *)m_testStrings[i], i)).second);
       }
 
-      *pMapResult = ReadTSC() - start;
+      pMapResult->clockTicks = ReadTSC() - startTicks;
+      pMapResult->seconds = TimeGetSecs() - startSecs;
    }
 }
+
+////////////////////////////////////////
 
 void cHashTableSpeedTests::TestInsertSpeed()
 {
    const int kNumRuns = 5;
    const double kOneOverNumRuns = 1.0 / kNumRuns;
 
-   int64 hashTableResult[kNumRuns], mapResult[kNumRuns];
-   double hashTableAverage = 0, mapAverage = 0;
+   sTiming hashTableResult[kNumRuns], mapResult[kNumRuns];
+   double hashTableAverageTicks = 0, mapAverageTicks = 0;
 
+   LocalMsg2("cHashTable/std::map Speed Test; inserting %d items; %d runs\n", kNumTests, kNumRuns);
    for (int i = 0; i < kNumRuns; i++)
    {
       RunInsertSpeedTest(&hashTableResult[i], &mapResult[i]);
-      hashTableAverage += (double)(long)hashTableResult[i] * kOneOverNumRuns;
-      mapAverage += (double)(long)mapResult[i] * kOneOverNumRuns;
+
+      LocalMsg3("   [%d] cHashTable: %.5f seconds, %d clock ticks\n",
+         i, hashTableResult[i].seconds, hashTableResult[i].clockTicks);
+
+      LocalMsg3("   [%d] std::map:   %.5f seconds, %d  clock ticks\n",
+         i, mapResult[i].seconds, mapResult[i].clockTicks);
+
+      hashTableAverageTicks += (double)(long)hashTableResult[i].clockTicks * kOneOverNumRuns;
+      mapAverageTicks += (double)(long)mapResult[i].clockTicks * kOneOverNumRuns;
    }
 
-   DebugMsgEx2(HashTableTest, "Inserting %d items (average over %d runs):\n", kNumTests, kNumRuns);
-   DebugMsgEx1(HashTableTest, "   Hash Table: %.2f clock ticks\n", hashTableAverage);
-   DebugMsgEx1(HashTableTest, "   STL map:    %.2f clock ticks\n", mapAverage);
+   LocalMsg2("Inserting %d items (average over %d runs):\n", kNumTests, kNumRuns);
+   LocalMsg1("   Hash Table: %.2f clock ticks\n", hashTableAverageTicks);
+   LocalMsg1("   STL map:    %.2f clock ticks\n", mapAverageTicks);
 }
+
+////////////////////////////////////////
 
 void cHashTableSpeedTests::RunLookupSpeedTest(int nLookups, double * pHashTableResult, double * pMapResult)
 {
@@ -238,15 +283,19 @@ void cHashTableSpeedTests::RunLookupSpeedTest(int nLookups, double * pHashTableR
    }
 }
 
+////////////////////////////////////////
+
 void cHashTableSpeedTests::TestLookupSpeed()
 {
    double hashTableResult, mapResult;
    RunLookupSpeedTest(kNumTests, &hashTableResult, &mapResult);
 
-   DebugMsgEx1(HashTableTest, "Lookup (average over %d lookups):\n", kNumTests);
-   DebugMsgEx1(HashTableTest, "   Hash Table: %.2f clock ticks\n", hashTableResult);
-   DebugMsgEx1(HashTableTest, "   STL map:    %.2f clock ticks\n", mapResult);
+   LocalMsg1("Lookup (average over %d lookups):\n", kNumTests);
+   LocalMsg1("   Hash Table: %.2f clock ticks\n", hashTableResult);
+   LocalMsg1("   STL map:    %.2f clock ticks\n", mapResult);
 }
+
+////////////////////////////////////////
 
 void cHashTableSpeedTests::setUp()
 {
@@ -255,6 +304,8 @@ void cHashTableSpeedTests::setUp()
       random_string(m_testStrings[i], _countof(m_testStrings[i]));
    }
 }
+
+////////////////////////////////////////
 
 void cHashTableSpeedTests::tearDown()
 {
