@@ -1,8 +1,7 @@
-// ms3dviewDoc.cpp : implementation of the CMs3dviewDoc class
-//
+/////////////////////////////////////////////////////////////////////////////
+// $Id$
 
 #include "stdafx.h"
-#include "ms3dview.h"
 
 #include "ms3dviewDoc.h"
 
@@ -11,7 +10,10 @@
 #include "resmgr.h"
 #include "readwriteapi.h"
 #include "filespec.h"
+#include "filepath.h"
 #include "globalobj.h"
+
+#include "resource.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -114,9 +116,13 @@ BOOL CMs3dviewDoc::OnOpenDocument(LPCTSTR lpszPathName)
       return FALSE;
    }
 
-   cAutoIPtr<IReader> pReader = FileCreateReader(cFileSpec(lpszPathName));
+   cFileSpec file(lpszPathName);
 
    UseGlobal(ResourceManager);
+
+   pResourceManager->AddSearchPath(file.GetPath().GetPath());
+
+   cAutoIPtr<IReader> pReader = pResourceManager->Find(file.GetFileName());
 
    if (!pReader
       || m_mesh.Read(pReader, pMs3dView->AccessRenderDevice(), pResourceManager) != S_OK)
