@@ -33,15 +33,6 @@ AssertOnce(sizeof(ms3d_header_t) == 14);
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <>
-std::vector<IKeyFrameInterpolator *>::~vector()
-{
-   std::for_each(begin(), end(), CTInterfaceMethodRef(&IKeyFrameInterpolator::Release));
-   clear();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 struct sMs3dVertex
 {
    tVec3::value_type u, v;
@@ -228,6 +219,8 @@ cMs3dFileReader::cMs3dFileReader()
 
 cMs3dFileReader::~cMs3dFileReader()
 {
+   std::for_each(m_interpolators.begin(), m_interpolators.end(), CTInterfaceMethodRef(&IUnknown::Release));
+   m_interpolators.clear();
 }
 
 ///////////////////////////////////////

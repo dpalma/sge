@@ -113,12 +113,12 @@ static tResult ReadKeyFrames(IReader * pReader,
          break;
       }
 
-      std::vector<ms3d_keyframe_rot_t> rotationKeys(nKeyFramesRot);
-      if (pReader->Read(&rotationKeys[0], rotationKeys.size() * sizeof(ms3d_keyframe_rot_t)) != S_OK)
+      ms3d_keyframe_rot_t rotationKeys[MAX_KEYFRAMES];
+      if (pReader->Read(rotationKeys, nKeyFramesRot * sizeof(ms3d_keyframe_rot_t)) != S_OK)
          break;
 
-      std::vector<ms3d_keyframe_pos_t> translationKeys(nKeyFramesTrans);
-      if (pReader->Read(&translationKeys[0], translationKeys.size() * sizeof(ms3d_keyframe_pos_t)) != S_OK)
+      ms3d_keyframe_pos_t translationKeys[MAX_KEYFRAMES];
+      if (pReader->Read(translationKeys, nKeyFramesTrans * sizeof(ms3d_keyframe_pos_t)) != S_OK)
          break;
 
       pTranslationFrames->resize(nKeyFramesTrans);
