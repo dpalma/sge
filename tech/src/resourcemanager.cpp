@@ -4,6 +4,7 @@
 #include "stdhdr.h"
 
 #include "resmgr.h"
+#include "ziparchive.h"
 #include "filepath.h"
 #include "filespec.h"
 #include "readwriteapi.h"
@@ -100,11 +101,14 @@ public:
    cResourceManager();
    virtual ~cResourceManager();
 
+   virtual tResult Term();
+
    virtual IReader * Find(const char * pszName);
    virtual void AddSearchPath(const char * pszPath);
 
 private:
    std::vector<cFilePath> m_searchPaths;
+   std::vector<cZipArchive *> m_zipArchives;
 };
 
 ///////////////////////////////////////
@@ -118,23 +122,55 @@ cResourceManager::cResourceManager()
 
 cResourceManager::~cResourceManager()
 {
+   Assert(m_zipArchives.empty());
+}
+
+///////////////////////////////////////
+
+tResult cResourceManager::Term()
+{
+   std::vector<cZipArchive *>::iterator iter;
+   for (iter = m_zipArchives.begin(); iter != m_zipArchives.end(); iter++)
+   {
+      delete (*iter);
+   }
+   m_zipArchives.clear();
+
+   return S_OK;
 }
 
 ///////////////////////////////////////
 
 IReader * cResourceManager::Find(const char * pszName)
 {
-   if (cFileSpec(pszName).Exists())
-      return FileCreateReader(cFileSpec(pszName));
-
-   std::vector<cFilePath>::iterator iter;
-   for (iter = m_searchPaths.begin(); iter != m_searchPaths.end(); iter++)
+   if (!m_zipArchives.empty())
    {
-      cFileSpec file(pszName);
-      file.SetPath(*iter);
-      if (file.Exists())
+      std::vector<cZipArchive *>::iterator iter;
+      for (iter = m_zipArchives.begin(); iter != m_zipArchives.end(); iter++)
       {
-         return FileCreateReader(file);
+         IReader * pReader = NULL;
+         if ((*iter)->OpenMember(pszName, &pReader) == S_OK)
+         {
+            return pReader;
+         }
+      }
+   }
+   else
+   {
+      if (cFileSpec(pszName).Exists())
+      {
+         return FileCreateReader(cFileSpec(pszName));
+      }
+
+      std::vector<cFilePath>::iterator iter;
+      for (iter = m_searchPaths.begin(); iter != m_searchPaths.end(); iter++)
+      {
+         cFileSpec file(pszName);
+         file.SetPath(*iter);
+         if (file.Exists())
+         {
+            return FileCreateReader(file);
+         }
       }
    }
 
@@ -145,21 +181,40 @@ IReader * cResourceManager::Find(const char * pszName)
 
 void cResourceManager::AddSearchPath(const char * pszPath)
 {
-   cFilePath path(pszPath);
-   path.MakeFullPath();
-
-   m_searchPaths.push_back(path);
-
-   std::vector<std::string> dirs;
-   if (ListDirs(path, &dirs) > 0)
+   cFileSpec f(pszPath);
+   if (strcmp(f.GetFileExt(), "zip") == 0)
    {
-      std::vector<std::string>::iterator iter;
-      for (iter = dirs.begin(); iter != dirs.end(); iter++)
+      cZipArchive * pZip = new cZipArchive;
+      if (pZip != NULL)
       {
-         cFilePath searchPath(path);
-         searchPath.AddRelative(iter->c_str());
+         if (pZip->Open(f) == S_OK)
+         {
+            m_zipArchives.push_back(pZip);
+         }
+         else
+         {
+            delete pZip;
+         }
+      }
+   }
+   else
+   {
+      cFilePath path(pszPath);
+      path.MakeFullPath();
 
-         AddSearchPath(searchPath.GetPath());
+      m_searchPaths.push_back(path);
+
+      std::vector<std::string> dirs;
+      if (ListDirs(path, &dirs) > 0)
+      {
+         std::vector<std::string>::iterator iter;
+         for (iter = dirs.begin(); iter != dirs.end(); iter++)
+         {
+            cFilePath searchPath(path);
+            searchPath.AddRelative(iter->c_str());
+
+            AddSearchPath(searchPath.GetPath());
+         }
       }
    }
 }

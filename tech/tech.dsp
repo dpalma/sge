@@ -298,6 +298,10 @@ SOURCE=.\src\rand.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\readwritemem.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\resmgr.cpp
 # End Source File
 # Begin Source File
@@ -326,6 +330,10 @@ SOURCE=.\src\windoww32.cpp
 SOURCE=.\src\windowx11.cpp
 # PROP Exclude_From_Build 1
 # End Source File
+# Begin Source File
+
+SOURCE=.\src\ziparchive.cpp
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -352,7 +360,15 @@ SOURCE=.\src\hashtbltem.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\readwritemem.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\stdhdr.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\ziparchive.h
 # End Source File
 # End Group
 # End Group
