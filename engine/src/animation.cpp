@@ -271,3 +271,131 @@ tResult KeyFrameInterpolatorCreate(const char * pszName,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cKeyFrameInterpolator2
+//
+
+class cKeyFrameInterpolator2 : public cComObject<IMPLEMENTS(IKeyFrameInterpolator2)>
+{
+public:
+   cKeyFrameInterpolator2(const char * pszName, const sKeyFrame * pKeyFrames, uint nKeyFrames);
+
+   virtual tTime GetPeriod() const;
+   virtual tResult GetKeyFrames(sKeyFrame * pKeyFrames, uint * pnKeyFrames) const;
+   virtual tResult Interpolate(tTime time, sKeyFrame * pInterpFrame) const;
+
+private:
+   typedef std::vector<sKeyFrame> tKeyFrames;
+
+   char m_szName[100];
+   tTime m_period;
+   tKeyFrames m_keyFrames;
+};
+
+///////////////////////////////////////
+
+cKeyFrameInterpolator2::cKeyFrameInterpolator2(const char * pszName,
+                                               const sKeyFrame * pKeyFrames, 
+                                               uint nKeyFrames)
+ : m_period(0)
+{
+   if (pszName != NULL)
+   {
+      strncpy(m_szName, pszName, _countof(m_szName));
+      m_szName[_countof(m_szName) - 1] = 0;
+   }
+   else
+   {
+      memset(m_szName, 0, sizeof(m_szName));
+   }
+
+   if (pKeyFrames != NULL && nKeyFrames > 0)
+   {
+      m_keyFrames.resize(nKeyFrames);
+      memcpy(&m_keyFrames[0], pKeyFrames, sizeof(sKeyFrame) * nKeyFrames);
+   }
+
+   m_period = FLT_MIN;
+   for (uint i = 0; i < nKeyFrames; i++)
+   {
+      if (pKeyFrames[i].time > m_period)
+         m_period = pKeyFrames[i].time;
+   }
+}
+
+///////////////////////////////////////
+
+tTime cKeyFrameInterpolator2::GetPeriod() const
+{
+   return m_period;
+}
+
+///////////////////////////////////////
+
+tResult cKeyFrameInterpolator2::GetKeyFrames(sKeyFrame * pKeyFrames, uint * pnKeyFrames) const
+{
+   if (pKeyFrames != NULL && pnKeyFrames != NULL)
+   {
+      uint nKeyFramesToCopy = Min(m_keyFrames.size(), *pnKeyFrames);
+      memcpy(pKeyFrames, &m_keyFrames[0], sizeof(sKeyFrameVec3) * nKeyFramesToCopy);
+      *pnKeyFrames = nKeyFramesToCopy;
+      return (nKeyFramesToCopy < m_keyFrames.size()) ? S_FALSE : S_OK;
+   }
+   else if (pKeyFrames == NULL && pnKeyFrames != NULL)
+   {
+      *pnKeyFrames = m_keyFrames.size();
+      return S_OK;
+   }
+   return E_FAIL;
+}
+
+///////////////////////////////////////
+
+tResult cKeyFrameInterpolator2::Interpolate(tTime time, sKeyFrame * pInterpFrame) const
+{
+   if (pInterpFrame != NULL)
+   {
+      tKeyFrames::const_iterator iter, prev;
+      for (prev = iter = m_keyFrames.begin(); iter != m_keyFrames.end(); prev = iter, iter++)
+      {
+         if (iter->time >= time)
+         {
+            if (iter == prev)
+            {
+               pInterpFrame->rotation = iter->rotation;
+               pInterpFrame->translation = iter->translation;
+            }
+            else
+            {
+               tTime u = (time - prev->time) / (iter->time - prev->time);
+               DebugMsgEx4(Animation, "time %.2f prev %.2f, iter %.2f, u %.2f\n", time, prev->time, iter->time, u);
+               pInterpFrame->rotation = QuatSlerp(prev->rotation, iter->rotation, u);
+               pInterpFrame->translation = Vec3Lerp(prev->translation, iter->translation, (tVec3::value_type)u);
+            }
+
+            return S_OK;
+         }
+      }
+   }
+
+   return E_FAIL;
+}
+
+///////////////////////////////////////
+
+tResult KeyFrameInterpolatorCreate(const char * pszName,
+                                   const sKeyFrame * pKeyFrames, uint nKeyFrames,
+                                   IKeyFrameInterpolator2 * * ppInterpolator)
+{
+   if (ppInterpolator == NULL)
+      return E_INVALIDARG;
+
+   *ppInterpolator = new cKeyFrameInterpolator2(pszName, pKeyFrames, nKeyFrames);
+
+   if ((*ppInterpolator) == NULL)
+      return E_FAIL;
+
+   return S_OK;
+}
+
+///////////////////////////////////////////////////////////////////////////////

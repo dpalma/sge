@@ -34,6 +34,10 @@ DEFINE_GUID(IID_ISim,
 DEFINE_GUID(IID_IKeyFrameInterpolator, 
 0x25d1658b, 0x34d2, 0x4013, 0xb8, 0x54, 0xcb, 0x67, 0xfd, 0xe7, 0x21, 0x3a);
 
+// {DB4CC109-5333-4768-9A22-4805CC7442E7}
+DEFINE_GUID(IID_IKeyFrameInterpolator2, 
+0xdb4cc109, 0x5333, 0x4768, 0x9a, 0x22, 0x48, 0x5, 0xcc, 0x74, 0x42, 0xe7);
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #endif // !INCLUDED_ENGINEGUIDS_H
