@@ -298,7 +298,7 @@ tResult cTextureManager::FreeAll()
       textureIds[i] = iter->second.textureId;
    }
 
-   glDeleteTextures(textureIds.size(), textureIds.begin());
+   glDeleteTextures(textureIds.size(), &textureIds[0]);
 
    DebugMsgIf(glGetError() != GL_NO_ERROR, "WARNING: glDeleteTextures call caused an error\n");
 
