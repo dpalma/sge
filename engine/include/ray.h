@@ -12,9 +12,6 @@
 #pragma once
 #endif
 
-template <typename T> class cVec3;
-typedef class ENGINE_API cVec3<float> tVec3;
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cRay

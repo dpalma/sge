@@ -19,9 +19,6 @@
 
 typedef cStr tGUIString;
 
-template <typename T> class cVec2;
-typedef class cVec2<float> tVec2;
-
 typedef tVec2 tGUIPoint;
 
 template <typename T> class cGUISize;

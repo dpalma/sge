@@ -10,11 +10,6 @@
 #pragma once
 #endif
 
-#ifndef NO_DEFAULT_VEC3
-template <typename T> class cVec3;
-typedef class cVec3<float> tVec3;
-#endif
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cVec3
@@ -52,6 +47,22 @@ public:
       value_type v[3];
    };
 };
+
+///////////////////////////////////////
+
+#ifndef NO_EXPORT_VEC3
+#ifndef TECH_EXPORTS
+#pragma warning(disable:4231) // nonstandard extension used : 'extern' before template explicit instantiation
+extern
+#endif
+template class TECH_API cVec3<float>;
+#endif
+
+///////////////////////////////////////
+
+#ifndef NO_DEFAULT_VEC3
+typedef class cVec3<float> tVec3;
+#endif
 
 ///////////////////////////////////////
 

@@ -2,10 +2,13 @@
 // $Id$
 
 #include "stdhdr.h"
+
 #include "matrix4.h"
+// cVec2 is not used but is included here to instantiate the exports
+#include "vec2.h"
 #include "vec3.h"
 #include "vec4.h"
-#include "techmath.h"
+
 #include <cmath>
 #include <cfloat>
 #include <memory.h>
