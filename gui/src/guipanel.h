@@ -5,8 +5,7 @@
 #define INCLUDED_GUIPANEL_H
 
 #include "guielementbase.h"
-
-#include <list>
+#include "guicontainerbase.h"
 
 #ifdef _MSC_VER
 #pragma once
@@ -17,8 +16,11 @@
 // CLASS: cGUIPanelElement
 //
 
-class cGUIPanelElement : public cComObject<cGUIElementBase<IGUIPanelElement>, &IID_IGUIPanelElement>
+class cGUIPanelElement : public cComObject<cGUIElementBase< cGUIContainerBase<IGUIPanelElement> >, 
+                                           &IID_IGUIPanelElement>
 {
+   typedef cComObject<cGUIElementBase< cGUIContainerBase<IGUIPanelElement> >, 
+                      &IID_IGUIPanelElement> tBaseClass;
 public:
    cGUIPanelElement();
    ~cGUIPanelElement();
@@ -39,17 +41,10 @@ public:
 
    virtual tResult GetRendererClass(tGUIString * pRendererClass);
 
-   virtual tResult AddElement(IGUIElement * pElement);
-   virtual tResult RemoveElement(IGUIElement * pElement);
-   virtual tResult GetElements(IGUIElementEnum * * ppElements);
-   virtual tResult HasElement(IGUIElement * pElement) const;
-
    virtual tResult GetInsets(tGUIInsets * pInsets);
    virtual tResult SetInsets(const tGUIInsets & insets);
 
 private:
-   typedef std::list<IGUIElement *> tGUIElementList;
-   tGUIElementList m_children;
    tGUIInsets * m_pInsets;
 };
 

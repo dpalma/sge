@@ -5,6 +5,7 @@
 
 #include "guipanel.h"
 #include "guielementbasetem.h"
+#include "guicontainerbasetem.h"
 #include "guielementenum.h"
 #include "guirender.h"
 #include "guielementtools.h"
@@ -17,7 +18,6 @@
 #include "parse.h"
 
 #include <tinyxml.h>
-#include <algorithm>
 
 #include "dbgalloc.h" // must be last header
 
@@ -37,18 +37,31 @@ cGUIPanelElement::cGUIPanelElement()
 
 cGUIPanelElement::~cGUIPanelElement()
 {
-   std::for_each(m_children.begin(), m_children.end(), CTInterfaceMethod(&IGUIElement::Release));
-   m_children.clear();
-
    delete m_pInsets;
    m_pInsets = NULL;
 }
 
 ///////////////////////////////////////
 
+class cSizeAndPlaceElement
+{
+public:
+   cSizeAndPlaceElement(const tGUIRect & rect) : m_rect(rect) {}
+
+   void operator()(IGUIElement * pGUIElement)
+   {
+      Assert(pGUIElement != NULL);
+      GUISizeElement(m_rect, pGUIElement);
+      GUIPlaceElement(m_rect, pGUIElement);
+   }
+
+private:
+   tGUIRect m_rect;
+};
+
 void cGUIPanelElement::SetSize(const tGUISize & size)
 {
-   cGUIElementBase<IGUIPanelElement>::SetSize(size);
+   tBaseClass::SetSize(size);
 
    tGUIRect rect(0, 0, size.width, size.height);
 
@@ -61,12 +74,7 @@ void cGUIPanelElement::SetSize(const tGUISize & size)
       rect.bottom -= insets.bottom;
    }
 
-   tGUIElementList::iterator iter;
-   for (iter = m_children.begin(); iter != m_children.end(); iter++)
-   {
-      GUISizeElement(rect, *iter);
-      GUIPlaceElement(rect, *iter);
-   }
+   ForEachElement(cSizeAndPlaceElement(rect));
 }
 
 ///////////////////////////////////////
@@ -84,82 +92,6 @@ tResult cGUIPanelElement::GetRendererClass(tGUIString * pRendererClass)
       return E_POINTER;
    *pRendererClass = "panel";
    return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cGUIPanelElement::AddElement(IGUIElement * pElement)
-{
-   if (pElement == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (HasElement(pElement) == S_OK)
-   {
-      return S_FALSE;
-   }
-
-   // Important to add the given element to the child list before setting
-   // the parent pointer. Setting the parent will also add the element to the
-   // new parent. The HasElement() call above prevents the infinite circle of
-   // AddElement() calling SetParent() calling AddElement() etc.
-   m_children.push_back(CTAddRef(pElement));
-
-   pElement->SetParent(this);
-
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cGUIPanelElement::RemoveElement(IGUIElement * pElement)
-{
-   if (pElement == NULL)
-   {
-      return E_POINTER;
-   }
-
-   tGUIElementList::iterator iter;
-   for (iter = m_children.begin(); iter != m_children.end(); iter++)
-   {
-      if (CTIsSameObject(*iter, pElement))
-      {
-         m_children.erase(iter);
-         pElement->Release();
-         return S_OK;
-      }
-   }
-
-   return S_FALSE;
-}
-
-///////////////////////////////////////
-
-tResult cGUIPanelElement::GetElements(IGUIElementEnum * * ppElements)
-{
-   return GUIElementEnumCreate(m_children, ppElements);
-}
-
-///////////////////////////////////////
-
-tResult cGUIPanelElement::HasElement(IGUIElement * pElement) const
-{
-   if (pElement == NULL)
-   {
-      return E_POINTER;
-   }
-
-   tGUIElementList::const_iterator iter;
-   for (iter = m_children.begin(); iter != m_children.end(); iter++)
-   {
-      if (CTIsSameObject(*iter, pElement))
-      {
-         return S_OK;
-      }
-   }
-
-   return S_FALSE;
 }
 
 ///////////////////////////////////////
@@ -324,12 +256,15 @@ tResult cGUIPanelRenderer::Render(IGUIElement * pElement, IRenderDevice * pRende
 
          while ((pEnum->Next(1, &pChild, &count) == S_OK) && (count == 1))
          {
-            cAutoIPtr<IGUIElementRenderer> pChildRenderer;
-            if (pChild->GetRenderer(&pChildRenderer) == S_OK)
+            if (pChild->IsVisible())
             {
-               if ((result = pChildRenderer->Render(pChild, pRenderDevice)) != S_OK)
+               cAutoIPtr<IGUIElementRenderer> pChildRenderer;
+               if (pChild->GetRenderer(&pChildRenderer) == S_OK)
                {
-                  break;
+                  if ((result = pChildRenderer->Render(pChild, pRenderDevice)) != S_OK)
+                  {
+                     break;
+                  }
                }
             }
 

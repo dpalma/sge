@@ -329,6 +329,14 @@ SOURCE=.\guibutton.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\guicontainerbase.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\guicontainerbasetem.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\guicontext.h
 # End Source File
 # Begin Source File
