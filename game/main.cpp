@@ -13,7 +13,8 @@
 #include "sys.h"
 #include "raycast.h"
 #include "mesh.h"
-#include "scenegraph.h"
+#include "scenenode.h"
+#include "scenegroup.h"
 #include "camera.h"
 #include "script.h"
 #include "scriptvm.h"
@@ -22,13 +23,13 @@
 #include "image.h"
 #include "render.h"
 
-#include "TechMath.h"
-#include "TechTime.h"
+#include "techmath.h"
+#include "techtime.h"
 #include "window.h"
 #include "resmgr.h"
-#include "ConfigAPI.h"
-#include "FileSpec.h"
-#include "FilePath.h"
+#include "configapi.h"
+#include "filespec.h"
+#include "filepath.h"
 #include "matrix4.h"
 #include "vec2.h"
 #include "vec4.h"
@@ -63,10 +64,10 @@ static const float kRotateDegreesPerSec = 20;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-cSceneNode * g_pGameScene = NULL;
+cSceneGroup * g_pGameScene = NULL;
 cCamera * g_pGameCamera = NULL;
 
-cSceneNode * g_pUIScene = NULL;
+cSceneGroup * g_pUIScene = NULL;
 cCamera * g_pUICamera = NULL;
 
 double g_fov;
@@ -529,7 +530,7 @@ void cSelectionIndicatorNode::Render()
 // CLASS: cSimpleSceneNode
 //
 
-class cSimpleSceneNode : public cSceneNode
+class cSimpleSceneNode : public cSceneGroup
 {
 public:
    cSimpleSceneNode();
@@ -904,7 +905,7 @@ bool MainInit(int argc, char * argv[])
 
    g_pUIManager = UIManagerCreate();
 
-   g_pGameScene = new cSceneNode;
+   g_pGameScene = new cSceneGroup;
    g_pGameScene->AddChild(TerrainRootNodeCreate());
 
    g_pGameCamera = new cCamera;
@@ -913,7 +914,7 @@ bool MainInit(int argc, char * argv[])
    g_pGameCameraController = new cGameCameraController(g_pGameCamera);
    g_pGameCameraController->Connect();
 
-   g_pUIScene = new cSceneNode;
+   g_pUIScene = new cSceneGroup;
    g_pUIScene->AddChild(new cUIManagerSceneNode);
 
    g_pUICamera = new cCamera;

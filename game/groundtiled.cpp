@@ -5,7 +5,7 @@
 
 #include "groundtiled.h"
 #include "heightmap.h"
-#include "scenegraph.h"
+#include "scenenode.h"
 
 #include "render.h"
 #include "material.h"

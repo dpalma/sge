@@ -22,7 +22,8 @@ game_SOURCES = 3ds.cpp \
                mesh.cpp \
                ms3d.cpp \
                raycast.cpp \
-               scenegraph.cpp \
+               scenegroup.cpp \
+               scenenode.cpp \
                script.cpp \
                scriptvm.cpp \
                sim.cpp \

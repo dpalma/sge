@@ -1,15 +1,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 // $Id$
 
-#ifndef INCLUDED_SCENEGRAPH_H
-#define INCLUDED_SCENEGRAPH_H
+#ifndef INCLUDED_SCENENODE_H
+#define INCLUDED_SCENENODE_H
 
 #include "vec3.h"
 #include "quat.h"
 #include "matrix4.h"
 #include "comtools.h"
-
-#include <list>
 
 #ifdef _MSC_VER
 #pragma once
@@ -32,18 +30,12 @@ class cSceneNode
 
 public:
    cSceneNode();
-   virtual ~cSceneNode();
+   virtual ~cSceneNode() = 0;
 
    const cSceneNode * GetParent() const;
+   void SetParent(cSceneNode * pParent);
 
-   void AddChild(cSceneNode * pNode);
-   bool RemoveChild(cSceneNode * pNode);
-
-   HANDLE IterChildrenBegin();
-   bool IterNextChild(HANDLE hIter, cSceneNode * * ppNode);
-   void IterChildrenEnd(HANDLE hIter);
-
-   void Traverse(cSceneNodeVisitor * pVisitor);
+   virtual void Traverse(cSceneNodeVisitor * pVisitor);
 
    const tVec3 & GetTranslation() const;
    void SetTranslation(const tVec3 & translation);
@@ -67,13 +59,7 @@ public:
    virtual void ClearHitState() {}
 
 private:
-   void SetParent(cSceneNode * pParent);
-
-   ////////////////////////////////////
-
    cSceneNode * m_pParent;
-
-   std::list<cSceneNode *> m_children;
 
    tVec3 m_translation;
    tQuat m_rotation;
@@ -136,4 +122,4 @@ public:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // !INCLUDED_SCENEGRAPH_H
+#endif // !INCLUDED_SCENENODE_H

@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "scenegraph.h"
+#include "scenenode.h"
 
 #include "render.h"
 
@@ -28,73 +28,6 @@ cSceneNode::cSceneNode()
 
 cSceneNode::~cSceneNode()
 {
-   std::list<cSceneNode *>::iterator iter;
-   for (iter = m_children.begin(); iter != m_children.end(); iter++)
-   {
-      delete *iter;
-   }
-   m_children.clear();
-}
-
-///////////////////////////////////////
-
-void cSceneNode::AddChild(cSceneNode * pNode)
-{
-   Assert(pNode != NULL);
-   m_children.push_back(pNode);
-   pNode->SetParent(this);
-}
-
-///////////////////////////////////////
-
-bool cSceneNode::RemoveChild(cSceneNode * pNode)
-{
-   Assert(pNode != NULL);
-   std::list<cSceneNode *>::iterator iter;
-   for (iter = m_children.begin(); iter != m_children.end(); iter++)
-   {
-      if (*iter == pNode)
-      {
-         m_children.erase(iter);
-         return true;
-      }
-   }
-   return false;
-}
-
-///////////////////////////////////////
-
-HANDLE cSceneNode::IterChildrenBegin()
-{
-   if (!m_children.empty())
-   {
-      std::list<cSceneNode *>::iterator * pIter = new std::list<cSceneNode *>::iterator(m_children.begin());
-      return (HANDLE)pIter;
-   }
-   return NULL;
-}
-
-///////////////////////////////////////
-
-bool cSceneNode::IterNextChild(HANDLE hIter, cSceneNode * * ppNode)
-{
-   Assert(hIter != NULL);
-   std::list<cSceneNode *>::iterator * pIter = (std::list<cSceneNode *>::iterator *)hIter;
-   if (*pIter != m_children.end())
-   {
-      *ppNode = *(*pIter);
-      (*pIter)++;
-      return true;
-   }
-   return false;
-}
-
-///////////////////////////////////////
-
-void cSceneNode::IterChildrenEnd(HANDLE hIter)
-{
-   std::list<cSceneNode *>::iterator * pIter = (std::list<cSceneNode *>::iterator *)hIter;
-   delete pIter;
 }
 
 ///////////////////////////////////////
@@ -102,13 +35,7 @@ void cSceneNode::IterChildrenEnd(HANDLE hIter)
 void cSceneNode::Traverse(cSceneNodeVisitor * pVisitor)
 {
    Assert(pVisitor != NULL);
-   std::list<cSceneNode *>::iterator iter;
-   for (iter = m_children.begin(); iter != m_children.end(); iter++)
-   {
-      pVisitor->VisitSceneNode(*iter);
-
-      (*iter)->Traverse(pVisitor);
-   }
+   pVisitor->VisitSceneNode(this);
 }
 
 ///////////////////////////////////////
@@ -171,7 +98,8 @@ void cSceneNode::SetParent(cSceneNode * pParent)
    {
       if (m_pParent != NULL)
       {
-         m_pParent->RemoveChild(this);
+   // TODO
+   //      m_pParent->RemoveChild(this);
       }
       m_pParent = pParent;
    }

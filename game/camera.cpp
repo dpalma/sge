@@ -4,7 +4,7 @@
 #include "stdhdr.h"
 
 #include "camera.h"
-#include "scenegraph.h"
+#include "scenenode.h"
 
 #include "render.h"
 #include "ggl.h"

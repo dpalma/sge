@@ -227,7 +227,11 @@ SOURCE=.\raycast.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\scenegraph.cpp
+SOURCE=.\scenegroup.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\scenenode.cpp
 # End Source File
 # Begin Source File
 
@@ -341,7 +345,11 @@ SOURCE=.\raycast.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\scenegraph.h
+SOURCE=.\scenegroup.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\scenenode.h
 # End Source File
 # Begin Source File
 
