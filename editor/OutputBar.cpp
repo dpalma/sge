@@ -122,3 +122,13 @@ LRESULT cOutputBar::OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bH
    g_pOutputBar = NULL;
    return NULL;
 }
+
+////////////////////////////////////////
+
+LRESULT cOutputBar::OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled)
+{
+   m_logWnd.MoveWindow(CRect(CPoint(0,0), CSize(lParam)));
+   return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////

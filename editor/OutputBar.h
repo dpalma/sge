@@ -29,11 +29,13 @@ public:
    BEGIN_MSG_MAP(cOutputBar)
       MESSAGE_HANDLER(WM_CREATE, OnCreate)
       MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
+      MESSAGE_HANDLER(WM_SIZE, OnSize)
       CHAIN_MSG_MAP(cDockingWindow)
    END_MSG_MAP()
 
    LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
    LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
+   LRESULT OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
 
 private:
    cLogWnd m_logWnd;

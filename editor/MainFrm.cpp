@@ -106,7 +106,6 @@ void CMainFrame::OnUpdateViewControlBarMenu(CCmdUI* pCmdUI)
 ////////////////////////////////////////
 
 cMainFrame::cMainFrame()
- : m_pView(NULL)
 {
 }
 
@@ -214,15 +213,7 @@ LRESULT cMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
    UIAddToolBar(hWndToolBar);
 
-   if (FAILED(CComObject<cEditorView>::CreateInstance(&m_pView)))
-   {
-      ErrorMsg("Error creating IEditorView instance\n");
-      return -1;
-   }
-
-   m_hWndClient = m_pView->CWindowImpl<cEditorView>::Create(m_hWnd, rcDefault, NULL,
-      WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, WS_EX_CLIENTEDGE, ATL_IDW_CLIENT);
-
+   m_hWndClient = m_clientWnd.Create(m_hWnd, rcDefault, NULL, 0, 0, ATL_IDW_CLIENT);
    if (m_hWndClient == NULL)
    {
       ErrorMsg("Error creating view window\n");
@@ -278,12 +269,6 @@ LRESULT cMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
    }
 
    m_dockingWindows.clear();
-
-   if (m_pView != NULL)
-   {
-      m_pView->DestroyWindow();
-//      m_pView->Release();
-   }
 
    PostQuitMessage(0);
 

@@ -91,6 +91,8 @@ static uint LoadTileSets(const TiXmlDocument & xmlDoc)
                      }
                   }
                }
+
+               pEditorTileManager->SetDefaultTileSet(pszName);
             }
          }
       }

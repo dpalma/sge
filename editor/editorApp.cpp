@@ -106,8 +106,15 @@ void ListTileSets(CONTAINER * pContainer)
 
 ////////////////////////////////////////
 
+BEGIN_CONSTRAINTS()
+   AFTER_GUID(IID_IEditorTileManager)
+END_CONSTRAINTS()
+
+////////////////////////////////////////
+
 cEditorApp::cEditorApp()
- : m_bPromptMapSettings(false),
+ : cGlobalObject<IMPLEMENTS(IEditorApp)>("EditorApp", CONSTRAINTS()),
+   m_bPromptMapSettings(false),
    m_hCurrentToolWnd(NULL)
 {
 }

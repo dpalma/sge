@@ -5,6 +5,7 @@
 #define INCLUDED_MAINFRM_H
 
 #include "editorView.h"
+#include "GLContext.h"
 
 #include <DockingFrame.h>
 #include <sstate.h>
@@ -18,6 +19,34 @@
 #endif // _MSC_VER > 1000
 
 class cDockingWindow;
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cClientWnd
+//
+
+typedef CWinTraitsOR<0, WS_EX_CLIENTEDGE> tClientWndTraits;
+
+class cClientWnd : public CWindowImpl<cClientWnd, CWindow, tClientWndTraits>,
+                   public cGLContext<cClientWnd>
+{
+   typedef cGLContext<cClientWnd> tClientWndGLContext;
+public:
+
+   BEGIN_MSG_MAP_EX(cClientWnd)
+      CHAIN_MSG_MAP(tClientWndGLContext)
+      MSG_WM_PAINT(OnPaint)
+   END_MSG_MAP()
+
+   void OnPaint(HDC hDC)
+   {
+      CPaintDC dc(m_hWnd);
+      CRect rect;
+      GetClientRect(&rect);
+      dc.FillSolidRect(&rect, GetSysColor(COLOR_WINDOW));
+      dc.DrawText("Client Window", -1, &rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+   }
+};
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -102,7 +131,7 @@ private:
    sstate::CWindowStateMgr	m_dockingWindowStateMgr;
    CString m_dockingWindowViewMenuText;
 
-   CComObject<cEditorView> * m_pView;
+   cClientWnd m_clientWnd;
 };
 
 /////////////////////////////////////////////////////////////////////////////
