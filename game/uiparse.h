@@ -1,0 +1,34 @@
+///////////////////////////////////////////////////////////////////////////////
+// $Id$
+
+#ifndef INCLUDED_UIPARSE_H
+#define INCLUDED_UIPARSE_H
+
+#ifdef _MSC_VER
+#pragma once
+#endif
+
+///////////////////////////////////////////////////////////////////////////////
+
+enum eSkipResult
+{
+   kNoSkip,
+   kSkipEntire,
+   kSkipAllowChildren,
+};
+
+class cUIParseHook
+{
+public:
+   virtual ~cUIParseHook() = 0;
+
+   virtual eSkipResult SkipElement(const char * pszElement) = 0;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+int UIParseFile(const char * pszXmlFile, tUIComponentList * pComponents, cUIParseHook * pHook = NULL);
+
+///////////////////////////////////////////////////////////////////////////////
+
+#endif // !INCLUDED_UIPARSE_H
