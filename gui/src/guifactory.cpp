@@ -8,6 +8,20 @@
 #include "dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
+
+REFERENCE_GUIELEMENTFACTORY(button);
+REFERENCE_GUIELEMENTFACTORY(dialog);
+REFERENCE_GUIELEMENTFACTORY(label);
+REFERENCE_GUIELEMENTFACTORY(panel);
+REFERENCE_GUIELEMENTFACTORY(textedit);
+
+REFERENCE_GUIELEMENTRENDERERFACTORY(button);
+REFERENCE_GUIELEMENTRENDERERFACTORY(dialog);
+REFERENCE_GUIELEMENTRENDERERFACTORY(label);
+REFERENCE_GUIELEMENTRENDERERFACTORY(panel);
+REFERENCE_GUIELEMENTRENDERERFACTORY(textedit);
+
+///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUIFactory
 //

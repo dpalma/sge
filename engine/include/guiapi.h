@@ -506,8 +506,14 @@ struct sAutoRegisterGUIElementFactory
    }
 };
 
+#define REFERENCE_GUIELEMENTFACTORY(type) \
+   extern IGUIElementFactory * Make##type##ElementFactory(); \
+   void * MAKE_UNIQUE(g_pRefSym##type) = (void *)&Make##type##ElementFactory
+
 #define AUTOREGISTER_GUIELEMENTFACTORY(type, factoryClass) \
-   static sAutoRegisterGUIElementFactory g_auto##type##Element(#type, static_cast<IGUIElementFactory *>(new (factoryClass)))
+   IGUIElementFactory * Make##type##ElementFactory() \
+   { return static_cast<IGUIElementFactory *>(new (factoryClass)); } \
+   static sAutoRegisterGUIElementFactory g_auto##type##Element(#type, Make##type##ElementFactory())
 
 ///////////////////////////////////////
 
@@ -522,8 +528,14 @@ struct sAutoRegisterGUIElementRendererFactory
    }
 };
 
+#define REFERENCE_GUIELEMENTRENDERERFACTORY(renderer) \
+   extern IGUIElementRendererFactory * Make##renderer##RendererFactory(); \
+   void * MAKE_UNIQUE(g_pRefSym##renderer) = (void *)&Make##renderer##RendererFactory
+
 #define AUTOREGISTER_GUIELEMENTRENDERERFACTORY(renderer, factoryClass) \
-   static sAutoRegisterGUIElementRendererFactory g_auto##renderer##Renderer(#renderer, static_cast<IGUIElementRendererFactory *>(new (factoryClass)))
+   IGUIElementRendererFactory * Make##renderer##RendererFactory() \
+   { return static_cast<IGUIElementRendererFactory *>(new (factoryClass)); } \
+   static sAutoRegisterGUIElementRendererFactory g_auto##renderer##Renderer(#renderer, Make##renderer##RendererFactory())
 
 ///////////////////////////////////////////////////////////////////////////////
 //
