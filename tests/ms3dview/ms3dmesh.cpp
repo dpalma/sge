@@ -79,19 +79,6 @@ void cgErrorCallback()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static void MatrixFromAngles(tVec3 angles, tMatrix4 * pMatrix)
-{
-   tMatrix4 rotX, rotY, rotZ, temp1, temp2;
-   MatrixRotateX(Rad2Deg(angles.x), &rotX);
-   MatrixRotateY(Rad2Deg(angles.y), &rotY);
-   MatrixRotateZ(Rad2Deg(angles.z), &rotZ);
-   temp1 = rotZ;
-   temp2 = temp1 * rotY;
-   *pMatrix = temp2 * rotX;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 static char * GetResource(const char * pResId, const char * pResType)
 {
    HRSRC hR = FindResource(AfxGetInstanceHandle(), pResId, pResType);
@@ -121,6 +108,7 @@ static char * GetResource(const char * pResId, const char * pResType)
 
 cMs3dMesh::cMs3dMesh()
  : m_pInnerMesh(MeshCreate()),
+   m_bPrepared(false),
    m_program(NULL),
    m_modelViewProjParam(NULL)
 {
@@ -145,9 +133,17 @@ void cMs3dMesh::GetAABB(tVec3 * pMaxs, tVec3 * pMins) const
 
 void cMs3dMesh::Render(IRenderDevice * pRenderDevice) const
 {
-   pRenderDevice->SetBlendMatrices(m_boneMatrices.size(), &m_boneMatrices[0]);
+   if (!m_bPrepared)
+   {
+      const_cast<cMs3dMesh *>(this)->Prepare();
+      m_bPrepared = true;
+   }
+
    if (m_pInnerMesh)
+   {
+      pRenderDevice->SetBlendMatrices(m_boneMatrices.size(), &m_boneMatrices[0]);
       m_pInnerMesh->Render(pRenderDevice);
+   }
 }
 
 uint cMs3dMesh::GetVertexCount() const
@@ -221,24 +217,19 @@ tResult cMs3dMesh::GetSkeleton(ISkeleton * * ppSkeleton)
    return m_pInnerMesh->GetSkeleton(ppSkeleton);
 }
 
-tResult cMs3dMesh::Optimize()
-{
-   return m_pInnerMesh->Optimize();
-}
-
 tResult cMs3dMesh::Load(const char * pszMesh, IRenderDevice * pRenderDevice, IResourceManager * pResourceManager)
 {
    SafeRelease(m_pInnerMesh);
    m_pInnerMesh = MeshLoad(pResourceManager, pRenderDevice, pszMesh);
-   if (m_pInnerMesh)
+   if (!m_pInnerMesh)
    {
-      return PostRead();
+      return E_FAIL;
    }
-
-   return E_FAIL;
+   m_bPrepared = false;
+   return S_OK;
 }
 
-tResult cMs3dMesh::PostRead()
+void cMs3dMesh::Prepare()
 {
    cAutoIPtr<ISkeleton> pSkeleton;
    if (GetSkeleton(&pSkeleton) == S_OK)
@@ -354,8 +345,6 @@ tResult cMs3dMesh::PostRead()
          }
       }
    }
-
-   return S_OK;
 }
 
 void cMs3dMesh::SetFrame(float percent)

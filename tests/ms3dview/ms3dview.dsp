@@ -96,6 +96,10 @@ SOURCE=.\MainFrm.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\meshoptimize.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ms3dmesh.cpp
 # End Source File
 # Begin Source File
@@ -122,6 +126,10 @@ SOURCE=.\ms3dviewView.cpp
 
 SOURCE=.\StdAfx.cpp
 # ADD CPP /Yc"stdafx.h"
+# End Source File
+# Begin Source File
+
+SOURCE=.\TreeUtils.cpp
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -158,6 +166,10 @@ SOURCE=.\Resource.h
 # Begin Source File
 
 SOURCE=.\StdAfx.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\TreeUtils.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

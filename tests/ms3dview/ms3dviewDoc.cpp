@@ -5,10 +5,9 @@
 
 #include "ms3dviewDoc.h"
 
-#include "ms3dviewView.h" // @HACK: really need to access the view?
+#include "ms3dviewView.h" // TODO HACK: really need to access the view?
 
 #include "resmgr.h"
-#include "readwriteapi.h"
 #include "filespec.h"
 #include "filepath.h"
 #include "globalobj.h"
@@ -28,8 +27,8 @@ IMPLEMENT_DYNCREATE(CMs3dviewDoc, CDocument)
 
 BEGIN_MESSAGE_MAP(CMs3dviewDoc, CDocument)
 	//{{AFX_MSG_MAP(CMs3dviewDoc)
-		// NOTE - the ClassWizard will add and remove mapping macros here.
-		//    DO NOT EDIT what you see in these blocks of generated code!
+	ON_UPDATE_COMMAND_UI(ID_TOOLS_OPTIMIZE, OnUpdateToolsOptimize)
+	ON_COMMAND(ID_TOOLS_OPTIMIZE, OnToolsOptimize)
 	//}}AFX_MSG_MAP
 	ON_UPDATE_COMMAND_UI(ID_INDICATOR_RENDERING, OnUpdateRendering)
 END_MESSAGE_MAP()
@@ -39,8 +38,6 @@ END_MESSAGE_MAP()
 
 CMs3dviewDoc::CMs3dviewDoc()
 {
-	// TODO: add one-time construction code here
-
 }
 
 CMs3dviewDoc::~CMs3dviewDoc()
@@ -55,24 +52,9 @@ BOOL CMs3dviewDoc::OnNewDocument()
 	// TODO: add reinitialization code here
 	// (SDI documents will reuse this document)
 
+   SafeRelease(m_pMesh);
+
 	return TRUE;
-}
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CMs3dviewDoc serialization
-
-void CMs3dviewDoc::Serialize(CArchive& ar)
-{
-	if (ar.IsStoring())
-	{
-		// TODO: add storing code here
-	}
-	else
-	{
-		// TODO: add loading code here
-	}
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -95,9 +77,6 @@ void CMs3dviewDoc::Dump(CDumpContext& dc) const
 
 BOOL CMs3dviewDoc::OnOpenDocument(LPCTSTR lpszPathName) 
 {
-	if (!CDocument::OnOpenDocument(lpszPathName))
-		return FALSE;
-	
    CMs3dviewView * pMs3dView = NULL;
 
 	POSITION pos = GetFirstViewPosition();
@@ -112,22 +91,25 @@ BOOL CMs3dviewDoc::OnOpenDocument(LPCTSTR lpszPathName)
 
    if (!pMs3dView)
    {
-      TRACE0("Have no CMs3dviewView from which to get a rendering device\n");
+      DebugMsg("Have no appropriate view from which to get a rendering device\n");
       return FALSE;
    }
 
-   cFileSpec file(lpszPathName);
+   DeleteContents();
+   SetModifiedFlag();  // dirty during de-serialize
 
    UseGlobal(ResourceManager);
-   pResourceManager->AddSearchPath(file.GetPath().GetPath());
+   pResourceManager->AddSearchPath(cFileSpec(lpszPathName).GetPath().GetPath());
 
-   SafeRelease(m_pMesh);
+   Assert(!m_pMesh);
    m_pMesh = new cMs3dMesh;
-   if (m_pMesh->Load(file.GetFileName(), pMs3dView->AccessRenderDevice(), pResourceManager) != S_OK)
+   if (m_pMesh->Load(lpszPathName, pMs3dView->AccessRenderDevice(), pResourceManager) != S_OK)
    {
-      SafeRelease(m_pMesh);
+   	DeleteContents();
       return FALSE;
    }
+
+   SetModifiedFlag(FALSE);
 
    return TRUE;
 }
@@ -145,4 +127,15 @@ void CMs3dviewDoc::OnUpdateRendering(CCmdUI * pCmdUI)
    CString string;
    VERIFY(string.LoadString(stringId));
    pCmdUI->SetText(string);
+}
+
+void CMs3dviewDoc::OnUpdateToolsOptimize(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable(!!m_pMesh);
+}
+
+void CMs3dviewDoc::OnToolsOptimize() 
+{
+	// TODO: Add your command handler code here
+	
 }

@@ -109,6 +109,10 @@ BEGIN
         MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
     END
+    POPUP "&Tools"
+    BEGIN
+        MENUITEM "&Optimize",                   ID_TOOLS_OPTIMIZE
+    END
     POPUP "&Help"
     BEGIN
         MENUITEM "&About ms3dview...",          ID_APP_ABOUT
@@ -324,6 +328,11 @@ BEGIN
     ID_INDICATOR_RENDERING  "XXXXXXXXXXXXX"
     IDS_RENDERING_SOFTWARE  "Software"
     IDS_RENDERING_VERTEX_PROGRAM "Vertex Program"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_TOOLS_OPTIMIZE       "Optimize the current mesh"
 END
 
 #endif    // English (U.S.) resources

@@ -1,9 +1,8 @@
-// ms3dviewDoc.h : interface of the CMs3dviewDoc class
-//
 /////////////////////////////////////////////////////////////////////////////
+// $Id$
 
-#if !defined(AFX_MS3DVIEWDOC_H__FA1FD203_9798_4816_B288_5BDCA368C118__INCLUDED_)
-#define AFX_MS3DVIEWDOC_H__FA1FD203_9798_4816_B288_5BDCA368C118__INCLUDED_
+#if !defined(INCLUDED_MS3DVIEWDOC_H)
+#define INCLUDED_MS3DVIEWDOC_H
 
 #include "ms3dmesh.h"
 
@@ -29,7 +28,6 @@ public:
 	//{{AFX_VIRTUAL(CMs3dviewDoc)
 	public:
 	virtual BOOL OnNewDocument();
-	virtual void Serialize(CArchive& ar);
 	virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
 	virtual void DeleteContents();
 	//}}AFX_VIRTUAL
@@ -47,8 +45,8 @@ protected:
 // Generated message map functions
 protected:
 	//{{AFX_MSG(CMs3dviewDoc)
-		// NOTE - the ClassWizard will add and remove member functions here.
-		//    DO NOT EDIT what you see in these blocks of generated code !
+	afx_msg void OnUpdateToolsOptimize(CCmdUI* pCmdUI);
+	afx_msg void OnToolsOptimize();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
@@ -63,4 +61,4 @@ private:
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#endif // !defined(AFX_MS3DVIEWDOC_H__FA1FD203_9798_4816_B288_5BDCA368C118__INCLUDED_)
+#endif // !defined(INCLUDED_MS3DVIEWDOC_H)
