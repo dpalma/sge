@@ -230,6 +230,10 @@ SOURCE=.\src\stdhdr.cpp
 
 SOURCE=.\src\stripify.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=.\src\submesh.cpp
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
