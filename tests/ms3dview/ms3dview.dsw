@@ -3,7 +3,7 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
-Project: "allguids"=..\..\allguids\allguids.dsp - Package Owner=<4>
+Project: "allguids"=..\..\vcproj\vc6\allguids.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -15,7 +15,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "engine"=..\..\engine\engine.dsp - Package Owner=<4>
+Project: "engine"=..\..\vcproj\vc6\engine.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -27,13 +27,10 @@ Package=<4>
     Project_Dep_Name allguids
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name render
+    Project_Dep_Name rendergl
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name tech
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name rendergl
     End Project Dependency
 }}}
 
@@ -66,7 +63,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "rendergl"=..\..\render\gl\rendergl.dsp - Package Owner=<4>
+Project: "rendergl"=..\..\vcproj\vc6\rendergl.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -84,7 +81,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "tech"=..\..\tech\tech.dsp - Package Owner=<4>
+Project: "tech"=..\..\vcproj\vc6\tech.dsp - Package Owner=<4>
 
 Package=<5>
 {{{

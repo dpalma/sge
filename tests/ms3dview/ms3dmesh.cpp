@@ -227,10 +227,12 @@ void cMs3dMesh::Prepare()
 
                      if (index >= 0)
                      {
-                        tVec4 nprime = inverses[index].Transform(tVec4(pNormal[0],pNormal[1],pNormal[2],1));
+                        tVec4 nprime;
+                        inverses[index].Transform(tVec4(pNormal[0],pNormal[1],pNormal[2],1), &nprime);
                         memcpy(pNormal, nprime.v, 3 * sizeof(float));
 
-                        tVec4 vprime = inverses[index].Transform(tVec4(pPosition[0],pPosition[1],pPosition[2],1));
+                        tVec4 vprime;
+                        inverses[index].Transform(tVec4(pPosition[0],pPosition[1],pPosition[2],1), &vprime);
                         memcpy(pPosition, vprime.v, 3 * sizeof(float));
                      }
                   }

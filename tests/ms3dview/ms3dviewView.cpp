@@ -65,35 +65,10 @@ BOOL CMs3dviewView::PreCreateWindow(CREATESTRUCT& cs)
 
 ////////////////////////////////////////
 
-tResult CMs3dviewView::Create(int width, int height, int bpp, const char * pszTitle)
+tResult CMs3dviewView::Create(const sWindowCreateParams * pParams)
 {
    Assert(!"This should never be called");
    return E_FAIL;
-}
-
-////////////////////////////////////////
-
-tResult CMs3dviewView::GetWindowInfo(sWindowInfo * pInfo) const
-{
-   if (pInfo == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (!IsWindow(GetSafeHwnd()))
-   {
-      return E_FAIL;
-   }
-
-   CRect rect;
-   GetClientRect(&rect);
-
-   pInfo->width = rect.Width();
-   pInfo->height = rect.Height();
-   pInfo->bpp = (m_hDC != NULL) ? GetDeviceCaps(m_hDC, BITSPIXEL) : 0;
-   pInfo->hWnd = GetSafeHwnd();
-
-   return S_OK;
 }
 
 ////////////////////////////////////////
@@ -211,9 +186,7 @@ int CMs3dviewView::OnCreate(LPCREATESTRUCT lpCreateStruct)
    wglMakeCurrent(m_hDC, m_hRC);
 
    // Create the render device after setting up the GL context
-   sRenderDeviceParameters params = {0};
-   params.pWindow = static_cast<IWindow *>(this);
-   if (RenderDeviceCreate(&params, &m_pRenderDevice) != S_OK)
+   if (RenderDeviceCreate(static_cast<IWindow *>(this), &m_pRenderDevice) != S_OK)
    {
       TRACE0("Failed to create rendering device\n");
       return -1;
