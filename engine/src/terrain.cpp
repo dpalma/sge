@@ -19,6 +19,7 @@
 
 #include <GL/gl.h>
 #include <algorithm>
+#include <map>
 
 #include "dbgalloc.h" // must be last header
 
@@ -523,6 +524,55 @@ void cTerrain::cSceneEntity::Render(IRenderDevice * pRenderDevice)
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: cSplat
+//
+
+////////////////////////////////////////
+
+cSplat::cSplat()
+{
+}
+
+////////////////////////////////////////
+
+cSplat::~cSplat()
+{
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cSplatBuilder
+//
+
+////////////////////////////////////////
+
+cSplatBuilder::cSplatBuilder()
+{
+}
+
+////////////////////////////////////////
+
+cSplatBuilder::~cSplatBuilder()
+{
+}
+
+////////////////////////////////////////
+
+void cSplatBuilder::AddTriangle(int i0, int i1, int i2)
+{
+}
+
+////////////////////////////////////////
+
+tResult cSplatBuilder::GenerateSplat(cSplat * * ppSplat)
+{
+   return E_NOTIMPL;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cTerrainChunk
 //
 
@@ -551,15 +601,47 @@ tResult cTerrainChunk::Create(uint ix, uint iz, uint cx, uint cz,
       return E_POINTER;
    }
 
+   cAutoIPtr<cTerrainChunk> pChunk(new cTerrainChunk);
+   if (!pChunk)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   typedef std::map<uint, cSplatBuilder *> tSplatBuilders;
+   tSplatBuilders splatBuilders;
+
    for (uint z = iz; z < (iz + cz); z++)
    {
+      uint zPrev = (z > iz) ? (z - 1) : (iz + cz - 1);
+      uint zNext = (z < (iz + cz - 1)) ? (z + 1) : iz;
+
       for (uint x = ix; x < (ix + cx); x++)
       {
          uint iQuad = (z * nQuadsZ) + x;
 
          const sTerrainQuad & quad = quads[iQuad];
+
+         if (splatBuilders.find(quad.tile) == splatBuilders.end())
+         {
+            cSplatBuilder * pSplatBuilder = new cSplatBuilder;
+            if (pSplatBuilder != NULL)
+            {
+               splatBuilders[quad.tile] = pSplatBuilder;
+            }
+         }
+
+         splatBuilders[quad.tile]->AddTriangle(iQuad,iQuad+3,iQuad+2);
+         splatBuilders[quad.tile]->AddTriangle(iQuad+3,iQuad+2,iQuad+1);
       }
    }
+
+   tSplatBuilders::iterator iter = splatBuilders.begin();
+   tSplatBuilders::iterator end = splatBuilders.end();
+   for (; iter != end; iter++)
+   {
+      delete iter->second;
+   }
+   splatBuilders.clear();
 
    return E_NOTIMPL;
 }

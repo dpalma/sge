@@ -23,6 +23,7 @@ F_DECLARE_INTERFACE(IEditorTileSet);
 F_DECLARE_INTERFACE(IHeightMap);
 F_DECLARE_INTERFACE(IMaterial);
 F_DECLARE_INTERFACE(IRenderDevice);
+F_DECLARE_INTERFACE(IIndexBuffer);
 F_DECLARE_INTERFACE(IReader);
 F_DECLARE_INTERFACE(IWriter);
 
@@ -136,6 +137,43 @@ private:
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: cSplat
+//
+
+class cSplat
+{
+public:
+   cSplat();
+   ~cSplat();
+
+private:
+   cAutoIPtr<IMaterial> m_pMaterial;
+   cAutoIPtr<IIndexBuffer> m_pIndexBuffer;
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cSplatBuilder
+//
+
+class cSplatBuilder
+{
+public:
+   cSplatBuilder();
+   ~cSplatBuilder();
+
+   void AddTriangle(int i0, int i1, int i2);
+
+   tResult GenerateSplat(cSplat * * ppSplat);
+
+private:
+   std::vector<int> m_indices;
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cTerrainChunk
 //
 
@@ -153,7 +191,6 @@ public:
       IEditorTileSet * pTileSet, cTerrainChunk * * ppChunk);
 
 private:
-   cAutoIPtr<IMaterial> m_pMaterial;
 };
 
 /////////////////////////////////////////////////////////////////////////////
