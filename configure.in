@@ -58,7 +58,7 @@ MDL_HAVE_OPENGL
 AC_OUTPUT([Makefile \
            3rdparty/Makefile \
            3rdparty/tinyxml/Makefile \
-           allguids/Makefile] \
+           allguids/Makefile \
            tech/Makefile \
            render/Makefile \
            engine/Makefile \
