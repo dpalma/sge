@@ -22,6 +22,7 @@ F_DECLARE_INTERFACE(IMaterial);
 
 F_DECLARE_INTERFACE(IMesh);
 F_DECLARE_INTERFACE(ISubMesh);
+F_DECLARE_INTERFACE(ISkeleton);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -38,6 +39,9 @@ interface IMesh : IUnknown
    virtual tResult FindMaterial(const char * pszName, IMaterial * * ppMaterial) const = 0;
 
    virtual tResult AddSubMesh(ISubMesh * pSubMesh) = 0;
+
+   virtual tResult AttachSkeleton(ISkeleton * pSkeleton) = 0;
+   virtual tResult GetSkeleton(ISkeleton * * ppSkeleton) = 0;
 };
 
 ENGINE_API IMesh * MeshCreate();

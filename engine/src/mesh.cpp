@@ -4,6 +4,7 @@
 #include "stdhdr.h"
 
 #include "mesh.h"
+#include "skeleton.h"
 #include "render.h"
 #include "material.h"
 #include "vec3.h"
@@ -125,6 +126,8 @@ public:
    virtual tResult AddMaterial(IMaterial * pMaterial);
    virtual tResult FindMaterial(const char * pszName, IMaterial * * ppMaterial) const;
    virtual tResult AddSubMesh(ISubMesh * pSubMesh);
+   virtual tResult AttachSkeleton(ISkeleton * pSkeleton);
+   virtual tResult GetSkeleton(ISkeleton * * ppSkeleton);
 
 private:
    typedef std::vector<IMaterial *> tMaterials;
@@ -132,6 +135,8 @@ private:
 
    typedef std::vector<ISubMesh *> tSubMeshes;
    tSubMeshes m_subMeshes;
+
+   cAutoIPtr<ISkeleton> m_pSkeleton;
 };
 
 ///////////////////////////////////////
@@ -297,6 +302,39 @@ tResult cMesh::AddSubMesh(ISubMesh * pSubMesh)
       m_subMeshes.push_back(pSubMesh);
       pSubMesh->AddRef();
       return S_OK;
+   }
+   return E_FAIL;
+}
+
+///////////////////////////////////////
+
+tResult cMesh::AttachSkeleton(ISkeleton * pSkeleton)
+{
+   SafeRelease(m_pSkeleton);
+   m_pSkeleton = pSkeleton;
+   if (m_pSkeleton)
+   {
+      m_pSkeleton->AddRef();
+   }
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cMesh::GetSkeleton(ISkeleton * * ppSkeleton)
+{
+   if (ppSkeleton != NULL)
+   {
+      *ppSkeleton = static_cast<ISkeleton *>(m_pSkeleton);
+      if (*ppSkeleton != NULL)
+      {
+         (*ppSkeleton)->AddRef();
+         return S_OK;
+      }
+      else
+      {
+         return S_FALSE;
+      }
    }
    return E_FAIL;
 }

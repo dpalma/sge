@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // $Id$
 
-#include "stdafx.h"
+#include "stdhdr.h"
 
 #include "skeleton.h"
 
@@ -9,7 +9,6 @@
 #include "str.h"
 
 #include <algorithm>
-#include <map>
 
 #include "dbgalloc.h" // must be last header
 
@@ -291,16 +290,8 @@ bool cSkeleton::Create(const sBoneInfo * pBones, uint nBones,
 
    if ((pBones != NULL) && (nBones > 0))
    {
-      std::map<cStr, uint> boneNames; // map bone names to indices
-
-      uint i;
-      for (i = 0; i < nBones; i++)
-      {
-         boneNames.insert(std::make_pair(cStr(pBones[i].name), i));
-      }
-
       m_bones.resize(nBones);
-      for ( i = 0; i < nBones; i++)
+      for (uint i = 0; i < nBones; i++)
       {
          m_bones[i] = pBones[i];
          m_bones[i].SetIndex(i);

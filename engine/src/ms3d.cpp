@@ -14,8 +14,10 @@
 #include "render.h"
 #include "resmgr.h"
 #include "globalobj.h"
+#include "animation.h"
 
 #include <vector>
+#include <algorithm>
 
 #include "dbgalloc.h" // must be last header
 
@@ -32,6 +34,15 @@ AssertOnce(sizeof(ms3d_header_t) == 14);
 extern ISubMesh * SubMeshCreate(uint nFaces, uint nVertices,
                                 IVertexDeclaration * pVertexDecl,
                                 IRenderDevice * pRenderDevice);
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <>
+std::vector<IKeyFrameInterpolator *>::~vector()
+{
+   std::for_each(begin(), end(), CTInterfaceMethodRef(&IUnknown::Release));
+   clear();
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -200,30 +211,22 @@ tResult Ms3dFileRead(IRenderDevice * pRenderDevice, IReader * pReader, IMesh * *
       }
    }
 
+   std::vector<sBoneInfo> bones;
+   std::vector<IKeyFrameInterpolator *> interpolators;
+
+   if (ReadSkeleton(pReader, &bones, &interpolators) != S_OK)
+      return E_FAIL;
+
+   cAutoIPtr<ISkeleton> pSkeleton;
+   if (SkeletonCreate(&bones[0], bones.size(), &interpolators[0], interpolators.size(), &pSkeleton) == S_OK)
+   {
+      pMesh->AttachSkeleton(pSkeleton);
+   }
+
    if (ppMesh != NULL)
    {
       *ppMesh = pMesh;
       pMesh->AddRef();
-   }
-
-   float animationFPS;
-   float currentTime;
-   int nTotalFrames;
-   uint16 nJoints;
-   if (pReader->Read(&animationFPS, sizeof(animationFPS)) != S_OK
-      || pReader->Read(&currentTime, sizeof(currentTime)) != S_OK
-      || pReader->Read(&nTotalFrames, sizeof(nTotalFrames)) != S_OK
-      || pReader->Read(&nJoints, sizeof(nJoints)) != S_OK)
-      return E_FAIL;
-
-   std::vector<cMs3dJoint> joints(nJoints);
-   for (i = 0; i < nJoints; i++)
-   {
-      if (pReader->Read(&joints[i]) != S_OK)
-         break;
-#ifdef _DEBUG
-      joints[i].DebugPrint();
-#endif
    }
 
    return S_OK;

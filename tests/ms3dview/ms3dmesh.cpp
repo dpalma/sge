@@ -545,6 +545,54 @@ tResult cMs3dMesh::Read(IReader * pReader, IRenderDevice * pRenderDevice, IResou
    {
       m_boneMatrices.resize(GetSkeleton()->GetBoneCount());
 
+      tMatrices inverses(GetSkeleton()->GetBoneCount());
+
+      for (int i = 0; i < inverses.size(); i++)
+      {
+         MatrixInvert(GetSkeleton()->GetBoneWorldTransform(i), &inverses[i]);
+      }
+
+      // transform all vertices by the inverse of the affecting bone's absolute matrix
+      tVertices::iterator vertIter;
+      for (vertIter = m_vertices.begin(); vertIter != m_vertices.end(); vertIter++)
+      {
+         if (vertIter->boneId != -1)
+         {
+            const tMatrix4 & m = inverses[vertIter->boneId];
+            tVec4 v2, v(vertIter->vertex[0], vertIter->vertex[1], vertIter->vertex[2], k4thDimension);
+            v2 = m.Transform(v);
+            vertIter->vertex[0] = v2.x;
+            vertIter->vertex[1] = v2.y;
+            vertIter->vertex[2] = v2.z;
+         }
+      }
+
+      // transform the vertex normals as well
+      tTriangles::iterator triIter;
+      for (triIter = m_triangles.begin(); triIter != m_triangles.end(); triIter++)
+      {
+         for (int i = 0; i < 3; i++)
+         {
+            ms3d_vertex_t & v = m_vertices[triIter->vertexIndices[i]];
+            if (v.boneId != -1)
+            {
+               const tMatrix4 & m = inverses[v.boneId];
+               tVec4 n(
+                  triIter->vertexNormals[i][0],
+                  triIter->vertexNormals[i][1],
+                  triIter->vertexNormals[i][2],
+                  k4thDimension);
+               tVec4 nprime;
+               nprime = m.Transform(n);
+               triIter->vertexNormals[i][0] = nprime.x;
+               triIter->vertexNormals[i][1] = nprime.y;
+               triIter->vertexNormals[i][2] = nprime.z;
+            }
+         }
+      }
+
+      SetFrame(0);
+
       cgSetErrorCallback(cgErrorCallback);
 
       g_cgProfile = cgGLGetLatestProfile(CG_GL_VERTEX);
@@ -569,57 +617,6 @@ tResult cMs3dMesh::Read(IReader * pReader, IRenderDevice * pRenderDevice, IResou
                m_pfnRender = RenderVertexProgram;
             }
          }
-
-      }
-      else
-      {
-         tMatrices inverses(GetSkeleton()->GetBoneCount());
-
-         for (int i = 0; i < inverses.size(); i++)
-         {
-            MatrixInvert(GetSkeleton()->GetBoneWorldTransform(i), &inverses[i]);
-         }
-
-         // transform all vertices by the inverse of the affecting bone's absolute matrix
-         tVertices::iterator vertIter;
-         for (vertIter = m_vertices.begin(); vertIter != m_vertices.end(); vertIter++)
-         {
-            if (vertIter->boneId != -1)
-            {
-               const tMatrix4 & m = inverses[vertIter->boneId];
-               tVec4 v2, v(vertIter->vertex[0], vertIter->vertex[1], vertIter->vertex[2], k4thDimension);
-               v2 = m.Transform(v);
-               vertIter->vertex[0] = v2.x;
-               vertIter->vertex[1] = v2.y;
-               vertIter->vertex[2] = v2.z;
-            }
-         }
-
-         // transform the vertex normals as well
-         tTriangles::iterator triIter;
-         for (triIter = m_triangles.begin(); triIter != m_triangles.end(); triIter++)
-         {
-            for (int i = 0; i < 3; i++)
-            {
-               ms3d_vertex_t & v = m_vertices[triIter->vertexIndices[i]];
-               if (v.boneId != -1)
-               {
-                  const tMatrix4 & m = inverses[v.boneId];
-                  tVec4 n(
-                     triIter->vertexNormals[i][0],
-                     triIter->vertexNormals[i][1],
-                     triIter->vertexNormals[i][2],
-                     k4thDimension);
-                  tVec4 nprime;
-                  nprime = m.Transform(n);
-                  triIter->vertexNormals[i][0] = nprime.x;
-                  triIter->vertexNormals[i][1] = nprime.y;
-                  triIter->vertexNormals[i][2] = nprime.z;
-               }
-            }
-         }
-
-         SetFrame(0);
       }
    }
 
