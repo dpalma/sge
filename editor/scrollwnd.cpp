@@ -57,8 +57,6 @@ void sAuxData::UpdateSysMetrics()
 
 static sAuxData afxData;
 
-static BOOL _afxGotScrollLines;
-
 /////////////////////////////////////////////////////////////////////////////
 // CScrollWnd
 
@@ -76,8 +74,10 @@ END_MESSAGE_MAP()
 #define MM_SCALETOFIT       (-1)
 	// standard GDI mapping modes are > 0
 
-extern BOOL _afxGotScrollLines; // defined in wincore.cpp
-
+#ifndef _AFXDLL
+extern UINT PASCAL _AfxGetMouseScrollLines();
+#else
+static BOOL _afxGotScrollLines;
 UINT PASCAL _AfxGetMouseScrollLines()
 {
 	static UINT uCachedScrollLines;
@@ -143,6 +143,7 @@ UINT PASCAL _AfxGetMouseScrollLines()
 
 	return uCachedScrollLines;
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CScrollWnd construction/destruction
