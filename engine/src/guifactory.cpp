@@ -223,14 +223,6 @@ tResult cGUIFactory::RevokeElementRendererFactory(const char * pszRenderer)
 
 void cGUIFactory::CleanupElementFactories()
 {
-   sElementFactoryMapEntry * p = gm_pElementFactoryMapEntries;
-   while (p != NULL)
-   {
-      gm_pElementFactoryMapEntries = gm_pElementFactoryMapEntries->pNext;
-      delete p;
-      p = gm_pElementFactoryMapEntries;
-   }
-
    tGUIElementFactoryMap::iterator iter;
    for (iter = m_elementFactoryMap.begin(); iter != m_elementFactoryMap.end(); iter++)
    {
@@ -243,14 +235,6 @@ void cGUIFactory::CleanupElementFactories()
 
 void cGUIFactory::CleanupRendererFactories()
 {
-   sRendererFactoryMapEntry * p = gm_pRendererFactoryMapEntries;
-   while (p != NULL)
-   {
-      gm_pRendererFactoryMapEntries = gm_pRendererFactoryMapEntries->pNext;
-      delete p;
-      p = gm_pRendererFactoryMapEntries;
-   }
-
    tGUIRendererFactoryMap::iterator iter;
    for (iter = m_rendererFactoryMap.begin(); iter != m_rendererFactoryMap.end(); iter++)
    {
@@ -258,6 +242,37 @@ void cGUIFactory::CleanupRendererFactories()
    }
    m_rendererFactoryMap.clear();
 }
+
+///////////////////////////////////////
+
+cGUIFactory::cAutoCleanupStatics::~cAutoCleanupStatics()
+{
+   {
+      sElementFactoryMapEntry * p = gm_pElementFactoryMapEntries;
+      while (p != NULL)
+      {
+         gm_pElementFactoryMapEntries = p->pNext;
+         SafeRelease(p->pFactory);
+         delete p;
+         p = gm_pElementFactoryMapEntries;
+      }
+   }
+
+   {
+      sRendererFactoryMapEntry * p = gm_pRendererFactoryMapEntries;
+      while (p != NULL)
+      {
+         gm_pRendererFactoryMapEntries = p->pNext;
+         SafeRelease(p->pFactory);
+         delete p;
+         p = gm_pRendererFactoryMapEntries;
+      }
+   }
+}
+
+///////////////////////////////////////
+
+cGUIFactory::cAutoCleanupStatics cGUIFactory::g_autoCleanupStatics;
 
 ///////////////////////////////////////
 

@@ -764,11 +764,22 @@ void cLuaInterpreter::CleanupPreRegisteredFunctions()
    sPreRegisteredFunction * p = gm_pPreRegisteredFunctions;
    while (p != NULL)
    {
-      gm_pPreRegisteredFunctions = gm_pPreRegisteredFunctions->pNext;
+      gm_pPreRegisteredFunctions = p->pNext;
       delete p;
       p = gm_pPreRegisteredFunctions;
    }
 }
+
+///////////////////////////////////////
+
+cLuaInterpreter::cAutoCleanupPreRegisteredFunctions::~cAutoCleanupPreRegisteredFunctions()
+{
+   CleanupPreRegisteredFunctions();
+}
+
+///////////////////////////////////////
+
+cLuaInterpreter::cAutoCleanupPreRegisteredFunctions cLuaInterpreter::g_autoCleanupPreRegisteredFunctions;
 
 
 ///////////////////////////////////////////////////////////////////////////////

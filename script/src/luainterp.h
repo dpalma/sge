@@ -48,6 +48,14 @@ public:
 private:
    static void CleanupPreRegisteredFunctions();
 
+   class cAutoCleanupPreRegisteredFunctions
+   {
+   public:
+      ~cAutoCleanupPreRegisteredFunctions();
+   };
+   friend class cAutoCleanupPreRegisteredFunctions;
+   static cAutoCleanupPreRegisteredFunctions g_autoCleanupPreRegisteredFunctions;
+
    static bool gm_bInitialized;
 
    struct sPreRegisteredFunction

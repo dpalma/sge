@@ -43,6 +43,14 @@ private:
    void CleanupElementFactories();
    void CleanupRendererFactories();
 
+   class cAutoCleanupStatics
+   {
+   public:
+      ~cAutoCleanupStatics();
+   };
+   friend class cAutoCleanupStatics;
+   static cAutoCleanupStatics g_autoCleanupStatics;
+
    typedef std::map<cStr, IGUIElementFactory *> tGUIElementFactoryMap;
    tGUIElementFactoryMap m_elementFactoryMap;
 
