@@ -4,6 +4,7 @@
 #ifndef INCLUDED_FUNCTOR_H
 #define INCLUDED_FUNCTOR_H
 
+#include "techdll.h"
 #include "comtools.h"
 
 #ifdef _MSC_VER
@@ -11,11 +12,23 @@
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
+// Define to nothing by default. Can be used to force __stdcall or whatever
+// on cFunctor0, cFunctor1, etc.
+
+#ifndef FUNCTORCALLTYPE
+#define FUNCTORCALLTYPE
+#endif
+
+#ifndef METHODFUNCTORCALLTYPE
+#define METHODFUNCTORCALLTYPE
+#endif
+
+///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cFunctor
 //
 
-class cFunctor
+class TECH_API cFunctor
 {
 public:
    virtual ~cFunctor() = 0;
@@ -31,7 +44,7 @@ template <typename RETURN>
 class cFunctor0 : public cFunctor
 {
 protected:
-   typedef RETURN (* tFn)();
+   typedef RETURN (FUNCTORCALLTYPE * tFn)();
 
 public:
    cFunctor0(tFn pfn);
@@ -95,7 +108,7 @@ template <typename RETURN, typename ARG1>
 class cFunctor1 : public cFunctor
 {
 protected:
-   typedef RETURN (* tFn)(ARG1);
+   typedef RETURN (FUNCTORCALLTYPE * tFn)(ARG1);
 
 public:
    cFunctor1(tFn pfn, ARG1 arg1);
@@ -163,7 +176,7 @@ template <typename RETURN, typename ARG1, typename ARG2>
 class cFunctor2 : public cFunctor
 {
 protected:
-   typedef RETURN (* tFn)(ARG1, ARG2);
+   typedef RETURN (FUNCTORCALLTYPE * tFn)(ARG1, ARG2);
 
 public:
    cFunctor2(tFn pfn, ARG1 arg1, ARG2 arg2);
@@ -236,7 +249,7 @@ template <typename RETURN, typename ARG1, typename ARG2, typename ARG3>
 class cFunctor3 : public cFunctor
 {
 protected:
-   typedef RETURN (* tFn)(ARG1, ARG2, ARG3);
+   typedef RETURN (FUNCTORCALLTYPE * tFn)(ARG1, ARG2, ARG3);
 
 public:
    cFunctor3(tFn pfn, ARG1 arg1, ARG2 arg2, ARG3 arg3);
@@ -314,7 +327,7 @@ template <typename IFC, typename RETURN>
 class cMethodFunctor0 : public cFunctor
 {
 protected:
-   typedef RETURN (STDMETHODCALLTYPE IFC::*tMethod)();
+   typedef RETURN (METHODFUNCTORCALLTYPE IFC::*tMethod)();
 
 public:
    cMethodFunctor0(IFC * pIfc, tMethod pMethod);
@@ -386,7 +399,7 @@ template <typename IFC, typename RETURN, typename ARG1>
 class cMethodFunctor1 : public cFunctor
 {
 protected:
-   typedef RETURN (STDMETHODCALLTYPE IFC::*tMethod)(ARG1);
+   typedef RETURN (METHODFUNCTORCALLTYPE IFC::*tMethod)(ARG1);
 
 public:
    cMethodFunctor1(IFC * pIfc, tMethod pMethod, ARG1 arg1);
@@ -463,7 +476,7 @@ template <typename IFC, typename RETURN, typename ARG1, typename ARG2>
 class cMethodFunctor2 : public cFunctor
 {
 protected:
-   typedef RETURN (STDMETHODCALLTYPE IFC::*tMethod)(ARG1, ARG2);
+   typedef RETURN (METHODFUNCTORCALLTYPE IFC::*tMethod)(ARG1, ARG2);
 
 public:
    cMethodFunctor2(IFC * pIfc, tMethod pMethod, ARG1 arg1, ARG2 arg2);
@@ -544,7 +557,7 @@ template <typename IFC, typename RETURN, typename ARG1, typename ARG2, typename 
 class cMethodFunctor3 : public cFunctor
 {
 protected:
-   typedef RETURN (STDMETHODCALLTYPE IFC::*tMethod)(ARG1, ARG2, ARG3);
+   typedef RETURN (METHODFUNCTORCALLTYPE IFC::*tMethod)(ARG1, ARG2, ARG3);
 
 public:
    cMethodFunctor3(IFC * pIfc, tMethod pMethod, ARG1 arg1, ARG2 arg2, ARG3 arg3);
