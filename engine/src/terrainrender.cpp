@@ -10,8 +10,11 @@
 #include "renderapi.h"
 #include "textureapi.h"
 
+#include "imagedata.h"
+
 #include <algorithm>
 #include <GL/gl.h>
+#include <GL/glext.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -23,6 +26,24 @@ const int kTilesPerChunk = 32;
 
 const uint kNoIndex = ~0;
 
+/////////////////////////////////////////////////////////////////////////////
+// HACK: this stuff will go away when the code is converted to using
+// IRenderDevice, IMaterial, etc.
+typedef void (APIENTRY * tglActiveTextureARB) (GLenum texture);
+typedef void (APIENTRY * tglClientActiveTextureARB) (GLenum texture);
+tglActiveTextureARB pfnglActiveTextureARB = NULL;
+tglClientActiveTextureARB pfnglClientActiveTextureARB = NULL;
+void InitGLExtensions()
+{
+   if (pfnglActiveTextureARB == NULL)
+   {
+      pfnglActiveTextureARB = (tglActiveTextureARB)wglGetProcAddress("glActiveTextureARB");
+   }
+   if (pfnglClientActiveTextureARB == NULL)
+   {
+      pfnglClientActiveTextureARB = (tglClientActiveTextureARB)wglGetProcAddress("glClientActiveTextureARB");
+   }
+}
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -195,6 +216,13 @@ tResult cTerrainRenderer::Render(IRenderDevice * pRenderDevice)
    {
       glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
 
+      glDisableClientState(GL_EDGE_FLAG_ARRAY);
+      glDisableClientState(GL_INDEX_ARRAY);
+      glDisableClientState(GL_VERTEX_ARRAY);
+      glDisableClientState(GL_NORMAL_ARRAY);
+      glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+      glDisableClientState(GL_COLOR_ARRAY);
+
       glEnable(GL_COLOR_MATERIAL);
 
       tTerrainQuads::const_iterator iter = m_pModel->GetTerrainQuads().begin();
@@ -325,6 +353,13 @@ tResult cSplatBuilder::GetTexture(ITexture * * ppTexture)
 
 ////////////////////////////////////////
 
+tResult cSplatBuilder::GetAlphaMap(ITexture * * ppTexture)
+{
+   return m_pAlphaMap.GetPointer(ppTexture);
+}
+
+////////////////////////////////////////
+
 void cSplatBuilder::AddTriangle(uint i0, uint i1, uint i2)
 {
    m_indices.push_back(i0);
@@ -433,7 +468,7 @@ static const float g_texelWeights[4][8] =
       STW(tVec2(-.25,-.25), tVec2( 1, 0)), // right
       STW(tVec2(-.25,-.25), tVec2(-1, 1)), // bottom left
       STW(tVec2(-.25,-.25), tVec2( 0, 1)), // bottom mid
-      STW(tVec2(-.25,-.25), tVec2( 1, 1)), // bottom right
+      STW(tVec2(-.25,-.25), tVec2( 1, 1)), // bottom right (could be zero)
    },
    {
       // from upper right texel (+.25, -.25)
@@ -442,7 +477,7 @@ static const float g_texelWeights[4][8] =
       STW(tVec2(.25,-.25), tVec2( 1,-1)), // top right
       STW(tVec2(.25,-.25), tVec2(-1, 0)), // left
       STW(tVec2(.25,-.25), tVec2( 1, 0)), // right
-      STW(tVec2(.25,-.25), tVec2(-1, 1)), // bottom left
+      STW(tVec2(.25,-.25), tVec2(-1, 1)), // bottom left (could be zero)
       STW(tVec2(.25,-.25), tVec2( 0, 1)), // bottom mid
       STW(tVec2(.25,-.25), tVec2( 1, 1)), // bottom right
    },
@@ -450,7 +485,7 @@ static const float g_texelWeights[4][8] =
       // from lower left texel (-.25, +.25)
       STW(tVec2(-.25,.25), tVec2(-1,-1)), // top left
       STW(tVec2(-.25,.25), tVec2( 0,-1)), // top mid
-      STW(tVec2(-.25,.25), tVec2( 1,-1)), // top right
+      STW(tVec2(-.25,.25), tVec2( 1,-1)), // top right (could be zero)
       STW(tVec2(-.25,.25), tVec2(-1, 0)), // left
       STW(tVec2(-.25,.25), tVec2( 1, 0)), // right
       STW(tVec2(-.25,.25), tVec2(-1, 1)), // bottom left
@@ -459,7 +494,7 @@ static const float g_texelWeights[4][8] =
    },
    {
       // from lower right texel (+.25, +.25)
-      STW(tVec2(.25,.25), tVec2(-1,-1)), // top left
+      STW(tVec2(.25,.25), tVec2(-1,-1)), // top left (could be zero)
       STW(tVec2(.25,.25), tVec2( 0,-1)), // top mid
       STW(tVec2(.25,.25), tVec2( 1,-1)), // top right
       STW(tVec2(.25,.25), tVec2(-1, 0)), // left
@@ -492,7 +527,7 @@ void cSplatBuilder::BuildAlphaMap(const tTerrainQuads & quads,
    bmi.bmiHeader.biHeight = -((int)kTilesPerChunk * 2);
    bmi.bmiHeader.biPlanes = 1;
    bmi.bmiHeader.biCompression = BI_RGB;
-   bmi.bmiHeader.biBitCount = 24;
+   bmi.bmiHeader.biBitCount = 32;
    byte * pBitmapBits = NULL;
    HBITMAP hBitmap = CreateDIBSection(NULL, &bmi, DIB_RGB_COLORS, (void**)&pBitmapBits, NULL, 0);
    if (hBitmap == NULL)
@@ -549,9 +584,6 @@ void cSplatBuilder::BuildAlphaMap(const tTerrainQuads & quads,
             xNext = xEnd;
          }
 
-         uint iQuad = (z * nQuadsZ) + x;
-         const sTerrainQuad & quad = quads[iQuad];
-
          const sTerrainQuad * neighbors[8] =
          {
             GetQuadPtr(xPrev, zPrev, quads, nQuadsX, nQuadsZ),
@@ -595,19 +627,34 @@ void cSplatBuilder::BuildAlphaMap(const tTerrainQuads & quads,
          byte * p2 = pBitmapBits + ((iz+1) * bmi.bmiHeader.biWidth * 3) + (ix * 3);
          byte * p3 = pBitmapBits + ((iz+1) * bmi.bmiHeader.biWidth * 3) + ((ix+1) * 3);
 
-         p0[0] = p0[1] = p0[2] = (texelDivisors[0] > 0) ? (byte)(255 * (texelWeights[0] / texelDivisors[0])) : 0;
-         p1[0] = p1[1] = p1[2] = (texelDivisors[1] > 0) ? (byte)(255 * (texelWeights[1] / texelDivisors[1])) : 0;
-         p2[0] = p2[1] = p2[2] = (texelDivisors[2] > 0) ? (byte)(255 * (texelWeights[2] / texelDivisors[2])) : 0;
-         p3[0] = p3[1] = p3[2] = (texelDivisors[3] > 0) ? (byte)(255 * (texelWeights[3] / texelDivisors[3])) : 0;
+         p0[0] = p0[1] = p0[2] = p0[3] = (texelDivisors[0] > 0) ? (byte)(255 * (texelWeights[0] / texelDivisors[0])) : 0;
+         p1[0] = p1[1] = p1[2] = p1[3] = (texelDivisors[1] > 0) ? (byte)(255 * (texelWeights[1] / texelDivisors[1])) : 0;
+         p2[0] = p2[1] = p2[2] = p2[3] = (texelDivisors[2] > 0) ? (byte)(255 * (texelWeights[2] / texelDivisors[2])) : 0;
+         p3[0] = p3[1] = p3[2] = p3[3] = (texelDivisors[3] > 0) ? (byte)(255 * (texelWeights[3] / texelDivisors[3])) : 0;
       }
    }
 
    cStr tileName;
-   m_pTileSet->GetTileName(m_tile, &tileName);
+   Verify(m_pTileSet->GetTileName(m_tile, &tileName) == S_OK);
 
    tChar szFile[MAX_PATH];
    wsprintf(szFile, "%sAlpha%d%d.bmp", tileName.c_str(), iChunkX, iChunkZ);
+#ifdef _DEBUG
    WriteBitmapFile(szFile, &bmi, pBitmapBits);
+#endif
+
+   cImageData * pImage = new cImageData;
+   if (pImage != NULL)
+   {
+      if (pImage->Create(bmi.bmiHeader.biWidth, abs(bmi.bmiHeader.biHeight), kPF_RGBA8888, pBitmapBits))
+      {
+         UseGlobal(TextureManager);
+         pTextureManager->CreateTexture(szFile, pImage, &m_pAlphaMap);
+      }
+
+      delete pImage;
+      pImage = NULL;
+   }
 
    DeleteObject(hBitmap), hBitmap = NULL;
 }
@@ -694,6 +741,11 @@ tResult cTerrainChunk::Create(const tTerrainQuads & quads,
             pSplatBuilder->AddTriangle(iVert+0,iVert+3,iVert+2);
          }
 
+         pChunk->m_vertices[iVert+0].uv2 = tVec2((float)(x-ix) / (kTilesPerChunk*2), (float)(z-iz) / (kTilesPerChunk*2));
+         pChunk->m_vertices[iVert+1].uv2 = tVec2((float)(x-ix+1) / (kTilesPerChunk*2), (float)(z-iz) / (kTilesPerChunk*2));
+         pChunk->m_vertices[iVert+2].uv2 = tVec2((float)(x-ix+1) / (kTilesPerChunk*2), (float)(z-iz+1) / (kTilesPerChunk*2));
+         pChunk->m_vertices[iVert+3].uv2 = tVec2((float)(x-ix) / (kTilesPerChunk*2), (float)(z-iz+1) / (kTilesPerChunk*2));
+
          pChunk->m_vertices[iVert++] = quad.verts[0];
          pChunk->m_vertices[iVert++] = quad.verts[1];
          pChunk->m_vertices[iVert++] = quad.verts[2];
@@ -721,6 +773,9 @@ tResult cTerrainChunk::Create(const tTerrainQuads & quads,
 
 void cTerrainChunk::Render(IRenderDevice * pRenderDevice)
 {
+   // HACK: see comments above
+   InitGLExtensions();
+
    glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
 
    glDisableClientState(GL_EDGE_FLAG_ARRAY);
@@ -733,27 +788,50 @@ void cTerrainChunk::Render(IRenderDevice * pRenderDevice)
    const byte * pVertexData = (const byte *)(sTerrainVertex *)&m_vertices[0];
 
    glEnableClientState(GL_VERTEX_ARRAY);
-   glVertexPointer(3, GL_FLOAT, sizeof(sTerrainVertex), pVertexData + sizeof(tVec2) + sizeof(uint32));
+   glVertexPointer(3, GL_FLOAT, sizeof(sTerrainVertex), pVertexData + offsetof(sTerrainVertex, pos));
 
    glEnableClientState(GL_COLOR_ARRAY);
-   glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(sTerrainVertex), pVertexData + sizeof(tVec2));
+   glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(sTerrainVertex), pVertexData + offsetof(sTerrainVertex, color));
 
+   pfnglClientActiveTextureARB(GL_TEXTURE0_ARB);
+   glTexCoordPointer(2, GL_FLOAT, sizeof(sTerrainVertex), pVertexData + offsetof(sTerrainVertex, uv1));
    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-//   glClientActiveTextureARB(GL_TEXTURE0_ARB);
-   glTexCoordPointer(2, GL_FLOAT, sizeof(sTerrainVertex), pVertexData);
+
+   pfnglClientActiveTextureARB(GL_TEXTURE1_ARB);
+   glTexCoordPointer(2, GL_FLOAT, sizeof(sTerrainVertex), pVertexData + offsetof(sTerrainVertex, uv2));
+   glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
    tSplatBuilders::iterator iter = m_splats.begin();
    tSplatBuilders::iterator end = m_splats.end();
    for (; iter != end; iter++)
    {
-      cAutoIPtr<ITexture> pTexture;
-      if ((*iter)->GetTexture(&pTexture) == S_OK)
       {
-         HANDLE tex;
-         if (pTexture->GetTextureHandle(&tex) == S_OK)
+         cAutoIPtr<ITexture> pTexture;
+         if ((*iter)->GetTexture(&pTexture) == S_OK)
          {
-            glEnable(GL_TEXTURE_2D);
-            glBindTexture(GL_TEXTURE_2D, (uint)tex);
+            HANDLE tex;
+            if (pTexture->GetTextureHandle(&tex) == S_OK)
+            {
+               pfnglActiveTextureARB(GL_TEXTURE0_ARB);
+               glEnable(GL_TEXTURE_2D);
+               glBindTexture(GL_TEXTURE_2D, (uint)tex);
+               //glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB, GL_TEXTURE);
+            }
+         }
+      }
+
+      {
+         cAutoIPtr<ITexture> pAlphaMap;
+         if ((*iter)->GetAlphaMap(&pAlphaMap) == S_OK)
+         {
+            HANDLE alpha;
+            if (pAlphaMap->GetTextureHandle(&alpha) == S_OK)
+            {
+               pfnglActiveTextureARB(GL_TEXTURE1_ARB);
+               glEnable(GL_TEXTURE_2D);
+               glBindTexture(GL_TEXTURE_2D, (uint)alpha);
+               //glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_ARB, GL_TEXTURE);
+            }
          }
       }
 

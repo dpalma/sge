@@ -275,6 +275,7 @@ public:
    virtual tResult Init();
    virtual tResult Term();
 
+   virtual tResult CreateTexture(const char * pszName, const cImageData * pImageData, ITexture * * ppTexture);
    virtual tResult GetTexture(const char * pszName, ITexture * * ppTexture);
 
    virtual tResult FreeAll();
@@ -311,6 +312,33 @@ tResult cTextureManager::Term()
 {
    FreeAll();
    return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cTextureManager::CreateTexture(const char * pszName,
+                                       const cImageData * pImageData,
+                                       ITexture * * ppTexture)
+{
+   if (pszName == NULL || pImageData == NULL || ppTexture == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cAutoIPtr<cTexture> pTex(new cTexture);
+   if (!pTex)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   if (pTex->UploadImage(pImageData) == S_OK)
+   {
+      m_texObjMap.insert(std::make_pair(cStr(pszName), CTAddRef(pTex.operator->())));
+      *ppTexture = CTAddRef(pTex);
+      return S_OK;
+   }
+
+   return E_FAIL;
 }
 
 ///////////////////////////////////////

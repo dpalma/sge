@@ -165,6 +165,7 @@ public:
    ~cSplatBuilder();
 
    tResult GetTexture(ITexture * * ppTexture);
+   tResult GetAlphaMap(ITexture * * ppTexture);
 
    void AddTriangle(uint i0, uint i1, uint i2);
 
@@ -181,6 +182,7 @@ private:
    uint m_tile;
    std::vector<uint> m_indices;
    cAutoIPtr<ITexture> m_pTexture;
+   cAutoIPtr<ITexture> m_pAlphaMap;
 };
 
 
