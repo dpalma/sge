@@ -10,6 +10,8 @@
 #pragma once
 #endif
 
+struct sInputEvent;
+
 class cUIEvent;
 class cUIComponent;
 
@@ -54,14 +56,15 @@ class cUIEvent
 {
 public:
    cUIEvent();
+   cUIEvent(const sInputEvent * pInputEvent);
+   cUIEvent(eUIEventCode code, const cUIPoint & mousePos, long keyCode, cUIComponent * pSrc = NULL);
    cUIEvent(const cUIEvent & other);
-
    const cUIEvent & operator =(const cUIEvent & other);
 
    eUIEventCode code;
-   cUIComponent * pSrc;
    cUIPoint mousePos; // position of mouse in screen coordinates
    long keyCode;
+   cUIComponent * pSrc;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

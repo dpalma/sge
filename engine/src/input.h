@@ -36,8 +36,8 @@ public:
 
 private:
    bool DispatchInputEvent(int x, int y, long key, bool down, double time);
-   void DispatchKeyEvent(long key, bool down, double time);
-   void DispatchMouseEvent(int x, int y, uint mouseState, double time);
+   void HandleKeyEvent(long key, bool down, double time);
+   void HandleMouseEvent(int x, int y, uint mouseState, double time);
 
    const char * KeyGetDownBinding(long key) const;
    const char * KeyGetUpBinding(long key) const;

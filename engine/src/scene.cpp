@@ -175,40 +175,6 @@ tResult cScene::Query(const cRay & ray, ISceneEntityEnum * * ppEnum)
 
 #define GetOuter(Class, Member) ((Class *)((byte *)this - offsetof(Class, Member)))
 
-bool cScene::cInputListener::OnMouseEvent(int x, int y, uint mouseState, double time)
-{
-   cScene * pScene = GetOuter(cScene, m_inputListener);
-
-   for (int i = _countof(pScene->m_layers) - 1; i >= 0; i--)
-   {
-      if (pScene->m_layers[i].HandleMouseEvent(x, y, mouseState, time))
-      {
-         return true;
-      }
-   }
-
-   return false;
-}
-
-///////////////////////////////////////
-
-bool cScene::cInputListener::OnKeyEvent(long key, bool down, double time)
-{
-   cScene * pScene = GetOuter(cScene, m_inputListener);
-
-   for (int i = _countof(pScene->m_layers) - 1; i >= 0; i--)
-   {
-      if (pScene->m_layers[i].HandleKeyEvent(key, down, time))
-      {
-         return true;
-      }
-   }
-
-   return false;
-}
-
-///////////////////////////////////////
-
 bool cScene::cInputListener::OnInputEvent(const sInputEvent * pEvent)
 {
    cScene * pScene = GetOuter(cScene, m_inputListener);

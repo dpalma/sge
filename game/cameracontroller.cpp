@@ -96,60 +96,6 @@ void cGameCameraController::OnFrame(double elapsedTime)
 
 ///////////////////////////////////////
 
-bool cGameCameraController::OnKeyEvent(long key, bool down, double time)
-{
-   bool bUpdateCamera = false;
-
-   switch (key)
-   {
-      case kLeft:
-      {
-         m_velocity.x = down ? -kDefaultSpeed : 0;
-         bUpdateCamera = true;
-         break;
-      }
-
-      case kRight:
-      {
-         m_velocity.x = down ? kDefaultSpeed : 0;
-         bUpdateCamera = true;
-         break;
-      }
-
-      case kUp:
-      {
-         m_velocity.z = down ? -kDefaultSpeed : 0;
-         bUpdateCamera = true;
-         break;
-      }
-
-      case kDown:
-      {
-         m_velocity.z = down ? kDefaultSpeed : 0;
-         bUpdateCamera = true;
-         break;
-      }
-
-      case kMouseWheelUp:
-      {
-         m_elevation++;
-         bUpdateCamera = true;
-         break;
-      }
-
-      case kMouseWheelDown:
-      {
-         m_elevation--;
-         bUpdateCamera = true;
-         break;
-      }
-   }
-
-   return bUpdateCamera;
-}
-
-///////////////////////////////////////
-
 bool cGameCameraController::OnInputEvent(const sInputEvent * pEvent)
 {
    if ((pEvent->key == kMouseLeft) && pEvent->down)
@@ -180,7 +126,54 @@ bool cGameCameraController::OnInputEvent(const sInputEvent * pEvent)
       }
    }
 
-   return false;
+   bool bUpdateCamera = false;
+
+   switch (pEvent->key)
+   {
+      case kLeft:
+      {
+         m_velocity.x = pEvent->down ? -kDefaultSpeed : 0;
+         bUpdateCamera = true;
+         break;
+      }
+
+      case kRight:
+      {
+         m_velocity.x = pEvent->down ? kDefaultSpeed : 0;
+         bUpdateCamera = true;
+         break;
+      }
+
+      case kUp:
+      {
+         m_velocity.z = pEvent->down ? -kDefaultSpeed : 0;
+         bUpdateCamera = true;
+         break;
+      }
+
+      case kDown:
+      {
+         m_velocity.z = pEvent->down ? kDefaultSpeed : 0;
+         bUpdateCamera = true;
+         break;
+      }
+
+      case kMouseWheelUp:
+      {
+         m_elevation++;
+         bUpdateCamera = true;
+         break;
+      }
+
+      case kMouseWheelDown:
+      {
+         m_elevation--;
+         bUpdateCamera = true;
+         break;
+      }
+   }
+
+   return bUpdateCamera;
 }
 
 ///////////////////////////////////////

@@ -4,9 +4,9 @@
 #ifndef INCLUDED_UITYPES_H
 #define INCLUDED_UITYPES_H
 
-#include <string>
-#include "vec2.h"
 #include "color.h"
+#include "str.h"
+#include "vec2.h"
 
 #ifdef _MSC_VER
 #pragma once
@@ -14,7 +14,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-typedef std::string cUIString;
+typedef cStr cUIString;
 
 template <typename T> class cVec2;
 typedef class cVec2<float> tVec2;

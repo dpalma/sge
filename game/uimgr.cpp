@@ -140,7 +140,7 @@ void cUIManager::SetFocus(cUIComponent * pNewFocus)
          event.code = kEventBlur;
          event.pSrc = pNewFocus;
          UIDispatchEvent(m_pFocus, &event);
-         Assert(m_pFocus->TestInternalFlags(kUICF_Focussed));
+         Assert(m_pFocus->IsFocussed());
          m_pFocus->SetInternalFlags(0, kUICF_Focussed);
       }
 
@@ -152,10 +152,7 @@ void cUIManager::SetFocus(cUIComponent * pNewFocus)
 
 bool cUIManager::HandleInputEvent(const sInputEvent * pEvent)
 {
-   cUIEvent event;
-   event.code = UIEventCode(pEvent->key, pEvent->down);
-   event.mousePos = pEvent->point;
-   event.keyCode = pEvent->key;
+   cUIEvent event(pEvent);
    Assert(event.code != kEventERROR);
 
    if (KeyIsMouse(pEvent->key))
@@ -172,10 +169,7 @@ bool cUIManager::HandleInputEvent(const sInputEvent * pEvent)
             {
                if (m_pLastMouseOver != NULL)
                {
-                  cUIEvent mouseLeaveEvent;
-                  mouseLeaveEvent.code = kEventMouseLeave;
-                  mouseLeaveEvent.pSrc = m_pLastMouseOver;
-                  mouseLeaveEvent.mousePos = event.mousePos;
+                  cUIEvent mouseLeaveEvent(kEventMouseLeave, event.mousePos, 0, m_pLastMouseOver);
                   UIBubbleEvent(mouseLeaveEvent.pSrc, &mouseLeaveEvent);
                }
 
@@ -192,11 +186,8 @@ bool cUIManager::HandleInputEvent(const sInputEvent * pEvent)
             if (m_pFocus == event.pSrc)
             {
                DebugMsgEx1(UIMgr, "Click element \"%s\"\n", event.pSrc->GetId());
-               cUIEvent clickEvent;
+               cUIEvent clickEvent(event);
                clickEvent.code = kEventClick;
-               clickEvent.pSrc = event.pSrc;
-               clickEvent.mousePos = event.mousePos;
-               clickEvent.keyCode = event.keyCode;
                UIBubbleEvent(clickEvent.pSrc, &clickEvent);
             }
          }

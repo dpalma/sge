@@ -279,22 +279,12 @@ bool cInput::DispatchInputEvent(int x, int y, long key, bool down, double time)
 
 ///////////////////////////////////////
 
-void cInput::DispatchKeyEvent(long key, bool down, double time)
+void cInput::HandleKeyEvent(long key, bool down, double time)
 {
    // TODO: Provide mouse position even for key events
    if (DispatchInputEvent(0, 0, key, down, time))
    {
       return;
-   }
-
-   // iterate in reverse order so the most recently added listener gets first crack
-   tSinks::reverse_iterator iter;
-   for (iter = AccessSinks().rbegin(); iter != AccessSinks().rend(); iter++)
-   {
-      if ((*iter)->OnKeyEvent(key, down, time))
-      {
-         return; // do no further processing for this key event
-      }
    }
 
    key = KeyGetBindable(key);
@@ -319,42 +309,26 @@ void cInput::DispatchKeyEvent(long key, bool down, double time)
 
 ///////////////////////////////////////
 
-void cInput::DispatchMouseEvent(int x, int y, uint mouseState, double time)
+void cInput::HandleMouseEvent(int x, int y, uint mouseState, double time)
 {
-   bool bListenerShortCircuit = false;
+   // Up/down doesn't matter for mouse motion. Use false so that the
+   // repeat count doesn't get incremented wildly.
+   DispatchInputEvent(x, y, kMouseMove, false, time);
 
-   // iterate in reverse order so the most recently added listener gets first crack
-   tSinks::reverse_iterator iter;
-   for (iter = AccessSinks().rbegin(); iter != AccessSinks().rend(); iter++)
-   {
-      if ((*iter)->OnMouseEvent(x, y, mouseState, time))
-      {
-         bListenerShortCircuit = true;
-         break;
-      }
-   }
+   if ((mouseState & kLMouseDown) && !(m_oldMouseState & kLMouseDown))
+      DispatchInputEvent(x, y, kMouseLeft, true, time);
+   else if (!(mouseState & kLMouseDown) && (m_oldMouseState & kLMouseDown))
+      DispatchInputEvent(x, y, kMouseLeft, false, time);
 
-   if (!bListenerShortCircuit)
-   {
-      // Up/down doesn't matter for mouse motion. Use false so that the
-      // repeat count doesn't get incremented wildly.
-      DispatchInputEvent(x, y, kMouseMove, false, time);
+   if ((mouseState & kRMouseDown) && !(m_oldMouseState & kRMouseDown))
+      DispatchInputEvent(x, y, kMouseRight, true, time);
+   else if (!(mouseState & kRMouseDown) && (m_oldMouseState & kRMouseDown))
+      DispatchInputEvent(x, y, kMouseRight, false, time);
 
-      if ((mouseState & kLMouseDown) && !(m_oldMouseState & kLMouseDown))
-         DispatchInputEvent(x, y, kMouseLeft, true, time);
-      else if (!(mouseState & kLMouseDown) && (m_oldMouseState & kLMouseDown))
-         DispatchInputEvent(x, y, kMouseLeft, false, time);
-
-      if ((mouseState & kRMouseDown) && !(m_oldMouseState & kRMouseDown))
-         DispatchInputEvent(x, y, kMouseRight, true, time);
-      else if (!(mouseState & kRMouseDown) && (m_oldMouseState & kRMouseDown))
-         DispatchInputEvent(x, y, kMouseRight, false, time);
-
-      if ((mouseState & kMMouseDown) && !(m_oldMouseState & kMMouseDown))
-         DispatchInputEvent(x, y, kMouseMiddle, true, time);
-      else if (!(mouseState & kMMouseDown) && (m_oldMouseState & kMMouseDown))
-         DispatchInputEvent(x, y, kMouseMiddle, false, time);
-   }
+   if ((mouseState & kMMouseDown) && !(m_oldMouseState & kMMouseDown))
+      DispatchInputEvent(x, y, kMouseMiddle, true, time);
+   else if (!(mouseState & kMMouseDown) && (m_oldMouseState & kMMouseDown))
+      DispatchInputEvent(x, y, kMouseMiddle, false, time);
 
    m_oldMouseState = mouseState;
 }
@@ -366,7 +340,7 @@ void cInput::DispatchMouseEvent(int x, int y, uint mouseState, double time)
 void cInput::cWindowSink::OnKeyEvent(long key, bool down, double time)
 {
    cInput * pOuter = GetOuter(cInput, m_windowSink);
-   pOuter->DispatchKeyEvent(key, down, time);
+   pOuter->HandleKeyEvent(key, down, time);
 }
 
 ///////////////////////////////////////
@@ -374,7 +348,7 @@ void cInput::cWindowSink::OnKeyEvent(long key, bool down, double time)
 void cInput::cWindowSink::OnMouseEvent(int x, int y, uint mouseState, double time)
 {
    cInput * pOuter = GetOuter(cInput, m_windowSink);
-   pOuter->DispatchMouseEvent(x, y, mouseState, time);
+   pOuter->HandleMouseEvent(x, y, mouseState, time);
 }
 
 ///////////////////////////////////////

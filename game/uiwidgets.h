@@ -84,8 +84,6 @@ public:
    bool QueryStartDrag(const cUIPoint & mousePos);
    void UpdateDrag(const cUIPoint & mousePos);
 
-   virtual bool OnKeyEvent(long key, bool down, double time);
-
 private:
    cUIRect GetCaptionRect() const;
 
@@ -225,7 +223,8 @@ public:
    void SetOnClick(const char * pszOnClick);
 
 private:
-   bool IsPressed();
+   bool IsPressed() const;
+   bool IsMouseOver() const;
 
    enum eUIButtonConstants
    {
@@ -235,7 +234,7 @@ private:
 
    cUIString m_text;
 
-   bool m_bPressed;
+   bool m_bPressed, m_bMouseOver;
 };
 
 ///////////////////////////////////////
@@ -262,9 +261,16 @@ inline void cUIButton::SetOnClick(const char * pszOnClick)
 
 ///////////////////////////////////////
 
-inline bool cUIButton::IsPressed()
+inline bool cUIButton::IsPressed() const
 {
    return m_bPressed;
+}
+
+///////////////////////////////////////
+
+inline bool cUIButton::IsMouseOver() const
+{
+   return m_bMouseOver;
 }
 
 
@@ -290,7 +296,8 @@ public:
    void SetOnClick(const char * pszOnClick);
 
 private:
-   bool IsPressed();
+   bool IsPressed() const;
+   bool IsMouseOver() const;
 
    enum eConstants
    {
@@ -302,7 +309,7 @@ private:
    cAutoIPtr<IVertexBuffer> m_pVB;
    cAutoIPtr<IIndexBuffer> m_pIB;
 
-   bool m_bPressed;
+   bool m_bPressed, m_bMouseOver;
 };
 
 ///////////////////////////////////////
@@ -314,9 +321,16 @@ inline void cUIBitmapButton::SetOnClick(const char * pszOnClick)
 
 ///////////////////////////////////////
 
-inline bool cUIBitmapButton::IsPressed()
+inline bool cUIBitmapButton::IsPressed() const
 {
    return m_bPressed;
+}
+
+///////////////////////////////////////
+
+inline bool cUIBitmapButton::IsMouseOver() const
+{
+   return m_bMouseOver;
 }
 
 

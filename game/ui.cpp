@@ -15,15 +15,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-cUIPoint UIGetMousePos()
-{
-   int x, y;
-   SysGetMousePos(&x,&y);
-   return cUIPoint(x,y);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 bool IsEventPertinent(const cUIEvent * pEvent, const cUIComponent * pComponent)
 {
    if (pComponent != NULL)
@@ -51,19 +42,14 @@ cUIComponent::cUIComponent(uint flags)
    m_size(0,0),
    m_pParent(NULL),
    m_flags(flags),
-   m_bAcceptsFocus(true)
+   m_bAcceptsFocus(true),
+   m_bVisible(true)
 {
 }
 
 ///////////////////////////////////////
 
 cUIComponent::~cUIComponent()
-{
-}
-
-///////////////////////////////////////
-
-void cUIComponent::Render(IRenderDevice * pRenderDevice)
 {
 }
 
@@ -78,6 +64,14 @@ cUIComponent * cUIComponent::HitTest(const cUIPoint & point)
 
 bool cUIComponent::OnEvent(const cUIEvent * pEvent)
 {
+   std::list<IUIEventListener *>::iterator iter;
+   for (iter = m_listeners.begin(); iter != m_listeners.end(); iter++)
+   {
+      if ((*iter)->OnEvent(pEvent))
+      {
+         return true;
+      }
+   }
    return false;
 }
 
@@ -121,6 +115,20 @@ void cUIComponent::SetInternalFlags(uint flags, uint mask)
 bool cUIComponent::TestInternalFlags(uint flags) const
 {
    return (m_flags & flags);
+}
+
+///////////////////////////////////////
+
+tResult cUIComponent::AddListener(IUIEventListener * pListener)
+{
+   return add_interface(m_listeners, pListener) ? S_OK : S_FALSE;
+}
+
+///////////////////////////////////////
+
+tResult cUIComponent::RemoveListener(IUIEventListener * pListener)
+{
+   return remove_interface(m_listeners, pListener) ? S_OK : S_FALSE;
 }
 
 
@@ -385,8 +393,6 @@ void cUIContainerBase::Render(IRenderDevice * pRenderDevice)
 {
    if (IsVisible())
    {
-      cUIComponent::Render(pRenderDevice);
-
       tUIComponentList::iterator iter;
       for (iter = m_children.begin(); iter != m_children.end(); iter++)
       {

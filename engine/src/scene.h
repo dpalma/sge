@@ -49,8 +49,6 @@ private:
    {
       void CDECL operator delete(void *) { Assert(!"Should never be called"); }
    public:
-      virtual bool OnMouseEvent(int x, int y, uint mouseState, double time);
-      virtual bool OnKeyEvent(long key, bool down, double time);
       virtual bool OnInputEvent(const sInputEvent * pEvent);
    };
 

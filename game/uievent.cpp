@@ -167,9 +167,29 @@ bool UIBubbleEvent(cUIComponent * pStart, const cUIEvent * pEvent)
 
 cUIEvent::cUIEvent()
  : code(kEventERROR),
-   pSrc(NULL),
    mousePos(-1,-1),
-   keyCode(-1)
+   keyCode(-1),
+   pSrc(NULL)
+{
+}
+
+///////////////////////////////////////
+
+cUIEvent::cUIEvent(eUIEventCode c, const cUIPoint & mp, long kc, cUIComponent * p /*=NULL*/)
+ : code(c),
+   mousePos(mp),
+   keyCode(kc),
+   pSrc(p)
+{
+}
+
+///////////////////////////////////////
+
+cUIEvent::cUIEvent(const sInputEvent * pInputEvent)
+ : code(UIEventCode(pInputEvent->key, pInputEvent->down)),
+   mousePos(pInputEvent->point),
+   keyCode(pInputEvent->key),
+   pSrc(NULL)
 {
 }
 
@@ -177,17 +197,17 @@ cUIEvent::cUIEvent()
 
 cUIEvent::cUIEvent(const cUIEvent & other)
 {
-   operator=(other);
+   operator =(other);
 }
 
 ///////////////////////////////////////
 
-const cUIEvent & cUIEvent::operator=(const cUIEvent & other)
+const cUIEvent & cUIEvent::operator =(const cUIEvent & other)
 {
    code = other.code;
-   pSrc = other.pSrc;
    mousePos = other.mousePos;
    keyCode = other.keyCode;
+   pSrc = other.pSrc;
    return *this;
 }
 

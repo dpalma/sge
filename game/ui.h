@@ -6,6 +6,7 @@
 
 #include "uitypes.h"
 #include "comtools.h"
+#include "connptimpl.h"
 
 #include <list>
 
@@ -22,8 +23,14 @@ class cUIContainer;
 F_DECLARE_INTERFACE(IRenderDevice);
 
 ///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IUIEventListener
+//
 
-cUIPoint UIGetMousePos();
+interface IUIEventListener : IUnknown
+{
+   virtual bool OnEvent(const cUIEvent * pEvent) = 0;
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -34,10 +41,9 @@ enum eUIComponentFlags
 {
    kUICF_NONE = 0,
    kUICF_Focussed = 1 << 0,
-   kUICF_Visible = 1 << 1,
 };
 
-#define kUICF_Default (kUICF_Visible)
+#define kUICF_Default (0)
 
 class cUIComponent
 {
@@ -73,9 +79,14 @@ public:
    cUIRect GetScreenRect() const;
 
    void SetInternalFlags(uint flags, uint mask);
-   bool TestInternalFlags(uint flags) const;
 
    bool AcceptsFocus() const { return m_bAcceptsFocus; }
+
+   bool IsFocussed() const;
+   bool IsVisible() const;
+
+   tResult AddListener(IUIEventListener * pListener);
+   tResult RemoveListener(IUIEventListener * pListener);
 
 protected:
    friend class cUIContainerBase;
@@ -83,17 +94,20 @@ protected:
 
    void SetParent(cUIComponent * pParent);
 
-   bool IsVisible() const;
-
    void NoFocus() { m_bAcceptsFocus = false; }
 
 private:
+   bool TestInternalFlags(uint flags) const;
+
    float m_x, m_y;
    cUISize m_size;
    cUIComponent * m_pParent;
    cUIString m_id;
    uint m_flags;
    bool m_bAcceptsFocus;
+   bool m_bVisible;
+
+   std::list<IUIEventListener *> m_listeners;
 };
 
 ///////////////////////////////////////
@@ -173,7 +187,14 @@ inline void cUIComponent::SetParent(cUIComponent * pParent)
 
 inline bool cUIComponent::IsVisible() const
 {
-   return TestInternalFlags(kUICF_Visible);
+   return m_bVisible;
+}
+
+///////////////////////////////////////
+
+inline bool cUIComponent::IsFocussed() const
+{
+   return TestInternalFlags(kUICF_Focussed);
 }
 
 
@@ -186,6 +207,9 @@ typedef std::list<cUIComponent *> tUIComponentList;
 
 class cUIContainerBase : public cUIComponent
 {
+   cUIContainerBase(const cUIContainerBase &);
+   const cUIContainerBase & operator=(const cUIContainerBase &);
+
 public:
    cUIContainerBase(uint flags = kUICF_Default);
    virtual ~cUIContainerBase() = 0;
@@ -209,10 +233,6 @@ protected:
    tUIComponentList::iterator FindChild(cUIComponent * pComponent);
 
 private:
-   // deliberately un-implemented and private copy constructor and assignment operator
-   cUIContainerBase(const cUIContainerBase &);
-   const cUIContainerBase & operator=(const cUIContainerBase &);
-
    tUIComponentList m_children;
 };
 
@@ -223,11 +243,12 @@ private:
 
 class cUIContainer : public cUIContainerBase
 {
+   cUIContainer(const cUIContainer &);
+   const cUIContainer & operator=(const cUIContainer &);
+
 public:
    cUIContainer(uint flags = kUICF_Default);
    virtual ~cUIContainer();
-
-   ////////////////////////////////////
 
    const cUIMargins & GetMargins() const;
    void SetMargins(const cUIMargins & margins);
@@ -237,10 +258,6 @@ public:
 
 private:
    cUILayoutManager * AccessLayoutManager();
-
-   // deliberately un-implemented and private copy constructor and assignment operator
-   cUIContainer(const cUIContainer &);
-   const cUIContainer & operator=(const cUIContainer &);
 
    cUIMargins m_margins;
    cUILayoutManager * m_pLayoutManager;

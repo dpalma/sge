@@ -3,19 +3,23 @@
 
 #include "stdhdr.h"
 
-#include "techtime.h"
 #include "gcommon.h"
 #include "uiwidgets.h"
 #include "uiwidgutilstem.h"
 #include "uirender.h"
-#include "keys.h"
+
+#include "inputapi.h"
+
 #include "font.h"
 #include "render.h"
 #include "material.h"
-#include "vec3.h"
 #include "image.h"
+
+#include "keys.h"
+#include "vec3.h"
 #include "resmgr.h"
 #include "globalobj.h"
+#include "techtime.h"
 
 #include <locale>
 
@@ -106,44 +110,14 @@ void cUIDialog::Render(IRenderDevice * pRenderDevice)
 
 bool cUIDialog::OnEvent(const cUIEvent * pEvent)
 {
-   Assert(pEvent);
-   if (pEvent->code == kEventKeyDown)
+   if ((pEvent->code == kEventKeyDown) && (pEvent->keyCode == kEscape))
    {
-      if (pEvent->keyCode == kEscape)
-      {
-         cUIEvent destroyEvent;
-         destroyEvent.code = kEventDestroy;
-         destroyEvent.pSrc = this;
-         UIBubbleEvent(this, &destroyEvent);
-         delete this;
-         return true;
-      }
+      cUIEvent destroyEvent(kEventDestroy, cUIPoint(0,0), 0, this);
+      UIBubbleEvent(this, &destroyEvent);
+      delete this;
+      return true;
    }
    return tBase::OnEvent(pEvent);
-}
-
-///////////////////////////////////////
-
-bool cUIDialog::OnKeyEvent(long key, bool down, double time)
-{
-//   if (cUIDragSemantics<cUIDialog>::OnKeyEvent(key, down, time))
-//      return true;
-//
-//   cUIComponent * pTarget = NULL;
-//   cUIEvent event;
-//   if (TranslateKeyEvent(key, down, time, &pTarget, &event))
-//   {
-//      if (event.code == kEventMouseDown)
-//      {
-//         SetFocus(pTarget);
-//      }
-//
-//      tUIResult result;
-//      UIBubbleEvent(pTarget, &event, &result);
-//   }
-
-   // modal dialog boxes always intercept all input events
-   return true;
 }
 
 
@@ -242,7 +216,8 @@ bool cUIImage::LoadImage(const char * pszFilename)
 //
 
 cUIButton::cUIButton()
- : m_bPressed(false)
+ : m_bPressed(false),
+   m_bMouseOver(false)
 {
 }
 
@@ -252,11 +227,9 @@ void cUIButton::Render(IRenderDevice * pRenderDevice)
 {
    cUIRect screenRect = GetScreenRect();
 
-   bool bIsMouseOver = screenRect.PtInside(UIGetMousePos());
-
    cUIPoint offset(0,0);
 
-   if (bIsMouseOver && IsPressed())
+   if (IsMouseOver() && IsPressed())
    {
       UIDraw3dRect(screenRect, g_3dEdge, AccessStyle()->GetShadow(), AccessStyle()->GetHighlight(), AccessStyle()->GetFace());
       offset = cUIPoint(g_3dEdge, g_3dEdge);
@@ -268,11 +241,14 @@ void cUIButton::Render(IRenderDevice * pRenderDevice)
 
    if (!m_text.empty())
    {
-      cUIRect rect = GetScreenRect();
-      rect.left += offset.x;
-      rect.top += offset.y;
-      UIDrawText(m_text.c_str(), m_text.length(), &rect,
-         kTextCenter | kTextVCenter, AccessStyle()->AccessFont(), bIsMouseOver ? AccessStyle()->GetHot() : AccessStyle()->GetText());
+      screenRect.left += offset.x;
+      screenRect.top += offset.y;
+      UIDrawText(m_text.c_str(), 
+         m_text.length(), 
+         &screenRect,
+         kTextCenter | kTextVCenter, 
+         AccessStyle()->AccessFont(), 
+         IsMouseOver() ? AccessStyle()->GetHot() : AccessStyle()->GetText());
    }
 }
 
@@ -289,6 +265,14 @@ bool cUIButton::OnEvent(const cUIEvent * pEvent)
    else if (pEvent->code == kEventMouseUp || pEvent->code == kEventBlur)
    {
       m_bPressed = false;
+   }
+   else if (pEvent->code == kEventMouseEnter)
+   {
+      m_bMouseOver = true;
+   }
+   else if (pEvent->code == kEventMouseLeave)
+   {
+      m_bMouseOver = false;
    }
    return Base::OnEvent(pEvent);
 }
@@ -316,7 +300,8 @@ static const int kUIBitmapButtonIndices = 4;
 
 cUIBitmapButton::cUIBitmapButton()
  : m_size(0,0),
-   m_bPressed(false)
+   m_bPressed(false),
+   m_bMouseOver(false)
 {
 }
 
@@ -330,26 +315,25 @@ cUIBitmapButton::~cUIBitmapButton()
 
 void cUIBitmapButton::Render(IRenderDevice * pRenderDevice)
 {
-   cUIRect screenRect = GetScreenRect();
-
-   bool bIsMouseOver = screenRect.PtInside(UIGetMousePos());
-
    uint buttonState = kBS_Normal;
-   if (bIsMouseOver && IsPressed())
-      buttonState = kBS_Pressed;
-   else if (bIsMouseOver)
-      buttonState = kBS_Hover;
+   if (IsMouseOver())
+   {
+      buttonState = IsPressed() ? kBS_Pressed : kBS_Hover;
+   }
+
+   cUIRect screenRect = GetScreenRect();
 
    glPushMatrix();
    glTranslatef(screenRect.left, screenRect.top, 0);
 
-   AccessRenderDevice()->Render(kRP_TriangleFan, m_pMat,
-      kUIBitmapButtonIndices, m_pIB,
-      buttonState * 4, m_pVB);
+   AccessRenderDevice()->Render(kRP_TriangleFan, 
+      m_pMat,
+      kUIBitmapButtonIndices, 
+      m_pIB,
+      buttonState * 4, 
+      m_pVB);
 
    glPopMatrix();
-
-   cUIWidget::Render(pRenderDevice);
 }
 
 ///////////////////////////////////////
@@ -364,7 +348,15 @@ bool cUIBitmapButton::OnEvent(const cUIEvent * pEvent)
    {
       m_bPressed = false;
    }
-   
+   else if (pEvent->code == kEventMouseEnter)
+   {
+      m_bMouseOver = true;
+   }
+   else if (pEvent->code == kEventMouseLeave)
+   {
+      m_bMouseOver = false;
+   }
+
    if (cUIScriptEventHandler<cUIBitmapButton>::FilterEvent(pEvent))
       return true;
 
@@ -430,57 +422,57 @@ bool cUIBitmapButton::SetBitmap(const char * pszName)
          verts[0].u = 0;
          verts[0].v = 0.5;
          verts[0].pos = tVec3(0,0,0);
-         verts[1].u = 1;
-         verts[1].v = 0.5;
-         verts[1].pos = tVec3(w,0,0);
+         verts[1].u = 0;
+         verts[1].v = 0.25;
+         verts[1].pos = tVec3(0,h,0);
          verts[2].u = 1;
          verts[2].v = 0.25;
          verts[2].pos = tVec3(w,h,0);
-         verts[3].u = 0;
-         verts[3].v = 0.25;
-         verts[3].pos = tVec3(0,h,0);
+         verts[3].u = 1;
+         verts[3].v = 0.5;
+         verts[3].pos = tVec3(w,0,0);
 
          // hovered
          verts[4].u = 0;
          verts[4].v = 0.75;
          verts[4].pos = tVec3(0,0,0);
-         verts[5].u = 1;
-         verts[5].v = 0.75;
-         verts[5].pos = tVec3(w,0,0);
+         verts[5].u = 0;
+         verts[5].v = 0.5;
+         verts[5].pos = tVec3(0,h,0);
          verts[6].u = 1;
          verts[6].v = 0.5;
          verts[6].pos = tVec3(w,h,0);
-         verts[7].u = 0;
-         verts[7].v = 0.5;
-         verts[7].pos = tVec3(0,h,0);
+         verts[7].u = 1;
+         verts[7].v = 0.75;
+         verts[7].pos = tVec3(w,0,0);
 
          // pressed
          verts[8].u = 0;
          verts[8].v = 1;
          verts[8].pos = tVec3(0,0,0);
-         verts[9].u = 1;
-         verts[9].v = 1;
-         verts[9].pos = tVec3(w,0,0);
+         verts[9].u = 0;
+         verts[9].v = 0.75;
+         verts[9].pos = tVec3(0,h,0);
          verts[10].u = 1;
          verts[10].v = 0.75;
          verts[10].pos = tVec3(w,h,0);
-         verts[11].u = 0;
-         verts[11].v = 0.75;
-         verts[11].pos = tVec3(0,h,0);
+         verts[11].u = 1;
+         verts[11].v = 1;
+         verts[11].pos = tVec3(w,0,0);
 
          // disabled
          verts[12].u = 0;
          verts[12].v = 0.25;
          verts[12].pos = tVec3(0,0,0);
-         verts[13].u = 1;
-         verts[13].v = 0.25;
-         verts[13].pos = tVec3(w,0,0);
+         verts[13].u = 0;
+         verts[13].v = 0;
+         verts[13].pos = tVec3(0,h,0);
          verts[14].u = 1;
          verts[14].v = 0;
          verts[14].pos = tVec3(w,h,0);
-         verts[15].u = 0;
-         verts[15].v = 0;
-         verts[15].pos = tVec3(0,h,0);
+         verts[15].u = 1;
+         verts[15].v = 0.25;
+         verts[15].pos = tVec3(w,0,0);
 
          void * pVertexData;
          if (m_pVB->Lock(kBL_Discard, &pVertexData) == S_OK)
@@ -546,7 +538,7 @@ void cUIEdit::Render(IRenderDevice * pRenderDevice)
    UIDrawText(m_text.c_str(), m_text.length(), &rect, kTextNoClip, AccessStyle()->AccessFont(), AccessStyle()->GetText());
 
    // render the cursor if this widget has focus and it's 'on' in its blink cycle
-   if (TestInternalFlags(kUICF_Focussed) && (m_bCursorBlinkOn || m_bCursorForceOn))
+   if (IsFocussed() && (m_bCursorBlinkOn || m_bCursorForceOn))
    {
       cUISize textSize = UIMeasureText(m_text.c_str(), m_selection.GetCursorIndex(), AccessStyle()->AccessFont());
 

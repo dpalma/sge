@@ -5,7 +5,6 @@
 #define INCLUDED_UIWIDGUTILS_H
 
 #include "uievent.h"
-#include "inputapi.h"
 #include "comtools.h"
 #include <map>
 
@@ -16,35 +15,6 @@
 F_DECLARE_INTERFACE(IRenderFont);
 
 F_DECLARE_INTERFACE(IUIStyle);
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// TEMPLATE: cUIDragSemantics
-//
-
-template <class T>
-class cUIDragSemantics : public cComObject<cDefaultInputListener, &IID_IInputListener>
-{
-public:
-   cUIDragSemantics();
-   ~cUIDragSemantics();
-
-   bool FilterEvent(const cUIEvent * pEvent);
-
-   bool QueryStartDrag(const cUIPoint & mousePos);
-
-   void UpdateDrag(const cUIPoint & mousePos);
-
-   void EndDrag(const cUIPoint & mousePos);
-
-   bool IsDragging() const;
-
-   virtual bool OnKeyEvent(long key, bool down, double time);
-
-private:
-   bool m_bDragging;
-};
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //

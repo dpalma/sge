@@ -35,7 +35,6 @@ public:
 
    virtual void OnFrame(double elapsedTime);
 
-   virtual bool OnKeyEvent(long key, bool down, double time);
    virtual bool OnInputEvent(const sInputEvent * pEvent);
 
    void LookAtPoint(float x, float z);

@@ -56,15 +56,11 @@ struct sInputEvent
 
 interface IInputListener : IUnknown
 {
-   virtual bool OnMouseEvent(int x, int y, uint mouseState, double time) = 0;
-   virtual bool OnKeyEvent(long key, bool down, double time) = 0;
    virtual bool OnInputEvent(const sInputEvent * pEvent) = 0;
 };
 
 class cDefaultInputListener : public IInputListener
 {
-   virtual bool OnMouseEvent(int x, int y, uint mouseState, double time) { return false; }
-   virtual bool OnKeyEvent(long key, bool down, double time) { return false; }
    virtual bool OnInputEvent(const sInputEvent * pEvent) { return false; }
 };
 
