@@ -61,6 +61,45 @@ public:
 
       return bSuccess;
    }
+
+   template <typename STRING>
+   BOOL DDX_Combo_String(UINT id, STRING & string, BOOL bSave, BOOL bValidate = FALSE)
+   {
+      T* pT = static_cast<T*>(this);
+      BOOL bSuccess = FALSE;
+      int index = CB_ERR;
+
+      if (bSave)
+      {
+         index = ::SendDlgItemMessage(pT->m_hWnd, id, CB_GETCURSEL, 0, 0);
+         if (index != CB_ERR)
+         {
+            int len = ::SendDlgItemMessage(pT->m_hWnd, id, CB_GETLBTEXTLEN, index, 0);
+            if (len > 0)
+            {
+               char * pszString = reinterpret_cast<char *>(alloca(len + 1));
+               ::SendDlgItemMessage(pT->m_hWnd, id, CB_GETLBTEXT, index, reinterpret_cast<LPARAM>(pszString));
+               string = pszString;
+               bSuccess = TRUE;
+            }
+         }
+      }
+      else
+      {
+         const char * pszString = static_cast<const char *>(string);
+         index = ::SendDlgItemMessage(pT->m_hWnd, id, CB_FINDSTRINGEXACT, -1, reinterpret_cast<LPARAM>(pszString));
+         if (index != CB_ERR)
+         {
+            ::SendDlgItemMessage(pT->m_hWnd, id, CB_SETCURSEL, index, 0);
+            bSuccess = TRUE;
+         }
+      }
+
+      if (!bSuccess)
+      {
+         pT->OnDataExchangeError(id, bSave);
+      }
+   }
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -69,6 +108,15 @@ public:
    if (nCtlID == (UINT)-1 || nCtlID == nID) \
    { \
       if (!DDX_Combo_Index(nID, var, TRUE, bSaveAndValidate)) \
+         return FALSE; \
+   }
+
+/////////////////////////////////////////////////////////////////////////////
+
+#define DDX_COMBO_STRING(nID, var) \
+   if (nCtlID == (UINT)-1 || nCtlID == nID) \
+   { \
+      if (!DDX_Combo_String(nID, var, bSaveAndValidate)) \
          return FALSE; \
    }
 
