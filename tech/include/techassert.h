@@ -35,9 +35,11 @@ extern "C" __declspec(dllimport) int __stdcall IsDebuggerPresent();
 
 #ifdef _DEBUG
 #define Assert(expr)    do { if (!(expr)) { if (AssertFail(__FILE__, __LINE__, #expr)) DbgBreak(); } } while(0)
+#define AssertMsg(expr, msg) do { if (!(expr)) { if (AssertFail(__FILE__, __LINE__, #expr "\n" msg)) DbgBreak(); } } while(0)
 #define Verify(expr)    Assert(expr)
 #else
 #define Assert(expr)    ((void)0)
+#define AssertMsg(expr, msg) ((void)0)
 #define Verify(expr)    (expr)
 #endif
 
