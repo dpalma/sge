@@ -82,6 +82,11 @@ int ParseTuple(const char * psz, std::vector<std::string> * pStrings)
 
 int ParseTuple(const char * psz, double * pNumbers, int nMaxNumbers)
 {
+   if (psz == NULL || *psz == 0 || pNumbers == NULL || nMaxNumbers == 0)
+   {
+      return kPTE_InvalidArg;
+   }
+
    std::vector<std::string> strings;
 
    int result = ParseTuple(psz, &strings);
