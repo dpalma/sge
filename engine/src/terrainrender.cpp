@@ -21,6 +21,9 @@ static char THIS_FILE[] = __FILE__;
 
 const int kTilesPerChunk = 32;
 
+const uint kNoIndex = ~0;
+
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cTerrainRenderer
@@ -297,10 +300,14 @@ cSplat::~cSplat()
 
 ////////////////////////////////////////
 
-cSplatBuilder::cSplatBuilder(uint tile, ITexture * pTexture)
- : m_tile(tile),
-   m_pTexture(CTAddRef(pTexture))
+cSplatBuilder::cSplatBuilder(IEditorTileSet * pTileSet, uint tile)
+ : m_pTileSet(CTAddRef(pTileSet)),
+   m_tile(tile)
 {
+   if (pTileSet != NULL)
+   {
+      pTileSet->GetTileTexture(tile, &m_pTexture);
+   }
 }
 
 ////////////////////////////////////////
@@ -358,11 +365,251 @@ const uint * cSplatBuilder::GetIndexPtr() const
 
 ////////////////////////////////////////
 
+#ifndef NDEBUG
+static void WriteBitmapFile(const char * pszFileName, BITMAPINFO * pBmInfo, void * pBits)
+{
+   int headerSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
+
+   int bitsSize = abs(pBmInfo->bmiHeader.biWidth * pBmInfo->bmiHeader.biHeight * pBmInfo->bmiHeader.biBitCount / 8);
+
+   BITMAPFILEHEADER fileHeader;
+   fileHeader.bfType = 0x4D42;
+   fileHeader.bfReserved1 = 0;
+   fileHeader.bfReserved2 = 0;
+   fileHeader.bfOffBits = headerSize;
+   fileHeader.bfSize = headerSize + bitsSize;
+
+   BITMAPINFOHEADER infoHeader;
+   memcpy(&infoHeader, &pBmInfo->bmiHeader, sizeof(BITMAPINFOHEADER));
+
+   HANDLE hFile = CreateFile(pszFileName, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+   if (hFile != NULL && hFile != INVALID_HANDLE_VALUE)
+   {
+      DWORD bytesWritten;
+      WriteFile(hFile, &fileHeader, sizeof(BITMAPFILEHEADER), &bytesWritten, NULL);
+      WriteFile(hFile, &infoHeader, sizeof(BITMAPINFOHEADER), &bytesWritten, NULL);
+      WriteFile(hFile, pBits, bitsSize, &bytesWritten, NULL);
+      CloseHandle(hFile);
+   }
+}
+#endif
+
+static float SplatTexelWeight(const tVec2 & pt1, const tVec2 & pt2)
+{
+   static const float kOneOver175Sqr = 1.0f / (1.75f * 1.75f);
+   return 1 - (Vec2DistanceSqr(pt1, pt2) * kOneOver175Sqr);
+}
+
+template <typename T>
+inline T Clamp(T value, T rangeFirst, T rangeLast)
+{
+   if (value < rangeFirst)
+   {
+      return rangeFirst;
+   }
+   else if (value > rangeLast)
+   {
+      return rangeLast;
+   }
+   else
+   {
+      return value;
+   }
+}
+
+inline float STW(const tVec2 & pt1, const tVec2 & pt2)
+{
+   return Clamp(SplatTexelWeight(pt1,pt2), 0.f, 1.f);
+}
+
+static const float g_texelWeights[4][8] =
+{
+   {
+      // from upper left texel (-.25, -.25)
+      STW(tVec2(-.25,-.25), tVec2(-1,-1)), // top left
+      STW(tVec2(-.25,-.25), tVec2( 0,-1)), // top mid
+      STW(tVec2(-.25,-.25), tVec2( 1,-1)), // top right
+      STW(tVec2(-.25,-.25), tVec2(-1, 0)), // left
+      STW(tVec2(-.25,-.25), tVec2( 1, 0)), // right
+      STW(tVec2(-.25,-.25), tVec2(-1, 1)), // bottom left
+      STW(tVec2(-.25,-.25), tVec2( 0, 1)), // bottom mid
+      STW(tVec2(-.25,-.25), tVec2( 1, 1)), // bottom right
+   },
+   {
+      // from upper right texel (+.25, -.25)
+      STW(tVec2(.25,-.25), tVec2(-1,-1)), // top left
+      STW(tVec2(.25,-.25), tVec2( 0,-1)), // top mid
+      STW(tVec2(.25,-.25), tVec2( 1,-1)), // top right
+      STW(tVec2(.25,-.25), tVec2(-1, 0)), // left
+      STW(tVec2(.25,-.25), tVec2( 1, 0)), // right
+      STW(tVec2(.25,-.25), tVec2(-1, 1)), // bottom left
+      STW(tVec2(.25,-.25), tVec2( 0, 1)), // bottom mid
+      STW(tVec2(.25,-.25), tVec2( 1, 1)), // bottom right
+   },
+   {
+      // from lower left texel (-.25, +.25)
+      STW(tVec2(-.25,.25), tVec2(-1,-1)), // top left
+      STW(tVec2(-.25,.25), tVec2( 0,-1)), // top mid
+      STW(tVec2(-.25,.25), tVec2( 1,-1)), // top right
+      STW(tVec2(-.25,.25), tVec2(-1, 0)), // left
+      STW(tVec2(-.25,.25), tVec2( 1, 0)), // right
+      STW(tVec2(-.25,.25), tVec2(-1, 1)), // bottom left
+      STW(tVec2(-.25,.25), tVec2( 0, 1)), // bottom mid
+      STW(tVec2(-.25,.25), tVec2( 1, 1)), // bottom right
+   },
+   {
+      // from lower right texel (+.25, +.25)
+      STW(tVec2(.25,.25), tVec2(-1,-1)), // top left
+      STW(tVec2(.25,.25), tVec2( 0,-1)), // top mid
+      STW(tVec2(.25,.25), tVec2( 1,-1)), // top right
+      STW(tVec2(.25,.25), tVec2(-1, 0)), // left
+      STW(tVec2(.25,.25), tVec2( 1, 0)), // right
+      STW(tVec2(.25,.25), tVec2(-1, 1)), // bottom left
+      STW(tVec2(.25,.25), tVec2( 0, 1)), // bottom mid
+      STW(tVec2(.25,.25), tVec2( 1, 1)), // bottom right
+   },
+};
+
+static const sTerrainQuad * GetQuadPtr(uint x, uint z, const tTerrainQuads & quads, uint nQuadsX, uint nQuadsZ)
+{
+   if (x == kNoIndex || z == kNoIndex)
+   {
+      return NULL;
+   }
+   else
+   {
+      return &quads[(z * nQuadsZ) + x];
+   }
+}
+
 void cSplatBuilder::BuildAlphaMap(const tTerrainQuads & quads,
                                   uint nQuadsX, uint nQuadsZ,
                                   uint iChunkX, uint iChunkZ)
 {
-   // TODO
+   BITMAPINFO bmi = {0};
+   bmi.bmiHeader.biSize = sizeof(bmi.bmiHeader);
+   bmi.bmiHeader.biWidth = kTilesPerChunk * 2;
+   bmi.bmiHeader.biHeight = -((int)kTilesPerChunk * 2);
+   bmi.bmiHeader.biPlanes = 1;
+   bmi.bmiHeader.biCompression = BI_RGB;
+   bmi.bmiHeader.biBitCount = 24;
+   byte * pBitmapBits = NULL;
+   HBITMAP hBitmap = CreateDIBSection(NULL, &bmi, DIB_RGB_COLORS, (void**)&pBitmapBits, NULL, 0);
+   if (hBitmap == NULL)
+   {
+      return;
+   }
+
+   uint zStart = iChunkZ * kTilesPerChunk;
+   uint zEnd = zStart + kTilesPerChunk;
+   uint xStart = iChunkX * kTilesPerChunk;
+   uint xEnd = xStart + kTilesPerChunk;
+
+   for (uint z = zStart; z < zEnd; z++)
+   {
+      uint zPrev = kNoIndex;
+      if (z > zStart)
+      {
+         zPrev = z - 1;
+      }
+      else if ((z == zStart) && (zStart > 0))
+      {
+         zPrev = zStart - 1;
+      }
+
+      uint zNext = kNoIndex;
+      if (z < (zEnd - 1))
+      {
+         zNext = z + 1;
+      }
+      else if ((z == (zEnd - 1)) && (zEnd < nQuadsZ))
+      {
+         zNext = zEnd;
+      }
+
+      for (uint x = xStart; x < xEnd; x++)
+      {
+         uint xPrev = kNoIndex;
+         if (x > xStart)
+         {
+            xPrev = x - 1;
+         }
+         else if ((x == xStart) && (xStart > 0))
+         {
+            xPrev = xStart - 1;
+         }
+
+         uint xNext = kNoIndex;
+         if (x < (xEnd - 1))
+         {
+            xNext = x + 1;
+         }
+         else if ((x == (xEnd - 1)) && (xEnd < nQuadsX))
+         {
+            xNext = xEnd;
+         }
+
+         uint iQuad = (z * nQuadsZ) + x;
+         const sTerrainQuad & quad = quads[iQuad];
+
+         const sTerrainQuad * neighbors[8] =
+         {
+            GetQuadPtr(xPrev, zPrev, quads, nQuadsX, nQuadsZ),
+            GetQuadPtr(x,     zPrev, quads, nQuadsX, nQuadsZ),
+            GetQuadPtr(xNext, zPrev, quads, nQuadsX, nQuadsZ),
+            GetQuadPtr(xPrev, z,     quads, nQuadsX, nQuadsZ),
+            GetQuadPtr(xNext, z,     quads, nQuadsX, nQuadsZ),
+            GetQuadPtr(xPrev, zNext, quads, nQuadsX, nQuadsZ),
+            GetQuadPtr(x,     zNext, quads, nQuadsX, nQuadsZ),
+            GetQuadPtr(xNext, zNext, quads, nQuadsX, nQuadsZ),
+         };
+
+         float texelWeights[4];
+         int texelDivisors[4];
+
+         memset(texelWeights, 0, sizeof(texelWeights));
+         memset(texelDivisors, 0, sizeof(texelDivisors));
+
+         for (int i = 0; i < _countof(neighbors); i++)
+         {
+            if (neighbors[i] == NULL)
+            {
+               continue;
+            }
+
+            if (neighbors[i]->tile == m_tile)
+            {
+               for (int j = 0; j < _countof(texelWeights); j++)
+               {
+                  texelWeights[j] += g_texelWeights[j][i];
+                  texelDivisors[j] += 1;
+               }
+            }
+         }
+
+         uint iz = (z - zStart) * 2;
+         uint ix = (x - xStart) * 2;
+
+         byte * p0 = pBitmapBits + (iz * bmi.bmiHeader.biWidth * 3) + (ix * 3);
+         byte * p1 = pBitmapBits + (iz * bmi.bmiHeader.biWidth * 3) + ((ix+1) * 3);
+         byte * p2 = pBitmapBits + ((iz+1) * bmi.bmiHeader.biWidth * 3) + (ix * 3);
+         byte * p3 = pBitmapBits + ((iz+1) * bmi.bmiHeader.biWidth * 3) + ((ix+1) * 3);
+
+         p0[0] = p0[1] = p0[2] = (texelDivisors[0] > 0) ? (byte)(255 * (texelWeights[0] / texelDivisors[0])) : 0;
+         p1[0] = p1[1] = p1[2] = (texelDivisors[1] > 0) ? (byte)(255 * (texelWeights[1] / texelDivisors[1])) : 0;
+         p2[0] = p2[1] = p2[2] = (texelDivisors[2] > 0) ? (byte)(255 * (texelWeights[2] / texelDivisors[2])) : 0;
+         p3[0] = p3[1] = p3[2] = (texelDivisors[3] > 0) ? (byte)(255 * (texelWeights[3] / texelDivisors[3])) : 0;
+      }
+   }
+
+   cStr tileName;
+   m_pTileSet->GetTileName(m_tile, &tileName);
+
+   tChar szFile[MAX_PATH];
+   wsprintf(szFile, "%sAlpha%d%d.bmp", tileName.c_str(), iChunkX, iChunkZ);
+   WriteBitmapFile(szFile, &bmi, pBitmapBits);
+
+   DeleteObject(hBitmap), hBitmap = NULL;
 }
 
 
@@ -430,14 +677,10 @@ tResult cTerrainChunk::Create(const tTerrainQuads & quads,
 
          if (splatBuilders.find(quad.tile) == splatBuilders.end())
          {
-            cAutoIPtr<ITexture> pTexture;
-            if (pTileSet->GetTileTexture(quad.tile, &pTexture) == S_OK)
+            pSplatBuilder = new cSplatBuilder(pTileSet, quad.tile);
+            if (pSplatBuilder != NULL)
             {
-               pSplatBuilder = new cSplatBuilder(quad.tile, pTexture);
-               if (pSplatBuilder != NULL)
-               {
-                  splatBuilders[quad.tile] = pSplatBuilder;
-               }
+               splatBuilders[quad.tile] = pSplatBuilder;
             }
          }
          else

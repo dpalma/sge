@@ -161,7 +161,7 @@ class cSplatBuilder
    void operator =(const cSplatBuilder &);
 
 public:
-   cSplatBuilder(uint tile, ITexture * pTexture);
+   cSplatBuilder(IEditorTileSet * pTileSet, uint tile);
    ~cSplatBuilder();
 
    tResult GetTexture(ITexture * * ppTexture);
@@ -177,6 +177,7 @@ public:
                       uint iChunkX, uint iChunkZ);
 
 private:
+   cAutoIPtr<IEditorTileSet> m_pTileSet;
    uint m_tile;
    std::vector<uint> m_indices;
    cAutoIPtr<ITexture> m_pTexture;
