@@ -395,7 +395,7 @@ void cGUIContext::RenderDebugInfo(IRenderDevice * pRenderDevice)
          text.NullTerminate();
       }
 
-      tGUIRect rect(m_debugInfoPlacement.x, m_debugInfoPlacement.y, 0, 0);
+      tGUIRect rect(Round(m_debugInfoPlacement.x), Round(m_debugInfoPlacement.y), 0, 0);
       pFont->DrawText(text.GetBuffer(), -1, kDT_NoClip, &rect, m_debugInfoTextColor);
    }
 }

@@ -158,7 +158,7 @@ private:
    friend class cInputListener;
    cInputListener m_inputListener;
 
-   float m_timeLastBlink;
+   double m_timeLastBlink;
    bool m_bCursorBlinkOn, m_bCursorForceOn;
 };
 

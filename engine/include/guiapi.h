@@ -330,6 +330,12 @@ interface IGUIDialogElement : IGUIContainerElement
 {
    virtual tResult GetTitle(tGUIString * pTitle) = 0;
    virtual tResult SetTitle(const char * pszTitle) = 0;
+
+   virtual tResult GetCaptionHeight(uint * pHeight) = 0;
+   virtual tResult SetCaptionHeight(uint height) = 0;
+
+   virtual tResult SetModal(bool bModal) = 0;
+   virtual tResult IsModal() = 0;
 };
 
 

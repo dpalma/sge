@@ -130,6 +130,22 @@ tResult cGUIEventRouter<INTRFC>::AddElement(IGUIElement * pElement)
       return S_FALSE;
    }
 
+   cAutoIPtr<IGUIDialogElement> pDialog;
+   if (pElement->QueryInterface(IID_IGUIDialogElement, (void**)&pDialog) == S_OK)
+   {
+#ifdef _DEBUG
+      tGUIDialogList::iterator dIter;
+      for (dIter = m_dialogs.begin(); dIter != m_dialogs.end(); dIter++)
+      {
+         if (CTIsSameObject(*dIter, pElement))
+         {
+            Assert(!"ERROR: GUI element should not be in dialog list if not in element list!");
+         }
+      }
+#endif
+      m_dialogs.push_back(CTAddRef(pDialog));
+   }
+
    m_elements.push_back(CTAddRef(pElement));
    return S_OK;
 }
@@ -144,6 +160,8 @@ tResult cGUIEventRouter<INTRFC>::RemoveElement(IGUIElement * pElement)
       return E_POINTER;
    }
 
+   tResult result = S_FALSE;
+
    tGUIElementList::iterator iter;
    for (iter = m_elements.begin(); iter != m_elements.end(); iter++)
    {
@@ -151,11 +169,26 @@ tResult cGUIEventRouter<INTRFC>::RemoveElement(IGUIElement * pElement)
       {
          m_elements.erase(iter);
          pElement->Release();
-         return S_OK;
+         result = S_OK;
       }
    }
 
-   return S_FALSE;
+   // Remove from dialog list too if necessary
+   cAutoIPtr<IGUIDialogElement> pDialog;
+   if (pElement->QueryInterface(IID_IGUIDialogElement, (void**)&pDialog) == S_OK)
+   {
+      tGUIDialogList::iterator dIter;
+      for (dIter = m_dialogs.begin(); dIter != m_dialogs.end(); dIter++)
+      {
+         if (CTIsSameObject(*dIter, pDialog))
+         {
+            m_dialogs.erase(dIter);
+            (*dIter)->Release();
+         }
+      }
+
+   }
+   return result;
 }
 
 ///////////////////////////////////////
@@ -198,6 +231,8 @@ void cGUIEventRouter<INTRFC>::RemoveAllElements()
    SafeRelease(m_pMouseOver);
    std::for_each(m_elements.begin(), m_elements.end(), CTInterfaceMethod(&IGUIElement::Release));
    m_elements.clear();
+   std::for_each(m_dialogs.begin(), m_dialogs.end(), CTInterfaceMethod(&IGUIDialogElement::Release));
+   m_dialogs.clear();
 }
 
 ///////////////////////////////////////
@@ -352,6 +387,38 @@ bool cGUIEventRouter<INTRFC>::BubbleEvent(IGUIEvent * pEvent)
 }
 
 ///////////////////////////////////////
+
+inline bool IsDescendant(IGUIContainerElement * pParent, IGUIElement * pElement)
+{
+   Assert(pParent != NULL);
+   Assert(pElement != NULL);
+
+   cAutoIPtr<IGUIElement> pTestParent;
+
+   if (pElement->GetParent(&pTestParent) == S_OK)
+   {
+      do
+      {
+         if (CTIsSameObject(pTestParent, pParent))
+         {
+            return true;
+         }
+
+         cAutoIPtr<IGUIElement> pNextParent;
+         if (pTestParent->GetParent(&pNextParent) != S_OK)
+         {
+            SafeRelease(pTestParent);
+         }
+         else
+         {
+            pTestParent = pNextParent;
+         }
+      }
+      while (!!pTestParent);
+   }
+
+   return false;
+}
 
 template <typename INTRFC>
 bool cGUIEventRouter<INTRFC>::GetEventTarget(const sInputEvent * pInputEvent, 

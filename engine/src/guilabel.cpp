@@ -145,10 +145,9 @@ tResult cGUILabelStatelessRenderer::Render(IGUIElement * pElement, IRenderDevice
    {
       tGUIPoint pos = GUIElementAbsolutePosition(pLabel);
       tGUISize size = pLabel->GetSize();
+      tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
 
-      tRect rect(pos.x, pos.y, pos.x + size.width, pos.y + size.height);
-
-      tGUIColor color(tGUIColor::White);
+      tGUIColor color(tGUIColor::Black);
 
       cAutoIPtr<IRenderFont> pFont;
 
@@ -206,7 +205,7 @@ tGUISize cGUILabelStatelessRenderer::GetPreferredSize(IGUIElement * pElement)
             tRect rect(0,0,0,0);
             pFont->DrawText(text, text.length(), kDT_CalcRect, &rect, tGUIColor::White);
 
-            return tGUISize(rect.GetWidth(), rect.GetHeight());
+            return tGUISize((tGUISizeType)rect.GetWidth(), (tGUISizeType)rect.GetHeight());
          }
       }
    }

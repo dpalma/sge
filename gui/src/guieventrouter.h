@@ -86,6 +86,9 @@ private:
    typedef std::list<IGUIElement *> tGUIElementList;
    tGUIElementList m_elements;
 
+   typedef std::list<IGUIDialogElement *> tGUIDialogList;
+   tGUIDialogList m_dialogs;
+
    cAutoIPtr<IGUIElement> m_pFocus, m_pCapture, m_pMouseOver;
 };
 

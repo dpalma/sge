@@ -42,11 +42,26 @@ public:
 
    virtual tResult GetRendererClass(tGUIString * pRendererClass);
 
+   virtual tResult GetInsets(tGUIInsets * pInsets);
+
    virtual tResult GetTitle(tGUIString * pTitle);
    virtual tResult SetTitle(const char * pszTitle);
 
+   virtual tResult GetCaptionHeight(uint * pHeight);
+   virtual tResult SetCaptionHeight(uint height);
+
+   virtual tResult SetModal(bool bModal);
+   virtual tResult IsModal();
+
 private:
+   tGUIRect GetCaptionRectAbsolute();
+
+   bool m_bDragging;
+   tGUIPoint m_dragOffset;
+
    tGUIString m_title;
+   uint m_captionHeight;
+   bool m_bModal;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

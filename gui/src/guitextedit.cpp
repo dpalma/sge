@@ -651,7 +651,7 @@ tResult cGUITextEditStatelessRenderer::Render(IGUIElement * pElement, IRenderDev
 
       pRenderDevice->SetScissorRect(NULL);
 
-      float time = TimeGetSecs();
+      double time = TimeGetSecs();
 
       if (m_timeLastBlink == 0)
       {

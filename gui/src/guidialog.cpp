@@ -30,9 +30,17 @@ LOG_DEFINE_CHANNEL(GUIDialogEvents);
 // CLASS: cGUIDialogElement
 //
 
+static const int kDialog3dEdge = 2;
+
+static const uint kNoCaptionHeight = (uint)-1;
+
 ///////////////////////////////////////
 
 cGUIDialogElement::cGUIDialogElement()
+ : m_bDragging(false),
+   m_dragOffset(0,0),
+   m_captionHeight(kNoCaptionHeight),
+   m_bModal(false)
 {
 }
 
@@ -64,11 +72,16 @@ tResult cGUIDialogElement::OnEvent(IGUIEvent * pEvent)
 {
    Assert(pEvent != NULL);
 
+   tResult result = S_OK;
+
    tGUIEventCode eventCode;
    Verify(pEvent->GetEventCode(&eventCode) == S_OK);
 
    long keyCode;
    Verify(pEvent->GetKeyCode(&keyCode) == S_OK);
+
+   tGUIPoint mousePos;
+   Verify(pEvent->GetMousePosition(&mousePos) == S_OK);
 
    if (eventCode == kGUIEventMouseEnter)
    {
@@ -78,13 +91,34 @@ tResult cGUIDialogElement::OnEvent(IGUIEvent * pEvent)
    {
       LocalMsg("Mouse leave dialog\n");
    }
+   else if (eventCode == kGUIEventMouseMove)
+   {
+      LocalMsg("Mouse move dialog\n");
+      if (m_bDragging)
+      {
+         SetPosition(mousePos - m_dragOffset);
+      }
+   }
    else if (eventCode == kGUIEventMouseDown)
    {
       LocalMsg("Mouse down dialog\n");
+      tGUIRect captionRect = GetCaptionRectAbsolute();
+      if (captionRect.PtInside(Round(mousePos.x), Round(mousePos.y)))
+      {
+         UseGlobal(GUIContext);
+         pGUIContext->SetCapture(this);
+         m_bDragging = true;
+         m_dragOffset = mousePos - tGUIPoint(captionRect.left, captionRect.top);
+         result = S_FALSE; // now eat this event
+      }
    }
    else if (eventCode == kGUIEventMouseUp)
    {
       LocalMsg("Mouse up dialog\n");
+      UseGlobal(GUIContext);
+      pGUIContext->SetCapture(NULL);
+      m_bDragging = false;
+      result = S_FALSE; // now eat this event
    }
    else if (eventCode == kGUIEventClick)
    {
@@ -107,7 +141,7 @@ tResult cGUIDialogElement::OnEvent(IGUIEvent * pEvent)
       }
    }
 
-   return S_OK;
+   return result;
 }
 
 ///////////////////////////////////////
@@ -115,9 +149,30 @@ tResult cGUIDialogElement::OnEvent(IGUIEvent * pEvent)
 tResult cGUIDialogElement::GetRendererClass(tGUIString * pRendererClass)
 {
    if (pRendererClass == NULL)
+   {
       return E_POINTER;
+   }
    *pRendererClass = "dialog";
    return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIDialogElement::GetInsets(tGUIInsets * pInsets)
+{
+   tResult result;
+   if ((result = cGUIContainerBase<IGUIDialogElement>::GetInsets(pInsets)) == S_OK)
+   {
+      // Add in the caption height so that the layout manager can account for it
+      // when sizing and positioning child elements
+      uint captionHeight;
+      if (GetCaptionHeight(&captionHeight) == S_OK)
+      {
+         Assert(pInsets != NULL); // if above call returned S_OK this should never be NULL
+         pInsets->top += captionHeight;
+      }
+   }
+   return result;
 }
 
 ///////////////////////////////////////
@@ -144,6 +199,69 @@ tResult cGUIDialogElement::SetTitle(const char * pszTitle)
    return S_OK;
 }
 
+///////////////////////////////////////
+
+tResult cGUIDialogElement::GetCaptionHeight(uint * pHeight)
+{
+   if (pHeight == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (m_captionHeight == kNoCaptionHeight)
+   {
+      return S_FALSE;
+   }
+
+   *pHeight = m_captionHeight;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIDialogElement::SetCaptionHeight(uint height)
+{
+   m_captionHeight = height;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIDialogElement::SetModal(bool bModal)
+{
+   m_bModal = bModal;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIDialogElement::IsModal()
+{
+   return m_bModal ? S_OK : S_FALSE;
+}
+
+///////////////////////////////////////
+
+tGUIRect cGUIDialogElement::GetCaptionRectAbsolute()
+{
+   uint captionHeight;
+   if ((GetCaptionHeight(&captionHeight) == S_OK) && (captionHeight > 0))
+   {
+      tGUIPoint pos = GUIElementAbsolutePosition(this);
+      tGUISize size = GetSize();
+
+      tGUIRect captionRect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
+      captionRect.left += kDialog3dEdge;
+      captionRect.top += kDialog3dEdge;
+      captionRect.right -= kDialog3dEdge;
+      captionRect.bottom = captionRect.top + captionHeight;
+
+      return captionRect;
+   }
+
+   return tGUIRect(0,0,0,0);
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -151,6 +269,39 @@ tResult cGUIDialogElement::SetTitle(const char * pszTitle)
 //
 
 AUTOREGISTER_GUIELEMENTFACTORY(dialog, cGUIDialogElementFactory);
+
+static tResult QueryBoolAttribute(const TiXmlElement * pXmlElement, const char * pszAttrib, bool * pBool)
+{
+   Assert(pXmlElement != NULL);
+   Assert(pszAttrib != NULL);
+   Assert(pBool != NULL);
+
+   int value;
+	if (pXmlElement->QueryIntAttribute(pszAttrib, &value) == TIXML_SUCCESS)
+   {
+      *pBool = value ? true : false;
+      return S_OK;
+   }
+   else
+   {
+      const char * pszValue = pXmlElement->Attribute(pszAttrib);
+      if (pszValue != NULL)
+      {
+         if (stricmp(pszValue, "true") == 0)
+         {
+            *pBool = true;
+            return S_OK;
+         }
+         else if (stricmp(pszValue, "false") == 0)
+         {
+            *pBool = false;
+            return S_OK;
+         }
+      }
+   }
+
+   return S_FALSE;
+}
 
 tResult cGUIDialogElementFactory::CreateElement(const TiXmlElement * pXmlElement, 
                                                 IGUIElement * * ppElement)
@@ -169,9 +320,16 @@ tResult cGUIDialogElementFactory::CreateElement(const TiXmlElement * pXmlElement
          {
             GUIElementStandardAttributes(pXmlElement, pDialog);
 
-            if (pXmlElement->Attribute("title"))
+            const char * pszValue;
+            if ((pszValue = pXmlElement->Attribute("title")) != NULL)
             {
-               pDialog->SetTitle(pXmlElement->Attribute("title"));
+               pDialog->SetTitle(pszValue);
+            }
+
+            bool bIsModal;
+            if (QueryBoolAttribute(pXmlElement, "ismodal", &bIsModal) == S_OK)
+            {
+               pDialog->SetModal(bIsModal);
             }
 
             if (GUIElementCreateChildren(pXmlElement, pDialog) == S_OK)
@@ -196,8 +354,6 @@ tResult cGUIDialogElementFactory::CreateElement(const TiXmlElement * pXmlElement
 //
 // CLASS: cGUIDialogRenderer
 //
-
-static const int k3dEdge = 2;
 
 ///////////////////////////////////////
 
@@ -225,13 +381,54 @@ tResult cGUIDialogRenderer::Render(IGUIElement * pElement, IRenderDevice * pRend
    {
       tGUIPoint pos = GUIElementAbsolutePosition(pDialog);
       tGUISize size = pDialog->GetSize();
+      tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
 
       UseGlobal(GUIRenderingTools);
 
-      // TODO: use colors from style
-      pGUIRenderingTools->Render3dRect(
-         tGUIRect(pos.x, pos.y, pos.x + size.width, pos.y + size.height), 
-         k3dEdge, tGUIColor::LightGray, tGUIColor::DarkGray, tGUIColor::Gray);
+      tGUIColor topLeft(tGUIColor::LightGray);
+      tGUIColor bottomRight(tGUIColor::DarkGray);
+      tGUIColor face(tGUIColor::Gray);
+      tGUIColor caption(tGUIColor::Blue);
+
+      cAutoIPtr<IRenderFont> pFont;
+
+      cAutoIPtr<IGUIStyle> pStyle;
+      if (pElement->GetStyle(&pStyle) == S_OK)
+      {
+         pStyle->GetFont(&pFont);
+         pStyle->GetAttribute("frame-top-left-color", &topLeft);
+         pStyle->GetAttribute("frame-bottom-right-color", &bottomRight);
+         pStyle->GetAttribute("frame-face-color", &face);
+         pStyle->GetAttribute("caption-color", &caption);
+      }
+
+      if (!pFont)
+      {
+         UseGlobal(GUIRenderingTools);
+         pGUIRenderingTools->GetDefaultFont(&pFont);
+      }
+
+      pGUIRenderingTools->Render3dRect(rect, kDialog3dEdge, topLeft, bottomRight, face);
+
+      uint captionHeight;
+      if ((pDialog->GetCaptionHeight(&captionHeight) == S_OK)
+         && (captionHeight > 0))
+      {
+         tGUIRect captionRect(rect);
+
+         captionRect.left += kDialog3dEdge;
+         captionRect.top += kDialog3dEdge;
+         captionRect.right -= kDialog3dEdge;
+         captionRect.bottom = captionRect.top + captionHeight;
+
+         pGUIRenderingTools->Render3dRect(captionRect, 0, caption, caption, caption);
+
+         tGUIString title;
+         if (pDialog->GetTitle(&title) == S_OK)
+         {
+            pFont->DrawText(title.c_str(), -1, 0, &captionRect, tGUIColor::White);
+         }
+      }
 
       if (GUIElementRenderChildren(pDialog, pRenderDevice) == S_OK)
       {
@@ -251,12 +448,46 @@ tGUISize cGUIDialogRenderer::GetPreferredSize(IGUIElement * pElement)
       cAutoIPtr<IGUIDialogElement> pDialog;
       if (pElement->QueryInterface(IID_IGUIDialogElement, (void**)&pDialog) == S_OK)
       {
+         cAutoIPtr<IRenderFont> pFont;
+
+         cAutoIPtr<IGUIStyle> pStyle;
+         if (pElement->GetStyle(&pStyle) == S_OK)
+         {
+            pStyle->GetFont(&pFont);
+         }
+
+         if (!pFont)
+         {
+            UseGlobal(GUIRenderingTools);
+            pGUIRenderingTools->GetDefaultFont(&pFont);
+         }
+
          cAutoIPtr<IGUILayoutManager> pLayout;
          if (pDialog->GetLayout(&pLayout) == S_OK)
          {
             tGUISize size(0,0);
             if (pLayout->GetPreferredSize(pDialog, &size) == S_OK)
             {
+               uint captionHeight;
+               if (pDialog->GetCaptionHeight(&captionHeight) == S_OK)
+               {
+                  size.height += captionHeight;
+               }
+               else
+               {
+                  tGUIString title;
+                  if (pDialog->GetTitle(&title) == S_OK)
+                  {
+                     tRect rect(0,0,0,0);
+                     pFont->DrawText(title.c_str(), -1, kDT_CalcRect, &rect, tGUIColor::White);
+
+                     captionHeight = rect.GetHeight();
+
+                     pDialog->SetCaptionHeight(captionHeight);
+                     size.height += captionHeight;
+                  }
+               }
+
                return size;
             }
          }
