@@ -1,17 +1,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 // $Id$
 
-#ifndef INCLUDED_HASHTBL_H
-#define INCLUDED_HASHTBL_H
+#ifndef INCLUDED_HASHTABLE_H
+#define INCLUDED_HASHTABLE_H
 
 #include <memory>
 
 #ifdef _MSC_VER
 #pragma once
-#endif
-
-#ifndef HASHTBLTEST
-#error ("Do not use cHashTable! Use a STL container instead!")
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -86,4 +82,4 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // !INCLUDED_HASHTBL_H
+#endif // !INCLUDED_HASHTABLE_H

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // $Id$
 
-#ifndef INCLUDED_HASHTBLTEM_H
-#define INCLUDED_HASHTBLTEM_H
+#ifndef INCLUDED_HASHTABLETEM_H
+#define INCLUDED_HASHTABLETEM_H
 
 #include "hash.h"
 #include "techmath.h"
@@ -291,4 +291,4 @@ HASHTABLE_TEMPLATE_(void)::Reset(uint newInitialSize)
 
 #include "undbgalloc.h"
 
-#endif // !INCLUDED_HASHTBLTEM_H
+#endif // !INCLUDED_HASHTABLETEM_H
