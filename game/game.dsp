@@ -46,7 +46,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I "..\3rdparty\lua\include" /I "..\render\include" /I "..\tech\include" /I "..\3rdparty\tinyxml" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "TIXML_USE_STL" /Yu"stdhdr.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /I "..\3rdparty\lua\include" /I "..\engine\include" /I "..\render\include" /I "..\tech\include" /I "..\3rdparty\tinyxml" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "TIXML_USE_STL" /Yu"stdhdr.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -72,7 +72,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\3rdparty\cppunit\include" /I "..\3rdparty\lua\include" /I "..\render\include" /I "..\tech\include" /I "..\3rdparty\tinyxml" /D "_DEBUG" /D "HAVE_CPPUNIT" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "TIXML_USE_STL" /Yu"stdhdr.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\3rdparty\cppunit\include" /I "..\3rdparty\lua\include" /I "..\engine\include" /I "..\render\include" /I "..\tech\include" /I "..\3rdparty\tinyxml" /D "_DEBUG" /D "HAVE_CPPUNIT" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "TIXML_USE_STL" /Yu"stdhdr.h" /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
@@ -99,7 +99,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /I "..\lua\include" /I "..\tech\include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /I "..\3rdparty\lua\include" /I "..\render\include" /I "..\tech\include" /I "..\3rdparty\tinyxml" /D "NDEBUG" /D "STATIC_BUILD" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "TIXML_USE_STL" /Yu"stdhdr.h" /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /I "..\3rdparty\lua\include" /I "..\engine\include" /I "..\render\include" /I "..\tech\include" /I "..\3rdparty\tinyxml" /D "NDEBUG" /D "STATIC_BUILD" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "TIXML_USE_STL" /Yu"stdhdr.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -126,7 +126,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\lua\include" /I "..\tech\include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\3rdparty\cppunit\include" /I "..\3rdparty\lua\include" /I "..\render\include" /I "..\tech\include" /I "..\3rdparty\tinyxml" /D "STATIC_BUILD" /D "_DEBUG" /D "HAVE_CPPUNIT" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "TIXML_USE_STL" /Yu"stdhdr.h" /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\3rdparty\cppunit\include" /I "..\3rdparty\lua\include" /I "..\engine\include" /I "..\render\include" /I "..\tech\include" /I "..\3rdparty\tinyxml" /D "STATIC_BUILD" /D "_DEBUG" /D "HAVE_CPPUNIT" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "TIXML_USE_STL" /Yu"stdhdr.h" /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
@@ -153,7 +153,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /I "..\lua\include" /I "..\tech\include" /I "..\3rdparty\tinyxml" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "TIXML_USE_STL" /YX /FD /c
-# ADD CPP /nologo /MDd /W3 /GX /Zi /O2 /I "..\3rdparty\lua\include" /I "..\render\include" /I "..\tech\include" /I "..\3rdparty\tinyxml" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "TIXML_USE_STL" /Yu"stdhdr.h" /FD /c
+# ADD CPP /nologo /MDd /W3 /GX /Zi /O2 /I "..\3rdparty\lua\include" /I "..\engine\include" /I "..\render\include" /I "..\tech\include" /I "..\3rdparty\tinyxml" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "TIXML_USE_STL" /Yu"stdhdr.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -179,10 +179,6 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=.\3ds.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\boundingvolume.cpp
 # End Source File
 # Begin Source File
@@ -203,10 +199,6 @@ SOURCE=.\groundtiled.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\guids.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\heightmap.cpp
 # End Source File
 # Begin Source File
@@ -216,14 +208,6 @@ SOURCE=.\input.cpp
 # Begin Source File
 
 SOURCE=.\main.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\mesh.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\ms3d.cpp
 # End Source File
 # Begin Source File
 
@@ -309,10 +293,6 @@ SOURCE=.\uiwidgutils.cpp
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=.\3ds.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\boundingvolume.h
 # End Source File
 # Begin Source File
@@ -322,6 +302,10 @@ SOURCE=.\cameracontroller.h
 # Begin Source File
 
 SOURCE=.\frustum.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\gameguids.h
 # End Source File
 # Begin Source File
 
@@ -337,23 +321,11 @@ SOURCE=.\groundtiled.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\guids.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\heightmap.h
 # End Source File
 # Begin Source File
 
 SOURCE=.\input.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\mesh.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\ms3d.h
 # End Source File
 # Begin Source File
 

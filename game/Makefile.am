@@ -16,7 +16,6 @@ game_SOURCES = 3ds.cpp \
                cameracontroller.cpp \
                frustum.cpp \
                groundtiled.cpp \
-               guids.cpp \
                heightmap.cpp \
                input.cpp \
                main.cpp \
@@ -42,9 +41,10 @@ game_SOURCES = 3ds.cpp \
 
 game_LDFLAGS = -L@top_srcdir@/3rdparty/lua/lib \
                -L@top_srcdir@/3rdparty/tinyxml \
+               -L@top_srcdir@/engine \
                -L@top_srcdir@/render \
                -L@top_srcdir@/tech \
-               -L@top_srcdir@/techguid
+               -L@top_srcdir@/allguids
 
 if HAVE_RC
 RES = game.$(OBJEXT)
@@ -54,10 +54,11 @@ else
 RES =
 endif
 
-game_LDADD = $(RES) $(CORE_LIBS) $(GL_LIBS) -llua -llualib -ltinyxml -lrender -ltech -ltechguid
+game_LDADD = $(RES) $(CORE_LIBS) $(GL_LIBS) -llua -llualib -ltinyxml -lrender -lengine -ltech -lallguids
 
 INCLUDES = $(GL_CFLAGS) \
            -I@top_srcdir@/3rdparty/lua/include \
            -I@top_srcdir@/3rdparty/tinyxml \
+           -I@top_srcdir@/engine/include \
            -I@top_srcdir@/render/include \
            -I@top_srcdir@/tech/include

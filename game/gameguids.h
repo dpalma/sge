@@ -1,18 +1,14 @@
 ///////////////////////////////////////////////////////////////////////////////
 // $Id$
 
-#ifndef INCLUDED_GUIDS_H
-#define INCLUDED_GUIDS_H
+#ifndef INCLUDED_GAMEGUIDS_H
+#define INCLUDED_GAMEGUIDS_H
 
 #ifdef _MSC_VER
 #pragma once
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
-
-// {119690B8-0CE3-492c-8B6A-EA1BE65127AB}
-DEFINE_GUID(IID_IMesh, 
-0x119690b8, 0xce3, 0x492c, 0x8b, 0x6a, 0xea, 0x1b, 0xe6, 0x51, 0x27, 0xab);
 
 // {59013351-8C9A-419c-AE0B-A834EDE233D9}
 DEFINE_GUID(IID_IUIStyle, 
@@ -32,4 +28,4 @@ DEFINE_GUID(IID_ISim,
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // !INCLUDED_GUIDS_H
+#endif // !INCLUDED_GAMEGUIDS_H
