@@ -103,7 +103,6 @@ cHistoryWnd::cHistoryWnd()
    m_pSelAnchor(NULL),
    m_pSelDrag(NULL)
 {
-   m_entries.reserve(m_nMaxEntries);
 }
 
 ///////////////////////////////////////
@@ -678,6 +677,11 @@ void cHistoryWnd::OnPaint()
 {
    CPaintDC dc(this);
 
+   if (m_entries.empty())
+   {
+      return;
+   }
+
    // set window origin, clipping, etc.
    OnPrepareDC(&dc);
 
@@ -688,8 +692,7 @@ void cHistoryWnd::OnPaint()
    int start, end;
    GetVisibleRange(&start, &end);
 
-   CRect r;
-   r.SetRect(0, start * m_nCharHeight, m_totalDev.cx, m_totalDev.cy);
+   CRect r(0, start * m_nCharHeight, m_totalDev.cx, m_totalDev.cy);
 
    r.bottom = r.top + m_nCharHeight;
 
@@ -815,9 +818,12 @@ void cHistoryWnd::OnPaint()
 
 BOOL cHistoryWnd::OnEraseBkgnd(CDC * pDC) 
 {
-   CRect rect;
-   GetClientRect(&rect);
-   pDC->FillSolidRect(rect, GetBkColor());
+   if (m_entries.empty())
+   {
+      CRect rect;
+      GetClientRect(&rect);
+      pDC->FillSolidRect(rect, GetBkColor());
+   }
    return TRUE;
 }
 
