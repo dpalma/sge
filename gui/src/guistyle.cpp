@@ -509,6 +509,27 @@ static eGUIVerticalAlignment GUIStyleParseVertAlignment(const char * psz)
 
 static tResult GUIStyleParseColor(const char * psz, tGUIColor * pColor)
 {
+   static const struct sNamedColor
+   {
+      sNamedColor(const char * p, const tGUIColor & c) : pszName(p), color(c) {}
+      const char * pszName;
+      tGUIColor color;
+   }
+   g_namedColorTable[] =
+   {
+      sNamedColor("black", tGUIColor::Black),
+      sNamedColor("red", tGUIColor::Red),
+      sNamedColor("green", tGUIColor::Green),
+      sNamedColor("yellow", tGUIColor::Yellow),
+      sNamedColor("blue", tGUIColor::Blue),
+      sNamedColor("magenta", tGUIColor::Magenta),
+      sNamedColor("cyan", tGUIColor::Cyan),
+      sNamedColor("darkgray", tGUIColor::DarkGray),
+      sNamedColor("gray", tGUIColor::Gray),
+      sNamedColor("lightgray", tGUIColor::LightGray),
+      sNamedColor("white", tGUIColor::White),
+   };
+
    double rgba[4];
    int parseResult = ParseTuple(psz, rgba, _countof(rgba));
    if (parseResult == 3)
@@ -521,60 +542,16 @@ static tResult GUIStyleParseColor(const char * psz, tGUIColor * pColor)
       *pColor = tGUIColor(rgba[0],rgba[1],rgba[2],rgba[3]);
       return S_OK;
    }
-   else if (stricmp(psz, "black") == 0)
+   else
    {
-      *pColor = tGUIColor::Black;
-      return S_OK;
-   }
-   else if (stricmp(psz, "red") == 0)
-   {
-      *pColor = tGUIColor::Red;
-      return S_OK;
-   }
-   else if (stricmp(psz, "green") == 0)
-   {
-      *pColor = tGUIColor::Green;
-      return S_OK;
-   }
-   else if (stricmp(psz, "yellow") == 0)
-   {
-      *pColor = tGUIColor::Yellow;
-      return S_OK;
-   }
-   else if (stricmp(psz, "blue") == 0)
-   {
-      *pColor = tGUIColor::Blue;
-      return S_OK;
-   }
-   else if (stricmp(psz, "magenta") == 0)
-   {
-      *pColor = tGUIColor::Magenta;
-      return S_OK;
-   }
-   else if (stricmp(psz, "cyan") == 0)
-   {
-      *pColor = tGUIColor::Cyan;
-      return S_OK;
-   }
-   else if (stricmp(psz, "darkgray") == 0)
-   {
-      *pColor = tGUIColor::DarkGray;
-      return S_OK;
-   }
-   else if (stricmp(psz, "gray") == 0)
-   {
-      *pColor = tGUIColor::Gray;
-      return S_OK;
-   }
-   else if (stricmp(psz, "lightgray") == 0)
-   {
-      *pColor = tGUIColor::LightGray;
-      return S_OK;
-   }
-   else if (stricmp(psz, "white") == 0)
-   {
-      *pColor = tGUIColor::White;
-      return S_OK;
+      for (int i = 0; i < _countof(g_namedColorTable); ++i)
+      {
+         if (stricmp(g_namedColorTable[i].pszName, psz) == 0)
+         {
+            *pColor = g_namedColorTable[i].color;
+            return S_OK;
+         }
+      }
    }
    return E_FAIL;
 }
@@ -755,11 +732,13 @@ class cGUIStyleTests : public CppUnit::TestCase
       CPPUNIT_TEST(TestFactoryFunction);
       CPPUNIT_TEST(TestParseDimension);
       CPPUNIT_TEST(TestCustomAttributes);
+      CPPUNIT_TEST(TestParseColor);
    CPPUNIT_TEST_SUITE_END();
 
    void TestFactoryFunction();
    void TestParseDimension();
    void TestCustomAttributes();
+   void TestParseColor();
 };
 
 ///////////////////////////////////////
@@ -868,6 +847,35 @@ void cGUIStyleTests::TestCustomAttributes()
    CPPUNIT_ASSERT(pStyle->GetAttribute("color1", &number) == S_FALSE);
    CPPUNIT_ASSERT(pStyle->GetAttribute("color1", &color) == S_OK);
    CPPUNIT_ASSERT(color == tGUIColor(0.75,0.75,0.75,1));
+}
+
+///////////////////////////////////////
+
+void cGUIStyleTests::TestParseColor()
+{
+   tGUIColor color;
+   CPPUNIT_ASSERT(GUIStyleParseColor("black", &color) == S_OK);
+   CPPUNIT_ASSERT(color == tGUIColor::Black);
+   CPPUNIT_ASSERT(GUIStyleParseColor("red", &color) == S_OK);
+   CPPUNIT_ASSERT(color == tGUIColor::Red);
+   CPPUNIT_ASSERT(GUIStyleParseColor("green", &color) == S_OK);
+   CPPUNIT_ASSERT(color == tGUIColor::Green);
+   CPPUNIT_ASSERT(GUIStyleParseColor("yellow", &color) == S_OK);
+   CPPUNIT_ASSERT(color == tGUIColor::Yellow);
+   CPPUNIT_ASSERT(GUIStyleParseColor("blue", &color) == S_OK);
+   CPPUNIT_ASSERT(color == tGUIColor::Blue);
+   CPPUNIT_ASSERT(GUIStyleParseColor("magenta", &color) == S_OK);
+   CPPUNIT_ASSERT(color == tGUIColor::Magenta);
+   CPPUNIT_ASSERT(GUIStyleParseColor("cyan", &color) == S_OK);
+   CPPUNIT_ASSERT(color == tGUIColor::Cyan);
+   CPPUNIT_ASSERT(GUIStyleParseColor("darkgray", &color) == S_OK);
+   CPPUNIT_ASSERT(color == tGUIColor::DarkGray);
+   CPPUNIT_ASSERT(GUIStyleParseColor("gray", &color) == S_OK);
+   CPPUNIT_ASSERT(color == tGUIColor::Gray);
+   CPPUNIT_ASSERT(GUIStyleParseColor("lightgray", &color) == S_OK);
+   CPPUNIT_ASSERT(color == tGUIColor::LightGray);
+   CPPUNIT_ASSERT(GUIStyleParseColor("white", &color) == S_OK);
+   CPPUNIT_ASSERT(color == tGUIColor::White);
 }
 
 #endif // HAVE_CPPUNIT
