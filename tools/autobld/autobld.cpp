@@ -192,12 +192,32 @@ static int autobld_Cwd(lua_State *L)
 
 
 
+static int autobld_Setenv(lua_State * L)
+{
+   const char * pszValue = NULL;
+   if (lua_isstring(L, -1))
+   {
+      luaL_checkstring(L, -1);
+      pszValue = lua_tostring(L, -1);
+   }
+   luaL_checkstring(L, -2);
+   const char * pszName = lua_tostring(L, -2);
+   if (!SetEnvironmentVariable(pszName, pszValue))
+   {
+      PushError(L, GetLastError());
+      lua_error(L);
+   }
+   return 0;
+}
+
+
 static const luaL_reg autobld_funcs[] =
 {
    { "getregistryvalue", autobld_GetRegistryValue },
    { "dir", autobld_Dir },
    { "mkdir", autobld_Mkdir },
    { "cwd", autobld_Cwd },
+   { "setenv", autobld_Setenv },
    { NULL, NULL }
 };
 
