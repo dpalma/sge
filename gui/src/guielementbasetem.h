@@ -170,7 +170,7 @@ bool cGUIElementBase<INTRFC>::Contains(const tGUIPoint & point) const
 {
    tGUIPoint absPos = GetPosition();
    tGUISize size = GetSize();
-   return tRect(
+   return tRectf(
       absPos.x, 
       absPos.y, 
       absPos.x + size.width, 

@@ -217,7 +217,7 @@ bool cGUIEventRouter<INTRFC>::BubbleEvent(IGUIEvent * pEvent)
 {
    Assert(pEvent != NULL);
 
-   tSinks::iterator iter;
+   tSinksIterator iter;
    for (iter = AccessSinks().begin(); iter != AccessSinks().end(); iter++)
    {
       if ((*iter)->OnEvent(pEvent) != S_OK)

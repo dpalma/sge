@@ -319,7 +319,7 @@ tResult cGUIRenderingTools::Render3dRect(const tGUIRect & rect, int bevel,
                                          const tGUIColor & bottomRight, 
                                          const tGUIColor & face)
 {
-   static const kMaxVertices = 32;
+   static const uint kMaxVertices = 32;
    sGUIVertex vertices[kMaxVertices];
 
    uint nVertices = 0;

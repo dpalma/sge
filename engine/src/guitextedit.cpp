@@ -592,7 +592,7 @@ tResult cGUITextEditStatelessRenderer::Render(IGUIElement * pElement, IRenderDev
       tGUIPoint pos = GUIElementAbsolutePosition(pTextEdit);
       tGUISize size = pTextEdit->GetSize();
 
-      tGUIRect rect(pos.x, pos.y, pos.x + size.width, pos.y + size.height);
+      tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
 
       UseGlobal(GUIRenderingTools);
 

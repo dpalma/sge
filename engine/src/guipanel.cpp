@@ -63,7 +63,7 @@ void cGUIPanelElement::SetSize(const tGUISize & size)
 {
    tBaseClass::SetSize(size);
 
-   tGUIRect rect(0, 0, size.width, size.height);
+   tGUIRect rect(0, 0, Round(size.width), Round(size.height));
 
    tGUIInsets insets;
    if (GetInsets(&insets) == S_OK)
@@ -162,10 +162,10 @@ tResult cGUIPanelElementFactory::CreateElement(const TiXmlElement * pXmlElement,
             if (ParseTuple(pXmlElement->Attribute("insets"), insetVals, _countof(insetVals)) == 4)
             {
                tGUIInsets insets;
-               insets.left = insetVals[0];
-               insets.top = insetVals[1];
-               insets.right = insetVals[2];
-               insets.bottom = insetVals[3];
+               insets.left = Round(insetVals[0]);
+               insets.top = Round(insetVals[1]);
+               insets.right = Round(insetVals[2]);
+               insets.bottom = Round(insetVals[3]);
                pPanel->SetInsets(insets);
             }
          }
@@ -238,13 +238,12 @@ tResult cGUIPanelRenderer::Render(IGUIElement * pElement, IRenderDevice * pRende
    {
       tGUIPoint pos = GUIElementAbsolutePosition(pPanel);
       tGUISize size = pPanel->GetSize();
+      tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
 
       UseGlobal(GUIRenderingTools);
 
       // TODO HACK
-      pGUIRenderingTools->Render3dRect(
-         tGUIRect(pos.x, pos.y, pos.x + size.width, pos.y + size.height), 
-         4, tGUIColor::Yellow, tGUIColor::Green, tGUIColor::Blue);
+      pGUIRenderingTools->Render3dRect(rect, 4, tGUIColor::Yellow, tGUIColor::Green, tGUIColor::Blue);
 
       tResult result = S_OK;
 

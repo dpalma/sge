@@ -73,6 +73,7 @@ public:
 
 protected:
    typedef CONTAINER tSinks;
+   typedef typename CONTAINER::iterator tSinksIterator;
 
    inline tSinks & AccessSinks() { return m_sinks; }
 
