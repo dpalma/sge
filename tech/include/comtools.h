@@ -206,7 +206,55 @@ public:
       const struct sQIPair pairs[] =
       {
          { static_cast<INTRFC1 *>(this), PIID1 },
-         { static_cast<INTRFC2 *>(this), PIID2 }
+         { static_cast<INTRFC2 *>(this), PIID2 },
+      };
+      return DoQueryInterface(pairs, _countof(pairs), iid, ppvObject);
+   }
+};
+
+template <class INTRFC1, const IID * PIID1, 
+          class INTRFC2, const IID * PIID2,
+          class INTRFC3, const IID * PIID3,
+          class SERVICES = cDefaultComServices>
+class cComObject3 : public INTRFC1, public INTRFC2, public INTRFC3, public SERVICES
+{
+public:
+   virtual ~cComObject3() {}
+   virtual ULONG STDMETHODCALLTYPE AddRef() { return DoAddRef(); }
+   virtual ULONG STDMETHODCALLTYPE Release() { return DoRelease(); }
+   virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid,
+                                                    void * * ppvObject)
+   {
+      const struct sQIPair pairs[] =
+      {
+         { static_cast<INTRFC1 *>(this), PIID1 },
+         { static_cast<INTRFC2 *>(this), PIID2 },
+         { static_cast<INTRFC3 *>(this), PIID3 },
+      };
+      return DoQueryInterface(pairs, _countof(pairs), iid, ppvObject);
+   }
+};
+
+template <class INTRFC1, const IID * PIID1, 
+          class INTRFC2, const IID * PIID2,
+          class INTRFC3, const IID * PIID3,
+          class INTRFC4, const IID * PIID4,
+          class SERVICES = cDefaultComServices>
+class cComObject4 : public INTRFC1, public INTRFC2, public INTRFC3, public INTRFC4, public SERVICES
+{
+public:
+   virtual ~cComObject4() {}
+   virtual ULONG STDMETHODCALLTYPE AddRef() { return DoAddRef(); }
+   virtual ULONG STDMETHODCALLTYPE Release() { return DoRelease(); }
+   virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid,
+                                                    void * * ppvObject)
+   {
+      const struct sQIPair pairs[] =
+      {
+         { static_cast<INTRFC1 *>(this), PIID1 },
+         { static_cast<INTRFC2 *>(this), PIID2 },
+         { static_cast<INTRFC3 *>(this), PIID3 },
+         { static_cast<INTRFC4 *>(this), PIID4 },
       };
       return DoQueryInterface(pairs, _countof(pairs), iid, ppvObject);
    }
