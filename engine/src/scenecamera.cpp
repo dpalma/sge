@@ -23,6 +23,7 @@ ISceneCamera * SceneCameraCreate()
 ///////////////////////////////////////
 
 cSceneCamera::cSceneCamera()
+ : m_projectionType(kPT_Orthographic)
 {
    m_projection.Identity();
    m_view.Identity();
@@ -38,6 +39,7 @@ cSceneCamera::~cSceneCamera()
 
 void cSceneCamera::SetPerspective(float fov, float aspect, float znear, float zfar)
 {
+   m_projectionType = kPT_Perspective;
    MatrixPerspective(fov, aspect, znear, zfar, &m_projection);
    UpdateCompositeMatrices();
 }
@@ -46,6 +48,7 @@ void cSceneCamera::SetPerspective(float fov, float aspect, float znear, float zf
 
 void cSceneCamera::SetOrtho(float left, float right, float bottom, float top, float znear, float zfar)
 {
+   m_projectionType = kPT_Orthographic;
    MatrixOrtho(left, right, bottom, top, znear, zfar, &m_projection);
    UpdateCompositeMatrices();
 }

@@ -5,10 +5,12 @@
 
 #include "scene.h"
 #include "ray.h"
+#include "inputapi.h"
 
 #include "render.h"
 
 #include "matrix4.h"
+#include "connptimpl.h"
 
 // TODO: HACK
 #include <windows.h>
@@ -35,6 +37,9 @@ cSceneLayer::cSceneLayer()
 cSceneLayer::~cSceneLayer()
 {
    Clear();
+
+   std::for_each(m_inputListeners.begin(), m_inputListeners.end(), CTInterfaceMethodRef(&IUnknown::Release));
+   m_inputListeners.clear();
 }
 
 ///////////////////////////////////////
@@ -116,6 +121,20 @@ void cSceneLayer::Clear()
 {
    std::for_each(m_entities.begin(), m_entities.end(), CTInterfaceMethodRef(&::IUnknown::Release));
    m_entities.clear();
+}
+
+///////////////////////////////////////
+
+tResult cSceneLayer::AddInputListener(IInputListener * pListener)
+{
+   return add_interface(m_inputListeners, pListener) ? S_OK : E_FAIL;
+}
+
+///////////////////////////////////////
+
+tResult cSceneLayer::RemoveInputListener(IInputListener * pListener)
+{
+   return remove_interface(m_inputListeners, pListener) ? S_OK : E_FAIL;
 }
 
 ///////////////////////////////////////
@@ -203,6 +222,38 @@ tResult cSceneLayer::Query(const cRay & ray, tSceneEntityList * pEntities)
    Assert(pEntities != NULL);
    std::for_each(m_entities.begin(), m_entities.end(), cRayTest(ray, pEntities));
    return pEntities->empty() ? S_FALSE : S_OK;
+}
+
+///////////////////////////////////////
+
+bool cSceneLayer::HandleMouseEvent(int x, int y, uint mouseState, double time)
+{
+   tInputListeners::iterator iter;
+   for (iter = m_inputListeners.begin(); iter != m_inputListeners.end(); iter++)
+   {
+      if ((*iter)->OnMouseEvent(x, y, mouseState, time))
+      {
+         return true;
+      }
+   }
+
+   return false;
+}
+
+///////////////////////////////////////
+
+bool cSceneLayer::HandleKeyEvent(long key, bool down, double time)
+{
+   tInputListeners::iterator iter;
+   for (iter = m_inputListeners.begin(); iter != m_inputListeners.end(); iter++)
+   {
+      if ((*iter)->OnKeyEvent(key, down, time))
+      {
+         return true;
+      }
+   }
+
+   return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

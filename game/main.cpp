@@ -68,7 +68,7 @@ cAutoIPtr<cTerrainNode> g_pTerrainRoot;
 
 double g_fov;
 
-cAutoIPtr<IUIManager> g_pUIManager;
+cUIManager * g_pUIManager;
 
 cAutoIPtr<IRenderDevice> g_pRenderDevice;
 cAutoIPtr<IWindow> g_pWindow;
@@ -306,25 +306,24 @@ private:
 cUIManagerSceneNode::cUIManagerSceneNode()
  : m_pSceneEntity(SceneEntityCreate())
 {
-   g_pUIManager = UIManagerCreate();
+   g_pUIManager = new cUIManager();
 }
 
 cUIManagerSceneNode::~cUIManagerSceneNode()
 {
-   SafeRelease(g_pUIManager);
+   delete g_pUIManager;
+   g_pUIManager = NULL;
 }
 
 void cUIManagerSceneNode::Render(IRenderDevice * pRenderDevice)
 {
-   glPushAttrib(GL_ENABLE_BIT);
-   glDisable(GL_DEPTH_TEST);
-
    if (g_pUIManager != NULL)
    {
+      glPushAttrib(GL_ENABLE_BIT);
+      glDisable(GL_DEPTH_TEST);
       g_pUIManager->Render();
+      glPopAttrib();
    }
-
-   glPopAttrib();
 }
 
 

@@ -29,6 +29,8 @@ public:
    void SetPerspective(float fov, float aspect, float znear, float zfar);
    void SetOrtho(float left, float right, float bottom, float top, float znear, float zfar);
 
+   eProjectionType GetProjectionType() const;
+
    const tMatrix4 & GetViewMatrix() const;
    void SetViewMatrix(const tMatrix4 & view);
 
@@ -41,6 +43,8 @@ public:
 private:
    void UpdateCompositeMatrices();
 
+   eProjectionType m_projectionType;
+
    tMatrix4 m_projection;
    tMatrix4 m_view;
 
@@ -49,6 +53,13 @@ private:
 
    cFrustum m_frustum;
 };
+
+///////////////////////////////////////
+
+inline eProjectionType cSceneCamera::GetProjectionType() const
+{
+   return m_projectionType;
+}
 
 ///////////////////////////////////////
 

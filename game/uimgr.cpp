@@ -3,22 +3,15 @@
 
 #include "stdhdr.h"
 
-#include "ui.h"
 #include "uimgr.h"
 #include "uievent.h"
 #include "uirender.h"
-#include "uiparse.h"
-#include "keys.h"
-#include "inputapi.h"
+#include "sceneapi.h"
 #include "globalobj.h"
 
 #include "dbgalloc.h" // must be last header
 
 bool IsEventPertinent(const cUIEvent *, const cUIComponent *); // from ui.cpp
-
-// {A1EC19A0-E2DC-4652-BF61-C848DB00DC6A}
-const GUID IID_IUIManager = 
-{ 0xa1ec19a0, 0xe2dc, 0x4652, { 0xbf, 0x61, 0xc8, 0x48, 0xdb, 0x0, 0xdc, 0x6a } };
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -43,71 +36,21 @@ static void Center(cUIComponent * pComponent)
 // CLASS: cUIManager
 //
 
-class cUIManager : public cComObject<IMPLEMENTS(IUIManager)>,
-                   private cUIContainer,
-                   public cComObject<cDefaultInputListener, &IID_IInputListener>
-{
-   typedef cUIContainer tContainerBase;
-
-public:
-   cUIManager();
-   virtual ~cUIManager();
-
-   ////////////////////////////////////
-   // IUIManager methods
-
-   virtual void ShowModalDialog(const char * pszXmlFile);
-
-   virtual void Render();
-
-   ////////////////////////////////////
-   // cUIContainer/cUIComponent over-rides
-
-   virtual cUISize GetSize() const;
-   virtual bool OnEvent(const cUIEvent * pEvent, tUIResult * pResult);
-
-   ////////////////////////////////////
-   // cDefaultInputListener methods
-
-   virtual bool OnKeyEvent(long key, bool down, double time);
-
-private:
-   class cDialogParseHook : public cUIParseHook
-   {
-   public:
-      cDialogParseHook();
-      virtual ~cDialogParseHook();
-   
-      virtual eSkipResult SkipElement(const char * pszElement);
-
-   private:
-      int m_nDlgsSeen;
-   };
-
-   void PreBubbleEvent(cUIComponent * pEventTarget, cUIEvent * pEvent);
-
-   cUIComponent * m_pLastMouseOver;
-};
-
 ///////////////////////////////////////
 
 cUIManager::cUIManager()
  : m_pLastMouseOver(NULL)
 {
-//   // if this happens too early (e.g., at static initialization time)
-//   // it will likely cause problems
-//   InputAddListener(this);
-   UseGlobal(Input);
-   pInput->Connect(this);
+   UseGlobal(Scene);
+   pScene->AddInputListener(kSL_InGameUI, &m_inputListener);
 }
 
 ///////////////////////////////////////
 
 cUIManager::~cUIManager()
 {
-//   InputRemoveListener(this);
-   UseGlobal(Input);
-   pInput->Disconnect(this);
+   UseGlobal(Scene);
+   pScene->RemoveInputListener(kSL_InGameUI, &m_inputListener);
 }
 
 ///////////////////////////////////////
@@ -158,23 +101,6 @@ bool cUIManager::OnEvent(const cUIEvent * pEvent, tUIResult * pResult)
          m_pLastMouseOver = NULL;
    }
    return tContainerBase::OnEvent(pEvent, pResult);
-}
-
-///////////////////////////////////////
-
-bool cUIManager::OnKeyEvent(long key, bool down, double time)
-{
-   cUIComponent * pTarget = NULL;
-   cUIEvent event;
-   if (TranslateKeyEvent(key, down, time, &pTarget, &event))
-   {
-      PreBubbleEvent(pTarget, &event);
-
-      tUIResult result;
-      return UIBubbleEvent(pTarget, &event, &result);
-   }
-
-   return false;
 }
 
 ///////////////////////////////////////
@@ -237,9 +163,22 @@ eSkipResult cUIManager::cDialogParseHook::SkipElement(const char * pszElement)
 
 ///////////////////////////////////////
 
-IUIManager * UIManagerCreate()
+#define GetOuter(Class, Member) ((Class *)((byte *)this - (byte *)&((Class *)NULL)->Member))
+
+bool cUIManager::cInputListener::OnKeyEvent(long key, bool down, double time)
 {
-   return static_cast<IUIManager *>(new cUIManager);
+   cUIManager * pUIManager = GetOuter(cUIManager, m_inputListener);
+   cUIComponent * pTarget = NULL;
+   cUIEvent event;
+   if (pUIManager->TranslateKeyEvent(key, down, time, &pTarget, &event))
+   {
+      pUIManager->PreBubbleEvent(pTarget, &event);
+
+      tUIResult result;
+      return UIBubbleEvent(pTarget, &event, &result);
+   }
+
+   return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

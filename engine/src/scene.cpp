@@ -11,6 +11,8 @@
 
 #include "dbgalloc.h" // must be last header
 
+F_DECLARE_INTERFACE(IInput);
+
 extern ISceneEntityEnum * SceneEntityEnumCreate(const tSceneEntityList & entities);
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -18,9 +20,14 @@ extern ISceneEntityEnum * SceneEntityEnumCreate(const tSceneEntityList & entitie
 // CLASS: cScene
 //
 
+BEGIN_CONSTRAINTS()
+   AFTER_GUID(IID_IInput)
+END_CONSTRAINTS()
+
 ///////////////////////////////////////
 
 cScene::cScene()
+ : cGlobalObject<IMPLEMENTS(IScene)>("Scene", CONSTRAINTS())
 {
 }
 
@@ -28,7 +35,27 @@ cScene::cScene()
 
 cScene::~cScene()
 {
+}
+
+///////////////////////////////////////
+
+tResult cScene::Init()
+{
+   UseGlobal(Input);
+   pInput->Connect(&m_inputListener);
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cScene::Term()
+{
+   UseGlobal(Input);
+   pInput->Disconnect(&m_inputListener);
+
    Clear();
+
+   return S_OK;
 }
 
 ///////////////////////////////////////
@@ -74,6 +101,20 @@ void cScene::Clear()
    {
       m_layers[i].Clear();
    }
+}
+
+///////////////////////////////////////
+
+tResult cScene::AddInputListener(eSceneLayer layer, IInputListener * pListener)
+{
+   return m_layers[layer].AddInputListener(pListener);
+}
+
+///////////////////////////////////////
+
+tResult cScene::RemoveInputListener(eSceneLayer layer, IInputListener * pListener)
+{
+   return m_layers[layer].RemoveInputListener(pListener);
 }
 
 ///////////////////////////////////////
@@ -128,6 +169,42 @@ tResult cScene::Query(const cRay & ray, ISceneEntityEnum * * ppEnum)
    std::for_each(entities.begin(), entities.end(), CTInterfaceMethodRef(&::IUnknown::Release));
 
    return result;
+}
+
+///////////////////////////////////////
+
+#define GetOuter(Class, Member) ((Class *)((byte *)this - (byte *)&((Class *)NULL)->Member))
+
+bool cScene::cInputListener::OnMouseEvent(int x, int y, uint mouseState, double time)
+{
+   cScene * pScene = GetOuter(cScene, m_inputListener);
+
+   for (int i = 0; i < _countof(pScene->m_layers); i++)
+   {
+      if (pScene->m_layers[i].HandleMouseEvent(x, y, mouseState, time))
+      {
+         return true;
+      }
+   }
+
+   return false;
+}
+
+///////////////////////////////////////
+
+bool cScene::cInputListener::OnKeyEvent(long key, bool down, double time)
+{
+   cScene * pScene = GetOuter(cScene, m_inputListener);
+
+   for (int i = 0; i < _countof(pScene->m_layers); i++)
+   {
+      if (pScene->m_layers[i].HandleKeyEvent(key, down, time))
+      {
+         return true;
+      }
+   }
+
+   return false;
 }
 
 ///////////////////////////////////////

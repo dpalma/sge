@@ -34,13 +34,22 @@ public:
 
    void Clear();
 
+   tResult AddInputListener(IInputListener * pListener);
+   tResult RemoveInputListener(IInputListener * pListener);
+
    tResult Render(IRenderDevice * pRenderDevice);
 
    tResult Query(const cRay & ray, tSceneEntityList * pEntities);
 
+   bool HandleMouseEvent(int x, int y, uint mouseState, double time);
+   bool HandleKeyEvent(long key, bool down, double time);
+
 private:
    tSceneEntityList m_entities;
    cAutoIPtr<ISceneCamera> m_pCamera;
+
+   typedef std::list<IInputListener *> tInputListeners;
+   tInputListeners m_inputListeners;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
