@@ -58,17 +58,17 @@ MDL_HAVE_OPENGL
 CHECK_ZLIB
 
 AC_CONFIG_FILES([
-   doxyfile
-   Makefile
-   3rdparty/Makefile
-   3rdparty/tinyxml/Makefile
-   3rdparty/zlib/contrib/minizip/Makefile
-   allguids/Makefile
-   tech/Makefile
-   render/Makefile
-   render/gl/Makefile
-   engine/Makefile
-   game/Makefile
-   data/Makefile
+   doxyfile \
+   Makefile \
+   3rdparty/Makefile \
+   3rdparty/tinyxml/Makefile \
+   3rdparty/zlib/contrib/minizip/Makefile \
+   allguids/Makefile \
+   tech/Makefile \
+   render/Makefile \
+   render/gl/Makefile \
+   engine/Makefile \
+   game/Makefile \
+   data/Makefile \
 ])
 AC_OUTPUT
