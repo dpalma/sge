@@ -73,6 +73,10 @@ static const uint kDefaultMapSizeIndex = 0;
 
 /////////////////////////////////////////////////////////////////////////////
 
+WTL::CAppModule _Module;
+
+/////////////////////////////////////////////////////////////////////////////
+
 template <typename CONTAINER>
 void ListTileSets(CONTAINER * pContainer)
 {
@@ -221,6 +225,12 @@ static void RegisterGlobalObjects()
 
 BOOL cEditorApp::InitInstance()
 {
+   if (FAILED(_Module.Init(NULL, AfxGetInstanceHandle())))
+   {
+      DebugMsg("Error initializing main ATL module object\n");
+      return FALSE;
+   }
+
 	// Standard initialization
 	// If you are not using these features and wish to reduce the size
 	//  of your final executable, you should remove from the following
@@ -345,6 +355,8 @@ BOOL cEditorApp::InitInstance()
 int cEditorApp::ExitInstance() 
 {
 	StopGlobalObjects();
+
+   _Module.Term();
 	
 	return CWinApp::ExitInstance();
 }
@@ -810,18 +822,10 @@ void cEditorApp::OnToolsUnitTestRunner()
 class cEditorAppTests : public CppUnit::TestCase
 {
    CPPUNIT_TEST_SUITE(cEditorAppTests);
-      CPPUNIT_TEST(Test);
    CPPUNIT_TEST_SUITE_END();
-
-   void Test();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(cEditorAppTests);
-
-void cEditorAppTests::Test()
-{
-   CPPUNIT_ASSERT(true);
-}
 
 #endif // HAVE_CPPUNIT
 

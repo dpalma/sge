@@ -27,6 +27,14 @@
 #include "scbarg.h"
 #include "scbarcf.h"
 
+#define _WTL_NO_AUTOMATIC_NAMESPACE
+#include <atlbase.h>
+#include <atlapp.h>
+
+extern WTL::CAppModule _Module;
+
+#include <atlwin.h>
+
 #pragma warning(disable:4355) // 'this' : used in base member initializer list
 
 /////////////////////////////////////////////////////////////////////////////

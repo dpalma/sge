@@ -58,6 +58,7 @@ static const COLORREF g_colors[] =
 void cOutputBar::HandleLogCallback(eLogSeverity severity, const tChar * pszMsg, size_t msgLen)
 {
    m_wndChild.AddText(pszMsg, msgLen, g_colors[severity]);
+   m_fooWnd.AddString(pszMsg, msgLen, g_colors[severity]);
 
    if (m_nextLogCallback != NULL)
    {
@@ -82,12 +83,13 @@ int cOutputBar::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
    SetSCBStyle(GetSCBStyle() | SCBS_SIZECHILD);
 
-   if (!m_wndChild.Create(NULL, NULL, WS_CHILD | WS_VISIBLE, CRect(0,0,0,0), this, kChildId))
+   if (m_fooWnd.Create(GetSafeHwnd(), CWindow::rcDefault, NULL, WS_CHILD | WS_VISIBLE, 0, kChildId) == NULL)
    {
+      DebugMsg("Error creating child window\n");
       return -1;
    }
 
-   m_wndChild.ModifyStyleEx(0, WS_EX_CLIENTEDGE);
+   m_fooWnd.ModifyStyleEx(0, WS_EX_CLIENTEDGE);
 
    CFont font;
    if (!font.CreateStockObject(DEFAULT_GUI_FONT))
@@ -99,7 +101,16 @@ int cOutputBar::OnCreate(LPCREATESTRUCT lpCreateStruct)
       }
    }
 
+#if 0
+   if (!m_wndChild.Create(NULL, NULL, WS_CHILD | WS_VISIBLE, CRect(0,0,0,0), this, kChildId))
+   {
+      return -1;
+   }
+
+   m_wndChild.ModifyStyleEx(0, WS_EX_CLIENTEDGE);
+
    m_wndChild.SetFont(&font);
+#endif
 
    g_pOutputBar = this;
    m_nextLogCallback = techlog.SetCallback(OutputBarLogCallback);

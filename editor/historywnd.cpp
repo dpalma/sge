@@ -121,6 +121,11 @@ void cHistoryWnd::AddText(LPCTSTR pszText, int textLength, COLORREF textColor)
    Assert(AfxIsValidString(pszText, lstrlen(pszText)));
    Assert((textLength < 0) || (textLength <= lstrlen(pszText)));
 
+   if (!IsWindow(GetSafeHwnd()))
+   {
+      return;
+   }
+
    static const tChar szLineBreakChars[] = _T("\r\n");
 
    if (textLength < 0)
