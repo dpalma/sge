@@ -4,6 +4,7 @@
 #include "stdhdr.h"
 
 #include "guistyle.h"
+#include "guistrings.h"
 
 #include "font.h"
 #include "color.h"
@@ -18,6 +19,8 @@
 #endif
 
 #include "dbgalloc.h" // must be last header
+
+///////////////////////////////////////////////////////////////////////////////
 
 static const uint NO_DIMENSION = (uint)-1;
 
@@ -467,15 +470,15 @@ inline const char * SkipSpaceBack(const char * psz)
 static eGUIAlignment GUIStyleParseAlignment(const char * psz)
 {
    Assert(psz != NULL);
-   if (stricmp(psz, "left") == 0)
+   if (stricmp(psz, kValueAlignLeft) == 0)
    {
       return kGUIAlignLeft;
    }
-   else if (stricmp(psz, "right") == 0)
+   else if (stricmp(psz, kValueAlignRight) == 0)
    {
       return kGUIAlignRight;
    }
-   else if (stricmp(psz, "center") == 0)
+   else if (stricmp(psz, kValueAlignCenter) == 0)
    {
       return kGUIAlignCenter;
    }
@@ -488,15 +491,15 @@ static eGUIAlignment GUIStyleParseAlignment(const char * psz)
 static eGUIVerticalAlignment GUIStyleParseVertAlignment(const char * psz)
 {
    Assert(psz != NULL);
-   if (stricmp(psz, "top") == 0)
+   if (stricmp(psz, kValueVertAlignTop) == 0)
    {
       return kGUIVertAlignTop;
    }
-   else if (stricmp(psz, "bottom") == 0)
+   else if (stricmp(psz, kValueVertAlignBottom) == 0)
    {
       return kGUIVertAlignBottom;
    }
-   else if (stricmp(psz, "center") == 0)
+   else if (stricmp(psz, kValueVertAlignCenter) == 0)
    {
       return kGUIVertAlignCenter;
    }
@@ -518,17 +521,17 @@ tResult GUIStyleParseColor(const char * psz, tGUIColor * pColor)
    }
    g_namedColorTable[] =
    {
-      sNamedColor("black", tGUIColor::Black),
-      sNamedColor("red", tGUIColor::Red),
-      sNamedColor("green", tGUIColor::Green),
-      sNamedColor("yellow", tGUIColor::Yellow),
-      sNamedColor("blue", tGUIColor::Blue),
-      sNamedColor("magenta", tGUIColor::Magenta),
-      sNamedColor("cyan", tGUIColor::Cyan),
-      sNamedColor("darkgray", tGUIColor::DarkGray),
-      sNamedColor("gray", tGUIColor::Gray),
-      sNamedColor("lightgray", tGUIColor::LightGray),
-      sNamedColor("white", tGUIColor::White),
+      sNamedColor(kValueColorBlack, tGUIColor::Black),
+      sNamedColor(kValueColorRed, tGUIColor::Red),
+      sNamedColor(kValueColorGreen, tGUIColor::Green),
+      sNamedColor(kValueColorYellow, tGUIColor::Yellow),
+      sNamedColor(kValueColorBlue, tGUIColor::Blue),
+      sNamedColor(kValueColorMagenta, tGUIColor::Magenta),
+      sNamedColor(kValueColorCyan, tGUIColor::Cyan),
+      sNamedColor(kValueColorDarkGray, tGUIColor::DarkGray),
+      sNamedColor(kValueColorGray, tGUIColor::Gray),
+      sNamedColor(kValueColorLightGray, tGUIColor::LightGray),
+      sNamedColor(kValueColorWhite, tGUIColor::White),
    };
 
    double rgba[4];
@@ -609,15 +612,15 @@ static tResult GUIStyleParseAndSetAttribute(const char * pszAttrib, IGUIStyle * 
    strncpy(pszValue, pszValueStart, valueLength);
    pszValue[valueLength] = 0;
 
-   if (strcmp(pszAttribName, "align") == 0)
+   if (strcmp(pszAttribName, kAttribAlign) == 0)
    {
       return pStyle->SetAlignment(GUIStyleParseAlignment(pszValue));
    }
-   else if (strcmp(pszAttribName, "verticalAlign") == 0)
+   else if (strcmp(pszAttribName, kAttribVerticalAlign) == 0)
    {
       return pStyle->SetVerticalAlignment(GUIStyleParseVertAlignment(pszValue));
    }
-   else if (strcmp(pszAttribName, "background-color") == 0)
+   else if (strcmp(pszAttribName, kAttribBackgroundColor) == 0)
    {
       tGUIColor color;
       if (GUIStyleParseColor(pszValue, &color) == S_OK)
@@ -625,7 +628,7 @@ static tResult GUIStyleParseAndSetAttribute(const char * pszAttrib, IGUIStyle * 
          return pStyle->SetBackgroundColor(color);
       }
    }
-   else if (strcmp(pszAttribName, "foreground-color") == 0)
+   else if (strcmp(pszAttribName, kAttribForegroundColor) == 0)
    {
       tGUIColor color;
       if (GUIStyleParseColor(pszValue, &color) == S_OK)
@@ -633,19 +636,19 @@ static tResult GUIStyleParseAndSetAttribute(const char * pszAttrib, IGUIStyle * 
          return pStyle->SetForegroundColor(color);
       }
    }
-   else if (strcmp(pszAttribName, "text-align") == 0)
+   else if (strcmp(pszAttribName, kAttribTextAlign) == 0)
    {
       return pStyle->SetTextAlignment(GUIStyleParseAlignment(pszValue));
    }
-   else if (strcmp(pszAttribName, "text-verticalAlign") == 0)
+   else if (strcmp(pszAttribName, kAttribTextVerticalAlign) == 0)
    {
       return pStyle->SetTextVerticalAlignment(GUIStyleParseVertAlignment(pszValue));
    }
-   else if (strcmp(pszAttribName, "font-name") == 0)
+   else if (strcmp(pszAttribName, kAttribFontName) == 0)
    {
       return pStyle->SetFontName(pszValue);
    }
-   else if (strcmp(pszAttribName, "font-pointSize") == 0)
+   else if (strcmp(pszAttribName, kAttribFontPointSize) == 0)
    {
       int pointSize;
       if (sscanf(pszValue, "%d", &pointSize) == 1)
@@ -653,7 +656,7 @@ static tResult GUIStyleParseAndSetAttribute(const char * pszAttrib, IGUIStyle * 
          return pStyle->SetFontPointSize(pointSize);
       }
    }
-   else if (strcmp(pszAttribName, "width") == 0)
+   else if (strcmp(pszAttribName, kAttribWidth) == 0)
    {
       uint width, spec;
       if (GUIStyleParseDimension(pszValue, &width, &spec) == S_OK)
@@ -661,7 +664,7 @@ static tResult GUIStyleParseAndSetAttribute(const char * pszAttrib, IGUIStyle * 
          return pStyle->SetWidth(width, spec);
       }
    }
-   else if (strcmp(pszAttribName, "height") == 0)
+   else if (strcmp(pszAttribName, kAttribHeight) == 0)
    {
       uint height, spec;
       if (GUIStyleParseDimension(pszValue, &height, &spec) == S_OK)
@@ -755,17 +758,31 @@ void cGUIStyleTests::TestFactoryFunction()
    tGUIString fontName;
    cAutoIPtr<IGUIStyle> pStyle;
 
-   static const char * pszTestStyleString = 
-      "align : center;" \
-      "verticalAlign : center;  " \
-      "background-color : white;" \
-      "foreground-color : (0,0,0) ;" \
-      "text-align: right;" \
-      "text-verticalAlign: bottom;" \
-      "font-name: MS Sans Serif;" \
-      "font-pointSize: 14;";
+   static const char szFont[] = "MS Sans Serif";
+   static const uint kPointSize = 14;
 
-   CPPUNIT_ASSERT(GUIStyleParse(pszTestStyleString, &pStyle) == S_OK);
+   char szText[1024];
+
+   snprintf(szText, _countof(szText),
+      "%s : %s;" \
+      "%s : %s;  " \
+      "%s : %s;" \
+      "%s : (0,0,0) ;" \
+      "%s: %s;" \
+      "%s: %s;" \
+      "%s: %s;" \
+      "%s: %d;",
+      kAttribAlign, kValueAlignCenter,
+      kAttribVerticalAlign, kValueVertAlignCenter,
+      kAttribBackgroundColor, kValueColorWhite,
+      kAttribForegroundColor,
+      kAttribTextAlign, kValueAlignRight,
+      kAttribTextVerticalAlign, kValueVertAlignBottom,
+      kAttribFontName, szFont,
+      kAttribFontPointSize, kPointSize
+   );
+
+   CPPUNIT_ASSERT(GUIStyleParse(szText, &pStyle) == S_OK);
    CPPUNIT_ASSERT(pStyle->GetAlignment(&temp) == S_OK);
    CPPUNIT_ASSERT(temp == kGUIAlignCenter);
    CPPUNIT_ASSERT(pStyle->GetVerticalAlignment(&temp) == S_OK);
@@ -779,16 +796,10 @@ void cGUIStyleTests::TestFactoryFunction()
    CPPUNIT_ASSERT(pStyle->GetTextVerticalAlignment(&temp) == S_OK);
    CPPUNIT_ASSERT(temp == kGUIVertAlignBottom);
    CPPUNIT_ASSERT(pStyle->GetFontName(&fontName) == S_OK);
-   CPPUNIT_ASSERT(strcmp(fontName.c_str(), "MS Sans Serif") == 0);
+   CPPUNIT_ASSERT(strcmp(fontName.c_str(), szFont) == 0);
    CPPUNIT_ASSERT(pStyle->GetFontPointSize(&temp) == S_OK);
-   CPPUNIT_ASSERT(temp == 14);
+   CPPUNIT_ASSERT(temp == kPointSize);
    SafeRelease(pStyle);
-
-   static const char * pszTestStyleString2 = "verticalAlign:bottom;";
-
-   CPPUNIT_ASSERT(GUIStyleParse(pszTestStyleString2, &pStyle) == S_OK);
-   CPPUNIT_ASSERT(pStyle->GetVerticalAlignment(&temp) == S_OK);
-   CPPUNIT_ASSERT(temp == kGUIVertAlignBottom);
 }
 
 ///////////////////////////////////////

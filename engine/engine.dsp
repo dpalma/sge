@@ -435,6 +435,10 @@ SOURCE=.\src\guirender.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\guistrings.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\guistyle.h
 # End Source File
 # Begin Source File

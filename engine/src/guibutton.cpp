@@ -7,6 +7,7 @@
 #include "guielementbasetem.h"
 #include "guielementtools.h"
 #include "scriptapi.h"
+#include "guistrings.h"
 
 #include "font.h"
 #include "color.h"
@@ -185,12 +186,12 @@ tResult cGUIButtonElementFactory::CreateElement(const TiXmlElement * pXmlElement
 
             const char * pszAttribute;
 
-            if ((pszAttribute = pXmlElement->Attribute("text")) != NULL)
+            if ((pszAttribute = pXmlElement->Attribute(kAttribText)) != NULL)
             {
                pButton->SetText(pszAttribute);
             }
 
-            if ((pszAttribute = pXmlElement->Attribute("onclick")) != NULL)
+            if ((pszAttribute = pXmlElement->Attribute(kAttribOnClick)) != NULL)
             {
                pButton->SetOnClick(pszAttribute);
             }
@@ -253,10 +254,19 @@ tResult cGUIButtonRenderer::Render(IGUIElement * pElement, IRenderDevice * pRend
 
       cAutoIPtr<IRenderFont> pFont;
 
+      uint drawTextFlags = kDT_Center | kDT_VCenter | kDT_SingleLine;
+
       cAutoIPtr<IGUIStyle> pStyle;
       if (pElement->GetStyle(&pStyle) == S_OK)
       {
          pStyle->GetFont(&pFont);
+
+         uint dropShadow = 0;
+         if (pStyle->GetAttribute(kAttribDropShadow, &dropShadow) == S_OK
+            && dropShadow != 0)
+         {
+            drawTextFlags |= kDT_DropShadow;
+         }
       }
 
       if (!pFont)
@@ -279,8 +289,7 @@ tResult cGUIButtonRenderer::Render(IGUIElement * pElement, IRenderDevice * pRend
 
       rect.left += Round(textOffset.x);
       rect.top += Round(textOffset.y);
-      pFont->DrawText(pButton->GetText(), -1, kDT_Center | kDT_VCenter | 
-         kDT_SingleLine, &rect, tGUIColor::White);
+      pFont->DrawText(pButton->GetText(), -1, drawTextFlags, &rect, tGUIColor::White);
 
       return S_OK;
    }
