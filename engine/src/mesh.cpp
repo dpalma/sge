@@ -57,7 +57,7 @@ static tResult CalculateAABB(uint nVertices, IVertexBuffer * pVertexBuffer,
          }
 
          byte * pVertexData;
-         if (pVertexBuffer->Lock((void**)&pVertexData) == S_OK)
+         if (pVertexBuffer->Lock(kBL_ReadOnly, (void**)&pVertexData) == S_OK)
          {
             tVec3 max(FLT_MIN, FLT_MIN, FLT_MIN);
             tVec3 min(FLT_MAX, FLT_MAX, FLT_MAX);
@@ -117,7 +117,7 @@ public:
    virtual void Render(IRenderDevice * pRenderDevice) const;
    virtual uint GetVertexCount() const;
    virtual tResult GetVertexBuffer(IVertexBuffer * * ppVertexBuffer);
-   virtual tResult LockVertexBuffer(void * * ppData);
+   virtual tResult LockVertexBuffer(uint lock, void * * ppData);
    virtual tResult UnlockVertexBuffer();
    virtual tResult AddMaterial(IMaterial * pMaterial);
    virtual tResult FindMaterial(const char * pszName, IMaterial * * ppMaterial) const;
@@ -343,11 +343,11 @@ tResult cMesh::GetVertexBuffer(IVertexBuffer * * ppVertexBuffer)
 
 ///////////////////////////////////////
 
-tResult cMesh::LockVertexBuffer(void * * ppData)
+tResult cMesh::LockVertexBuffer(uint lock, void * * ppData)
 {
    if (!!m_pVertexBuffer)
    {
-      return m_pVertexBuffer->Lock(ppData);
+      return m_pVertexBuffer->Lock(lock, ppData);
    }
    else
    {
@@ -505,7 +505,7 @@ IMesh * MeshCreate(uint nVertices,
    if ((nVertices > 0) && (pVertexDecl != NULL) && (pRenderDevice != NULL))
    {
       cAutoIPtr<IVertexBuffer> pVertexBuffer;
-      if (pRenderDevice->CreateVertexBuffer(nVertices, options, pVertexDecl, kMP_Auto, &pVertexBuffer) == S_OK)
+      if (pRenderDevice->CreateVertexBuffer(nVertices, options, pVertexDecl, kBP_Auto, &pVertexBuffer) == S_OK)
       {
          return static_cast<IMesh *>(new cMesh(nVertices, pVertexBuffer));
       }

@@ -39,7 +39,7 @@ interface IMesh : IUnknown
    virtual uint GetVertexCount() const = 0;
    virtual tResult GetVertexBuffer(IVertexBuffer * * ppVertexBuffer) = 0;
 
-   virtual tResult LockVertexBuffer(void * * ppData) = 0;
+   virtual tResult LockVertexBuffer(uint lock, void * * ppData) = 0;
    virtual tResult UnlockVertexBuffer() = 0;
 
    virtual tResult AddMaterial(IMaterial * pMaterial) = 0;
@@ -82,13 +82,13 @@ interface ISubMesh : IUnknown
    virtual uint GetVertexCount() const = 0;
    virtual tResult GetVertexBuffer(IVertexBuffer * * ppVertexBuffer) = 0;
 
-   virtual tResult LockVertexBuffer(void * * ppData) = 0;
+   virtual tResult LockVertexBuffer(uint lock, void * * ppData) = 0;
    virtual tResult UnlockVertexBuffer() = 0;
 
    virtual uint GetIndexCount() const = 0;
    virtual tResult GetIndexBuffer(IIndexBuffer * * ppIndexBuffer) = 0;
 
-   virtual tResult LockIndexBuffer(void * * ppData) = 0;
+   virtual tResult LockIndexBuffer(uint lock, void * * ppData) = 0;
    virtual tResult UnlockIndexBuffer() = 0;
 };
 

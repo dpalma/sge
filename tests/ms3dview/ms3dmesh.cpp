@@ -162,9 +162,9 @@ tResult cMs3dMesh::GetVertexBuffer(IVertexBuffer * * ppVertexBuffer)
    return m_pInnerMesh->GetVertexBuffer(ppVertexBuffer);
 }
 
-tResult cMs3dMesh::LockVertexBuffer(void * * ppData)
+tResult cMs3dMesh::LockVertexBuffer(uint lock, void * * ppData)
 {
-   return m_pInnerMesh->LockVertexBuffer(ppData);
+   return m_pInnerMesh->LockVertexBuffer(lock, ppData);
 }
 
 tResult cMs3dMesh::UnlockVertexBuffer()
@@ -291,7 +291,7 @@ tResult cMs3dMesh::PostRead()
 
                // transform all vertices by the inverse of the affecting bone's absolute matrix
                byte * pVertexData;
-               if (m_pInnerMesh->LockVertexBuffer((void**)&pVertexData) == S_OK)
+               if (m_pInnerMesh->LockVertexBuffer(kBL_Default, (void**)&pVertexData) == S_OK)
                {
                   for (uint i = 0; i < m_pInnerMesh->GetVertexCount(); i++)
                   {

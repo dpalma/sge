@@ -450,13 +450,13 @@ bool Load3dsTriangleMesh(IReader * pReader, long stop, IRenderDevice * pRenderDe
                pSubMesh->SetMaterialName(materialName);
 
                s3dsVertex * pVertexData = NULL;
-               if (pSubMesh->LockVertexBuffer((void * *)&pVertexData) == S_OK)
+               if (pSubMesh->LockVertexBuffer(kBL_Discard, (void * *)&pVertexData) == S_OK)
                {
                   memcpy(pVertexData, &vertices[0], vertices.size() * sizeof(s3dsVertex));
                   pSubMesh->UnlockVertexBuffer();
 
                   uint16 * pFaces = NULL;
-                  if (pSubMesh->LockIndexBuffer((void**)&pFaces) == S_OK)
+                  if (pSubMesh->LockIndexBuffer(kBL_Discard, (void**)&pFaces) == S_OK)
                   {
                      for (int i = 0; i < nGroupFaces; i++)
                      {

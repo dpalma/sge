@@ -409,10 +409,10 @@ bool cUIBitmapButton::SetBitmap(const char * pszName)
          m_pMat->SetTexture(0, pTex);
       }
 
-      if (AccessRenderDevice()->CreateIndexBuffer(kUIBitmapButtonIndices, kIBF_16Bit, kMP_Auto, &m_pIB) == S_OK)
+      if (AccessRenderDevice()->CreateIndexBuffer(kUIBitmapButtonIndices, kIBF_16Bit, kBP_Auto, &m_pIB) == S_OK)
       {
          uint16 * pIndexData;
-         if (m_pIB->Lock((void * *)&pIndexData) == S_OK)
+         if (m_pIB->Lock(kBL_Discard, (void * *)&pIndexData) == S_OK)
          {
             pIndexData[0] = 0;
             pIndexData[1] = 1;
@@ -422,7 +422,7 @@ bool cUIBitmapButton::SetBitmap(const char * pszName)
          }
       }
 
-      if (AccessRenderDevice()->CreateVertexBuffer(kNumVerts, kVBO_Default, UIAccessVertexDecl(), kMP_Auto, &m_pVB) == S_OK)
+      if (AccessRenderDevice()->CreateVertexBuffer(kNumVerts, kBU_Default, UIAccessVertexDecl(), kBP_Auto, &m_pVB) == S_OK)
       {
          float w = m_size.width;
          float h = m_size.height / 4;
@@ -491,7 +491,7 @@ bool cUIBitmapButton::SetBitmap(const char * pszName)
          verts[15].pos = tVec3(0,h,0);
 
          void * pVertexData;
-         if (m_pVB->Lock(&pVertexData) == S_OK)
+         if (m_pVB->Lock(kBL_Discard, &pVertexData) == S_OK)
          {
             memcpy(pVertexData, verts, sizeof(verts));
             m_pVB->Unlock();

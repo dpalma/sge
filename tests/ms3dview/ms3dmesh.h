@@ -132,7 +132,7 @@ public:
    virtual void Render(IRenderDevice * pRenderDevice) const;
    virtual uint GetVertexCount() const;
    virtual tResult GetVertexBuffer(IVertexBuffer * * ppVertexBuffer);
-   virtual tResult LockVertexBuffer(void * * ppData);
+   virtual tResult LockVertexBuffer(uint lock, void * * ppData);
    virtual tResult UnlockVertexBuffer();
    virtual tResult AddMaterial(IMaterial * pMaterial);
    virtual tResult FindMaterial(const char * pszName, IMaterial * * ppMaterial) const;

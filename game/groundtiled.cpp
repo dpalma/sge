@@ -98,41 +98,41 @@ bool cTiledGround::Init(cHeightMap * pHeightMap)
    }
 
    if (AccessRenderDevice()->CreateVertexBuffer(kNumVerts,
-      kVBO_Default, m_pVertexDecl, kMP_Auto, &m_pVertexBuffer) != S_OK)
+      kBU_Default, m_pVertexDecl, kBP_Auto, &m_pVertexBuffer) != S_OK)
    {
       return false;
    }
 
    sTerrainVertex * pVertexData = NULL;
-   if (m_pVertexBuffer->Lock((void * *)&pVertexData) == S_OK)
+   if (m_pVertexBuffer->Lock(kBL_Discard, (void * *)&pVertexData) == S_OK)
    {
       int index = 0;
 
-      for (int iz = 0; iz < kNumQuadsPerSide; iz++)
+      float z1 = 0;
+      float z2 = kStepSize;
+
+      for (int iz = 0; iz < kNumQuadsPerSide; iz++, z1 += kStepSize, z2 += kStepSize)
       {
-         float z1 = iz * kStepSize;
-         float z2 = (iz + 1) * kStepSize;
+         float x1 = 0;
+         float x2 = kStepSize;
 
-         for (int ix = 0; ix < kNumQuadsPerSide; ix++)
+         for (int ix = 0; ix < kNumQuadsPerSide; ix++, x1 += kStepSize, x2 += kStepSize)
          {
-            float x1 = ix * kStepSize;
-            float x2 = (ix + 1) * kStepSize;
-
             pVertexData[index].u = 0;
             pVertexData[index].v = 0;
-            pVertexData[index++].pos = tVec3(x1, pHeightMap->Height(x1,z1), z1);
+            pVertexData[index++].pos = tVec3(x1, pHeightMap->Height(Round(x1),Round(z1)), z1);
 
             pVertexData[index].u = 1;
             pVertexData[index].v = 0;
-            pVertexData[index++].pos = tVec3(x2, pHeightMap->Height(x2,z1), z1);
+            pVertexData[index++].pos = tVec3(x2, pHeightMap->Height(Round(x2),Round(z1)), z1);
 
             pVertexData[index].u = 1;
             pVertexData[index].v = 1;
-            pVertexData[index++].pos = tVec3(x2, pHeightMap->Height(x2,z2), z2);
+            pVertexData[index++].pos = tVec3(x2, pHeightMap->Height(Round(x2),Round(z2)), z2);
 
             pVertexData[index].u = 0;
             pVertexData[index].v = 1;
-            pVertexData[index++].pos = tVec3(x1, pHeightMap->Height(x1,z2), z2);
+            pVertexData[index++].pos = tVec3(x1, pHeightMap->Height(Round(x1),Round(z2)), z2);
          }
       }
 
@@ -143,13 +143,13 @@ bool cTiledGround::Init(cHeightMap * pHeightMap)
       return false;
    }
 
-   if (AccessRenderDevice()->CreateIndexBuffer(kNumIndices, kIBF_32Bit, kMP_Auto, &m_pIndexBuffer) != S_OK)
+   if (AccessRenderDevice()->CreateIndexBuffer(kNumIndices, kIBF_32Bit, kBP_Auto, &m_pIndexBuffer) != S_OK)
    {
       return false;
    }
 
    uint * pIndexData = NULL;
-   if (m_pIndexBuffer->Lock((void * *)&pIndexData) == S_OK)
+   if (m_pIndexBuffer->Lock(kBL_Discard, (void * *)&pIndexData) == S_OK)
    {
       int iQuad = 0;
 
@@ -220,7 +220,7 @@ float cTerrainNode::GetElevation(float nx, float nz) const
 tVec2 cTerrainNode::GetDimensions() const
 {
    Assert(m_pHeightMap != NULL);
-   uint size = m_pHeightMap->GetSize();
+   float size = (float)m_pHeightMap->GetSize();
    return tVec2(size, size);
 }
 

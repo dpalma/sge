@@ -310,14 +310,14 @@ tResult cMs3dFileReader::CreateMesh(IRenderDevice * pRenderDevice, IMesh * * ppM
       _countof(g_ms3dVertexDecl), &pVertexDecl) == S_OK)
    {
       cAutoIPtr<IMesh> pMesh = MeshCreate(vertexList.GetVertexCount(), 
-         kVBO_Dynamic | kVBO_SoftwareProcessing, pVertexDecl, pRenderDevice);
+         kBU_Dynamic | kBU_SoftwareProcessing, pVertexDecl, pRenderDevice);
       if (!pMesh)
       {
          return E_FAIL;
       }
 
       sMs3dVertex * pVertexData = NULL;
-      if (pMesh->LockVertexBuffer((void * *)&pVertexData) == S_OK)
+      if (pMesh->LockVertexBuffer(kBL_Discard, (void * *)&pVertexData) == S_OK)
       {
          memcpy(pVertexData, vertexList.GetVertexData(), vertexList.GetVertexCount() * sizeof(sMs3dVertex));
          pMesh->UnlockVertexBuffer();
@@ -332,7 +332,7 @@ tResult cMs3dFileReader::CreateMesh(IRenderDevice * pRenderDevice, IMesh * * ppM
             pSubMesh->SetMaterialName(m_materials[iter->GetMaterialIndex()].name);
 
             uint16 * pFaces = NULL;
-            if (pSubMesh->LockIndexBuffer((void**)&pFaces) == S_OK)
+            if (pSubMesh->LockIndexBuffer(kBL_Discard, (void**)&pFaces) == S_OK)
             {
                for (int i = 0; i < iter->GetNumTriangles(); i++)
                {

@@ -46,7 +46,7 @@ public:
 
    virtual tResult GetVertexBuffer(IVertexBuffer * * ppVertexBuffer);
 
-   virtual tResult LockVertexBuffer(void * * ppData);
+   virtual tResult LockVertexBuffer(uint lock, void * * ppData);
    virtual tResult UnlockVertexBuffer();
 
    virtual uint GetIndexCount() const
@@ -56,7 +56,7 @@ public:
 
    virtual tResult GetIndexBuffer(IIndexBuffer * * ppIndexBuffer);
 
-   virtual tResult LockIndexBuffer(void * * ppData);
+   virtual tResult LockIndexBuffer(uint lock, void * * ppData);
    virtual tResult UnlockIndexBuffer();
 
 private:
@@ -98,10 +98,10 @@ ISubMesh * SubMeshCreate(uint nFaces, uint nVertices,
       return NULL;
 
    cAutoIPtr<IIndexBuffer> pIndexBuffer;
-   if (pRenderDevice->CreateIndexBuffer(3 * nFaces, kIBF_16Bit, kMP_Auto, &pIndexBuffer) == S_OK)
+   if (pRenderDevice->CreateIndexBuffer(3 * nFaces, kIBF_16Bit, kBP_Auto, &pIndexBuffer) == S_OK)
    {
       cAutoIPtr<IVertexBuffer> pVertexBuffer;
-      if (pRenderDevice->CreateVertexBuffer(nVertices, kVBO_Default, pVertexDecl, kMP_Auto, &pVertexBuffer) == S_OK)
+      if (pRenderDevice->CreateVertexBuffer(nVertices, kBU_Default, pVertexDecl, kBP_Auto, &pVertexBuffer) == S_OK)
       {
          return static_cast<ISubMesh *>(new cSubMesh(nFaces, nVertices, pIndexBuffer, pVertexBuffer, NULL));
       }
@@ -117,7 +117,7 @@ ISubMesh * SubMeshCreate(uint nFaces, IRenderDevice * pRenderDevice)
    if ((nFaces > 0) && (pRenderDevice != NULL))
    {
       cAutoIPtr<IIndexBuffer> pIndexBuffer;
-      if (pRenderDevice->CreateIndexBuffer(3 * nFaces, kIBF_16Bit, kMP_Auto, &pIndexBuffer) == S_OK)
+      if (pRenderDevice->CreateIndexBuffer(3 * nFaces, kIBF_16Bit, kBP_Auto, &pIndexBuffer) == S_OK)
       {
          return static_cast<ISubMesh *>(new cSubMesh(nFaces, 0, pIndexBuffer, NULL, NULL));
       }
@@ -194,11 +194,11 @@ tResult cSubMesh::GetVertexBuffer(IVertexBuffer * * ppVertexBuffer)
 
 ///////////////////////////////////////
 
-tResult cSubMesh::LockVertexBuffer(void * * ppData)
+tResult cSubMesh::LockVertexBuffer(uint lock, void * * ppData)
 {
    if (AccessVertexBuffer())
    {
-      return AccessVertexBuffer()->Lock(ppData);
+      return AccessVertexBuffer()->Lock(lock, ppData);
    }
    else
    {
@@ -238,11 +238,11 @@ tResult cSubMesh::GetIndexBuffer(IIndexBuffer * * ppIndexBuffer)
 
 ///////////////////////////////////////
 
-tResult cSubMesh::LockIndexBuffer(void * * ppData)
+tResult cSubMesh::LockIndexBuffer(uint lock, void * * ppData)
 {
    if (AccessIndexBuffer())
    {
-      return AccessIndexBuffer()->Lock(ppData);
+      return AccessIndexBuffer()->Lock(lock, ppData);
    }
    else
    {
