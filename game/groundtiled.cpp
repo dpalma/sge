@@ -181,7 +181,7 @@ bool cTiledGround::Init(cHeightMap * pHeightMap)
 
 void cTiledGround::Render()
 {
-   AccessRenderDevice()->Render(kRP_Triangles, m_pMaterial, m_nIndices, m_pIndexBuffer, 0, m_nVerts, m_pVertexBuffer);
+   AccessRenderDevice()->Render(kRP_Triangles, m_pMaterial, m_nIndices, m_pIndexBuffer, 0, m_pVertexBuffer);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

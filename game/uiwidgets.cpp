@@ -361,7 +361,7 @@ void cUIBitmapButton::Render()
 
    AccessRenderDevice()->Render(kRP_TriangleFan, m_pMat,
       kUIBitmapButtonIndices, m_pIB,
-      buttonState * 4, 4, m_pVB);
+      buttonState * 4, m_pVB);
 
    glPopMatrix();
 
