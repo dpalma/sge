@@ -26,6 +26,20 @@ typedef class cGUISize<float> tGUISize;
 
 typedef tRectf tGUIRect;
 
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// STRUCT: sGUIInsets
+//
+
+struct sGUIInsets
+{
+   int left, top, right, bottom;
+};
+
+typedef struct sGUIInsets tGUIInsets;
+
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUIColor

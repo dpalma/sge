@@ -6,6 +6,7 @@
 #include "guibutton.h"
 #include "guielementbasetem.h"
 #include "guirender.h"
+#include "guielementtools.h"
 
 #include "font.h"
 #include "color.h"
@@ -224,7 +225,7 @@ tResult cGUIButtonRenderer::Render(IGUIElement * pElement, IRenderDevice * pRend
    cAutoIPtr<IGUIButtonElement> pButton;
    if (pElement->QueryInterface(IID_IGUIButtonElement, (void**)&pButton) == S_OK)
    {
-      tGUIPoint pos = pButton->GetPosition();
+      tGUIPoint pos = GUIElementAbsolutePosition(pButton);
       tGUISize size = pButton->GetSize();
 
       tGUIPoint textOffset(0,0);

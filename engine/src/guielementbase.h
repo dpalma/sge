@@ -61,7 +61,7 @@ private:
    bool m_bFocus;
    bool m_bVisible;
    bool m_bEnabled;
-   cAutoIPtr<IGUIElement> m_pParent;
+   IGUIElement * m_pParent;
    tGUIPoint m_position;
    tGUISize m_size;
    cAutoIPtr<IGUIElementRenderer> m_pRenderer;

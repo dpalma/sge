@@ -21,6 +21,7 @@ cGUIElementBase<INTRFC>::cGUIElementBase()
    m_bFocus(false),
    m_bVisible(true),
    m_bEnabled(true),
+   m_pParent(NULL),
    m_position(0,0),
    m_size(0,0)
 {
@@ -95,7 +96,16 @@ void cGUIElementBase<INTRFC>::SetEnabled(bool bEnabled)
 template <typename INTRFC>
 tResult cGUIElementBase<INTRFC>::GetParent(IGUIElement * * ppParent)
 {
-   return m_pParent.GetPointer(ppParent);
+   if (ppParent == NULL)
+   {
+      return E_POINTER;
+   }
+   if (m_pParent == NULL)
+   {
+      return S_FALSE;
+   }
+   *ppParent = CTAddRef(m_pParent);
+   return S_OK;
 }
 
 ///////////////////////////////////////
@@ -103,7 +113,6 @@ tResult cGUIElementBase<INTRFC>::GetParent(IGUIElement * * ppParent)
 template <typename INTRFC>
 tResult cGUIElementBase<INTRFC>::SetParent(IGUIElement * pParent)
 {
-   SafeRelease(m_pParent);
    if (pParent != NULL)
    {
       cAutoIPtr<IGUIContainerElement> pContainer;
@@ -112,7 +121,11 @@ tResult cGUIElementBase<INTRFC>::SetParent(IGUIElement * pParent)
          pContainer->AddElement(this);
       }
    }
-   m_pParent = CTAddRef(pParent);
+   // Elements don't AddRef() the parent pointer because if the parent is
+   // destroyed the element is likely to be destroyed as well. Plus, container
+   // elements hold references to their children so to AddRef() the parent 
+   // too would cause a circular reference.
+   m_pParent = pParent;
    return S_OK;
 }
 
@@ -153,7 +166,7 @@ void cGUIElementBase<INTRFC>::SetSize(const tGUISize & size)
 template <typename INTRFC>
 bool cGUIElementBase<INTRFC>::Contains(const tGUIPoint & point) const
 {
-   tGUIPoint absPos = GetAbsolutePosition();
+   tGUIPoint absPos = GetPosition();
    tGUISize size = GetSize();
    return tRect(
       absPos.x, 

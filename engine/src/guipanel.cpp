@@ -7,6 +7,7 @@
 #include "guielementbasetem.h"
 #include "guielementenum.h"
 #include "guirender.h"
+#include "guielementtools.h"
 
 #include "font.h"
 #include "color.h"
@@ -45,6 +46,12 @@ void cGUIPanelElement::SetSize(const tGUISize & size)
    cGUIElementBase<IGUIPanelElement>::SetSize(size);
 
    // TODO: size child elements
+   tGUIRect rect(0, 0, size.width, size.height);
+   tGUIElementList::iterator iter;
+   for (iter = m_children.begin(); iter != m_children.end(); iter++)
+   {
+      GUISizeElement(rect, *iter);
+   }
 }
 
 ///////////////////////////////////////
@@ -78,7 +85,14 @@ tResult cGUIPanelElement::AddElement(IGUIElement * pElement)
       return S_FALSE;
    }
 
+   // Important to add the given element to the child list before setting
+   // the parent pointer. Setting the parent will also add the element to the
+   // new parent. The HasElement() call above prevents the infinite circle of
+   // AddElement() calling SetParent() calling AddElement() etc.
    m_children.push_back(CTAddRef(pElement));
+
+   pElement->SetParent(this);
+
    return S_OK;
 }
 
@@ -209,7 +223,6 @@ tResult cGUIPanelElementFactory::CreateElement(const TiXmlElement * pXmlElement,
 ///////////////////////////////////////
 
 cGUIPanelRenderer::cGUIPanelRenderer()
- : m_pFont(FontCreateDefault())
 {
 }
 
@@ -231,7 +244,7 @@ tResult cGUIPanelRenderer::Render(IGUIElement * pElement, IRenderDevice * pRende
    cAutoIPtr<IGUIPanelElement> pPanel;
    if (pElement->QueryInterface(IID_IGUIPanelElement, (void**)&pPanel) == S_OK)
    {
-      tGUIPoint pos = pPanel->GetPosition();
+      tGUIPoint pos = GUIElementAbsolutePosition(pPanel);
       tGUISize size = pPanel->GetSize();
 
       // TODO: render background, if any

@@ -71,6 +71,7 @@ protected:
    }
 
    tResult GetHitElement(const tGUIPoint & point, IGUIElement * * ppElement) const;
+   tResult GetHitChild(const tGUIPoint & point, IGUIContainerElement * pContainer, IGUIElement * * ppElement) const;
 
    bool BubbleEvent(IGUIEvent * pEvent);
    bool GetEventTarget(const sInputEvent * pEvent, IGUIElement * * ppElement);

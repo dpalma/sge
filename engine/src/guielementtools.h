@@ -16,6 +16,8 @@ void GUISizeElement(const tGUIRect & field, IGUIElement * pGUIElement);
 
 void GUIPlaceElement(const tGUIRect & field, IGUIElement * pGUIElement);
 
+tGUIPoint GUIElementAbsolutePosition(IGUIElement * pGUIElement);
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #endif // !INCLUDED_GUIELEMENTTOOLS_H

@@ -6,6 +6,7 @@
 #include "guilabel.h"
 #include "guielementbasetem.h"
 #include "guirender.h"
+#include "guielementtools.h"
 
 #include "font.h"
 #include "color.h"
@@ -138,7 +139,7 @@ tResult cGUILabelStatelessRenderer::Render(IGUIElement * pElement, IRenderDevice
    cAutoIPtr<IGUILabelElement> pLabel;
    if (pElement->QueryInterface(IID_IGUILabelElement, (void**)&pLabel) == S_OK)
    {
-      tGUIPoint pos = pLabel->GetPosition();
+      tGUIPoint pos = GUIElementAbsolutePosition(pLabel);
       tGUISize size = pLabel->GetSize();
 
       tRect rect(pos.x, pos.y, pos.x + size.width, pos.y + size.height);

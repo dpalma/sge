@@ -141,8 +141,58 @@ tResult cGUIEventRouter<INTRFC>::GetHitElement(const tGUIPoint & point, IGUIElem
    {
       if ((*iter)->Contains(point))
       {
+         cAutoIPtr<IGUIContainerElement> pContainer;
+         if ((*iter)->QueryInterface(IID_IGUIContainerElement, (void**)&pContainer) == S_OK)
+         {
+            if (GetHitChild(point - (*iter)->GetPosition(), pContainer, ppElement) == S_OK)
+            {
+               return S_OK;
+            }
+         }
+
          *ppElement = CTAddRef(*iter);
          return S_OK;
+      }
+   }
+
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+tResult cGUIEventRouter<INTRFC>::GetHitChild(const tGUIPoint & point, 
+                                             IGUIContainerElement * pContainer, 
+                                             IGUIElement * * ppElement) const
+{
+   Assert(pContainer != NULL);
+   Assert(ppElement != NULL);
+
+   cAutoIPtr<IGUIElementEnum> pEnum;
+   if (pContainer->GetElements(&pEnum) == S_OK)
+   {
+      cAutoIPtr<IGUIElement> pChild;
+      ulong count = 0;
+
+      while ((pEnum->Next(1, &pChild, &count) == S_OK) && (count == 1))
+      {
+         if (pChild->Contains(point))
+         {
+            cAutoIPtr<IGUIContainerElement> pChildContainer;
+            if (pChild->QueryInterface(IID_IGUIContainerElement, (void**)&pChildContainer) == S_OK)
+            {
+               if (GetHitChild(point - pChild->GetPosition(), pChildContainer, ppElement) == S_OK)
+               {
+                  return S_OK;
+               }
+            }
+
+            *ppElement = CTAddRef(pChild);
+            return S_OK;
+         }
+
+         SafeRelease(pChild);
+         count = 0;
       }
    }
 
@@ -217,6 +267,11 @@ bool cGUIEventRouter<INTRFC>::GetEventTarget(const sInputEvent * pInputEvent,
 
 ///////////////////////////////////////
 
+inline tGUIPoint ScreenToElement(IGUIElement * pGUIElement, const tGUIPoint & point)
+{
+   return point - GUIElementAbsolutePosition(pGUIElement);
+}
+
 template <typename INTRFC>
 bool cGUIEventRouter<INTRFC>::HandleInputEvent(const sInputEvent * pInputEvent)
 {
@@ -230,7 +285,8 @@ bool cGUIEventRouter<INTRFC>::HandleInputEvent(const sInputEvent * pInputEvent)
    if (eventCode == kGUIEventMouseMove)
    {
       cAutoIPtr<IGUIElement> pMouseOver;
-      if ((GetMouseOver(&pMouseOver) == S_OK) && !pMouseOver->Contains(pInputEvent->point))
+      if ((GetMouseOver(&pMouseOver) == S_OK) 
+         && !pMouseOver->Contains(ScreenToElement(pMouseOver, pInputEvent->point)))
       {
          SetMouseOver(NULL);
          cAutoIPtr<IGUIEvent> pMouseLeaveEvent;
@@ -264,7 +320,7 @@ bool cGUIEventRouter<INTRFC>::HandleInputEvent(const sInputEvent * pInputEvent)
       }
       else if (eventCode == kGUIEventMouseUp)
       {
-         if (pElement->Contains(pInputEvent->point))
+         if (pElement->Contains(ScreenToElement(pElement, pInputEvent->point)))
          {
             // TODO: Doing this here, the click event will occur before the mouse up event
             // Not sure if that is the right thing
