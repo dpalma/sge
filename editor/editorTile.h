@@ -35,7 +35,7 @@ public:
 
    virtual tResult GetTexture(ITexture * * ppTexture);
 
-   virtual tResult GetBitmap(uint dimension, HBITMAP * phBitmap);
+   virtual tResult GetBitmap(uint dimension, bool bEntire, HBITMAP * phBitmap);
 
 private:
    void LazyInit();

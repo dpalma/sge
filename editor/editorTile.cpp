@@ -102,7 +102,7 @@ tResult cEditorTile::GetTexture(ITexture * * ppTexture)
 
 ///////////////////////////////////////
 
-tResult cEditorTile::GetBitmap(uint dimension, HBITMAP * phBitmap)
+tResult cEditorTile::GetBitmap(uint dimension, bool bEntire, HBITMAP * phBitmap)
 {
    if (dimension == 0)
    {
@@ -130,8 +130,12 @@ tResult cEditorTile::GetBitmap(uint dimension, HBITMAP * phBitmap)
       return S_OK;
    }
 
+   uint tileWidth = m_pImageData->GetWidth() / m_horzImages;
+   uint tileHeight = m_pImageData->GetHeight() / m_vertImages;
+
    HBITMAP hbm = StretchCopyBitmap(dimension, dimension, m_hBitmap, 0, 0,
-      m_pImageData->GetWidth() / m_horzImages, m_pImageData->GetHeight() / m_vertImages);
+      bEntire ? tileWidth : min(dimension, tileWidth),
+      bEntire ? tileHeight : min(dimension, tileHeight));
 
    if (hbm == NULL)
    {

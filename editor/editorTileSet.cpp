@@ -27,6 +27,13 @@ cEditorTileSet::cEditorTileSet(const tChar * pszName)
 cEditorTileSet::~cEditorTileSet()
 {
    std::for_each(m_tiles.begin(), m_tiles.end(), CTInterfaceMethod(&IEditorTile::Release));
+
+   tImageLists::iterator iter;
+   for (iter = m_imageLists.begin(); iter != m_imageLists.end(); iter++)
+   {
+      Verify(ImageList_Destroy(iter->second));
+   }
+   m_imageLists.clear();
 }
 
 ///////////////////////////////////////
@@ -138,7 +145,44 @@ tResult cEditorTileSet::GetMaterial(IMaterial * * ppMaterial)
 
 tResult cEditorTileSet::GetImageList(uint dimension, HIMAGELIST * phImageList)
 {
-   return E_NOTIMPL; // TODO
+   if (dimension == 0)
+   {
+      return E_INVALIDARG;
+   }
+
+   if (phImageList == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tImageLists::iterator f = m_imageLists.find(dimension);
+   if (f != m_imageLists.end())
+   {
+      *phImageList = f->second;
+      return S_OK;
+   }
+
+   HIMAGELIST hImageList = ImageList_Create(dimension, dimension, ILC_COLOR24, m_tiles.size(), 0);
+   if (hImageList == NULL)
+   {
+      return E_FAIL;
+   }
+
+   tTiles::iterator iter;
+   for (iter = m_tiles.begin(); iter != m_tiles.end(); iter++)
+   {
+      HBITMAP hTileBitmap;
+      if ((*iter)->GetBitmap(dimension, false, &hTileBitmap) == S_OK)
+      {
+         Verify(ImageList_Add(hImageList, hTileBitmap, NULL) >= 0);
+      }
+   }
+
+   m_imageLists.insert(std::make_pair(dimension, hImageList));
+
+   *phImageList = hImageList;
+
+   return S_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

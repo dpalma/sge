@@ -329,6 +329,14 @@ void cMapSettingsDlg::PopulateInitialTileComboBox(bool bForce)
          UseGlobal(EditorTileManager);
          if (pEditorTileManager->GetTileSet(pszTileSet, &pTileSet) == S_OK)
          {
+            int imageSize = m_initialTileComboBox.GetItemHeight(0);
+
+            HIMAGELIST hImageList = NULL;
+            if (pTileSet->GetImageList(imageSize, &hImageList) == S_OK)
+            {
+               m_initialTileComboBox.SetImageList(CImageList::FromHandle(hImageList));
+            }
+
             uint nTiles = 0;
             if (pTileSet->GetTileCount(&nTiles) == S_OK)
             {
@@ -341,10 +349,12 @@ void cMapSettingsDlg::PopulateInitialTileComboBox(bool bForce)
                      Verify(pTile->GetName(&tileName) == S_OK);
 
                      COMBOBOXEXITEM item;
-                     item.mask = CBEIF_TEXT;
+                     item.mask = CBEIF_TEXT | CBEIF_IMAGE | CBEIF_SELECTEDIMAGE;
                      item.iItem = i;
                      item.pszText = const_cast<char *>(tileName.c_str());
                      item.cchTextMax = tileName.length();
+                     item.iImage = i;
+                     item.iSelectedImage = i;
 
                      Verify(m_initialTileComboBox.InsertItem(&item) != CB_ERR);
                   }

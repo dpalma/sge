@@ -12,6 +12,7 @@
 #include "str.h"
 
 #include <vector>
+#include <map>
 
 #if _MSC_VER > 1000
 #pragma once
@@ -47,6 +48,9 @@ private:
    typedef std::vector<IEditorTile *> tTiles;
    tTiles m_tiles;
    cAutoIPtr<IMaterial> m_pMaterial;
+
+   typedef std::map<uint, HIMAGELIST> tImageLists;
+   tImageLists m_imageLists;
 };
 
 /////////////////////////////////////////////////////////////////////////////

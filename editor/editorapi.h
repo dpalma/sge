@@ -132,7 +132,7 @@ interface UUID("CDEB5694-56D2-4750-BEF8-85F286364C23") IEditorTile : IUnknown
 
    virtual tResult GetTexture(ITexture * * ppTexture) = 0;
 
-   virtual tResult GetBitmap(uint dimension, HBITMAP * phBitmap) = 0;
+   virtual tResult GetBitmap(uint dimension, bool bEntire, HBITMAP * phBitmap) = 0;
 };
 
 /////////////////////////////////////////////////////////////////////////////
