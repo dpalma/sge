@@ -235,7 +235,7 @@ void MatrixMultiply(const float * ml, const float * mr, float * pResult)
 void MatrixTranslate(float x, float y, float z, tMatrix4 * pResult)
 {
    Assert(pResult != NULL);
-   pResult->Identity();
+   memcpy(pResult->m, tMatrix4::GetIdentity().m, sizeof(pResult->m));
    pResult->m03 = x;
    pResult->m13 = y;
    pResult->m23 = z;
@@ -249,7 +249,7 @@ void MatrixRotateX(float theta, tMatrix4 * pResult)
    float sintheta = sinf(Deg2Rad(theta));
    float costheta = cosf(Deg2Rad(theta));
    Assert(pResult != NULL);
-   pResult->Identity();
+   memcpy(pResult->m, tMatrix4::GetIdentity().m, sizeof(pResult->m));
    pResult->m11 = costheta;
    pResult->m12 = -sintheta;
    pResult->m21 = sintheta;
@@ -263,7 +263,7 @@ void MatrixRotateY(float theta, tMatrix4 * pResult)
    float sintheta = sinf(Deg2Rad(theta));
    float costheta = cosf(Deg2Rad(theta));
    Assert(pResult != NULL);
-   pResult->Identity();
+   memcpy(pResult->m, tMatrix4::GetIdentity().m, sizeof(pResult->m));
    pResult->m00 = costheta;
    pResult->m02 = sintheta;
    pResult->m20 = -sintheta;
@@ -277,7 +277,7 @@ void MatrixRotateZ(float theta, tMatrix4 * pResult)
    float sintheta = sinf(Deg2Rad(theta));
    float costheta = cosf(Deg2Rad(theta));
    Assert(pResult != NULL);
-   pResult->Identity();
+   memcpy(pResult->m, tMatrix4::GetIdentity().m, sizeof(pResult->m));
    pResult->m00 = costheta;
    pResult->m01 = -sintheta;
    pResult->m10 = sintheta;
@@ -330,12 +330,13 @@ void MatrixLookAt(const tVec3 & eye, const tVec3 & center, const tVec3 & up,
    pMatrix->m33 = 1;
 
    tMatrix4 eyeTrans;
-   eyeTrans.Identity();
+   memcpy(eyeTrans.m, tMatrix4::GetIdentity().m, sizeof(eyeTrans.m));
    eyeTrans.m03 = -eye.x;
    eyeTrans.m13 = -eye.y;
    eyeTrans.m23 = -eye.z;
 
-   tMatrix4 temp = *pMatrix * eyeTrans;
+   tMatrix4 temp;
+   pMatrix->Multiply(eyeTrans, &temp);
    *pMatrix = temp;
 }
 
@@ -468,7 +469,8 @@ void cMatrix4Tests::TestMatrixInvert()
       return;
    }
 
-   tMatrix4 result = M * I;
+   tMatrix4 result;
+   M.Multiply(I, &result);
 
    CPPUNIT_ASSERT(MatrixIsIdentity(result));
 }

@@ -26,11 +26,11 @@ cSceneEntity::cSceneEntity()
    m_localTranslation(0,0,0),
    m_localRotation(0,0,0,1),
    m_bHaveLocalTransform(false),
+   m_localTransform(tMatrix4::GetIdentity()),
    m_bHaveWorldTranslation(false),
    m_bHaveWorldRotation(false),
    m_bHaveWorldTransform(false)
 {
-   m_localTransform.Identity();
 }
 
 ///////////////////////////////////////
@@ -127,7 +127,7 @@ const tMatrix4 & cSceneEntity::GetLocalTransform() const
       MatrixTranslate(t.x, t.y, t.z, &mt);
       r.ToMatrix(&mr);
 
-      m_localTransform = mt * mr;
+      mr.Multiply(mr, &m_localTransform);
 
       m_bHaveLocalTransform = true;
    }
@@ -190,7 +190,7 @@ const tMatrix4 & cSceneEntity::GetWorldTransform() const
       MatrixTranslate(t.x, t.y, t.z, &mt);
       r.ToMatrix(&mr);
 
-      m_worldTransform = mt * mr;
+      mt.Multiply(mr, &m_worldTransform);
 
       m_bHaveWorldTransform = true;
    }

@@ -179,7 +179,7 @@ const tMatrix4 & cBone::GetWorldTransform() const
 
       if (pParent != NULL)
       {
-         m_worldTransform = pParent->GetWorldTransform() * GetLocalTransform();
+         pParent->GetWorldTransform().Multiply(GetLocalTransform(), &m_worldTransform);
       }
       else
       {
@@ -382,11 +382,13 @@ void cSkeleton::GetBoneMatrices(float time, tMatrices * pBoneMatrices) const
             frame.rotation.ToMatrix(&mr);
             MatrixTranslate(frame.translation.x, frame.translation.y, frame.translation.z, &mt);
 
-            tMatrix4 temp = mt * mr;
+            tMatrix4 temp;
+            mt.Multiply(mr, &temp);
 
             const cBone & bone = GetBone(i);
 
-            tMatrix4 mf = bone.GetLocalTransform() * temp;
+            tMatrix4 mf;
+            bone.GetLocalTransform().Multiply(temp, &mf);
 
             if (bone.GetParentIndex() < 0)
             {
@@ -394,7 +396,7 @@ void cSkeleton::GetBoneMatrices(float time, tMatrices * pBoneMatrices) const
             }
             else
             {
-               temp = (*pBoneMatrices)[bone.GetParentIndex()] * mf;
+               (*pBoneMatrices)[bone.GetParentIndex()].Multiply(mf, &temp);
             }
 
             (*pBoneMatrices)[i] = temp;

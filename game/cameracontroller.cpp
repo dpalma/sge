@@ -90,7 +90,8 @@ void cGameCameraController::OnFrame(double elapsedTime)
    tMatrix4 mt;
    MatrixTranslate(-m_eye.x, -m_eye.y, -m_eye.z, &mt);
 
-   tMatrix4 newModelView = m_rotation * mt;
+   tMatrix4 newModelView;
+   m_rotation.Multiply(mt, &newModelView);
    m_pCamera->SetViewMatrix(newModelView);
 }
 

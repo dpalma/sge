@@ -13,6 +13,7 @@
 template <typename T> class cVec3;
 typedef cVec3<float> tVec3;
 template <typename T> class cVec4;
+typedef cVec4<float> tVec4;
 
 #ifndef NO_DEFAULT_MATRIX4
 template <typename T> class cMatrix4;
@@ -20,18 +21,26 @@ typedef cMatrix4<float> tMatrix4;
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
+//
+// TEMPLATE: cMatrix4
+//
 
 template <typename T>
 class cMatrix4
 {
 public:
    cMatrix4();
+   cMatrix4(T m00, T m10, T m20, T m30, T m01, T m11, T m21, T m31,
+            T m02, T m12, T m22, T m32, T m03, T m13, T m23, T m33);
    cMatrix4(const cMatrix4 & other);
 
    const cMatrix4 & operator =(const cMatrix4 & other);
 
-   void Identity();
-   void Transpose();
+   static const cMatrix4 & GetIdentity();
+
+   void Transpose(cMatrix4 * pDest);
+
+   void Multiply(const cMatrix4 & other, cMatrix4 * pResult) const;
 
    template <typename VT>
    cVec3<VT> Transform(const cVec3<VT> & v) const
@@ -75,6 +84,30 @@ cMatrix4<T>::cMatrix4()
 ///////////////////////////////////////
 
 template <typename T>
+cMatrix4<T>::cMatrix4(T m00, T m10, T m20, T m30, T m01, T m11, T m21, T m31,
+                      T m02, T m12, T m22, T m32, T m03, T m13, T m23, T m33)
+{
+   this->m00 = m00;
+   this->m10 = m10;
+   this->m20 = m20;
+   this->m30 = m30;
+   this->m01 = m01;
+   this->m11 = m11;
+   this->m21 = m21;
+   this->m31 = m31;
+   this->m02 = m02;
+   this->m12 = m12;
+   this->m22 = m22;
+   this->m32 = m32;
+   this->m03 = m03;
+   this->m13 = m13;
+   this->m23 = m23;
+   this->m33 = m33;
+}
+
+///////////////////////////////////////
+
+template <typename T>
 cMatrix4<T>::cMatrix4(const cMatrix4 & other)
 {
    operator =(other);
@@ -95,29 +128,43 @@ const cMatrix4<T> & cMatrix4<T>::operator =(const cMatrix4 & other)
 ///////////////////////////////////////
 
 template <typename T>
-void cMatrix4<T>::Identity()
+const cMatrix4<T> & cMatrix4<T>::GetIdentity()
 {
-   m00 = 1; m01 = 0; m02 = 0; m03 = 0;
-   m10 = 0; m11 = 1; m12 = 0; m13 = 0;
-   m20 = 0; m21 = 0; m22 = 1; m23 = 0;
-   m30 = 0; m31 = 0; m32 = 0; m33 = 1;
+   static cMatrix4<T> identity(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1);
+   return identity;
 }
 
 ///////////////////////////////////////
 
 template <typename T>
-void cMatrix4<T>::Transpose()
+void cMatrix4<T>::Transpose(cMatrix4<T> * pDest)
 {
-   T temp;
-   temp = m10, m10 = m01, m01 = temp;
-   temp = m12, m12 = m21, m21 = temp;
-   temp = m13, m13 = m31, m31 = temp;
-   temp = m20, m20 = m02, m02 = temp;
-   temp = m21, m21 = m12, m12 = temp;
-   temp = m23, m23 = m32, m32 = temp;
-   temp = m30, m30 = m03, m03 = temp;
-   temp = m31, m31 = m13, m13 = temp;
-   temp = m32, m32 = m23, m23 = temp;
+   Assert(pDest != NULL);
+   pDest->m00 = m00;
+   pDest->m10 = m01;
+   pDest->m20 = m02;
+   pDest->m30 = m03;
+   pDest->m01 = m10;
+   pDest->m11 = m11;
+   pDest->m21 = m12;
+   pDest->m31 = m13;
+   pDest->m02 = m20;
+   pDest->m12 = m21;
+   pDest->m22 = m22;
+   pDest->m32 = m23;
+   pDest->m03 = m30;
+   pDest->m13 = m31;
+   pDest->m23 = m32;
+   pDest->m33 = m33;
+}
+
+///////////////////////////////////////
+
+template <typename T>
+void cMatrix4<T>::Multiply(const cMatrix4 & other, cMatrix4 * pResult) const
+{
+   Assert(pResult != NULL);
+   MatrixMultiply(m, other.m, pResult->m);
 }
 
 ///////////////////////////////////////
@@ -128,16 +175,6 @@ inline void cMatrix4<T>::Transform(const float * pSource, float * pDest) const
    pDest[0] = (pSource[0] * m00) + (pSource[1] * m01) + (pSource[2] * m02) + m03;
    pDest[1] = (pSource[0] * m10) + (pSource[1] * m11) + (pSource[2] * m12) + m13;
    pDest[2] = (pSource[0] * m20) + (pSource[1] * m21) + (pSource[2] * m22) + m23;
-}
-
-///////////////////////////////////////
-
-template <typename T>
-inline cMatrix4<T> operator *(const cMatrix4<T> & a, const cMatrix4<T> & b)
-{
-   cMatrix4<T> result;
-   MatrixMultiply(a.m, b.m, result.m);
-   return result;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

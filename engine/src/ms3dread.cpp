@@ -146,8 +146,8 @@ static void MatrixFromAngles(tVec3 angles, tMatrix4 * pMatrix)
    MatrixRotateY(Rad2Deg(angles.y), &rotY);
    MatrixRotateZ(Rad2Deg(angles.z), &rotZ);
    temp1 = rotZ;
-   temp2 = temp1 * rotY;
-   *pMatrix = temp2 * rotX;
+   temp1.Multiply(rotY, &temp2);
+   temp2.Multiply(rotX, pMatrix);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -236,7 +236,7 @@ tResult ReadSkeleton(IReader * pReader,
          MatrixTranslate(boneInfo[i].position[0], boneInfo[i].position[1], boneInfo[i].position[2], &mt);
          MatrixFromAngles(tVec3(boneInfo[i].rotation), &mr);
 
-         (*pBones)[i].localTransform = mt * mr;
+         mt.Multiply(mr, &(*pBones)[i].localTransform);
       }
 
       result = S_OK;
