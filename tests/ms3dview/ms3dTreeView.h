@@ -51,7 +51,7 @@ protected:
 
    void AddVertices(IMesh * pMesh, HTREEITEM hParent = TVI_ROOT);
    void AddMaterials(IMesh * pMesh, HTREEITEM hParent = TVI_ROOT);
-   void AddGroups(cMs3dMesh * pMesh, HTREEITEM hParent = TVI_ROOT);
+   void AddSubMeshes(IMesh * pMesh, HTREEITEM hParent = TVI_ROOT);
    void AddSkeleton(IMesh * pMesh, HTREEITEM hParent = TVI_ROOT);
    void AddBones(ISkeleton * pSkeleton, HTREEITEM hParent = TVI_ROOT);
    void AddAnimation(ISkeleton * pSkeleton, HTREEITEM hParent = TVI_ROOT);

@@ -36,7 +36,6 @@ cMs3dTreeView::~cMs3dTreeView()
 {
 }
 
-
 BEGIN_MESSAGE_MAP(cMs3dTreeView, CTreeView)
 	//{{AFX_MSG_MAP(cMs3dTreeView)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
@@ -46,15 +45,14 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // cMs3dTreeView drawing
 
-void cMs3dTreeView::OnDraw(CDC* pDC)
+void cMs3dTreeView::OnDraw(CDC * pDC)
 {
-	CDocument* pDoc = GetDocument();
-	// TODO: add draw code here
+   // Do nothing
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL cMs3dTreeView::PreCreateWindow(CREATESTRUCT& cs) 
+BOOL cMs3dTreeView::PreCreateWindow(CREATESTRUCT & cs) 
 {
    cs.style |= TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT;
 	
@@ -89,8 +87,6 @@ void cMs3dTreeView::OnInitialUpdate()
 {
 	CTreeView::OnInitialUpdate();
 	
-	// TODO: Add your specialized code here and/or call the base class
-
 	CMs3dviewDoc * pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
@@ -100,37 +96,82 @@ void cMs3dTreeView::OnInitialUpdate()
    {
       AddVertices(pDoc->GetModel());
       AddMaterials(pDoc->GetModel());
-      AddGroups(pDoc->GetModel());
+      AddSubMeshes(pDoc->GetModel());
       AddSkeleton(pDoc->GetModel());
    }
 }
+
+////////////////////////////////////////
+
+static CString VertexUsageToString(tVertexDeclUsage usage)
+{
+   switch (usage)
+   {
+   case kVDU_Position: return CString(_T("Position")); break;
+   case kVDU_Normal: return CString(_T("Normal")); break;
+   case kVDU_Color: return CString(_T("Color")); break;
+   case kVDU_TexCoord: return CString(_T("TexCoord")); break;
+   case kVDU_Weight: return CString(_T("Weight")); break;
+   case kVDU_Index: return CString(_T("Index")); break;
+   }
+   return CString(_T(""));
+}
+
+////////////////////////////////////////
+
+static CString VertexDataTypeToString(tVertexDeclType type)
+{
+   switch (type)
+   {
+   case kVDT_Float1: return CString(_T("Float1")); break;
+   case kVDT_Float2: return CString(_T("Float2")); break;
+   case kVDT_Float3: return CString(_T("Float3")); break;
+   case kVDT_Float4: return CString(_T("Float4")); break;
+   case kVDT_UnsignedByte4: return CString(_T("UnsignedByte4")); break;
+   case kVDT_Short2: return CString(_T("Short2")); break;
+   case kVDT_Short4: return CString(_T("Short4")); break;
+   }
+   return CString(_T(""));
+}
+
+////////////////////////////////////////
 
 static void DescribeVertexElement(const sVertexElement & element, CString * pStr)
 {
    Assert(pStr != NULL);
    pStr->Empty();
+   *pStr += VertexUsageToString(element.usage);
+   *pStr += _T(": ");
+   *pStr += VertexDataTypeToString(element.type);
+}
 
-   switch (element.usage)
-   {
-   case kVDU_Position: *pStr += _T("Position"); break;
-   case kVDU_Normal: *pStr += _T("Normal"); break;
-   case kVDU_Color: *pStr += _T("Color"); break;
-   case kVDU_TexCoord: *pStr += _T("TexCoord"); break;
-   case kVDU_Weight: *pStr += _T("Weight"); break;
-   case kVDU_Index: *pStr += _T("Index"); break;
-   }
+////////////////////////////////////////
+
+static void DescribeVertexData(const sVertexElement & element, const byte * pData, CString * pStr)
+{
+   Assert(pStr != NULL);
+   pStr->Empty();
+
+   *pStr += VertexUsageToString(element.usage);
+   *pStr += _T(": ");
+
+   CString data(_T("UNKNOWN"));
 
    switch (element.type)
    {
-   case kVDT_Float1: *pStr += _T(": Float1"); break;
-   case kVDT_Float2: *pStr += _T(": Float2"); break;
-   case kVDT_Float3: *pStr += _T(": Float3"); break;
-   case kVDT_Float4: *pStr += _T(": Float4"); break;
-   case kVDT_UnsignedByte4: *pStr += _T(": UnsignedByte4"); break;
-   case kVDT_Short2: *pStr += _T(": Short2"); break;
-   case kVDT_Short4: *pStr += _T(": Short4"); break;
+   case kVDT_Float1: data.Format("%f", *(float *)pData); break;
+   case kVDT_Float2: data.Format("%f, %f", *(float *)pData, *((float *)pData + 1)); break;
+   case kVDT_Float3: data.Format("%f, %f, %f", *(float *)pData, *((float *)pData + 1), *((float *)pData + 2)); break;
+   case kVDT_Float4: data.Format("%f, %f, %f, %f", *(float *)pData, *((float *)pData + 1), *((float *)pData + 2), *((float *)pData + 3)); break;
+   case kVDT_UnsignedByte4: data.Format("%x", *(uint *)pData); break;
+   case kVDT_Short2: data.Format("%d, %d", *(short *)pData); break;
+   case kVDT_Short4: data.Format("%d, %d, %d, %d", *(short *)pData, *((short *)pData + 1)); break;
    }
+
+   *pStr += data;
 }
+
+////////////////////////////////////////
 
 void cMs3dTreeView::AddVertices(IMesh * pMesh, HTREEITEM hParent)
 {
@@ -164,11 +205,40 @@ void cMs3dTreeView::AddVertices(IMesh * pMesh, HTREEITEM hParent)
             HTREEITEM hVertices = GetTreeCtrl().InsertItem("Vertices", hParent);
             if (hVertices != NULL)
             {
+               byte * pVertexData;
+               if (pVertexBuffer->Lock(kBL_ReadOnly, (void**)&pVertexData) == S_OK)
+               {
+                  uint vertexSize = GetVertexSize(elements, nElements);
+
+                  CString item;
+                  byte * pVertex = pVertexData;
+                  for (uint i = 0; i < pMesh->GetVertexCount(); i++, pVertex += vertexSize)
+                  {
+                     item.Format("Vertex %d", i);
+                     HTREEITEM hVertex = GetTreeCtrl().InsertItem(item, hVertices);
+                     if (hVertex != NULL)
+                     {
+                        byte * pVertexElement = pVertex;
+                        for (int j = 0; j < nElements; pVertexElement += GetVertexSize(&elements[j], 1), j++)
+                        {
+                           DescribeVertexData(elements[j], pVertexElement, &item);
+                           if (!item.IsEmpty())
+                           {
+                              GetTreeCtrl().InsertItem(item, hVertex);
+                           }
+                        }
+                     }
+                  }
+
+                  pVertexBuffer->Unlock();
+               }
             }
          }
       }
    }
 }
+
+////////////////////////////////////////
 
 void cMs3dTreeView::AddMaterials(IMesh * pMesh, HTREEITEM hParent)
 {
@@ -225,30 +295,45 @@ void cMs3dTreeView::AddMaterials(IMesh * pMesh, HTREEITEM hParent)
    }
 }
 
-void cMs3dTreeView::AddGroups(cMs3dMesh * pMesh, HTREEITEM hParent)
+////////////////////////////////////////
+
+void cMs3dTreeView::AddSubMeshes(IMesh * pMesh, HTREEITEM hParent)
 {
-   int nGroups = pMesh->GetGroupCount();
-   if (nGroups > 0)
+   uint nSubMeshes = pMesh->GetSubMeshCount();
+   if (nSubMeshes > 0)
    {
-      HTREEITEM hGroups = GetTreeCtrl().InsertItem("Groups", hParent);
-      if (hGroups != NULL)
+      HTREEITEM hSubMeshes = GetTreeCtrl().InsertItem("SubMeshes", hParent);
+      if (hSubMeshes != NULL)
       {
-         for (int i = 0; i < nGroups; i++)
+         for (uint i = 0; i < nSubMeshes; i++)
          {
-            const cMs3dGroup & g = pMesh->GetGroup(i);
-            HTREEITEM hGroup = GetTreeCtrl().InsertItem(g.GetName(), hGroups);
-            if (hGroup != NULL)
+            cAutoIPtr<ISubMesh> pSubMesh;
+            if (pMesh->GetSubMesh(i, &pSubMesh) == S_OK)
             {
-               CString str;
-               str.Format("Material index: %d", g.GetMaterialIndex());
-               GetTreeCtrl().InsertItem(str, hGroup);
-               str.Format("Triangle count: %d", g.GetTriangleIndices().size());
-               GetTreeCtrl().InsertItem(str, hGroup);
+               HTREEITEM hSubMesh = GetTreeCtrl().InsertItem(pSubMesh->GetMaterialName(), hSubMeshes);
+               if (hSubMesh != NULL)
+               {
+                  // TODO HACK: assumes index buffer uses 16-bit indices
+                  uint16 * pIndices = NULL;
+                  if (pSubMesh->LockIndexBuffer(kBL_Default, (void**)&pIndices) == S_OK)
+                  {
+                     for (uint i = 0; i < pSubMesh->GetIndexCount(); i++)
+                     {
+                        CString item;
+                        item.Format("Index %d = %d", i, pIndices[i]);
+                        GetTreeCtrl().InsertItem(item, hSubMesh);
+                     }
+
+                     pSubMesh->UnlockIndexBuffer();
+                  }
+               }
             }
          }
       }
    }
 }
+
+////////////////////////////////////////
 
 void cMs3dTreeView::AddSkeleton(IMesh * pMesh, HTREEITEM hParent)
 {
@@ -263,6 +348,8 @@ void cMs3dTreeView::AddSkeleton(IMesh * pMesh, HTREEITEM hParent)
       }
    }
 }
+
+////////////////////////////////////////
 
 void cMs3dTreeView::AddBones(ISkeleton * pSkeleton, HTREEITEM hParent)
 {
@@ -280,6 +367,8 @@ void cMs3dTreeView::AddBones(ISkeleton * pSkeleton, HTREEITEM hParent)
       }
    }
 }
+
+////////////////////////////////////////
 
 void cMs3dTreeView::AddAnimation(ISkeleton * pSkeleton, HTREEITEM hParent)
 {

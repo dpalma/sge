@@ -1,5 +1,5 @@
-// ms3dviewView.cpp : implementation of the CMs3dviewView class
-//
+/////////////////////////////////////////////////////////////////////////////
+// $Id$
 
 #include "stdafx.h"
 #include "ms3dview.h"
@@ -188,12 +188,17 @@ int CMs3dviewView::OnCreate(LPCREATESTRUCT lpCreateStruct)
       1);
 
    glEnable(GL_DEPTH_TEST);
-   glEnable(GL_VERTEX_WEIGHTING_EXT);
-   glEnable(GL_NORMALIZE); // required with vertex weighting
+   glEnable(GL_CULL_FACE);
 
    glVertexWeightfEXT = (PFNGLVERTEXWEIGHTFEXTPROC)wglGetProcAddress("glVertexWeightfEXT");
    glVertexWeightfvEXT = (PFNGLVERTEXWEIGHTFVEXTPROC)wglGetProcAddress("glVertexWeightfvEXT");
    glVertexWeightPointerEXT = (PFNGLVERTEXWEIGHTPOINTEREXTPROC)wglGetProcAddress("glVertexWeightPointerEXT");
+
+   if (glVertexWeightfEXT != NULL && glVertexWeightfvEXT != NULL && glVertexWeightPointerEXT != NULL)
+   {
+      glEnable(GL_VERTEX_WEIGHTING_EXT);
+      glEnable(GL_NORMALIZE); // required with vertex weighting
+   }
 
 	return 0;
 }

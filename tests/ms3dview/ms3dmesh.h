@@ -81,39 +81,6 @@ typedef struct
 
 #pragma pack(pop)
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cMs3dGroup
-//
-
-class cMs3dGroup
-{
-   friend class cReadWriteOps<cMs3dGroup>;
-
-public:
-   cMs3dGroup()
-   {
-   }
-
-   const char * GetName() const { return name; }
-
-   int GetMaterialIndex() const
-   {
-      return materialIndex;
-   }
-
-   const std::vector<uint16> & GetTriangleIndices() const
-   {
-      return triangleIndices;
-   }
-
-private:
-   char name[32];
-   std::vector<uint16> triangleIndices;
-   char materialIndex;
-};
-
-
 //////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cMs3dMesh
@@ -153,9 +120,6 @@ public:
 
    // using software or vertex program rendering?
    bool IsRenderingSoftware() const;
-
-   int GetGroupCount() const { return 0; }
-   cMs3dGroup GetGroup(int index) const { return cMs3dGroup(); }
 
 private:
    void RenderVertexProgram() const;

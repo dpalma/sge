@@ -223,7 +223,7 @@ tResult cMs3dMesh::GetSkeleton(ISkeleton * * ppSkeleton)
 
 tResult cMs3dMesh::Optimize()
 {
-   return E_NOTIMPL;
+   return m_pInnerMesh->Optimize();
 }
 
 tResult cMs3dMesh::Load(const char * pszMesh, IRenderDevice * pRenderDevice, IResourceManager * pResourceManager)
