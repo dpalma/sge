@@ -28,6 +28,10 @@ F_DECLARE_INTERFACE(IScriptInterpreter);
 
 typedef int (* tScriptFn)(int, const cScriptVar *, int, cScriptVar *);
 
+///////////////////////////////////////////////////////////////////////////////
+/// @struct tScriptFn
+/// @brief Pair that includes a script function pointer plus its name as exposed to script code
+
 struct sScriptReg
 {
    const char * pszName;
@@ -124,6 +128,12 @@ ENGINE_API void ScriptInterpreterCreate();
 /// @see @ref tScriptFn
 
 ENGINE_API tResult ScriptAddFunction(const char * pszName, tScriptFn pfn);
+
+///////////////////////////////////////
+/// Register many global functions with the script interpreter at once
+/// @see @ref tScriptFn
+
+ENGINE_API tResult ScriptAddFunctions(const sScriptReg * pFns, uint nFns);
 
 ///////////////////////////////////////
 

@@ -394,6 +394,27 @@ tResult ScriptAddFunction(const char * pszName, tScriptFn pfn)
 
 ///////////////////////////////////////
 
+tResult ScriptAddFunctions(const sScriptReg * pFns, uint nFns)
+{
+   if (pFns == NULL)
+   {
+      return E_POINTER;
+   }
+
+   for (uint i = 0; i < nFns; i++, pFns++)
+   {
+      tResult result = ScriptAddFunction(pFns->pszName, pFns->pfn);
+      if (FAILED(result))
+      {
+         return result;
+      }
+   }
+
+   return S_OK;
+}
+
+///////////////////////////////////////
+
 cScriptAutoAddFunction::cScriptAutoAddFunction(const char * pszName, tScriptFn pfn)
 {
    ScriptAddFunction(pszName, pfn);
