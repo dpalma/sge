@@ -133,6 +133,7 @@ static long Name2Key(const char * pszKeyName)
 
 cInput::cInput()
 {
+   memset(m_keyRepeats, 0, sizeof(m_keyRepeats));
    memset(m_keyDownBindings, 0, sizeof(m_keyDownBindings));
    memset(m_keyUpBindings, 0, sizeof(m_keyUpBindings));
 }
