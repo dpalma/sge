@@ -205,16 +205,19 @@ tResult cGUILabelElementFactory::CreateElement(const TiXmlElement * pXmlElement,
 
    if (pXmlElement != NULL)
    {
-      cAutoIPtr<IGUILabelElement> pLabel = static_cast<IGUILabelElement *>(new cGUILabelElement);
-      if (!!pLabel)
+      if (strcmp(pXmlElement->Value(), "label") == 0)
       {
-         if (pXmlElement->Attribute("text"))
+         cAutoIPtr<IGUILabelElement> pLabel = static_cast<IGUILabelElement *>(new cGUILabelElement);
+         if (!!pLabel)
          {
-            pLabel->SetText(pXmlElement->Attribute("text"));
-         }
+            if (pXmlElement->Attribute("text"))
+            {
+               pLabel->SetText(pXmlElement->Attribute("text"));
+            }
 
-         *ppElement = CTAddRef(pLabel);
-         return S_OK;
+            *ppElement = CTAddRef(pLabel);
+            return S_OK;
+         }
       }
    }
    else

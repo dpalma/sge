@@ -229,6 +229,15 @@ bool cGUIContext::BubbleEvent(IGUIEvent * pEvent)
 {
    Assert(pEvent != NULL);
 
+   tSinks::iterator iter;
+   for (iter = AccessSinks().begin(); iter != AccessSinks().end(); iter++)
+   {
+      if ((*iter)->OnEvent(pEvent) != S_OK)
+      {
+         return true;
+      }
+   }
+
    cAutoIPtr<IGUIElement> pDispatchTo;
    if (pEvent->GetSourceElement(&pDispatchTo) == S_OK)
    {
@@ -251,6 +260,36 @@ bool cGUIContext::BubbleEvent(IGUIEvent * pEvent)
 
 ///////////////////////////////////////
 
+bool cGUIContext::GetEventTarget(const sInputEvent * pInputEvent, IGUIElement * * ppElement)
+{
+   Assert(pInputEvent != NULL);
+   Assert(ppElement != NULL);
+
+   if (KeyIsMouse(pInputEvent->key))
+   {
+      tGUIElementList::iterator iter;
+      for (iter = m_elements.begin(); iter != m_elements.end(); iter++)
+      {
+         if ((*iter)->Contains(pInputEvent->point))
+         {
+            *ppElement = CTAddRef(*iter);
+            return true;
+         }
+      }
+   }
+   else
+   {
+      if (GetFocus(ppElement) == S_OK)
+      {
+         return true;
+      }
+   }
+
+   return false;
+}
+
+///////////////////////////////////////
+
 bool cGUIContext::HandleInputEvent(const sInputEvent * pInputEvent)
 {
    tGUIEventCode eventCode = GUIEventCode(pInputEvent->key, pInputEvent->down);
@@ -260,74 +299,48 @@ bool cGUIContext::HandleInputEvent(const sInputEvent * pInputEvent)
       return false;
    }
 
-   if (KeyIsMouse(pInputEvent->key))
+   cAutoIPtr<IGUIElement> pElement;
+   if (GetEventTarget(pInputEvent, &pElement))
    {
-      cAutoIPtr<IGUIElement> pElement;
-
-      tGUIElementList::iterator iter;
-      for (iter = m_elements.begin(); iter != m_elements.end(); iter++)
+      if (eventCode == kGUIEventMouseMove)
       {
-         if ((*iter)->Contains(pInputEvent->point))
+         if (!CTIsSameObject(pElement, AccessMouseOver()))
          {
-            pElement = CTAddRef(*iter);
-            break;
+            cAutoIPtr<IGUIElement> pMouseOver;
+            if (GetMouseOver(&pMouseOver) == S_OK)
+            {
+               cAutoIPtr<IGUIEvent> pMouseLeaveEvent;
+               if (GUIEventCreate(kGUIEventMouseLeave, pInputEvent->point, pInputEvent->key, 
+                  AccessMouseOver(), &pMouseLeaveEvent) == S_OK)
+               {
+                  BubbleEvent(pMouseLeaveEvent);
+               }
+            }
+
+            SetMouseOver(pElement);
+            eventCode = kGUIEventMouseEnter;
+         }
+      }
+      else if (eventCode == kGUIEventMouseDown)
+      {
+         SetFocus(pElement);
+      }
+      else if (eventCode == kGUIEventMouseUp)
+      {
+         if (CTIsSameObject(pElement, AccessFocus()))
+         {
+            cAutoIPtr<IGUIEvent> pClickEvent;
+            if (GUIEventCreate(kGUIEventClick, pInputEvent->point, pInputEvent->key, pElement, &pClickEvent) == S_OK)
+            {
+               BubbleEvent(pClickEvent);
+            }
          }
       }
 
-      if (!!pElement)
+      cAutoIPtr<IGUIEvent> pEvent;
+      if (GUIEventCreate(eventCode, pInputEvent->point, pInputEvent->key, pElement, &pEvent) == S_OK)
       {
-         if (eventCode == kGUIEventMouseMove)
-         {
-            if (!CTIsSameObject(pElement, AccessMouseOver()))
-            {
-               cAutoIPtr<IGUIElement> pMouseOver;
-               if (GetMouseOver(&pMouseOver) == S_OK)
-               {
-                  cAutoIPtr<IGUIEvent> pMouseLeaveEvent;
-                  if (GUIEventCreate(kGUIEventMouseLeave, pInputEvent->point, pInputEvent->key, 
-                     AccessMouseOver(), &pMouseLeaveEvent) == S_OK)
-                  {
-                     BubbleEvent(pMouseLeaveEvent);
-                  }
-               }
-
-               SetMouseOver(pElement);
-               eventCode = kGUIEventMouseEnter;
-            }
-         }
-         else if (eventCode == kGUIEventMouseDown)
-         {
-            SetFocus(pElement);
-         }
-         else if (eventCode == kGUIEventMouseUp)
-         {
-            if (CTIsSameObject(pElement, AccessFocus()))
-            {
-               cAutoIPtr<IGUIEvent> pClickEvent;
-               if (GUIEventCreate(kGUIEventClick, pInputEvent->point, pInputEvent->key, pElement, &pClickEvent) == S_OK)
-               {
-                  BubbleEvent(pClickEvent);
-               }
-            }
-         }
-
-         cAutoIPtr<IGUIEvent> pEvent;
-         if (GUIEventCreate(eventCode, pInputEvent->point, pInputEvent->key, pElement, &pEvent) == S_OK)
-         {
-            return BubbleEvent(pEvent);
-         }
-      }
-   }
-   else
-   {
-      cAutoIPtr<IGUIElement> pElement;
-      if (GetFocus(&pElement) == S_OK)
-      {
-         cAutoIPtr<IGUIEvent> pEvent;
-         if (GUIEventCreate(eventCode, pInputEvent->point, pInputEvent->key, pElement, &pEvent) == S_OK)
-         {
-            return BubbleEvent(pEvent);
-         }
+         return BubbleEvent(pEvent);
       }
    }
 

@@ -1,10 +1,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 // $Id$
 
-#ifndef INCLUDED_GUIBUTTON_H
-#define INCLUDED_GUIBUTTON_H
+#ifndef INCLUDED_GUIPANEL_H
+#define INCLUDED_GUIPANEL_H
 
 #include "guiapi.h"
+
+#include <list>
 
 #ifdef _MSC_VER
 #pragma once
@@ -14,14 +16,14 @@ F_DECLARE_INTERFACE(IRenderFont);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGUIButtonElement
+// CLASS: cGUIPanelElement
 //
 
-class cGUIButtonElement : public cComObject<IMPLEMENTS(IGUIButtonElement)>
+class cGUIPanelElement : public cComObject<IMPLEMENTS(IGUIPanelElement)>
 {
 public:
-   cGUIButtonElement();
-   ~cGUIButtonElement();
+   cGUIPanelElement();
+   ~cGUIPanelElement();
 
    virtual const char * GetId() const;
    virtual void SetId(const char * pszId);
@@ -52,52 +54,43 @@ public:
    virtual tResult GetRenderer(IGUIElementRenderer * * ppRenderer);
    virtual tResult SetRenderer(IGUIElementRenderer * pRenderer);
 
-   virtual bool IsArmed() const;
-   virtual void SetArmed(bool bArmed);
-
-   virtual bool IsMouseOver() const;
-   virtual void SetMouseOver(bool bMouseOver);
-
-   virtual const char * GetText() const;
-   virtual void SetText(const char * pszText);
+   virtual tResult AddElement(IGUIElement * pElement);
+   virtual tResult RemoveElement(IGUIElement * pElement);
+   virtual tResult GetElements(IGUIElementEnum * * ppElements);
 
 private:
    tGUIString m_id;
-   bool m_bHasFocus;
    bool m_bVisible;
    bool m_bEnabled;
    cAutoIPtr<IGUIElement> m_pParent;
    tGUIPoint m_position;
    tGUISize m_size;
    cAutoIPtr<IGUIElementRenderer> m_pRenderer;
-   bool m_bArmed;
-   bool m_bMouseOver;
-   tGUIString m_text;
+   typedef std::list<IGUIElement *> tGUIElementList;
+   tGUIElementList m_children;
 };
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGUIButtonElementFactory
+// CLASS: cGUIPanelElementFactory
 //
 
-class cGUIButtonElementFactory : public cComObject<IMPLEMENTS(IGUIElementFactory)>
+class cGUIPanelElementFactory : public cComObject<IMPLEMENTS(IGUIElementFactory)>
 {
 public:
    virtual tResult CreateElement(const TiXmlElement * pXmlElement, IGUIElement * * ppElement);
 };
 
-
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGUIButtonRenderer
+// CLASS: cGUIPanelRenderer
 //
 
-class cGUIButtonRenderer : public cComObject<IMPLEMENTS(IGUIElementRenderer)>
+class cGUIPanelRenderer : public cComObject<IMPLEMENTS(IGUIElementRenderer)>
 {
 public:
-   cGUIButtonRenderer();
-   ~cGUIButtonRenderer();
+   cGUIPanelRenderer();
+   ~cGUIPanelRenderer();
 
    virtual tResult Render(IGUIElement * pElement, IRenderDevice * pRenderDevice);
 
@@ -109,10 +102,10 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGUIButtonRendererFactory
+// CLASS: cGUIPanelRendererFactory
 //
 
-class cGUIButtonRendererFactory : public cComObject<IMPLEMENTS(IGUIElementRendererFactory)>
+class cGUIPanelRendererFactory : public cComObject<IMPLEMENTS(IGUIElementRendererFactory)>
 {
 public:
    virtual tResult CreateRenderer(IGUIElement * pElement, IGUIElementRenderer * * ppRenderer);
@@ -120,4 +113,4 @@ public:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // !INCLUDED_GUIBUTTON_H
+#endif // !INCLUDED_GUIPANEL_H

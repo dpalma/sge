@@ -16,6 +16,7 @@ F_DECLARE_INTERFACE(IGUIElement);
 F_DECLARE_INTERFACE(IGUIElementFactory);
 F_DECLARE_INTERFACE(IGUIElementRenderer);
 F_DECLARE_INTERFACE(IGUIElementRendererFactory);
+F_DECLARE_INTERFACE(IGUIElementEnum);
 F_DECLARE_INTERFACE(IGUIEvent);
 F_DECLARE_INTERFACE(IGUIContainerElement);
 F_DECLARE_INTERFACE(IGUIPanelElement);
@@ -104,6 +105,21 @@ interface IGUIElementRendererFactory : IUnknown
    virtual tResult CreateRenderer(IGUIElement * pElement, IGUIElementRenderer * * ppRenderer) = 0;
 };
 
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IGUIElementEnum
+//
+
+interface IGUIElementEnum : IUnknown
+{
+   virtual tResult Next(ulong count, IGUIElement * * ppElements, ulong * pnElements) = 0;
+   virtual tResult Skip(ulong count) = 0;
+   virtual tResult Reset() = 0;
+   virtual tResult Clone(IGUIElementEnum * * ppEnum) = 0;
+};
+
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // INTERFACE: IGUIEvent
@@ -149,6 +165,7 @@ interface IGUIContainerElement : IGUIElement
 {
    virtual tResult AddElement(IGUIElement * pElement) = 0;
    virtual tResult RemoveElement(IGUIElement * pElement) = 0;
+   virtual tResult GetElements(IGUIElementEnum * * ppElements) = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -10,6 +10,8 @@
 #pragma once
 #endif
 
+F_DECLARE_INTERFACE(IRenderFont);
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUIButtonElement
@@ -83,6 +85,37 @@ class cGUIButtonElementFactory : public cComObject<IMPLEMENTS(IGUIElementFactory
 {
 public:
    virtual tResult CreateElement(const TiXmlElement * pXmlElement, IGUIElement * * ppElement);
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cGUIButtonRenderer
+//
+
+class cGUIButtonRenderer : public cComObject<IMPLEMENTS(IGUIElementRenderer)>
+{
+public:
+   cGUIButtonRenderer();
+   ~cGUIButtonRenderer();
+
+   virtual tResult Render(IGUIElement * pElement, IRenderDevice * pRenderDevice);
+
+   virtual tGUISize GetPreferredSize(IGUIElement * pElement);
+
+private:
+   cAutoIPtr<IRenderFont> m_pFont;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cGUIButtonRendererFactory
+//
+
+class cGUIButtonRendererFactory : public cComObject<IMPLEMENTS(IGUIElementRendererFactory)>
+{
+public:
+   virtual tResult CreateRenderer(IGUIElement * pElement, IGUIElementRenderer * * ppRenderer);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

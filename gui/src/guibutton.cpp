@@ -5,6 +5,10 @@
 
 #include "guibutton.h"
 
+#include "font.h"
+#include "color.h"
+#include "render.h"
+
 #include <tinyxml.h>
 
 #include "dbgalloc.h" // must be last header
@@ -234,16 +238,19 @@ tResult cGUIButtonElementFactory::CreateElement(const TiXmlElement * pXmlElement
 
    if (pXmlElement != NULL)
    {
-      cAutoIPtr<IGUIButtonElement> pButton = static_cast<IGUIButtonElement *>(new cGUIButtonElement);
-      if (!!pButton)
+      if (strcmp(pXmlElement->Value(), "button") == 0)
       {
-         if (pXmlElement->Attribute("text"))
+         cAutoIPtr<IGUIButtonElement> pButton = static_cast<IGUIButtonElement *>(new cGUIButtonElement);
+         if (!!pButton)
          {
-            pButton->SetText(pXmlElement->Attribute("text"));
-         }
+            if (pXmlElement->Attribute("text"))
+            {
+               pButton->SetText(pXmlElement->Attribute("text"));
+            }
 
-         *ppElement = CTAddRef(pButton);
-         return S_OK;
+            *ppElement = CTAddRef(pButton);
+            return S_OK;
+         }
       }
    }
    else
@@ -253,6 +260,87 @@ tResult cGUIButtonElementFactory::CreateElement(const TiXmlElement * pXmlElement
    }
 
    return E_FAIL;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cGUIButtonRenderer
+//
+
+///////////////////////////////////////
+
+cGUIButtonRenderer::cGUIButtonRenderer()
+ : m_pFont(FontCreateDefault())
+{
+}
+
+///////////////////////////////////////
+
+cGUIButtonRenderer::~cGUIButtonRenderer()
+{
+}
+
+///////////////////////////////////////
+
+tResult cGUIButtonRenderer::Render(IGUIElement * pElement, IRenderDevice * pRenderDevice)
+{
+   if (pElement == NULL || pRenderDevice == NULL)
+   {
+      return E_POINTER;
+   }
+
+   // TODO
+
+   cAutoIPtr<IGUIButtonElement> pButton;
+   if (pElement->QueryInterface(IID_IGUIButtonElement, (void**)&pButton) == S_OK)
+   {
+      tGUIPoint pos = pButton->GetPosition();
+      tGUISize size = pButton->GetSize();
+
+      tRect rect(pos.x, pos.y, pos.x + size.width, pos.y + size.height);
+      m_pFont->DrawText(pButton->GetText(), -1, kDT_NoClip, &rect, cColor(1,1,1,1));
+
+      return S_OK;
+   }
+
+   return E_FAIL;
+}
+
+///////////////////////////////////////
+
+tGUISize cGUIButtonRenderer::GetPreferredSize(IGUIElement * pElement)
+{
+   if (pElement != NULL)
+   {
+      cAutoIPtr<IGUIButtonElement> pButton;
+      if (pElement->QueryInterface(IID_IGUIButtonElement, (void**)&pButton) == S_OK)
+      {
+         tRect rect(0,0,0,0);
+         m_pFont->DrawText(pButton->GetText(), -1, kDT_CalcRect, &rect, cColor(1,1,1,1));
+         return tGUISize(rect.GetWidth(), rect.GetHeight());
+      }
+   }
+   return tGUISize(0,0);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cGUIButtonRendererFactory
+//
+
+AUTOREGISTER_GUIELEMENTRENDERERFACTORY(button, cGUIButtonRendererFactory);
+
+tResult cGUIButtonRendererFactory::CreateRenderer(IGUIElement * /*pElement*/, IGUIElementRenderer * * ppRenderer)
+{
+   if (ppRenderer == NULL)
+   {
+      return E_POINTER;
+   }
+
+   *ppRenderer = static_cast<IGUIElementRenderer *>(new cGUIButtonRenderer);
+   return (*ppRenderer != NULL) ? S_OK : E_OUTOFMEMORY;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -54,6 +54,7 @@ private:
    IGUIElement * AccessMouseOver();
 
    bool BubbleEvent(IGUIEvent * pEvent);
+   bool GetEventTarget(const sInputEvent * pEvent, IGUIElement * * ppElement);
    bool HandleInputEvent(const sInputEvent * pEvent);
 
    class cInputListener : public cComObject<IMPLEMENTS(IInputListener)>
