@@ -67,13 +67,22 @@ protected:
    void RemoveAllElements();
 
    template <typename F>
-   void ForEachElement(F f)
+   tResult ForEachElement(F f)
    {
+      tResult result = E_FAIL;
       tGUIElementList::iterator iter;
       for (iter = m_elements.begin(); iter != m_elements.end(); iter++)
       {
-         f(*iter);
+         result = f(*iter);
+         // S_OK means success (good)
+         // S_FALSE means not visible (good)
+         // otherwise, error (bad)
+         if (FAILED(result))
+         {
+            break;
+         }
       }
+      return result;
    }
 
    tResult GetHitElement(const tGUIPoint & point, IGUIElement * * ppElement);

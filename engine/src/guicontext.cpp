@@ -175,29 +175,45 @@ tResult cGUIContext::LoadFromString(const char * psz)
 
 ///////////////////////////////////////
 
-struct sRenderElement
+class cRenderElement
 {
-   sRenderElement() : m_bError(false) {}
+public:
+   cRenderElement(IRenderDevice * pRenderDevice);
 
-   void operator()(IGUIElement * pGUIElement)
+   tResult operator()(IGUIElement * pGUIElement);
+
+private:
+   cAutoIPtr<IRenderDevice> m_pRenderDevice;
+};
+
+cRenderElement::cRenderElement(IRenderDevice * pRenderDevice)
+ : m_pRenderDevice(CTAddRef(pRenderDevice))
+{
+}
+
+tResult cRenderElement::operator()(IGUIElement * pGUIElement)
+{
+   if (pGUIElement == NULL)
    {
-      if (pGUIElement->IsVisible())
+      return E_POINTER;
+   }
+
+   if (!pGUIElement->IsVisible())
+   {
+      return S_FALSE;
+   }
+
+   cAutoIPtr<IGUIElementRenderer> pRenderer;
+   if (pGUIElement->GetRenderer(&pRenderer) == S_OK)
+   {
+      if (pRenderer->Render(pGUIElement, m_pRenderDevice) == S_OK)
       {
-         cAutoIPtr<IGUIElementRenderer> pRenderer;
-         if (pGUIElement->GetRenderer(&pRenderer) == S_OK)
-         {
-            if (pRenderer->Render(pGUIElement, m_pRenderDevice) != S_OK)
-            {
-               DebugMsg("WARNING: Error during GUI rendering\n");
-               m_bError = true;
-            }
-         }
+         return S_OK;
       }
    }
 
-   cAutoIPtr<IRenderDevice> m_pRenderDevice;
-   bool m_bError;
-};
+   return E_FAIL;
+}
 
 ///////////////////////////////////////
 
@@ -220,9 +236,7 @@ tResult cGUIContext::RenderGUI(IRenderDevice * pRenderDevice)
 
    pRenderDevice->SetRenderState(kRS_EnableDepthBuffer, FALSE);
 
-   sRenderElement renderElementFunctor;
-   renderElementFunctor.m_pRenderDevice = CTAddRef(pRenderDevice);
-   ForEachElement(renderElementFunctor);
+   ForEachElement(cRenderElement(pRenderDevice));
 
    pRenderDevice->SetRenderState(kRS_EnableDepthBuffer, TRUE);
 

@@ -32,11 +32,12 @@ class cSizeAndPlaceElement
 public:
    cSizeAndPlaceElement(const tGUIRect & rect) : m_rect(rect) {}
 
-   void operator()(IGUIElement * pGUIElement)
+   tResult operator()(IGUIElement * pGUIElement)
    {
       Assert(pGUIElement != NULL);
       GUISizeElement(m_rect, pGUIElement);
       GUIPlaceElement(m_rect, pGUIElement);
+      return S_OK;
    }
 
 private:

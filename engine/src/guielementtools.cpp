@@ -89,10 +89,11 @@ tResult GUIElementRenderChildren(IGUIContainerElement * pContainer,
             cAutoIPtr<IGUIElementRenderer> pChildRenderer;
             if (pChild->GetRenderer(&pChildRenderer) == S_OK)
             {
-               if ((result = pChildRenderer->Render(pChild, pRenderDevice)) != S_OK)
+               result = pChildRenderer->Render(pChild, pRenderDevice);
+               if (FAILED(result))
                {
-                  DebugMsg("WARNING: Error rendering child element\n");
-                  return result;
+                  SafeRelease(pChild);
+                  break;
                }
             }
          }
@@ -102,7 +103,7 @@ tResult GUIElementRenderChildren(IGUIContainerElement * pContainer,
       }
    }
 
-   return S_OK;
+   return result;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
