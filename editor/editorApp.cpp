@@ -414,9 +414,9 @@ tResult cEditorApp::RemoveLoopClient(IEditorLoopClient * pLoopClient)
 
 ////////////////////////////////////////
 
-tResult cEditorApp::GetMapSettings(uint * pXDimension, uint * pZDimension, cStr * pTileSet)
+tResult cEditorApp::GetMapSettings(cMapSettings * pMapSettings)
 {
-   if (pXDimension == NULL || pZDimension == NULL || pTileSet == NULL)
+   if (pMapSettings == NULL)
    {
       return E_POINTER;
    }
@@ -432,26 +432,34 @@ tResult cEditorApp::GetMapSettings(uint * pXDimension, uint * pZDimension, cStr 
 
    if (m_bPromptMapSettings)
    {
-      cMapSettingsDlg dlg(g_mapSizes, _countof(g_mapSizes), kDefaultMapSizeIndex, tileSets, 0, AfxGetMainWnd());
+      cMapSettingsDlg dlg(g_mapSizes, _countof(g_mapSizes), kDefaultMapSizeIndex,
+         tileSets, 0, kHeightData_None, AfxGetMainWnd());
 
       // Shouldn't be allowed to cancel the dialog
       Verify(dlg.DoModal() == IDOK);
 
       SIZE mapSize;
-      cStr tileSet;
+      cStr tileSet, heightMap;
 
       Verify(dlg.GetSelectedSize(&mapSize));
       Verify(dlg.GetSelectedTileSet(&tileSet));
+      Verify(dlg.GetHeightDataFile(&heightMap));
 
-      *pXDimension = mapSize.cx;
-      *pZDimension = mapSize.cy;
-      *pTileSet = tileSet;
+      *pMapSettings = cMapSettings(
+         mapSize.cx,
+         mapSize.cy,
+         tileSet,
+         dlg.GetHeightData(),
+         heightMap.empty() ? NULL : heightMap.c_str());
    }
    else
    {
-      *pXDimension = g_mapSizes[kDefaultMapSizeIndex].cx;
-      *pZDimension = g_mapSizes[kDefaultMapSizeIndex].cy;
-      *pTileSet = tileSets[0];
+      *pMapSettings = cMapSettings(
+         g_mapSizes[kDefaultMapSizeIndex].cx,
+         g_mapSizes[kDefaultMapSizeIndex].cy,
+         tileSets[0],
+         kHeightData_None,
+         NULL);
    }
 
    return S_OK;

@@ -60,13 +60,15 @@ BOOL cEditorDoc::OnNewDocument()
 
    Assert(AccessEditorApp() != NULL);
 
-   uint xDimension, zDimension;
-   cStr tileSet;
+   cMapSettings mapSettings;
 
-   tResult result = AccessEditorApp()->GetMapSettings(&xDimension, &zDimension, &tileSet);
+   tResult result = AccessEditorApp()->GetMapSettings(&mapSettings);
    if (result == S_OK)
    {
-      DebugMsg3("Create %d x %d map with tileset \"%s\"\n", xDimension, zDimension, tileSet.c_str());
+      DebugMsg3("Create %d x %d map with tileset \"%s\"\n",
+         mapSettings.GetXDimension(),
+         mapSettings.GetZDimension(),
+         mapSettings.GetTileSet());
    }
    else
    {
@@ -155,10 +157,14 @@ bool cEditorDoc::GetDimensions(uint * pxd, uint * pzd) const
    if (m_pHeightMap != NULL)
    {
       uint size = m_pHeightMap->GetSize();
-      if (pxd)
+      if (pxd != NULL)
+      {
          *pxd = size;
-      if (pzd)
+      }
+      if (pzd != NULL)
+      {
          *pzd = size;
+      }
       return true;
    }
    return false;

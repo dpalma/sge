@@ -8,9 +8,15 @@
 #define IDD_MAPSETTINGS                 130
 #define IDC_MAP_SIZE                    1000
 #define IDC_MAP_TILESET                 1001
+#define IDC_HEIGHT_NONE                 1002
+#define IDC_IMPORT_HEIGHT_MAP           1003
+#define IDC_HEIGHT_NOISE                1004
+#define IDC_BROWSE_HEIGHT_MAP           1005
+#define IDC_HEIGHT_MAP_FILE             1006
 #define IDS_NO_UNIT_TESTS               5000
 #define IDS_OUTPUT_BAR_TITLE            5001
 #define IDS_TOOL_PALETTE_BAR_TITLE      5002
+#define IDS_HEIGHT_MAP_FILTER           5003
 #define ID_TOOLS_UNITTESTRUNNER         32771
 #define ID_VIEW_CONTROL_BAR_FIRST       0xC100
 #define ID_VIEW_CONTROL_BAR1            0xC100
@@ -38,7 +44,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        131
 #define _APS_NEXT_COMMAND_VALUE         32773
-#define _APS_NEXT_CONTROL_VALUE         1002
+#define _APS_NEXT_CONTROL_VALUE         1007
 #define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif

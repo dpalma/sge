@@ -49,7 +49,7 @@ public:
    virtual tResult AddLoopClient(IEditorLoopClient * pLoopClient);
    virtual tResult RemoveLoopClient(IEditorLoopClient * pLoopClient);
 
-   virtual tResult GetMapSettings(uint * pXDimension, uint * pZDimension, cStr * pTileSet);
+   virtual tResult GetMapSettings(cMapSettings * pMapSettings);
 
 private:
    typedef std::vector<IEditorLoopClient *> tEditorLoopClients;

@@ -21,6 +21,40 @@ F_DECLARE_INTERFACE(IEditorTile);
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: cMapSettings
+//
+
+enum eHeightData
+{
+   kHeightData_None,
+   kHeightData_HeightMap,
+   kHeightData_Noise,
+};
+
+class cMapSettings
+{
+public:
+   cMapSettings();
+   cMapSettings(uint xDimension, uint zDimension, const tChar * pszTileSet,
+      eHeightData heightData, const tChar * pszHeightMapFile);
+   cMapSettings(const cMapSettings & mapSettings);
+   const cMapSettings & operator=(const cMapSettings & mapSettings);
+
+   inline uint GetXDimension() const { return m_xDimension; }
+   inline uint GetZDimension() const { return m_zDimension; }
+   inline const tChar * GetTileSet() const { return m_tileSet.c_str(); }
+   inline eHeightData GetHeightData() const { return m_heightData; }
+   inline const tChar * GetHeightMap() const { return m_heightMapFile.c_str(); }
+
+private:
+   uint m_xDimension, m_zDimension;
+   cStr m_tileSet;
+   eHeightData m_heightData;
+   cStr m_heightMapFile;
+};
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // INTERFACE: IEditorApp
 //
 
@@ -29,7 +63,7 @@ interface UUID("2A04E541-6BA1-41e9-92FA-E7B3D493F1A2") IEditorApp : IUnknown
    virtual tResult AddLoopClient(IEditorLoopClient * pLoopClient) = 0;
    virtual tResult RemoveLoopClient(IEditorLoopClient * pLoopClient) = 0;
 
-   virtual tResult GetMapSettings(uint * pXDimension, uint * pZDimension, cStr * pTileSet) = 0;
+   virtual tResult GetMapSettings(cMapSettings * pMapSettings) = 0;
 };
 
 IEditorApp * AccessEditorApp();
