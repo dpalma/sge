@@ -17,7 +17,6 @@
 #include "color.h"
 
 #include <cfloat>
-#include <string>
 #include <map>
 #include <algorithm>
 
@@ -189,157 +188,6 @@ tResult cReadWriteOps<cMs3dGroup>::Read(IReader * pReader, cMs3dGroup * pGroup)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cBone
-//
-
-///////////////////////////////////////
-
-cBone::cBone()
- : m_index(-1),
-   m_pParent(NULL),
-   m_bHaveWorldTransform(false)
-{
-}
-
-///////////////////////////////////////
-
-cBone::cBone(const cBone & other)
-{
-   operator =(other);
-}
-
-///////////////////////////////////////
-
-const cBone & cBone::operator =(const cBone & other)
-{
-   m_name = other.m_name;
-   m_index = other.m_index;
-   m_pParent = other.m_pParent;
-   m_children.resize(other.m_children.size());
-   std::copy(other.m_children.begin(), other.m_children.end(), m_children.begin());
-   m_localTransform = other.m_localTransform;
-   m_worldTransform = other.m_worldTransform;
-   m_bHaveWorldTransform = other.m_bHaveWorldTransform;
-   return *this;
-}
-
-///////////////////////////////////////
-
-bool cBone::AddChild(const cBone * pChild)
-{
-   if (pChild != NULL)
-   {
-      tChildren::iterator iter;
-      for (iter = m_children.begin(); iter != m_children.end(); iter++)
-      {
-         if ((*iter == pChild) || (strcmp((*iter)->GetName(), pChild->GetName()) == 0))
-         {
-            return false;
-         }
-      }
-
-      m_children.push_back(pChild);
-
-      const_cast<cBone *>(pChild)->m_pParent = this;
-      const_cast<cBone *>(pChild)->m_bHaveWorldTransform = false;
-
-      return true;
-   }
-
-   return false;
-}
-
-///////////////////////////////////////
-
-const tMatrix4 & cBone::GetWorldTransform() const
-{
-   if (!m_bHaveWorldTransform)
-   {
-      const cBone * pParent = GetParent();
-
-      if (pParent != NULL)
-      {
-         m_worldTransform = pParent->GetWorldTransform() * GetLocalTransform();
-      }
-      else
-      {
-         m_worldTransform = GetLocalTransform();
-      }
-
-      m_bHaveWorldTransform = true;
-   }
-
-   return m_worldTransform;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cMs3dBone
-//
-
-///////////////////////////////////////
-
-cMs3dBone::cMs3dBone()
-{
-   parentName[0] = 0;
-}
-
-///////////////////////////////////////
-
-cMs3dBone::cMs3dBone(const cMs3dBone & other)
-{
-   operator =(other);
-}
-
-///////////////////////////////////////
-
-const cMs3dBone & cMs3dBone::operator =(const cMs3dBone & other)
-{
-   cBone::operator =(static_cast<const cBone &>(other));
-   strcpy(parentName, other.parentName);
-   return *this;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-struct sMs3dBoneInfo
-{
-   char name[kMaxBoneName];
-   char parentName[kMaxBoneName];
-   float rotation[3];
-   float position[3];
-};
-
-template <>
-class cReadWriteOps<sMs3dBoneInfo>
-{
-public:
-   static tResult Read(IReader * pReader, sMs3dBoneInfo * pBoneInfo);
-};
-
-tResult cReadWriteOps<sMs3dBoneInfo>::Read(IReader * pReader, sMs3dBoneInfo * pBoneInfo)
-{
-   Assert(pReader != NULL);
-   Assert(pBoneInfo != NULL);
-
-   byte flags; // SELECTED | DIRTY
-
-   if (pReader->Read(&flags, sizeof(flags)) != S_OK
-      || pReader->Read(pBoneInfo->name, sizeof(pBoneInfo->name)) != S_OK
-      || pReader->Read(pBoneInfo->parentName, sizeof(pBoneInfo->parentName)) != S_OK
-      || pReader->Read(pBoneInfo->rotation, sizeof(pBoneInfo->rotation)) != S_OK
-      || pReader->Read(pBoneInfo->position, sizeof(pBoneInfo->position)) != S_OK)
-   {
-      return E_FAIL;
-   }
-
-   return S_OK;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 
 static tResult ReadKeyFrames(IReader * pReader, 
                              std::vector<sKeyFrameVec3> * pTranslationFrames,
@@ -397,13 +245,54 @@ static tResult ReadKeyFrames(IReader * pReader,
 
 
 ///////////////////////////////////////////////////////////////////////////////
+
+struct sMs3dBoneInfo
+{
+   char name[kMaxBoneName];
+   char parentName[kMaxBoneName];
+   float rotation[3];
+   float position[3];
+};
+
+template <>
+class cReadWriteOps<sMs3dBoneInfo>
+{
+public:
+   static tResult Read(IReader * pReader, sMs3dBoneInfo * pBoneInfo);
+};
+
+tResult cReadWriteOps<sMs3dBoneInfo>::Read(IReader * pReader, sMs3dBoneInfo * pBoneInfo)
+{
+   Assert(pReader != NULL);
+   Assert(pBoneInfo != NULL);
+
+   byte flags; // SELECTED | DIRTY
+
+   if (pReader->Read(&flags, sizeof(flags)) != S_OK
+      || pReader->Read(pBoneInfo->name, sizeof(pBoneInfo->name)) != S_OK
+      || pReader->Read(pBoneInfo->parentName, sizeof(pBoneInfo->parentName)) != S_OK
+      || pReader->Read(pBoneInfo->rotation, sizeof(pBoneInfo->rotation)) != S_OK
+      || pReader->Read(pBoneInfo->position, sizeof(pBoneInfo->position)) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   return S_OK;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cMs3dSkeleton
+// CLASS: cReadWriteOps<cSkeleton>
 //
 
-cMs3dSkeleton::cMs3dSkeleton()
+template <>
+class cReadWriteOps<cSkeleton>
 {
-}
+public:
+   static tResult Read(IReader * pReader, cSkeleton * pSkeleton);
+};
+
+///////////////////////////////////////
 
 template <>
 std::vector<IKeyFrameInterpolator *>::~vector()
@@ -412,129 +301,10 @@ std::vector<IKeyFrameInterpolator *>::~vector()
    clear();
 }
 
-cMs3dSkeleton::~cMs3dSkeleton()
-{
-   Reset();
-}
-
-void cMs3dSkeleton::GetBoneMatrices(float percent, tMatrices * pBoneMatrices) const
-{
-   Assert(percent >= 0 && percent <= 1);
-   Assert(pBoneMatrices != NULL);
-   Assert(pBoneMatrices->size() == GetBoneCount());
-
-   for (int i = 0; i < GetBoneCount(); i++)
-   {
-      tQuat rotation;
-      tVec3 translation;
-
-      IKeyFrameInterpolator * pInterpolator = m_interpolators[i];
-
-      if (pInterpolator->Interpolate(
-         percent * pInterpolator->GetPeriod(),
-         NULL, &rotation, &translation) == S_OK)
-      {
-         tMatrix4 mt;
-         MatrixTranslate(translation.x, translation.y, translation.z, &mt);
-
-         tMatrix4 mr;
-         rotation.ToMatrix(&mr);
-
-         tMatrix4 temp = mt * mr;
-
-         const cBone & bone = GetBone(i);
-
-         tMatrix4 mf = bone.GetLocalTransform() * temp;
-
-         if (bone.GetParent() == NULL)
-         {
-            temp = mf;
-         }
-         else
-         {
-            temp = (*pBoneMatrices)[bone.GetParent()->GetIndex()] * mf;
-         }
-
-         (*pBoneMatrices)[i] = temp;
-      }
-   }
-}
-
-tResult cMs3dSkeleton::GetInterpolator(int index, IKeyFrameInterpolator * * ppInterpolator) const
-{
-   if (index >= 0 && index < m_interpolators.size() && ppInterpolator != NULL)
-   {
-      *ppInterpolator = m_interpolators[index];
-      (*ppInterpolator)->AddRef();
-      return S_OK;
-   }
-   return E_FAIL;
-}
-
-void cMs3dSkeleton::Reset()
-{
-   m_bones.clear();
-   std::for_each(m_interpolators.begin(), m_interpolators.end(), CTInterfaceMethodRef(&IUnknown::Release));
-   m_interpolators.clear();
-}
-
-void cMs3dSkeleton::SetupJoints()
-{
-   if (!m_bones.empty())
-   {
-      typedef std::map<std::string, cBone *> tBoneNames;
-      tBoneNames boneNames;
-
-      std::vector<cMs3dBone>::iterator iter;
-
-      for (iter = m_bones.begin(); iter != m_bones.end(); iter++)
-      {
-         const char * pszBoneName = iter->GetName();
-         Assert(pszBoneName != NULL);
-         if (strlen(pszBoneName) > 0)
-         {
-            boneNames.insert(std::make_pair(pszBoneName, iter));
-         }
-      }
-
-      for (iter = m_bones.begin(); iter != m_bones.end(); iter++)
-      {
-         const char * pszParentName = iter->GetParentName();
-         Assert(pszParentName != NULL);
-         if (strlen(pszParentName) > 0)
-         {
-            tBoneNames::iterator n = boneNames.find(pszParentName);
-            if (n != boneNames.end())
-            {
-               n->second->AddChild(iter);
-            }
-         }
-      }
-   }
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cReadWriteOps<cMs3dSkeleton>
-//
-
-template <>
-class cReadWriteOps<cMs3dSkeleton>
-{
-public:
-   static tResult Read(IReader * pReader, cMs3dSkeleton * pSkeleton);
-};
-
-///////////////////////////////////////
-
-tResult cReadWriteOps<cMs3dSkeleton>::Read(IReader * pReader, cMs3dSkeleton * pSkeleton)
+tResult cReadWriteOps<cSkeleton>::Read(IReader * pReader, cSkeleton * pSkeleton)
 {
    Assert(pReader != NULL);
    Assert(pSkeleton != NULL);
-
-   Assert(pSkeleton->m_bones.empty());
-   Assert(pSkeleton->m_interpolators.empty());
 
    tResult result = E_FAIL;
 
@@ -552,23 +322,19 @@ tResult cReadWriteOps<cMs3dSkeleton>::Read(IReader * pReader, cMs3dSkeleton * pS
          break;
       }
 
-      pSkeleton->m_bones.resize(nJoints);
+      std::map<cStr, int> boneNames; // map bone names to indices
 
-      for (uint i = 0; i < nJoints; i++)
+      std::vector<sMs3dBoneInfo> boneInfo(nJoints);
+
+      std::vector<IKeyFrameInterpolator *> interpolators(nJoints);
+
+      uint i;
+      for (i = 0; i < nJoints; i++)
       {
-         sMs3dBoneInfo boneInfo;
-         if (pReader->Read(&boneInfo) != S_OK)
+         if (pReader->Read(&boneInfo[i]) != S_OK)
             break;
 
-         pSkeleton->m_bones[i].SetName(boneInfo.name);
-         pSkeleton->m_bones[i].SetIndex(i);
-         pSkeleton->m_bones[i].SetParentName(boneInfo.parentName);
-
-         tMatrix4 mt, mr;
-         MatrixTranslate(boneInfo.position[0], boneInfo.position[1], boneInfo.position[2], &mt);
-         MatrixFromAngles(tVec3(boneInfo.rotation), &mr);
-
-         pSkeleton->m_bones[i].SetLocalTransform(mt * mr);
+         boneNames.insert(std::make_pair(cStr(boneInfo[i].name), i));
 
          std::vector<sKeyFrameVec3> translationFrames;
          std::vector<sKeyFrameQuat> rotationFrames;
@@ -578,9 +344,7 @@ tResult cReadWriteOps<cMs3dSkeleton>::Read(IReader * pReader, cMs3dSkeleton * pS
          }
 
          IKeyFrameInterpolator * pInterpolator = NULL;
-         if (KeyFrameInterpolatorCreate(
-            pSkeleton->m_bones[i].GetName(),
-            NULL, 0,
+         if (KeyFrameInterpolatorCreate(boneInfo[i].name, NULL, 0,
             &rotationFrames[0], rotationFrames.size(),
             &translationFrames[0], rotationFrames.size(),
             &pInterpolator) != S_OK)
@@ -589,13 +353,37 @@ tResult cReadWriteOps<cMs3dSkeleton>::Read(IReader * pReader, cMs3dSkeleton * pS
             break;
          }
 
-         pSkeleton->m_interpolators.push_back(pInterpolator);
+         interpolators[i] = pInterpolator;
       }
 
       if (i < nJoints)
          break;
 
-      pSkeleton->SetupJoints();
+      std::vector<cBone> bones(nJoints);
+
+      for (i = 0; i < nJoints; i++)
+      {
+         bones[i].SetName(boneInfo[i].name);
+         bones[i].SetIndex(i);
+
+         if (strlen(boneInfo[i].parentName) > 0)
+         {
+            std::map<cStr, int>::iterator n = boneNames.find(boneInfo[i].parentName);
+            if (n != boneNames.end())
+            {
+               Assert(strcmp(boneInfo[n->second].name, boneInfo[i].parentName) == 0);
+               bones[i].SetParentIndex(n->second);
+            }
+         }
+
+         tMatrix4 mt, mr;
+         MatrixTranslate(boneInfo[i].position[0], boneInfo[i].position[1], boneInfo[i].position[2], &mt);
+         MatrixFromAngles(tVec3(boneInfo[i].rotation), &mr);
+
+         bones[i].SetLocalTransform(mt * mr);
+      }
+
+      pSkeleton->Create(&bones[0], bones.size(), &interpolators[0], interpolators.size());
 
       result = S_OK;
    }

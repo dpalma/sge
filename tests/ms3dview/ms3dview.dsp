@@ -120,6 +120,10 @@ SOURCE=.\ms3dviewView.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\skeleton.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\StdAfx.cpp
 # ADD CPP /Yc"stdafx.h"
 # End Source File
@@ -154,6 +158,10 @@ SOURCE=.\ms3dviewView.h
 # Begin Source File
 
 SOURCE=.\Resource.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\skeleton.h
 # End Source File
 # Begin Source File
 
