@@ -3,10 +3,15 @@
 
 #include "stdhdr.h"
 
-#include "gcommon.h"
+#include "resmgr.h"
+#include "globalobj.h"
 #include "image.h"
 #include "pixelformat.h"
 #include "heightmap.h"
+
+#include "dbgalloc.h" // must be last header
+
+F_DECLARE_INTERFACE(IResourceManager);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -34,7 +39,9 @@ cHeightMap::~cHeightMap()
 
 bool cHeightMap::Load(const char * pszFilename)
 {
-   cImage * pNewImage = ImageLoad(AccessResourceManager(), pszFilename);
+   UseGlobal(ResourceManager);
+
+   cImage * pNewImage = ImageLoad(pResourceManager, pszFilename);
    if (pNewImage == NULL)
       return false;
 

@@ -3,15 +3,16 @@
 
 #include "stdhdr.h"
 
-#include "TechMath.h"
+#include "techmath.h"
 #include "parse.h"
 #include "ui.h"
 #include "uiparse.h"
 #include "uiwidgets.h"
 #include "uiwidgutilstem.h"
 #include "uievent.h"
-#include "ReadWriteAPI.h"
+#include "readwriteapi.h"
 #include "resmgr.h"
+#include "globalobj.h"
 #include <tinyxml.h>
 
 #ifdef HAVE_CPPUNIT
@@ -20,8 +21,6 @@
 #endif
 
 #include "dbgalloc.h" // must be last header
-
-IResourceManager * AccessResourceManager();
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -378,7 +377,8 @@ static char * GetEntireContents(IReader * pReader)
 
 int UIParseFile(const char * pszXmlFile, tUIComponentList * pComponents, cUIParseHook * pHook /*=NULL*/)
 {
-   cAutoIPtr<IReader> pReader = AccessResourceManager()->Find(pszXmlFile);
+   UseGlobal(ResourceManager);
+   cAutoIPtr<IReader> pReader = pResourceManager->Find(pszXmlFile);
    if (!pReader)
       return 0;
 

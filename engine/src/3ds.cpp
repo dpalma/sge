@@ -7,7 +7,7 @@
 #include "3ds.h"
 #include "mesh.h"
 #include "material.h"
-#include "ReadWriteAPI.h"
+#include "readwriteapi.h"
 #include "str.h"
 #include "vec3.h"
 #include "vec4.h"
@@ -15,6 +15,7 @@
 #include "image.h"
 #include "color.h"
 #include "resmgr.h"
+#include "globalobj.h"
 
 #include <map>
 #include <vector>
@@ -26,7 +27,6 @@ class c3dsSubMesh;
 
 // @HACK
 extern IRenderDevice * AccessRenderDevice();
-extern IResourceManager * AccessResourceManager();
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -538,8 +538,10 @@ void c3dsMesh::AddMaterial(const char * pszMaterial, const s3dsMaterial * p3dsMa
 
       if (p3dsMaterial->szTexture[0] != 0)
       {
+         UseGlobal(ResourceManager);
+
          cImage texture;
-         if (ImageLoad(AccessResourceManager(), p3dsMaterial->szTexture, &texture))
+         if (ImageLoad(pResourceManager, p3dsMaterial->szTexture, &texture))
          {
             AccessRenderDevice()->CreateTexture(&texture, &pTexture);
          }

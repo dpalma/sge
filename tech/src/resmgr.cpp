@@ -2,76 +2,28 @@
 // $Id$
 
 #include "stdhdr.h"
+
 #include "resmgr.h"
 #include "filepath.h"
 #include "filespec.h"
 #include "readwriteapi.h"
+#include "globalobj.h"
 
-#include <stdio.h>
+#include <cstdio>
 #include <vector>
 
 #include "dbgalloc.h" // must be last header
 
-using namespace std;
-
-///////////////////////////////////////////////////////////////////////////////
-
-vector<cFilePath> g_searchPaths;
-
-///////////////////////////////////////////////////////////////////////////////
-
-IReader * ResourceFind(const char * pszName)
-{
-   if (cFileSpec(pszName).Exists())
-      return FileCreateReader(cFileSpec(pszName));
-
-   vector<cFilePath>::iterator iter;
-   for (iter = g_searchPaths.begin(); iter != g_searchPaths.end(); iter++)
-   {
-      cFileSpec file(*iter, pszName);
-      if (file.Exists())
-      {
-         return FileCreateReader(file);
-      }
-   }
-
-   return NULL;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void ResourceAddSearchPath(const char * pszPath, bool bRecurse)
-{
-   cFilePath path(pszPath);
-   path.MakeFullPath();
-
-   g_searchPaths.push_back(path);
-
-   if (bRecurse)
-   {
-      vector<string> dirs;
-      if (path.ListDirs(&dirs) > 0)
-      {
-         vector<string>::iterator iter;
-         for (iter = dirs.begin(); iter != dirs.end(); iter++)
-         {
-            cFilePath searchPath(path);
-            searchPath.AddRelative(iter->c_str());
-
-            ResourceAddSearchPath(searchPath.GetPath(), bRecurse);
-         }
-      }
-   }
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cResourceManager
+// CLASS: cResourceManagerGlobalObj
 //
 
-class cResourceManager : public cComObject<IMPLEMENTS(IResourceManager)>
+class cResourceManagerGlobalObj : public cGlobalObject<IMPLEMENTS(IResourceManager)>
 {
 public:
+   cResourceManagerGlobalObj();
+
    virtual IReader * Find(const char * pszName);
    virtual void AddSearchPath(const char * pszPath, bool bRecurse);
 
@@ -81,7 +33,14 @@ private:
 
 ///////////////////////////////////////
 
-IReader * cResourceManager::Find(const char * pszName)
+cResourceManagerGlobalObj::cResourceManagerGlobalObj()
+ : cGlobalObject<IMPLEMENTS(IResourceManager)>(kResourceManagerName)
+{
+}
+
+///////////////////////////////////////
+
+IReader * cResourceManagerGlobalObj::Find(const char * pszName)
 {
    if (cFileSpec(pszName).Exists())
       return FileCreateReader(cFileSpec(pszName));
@@ -101,7 +60,7 @@ IReader * cResourceManager::Find(const char * pszName)
 
 ///////////////////////////////////////
 
-void cResourceManager::AddSearchPath(const char * pszPath, bool bRecurse)
+void cResourceManagerGlobalObj::AddSearchPath(const char * pszPath, bool bRecurse)
 {
    cFilePath path(pszPath);
    path.MakeFullPath();
@@ -127,9 +86,9 @@ void cResourceManager::AddSearchPath(const char * pszPath, bool bRecurse)
 
 ///////////////////////////////////////
 
-IResourceManager * ResourceManagerCreate()
+void ResourceManagerCreate()
 {
-   return static_cast<IResourceManager *>(new cResourceManager);
+   cAutoIPtr<IResourceManager>(new cResourceManagerGlobalObj);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -26,9 +26,11 @@ interface IResourceManager : IUnknown
    virtual void AddSearchPath(const char * pszPath, bool bRecurse) = 0;
 };
 
+#define kResourceManagerName "ResourceManager"
+
 ///////////////////////////////////////
 
-TECH_API IResourceManager * ResourceManagerCreate();
+TECH_API void ResourceManagerCreate();
 
 ///////////////////////////////////////////////////////////////////////////////
 

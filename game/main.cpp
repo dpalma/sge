@@ -80,18 +80,11 @@ cAutoIPtr<IUIManager> g_pUIManager;
 cAutoIPtr<IRenderDevice> g_pRenderDevice;
 cAutoIPtr<IWindow> g_pWindow;
 
-cAutoIPtr<IResourceManager> g_pResourceManager;
-
 ///////////////////////////////////////////////////////////////////////////////
 
 IRenderDevice * AccessRenderDevice()
 {
    return static_cast<IRenderDevice *>(g_pRenderDevice);
-}
-
-IResourceManager * AccessResourceManager()
-{
-   return static_cast<IResourceManager *>(g_pResourceManager);
 }
 
 
@@ -467,6 +460,7 @@ static bool RunUnitTests()
 static void RegisterGlobalObjects()
 {
    SimCreate();
+   ResourceManagerCreate();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -484,14 +478,7 @@ bool MainInit(int argc, char * argv[])
 
    g_pConfig->ParseCmdLine(argc, argv);
 
-   g_pResourceManager = ResourceManagerCreate();
-
    cStr temp;
-   if (ConfigGet("data", &temp) == S_OK)
-   {
-      AccessResourceManager()->AddSearchPath(temp, true);
-   }
-
    if (ConfigGet("debug_log", &temp) == S_OK)
    {
       DebugEchoFileStart(temp);
@@ -507,6 +494,12 @@ bool MainInit(int argc, char * argv[])
    {
       DebugMsg("One or more application-level services failed to start!\n");
       return false;
+   }
+
+   if (ConfigGet("data", &temp) == S_OK)
+   {
+      UseGlobal(ResourceManager);
+      pResourceManager->AddSearchPath(temp, true);
    }
 
    cStr autoExecScript(kAutoExecScript);
@@ -622,8 +615,6 @@ void MainTerm()
 
       SafeRelease(g_pWindow);
    }
-
-   SafeRelease(g_pResourceManager);
 
    if (g_pGameCameraController)
       g_pGameCameraController->Disconnect();

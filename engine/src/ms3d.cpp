@@ -9,7 +9,7 @@
 #include "ms3d.h"
 #include "mesh.h"
 #include "material.h"
-#include "ReadWriteAPI.h"
+#include "readwriteapi.h"
 #include "str.h"
 #include "vec3.h"
 #include "comtools.h"
@@ -18,6 +18,7 @@
 #include "color.h"
 #include "render.h"
 #include "resmgr.h"
+#include "globalobj.h"
 
 #include <cfloat>
 #include <vector>
@@ -420,8 +421,10 @@ tResult cMs3dMesh::Read(IReader * pReader)
 
       if (material.texture[0] != 0)
       {
+         UseGlobal(ResourceManager);
+
          cImage texture;
-         if (ImageLoad(AccessResourceManager(), material.texture, &texture))
+         if (ImageLoad(pResourceManager, material.texture, &texture))
          {
             AccessRenderDevice()->CreateTexture(&texture, &pTexture);
          }

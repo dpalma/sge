@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "TechTime.h"
+#include "techtime.h"
 #include "gcommon.h"
 #include "uiwidgets.h"
 #include "uiwidgutilstem.h"
@@ -15,6 +15,9 @@
 #include "material.h"
 #include "vec3.h"
 #include "image.h"
+#include "resmgr.h"
+#include "globalobj.h"
+
 #include <locale>
 
 // @HACK @TODO: only needed while cUIBitmapButton moves to new
@@ -246,8 +249,10 @@ cUISize cUIImage::GetPreferredSize() const
 
 bool cUIImage::LoadImage(const char * pszFilename)
 {
+   UseGlobal(ResourceManager);
+
    cImage image;
-   if (ImageLoad(AccessResourceManager(), pszFilename, &image) != NULL)
+   if (ImageLoad(pResourceManager, pszFilename, &image) != NULL)
    {
       m_size = cUISize(image.GetWidth(), image.GetHeight());
       AccessRenderDevice()->CreateTexture(&image, &m_pTex);
@@ -384,8 +389,10 @@ cUISize cUIBitmapButton::GetPreferredSize() const
 
 bool cUIBitmapButton::SetBitmap(const char * pszName)
 {
+   UseGlobal(ResourceManager);
+
    cImage image;
-   if (ImageLoad(AccessResourceManager(), pszName, &image) != NULL)
+   if (ImageLoad(pResourceManager, pszName, &image) != NULL)
    {
       m_size = cUISize(image.GetWidth(), image.GetHeight());
 

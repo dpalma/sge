@@ -11,13 +11,11 @@
 #endif
 
 F_DECLARE_INTERFACE(IRenderDevice);
-F_DECLARE_INTERFACE(IResourceManager);
 
 ///////////////////////////////////////////////////////////////////////////////
 // main.cpp
 
 IRenderDevice * AccessRenderDevice();
-IResourceManager * AccessResourceManager();
 
 bool MainInit(int argc, char * argv[]);
 void MainTerm();

@@ -6,7 +6,8 @@
 #include "scenemesh.h"
 #include "mesh.h"
 #include "ggl.h"
-#include "gcommon.h"
+#include "resmgr.h"
+#include "globalobj.h"
 
 #include "dbgalloc.h" // must be last header
 
@@ -33,7 +34,9 @@ bool cSceneMesh::SetMesh(const char * pszMesh)
 {
    SafeRelease(m_pMesh);
 
-   m_pMesh = MeshLoad(AccessResourceManager(), pszMesh);
+   UseGlobal(ResourceManager);
+
+   m_pMesh = MeshLoad(pResourceManager, pszMesh);
 
    if (m_pMesh != NULL)
    {
