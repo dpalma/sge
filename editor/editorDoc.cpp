@@ -153,22 +153,6 @@ size_t cEditorDoc::GetVertexCount() const
    return (m_pTerrain != NULL) ? m_pTerrain->GetVertexCount() : 0;
 }
 
-void cEditorDoc::GetMapDimensions(uint * pXDim, uint * pZDim) const
-{
-   if (m_pTerrain != NULL)
-   {
-      m_pTerrain->GetDimensions(pXDim, pZDim);
-   }
-}
-
-void cEditorDoc::GetMapExtents(uint * pXExt, uint * pZExt) const
-{
-   if (m_pTerrain != NULL)
-   {
-      m_pTerrain->GetExtents(pXExt, pZExt);
-   }
-}
-
 /////////////////////////////////////////////////////////////////////////////
 // cEditorDoc commands
 

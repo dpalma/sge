@@ -13,6 +13,8 @@
 #pragma once
 #endif // _MSC_VER >= 1000
 
+class cTerrainTileTool;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cButtonPanel
@@ -40,7 +42,7 @@ private:
 
    CRect m_margins;
 
-   cAutoIPtr<IEditorTool> m_pTool;
+   cAutoIPtr<cTerrainTileTool> m_pTool;
 };
 
 
@@ -55,7 +57,14 @@ public:
    cTerrainTileTool();
    ~cTerrainTileTool();
 
+   void SetTile(uint tile);
+
    virtual tResult OnLButtonDown(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+	virtual tResult OnLButtonUp(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+	virtual tResult OnMouseMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+
+private:
+   uint m_tile;
 };
 
 /////////////////////////////////////////////////////////////////////////////

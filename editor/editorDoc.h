@@ -41,8 +41,6 @@ public:
 
 // Operations
 public:
-   void GetMapDimensions(uint * pxd, uint * pzd) const;
-   void GetMapExtents(uint * px, uint * pz) const;
 
 // Overrides
 	// ClassWizard generated virtual function overrides

@@ -7,6 +7,7 @@
 #include "comtools.h"
 #include "connpt.h"
 #include "str.h"
+#include "vec3.h"
 
 #if _MSC_VER > 1000
 #pragma once
@@ -24,6 +25,7 @@ F_DECLARE_INTERFACE(IEditorModel);
 F_DECLARE_INTERFACE(IEditorCommand);
 F_DECLARE_INTERFACE(IEditorTool);
 
+F_DECLARE_INTERFACE(ISceneCamera);
 F_DECLARE_INTERFACE(ITexture);
 F_DECLARE_INTERFACE(IMaterial);
 
@@ -200,6 +202,11 @@ interface UUID("CDEB5694-56D2-4750-BEF8-85F286364C23") IEditorTile : IUnknown
 
 interface UUID("78C29790-865D-4f81-9AF1-26EC23BB5FAC") IEditorView : IUnknown
 {
+   virtual tVec3 GetCameraEyePosition() const = 0;
+
+   virtual tResult GetCamera(ISceneCamera * * ppCamera) = 0;
+
+   virtual tResult GetModel(IEditorModel * * ppModel) = 0;
 };
 
 

@@ -52,10 +52,17 @@ public:
 public:
    inline IRenderDevice * AccessRenderDevice() { return m_pRenderDevice; }
 
+   // IWindow
    virtual tResult Create(int width, int height, int bpp, const char * pszTitle = NULL);
    virtual tResult GetWindowInfo(sWindowInfo * pInfo) const;
    virtual tResult SwapBuffers();
 
+   // IEditorView
+   virtual tVec3 GetCameraEyePosition() const;
+   virtual tResult GetCamera(ISceneCamera * * ppCamera);
+   virtual tResult GetModel(IEditorModel * * ppModel);
+
+   // IEditorLoopClient
    virtual void OnFrame(double time, double elapsed);
 
    void RenderScene();
@@ -121,7 +128,6 @@ protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnDestroy();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
-	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);

@@ -14,14 +14,8 @@
 #include "render.h"
 
 #include "globalobj.h"
-#include "matrix4.h"
-#include "vec2.h"
-#include "vec3.h"
-#include "vec4.h"
 #include "keys.h"
 #include "techtime.h"
-
-#include <GL/gl.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -32,62 +26,6 @@ static char THIS_FILE[] = __FILE__;
 const float kFov = 70;
 const float kZNear = 1;
 const float kZFar = 5000;
-
-/////////////////////////////////////////////////////////////////////////////
-
-static void ScreenToNormalizedDeviceCoords(int sx, int sy,
-                                           float * pndx, float * pndy)
-{
-   Assert(pndx != NULL);
-   Assert(pndy != NULL);
-
-   int viewport[4];
-   glGetIntegerv(GL_VIEWPORT, viewport);
-
-   sy = viewport[3] - sy;
-
-   // convert screen coords to normalized (origin at center, [-1..1])
-   float normx = (float)(sx - viewport[0]) * 2.f / viewport[2] - 1.f;
-   float normy = (float)(sy - viewport[1]) * 2.f / viewport[3] - 1.f;
-
-   *pndx = normx;
-   *pndy = normy;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-static bool GetPickVector(ISceneCamera * pCamera, float ndx, float ndy, tVec3 * pPickDir)
-{
-   Assert(pCamera != NULL);
-
-   const tMatrix4 & m = pCamera->GetViewProjectionInverseMatrix();
-
-   tVec4 n = m.Transform(tVec4(ndx, ndy, -1, 1));
-   if (n.w == 0.0f)
-   {
-      return false;
-   }
-   n.x /= n.w;
-   n.y /= n.w;
-   n.z /= n.w;
-
-   tVec4 f = m.Transform(tVec4(ndx, ndy, 1, 1));
-   if (f.w == 0.0f)
-   {
-      return false;
-   }
-   f.x /= f.w;
-   f.y /= f.w;
-   f.z /= f.w;
-
-   if (pPickDir != NULL)
-   {
-      *pPickDir = tVec3(f.x - n.x, f.y - n.y, f.z - n.z);
-      pPickDir->Normalize();
-   }
-
-   return true;
-}
 
 /////////////////////////////////////////////////////////////////////////////
 // cEditorView
@@ -103,7 +41,6 @@ BEGIN_MESSAGE_MAP(cEditorView, cGLView)
 	ON_WM_CREATE()
 	ON_WM_DESTROY()
 	ON_WM_SIZE()
-	ON_WM_LBUTTONDOWN()
 	ON_WM_RBUTTONDOWN()
 	ON_WM_RBUTTONUP()
 	ON_WM_MOUSEMOVE()
@@ -171,6 +108,41 @@ tResult cEditorView::GetWindowInfo(sWindowInfo * pInfo) const
 tResult cEditorView::SwapBuffers()
 {
    return ::SwapBuffers(GetSafeHdc()) ? S_OK : E_FAIL;
+}
+
+////////////////////////////////////////
+
+tVec3 cEditorView::GetCameraEyePosition() const
+{
+   return m_eye;
+}
+
+////////////////////////////////////////
+
+tResult cEditorView::GetCamera(ISceneCamera * * ppCamera)
+{
+   return m_pCamera.GetPointer(ppCamera);
+}
+
+////////////////////////////////////////
+
+tResult cEditorView::GetModel(IEditorModel * * ppModel)
+{
+   if (ppModel == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cEditorDoc * pDoc = GetDocument();
+
+   if (pDoc == NULL)
+   {
+      *ppModel = NULL;
+      return S_FALSE;
+   }
+
+   *ppModel = CTAddRef(static_cast<IEditorModel *>(pDoc));
+   return S_OK;
 }
 
 ////////////////////////////////////////
@@ -395,7 +367,7 @@ void cEditorView::OnInitialUpdate()
    }
 
    uint xDim, zDim;
-   pDoc->GetMapDimensions(&xDim, &zDim);
+   pDoc->AccessTerrain()->GetDimensions(&xDim, &zDim);
 
    m_nIndices = xDim * zDim * 6;
 
@@ -411,7 +383,7 @@ void cEditorView::OnInitialUpdate()
    }
 
    uint xExt, zExt;
-   pDoc->GetMapExtents(&xExt, &zExt);
+   pDoc->AccessTerrain()->GetExtents(&xExt, &zExt);
 
    m_center = tVec3((tVec3::value_type)xExt / 2, 0, (tVec3::value_type)zExt / 2);
    m_eye = CalcEyePoint(m_center);
@@ -445,7 +417,7 @@ void cEditorView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
          int iQuad = 0;
 
          uint xDim, zDim;
-         pDoc->GetMapDimensions(&xDim, &zDim);
+         pDoc->AccessTerrain()->GetDimensions(&xDim, &zDim);
 
          for (int iz = 0; iz < zDim; iz++)
          {
@@ -594,49 +566,7 @@ LRESULT cEditorView::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
       }
    }
 	
-	return CView::WindowProc(message, wParam, lParam);
-}
-
-////////////////////////////////////////
-
-void cEditorView::OnLButtonDown(UINT nFlags, CPoint point) 
-{
-	cEditorDoc * pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-
-   float ndx, ndy;
-   ScreenToNormalizedDeviceCoords(point.x, point.y, &ndx, &ndy);
-
-   tVec3 pickDir;
-   if (GetPickVector(m_pCamera, ndx, ndy, &pickDir))
-   {
-      cRay pickRay(m_eye, pickDir);
-
-      tVec3 pointOnPlane;
-      if (pickRay.IntersectsPlane(tVec3(0,1,0), 0, &pointOnPlane))
-      {
-         DebugMsg3("Hit the ground at approximately (%.1f, %.1f, %.1f)\n",
-            pointOnPlane.x, pointOnPlane.y, pointOnPlane.z);
-
-         uint mapDimX, mapDimZ, mapExtX, mapExtZ;
-         pDoc->GetMapDimensions(&mapDimX, &mapDimZ);
-         pDoc->GetMapExtents(&mapExtX, &mapExtZ);
-
-         int iTileX = Round(pointOnPlane.x / mapDimX);
-         int iTileZ = Round(pointOnPlane.z / mapDimZ);
-
-         cTerrain * pTerrain = pDoc->AccessTerrain();
-         if (pTerrain != NULL)
-         {
-            cTerrainTile * pTile = pTerrain->GetTile(iTileX, iTileZ);
-            pTile->SetTile(3); // TODO HACK hard-coded
-         }
-
-         DebugMsg2("Hit tile (%d, %d)\n", iTileX, iTileZ);
-      }
-   }
-
-	cGLView::OnLButtonDown(nFlags, point);
+	return cGLView::WindowProc(message, wParam, lParam);
 }
 
 ////////////////////////////////////////

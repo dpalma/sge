@@ -122,8 +122,10 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
             if (pCtrlBar->Create(ctrlBarWndClass, title, ctrlBarStyle, rect, this, ctrlBarId))
             {
                pCtrlBar->EnableDocking(CBRS_ALIGN_ANY);
+#if _MFC_VER < 0x0700
                pCtrlBar->SetBarStyle(pCtrlBar->GetBarStyle() |
                   CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
+#endif
 
                ctrlBarId++;
                m_ctrlBars.push_back(pCtrlBar);
