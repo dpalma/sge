@@ -230,6 +230,10 @@ SOURCE=.\src\ms3dread.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\ray.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\sim.cpp
 # End Source File
 # Begin Source File
@@ -293,6 +297,10 @@ SOURCE=.\include\engineguids.h
 # Begin Source File
 
 SOURCE=.\include\mesh.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\ray.h
 # End Source File
 # Begin Source File
 

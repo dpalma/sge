@@ -314,6 +314,9 @@
 					RelativePath="src\ms3dread.cpp">
 				</File>
 				<File
+					RelativePath="src\ray.cpp">
+				</File>
+				<File
 					RelativePath="src\sim.cpp">
 				</File>
 				<File
@@ -390,6 +393,9 @@
 			</File>
 			<File
 				RelativePath=".\include\mesh.h">
+			</File>
+			<File
+				RelativePath="include\ray.h">
 			</File>
 			<File
 				RelativePath="include\sim.h">

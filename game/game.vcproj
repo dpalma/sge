@@ -319,9 +319,6 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 			<File
-				RelativePath=".\boundingvolume.cpp">
-			</File>
-			<File
 				RelativePath=".\cameracontroller.cpp">
 			</File>
 			<File
@@ -343,13 +340,7 @@
 				RelativePath=".\main.cpp">
 			</File>
 			<File
-				RelativePath=".\raycast.cpp">
-			</File>
-			<File
 				RelativePath=".\scenecamera.cpp">
-			</File>
-			<File
-				RelativePath=".\scenegroup.cpp">
 			</File>
 			<File
 				RelativePath=".\scenemesh.cpp">
@@ -362,9 +353,6 @@
 			</File>
 			<File
 				RelativePath=".\scriptvm.cpp">
-			</File>
-			<File
-				RelativePath=".\sim.cpp">
 			</File>
 			<File
 				RelativePath=".\stdhdr.cpp">
@@ -494,9 +482,6 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl">
 			<File
-				RelativePath=".\boundingvolume.h">
-			</File>
-			<File
 				RelativePath=".\cameracontroller.h">
 			</File>
 			<File
@@ -521,13 +506,7 @@
 				RelativePath=".\input.h">
 			</File>
 			<File
-				RelativePath=".\raycast.h">
-			</File>
-			<File
 				RelativePath=".\scenecamera.h">
-			</File>
-			<File
-				RelativePath=".\scenegroup.h">
 			</File>
 			<File
 				RelativePath=".\scenemesh.h">
@@ -540,9 +519,6 @@
 			</File>
 			<File
 				RelativePath=".\scriptvm.h">
-			</File>
-			<File
-				RelativePath=".\sim.h">
 			</File>
 			<File
 				RelativePath=".\stdhdr.h">

@@ -6,7 +6,7 @@
 #include "cameracontroller.h"
 #include "scenecamera.h"
 #include "globalobj.h"
-#include "raycast.h"
+#include "ray.h"
 #include "ggl.h"
 #include "scenenode.h"
 
@@ -22,22 +22,25 @@
 
 extern cSceneNode * g_pGameGroup; // HACK
 
+static const float kDefaultElevation = 100;
+static const float kDefaultPitch = 70;
+static const float kDefaultSpeed = 50;
+
 ///////////////////////////////////////////////////////////////////////////////
 
 class cPickNodeVisitor : public cSceneNodeVisitor
 {
 public:
-   cPickNodeVisitor(const tVec3 & rayDir, const tVec3 & rayOrigin);
+   cPickNodeVisitor(const cRay & ray);
 
    virtual void VisitSceneNode(cSceneNode * pNode);
 
-   tVec3 m_rayDir, m_rayOrigin;
+   const cRay m_ray;
    std::vector<cSceneNode *> m_hitNodes;
 };
 
-cPickNodeVisitor::cPickNodeVisitor(const tVec3 & rayDir, const tVec3 & rayOrigin)
- : m_rayDir(rayDir),
-   m_rayOrigin(rayOrigin)
+cPickNodeVisitor::cPickNodeVisitor(const cRay & ray)
+ : m_ray(ray)
 {
 }
 
@@ -47,7 +50,7 @@ void cPickNodeVisitor::VisitSceneNode(cSceneNode * pNode)
 
    if (pNode->IsPickable())
    {
-      if (RayIntersectSphere(m_rayOrigin, m_rayDir, pNode->GetWorldTranslation(), pNode->GetBoundingSphereRadius(), NULL))
+      if (m_ray.IntersectsSphere(pNode->GetWorldTranslation(), pNode->GetBoundingSphereRadius()))
       {
          pNode->Hit();
          m_hitNodes.push_back(pNode);
@@ -132,13 +135,14 @@ bool cGameCameraController::OnMouseEvent(int x, int y, uint mouseState, double t
       tVec3 dir;
       if (BuildPickRay(x, y, &dir))
       {
-         cPickNodeVisitor pickVisitor(dir, GetEyePosition());
+         cRay ray(GetEyePosition(), dir);
+         cPickNodeVisitor pickVisitor(ray);
          g_pGameGroup->Traverse(&pickVisitor);
 
          if (pickVisitor.m_hitNodes.empty())
          {
             tVec3 intersect;
-            if (RayIntersectPlane(GetEyePosition(), dir, tVec3(0,1,0), 0, &intersect))
+            if (ray.IntersectsPlane(tVec3(0,1,0), 0, &intersect))
             {
                DebugMsg3("Hit the ground at approximately (%.1f,%.1f,%.1f)\n",
                   intersect.x, intersect.y, intersect.z);

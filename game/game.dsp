@@ -207,10 +207,6 @@ SOURCE=.\main.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\raycast.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\scenecamera.cpp
 # End Source File
 # Begin Source File
@@ -306,10 +302,6 @@ SOURCE=.\heightmap.h
 # Begin Source File
 
 SOURCE=.\input.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\raycast.h
 # End Source File
 # Begin Source File
 

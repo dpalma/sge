@@ -45,13 +45,6 @@ public:
 private:
    bool BuildPickRay(int x, int y, tVec3 * pRay);
 
-   enum eConstants
-   {
-      kDefaultElevation = 100,
-      kDefaultPitch = 70,
-      kDefaultSpeed = 50,
-   };
-
    float m_pitch, m_oneOverTangentPitch, m_elevation;
    tVec3 m_eye, m_focus, m_velocity;
 
