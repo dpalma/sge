@@ -59,7 +59,7 @@ bool LoadBitmap(const cImageData * pImageData, HBITMAP * phBitmap)
             byte * pSrc = (byte *)pImageData->GetData();
             byte * pDest = pImageBits;
 
-            for (int i = 0; i < pImageData->GetHeight(); i++)
+            for (uint i = 0; i < pImageData->GetHeight(); i++)
             {
                memcpy(pDest, pSrc, srcScanLineSize);
                pDest += destScanLineSize;

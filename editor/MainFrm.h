@@ -6,8 +6,6 @@
 
 #include "editorView.h"
 
-#include <atlframe.h>
-#include <atlmisc.h>
 #include <DockingFrame.h>
 
 #include <vector>
@@ -26,12 +24,12 @@ class cDockingWindow;
 //
 
 class cMainFrame : public dockwins::CDockingFrameImpl<cMainFrame>,
-                   public WTL::CUpdateUI<cMainFrame>,
-                   public WTL::CIdleHandler,
-                   public WTL::CMessageFilter
+                   public CUpdateUI<cMainFrame>,
+                   public CIdleHandler,
+                   public CMessageFilter
 {
    typedef dockwins::CDockingFrameImpl<cMainFrame> tFrameBase;
-   typedef WTL::CUpdateUI<cMainFrame> tUpdateUIBase;
+   typedef CUpdateUI<cMainFrame> tUpdateUIBase;
 
    enum
    {

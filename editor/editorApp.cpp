@@ -7,8 +7,6 @@
 #include "editorDoc.h"
 #include "editorView.h"
 #include "editorTypes.h"
-#include "MainFrm.h"
-#include "aboutdlg.h"
 #include "BitmapUtils.h"
 #include "MapSettingsDlg.h"
 
@@ -70,7 +68,7 @@ static const uint kDefaultMapSizeIndex = 0;
 
 /////////////////////////////////////////////////////////////////////////////
 
-WTL::CAppModule _Module;
+CAppModule _Module;
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -101,43 +99,55 @@ void ListTileSets(CONTAINER * pContainer)
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// cEditorApp
+//
+// CLASS: cEditorApp
+//
 
-BEGIN_MESSAGE_MAP(cEditorApp, CWinApp)
-	//{{AFX_MSG_MAP(cEditorApp)
-	ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
-	ON_COMMAND(ID_TOOLS_UNITTESTRUNNER, OnToolsUnitTestRunner)
-	//}}AFX_MSG_MAP
-	// Standard file based document commands
-	ON_COMMAND(ID_FILE_NEW, CWinApp::OnFileNew)
-	ON_COMMAND(ID_FILE_OPEN, CWinApp::OnFileOpen)
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// cEditorApp construction
+////////////////////////////////////////
 
 cEditorApp::cEditorApp()
  : m_bPromptMapSettings(false),
    m_hCurrentToolWnd(NULL)
 {
-	// TODO: add construction code here,
-	// Place all significant initialization in InitInstance
 }
+
+////////////////////////////////////////
 
 cEditorApp::~cEditorApp()
 {
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// The one and only cEditorApp object
+////////////////////////////////////////
+
+tResult cEditorApp::Init()
+{
+   if (!m_mainWnd.CreateEx())
+   {
+      return E_FAIL;
+   }
+	m_mainWnd.ShowWindow(SW_SHOW);
+	m_mainWnd.UpdateWindow();
+
+   m_bPromptMapSettings = true;
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cEditorApp::Term()
+{
+   return S_OK;
+}
+
+////////////////////////////////////////
 
 void EditorAppCreate()
 {
    cAutoIPtr<IEditorApp>(new cEditorApp);
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// cEditorApp initialization
+////////////////////////////////////////
 
 static bool ScriptExecFile(const char * pszFile)
 {
@@ -224,43 +234,8 @@ static void RegisterGlobalObjects()
 
 ////////////////////////////////////////
 
-BOOL cEditorApp::InitInstance()
+BOOL EditorInit()
 {
-   if (FAILED(_Module.Init(NULL, AfxGetInstanceHandle())))
-   {
-      DebugMsg("Error initializing main ATL module object\n");
-      return FALSE;
-   }
-
-	// Standard initialization
-	// If you are not using these features and wish to reduce the size
-	//  of your final executable, you should remove from the following
-	//  the specific initialization routines you do not need.
-
-#if _MFC_VER < 0x0700
-#ifdef _AFXDLL
-	Enable3dControls();			// Call this when using MFC in a shared DLL
-#else
-	Enable3dControlsStatic();	// Call this when linking to MFC statically
-#endif
-#endif
-
-   _Module.AddMessageLoop(&m_messageLoop);
-
-	// Change the registry key under which our settings are stored.
-	// TODO: You should modify this string to be something appropriate
-	// such as the name of your company or organization.
-	SetRegistryKey(g_szRegistryKey);
-
-	LoadStdProfileSettings();  // Load standard INI file options (including MRU)
-
-   RegisterGlobalObjects();
-   if (FAILED(StartGlobalObjects()))
-   {
-      DebugMsg("One or more application-level services failed to start!\n");
-      return FALSE;
-   }
-
    UseGlobal(ThreadCaller);
    pThreadCaller->ThreadInit();
 
@@ -285,38 +260,6 @@ BOOL cEditorApp::InitInstance()
       pResourceManager->AddSearchPath(temp);
    }
 
-   cSplashThread * pSplashThread = NULL;
-   HBITMAP hSplashBitmap = NULL;
-   if (ConfigGet("splash_image", &temp) == S_OK
-      && ::LoadBitmap(temp.c_str(), &hSplashBitmap))
-   {
-      pSplashThread = (cSplashThread *)AfxBeginThread(
-         RUNTIME_CLASS(cSplashThread),
-         THREAD_PRIORITY_NORMAL,
-         CREATE_SUSPENDED);
-      ASSERT_VALID(pSplashThread);
-
-      pSplashThread->SetBitmap(hSplashBitmap);
-      pSplashThread->ResumeThread();
-
-      int splashDelay = 0;
-      if (ConfigGet("splash_delay_ms", &splashDelay) == S_OK
-         && splashDelay > 0)
-      {
-         Sleep(splashDelay);
-      }
-   }
-
-	// Register the application's document templates.  Document templates
-	//  serve as the connection between documents, frame windows and views.
-
-	CSingleDocTemplate * pDocTemplate = new CSingleDocTemplate(
-		IDR_MAINFRAME,
-		RUNTIME_CLASS(cEditorDoc),
-		RUNTIME_CLASS(CMainFrame),       // main SDI frame window
-		RUNTIME_CLASS(cEditorView));
-	AddDocTemplate(pDocTemplate);
-
    cStr autoexecScript("editor.lua");
    ConfigGet("editor_autoexec_script", &autoexecScript);
 
@@ -331,60 +274,14 @@ BOOL cEditorApp::InitInstance()
 
    ScriptCallFunction("EditorInit", NULL);
 
-	// Parse command line for standard shell commands, DDE, file open
-	CCommandLineInfo cmdInfo;
-//	ParseCommandLine(cmdInfo);
-
-	// Dispatch commands specified on the command line
-	if (!ProcessShellCommand(cmdInfo))
-		return FALSE;
-
-	// The one and only window has been initialized, so show and update it.
-	m_pMainWnd->ShowWindow(SW_SHOW);
-	m_pMainWnd->UpdateWindow();
-
-   g_pAltMainFrame = new cMainFrame();
-   g_pAltMainFrame->CreateEx();
-   ShowWindow(g_pAltMainFrame->m_hWnd, SW_SHOW);
-
-   if (pSplashThread != NULL)
-   {
-      pSplashThread->HideSplash();
-   }
-
-   m_bPromptMapSettings = true;
-
 	return TRUE;
 }
 
 ////////////////////////////////////////
 
-int cEditorApp::ExitInstance() 
-{
-	StopGlobalObjects();
-
-   _Module.RemoveMessageLoop();
-
-   _Module.Term();
-
-	return CWinApp::ExitInstance();
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// cEditorApp message handlers
-
-// App command to run the dialog
-void cEditorApp::OnAppAbout()
-{
-	cAboutDlg().DoModal();
-}
-
-////////////////////////////////////////
-
+#if 0
 int cEditorApp::Run() 
 {
-   ASSERT_VALID(this);
-
    // for tracking the idle time state
    bool bIdle = true;
    long lIdleCount = 0;
@@ -442,6 +339,7 @@ int cEditorApp::Run()
 
    Assert(!"Should never reach this point!"); // not reachable
 }
+#endif
 
 ////////////////////////////////////////
 
@@ -465,6 +363,7 @@ BOOL cEditorApp::PreTranslateMessage(MSG * pMsg)
    {
       m_hCurrentToolWnd = pMsg->hwnd;
 
+#if 0 // TODO
       Assert(!m_pCurrentToolView);
       CWnd * pWnd = CWnd::FromHandlePermanent(pMsg->hwnd);
       if (pWnd != NULL)
@@ -475,6 +374,7 @@ BOOL cEditorApp::PreTranslateMessage(MSG * pMsg)
             m_pCurrentToolView = CTAddRef(static_cast<IEditorView *>(pEditorView));
          }
       }
+#endif
 
       tResult toolResult = S_EDITOR_TOOL_CONTINUE;
 
@@ -555,21 +455,7 @@ BOOL cEditorApp::PreTranslateMessage(MSG * pMsg)
       }
    }
 
-   if (m_messageLoop.PreTranslateMessage(pMsg))
-   {
-      return TRUE;
-   }
-
-   return CWinApp::PreTranslateMessage(pMsg);
-}
-
-////////////////////////////////////////
-
-BOOL cEditorApp::OnIdle(LONG lCount) 
-{
-   m_messageLoop.OnIdle(lCount);
-
-	return CWinApp::OnIdle(lCount);
+   return FALSE;
 }
 
 ////////////////////////////////////////
@@ -615,10 +501,10 @@ tResult cEditorApp::GetMapSettings(cMapSettings * pMapSettings)
    if (m_bPromptMapSettings)
    {
       cMapSettingsDlg dlg(g_mapSizes, _countof(g_mapSizes), kDefaultMapSizeIndex,
-         tileSets, 0, kHeightData_None, AfxGetMainWnd());
+         tileSets, 0, kHeightData_None);
 
       // Shouldn't be allowed to cancel the dialog
-      Verify(dlg.DoModal() == IDOK);
+      Verify(dlg.DoModal(m_mainWnd) == IDOK);
 
       SIZE mapSize;
       cStr tileSet, heightMap;
@@ -656,18 +542,7 @@ tResult cEditorApp::GetActiveView(IEditorView * * ppView)
       return E_POINTER;
    }
 
-   CFrameWnd * pMainFrm = DYNAMIC_DOWNCAST(CFrameWnd, GetMainWnd());
-   if (pMainFrm != NULL)
-   {
-      cEditorView * pEditorView = DYNAMIC_DOWNCAST(cEditorView, pMainFrm->GetActiveView());
-      if (pEditorView != NULL)
-      {
-         *ppView = CTAddRef(static_cast<IEditorView *>(pEditorView));
-         return S_OK;
-      }
-   }
-
-   return E_FAIL;
+   return E_NOTIMPL; // TODO
 }
 
 ////////////////////////////////////////
@@ -679,18 +554,7 @@ tResult cEditorApp::GetActiveModel(IEditorModel * * ppModel)
       return E_POINTER;
    }
 
-   CFrameWnd * pMainFrm = DYNAMIC_DOWNCAST(CFrameWnd, GetMainWnd());
-   if (pMainFrm != NULL)
-   {
-      cEditorDoc * pEditorDoc = DYNAMIC_DOWNCAST(cEditorDoc, pMainFrm->GetActiveDocument());
-      if (pEditorDoc != NULL)
-      {
-         *ppModel = CTAddRef(static_cast<IEditorModel *>(pEditorDoc));
-         return S_OK;
-      }
-   }
-
-   return E_FAIL;
+   return E_NOTIMPL; // TODO
 }
 
 ////////////////////////////////////////
@@ -828,13 +692,52 @@ void RunUnitTests()
    }
 #endif
 #else
-   AfxMessageBox(IDS_NO_UNIT_TESTS);
+   AtlMessageBox(IDS_NO_UNIT_TESTS, NULL);
 #endif
 }
 
-void cEditorApp::OnToolsUnitTestRunner() 
+///////////////////////////////////////////////////////////////////////////////
+
+int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/,
+                     LPTSTR /*lpCmdLine*/, int /*nCmdShow*/)
 {
-   RunUnitTests();
+   ::CoInitialize(NULL);
+
+   // this resolves ATL window thunking problem when Microsoft Layer for Unicode (MSLU) is used
+   ::DefWindowProc(NULL, 0, 0, 0L);
+
+   AtlInitCommonControls(ICC_COOL_CLASSES | ICC_BAR_CLASSES);
+
+   if (FAILED(_Module.Init(NULL, hInstance)))
+   {
+      ErrorMsg("ATL module failed to start!\n");
+      return -1;
+   }
+
+   RegisterGlobalObjects();
+   if (FAILED(StartGlobalObjects()))
+   {
+      ErrorMsg("One or more application-level services failed to start!\n");
+      return -1;
+   }
+
+   if (!EditorInit())
+   {
+      return -1;
+   }
+
+   CMessageLoop messageLoop;
+   _Module.AddMessageLoop(&messageLoop);
+
+   int result = messageLoop.Run();
+
+	StopGlobalObjects();
+
+   _Module.RemoveMessageLoop();
+   _Module.Term();
+   ::CoUninitialize();
+
+   return result;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

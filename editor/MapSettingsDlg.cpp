@@ -26,11 +26,11 @@
 cMapSettingsDlg::cMapSettingsDlg(const SIZE * pSizes, size_t nSizes, int sizeSelectIndex,
                                  const std::vector<cStr> & tileSets, int tileSetSelectIndex,
                                  eHeightData heightData)
- :	m_tileSetIndex(-1),
+ :	m_tileSetIndex(kNoIndex),
 	m_heightData(-1),
 	m_heightMapFile(_T("")),
-	m_mapHeightIndex(-1),
-	m_mapWidthIndex(-1)
+	m_mapHeightIndex(kNoIndex),
+	m_mapWidthIndex(kNoIndex)
 {
    if (pSizes != NULL && nSizes > 0)
    {
@@ -136,14 +136,6 @@ bool cMapSettingsDlg::GetHeightDataFile(cStr * pHeightData) const
 
 ////////////////////////////////////////
 
-void cMapSettingsDlg::OnCancel()
-{
-   // Don't call the base class method so that the dialog
-   // can never be cancelled (no Cancel button, ESC key, etc.)
-}
-
-////////////////////////////////////////
-
 LRESULT cMapSettingsDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/)
 {
    // Don't sort the drop-lists because selection is defined and
@@ -186,6 +178,23 @@ LRESULT cMapSettingsDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+////////////////////////////////////////
+
+LRESULT cMapSettingsDlg::OnOK(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL & /*bHandled*/)
+{
+   EndDialog(IDOK);
+   return 0;
+}
+
+////////////////////////////////////////
+
+LRESULT cMapSettingsDlg::OnCancel(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL & /*bHandled*/)
+{
+   // Don't call the base class method so that the dialog
+   // can never be cancelled (no Cancel button, ESC key, etc.)
+   return 0;
 }
 
 ////////////////////////////////////////

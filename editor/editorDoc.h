@@ -26,7 +26,9 @@ typedef std::stack<IEditorCommand *> tCommandStack;
 // CLASS: cEditorDoc
 //
 
-class cEditorDoc : public cComObject<IMPLEMENTS(IEditorModel)>
+class cEditorDoc : public cComObject<IMPLEMENTS(IEditorModel)>,
+                   public CUpdateUI<cEditorDoc>,
+                   public CIdleHandler
 {
 protected: // create from serialization only
 
@@ -52,26 +54,23 @@ public:
 	//{{AFX_VIRTUAL(cEditorDoc)
 	public:
 	virtual BOOL OnNewDocument();
-	virtual void Serialize(CArchive& ar);
 	virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
 	virtual BOOL OnSaveDocument(LPCTSTR lpszPathName);
 	virtual void DeleteContents();
 	//}}AFX_VIRTUAL
 
-// Implementation
-public:
-#ifdef _DEBUG
-	virtual void AssertValid() const;
-	virtual void Dump(CDumpContext& dc) const;
-#endif
+   BEGIN_UPDATE_UI_MAP(cEditorDoc)
+      UPDATE_ELEMENT(ID_EDIT_UNDO, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
+      UPDATE_ELEMENT(ID_EDIT_REDO, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
+   END_UPDATE_UI_MAP()
 
 // Generated message map functions
 protected:
 	//{{AFX_MSG(cEditorDoc)
-	afx_msg void OnEditUndo();
-	afx_msg void OnUpdateEditUndo(CCmdUI* pCmdUI);
-	afx_msg void OnEditRedo();
-	afx_msg void OnUpdateEditRedo(CCmdUI* pCmdUI);
+	void OnEditUndo();
+	void OnUpdateEditUndo();
+	void OnEditRedo();
+	void OnUpdateEditRedo();
 	//}}AFX_MSG
 
 private:
@@ -101,8 +100,5 @@ inline cTerrain * cEditorDoc::AccessTerrain()
 }
 
 /////////////////////////////////////////////////////////////////////////////
-
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
 #endif // !defined(INCLUDED_EDITORDOC_H)

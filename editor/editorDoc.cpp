@@ -41,19 +41,7 @@ void FlushCommandStack(std::stack<IEditorCommand *> * pCommandStack)
 // CLASS: cEditorDoc
 //
 
-IMPLEMENT_DYNCREATE(cEditorDoc, CDocument)
-
-BEGIN_MESSAGE_MAP(cEditorDoc, CDocument)
-	//{{AFX_MSG_MAP(cEditorDoc)
-	ON_COMMAND(ID_EDIT_UNDO, OnEditUndo)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_UNDO, OnUpdateEditUndo)
-	ON_COMMAND(ID_EDIT_REDO, OnEditRedo)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_REDO, OnUpdateEditRedo)
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// cEditorDoc construction/destruction
+////////////////////////////////////////
 
 cEditorDoc::cEditorDoc()
  : m_pHeightMap(NULL),
@@ -61,20 +49,17 @@ cEditorDoc::cEditorDoc()
 {
 }
 
+////////////////////////////////////////
+
 cEditorDoc::~cEditorDoc()
 {
    Assert(m_pHeightMap == NULL);
 }
 
+////////////////////////////////////////
+
 BOOL cEditorDoc::OnNewDocument()
 {
-	if (!CDocument::OnNewDocument())
-		return FALSE;
-
-	// Add reinitialization code here (SDI documents will reuse this document)
-
-   Assert(AccessEditorApp() != NULL);
-
    SafeRelease(m_pMaterial);
 
    delete m_pTerrain, m_pTerrain = NULL;
@@ -85,7 +70,8 @@ BOOL cEditorDoc::OnNewDocument()
 
    cMapSettings mapSettings;
 
-   if (AccessEditorApp()->GetMapSettings(&mapSettings) == S_OK)
+   UseGlobal(EditorApp);
+   if (pEditorApp->GetMapSettings(&mapSettings) == S_OK)
    {
       cHeightMap * pHeightMap = NULL;
       if (mapSettings.GetHeightData() == kHeightData_HeightMap)
@@ -138,29 +124,6 @@ BOOL cEditorDoc::OnNewDocument()
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// cEditorDoc serialization
-
-void cEditorDoc::Serialize(CArchive& ar)
-{
-   Assert(!"This method should never be called");
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// cEditorDoc diagnostics
-
-#ifdef _DEBUG
-void cEditorDoc::AssertValid() const
-{
-	CDocument::AssertValid();
-}
-
-void cEditorDoc::Dump(CDumpContext& dc) const
-{
-	CDocument::Dump(dc);
-}
-#endif //_DEBUG
-
-/////////////////////////////////////////////////////////////////////////////
 // cEditorDoc operations
 
 const sTerrainVertex * cEditorDoc::GetVertexPointer() const
@@ -205,7 +168,9 @@ tResult cEditorDoc::AddCommand(IEditorCommand * pCommand)
 BOOL cEditorDoc::OnOpenDocument(LPCTSTR lpszPathName) 
 {
    DeleteContents();
+#if 0 // TODO
    SetModifiedFlag(); // set modified flag during load
+#endif
 
    cAutoIPtr<IReader> pReader(FileCreateReader(cFileSpec(lpszPathName)));
    if (!pReader)
@@ -229,7 +194,9 @@ BOOL cEditorDoc::OnOpenDocument(LPCTSTR lpszPathName)
       }
    }
 
+#if 0 // TODO
    SetModifiedFlag(FALSE); // start off as unmodified
+#endif
 
    return TRUE;
 }
@@ -254,7 +221,9 @@ BOOL cEditorDoc::OnSaveDocument(LPCTSTR lpszPathName)
    FlushCommandStack(&m_undoStack);
    FlushCommandStack(&m_redoStack);
 
+#if 0 // TODO
    SetModifiedFlag(FALSE); // not modified anymore
+#endif
 
    return TRUE;
 }
@@ -269,8 +238,6 @@ void cEditorDoc::DeleteContents()
 
    FlushCommandStack(&m_undoStack);
    FlushCommandStack(&m_redoStack);
-
-   CDocument::DeleteContents();
 }
 
 static void UndoRedoHelper(tResult (IEditorCommand::*pfnDoMethod)(),
@@ -313,8 +280,9 @@ void cEditorDoc::OnEditUndo()
    UndoRedoHelper(&IEditorCommand::Undo, &m_undoStack, &m_redoStack);
 }
 
-void cEditorDoc::OnUpdateEditUndo(CCmdUI* pCmdUI) 
+void cEditorDoc::OnUpdateEditUndo(/*CCmdUI* pCmdUI*/) 
 {
+#if 0 // TODO
    if (m_originalUndoText.IsEmpty() && (pCmdUI->m_pMenu != NULL))
    {
       pCmdUI->m_pMenu->GetMenuString(pCmdUI->m_nID, m_originalUndoText, MF_BYCOMMAND);
@@ -337,6 +305,7 @@ void cEditorDoc::OnUpdateEditUndo(CCmdUI* pCmdUI)
          pCmdUI->SetText(menuText);
       }
    }
+#endif
 }
 
 void cEditorDoc::OnEditRedo() 
@@ -344,8 +313,9 @@ void cEditorDoc::OnEditRedo()
    UndoRedoHelper(&IEditorCommand::Do, &m_redoStack, &m_undoStack);
 }
 
-void cEditorDoc::OnUpdateEditRedo(CCmdUI* pCmdUI) 
+void cEditorDoc::OnUpdateEditRedo(/*CCmdUI* pCmdUI*/) 
 {
+#if 0 // TODO
    if (m_originalRedoText.IsEmpty() && (pCmdUI->m_pMenu != NULL))
    {
       pCmdUI->m_pMenu->GetMenuString(pCmdUI->m_nID, m_originalRedoText, MF_BYCOMMAND);
@@ -368,4 +338,5 @@ void cEditorDoc::OnUpdateEditRedo(CCmdUI* pCmdUI)
          pCmdUI->SetText(menuText);
       }
    }
+#endif
 }

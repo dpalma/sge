@@ -19,7 +19,6 @@
 #include "techtime.h"
 
 #include <GL/gl.h>
-#include <zmouse.h>
 
 #include "dbgalloc.h" // must be last header
 

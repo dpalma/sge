@@ -4,8 +4,7 @@
 	Version="7.00"
 	Name="editor"
 	SccProjectName=""
-	SccLocalPath=""
-	Keyword="MFCProj">
+	SccLocalPath="">
 	<Platforms>
 		<Platform
 			Name="Win32"/>
@@ -16,13 +15,13 @@
 			OutputDirectory=".\..\..\Build.vc7\Release"
 			IntermediateDirectory=".\..\..\Build.vc7\Release\editor"
 			ConfigurationType="1"
-			UseOfMFC="2"
+			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\wtl\include"
+				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\wtl\include,..\..\3rdparty\WTLDockingWindows\include"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;TIXML_USE_STL"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -63,7 +62,8 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_AFXDLL;NDEBUG"
-				Culture="1033"/>
+				Culture="1033"
+				AdditionalIncludeDirectories="../../3rdparty/wtl/include"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
@@ -74,13 +74,13 @@
 			OutputDirectory=".\..\..\Build.vc7\Debug"
 			IntermediateDirectory=".\..\..\Build.vc7\Debug\editor"
 			ConfigurationType="1"
-			UseOfMFC="2"
+			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\wtl\include"
+				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\wtl\include,..\..\3rdparty\WTLDockingWindows\include"
 				PreprocessorDefinitions="_DEBUG;HAVE_CPPUNIT;WIN32;_WINDOWS;TIXML_USE_STL"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -123,7 +123,8 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_AFXDLL;_DEBUG"
-				Culture="1033"/>
+				Culture="1033"
+				AdditionalIncludeDirectories="../../3rdparty/wtl/include"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
@@ -134,13 +135,13 @@
 			OutputDirectory=".\..\..\Build.vc7\StaticDebug"
 			IntermediateDirectory=".\..\..\Build.vc7\StaticDebug\editor"
 			ConfigurationType="1"
-			UseOfMFC="1"
+			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\wtl\include"
+				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\wtl\include,..\..\3rdparty\WTLDockingWindows\include"
 				PreprocessorDefinitions="STATIC_BUILD,_DEBUG,WIN32,_WINDOWS,TIXML_USE_STL"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -182,7 +183,8 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"/>
+				Culture="1033"
+				AdditionalIncludeDirectories="../../3rdparty/wtl/include"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
@@ -193,13 +195,13 @@
 			OutputDirectory=".\..\..\Build.vc7\Opt"
 			IntermediateDirectory=".\..\..\Build.vc7\Opt\editor"
 			ConfigurationType="1"
-			UseOfMFC="2"
+			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\wtl\include"
+				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\wtl\include,..\..\3rdparty\WTLDockingWindows\include"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;TIXML_USE_STL"
 				StringPooling="TRUE"
 				RuntimeLibrary="3"
@@ -243,7 +245,8 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_AFXDLL;NDEBUG"
-				Culture="1033"/>
+				Culture="1033"
+				AdditionalIncludeDirectories="../../3rdparty/wtl/include"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
@@ -254,13 +257,13 @@
 			OutputDirectory=".\..\..\Build.vc7\StaticRelease"
 			IntermediateDirectory=".\..\..\Build.vc7\StaticRelease\editor"
 			ConfigurationType="1"
-			UseOfMFC="1"
+			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\wtl\include"
+				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\wtl\include,..\..\3rdparty\WTLDockingWindows\include"
 				PreprocessorDefinitions="STATIC_BUILD,NDEBUG,WIN32,_WINDOWS,TIXML_USE_STL"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -302,7 +305,8 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
-				Culture="1033"/>
+				Culture="1033"
+				AdditionalIncludeDirectories="../../3rdparty/wtl/include"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
@@ -401,28 +405,7 @@
 				RelativePath="..\..\editor\editorView.cpp">
 			</File>
 			<File
-				RelativePath="..\..\editor\glView.cpp">
-			</File>
-			<File
 				RelativePath="..\..\editor\heightmap.cpp">
-			</File>
-			<File
-				RelativePath="..\..\editor\historywnd.cpp">
-			</File>
-			<File
-				RelativePath="..\..\editor\scbarcf.cpp">
-			</File>
-			<File
-				RelativePath="..\..\editor\scbarg.cpp">
-			</File>
-			<File
-				RelativePath="..\..\editor\scrollwnd.cpp">
-			</File>
-			<File
-				RelativePath="..\..\editor\sizecbar.cpp">
-			</File>
-			<File
-				RelativePath="..\..\editor\splashwnd.cpp">
 			</File>
 			<File
 				RelativePath="..\..\editor\stdhdr.cpp">
@@ -468,6 +451,9 @@
 				RelativePath="..\..\editor\BitmapUtils.h">
 			</File>
 			<File
+				RelativePath="..\..\editor\GLContext.h">
+			</File>
+			<File
 				RelativePath="..\..\editor\LogWnd.h">
 			</File>
 			<File
@@ -486,7 +472,7 @@
 				RelativePath="..\..\editor\aboutdlg.h">
 			</File>
 			<File
-				RelativePath="..\..\editor\afxcomtools.h">
+				RelativePath="..\..\editor\ddxext.h">
 			</File>
 			<File
 				RelativePath="..\..\editor\editorApp.h">
@@ -525,31 +511,10 @@
 				RelativePath="..\..\editor\editorguids.h">
 			</File>
 			<File
-				RelativePath="..\..\editor\glView.h">
-			</File>
-			<File
 				RelativePath="..\..\editor\heightmap.h">
 			</File>
 			<File
-				RelativePath="..\..\editor\historywnd.h">
-			</File>
-			<File
 				RelativePath="..\..\editor\resource.h">
-			</File>
-			<File
-				RelativePath="..\..\editor\scbarcf.h">
-			</File>
-			<File
-				RelativePath="..\..\editor\scbarg.h">
-			</File>
-			<File
-				RelativePath="..\..\editor\scrollwnd.h">
-			</File>
-			<File
-				RelativePath="..\..\editor\sizecbar.h">
-			</File>
-			<File
-				RelativePath="..\..\editor\splashwnd.h">
 			</File>
 			<File
 				RelativePath="..\..\editor\stdhdr.h">

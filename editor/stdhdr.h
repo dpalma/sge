@@ -30,14 +30,11 @@ extern WTL::CAppModule _Module;
 #include <atlctrlw.h>
 #include <atlctrlx.h>
 #include <atlcrack.h>
+#include <atlframe.h>
+
+#include <zmouse.h>
 
 #pragma warning(disable:4355) // 'this' : used in base member initializer list
-
-// MFC stand-in hacks
-class CArchive {};
-class CDumpContext {};
-class CCmdUI {};
-#define afx_msg
 
 /////////////////////////////////////////////////////////////////////////////
 

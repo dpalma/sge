@@ -5,6 +5,7 @@
 #define INCLUDED_EDITORAPP_H
 
 #include "editorapi.h"
+#include "MainFrm.h"
 
 #include "globalobj.h"
 
@@ -25,16 +26,10 @@ public:
 	cEditorApp();
    ~cEditorApp();
 
-// Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(cEditorApp)
-	public:
-	virtual BOOL InitInstance();
-	virtual int ExitInstance();
-	virtual int Run();
+   virtual tResult Init();
+   virtual tResult Term();
+
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
-	virtual BOOL OnIdle(LONG lCount);
-	//}}AFX_VIRTUAL
 
    virtual tResult AddLoopClient(IEditorLoopClient * pLoopClient);
    virtual tResult RemoveLoopClient(IEditorLoopClient * pLoopClient);
@@ -77,7 +72,7 @@ private:
    cAutoIPtr<IEditorTool> m_pDefaultTool;
    cAutoIPtr<IEditorTool> m_pToolCapture;
 
-   CMessageLoop m_messageLoop;
+   cMainFrame m_mainWnd;
 };
 
 ////////////////////////////////////////
