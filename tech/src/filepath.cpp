@@ -4,19 +4,9 @@
 #include "stdhdr.h"
 
 #include "filepath.h"
-#include "filespec.h"
 
 #include <cstring>
 #include <cstdlib>
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <direct.h>
-#else
-#include <unistd.h>
-#include <dirent.h>
-#include <sys/stat.h>
-#endif
 #include <locale>
 
 #ifdef HAVE_CPPUNIT
@@ -24,6 +14,23 @@
 #endif
 
 #include "dbgalloc.h" // must be last header
+
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef _WIN32
+extern "C"
+{
+   __declspec(dllimport) uint STDCALL GetCurrentDirectoryA(uint, char *);
+   __declspec(dllimport) uint STDCALL GetCurrentDirectoryW(uint, wchar_t *);
+}
+#ifdef UNICODE
+#define GetCurrentDirectory  GetCurrentDirectoryW
+#else
+#define GetCurrentDirectory  GetCurrentDirectoryA
+#endif // !UNICODE
+#endif // _WIN32
+
+///////////////////////////////////////////////////////////////////////////////
 
 #ifdef _WIN32
 static const char kPathSep = '\\';
@@ -203,7 +210,21 @@ static void StrCpyExcl(char * pDest, const char * pSrc, const char * pExcl)
    *pDest = 0;
 }
 
+///////////////////////////////////////
+
 int cFilePath::Compare(const cFilePath & other) const
+{
+   char szTemp1[kMaxPath], szTemp2[kMaxPath];
+
+   StrCpyExcl(szTemp1, GetPath(), szPathSeps);
+   StrCpyExcl(szTemp2, other.GetPath(), szPathSeps);
+
+   return strcmp(szTemp1, szTemp2);
+}
+
+///////////////////////////////////////
+
+int cFilePath::CompareNoCase(const cFilePath & other) const
 {
    char szTemp1[kMaxPath], szTemp2[kMaxPath];
 
@@ -268,7 +289,7 @@ void cFilePath::MakeFullPath()
       char szFull[kMaxPath];
 
 #ifdef _WIN32
-      _getcwd(szFull, _countof(szFull));
+      GetCurrentDirectory(_countof(szFull), szFull);
 #else
       getcwd(szFull, _countof(szFull));
 #endif
@@ -285,74 +306,11 @@ cFilePath cFilePath::GetCwd()
 {
    char szCwd[kMaxPath];
 #ifdef _WIN32
-   _getcwd(szCwd, _countof(szCwd));
+   GetCurrentDirectory(_countof(szCwd), szCwd);
 #else
    getcwd(szCwd, _countof(szCwd));
 #endif
    return cFilePath(szCwd);
-}
-
-///////////////////////////////////////
-
-int cFilePath::ListDirs(std::vector<std::string> * pDirs) const
-{
-   Assert(pDirs != NULL);
-   if (pDirs == NULL)
-      return -1;
-
-   pDirs->clear();
-
-#ifdef _WIN32
-   cFileSpec wildcard(*this, "*");
-
-   WIN32_FIND_DATA findData;
-   HANDLE hFinder = FindFirstFile(wildcard.GetName(), &findData);
-   if (hFinder != INVALID_HANDLE_VALUE)
-   {
-      do
-      {
-         if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-         {
-            if (strcmp(findData.cFileName, ".") &&
-                strcmp(findData.cFileName, ".."))
-            {
-               pDirs->push_back(findData.cFileName);
-            }
-         }
-      }
-      while (FindNextFile(hFinder, &findData));
-
-      FindClose(hFinder);
-   }
-#else
-   DIR * dir = opendir(GetPath());
-   if (dir)
-   {
-      struct dirent * ent = readdir(dir);
-      while (ent)
-      {
-         if (strcmp(ent->d_name, ".") && strcmp(ent->d_name, ".."))
-         {
-            cFileSpec file(*this, ent->d_name);
-
-            struct stat fstat;
-            if (stat(file.GetName(), &fstat) == 0)
-            {
-               if (S_ISDIR(fstat.st_mode))
-               {
-                  pDirs->push_back(ent->d_name);
-               }
-            }
-         }
-
-         ent = readdir(dir);
-      }
-
-      closedir(dir);
-   }
-#endif
-
-   return pDirs->size();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -363,27 +321,15 @@ class cCollapseDotsTests : public CppUnit::TestCase
 {
    CPPUNIT_TEST_SUITE(cCollapseDotsTests);
       CPPUNIT_TEST(TestCollapseDots);
-      CPPUNIT_TEST(TestCollapseDotsBufferSize);
    CPPUNIT_TEST_SUITE_END();
 
    static const char * gm_testStrings[];
    static const int gm_nTestStrings;
 
-   void TestCollapseDots()
-   {
-      for (int i = 0; i < gm_nTestStrings; i += 2)
-      {
-         char szTemp[kMaxPath];
-         CollapseDots(gm_testStrings[i], szTemp, kMaxPath);
-         CPPUNIT_ASSERT(strcmp(gm_testStrings[i + 1], szTemp) == 0);
-      }
-   }
-
-   void TestCollapseDotsBufferSize()
-   {
-      // @TODO: ensure no buffer over-runs and return value is appropriate
-   }
+   void TestCollapseDots();
 };
+
+CPPUNIT_TEST_SUITE_REGISTRATION(cCollapseDotsTests);
 
 const char * cCollapseDotsTests::gm_testStrings[] =
 {
@@ -406,7 +352,15 @@ const char * cCollapseDotsTests::gm_testStrings[] =
 
 const int cCollapseDotsTests::gm_nTestStrings = _countof(gm_testStrings);
 
-CPPUNIT_TEST_SUITE_REGISTRATION(cCollapseDotsTests);
+void cCollapseDotsTests::TestCollapseDots()
+{
+   for (int i = 0; i < gm_nTestStrings; i += 2)
+   {
+      char szTemp[kMaxPath];
+      CollapseDots(gm_testStrings[i], szTemp, kMaxPath);
+      CPPUNIT_ASSERT(strcmp(gm_testStrings[i + 1], szTemp) == 0);
+   }
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -417,24 +371,29 @@ class cFilePathTests : public CppUnit::TestCase
       CPPUNIT_TEST(TestCompare);
    CPPUNIT_TEST_SUITE_END();
 
-   void TestIsFullPath()
-   {
-      CPPUNIT_ASSERT(cFilePath("C:\\p1\\p2").IsFullPath());
-      CPPUNIT_ASSERT(!cFilePath("C:p1\\p2").IsFullPath());
-      CPPUNIT_ASSERT(!cFilePath("C:\\p1\\p2\\..\\p3").IsFullPath());
-      CPPUNIT_ASSERT(cFilePath("/p1/p2/p3").IsFullPath());
-      CPPUNIT_ASSERT(!cFilePath("p1/p2/p3").IsFullPath());
-      CPPUNIT_ASSERT(!cFilePath("/p1/p2/../p3").IsFullPath());
-   }
-
-   void TestCompare()
-   {
-      CPPUNIT_ASSERT(cFilePath("c:\\p1\\p2\\p3").Compare(cFilePath("c:/p1/p2/p3")) == 0);
-      CPPUNIT_ASSERT(cFilePath("c:\\p1\\p2\\p3").Compare(cFilePath("c:\\p4\\p5\\p6")) < 0);
-   }
+   void TestIsFullPath();
+   void TestCompare();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(cFilePathTests);
+
+void cFilePathTests::TestIsFullPath()
+{
+   CPPUNIT_ASSERT(cFilePath("C:\\p1\\p2").IsFullPath());
+   CPPUNIT_ASSERT(!cFilePath("C:p1\\p2").IsFullPath());
+   CPPUNIT_ASSERT(!cFilePath("C:\\p1\\p2\\..\\p3").IsFullPath());
+   CPPUNIT_ASSERT(cFilePath("/p1/p2/p3").IsFullPath());
+   CPPUNIT_ASSERT(!cFilePath("p1/p2/p3").IsFullPath());
+   CPPUNIT_ASSERT(!cFilePath("/p1/p2/../p3").IsFullPath());
+}
+
+void cFilePathTests::TestCompare()
+{
+   CPPUNIT_ASSERT(cFilePath("c:\\p1\\p2\\p3").Compare(cFilePath("c:/p1/p2/p3")) == 0);
+   CPPUNIT_ASSERT(cFilePath("C:\\P1\\P2\\P3").Compare(cFilePath("c:/p1/p2/p3")) != 0);
+   CPPUNIT_ASSERT(cFilePath("C:\\P1\\P2\\P3").CompareNoCase(cFilePath("c:/p1/p2/p3")) == 0);
+   CPPUNIT_ASSERT(cFilePath("c:\\p1\\p2\\p3").Compare(cFilePath("c:\\p4\\p5\\p6")) < 0);
+}
 
 #endif // HAVE_CPPUNIT
 

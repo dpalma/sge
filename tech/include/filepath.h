@@ -29,6 +29,7 @@ public:
    const cFilePath & operator =(const char * pszPath);
 
    int Compare(const cFilePath & other) const;
+   int CompareNoCase(const cFilePath & other) const;
 
    const char * GetPath() const;
 
@@ -39,8 +40,6 @@ public:
 
    static cFilePath GetCwd();
 
-   int ListDirs(std::vector<std::string> * pDirs) const;
-
 private:
    char m_szPath[kMaxPath];
 };
@@ -50,13 +49,6 @@ private:
 inline const char * cFilePath::GetPath() const
 {
    return m_szPath;
-}
-
-///////////////////////////////////////
-
-inline bool operator ==(const cFilePath & path1, const cFilePath & path2)
-{
-   return (path1.Compare(path2) == 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
