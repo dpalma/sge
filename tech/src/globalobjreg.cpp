@@ -26,15 +26,11 @@ LOG_DEFINE_CHANNEL(GlobalObjReg);
 #define LocalMsg3(s,a,b,c)       DebugMsgEx3(GlobalObjReg,(s),(a),(b),(c))
 #define LocalMsg4(s,a,b,c,d)     DebugMsgEx4(GlobalObjReg,(s),(a),(b),(c),(d))
 
-using namespace std;
-
-#define InlineAddRef(pUnk) ((pUnk)->AddRef(), pUnk)
-
 ///////////////////////////////////////////////////////////////////////////////
 // Template specialization for pair that compares IID/Interface pairs
 
-bool CDECL operator==(const pair<const IID *, IGlobalObject *> & P1,
-                      const pair<const IID *, IGlobalObject *> & P2)
+bool CDECL operator==(const std::pair<const IID *, IGlobalObject *> & P1,
+                      const std::pair<const IID *, IGlobalObject *> & P2)
 {
    if (!CTIsEqualGUID(*(P1.first), *(P2.first)))
       return false;
@@ -63,6 +59,8 @@ public:
    virtual tResult TermAll();
 
 private:
+   static void TermAllAtExit();
+
    bool LookupByName(const char * pszName, IUnknown * * ppUnk, const GUID * * ppGuid) const;
 
    enum eState
@@ -84,10 +82,10 @@ private:
       }
    };
 
-   typedef map<const IID *, IUnknown *, less_iid> tObjMap;
+   typedef std::map<const IID *, IUnknown *, less_iid> tObjMap;
    tObjMap m_objMap;
 
-   typedef vector<IGlobalObject *> tInitOrder;
+   typedef std::vector<IGlobalObject *> tInitOrder;
    tInitOrder m_initOrder;
 
    eState m_state;
@@ -128,7 +126,7 @@ tResult cGlobalObjectRegistry::Register(REFIID iid, IUnknown * pUnk)
          {
             if (m_objMap.find(&iid) == m_objMap.end())
             {
-               m_objMap.insert(make_pair(&iid, pPostQI));
+               m_objMap.insert(std::make_pair(&iid, pPostQI));
                return S_OK;
             }
 
@@ -194,7 +192,7 @@ tResult cGlobalObjectRegistry::InitAll()
                tObjMap::iterator found = m_objMap.find(iter->pGUID);
                if (found != m_objMap.end())
                {
-                  pTargetUnk = InlineAddRef(found->second);
+                  pTargetUnk = CTAddRef(found->second);
                   pTargetGUID = found->first;
                }
             }
@@ -241,7 +239,7 @@ tResult cGlobalObjectRegistry::InitAll()
    }
 
    cTopoSorter<tInitGraph> sorter;
-   typedef vector<const IID *> tInitOrderIIDVector;
+   typedef std::vector<const IID *> tInitOrderIIDVector;
    tInitOrderIIDVector initOrderIIDs;
    sorter.TopoSort(&initGraph, &initOrderIIDs);
 
@@ -278,6 +276,8 @@ tResult cGlobalObjectRegistry::InitAll()
       }
    }
 
+   atexit(TermAllAtExit);
+
    return result;
 }
 
@@ -295,6 +295,7 @@ tResult cGlobalObjectRegistry::TermAll()
       SetState(kTerminated);
       m_initOrder.clear();
       m_objMap.clear();
+      return S_OK;
    }
 #ifndef NDEBUG
    else
@@ -302,9 +303,16 @@ tResult cGlobalObjectRegistry::TermAll()
       Assert(m_initOrder.empty());
       Assert(m_objMap.empty());
       Assert(GetState() == kTerminated);
+      return S_FALSE;
    }
 #endif
-   return S_OK;
+}
+
+///////////////////////////////////////
+
+void cGlobalObjectRegistry::TermAllAtExit()
+{
+   AccessGlobalObjectRegistry()->TermAll();
 }
 
 ///////////////////////////////////////
