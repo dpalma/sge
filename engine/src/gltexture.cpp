@@ -21,105 +21,45 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static GLint GlTexNumComponents(GLenum format)
+// Convert a pixel format to a number of color components.
+// This array must match the enum ePixelFormat type in imagedata.h,
+// excluding kPF_ERROR which is -1 and not a valid array index.
+static const GLint g_glTexComponents[] =
 {
-   switch (format)
-   {
-      case GL_RGB:
-      case GL_BGR_EXT:
-         return 3;
-
-      case GL_RGBA:
-      case GL_BGRA_EXT:
-         return 4;
-
-      default:
-         return 0;
-   }
-}
+   0, // kPF_Grayscale
+   0, // kPF_ColorMapped
+   3, // kPF_RGB555
+   3, // kPF_BGR555
+   3, // kPF_RGB565
+   3, // kPF_BGR565
+   4, // kPF_RGBA1555
+   4, // kPF_BGRA1555
+   3, // kPF_RGB888
+   3, // kPF_BGR888
+   4, // kPF_RGBA8888
+   4, // kPF_BGRA8888
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static GLenum GlTexFormat(ePixelFormat pixelFormat)
+// Convert a pixel format to a GL format constant.
+// This array must match the enum ePixelFormat type in imagedata.h,
+// excluding kPF_ERROR which is -1 and not a valid array index.
+static const GLenum g_glTexFormats[] =
 {
-   switch (pixelFormat)
-   {
-      case kPF_RGB888:
-         return GL_RGB;
-
-      case kPF_BGR888:
-         return GL_BGR_EXT;
-
-      case kPF_RGBA8888:
-         return GL_RGBA;
-
-      case kPF_BGRA8888:
-         return GL_BGRA_EXT;
-
-      default:
-         return 0;
-   }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-static tResult UploadTextureImage(cImageData * pImage, GLuint * pTextureId)
-{
-   Assert(pImage != NULL);
-   Assert(pTextureId != NULL);
-
-   if (pImage == NULL || pTextureId == NULL)
-      return E_FAIL;
-
-   bool bNoMipMaps = false;
-
-   if (bNoMipMaps &&
-       (!IsPowerOfTwo(pImage->GetWidth()) || !IsPowerOfTwo(pImage->GetHeight())))
-   {
-      DebugMsg2("WARNING: Improper texture dimensions %dx%d\n",
-         pImage->GetWidth(), pImage->GetHeight());
-      return E_FAIL;
-   }
-
-   GLenum format = GlTexFormat(pImage->GetPixelFormat());
-
-   if (format == 0)
-   {
-      DebugMsg("WARNING: unsupported texture pixel format\n");
-      return E_FAIL;
-   }
-
-   GLint nComponents = GlTexNumComponents(format);
-
-   if (nComponents == 0)
-   {
-      DebugMsg1("Unsupported texture pixel format %x in InstallTexture\n", format);
-      return E_FAIL;
-   }
-
-   glGenTextures(1, pTextureId);
-   glBindTexture(GL_TEXTURE_2D, *pTextureId);
-
-   if (bNoMipMaps)
-   {
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-      glTexImage2D(GL_TEXTURE_2D, 0, nComponents, pImage->GetWidth(), pImage->GetHeight(),
-         0, format, GL_UNSIGNED_BYTE, pImage->GetData());
-   }
-   else
-   {
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-
-      // gluBuild2DMipmaps will scale the image if its dimensions are not powers of two
-      gluBuild2DMipmaps(GL_TEXTURE_2D, nComponents, pImage->GetWidth(), pImage->GetHeight(),
-         format, GL_UNSIGNED_BYTE, pImage->GetData());
-   }
-
-   return S_OK;
-}
+   0, // kPF_Grayscale
+   0, // kPF_ColorMapped
+   0, // kPF_RGB555
+   0, // kPF_BGR555
+   0, // kPF_RGB565
+   0, // kPF_BGR565
+   0, // kPF_RGBA1555
+   0, // kPF_BGRA1555
+   GL_RGB,        // kPF_RGB888
+   GL_BGR_EXT,    // kPF_BGR888
+   GL_RGBA,       // kPF_RGBA8888
+   GL_BGRA_EXT,   // kPF_BGRA8888
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -129,31 +69,48 @@ static tResult UploadTextureImage(cImageData * pImage, GLuint * pTextureId)
 class cTexture : public cComObject<IMPLEMENTS(ITexture)>
 {
 public:
-   cTexture();
-   cTexture(uint textureId);
+   cTexture(float priority = kTexPriorityHighest);
+   ~cTexture();
 
    virtual void OnFinalRelease();
 
+   virtual tResult UploadImage(const cImageData * pImageData);
+
+   virtual tResult HasAlphaComponent();
+
+   virtual uint GetWidth();
+   virtual uint GetHeight();
+
+   virtual tResult SetPriority(float priority);
+   virtual tResult GetPriority(float * pPriority);
+
    virtual tResult GetTextureHandle(HANDLE * phTexture) const;
 
+   GLuint GetTextureId() const { return m_textureId; }
+
 private:
+   void ReleaseTextureId();
+
+   float m_priority;
+   bool m_bHasAlpha;
+   uint m_width, m_height;
    uint m_textureId;
-   bool m_bOwnTextureId;
 };
 
 ///////////////////////////////////////
 
-cTexture::cTexture()
- : m_textureId(0),
-   m_bOwnTextureId(false)
+cTexture::cTexture(float priority)
+ : m_priority(priority),
+   m_bHasAlpha(false),
+   m_width(0),
+   m_height(0),
+   m_textureId(0)
 {
 }
 
 ///////////////////////////////////////
 
-cTexture::cTexture(uint textureId)
- : m_textureId(textureId),
-   m_bOwnTextureId(false)
+cTexture::~cTexture()
 {
 }
 
@@ -161,11 +118,122 @@ cTexture::cTexture(uint textureId)
 
 void cTexture::OnFinalRelease()
 {
-   if (m_bOwnTextureId && glIsTexture(m_textureId))
+   ReleaseTextureId();
+}
+
+///////////////////////////////////////
+
+tResult cTexture::UploadImage(const cImageData * pImageData)
+{
+   if (pImageData == NULL)
    {
-      glDeleteTextures(1, &m_textureId);
+      return E_POINTER;
    }
-   m_textureId = 0;
+
+   ePixelFormat pixelFormat = pImageData->GetPixelFormat();
+
+   if (pixelFormat == kPF_ERROR)
+   {
+      WarnMsg("Invalid image format while creating texture\n");
+      return E_FAIL;
+   }
+
+   GLenum texelFormat = g_glTexFormats[pixelFormat];
+   if (texelFormat == 0)
+   {
+      WarnMsg1("Unsupported texture pixel format %d\n", pixelFormat);
+      return E_FAIL;
+   }
+
+   GLint nComponents = g_glTexComponents[pixelFormat];
+   if (nComponents == 0)
+   {
+      WarnMsg1("Unsupported texture pixel format %d\n", pixelFormat);
+      return E_FAIL;
+   }
+
+   // TODO: Support kPF_RGBA1555 and kPF_BGRA1555?
+   if (pixelFormat == kPF_RGBA8888 || pixelFormat == kPF_BGRA8888)
+   {
+      m_bHasAlpha = true;
+   }
+   else
+   {
+      m_bHasAlpha = false;
+   }
+
+   m_width = pImageData->GetWidth();
+   m_height = pImageData->GetHeight();
+
+   if ((m_textureId == 0) || !glIsTexture(m_textureId))
+   {
+      glGenTextures(1, &m_textureId);
+   }
+
+   glBindTexture(GL_TEXTURE_2D, m_textureId);
+
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+
+   // gluBuild2DMipmaps will scale the image if its dimensions are not powers of two
+   int result = gluBuild2DMipmaps(
+      GL_TEXTURE_2D,
+      nComponents,
+      pImageData->GetWidth(),
+      pImageData->GetHeight(),
+      texelFormat,
+      GL_UNSIGNED_BYTE,
+      pImageData->GetData());
+
+   DebugMsgIf1(result != 0, "gluBuild2DMipmaps returned error: \n",
+      (const char *)gluErrorString(glGetError()));
+
+   return (result == 0) ? S_OK : E_FAIL;
+}
+
+///////////////////////////////////////
+
+tResult cTexture::HasAlphaComponent()
+{
+   return m_bHasAlpha ? S_OK : S_FALSE;
+}
+
+///////////////////////////////////////
+
+uint cTexture::GetWidth()
+{
+   return m_width;
+}
+
+///////////////////////////////////////
+
+uint cTexture::GetHeight()
+{
+   return m_height;
+}
+
+///////////////////////////////////////
+
+tResult cTexture::SetPriority(float priority)
+{
+   if (priority < 0.0f || priority > 1.0f)
+   {
+      return E_INVALIDARG;
+   }
+   m_priority = priority;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cTexture::GetPriority(float * pPriority)
+{
+   if (pPriority == NULL)
+   {
+      return E_POINTER;
+   }
+   *pPriority = m_priority;
+   return S_OK;
 }
 
 ///////////////////////////////////////
@@ -179,6 +247,17 @@ tResult cTexture::GetTextureHandle(HANDLE * phTexture) const
 
    *phTexture = (HANDLE)m_textureId;
    return (m_textureId != 0) ? S_OK : S_FALSE;
+}
+
+///////////////////////////////////////
+
+void cTexture::ReleaseTextureId()
+{
+   if (glIsTexture(m_textureId))
+   {
+      glDeleteTextures(1, &m_textureId);
+   }
+   m_textureId = 0;
 }
 
 
@@ -198,17 +277,13 @@ public:
 
    virtual tResult GetTexture(const char * pszName, ITexture * * ppTexture);
 
-   virtual tResult FreeTexture(ITexture * pTexture);
    virtual tResult FreeAll();
 
+   virtual tResult PrioritizeTextures();
+
 private:
-   struct sTextureInfo
-   {
-      GLuint textureId;
-      ulong refCount;
-   };
-   typedef std::map<cStr, sTextureInfo> tTextureObjectMap;
-   tTextureObjectMap m_textureObjectMap;
+   typedef std::map<cStr, cTexture *> tTexObjMap;
+   tTexObjMap m_texObjMap;
 };
 
 ///////////////////////////////////////
@@ -242,69 +317,98 @@ tResult cTextureManager::Term()
 
 tResult cTextureManager::GetTexture(const char * pszName, ITexture * * ppTexture)
 {
-   Assert(pszName != NULL);
-   Assert(ppTexture != NULL);
-
-   tTextureObjectMap::iterator iter = m_textureObjectMap.find(pszName);
-   if (iter == m_textureObjectMap.end())
+   if (pszName == NULL || ppTexture == NULL)
    {
-      UseGlobal(ResourceManager);
-      cImageData * pImage = ImageLoad(pResourceManager, pszName);
-      if (pImage == NULL)
-      {
-         *ppTexture = NULL;
-         return E_FAIL;
-      }
+      return E_POINTER;
+   }
 
-      sTextureInfo textureInfo;
-      if (UploadTextureImage(pImage, &textureInfo.textureId) != S_OK)
-      {
-         delete pImage;
-         *ppTexture = NULL;
-         return E_FAIL;
-      }
-
-      delete pImage;
-
-      textureInfo.refCount = 1;
-      m_textureObjectMap.insert(std::make_pair(cStr(pszName), textureInfo));
-
-      *ppTexture = new cTexture(textureInfo.textureId);
-      return ((*ppTexture) != NULL) ? S_OK : E_FAIL;
+   tTexObjMap::iterator iter = m_texObjMap.find(pszName);
+   if (iter != m_texObjMap.end())
+   {
+      *ppTexture = CTAddRef(iter->second);
+      return S_OK;
    }
    else
    {
-      iter->second.refCount++;
-      *ppTexture = new cTexture(iter->second.textureId);
-      return ((*ppTexture) != NULL) ? S_OK : E_FAIL;
+      UseGlobal(ResourceManager);
+      cImageData * pImageData = ImageLoad(pResourceManager, pszName);
+      if (pImageData == NULL)
+      {
+         *ppTexture = NULL;
+         return E_FAIL;
+      }
+
+      cTexture * pTexture = new cTexture;
+      if (!pTexture)
+      {
+         delete pImageData;
+         *ppTexture = NULL;
+         return E_OUTOFMEMORY;
+      }
+
+      if (FAILED(pTexture->UploadImage(pImageData)))
+      {
+         delete pImageData;
+         SafeRelease(pTexture);
+         *ppTexture = NULL;
+         return E_FAIL;
+      }
+
+      m_texObjMap.insert(std::make_pair(cStr(pszName), CTAddRef(pTexture)));
+      *ppTexture = CTAddRef(pTexture);
+
+      pTexture->Release();
+      delete pImageData;
+
+      return S_OK;
    }
-
-   return E_FAIL;
-}
-
-///////////////////////////////////////
-
-tResult cTextureManager::FreeTexture(ITexture * pTexture)
-{
-   return E_NOTIMPL;
 }
 
 ///////////////////////////////////////
 
 tResult cTextureManager::FreeAll()
 {
-   std::vector<GLuint> textureIds(m_textureObjectMap.size());
-
-   uint i;
-   tTextureObjectMap::iterator iter;
-   for (i = 0, iter = m_textureObjectMap.begin(); iter != m_textureObjectMap.end(); iter++, i++)
+   tTexObjMap::iterator iter;
+   for (iter = m_texObjMap.begin(); iter != m_texObjMap.end(); iter++)
    {
-      textureIds[i] = iter->second.textureId;
+      iter->second->Release();
+   }
+   m_texObjMap.clear();
+
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cTextureManager::PrioritizeTextures()
+{
+   size_t nTextures = m_texObjMap.size();
+
+   uint * pTextureIds = new uint[nTextures];
+   if (pTextureIds == NULL)
+   {
+      return E_OUTOFMEMORY;
    }
 
-   glDeleteTextures(textureIds.size(), &textureIds[0]);
+   float * pPriorities = new float[nTextures];
+   if (pPriorities == NULL)
+   {
+      delete [] pTextureIds;
+      return E_OUTOFMEMORY;
+   }
 
-   DebugMsgIf(glGetError() != GL_NO_ERROR, "WARNING: glDeleteTextures call caused an error\n");
+   int index = 0;
+   tTexObjMap::iterator iter;
+   for (iter = m_texObjMap.begin(); iter != m_texObjMap.end(); iter++, index++)
+   {
+      pTextureIds[index] = iter->second->GetTextureId();
+      Verify(iter->second->GetPriority(&pPriorities[index]) == S_OK);
+   }
+
+   glPrioritizeTextures(nTextures, pTextureIds, pPriorities);
+
+   delete [] pTextureIds;
+   delete [] pPriorities;
 
    return S_OK;
 }
