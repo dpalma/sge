@@ -46,29 +46,14 @@ HASHTABLE_TEMPLATE::cHashTable(int initialSize)
 
 HASHTABLE_TEMPLATE::~cHashTable()
 {
-   Clear();
+   Reset(0);
 }
 
 ///////////////////////////////////////
 
 HASHTABLE_TEMPLATE_(void)::Clear()
 {
-   Reset(0);
-}
-
-///////////////////////////////////////
-
-HASHTABLE_TEMPLATE_(void)::Reset(int newInitialSize)
-{
-   Assert(m_nItersActive == 0); // don't clear while iterating
-
-   m_allocator.deallocate(m_elts, m_size);
-   m_elts = NULL;
-   m_size = 0;
-   m_count = 0;
-
-   if (newInitialSize > 0)
-      Grow(newInitialSize);
+   Reset();
 }
 
 ///////////////////////////////////////
@@ -251,6 +236,21 @@ HASHTABLE_TEMPLATE_(void)::Grow(uint newSize)
 HASHTABLE_TEMPLATE_(bool)::Equal(const KEY & k1, const KEY & k2) const
 {
    return k1 == k2;
+}
+
+///////////////////////////////////////
+
+HASHTABLE_TEMPLATE_(void)::Reset(int newInitialSize)
+{
+   Assert(m_nItersActive == 0); // don't clear while iterating
+
+   m_allocator.deallocate(m_elts, m_size);
+   m_elts = NULL;
+   m_size = 0;
+   m_count = 0;
+
+   if (newInitialSize > 0)
+      Grow(newInitialSize);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -51,7 +51,6 @@ public:
    ~cHashTable();
 
    void Clear();
-   void Reset(int newInitialSize = kInitialSizeSmall);
 
    bool Set(const KEY & k, const VALUE & v);
    bool Insert(const KEY & k, const VALUE & v);
@@ -66,6 +65,8 @@ private:
    uint Probe(const KEY & k) const;
    void Grow(uint newSize);
    bool Equal(const KEY & k1, const KEY & k2) const;
+
+   void Reset(int newInitialSize = kInitialSizeSmall);
 
    typedef struct sHashElement<KEY, VALUE> tHashElement;
 

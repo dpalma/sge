@@ -147,7 +147,7 @@ private:
 
       int64 start;
 
-      m_hashTable.Reset();
+      m_hashTable.Clear();
       m_map.clear();
 
       {
