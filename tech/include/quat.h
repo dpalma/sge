@@ -11,7 +11,7 @@
 #endif // _MSC_VER > 1000
 
 template <typename T> class cMatrix4;
-typedef class cMatrix4<float> sMatrix4;
+typedef class cMatrix4<float> tMatrix4;
 
 typedef class cQuat tQuat;
 
@@ -42,7 +42,7 @@ public:
    value_type Norm() const;
    cQuat Inverse() const;
 
-   void ToMatrix(sMatrix4 * pMatrix) const;
+   void ToMatrix(tMatrix4 * pMatrix) const;
 
    value_type x, y, z, w;
 };

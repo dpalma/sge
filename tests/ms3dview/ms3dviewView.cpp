@@ -226,7 +226,7 @@ void CMs3dviewView::OnSize(UINT nType, int cx, int cy)
 
    GLfloat aspect = (GLfloat)cx / (GLfloat)cy;
 
-   sMatrix4 proj;
+   tMatrix4 proj;
    MatrixPerspective(kFov, aspect, kZNear, kZFar, &proj);
 
    glMatrixMode(GL_PROJECTION);

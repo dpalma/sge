@@ -21,7 +21,13 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool MatrixInvertByCramersRule(float *mat, float *dst)
+typedef bool (* tMatrixInvertFn)(const float *, float *);
+typedef void (* tMatrixMultiplyFn)(const float *, const float *, float *);
+typedef bool (* tMatrixOpQuerySupportFn)();
+
+///////////////////////////////////////////////////////////////////////////////
+
+bool MatrixInvertByCramersRule(const float *mat, float *dst)
 {
    float tmp[12]; /* temp array for pairs */
    float src[16]; /* array of transpose source matrix */
@@ -104,56 +110,129 @@ bool MatrixInvertByCramersRule(float *mat, float *dst)
    return true;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-
-sMatrix4 * MatrixInvert(const sMatrix4 & m, sMatrix4 * pInverse)
+bool MatrixInvertByCramersRuleSupported()
 {
-   Assert(pInverse != NULL);
-   return MatrixInvertByCramersRule(const_cast<float *>(m.m), pInverse->m) ? pInverse : NULL;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// @TODO (dpalma 9-12-02)
-
-sMatrix4 * MatrixInvertByGaussJordan(const sMatrix4 & m, sMatrix4 * pInverse)
-{
-   Assert(pInverse != NULL);
-
-   tMatrix4 a(m), b;
-   b.Identity();
-
-   float p = a.m00;
-   a.m00 /= p;
-   a.m01 /= p;
-   a.m02 /= p;
-   a.m03 /= p;
-
-   p = a.m10 / a.m00;
-   a.m10 -= a.m00 * p;
-   a.m11 -= a.m01 * p;
-   a.m12 -= a.m02 * p;
-   a.m13 -= a.m03 * p;
-
-   p = a.m20 / a.m00;
-   a.m20 -= a.m00 * p;
-   a.m21 -= a.m01 * p;
-   a.m22 -= a.m02 * p;
-   a.m23 -= a.m03 * p;
-
-   p = a.m30 / a.m00;
-   a.m30 -= a.m00 * p;
-   a.m31 -= a.m01 * p;
-   a.m32 -= a.m02 * p;
-   a.m33 -= a.m03 * p;
-
-   *pInverse = b;
-
-   return pInverse;
+   return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void MatrixTranslate(float x, float y, float z, sMatrix4 * pResult)
+static const struct
+{
+   tMatrixInvertFn pfnInvert;
+   tMatrixOpQuerySupportFn pfnSupport;
+}
+g_matrixInvertFns[] =
+{
+   { MatrixInvertByCramersRule, MatrixInvertByCramersRuleSupported },
+};
+
+////////////////////////////////////////
+
+bool MatrixInvertInit(const float * m, float * pResult);
+
+tMatrixInvertFn g_pfnMatrixInvert = MatrixInvertInit;
+
+////////////////////////////////////////
+
+bool MatrixInvertInit(const float * m, float * pResult)
+{
+   for (size_t i = 0; i < _countof(g_matrixInvertFns); i++)
+   {
+      if (g_matrixInvertFns[i].pfnSupport != NULL && 
+         (*g_matrixInvertFns[i].pfnSupport)())
+      {
+         g_pfnMatrixInvert = g_matrixInvertFns[i].pfnInvert;
+         break;
+      }
+   }
+   Assert(g_pfnMatrixInvert != NULL);
+   return (*g_pfnMatrixInvert)(m, pResult);
+}
+
+////////////////////////////////////////
+
+bool MatrixInvert(const float * m, float * pResult)
+{
+   Assert(g_pfnMatrixInvert != NULL);
+   return (*g_pfnMatrixInvert)(m, pResult);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Default C code for matrix multiplication
+
+void MatrixMultiplyDefault(const float * ml, const float * mr, float * pResult)
+{
+   Assert(pResult != NULL);
+
+#define A(row,col)  ml[(col<<2)+row]
+#define B(row,col)  mr[(col<<2)+row]
+#define T(row,col)  pResult[(col<<2)+row]
+
+   for (int i = 0; i < 4; i++)
+   {
+      T(i, 0) = A(i, 0) * B(0, 0) + A(i, 1) * B(1, 0) + A(i, 2) * B(2, 0) + A(i, 3) * B(3, 0);
+      T(i, 1) = A(i, 0) * B(0, 1) + A(i, 1) * B(1, 1) + A(i, 2) * B(2, 1) + A(i, 3) * B(3, 1);
+      T(i, 2) = A(i, 0) * B(0, 2) + A(i, 1) * B(1, 2) + A(i, 2) * B(2, 2) + A(i, 3) * B(3, 2);
+      T(i, 3) = A(i, 0) * B(0, 3) + A(i, 1) * B(1, 3) + A(i, 2) * B(2, 3) + A(i, 3) * B(3, 3);
+   }
+
+#undef A
+#undef B
+#undef T
+}
+
+bool MatrixMultiplyDefaultSupported()
+{
+   return true; // always supported
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+static const struct
+{
+   tMatrixMultiplyFn pfnMultiply;
+   tMatrixOpQuerySupportFn pfnSupport;
+}
+g_matrixMultiplyFns[] =
+{
+   { MatrixMultiplyDefault, MatrixMultiplyDefaultSupported },
+};
+
+////////////////////////////////////////
+
+void MatrixMultiplyInit(const float * ml, const float * mr, float * pResult);
+
+tMatrixMultiplyFn g_pfnMatrixMultiply = MatrixMultiplyInit;
+
+////////////////////////////////////////
+
+void MatrixMultiplyInit(const float * ml, const float * mr, float * pResult)
+{
+   for (size_t i = 0; i < _countof(g_matrixMultiplyFns); i++)
+   {
+      if (g_matrixMultiplyFns[i].pfnSupport != NULL && 
+         (*g_matrixMultiplyFns[i].pfnSupport)())
+      {
+         g_pfnMatrixMultiply = g_matrixMultiplyFns[i].pfnMultiply;
+         break;
+      }
+   }
+   Assert(g_pfnMatrixMultiply != NULL);
+   (*g_pfnMatrixMultiply)(ml, mr, pResult);
+}
+
+////////////////////////////////////////
+
+void MatrixMultiply(const float * ml, const float * mr, float * pResult)
+{
+   Assert(g_pfnMatrixMultiply != NULL);
+   (*g_pfnMatrixMultiply)(ml, mr, pResult);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void MatrixTranslate(float x, float y, float z, tMatrix4 * pResult)
 {
    Assert(pResult != NULL);
    pResult->Identity();
@@ -165,7 +244,7 @@ void MatrixTranslate(float x, float y, float z, sMatrix4 * pResult)
 ///////////////////////////////////////////////////////////////////////////////
 // See http://www.makegames.com/3drotation
 
-void MatrixRotateX(float theta, sMatrix4 * pResult)
+void MatrixRotateX(float theta, tMatrix4 * pResult)
 {
    float sintheta = sinf(Deg2Rad(theta));
    float costheta = cosf(Deg2Rad(theta));
@@ -179,7 +258,7 @@ void MatrixRotateX(float theta, sMatrix4 * pResult)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void MatrixRotateY(float theta, sMatrix4 * pResult)
+void MatrixRotateY(float theta, tMatrix4 * pResult)
 {
    float sintheta = sinf(Deg2Rad(theta));
    float costheta = cosf(Deg2Rad(theta));
@@ -193,7 +272,7 @@ void MatrixRotateY(float theta, sMatrix4 * pResult)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void MatrixRotateZ(float theta, sMatrix4 * pResult)
+void MatrixRotateZ(float theta, tMatrix4 * pResult)
 {
    float sintheta = sinf(Deg2Rad(theta));
    float costheta = cosf(Deg2Rad(theta));
@@ -262,7 +341,7 @@ void MatrixLookAt(const tVec3 & eye, const tVec3 & center, const tVec3 & up,
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void MatrixPerspective(float fov, float aspect, float znear, float zfar, sMatrix4 * pResult)
+void MatrixPerspective(float fov, float aspect, float znear, float zfar, tMatrix4 * pResult)
 {
    static const float kPiOver360 = kPi / 360.0f;
 
@@ -318,7 +397,7 @@ void MatrixPerspective(double fov, double aspect, double znear, double zfar, cMa
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void MatrixOrtho(float left, float right, float bottom, float top, float znear, float zfar, sMatrix4 * pResult)
+void MatrixOrtho(float left, float right, float bottom, float top, float znear, float zfar, tMatrix4 * pResult)
 {
    // formulas obtained from documentation of glOrtho
    Assert(pResult != NULL);
@@ -372,27 +451,27 @@ class cMatrix4Tests : public CppUnit::TestCase
    CPPUNIT_TEST_SUITE_END();
 };
 
+CPPUNIT_TEST_SUITE_REGISTRATION(cMatrix4Tests);
+
 void cMatrix4Tests::TestMatrixInvert()
 {
-   sMatrix4 M;
+   tMatrix4 M;
    M.m00 = -.519f; M.m01 = 0;      M.m02 = .854f;  M.m03 = 0;
    M.m10 = -.207f; M.m11 = 0.97f;  M.m12 = -.126f; M.m13 = -1e-08f;
    M.m20 = -.828f; M.m21 = -.242f; M.m22 = -.504f; M.m23 = 4.12f;
    M.m30 = 0;      M.m31 = 0;      M.m32 = 0;      M.m33 = 1;
 
-   sMatrix4 I;
+   tMatrix4 I;
    if (!MatrixInvert(M, &I))
    {
       DebugMsg("Matrix is NOT invertible\n");
       return;
    }
 
-   sMatrix4 result = M * I;
+   tMatrix4 result = M * I;
 
    CPPUNIT_ASSERT(MatrixIsIdentity(result));
 }
-
-CPPUNIT_TEST_SUITE_REGISTRATION(cMatrix4Tests);
 
 #endif // HAVE_CPPUNIT
 

@@ -103,7 +103,7 @@ tResult cSceneMesh::PostRead()
 
       for (uint i = 0; i < inverses.size(); i++)
       {
-         MatrixInvert(pSkeleton->GetBoneWorldTransform(i), &inverses[i]);
+         MatrixInvert(pSkeleton->GetBoneWorldTransform(i).m, inverses[i].m);
       }
 
       if (m_pMesh)

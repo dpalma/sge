@@ -28,7 +28,7 @@ cQuat::cQuat(const tVec3 & v, value_type _w)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void cQuat::ToMatrix(sMatrix4 * pMatrix) const
+void cQuat::ToMatrix(tMatrix4 * pMatrix) const
 {
    tQuat::value_type s = 2.0f / Norm();
    tQuat::value_type xs = x*s;

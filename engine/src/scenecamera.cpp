@@ -58,7 +58,7 @@ void cSceneCamera::SetOrtho(float left, float right, float bottom, float top, fl
 void cSceneCamera::UpdateCompositeMatrices()
 {
    m_viewProjection = GetProjectionMatrix() * GetViewMatrix();
-   MatrixInvert(GetViewProjectionMatrix(), &m_viewProjectionInverse);
+   MatrixInvert(GetViewProjectionMatrix().m, m_viewProjectionInverse.m);
    m_frustum.ExtractPlanes(GetViewProjectionMatrix());
 }
 

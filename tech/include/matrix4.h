@@ -133,36 +133,18 @@ inline void cMatrix4<T>::Transform(const float * pSource, float * pDest) const
 ///////////////////////////////////////
 
 template <typename T>
-cMatrix4<T> operator *(const cMatrix4<T> & a, const cMatrix4<T> & b)
+inline cMatrix4<T> operator *(const cMatrix4<T> & a, const cMatrix4<T> & b)
 {
    cMatrix4<T> result;
-
-#define A(row,col)  a.m[(col<<2)+row]
-#define B(row,col)  b.m[(col<<2)+row]
-#define T(row,col)  result.m[(col<<2)+row]
-
-   for (int i = 0; i < 4; i++)
-   {
-      T(i, 0) = A(i, 0) * B(0, 0) + A(i, 1) * B(1, 0) + A(i, 2) * B(2, 0) + A(i, 3) * B(3, 0);
-      T(i, 1) = A(i, 0) * B(0, 1) + A(i, 1) * B(1, 1) + A(i, 2) * B(2, 1) + A(i, 3) * B(3, 1);
-      T(i, 2) = A(i, 0) * B(0, 2) + A(i, 1) * B(1, 2) + A(i, 2) * B(2, 2) + A(i, 3) * B(3, 2);
-      T(i, 3) = A(i, 0) * B(0, 3) + A(i, 1) * B(1, 3) + A(i, 2) * B(2, 3) + A(i, 3) * B(3, 3);
-   }
-
-#undef A
-#undef B
-#undef T
-
+   MatrixMultiply(a.m, b.m, result.m);
    return result;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // matrix operations
 
-// @TODO: "sMatrix4" is the old name. Everybody should move to "tMatrix4".
-typedef cMatrix4<float> sMatrix4;
-
-TECH_API sMatrix4 * MatrixInvert(const sMatrix4 & m, tMatrix4 * pResult);
+TECH_API bool MatrixInvert(const float * m, float * pResult);
+TECH_API void MatrixMultiply(const float * ml, const float * mr, float * pResult);
 
 ///////////////////////////////////////////////////////////////////////////////
 // 3D transformations
