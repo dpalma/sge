@@ -108,13 +108,20 @@ tResult cEditorTileManager::SetDefaultTileSet(const tChar * pszName)
 {
    if (pszName != NULL)
    {
-      m_defaultTileSet = pszName;
-
-      cAutoIPtr<IEditorTileSet> pTileSet;
-      if (GetTileSet(pszName, &pTileSet) == S_OK)
+      if (m_defaultTileSet.compare(pszName) == 0)
       {
-         ForEachConnection(&IEditorTileManagerListener::OnDefaultTileSetChange,
-            static_cast<IEditorTileSet *>(pTileSet));
+         return S_FALSE;
+      }
+      else
+      {
+         m_defaultTileSet = pszName;
+
+         cAutoIPtr<IEditorTileSet> pTileSet;
+         if (GetTileSet(pszName, &pTileSet) == S_OK)
+         {
+            ForEachConnection(&IEditorTileManagerListener::OnDefaultTileSetChange,
+               static_cast<IEditorTileSet *>(pTileSet));
+         }
       }
    }
    else
