@@ -225,20 +225,20 @@ SCRIPT_DEFINE_FUNCTION(SetTerrain)
    if (ScriptArgc() == 1 
       && ScriptArgIsString(0))
    {
-      g_pTerrainRoot = TerrainNodeCreate(ScriptArgAsString(0), kGroundScaleY, NULL);
+      g_pTerrainRoot = TerrainNodeCreate(AccessRenderDevice(), ScriptArgAsString(0), kGroundScaleY, NULL);
    }
    else if (ScriptArgc() == 2 
       && ScriptArgIsString(0)
       && ScriptArgIsNumber(1))
    {
-      g_pTerrainRoot = TerrainNodeCreate(ScriptArgAsString(0), ScriptArgAsNumber(1), NULL);
+      g_pTerrainRoot = TerrainNodeCreate(AccessRenderDevice(), ScriptArgAsString(0), ScriptArgAsNumber(1), NULL);
    }
    else if (ScriptArgc() == 3 
       && ScriptArgIsString(0)
       && ScriptArgIsNumber(1)
       && ScriptArgIsString(2))
    {
-      g_pTerrainRoot = TerrainNodeCreate(ScriptArgAsString(0), ScriptArgAsNumber(1), ScriptArgAsString(2));
+      g_pTerrainRoot = TerrainNodeCreate(AccessRenderDevice(), ScriptArgAsString(0), ScriptArgAsNumber(1), ScriptArgAsString(2));
    }
    else
    {

@@ -9,8 +9,8 @@
 #include "render.h"
 #include "material.h"
 #include "textureapi.h"
-
 #include "imagedata.h"
+
 #include "vec2.h"
 #include "vec3.h"
 #include "techmath.h"
@@ -18,8 +18,6 @@
 #include "globalobj.h"
 
 #include "dbgalloc.h" // must be last header
-
-extern IRenderDevice * AccessRenderDevice();
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -47,7 +45,7 @@ public:
    cTiledGround();
    ~cTiledGround();
 
-   bool Init(cHeightMap * pHeightMap, const char * pszTexture);
+   bool Init(IRenderDevice * pRenderDevice, cHeightMap * pHeightMap, const char * pszTexture);
 
    void Render(IRenderDevice * pRenderDevice);
 
@@ -74,7 +72,7 @@ cTiledGround::~cTiledGround()
 
 ///////////////////////////////////////
 
-bool cTiledGround::Init(cHeightMap * pHeightMap, const char * pszTexture)
+bool cTiledGround::Init(IRenderDevice * pRenderDevice, cHeightMap * pHeightMap, const char * pszTexture)
 {
    const int kStepSize = 16;
    const int kGroundSize = 1024;
@@ -110,13 +108,13 @@ bool cTiledGround::Init(cHeightMap * pHeightMap, const char * pszTexture)
    }
 
    cAutoIPtr<IVertexDeclaration> pVertexDecl;
-   if (AccessRenderDevice()->CreateVertexDeclaration(g_terrainVertexDecl,
+   if (pRenderDevice->CreateVertexDeclaration(g_terrainVertexDecl,
       _countof(g_terrainVertexDecl), &pVertexDecl) != S_OK)
    {
       return false;
    }
 
-   if (AccessRenderDevice()->CreateVertexBuffer(kNumVerts,
+   if (pRenderDevice->CreateVertexBuffer(kNumVerts,
       kBU_Default, pVertexDecl, kBP_Auto, &m_pVertexBuffer) != S_OK)
    {
       return false;
@@ -169,7 +167,7 @@ bool cTiledGround::Init(cHeightMap * pHeightMap, const char * pszTexture)
       return false;
    }
 
-   if (AccessRenderDevice()->CreateIndexBuffer(kNumIndices, kBU_Default, kIBF_16Bit, kBP_System, &m_pIndexBuffer) != S_OK)
+   if (pRenderDevice->CreateIndexBuffer(kNumIndices, kBU_Default, kIBF_16Bit, kBP_System, &m_pIndexBuffer) != S_OK)
    {
       return false;
    }
@@ -217,12 +215,12 @@ void cTiledGround::Render(IRenderDevice * pRenderDevice)
 
 ///////////////////////////////////////
 
-cTerrainNode::cTerrainNode(cHeightMap * pHeightMap, const char * pszTexture)
+cTerrainNode::cTerrainNode(IRenderDevice * pRenderDevice, cHeightMap * pHeightMap, const char * pszTexture)
  : m_pSceneEntity(SceneEntityCreate()),
    m_pHeightMap(pHeightMap),
    m_pGround(new cTiledGround)
 {
-   m_pGround->Init(pHeightMap, pszTexture);
+   m_pGround->Init(pRenderDevice, pHeightMap, pszTexture);
 }
 
 ///////////////////////////////////////
@@ -263,7 +261,7 @@ void cTerrainNode::Render(IRenderDevice * pRenderDevice)
 
 ///////////////////////////////////////
 
-cTerrainNode * TerrainNodeCreate(const char * pszHeightData, float heightScale, const char * pszTexture)
+cTerrainNode * TerrainNodeCreate(IRenderDevice * pRenderDevice, const char * pszHeightData, float heightScale, const char * pszTexture)
 {
    cHeightMap * pHeightMap = new cHeightMap(heightScale);
 
@@ -273,7 +271,7 @@ cTerrainNode * TerrainNodeCreate(const char * pszHeightData, float heightScale, 
       return NULL;
    }
 
-   return new cTerrainNode(pHeightMap, pszTexture);
+   return new cTerrainNode(pRenderDevice, pHeightMap, pszTexture);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

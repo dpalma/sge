@@ -4,18 +4,11 @@
 #ifndef INCLUDED_GCOMMON_H
 #define INCLUDED_GCOMMON_H
 
-#include "combase.h"
-
 #ifdef _MSC_VER
 #pragma once
 #endif
 
-F_DECLARE_INTERFACE(IRenderDevice);
-
 ///////////////////////////////////////////////////////////////////////////////
-// main.cpp
-
-IRenderDevice * AccessRenderDevice();
 
 bool MainInit(int argc, char * argv[]);
 void MainTerm();
