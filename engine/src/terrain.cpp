@@ -10,6 +10,7 @@
 #include "material.h"
 #include "render.h"
 #include "textureapi.h"
+#include "color.h"
 
 #include "readwriteapi.h"
 
@@ -35,7 +36,7 @@ static const uint kTerrainFileVersion = MAKELONG(1,0);
 sVertexElement g_terrainVertexDecl[] =
 {
    { kVDU_TexCoord, kVDT_Float2, 0 },
-   { kVDU_Color, kVDT_Float3 },
+   { kVDU_Color, kVDT_Color },
    { kVDU_Position, kVDT_Float3 },
 };
 
@@ -237,7 +238,7 @@ bool cTerrain::Create(uint xDim, uint zDim, int stepSize,
    pTileSet->GetName(&m_tileSetName);
    m_pTileSet = CTAddRef(pTileSet);
 
-   static const float kRed = 0.75f, kGreen = 0.75f, kBlue = 0.75f;
+   static const uint32 color = ARGB(255,192,192,192);
 
    uint nTileImages = pTile->GetHorizontalImageCount() * pTile->GetVerticalImageCount();
 
@@ -275,16 +276,16 @@ bool cTerrain::Create(uint xDim, uint zDim, int stepSize,
          int iTileVerts = iVertex;
 
          m_vertices[iVertex].uv1 = tVec2(tileCol * tileTexWidth, tileRow * tileTexHeight);
-         m_vertices[iVertex++].rgb = tVec3(kRed,kGreen,kBlue);
+         m_vertices[iVertex++].color = color;
 
          m_vertices[iVertex].uv1 = tVec2((tileCol + 1) * tileTexWidth, tileRow * tileTexHeight);
-         m_vertices[iVertex++].rgb = tVec3(kRed,kGreen,kBlue);
+         m_vertices[iVertex++].color = color;
 
          m_vertices[iVertex].uv1 = tVec2((tileCol + 1) * tileTexWidth, (tileRow + 1) * tileTexHeight);
-         m_vertices[iVertex++].rgb = tVec3(kRed,kGreen,kBlue);
+         m_vertices[iVertex++].color = color;
 
          m_vertices[iVertex].uv1 = tVec2(tileCol * tileTexWidth, (tileRow + 1) * tileTexHeight);
-         m_vertices[iVertex++].rgb = tVec3(kRed,kGreen,kBlue);
+         m_vertices[iVertex++].color = color;
 
          m_tiles[iTile++].SetVertices(&m_vertices[iTileVerts]);
       }
@@ -400,19 +401,19 @@ tResult cTerrain::Render(IRenderDevice * pRenderDevice)
 
       glNormal3f(1,1,1);
 
-      glColor3fv(pVertices[0].rgb.v);
+      glColor4ubv((const byte *)&pVertices[0].color);
       glTexCoord2fv(pVertices[0].uv1.v);
       glVertex3fv(pVertices[0].pos.v);
 
-      glColor3fv(pVertices[3].rgb.v);
+      glColor4ubv((const byte *)&pVertices[3].color);
       glTexCoord2fv(pVertices[3].uv1.v);
       glVertex3fv(pVertices[3].pos.v);
 
-      glColor3fv(pVertices[2].rgb.v);
+      glColor4ubv((const byte *)&pVertices[2].color);
       glTexCoord2fv(pVertices[2].uv1.v);
       glVertex3fv(pVertices[2].pos.v);
 
-      glColor3fv(pVertices[1].rgb.v);
+      glColor4ubv((const byte *)&pVertices[1].color);
       glTexCoord2fv(pVertices[1].uv1.v);
       glVertex3fv(pVertices[1].pos.v);
 

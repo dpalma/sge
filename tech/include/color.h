@@ -13,6 +13,9 @@
 #define ARGB(a,r,g,b) \
    (((((a)&0xff)<<24)|(((r)&0xff)<<16)|(((g)&0xff)<<8)|((b)&0xff)))
 
+#define RGBA(r,g,b,a) \
+   ARGB(r,g,b,a)
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cColor
@@ -36,7 +39,7 @@ public:
    float GetBlue() const;
    float GetAlpha() const;
 
-   uint GetARGB();
+   uint GetARGB() const;
 
    const float * GetPointer() const;
 
@@ -49,8 +52,7 @@ private:
 ///////////////////////////////////////
 
 inline cColor::cColor()
- : m_bHaveARGB(false),
-   m_argb(0)
+ : m_bHaveARGB(false)
 {
 }
 
@@ -167,7 +169,7 @@ inline float cColor::GetAlpha() const
 
 ///////////////////////////////////////
 
-inline uint cColor::GetARGB()
+inline uint cColor::GetARGB() const
 {
    if (!m_bHaveARGB)
    {

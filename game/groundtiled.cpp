@@ -11,8 +11,9 @@
 #include "render.h"
 #include "material.h"
 #include "textureapi.h"
-#include "imagedata.h"
+#include "color.h"
 
+#include "imagedata.h"
 #include "vec2.h"
 #include "vec3.h"
 #include "techmath.h"
@@ -26,13 +27,13 @@
 struct sTerrainVertex
 {
    tVec2 uv;
-   tVec3 rgb;
+   uint32 color;
    tVec3 pos;
 };
 
 VERTEXDECL_BEGIN(g_terrainVertexDecl)
    VERTEXDECL_ELEMENT(kVDU_TexCoord, kVDT_Float2)
-   VERTEXDECL_ELEMENT(kVDU_Color, kVDT_Float3)
+   VERTEXDECL_ELEMENT(kVDU_Color, kVDT_Color)
    VERTEXDECL_ELEMENT(kVDU_Position, kVDT_Float3)
 VERTEXDECL_END()
 
@@ -83,7 +84,7 @@ bool cTiledGround::Init(IRenderDevice * pRenderDevice, cHeightMap * pHeightMap, 
    const int kNumVerts = kNumQuads * 4;
    const int kNumIndices = kNumQuads * 6;
 
-   float kRed = 1, kGreen = 1, kBlue = 1;
+   uint32 color = RGBA(255,255,255,255);
 
    m_nVerts = kNumVerts;
    m_nIndices = kNumIndices;
@@ -105,8 +106,7 @@ bool cTiledGround::Init(IRenderDevice * pRenderDevice, cHeightMap * pHeightMap, 
    }
    else
    {
-      kGreen = 0.5f;
-      kRed = kBlue = 0;
+      color = RGBA(0,128,0,255);
    }
 
    cAutoIPtr<IVertexDeclaration> pVertexDecl;
@@ -145,19 +145,19 @@ bool cTiledGround::Init(IRenderDevice * pRenderDevice, cHeightMap * pHeightMap, 
             uint tileCol = tile / 4;
 
             pVertexData[index].uv = tVec2(tileCol * kTileTexWidth, tileRow * kTileTexHeight);
-            pVertexData[index].rgb = tVec3(kRed,kGreen,kBlue);
+            pVertexData[index].color = color;
             pVertexData[index++].pos = tVec3(x1, pHeightMap->Height(Round(x1),Round(z1)), z1);
 
             pVertexData[index].uv = tVec2((tileCol + 1) * kTileTexWidth, tileRow * kTileTexHeight);
-            pVertexData[index].rgb = tVec3(kRed,kGreen,kBlue);
+            pVertexData[index].color = color;
             pVertexData[index++].pos = tVec3(x2, pHeightMap->Height(Round(x2),Round(z1)), z1);
 
             pVertexData[index].uv = tVec2((tileCol + 1) * kTileTexWidth, (tileRow + 1) * kTileTexHeight);
-            pVertexData[index].rgb = tVec3(kRed,kGreen,kBlue);
+            pVertexData[index].color = color;
             pVertexData[index++].pos = tVec3(x2, pHeightMap->Height(Round(x2),Round(z2)), z2);
 
             pVertexData[index].uv = tVec2(tileCol * kTileTexWidth, (tileRow + 1) * kTileTexHeight);
-            pVertexData[index].rgb = tVec3(kRed,kGreen,kBlue);
+            pVertexData[index].color = color;
             pVertexData[index++].pos = tVec3(x1, pHeightMap->Height(Round(x1),Round(z2)), z2);
          }
       }

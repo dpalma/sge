@@ -48,14 +48,14 @@ private:
 
    struct sGUIVertex
    {
-      float rgba[4];
+      uint32 color;
       tVec2 pos;
    };
 
    struct sGUITexVertex
    {
       float u,v;
-      float rgba[4];
+      uint32 color;
       tVec2 pos;
    };
 

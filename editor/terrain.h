@@ -32,7 +32,7 @@ class cTerrainChunk;
 struct sTerrainVertex
 {
    tVec2 uv1;
-   tVec3 rgb;
+   uint32 color;
    tVec3 pos;
 };
 

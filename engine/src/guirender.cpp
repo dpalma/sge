@@ -6,6 +6,7 @@
 #include "guirender.h"
 
 #include "font.h"
+#include "color.h"
 
 // TODO: HACK: get rid of this <windows.h>
 #ifdef _WIN32
@@ -26,7 +27,7 @@ const uint kNumBitmapButtonVertices = 16; // 4 button states * 4 vertices per st
 ///////////////////////////////////////
 
 VERTEXDECL_BEGIN(cGUIRenderingTools::gm_vertexDecl)
-   VERTEXDECL_ELEMENT(kVDU_Color, kVDT_Float4)
+   VERTEXDECL_ELEMENT(kVDU_Color, kVDT_Color)
    VERTEXDECL_ELEMENT(kVDU_Position, kVDT_Float2)
 VERTEXDECL_END()
 
@@ -34,7 +35,7 @@ VERTEXDECL_END()
 
 VERTEXDECL_BEGIN(cGUIRenderingTools::gm_texVertexDecl)
    VERTEXDECL_ELEMENT(kVDU_TexCoord, kVDT_Float2)
-   VERTEXDECL_ELEMENT(kVDU_Color, kVDT_Float4)
+   VERTEXDECL_ELEMENT(kVDU_Color, kVDT_Color)
    VERTEXDECL_ELEMENT(kVDU_Position, kVDT_Float2)
 VERTEXDECL_END()
 
@@ -184,10 +185,7 @@ tResult cGUIRenderingTools::GetBitmapButtonVertexBuffer(const tGUIRect & rect,
 
       for (int i = 0; i < _countof(verts); i++)
       {
-         verts[i].rgba[0] = 1.0f;
-         verts[i].rgba[1] = 1.0f;
-         verts[i].rgba[2] = 1.0f;
-         verts[i].rgba[3] = 1.0f;
+         verts[i].color = RGBA(255,255,255,255);
       }
 
       // TODO: Modifying the shared vertex buffer like this won't work
@@ -265,6 +263,15 @@ tResult cGUIRenderingTools::GetBitmapButtonVertexBuffer(const tGUIRect & rect,
 
 ///////////////////////////////////////
 
+static uint32 PackColor(const tGUIColor & color)
+{
+   byte r = (byte)(color.GetRed() * 255);
+   byte g = (byte)(color.GetGreen() * 255);
+   byte b = (byte)(color.GetBlue() * 255);
+   byte a = (byte)(color.GetAlpha() * 255);
+   return ARGB(a,b,g,r);
+}
+
 tResult cGUIRenderingTools::Render3dRect(const tGUIRect & rect, int bevel, 
                                          const tGUIColor & topLeft, 
                                          const tGUIColor & bottomRight, 
@@ -275,14 +282,11 @@ tResult cGUIRenderingTools::Render3dRect(const tGUIRect & rect, int bevel,
 
    uint nVertices = 0;
 
-#define FillVertex(index, x, y, color) \
+#define FillVertex(index, x, y, clr) \
    do { \
       Assert(index == nVertices); \
       Assert(nVertices < kMaxVertices); \
-      vertices[nVertices].rgba[0] = color.GetRed(); \
-      vertices[nVertices].rgba[1] = color.GetGreen(); \
-      vertices[nVertices].rgba[2] = color.GetBlue(); \
-      vertices[nVertices].rgba[3] = color.GetAlpha(); \
+      vertices[nVertices].color = PackColor(clr); \
       vertices[nVertices].pos = tVec2((x),(y)); \
       nVertices++; \
    } while (0)
@@ -353,29 +357,12 @@ tResult cGUIRenderingTools::Render3dRect(const tGUIRect & rect, int bevel,
 #undef FillVertex
 
    glEnableClientState(GL_COLOR_ARRAY);
-   glColorPointer(4, GL_FLOAT, sizeof(sGUIVertex), vertices);
+   glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(sGUIVertex), vertices);
 
    glEnableClientState(GL_VERTEX_ARRAY);
-   glVertexPointer(2, GL_FLOAT, sizeof(sGUIVertex), (byte*)vertices + (4*sizeof(float)));
+   glVertexPointer(2, GL_FLOAT, sizeof(sGUIVertex), (byte *)vertices + sizeof(uint32));
 
    glDrawArrays(GL_TRIANGLES, 0, nVertices);
-
-#if 0
-   cAutoIPtr<IVertexDeclaration> pVertexDecl;
-   if (pRenderDevice->CreateVertexDeclaration(gm_vertexDecl, _countof(gm_vertexDecl), &pVertexDecl) == S_OK)
-   {
-      cAutoIPtr<IVertexBuffer> pVertexBuffer;
-      if (pRenderDevice->CreateVertexBuffer(kNumVertices, kBU_Default, pVertexDecl, kBP_System, &pVertexBuffer) == S_OK)
-      {
-         void * pVertexData;
-         if (pVertexBuffer->Lock(kBL_Discard, &pVertexData) == S_OK)
-         {
-            memcpy(pVertexData, vertices, sizeof(vertices));
-            pVertexBuffer->Unlock();
-         }
-      }
-   }
-#endif
 
    return S_OK;
 }
