@@ -1,9 +1,15 @@
 ###############################################################################
 # $Id$
 
-bin_PROGRAMS=game
+bin_PROGRAMS = game
 
-EXTRA_DIST = *.h *.lua *.rc *.ico *.dsp *.dsw *.vcproj *.sln
+datadir = $(prefix)/data
+
+data_DATA = *.lua
+
+EXTRA_DIST = *.rc *.ico *.dsp *.dsw *.vcproj *.sln
+
+noinst_HEADERS = *.h
 
 if NO_X
 game_PLATFORM_SOURCES = syswin.cpp
@@ -37,7 +43,9 @@ game_LDFLAGS = -L$(top_builddir)/3rdparty/lua/src \
 if HAVE_RC
 RES = game.$(OBJEXT)
 game.$(OBJEXT): $(top_srcdir)/game/game.rc
-	cp $(top_srcdir)/game/game.ico $(top_builddir)/game
+	if test "$(top_srcdir)" != "$(top_builddir)"; then \
+		cp $(top_srcdir)/game/game.ico $(top_builddir)/game; \
+	fi;
 	$(RC) -i $< -o $@
 else
 RES =
