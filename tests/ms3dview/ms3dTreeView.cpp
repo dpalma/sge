@@ -177,40 +177,40 @@ void cMs3dTreeView::OnInitialUpdate()
                   HTREEITEM hBone = GetTreeCtrl().InsertItem(pszBone, hBones);
                   if (hBone != NULL)
                   {
-                     cAutoIPtr<IKeyFrameInterpolator> pInterp;
-                     if (pSkeleton->GetInterpolator(i, &pInterp) == S_OK)
-                     {
-                        uint n;
-                        CString str;
-                        if ((pInterp->GetRotationKeys(NULL, &n) == S_OK) && (n > 0))
-                        {
-                           str.Format("Rotation keys (%d)", n);
-                           HTREEITEM hRotations = GetTreeCtrl().InsertItem(str, hBone);
-                           if (hRotations != NULL)
-                           {
-                              std::vector<sKeyFrameQuat> keys(n);
-                              if (pInterp->GetRotationKeys(&keys[0], &n) == S_OK)
-                              {
-                                 std::vector<sKeyFrameQuat>::iterator iter;
-                                 for (iter = keys.begin(); iter != keys.end(); iter++)
-                                 {
-                                    str.Format("Time %.2f: <%.2f, %.2f, %.2f, %.2f>",
-                                       iter->time, iter->value.x, iter->value.y, iter->value.z, iter->value.w);
-                                    GetTreeCtrl().InsertItem(str, hRotations);
-                                 }
-                              }
-                           }
-                        }
-                        if ((pInterp->GetTranslationKeys(NULL, &n) == S_OK) && (n > 0))
-                        {
-                           str.Format("Translation keys (%d)", n);
-                           HTREEITEM hTranslations = GetTreeCtrl().InsertItem(str, hBone);
-                           if (hTranslations != NULL)
-                           {
-                              // TODO
-                           }
-                        }
-                     }
+//                     cAutoIPtr<IKeyFrameInterpolator> pInterp;
+//                     if (pSkeleton->GetInterpolator(i, &pInterp) == S_OK)
+//                     {
+//                        uint n;
+//                        CString str;
+//                        if ((pInterp->GetRotationKeys(NULL, &n) == S_OK) && (n > 0))
+//                        {
+//                           str.Format("Rotation keys (%d)", n);
+//                           HTREEITEM hRotations = GetTreeCtrl().InsertItem(str, hBone);
+//                           if (hRotations != NULL)
+//                           {
+//                              std::vector<sKeyFrameQuat> keys(n);
+//                              if (pInterp->GetRotationKeys(&keys[0], &n) == S_OK)
+//                              {
+//                                 std::vector<sKeyFrameQuat>::iterator iter;
+//                                 for (iter = keys.begin(); iter != keys.end(); iter++)
+//                                 {
+//                                    str.Format("Time %.2f: <%.2f, %.2f, %.2f, %.2f>",
+//                                       iter->time, iter->value.x, iter->value.y, iter->value.z, iter->value.w);
+//                                    GetTreeCtrl().InsertItem(str, hRotations);
+//                                 }
+//                              }
+//                           }
+//                        }
+//                        if ((pInterp->GetTranslationKeys(NULL, &n) == S_OK) && (n > 0))
+//                        {
+//                           str.Format("Translation keys (%d)", n);
+//                           HTREEITEM hTranslations = GetTreeCtrl().InsertItem(str, hBone);
+//                           if (hTranslations != NULL)
+//                           {
+//                              // TODO
+//                           }
+//                        }
+//                     }
                   }
                }
             }

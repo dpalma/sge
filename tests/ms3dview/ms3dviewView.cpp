@@ -140,7 +140,7 @@ int CMs3dviewView::OnCreate(LPCREATESTRUCT lpCreateStruct)
       return -1;
    }
 
-   if (RenderDeviceCreate(&m_pRenderDevice) != S_OK)
+   if (RenderDeviceCreate(0, &m_pRenderDevice) != S_OK)
    {
       TRACE0("Failed to create rendering device\n");
       return -1;
