@@ -255,20 +255,16 @@ void cMapSettingsDlg::PopulateInitialTileComboBox()
          {
             for (uint i = 0; i < nTiles; i++)
             {
-               cAutoIPtr<IEditorTile> pTile;
-               if (pTileSet->GetTile(i, &pTile) == S_OK)
+               cStr tileName;
+               if (pTileSet->GetTileName(i, &tileName) == S_OK)
                {
-                  cStr tileName;
-                  Verify(pTile->GetName(&tileName) == S_OK);
-
-                  COMBOBOXEXITEM item;
+                  COMBOBOXEXITEM item = {0};
                   item.mask = CBEIF_TEXT | CBEIF_IMAGE | CBEIF_SELECTEDIMAGE;
                   item.iItem = i;
                   item.pszText = const_cast<char *>(tileName.c_str());
                   item.cchTextMax = tileName.length();
                   item.iImage = i;
                   item.iSelectedImage = i;
-
                   Verify(m_initialTileComboBox.InsertItem(&item) != CB_ERR);
                }
             }

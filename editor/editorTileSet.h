@@ -34,8 +34,8 @@ public:
                            int vertImages);
 
    virtual tResult GetTileCount(uint * pTileCount) const;
-   virtual tResult GetTile(uint index, IEditorTile * * ppTile);
    virtual tResult GetTileTexture(uint iTile, ITexture * * ppTexture);
+   virtual tResult GetTileName(uint iTile, cStr * pName) const;
 
    virtual tResult GetImageList(uint dimension, HIMAGELIST * phImageList);
 

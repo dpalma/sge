@@ -96,18 +96,14 @@ void cToolPaletteBar::OnDefaultTileSetChange(IEditorTileSet * pTileSet)
 
                      for (uint j = 0; j < nTiles; j++)
                      {
-                        cAutoIPtr<IEditorTile> pTile;
-                        if (pTileSet->GetTile(j, &pTile) == S_OK)
+                        cStr tileName;
+                        if (pTileSet->GetTileName(j, &tileName) == S_OK)
                         {
-                           cStr tileName;
-                           if (pTile->GetName(&tileName) == S_OK)
+                           cTerrainTileTool * pTerrainTool = new cTerrainTileTool;
+                           if (pTerrainTool != NULL)
                            {
-                              cTerrainTileTool * pTerrainTool = new cTerrainTileTool;
-                              if (pTerrainTool != NULL)
-                              {
-                                 pTerrainTool->SetTile(j);
-                                 m_toolPalette.AddTool(hGroup, tileName.c_str(), j, pTerrainTool);
-                              }
+                              pTerrainTool->SetTile(j);
+                              m_toolPalette.AddTool(hGroup, tileName.c_str(), j, pTerrainTool);
                            }
                         }
                      }

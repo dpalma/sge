@@ -142,8 +142,8 @@ interface UUID("61B488AA-AB50-41c5-AA42-45F07C982F6A") IEditorTileSet : IUnknown
                            int vertImages) = 0;
 
    virtual tResult GetTileCount(uint * pTileCount) const = 0;
-   virtual tResult GetTile(uint index, IEditorTile * * ppTile) = 0;
    virtual tResult GetTileTexture(uint iTile, ITexture * * ppTexture) = 0;
+   virtual tResult GetTileName(uint iTile, cStr * pName) const = 0;
 
    virtual tResult GetImageList(uint dimension, HIMAGELIST * phImageList) = 0;
 };

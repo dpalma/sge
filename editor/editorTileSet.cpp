@@ -105,22 +105,6 @@ tResult cEditorTileSet::GetTileCount(uint * pTileCount) const
 
 ///////////////////////////////////////
 
-tResult cEditorTileSet::GetTile(uint index, IEditorTile * * ppTile)
-{
-   if (index >= m_tiles.size())
-   {
-      return E_INVALIDARG;
-   }
-   if (ppTile == NULL)
-   {
-      return E_POINTER;
-   }
-   *ppTile = CTAddRef(m_tiles[index]);
-   return S_OK;
-}
-
-///////////////////////////////////////
-
 tResult cEditorTileSet::GetTileTexture(uint iTile, ITexture * * ppTexture)
 {
    if (iTile >= m_tiles.size())
@@ -132,6 +116,21 @@ tResult cEditorTileSet::GetTileTexture(uint iTile, ITexture * * ppTexture)
       return E_POINTER;
    }
    return m_tiles[iTile]->GetTexture(ppTexture);
+}
+
+///////////////////////////////////////
+
+tResult cEditorTileSet::GetTileName(uint iTile, cStr * pName) const
+{
+   if (iTile >= m_tiles.size())
+   {
+      return E_INVALIDARG;
+   }
+   if (pName == NULL)
+   {
+      return E_POINTER;
+   }
+   return m_tiles[iTile]->GetName(pName);
 }
 
 ///////////////////////////////////////
