@@ -314,6 +314,9 @@
 					RelativePath="src\guicontext.cpp">
 				</File>
 				<File
+					RelativePath="src\guidialog.cpp">
+				</File>
+				<File
 					RelativePath="src\guielementenum.cpp">
 				</File>
 				<File
@@ -448,6 +451,9 @@
 				</File>
 				<File
 					RelativePath="src\guicontext.h">
+				</File>
+				<File
+					RelativePath="src\guidialog.h">
 				</File>
 				<File
 					RelativePath="src\guielementbase.h">
