@@ -219,34 +219,6 @@ SOURCE=.\syslinux.cpp
 
 SOURCE=.\syswin.cpp
 # End Source File
-# Begin Source File
-
-SOURCE=.\ui.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\uievent.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\uimgr.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\uiparse.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\uirender.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\uiwidgets.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\uiwidgutils.cpp
-# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -286,42 +258,6 @@ SOURCE=.\stdhdr.h
 # Begin Source File
 
 SOURCE=.\sys.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\ui.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\uievent.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\uimgr.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\uiparse.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\uirender.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\uitypes.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\uiwidgets.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\uiwidgutils.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\uiwidgutilstem.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

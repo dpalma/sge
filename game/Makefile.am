@@ -17,13 +17,6 @@ game_SOURCES = cameracontroller.cpp \
                heightmap.cpp \
                main.cpp \
                script.cpp \
-               ui.cpp \
-               uievent.cpp \
-               uimgr.cpp \
-               uiparse.cpp \
-               uirender.cpp \
-               uiwidgets.cpp \
-               uiwidgutils.cpp \
                $(game_PLATFORM_SOURCES)
 
 game_LDFLAGS = -L$(top_builddir)/3rdparty/lua/src \

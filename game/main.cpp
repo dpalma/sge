@@ -4,12 +4,10 @@
 #include "stdhdr.h"
 
 #include "ggl.h"
-#include "uimgr.h"
 #include "groundtiled.h"
 #include "sys.h"
 #include "script.h"
 #include "cameracontroller.h"
-#include "uirender.h"
 #include "guiapi.h"
 
 #include "sceneapi.h"
@@ -71,8 +69,6 @@ cAutoIPtr<ISceneCamera> g_pUICamera;
 cAutoIPtr<cTerrainNode> g_pTerrainRoot;
 
 double g_fov;
-
-cAutoIPtr<cUIManager> g_pUIManager;
 
 cAutoIPtr<IRenderDevice> g_pRenderDevice;
 cAutoIPtr<IWindow> g_pWindow;
@@ -164,17 +160,6 @@ void cWindowInputBroker::OnResize(int width, int height, double time)
 void cWindowInputBroker::OnActivateApp(bool bActive, double time)
 {
    SysAppActivate(bActive);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-SCRIPT_DEFINE_FUNCTION(ShowModalDialog)
-{
-   if (ScriptArgc() == 1 && ScriptArgIsString(0))
-   {
-      g_pUIManager->ShowModalDialog(ScriptArgAsString(0));
-   }
-   return 0;
 }
 
 
@@ -396,7 +381,6 @@ static void RegisterGlobalObjects()
    ResourceManagerCreate();
    SceneCreate();
    ScriptInterpreterCreate();
-   UIRenderingToolsCreate();
    TextureManagerCreate();
    GUIContextCreate();
    GUIFactoryCreate();
@@ -491,8 +475,6 @@ bool MainInit(int argc, char * argv[])
    if (RenderDeviceCreate(kRDO_ShowStatistics, &g_pRenderDevice) != S_OK)
       return false;
 
-   UseGlobal(UIRenderingTools);
-   pUIRenderingTools->SetRenderDevice(g_pRenderDevice);
    UseGlobal(GUIRenderingTools);
    pGUIRenderingTools->SetRenderDevice(g_pRenderDevice);
 
@@ -507,17 +489,13 @@ bool MainInit(int argc, char * argv[])
    g_pUICamera = SceneCameraCreate();
    g_pUICamera->SetOrtho(0, width, height, 0, -99999, 99999);
 
-   g_pUIManager = new cUIManager();
-
-   UseGlobal(Scene);
-   pScene->AddEntity(kSL_InGameUI, g_pUIManager);
-
    g_pGameCamera = SceneCameraCreate();
    g_pGameCamera->SetPerspective(g_fov, (float)width / height, kZNear, kZFar);
 
    g_pGameCameraController = new cGameCameraController(g_pGameCamera);
    g_pGameCameraController->Connect();
 
+   UseGlobal(Scene);
    pScene->SetCamera(kSL_Terrain, g_pGameCamera);
    pScene->SetCamera(kSL_InGameUI, g_pUICamera);
 
@@ -540,8 +518,6 @@ bool MainInit(int argc, char * argv[])
 
 void MainTerm()
 {
-   SafeRelease(g_pUIManager);
-
    UseGlobal(Sim);
    pSim->Stop();
 

@@ -408,27 +408,6 @@
 			<File
 				RelativePath=".\syswin.cpp">
 			</File>
-			<File
-				RelativePath=".\ui.cpp">
-			</File>
-			<File
-				RelativePath=".\uievent.cpp">
-			</File>
-			<File
-				RelativePath=".\uimgr.cpp">
-			</File>
-			<File
-				RelativePath=".\uiparse.cpp">
-			</File>
-			<File
-				RelativePath=".\uirender.cpp">
-			</File>
-			<File
-				RelativePath=".\uiwidgets.cpp">
-			</File>
-			<File
-				RelativePath=".\uiwidgutils.cpp">
-			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -459,33 +438,6 @@
 			</File>
 			<File
 				RelativePath=".\sys.h">
-			</File>
-			<File
-				RelativePath=".\ui.h">
-			</File>
-			<File
-				RelativePath=".\uievent.h">
-			</File>
-			<File
-				RelativePath=".\uimgr.h">
-			</File>
-			<File
-				RelativePath=".\uiparse.h">
-			</File>
-			<File
-				RelativePath=".\uirender.h">
-			</File>
-			<File
-				RelativePath=".\uitypes.h">
-			</File>
-			<File
-				RelativePath=".\uiwidgets.h">
-			</File>
-			<File
-				RelativePath=".\uiwidgutils.h">
-			</File>
-			<File
-				RelativePath=".\uiwidgutilstem.h">
 			</File>
 		</Filter>
 		<Filter
