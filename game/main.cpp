@@ -397,10 +397,10 @@ bool MainInit(int argc, char * argv[])
    file.SetPath(cFilePath());
    file.SetFileExt("cfg");
 
-   cAutoIPtr<IConfigStore> pConfigStore = CreateTextConfigStore(file);
-   pConfigStore->Load(g_pConfig);
+   cAutoIPtr<IDictionaryStore> pStore = DictionaryStoreCreate(file);
+   pStore->Load(g_pConfig);
 
-   g_pConfig->ParseCmdLine(argc, argv);
+   ParseCommandLine(argc, argv, g_pConfig);
 
    cStr temp;
    if (ConfigGet("debug_log", &temp) == S_OK)

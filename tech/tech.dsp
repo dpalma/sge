@@ -222,7 +222,11 @@ SOURCE=.\src\config.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\configstore.cpp
+SOURCE=.\src\dictionary.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\dictionarystore.cpp
 # End Source File
 # Begin Source File
 
@@ -320,11 +324,11 @@ SOURCE=.\src\windowx11.cpp
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\src\config.h
+SOURCE=.\src\dictionary.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\configstore.h
+SOURCE=.\src\dictionarystore.h
 # End Source File
 # Begin Source File
 
@@ -374,6 +378,10 @@ SOURCE=.\include\constraints.h
 # Begin Source File
 
 SOURCE=.\include\dbgalloc.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\dictionaryapi.h
 # End Source File
 # Begin Source File
 

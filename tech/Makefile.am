@@ -13,9 +13,10 @@ endif
 
 libtech_la_SOURCES = src/bmp.cpp \
                      src/comtools.cpp \
+                     src/dictionary.cpp \
+                     src/dictionarystore.cpp \
                      src/globalobjreg.cpp \
                      src/config.cpp \
-                     src/configstore.cpp\
                      src/fileiter.cpp \
                      src/filepath.cpp \
                      src/filespec.cpp \

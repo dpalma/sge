@@ -308,7 +308,10 @@
 					RelativePath=".\src\config.cpp">
 				</File>
 				<File
-					RelativePath=".\src\configstore.cpp">
+					RelativePath="src\dictionary.cpp">
+				</File>
+				<File
+					RelativePath="src\dictionarystore.cpp">
 				</File>
 				<File
 					RelativePath=".\src\fileiter.cpp">
@@ -441,10 +444,10 @@
 				Name="Header Files"
 				Filter="">
 				<File
-					RelativePath=".\src\config.h">
+					RelativePath="src\dictionary.h">
 				</File>
 				<File
-					RelativePath=".\src\configstore.h">
+					RelativePath="src\dictionarystore.h">
 				</File>
 				<File
 					RelativePath=".\src\filereadwrite.h">
@@ -486,6 +489,9 @@
 			</File>
 			<File
 				RelativePath=".\include\dbgalloc.h">
+			</File>
+			<File
+				RelativePath="include\dictionaryapi.h">
 			</File>
 			<File
 				RelativePath=".\include\digraph.h">

@@ -3,208 +3,35 @@
 
 #include "stdhdr.h"
 
-#include "config.h"
+#include "configapi.h"
+#include "str.h"
 
 #include <cstdio>
 
+#ifdef HAVE_CPPUNIT
+#include <cppunit/extensions/HelperMacros.h>
+#endif
+
 #include "dbgalloc.h" // must be last header
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cStackConfig
-//
-
-class cStackConfig : public cConfig
-{
-public:
-   virtual ulong STDMETHODCALLTYPE AddRef() { return 2; }
-   virtual ulong STDMETHODCALLTYPE Release() { return 1; }
-};
-
-cStackConfig g_config;
-IConfig * g_pConfig = static_cast<IConfig *>(&g_config);
+extern bool ParseDictionaryLine(const tChar * psz, cStr * pKey, cStr * pValue, cStr * pComment);
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cConfig
-//
 
-///////////////////////////////////////
+cAutoIPtr<IConfig> g_pAutoDeleteConfig(DictionaryCreate());
+IConfig * g_pConfig = static_cast<IConfig *>(g_pAutoDeleteConfig);
 
-bool cConfig::cStringLessNoCase::operator()(const cStr & lhs, const cStr & rhs) const
+//////////////////////////////////////////////////////////////////////////////
+
+tResult ParseCommandLine(int argc, char *argv[], IConfig * pConfig)
 {
-   return (stricmp(lhs.c_str(), rhs.c_str()) < 0) ? true : false;
-}
-
-///////////////////////////////////////
-
-cConfig::cConfig()
-{
-}
-
-///////////////////////////////////////
-
-cConfig::~cConfig()
-{
-}
-
-///////////////////////////////////////
-
-tResult cConfig::Get(const char * name, char * pVal, int maxLen)
-{
-   tMap::iterator iter = m_vars.find(name);
-   if (iter != m_vars.end())
+   if (argv == NULL || pConfig == NULL)
    {
-      if (pVal != NULL && maxLen > 0)
-      {
-         strncpy(pVal, iter->second.c_str(), maxLen);
-         pVal[maxLen-1] = '\0';
-      }
-      return S_OK;
+      return E_POINTER;
    }
-   return S_FALSE;
-}
 
-///////////////////////////////////////
-
-tResult cConfig::Get(const char * name, cStr * pVal)
-{
-   tMap::iterator iter = m_vars.find(name);
-   if (iter != m_vars.end())
-   {
-      if (pVal != NULL)
-         *pVal = iter->second.c_str();
-      return S_OK;
-   }
-   return S_FALSE;
-}
-
-///////////////////////////////////////
-
-tResult cConfig::Get(const char * name, int * pVal)
-{
-   tMap::iterator iter = m_vars.find(name);
-   if (iter != m_vars.end())
-   {
-      if (pVal != NULL)
-         *pVal = atoi(iter->second.c_str());
-      return S_OK;
-   }
-   return S_FALSE;
-}
-
-///////////////////////////////////////
-
-tResult cConfig::Get(const char * name, float * pVal)
-{
-   tMap::iterator iter = m_vars.find(name);
-   if (iter != m_vars.end())
-   {
-      if (pVal != NULL)
-         *pVal = (float)atof(iter->second.c_str());
-      return S_OK;
-   }
-   return S_FALSE;
-}
-
-///////////////////////////////////////
-
-tResult cConfig::Set(const char * name, const char * val)
-{
-   m_vars.erase(name);
-   m_vars.insert(std::make_pair(name, val));
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cConfig::Set(const char * name, int val)
-{
-   char buffer[32];
-   m_vars.erase(name);
-   snprintf(buffer, _countof(buffer), "%d", val);
-   m_vars.insert(std::make_pair(name, (const char *)buffer));
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cConfig::Set(const char * name, float val)
-{
-   char buffer[64];
-   snprintf(buffer, _countof(buffer), "%f", val);
-   m_vars.erase(name);
-   m_vars.insert(std::make_pair(name, (char *)buffer));
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cConfig::UnSet(const char * name)
-{
-   return m_vars.erase(name) > 0 ? S_OK : S_FALSE;
-}
-
-///////////////////////////////////////
-
-BOOL cConfig::IsSet(const char * name)
-{
-   return (m_vars.find(name) != m_vars.end());
-}
-
-///////////////////////////////////////
-
-BOOL cConfig::IsTrue(const char * name)
-{
-   tMap::iterator iter = m_vars.find(name);
-   if (iter != m_vars.end())
-   {
-      if (stricmp(iter->second.c_str(), "true") == 0)
-         return TRUE;
-      return atoi(iter->second.c_str());
-   }
-   return FALSE;
-}
-
-///////////////////////////////////////
-
-void cConfig::IterCfgVarBegin(HANDLE * phIter)
-{
-   *phIter = new tMap::iterator(m_vars.begin());
-}
-
-///////////////////////////////////////
-
-BOOL cConfig::IterNextCfgVar(HANDLE * phIter, cStr * pName, cStr * pValue)
-{
-   tMap::iterator * pIter = (tMap::iterator *)*phIter;
-   if (*pIter != m_vars.end())
-   {
-      Assert(pName && pValue);
-      *pName = (*pIter)->first.c_str();
-      *pValue = (*pIter)->second.c_str();
-      (*pIter)++;
-      return TRUE;
-   }
-   return FALSE;
-}
-
-///////////////////////////////////////
-
-void cConfig::IterCfgVarEnd(HANDLE * phIter)
-{
-   tMap::iterator * pIter = (tMap::iterator *)*phIter;
-   delete pIter;
-}
-
-///////////////////////////////////////
-
-// @TODO (dpalma 12/3/00): command-line variables should be set as
-// "transient" when that facility is available
-tResult cConfig::ParseCmdLine(int argc, char *argv[])
-{
    cStr curKey, curVal;
-   BOOL bLastWasKey = FALSE;
+   bool bLastWasKey = false;
 
    for (int i = 0; i < argc; i++)
    {
@@ -213,24 +40,23 @@ tResult cConfig::ParseCmdLine(int argc, char *argv[])
          // set currently accumulating key/value
          if (curKey.GetLength() > 0)
          {
-            Set(curKey, curVal);
-            curKey.Empty();
-            curVal.Empty();
+            pConfig->Set(curKey, curVal);
+            curKey.erase();
+            curVal.erase();
          }
 
-         const char * pszKey = NULL, * pszVal = NULL, * pszComment = NULL;
-         ParseConfigLine(argv[i] + 1, &pszKey, &pszVal, &pszComment);
-         if (pszKey && pszVal)
+         cStr key, value;
+         if (ParseDictionaryLine(argv[i] + 1, &key, &value, NULL) && !key.empty())
          {
-            curKey = pszKey;
-            curVal = (pszVal != NULL) ? pszVal : "1";
-            bLastWasKey = TRUE;
+            curKey = key;
+            curVal = value.empty() ? value : "1";
+            bLastWasKey = true;
          }
       }
       else if (argv[i][0] == '-')
       {
-         UnSet(argv[i] + 1);
-         bLastWasKey = FALSE;
+         pConfig->Delete(argv[i] + 1);
+         bLastWasKey = false;
       }
       else
       {
@@ -243,24 +69,85 @@ tResult cConfig::ParseCmdLine(int argc, char *argv[])
          {
             curVal = argv[i];
          }
-         bLastWasKey = FALSE;
+         bLastWasKey = false;
       }
    }
 
    // set final key
    if (curKey.GetLength() > 0)
    {
-      Set(curKey, curVal);
+      pConfig->Set(curKey, curVal);
    }
 
    return S_OK;
 }
 
-///////////////////////////////////////
-
-IConfig * CreateGenericConfig()
+static bool StringIsTrue(const char * psz)
 {
-   return new cConfig;
+   Assert(psz != NULL);
+   if (stricmp(psz, "true") == 0)
+   {
+      return true;
+   }
+   else if (stricmp(psz, "true") == 0)
+   {
+      return true;
+   }
+   return atoi(psz) ? true : false;
 }
 
-//////////////////////////////////////////////////////////////////////////////
+bool ConfigIsTrue(const char * pszName)
+{
+   if (g_pConfig != NULL)
+   {
+      cStr value;
+      if (g_pConfig->Get(pszName, &value) == S_OK)
+      {
+         return StringIsTrue(value.c_str());
+      }
+   }
+   return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_CPPUNIT
+
+class cConfigTests : public CppUnit::TestCase
+{
+   CPPUNIT_TEST_SUITE(cConfigTests);
+      CPPUNIT_TEST(TestParseCmdLine);
+      CPPUNIT_TEST(TestStringIsTrue);
+   CPPUNIT_TEST_SUITE_END();
+
+   void TestParseCmdLine();
+   void TestStringIsTrue();
+};
+
+///////////////////////////////////////
+
+CPPUNIT_TEST_SUITE_REGISTRATION(cConfigTests);
+
+///////////////////////////////////////
+
+void cConfigTests::TestParseCmdLine()
+{
+   cAutoIPtr<IDictionary> pDict(DictionaryCreate());
+   // TODO
+}
+
+///////////////////////////////////////
+
+void cConfigTests::TestStringIsTrue()
+{
+   CPPUNIT_ASSERT(StringIsTrue("true"));
+   CPPUNIT_ASSERT(!StringIsTrue("false"));
+   CPPUNIT_ASSERT(StringIsTrue("TRUE"));
+   CPPUNIT_ASSERT(!StringIsTrue("FALSE"));
+   CPPUNIT_ASSERT(StringIsTrue("1"));
+   CPPUNIT_ASSERT(!StringIsTrue("0"));
+}
+
+#endif // HAVE_CPPUNIT
+
+///////////////////////////////////////////////////////////////////////////////

@@ -186,13 +186,13 @@ BOOL cEditorApp::InitInstance()
    file.SetPath(cFilePath());
    file.SetFileExt("cfg");
 
-   cAutoIPtr<IConfigStore> pConfigStore = CreateTextConfigStore(file);
-   if (pConfigStore->Load(g_pConfig) != S_OK)
+   cAutoIPtr<IDictionaryStore> pStore = DictionaryStoreCreate(file);
+   if (pStore->Load(g_pConfig) != S_OK)
    {
       DebugMsg1("Error loading settings from %s\n", file.GetName());
    }
 
-   g_pConfig->ParseCmdLine(__argc, __argv);
+   ::ParseCommandLine(__argc, __argv, g_pConfig);
 
    cStr temp;
    if (ConfigGet("data", &temp) == S_OK)
