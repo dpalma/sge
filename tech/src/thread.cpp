@@ -16,6 +16,8 @@
 
 #ifdef HAVE_CPPUNIT
 #include "techtime.h"
+#include <cmath>
+#include <cfloat>
 #include <cppunit/extensions/HelperMacros.h>
 #endif
 
@@ -448,31 +450,33 @@ void cThreadTests::TestSleep()
 
    CPPUNIT_ASSERT(event.Create());
 
-#define kWaitMillis 2000
+   static const double kWaitSecs = 2;
+   static const ulong kWaitMillis = (ulong)(kWaitSecs * 1000);
 
    class cSleepThread : public cThread
    {
    public:
-      cSleepThread(cThreadEvent * pEvent)
-        : m_pEvent(pEvent)
+      cSleepThread(cThreadEvent * pEvent, ulong sleepMs)
+        : m_pEvent(pEvent), m_sleepMs(sleepMs)
       {
          CPPUNIT_ASSERT(pEvent != NULL);
       }
 
       virtual int Run()
       {
-         ThreadSleep(kWaitMillis);
+         ThreadSleep(m_sleepMs);
          CPPUNIT_ASSERT(m_pEvent->Set());
          return 0;
       }
 
    private:
       cThreadEvent * m_pEvent;
+      ulong m_sleepMs;
    };
 
    double start = TimeGetSecs();
 
-   cSleepThread * pThread = new cSleepThread(&event);
+   cSleepThread * pThread = new cSleepThread(&event, kWaitMillis);
    CPPUNIT_ASSERT(pThread->Create());
 
    event.Wait();
@@ -481,7 +485,7 @@ void cThreadTests::TestSleep()
 
    delete pThread, pThread = NULL;
 
-   CPPUNIT_ASSERT(((end - start) * 1000) >= kWaitMillis);
+   CPPUNIT_ASSERT(fabs(end - start - kWaitSecs) < 1.0e-2);
 }
 
 #endif // HAVE_CPPUNIT
