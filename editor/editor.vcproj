@@ -312,6 +312,9 @@
 				RelativePath=".\MainFrm.cpp">
 			</File>
 			<File
+				RelativePath="OutputBar.cpp">
+			</File>
+			<File
 				RelativePath=".\aboutdlg.cpp">
 			</File>
 			<File
@@ -395,6 +398,9 @@
 			Filter="h;hpp;hxx;hm;inl">
 			<File
 				RelativePath=".\MainFrm.h">
+			</File>
+			<File
+				RelativePath="OutputBar.h">
 			</File>
 			<File
 				RelativePath=".\aboutdlg.h">
