@@ -19,6 +19,10 @@
 #include <afxcmn.h>			// MFC support for Windows Common Controls
 #endif // _AFX_NO_AFXCMN_SUPPORT
 
+// Use the inline function versions of these from <combase.h>
+#undef SUCCEEDED
+#undef FAILED
+
 #include "techtypes.h"
 #include "techdebug.h"
 

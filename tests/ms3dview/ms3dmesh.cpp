@@ -67,12 +67,12 @@ void cgErrorCallback()
 
    if (lastError)
    {
-      DebugPrintf(NULL, 0, cgGetErrorString(lastError));
+      DebugMsg(cgGetErrorString(lastError));
 
       const char * pszListing = cgGetLastListing(g_cgContext);
       if (pszListing != NULL)
       {
-         DebugPrintf(NULL, 0, "   %s\n", pszListing);
+         DebugMsg1("   %s\n", pszListing);
       }
    }
 }
@@ -244,7 +244,7 @@ tResult cMs3dMesh::PostRead()
 
       for (int i = 0; i < inverses.size(); i++)
       {
-         MatrixInvert(pSkeleton->GetBoneWorldTransform(i), &inverses[i]);
+         MatrixInvert(pSkeleton->GetBoneWorldTransform(i).m, inverses[i].m);
       }
 
       if (m_pInnerMesh)

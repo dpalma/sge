@@ -139,12 +139,6 @@ int CMs3dviewView::OnCreate(LPCREATESTRUCT lpCreateStruct)
       TRACE0("Failed to create slider control\n");
       return -1;
    }
-
-   if (RenderDeviceCreate(0, &m_pRenderDevice) != S_OK)
-   {
-      TRACE0("Failed to create rendering device\n");
-      return -1;
-   }
 	
    m_hDC = ::GetDC(m_hWnd);
    if (m_hDC == NULL)
@@ -177,6 +171,13 @@ int CMs3dviewView::OnCreate(LPCREATESTRUCT lpCreateStruct)
       return -1;
 
    wglMakeCurrent(m_hDC, m_hRC);
+
+   // Create the render device after setting up the GL context
+   if (RenderDeviceCreate(0, &m_pRenderDevice) != S_OK)
+   {
+      TRACE0("Failed to create rendering device\n");
+      return -1;
+   }
 
    COLORREF colorWindow = GetSysColor(COLOR_WINDOW);
 

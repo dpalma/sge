@@ -4,6 +4,8 @@
 #include "stdafx.h"
 #include "ms3dview.h"
 
+#include "textureapi.h"
+
 #include "resmgr.h"
 #include "globalobj.h"
 
@@ -67,6 +69,7 @@ BOOL CMs3dviewApp::InitInstance()
 
 	LoadStdProfileSettings();  // Load standard INI file options (including MRU)
 
+   TextureManagerCreate();
    ResourceManagerCreate();
    StartGlobalObjects();
 
