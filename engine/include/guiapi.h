@@ -13,6 +13,7 @@
 #endif
 
 F_DECLARE_INTERFACE(IGUIElement);
+F_DECLARE_INTERFACE(IGUIStyle);
 F_DECLARE_INTERFACE(IGUIElementFactory);
 F_DECLARE_INTERFACE(IGUIElementRenderer);
 F_DECLARE_INTERFACE(IGUIElementRendererFactory);
@@ -28,18 +29,13 @@ F_DECLARE_INTERFACE(IGUIFactory);
 F_DECLARE_INTERFACE(IGUIContext);
 
 F_DECLARE_INTERFACE(IRenderDevice);
+F_DECLARE_INTERFACE(IRenderFont);
 class TiXmlElement;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
 // INTERFACE: IGUIElement
 //
-
-enum eGUIDimensionType
-{
-   kAbsolute,
-   kRelative,
-};
 
 interface IGUIElement : IUnknown
 {
@@ -71,7 +67,70 @@ interface IGUIElement : IUnknown
    virtual tResult GetRendererClass(tGUIString * pRendererClass) = 0;
    virtual tResult GetRenderer(IGUIElementRenderer * * ppRenderer) = 0;
    virtual tResult SetRenderer(IGUIElementRenderer * pRenderer) = 0;
+
+   virtual tResult GetStyle(IGUIStyle * * ppStyle) = 0;
+   virtual tResult SetStyle(IGUIStyle * pStyle) = 0;
 };
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IGUIStyle
+//
+
+enum eGUIAlignment
+{
+   kGUIAlignLeft,
+   kGUIAlignRight,
+   kGUIAlignCenter,
+};
+
+enum eGUIVerticalAlignment
+{
+   kGUIVertAlignTop,
+   kGUIVertAlignBottom,
+   kGUIVertAlignCenter,
+};
+
+enum eGUIDimensionSpec
+{
+   kGUIDimensionPixels,
+   kGUIDimensionPercent,
+};
+
+interface IGUIStyle : IUnknown
+{
+   virtual tResult GetAlignment(uint * pAlignment) = 0;
+   virtual tResult SetAlignment(uint alignment) = 0;
+
+   virtual tResult GetVerticalAlignment(uint * pAlignment) = 0;
+   virtual tResult SetVerticalAlignment(uint alignment) = 0;
+
+   virtual tResult GetBackgroundColor(tGUIColor * pColor) = 0;
+   virtual tResult SetBackgroundColor(const tGUIColor & color) = 0;
+
+   virtual tResult GetForegroundColor(tGUIColor * pColor) = 0;
+   virtual tResult SetForegroundColor(const tGUIColor & color) = 0;
+
+   virtual tResult GetTextAlignment(uint * pAlignment) = 0;
+   virtual tResult SetTextAlignment(uint alignment) = 0;
+
+   virtual tResult GetTextVerticalAlignment(uint * pAlignment) = 0;
+   virtual tResult SetTextVerticalAlignment(uint alignment) = 0;
+
+   virtual tResult GetFontName(tGUIString * pFontName) = 0;
+   virtual tResult SetFontName(const char * pszFontName) = 0;
+
+   virtual tResult GetFontPointSize(uint * pFontPointSize) = 0;
+   virtual tResult SetFontPointSize(uint fontPointSize) = 0;
+
+   virtual tResult GetFont(IRenderFont * * ppFont) = 0;
+};
+
+///////////////////////////////////////
+// Parse a CSS-like string to produce a GUI style object
+
+tResult GUIElementStyleParse(const char * pszStyle, IGUIStyle * * ppStyle);
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -152,6 +211,8 @@ interface IGUIEvent : IUnknown
    virtual tResult GetKeyCode(long * pKeyCode) = 0;
    virtual tResult GetSourceElement(IGUIElement * * ppElement) = 0;
 };
+
+///////////////////////////////////////
 
 tResult GUIEventCreate(tGUIEventCode eventCode, tGUIPoint mousePos, long keyCode, 
                        IGUIElement * pSource, IGUIEvent * * ppEvent);

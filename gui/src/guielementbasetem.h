@@ -174,6 +174,24 @@ tResult cGUIElementBase<INTRFC>::SetRenderer(IGUIElementRenderer * pRenderer)
    return S_OK;
 }
 
+///////////////////////////////////////
+
+template <typename INTRFC>
+tResult cGUIElementBase<INTRFC>::GetStyle(IGUIStyle * * ppStyle)
+{
+   return m_pStyle.GetPointer(ppStyle);
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+tResult cGUIElementBase<INTRFC>::SetStyle(IGUIStyle * pStyle)
+{
+   SafeRelease(m_pStyle);
+   m_pStyle = CTAddRef(pStyle);
+   return S_OK;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #endif // !INCLUDED_GUIELEMENTBASETEM_H

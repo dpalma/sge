@@ -49,6 +49,9 @@ public:
    virtual tResult GetRenderer(IGUIElementRenderer * * ppRenderer);
    virtual tResult SetRenderer(IGUIElementRenderer * pRenderer);
 
+   virtual tResult GetStyle(IGUIStyle * * ppStyle);
+   virtual tResult SetStyle(IGUIStyle * pStyle);
+
 private:
    tGUIString m_id;
    bool m_bFocus;
@@ -58,6 +61,7 @@ private:
    tGUIPoint m_position;
    tGUISize m_size;
    cAutoIPtr<IGUIElementRenderer> m_pRenderer;
+   cAutoIPtr<IGUIStyle> m_pStyle;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

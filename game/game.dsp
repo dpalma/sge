@@ -223,6 +223,10 @@ SOURCE=.\guipanel.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\guistyle.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\heightmap.cpp
 # End Source File
 # Begin Source File
@@ -338,6 +342,10 @@ SOURCE=.\guilabel.h
 # Begin Source File
 
 SOURCE=.\guipanel.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\guistyle.h
 # End Source File
 # Begin Source File
 
