@@ -3,10 +3,6 @@
 
 bin_PROGRAMS = game
 
-datadir = $(prefix)/data
-
-data_DATA = *.lua
-
 EXTRA_DIST = *.rc *.ico *.dsp *.dsw *.vcproj *.sln
 
 noinst_HEADERS = *.h
@@ -50,6 +46,9 @@ game.$(OBJEXT): $(top_srcdir)/game/game.rc
 else
 RES =
 endif
+
+install-exec-hook:
+	$(ECHO) "data=$(DESTDIR)$(prefix)/data" > $(DESTDIR)$(bindir)/game.cfg
 
 game_LDADD = $(RES) $(CORE_LIBS) $(GL_LIBS) -llua -llualib -ltinyxml -lrender -lengine -ltech -lallguids
 
