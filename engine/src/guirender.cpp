@@ -361,6 +361,7 @@ tResult cGUIRenderingTools::Render3dRect(const tGUIRect & rect, int bevel,
       cAutoIPtr<IVertexDeclaration> pVertexDecl;
       if (GetVertexDeclaration(&pVertexDecl) == S_OK)
       {
+         // TODO: Use a non-NULL material
          m_pRenderDevice->Render(kRP_Triangles, nVertices / 3, NULL, pVertexDecl, vertices);
       }
    }
