@@ -14,7 +14,6 @@ endif
 game_SOURCES = cameracontroller.cpp \
                groundtiled.cpp \
                heightmap.cpp \
-               input.cpp \
                main.cpp \
                script.cpp \
                scriptvm.cpp \

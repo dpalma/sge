@@ -222,6 +222,10 @@ SOURCE=.\src\frustum.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\input.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\mesh.cpp
 # End Source File
 # Begin Source File
@@ -251,6 +255,10 @@ SOURCE=.\src\sceneentity.cpp
 # Begin Source File
 
 SOURCE=.\src\scenelayer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\scenemesh.cpp
 # End Source File
 # Begin Source File
 
@@ -287,6 +295,10 @@ SOURCE=.\src\frustum.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\input.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\ms3d.h
 # End Source File
 # Begin Source File
@@ -308,6 +320,10 @@ SOURCE=.\src\sceneentity.h
 # Begin Source File
 
 SOURCE=.\src\scenelayer.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\scenemesh.h
 # End Source File
 # Begin Source File
 
@@ -333,6 +349,10 @@ SOURCE=.\include\enginedll.h
 # Begin Source File
 
 SOURCE=.\include\engineguids.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\inputapi.h
 # End Source File
 # Begin Source File
 
