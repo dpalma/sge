@@ -1,0 +1,275 @@
+# Microsoft Developer Studio Project File - Name="editor" - Package Owner=<4>
+# Microsoft Developer Studio Generated Build File, Format Version 6.00
+# ** DO NOT EDIT **
+
+# TARGTYPE "Win32 (x86) Application" 0x0101
+
+CFG=editor - Win32 StaticDebug
+!MESSAGE This is not a valid makefile. To build this project using NMAKE,
+!MESSAGE use the Export Makefile command and run
+!MESSAGE 
+!MESSAGE NMAKE /f "editor.mak".
+!MESSAGE 
+!MESSAGE You can specify a configuration when running NMAKE
+!MESSAGE by defining the macro CFG on the command line. For example:
+!MESSAGE 
+!MESSAGE NMAKE /f "editor.mak" CFG="editor - Win32 StaticDebug"
+!MESSAGE 
+!MESSAGE Possible choices for configuration are:
+!MESSAGE 
+!MESSAGE "editor - Win32 Release" (based on "Win32 (x86) Application")
+!MESSAGE "editor - Win32 Debug" (based on "Win32 (x86) Application")
+!MESSAGE "editor - Win32 Opt" (based on "Win32 (x86) Application")
+!MESSAGE "editor - Win32 StaticDebug" (based on "Win32 (x86) Application")
+!MESSAGE "editor - Win32 StaticRelease" (based on "Win32 (x86) Application")
+!MESSAGE 
+
+# Begin Project
+# PROP AllowPerConfigDependencies 0
+# PROP Scc_ProjName ""
+# PROP Scc_LocalPath ""
+CPP=cl.exe
+MTL=midl.exe
+RSC=rc.exe
+
+!IF  "$(CFG)" == "editor - Win32 Release"
+
+# PROP BASE Use_MFC 6
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "Release"
+# PROP BASE Intermediate_Dir "Release"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 6
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "..\Build\Release"
+# PROP Intermediate_Dir "..\Build\Release\editor"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AFXDLL" /Yu"stdhdr.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /I "..\tech\include" /I "..\engine\include" /I "..\render\include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /Yu"stdhdr.h" /FD /c
+# ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
+# ADD BASE RSC /l 0x409 /d "NDEBUG" /d "_AFXDLL"
+# ADD RSC /l 0x409 /d "NDEBUG" /d "_AFXDLL"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 /nologo /subsystem:windows /machine:I386
+# ADD LINK32 opengl32.lib glu32.lib winmm.lib /nologo /subsystem:windows /machine:I386
+
+!ELSEIF  "$(CFG)" == "editor - Win32 Debug"
+
+# PROP BASE Use_MFC 6
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "Debug"
+# PROP BASE Intermediate_Dir "Debug"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 6
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "..\Build\Debug"
+# PROP Intermediate_Dir "..\Build\Debug\editor"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /Yu"stdhdr.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\tech\include" /I "..\engine\include" /I "..\render\include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /Yu"stdhdr.h" /FD /GZ /c
+# ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD BASE RSC /l 0x409 /d "_DEBUG" /d "_AFXDLL"
+# ADD RSC /l 0x409 /d "_DEBUG" /d "_AFXDLL"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 opengl32.lib glu32.lib winmm.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
+
+!ELSEIF  "$(CFG)" == "editor - Win32 Opt"
+
+# PROP BASE Use_MFC 6
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "editor___Win32_Opt"
+# PROP BASE Intermediate_Dir "editor___Win32_Opt"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 6
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "..\Build\Opt"
+# PROP Intermediate_Dir "..\Build\Opt\editor"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MD /W3 /GX /O2 /I "..\tech\include" /I "..\engine\include" /I "..\render\include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /Yu"stdhdr.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /I "..\tech\include" /I "..\engine\include" /I "..\render\include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /Yu"stdhdr.h" /FD /c
+# ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
+# ADD BASE RSC /l 0x409 /d "NDEBUG" /d "_AFXDLL"
+# ADD RSC /l 0x409 /d "NDEBUG" /d "_AFXDLL"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 opengl32.lib glu32.lib /nologo /subsystem:windows /machine:I386
+# ADD LINK32 opengl32.lib glu32.lib winmm.lib /nologo /subsystem:windows /machine:I386
+
+!ELSEIF  "$(CFG)" == "editor - Win32 StaticDebug"
+
+# PROP BASE Use_MFC 6
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "editor___Win32_StaticDebug"
+# PROP BASE Intermediate_Dir "editor___Win32_StaticDebug"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 5
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "..\Build\StaticDebug"
+# PROP Intermediate_Dir "..\Build\StaticDebug\editor"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\tech\include" /I "..\engine\include" /I "..\render\include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /Yu"stdhdr.h" /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\tech\include" /I "..\engine\include" /I "..\render\include" /D "STATIC_BUILD" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /Yu"stdhdr.h" /FD /GZ /c
+# ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD BASE RSC /l 0x409 /d "_DEBUG" /d "_AFXDLL"
+# ADD RSC /l 0x409 /d "_DEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 opengl32.lib glu32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 opengl32.lib glu32.lib winmm.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
+
+!ELSEIF  "$(CFG)" == "editor - Win32 StaticRelease"
+
+# PROP BASE Use_MFC 6
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "editor___Win32_StaticRelease"
+# PROP BASE Intermediate_Dir "editor___Win32_StaticRelease"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 5
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "..\Build\StaticRelease"
+# PROP Intermediate_Dir "..\Build\StaticRelease\editor"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MD /W3 /GX /O2 /I "..\tech\include" /I "..\engine\include" /I "..\render\include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /Yu"stdhdr.h" /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /I "..\tech\include" /I "..\engine\include" /I "..\render\include" /D "STATIC_BUILD" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /Yu"stdhdr.h" /FD /c
+# ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
+# ADD BASE RSC /l 0x409 /d "NDEBUG" /d "_AFXDLL"
+# ADD RSC /l 0x409 /d "NDEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 opengl32.lib glu32.lib /nologo /subsystem:windows /machine:I386
+# ADD LINK32 opengl32.lib glu32.lib winmm.lib /nologo /subsystem:windows /machine:I386
+
+!ENDIF 
+
+# Begin Target
+
+# Name "editor - Win32 Release"
+# Name "editor - Win32 Debug"
+# Name "editor - Win32 Opt"
+# Name "editor - Win32 StaticDebug"
+# Name "editor - Win32 StaticRelease"
+# Begin Group "Source Files"
+
+# PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+# Begin Source File
+
+SOURCE=.\aboutdlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\editor.rc
+# End Source File
+# Begin Source File
+
+SOURCE=.\editorApp.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\editorDoc.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\editorView.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\MainFrm.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\stdhdr.cpp
+# ADD CPP /Yc"stdhdr.h"
+# End Source File
+# End Group
+# Begin Group "Header Files"
+
+# PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Source File
+
+SOURCE=.\aboutdlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\afxcomtools.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\editorapi.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\editorApp.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\editorDoc.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\editorguids.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\editorView.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\MainFrm.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\resource.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\stdhdr.h
+# End Source File
+# End Group
+# Begin Group "Resource Files"
+
+# PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
+# Begin Source File
+
+SOURCE=.\res\editor.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\editor.rc2
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\editorDoc.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\toolbar.bmp
+# End Source File
+# End Group
+# End Target
+# End Project
