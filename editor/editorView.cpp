@@ -3,7 +3,6 @@
 
 #include "stdhdr.h"
 
-#include "editorApp.h"
 #include "editorDoc.h"
 #include "editorView.h"
 
@@ -17,17 +16,15 @@
 #include "keys.h"
 #include "techtime.h"
 
-#include <GL/gl.h>
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
 
-const GLfloat kFov = 70;
-const GLfloat kZNear = 1;
-const GLfloat kZFar = 5000;
+const float kFov = 70;
+const float kZNear = 1;
+const float kZFar = 5000;
 
 /////////////////////////////////////////////////////////////////////////////
 // cEditorView
@@ -127,6 +124,7 @@ void cEditorView::OnDraw(CDC * pDC)
 //	cEditorDoc * pDoc = GetDocument();
 //	ASSERT_VALID(pDoc);
 
+   RenderScene();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -195,7 +193,7 @@ void cEditorView::OnSize(UINT nType, int cx, int cy)
 {
 	cGLView::OnSize(nType, cx, cy);
 
-   GLfloat aspect = (GLfloat)cx / cy;
+   float aspect = (float)cx / cy;
 
    if (AccessRenderDevice() != NULL)
    {
@@ -296,13 +294,6 @@ LRESULT cEditorView::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
       {
          ForEachConnection(&IWindowSink::OnResize, (int)LOWORD(lParam), (int)HIWORD(lParam), msgTime);
          break;
-      }
-
-      case WM_PAINT:
-      {
-         // Eat paint messages because the view is drawn in a continuous rendering loop
-         ValidateRect(NULL);
-         return 0;
       }
 
       case WM_ACTIVATEAPP:
