@@ -17,7 +17,7 @@
 
 #include "dbgalloc.h" // must be last header
 
-LOG_DEFINE_ENABLE_CHANNEL(Window, true);
+LOG_DEFINE_CHANNEL(Window);
 
 #define LocalMsg(msg)            DebugMsgEx(Window,(msg))
 #define LocalMsg1(msg,a)         DebugMsgEx1(Window,(msg),(a))
