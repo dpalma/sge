@@ -58,7 +58,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 msModelLib.lib $(OutDir)/tinyxml.lib opengl32.lib glu32.lib /nologo /dll /map:"..\Build\Release/msPlugIn.map" /machine:I386 /libpath:"..\3rdparty\ms3dsdk\msLib\lib" /opt:ref
+# ADD LINK32 msModelLib.lib $(OutDir)/tinyxml.lib opengl32.lib glu32.lib winmm.lib /nologo /dll /map:"..\Build\Release/msPlugIn.map" /machine:I386 /libpath:"..\3rdparty\ms3dsdk\msLib\lib" /opt:ref
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "msPlugIn - Win32 Debug"
@@ -87,7 +87,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 msModelLib.lib $(OutDir)/tinyxml.lib opengl32.lib glu32.lib /nologo /dll /map:"..\Build\Debug/msPlugIn.map" /debug /machine:I386 /pdbtype:sept /libpath:"..\3rdparty\ms3dsdk\msLib\lib"
+# ADD LINK32 msModelLib.lib $(OutDir)/tinyxml.lib opengl32.lib glu32.lib winmm.lib /nologo /dll /map:"..\Build\Debug/msPlugIn.map" /debug /machine:I386 /pdbtype:sept /libpath:"..\3rdparty\ms3dsdk\msLib\lib"
 # SUBTRACT LINK32 /profile
 
 !ELSEIF  "$(CFG)" == "msPlugIn - Win32 Opt"
@@ -118,7 +118,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winmm.lib /nologo /dll /debug /machine:I386 /pdbtype:sept /libpath:"..\..\3rdparty\dx7sdk\lib"
 # SUBTRACT BASE LINK32 /profile
-# ADD LINK32 msModelLib.lib $(OutDir)/tinyxml.lib opengl32.lib glu32.lib /nologo /dll /profile /map:"..\Build\Opt/msPlugIn.map" /debug /machine:I386 /libpath:"..\3rdparty\ms3dsdk\msLib\lib"
+# ADD LINK32 msModelLib.lib $(OutDir)/tinyxml.lib opengl32.lib glu32.lib winmm.lib /nologo /dll /profile /map:"..\Build\Opt/msPlugIn.map" /debug /machine:I386 /libpath:"..\3rdparty\ms3dsdk\msLib\lib"
 
 !ELSEIF  "$(CFG)" == "msPlugIn - Win32 StaticDebug"
 
@@ -147,7 +147,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 $(OutDir)\cppunit.lib msModelLib.lib $(OutDir)/tinyxml.lib opengl32.lib glu32.lib /nologo /dll /map:"..\Build\StaticDebug/msPlugIn.map" /debug /machine:I386 /libpath:"..\3rdparty\ms3dsdk\msLib\lib"
+# ADD LINK32 $(OutDir)\cppunit.lib msModelLib.lib $(OutDir)/tinyxml.lib opengl32.lib glu32.lib winmm.lib /nologo /dll /map:"..\Build\StaticDebug/msPlugIn.map" /debug /machine:I386 /libpath:"..\3rdparty\ms3dsdk\msLib\lib"
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "msPlugIn - Win32 StaticRelease"
@@ -177,7 +177,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 msModelLib.lib $(OutDir)/tinyxml.lib opengl32.lib glu32.lib /nologo /dll /map:"..\Build\StaticRelease/msPlugIn.map" /machine:I386 /libpath:"..\3rdparty\ms3dsdk\msLib\lib" /opt:ref
+# ADD LINK32 msModelLib.lib $(OutDir)/tinyxml.lib opengl32.lib glu32.lib winmm.lib /nologo /dll /map:"..\Build\StaticRelease/msPlugIn.map" /machine:I386 /libpath:"..\3rdparty\ms3dsdk\msLib\lib" /opt:ref
 # SUBTRACT LINK32 /pdb:none
 
 !ENDIF 
