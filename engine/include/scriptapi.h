@@ -94,11 +94,11 @@ interface IScriptInterpreter : IUnknown
    /// UseGlobal(pScriptInterpreter);
    /// pScriptInterpreter->CallFunction("Square", "ff", 100.0, 50.9);
    /// @endcode
-   virtual void CallFunction(const char * pszName, const char * pszArgDesc = NULL, ...) = 0;
+   virtual tResult CallFunction(const char * pszName, const char * pszArgDesc = NULL, ...) = 0;
    /*!
-    * @overload void CallFunction(const char * pszName, const char * pszArgDesc, va_list args);
+    * @overload tResult CallFunction(const char * pszName, const char * pszArgDesc, va_list args);
     */
-   virtual void CallFunction(const char * pszName, const char * pszArgDesc, va_list args) = 0;
+   virtual tResult CallFunction(const char * pszName, const char * pszArgDesc, va_list args) = 0;
 
    /// @brief Expose a global function to script code using the given name
    /// @param pszName is the name script code will use to invoke the function

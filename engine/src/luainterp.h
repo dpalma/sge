@@ -31,8 +31,8 @@ public:
 
    tResult ExecFile(const char * pszFile);
    tResult ExecString(const char * pszCode);
-   void CallFunction(const char * pszName, const char * pszArgDesc = NULL, ...);
-   void CallFunction(const char * pszName, const char * pszArgDesc, va_list args);
+   tResult CallFunction(const char * pszName, const char * pszArgDesc = NULL, ...);
+   tResult CallFunction(const char * pszName, const char * pszArgDesc, va_list args);
    tResult AddFunction(const char * pszName, tScriptFn pfn);
    tResult RemoveFunction(const char * pszName);
 

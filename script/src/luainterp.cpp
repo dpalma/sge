@@ -526,22 +526,30 @@ tResult cLuaInterpreter::ExecString(const char * pszCode)
 
 ///////////////////////////////////////
 
-void cLuaInterpreter::CallFunction(const char * pszName, const char * pszArgDesc, ...)
+tResult cLuaInterpreter::CallFunction(const char * pszName, const char * pszArgDesc, ...)
 {
    Assert(pszName != NULL);
    va_list args;
    va_start(args, pszArgDesc);
-   CallFunction(pszName, pszArgDesc, args);
+   tResult result = CallFunction(pszName, pszArgDesc, args);
    va_end(args);
+   return result;
 }
 
 ///////////////////////////////////////
 
-void cLuaInterpreter::CallFunction(const char * pszName, const char * pszArgDesc, va_list args)
+tResult cLuaInterpreter::CallFunction(const char * pszName, const char * pszArgDesc, va_list args)
 {
+   if (pszName == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tResult result = E_FAIL;
+
    if (m_L != NULL)
    {
-      int result = kLuaNoError;
+      int luaResult = kLuaNoError;
 
       if (pszArgDesc && *pszArgDesc)
       {
@@ -579,19 +587,30 @@ void cLuaInterpreter::CallFunction(const char * pszName, const char * pszArgDesc
            lua_checkstack(m_L, 1);
          }
          lua_getglobal(m_L, pszName);
-         result = lua_pcall(m_L, strlen(pszArgDesc), 0, 0);
+         luaResult = lua_pcall(m_L, strlen(pszArgDesc), 0, 0);
       }
       else
       {
          lua_getglobal(m_L, pszName);
-         result = lua_pcall(m_L, 0, 0, 0);
+         luaResult = lua_pcall(m_L, 0, 0, 0);
       }
 
-      if (result != kLuaNoError)
+      static const tResult resultMap[] =
       {
-         ErrorMsg1("An error occured calling function %s\n", pszName);
-      }
+         S_OK, // kLuaNoError (zero)
+         E_FAIL, // LUA_ERRRUN
+         E_FAIL, // LUA_ERRFILE
+         E_FAIL, // LUA_ERRSYNTAX
+         E_OUTOFMEMORY, // LUA_ERRMEM
+         E_UNEXPECTED, // LUA_ERRERR
+      };
+
+      Assert(luaResult >= 0 && luaResult < _countof(resultMap));
+
+      result = resultMap[luaResult];
    }
+
+   return result;
 }
 
 ///////////////////////////////////////
