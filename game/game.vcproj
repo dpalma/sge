@@ -361,6 +361,9 @@
 				RelativePath="guistyle.cpp">
 			</File>
 			<File
+				RelativePath="guitextedit.cpp">
+			</File>
+			<File
 				RelativePath="guitypes.cpp">
 			</File>
 			<File
@@ -488,6 +491,12 @@
 				RelativePath="guibutton.h">
 			</File>
 			<File
+				RelativePath="guicontainerbase.h">
+			</File>
+			<File
+				RelativePath="guicontainerbasetem.h">
+			</File>
+			<File
 				RelativePath="guicontext.h">
 			</File>
 			<File
@@ -525,6 +534,9 @@
 			</File>
 			<File
 				RelativePath="guistyle.h">
+			</File>
+			<File
+				RelativePath="guitextedit.h">
 			</File>
 			<File
 				RelativePath="guitypes.h">
