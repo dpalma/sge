@@ -7,25 +7,16 @@
 #include "editorDoc.h"
 #include "editorView.h"
 #include "editorTypes.h"
-#include "BitmapUtils.h"
 #include "MapSettingsDlg.h"
 
-#include "sceneapi.h"
-#include "inputapi.h"
 #include "scriptapi.h"
-
-#include "textureapi.h"
 
 #include "resmgr.h"
 #include "configapi.h"
-#include "globalobj.h"
 #include "techtime.h"
 #include "connptimpl.h"
 #include "readwriteapi.h"
-#include "filespec.h"
-#include "filepath.h"
 #include "str.h"
-#include "threadcallapi.h"
 
 #include <algorithm>
 #include <zmouse.h>
@@ -53,8 +44,6 @@ extern uint g_nEditorCmds;
 
 static const tChar g_szRegistryKey[] = _T("SGE");
 
-cMainFrame * g_pAltMainFrame = NULL;
-
 /////////////////////////////////////////////////////////////////////////////
 
 static const SIZE g_mapSizes[] =
@@ -66,10 +55,6 @@ static const SIZE g_mapSizes[] =
 };
 
 static const uint kDefaultMapSizeIndex = 0;
-
-/////////////////////////////////////////////////////////////////////////////
-
-CAppModule _Module;
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -100,65 +85,6 @@ void ListTileSets(CONTAINER * pContainer)
 }
 
 /////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cEditorApp
-//
-
-////////////////////////////////////////
-
-BEGIN_CONSTRAINTS()
-   AFTER_GUID(IID_IEditorTileManager)
-END_CONSTRAINTS()
-
-////////////////////////////////////////
-
-cEditorApp::cEditorApp()
- : cGlobalObject<IMPLEMENTS(IEditorApp)>("EditorApp", CONSTRAINTS()),
-   m_bPromptMapSettings(false),
-   m_hCurrentToolWnd(NULL)
-{
-}
-
-////////////////////////////////////////
-
-cEditorApp::~cEditorApp()
-{
-}
-
-////////////////////////////////////////
-
-tResult cEditorApp::Init()
-{
-   if (!m_mainWnd.CreateEx())
-   {
-      return E_FAIL;
-   }
-	m_mainWnd.ShowWindow(SW_SHOW);
-	m_mainWnd.UpdateWindow();
-
-   m_bPromptMapSettings = true;
-
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cEditorApp::Term()
-{
-	if (m_mainWnd.IsWindow())
-   {
-      m_mainWnd.DestroyWindow();
-   }
-
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-void EditorAppCreate()
-{
-   cAutoIPtr<IEditorApp>(new cEditorApp);
-}
 
 ////////////////////////////////////////
 
@@ -227,44 +153,48 @@ static bool ScriptExecResource(const char * pszResource)
    return result;
 }
 
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cEditorApp
+//
+
 ////////////////////////////////////////
 
-static void RegisterGlobalObjects()
+BEGIN_CONSTRAINTS()
+   AFTER_GUID(IID_IEditorTileManager)
+   AFTER_GUID(IID_IResourceManager)
+   AFTER_GUID(IID_IScriptInterpreter)
+END_CONSTRAINTS()
+
+////////////////////////////////////////
+
+cEditorApp::cEditorApp()
+ : cGlobalObject<IMPLEMENTS(IEditorApp)>("EditorApp", CONSTRAINTS()),
+   m_bPromptMapSettings(false),
+   m_hCurrentToolWnd(NULL)
 {
-   InputCreate();
-//   SimCreate();
-   ResourceManagerCreate();
-   SceneCreate();
-   ScriptInterpreterCreate();
-   TextureManagerCreate();
-//   GUIContextCreate();
-//   GUIFactoryCreate();
-//   GUIRenderingToolsCreate();
-   EditorTileManagerCreate();
-   ThreadCallerCreate();
-   EditorAppCreate();
 }
 
 ////////////////////////////////////////
 
-BOOL EditorInit()
+cEditorApp::~cEditorApp()
 {
-   UseGlobal(ThreadCaller);
-   pThreadCaller->ThreadInit();
+}
+
+////////////////////////////////////////
+
+tResult cEditorApp::Init()
+{
+   if (!m_mainWnd.CreateEx())
+   {
+      return E_FAIL;
+   }
+	m_mainWnd.ShowWindow(SW_SHOW);
+	m_mainWnd.UpdateWindow();
+
+   m_bPromptMapSettings = true;
 
    ScriptAddFunctions(g_editorCmds, g_nEditorCmds);
-
-   cFileSpec file(__argv[0]);
-   file.SetPath(cFilePath());
-   file.SetFileExt("cfg");
-
-   cAutoIPtr<IDictionaryStore> pStore = DictionaryStoreCreate(file);
-   if (pStore->Load(g_pConfig) != S_OK)
-   {
-      DebugMsg1("Error loading settings from %s\n", file.GetName());
-   }
-
-   ::ParseCommandLine(__argc, __argv, g_pConfig);
 
    cStr temp;
    if (ConfigGet("data", &temp) == S_OK)
@@ -287,7 +217,26 @@ BOOL EditorInit()
 
    ScriptCallFunction("EditorInit", NULL);
 
-	return TRUE;
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cEditorApp::Term()
+{
+	if (m_mainWnd.IsWindow())
+   {
+      m_mainWnd.DestroyWindow();
+   }
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+void EditorAppCreate()
+{
+   cAutoIPtr<IEditorApp>(new cEditorApp);
 }
 
 ////////////////////////////////////////
@@ -707,50 +656,6 @@ void RunUnitTests()
 #else
    AtlMessageBox(IDS_NO_UNIT_TESTS, NULL);
 #endif
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/,
-                     LPTSTR /*lpCmdLine*/, int /*nCmdShow*/)
-{
-   ::CoInitialize(NULL);
-
-   // this resolves ATL window thunking problem when Microsoft Layer for Unicode (MSLU) is used
-   ::DefWindowProc(NULL, 0, 0, 0L);
-
-   AtlInitCommonControls(ICC_COOL_CLASSES | ICC_BAR_CLASSES);
-
-   if (FAILED(_Module.Init(NULL, hInstance)))
-   {
-      ErrorMsg("ATL module failed to start!\n");
-      return -1;
-   }
-
-   CMessageLoop messageLoop;
-   _Module.AddMessageLoop(&messageLoop);
-
-   RegisterGlobalObjects();
-   if (FAILED(StartGlobalObjects()))
-   {
-      ErrorMsg("One or more application-level services failed to start!\n");
-      return -1;
-   }
-
-   if (!EditorInit())
-   {
-      return -1;
-   }
-
-   int result = messageLoop.Run();
-
-	StopGlobalObjects();
-
-   _Module.RemoveMessageLoop();
-   _Module.Term();
-   ::CoUninitialize();
-
-   return result;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -53,6 +53,37 @@ void cDockingWindowMenu::SetMenu(HMENU hMenu)
 
 ////////////////////////////////////////
 
+static tResult GetMenuItemPosition(HMENU hMenu, uint command, int * pPosition)
+{
+   if (!IsMenu(hMenu))
+   {
+      return E_INVALIDARG;
+   }
+
+   if (pPosition == NULL)
+   {
+      return E_POINTER;
+   }
+
+   int nItems = GetMenuItemCount(hMenu);
+
+   for (int i = 0; i < nItems; i++)
+   {
+      CMenuItemInfo mii;
+      mii.fMask = MIIM_ID;
+      if (GetMenuItemInfo(hMenu, i, TRUE, &mii))
+      {
+         if (mii.wID == command)
+         {
+            *pPosition = i;
+            return S_OK;
+         }
+      }
+   }
+
+   return E_FAIL;
+}
+
 bool cDockingWindowMenu::UpdateMenu()
 {
    if (m_menu.IsNull())
@@ -68,24 +99,16 @@ bool cDockingWindowMenu::UpdateMenu()
       }
    }
 
-   int nItems = m_menu.GetMenuItemCount();
    int insertPoint;
-   for (insertPoint = 0; insertPoint < nItems; insertPoint++)
-   {
-      CMenuItemInfo mii;
-      mii.fMask = MIIM_ID;
-      if (!m_menu.GetMenuItemInfo(insertPoint, TRUE, &mii))
-      {
-         return false;
-      }
-      if (mii.wID == m_idFirst)
-         break;
-   }
-
-   if (insertPoint >= nItems)
+   if (GetMenuItemPosition(m_menu, m_idFirst, &insertPoint) != S_OK)
    {
       WarnMsg1("No menu item with ID %d\n", m_idFirst);
       return false;
+   }
+
+   for (uint i = m_idFirst; i <= m_idLast; i++)
+   {
+      m_menu.DeleteMenu(i, MF_BYCOMMAND);
    }
 
    if (m_dockingWindows.empty())
@@ -93,43 +116,47 @@ bool cDockingWindowMenu::UpdateMenu()
       if (!m_originalText.IsEmpty())
       {
          CMenuItemInfo mii;
-         mii.fMask = MIIM_STRING | MIIM_STATE;
+         mii.fMask = MIIM_ID | MIIM_STRING | MIIM_STATE;
+         mii.wID = m_idFirst;
          mii.fState = MFS_DISABLED;
          mii.dwTypeData = const_cast<LPSTR>((LPCTSTR)m_originalText);
-         if (m_menu.SetMenuItemInfo(m_idFirst, FALSE, &mii))
+         mii.cch = m_originalText.GetLength();
+         if (m_menu.InsertMenuItem(insertPoint, TRUE, &mii))
          {
             return true;
          }
       }
    }
-
-   // Start at one to keep the very first menu item
-   for (uint i = 1; i < m_dockingWindows.size(); i++)
+   else
    {
-      m_menu.DeleteMenu(m_idFirst + i, MF_BYCOMMAND);
-   }
-
-   tDockingWindows::const_iterator iter = m_dockingWindows.begin();
-   tDockingWindows::const_iterator end = m_dockingWindows.end();
-   for (int index = 0; iter != end; iter++, index++)
-   {
-      uint len = (*iter)->GetWindowTextLength() + 1;
-      CString title;
-      (*iter)->GetWindowText(title.GetBuffer(len), len);
-
-      // TODO: double up all '&' characters so they don't appear underlined
-
-      CMenuItemInfo mii;
-      mii.fMask = MIIM_STRING | MIIM_STATE;
-      mii.fState = (*iter)->IsWindowVisible() ? MFS_CHECKED : MFS_UNCHECKED;
-      mii.dwTypeData = const_cast<LPSTR>((LPCTSTR)title);
-      if (!m_menu.InsertMenuItem(insertPoint + index, TRUE, &mii))
+      tDockingWindows::const_iterator iter = m_dockingWindows.begin();
+      tDockingWindows::const_iterator end = m_dockingWindows.end();
+      for (int index = 0; iter != end; iter++, index++)
       {
-         return false;
+         uint len = (*iter)->GetWindowTextLength() + 1;
+         CString title;
+         (*iter)->GetWindowText(title.GetBuffer(len), len);
+
+         // TODO: double up all '&' characters so they don't appear underlined
+
+         CMenuItemInfo mii;
+         mii.fMask = MIIM_ID | MIIM_STRING;
+         mii.wID = m_idFirst + index;
+         mii.dwTypeData = const_cast<LPSTR>((LPCTSTR)title);
+         mii.cch = title.GetLength();
+         if ((*iter)->IsWindowVisible())
+         {
+            mii.fMask |= MIIM_STATE;
+            mii.fState |= MFS_CHECKED;
+         }
+         if (!m_menu.InsertMenuItem(insertPoint + index, TRUE, &mii))
+         {
+            return false;
+         }
       }
    }
 
-   return false;
+   return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -362,7 +389,7 @@ LRESULT cMainFrame::OnPostCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 
    m_dockingWindowStateMgr.Initialize(_T("SOFTWARE\\SGE"), m_hWnd);
 //   m_dockingWindowStateMgr.Add(sstate::CRebarStateAdapter(m_hWndToolBar));
-//   m_dockingWindowStateMgr.Add(sstate::CToggleWindowAdapter(m_hWndStatusBar));
+   m_dockingWindowStateMgr.Add(sstate::CToggleWindowAdapter(m_hWndStatusBar));
    m_dockingWindowStateMgr.Add(dockWndMgr);
    m_dockingWindowStateMgr.Restore();
 
@@ -473,15 +500,13 @@ LRESULT cMainFrame::OnAppAbout(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bH
 
 ////////////////////////////////////////
 
-LRESULT cMainFrame::OnViewControlBar(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled)
+LRESULT cMainFrame::OnViewDockingWindow(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled)
 {
    Assert(id >= ID_VIEW_DOCKING_WINDOW1);
    Assert(id < (ID_VIEW_DOCKING_WINDOW1 + m_dockingWindows.size()));
    int index = id - ID_VIEW_DOCKING_WINDOW1;
    Assert(m_dockingWindows[index] != NULL);
-   // TODO
-//   CControlBar * pCtrlBar = m_ctrlBars[index];
-//   ShowControlBar(pCtrlBar, !pCtrlBar->IsWindowVisible(), FALSE);
+   m_dockingWindows[index]->Toggle();
    return 0;
 }
 
@@ -508,7 +533,7 @@ BOOL cMainFrame::OnIdle()
 {
    UIUpdateToolBar();
    //UISetCheck(ID_VIEW_TOOLBAR, IsToolbarVisible());
-   //UISetCheck(ID_VIEW_STATUS_BAR, ::IsWindowVisible(m_hWndStatusBar));
+   UISetCheck(ID_VIEW_STATUS_BAR, ::IsWindowVisible(m_hWndStatusBar));
    m_dockingWindowMenu.UpdateMenu();
    return FALSE;
 }

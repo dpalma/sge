@@ -4,7 +4,6 @@
 #if !defined(INCLUDED_MAINFRM_H)
 #define INCLUDED_MAINFRM_H
 
-#include "editorView.h"
 #include "GLContext.h"
 
 #include <DockingFrame.h>
@@ -54,6 +53,8 @@ public:
 //
 // CLASS: cDockingWindowMenu
 //
+// Don't add menu IDs managed by this class to the CUpdateUI map or
+// it will overrule changes made by this class.
 
 class cDockingWindowMenu
 {
@@ -115,16 +116,14 @@ public:
       COMMAND_ID_HANDLER(ID_VIEW_STATUS_BAR, OnViewStatusBar)
       COMMAND_ID_HANDLER(ID_TOOLS_UNITTESTRUNNER, OnToolsUnitTestRunner)
       COMMAND_ID_HANDLER(ID_APP_ABOUT, OnAppAbout)
-	   COMMAND_RANGE_HANDLER(ID_VIEW_DOCKING_WINDOW1, ID_VIEW_DOCKING_WINDOW16, OnViewControlBar)
+	   COMMAND_RANGE_HANDLER(ID_VIEW_DOCKING_WINDOW1, ID_VIEW_DOCKING_WINDOW16, OnViewDockingWindow)
       CHAIN_MSG_MAP(tFrameBase)
       CHAIN_MSG_MAP(tUpdateUIBase)
    END_MSG_MAP()
 
    BEGIN_UPDATE_UI_MAP(cMainFrame)
-      //UPDATE_ELEMENT(ID_xxx, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
       UPDATE_ELEMENT(ID_VIEW_TOOLBAR, UPDUI_MENUPOPUP)
       UPDATE_ELEMENT(ID_VIEW_STATUS_BAR, UPDUI_MENUPOPUP)
-	   UPDATE_ELEMENT(ID_VIEW_DOCKING_WINDOW1, UPDUI_MENUPOPUP)
    END_UPDATE_UI_MAP()
 
    void CreateDockingWindows();
@@ -143,7 +142,7 @@ public:
    LRESULT OnViewStatusBar(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled);
    LRESULT OnToolsUnitTestRunner(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled);
    LRESULT OnAppAbout(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled);
-   LRESULT OnViewControlBar(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled);
+   LRESULT OnViewDockingWindow(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled);
 
 	virtual BOOL PreTranslateMessage(MSG * pMsg);
 

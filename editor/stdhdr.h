@@ -8,6 +8,8 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#define _WIN32_WINNT 0x0400
+
 #include "techtypes.h"
 #include "techdebug.h"
 
