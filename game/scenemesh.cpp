@@ -3,6 +3,8 @@
 
 #include "stdhdr.h"
 
+#include "gcommon.h"
+
 #include "scenemesh.h"
 #include "mesh.h"
 #include "ggl.h"
@@ -36,7 +38,7 @@ bool cSceneMesh::SetMesh(const char * pszMesh)
 
    UseGlobal(ResourceManager);
 
-   m_pMesh = MeshLoad(pResourceManager, pszMesh);
+   m_pMesh = MeshLoad(pResourceManager, AccessRenderDevice(), pszMesh);
 
    if (m_pMesh != NULL)
    {
@@ -71,7 +73,7 @@ void cSceneMesh::Render()
       glPushMatrix();
       glMultMatrixf(GetTransform().m);
 
-      m_pMesh->Render();
+      m_pMesh->Render(AccessRenderDevice());
 
       tChildren::iterator iter;
       for (iter = m_children.begin(); iter != m_children.end(); iter++)
