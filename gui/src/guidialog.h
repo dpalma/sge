@@ -53,6 +53,15 @@ public:
    virtual tResult SetModal(bool bModal);
    virtual bool IsModal();
 
+   virtual tResult Accept();
+   virtual tResult Cancel();
+
+   virtual tResult GetOnOK(tGUIString * pOnOK) const;
+   virtual tResult SetOnOK(const char * pszOnOK);
+
+   virtual tResult GetOnCancel(tGUIString * pOnCancel) const;
+   virtual tResult SetOnCancel(const char * pszOnCancel);
+
 private:
    tGUIRect GetCaptionRectAbsolute();
 
@@ -62,6 +71,8 @@ private:
    tGUIString m_title;
    uint m_captionHeight;
    bool m_bModal;
+   tGUIString m_onOK;
+   tGUIString m_onCancel;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

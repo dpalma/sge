@@ -7,6 +7,7 @@
 #include "guielementbasetem.h"
 #include "guicontainerbasetem.h"
 #include "guielementtools.h"
+#include "scriptapi.h"
 
 #include "font.h"
 #include "color.h"
@@ -100,7 +101,7 @@ tResult cGUIDialogElement::OnEvent(IGUIEvent * pEvent)
          if (captionRect.PtInside(Round(mousePos.x), Round(mousePos.y)))
          {
             m_bDragging = true;
-            m_dragOffset = mousePos - tGUIPoint(captionRect.left, captionRect.top);
+            m_dragOffset = mousePos - GUIElementAbsolutePosition(this);
             pEvent->SetCancelBubble(true);
          }
          break;
@@ -109,9 +110,14 @@ tResult cGUIDialogElement::OnEvent(IGUIEvent * pEvent)
       case kGUIEventDragMove:
       {
          LocalMsg("Dialog drag move\n");
-         Assert(m_bDragging);
-         SetPosition(mousePos - m_dragOffset);
+         if (m_bDragging)
+         {
+            SetPosition(mousePos - m_dragOffset);
+         }
          pEvent->SetCancelBubble(true);
+         // prevent the drag-over event since drag is being used to implement 
+         // moving the dialog box
+         result = S_FALSE;
          break;
       }
 
@@ -130,6 +136,8 @@ tResult cGUIDialogElement::OnEvent(IGUIEvent * pEvent)
       if (keyCode == kEnter)
       {
          LocalMsg("ENTER KEY --> OK\n");
+         pEvent->SetCancelBubble(true);
+         Accept();
       }
    }
    else if (eventCode == kGUIEventKeyDown)
@@ -138,6 +146,29 @@ tResult cGUIDialogElement::OnEvent(IGUIEvent * pEvent)
       if (keyCode == kEscape)
       {
          LocalMsg("ESC KEY --> Cancel\n");
+         pEvent->SetCancelBubble(true);
+         Cancel();
+      }
+   }
+   else if (eventCode == kGUIEventClick)
+   {
+      cAutoIPtr<IGUIElement> pSrcElement;
+      if (pEvent->GetSourceElement(&pSrcElement) == S_OK)
+      {
+         cAutoIPtr<IGUIButtonElement> pButtonElement;
+         if (pSrcElement->QueryInterface(IID_IGUIButtonElement, (void**)&pButtonElement) == S_OK)
+         {
+            if (stricmp(pButtonElement->GetId(), "ok") == 0)
+            {
+               pEvent->SetCancelBubble(true);
+               Accept();
+            }
+            else if (stricmp(pButtonElement->GetId(), "cancel") == 0)
+            {
+               pEvent->SetCancelBubble(true);
+               Cancel();
+            }
+         }
       }
    }
 
@@ -242,6 +273,80 @@ bool cGUIDialogElement::IsModal()
 
 ///////////////////////////////////////
 
+tResult cGUIDialogElement::Accept()
+{
+   tGUIString onOK;
+   if (GetOnOK(&onOK) == S_OK)
+   {
+      UseGlobal(ScriptInterpreter);
+      pScriptInterpreter->ExecString(onOK.c_str());
+   }
+   UseGlobal(GUIContext);
+   pGUIContext->RemoveElement(this);
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIDialogElement::Cancel()
+{
+   tGUIString onCancel;
+   if (GetOnCancel(&onCancel) == S_OK)
+   {
+      UseGlobal(ScriptInterpreter);
+      pScriptInterpreter->ExecString(onCancel.c_str());
+   }
+   UseGlobal(GUIContext);
+   pGUIContext->RemoveElement(this);
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIDialogElement::GetOnOK(tGUIString * pOnOK) const
+{
+   if (pOnOK == NULL)
+      return E_POINTER;
+   if (m_onOK.empty())
+      return S_FALSE;
+   *pOnOK = m_onOK;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIDialogElement::SetOnOK(const char * pszOnOK)
+{
+   if (pszOnOK == NULL)
+      return E_POINTER;
+   m_onOK = pszOnOK;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIDialogElement::GetOnCancel(tGUIString * pOnCancel) const
+{
+   if (pOnCancel == NULL)
+      return E_POINTER;
+   if (m_onCancel.empty())
+      return S_FALSE;
+   *pOnCancel = m_onCancel;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIDialogElement::SetOnCancel(const char * pszOnCancel)
+{
+   if (pszOnCancel == NULL)
+      return E_POINTER;
+   m_onCancel = pszOnCancel;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
 tGUIRect cGUIDialogElement::GetCaptionRectAbsolute()
 {
    uint captionHeight;
@@ -324,6 +429,16 @@ tResult cGUIDialogElementFactory::CreateElement(const TiXmlElement * pXmlElement
             if ((pszValue = pXmlElement->Attribute("title")) != NULL)
             {
                pDialog->SetTitle(pszValue);
+            }
+
+            if ((pszValue = pXmlElement->Attribute("onok")) != NULL)
+            {
+               pDialog->SetOnOK(pszValue);
+            }
+
+            if ((pszValue = pXmlElement->Attribute("oncancel")) != NULL)
+            {
+               pDialog->SetOnCancel(pszValue);
             }
 
             bool bIsModal;

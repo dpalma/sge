@@ -56,13 +56,23 @@ class TiXmlElement;
 
 interface IGUIElement : IUnknown
 {
+   /// @return The semi-unique identifier assigned to this element
    virtual const char * GetId() const = 0;
    virtual void SetId(const char * pszId) = 0;
 
+   /// @return A boolean value representing whether the element presently has input focus
    virtual bool HasFocus() const = 0;
+   /// @brief Called by the GUI system to tell the element that it has input 
+   /// focus and can render an indicator of that if desired
+   /// @internal
+   /// @remarks Calling this function will not actually obtain input focus.
    virtual void SetFocus(bool bFocus) = 0;
 
+   /// @return A boolean value representing whether the mouse is presently over the element
    virtual bool IsMouseOver() const = 0;
+   /// @brief Called by the GUI system to tell the element that the mouse is 
+   /// presently over it
+   /// @internal
    virtual void SetMouseOver(bool bMouseOver) = 0;
 
    virtual bool IsVisible() const = 0;
@@ -74,11 +84,12 @@ interface IGUIElement : IUnknown
    virtual tResult GetParent(IGUIElement * * ppParent) = 0;
    virtual tResult SetParent(IGUIElement * pParent) = 0;
 
-   /// @return The element's position relative to it's parent element.
+   /// @return The element's position relative to it's parent element
    /// @remarks Use GUIElementAbsolutePosition to calculate the element's 
    /// position in screen coordinates.
    /// @see GUIElementAbsolutePosition
    virtual tGUIPoint GetPosition() const = 0;
+   /// @internal
    /// @remarks Element positions are set by the GUI system using parameters 
    /// from the style along with context information from the parent 
    /// element, if any. Use caution when calling SetPosition directly.
@@ -91,7 +102,14 @@ interface IGUIElement : IUnknown
 
    virtual tResult OnEvent(IGUIEvent * pEvent) = 0;
 
+   /// @brief The renderer "class" names the type of GUI element renderer object
+   /// that will be instantiated for this element by default.
+   /// @return The name of the default renderer for this type of GUI element
+   /// @remarks Override the default renderer by instantiating an alternative
+   /// one and using SetRenderer to replace the default.
+   /// @see IGUIElementRenderer
    virtual tResult GetRendererClass(tGUIString * pRendererClass) = 0;
+
    virtual tResult GetRenderer(IGUIElementRenderer * * ppRenderer) = 0;
    virtual tResult SetRenderer(IGUIElementRenderer * pRenderer) = 0;
 
@@ -368,6 +386,17 @@ interface IGUIDialogElement : IGUIContainerElement
 
    virtual tResult SetModal(bool bModal) = 0;
    virtual bool IsModal() = 0;
+
+   /// The programmatic equivalent of clicking the OK button or pressing Enter
+   virtual tResult Accept() = 0;
+   /// The programmatic equivalent of clicking the Cancel button or pressing Esc
+   virtual tResult Cancel() = 0;
+
+   virtual tResult GetOnOK(tGUIString * pOnOK) const = 0;
+   virtual tResult SetOnOK(const char * pszOnOK) = 0;
+
+   virtual tResult GetOnCancel(tGUIString * pOnCancel) const = 0;
+   virtual tResult SetOnCancel(const char * pszOnCancel) = 0;
 };
 
 

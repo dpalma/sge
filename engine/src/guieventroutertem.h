@@ -4,11 +4,17 @@
 #ifndef INCLUDED_GUIEVENTROUTERTEM_H
 #define INCLUDED_GUIEVENTROUTERTEM_H
 
+/// @file guieventroutertem.h
+/// Contains the member function implementations of the cGUIEventRouter class.
+/// This file is intended to be included only by cpp files, not other headers.
+
 #include "guiapi.h"
 
 #include "guielementenum.h"
 
 #include "inputapi.h"
+
+#include "techtime.h"
 
 #include <algorithm>
 
@@ -17,6 +23,24 @@
 #ifdef _MSC_VER
 #pragma once
 #endif
+
+///////////////////////////////////////////////////////////////////////////////
+
+class cSameAs
+{
+public:
+   cSameAs(IUnknown * pUnknown) : m_pUnknown(CTAddRef(pUnknown))
+   {
+   }
+
+   bool operator()(IUnknown * pUnknown2)
+   {
+      return CTIsSameObject(m_pUnknown, pUnknown2);
+   }
+
+private:
+   cAutoIPtr<IUnknown> m_pUnknown;
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -144,6 +168,8 @@ tResult cGUIEventRouter<INTRFC>::AddElement(IGUIElement * pElement)
             Assert(!"ERROR: GUI element should not be in dialog list if not in element list!");
          }
       }
+      AssertMsg(std::find_if(m_dialogs.begin(), m_dialogs.end(), cSameAs(pElement)) == m_dialogs.end(),
+         "ERROR: GUI element should not be in dialog list if not in element list!");
 #endif
       m_dialogs.push_back(CTAddRef(pDialog));
    }
@@ -169,9 +195,10 @@ tResult cGUIEventRouter<INTRFC>::RemoveElement(IGUIElement * pElement)
    {
       if (CTIsSameObject(*iter, pElement))
       {
+         (*iter)->Release();
          m_elements.erase(iter);
-         pElement->Release();
          result = S_OK;
+         break;
       }
    }
 
@@ -184,12 +211,13 @@ tResult cGUIEventRouter<INTRFC>::RemoveElement(IGUIElement * pElement)
       {
          if (CTIsSameObject(*dIter, pDialog))
          {
-            m_dialogs.erase(dIter);
             (*dIter)->Release();
+            m_dialogs.erase(dIter);
+            break;
          }
       }
-
    }
+
    return result;
 }
 
@@ -420,11 +448,11 @@ bool cGUIEventRouter<INTRFC>::GetActiveModalDialog(IGUIDialogElement * * ppModal
       if ((*iter)->IsModal())
       {
          *ppModalDialog = CTAddRef(*iter);
-         return S_OK;
+         return true;
       }
    }
 
-   return S_FALSE;
+   return false;
 }
 
 ///////////////////////////////////////
@@ -491,91 +519,35 @@ bool cGUIEventRouter<INTRFC>::HandleInputEvent(const sInputEvent * pInputEvent)
    cAutoIPtr<IGUIElement> pDrag;
    if (GetDrag(&pDrag) == S_OK)
    {
-      if (eventCode == kGUIEventMouseMove)
-      {
-         DoMouseEnterExit(pInputEvent, pMouseOver, pDrag);
-
-         // Send drag move to dragging element
-         cAutoIPtr<IGUIEvent> pDragMoveEvent;
-         if (GUIEventCreate(kGUIEventDragMove, pInputEvent->point, 
-            pInputEvent->key, pDrag, true, &pDragMoveEvent) == S_OK)
-         {
-            if (!BubbleEvent(pDragMoveEvent))
-            {
-               // Send drag over to moused-over element
-               if (!!pMouseOver)
-               {
-                  cAutoIPtr<IGUIEvent> pDragOverEvent;
-                  if (GUIEventCreate(kGUIEventDragOver, pInputEvent->point, 
-                     pInputEvent->key, pMouseOver, true, &pDragOverEvent) == S_OK)
-                  {
-                     return BubbleEvent(pDragOverEvent);
-                  }
-               }
-            }
-         }
-      }
-      else if (eventCode == kGUIEventMouseUp)
-      {
-         SetDrag(NULL);
-
-         cAutoIPtr<IGUIEvent> pDragEndEvent;
-         if (GUIEventCreate(kGUIEventDragEnd, pInputEvent->point, 
-            pInputEvent->key, pDrag, true, &pDragEndEvent) == S_OK)
-         {
-            BubbleEvent(pDragEndEvent);
-         }
-
-         if (!!pMouseOver)
-         {
-            // If moused-over same as dragging element
-            if (CTIsSameObject(pMouseOver, pDrag))
-            {
-               // Send click to moused-over/dragging element
-               // TODO: Doing this here, the click event will occur before the mouse up event
-               cAutoIPtr<IGUIEvent> pClickEvent;
-               if (GUIEventCreate(kGUIEventClick, pInputEvent->point, 
-                  pInputEvent->key, pMouseOver, true, &pClickEvent) == S_OK)
-               {
-                  return BubbleEvent(pClickEvent);
-               }
-            }
-            else
-            {
-               // Send drop to moused-over element
-               cAutoIPtr<IGUIEvent> pDropEvent;
-               if (GUIEventCreate(kGUIEventDrop, pInputEvent->point, 
-                  pInputEvent->key, pMouseOver, true, &pDropEvent) == S_OK)
-               {
-                  return BubbleEvent(pDropEvent);
-               }
-            }
-         }
-      }
-      else if (eventCode == kGUIEventKeyDown)
-      {
-         // If key is escape stop dragging
-         if (pInputEvent->key == kEscape)
-         {
-            SetDrag(NULL);
-            cAutoIPtr<IGUIEvent> pDragEndEvent;
-
-            if (GUIEventCreate(kGUIEventDragEnd, pInputEvent->point, 
-               pInputEvent->key, pDrag, true, &pDragEndEvent) == S_OK)
-            {
-               BubbleEvent(pDragEndEvent);
-            }
-
-            return true;
-         }
-      }
+      DoDragDrop(pInputEvent, eventCode, pMouseOver, pDrag);
    }
 
-   // If have an active modal dialog
+   cAutoIPtr<IGUIElement> pFocus;
+   GetFocus(&pFocus);
+
+   // If a modal dialog is active, restrict input to the dialog and its descendants
    cAutoIPtr<IGUIDialogElement> pModalDialog;
    if (GetActiveModalDialog(&pModalDialog))
    {
-      // TODO
+      if (KeyIsMouse(pInputEvent->key))
+      {
+         if (!!pMouseOver && !CTIsSameObject(pModalDialog, pMouseOver) && !IsDescendant(pModalDialog, pMouseOver))
+         {
+            SafeRelease(pMouseOver);
+         }
+      }
+      else
+      {
+         if (!!pFocus && !CTIsSameObject(pModalDialog, pFocus) && !IsDescendant(pModalDialog, pFocus))
+         {
+            SafeRelease(pFocus);
+         }
+
+         if (!pFocus)
+         {
+            pFocus = CTAddRef(pModalDialog);
+         }
+      }
    }
 
    if (KeyIsMouse(pInputEvent->key) && !!pMouseOver)
@@ -607,19 +579,112 @@ bool cGUIEventRouter<INTRFC>::HandleInputEvent(const sInputEvent * pInputEvent)
    }
    else
    {
-      cAutoIPtr<IGUIElement> pFocus;
-      if (GetFocus(&pFocus) == S_OK)
+      if (!!pFocus)
       {
          cAutoIPtr<IGUIEvent> pEvent;
          if (GUIEventCreate(eventCode, pInputEvent->point, 
             pInputEvent->key, pFocus, true, &pEvent) == S_OK)
          {
-            return BubbleEvent(pEvent);
+            BubbleEvent(pEvent);
          }
+      }
+
+      if (!!pModalDialog)
+      {
+         bEatInputEvent = true;
       }
    }
 
    return bEatInputEvent;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+void cGUIEventRouter<INTRFC>::DoDragDrop(const sInputEvent * pInputEvent, 
+                                         tGUIEventCode eventCode, 
+                                         IGUIElement * pMouseOver, 
+                                         IGUIElement * pDrag)
+{
+   Assert(pInputEvent != NULL);
+   Assert(pDrag != NULL);
+
+   if (eventCode == kGUIEventMouseMove)
+   {
+      DoMouseEnterExit(pInputEvent, pMouseOver, pDrag);
+
+      // Send drag move to dragging element
+      cAutoIPtr<IGUIEvent> pDragMoveEvent;
+      if (GUIEventCreate(kGUIEventDragMove, pInputEvent->point, 
+         pInputEvent->key, pDrag, true, &pDragMoveEvent) == S_OK)
+      {
+         if (!BubbleEvent(pDragMoveEvent))
+         {
+            // Send drag over to moused-over element
+            if (!!pMouseOver)
+            {
+               cAutoIPtr<IGUIEvent> pDragOverEvent;
+               if (GUIEventCreate(kGUIEventDragOver, pInputEvent->point, 
+                  pInputEvent->key, pMouseOver, true, &pDragOverEvent) == S_OK)
+               {
+                  BubbleEvent(pDragOverEvent);
+               }
+            }
+         }
+      }
+   }
+   else if (eventCode == kGUIEventMouseUp)
+   {
+      SetDrag(NULL);
+
+      cAutoIPtr<IGUIEvent> pDragEndEvent;
+      if (GUIEventCreate(kGUIEventDragEnd, pInputEvent->point, 
+         pInputEvent->key, pDrag, true, &pDragEndEvent) == S_OK)
+      {
+         BubbleEvent(pDragEndEvent);
+      }
+
+      if (!!pMouseOver)
+      {
+         // If moused-over same as dragging element
+         if (CTIsSameObject(pMouseOver, pDrag))
+         {
+            // Send click to moused-over/dragging element
+            // TODO: Doing this here, the click event will occur before the mouse up event
+            cAutoIPtr<IGUIEvent> pClickEvent;
+            if (GUIEventCreate(kGUIEventClick, pInputEvent->point, 
+               pInputEvent->key, pMouseOver, true, &pClickEvent) == S_OK)
+            {
+               BubbleEvent(pClickEvent);
+            }
+         }
+         else
+         {
+            // Send drop to moused-over element
+            cAutoIPtr<IGUIEvent> pDropEvent;
+            if (GUIEventCreate(kGUIEventDrop, pInputEvent->point, 
+               pInputEvent->key, pMouseOver, true, &pDropEvent) == S_OK)
+            {
+               BubbleEvent(pDropEvent);
+            }
+         }
+      }
+   }
+   else if (eventCode == kGUIEventKeyDown)
+   {
+      // If key is escape stop dragging
+      if (pInputEvent->key == kEscape)
+      {
+         SetDrag(NULL);
+         cAutoIPtr<IGUIEvent> pDragEndEvent;
+
+         if (GUIEventCreate(kGUIEventDragEnd, pInputEvent->point, 
+            pInputEvent->key, pDrag, true, &pDragEndEvent) == S_OK)
+         {
+            BubbleEvent(pDragEndEvent);
+         }
+      }
+   }
 }
 
 ///////////////////////////////////////

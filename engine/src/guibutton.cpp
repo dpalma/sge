@@ -76,6 +76,9 @@ tResult cGUIButtonElement::OnEvent(IGUIEvent * pEvent)
    else if (eventCode == kGUIEventDragMove)
    {
       Verify(pEvent->SetCancelBubble(true) == S_OK);
+      // prevent the drag-over event since drag is being used to implement 
+      // the "arming" of the button
+      result = S_FALSE;
       LocalMsg("Button drag move\n");
    }
    else if (eventCode == kGUIEventClick)
@@ -85,9 +88,9 @@ tResult cGUIButtonElement::OnEvent(IGUIEvent * pEvent)
       tGUIString onClick;
       if (GetOnClick(&onClick) == S_OK)
       {
+         Verify(pEvent->SetCancelBubble(true) == S_OK);
          UseGlobal(ScriptInterpreter);
          pScriptInterpreter->ExecString(onClick.c_str());
-         result = S_FALSE;
       }
    }
 

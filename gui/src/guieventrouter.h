@@ -86,6 +86,7 @@ protected:
 
    bool GetActiveModalDialog(IGUIDialogElement * * ppModalDialog);
 
+   void DoDragDrop(const sInputEvent * pInputEvent, tGUIEventCode eventCode, IGUIElement * pMouseOver, IGUIElement * pDrag);
    void DoMouseEnterExit(const sInputEvent * pInputEvent, IGUIElement * pMouseOver, IGUIElement * pRestrictTo);
 
    bool HandleInputEvent(const sInputEvent * pInputEvent);

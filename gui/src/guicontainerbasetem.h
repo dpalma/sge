@@ -32,7 +32,14 @@ cGUIContainerBase<INTRFC>::cGUIContainerBase()
 template <typename INTRFC>
 cGUIContainerBase<INTRFC>::~cGUIContainerBase()
 {
-   std::for_each(m_children.begin(), m_children.end(), CTInterfaceMethod(&IGUIElement::Release));
+   // Since the container has been destroyed, set the parent of all children
+   // to NULL as well as release references
+   tGUIElementList::iterator iter;
+   for (iter = m_children.begin(); iter != m_children.end(); iter++)
+   {
+      (*iter)->SetParent(NULL);
+      (*iter)->Release();
+   }
    m_children.clear();
 
    delete m_pInsets;
