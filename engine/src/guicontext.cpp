@@ -4,8 +4,11 @@
 #include "stdhdr.h"
 
 #include "guicontext.h"
+#include "guievent.h"
 
 #include "sceneapi.h"
+
+#include "render.h"
 
 #include "keys.h"
 #include "resmgr.h"
@@ -52,6 +55,9 @@ tResult cGUIContext::Init()
 
 tResult cGUIContext::Term()
 {
+   SafeRelease(m_pFocus);
+   SafeRelease(m_pCapture);
+   SafeRelease(m_pMouseOver);
    std::for_each(m_elements.begin(), m_elements.end(), CTInterfaceMethodRef(&IGUIElement::Release));
    m_elements.clear();
    return S_OK;
@@ -75,28 +81,48 @@ tResult cGUIContext::RemoveEventListener(IGUIEventListener * pListener)
 
 tResult cGUIContext::GetFocus(IGUIElement * * ppElement)
 {
-   return E_NOTIMPL;
+   return m_pFocus.GetPointer(ppElement);
 }
 
 ///////////////////////////////////////
 
 tResult cGUIContext::SetFocus(IGUIElement * pElement)
 {
-   return E_NOTIMPL;
+   SafeRelease(m_pFocus);
+   m_pFocus = CTAddRef(pElement);
+   return S_OK;
 }
 
 ///////////////////////////////////////
 
 tResult cGUIContext::GetCapture(IGUIElement * * ppElement)
 {
-   return E_NOTIMPL;
+   return m_pCapture.GetPointer(ppElement);
 }
 
 ///////////////////////////////////////
 
 tResult cGUIContext::SetCapture(IGUIElement * pElement)
 {
-   return E_NOTIMPL;
+   SafeRelease(m_pCapture);
+   m_pCapture = CTAddRef(pElement);
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIContext::GetMouseOver(IGUIElement * * ppElement)
+{
+   return m_pMouseOver.GetPointer(ppElement);
+}
+
+///////////////////////////////////////
+
+tResult cGUIContext::SetMouseOver(IGUIElement * pElement)
+{
+   SafeRelease(m_pMouseOver);
+   m_pMouseOver = CTAddRef(pElement);
+   return S_OK;
 }
 
 ///////////////////////////////////////
@@ -167,13 +193,142 @@ tResult cGUIContext::LoadFromString(const char * psz)
 
 ///////////////////////////////////////
 
-bool cGUIContext::HandleInputEvent(const sInputEvent * pEvent)
+tResult cGUIContext::RenderGUI(IRenderDevice * pRenderDevice)
 {
-   if (KeyIsMouse(pEvent->key))
+   Assert(pRenderDevice != NULL);
+
+   tResult result = S_OK;
+
+   pRenderDevice->SetRenderState(kRS_EnableDepthBuffer, FALSE);
+
+   tGUIElementList::iterator iter;
+   for (iter = m_elements.begin(); iter != m_elements.end(); iter++)
    {
+      if ((*iter)->IsVisible())
+      {
+         cAutoIPtr<IGUIElementRenderer> pRenderer;
+         if ((*iter)->GetRenderer(&pRenderer) == S_OK)
+         {
+            if ((result = pRenderer->Render(*iter, pRenderDevice)) != S_OK)
+            {
+               DebugMsg("WARNING: Error during GUI rendering\n");
+               break;
+            }
+         }
+      }
+   }
+
+   pRenderDevice->SetRenderState(kRS_EnableDepthBuffer, TRUE);
+
+   return result;
+}
+
+///////////////////////////////////////
+
+bool cGUIContext::BubbleEvent(IGUIEvent * pEvent)
+{
+   Assert(pEvent != NULL);
+
+   cAutoIPtr<IGUIElement> pDispatchTo;
+   if (pEvent->GetSourceElement(&pDispatchTo) == S_OK)
+   {
+      while (!!pDispatchTo)
+      {
+         if (pDispatchTo->OnEvent(pEvent))
+         {
+            return true;
+         }
+
+         if (pDispatchTo->GetParent(&pDispatchTo) != S_OK)
+         {
+            SafeRelease(pDispatchTo);
+         }
+      }
+   }
+
+   return false;
+}
+
+///////////////////////////////////////
+
+bool cGUIContext::HandleInputEvent(const sInputEvent * pInputEvent)
+{
+   tGUIEventCode eventCode = GUIEventCode(pInputEvent->key, pInputEvent->down);
+   if (eventCode == kGUIEventNone)
+   {
+      DebugMsg("WARNING: Invalid event code\n");
+      return false;
+   }
+
+   if (KeyIsMouse(pInputEvent->key))
+   {
+      cAutoIPtr<IGUIElement> pElement;
+
+      tGUIElementList::iterator iter;
+      for (iter = m_elements.begin(); iter != m_elements.end(); iter++)
+      {
+         if ((*iter)->Contains(pInputEvent->point))
+         {
+            pElement = CTAddRef(*iter);
+            break;
+         }
+      }
+
+      if (!!pElement)
+      {
+         if (eventCode == kGUIEventMouseMove)
+         {
+            if (!CTIsSameObject(pElement, AccessMouseOver()))
+            {
+               cAutoIPtr<IGUIElement> pMouseOver;
+               if (GetMouseOver(&pMouseOver) == S_OK)
+               {
+                  cAutoIPtr<IGUIEvent> pMouseLeaveEvent;
+                  if (GUIEventCreate(kGUIEventMouseLeave, pInputEvent->point, pInputEvent->key, 
+                     AccessMouseOver(), &pMouseLeaveEvent) == S_OK)
+                  {
+                     BubbleEvent(pMouseLeaveEvent);
+                  }
+               }
+
+               SetMouseOver(pElement);
+               eventCode = kGUIEventMouseEnter;
+            }
+         }
+         else if (eventCode == kGUIEventMouseDown)
+         {
+            SetFocus(pElement);
+         }
+         else if (eventCode == kGUIEventMouseUp)
+         {
+            if (CTIsSameObject(pElement, AccessFocus()))
+            {
+               cAutoIPtr<IGUIEvent> pClickEvent;
+               if (GUIEventCreate(kGUIEventClick, pInputEvent->point, pInputEvent->key, pElement, &pClickEvent) == S_OK)
+               {
+                  BubbleEvent(pClickEvent);
+               }
+            }
+         }
+
+         cAutoIPtr<IGUIEvent> pEvent;
+         if (GUIEventCreate(eventCode, pInputEvent->point, pInputEvent->key, pElement, &pEvent) == S_OK)
+         {
+            return BubbleEvent(pEvent);
+         }
+      }
    }
    else
    {
+      cAutoIPtr<IGUIElement> pElement;
+      if (GetFocus(&pElement) == S_OK)
+      {
+         cAutoIPtr<IGUIEvent> pEvent;
+         if (GUIEventCreate(eventCode, pInputEvent->point, pInputEvent->key, pElement, &pEvent) == S_OK)
+         {
+            return BubbleEvent(pEvent);
+         }
+      }
    }
 
    return false;

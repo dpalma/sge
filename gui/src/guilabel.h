@@ -10,6 +10,8 @@
 #pragma once
 #endif
 
+F_DECLARE_INTERFACE(IRenderFont);
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUILabelElement
@@ -44,6 +46,12 @@ public:
 
    virtual bool Contains(const tGUIPoint & point);
 
+   virtual tResult OnEvent(IGUIEvent * pEvent);
+
+   virtual tResult GetRendererClass(tGUIString * pRendererClass);
+   virtual tResult GetRenderer(IGUIElementRenderer * * ppRenderer);
+   virtual tResult SetRenderer(IGUIElementRenderer * pRenderer);
+
    virtual const char * GetText() const;
    virtual void SetText(const char * pszText);
 
@@ -54,6 +62,7 @@ private:
    cAutoIPtr<IGUIElement> m_pParent;
    tGUIPoint m_position;
    tGUISize m_size;
+   cAutoIPtr<IGUIElementRenderer> m_pRenderer;
    tGUIString m_text;
 };
 
@@ -66,6 +75,36 @@ class cGUILabelElementFactory : public cComObject<IMPLEMENTS(IGUIElementFactory)
 {
 public:
    virtual tResult CreateElement(const TiXmlElement * pXmlElement, IGUIElement * * ppElement);
+};
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cGUILabelRenderer
+//
+
+class cGUILabelRenderer : public cComObject<IMPLEMENTS(IGUIElementRenderer)>
+{
+public:
+   cGUILabelRenderer();
+   ~cGUILabelRenderer();
+
+   virtual tResult Render(IGUIElement * pElement, IRenderDevice * pRenderDevice);
+
+   virtual tGUISize GetPreferredSize(IGUIElement * pElement);
+
+private:
+   cAutoIPtr<IRenderFont> m_pFont;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cGUILabelRendererFactory
+//
+
+class cGUILabelRendererFactory : public cComObject<IMPLEMENTS(IGUIElementRendererFactory)>
+{
+public:
+   virtual tResult CreateRenderer(IGUIElement * pElement, IGUIElementRenderer * * ppRenderer);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -203,6 +203,10 @@ SOURCE=.\guicontext.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\guievent.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\guifactory.cpp
 # End Source File
 # Begin Source File
@@ -298,6 +302,10 @@ SOURCE=.\guibutton.h
 # Begin Source File
 
 SOURCE=.\guicontext.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\guievent.h
 # End Source File
 # Begin Source File
 

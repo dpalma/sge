@@ -531,6 +531,9 @@ void MainFrame()
    UseGlobal(Scene);
    pScene->Render(g_pRenderDevice);
 
+   UseGlobal(GUIContext);
+   pGUIContext->RenderGUI(g_pRenderDevice);
+
    g_pRenderDevice->EndScene();
    g_pWindow->SwapBuffers();
 }

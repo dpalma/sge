@@ -44,6 +44,12 @@ public:
 
    virtual bool Contains(const tGUIPoint & point);
 
+   virtual tResult OnEvent(IGUIEvent * pEvent);
+
+   virtual tResult GetRendererClass(tGUIString * pRendererClass);
+   virtual tResult GetRenderer(IGUIElementRenderer * * ppRenderer);
+   virtual tResult SetRenderer(IGUIElementRenderer * pRenderer);
+
    virtual bool IsArmed() const;
    virtual void SetArmed(bool bArmed);
 
@@ -61,10 +67,12 @@ private:
    cAutoIPtr<IGUIElement> m_pParent;
    tGUIPoint m_position;
    tGUISize m_size;
+   cAutoIPtr<IGUIElementRenderer> m_pRenderer;
    bool m_bArmed;
    bool m_bMouseOver;
    tGUIString m_text;
 };
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //

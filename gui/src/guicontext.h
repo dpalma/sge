@@ -43,7 +43,17 @@ public:
    virtual tResult LoadFromResource(const char * psz);
    virtual tResult LoadFromString(const char * psz);
 
+   virtual tResult RenderGUI(IRenderDevice * pRenderDevice);
+
 private:
+   tResult GetMouseOver(IGUIElement * * ppElement);
+   tResult SetMouseOver(IGUIElement * pElement);
+
+   IGUIElement * AccessFocus();
+   IGUIElement * AccessCapture();
+   IGUIElement * AccessMouseOver();
+
+   bool BubbleEvent(IGUIEvent * pEvent);
    bool HandleInputEvent(const sInputEvent * pEvent);
 
    class cInputListener : public cComObject<IMPLEMENTS(IInputListener)>
@@ -56,7 +66,30 @@ private:
 
    typedef std::list<IGUIElement *> tGUIElementList;
    tGUIElementList m_elements;
+
+   cAutoIPtr<IGUIElement> m_pFocus, m_pCapture, m_pMouseOver;
 };
+
+///////////////////////////////////////
+
+inline IGUIElement * cGUIContext::AccessFocus()
+{
+   return m_pFocus;
+}
+
+///////////////////////////////////////
+
+inline IGUIElement * cGUIContext::AccessCapture()
+{
+   return m_pCapture;
+}
+
+///////////////////////////////////////
+
+inline IGUIElement * cGUIContext::AccessMouseOver()
+{
+   return m_pMouseOver;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 

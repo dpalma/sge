@@ -33,11 +33,23 @@ public:
    virtual tResult RegisterElementFactory(const char * pszType, IGUIElementFactory * pFactory);
    virtual tResult RevokeElementFactory(const char * pszType);
 
+   virtual tResult RegisterElementRendererFactory(const char * pszRenderer, IGUIElementRendererFactory * pFactory);
+   virtual tResult RevokeElementRendererFactory(const char * pszRenderer);
+
    friend tResult RegisterGUIElementFactory(const char * pszType, IGUIElementFactory * pFactory);
+   friend tResult RegisterGUIElementRendererFactory(const char * pszRenderer, IGUIElementRendererFactory * pFactory);
 
 private:
+   void CleanupElementFactories();
+   void CleanupRendererFactories();
+
    typedef std::map<cStr, IGUIElementFactory *> tGUIElementFactoryMap;
    tGUIElementFactoryMap m_elementFactoryMap;
+
+   typedef std::map<cStr, IGUIElementRendererFactory *> tGUIRendererFactoryMap;
+   tGUIRendererFactoryMap m_rendererFactoryMap;
+
+   static bool gm_bInitialized;
 
    struct sElementFactoryMapEntry
    {
@@ -46,7 +58,14 @@ private:
       struct sElementFactoryMapEntry * pNext;
    };
    static struct sElementFactoryMapEntry * gm_pElementFactoryMapEntries;
-   static bool gm_bInitialized;
+
+   struct sRendererFactoryMapEntry
+   {
+      char szRenderer[200];
+      IGUIElementRendererFactory * pFactory;
+      struct sRendererFactoryMapEntry * pNext;
+   };
+   static struct sRendererFactoryMapEntry * gm_pRendererFactoryMapEntries;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

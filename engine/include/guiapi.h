@@ -14,6 +14,9 @@
 
 F_DECLARE_INTERFACE(IGUIElement);
 F_DECLARE_INTERFACE(IGUIElementFactory);
+F_DECLARE_INTERFACE(IGUIElementRenderer);
+F_DECLARE_INTERFACE(IGUIElementRendererFactory);
+F_DECLARE_INTERFACE(IGUIEvent);
 F_DECLARE_INTERFACE(IGUIContainerElement);
 F_DECLARE_INTERFACE(IGUIPanelElement);
 F_DECLARE_INTERFACE(IGUIButtonElement);
@@ -61,6 +64,12 @@ interface IGUIElement : IUnknown
    virtual void SetSize(const tGUISize & size) = 0;
 
    virtual bool Contains(const tGUIPoint & point) = 0;
+
+   virtual tResult OnEvent(IGUIEvent * pEvent) = 0;
+
+   virtual tResult GetRendererClass(tGUIString * pRendererClass) = 0;
+   virtual tResult GetRenderer(IGUIElementRenderer * * ppRenderer) = 0;
+   virtual tResult SetRenderer(IGUIElementRenderer * pRenderer) = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -72,6 +81,64 @@ interface IGUIElementFactory : IUnknown
 {
    virtual tResult CreateElement(const TiXmlElement * pXmlElement, IGUIElement * * ppElement) = 0;
 };
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IGUIElementRenderer
+//
+
+interface IGUIElementRenderer : IUnknown
+{
+   virtual tResult Render(IGUIElement * pElement, IRenderDevice * pRenderDevice) = 0;
+
+   virtual tGUISize GetPreferredSize(IGUIElement * pElement) = 0;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IGUIElementRendererFactory
+//
+
+interface IGUIElementRendererFactory : IUnknown
+{
+   virtual tResult CreateRenderer(IGUIElement * pElement, IGUIElementRenderer * * ppRenderer) = 0;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IGUIEvent
+//
+
+enum eGUIEventCode
+{
+   kGUIEventNone,
+   kGUIEventFocus,
+   kGUIEventBlur,
+   kGUIEventDestroy,
+   kGUIEventMouseMove,
+   kGUIEventMouseEnter,
+   kGUIEventMouseLeave,
+   kGUIEventMouseUp,
+   kGUIEventMouseDown,
+   kGUIEventMouseWheelUp,
+   kGUIEventMouseWheelDown,
+   kGUIEventKeyUp,
+   kGUIEventKeyDown,
+   kGUIEventClick,
+};
+
+typedef enum eGUIEventCode tGUIEventCode;
+
+interface IGUIEvent : IUnknown
+{
+   virtual tResult GetEventCode(tGUIEventCode * pEventCode) = 0;
+   virtual tResult GetMousePosition(tGUIPoint * pMousePos) = 0;
+   virtual tResult GetKeyCode(long * pKeyCode) = 0;
+   virtual tResult GetSourceElement(IGUIElement * * ppElement) = 0;
+};
+
+tResult GUIEventCreate(tGUIEventCode eventCode, tGUIPoint mousePos, long keyCode, 
+                       IGUIElement * pSource, IGUIEvent * * ppEvent);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -145,6 +212,7 @@ interface IGUIEventRouter : IUnknown
 
 interface IGUIEventListener : IUnknown
 {
+   virtual tResult OnEvent(IGUIEvent * pEvent) = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -158,6 +226,9 @@ interface IGUIFactory : IUnknown
 
    virtual tResult RegisterElementFactory(const char * pszType, IGUIElementFactory * pFactory) = 0;
    virtual tResult RevokeElementFactory(const char * pszType) = 0;
+
+   virtual tResult RegisterElementRendererFactory(const char * pszRenderer, IGUIElementRendererFactory * pFactory) = 0;
+   virtual tResult RevokeElementRendererFactory(const char * pszRenderer) = 0;
 };
 
 ///////////////////////////////////////
@@ -178,7 +249,23 @@ struct sAutoRegisterGUIElementFactory
 };
 
 #define AUTOREGISTER_GUIELEMENTFACTORY(type, factoryClass) \
-   static sAutoRegisterGUIElementFactory g_auto##type(#type, static_cast<IGUIElementFactory *>(new (factoryClass)))
+   static sAutoRegisterGUIElementFactory g_auto##type##Element(#type, static_cast<IGUIElementFactory *>(new (factoryClass)))
+
+///////////////////////////////////////
+
+tResult RegisterGUIElementRendererFactory(const char * pszRenderer, IGUIElementRendererFactory * pFactory);
+
+struct sAutoRegisterGUIElementRendererFactory
+{
+   sAutoRegisterGUIElementRendererFactory(const char * pszRenderer, IGUIElementRendererFactory * pFactory)
+   {
+      RegisterGUIElementRendererFactory(pszRenderer, pFactory);
+      SafeRelease(pFactory);
+   }
+};
+
+#define AUTOREGISTER_GUIELEMENTRENDERERFACTORY(renderer, factoryClass) \
+   static sAutoRegisterGUIElementRendererFactory g_auto##renderer##Renderer(#renderer, static_cast<IGUIElementRendererFactory *>(new (factoryClass)))
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -189,6 +276,8 @@ interface IGUIContext : IGUIEventRouter
 {
    virtual tResult LoadFromResource(const char * psz) = 0;
    virtual tResult LoadFromString(const char * psz) = 0;
+
+   virtual tResult RenderGUI(IRenderDevice * pRenderDevice) = 0;
 };
 
 ///////////////////////////////////////

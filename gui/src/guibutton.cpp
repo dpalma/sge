@@ -144,6 +144,39 @@ bool cGUIButtonElement::Contains(const tGUIPoint & point)
 
 ///////////////////////////////////////
 
+tResult cGUIButtonElement::OnEvent(IGUIEvent * pEvent)
+{
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIButtonElement::GetRendererClass(tGUIString * pRendererClass)
+{
+   if (pRendererClass == NULL)
+      return E_POINTER;
+   *pRendererClass = "button";
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIButtonElement::GetRenderer(IGUIElementRenderer * * ppRenderer)
+{
+   return m_pRenderer.GetPointer(ppRenderer);
+}
+
+///////////////////////////////////////
+
+tResult cGUIButtonElement::SetRenderer(IGUIElementRenderer * pRenderer)
+{
+   SafeRelease(m_pRenderer);
+   m_pRenderer = CTAddRef(pRenderer);
+   return S_OK;
+}
+
+///////////////////////////////////////
+
 bool cGUIButtonElement::IsArmed() const
 {
    return m_bArmed;
