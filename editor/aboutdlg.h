@@ -34,7 +34,7 @@ public:
 // Implementation
 protected:
 	//{{AFX_MSG(CAboutDlg)
-		// No message handlers
+	virtual BOOL OnInitDialog();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

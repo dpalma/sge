@@ -118,6 +118,31 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
 	//{{AFX_MSG_MAP(CAboutDlg)
-		// No message handlers
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
+
+BOOL CAboutDlg::OnInitDialog() 
+{
+	CDialog::OnInitDialog();
+
+   CString creditString;
+   for (int i = 0; i < _countof(g_thirdPartyCredits); i++)
+   {
+      const cThirdPartyCredit & c = g_thirdPartyCredits[i];
+
+      CString s;
+      s += c.GetTitle();
+      s += ", ";
+      s += c.GetAuthor();
+      s += "\r\n";
+      s += c.GetUrl();
+      s += "\r\n\r\n";
+
+      creditString += s;
+   }
+
+   SetDlgItemText(IDC_CREDITS, creditString);
+	
+	return TRUE;  // return TRUE unless you set the focus to a control
+	              // EXCEPTION: OCX Property Pages should return FALSE
+}
