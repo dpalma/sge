@@ -5,6 +5,7 @@
 #define INCLUDED_CONFIG_H
 
 #include "configapi.h"
+
 #include <map>
 #include <string>
 
@@ -46,15 +47,12 @@ public:
 private:
    typedef std::basic_string<tChar> tString;
 
-   struct less_string_case_insensitive
+   struct sStringLessNoCase
    {
-      bool operator()(const tString lhs, const tString rhs) const
-      {
-         return (stricmp(lhs.c_str(), rhs.c_str()) < 0) ? true : false;
-      }
+      bool operator()(const tString lhs, const tString rhs) const;
    };
 
-   typedef std::map<tString, tString, less_string_case_insensitive> tMap;
+   typedef std::map<tString, tString, sStringLessNoCase> tMap;
    tMap m_vars;
 };
 

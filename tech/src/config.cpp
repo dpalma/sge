@@ -6,7 +6,7 @@
 #include "config.h"
 #include "str.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "dbgalloc.h" // must be last header
 
@@ -29,6 +29,15 @@ IConfig * g_pConfig = static_cast<IConfig *>(&g_config);
 //
 // CLASS: cConfig
 //
+
+///////////////////////////////////////
+
+bool cConfig::sStringLessNoCase::operator()(const tString lhs, const tString rhs) const
+{
+   return (stricmp(lhs.c_str(), rhs.c_str()) < 0) ? true : false;
+}
+
+///////////////////////////////////////
 
 cConfig::cConfig()
 {
