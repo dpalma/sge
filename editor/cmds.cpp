@@ -143,11 +143,11 @@ int LoadTiles(int argc, const cScriptVar * argv,
 
 ///////////////////////////////////////////////////////////////////////////////
 
-sScriptReg cmds[] =
+sScriptReg g_editorCmds[] =
 {
    { "LoadTiles", LoadTiles },
 };
 
-uint nCmds = _countof(cmds);
+uint g_nEditorCmds = _countof(g_editorCmds);
 
 ///////////////////////////////////////////////////////////////////////////////

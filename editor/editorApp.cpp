@@ -53,8 +53,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-extern sScriptReg cmds[];
-extern uint nCmds;
+extern sScriptReg g_editorCmds[];
+extern uint g_nEditorCmds;
 
 static const tChar g_szRegistryKey[] = _T("SGE");
 
@@ -246,7 +246,7 @@ BOOL cEditorApp::InitInstance()
       return FALSE;
    }
 
-   ScriptAddFunctions(cmds, nCmds);
+   ScriptAddFunctions(g_editorCmds, g_nEditorCmds);
 
    cFileSpec file(__argv[0]);
    file.SetPath(cFilePath());
