@@ -5,18 +5,13 @@
 
 #include "scenelayer.h"
 #include "ray.h"
+#include "frustum.h"
 #include "inputapi.h"
 
 #include "render.h"
 
 #include "matrix4.h"
 #include "connptimpl.h"
-
-// TODO: HACK
-#ifdef _WIN32
-#include <windows.h>
-#endif
-#include <GL/gl.h>
 
 #include <algorithm>
 #include <functional>
@@ -141,41 +136,6 @@ tResult cSceneLayer::RemoveInputListener(IInputListener * pListener)
 
 ///////////////////////////////////////
 
-class cRenderEntity
-{
-public:
-   cRenderEntity(IRenderDevice * pRenderDevice);
-
-   void operator()(ISceneEntity * pEntity);
-
-private:
-   cAutoIPtr<IRenderDevice> m_pRenderDevice;
-};
-
-cRenderEntity::cRenderEntity(IRenderDevice * pRenderDevice)
- : m_pRenderDevice(CTAddRef(pRenderDevice))
-{
-   Assert(m_pRenderDevice != NULL);
-}
-
-void cRenderEntity::operator()(ISceneEntity * pEntity)
-{
-   glPushMatrix();
-   glMultMatrixf(pEntity->GetWorldTransform().m);
-   pEntity->Render(m_pRenderDevice);
-   glPopMatrix();
-}
-
-///////////////////////////////////////
-
-tResult cSceneLayer::Render(IRenderDevice * pRenderDevice)
-{
-   std::for_each(m_entities.begin(), m_entities.end(), cRenderEntity(pRenderDevice));
-   return S_OK;
-}
-
-///////////////////////////////////////
-
 class cRayTest
 {
    void operator delete(void *);
@@ -219,6 +179,54 @@ tResult cSceneLayer::Query(const cRay & ray, tSceneEntityList * pEntities)
 {
    Assert(pEntities != NULL);
    std::for_each(m_entities.begin(), m_entities.end(), cRayTest(ray, pEntities));
+   return pEntities->empty() ? S_FALSE : S_OK;
+}
+
+///////////////////////////////////////
+
+class cFrustumCull
+{
+   void operator delete(void *);
+   const cFrustumCull & operator =(const cFrustumCull &);
+
+public:
+   cFrustumCull(const cFrustum & frustum, tSceneEntityList * pEntities);
+
+   void operator()(ISceneEntity * pEntity);
+
+private:
+   // this member can be a reference because this object is meant to
+   // be used as a temporary within the scope of a function invocation
+   const cFrustum & m_frustum; 
+   tSceneEntityList * m_pEntities;
+};
+
+///////////////////////////////////////
+
+cFrustumCull::cFrustumCull(const cFrustum & frustum, tSceneEntityList * pEntities)
+ : m_frustum(frustum),
+   m_pEntities(pEntities)
+{
+   Assert(pEntities != NULL);
+}
+
+///////////////////////////////////////
+
+void cFrustumCull::operator()(ISceneEntity * pEntity)
+{
+   if (m_frustum.SphereInFrustum(pEntity->GetWorldTranslation(), pEntity->GetBoundingRadius()))
+   {
+      pEntity->AddRef();
+      m_pEntities->push_back(pEntity);
+   }
+}
+
+///////////////////////////////////////
+
+tResult cSceneLayer::Cull(const cFrustum & frustum, tSceneEntityList * pEntities)
+{
+   Assert(pEntities != NULL);
+   std::for_each(m_entities.begin(), m_entities.end(), cFrustumCull(frustum, pEntities));
    return pEntities->empty() ? S_FALSE : S_OK;
 }
 

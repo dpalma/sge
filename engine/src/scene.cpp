@@ -4,10 +4,19 @@
 #include "stdhdr.h"
 
 #include "scene.h"
+#include "frustum.h"
 
 #include "render.h"
 
+#include "matrix4.h"
+
 #include <algorithm>
+
+// TODO: HACK
+#ifdef _WIN32
+#include <windows.h>
+#endif
+#include <GL/gl.h>
 
 #include "dbgalloc.h" // must be last header
 
@@ -131,8 +140,34 @@ tResult cScene::RemoveInputListener(eSceneLayer layer, IInputListener * pListene
 
 ///////////////////////////////////////
 
+class cRenderEntity
+{
+public:
+   cRenderEntity(IRenderDevice * pRenderDevice);
+
+   void operator()(ISceneEntity * pEntity);
+
+private:
+   cAutoIPtr<IRenderDevice> m_pRenderDevice;
+};
+
+cRenderEntity::cRenderEntity(IRenderDevice * pRenderDevice)
+ : m_pRenderDevice(CTAddRef(pRenderDevice))
+{
+   Assert(m_pRenderDevice != NULL);
+}
+
+void cRenderEntity::operator()(ISceneEntity * pEntity)
+{
+   glPushMatrix();
+   glMultMatrixf(pEntity->GetWorldTransform().m);
+   pEntity->Render(m_pRenderDevice);
+   glPopMatrix();
+}
+
 tResult cScene::Render(IRenderDevice * pRenderDevice)
 {
+   cFrustum frustum;
    for (int i = 0; i < _countof(m_layers); i++)
    {
       cAutoIPtr<ISceneCamera> pCamera;
@@ -140,10 +175,14 @@ tResult cScene::Render(IRenderDevice * pRenderDevice)
       {
          pRenderDevice->SetProjectionMatrix(pCamera->GetProjectionMatrix());
          pRenderDevice->SetViewMatrix(pCamera->GetViewMatrix());
+         frustum.ExtractPlanes(pCamera->GetViewProjectionMatrix());
       }
-      tResult result = m_layers[i].Render(pRenderDevice);
-      if (result != S_OK)
-         return result;
+      tSceneEntityList culledEntities;
+      if (m_layers[i].Cull(frustum, &culledEntities) == S_OK)
+      {
+         std::for_each(culledEntities.begin(), culledEntities.end(), cRenderEntity(pRenderDevice));
+         std::for_each(culledEntities.begin(), culledEntities.end(), CTInterfaceMethodRef(&::IUnknown::Release));
+      }
    }
    return S_OK;
 }

@@ -12,6 +12,8 @@
 #pragma once
 #endif
 
+class cFrustum;
+
 struct sInputEvent;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -39,9 +41,9 @@ public:
    tResult AddInputListener(IInputListener * pListener);
    tResult RemoveInputListener(IInputListener * pListener);
 
-   tResult Render(IRenderDevice * pRenderDevice);
-
    tResult Query(const cRay & ray, tSceneEntityList * pEntities);
+
+   tResult Cull(const cFrustum & frustum, tSceneEntityList * pEntities);
 
    bool HandleInputEvent(const sInputEvent * pEvent);
 
