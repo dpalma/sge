@@ -31,6 +31,7 @@
 #include "str.h"
 #include "globalobj.h"
 #include "vec2.h"
+#include "readwriteapi.h"
 
 #include <ctime>
 
@@ -349,6 +350,45 @@ static bool RunUnitTests()
 
 ///////////////////////////////////////////////////////////////////////////////
 
+static char * GetEntireContents(IReader * pReader)
+{
+   Assert(pReader != NULL);
+
+   pReader->Seek(0, kSO_End);
+   int length = pReader->Tell();
+   pReader->Seek(0, kSO_Set);
+
+   char * pszContents = new char[length + 1];
+
+   if (pReader->Read(pszContents, length) != S_OK)
+   {
+      delete [] pszContents;
+      return NULL;
+   }
+
+   pszContents[length] = 0;
+
+   return pszContents;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+static bool ScriptExecResource(const char * pszResource)
+{
+   UseGlobal(ResourceManager);
+   cAutoIPtr<IReader> pReader = pResourceManager->Find(pszResource);
+   if (!pReader)
+      return false;
+   const char * pszCode = GetEntireContents(pReader);
+   if (pszCode == NULL)
+      return false;
+   bool result = ScriptExecString(pszCode);
+   delete [] pszCode;
+   return result;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 static void RegisterGlobalObjects()
 {
    InputCreate();
@@ -408,8 +448,11 @@ bool MainInit(int argc, char * argv[])
 
    if (!ScriptExecFile(autoExecScript))
    {
-      DebugMsg1("Error parsing or executing %s\n", autoExecScript.c_str());
-      return false;
+      if (!ScriptExecResource(autoExecScript))
+      {
+         DebugMsg1("Error parsing or executing %s\n", autoExecScript.c_str());
+         return false;
+      }
    }
 
    g_fov = kDefaultFov;
