@@ -11,6 +11,7 @@
 #endif
 
 template <typename T> class cVec3;
+typedef cVec3<float> tVec3;
 template <typename T> class cVec4;
 
 #ifndef NO_DEFAULT_MATRIX4
@@ -147,18 +148,20 @@ cMatrix4<T> operator *(const cMatrix4<T> & a, const cMatrix4<T> & b)
 // @TODO: "sMatrix4" is the old name. Everybody should move to "tMatrix4".
 typedef cMatrix4<float> sMatrix4;
 
-TECH_API sMatrix4 * MatrixInvert(const sMatrix4 & m, sMatrix4 * pResult);
+TECH_API sMatrix4 * MatrixInvert(const sMatrix4 & m, tMatrix4 * pResult);
 
 ///////////////////////////////////////////////////////////////////////////////
 // 3D transformations
 
-TECH_API void MatrixTranslate(float x, float y, float z, sMatrix4 * pResult);
-TECH_API void MatrixRotateX(float theta, sMatrix4 * pResult);
-TECH_API void MatrixRotateY(float theta, sMatrix4 * pResult);
-TECH_API void MatrixRotateZ(float theta, sMatrix4 * pResult);
-TECH_API void MatrixPerspective(float fov, float aspect, float znear, float zfar, sMatrix4 * pResult);
+TECH_API void MatrixTranslate(float x, float y, float z, tMatrix4 * pResult);
+TECH_API void MatrixRotateX(float theta, tMatrix4 * pResult);
+TECH_API void MatrixRotateY(float theta, tMatrix4 * pResult);
+TECH_API void MatrixRotateZ(float theta, tMatrix4 * pResult);
+TECH_API void MatrixLookAt(const tVec3 & eye, const tVec3 & center, const tVec3 & up,
+                           tMatrix4 * pMatrix);
+TECH_API void MatrixPerspective(float fov, float aspect, float znear, float zfar, tMatrix4 * pResult);
 TECH_API void MatrixPerspective(double fov, double aspect, double znear, double zfar, cMatrix4<double> * pResult);
-TECH_API void MatrixOrtho(float left, float right, float bottom, float top, float znear, float zfar, sMatrix4 * pResult);
+TECH_API void MatrixOrtho(float left, float right, float bottom, float top, float znear, float zfar, tMatrix4 * pResult);
 
 ///////////////////////////////////////////////////////////////////////////////
 

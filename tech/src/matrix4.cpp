@@ -204,6 +204,61 @@ void MatrixRotateZ(float theta, sMatrix4 * pResult)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// Use the Gram-Schmidt method to determine an orthogonal vector 
+// to the plane defined by v1 and v2.
+static tVec3 GetOrthogonalVector(const tVec3 & v1, const tVec3 & v2)
+{
+   tVec3 v1Prime(v1);
+   v1Prime.Normalize();
+
+   tVec3::value_type v2dotv1p = v2.Dot(v1Prime);
+
+   return tVec3(v2 - (v1Prime * v2dotv1p));
+}
+
+void MatrixLookAt(const tVec3 & eye, const tVec3 & center, const tVec3 & up,
+                  tMatrix4 * pMatrix)
+{
+   tVec3 newZAxis(eye - center);
+   newZAxis.Normalize();
+
+   tVec3 lineOfSight(center - eye);
+   tVec3 newYAxis = GetOrthogonalVector(lineOfSight, up);
+   newYAxis.Normalize();
+
+   tVec3 newXAxis = newYAxis.Cross(newZAxis);
+   newXAxis.Normalize();
+
+   Assert(pMatrix != NULL);
+   pMatrix->m00 = newXAxis.x;
+   pMatrix->m10 = newYAxis.x;
+   pMatrix->m20 = newZAxis.x;
+   pMatrix->m30 = 0;
+   pMatrix->m01 = newXAxis.y;
+   pMatrix->m11 = newYAxis.y;
+   pMatrix->m21 = newZAxis.y;
+   pMatrix->m31 = 0;
+   pMatrix->m02 = newXAxis.z;
+   pMatrix->m12 = newYAxis.z;
+   pMatrix->m22 = newZAxis.z;
+   pMatrix->m32 = 0;
+   pMatrix->m03 = 0;
+   pMatrix->m13 = 0;
+   pMatrix->m23 = 0;
+   pMatrix->m33 = 1;
+
+   tMatrix4 eyeTrans;
+   eyeTrans.Identity();
+   eyeTrans.m03 = -eye.x;
+   eyeTrans.m13 = -eye.y;
+   eyeTrans.m23 = -eye.z;
+
+   tMatrix4 temp = *pMatrix * eyeTrans;
+   *pMatrix = temp;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 void MatrixPerspective(float fov, float aspect, float znear, float zfar, sMatrix4 * pResult)
 {
    static const float kPiOver360 = kPi / 360.0f;
