@@ -165,10 +165,10 @@ cMesh::cMesh(uint nVertices, IVertexBuffer * pVertexBuffer)
 
 cMesh::~cMesh()
 {
-   std::for_each(m_materials.begin(), m_materials.end(), CTInterfaceMethodRef(&IUnknown::Release));
+   std::for_each(m_materials.begin(), m_materials.end(), CTInterfaceMethod(&IUnknown::Release));
    m_materials.clear();
 
-   std::for_each(m_subMeshes.begin(), m_subMeshes.end(), CTInterfaceMethodRef(&IUnknown::Release));
+   std::for_each(m_subMeshes.begin(), m_subMeshes.end(), CTInterfaceMethod(&IUnknown::Release));
    m_subMeshes.clear();
 }
 

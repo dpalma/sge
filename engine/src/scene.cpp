@@ -203,7 +203,7 @@ tResult cScene::Render(IRenderDevice * pRenderDevice)
       if (!entities.empty())
       {
          std::for_each(entities.begin(), entities.end(), cRenderEntity(pRenderDevice));
-         std::for_each(entities.begin(), entities.end(), CTInterfaceMethodRef(&::IUnknown::Release));
+         std::for_each(entities.begin(), entities.end(), CTInterfaceMethod(&::IUnknown::Release));
       }
    }
 
@@ -240,7 +240,7 @@ tResult cScene::Query(const cRay & ray, ISceneEntityEnum * * ppEnum)
       result = S_OK;
    }
 
-   std::for_each(entities.begin(), entities.end(), CTInterfaceMethodRef(&::IUnknown::Release));
+   std::for_each(entities.begin(), entities.end(), CTInterfaceMethod(&::IUnknown::Release));
 
    return result;
 }

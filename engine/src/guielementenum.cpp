@@ -32,7 +32,7 @@ cGUIElementEnum::cGUIElementEnum(const tGUIElementList & elements)
  : m_elements(elements.size())
 {
    std::copy(elements.begin(), elements.end(), m_elements.begin());
-   std::for_each(m_elements.begin(), m_elements.end(), CTInterfaceMethodRef(&IGUIElement::AddRef));
+   std::for_each(m_elements.begin(), m_elements.end(), CTInterfaceMethod(&IGUIElement::AddRef));
    m_iterator = m_elements.begin();
 }
 
@@ -40,7 +40,7 @@ cGUIElementEnum::cGUIElementEnum(const tGUIElementList & elements)
 
 cGUIElementEnum::~cGUIElementEnum()
 {
-   std::for_each(m_elements.begin(), m_elements.end(), CTInterfaceMethodRef(&IGUIElement::Release));
+   std::for_each(m_elements.begin(), m_elements.end(), CTInterfaceMethod(&IGUIElement::Release));
    m_elements.clear();
    m_iterator = m_elements.end();
 }

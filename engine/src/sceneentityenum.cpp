@@ -27,7 +27,7 @@ cSceneEntityEnum::cSceneEntityEnum(const tSceneEntityList & entities)
  : m_entities(entities.size())
 {
    std::copy(entities.begin(), entities.end(), m_entities.begin());
-   std::for_each(m_entities.begin(), m_entities.end(), CTInterfaceMethodRef(&IUnknown::AddRef));
+   std::for_each(m_entities.begin(), m_entities.end(), CTInterfaceMethod(&IUnknown::AddRef));
    m_iterator = m_entities.begin();
 }
 
@@ -35,7 +35,7 @@ cSceneEntityEnum::cSceneEntityEnum(const tSceneEntityList & entities)
 
 cSceneEntityEnum::~cSceneEntityEnum()
 {
-   std::for_each(m_entities.begin(), m_entities.end(), CTInterfaceMethodRef(&IUnknown::Release));
+   std::for_each(m_entities.begin(), m_entities.end(), CTInterfaceMethod(&IUnknown::Release));
    m_entities.clear();
    m_iterator = m_entities.end();
 }

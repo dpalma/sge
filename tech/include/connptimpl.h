@@ -78,7 +78,7 @@ protected:
 
    ~cConnectionPoint()
    {
-      std::for_each(m_sinks.begin(), m_sinks.end(), CTInterfaceMethodRef(&IUnknown::Release));
+      std::for_each(m_sinks.begin(), m_sinks.end(), CTInterfaceMethod(&IUnknown::Release));
       m_sinks.clear();
    }
 

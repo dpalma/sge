@@ -133,7 +133,7 @@ void cGUIEventRouter<INTRFC>::RemoveAllElements()
    SafeRelease(m_pFocus);
    SafeRelease(m_pCapture);
    SafeRelease(m_pMouseOver);
-   std::for_each(m_elements.begin(), m_elements.end(), CTInterfaceMethodRef(&IGUIElement::Release));
+   std::for_each(m_elements.begin(), m_elements.end(), CTInterfaceMethod(&IGUIElement::Release));
    m_elements.clear();
 }
 

@@ -35,7 +35,7 @@ cSceneLayer::~cSceneLayer()
 {
    Clear();
 
-   std::for_each(m_inputListeners.begin(), m_inputListeners.end(), CTInterfaceMethodRef(&IUnknown::Release));
+   std::for_each(m_inputListeners.begin(), m_inputListeners.end(), CTInterfaceMethod(&IUnknown::Release));
    m_inputListeners.clear();
 }
 
@@ -116,7 +116,7 @@ tResult cSceneLayer::GetCamera(ISceneCamera * * ppCamera)
 
 void cSceneLayer::Clear()
 {
-   std::for_each(m_entities.begin(), m_entities.end(), CTInterfaceMethodRef(&::IUnknown::Release));
+   std::for_each(m_entities.begin(), m_entities.end(), CTInterfaceMethod(&::IUnknown::Release));
    m_entities.clear();
 }
 
@@ -236,7 +236,7 @@ void cSceneLayer::GetAll(tSceneEntityList * pEntities)
    Assert(pEntities != NULL);
    pEntities->resize(m_entities.size());
    std::copy(m_entities.begin(), m_entities.end(), pEntities->begin());
-   std::for_each(pEntities->begin(), pEntities->end(), CTInterfaceMethodRef(&::IUnknown::AddRef));
+   std::for_each(pEntities->begin(), pEntities->end(), CTInterfaceMethod(&::IUnknown::AddRef));
 }
 
 ///////////////////////////////////////

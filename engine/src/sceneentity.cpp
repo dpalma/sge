@@ -37,7 +37,7 @@ cSceneEntity::cSceneEntity()
 
 cSceneEntity::~cSceneEntity()
 {
-   std::for_each(m_children.begin(), m_children.end(), CTInterfaceMethodRef(&IUnknown::Release));
+   std::for_each(m_children.begin(), m_children.end(), CTInterfaceMethod(&IUnknown::Release));
    m_children.clear();
 }
 

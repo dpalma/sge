@@ -215,31 +215,45 @@ public:
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// cCTInterfaceMethodRef
+// cStdcallMethod
 //
-// Functor objects for use with STL algorithms. For example,
-//    std::for_each(objects.begin(), objects.end(), CTInterfaceMethodRef(&IUnknown::Release));
+// Functor class for use with STL algorithms. For example,
+//    std::for_each(objects.begin(), objects.end(), CTInterfaceMethod(&IUnknown::Release));
 
 template <typename RETURN, typename INTRFC>
-class cCTInterfaceMethodRef
+class cStdcallMethod
 {
    typedef RETURN (STDMETHODCALLTYPE INTRFC::*tMethod)();
 public:
-   explicit cCTInterfaceMethodRef(tMethod pfnMethod)
-     : m_pfnMethod(pfnMethod) {}
-   RETURN operator()(INTRFC * pInterface)
-   {
-      return (pInterface->*m_pfnMethod)();
-   }
+   explicit cStdcallMethod(tMethod pfnMethod);
+   RETURN operator()(INTRFC * pInterface);
 private:
    tMethod m_pfnMethod;
 };
 
+///////////////////////////////////////
+
 template <typename RETURN, typename INTRFC>
-inline cCTInterfaceMethodRef<RETURN, INTRFC>
-   CTInterfaceMethodRef(RETURN (STDMETHODCALLTYPE INTRFC::*pfnMethod)())
+cStdcallMethod<RETURN, INTRFC>::cStdcallMethod(tMethod pfnMethod)
+ : m_pfnMethod(pfnMethod)
 {
-   return cCTInterfaceMethodRef<RETURN, INTRFC>(pfnMethod);
+}
+
+///////////////////////////////////////
+
+template <typename RETURN, typename INTRFC>
+RETURN cStdcallMethod<RETURN, INTRFC>::operator()(INTRFC * pInterface)
+{
+   return (pInterface->*m_pfnMethod)();
+}
+
+///////////////////////////////////////
+
+template <typename RETURN, typename INTRFC>
+inline cStdcallMethod<RETURN, INTRFC>
+   CTInterfaceMethod(RETURN (STDMETHODCALLTYPE INTRFC::*pfnMethod)())
+{
+   return cStdcallMethod<RETURN, INTRFC>(pfnMethod);
 }
 
 

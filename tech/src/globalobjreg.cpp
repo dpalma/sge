@@ -291,7 +291,7 @@ tResult cGlobalObjectRegistry::TermAll()
       // Terminate in reverse order
       SetState(kTerminating);
       std::for_each(m_initOrder.rbegin(), m_initOrder.rend(), std::mem_fun(&IGlobalObject::Term));
-      std::for_each(m_initOrder.rbegin(), m_initOrder.rend(), CTInterfaceMethodRef(&IGlobalObject::Release));
+      std::for_each(m_initOrder.rbegin(), m_initOrder.rend(), CTInterfaceMethod(&IGlobalObject::Release));
       SetState(kTerminated);
       m_initOrder.clear();
       m_objMap.clear();

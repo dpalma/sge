@@ -220,7 +220,7 @@ cMs3dFileReader::cMs3dFileReader()
 
 cMs3dFileReader::~cMs3dFileReader()
 {
-   std::for_each(m_interpolators.begin(), m_interpolators.end(), CTInterfaceMethodRef(&IUnknown::Release));
+   std::for_each(m_interpolators.begin(), m_interpolators.end(), CTInterfaceMethod(&IUnknown::Release));
    m_interpolators.clear();
 }
 

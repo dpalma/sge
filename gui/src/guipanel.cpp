@@ -37,7 +37,7 @@ cGUIPanelElement::cGUIPanelElement()
 
 cGUIPanelElement::~cGUIPanelElement()
 {
-   std::for_each(m_children.begin(), m_children.end(), CTInterfaceMethodRef(&IGUIElement::Release));
+   std::for_each(m_children.begin(), m_children.end(), CTInterfaceMethod(&IGUIElement::Release));
    m_children.clear();
 
    delete m_pInsets;
