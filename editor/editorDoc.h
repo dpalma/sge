@@ -15,7 +15,33 @@
 
 class cTerrain;
 
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cCommandStack
+//
+
 typedef std::stack<IEditorCommand *> tCommandStack;
+
+class cCommandStack
+{
+public:
+   cCommandStack();
+   ~cCommandStack();
+
+   tResult FlushUndo();
+   tResult FlushRedo();
+
+   tResult CanUndo(cStr * pLabel);
+   tResult Undo();
+   tResult CanRedo(cStr * pLabel);
+   tResult Redo();
+
+   tResult PushCommand(IEditorCommand * pCommand);
+
+private:
+   tCommandStack m_undoStack, m_redoStack;
+};
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -61,7 +87,7 @@ private:
 
    cTerrain * m_pTerrain;
 
-   tCommandStack m_undoStack, m_redoStack;
+   cCommandStack m_commandStack;
 };
 
 ////////////////////////////////////////

@@ -34,6 +34,159 @@ void FlushCommandStack(tCommandStack * pCommandStack)
 }
 
 /////////////////////////////////////////////////////////////////////////////
+
+static void UndoRedoHelper(tResult (IEditorCommand::*pfnDoMethod)(),
+                           tCommandStack * pSourceStack,
+                           tCommandStack * pDestStack)
+{
+   Assert(pfnDoMethod != NULL);
+   Assert(pSourceStack != NULL);
+   Assert(pDestStack != NULL);
+
+   IEditorCommand * pPrevious = NULL;
+   while (!pSourceStack->empty())
+   {
+      IEditorCommand * pCommand = pSourceStack->top();
+
+      if (pPrevious != NULL)
+      {
+         if (pCommand->Compare(pPrevious) != S_OK)
+         {
+            break;
+         }
+      }
+
+      if ((pCommand->*pfnDoMethod)() == S_OK)
+      {
+         pSourceStack->pop();
+         pDestStack->push(pCommand);
+      }
+      else
+      {
+         break;
+      }
+
+      pPrevious = pCommand;
+   }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cCommandStack
+//
+
+////////////////////////////////////////
+
+cCommandStack::cCommandStack()
+{
+}
+
+////////////////////////////////////////
+
+cCommandStack::~cCommandStack()
+{
+}
+
+////////////////////////////////////////
+
+tResult cCommandStack::FlushUndo()
+{
+   FlushCommandStack(&m_undoStack);
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cCommandStack::FlushRedo()
+{
+   FlushCommandStack(&m_redoStack);
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cCommandStack::CanUndo(cStr * pLabel)
+{
+   if (pLabel == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (m_undoStack.empty())
+   {
+      return S_FALSE;
+   }
+   else
+   {
+      return m_undoStack.top()->GetLabel(pLabel);
+   }
+}
+
+////////////////////////////////////////
+
+tResult cCommandStack::Undo()
+{
+   UndoRedoHelper(&IEditorCommand::Undo, &m_undoStack, &m_redoStack);
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cCommandStack::CanRedo(cStr * pLabel)
+{
+   if (pLabel == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (m_redoStack.empty())
+   {
+      return S_FALSE;
+   }
+   else
+   {
+      return m_redoStack.top()->GetLabel(pLabel);
+   }
+}
+
+////////////////////////////////////////
+
+tResult cCommandStack::Redo()
+{
+   UndoRedoHelper(&IEditorCommand::Do, &m_redoStack, &m_undoStack);
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cCommandStack::PushCommand(IEditorCommand * pCommand)
+{
+   if (pCommand == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (pCommand->Do() == S_OK)
+   {
+      if (pCommand->CanUndo() == S_OK)
+      {
+         m_undoStack.push(CTAddRef(pCommand));
+      }
+      else
+      {
+         FlushCommandStack(&m_undoStack);
+      }
+
+      FlushCommandStack(&m_redoStack);
+
+      return S_OK;
+   }
+
+   return E_FAIL;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cEditorDoc
 //
@@ -137,8 +290,8 @@ tResult cEditorDoc::Save(IWriter * pWriter)
       }
    }
 
-   FlushCommandStack(&m_undoStack);
-   FlushCommandStack(&m_redoStack);
+   m_commandStack.FlushUndo();
+   m_commandStack.FlushRedo();
 
    m_bModified = false; // not modified anymore
 
@@ -151,8 +304,8 @@ tResult cEditorDoc::Reset()
 {
    delete m_pTerrain, m_pTerrain = NULL;
 
-   FlushCommandStack(&m_undoStack);
-   FlushCommandStack(&m_redoStack);
+   m_commandStack.FlushUndo();
+   m_commandStack.FlushRedo();
 
    return S_OK;
 }
@@ -166,124 +319,51 @@ tResult cEditorDoc::IsModified()
 
 ////////////////////////////////////////
 
-static void UndoRedoHelper(tResult (IEditorCommand::*pfnDoMethod)(),
-                           tCommandStack * pSourceStack,
-                           tCommandStack * pDestStack)
-{
-   Assert(pfnDoMethod != NULL);
-   Assert(pSourceStack != NULL);
-   Assert(pDestStack != NULL);
-
-   IEditorCommand * pPrevious = NULL;
-   while (!pSourceStack->empty())
-   {
-      IEditorCommand * pCommand = pSourceStack->top();
-
-      if (pPrevious != NULL)
-      {
-         if (pCommand->Compare(pPrevious) != S_OK)
-         {
-            break;
-         }
-      }
-
-      if ((pCommand->*pfnDoMethod)() == S_OK)
-      {
-         pSourceStack->pop();
-         pDestStack->push(pCommand);
-      }
-      else
-      {
-         break;
-      }
-
-      pPrevious = pCommand;
-   }
-}
-
-////////////////////////////////////////
-
 tResult cEditorDoc::CanUndo(cStr * pLabel)
 {
-   if (pLabel == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (m_undoStack.empty())
-   {
-      return S_FALSE;
-   }
-   else
-   {
-      return m_undoStack.top()->GetLabel(pLabel);
-   }
+   return m_commandStack.CanUndo(pLabel);
 }
 
 ////////////////////////////////////////
 
 tResult cEditorDoc::Undo()
 {
-   UndoRedoHelper(&IEditorCommand::Undo, &m_undoStack, &m_redoStack);
-   m_bModified = true;
-   return S_OK;
+   if (m_commandStack.Undo() == S_OK)
+   {
+      m_bModified = true;
+      return S_OK;
+   }
+   return E_FAIL;
 }
 
 ////////////////////////////////////////
 
 tResult cEditorDoc::CanRedo(cStr * pLabel)
 {
-   if (pLabel == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (m_redoStack.empty())
-   {
-      return S_FALSE;
-   }
-   else
-   {
-      return m_redoStack.top()->GetLabel(pLabel);
-   }
+   return m_commandStack.CanRedo(pLabel);
 }
 
 ////////////////////////////////////////
 
 tResult cEditorDoc::Redo()
 {
-   UndoRedoHelper(&IEditorCommand::Do, &m_redoStack, &m_undoStack);
-   m_bModified = true;
-   return S_OK;
+   if (m_commandStack.Redo() == S_OK)
+   {
+      m_bModified = true;
+      return S_OK;
+   }
+   return E_FAIL;
 }
 
 ////////////////////////////////////////
 
 tResult cEditorDoc::AddCommand(IEditorCommand * pCommand)
 {
-   if (pCommand == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (pCommand->Do() == S_OK)
+   if (m_commandStack.PushCommand(pCommand) == S_OK)
    {
       m_bModified = true;
-
-      if (pCommand->CanUndo() == S_OK)
-      {
-         m_undoStack.push(CTAddRef(pCommand));
-      }
-      else
-      {
-         FlushCommandStack(&m_undoStack);
-      }
-
-      FlushCommandStack(&m_redoStack);
-
       return S_OK;
    }
-
    return E_FAIL;
 }
 
