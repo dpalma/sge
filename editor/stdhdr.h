@@ -27,6 +27,8 @@
 #include "scbarg.h"
 #include "scbarcf.h"
 
+#pragma warning(disable:4355) // 'this' : used in base member initializer list
+
 /////////////////////////////////////////////////////////////////////////////
 
 //{{AFX_INSERT_LOCATION}}
