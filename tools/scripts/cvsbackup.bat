@@ -37,7 +37,7 @@ if "%BACKUPDEST%" neq "" pushd "%BACKUPDEST%"
 if defined DATE (
 	:: When defined, the DATE environment variable looks like "Day mm/dd/yyyy"
 	for /f "tokens=1,2,3,4 delims=/ " %%a in ("%DATE%") do (
-		set BACKUPNAME=cvsbackup-%%d-%%c-%%b
+		set BACKUPNAME=cvsbackup-%%d-%%b-%%c
 	)
 ) else (
 	set BACKUPNAME=cvsbackup
