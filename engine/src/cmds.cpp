@@ -250,3 +250,14 @@ int ToggleGUIDebugInfo(int argc, const cScriptVar * argv,
 AUTOADD_SCRIPTFUNCTION(ToggleGUIDebugInfo, ToggleGUIDebugInfo);
 
 ///////////////////////////////////////////////////////////////////////////////
+
+sScriptReg cmds[] =
+{
+   { "bind", BindKey },
+   { "unbind", UnbindKey },
+   { "LogChannel", LogEnableChannel },
+   { "LoadGUI", LoadGUI },
+   { "ToggleGUIDebugInfo", ToggleGUIDebugInfo },
+};
+
+///////////////////////////////////////////////////////////////////////////////

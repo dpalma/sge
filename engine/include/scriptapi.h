@@ -28,6 +28,12 @@ F_DECLARE_INTERFACE(IScriptInterpreter);
 
 typedef int (* tScriptFn)(int, const cScriptVar *, int, cScriptVar *);
 
+struct sScriptReg
+{
+   const char * pszName;
+   tScriptFn pfn;
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // INTERFACE: IScriptableFactory
