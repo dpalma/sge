@@ -27,6 +27,86 @@ LOG_DEFINE_CHANNEL(EditorTools);
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: cDragTool
+//
+
+////////////////////////////////////////
+
+cDragTool::cDragTool()
+{
+}
+
+////////////////////////////////////////
+
+cDragTool::~cDragTool()
+{
+}
+
+////////////////////////////////////////
+
+tResult cDragTool::OnKeyDown(const cEditorKeyEvent & keyEvent, IEditorView * pView)
+{
+   return S_EDITOR_TOOL_CONTINUE;
+}
+
+////////////////////////////////////////
+
+tResult cDragTool::OnLButtonDown(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+{
+   if (pView != NULL)
+   {
+      m_pView = CTAddRef(pView);
+      AccessEditorApp()->SetToolCapture(this);
+      return OnDragStart(mouseEvent, pView);
+   }
+
+   return S_EDITOR_TOOL_CONTINUE;
+}
+
+////////////////////////////////////////
+
+tResult cDragTool::OnLButtonUp(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+{
+   if (IsDragging())
+   {
+      tResult result = OnDragEnd(mouseEvent, pView);
+      SafeRelease(m_pView);
+      AccessEditorApp()->ReleaseToolCapture();
+      return result;
+   }
+
+   return S_EDITOR_TOOL_CONTINUE;
+}
+
+////////////////////////////////////////
+
+tResult cDragTool::OnMouseMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+{
+   if (IsDragging())
+   {
+      return OnDragMove(mouseEvent, pView);
+   }
+
+   return S_EDITOR_TOOL_CONTINUE;
+}
+
+////////////////////////////////////////
+
+bool cDragTool::IsDragging()
+{
+   return (!!m_pView);
+}
+
+////////////////////////////////////////
+
+IEditorView * cDragTool::AccessView()
+{
+   return m_pView;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cMoveCameraTool
 //
 
@@ -44,24 +124,73 @@ cMoveCameraTool::~cMoveCameraTool()
 
 ////////////////////////////////////////
 
-tResult cMoveCameraTool::OnLButtonDown(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+tResult cMoveCameraTool::OnKeyDown(const cEditorKeyEvent & keyEvent, IEditorView * pView)
 {
-   if (pView != NULL)
+   static const int kMove = 5;
+
+   switch (keyEvent.GetChar())
    {
-      m_pView = CTAddRef(pView);
-      m_lastMousePoint = mouseEvent.GetPoint();
-      AccessEditorApp()->SetToolCapture(this);
-      return S_EDITOR_TOOL_HANDLED;
+      case VK_LEFT:
+      {
+         MoveCamera(pView, CPoint(-kMove,0));
+         break;
+      }
+      case VK_RIGHT:
+      {
+         MoveCamera(pView, CPoint(kMove,0));
+         break;
+      }
+      case VK_UP:
+      {
+         MoveCamera(pView, CPoint(0,-kMove));
+         break;
+      }
+      case VK_DOWN:
+      {
+         MoveCamera(pView, CPoint(0,kMove));
+         break;
+      }
    }
 
-   return S_EDITOR_TOOL_CONTINUE;
+   return cDragTool::OnKeyDown(keyEvent, pView);
 }
 
 ////////////////////////////////////////
 
-tResult cMoveCameraTool::OnLButtonUp(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+tResult cMoveCameraTool::OnMouseWheel(const cEditorMouseWheelEvent & mouseWheelEvent, IEditorView * pView)
 {
-   if ((pView != NULL) && (!!m_pView) && CTIsSameObject(pView, m_pView))
+   static const float kMinElevation = 10;
+   static const float kMaxElevation = 500;
+
+   if (pView != NULL)
+   {
+      float elevation;
+      if (pView->GetCameraElevation(&elevation) == S_OK)
+      {
+         elevation += (mouseWheelEvent.GetZDelta() / WHEEL_DELTA);
+         if (elevation >= kMinElevation && elevation <= kMaxElevation)
+         {
+            pView->SetCameraElevation(elevation);
+         }
+      }
+   }
+
+   return cDragTool::OnMouseWheel(mouseWheelEvent, pView);
+}
+
+////////////////////////////////////////
+
+tResult cMoveCameraTool::OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+{
+   m_lastMousePoint = mouseEvent.GetPoint();
+   return S_EDITOR_TOOL_HANDLED;
+}
+
+////////////////////////////////////////
+
+tResult cMoveCameraTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+{
+   if ((pView != NULL) && CTIsSameObject(pView, AccessView()))
    {
       float camPlaceX, camPlaceZ;
       if ((pView != NULL) && pView->GetCameraPlacement(&camPlaceX, &camPlaceZ) == S_OK)
@@ -69,9 +198,6 @@ tResult cMoveCameraTool::OnLButtonUp(const cEditorMouseEvent & mouseEvent, IEdit
          techlog.Print(kInfo, "Looking at point (%.2f, 0, %.2f)\n", camPlaceX, camPlaceZ);
       }
 
-      AccessEditorApp()->ReleaseToolCapture();
-      SafeRelease(m_pView);
-
       return S_EDITOR_TOOL_HANDLED;
    }
 
@@ -80,12 +206,25 @@ tResult cMoveCameraTool::OnLButtonUp(const cEditorMouseEvent & mouseEvent, IEdit
 
 ////////////////////////////////////////
 
-tResult cMoveCameraTool::OnMouseMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+tResult cMoveCameraTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
 {
-   if ((pView != NULL) && (!!m_pView) && CTIsSameObject(pView, m_pView))
+   if ((pView != NULL) && CTIsSameObject(pView, AccessView()))
    {
       CPoint delta = mouseEvent.GetPoint() - m_lastMousePoint;
+      MoveCamera(pView, delta);
+      m_lastMousePoint = mouseEvent.GetPoint();
+      return S_EDITOR_TOOL_HANDLED;
+   }
 
+   return S_EDITOR_TOOL_CONTINUE;
+}
+
+////////////////////////////////////////
+
+void cMoveCameraTool::MoveCamera(IEditorView * pView, CPoint delta)
+{
+   if (pView != NULL)
+   {
       float camPlaceX, camPlaceZ;
       if (pView->GetCameraPlacement(&camPlaceX, &camPlaceZ) == S_OK)
       {
@@ -94,13 +233,7 @@ tResult cMoveCameraTool::OnMouseMove(const cEditorMouseEvent & mouseEvent, IEdit
 
          pView->PlaceCamera(camPlaceX, camPlaceZ);
       }
-
-      m_lastMousePoint = mouseEvent.GetPoint();
-
-      return S_EDITOR_TOOL_HANDLED;
    }
-
-   return S_EDITOR_TOOL_CONTINUE;
 }
 
 

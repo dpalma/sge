@@ -352,7 +352,7 @@ void cEditorView::cSceneEntity::Render(IRenderDevice * pRenderDevice)
          sTerrainVertex verts[4];
          memcpy(verts, pTile->GetVertices(), 4 * sizeof(sTerrainVertex));
 
-         static const float kOffsetY = 0.2f;
+         static const float kOffsetY = 0.5f;
 
          verts[0].pos.y += kOffsetY;
          verts[1].pos.y += kOffsetY;
@@ -405,7 +405,7 @@ int cEditorView::OnCreate(LPCREATESTRUCT lpCreateStruct)
    Assert(AccessEditorApp() != NULL);
    Verify(AccessEditorApp()->AddLoopClient(this) == S_OK);
 
-   AccessEditorApp()->SetDefaultTool(static_cast<IEditorTool *>(new cMoveCameraTool));
+   AccessEditorApp()->SetDefaultTool(cAutoIPtr<IEditorTool>(new cMoveCameraTool));
 
 	return 0;
 }

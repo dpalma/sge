@@ -12,20 +12,57 @@
 
 class cTerrainTile;
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cDragTool
+//
+
+class cDragTool : public cDefaultEditorTool
+{
+public:
+   cDragTool();
+   virtual ~cDragTool() = 0;
+
+   virtual tResult OnKeyDown(const cEditorKeyEvent & keyEvent, IEditorView * pView);
+   virtual tResult OnLButtonDown(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+	virtual tResult OnLButtonUp(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+	virtual tResult OnMouseMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+
+protected:
+   virtual tResult OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView) = 0;
+   virtual tResult OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView) = 0;
+   virtual tResult OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView) = 0;
+
+   bool IsDragging();
+
+   IEditorView * AccessView();
+
+private:
+   cAutoIPtr<IEditorView> m_pView;
+};
+
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cMoveCameraTool
 //
 
-class cMoveCameraTool : public cComObject<cDefaultEditorTool, &IID_IEditorTool>
+class cMoveCameraTool : public cComObject<cDragTool, &IID_IEditorTool>
 {
 public:
    cMoveCameraTool();
    ~cMoveCameraTool();
 
-   virtual tResult OnLButtonDown(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
-	virtual tResult OnLButtonUp(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
-	virtual tResult OnMouseMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+   virtual tResult OnKeyDown(const cEditorKeyEvent & keyEvent, IEditorView * pView);
+   virtual tResult OnMouseWheel(const cEditorMouseWheelEvent & mouseWheelEvent, IEditorView * pView);
+
+protected:
+   virtual tResult OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+   virtual tResult OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+   virtual tResult OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+
+   void MoveCamera(IEditorView * pView, CPoint delta);
 
 private:
    cAutoIPtr<IEditorView> m_pView;
