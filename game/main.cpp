@@ -418,9 +418,6 @@ bool MainInit(int argc, char * argv[])
       return false;
    }
 
-   // Registers functions that were added at static initialization time
-   ScriptInit();
-
    if (ConfigGet("data", &temp) == S_OK)
    {
       UseGlobal(ResourceManager);
@@ -521,7 +518,6 @@ void MainTerm()
    UseGlobal(Sim);
    pSim->Stop();
 
-   ScriptTerm();
    SafeRelease(g_pRenderDevice);
 
    if (g_pWindow)
@@ -536,7 +532,9 @@ void MainTerm()
    }
 
    if (g_pGameCameraController)
+   {
       g_pGameCameraController->Disconnect();
+   }
 
    StopGlobalObjects();
 }

@@ -70,7 +70,26 @@ interface IScriptInterpreter : IUnknown
    virtual tResult RevokeCustomClass(const tChar * pszClassName) = 0;
 };
 
+///////////////////////////////////////
+
 ENGINE_API void ScriptInterpreterCreate();
+
+///////////////////////////////////////
+
+ENGINE_API tResult ScriptAddFunction(const char * pszName, tScriptFn pfn);
+
+///////////////////////////////////////
+
+struct sScriptAutoAddFunction
+{
+   sScriptAutoAddFunction(const char * pszName, tScriptFn pfn)
+   {
+      ScriptAddFunction(pszName, pfn);
+   }
+};
+
+#define AUTOADD_SCRIPTFUNCTION(name, pfn) \
+   static sScriptAutoAddFunction g_auto##name##ScriptFn(#name, pfn)
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -20,6 +20,8 @@ typedef struct lua_State lua_State;
 
 class cLuaInterpreter : public cGlobalObject<IMPLEMENTS(IScriptInterpreter)>
 {
+   friend tResult ScriptAddFunction(const char * pszName, tScriptFn pfn);
+
 public:
    cLuaInterpreter();
    ~cLuaInterpreter();
@@ -44,6 +46,19 @@ public:
    tResult RevokeCustomClass(const tChar * pszClassName);
 
 private:
+   static void CleanupPreRegisteredFunctions();
+
+   static bool gm_bInitialized;
+
+   struct sPreRegisteredFunction
+   {
+      char szName[100];
+      tScriptFn pfn;
+      struct sPreRegisteredFunction * pNext;
+   };
+
+   static struct sPreRegisteredFunction * gm_pPreRegisteredFunctions;
+
    lua_State * m_L;
 };
 

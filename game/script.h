@@ -14,21 +14,10 @@ class cScriptVar;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void ScriptInit();
-void ScriptTerm();
 bool ScriptExecFile(const char * pszFile);
 bool ScriptExecString(const char * pszCode);
 void ScriptCallFunction(const char * pszName,
                         const char * pszArgDesc = NULL, ...);
-void ScriptAddFunction(const char * pszName, tScriptFn pfn);
-
-struct sScriptAutoAddFunction
-{
-   sScriptAutoAddFunction(const char * pszName, tScriptFn pfn)
-   {
-      ScriptAddFunction(pszName, pfn);
-   }
-};
 
 #define SCRIPT_FUNCTION_NAME(name) name
 
@@ -37,7 +26,7 @@ struct sScriptAutoAddFunction
 
 #define SCRIPT_DEFINE_FUNCTION(name) \
    SCRIPT_DEFINE_FUNCTION_NO_AUTOADD(name); \
-   static sScriptAutoAddFunction g_AutoAdd##name(#name, SCRIPT_FUNCTION_NAME(name)); \
+   AUTOADD_SCRIPTFUNCTION(name, SCRIPT_FUNCTION_NAME(name)); \
    SCRIPT_DEFINE_FUNCTION_NO_AUTOADD(name)
 
 #define ScriptArgc() argc

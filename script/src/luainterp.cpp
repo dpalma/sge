@@ -337,6 +337,45 @@ void ScriptInterpreterCreate()
 
 ///////////////////////////////////////
 
+tResult ScriptAddFunction(const char * pszName, tScriptFn pfn)
+{
+   if (pszName == NULL || pfn == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (cLuaInterpreter::gm_bInitialized)
+   {
+      UseGlobal(ScriptInterpreter);
+      return pScriptInterpreter->AddFunction(pszName, pfn);
+   }
+   else
+   {
+      // simple queue to support adding at static init time
+      cLuaInterpreter::sPreRegisteredFunction * p = new cLuaInterpreter::sPreRegisteredFunction;
+      if (p != NULL)
+      {
+         strcpy(p->szName, pszName);
+         p->pfn = pfn;
+         p->pNext = cLuaInterpreter::gm_pPreRegisteredFunctions;
+         cLuaInterpreter::gm_pPreRegisteredFunctions = p;
+         return S_OK;
+      }
+   }
+
+   return E_FAIL;
+}
+
+///////////////////////////////////////
+
+bool cLuaInterpreter::gm_bInitialized = false;
+
+///////////////////////////////////////
+
+struct cLuaInterpreter::sPreRegisteredFunction * cLuaInterpreter::gm_pPreRegisteredFunctions = NULL;
+
+///////////////////////////////////////
+
 cLuaInterpreter::cLuaInterpreter()
  : m_L(NULL)
 {
@@ -376,6 +415,17 @@ tResult cLuaInterpreter::Init()
    luaopen_loadlib(m_L);
 
    lua_register(m_L, "print", LuaPrintEx);
+
+   Assert(!gm_bInitialized);
+   gm_bInitialized = true;
+
+   while (gm_pPreRegisteredFunctions != NULL)
+   {
+      AddFunction(gm_pPreRegisteredFunctions->szName, gm_pPreRegisteredFunctions->pfn);
+      sPreRegisteredFunction * p = gm_pPreRegisteredFunctions;
+      gm_pPreRegisteredFunctions = gm_pPreRegisteredFunctions->pNext;
+      delete p;
+   }
 
    return S_OK;
 }
@@ -651,6 +701,19 @@ tResult cLuaInterpreter::RevokeCustomClass(const tChar * pszClassName)
    SafeRelease(pUnkFactory);
 
    return S_OK;
+}
+
+///////////////////////////////////////
+
+void cLuaInterpreter::CleanupPreRegisteredFunctions()
+{
+   sPreRegisteredFunction * p = gm_pPreRegisteredFunctions;
+   while (p != NULL)
+   {
+      gm_pPreRegisteredFunctions = gm_pPreRegisteredFunctions->pNext;
+      delete p;
+      p = gm_pPreRegisteredFunctions;
+   }
 }
 
 
