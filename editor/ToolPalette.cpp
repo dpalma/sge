@@ -4,6 +4,11 @@
 #include "stdhdr.h"
 
 #include "ToolPalette.h"
+#include "BitmapUtils.h"
+
+#ifdef HAVE_CPPUNIT
+#include <cppunit/extensions/HelperMacros.h>
+#endif
 
 #include "dbgalloc.h" // must be last header
 
@@ -11,33 +16,6 @@
 
 static const int kTextGap = 2;
 static const int kImageGap = 1;
-
-///////////////////////////////////////////////////////////////////////////////
-
-static byte GrayLevel(COLORREF color)
-{
-   double intensity =
-      0.2989 * ((double)GetRValue(color) / 255) +
-      0.5870 * ((double)GetGValue(color) / 255) +
-      0.1140 * ((double)GetBValue(color) / 255);
-
-   if (intensity < 0)
-   {
-      intensity = 0;
-   }
-   else if (intensity > 1)
-   {
-      intensity = 1;
-   }
-
-   return (byte)(intensity * 255);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-#define GetRValue16(color) ((uint16)(GetRValue((color))<<8))
-#define GetGValue16(color) ((uint16)(GetGValue((color))<<8))
-#define GetBValue16(color) ((uint16)(GetBValue((color))<<8))
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -143,6 +121,7 @@ BOOL WINAPI DynamicGradientFill(HDC hdc,
 cToolItem::cToolItem(cToolGroup * pGroup, const tChar * pszName, int iImage, void * pUserData)
  : m_pGroup(pGroup),
    m_name(pszName != NULL ? pszName : ""),
+   m_state(kTPTS_None),
    m_iImage(iImage),
    m_pUserData(pUserData)
 {
@@ -169,9 +148,10 @@ void cToolItem::SetState(uint mask, uint state)
 
 ////////////////////////////////////////
 
-cToolGroup::cToolGroup(const tChar * pszName, HIMAGELIST hImageList)
+cToolGroup::cToolGroup(const tChar * pszName, HIMAGELIST hImageList, HIMAGELIST hDisabledImages)
  : m_name(pszName != NULL ? pszName : ""),
    m_hImageList(hImageList),
+   m_hDisabledImages(hDisabledImages),
    m_bCollapsed(false)
 {
 }
@@ -184,6 +164,12 @@ cToolGroup::~cToolGroup()
    {
       ImageList_Destroy(m_hImageList);
       m_hImageList = NULL;
+   }
+
+   if (m_hDisabledImages != NULL)
+   {
+      ImageList_Destroy(m_hDisabledImages);
+      m_hDisabledImages = NULL;
    }
 
    Clear();
@@ -446,7 +432,8 @@ void cToolPaletteRenderer::Render(const cToolGroup * pGroup)
       return;
    }
 
-   HIMAGELIST hImageList = pGroup->GetImageList();
+   HIMAGELIST hNormalImages = pGroup->GetNormalImages();
+   HIMAGELIST hDisabledImages = pGroup->GetDisabledImages();
 
    CRect toolRect(m_rect);
    toolRect.top += m_totalHeight + headingHeight;
@@ -469,10 +456,10 @@ void cToolPaletteRenderer::Render(const cToolGroup * pGroup)
          CRect textRect(toolRect);
          CPoint imagePos(toolRect.TopLeft());
 
-         if ((hImageList != NULL) && (iImage > -1))
+         if ((hNormalImages != NULL) && (iImage > -1))
          {
             IMAGEINFO imageInfo;
-            if (ImageList_GetImageInfo(hImageList, iImage, &imageInfo))
+            if (ImageList_GetImageInfo(hNormalImages, iImage, &imageInfo))
             {
                int imageHeight = (imageInfo.rcImage.bottom - imageInfo.rcImage.top);
                int imageWidth = (imageInfo.rcImage.right - imageInfo.rcImage.left);
@@ -497,17 +484,23 @@ void cToolPaletteRenderer::Render(const cToolGroup * pGroup)
 
          // All size/position calculation done, now draw
 
-         if (m_bHaveMousePos && toolRect.PtInRect(m_mousePos))
+         if (!pTool->IsDisabled() && m_bHaveMousePos && toolRect.PtInRect(m_mousePos))
          {
             m_dc.Draw3dRect(toolRect, GetSysColor(COLOR_3DHILIGHT), GetSysColor(COLOR_3DSHADOW));
          }
 
-         if ((hImageList != NULL) && (iImage > -1))
+         if ((hNormalImages != NULL) && (iImage > -1))
          {
-            ImageList_Draw(hImageList, iImage, m_dc, imagePos.x, imagePos.y, 0);
+            ImageList_Draw(
+               (pTool->IsDisabled() && (hDisabledImages != NULL))
+                  ? hDisabledImages
+                  : hNormalImages,
+               iImage, m_dc, imagePos.x, imagePos.y, ILD_NORMAL);
          }
 
-         COLORREF oldTextColor = m_dc.SetTextColor(GetSysColor(COLOR_WINDOWTEXT));
+         COLORREF oldTextColor = m_dc.SetTextColor(pTool->IsDisabled()
+            ? GetSysColor(COLOR_GRAYTEXT)
+            : GetSysColor(COLOR_WINDOWTEXT));
          int oldBkMode = m_dc.SetBkMode(TRANSPARENT);
          m_dc.DrawText(pTool->GetName(), -1, &textRect, DT_SINGLELINE | DT_LEFT | DT_VCENTER | DT_END_ELLIPSIS);
          m_dc.SetTextColor(oldTextColor);
@@ -567,9 +560,14 @@ int cToolPaletteRenderer::RenderGroupHeading(CDCHandle dc, LPRECT pRect,
    GRADIENT_RECT gr;
    gr.UpperLeft = 0;
    gr.LowerRight = 1;
-   DynamicGradientFill(dc, gv, _countof(gv), &gr, 1, GRADIENT_FILL_RECT_H);
-
-   dc.FillSolidRect(textRect.left + halfWidth, textRect.top, halfWidth, textRect.Height(), rightColor);
+   if (DynamicGradientFill(dc, gv, _countof(gv), &gr, 1, GRADIENT_FILL_RECT_H))
+   {
+      dc.FillSolidRect(textRect.left + halfWidth, textRect.top, halfWidth, textRect.Height(), rightColor);
+   }
+   else
+   {
+      dc.FillSolidRect(textRect.left, textRect.top, textRect.Width(), textRect.Height(), rightColor);
+   }
 
    textRect.left += kTextGap;
 
@@ -743,7 +741,7 @@ HTOOLGROUP cToolPalette::AddGroup(const tChar * pszGroup, HIMAGELIST hImageList)
          return hGroup;
       }
 
-      cToolGroup * pGroup = new cToolGroup(pszGroup, hImageList);
+      cToolGroup * pGroup = new cToolGroup(pszGroup, hImageList, ImageList_CreateGrayscale(hImageList));
       if (pGroup != NULL)
       {
          m_groups.push_back(pGroup);
@@ -941,15 +939,24 @@ bool cToolPalette::GetTool(HTOOLITEM hTool, sToolPaletteItem * pTPI)
 bool cToolPalette::RemoveTool(HTOOLITEM hTool)
 {
    // TODO
-   WarnMsg("UNSUPPORTED FUNCTION CALLED: \n");
+   WarnMsg("Unsupported function called: cToolPalette::RemoveTool\n");
    return false;
 }
 
 ////////////////////////////////////////
 
-bool cToolPalette::EnableTool(HTOOLITEM hTool)
+bool cToolPalette::EnableTool(HTOOLITEM hTool, bool bEnable)
 {
-   // TODO
+   if (IsTool(hTool))
+   {
+      cToolItem * pTool = reinterpret_cast<cToolItem *>(hTool);
+      Assert(IsGroup(reinterpret_cast<HTOOLGROUP>(pTool->GetGroup())));
+
+      pTool->SetState(kTPTS_Disabled, bEnable ? 0 : kTPTS_Disabled);
+
+      return true;
+   }
+
    return false;
 }
 
@@ -1010,22 +1017,160 @@ void cToolPalette::DoClick(HANDLE hItem, CPoint point)
       }
       else
       {
-         HWND hWndParent = GetParent();
-         if (::IsWindow(hWndParent))
+         cToolItem * pTool = reinterpret_cast<cToolItem *>(hItem);
+         Assert(IsGroup(reinterpret_cast<HTOOLGROUP>(pTool->GetGroup())));
+         if (!pTool->IsDisabled())
          {
-            cToolItem * pTool = reinterpret_cast<cToolItem *>(hItem);
-            Assert(IsGroup(reinterpret_cast<HTOOLGROUP>(pTool->GetGroup())));
-            sNMToolPaletteItemClick nm = {0};
-            nm.hdr.hwndFrom = m_hWnd;
-            nm.hdr.code = kTPN_ItemClick;
-            nm.hdr.idFrom = GetDlgCtrlID();
-            nm.pt = point;
-            nm.hTool = reinterpret_cast<HTOOLITEM>(hItem);
-            nm.pUserData = pTool->GetUserData();
-            ::SendMessage(hWndParent, WM_NOTIFY, GetDlgCtrlID(), reinterpret_cast<LPARAM>(&nm));
+            HWND hWndParent = GetParent();
+            if (::IsWindow(hWndParent))
+            {
+               sNMToolPaletteItemClick nm = {0};
+               nm.hdr.hwndFrom = m_hWnd;
+               nm.hdr.code = kTPN_ItemClick;
+               nm.hdr.idFrom = GetDlgCtrlID();
+               nm.pt = point;
+               nm.hTool = reinterpret_cast<HTOOLITEM>(hItem);
+               nm.pUserData = pTool->GetUserData();
+               ::SendMessage(hWndParent, WM_NOTIFY, GetDlgCtrlID(), reinterpret_cast<LPARAM>(&nm));
+            }
          }
       }
    }
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_CPPUNIT
+
+class cToolPaletteTests : public CppUnit::TestCase
+{
+   CPPUNIT_TEST_SUITE(cToolPaletteTests);
+      CPPUNIT_TEST(Test1);
+   CPPUNIT_TEST_SUITE_END();
+
+   void Test1();
+
+public:
+   cToolPaletteTests();
+   ~cToolPaletteTests();
+
+   virtual void setUp();
+   virtual void tearDown();
+
+private:
+   typedef CWinTraits<WS_POPUP, 0> tDummyWinTraits;
+   class cDummyWindow : public CWindowImpl<cDummyWindow, CWindow, tDummyWinTraits>
+   {
+   public:
+      DECLARE_WND_CLASS(NULL);
+      DECLARE_EMPTY_MSG_MAP()
+   };
+
+   cDummyWindow * m_pDummyWnd;
+   cToolPalette * m_pToolPalette;
+};
+
+////////////////////////////////////////
+
+CPPUNIT_TEST_SUITE_REGISTRATION(cToolPaletteTests);
+
+////////////////////////////////////////
+
+void cToolPaletteTests::Test1()
+{
+   if (m_pToolPalette == NULL || !m_pToolPalette->IsWindow())
+   {
+      return;
+   }
+
+   for (int i = 0; i < 3; i++)
+   {
+      tChar szTemp[200];
+      wsprintf(szTemp, "Group %c", 'A' + i);
+      HTOOLGROUP hToolGroup = m_pToolPalette->AddGroup(szTemp, NULL);
+      if (hToolGroup != NULL)
+      {
+         int nTools = 3 + (rand() & 3);
+         for (int j = 0; j < nTools; j++)
+         {
+            wsprintf(szTemp, "Tool %d", j);
+            HTOOLITEM hTool = m_pToolPalette->AddTool(hToolGroup, szTemp, -1);
+            if (hTool != NULL)
+            {
+               if (j == 1)
+               {
+                  CPPUNIT_ASSERT(m_pToolPalette->EnableTool(hTool, false));
+               }
+            }
+         }
+      }
+   }
+}
+
+////////////////////////////////////////
+
+cToolPaletteTests::cToolPaletteTests()
+ : m_pDummyWnd(NULL),
+   m_pToolPalette(NULL)
+{
+}
+
+////////////////////////////////////////
+
+cToolPaletteTests::~cToolPaletteTests()
+{
+}
+
+////////////////////////////////////////
+
+void cToolPaletteTests::setUp()
+{
+   CPPUNIT_ASSERT(m_pDummyWnd == NULL);
+   m_pDummyWnd = new cDummyWindow;
+   CPPUNIT_ASSERT(m_pDummyWnd != NULL);
+   HWND hDummyWnd = m_pDummyWnd->Create(NULL);
+   CPPUNIT_ASSERT(IsWindow(hDummyWnd));
+   if (!IsWindow(hDummyWnd))
+   {
+      delete m_pDummyWnd;
+      m_pDummyWnd = NULL;
+   }
+   else
+   {
+      CPPUNIT_ASSERT(m_pToolPalette == NULL);
+      m_pToolPalette = new cToolPalette;
+      CPPUNIT_ASSERT(m_pToolPalette != NULL);
+      HWND hWndToolPalette = m_pToolPalette->Create(m_pDummyWnd->m_hWnd);
+      CPPUNIT_ASSERT(IsWindow(hWndToolPalette));
+      if (!IsWindow(hWndToolPalette))
+      {
+         delete m_pToolPalette;
+         m_pToolPalette = NULL;
+      }
+   }
+}
+
+////////////////////////////////////////
+
+void cToolPaletteTests::tearDown()
+{
+   if (m_pToolPalette != NULL && m_pToolPalette->IsWindow())
+   {
+      CPPUNIT_ASSERT(m_pToolPalette->DestroyWindow());
+   }
+   delete m_pToolPalette;
+   m_pToolPalette = NULL;
+
+   if (m_pDummyWnd != NULL && m_pDummyWnd->IsWindow())
+   {
+      CPPUNIT_ASSERT(m_pDummyWnd->DestroyWindow());
+   }
+   delete m_pDummyWnd;
+   m_pDummyWnd = NULL;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+#endif // HAVE_CPPUNIT
 
 ///////////////////////////////////////////////////////////////////////////////

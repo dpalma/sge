@@ -13,6 +13,112 @@
 
 #define ALIGN4BYTE(w) (((w) + 3) & ~3)
 
+///////////////////////////////////////////////////////////////////////////////
+// Use NTSC constants for converting color to gray
+
+byte GrayLevel(COLORREF color)
+{
+   double r = GetRValue(color);
+   double g = GetGValue(color);
+   double b = GetBValue(color);
+
+   double intensity =
+      0.3 * (r / 255) +
+      0.6 * (g / 255) +
+      0.1 * (b / 255);
+
+   if (intensity < 0)
+   {
+      intensity = 0;
+   }
+   else if (intensity > 1)
+   {
+      intensity = 1;
+   }
+
+   return (byte)(intensity * 255);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+HIMAGELIST ImageList_CreateGrayscale(HIMAGELIST hImageList)
+{
+   if (hImageList != NULL)
+   {
+      int nImages = ImageList_GetImageCount(hImageList);
+      if (nImages > 0)
+      {
+         IMAGEINFO imageInfo;
+         if (!ImageList_GetImageInfo(hImageList, 0, &imageInfo))
+         {
+            return NULL;
+         }
+
+         int imageWidth = imageInfo.rcImage.right - imageInfo.rcImage.left;
+         int imageHeight = imageInfo.rcImage.bottom - imageInfo.rcImage.top;
+
+         HIMAGELIST hGrayImages = ImageList_Create(
+            imageWidth, imageHeight, ILC_COLOR, nImages, nImages);
+         if (hGrayImages != NULL)
+         {
+            HDC hScreenDC = GetDC(NULL);
+            if (hScreenDC != NULL)
+            {
+               CDC destDC;
+               if (destDC.CreateCompatibleDC(hScreenDC))
+               {
+                  for (int i = 0; i < nImages; i++)
+                  {
+                     IMAGEINFO imageInfo;
+                     if (ImageList_GetImageInfo(hImageList, i, &imageInfo))
+                     {
+                        HBITMAP hGrayBm = CreateCompatibleBitmap(hScreenDC, imageWidth, imageHeight);
+                        if (hGrayBm != NULL)
+                        {
+                           HBITMAP hDestOld = destDC.SelectBitmap(hGrayBm);
+                           if (hDestOld != NULL)
+                           {
+                              Verify(ImageList_Draw(hImageList, i, destDC, 0, 0, ILD_NORMAL));
+
+                              for (int x = 0; x < imageWidth; x++)
+                              {
+                                 for (int y = 0; y < imageHeight; y++)
+                                 {
+                                    COLORREF c = destDC.GetPixel(x, y);
+                                    byte g = GrayLevel(c);
+                                    destDC.SetPixel(x, y, RGB(g,g,g));
+                                 }
+                              }
+
+                              destDC.SelectBitmap(hDestOld);
+
+                              int iNew = ImageList_Add(hGrayImages, hGrayBm, imageInfo.hbmMask);
+                           }
+
+                           DeleteObject(hGrayBm);
+                        }
+                     }
+                  }
+               }
+
+               ReleaseDC(NULL, hScreenDC);
+               hScreenDC = NULL;
+            }
+         }
+
+         if (ImageList_GetImageCount(hGrayImages) != nImages)
+         {
+            ImageList_Destroy(hGrayImages);
+            return NULL;
+         }
+
+         return hGrayImages;
+      }
+   }
+
+   return NULL;
+}
+
 /////////////////////////////////////////////////////////////////////////////
 
 bool LoadBitmap(const cImageData * pImageData, HBITMAP * phBitmap)
@@ -133,7 +239,7 @@ bool LoadBitmap(const tChar * pszBitmap, HBITMAP * phBitmap)
 
       if (hBitmap == NULL)
       {
-         hBitmap = (HBITMAP)LoadImage(GetModuleHandle(NULL),
+         hBitmap = (HBITMAP)LoadImage(_Module.GetResourceInstance(),
                                       pszBitmap,
                                       IMAGE_BITMAP,
                                       0, 0,
@@ -152,6 +258,7 @@ bool LoadBitmap(const tChar * pszBitmap, HBITMAP * phBitmap)
 
 /////////////////////////////////////////////////////////////////////////////
 
+// TODO: See Win32 API function CopyImage. Does the same thing
 HBITMAP StretchCopyBitmap(uint width, uint height, HBITMAP hSrcBitmap,
                           uint srcX, uint srcY, uint srcWidth, uint srcHeight)
 {

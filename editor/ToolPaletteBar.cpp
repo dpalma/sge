@@ -237,16 +237,20 @@ LRESULT cToolPaletteBar::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL 
       return -1;
    }
 
-   HIMAGELIST hStdImages = ImageList_LoadBitmap(_Module.GetResourceInstance(),
-      MAKEINTRESOURCE(IDB_STD_TOOLS), 16, 0, RGB(255,0,255));
+   HIMAGELIST hStdImages = ImageList_LoadImage(_Module.GetResourceInstance(),
+      MAKEINTRESOURCE(IDB_STD_TOOLS), 16, 0, CLR_DEFAULT, IMAGE_BITMAP, 0);
 
    // TODO: Come up with a better way for creating the standard tools
    if (hStdImages != NULL)
    {
-      HTOOLGROUP hStdGroup = m_toolPalette.AddGroup("", NULL);
+      HTOOLGROUP hStdGroup = m_toolPalette.AddGroup("", hStdImages);
       if (hStdGroup != NULL)
       {
          HTOOLITEM hTool = m_toolPalette.AddTool(hStdGroup, "Select", 0, NULL);
+         if (hTool != NULL)
+         {
+            Verify(m_toolPalette.EnableTool(hTool, false));
+         }
       }
    }
 
@@ -268,6 +272,13 @@ LRESULT cToolPaletteBar::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL 
          {
             wsprintf(szTemp, "Tool %d", j);
             HTOOLITEM hTool = m_toolPalette.AddTool(hToolGroup, szTemp, -1);
+            if (hTool != NULL)
+            {
+               if (j == 1)
+               {
+                  Verify(m_toolPalette.EnableTool(hTool, false));
+               }
+            }
          }
       }
    }

@@ -12,7 +12,17 @@ F_DECLARE_HANDLE(HBITMAP);
 
 class cImageData;
 
+///////////////////////////////////////////////////////////////////////////////
+
+#define GetRValue16(color) ((uint16)(GetRValue((color))<<8))
+#define GetGValue16(color) ((uint16)(GetGValue((color))<<8))
+#define GetBValue16(color) ((uint16)(GetBValue((color))<<8))
+
 /////////////////////////////////////////////////////////////////////////////
+
+byte GrayLevel(COLORREF color);
+
+HIMAGELIST ImageList_CreateGrayscale(HIMAGELIST hImageList);
 
 bool LoadBitmap(const cImageData * pImageData, HBITMAP * phBitmap);
 

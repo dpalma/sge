@@ -90,6 +90,8 @@ public:
    int GetImageIndex() const;
    void * GetUserData() const;
 
+   bool IsDisabled() const;
+
 private:
    cToolGroup * m_pGroup;
    std::string m_name;
@@ -133,6 +135,13 @@ inline void * cToolItem::GetUserData() const
    return m_pUserData;
 }
 
+////////////////////////////////////////
+
+inline bool cToolItem::IsDisabled() const
+{
+   return (m_state & kTPTS_Disabled) == kTPTS_Disabled;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -145,11 +154,12 @@ class cToolGroup
    const cToolGroup & operator =(const cToolGroup &);
 
 public:
-   cToolGroup(const tChar * pszName, HIMAGELIST hImageList);
+   cToolGroup(const tChar * pszName, HIMAGELIST hImageList, HIMAGELIST hDisabledImages = NULL);
    ~cToolGroup();
 
    const tChar * GetName() const;
-   HIMAGELIST GetImageList() const;
+   HIMAGELIST GetNormalImages() const;
+   HIMAGELIST GetDisabledImages() const;
    uint GetToolCount() const;
    cToolItem * GetTool(uint index) const;
 
@@ -165,6 +175,7 @@ public:
 private:
    std::string m_name;
    HIMAGELIST m_hImageList;
+   HIMAGELIST m_hDisabledImages;
 
    typedef std::vector<cToolItem *> tTools;
    tTools m_tools;
@@ -185,9 +196,16 @@ inline const tChar * cToolGroup::GetName() const
 
 ////////////////////////////////////////
 
-inline HIMAGELIST cToolGroup::GetImageList() const
+inline HIMAGELIST cToolGroup::GetNormalImages() const
 {
    return m_hImageList;
+}
+
+////////////////////////////////////////
+
+inline HIMAGELIST cToolGroup::GetDisabledImages() const
+{
+   return m_hDisabledImages;
 }
 
 ////////////////////////////////////////
@@ -319,7 +337,7 @@ public:
    bool GetToolText(HTOOLITEM hTool, std::string * pText);
    bool GetTool(HTOOLITEM hTool, sToolPaletteItem * pTPI);
    bool RemoveTool(HTOOLITEM hTool);
-   bool EnableTool(HTOOLITEM hTool);
+   bool EnableTool(HTOOLITEM hTool, bool bEnable);
 
 private:
    void SetMouseOverItem(HANDLE hItem);
