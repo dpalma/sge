@@ -1,0 +1,10 @@
+<!-- $Id$ -->
+
+<dialog 
+   title="Confirm" 
+   insets="(4,4,4,4)" 
+   style="align:center;verticalAlign:center;">
+   <layout type="grid" hgap="3" vgap="3" columns="1" rows="2" />
+   <label text="Are you sure you want to quit?" />
+   <button text="Quit" onclick="quit();" />
+</dialog>
