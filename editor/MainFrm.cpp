@@ -10,8 +10,6 @@
 
 #include <afxcview.h>
 
-#include "resource.h"       // main symbols
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -155,16 +153,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	return 0;
 }
 
-BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
-{
-	if( !CFrameWnd::PreCreateWindow(cs) )
-		return FALSE;
-	// TODO: Modify the Window class or styles here by modifying
-	//  the CREATESTRUCT cs
-
-	return TRUE;
-}
-
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame diagnostics
 
@@ -187,20 +175,6 @@ void CMainFrame::Dump(CDumpContext& dc) const
 
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame message handlers
-
-BOOL CMainFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext) 
-{
-#if 0
-   CRect rect;
-   GetClientRect(rect);
-   CSize treeSize(min(kDefaultTreeWidth, rect.Width() / 4),0);
-   return m_wndSplitter.CreateStatic(this, 1, 2)
-      && m_wndSplitter.CreateView(0, 0, RUNTIME_CLASS(CTreeView), treeSize, pContext)
-      && m_wndSplitter.CreateView(0, 1, RUNTIME_CLASS(cEditorView), CSize(0,0), pContext);
-#else
-   return CFrameWnd::OnCreateClient(lpcs, pContext);
-#endif
-}
 
 void CMainFrame::OnUpdateViewControlBarMenu(CCmdUI* pCmdUI) 
 {
@@ -284,3 +258,22 @@ BOOL CMainFrame::OnViewControlBar(UINT nID)
    ShowControlBar(pCtrlBar, !pCtrlBar->IsWindowVisible(), FALSE);
    return TRUE;
 }
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cMainFrame
+//
+
+////////////////////////////////////////
+
+LRESULT cMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+{
+   if (!CreateSimpleStatusBar())
+   {
+      return -1;
+   }
+
+   return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////

@@ -4,7 +4,12 @@
 #if !defined(INCLUDED_MAINFRM_H)
 #define INCLUDED_MAINFRM_H
 
+#include <atlframe.h>
+#include <atlmisc.h>
+
 #include <vector>
+
+#include "resource.h"       // main symbols
 
 #if _MSC_VER > 1000
 #pragma once
@@ -30,10 +35,6 @@ public:
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CMainFrame)
-	public:
-	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
-	protected:
-	virtual BOOL OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext);
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -47,7 +48,6 @@ public:
 protected:  // control bar embedded members
 	CStatusBar  m_wndStatusBar;
 	CToolBar    m_wndToolBar;
-   CSplitterWnd m_wndSplitter;
 
 // Generated message map functions
 protected:
@@ -61,6 +61,36 @@ protected:
 private:
    std::vector<CControlBar *> m_ctrlBars;
    CString m_ctrlBarViewMenuText;
+};
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cMainFrame
+//
+
+class cMainFrame : public WTL::CFrameWindowImpl<cMainFrame>,
+                   public WTL::CUpdateUI<cMainFrame>
+{
+   typedef WTL::CFrameWindowImpl<cMainFrame> tFrameBase;
+   typedef WTL::CUpdateUI<cMainFrame> tUpdateUIBase;
+
+public:
+   DECLARE_FRAME_WND_CLASS(NULL, IDR_MAINFRAME);
+
+   BEGIN_MSG_MAP(cMainFrame)
+      MESSAGE_HANDLER(WM_CREATE, OnCreate)
+      CHAIN_MSG_MAP(tFrameBase)
+      CHAIN_MSG_MAP(tUpdateUIBase)
+   END_MSG_MAP()
+
+   BEGIN_UPDATE_UI_MAP(cMainFrame)
+      //UPDATE_ELEMENT(ID_xxx, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
+   END_UPDATE_UI_MAP()
+
+   LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
+
+private:
+   WTL::CRecentDocumentList m_recentDocuments;
 };
 
 /////////////////////////////////////////////////////////////////////////////

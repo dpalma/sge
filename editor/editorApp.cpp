@@ -59,6 +59,8 @@ extern uint g_nEditorCmds;
 
 static const tChar g_szRegistryKey[] = _T("SGE");
 
+cMainFrame g_altMainFrame;
+
 /////////////////////////////////////////////////////////////////////////////
 
 static const SIZE g_mapSizes[] =
@@ -340,6 +342,9 @@ BOOL cEditorApp::InitInstance()
 	m_pMainWnd->ShowWindow(SW_SHOW);
 	m_pMainWnd->UpdateWindow();
 
+//   g_altMainFrame.CreateEx();
+//   ShowWindow(g_altMainFrame.m_hWnd, SW_SHOW);
+
    if (pSplashThread != NULL)
    {
       pSplashThread->HideSplash();
@@ -357,7 +362,7 @@ int cEditorApp::ExitInstance()
 	StopGlobalObjects();
 
    _Module.Term();
-	
+
 	return CWinApp::ExitInstance();
 }
 
@@ -367,7 +372,7 @@ int cEditorApp::ExitInstance()
 // App command to run the dialog
 void cEditorApp::OnAppAbout()
 {
-	CAboutDlg().DoModal();
+	cAboutDlg().DoModal();
 }
 
 ////////////////////////////////////////
@@ -544,6 +549,11 @@ BOOL cEditorApp::PreTranslateMessage(MSG * pMsg)
       {
          return TRUE;
       }
+   }
+
+   if (g_altMainFrame.IsWindow() && g_altMainFrame.PreTranslateMessage(pMsg))
+   {
+      return TRUE;
    }
 
    return CWinApp::PreTranslateMessage(pMsg);

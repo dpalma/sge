@@ -5,32 +5,27 @@
 
 #include "aboutdlg.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include "dbgalloc.h" // must be last header
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: CAboutDlg
+// CLASS: cAboutDlg
 //
 
-CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
+////////////////////////////////////////
+
+LRESULT cAboutDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/)
 {
-	//{{AFX_DATA_INIT(CAboutDlg)
-	//}}AFX_DATA_INIT
+   CenterWindow(GetParent());
+   return (LRESULT)TRUE;
 }
 
-void CAboutDlg::DoDataExchange(CDataExchange* pDX)
+////////////////////////////////////////
+
+LRESULT cAboutDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL & /*bHandled*/)
 {
-	CDialog::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CAboutDlg)
-	//}}AFX_DATA_MAP
+   EndDialog(wID);
+   return 0;
 }
 
-BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
-	//{{AFX_MSG_MAP(CAboutDlg)
-		// No message handlers
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+/////////////////////////////////////////////////////////////////////////////
