@@ -8,6 +8,8 @@
 #include "quat.h"
 #include "matrix4.h"
 
+#include <list>
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -38,7 +40,15 @@ class cSceneNode
 
 public:
    cSceneNode();
-   virtual ~cSceneNode() = 0;
+   virtual ~cSceneNode();
+
+   const tVec3 & GetTranslation() const;
+   void SetTranslation(const tVec3 & translation);
+
+   const tQuat & GetRotation() const;
+   void SetRotation(const tQuat & rotation);
+
+   const sMatrix4 & GetTransform() const;
 
    bool IsPickable() const;
    void SetPickable(bool pickable);
@@ -46,9 +56,12 @@ public:
    bool IsSelected() const;
    void SetSelected(bool selected);
 
+   bool AddChild(cSceneNode * pNode);
+   bool RemoveChild(cSceneNode * pNode);
+
    virtual void Traverse(cSceneNodeVisitor * pVisitor);
 
-   virtual void Render() = 0;
+   virtual void Render();
 
    virtual const cBoundingVolume * GetBoundingVolume() const { return NULL; }
    virtual float GetBoundingSphereRadius() const { return 0; }
@@ -57,10 +70,50 @@ public:
    virtual void Hit() {}
    virtual void ClearHitState() {}
 
+protected:
+   typedef std::list<cSceneNode *> tChildren;
+   tChildren m_children;
+
 private:
+   tVec3 m_translation;
+   tQuat m_rotation;
+
+   mutable bool m_bUpdateLocalTransform;
+   mutable sMatrix4 m_localTransform;
+
    uint m_caps;
    uint m_state;
 };
+
+///////////////////////////////////////
+
+inline const tVec3 & cSceneNode::GetTranslation() const
+{
+   return m_translation;
+}
+
+///////////////////////////////////////
+
+inline void cSceneNode::SetTranslation(const tVec3 & translation)
+{
+   m_translation = translation;
+   m_bUpdateLocalTransform = true;
+}
+
+///////////////////////////////////////
+
+inline const tQuat & cSceneNode::GetRotation() const
+{
+   return m_rotation;
+}
+
+///////////////////////////////////////
+
+inline void cSceneNode::SetRotation(const tQuat & rotation)
+{
+   m_rotation = rotation;
+   m_bUpdateLocalTransform = true;
+}
 
 ///////////////////////////////////////
 

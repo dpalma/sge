@@ -67,9 +67,9 @@ static const char kszSelIndicatorMesh[] = "arrow.ms3d";
 cAutoIPtr<cGameCameraController> g_pGameCameraController;
 
 cSceneCamera * g_pGameCamera = NULL;
-cSceneGroup * g_pGameGroup = NULL;
+cSceneNode * g_pGameGroup = NULL;
 cSceneCamera * g_pUICamera = NULL;
-cSceneGroup * g_pUIGroup = NULL;
+cSceneNode * g_pUIGroup = NULL;
 
 cTerrainNode * g_pTerrainRoot = NULL;
 
@@ -208,25 +208,22 @@ class cSpinner : public cComObject<IMPLEMENTS(ISimClient)>
    const cSpinner & operator =(const cSpinner &);
 
 public:
-   cSpinner(cSceneTransformGroup * pGroup, float degreesPerSec);
+   cSpinner(cSceneNode * pGroup, float degreesPerSec);
    ~cSpinner();
-
-   void Connect();
-   void Disconnect();
 
    virtual void OnFrame(double elapsedTime);
 
    virtual void DeleteThis() {}
 
 private:
-   cSceneTransformGroup * m_pGroup;
+   cSceneNode * m_pNode;
    float m_radiansPerSec;
 };
 
 ///////////////////////////////////////
 
-cSpinner::cSpinner(cSceneTransformGroup * pGroup, float degreesPerSec)
- : m_pGroup(pGroup),
+cSpinner::cSpinner(cSceneNode * pGroup, float degreesPerSec)
+ : m_pNode(pGroup),
    m_radiansPerSec(Deg2Rad(degreesPerSec))
 {
    Assert(pGroup != NULL);
@@ -242,16 +239,16 @@ cSpinner::~cSpinner()
    UseGlobal(Sim);
    pSim->Disconnect(this);
 
-   m_pGroup = NULL;
+   m_pNode = NULL;
 }
 
 ///////////////////////////////////////
 
 void cSpinner::OnFrame(double elapsedTime)
 {
-   Assert(m_pGroup != NULL);
+   Assert(m_pNode != NULL);
    tQuat q = QuatFromEulerAngles(tVec3(0, m_radiansPerSec * elapsedTime, 0));
-   m_pGroup->SetRotation(m_pGroup->GetRotation() * q);
+   m_pNode->SetRotation(m_pNode->GetRotation() * q);
 }
 
 
@@ -560,7 +557,7 @@ bool MainInit(int argc, char * argv[])
    // display is created so that there is a gl context
    InputInit();
 
-   g_pGameGroup = new cSceneGroup;
+   g_pGameGroup = new cSceneNode;
 
    g_pGameCamera = new cSceneCamera;
    g_pGameCamera->SetPerspective(g_fov, (float)width / height, kZNear, kZFar);
@@ -582,7 +579,7 @@ bool MainInit(int argc, char * argv[])
    g_pUICamera = new cSceneCamera;
    g_pUICamera->SetOrtho(0, width, height, 0, -99999, 99999);
 
-   g_pUIGroup = new cSceneGroup;
+   g_pUIGroup = new cSceneNode;
    g_pUIGroup->AddChild(new cUIManagerSceneNode);
 
    ScriptCallFunction("GameInit");

@@ -219,10 +219,6 @@ SOURCE=.\scenecamera.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\scenegroup.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\scenemesh.cpp
 # End Source File
 # Begin Source File
@@ -326,10 +322,6 @@ SOURCE=.\raycast.h
 # Begin Source File
 
 SOURCE=.\scenecamera.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\scenegroup.h
 # End Source File
 # Begin Source File
 

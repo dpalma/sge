@@ -9,7 +9,7 @@
 #include "boundingvolume.h"
 #include "raycast.h"
 #include "ggl.h"
-#include "scenegroup.h"
+#include "scenenode.h"
 
 #include "vec4.h"
 #include "configapi.h"
@@ -21,7 +21,7 @@
 
 #include "dbgalloc.h" // must be last header
 
-extern cSceneGroup * g_pGameGroup; // HACK
+extern cSceneNode * g_pGameGroup; // HACK
 
 ///////////////////////////////////////////////////////////////////////////////
 

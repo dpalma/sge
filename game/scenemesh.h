@@ -5,7 +5,7 @@
 #define INCLUDED_SCENEMESH_H
 
 #include "boundingvolume.h"
-#include "scenegroup.h"
+#include "scenenode.h"
 #include "comtools.h"
 #include "sim.h"
 
@@ -22,7 +22,7 @@ F_DECLARE_INTERFACE(IMesh);
 // CLASS: cSceneMesh
 //
 
-class cSceneMesh : public cSceneTransformGroup
+class cSceneMesh : public cSceneNode
 {
    cSceneMesh(const cSceneMesh &);
    const cSceneMesh & operator =(const cSceneMesh &);
