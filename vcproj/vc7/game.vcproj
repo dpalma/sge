@@ -44,7 +44,6 @@
 				OutputFile=".\..\..\Build.vc7\StaticRelease/game.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
-				ProgramDatabaseFile=".\..\..\Build.vc7\StaticRelease/game.pdb"
 				GenerateMapFile="TRUE"
 				MapFileName="..\..\Build.vc7\StaticRelease/game.map"
 				SubSystem="2"/>

@@ -283,7 +283,6 @@
 				OutputFile=".\..\..\Build.vc7\StaticRelease/editor.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
-				ProgramDatabaseFile=".\..\..\Build.vc7\StaticRelease/editor.pdb"
 				GenerateMapFile="TRUE"
 				MapFileName="..\..\Build.vc7\StaticRelease\editor.map"
 				SubSystem="2"/>

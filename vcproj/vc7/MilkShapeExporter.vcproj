@@ -47,7 +47,6 @@
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\3rdparty\ms3dsdk\msLib\lib"
 				ModuleDefinitionFile="..\..\MilkShapeExporter\msPlugIn.def"
-				ProgramDatabaseFile=".\..\..\Build.vc7\StaticRelease/msSGEExporter.pdb"
 				GenerateMapFile="TRUE"
 				MapFileName="..\..\Build.vc7\StaticRelease/msSGEExporter.map"
 				OptimizeReferences="2"
