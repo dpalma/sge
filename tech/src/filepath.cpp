@@ -31,6 +31,7 @@ static const char kPathSep = '\\';
 static const char kPathSep = '/';
 #endif
 static const char szPathSep[] = { kPathSep, 0 };
+static const char szPathSeps[] = "\\/";
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -121,7 +122,7 @@ static char * CollapseDots(const char * pszPath, char * pszResult, int maxLen)
    {
       if (dirs[i] != NULL)
       {
-         int len = strcspn(dirs[i] + 1, "/\\") + 1;
+         int len = strcspn(dirs[i] + 1, szPathSeps) + 1;
          strncat(pszResult, dirs[i], len);
       }
    }
@@ -143,7 +144,7 @@ static char * CollapseDots(const char * pszPath, char * pszResult, int maxLen)
 
 cFilePath::cFilePath()
 {
-   memset(m_szPath, 0, sizeof(m_szPath));
+   m_szPath[0] = 0;
 }
 
 ///////////////////////////////////////
@@ -153,7 +154,7 @@ cFilePath::cFilePath(const char * pszPath)
    if (pszPath != NULL)
    {
       strncpy(m_szPath, pszPath, sizeof(m_szPath));
-      m_szPath[sizeof(m_szPath) - 1] = '\0';
+      m_szPath[_countof(m_szPath) - 1] = 0;
    }
 }
 
@@ -165,7 +166,11 @@ cFilePath::cFilePath(const char * pszPath, int pathLen)
    {
       int len = Min(pathLen, sizeof(m_szPath));
       strncpy(m_szPath, pszPath, len);
-      m_szPath[len - 1] = '\0';
+      m_szPath[len - 1] = 0;
+   }
+   else
+   {
+      m_szPath[0] = 0;
    }
 }
 
