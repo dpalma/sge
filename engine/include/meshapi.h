@@ -52,6 +52,11 @@ interface ISubMesh : IUnknown
    virtual const char * GetMaterialName() const = 0;
    virtual void SetMaterialName(const char * pszMaterialName) = 0;
 
+   // Used only to cache a pointer to the named material. Use SetMaterialName
+   // to assign a material to a submesh.
+   virtual tResult GetMaterial(IMaterial * * ppMaterial) = 0;
+   virtual tResult SetMaterial(IMaterial * pMaterial) = 0;
+
    virtual uint GetVertexCount() const = 0;
 
    virtual tResult GetVertexBuffer(IVertexBuffer * * ppVertexBuffer) = 0;

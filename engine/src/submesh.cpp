@@ -5,6 +5,7 @@
 
 #include "mesh.h"
 #include "render.h"
+#include "material.h"
 #include "comtools.h"
 #include "str.h"
 
@@ -33,6 +34,9 @@ public:
    virtual const char * GetMaterialName() const;
    virtual void SetMaterialName(const char * pszMaterialName);
 
+   virtual tResult GetMaterial(IMaterial * * ppMaterial);
+   virtual tResult SetMaterial(IMaterial * pMaterial);
+
    virtual uint GetVertexCount() const
    {
       return m_nVerts;
@@ -58,6 +62,7 @@ private:
    IIndexBuffer * AccessIndexBuffer() { return m_pIndexBuffer; }
 
    cStr m_materialName;
+   cAutoIPtr<IMaterial> m_pMaterial;
    uint m_nVerts;
    uint m_nIndices;
    cAutoIPtr<IIndexBuffer> m_pIndexBuffer;
@@ -121,6 +126,37 @@ const char * cSubMesh::GetMaterialName() const
 void cSubMesh::SetMaterialName(const char * pszMaterialName)
 {
    m_materialName = pszMaterialName ? pszMaterialName : "";
+   // When the assigned material name changes, get rid of the cached
+   // IMaterial interface pointer.
+   SetMaterial(NULL);
+}
+
+///////////////////////////////////////
+
+tResult cSubMesh::GetMaterial(IMaterial * * ppMaterial)
+{
+   if (ppMaterial != NULL && !!m_pMaterial)
+   {
+      *ppMaterial = m_pMaterial;
+      (*ppMaterial)->AddRef();
+      return S_OK;
+   }
+   return E_FAIL;
+}
+
+///////////////////////////////////////
+
+tResult cSubMesh::SetMaterial(IMaterial * pMaterial)
+{
+   SafeRelease(m_pMaterial);
+   if (pMaterial != NULL
+      && (strcmp(pMaterial->GetName(), GetMaterialName()) == 0))
+   {
+      m_pMaterial = pMaterial;
+      pMaterial->AddRef();
+      return S_OK;
+   }
+   return E_FAIL;
 }
 
 ///////////////////////////////////////

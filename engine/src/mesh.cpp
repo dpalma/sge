@@ -195,30 +195,64 @@ void cMesh::GetAABB(tVec3 * pMax, tVec3 * pMin) const
 
 ///////////////////////////////////////
 
-void cMesh::Render(IRenderDevice * pRenderDevice) const
+class cRenderSubMesh
 {
-   tSubMeshes::const_iterator iter;
-   for (iter = m_subMeshes.begin(); iter != m_subMeshes.end(); iter++)
-   {
-      ISubMesh * pSubMesh = *iter;
+public:
+   cRenderSubMesh(IMesh * pMesh, IRenderDevice * pRenderDevice);
 
-      cAutoIPtr<IMaterial> pMaterial;
-      if (FindMaterial(pSubMesh->GetMaterialName(), &pMaterial) == S_OK)
+   void operator()(ISubMesh * pSubMesh);
+
+private:
+   cAutoIPtr<IMesh> m_pMesh;
+   cAutoIPtr<IRenderDevice> m_pRenderDevice;
+};
+
+///////////////////////////////////////
+
+cRenderSubMesh::cRenderSubMesh(IMesh * pMesh, IRenderDevice * pRenderDevice)
+ : m_pMesh(pMesh),
+   m_pRenderDevice(pRenderDevice)
+{
+   Assert(pMesh && pRenderDevice);
+   pMesh->AddRef();
+   pRenderDevice->AddRef();
+};
+
+///////////////////////////////////////
+
+void cRenderSubMesh::operator()(ISubMesh * pSubMesh)
+{
+   cAutoIPtr<IMaterial> pMaterial;
+   if (pSubMesh->GetMaterial(&pMaterial) != S_OK || !pMaterial)
+   {
+      if (m_pMesh->FindMaterial(pSubMesh->GetMaterialName(), &pMaterial) == S_OK)
       {
-         cAutoIPtr<IIndexBuffer> pIndexBuffer;
-         if (pSubMesh->GetIndexBuffer(&pIndexBuffer) == S_OK)
-         {
-            cAutoIPtr<IVertexBuffer> pVertexBuffer;
-            if (pSubMesh->GetVertexBuffer(&pVertexBuffer) == S_OK)
-            {
-               pRenderDevice->Render(
-                  kRP_Triangles, pMaterial,
-                  pSubMesh->GetIndexCount(), pIndexBuffer,
-                  0, pSubMesh->GetVertexCount(), pVertexBuffer);
-            }
-         }
+         pSubMesh->SetMaterial(pMaterial);
       }
    }
+
+   AssertMsg(!!pMaterial, "SubMesh object has an invalid material!");
+
+   cAutoIPtr<IIndexBuffer> pIndexBuffer;
+   if (pSubMesh->GetIndexBuffer(&pIndexBuffer) == S_OK)
+   {
+      cAutoIPtr<IVertexBuffer> pVertexBuffer;
+      if (pSubMesh->GetVertexBuffer(&pVertexBuffer) == S_OK)
+      {
+         m_pRenderDevice->Render(
+            kRP_Triangles, pMaterial,
+            pSubMesh->GetIndexCount(), pIndexBuffer,
+            0, pSubMesh->GetVertexCount(), pVertexBuffer);
+      }
+   }
+}
+
+///////////////////////////////////////
+
+void cMesh::Render(IRenderDevice * pRenderDevice) const
+{
+   std::for_each(m_subMeshes.begin(), m_subMeshes.end(),
+      cRenderSubMesh(const_cast<cMesh *>(this), pRenderDevice));
 }
 
 ///////////////////////////////////////
