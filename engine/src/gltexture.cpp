@@ -134,12 +134,7 @@ public:
 
    virtual void OnFinalRelease();
 
-   virtual tResult GetTextureId(uint * pTextureId) const
-   {
-      Assert(pTextureId != NULL);
-      *pTextureId = m_textureId;
-      return S_OK;
-   }
+   virtual tResult GetTextureHandle(HANDLE * phTexture) const;
 
 private:
    uint m_textureId;
@@ -166,12 +161,24 @@ cTexture::cTexture(uint textureId)
 
 void cTexture::OnFinalRelease()
 {
-   if (m_bOwnTextureId)
+   if (m_bOwnTextureId && glIsTexture(m_textureId))
    {
-      if (glIsTexture(m_textureId))
-         glDeleteTextures(1, &m_textureId);
+      glDeleteTextures(1, &m_textureId);
    }
    m_textureId = 0;
+}
+
+///////////////////////////////////////
+
+tResult cTexture::GetTextureHandle(HANDLE * phTexture) const
+{
+   if (phTexture == NULL)
+   {
+      return E_POINTER;
+   }
+
+   *phTexture = (HANDLE)m_textureId;
+   return (m_textureId != 0) ? S_OK : S_FALSE;
 }
 
 
