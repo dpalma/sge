@@ -24,6 +24,7 @@ F_DECLARE_INTERFACE(IHeightMap);
 F_DECLARE_INTERFACE(IMaterial);
 F_DECLARE_INTERFACE(IRenderDevice);
 F_DECLARE_INTERFACE(IIndexBuffer);
+F_DECLARE_INTERFACE(ITexture);
 F_DECLARE_INTERFACE(IReader);
 F_DECLARE_INTERFACE(IWriter);
 
@@ -68,6 +69,7 @@ public:
 
    tResult Init(uint nTilesX, uint nTilesZ, IEditorTileSet * pTileSet, IHeightMap * pHeightMap);
    static tResult InitQuads(uint nTilesX, uint nTilesZ, IHeightMap * pHeightMap, tTerrainQuads * pQuads);
+   tResult RegenerateChunks();
 
    void GetDimensions(uint * pxd, uint * pzd) const;
    void GetExtents(uint * px, uint * pz) const;
@@ -131,7 +133,8 @@ private:
 
    cSceneEntity m_sceneEntity;
 
-   std::vector<cTerrainChunk *> m_chunks;
+   typedef std::vector<cTerrainChunk *> tChunks;
+   tChunks m_chunks;
 };
 
 
@@ -160,15 +163,21 @@ private:
 class cSplatBuilder
 {
 public:
-   cSplatBuilder();
+   cSplatBuilder(ITexture * pTexture);
    ~cSplatBuilder();
 
-   void AddTriangle(int i0, int i1, int i2);
+   tResult GetTexture(ITexture * * ppTexture);
 
-   tResult GenerateSplat(cSplat * * ppSplat);
+   void AddTriangle(uint i0, uint i1, uint i2);
+
+   tResult CreateIndexBuffer(IIndexBuffer * * ppIndexBuffer);
+
+   size_t GetIndexCount() const;
+   const uint * GetIndexPtr() const;
 
 private:
-   std::vector<int> m_indices;
+   std::vector<uint> m_indices;
+   cAutoIPtr<ITexture> m_pTexture;
 };
 
 
@@ -177,7 +186,7 @@ private:
 // CLASS: cTerrainChunk
 //
 
-class cTerrainChunk : public cComObject<IMPLEMENTS(IUnknown)>
+class cTerrainChunk : public cComObject<IMPLEMENTS(ISceneEntity)>
 {
    cTerrainChunk(const cTerrainChunk &);
    const cTerrainChunk & operator =(const cTerrainChunk &);
@@ -190,7 +199,33 @@ public:
       const tTerrainQuads & quads, uint nQuadsX, uint nQuadsZ,
       IEditorTileSet * pTileSet, cTerrainChunk * * ppChunk);
 
+   virtual ISceneEntity * AccessParent() { return NULL; }
+   virtual tResult SetParent(ISceneEntity * pEntity) { return E_FAIL; }
+   virtual tResult IsChild(ISceneEntity * pEntity) const { return E_FAIL; }
+   virtual tResult AddChild(ISceneEntity * pEntity) { return E_FAIL; }
+   virtual tResult RemoveChild(ISceneEntity * pEntity) { return E_FAIL; }
+
+   virtual const tVec3 & GetLocalTranslation() const { static tVec3 vz(0,0,0); return vz; }
+   virtual void SetLocalTranslation(const tVec3 & translation) {}
+   virtual const tQuat & GetLocalRotation() const { static tQuat qz(0,0,0,1); return qz; }
+   virtual void SetLocalRotation(const tQuat & rotation) {}
+   virtual const tMatrix4 & GetLocalTransform() const { return tMatrix4::GetIdentity(); }
+
+   virtual const tVec3 & GetWorldTranslation() const { return GetLocalTranslation(); }
+   virtual const tQuat & GetWorldRotation() const { return GetLocalRotation(); }
+   virtual const tMatrix4 & GetWorldTransform() const { return GetLocalTransform(); }
+
+   virtual void Render(IRenderDevice * pRenderDevice);
+   virtual float GetBoundingRadius() const { return 9999999; }
+
+   virtual tResult Intersects(const cRay & ray) { return E_NOTIMPL; }
+
 private:
+   typedef std::vector<sTerrainVertex> tVertices;
+   tVertices m_vertices;
+
+   typedef std::vector<cSplatBuilder *> tSplatBuilders;
+   tSplatBuilders m_splats;
 };
 
 /////////////////////////////////////////////////////////////////////////////

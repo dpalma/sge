@@ -155,7 +155,7 @@ cTerrain::cTerrain()
 
 cTerrain::~cTerrain()
 {
-   std::for_each(m_chunks.begin(), m_chunks.end(), CTInterfaceMethod(&IUnknown::Release));
+   std::for_each(m_chunks.begin(), m_chunks.end(), CTInterfaceMethod(&cTerrainChunk::Release));
 }
 
 ////////////////////////////////////////
@@ -264,6 +264,14 @@ tResult cTerrain::Init(uint nTilesX, uint nTilesZ, IEditorTileSet * pTileSet, IH
    m_nChunksZ = m_nTilesZ / kTilesPerChunk;
 
    Assert(m_chunks.empty());
+   return RegenerateChunks();
+}
+
+////////////////////////////////////////
+
+tResult cTerrain::RegenerateChunks()
+{
+   std::for_each(m_chunks.begin(), m_chunks.end(), CTInterfaceMethod(&cTerrainChunk::Release));
 
    for (uint iz = 0; iz < m_nChunksZ; iz++)
    {
@@ -274,7 +282,7 @@ tResult cTerrain::Init(uint nTilesX, uint nTilesZ, IEditorTileSet * pTileSet, IH
             kTilesPerChunk, kTilesPerChunk, m_terrainQuads,
             m_nTilesX, m_nTilesZ, m_pTileSet, &pChunk) == S_OK)
          {
-            m_chunks.push_back(pChunk);
+            m_chunks.push_back(CTAddRef(pChunk));
          }
       }
    }
@@ -389,6 +397,20 @@ void cTerrain::GetTileIndices(float x, float z, uint * pix, uint * piz)
 
 tResult cTerrain::Render(IRenderDevice * pRenderDevice)
 {
+   if (!m_chunks.empty())
+   {
+      tChunks::iterator iter = m_chunks.begin();
+      tChunks::iterator end = m_chunks.end();
+      for (; iter != end; iter++)
+      {
+         (*iter)->Render(pRenderDevice);
+      }
+      return S_OK;
+   }
+
+   return E_FAIL;
+
+   /*
    glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
 
    glEnable(GL_COLOR_MATERIAL);
@@ -440,6 +462,7 @@ tResult cTerrain::Render(IRenderDevice * pRenderDevice)
    glPopAttrib();
 
    return S_OK;
+   */
 }
 
 ////////////////////////////////////////
@@ -547,7 +570,8 @@ cSplat::~cSplat()
 
 ////////////////////////////////////////
 
-cSplatBuilder::cSplatBuilder()
+cSplatBuilder::cSplatBuilder(ITexture * pTexture)
+ : m_pTexture(CTAddRef(pTexture))
 {
 }
 
@@ -559,15 +583,49 @@ cSplatBuilder::~cSplatBuilder()
 
 ////////////////////////////////////////
 
-void cSplatBuilder::AddTriangle(int i0, int i1, int i2)
+tResult cSplatBuilder::GetTexture(ITexture * * ppTexture)
 {
+   return m_pTexture.GetPointer(ppTexture);
 }
 
 ////////////////////////////////////////
 
-tResult cSplatBuilder::GenerateSplat(cSplat * * ppSplat)
+void cSplatBuilder::AddTriangle(uint i0, uint i1, uint i2)
 {
+   m_indices.push_back(i0);
+   m_indices.push_back(i1);
+   m_indices.push_back(i2);
+}
+
+////////////////////////////////////////
+
+tResult cSplatBuilder::CreateIndexBuffer(IIndexBuffer * * ppIndexBuffer)
+{
+   if (ppIndexBuffer == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if ((m_indices.size() % 3) != 0)
+   {
+      return E_FAIL;
+   }
+
    return E_NOTIMPL;
+}
+
+////////////////////////////////////////
+
+size_t cSplatBuilder::GetIndexCount() const
+{
+   return m_indices.size();
+}
+
+////////////////////////////////////////
+
+const uint * cSplatBuilder::GetIndexPtr() const
+{
+   return &m_indices[0];
 }
 
 
@@ -586,6 +644,13 @@ cTerrainChunk::cTerrainChunk()
 
 cTerrainChunk::~cTerrainChunk()
 {
+   tSplatBuilders::iterator iter = m_splats.begin();
+   tSplatBuilders::iterator end = m_splats.end();
+   for (; iter != end; iter++)
+   {
+      delete *iter;
+   }
+   m_splats.clear();
 }
 
 ////////////////////////////////////////
@@ -607,8 +672,11 @@ tResult cTerrainChunk::Create(uint ix, uint iz, uint cx, uint cz,
       return E_OUTOFMEMORY;
    }
 
-   typedef std::map<uint, cSplatBuilder *> tSplatBuilders;
-   tSplatBuilders splatBuilders;
+   pChunk->m_vertices.resize(cx * cz * 4);
+   uint iVert = 0;
+
+   typedef std::map<uint, cSplatBuilder *> tSplatBuilderMap;
+   tSplatBuilderMap splatBuilders;
 
    for (uint z = iz; z < (iz + cz); z++)
    {
@@ -618,32 +686,99 @@ tResult cTerrainChunk::Create(uint ix, uint iz, uint cx, uint cz,
       for (uint x = ix; x < (ix + cx); x++)
       {
          uint iQuad = (z * nQuadsZ) + x;
-
          const sTerrainQuad & quad = quads[iQuad];
+
+         cSplatBuilder * pSplatBuilder = NULL;
 
          if (splatBuilders.find(quad.tile) == splatBuilders.end())
          {
-            cSplatBuilder * pSplatBuilder = new cSplatBuilder;
-            if (pSplatBuilder != NULL)
+            cAutoIPtr<ITexture> pTexture;
+            if (pTileSet->GetTileTexture(quad.tile, &pTexture) == S_OK)
             {
-               splatBuilders[quad.tile] = pSplatBuilder;
+               pSplatBuilder = new cSplatBuilder(pTexture);
+               if (pSplatBuilder != NULL)
+               {
+                  splatBuilders[quad.tile] = pSplatBuilder;
+               }
             }
          }
+         else
+         {
+            pSplatBuilder = splatBuilders[quad.tile];
+         }
 
-         splatBuilders[quad.tile]->AddTriangle(iQuad,iQuad+3,iQuad+2);
-         splatBuilders[quad.tile]->AddTriangle(iQuad+3,iQuad+2,iQuad+1);
+         if (pSplatBuilder != NULL)
+         {
+            pSplatBuilder->AddTriangle(iVert+2,iVert+1,iVert+0);
+            pSplatBuilder->AddTriangle(iVert+0,iVert+3,iVert+2);
+         }
+
+         pChunk->m_vertices[iVert++] = quad.verts[0];
+         pChunk->m_vertices[iVert++] = quad.verts[1];
+         pChunk->m_vertices[iVert++] = quad.verts[2];
+         pChunk->m_vertices[iVert++] = quad.verts[3];
       }
    }
 
-   tSplatBuilders::iterator iter = splatBuilders.begin();
-   tSplatBuilders::iterator end = splatBuilders.end();
+   Assert(pChunk->m_vertices.size() == iVert);
+
+   tSplatBuilderMap::iterator iter = splatBuilders.begin();
+   tSplatBuilderMap::iterator end = splatBuilders.end();
    for (; iter != end; iter++)
    {
-      delete iter->second;
+      pChunk->m_splats.push_back(iter->second);
    }
    splatBuilders.clear();
 
-   return E_NOTIMPL;
+   *ppChunk = CTAddRef(pChunk);
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+void cTerrainChunk::Render(IRenderDevice * pRenderDevice)
+{
+   glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
+
+   glDisableClientState(GL_EDGE_FLAG_ARRAY);
+   glDisableClientState(GL_INDEX_ARRAY);
+   glDisableClientState(GL_VERTEX_ARRAY);
+   glDisableClientState(GL_NORMAL_ARRAY);
+   glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+   glDisableClientState(GL_COLOR_ARRAY);
+
+   const byte * pVertexData = (const byte *)(sTerrainVertex *)&m_vertices[0];
+
+   glEnableClientState(GL_VERTEX_ARRAY);
+   glVertexPointer(3, GL_FLOAT, sizeof(sTerrainVertex), pVertexData + sizeof(tVec2) + sizeof(uint32));
+
+   glEnableClientState(GL_COLOR_ARRAY);
+   glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(sTerrainVertex), pVertexData + sizeof(tVec2));
+
+   glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+//   glClientActiveTextureARB(GL_TEXTURE0_ARB);
+   glTexCoordPointer(2, GL_FLOAT, sizeof(sTerrainVertex), pVertexData);
+
+   tSplatBuilders::iterator iter = m_splats.begin();
+   tSplatBuilders::iterator end = m_splats.end();
+   for (; iter != end; iter++)
+   {
+      cAutoIPtr<ITexture> pTexture;
+      if ((*iter)->GetTexture(&pTexture) == S_OK)
+      {
+         HANDLE tex;
+         if (pTexture->GetTextureHandle(&tex) == S_OK)
+         {
+            glEnable(GL_TEXTURE_2D);
+            glBindTexture(GL_TEXTURE_2D, (uint)tex);
+         }
+      }
+
+      glDrawElements(GL_TRIANGLES, (*iter)->GetIndexCount(), GL_UNSIGNED_INT, (*iter)->GetIndexPtr());
+   }
+
+   glPopAttrib();
 }
 
 /////////////////////////////////////////////////////////////////////////////
