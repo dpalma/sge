@@ -113,7 +113,8 @@ int LoadTiles(int argc, const cScriptVar * argv,
       if (!!pReader)
       {
          pReader->Seek(0, kSO_End);
-         size_t length = pReader->Tell();
+         ulong length;
+         pReader->Tell(&length);
          pReader->Seek(0, kSO_Set);
 
          char * pszContents = new char[length + 1];
