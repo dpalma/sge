@@ -61,6 +61,26 @@ void DescribeVertexElement(const sVertexElement & element, CString * pStr)
 
 /////////////////////////////////////////////////////////////////////////////
 
+uint VertexElementSize(const sVertexElement & element)
+{
+   static const uint elementSizeTable[] =
+   {
+      1 * sizeof(float), // kVDT_Float1
+      2 * sizeof(float), // kVDT_Float2
+      3 * sizeof(float), // kVDT_Float3
+      4 * sizeof(float), // kVDT_Float4
+      sizeof(uint32), // kVDT_Color
+      4 * sizeof(unsigned char), // kVDT_UnsignedByte4
+      2 * sizeof(short), // kVDT_Short2
+      4 * sizeof(short), // kVDT_Short4
+   };
+
+   Assert((int)element.type < _countof(elementSizeTable));
+   return elementSizeTable[element.type];
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
 void DescribeVertexData(const sVertexElement & element, const byte * pData, CString * pStr)
 {
    Assert(pStr != NULL);
@@ -98,6 +118,7 @@ void AddVertices(uint nVertices, IVertexBuffer * pVertexBuffer, CTreeCtrl * pTre
       {
          sVertexElement elements[256];
          int nElements = _countof(elements);
+         uint vertexSize;
 
          HTREEITEM hVertexDecl = pTreeCtrl->InsertItem("Vertex Declaration", hParent);
 
@@ -114,14 +135,14 @@ void AddVertices(uint nVertices, IVertexBuffer * pVertexBuffer, CTreeCtrl * pTre
             }
          }
 
+         Verify(pVertexDecl->GetVertexSize(&vertexSize) == S_OK);
+
          HTREEITEM hVertices = pTreeCtrl->InsertItem("Vertices", hParent);
          if (hVertices != NULL)
          {
             byte * pVertexData;
             if (pVertexBuffer->Lock(kBL_ReadOnly, (void**)&pVertexData) == S_OK)
             {
-               uint vertexSize = GetVertexSize(elements, nElements);
-
                CString item;
                byte * pVertex = pVertexData;
                for (uint i = 0; i < nVertices; i++, pVertex += vertexSize)
@@ -131,7 +152,7 @@ void AddVertices(uint nVertices, IVertexBuffer * pVertexBuffer, CTreeCtrl * pTre
                   if (hVertex != NULL)
                   {
                      byte * pVertexElement = pVertex;
-                     for (int j = 0; j < nElements; pVertexElement += GetVertexSize(&elements[j], 1), j++)
+                     for (int j = 0; j < nElements; pVertexElement += VertexElementSize(elements[j]), j++)
                      {
                         DescribeVertexData(elements[j], pVertexElement, &item);
                         if (!item.IsEmpty())

@@ -35,8 +35,10 @@ tResult MeshOptimize(IMesh * pMesh)
       {
          sVertexElement elements[256];
          int nElements = _countof(elements);
+         uint vertexSize;
 
-         if (pVertexDecl->GetElements(elements, &nElements) == S_OK)
+         if (pVertexDecl->GetElements(elements, &nElements) == S_OK
+            && pVertexDecl->GetVertexSize(&vertexSize) == S_OK)
          {
             uint blendIndexOffset = INVALID_UINT;
             for (int i = 0; i < nElements; i++)
@@ -54,8 +56,6 @@ tResult MeshOptimize(IMesh * pMesh)
                byte * pVertexData;
                if (pVertexBuffer->Lock(kBL_ReadOnly, (void**)&pVertexData) == S_OK)
                {
-                  uint vertexSize = GetVertexSize(elements, nElements);
-
                   byte * pTempVertex = reinterpret_cast<byte *>(alloca(vertexSize));
 
                   int * vertexMap = reinterpret_cast<int *>(alloca(sizeof(int) * pMesh->GetVertexCount()));
