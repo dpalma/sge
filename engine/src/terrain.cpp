@@ -5,7 +5,7 @@
 
 #include "terrain.h"
 #include "editorapi.h"
-#include "heightmap.h"
+#include "editorTypes.h"
 
 #include "materialapi.h"
 #include "renderapi.h"
@@ -13,6 +13,7 @@
 #include "color.h"
 
 #include "readwriteapi.h"
+#include "globalobj.h"
 
 #include <GL/gl.h>
 
@@ -20,9 +21,13 @@
 
 /////////////////////////////////////////////////////////////////////////////
 
+static const uint kMaxTerrainHeight = 30;
+
+/////////////////////////////////////////////////////////////////////////////
+
 static const union
 {
-   byte b[4];
+   byte b[sizeof(uint)];
    uint v;
 }
 kTerrainFileIdGenerator = { { 's', 'g', 'e', 'm' } };
@@ -133,11 +138,11 @@ tResult cReadWriteOps<tTerrainVertexVector>::Write(IWriter * pWriter,
 ////////////////////////////////////////
 
 cTerrain::cTerrain()
- : m_xDim(0),
-   m_zDim(0),
-   m_tileSize(0),
-   m_xChunks(0),
-   m_zChunks(0)
+ : m_tileSize(0),
+   m_nTilesX(0),
+   m_nTilesZ(0),
+   m_nChunksX(0),
+   m_nChunksZ(0)
 {
 }
 
@@ -180,12 +185,11 @@ tResult cTerrain::Read(IReader * pReader)
       return E_FAIL;
    }
 
-   if (pReader->Read(&m_xDim) != S_OK ||
-      pReader->Read(&m_zDim) != S_OK ||
-      pReader->Read(&m_tileSize) != S_OK ||
-      pReader->Read(&m_xChunks) != S_OK ||
-      pReader->Read(&m_zChunks) != S_OK ||
-      pReader->Read(&m_vertices) != S_OK ||
+   if (pReader->Read(&m_tileSize) != S_OK ||
+      pReader->Read(&m_nTilesX) != S_OK ||
+      pReader->Read(&m_nTilesZ) != S_OK ||
+      pReader->Read(&m_nChunksX) != S_OK ||
+      pReader->Read(&m_nChunksZ) != S_OK ||
       pReader->Read(&m_tileSetName, 0) != S_OK)
    {
       return E_FAIL;
@@ -205,12 +209,11 @@ tResult cTerrain::Write(IWriter * pWriter)
 
    if (pWriter->Write(kTerrainFileId) != S_OK ||
       pWriter->Write(kTerrainFileVersion) != S_OK ||
-      pWriter->Write(m_xDim) != S_OK ||
-      pWriter->Write(m_zDim) != S_OK ||
       pWriter->Write(m_tileSize) != S_OK ||
-      pWriter->Write(m_xChunks) != S_OK ||
-      pWriter->Write(m_zChunks) != S_OK ||
-      pWriter->Write(m_vertices) != S_OK ||
+      pWriter->Write(m_nTilesX) != S_OK ||
+      pWriter->Write(m_nTilesZ) != S_OK ||
+      pWriter->Write(m_nChunksX) != S_OK ||
+      pWriter->Write(m_nChunksZ) != S_OK ||
       pWriter->Write(m_tileSetName.c_str()) != S_OK)
    {
       return E_FAIL;
@@ -221,53 +224,84 @@ tResult cTerrain::Write(IWriter * pWriter)
 
 ////////////////////////////////////////
 
-bool cTerrain::Create(uint xDim, uint zDim, int stepSize,
-                      IEditorTileSet * pTileSet, uint defaultTile,
-                      cHeightMap * pHeightMap)
+tResult cTerrain::Init(const cMapSettings * pMapSettings)
 {
-   InitializeVertices(xDim, zDim, stepSize, pHeightMap);
-
-   Assert(pTileSet != NULL);
-
-   cAutoIPtr<IEditorTile> pTile;
-   if (pTileSet->GetTile(defaultTile, &pTile) != S_OK)
+   if (pMapSettings == NULL)
    {
-      return false;
+      return E_POINTER;
    }
 
-   pTileSet->GetName(&m_tileSetName);
-   m_pTileSet = CTAddRef(pTileSet);
-
-   static const uint32 color = ARGB(255,192,192,192);
-
-   uint nTileImages = pTile->GetHorizontalImageCount() * pTile->GetVerticalImageCount();
-
-   Assert(IsPowerOfTwo(nTileImages));
-
-   if (!IsPowerOfTwo(nTileImages))
+   if (FAILED(InitQuads(pMapSettings, &m_terrainQuads)))
    {
-      DebugMsg("Number of variations in a tile must be a power of two\n");
-      return false;
+      return E_FAIL;
    }
 
-   float tileTexWidth = 1.0f / pTile->GetHorizontalImageCount();
-   float tileTexHeight = 1.0f / pTile->GetVerticalImageCount();
+   m_tileSize = kDefaultStepSize;
+   m_nTilesX = pMapSettings->GetXDimension();
+   m_nTilesZ = pMapSettings->GetZDimension();
 
-   m_tileSize = stepSize;
+   Assert(!m_pTileSet);
+   Assert(m_tileSetName.empty());
 
-   if (xDim > kTilesPerChunk)
+   UseGlobal(EditorTileManager);
+   if (pEditorTileManager->GetTileSet(pMapSettings->GetTileSet(), &m_pTileSet) == S_OK)
    {
-      m_xChunks = xDim / kTilesPerChunk;
+      m_pTileSet->GetName(&m_tileSetName);
    }
 
-   if (zDim > kTilesPerChunk)
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cTerrain::InitQuads(const cMapSettings * pMapSettings, tTerrainQuads * pQuads)
+{
+   if (pMapSettings == NULL || pQuads == NULL)
    {
-      m_zChunks = zDim / kTilesPerChunk;
+      return E_POINTER;
    }
 
-   CreateTerrainChunks();
+   uint nQuads = pMapSettings->GetXDimension() * pMapSettings->GetZDimension();
+   pQuads->resize(nQuads);
 
-   return true;
+   static const uint stepSize = kDefaultStepSize;
+
+   uint extentX = pMapSettings->GetXDimension() * stepSize;
+   uint extentZ = pMapSettings->GetZDimension() * stepSize;
+
+   int iQuad = 0;
+   float z = 0;
+   float z2 = static_cast<float>(stepSize);
+   for (uint iz = 0; iz < pMapSettings->GetZDimension(); iz++, z += stepSize, z2 += stepSize)
+   {
+      float x = 0;
+      float x2 = static_cast<float>(stepSize);
+      for (uint ix = 0; ix < pMapSettings->GetXDimension(); ix++, x += stepSize, x2 += stepSize, iQuad++)
+      {
+         sTerrainQuad & tq = pQuads->at(iQuad);
+
+         tq.tile = 0;
+
+         tq.verts[0].color = ARGB(255,192,192,192);
+         tq.verts[1].color = ARGB(255,192,192,192);
+         tq.verts[2].color = ARGB(255,192,192,192);
+         tq.verts[3].color = ARGB(255,192,192,192);
+
+         tq.verts[0].uv1 = tVec2(0,0);
+         tq.verts[1].uv1 = tVec2(1,0);
+         tq.verts[2].uv1 = tVec2(1,1);
+         tq.verts[3].uv1 = tVec2(0,1);
+
+#define Height(xx,zz) (pMapSettings->GetNormalizedHeight((xx)/extentX,(zz)/extentZ)*kMaxTerrainHeight)
+         tq.verts[0].pos = tVec3(x, Height(x,z), z);
+         tq.verts[1].pos = tVec3(x2, Height(x2,z), z);
+         tq.verts[2].pos = tVec3(x2, Height(x2,z2), z2);
+         tq.verts[3].pos = tVec3(x, Height(x,z2), z2);
+#undef Height
+      }
+   }
+
+   return S_OK;
 }
 
 ////////////////////////////////////////
@@ -276,12 +310,12 @@ void cTerrain::GetDimensions(uint * pxd, uint * pzd) const
 {
    if (pxd != NULL)
    {
-      *pxd = m_xDim;
+      *pxd = m_nTilesX;
    }
 
    if (pzd != NULL)
    {
-      *pzd = m_zDim;
+      *pzd = m_nTilesZ;
    }
 }
 
@@ -291,12 +325,12 @@ void cTerrain::GetExtents(uint * px, uint * pz) const
 {
    if (px != NULL)
    {
-      *px = m_tileSize * m_xDim;
+      *px = m_tileSize * m_nTilesX;
    }
 
    if (pz != NULL)
    {
-      *pz = m_tileSize * m_zDim;
+      *pz = m_tileSize * m_nTilesZ;
    }
 }
 
@@ -325,10 +359,6 @@ tResult cTerrain::Render(IRenderDevice * pRenderDevice)
 
    glEnable(GL_COLOR_MATERIAL);
 
-   //std::vector<cTerrainTile>::iterator iter;
-   //for (iter = m_tiles.begin(); iter != m_tiles.end(); iter++)
-   //{
-   //   const sTerrainVertex * pVertices = iter->GetVertices();
    tTerrainQuads::iterator iter = m_terrainQuads.begin();
    tTerrainQuads::iterator end = m_terrainQuads.end();
    for (; iter != end; iter++)
@@ -382,9 +412,9 @@ tResult cTerrain::Render(IRenderDevice * pRenderDevice)
 
 uint cTerrain::SetTileTerrain(uint tx, uint tz, uint terrain)
 {
-   if (tx < m_xDim && tz < m_zDim)
+   if (tx < m_nTilesX && tz < m_nTilesZ)
    {
-      uint index = (tz * m_zDim) + tx;
+      uint index = (tz * m_nTilesZ) + tx;
       if (index < m_terrainQuads.size())
       {
          uint formerTerrain = m_terrainQuads[index].tile;
@@ -392,7 +422,7 @@ uint cTerrain::SetTileTerrain(uint tx, uint tz, uint terrain)
          return formerTerrain;
       }
    }
-   return kInvalidTerrain;
+   return kInvalidUintValue;
 }
 
 ////////////////////////////////////////
@@ -403,9 +433,9 @@ tResult cTerrain::GetTileVertices(uint tx, uint tz, tVec3 vertices[4]) const
    {
       return E_POINTER;
    }
-   if (tx < m_xDim && tz < m_zDim)
+   if (tx < m_nTilesX && tz < m_nTilesZ)
    {
-      uint index = (tz * m_zDim) + tx;
+      uint index = (tz * m_nTilesZ) + tx;
       if (index < m_terrainQuads.size())
       {
          const sTerrainVertex * pVertices = m_terrainQuads[index].verts;
@@ -417,74 +447,6 @@ tResult cTerrain::GetTileVertices(uint tx, uint tz, tVec3 vertices[4]) const
       }
    }
    return E_FAIL;
-}
-
-////////////////////////////////////////
-
-void cTerrain::InitializeVertices(uint xDim, uint zDim, int stepSize, cHeightMap * pHeightMap)
-{
-   uint nQuads = xDim * zDim;
-
-   m_terrainQuads.resize(nQuads);
-
-   m_vertices.resize(nQuads * 4);
-
-   int index = 0, iQuad = 0;
-
-   float z = 0;
-   float z2 = static_cast<float>(stepSize);
-   for (uint iz = 0; iz < zDim; iz++, z += stepSize, z2 += stepSize)
-   {
-      float x = 0;
-      float x2 = static_cast<float>(stepSize);
-      for (uint ix = 0; ix < xDim; ix++, x += stepSize, x2 += stepSize, iQuad++)
-      {
-         m_terrainQuads[iQuad].tile = 0;
-
-         m_terrainQuads[iQuad].verts[0].color = ARGB(255,192,192,192);
-         m_terrainQuads[iQuad].verts[1].color = ARGB(255,192,192,192);
-         m_terrainQuads[iQuad].verts[2].color = ARGB(255,192,192,192);
-         m_terrainQuads[iQuad].verts[3].color = ARGB(255,192,192,192);
-
-         m_terrainQuads[iQuad].verts[0].uv1 = tVec2(0,0);
-         m_terrainQuads[iQuad].verts[1].uv1 = tVec2(1,0);
-         m_terrainQuads[iQuad].verts[2].uv1 = tVec2(1,1);
-         m_terrainQuads[iQuad].verts[3].uv1 = tVec2(0,1);
-
-#define Height(xx,zz) ((pHeightMap != NULL) ? pHeightMap->Height(Round(xx),Round(zz)) : 0)
-
-         m_terrainQuads[iQuad].verts[0].pos = tVec3(x, Height(x,z), z);
-         m_terrainQuads[iQuad].verts[1].pos = tVec3(x2, Height(x2,z), z);
-         m_terrainQuads[iQuad].verts[2].pos = tVec3(x2, Height(x2,z2), z2);
-         m_terrainQuads[iQuad].verts[3].pos = tVec3(x, Height(x,z2), z2);
-
-         m_vertices[index++].pos = tVec3(x, Height(x,z), z);
-         m_vertices[index++].pos = tVec3(x2, Height(x2,z), z);
-         m_vertices[index++].pos = tVec3(x2, Height(x2,z2), z2);
-         m_vertices[index++].pos = tVec3(x, Height(x,z2), z2);
-
-#undef Height
-      }
-   }
-
-   m_xDim = xDim;
-   m_zDim = zDim;
-}
-
-////////////////////////////////////////
-
-bool cTerrain::CreateTerrainChunks()
-{
-   Assert(m_xChunks > 0 && m_zChunks > 0);
-
-   for (uint i = 0; i < m_zChunks; i++)
-   {
-      for (uint j = 0; j < m_xChunks; j++)
-      {
-      }
-   }
-
-   return false;
 }
 
 

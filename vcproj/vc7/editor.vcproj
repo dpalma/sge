@@ -397,9 +397,6 @@
 				RelativePath="..\..\editor\editorView.cpp">
 			</File>
 			<File
-				RelativePath="..\..\editor\heightmap.cpp">
-			</File>
-			<File
 				RelativePath="..\..\editor\stdhdr.cpp">
 				<FileConfiguration
 					Name="Release|Win32">
@@ -516,9 +513,6 @@
 			</File>
 			<File
 				RelativePath="..\..\editor\editorguids.h">
-			</File>
-			<File
-				RelativePath="..\..\editor\heightmap.h">
 			</File>
 			<File
 				RelativePath="..\..\editor\resource.h">

@@ -12,6 +12,8 @@
 
 typedef CPoint tPoint;
 
+class cImageData;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cMapSettings
@@ -33,7 +35,9 @@ public:
    cMapSettings(uint xDimension, uint zDimension, const tChar * pszTileSet,
       eHeightData heightData = kHeightData_None, const tChar * pszHeightMapFile = NULL);
    cMapSettings(const cMapSettings & mapSettings);
-   const cMapSettings & operator=(const cMapSettings & mapSettings);
+   ~cMapSettings();
+
+   const cMapSettings & operator =(const cMapSettings & mapSettings);
 
    inline uint GetXDimension() const { return m_xDimension; }
    inline uint GetZDimension() const { return m_zDimension; }
@@ -41,11 +45,15 @@ public:
    inline eHeightData GetHeightData() const { return m_heightData; }
    inline const tChar * GetHeightMap() const { return m_heightMapFile.c_str(); }
 
+   float GetNormalizedHeight(float nx, float nz) const;
+
 private:
    uint m_xDimension, m_zDimension;
    cStr m_tileSet;
    eHeightData m_heightData;
    cStr m_heightMapFile;
+
+   mutable cImageData * m_pHeightImageData;
 };
 
 /////////////////////////////////////////////////////////////////////////////

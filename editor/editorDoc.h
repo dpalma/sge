@@ -13,7 +13,6 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-class cHeightMap;
 class cTerrain;
 struct sTerrainVertex;
 
@@ -53,9 +52,6 @@ public:
    virtual tResult CanRedo(cStr * pLabel);
    virtual tResult Redo();
 
-   const sTerrainVertex * GetVertexPointer() const;
-   size_t GetVertexCount() const;
-
    IMaterial * AccessMaterial();
 
    cTerrain * AccessTerrain();
@@ -67,8 +63,6 @@ public:
 
 private:
    bool m_bModified;
-
-   cHeightMap * m_pHeightMap;
 
    cAutoIPtr<IMaterial> m_pMaterial;
 

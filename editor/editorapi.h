@@ -42,7 +42,6 @@ class cEditorKeyEvent;
 class cEditorMouseEvent;
 class cEditorMouseWheelEvent;
 
-struct sTerrainVertex;
 class cTerrain;
 
 #define UUID(uuidstr) __declspec(uuid(uuidstr))
@@ -221,9 +220,6 @@ interface UUID("F131D72E-30A7-4758-A094-830F00A50D91") IEditorModel : IUnknown
 
    virtual cTerrain * AccessTerrain() = 0;
    virtual IMaterial * AccessMaterial() = 0;
-
-   virtual const sTerrainVertex * GetVertexPointer() const = 0;
-   virtual size_t GetVertexCount() const = 0;
 
    virtual tResult AddCommand(IEditorCommand * pCommand) = 0;
 

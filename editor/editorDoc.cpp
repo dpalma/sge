@@ -4,7 +4,6 @@
 #include "stdhdr.h"
 
 #include "editorDoc.h"
-#include "heightmap.h"
 #include "terrain.h"
 #include "editorTypes.h"
 
@@ -48,7 +47,6 @@ OBJECT_ENTRY_AUTO(CLSID_EditorDoc, cEditorDoc)
 
 cEditorDoc::cEditorDoc()
  : m_bModified(false),
-   m_pHeightMap(NULL),
    m_pTerrain(NULL)
 {
 }
@@ -57,68 +55,23 @@ cEditorDoc::cEditorDoc()
 
 cEditorDoc::~cEditorDoc()
 {
-   Assert(m_pHeightMap == NULL);
 }
 
 ////////////////////////////////////////
 
 tResult cEditorDoc::New(const cMapSettings * pMapSettings)
 {
-   if (pMapSettings == NULL)
+   Verify(Reset() == S_OK);
+
+   m_pTerrain = new cTerrain;
+   if (m_pTerrain == NULL)
    {
-      return E_POINTER;
+      return E_OUTOFMEMORY;
    }
-
-   SafeRelease(m_pMaterial);
-
-   delete m_pTerrain, m_pTerrain = NULL;
-
-   delete m_pHeightMap, m_pHeightMap = NULL;
-
-   BOOL bResult = FALSE;
-
-   cHeightMap * pHeightMap = NULL;
-   if (pMapSettings->GetHeightData() == kHeightData_HeightMap)
+   else
    {
-      pHeightMap = new cHeightMap(0.25f); // TODO: hard-coded height scale
-      if (pHeightMap != NULL)
-      {
-         if (!pHeightMap->Load(pMapSettings->GetHeightMap()))
-         {
-            delete pHeightMap;
-            pHeightMap = NULL;
-         }
-      }
+      return m_pTerrain->Init(pMapSettings);
    }
-
-   m_pHeightMap = pHeightMap;
-
-   cAutoIPtr<IEditorTileSet> pTileSet;
-
-   UseGlobal(EditorTileManager);
-   if (pEditorTileManager->GetTileSet(pMapSettings->GetTileSet(), &pTileSet) == S_OK)
-   {
-      pEditorTileManager->SetDefaultTileSet(pMapSettings->GetTileSet());
-
-      Assert(m_pTerrain == NULL);
-      m_pTerrain = new cTerrain;
-      if (m_pTerrain != NULL)
-      {
-         if (m_pTerrain->Create(pMapSettings->GetXDimension(),
-                                pMapSettings->GetZDimension(),
-                                kDefaultStepSize,
-                                pTileSet, 0, pHeightMap))
-         {
-            Assert(!m_pMaterial);
-            if (pTileSet->GetMaterial(&m_pMaterial) == S_OK)
-            {
-               bResult = TRUE;
-            }
-         }
-      }
-   }
-
-   return bResult ? S_OK : E_FAIL;
 }
 
 ////////////////////////////////////////
@@ -180,8 +133,6 @@ tResult cEditorDoc::Save(IWriter * pWriter)
 
 tResult cEditorDoc::Reset()
 {
-   delete m_pHeightMap, m_pHeightMap = NULL;
-
    delete m_pTerrain, m_pTerrain = NULL;
 
    SafeRelease(m_pMaterial);
@@ -260,6 +211,7 @@ tResult cEditorDoc::CanUndo(cStr * pLabel)
 tResult cEditorDoc::Undo()
 {
    UndoRedoHelper(&IEditorCommand::Undo, &m_undoStack, &m_redoStack);
+   m_bModified = true;
    return S_OK;
 }
 
@@ -287,21 +239,8 @@ tResult cEditorDoc::CanRedo(cStr * pLabel)
 tResult cEditorDoc::Redo()
 {
    UndoRedoHelper(&IEditorCommand::Do, &m_redoStack, &m_undoStack);
+   m_bModified = true;
    return S_OK;
-}
-
-////////////////////////////////////////
-
-const sTerrainVertex * cEditorDoc::GetVertexPointer() const
-{
-   return NULL;
-}
-
-////////////////////////////////////////
-
-size_t cEditorDoc::GetVertexCount() const
-{
-   return 0;
 }
 
 ////////////////////////////////////////
@@ -315,6 +254,8 @@ tResult cEditorDoc::AddCommand(IEditorCommand * pCommand)
 
    if (pCommand->Do() == S_OK)
    {
+      m_bModified = true;
+
       if (pCommand->CanUndo() == S_OK)
       {
          m_undoStack.push(CTAddRef(pCommand));
@@ -345,3 +286,5 @@ tResult cEditorDoc::RemoveEditorModelListener(IEditorModelListener * pListener)
 {
    return Disconnect(pListener);
 }
+
+/////////////////////////////////////////////////////////////////////////////

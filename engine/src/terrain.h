@@ -18,16 +18,14 @@
 F_DECLARE_INTERFACE(IEditorTileSet);
 F_DECLARE_INTERFACE(IMaterial);
 F_DECLARE_INTERFACE(IRenderDevice);
-F_DECLARE_INTERFACE(IVertexDeclaration);
 F_DECLARE_INTERFACE(IReader);
 F_DECLARE_INTERFACE(IWriter);
-class cHeightMap;
+class cMapSettings;
 
 class cTerrain;
 class cTerrainChunk;
 
 const uint kInvalidUintValue = ~0;
-const uint kInvalidTerrain = ~0;
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -37,9 +35,6 @@ struct sTerrainVertex
    uint32 color;
    tVec3 pos;
 };
-
-tResult TerrainVertexDeclarationCreate(IRenderDevice * pRenderDevice,
-                                       IVertexDeclaration * * ppVertexDecl);
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -69,8 +64,8 @@ public:
    tResult Read(IReader * pReader);
    tResult Write(IWriter * pWriter);
 
-   bool Create(uint xDim, uint zDim, int stepSize, IEditorTileSet * pTileSet,
-      uint defaultTile, cHeightMap * pHeightMap);
+   tResult Init(const cMapSettings * pMapSettings);
+   static tResult InitQuads(const cMapSettings * pMapSettings, tTerrainQuads * pQuads);
 
    void GetDimensions(uint * pxd, uint * pzd) const;
    void GetExtents(uint * px, uint * pz) const;
@@ -82,24 +77,15 @@ public:
    uint SetTileTerrain(uint tx, uint tz, uint terrain);
    tResult GetTileVertices(uint tx, uint tz, tVec3 vertices[4]) const;
 
-protected:
-   void InitializeVertices(uint xDim, uint zDim, int stepSize, cHeightMap * pHeightMap);
-   bool CreateTerrainChunks();
-
 private:
-   uint m_xDim, m_zDim;
    uint m_tileSize; // dimensions of a single tile in terrain space
-
-   uint m_xChunks, m_zChunks; // # of terrain chunks in the x, z directions
-
-   std::vector<sTerrainVertex> m_vertices;
+   uint m_nTilesX, m_nTilesZ; // # of tiles in the x,z directions
+   uint m_nChunksX, m_nChunksZ; // # of chunks in the x,z directions
 
    tTerrainQuads m_terrainQuads;
 
    cStr m_tileSetName;
    cAutoIPtr<IEditorTileSet> m_pTileSet;
-
-   cAutoIPtr<IMaterial> m_pMaterial;
 };
 
 
@@ -117,7 +103,6 @@ public:
 private:
    cAutoIPtr<IMaterial> m_pMaterial;
 };
-
 
 /////////////////////////////////////////////////////////////////////////////
 
