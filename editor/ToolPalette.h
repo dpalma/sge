@@ -4,6 +4,8 @@
 #if !defined(INCLUDED_TOOLPALETTE_H)
 #define INCLUDED_TOOLPALETTE_H
 
+#include <atlscrl.h>
+
 #include <string>
 #include <vector>
 #include <map>
@@ -28,15 +30,17 @@ class cToolItem
    const cToolItem & operator =(const cToolItem &);
 
 public:
-   cToolItem(const tChar * pszName, int iImage);
+   cToolItem(const tChar * pszName, int iImage, void * pUserData);
    ~cToolItem();
 
    const tChar * GetName() const;
    int GetImageIndex() const;
+   void * GetUserData() const;
 
 private:
    std::string m_name;
    int m_iImage;
+   void * m_pUserData;
 };
 
 ////////////////////////////////////////
@@ -51,6 +55,13 @@ inline const tChar * cToolItem::GetName() const
 inline int cToolItem::GetImageIndex() const
 {
    return m_iImage;
+}
+
+////////////////////////////////////////
+
+inline void * cToolItem::GetUserData() const
+{
+   return m_pUserData;
 }
 
 
@@ -73,7 +84,7 @@ public:
    uint GetToolCount() const;
    cToolItem * GetTool(uint index) const;
 
-   HTOOLITEM AddTool(const tChar * pszTool, int iImage);
+   HTOOLITEM AddTool(const tChar * pszTool, int iImage, void * pUserData);
    bool RemoveTool(HTOOLITEM hTool);
    HTOOLITEM FindTool(const tChar * pszTool);
    bool IsTool(HTOOLITEM hTool) const;
@@ -171,9 +182,9 @@ private:
 // CLASS: cToolPalette
 //
 
-class cToolPalette : public CWindowImpl<cToolPalette>
+class cToolPalette : public CScrollWindowImpl<cToolPalette>
 {
-   typedef CWindowImpl<cToolPalette> tToolPaletteBase;
+   typedef CScrollWindowImpl<cToolPalette> tToolPaletteBase;
 
 public:
    cToolPalette();
@@ -192,6 +203,7 @@ public:
       MSG_WM_MOUSEMOVE(OnMouseMove)
       MSG_WM_LBUTTONDOWN(OnLButtonDown)
       MSG_WM_LBUTTONUP(OnLButtonUp)
+      CHAIN_MSG_MAP(tToolPaletteBase)
    END_MSG_MAP()
 
    LRESULT OnCreate(LPCREATESTRUCT lpCreateStruct);
@@ -210,7 +222,7 @@ public:
    HTOOLGROUP FindGroup(const tChar * pszGroup);
    bool IsGroup(HTOOLGROUP hGroup);
    void Clear();
-   HTOOLITEM AddTool(HTOOLGROUP hGroup, const tChar * pszTool, int iImage);
+   HTOOLITEM AddTool(HTOOLGROUP hGroup, const tChar * pszTool, int iImage, void * pUserData = NULL);
    bool RemoveTool(HTOOLITEM hTool);
    bool EnableTool(HTOOLITEM hTool);
 

@@ -87,8 +87,6 @@ public:
    void RepositionButtons(BOOL bRepaint = TRUE);
 
 private:
-   cButtonPanel m_buttonPanel;
-
    cToolPalette m_toolPalette;
 
    HTOOLGROUP m_hTerrainTileGroup;

@@ -216,22 +216,22 @@ void cToolPaletteBar::OnDefaultTileSetChange(IEditorTileSet * pTileSet)
                      m_toolPalette.AddTool(m_hTerrainTileGroup, tileName.c_str(), i);
                   }
 
-                  CButton * pButton = new CButton();
-                  if (pButton != NULL)
-                  {
-                     if (pButton->Create(m_hWnd, rcDefault, "", WS_CHILD | WS_VISIBLE | BS_BITMAP, 0, kButtonIdFirst + i, this))
-                     {
-                        pButton->SendMessage(BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmap);
-
-                        m_tooltip.AddTool(pButton->m_hWnd, tileName.c_str());
-
-                        m_buttonPanel.AddButton(pButton);
-                     }
-                     else
-                     {
-                        delete pButton;
-                     }
-                  }
+//                  CButton * pButton = new CButton();
+//                  if (pButton != NULL)
+//                  {
+//                     if (pButton->Create(m_hWnd, rcDefault, "", WS_CHILD | WS_VISIBLE | BS_BITMAP, 0, kButtonIdFirst + i, this))
+//                     {
+//                        pButton->SendMessage(BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmap);
+//
+//                        m_tooltip.AddTool(pButton->m_hWnd, tileName.c_str());
+//
+//                        m_buttonPanel.AddButton(pButton);
+//                     }
+//                     else
+//                     {
+//                        delete pButton;
+//                     }
+//                  }
                }
             }
          }
@@ -245,21 +245,21 @@ void cToolPaletteBar::OnDefaultTileSetChange(IEditorTileSet * pTileSet)
 
 void cToolPaletteBar::ClearButtons()
 {
-   m_buttonPanel.Clear();
+//   m_buttonPanel.Clear();
 }
 
 ////////////////////////////////////////
 
 void cToolPaletteBar::RepositionButtons(BOOL bRepaint)
 {
-   CRect rect;
-   GetClientRect(rect);
-   int bottom = m_buttonPanel.Reposition(rect, bRepaint);
-   if (m_toolPalette.IsWindow())
-   {
-      rect.top = bottom;
-      m_toolPalette.MoveWindow(rect);
-   }
+//   CRect rect;
+//   GetClientRect(rect);
+//   int bottom = m_buttonPanel.Reposition(rect, bRepaint);
+//   if (m_toolPalette.IsWindow())
+//   {
+//      rect.top = bottom;
+//      m_toolPalette.MoveWindow(rect);
+//   }
 }
 
 ////////////////////////////////////////
@@ -331,7 +331,13 @@ LRESULT cToolPaletteBar::OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
 
 LRESULT cToolPaletteBar::OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled)
 {
-   RepositionButtons();
+//   RepositionButtons();
+   if (m_toolPalette.IsWindow())
+   {
+      CRect rect;
+      GetClientRect(rect);
+      m_toolPalette.MoveWindow(rect);
+   }
    return 0;
 }
 
@@ -341,7 +347,7 @@ LRESULT cToolPaletteBar::OnButtonClicked(WORD wNotifyCode, WORD wID, HWND hWndCt
 {
    if (wNotifyCode == BN_CLICKED)
    {
-      m_buttonPanel.HandleClick(wID);
+//      m_buttonPanel.HandleClick(wID);
    }
    return 0;
 }

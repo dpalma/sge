@@ -140,9 +140,10 @@ BOOL WINAPI DynamicGradientFill(HDC hdc,
 
 ////////////////////////////////////////
 
-cToolItem::cToolItem(const tChar * pszName, int iImage)
+cToolItem::cToolItem(const tChar * pszName, int iImage, void * pUserData)
  : m_name(pszName != NULL ? pszName : ""),
-   m_iImage(iImage)
+   m_iImage(iImage),
+   m_pUserData(pUserData)
 {
 }
 
@@ -181,7 +182,7 @@ cToolGroup::~cToolGroup()
 
 ////////////////////////////////////////
 
-HTOOLITEM cToolGroup::AddTool(const tChar * pszTool, int iImage)
+HTOOLITEM cToolGroup::AddTool(const tChar * pszTool, int iImage, void * pUserData)
 {
    if (pszTool != NULL)
    {
@@ -191,7 +192,7 @@ HTOOLITEM cToolGroup::AddTool(const tChar * pszTool, int iImage)
          return hTool;
       }
 
-      cToolItem * pTool = new cToolItem(pszTool, iImage);
+      cToolItem * pTool = new cToolItem(pszTool, iImage, pUserData);
       if (pTool != NULL)
       {
          m_tools.push_back(pTool);
@@ -799,12 +800,12 @@ void cToolPalette::Clear()
 
 ////////////////////////////////////////
 
-HTOOLITEM cToolPalette::AddTool(HTOOLGROUP hGroup, const tChar * pszTool, int iImage)
+HTOOLITEM cToolPalette::AddTool(HTOOLGROUP hGroup, const tChar * pszTool, int iImage, void * pUserData)
 {
    if (IsGroup(hGroup))
    {
       cToolGroup * pGroup = reinterpret_cast<cToolGroup *>(hGroup);
-      HTOOLITEM hItem = pGroup->AddTool(pszTool, iImage);
+      HTOOLITEM hItem = pGroup->AddTool(pszTool, iImage, pUserData);
       if (hItem != NULL)
       {
          Invalidate();
