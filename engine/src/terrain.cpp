@@ -244,9 +244,10 @@ tResult cTerrain::Init(const cMapSettings * pMapSettings)
    Assert(m_tileSetName.empty());
 
    UseGlobal(EditorTileManager);
-   if (pEditorTileManager->GetTileSet(pMapSettings->GetTileSet(), &m_pTileSet) == S_OK)
+   if (pEditorTileManager->GetTileSet(pMapSettings->GetTileSet(), &m_pTileSet) != S_OK
+      || m_pTileSet->GetName(&m_tileSetName) != S_OK)
    {
-      m_pTileSet->GetName(&m_tileSetName);
+      return E_FAIL;
    }
 
    return S_OK;
