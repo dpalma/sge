@@ -3,59 +3,24 @@
 
 #include "stdhdr.h"
 
-#include "render.h"
-
-#include "techmath.h"
+#include "textureapi.h"
 #include "pixelformat.h"
 #include "image.h"
+
+#include "techmath.h"
+#include "globalobj.h"
+#include "str.h"
+#include "resmgr.h"
 
 #include "stdgl.h"
 #include <GL/glu.h>
 
+#include <map>
+#include <vector>
+
 #include "dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cTexture
-//
-
-class cTexture : public cComObject<IMPLEMENTS(ITexture)>
-{
-public:
-   cTexture();
-
-   virtual void OnFinalRelease();
-
-   tResult UploadImage(cImage * pImageData);
-
-   virtual tResult GetTextureId(uint * pTextureId) const
-   {
-      Assert(pTextureId != NULL);
-      *pTextureId = m_textureId;
-      return S_OK;
-   }
-
-private:
-   uint m_textureId;
-};
-
-///////////////////////////////////////
-
-cTexture::cTexture()
- : m_textureId(0)
-{
-}
-
-///////////////////////////////////////
-
-void cTexture::OnFinalRelease()
-{
-   if (glIsTexture(m_textureId))
-      glDeleteTextures(1, &m_textureId);
-   m_textureId = 0;
-}
-
-///////////////////////////////////////
 
 static GLint GlTexNumComponents(GLenum format)
 {
@@ -74,11 +39,11 @@ static GLint GlTexNumComponents(GLenum format)
    }
 }
 
-///////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
-static GLenum GlTexFormat(ePixelFormat pf)
+static GLenum GlTexFormat(ePixelFormat pixelFormat)
 {
-   switch (pf)
+   switch (pixelFormat)
    {
       case kPF_RGB888:
          return GL_RGB;
@@ -97,11 +62,14 @@ static GLenum GlTexFormat(ePixelFormat pf)
    }
 }
 
-///////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
-tResult cTexture::UploadImage(cImage * pImage)
+static tResult UploadTextureImage(cImage * pImage, GLuint * pTextureId)
 {
-   if (pImage == NULL)
+   Assert(pImage != NULL);
+   Assert(pTextureId != NULL);
+
+   if (pImage == NULL || pTextureId == NULL)
       return E_FAIL;
 
    bool bNoMipMaps = false;
@@ -130,8 +98,8 @@ tResult cTexture::UploadImage(cImage * pImage)
       return E_FAIL;
    }
 
-   glGenTextures(1, &m_textureId);
-   glBindTexture(GL_TEXTURE_2D, m_textureId);
+   glGenTextures(1, pTextureId);
+   glBindTexture(GL_TEXTURE_2D, *pTextureId);
 
    glPixelStorei(GL_UNPACK_ALIGNMENT, pImage->GetAlignment());
 
@@ -156,19 +124,192 @@ tResult cTexture::UploadImage(cImage * pImage)
    return S_OK;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cTexture
+//
+
+class cTexture : public cComObject<IMPLEMENTS(ITexture)>
+{
+public:
+   cTexture();
+   cTexture(uint textureId);
+
+   virtual void OnFinalRelease();
+
+   virtual tResult GetTextureId(uint * pTextureId) const
+   {
+      Assert(pTextureId != NULL);
+      *pTextureId = m_textureId;
+      return S_OK;
+   }
+
+private:
+   uint m_textureId;
+   bool m_bOwnTextureId;
+};
+
 ///////////////////////////////////////
 
-ITexture * TextureCreate(cImage * pImageData)
+cTexture::cTexture()
+ : m_textureId(0),
+   m_bOwnTextureId(false)
 {
-   cTexture * pTexture = new cTexture;
-   if (pTexture != NULL)
+}
+
+///////////////////////////////////////
+
+cTexture::cTexture(uint textureId)
+ : m_textureId(textureId),
+   m_bOwnTextureId(false)
+{
+}
+
+///////////////////////////////////////
+
+void cTexture::OnFinalRelease()
+{
+   if (m_bOwnTextureId)
    {
-      if (pTexture->UploadImage(pImageData) == S_OK)
-      {
-         return static_cast<ITexture *>(pTexture);
-      }
+      if (glIsTexture(m_textureId))
+         glDeleteTextures(1, &m_textureId);
    }
-   return NULL;
+   m_textureId = 0;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cTextureManager
+//
+
+class cTextureManager : public cGlobalObject<IMPLEMENTS(ITextureManager)>
+{
+public:
+   cTextureManager();
+   ~cTextureManager();
+
+   virtual tResult Init();
+   virtual tResult Term();
+
+   virtual tResult GetTexture(const char * pszName, ITexture * * ppTexture);
+
+   virtual tResult FreeTexture(ITexture * pTexture);
+   virtual tResult FreeAll();
+
+private:
+   struct sTextureInfo
+   {
+      GLuint textureId;
+      ulong refCount;
+   };
+   typedef std::map<cStr, sTextureInfo> tTextureObjectMap;
+   tTextureObjectMap m_textureObjectMap;
+};
+
+///////////////////////////////////////
+
+cTextureManager::cTextureManager()
+{
+}
+
+///////////////////////////////////////
+
+cTextureManager::~cTextureManager()
+{
+}
+
+///////////////////////////////////////
+
+tResult cTextureManager::Init()
+{
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cTextureManager::Term()
+{
+   FreeAll();
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cTextureManager::GetTexture(const char * pszName, ITexture * * ppTexture)
+{
+   Assert(pszName != NULL);
+   Assert(ppTexture != NULL);
+
+   tTextureObjectMap::iterator iter = m_textureObjectMap.find(pszName);
+   if (iter == m_textureObjectMap.end())
+   {
+      UseGlobal(ResourceManager);
+      cImage * pImage = ImageLoad(pResourceManager, pszName);
+      if (pImage == NULL)
+      {
+         *ppTexture = NULL;
+         return E_FAIL;
+      }
+
+      sTextureInfo textureInfo;
+      if (UploadTextureImage(pImage, &textureInfo.textureId) != S_OK)
+      {
+         delete pImage;
+         *ppTexture = NULL;
+         return E_FAIL;
+      }
+
+      delete pImage;
+
+      textureInfo.refCount = 1;
+      m_textureObjectMap.insert(std::make_pair(cStr(pszName), textureInfo));
+
+      *ppTexture = new cTexture(textureInfo.textureId);
+      return ((*ppTexture) != NULL) ? S_OK : E_FAIL;
+   }
+   else
+   {
+      iter->second.refCount++;
+      *ppTexture = new cTexture(iter->second.textureId);
+      return ((*ppTexture) != NULL) ? S_OK : E_FAIL;
+   }
+
+   return E_FAIL;
+}
+
+///////////////////////////////////////
+
+tResult cTextureManager::FreeTexture(ITexture * pTexture)
+{
+   return E_NOTIMPL;
+}
+
+///////////////////////////////////////
+
+tResult cTextureManager::FreeAll()
+{
+   std::vector<GLuint> textureIds(m_textureObjectMap.size());
+
+   uint i;
+   tTextureObjectMap::iterator iter;
+   for (i = 0, iter = m_textureObjectMap.begin(); iter != m_textureObjectMap.end(); iter++, i++)
+   {
+      textureIds[i] = iter->second.textureId;
+   }
+
+   glDeleteTextures(textureIds.size(), textureIds.begin());
+
+   DebugMsgIf(glGetError() != GL_NO_ERROR, "WARNING: glDeleteTextures call caused an error\n");
+
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+void TextureManagerCreate()
+{
+   cAutoIPtr<ITextureManager>(new cTextureManager);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

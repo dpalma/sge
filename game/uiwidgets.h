@@ -272,7 +272,7 @@ inline bool cUIButton::IsMouseOver() const
 //
 
 class cUIBitmapButton
- : public cUIWidget,
+ : public cUIComponent,
    public cUIScriptEventHandler<cUIBitmapButton>
 {
 public:

@@ -13,6 +13,7 @@
 #include "font.h"
 #include "render.h"
 #include "material.h"
+#include "textureapi.h"
 #include "image.h"
 
 #include "keys.h"
@@ -168,9 +169,14 @@ bool cUIImage::LoadImage(const char * pszFilename)
    if (pImage != NULL)
    {
       m_size = cUISize(pImage->GetWidth(), pImage->GetHeight());
-      AccessRenderDevice()->CreateTexture(pImage, &m_pTex);
       delete pImage;
    }
+
+   UseGlobal(TextureManager);
+   if (pTextureManager->GetTexture(pszFilename, &m_pTex) == S_OK)
+   {
+   }
+
    // return true unconditionally so that this component will
    // be a placeholder at least if the image fails to load
    return true;
@@ -326,7 +332,7 @@ bool cUIBitmapButton::OnEvent(const cUIEvent * pEvent)
    if (cUIScriptEventHandler<cUIBitmapButton>::FilterEvent(pEvent))
       return true;
 
-   return cUIWidget::OnEvent(pEvent);
+   return cUIComponent::OnEvent(pEvent);
 }
 
 ///////////////////////////////////////
@@ -347,17 +353,18 @@ bool cUIBitmapButton::SetBitmap(const char * pszName)
    {
       m_size = cUISize(pImage->GetWidth(), pImage->GetHeight());
 
-      // @TODO: Check for errors here
-      cAutoIPtr<ITexture> pTex;
-      AccessRenderDevice()->CreateTexture(pImage, &pTex);
-
       delete pImage;
 
-      m_pMaterial = MaterialCreate();
-      if (m_pMaterial != NULL)
+      UseGlobal(TextureManager);
+      cAutoIPtr<ITexture> pTexture;
+      if (pTextureManager->GetTexture(pszName, &pTexture) == S_OK)
       {
-         m_pMaterial->SetTexture(0, pTex);
-         return true;
+         m_pMaterial = MaterialCreate();
+         if (m_pMaterial != NULL)
+         {
+            m_pMaterial->SetTexture(0, pTexture);
+            return true;
+         }
       }
    }
 

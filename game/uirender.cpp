@@ -8,6 +8,7 @@
 
 #include "font.h"
 #include "render.h"
+#include "textureapi.h"
 
 #include "globalobj.h"
 
@@ -194,6 +195,7 @@ public:
    cUIRenderingTools();
    ~cUIRenderingTools();
 
+   virtual tResult Init();
    virtual tResult Term();
 
    virtual tResult SetRenderDevice(IRenderDevice * pRenderDevice);
@@ -208,16 +210,16 @@ private:
    cAutoIPtr<IVertexDeclaration> m_pUIVertexDecl;
    cAutoIPtr<IVertexBuffer> m_pBitmapButtonVB;
    cAutoIPtr<IIndexBuffer> m_pBitmapButtonIB;
+   cAutoIPtr<IRenderFont> m_pFont;
 };
 
 ///////////////////////////////////////
 
-sVertexElement cUIRenderingTools::gm_UIVertexDecl[] =
-{
-   { kVDU_TexCoord, kVDT_Float2 },
-   { kVDU_Color, kVDT_UnsignedByte4 },
-   { kVDU_Position, kVDT_Float2 }
-};
+VERTEXDECL_BEGIN(cUIRenderingTools::gm_UIVertexDecl)
+   VERTEXDECL_ELEMENT(kVDU_TexCoord, kVDT_Float2)
+   VERTEXDECL_ELEMENT(kVDU_Color, kVDT_UnsignedByte4)
+   VERTEXDECL_ELEMENT(kVDU_Position, kVDT_Float2)
+VERTEXDECL_END()
 
 ///////////////////////////////////////
 
@@ -233,8 +235,17 @@ cUIRenderingTools::~cUIRenderingTools()
 
 ///////////////////////////////////////
 
+tResult cUIRenderingTools::Init()
+{
+   m_pFont = FontCreateDefault();
+   return S_OK;
+}
+
+///////////////////////////////////////
+
 tResult cUIRenderingTools::Term()
 {
+   SafeRelease(m_pFont);
    SafeRelease(m_pBitmapButtonVB);
    SafeRelease(m_pBitmapButtonIB);
    SafeRelease(m_pUIVertexDecl);

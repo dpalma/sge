@@ -8,6 +8,7 @@
 
 #include "render.h"
 #include "material.h"
+#include "textureapi.h"
 #include "image.h"
 
 #include "vec2.h"
@@ -29,12 +30,11 @@ struct sTerrainVertex
    tVec3 pos;
 };
 
-sVertexElement g_terrainVertexDecl[] =
-{
-   { kVDU_TexCoord, kVDT_Float2 },
-   { kVDU_Color, kVDT_Float3 },
-   { kVDU_Position, kVDT_Float3 }
-};
+VERTEXDECL_BEGIN(g_terrainVertexDecl)
+   VERTEXDECL_ELEMENT(kVDU_TexCoord, kVDT_Float2)
+   VERTEXDECL_ELEMENT(kVDU_Color, kVDT_Float3)
+   VERTEXDECL_ELEMENT(kVDU_Position, kVDT_Float3)
+VERTEXDECL_END()
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -96,17 +96,11 @@ bool cTiledGround::Init(cHeightMap * pHeightMap, const char * pszTexture)
 
    if (pszTexture != NULL)
    {
-      UseGlobal(ResourceManager);
-      cImage * pImage = ImageLoad(pResourceManager, pszTexture);
-      if (pImage != NULL)
+      UseGlobal(TextureManager);
+      cAutoIPtr<ITexture> pTexture;
+      if (pTextureManager->GetTexture(pszTexture, &pTexture) == S_OK)
       {
-         cAutoIPtr<ITexture> pTexture;
-         if (AccessRenderDevice()->CreateTexture(pImage, &pTexture) == S_OK)
-         {
-            m_pMaterial->SetTexture(0, pTexture);
-         }
-
-         delete pImage;
+         m_pMaterial->SetTexture(0, pTexture);
       }
    }
    else

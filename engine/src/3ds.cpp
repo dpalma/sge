@@ -7,6 +7,7 @@
 #include "3ds.h"
 #include "mesh.h"
 #include "material.h"
+#include "textureapi.h"
 #include "readwriteapi.h"
 #include "str.h"
 #include "vec3.h"
@@ -38,12 +39,11 @@ struct s3dsVertex
    tVec3 pos;
 };
 
-sVertexElement g_3dsVertexDecl[] =
-{
-   { kVDU_TexCoord, kVDT_Float2 },
-   { kVDU_Normal, kVDT_Float3 },
-   { kVDU_Position, kVDT_Float3 }
-};
+VERTEXDECL_BEGIN(g_3dsVertexDecl)
+   VERTEXDECL_ELEMENT(kVDU_TexCoord, kVDT_Float2)
+   VERTEXDECL_ELEMENT(kVDU_Normal, kVDT_Float3)
+   VERTEXDECL_ELEMENT(kVDU_Position, kVDT_Float3)
+VERTEXDECL_END()
 
 struct s3dsMaterial
 {
@@ -99,24 +99,17 @@ static IMaterial * MaterialFrom3ds(const s3dsMaterial * p3dsMaterial,
 {
    Assert(p3dsMaterial != NULL);
 
-   cAutoIPtr<ITexture> pTexture;
+   IMaterial * pMaterial = MaterialCreate();
 
    if (p3dsMaterial->szTexture[0] != 0)
    {
-      UseGlobal(ResourceManager);
-
-      cImage * pTextureImage = ImageLoad(pResourceManager, p3dsMaterial->szTexture);
-      if (pTextureImage != NULL)
+      UseGlobal(TextureManager);
+      cAutoIPtr<ITexture> pTexture;
+      if (pTextureManager->GetTexture(p3dsMaterial->szTexture, &pTexture) == S_OK)
       {
-         pRenderDevice->CreateTexture(pTextureImage, &pTexture);
-         delete pTextureImage;
+         pMaterial->SetTexture(0, pTexture);
       }
    }
-
-   IMaterial * pMaterial = MaterialCreate();
-
-   if (pTexture != NULL)
-      pMaterial->SetTexture(0, pTexture);
 
    pMaterial->SetName(p3dsMaterial->name);
    pMaterial->SetAmbient(cColor(p3dsMaterial->ambient[0],p3dsMaterial->ambient[1],p3dsMaterial->ambient[2]));

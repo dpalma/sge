@@ -17,6 +17,7 @@
 #include "inputapi.h"
 
 #include "render.h"
+#include "textureapi.h"
 
 #include "scriptvar.h"
 #include "techmath.h"
@@ -352,6 +353,7 @@ static void RegisterGlobalObjects()
    SceneCreate();
    ScriptInterpreterCreate();
    UIRenderingToolsCreate();
+   TextureManagerCreate();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

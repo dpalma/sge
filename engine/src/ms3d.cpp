@@ -7,6 +7,7 @@
 #include "ms3d.h"
 #include "mesh.h"
 #include "material.h"
+#include "textureapi.h"
 #include "readwriteapi.h"
 #include "vec3.h"
 #include "image.h"
@@ -396,14 +397,11 @@ tResult cMs3dFileReader::CreateMaterials(IRenderDevice * pRenderDevice, IMesh * 
 
          if (iter->texture[0] != 0)
          {
-            UseGlobal(ResourceManager);
-            cImage * pTextureImage = ImageLoad(pResourceManager, iter->texture);
-            if (pTextureImage != NULL)
+            UseGlobal(TextureManager);
+            cAutoIPtr<ITexture> pTexture;
+            if (pTextureManager->GetTexture(iter->texture, &pTexture) == S_OK)
             {
-               cAutoIPtr<ITexture> pTexture;
-               pRenderDevice->CreateTexture(pTextureImage, &pTexture);
                pMaterial->SetTexture(0, pTexture);
-               delete pTextureImage;
             }
          }
 
