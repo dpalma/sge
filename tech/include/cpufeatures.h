@@ -14,6 +14,7 @@
 
 const int kMaxVendorName      = 13;
 const int kMaxModelName       = 30;
+const int kMaxBrandString     = 48;
 
 const int kCpuHasRdtsc              = (1<<4);
 const int kCpuHasMmx                = (1<<23);
@@ -26,6 +27,7 @@ struct sCpuFeatures
    char szVendor[kMaxVendorName];
    char szModel[kMaxModelName];
    int features;
+   char szBrand[kMaxBrandString];
 };
 
 TECH_API bool GetCpuFeatures(sCpuFeatures * pCpuFeatures);

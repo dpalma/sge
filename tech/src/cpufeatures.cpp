@@ -39,6 +39,10 @@ bool GetCpuFeatures(sCpuFeatures * pCpuFeatures)
 
    char szVendor[kMaxVendorName];
    uint version, info, features;
+   char szBrand[kMaxBrandString];
+
+   memset(szVendor, 0, sizeof(szVendor));
+   memset(szBrand, 0, sizeof(szBrand));
 
    __asm
    {
@@ -51,12 +55,38 @@ bool GetCpuFeatures(sCpuFeatures * pCpuFeatures)
       mov dword ptr [szVendor+4], edx
       mov dword ptr [szVendor+8], ecx
       test eax, 1
-      jl End 
+      jl End
+      ; Get basic information
       mov eax, 1
       cpuid
       mov version, eax
       mov info, ebx
       mov features, edx
+      bt eax, 80000000h
+      jnc End
+      ; Get extended information
+      mov eax, 80000000h
+      cpuid
+      test eax, 800000004h
+      jl End
+      mov eax, 80000002h
+      cpuid
+      mov dword ptr [szBrand], eax
+      mov dword ptr [szBrand+4], ebx
+      mov dword ptr [szBrand+8], ecx
+      mov dword ptr [szBrand+12], edx
+      mov eax, 80000003h
+      cpuid
+      mov dword ptr [szBrand+16], eax
+      mov dword ptr [szBrand+20], ebx
+      mov dword ptr [szBrand+24], ecx
+      mov dword ptr [szBrand+28], edx
+      mov eax, 80000004h
+      cpuid
+      mov dword ptr [szBrand+32], eax
+      mov dword ptr [szBrand+36], ebx
+      mov dword ptr [szBrand+40], ecx
+      mov dword ptr [szBrand+44], edx
 End:
       pop ebx
       pop ecx
@@ -69,6 +99,9 @@ End:
    memcpy(pCpuFeatures->szVendor, szVendor, kMaxVendorName * sizeof(char));
 
    pCpuFeatures->features = features;
+
+   szBrand[kMaxBrandString-1] = 0;
+   memcpy(pCpuFeatures->szBrand, szBrand, kMaxBrandString * sizeof(char));
 
    return true;
 }
