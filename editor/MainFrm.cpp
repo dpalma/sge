@@ -188,12 +188,16 @@ void CMainFrame::Dump(CDumpContext& dc) const
 
 BOOL CMainFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext) 
 {
+#if 0
    CRect rect;
    GetClientRect(rect);
    CSize treeSize(min(kDefaultTreeWidth, rect.Width() / 4),0);
    return m_wndSplitter.CreateStatic(this, 1, 2)
       && m_wndSplitter.CreateView(0, 0, RUNTIME_CLASS(CTreeView), treeSize, pContext)
       && m_wndSplitter.CreateView(0, 1, RUNTIME_CLASS(cEditorView), CSize(0,0), pContext);
+#else
+   return CFrameWnd::OnCreateClient(lpcs, pContext);
+#endif
 }
 
 void CMainFrame::OnUpdateViewControlBarMenu(CCmdUI* pCmdUI) 

@@ -7,6 +7,7 @@
 #define IDR_EDITOTYPE                   129
 #define IDS_NO_UNIT_TESTS               5000
 #define IDS_OUTPUT_BAR_TITLE            5001
+#define IDS_TOOL_PALETTE_BAR_TITLE      5002
 #define ID_TOOLS_UNITTESTRUNNER         32771
 #define ID_VIEW_CONTROL_BAR_FIRST       0xC100
 #define ID_VIEW_CONTROL_BAR1            0xC100

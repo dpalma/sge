@@ -363,6 +363,7 @@ STRINGTABLE DISCARDABLE
 BEGIN
     IDS_NO_UNIT_TESTS       "Unit tests not available in this build"
     IDS_OUTPUT_BAR_TITLE    "Output"
+    IDS_TOOL_PALETTE_BAR_TITLE "Tool Palette"
 END
 
 STRINGTABLE DISCARDABLE 

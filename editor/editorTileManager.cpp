@@ -96,6 +96,20 @@ tResult cEditorTileManager::GetTileSet(const tChar * pszName, IEditorTileSet * *
 
 ///////////////////////////////////////
 
+tResult cEditorTileManager::GetDefaultTileSet(IEditorTileSet * * ppTileSet)
+{
+   return E_NOTIMPL;
+}
+
+///////////////////////////////////////
+
+tResult cEditorTileManager::SetDefaultTileSet(const tChar * pszName)
+{
+   return E_NOTIMPL;
+}
+
+///////////////////////////////////////
+
 void EditorTileManagerCreate()
 {
    cAutoIPtr<IEditorTileManager>(new cEditorTileManager);

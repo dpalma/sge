@@ -15,6 +15,7 @@ F_DECLARE_INTERFACE(IEditorApp);
 F_DECLARE_INTERFACE(IEditorLoopClient);
 F_DECLARE_INTERFACE(IEditorTileManager);
 F_DECLARE_INTERFACE(IEditorTileSet);
+F_DECLARE_INTERFACE(IEditorTile);
 
 #define UUID(uuidstr) __declspec(uuid(uuidstr))
 
@@ -50,6 +51,8 @@ interface UUID("CA3DFC7D-CF34-43cd-AE46-FA1AF6A34F27") IEditorTileManager : IUnk
 {
    virtual tResult CreateTileSet(const tChar * pszName, IEditorTileSet * * ppTileSet) = 0;
    virtual tResult GetTileSet(const tChar * pszName, IEditorTileSet * * ppTileSet) = 0;
+   virtual tResult GetDefaultTileSet(IEditorTileSet * * ppTileSet) = 0;
+   virtual tResult SetDefaultTileSet(const tChar * pszName) = 0;
 };
 
 void EditorTileManagerCreate();
@@ -59,20 +62,30 @@ void EditorTileManagerCreate();
 // INTERFACE: IEditorTileSet
 //
 
-struct sTileDefinition
-{
-   cStr name;
-   cStr texture;
-   int horzImages;
-   int vertImages;
-};
-
 interface UUID("61B488AA-AB50-41c5-AA42-45F07C982F6A") IEditorTileSet : IUnknown
 {
-   virtual tResult AddTileTexture(const tChar * pszName,
-                                  const tChar * pszTexture,
-                                  int horzImages,
-                                  int vertImages) = 0;
+   virtual tResult GetName(cStr * pName) const = 0;
+
+   virtual tResult AddTile(const tChar * pszName,
+                           const tChar * pszTexture,
+                           int horzImages,
+                           int vertImages) = 0;
+
+   virtual tResult GetTileCount(uint * pTileCount) const = 0;
+   virtual tResult GetTile(uint index, IEditorTile * * ppTile) = 0;
+};
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IEditorTile
+//
+
+interface UUID("CDEB5694-56D2-4750-BEF8-85F286364C23") IEditorTile : IUnknown
+{
+   virtual tResult GetName(cStr * pName) const = 0;
+   virtual tResult GetTexture(cStr * pTexture) const = 0;
+
+   virtual tResult GetButtonImage(HBITMAP * phBitmap) = 0;
 };
 
 /////////////////////////////////////////////////////////////////////////////

@@ -207,6 +207,10 @@ SOURCE=.\editorDoc.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\editorTile.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\editorTileManager.cpp
 # End Source File
 # Begin Source File
@@ -269,6 +273,10 @@ SOURCE=.\stdhdr.cpp
 
 SOURCE=.\tiledground.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=.\ToolPaletteBar.cpp
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -304,6 +312,10 @@ SOURCE=.\editorDoc.h
 # Begin Source File
 
 SOURCE=.\editorguids.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\editorTile.h
 # End Source File
 # Begin Source File
 
@@ -368,6 +380,10 @@ SOURCE=.\stdhdr.h
 # Begin Source File
 
 SOURCE=.\tiledground.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\ToolPaletteBar.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

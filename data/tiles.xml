@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<tileset name="WarCraft3">
+
+    <tile
+       name="Dirt"
+       texture="Lords_Dirt.tga"
+       horizontalImages=8
+       verticalImages=4
+       >
+    </tile>
+
+    <tile
+       name="Dirt (Grass)"
+       texture="Lords_DirtGrass.tga"
+       horizontalImages=8
+       verticalImages=4
+       >
+    </tile>
+
+    <tile
+       name="Dirt (Rough)"
+       texture="Lords_DirtRough.tga"
+       horizontalImages=8
+       verticalImages=4
+       >
+    </tile>
+
+    <tile
+       name="Grass"
+       texture="Lords_Grass.tga"
+       horizontalImages=8
+       verticalImages=4
+       >
+    </tile>
+
+    <tile
+       name="Grass (Dark)"
+       texture="Lords_GrassDark.tga"
+       horizontalImages=8
+       verticalImages=4
+       >
+    </tile>
+
+    <tile
+       name="Rock"
+       texture="Lords_Rock.tga"
+       horizontalImages=8
+       verticalImages=4
+       >
+    </tile>
+
+</tileset>

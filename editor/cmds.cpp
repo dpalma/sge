@@ -22,46 +22,86 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+#define STRING_TILESET           "tileset"
+#define STRING_TILE              "tile"
+#define STRING_TEXTURE           "texture"
+#define STRING_NAME              "name"
+#define STRING_HORIZONTALIMAGES  "horizontalImages"
+#define STRING_VERTICALIMAGES    "verticalImages"
+
 ///////////////////////////////////////////////////////////////////////////////
 
-int RegisterTileTexture(int argc, const cScriptVar * argv, 
-                        int nMaxResults, cScriptVar * pResults)
+static uint LoadTileSets(const TiXmlDocument & xmlDoc)
 {
-   if (argc == 1 && argv[0].type == kInterface)
+   Assert(!xmlDoc.Error());
+
+   uint nTileSets = 0;
+
+   UseGlobal(EditorTileManager);
+
+   TiXmlElement * pXmlElement;
+   for (pXmlElement = xmlDoc.FirstChildElement();
+        pXmlElement != NULL;
+        pXmlElement = pXmlElement->NextSiblingElement())
    {
-      cAutoIPtr<IDictionary> pDict;
-      if (argv[0].pUnk->QueryInterface(IID_IDictionary, (void**)&pDict) == S_OK)
+      if (pXmlElement->Type() == TiXmlNode::ELEMENT
+         && strcmp(pXmlElement->Value(), STRING_TILESET) == 0)
       {
-         cStr name, texture;
-         int horzImages = -1, vertImages = -1;
-
-         if (pDict->Get("texture", &texture) == S_OK)
+         const char * pszName = NULL;
+         if ((pszName = pXmlElement->Attribute(STRING_NAME)) != NULL)
          {
-            if (pDict->Get("name", &name) != S_OK)
+            cAutoIPtr<IEditorTileSet> pTileSet;
+            if (SUCCEEDED(pEditorTileManager->CreateTileSet(pszName, &pTileSet)))
             {
-               name = texture;
+               nTileSets++;
+
+               TiXmlElement * pXmlChild;
+               for (pXmlChild = pXmlElement->FirstChildElement();
+                    pXmlChild != NULL;
+                    pXmlChild = pXmlChild->NextSiblingElement())
+               {
+                  if (pXmlChild->Type() == TiXmlNode::ELEMENT
+                     && strcmp(pXmlChild->Value(), STRING_TILE) == 0)
+                  {
+                     const char * pszValue;
+
+                     if ((pszValue = pXmlChild->Attribute(STRING_TEXTURE)) != NULL)
+                     {
+                        cStr texture, name;
+                        int horzImages = 1, vertImages = 1;
+
+                        texture = pszValue;
+
+                        if ((pszValue = pXmlChild->Attribute(STRING_NAME)) != NULL)
+                        {
+                           name = pszValue;
+                        }
+                        else
+                        {
+                           name = texture;
+                        }
+
+                        if (pXmlChild->QueryIntAttribute(STRING_HORIZONTALIMAGES, &horzImages) != TIXML_SUCCESS)
+                        {
+                           horzImages = 1;
+                        }
+
+                        if (pXmlChild->QueryIntAttribute(STRING_VERTICALIMAGES, &vertImages) != TIXML_SUCCESS)
+                        {
+                           vertImages = 1;
+                        }
+
+                        Verify(pTileSet->AddTile(name.c_str(), texture.c_str(), horzImages, vertImages) == S_OK);
+                     }
+                  }
+               }
             }
-
-            pDict->Get("horizontalImages", &horzImages);
-            pDict->Get("verticalImages", &vertImages);
-
-            UseGlobal(EditorTileManager);
-//            pEditorTileManager->AddTile(name.c_str(), texture.c_str(), horzImages, vertImages);
          }
-         else
-         {
-            DebugMsg("No tile texture provided\n");
-         }
-
-         // TODO
       }
    }
-   return 0;
+
+   return nTileSets;
 }
-
-AUTOADD_SCRIPTFUNCTION(RegisterTileTexture, RegisterTileTexture);
-
-///////////////////////////////////////////////////////////////////////////////
 
 int LoadTiles(int argc, const cScriptVar * argv, 
               int nMaxResults, cScriptVar * pResults)
@@ -88,26 +128,7 @@ int LoadTiles(int argc, const cScriptVar * argv,
 
                if (!doc.Error())
                {
-                  UseGlobal(EditorTileManager);
-
-                  TiXmlElement * pXmlElement;
-                  for (pXmlElement = doc.FirstChildElement();
-                       pXmlElement != NULL;
-                       pXmlElement = pXmlElement->NextSiblingElement())
-                  {
-                     if (pXmlElement->Type() == TiXmlNode::ELEMENT
-                        && strcmp(pXmlElement->Value(), "tileset") == 0)
-                     {
-                        const char * pszName = NULL;
-                        if ((pszName = pXmlElement->Attribute("name")) != NULL)
-                        {
-                           cAutoIPtr<IEditorTileSet> pTileSet;
-                           if (SUCCEEDED(pEditorTileManager->CreateTileSet(pszName, &pTileSet)))
-                           {
-                           }
-                        }
-                     }
-                  }
+                  uint nTileSets = LoadTileSets(doc);
                }
             }
 

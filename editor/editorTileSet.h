@@ -9,6 +9,8 @@
 #include "comtools.h"
 #include "str.h"
 
+#include <vector>
+
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
@@ -24,13 +26,20 @@ public:
    cEditorTileSet(const tChar * pszName);
    ~cEditorTileSet();
 
-   virtual tResult AddTileTexture(const tChar * pszName,
-                                  const tChar * pszTexture,
-                                  int horzImages,
-                                  int vertImages);
+   virtual tResult GetName(cStr * pName) const;
+
+   virtual tResult AddTile(const tChar * pszName,
+                           const tChar * pszTexture,
+                           int horzImages,
+                           int vertImages);
+
+   virtual tResult GetTileCount(uint * pTileCount) const;
+   virtual tResult GetTile(uint index, IEditorTile * * ppTile);
 
 private:
    cStr m_name;
+   typedef std::vector<IEditorTile *> tTiles;
+   tTiles m_tiles;
 };
 
 /////////////////////////////////////////////////////////////////////////////

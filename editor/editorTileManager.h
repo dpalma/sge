@@ -29,6 +29,8 @@ public:
 
    virtual tResult CreateTileSet(const tChar * pszName, IEditorTileSet * * ppTileSet);
    virtual tResult GetTileSet(const tChar * pszName, IEditorTileSet * * ppTileSet);
+   virtual tResult GetDefaultTileSet(IEditorTileSet * * ppTileSet);
+   virtual tResult SetDefaultTileSet(const tChar * pszName);
 
 private:
    typedef std::map<cStr, IEditorTileSet *> tTileSetMap;
