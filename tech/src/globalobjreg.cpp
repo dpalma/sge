@@ -25,6 +25,8 @@ LOG_DEFINE_CHANNEL(GlobalObjReg);
 
 using namespace std;
 
+#define InlineAddRef(pUnk) ((pUnk)->AddRef(), pUnk)
+
 ///////////////////////////////////////////////////////////////////////////////
 // Template specialization for pair that compares IID/Interface pairs
 
@@ -58,6 +60,8 @@ public:
    virtual tResult TermAll();
 
 private:
+   bool LookupByName(const char * pszName, IUnknown * * ppUnk, const GUID * * ppGuid) const;
+
    enum eState
    {
       kPreInit,
@@ -178,7 +182,7 @@ tResult cGlobalObjectRegistry::InitAll()
          std::vector<sConstraint>::iterator iter;
          for (iter = constraints.begin(); iter != constraints.end(); iter++)
          {
-            IUnknown * pTargetUnk = NULL;
+            cAutoIPtr<IUnknown> pTargetUnk = NULL;
             const GUID * pTargetGUID = NULL;
 
             if (iter->against == kCA_Guid)
@@ -186,26 +190,13 @@ tResult cGlobalObjectRegistry::InitAll()
                tObjMap::iterator found = m_objMap.find(iter->pGUID);
                if (found != m_objMap.end())
                {
-                  pTargetUnk = found->second;
+                  pTargetUnk = InlineAddRef(found->second);
                   pTargetGUID = found->first;
                }
             }
             else if (iter->against == kCA_Name)
             {
-               // TODO: allow lookup by name as well as by GUID so this
-               // linear search isn't necessary
-               for (tObjMap::iterator jter = m_objMap.begin(); jter != m_objMap.end(); jter++)
-               {
-                  cAutoIPtr<IGlobalObject> pGlobalObj;
-                  Verify(SUCCEEDED(jter->second->QueryInterface(IID_IGlobalObject, (void**)&pGlobalObj)));
-
-                  if (strcmp(pGlobalObj->GetName(), iter->pszName) == 0)
-                  {
-                     pTargetUnk = jter->second;
-                     pTargetGUID = jter->first;
-                     break;
-                  }
-               }
+               LookupByName(iter->pszName, &pTargetUnk, &pTargetGUID);
             }
 
             if (pTargetUnk != NULL)
@@ -261,14 +252,21 @@ tResult cGlobalObjectRegistry::InitAll()
 
       LocalMsg1("Initializing global object %s\n", pGlobalObj->GetName());
 
-      if (SUCCEEDED(pGlobalObj->Init()))
+      tResult initResult = pGlobalObj->Init();
+
+      if (initResult == S_OK)
       {
          m_initOrder.push_back(pGlobalObj);
+      }
+      else if (initResult == S_FALSE)
+      {
+         m_objMap.erase(initOrderIIDs[i]);
+         pGlobalObj->Release();
       }
       else
       {
          // if the initialization failed, exit the loop and return an error
-         DebugMsg("Init failed in cGlobalObjectRegistry::InitAll!!!\n");
+         DebugMsg1("ERROR: %s failed to initialize\n", pGlobalObj->GetName());
          result = E_FAIL;
          break;
       }
@@ -320,6 +318,32 @@ IUnknown * cGlobalObjectRegistry::Lookup(REFIID iid)
       return iter->second;
    }
    return NULL;
+}
+
+///////////////////////////////////////
+
+bool cGlobalObjectRegistry::LookupByName(const char * pszName, IUnknown * * ppUnk, const GUID * * ppGuid) const
+{
+   // TODO: Index by name as well as by GUID so a linear search isn't necessary
+   for (tObjMap::const_iterator iter = m_objMap.begin(); iter != m_objMap.end(); iter++)
+   {
+      cAutoIPtr<IGlobalObject> pGlobalObj;
+      Verify(SUCCEEDED(iter->second->QueryInterface(IID_IGlobalObject, (void**)&pGlobalObj)));
+
+      if (strcmp(pGlobalObj->GetName(), pszName) == 0)
+      {
+         if (ppUnk != NULL)
+         {
+            iter->second->QueryInterface(IID_IUnknown, (void * *)ppUnk);
+         }
+         if (ppGuid != NULL)
+         {
+            *ppGuid = iter->first;
+         }
+         return true;
+      }
+   }
+   return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
