@@ -295,6 +295,9 @@
 				RelativePath="..\..\render\gl\arbbufferobject.cpp">
 			</File>
 			<File
+				RelativePath="..\..\render\gl\font.cpp">
+			</File>
+			<File
 				RelativePath="..\..\render\gl\fontw32.cpp">
 			</File>
 			<File
@@ -334,6 +337,9 @@
 				RelativePath="..\..\render\gl\glext.cpp">
 			</File>
 			<File
+				RelativePath="..\..\render\gl\glutils.cpp">
+			</File>
+			<File
 				RelativePath="..\..\render\gl\indexbuffer.cpp">
 			</File>
 			<File
@@ -343,10 +349,19 @@
 				RelativePath="..\..\render\gl\material.cpp">
 			</File>
 			<File
+				RelativePath="..\..\render\gl\materialparameter.cpp">
+			</File>
+			<File
 				RelativePath="..\..\render\gl\renderdevice.cpp">
 			</File>
 			<File
+				RelativePath="..\..\render\gl\renderop.cpp">
+			</File>
+			<File
 				RelativePath="..\..\render\gl\renderqueue.cpp">
+			</File>
+			<File
+				RelativePath="..\..\render\gl\rendertypes.cpp">
 			</File>
 			<File
 				RelativePath="..\..\render\gl\softwarevertexblend.cpp">
@@ -407,7 +422,16 @@
 				RelativePath="..\..\render\gl\fontw32.h">
 			</File>
 			<File
+				RelativePath="..\..\render\gl\glutils.h">
+			</File>
+			<File
+				RelativePath="..\..\render\gl\materialparameter.h">
+			</File>
+			<File
 				RelativePath="..\..\render\gl\renderdevice.h">
+			</File>
+			<File
+				RelativePath="..\..\render\gl\renderop.h">
 			</File>
 			<File
 				RelativePath="..\..\render\gl\renderqueue.h">
@@ -435,7 +459,7 @@
 				RelativePath="..\..\render\include\font.h">
 			</File>
 			<File
-				RelativePath="..\..\render\include\material.h">
+				RelativePath="..\..\render\include\materialapi.h">
 			</File>
 			<File
 				RelativePath="..\..\render\include\render.h">
@@ -445,6 +469,9 @@
 			</File>
 			<File
 				RelativePath="..\..\render\include\renderguids.h">
+			</File>
+			<File
+				RelativePath="..\..\render\include\rendertypes.h">
 			</File>
 			<File
 				RelativePath="..\..\render\include\textureapi.h">

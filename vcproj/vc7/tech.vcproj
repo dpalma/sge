@@ -325,6 +325,9 @@
 					RelativePath="..\..\tech\src\filespec.cpp">
 				</File>
 				<File
+					RelativePath="..\..\tech\src\functor.cpp">
+				</File>
+				<File
 					RelativePath="..\..\tech\src\globalobjreg.cpp">
 				</File>
 				<File
@@ -406,7 +409,16 @@
 					RelativePath="..\..\tech\src\techtime.cpp">
 				</File>
 				<File
+					RelativePath="..\..\tech\src\text.cpp">
+				</File>
+				<File
 					RelativePath="..\..\tech\src\tga.cpp">
+				</File>
+				<File
+					RelativePath="..\..\tech\src\thread.cpp">
+				</File>
+				<File
+					RelativePath="..\..\tech\src\threadcaller.cpp">
 				</File>
 				<File
 					RelativePath="..\..\tech\src\windoww32.cpp">
@@ -523,6 +535,9 @@
 				RelativePath="..\..\tech\include\filespec.h">
 			</File>
 			<File
+				RelativePath="..\..\tech\include\functor.h">
+			</File>
+			<File
 				RelativePath="..\..\tech\include\globalobj.h">
 			</File>
 			<File
@@ -530,6 +545,12 @@
 			</File>
 			<File
 				RelativePath="..\..\tech\include\hash.h">
+			</File>
+			<File
+				RelativePath="..\..\tech\include\hashtable.h">
+			</File>
+			<File
+				RelativePath="..\..\tech\include\hashtabletem.h">
 			</File>
 			<File
 				RelativePath="..\..\tech\include\imagedata.h">
@@ -584,6 +605,15 @@
 			</File>
 			<File
 				RelativePath="..\..\tech\include\techtypes.h">
+			</File>
+			<File
+				RelativePath="..\..\tech\include\thread.h">
+			</File>
+			<File
+				RelativePath="..\..\tech\include\threadcallapi.h">
+			</File>
+			<File
+				RelativePath="..\..\tech\src\threadcaller.h">
 			</File>
 			<File
 				RelativePath="..\..\tech\include\toposort.h">
