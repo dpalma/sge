@@ -235,6 +235,10 @@ tResult ReadSkeleton(IReader * pReader,
                (*pBones)[i].parentIndex = n->second;
             }
          }
+         else
+         {
+            (*pBones)[i].parentIndex = -1;
+         }
 
          tMatrix4 mt, mr;
          MatrixTranslate(boneInfo[i].position[0], boneInfo[i].position[1], boneInfo[i].position[2], &mt);
