@@ -9,6 +9,7 @@ libengine_la_SOURCES = src/3ds.cpp \
                        src/animation.cpp \
                        src/frustum.cpp \
                        src/input.cpp \
+                       src/luainterp.cpp \
                        src/mesh.cpp \
                        src/ms3d.cpp \
                        src/ms3dread.cpp \
@@ -25,11 +26,12 @@ libengine_la_SOURCES = src/3ds.cpp \
                        src/stdhdr.cpp \
                        src/submesh.cpp
 
-libengine_la_LIBADD = $(GL_LIBS) $(CORE_LIBS)
+libengine_la_LIBADD = $(GL_LIBS) $(CORE_LIBS) -llua -llualib
 
 INCLUDES = $(GL_CFLAGS) \
            -DENGINE_EXPORTS \
            -I ./include \
            -I ./src \
+           -I @top_srcdir@/3rdparty/lua/include \
            -I @top_srcdir@/tech/include \
            -I @top_srcdir@/render/include
