@@ -27,21 +27,6 @@ LOG_DEFINE_CHANNEL(GlobalObjReg);
 #define LocalMsg4(s,a,b,c,d)     DebugMsgEx4(GlobalObjReg,(s),(a),(b),(c),(d))
 
 ///////////////////////////////////////////////////////////////////////////////
-// Template specialization for pair that compares IID/Interface pairs
-
-bool CDECL operator==(const std::pair<const IID *, IGlobalObject *> & P1,
-                      const std::pair<const IID *, IGlobalObject *> & P2)
-{
-   if (!CTIsEqualGUID(*(P1.first), *(P2.first)))
-      return false;
-
-   if (!CTIsSameObject(P1.second, P2.second))
-      return false;
-
-   return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGlobalObjectRegistry
 //
@@ -59,9 +44,10 @@ public:
    virtual tResult TermAll();
 
 private:
-   static void TermAllAtExit();
-
    bool LookupByName(const char * pszName, IUnknown * * ppUnk, const GUID * * ppGuid) const;
+
+   typedef cDigraph<const IID *> tConstraintGraph;
+   void BuildConstraintGraph(tConstraintGraph * pGraph);
 
    enum eState
    {
@@ -71,10 +57,12 @@ private:
       kTerminated
    };
 
+   eState m_state;
+
    void SetState(eState state) { m_state = state; }
    eState GetState() const { return m_state; }
 
-   struct less_iid
+   struct sLessIid
    {
       bool operator()(const IID * pIID1, const IID * pIID2) const
       {
@@ -82,13 +70,11 @@ private:
       }
    };
 
-   typedef std::map<const IID *, IUnknown *, less_iid> tObjMap;
+   typedef std::map<const IID *, IUnknown *, sLessIid> tObjMap;
    tObjMap m_objMap;
 
-   typedef std::vector<IGlobalObject *> tInitOrder;
+   typedef std::vector<const GUID *> tInitOrder;
    tInitOrder m_initOrder;
-
-   eState m_state;
 };
 
 ///////////////////////////////////////
@@ -112,31 +98,47 @@ cGlobalObjectRegistry::~cGlobalObjectRegistry()
 
 tResult cGlobalObjectRegistry::Register(REFIID iid, IUnknown * pUnk)
 {
-   Assert(!CTIsEqualUnknown(iid));
-   Assert(pUnk != NULL);
-
-   if (GetState() == kPreInit)
+   if (CTIsEqualUnknown(iid))
    {
-      // Object must support IGlobalObject
-      cAutoIPtr<IGlobalObject> pGlobalObject;
-      if (SUCCEEDED(pUnk->QueryInterface(IID_IGlobalObject, (void**)&pGlobalObject)))
-      {
-         IUnknown * pPostQI = NULL;
-         if (SUCCEEDED(pUnk->QueryInterface(iid, (void**)&pPostQI)))
-         {
-            if (m_objMap.find(&iid) == m_objMap.end())
-            {
-               m_objMap.insert(std::make_pair(&iid, pPostQI));
-               return S_OK;
-            }
-
-            DebugMsg("Unable to register global object. Duplicate IID.\n");
-            SafeRelease(pPostQI);
-         }
-      }
+      // Cannot register IID_IUnknown
+      return E_INVALIDARG;
    }
 
-   return E_FAIL;
+   if (pUnk == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (GetState() != kPreInit)
+   {
+      return E_FAIL;
+   }
+
+   cAutoIPtr<IGlobalObject> pGO;
+   if (FAILED(pUnk->QueryInterface(IID_IGlobalObject, (void**)&pGO)))
+   {
+      // Object must support IGlobalObject
+      return E_INVALIDARG;
+   }
+   SafeRelease(pGO);
+
+   if (m_objMap.find(&iid) != m_objMap.end())
+   {
+      DebugMsg("Unable to register global object: duplicate IID.\n");
+      return S_FALSE;
+   }
+
+   cAutoIPtr<IUnknown> pPostQI;
+   if (FAILED(pUnk->QueryInterface(iid, (void**)&pPostQI)))
+   {
+      // Object must support its own interface
+      return E_INVALIDARG;
+   }
+
+   // Store the QI'ed pointer
+   m_objMap[&iid] = CTAddRef(pPostQI);
+
+   return S_OK;
 }
 
 ///////////////////////////////////////
@@ -145,140 +147,41 @@ tResult cGlobalObjectRegistry::InitAll()
 {
    Assert(GetState() == kPreInit);
 
-   tResult result = S_OK; // a little cheesy to assume success...
+   tConstraintGraph constraintGraph;
+   BuildConstraintGraph(&constraintGraph);
 
-   typedef cDigraph<const IID *, IGlobalObject *> tInitGraph;
-   tInitGraph initGraph;
-
-   // add nodes
-   tObjMap::iterator iter;
-   for (iter = m_objMap.begin(); iter != m_objMap.end(); iter++)
-   {
-      const IID * pIID = iter->first;
-      IUnknown * pUnk = iter->second;
-
-      // If the object doesn't support IGlobalObject it shouldn't have 
-      // made it past the Register() step.
-      IGlobalObject * pGlobalObj = NULL;
-      Verify(SUCCEEDED(pUnk->QueryInterface(IID_IGlobalObject, (void**)&pGlobalObj)));
-      initGraph.AddNode(pIID, pGlobalObj);
-
-      // Release the reference from the QI call above even though the pointer
-      // was added to "initGraph", because a reference to the same object is
-      // held by the "m_objMap" array.
-      pGlobalObj->Release();
-   }
-
-   // add constraints as edges
-   for (iter = m_objMap.begin(); iter != m_objMap.end(); iter++)
-   {
-      const IID * pIID = iter->first;
-      IUnknown * pUnk = iter->second;
-
-      cAutoIPtr<IGlobalObject> pGlobalObj;
-      Verify(SUCCEEDED(pUnk->QueryInterface(IID_IGlobalObject, (void**)&pGlobalObj)));
-
-      std::vector<sConstraint> constraints;
-      if (pGlobalObj->GetConstraints(&constraints) > 0)
-      {
-         std::vector<sConstraint>::iterator iter;
-         for (iter = constraints.begin(); iter != constraints.end(); iter++)
-         {
-            cAutoIPtr<IUnknown> pTargetUnk = NULL;
-            const GUID * pTargetGUID = NULL;
-
-            if (iter->against == kCA_Guid)
-            {
-               tObjMap::iterator found = m_objMap.find(iter->pGUID);
-               if (found != m_objMap.end())
-               {
-                  pTargetUnk = CTAddRef(found->second);
-                  pTargetGUID = found->first;
-               }
-            }
-            else if (iter->against == kCA_Name)
-            {
-               LookupByName(iter->pszName, &pTargetUnk, &pTargetGUID);
-            }
-
-            if (pTargetUnk != NULL)
-            {
-#ifndef NDEBUG
-               cAutoIPtr<IGlobalObject> pTargetGlobalObj;
-               Verify(SUCCEEDED(pTargetUnk->QueryInterface(IID_IGlobalObject, (void**)&pTargetGlobalObj)));
-#endif
-
-               // add edge
-               if (iter->when == kCW_Before)
-               {
-                  LocalMsg2("%s initialized before %s\n",
-                     pGlobalObj->GetName(), pTargetGlobalObj->GetName());
-                  initGraph.AddEdge(pIID, pTargetGUID);
-               }
-               else if (iter->when == kCW_After)
-               {
-                  LocalMsg2("%s initialized after %s\n",
-                     pGlobalObj->GetName(), pTargetGlobalObj->GetName());
-                  initGraph.AddEdge(pTargetGUID, pIID);
-               }
-            }
-#ifndef NDEBUG
-            else
-            {
-               char szGUID[kGuidStringLength];
-               GUIDToString(*(iter->pGUID), szGUID, _countof(szGUID));
-
-               DebugMsg3("%s initialized %s non-existent object %s\n",
-                  pGlobalObj->GetName(),
-                  (iter->when == kCW_Before) ? "before" : "after",
-                  (iter->against == kCA_Guid) ? szGUID : iter->pszName);
-            }
-#endif
-         }
-      }
-   }
-
-   cTopoSorter<tInitGraph> sorter;
-   typedef std::vector<const IID *> tInitOrderIIDVector;
-   tInitOrderIIDVector initOrderIIDs;
-   sorter.TopoSort(&initGraph, &initOrderIIDs);
+   cTopoSorter<tConstraintGraph>().TopoSort(&constraintGraph, &m_initOrder);
 
    // Let the state be live during initialization so the global objects
    // may refer to each other.
    SetState(kLive);
 
-   Assert(m_initOrder.size() == 0);
-   for (tInitOrderIIDVector::size_type i = 0; i < initOrderIIDs.size(); i++)
+   tInitOrder::iterator iter;
+   for (iter = m_initOrder.begin(); iter != m_initOrder.end(); iter++)
    {
-      IGlobalObject * pGlobalObj = NULL;
-      if (initGraph.GetNodeData(initOrderIIDs[i], &pGlobalObj))
+      cAutoIPtr<IUnknown> pUnk(Lookup(*(*iter)));
+      if (!!pUnk)
       {
-         LocalMsg1("Initializing global object %s\n", pGlobalObj->GetName());
+         cAutoIPtr<IGlobalObject> pGO;
+         if (pUnk->QueryInterface(IID_IGlobalObject, (void**)&pGO) == S_OK)
+         {
+            LocalMsg1("Initializing global object %s\n", pGO->GetName());
 
-         tResult initResult = pGlobalObj->Init();
-
-         if (initResult == S_OK)
-         {
-            m_initOrder.push_back(pGlobalObj);
-         }
-         else if (initResult == S_FALSE)
-         {
-            m_objMap.erase(initOrderIIDs[i]);
-            pGlobalObj->Release();
-         }
-         else
-         {
-            // if the initialization failed, exit the loop and return an error
-            DebugMsg1("ERROR: %s failed to initialize\n", pGlobalObj->GetName());
-            result = E_FAIL;
-            break;
+            tResult initResult = pGO->Init();
+            if (initResult == S_FALSE)
+            {
+               m_objMap.erase(*iter);
+            }
+            else if (FAILED(initResult))
+            {
+               ErrorMsg1("%s failed to initialize\n", pGO->GetName());
+               return initResult;
+            }
          }
       }
    }
 
-   atexit(TermAllAtExit);
-
-   return result;
+   return S_OK;
 }
 
 ///////////////////////////////////////
@@ -288,13 +191,36 @@ tResult cGlobalObjectRegistry::TermAll()
    if (GetState() == kLive)
    {
       Assert(m_objMap.size() == m_initOrder.size());
-      // Terminate in reverse order
+
       SetState(kTerminating);
-      std::for_each(m_initOrder.rbegin(), m_initOrder.rend(), std::mem_fun(&IGlobalObject::Term));
-      std::for_each(m_initOrder.rbegin(), m_initOrder.rend(), CTInterfaceMethod(&IGlobalObject::Release));
-      SetState(kTerminated);
+
+      // Terminate in reverse order
+      tInitOrder::reverse_iterator iter;
+      for (iter = m_initOrder.rbegin(); iter != m_initOrder.rend(); iter++)
+      {
+         cAutoIPtr<IUnknown> pUnk(Lookup(*(*iter)));
+         if (!!pUnk)
+         {
+            cAutoIPtr<IGlobalObject> pGO;
+            if (pUnk->QueryInterface(IID_IGlobalObject, (void**)&pGO) == S_OK)
+            {
+               pGO->Term();
+            }
+         }
+      }
+
+      // Release references in m_objMap (order doesn't matter here)
+      tObjMap::iterator oiter;
+      for (oiter = m_objMap.begin(); oiter != m_objMap.end(); oiter++)
+      {
+         oiter->second->Release();
+      }
+
       m_initOrder.clear();
       m_objMap.clear();
+
+      SetState(kTerminated);
+
       return S_OK;
    }
 #ifndef NDEBUG
@@ -305,14 +231,8 @@ tResult cGlobalObjectRegistry::TermAll()
       Assert(GetState() == kTerminated);
    }
 #endif
-    return S_FALSE;
-}
 
-///////////////////////////////////////
-
-void cGlobalObjectRegistry::TermAllAtExit()
-{
-   AccessGlobalObjectRegistry()->TermAll();
+   return S_FALSE;
 }
 
 ///////////////////////////////////////
@@ -323,8 +243,12 @@ IUnknown * cGlobalObjectRegistry::Lookup(REFIID iid)
    if (iter != m_objMap.end())
    {
       Assert(iter->second != NULL);
+#ifdef _DEBUG
+      // is the interface pointer callable?
       iter->second->AddRef();
-      return iter->second;
+      iter->second->Release();
+#endif
+      return CTAddRef(iter->second);
    }
    return NULL;
 }
@@ -355,23 +279,116 @@ bool cGlobalObjectRegistry::LookupByName(const char * pszName, IUnknown * * ppUn
    return false;
 }
 
+///////////////////////////////////////
+
+void cGlobalObjectRegistry::BuildConstraintGraph(tConstraintGraph * pGraph)
+{
+   // add nodes
+   tObjMap::iterator iter;
+   for (iter = m_objMap.begin(); iter != m_objMap.end(); iter++)
+   {
+      pGraph->AddNode(iter->first);
+   }
+
+   // add constraints as edges
+   for (iter = m_objMap.begin(); iter != m_objMap.end(); iter++)
+   {
+      cAutoIPtr<IGlobalObject> pGlobalObj;
+      Verify(SUCCEEDED(iter->second->QueryInterface(IID_IGlobalObject, (void**)&pGlobalObj)));
+
+      typedef std::vector<sConstraint> tConstraints;
+
+      tConstraints constraints;
+      if (pGlobalObj->GetConstraints(&constraints) > 0)
+      {
+         tConstraints::iterator citer;
+         for (citer = constraints.begin(); citer != constraints.end(); citer++)
+         {
+            const GUID * pTargetGuid = NULL;
+
+            if (citer->against == kCA_Guid)
+            {
+               cAutoIPtr<IUnknown> pTargetUnk(Lookup(*(citer->pGUID)));
+               if (!!pTargetUnk)
+               {
+                  pTargetGuid = citer->pGUID;
+               }
+            }
+            else if (citer->against == kCA_Name)
+            {
+               LookupByName(citer->pszName, NULL, &pTargetGuid);
+            }
+
+            if (pTargetGuid != NULL)
+            {
+               if (citer->when == kCW_Before)
+               {
+                  pGraph->AddEdge(iter->first, pTargetGuid);
+               }
+               else if (citer->when == kCW_After)
+               {
+                  pGraph->AddEdge(pTargetGuid, iter->first);
+               }
+            }
+         }
+      }
+   }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cStackGlobalObjectRegistry
+// CLASS: cSingletonGlobalObjectRegistry
 //
 
-class cStackGlobalObjectRegistry : public cGlobalObjectRegistry
+class cSingletonGlobalObjectRegistry : public cGlobalObjectRegistry
 {
 public:
-   virtual ulong STDMETHODCALLTYPE AddRef() { return 2; }
-   virtual ulong STDMETHODCALLTYPE Release() { return 1; }
+   static IGlobalObjectRegistry * Access();
+   virtual void DeleteThis();
+   static void TermAllAtExit();
+   virtual tResult InitAll();
+private:
+   static cSingletonGlobalObjectRegistry gm_instance;
 };
 
-static cStackGlobalObjectRegistry g_globalObjectRegistry;
+////////////////////////////////////////
+
+cSingletonGlobalObjectRegistry cSingletonGlobalObjectRegistry::gm_instance;
+
+////////////////////////////////////////
+
+IGlobalObjectRegistry * cSingletonGlobalObjectRegistry::Access()
+{
+   return static_cast<IGlobalObjectRegistry *>(&gm_instance);
+}
+
+////////////////////////////////////////
+
+void cSingletonGlobalObjectRegistry::DeleteThis()
+{
+   // Do nothing
+}
+
+///////////////////////////////////////
+
+void cSingletonGlobalObjectRegistry::TermAllAtExit()
+{
+   Access()->TermAll();
+}
+
+///////////////////////////////////////
+
+tResult cSingletonGlobalObjectRegistry::InitAll()
+{
+   atexit(TermAllAtExit);
+   return cGlobalObjectRegistry::InitAll();
+}
+
+////////////////////////////////////////
 
 IGlobalObjectRegistry * AccessGlobalObjectRegistry()
 {
-   return &g_globalObjectRegistry;
+   return cSingletonGlobalObjectRegistry::Access();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -381,60 +398,102 @@ IGlobalObjectRegistry * AccessGlobalObjectRegistry()
 ///////////////////////////////////////////////////////////////////////////////
 
 // {A2A64E3E-4549-4a54-B43A-313DD78E9192}
-EXTERN_C const GUID IID_IFoo = 
+EXTERN_C const GUID IID_IFooGlobalObj = 
 { 0xa2a64e3e, 0x4549, 0x4a54, { 0xb4, 0x3a, 0x31, 0x3d, 0xd7, 0x8e, 0x91, 0x92 } };
 
-interface IFoo : IUnknown
+interface IFooGlobalObj : IUnknown
 {
    virtual void Foo() = 0;
 };
 
-BEGIN_CONSTRAINTS_NAMED(g_fooConstraints)
-   BEFORE_NAME("Bar")
-END_CONSTRAINTS()
+////////////////////////////////////////
 
-class cFoo : public cGlobalObject<IMPLEMENTS(IFoo)>
+class cFooGlobalObj : public cGlobalObject<IMPLEMENTS(IFooGlobalObj)>
 {
 public:
-   cFoo(IGlobalObjectRegistry * pReg = NULL)
-    : cGlobalObject<IMPLEMENTS(IFoo)>("Foo", CONSTRAINTS_NAMED(g_fooConstraints), pReg)
-   {
-   }
+   cFooGlobalObj(IGlobalObjectRegistry * pReg);
+   ~cFooGlobalObj();
 
-   virtual void Foo()
-   {
-      DebugMsg("Foo\n");
-   }
+   virtual void Foo();
 };
+
+////////////////////////////////////////
+
+BEGIN_CONSTRAINTS_NAMED(g_fooConstraints)
+   BEFORE_NAME("BarGlobalObj")
+END_CONSTRAINTS()
+
+////////////////////////////////////////
+
+cFooGlobalObj::cFooGlobalObj(IGlobalObjectRegistry * pReg)
+ : cGlobalObject<IMPLEMENTS(IFooGlobalObj)>("FooGlobalObj", CONSTRAINTS_NAMED(g_fooConstraints), pReg)
+{
+   LocalMsg("cFooGlobalObj::cFooGlobalObj()\n");
+}
+
+////////////////////////////////////////
+
+cFooGlobalObj::~cFooGlobalObj()
+{
+   LocalMsg("cFooGlobalObj::~cFooGlobalObj()\n");
+}
+
+////////////////////////////////////////
+
+void cFooGlobalObj::Foo()
+{
+   LocalMsg("cFooGlobalObj::Foo()\n");
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
 // {D0C9B0BF-B0C6-4d28-B379-3C5F01DA0890}
-EXTERN_C const GUID IID_IBar = 
+EXTERN_C const GUID IID_IBarGlobalObj = 
 { 0xd0c9b0bf, 0xb0c6, 0x4d28, { 0xb3, 0x79, 0x3c, 0x5f, 0x1, 0xda, 0x8, 0x90 } };
 
-interface IBar : IUnknown
+interface IBarGlobalObj : IUnknown
 {
    virtual void Bar() = 0;
 };
 
-BEGIN_CONSTRAINTS_NAMED(g_barConstraints)
-   AFTER_GUID(IID_IFoo) // redundant with BEFORE_NAME("Bar") above--for testing
-END_CONSTRAINTS()
+////////////////////////////////////////
 
-class cBar : public cGlobalObject<IMPLEMENTS(IBar)>
+class cBarGlobalObj : public cGlobalObject<IMPLEMENTS(IBarGlobalObj)>
 {
 public:
-   cBar(IGlobalObjectRegistry * pReg = NULL)
-    : cGlobalObject<IMPLEMENTS(IBar)>("Bar", CONSTRAINTS_NAMED(g_barConstraints), pReg)
-   {
-   }
+   cBarGlobalObj(IGlobalObjectRegistry * pReg);
+   ~cBarGlobalObj();
 
-   virtual void Bar()
-   {
-      DebugMsg("Bar\n");
-   }
+   virtual void Bar();
 };
+
+////////////////////////////////////////
+
+BEGIN_CONSTRAINTS_NAMED(g_barConstraints)
+   AFTER_GUID(IID_IFooGlobalObj) // redundant with BEFORE_NAME("Bar") above--for testing
+END_CONSTRAINTS()
+
+////////////////////////////////////////
+
+cBarGlobalObj::cBarGlobalObj(IGlobalObjectRegistry * pReg)
+ : cGlobalObject<IMPLEMENTS(IBarGlobalObj)>("BarGlobalObj", CONSTRAINTS_NAMED(g_barConstraints), pReg)
+{
+   LocalMsg("cBarGlobalObj::cBarGlobalObj()\n");
+}
+
+////////////////////////////////////////
+
+cBarGlobalObj::~cBarGlobalObj()
+{
+   LocalMsg("cBarGlobalObj::~cBarGlobalObj()\n");
+}
+
+////////////////////////////////////////
+
+void cBarGlobalObj::Bar()
+{
+   LocalMsg("cBarGlobalObj::Bar()\n");
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -444,37 +503,33 @@ class cGlobalObjectRegistryTests : public CppUnit::TestCase
       CPPUNIT_TEST(TestGlobalObjReg);
    CPPUNIT_TEST_SUITE_END();
 
-   void TestGlobalObjReg()
-   {
-      cAutoIPtr<IBar> pBar = new cBar(m_pRegistry);
-      cAutoIPtr<IFoo> pFoo = new cFoo(m_pRegistry);
-
-      CPPUNIT_ASSERT(m_pRegistry->InitAll() == S_OK);
-
-      cAutoIPtr<IFoo> pFoo2 = (IFoo *)m_pRegistry->Lookup(IID_IFoo);
-      CPPUNIT_ASSERT(CTIsSameObject(pFoo, pFoo2));
-
-      cAutoIPtr<IBar> pBar2 = (IBar *)m_pRegistry->Lookup(IID_IBar);
-      CPPUNIT_ASSERT(CTIsSameObject(pBar, pBar2));
-
-      CPPUNIT_ASSERT(m_pRegistry->TermAll() == S_OK);
-   }
-
-   cAutoIPtr<IGlobalObjectRegistry> m_pRegistry;
-
-public:
-   virtual void setUp()
-   {
-      m_pRegistry = new cGlobalObjectRegistry;
-   }
-
-   virtual void tearDown()
-   {
-      SafeRelease(m_pRegistry);
-   }
+   void TestGlobalObjReg();
 };
 
+////////////////////////////////////////
+
 CPPUNIT_TEST_SUITE_REGISTRATION(cGlobalObjectRegistryTests);
+
+////////////////////////////////////////
+
+void cGlobalObjectRegistryTests::TestGlobalObjReg()
+{
+   cAutoIPtr<IGlobalObjectRegistry> pRegistry(
+      static_cast<IGlobalObjectRegistry *>(new cGlobalObjectRegistry));
+
+   cAutoIPtr<IBarGlobalObj> pBar(static_cast<IBarGlobalObj *>(new cBarGlobalObj(pRegistry)));
+   cAutoIPtr<IFooGlobalObj> pFoo(static_cast<IFooGlobalObj *>(new cFooGlobalObj(pRegistry)));
+
+   CPPUNIT_ASSERT(pRegistry->InitAll() == S_OK);
+
+   cAutoIPtr<IFooGlobalObj> pFoo2 = (IFooGlobalObj *)pRegistry->Lookup(IID_IFooGlobalObj);
+   CPPUNIT_ASSERT(CTIsSameObject(pFoo, pFoo2));
+
+   cAutoIPtr<IBarGlobalObj> pBar2 = (IBarGlobalObj *)pRegistry->Lookup(IID_IBarGlobalObj);
+   CPPUNIT_ASSERT(CTIsSameObject(pBar, pBar2));
+
+   CPPUNIT_ASSERT(pRegistry->TermAll() == S_OK);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
