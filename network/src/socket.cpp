@@ -75,4 +75,15 @@ int cSocket::ReceiveFrom(void * pBuffer, int nBufferBytes, struct sockaddr * pAd
    return SOCKET_ERROR;
 }
 
+///////////////////////////////////////
+
+int cSocket::SendTo(const void * pBuffer, int nBufferBytes, const sockaddr * pAddr, int addrLen, int flags)
+{
+   if (m_socket != INVALID_SOCKET)
+   {
+      return sendto(m_socket, (const char *)pBuffer, nBufferBytes, flags, pAddr, addrLen);
+   }
+   return SOCKET_ERROR;
+}
+
 ///////////////////////////////////////////////////////////////////////////////

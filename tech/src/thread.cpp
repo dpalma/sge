@@ -5,6 +5,9 @@
 
 #include "thread.h"
 
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
 #include "dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -20,6 +23,7 @@ cThread::cThread()
 #else
 #error ("Need platform-specific thread member initialization")
 #endif
+ , m_threadId(0)
 {
 }
 
@@ -33,6 +37,11 @@ cThread::~cThread()
 
 bool cThread::Begin()
 {
+   if (m_hThread == NULL)
+   {
+      m_hThread = (HTHREAD)CreateThread(NULL, 0, ThreadEntry, this, 0, &m_threadId);
+      return (m_hThread != NULL);
+   }
    return false;
 }
 
@@ -40,49 +49,38 @@ bool cThread::Begin()
 
 uint cThread::End()
 {
+   // TODO
    return 0;
 }
 
 ///////////////////////////////////////
 
-uint cThread::GetId() const
+void cThread::Join(uint timeoutMs)
 {
-   return 0;
-}
-
-///////////////////////////////////////
-
-uint cThread::Suspend()
-{
-   return 0;
-}
-
-///////////////////////////////////////
-
-uint cThread::Resume()
-{
-   return 0;
+   WaitForSingleObject(GetHandle(), timeoutMs);
 }
 
 ///////////////////////////////////////
 
 bool cThread::Terminate()
 {
+   if (m_hThread != NULL)
+   {
+      return TerminateThread(m_hThread, 0) ? true : false;
+   }
    return false;
 }
 
 ///////////////////////////////////////
 
-int cThread::Run()
+ulong STDCALL cThread::ThreadEntry(void * param)
 {
-   return 0;
-}
+   cThread * pThread = (cThread *)param;
+   Assert(pThread != NULL);
 
-///////////////////////////////////////
+   int result = pThread->Run();
 
-uint STDCALL cThread::ThreadEntry(void * param)
-{
-   return 0;
+   return result;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

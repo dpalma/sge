@@ -14,32 +14,31 @@
 
 #include "dbgalloc.h" // must be last header
 
-#define LOCAL_SERVER_PORT 1500
+#define SERVER_PORT 1500
 
-int main(int argc, char * argv[])
+///////////////////////////////////////////////////////////////////////////////
+
+class cServerThread : public cThread
+{
+protected:
+   virtual int Run();
+};
+
+int cServerThread::Run()
 {
    int cliLen;
    struct sockaddr_in cliAddr;
    char msg[100];
 
-   StartGlobalObjects();
-
    cSocket serverSocket;
 
-   if (!cSocket::Init())
+   if (!serverSocket.Create(SERVER_PORT, SOCK_DGRAM, NULL))
    {
-      printf("%s: could not initialize socket library\n", argv[0]);
-      exit(1);
+      printf("cannot open socket \n");
+      return -1;
    }
 
-   if (!serverSocket.Create(LOCAL_SERVER_PORT, SOCK_DGRAM, NULL))
-   {
-      printf("%s: cannot open socket \n",argv[0]);
-      exit(1);
-   }
-
-   printf("%s: waiting for data on port UDP %u\n", 
-      argv[0],LOCAL_SERVER_PORT);
+   printf("waiting for data on port UDP %u\n", SERVER_PORT);
 
    for (;;)
    {
@@ -51,14 +50,102 @@ int main(int argc, char * argv[])
 
       if (result == SOCKET_ERROR)
       {
-         printf("%s: cannot receive data \n",argv[0]);
+         printf("cannot receive data \n");
          continue;
       }
 
-      printf("%s: from %s:UDP%u : %s \n", 
-         argv[0],inet_ntoa(cliAddr.sin_addr),
-         ntohs(cliAddr.sin_port),msg);
+      printf("from %s:UDP%u : %s \n", inet_ntoa(cliAddr.sin_addr), ntohs(cliAddr.sin_port), msg);
    }
+
+   return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+class cClientThread : public cThread
+{
+protected:
+   virtual int Run();
+};
+
+int cClientThread::Run()
+{
+   cSocket clientSocket;
+
+   if (!clientSocket.Create(0, SOCK_DGRAM, NULL))
+   {
+      printf("cannot open socket \n");
+      return -1;
+   }
+
+   struct hostent * h = gethostbyname("127.0.0.1");
+   if (h == NULL)
+   {
+      printf("unknown host\n");
+      return -1;
+   }
+
+   struct sockaddr_in addr;
+   addr.sin_family = h->h_addrtype;
+   memcpy(&addr.sin_addr.s_addr, h->h_addr_list[0], h->h_length);
+   addr.sin_port = htons(SERVER_PORT);
+
+   char buffer[100];
+   int len = 0;
+
+   int result = 0;
+
+   for (;;)
+   {
+      char c = getc(stdin);
+
+      if (c == '\n')
+      {
+         if (stricmp(buffer, "quit") == 0)
+         {
+            break;
+         }
+
+         if (clientSocket.SendTo(buffer, strlen(buffer) + 1, (struct sockaddr *)&addr, sizeof(addr)) == SOCKET_ERROR)
+         {
+            result = -1;
+            break;
+         }
+
+         memset(buffer, 0, sizeof(buffer));
+         len = 0;
+      }
+      else if ((len + 2) < sizeof(buffer))
+      {
+         buffer[len++] = c;
+         buffer[len] = 0;
+      }
+   }
+
+   return result;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+int main(int argc, char * argv[])
+{
+   StartGlobalObjects();
+
+   if (!cSocket::Init())
+   {
+      printf("%s: could not initialize socket library\n", argv[0]);
+      exit(1);
+   }
+
+   cServerThread serverThread;
+   cClientThread clientThread;
+
+   serverThread.Begin();
+   clientThread.Begin();
+   
+   clientThread.Join(INFINITE);
+
+   serverThread.Terminate();
 
    cSocket::Term();
 
@@ -66,3 +153,5 @@ int main(int argc, char * argv[])
 
    return 0;
 }
+
+///////////////////////////////////////////////////////////////////////////////

@@ -28,6 +28,8 @@ public:
 
    int ReceiveFrom(void * pBuffer, int nBufferBytes, struct sockaddr * pAddr, int * pAddrLength);
 
+	int SendTo(const void * pBuffer, int nBufferBytes, const sockaddr * pAddr, int addrLen, int flags = 0);
+
 private:
    uint m_socket;
 };

@@ -28,21 +28,38 @@ public:
 
    uint GetId() const;
 
-   uint Suspend();
-   uint Resume();
+   void Join(uint timeoutMs);
    bool Terminate();
 
-   virtual int Run();
+protected:
+   virtual int Run() = 0;
+
+   HANDLE GetHandle() const;
 
 private:
-   static uint STDCALL ThreadEntry(void * param);
+   static ulong STDCALL ThreadEntry(void * param);
 
 #ifdef _WIN32
    HTHREAD m_hThread;
 #else
 #error ("Need platform-specific thread members")
 #endif
+   ulong m_threadId;
 };
+
+///////////////////////////////////////
+
+inline uint cThread::GetId() const
+{
+   return m_threadId;
+}
+
+///////////////////////////////////////
+
+inline HANDLE cThread::GetHandle() const
+{
+   return m_hThread;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
