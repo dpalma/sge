@@ -56,7 +56,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib /nologo /subsystem:windows /map /machine:I386
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib /nologo /subsystem:windows /map:"..\Build\Release/game.map" /machine:I386
 
 !ELSEIF  "$(CFG)" == "game - Win32 Debug"
 
@@ -82,7 +82,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 $(OutDir)\cppunit.lib kernel32.lib user32.lib gdi32.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib /nologo /subsystem:windows /map /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 $(OutDir)\cppunit.lib kernel32.lib user32.lib gdi32.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib /nologo /subsystem:windows /map:"..\Build\Debug/game.map" /debug /machine:I386 /pdbtype:sept
 
 !ELSEIF  "$(CFG)" == "game - Win32 StaticRelease"
 
@@ -109,7 +109,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib opengl32.lib glu32.lib winmm.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib /nologo /subsystem:windows /map /machine:I386
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib /nologo /subsystem:windows /map:"..\Build\StaticRelease/game.map" /machine:I386
 
 !ELSEIF  "$(CFG)" == "game - Win32 StaticDebug"
 
@@ -136,7 +136,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib opengl32.lib glu32.lib winmm.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 $(OutDir)\cppunit.lib kernel32.lib user32.lib gdi32.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib /nologo /subsystem:windows /map /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 $(OutDir)\cppunit.lib kernel32.lib user32.lib gdi32.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib /nologo /subsystem:windows /map:"..\Build\StaticDebug/game.map" /debug /machine:I386 /pdbtype:sept
 
 !ELSEIF  "$(CFG)" == "game - Win32 Opt"
 
@@ -153,7 +153,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /I "..\lua\include" /I "..\tech\include" /I "..\3rdparty\tinyxml" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "TIXML_USE_STL" /YX /FD /c
-# ADD CPP /nologo /MDd /W3 /GX /Zi /O2 /I "..\3rdparty\lua\include" /I "..\engine\include" /I "..\render\include" /I "..\tech\include" /I "..\3rdparty\tinyxml" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "TIXML_USE_STL" /Yu"stdhdr.h" /FD /c
+# ADD CPP /nologo /MDd /W3 /GX /Zi /O2 /I "..\3rdparty\lua\include" /I "..\engine\include" /I "..\render\include" /I "..\tech\include" /I "..\3rdparty\tinyxml" /D "TIXML_USE_STL" /D "_WINDOWS" /D "NDEBUG" /D "WIN32" /D "_MBCS" /Yu"stdhdr.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -163,7 +163,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib /nologo /subsystem:windows /map /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib /nologo /subsystem:windows /profile /map /debug /machine:I386
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib /nologo /subsystem:windows /profile /map:"..\Build\Opt/game.map" /debug /machine:I386
 
 !ENDIF 
 

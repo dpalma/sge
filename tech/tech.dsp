@@ -46,7 +46,8 @@ CFG=tech - Win32 StaticDebug
 F90=df.exe
 CPP=cl.exe
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TECH_EXPORTS" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I ".\include" /D "NDEBUG" /D "_USRDLL" /D "TECH_EXPORTS" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "STRICT" /FR /Yu"stdhdr.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /I ".\include" /D "NDEBUG" /D "_USRDLL" /D "TECH_EXPORTS" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "STRICT" /Yu"stdhdr.h" /FD /c
+# SUBTRACT CPP /Fr
 MTL=midl.exe
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
@@ -58,7 +59,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winmm.lib opengl32.lib /nologo /dll /map /machine:I386 /opt:ref
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winmm.lib opengl32.lib /nologo /dll /map:"..\Build\Release/tech.map" /machine:I386 /opt:ref
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "tech - Win32 Debug"
@@ -77,7 +78,8 @@ LINK32=link.exe
 F90=df.exe
 CPP=cl.exe
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TECH_EXPORTS" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I ".\include" /I "..\3rdparty\cppunit\include" /D "_DEBUG" /D "_USRDLL" /D "TECH_EXPORTS" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "STRICT" /D "HAVE_CPPUNIT" /FR /Yu"stdhdr.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I ".\include" /I "..\3rdparty\cppunit\include" /D "_DEBUG" /D "_USRDLL" /D "TECH_EXPORTS" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "STRICT" /D "HAVE_CPPUNIT" /Yu"stdhdr.h" /FD /GZ /c
+# SUBTRACT CPP /Fr
 MTL=midl.exe
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
@@ -89,7 +91,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 $(OutDir)\cppunit.lib kernel32.lib user32.lib gdi32.lib winmm.lib opengl32.lib /nologo /dll /map /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 $(OutDir)\cppunit.lib kernel32.lib user32.lib gdi32.lib winmm.lib opengl32.lib /nologo /dll /map:"..\Build\Debug/tech.map" /debug /machine:I386 /pdbtype:sept
 # SUBTRACT LINK32 /profile
 
 !ELSEIF  "$(CFG)" == "tech - Win32 Opt"
@@ -109,7 +111,7 @@ LINK32=link.exe
 F90=df.exe
 CPP=cl.exe
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "_DEBUG" /D "STRICT" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TECH_EXPORTS" /Yu"stdhdr.h" /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /GX /Zi /O2 /I ".\include" /D "NDEBUG" /D "_USRDLL" /D "TECH_EXPORTS" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "STRICT" /Yu"stdhdr.h" /FD /c
+# ADD CPP /nologo /MDd /W3 /GX /Zi /O2 /I ".\include" /D "_USRDLL" /D "TECH_EXPORTS" /D "STRICT" /D "_WINDOWS" /D "NDEBUG" /D "WIN32" /D "_MBCS" /Yu"stdhdr.h" /FD /c
 # SUBTRACT CPP /Fr
 MTL=midl.exe
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
@@ -123,8 +125,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winmm.lib /nologo /dll /debug /machine:I386 /pdbtype:sept /libpath:"..\..\3rdparty\dx7sdk\lib"
 # SUBTRACT BASE LINK32 /profile
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winmm.lib opengl32.lib /nologo /dll /incremental:no /map /debug /machine:I386 /pdbtype:sept
-# SUBTRACT LINK32 /profile
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winmm.lib opengl32.lib /nologo /dll /profile /map:"..\Build\Opt/tech.map" /debug /machine:I386
 
 !ELSEIF  "$(CFG)" == "tech - Win32 StaticDebug"
 
@@ -140,14 +141,15 @@ LINK32=link.exe
 # PROP Intermediate_Dir "..\Build\StaticDebug\tech"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-F90=df.exe
+LINK32=link.exe
 MTL=midl.exe
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
-LINK32=link.exe
+F90=df.exe
 CPP=cl.exe
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "_DEBUG" /D "STRICT" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TECH_EXPORTS" /Yu"stdhdr.h" /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I ".\include" /I "..\3rdparty\cppunit\include" /D "STATIC_BUILD" /D "_DEBUG" /D "_USRDLL" /D "TECH_EXPORTS" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "STRICT" /D "HAVE_CPPUNIT" /FR /Yu"stdhdr.h" /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I ".\include" /I "..\3rdparty\cppunit\include" /D "STATIC_BUILD" /D "_DEBUG" /D "_USRDLL" /D "TECH_EXPORTS" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "STRICT" /D "HAVE_CPPUNIT" /Yu"stdhdr.h" /FD /GZ /c
+# SUBTRACT CPP /Fr
 RSC=rc.exe
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
@@ -172,14 +174,15 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "..\Build\StaticRelease\tech"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-F90=df.exe
+LINK32=link.exe
 MTL=midl.exe
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
-LINK32=link.exe
+F90=df.exe
 CPP=cl.exe
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "NDEBUG" /D "STRICT" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TECH_EXPORTS" /Yu"stdhdr.h" /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /I ".\include" /D "NDEBUG" /D "STATIC_BUILD" /D "_USRDLL" /D "TECH_EXPORTS" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "STRICT" /FR /Yu"stdhdr.h" /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /I ".\include" /D "NDEBUG" /D "STATIC_BUILD" /D "_USRDLL" /D "TECH_EXPORTS" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "STRICT" /Yu"stdhdr.h" /FD /c
+# SUBTRACT CPP /Fr
 RSC=rc.exe
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"

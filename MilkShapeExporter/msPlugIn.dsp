@@ -47,7 +47,8 @@ RSC=rc.exe
 # PROP Target_Dir ""
 F90=df.exe
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I "..\3rdparty\ms3dsdk\msLib" /I "..\tech\include" /I "..\render\include" /I "..\engine\include" /D "NDEBUG" /D "_USRDLL" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "STRICT" /D "_WINDLL" /D "_AFXDLL" /FR /Yu"StdAfx.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /I "..\3rdparty\ms3dsdk\msLib" /I "..\tech\include" /I "..\render\include" /I "..\engine\include" /D "NDEBUG" /D "_USRDLL" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "STRICT" /D "_WINDLL" /D "_AFXDLL" /Yu"StdAfx.h" /FD /c
+# SUBTRACT CPP /Fr
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -57,7 +58,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 msModelLib.lib opengl32.lib glu32.lib /nologo /dll /map /machine:I386 /libpath:"..\3rdparty\ms3dsdk\msLib\lib" /opt:ref
+# ADD LINK32 msModelLib.lib opengl32.lib glu32.lib /nologo /dll /map:"..\Build\Release/msPlugIn.map" /machine:I386 /libpath:"..\3rdparty\ms3dsdk\msLib\lib" /opt:ref
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "msPlugIn - Win32 Debug"
@@ -75,7 +76,8 @@ LINK32=link.exe
 # PROP Target_Dir ""
 F90=df.exe
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\3rdparty\cppunit\include" /I "..\3rdparty\ms3dsdk\msLib" /I "..\tech\include" /I "..\render\include" /I "..\engine\include" /D "_DEBUG" /D "_USRDLL" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "STRICT" /D "_WINDLL" /D "_AFXDLL" /FR /Yu"StdAfx.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\3rdparty\cppunit\include" /I "..\3rdparty\ms3dsdk\msLib" /I "..\tech\include" /I "..\render\include" /I "..\engine\include" /D "_DEBUG" /D "_USRDLL" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "STRICT" /D "_WINDLL" /D "_AFXDLL" /Yu"StdAfx.h" /FD /GZ /c
+# SUBTRACT CPP /Fr
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
@@ -85,7 +87,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 msModelLib.lib opengl32.lib glu32.lib /nologo /dll /map /debug /machine:I386 /pdbtype:sept /libpath:"..\3rdparty\ms3dsdk\msLib\lib"
+# ADD LINK32 msModelLib.lib opengl32.lib glu32.lib /nologo /dll /map:"..\Build\Debug/msPlugIn.map" /debug /machine:I386 /pdbtype:sept /libpath:"..\3rdparty\ms3dsdk\msLib\lib"
 # SUBTRACT LINK32 /profile
 
 !ELSEIF  "$(CFG)" == "msPlugIn - Win32 Opt"
@@ -104,7 +106,7 @@ LINK32=link.exe
 # PROP Target_Dir ""
 F90=df.exe
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "_DEBUG" /D "STRICT" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /Yu"stdhdr.h" /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /GX /Zi /O2 /I "..\3rdparty\ms3dsdk\msLib" /I "..\tech\include" /I "..\render\include" /I "..\engine\include" /D "NDEBUG" /D "_USRDLL" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "STRICT" /D "_WINDLL" /D "_AFXDLL" /Yu"StdAfx.h" /FD /c
+# ADD CPP /nologo /MDd /W3 /GX /Zi /O2 /I "..\3rdparty\ms3dsdk\msLib" /I "..\tech\include" /I "..\render\include" /I "..\engine\include" /D "_USRDLL" /D "STRICT" /D "_WINDLL" /D "_AFXDLL" /D "_WINDOWS" /D "NDEBUG" /D "WIN32" /D "_MBCS" /Yu"StdAfx.h" /FD /c
 # SUBTRACT CPP /Fr
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
@@ -116,8 +118,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winmm.lib /nologo /dll /debug /machine:I386 /pdbtype:sept /libpath:"..\..\3rdparty\dx7sdk\lib"
 # SUBTRACT BASE LINK32 /profile
-# ADD LINK32 msModelLib.lib opengl32.lib glu32.lib /nologo /dll /incremental:no /map /debug /machine:I386 /pdbtype:sept /libpath:"..\3rdparty\ms3dsdk\msLib\lib"
-# SUBTRACT LINK32 /profile
+# ADD LINK32 msModelLib.lib opengl32.lib glu32.lib /nologo /dll /profile /map:"..\Build\Opt/msPlugIn.map" /debug /machine:I386 /libpath:"..\3rdparty\ms3dsdk\msLib\lib"
 
 !ELSEIF  "$(CFG)" == "msPlugIn - Win32 StaticDebug"
 
@@ -135,7 +136,8 @@ LINK32=link.exe
 # PROP Target_Dir ""
 F90=df.exe
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "_DEBUG" /D "STRICT" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /Yu"stdhdr.h" /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\3rdparty\cppunit\include" /I "..\3rdparty\ms3dsdk\msLib" /I "..\tech\include" /I "..\render\include" /I "..\engine\include" /D "_DEBUG" /D "STATIC_BUILD" /D "_USRDLL" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "STRICT" /D "_WINDLL" /FR /Yu"StdAfx.h" /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\3rdparty\cppunit\include" /I "..\3rdparty\ms3dsdk\msLib" /I "..\tech\include" /I "..\render\include" /I "..\engine\include" /D "_DEBUG" /D "STATIC_BUILD" /D "_USRDLL" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "STRICT" /D "_WINDLL" /Yu"StdAfx.h" /FD /GZ /c
+# SUBTRACT CPP /Fr
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
@@ -145,7 +147,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 $(OutDir)\cppunit.lib msModelLib.lib opengl32.lib glu32.lib /nologo /dll /map /debug /machine:I386 /libpath:"..\3rdparty\ms3dsdk\msLib\lib"
+# ADD LINK32 $(OutDir)\cppunit.lib msModelLib.lib opengl32.lib glu32.lib /nologo /dll /map:"..\Build\StaticDebug/msPlugIn.map" /debug /machine:I386 /libpath:"..\3rdparty\ms3dsdk\msLib\lib"
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "msPlugIn - Win32 StaticRelease"
@@ -164,7 +166,8 @@ LINK32=link.exe
 # PROP Target_Dir ""
 F90=df.exe
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "NDEBUG" /D "STRICT" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /Yu"stdhdr.h" /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /I "..\3rdparty\ms3dsdk\msLib" /I "..\tech\include" /I "..\render\include" /I "..\engine\include" /D "NDEBUG" /D "STATIC_BUILD" /D "_USRDLL" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "STRICT" /D "_WINDLL" /FR /Yu"StdAfx.h" /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /I "..\3rdparty\ms3dsdk\msLib" /I "..\tech\include" /I "..\render\include" /I "..\engine\include" /D "NDEBUG" /D "STATIC_BUILD" /D "_USRDLL" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "STRICT" /D "_WINDLL" /Yu"StdAfx.h" /FD /c
+# SUBTRACT CPP /Fr
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -174,7 +177,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 msModelLib.lib opengl32.lib glu32.lib /nologo /dll /map /machine:I386 /libpath:"..\3rdparty\ms3dsdk\msLib\lib" /opt:ref
+# ADD LINK32 msModelLib.lib opengl32.lib glu32.lib /nologo /dll /map:"..\Build\StaticRelease/msPlugIn.map" /machine:I386 /libpath:"..\3rdparty\ms3dsdk\msLib\lib" /opt:ref
 # SUBTRACT LINK32 /pdb:none
 
 !ENDIF 
