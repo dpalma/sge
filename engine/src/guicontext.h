@@ -33,6 +33,11 @@ public:
    virtual tResult Init();
    virtual tResult Term();
 
+   virtual tResult AddElement(IGUIElement * pElement);
+   virtual tResult RemoveElement(IGUIElement * pElement);
+   virtual tResult GetElements(IGUIElementEnum * * ppElements);
+   virtual tResult HasElement(IGUIElement * pElement) const;
+
    virtual tResult LoadFromResource(const char * psz);
    virtual tResult LoadFromString(const char * psz);
 
@@ -50,6 +55,9 @@ private:
    // cInputListener::OnInputEvent
    bool HandleInputEvent(const sInputEvent * pEvent);
 #endif
+
+   typedef std::list<IGUIElement *> tGUIElementList;
+   tGUIElementList m_children;
 
    class cInputListener : public cComObject<IMPLEMENTS(IInputListener)>
    {

@@ -471,6 +471,11 @@ struct sAutoRegisterGUIElementRendererFactory
 
 interface IGUIContext : IGUIEventRouter
 {
+   virtual tResult AddElement(IGUIElement * pElement) = 0;
+   virtual tResult RemoveElement(IGUIElement * pElement) = 0;
+   virtual tResult GetElements(IGUIElementEnum * * ppElements) = 0;
+   virtual tResult HasElement(IGUIElement * pElement) const = 0;
+
    virtual tResult LoadFromResource(const char * psz) = 0;
    virtual tResult LoadFromString(const char * psz) = 0;
 

@@ -139,8 +139,8 @@ tResult cGUIGridLayoutManager::Layout(IGUIContainerElement * pContainer)
    tGUIInsets insets = {0};
    if (pContainer->GetInsets(&insets) == S_OK)
    {
-      pos.x = insets.left;
-      pos.y = insets.top;
+      pos.x = (tVec2::value_type)insets.left;
+      pos.y = (tVec2::value_type)insets.top;
    }
 
    cAutoIPtr<IGUIElementEnum> pEnum;
@@ -173,7 +173,7 @@ tResult cGUIGridLayoutManager::Layout(IGUIContainerElement * pContainer)
                   pos.y += rowHeight + m_vGap;
                   rowHeight = 0;
 
-                  pos.x = insets.left;
+                  pos.x = (tVec2::value_type)insets.left;
 
                   iCol = 0;
                   if (++iRow >= m_rows)

@@ -6,6 +6,8 @@
 
 #include "guiapi.h"
 
+#include "guielementenum.h"
+
 #include "inputapi.h"
 
 #include "dbgalloc.h" // must be last header
@@ -31,6 +33,7 @@ cGUIEventRouter<INTRFC>::cGUIEventRouter()
 template <typename INTRFC>
 cGUIEventRouter<INTRFC>::~cGUIEventRouter()
 {
+   RemoveAllElements();
 }
 
 ///////////////////////////////////////
@@ -121,8 +124,68 @@ tResult cGUIEventRouter<INTRFC>::AddElement(IGUIElement * pElement)
    {
       return E_POINTER;
    }
+
+   if (HasElement(pElement) == S_OK)
+   {
+      return S_FALSE;
+   }
+
    m_elements.push_back(CTAddRef(pElement));
    return S_OK;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+tResult cGUIEventRouter<INTRFC>::RemoveElement(IGUIElement * pElement)
+{
+   if (pElement == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tGUIElementList::iterator iter;
+   for (iter = m_elements.begin(); iter != m_elements.end(); iter++)
+   {
+      if (CTIsSameObject(*iter, pElement))
+      {
+         m_elements.erase(iter);
+         pElement->Release();
+         return S_OK;
+      }
+   }
+
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+tResult cGUIEventRouter<INTRFC>::GetElements(IGUIElementEnum * * ppElements)
+{
+   return GUIElementEnumCreate(m_elements, ppElements);
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+tResult cGUIEventRouter<INTRFC>::HasElement(IGUIElement * pElement) const
+{
+   if (pElement == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tGUIElementList::const_iterator iter;
+   for (iter = m_elements.begin(); iter != m_elements.end(); iter++)
+   {
+      if (CTIsSameObject(*iter, pElement))
+      {
+         return S_OK;
+      }
+   }
+
+   return S_FALSE;
 }
 
 ///////////////////////////////////////

@@ -78,6 +78,34 @@ tResult cGUIContext::Term()
 
 ///////////////////////////////////////
 
+tResult cGUIContext::AddElement(IGUIElement * pElement)
+{
+   return tBaseClass::AddElement(pElement);
+}
+
+///////////////////////////////////////
+
+tResult cGUIContext::RemoveElement(IGUIElement * pElement)
+{
+   return tBaseClass::RemoveElement(pElement);
+}
+
+///////////////////////////////////////
+
+tResult cGUIContext::GetElements(IGUIElementEnum * * ppElements)
+{
+   return tBaseClass::GetElements(ppElements);
+}
+
+///////////////////////////////////////
+
+tResult cGUIContext::HasElement(IGUIElement * pElement) const
+{
+   return tBaseClass::HasElement(pElement);
+}
+
+///////////////////////////////////////
+
 tResult cGUIContext::LoadFromResource(const char * psz)
 {
    UseGlobal(ResourceManager);
