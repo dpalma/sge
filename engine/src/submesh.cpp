@@ -1,0 +1,214 @@
+///////////////////////////////////////////////////////////////////////////////
+// $Id$
+
+#include "stdhdr.h"
+
+#include "mesh.h"
+#include "render.h"
+#include "comtools.h"
+#include "str.h"
+
+#include "dbgalloc.h" // must be last header
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cSubMesh
+//
+
+class cSubMesh : public cComObject<IMPLEMENTS(ISubMesh)>
+{
+   cSubMesh(const cSubMesh &); // un-implemented
+   const cSubMesh & operator=(const cSubMesh &); // un-implemented
+
+   cSubMesh(uint nFaces, uint nVertices,
+            IIndexBuffer * pIndexBuffer, IVertexBuffer * pVertexBuffer,
+            IVertexDeclaration * pVertexDecl);
+
+public:
+   friend ISubMesh * SubMeshCreate(uint nFaces, uint nVertices,
+                                   IVertexDeclaration * pVertexDecl,
+                                   IRenderDevice * pRenderDevice);
+   ~cSubMesh();
+
+   virtual const char * GetMaterialName() const;
+   virtual void SetMaterialName(const char * pszMaterialName);
+
+   virtual uint GetVertexCount() const
+   {
+      return m_nVerts;
+   }
+
+   virtual tResult GetVertexBuffer(IVertexBuffer * * ppVertexBuffer);
+
+   virtual tResult LockVertexBuffer(void * * ppData);
+   virtual tResult UnlockVertexBuffer();
+
+   virtual uint GetIndexCount() const
+   {
+      return m_nIndices;
+   }
+
+   virtual tResult GetIndexBuffer(IIndexBuffer * * ppIndexBuffer);
+
+   virtual tResult LockIndexBuffer(void * * ppData);
+   virtual tResult UnlockIndexBuffer();
+
+private:
+   IVertexBuffer * AccessVertexBuffer() { return m_pVertexBuffer; }
+   IIndexBuffer * AccessIndexBuffer() { return m_pIndexBuffer; }
+
+   cStr m_materialName;
+   uint m_nVerts;
+   uint m_nIndices;
+   cAutoIPtr<IIndexBuffer> m_pIndexBuffer;
+   cAutoIPtr<IVertexBuffer> m_pVertexBuffer;
+};
+
+///////////////////////////////////////
+
+cSubMesh::cSubMesh(uint nFaces, uint nVertices,
+                         IIndexBuffer * pIndexBuffer,
+                         IVertexBuffer * pVertexBuffer,
+                         IVertexDeclaration * pVertexDecl)
+ : m_nVerts(nVertices),
+   m_nIndices(nFaces * 3),
+   m_pIndexBuffer(pIndexBuffer),
+   m_pVertexBuffer(pVertexBuffer)
+{
+   if (pIndexBuffer != NULL)
+      pIndexBuffer->AddRef();
+   if (pVertexBuffer != NULL)
+      pVertexBuffer->AddRef();
+}
+
+///////////////////////////////////////
+
+ISubMesh * SubMeshCreate(uint nFaces, uint nVertices,
+                         IVertexDeclaration * pVertexDecl,
+                         IRenderDevice * pRenderDevice)
+{
+   if (nVertices == 0 || nFaces == 0 || pVertexDecl == NULL || pRenderDevice == NULL)
+      return NULL;
+
+   cAutoIPtr<IIndexBuffer> pIndexBuffer;
+   if (pRenderDevice->CreateIndexBuffer(3 * nFaces, kMP_Auto, &pIndexBuffer) == S_OK)
+   {
+      cAutoIPtr<IVertexBuffer> pVertexBuffer;
+      if (pRenderDevice->CreateVertexBuffer(nVertices, pVertexDecl, kMP_Auto, &pVertexBuffer) == S_OK)
+      {
+         return static_cast<ISubMesh *>(new cSubMesh(nFaces, nVertices, pIndexBuffer, pVertexBuffer, pVertexDecl));
+      }
+   }
+
+   return NULL;
+}
+
+///////////////////////////////////////
+
+cSubMesh::~cSubMesh()
+{
+}
+
+///////////////////////////////////////
+
+const char * cSubMesh::GetMaterialName() const
+{
+   return m_materialName;
+}
+
+///////////////////////////////////////
+
+void cSubMesh::SetMaterialName(const char * pszMaterialName)
+{
+   m_materialName = pszMaterialName ? pszMaterialName : "";
+}
+
+///////////////////////////////////////
+
+tResult cSubMesh::GetVertexBuffer(IVertexBuffer * * ppVertexBuffer)
+{
+   if (!m_pVertexBuffer || ppVertexBuffer == NULL)
+   {
+      return E_FAIL;
+   }
+   else
+   {
+      *ppVertexBuffer = AccessVertexBuffer();
+      (*ppVertexBuffer)->AddRef();
+      return S_OK;
+   }
+}
+
+///////////////////////////////////////
+
+tResult cSubMesh::LockVertexBuffer(void * * ppData)
+{
+   if (AccessVertexBuffer())
+   {
+      return AccessVertexBuffer()->Lock(ppData);
+   }
+   else
+   {
+      return E_FAIL;
+   }
+}
+
+///////////////////////////////////////
+
+tResult cSubMesh::UnlockVertexBuffer()
+{
+   if (AccessVertexBuffer())
+   {
+      return AccessVertexBuffer()->Unlock();
+   }
+   else
+   {
+      return E_FAIL;
+   }
+}
+
+///////////////////////////////////////
+
+tResult cSubMesh::GetIndexBuffer(IIndexBuffer * * ppIndexBuffer)
+{
+   if (!m_pIndexBuffer || ppIndexBuffer == NULL)
+   {
+      return E_FAIL;
+   }
+   else
+   {
+      *ppIndexBuffer = AccessIndexBuffer();
+      (*ppIndexBuffer)->AddRef();
+      return S_OK;
+   }
+}
+
+///////////////////////////////////////
+
+tResult cSubMesh::LockIndexBuffer(void * * ppData)
+{
+   if (AccessIndexBuffer())
+   {
+      return AccessIndexBuffer()->Lock(ppData);
+   }
+   else
+   {
+      return E_FAIL;
+   }
+}
+
+///////////////////////////////////////
+
+tResult cSubMesh::UnlockIndexBuffer()
+{
+   if (AccessIndexBuffer())
+   {
+      return AccessIndexBuffer()->Unlock();
+   }
+   else
+   {
+      return E_FAIL;
+   }
+}
+
+///////////////////////////////////////////////////////////////////////////////

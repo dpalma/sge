@@ -10,21 +10,14 @@
 #include "readwriteapi.h"
 #include "str.h"
 #include "vec3.h"
-#include "vec4.h"
-#include "comtools.h"
 #include "image.h"
 #include "color.h"
 #include "resmgr.h"
 #include "globalobj.h"
 
-#include <map>
 #include <vector>
-#include <cfloat>
-#include <algorithm>
 
 #include "dbgalloc.h" // must be last header
-
-class c3dsSubMesh;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -37,6 +30,10 @@ LOG_DEFINE_CHANNEL(3DSLoad);
 #define LocalMsg4(s,a,b,c,d)     DebugMsgEx4(3DSLoad,(s),(a),(b),(c),(d))
 
 ///////////////////////////////////////////////////////////////////////////////
+
+extern ISubMesh * SubMeshCreate(uint nFaces, uint nVertices,
+                                IVertexDeclaration * pVertexDecl,
+                                IRenderDevice * pRenderDevice);
 
 struct s3dsVertex
 {
@@ -63,35 +60,6 @@ struct s3dsMaterial
    short shading;
    float masterScale;
 };
-
-static void CalcAABB(const s3dsVertex * pVertices, int nVertices, tVec3 * pMax, tVec3 * pMin)
-{
-   Assert(pMax && pMin);
-
-   tVec3 max(FLT_MIN, FLT_MIN, FLT_MIN);
-   tVec3 min(FLT_MAX, FLT_MAX, FLT_MAX);
-
-   for (int i = 0; i < nVertices; i++)
-   {
-      if (max.x < pVertices[i].pos.x)
-         max.x = pVertices[i].pos.x;
-      if (min.x > pVertices[i].pos.x)
-         min.x = pVertices[i].pos.x;
-
-      if (max.y < pVertices[i].pos.y)
-         max.y = pVertices[i].pos.y;
-      if (min.y > pVertices[i].pos.y)
-         min.y = pVertices[i].pos.y;
-
-      if (max.z < pVertices[i].pos.z)
-         max.z = pVertices[i].pos.z;
-      if (min.z > pVertices[i].pos.z)
-         min.z = pVertices[i].pos.z;
-   }
-
-   if (pMax != NULL) *pMax = max;
-   if (pMin != NULL) *pMin = min;
-}
 
 static void CalcVertexNormals(int * pFaces, int nFaces, s3dsVertex * pVerts, int nVerts)
 {
@@ -181,349 +149,6 @@ template <>
 tResult cReadWriteOps<s3dsChunkHeader>::Read(IReader * pReader, s3dsChunkHeader * pChunk)
 {
    return pReader->Read(pChunk, sizeof(*pChunk));
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: c3dsMesh
-//
-
-class c3dsMesh : public cComObject<IMPLEMENTS(IMesh)>
-{
-   c3dsMesh(const c3dsMesh &); // un-implemented
-   const c3dsMesh & operator=(const c3dsMesh &); // un-implemented
-
-public:
-   ////////////////////////////////////
-
-   c3dsMesh(IRenderDevice * pRenderDevice);
-   ~c3dsMesh();
-
-   virtual void GetAABB(tVec3 * pMaxs, tVec3 * pMins) const;
-   virtual void Render(IRenderDevice * pRenderDevice) const;
-   virtual tResult AddMaterial(IMaterial * pMaterial);
-   virtual tResult FindMaterial(const char * pszName, IMaterial * * ppMaterial);
-
-   void AddSubMesh(c3dsSubMesh * pSubMesh);
-
-   static bool Load3dsMain(IReader * pReader, long stop, c3dsMesh * pMesh);
-
-   IRenderDevice * AccessRenderDevice() { return m_pRenderDevice; }
-
-private:
-   static bool Load3dsMaterial(IReader * pReader, long stop, c3dsMesh * pMesh);
-   static bool Load3dsTriangleMesh(IReader * pReader, long stop, c3dsMesh * pMesh);
-   static bool Load3dsNamedObject(IReader * pReader, long stop, c3dsMesh * pMesh);
-   static bool Load3dsMesh(IReader * pReader, long stop, c3dsMesh * pMesh);
-   static bool Load3dsKeyFrameHeader(IReader * pReader, long stop, c3dsMesh * pMesh);
-   static bool Load3dsKeyFrameData(IReader * pReader, long stop, c3dsMesh * pMesh);
-
-   ////////////////////////////////////
-
-   typedef std::vector<IMaterial *> tMaterials;
-   tMaterials m_materials;
-
-   std::vector<c3dsSubMesh *> m_subMeshes;
-
-   // Used for created vertex buffer and texture objects while reading from disk
-   cAutoIPtr<IRenderDevice> m_pRenderDevice;
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: c3dsSubMesh
-//
-
-class c3dsSubMesh
-{
-   c3dsSubMesh(const c3dsSubMesh &); // un-implemented
-   const c3dsSubMesh & operator=(const c3dsSubMesh &); // un-implemented
-
-public:
-   c3dsSubMesh(c3dsMesh * pParent);
-   ~c3dsSubMesh();
-
-   void Render(IRenderDevice * pRenderDevice);
-
-   tResult SetVertexData(const s3dsVertex * pVertices, int nVertices);
-   bool AddFaces(const int * pFaceData, int nFaces);
-   bool AddGroup(const char * pszMaterialName, const short * pFaceIndices, int nFaces);
-
-   void GetAABB(tVec3 * pMaxs, tVec3 * pMins) const
-   {
-      Assert(pMaxs && pMins);
-      *pMaxs = m_max;
-      *pMins = m_min;
-   }
-
-   inline int GetVertexCount() const
-   {
-      return m_nVerts;
-   }
-
-private:
-   c3dsMesh * GetParent() { return m_pParent; }
-
-   struct sGroup
-   {
-      char szMaterial[100];
-      uint nIndices; // 3 x # faces
-      cAutoIPtr<IIndexBuffer> m_pIB;
-   };
-
-   c3dsMesh * m_pParent;
-   long m_nVerts;
-   cAutoIPtr<IVertexBuffer> m_pVB;
-   std::vector<int> m_faceData;
-   std::vector<sGroup> m_groups;
-   tVec3 m_max, m_min;
-};
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: c3dsSubMesh
-//
-
-c3dsSubMesh::c3dsSubMesh(c3dsMesh * pParent)
- : m_pParent(pParent),
-   m_nVerts(0),
-   m_max(0,0,0),
-   m_min(0,0,0)
-{
-}
-
-///////////////////////////////////////
-
-c3dsSubMesh::~c3dsSubMesh()
-{
-}
-
-///////////////////////////////////////
-
-void c3dsSubMesh::Render(IRenderDevice * pRenderDevice)
-{
-   std::vector<sGroup>::iterator iter;
-   for (iter = m_groups.begin(); iter != m_groups.end(); iter++)
-   {
-      Assert(iter->m_pIB != NULL);
-
-      cAutoIPtr<IMaterial> pMaterial;
-      if (m_pParent->FindMaterial(iter->szMaterial, &pMaterial) == S_OK)
-      {
-         pRenderDevice->Render(kRP_Triangles, pMaterial,
-            iter->nIndices, iter->m_pIB,
-            0, GetVertexCount(), m_pVB);
-      }
-   }
-}
-
-///////////////////////////////////////
-
-tResult c3dsSubMesh::SetVertexData(const s3dsVertex * pVertices, int nVertices)
-{
-   SafeRelease(m_pVB);
-
-   cAutoIPtr<IVertexDeclaration> pVertexDecl;
-   if (GetParent()->AccessRenderDevice()->CreateVertexDeclaration(g_3dsVertexDecl, _countof(g_3dsVertexDecl), &pVertexDecl) == S_OK)
-   {
-      if (GetParent()->AccessRenderDevice()->CreateVertexBuffer(nVertices, pVertexDecl, kMP_Auto, &m_pVB) == S_OK)
-      {
-         m_nVerts = nVertices;
-         s3dsVertex * pVertexData = NULL;
-         if (m_pVB->Lock((void * *)&pVertexData) == S_OK)
-         {
-            memcpy(pVertexData, pVertices, nVertices * sizeof(s3dsVertex));
-            CalcAABB(pVertexData, nVertices, &m_max, &m_min);
-            m_pVB->Unlock();
-            return S_OK;
-         }
-      }
-   }
-
-   return E_FAIL;
-}
-
-///////////////////////////////////////
-
-bool c3dsSubMesh::AddFaces(const int * pFaceData, int nFaces)
-{
-   if (m_faceData.size() > 0)
-   {
-      DebugMsg("Multiple calls to AddFace not supported\n");
-      return false;
-   }
-
-   m_faceData.resize(3 * nFaces);
-
-   for (int i = 0; i < nFaces; i++)
-   {
-      m_faceData[i * 3 + 0] = pFaceData[i * 3 + 0];
-      m_faceData[i * 3 + 1] = pFaceData[i * 3 + 1];
-      m_faceData[i * 3 + 2] = pFaceData[i * 3 + 2];
-   }
-
-   return true;
-}
-
-///////////////////////////////////////
-
-bool c3dsSubMesh::AddGroup(const char * pszMaterialName, const short * pFaceIndices, int nFaces)
-{
-   sGroup group;
-   strcpy(group.szMaterial, pszMaterialName);
-
-   group.nIndices = 3 * nFaces;
-
-   if (GetParent()->AccessRenderDevice()->CreateIndexBuffer(3 * nFaces, kMP_Auto, &group.m_pIB) != S_OK)
-   {
-      return false;
-   }
-
-   int * pFaces = NULL;
-   if (group.m_pIB->Lock((void * *)&pFaces) == S_OK)
-   {
-      for (int i = 0; i < nFaces; i++)
-      {
-         pFaces[i * 3 + 0] = m_faceData[pFaceIndices[i] * 3 + 0];
-         pFaces[i * 3 + 1] = m_faceData[pFaceIndices[i] * 3 + 1];
-         pFaces[i * 3 + 2] = m_faceData[pFaceIndices[i] * 3 + 2];
-      }
-
-      group.m_pIB->Unlock();
-
-      m_groups.push_back(group);
-
-      return true;
-   }
-
-   return false;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: c3dsMesh
-//
-
-c3dsMesh::c3dsMesh(IRenderDevice * pRenderDevice)
-{
-   if (pRenderDevice != NULL)
-   {
-      m_pRenderDevice = pRenderDevice;
-      pRenderDevice->AddRef();
-   }
-}
-
-///////////////////////////////////////
-
-static void ForEachRelease(IUnknown * p)
-{
-   p->Release();
-}
-
-c3dsMesh::~c3dsMesh()
-{
-   std::for_each(m_materials.begin(), m_materials.end(), ForEachRelease);
-   m_materials.clear();
-
-   do
-   {
-      std::vector<c3dsSubMesh *>::iterator iter;
-      for (iter = m_subMeshes.begin(); iter != m_subMeshes.end(); iter++)
-      {
-         delete *iter;
-      }
-      m_subMeshes.clear();
-   }
-   while (0);
-}
-
-///////////////////////////////////////
-
-void c3dsMesh::GetAABB(tVec3 * pMaxs, tVec3 * pMins) const
-{
-   tVec3 maxs(FLT_MIN, FLT_MIN, FLT_MIN);
-   tVec3 mins(FLT_MAX, FLT_MAX, FLT_MAX);
-
-   std::vector<c3dsSubMesh *>::const_iterator iter;
-   for (iter = m_subMeshes.begin(); iter != m_subMeshes.end(); iter++)
-   {
-      tVec3 maxsSub, minsSub;
-      (*iter)->GetAABB(&maxsSub, &minsSub);
-
-      if (maxs.x < maxsSub.x)
-         maxs.x = maxsSub.x;
-      if (mins.x > minsSub.x)
-         mins.x = minsSub.x;
-
-      if (maxs.y < maxsSub.y)
-         maxs.y = maxsSub.y;
-      if (mins.y > minsSub.y)
-         mins.y = minsSub.y;
-
-      if (maxs.z < maxsSub.z)
-         maxs.z = maxsSub.z;
-      if (mins.z > minsSub.z)
-         mins.z = minsSub.z;
-   }
-
-   if (pMaxs != NULL)
-      *pMaxs = maxs;
-   if (pMins != NULL)
-      *pMins = mins;
-}
-
-///////////////////////////////////////
-
-void c3dsMesh::Render(IRenderDevice * pRenderDevice) const
-{
-   std::vector<c3dsSubMesh *>::const_iterator iter;
-   for (iter = m_subMeshes.begin(); iter != m_subMeshes.end(); iter++)
-   {
-      (*iter)->Render(pRenderDevice);
-   }
-}
-
-///////////////////////////////////////
-
-tResult c3dsMesh::AddMaterial(IMaterial * pMaterial)
-{
-   if (pMaterial == NULL || FindMaterial(pMaterial->GetName(), NULL) == S_OK)
-      return E_FAIL;
-   m_materials.push_back(pMaterial);
-   pMaterial->AddRef();
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult c3dsMesh::FindMaterial(const char * pszName, IMaterial * * ppMaterial)
-{
-   if (pszName == NULL || pszName[0] == 0)
-      return E_FAIL;
-   tMaterials::iterator iter;
-   for (iter = m_materials.begin(); iter != m_materials.end(); iter++)
-   {
-      if (strcmp(pszName, (*iter)->GetName()) == 0)
-      {
-         if (ppMaterial != NULL)
-         {
-            *ppMaterial = *iter;
-            (*ppMaterial)->AddRef();
-         }
-         return S_OK;
-      }
-   }
-   return S_FALSE;
-}
-
-///////////////////////////////////////
-
-void c3dsMesh::AddSubMesh(c3dsSubMesh * pSubMesh)
-{
-   if (pSubMesh!= NULL)
-      m_subMeshes.push_back(pSubMesh);
 }
 
 
@@ -685,23 +310,23 @@ static void Load3dsMaterial(IReader * pReader, long stop, s3dsMaterial * pMateri
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool c3dsMesh::Load3dsMaterial(IReader * pReader, long stop, c3dsMesh * pMesh)
+bool Load3dsMaterial(IReader * pReader, long stop, IRenderDevice * pRenderDevice, IMesh * pMesh)
 {
    s3dsMaterial mat;
    memset(&mat, 0, sizeof(mat));
 
    ::Load3dsMaterial(pReader, stop, &mat);
 
-   cAutoIPtr<IMaterial> pMaterial(MaterialFrom3ds(&mat, pMesh->AccessRenderDevice()));
+   cAutoIPtr<IMaterial> pMaterial(MaterialFrom3ds(&mat, pRenderDevice));
 
    return (pMesh->AddMaterial(pMaterial) == S_OK);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool c3dsMesh::Load3dsTriangleMesh(IReader * pReader, long stop, c3dsMesh * pMesh)
+bool Load3dsTriangleMesh(IReader * pReader, long stop, IRenderDevice * pRenderDevice, IMesh * pMesh)
 {
-   c3dsSubMesh * pSubMesh = new c3dsSubMesh(pMesh);
+   bool bResult = false;
 
    bool bHavePoints = false, bHaveTexCoords = false;
    std::vector<s3dsVertex> vertices;
@@ -801,12 +426,6 @@ bool c3dsMesh::Load3dsTriangleMesh(IReader * pReader, long stop, c3dsMesh * pMes
                CalcVertexNormals(&faces[0], nFaces, &vertices[0], vertices.size());
             }
 
-            if (FAILED(pSubMesh->SetVertexData(&vertices[0], vertices.size()))
-               || !pSubMesh->AddFaces(&faces[0], nFaces))
-            {
-               return false;
-            }
-
             break;
          }
 
@@ -823,7 +442,38 @@ bool c3dsMesh::Load3dsTriangleMesh(IReader * pReader, long stop, c3dsMesh * pMes
             std::vector<short> groupFaces(nGroupFaces);
             pReader->Read(&groupFaces[0], nGroupFaces * sizeof(short));
 
-            pSubMesh->AddGroup(materialName, &groupFaces[0], nGroupFaces);
+            cAutoIPtr<IVertexDeclaration> pVertexDecl;
+            if (pRenderDevice->CreateVertexDeclaration(g_3dsVertexDecl,
+                                                       _countof(g_3dsVertexDecl),
+                                                       &pVertexDecl) == S_OK)
+            {
+               cAutoIPtr<ISubMesh> pSubMesh = SubMeshCreate(faces.size() / 3,
+                  vertices.size(), pVertexDecl, pRenderDevice);
+
+               pSubMesh->SetMaterialName(materialName);
+
+               s3dsVertex * pVertexData = NULL;
+               if (pSubMesh->LockVertexBuffer((void * *)&pVertexData) == S_OK)
+               {
+                  memcpy(pVertexData, &vertices[0], vertices.size() * sizeof(s3dsVertex));
+                  pSubMesh->UnlockVertexBuffer();
+
+                  int * pFaces = NULL;
+                  if (pSubMesh->LockIndexBuffer((void**)&pFaces) == S_OK)
+                  {
+                     for (int i = 0; i < nGroupFaces; i++)
+                     {
+                        pFaces[i * 3 + 0] = faces[groupFaces[i] * 3 + 0];
+                        pFaces[i * 3 + 1] = faces[groupFaces[i] * 3 + 1];
+                        pFaces[i * 3 + 2] = faces[groupFaces[i] * 3 + 2];
+                     }
+                     pSubMesh->UnlockIndexBuffer();
+
+                     pMesh->AddSubMesh(pSubMesh);
+                     bResult = true;
+                  }
+               }
+            }
 
             break;
          }
@@ -838,14 +488,12 @@ bool c3dsMesh::Load3dsTriangleMesh(IReader * pReader, long stop, c3dsMesh * pMes
       }
    }
 
-   pMesh->AddSubMesh(pSubMesh);
-
-   return true;
+   return bResult;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool c3dsMesh::Load3dsNamedObject(IReader * pReader, long stop, c3dsMesh * pMesh)
+bool Load3dsNamedObject(IReader * pReader, long stop, IRenderDevice * pRenderDevice, IMesh * pMesh)
 {
    cStr name;
    pReader->Read(&name, 0);
@@ -861,7 +509,7 @@ bool c3dsMesh::Load3dsNamedObject(IReader * pReader, long stop, c3dsMesh * pMesh
       {
          case N_TRI_OBJECT:
          {
-            if (!Load3dsTriangleMesh(pReader, ChunkGetEnd(pReader, chunk), pMesh))
+            if (!Load3dsTriangleMesh(pReader, ChunkGetEnd(pReader, chunk), pRenderDevice, pMesh))
             {
                return false;
             }
@@ -882,7 +530,7 @@ bool c3dsMesh::Load3dsNamedObject(IReader * pReader, long stop, c3dsMesh * pMesh
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool c3dsMesh::Load3dsMesh(IReader * pReader, long stop, c3dsMesh * pMesh)
+bool Load3dsMesh(IReader * pReader, long stop, IRenderDevice * pRenderDevice, IMesh * pMesh)
 {
    s3dsChunkHeader chunk;
 
@@ -893,7 +541,7 @@ bool c3dsMesh::Load3dsMesh(IReader * pReader, long stop, c3dsMesh * pMesh)
       {
          case NAMED_OBJECT:
          {
-            if (!Load3dsNamedObject(pReader, ChunkGetEnd(pReader, chunk), pMesh))
+            if (!Load3dsNamedObject(pReader, ChunkGetEnd(pReader, chunk), pRenderDevice, pMesh))
             {
                return false;
             }
@@ -902,7 +550,7 @@ bool c3dsMesh::Load3dsMesh(IReader * pReader, long stop, c3dsMesh * pMesh)
 
          case MAT_ENTRY:
          {
-            Load3dsMaterial(pReader, ChunkGetEnd(pReader, chunk), pMesh);
+            Load3dsMaterial(pReader, ChunkGetEnd(pReader, chunk), pRenderDevice, pMesh);
             break;
          }
 
@@ -920,7 +568,7 @@ bool c3dsMesh::Load3dsMesh(IReader * pReader, long stop, c3dsMesh * pMesh)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool c3dsMesh::Load3dsKeyFrameHeader(IReader * pReader, long stop, c3dsMesh * pMesh)
+bool Load3dsKeyFrameHeader(IReader * pReader, long stop, IMesh * pMesh)
 {
    short revision;
    pReader->Read(&revision);
@@ -939,7 +587,7 @@ bool c3dsMesh::Load3dsKeyFrameHeader(IReader * pReader, long stop, c3dsMesh * pM
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool c3dsMesh::Load3dsKeyFrameData(IReader * pReader, long stop, c3dsMesh * pMesh)
+bool Load3dsKeyFrameData(IReader * pReader, long stop, IMesh * pMesh)
 {
    s3dsChunkHeader chunk;
 
@@ -968,7 +616,7 @@ bool c3dsMesh::Load3dsKeyFrameData(IReader * pReader, long stop, c3dsMesh * pMes
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool c3dsMesh::Load3dsMain(IReader * pReader, long stop, c3dsMesh * pMesh)
+bool Load3dsMain(IReader * pReader, long stop, IRenderDevice * pRenderDevice, IMesh * pMesh)
 {
    s3dsChunkHeader chunk;
    bool bFoundMeshData = false;
@@ -987,7 +635,7 @@ bool c3dsMesh::Load3dsMain(IReader * pReader, long stop, c3dsMesh * pMesh)
             }
             else
             {
-               bFoundMeshData = Load3dsMesh(pReader, ChunkGetEnd(pReader, chunk), pMesh);
+               bFoundMeshData = Load3dsMesh(pReader, ChunkGetEnd(pReader, chunk), pRenderDevice, pMesh);
             }
             break;
          }
@@ -1014,9 +662,10 @@ bool c3dsMesh::Load3dsMain(IReader * pReader, long stop, c3dsMesh * pMesh)
 
 IMesh * Load3ds(IRenderDevice * pRenderDevice, IReader * pReader)
 {
+   Assert(pRenderDevice != NULL);
    Assert(pReader != NULL);
 
-   c3dsMesh * pMesh = new c3dsMesh(pRenderDevice);
+   IMesh * pMesh = MeshCreate();
 
    bool bValidated = false;
 
@@ -1030,7 +679,7 @@ IMesh * Load3ds(IRenderDevice * pRenderDevice, IReader * pReader)
    {
       if (chunk.id == M3DMAGIC)
       {
-         bValidated = c3dsMesh::Load3dsMain(pReader, ChunkGetEnd(pReader, chunk), pMesh);
+         bValidated = Load3dsMain(pReader, ChunkGetEnd(pReader, chunk), pRenderDevice, pMesh);
       }
       else
       {
@@ -1041,7 +690,7 @@ IMesh * Load3ds(IRenderDevice * pRenderDevice, IReader * pReader)
 
    if (!bValidated)
    {
-      delete pMesh;
+      SafeRelease(pMesh);
       return NULL;
    }
 

@@ -16,6 +16,8 @@ template <typename T> class cVec3;
 typedef class cVec3<float> tVec3;
 F_DECLARE_INTERFACE(IResourceManager);
 F_DECLARE_INTERFACE(IRenderDevice);
+F_DECLARE_INTERFACE(IVertexBuffer);
+F_DECLARE_INTERFACE(IIndexBuffer);
 F_DECLARE_INTERFACE(IMaterial);
 
 F_DECLARE_INTERFACE(IMesh);
@@ -33,8 +35,12 @@ interface IMesh : IUnknown
    virtual void Render(IRenderDevice * pRenderDevice) const = 0;
 
    virtual tResult AddMaterial(IMaterial * pMaterial) = 0;
-   virtual tResult FindMaterial(const char * pszName, IMaterial * * ppMaterial) = 0;
+   virtual tResult FindMaterial(const char * pszName, IMaterial * * ppMaterial) const = 0;
+
+   virtual tResult AddSubMesh(ISubMesh * pSubMesh) = 0;
 };
+
+ENGINE_API IMesh * MeshCreate();
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -43,6 +49,22 @@ interface IMesh : IUnknown
 
 interface ISubMesh : IUnknown
 {
+   virtual const char * GetMaterialName() const = 0;
+   virtual void SetMaterialName(const char * pszMaterialName) = 0;
+
+   virtual uint GetVertexCount() const = 0;
+
+   virtual tResult GetVertexBuffer(IVertexBuffer * * ppVertexBuffer) = 0;
+
+   virtual tResult LockVertexBuffer(void * * ppData) = 0;
+   virtual tResult UnlockVertexBuffer() = 0;
+
+   virtual uint GetIndexCount() const = 0;
+
+   virtual tResult GetIndexBuffer(IIndexBuffer * * ppIndexBuffer) = 0;
+
+   virtual tResult LockIndexBuffer(void * * ppData) = 0;
+   virtual tResult UnlockIndexBuffer() = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

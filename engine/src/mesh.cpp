@@ -4,16 +4,279 @@
 #include "stdhdr.h"
 
 #include "mesh.h"
+#include "render.h"
+#include "material.h"
+#include "vec3.h"
+#include "resmgr.h"
 #include "readwriteapi.h"
 #include "filespec.h"
-#include "resmgr.h"
 
+#include <vector>
+#include <algorithm>
 #include <cstring>
+#include <cfloat>
 
 #include "dbgalloc.h" // must be last header
 
 IMesh * Load3ds(IRenderDevice * pRenderDevice, IReader * pReader);
 IMesh * LoadMs3d(IRenderDevice * pRenderDevice, IReader * pReader);
+
+///////////////////////////////////////////////////////////////////////////////
+
+static tResult CalculateAABB(uint nVertices, IVertexBuffer * pVertexBuffer,
+                             tVec3 * pMax, tVec3 * pMin)
+{
+   Assert(pVertexBuffer != NULL);
+
+   tResult result = E_FAIL;
+
+   static const uint vertexDeclTypeSizes[] =
+   {
+      1 * sizeof(float), // kVDT_Float1
+      2 * sizeof(float), // kVDT_Float2
+      3 * sizeof(float), // kVDT_Float3
+      4 * sizeof(float), // kVDT_Float4
+      4 * sizeof(unsigned char), // kVDT_UnsignedByte4
+      2 * sizeof(short), // kVDT_Short2
+      4 * sizeof(short), // kVDT_Short4
+   };
+
+   cAutoIPtr<IVertexDeclaration> pVertexDecl;
+   if (pVertexBuffer->GetVertexDeclaration(&pVertexDecl) == S_OK)
+   {
+      uint posOffset = 0, structSize;
+      sVertexElement elements[32];
+      int nElements = _countof(elements);
+
+      if (pVertexDecl->GetStructSize(&structSize, NULL) == S_OK
+         && pVertexDecl->GetElements(elements, &nElements) == S_OK)
+      {
+         for (int i = 0; i < nElements; i++)
+         {
+            if (elements[i].usage == kVDU_Position)
+            {
+               break;
+            }
+            else
+            {
+               posOffset += vertexDeclTypeSizes[elements[i].type];
+            }
+         }
+
+         byte * pVertexData;
+         if (pVertexBuffer->Lock((void**)&pVertexData) == S_OK)
+         {
+            tVec3 max(FLT_MIN, FLT_MIN, FLT_MIN);
+            tVec3 min(FLT_MAX, FLT_MAX, FLT_MAX);
+
+            for (uint i = 0; i < nVertices; i++, pVertexData += structSize)
+            {
+               float * pPos = (float *)(pVertexData + posOffset);
+
+               if (max.x < pPos[0])
+                  max.x = pPos[0];
+               if (min.x > pPos[0])
+                  min.x = pPos[0];
+
+               if (max.y < pPos[1])
+                  max.y = pPos[1];
+               if (min.y > pPos[1])
+                  min.y = pPos[1];
+
+               if (max.z < pPos[2])
+                  max.z = pPos[2];
+               if (min.z > pPos[2])
+                  min.z = pPos[2];
+            }
+
+            if (pMax != NULL)
+               *pMax = max;
+            if (pMin != NULL)
+               *pMin = min;
+
+            pVertexBuffer->Unlock();
+
+            result = S_OK;
+         }
+      }
+   }
+
+   return result;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cMesh
+//
+
+class cMesh : public cComObject<IMPLEMENTS(IMesh)>
+{
+   cMesh(const cMesh &); // un-implemented
+   const cMesh & operator=(const cMesh &); // un-implemented
+
+public:
+   cMesh();
+   ~cMesh();
+
+   virtual void GetAABB(tVec3 * pMaxs, tVec3 * pMins) const;
+   virtual void Render(IRenderDevice * pRenderDevice) const;
+   virtual tResult AddMaterial(IMaterial * pMaterial);
+   virtual tResult FindMaterial(const char * pszName, IMaterial * * ppMaterial) const;
+   virtual tResult AddSubMesh(ISubMesh * pSubMesh);
+
+private:
+   typedef std::vector<IMaterial *> tMaterials;
+   tMaterials m_materials;
+
+   typedef std::vector<ISubMesh *> tSubMeshes;
+   tSubMeshes m_subMeshes;
+};
+
+///////////////////////////////////////
+
+cMesh::cMesh()
+{
+}
+
+///////////////////////////////////////
+
+static void ForEachRelease(IUnknown * p)
+{
+   p->Release();
+}
+
+cMesh::~cMesh()
+{
+   std::for_each(m_materials.begin(), m_materials.end(), ForEachRelease);
+   m_materials.clear();
+
+   std::for_each(m_subMeshes.begin(), m_subMeshes.end(), ForEachRelease);
+   m_subMeshes.clear();
+}
+
+///////////////////////////////////////
+
+void cMesh::GetAABB(tVec3 * pMax, tVec3 * pMin) const
+{
+   tVec3 max(FLT_MIN, FLT_MIN, FLT_MIN);
+   tVec3 min(FLT_MAX, FLT_MAX, FLT_MAX);
+
+   tSubMeshes::const_iterator iter;
+   for (iter = m_subMeshes.begin(); iter != m_subMeshes.end(); iter++)
+   {
+      tVec3 maxSub, minSub;
+
+      cAutoIPtr<IVertexBuffer> pVertexBuffer;
+      if ((*iter)->GetVertexBuffer(&pVertexBuffer) == S_OK)
+      {
+         if (CalculateAABB((*iter)->GetVertexCount(), pVertexBuffer,
+                           &maxSub, &minSub) == S_OK)
+         {
+            if (max.x < maxSub.x)
+               max.x = maxSub.x;
+            if (min.x > minSub.x)
+               min.x = minSub.x;
+
+            if (max.y < maxSub.y)
+               max.y = maxSub.y;
+            if (min.y > minSub.y)
+               min.y = minSub.y;
+
+            if (max.z < maxSub.z)
+               max.z = maxSub.z;
+            if (min.z > minSub.z)
+               min.z = minSub.z;
+         }
+      }
+   }
+
+   if (pMax != NULL)
+      *pMax = max;
+   if (pMin != NULL)
+      *pMin = min;
+}
+
+///////////////////////////////////////
+
+void cMesh::Render(IRenderDevice * pRenderDevice) const
+{
+   tSubMeshes::const_iterator iter;
+   for (iter = m_subMeshes.begin(); iter != m_subMeshes.end(); iter++)
+   {
+      ISubMesh * pSubMesh = *iter;
+
+      cAutoIPtr<IMaterial> pMaterial;
+      if (FindMaterial(pSubMesh->GetMaterialName(), &pMaterial) == S_OK)
+      {
+         cAutoIPtr<IIndexBuffer> pIndexBuffer;
+         if (pSubMesh->GetIndexBuffer(&pIndexBuffer) == S_OK)
+         {
+            cAutoIPtr<IVertexBuffer> pVertexBuffer;
+            if (pSubMesh->GetVertexBuffer(&pVertexBuffer) == S_OK)
+            {
+               pRenderDevice->Render(
+                  kRP_Triangles, pMaterial,
+                  pSubMesh->GetIndexCount(), pIndexBuffer,
+                  0, pSubMesh->GetVertexCount(), pVertexBuffer);
+            }
+         }
+      }
+   }
+}
+
+///////////////////////////////////////
+
+tResult cMesh::AddMaterial(IMaterial * pMaterial)
+{
+   if (pMaterial == NULL || FindMaterial(pMaterial->GetName(), NULL) == S_OK)
+      return E_FAIL;
+   m_materials.push_back(pMaterial);
+   pMaterial->AddRef();
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cMesh::FindMaterial(const char * pszName, IMaterial * * ppMaterial) const
+{
+   if (pszName == NULL || pszName[0] == 0)
+      return E_FAIL;
+   tMaterials::const_iterator iter;
+   for (iter = m_materials.begin(); iter != m_materials.end(); iter++)
+   {
+      if (strcmp(pszName, (*iter)->GetName()) == 0)
+      {
+         if (ppMaterial != NULL)
+         {
+            *ppMaterial = *iter;
+            (*ppMaterial)->AddRef();
+         }
+         return S_OK;
+      }
+   }
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
+tResult cMesh::AddSubMesh(ISubMesh * pSubMesh)
+{
+   if (pSubMesh != NULL)
+   {
+      m_subMeshes.push_back(pSubMesh);
+      pSubMesh->AddRef();
+      return S_OK;
+   }
+   return E_FAIL;
+}
+
+///////////////////////////////////////
+
+IMesh * MeshCreate()
+{
+   return static_cast<IMesh *>(new cMesh);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 

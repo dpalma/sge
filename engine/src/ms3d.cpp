@@ -54,7 +54,8 @@ public:
    virtual void GetAABB(tVec3 * pMaxs, tVec3 * pMins) const;
    virtual void Render(IRenderDevice * pRenderDevice) const;
    virtual tResult AddMaterial(IMaterial * pMaterial);
-   virtual tResult FindMaterial(const char * pszName, IMaterial * * ppMaterial);
+   virtual tResult FindMaterial(const char * pszName, IMaterial * * ppMaterial) const;
+   virtual tResult AddSubMesh(ISubMesh * pSubMesh);
 
    tResult Read(IRenderDevice * pRenderDevice, IReader * pReader);
 
@@ -172,11 +173,11 @@ tResult cMs3dMesh::AddMaterial(IMaterial * pMaterial)
    return S_OK;
 }
 
-tResult cMs3dMesh::FindMaterial(const char * pszName, IMaterial * * ppMaterial)
+tResult cMs3dMesh::FindMaterial(const char * pszName, IMaterial * * ppMaterial) const
 {
    if (pszName == NULL || pszName[0] == 0)
       return E_FAIL;
-   tMaterials::iterator iter;
+   tMaterials::const_iterator iter;
    for (iter = m_materials.begin(); iter != m_materials.end(); iter++)
    {
       if (strcmp(pszName, (*iter)->GetName()) == 0)
@@ -190,6 +191,12 @@ tResult cMs3dMesh::FindMaterial(const char * pszName, IMaterial * * ppMaterial)
       }
    }
    return S_FALSE;
+}
+
+tResult cMs3dMesh::AddSubMesh(ISubMesh * pSubMesh)
+{
+   // TODO
+   return E_NOTIMPL;
 }
 
 tResult cMs3dMesh::Read(IRenderDevice * pRenderDevice, IReader * pReader)
