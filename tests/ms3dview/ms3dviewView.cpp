@@ -7,7 +7,7 @@
 #include "ms3dviewDoc.h"
 #include "ms3dviewView.h"
 
-#include "render.h"
+#include "renderapi.h"
 #include "matrix4.h"
 
 #include <GL/gl.h>

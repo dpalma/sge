@@ -8,7 +8,7 @@
 #include "skeleton.h"
 #include "animation.h"
 
-#include "render.h"
+#include "renderapi.h"
 #include "material.h"
 
 #include "techmath.h"
