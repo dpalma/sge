@@ -1,0 +1,32 @@
+///////////////////////////////////////////////////////////////////////////////
+// $Id$
+
+#ifndef INCLUDED_ENTITYAPI_H
+#define INCLUDED_ENTITYAPI_H
+
+#include "comtools.h"
+#include "vec3.h"
+
+#ifdef _MSC_VER
+#pragma once
+#endif
+
+F_DECLARE_INTERFACE(IEntityManager);
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IEntityManager
+//
+
+interface IEntityManager : IUnknown
+{
+   virtual tResult SpawnEntity(const char * pszMesh, const tVec3 & location) = 0;
+};
+
+////////////////////////////////////////
+
+void EntityManagerCreate();
+
+///////////////////////////////////////////////////////////////////////////////
+
+#endif // !INCLUDED_ENTITYAPI_H

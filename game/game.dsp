@@ -187,6 +187,10 @@ SOURCE=.\cmds.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\entitymgr.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\game.rc
 # End Source File
 # Begin Source File
@@ -226,6 +230,14 @@ SOURCE=.\syswin.cpp
 # Begin Source File
 
 SOURCE=.\cameracontroller.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\entityapi.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\entitymgr.h
 # End Source File
 # Begin Source File
 

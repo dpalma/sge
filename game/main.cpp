@@ -3,13 +3,13 @@
 
 #include "stdhdr.h"
 
-#include "ggl.h"
 #include "groundtiled.h"
 #include "sys.h"
 #include "script.h"
 #include "cameracontroller.h"
-#include "guiapi.h"
+#include "entityapi.h"
 
+#include "guiapi.h"
 #include "sceneapi.h"
 #include "meshapi.h"
 #include "sim.h"
@@ -25,10 +25,8 @@
 #include "configapi.h"
 #include "filespec.h"
 #include "filepath.h"
-#include "matrix4.h"
 #include "str.h"
 #include "globalobj.h"
-#include "vec2.h"
 #include "readwriteapi.h"
 
 #include <ctime>
@@ -254,53 +252,6 @@ SCRIPT_DEFINE_FUNCTION(SetTerrain)
    return 0;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-
-SCRIPT_DEFINE_FUNCTION(EntitySpawnTest)
-{
-   if (ScriptArgc() == 3
-      && ScriptArgIsString(0)
-      && ScriptArgIsNumber(1)
-      && ScriptArgIsNumber(2))
-   {
-      float x = ScriptArgAsNumber(1);
-      float z = ScriptArgAsNumber(2);
-
-      if (x >= 0 && x <= 1 && z >= 0 && z <= 1)
-      {
-         if (g_pTerrainRoot != NULL)
-         {
-            float y = g_pTerrainRoot->GetElevation(Round(x), Round(z));
-
-            tVec2 groundDims = g_pTerrainRoot->GetDimensions();
-
-            x *= groundDims.x;
-            z *= groundDims.y;
-
-            UseGlobal(ResourceManager);
-            cAutoIPtr<IMesh> pMesh = MeshLoad(pResourceManager, AccessRenderDevice(), ScriptArgAsString(0));
-            if (!pMesh)
-            {
-               DebugMsg1("Error loading mesh \"%s\"\n", ScriptArgAsString(0));
-               return 0;
-            }
-
-            cAutoIPtr<ISceneEntity> pEntity = SceneEntityCreate(pMesh);
-            pEntity->SetLocalTranslation(tVec3(x,y,z));
-
-            UseGlobal(Scene);
-            pScene->AddEntity(kSL_Object, pEntity);
-         }
-      }
-      else
-      {
-         DebugMsg2("EntitySpawnTest arguments %f, %f, out of range\n", x, z);
-      }
-   }
-
-   return 0;
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -385,6 +336,7 @@ static void RegisterGlobalObjects()
    GUIContextCreate();
    GUIFactoryCreate();
    GUIRenderingToolsCreate();
+   EntityManagerCreate();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -398,6 +350,10 @@ bool MainInit(int argc, char * argv[])
    file.SetFileExt("cfg");
 
    cAutoIPtr<IDictionaryStore> pStore = DictionaryStoreCreate(file);
+   if (!pStore)
+   {
+      return false;
+   }
    pStore->Load(g_pConfig);
 
    ParseCommandLine(argc, argv, g_pConfig);
