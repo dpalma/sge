@@ -20,6 +20,7 @@ LOG_DEFINE_CHANNEL(DictionaryStore);
 
 static const char kCommentChar = '#';
 static const char kSepChar = '=';
+static const char kWhitespace[] = " \t\r\n";
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -45,7 +46,7 @@ static bool SplitString(const tChar * psz, char split, cStr * pLeft, cStr * pRig
 static void TrimLeadingSpace(cStr * pStr)
 {
    Assert(pStr != NULL);
-   cStr::size_type index = pStr->find_first_not_of(" \t\r\n");
+   cStr::size_type index = pStr->find_first_not_of(kWhitespace);
    if (index != cStr::npos)
    {
       pStr->erase(0, index);
@@ -55,7 +56,7 @@ static void TrimLeadingSpace(cStr * pStr)
 static void TrimTrailingSpace(cStr * pStr)
 {
    Assert(pStr != NULL);
-   cStr::size_type index = pStr->find_last_not_of(" \t\r\n");
+   cStr::size_type index = pStr->find_last_not_of(kWhitespace);
    if (index != cStr::npos)
    {
       pStr->erase(index + 1);
@@ -87,6 +88,16 @@ bool ParseDictionaryLine(const tChar * psz, cStr * pKey, cStr * pValue, cStr * p
       TrimSpace(pKey);
       TrimSpace(pValue);
       return true;
+   }
+   else
+   {
+      *pKey = psz;
+      cStr::size_type index = pKey->find_first_of(kWhitespace);
+      if (index == cStr::npos)
+      {
+         return true;
+      }
+      pKey->erase();
    }
    return false;
 }
@@ -333,15 +344,29 @@ void cDictionaryStoreTests::TestParseDictionaryLine()
 {
    cStr key, value, comment;
 
+   key.erase();
+   value.erase();
+   comment.erase();
    CPPUNIT_ASSERT(ParseDictionaryLine("key=value", &key, &value, &comment));
    CPPUNIT_ASSERT(key == "key");
    CPPUNIT_ASSERT(value == "value");
    CPPUNIT_ASSERT(comment.empty());
 
+   key.erase();
+   value.erase();
+   comment.erase();
    CPPUNIT_ASSERT(ParseDictionaryLine("  key  =  value  # this is a comment   ", &key, &value, &comment));
    CPPUNIT_ASSERT(key == "key");
    CPPUNIT_ASSERT(value == "value");
    CPPUNIT_ASSERT(comment == "this is a comment");
+
+   key.erase();
+   value.erase();
+   comment.erase();
+   CPPUNIT_ASSERT(ParseDictionaryLine("definition", &key, &value, &comment));
+   CPPUNIT_ASSERT(key == "definition");
+   CPPUNIT_ASSERT(value.empty());
+   CPPUNIT_ASSERT(comment.empty());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
