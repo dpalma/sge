@@ -43,10 +43,10 @@ static tResult CalculateAABB(uint nVertices, IVertexBuffer * pVertexBuffer,
       sVertexElement elements[256];
       int nElements = _countof(elements);
 
-      if (pVertexDecl->GetElements(elements, &nElements) == S_OK)
+      uint vertexSize;
+      if (pVertexDecl->GetElements(elements, &nElements) == S_OK
+         && pVertexDecl->GetVertexSize(&vertexSize) == S_OK)
       {
-         uint vertexSize = GetVertexSize(elements, nElements);
-
          for (int i = 0; i < nElements; i++)
          {
             if (elements[i].usage == kVDU_Position)
