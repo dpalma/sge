@@ -6,7 +6,7 @@
 #include "editorTile.h"
 #include "BitmapUtils.h"
 
-#include "resmgr.h"
+#include "resourceapi.h"
 #include "imagedata.h"
 #include "globalobj.h"
 
@@ -174,13 +174,17 @@ void cEditorTile::LazyInit()
       {
          Assert(m_hBitmap == NULL);
 
-         UseGlobal(ResourceManager);
-
-         m_pImageData = ImageLoad(pResourceManager, m_texture.c_str());
-
-         if (m_pImageData != NULL)
+         cAutoIPtr<IResource> pRes;
+         UseGlobal(ResourceManager2);
+         if (pResourceManager2->Load(tResKey(m_texture.c_str(), kRC_Image), &pRes) == S_OK)
          {
-            m_bLoadBitmapFailed = !LoadBitmap(m_pImageData, &m_hBitmap);
+            if (pRes->GetData((void**)&m_pImageData) == S_OK && m_pImageData != NULL)
+            {
+               if (m_pImageData != NULL)
+               {
+                  m_bLoadBitmapFailed = !LoadBitmap(m_pImageData, &m_hBitmap);
+               }
+            }
          }
       }
    }

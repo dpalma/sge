@@ -61,7 +61,7 @@ cImageData::~cImageData()
 {
    Destroy();
 }
-   
+
 ///////////////////////////////////////
 
 bool cImageData::Create(int width, int height, ePixelFormat pixelFormat, void * pData /*= NULL*/)
@@ -101,53 +101,6 @@ void cImageData::Destroy()
 {
    delete [] m_pData;
    m_pData = NULL;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-cImageData * LoadBmp(IReader *); // bmp.cpp
-cImageData * LoadTarga(IReader *); // tga.cpp
-
-cImageData * ImageLoad(IResourceManager * pResMgr, const char * pszFile)
-{
-   typedef cImageData * (* tImageLoadFn)(IReader *);
-
-   static const struct
-   {
-      const char * ext;
-      tImageLoadFn pfn;
-   }
-   imageFileLoaders[] =
-   {
-      { "bmp", LoadBmp },
-      { "tga", LoadTarga },
-   };
-
-   Assert(pResMgr != NULL);
-   Assert(pszFile != NULL);
-
-   cFileSpec file(pszFile);
-
-   for (int i = 0; i < _countof(imageFileLoaders); i++)
-   {
-      if (stricmp(imageFileLoaders[i].ext, file.GetFileExt()) == 0)
-      {
-         cAutoIPtr<IReader> pReader = pResMgr->Find(pszFile);
-         if (!pReader)
-         {
-            return NULL;
-         }
-
-         cImageData * pImage = (*imageFileLoaders[i].pfn)(pReader);
-         if (pImage != NULL)
-         {
-            return pImage;
-         }
-      }
-   }
-
-   DebugMsg1("Unsupported image file format: \"%s\"\n", file.GetFileExt());
-   return NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

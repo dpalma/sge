@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "resmgr.h"
+#include "resourceapi.h"
 #include "globalobj.h"
 #include "imagedata.h"
 #include "heightmap.h"
@@ -38,25 +38,29 @@ cHeightMap::~cHeightMap()
 
 bool cHeightMap::Load(const char * pszFilename)
 {
-   UseGlobal(ResourceManager);
-
-   cImageData * pNewImage = ImageLoad(pResourceManager, pszFilename);
-   if (pNewImage == NULL)
-      return false;
-
-   // images used as height data must be square and grayscale format
-   if (pNewImage->GetWidth() != pNewImage->GetHeight() ||
-       pNewImage->GetPixelFormat() != kPF_Grayscale)
+   cAutoIPtr<IResource> pRes;
+   UseGlobal(ResourceManager2);
+   if (pResourceManager2->Load(tResKey(pszFilename, kRC_Image), &pRes) == S_OK)
    {
-      delete pNewImage;
-      return false;
+      cImageData * pHeightImage = NULL;
+      if (pRes->GetData((void**)&pHeightImage) == S_OK && pHeightImage != NULL)
+      {
+         // images used as height data must be square and grayscale format
+         if (pHeightImage->GetWidth() == pHeightImage->GetHeight() &&
+             pHeightImage->GetPixelFormat() == kPF_Grayscale)
+         {
+            Destroy();
+            m_pImage = pHeightImage;
+            m_size = m_pImage->GetWidth();
+            m_pData = (uint8 *)m_pImage->GetData();
+            return true;
+         }
+
+         delete pHeightImage;
+      }
    }
 
-   Destroy();
-   m_pImage = pNewImage;
-   m_size = m_pImage->GetWidth();
-   m_pData = (uint8 *)m_pImage->GetData();
-   return true;
+   return false;
 }
 
 ///////////////////////////////////////

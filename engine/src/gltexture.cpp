@@ -9,7 +9,7 @@
 #include "techmath.h"
 #include "globalobj.h"
 #include "str.h"
-#include "resmgr.h"
+#include "resourceapi.h"
 
 #include "stdgl.h"
 #include <GL/glu.h>
@@ -330,38 +330,36 @@ tResult cTextureManager::GetTexture(const char * pszName, ITexture * * ppTexture
    }
    else
    {
-      UseGlobal(ResourceManager);
-      cImageData * pImageData = ImageLoad(pResourceManager, pszName);
-      if (pImageData == NULL)
+      cAutoIPtr<cTexture> pTex(new cTexture);
+      if (!pTex)
       {
-         *ppTexture = NULL;
-         return E_FAIL;
-      }
-
-      cTexture * pTexture = new cTexture;
-      if (!pTexture)
-      {
-         delete pImageData;
-         *ppTexture = NULL;
          return E_OUTOFMEMORY;
       }
 
-      if (FAILED(pTexture->UploadImage(pImageData)))
+      cAutoIPtr<IResource> pRes;
+      UseGlobal(ResourceManager2);
+      if (pResourceManager2->Load(tResKey(pszName, kRC_Image), &pRes) == S_OK)
       {
-         delete pImageData;
-         SafeRelease(pTexture);
-         *ppTexture = NULL;
-         return E_FAIL;
+         cImageData * pImageData = NULL;
+         if (pRes->GetData((void**)&pImageData) == S_OK && pImageData != NULL)
+         {
+            tResult result = E_FAIL;
+
+            if (pTex->UploadImage(pImageData) == S_OK)
+            {
+               m_texObjMap.insert(std::make_pair(cStr(pszName), CTAddRef(pTex.operator->())));
+               *ppTexture = CTAddRef(pTex);
+               result = S_OK;
+            }
+
+            delete pImageData;
+
+            return result;
+         }
       }
-
-      m_texObjMap.insert(std::make_pair(cStr(pszName), CTAddRef(pTexture)));
-      *ppTexture = CTAddRef(pTexture);
-
-      pTexture->Release();
-      delete pImageData;
-
-      return S_OK;
    }
+
+   return E_FAIL;
 }
 
 ///////////////////////////////////////

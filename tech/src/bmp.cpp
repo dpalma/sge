@@ -5,6 +5,7 @@
 
 #include "imagedata.h"
 #include "readwriteapi.h"
+#include "resourceapi.h"
 
 #include <cstring> // required w/ gcc for memcpy
 
@@ -217,5 +218,86 @@ cImageData * LoadBmp(IReader * pReader)
    }
 
 }
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cBmpImage
+//
+
+class cBmpImage : public cComObject<IMPLEMENTS(IResource)>
+{
+public:
+   cBmpImage(IReader * pReader);
+
+   virtual eResourceClass GetClass() const { return kRC_Image; }
+
+   virtual tResult GetData(void * * ppData);
+
+private:
+   cAutoIPtr<IReader> m_pReader;
+};
+
+////////////////////////////////////////
+
+cBmpImage::cBmpImage(IReader * pReader)
+ : m_pReader(CTAddRef(pReader))
+{
+}
+
+////////////////////////////////////////
+
+tResult cBmpImage::GetData(void * * ppData)
+{
+   if (ppData == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (!m_pReader)
+   {
+      return E_FAIL;
+   }
+
+   *ppData = LoadBmp(m_pReader);
+
+   return (*ppData != NULL) ? S_OK : E_FAIL;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cImageFormatBmp
+//
+
+class cImageFormatBmp : public cComObject<IMPLEMENTS(IResourceFormat)>
+{
+public:
+   virtual tResult Load(const tResKey & key, IReader * pReader, IResource * * ppResource);
+};
+
+////////////////////////////////////////
+
+tResult cImageFormatBmp::Load(const tResKey & key, IReader * pReader, IResource * * ppResource)
+{
+   if (pReader == NULL || ppResource == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cBmpImage * pImg = new cBmpImage(pReader);
+   if (pImg == NULL)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   *ppResource = static_cast<IResource *>(pImg);
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+AUTOREGISTER_RESOURCEFORMAT(kRC_Image, "bmp", cImageFormatBmp);
+
 
 ////////////////////////////////////////////////////////////////////////////////

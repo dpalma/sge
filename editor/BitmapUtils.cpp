@@ -5,7 +5,7 @@
 
 #include "BitmapUtils.h"
 
-#include "resmgr.h"
+#include "resourceapi.h"
 #include "imagedata.h"
 #include "globalobj.h"
 
@@ -107,6 +107,8 @@ bool LoadBitmap(const cImageData * pImageData, HBITMAP * phBitmap)
    return bResult;   
 }
 
+/////////////////////////////////////////////////////////////////////////////
+
 bool LoadBitmap(const tChar * pszBitmap, HBITMAP * phBitmap)
 {
    if (pszBitmap == NULL || phBitmap == NULL)
@@ -116,16 +118,19 @@ bool LoadBitmap(const tChar * pszBitmap, HBITMAP * phBitmap)
 
    bool bResult = false;
 
-   UseGlobal(ResourceManager);
-
-   cImageData * pImageData = ImageLoad(pResourceManager, pszBitmap);
-
-   if (pImageData != NULL)
+   cAutoIPtr<IResource> pRes;
+   UseGlobal(ResourceManager2);
+   if (pResourceManager2->Load(tResKey(pszBitmap, kRC_Image), &pRes) == S_OK)
    {
-      bResult = LoadBitmap(pImageData, phBitmap);
-      delete pImageData;
+      cImageData * pImageData = NULL;
+      if (pRes->GetData((void**)&pImageData) == S_OK && pImageData != NULL)
+      {
+         bResult = LoadBitmap(pImageData, phBitmap);
+         delete pImageData;
+      }
    }
-   else
+
+   if (!bResult)
    {
       HBITMAP hBitmap = (HBITMAP)LoadImage(NULL,
                                            pszBitmap,
