@@ -343,6 +343,9 @@
 							UsePrecompiledHeader="1"/>
 					</FileConfiguration>
 				</File>
+				<File
+					RelativePath="src\submesh.cpp">
+				</File>
 			</Filter>
 			<Filter
 				Name="Header Files"

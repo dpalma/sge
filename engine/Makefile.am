@@ -8,12 +8,14 @@ EXTRA_DIST = engine.dsp engine.vcproj include/*.h src/*.h
 libengine_la_SOURCES = src/3ds.cpp \
                        src/mesh.cpp \
                        src/ms3d.cpp \
-                       src/stdhdr.cpp
+                       src/ms3dread.cpp \
+                       src/stdhdr.cpp \
+                       src/submesh.cpp
 
-libengine_la_LIBADD = $(GL_LIBS)
+libengine_la_LIBADD = $(GL_LIBS) $(CORE_LIBS)
 
 INCLUDES = $(GL_CFLAGS) \
-           -DTECH_EXPORTS \
+           -DENGINE_EXPORTS \
            -I ./include \
            -I ./src \
            -I @top_srcdir@/tech/include \

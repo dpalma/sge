@@ -3,7 +3,7 @@
 
 lib_LTLIBRARIES = libtech.la
 
-EXTRA_DIST = tech.dsp include/*.h
+EXTRA_DIST = tech.dsp tech.vcproj include/*.h src/*.h
 
 if NO_X
 libtech_PLATFORM_SOURCES = src/windoww32.cpp
@@ -33,6 +33,6 @@ libtech_la_SOURCES = src/comtools.cpp \
                      src/techtime.cpp \
                      $(libtech_PLATFORM_SOURCES)
 
-libtech_la_LIBADD = $(GL_LIBS)
+libtech_la_LIBADD = $(GL_LIBS) $(CORE_LIBS)
 
 INCLUDES = $(GL_CFLAGS) -DTECH_EXPORTS -I ./include -I ./src

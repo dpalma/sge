@@ -38,16 +38,16 @@ AC_ARG_ENABLE(debug,
               CXXFLAGS="$CXXFLAGS -ggdb -DDEBUG -D_DEBUG",
               CXXFLAGS="$CXXFLAGS -O2 -DNDEBUG")
 
-AC_SUBST(CXXFLAGS)
-
 CORE_LIBS=
 case $build in
    *cygwin*|*mingw*)
       CXXFLAGS="$CXXFLAGS -mwindows"
-      CORE_LIBS="-lwinmm -lgdi32 -lopengl32"
+      CORE_LIBS="-lwinmm -lgdi32 -lopengl32 -glu32"
       ;;
 esac
 AC_SUBST(CORE_LIBS)
+
+AC_SUBST(CXXFLAGS)
 
 dnl Check for libraries
 AC_PATH_XTRA
@@ -55,19 +55,11 @@ AM_CONDITIONAL(NO_X, test "$no_x" = "yes")
 
 MDL_HAVE_OPENGL
 
-dnl The Win32 API headers in the cygwin environment typedefs REFGUID 
-dnl as a pointer. The Win32 Platform SDK typedefs it as an actual
-dnl reference.
-AC_MSG_CHECKING(for actual REFGUID type)
-AC_TRY_COMPILE([#include <winnt.h>],
-               [GUID g; REFGUID rg = g;],
-               refguid_is_reference=yes,
-               refguid_is_reference=no)
-if test "$refguid_is_reference" = yes; then
-   AC_MSG_RESULT(reference)
-else
-   AC_MSG_RESULT(pointer)
-   AC_DEFINE(REFGUID_IS_POINTER, 1, [REFGUID is actually typedef'ed as pointer-to-GUID])
-fi
-
-AC_OUTPUT([Makefile 3rdparty/Makefile 3rdparty/tinyxml/Makefile game/Makefile render/Makefile tech/Makefile techguid/Makefile])
+AC_OUTPUT([Makefile \
+           3rdparty/Makefile \
+           3rdparty/tinyxml/Makefile \
+           allguids/Makefile] \
+           tech/Makefile \
+           render/Makefile \
+           engine/Makefile \
+           game/Makefile])
