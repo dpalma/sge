@@ -384,7 +384,6 @@ tResult cResourceManager::RegisterResourceFormat(eResourceClass resClass,
 
    cStr extension(pszExtension);
 
-   tResExtFormatMap::iterator;
    if (m_resExtFormatMap.find(extension) != m_resExtFormatMap.end())
    {
       return S_FALSE;
