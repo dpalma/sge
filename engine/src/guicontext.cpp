@@ -17,7 +17,7 @@
 #endif
 
 #include "keys.h"
-#include "resmgr.h"
+#include "resourceapi.h"
 #include "readwriteapi.h"
 
 #include <tinyxml.h>
@@ -109,32 +109,19 @@ tResult cGUIContext::HasElement(IGUIElement * pElement) const
 
 tResult cGUIContext::LoadFromResource(const char * psz)
 {
-   UseGlobal(ResourceManager);
-   cAutoIPtr<IReader> pReader = pResourceManager->Find(psz);
-   if (!pReader)
-      return E_FAIL;
-
-   pReader->Seek(0, kSO_End);
-   int len = pReader->Tell();
-   pReader->Seek(0, kSO_Set);
-
-   char * pszContents = new char[len + 1];
-   if (pszContents == NULL)
-      return E_OUTOFMEMORY;
-
-   if (pReader->Read(pszContents, len) != S_OK)
+   cAutoIPtr<IResource> pResource;
+   UseGlobal(ResourceManager2);
+   if (pResourceManager2->Load(tResKey(psz, kRC_Text), &pResource) == S_OK)
    {
-      delete [] pszContents;
-      return E_FAIL;
+      char * pszXml;
+      if (pResource->GetData((void**)&pszXml) == S_OK)
+      {
+         tResult result = LoadFromString(pszXml);
+         delete [] pszXml;
+         return result;
+      }
    }
-
-   pszContents[len] = 0;
-
-   tResult result = LoadFromString(pszContents);
-
-   delete [] pszContents;
-
-   return result;
+   return E_FAIL;
 }
 
 ///////////////////////////////////////

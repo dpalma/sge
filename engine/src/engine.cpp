@@ -9,7 +9,7 @@
 
 #include "renderapi.h"
 
-#include "resmgr.h"
+#include "resourceapi.h"
 #include "readwriteapi.h"
 
 #include "dbgalloc.h" // must be last header
@@ -41,16 +41,21 @@ static char * GetEntireContents(IReader * pReader)
 
 static bool ScriptExecResource(IScriptInterpreter * pInterpreter, const char * pszResource)
 {
-   UseGlobal(ResourceManager);
-   cAutoIPtr<IReader> pReader = pResourceManager->Find(pszResource);
-   if (!pReader)
-      return false;
-   char * pszCode = GetEntireContents(pReader);
-   if (pszCode == NULL)
-      return false;
-   bool result = SUCCEEDED(pInterpreter->ExecString(pszCode));
-   delete [] pszCode;
-   return result;
+   bool bResult = false;
+
+   cAutoIPtr<IResource> pResource;
+   UseGlobal(ResourceManager2);
+   if (pResourceManager2->Load(tResKey(pszResource, kRC_Text), &pResource) == S_OK)
+   {
+      char * pszCode;
+      if (pResource->GetData((void**)&pszCode) == S_OK)
+      {
+         bResult = SUCCEEDED(pInterpreter->ExecString(pszCode));
+         delete [] pszCode;
+      }
+   }
+
+   return bResult;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
