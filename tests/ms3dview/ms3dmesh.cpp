@@ -73,6 +73,15 @@ static const char g_MS3D[] = "MS3D000000";
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template <>
+std::vector<IKeyFrameInterpolator *>::~vector()
+{
+   std::for_each(begin(), end(), CTInterfaceMethodRef(&IUnknown::Release));
+   clear();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 void cgErrorCallback()
 {
    CGerror lastError = cgGetError();
@@ -280,31 +289,13 @@ tResult cReadWriteOps<sMs3dBoneInfo>::Read(IReader * pReader, sMs3dBoneInfo * pB
    return S_OK;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cReadWriteOps<cSkeleton>
-//
-
-template <>
-class cReadWriteOps<cSkeleton>
-{
-public:
-   static tResult Read(IReader * pReader, cSkeleton * pSkeleton);
-};
-
-///////////////////////////////////////
-
-template <>
-std::vector<IKeyFrameInterpolator *>::~vector()
-{
-   std::for_each(begin(), end(), CTInterfaceMethodRef(&IUnknown::Release));
-   clear();
-}
-
-tResult cReadWriteOps<cSkeleton>::Read(IReader * pReader, cSkeleton * pSkeleton)
+static tResult ReadSkeleton(IReader * pReader, 
+                            std::vector<cBone> * pBones,
+                            std::vector<IKeyFrameInterpolator *> * pInterpolators)
 {
    Assert(pReader != NULL);
-   Assert(pSkeleton != NULL);
+   Assert(pBones != NULL);
+   Assert(pInterpolators != NULL);
 
    tResult result = E_FAIL;
 
@@ -326,7 +317,7 @@ tResult cReadWriteOps<cSkeleton>::Read(IReader * pReader, cSkeleton * pSkeleton)
 
       std::vector<sMs3dBoneInfo> boneInfo(nJoints);
 
-      std::vector<IKeyFrameInterpolator *> interpolators(nJoints);
+      pInterpolators->resize(nJoints);
 
       uint i;
       for (i = 0; i < nJoints; i++)
@@ -353,18 +344,18 @@ tResult cReadWriteOps<cSkeleton>::Read(IReader * pReader, cSkeleton * pSkeleton)
             break;
          }
 
-         interpolators[i] = pInterpolator;
+         (*pInterpolators)[i] = pInterpolator;
       }
 
       if (i < nJoints)
          break;
 
-      std::vector<cBone> bones(nJoints);
+      pBones->resize(nJoints);
 
       for (i = 0; i < nJoints; i++)
       {
-         bones[i].SetName(boneInfo[i].name);
-         bones[i].SetIndex(i);
+         (*pBones)[i].SetName(boneInfo[i].name);
+         (*pBones)[i].SetIndex(i);
 
          if (strlen(boneInfo[i].parentName) > 0)
          {
@@ -372,7 +363,7 @@ tResult cReadWriteOps<cSkeleton>::Read(IReader * pReader, cSkeleton * pSkeleton)
             if (n != boneNames.end())
             {
                Assert(strcmp(boneInfo[n->second].name, boneInfo[i].parentName) == 0);
-               bones[i].SetParentIndex(n->second);
+               (*pBones)[i].SetParentIndex(n->second);
             }
          }
 
@@ -380,10 +371,8 @@ tResult cReadWriteOps<cSkeleton>::Read(IReader * pReader, cSkeleton * pSkeleton)
          MatrixTranslate(boneInfo[i].position[0], boneInfo[i].position[1], boneInfo[i].position[2], &mt);
          MatrixFromAngles(tVec3(boneInfo[i].rotation), &mr);
 
-         bones[i].SetLocalTransform(mt * mr);
+         (*pBones)[i].SetLocalTransform(mt * mr);
       }
-
-      pSkeleton->Create(&bones[0], bones.size(), &interpolators[0], interpolators.size());
 
       result = S_OK;
    }
@@ -402,7 +391,8 @@ cMs3dMesh::cMs3dMesh()
  : m_pfnRender(RenderSoftware),
    m_bCalculatedAABB(false),
    m_program(NULL),
-   m_modelViewProjParam(NULL)
+   m_modelViewProjParam(NULL),
+   m_pSkeleton(NULL)
 {
 }
 
@@ -458,6 +448,7 @@ tResult cMs3dMesh::Read(IReader * pReader, IRenderDevice * pRenderDevice, IResou
    Assert(m_triangles.empty());
    Assert(m_groups.empty());
    Assert(m_materials.empty());
+   Assert(!m_pSkeleton);
 
    ms3d_header_t header;
    if (pReader->Read(&header, sizeof(header)) != S_OK ||
@@ -544,86 +535,92 @@ tResult cMs3dMesh::Read(IReader * pReader, IRenderDevice * pRenderDevice, IResou
 
    Assert(m_materials.size() == nMaterials);
 
-   if (pReader->Read(&m_skeleton) != S_OK)
+   std::vector<cBone> bones;
+   std::vector<IKeyFrameInterpolator *> interpolators;
+
+   if (ReadSkeleton(pReader, &bones, &interpolators) != S_OK)
       return E_FAIL;
 
-   m_boneMatrices.resize(GetSkeleton()->GetBoneCount());
-
-   cgSetErrorCallback(cgErrorCallback);
-
-   g_cgProfile = cgGLGetLatestProfile(CG_GL_VERTEX);
-
-   if (g_cgProfile != CG_PROFILE_UNKNOWN)
+   if (SkeletonCreate(&bones[0], bones.size(), &interpolators[0], interpolators.size(), &m_pSkeleton) == S_OK)
    {
-      char * pszProgram = GetResource("ms3dmeshanim.cg", "CG");
+      m_boneMatrices.resize(GetSkeleton()->GetBoneCount());
 
-      if (pszProgram != NULL)
+      cgSetErrorCallback(cgErrorCallback);
+
+      g_cgProfile = cgGLGetLatestProfile(CG_GL_VERTEX);
+
+      if (g_cgProfile != CG_PROFILE_UNKNOWN)
       {
-         m_program = cgCreateProgram(GetCgContext(), CG_SOURCE, pszProgram,
-            g_cgProfile, NULL, NULL);
+         char * pszProgram = GetResource("ms3dmeshanim.cg", "CG");
 
-         delete [] pszProgram;
-
-         if (m_program != NULL)
+         if (pszProgram != NULL)
          {
-            cgGLLoadProgram(m_program);
+            m_program = cgCreateProgram(GetCgContext(), CG_SOURCE, pszProgram,
+               g_cgProfile, NULL, NULL);
 
-            m_modelViewProjParam = cgGetNamedParameter(m_program, "modelViewProj");
+            delete [] pszProgram;
 
-            m_pfnRender = RenderVertexProgram;
-         }
-      }
-
-   }
-   else
-   {
-      tMatrices inverses(GetSkeleton()->GetBoneCount());
-
-      for (int i = 0; i < inverses.size(); i++)
-      {
-         MatrixInvert(GetSkeleton()->GetBone(i).GetWorldTransform(), &inverses[i]);
-      }
-
-      // transform all vertices by the inverse of the affecting bone's absolute matrix
-      tVertices::iterator vertIter;
-      for (vertIter = m_vertices.begin(); vertIter != m_vertices.end(); vertIter++)
-      {
-         if (vertIter->boneId != -1)
-         {
-            const tMatrix4 & m = inverses[vertIter->boneId];
-            tVec4 v2, v(vertIter->vertex[0], vertIter->vertex[1], vertIter->vertex[2], k4thDimension);
-            v2 = m.Transform(v);
-            vertIter->vertex[0] = v2.x;
-            vertIter->vertex[1] = v2.y;
-            vertIter->vertex[2] = v2.z;
-         }
-      }
-
-      // transform the vertex normals as well
-      tTriangles::iterator triIter;
-      for (triIter = m_triangles.begin(); triIter != m_triangles.end(); triIter++)
-      {
-         for (int i = 0; i < 3; i++)
-         {
-            ms3d_vertex_t & v = m_vertices[triIter->vertexIndices[i]];
-            if (v.boneId != -1)
+            if (m_program != NULL)
             {
-               const tMatrix4 & m = inverses[v.boneId];
-               tVec4 n(
-                  triIter->vertexNormals[i][0],
-                  triIter->vertexNormals[i][1],
-                  triIter->vertexNormals[i][2],
-                  k4thDimension);
-               tVec4 nprime;
-               nprime = m.Transform(n);
-               triIter->vertexNormals[i][0] = nprime.x;
-               triIter->vertexNormals[i][1] = nprime.y;
-               triIter->vertexNormals[i][2] = nprime.z;
+               cgGLLoadProgram(m_program);
+
+               m_modelViewProjParam = cgGetNamedParameter(m_program, "modelViewProj");
+
+               m_pfnRender = RenderVertexProgram;
             }
          }
-      }
 
-      SetFrame(0);
+      }
+      else
+      {
+         tMatrices inverses(GetSkeleton()->GetBoneCount());
+
+         for (int i = 0; i < inverses.size(); i++)
+         {
+            MatrixInvert(GetSkeleton()->GetBoneWorldTransform(i), &inverses[i]);
+         }
+
+         // transform all vertices by the inverse of the affecting bone's absolute matrix
+         tVertices::iterator vertIter;
+         for (vertIter = m_vertices.begin(); vertIter != m_vertices.end(); vertIter++)
+         {
+            if (vertIter->boneId != -1)
+            {
+               const tMatrix4 & m = inverses[vertIter->boneId];
+               tVec4 v2, v(vertIter->vertex[0], vertIter->vertex[1], vertIter->vertex[2], k4thDimension);
+               v2 = m.Transform(v);
+               vertIter->vertex[0] = v2.x;
+               vertIter->vertex[1] = v2.y;
+               vertIter->vertex[2] = v2.z;
+            }
+         }
+
+         // transform the vertex normals as well
+         tTriangles::iterator triIter;
+         for (triIter = m_triangles.begin(); triIter != m_triangles.end(); triIter++)
+         {
+            for (int i = 0; i < 3; i++)
+            {
+               ms3d_vertex_t & v = m_vertices[triIter->vertexIndices[i]];
+               if (v.boneId != -1)
+               {
+                  const tMatrix4 & m = inverses[v.boneId];
+                  tVec4 n(
+                     triIter->vertexNormals[i][0],
+                     triIter->vertexNormals[i][1],
+                     triIter->vertexNormals[i][2],
+                     k4thDimension);
+                  tVec4 nprime;
+                  nprime = m.Transform(n);
+                  triIter->vertexNormals[i][0] = nprime.x;
+                  triIter->vertexNormals[i][1] = nprime.y;
+                  triIter->vertexNormals[i][2] = nprime.z;
+               }
+            }
+         }
+
+         SetFrame(0);
+      }
    }
 
    return S_OK;
@@ -631,7 +628,7 @@ tResult cMs3dMesh::Read(IReader * pReader, IRenderDevice * pRenderDevice, IResou
 
 void cMs3dMesh::Reset()
 {
-   m_skeleton.Reset();
+   SafeRelease(m_pSkeleton);
 
    m_vertices.clear();
    m_triangles.clear();
@@ -653,7 +650,10 @@ void cMs3dMesh::Reset()
 
 void cMs3dMesh::SetFrame(float percent)
 {
-   m_skeleton.GetBoneMatrices(percent, &m_boneMatrices);
+   if (!!m_pSkeleton)
+   {
+      m_pSkeleton->GetBoneMatrices(percent, &m_boneMatrices);
+   }
 }
 
 void cMs3dMesh::RenderSoftware() const

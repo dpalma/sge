@@ -161,7 +161,8 @@ void cMs3dTreeView::OnInitialUpdate()
          }
       }
 
-      int nBones = pDoc->GetModel()->GetSkeleton()->GetBoneCount();
+      ISkeleton * pSkeleton = pDoc->GetModel()->GetSkeleton();
+      int nBones = pSkeleton != NULL ? pSkeleton->GetBoneCount() : 0;
       if (nBones > 0)
       {
          HTREEITEM hBones = GetTreeCtrl().InsertItem("Bones");
@@ -169,8 +170,8 @@ void cMs3dTreeView::OnInitialUpdate()
          {
             for (int i = 0; i < nBones; i++)
             {
-               const cBone & bone = pDoc->GetModel()->GetSkeleton()->GetBone(i);
-               HTREEITEM hBone = GetTreeCtrl().InsertItem(bone.GetName(), hBones);
+               const char * pszBone = pDoc->GetModel()->GetSkeleton()->GetBoneName(i);
+               HTREEITEM hBone = GetTreeCtrl().InsertItem(pszBone, hBones);
                if (hBone != NULL)
                {
                   cAutoIPtr<IKeyFrameInterpolator> pInterp;

@@ -151,7 +151,7 @@ public:
    int GetGroupCount() const { return m_groups.size(); }
    const cMs3dGroup & GetGroup(int index) const { return m_groups[index]; }
 
-   const cSkeleton * GetSkeleton() const { return &m_skeleton; }
+   ISkeleton * GetSkeleton() { return m_pSkeleton; }
 
 private:
    typedef void (cMs3dMesh:: * tRenderMethod)() const;
@@ -174,7 +174,7 @@ private:
    mutable tVec3 m_maxs, m_mins;
    mutable bool m_bCalculatedAABB;
 
-   cSkeleton m_skeleton;
+   cAutoIPtr<ISkeleton> m_pSkeleton;
 
    tMatrices m_boneMatrices;
 

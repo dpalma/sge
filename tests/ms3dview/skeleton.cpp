@@ -6,10 +6,15 @@
 #include "skeleton.h"
 
 #include "animation.h"
+#include "str.h"
 
 #include <algorithm>
 
 #include "dbgalloc.h" // must be last header
+
+// {F0B870B5-83F8-4e8b-8022-DD4C594C0294}
+const GUID IID_ISkeleton = 
+{ 0xf0b870b5, 0x83f8, 0x4e8b, { 0x80, 0x22, 0xdd, 0x4c, 0x59, 0x4c, 0x2, 0x94 } };
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -105,14 +110,55 @@ bool cBone::AddChild(const cBone * pChild)
 // CLASS: cSkeleton
 //
 
+class cSkeleton : public cComObject<IMPLEMENTS(ISkeleton)>
+{
+   cSkeleton(const cSkeleton &); // private, un-implemented
+   const cSkeleton & operator =(const cSkeleton &); // private, un-implemented
+
+public:
+   cSkeleton();
+   ~cSkeleton();
+
+   bool Create(const cBone * pBones, uint nBones, 
+      IKeyFrameInterpolator * * pInterpolators, uint nInterpolators);
+
+   int GetBoneCount() const;
+
+   const char * GetBoneName(int index) const;
+   const tMatrix4 & GetBoneWorldTransform(int index) const;
+
+   void GetBoneMatrices(float percent, tMatrices * pBoneMatrices) const;
+
+   tResult GetInterpolator(int index, IKeyFrameInterpolator * * ppInterpolator) const;
+
+private:
+   const cBone & GetBone(int index) const;
+
+   void SetupJoints();
+
+   typedef std::vector<cBone> tBones;
+   tBones m_bones;
+
+   typedef std::vector<IKeyFrameInterpolator *> tInterpolators;
+   tInterpolators m_interpolators;
+};
+
+///////////////////////////////////////
+
 cSkeleton::cSkeleton()
 {
 }
 
+///////////////////////////////////////
+
 cSkeleton::~cSkeleton()
 {
-   Reset();
+   m_bones.clear();
+   std::for_each(m_interpolators.begin(), m_interpolators.end(), CTInterfaceMethodRef(&IUnknown::Release));
+   m_interpolators.clear();
 }
+
+///////////////////////////////////////
 
 bool cSkeleton::Create(const cBone * pBones, uint nBones, 
                        IKeyFrameInterpolator * * pInterpolators, uint nInterpolators)
@@ -142,6 +188,36 @@ bool cSkeleton::Create(const cBone * pBones, uint nBones,
 
    return false;
 }
+
+///////////////////////////////////////
+
+inline int cSkeleton::GetBoneCount() const
+{
+   return m_bones.size();
+}
+
+///////////////////////////////////////
+
+inline const char * cSkeleton::GetBoneName(int index) const
+{
+	return GetBone(index).GetName();
+}
+
+///////////////////////////////////////
+
+inline const tMatrix4 & cSkeleton::GetBoneWorldTransform(int index) const
+{
+	return GetBone(index).GetWorldTransform();
+}
+
+///////////////////////////////////////
+
+inline const cBone & cSkeleton::GetBone(int index) const
+{
+   return m_bones[index];
+}
+
+///////////////////////////////////////
 
 void cSkeleton::GetBoneMatrices(float percent, tMatrices * pBoneMatrices) const
 {
@@ -186,6 +262,8 @@ void cSkeleton::GetBoneMatrices(float percent, tMatrices * pBoneMatrices) const
    }
 }
 
+///////////////////////////////////////
+
 tResult cSkeleton::GetInterpolator(int index, IKeyFrameInterpolator * * ppInterpolator) const
 {
    if (index >= 0 && index < m_interpolators.size() && ppInterpolator != NULL)
@@ -197,12 +275,7 @@ tResult cSkeleton::GetInterpolator(int index, IKeyFrameInterpolator * * ppInterp
    return E_FAIL;
 }
 
-void cSkeleton::Reset()
-{
-   m_bones.clear();
-   std::for_each(m_interpolators.begin(), m_interpolators.end(), CTInterfaceMethodRef(&IUnknown::Release));
-   m_interpolators.clear();
-}
+///////////////////////////////////////
 
 void cSkeleton::SetupJoints()
 {
@@ -214,6 +287,32 @@ void cSkeleton::SetupJoints()
          m_bones[iter->GetParentIndex()].AddChild(iter);
       }
    }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: ISkeleton
+//
+
+///////////////////////////////////////
+
+tResult SkeletonCreate(const cBone * pBones, uint nBones, 
+   IKeyFrameInterpolator * * pInterpolators, uint nInterpolators,
+   ISkeleton * * ppSkeleton)
+{
+   if (ppSkeleton != NULL && pBones != NULL && nBones > 0)
+   {
+      cSkeleton * pSkeleton = new cSkeleton;
+      if (!pSkeleton->Create(pBones, nBones, pInterpolators, nInterpolators))
+      {
+         delete pSkeleton;
+         pSkeleton = NULL;
+      }
+      *ppSkeleton = static_cast<ISkeleton *>(pSkeleton);
+      return (*ppSkeleton) != NULL ? S_OK : E_FAIL;
+   }
+   return E_FAIL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -16,7 +16,34 @@
 
 F_DECLARE_INTERFACE(IKeyFrameInterpolator);
 
+F_DECLARE_INTERFACE(ISkeleton);
+
 typedef std::vector<tMatrix4> tMatrices;
+
+class cBone;
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: ISkeleton
+//
+
+interface ISkeleton : IUnknown
+{
+   virtual int GetBoneCount() const = 0;
+   virtual const char * GetBoneName(int index) const = 0;
+   virtual const tMatrix4 & GetBoneWorldTransform(int index) const = 0;
+
+   // TODO: Pull out animation-related methods into separate interfaces
+   virtual void GetBoneMatrices(float percent, tMatrices * pBoneMatrices) const = 0;
+   virtual tResult GetInterpolator(int index, IKeyFrameInterpolator * * ppInterpolator) const = 0;
+};
+
+///////////////////////////////////////
+
+tResult SkeletonCreate(const cBone * pBones, uint nBones, 
+   IKeyFrameInterpolator * * pInterpolators, uint nInterpolators,
+   ISkeleton * * ppSkeleton);
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -125,57 +152,6 @@ inline void cBone::SetLocalTransform(const tMatrix4 & matrix)
 inline const cBone * cBone::GetParent() const
 {
    return m_pParent;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cSkeleton
-//
-
-class cSkeleton
-{
-   cSkeleton(const cSkeleton &); // private, un-implemented
-   const cSkeleton & operator =(const cSkeleton &); // private, un-implemented
-
-public:
-   cSkeleton();
-   ~cSkeleton();
-
-   bool Create(const cBone * pBones, uint nBones, 
-      IKeyFrameInterpolator * * pInterpolators, uint nInterpolators);
-
-   int GetBoneCount() const;
-   const cBone & GetBone(int index) const;
-
-   void GetBoneMatrices(float percent, tMatrices * pBoneMatrices) const;
-
-   tResult GetInterpolator(int index, IKeyFrameInterpolator * * ppInterpolator) const;
-
-   void Reset();
-
-private:
-   void SetupJoints();
-
-   typedef std::vector<cBone> tBones;
-   tBones m_bones;
-
-   typedef std::vector<IKeyFrameInterpolator *> tInterpolators;
-   tInterpolators m_interpolators;
-};
-
-///////////////////////////////////////
-
-inline int cSkeleton::GetBoneCount() const
-{
-   return m_bones.size();
-}
-
-///////////////////////////////////////
-
-inline const cBone & cSkeleton::GetBone(int index) const
-{
-   return m_bones[index];
 }
 
 ///////////////////////////////////////////////////////////////////////////////
