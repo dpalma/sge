@@ -415,6 +415,9 @@
 						UsePrecompiledHeader="1"/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath="terrain.cpp">
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -496,6 +499,9 @@
 			</File>
 			<File
 				RelativePath=".\stdhdr.h">
+			</File>
+			<File
+				RelativePath="terrain.h">
 			</File>
 		</Filter>
 		<Filter
