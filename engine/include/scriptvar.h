@@ -32,7 +32,7 @@ struct sScriptVar
    };
 };
 
-class TECH_API cScriptVar : public sScriptVar
+class ENGINE_API cScriptVar : public sScriptVar
 {
 public:
    cScriptVar();
