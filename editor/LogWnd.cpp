@@ -279,7 +279,7 @@ void cLogWnd::DoPaint(CDCHandle dc)
    CRect rect;
    Verify(GetClientRect(&rect));
 
-   cLogWndItemRender renderer(dc, rect, AtlGetDefaultGuiFont());
+   cLogWndItemRender renderer(dc, rect, m_font.IsNull() ? AtlGetDefaultGuiFont() : m_font);
 
    cLogWndItemRender result = std::for_each(m_items.begin(), m_items.end(), renderer);
 
@@ -295,6 +295,46 @@ void cLogWnd::DoPaint(CDCHandle dc)
 
 ////////////////////////////////////////
 
+void cLogWnd::OnDestroy()
+{
+   SetFont(NULL, FALSE);
+}
+
+////////////////////////////////////////
+
+void cLogWnd::OnSetFont(HFONT hFont, BOOL bRedraw)
+{
+   if (!m_font.IsNull())
+   {
+      m_font.DeleteObject();
+   }
+
+   if (hFont != NULL)
+   {
+      LOGFONT logFont = {0};
+      if (GetObject(hFont, sizeof(LOGFONT), &logFont))
+      {
+         m_font.CreateFontIndirect(&logFont);
+      }
+   }
+}
+
+////////////////////////////////////////
+
+LRESULT cLogWnd::OnSetCursor(HWND hWnd, UINT hitTest, UINT message)
+{
+   if (hitTest == HTCLIENT)
+   {
+      SetCursor(LoadCursor(NULL, IDC_IBEAM));
+      return TRUE;
+   }
+
+   SetMsgHandled(FALSE);
+   return 0;
+}
+
+////////////////////////////////////////
+
 void cLogWnd::UpdateScrollInfo()
 {
    CRect rect;
@@ -302,7 +342,7 @@ void cLogWnd::UpdateScrollInfo()
 
    CDC dc(GetDC());
 
-   cLogWndItemRender renderer(CDCHandle(dc), rect, AtlGetDefaultGuiFont(), true);
+   cLogWndItemRender renderer(CDCHandle(dc), rect, m_font.IsNull() ? AtlGetDefaultGuiFont() : m_font, true);
 
    cLogWndItemRender result = std::for_each(m_items.begin(), m_items.end(), renderer);
 

@@ -101,9 +101,16 @@ public:
 
    BEGIN_MSG_MAP_EX(cLogWnd)
       CHAIN_MSG_MAP(tBase)
+      MSG_WM_DESTROY(OnDestroy)
+      MSG_WM_SETFONT(OnSetFont)
+      MSG_WM_SETCURSOR(OnSetCursor)
    END_MSG_MAP()
 
    void DoPaint(CDCHandle dc);
+
+   void OnDestroy();
+   void OnSetFont(HFONT hFont, BOOL bRedraw);
+   LRESULT OnSetCursor(HWND hWnd, UINT hitTest, UINT message);
 
 protected:
    void UpdateScrollInfo();
@@ -111,6 +118,8 @@ protected:
 private:
    typedef std::vector<cLogWndItem> tItems;
    tItems m_items;
+
+   CFont m_font;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
