@@ -138,6 +138,8 @@ int main(int argc, char * argv[])
 {
    StartGlobalObjects();
 
+   /* Testing anonymous CVS access */
+
    if (!cSocket::Init())
    {
       printf("%s: could not initialize socket library\n", argv[0]);
