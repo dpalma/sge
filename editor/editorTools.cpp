@@ -369,14 +369,16 @@ tResult cTerrainTileTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEdit
             m_iLastHitX = ix;
             m_iLastHitZ = iz;
 
-            cAutoIPtr<IEditorModel> pModel;
-            if (pView->GetModel(&pModel) == S_OK)
+            cAutoIPtr<IEditorModel> pEditModel;
+            cAutoIPtr<ITerrainModel> pTerrModel;
+            if (pView->GetModel(&pEditModel) == S_OK
+               && pEditModel->GetTerrainModel(&pTerrModel) == S_OK)
             {
                cAutoIPtr<IEditorCommand> pCommand(new cTerrainTileCommand(
-                  pModel->AccessTerrain(), ix, iz, m_tile, m_currentStamp));
+                  pTerrModel, ix, iz, m_tile, m_currentStamp));
                if (!!pCommand)
                {
-                  pModel->AddCommand(pCommand);
+                  pEditModel->AddCommand(pCommand);
                }
             }
          }
@@ -390,8 +392,10 @@ tResult cTerrainTileTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEdit
 
 bool cTerrainTileTool::GetHitTile(CPoint point, IEditorView * pView, uint * pix, uint * piz)
 {
-   cAutoIPtr<IEditorModel> pModel;
-   if (pView->GetModel(&pModel) == S_OK)
+   cAutoIPtr<IEditorModel> pEditModel;
+   cAutoIPtr<ITerrainModel> pTerrModel;
+   if (pView->GetModel(&pEditModel) == S_OK
+      && pEditModel->GetTerrainModel(&pTerrModel) == S_OK)
    {
       cAutoIPtr<ISceneCamera> pCamera;
       if (pView->GetCamera(&pCamera) == S_OK)
@@ -408,24 +412,20 @@ bool cTerrainTileTool::GetHitTile(CPoint point, IEditorView * pView, uint * pix,
                LocalMsg3("Hit the ground at approximately (%.1f, %.1f, %.1f)\n",
                   pointOnPlane.x, pointOnPlane.y, pointOnPlane.z);
 
-               cTerrain * pTerrain = pModel->AccessTerrain();
-               if (pTerrain != NULL)
+               uint ix, iz;
+               pTerrModel->GetTileIndices(pointOnPlane.x, pointOnPlane.z, &ix, &iz);
+
+               LocalMsg2("Hit tile (%d, %d)\n", ix, iz);
+
+               if (pix != NULL)
                {
-                  uint ix, iz;
-                  pTerrain->GetTileIndices(pointOnPlane.x, pointOnPlane.z, &ix, &iz);
-
-                  LocalMsg2("Hit tile (%d, %d)\n", ix, iz);
-
-                  if (pix != NULL)
-                  {
-                     *pix = ix;
-                  }
-                  if (piz != NULL)
-                  {
-                     *piz = iz;
-                  }
-                  return true;
+                  *pix = ix;
                }
+               if (piz != NULL)
+               {
+                  *piz = iz;
+               }
+               return true;
             }
          }
       }

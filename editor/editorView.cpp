@@ -14,6 +14,7 @@
 #include "renderapi.h"
 
 #include "globalobj.h"
+#include "matrix4.h"
 
 #include <algorithm>
 #include <GL/gl.h>
@@ -264,15 +265,16 @@ void cEditorView::RenderScene()
       UseGlobal(Scene);
       pScene->Render(pDevice);
 
-      cAutoIPtr<IEditorModel> pModel;
-      if (GetModel(&pModel) == S_OK
-         && pModel->AccessTerrain() != NULL)
+      cAutoIPtr<IEditorModel> pEditModel;
+      cAutoIPtr<ITerrainModel> pTerrModel;
+      if (GetModel(&pEditModel) == S_OK
+         && pEditModel->GetTerrainModel(&pTerrModel) == S_OK)
       {
          int iHlx, iHlz;
          if (GetHighlightTile(&iHlx, &iHlz) == S_OK)
          {
             tVec3 verts[4];
-            if (pModel->AccessTerrain()->GetTileVertices(iHlx, iHlz, verts) == S_OK)
+            if (pTerrModel->GetTileVertices(iHlx, iHlz, verts) == S_OK)
             {
                static const float kOffsetY = 0.5f;
                verts[0].y += kOffsetY;
@@ -387,20 +389,20 @@ LRESULT cEditorView::OnGetIEditorView(UINT uMsg, WPARAM wParam, LPARAM lParam, B
 
 void cEditorView::InitialUpdate() 
 {
-   cAutoIPtr<IEditorModel> pModel;
-   if (GetModel(&pModel) != S_OK || pModel->AccessTerrain() == NULL)
+   cAutoIPtr<IEditorModel> pEditModel;
+   cAutoIPtr<ITerrainModel> pTerrModel;
+   if (GetModel(&pEditModel) != S_OK || pEditModel->GetTerrainModel(&pTerrModel) != S_OK)
    {
       return;
    }
 
-   uint xDim, zDim;
-   pModel->AccessTerrain()->GetDimensions(&xDim, &zDim);
-
    uint xExt, zExt;
-   pModel->AccessTerrain()->GetExtents(&xExt, &zExt);
+   pTerrModel->GetExtents(&xExt, &zExt);
 
    PlaceCamera((float)xExt / 2, (float)zExt / 2);
 
+   // TODO: this should all be done by the terrain renderer
+#if 0
    std::vector<ISceneEntity *> entities;
    if (pModel->AccessTerrain()->GetSceneEntities(&entities) == S_OK)
    {
@@ -413,6 +415,7 @@ void cEditorView::InitialUpdate()
       }
    }
    std::for_each(entities.begin(), entities.end(), CTInterfaceMethod(&ISceneEntity::Release));
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////

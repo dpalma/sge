@@ -10,7 +10,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-class cTerrain;
+F_DECLARE_INTERFACE(ITerrainModel);
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -20,7 +20,7 @@ class cTerrain;
 class cTerrainTileCommand : public cComObject<IMPLEMENTS(IEditorTerrainTileCommand)>
 {
 public:
-   cTerrainTileCommand(cTerrain * pTerrain, uint ix, uint iz, uint tile, ulong stamp);
+   cTerrainTileCommand(ITerrainModel * pTerrain, uint ix, uint iz, uint tile, ulong stamp);
    ~cTerrainTileCommand();
 
    /////////////////////////////////////
@@ -37,7 +37,7 @@ public:
    virtual tResult GetStamp(ulong * pStamp);
 
 private:
-   cTerrain * m_pTerrain;
+   cAutoIPtr<ITerrainModel> m_pModel;
    uint m_ix, m_iz, m_tile, m_oldTile;
    ulong m_stamp; // used to identify commands issued as part of the same drag operation
 };

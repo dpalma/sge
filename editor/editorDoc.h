@@ -13,7 +13,6 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-class cTerrain;
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -64,7 +63,7 @@ public:
    END_COM_MAP()
 
    // IEditorModel methods
-   virtual tResult New(const cMapSettings * pMapSettings);
+   virtual tResult New();
    virtual tResult Open(IReader * pReader);
    virtual tResult Save(IWriter * pWriter);
    virtual tResult Reset();
@@ -75,7 +74,8 @@ public:
    virtual tResult CanRedo(cStr * pLabel);
    virtual tResult Redo();
 
-   cTerrain * AccessTerrain();
+   virtual tResult SetTerrainModel(ITerrainModel * pTerrainModel);
+   virtual tResult GetTerrainModel(ITerrainModel * * ppTerrainModel);
 
    virtual tResult AddCommand(IEditorCommand * pCommand);
 
@@ -85,17 +85,10 @@ public:
 private:
    bool m_bModified;
 
-   cTerrain * m_pTerrain;
+   cAutoIPtr<ITerrainModel> m_pTerrainModel;
 
    cCommandStack m_commandStack;
 };
-
-////////////////////////////////////////
-
-inline cTerrain * cEditorDoc::AccessTerrain()
-{
-   return m_pTerrain;
-}
 
 /////////////////////////////////////////////////////////////////////////////
 

@@ -200,8 +200,7 @@ OBJECT_ENTRY_AUTO(CLSID_EditorDoc, cEditorDoc)
 ////////////////////////////////////////
 
 cEditorDoc::cEditorDoc()
- : m_bModified(false),
-   m_pTerrain(NULL)
+ : m_bModified(false)
 {
 }
 
@@ -214,30 +213,9 @@ cEditorDoc::~cEditorDoc()
 
 ////////////////////////////////////////
 
-tResult cEditorDoc::New(const cMapSettings * pMapSettings)
+tResult cEditorDoc::New()
 {
-   if (pMapSettings == NULL)
-   {
-      return E_POINTER;
-   }
-
-   Verify(Reset() == S_OK);
-
-   UseGlobal(Terrain);
-   if (!pTerrain)
-   {
-      return E_FAIL;
-   }
-
-   pTerrain->Set(*pMapSettings);
-
-   m_pTerrain = new cTerrain;
-   if (m_pTerrain == NULL)
-   {
-      return E_OUTOFMEMORY;
-   }
-
-   return m_pTerrain->Init(*pMapSettings);
+   return Reset();
 }
 
 ////////////////////////////////////////
@@ -253,21 +231,12 @@ tResult cEditorDoc::Open(IReader * pReader)
 
    m_bModified = true; // set modified flag during load
 
-   Assert(m_pTerrain == NULL);
-   m_pTerrain = new cTerrain;
-   if (m_pTerrain == NULL)
-   {
-      return E_OUTOFMEMORY;
-   }
-
-   if (FAILED(m_pTerrain->Read(pReader)))
-   {
-      return E_FAIL;
-   }
+   tResult result = E_NOTIMPL;
+   // TODO
 
    m_bModified = false; // start off as unmodified
 
-   return S_OK;
+   return result;
 }
 
 ////////////////////////////////////////
@@ -279,30 +248,25 @@ tResult cEditorDoc::Save(IWriter * pWriter)
       return E_POINTER;
    }
 
-   if (m_pTerrain != NULL)
-   {
-      if (FAILED(m_pTerrain->Write(pWriter)))
-      {
-         return E_FAIL;
-      }
-   }
+   tResult result = E_NOTIMPL;
+   // TODO
 
    m_commandStack.FlushUndo();
    m_commandStack.FlushRedo();
 
    m_bModified = false; // not modified anymore
 
-   return S_OK;
+   return result;
 }
 
 ////////////////////////////////////////
 
 tResult cEditorDoc::Reset()
 {
-   delete m_pTerrain, m_pTerrain = NULL;
-
    m_commandStack.FlushUndo();
    m_commandStack.FlushRedo();
+
+   SetTerrainModel(NULL);
 
    return S_OK;
 }
@@ -350,6 +314,30 @@ tResult cEditorDoc::Redo()
       return S_OK;
    }
    return E_FAIL;
+}
+
+////////////////////////////////////////
+
+tResult cEditorDoc::SetTerrainModel(ITerrainModel * pTerrainModel)
+{
+   SafeRelease(m_pTerrainModel);
+   m_pTerrainModel = CTAddRef(pTerrainModel);
+
+   // Tell the terrain renderer about the new terrain model
+   UseGlobal(TerrainRenderer);
+   if (!!pTerrainRenderer)
+   {
+      pTerrainRenderer->SetModel(pTerrainModel);
+   }
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cEditorDoc::GetTerrainModel(ITerrainModel * * ppTerrainModel)
+{
+   return m_pTerrainModel.GetPointer(ppTerrainModel);
 }
 
 ////////////////////////////////////////

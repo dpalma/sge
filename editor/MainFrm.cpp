@@ -10,6 +10,7 @@
 #include "aboutdlg.h"
 #include "MapSettingsDlg.h"
 #include "editorTypes.h"
+#include "terrainapi.h"
 
 #include "globalobj.h"
 #include "readwriteapi.h"
@@ -436,13 +437,20 @@ LRESULT cMainFrame::OnFileNew(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHa
    }
 
    cAutoIPtr<IEditorModel> pModel;
-   if (CreateNewModel(&pModel) != S_OK || pModel->New(&mapSettings) != S_OK)
+   if (CreateNewModel(&pModel) != S_OK)
    {
       ErrorMsg("Error creating new document\n");
       AtlMessageBox(m_hWnd, "Error creating new document", (LPCTSTR)NULL, MB_OK | MB_ICONERROR);
    }
    else
    {
+      cAutoIPtr<ITerrainModel> pTerrainModel;
+      if (TerrainModelCreate(mapSettings, &pTerrainModel) != S_OK)
+      {
+         ErrorMsg("Error creating terrain model\n");
+      }
+
+      pModel->SetTerrainModel(pTerrainModel);
       Verify(SetModel(pModel) == S_OK);
    }
 

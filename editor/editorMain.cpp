@@ -68,7 +68,7 @@ static void RegisterGlobalObjects()
    EditorTileManagerCreate();
    ThreadCallerCreate();
    EditorAppCreate();
-   TerrainCreate();
+   TerrainRendererCreate();
 }
 
 /////////////////////////////////////////////////////////////////////////////

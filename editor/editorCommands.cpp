@@ -17,8 +17,8 @@
 
 ////////////////////////////////////////
 
-cTerrainTileCommand::cTerrainTileCommand(cTerrain * pTerrain, uint ix, uint iz, uint tile, ulong stamp)
- : m_pTerrain(pTerrain),
+cTerrainTileCommand::cTerrainTileCommand(ITerrainModel * pTerrain, uint ix, uint iz, uint tile, ulong stamp)
+ : m_pModel(CTAddRef(pTerrain)),
    m_ix(ix),
    m_iz(iz),
    m_tile(tile),
@@ -37,10 +37,9 @@ cTerrainTileCommand::~cTerrainTileCommand()
 
 tResult cTerrainTileCommand::Do()
 {
-   if (m_pTerrain != NULL)
+   if (!!m_pModel)
    {
-      m_oldTile = m_pTerrain->SetTileTerrain(m_ix,m_iz,m_tile);
-      return S_OK;
+      return m_pModel->SetTileTerrain(m_ix,m_iz,m_tile,&m_oldTile);
    }
    return E_FAIL;
 }
@@ -56,10 +55,12 @@ tResult cTerrainTileCommand::CanUndo()
 
 tResult cTerrainTileCommand::Undo()
 {
-   if (m_pTerrain != NULL)
+   if (!!m_pModel)
    {
-      Verify(m_pTerrain->SetTileTerrain(m_ix,m_iz,m_oldTile) == m_tile);
-      return S_OK;
+      uint t;
+      tResult result = m_pModel->SetTileTerrain(m_ix,m_iz,m_oldTile,&t);
+      Assert(t = m_tile);
+      return result;
    }
    return E_FAIL;
 }

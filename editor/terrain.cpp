@@ -8,15 +8,14 @@
 #include "terrainapi.h"
 #include "editorTypes.h"
 
-#include "materialapi.h"
 #include "renderapi.h"
-#include "textureapi.h"
 #include "color.h"
 
 #include "resourceapi.h"
 #include "imagedata.h"
 #include "readwriteapi.h"
 #include "globalobj.h"
+#include "connptimpl.h"
 
 #include <GL/gl.h>
 #include <algorithm>
@@ -137,102 +136,27 @@ tResult cReadWriteOps<tTerrainVertexVector>::Write(IWriter * pWriter,
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cTerrainGlobal
+// CLASS: cTerrainModel
 //
 
 ////////////////////////////////////////
 
-tResult TerrainCreate()
-{
-   cAutoIPtr<ITerrain> p(new cTerrainGlobal);
-   if (!p)
-   {
-      return E_OUTOFMEMORY;
-   }
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-BEGIN_CONSTRAINTS()
-   AFTER_GUID(IID_IScene)
-END_CONSTRAINTS()
-
-////////////////////////////////////////
-
-cTerrainGlobal::cTerrainGlobal()
- : cGlobalObject<IMPLEMENTS(ITerrain)>("Terrain", CONSTRAINTS())
-{
-}
-
-////////////////////////////////////////
-
-cTerrainGlobal::~cTerrainGlobal()
-{
-}
-
-////////////////////////////////////////
-
-tResult cTerrainGlobal::Init()
-{
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cTerrainGlobal::Term()
-{
-   Reset();
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cTerrainGlobal::Set(const cMapSettings & mapSettings)
-{
-   return E_NOTIMPL;
-}
-
-////////////////////////////////////////
-
-tResult cTerrainGlobal::Reset()
-{
-   return E_NOTIMPL;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cTerrain
-//
-
-////////////////////////////////////////
-
-cTerrain::cTerrain()
+cTerrainModel::cTerrainModel()
  : m_tileSize(0),
    m_nTilesX(0),
-   m_nTilesZ(0),
-   m_nChunksX(0),
-   m_nChunksZ(0),
-   m_sceneEntity(this)
+   m_nTilesZ(0)
 {
 }
 
 ////////////////////////////////////////
 
-cTerrain::~cTerrain()
+cTerrainModel::~cTerrainModel()
 {
-   // HACK
-   UseGlobal(Scene);
-   pScene->RemoveEntity(kSL_Terrain, &m_sceneEntity);
-
-   std::for_each(m_chunks.begin(), m_chunks.end(), CTInterfaceMethod(&cTerrainChunk::Release));
-   m_chunks.clear();
 }
 
 ////////////////////////////////////////
 
-tResult cTerrain::Read(IReader * pReader)
+tResult cTerrainModel::Read(IReader * pReader)
 {
    if (pReader == NULL)
    {
@@ -266,8 +190,6 @@ tResult cTerrain::Read(IReader * pReader)
    if (pReader->Read(&m_tileSize) != S_OK ||
       pReader->Read(&m_nTilesX) != S_OK ||
       pReader->Read(&m_nTilesZ) != S_OK ||
-      pReader->Read(&m_nChunksX) != S_OK ||
-      pReader->Read(&m_nChunksZ) != S_OK ||
       pReader->Read(&m_tileSetName, 0) != S_OK)
    {
       return E_FAIL;
@@ -278,7 +200,7 @@ tResult cTerrain::Read(IReader * pReader)
 
 ////////////////////////////////////////
 
-tResult cTerrain::Write(IWriter * pWriter)
+tResult cTerrainModel::Write(IWriter * pWriter)
 {
    if (pWriter == NULL)
    {
@@ -290,8 +212,6 @@ tResult cTerrain::Write(IWriter * pWriter)
       pWriter->Write(m_tileSize) != S_OK ||
       pWriter->Write(m_nTilesX) != S_OK ||
       pWriter->Write(m_nTilesZ) != S_OK ||
-      pWriter->Write(m_nChunksX) != S_OK ||
-      pWriter->Write(m_nChunksZ) != S_OK ||
       pWriter->Write(m_tileSetName.c_str()) != S_OK)
    {
       return E_FAIL;
@@ -302,7 +222,123 @@ tResult cTerrain::Write(IWriter * pWriter)
 
 ////////////////////////////////////////
 
-tResult cTerrain::Init(const cMapSettings & mapSettings)
+tResult cTerrainModel::AddTerrainModelListener(ITerrainModelListener * pListener)
+{
+   return add_interface(m_listeners, pListener) ? S_OK : E_FAIL;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainModel::RemoveTerrainModelListener(ITerrainModelListener * pListener)
+{
+   return remove_interface(m_listeners, pListener) ? S_OK : E_FAIL;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainModel::GetDimensions(uint * pxd, uint * pzd) const
+{
+   if (pxd == NULL || pzd == NULL)
+   {
+      return E_POINTER;
+   }
+
+   *pxd = m_nTilesX;
+   *pzd = m_nTilesZ;
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainModel::GetExtents(uint * px, uint * pz) const
+{
+   if (px == NULL || pz == NULL)
+   {
+      return E_POINTER;
+   }
+
+   *px = m_tileSize * m_nTilesX;
+   *pz = m_tileSize * m_nTilesZ;
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainModel::GetTileSet(IEditorTileSet * * ppTileSet)
+{
+   return m_pTileSet.GetPointer(ppTileSet);
+}
+
+////////////////////////////////////////
+
+const tTerrainQuads & cTerrainModel::GetTerrainQuads() const
+{
+   return m_terrainQuads;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainModel::SetTileTerrain(uint tx, uint tz, uint terrain, uint * pFormer)
+{
+   if (tx < m_nTilesX && tz < m_nTilesZ)
+   {
+      uint index = (tz * m_nTilesZ) + tx;
+      if (index < m_terrainQuads.size())
+      {
+         if (pFormer != NULL)
+         {
+            *pFormer = m_terrainQuads[index].tile;
+         }
+         m_terrainQuads[index].tile = terrain;
+         NotifyListeners();
+         return S_OK;
+      }
+   }
+   return E_FAIL;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainModel::GetTileIndices(float x, float z, uint * pix, uint * piz) const
+{
+   if (pix == NULL || piz == NULL)
+   {
+      return E_POINTER;
+   }
+
+   uint halfTile = m_tileSize >> 1;
+   *pix = Round((x - halfTile) / m_tileSize);
+   *piz = Round((z - halfTile) / m_tileSize);
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainModel::GetTileVertices(uint tx, uint tz, tVec3 vertices[4]) const
+{
+   if (vertices == NULL)
+   {
+      return E_POINTER;
+   }
+   if (tx < m_nTilesX && tz < m_nTilesZ)
+   {
+      uint index = (tz * m_nTilesZ) + tx;
+      if (index < m_terrainQuads.size())
+      {
+         const sTerrainVertex * pVertices = m_terrainQuads[index].verts;
+         vertices[0] = pVertices[0].pos;
+         vertices[1] = pVertices[1].pos;
+         vertices[2] = pVertices[2].pos;
+         vertices[3] = pVertices[3].pos;
+         return S_OK;
+      }
+   }
+   return E_FAIL;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainModel::Init(const cMapSettings & mapSettings)
 {
    Assert(!m_pTileSet);
    Assert(m_tileSetName.empty());
@@ -336,39 +372,14 @@ tResult cTerrain::Init(const cMapSettings & mapSettings)
    m_nTilesX = mapSettings.GetXDimension();
    m_nTilesZ = mapSettings.GetZDimension();
 
-   m_nChunksX = m_nTilesX / kTilesPerChunk;
-   m_nChunksZ = m_nTilesZ / kTilesPerChunk;
-
-   Assert(m_chunks.empty());
-   return RegenerateChunks();
-}
-
-////////////////////////////////////////
-
-tResult cTerrain::RegenerateChunks()
-{
-   std::for_each(m_chunks.begin(), m_chunks.end(), CTInterfaceMethod(&cTerrainChunk::Release));
-
-   for (uint iz = 0; iz < m_nChunksZ; iz++)
-   {
-      for (uint ix = 0; ix < m_nChunksX; ix++)
-      {
-         cAutoIPtr<cTerrainChunk> pChunk;
-         if (cTerrainChunk::Create(ix * kTilesPerChunk, iz * kTilesPerChunk,
-            kTilesPerChunk, kTilesPerChunk, m_terrainQuads,
-            m_nTilesX, m_nTilesZ, m_pTileSet, &pChunk) == S_OK)
-         {
-            m_chunks.push_back(CTAddRef(pChunk));
-         }
-      }
-   }
+   NotifyListeners();
 
    return S_OK;
 }
 
 ////////////////////////////////////////
 
-tResult cTerrain::InitQuads(uint nTilesX, uint nTilesZ, IHeightMap * pHeightMap, tTerrainQuads * pQuads)
+tResult cTerrainModel::InitQuads(uint nTilesX, uint nTilesZ, IHeightMap * pHeightMap, tTerrainQuads * pQuads)
 {
    if (nTilesX == 0 || nTilesZ == 0)
    {
@@ -424,437 +435,39 @@ tResult cTerrain::InitQuads(uint nTilesX, uint nTilesZ, IHeightMap * pHeightMap,
 
 ////////////////////////////////////////
 
-void cTerrain::GetDimensions(uint * pxd, uint * pzd) const
+void cTerrainModel::NotifyListeners()
 {
-   if (pxd != NULL)
-   {
-      *pxd = m_nTilesX;
-   }
-
-   if (pzd != NULL)
-   {
-      *pzd = m_nTilesZ;
-   }
-}
-
-////////////////////////////////////////
-
-void cTerrain::GetExtents(uint * px, uint * pz) const
-{
-   if (px != NULL)
-   {
-      *px = m_tileSize * m_nTilesX;
-   }
-
-   if (pz != NULL)
-   {
-      *pz = m_tileSize * m_nTilesZ;
-   }
-}
-
-////////////////////////////////////////
-
-void cTerrain::GetTileIndices(float x, float z, uint * pix, uint * piz)
-{
-   uint halfTile = m_tileSize >> 1;
-
-   if (pix != NULL)
-   {
-      *pix = Round((x - halfTile) / m_tileSize);
-   }
-
-   if (piz != NULL)
-   {
-      *piz = Round((z - halfTile) / m_tileSize);
-   }
-}
-
-////////////////////////////////////////
-
-tResult cTerrain::Render(IRenderDevice * pRenderDevice)
-{
-   if (!m_chunks.empty())
-   {
-      tChunks::iterator iter = m_chunks.begin();
-      tChunks::iterator end = m_chunks.end();
-      for (; iter != end; iter++)
-      {
-         (*iter)->Render(pRenderDevice);
-      }
-      return S_OK;
-   }
-
-   return E_FAIL;
-
-   /*
-   glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
-
-   glEnable(GL_COLOR_MATERIAL);
-
-   tTerrainQuads::iterator iter = m_terrainQuads.begin();
-   tTerrainQuads::iterator end = m_terrainQuads.end();
+   tListeners::iterator iter = m_listeners.begin();
+   tListeners::iterator end = m_listeners.end();
    for (; iter != end; iter++)
    {
-      const sTerrainVertex * pVertices = iter->verts;
-
-      cAutoIPtr<IEditorTile> pEditorTile;
-      if (m_pTileSet->GetTile(iter->tile, &pEditorTile) == S_OK)
-      {
-         cAutoIPtr<ITexture> pTexture;
-         if (pEditorTile->GetTexture(&pTexture) == S_OK)
-         {
-            HANDLE tex;
-            if (pTexture->GetTextureHandle(&tex) == S_OK)
-            {
-               glEnable(GL_TEXTURE_2D);
-               glBindTexture(GL_TEXTURE_2D, (uint)tex);
-            }
-         }
-      }
-
-      glBegin(GL_QUADS);
-
-      glNormal3f(1,1,1);
-
-      glColor4ubv((const byte *)&pVertices[0].color);
-      glTexCoord2fv(pVertices[0].uv1.v);
-      glVertex3fv(pVertices[0].pos.v);
-
-      glColor4ubv((const byte *)&pVertices[3].color);
-      glTexCoord2fv(pVertices[3].uv1.v);
-      glVertex3fv(pVertices[3].pos.v);
-
-      glColor4ubv((const byte *)&pVertices[2].color);
-      glTexCoord2fv(pVertices[2].uv1.v);
-      glVertex3fv(pVertices[2].pos.v);
-
-      glColor4ubv((const byte *)&pVertices[1].color);
-      glTexCoord2fv(pVertices[1].uv1.v);
-      glVertex3fv(pVertices[1].pos.v);
-
-      glEnd();
-   }
-
-   glPopAttrib();
-
-   return S_OK;
-   */
-}
-
-////////////////////////////////////////
-
-uint cTerrain::SetTileTerrain(uint tx, uint tz, uint terrain)
-{
-   if (tx < m_nTilesX && tz < m_nTilesZ)
-   {
-      uint index = (tz * m_nTilesZ) + tx;
-      if (index < m_terrainQuads.size())
-      {
-         uint formerTerrain = m_terrainQuads[index].tile;
-         m_terrainQuads[index].tile = terrain;
-         return formerTerrain;
-      }
-   }
-   return kInvalidUintValue;
-}
-
-////////////////////////////////////////
-
-tResult cTerrain::GetTileVertices(uint tx, uint tz, tVec3 vertices[4]) const
-{
-   if (vertices == NULL)
-   {
-      return E_POINTER;
-   }
-   if (tx < m_nTilesX && tz < m_nTilesZ)
-   {
-      uint index = (tz * m_nTilesZ) + tx;
-      if (index < m_terrainQuads.size())
-      {
-         const sTerrainVertex * pVertices = m_terrainQuads[index].verts;
-         vertices[0] = pVertices[0].pos;
-         vertices[1] = pVertices[1].pos;
-         vertices[2] = pVertices[2].pos;
-         vertices[3] = pVertices[3].pos;
-         return S_OK;
-      }
-   }
-   return E_FAIL;
-}
-
-////////////////////////////////////////
-
-tResult cTerrain::GetSceneEntities(std::vector<ISceneEntity *> * pSceneEntities)
-{
-   if (pSceneEntities == NULL)
-   {
-      return E_POINTER;
-   }
-   pSceneEntities->push_back(&m_sceneEntity);
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-cTerrain::cSceneEntity::cSceneEntity(cTerrain * pOuter)
- : m_pOuter(pOuter),
-   m_translation(0,0,0),
-   m_rotation(0,0,0,1),
-   m_transform(tMatrix4::GetIdentity())
-{
-}
-
-////////////////////////////////////////
-
-cTerrain::cSceneEntity::~cSceneEntity()
-{
-}
-
-////////////////////////////////////////
-
-void cTerrain::cSceneEntity::Render(IRenderDevice * pRenderDevice)
-{
-   Assert(m_pOuter != NULL);
-   if (m_pOuter->Render(pRenderDevice) == S_OK)
-   {
+      (*iter)->OnTerrainChange();
    }
 }
 
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cSplat
-//
-
 ////////////////////////////////////////
 
-cSplat::cSplat()
+tResult TerrainModelCreate(const cMapSettings & mapSettings, ITerrainModel * * ppTerrainModel)
 {
-}
-
-////////////////////////////////////////
-
-cSplat::~cSplat()
-{
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cSplatBuilder
-//
-
-////////////////////////////////////////
-
-cSplatBuilder::cSplatBuilder(ITexture * pTexture)
- : m_pTexture(CTAddRef(pTexture))
-{
-}
-
-////////////////////////////////////////
-
-cSplatBuilder::~cSplatBuilder()
-{
-}
-
-////////////////////////////////////////
-
-tResult cSplatBuilder::GetTexture(ITexture * * ppTexture)
-{
-   return m_pTexture.GetPointer(ppTexture);
-}
-
-////////////////////////////////////////
-
-void cSplatBuilder::AddTriangle(uint i0, uint i1, uint i2)
-{
-   m_indices.push_back(i0);
-   m_indices.push_back(i1);
-   m_indices.push_back(i2);
-}
-
-////////////////////////////////////////
-
-tResult cSplatBuilder::CreateIndexBuffer(IIndexBuffer * * ppIndexBuffer)
-{
-   if (ppIndexBuffer == NULL)
+   if (ppTerrainModel == NULL)
    {
       return E_POINTER;
    }
 
-   if ((m_indices.size() % 3) != 0)
-   {
-      return E_FAIL;
-   }
-
-   return E_NOTIMPL;
-}
-
-////////////////////////////////////////
-
-size_t cSplatBuilder::GetIndexCount() const
-{
-   return m_indices.size();
-}
-
-////////////////////////////////////////
-
-const uint * cSplatBuilder::GetIndexPtr() const
-{
-   return &m_indices[0];
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cTerrainChunk
-//
-
-////////////////////////////////////////
-
-cTerrainChunk::cTerrainChunk()
-{
-}
-
-////////////////////////////////////////
-
-cTerrainChunk::~cTerrainChunk()
-{
-   tSplatBuilders::iterator iter = m_splats.begin();
-   tSplatBuilders::iterator end = m_splats.end();
-   for (; iter != end; iter++)
-   {
-      delete *iter;
-   }
-   m_splats.clear();
-}
-
-////////////////////////////////////////
-
-tResult cTerrainChunk::Create(uint ix, uint iz, uint cx, uint cz,
-                              const tTerrainQuads & quads,
-                              uint nQuadsX, uint nQuadsZ,
-                              IEditorTileSet * pTileSet,
-                              cTerrainChunk * * ppChunk)
-{
-   if (pTileSet == NULL || ppChunk == NULL)
-   {
-      return E_POINTER;
-   }
-
-   cAutoIPtr<cTerrainChunk> pChunk(new cTerrainChunk);
-   if (!pChunk)
+   cAutoIPtr<cTerrainModel> pTM(new cTerrainModel);
+   if (!pTM)
    {
       return E_OUTOFMEMORY;
    }
 
-   pChunk->m_vertices.resize(cx * cz * 4);
-   uint iVert = 0;
-
-   typedef std::map<uint, cSplatBuilder *> tSplatBuilderMap;
-   tSplatBuilderMap splatBuilders;
-
-   for (uint z = iz; z < (iz + cz); z++)
+   if (pTM->Init(mapSettings) != S_OK)
    {
-      uint zPrev = (z > iz) ? (z - 1) : (iz + cz - 1);
-      uint zNext = (z < (iz + cz - 1)) ? (z + 1) : iz;
-
-      for (uint x = ix; x < (ix + cx); x++)
-      {
-         uint iQuad = (z * nQuadsZ) + x;
-         const sTerrainQuad & quad = quads[iQuad];
-
-         cSplatBuilder * pSplatBuilder = NULL;
-
-         if (splatBuilders.find(quad.tile) == splatBuilders.end())
-         {
-            cAutoIPtr<ITexture> pTexture;
-            if (pTileSet->GetTileTexture(quad.tile, &pTexture) == S_OK)
-            {
-               pSplatBuilder = new cSplatBuilder(pTexture);
-               if (pSplatBuilder != NULL)
-               {
-                  splatBuilders[quad.tile] = pSplatBuilder;
-               }
-            }
-         }
-         else
-         {
-            pSplatBuilder = splatBuilders[quad.tile];
-         }
-
-         if (pSplatBuilder != NULL)
-         {
-            pSplatBuilder->AddTriangle(iVert+2,iVert+1,iVert+0);
-            pSplatBuilder->AddTriangle(iVert+0,iVert+3,iVert+2);
-         }
-
-         pChunk->m_vertices[iVert++] = quad.verts[0];
-         pChunk->m_vertices[iVert++] = quad.verts[1];
-         pChunk->m_vertices[iVert++] = quad.verts[2];
-         pChunk->m_vertices[iVert++] = quad.verts[3];
-      }
+      return E_FAIL;
    }
 
-   Assert(pChunk->m_vertices.size() == iVert);
-
-   tSplatBuilderMap::iterator iter = splatBuilders.begin();
-   tSplatBuilderMap::iterator end = splatBuilders.end();
-   for (; iter != end; iter++)
-   {
-      pChunk->m_splats.push_back(iter->second);
-   }
-   splatBuilders.clear();
-
-   *ppChunk = CTAddRef(pChunk);
+   *ppTerrainModel = CTAddRef(static_cast<ITerrainModel*>(pTM));
 
    return S_OK;
-}
-
-////////////////////////////////////////
-
-void cTerrainChunk::Render(IRenderDevice * pRenderDevice)
-{
-   glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
-
-   glDisableClientState(GL_EDGE_FLAG_ARRAY);
-   glDisableClientState(GL_INDEX_ARRAY);
-   glDisableClientState(GL_VERTEX_ARRAY);
-   glDisableClientState(GL_NORMAL_ARRAY);
-   glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-   glDisableClientState(GL_COLOR_ARRAY);
-
-   const byte * pVertexData = (const byte *)(sTerrainVertex *)&m_vertices[0];
-
-   glEnableClientState(GL_VERTEX_ARRAY);
-   glVertexPointer(3, GL_FLOAT, sizeof(sTerrainVertex), pVertexData + sizeof(tVec2) + sizeof(uint32));
-
-   glEnableClientState(GL_COLOR_ARRAY);
-   glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(sTerrainVertex), pVertexData + sizeof(tVec2));
-
-   glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-//   glClientActiveTextureARB(GL_TEXTURE0_ARB);
-   glTexCoordPointer(2, GL_FLOAT, sizeof(sTerrainVertex), pVertexData);
-
-   tSplatBuilders::iterator iter = m_splats.begin();
-   tSplatBuilders::iterator end = m_splats.end();
-   for (; iter != end; iter++)
-   {
-      cAutoIPtr<ITexture> pTexture;
-      if ((*iter)->GetTexture(&pTexture) == S_OK)
-      {
-         HANDLE tex;
-         if (pTexture->GetTextureHandle(&tex) == S_OK)
-         {
-            glEnable(GL_TEXTURE_2D);
-            glBindTexture(GL_TEXTURE_2D, (uint)tex);
-         }
-      }
-
-      glDrawElements(GL_TRIANGLES, (*iter)->GetIndexCount(), GL_UNSIGNED_INT, (*iter)->GetIndexPtr());
-   }
-
-   glPopAttrib();
 }
 
 /////////////////////////////////////////////////////////////////////////////

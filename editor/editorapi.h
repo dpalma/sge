@@ -30,6 +30,8 @@ F_DECLARE_INTERFACE(IEditorTool);
 F_DECLARE_GUID(CLSID_EditorDoc);
 F_DECLARE_GUID(CLSID_EditorView);
 
+F_DECLARE_INTERFACE(ITerrainModel);
+
 F_DECLARE_INTERFACE(ISceneCamera);
 F_DECLARE_INTERFACE(ITexture);
 F_DECLARE_INTERFACE(IMaterial);
@@ -37,14 +39,12 @@ F_DECLARE_INTERFACE(IMaterial);
 F_DECLARE_INTERFACE(IReader);
 F_DECLARE_INTERFACE(IWriter);
 
-class cMapSettings;
 class cEditorKeyEvent;
 class cEditorMouseEvent;
 class cEditorMouseWheelEvent;
 
-class cTerrain;
-
 #define UUID(uuidstr) __declspec(uuid(uuidstr))
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -208,7 +208,7 @@ interface UUID("78C29790-865D-4f81-9AF1-26EC23BB5FAC") IEditorView : IUnknown
 
 interface UUID("F131D72E-30A7-4758-A094-830F00A50D91") IEditorModel : IUnknown
 {
-   virtual tResult New(const cMapSettings * pMapSettings) = 0;
+   virtual tResult New() = 0;
    virtual tResult Open(IReader * pReader) = 0;
    virtual tResult Save(IWriter * pWriter) = 0;
    virtual tResult Reset() = 0;
@@ -219,7 +219,8 @@ interface UUID("F131D72E-30A7-4758-A094-830F00A50D91") IEditorModel : IUnknown
    virtual tResult CanRedo(cStr * pLabel) = 0;
    virtual tResult Redo() = 0;
 
-   virtual cTerrain * AccessTerrain() = 0;
+   virtual tResult SetTerrainModel(ITerrainModel * pTerrainModel) = 0;
+   virtual tResult GetTerrainModel(ITerrainModel * * ppTerrainModel) = 0;
 
    virtual tResult AddCommand(IEditorCommand * pCommand) = 0;
 
