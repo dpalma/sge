@@ -38,7 +38,7 @@ cUIDragSemantics<T>::~cUIDragSemantics()
 ///////////////////////////////////////
 
 template <class T>
-bool cUIDragSemantics<T>::FilterEvent(const cUIEvent * pEvent, tUIResult * pResult)
+bool cUIDragSemantics<T>::FilterEvent(const cUIEvent * pEvent)
 {
    T * pT = static_cast<T *>(this);
 
@@ -126,47 +126,6 @@ bool cUIDragSemantics<T>::OnKeyEvent(long key, bool down, double time)
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// TEMPLATE: cUIClickSemantics
-//
-
-///////////////////////////////////////
-
-template <class T>
-void cUIClickSemantics<T>::EndDrag(const cUIPoint & mousePos)
-{
-   T * pT = static_cast<T *>(this);
-   if (pT->GetScreenRect().PtInside(mousePos))
-   {
-      cUIEvent clickEvent;
-      clickEvent.code = kEventClick;
-      clickEvent.pSrc = pT;
-      clickEvent.mousePos = mousePos;
-      clickEvent.keyCode = 0;
-      tUIResult result;
-      UIBubbleEvent(pT, &clickEvent, &result);
-   }
-}
-
-///////////////////////////////////////
-
-template <class T>
-bool cUIClickSemantics<T>::IsMouseOver() const
-{
-   const T * pT = static_cast<const T *>(this);
-   return pT->GetScreenRect().PtInside(UIGetMousePos());
-}
-
-///////////////////////////////////////
-
-template <class T>
-bool cUIClickSemantics<T>::IsPressed()
-{
-   return IsDragging();
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
 // TEMPLATE: cUIScriptEventHandler
 //
 
@@ -183,7 +142,7 @@ void cUIScriptEventHandler<T>::SetEventHandler(eUIEventCode code, const char * p
 ///////////////////////////////////////
 
 template <class T>
-bool cUIScriptEventHandler<T>::FilterEvent(const cUIEvent * pEvent, tUIResult * pResult)
+bool cUIScriptEventHandler<T>::FilterEvent(const cUIEvent * pEvent)
 {
    return CallEventHandler(pEvent->code);
 }

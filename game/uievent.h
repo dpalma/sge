@@ -42,8 +42,8 @@ eUIEventCode UIEventCode(long key, bool down);
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool UIDispatchEvent(cUIComponent * pTarget, const cUIEvent * pEvent, tUIResult * pResult);
-bool UIBubbleEvent(cUIComponent * pStart, const cUIEvent * pEvent, tUIResult * pResult);
+bool UIDispatchEvent(cUIComponent * pTarget, const cUIEvent * pEvent);
+bool UIBubbleEvent(cUIComponent * pStart, const cUIEvent * pEvent);
 
 ///////////////////////////////////////////////////////////////////////////////
 //

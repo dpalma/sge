@@ -21,8 +21,6 @@ typedef class cVec2<float> tVec2;
 
 typedef tVec2 cUIPoint;
 
-typedef bool tUIResult;
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cUISize

@@ -53,10 +53,11 @@ public:
    // cUIContainer/cUIComponent over-rides
 
    virtual cUISize GetSize() const;
-   virtual bool OnEvent(const cUIEvent * pEvent, tUIResult * pResult);
+   virtual bool OnEvent(const cUIEvent * pEvent);
 
 private:
-   void PreBubbleEvent(cUIComponent * pEventTarget, cUIEvent * pEvent);
+   void SetFocus(cUIComponent * pNewFocus);
+   bool HandleInputEvent(const sInputEvent * pEvent);
 
    class cDialogParseHook : public cUIParseHook
    {
@@ -74,7 +75,6 @@ private:
    {
       void operator delete(void *) { Assert(!"Should never be called"); }
    public:
-      virtual bool OnKeyEvent(long key, bool down, double time);
       virtual bool OnInputEvent(const sInputEvent * pEvent);
    };
 
@@ -82,6 +82,7 @@ private:
    cInputListener m_inputListener;
 
    cUIComponent * m_pLastMouseOver;
+   cUIComponent * m_pFocus;
 
    cAutoIPtr<ISceneEntity> m_pSceneEntity;
 };

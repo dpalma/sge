@@ -50,7 +50,8 @@ cUIComponent::cUIComponent(uint flags)
  : m_x(0), m_y(0),
    m_size(0,0),
    m_pParent(NULL),
-   m_flags(flags)
+   m_flags(flags),
+   m_bAcceptsFocus(true)
 {
 }
 
@@ -62,7 +63,7 @@ cUIComponent::~cUIComponent()
 
 ///////////////////////////////////////
 
-void cUIComponent::Render()
+void cUIComponent::Render(IRenderDevice * pRenderDevice)
 {
 }
 
@@ -75,7 +76,7 @@ cUIComponent * cUIComponent::HitTest(const cUIPoint & point)
 
 ///////////////////////////////////////
 
-bool cUIComponent::OnEvent(const cUIEvent * pEvent, tUIResult * pResult)
+bool cUIComponent::OnEvent(const cUIEvent * pEvent)
 {
    return false;
 }
@@ -380,18 +381,18 @@ cUIContainerBase::~cUIContainerBase()
 
 ///////////////////////////////////////
 
-void cUIContainerBase::Render()
+void cUIContainerBase::Render(IRenderDevice * pRenderDevice)
 {
    if (IsVisible())
    {
-      cUIComponent::Render();
+      cUIComponent::Render(pRenderDevice);
 
       tUIComponentList::iterator iter;
       for (iter = m_children.begin(); iter != m_children.end(); iter++)
       {
          if ((*iter)->IsVisible())
          {
-            (*iter)->Render();
+            (*iter)->Render(pRenderDevice);
          }
       }
    }
@@ -417,7 +418,7 @@ cUIComponent * cUIContainerBase::HitTest(const cUIPoint & point)
 
 ///////////////////////////////////////
 
-bool cUIContainerBase::OnEvent(const cUIEvent * pEvent, tUIResult * pResult)
+bool cUIContainerBase::OnEvent(const cUIEvent * pEvent)
 {
    Assert(pEvent != NULL);
    if (pEvent->code == kEventDestroy)
@@ -428,7 +429,7 @@ bool cUIContainerBase::OnEvent(const cUIEvent * pEvent, tUIResult * pResult)
          RemoveComponent(pEvent->pSrc);
       }
    }
-   return cUIComponent::OnEvent(pEvent, pResult);
+   return cUIComponent::OnEvent(pEvent);
 }
 
 ///////////////////////////////////////
@@ -521,8 +522,7 @@ tUIComponentList::iterator cUIContainerBase::FindChild(cUIComponent * pComponent
 cUIContainer::cUIContainer(uint flags)
  : cUIContainerBase(flags),
    m_margins(0,0,0,0),
-   m_pLayoutManager(NULL),
-   m_pFocus(NULL)
+   m_pLayoutManager(NULL)
 {
 }
 
@@ -531,19 +531,6 @@ cUIContainer::cUIContainer(uint flags)
 cUIContainer::~cUIContainer()
 {
    SetLayoutManager(NULL);
-}
-
-///////////////////////////////////////
-
-bool cUIContainer::OnEvent(const cUIEvent * pEvent, tUIResult * pResult)
-{
-   Assert(pEvent != NULL);
-   if (pEvent->code == kEventDestroy)
-   {
-      if (IsEventPertinent(pEvent, m_pFocus))
-         SetFocus(NULL);
-   }
-   return cUIContainerBase::OnEvent(pEvent, pResult);
 }
 
 ///////////////////////////////////////
@@ -571,83 +558,6 @@ void cUIContainer::SetLayoutManager(cUILayoutManager * pLayoutManager)
 {
    delete m_pLayoutManager;
    m_pLayoutManager = pLayoutManager;
-}
-
-///////////////////////////////////////
-
-void cUIContainer::SetFocus(cUIComponent * pNewFocus)
-{
-   if (pNewFocus != m_pFocus)
-   {
-      if (pNewFocus != NULL)
-      {
-         cUIEvent event;
-         event.code = kEventFocus;
-         event.pSrc = m_pFocus;
-         // test if component will accept focus
-         tUIResult result = true;
-         UIDispatchEvent(pNewFocus, &event, &result);
-         if (!result)
-            return;
-         pNewFocus->SetInternalFlags(kUICF_Focussed, kUICF_Focussed);
-      }
-
-      if (m_pFocus != NULL)
-      {
-         cUIEvent event;
-         event.code = kEventBlur;
-         event.pSrc = pNewFocus;
-         tUIResult result;
-         UIDispatchEvent(m_pFocus, &event, &result);
-         Assert(m_pFocus->TestInternalFlags(kUICF_Focussed));
-         m_pFocus->SetInternalFlags(0, kUICF_Focussed);
-      }
-
-      m_pFocus = pNewFocus;
-   }
-}
-
-///////////////////////////////////////
-// translate event parameters from the input system (key, down?, time)
-// into a target component and event object
-
-bool cUIContainer::TranslateKeyEvent(long key, bool down, double time,
-                                     cUIComponent * * ppTarget, cUIEvent * pEvent)
-{
-   cUIPoint mousePos = UIGetMousePos();
-
-   cUIComponent * pTarget = NULL;
-
-   if (KeyIsMouse(key))
-   {
-      pTarget = HitTest(mousePos);
-   }
-   else
-   {
-      pTarget = GetFocus();
-
-      if (pTarget == NULL)
-         pTarget = this;
-   }
-
-   if (pTarget != NULL)
-   {
-      cUIEvent event;
-      event.code = UIEventCode(key, down);
-      event.pSrc = pTarget;
-      event.mousePos = mousePos;
-      event.keyCode = key;
-      if (event.code != kEventERROR)
-      {
-         if (ppTarget != NULL)
-            *ppTarget = pTarget;
-         if (pEvent != NULL)
-            *pEvent = event;
-         return true;
-      }
-   }
-
-   return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -4,8 +4,10 @@
 #ifndef INCLUDED_UI_H
 #define INCLUDED_UI_H
 
-#include <list>
 #include "uitypes.h"
+#include "comtools.h"
+
+#include <list>
 
 #ifdef _MSC_VER
 #pragma once
@@ -16,6 +18,8 @@ class cUIComponent;
 class cUILayoutManager;
 class cUIContainerBase;
 class cUIContainer;
+
+F_DECLARE_INTERFACE(IRenderDevice);
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -37,11 +41,14 @@ enum eUIComponentFlags
 
 class cUIComponent
 {
+   cUIComponent(const cUIComponent &);
+   const cUIComponent & operator=(const cUIComponent &);
+
 public:
    cUIComponent(uint flags = kUICF_Default);
    virtual ~cUIComponent() = 0;
 
-   virtual void Render();
+   virtual void Render(IRenderDevice * pRenderDevice) = 0;
 
    virtual cUIPoint GetPos() const;
    virtual void SetPos(float x, float y);
@@ -55,7 +62,7 @@ public:
 
    virtual cUIComponent * HitTest(const cUIPoint & point);
 
-   virtual bool OnEvent(const cUIEvent * pEvent, tUIResult * pResult) = 0;
+   virtual bool OnEvent(const cUIEvent * pEvent);
 
    cUIComponent * GetParent();
    const cUIComponent * GetParent() const;
@@ -68,6 +75,8 @@ public:
    void SetInternalFlags(uint flags, uint mask);
    bool TestInternalFlags(uint flags) const;
 
+   bool AcceptsFocus() const { return m_bAcceptsFocus; }
+
 protected:
    friend class cUIContainerBase;
    friend class cUIContainer;
@@ -76,16 +85,15 @@ protected:
 
    bool IsVisible() const;
 
-private:
-   // deliberately un-implemented and private copy constructor and assignment operator
-   cUIComponent(const cUIComponent &);
-   const cUIComponent & operator=(const cUIComponent &);
+   void NoFocus() { m_bAcceptsFocus = false; }
 
+private:
    float m_x, m_y;
    cUISize m_size;
    cUIComponent * m_pParent;
    cUIString m_id;
    uint m_flags;
+   bool m_bAcceptsFocus;
 };
 
 ///////////////////////////////////////
@@ -184,9 +192,9 @@ public:
 
    ////////////////////////////////////
 
-   virtual void Render();
+   virtual void Render(IRenderDevice * pRenderDevice);
    virtual cUIComponent * HitTest(const cUIPoint & point);
-   virtual bool OnEvent(const cUIEvent * pEvent, tUIResult * pResult);
+   virtual bool OnEvent(const cUIEvent * pEvent);
 
    ////////////////////////////////////
 
@@ -221,24 +229,11 @@ public:
 
    ////////////////////////////////////
 
-   virtual bool OnEvent(const cUIEvent * pEvent, tUIResult * pResult);
-
-   ////////////////////////////////////
-
    const cUIMargins & GetMargins() const;
    void SetMargins(const cUIMargins & margins);
 
    void Layout();
    void SetLayoutManager(cUILayoutManager * pLayoutManager);
-
-   void SetFocus(cUIComponent * pNewFocus);
-   const cUIComponent * GetFocus() const;
-
-protected:
-   cUIComponent * GetFocus();
-
-   bool TranslateKeyEvent(long key, bool down, double time,
-      cUIComponent * * ppTarget, cUIEvent * pEvent);
 
 private:
    cUILayoutManager * AccessLayoutManager();
@@ -249,7 +244,6 @@ private:
 
    cUIMargins m_margins;
    cUILayoutManager * m_pLayoutManager;
-   cUIComponent * m_pFocus;
 };
 
 ///////////////////////////////////////
@@ -264,20 +258,6 @@ inline const cUIMargins & cUIContainer::GetMargins() const
 inline void cUIContainer::SetMargins(const cUIMargins & margins)
 {
    m_margins = margins;
-}
-
-///////////////////////////////////////
-
-inline const cUIComponent * cUIContainer::GetFocus() const
-{
-   return m_pFocus;
-}
-
-///////////////////////////////////////
-
-inline cUIComponent * cUIContainer::GetFocus()
-{
-   return m_pFocus;
 }
 
 ///////////////////////////////////////

@@ -9,7 +9,6 @@
 #include "uiwidgutilstem.h"
 #include "uirender.h"
 #include "keys.h"
-#include "inputapi.h"
 #include "font.h"
 #include "render.h"
 #include "material.h"
@@ -75,22 +74,17 @@ cUIDialog::cUIDialog()
          kDefaultMargin + kCaptionHeight + kCaptionGap,
          kDefaultMargin,
          kDefaultMargin));
-
-   UseGlobal(Input);
-   pInput->Connect(this);
 }
 
 ///////////////////////////////////////
 
 cUIDialog::~cUIDialog()
 {
-   UseGlobal(Input);
-   pInput->Disconnect(this);
 }
 
 ///////////////////////////////////////
 
-void cUIDialog::Render()
+void cUIDialog::Render(IRenderDevice * pRenderDevice)
 {
    UIDraw3dRect(GetScreenRect(), 2, AccessStyle()->GetHighlight(), AccessStyle()->GetShadow(), AccessStyle()->GetFace());
 
@@ -105,16 +99,13 @@ void cUIDialog::Render()
          kTextCenter | kTextVCenter, AccessStyle()->AccessFont(), AccessStyle()->GetCaptionText());
    }
 
-   tBase::Render();
+   tBase::Render(pRenderDevice);
 }
 
 ///////////////////////////////////////
 
-bool cUIDialog::OnEvent(const cUIEvent * pEvent, tUIResult * pResult)
+bool cUIDialog::OnEvent(const cUIEvent * pEvent)
 {
-   if (cUIDragSemantics<cUIDialog>::FilterEvent(pEvent, pResult))
-      return true;
-
    Assert(pEvent);
    if (pEvent->code == kEventKeyDown)
    {
@@ -123,34 +114,33 @@ bool cUIDialog::OnEvent(const cUIEvent * pEvent, tUIResult * pResult)
          cUIEvent destroyEvent;
          destroyEvent.code = kEventDestroy;
          destroyEvent.pSrc = this;
-         tUIResult result;
-         UIBubbleEvent(this, &destroyEvent, &result);
+         UIBubbleEvent(this, &destroyEvent);
          delete this;
          return true;
       }
    }
-   return tBase::OnEvent(pEvent, pResult);
+   return tBase::OnEvent(pEvent);
 }
 
 ///////////////////////////////////////
 
 bool cUIDialog::OnKeyEvent(long key, bool down, double time)
 {
-   if (cUIDragSemantics<cUIDialog>::OnKeyEvent(key, down, time))
-      return true;
-
-   cUIComponent * pTarget = NULL;
-   cUIEvent event;
-   if (TranslateKeyEvent(key, down, time, &pTarget, &event))
-   {
-      if (event.code == kEventMouseDown)
-      {
-         SetFocus(pTarget);
-      }
-
-      tUIResult result;
-      UIBubbleEvent(pTarget, &event, &result);
-   }
+//   if (cUIDragSemantics<cUIDialog>::OnKeyEvent(key, down, time))
+//      return true;
+//
+//   cUIComponent * pTarget = NULL;
+//   cUIEvent event;
+//   if (TranslateKeyEvent(key, down, time, &pTarget, &event))
+//   {
+//      if (event.code == kEventMouseDown)
+//      {
+//         SetFocus(pTarget);
+//      }
+//
+//      tUIResult result;
+//      UIBubbleEvent(pTarget, &event, &result);
+//   }
 
    // modal dialog boxes always intercept all input events
    return true;
@@ -162,9 +152,14 @@ bool cUIDialog::OnKeyEvent(long key, bool down, double time)
 // CLASS: cUILabel
 //
 
+cUILabel::cUILabel()
+{
+   NoFocus();
+}
+
 ///////////////////////////////////////
 
-void cUILabel::Render()
+void cUILabel::Render(IRenderDevice * pRenderDevice)
 {
    cUIRect rect = GetScreenRect();
    UIDrawText(m_text.c_str(), m_text.length(), &rect,
@@ -181,19 +176,6 @@ cUISize cUILabel::GetPreferredSize() const
    return cUISize(textWidth, textHeight);
 }
 
-///////////////////////////////////////
-
-bool cUILabel::OnEvent(const cUIEvent * pEvent, tUIResult * pResult)
-{
-   Assert(pEvent != NULL && pResult != NULL);
-   if (pEvent->code == kEventFocus)
-   {
-      *pResult = false; // reject focus
-      return true;
-   }
-   return cUIWidget::OnEvent(pEvent, pResult);
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -204,6 +186,7 @@ bool cUILabel::OnEvent(const cUIEvent * pEvent, tUIResult * pResult)
 
 cUIImage::cUIImage()
 {
+   NoFocus();
 }
 
 ///////////////////////////////////////
@@ -214,7 +197,7 @@ cUIImage::~cUIImage()
 
 ///////////////////////////////////////
 
-void cUIImage::Render()
+void cUIImage::Render(IRenderDevice * pRenderDevice)
 {
    if (m_pTex != NULL)
    {
@@ -225,19 +208,6 @@ void cUIImage::Render()
       // draw a hideous color to indicate error
       UIDrawSolidRect(GetScreenRect(), g_hideousErrorColor);
    }
-}
-
-///////////////////////////////////////
-
-bool cUIImage::OnEvent(const cUIEvent * pEvent, tUIResult * pResult)
-{
-   Assert(pEvent != NULL && pResult != NULL);
-   if (pEvent->code == kEventFocus)
-   {
-      *pResult = false; // reject focus
-      return true;
-   }
-   return cUIWidget::OnEvent(pEvent, pResult);
 }
 
 ///////////////////////////////////////
@@ -271,13 +241,18 @@ bool cUIImage::LoadImage(const char * pszFilename)
 // CLASS: cUIButton
 //
 
+cUIButton::cUIButton()
+ : m_bPressed(false)
+{
+}
+
 ///////////////////////////////////////
 
-void cUIButton::Render()
+void cUIButton::Render(IRenderDevice * pRenderDevice)
 {
    cUIRect screenRect = GetScreenRect();
 
-   bool bIsMouseOver = IsMouseOver();
+   bool bIsMouseOver = screenRect.PtInside(UIGetMousePos());
 
    cUIPoint offset(0,0);
 
@@ -303,13 +278,19 @@ void cUIButton::Render()
 
 ///////////////////////////////////////
 
-bool cUIButton::OnEvent(const cUIEvent * pEvent, tUIResult * pResult)
+bool cUIButton::OnEvent(const cUIEvent * pEvent)
 {
-   if (cUIClickSemantics<cUIButton>::FilterEvent(pEvent, pResult))
+   if (cUIScriptEventHandler<cUIButton>::FilterEvent(pEvent))
       return true;
-   if (cUIScriptEventHandler<cUIButton>::FilterEvent(pEvent, pResult))
-      return true;
-   return Base::OnEvent(pEvent, pResult);
+   if (pEvent->code == kEventMouseDown)
+   {
+      m_bPressed = true;
+   }
+   else if (pEvent->code == kEventMouseUp || pEvent->code == kEventBlur)
+   {
+      m_bPressed = false;
+   }
+   return Base::OnEvent(pEvent);
 }
 
 ///////////////////////////////////////
@@ -334,7 +315,8 @@ static const int kUIBitmapButtonIndices = 4;
 ///////////////////////////////////////
 
 cUIBitmapButton::cUIBitmapButton()
- : m_size(0,0)
+ : m_size(0,0),
+   m_bPressed(false)
 {
 }
 
@@ -346,17 +328,17 @@ cUIBitmapButton::~cUIBitmapButton()
 
 ///////////////////////////////////////
 
-void cUIBitmapButton::Render()
+void cUIBitmapButton::Render(IRenderDevice * pRenderDevice)
 {
-   bool bIsMouseOver = IsMouseOver();
+   cUIRect screenRect = GetScreenRect();
+
+   bool bIsMouseOver = screenRect.PtInside(UIGetMousePos());
 
    uint buttonState = kBS_Normal;
    if (bIsMouseOver && IsPressed())
       buttonState = kBS_Pressed;
    else if (bIsMouseOver)
       buttonState = kBS_Hover;
-
-   cUIRect screenRect = GetScreenRect();
 
    glPushMatrix();
    glTranslatef(screenRect.left, screenRect.top, 0);
@@ -367,18 +349,26 @@ void cUIBitmapButton::Render()
 
    glPopMatrix();
 
-   cUIWidget::Render();
+   cUIWidget::Render(pRenderDevice);
 }
 
 ///////////////////////////////////////
 
-bool cUIBitmapButton::OnEvent(const cUIEvent * pEvent, tUIResult * pResult)
+bool cUIBitmapButton::OnEvent(const cUIEvent * pEvent)
 {
-   if (cUIClickSemantics<cUIBitmapButton>::FilterEvent(pEvent, pResult))
+   if (pEvent->code == kEventMouseDown)
+   {
+      m_bPressed = true;
+   }
+   else if (pEvent->code == kEventMouseUp || pEvent->code == kEventBlur)
+   {
+      m_bPressed = false;
+   }
+   
+   if (cUIScriptEventHandler<cUIBitmapButton>::FilterEvent(pEvent))
       return true;
-   if (cUIScriptEventHandler<cUIBitmapButton>::FilterEvent(pEvent, pResult))
-      return true;
-   return cUIWidget::OnEvent(pEvent, pResult);
+
+   return cUIWidget::OnEvent(pEvent);
 }
 
 ///////////////////////////////////////
@@ -530,7 +520,7 @@ cUIEdit::~cUIEdit()
 
 ///////////////////////////////////////
 
-void cUIEdit::Render()
+void cUIEdit::Render(IRenderDevice * pRenderDevice)
 {
    cUIRect rect = GetScreenRect();
 
@@ -592,7 +582,7 @@ void cUIEdit::Render()
 
 ///////////////////////////////////////
 
-bool cUIEdit::OnEvent(const cUIEvent * pEvent, tUIResult * pResult)
+bool cUIEdit::OnEvent(const cUIEvent * pEvent)
 {
    if (pEvent->code == kEventMouseDown)
    {
@@ -674,7 +664,7 @@ bool cUIEdit::OnEvent(const cUIEvent * pEvent, tUIResult * pResult)
       return true;
    }
 
-   return cUIWidget::OnEvent(pEvent, pResult);
+   return cUIWidget::OnEvent(pEvent);
 }
 
 ///////////////////////////////////////

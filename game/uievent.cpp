@@ -135,23 +135,23 @@ eUIEventCode UIEventCode(long key, bool down)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool UIDispatchEvent(cUIComponent * pTarget, const cUIEvent * pEvent, tUIResult * pResult)
+bool UIDispatchEvent(cUIComponent * pTarget, const cUIEvent * pEvent)
 {
-   Assert(pTarget != NULL && pEvent != NULL && pResult != NULL);
+   Assert(pTarget != NULL && pEvent != NULL);
    DebugMsgIfEx2(UIEvent, pEvent->code != kEventMouseMove,
       "Dispatching event %s to %x\n", UIEventName(pEvent->code).c_str(), pTarget);
-   return pTarget->OnEvent(pEvent, pResult);
+   return pTarget->OnEvent(pEvent);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool UIBubbleEvent(cUIComponent * pStart, const cUIEvent * pEvent, tUIResult * pResult)
+bool UIBubbleEvent(cUIComponent * pStart, const cUIEvent * pEvent)
 {
-   Assert(pStart != NULL && pEvent != NULL && pResult != NULL);
+   Assert(pStart != NULL && pEvent != NULL);
    cUIComponent * pTarget = pStart;
    while (pTarget != NULL)
    {
-      if (UIDispatchEvent(pTarget, pEvent, pResult))
+      if (UIDispatchEvent(pTarget, pEvent))
          return true;
       pTarget = pTarget->GetParent();
    }

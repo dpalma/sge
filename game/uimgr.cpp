@@ -13,6 +13,8 @@
 
 #include "dbgalloc.h" // must be last header
 
+extern const char * Key2Name(long key); // from cmds.cpp
+
 bool IsEventPertinent(const cUIEvent *, const cUIComponent *); // from ui.cpp
 
 LOG_DEFINE_CHANNEL(UIMgr);
@@ -30,8 +32,8 @@ static void Center(cUIComponent * pComponent)
       cUISize size = pParent->GetSize();
 
       pComponent->SetPos(
-         (size.width - pComponent->GetSize().width) * 0.5,
-         (size.height - pComponent->GetSize().height) * 0.5);
+         (size.width - pComponent->GetSize().width) * 0.5f,
+         (size.height - pComponent->GetSize().height) * 0.5f);
    }
 }
 
@@ -44,6 +46,7 @@ static void Center(cUIComponent * pComponent)
 
 cUIManager::cUIManager()
  : m_pLastMouseOver(NULL),
+   m_pFocus(NULL),
    m_pSceneEntity(SceneEntityCreate())
 {
    UseGlobal(Scene);
@@ -87,7 +90,7 @@ void cUIManager::Render(IRenderDevice * pRenderDevice)
 {
    glPushAttrib(GL_ENABLE_BIT);
    glDisable(GL_DEPTH_TEST);
-   tContainerBase::Render();
+   tContainerBase::Render(pRenderDevice);
    glPopAttrib();
 }
 
@@ -100,46 +103,120 @@ cUISize cUIManager::GetSize() const
 
 ///////////////////////////////////////
 
-bool cUIManager::OnEvent(const cUIEvent * pEvent, tUIResult * pResult)
+bool cUIManager::OnEvent(const cUIEvent * pEvent)
 {
    Assert(pEvent != NULL);
    if (pEvent->code == kEventDestroy)
    {
       if (IsEventPertinent(pEvent, m_pLastMouseOver))
          m_pLastMouseOver = NULL;
+      if (IsEventPertinent(pEvent, m_pFocus))
+         SetFocus(NULL);
    }
-   return tContainerBase::OnEvent(pEvent, pResult);
+   return tContainerBase::OnEvent(pEvent);
 }
 
 ///////////////////////////////////////
 
-void cUIManager::PreBubbleEvent(cUIComponent * pEventTarget, cUIEvent * pEvent)
+void cUIManager::SetFocus(cUIComponent * pNewFocus)
 {
-   Assert(pEventTarget != NULL);
-   Assert(pEvent != NULL);
-
-   if (pEvent->code == kEventMouseMove)
+   if (pNewFocus != m_pFocus)
    {
-      if (pEventTarget != m_pLastMouseOver)
+      if (pNewFocus != NULL)
       {
-         if (m_pLastMouseOver != NULL)
+         if (!pNewFocus->AcceptsFocus())
+            return;
+
+         cUIEvent event;
+         event.code = kEventFocus;
+         event.pSrc = m_pFocus;
+         UIDispatchEvent(pNewFocus, &event);
+         pNewFocus->SetInternalFlags(kUICF_Focussed, kUICF_Focussed);
+      }
+
+      if (m_pFocus != NULL)
+      {
+         cUIEvent event;
+         event.code = kEventBlur;
+         event.pSrc = pNewFocus;
+         UIDispatchEvent(m_pFocus, &event);
+         Assert(m_pFocus->TestInternalFlags(kUICF_Focussed));
+         m_pFocus->SetInternalFlags(0, kUICF_Focussed);
+      }
+
+      m_pFocus = pNewFocus;
+   }
+}
+
+///////////////////////////////////////
+
+bool cUIManager::HandleInputEvent(const sInputEvent * pEvent)
+{
+   cUIEvent event;
+   event.code = UIEventCode(pEvent->key, pEvent->down);
+   event.mousePos = pEvent->point;
+   event.keyCode = pEvent->key;
+   Assert(event.code != kEventERROR);
+
+   if (KeyIsMouse(pEvent->key))
+   {
+      event.pSrc = HitTest(pEvent->point);
+
+      DebugMsgIfEx1(UIMgr, event.pSrc != NULL, "Hit UI element \"%s\"\n", event.pSrc->GetId());
+
+      if (event.pSrc != NULL)
+      {
+         if (event.code == kEventMouseMove)
          {
-            cUIEvent mouseLeaveEvent;
-            mouseLeaveEvent.code = kEventMouseLeave;
-            mouseLeaveEvent.pSrc = m_pLastMouseOver;
-            mouseLeaveEvent.mousePos = pEvent->mousePos;
-            tUIResult result;
-            UIBubbleEvent(m_pLastMouseOver, &mouseLeaveEvent, &result);
+            if (event.pSrc != m_pLastMouseOver)
+            {
+               if (m_pLastMouseOver != NULL)
+               {
+                  cUIEvent mouseLeaveEvent;
+                  mouseLeaveEvent.code = kEventMouseLeave;
+                  mouseLeaveEvent.pSrc = m_pLastMouseOver;
+                  mouseLeaveEvent.mousePos = event.mousePos;
+                  UIBubbleEvent(mouseLeaveEvent.pSrc, &mouseLeaveEvent);
+               }
+
+               m_pLastMouseOver = event.pSrc;
+               event.code = kEventMouseEnter;
+            }
+         }
+         else if (event.code == kEventMouseDown)
+         {
+            SetFocus(event.pSrc);
+         }
+         else if (event.code == kEventMouseUp)
+         {
+            if (m_pFocus == event.pSrc)
+            {
+               DebugMsgEx1(UIMgr, "Click element \"%s\"\n", event.pSrc->GetId());
+               cUIEvent clickEvent;
+               clickEvent.code = kEventClick;
+               clickEvent.pSrc = event.pSrc;
+               clickEvent.mousePos = event.mousePos;
+               clickEvent.keyCode = event.keyCode;
+               UIBubbleEvent(clickEvent.pSrc, &clickEvent);
+            }
          }
 
-         m_pLastMouseOver = pEventTarget;
-         pEvent->code = kEventMouseEnter;
+         return UIBubbleEvent(event.pSrc, &event);
       }
    }
-   else if (pEvent->code == kEventMouseDown)
+   else
    {
-      SetFocus(pEventTarget);
+      event.pSrc = m_pFocus;
+
+      DebugMsgIfEx1(UIMgr, event.pSrc != NULL, "Key event to UI element %s\n", event.pSrc->GetId());
+
+      if (event.pSrc != NULL)
+      {
+         return UIBubbleEvent(event.pSrc, &event);
+      }
    }
+
+   return false;
 }
 
 ///////////////////////////////////////
@@ -171,33 +248,12 @@ eSkipResult cUIManager::cDialogParseHook::SkipElement(const char * pszElement)
 
 ///////////////////////////////////////
 
-#define GetOuter(Class, Member) ((Class *)((byte *)this - (byte *)&((Class *)NULL)->Member))
-
-bool cUIManager::cInputListener::OnKeyEvent(long key, bool down, double time)
-{
-   cUIManager * pUIManager = GetOuter(cUIManager, m_inputListener);
-   cUIComponent * pTarget = NULL;
-   cUIEvent event;
-   if (pUIManager->TranslateKeyEvent(key, down, time, &pTarget, &event))
-   {
-      pUIManager->PreBubbleEvent(pTarget, &event);
-
-      tUIResult result;
-      return UIBubbleEvent(pTarget, &event, &result);
-   }
-
-   return false;
-}
+#define GetOuter(Class, Member) ((Class *)((byte *)this - offsetof(Class, Member)))
 
 bool cUIManager::cInputListener::OnInputEvent(const sInputEvent * pEvent)
 {
    cUIManager * pUIManager = GetOuter(cUIManager, m_inputListener);
-   if (KeyIsMouse(pEvent->key))
-   {
-      cUIComponent * pTarget = pUIManager->HitTest(pEvent->point);
-      DebugMsgIfEx1(UIMgr, pTarget != NULL, "Hit UI element %s\n", pTarget->GetId());
-   }
-   return false;
+   return pUIManager->HandleInputEvent(pEvent);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -4,10 +4,10 @@
 #ifndef INCLUDED_UIWIDGUTILS_H
 #define INCLUDED_UIWIDGUTILS_H
 
-#include "comtools.h"
-#include <map>
 #include "uievent.h"
 #include "inputapi.h"
+#include "comtools.h"
+#include <map>
 
 #ifdef _MSC_VER
 #pragma once
@@ -29,7 +29,7 @@ public:
    cUIDragSemantics();
    ~cUIDragSemantics();
 
-   bool FilterEvent(const cUIEvent * pEvent, tUIResult * pResult);
+   bool FilterEvent(const cUIEvent * pEvent);
 
    bool QueryStartDrag(const cUIPoint & mousePos);
 
@@ -48,23 +48,6 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// TEMPLATE: cUIClickSemantics
-//
-
-template <class T>
-class cUIClickSemantics : public cUIDragSemantics<T>
-{
-public:
-   void EndDrag(const cUIPoint & mousePos);
-
-protected:
-   bool IsMouseOver() const;
-   bool IsPressed();
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
 // TEMPLATE: cUIScriptEventHandler
 //
 
@@ -75,7 +58,7 @@ public:
    void SetEventHandler(eUIEventCode code, const char * pszScriptCode);
 
 protected:
-   bool FilterEvent(const cUIEvent * pEvent, tUIResult * pResult);
+   bool FilterEvent(const cUIEvent * pEvent);
 
 private:
    bool CallEventHandler(eUIEventCode code);

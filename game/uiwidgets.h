@@ -61,9 +61,7 @@ typedef cUIWidgetBase<cUIComponent> cUIWidget;
 // CLASS: cUIDialog
 //
 
-class cUIDialog
- : public cUIWidgetBase<cUIContainer>,
-   public cUIDragSemantics<cUIDialog>
+class cUIDialog : public cUIWidgetBase<cUIContainer>
 {
    typedef cUIContainer tBase;
 
@@ -78,8 +76,8 @@ public:
    cUIDialog();
    ~cUIDialog();
 
-   virtual void Render();
-   virtual bool OnEvent(const cUIEvent * pEvent, tUIResult * pResult);
+   virtual void Render(IRenderDevice * pRenderDevice);
+   virtual bool OnEvent(const cUIEvent * pEvent);
 
    void SetTitle(const char * pszTitle);
 
@@ -144,10 +142,11 @@ inline cUIRect cUIDialog::GetCaptionRect() const
 class cUILabel : public cUIWidget
 {
 public:
+   cUILabel();
+
    // cUIComponent over-rides
-   virtual void Render();
+   virtual void Render(IRenderDevice * pRenderDevice);
    virtual cUISize GetPreferredSize() const;
-   virtual bool OnEvent(const cUIEvent * pEvent, tUIResult * pResult);
 
    const char * GetText() const;
    void SetText(const char * psz);
@@ -183,8 +182,7 @@ public:
    cUIImage();
    virtual ~cUIImage();
 
-   virtual void Render();
-   virtual bool OnEvent(const cUIEvent * pEvent, tUIResult * pResult);
+   virtual void Render(IRenderDevice * pRenderDevice);
    virtual cUISize GetPreferredSize() const;
 
    bool LoadImage(const char * pszFilename);
@@ -210,14 +208,15 @@ enum eUIButtonState
 
 class cUIButton
  : public cUIWidget,
-   public cUIClickSemantics<cUIButton>,
    public cUIScriptEventHandler<cUIButton>
 {
    typedef cUIWidget Base;
 
 public:
-   virtual void Render();
-   virtual bool OnEvent(const cUIEvent * pEvent, tUIResult * pResult);
+   cUIButton();
+
+   virtual void Render(IRenderDevice * pRenderDevice);
+   virtual bool OnEvent(const cUIEvent * pEvent);
    virtual cUISize GetPreferredSize() const;
 
    const char * GetText() const;
@@ -226,6 +225,8 @@ public:
    void SetOnClick(const char * pszOnClick);
 
 private:
+   bool IsPressed();
+
    enum eUIButtonConstants
    {
       kTextBorderHorz = 10,
@@ -233,6 +234,8 @@ private:
    };
 
    cUIString m_text;
+
+   bool m_bPressed;
 };
 
 ///////////////////////////////////////
@@ -257,6 +260,13 @@ inline void cUIButton::SetOnClick(const char * pszOnClick)
    SetEventHandler(kEventClick, pszOnClick);
 }
 
+///////////////////////////////////////
+
+inline bool cUIButton::IsPressed()
+{
+   return m_bPressed;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -265,15 +275,14 @@ inline void cUIButton::SetOnClick(const char * pszOnClick)
 
 class cUIBitmapButton
  : public cUIWidget,
-   public cUIClickSemantics<cUIBitmapButton>,
    public cUIScriptEventHandler<cUIBitmapButton>
 {
 public:
    cUIBitmapButton();
    virtual ~cUIBitmapButton();
 
-   virtual void Render();
-   virtual bool OnEvent(const cUIEvent * pEvent, tUIResult * pResult);
+   virtual void Render(IRenderDevice * pRenderDevice);
+   virtual bool OnEvent(const cUIEvent * pEvent);
    virtual cUISize GetPreferredSize() const;
 
    bool SetBitmap(const char * pszName);
@@ -281,6 +290,8 @@ public:
    void SetOnClick(const char * pszOnClick);
 
 private:
+   bool IsPressed();
+
    enum eConstants
    {
       kNumVerts = 16,
@@ -290,6 +301,8 @@ private:
    cAutoIPtr<IMaterial> m_pMat;
    cAutoIPtr<IVertexBuffer> m_pVB;
    cAutoIPtr<IIndexBuffer> m_pIB;
+
+   bool m_bPressed;
 };
 
 ///////////////////////////////////////
@@ -297,6 +310,13 @@ private:
 inline void cUIBitmapButton::SetOnClick(const char * pszOnClick)
 {
    SetEventHandler(kEventClick, pszOnClick);
+}
+
+///////////////////////////////////////
+
+inline bool cUIBitmapButton::IsPressed()
+{
+   return m_bPressed;
 }
 
 
@@ -318,8 +338,8 @@ public:
    cUIEdit();
    virtual ~cUIEdit();
 
-   virtual void Render();
-   virtual bool OnEvent(const cUIEvent * pEvent, tUIResult * pResult);
+   virtual void Render(IRenderDevice * pRenderDevice);
+   virtual bool OnEvent(const cUIEvent * pEvent);
    virtual cUISize GetPreferredSize() const;
 
    void SetSize(uint size);

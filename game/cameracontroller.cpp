@@ -96,41 +96,6 @@ void cGameCameraController::OnFrame(double elapsedTime)
 
 ///////////////////////////////////////
 
-bool cGameCameraController::OnMouseEvent(int x, int y, uint mouseState, double time)
-{
-   if (mouseState & kLMouseDown)
-   {
-      tVec3 dir;
-      if (BuildPickRay(x, y, &dir))
-      {
-         cRay ray(GetEyePosition(), dir);
-
-         cAutoIPtr<ISceneEntityEnum> pHits;
-
-         UseGlobal(Scene);
-         if (pScene->Query(ray, &pHits) == S_OK)
-         {
-            return true;
-         }
-#ifdef _DEBUG
-         else
-         {
-            tVec3 intersect;
-            if (ray.IntersectsPlane(tVec3(0,1,0), 0, &intersect))
-            {
-               DebugMsg3("Hit the ground at approximately (%.1f,%.1f,%.1f)\n",
-                  intersect.x, intersect.y, intersect.z);
-            }
-         }
-#endif
-      }
-   }
-
-   return false;
-}
-
-///////////////////////////////////////
-
 bool cGameCameraController::OnKeyEvent(long key, bool down, double time)
 {
    bool bUpdateCamera = false;
@@ -181,6 +146,41 @@ bool cGameCameraController::OnKeyEvent(long key, bool down, double time)
    }
 
    return bUpdateCamera;
+}
+
+///////////////////////////////////////
+
+bool cGameCameraController::OnInputEvent(const sInputEvent * pEvent)
+{
+   if ((pEvent->key == kMouseLeft) && pEvent->down)
+   {
+      tVec3 dir;
+      if (BuildPickRay(pEvent->point.x, pEvent->point.y, &dir))
+      {
+         cRay ray(GetEyePosition(), dir);
+
+         cAutoIPtr<ISceneEntityEnum> pHits;
+
+         UseGlobal(Scene);
+         if (pScene->Query(ray, &pHits) == S_OK)
+         {
+            return true;
+         }
+#ifdef _DEBUG
+         else
+         {
+            tVec3 intersect;
+            if (ray.IntersectsPlane(tVec3(0,1,0), 0, &intersect))
+            {
+               DebugMsg3("Hit the ground at approximately (%.1f,%.1f,%.1f)\n",
+                  intersect.x, intersect.y, intersect.z);
+            }
+         }
+#endif
+      }
+   }
+
+   return false;
 }
 
 ///////////////////////////////////////
