@@ -10,6 +10,7 @@
 
 #include "scriptapi.h"
 
+#include "resourceapi.h"
 #include "resmgr.h"
 #include "configapi.h"
 #include "techtime.h"
@@ -87,22 +88,6 @@ void ListTileSets(CONTAINER * pContainer)
 
 ////////////////////////////////////////
 
-static bool ScriptExecFile(const char * pszFile)
-{
-   UseGlobal(ScriptInterpreter);
-   return pScriptInterpreter->ExecFile(pszFile) == S_OK;
-}
-
-////////////////////////////////////////
-
-static bool ScriptExecString(const char * pszCode)
-{
-   UseGlobal(ScriptInterpreter);
-   return pScriptInterpreter->ExecString(pszCode) == S_OK;
-}
-
-////////////////////////////////////////
-
 static char * GetEntireContents(IReader * pReader)
 {
    Assert(pReader != NULL);
@@ -127,18 +112,23 @@ static char * GetEntireContents(IReader * pReader)
 
 ////////////////////////////////////////
 
-static bool ScriptExecResource(const char * pszResource)
+static bool ScriptExecResource(IScriptInterpreter * pInterpreter, const char * pszResource)
 {
-   UseGlobal(ResourceManager);
-   cAutoIPtr<IReader> pReader = pResourceManager->Find(pszResource);
-   if (!pReader)
-      return false;
-   char * pszCode = GetEntireContents(pReader);
-   if (pszCode == NULL)
-      return false;
-   bool result = ScriptExecString(pszCode);
-   delete [] pszCode;
-   return result;
+   bool bResult = false;
+
+   cAutoIPtr<IResource> pResource;
+   UseGlobal(ResourceManager2);
+   if (pResourceManager2->Load(tResKey(pszResource, kRC_Text), &pResource) == S_OK)
+   {
+      char * pszCode;
+      if (pResource->GetData((void**)&pszCode) == S_OK)
+      {
+         bResult = SUCCEEDED(pInterpreter->ExecString(pszCode));
+         delete [] pszCode;
+      }
+   }
+
+   return bResult;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -150,6 +140,7 @@ static bool ScriptExecResource(const char * pszResource)
 
 BEGIN_CONSTRAINTS()
    AFTER_GUID(IID_IResourceManager)
+   AFTER_GUID(IID_IResourceManager2)
    AFTER_GUID(IID_IScriptInterpreter)
 END_CONSTRAINTS()
 
@@ -188,15 +179,15 @@ tResult cEditorApp::Init()
    cStr autoexecScript("editor.lua");
    ConfigGet("editor_autoexec_script", &autoexecScript);
 
-   if (!ScriptExecFile(autoexecScript))
+   UseGlobal(ScriptInterpreter);
+   if (pScriptInterpreter->ExecFile(autoexecScript) != S_OK)
    {
-      if (!ScriptExecResource(autoexecScript))
+      if (!ScriptExecResource(pScriptInterpreter, autoexecScript))
       {
          WarnMsg1("Error parsing or executing %s\n", autoexecScript.c_str());
       }
    }
 
-   UseGlobal(ScriptInterpreter);
    if (pScriptInterpreter->CallFunction("EditorInit") != S_OK)
    {
       ErrorMsg("An error occured calling EditorInit()\n");

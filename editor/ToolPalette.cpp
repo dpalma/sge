@@ -5,13 +5,12 @@
 
 #include "ToolPalette.h"
 
-#include <algorithm>
-
 #include "dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 
 static const int kTextGap = 2;
+static const int kImageGap = 1;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -280,45 +279,139 @@ void cToolGroup::Clear()
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cToolGroupRenderer
+// CLASS: cToolPaletteRenderer
 //
 
 ////////////////////////////////////////
 
-cToolGroupRenderer::cToolGroupRenderer(HDC hDC, LPCRECT pRect)
- : m_dc(hDC),
-   m_rect(pRect)
+cToolPaletteRenderer::cToolPaletteRenderer()
+ : m_bHaveMousePos(false)
 {
 }
 
 ////////////////////////////////////////
 
-cToolGroupRenderer::cToolGroupRenderer(const cToolGroupRenderer & other)
+cToolPaletteRenderer::cToolPaletteRenderer(const cToolPaletteRenderer & other)
  : m_dc(other.m_dc),
-   m_rect(other.m_rect)
+   m_rect(other.m_rect),
+   m_mousePos(other.m_mousePos),
+   m_bHaveMousePos(other.m_bHaveMousePos)
 {
 }
 
 ////////////////////////////////////////
 
-cToolGroupRenderer::~cToolGroupRenderer()
+cToolPaletteRenderer::~cToolPaletteRenderer()
 {
 }
 
 ////////////////////////////////////////
 
-const cToolGroupRenderer & cToolGroupRenderer::operator =(const cToolGroupRenderer & other)
+const cToolPaletteRenderer & cToolPaletteRenderer::operator =(const cToolPaletteRenderer & other)
 {
    m_dc = other.m_dc;
    m_rect = other.m_rect;
+   m_mousePos = other.m_mousePos;
+   m_bHaveMousePos = other.m_bHaveMousePos;
    return *this;
 }
 
 ////////////////////////////////////////
 
-void cToolGroupRenderer::Render(const cToolGroup * pGroup)
+bool cToolPaletteRenderer::Begin(HDC hDC, LPCRECT pRect, const POINT * pMousePos)
 {
-   if (pGroup == NULL)
+   if (m_dc.IsNull() && (hDC != NULL) && (pRect != NULL))
+   {
+      m_dc = hDC;
+      m_rect = pRect;
+      if (pMousePos != NULL)
+      {
+         m_mousePos = *pMousePos;
+         m_bHaveMousePos = true;
+      }
+      else
+      {
+         m_bHaveMousePos = false;
+      }
+      return true;
+   }
+   return false;
+}
+
+////////////////////////////////////////
+
+bool cToolPaletteRenderer::End()
+{
+   if (!m_dc.IsNull())
+   {
+      m_dc = NULL;
+      m_bHaveMousePos = false;
+      return true;
+   }
+   return false;
+}
+
+////////////////////////////////////////
+
+HANDLE cToolPaletteRenderer::GetHitItem(const CPoint & point, RECT * pRect)
+{
+   tCachedRects::const_iterator iter = m_cachedRects.begin();
+   tCachedRects::const_iterator end = m_cachedRects.end();
+   for (; iter != end; iter++)
+   {
+      if (iter->second.PtInRect(point))
+      {
+         if (pRect != NULL)
+         {
+            *pRect = iter->second;
+         }
+         return iter->first;
+      }
+   }
+   return NULL;
+}
+
+////////////////////////////////////////
+
+bool cToolPaletteRenderer::GetItemRect(HANDLE hItem, RECT * pRect)
+{
+   tCachedRects::const_iterator iter = m_cachedRects.find(hItem);
+   if (iter != m_cachedRects.end())
+   {
+      if (pRect != NULL)
+      {
+         *pRect = iter->second;
+      }
+      return true;
+   }
+   return false;
+}
+
+////////////////////////////////////////
+
+void cToolPaletteRenderer::Render(tGroups::const_iterator from,
+                                  tGroups::const_iterator to)
+{
+   if (m_dc.IsNull())
+   {
+      return;
+   }
+
+   // Not using std::for_each() here because the functor is passed by
+   // value which instantiates a temporary object and the renderer class
+   // is a little too heavy to copy on every paint.
+   tGroups::const_iterator iter = from;
+   for (; iter != to; iter++)
+   {
+      Render(*iter);
+   }
+}
+
+////////////////////////////////////////
+
+void cToolPaletteRenderer::Render(const cToolGroup * pGroup)
+{
+   if (m_dc.IsNull() || (pGroup == NULL))
    {
       return;
    }
@@ -346,23 +439,51 @@ void cToolGroupRenderer::Render(const cToolGroup * pGroup)
          int iImage = pTool->GetImageIndex();
 
          CRect textRect(toolRect);
+         CPoint imagePos(toolRect.TopLeft());
 
          if ((hImageList != NULL) && (iImage > -1))
          {
             IMAGEINFO imageInfo;
             if (ImageList_GetImageInfo(hImageList, iImage, &imageInfo))
             {
-               int vertOffset = toolRect.Height() - (imageInfo.rcImage.bottom - imageInfo.rcImage.top);
-               ImageList_Draw(hImageList, iImage, m_dc, toolRect.left + 1, toolRect.top + vertOffset, 0);
-               textRect.left += imageInfo.rcImage.right - imageInfo.rcImage.left + 2;
+               int imageHeight = (imageInfo.rcImage.bottom - imageInfo.rcImage.top);
+               int imageWidth = (imageInfo.rcImage.right - imageInfo.rcImage.left);
+               if ((imageHeight + (2 * kImageGap)) > toolRect.Height())
+               {
+                  toolRect.bottom = toolRect.top + imageHeight + (2 * kImageGap);
+               }
+               imagePos.x = toolRect.left + kImageGap;
+               imagePos.y = toolRect.top + ((toolRect.Height() - imageHeight) / 2);
+               textRect.left = imagePos.x + imageWidth;
+            }
+            else
+            {
+               // ImageList_GetImageInfo() failed so don't draw the image
+               iImage = -1;
             }
          }
 
+         m_cachedRects[reinterpret_cast<HANDLE>(pTool)] = toolRect;
+
          textRect.left += kTextGap;
 
-         m_dc.SetTextColor(GetSysColor(COLOR_WINDOWTEXT));
-         m_dc.SetBkMode(OPAQUE);
+         // All size/position calculation done, now draw
+
+         if (m_bHaveMousePos && toolRect.PtInRect(m_mousePos))
+         {
+            m_dc.Draw3dRect(toolRect, GetSysColor(COLOR_3DHILIGHT), GetSysColor(COLOR_3DSHADOW));
+         }
+
+         if ((hImageList != NULL) && (iImage > -1))
+         {
+            ImageList_Draw(hImageList, iImage, m_dc, imagePos.x, imagePos.y, 0);
+         }
+
+         COLORREF oldTextColor = m_dc.SetTextColor(GetSysColor(COLOR_WINDOWTEXT));
+         int oldBkMode = m_dc.SetBkMode(TRANSPARENT);
          m_dc.DrawText(pTool->GetName(), -1, &textRect, DT_SINGLELINE | DT_LEFT | DT_VCENTER | DT_END_ELLIPSIS);
+         m_dc.SetTextColor(oldTextColor);
+         m_dc.SetBkMode(oldBkMode);
 
          toolRect.OffsetRect(0, toolRect.Height());
       }
@@ -371,7 +492,7 @@ void cToolGroupRenderer::Render(const cToolGroup * pGroup)
 
 ////////////////////////////////////////
 
-int cToolGroupRenderer::RenderGroupHeading(const cToolGroup * pGroup)
+int cToolPaletteRenderer::RenderGroupHeading(const cToolGroup * pGroup)
 {
    if ((pGroup == NULL) || (lstrlen(pGroup->GetName()) == 0))
    {
@@ -383,18 +504,19 @@ int cToolGroupRenderer::RenderGroupHeading(const cToolGroup * pGroup)
    CSize extent;
    m_dc.GetTextExtent(pGroup->GetName(), -1, &extent);
 
-   COLORREF leftColor = GetSysColor(COLOR_3DSHADOW);
-   COLORREF rightColor = GetSysColor(COLOR_3DFACE);
-
    extent.cy += (2 * kTextGap);
 
    CRect r(m_rect);
    r.bottom = r.top + extent.cy;
+
    m_dc.Draw3dRect(r, GetSysColor(COLOR_3DHILIGHT), GetSysColor(COLOR_3DSHADOW));
 
    r.DeflateRect(1, 1);
 
    int halfWidth = r.Width() / 2;
+
+   COLORREF leftColor = GetSysColor(COLOR_3DSHADOW);
+   COLORREF rightColor = GetSysColor(COLOR_3DFACE);
 
    TRIVERTEX gv[2];
    gv[0].x = r.left;
@@ -435,6 +557,8 @@ int cToolGroupRenderer::RenderGroupHeading(const cToolGroup * pGroup)
 ////////////////////////////////////////
 
 cToolPalette::cToolPalette()
+ : m_bTrackingMouseLeave(false),
+   m_hMouseOverItem(NULL)
 {
 }
 
@@ -457,12 +581,14 @@ void cToolPalette::OnDestroy()
 {
    Clear();
    SetFont(NULL, FALSE);
+   m_renderer.FlushCachedRects();
 }
 
 ////////////////////////////////////////
 
 void cToolPalette::OnSize(UINT nType, CSize size)
 {
+   m_renderer.FlushCachedRects();
 }
 
 ////////////////////////////////////////
@@ -471,7 +597,7 @@ void cToolPalette::OnSetFont(HFONT hFont, BOOL bRedraw)
 {
    if (!m_font.IsNull())
    {
-      m_font.DeleteObject();
+      Verify(m_font.DeleteObject());
    }
 
    if (hFont != NULL)
@@ -481,6 +607,12 @@ void cToolPalette::OnSetFont(HFONT hFont, BOOL bRedraw)
       {
          m_font.CreateFontIndirect(&logFont);
       }
+   }
+
+   if (bRedraw)
+   {
+      Invalidate();
+      UpdateWindow();
    }
 }
 
@@ -510,18 +642,50 @@ void cToolPalette::OnPaint(CDCHandle dc)
    CRect rect;
    GetClientRect(rect);
 
+   const POINT * pMousePos = NULL;
+   CPoint mousePos;
+   if (GetCursorPos(&mousePos) && ::MapWindowPoints(NULL, m_hWnd, &mousePos, 1))
+   {
+      pMousePos = &mousePos;
+   }
+
    HFONT hOldFont = paintDC.SelectFont(!m_font.IsNull() ? m_font : AtlGetDefaultGuiFont());
 
-   cToolGroupRenderer groupRenderer(paintDC, rect);
-   std::for_each(m_groups.begin(), m_groups.end(), groupRenderer);
+   Verify(m_renderer.Begin(paintDC, rect, pMousePos));
+   m_renderer.Render(m_groups.begin(), m_groups.end());
+   Verify(m_renderer.End());
 
    paintDC.SelectFont(hOldFont);
 }
 
 ////////////////////////////////////////
 
+void cToolPalette::OnMouseLeave()
+{
+   m_bTrackingMouseLeave = false;
+
+   SetMouseOverItem(NULL);
+}
+
+////////////////////////////////////////
+
 void cToolPalette::OnMouseMove(UINT flags, CPoint point)
 {
+   // TODO: refactor use of TrackMouseEvent out into a "mix-in" class
+   // see cGLContext
+   if (!m_bTrackingMouseLeave)
+   {
+      TRACKMOUSEEVENT tme = {0};
+      tme.cbSize = sizeof(TRACKMOUSEEVENT);
+      tme.dwFlags = TME_LEAVE;
+      tme.hwndTrack = m_hWnd;
+      if (_TrackMouseEvent(&tme))
+      {
+         m_bTrackingMouseLeave = true;
+      }
+   }
+
+   SetMouseOverItem(m_renderer.GetHitItem(point));
 }
 
 ////////////////////////////////////////
@@ -665,6 +829,28 @@ bool cToolPalette::EnableTool(HTOOLITEM hTool)
 {
    // TODO
    return false;
+}
+
+////////////////////////////////////////
+
+void cToolPalette::SetMouseOverItem(HANDLE hItem)
+{
+   if (hItem != m_hMouseOverItem)
+   {
+      CRect oldItemRect;
+      if ((m_hMouseOverItem != NULL) && m_renderer.GetItemRect(m_hMouseOverItem, &oldItemRect))
+      {
+         InvalidateRect(oldItemRect, TRUE);
+      }
+
+      m_hMouseOverItem = hItem;
+
+      CRect itemRect;
+      if ((hItem != NULL) && m_renderer.GetItemRect(hItem, &itemRect))
+      {
+         InvalidateRect(itemRect, FALSE);
+      }
+   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

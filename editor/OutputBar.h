@@ -22,7 +22,7 @@ public:
    static tResult Factory(cDockingWindow * * ppDockingWindow);
 
    cOutputBar();
-   virtual ~cOutputBar();
+   ~cOutputBar();
 
    void HandleLogCallback(eLogSeverity severity, const tChar * pszMsg, size_t msgLen);
 

@@ -6,6 +6,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 #if _MSC_VER > 1000
 #pragma once
@@ -88,6 +89,10 @@ private:
 
 ////////////////////////////////////////
 
+typedef std::vector<cToolGroup *> tGroups;
+
+////////////////////////////////////////
+
 inline const tChar * cToolGroup::GetName() const
 {
    return m_name.c_str();
@@ -121,26 +126,43 @@ inline cToolItem * cToolGroup::GetTool(uint index) const
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cToolGroupRenderer
+// CLASS: cToolPaletteRenderer
 //
+// Handles painting for cToolPalette. Called in a loop for each group to be
+// rendered. Also caches size/position information for use in hit-testing.
 
-class cToolGroupRenderer
+class cToolPaletteRenderer
 {
 public:
-   cToolGroupRenderer(HDC hDC, LPCRECT pRect);
-   cToolGroupRenderer(const cToolGroupRenderer &);
-   ~cToolGroupRenderer();
-   const cToolGroupRenderer & operator =(const cToolGroupRenderer &);
+   cToolPaletteRenderer();
+   cToolPaletteRenderer(const cToolPaletteRenderer &);
+   ~cToolPaletteRenderer();
+   const cToolPaletteRenderer & operator =(const cToolPaletteRenderer &);
 
+   bool Begin(HDC hDC, LPCRECT pRect, const POINT * pMousePos);
+   bool End();
+
+   HANDLE GetHitItem(const CPoint & point, RECT * pRect = NULL);
+   bool GetItemRect(HANDLE hItem, RECT * pRect);
+
+   void Render(tGroups::const_iterator from, tGroups::const_iterator to);
    void Render(const cToolGroup * pGroup);
+
+   inline void FlushCachedRects() { m_cachedRects.clear(); }
 
    inline void operator ()(const cToolGroup * pGroup) { Render(pGroup); }
 
 private:
    int RenderGroupHeading(const cToolGroup * pGroup);
 
+   typedef std::map<HANDLE, CRect> tCachedRects;
+   tCachedRects m_cachedRects;
+
+   // These member variables valid only between Begin() and End() calls
    CDCHandle m_dc;
    CRect m_rect;
+   CPoint m_mousePos;
+   bool m_bHaveMousePos;
 };
 
 
@@ -166,6 +188,7 @@ public:
       MSG_WM_SETFONT(OnSetFont)
       MSG_WM_ERASEBKGND(OnEraseBkgnd);
       MSG_WM_PAINT(OnPaint)
+      MSG_WM_MOUSELEAVE(OnMouseLeave)
       MSG_WM_MOUSEMOVE(OnMouseMove)
       MSG_WM_LBUTTONDOWN(OnLButtonDown)
       MSG_WM_LBUTTONUP(OnLButtonUp)
@@ -177,6 +200,7 @@ public:
    void OnSetFont(HFONT hFont, BOOL bRedraw);
    LRESULT OnEraseBkgnd(CDCHandle dc);
    void OnPaint(CDCHandle dc);
+   void OnMouseLeave();
    void OnMouseMove(UINT flags, CPoint point);
    void OnLButtonDown(UINT flags, CPoint point);
    void OnLButtonUp(UINT flags, CPoint point);
@@ -191,10 +215,16 @@ public:
    bool EnableTool(HTOOLITEM hTool);
 
 private:
-   typedef std::vector<cToolGroup *> tGroups;
+   void SetMouseOverItem(HANDLE hItem);
+
    tGroups m_groups;
 
+   cToolPaletteRenderer m_renderer;
+
    CFont m_font;
+
+   bool m_bTrackingMouseLeave;
+   HANDLE m_hMouseOverItem;
 };
 
 /////////////////////////////////////////////////////////////////////////////

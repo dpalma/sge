@@ -282,6 +282,7 @@ LRESULT cToolPaletteBar::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL 
    ////////////////////////////////////////
    // TESTING
    ////////////////////////////////////////
+#if 0
    HTOOLGROUP hToolGroup = m_toolPalette.AddGroup("Tool Group", NULL);
    if (hToolGroup != NULL)
    {
@@ -292,6 +293,7 @@ LRESULT cToolPaletteBar::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL 
          HTOOLITEM hTool = m_toolPalette.AddTool(hToolGroup, szTool, -1);
       }
    }
+#endif
    ////////////////////////////////////////
    // END TESTING
    ////////////////////////////////////////

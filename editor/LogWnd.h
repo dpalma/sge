@@ -22,7 +22,7 @@ class cLogWndItem
 {
 public:
    cLogWndItem();
-   explicit cLogWndItem(eLogSeverity severity, const std::string & string);
+   cLogWndItem(eLogSeverity severity, const std::string & string);
    cLogWndItem(const cLogWndItem & other);
 
    ~cLogWndItem();
@@ -48,31 +48,26 @@ class cLogWndItemRender
 public:
    enum
    {
-      DT_FLAGS = DT_LEFT | DT_TOP | DT_WORDBREAK,
       kLeftColumnWidth = 18,
    };
 
-   cLogWndItemRender(CDCHandle dc, const CRect & startRect, HFONT hFont = NULL, bool bCalcOnly = false);
+   cLogWndItemRender(HDC hDC, const CRect & startRect, bool bCalcOnly = false);
    cLogWndItemRender(const cLogWndItemRender & other);
    ~cLogWndItemRender();
 
    const cLogWndItemRender & operator =(const cLogWndItemRender & other);
 
-   void operator ()(const cLogWndItem & item);
-   void Invoke(const cLogWndItem & item);
+   void Render(const cLogWndItem & item);
 
    void RenderLeftColumn(const CRect & rect);
 
-   const std::vector<CRect> & GetRects() const;
    int GetTotalHeight() const;
 
 private:
    CDCHandle m_dc;
-   HFONT m_hOldFont;
    CRect m_rect;
    bool m_bCalcOnly;
    int m_rightSide;
-   std::vector<CRect> m_rects;
    int m_totalHeight;
 };
 
@@ -94,6 +89,7 @@ public:
    DECLARE_WND_CLASS("LogWnd")
 
    cLogWnd();
+   ~cLogWnd();
 
    tResult AddString(const tChar * pszString, size_t length = -1);
    tResult AddString(eLogSeverity severity, const tChar * pszString, size_t length = -1);
