@@ -13,6 +13,11 @@
 
 F_DECLARE_INTERFACE(ITexture);
 F_DECLARE_INTERFACE(IRenderFont);
+F_DECLARE_INTERFACE(IVertexDeclaration);
+F_DECLARE_INTERFACE(IVertexBuffer);
+F_DECLARE_INTERFACE(IIndexBuffer);
+
+F_DECLARE_INTERFACE(IUIRenderingTools);
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -51,6 +56,49 @@ void UIDrawGradientRect(const cUIRect & rect,
 void UIDrawSolidRect(const cUIRect & rect, const cUIColor & color);
 
 void UIDrawTextureRect(const cUIRect & rect, ITexture * pTexture);
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IUIRenderingTools
+//
+
+struct sUIVertex
+{
+   float u, v;
+   byte r, g, b, a;
+   tVec2 pos;
+};
+
+enum eUIButtonState
+{
+   kBS_Normal,
+   kBS_Hover,
+   kBS_Pressed,
+   kBS_Disabled
+};
+
+const uint kNumBitmapButtonIndices = 4;
+const uint kNumBitmapButtonVertices = 16; // 4 button states * 4 vertices per state
+
+inline uint UIButtonStateVertexStartIndex(eUIButtonState buttonState)
+{
+   return buttonState * kNumBitmapButtonIndices;
+}
+
+interface IUIRenderingTools : IUnknown
+{
+   virtual tResult SetRenderDevice(IRenderDevice * pRenderDevice) = 0;
+   virtual tResult GetRenderDevice(IRenderDevice * * ppRenderDevice) = 0;
+
+   virtual tResult GetUIVertexDeclaration(IVertexDeclaration * * ppVertexDecl) = 0;
+
+   // All bitmap buttons everywhere can share the same vertex and index
+   // buffers by varying the material and start vertex used in the render call
+   virtual tResult GetBitmapButtonIndexBuffer(IIndexBuffer * * ppIndexBuffer) = 0;
+   virtual tResult GetBitmapButtonVertexBuffer(const cUIRect & rect, IVertexBuffer * * ppVertexBuffer) = 0;
+};
+
+void UIRenderingToolsCreate();
 
 ///////////////////////////////////////////////////////////////////////////////
 

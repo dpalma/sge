@@ -196,14 +196,6 @@ private:
 // CLASS: cUIButton
 //
 
-enum eUIButtonState
-{
-   kBS_Normal,
-   kBS_Hover,
-   kBS_Pressed,
-   kBS_Disabled
-};
-
 class cUIButton
  : public cUIWidget,
    public cUIScriptEventHandler<cUIButton>
@@ -299,15 +291,8 @@ private:
    bool IsPressed() const;
    bool IsMouseOver() const;
 
-   enum eConstants
-   {
-      kNumVerts = 16,
-   };
-
    cUISize m_size;
-   cAutoIPtr<IMaterial> m_pMat;
-   cAutoIPtr<IVertexBuffer> m_pVB;
-   cAutoIPtr<IIndexBuffer> m_pIB;
+   cAutoIPtr<IMaterial> m_pMaterial;
 
    bool m_bPressed, m_bMouseOver;
 };

@@ -9,6 +9,7 @@
 #include "sys.h"
 #include "script.h"
 #include "cameracontroller.h"
+#include "uirender.h"
 
 #include "sceneapi.h"
 #include "mesh.h"
@@ -350,6 +351,7 @@ static void RegisterGlobalObjects()
    ResourceManagerCreate();
    SceneCreate();
    ScriptInterpreterCreate();
+   UIRenderingToolsCreate();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -436,6 +438,9 @@ bool MainInit(int argc, char * argv[])
 
    if (RenderDeviceCreate(kRDO_ShowStatistics, &g_pRenderDevice) != S_OK)
       return false;
+
+   UseGlobal(UIRenderingTools);
+   pUIRenderingTools->SetRenderDevice(g_pRenderDevice);
 
    cAutoIPtr<IWindowFullScreen> pWindowFullScreen;
    bool bFullScreen = (ConfigIsTrue("full_screen") && !IsDebuggerPresent());

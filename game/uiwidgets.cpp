@@ -16,52 +16,18 @@
 #include "image.h"
 
 #include "keys.h"
-#include "vec3.h"
+#include "vec2.h"
 #include "resmgr.h"
 #include "globalobj.h"
 #include "techtime.h"
 
 #include <locale>
 
-// @HACK @TODO: only needed while cUIBitmapButton moves to new
-// rendering interfaces (use to use cImage::Blt)
-#include "ggl.h"
-
 #include "dbgalloc.h" // must be last header
 
 static const int g_3dEdge = 2;
 
 static const cUIColor g_hideousErrorColor(0,1,0,1);
-
-///////////////////////////////////////////////////////////////////////////////
-
-struct sUIVertex
-{
-   float u, v;
-   byte r, g, b, a;
-   tVec3 pos;
-};
-
-sVertexElement g_UIVertexDecl[] =
-{
-   { kVDU_TexCoord, kVDT_Float2 },
-   { kVDU_Color, kVDT_UnsignedByte4 },
-   { kVDU_Position, kVDT_Float3 }
-};
-
-cAutoIPtr<IVertexDeclaration> g_pUIVertexDecl;
-
-IVertexDeclaration * UIAccessVertexDecl()
-{
-   if (!g_pUIVertexDecl)
-   {
-      Assert(AccessRenderDevice() != NULL);
-      AccessRenderDevice()->CreateVertexDeclaration(g_UIVertexDecl, _countof(g_UIVertexDecl), &g_pUIVertexDecl);
-   }
-
-   return g_pUIVertexDecl;
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -294,8 +260,6 @@ cUISize cUIButton::GetPreferredSize() const
 // CLASS: cUIBitmapButton
 //
 
-static const int kUIBitmapButtonIndices = 4;
-
 ///////////////////////////////////////
 
 cUIBitmapButton::cUIBitmapButton()
@@ -315,25 +279,27 @@ cUIBitmapButton::~cUIBitmapButton()
 
 void cUIBitmapButton::Render(IRenderDevice * pRenderDevice)
 {
-   uint buttonState = kBS_Normal;
+   eUIButtonState buttonState = kBS_Normal;
    if (IsMouseOver())
    {
       buttonState = IsPressed() ? kBS_Pressed : kBS_Hover;
    }
 
-   cUIRect screenRect = GetScreenRect();
-
-   glPushMatrix();
-   glTranslatef(screenRect.left, screenRect.top, 0);
-
-   AccessRenderDevice()->Render(kRP_TriangleFan, 
-      m_pMat,
-      kUIBitmapButtonIndices, 
-      m_pIB,
-      buttonState * 4, 
-      m_pVB);
-
-   glPopMatrix();
+   UseGlobal(UIRenderingTools);
+   cAutoIPtr<IIndexBuffer> pIndexBuffer;
+   if (pUIRenderingTools->GetBitmapButtonIndexBuffer(&pIndexBuffer) == S_OK)
+   {
+      cAutoIPtr<IVertexBuffer> pVertexBuffer;
+      if (pUIRenderingTools->GetBitmapButtonVertexBuffer(GetScreenRect(), &pVertexBuffer) == S_OK)
+      {
+         pRenderDevice->Render(kRP_TriangleFan, 
+                               m_pMaterial,
+                               kNumBitmapButtonIndices, 
+                               pIndexBuffer,
+                               UIButtonStateVertexStartIndex(buttonState), 
+                               pVertexBuffer);
+      }
+   }
 }
 
 ///////////////////////////////////////
@@ -387,104 +353,17 @@ bool cUIBitmapButton::SetBitmap(const char * pszName)
 
       delete pImage;
 
-      m_pMat = MaterialCreate();
-      if (m_pMat != NULL)
+      m_pMaterial = MaterialCreate();
+      if (m_pMaterial != NULL)
       {
-         m_pMat->SetTexture(0, pTex);
-      }
-
-      if (AccessRenderDevice()->CreateIndexBuffer(kUIBitmapButtonIndices, kBU_Default, kIBF_16Bit, kBP_Auto, &m_pIB) == S_OK)
-      {
-         uint16 * pIndexData;
-         if (m_pIB->Lock(kBL_Discard, (void * *)&pIndexData) == S_OK)
-         {
-            pIndexData[0] = 0;
-            pIndexData[1] = 1;
-            pIndexData[2] = 2;
-            pIndexData[3] = 3;
-            m_pIB->Unlock();
-         }
-      }
-
-      if (AccessRenderDevice()->CreateVertexBuffer(kNumVerts, kBU_Default, UIAccessVertexDecl(), kBP_Auto, &m_pVB) == S_OK)
-      {
-         float w = m_size.width;
-         float h = m_size.height / 4;
-
-         sUIVertex verts[kNumVerts];
-
-         for (int i = 0; i < _countof(verts); i++)
-         {
-            verts[i].r = verts[i].g = verts[i].b = verts[i].a = 255;
-         }
-
-         // steady state
-         verts[0].u = 0;
-         verts[0].v = 0.5;
-         verts[0].pos = tVec3(0,0,0);
-         verts[1].u = 0;
-         verts[1].v = 0.25;
-         verts[1].pos = tVec3(0,h,0);
-         verts[2].u = 1;
-         verts[2].v = 0.25;
-         verts[2].pos = tVec3(w,h,0);
-         verts[3].u = 1;
-         verts[3].v = 0.5;
-         verts[3].pos = tVec3(w,0,0);
-
-         // hovered
-         verts[4].u = 0;
-         verts[4].v = 0.75;
-         verts[4].pos = tVec3(0,0,0);
-         verts[5].u = 0;
-         verts[5].v = 0.5;
-         verts[5].pos = tVec3(0,h,0);
-         verts[6].u = 1;
-         verts[6].v = 0.5;
-         verts[6].pos = tVec3(w,h,0);
-         verts[7].u = 1;
-         verts[7].v = 0.75;
-         verts[7].pos = tVec3(w,0,0);
-
-         // pressed
-         verts[8].u = 0;
-         verts[8].v = 1;
-         verts[8].pos = tVec3(0,0,0);
-         verts[9].u = 0;
-         verts[9].v = 0.75;
-         verts[9].pos = tVec3(0,h,0);
-         verts[10].u = 1;
-         verts[10].v = 0.75;
-         verts[10].pos = tVec3(w,h,0);
-         verts[11].u = 1;
-         verts[11].v = 1;
-         verts[11].pos = tVec3(w,0,0);
-
-         // disabled
-         verts[12].u = 0;
-         verts[12].v = 0.25;
-         verts[12].pos = tVec3(0,0,0);
-         verts[13].u = 0;
-         verts[13].v = 0;
-         verts[13].pos = tVec3(0,h,0);
-         verts[14].u = 1;
-         verts[14].v = 0;
-         verts[14].pos = tVec3(w,h,0);
-         verts[15].u = 1;
-         verts[15].v = 0.25;
-         verts[15].pos = tVec3(w,0,0);
-
-         void * pVertexData;
-         if (m_pVB->Lock(kBL_Discard, &pVertexData) == S_OK)
-         {
-            memcpy(pVertexData, verts, sizeof(verts));
-            m_pVB->Unlock();
-         }
+         m_pMaterial->SetTexture(0, pTex);
+         return true;
       }
    }
-   // return true unconditionally so that this component will
-   // be a placeholder at least if the image fails to load
-   return true;
+
+   DebugMsg1("Warning: Error creating button with bitmap \"%s\"\n", pszName);
+
+   return false;
 }
 
 
