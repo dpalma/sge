@@ -255,15 +255,14 @@ tResult cMs3dMesh::PostRead()
 
          if (m_pInnerMesh->GetVertexBuffer(&pVB) == S_OK)
          {
-            sVertexElement elements[8];
+            sVertexElement elements[256];
             int nElements = _countof(elements);
             
-            uint vertexSize;
-
             if (pVB->GetVertexDeclaration(&pVertexDecl) == S_OK
-               && pVertexDecl->GetElements(elements, &nElements) == S_OK
-               && pVertexDecl->GetStructSize(NULL, &vertexSize) == S_OK)
+               && pVertexDecl->GetElements(elements, &nElements) == S_OK)
             {
+               uint vertexSize = GetVertexSize(elements, nElements);
+
                uint positionOffset, normalOffset, indexOffset;
 
                for (int i = 0; i < nElements; i++)
