@@ -5,9 +5,9 @@
 
 #include "ms3dmesh.h"
 
-#include "FileSpec.h"
-#include "ReadWriteAPI.h"
-#include "TechMath.h"
+#include "filespec.h"
+#include "readwriteapi.h"
+#include "techmath.h"
 #include "animation.h"
 #include "vec4.h"
 
@@ -19,6 +19,7 @@
 #include <cfloat>
 #include <string>
 #include <map>
+#include <algorithm>
 
 #include <GL/gl.h>
 #include "GL/glext.h"
@@ -166,18 +167,100 @@ tResult cReadWriteOps<cMs3dGroup>::Read(IReader * pReader, cMs3dGroup * pGroup)
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: cMs3dBone
+//
+
+///////////////////////////////////////
+
+cMs3dBone::cMs3dBone()
+ : m_iParent(-1)
+{
+   name[0] = 0;
+   parentName[0] = 0;
+   local.Identity();
+   final.Identity();
+}
+
+///////////////////////////////////////
+
+cMs3dBone::cMs3dBone(const cMs3dBone & other)
+{
+   operator =(other);
+}
+
+///////////////////////////////////////
+
+const cMs3dBone & cMs3dBone::operator =(const cMs3dBone & other)
+{
+   strcpy(name, other.name);
+   strcpy(parentName, other.parentName);
+   m_iParent = other.m_iParent;
+   local = other.local;
+   final = other.final;
+   return *this;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cReadWriteOps<cMs3dBone>
+//
+
+template <>
+class cReadWriteOps<cMs3dBone>
+{
+public:
+   static tResult Read(IReader * pReader, cMs3dBone * pBone);
+};
+
+///////////////////////////////////////
+
+tResult cReadWriteOps<cMs3dBone>::Read(IReader * pReader, cMs3dBone * pBone)
+{
+   Assert(pReader != NULL);
+   Assert(pBone != NULL);
+
+   tResult result = E_FAIL;
+
+   do
+   {
+      byte flags; // SELECTED | DIRTY
+      if (pReader->Read(&flags, sizeof(flags)) != S_OK)
+         break;
+
+      if (pReader->Read(pBone->name, sizeof(pBone->name)) != S_OK)
+         break;
+
+      if (pReader->Read(pBone->parentName, sizeof(pBone->parentName)) != S_OK)
+         break;
+
+      float rotation[3], position[3];
+      if (pReader->Read(rotation, sizeof(rotation)) != S_OK ||
+         pReader->Read(position, sizeof(position)) != S_OK)
+         break;
+
+      tMatrix4 mt, mr;
+      MatrixTranslate(position[0], position[1], position[2], &mt);
+      MatrixFromAngles(tVec3(rotation), &mr);
+      pBone->local = mt * mr;
+
+      result = S_OK;
+   }
+   while (0);
+
+   return result;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cMs3dJoint
 //
 
 ///////////////////////////////////////
 
 cMs3dJoint::cMs3dJoint()
- : m_iParentJoint(-1)
 {
-   name[0] = 0;
-   parentName[0] = 0;
-
-   m_local.Identity();
 }
 
 
@@ -204,25 +287,8 @@ tResult cReadWriteOps<cMs3dJoint>::Read(IReader * pReader, cMs3dJoint * pJoint)
 
    do
    {
-      byte flags; // SELECTED | DIRTY
-      if (pReader->Read(&flags, sizeof(flags)) != S_OK)
+      if (cReadWriteOps<cMs3dBone>::Read(pReader, pJoint) != S_OK)
          break;
-
-      if (pReader->Read(pJoint->name, sizeof(pJoint->name)) != S_OK)
-         break;
-
-      if (pReader->Read(pJoint->parentName, sizeof(pJoint->parentName)) != S_OK)
-         break;
-
-      float rotation[3], position[3];
-      if (pReader->Read(rotation, sizeof(rotation)) != S_OK ||
-         pReader->Read(position, sizeof(position)) != S_OK)
-         break;
-
-      tMatrix4 mt, mr;
-      MatrixTranslate(position[0], position[1], position[2], &mt);
-      MatrixFromAngles(tVec3(rotation), &mr);
-      pJoint->m_local = mt * mr;
 
       uint16 nKeyFramesRot, nKeyFramesTrans;
 
@@ -237,30 +303,30 @@ tResult cReadWriteOps<cMs3dJoint>::Read(IReader * pReader, cMs3dJoint * pJoint)
          break;
       }
 
-      pJoint->m_rotationKeys.resize(nKeyFramesRot);
-      if (pReader->Read(&pJoint->m_rotationKeys[0], pJoint->m_rotationKeys.size() * sizeof(ms3d_keyframe_rot_t)) != S_OK)
+      std::vector<ms3d_keyframe_rot_t> rotationKeys(nKeyFramesRot);
+      if (pReader->Read(&rotationKeys[0], rotationKeys.size() * sizeof(ms3d_keyframe_rot_t)) != S_OK)
          break;
 
-      pJoint->m_translationKeys.resize(nKeyFramesTrans);
-      if (pReader->Read(&pJoint->m_translationKeys[0], pJoint->m_translationKeys.size() * sizeof(ms3d_keyframe_pos_t)) != S_OK)
+      std::vector<ms3d_keyframe_pos_t> translationKeys(nKeyFramesTrans);
+      if (pReader->Read(&translationKeys[0], translationKeys.size() * sizeof(ms3d_keyframe_pos_t)) != S_OK)
          break;
 
       sKeyFrameVec3 * pTranslationFrames = (sKeyFrameVec3 *)alloca(nKeyFramesTrans * sizeof(sKeyFrameVec3));
       for (unsigned i = 0; i < nKeyFramesTrans; i++)
       {
-         pTranslationFrames[i].time = pJoint->m_translationKeys[i].time;
-         pTranslationFrames[i].value = tVec3(pJoint->m_translationKeys[i].position);
+         pTranslationFrames[i].time = translationKeys[i].time;
+         pTranslationFrames[i].value = tVec3(translationKeys[i].position);
       }
 
       sKeyFrameQuat * pRotationFrames = (sKeyFrameQuat *)alloca(nKeyFramesRot * sizeof(sKeyFrameQuat));
       for (i = 0; i < nKeyFramesRot; i++)
       {
-         pRotationFrames[i].time = pJoint->m_rotationKeys[i].time;
-         pRotationFrames[i].value = QuatFromEulerAngles(tVec3(pJoint->m_rotationKeys[i].rotation));
+         pRotationFrames[i].time = rotationKeys[i].time;
+         pRotationFrames[i].value = QuatFromEulerAngles(tVec3(rotationKeys[i].rotation));
       }
 
       if (KeyFrameInterpolatorCreate(
-         pJoint->name,
+         pJoint->GetName(),
          NULL, 0,
          pRotationFrames, nKeyFramesRot,
          pTranslationFrames, nKeyFramesTrans,
@@ -288,6 +354,130 @@ cMs3dSkeleton::cMs3dSkeleton()
 
 cMs3dSkeleton::~cMs3dSkeleton()
 {
+   Reset();
+}
+
+void cMs3dSkeleton::Reset()
+{
+   m_joints.clear();
+
+   std::for_each(m_interpolators.begin(), m_interpolators.end(), CTInterfaceMethodRef(&IUnknown::Release));
+   m_interpolators.clear();
+}
+
+void cMs3dSkeleton::SetupJoints()
+{
+   if (m_joints.empty())
+   {
+      return;
+   }
+
+   typedef std::map<std::string, int> tJointNames;
+
+   tJointNames jointNames;
+
+   int index;
+   std::vector<cMs3dJoint>::iterator iter;
+
+   for (iter = m_joints.begin(), index = 0; iter != m_joints.end(); iter++, index++)
+   {
+      const char * pszJointName = iter->GetName();
+      if (pszJointName && *pszJointName)
+      {
+         jointNames.insert(std::make_pair(pszJointName, index));
+      }
+   }
+
+   std::vector<tMatrix4> absolutes(m_joints.size());
+
+   for (iter = m_joints.begin(), index = 0; iter != m_joints.end(); iter++, index++)
+   {
+      int iParent = -1;
+
+      const char * pszParentJointName = iter->GetParentName();
+      if (pszParentJointName && *pszParentJointName)
+      {
+         tJointNames::iterator pjni = jointNames.find(pszParentJointName);
+         if (pjni != jointNames.end())
+         {
+            iParent = pjni->second;
+            Assert(iParent >= 0 && iParent < m_joints.size());
+         }
+      }
+
+      iter->SetParentIndex(iParent);
+
+      tMatrix4 absolute;
+
+      if (iParent == -1)
+      {
+         absolute = iter->GetLocalMatrix();
+      }
+      else
+      {
+         absolute = absolutes[iParent] * iter->GetLocalMatrix();
+      }
+
+      absolutes[index] = absolute;
+
+      iter->SetFinalMatrix(absolute);
+   }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cReadWriteOps<cMs3dSkeleton>
+//
+
+template <>
+class cReadWriteOps<cMs3dSkeleton>
+{
+public:
+   static tResult Read(IReader * pReader, cMs3dSkeleton * pSkeleton);
+};
+
+///////////////////////////////////////
+
+tResult cReadWriteOps<cMs3dSkeleton>::Read(IReader * pReader, cMs3dSkeleton * pSkeleton)
+{
+   Assert(pReader != NULL);
+   Assert(pSkeleton != NULL);
+
+   Assert(pSkeleton->m_joints.empty());
+
+   tResult result = E_FAIL;
+
+   do
+   {
+      float animationFPS;
+      float currentTime;
+      int nTotalFrames;
+      uint16 nJoints;
+      if (pReader->Read(&animationFPS, sizeof(animationFPS)) != S_OK
+         || pReader->Read(&currentTime, sizeof(currentTime)) != S_OK
+         || pReader->Read(&nTotalFrames, sizeof(nTotalFrames)) != S_OK
+         || pReader->Read(&nJoints, sizeof(nJoints)) != S_OK)
+      {
+         break;
+      }
+
+      pSkeleton->m_bones.resize(nJoints);
+
+      pSkeleton->m_joints.resize(nJoints);
+      for (uint i = 0; i < nJoints; i++)
+      {
+         if (pReader->Read(&pSkeleton->m_joints[i]) != S_OK)
+            break;
+      }
+      if (i < nJoints)
+         break;
+
+      result = S_OK;
+   }
+   while (0);
+
+   return result;
 }
 
 
@@ -393,7 +583,6 @@ tResult cMs3dMesh::Read(IReader * pReader, IRenderDevice * pRenderDevice, IResou
    Assert(m_triangles.empty());
    Assert(m_groups.empty());
    Assert(m_materials.empty());
-   Assert(m_joints.empty());
 
    ms3d_header_t header;
    if (pReader->Read(&header, sizeof(header)) != S_OK ||
@@ -480,22 +669,8 @@ tResult cMs3dMesh::Read(IReader * pReader, IRenderDevice * pRenderDevice, IResou
 
    Assert(m_materials.size() == nMaterials);
 
-   float animationFPS;
-   float currentTime;
-   int nTotalFrames;
-   uint16 nJoints;
-   if (pReader->Read(&animationFPS, sizeof(animationFPS)) != S_OK
-      || pReader->Read(&currentTime, sizeof(currentTime)) != S_OK
-      || pReader->Read(&nTotalFrames, sizeof(nTotalFrames)) != S_OK
-      || pReader->Read(&nJoints, sizeof(nJoints)) != S_OK)
+   if (cReadWriteOps<cMs3dSkeleton>::Read(pReader, this) != S_OK)
       return E_FAIL;
-
-   m_joints.resize(nJoints);
-   for (i = 0; i < nJoints; i++)
-   {
-      if (pReader->Read(&m_joints[i]) != S_OK)
-         break;
-   }
 
    cgSetErrorCallback(cgErrorCallback);
 
@@ -526,6 +701,53 @@ tResult cMs3dMesh::Read(IReader * pReader, IRenderDevice * pRenderDevice, IResou
    else
    {
       SetupJoints();
+
+      typedef std::vector<tMatrix4> tMatrices;
+      tMatrices inverses(GetJointCount());
+
+      for (int i = 0; i < inverses.size(); i++)
+      {
+         MatrixInvert(GetJoint(i).GetFinalMatrix(), &inverses[i]);
+      }
+
+      // transform all vertices by the inverse of the affecting bone's absolute matrix
+      tVertices::iterator vertIter;
+      for (vertIter = m_vertices.begin(); vertIter != m_vertices.end(); vertIter++)
+      {
+         if (vertIter->boneId != -1)
+         {
+            const tMatrix4 & m = inverses[vertIter->boneId];
+            tVec4 v2, v(vertIter->vertex[0], vertIter->vertex[1], vertIter->vertex[2], k4thDimension);
+            v2 = m.Transform(v);
+            vertIter->vertex[0] = v2.x;
+            vertIter->vertex[1] = v2.y;
+            vertIter->vertex[2] = v2.z;
+         }
+      }
+
+      // transform the vertex normals as well
+      tTriangles::iterator triIter;
+      for (triIter = m_triangles.begin(); triIter != m_triangles.end(); triIter++)
+      {
+         for (int i = 0; i < 3; i++)
+         {
+            ms3d_vertex_t & v = m_vertices[triIter->vertexIndices[i]];
+            if (v.boneId != -1)
+            {
+               const tMatrix4 & m = inverses[v.boneId];
+               tVec4 n(
+                  triIter->vertexNormals[i][0],
+                  triIter->vertexNormals[i][1],
+                  triIter->vertexNormals[i][2],
+                  k4thDimension);
+               tVec4 nprime;
+               nprime = m.Transform(n);
+               triIter->vertexNormals[i][0] = nprime.x;
+               triIter->vertexNormals[i][1] = nprime.y;
+               triIter->vertexNormals[i][2] = nprime.z;
+            }
+         }
+      }
    }
 
    return S_OK;
@@ -533,6 +755,8 @@ tResult cMs3dMesh::Read(IReader * pReader, IRenderDevice * pRenderDevice, IResou
 
 void cMs3dMesh::Reset()
 {
+   cMs3dSkeleton::Reset();
+
    tMaterials::iterator iter;
    for (iter = m_materials.begin(); iter != m_materials.end(); iter++)
    {
@@ -543,7 +767,6 @@ void cMs3dMesh::Reset()
    m_triangles.clear();
    m_groups.clear();
    m_materials.clear();
-   m_joints.clear();
 
    m_bCalculatedAABB = false;
 
@@ -556,134 +779,35 @@ void cMs3dMesh::Reset()
    ReleaseCgContext();
 }
 
-void cMs3dMesh::SetupJoints()
-{
-   if (m_joints.empty())
-   {
-      return;
-   }
-
-   typedef std::map<std::string, int> tJointNames;
-
-   tJointNames jointNames;
-
-   int index;
-   std::vector<cMs3dJoint>::iterator iter;
-
-   for (iter = m_joints.begin(), index = 0; iter != m_joints.end(); iter++, index++)
-   {
-      const char * pszJointName = iter->GetName();
-      if (pszJointName && *pszJointName)
-      {
-         jointNames.insert(std::make_pair(pszJointName, index));
-      }
-   }
-
-   std::vector<tMatrix4> absolutes(m_joints.size());
-   std::vector<tMatrix4> inverses(m_joints.size());
-
-   for (iter = m_joints.begin(), index = 0; iter != m_joints.end(); iter++, index++)
-   {
-      int iParent = -1;
-
-      const char * pszParentJointName = iter->GetParentName();
-      if (pszParentJointName && *pszParentJointName)
-      {
-         tJointNames::iterator pjni = jointNames.find(pszParentJointName);
-         if (pjni != jointNames.end())
-         {
-            iParent = pjni->second;
-            Assert(iParent >= 0 && iParent < m_joints.size());
-         }
-      }
-
-      iter->SetParentJointIndex(iParent);
-
-      tMatrix4 absolute;
-
-      if (iParent == -1)
-      {
-         absolute = iter->GetLocalMatrix();
-      }
-      else
-      {
-         absolute = absolutes[iParent] * iter->GetLocalMatrix();
-      }
-
-      absolutes[index] = absolute;
-      MatrixInvert(absolute, &inverses[index]);
-
-      iter->SetFinalMatrix(absolute);
-   }
-
-   // transform all vertices by the inverse of the affecting bone's absolute matrix
-   tVertices::iterator vertIter;
-   for (vertIter = m_vertices.begin(); vertIter != m_vertices.end(); vertIter++)
-   {
-      if (vertIter->boneId != -1)
-      {
-         const tMatrix4 & m = inverses[vertIter->boneId];
-         tVec4 v2, v(vertIter->vertex[0], vertIter->vertex[1], vertIter->vertex[2], k4thDimension);
-         v2 = m.Transform(v);
-         vertIter->vertex[0] = v2.x;
-         vertIter->vertex[1] = v2.y;
-         vertIter->vertex[2] = v2.z;
-      }
-   }
-
-   // transform the vertex normals as well
-   tTriangles::iterator triIter;
-   for (triIter = m_triangles.begin(); triIter != m_triangles.end(); triIter++)
-   {
-      for (int i = 0; i < 3; i++)
-      {
-         ms3d_vertex_t & v = m_vertices[triIter->vertexIndices[i]];
-         if (v.boneId != -1)
-         {
-            const tMatrix4 & m = inverses[v.boneId];
-            tVec4 n(
-               triIter->vertexNormals[i][0],
-               triIter->vertexNormals[i][1],
-               triIter->vertexNormals[i][2],
-               k4thDimension);
-            tVec4 nprime;
-            nprime = m.Transform(n);
-            triIter->vertexNormals[i][0] = nprime.x;
-            triIter->vertexNormals[i][1] = nprime.y;
-            triIter->vertexNormals[i][2] = nprime.z;
-         }
-      }
-   }
-}
-
 void cMs3dMesh::SetFrame(float percent)
 {
    Assert(percent >= 0 && percent <= 1);
 
-   std::vector<cMs3dJoint>::iterator iter;
-   for (iter = m_joints.begin(); iter != m_joints.end(); iter++)
+   for (int i = 0; i < GetJointCount(); i++)
    {
       tQuat rotation;
       tVec3 translation;
 
-      if (iter->AccessInterpolator()->Interpolate(
-         percent * iter->AccessInterpolator()->GetPeriod(),
+      cMs3dJoint * pJoint = GetJointPtr(i);
+
+      if (pJoint->AccessInterpolator()->Interpolate(
+         percent * pJoint->AccessInterpolator()->GetPeriod(),
          NULL, &rotation, &translation) == S_OK)
       {
          tMatrix4 mt, mr, mf, temp;
          MatrixTranslate(translation.x, translation.y, translation.z, &mt);
          rotation.ToMatrix(&mr);
          temp = mt * mr;
-         mf = iter->GetLocalMatrix() * temp;
+         mf = pJoint->GetLocalMatrix() * temp;
 
-         if (iter->GetParentJointIndex() == -1)
+         if (pJoint->GetParentIndex() == -1)
          {
-            iter->SetFinalMatrix(mf);
+            pJoint->SetFinalMatrix(mf);
          }
          else
          {
-            temp = m_joints[iter->GetParentJointIndex()].GetFinalMatrix() * mf;
-            iter->SetFinalMatrix(temp);
+            temp = GetJointPtr(pJoint->GetParentIndex())->GetFinalMatrix() * mf;
+            pJoint->SetFinalMatrix(temp);
          }
       }
    }
@@ -721,7 +845,7 @@ void cMs3dMesh::RenderSoftware() const
             }
             else
             {
-               const tMatrix4 & m = m_joints[vk.boneId].GetFinalMatrix();
+               const tMatrix4 & m = GetJoint(vk.boneId).GetFinalMatrix();
 
                tVec4 nprime, n(tri.vertexNormals[k][0], tri.vertexNormals[k][1], tri.vertexNormals[k][2], k4thDimension);
                nprime = m.Transform(n);

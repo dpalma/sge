@@ -23,6 +23,8 @@ F_DECLARE_INTERFACE(IRenderDevice);
 typedef struct _CGprogram * CGprogram;
 typedef struct _CGparameter * CGparameter;
 
+const int kMaxBoneName = 32;
+
 ///////////////////////////////////////////////////////////////////////////////
 // MS3D file format structs
 
@@ -114,64 +116,101 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cMs3dJoint
+// CLASS: cMs3dBone
 //
 
-class cMs3dJoint
+class cMs3dBone
 {
-   friend class cReadWriteOps<cMs3dJoint>;
+   friend class cReadWriteOps<cMs3dBone>;
 
 public:
-   cMs3dJoint();
+   cMs3dBone();
+   cMs3dBone(const cMs3dBone & other);
+   const cMs3dBone & operator =(const cMs3dBone & other);
 
    const char * GetName() const;
    const char * GetParentName() const;
-
-   const sMatrix4 & GetLocalMatrix() const;
-
-   inline void SetFinalMatrix(const sMatrix4 & m) { m_final = m; }
-   inline const sMatrix4 & GetFinalMatrix() const { return m_final; }
-
-   inline int GetParentJointIndex() const { return m_iParentJoint; }
-   inline void SetParentJointIndex(int i) { m_iParentJoint = i; }
-
-   IKeyFrameInterpolator * AccessInterpolator() { return m_pInterpolator; }
+   int GetParentIndex() const;
+   void SetParentIndex(int index);
+   const tMatrix4 & GetLocalMatrix() const;
+   void SetFinalMatrix(const tMatrix4 & m);
+   const tMatrix4 & GetFinalMatrix() const;
 
 private:
-   char name[32];
-   char parentName[32];
-   sMatrix4 m_local; // local reference matrix
-
-   cAutoIPtr<IKeyFrameInterpolator> m_pInterpolator;
-
-   sMatrix4 m_final;
-
-   int m_iParentJoint;
-
-   std::vector<ms3d_keyframe_rot_t> m_rotationKeys;
-   std::vector<ms3d_keyframe_pos_t> m_translationKeys;
+   char name[kMaxBoneName];
+   char parentName[kMaxBoneName];
+   int m_iParent;
+   tMatrix4 local; // local reference matrix
+   tMatrix4 final;
 };
 
 ///////////////////////////////////////
 
-inline const char * cMs3dJoint::GetName() const
+inline const char * cMs3dBone::GetName() const
 {
    return name;
 }
 
 ///////////////////////////////////////
 
-inline const char * cMs3dJoint::GetParentName() const
+inline const char * cMs3dBone::GetParentName() const
 {
    return parentName;
 }
 
 ///////////////////////////////////////
 
-inline const sMatrix4 & cMs3dJoint::GetLocalMatrix() const
+inline int cMs3dBone::GetParentIndex() const
 {
-   return m_local;
+   return m_iParent;
 }
+
+///////////////////////////////////////
+
+inline void cMs3dBone::SetParentIndex(int index)
+{
+   m_iParent = index;
+}
+
+///////////////////////////////////////
+
+inline const tMatrix4 & cMs3dBone::GetLocalMatrix() const
+{
+   return local;
+}
+
+///////////////////////////////////////
+
+inline void cMs3dBone::SetFinalMatrix(const tMatrix4 & m)
+{
+   final = m;
+}
+
+///////////////////////////////////////
+
+inline const tMatrix4 & cMs3dBone::GetFinalMatrix() const
+{
+   return final;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cMs3dJoint
+//
+
+class cMs3dJoint : public cMs3dBone
+{
+   friend class cReadWriteOps<cMs3dJoint>;
+
+public:
+   cMs3dJoint();
+
+   IKeyFrameInterpolator * AccessInterpolator() { return m_pInterpolator; }
+
+private:
+   cAutoIPtr<IKeyFrameInterpolator> m_pInterpolator;
+};
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -184,6 +223,8 @@ class cMs3dSkeleton
    cMs3dSkeleton(const cMs3dSkeleton &); // private, un-implemented
    const cMs3dSkeleton & operator =(const cMs3dSkeleton &); // private, un-implemented
 
+   friend class cReadWriteOps<cMs3dSkeleton>;
+
 public:
    cMs3dSkeleton();
    virtual ~cMs3dSkeleton();
@@ -191,9 +232,21 @@ public:
    void SetNumJoints(int nJoints);
    void SetJoint(int index, const cMs3dJoint & joint);
 
-protected:
-   typedef std::vector<cMs3dJoint> tJoints;
+   int GetJointCount() const { return m_joints.size(); }
+   const cMs3dJoint & GetJoint(int index) const { return m_joints[index]; }
+   cMs3dJoint * GetJointPtr(int index) { return &m_joints[index]; }
 
+   void Reset();
+   void SetupJoints();
+
+private:
+   typedef std::vector<cMs3dBone> tBones;
+   tBones m_bones;
+
+   typedef std::vector<IKeyFrameInterpolator *> tInterpolators;
+   tInterpolators m_interpolators;
+
+   typedef std::vector<cMs3dJoint> tJoints;
    tJoints m_joints;
 };
 
@@ -209,8 +262,6 @@ class cMs3dMesh : public cMs3dSkeleton
    const cMs3dMesh & operator =(const cMs3dMesh &); // private, un-implemented
 
 public:
-   ////////////////////////////////////
-
    cMs3dMesh();
    virtual ~cMs3dMesh();
 
@@ -236,12 +287,7 @@ public:
    int GetGroupCount() const { return m_groups.size(); }
    const cMs3dGroup & GetGroup(int index) const { return m_groups[index]; }
 
-   int GetJointCount() const { return m_joints.size(); }
-   const cMs3dJoint & GetJoint(int index) const { return m_joints[index]; }
-
 private:
-   void SetupJoints();
-
    typedef void (cMs3dMesh:: * tRenderMethod)() const;
 
    tRenderMethod m_pfnRender;
