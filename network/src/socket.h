@@ -10,6 +10,18 @@
 
 struct sockaddr;
 
+#ifndef _WIN32
+typedef uint SOCKET;
+#endif
+
+#ifndef INVALID_SOCKET
+#define INVALID_SOCKET (SOCKET)(~0)
+#endif
+
+#ifndef SOCKET_ERROR
+#define SOCKET_ERROR (-1)
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cSocket

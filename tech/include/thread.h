@@ -4,12 +4,12 @@
 #ifndef INCLUDED_THREAD_H
 #define INCLUDED_THREAD_H
 
-#ifdef _MSC_VER
-#pragma once
+#ifndef _WIN32
+#include <pthread.h>
 #endif
 
-#ifdef _WIN32
-F_DECLARE_HANDLE(HTHREAD);
+#ifdef _MSC_VER
+#pragma once
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -17,49 +17,39 @@ F_DECLARE_HANDLE(HTHREAD);
 // CLASS: cThread
 //
 
+const uint kInfiniteTimeout = (uint)-1;
+
+enum eThreadPriority
+{
+   kTP_Lowest = 0,
+   kTP_Highest = 15,
+   kTP_Normal = (kTP_Lowest + kTP_Highest) / 2,
+};
+
 class cThread
 {
 public:
    cThread();
    virtual ~cThread();
 
-   bool Begin();
-   uint End();
+   bool Create(int priority = kTP_Normal, uint stackSize = 0);
 
-   uint GetId() const;
+   void Join();
 
-   void Join(uint timeoutMs);
    bool Terminate();
 
 protected:
    virtual int Run() = 0;
 
-   HANDLE GetHandle() const;
-
 private:
-   static ulong STDCALL ThreadEntry(void * param);
-
 #ifdef _WIN32
-   HTHREAD m_hThread;
+   static ulong STDCALL ThreadEntry(void * param);
+   HANDLE m_hThread;
 #else
-#error ("Need platform-specific thread members")
+   static void * ThreadEntry(void * param);
+   pthread_t m_thread;
 #endif
-   ulong m_threadId;
 };
-
-///////////////////////////////////////
-
-inline uint cThread::GetId() const
-{
-   return m_threadId;
-}
-
-///////////////////////////////////////
-
-inline HANDLE cThread::GetHandle() const
-{
-   return m_hThread;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 

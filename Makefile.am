@@ -11,7 +11,7 @@ EXTRA_DIST = bootstrap data
 dist-hook:
 	rm -rf `find $(distdir)/data -name CVS`
 
-SUBDIRS = 3rdparty allguids tech render engine game
+SUBDIRS = 3rdparty allguids tech render engine game tests
 
 MAINTAINERCLEANFILES = Makefile.in aclocal.m4 configure
 

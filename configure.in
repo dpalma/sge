@@ -63,5 +63,7 @@ AC_CONFIG_FILES([Makefile
                  render/Makefile
                  engine/Makefile
                  game/Makefile
+                 tests/Makefile
+                 tests/network/Makefile
                  ])
 AC_OUTPUT

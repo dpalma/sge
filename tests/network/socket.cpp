@@ -5,7 +5,14 @@
 
 #include "socket.h"
 
+#ifdef _WIN32
 #include <winsock.h>
+#else
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#endif
 
 #include "dbgalloc.h" // must be last header
 
@@ -31,15 +38,21 @@ cSocket::~cSocket()
 
 bool cSocket::Init()
 {
+#ifdef _WIN32
    WSADATA wsaData;
    return (WSAStartup(MAKEWORD(1,1), &wsaData) == 0);
+#else
+   return true;
+#endif
 }
 
 ///////////////////////////////////////
 
 void cSocket::Term()
 {
+#ifdef _WIN32
    WSACleanup();
+#endif
 }
 
 ///////////////////////////////////////

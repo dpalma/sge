@@ -8,7 +8,14 @@
 
 #include "globalobj.h"
 
+#ifdef _WIN32
 #include <winsock.h>
+#else
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#endif
 #include <cstdio>
 #include <cstring>
 
@@ -140,10 +147,10 @@ int main(int argc, char * argv[])
    cServerThread serverThread;
    cClientThread clientThread;
 
-   serverThread.Begin();
-   clientThread.Begin();
+   serverThread.Create();
+   clientThread.Create();
    
-   clientThread.Join(INFINITE);
+   clientThread.Join();
 
    serverThread.Terminate();
 
