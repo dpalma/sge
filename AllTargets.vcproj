@@ -16,8 +16,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\..\Build.vc6\Debug"
-			IntermediateDirectory=".\..\Build.vc6\Debug"
+			OutputDirectory=".\Build.vc8\Debug"
+			IntermediateDirectory=".\Build.vc8\Debug"
 			ConfigurationType="0"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -35,8 +35,8 @@
 		</Configuration>
 		<Configuration
 			Name="Opt|Win32"
-			OutputDirectory=".\..\Build.vc6\Opt"
-			IntermediateDirectory=".\..\Build.vc6\Opt"
+			OutputDirectory=".\Build.vc8\Opt"
+			IntermediateDirectory=".\Build.vc8\Opt"
 			ConfigurationType="0"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -54,8 +54,8 @@
 		</Configuration>
 		<Configuration
 			Name="StaticDebug|Win32"
-			OutputDirectory=".\..\Build.vc6\StaticDebug"
-			IntermediateDirectory=".\..\Build.vc6\StaticDebug"
+			OutputDirectory=".\Build.vc8\StaticDebug"
+			IntermediateDirectory=".\Build.vc8\StaticDebug"
 			ConfigurationType="0"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -73,8 +73,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\..\Build.vc6\Release"
-			IntermediateDirectory=".\..\Build.vc6\Release"
+			OutputDirectory=".\Build.vc8\Release"
+			IntermediateDirectory=".\Build.vc8\Release"
 			ConfigurationType="0"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -92,8 +92,8 @@
 		</Configuration>
 		<Configuration
 			Name="StaticRelease|Win32"
-			OutputDirectory=".\..\Build.vc6\StaticRelease"
-			IntermediateDirectory=".\..\Build.vc6\StaticRelease"
+			OutputDirectory=".\Build.vc8\StaticRelease"
+			IntermediateDirectory=".\Build.vc8\StaticRelease"
 			ConfigurationType="0"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
