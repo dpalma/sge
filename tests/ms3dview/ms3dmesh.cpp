@@ -196,7 +196,9 @@ tResult cReadWriteOps<cMs3dGroup>::Read(IReader * pReader, cMs3dGroup * pGroup)
 ///////////////////////////////////////
 
 cBone::cBone()
- : m_pParent(NULL)
+ : m_index(-1),
+   m_pParent(NULL),
+   m_bHaveWorldTransform(false)
 {
 }
 
@@ -212,10 +214,13 @@ cBone::cBone(const cBone & other)
 const cBone & cBone::operator =(const cBone & other)
 {
    m_name = other.m_name;
+   m_index = other.m_index;
    m_pParent = other.m_pParent;
    m_children.resize(other.m_children.size());
    std::copy(other.m_children.begin(), other.m_children.end(), m_children.begin());
    m_localTransform = other.m_localTransform;
+   m_worldTransform = other.m_worldTransform;
+   m_bHaveWorldTransform = other.m_bHaveWorldTransform;
    return *this;
 }
 
@@ -235,12 +240,37 @@ bool cBone::AddChild(const cBone * pChild)
       }
 
       m_children.push_back(pChild);
+
       const_cast<cBone *>(pChild)->m_pParent = this;
+      const_cast<cBone *>(pChild)->m_bHaveWorldTransform = false;
 
       return true;
    }
 
    return false;
+}
+
+///////////////////////////////////////
+
+const tMatrix4 & cBone::GetWorldTransform() const
+{
+   if (!m_bHaveWorldTransform)
+   {
+      const cBone * pParent = GetParent();
+
+      if (pParent != NULL)
+      {
+         m_worldTransform = pParent->GetWorldTransform() * GetLocalTransform();
+      }
+      else
+      {
+         m_worldTransform = GetLocalTransform();
+      }
+
+      m_bHaveWorldTransform = true;
+   }
+
+   return m_worldTransform;
 }
 
 
@@ -252,10 +282,8 @@ bool cBone::AddChild(const cBone * pChild)
 ///////////////////////////////////////
 
 cMs3dBone::cMs3dBone()
- : m_iParent(-1)
 {
    parentName[0] = 0;
-   final.Identity();
 }
 
 ///////////////////////////////////////
@@ -271,8 +299,6 @@ const cMs3dBone & cMs3dBone::operator =(const cMs3dBone & other)
 {
    cBone::operator =(static_cast<const cBone &>(other));
    strcpy(parentName, other.parentName);
-   m_iParent = other.m_iParent;
-   final = other.final;
    return *this;
 }
 
@@ -421,13 +447,8 @@ void cMs3dSkeleton::SetupJoints()
       }
    }
 
-   std::vector<tMatrix4> absolutes(m_bones.size());
-
    for (iter = m_bones.begin(), index = 0; iter != m_bones.end(); iter++, index++)
    {
-      int iParent = -1;
-      const cBone * pParent = NULL;
-
       const char * pszParentName = iter->GetParentName();
       Assert(pszParentName != NULL);
       if (strlen(pszParentName) > 0)
@@ -435,30 +456,10 @@ void cMs3dSkeleton::SetupJoints()
          tBoneNames::iterator n = boneNames.find(pszParentName);
          if (n != boneNames.end())
          {
-            iParent = n->second;
-            pParent = &m_bones[n->second];
-            Assert(iParent >= 0 && iParent < m_bones.size());
+            cBone * pParent = &m_bones[n->second];
+            pParent->AddChild(iter);
          }
       }
-
-      iter->SetParentIndex(iParent);
-
-      tMatrix4 absolute;
-
-      if (iParent == -1)
-      {
-         Assert(pParent == NULL);
-         absolute = iter->GetLocalTransform();
-      }
-      else
-      {
-         Assert(pParent != NULL);
-         absolute = absolutes[iParent] * iter->GetLocalTransform();
-      }
-
-      absolutes[index] = absolute;
-
-      iter->SetFinalMatrix(absolute);
    }
 }
 
@@ -510,6 +511,7 @@ tResult cReadWriteOps<cMs3dSkeleton>::Read(IReader * pReader, cMs3dSkeleton * pS
             break;
 
          pSkeleton->m_bones[i].SetName(boneInfo.name);
+         pSkeleton->m_bones[i].SetIndex(i);
          pSkeleton->m_bones[i].SetParentName(boneInfo.parentName);
 
          tMatrix4 mt, mr;
@@ -709,7 +711,7 @@ tResult cMs3dMesh::Read(IReader * pReader, IRenderDevice * pRenderDevice, IResou
 
    cgSetErrorCallback(cgErrorCallback);
 
-//   g_cgProfile = cgGLGetLatestProfile(CG_GL_VERTEX);
+   g_cgProfile = cgGLGetLatestProfile(CG_GL_VERTEX);
 
    if (g_cgProfile != CG_PROFILE_UNKNOWN)
    {
@@ -737,12 +739,11 @@ tResult cMs3dMesh::Read(IReader * pReader, IRenderDevice * pRenderDevice, IResou
    {
       m_skeleton.SetupJoints();
 
-      typedef std::vector<tMatrix4> tMatrices;
       tMatrices inverses(GetSkeleton()->GetBoneCount());
 
       for (int i = 0; i < inverses.size(); i++)
       {
-         MatrixInvert(GetSkeleton()->GetBone(i).GetFinalMatrix(), &inverses[i]);
+         MatrixInvert(GetSkeleton()->GetBone(i).GetWorldTransform(), &inverses[i]);
       }
 
       // transform all vertices by the inverse of the affecting bone's absolute matrix
@@ -840,14 +841,16 @@ void cMs3dMesh::SetFrame(float percent)
 
          tMatrix4 mf = pBone->GetLocalTransform() * temp;
 
-         if (pBone->GetParentIndex() == -1)
+         if (pBone->GetParent() == NULL)
          {
-            m_boneMatrices[i] = mf;
+            temp = mf;
          }
          else
          {
-            m_boneMatrices[i] = m_boneMatrices[pBone->GetParentIndex()] * mf;
+            temp = m_boneMatrices[pBone->GetParent()->GetIndex()] * mf;
          }
+
+         m_boneMatrices[i] = temp;
       }
    }
 }

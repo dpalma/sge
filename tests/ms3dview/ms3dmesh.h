@@ -129,6 +129,10 @@ public:
    const char * GetName() const;
    void SetName(const char * pszName);
 
+   // The index of this bone in its containing skeleton
+   int GetIndex() const;
+   void SetIndex(int index);
+
    const cBone * GetParent() const;
 
    bool AddChild(const cBone * pChild);
@@ -136,12 +140,17 @@ public:
    const tMatrix4 & GetLocalTransform() const;
    void SetLocalTransform(const tMatrix4 & matrix);
 
+   const tMatrix4 & GetWorldTransform() const;
+
 private:
    cStr m_name;
+   int m_index;
    const cBone * m_pParent;
    typedef std::vector<const cBone *> tChildren;
    tChildren m_children;
    tMatrix4 m_localTransform;
+   mutable tMatrix4 m_worldTransform;
+   mutable bool m_bHaveWorldTransform;
 };
 
 ///////////////////////////////////////
@@ -156,6 +165,20 @@ inline const char * cBone::GetName() const
 inline void cBone::SetName(const char * pszName)
 {
    m_name = (pszName != NULL) ? pszName : "";
+}
+
+///////////////////////////////////////
+
+inline int cBone::GetIndex() const
+{
+   return m_index;
+}
+
+///////////////////////////////////////
+
+inline void cBone::SetIndex(int index)
+{
+   m_index = index;
 }
 
 ///////////////////////////////////////
@@ -177,6 +200,7 @@ inline const tMatrix4 & cBone::GetLocalTransform() const
 inline void cBone::SetLocalTransform(const tMatrix4 & matrix)
 {
    m_localTransform = matrix;
+   m_bHaveWorldTransform = false;
 }
 
 
@@ -195,16 +219,8 @@ public:
    const char * GetParentName() const;
    void SetParentName(const char * pszParentName);
 
-   int GetParentIndex() const;
-   void SetParentIndex(int index);
-
-   void SetFinalMatrix(const tMatrix4 & m);
-   const tMatrix4 & GetFinalMatrix() const;
-
 private:
    char parentName[kMaxBoneName];
-   int m_iParent;
-   tMatrix4 final;
 };
 
 ///////////////////////////////////////
@@ -220,34 +236,6 @@ inline void cMs3dBone::SetParentName(const char * pszParentName)
 {
    strncpy(parentName, pszParentName, _countof(parentName));
    parentName[_countof(parentName) - 1] = 0;
-}
-
-///////////////////////////////////////
-
-inline int cMs3dBone::GetParentIndex() const
-{
-   return m_iParent;
-}
-
-///////////////////////////////////////
-
-inline void cMs3dBone::SetParentIndex(int index)
-{
-   m_iParent = index;
-}
-
-///////////////////////////////////////
-
-inline void cMs3dBone::SetFinalMatrix(const tMatrix4 & m)
-{
-   final = m;
-}
-
-///////////////////////////////////////
-
-inline const tMatrix4 & cMs3dBone::GetFinalMatrix() const
-{
-   return final;
 }
 
 
