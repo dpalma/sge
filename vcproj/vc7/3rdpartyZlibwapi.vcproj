@@ -35,12 +35,7 @@
 				DebugInformationFormat="4"
 				CompileAs="0"/>
 			<Tool
-				Name="VCCustomBuildTool"
-				CommandLine="if not exist ..\..\3rdparty\zlib\include\nul mkdir ..\..\3rdparty\zlib\include
-xcopy /y ..\..\3rdparty\zlib\contrib\minizip\*.h ..\..\3rdparty\zlib\include
-xcopy /y ..\..\3rdparty\zlib\zlib.h ..\..\3rdparty\zlib\include
-xcopy /y ..\..\3rdparty\zlib\zconf.h ..\..\3rdparty\zlib\include"
-				Outputs="..\..\3rdparty\zlib\include\zlib.h;..\..\3rdparty\zlib\include\zconf.h"/>
+				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
@@ -101,12 +96,7 @@ xcopy /y ..\..\3rdparty\zlib\zconf.h ..\..\3rdparty\zlib\include"
 				DebugInformationFormat="3"
 				CompileAs="0"/>
 			<Tool
-				Name="VCCustomBuildTool"
-				CommandLine="if not exist ..\..\3rdparty\zlib\include\nul mkdir ..\..\3rdparty\zlib\include
-xcopy /y ..\..\3rdparty\zlib\contrib\minizip\*.h ..\..\3rdparty\zlib\include
-xcopy /y ..\..\3rdparty\zlib\zlib.h ..\..\3rdparty\zlib\include
-xcopy /y ..\..\3rdparty\zlib\zconf.h ..\..\3rdparty\zlib\include"
-				Outputs="..\..\3rdparty\zlib\include\zlib.h;..\..\3rdparty\zlib\include\zconf.h"/>
+				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
@@ -166,12 +156,7 @@ xcopy /y ..\..\3rdparty\zlib\zconf.h ..\..\3rdparty\zlib\include"
 				SuppressStartupBanner="TRUE"
 				CompileAs="0"/>
 			<Tool
-				Name="VCCustomBuildTool"
-				CommandLine="if not exist ..\..\3rdparty\zlib\include\nul mkdir ..\..\3rdparty\zlib\include
-xcopy /y ..\..\3rdparty\zlib\contrib\minizip\*.h ..\..\3rdparty\zlib\include
-xcopy /y ..\..\3rdparty\zlib\zlib.h ..\..\3rdparty\zlib\include
-xcopy /y ..\..\3rdparty\zlib\zconf.h ..\..\3rdparty\zlib\include"
-				Outputs="..\..\3rdparty\zlib\include\zlib.h;..\..\3rdparty\zlib\include\zconf.h"/>
+				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
 				OutputFile="..\..\Build.vc7\StaticRelease\zlibwapi.lib"
@@ -216,12 +201,7 @@ xcopy /y ..\..\3rdparty\zlib\zconf.h ..\..\3rdparty\zlib\include"
 				SuppressStartupBanner="TRUE"
 				CompileAs="0"/>
 			<Tool
-				Name="VCCustomBuildTool"
-				CommandLine="if not exist ..\..\3rdparty\zlib\include\nul mkdir ..\..\3rdparty\zlib\include
-xcopy /y ..\..\3rdparty\zlib\contrib\minizip\*.h ..\..\3rdparty\zlib\include
-xcopy /y ..\..\3rdparty\zlib\zlib.h ..\..\3rdparty\zlib\include
-xcopy /y ..\..\3rdparty\zlib\zconf.h ..\..\3rdparty\zlib\include"
-				Outputs="..\..\3rdparty\zlib\include\zlib.h;..\..\3rdparty\zlib\include\zconf.h"/>
+				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
@@ -280,12 +260,7 @@ xcopy /y ..\..\3rdparty\zlib\zconf.h ..\..\3rdparty\zlib\include"
 				DebugInformationFormat="4"
 				CompileAs="0"/>
 			<Tool
-				Name="VCCustomBuildTool"
-				CommandLine="if not exist ..\..\3rdparty\zlib\include\nul mkdir ..\..\3rdparty\zlib\include
-xcopy /y ..\..\3rdparty\zlib\contrib\minizip\*.h ..\..\3rdparty\zlib\include
-xcopy /y ..\..\3rdparty\zlib\zlib.h ..\..\3rdparty\zlib\include
-xcopy /y ..\..\3rdparty\zlib\zconf.h ..\..\3rdparty\zlib\include"
-				Outputs="..\..\3rdparty\zlib\include\zlib.h;..\..\3rdparty\zlib\include\zconf.h"/>
+				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
 				OutputFile="..\..\Build.vc7\StaticDebug\zlibwapi.lib"
