@@ -494,7 +494,7 @@
 				RelativePath="..\..\render\include\materialapi.h">
 			</File>
 			<File
-				RelativePath="..\..\render\include\render.h">
+				RelativePath="..\..\render\include\renderapi.h">
 			</File>
 			<File
 				RelativePath="..\..\render\include\renderdll.h">
