@@ -211,7 +211,7 @@ cTerrainNode::~cTerrainNode()
 float cTerrainNode::GetElevation(float nx, float nz) const
 {
    Assert(m_pHeightMap != NULL);
-   uint size = m_pHeightMap->GetSize();
+   uint size = m_pHeightMap->GetSize() - 1;
    return m_pHeightMap->Height(Round(nx * size), Round(nz * size));
 }
 
