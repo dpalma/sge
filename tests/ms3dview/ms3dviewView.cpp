@@ -136,8 +136,6 @@ void CMs3dviewView::OnDraw(CDC* pDC)
    glPopMatrix();
 
    glFinish();
-
-   SwapBuffers();
 }
 
 /////////////////////////////////////////////////////////////////////////////
