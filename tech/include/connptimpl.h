@@ -72,6 +72,10 @@ public:
    }
 
 protected:
+   typedef CONTAINER tSinks;
+
+   inline tSinks & AccessSinks() { return m_sinks; }
+
    ~cConnectionPoint()
    {
       std::for_each(m_sinks.begin(), m_sinks.end(), CTInterfaceMethodRef(&IUnknown::Release));
