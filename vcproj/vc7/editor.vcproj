@@ -364,10 +364,10 @@
 				RelativePath="..\..\editor\editorCommands.cpp">
 			</File>
 			<File
-				RelativePath="..\..\editor\editorCtrlBars.cpp">
+				RelativePath="..\..\editor\editorDoc.cpp">
 			</File>
 			<File
-				RelativePath="..\..\editor\editorDoc.cpp">
+				RelativePath="..\..\editor\editorDockingWindows.cpp">
 			</File>
 			<File
 				RelativePath="..\..\editor\editorMain.cpp">
@@ -473,10 +473,10 @@
 				RelativePath="..\..\editor\editorCommands.h">
 			</File>
 			<File
-				RelativePath="..\..\editor\editorCtrlBars.h">
+				RelativePath="..\..\editor\editorDoc.h">
 			</File>
 			<File
-				RelativePath="..\..\editor\editorDoc.h">
+				RelativePath="..\..\editor\editorDockingWindows.h">
 			</File>
 			<File
 				RelativePath="..\..\editor\editorMessageLoop.h">
