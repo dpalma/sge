@@ -3,7 +3,6 @@
 
 #include "stdhdr.h"
 
-#include "ggl.h"
 #include "gcommon.h"
 
 #define WIN32_LEAN_AND_MEAN
@@ -135,10 +134,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
       return -1;
    }
 
-   DebugPrintf(NULL, 0, "Vendor:   %s\n", glGetString(GL_VENDOR));
-   DebugPrintf(NULL, 0, "Renderer: %s\n", glGetString(GL_RENDERER));
-   DebugPrintf(NULL, 0, "Version:  %s\n", glGetString(GL_VERSION));
-
    MSG msg;
 
    for (;;)
@@ -161,8 +156,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
          {
             WaitMessage();
          }
-
-         GlShowError();
       }
    }
 

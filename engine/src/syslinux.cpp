@@ -3,7 +3,6 @@
 
 #include "stdhdr.h"
 
-#include "ggl.h"
 #include "gcommon.h"
 #include "matrix4.h"
 #include "window.h"
@@ -160,8 +159,6 @@ int main(int argc, char * argv[])
       else
       {
          MainFrame();
-
-         GlShowError();
       }
    }
 

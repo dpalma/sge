@@ -652,7 +652,7 @@ void MainFrame()
 
    g_pRenderDevice->BeginScene();
 
-   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+   g_pRenderDevice->Clear();
 
    g_pGameCamera->Render();
 

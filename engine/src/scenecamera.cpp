@@ -3,9 +3,9 @@
 
 #include "stdhdr.h"
 
+#include "render.h"
 #include "scenecamera.h"
-
-#include "ggl.h"
+#include "gcommon.h"
 
 #include "dbgalloc.h" // must be last header
 
@@ -57,25 +57,9 @@ void cSceneCameraGroup::UpdateCompositeMatrices()
 
 void cSceneCameraGroup::Render()
 {
-   glPushAttrib(GL_MATRIX_MODE);
-
-   glMatrixMode(GL_PROJECTION);
-   glPushMatrix();
-   glLoadMatrixf(GetProjectionMatrix().m);
-
-   glMatrixMode(GL_MODELVIEW);
-   glPushMatrix();
-   glLoadMatrixf(GetModelViewMatrix().m);
-
+   AccessRenderDevice()->SetProjectionMatrix(GetProjectionMatrix());
+   AccessRenderDevice()->SetViewMatrix(GetModelViewMatrix());
    cSceneGroup::Render();
-
-   glMatrixMode(GL_MODELVIEW);
-   glPopMatrix();
-
-   glMatrixMode(GL_PROJECTION);
-   glPopMatrix();
-
-   glPopAttrib();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
