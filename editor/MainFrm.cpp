@@ -27,10 +27,10 @@ IMPLEMENT_DYNCREATE(CMainFrame, CFrameWnd)
 
 BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	//{{AFX_MSG_MAP(CMainFrame)
-		// NOTE - the ClassWizard will add and remove mapping macros here.
-		//    DO NOT EDIT what you see in these blocks of generated code !
 	ON_WM_CREATE()
+	ON_UPDATE_COMMAND_UI(ID_VIEW_CONTROL_BAR1, OnUpdateViewControlBarMenu)
 	//}}AFX_MSG_MAP
+	ON_COMMAND_EX_RANGE(ID_VIEW_CONTROL_BAR1, ID_VIEW_CONTROL_BAR16, OnViewControlBar)
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -170,6 +170,10 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 void CMainFrame::AssertValid() const
 {
 	CFrameWnd::AssertValid();
+   for (uint i = 0; i < m_ctrlBars.size(); i++)
+   {
+      ASSERT_VALID(m_ctrlBars[i]);
+   }
 }
 
 void CMainFrame::Dump(CDumpContext& dc) const
@@ -190,4 +194,87 @@ BOOL CMainFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
    return m_wndSplitter.CreateStatic(this, 1, 2)
       && m_wndSplitter.CreateView(0, 0, RUNTIME_CLASS(CTreeView), treeSize, pContext)
       && m_wndSplitter.CreateView(0, 1, RUNTIME_CLASS(cEditorView), CSize(0,0), pContext);
+}
+
+void CMainFrame::OnUpdateViewControlBarMenu(CCmdUI* pCmdUI) 
+{
+   if (m_ctrlBarViewMenuText.IsEmpty() && pCmdUI->m_pMenu != NULL)
+   {
+      pCmdUI->m_pMenu->GetMenuString(pCmdUI->m_nID, m_ctrlBarViewMenuText, MF_BYCOMMAND);
+   }
+
+   if (m_ctrlBars.empty())
+   {
+      if (!m_ctrlBarViewMenuText.IsEmpty())
+      {
+         pCmdUI->SetText(m_ctrlBarViewMenuText);
+      }
+      pCmdUI->Enable(FALSE);
+      return;
+   }
+
+   if (pCmdUI->m_pMenu == NULL)
+   {
+      return;
+   }
+
+   for (uint i = 0; i < m_ctrlBars.size(); i++)
+   {
+      pCmdUI->m_pMenu->DeleteMenu(pCmdUI->m_nID + i, MF_BYCOMMAND);
+   }
+
+   CString strName;
+   CString strTemp;
+   for (i = 0; i < m_ctrlBars.size(); i++)
+   {
+      ASSERT_VALID(m_ctrlBars[i]);
+
+      CString title, temp;
+      m_ctrlBars[i]->GetWindowText(title);
+
+      // double up any '&' characters so they are not underlined
+      LPCTSTR lpszSrc = title;
+      LPTSTR lpszDest = temp.GetBuffer(title.GetLength()*2);
+      while (*lpszSrc != 0)
+      {
+         if (*lpszSrc == '&')
+         {
+            *lpszDest++ = '&';
+         }
+         if (_istlead(*lpszSrc))
+         {
+            *lpszDest++ = *lpszSrc++;
+         }
+         *lpszDest++ = *lpszSrc++;
+      }
+      *lpszDest = 0;
+      temp.ReleaseBuffer();
+
+      uint menuFlags = MF_STRING | MF_BYPOSITION;
+
+      if (m_ctrlBars[i]->IsWindowVisible())
+      {
+         menuFlags |= MF_CHECKED;
+      }
+
+      pCmdUI->m_pMenu->InsertMenu(pCmdUI->m_nIndex++, menuFlags, pCmdUI->m_nID++, temp);
+   }
+
+   // update end menu count
+   pCmdUI->m_nIndex--; // point to last menu added
+   pCmdUI->m_nIndexMax = pCmdUI->m_pMenu->GetMenuItemCount();
+
+   pCmdUI->m_bEnableChanged = TRUE; // all the added items are enabled
+}
+
+BOOL CMainFrame::OnViewControlBar(UINT nID)
+{
+   ASSERT_VALID(this);
+   Assert(nID >= ID_VIEW_CONTROL_BAR1);
+   Assert(nID < (ID_VIEW_CONTROL_BAR1 + m_ctrlBars.size()));
+   int index = nID - ID_VIEW_CONTROL_BAR1;
+   ASSERT_VALID(m_ctrlBars[index]);
+   CControlBar * pCtrlBar = m_ctrlBars[index];
+   ShowControlBar(pCtrlBar, !pCtrlBar->IsWindowVisible(), FALSE);
+   return TRUE;
 }

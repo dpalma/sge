@@ -127,6 +127,8 @@ BEGIN
     BEGIN
         MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
+        MENUITEM SEPARATOR
+        MENUITEM "Control Bar",                 ID_VIEW_CONTROL_BAR1
     END
     POPUP "&Tools"
     BEGIN
@@ -361,6 +363,26 @@ STRINGTABLE DISCARDABLE
 BEGIN
     IDS_NO_UNIT_TESTS       "Unit tests not available in this build"
     IDS_OUTPUT_BAR_TITLE    "Output"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_VIEW_CONTROL_BAR1    "Show or hide this control bar"
+    ID_VIEW_CONTROL_BAR2    "Show or hide this control bar"
+    ID_VIEW_CONTROL_BAR3    "Show or hide this control bar"
+    ID_VIEW_CONTROL_BAR4    "Show or hide this control bar"
+    ID_VIEW_CONTROL_BAR5    "Show or hide this control bar"
+    ID_VIEW_CONTROL_BAR6    "Show or hide this control bar"
+    ID_VIEW_CONTROL_BAR7    "Show or hide this control bar"
+    ID_VIEW_CONTROL_BAR8    "Show or hide this control bar"
+    ID_VIEW_CONTROL_BAR9    "Show or hide this control bar"
+    ID_VIEW_CONTROL_BAR10   "Show or hide this control bar"
+    ID_VIEW_CONTROL_BAR11   "Show or hide this control bar"
+    ID_VIEW_CONTROL_BAR12   "Show or hide this control bar"
+    ID_VIEW_CONTROL_BAR13   "Show or hide this control bar"
+    ID_VIEW_CONTROL_BAR14   "Show or hide this control bar"
+    ID_VIEW_CONTROL_BAR15   "Show or hide this control bar"
+    ID_VIEW_CONTROL_BAR16   "Show or hide this control bar"
 END
 
 #endif    // English (U.S.) resources

@@ -10,6 +10,11 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: CMainFrame
+//
+
 class CMainFrame : public CFrameWnd
 {
 protected: // create from serialization only
@@ -48,13 +53,14 @@ protected:  // control bar embedded members
 protected:
 	//{{AFX_MSG(CMainFrame)
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-		// NOTE - the ClassWizard will add and remove member functions here.
-		//    DO NOT EDIT what you see in these blocks of generated code!
+	afx_msg void OnUpdateViewControlBarMenu(CCmdUI* pCmdUI);
 	//}}AFX_MSG
+   afx_msg BOOL OnViewControlBar(UINT nID);
 	DECLARE_MESSAGE_MAP()
 
 private:
    std::vector<CControlBar *> m_ctrlBars;
+   CString m_ctrlBarViewMenuText;
 };
 
 /////////////////////////////////////////////////////////////////////////////
