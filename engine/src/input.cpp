@@ -321,6 +321,8 @@ SCRIPT_DEFINE_FUNCTION(bind)
    {
       KeyBind(Name2Key(pszKeyName), pszDownCmd, pszUpCmd);
    }
+
+   return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -331,6 +333,8 @@ SCRIPT_DEFINE_FUNCTION(unbind)
    {
       KeyUnbind(Name2Key(ScriptArgv(0).psz));
    }
+
+   return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
