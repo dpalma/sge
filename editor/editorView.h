@@ -53,8 +53,7 @@ public:
    inline IRenderDevice * AccessRenderDevice() { return m_pRenderDevice; }
 
    // IWindow
-   virtual tResult Create(int width, int height, int bpp, const char * pszTitle = NULL);
-   virtual tResult GetWindowInfo(sWindowInfo * pInfo) const;
+   virtual tResult Create(const sWindowCreateParams * pParams);
    virtual tResult SwapBuffers();
 
    // IEditorView

@@ -91,35 +91,10 @@ cEditorView::~cEditorView()
 
 ////////////////////////////////////////
 
-tResult cEditorView::Create(int width, int height, int bpp, const char * pszTitle)
+tResult cEditorView::Create(const sWindowCreateParams * /*pParams*/)
 {
    Assert(!"This should never be called");
    return E_FAIL;
-}
-
-////////////////////////////////////////
-
-tResult cEditorView::GetWindowInfo(sWindowInfo * pInfo) const
-{
-   if (pInfo == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (!IsWindow(GetSafeHwnd()))
-   {
-      return E_FAIL;
-   }
-
-   CRect rect;
-   GetClientRect(&rect);
-
-   pInfo->width = rect.Width();
-   pInfo->height = rect.Height();
-   pInfo->bpp = (GetSafeHdc() != NULL) ? GetDeviceCaps(GetSafeHdc(), BITSPIXEL) : 0;
-   pInfo->hWnd = GetSafeHwnd();
-
-   return S_OK;
 }
 
 ////////////////////////////////////////
