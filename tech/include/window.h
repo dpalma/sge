@@ -23,6 +23,7 @@ F_DECLARE_INTERFACE(IWindowX11);
 typedef unsigned long XID;
 typedef XID Window;
 typedef struct _XDisplay Display;
+typedef union _XEvent XEvent;
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -99,16 +100,13 @@ class cDefaultWindowSink : public IWindowSink
 // INTERFACE: IWindowX11
 //
 
-typedef union _XEvent XEvent;
-
 interface IWindowX11 : IWindow
 {
    virtual void DispatchEvent(const XEvent * pXEvent) = 0;
 };
 
 TECH_API IWindowX11 * FindWindow(Window window);
-
-extern TECH_API Display * g_pXDisplay;
+TECH_API tResult GetDisplay(Display * * ppDisplay);
 
 #endif
 

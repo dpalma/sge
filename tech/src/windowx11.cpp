@@ -17,57 +17,29 @@
 
 #include "dbgalloc.h" // must be last header
 
-Display * g_pXDisplay = NULL;
+LOG_DEFINE_ENABLE_CHANNEL(Window, true);
+
+#define LocalMsg(msg)            DebugMsgEx(Window,(msg))
+#define LocalMsg1(msg,a)         DebugMsgEx1(Window,(msg),(a))
+#define LocalMsg2(msg,a,b)       DebugMsgEx2(Window,(msg),(a),(b))
+#define LocalMsg3(msg,a,b,c)     DebugMsgEx3(Window,(msg),(a),(b),(c))
+#define LocalMsg4(msg,a,b,c,d)   DebugMsgEx4(Window,(msg),(a),(b),(c),(d))
 
 ///////////////////////////////////////////////////////////////////////////////
 
-typedef std::map<Window, IWindowX11 *> tWindowMap;
-
-tWindowMap g_windows;
-
-///////////////////////////////////////////////////////////////////////////////
-// These functions do NOT AddRef the IWindowX11 interface pointer because
-// the implementation behind IWindowX11 calls AddWindow when a window
-// object is created and RemoveWindow when it is destroyed. So, every pointer
-// in the map is always valid.
-
-bool RegisterWindow(Window window, IWindowX11 * pWindow)
+static int CompareKeySym(const void * elem1, const void * elem2)
 {
-   Assert(window != 0);
-   Assert(pWindow != NULL);
-   std::pair<tWindowMap::iterator, bool> result = g_windows.insert(std::make_pair(window, pWindow));
-   return result.second;
+   return (*(long*)elem1) - (*(long*)elem2);
 }
 
-IWindowX11 * RevokeWindow(Window window)
+static bool MapXKeysym(KeySym keysym, long * pKeyCode)
 {
-   tWindowMap::iterator iter = g_windows.find(window);
-   if (iter == g_windows.end())
-      return NULL;
-   IWindowX11 * result = iter->second;
-   g_windows.erase(iter);
-   if (g_windows.empty())
+   static struct
    {
-      XCloseDisplay(g_pXDisplay);
-      g_pXDisplay = NULL;
+      long keySym;
+      long keyCode;
    }
-   return result;
-}
-
-IWindowX11 * FindWindow(Window window)
-{
-   tWindowMap::iterator iter = g_windows.find(window);
-   if (iter == g_windows.end())
-      return NULL;
-   iter->second->AddRef();
-   return iter->second;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-static bool MapXKeysym(KeySym keysym, long * pkeycode)
-{
-   static const struct { long sym; long code; } sym2code[] =
+   keyCodeTable[] =
    {
       { XK_KP_Tab, kTab }, { XK_Tab, kTab },
       { XK_Return, kEnter }, { XK_KP_Enter, kEnter }, // ??? XK_Linefeed
@@ -98,22 +70,40 @@ static bool MapXKeysym(KeySym keysym, long * pkeycode)
       { XK_Right, kRight },
       { XK_Pause, kPause },
    };
-   static const int nEntries = _countof(sym2code);
-   for (int i = 0; i < nEntries; i++)
+
+   static bool keyCodeTableSorted = false;
+
+   if (!keyCodeTableSorted)
    {
-      if (sym2code[i].sym == keysym)
+      qsort(keyCodeTable, _countof(keyCodeTable), sizeof(keyCodeTable[0]), CompareKeySym);
+      keyCodeTableSorted = true;
+   }
+
+#if 0
+   // TODO: use bsearch
+#else
+   for (int i = 0; i < _countof(keyCodeTable); i++)
+   {
+      if (keyCodeTable[i].keySym == keysym)
       {
-         if (pkeycode != NULL)
-            *pkeycode = sym2code[i].code;
+         if (pKeyCode != NULL)
+         {
+            *pKeyCode = keyCodeTable[i].keyCode;
+         }
          return true;
       }
    }
+#endif
+
    if (isprint(keysym))
    {
-      if (pkeycode != NULL)
-         *pkeycode = keysym;
+      if (pKeyCode != NULL)
+      {
+         *pKeyCode = keysym;
+      }
       return true;
    }
+
    DebugMsg1("Unknown keysym %d\n", (int)keysym);
    return false;
 }
@@ -126,32 +116,51 @@ static bool MapXKeysym(KeySym keysym, long * pkeycode)
 class cWindowX11 : public cComObject<IMPLEMENTSCP(IWindowX11, IWindowSink)>
 {
 public:
-   cWindowX11(Display * pDisplay);
+   friend IWindowX11 * FindWindow(Window window);
+   friend tResult GetDisplay(Display * * ppDisplay);
+
+   cWindowX11();
 
    virtual void OnFinalRelease();
 
    virtual tResult Create(int width, int height, int bpp, const char * pszTitle = NULL);
-
    virtual tResult GetWindowInfo(sWindowInfo * pInfo) const;
-
    virtual tResult SwapBuffers();
 
    virtual void DispatchEvent(const XEvent * pXEvent);
 
 private:
+   static int HandleXError(Display * display, XErrorEvent * event);
+   static XErrorHandler gm_nextErrorHandler;
+
+   typedef std::map<Window, IWindowX11 *> tWindowMap;
+   static tWindowMap gm_windowMap;
+
+   static Display * gm_display;
+
    int m_bpp;
-   Display * m_pDisplay;
    Window m_window;
-   GLXContext m_glXContext;
+   GLXContext m_context;
 };
 
 ///////////////////////////////////////
 
-cWindowX11::cWindowX11(Display * pDisplay)
+XErrorHandler cWindowX11::gm_nextErrorHandler = NULL;
+
+///////////////////////////////////////
+
+cWindowX11::tWindowMap cWindowX11::gm_windowMap;
+
+///////////////////////////////////////
+
+Display * cWindowX11::gm_display = NULL;
+
+///////////////////////////////////////
+
+cWindowX11::cWindowX11()
  : m_bpp(0),
-   m_pDisplay(pDisplay),
    m_window(0),
-   m_glXContext(NULL)
+   m_context(NULL)
 {
 }
 
@@ -159,22 +168,33 @@ cWindowX11::cWindowX11(Display * pDisplay)
 
 void cWindowX11::OnFinalRelease()
 {
-   if (m_glXContext != NULL)
+   m_bpp = 0;
+
+   if (m_context != NULL)
    {
-      glXDestroyContext(m_pDisplay, m_glXContext);
-      m_glXContext = NULL;
+      glXDestroyContext(gm_display, m_context);
+      m_context = NULL;
    }
 
    if (m_window != 0)
    {
-      Verify(RevokeWindow(m_window) == this);
+      gm_windowMap.erase(m_window);
 
-      XDestroyWindow(m_pDisplay, m_window);
+      XDestroyWindow(gm_display, m_window);
       m_window = 0;
    }
 
-   m_bpp = 0;
-   m_pDisplay = NULL;
+   if (gm_windowMap.empty())
+   {
+      if (gm_nextErrorHandler != NULL)
+      {
+         XSetErrorHandler(gm_nextErrorHandler);
+         gm_nextErrorHandler = NULL;
+      }
+
+      XCloseDisplay(gm_display);
+      gm_display = NULL;
+   }
 }
 
 ///////////////////////////////////////
@@ -193,13 +213,21 @@ tResult cWindowX11::Create(int width, int height, int bpp, const char * pszTitle
       return E_FAIL;
    }
 
-   if (m_pDisplay == NULL)
+   if (gm_display == NULL)
    {
-      DebugMsg("No open Display on which to create the window\n");
+      gm_display = XOpenDisplay(NULL);
+
+      Assert(gm_nextErrorHandler == NULL);
+      gm_nextErrorHandler = XSetErrorHandler(HandleXError);
+   }
+
+   if (gm_display == NULL)
+   {
+      DebugMsg("Unable to open X display\n");
       return E_FAIL;
    }
 
-   if (!glXQueryExtension(m_pDisplay, NULL, NULL))
+   if (!glXQueryExtension(gm_display, NULL, NULL))
    {
       DebugMsg("Display doesn't support glx\n");
       return E_FAIL;
@@ -207,7 +235,7 @@ tResult cWindowX11::Create(int width, int height, int bpp, const char * pszTitle
 
    int attributes[] = { GLX_RGBA, GLX_DOUBLEBUFFER, None };
 
-   XVisualInfo * pVi = glXChooseVisual(m_pDisplay, DefaultScreen(m_pDisplay), attributes);
+   XVisualInfo * pVi = glXChooseVisual(gm_display, DefaultScreen(gm_display), attributes);
 
    if (pVi == NULL)
    {
@@ -215,28 +243,36 @@ tResult cWindowX11::Create(int width, int height, int bpp, const char * pszTitle
       return E_FAIL;
    }
 
-   int screenWidth = DisplayWidth(m_pDisplay, pVi->screen);
-   int screenHeight = DisplayHeight(m_pDisplay, pVi->screen);
+   int screenWidth = DisplayWidth(gm_display, pVi->screen);
+   int screenHeight = DisplayHeight(gm_display, pVi->screen);
 
-   int x = (screenWidth - width) / 2;
-   int y = (screenHeight - height) / 2;
+   LocalMsg3("Screen %d is %d x %d\n", pVi->screen, screenWidth, screenHeight);
+   LocalMsg3("Using visual %x, depth %d, class %d\n", pVi->visualid, pVi->depth, pVi->c_class);
+
+   Colormap colorMap = XCreateColormap(gm_display, RootWindow(gm_display, pVi->screen),
+      pVi->visual, AllocNone);
 
    XSetWindowAttributes swa;
    swa.border_pixel = 0;
+   swa.colormap = colorMap;
    swa.event_mask = ButtonPressMask | ButtonReleaseMask |
                     KeyPressMask | KeyReleaseMask |
                     PointerMotionMask | StructureNotifyMask;
 
-   m_window = XCreateWindow(
-      m_pDisplay, RootWindow(m_pDisplay, pVi->screen),
-      x, y, width, height, 0, pVi->depth, InputOutput,
-      pVi->visual, CWBorderPixel | CWEventMask, &swa);
+   int x = (screenWidth - width) / 2;
+   int y = (screenHeight - height) / 2;
 
-   // @TODO: check for error
+   m_window = XCreateWindow(
+      gm_display, RootWindow(gm_display, pVi->screen),
+      x, y, width, height, 0, pVi->depth, InputOutput,
+      pVi->visual, CWBorderPixel | CWColormap | CWEventMask, &swa);
+
+   std::pair<tWindowMap::iterator, bool> result = gm_windowMap.insert(std::make_pair(m_window, this));
+   Assert(result.second);
 
    if (pszTitle != NULL)
    {
-      XStoreName(m_pDisplay, m_window, pszTitle);
+      XStoreName(gm_display, m_window, pszTitle);
    }
 
    XSizeHints sizeHints;
@@ -245,24 +281,22 @@ tResult cWindowX11::Create(int width, int height, int bpp, const char * pszTitle
    sizeHints.y = y;
    sizeHints.width = width;
    sizeHints.height = height;
-   XSetNormalHints(m_pDisplay, m_window, &sizeHints);
+   XSetNormalHints(gm_display, m_window, &sizeHints);
 
-   m_glXContext = glXCreateContext(m_pDisplay, pVi, None, GL_TRUE);
+   m_context = glXCreateContext(gm_display, pVi, None, GL_TRUE);
 
    XFree(pVi);
    pVi = NULL;
 
-   if (m_glXContext == NULL)
+   if (m_context == NULL)
    {
       DebugMsg("Could not create glx context\n");
       return E_FAIL;
    }
 
-   glXMakeCurrent(m_pDisplay, m_window, m_glXContext);
+   glXMakeCurrent(gm_display, m_window, m_context);
 
-   XMapRaised(m_pDisplay, m_window);
-
-   Verify(RegisterWindow(m_window, static_cast<IWindowX11 *>(this)));
+   XMapRaised(gm_display, m_window);
 
    m_bpp = bpp;
 
@@ -276,12 +310,12 @@ tResult cWindowX11::GetWindowInfo(sWindowInfo * pInfo) const
    Assert(pInfo != NULL);
 
    XWindowAttributes attr;
-   XGetWindowAttributes(m_pDisplay, m_window, &attr);
+   XGetWindowAttributes(gm_display, m_window, &attr);
 
    pInfo->width = attr.width;
    pInfo->height = attr.height;
    pInfo->bpp = m_bpp;
-   pInfo->display = m_pDisplay;
+   pInfo->display = gm_display;
    pInfo->window = m_window;
 
    return S_OK;
@@ -291,7 +325,7 @@ tResult cWindowX11::GetWindowInfo(sWindowInfo * pInfo) const
 
 tResult cWindowX11::SwapBuffers()
 {
-   glXSwapBuffers(m_pDisplay, m_window);
+   glXSwapBuffers(gm_display, m_window);
    return S_OK;
 }
 
@@ -299,12 +333,6 @@ tResult cWindowX11::SwapBuffers()
 
 void cWindowX11::DispatchEvent(const XEvent * pXEvent)
 {
-   typedef void (IWindowSink::*tOnKeyEvent)(long, bool, double);
-   typedef void (IWindowSink::*tOnMouseEvent)(int x, int y, uint mouseState, double time);
-   typedef void (IWindowSink::*tOnDestroy)(double time);
-   typedef void (IWindowSink::*tOnResize)(int width, int height, double time);
-   typedef void (IWindowSink::*tOnActivateApp)(bool bActive, double time);
-
    double eventTime = TimeGetSecs();
 
    switch (pXEvent->type)
@@ -335,14 +363,13 @@ void cWindowX11::DispatchEvent(const XEvent * pXEvent)
 
       case ButtonPress:
       case ButtonRelease:
-         // @TODO (dpalma 8-21-02): a less than ideal way to handle the mousewheel
-         if (((XButtonEvent *)pXEvent)->button == 4)
+         if (pXEvent->xbutton.button == 4)
          {
             ForEachConnection(&IWindowSink::OnKeyEvent, (long)kMouseWheelUp, true, eventTime);
             ForEachConnection(&IWindowSink::OnKeyEvent, (long)kMouseWheelUp, false, eventTime);
             break;
          }
-         else if (((XButtonEvent *)pXEvent)->button == 5)
+         else if (pXEvent->xbutton.button == 5)
          {
             ForEachConnection(&IWindowSink::OnKeyEvent, (long)kMouseWheelDown, true, eventTime);
             ForEachConnection(&IWindowSink::OnKeyEvent, (long)kMouseWheelDown, false, eventTime);
@@ -351,9 +378,7 @@ void cWindowX11::DispatchEvent(const XEvent * pXEvent)
          // fall through
       case MotionNotify:
       {
-         const XMotionEvent * pMotionEvent = reinterpret_cast<const XMotionEvent *>(pXEvent);
-
-         uint state = pMotionEvent->state;
+         uint state = pXEvent->xmotion.state;
 
          uint mouseState = 0;
          if (state & Button1Mask)
@@ -363,7 +388,7 @@ void cWindowX11::DispatchEvent(const XEvent * pXEvent)
          if (state & Button2Mask)
             mouseState |= kMMouseDown;
 
-         ForEachConnection(&IWindowSink::OnMouseEvent, pMotionEvent->x, pMotionEvent->y, mouseState, eventTime);
+         ForEachConnection(&IWindowSink::OnMouseEvent, pXEvent->xmotion.x, pXEvent->xmotion.y, mouseState, eventTime);
          break;
       }
    }
@@ -371,14 +396,47 @@ void cWindowX11::DispatchEvent(const XEvent * pXEvent)
 
 ///////////////////////////////////////
 
+int cWindowX11::HandleXError(Display * display, XErrorEvent * event)
+{
+   LocalMsg4("X error %d, %d, %d, %d\n", event->serial, event->error_code, event->request_code, event->minor_code);
+   Assert(gm_nextErrorHandler != NULL);
+   return gm_nextErrorHandler(display, event);
+}
+
+///////////////////////////////////////
+
+IWindowX11 * FindWindow(Window window)
+{
+   cWindowX11::tWindowMap::iterator iter = cWindowX11::gm_windowMap.find(window);
+   if (iter != cWindowX11::gm_windowMap.end())
+   {
+      return CTAddRef(iter->second);
+   }
+   return NULL;
+}
+
+///////////////////////////////////////
+
+tResult GetDisplay(Display * * ppDisplay)
+{
+   Assert(ppDisplay != NULL);
+   if (ppDisplay == NULL)
+   {
+      return E_POINTER;
+   }
+   if (cWindowX11::gm_display == NULL)
+   {
+      return S_FALSE;
+   }
+   *ppDisplay = cWindowX11::gm_display;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
 IWindow * WindowCreate()
 {
-   if (g_pXDisplay == NULL)
-   {
-      g_pXDisplay = XOpenDisplay(NULL);
-   }
-
-   return static_cast<IWindow *>(new cWindowX11(g_pXDisplay));
+   return static_cast<IWindow *>(new cWindowX11);
 }
 
 IWindow * WindowCreate(int width, int height, int bpp, const char * pszTitle /*= NULL*/)
