@@ -26,13 +26,6 @@ bool IsExiting()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-Display * GetXDisplay()
-{
-   return g_pXDisplay;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 void SysAppActivate(bool active)
 {
 }
@@ -130,13 +123,20 @@ int main(int argc, char * argv[])
       return EXIT_FAILURE;
    }
 
+   Display * display = NULL;
+   if (GetDisplay(&display) != S_OK)
+   {
+      DebugMsg("Unable to get X display\n");
+      return EXIT_FAILURE;
+   }
+
    for (;;)
    {
-      XFlush(g_pXDisplay);
-      if (XPending(g_pXDisplay))
+      XFlush(display);
+      if (XPending(display))
       {
          XEvent event;
-         XNextEvent(g_pXDisplay, &event);
+         XNextEvent(display, &event);
 
          DebugMsgEx2(XEvents, "Event %s at %f\n", XEventName(event.type), TimeGetSecs());
 
@@ -154,7 +154,9 @@ int main(int argc, char * argv[])
          }
 
 	      if (g_bExiting)
+         {
             break;
+         }
       }
       else
       {
