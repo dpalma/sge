@@ -2,11 +2,35 @@
 
 @echo off
 
-if "%1"=="" goto NoRepository
-
 setlocal
 
-set CVSREPOS=%1
+set ARGC=0
+:ParseArgs
+if "%1"=="" goto ParseArgsDone
+for /F "delims=-" %%a in ("%1") do (
+   if "%LAST%" == "" (
+	   set LAST=%%a
+   ) else (
+	   if /i "%LAST%" == "cvsrepos" (
+		   set CVSREPOS=%%a
+	      set /a ARGC+=1
+	   ) else if /i "%LAST%" == "dest" (
+		   set BACKUPDEST=%%a
+	      set /a ARGC+=1
+	   ) else (
+	      echo Unknown argument %LAST%
+	   )
+		set LAST=
+   )
+)
+shift
+goto ParseArgs
+:ParseArgsDone
+rem echo Parsed %ARGC% arguments
+echo CVS repository %CVSREPOS%
+echo Backup to %BACKUPDEST%
+if "%ARGC%" == "0" then goto InvalidArgs
+if "%CVSREPOS%" == "" then goto NoRepository
 
 set BACKUPFILE=
 
@@ -71,6 +95,10 @@ goto Done
 
 :NoBackupFile
 echo Delete some backup files
+goto Done
+
+:InvalidArgs
+echo Invalid arguments
 goto Done
 
 :Done
