@@ -25,8 +25,6 @@
 // http://nehe.gamedev.net/data/lessons/lesson.asp?lesson=31
 // http://rsn.gamedev.net/tutorials/ms3danim.asp
 
-static const char g_MS3D[] = "MS3D000000";
-
 // If this assertion fails, the struct packing was likely wrong
 // when ms3d.h was compiled.
 AssertOnce(sizeof(ms3d_header_t) == 14);
@@ -204,9 +202,15 @@ public:
    cMs3dFileReader();
    ~cMs3dFileReader();
 
-   tResult Read(IReader * pReader, IRenderDevice * pRenderDevice);
+   tResult Read(IReader * pReader);
+
+   tResult CreateMesh(IRenderDevice * pRenderDevice, IMesh * * ppMesh) const;
 
 private:
+   tResult CreateMaterials(IRenderDevice * pRenderDevice, IMesh * pMesh) const;
+
+   static const char gm_MS3D[];
+
    std::vector<ms3d_vertex_t> m_vertices;
    std::vector<ms3d_triangle_t> m_triangles;
    std::vector<cMs3dGroup> m_groups;
@@ -214,6 +218,10 @@ private:
    std::vector<sBoneInfo> m_bones;
    std::vector<IKeyFrameInterpolator *> m_interpolators;
 };
+
+///////////////////////////////////////
+
+const char cMs3dFileReader::gm_MS3D[] = "MS3D000000";
 
 ///////////////////////////////////////
 
@@ -229,11 +237,11 @@ cMs3dFileReader::~cMs3dFileReader()
 
 ///////////////////////////////////////
 
-tResult cMs3dFileReader::Read(IReader * pReader, IRenderDevice * pRenderDevice)
+tResult cMs3dFileReader::Read(IReader * pReader)
 {
    ms3d_header_t header;
    if (pReader->Read(&header, sizeof(header)) != S_OK ||
-      memcmp(g_MS3D, header.id, _countof(header.id)) != 0)
+      memcmp(gm_MS3D, header.id, _countof(header.id)) != 0)
       return E_FAIL;
 
    uint16 nVertices;
@@ -279,18 +287,15 @@ tResult cMs3dFileReader::Read(IReader * pReader, IRenderDevice * pRenderDevice)
    return S_OK;
 }
 
-tResult Ms3dFileRead(IRenderDevice * pRenderDevice, IReader * pReader, IMesh * * ppMesh)
+///////////////////////////////////////
+
+tResult cMs3dFileReader::CreateMesh(IRenderDevice * pRenderDevice, IMesh * * ppMesh) const
 {
-   cMs3dFileReader ms3dReader;
-
-   if (ms3dReader.Read(pReader, pRenderDevice) != S_OK)
-      return E_FAIL;
-
-   std::vector<cMs3dVertexInfo> vertexInfo(ms3dReader.m_vertices.size());
+   std::vector<cMs3dVertexInfo> vertexInfo(m_vertices.size());
    {
       uint index;
-      std::vector<ms3d_vertex_t>::iterator iter;
-      for (index = 0, iter = ms3dReader.m_vertices.begin(); iter != ms3dReader.m_vertices.end(); index++, iter++)
+      std::vector<ms3d_vertex_t>::const_iterator iter;
+      for (index = 0, iter = m_vertices.begin(); iter != m_vertices.end(); index++, iter++)
       {
          cMs3dVertexInfo * pV = &vertexInfo[index];
          pV->SetPosition(iter->vertex);
@@ -305,13 +310,13 @@ tResult Ms3dFileRead(IRenderDevice * pRenderDevice, IReader * pReader, IMesh * *
    // the normal or texture coordinates. Seems to work OK.
    uint i;
    bool bHaveBoneAssignments = false;
-   std::vector<sMs3dVertex> vertices2(ms3dReader.m_vertices.size());
-   for (i = 0; i < ms3dReader.m_triangles.size(); i++)
+   std::vector<sMs3dVertex> vertices2(m_vertices.size());
+   for (i = 0; i < m_triangles.size(); i++)
    {
-      const ms3d_triangle_t & tri = ms3dReader.m_triangles[i];
+      const ms3d_triangle_t & tri = m_triangles[i];
       for (int j = 0; j < 3; j++)
       {
-         if (ms3dReader.m_vertices[tri.vertexIndices[j]].boneId >= 0)
+         if (m_vertices[tri.vertexIndices[j]].boneId >= 0)
          {
             bHaveBoneAssignments = true;
          }
@@ -320,7 +325,7 @@ tResult Ms3dFileRead(IRenderDevice * pRenderDevice, IReader * pReader, IMesh * *
          pV->AddReferringTriangle(i, j, tri.vertexNormals[j], tri.s[j], tri.t[j]);
 
          sMs3dVertex * pVertex = &vertices2[tri.vertexIndices[j]];
-         pVertex->pos = tVec3(ms3dReader.m_vertices[tri.vertexIndices[j]].vertex);
+         pVertex->pos = tVec3(m_vertices[tri.vertexIndices[j]].vertex);
          pVertex->normal = tVec3(tri.vertexNormals[j]);
          pVertex->u = tri.s[j];
          pVertex->v = 1 - tri.t[j];
@@ -341,8 +346,8 @@ tResult Ms3dFileRead(IRenderDevice * pRenderDevice, IReader * pReader, IMesh * *
       return E_FAIL;
    }
 
-   std::vector<cMs3dGroup>::iterator iter;
-   for (iter = ms3dReader.m_groups.begin(); iter != ms3dReader.m_groups.end(); iter++)
+   std::vector<cMs3dGroup>::const_iterator iter;
+   for (iter = m_groups.begin(); iter != m_groups.end(); iter++)
    {
       cAutoIPtr<IVertexDeclaration> pVertexDecl;
       if (pRenderDevice->CreateVertexDeclaration(g_ms3dVertexDecl, 
@@ -352,7 +357,7 @@ tResult Ms3dFileRead(IRenderDevice * pRenderDevice, IReader * pReader, IMesh * *
             vertices2.size(), pVertexDecl, pRenderDevice);
          if (!!pSubMesh)
          {
-            pSubMesh->SetMaterialName(ms3dReader.m_materials[iter->GetMaterialIndex()].name);
+            pSubMesh->SetMaterialName(m_materials[iter->GetMaterialIndex()].name);
 
             sMs3dVertex * pVertexData = NULL;
             if (pSubMesh->LockVertexBuffer((void * *)&pVertexData) == S_OK)
@@ -369,7 +374,7 @@ tResult Ms3dFileRead(IRenderDevice * pRenderDevice, IReader * pReader, IMesh * *
                {
                   for (int i = 0; i < iter->GetNumTriangles(); i++)
                   {
-                     const ms3d_triangle_t & tri = ms3dReader.m_triangles[iter->GetTriangle(i)];
+                     const ms3d_triangle_t & tri = m_triangles[iter->GetTriangle(i)];
                      pFaces[i * 3 + 0] = tri.vertexIndices[0];
                      pFaces[i * 3 + 1] = tri.vertexIndices[1];
                      pFaces[i * 3 + 2] = tri.vertexIndices[2];
@@ -383,41 +388,15 @@ tResult Ms3dFileRead(IRenderDevice * pRenderDevice, IReader * pReader, IMesh * *
       }
    }
 
-   for (i = 0; i < ms3dReader.m_materials.size(); i++)
+   if (CreateMaterials(pRenderDevice, pMesh) != S_OK)
    {
-      const ms3d_material_t & material = ms3dReader.m_materials[i];
-
-      cAutoIPtr<ITexture> pTexture;
-
-      if (material.texture[0] != 0)
-      {
-         UseGlobal(ResourceManager);
-
-         cImage * pTextureImage = ImageLoad(pResourceManager, material.texture);
-         if (pTextureImage != NULL)
-         {
-            pRenderDevice->CreateTexture(pTextureImage, &pTexture);
-            delete pTextureImage;
-         }
-      }
-
-      cAutoIPtr<IMaterial> pMaterial = MaterialCreate();
-      if (pMaterial != NULL)
-      {
-         pMaterial->SetName(material.name);
-         pMaterial->SetAmbient(cColor(material.ambient));
-         pMaterial->SetDiffuse(cColor(material.diffuse));
-         pMaterial->SetSpecular(cColor(material.specular));
-         pMaterial->SetEmissive(cColor(material.emissive));
-         pMaterial->SetShininess(material.shininess);
-         pMaterial->SetTexture(0, pTexture);
-         pMesh->AddMaterial(pMaterial);
-      }
+      return E_FAIL;
    }
 
    cAutoIPtr<ISkeleton> pSkeleton;
-   if (SkeletonCreate(&ms3dReader.m_bones[0], ms3dReader.m_bones.size(), 
-                      &ms3dReader.m_interpolators[0], ms3dReader.m_interpolators.size(), 
+   if (SkeletonCreate(&m_bones[0], m_bones.size(), 
+                      const_cast<IKeyFrameInterpolator * *>(&m_interpolators[0]), 
+                      m_interpolators.size(), 
                       &pSkeleton) == S_OK)
    {
       pMesh->AttachSkeleton(pSkeleton);
@@ -432,17 +411,59 @@ tResult Ms3dFileRead(IRenderDevice * pRenderDevice, IReader * pReader, IMesh * *
    return S_OK;
 }
 
+///////////////////////////////////////
+
+tResult cMs3dFileReader::CreateMaterials(IRenderDevice * pRenderDevice, IMesh * pMesh) const
+{
+   std::vector<ms3d_material_t>::const_iterator iter;
+   for (iter = m_materials.begin(); iter != m_materials.end(); iter++)
+   {
+      cAutoIPtr<IMaterial> pMaterial = MaterialCreate();
+      if (pMaterial != NULL)
+      {
+         pMaterial->SetName(iter->name);
+         pMaterial->SetAmbient(cColor(iter->ambient));
+         pMaterial->SetDiffuse(cColor(iter->diffuse));
+         pMaterial->SetSpecular(cColor(iter->specular));
+         pMaterial->SetEmissive(cColor(iter->emissive));
+         pMaterial->SetShininess(iter->shininess);
+
+         if (iter->texture[0] != 0)
+         {
+            UseGlobal(ResourceManager);
+            cImage * pTextureImage = ImageLoad(pResourceManager, iter->texture);
+            if (pTextureImage != NULL)
+            {
+               cAutoIPtr<ITexture> pTexture;
+               pRenderDevice->CreateTexture(pTextureImage, &pTexture);
+               pMaterial->SetTexture(0, pTexture);
+               delete pTextureImage;
+            }
+         }
+
+         pMesh->AddMaterial(pMaterial);
+      }
+   }
+
+   return S_OK;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 IMesh * LoadMs3d(IRenderDevice * pRenderDevice, IReader * pReader)
 {
+   Assert(pRenderDevice != NULL);
    Assert(pReader != NULL);
 
-   cAutoIPtr<IMesh> pMesh;
-   if (Ms3dFileRead(pRenderDevice, pReader, &pMesh) == S_OK)
+   cMs3dFileReader ms3dReader;
+   if (ms3dReader.Read(pReader) == S_OK)
    {
-      pMesh->AddRef();
-      return pMesh;
+      cAutoIPtr<IMesh> pMesh;
+      if (ms3dReader.CreateMesh(pRenderDevice, &pMesh) == S_OK)
+      {
+         pMesh->AddRef();
+         return pMesh;
+      }
    }
 
    return NULL;
