@@ -178,10 +178,11 @@ tResult Ms3dFileRead(IRenderDevice * pRenderDevice, IReader * pReader, IMesh * *
       {
          UseGlobal(ResourceManager);
 
-         cImage texture;
-         if (ImageLoad(pResourceManager, material.texture, &texture))
+         cImage * pTextureImage = ImageLoad(pResourceManager, material.texture);
+         if (pTextureImage != NULL)
          {
-            pRenderDevice->CreateTexture(&texture, &pTexture);
+            pRenderDevice->CreateTexture(pTextureImage, &pTexture);
+            delete pTextureImage;
          }
       }
 

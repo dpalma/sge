@@ -109,10 +109,11 @@ static IMaterial * MaterialFrom3ds(const s3dsMaterial * p3dsMaterial,
    {
       UseGlobal(ResourceManager);
 
-      cImage texture;
-      if (ImageLoad(pResourceManager, p3dsMaterial->szTexture, &texture))
+      cImage * pTextureImage = ImageLoad(pResourceManager, p3dsMaterial->szTexture);
+      if (pTextureImage != NULL)
       {
-         pRenderDevice->CreateTexture(&texture, &pTexture);
+         pRenderDevice->CreateTexture(pTextureImage, &pTexture);
+         delete pTextureImage;
       }
    }
 

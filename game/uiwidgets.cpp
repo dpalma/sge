@@ -251,11 +251,12 @@ bool cUIImage::LoadImage(const char * pszFilename)
 {
    UseGlobal(ResourceManager);
 
-   cImage image;
-   if (ImageLoad(pResourceManager, pszFilename, &image) != NULL)
+   cImage * pImage = ImageLoad(pResourceManager, pszFilename);
+   if (pImage != NULL)
    {
-      m_size = cUISize(image.GetWidth(), image.GetHeight());
-      AccessRenderDevice()->CreateTexture(&image, &m_pTex);
+      m_size = cUISize(pImage->GetWidth(), pImage->GetHeight());
+      AccessRenderDevice()->CreateTexture(pImage, &m_pTex);
+      delete pImage;
    }
    // return true unconditionally so that this component will
    // be a placeholder at least if the image fails to load
@@ -391,14 +392,16 @@ bool cUIBitmapButton::SetBitmap(const char * pszName)
 {
    UseGlobal(ResourceManager);
 
-   cImage image;
-   if (ImageLoad(pResourceManager, pszName, &image) != NULL)
+   cImage * pImage = ImageLoad(pResourceManager, pszName);
+   if (pImage != NULL)
    {
-      m_size = cUISize(image.GetWidth(), image.GetHeight());
+      m_size = cUISize(pImage->GetWidth(), pImage->GetHeight());
 
       // @TODO: Check for errors here
       cAutoIPtr<ITexture> pTex;
-      AccessRenderDevice()->CreateTexture(&image, &pTex);
+      AccessRenderDevice()->CreateTexture(pImage, &pTex);
+
+      delete pImage;
 
       m_pMat = MaterialCreate();
       if (m_pMat != NULL)
