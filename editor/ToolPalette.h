@@ -25,6 +25,31 @@ DECLARE_HANDLE(HTOOLGROUP);
 DECLARE_HANDLE(HTOOLITEM);
 
 ///////////////////////////////////////////////////////////////////////////////
+
+enum eToolPaletteNotifyCodes
+{
+   kTPN_ItemClick = 0xD100,
+   kTPN_ItemDestroy = 0xD101,
+};
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// STRUCT: sNMToolPaletteItem
+//
+// Info struct for most item-based notification messages
+
+struct sNMToolPaletteItem
+{
+   NMHDR hdr;
+   POINT pt;
+   HTOOLITEM hTool;
+   void * pUserData;
+};
+
+typedef sNMToolPaletteItem sNMToolPaletteItemClick;
+typedef sNMToolPaletteItem sNMToolPaletteItemDestroy;
+
+///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cToolItem
 //
@@ -257,14 +282,16 @@ public:
    bool RemoveGroup(HTOOLGROUP hGroup);
    HTOOLGROUP FindGroup(const tChar * pszGroup);
    bool IsGroup(HTOOLGROUP hGroup);
+   bool IsTool(HTOOLITEM hTool);
    void Clear();
    HTOOLITEM AddTool(HTOOLGROUP hGroup, const tChar * pszTool, int iImage, void * pUserData = NULL);
+   bool GetToolText(HTOOLITEM hTool, std::string * pText);
    bool RemoveTool(HTOOLITEM hTool);
    bool EnableTool(HTOOLITEM hTool);
 
 private:
    void SetMouseOverItem(HANDLE hItem);
-   void DoClick(HANDLE hItem);
+   void DoClick(HANDLE hItem, CPoint point);
 
    tGroups m_groups;
 

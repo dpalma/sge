@@ -428,12 +428,10 @@ void cToolPaletteRenderer::Render(const cToolGroup * pGroup)
 
    int headingHeight = RenderGroupHeading(m_dc, &r, pGroup);
 
-   if (headingHeight <= 0)
+   if (headingHeight > 0)
    {
-      return;
+      m_cachedRects[reinterpret_cast<HANDLE>(const_cast<cToolGroup *>(pGroup))] = r;
    }
-
-   m_cachedRects[reinterpret_cast<HANDLE>(const_cast<cToolGroup *>(pGroup))] = r;
 
    if (pGroup->IsCollapsed())
    {
@@ -720,7 +718,7 @@ void cToolPalette::OnLButtonUp(UINT flags, CPoint point)
       ReleaseCapture();
       if (m_hClickCandidateItem == m_renderer.GetHitItem(point))
       {
-         DoClick(m_hClickCandidateItem);
+         DoClick(m_hClickCandidateItem, point);
       }
       m_hClickCandidateItem = NULL;
    }
@@ -762,6 +760,25 @@ bool cToolPalette::RemoveGroup(HTOOLGROUP hGroup)
       {
          if (*iter == pRmGroup)
          {
+            HWND hWndParent = GetParent();
+            if (::IsWindow(hWndParent))
+            {
+               sNMToolPaletteItemDestroy nm = {0};
+               nm.hdr.hwndFrom = m_hWnd;
+               nm.hdr.code = kTPN_ItemDestroy;
+               nm.hdr.idFrom = GetDlgCtrlID();
+               uint nTools = pRmGroup->GetToolCount();
+               for (uint i = 0; i < nTools; i++)
+               {
+                  cToolItem * pRmTool = pRmGroup->GetTool(i);
+                  if (pRmTool != NULL)
+                  {
+                     nm.hTool = reinterpret_cast<HTOOLITEM>(pRmTool);
+                     nm.pUserData = pRmTool->GetUserData();
+                     ::SendMessage(hWndParent, WM_NOTIFY, nm.hdr.idFrom, reinterpret_cast<LPARAM>(&nm));
+                  }
+               }
+            }
             delete pRmGroup;
             m_groups.erase(iter);
             return true;
@@ -812,15 +829,32 @@ bool cToolPalette::IsGroup(HTOOLGROUP hGroup)
 
 ////////////////////////////////////////
 
+bool cToolPalette::IsTool(HTOOLITEM hTool)
+{
+   if (hTool != NULL)
+   {
+      tGroups::iterator iter = m_groups.begin();
+      tGroups::iterator end = m_groups.end();
+      for (; iter != end; iter++)
+      {
+         if ((*iter)->IsTool(hTool))
+         {
+            return true;
+         }
+      }
+   }
+   return false;
+}
+
+////////////////////////////////////////
+
 void cToolPalette::Clear()
 {
-   tGroups::iterator iter = m_groups.begin();
-   tGroups::iterator end = m_groups.end();
-   for (; iter != end; iter++)
+   // Call RemoveGroup() for each so that all the item destroy notifications happen
+   while (!m_groups.empty())
    {
-      delete *iter;
+      RemoveGroup(reinterpret_cast<HTOOLGROUP>(m_groups.front()));
    }
-   m_groups.clear();
 }
 
 ////////////////////////////////////////
@@ -839,6 +873,26 @@ HTOOLITEM cToolPalette::AddTool(HTOOLGROUP hGroup, const tChar * pszTool, int iI
    }
 
    return NULL;
+}
+
+////////////////////////////////////////
+
+bool cToolPalette::GetToolText(HTOOLITEM hTool, std::string * pText)
+{
+   if (IsTool(hTool))
+   {
+      cToolItem * pTool = reinterpret_cast<cToolItem *>(hTool);
+      Assert(IsGroup(reinterpret_cast<HTOOLGROUP>(pTool->GetGroup())));
+
+      if (pText != NULL)
+      {
+         *pText = pTool->GetName();
+      }
+
+      return true;
+   }
+
+   return false;
 }
 
 ////////////////////////////////////////
@@ -881,7 +935,7 @@ void cToolPalette::SetMouseOverItem(HANDLE hItem)
 
 ////////////////////////////////////////
 
-void cToolPalette::DoClick(HANDLE hItem)
+void cToolPalette::DoClick(HANDLE hItem, CPoint point)
 {
    if (hItem != NULL)
    {
@@ -889,14 +943,37 @@ void cToolPalette::DoClick(HANDLE hItem)
       {
          cToolGroup * pGroup = reinterpret_cast<cToolGroup *>(hItem);
          pGroup->ToggleExpandCollapse();
-         m_renderer.FlushCachedRects();
-         Invalidate();
+         RECT rg;
+         if (m_renderer.GetItemRect(hItem, &rg))
+         {
+            m_renderer.FlushCachedRects();
+            RECT rc;
+            GetClientRect(&rc);
+            rg.bottom = rc.bottom;
+            InvalidateRect(&rg);
+         }
+         else
+         {
+            m_renderer.FlushCachedRects();
+            Invalidate();
+         }
       }
       else
       {
-         cToolItem * pTool = reinterpret_cast<cToolItem *>(hItem);
-         Assert(IsGroup(reinterpret_cast<HTOOLGROUP>(pTool->GetGroup())));
-         DebugMsg1("Tool \"%s\" clicked\n", pTool->GetName());
+         HWND hWndParent = GetParent();
+         if (::IsWindow(hWndParent))
+         {
+            cToolItem * pTool = reinterpret_cast<cToolItem *>(hItem);
+            Assert(IsGroup(reinterpret_cast<HTOOLGROUP>(pTool->GetGroup())));
+            sNMToolPaletteItemClick nm = {0};
+            nm.hdr.hwndFrom = m_hWnd;
+            nm.hdr.code = kTPN_ItemClick;
+            nm.hdr.idFrom = GetDlgCtrlID();
+            nm.pt = point;
+            nm.hTool = reinterpret_cast<HTOOLITEM>(hItem);
+            nm.pUserData = pTool->GetUserData();
+            ::SendMessage(hWndParent, WM_NOTIFY, GetDlgCtrlID(), reinterpret_cast<LPARAM>(&nm));
+         }
       }
    }
 }

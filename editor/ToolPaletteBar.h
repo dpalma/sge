@@ -56,8 +56,7 @@ class cToolPaletteBar : public cDockingWindow,
 {
    enum
    {
-      kButtonIdFirst = 1000,
-      kButtonIdLast = 1100,
+      kToolPaletteId = 1500
    };
 
 public:
@@ -72,19 +71,16 @@ public:
       MESSAGE_HANDLER(WM_CREATE, OnCreate)
       MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
       MESSAGE_HANDLER(WM_SIZE, OnSize)
-      COMMAND_RANGE_HANDLER(kButtonIdFirst, kButtonIdLast, OnButtonClicked)
+      NOTIFY_ID_HANDLER(kToolPaletteId, OnToolPaletteNotify)
       CHAIN_MSG_MAP(cDockingWindow)
    END_MSG_MAP()
 
    LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
    LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
    LRESULT OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
-   LRESULT OnButtonClicked(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL & bHandled);
+   LRESULT OnToolPaletteNotify(int idCtrl, LPNMHDR pnmh, BOOL & bHandled);
 
-	virtual BOOL PreTranslateMessage(MSG * pMsg);
-
-   void ClearButtons();
-   void RepositionButtons(BOOL bRepaint = TRUE);
+   virtual BOOL PreTranslateMessage(MSG * pMsg);
 
 private:
    cToolPalette m_toolPalette;

@@ -173,8 +173,6 @@ cToolPaletteBar::~cToolPaletteBar()
 
 void cToolPaletteBar::OnDefaultTileSetChange(IEditorTileSet * pTileSet)
 {
-   ClearButtons();
-
    if (m_toolPalette.IsWindow() && (m_hTerrainTileGroup != NULL))
    {
       Verify(m_toolPalette.RemoveGroup(m_hTerrainTileGroup));
@@ -215,51 +213,11 @@ void cToolPaletteBar::OnDefaultTileSetChange(IEditorTileSet * pTileSet)
                   {
                      m_toolPalette.AddTool(m_hTerrainTileGroup, tileName.c_str(), i);
                   }
-
-//                  CButton * pButton = new CButton();
-//                  if (pButton != NULL)
-//                  {
-//                     if (pButton->Create(m_hWnd, rcDefault, "", WS_CHILD | WS_VISIBLE | BS_BITMAP, 0, kButtonIdFirst + i, this))
-//                     {
-//                        pButton->SendMessage(BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmap);
-//
-//                        m_tooltip.AddTool(pButton->m_hWnd, tileName.c_str());
-//
-//                        m_buttonPanel.AddButton(pButton);
-//                     }
-//                     else
-//                     {
-//                        delete pButton;
-//                     }
-//                  }
                }
             }
          }
       }
-
-      RepositionButtons();
    }
-}
-
-////////////////////////////////////////
-
-void cToolPaletteBar::ClearButtons()
-{
-//   m_buttonPanel.Clear();
-}
-
-////////////////////////////////////////
-
-void cToolPaletteBar::RepositionButtons(BOOL bRepaint)
-{
-//   CRect rect;
-//   GetClientRect(rect);
-//   int bottom = m_buttonPanel.Reposition(rect, bRepaint);
-//   if (m_toolPalette.IsWindow())
-//   {
-//      rect.top = bottom;
-//      m_toolPalette.MoveWindow(rect);
-//   }
 }
 
 ////////////////////////////////////////
@@ -272,7 +230,7 @@ LRESULT cToolPaletteBar::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL 
       return -1;
    }
 
-   if (!m_toolPalette.Create(m_hWnd, CWindow::rcDefault))
+   if (!m_toolPalette.Create(m_hWnd, CWindow::rcDefault, "", 0, 0, kToolPaletteId))
    {
       ErrorMsg1("Unable to create tool palette control (error %d)\n", GetLastError());
       return -1;
@@ -286,7 +244,14 @@ LRESULT cToolPaletteBar::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL 
    for (int i = 0; i < 3; i++)
    {
       tChar szTemp[200];
-      wsprintf(szTemp, "Group %c", 'A' + i);
+      if (i == 0)
+      {
+         ZeroMemory(szTemp, sizeof(szTemp));
+      }
+      else
+      {
+         wsprintf(szTemp, "Group %c", 'A' + i);
+      }
       HTOOLGROUP hToolGroup = m_toolPalette.AddGroup(szTemp, NULL);
       if (hToolGroup != NULL)
       {
@@ -329,7 +294,7 @@ LRESULT cToolPaletteBar::OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
 
    UseGlobal(EditorTileManager);
    pEditorTileManager->Disconnect(this);
-   ClearButtons();
+
    return 0;
 }
 
@@ -337,7 +302,6 @@ LRESULT cToolPaletteBar::OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
 
 LRESULT cToolPaletteBar::OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled)
 {
-//   RepositionButtons();
    if (m_toolPalette.IsWindow())
    {
       CRect rect;
@@ -349,12 +313,30 @@ LRESULT cToolPaletteBar::OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & 
 
 ////////////////////////////////////////
 
-LRESULT cToolPaletteBar::OnButtonClicked(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL & bHandled)
+LRESULT cToolPaletteBar::OnToolPaletteNotify(int idCtrl, LPNMHDR pnmh, BOOL & bHandled)
 {
-   if (wNotifyCode == BN_CLICKED)
+   Assert(pnmh != NULL);
+
+   std::string temp;
+
+   switch (pnmh->code)
    {
-//      m_buttonPanel.HandleClick(wID);
+      case kTPN_ItemClick:
+      {
+         if (m_toolPalette.GetToolText(((sNMToolPaletteItemClick *)pnmh)->hTool, &temp))
+         {
+            DebugMsg1("Tool \"%s\" clicked\n", temp.c_str());
+         }
+         break;
+      }
+
+      case kTPN_ItemDestroy:
+      {
+         // TODO: release/free whatever is in user data
+         break;
+      }
    }
+
    return 0;
 }
 
