@@ -452,6 +452,8 @@ void cEditorView::InitialUpdate()
    pModel->AccessTerrain()->GetExtents(&xExt, &zExt);
 
    PlaceCamera((float)xExt / 2, (float)zExt / 2);
+
+   Update();
 }
 
 ////////////////////////////////////////

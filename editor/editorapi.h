@@ -57,13 +57,11 @@ interface UUID("2A04E541-6BA1-41e9-92FA-E7B3D493F1A2") IEditorApp : IUnknown
    virtual tResult AddLoopClient(IEditorLoopClient * pLoopClient) = 0;
    virtual tResult RemoveLoopClient(IEditorLoopClient * pLoopClient) = 0;
 
+   // HACK
+   virtual tResult CallLoopClients(double time, double elapsed) = 0;
+
    virtual tResult AddEditorAppListener(IEditorAppListener * pListener) = 0;
    virtual tResult RemoveEditorAppListener(IEditorAppListener * pListener) = 0;
-
-   virtual tResult GetMapSettings(cMapSettings * pMapSettings) = 0;
-
-   virtual tResult GetActiveView(IEditorView * * ppView) = 0;
-   virtual tResult GetActiveModel(IEditorModel * * ppModel) = 0;
 
    virtual tResult GetActiveTool(IEditorTool * * ppTool) = 0;
    virtual tResult SetActiveTool(IEditorTool * pTool) = 0;

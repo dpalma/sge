@@ -10,8 +10,6 @@
 
 #include "dbgalloc.h" // must be last header
 
-const uint kChildId = 256;
-
 /////////////////////////////////////////////////////////////////////////////
 
 cOutputBar * g_pOutputBar = NULL;
@@ -79,34 +77,13 @@ void cOutputBar::HandleLogCallback(eLogSeverity severity, const tChar * pszMsg, 
 
 LRESULT cOutputBar::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled)
 {
-   if (m_logWnd.Create(m_hWnd, CWindow::rcDefault, NULL, WS_CHILD | WS_VISIBLE, 0, kChildId) == NULL)
+   if (m_logWnd.Create(m_hWnd, CWindow::rcDefault, NULL, WS_CHILD | WS_VISIBLE) == NULL)
    {
       DebugMsg("Error creating child window\n");
       return -1;
    }
 
    m_logWnd.ModifyStyleEx(0, WS_EX_CLIENTEDGE);
-
-#if 0
-   CFont font;
-   if (!font.CreateStockObject(DEFAULT_GUI_FONT))
-   {
-      if (!font.CreatePointFont(80, "MS Sans Serif"))
-      {
-         DebugMsg("Unable to create font\n");
-         return -1;
-      }
-   }
-
-   if (!m_wndChild.Create(NULL, NULL, WS_CHILD | WS_VISIBLE, CRect(0,0,0,0), this, kChildId))
-   {
-      return -1;
-   }
-
-   m_wndChild.ModifyStyleEx(0, WS_EX_CLIENTEDGE);
-
-   m_wndChild.SetFont(&font);
-#endif
 
    g_pOutputBar = this;
    m_nextLogCallback = techlog.SetCallback(OutputBarLogCallback);

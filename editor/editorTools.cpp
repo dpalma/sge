@@ -348,10 +348,10 @@ tResult cTerrainTileTool::Deactivate()
 {
    UseGlobal(EditorApp);
    cAutoIPtr<IEditorView> pView;
-   if (pEditorApp->GetActiveView(&pView) == S_OK)
-   {
-      pView->ClearTileHighlight();
-   }
+//   if (pEditorApp->GetActiveView(&pView) == S_OK)
+//   {
+//      pView->ClearTileHighlight();
+//   }
 
    return S_OK;
 }

@@ -4,16 +4,17 @@
 #include "stdhdr.h"
 
 #include "editorapi.h"
-
-#include "sceneapi.h"
-#include "inputapi.h"
-#include "scriptapi.h"
+#include "editorMessageLoop.h"
 
 #if _ATL_VER < 0x0700
 // header files required to build ATL 3.0 object map
 #include "editorDoc.h"
 #include "editorView.h"
 #endif
+
+#include "sceneapi.h"
+#include "inputapi.h"
+#include "scriptapi.h"
 
 #include "textureapi.h"
 
@@ -93,7 +94,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/,
       return -1;
    }
 
-   CMessageLoop messageLoop;
+   cEditorMessageLoop messageLoop;
    _Module.AddMessageLoop(&messageLoop);
 
    cFileSpec file(__argv[0]);

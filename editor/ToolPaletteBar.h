@@ -7,6 +7,7 @@
 #include "editorapi.h"
 #include "editorTools.h"
 #include "editorCtrlBars.h"
+#include "ToolPalette.h"
 
 #include <vector>
 

@@ -1,0 +1,9 @@
+/////////////////////////////////////////////////////////////////////////////
+// $Id$
+
+#include "stdhdr.h"
+
+#include "ToolPalette.h"
+
+#include "dbgalloc.h" // must be last header
+

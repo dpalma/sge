@@ -7,7 +7,6 @@
 #include "editorDoc.h"
 #include "editorView.h"
 #include "editorTypes.h"
-#include "MapSettingsDlg.h"
 
 #include "scriptapi.h"
 
@@ -170,7 +169,6 @@ END_CONSTRAINTS()
 
 cEditorApp::cEditorApp()
  : cGlobalObject<IMPLEMENTS(IEditorApp)>("EditorApp", CONSTRAINTS()),
-   m_bPromptMapSettings(false),
    m_hCurrentToolWnd(NULL)
 {
 }
@@ -185,15 +183,6 @@ cEditorApp::~cEditorApp()
 
 tResult cEditorApp::Init()
 {
-   if (!m_mainWnd.CreateEx())
-   {
-      return E_FAIL;
-   }
-	m_mainWnd.ShowWindow(SW_SHOW);
-	m_mainWnd.UpdateWindow();
-
-   m_bPromptMapSettings = true;
-
    ScriptAddFunctions(g_editorCmds, g_nEditorCmds);
 
    cStr temp;
@@ -217,6 +206,13 @@ tResult cEditorApp::Init()
 
    ScriptCallFunction("EditorInit", NULL);
 
+   if (!m_mainWnd.CreateEx())
+   {
+      return E_FAIL;
+   }
+	m_mainWnd.ShowWindow(SW_SHOW);
+	m_mainWnd.UpdateWindow();
+
    return S_OK;
 }
 
@@ -238,70 +234,6 @@ void EditorAppCreate()
 {
    cAutoIPtr<IEditorApp>(new cEditorApp);
 }
-
-////////////////////////////////////////
-
-#if 0
-int cEditorApp::Run() 
-{
-   // for tracking the idle time state
-   bool bIdle = true;
-   long lIdleCount = 0;
-
-   double timeLastFrame = TimeGetSecs();
-   double time = timeLastFrame;
-
-   // acquire and dispatch messages until a WM_QUIT message is received.
-   for (;;)
-   {
-      // phase1: check to see if we can do idle work
-      double timeEnterIdle = TimeGetSecs();
-      while (bIdle &&
-         (TimeGetSecs() - timeEnterIdle) < 0.05)
-//         !::PeekMessage(&m_msgCur, NULL, NULL, NULL, PM_NOREMOVE))
-      {
-         // call OnIdle while in bIdle state
-         if (!OnIdle(lIdleCount++))
-            bIdle = false; // assume "no idle" state
-      }
-
-#if _MFC_VER >= 0x0700
-	   _AFX_THREAD_STATE * pState = AfxGetThreadState();
-      MSG * pMsg = &(pState->m_msgCur);
-#else
-      MSG * pMsg = &m_msgCur;
-#endif
-
-      // phase2: pump messages while available
-      while (::PeekMessage(pMsg, NULL, NULL, NULL, PM_NOREMOVE))
-      {
-         // pump message, but quit on WM_QUIT
-         if (!PumpMessage())
-            return ExitInstance();
-
-         // reset "no idle" state after pumping "normal" message
-         if (IsIdleMessage(pMsg))
-         {
-            bIdle = true;
-            lIdleCount = 0;
-         }
-      }
-
-      double elapsed = time - timeLastFrame;
-
-      tEditorLoopClients::iterator iter;
-      for (iter = m_loopClients.begin(); iter != m_loopClients.end(); iter++)
-      {
-         (*iter)->OnFrame(time, elapsed);
-      }
-
-      timeLastFrame = time;
-      time = TimeGetSecs();
-   }
-
-   Assert(!"Should never reach this point!"); // not reachable
-}
-#endif
 
 ////////////////////////////////////////
 
@@ -436,6 +368,19 @@ tResult cEditorApp::RemoveLoopClient(IEditorLoopClient * pLoopClient)
 
 ////////////////////////////////////////
 
+tResult cEditorApp::CallLoopClients(double time, double elapsed)
+{
+   tEditorLoopClients::iterator iter = m_loopClients.begin();
+   tEditorLoopClients::iterator end = m_loopClients.end();
+   for (; iter != end; iter++)
+   {
+      (*iter)->OnFrame(time, elapsed);
+   }
+   return S_OK;
+}
+
+////////////////////////////////////////
+
 tResult cEditorApp::AddEditorAppListener(IEditorAppListener * pListener)
 {
    return add_interface(m_editorAppListeners, pListener) ? S_OK : E_FAIL;
@@ -446,77 +391,6 @@ tResult cEditorApp::AddEditorAppListener(IEditorAppListener * pListener)
 tResult cEditorApp::RemoveEditorAppListener(IEditorAppListener * pListener)
 {
    return remove_interface(m_editorAppListeners, pListener) ? S_OK : E_FAIL;
-}
-
-////////////////////////////////////////
-
-tResult cEditorApp::GetMapSettings(cMapSettings * pMapSettings)
-{
-   if (pMapSettings == NULL)
-   {
-      return E_POINTER;
-   }
-
-   std::vector<cStr> tileSets;
-   ListTileSets(&tileSets);
-
-   if (m_bPromptMapSettings)
-   {
-      cMapSettingsDlg dlg(g_mapSizes, _countof(g_mapSizes), kDefaultMapSizeIndex,
-         tileSets, 0, kHeightData_None);
-
-      // Shouldn't be allowed to cancel the dialog
-      Verify(dlg.DoModal(m_mainWnd) == IDOK);
-
-      SIZE mapSize;
-      cStr tileSet, heightMap;
-
-      Verify(dlg.GetSelectedSize(&mapSize));
-      Verify(dlg.GetSelectedTileSet(&tileSet));
-      Verify(dlg.GetHeightDataFile(&heightMap));
-
-      *pMapSettings = cMapSettings(
-         mapSize.cx,
-         mapSize.cy,
-         tileSet,
-         dlg.GetHeightData(),
-         heightMap.empty() ? NULL : heightMap.c_str());
-   }
-   else
-   {
-      *pMapSettings = cMapSettings(
-         g_mapSizes[kDefaultMapSizeIndex].cx,
-         g_mapSizes[kDefaultMapSizeIndex].cy,
-         tileSets.empty() ? "" : tileSets[0],
-         kHeightData_None,
-         NULL);
-   }
-
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cEditorApp::GetActiveView(IEditorView * * ppView)
-{
-   if (ppView == NULL)
-   {
-      return E_POINTER;
-   }
-
-   return E_NOTIMPL; // TODO
-}
-
-////////////////////////////////////////
-
-tResult cEditorApp::GetActiveModel(IEditorModel * * ppModel)
-{
-   if (ppModel == NULL)
-   {
-      return E_POINTER;
-   }
-
-   return E_NOTIMPL; // TODO
 }
 
 ////////////////////////////////////////

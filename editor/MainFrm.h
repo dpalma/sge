@@ -155,6 +155,10 @@ inline tResult cMainFrame::SetModel(IEditorModel * pModel)
 {
    SafeRelease(m_pModel);
    m_pModel = CTAddRef(pModel);
+   if (!!m_pMainView)
+   {
+      m_pMainView->SetModel(pModel);
+   }
    return S_OK;
 }
 

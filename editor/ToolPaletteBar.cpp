@@ -243,6 +243,12 @@ LRESULT cToolPaletteBar::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL 
    UseGlobal(EditorTileManager);
    pEditorTileManager->Connect(this);
 
+   cAutoIPtr<IEditorTileSet> pTileSet;
+   if (pEditorTileManager->GetDefaultTileSet(&pTileSet) == S_OK)
+   {
+      OnDefaultTileSetChange(pTileSet);
+   }
+
    CMessageLoop * pMessageLoop = _Module.GetMessageLoop();
    pMessageLoop->AddMessageFilter(this);
 

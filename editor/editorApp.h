@@ -34,13 +34,10 @@ public:
    virtual tResult AddLoopClient(IEditorLoopClient * pLoopClient);
    virtual tResult RemoveLoopClient(IEditorLoopClient * pLoopClient);
 
+   virtual tResult CallLoopClients(double time, double elapsed);
+
    virtual tResult AddEditorAppListener(IEditorAppListener * pListener);
    virtual tResult RemoveEditorAppListener(IEditorAppListener * pListener);
-
-   virtual tResult GetMapSettings(cMapSettings * pMapSettings);
-
-   virtual tResult GetActiveView(IEditorView * * ppView);
-   virtual tResult GetActiveModel(IEditorModel * * ppModel);
 
    virtual tResult GetActiveTool(IEditorTool * * ppTool);
    virtual tResult SetActiveTool(IEditorTool * pTool);
@@ -62,8 +59,6 @@ private:
 
    typedef std::vector<IEditorAppListener *> tEditorAppListeners;
    tEditorAppListeners m_editorAppListeners;
-
-   bool m_bPromptMapSettings;
 
    cAutoIPtr<IEditorView> m_pCurrentToolView; // the view passed to the tool being processed
    HWND m_hCurrentToolWnd; // the HWND of the view above
