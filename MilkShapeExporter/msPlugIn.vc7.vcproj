@@ -42,7 +42,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="msModelLib.lib $(OutDir)/tinyxml.lib opengl32.lib glu32.lib winmm.lib"
-				OutputFile=".\..\Build.vc7\Debug/msPlugIn.dll"
+				OutputFile=".\..\Build.vc7\Debug/msSGEExporter.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\3rdparty\ms3dsdk\msLib\lib"
@@ -106,7 +106,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="msModelLib.lib $(OutDir)/tinyxml.lib opengl32.lib glu32.lib winmm.lib"
-				OutputFile=".\..\Build.vc7\Opt/msPlugIn.dll"
+				OutputFile=".\..\Build.vc7\Opt/msSGEExporter.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\3rdparty\ms3dsdk\msLib\lib"
@@ -169,7 +169,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="$(OutDir)\cppunit.lib msModelLib.lib $(OutDir)/tinyxml.lib opengl32.lib glu32.lib winmm.lib"
-				OutputFile=".\..\Build.vc7\StaticDebug/msPlugIn.dll"
+				OutputFile=".\..\Build.vc7\StaticDebug/msSGEExporter.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\3rdparty\ms3dsdk\msLib\lib"
@@ -232,7 +232,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="msModelLib.lib $(OutDir)/tinyxml.lib opengl32.lib glu32.lib winmm.lib"
-				OutputFile=".\..\Build.vc7\StaticRelease/msPlugIn.dll"
+				OutputFile=".\..\Build.vc7\StaticRelease/msSGEExporter.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\3rdparty\ms3dsdk\msLib\lib"
@@ -295,7 +295,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="msModelLib.lib $(OutDir)/tinyxml.lib opengl32.lib glu32.lib winmm.lib"
-				OutputFile=".\..\Build.vc7\Release/msPlugIn.dll"
+				OutputFile=".\..\Build.vc7\Release/msSGEExporter.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\3rdparty\ms3dsdk\msLib\lib"
@@ -332,6 +332,9 @@
 		<Filter
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
+			<File
+				RelativePath="ModelTreeInfo.cpp">
+			</File>
 			<File
 				RelativePath=".\StdAfx.cpp">
 				<FileConfiguration
@@ -384,6 +387,9 @@
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl">
+			<File
+				RelativePath="ModelTreeInfo.h">
+			</File>
 			<File
 				RelativePath=".\StdAfx.h">
 			</File>

@@ -8,6 +8,8 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+class cModelTreeInfo;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cMsPlugInExportDlg
@@ -17,11 +19,12 @@ class cMsPlugInExportDlg : public CDialog
 {
 // Construction
 public:
-	cMsPlugInExportDlg(CWnd* pParent = NULL);   // standard constructor
+	cMsPlugInExportDlg(cModelTreeInfo * pModelTreeInfo, CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(cMsPlugInExportDlg)
 	enum { IDD = IDD_EXPORT };
+	CTreeCtrl	m_modelInfo;
 	CListCtrl	m_animations;
 	BOOL	m_bExportAnimations;
 	BOOL	m_bExportMaterials;
@@ -50,6 +53,9 @@ protected:
 	virtual BOOL OnInitDialog();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+
+private:
+   cModelTreeInfo * m_pModelTreeInfo;
 };
 
 //{{AFX_INSERT_LOCATION}}

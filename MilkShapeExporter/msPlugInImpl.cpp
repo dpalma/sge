@@ -6,6 +6,7 @@
 #include "msPlugInImpl.h"
 #include "resource.h"
 #include "msPlugInExportDlg.h"
+#include "ModelTreeInfo.h"
 
 #include "mesh.h"
 #include "material.h"
@@ -78,7 +79,9 @@ int cPlugIn::Execute(msModel * pModel)
       return -1;
    }
 
-   cMsPlugInExportDlg dlg;
+   cModelTreeInfo modelTreeInfo(pModel);
+
+   cMsPlugInExportDlg dlg(&modelTreeInfo);
    if (dlg.DoModal() != IDOK)
    {
       return -1;

@@ -5,6 +5,7 @@
 
 #include "resource.h"
 #include "msPlugInExportDlg.h"
+#include "ModelTreeInfo.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -17,8 +18,11 @@ static char THIS_FILE[] = __FILE__;
 // CLASS: cMsPlugInExportDlg
 //
 
-cMsPlugInExportDlg::cMsPlugInExportDlg(CWnd* pParent /*=NULL*/)
-	: CDialog(cMsPlugInExportDlg::IDD, pParent)
+////////////////////////////////////////
+
+cMsPlugInExportDlg::cMsPlugInExportDlg(cModelTreeInfo * pModelTreeInfo, CWnd* pParent /*=NULL*/)
+ : CDialog(cMsPlugInExportDlg::IDD, pParent),
+   m_pModelTreeInfo(pModelTreeInfo)
 {
 	//{{AFX_DATA_INIT(cMsPlugInExportDlg)
 	m_bExportAnimations = FALSE;
@@ -28,11 +32,13 @@ cMsPlugInExportDlg::cMsPlugInExportDlg(CWnd* pParent /*=NULL*/)
 	//}}AFX_DATA_INIT
 }
 
+////////////////////////////////////////
 
 void cMsPlugInExportDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(cMsPlugInExportDlg)
+	DDX_Control(pDX, IDC_MODEL_INFO_TREE, m_modelInfo);
 	DDX_Control(pDX, IDC_ANIMATIONS, m_animations);
 	DDX_Check(pDX, IDC_EXPORTANIMATIONS, m_bExportAnimations);
 	DDX_Check(pDX, IDC_EXPORTMATERIALS, m_bExportMaterials);
@@ -40,6 +46,8 @@ void cMsPlugInExportDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_SKELETONFILENAME, m_skeletonFileName);
 	//}}AFX_DATA_MAP
 }
+
+////////////////////////////////////////
 
 BEGIN_MESSAGE_MAP(cMsPlugInExportDlg, CDialog)
 	//{{AFX_MSG_MAP(cMsPlugInExportDlg)
@@ -97,6 +105,11 @@ BOOL cMsPlugInExportDlg::OnInitDialog()
    VERIFY(m_animations.InsertColumn(0, "Name", LVCFMT_LEFT, rect.Width() / 2) == 0);
    VERIFY(m_animations.InsertColumn(1, "Start", LVCFMT_LEFT, rect.Width() / 4) == 1);
    VERIFY(m_animations.InsertColumn(2, "End", LVCFMT_LEFT, rect.Width() / 4) == 2);
+
+   if (m_pModelTreeInfo != NULL)
+   {
+      m_pModelTreeInfo->DisplayModelInfo(&m_modelInfo);
+   }
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
