@@ -462,7 +462,7 @@ void cMatrix4Tests::TestMatrixInvert()
    M.m30 = 0;      M.m31 = 0;      M.m32 = 0;      M.m33 = 1;
 
    tMatrix4 I;
-   if (!MatrixInvert(M, &I))
+   if (!MatrixInvert(M.m, I.m))
    {
       DebugMsg("Matrix is NOT invertible\n");
       return;
