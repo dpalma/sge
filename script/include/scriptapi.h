@@ -4,6 +4,9 @@
 #ifndef INCLUDED_SCRIPTAPI_H
 #define INCLUDED_SCRIPTAPI_H
 
+/// @file scriptapi.h
+/// Interface definitions for script language integration
+
 #include "enginedll.h"
 #include "comtools.h"
 
@@ -20,6 +23,8 @@ F_DECLARE_INTERFACE(IScriptableFactory);
 F_DECLARE_INTERFACE(IScriptInterpreter);
 
 ///////////////////////////////////////////////////////////////////////////////
+/// @typedef tScriptFn
+/// @brief Function signature for functions to be exposed to script code
 
 typedef int (* tScriptFn)(int, const cScriptVar *, int, cScriptVar *);
 
@@ -27,6 +32,12 @@ typedef int (* tScriptFn)(int, const cScriptVar *, int, cScriptVar *);
 //
 // INTERFACE: IScriptableFactory
 //
+/// @interface IScriptableFactory
+/// @brief The factory interface for IScriptable objects
+/// @remarks To expose a class for use in script code, register a factory
+/// with the run-time interpreter using IScriptInterpreter#RegisterCustomClass. 
+/// The factory manufactures instances of scriptable objects when an object is 
+/// created in script code.
 
 interface IScriptableFactory : IUnknown
 {
@@ -37,6 +48,9 @@ interface IScriptableFactory : IUnknown
 //
 // INTERFACE: IScriptable
 //
+/// @interface IScriptable
+/// @brief Implement this interface to expose a scriptable version of a
+/// class's public interface to the run-time interpreter.
 
 interface IScriptable : IUnknown
 {
@@ -49,15 +63,39 @@ interface IScriptable : IUnknown
 //
 // INTERFACE: IScriptInterpreter
 //
+/// @interface IScriptInterpreter
+/// @brief The script interpreter interface isolates game and engine
+/// code from the details of the actual scripting language in use.
 
 interface IScriptInterpreter : IUnknown
 {
+   /// @brief Execute a script code source file
    virtual tResult ExecFile(const char * pszFile) = 0;
+   /// @brief Execute script code stored in a string variable
    virtual tResult ExecString(const char * pszCode) = 0;
 
+   /// @brief Invoke a global script function
+   /// @param pszName is the name of the function to invoke
+   /// @param pszArgDesc is a string describing the arguments passed to the script 
+   /// function: 'i' denotes an integer, 'f' denotes a floating point number, and 
+   /// 's' denotes a string.
+   /// @param ... is the variable list of arguments
+   /// @code
+   /// UseGlobal(pScriptInterpreter);
+   /// pScriptInterpreter->CallFunction("Square", "ff", 100.0, 50.9);
+   /// @endcode
    virtual void CallFunction(const char * pszName, const char * pszArgDesc = NULL, ...) = 0;
+   /*!
+    * @overload void CallFunction(const char * pszName, const char * pszArgDesc, va_list args);
+    */
    virtual void CallFunction(const char * pszName, const char * pszArgDesc, va_list args) = 0;
+
+   /// @brief Expose a global function to script code using the given name
+   /// @param pszName is the name script code will use to invoke the function
+   /// @param pfn is a pointer to the function's C++ implementation
    virtual tResult AddFunction(const char * pszName, tScriptFn pfn) = 0;
+   /// @brief Revoke a previously registered function
+   /// @param pszName is the name of the function to be removed
    virtual tResult RemoveFunction(const char * pszName) = 0;
 
    virtual tResult GetGlobal(const char * pszName, cScriptVar * pValue) = 0;
@@ -71,10 +109,13 @@ interface IScriptInterpreter : IUnknown
 };
 
 ///////////////////////////////////////
+/// Create the singleton script interpreter object
 
 ENGINE_API void ScriptInterpreterCreate();
 
 ///////////////////////////////////////
+/// Register a global function with the script interpreter
+/// @see @ref tScriptFn
 
 ENGINE_API tResult ScriptAddFunction(const char * pszName, tScriptFn pfn);
 
