@@ -66,59 +66,65 @@ static int LuaThunkInvoke(lua_State * L)
    // the name of the method to call is at the top of the stack
    const char * pszMethodName = lua_tostring(L, lua_upvalueindex(1));
 
-   cScriptVar args[kMaxArgs];
+   // the "this" pointer is at the bottom of the stack
+   IScriptable * pInstance = static_cast<IScriptable *>(lua_unboxpointer(L, 1));
 
-   // Subtract one to exclude the "this" pointer while construction
-   // the argument array
+   // Subtract one to exclude the "this" pointer
    int nArgs = lua_gettop(L) - 1;
 
    if (nArgs > kMaxArgs)
       nArgs = kMaxArgs;
 
-   int i, iArg;
-   for (i = 0, iArg = -1; i < nArgs; i++, iArg--)
+   cScriptVar results[kMaxResults];
+   int result = -1;
+
+   if (nArgs > 0)
    {
-      switch (lua_type(L, iArg))
+      cScriptVar args[kMaxArgs];
+
+      for (int i = 0, iArg = -1; i < nArgs; i++, iArg--)
       {
-         case LUA_TNUMBER:
+         switch (lua_type(L, iArg))
          {
-            args[i].type = kNumber;
-            args[i].d = lua_tonumber(L, iArg);
-            break;
-         }
+            case LUA_TNUMBER:
+            {
+               args[i] = lua_tonumber(L, iArg);
+               break;
+            }
 
-         case LUA_TSTRING:
-         {
-            args[i].type = kString;
-            args[i].psz = const_cast<char *>(lua_tostring(L, iArg));
-            break;
-         }
+            case LUA_TSTRING:
+            {
+               args[i] = const_cast<char *>(lua_tostring(L, iArg));
+               break;
+            }
 
-         default:
-         {
-            args[i].type = kEmpty;
-            DebugMsg2("Arg %d of unsupported type %s\n", iArg, lua_typename(L, lua_type(L, iArg)));
-            break;
+            default:
+            {
+               args[i].type = kEmpty;
+               DebugMsg2("Arg %d of unsupported type %s\n", iArg, lua_typename(L, lua_type(L, iArg)));
+               break;
+            }
          }
       }
+
+      lua_pop(L, nArgs);
+
+      result = pInstance->Invoke(pszMethodName, nArgs, args, kMaxResults, results);
    }
-
-   // the "this" pointer is at the bottom of the stack
-   IScriptable * pScr = static_cast<IScriptable *>(lua_unboxpointer(L, 1));
-
-   cScriptVar results[kMaxResults];
-
-   tResult result = pScr->Invoke(pszMethodName, nArgs, args, kMaxResults, results);
+   else
+   {
+      result = pInstance->Invoke(pszMethodName, 0, NULL, kMaxResults, results);
+   }
 
    if (FAILED(result))
    {
-      DebugMsg2("IScriptable[0x%08X]->Invoke(%s, ...) failed\n", pScr, pszMethodName);
+      DebugMsg2("IScriptable[0x%08X]->Invoke(%s, ...) failed\n", pInstance, pszMethodName);
       return 0;
    }
 
    Assert(result <= kMaxResults);
 
-   for (i = 0; i < result; i++)
+   for (int i = 0; i < result; i++)
    {
       switch (results[i].type)
       {
@@ -250,15 +256,13 @@ static int LuaThunkFunction(lua_State * L)
          {
             case LUA_TNUMBER:
             {
-               args[i].type = kNumber;
-               args[i].d = lua_tonumber(L, i + 1);
+               args[i] = lua_tonumber(L, i + 1);
                break;
             }
 
             case LUA_TSTRING:
             {
-               args[i].type = kString;
-               args[i].psz = const_cast<char *>(lua_tostring(L, i + 1));
+               args[i] = const_cast<char *>(lua_tostring(L, i + 1));
                break;
             }
 
@@ -315,6 +319,7 @@ static int LuaThunkFunction(lua_State * L)
       }
    }
 
+   // on success, result is the number of return values
    return result;
 }
 
@@ -639,6 +644,9 @@ tResult cLuaInterpreter::RevokeCustomClass(const tChar * pszClassName)
    IUnknown * pUnkFactory = static_cast<IUnknown *>(lua_touserdata(m_L, -1));
    lua_pop(m_L, 2); // pop the function and the up-value (getglobal and getupvalue results)
 
+   lua_pushnil(m_L);
+   lua_setglobal(m_L, pszClassName);
+
    Assert(pUnkFactory != NULL);
    SafeRelease(pUnkFactory);
 
@@ -850,7 +858,7 @@ private:
          "rng = RNG();" \
          "rng:Seed(%d);" \
          "local r = rng:Rand();" \
-         "print(r);"
+         "print([[Rand() returned ]] .. r .. [[\r\n]]);"
       };
 
       char szScript[1024];
@@ -859,6 +867,8 @@ private:
       CPPUNIT_ASSERT(m_pInterp->ExecString(szScript) == S_OK);
 
       CPPUNIT_ASSERT(m_pInterp->RevokeCustomClass(cRNG::LuaClassName) == S_OK);
+
+      CPPUNIT_ASSERT(m_pInterp->ExecString(szScript) != S_OK);
    }
 
    cAutoIPtr<IScriptInterpreter> m_pInterp;
