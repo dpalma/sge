@@ -36,9 +36,6 @@ void UIDrawText(const char * pszText, int textLen,
                 IRenderFont * pFont = NULL,
                 const cUIColor & color = cUIColor(1,1,1,1));
 
-void UIDrawText(const cUIPoint & point,
-                const char * pszText, int textLen = -1);
-
 void UIDraw3dRect(const cUIRect & rect,
                   int bevel,
                   const cUIColor & topLeft,

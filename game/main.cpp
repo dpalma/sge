@@ -20,6 +20,7 @@
 #include "cameracontroller.h"
 
 #include "render.h"
+#include "font.h"
 
 #include "techmath.h"
 #include "techtime.h"
@@ -394,9 +395,13 @@ public:
    virtual ~cUIManagerSceneNode();
 
    virtual void Render();
+
+private:
+   cAutoIPtr<IRenderFont> m_pFont;
 };
 
 cUIManagerSceneNode::cUIManagerSceneNode()
+ : m_pFont(FontCreateDefault())
 {
    g_pUIManager = UIManagerCreate();
 }
@@ -418,9 +423,12 @@ void cUIManagerSceneNode::Render()
 
    glPopAttrib();
 
-   char szStats[30];
-   sprintf(szStats, "%.2f FPS\n", CalcFramesPerSec());
-   UIDrawText(cUIPoint(50, 50), szStats);
+   if (m_pFont != NULL)
+   {
+      char szStats[30];
+      sprintf(szStats, "%.2f FPS\n", CalcFramesPerSec());
+      m_pFont->DrawText(50, 50, szStats, strlen(szStats));
+   }
 }
 
 

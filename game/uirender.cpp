@@ -115,16 +115,6 @@ void UIDrawText(const char * pszText, int textLen,
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void UIDrawText(const cUIPoint & point,
-                const char * pszText, int textLen /*=-1*/)
-{
-   cAutoIPtr<IRenderFont> pFont = FontCreateDefault();
-   if (pFont)
-      pFont->DrawText(point.x, point.y, pszText, textLen);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 void UIDraw3dRect(const cUIRect & rect,
                   int bevel,
                   const cUIColor & topLeft,
