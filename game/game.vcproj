@@ -21,7 +21,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\3rdparty\lua\include,..\render\include,..\tech\include,..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\3rdparty\lua\include,..\engine\include,..\render\include,..\tech\include,..\3rdparty\tinyxml"
 				PreprocessorDefinitions="NDEBUG,STATIC_BUILD,WIN32,_WINDOWS,TIXML_USE_STL"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -81,7 +81,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\3rdparty\lua\include,..\render\include,..\tech\include,..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\3rdparty\lua\include,..\engine\include,..\render\include,..\tech\include,..\3rdparty\tinyxml"
 				PreprocessorDefinitions="NDEBUG,WIN32,_WINDOWS,TIXML_USE_STL"
 				StringPooling="TRUE"
 				RuntimeLibrary="3"
@@ -142,7 +142,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\3rdparty\cppunit\include,..\3rdparty\lua\include,..\render\include,..\tech\include,..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\3rdparty\cppunit\include,..\3rdparty\lua\include,..\engine\include,..\render\include,..\tech\include,..\3rdparty\tinyxml"
 				PreprocessorDefinitions="_DEBUG,HAVE_CPPUNIT,WIN32,_WINDOWS,TIXML_USE_STL"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -203,7 +203,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\3rdparty\cppunit\include,..\3rdparty\lua\include,..\render\include,..\tech\include,..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\3rdparty\cppunit\include,..\3rdparty\lua\include,..\engine\include,..\render\include,..\tech\include,..\3rdparty\tinyxml"
 				PreprocessorDefinitions="STATIC_BUILD,_DEBUG,HAVE_CPPUNIT,WIN32,_WINDOWS,TIXML_USE_STL"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -264,7 +264,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\3rdparty\lua\include,..\render\include,..\tech\include,..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\3rdparty\lua\include,..\engine\include,..\render\include,..\tech\include,..\3rdparty\tinyxml"
 				PreprocessorDefinitions="NDEBUG,WIN32,_WINDOWS,TIXML_USE_STL"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -319,9 +319,6 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 			<File
-				RelativePath=".\3ds.cpp">
-			</File>
-			<File
 				RelativePath=".\boundingvolume.cpp">
 			</File>
 			<File
@@ -337,9 +334,6 @@
 				RelativePath=".\groundtiled.cpp">
 			</File>
 			<File
-				RelativePath=".\guids.cpp">
-			</File>
-			<File
 				RelativePath=".\heightmap.cpp">
 			</File>
 			<File
@@ -347,12 +341,6 @@
 			</File>
 			<File
 				RelativePath=".\main.cpp">
-			</File>
-			<File
-				RelativePath=".\mesh.cpp">
-			</File>
-			<File
-				RelativePath=".\ms3d.cpp">
 			</File>
 			<File
 				RelativePath=".\raycast.cpp">
@@ -506,9 +494,6 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl">
 			<File
-				RelativePath=".\3ds.h">
-			</File>
-			<File
 				RelativePath=".\boundingvolume.h">
 			</File>
 			<File
@@ -516,6 +501,9 @@
 			</File>
 			<File
 				RelativePath=".\frustum.h">
+			</File>
+			<File
+				RelativePath=".\gameguids.h">
 			</File>
 			<File
 				RelativePath=".\gcommon.h">
@@ -527,19 +515,10 @@
 				RelativePath=".\groundtiled.h">
 			</File>
 			<File
-				RelativePath=".\guids.h">
-			</File>
-			<File
 				RelativePath=".\heightmap.h">
 			</File>
 			<File
 				RelativePath=".\input.h">
-			</File>
-			<File
-				RelativePath=".\mesh.h">
-			</File>
-			<File
-				RelativePath=".\ms3d.h">
 			</File>
 			<File
 				RelativePath=".\raycast.h">
