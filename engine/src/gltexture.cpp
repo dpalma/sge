@@ -365,8 +365,8 @@ tResult cTextureManager::GetTexture(const char * pszName, ITexture * * ppTexture
       }
 
       cImageData * pImageData = NULL;
-      UseGlobal(ResourceManager2);
-      if (pResourceManager2->Load(tResKey(pszName, kRC_Image), (void**)&pImageData) == S_OK)
+      UseGlobal(ResourceManager);
+      if (pResourceManager->Load(tResKey(pszName, kRC_Image), (void**)&pImageData) == S_OK)
       {
          tResult result = E_FAIL;
 

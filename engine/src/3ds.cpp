@@ -13,7 +13,7 @@
 #include "vec3.h"
 #include "imagedata.h"
 #include "color.h"
-#include "resmgr.h"
+#include "resourceapi.h"
 #include "globalobj.h"
 
 #include <vector>
@@ -746,6 +746,39 @@ IMesh * Load3ds(IRenderDevice * pRenderDevice, IReader * pReader)
    }
 
    return pMesh;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void * Load3ds(IReader * pReader)
+{
+   if (pReader != NULL)
+   {
+      // TODO
+   }
+
+   return NULL;
+}
+
+void * Postload3ds(void * pData, int dataLength, void * param)
+{
+   // TODO
+   return NULL;
+}
+
+void Unload3ds(void * pData)
+{
+   reinterpret_cast<IMesh*>(pData)->Release();
+}
+
+ENGINE_API tResult Register3dsFormat()
+{
+   UseGlobal(ResourceManager);
+   if (!!pResourceManager)
+   {
+      return pResourceManager->RegisterFormat(kRC_Mesh, "3ds", Load3ds, Postload3ds, Unload3ds);
+   }
+   return E_FAIL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

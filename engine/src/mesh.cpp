@@ -8,9 +8,10 @@
 #include "renderapi.h"
 #include "materialapi.h"
 #include "vec3.h"
-#include "resmgr.h"
+#include "resourceapi.h"
 #include "readwriteapi.h"
 #include "filespec.h"
+#include "globalobj.h"
 
 #include <vector>
 #include <algorithm>
@@ -498,71 +499,5 @@ IMesh * MeshCreate(uint nVertices,
    }
    return NULL;
 }
-
-///////////////////////////////////////////////////////////////////////////////
-
-IMesh * MeshLoad(IResourceManager * pResMgr, IRenderDevice * pRenderDevice, const char * pszMesh)
-{
-   typedef IMesh * (* tMeshLoadFn)(IRenderDevice *, IReader *);
-
-   static const struct
-   {
-      const char * ext;
-      tMeshLoadFn pfn;
-   }
-   meshFileLoaders[] =
-   {
-      { "3ds", Load3ds },
-      { "ms3d", LoadMs3d },
-   };
-
-   cFileSpec meshFile(pszMesh);
-
-   for (int i = 0; i < _countof(meshFileLoaders); i++)
-   {
-      if (stricmp(meshFileLoaders[i].ext, meshFile.GetFileExt()) == 0)
-      {
-         cAutoIPtr<IReader> pReader = pResMgr->Find(meshFile.GetName());
-         if (!pReader)
-         {
-            return NULL;
-         }
-
-         IMesh * pMesh = (*meshFileLoaders[i].pfn)(pRenderDevice, pReader);
-         if (pMesh != NULL)
-         {
-            return pMesh;
-         }
-      }
-   }
-
-   DebugMsg1("Unsupported mesh file format: \"%s\"\n", meshFile.GetFileExt());
-   return NULL;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-#ifdef HAVE_CPPUNIT
-
-class cMeshTests : public CppUnit::TestCase
-{
-   CPPUNIT_TEST_SUITE(cMeshTests);
-      CPPUNIT_TEST(TestSave);
-   CPPUNIT_TEST_SUITE_END();
-
-   void TestSave();
-};
-
-CPPUNIT_TEST_SUITE_REGISTRATION(cMeshTests);
-
-void cMeshTests::TestSave()
-{
-	cAutoIPtr<IMesh> pMesh = MeshCreate();
-	if (!!pMesh)
-	{
-	}
-}
-
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -11,7 +11,7 @@
 #include "sceneapi.h"
 #include "scriptvar.h"
 
-#include "resmgr.h"
+#include "resourceapi.h"
 #include "vec2.h"
 
 #include "dbgalloc.h" // must be last header
@@ -95,9 +95,9 @@ tResult cEntityManager::Term()
 
 tResult cEntityManager::SpawnEntity(const char * pszMesh, const tVec3 & location)
 {
+   cAutoIPtr<IMesh> pMesh;
    UseGlobal(ResourceManager);
-   cAutoIPtr<IMesh> pMesh = MeshLoad(pResourceManager, AccessRenderDevice(), pszMesh);
-   if (!pMesh)
+   if (pResourceManager->Load(tResKey(pszMesh, kRC_Mesh), AccessRenderDevice(), (void**)&pMesh) != S_OK)
    {
       DebugMsg1("Error loading mesh \"%s\"\n", pszMesh);
       return E_FAIL;

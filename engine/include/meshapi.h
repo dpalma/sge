@@ -102,7 +102,7 @@ ENGINE_API ISubMesh * SubMeshCreate(uint nFaces, uint usage, IRenderDevice * pRe
 
 ///////////////////////////////////////////////////////////////////////////////
 
-ENGINE_API IMesh * MeshLoad(IResourceManager * pResMgr, IRenderDevice * pRenderDevice, const char * pszMesh);
+ENGINE_API tResult Ms3dFormatRegister();
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -110,9 +110,9 @@ int LoadTiles(int argc, const cScriptVar * argv,
 {
    if (argc == 1 && argv[0].type == kString)
    {
-      UseGlobal(ResourceManager2);
       char * pszContents = NULL;
-      if (pResourceManager2->Load(tResKey(argv[0].psz, kRC_Text), (void**)&pszContents) == S_OK)
+      UseGlobal(ResourceManager);
+      if (pResourceManager->Load(tResKey(argv[0].psz, kRC_Text), (void**)&pszContents) == S_OK)
       {
          TiXmlDocument doc;
          doc.Parse(pszContents);

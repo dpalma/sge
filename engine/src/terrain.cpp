@@ -564,8 +564,8 @@ tResult HeightMapLoad(const tChar * pszHeightData, IHeightMap * * ppHeightMap)
    };
 
    cImageData * pHeightData = NULL;
-   UseGlobal(ResourceManager2);
-   if (pResourceManager2->Load(tResKey(pszHeightData, kRC_Image), (void**)&pHeightData) != S_OK)
+   UseGlobal(ResourceManager);
+   if (pResourceManager->Load(tResKey(pszHeightData, kRC_Image), (void**)&pHeightData) != S_OK)
    {
       return E_FAIL;
    }

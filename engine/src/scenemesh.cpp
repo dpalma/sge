@@ -13,7 +13,7 @@
 
 #include "vec4.h"
 #include "matrix4.h"
-#include "resmgr.h"
+#include "resourceapi.h"
 #include "globalobj.h"
 
 #include "dbgalloc.h" // must be last header

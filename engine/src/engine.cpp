@@ -48,8 +48,8 @@ static bool ScriptExecResource(IScriptInterpreter * pInterpreter, const char * p
    bool bResult = false;
 
    char * pszCode = NULL;
-   UseGlobal(ResourceManager2);
-   if (pResourceManager2->Load(tResKey(pszResource, kRC_Text), (void**)&pszCode) == S_OK)
+   UseGlobal(ResourceManager);
+   if (pResourceManager->Load(tResKey(pszResource, kRC_Text), (void**)&pszCode) == S_OK)
    {
       bResult = SUCCEEDED(pInterpreter->ExecString(pszCode));
       delete [] pszCode;

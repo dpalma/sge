@@ -299,8 +299,8 @@ bool LoadBitmap(const tChar * pszBitmap, HBITMAP * phBitmap)
    bool bResult = false;
 
    cImageData * pImageData = NULL;
-   UseGlobal(ResourceManager2);
-   if (pResourceManager2->Load(tResKey(pszBitmap, kRC_Image), (void**)&pImageData) == S_OK)
+   UseGlobal(ResourceManager);
+   if (pResourceManager->Load(tResKey(pszBitmap, kRC_Image), (void**)&pImageData) == S_OK)
    {
       bResult = LoadBitmap(pImageData, phBitmap);
       delete pImageData;

@@ -16,7 +16,7 @@
 
 F_DECLARE_INTERFACE(IReader);
 
-F_DECLARE_INTERFACE(IResourceManager2);
+F_DECLARE_INTERFACE(IResourceManager);
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -119,7 +119,7 @@ typedef void * (* tResourceLoad)(IReader * pReader);
 typedef void * (* tResourcePostload)(void * pData, int dataLength, void * param);
 typedef void   (* tResourceUnload)(void * pData);
 
-interface IResourceManager2 : IUnknown
+interface IResourceManager : IUnknown
 {
    virtual tResult AddDirectory(const char * pszDir) = 0;
    // HACK: This AddDirectoryTreeFlattened is to support the legacy behavior
@@ -127,8 +127,13 @@ interface IResourceManager2 : IUnknown
    virtual tResult AddArchive(const char * pszArchive) = 0;
 
    // TODO: Make this type-safe. Maybe pass in a GUID sort of like QueryInterface
-   virtual tResult Load(const tResKey & key, void * * ppData) = 0;
+   virtual tResult Load(const tResKey & key, void * param, void * * ppData) = 0;
    virtual tResult Unload(const tResKey & key) = 0;
+
+   tResult Load(const tResKey & key, void * * ppData)
+   {
+      return Load(key, NULL, ppData);
+   }
 
    virtual tResult RegisterFormat(eResourceClass rc,
                                   const char * pszExtension,

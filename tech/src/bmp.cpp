@@ -239,10 +239,10 @@ void BmpUnload(void * pData)
 
 TECH_API tResult BmpFormatRegister()
 {
-   UseGlobal(ResourceManager2);
-   if (!!pResourceManager2)
+   UseGlobal(ResourceManager);
+   if (!!pResourceManager)
    {
-      return pResourceManager2->RegisterFormat(kRC_Image, "bmp", BmpLoad, NULL, BmpUnload);
+      return pResourceManager->RegisterFormat(kRC_Image, "bmp", BmpLoad, NULL, BmpUnload);
    }
    return E_FAIL;
 }

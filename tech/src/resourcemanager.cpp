@@ -3,7 +3,6 @@
 
 #include "stdhdr.h"
 
-#include "resmgr.h"
 #include "resourceapi.h"
 #include "ziparchive.h"
 #include "filepath.h"
@@ -112,9 +111,7 @@ static size_t ListDirs(const cFilePath & path, std::vector<std::string> * pDirs)
 // CLASS: cResourceManager
 //
 
-class cResourceManager : public cComObject3<IMPLEMENTS(IResourceManager),
-                                            IMPLEMENTS(IResourceManager2),
-                                            cGlobalObjectBase, &IID_IGlobalObject>
+class cResourceManager : public cGlobalObject<IMPLEMENTS(IResourceManager)>
 {
 public:
    cResourceManager();
@@ -131,7 +128,7 @@ public:
    virtual tResult AddDirectory(const char * pszDir);
    virtual tResult AddDirectoryTreeFlattened(const char * pszDir);
    virtual tResult AddArchive(const char * pszArchive);
-   virtual tResult Load(const tResKey & key, void * * ppData);
+   virtual tResult Load(const tResKey & key, void * param, void * * ppData);
    virtual tResult Unload(const tResKey & key);
    virtual tResult RegisterFormat(eResourceClass rc,
                                   const char * pszExtension,
@@ -164,14 +161,8 @@ private:
 ////////////////////////////////////////
 
 cResourceManager::cResourceManager()
+ : cGlobalObject<IMPLEMENTS(IResourceManager)>(kResourceManagerName)
 {
-   Construct(IID_IResourceManager, kResourceManagerName, NULL, 0);
-
-   if (AccessGlobalObjectRegistry() != NULL)
-   {
-      Verify(SUCCEEDED(AccessGlobalObjectRegistry()->Register(IID_IResourceManager, static_cast<IResourceManager *>(this))));
-      Verify(SUCCEEDED(AccessGlobalObjectRegistry()->Register(IID_IResourceManager2, static_cast<IResourceManager2 *>(this))));
-   }
 }
 
 ////////////////////////////////////////
@@ -279,11 +270,11 @@ tResult cResourceManager::AddDirectory(const char * pszDir)
       // TODO: do something; cache information about the file
       if ((attribs & kFA_Directory) == kFA_Directory)
       {
-         DebugMsg1("Dir: %s\n", szFile);
+         LocalMsg1("Dir: %s\n", szFile);
       }
       else
       {
-         DebugMsg1("File: %s\n", szFile);
+         LocalMsg1("File: %s\n", szFile);
       }
    }
    pFileIter->IterEnd();
@@ -355,7 +346,7 @@ tResult cResourceManager::AddArchive(const char * pszArchive)
 
 ////////////////////////////////////////
 
-tResult cResourceManager::Load(const tResKey & key, void * * ppData)
+tResult cResourceManager::Load(const tResKey & key, void * param, void * * ppData)
 {
    if (ppData == NULL)
    {
@@ -399,9 +390,29 @@ tResult cResourceManager::Load(const tResKey & key, void * * ppData)
             {
                if (fIter->pfnLoad != NULL)
                {
-                  if ((*ppData = (*fIter->pfnLoad)(pReader)) != NULL)
+                  void * pData = (*fIter->pfnLoad)(pReader);
+                  if (pData != NULL)
                   {
-                     return S_OK;
+                     if (fIter->pfnPostload == NULL)
+                     {
+                        *ppData = pData;
+                        return S_OK;
+                     }
+                     else
+                     {
+                        pReader->Seek(0, kSO_End);
+                        ulong dataLength;
+                        if (pReader->Tell(&dataLength) == S_OK)
+                        {
+                           pReader->Seek(0, kSO_Set);
+                           void * pNewData = (*fIter->pfnPostload)(pData, dataLength, param);
+                           if (pNewData != NULL)
+                           {
+                              *ppData = pNewData;
+                              return S_OK;
+                           }
+                        }
+                     }
                   }
                   else
                   {

@@ -439,11 +439,12 @@ bool MainInit(int argc, char * argv[])
    TextFormatRegister("txt");
    TextFormatRegister("lua");
    TextFormatRegister("xml");
+   Ms3dFormatRegister();
 
    if (ConfigGet("data", &temp) == S_OK)
    {
-      UseGlobal(ResourceManager2);
-      pResourceManager2->AddDirectoryTreeFlattened(temp);
+      UseGlobal(ResourceManager);
+      pResourceManager->AddDirectoryTreeFlattened(temp);
    }
 
    g_fov = kDefaultFov;

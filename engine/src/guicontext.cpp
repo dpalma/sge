@@ -110,8 +110,8 @@ tResult cGUIContext::HasElement(IGUIElement * pElement) const
 tResult cGUIContext::LoadFromResource(const char * psz)
 {
    char * pszXml = NULL;
-   UseGlobal(ResourceManager2);
-   if (pResourceManager2->Load(tResKey(psz, kRC_Text), (void**)&pszXml) == S_OK)
+   UseGlobal(ResourceManager);
+   if (pResourceManager->Load(tResKey(psz, kRC_Text), (void**)&pszXml) == S_OK)
    {
       tResult result = LoadFromString(pszXml);
       delete [] pszXml;

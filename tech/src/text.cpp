@@ -55,10 +55,10 @@ void TextUnload(void * pData)
 
 TECH_API tResult TextFormatRegister(const char * pszExtension)
 {
-   UseGlobal(ResourceManager2);
-   if (!!pResourceManager2)
+   UseGlobal(ResourceManager);
+   if (!!pResourceManager)
    {
-      return pResourceManager2->RegisterFormat(kRC_Text, pszExtension, TextLoad, NULL, TextUnload);
+      return pResourceManager->RegisterFormat(kRC_Text, pszExtension, TextLoad, NULL, TextUnload);
    }
    return E_FAIL;
 }

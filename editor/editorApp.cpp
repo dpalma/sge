@@ -150,8 +150,8 @@ static bool ScriptExecResource(const char * pszResource)
 {
    bool bResult = false;
    char * pszCode = NULL;
-   UseGlobal(ResourceManager2);
-   if (pResourceManager2->Load(tResKey(pszResource, kRC_Text), (void**)&pszCode) == S_OK)
+   UseGlobal(ResourceManager);
+   if (pResourceManager->Load(tResKey(pszResource, kRC_Text), (void**)&pszCode) == S_OK)
    {
       bResult = ScriptExecString(pszCode);
       delete [] pszCode;
@@ -240,8 +240,8 @@ BOOL cEditorApp::InitInstance()
    cStr temp;
    if (ConfigGet("data", &temp) == S_OK)
    {
-      UseGlobal(ResourceManager2);
-      if (FAILED(pResourceManager2->AddDirectoryTreeFlattened(temp)))
+      UseGlobal(ResourceManager);
+      if (FAILED(pResourceManager->AddDirectoryTreeFlattened(temp)))
       {
          ErrorMsg1("Unable to set up resource directory %s\n", temp.c_str());
          return FALSE;

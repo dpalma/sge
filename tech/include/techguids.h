@@ -22,11 +22,11 @@ DEFINE_TECH_GUID(IID_IMemManagerPrivate, 0xA);
 DEFINE_TECH_GUID(IID_IWindow, 0xB);
 DEFINE_TECH_GUID(IID_IWindowSink, 0xC);
 DEFINE_TECH_GUID(IID_IWindowX11, 0xD);
-DEFINE_TECH_GUID(IID_IResourceManager, 0xE);
+//DEFINE_TECH_GUID(<<name>>, 0xE);
 DEFINE_TECH_GUID(IID_IWindowFullScreen, 0xF);
-DEFINE_TECH_GUID(IID_IResource, 0x10);
-DEFINE_TECH_GUID(IID_IResourceFormat, 0x11);
-DEFINE_TECH_GUID(IID_IResourceManager2, 0x12);
+//DEFINE_TECH_GUID(<<name>>, 0x10);
+//DEFINE_TECH_GUID(<<name>>, 0x11);
+DEFINE_TECH_GUID(IID_IResourceManager, 0x12);
 DEFINE_TECH_GUID(IID_IThreadCaller, 0x13);
 
 ///////////////////////////////////////////////////////////////////////////////

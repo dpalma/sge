@@ -461,10 +461,10 @@ void TargaUnload(void * pData)
 
 TECH_API tResult TargaFormatRegister()
 {
-   UseGlobal(ResourceManager2);
-   if (!!pResourceManager2)
+   UseGlobal(ResourceManager);
+   if (!!pResourceManager)
    {
-      return pResourceManager2->RegisterFormat(kRC_Image, "tga", TargaLoad, NULL, TargaUnload);
+      return pResourceManager->RegisterFormat(kRC_Image, "tga", TargaLoad, NULL, TargaUnload);
    }
    return E_FAIL;
 }

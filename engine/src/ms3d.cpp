@@ -13,7 +13,7 @@
 #include "imagedata.h"
 #include "color.h"
 #include "renderapi.h"
-#include "resmgr.h"
+#include "resourceapi.h"
 #include "globalobj.h"
 #include "animation.h"
 #include "hash.h"
@@ -441,6 +441,56 @@ IMesh * LoadMs3d(IRenderDevice * pRenderDevice, IReader * pReader)
    }
 
    return NULL;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void * Ms3dLoad(IReader * pReader)
+{
+   if (pReader != NULL)
+   {
+      cMs3dFileReader * pMs3dReader = new cMs3dFileReader;
+      if (pMs3dReader != NULL)
+      {
+         if (pMs3dReader->Read(pReader) == S_OK)
+         {
+            return pMs3dReader;
+         }
+      }
+   }
+
+   return NULL;
+}
+
+void * Ms3dPostload(void * pData, int dataLength, void * param)
+{
+   cMs3dFileReader * pMs3dReader = reinterpret_cast<cMs3dFileReader*>(pData);
+
+   cAutoIPtr<IMesh> pMesh;
+   if (pMs3dReader->CreateMesh(reinterpret_cast<IRenderDevice*>(param), &pMesh) == S_OK)
+   {
+      delete pMs3dReader;
+      pMesh->AddRef();
+      return pMesh;
+   }
+
+   delete pMs3dReader;
+   return NULL;
+}
+
+void Ms3dUnload(void * pData)
+{
+   reinterpret_cast<IMesh*>(pData)->Release();
+}
+
+ENGINE_API tResult Ms3dFormatRegister()
+{
+   UseGlobal(ResourceManager);
+   if (!!pResourceManager)
+   {
+      return pResourceManager->RegisterFormat(kRC_Mesh, "ms3d", Ms3dLoad, Ms3dPostload, Ms3dUnload);
+   }
+   return E_FAIL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -178,8 +178,8 @@ void cEditorTile::LazyInit()
       {
          Assert(m_hBitmap == NULL);
 
-         UseGlobal(ResourceManager2);
-         if (pResourceManager2->Load(tResKey(m_texture.c_str(), kRC_Image), (void**)&m_pImageData) == S_OK)
+         UseGlobal(ResourceManager);
+         if (pResourceManager->Load(tResKey(m_texture.c_str(), kRC_Image), (void**)&m_pImageData) == S_OK)
          {
             m_bLoadBitmapFailed = !LoadBitmap(m_pImageData, &m_hBitmap);
          }
