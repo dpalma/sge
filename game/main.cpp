@@ -375,7 +375,6 @@ tResult cEngineConfiguration::GetRenderDeviceParameters(sRenderDeviceParameters 
    pParams->bpp = bpp;
    pParams->bFullScreen = ConfigIsTrue("full_screen") && !IsDebuggerPresent();
    pParams->options = kRDO_ShowStatistics;
-   pParams->pWindow = NULL;
 
    return S_OK;
 }

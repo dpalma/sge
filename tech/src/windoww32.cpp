@@ -329,8 +329,9 @@ static bool FullScreenEnd(HWND hWnd)
 // CLASS: cWindowWin32
 //
 
-class cWindowWin32 : public cComObject2<IMPLEMENTSCP(IWindow, IWindowSink),
-                                        IMPLEMENTS(IWindowFullScreen)>
+class cWindowWin32 : public cComObject3<IMPLEMENTSCP(IWindow, IWindowSink),
+                                        IMPLEMENTS(IWindowFullScreen),
+                                        IMPLEMENTS(IWindowW32)>
 {
 public:
    cWindowWin32();
@@ -343,6 +344,8 @@ public:
 
    virtual tResult BeginFullScreen();
    virtual tResult EndFullScreen();
+
+   virtual tResult GetHwnd(HWND * phWnd);
 
 private:
    static std::string GenerateWindowClassName(uint classStyle,
@@ -477,6 +480,20 @@ tResult cWindowWin32::BeginFullScreen()
 tResult cWindowWin32::EndFullScreen()
 {
    return FullScreenEnd(m_hWnd) ? S_OK : E_FAIL;
+}
+
+///////////////////////////////////////
+
+tResult cWindowWin32::GetHwnd(HWND * phWnd)
+{
+   if (phWnd == NULL)
+   {
+      return E_POINTER;
+   }
+
+   *phWnd = m_hWnd;
+
+   return (m_hWnd == NULL) ? S_FALSE : S_OK;
 }
 
 ///////////////////////////////////////

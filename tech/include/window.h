@@ -19,6 +19,7 @@ F_DECLARE_INTERFACE(IWindowFullScreen);
 F_DECLARE_INTERFACE(IWindowSink);
 #ifdef _WIN32
 F_DECLARE_HANDLE(HWND);
+F_DECLARE_INTERFACE(IWindowW32);
 #else
 F_DECLARE_INTERFACE(IWindowX11);
 typedef unsigned long XID;
@@ -93,7 +94,19 @@ class cDefaultWindowSink : public IWindowSink
    virtual void OnActivateApp(bool bActive, double time) {}
 };
 
-#ifndef _WIN32
+#ifdef _WIN32
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IWindowW32
+//
+
+interface IWindowW32 : IUnknown
+{
+   virtual tResult GetHwnd(HWND * phWnd) = 0;
+};
+
+#else
 
 ///////////////////////////////////////////////////////////////////////////////
 //

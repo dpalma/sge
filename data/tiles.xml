@@ -1,5 +1,90 @@
 <?xml version="1.0" encoding="utf-8"?>
 
+<tileset name="test">
+
+    <tile
+       name="Cracked Mud"
+       texture="crackedmud1.bmp"
+       horizontalImages=1
+       verticalImages=1
+       >
+    </tile>
+
+    <tile
+       name="Cracked Mud 2"
+       texture="crackedmud2.bmp"
+       horizontalImages=1
+       verticalImages=1
+       >
+    </tile>
+
+    <tile
+       name="Cracked Mud 3"
+       texture="crackedmud3.bmp"
+       horizontalImages=1
+       verticalImages=1
+       >
+    </tile>
+
+    <tile
+       name="Dried Mud 1"
+       texture="driedmud1.bmp"
+       horizontalImages=1
+       verticalImages=1
+       >
+    </tile>
+
+    <tile
+       name="Dried Mud 2"
+       texture="driedmud2.bmp"
+       horizontalImages=1
+       verticalImages=1
+       >
+    </tile>
+
+    <tile
+       name="Grass 1"
+       texture="grass1.bmp"
+       horizontalImages=1
+       verticalImages=1
+       >
+    </tile>
+
+    <tile
+       name="Grass 2"
+       texture="grass2.bmp"
+       horizontalImages=1
+       verticalImages=1
+       >
+    </tile>
+
+    <tile
+       name="Grass 3"
+       texture="grass3.bmp"
+       horizontalImages=1
+       verticalImages=1
+       >
+    </tile>
+
+    <tile
+       name="Snow 1"
+       texture="snow1.bmp"
+       horizontalImages=1
+       verticalImages=1
+       >
+    </tile>
+
+    <tile
+       name="Snow 2"
+       texture="snow2.bmp"
+       horizontalImages=1
+       verticalImages=1
+       >
+    </tile>
+
+</tileset>
+
+<!--
 <tileset name="WarCraft3">
 
     <tile
@@ -10,8 +95,6 @@
        >
     </tile>
 
-<!-- TODO: un-comment these textures when they're properly handled via multitexturing -->
-<!--
     <tile
        name="Dirt (Grass)"
        texture="Lords_DirtGrass.tga"
@@ -51,6 +134,6 @@
        verticalImages=4
        >
     </tile>
--->
 
 </tileset>
+-->

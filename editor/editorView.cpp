@@ -334,6 +334,7 @@ void cEditorView::cSceneEntity::Render(IRenderDevice * pRenderDevice)
 
          glPushAttrib(GL_ENABLE_BIT);
          glEnable(GL_BLEND);
+         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
          glBegin(GL_QUADS);
             glColor4f(0, 1, 0, 0.25f);
             glNormal3f(0, 1, 0);
@@ -357,15 +358,7 @@ int cEditorView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (cGLView::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
-   sRenderDeviceParameters params = {0};
-   params.width = 0;
-   params.height = 0;
-   params.bpp = 0;
-   params.bFullScreen = false;
-   params.options = kRDO_ShowStatistics;
-   params.pWindow = static_cast<IWindow *>(this);
-
-   if (RenderDeviceCreate(&params, &m_pRenderDevice) != S_OK)
+   if (RenderDeviceCreate(static_cast<IWindow *>(this), &m_pRenderDevice) != S_OK)
    {
       DebugMsg("Failed to create rendering device\n");
       return -1;
