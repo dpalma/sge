@@ -749,7 +749,7 @@ void cLuaInterpreter::CleanupPreRegisteredFunctions()
 
 double g_foo;
 
-class cFoo : public cComObject<IMPLEMENTS(IScriptable)>
+class cFooScriptable : public cComObject<IMPLEMENTS(IScriptable)>
 {
 public:
    virtual tResult Invoke(const char * pszMethodName,
@@ -769,12 +769,12 @@ public:
    }
 };
 
-class cFooFactory : public cComObject<IMPLEMENTS(IScriptableFactory)>
+class cFooScriptableFactory : public cComObject<IMPLEMENTS(IScriptableFactory)>
 {
 public:
    virtual tResult CreateInstance(void * * ppvInstance)
    {
-      *ppvInstance = (void *)new cFoo;
+      *ppvInstance = (void *)new cFooScriptable;
       return S_OK;
    }
 };
@@ -863,121 +863,157 @@ class cLuaInterpreterTests : public CppUnit::TestCase
       CPPUNIT_TEST(TestCustomClass2);
    CPPUNIT_TEST_SUITE_END();
 
-private:
    static bool gm_bCalled;
 
-   static int CallThisFunction(int argc, const cScriptVar * argv, int, cScriptVar *)
-   {
-      gm_bCalled = true;
-      return 0;
-   }
+   static int CallThisFunction(int argc, const cScriptVar * argv, int, cScriptVar *);
+   static int RemoveThisFunction(int, const cScriptVar *, int, cScriptVar *);
 
-   static int RemoveThisFunction(int, const cScriptVar *, int, cScriptVar *)
-   {
-      // does nothing
-      return 0;
-   }
-
-   void TestCallFunction()
-   {
-      CPPUNIT_ASSERT(m_pInterp->AddFunction("CallThisFunction", CallThisFunction) == S_OK);
-      gm_bCalled = false;
-      CPPUNIT_ASSERT(m_pInterp->ExecString("CallThisFunction();") == S_OK);
-      CPPUNIT_ASSERT(gm_bCalled);
-      CPPUNIT_ASSERT(m_pInterp->RemoveFunction("CallThisFunction") == S_OK);
-   }
-
-   void TestRemoveFunction()
-   {
-      CPPUNIT_ASSERT(m_pInterp->AddFunction("RemoveThisFunction", RemoveThisFunction) == S_OK);
-      CPPUNIT_ASSERT(m_pInterp->ExecString("RemoveThisFunction();") == S_OK);
-      CPPUNIT_ASSERT(m_pInterp->RemoveFunction("RemoveThisFunction") == S_OK);
-      CPPUNIT_ASSERT(m_pInterp->ExecString("RemoveThisFunction();") != S_OK);
-
-      CPPUNIT_ASSERT(m_pInterp->ExecString("ThisNameWillNotBeFoundSoThisCallShouldFail();") != S_OK);
-   }
-
-   void TestGetNumber()
-   {
-      double value;
-
-      m_pInterp->SetGlobal("foo", 123.456);
-      CPPUNIT_ASSERT(m_pInterp->GetGlobal("foo", &value) == S_OK);
-      CPPUNIT_ASSERT(value == 123.456);
-   }
-
-   void TestGetString()
-   {
-      char szValue[16];
-
-      m_pInterp->SetGlobal("bar", "blah blah");
-      CPPUNIT_ASSERT(m_pInterp->GetGlobal("bar", szValue, _countof(szValue)) == S_OK);
-      CPPUNIT_ASSERT(strcmp(szValue, "blah blah") == 0);
-
-      m_pInterp->SetGlobal("bar", "blah blah blah blah blah blah blah blah");
-      CPPUNIT_ASSERT(m_pInterp->GetGlobal("bar", szValue, _countof(szValue)) == S_OK);
-      CPPUNIT_ASSERT(strcmp(szValue, "blah blah blah ") == 0);
-   }
-
-   void TestCustomClass()
-   {
-      cAutoIPtr<IScriptableFactory> pFooFactory = new cFooFactory;
-
-      CPPUNIT_ASSERT(m_pInterp->RegisterCustomClass("foo", pFooFactory) == S_OK);
-
-      CPPUNIT_ASSERT(m_pInterp->ExecString("f = foo(); f:SetFoo(1000);") == S_OK);
-      CPPUNIT_ASSERT(g_foo == 1000);
-
-      CPPUNIT_ASSERT(m_pInterp->ExecString("f = foo(); f:SetFoo(3.1415);") == S_OK);
-      CPPUNIT_ASSERT(g_foo == 3.1415);
-
-      CPPUNIT_ASSERT(m_pInterp->RevokeCustomClass("foo") == S_OK);
-
-      CPPUNIT_ASSERT(m_pInterp->ExecString("f = foo(); f:SetFoo(99);") != S_OK);
-   }
-
-   void TestCustomClass2()
-   {
-      cAutoIPtr<IScriptableFactory> pRNGFactory = new cRNGFactory;
-
-      CPPUNIT_ASSERT(m_pInterp->RegisterCustomClass(cRNG::LuaClassName, pRNGFactory) == S_OK);
-
-      static const char scriptSpec[] =
-      {
-         "rng = RNG();" \
-         "rng:Seed(%d);" \
-         "local r = rng:Rand();" \
-         "print([[Rand() returned ]] .. r .. [[\r\n]]);"
-      };
-
-      char szScript[1024];
-      sprintf(szScript, scriptSpec, time(NULL));
-
-      CPPUNIT_ASSERT(m_pInterp->ExecString(szScript) == S_OK);
-
-      CPPUNIT_ASSERT(m_pInterp->RevokeCustomClass(cRNG::LuaClassName) == S_OK);
-
-      CPPUNIT_ASSERT(m_pInterp->ExecString(szScript) != S_OK);
-   }
+   void TestCallFunction();
+   void TestRemoveFunction();
+   void TestGetNumber();
+   void TestGetString();
+   void TestCustomClass();
+   void TestCustomClass2();
 
    cAutoIPtr<IScriptInterpreter> m_pInterp;
 
 public:
-   virtual void setUp()
-   {
-      CPPUNIT_ASSERT(!m_pInterp);
-      m_pInterp = (IScriptInterpreter *)FindGlobalObject(IID_IScriptInterpreter);
-   }
-
-   virtual void tearDown()
-   {
-      SafeRelease(m_pInterp);
-   }
+   virtual void setUp();
+   virtual void tearDown();
 };
+
+////////////////////////////////////////
 
 bool cLuaInterpreterTests::gm_bCalled = false;
 
+////////////////////////////////////////
+
 CPPUNIT_TEST_SUITE_REGISTRATION(cLuaInterpreterTests);
+
+////////////////////////////////////////
+
+int cLuaInterpreterTests::CallThisFunction(int argc, const cScriptVar * argv, int, cScriptVar *)
+{
+   gm_bCalled = true;
+   return 0;
+}
+
+////////////////////////////////////////
+
+int cLuaInterpreterTests::RemoveThisFunction(int, const cScriptVar *, int, cScriptVar *)
+{
+   // does nothing
+   return 0;
+}
+
+////////////////////////////////////////
+
+void cLuaInterpreterTests::TestCallFunction()
+{
+   CPPUNIT_ASSERT(m_pInterp->AddFunction("CallThisFunction", CallThisFunction) == S_OK);
+   gm_bCalled = false;
+   CPPUNIT_ASSERT(m_pInterp->ExecString("CallThisFunction();") == S_OK);
+   CPPUNIT_ASSERT(gm_bCalled);
+   CPPUNIT_ASSERT(m_pInterp->RemoveFunction("CallThisFunction") == S_OK);
+}
+
+////////////////////////////////////////
+
+void cLuaInterpreterTests::TestRemoveFunction()
+{
+   CPPUNIT_ASSERT(m_pInterp->AddFunction("RemoveThisFunction", RemoveThisFunction) == S_OK);
+   CPPUNIT_ASSERT(m_pInterp->ExecString("RemoveThisFunction();") == S_OK);
+   CPPUNIT_ASSERT(m_pInterp->RemoveFunction("RemoveThisFunction") == S_OK);
+   CPPUNIT_ASSERT(m_pInterp->ExecString("RemoveThisFunction();") != S_OK);
+
+   CPPUNIT_ASSERT(m_pInterp->ExecString("ThisNameWillNotBeFoundSoThisCallShouldFail();") != S_OK);
+}
+
+////////////////////////////////////////
+
+void cLuaInterpreterTests::TestGetNumber()
+{
+   double value;
+
+   m_pInterp->SetGlobal("foo", 123.456);
+   CPPUNIT_ASSERT(m_pInterp->GetGlobal("foo", &value) == S_OK);
+   CPPUNIT_ASSERT(value == 123.456);
+}
+
+////////////////////////////////////////
+
+void cLuaInterpreterTests::TestGetString()
+{
+   char szValue[16];
+
+   m_pInterp->SetGlobal("bar", "blah blah");
+   CPPUNIT_ASSERT(m_pInterp->GetGlobal("bar", szValue, _countof(szValue)) == S_OK);
+   CPPUNIT_ASSERT(strcmp(szValue, "blah blah") == 0);
+
+   m_pInterp->SetGlobal("bar", "blah blah blah blah blah blah blah blah");
+   CPPUNIT_ASSERT(m_pInterp->GetGlobal("bar", szValue, _countof(szValue)) == S_OK);
+   CPPUNIT_ASSERT(strcmp(szValue, "blah blah blah ") == 0);
+}
+
+////////////////////////////////////////
+
+void cLuaInterpreterTests::TestCustomClass()
+{
+   cAutoIPtr<IScriptableFactory> pFooFactory = new cFooScriptableFactory;
+
+   CPPUNIT_ASSERT(m_pInterp->RegisterCustomClass("foo", pFooFactory) == S_OK);
+
+   CPPUNIT_ASSERT(m_pInterp->ExecString("f = foo(); f:SetFoo(1000);") == S_OK);
+   CPPUNIT_ASSERT(g_foo == 1000);
+
+   CPPUNIT_ASSERT(m_pInterp->ExecString("f = foo(); f:SetFoo(3.1415);") == S_OK);
+   CPPUNIT_ASSERT(g_foo == 3.1415);
+
+   CPPUNIT_ASSERT(m_pInterp->RevokeCustomClass("foo") == S_OK);
+
+   CPPUNIT_ASSERT(m_pInterp->ExecString("f = foo(); f:SetFoo(99);") != S_OK);
+}
+
+////////////////////////////////////////
+
+void cLuaInterpreterTests::TestCustomClass2()
+{
+   cAutoIPtr<IScriptableFactory> pRNGFactory = new cRNGFactory;
+
+   CPPUNIT_ASSERT(m_pInterp->RegisterCustomClass(cRNG::LuaClassName, pRNGFactory) == S_OK);
+
+   static const char scriptSpec[] =
+   {
+      "rng = RNG();" \
+      "rng:Seed(%d);" \
+      "local r = rng:Rand();" \
+      "print([[Rand() returned ]] .. r .. [[\r\n]]);"
+   };
+
+   char szScript[1024];
+   sprintf(szScript, scriptSpec, time(NULL));
+
+   CPPUNIT_ASSERT(m_pInterp->ExecString(szScript) == S_OK);
+
+   CPPUNIT_ASSERT(m_pInterp->RevokeCustomClass(cRNG::LuaClassName) == S_OK);
+
+   CPPUNIT_ASSERT(m_pInterp->ExecString(szScript) != S_OK);
+}
+
+////////////////////////////////////////
+
+void cLuaInterpreterTests::setUp()
+{
+   CPPUNIT_ASSERT(!m_pInterp);
+   m_pInterp = (IScriptInterpreter *)FindGlobalObject(IID_IScriptInterpreter);
+}
+
+////////////////////////////////////////
+
+void cLuaInterpreterTests::tearDown()
+{
+   SafeRelease(m_pInterp);
+}
 
 #endif // HAVE_CPPUNIT
 
