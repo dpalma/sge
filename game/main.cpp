@@ -287,6 +287,11 @@ SCRIPT_DEFINE_FUNCTION(EntitySpawnTest)
 
             UseGlobal(ResourceManager);
             cAutoIPtr<IMesh> pMesh = MeshLoad(pResourceManager, AccessRenderDevice(), ScriptArgAsString(0));
+            if (!pMesh)
+            {
+               DebugMsg1("Error loading mesh \"%s\"\n", ScriptArgAsString(0));
+               return 0;
+            }
 
             cAutoIPtr<ISceneEntity> pEntity = SceneEntityCreate(pMesh);
             pEntity->SetLocalTranslation(tVec3(x,y,z));

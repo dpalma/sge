@@ -6,7 +6,7 @@ bind("escape", [[ShowModalDialog("maindlg.xml");]]);
 
 gameMeshes = 
 {
-   "tree.ms3d",
+   "tree2.ms3d",
    "crate.ms3d",
    "face.3ds",
    "zombie.ms3d",
