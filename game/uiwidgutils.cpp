@@ -242,10 +242,10 @@ public:
    cUIColor GetCaptionGradient() const;
    cUIColor GetBackground() const;
 
-   IFont * AccessFont() const;
+   IRenderFont * AccessFont() const;
 
 private:
-   cAutoIPtr<IFont> m_pFont;
+   cAutoIPtr<IRenderFont> m_pFont;
 };
 
 ///////////////////////////////////////
@@ -395,7 +395,7 @@ cUIColor cUIStyle::GetBackground() const
 
 ///////////////////////////////////////
 
-IFont * cUIStyle::AccessFont() const
+IRenderFont * cUIStyle::AccessFont() const
 {
    return const_cast<cUIStyle *>(this)->m_pFont;
 }

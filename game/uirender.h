@@ -12,7 +12,7 @@
 #endif
 
 F_DECLARE_INTERFACE(ITexture);
-F_DECLARE_INTERFACE(IFont);
+F_DECLARE_INTERFACE(IRenderFont);
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -29,11 +29,11 @@ enum eDrawTextFlags
    kTextNoClip = (1<<2),
 };
 
-cUISize UIMeasureText(const char * pszText, int textLen, IFont * pFont = NULL);
+cUISize UIMeasureText(const char * pszText, int textLen, IRenderFont * pFont = NULL);
 
 void UIDrawText(const char * pszText, int textLen,
                 const cUIRect * pRect, uint flags = kTextDefault,
-                IFont * pFont = NULL,
+                IRenderFont * pFont = NULL,
                 const cUIColor & color = cUIColor(1,1,1,1));
 
 void UIDrawText(const cUIPoint & point,

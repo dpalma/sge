@@ -46,7 +46,7 @@ void UIPopClipRect()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-cUISize UIMeasureText(const char * pszText, int textLen, IFont * pFont /*=NULL*/)
+cUISize UIMeasureText(const char * pszText, int textLen, IRenderFont * pFont /*=NULL*/)
 {
    Assert(pszText != NULL);
 
@@ -57,7 +57,7 @@ cUISize UIMeasureText(const char * pszText, int textLen, IFont * pFont /*=NULL*/
 
    if (pFont == NULL)
    {
-      cAutoIPtr<IFont> pFont2 = FontCreateDefault();
+      cAutoIPtr<IRenderFont> pFont2 = FontCreateDefault();
       pFont2->MeasureText(pszText, textLen, &textWidth, &textHeight);
    }
    else
@@ -72,7 +72,7 @@ cUISize UIMeasureText(const char * pszText, int textLen, IFont * pFont /*=NULL*/
 
 void UIDrawText(const char * pszText, int textLen,
                 const cUIRect * pRect, uint flags /*=kTextDefault*/,
-                IFont * pFont /*=NULL*/,
+                IRenderFont * pFont /*=NULL*/,
                 const cUIColor & color /*=cUIColor(1,1,1,1)*/)
 {
    Assert(pszText != NULL);
@@ -118,7 +118,7 @@ void UIDrawText(const char * pszText, int textLen,
 void UIDrawText(const cUIPoint & point,
                 const char * pszText, int textLen /*=-1*/)
 {
-   cAutoIPtr<IFont> pFont = FontCreateDefault();
+   cAutoIPtr<IRenderFont> pFont = FontCreateDefault();
    if (pFont)
       pFont->DrawText(point.x, point.y, pszText, textLen);
 }

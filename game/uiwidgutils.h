@@ -13,7 +13,7 @@
 #pragma once
 #endif
 
-F_DECLARE_INTERFACE(IFont);
+F_DECLARE_INTERFACE(IRenderFont);
 
 F_DECLARE_INTERFACE(IUIStyle);
 
@@ -189,7 +189,7 @@ interface IUIStyle : IUnknown
    virtual cUIColor GetCaptionGradient() const = 0;
    virtual cUIColor GetBackground() const = 0;
 
-   virtual IFont * AccessFont() const = 0;
+   virtual IRenderFont * AccessFont() const = 0;
 };
 
 IUIStyle * UIStyleCreateDefault();
