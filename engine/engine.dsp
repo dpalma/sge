@@ -423,10 +423,6 @@ SOURCE=.\src\guitextedit.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\guitypes.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\input.h
 # End Source File
 # Begin Source File
@@ -493,6 +489,10 @@ SOURCE=.\include\engineguids.h
 # Begin Source File
 
 SOURCE=.\include\guiapi.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\guitypes.h
 # End Source File
 # Begin Source File
 
