@@ -9,6 +9,7 @@
 #include "color.h"
 #include "str.h"
 #include "vec2.h"
+#include "rect.h"
 
 #ifdef _MSC_VER
 #pragma once
