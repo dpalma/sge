@@ -481,6 +481,10 @@ SOURCE=.\include\resmgr.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\include\resourceapi.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\include\str.h
 # End Source File
 # Begin Source File

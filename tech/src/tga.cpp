@@ -6,6 +6,7 @@
 #include "imagedata.h"
 #include "readwriteapi.h"
 #include "resmgr.h"
+#include "resourceapi.h"
 
 #include <cstdlib>
 #include <memory.h>
@@ -433,6 +434,103 @@ cImageData * LoadTarga(IReader * pReader)
 
    return NULL;
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cTargaImage
+//
+
+class cTargaImage : public cComObject<IMPLEMENTS(IResource)>
+{
+public:
+   cTargaImage(IReader * pReader);
+
+   virtual eResourceClass GetClass() const { return kRC_Image; }
+
+   virtual tResult GetData(void * * ppData);
+
+private:
+   cAutoIPtr<IReader> m_pReader;
+};
+
+////////////////////////////////////////
+
+cTargaImage::cTargaImage(IReader * pReader)
+ : m_pReader(CTAddRef(pReader))
+{
+}
+
+////////////////////////////////////////
+
+tResult cTargaImage::GetData(void * * ppData)
+{
+   if (ppData == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (!m_pReader)
+   {
+      return E_FAIL;
+   }
+
+   cTargaReader tgaReader(m_pReader);
+
+   if (tgaReader.ReadHeader())
+   {
+      if (tgaReader.ReadFooter())
+      {
+         if (tgaReader.ReadColorMap())
+         {
+            if (tgaReader.ReadImageData())
+            {
+               *ppData = tgaReader.CreateImage();
+               return S_OK;
+            }
+         }
+      }
+   }
+
+   return E_FAIL;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cImageFormatTarga
+//
+
+class cImageFormatTarga : public cComObject<IMPLEMENTS(IResourceFormat)>
+{
+public:
+   virtual tResult Load(const tResKey & key, IReader * pReader, IResource * * ppResource);
+};
+
+////////////////////////////////////////
+
+tResult cImageFormatTarga::Load(const tResKey & key, IReader * pReader, IResource * * ppResource)
+{
+   if (pReader == NULL || ppResource == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cTargaImage * pImg = new cTargaImage(pReader);
+   if (pImg == NULL)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   *ppResource = static_cast<IResource *>(pImg);
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+AUTOREGISTER_RESOURCEFORMAT(kRC_Image, "tga", cImageFormatTarga);
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
