@@ -353,9 +353,6 @@
 					RelativePath=".\src\resmgr.cpp">
 				</File>
 				<File
-					RelativePath=".\src\scriptvar.cpp">
-				</File>
-				<File
 					RelativePath=".\src\stdhdr.cpp">
 					<FileConfiguration
 						Name="Opt|Win32">
@@ -528,12 +525,6 @@
 			</File>
 			<File
 				RelativePath=".\include\resmgr.h">
-			</File>
-			<File
-				RelativePath=".\include\scriptapi.h">
-			</File>
-			<File
-				RelativePath=".\include\scriptvar.h">
 			</File>
 			<File
 				RelativePath=".\include\str.h">

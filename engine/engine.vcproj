@@ -21,7 +21,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories=".\include,..\tech\include,..\render\include"
+				AdditionalIncludeDirectories="..\3rdparty\lua\include,..\tech\include,..\render\include,.\include"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT"
 				StringPooling="TRUE"
 				RuntimeLibrary="3"
@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="winmm.lib opengl32.lib"
+				AdditionalDependencies="opengl32.lib $(OutDir)\lua.lib"
 				OutputFile=".\..\Build.vc7\Opt/engine.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -83,7 +83,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\3rdparty\cppunit\include,.\include,..\tech\include,..\render\include"
+				AdditionalIncludeDirectories="..\3rdparty\cppunit\include;..\3rdparty\lua\include;..\tech\include;..\render\include;.\include"
 				PreprocessorDefinitions="STATIC_BUILD,_DEBUG,_USRDLL,ENGINE_EXPORTS,WIN32,_WINDOWS,STRICT,HAVE_CPPUNIT"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -130,7 +130,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\3rdparty\cppunit\include,.\include,..\tech\include,..\render\include"
+				AdditionalIncludeDirectories="..\3rdparty\cppunit\include;..\3rdparty\lua\include;..\tech\include;..\render\include;.\include"
 				PreprocessorDefinitions="_DEBUG;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT;HAVE_CPPUNIT"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -150,7 +150,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\cppunit.lib winmm.lib opengl32.lib"
+				AdditionalDependencies="opengl32.lib $(OutDir)\lua.lib $(OutDir)\cppunit.lib"
 				OutputFile=".\..\Build.vc7\Debug/engine.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -192,7 +192,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories=".\include,..\tech\include,..\render\include"
+				AdditionalIncludeDirectories="..\3rdparty\lua\include,..\tech\include,..\render\include,.\include"
 				PreprocessorDefinitions="NDEBUG,STATIC_BUILD,_USRDLL,ENGINE_EXPORTS,WIN32,_WINDOWS,STRICT"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -239,7 +239,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories=".\include,..\tech\include,..\render\include"
+				AdditionalIncludeDirectories="..\3rdparty\lua\include,..\tech\include,..\render\include,.\include"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -259,7 +259,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="winmm.lib opengl32.lib"
+				AdditionalDependencies="opengl32.lib $(OutDir)\lua.lib"
 				OutputFile=".\..\Build.vc7\Release/engine.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -311,6 +311,9 @@
 					RelativePath="src\input.cpp">
 				</File>
 				<File
+					RelativePath="src\luainterp.cpp">
+				</File>
+				<File
 					RelativePath=".\src\mesh.cpp">
 				</File>
 				<File
@@ -332,10 +335,16 @@
 					RelativePath="src\sceneentity.cpp">
 				</File>
 				<File
+					RelativePath="src\sceneentityenum.cpp">
+				</File>
+				<File
 					RelativePath="src\scenelayer.cpp">
 				</File>
 				<File
 					RelativePath="src\scenemesh.cpp">
+				</File>
+				<File
+					RelativePath="src\scriptvar.cpp">
 				</File>
 				<File
 					RelativePath="src\sim.cpp">
@@ -393,6 +402,9 @@
 					RelativePath="src\input.h">
 				</File>
 				<File
+					RelativePath="src\luainterp.h">
+				</File>
+				<File
 					RelativePath=".\src\minigl.h">
 				</File>
 				<File
@@ -409,6 +421,9 @@
 				</File>
 				<File
 					RelativePath="src\sceneentity.h">
+				</File>
+				<File
+					RelativePath="src\sceneentityenum.h">
 				</File>
 				<File
 					RelativePath="src\scenelayer.h">
@@ -444,6 +459,12 @@
 			</File>
 			<File
 				RelativePath="include\sceneapi.h">
+			</File>
+			<File
+				RelativePath="include\scriptapi.h">
+			</File>
+			<File
+				RelativePath="include\scriptvar.h">
 			</File>
 			<File
 				RelativePath="include\sim.h">

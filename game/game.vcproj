@@ -340,9 +340,6 @@
 				RelativePath=".\script.cpp">
 			</File>
 			<File
-				RelativePath=".\scriptvm.cpp">
-			</File>
-			<File
 				RelativePath=".\stdhdr.cpp">
 				<FileConfiguration
 					Name="StaticRelease|Win32">
@@ -456,9 +453,6 @@
 			</File>
 			<File
 				RelativePath=".\script.h">
-			</File>
-			<File
-				RelativePath=".\scriptvm.h">
 			</File>
 			<File
 				RelativePath=".\stdhdr.h">
