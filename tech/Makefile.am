@@ -32,6 +32,7 @@ libtech_la_SOURCES = src/bmp.cpp \
                      src/quat.cpp \
                      src/prime.cpp \
                      src/rand.cpp \
+                     src/readwritemem.cpp \
                      src/resmgr.cpp \
                      src/techdebug.cpp \
                      src/techtime.cpp \

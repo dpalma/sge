@@ -22,8 +22,9 @@ game_SOURCES = cameracontroller.cpp \
 game_LDFLAGS = -L$(top_builddir)/3rdparty/lua/src \
                -L$(top_builddir)/3rdparty/lua/src/lib \
                -L$(top_builddir)/3rdparty/tinyxml \
+               -L$(top_builddir)/3rdparty/zlib/contrib/minizip \
                -L$(top_builddir)/engine \
-               -L$(top_builddir)/render \
+               -L$(top_builddir)/render/gl \
                -L$(top_builddir)/tech \
                -L$(top_builddir)/allguids
 
@@ -41,7 +42,7 @@ endif
 install-exec-hook:
 	$(ECHO) "data=$(DESTDIR)$(prefix)/data" > $(DESTDIR)$(bindir)/game.cfg
 
-game_LDADD = $(RES) $(CORE_LIBS) $(GL_LIBS) -llua -llualib -ltinyxml -lrender -lengine -ltech -lallguids
+game_LDADD = $(RES) $(CORE_LIBS) $(GL_LIBS) -lminizip -llua -llualib -ltinyxml -lrendergl -lengine -ltech -lallguids
 
 INCLUDES = $(GL_CFLAGS) \
            -I$(top_srcdir)/3rdparty/lua/include \

@@ -62,9 +62,11 @@ AC_CONFIG_FILES([
    Makefile
    3rdparty/Makefile
    3rdparty/tinyxml/Makefile
+   3rdparty/zlib/contrib/minizip/Makefile
    allguids/Makefile
    tech/Makefile
    render/Makefile
+   render/gl/Makefile
    engine/Makefile
    game/Makefile
    data/Makefile

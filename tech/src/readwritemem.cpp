@@ -88,7 +88,8 @@ tResult cMemReader::Read(cStr * pValue, char stop)
       return S_FALSE;
    }
 
-   for (long pos = Tell(); pos < m_memSize; pos++)
+   long pos;
+   for (pos = Tell(); pos < m_memSize; pos++)
    {
       if (m_pMem[pos] == stop)
       {
