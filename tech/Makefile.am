@@ -36,6 +36,7 @@ libtech_la_SOURCES = src/bmp.cpp \
                      src/techdebug.cpp \
                      src/techtime.cpp \
                      src/tga.cpp \
+                     src/ziparchive.cpp \
                      $(libtech_PLATFORM_SOURCES)
 
 libtech_la_LIBADD = $(GL_LIBS) $(CORE_LIBS)
