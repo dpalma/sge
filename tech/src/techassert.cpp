@@ -24,6 +24,8 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+tLogCallbackFn g_pfnNextLogCB = NULL;
+
 FILE * g_pDebugEchoFile = NULL;
 
 struct sDebugEchoFileAutoClose
@@ -73,8 +75,29 @@ static void TimeAsString(char * psz, int max)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+void DebugEchoFileLogCB(eLogSeverity severity, const tChar * pszMsg, size_t msgLen)
+{
+   if (g_pDebugEchoFile != NULL)
+   {
+      printf(pszMsg);
+      fprintf(g_pDebugEchoFile, pszMsg);
+   }
+
+   if (g_pfnNextLogCB != NULL)
+   {
+      (*g_pfnNextLogCB)(severity, pszMsg, msgLen);
+   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 void DebugEchoFileStart(const char * pszFile)
 {
+   if (g_pfnNextLogCB == NULL)
+   {
+      g_pfnNextLogCB = techlog.SetCallback(DebugEchoFileLogCB);
+   }
+
    if (g_pDebugEchoFile == NULL)
    {
       g_pDebugEchoFile = fopen(pszFile, "w");
@@ -92,6 +115,12 @@ void DebugEchoFileStart(const char * pszFile)
 
 void DebugEchoFileStop()
 {
+   if (g_pfnNextLogCB != NULL)
+   {
+      techlog.SetCallback(g_pfnNextLogCB);
+      g_pfnNextLogCB = NULL;
+   }
+
    if (g_pDebugEchoFile != NULL)
    {
       char szTime[30];
