@@ -4,7 +4,6 @@
 #include "stdhdr.h"
 
 #include "outputbar.h"
-
 #include "editorCtrlBars.h"
 
 #include "resource.h"       // main symbols
@@ -30,7 +29,11 @@ void OutputBarLogCallback(eLogSeverity severity, const tChar * pszMsg, size_t ms
 // CLASS: cOutputBar
 //
 
-AUTO_REGISTER_CONTROLBAR(IDS_OUTPUT_BAR_TITLE, cOutputBar::Factory, kCBP_Bottom);
+////////////////////////////////////////
+
+AUTO_REGISTER_DOCKINGWINDOW(IDS_OUTPUT_BAR_TITLE, cOutputBar::Factory, kDWP_Bottom);
+
+////////////////////////////////////////
 
 tResult cOutputBar::Factory(cDockingWindow * * ppDockingWindow)
 {
@@ -47,14 +50,20 @@ tResult cOutputBar::Factory(cDockingWindow * * ppDockingWindow)
    return S_OK;
 }
 
+////////////////////////////////////////
+
 cOutputBar::cOutputBar()
  : m_nextLogCallback(NULL)
 {
 }
 
+////////////////////////////////////////
+
 cOutputBar::~cOutputBar()
 {
 }
+
+////////////////////////////////////////
 
 void cOutputBar::HandleLogCallback(eLogSeverity severity, const tChar * pszMsg, size_t msgLen)
 {
@@ -65,6 +74,8 @@ void cOutputBar::HandleLogCallback(eLogSeverity severity, const tChar * pszMsg, 
       (*m_nextLogCallback)(severity, pszMsg, msgLen);
    }
 }
+
+////////////////////////////////////////
 
 LRESULT cOutputBar::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled)
 {
@@ -102,6 +113,8 @@ LRESULT cOutputBar::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHa
 
    return 0;
 }
+
+////////////////////////////////////////
 
 LRESULT cOutputBar::OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled)
 {

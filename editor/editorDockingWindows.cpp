@@ -13,7 +13,7 @@ struct sDockingWindowDesc
 {
    uint titleStringId;
    tDockingWindowFactoryFn pFactoryFn;
-   eControlBarPlacement placement;
+   eDockingWindowPlacement placement;
    struct sDockingWindowDesc * pNext;
 };
 
@@ -51,7 +51,7 @@ sAutoDeleteDockingWindowDescs g_autoDeleteDockingWindowDescs;
 
 tResult RegisterDockingWindow(uint titleStringId,
                               tDockingWindowFactoryFn pFactoryFn,
-                              eControlBarPlacement placement)
+                              eDockingWindowPlacement placement)
 {
    struct sDockingWindowDesc * pcb = new struct sDockingWindowDesc;
    pcb->titleStringId = titleStringId;
@@ -73,7 +73,7 @@ void IterCtrlBarsBegin(HANDLE * phIter)
 bool IterNextCtrlBar(HANDLE * phIter,
                      uint * pTitleStringId,
                      tDockingWindowFactoryFn * ppFactoryFn,
-                     eControlBarPlacement * pPlacement)
+                     eDockingWindowPlacement * pPlacement)
 {
    if (phIter != NULL && *phIter != NULL)
    {

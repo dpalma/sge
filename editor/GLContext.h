@@ -33,7 +33,7 @@ public:
       MESSAGE_HANDLER(WM_ERASEBKGND, OnEraseBackground)
    END_MSG_MAP()
 
-   LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & /*bHandled*/)
+   LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled)
 	{
       T * pT = static_cast<T*>(this);
 
@@ -85,6 +85,7 @@ public:
 
       wglMakeCurrent(m_hDC, m_hRC);
 
+      bHandled = FALSE;
       return 0;
    }
 
@@ -106,6 +107,7 @@ public:
          m_hDC = NULL;
       }
 
+      bHandled = FALSE;
       return 0;
    }
 

@@ -81,6 +81,16 @@ const tChar * cThirdPartyCredit::GetUrl() const
    return m_url.c_str();
 }
 
+/////////////////////////////////////////////////////////////////////////////
+
+static cThirdPartyCredit g_thirdPartyCredits[] =
+{
+   cThirdPartyCredit("CppUnit", "(various)", "http://cppunit.sourceforge.net/"),
+   cThirdPartyCredit("TinyXml", "Lee Thomason", "http://www.grinninglizard.com/tinyxml/"),
+   cThirdPartyCredit("Lua", "PUC-Rio", "http://www.lua.org/"),
+   cThirdPartyCredit("WTL Docking Windows", "Sergey Klimov", "http://www.codeproject.com/wtl/wtldockingwindows.asp"),
+   cThirdPartyCredit("zlib", "Jean-loup Gailly and Mark Adler", "http://www.gzip.org/zlib/"),
+};
 
 /////////////////////////////////////////////////////////////////////////////
 //

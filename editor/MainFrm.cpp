@@ -120,7 +120,7 @@ cMainFrame::~cMainFrame()
 
 void cMainFrame::CreateDockingWindows()
 {
-   static const uint ctrlBarPlacementMap[] =
+   static const uint placementMap[] =
    {
       dockwins::CDockingSide::sTop, // kCBP_Top
       dockwins::CDockingSide::sLeft, // kCBP_Left
@@ -131,15 +131,12 @@ void cMainFrame::CreateDockingWindows()
 
    uint titleStringId;
    tDockingWindowFactoryFn factoryFn;
-   eControlBarPlacement placement;
+   eDockingWindowPlacement placement;
 
-   uint ctrlBarId = IDW_DOCKINGWINDOW_FIRST + 32;
-   uint ctrlBarIndex = 0;
+   CRect defaultDockRect(0, 0, 100, 100);
 
-//   static const DWORD ctrlBarStyle = WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN;
-   static const DWORD ctrlBarStyle = WS_OVERLAPPEDWINDOW | WS_POPUP| WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+   std::vector<uint> dockSides;
 
-   std::vector<uint> dockBars;
    HANDLE hIter;
    IterCtrlBarsBegin(&hIter);
    while (IterNextCtrlBar(&hIter, &titleStringId, &factoryFn, &placement))
@@ -152,55 +149,35 @@ void cMainFrame::CreateDockingWindows()
 
       if (factoryFn != NULL && !IsBadCodePtr(reinterpret_cast<FARPROC>(factoryFn)))
       {
-         cDockingWindow * pCtrlBar = NULL;
-         if (((*factoryFn)(&pCtrlBar) == S_OK) && (pCtrlBar != NULL))
+         cDockingWindow * pDockingWindow = NULL;
+         if (((*factoryFn)(&pDockingWindow) == S_OK) && (pDockingWindow != NULL))
          {
-            if (pCtrlBar->Create(m_hWnd, rcDefault, title, ctrlBarStyle, 0, ctrlBarId))
+            if (pDockingWindow->Create(m_hWnd, defaultDockRect, title))
             {
-               DockWindow(*pCtrlBar, dockwins::CDockingSide(ctrlBarPlacementMap[placement]),
-                          0, 0.0f/*fPctPos*/,100/*nWidth*/,100/* nHeight*/);
-               ctrlBarId++;
-               ctrlBarIndex++;
-               m_dockingWindows.push_back(pCtrlBar);
+               dockSides.push_back(placementMap[placement]);
+               m_dockingWindows.push_back(pDockingWindow);
             }
             else
             {
                WarnMsg("Error creating docking window\n");
-               delete pCtrlBar;
+               delete pDockingWindow;
             }
-
-//            if (pCtrlBar->Create(ctrlBarWndClass, title, ctrlBarStyle, rect, this, ctrlBarId))
-//            {
-//               pCtrlBar->EnableDocking(CBRS_ALIGN_ANY);
-//#if _MFC_VER < 0x0700
-//               pCtrlBar->SetBarStyle(pCtrlBar->GetBarStyle() |
-//                  CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
-//#endif
-//
-//               ctrlBarId++;
-//               m_ctrlBars.push_back(pCtrlBar);
-//               dockBars.push_back(ctrlBarPlacementMap[placement]);
-//            }
-//            else
-//            {
-//               DebugMsg1("Error creating control bar of type %s\n", pRuntimeClass->m_lpszClassName);
-//               delete pCtrlBar;
-//            }
          }
       }
    }
    IterCtrlBarsEnd(hIter);
 
-//	m_wndToolBar.EnableDocking(CBRS_ALIGN_ANY);
-//	EnableDocking(CBRS_ALIGN_ANY);
-//	DockControlBar(&m_wndToolBar);
-//
-//   Assert(m_ctrlBars.size() == dockBars.size());
-//
-//   for (uint i = 0; i < m_ctrlBars.size(); i++)
-//   {
-//	   DockControlBar(m_ctrlBars[i], dockBars[i]);
-//   }
+   Assert(m_dockingWindows.size() == dockSides.size());
+
+   uint index = 0;
+   tDockingWindows::iterator iter = m_dockingWindows.begin();
+   tDockingWindows::iterator end = m_dockingWindows.end();
+   for (; iter != end; iter++, index++)
+   {
+      cDockingWindow * pDockingWindow = *iter;
+      DockWindow(*pDockingWindow, dockwins::CDockingSide(dockSides[index]),
+         0, 0.0f/*fPctPos*/,100/*nWidth*/,100/* nHeight*/);
+   }
 }
 
 ////////////////////////////////////////
@@ -244,7 +221,7 @@ LRESULT cMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
    }
 
    m_hWndClient = m_pView->CWindowImpl<cEditorView>::Create(m_hWnd, rcDefault, NULL,
-      WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
+      WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, WS_EX_CLIENTEDGE, ATL_IDW_CLIENT);
 
    if (m_hWndClient == NULL)
    {

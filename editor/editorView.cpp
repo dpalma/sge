@@ -317,7 +317,10 @@ void cEditorView::cSceneEntity::Render(IRenderDevice * pRenderDevice)
    Assert(m_pOuter != NULL);
 
 	cEditorDoc * pDoc = m_pOuter->GetDocument();
-	Assert(pDoc != NULL);
+	if (pDoc == NULL)
+   {
+      return;
+   }
 
    tResult renderResult = S_FALSE;
 
@@ -379,9 +382,7 @@ void cEditorView::InitialUpdate()
    GetClientRect(rect);
 
 	cEditorDoc * pDoc = GetDocument();
-	Assert(pDoc != NULL);
-
-   if (pDoc->AccessTerrain() == NULL)
+   if (pDoc == NULL || pDoc->AccessTerrain() == NULL)
    {
       return;
    }

@@ -14,10 +14,15 @@
 
 /////////////////////////////////////////////////////////////////////////////
 
+typedef dockwins::CDockingWindowTraits<dockwins::CVC6LikeCaption,
+								WS_OVERLAPPEDWINDOW | WS_POPUP | /*WS_VISIBLE |*/
+								WS_CLIPCHILDREN | WS_CLIPSIBLINGS, WS_EX_TOOLWINDOW> 
+							 cDockingWindowTraits;
+
 class cDockingWindow : 
-	public dockwins::CTitleDockingWindowImpl<cDockingWindow, CWindow, dockwins::CVC6LikeTitleDockingWindowTraits>
+	public dockwins::CTitleDockingWindowImpl<cDockingWindow, CWindow, cDockingWindowTraits>
 {
-	typedef dockwins::CTitleDockingWindowImpl<cDockingWindow, CWindow, dockwins::CVC6LikeTitleDockingWindowTraits> tBaseClass;
+	typedef dockwins::CTitleDockingWindowImpl<cDockingWindow, CWindow, cDockingWindowTraits> tBaseClass;
 
 public:
    DECLARE_WND_CLASS(_T("DockingWindow"))
@@ -29,37 +34,37 @@ public:
 
 typedef tResult (* tDockingWindowFactoryFn)(cDockingWindow * *);
 
-enum eControlBarPlacement
+enum eDockingWindowPlacement
 {
-   kCBP_Top,
-   kCBP_Left,
-   kCBP_Right,
-   kCBP_Bottom,
-   kCBP_Float,
+   kDWP_Top,
+   kDWP_Left,
+   kDWP_Right,
+   kDWP_Bottom,
+   kDWP_Float,
 };
 
 tResult RegisterDockingWindow(uint titleStringId,
                               tDockingWindowFactoryFn pFactoryFn,
-                              eControlBarPlacement placement);
+                              eDockingWindowPlacement placement);
 
 void IterCtrlBarsBegin(HANDLE * phIter);
 bool IterNextCtrlBar(HANDLE * phIter,
                      uint * pTitleStringId,
                      tDockingWindowFactoryFn * ppFactoryFn,
-                     eControlBarPlacement * pPlacement);
+                     eDockingWindowPlacement * pPlacement);
 void IterCtrlBarsEnd(HANDLE hIter);
 
 struct sAutoRegisterDockingWindow
 {
    sAutoRegisterDockingWindow(uint titleStringId,
-                           tDockingWindowFactoryFn pFactoryFn,
-                           eControlBarPlacement placement)
+                              tDockingWindowFactoryFn pFactoryFn,
+                              eDockingWindowPlacement placement)
    {
       RegisterDockingWindow(titleStringId, pFactoryFn, placement);
    }
 };
 
-#define AUTO_REGISTER_CONTROLBAR(titleStringId, factoryFn, placement) \
+#define AUTO_REGISTER_DOCKINGWINDOW(titleStringId, factoryFn, placement) \
    static sAutoRegisterDockingWindow MAKE_UNIQUE(g_autoReg##titleStringId##DockWin)( \
       titleStringId, factoryFn, placement)
 

@@ -137,7 +137,7 @@ void cButtonPanel::SetMargins(LPCRECT pMargins)
 
 ////////////////////////////////////////
 
-AUTO_REGISTER_CONTROLBAR(IDS_TOOL_PALETTE_BAR_TITLE, cToolPaletteBar::Factory, kCBP_Right);
+AUTO_REGISTER_DOCKINGWINDOW(IDS_TOOL_PALETTE_BAR_TITLE, cToolPaletteBar::Factory, kDWP_Right);
 
 ////////////////////////////////////////
 
