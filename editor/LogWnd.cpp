@@ -18,8 +18,8 @@ static const COLORREF g_logColors[] =
 };
 
 static const int kLeftColumnMargin = 1;
-static const COLORREF kLeftColumnColor = RGB(192,192,192);
-static const COLORREF kLeftColumnBorderColor = RGB(128,128,128);
+static const COLORREF kLeftColumnColor = GetSysColor(COLOR_3DFACE);
+static const COLORREF kLeftColumnBorderColor = GetSysColor(COLOR_3DDKSHADOW);
 
 ///////////////////////////////////////////////////////////////////////////////
 

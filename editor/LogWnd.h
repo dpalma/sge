@@ -101,7 +101,7 @@ public:
 
    BOOL PreTranslateMessage(MSG * pMsg);
 
-   BEGIN_MSG_MAP(cLogWnd)
+   BEGIN_MSG_MAP_EX(cLogWnd)
       CHAIN_MSG_MAP(tBase)
    END_MSG_MAP()
 

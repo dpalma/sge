@@ -27,6 +27,11 @@
 #include "scbarg.h"
 #include "scbarcf.h"
 
+// TODO HACK required only for using WTL and MFC at the same time
+#include <objidl.h>
+WINCOMMCTRLAPI HIMAGELIST WINAPI ImageList_Read(LPSTREAM pstm);
+WINCOMMCTRLAPI BOOL       WINAPI ImageList_Write(HIMAGELIST himl, LPSTREAM pstm);
+
 #define _WTL_NO_AUTOMATIC_NAMESPACE
 #include <atlbase.h>
 #include <atlapp.h>
@@ -34,6 +39,10 @@
 extern WTL::CAppModule _Module;
 
 #include <atlwin.h>
+//#include <atlctrls.h>
+//#include <atlctrlw.h>
+//#include <atlctrlx.h>
+#include <atlcrack.h>
 
 #pragma warning(disable:4355) // 'this' : used in base member initializer list
 

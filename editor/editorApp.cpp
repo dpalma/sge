@@ -59,7 +59,7 @@ extern uint g_nEditorCmds;
 
 static const tChar g_szRegistryKey[] = _T("SGE");
 
-cMainFrame g_altMainFrame;
+cMainFrame * g_pAltMainFrame = NULL;
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -246,6 +246,8 @@ BOOL cEditorApp::InitInstance()
 #endif
 #endif
 
+   _Module.AddMessageLoop(&m_messageLoop);
+
 	// Change the registry key under which our settings are stored.
 	// TODO: You should modify this string to be something appropriate
 	// such as the name of your company or organization.
@@ -342,8 +344,9 @@ BOOL cEditorApp::InitInstance()
 	m_pMainWnd->ShowWindow(SW_SHOW);
 	m_pMainWnd->UpdateWindow();
 
-//   g_altMainFrame.CreateEx();
-//   ShowWindow(g_altMainFrame.m_hWnd, SW_SHOW);
+   g_pAltMainFrame = new cMainFrame();
+   g_pAltMainFrame->CreateEx();
+   ShowWindow(g_pAltMainFrame->m_hWnd, SW_SHOW);
 
    if (pSplashThread != NULL)
    {
@@ -360,6 +363,8 @@ BOOL cEditorApp::InitInstance()
 int cEditorApp::ExitInstance() 
 {
 	StopGlobalObjects();
+
+   _Module.RemoveMessageLoop();
 
    _Module.Term();
 
@@ -551,12 +556,21 @@ BOOL cEditorApp::PreTranslateMessage(MSG * pMsg)
       }
    }
 
-   if (g_altMainFrame.IsWindow() && g_altMainFrame.PreTranslateMessage(pMsg))
+   if (m_messageLoop.PreTranslateMessage(pMsg))
    {
       return TRUE;
    }
 
    return CWinApp::PreTranslateMessage(pMsg);
+}
+
+////////////////////////////////////////
+
+BOOL cEditorApp::OnIdle(LONG lCount) 
+{
+   m_messageLoop.OnIdle(lCount);
+
+	return CWinApp::OnIdle(lCount);
 }
 
 ////////////////////////////////////////
@@ -598,12 +612,6 @@ tResult cEditorApp::GetMapSettings(cMapSettings * pMapSettings)
 
    std::vector<cStr> tileSets;
    ListTileSets(&tileSets);
-
-   //if (tileSets.empty())
-   //{
-   //   ErrorMsg("No tile sets defined, or they failed to load\n");
-   //   return E_FAIL;
-   //}
 
    if (m_bPromptMapSettings)
    {

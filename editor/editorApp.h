@@ -38,6 +38,7 @@ public:
 	virtual int ExitInstance();
 	virtual int Run();
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	virtual BOOL OnIdle(LONG lCount);
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -87,6 +88,8 @@ private:
    cAutoIPtr<IEditorTool> m_pActiveTool;
    cAutoIPtr<IEditorTool> m_pDefaultTool;
    cAutoIPtr<IEditorTool> m_pToolCapture;
+
+   WTL::CMessageLoop m_messageLoop;
 };
 
 ////////////////////////////////////////

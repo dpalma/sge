@@ -7,8 +7,7 @@
 
 #include "editorView.h"
 #include "editorCtrlBars.h"
-
-#include <afxcview.h>
+#include "aboutdlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -264,14 +263,112 @@ BOOL CMainFrame::OnViewControlBar(UINT nID)
 
 ////////////////////////////////////////
 
-LRESULT cMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+LRESULT cMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/)
 {
+//   HWND hWndCmdBar = m_cmdBar.Create(m_hWnd, rcDefault, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE);
+//   if (hWndCmdBar != NULL)
+//   {
+//      m_cmdBar.AttachMenu(GetMenu());
+//      m_cmdBar.LoadImages(IDR_MAINFRAME);
+//      SetMenu(NULL);
+//   }
+ 
    if (!CreateSimpleStatusBar())
    {
       return -1;
    }
 
+   WTL::CMessageLoop * pMessageLoop = _Module.GetMessageLoop();
+   pMessageLoop->AddIdleHandler(this);
+   pMessageLoop->AddMessageFilter(this);
+
    return 0;
+}
+
+////////////////////////////////////////
+
+LRESULT cMainFrame::OnFileNew(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled)
+{
+   // TODO
+   return 0;
+}
+
+////////////////////////////////////////
+
+LRESULT cMainFrame::OnFileOpen(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled)
+{
+   // TODO
+   return 0;
+}
+
+////////////////////////////////////////
+
+LRESULT cMainFrame::OnFileSave(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled)
+{
+   // TODO
+   return 0;
+}
+
+////////////////////////////////////////
+
+LRESULT cMainFrame::OnFileSaveAs(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled)
+{
+   // TODO
+   return 0;
+}
+
+////////////////////////////////////////
+
+LRESULT cMainFrame::OnFileRecent(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled)
+{
+   // TODO
+   return 0;
+}
+
+////////////////////////////////////////
+
+LRESULT cMainFrame::OnFileExit(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled)
+{
+   PostQuitMessage(0);
+   return 0;
+}
+
+////////////////////////////////////////
+
+LRESULT cMainFrame::OnViewToolBar(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled)
+{
+   // TODO
+   return 0;
+}
+
+////////////////////////////////////////
+
+LRESULT cMainFrame::OnViewStatusBar(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled)
+{
+   // TODO
+   return 0;
+}
+
+////////////////////////////////////////
+
+LRESULT cMainFrame::OnAppAbout(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled)
+{
+	cAboutDlg().DoModal();
+   return 0;
+}
+
+////////////////////////////////////////
+
+BOOL cMainFrame::PreTranslateMessage(MSG * pMsg)
+{
+   return FALSE;
+}
+
+////////////////////////////////////////
+
+BOOL cMainFrame::OnIdle()
+{
+   return FALSE;
 }
 
 /////////////////////////////////////////////////////////////////////////////
