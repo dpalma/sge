@@ -9,7 +9,7 @@
 #include "ray.h"
 
 #include "renderapi.h"
-#include "material.h"
+#include "materialapi.h"
 #include "textureapi.h"
 #include "color.h"
 

@@ -5,7 +5,7 @@
 
 #include "meshapi.h"
 #include "renderapi.h"
-#include "material.h"
+#include "materialapi.h"
 #include "comtools.h"
 #include "str.h"
 

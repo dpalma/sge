@@ -6,7 +6,7 @@
 #include "renderapi.h"
 #include "3ds.h"
 #include "meshapi.h"
-#include "material.h"
+#include "materialapi.h"
 #include "textureapi.h"
 #include "readwriteapi.h"
 #include "str.h"
