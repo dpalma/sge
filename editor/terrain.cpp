@@ -7,7 +7,7 @@
 #include "editorapi.h"
 #include "heightmap.h"
 
-#include "material.h"
+#include "materialapi.h"
 #include "renderapi.h"
 #include "textureapi.h"
 #include "color.h"

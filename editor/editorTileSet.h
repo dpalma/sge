@@ -6,7 +6,7 @@
 
 #include "editorapi.h"
 
-#include "material.h"
+#include "materialapi.h"
 
 #include "comtools.h"
 #include "str.h"

@@ -12,7 +12,7 @@
 #include "resource.h"
 
 #include "renderapi.h"
-#include "material.h"
+#include "materialapi.h"
 
 #include "readwriteapi.h"
 #include "filespec.h"
