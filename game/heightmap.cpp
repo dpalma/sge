@@ -5,8 +5,7 @@
 
 #include "resmgr.h"
 #include "globalobj.h"
-#include "image.h"
-#include "pixelformat.h"
+#include "imagedata.h"
 #include "heightmap.h"
 
 #include "dbgalloc.h" // must be last header
@@ -41,7 +40,7 @@ bool cHeightMap::Load(const char * pszFilename)
 {
    UseGlobal(ResourceManager);
 
-   cImage * pNewImage = ImageLoad(pResourceManager, pszFilename);
+   cImageData * pNewImage = ImageLoad(pResourceManager, pszFilename);
    if (pNewImage == NULL)
       return false;
 

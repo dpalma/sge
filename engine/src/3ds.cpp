@@ -11,7 +11,7 @@
 #include "readwriteapi.h"
 #include "str.h"
 #include "vec3.h"
-#include "image.h"
+#include "imagedata.h"
 #include "color.h"
 #include "resmgr.h"
 #include "globalobj.h"

@@ -8,7 +8,7 @@
 #pragma once
 #endif
 
-class cImage;
+class cImageData;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -29,7 +29,7 @@ public:
 private:
    void Destroy();
 
-   cImage * m_pImage;
+   cImageData * m_pImage;
    float m_scale;
    uint m_size; // all height maps are square, for now
    uint8 * m_pData; // byte pointer to height data

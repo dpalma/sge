@@ -10,7 +10,7 @@
 #include "textureapi.h"
 #include "readwriteapi.h"
 #include "vec3.h"
-#include "image.h"
+#include "imagedata.h"
 #include "color.h"
 #include "render.h"
 #include "resmgr.h"

@@ -299,6 +299,9 @@
 				Name="Source Files"
 				Filter="">
 				<File
+					RelativePath="src\bmp.cpp">
+				</File>
+				<File
 					RelativePath=".\src\comtools.cpp">
 				</File>
 				<File
@@ -330,6 +333,9 @@
 				</File>
 				<File
 					RelativePath=".\src\hashtbltest.cpp">
+				</File>
+				<File
+					RelativePath="src\imagedata.cpp">
 				</File>
 				<File
 					RelativePath=".\src\matrix4.cpp">
@@ -390,6 +396,9 @@
 				</File>
 				<File
 					RelativePath=".\src\techtime.cpp">
+				</File>
+				<File
+					RelativePath="src\tga.cpp">
 				</File>
 				<File
 					RelativePath=".\src\windoww32.cpp">
@@ -501,6 +510,9 @@
 			</File>
 			<File
 				RelativePath=".\include\hash.h">
+			</File>
+			<File
+				RelativePath="include\imagedata.h">
 			</File>
 			<File
 				RelativePath=".\include\keys.h">

@@ -9,8 +9,8 @@
 #include "render.h"
 #include "material.h"
 #include "textureapi.h"
-#include "image.h"
 
+#include "imagedata.h"
 #include "vec2.h"
 #include "vec3.h"
 #include "techmath.h"

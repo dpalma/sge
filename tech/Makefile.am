@@ -3,7 +3,7 @@
 
 lib_LTLIBRARIES = libtech.la
 
-EXTRA_DIST = tech.dsp tech.vcproj include/*.h src/*.h
+EXTRA_DIST = *.dsp *.vcproj include/*.h src/*.h
 
 if NO_X
 libtech_PLATFORM_SOURCES = src/windoww32.cpp
@@ -11,7 +11,8 @@ else
 libtech_PLATFORM_SOURCES = src/windowx11.cpp
 endif
 
-libtech_la_SOURCES = src/comtools.cpp \
+libtech_la_SOURCES = src/bmp.cpp \
+                     src/comtools.cpp \
                      src/globalobjreg.cpp \
                      src/config.cpp \
                      src/configstore.cpp\
@@ -21,6 +22,7 @@ libtech_la_SOURCES = src/comtools.cpp \
                      src/filereadwrite.cpp \
                      src/graphtest.cpp \
                      src/hash.cpp \
+                     src/imagedata.cpp \
                      src/matrix4.cpp \
                      src/memmanager.cpp \
                      src/parse.cpp \
@@ -30,6 +32,7 @@ libtech_la_SOURCES = src/comtools.cpp \
                      src/resmgr.cpp \
                      src/techdebug.cpp \
                      src/techtime.cpp \
+                     src/tga.cpp \
                      $(libtech_PLATFORM_SOURCES)
 
 libtech_la_LIBADD = $(GL_LIBS) $(CORE_LIBS)

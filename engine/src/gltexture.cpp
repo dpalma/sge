@@ -4,9 +4,8 @@
 #include "stdhdr.h"
 
 #include "textureapi.h"
-#include "pixelformat.h"
-#include "image.h"
 
+#include "imagedata.h"
 #include "techmath.h"
 #include "globalobj.h"
 #include "str.h"
@@ -64,7 +63,7 @@ static GLenum GlTexFormat(ePixelFormat pixelFormat)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static tResult UploadTextureImage(cImage * pImage, GLuint * pTextureId)
+static tResult UploadTextureImage(cImageData * pImage, GLuint * pTextureId)
 {
    Assert(pImage != NULL);
    Assert(pTextureId != NULL);
@@ -100,8 +99,6 @@ static tResult UploadTextureImage(cImage * pImage, GLuint * pTextureId)
 
    glGenTextures(1, pTextureId);
    glBindTexture(GL_TEXTURE_2D, *pTextureId);
-
-   glPixelStorei(GL_UNPACK_ALIGNMENT, pImage->GetAlignment());
 
    if (bNoMipMaps)
    {
@@ -245,7 +242,7 @@ tResult cTextureManager::GetTexture(const char * pszName, ITexture * * ppTexture
    if (iter == m_textureObjectMap.end())
    {
       UseGlobal(ResourceManager);
-      cImage * pImage = ImageLoad(pResourceManager, pszName);
+      cImageData * pImage = ImageLoad(pResourceManager, pszName);
       if (pImage == NULL)
       {
          *ppTexture = NULL;

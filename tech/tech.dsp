@@ -141,11 +141,11 @@ LINK32=link.exe
 # PROP Intermediate_Dir "..\Build\StaticDebug\tech"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-F90=df.exe
+LINK32=link.exe
 MTL=midl.exe
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
-LINK32=link.exe
+F90=df.exe
 CPP=cl.exe
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "_DEBUG" /D "STRICT" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TECH_EXPORTS" /Yu"stdhdr.h" /FD /GZ /c
 # ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\3rdparty\cppunit\include" /I ".\include" /I "..\3rdparty\zlib\include" /D "STATIC_BUILD" /D "_DEBUG" /D "_USRDLL" /D "TECH_EXPORTS" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "STRICT" /D "HAVE_CPPUNIT" /Yu"stdhdr.h" /FD /GZ /c
@@ -174,11 +174,11 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "..\Build\StaticRelease\tech"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-F90=df.exe
+LINK32=link.exe
 MTL=midl.exe
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
-LINK32=link.exe
+F90=df.exe
 CPP=cl.exe
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "NDEBUG" /D "STRICT" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TECH_EXPORTS" /Yu"stdhdr.h" /FD /c
 # ADD CPP /nologo /MT /W3 /GX /O2 /I ".\include" /I "..\3rdparty\zlib\include" /D "NDEBUG" /D "STATIC_BUILD" /D "_USRDLL" /D "TECH_EXPORTS" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "STRICT" /Yu"stdhdr.h" /FD /c
@@ -208,6 +208,10 @@ LIB32=link.exe -lib
 # Begin Group "Source Files"
 
 # PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\bmp.cpp
+# End Source File
 # Begin Source File
 
 SOURCE=.\src\comtools.cpp
@@ -254,6 +258,10 @@ SOURCE=.\src\hashtbltest.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\imagedata.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\matrix4.cpp
 # End Source File
 # Begin Source File
@@ -292,6 +300,10 @@ SOURCE=.\src\techdebug.cpp
 # Begin Source File
 
 SOURCE=.\src\techtime.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\tga.cpp
 # End Source File
 # Begin Source File
 
@@ -394,6 +406,10 @@ SOURCE=.\include\globalobjreg.h
 # Begin Source File
 
 SOURCE=.\include\hash.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\imagedata.h
 # End Source File
 # Begin Source File
 
