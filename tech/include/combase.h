@@ -163,7 +163,11 @@ typedef unsigned long ULONG;
 #ifndef __IUnknown_INTERFACE_DEFINED__
 #define __IUnknown_INTERFACE_DEFINED__
 
+#if defined(_MSC_VER) && (_MSC_VER >= 1300)
+interface __declspec(uuid("{00000000-0000-0000-0C00-000000000046}")) IUnknown
+#else
 interface IUnknown
+#endif
 {
    STDMETHOD(QueryInterface)(REFIID riid, void * * ppvObject) PURE;
 
