@@ -53,6 +53,9 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+extern sScriptReg cmds[];
+extern uint nCmds;
+
 static const tChar g_szRegistryKey[] = _T("SGE");
 
 /////////////////////////////////////////////////////////////////////////////
@@ -242,6 +245,8 @@ BOOL cEditorApp::InitInstance()
       DebugMsg("One or more application-level services failed to start!\n");
       return FALSE;
    }
+
+   ScriptAddFunctions(cmds, nCmds);
 
    cFileSpec file(__argv[0]);
    file.SetPath(cFilePath());

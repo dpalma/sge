@@ -141,6 +141,13 @@ int LoadTiles(int argc, const cScriptVar * argv,
    return 0;
 }
 
-AUTOADD_SCRIPTFUNCTION(LoadTiles, LoadTiles);
+///////////////////////////////////////////////////////////////////////////////
+
+sScriptReg cmds[] =
+{
+   { "LoadTiles", LoadTiles },
+};
+
+uint nCmds = _countof(cmds);
 
 ///////////////////////////////////////////////////////////////////////////////
