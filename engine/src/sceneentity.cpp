@@ -41,12 +41,6 @@ void cSceneNode::Traverse(cSceneNodeVisitor * pVisitor)
 
 ///////////////////////////////////////
 
-void cSceneNode::Update(float timeDelta)
-{
-}
-
-///////////////////////////////////////
-
 void cSceneNode::Render()
 {
 }

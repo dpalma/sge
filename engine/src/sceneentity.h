@@ -51,9 +51,6 @@ public:
 
    virtual void Traverse(cSceneNodeVisitor * pVisitor);
 
-   // TODO: refactor this out of the scene graph class hierarchy
-   virtual void Update(float timeDelta);
-
    virtual void Render();
 
    virtual const cBoundingVolume * GetBoundingVolume() const { return NULL; }

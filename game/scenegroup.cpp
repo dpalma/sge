@@ -75,12 +75,6 @@ void cSceneGroup::Traverse(cSceneNodeVisitor * pVisitor)
 
 ///////////////////////////////////////
 
-void cSceneGroup::Update(float timeDelta)
-{
-}
-
-///////////////////////////////////////
-
 void cSceneGroup::Render()
 {
    tChildren::iterator iter;

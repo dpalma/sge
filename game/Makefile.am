@@ -3,7 +3,7 @@
 
 bin_PROGRAMS=game
 
-EXTRA_DIST = *.h autoexec.lua game.rc game.ico game.dsp game.dsw
+EXTRA_DIST = *.h *.lua game.rc game.ico game.dsp game.dsw
 
 if NO_X
 game_PLATFORM_SOURCES = syswin.cpp
@@ -13,6 +13,7 @@ endif
 
 game_SOURCES = 3ds.cpp \
                boundingvolume.cpp \
+               cameracontroller.cpp \
                frustum.cpp \
                groundtiled.cpp \
                guids.cpp \

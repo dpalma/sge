@@ -11,16 +11,14 @@
 #include "groundtiled.h"
 #include "input.h"
 #include "sys.h"
-#include "raycast.h"
 #include "mesh.h"
 #include "scenenode.h"
 #include "scenecamera.h"
 #include "scenemesh.h"
 #include "script.h"
 #include "scriptvm.h"
+#include "cameracontroller.h"
 
-#include "font.h"
-#include "image.h"
 #include "render.h"
 
 #include "techmath.h"
@@ -31,10 +29,7 @@
 #include "filespec.h"
 #include "filepath.h"
 #include "matrix4.h"
-#include "vec2.h"
-#include "vec4.h"
 #include "str.h"
-#include "keys.h"
 #include "globalobj.h"
 
 #include <ctime>
@@ -49,6 +44,8 @@
 #endif
 
 #include "dbgalloc.h" // must be last header
+
+#pragma warning(disable:4355) // 'this' used in base member initializer list
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -68,6 +65,8 @@ static const float kRotateDegreesPerSec = 20;
 static const char kszSelIndicatorMesh[] = "arrow.ms3d";
 
 ///////////////////////////////////////////////////////////////////////////////
+
+cAutoIPtr<cGameCameraController> g_pGameCameraController;
 
 cSceneCameraGroup * g_pGameCamera = NULL;
 cSceneCameraGroup * g_pUICamera = NULL;
@@ -93,289 +92,6 @@ IRenderDevice * AccessRenderDevice()
 IResourceManager * AccessResourceManager()
 {
    return static_cast<IResourceManager *>(g_pResourceManager);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-class cPickNodeVisitor : public cSceneNodeVisitor
-{
-public:
-   cPickNodeVisitor(const tVec3 & rayDir, const tVec3 & rayOrigin);
-
-   virtual void VisitSceneNode(cSceneNode * pNode);
-
-   tVec3 m_rayDir, m_rayOrigin;
-   std::vector<cSceneNode *> m_hitNodes;
-};
-
-cPickNodeVisitor::cPickNodeVisitor(const tVec3 & rayDir, const tVec3 & rayOrigin)
- : m_rayDir(rayDir),
-   m_rayOrigin(rayOrigin)
-{
-}
-
-void cPickNodeVisitor::VisitSceneNode(cSceneNode * pNode)
-{
-   Assert(pNode != NULL);
-
-   if (pNode->IsPickable())
-   {
-      const cBoundingVolume * pBounds = pNode->GetBoundingVolume();
-      if (pBounds != NULL)
-      {
-         if (pBounds->Intersects(m_rayOrigin, m_rayDir))
-         {
-            pNode->Hit();
-            m_hitNodes.push_back(pNode);
-         }
-         else
-         {
-            pNode->ClearHitState();
-         }
-      }
-   }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-static bool BuildPickRay(int x, int y, tVec3 * pRay)
-{
-   Assert(g_pGameCamera != NULL);
-
-   int viewport[4];
-   glGetIntegerv(GL_VIEWPORT, viewport);
-
-   y = viewport[3] - y;
-
-   // convert screen coords to normalized (origin at center, [-1..1])
-   float normx = (float)(x - viewport[0]) * 2.f / viewport[2] - 1.f;
-   float normy = (float)(y - viewport[1]) * 2.f / viewport[3] - 1.f;
-
-   Assert(g_pGameCamera != NULL);
-   const sMatrix4 & m = g_pGameCamera->GetModelViewProjectionInverseMatrix();
-
-   tVec4 n = m.Transform(tVec4(normx, normy, -1, 1));
-   if (n.w == 0.0f)
-      return false;
-   n.x /= n.w;
-   n.y /= n.w;
-   n.z /= n.w;
-
-   tVec4 f = m.Transform(tVec4(normx, normy, 1, 1));
-   if (f.w == 0.0f)
-      return false;
-   f.x /= f.w;
-   f.y /= f.w;
-   f.z /= f.w;
-
-   Assert(pRay != NULL);
-   *pRay = tVec3(f.x - n.x, f.y - n.y, f.z - n.z);
-   pRay->Normalize();
-
-   return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGameCameraController
-//
-
-class cGameCameraController : public cComObject2<IMPLEMENTS(ISimClient), IMPLEMENTS(IInputListener)>
-{
-   cGameCameraController(const cGameCameraController &);
-   const cGameCameraController & operator =(const cGameCameraController &);
-
-public:
-   cGameCameraController(cSceneCameraGroup * pCamera);
-   ~cGameCameraController();
-
-   void Connect();
-   void Disconnect();
-
-   virtual void OnFrame(double elapsedTime);
-
-   virtual bool OnMouseEvent(int x, int y, uint mouseState, double time);
-   virtual bool OnKeyEvent(long key, bool down, double time);
-
-   void LookAtPoint(float x, float z);
-
-   const tVec3 & GetEyePosition() const { return m_eye; }
-
-private:
-   enum eConstants
-   {
-      kDefaultElevation = 100,
-      kDefaultPitch = 70,
-      kDefaultSpeed = 50,
-   };
-
-   float m_pitch, m_oneOverTangentPitch, m_elevation;
-   tVec3 m_eye, m_focus, m_velocity;
-
-   sMatrix4 m_rotation;
-
-   cSceneCameraGroup * m_pCamera;
-};
-
-cAutoIPtr<cGameCameraController> g_pGameCameraController;
-
-///////////////////////////////////////
-
-cGameCameraController::cGameCameraController(cSceneCameraGroup * pCamera)
- : m_pitch(kDefaultPitch),
-   m_oneOverTangentPitch(0),
-   m_elevation(kDefaultElevation),
-   m_focus(0,0,0),
-   m_velocity(0,0,0),
-   m_pCamera(pCamera)
-{
-   ConfigGet("view_elevation", &m_elevation);
-   ConfigGet("view_pitch", &m_pitch);
-   MatrixRotateX(m_pitch, &m_rotation);
-   m_oneOverTangentPitch = 1.0f / tanf(m_pitch);
-}
-
-///////////////////////////////////////
-
-cGameCameraController::~cGameCameraController()
-{
-}
-
-///////////////////////////////////////
-
-void cGameCameraController::Connect()
-{
-   UseGlobal(Sim);
-   pSim->Connect(this);
-   InputAddListener(this);
-}
-
-///////////////////////////////////////
-
-void cGameCameraController::Disconnect()
-{
-   InputRemoveListener(this);
-   UseGlobal(Sim);
-   pSim->Disconnect(this);
-}
-
-///////////////////////////////////////
-
-void cGameCameraController::OnFrame(double elapsedTime)
-{
-   m_focus += m_velocity * (float)elapsedTime;
-
-   float zOffset = m_elevation * m_oneOverTangentPitch;
-
-   m_eye = tVec3(m_focus.x, m_focus.y + m_elevation, m_focus.z + zOffset);
-
-   // Very simple third-person camera model. Always looking down the -z axis
-   // and slightly pitched over the x axis.
-   sMatrix4 mt;
-   MatrixTranslate(-m_eye.x, -m_eye.y, -m_eye.z, &mt);
-
-   sMatrix4 newModelView = m_rotation * mt;
-   m_pCamera->SetModelViewMatrix(newModelView);
-}
-
-///////////////////////////////////////
-
-bool cGameCameraController::OnMouseEvent(int x, int y, uint mouseState, double time)
-{
-   if (mouseState & kLMouseDown)
-   {
-      tVec3 dir;
-      if (BuildPickRay(x, y, &dir))
-      {
-         cPickNodeVisitor pickVisitor(dir, GetEyePosition());
-         g_pGameCamera->Traverse(&pickVisitor);
-
-         if (pickVisitor.m_hitNodes.empty())
-         {
-            tVec3 intersect;
-            if (RayIntersectPlane(GetEyePosition(), dir, tVec3(0,1,0), 0, &intersect))
-            {
-               DebugMsg3("Hit the ground at approximately (%.1f,%.1f,%.1f)\n",
-                  intersect.x, intersect.y, intersect.z);
-            }
-         }
-      }
-
-      return true;
-   }
-
-   return false;
-}
-
-///////////////////////////////////////
-
-bool cGameCameraController::OnKeyEvent(long key, bool down, double time)
-{
-   bool bUpdateCamera = false;
-
-   switch (key)
-   {
-      case kLeft:
-      {
-         m_velocity.x = down ? -kDefaultSpeed : 0;
-         bUpdateCamera = true;
-         break;
-      }
-
-      case kRight:
-      {
-         m_velocity.x = down ? kDefaultSpeed : 0;
-         bUpdateCamera = true;
-         break;
-      }
-
-      case kUp:
-      {
-         m_velocity.z = down ? -kDefaultSpeed : 0;
-         bUpdateCamera = true;
-         break;
-      }
-
-      case kDown:
-      {
-         m_velocity.z = down ? kDefaultSpeed : 0;
-         bUpdateCamera = true;
-         break;
-      }
-
-      case kMouseWheelUp:
-      {
-         m_elevation++;
-         bUpdateCamera = true;
-         break;
-      }
-
-      case kMouseWheelDown:
-      {
-         m_elevation--;
-         bUpdateCamera = true;
-         break;
-      }
-   }
-
-   return bUpdateCamera;
-}
-
-///////////////////////////////////////
-
-void cGameCameraController::LookAtPoint(float x, float z)
-{
-   m_focus = tVec3(x, 0, z);
-}
-
-///////////////////////////////////////
-
-void ViewGetPos(tVec3 * pPos)
-{
-   if (pPos != NULL)
-   {
-      *pPos = g_pGameCameraController->GetEyePosition();
-   }
 }
 
 
@@ -408,8 +124,13 @@ SCRIPT_DEFINE_FUNCTION(ViewSetPos)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cWindowInputBroker
+//
+// Receives event notifications from the Windows or X window and channels
+// them into the game input system.
 
-class cWindowSink : public cComObject<IMPLEMENTS(IWindowSink)>
+class cWindowInputBroker : public cComObject<IMPLEMENTS(IWindowSink)>
 {
 public:
    virtual void OnKeyEvent(long key, bool down, double time);
@@ -419,22 +140,22 @@ public:
    virtual void OnActivateApp(bool bActive, double time);
 };
 
-void cWindowSink::OnKeyEvent(long key, bool down, double time)
+void cWindowInputBroker::OnKeyEvent(long key, bool down, double time)
 {
    KeyEvent(key, down, time);
 }
 
-void cWindowSink::OnMouseEvent(int x, int y, uint mouseState, double time)
+void cWindowInputBroker::OnMouseEvent(int x, int y, uint mouseState, double time)
 {
    MouseEvent(x, y, mouseState, time);
 }
 
-void cWindowSink::OnDestroy(double time)
+void cWindowInputBroker::OnDestroy(double time)
 {
    SysQuit();
 }
 
-void cWindowSink::OnResize(int width, int height, double time)
+void cWindowInputBroker::OnResize(int width, int height, double time)
 {
    glViewport(0, 0, width, height);
 
@@ -449,7 +170,7 @@ void cWindowSink::OnResize(int width, int height, double time)
    }
 }
 
-void cWindowSink::OnActivateApp(bool bActive, double time)
+void cWindowInputBroker::OnActivateApp(bool bActive, double time)
 {
    SysAppActivate(bActive);
 }
@@ -481,6 +202,64 @@ SCRIPT_DEFINE_FUNCTION(LogEnableChannel)
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: cSpinner
+//
+
+class cSpinner : public cComObject<IMPLEMENTS(ISimClient)>
+{
+   cSpinner(const cSpinner &);
+   const cSpinner & operator =(const cSpinner &);
+
+public:
+   cSpinner(cSceneTransformGroup * pGroup, float degreesPerSec);
+   ~cSpinner();
+
+   void Connect();
+   void Disconnect();
+
+   virtual void OnFrame(double elapsedTime);
+
+   virtual void DeleteThis() {}
+
+private:
+   cSceneTransformGroup * m_pGroup;
+   float m_radiansPerSec;
+};
+
+///////////////////////////////////////
+
+cSpinner::cSpinner(cSceneTransformGroup * pGroup, float degreesPerSec)
+ : m_pGroup(pGroup),
+   m_radiansPerSec(Deg2Rad(degreesPerSec))
+{
+   Assert(pGroup != NULL);
+
+   UseGlobal(Sim);
+   pSim->Connect(this);
+}
+
+///////////////////////////////////////
+
+cSpinner::~cSpinner()
+{
+   UseGlobal(Sim);
+   pSim->Disconnect(this);
+
+   m_pGroup = NULL;
+}
+
+///////////////////////////////////////
+
+void cSpinner::OnFrame(double elapsedTime)
+{
+   Assert(m_pGroup != NULL);
+   tQuat q = QuatFromEulerAngles(tVec3(0, m_radiansPerSec * elapsedTime, 0));
+   m_pGroup->SetRotation(m_pGroup->GetRotation() * q);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cSelectionIndicatorNode
 //
 
@@ -488,72 +267,71 @@ class cSelectionIndicatorNode : public cSceneMesh
 {
 public:
    cSelectionIndicatorNode();
-
-   virtual void Update(float timeDelta);
+   ~cSelectionIndicatorNode();
 
 private:
    cAutoIPtr<IMesh> m_pMesh;
+   cSpinner * m_pSpinner;
 };
 
 cSelectionIndicatorNode::cSelectionIndicatorNode()
+ : m_pSpinner(new cSpinner(this, kRotateDegreesPerSec))
 {
    SetPickable(false);
    // TODO: SetTranslation(tVec3(0, parentY, 0));
 }
 
-void cSelectionIndicatorNode::Update(float timeDelta)
+cSelectionIndicatorNode::~cSelectionIndicatorNode()
 {
-   tQuat q = QuatFromEulerAngles(tVec3(0, Deg2Rad(2 * kRotateDegreesPerSec * timeDelta), 0));
-   SetRotation(GetRotation() * q);
+   delete m_pSpinner, m_pSpinner = NULL;
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cSimpleSceneNode
+// CLASS: cSelectableSceneNode
 //
 
-class cSimpleSceneNode : public cSceneMesh
+class cSelectableSceneNode : public cSceneMesh
 {
 public:
-   cSimpleSceneNode();
-
-   virtual void Update(float timeDelta);
+   cSelectableSceneNode();
+   ~cSelectableSceneNode();
 
    virtual void Hit();
    virtual void ClearHitState();
 
 private:
    cSelectionIndicatorNode * m_pSel;
+   cSpinner * m_pSpinner;
 };
 
-cSimpleSceneNode::cSimpleSceneNode()
- : m_pSel(NULL)
+cSelectableSceneNode::cSelectableSceneNode()
+ : m_pSel(NULL),
+   m_pSpinner(new cSpinner(this, kRotateDegreesPerSec))
 {
 }
 
-void cSimpleSceneNode::Update(float timeDelta)
+cSelectableSceneNode::~cSelectableSceneNode()
 {
-   tQuat q = QuatFromEulerAngles(tVec3(0, Deg2Rad(kRotateDegreesPerSec * timeDelta), 0));
-   SetRotation(GetRotation() * q);
+   delete m_pSpinner, m_pSpinner = NULL;
 }
 
-void cSimpleSceneNode::Hit()
+void cSelectableSceneNode::Hit()
 {
    if (m_pSel == NULL)
    {
       m_pSel = new cSelectionIndicatorNode;
-      AddChild(m_pSel);
       m_pSel->SetMesh(kszSelIndicatorMesh);
+      AddChild(m_pSel);
    }
    else
    {
-      RemoveChild(m_pSel);
-      delete m_pSel, m_pSel = NULL;
+      ClearHitState();
    }
 }
 
-void cSimpleSceneNode::ClearHitState()
+void cSelectableSceneNode::ClearHitState()
 {
    if (m_pSel != NULL)
    {
@@ -586,7 +364,7 @@ SCRIPT_DEFINE_FUNCTION(EntitySpawnTest)
             x *= groundDims.x;
             z *= groundDims.y;
 
-            cSimpleSceneNode * pNode = new cSimpleSceneNode;
+            cSelectableSceneNode * pNode = new cSelectableSceneNode;
 
             pNode->SetMesh(ScriptArgAsString(0));
             pNode->SetTranslation(tVec3(x,y,z));
@@ -758,7 +536,7 @@ bool MainInit(int argc, char * argv[])
       return false;
    }
 
-   cWindowSink * pSink = new cWindowSink;
+   cWindowInputBroker * pSink = new cWindowInputBroker;
    if (pSink != NULL)
    {
       g_pWindow->Connect(pSink);
@@ -859,32 +637,12 @@ void MainTerm()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class cUpdateVisitor : public cSceneNodeVisitor
-{
-public:
-   cUpdateVisitor(double frameTime) : m_frameTime(frameTime) {}
-   virtual void VisitSceneNode(cSceneNode * pNode);
-private:
-   double m_frameTime;
-};
-
-void cUpdateVisitor::VisitSceneNode(cSceneNode * pNode)
-{
-   Assert(pNode != NULL);
-   pNode->Update(m_frameTime);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 void MainFrame()
 {
    Assert(g_pRenderDevice != NULL);
 
    UseGlobal(Sim);
    pSim->NextFrame();
-
-   cUpdateVisitor updateVisitor(pSim->GetFrameTime());
-   g_pGameCamera->Traverse(&updateVisitor);
 
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

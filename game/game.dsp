@@ -187,6 +187,10 @@ SOURCE=.\boundingvolume.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\cameracontroller.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\frustum.cpp
 # End Source File
 # Begin Source File
@@ -310,6 +314,10 @@ SOURCE=.\3ds.h
 # Begin Source File
 
 SOURCE=.\boundingvolume.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\cameracontroller.h
 # End Source File
 # Begin Source File
 

@@ -31,8 +31,6 @@ public:
 
    void Traverse(cSceneNodeVisitor * pVisitor);
 
-   virtual void Update(float timeDelta);
-
    virtual void Render();
 
 protected:
