@@ -23,6 +23,11 @@ public:
    cColor(const cColor & other);
    const cColor & operator =(const cColor & other);
 
+   float GetRed() const;
+   float GetGreen() const;
+   float GetBlue() const;
+   float GetAlpha() const;
+
    const float * GetPointer() const;
 
 private:
@@ -84,6 +89,34 @@ inline const cColor & cColor::operator =(const cColor & other)
    m_rgba[2] = other.m_rgba[2];
    m_rgba[3] = other.m_rgba[3];
    return *this;
+}
+
+///////////////////////////////////////
+
+inline float cColor::GetRed() const
+{
+   return m_rgba[0];
+}
+
+///////////////////////////////////////
+
+inline float cColor::GetGreen() const
+{
+   return m_rgba[1];
+}
+
+///////////////////////////////////////
+
+inline float cColor::GetBlue() const
+{
+   return m_rgba[2];
+}
+
+///////////////////////////////////////
+
+inline float cColor::GetAlpha() const
+{
+   return m_rgba[3];
 }
 
 ///////////////////////////////////////

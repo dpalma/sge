@@ -417,10 +417,6 @@ SOURCE=.\include\parse.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\include\pixelformat.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\include\quat.h
 # End Source File
 # Begin Source File
