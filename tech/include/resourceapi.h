@@ -8,6 +8,8 @@
 #include "comtools.h"
 #include "str.h"
 
+#include <vector>
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -120,7 +122,6 @@ interface IResourceManager2 : IUnknown
    virtual tResult Load(const tResKey & key, IResource * * ppResource) = 0;
 
    virtual tResult RegisterResourceFormat(eResourceClass resClass,
-                                          const char * pszExtension,
                                           IResourceFormat * pResFormat) = 0;
 };
 
@@ -132,13 +133,14 @@ interface IResourceManager2 : IUnknown
 
 interface IResourceFormat : IUnknown
 {
+   virtual tResult GetSupportedFileExtensions(std::vector<cStr> * pExtensions) = 0;
+
    virtual tResult Load(const tResKey & key, IReader * pReader, IResource * * ppResource) = 0;
 };
 
 ////////////////////////////////////////
 
 TECH_API tResult RegisterResourceFormat(eResourceClass resClass,
-                                        const char * pszExtension,
                                         IResourceFormat * pResFormat);
 
 ////////////////////////////////////////
@@ -146,22 +148,17 @@ TECH_API tResult RegisterResourceFormat(eResourceClass resClass,
 struct sAutoRegisterResourceFormat
 {
    sAutoRegisterResourceFormat(eResourceClass resClass,
-                               const char * pszExtension,
                                IResourceFormat * pResFormat)
    {
-      RegisterResourceFormat(resClass, pszExtension, pResFormat);
+      RegisterResourceFormat(resClass, pResFormat);
       SafeRelease(pResFormat);
    }
 };
 
-#define REFERENCE_RESOURCEFORMAT(ext) \
-   extern void * ReferenceSymbol##ext(); \
-   void * MAKE_UNIQUE(g_pReference##ext) = (void *)&ReferenceSymbol##ext
-
-#define AUTOREGISTER_RESOURCEFORMAT(resClass, ext, resFormatClass) \
-   void * ReferenceSymbol##ext() { return NULL; } \
+#define AUTOREGISTER_RESOURCEFORMAT(resClass, resFormatClass) \
+   void * ReferenceSymbol##resFormatClass() { return NULL; } \
    static sAutoRegisterResourceFormat MAKE_UNIQUE(g_autoRegResFormat)( \
-      resClass, #ext, static_cast<IResourceFormat *>(new (resFormatClass)))
+      resClass, static_cast<IResourceFormat *>(new (resFormatClass)))
 
 ///////////////////////////////////////////////////////////////////////////////
 //

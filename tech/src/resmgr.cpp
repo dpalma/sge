@@ -27,6 +27,14 @@
 
 #include "dbgalloc.h" // must be last header
 
+LOG_DEFINE_ENABLE_CHANNEL(ResourceManager, false);
+
+#define LocalMsg(msg)            DebugMsgEx(ResourceManager,(msg))
+#define LocalMsg1(msg,a)         DebugMsgEx1(ResourceManager,(msg),(a))
+#define LocalMsg2(msg,a,b)       DebugMsgEx2(ResourceManager,(msg),(a),(b))
+#define LocalMsg3(msg,a,b,c)     DebugMsgEx3(ResourceManager,(msg),(a),(b),(c))
+#define LocalMsg4(msg,a,b,c,d)   DebugMsgEx4(ResourceManager,(msg),(a),(b),(c),(d))
+
 ////////////////////////////////////////////////////////////////////////////////
 
 static size_t ListDirs(const cFilePath & path, std::vector<std::string> * pDirs)
@@ -102,7 +110,6 @@ class cResourceManager : public cComObject3<IMPLEMENTS(IResourceManager),
                                             cGlobalObjectBase, &IID_IGlobalObject>
 {
    friend tResult RegisterResourceFormat(eResourceClass resClass,
-                                         const char * pszExtension,
                                          IResourceFormat * pResFormat);
 
 public:
@@ -120,7 +127,6 @@ public:
    virtual tResult AddResourceStore(const char * pszName, eResourceStorePriority priority);
    virtual tResult Load(const tResKey & key, IResource * * ppResource);
    virtual tResult RegisterResourceFormat(eResourceClass resClass,
-                                          const char * pszExtension,
                                           IResourceFormat * pResFormat);
 
 private:
@@ -130,7 +136,6 @@ private:
    struct sDeferredResourceFormat
    {
       eResourceClass resClass;
-      cStr extension;
       IResourceFormat * pResFormat;
       sDeferredResourceFormat * pNext;
    };
@@ -347,9 +352,9 @@ tResult cResourceManager::Load(const tResKey & key, IResource * * ppResource)
    }
    else
    {
-      tResClassExtMap::iterator iter;
-      for (iter = m_resClassExtMap.lower_bound(key.GetClass());
-         iter != m_resClassExtMap.upper_bound(key.GetClass()); iter++)
+      tResClassExtMap::iterator iter = m_resClassExtMap.lower_bound(key.GetClass());
+      tResClassExtMap::iterator end = m_resClassExtMap.upper_bound(key.GetClass());
+      for (; iter != end; iter++)
       {
          cStr name(key.GetName());
          name += kExtSep;
@@ -373,34 +378,60 @@ tResult cResourceManager::Load(const tResKey & key, IResource * * ppResource)
 
 ////////////////////////////////////////
 
+static const char * GetResourceClassName(eResourceClass rc)
+{
+   switch (rc)
+   {
+   case kRC_Image: return "Image";
+   case kRC_Mesh: return "Mesh";
+   case kRC_Text: return "Text";
+   case kRC_Font: return "Font";
+   default: return "Unknown";
+   }
+}
+
 tResult cResourceManager::RegisterResourceFormat(eResourceClass resClass,
-                                                 const char * pszExtension,
                                                  IResourceFormat * pResFormat)
 {
-   if (pszExtension == NULL || pResFormat == NULL)
+   if (pResFormat == NULL)
    {
       return E_POINTER;
    }
 
-   cStr extension(pszExtension);
-
-   if (m_resExtFormatMap.find(extension) != m_resExtFormatMap.end())
+   std::vector<cStr> extensions;
+   if (pResFormat->GetSupportedFileExtensions(&extensions) == S_OK)
    {
-      return S_FALSE;
-   }
-
-   tResClassExtMap::iterator iter;
-   for (iter = m_resClassExtMap.lower_bound(resClass);
-      iter != m_resClassExtMap.upper_bound(resClass); iter++)
-   {
-      if (iter->second == extension)
+      std::vector<cStr>::iterator iter = extensions.begin();
+      std::vector<cStr>::iterator end = extensions.end();
+      for (; iter != end; iter++)
       {
-         return S_FALSE;
+         const cStr & extension = *iter;
+
+         if (m_resExtFormatMap.find(extension) != m_resExtFormatMap.end())
+         {
+            WarnMsg1("Extension %s already registered to a different resource format\n", extension.c_str());
+            return S_FALSE;
+         }
+
+         tResClassExtMap::iterator iter = m_resClassExtMap.lower_bound(resClass);
+         tResClassExtMap::iterator end = m_resClassExtMap.upper_bound(resClass);
+         for (; iter != end; iter++)
+         {
+            if (iter->second == extension)
+            {
+               WarnMsg2("Extension %s already registered as resource class %s\n",
+                  extension.c_str(), GetResourceClassName(iter->first));
+               return S_FALSE;
+            }
+         }
+
+         LocalMsg3("File extension \"%s\" registered as type %s to resource format 0x%08x\n",
+            extension.c_str(), GetResourceClassName(resClass), pResFormat);
+
+         m_resClassExtMap.insert(std::make_pair(resClass, extension));
+         m_resExtFormatMap.insert(std::make_pair(extension, CTAddRef(pResFormat)));
       }
    }
-
-   m_resClassExtMap.insert(std::make_pair(resClass, extension));
-   m_resExtFormatMap.insert(std::make_pair(extension, CTAddRef(pResFormat)));
 
    return S_OK;
 }
@@ -408,10 +439,9 @@ tResult cResourceManager::RegisterResourceFormat(eResourceClass resClass,
 ////////////////////////////////////////
 
 tResult RegisterResourceFormat(eResourceClass resClass,
-                               const char * pszExtension,
                                IResourceFormat * pResFormat)
 {
-   if (pszExtension == NULL || pResFormat == NULL)
+   if (pResFormat == NULL)
    {
       return E_POINTER;
    }
@@ -421,7 +451,7 @@ tResult RegisterResourceFormat(eResourceClass resClass,
    if (cResourceManager::gm_bInitialized)
    {
       UseGlobal(ResourceManager2);
-      return pResourceManager2->RegisterResourceFormat(resClass, pszExtension, pResFormat);
+      return pResourceManager2->RegisterResourceFormat(resClass, pResFormat);
    }
    else
    {
@@ -432,7 +462,6 @@ tResult RegisterResourceFormat(eResourceClass resClass,
       }
 
       p->resClass = resClass;
-      p->extension = pszExtension;
       p->pResFormat = CTAddRef(pResFormat);
       p->pNext = cResourceManager::gm_pDeferredResourceFormats;
       cResourceManager::gm_pDeferredResourceFormats = p;
@@ -450,7 +479,6 @@ void cResourceManager::ConsumeDeferredResourceFormats()
    {
       RegisterResourceFormat(
          gm_pDeferredResourceFormats->resClass, 
-         gm_pDeferredResourceFormats->extension.c_str(), 
          gm_pDeferredResourceFormats->pResFormat);
 
       SafeRelease(gm_pDeferredResourceFormats->pResFormat);

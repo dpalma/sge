@@ -272,8 +272,25 @@ tResult cBmpImage::GetData(void * * ppData)
 class cImageFormatBmp : public cComObject<IMPLEMENTS(IResourceFormat)>
 {
 public:
+   virtual tResult GetSupportedFileExtensions(std::vector<cStr> * pExtensions);
+
    virtual tResult Load(const tResKey & key, IReader * pReader, IResource * * ppResource);
 };
+
+////////////////////////////////////////
+
+tResult cImageFormatBmp::GetSupportedFileExtensions(std::vector<cStr> * pExtensions)
+{
+   if (pExtensions == NULL)
+   {
+      return E_POINTER;
+   }
+
+   pExtensions->clear();
+   pExtensions->push_back(cStr("bmp"));
+
+   return S_OK;
+}
 
 ////////////////////////////////////////
 
@@ -297,7 +314,7 @@ tResult cImageFormatBmp::Load(const tResKey & key, IReader * pReader, IResource 
 
 ////////////////////////////////////////
 
-AUTOREGISTER_RESOURCEFORMAT(kRC_Image, bmp, cImageFormatBmp);
+AUTOREGISTER_RESOURCEFORMAT(kRC_Image, cImageFormatBmp);
 
 
 ////////////////////////////////////////////////////////////////////////////////

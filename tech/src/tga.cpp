@@ -504,8 +504,25 @@ tResult cTargaImage::GetData(void * * ppData)
 class cImageFormatTarga : public cComObject<IMPLEMENTS(IResourceFormat)>
 {
 public:
+   virtual tResult GetSupportedFileExtensions(std::vector<cStr> * pExtensions);
+
    virtual tResult Load(const tResKey & key, IReader * pReader, IResource * * ppResource);
 };
+
+////////////////////////////////////////
+
+tResult cImageFormatTarga::GetSupportedFileExtensions(std::vector<cStr> * pExtensions)
+{
+   if (pExtensions == NULL)
+   {
+      return E_POINTER;
+   }
+
+   pExtensions->clear();
+   pExtensions->push_back(cStr("tga"));
+
+   return S_OK;
+}
 
 ////////////////////////////////////////
 
@@ -529,51 +546,22 @@ tResult cImageFormatTarga::Load(const tResKey & key, IReader * pReader, IResourc
 
 ////////////////////////////////////////
 
-AUTOREGISTER_RESOURCEFORMAT(kRC_Image, tga, cImageFormatTarga);
+AUTOREGISTER_RESOURCEFORMAT(kRC_Image, cImageFormatTarga);
 
 
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifdef HAVE_CPPUNIT
 
-/*
-class cTargaLoadTests : public CppUnit::TestCase
+class cTargaTests : public CppUnit::TestCase
 {
-   CPPUNIT_TEST_SUITE(cTargaLoadTests);
-      CPPUNIT_TEST(Test);
+   CPPUNIT_TEST_SUITE(cTargaTests);
    CPPUNIT_TEST_SUITE_END();
-
-public:
-   void Test()
-   {
-      static const char * targaFiles[] =
-      {
-         "test16c.tga",
-         "test16u.tga",
-         "test24c.tga",
-         "test24u.tga",
-         "test32c.tga",
-         "test32u.tga",
-         "test8c.tga",
-         "test8u.tga",
-      };
-
-      static const int nTargaFiles = _countof(targaFiles);
-
-      for (int i = 0; i < nTargaFiles; i++)
-      {
-         cAutoIPtr<IReader> pReader = ResourceFind(targaFiles[i]);
-         CPPUNIT_ASSERT(pReader);
-         cImage * pImage = LoadTarga(pReader);
-         CPPUNIT_ASSERT(pImage->GetWidth() == 48);
-         CPPUNIT_ASSERT(pImage->GetHeight() == 48);
-         delete pImage;
-      }
-   }
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(cTargaLoadTests);
-*/
+////////////////////////////////////////
+
+CPPUNIT_TEST_SUITE_REGISTRATION(cTargaTests);
 
 #endif // HAVE_CPPUNIT
 
