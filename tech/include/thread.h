@@ -16,7 +16,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-const uint kInfiniteTimeout = (uint)-1;
+const uint kInfiniteTimeout = ~0;
 
 TECH_API void ThreadSleep(uint milliseconds);
 
@@ -36,11 +36,17 @@ enum eThreadPriority
 
 class TECH_API cThread
 {
+protected:
+   cThread(const cThread &);
+   const cThread & operator =(const cThread &);
+
 public:
    cThread();
    virtual ~cThread();
 
    bool Create(int priority = kTP_Normal, uint stackSize = 0);
+
+   ulong GetThreadId() const;
 
    void Join();
 
@@ -50,6 +56,7 @@ protected:
    virtual int Run() = 0;
 
 private:
+   ulong m_threadId;
 #ifdef _WIN32
    static ulong STDCALL ThreadEntry(void * param);
    HANDLE m_hThread;
@@ -58,6 +65,13 @@ private:
    pthread_t m_thread;
 #endif
 };
+
+////////////////////////////////////////
+
+inline ulong cThread::GetThreadId() const
+{
+   return m_threadId;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -75,6 +89,7 @@ public:
    bool Wait(uint timeout = kInfiniteTimeout);
    bool Set();
    bool Reset();
+   bool Pulse();
 
 private:
 #ifdef _WIN32
@@ -104,6 +119,25 @@ private:
    HANDLE m_hMutex;
 #else
 #endif
+};
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cMutexLock
+//
+
+class TECH_API cMutexLock
+{
+public:
+   cMutexLock(cThreadMutex * pMutex);
+   ~cMutexLock();
+
+   bool Acquire(uint timeout = kInfiniteTimeout);
+   void Release();
+
+private:
+   cThreadMutex * m_pMutex;
+   bool m_bLocked;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

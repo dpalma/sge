@@ -92,8 +92,9 @@ static int MapThreadPriority(int priority)
 ////////////////////////////////////////
 
 cThread::cThread()
+ : m_threadId(0)
 #ifdef _WIN32
- : m_hThread(NULL)
+   ,m_hThread(NULL)
 #endif
 {
 }
@@ -111,8 +112,8 @@ bool cThread::Create(int priority, uint stackSize)
 #ifdef _WIN32
    if (m_hThread == NULL)
    {
-      ulong threadId;
-      m_hThread = CreateThread(NULL, 0, ThreadEntry, this, CREATE_SUSPENDED, &threadId);
+      Assert(m_threadId == 0);
+      m_hThread = CreateThread(NULL, 0, ThreadEntry, this, CREATE_SUSPENDED, &m_threadId);
       if (m_hThread != NULL)
       {
          SetThreadPriority(m_hThread, MapThreadPriority(priority));
@@ -282,6 +283,21 @@ bool cThreadEvent::Reset()
    return false;
 }
 
+////////////////////////////////////////
+
+bool cThreadEvent::Pulse()
+{
+#ifdef _WIN32
+   if ((m_hEvent != NULL) && PulseEvent(m_hEvent))
+   {
+      return true;
+   }
+#else
+#error ("Need platform-specific event pulse function")
+#endif
+   return false;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -313,9 +329,13 @@ cThreadMutex::~cThreadMutex()
 bool cThreadMutex::Create()
 {
 #ifdef _WIN32
-   if ((m_hMutex == NULL) && CreateMutex(NULL, FALSE, NULL))
+   if (m_hMutex == NULL)
    {
-      return true;
+      m_hMutex = CreateMutex(NULL, FALSE, NULL);
+      if (m_hMutex != NULL)
+      {
+         return true;
+      }
    }
 #else
 #error ("Need platform-specific mutex create function")
@@ -346,8 +366,60 @@ bool cThreadMutex::Acquire(uint timeout)
 bool cThreadMutex::Release()
 {
 #ifdef _WIN32
+   if (m_hMutex != NULL)
+   {
+      if (ReleaseMutex(m_hMutex))
+      {
+         return true;
+      }
+   }
 #endif
    return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cMutexLock
+//
+
+////////////////////////////////////////
+
+cMutexLock::cMutexLock(cThreadMutex * pMutex)
+ : m_pMutex(pMutex),
+   m_bLocked(false)
+{
+   Assert(pMutex != NULL);
+}
+
+////////////////////////////////////////
+
+cMutexLock::~cMutexLock()
+{
+   Release();
+}
+
+////////////////////////////////////////
+
+bool cMutexLock::Acquire(uint timeout)
+{
+   if (!m_bLocked && m_pMutex != NULL)
+   {
+      m_bLocked = m_pMutex->Acquire(timeout);
+   }
+   return m_bLocked;
+}
+
+////////////////////////////////////////
+
+void cMutexLock::Release()
+{
+   if (m_bLocked && m_pMutex != NULL)
+   {
+      if (m_pMutex->Release())
+      {
+         m_bLocked = false;
+      }
+   }
 }
 
 

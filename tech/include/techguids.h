@@ -27,6 +27,7 @@ DEFINE_TECH_GUID(IID_IWindowFullScreen, 0xF);
 DEFINE_TECH_GUID(IID_IResource, 0x10);
 DEFINE_TECH_GUID(IID_IResourceFormat, 0x11);
 DEFINE_TECH_GUID(IID_IResourceManager2, 0x12);
+DEFINE_TECH_GUID(IID_IThreadCaller, 0x13);
 
 ///////////////////////////////////////////////////////////////////////////////
 

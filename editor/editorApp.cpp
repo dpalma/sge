@@ -28,6 +28,7 @@
 #include "filespec.h"
 #include "filepath.h"
 #include "str.h"
+#include "threadcallapi.h"
 
 #include <algorithm>
 
@@ -213,6 +214,7 @@ static void RegisterGlobalObjects()
 //   GUIFactoryCreate();
 //   GUIRenderingToolsCreate();
    EditorTileManagerCreate();
+   ThreadCallerCreate();
 }
 
 ////////////////////////////////////////
@@ -245,6 +247,9 @@ BOOL cEditorApp::InitInstance()
       DebugMsg("One or more application-level services failed to start!\n");
       return FALSE;
    }
+
+   UseGlobal(ThreadCaller);
+   pThreadCaller->ThreadInit();
 
    ScriptAddFunctions(g_editorCmds, g_nEditorCmds);
 

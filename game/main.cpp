@@ -31,6 +31,7 @@
 #include "str.h"
 #include "globalobj.h"
 #include "readwriteapi.h"
+#include "threadcallapi.h"
 
 #include <ctime>
 
@@ -308,6 +309,7 @@ static void RegisterGlobalObjects()
    GUIRenderingToolsCreate();
    EntityManagerCreate();
    EngineCreate();
+   ThreadCallerCreate();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -466,6 +468,12 @@ bool MainInit(int argc, char * argv[])
 
    g_pRenderDevice->GetWindow(&g_pWindow);
 
+   UseGlobal(ThreadCaller);
+   if (FAILED(pThreadCaller->ThreadInit()))
+   {
+      return false;
+   }
+
    if (FAILED(FontCreateDefault(g_pRenderDevice, &g_pFont)))
    {
       WarnMsg("Failed to create default font for rendering frame stats\n");
@@ -518,6 +526,9 @@ void MainTerm()
 {
    UseGlobal(Sim);
    pSim->Stop();
+
+   UseGlobal(ThreadCaller);
+   pThreadCaller->ThreadTerm();
 
    SafeRelease(g_pWindow);
 
