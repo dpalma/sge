@@ -4,8 +4,8 @@
 #ifndef INCLUDED_STDHDR_H
 #define INCLUDED_STDHDR_H
 
-#include "TechTypes.h"
-#include "TechDebug.h"
+#include "techtypes.h"
+#include "techdebug.h"
 
 #ifdef _MSC_VER
 #pragma once

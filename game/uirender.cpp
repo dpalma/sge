@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "TechMath.h"
+#include "techmath.h"
 #include "ggl.h"
 #include "font.h"
 #include "uirender.h"

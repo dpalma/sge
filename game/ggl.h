@@ -7,7 +7,7 @@
 #ifndef INCLUDED_GGL_H
 #define INCLUDED_GGL_H
 
-#include "TechTypes.h"
+#include "techtypes.h"
 
 #ifdef _WIN32
    #define WINAPI __stdcall

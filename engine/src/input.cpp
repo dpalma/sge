@@ -7,7 +7,7 @@
 #include "scriptvar.h"
 #include "input.h"
 #include "keys.h"
-#include "ConnPtImpl.h"
+#include "connptimpl.h"
 #include <string.h>
 #include <stdlib.h>
 #include <list>

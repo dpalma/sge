@@ -4,8 +4,8 @@
 #include "stdhdr.h"
 
 #include "mesh.h"
-#include "ReadWriteAPI.h"
-#include "FileSpec.h"
+#include "readwriteapi.h"
+#include "filespec.h"
 #include "resmgr.h"
 
 #include <cstring>

@@ -7,7 +7,7 @@
 #include "gcommon.h"
 #include "matrix4.h"
 #include "window.h"
-#include "TechTime.h"
+#include "techtime.h"
 
 #include <locale>
 #include <X11/Xlib.h>
