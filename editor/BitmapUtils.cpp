@@ -19,18 +19,9 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 
-bool LoadBitmap(const tChar * pszBitmap, HBITMAP * phBitmap)
+bool LoadBitmap(const cImageData * pImageData, HBITMAP * phBitmap)
 {
-   if (pszBitmap == NULL || phBitmap == NULL)
-   {
-      return false;
-   }
-
    bool bResult = false;
-
-   UseGlobal(ResourceManager);
-
-   cImageData * pImageData = ImageLoad(pResourceManager, pszBitmap);
 
    if (pImageData != NULL)
    {
@@ -111,7 +102,27 @@ bool LoadBitmap(const tChar * pszBitmap, HBITMAP * phBitmap)
             delete [] pImageBits;
          }
       }
+   }
 
+   return bResult;   
+}
+
+bool LoadBitmap(const tChar * pszBitmap, HBITMAP * phBitmap)
+{
+   if (pszBitmap == NULL || phBitmap == NULL)
+   {
+      return false;
+   }
+
+   bool bResult = false;
+
+   UseGlobal(ResourceManager);
+
+   cImageData * pImageData = ImageLoad(pResourceManager, pszBitmap);
+
+   if (pImageData != NULL)
+   {
+      bResult = LoadBitmap(pImageData, phBitmap);
       delete pImageData;
    }
    else
@@ -138,7 +149,65 @@ bool LoadBitmap(const tChar * pszBitmap, HBITMAP * phBitmap)
       }
    }
 
-   return bResult;   
+   return bResult;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+HBITMAP StretchCopyBitmap(uint width, uint height, HBITMAP hSrcBitmap,
+                          uint srcX, uint srcY, uint srcWidth, uint srcHeight)
+{
+   if (width == 0 || height == 0 || hSrcBitmap == NULL || srcWidth == 0 || srcHeight == 0)
+   {
+      ErrorMsg("Invalid argument to StretchCopyBitmap\n");
+      return NULL;
+   }
+
+   BOOL bSuccess = FALSE;
+
+   HBITMAP hBitmap = NULL;
+
+   HDC hScreenDC = GetDC(NULL);
+
+   if (hScreenDC != NULL)
+   {
+      hBitmap = CreateCompatibleBitmap(hScreenDC, width, height);
+      if (hBitmap != NULL)
+      {
+         HDC hSrcDC = CreateCompatibleDC(hScreenDC);
+         if (hSrcDC != NULL)
+         {
+            HGDIOBJ hSrcOld = SelectObject(hSrcDC, hSrcBitmap);
+
+            HDC hDestDC = CreateCompatibleDC(hScreenDC);
+            if (hDestDC != NULL)
+            {
+               HGDIOBJ hDestOld = SelectObject(hDestDC, hBitmap);
+
+               bSuccess = StretchBlt(hDestDC, 0, 0, width, height, hSrcDC,
+                  srcX, srcY, srcWidth, srcHeight, SRCCOPY);
+
+               DebugMsgIf1(!bSuccess, "Error %d in StretchBlt call\n", GetLastError());
+
+               SelectObject(hDestDC, hDestOld);
+               DeleteDC(hDestDC);
+            }
+
+            SelectObject(hSrcDC, hSrcOld);
+            DeleteDC(hSrcDC);
+         }
+      }
+
+      ReleaseDC(NULL, hScreenDC);
+   }
+
+   if (!bSuccess && hBitmap != NULL)
+   {
+      DeleteObject(hBitmap);
+      hBitmap = NULL;
+   }
+
+   return hBitmap;
 }
 
 /////////////////////////////////////////////////////////////////////////////

@@ -9,9 +9,13 @@
 #include "comtools.h"
 #include "str.h"
 
+#include <map>
+
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
+
+class cImageData;
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -27,11 +31,20 @@ public:
    virtual tResult GetName(cStr * pName) const;
    virtual tResult GetTexture(cStr * pTexture) const;
 
-   virtual tResult GetButtonImage(HBITMAP * phBitmap);
+   virtual tResult GetBitmap(uint dimension, HBITMAP * phBitmap);
 
 private:
+   void LazyInit();
+
    cStr m_name, m_texture;
    int m_horzImages, m_vertImages;
+
+   cImageData * m_pImageData;
+
+   HBITMAP m_hBitmap;
+
+   typedef std::map<uint, HBITMAP> tBitmaps;
+   tBitmaps m_bitmaps;
 };
 
 /////////////////////////////////////////////////////////////////////////////
