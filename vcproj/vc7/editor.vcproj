@@ -331,6 +331,9 @@
 				RelativePath="..\..\editor\BitmapUtils.cpp">
 			</File>
 			<File
+				RelativePath="..\..\editor\DynamicLink.cpp">
+			</File>
+			<File
 				RelativePath="..\..\editor\LogWnd.cpp">
 			</File>
 			<File
@@ -438,6 +441,9 @@
 			Filter="h;hpp;hxx;hm;inl">
 			<File
 				RelativePath="..\..\editor\BitmapUtils.h">
+			</File>
+			<File
+				RelativePath="..\..\editor\DynamicLink.h">
 			</File>
 			<File
 				RelativePath="..\..\editor\GLContext.h">

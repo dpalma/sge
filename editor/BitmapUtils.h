@@ -22,7 +22,8 @@ class cImageData;
 
 byte GrayLevel(COLORREF color);
 
-HIMAGELIST ImageList_CreateGrayscale(HIMAGELIST hImageList);
+// STDCALL to match the signature of ImageList_Draw exactly
+BOOL STDCALL ImageList_DrawDisabled(HIMAGELIST hImageList, int iImage, HDC hDC, int x, int y, uint drawStyle);
 
 bool LoadBitmap(const cImageData * pImageData, HBITMAP * phBitmap);
 

@@ -98,10 +98,9 @@ void cToolItem::ToggleChecked()
 
 ////////////////////////////////////////
 
-cToolGroup::cToolGroup(const tChar * pszName, HIMAGELIST hImageList, HIMAGELIST hDisabledImages)
+cToolGroup::cToolGroup(const tChar * pszName, HIMAGELIST hImageList)
  : m_name(pszName != NULL ? pszName : ""),
    m_hImageList(hImageList),
-   m_hDisabledImages(hDisabledImages),
    m_bCollapsed(false)
 {
 }
@@ -114,12 +113,6 @@ cToolGroup::~cToolGroup()
    {
       ImageList_Destroy(m_hImageList);
       m_hImageList = NULL;
-   }
-
-   if (m_hDisabledImages != NULL)
-   {
-      ImageList_Destroy(m_hDisabledImages);
-      m_hDisabledImages = NULL;
    }
 
    Clear();
@@ -398,12 +391,7 @@ void cToolPaletteRenderer::Render(const cToolGroup * pGroup)
       return;
    }
 
-   HIMAGELIST hNormalImages = pGroup->GetNormalImages();
-   HIMAGELIST hDisabledImages = pGroup->GetDisabledImages();
-   if (hDisabledImages == NULL)
-   {
-      hDisabledImages = hNormalImages;
-   }
+   HIMAGELIST hNormalImages = pGroup->GetImageList();
 
    CRect toolRect(m_rect);
    toolRect.top += m_totalHeight + headingHeight;
@@ -487,8 +475,14 @@ void cToolPaletteRenderer::Render(const cToolGroup * pGroup)
          if ((hNormalImages != NULL) && (iImage > -1))
          {
             // TODO: clip the image in case it is offset by being a checked item
-            ImageList_Draw(pTool->IsDisabled() ? hDisabledImages : hNormalImages,
-               iImage, m_dc, toolRect.left + imageOffset.x, toolRect.top + imageOffset.y, ILD_NORMAL);
+            BOOL (STDCALL *pfnILDraw)(HIMAGELIST, int, HDC, int, int, uint) = pTool->IsDisabled()
+               ? ImageList_DrawDisabled
+               : ImageList_Draw;
+
+            (*pfnILDraw)(hNormalImages, iImage, m_dc,
+               toolRect.left + imageOffset.x,
+               toolRect.top + imageOffset.y,
+               ILD_NORMAL);
          }
 
          COLORREF oldTextColor = m_dc.SetTextColor(pTool->IsDisabled()
@@ -734,7 +728,7 @@ HTOOLGROUP cToolPalette::AddGroup(const tChar * pszGroup, HIMAGELIST hImageList)
          return hGroup;
       }
 
-      cToolGroup * pGroup = new cToolGroup(pszGroup, hImageList, ImageList_CreateGrayscale(hImageList));
+      cToolGroup * pGroup = new cToolGroup(pszGroup, hImageList);
       if (pGroup != NULL)
       {
          m_groups.push_back(pGroup);

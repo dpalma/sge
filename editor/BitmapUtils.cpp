@@ -40,83 +40,48 @@ byte GrayLevel(COLORREF color)
 }
 
 /////////////////////////////////////////////////////////////////////////////
+// See CCommandBarCtrlImpl::DrawBitmapDisabled()
 
-HIMAGELIST ImageList_CreateGrayscale(HIMAGELIST hImageList)
+BOOL STDCALL ImageList_DrawDisabled(HIMAGELIST hImageList, int iImage,
+                                    HDC hDC, int x, int y, uint drawStyle)
 {
-   if (hImageList != NULL)
+   HBRUSH hBrushBackground = ::GetSysColorBrush(COLOR_3DFACE);
+   HBRUSH hBrush3DEffect = ::GetSysColorBrush(COLOR_3DHILIGHT);
+   HBRUSH hBrushDisabledImage = ::GetSysColorBrush(COLOR_3DSHADOW);
+
+   // create memory DC
+   CDC dcMem;
+   if (!dcMem.CreateCompatibleDC(hDC))
    {
-      int nImages = ImageList_GetImageCount(hImageList);
-      if (nImages > 0)
-      {
-         IMAGEINFO imageInfo;
-         if (!ImageList_GetImageInfo(hImageList, 0, &imageInfo))
-         {
-            return NULL;
-         }
-
-         int imageWidth = imageInfo.rcImage.right - imageInfo.rcImage.left;
-         int imageHeight = imageInfo.rcImage.bottom - imageInfo.rcImage.top;
-
-         HIMAGELIST hGrayImages = ImageList_Create(
-            imageWidth, imageHeight, ILC_COLOR, nImages, nImages);
-         if (hGrayImages != NULL)
-         {
-            HDC hScreenDC = GetDC(NULL);
-            if (hScreenDC != NULL)
-            {
-               CDC destDC;
-               if (destDC.CreateCompatibleDC(hScreenDC))
-               {
-                  for (int i = 0; i < nImages; i++)
-                  {
-                     IMAGEINFO imageInfo;
-                     if (ImageList_GetImageInfo(hImageList, i, &imageInfo))
-                     {
-                        HBITMAP hGrayBm = CreateCompatibleBitmap(hScreenDC, imageWidth, imageHeight);
-                        if (hGrayBm != NULL)
-                        {
-                           HBITMAP hDestOld = destDC.SelectBitmap(hGrayBm);
-                           if (hDestOld != NULL)
-                           {
-                              Verify(ImageList_Draw(hImageList, i, destDC, 0, 0, ILD_NORMAL));
-
-                              for (int x = 0; x < imageWidth; x++)
-                              {
-                                 for (int y = 0; y < imageHeight; y++)
-                                 {
-                                    COLORREF c = destDC.GetPixel(x, y);
-                                    byte g = GrayLevel(c);
-                                    destDC.SetPixel(x, y, RGB(g,g,g));
-                                 }
-                              }
-
-                              destDC.SelectBitmap(hDestOld);
-
-                              int iNew = ImageList_Add(hGrayImages, hGrayBm, imageInfo.hbmMask);
-                           }
-
-                           DeleteObject(hGrayBm);
-                        }
-                     }
-                  }
-               }
-
-               ReleaseDC(NULL, hScreenDC);
-               hScreenDC = NULL;
-            }
-         }
-
-         if (ImageList_GetImageCount(hGrayImages) != nImages)
-         {
-            ImageList_Destroy(hGrayImages);
-            return NULL;
-         }
-
-         return hGrayImages;
-      }
+      return FALSE;
    }
 
-   return NULL;
+   IMAGEINFO imageInfo;
+   if (!ImageList_GetImageInfo(hImageList, iImage, &imageInfo))
+   {
+      return FALSE;
+   }
+
+   int cxImage = imageInfo.rcImage.right - imageInfo.rcImage.left;
+   int cyImage = imageInfo.rcImage.bottom - imageInfo.rcImage.top;
+
+   // create mono or color bitmap
+   CBitmap bmp;
+   bmp.CreateCompatibleBitmap(hDC, cxImage, cyImage);
+   ATLASSERT(bmp.m_hBitmap != NULL);
+
+   // draw image into memory DC--fill BG white first
+   HBITMAP hBmpOld = dcMem.SelectBitmap(bmp);
+   dcMem.PatBlt(0, 0, cxImage, cyImage, WHITENESS);
+
+   // If white is the text color, we can't use the normal painting since
+   // it would blend with the WHITENESS, but the mask is OK
+   UINT uDrawStyle = (::GetSysColor(COLOR_BTNTEXT) == RGB(255, 255, 255)) ? ILD_MASK : ILD_NORMAL;
+   ImageList_Draw(hImageList, iImage, dcMem, x, y, uDrawStyle);
+   CDCHandle(hDC).DitherBlt(x, y, cxImage, cyImage, dcMem, NULL, 0, 0, hBrushBackground, hBrush3DEffect, hBrushDisabledImage);
+   dcMem.SelectBitmap(hBmpOld);
+
+   return TRUE;
 }
 
 /////////////////////////////////////////////////////////////////////////////

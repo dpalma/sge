@@ -163,12 +163,11 @@ class cToolGroup
    const cToolGroup & operator =(const cToolGroup &);
 
 public:
-   cToolGroup(const tChar * pszName, HIMAGELIST hImageList, HIMAGELIST hDisabledImages = NULL);
+   cToolGroup(const tChar * pszName, HIMAGELIST hImageList);
    ~cToolGroup();
 
    const tChar * GetName() const;
-   HIMAGELIST GetNormalImages() const;
-   HIMAGELIST GetDisabledImages() const;
+   HIMAGELIST GetImageList() const;
    uint GetToolCount() const;
    cToolItem * GetTool(uint index) const;
 
@@ -184,7 +183,6 @@ public:
 private:
    std::string m_name;
    HIMAGELIST m_hImageList;
-   HIMAGELIST m_hDisabledImages;
 
    typedef std::vector<cToolItem *> tTools;
    tTools m_tools;
@@ -205,16 +203,9 @@ inline const tChar * cToolGroup::GetName() const
 
 ////////////////////////////////////////
 
-inline HIMAGELIST cToolGroup::GetNormalImages() const
+inline HIMAGELIST cToolGroup::GetImageList() const
 {
    return m_hImageList;
-}
-
-////////////////////////////////////////
-
-inline HIMAGELIST cToolGroup::GetDisabledImages() const
-{
-   return m_hDisabledImages;
 }
 
 ////////////////////////////////////////

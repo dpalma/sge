@@ -249,7 +249,6 @@ LRESULT cToolPaletteBar::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL 
          HTOOLITEM hTool = m_toolPalette.AddTool(hStdGroup, "Select", 0, NULL);
          if (hTool != NULL)
          {
-            Verify(m_toolPalette.EnableTool(hTool, false));
          }
       }
    }
