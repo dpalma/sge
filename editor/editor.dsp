@@ -183,6 +183,10 @@ SOURCE=.\aboutdlg.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\BitmapUtils.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\cmds.cpp
 # End Source File
 # Begin Source File
@@ -246,6 +250,10 @@ SOURCE=.\sizecbar.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\splashwnd.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\stdhdr.cpp
 # ADD CPP /Yc"stdhdr.h"
 # End Source File
@@ -264,6 +272,10 @@ SOURCE=.\aboutdlg.h
 # Begin Source File
 
 SOURCE=.\afxcomtools.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\BitmapUtils.h
 # End Source File
 # Begin Source File
 
@@ -328,6 +340,10 @@ SOURCE=.\scrollwnd.h
 # Begin Source File
 
 SOURCE=.\sizecbar.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\splashwnd.h
 # End Source File
 # Begin Source File
 

@@ -8,6 +8,8 @@
 #include "editorView.h"
 #include "MainFrm.h"
 #include "aboutdlg.h"
+#include "splashwnd.h"
+#include "BitmapUtils.h"
 
 #include "sceneapi.h"
 #include "inputapi.h"
@@ -173,16 +175,6 @@ BOOL cEditorApp::InitInstance()
       return FALSE;
    }
 
-	// Register the application's document templates.  Document templates
-	//  serve as the connection between documents, frame windows and views.
-
-	CSingleDocTemplate * pDocTemplate = new CSingleDocTemplate(
-		IDR_MAINFRAME,
-		RUNTIME_CLASS(cEditorDoc),
-		RUNTIME_CLASS(CMainFrame),       // main SDI frame window
-		RUNTIME_CLASS(cEditorView));
-	AddDocTemplate(pDocTemplate);
-
    cFileSpec file(__argv[0]);
    file.SetPath(cFilePath());
    file.SetFileExt("cfg");
@@ -202,6 +194,31 @@ BOOL cEditorApp::InitInstance()
       pResourceManager->AddSearchPath(temp);
    }
 
+   cSplashThread * pSplashThread = NULL;
+   HBITMAP hSplashBitmap = NULL;
+   if (ConfigGet("splash_image", &temp) == S_OK
+      && ::LoadBitmap(temp.c_str(), &hSplashBitmap))
+   {
+      pSplashThread = (cSplashThread *)AfxBeginThread(
+         RUNTIME_CLASS(cSplashThread),
+         THREAD_PRIORITY_NORMAL,
+         CREATE_SUSPENDED);
+      ASSERT_VALID(pSplashThread);
+
+      pSplashThread->SetBitmap(hSplashBitmap);
+      pSplashThread->ResumeThread();
+   }
+
+	// Register the application's document templates.  Document templates
+	//  serve as the connection between documents, frame windows and views.
+
+	CSingleDocTemplate * pDocTemplate = new CSingleDocTemplate(
+		IDR_MAINFRAME,
+		RUNTIME_CLASS(cEditorDoc),
+		RUNTIME_CLASS(CMainFrame),       // main SDI frame window
+		RUNTIME_CLASS(cEditorView));
+	AddDocTemplate(pDocTemplate);
+
    cStr autoexecScript("editor.lua");
    ConfigGet("editor_autoexec_script", &autoexecScript);
 
@@ -218,7 +235,7 @@ BOOL cEditorApp::InitInstance()
 
 	// Parse command line for standard shell commands, DDE, file open
 	CCommandLineInfo cmdInfo;
-	ParseCommandLine(cmdInfo);
+//	ParseCommandLine(cmdInfo);
 
 	// Dispatch commands specified on the command line
 	if (!ProcessShellCommand(cmdInfo))
@@ -227,6 +244,11 @@ BOOL cEditorApp::InitInstance()
 	// The one and only window has been initialized, so show and update it.
 	m_pMainWnd->ShowWindow(SW_SHOW);
 	m_pMainWnd->UpdateWindow();
+
+   if (pSplashThread != NULL)
+   {
+      pSplashThread->HideSplash();
+   }
 
 	return TRUE;
 }
