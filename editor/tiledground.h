@@ -41,7 +41,7 @@ public:
    ~cTiledGround();
 
    bool SetTexture(const char * pszTexture);
-   bool Init(cHeightMap * pHeightMap);
+   bool Init(uint xDim, uint zDim, cHeightMap * pHeightMap);
    bool CreateBuffers(IRenderDevice * pRenderDevice);
 
    size_t GetVertexCount() const { return m_vertices.size(); }
@@ -52,6 +52,8 @@ public:
    IMaterial * AccessMaterial() { return m_pMaterial; }
 
 private:
+   uint m_xDim, m_zDim;
+   uint m_nVertices;
    cAutoIPtr<IVertexBuffer> m_pVertexBuffer;
    cAutoIPtr<IIndexBuffer> m_pIndexBuffer;
    cAutoIPtr<IMaterial> m_pMaterial;

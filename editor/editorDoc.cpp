@@ -133,7 +133,7 @@ bool cEditorDoc::SetTerrain(IRenderDevice * pRenderDevice,
          {
             if (m_pGround->SetTexture(pszTexture))
             {
-               if (m_pGround->Init(m_pHeightMap))
+               if (m_pGround->Init(64, 64, m_pHeightMap))
                {
                   return m_pGround->CreateBuffers(pRenderDevice);
                }

@@ -31,7 +31,10 @@ VERTEXDECL_END()
 ///////////////////////////////////////
 
 cTiledGround::cTiledGround()
- : m_nIndices(0),
+ : m_xDim(0),
+   m_zDim(0),
+   m_nVertices(0),
+   m_nIndices(0),
    m_bInitialized(false)
 {
 }
@@ -73,31 +76,33 @@ bool cTiledGround::SetTexture(const char * pszTexture)
 ///////////////////////////////////////
 
 static const int kStepSize = 16;
-static const int kGroundSize = 1024;
-static const int kNumQuadsPerSide = kGroundSize / kStepSize;
-static const int kNumQuads = kNumQuadsPerSide * kNumQuadsPerSide;
-static const int kNumVerts = kNumQuads * 4;
-static const int kNumIndices = kNumQuads * 6;
 static const float kRed = 1, kGreen = 1, kBlue = 1;
 
 static const float kTileTexWidth = 0.125f;
 static const float kTileTexHeight = 0.25f;
 
-bool cTiledGround::Init(cHeightMap * pHeightMap)
+bool cTiledGround::Init(uint xDim, uint zDim, cHeightMap * pHeightMap)
 {
-   m_vertices.resize(kNumVerts);
+   m_xDim = xDim;
+   m_zDim = zDim;
+
+   uint nQuads = xDim * zDim;
+   m_nVertices = nQuads * 4;
+   m_nIndices = nQuads * 6;
+
+   m_vertices.resize(m_nVertices);
 
    int index = 0;
 
    float z1 = 0;
    float z2 = kStepSize;
 
-   for (int iz = 0; iz < kNumQuadsPerSide; iz++, z1 += kStepSize, z2 += kStepSize)
+   for (int iz = 0; iz < zDim; iz++, z1 += kStepSize, z2 += kStepSize)
    {
       float x1 = 0;
       float x2 = kStepSize;
 
-      for (int ix = 0; ix < kNumQuadsPerSide; ix++, x1 += kStepSize, x2 += kStepSize)
+      for (int ix = 0; ix < xDim; ix++, x1 += kStepSize, x2 += kStepSize)
       {
          uint tile = rand() & 15;
          uint tileRow = tile % 4;
@@ -140,7 +145,7 @@ bool cTiledGround::CreateBuffers(IRenderDevice * pRenderDevice)
       return false;
    }
 
-   if (pRenderDevice->CreateVertexBuffer(kNumVerts,
+   if (pRenderDevice->CreateVertexBuffer(m_nVertices,
       kBU_Default, pVertexDecl, kBP_Auto, &m_pVertexBuffer) != S_OK)
    {
       return false;
@@ -157,21 +162,19 @@ bool cTiledGround::CreateBuffers(IRenderDevice * pRenderDevice)
       return false;
    }
 
-   if (pRenderDevice->CreateIndexBuffer(kNumIndices, kBU_Default, kIBF_16Bit, kBP_System, &m_pIndexBuffer) != S_OK)
+   if (pRenderDevice->CreateIndexBuffer(m_nIndices, kBU_Default, kIBF_16Bit, kBP_System, &m_pIndexBuffer) != S_OK)
    {
       return false;
    }
-
-   m_nIndices = kNumIndices;
 
    uint16 * pIndexData = NULL;
    if (m_pIndexBuffer->Lock(kBL_Discard, (void * *)&pIndexData) == S_OK)
    {
       int iQuad = 0;
 
-      for (int iz = 0; iz < kNumQuadsPerSide; iz++)
+      for (int iz = 0; iz < m_zDim; iz++)
       {
-         for (int ix = 0; ix < kNumQuadsPerSide; ix++, iQuad++)
+         for (int ix = 0; ix < m_xDim; ix++, iQuad++)
          {
             pIndexData[(iQuad * 6) + 0] = (iQuad * 4) + 0;
             pIndexData[(iQuad * 6) + 1] = (iQuad * 4) + 3;
