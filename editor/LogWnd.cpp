@@ -13,10 +13,10 @@
 
 static const COLORREF g_logColors[] =
 {
-   RGB(255,0,0),     // kError
-   RGB(0,255,255),   // kWarning
-   GetSysColor(COLOR_WINDOWTEXT), // kInfo
-   RGB(0,0,255),     // kDebug
+   RGB(255,0,0),                    // kError
+   GetSysColor(COLOR_WINDOWTEXT),   // kWarning
+   GetSysColor(COLOR_WINDOWTEXT),   // kInfo
+   RGB(0,0,255),                    // kDebug
 };
 
 static const int kLeftColumnMargin = 1;
@@ -331,6 +331,24 @@ LRESULT cLogWnd::OnSetCursor(HWND hWnd, UINT hitTest, UINT message)
 
    SetMsgHandled(FALSE);
    return 0;
+}
+
+////////////////////////////////////////
+
+void cLogWnd::OnMouseMove(UINT flags, CPoint point)
+{
+}
+
+////////////////////////////////////////
+
+void cLogWnd::OnLButtonDown(UINT flags, CPoint point)
+{
+}
+
+////////////////////////////////////////
+
+void cLogWnd::OnLButtonUp(UINT flags, CPoint point)
+{
 }
 
 ////////////////////////////////////////

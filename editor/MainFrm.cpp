@@ -450,8 +450,12 @@ LRESULT cMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
    tDockingWindows::iterator end = m_dockingWindows.end();
    for (; iter != end; iter++)
    {
-      (*iter)->DestroyWindow();
-      delete *iter;
+      cDockingWindow * pDockingWindow = *iter;
+      if ((pDockingWindow != NULL) && pDockingWindow->IsWindow())
+      {
+         pDockingWindow->DestroyWindow();
+      }
+      delete pDockingWindow;
    }
 
    m_dockingWindows.clear();

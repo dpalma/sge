@@ -103,17 +103,6 @@ static bool ScriptExecString(const char * pszCode)
 
 ////////////////////////////////////////
 
-static void ScriptCallFunction(const char * pszName, const char * pszArgDesc, ...)
-{
-   UseGlobal(ScriptInterpreter);
-   va_list args;
-   va_start(args, pszArgDesc);
-   pScriptInterpreter->CallFunction(pszName, pszArgDesc, args);
-   va_end(args);
-}
-
-////////////////////////////////////////
-
 static char * GetEntireContents(IReader * pReader)
 {
    Assert(pReader != NULL);
@@ -160,7 +149,6 @@ static bool ScriptExecResource(const char * pszResource)
 ////////////////////////////////////////
 
 BEGIN_CONSTRAINTS()
-   AFTER_GUID(IID_IEditorTileManager)
    AFTER_GUID(IID_IResourceManager)
    AFTER_GUID(IID_IScriptInterpreter)
 END_CONSTRAINTS()
@@ -183,6 +171,11 @@ cEditorApp::~cEditorApp()
 
 tResult cEditorApp::Init()
 {
+   if (!m_mainWnd.CreateEx())
+   {
+      return E_FAIL;
+   }
+
    ScriptAddFunctions(g_editorCmds, g_nEditorCmds);
 
    cStr temp;
@@ -199,17 +192,16 @@ tResult cEditorApp::Init()
    {
       if (!ScriptExecResource(autoexecScript))
       {
-         DebugMsg1("Error parsing or executing %s\n", autoexecScript.c_str());
-         return FALSE;
+         WarnMsg1("Error parsing or executing %s\n", autoexecScript.c_str());
       }
    }
 
-   ScriptCallFunction("EditorInit", NULL);
-
-   if (!m_mainWnd.CreateEx())
+   UseGlobal(ScriptInterpreter);
+   if (pScriptInterpreter->CallFunction("EditorInit") != S_OK)
    {
-      return E_FAIL;
+      ErrorMsg("An error occured calling EditorInit()\n");
    }
+
 	m_mainWnd.ShowWindow(SW_SHOW);
 	m_mainWnd.UpdateWindow();
 

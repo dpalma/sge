@@ -253,6 +253,25 @@ LRESULT cToolPaletteBar::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL 
       return -1;
    }
 
+   ////////////////////////////////////////
+   ////////////////////////////////////////
+   // TESTING
+   ////////////////////////////////////////
+   HTOOLGROUP hToolGroup = m_toolPalette.AddGroup("Tool Group", NULL);
+   if (hToolGroup != NULL)
+   {
+      for (int i = 0; i < 5; i++)
+      {
+         tChar szTool[200];
+         wsprintf(szTool, "Tool Item %d", i);
+         HTOOLITEM hTool = m_toolPalette.AddTool(hToolGroup, szTool, -1);
+      }
+   }
+   ////////////////////////////////////////
+   // END TESTING
+   ////////////////////////////////////////
+   ////////////////////////////////////////
+
    UseGlobal(EditorTileManager);
    pEditorTileManager->Connect(this);
 

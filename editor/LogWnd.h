@@ -104,6 +104,9 @@ public:
       MSG_WM_DESTROY(OnDestroy)
       MSG_WM_SETFONT(OnSetFont)
       MSG_WM_SETCURSOR(OnSetCursor)
+      MSG_WM_MOUSEMOVE(OnMouseMove)
+      MSG_WM_LBUTTONDOWN(OnLButtonDown)
+      MSG_WM_LBUTTONUP(OnLButtonUp)
    END_MSG_MAP()
 
    void DoPaint(CDCHandle dc);
@@ -111,6 +114,9 @@ public:
    void OnDestroy();
    void OnSetFont(HFONT hFont, BOOL bRedraw);
    LRESULT OnSetCursor(HWND hWnd, UINT hitTest, UINT message);
+   void OnMouseMove(UINT flags, CPoint point);
+   void OnLButtonDown(UINT flags, CPoint point);
+   void OnLButtonUp(UINT flags, CPoint point);
 
 protected:
    void UpdateScrollInfo();

@@ -40,6 +40,15 @@ BEGIN_OBJECT_MAP(g_objectMap)
    OBJECT_ENTRY(CLSID_EditorDoc, cEditorDoc)
    OBJECT_ENTRY(CLSID_EditorView, cEditorView)
 END_OBJECT_MAP()
+static _ATL_OBJMAP_ENTRY * GetObjectMap()
+{
+   return g_objectMap;
+}
+#else
+static _ATL_OBJMAP_ENTRY * GetObjectMap()
+{
+   return NULL;
+}
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
@@ -72,11 +81,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/,
 
    AtlInitCommonControls(ICC_COOL_CLASSES | ICC_BAR_CLASSES);
 
-#if _ATL_VER < 0x0700
-   if (FAILED(_Module.Init(g_objectMap, hInstance)))
-#else
-   if (FAILED(_Module.Init(NULL, hInstance)))
-#endif
+   if (FAILED(_Module.Init(GetObjectMap(), hInstance)))
    {
       ErrorMsg("ATL module failed to start!\n");
       return -1;
