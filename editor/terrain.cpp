@@ -18,6 +18,7 @@
 #include "globalobj.h"
 
 #include <GL/gl.h>
+#include <algorithm>
 
 #include "dbgalloc.h" // must be last header
 
@@ -153,6 +154,7 @@ cTerrain::cTerrain()
 
 cTerrain::~cTerrain()
 {
+   std::for_each(m_chunks.begin(), m_chunks.end(), CTInterfaceMethod(&IUnknown::Release));
 }
 
 ////////////////////////////////////////
@@ -247,6 +249,24 @@ tResult cTerrain::Init(uint nTilesX, uint nTilesZ, IEditorTileSet * pTileSet, IH
    m_tileSize = kDefaultStepSize;
    m_nTilesX = nTilesX;
    m_nTilesZ = nTilesZ;
+
+   m_nChunksX = m_nTilesX / kTilesPerChunk;
+   m_nChunksZ = m_nTilesZ / kTilesPerChunk;
+
+   Assert(m_chunks.empty());
+
+   for (uint iz = 0; iz < m_nChunksZ; iz++)
+   {
+      for (uint ix = 0; ix < m_nChunksX; ix++)
+      {
+         cAutoIPtr<cTerrainChunk> pChunk;
+         if (cTerrainChunk::Create(ix * kTilesPerChunk, iz * kTilesPerChunk,
+            kTilesPerChunk, kTilesPerChunk, m_terrainQuads, &pChunk) == S_OK)
+         {
+            m_chunks.push_back(pChunk);
+         }
+      }
+   }
 
    Assert(!m_pTileSet);
    Assert(m_tileSetName.empty());
@@ -516,6 +536,19 @@ cTerrainChunk::cTerrainChunk()
 
 cTerrainChunk::~cTerrainChunk()
 {
+}
+
+////////////////////////////////////////
+
+tResult cTerrainChunk::Create(uint ix, uint iz, uint cx, uint cz,
+                              const tTerrainQuads & quads, cTerrainChunk * * ppChunk)
+{
+   if (ppChunk == NULL)
+   {
+      return E_POINTER;
+   }
+
+   return E_NOTIMPL;
 }
 
 /////////////////////////////////////////////////////////////////////////////

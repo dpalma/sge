@@ -129,6 +129,8 @@ private:
    cAutoIPtr<IEditorTileSet> m_pTileSet;
 
    cSceneEntity m_sceneEntity;
+
+   std::vector<cTerrainChunk *> m_chunks;
 };
 
 
@@ -137,11 +139,16 @@ private:
 // CLASS: cTerrainChunk
 //
 
-class cTerrainChunk
+class cTerrainChunk : public cComObject<IMPLEMENTS(IUnknown)>
 {
+   cTerrainChunk(const cTerrainChunk &);
+   const cTerrainChunk & operator =(const cTerrainChunk &);
+
 public:
    cTerrainChunk();
    ~cTerrainChunk();
+
+   static tResult Create(uint ix, uint iz, uint cx, uint cz, const tTerrainQuads & quads, cTerrainChunk * * ppChunk);
 
 private:
    cAutoIPtr<IMaterial> m_pMaterial;
