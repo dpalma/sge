@@ -18,6 +18,10 @@ DEFINE_GUID(IID_IEditorApp,
 DEFINE_GUID(IID_IEditorLoopClient, 
 0xed1b3a1a, 0xe2d8, 0x4eec, 0xaa, 0xbd, 0x64, 0x8a, 0x54, 0x87, 0x29, 0xe8);
 
+// {CA3DFC7D-CF34-43cd-AE46-FA1AF6A34F27}
+DEFINE_GUID(IID_IEditorTileManager, 
+0xca3dfc7d, 0xcf34, 0x43cd, 0xae, 0x46, 0xfa, 0x1a, 0xf6, 0xa3, 0x4f, 0x27);
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #endif // !INCLUDED_EDITORGUIDS_H

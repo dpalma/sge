@@ -141,6 +141,7 @@ static void RegisterGlobalObjects()
 //   GUIContextCreate();
 //   GUIFactoryCreate();
 //   GUIRenderingToolsCreate();
+   EditorTileManagerCreate();
 }
 
 BOOL cEditorApp::InitInstance()
