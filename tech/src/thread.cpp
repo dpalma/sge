@@ -236,6 +236,24 @@ bool cThreadEvent::Create()
 
 ////////////////////////////////////////
 
+bool cThreadEvent::Wait(uint timeout)
+{
+#ifdef _WIN32
+   if (m_hEvent != NULL)
+   {
+      if (WaitForSingleObject(m_hEvent, timeout) == WAIT_OBJECT_0)
+      {
+         return true;
+      }
+   }
+#else
+#error ("Need platform-specific event wait function")
+#endif
+   return false;
+}
+
+////////////////////////////////////////
+
 bool cThreadEvent::Set()
 {
 #ifdef _WIN32
@@ -264,18 +282,72 @@ bool cThreadEvent::Reset()
    return false;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cThreadMutex
+//
+
 ////////////////////////////////////////
 
-void cThreadEvent::Wait(uint timeout)
+cThreadMutex::cThreadMutex()
+ : m_hMutex(NULL)
+{
+}
+
+////////////////////////////////////////
+
+cThreadMutex::~cThreadMutex()
 {
 #ifdef _WIN32
-   if (m_hEvent != NULL)
+   if (m_hMutex != NULL)
    {
-      WaitForSingleObject(m_hEvent, timeout);
+      CloseHandle(m_hMutex);
+      m_hMutex = NULL;
+   }
+#endif
+}
+
+////////////////////////////////////////
+
+bool cThreadMutex::Create()
+{
+#ifdef _WIN32
+   if ((m_hMutex == NULL) && CreateMutex(NULL, FALSE, NULL))
+   {
+      return true;
    }
 #else
-#error ("Need platform-specific event wait function")
+#error ("Need platform-specific mutex create function")
 #endif
+   return false;
+}
+
+////////////////////////////////////////
+
+bool cThreadMutex::Acquire(uint timeout)
+{
+#ifdef _WIN32
+   if (m_hMutex != NULL)
+   {
+      if (WaitForSingleObject(m_hMutex, timeout) == WAIT_OBJECT_0)
+      {
+         return true;
+      }
+   }
+#else
+#error ("Need platform-specific mutex acquire function")
+#endif
+   return false;
+}
+
+////////////////////////////////////////
+
+bool cThreadMutex::Release()
+{
+#ifdef _WIN32
+#endif
+   return false;
 }
 
 

@@ -72,14 +72,36 @@ public:
 
    bool Create();
 
+   bool Wait(uint timeout = kInfiniteTimeout);
    bool Set();
    bool Reset();
-
-   void Wait(uint timeout = kInfiniteTimeout);
 
 private:
 #ifdef _WIN32
    HANDLE m_hEvent;
+#else
+#endif
+};
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cThreadMutex
+//
+
+class TECH_API cThreadMutex
+{
+public:
+   cThreadMutex();
+   ~cThreadMutex();
+
+   bool Create();
+
+   bool Acquire(uint timeout = kInfiniteTimeout);
+   bool Release();
+
+private:
+#ifdef _WIN32
+   HANDLE m_hMutex;
 #else
 #endif
 };
