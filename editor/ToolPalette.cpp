@@ -5,6 +5,7 @@
 
 #include "ToolPalette.h"
 #include "BitmapUtils.h"
+#include "DynamicLink.h"
 
 #ifdef HAVE_CPPUNIT
 #include <cppunit/extensions/HelperMacros.h>
@@ -16,65 +17,7 @@
 
 static const int kTextGap = 2;
 static const int kImageGap = 1;
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cDynamicLink
-//
-
-class cDynamicLink
-{
-public:
-   cDynamicLink(const tChar * pszLibrary);
-   ~cDynamicLink();
-
-   FARPROC GetProcAddress(const tChar * pszProc);
-
-private:
-   std::string m_name;
-   HINSTANCE m_hLibrary;
-};
-
-////////////////////////////////////////
-
-cDynamicLink::cDynamicLink(const tChar * pszLibrary)
- : m_name(pszLibrary != NULL ? pszLibrary : ""),
-   m_hLibrary(NULL)
-{
-}
-
-////////////////////////////////////////
-
-cDynamicLink::~cDynamicLink()
-{
-   if (m_hLibrary != NULL)
-   {
-      FreeLibrary(m_hLibrary);
-      m_hLibrary = NULL;
-   }
-}
-
-////////////////////////////////////////
-
-FARPROC cDynamicLink::GetProcAddress(const tChar * pszProc)
-{
-   if (m_hLibrary == NULL)
-   {
-      if (m_name.empty())
-      {
-         return NULL;
-      }
-
-      m_hLibrary = LoadLibrary(m_name.c_str());
-      if (m_hLibrary == NULL)
-      {
-         return NULL;
-      }
-   }
-
-   return ::GetProcAddress(m_hLibrary, pszProc);
-}
-
+static const int kCheckedItemTextOffset = 2;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -138,6 +81,13 @@ cToolItem::~cToolItem()
 void cToolItem::SetState(uint mask, uint state)
 {
    m_state = (m_state & ~mask) | (state & mask);
+}
+
+////////////////////////////////////////
+
+void cToolItem::ToggleChecked()
+{
+   SetState(kTPTS_Checked, IsChecked() ? 0 : kTPTS_Checked);
 }
 
 
@@ -319,6 +269,21 @@ const cToolPaletteRenderer & cToolPaletteRenderer::operator =(const cToolPalette
 
 bool cToolPaletteRenderer::Begin(HDC hDC, LPCRECT pRect, const POINT * pMousePos)
 {
+   if (m_checkedItemBrush.IsNull())
+   {
+      static const WORD patternBits[] =
+      {
+         0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,
+      };
+
+      HBITMAP hPatternBm = CreateBitmap(8, 8, 1, 1, patternBits);
+      if (hPatternBm != NULL)
+      {
+         m_checkedItemBrush.CreatePatternBrush(hPatternBm);
+         DeleteObject(hPatternBm);
+      }
+   }
+
    if (m_dc.IsNull() && (hDC != NULL) && (pRect != NULL))
    {
       m_dc = hDC;
@@ -335,6 +300,7 @@ bool cToolPaletteRenderer::Begin(HDC hDC, LPCRECT pRect, const POINT * pMousePos
       m_totalHeight = 0;
       return true;
    }
+
    return false;
 }
 
@@ -434,6 +400,10 @@ void cToolPaletteRenderer::Render(const cToolGroup * pGroup)
 
    HIMAGELIST hNormalImages = pGroup->GetNormalImages();
    HIMAGELIST hDisabledImages = pGroup->GetDisabledImages();
+   if (hDisabledImages == NULL)
+   {
+      hDisabledImages = hNormalImages;
+   }
 
    CRect toolRect(m_rect);
    toolRect.top += m_totalHeight + headingHeight;
@@ -454,7 +424,7 @@ void cToolPaletteRenderer::Render(const cToolGroup * pGroup)
          int iImage = pTool->GetImageIndex();
 
          CRect textRect(toolRect);
-         CPoint imagePos(toolRect.TopLeft());
+         CPoint imageOffset(0,0);
 
          if ((hNormalImages != NULL) && (iImage > -1))
          {
@@ -467,9 +437,9 @@ void cToolPaletteRenderer::Render(const cToolGroup * pGroup)
                {
                   toolRect.bottom = toolRect.top + imageHeight + (2 * kImageGap);
                }
-               imagePos.x = toolRect.left + kImageGap;
-               imagePos.y = toolRect.top + ((toolRect.Height() - imageHeight) / 2);
-               textRect.left = imagePos.x + imageWidth;
+               imageOffset.x = kImageGap;
+               imageOffset.y = ((toolRect.Height() - imageHeight) / 2);
+               textRect.left = toolRect.left + imageOffset.x + imageWidth;
             }
             else
             {
@@ -484,18 +454,41 @@ void cToolPaletteRenderer::Render(const cToolGroup * pGroup)
 
          // All size/position calculation done, now draw
 
-         if (!pTool->IsDisabled() && m_bHaveMousePos && toolRect.PtInRect(m_mousePos))
+         if (!pTool->IsDisabled())
          {
-            m_dc.Draw3dRect(toolRect, GetSysColor(COLOR_3DHILIGHT), GetSysColor(COLOR_3DSHADOW));
+            if (pTool->IsChecked())
+            {
+               m_dc.Draw3dRect(toolRect, GetSysColor(COLOR_3DSHADOW), GetSysColor(COLOR_3DHILIGHT));
+
+               textRect.left += kCheckedItemTextOffset;
+               textRect.top += kCheckedItemTextOffset;
+
+               imageOffset.x += kCheckedItemTextOffset;
+               imageOffset.y += kCheckedItemTextOffset;
+
+               CRect tr2(toolRect);
+               tr2.DeflateRect(2, 2);
+
+               if (!m_checkedItemBrush.IsNull())
+               {
+                  COLORREF oldTextColor = m_dc.SetTextColor(GetSysColor(COLOR_3DHILIGHT));
+                  COLORREF oldBkColor = m_dc.SetBkColor(GetSysColor(COLOR_3DFACE));
+                  m_dc.FillRect(tr2, m_checkedItemBrush);
+                  m_dc.SetTextColor(oldTextColor);
+                  m_dc.SetBkColor(oldBkColor);
+               }
+            }
+            else if (m_bHaveMousePos && toolRect.PtInRect(m_mousePos))
+            {
+               m_dc.Draw3dRect(toolRect, GetSysColor(COLOR_3DHILIGHT), GetSysColor(COLOR_3DSHADOW));
+            }
          }
 
          if ((hNormalImages != NULL) && (iImage > -1))
          {
-            ImageList_Draw(
-               (pTool->IsDisabled() && (hDisabledImages != NULL))
-                  ? hDisabledImages
-                  : hNormalImages,
-               iImage, m_dc, imagePos.x, imagePos.y, ILD_NORMAL);
+            // TODO: clip the image in case it is offset by being a checked item
+            ImageList_Draw(pTool->IsDisabled() ? hDisabledImages : hNormalImages,
+               iImage, m_dc, toolRect.left + imageOffset.x, toolRect.top + imageOffset.y, ILD_NORMAL);
          }
 
          COLORREF oldTextColor = m_dc.SetTextColor(pTool->IsDisabled()
@@ -1033,6 +1026,16 @@ void cToolPalette::DoClick(HANDLE hItem, CPoint point)
                nm.pUserData = pTool->GetUserData();
                ::SendMessage(hWndParent, WM_NOTIFY, GetDlgCtrlID(), reinterpret_cast<LPARAM>(&nm));
             }
+            pTool->ToggleChecked();
+            RECT rt;
+            if (m_renderer.GetItemRect(hItem, &rt))
+            {
+               InvalidateRect(&rt);
+            }
+            else
+            {
+               Invalidate();
+            }
          }
       }
    }
@@ -1128,7 +1131,7 @@ void cToolPaletteTests::setUp()
    CPPUNIT_ASSERT(m_pDummyWnd == NULL);
    m_pDummyWnd = new cDummyWindow;
    CPPUNIT_ASSERT(m_pDummyWnd != NULL);
-   HWND hDummyWnd = m_pDummyWnd->Create(NULL);
+   HWND hDummyWnd = m_pDummyWnd->Create(NULL, CWindow::rcDefault);
    CPPUNIT_ASSERT(IsWindow(hDummyWnd));
    if (!IsWindow(hDummyWnd))
    {
@@ -1140,7 +1143,7 @@ void cToolPaletteTests::setUp()
       CPPUNIT_ASSERT(m_pToolPalette == NULL);
       m_pToolPalette = new cToolPalette;
       CPPUNIT_ASSERT(m_pToolPalette != NULL);
-      HWND hWndToolPalette = m_pToolPalette->Create(m_pDummyWnd->m_hWnd);
+      HWND hWndToolPalette = m_pToolPalette->Create(m_pDummyWnd->m_hWnd, CWindow::rcDefault);
       CPPUNIT_ASSERT(IsWindow(hWndToolPalette));
       if (!IsWindow(hWndToolPalette))
       {

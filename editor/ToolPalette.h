@@ -83,6 +83,7 @@ public:
    ~cToolItem();
 
    void SetState(uint mask, uint state);
+   void ToggleChecked();
 
    cToolGroup * GetGroup() const;
    const tChar * GetName() const;
@@ -91,6 +92,7 @@ public:
    void * GetUserData() const;
 
    bool IsDisabled() const;
+   bool IsChecked() const;
 
 private:
    cToolGroup * m_pGroup;
@@ -140,6 +142,13 @@ inline void * cToolItem::GetUserData() const
 inline bool cToolItem::IsDisabled() const
 {
    return (m_state & kTPTS_Disabled) == kTPTS_Disabled;
+}
+
+////////////////////////////////////////
+
+inline bool cToolItem::IsChecked() const
+{
+   return (m_state & kTPTS_Checked) == kTPTS_Checked;
 }
 
 
@@ -274,6 +283,8 @@ private:
 
    typedef std::map<HANDLE, CRect> tCachedRects;
    tCachedRects m_cachedRects;
+
+   CBrush m_checkedItemBrush;
 
    // These member variables valid only between Begin() and End() calls
    CDCHandle m_dc;
