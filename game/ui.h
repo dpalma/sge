@@ -37,21 +37,13 @@ interface IUIEventListener : IUnknown
 // CLASS: cUIComponent
 //
 
-enum eUIComponentFlags
-{
-   kUICF_NONE = 0,
-   kUICF_Focussed = 1 << 0,
-};
-
-#define kUICF_Default (0)
-
 class cUIComponent
 {
    cUIComponent(const cUIComponent &);
    const cUIComponent & operator=(const cUIComponent &);
 
 public:
-   cUIComponent(uint flags = kUICF_Default);
+   cUIComponent();
    virtual ~cUIComponent() = 0;
 
    virtual void Render(IRenderDevice * pRenderDevice) = 0;
@@ -78,11 +70,10 @@ public:
 
    cUIRect GetScreenRect() const;
 
-   void SetInternalFlags(uint flags, uint mask);
-
    bool AcceptsFocus() const { return m_bAcceptsFocus; }
-
    bool IsFocussed() const;
+   void SetHasFocus(bool bHasFocus);
+
    bool IsVisible() const;
 
    tResult AddListener(IUIEventListener * pListener);
@@ -97,14 +88,12 @@ protected:
    void NoFocus() { m_bAcceptsFocus = false; }
 
 private:
-   bool TestInternalFlags(uint flags) const;
-
    float m_x, m_y;
    cUISize m_size;
    cUIComponent * m_pParent;
    cUIString m_id;
-   uint m_flags;
    bool m_bAcceptsFocus;
+   bool m_bHasFocus;
    bool m_bVisible;
 
    std::list<IUIEventListener *> m_listeners;
@@ -194,7 +183,14 @@ inline bool cUIComponent::IsVisible() const
 
 inline bool cUIComponent::IsFocussed() const
 {
-   return TestInternalFlags(kUICF_Focussed);
+   return m_bHasFocus;
+}
+
+///////////////////////////////////////
+
+inline void cUIComponent::SetHasFocus(bool bHasFocus)
+{
+   m_bHasFocus = bHasFocus;
 }
 
 
@@ -211,7 +207,7 @@ class cUIContainerBase : public cUIComponent
    const cUIContainerBase & operator=(const cUIContainerBase &);
 
 public:
-   cUIContainerBase(uint flags = kUICF_Default);
+   cUIContainerBase();
    virtual ~cUIContainerBase() = 0;
 
    ////////////////////////////////////
@@ -247,7 +243,7 @@ class cUIContainer : public cUIContainerBase
    const cUIContainer & operator=(const cUIContainer &);
 
 public:
-   cUIContainer(uint flags = kUICF_Default);
+   cUIContainer();
    virtual ~cUIContainer();
 
    const cUIMargins & GetMargins() const;

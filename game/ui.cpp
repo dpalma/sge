@@ -4,31 +4,10 @@
 #include "stdhdr.h"
 
 #include "ui.h"
-#include "sys.h"
 #include "uievent.h"
 #include "uiparse.h"
-#include "keys.h"
 
 #include "dbgalloc.h" // must be last header
-
-#pragma warning(disable:4800) // forcing value to bool 'true' or 'false' 
-
-///////////////////////////////////////////////////////////////////////////////
-
-bool IsEventPertinent(const cUIEvent * pEvent, const cUIComponent * pComponent)
-{
-   if (pComponent != NULL)
-   {
-      if (pEvent->pSrc == pComponent ||
-          pEvent->pSrc->IsChild(pComponent) ||
-          pComponent->IsChild(pEvent->pSrc))
-      {
-         return true;
-      }
-   }
-   return false;
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -37,12 +16,12 @@ bool IsEventPertinent(const cUIEvent * pEvent, const cUIComponent * pComponent)
 
 ///////////////////////////////////////
 
-cUIComponent::cUIComponent(uint flags)
+cUIComponent::cUIComponent()
  : m_x(0), m_y(0),
    m_size(0,0),
    m_pParent(NULL),
-   m_flags(flags),
    m_bAcceptsFocus(true),
+   m_bHasFocus(false),
    m_bVisible(true)
 {
 }
@@ -57,7 +36,7 @@ cUIComponent::~cUIComponent()
 
 cUIComponent * cUIComponent::HitTest(const cUIPoint & point)
 {
-   return (IsVisible() && GetScreenRect().PtInside(point)) ? this : NULL;
+   return GetScreenRect().PtInside(point) ? this : NULL;
 }
 
 ///////////////////////////////////////
@@ -101,20 +80,6 @@ cUIRect cUIComponent::GetScreenRect() const
       pParent = pParent->GetParent();
    }
    return cUIRect(point, GetSize());
-}
-
-///////////////////////////////////////
-
-void cUIComponent::SetInternalFlags(uint flags, uint mask)
-{
-	m_flags = m_flags & ~mask | flags;
-}
-
-///////////////////////////////////////
-
-bool cUIComponent::TestInternalFlags(uint flags) const
-{
-   return (m_flags & flags);
 }
 
 ///////////////////////////////////////
@@ -375,8 +340,8 @@ cUILayoutManager * UIGridLayoutManagerCreate(int nRows, int nCols)
 
 ///////////////////////////////////////
 
-cUIContainerBase::cUIContainerBase(uint flags)
- : cUIComponent(flags)
+cUIContainerBase::cUIContainerBase()
+ : cUIComponent()
 {
 }
 
@@ -413,9 +378,12 @@ cUIComponent * cUIContainerBase::HitTest(const cUIPoint & point)
       tUIComponentList::reverse_iterator iter;
       for (iter = m_children.rbegin(); iter != m_children.rend(); iter++)
       {
-         cUIComponent * pHit = (*iter)->HitTest(point);
-         if (pHit != NULL)
-            return pHit;
+         if ((*iter)->IsVisible())
+         {
+            cUIComponent * pHit = (*iter)->HitTest(point);
+            if (pHit != NULL)
+               return pHit;
+         }
       }
       return this;
    }
@@ -525,8 +493,8 @@ tUIComponentList::iterator cUIContainerBase::FindChild(cUIComponent * pComponent
 
 ///////////////////////////////////////
 
-cUIContainer::cUIContainer(uint flags)
- : cUIContainerBase(flags),
+cUIContainer::cUIContainer()
+ : cUIContainerBase(),
    m_margins(0,0,0,0),
    m_pLayoutManager(NULL)
 {

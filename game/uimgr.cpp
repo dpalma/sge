@@ -15,8 +15,6 @@
 
 extern const char * Key2Name(long key); // from cmds.cpp
 
-bool IsEventPertinent(const cUIEvent *, const cUIComponent *); // from ui.cpp
-
 LOG_DEFINE_CHANNEL(UIMgr);
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -35,6 +33,22 @@ static void Center(cUIComponent * pComponent)
          (size.width - pComponent->GetSize().width) * 0.5f,
          (size.height - pComponent->GetSize().height) * 0.5f);
    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+static bool IsEventPertinent(const cUIEvent * pEvent, const cUIComponent * pComponent)
+{
+   if (pComponent != NULL)
+   {
+      if (pEvent->pSrc == pComponent ||
+          pEvent->pSrc->IsChild(pComponent) ||
+          pComponent->IsChild(pEvent->pSrc))
+      {
+         return true;
+      }
+   }
+   return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -131,7 +145,7 @@ void cUIManager::SetFocus(cUIComponent * pNewFocus)
          event.code = kEventFocus;
          event.pSrc = m_pFocus;
          UIDispatchEvent(pNewFocus, &event);
-         pNewFocus->SetInternalFlags(kUICF_Focussed, kUICF_Focussed);
+         pNewFocus->SetHasFocus(true);
       }
 
       if (m_pFocus != NULL)
@@ -141,7 +155,7 @@ void cUIManager::SetFocus(cUIComponent * pNewFocus)
          event.pSrc = pNewFocus;
          UIDispatchEvent(m_pFocus, &event);
          Assert(m_pFocus->IsFocussed());
-         m_pFocus->SetInternalFlags(0, kUICF_Focussed);
+         m_pFocus->SetHasFocus(false);
       }
 
       m_pFocus = pNewFocus;

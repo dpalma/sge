@@ -9,6 +9,8 @@
 #include "sceneapi.h"
 #include "inputapi.h"
 
+#include <stack>
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -18,9 +20,9 @@
 // CLASS: cUIManager
 //
 
-class cUIManager : private cUIContainer, public cComObject<IMPLEMENTS(ISceneEntity)>
+class cUIManager : private cUIContainerBase, public cComObject<IMPLEMENTS(ISceneEntity)>
 {
-   typedef cUIContainer tContainerBase;
+   typedef cUIContainerBase tContainerBase;
 
 public:
    cUIManager();
