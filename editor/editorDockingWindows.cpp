@@ -43,6 +43,8 @@ sAutoDeleteCtrlBars::~sAutoDeleteCtrlBars()
    }
 }
 
+sAutoDeleteCtrlBars g_autoDeleteCtrlBars;
+
 tResult RegisterControlBar(uint titleStringId,
                            CRuntimeClass * pRuntimeClass,
                            eControlBarPlacement placement)
