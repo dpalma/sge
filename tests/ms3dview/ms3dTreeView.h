@@ -11,6 +11,9 @@
 #endif // _MSC_VER > 1000
 
 class CMs3dviewDoc;
+class cMs3dMesh;
+interface IMesh;
+interface ISkeleton;
 
 /////////////////////////////////////////////////////////////////////////////
 // cMs3dTreeView view
@@ -45,6 +48,13 @@ protected:
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;
 #endif
+
+   void AddVertices(IMesh * pMesh, HTREEITEM hParent = TVI_ROOT);
+   void AddMaterials(IMesh * pMesh, HTREEITEM hParent = TVI_ROOT);
+   void AddGroups(cMs3dMesh * pMesh, HTREEITEM hParent = TVI_ROOT);
+   void AddSkeleton(IMesh * pMesh, HTREEITEM hParent = TVI_ROOT);
+   void AddBones(ISkeleton * pSkeleton, HTREEITEM hParent = TVI_ROOT);
+   void AddAnimation(ISkeleton * pSkeleton, HTREEITEM hParent = TVI_ROOT);
 
 	// Generated message map functions
 protected:
