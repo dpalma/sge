@@ -6,6 +6,7 @@
 #include "sys.h"
 #include "script.h"
 #include "scriptvar.h"
+#include "guiapi.h"
 #include "inputapi.h"
 #include "keys.h"
 #include "globalobj.h"
@@ -152,6 +153,56 @@ SCRIPT_DEFINE_FUNCTION(LogEnableChannel)
 SCRIPT_DEFINE_FUNCTION(quit)
 {
    SysQuit();
+   return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+SCRIPT_DEFINE_FUNCTION(ConfirmedQuit)
+{
+   if (ScriptArgc() == 1 && ScriptArgIsString(0))
+   {
+      UseGlobal(GUIContext);
+      if (pGUIContext->LoadFromString(ScriptArgAsString(0)) == 0)
+      {
+         if (pGUIContext->LoadFromResource(ScriptArgAsString(0)) == 0)
+         {
+            DebugMsg1("Error showing quit dialog %s\n", ScriptArgAsString(0));
+         }
+      }
+   }
+
+   return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+SCRIPT_DEFINE_FUNCTION(LoadGUI)
+{
+   if (ScriptArgc() == 1 && ScriptArgIsString(0))
+   {
+      UseGlobal(GUIContext);
+      if (pGUIContext->LoadFromString(ScriptArgAsString(0)) == 0)
+      {
+         if (pGUIContext->LoadFromResource(ScriptArgAsString(0)) == 0)
+         {
+            DebugMsg1("Loading GUI definitions from %s\n", ScriptArgAsString(0));
+         }
+      }
+   }
+
+   return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+SCRIPT_DEFINE_FUNCTION(ToggleGUIDebugInfo)
+{
+   UseGlobal(GUIContext);
+   if (pGUIContext->ShowDebugInfo(tGUIPoint(0,0), tGUIColor::White) == S_FALSE)
+   {
+      pGUIContext->HideDebugInfo();
+   }
    return 0;
 }
 

@@ -2,7 +2,13 @@
 -- $Id$
 
 bind("q", "quit();");
-bind("escape", [[ShowModalDialog("maindlg.xml");]]);
+--bind("escape", [[ShowModalDialog("maindlg.xml");]]);
+bind("escape", [[ConfirmedQuit("quitdlg.xml");]]);
+
+bind("d", "ToggleGUIDebugInfo();");
+
+--LogEnableChannel([[GUIButtonEvents]]);
+--LogEnableChannel([[GUIDialogEvents]]);
 
 gameMeshes = 
 {
@@ -13,6 +19,8 @@ gameMeshes =
 };
 
 function GameInit()
+   LoadGUI("guitest.xml");
+
    SetTerrain("ground.tga", 0.2, "grass.tga");
 
    nGameMeshes = table.getn(gameMeshes);
