@@ -5,10 +5,13 @@
 
 #include "guilabel.h"
 #include "guielementbasetem.h"
+#include "guirender.h"
 
 #include "font.h"
 #include "color.h"
 #include "render.h"
+
+#include "globalobj.h"
 
 #include <tinyxml.h>
 
@@ -114,7 +117,6 @@ tResult cGUILabelElementFactory::CreateElement(const TiXmlElement * pXmlElement,
 ///////////////////////////////////////
 
 cGUILabelStatelessRenderer::cGUILabelStatelessRenderer()
- : m_pFont(FontCreateDefault())
 {
 }
 
@@ -154,7 +156,8 @@ tResult cGUILabelStatelessRenderer::Render(IGUIElement * pElement, IRenderDevice
 
       if (!pFont)
       {
-         pFont = CTAddRef(m_pFont);
+         UseGlobal(GUIRenderingTools);
+         pGUIRenderingTools->GetDefaultFont(&pFont);
       }
 
       pFont->DrawText(pLabel->GetText(), -1, kDT_NoClip, &rect, color);
@@ -174,8 +177,23 @@ tGUISize cGUILabelStatelessRenderer::GetPreferredSize(IGUIElement * pElement)
       cAutoIPtr<IGUILabelElement> pLabel;
       if (pElement->QueryInterface(IID_IGUILabelElement, (void**)&pLabel) == S_OK)
       {
+         cAutoIPtr<IRenderFont> pFont;
+
+         cAutoIPtr<IGUIStyle> pStyle;
+         if (pElement->GetStyle(&pStyle) == S_OK)
+         {
+            pStyle->GetFont(&pFont);
+         }
+
+         if (!pFont)
+         {
+            UseGlobal(GUIRenderingTools);
+            pGUIRenderingTools->GetDefaultFont(&pFont);
+         }
+
          tRect rect(0,0,0,0);
-         m_pFont->DrawText(pLabel->GetText(), -1, kDT_CalcRect, &rect, cColor(1,1,1,1));
+         pFont->DrawText(pLabel->GetText(), -1, kDT_CalcRect, &rect, tGUIColor::White);
+
          return tGUISize(rect.GetWidth(), rect.GetHeight());
       }
    }

@@ -6,6 +6,7 @@
 #include "guipanel.h"
 #include "guielementbasetem.h"
 #include "guielementenum.h"
+#include "guirender.h"
 
 #include "font.h"
 #include "color.h"
@@ -35,6 +36,15 @@ cGUIPanelElement::~cGUIPanelElement()
 {
    std::for_each(m_children.begin(), m_children.end(), CTInterfaceMethodRef(&IGUIElement::Release));
    m_children.clear();
+}
+
+///////////////////////////////////////
+
+void cGUIPanelElement::SetSize(const tGUISize & size)
+{
+   cGUIElementBase<IGUIPanelElement>::SetSize(size);
+
+   // TODO: size child elements
 }
 
 ///////////////////////////////////////
@@ -145,6 +155,15 @@ tResult cGUIPanelElementFactory::CreateElement(const TiXmlElement * pXmlElement,
       {
          tResult result = S_OK;
 
+         if (pXmlElement->Attribute("style"))
+         {
+            cAutoIPtr<IGUIStyle> pStyle;
+            if (GUIStyleParse(pXmlElement->Attribute("style"), &pStyle) == S_OK)
+            {
+               pPanel->SetStyle(pStyle);
+            }
+         }
+
          UseGlobal(GUIFactory);
 
          for (TiXmlElement * pXmlChild = pXmlElement->FirstChildElement(); 
@@ -216,6 +235,12 @@ tResult cGUIPanelRenderer::Render(IGUIElement * pElement, IRenderDevice * pRende
       tGUISize size = pPanel->GetSize();
 
       // TODO: render background, if any
+
+      UseGlobal(GUIRenderingTools);
+
+      pGUIRenderingTools->Render3dRect(
+         tGUIRect(pos.x, pos.y, pos.x + size.width, pos.y + size.height), 
+         4, tGUIColor::Yellow, tGUIColor::Green, tGUIColor::Blue);
 
       tResult result = S_OK;
 

@@ -131,6 +131,12 @@ interface IGUIStyle : IUnknown
    virtual tResult SetFontPointSize(uint fontPointSize) = 0;
 
    virtual tResult GetFont(IRenderFont * * ppFont) = 0;
+
+   virtual tResult GetWidth(uint * pWidth, uint * pSpec) = 0;
+   virtual tResult SetWidth(uint width, uint spec) = 0;
+
+   virtual tResult GetHeight(uint * pHeight, uint * pSpec) = 0;
+   virtual tResult SetHeight(uint height, uint spec) = 0;
 };
 
 ///////////////////////////////////////
@@ -207,6 +213,7 @@ enum eGUIEventCode
    kGUIEventKeyUp,
    kGUIEventKeyDown,
    kGUIEventClick,
+   kGUIEventHover,
 };
 
 typedef enum eGUIEventCode tGUIEventCode;
@@ -224,6 +231,7 @@ interface IGUIEvent : IUnknown
 tResult GUIEventCreate(tGUIEventCode eventCode, tGUIPoint mousePos, long keyCode, 
                        IGUIElement * pSource, IGUIEvent * * ppEvent);
 
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // INTERFACE: IGUIContainerElement
@@ -236,6 +244,7 @@ interface IGUIContainerElement : IGUIElement
    virtual tResult GetElements(IGUIElementEnum * * ppElements) = 0;
    virtual tResult HasElement(IGUIElement * pElement) const = 0;
 };
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //

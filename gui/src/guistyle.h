@@ -49,6 +49,12 @@ public:
 
    virtual tResult GetFont(IRenderFont * * ppFont);
 
+   virtual tResult GetWidth(uint * pWidth, uint * pSpec);
+   virtual tResult SetWidth(uint width, uint spec);
+
+   virtual tResult GetHeight(uint * pHeight, uint * pSpec);
+   virtual tResult SetHeight(uint height, uint spec);
+
 private:
    uint m_alignment, m_verticalAlignment;
    tGUIColor * m_pBackground, * m_pForeground;
@@ -56,6 +62,8 @@ private:
    tGUIString m_fontName;
    uint m_fontPointSize;
    cAutoIPtr<IRenderFont> m_pFont;
+   uint m_width, m_widthSpec;
+   uint m_height, m_heightSpec;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

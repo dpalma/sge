@@ -10,8 +10,6 @@
 #pragma once
 #endif
 
-F_DECLARE_INTERFACE(IRenderFont);
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUILabelElement
@@ -57,9 +55,6 @@ public:
    virtual tResult Render(IGUIElement * pElement, IRenderDevice * pRenderDevice);
 
    virtual tGUISize GetPreferredSize(IGUIElement * pElement);
-
-private:
-   cAutoIPtr<IRenderFont> m_pFont;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

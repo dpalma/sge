@@ -36,6 +36,7 @@ public:
       return DoQueryInterface(pairs, _countof(pairs), iid, ppvObject);
    }
 
+   virtual void SetSize(const tGUISize & size);
    virtual tResult OnEvent(IGUIEvent * pEvent);
 
    virtual tResult GetRendererClass(tGUIString * pRendererClass);

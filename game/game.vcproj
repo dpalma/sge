@@ -340,6 +340,9 @@
 				RelativePath="guielementenum.cpp">
 			</File>
 			<File
+				RelativePath="guielementtools.cpp">
+			</File>
+			<File
 				RelativePath="guievent.cpp">
 			</File>
 			<File
@@ -352,7 +355,13 @@
 				RelativePath="guipanel.cpp">
 			</File>
 			<File
+				RelativePath="guirender.cpp">
+			</File>
+			<File
 				RelativePath="guistyle.cpp">
+			</File>
+			<File
+				RelativePath="guitypes.cpp">
 			</File>
 			<File
 				RelativePath=".\heightmap.cpp">
@@ -491,7 +500,16 @@
 				RelativePath="guielementenum.h">
 			</File>
 			<File
+				RelativePath="guielementtools.h">
+			</File>
+			<File
 				RelativePath="guievent.h">
+			</File>
+			<File
+				RelativePath="guieventrouter.h">
+			</File>
+			<File
+				RelativePath="guieventroutertem.h">
 			</File>
 			<File
 				RelativePath="guifactory.h">
@@ -501,6 +519,9 @@
 			</File>
 			<File
 				RelativePath="guipanel.h">
+			</File>
+			<File
+				RelativePath="guirender.h">
 			</File>
 			<File
 				RelativePath="guistyle.h">

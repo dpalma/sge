@@ -207,6 +207,10 @@ SOURCE=.\guielementenum.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\guielementtools.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\guievent.cpp
 # End Source File
 # Begin Source File
@@ -220,6 +224,10 @@ SOURCE=.\guilabel.cpp
 # Begin Source File
 
 SOURCE=.\guipanel.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\guirender.cpp
 # End Source File
 # Begin Source File
 
@@ -333,7 +341,19 @@ SOURCE=.\guielementenum.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\guielementtools.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\guievent.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\guieventrouter.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\guieventroutertem.h
 # End Source File
 # Begin Source File
 
@@ -346,6 +366,10 @@ SOURCE=.\guilabel.h
 # Begin Source File
 
 SOURCE=.\guipanel.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\guirender.h
 # End Source File
 # Begin Source File
 

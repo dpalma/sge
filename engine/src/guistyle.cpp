@@ -34,7 +34,11 @@ cGUIStyle::cGUIStyle()
    m_textVerticalAlignment(kGUIVertAlignTop),
    m_fontName(""),
    m_fontPointSize(0),
-   m_pFont(NULL)
+   m_pFont(NULL),
+   m_width(-1), 
+   m_height(-1),
+   m_widthSpec(-1), 
+   m_heightSpec(-1)
 {
 }
 
@@ -278,6 +282,76 @@ tResult cGUIStyle::GetFont(IRenderFont * * ppFont)
    return m_pFont.GetPointer(ppFont);
 }
 
+///////////////////////////////////////
+
+tResult cGUIStyle::GetWidth(uint * pWidth, uint * pSpec)
+{
+   if (pWidth == NULL || pSpec == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if ((m_width == -1) || (m_widthSpec == -1))
+   {
+      return S_FALSE;
+   }
+
+   *pWidth = m_width;
+   *pSpec = m_widthSpec;
+
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIStyle::SetWidth(uint width, uint spec)
+{
+   if ((spec == kGUIDimensionPercent) && (width > 100))
+   {
+      return E_INVALIDARG;
+   }
+
+   m_width = width;
+   m_widthSpec = spec;
+   
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIStyle::GetHeight(uint * pHeight, uint * pSpec)
+{
+   if (pHeight == NULL || pSpec == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if ((m_height == -1) || (m_heightSpec == -1))
+   {
+      return S_FALSE;
+   }
+
+   *pHeight = m_height;
+   *pSpec = m_heightSpec;
+
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIStyle::SetHeight(uint height, uint spec)
+{
+   if ((spec == kGUIDimensionPercent) && (height > 100))
+   {
+      return E_INVALIDARG;
+   }
+
+   m_height = height;
+   m_heightSpec = spec;
+
+   return S_OK;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -299,7 +373,7 @@ inline const char * SkipSpaceBack(const char * psz)
 
 ///////////////////////////////////////
 
-static eGUIAlignment String2Align(const char * psz)
+static eGUIAlignment GUIStyleParseAlignment(const char * psz)
 {
    Assert(psz != NULL);
    if (stricmp(psz, "left") == 0)
@@ -320,7 +394,7 @@ static eGUIAlignment String2Align(const char * psz)
    }
 }
 
-static eGUIVerticalAlignment String2VAlign(const char * psz)
+static eGUIVerticalAlignment GUIStyleParseVertAlignment(const char * psz)
 {
    Assert(psz != NULL);
    if (stricmp(psz, "top") == 0)
@@ -343,7 +417,7 @@ static eGUIVerticalAlignment String2VAlign(const char * psz)
 
 ///////////////////////////////////////
 
-static tResult String2Color(const char * psz, tGUIColor * pColor)
+static tResult GUIStyleParseColor(const char * psz, tGUIColor * pColor)
 {
    double rgba[4];
    int parseResult = ParseTuple(psz, rgba, _countof(rgba));
@@ -402,6 +476,31 @@ static tResult String2Color(const char * psz, tGUIColor * pColor)
 
 ///////////////////////////////////////
 
+static tResult GUIStyleParseDimension(const char * psz, uint * pDimension, uint * pSpec)
+{
+   Assert(psz != NULL);
+   Assert(pDimension != NULL);
+   Assert(pSpec != NULL);
+
+   if (sscanf(psz, "%d", pDimension) == 1)
+   {
+      if (strstr(psz, "px"))
+      {
+         *pSpec = kGUIDimensionPixels;
+         return S_OK;
+      }
+      else if (strchr(psz, '%'))
+      {
+         *pSpec = kGUIDimensionPercent;
+         return S_OK;
+      }
+   }
+
+   return E_FAIL;
+}
+
+///////////////////////////////////////
+
 static tResult GUIStyleParseAndSetAttribute(const char * pszAttrib, IGUIStyle * pStyle)
 {
    Assert(pszAttrib != NULL);
@@ -429,16 +528,16 @@ static tResult GUIStyleParseAndSetAttribute(const char * pszAttrib, IGUIStyle * 
 
    if (strcmp(pszAttribName, "align") == 0)
    {
-      return pStyle->SetAlignment(String2Align(pszValue));
+      return pStyle->SetAlignment(GUIStyleParseAlignment(pszValue));
    }
    else if (strcmp(pszAttribName, "verticalAlign") == 0)
    {
-      return pStyle->SetVerticalAlignment(String2VAlign(pszValue));
+      return pStyle->SetVerticalAlignment(GUIStyleParseVertAlignment(pszValue));
    }
    else if (strcmp(pszAttribName, "background-color") == 0)
    {
       tGUIColor color;
-      if (String2Color(pszValue, &color) == S_OK)
+      if (GUIStyleParseColor(pszValue, &color) == S_OK)
       {
          return pStyle->SetBackgroundColor(color);
       }
@@ -446,18 +545,18 @@ static tResult GUIStyleParseAndSetAttribute(const char * pszAttrib, IGUIStyle * 
    else if (strcmp(pszAttribName, "foreground-color") == 0)
    {
       tGUIColor color;
-      if (String2Color(pszValue, &color) == S_OK)
+      if (GUIStyleParseColor(pszValue, &color) == S_OK)
       {
          return pStyle->SetForegroundColor(color);
       }
    }
    else if (strcmp(pszAttribName, "text-align") == 0)
    {
-      return pStyle->SetTextAlignment(String2Align(pszValue));
+      return pStyle->SetTextAlignment(GUIStyleParseAlignment(pszValue));
    }
    else if (strcmp(pszAttribName, "text-verticalAlign") == 0)
    {
-      return pStyle->SetTextVerticalAlignment(String2VAlign(pszValue));
+      return pStyle->SetTextVerticalAlignment(GUIStyleParseVertAlignment(pszValue));
    }
    else if (strcmp(pszAttribName, "font-name") == 0)
    {
@@ -469,6 +568,22 @@ static tResult GUIStyleParseAndSetAttribute(const char * pszAttrib, IGUIStyle * 
       if (sscanf(pszValue, "%d", &pointSize) == 1)
       {
          return pStyle->SetFontPointSize(pointSize);
+      }
+   }
+   else if (strcmp(pszAttribName, "width") == 0)
+   {
+      uint width, spec;
+      if (GUIStyleParseDimension(pszValue, &width, &spec) == S_OK)
+      {
+         return pStyle->SetWidth(width, spec);
+      }
+   }
+   else if (strcmp(pszAttribName, "height") == 0)
+   {
+      uint height, spec;
+      if (GUIStyleParseDimension(pszValue, &height, &spec) == S_OK)
+      {
+         return pStyle->SetHeight(height, spec);
       }
    }
 
@@ -528,10 +643,12 @@ tResult GUIStyleParse(const char * pszStyle, IGUIStyle * * ppStyle)
 class cGUIStyleTests : public CppUnit::TestCase
 {
    CPPUNIT_TEST_SUITE(cGUIStyleTests);
-      CPPUNIT_TEST(Test);
+      CPPUNIT_TEST(TestFactoryFunction);
+      CPPUNIT_TEST(TestParseDimension);
    CPPUNIT_TEST_SUITE_END();
 
-   void Test();
+   void TestFactoryFunction();
+   void TestParseDimension();
 };
 
 ///////////////////////////////////////
@@ -540,9 +657,14 @@ CPPUNIT_TEST_SUITE_REGISTRATION(cGUIStyleTests);
 
 ///////////////////////////////////////
 
-void cGUIStyleTests::Test()
+void cGUIStyleTests::TestFactoryFunction()
 {
-   const char * pszTestStyleString = 
+   uint temp;
+   tGUIColor color;
+   tGUIString fontName;
+   cAutoIPtr<IGUIStyle> pStyle;
+
+   static const char * pszTestStyleString = 
       "align : center;" \
       "verticalAlign : center;  " \
       "background-color : white;" \
@@ -552,15 +674,11 @@ void cGUIStyleTests::Test()
       "font-name: MS Sans Serif;" \
       "font-pointSize: 14;";
 
-   cAutoIPtr<IGUIStyle> pStyle;
-
    CPPUNIT_ASSERT(GUIStyleParse(pszTestStyleString, &pStyle) == S_OK);
-   uint temp;
    CPPUNIT_ASSERT(pStyle->GetAlignment(&temp) == S_OK);
    CPPUNIT_ASSERT(temp == kGUIAlignCenter);
    CPPUNIT_ASSERT(pStyle->GetVerticalAlignment(&temp) == S_OK);
    CPPUNIT_ASSERT(temp == kGUIVertAlignCenter);
-   tGUIColor color;
    CPPUNIT_ASSERT(pStyle->GetBackgroundColor(&color) == S_OK);
    CPPUNIT_ASSERT(color == tGUIColor::White);
    CPPUNIT_ASSERT(pStyle->GetForegroundColor(&color) == S_OK);
@@ -569,11 +687,28 @@ void cGUIStyleTests::Test()
    CPPUNIT_ASSERT(temp == kGUIAlignRight);
    CPPUNIT_ASSERT(pStyle->GetTextVerticalAlignment(&temp) == S_OK);
    CPPUNIT_ASSERT(temp == kGUIVertAlignBottom);
-   tGUIString fontName;
    CPPUNIT_ASSERT(pStyle->GetFontName(&fontName) == S_OK);
    CPPUNIT_ASSERT(strcmp(fontName.c_str(), "MS Sans Serif") == 0);
    CPPUNIT_ASSERT(pStyle->GetFontPointSize(&temp) == S_OK);
    CPPUNIT_ASSERT(temp == 14);
+   SafeRelease(pStyle);
+
+   static const char * pszTestStyleString2 = "verticalAlign:bottom;";
+
+   CPPUNIT_ASSERT(GUIStyleParse(pszTestStyleString2, &pStyle) == S_OK);
+   CPPUNIT_ASSERT(pStyle->GetVerticalAlignment(&temp) == S_OK);
+   CPPUNIT_ASSERT(temp == kGUIVertAlignBottom);
+}
+
+///////////////////////////////////////
+
+void cGUIStyleTests::TestParseDimension()
+{
+   uint dim, spec;
+   CPPUNIT_ASSERT(GUIStyleParseDimension("50px", &dim, &spec) == S_OK);
+   CPPUNIT_ASSERT((dim == 50) && (spec == kGUIDimensionPixels));
+   CPPUNIT_ASSERT(GUIStyleParseDimension("25%", &dim, &spec) == S_OK);
+   CPPUNIT_ASSERT((dim == 25) && (spec == kGUIDimensionPercent));
 }
 
 #endif // HAVE_CPPUNIT

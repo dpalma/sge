@@ -5,6 +5,7 @@
 #define INCLUDED_GUIELEMENTBASE_H
 
 #include "guiapi.h"
+#include "guieventrouter.h"
 
 #ifdef _MSC_VER
 #pragma once

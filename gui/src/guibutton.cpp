@@ -5,6 +5,7 @@
 
 #include "guibutton.h"
 #include "guielementbasetem.h"
+#include "guirender.h"
 
 #include "font.h"
 #include "color.h"
@@ -207,77 +208,6 @@ cGUIButtonRenderer::~cGUIButtonRenderer()
 
 ///////////////////////////////////////
 
-#include <windows.h>
-#undef DrawText
-#include <GL/gl.h>
-static void Render3dRect(const tGUIRect & rect, int bevel,
-                         const tGUIColor & topLeft,
-                         const tGUIColor & bottomRight,
-                         const tGUIColor & face)
-{
-   float x0 = rect.left;
-   float x1 = rect.left + bevel;
-   float x2 = rect.right - bevel;
-   float x3 = rect.right;
-
-   float y0 = rect.top;
-   float y1 = rect.top + bevel;
-   float y2 = rect.bottom - bevel;
-   float y3 = rect.bottom;
-
-   glBegin(GL_TRIANGLES);
-
-      glColor4fv(topLeft.GetPointer());
-
-      glVertex2f(x0, y0);
-      glVertex2f(x0, y3);
-      glVertex2f(x1, y2);
-
-      glVertex2f(x0, y0);
-      glVertex2f(x1, y2);
-      glVertex2f(x1, y1);
-
-      glVertex2f(x0, y0);
-      glVertex2f(x2, y1);
-      glVertex2f(x3, y0);
-
-      glVertex2f(x0, y0);
-      glVertex2f(x1, y1);
-      glVertex2f(x2, y1);
-
-      glColor4fv(bottomRight.GetPointer());
-
-      glVertex2f(x0, y3);
-      glVertex2f(x3, y3);
-      glVertex2f(x1, y2);
-
-      glVertex2f(x1, y2);
-      glVertex2f(x3, y3);
-      glVertex2f(x2, y2);
-
-      glVertex2f(x3, y0);
-      glVertex2f(x2, y1);
-      glVertex2f(x3, y3);
-
-      glVertex2f(x2, y1);
-      glVertex2f(x2, y2);
-      glVertex2f(x3, y3);
-
-      glColor4fv(face.GetPointer());
-
-      glVertex2f(x1, y1);
-      glVertex2f(x2, y2);
-      glVertex2f(x2, y1);
-
-      glVertex2f(x2, y2);
-      glVertex2f(x1, y1);
-      glVertex2f(x1, y2);
-
-   glEnd();
-}
-
-static const int g_3dEdge = 2;
-
 static const tGUIColor kGray(0.75,0.75,0.75);
 static const tGUIColor kDarkGray(0.5,0.5,0.5);
 static const tGUIColor kLightGray(0.87f,0.87f,0.87f);
@@ -288,6 +218,8 @@ tResult cGUIButtonRenderer::Render(IGUIElement * pElement, IRenderDevice * pRend
    {
       return E_POINTER;
    }
+
+   static const int g_bevel = 2;
 
    cAutoIPtr<IGUIButtonElement> pButton;
    if (pElement->QueryInterface(IID_IGUIButtonElement, (void**)&pButton) == S_OK)
@@ -300,14 +232,16 @@ tResult cGUIButtonRenderer::Render(IGUIElement * pElement, IRenderDevice * pRend
       tRect rect(pos.x, pos.y, pos.x + size.width, pos.y + size.height);
       tGUIRect rect2(pos.x, pos.y, pos.x + size.width, pos.y + size.height);
 
+      UseGlobal(GUIRenderingTools);
+
       if (pButton->IsArmed() && pButton->IsMouseOver())
       {
-         Render3dRect(rect2, g_3dEdge, kDarkGray, kLightGray, kGray);
-         textOffset = tGUIPoint(g_3dEdge,g_3dEdge);
+         pGUIRenderingTools->Render3dRect(rect2, g_bevel, kDarkGray, kLightGray, kGray);
+         textOffset = tGUIPoint(g_bevel,g_bevel);
       }
       else
       {
-         Render3dRect(rect2, g_3dEdge, kLightGray, kDarkGray, kGray);
+         pGUIRenderingTools->Render3dRect(rect2, g_bevel, kLightGray, kDarkGray, kGray);
       }
 
       rect.left += textOffset.x;
