@@ -232,26 +232,26 @@ tResult cReadWriteOps<cMs3dJoint>::Read(IReader * pReader, cMs3dJoint * pJoint)
          break;
       }
 
-      std::vector<ms3d_keyframe_rot_t> keyFramesRot(nKeyFramesRot);
-      if (pReader->Read(&keyFramesRot[0], keyFramesRot.size() * sizeof(ms3d_keyframe_rot_t)) != S_OK)
+      pJoint->m_rotationKeys.resize(nKeyFramesRot);
+      if (pReader->Read(&pJoint->m_rotationKeys[0], pJoint->m_rotationKeys.size() * sizeof(ms3d_keyframe_rot_t)) != S_OK)
          break;
 
-      std::vector<ms3d_keyframe_pos_t> keyFramesTrans(nKeyFramesTrans);
-      if (pReader->Read(&keyFramesTrans[0], keyFramesTrans.size() * sizeof(ms3d_keyframe_pos_t)) != S_OK)
+      pJoint->m_translationKeys.resize(nKeyFramesTrans);
+      if (pReader->Read(&pJoint->m_translationKeys[0], pJoint->m_translationKeys.size() * sizeof(ms3d_keyframe_pos_t)) != S_OK)
          break;
 
       sKeyFrameVec3 * pTranslationFrames = (sKeyFrameVec3 *)alloca(nKeyFramesTrans * sizeof(sKeyFrameVec3));
       for (unsigned i = 0; i < nKeyFramesTrans; i++)
       {
-         pTranslationFrames[i].time = keyFramesTrans[i].time;
-         pTranslationFrames[i].value = tVec3(keyFramesTrans[i].position);
+         pTranslationFrames[i].time = pJoint->m_translationKeys[i].time;
+         pTranslationFrames[i].value = tVec3(pJoint->m_translationKeys[i].position);
       }
 
       sKeyFrameQuat * pRotationFrames = (sKeyFrameQuat *)alloca(nKeyFramesRot * sizeof(sKeyFrameQuat));
       for (i = 0; i < nKeyFramesRot; i++)
       {
-         pRotationFrames[i].time = keyFramesRot[i].time;
-         pRotationFrames[i].value = QuatFromEulerAngles(tVec3(keyFramesRot[i].rotation));
+         pRotationFrames[i].time = pJoint->m_rotationKeys[i].time;
+         pRotationFrames[i].value = QuatFromEulerAngles(tVec3(pJoint->m_rotationKeys[i].rotation));
       }
 
       if (KeyFrameInterpolatorCreate(
@@ -687,64 +687,27 @@ void cMs3dMesh::RenderSoftware() const
       {
          const ms3d_triangle_t & tri = m_triangles[*iterTris];
 
-         glTexCoord2f(tri.s[0], 1.0f - tri.t[0]);
-         const ms3d_vertex_t & v0 = m_vertices[tri.vertexIndices[0]];
-         if (v0.boneId == -1)
+         for (int k = 0; k < 3; k++)
          {
-            glNormal3fv(tri.vertexNormals[0]);
-            glVertex3fv(v0.vertex);
-         }
-         else
-         {
-            const sMatrix4 & m = m_joints[v0.boneId].GetFinalMatrix();
+            glTexCoord2f(tri.s[k], 1.0f - tri.t[k]);
+            const ms3d_vertex_t & vk = m_vertices[tri.vertexIndices[k]];
+            if (vk.boneId == -1)
+            {
+               glNormal3fv(tri.vertexNormals[k]);
+               glVertex3fv(vk.vertex);
+            }
+            else
+            {
+               const sMatrix4 & m = m_joints[vk.boneId].GetFinalMatrix();
 
-            tVec4 nprime, n(tri.vertexNormals[0][0], tri.vertexNormals[0][1], tri.vertexNormals[0][2], k4thDimension);
-            nprime = m.Transform(n);
-            glNormal3fv(nprime.v);
+               tVec4 nprime, n(tri.vertexNormals[k][0], tri.vertexNormals[k][1], tri.vertexNormals[k][2], k4thDimension);
+               nprime = m.Transform(n);
+               glNormal3fv(nprime.v);
 
-            tVec4 vprime, v(v0.vertex[0], v0.vertex[1], v0.vertex[2], k4thDimension);
-            vprime = m.Transform(v);
-            glVertex3fv(vprime.v);
-         }
-
-         glTexCoord2f(tri.s[1], 1.0f - tri.t[1]);
-         const ms3d_vertex_t & v1 = m_vertices[tri.vertexIndices[1]];
-         if (v1.boneId == -1)
-         {
-            glNormal3fv(tri.vertexNormals[1]);
-            glVertex3fv(v1.vertex);
-         }
-         else
-         {
-            const sMatrix4 & m = m_joints[v1.boneId].GetFinalMatrix();
-
-            tVec4 nprime, n(tri.vertexNormals[1][0], tri.vertexNormals[1][1], tri.vertexNormals[1][2], k4thDimension);
-            nprime = m.Transform(n);
-            glNormal3fv(nprime.v);
-
-            tVec4 vprime, v(v1.vertex[0], v1.vertex[1], v1.vertex[2], k4thDimension);
-            vprime = m.Transform(v);
-            glVertex3fv(vprime.v);
-         }
-
-         glTexCoord2f(tri.s[2], 1.0f - tri.t[2]);
-         const ms3d_vertex_t & v2 = m_vertices[tri.vertexIndices[2]];
-         if (v2.boneId == -1)
-         {
-            glNormal3fv(tri.vertexNormals[2]);
-            glVertex3fv(v2.vertex);
-         }
-         else
-         {
-            const sMatrix4 & m = m_joints[v2.boneId].GetFinalMatrix();
-
-            tVec4 nprime, n(tri.vertexNormals[2][0], tri.vertexNormals[2][1], tri.vertexNormals[2][2], k4thDimension);
-            nprime = m.Transform(n);
-            glNormal3fv(nprime.v);
-
-            tVec4 vprime, v(v2.vertex[0], v2.vertex[1], v2.vertex[2], k4thDimension);
-            vprime = m.Transform(v);
-            glVertex3fv(vprime.v);
+               tVec4 vprime, v(vk.vertex[0], vk.vertex[1], vk.vertex[2], k4thDimension);
+               vprime = m.Transform(v);
+               glVertex3fv(vprime.v);
+            }
          }
       }
 

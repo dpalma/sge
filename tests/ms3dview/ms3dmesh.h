@@ -147,6 +147,9 @@ private:
    sMatrix4 m_final;
 
    int m_iParentJoint;
+
+   std::vector<ms3d_keyframe_rot_t> m_rotationKeys;
+   std::vector<ms3d_keyframe_pos_t> m_translationKeys;
 };
 
 ///////////////////////////////////////
