@@ -12,7 +12,7 @@
 
 class cHeightMap;
 class cTerrain;
-struct sMapVertex;
+struct sTerrainVertex;
 
 F_DECLARE_INTERFACE(IMaterial);
 
@@ -29,7 +29,7 @@ protected: // create from serialization only
 
 // Attributes
 public:
-   const sMapVertex * GetVertexPointer() const;
+   const sTerrainVertex * GetVertexPointer() const;
    size_t GetVertexCount() const;
 
    IMaterial * AccessMaterial();

@@ -375,8 +375,7 @@ void cEditorView::OnInitialUpdate()
 	ASSERT_VALID(pDoc);
 
    cAutoIPtr<IVertexDeclaration> pVertexDecl;
-   if (AccessRenderDevice()->CreateVertexDeclaration(g_mapVertexDecl,
-      g_nMapVertexMembers, &pVertexDecl) == S_OK)
+   if (TerrainVertexDeclarationCreate(AccessRenderDevice(), &pVertexDecl) == S_OK)
    {
       if (AccessRenderDevice()->CreateVertexBuffer(pDoc->GetVertexCount(),
          kBU_Default, pVertexDecl, kBP_Auto, &m_pVertexBuffer) == S_OK)
@@ -384,7 +383,7 @@ void cEditorView::OnInitialUpdate()
          void * pVertexData = NULL;
          if (m_pVertexBuffer->Lock(kBL_Discard, (void * *)&pVertexData) == S_OK)
          {
-            memset(pVertexData, 0, pDoc->GetVertexCount() * sizeof(sMapVertex));
+            memset(pVertexData, 0, pDoc->GetVertexCount() * sizeof(sTerrainVertex));
             m_pVertexBuffer->Unlock();
          }
       }
@@ -428,7 +427,7 @@ void cEditorView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
       if (m_pVertexBuffer->Lock(kBL_Discard, (void * *)&pVertexData) == S_OK)
       {
          memcpy(pVertexData, pDoc->GetVertexPointer(),
-            pDoc->GetVertexCount() * sizeof(sMapVertex));
+            pDoc->GetVertexCount() * sizeof(sTerrainVertex));
          m_pVertexBuffer->Unlock();
       }
    }

@@ -14,24 +14,23 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-F_DECLARE_INTERFACE(IMaterial);
 F_DECLARE_INTERFACE(IEditorTileSet);
+F_DECLARE_INTERFACE(IMaterial);
 F_DECLARE_INTERFACE(IRenderDevice);
-struct sVertexElement;
+F_DECLARE_INTERFACE(IVertexDeclaration);
 class cHeightMap;
 
 /////////////////////////////////////////////////////////////////////////////
 
-struct sMapVertex
+struct sTerrainVertex
 {
    tVec2 uv1;
    tVec3 rgb;
    tVec3 pos;
 };
 
-extern sVertexElement g_mapVertexDecl[];
-extern uint g_nMapVertexMembers;
-
+tResult TerrainVertexDeclarationCreate(IRenderDevice * pRenderDevice,
+                                       IVertexDeclaration * * ppVertexDecl);
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -56,7 +55,7 @@ public:
    void GetDimensions(uint * pxd, uint * pzd) const;
    void GetExtents(uint * px, uint * pz) const;
 
-   const sMapVertex * GetVertexPointer() const;
+   const sTerrainVertex * GetVertexPointer() const;
    size_t GetVertexCount() const;
 
    void Render(IRenderDevice * pRenderDevice);
@@ -69,9 +68,9 @@ private:
    uint m_xDim, m_zDim;
    uint m_tileSize;
 
-   uint m_xBlocks, m_zBlocks; // # of terrain blocks in the x, z directions
+   uint m_xChunks, m_zChunks; // # of terrain chunks in the x, z directions
 
-   std::vector<sMapVertex> m_vertices;
+   std::vector<sTerrainVertex> m_vertices;
 
    cAutoIPtr<IMaterial> m_pMaterial;
 };
@@ -85,7 +84,13 @@ private:
 class cTerrainChunk
 {
 public:
+   cTerrainChunk();
+   ~cTerrainChunk();
+
+private:
+   cAutoIPtr<IMaterial> m_pMaterial;
 };
+
 
 /////////////////////////////////////////////////////////////////////////////
 

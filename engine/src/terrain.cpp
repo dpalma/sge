@@ -12,18 +12,31 @@
 
 #include "dbgalloc.h" // must be last header
 
-static const int kTilesPerBlock = 6;
-
 /////////////////////////////////////////////////////////////////////////////
 
-sVertexElement g_mapVertexDecl[] =
+sVertexElement g_terrainVertexDecl[] =
 {
    { kVDU_TexCoord, kVDT_Float2, 0 },
    { kVDU_Color, kVDT_Float3 },
    { kVDU_Position, kVDT_Float3 },
 };
 
-uint g_nMapVertexMembers = _countof(g_mapVertexDecl);
+uint g_nTerrainVertexMembers = _countof(g_terrainVertexDecl);
+
+////////////////////////////////////////
+
+tResult TerrainVertexDeclarationCreate(IRenderDevice * pRenderDevice,
+                                       IVertexDeclaration * * ppVertexDecl)
+{
+   if (pRenderDevice == NULL || ppVertexDecl == NULL)
+   {
+      return E_POINTER;
+   }
+
+   return pRenderDevice->CreateVertexDeclaration(g_terrainVertexDecl,
+                                                 g_nTerrainVertexMembers,
+                                                 ppVertexDecl);
+}
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -36,8 +49,8 @@ cTerrain::cTerrain()
  : m_xDim(0),
    m_zDim(0),
    m_tileSize(0),
-   m_xBlocks(0),
-   m_zBlocks(0)
+   m_xChunks(0),
+   m_zChunks(0)
 {
 }
 
@@ -110,15 +123,17 @@ bool cTerrain::Create(uint xDim, uint zDim, int stepSize,
 
    m_tileSize = stepSize;
 
-   if (xDim > kTilesPerBlock)
+   if (xDim > kTilesPerChunk)
    {
-      m_xBlocks = xDim / kTilesPerBlock;
+      m_xChunks = xDim / kTilesPerChunk;
    }
 
-   if (zDim > kTilesPerBlock)
+   if (zDim > kTilesPerChunk)
    {
-      m_zBlocks = zDim / kTilesPerBlock;
+      m_zChunks = zDim / kTilesPerChunk;
    }
+
+   CreateTerrainChunks();
 
    return true;
 }
@@ -155,7 +170,7 @@ void cTerrain::GetExtents(uint * px, uint * pz) const
 
 ////////////////////////////////////////
 
-const sMapVertex * cTerrain::GetVertexPointer() const
+const sTerrainVertex * cTerrain::GetVertexPointer() const
 {
    return &m_vertices[0];
 }
@@ -212,6 +227,33 @@ void cTerrain::InitializeVertices(uint xDim, uint zDim, int stepSize, cHeightMap
 
 bool cTerrain::CreateTerrainChunks()
 {
+   Assert(m_xChunks > 0 && m_zChunks > 0);
+
+   for (int i = 0; i < m_zChunks; i++)
+   {
+      for (int j = 0; j < m_xChunks; j++)
+      {
+      }
+   }
+
    return false;
 }
 
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cTerrainChunk
+//
+
+////////////////////////////////////////
+
+cTerrainChunk::cTerrainChunk()
+{
+}
+
+////////////////////////////////////////
+
+cTerrainChunk::~cTerrainChunk()
+{
+}
+
+/////////////////////////////////////////////////////////////////////////////

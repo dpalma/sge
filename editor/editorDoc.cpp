@@ -143,7 +143,7 @@ void cEditorDoc::Dump(CDumpContext& dc) const
 /////////////////////////////////////////////////////////////////////////////
 // cEditorDoc operations
 
-const sMapVertex * cEditorDoc::GetVertexPointer() const
+const sTerrainVertex * cEditorDoc::GetVertexPointer() const
 {
    return (m_pTerrain != NULL) ? m_pTerrain->GetVertexPointer() : NULL;
 }
@@ -174,19 +174,35 @@ void cEditorDoc::GetMapExtents(uint * pXExt, uint * pZExt) const
 
 BOOL cEditorDoc::OnOpenDocument(LPCTSTR lpszPathName) 
 {
-	if (!CDocument::OnOpenDocument(lpszPathName))
-		return FALSE;
+   DeleteContents();
+   SetModifiedFlag(); // set modified flag during load
+
+   cAutoIPtr<IReader> pReader(FileCreateReader(cFileSpec(lpszPathName)));
+   if (!pReader)
+   {
+      return FALSE;
+   }
 
    // TODO
+
+   SetModifiedFlag(FALSE); // start off as unmodified
 
    return TRUE;
 }
 
 BOOL cEditorDoc::OnSaveDocument(LPCTSTR lpszPathName) 
 {
-	// TODO: Add your specialized code here and/or call the base class
+   cAutoIPtr<IWriter> pWriter(FileCreateWriter(cFileSpec(lpszPathName)));
+   if (!pWriter)
+   {
+      return FALSE;
+   }
 
-	return CDocument::OnSaveDocument(lpszPathName);
+   // TODO
+
+   SetModifiedFlag(FALSE); // not modified anymore
+
+   return TRUE;
 }
 
 void cEditorDoc::DeleteContents() 
@@ -197,5 +213,5 @@ void cEditorDoc::DeleteContents()
 
    SafeRelease(m_pMaterial);
 
-	CDocument::DeleteContents();
+   CDocument::DeleteContents();
 }
