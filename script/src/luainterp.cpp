@@ -483,7 +483,7 @@ tResult cLuaInterpreter::AddFunction(const char * pszName, tScriptFn pfn)
    Assert(pszName != NULL);
    if (m_L != NULL)
    {
-      lua_pushlightuserdata(m_L, pfn);
+      lua_pushlightuserdata(m_L, (void *)pfn);
       lua_pushcclosure(m_L, LuaThunkFunction, 1);
       lua_setglobal(m_L, pszName);
       return S_OK;
