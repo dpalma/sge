@@ -16,6 +16,7 @@
 			IntermediateDirectory=".\..\..\Build.vc7\Release\editor"
 			ConfigurationType="1"
 			UseOfMFC="0"
+			UseOfATL="2"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
@@ -76,6 +77,7 @@
 			IntermediateDirectory=".\..\..\Build.vc7\Debug\editor"
 			ConfigurationType="1"
 			UseOfMFC="0"
+			UseOfATL="2"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
@@ -138,6 +140,7 @@
 			IntermediateDirectory=".\..\..\Build.vc7\StaticDebug\editor"
 			ConfigurationType="1"
 			UseOfMFC="0"
+			UseOfATL="1"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
@@ -199,6 +202,7 @@
 			IntermediateDirectory=".\..\..\Build.vc7\Opt\editor"
 			ConfigurationType="1"
 			UseOfMFC="0"
+			UseOfATL="2"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
@@ -262,6 +266,7 @@
 			IntermediateDirectory=".\..\..\Build.vc7\StaticRelease\editor"
 			ConfigurationType="1"
 			UseOfMFC="0"
+			UseOfATL="1"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
