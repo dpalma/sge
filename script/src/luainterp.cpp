@@ -33,8 +33,10 @@ void * pReferenceCmds = (void *)cmds;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-const int kMaxArgs = 16;
-const int kMaxResults = 8;
+static const int kMaxArgs = 16;
+static const int kMaxResults = 8;
+
+static const int kLuaNoError = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -149,6 +151,8 @@ static int LuaThunkInvoke(lua_State * L)
             break;
          }
       }
+
+      lua_checkstack(L, 1);
    }
 
    // on success, result is the number of return values
@@ -489,8 +493,10 @@ tResult cLuaInterpreter::Init()
 tResult cLuaInterpreter::Term()
 {
    if (m_L != NULL)
+   {
       lua_close(m_L);
-   m_L = NULL;
+      m_L = NULL;
+   }
    return S_OK;
 }
 
@@ -535,6 +541,8 @@ void cLuaInterpreter::CallFunction(const char * pszName, const char * pszArgDesc
 {
    if (m_L != NULL)
    {
+      int result = kLuaNoError;
+
       if (pszArgDesc && *pszArgDesc)
       {
          for (const char * p = pszArgDesc; *p != 0; p++)
@@ -564,18 +572,24 @@ void cLuaInterpreter::CallFunction(const char * pszName, const char * pszArgDesc
 
                default:
                {
-                  DebugMsg1("Unknown arg type spec %c\n", *p);
+                  WarnMsg1("Unknown arg type spec %c\n", *p);
                   break;
                }
             }
+           lua_checkstack(m_L, 1);
          }
          lua_getglobal(m_L, pszName);
-         lua_call(m_L, strlen(pszArgDesc), 0);
+         result = lua_pcall(m_L, strlen(pszArgDesc), 0, 0);
       }
       else
       {
          lua_getglobal(m_L, pszName);
-         lua_call(m_L, 0, 0);
+         result = lua_pcall(m_L, 0, 0, 0);
+      }
+
+      if (result != kLuaNoError)
+      {
+         ErrorMsg1("An error occured calling function %s\n", pszName);
       }
    }
 }
