@@ -27,9 +27,6 @@ Package=<4>
     Project_Dep_Name msPlugIn
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name render
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name tech
     End Project Dependency
 }}}
@@ -63,10 +60,10 @@ Package=<4>
     Project_Dep_Name engine
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name render
+    Project_Dep_Name tech
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name tech
+    Project_Dep_Name rendergl
     End Project Dependency
 }}}
 
@@ -99,10 +96,10 @@ Package=<4>
     Project_Dep_Name engine
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name render
+    Project_Dep_Name tech
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name tech
+    Project_Dep_Name rendergl
     End Project Dependency
 }}}
 
@@ -120,19 +117,19 @@ Package=<4>
     Project_Dep_Name allguids
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name render
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name tech
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name engine
     End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name rendergl
+    End Project Dependency
 }}}
 
 ###############################################################################
 
-Project: "render"=.\render\render.dsp - Package Owner=<4>
+Project: "rendergl"=.\render\gl\rendergl.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
