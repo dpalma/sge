@@ -212,6 +212,7 @@
 				ProgramDataBaseFileName=".\..\Build.vc7\Opt\editor/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="3"
 				CompileAs="0"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
@@ -222,7 +223,10 @@
 				OutputFile=".\..\Build.vc7\Opt/editor.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
-				ProgramDatabaseFile=".\..\Build.vc7\Opt/editor.pdb"
+				GenerateDebugInformation="TRUE"
+				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
+				GenerateMapFile="TRUE"
+				MapFileName="..\Build.vc7\Opt/editor.map"
 				SubSystem="2"/>
 			<Tool
 				Name="VCMIDLTool"
