@@ -35,8 +35,9 @@ cFileSpec::cFileSpec()
 
 cFileSpec::cFileSpec(const char * pszFile)
 {
-   strncpy(m_szFullName, pszFile, _countof(m_szFullName));
-   m_szFullName[_countof(m_szFullName) - 1] = 0;
+   static const size_t max = _countof(m_szFullName);
+   strncpy(m_szFullName, pszFile, max);
+   m_szFullName[max - 1] = 0;
 }
 
 ///////////////////////////////////////
@@ -142,11 +143,15 @@ const char * cFileSpec::GetFileExt() const
 
 ///////////////////////////////////////
 
+//#define UNSAFE
+
 bool cFileSpec::SetFileExt(const char * pszExt)
 {
-   if (strlen(GetName()) > 0)
+   size_t len = strlen(GetName());
+   if (len > 0)
    {
       char * pszDest = strrchr(GetName(), kExtensionSep);
+#ifdef UNSAFE
       if (pszDest != NULL)
       {
          strcpy(++pszDest, pszExt);
@@ -156,6 +161,20 @@ bool cFileSpec::SetFileExt(const char * pszExt)
          strcat(m_szFullName, szExtensionSep);
          strcat(m_szFullName, pszExt);
       }
+#else
+      if (pszDest != NULL)
+      {
+         uint max = _countof(m_szFullName) - len;
+         strncpy(++pszDest, pszExt, max);
+      }
+      else
+      {
+         char szTemp[kMaxPath];
+         snprintf(szTemp, _countof(szTemp), "%s%s%s", m_szFullName, szExtensionSep, pszExt);
+         strncpy(m_szFullName, szTemp, _countof(m_szFullName));
+      }
+      m_szFullName[_countof(m_szFullName) - 1] = 0;
+#endif
       return true;
    }
    return false;
@@ -213,6 +232,7 @@ class cFileSpecTests : public CppUnit::TestCase
       CPPUNIT_TEST(TestSetPath);
       CPPUNIT_TEST(TestGetPath);
       CPPUNIT_TEST(TestCompare);
+      CPPUNIT_TEST(TestSetFileExtBufferOverrunAttack);
    CPPUNIT_TEST_SUITE_END();
 
    void TestGetFileName();
@@ -220,9 +240,14 @@ class cFileSpecTests : public CppUnit::TestCase
    void TestSetPath();
    void TestGetPath();
    void TestCompare();
+   void TestSetFileExtBufferOverrunAttack();
 };
 
+///////////////////////////////////////
+
 CPPUNIT_TEST_SUITE_REGISTRATION(cFileSpecTests);
+
+///////////////////////////////////////
 
 void cFileSpecTests::TestGetFileName()
 {
@@ -231,6 +256,8 @@ void cFileSpecTests::TestGetFileName()
    CPPUNIT_ASSERT(strcmp(cFileSpec("c:\\p1\\p2.p3").GetFileName(), "p2.p3") == 0);
    CPPUNIT_ASSERT(strcmp(cFileSpec("c:\\foo\\bar").GetFileName(), "bar") == 0);
 }
+
+///////////////////////////////////////
 
 void cFileSpecTests::TestGetSetFileExt()
 {
@@ -251,6 +278,8 @@ void cFileSpecTests::TestGetSetFileExt()
    }
 }
 
+///////////////////////////////////////
+
 void cFileSpecTests::TestSetPath()
 {
    {
@@ -266,10 +295,14 @@ void cFileSpecTests::TestSetPath()
    }
 }
 
+///////////////////////////////////////
+
 void cFileSpecTests::TestGetPath()
 {
    CPPUNIT_ASSERT(strcmp(cFileSpec("c:\\p1\\p2\\p3\\p4\\file.ext").GetPath().GetPath(), "c:\\p1\\p2\\p3\\p4") == 0);
 }
+
+///////////////////////////////////////
 
 void cFileSpecTests::TestCompare()
 {
@@ -277,6 +310,55 @@ void cFileSpecTests::TestCompare()
    CPPUNIT_ASSERT(cFileSpec("C:\\P1\\P2\\P3.EXT").Compare(cFileSpec("c:/p1/p2/p3.ext")) != 0);
    CPPUNIT_ASSERT(cFileSpec("C:\\P1\\P2\\P3.EXT").CompareNoCase(cFileSpec("c:/p1/p2/p3.ext")) == 0);
    CPPUNIT_ASSERT(cFileSpec("c:\\p1\\p2.p3").Compare(cFileSpec("c:\\p4\\p5.p6")) < 0);
+}
+
+///////////////////////////////////////
+
+static bool g_bSetFileExtBufferOverrunSucceeded = false;
+
+static void SetFileExtAttackFunction()
+{
+   g_bSetFileExtBufferOverrunSucceeded = true;
+   DebugMsg("BUFFER OVERRUN ATTACK SUCCEEDED ON cFileSpec::SetFileExt()!!!\n");
+}
+
+static bool Vulnerable(const char * pszTestFileName, char * psz)
+{
+   cFileSpec f(pszTestFileName);
+   return f.SetFileExt(psz);
+}
+
+void cFileSpecTests::TestSetFileExtBufferOverrunAttack()
+{
+   static const char szTestFileName1[] = "foo.txt";
+   static const char szTestFileName2[] = "foo";
+
+   struct sAttack
+   {
+      char szExt[kMaxPath - 4]; // the 4 is the length of "foo." in szTestFileName
+      void * pStackFrame;
+      void * pReturnAddress;
+   };
+
+   struct sAttack attack;
+
+   static const unsigned char NOP = 0x90;
+
+   memset(attack.szExt, NOP, sizeof(attack.szExt));
+   attack.pStackFrame = (void *)0xDEADBEEF;
+   attack.pReturnAddress = (void *)SetFileExtAttackFunction;
+
+   try
+   {
+      CPPUNIT_ASSERT(Vulnerable(szTestFileName1, (char*)&attack));
+      CPPUNIT_ASSERT(Vulnerable(szTestFileName2, (char*)&attack));
+      CPPUNIT_ASSERT(!g_bSetFileExtBufferOverrunSucceeded);
+   }
+   catch (...)
+   {
+      CPPUNIT_ASSERT(!g_bSetFileExtBufferOverrunSucceeded);
+      throw;
+   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
