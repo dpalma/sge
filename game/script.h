@@ -4,24 +4,23 @@
 #ifndef INCLUDED_SCRIPT_H
 #define INCLUDED_SCRIPT_H
 
+#include "scriptapi.h"
+
 #ifdef _MSC_VER
 #pragma once
 #endif
 
 class cScriptVar;
-class cScriptResults;
-typedef void (* tScriptFn)(int, const cScriptVar *, cScriptResults *);
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void ScriptInit(int stackSize = 0);
+void ScriptInit();
 void ScriptTerm();
 bool ScriptExecFile(const char * pszFile);
 bool ScriptExecString(const char * pszCode);
 void ScriptCallFunction(const char * pszName,
                         const char * pszArgDesc = NULL, ...);
 void ScriptAddFunction(const char * pszName, tScriptFn pfn);
-void ScriptRemoveFunction(const char * pszName);
 
 struct sScriptAutoAddFunction
 {
@@ -34,12 +33,12 @@ struct sScriptAutoAddFunction
 #define SCRIPT_FUNCTION_NAME(name) name
 
 #define SCRIPT_DEFINE_FUNCTION_NO_AUTOADD(name) \
-   void SCRIPT_FUNCTION_NAME(name)(int argc, const cScriptVar * argv, cScriptResults * pResults)
+   int SCRIPT_FUNCTION_NAME(name)(int argc, const cScriptVar * argv, int nMaxResults, cScriptVar * pResults)
 
 #define SCRIPT_DEFINE_FUNCTION(name) \
-   void SCRIPT_FUNCTION_NAME(name)(int, const cScriptVar *, cScriptResults *); \
+   SCRIPT_DEFINE_FUNCTION_NO_AUTOADD(name); \
    static sScriptAutoAddFunction g_AutoAdd##name(#name, SCRIPT_FUNCTION_NAME(name)); \
-   void SCRIPT_FUNCTION_NAME(name)(int argc, const cScriptVar * argv, cScriptResults * pResults)
+   SCRIPT_DEFINE_FUNCTION_NO_AUTOADD(name)
 
 #define ScriptArgc() argc
 #define ScriptArgv(arg) argv[arg]
@@ -49,8 +48,6 @@ struct sScriptAutoAddFunction
 
 #define ScriptArgAsString(arg) (ScriptArgv(arg).psz)
 #define ScriptArgAsNumber(arg) (ScriptArgv(arg).d)
-
-#define ScriptAddResult(result) (pResults->push_back(cScriptVar((result))))
 
 ///////////////////////////////////////////////////////////////////////////////
 

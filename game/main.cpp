@@ -16,7 +16,7 @@
 #include "scenecamera.h"
 #include "scenemesh.h"
 #include "script.h"
-#include "scriptvm.h"
+#include "scriptvar.h"
 #include "cameracontroller.h"
 
 #include "render.h"
@@ -115,6 +115,8 @@ SCRIPT_DEFINE_FUNCTION(ViewSetPos)
          DebugMsg2("ViewSetPos arguments %f, %f, out of range\n", x, z);
       }
    }
+
+   return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -177,6 +179,7 @@ SCRIPT_DEFINE_FUNCTION(ShowModalDialog)
    {
       g_pUIManager->ShowModalDialog(ScriptArgAsString(0));
    }
+   return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -191,6 +194,7 @@ SCRIPT_DEFINE_FUNCTION(LogEnableChannel)
    {
       LogEnableChannel(ScriptArgAsString(0), ScriptArgAsNumber(1) ? true : false);
    }
+   return 0;
 }
 
 
@@ -372,6 +376,8 @@ SCRIPT_DEFINE_FUNCTION(EntitySpawnTest)
          DebugMsg2("EntitySpawnTest arguments %f, %f, out of range\n", x, z);
       }
    }
+
+   return 0;
 }
 
 
@@ -380,6 +386,7 @@ SCRIPT_DEFINE_FUNCTION(EntitySpawnTest)
 SCRIPT_DEFINE_FUNCTION(quit)
 {
    SysQuit();
+   return 0;
 }
 
 

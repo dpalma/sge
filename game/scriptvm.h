@@ -5,7 +5,7 @@
 #define INCLUDED_SCRIPTVM_H
 
 #include <cstdarg>
-#include <vector>
+#include "scriptapi.h"
 #include "scriptvar.h"
 
 #ifdef _MSC_VER
@@ -14,38 +14,38 @@
 
 typedef struct lua_State lua_State;
 
-// this is a class instead of a typedef for better forward-declaring elsewhere
-class cScriptResults : public std::vector<cScriptVar>
-{
-};
-
-typedef void (* tScriptFn)(int, const cScriptVar *, cScriptResults *);
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cScriptMachine
 //
 
-class cScriptMachine
+class cScriptMachine : public cComObject<IMPLEMENTS(IScriptInterpreter)>
 {
 public:
    cScriptMachine();
    ~cScriptMachine();
 
-   bool Init();
-   void Term();
-   bool ExecFile(const char * pszFile);
-   bool ExecString(const char * pszCode);
-   void CallFunction(const char * pszName, const char * pszArgDesc = NULL, ...);
-   void CallFunction(const char * pszName, const char * pszArgDesc, va_list args);
-   bool AddFunction(const char * pszName, tScriptFn pfn);
-   bool RemoveFunction(const char * pszName);
+   virtual void DeleteThis() {}
 
-   bool GetVar(const char * pszName, cScriptVar * pValue);
-   bool GetVar(const char * pszName, double * pValue);
-   bool GetVar(const char * pszName, char * pValue, int cbMaxValue);
-   void SetVar(const char * pszName, double value);
-   void SetVar(const char * pszName, const char * pszValue);
+   virtual tResult Init();
+   virtual void Term();
+
+   virtual tResult ExecFile(const char * pszFile);
+   virtual tResult ExecString(const char * pszCode);
+
+   virtual void CallFunction(const char * pszName, const char * pszArgDesc = NULL, ...);
+   virtual void CallFunction(const char * pszName, const char * pszArgDesc, va_list args);
+   virtual tResult AddFunction(const char * pszName, tScriptFn pfn);
+   virtual tResult RemoveFunction(const char * pszName);
+
+   virtual tResult GetGlobal(const char * pszName, cScriptVar * pValue);
+   virtual tResult GetGlobal(const char * pszName, double * pValue);
+   virtual tResult GetGlobal(const char * pszName, char * pValue, int cbMaxValue);
+   virtual void SetGlobal(const char * pszName, double value);
+   virtual void SetGlobal(const char * pszName, const char * pszValue);
+
+   virtual tResult RegisterCustomClass(const tChar * pszClassName, IScriptableFactory * pFactory);
+   virtual tResult RevokeCustomClass(const tChar * pszClassName);
 
 private:
    lua_State * m_L;

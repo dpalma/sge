@@ -16,38 +16,38 @@ cScriptMachine g_scriptMachine;
 bool g_bScriptMachineInitialized = false;
 
 ///////////////////////////////////////////////////////////////////////////////
-// queue mechanism avoids use of a global std::vector or something so that
-// the queue can be used at static initialization time
+// queueing mechanism cannot use a global std::vector or anything like that
+// so that the queue can be used at static initialization time
 
-struct sScriptAddFunctionDefer
+struct sFunctionQueueEntry
 {
    const char * pszName;
    tScriptFn pfn;
-   sScriptAddFunctionDefer * pNext;
+   sFunctionQueueEntry * pNext;
 };
 
-sScriptAddFunctionDefer * g_pDeferredAddFunctions = NULL;
+sFunctionQueueEntry * g_pQueuedFunctions = NULL;
 
 // just in case the queue never gets consumed
-struct sDeferredAddFunctionsAutoCleanup
+struct sQueuedFunctionsAutoCleanup
 {
-   ~sDeferredAddFunctionsAutoCleanup()
+   ~sQueuedFunctionsAutoCleanup()
    {
-      sScriptAddFunctionDefer * p = g_pDeferredAddFunctions;
+      sFunctionQueueEntry * p = g_pQueuedFunctions;
       while (p != NULL)
       {
-         g_pDeferredAddFunctions = g_pDeferredAddFunctions->pNext;
+         g_pQueuedFunctions = g_pQueuedFunctions->pNext;
          delete p;
-         p = g_pDeferredAddFunctions;
+         p = g_pQueuedFunctions;
       }
    }
-} g_deferredAddFunctionsAutoCleanup;
+} g_queuedFunctionsAutoCleanup;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void ScriptInit(int) // @TODO: remove the 'int' parameter
+void ScriptInit()
 {
-   if (!g_scriptMachine.Init())
+   if (FAILED(g_scriptMachine.Init()))
    {
       DebugMsg("WARNING: Error initializing script machine\n");
       return;
@@ -55,13 +55,12 @@ void ScriptInit(int) // @TODO: remove the 'int' parameter
 
    g_bScriptMachineInitialized = true;
 
-   sScriptAddFunctionDefer * p = g_pDeferredAddFunctions;
-   while (p != NULL)
+   while (g_pQueuedFunctions != NULL)
    {
-      // it's a good thing g_L != NULL at this point otherwise this
-      // function would add onto g_pDeferredAddFunctions again!
-      ScriptAddFunction(p->pszName, p->pfn);
-      p = p->pNext;
+      ScriptAddFunction(g_pQueuedFunctions->pszName, g_pQueuedFunctions->pfn);
+      sFunctionQueueEntry * p = g_pQueuedFunctions;
+      g_pQueuedFunctions = g_pQueuedFunctions->pNext;
+      delete p;
    }
 }
 
@@ -77,14 +76,14 @@ void ScriptTerm()
 
 bool ScriptExecFile(const char * pszFile)
 {
-   return g_scriptMachine.ExecFile(pszFile);
+   return g_scriptMachine.ExecFile(pszFile) == S_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 bool ScriptExecString(const char * pszCode)
 {
-   return g_scriptMachine.ExecString(pszCode);
+   return g_scriptMachine.ExecString(pszCode) == S_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -108,54 +107,12 @@ void ScriptAddFunction(const char * pszName, tScriptFn pfn)
    else
    {
       // simple queue to support adding at static init time
-      sScriptAddFunctionDefer * p = new sScriptAddFunctionDefer;
+      sFunctionQueueEntry * p = new sFunctionQueueEntry;
       p->pszName = pszName;
       p->pfn = pfn;
-      p->pNext = g_pDeferredAddFunctions;
-      g_pDeferredAddFunctions = p;
+      p->pNext = g_pQueuedFunctions;
+      g_pQueuedFunctions = p;
    }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void ScriptRemoveFunction(const char * pszName)
-{
-   g_scriptMachine.RemoveFunction(pszName);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-bool ScriptGetVar(const char * pszName, cScriptVar * pValue)
-{
-   return g_scriptMachine.GetVar(pszName, pValue);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-bool ScriptGetVar(const char * pszName, double * pValue)
-{
-   return g_scriptMachine.GetVar(pszName, pValue);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-bool ScriptGetVar(const char * pszName, char * pValue, int cbMaxValue)
-{
-   return g_scriptMachine.GetVar(pszName, pValue, cbMaxValue);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void ScriptSetVar(const char * pszName, double value)
-{
-   g_scriptMachine.SetVar(pszName, value);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void ScriptSetVar(const char * pszName, const char * pszValue)
-{
-   g_scriptMachine.SetVar(pszName, pszValue);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -13,7 +13,6 @@ extern "C"
 
 #include <cstdio>
 #include <cstring>
-#include <vector>
 
 #ifdef HAVE_CPPUNIT
 #include <cppunit/extensions/HelperMacros.h>
@@ -63,20 +62,19 @@ int LuaThunk(lua_State * L)
    if (pfn == NULL)
       return 0; // no C function to call
 
-   cScriptResults results;
+   const int kMaxResults = 8;
+   cScriptVar results[kMaxResults];
+   int nResults = 0;
 
    int nArgs = lua_gettop(L);
 
    if (nArgs > 0)
    {
-   #ifdef DBGALLOC_MAPPED
-   #undef new
-   #endif
-      void * pArgMem = alloca(nArgs * sizeof(cScriptVar));
-      cScriptVar * pArgs = new(pArgMem) cScriptVar[nArgs];
-   #ifdef DBGALLOC_MAPPED
-   #define new DebugNew
-   #endif
+      const int kMaxArgs = 16;
+      cScriptVar args[kMaxArgs];
+
+      if (nArgs > kMaxArgs)
+         nArgs = kMaxArgs;
 
       for (int i = 0; i < nArgs; i++)
       {
@@ -84,15 +82,15 @@ int LuaThunk(lua_State * L)
          {
             case LUA_TNUMBER:
             {
-               pArgs[i].type = kNumber;
-               pArgs[i].d = lua_tonumber(L, i + 1);
+               args[i].type = kNumber;
+               args[i].d = lua_tonumber(L, i + 1);
                break;
             }
 
             case LUA_TSTRING:
             {
-               pArgs[i].type = kString;
-               pArgs[i].psz = const_cast<char *>(lua_tostring(L, i + 1));
+               args[i].type = kString;
+               args[i].psz = const_cast<char *>(lua_tostring(L, i + 1));
                break;
             }
 
@@ -113,43 +111,43 @@ int LuaThunk(lua_State * L)
 
             default:
             {
-               pArgs[i].type = kEmpty;
+               args[i].type = kEmpty;
                break;
             }
          }
       }
 
-      (*pfn)(nArgs, pArgs, &results);
+      nResults = (*pfn)(nArgs, args, _countof(results), results);
 
       lua_pop(L, nArgs);
    }
    else
    {
-      (*pfn)(0, NULL, &results);
+      nResults = (*pfn)(0, NULL, _countof(results), results);
    }
 
-   if (results.empty())
+   if (nResults == 0)
       return 0; // we are not returning any values on the stack
 
-   for (cScriptResults::iterator iter = results.begin(); iter != results.end(); iter++)
+   for (int i = 0; i < nResults; i++)
    {
-      switch ((*iter).type)
+      switch (results[i].type)
       {
          case kNumber:
          {
-            lua_pushnumber(L, (*iter).d);
+            lua_pushnumber(L, results[i].d);
             break;
          }
 
          case kString:
          {
-            lua_pushstring(L, (*iter).psz);
+            lua_pushstring(L, results[i].psz);
             break;
          }
       }
    }
 
-   return results.size();
+   return nResults;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -173,18 +171,18 @@ cScriptMachine::~cScriptMachine()
 
 ///////////////////////////////////////
 
-bool cScriptMachine::Init()
+tResult cScriptMachine::Init()
 {
    Assert(m_L == NULL);
    if (m_L != NULL)
    {
-      return false;
+      return E_FAIL;
    }
 
    m_L = lua_open();
    if (m_L == NULL)
    {
-      return false;
+      return E_FAIL;
    }
 
    luaopen_base(m_L);
@@ -199,7 +197,7 @@ bool cScriptMachine::Init()
 
    lua_register(m_L, "print", LuaPrintEx);
 
-   return true;
+   return S_OK;
 }
 
 ///////////////////////////////////////
@@ -213,22 +211,22 @@ void cScriptMachine::Term()
 
 ///////////////////////////////////////
 
-bool cScriptMachine::ExecFile(const char * pszFile)
+tResult cScriptMachine::ExecFile(const char * pszFile)
 {
-   if (m_L != NULL)
-      return (lua_dofile(m_L, pszFile) == 0);
+   if ((m_L != NULL) && (lua_dofile(m_L, pszFile) == 0))
+      return S_OK;
    else
-      return false;
+      return E_FAIL;
 }
 
 ///////////////////////////////////////
 
-bool cScriptMachine::ExecString(const char * pszCode)
+tResult cScriptMachine::ExecString(const char * pszCode)
 {
-   if (m_L != NULL)
-      return (lua_dobuffer(m_L, pszCode, strlen(pszCode), pszCode) == 0);
+   if ((m_L != NULL) && (lua_dobuffer(m_L, pszCode, strlen(pszCode), pszCode) == 0))
+      return S_OK;
    else
-      return false;
+      return E_FAIL;
 }
 
 ///////////////////////////////////////
@@ -295,7 +293,7 @@ void cScriptMachine::CallFunction(const char * pszName, const char * pszArgDesc,
 
 ///////////////////////////////////////
 
-bool cScriptMachine::AddFunction(const char * pszName, tScriptFn pfn)
+tResult cScriptMachine::AddFunction(const char * pszName, tScriptFn pfn)
 {
    Assert(pszName != NULL);
    if (m_L != NULL)
@@ -303,28 +301,28 @@ bool cScriptMachine::AddFunction(const char * pszName, tScriptFn pfn)
       lua_pushlightuserdata(m_L, (void *)pfn);
       lua_pushcclosure(m_L, LuaThunk, 1);
       lua_setglobal(m_L, pszName);
-      return true;
+      return S_OK;
    }
-   return false;
+   return E_FAIL;
 }
 
 ///////////////////////////////////////
 
-bool cScriptMachine::RemoveFunction(const char * pszName)
+tResult cScriptMachine::RemoveFunction(const char * pszName)
 {
    Assert(pszName != NULL);
    if (m_L != NULL)
    {
       lua_pushnil(m_L);
       lua_setglobal(m_L, pszName);
-      return true;
+      return S_OK;
    }
-   return false;
+   return E_FAIL;
 }
 
 ///////////////////////////////////////
 
-bool cScriptMachine::GetVar(const char * pszName, cScriptVar * pValue)
+tResult cScriptMachine::GetGlobal(const char * pszName, cScriptVar * pValue)
 {
    Assert(pszName != NULL);
    Assert(pValue != NULL);
@@ -358,12 +356,12 @@ bool cScriptMachine::GetVar(const char * pszName, cScriptVar * pValue)
       }
       lua_pop(m_L, 1);
    }
-   return bFound;
+   return bFound ? S_OK : S_FALSE;
 }
 
 ///////////////////////////////////////
 
-bool cScriptMachine::GetVar(const char * pszName, double * pValue)
+tResult cScriptMachine::GetGlobal(const char * pszName, double * pValue)
 {
    Assert(pszName != NULL);
    Assert(pValue != NULL);
@@ -374,16 +372,16 @@ bool cScriptMachine::GetVar(const char * pszName, double * pValue)
       {
          *pValue = lua_tonumber(m_L, -1);
          lua_pop(m_L, 1);
-         return true;
+         return S_OK;
       }
       lua_pop(m_L, 1);
    }
-   return false;
+   return E_FAIL;
 }
 
 ///////////////////////////////////////
 
-bool cScriptMachine::GetVar(const char * pszName, char * pValue, int cbMaxValue)
+tResult cScriptMachine::GetGlobal(const char * pszName, char * pValue, int cbMaxValue)
 {
    Assert(pszName != NULL);
    Assert(pValue != NULL);
@@ -396,16 +394,16 @@ bool cScriptMachine::GetVar(const char * pszName, char * pValue, int cbMaxValue)
          strncpy(pValue, lua_tostring(m_L, -1), cbMaxValue);
          pValue[cbMaxValue - 1] = 0;
          lua_pop(m_L, 1);
-         return true;
+         return S_OK;
       }
       lua_pop(m_L, 1);
    }
-   return false;
+   return E_FAIL;
 }
 
 ///////////////////////////////////////
 
-void cScriptMachine::SetVar(const char * pszName, double value)
+void cScriptMachine::SetGlobal(const char * pszName, double value)
 {
    Assert(pszName != NULL);
    if (m_L != NULL)
@@ -417,7 +415,7 @@ void cScriptMachine::SetVar(const char * pszName, double value)
 
 ///////////////////////////////////////
 
-void cScriptMachine::SetVar(const char * pszName, const char * pszValue)
+void cScriptMachine::SetGlobal(const char * pszName, const char * pszValue)
 {
    Assert(pszName != NULL);
    if (m_L != NULL)
@@ -425,6 +423,20 @@ void cScriptMachine::SetVar(const char * pszName, const char * pszValue)
       lua_pushstring(m_L, pszValue);
       lua_setglobal(m_L, pszName);
    }
+}
+
+///////////////////////////////////////
+
+tResult cScriptMachine::RegisterCustomClass(const tChar * pszClassName, IScriptableFactory * pFactory)
+{
+   return E_NOTIMPL;
+}
+
+///////////////////////////////////////
+
+tResult cScriptMachine::RevokeCustomClass(const tChar * pszClassName)
+{
+   return E_NOTIMPL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -443,41 +455,43 @@ class cScriptMachineTests : public CppUnit::TestCase
 private:
    static bool gm_bCalled;
 
-   static void CallThisFunction(int argc, const cScriptVar * argv, cScriptResults *)
+   static int CallThisFunction(int argc, const cScriptVar * argv, int, cScriptVar *)
    {
       gm_bCalled = true;
+      return 0;
    }
 
-   static void RemoveThisFunction(int, const cScriptVar *, cScriptResults *)
+   static int RemoveThisFunction(int, const cScriptVar *, int, cScriptVar *)
    {
       // does nothing
+      return 0;
    }
 
    void TestCallFunction()
    {
-      CPPUNIT_ASSERT(m_sm.AddFunction("CallThisFunction", CallThisFunction));
+      CPPUNIT_ASSERT(m_sm.AddFunction("CallThisFunction", CallThisFunction) == S_OK);
       gm_bCalled = false;
-      CPPUNIT_ASSERT(m_sm.ExecString("CallThisFunction();"));
+      CPPUNIT_ASSERT(m_sm.ExecString("CallThisFunction();") == S_OK);
       CPPUNIT_ASSERT(gm_bCalled);
       m_sm.RemoveFunction("CallThisFunction");
    }
 
    void TestRemoveFunction()
    {
-      CPPUNIT_ASSERT(m_sm.AddFunction("RemoveThisFunction", RemoveThisFunction));
-      CPPUNIT_ASSERT(m_sm.ExecString("RemoveThisFunction();"));
+      CPPUNIT_ASSERT(m_sm.AddFunction("RemoveThisFunction", RemoveThisFunction) == S_OK);
+      CPPUNIT_ASSERT(m_sm.ExecString("RemoveThisFunction();") == S_OK);
       m_sm.RemoveFunction("RemoveThisFunction");
-      CPPUNIT_ASSERT(!m_sm.ExecString("RemoveThisFunction();"));
+      CPPUNIT_ASSERT(m_sm.ExecString("RemoveThisFunction();") != S_OK);
 
-      CPPUNIT_ASSERT(!m_sm.ExecString("ThisNameWillNotBeFoundSoThisCallShouldFail();"));
+      CPPUNIT_ASSERT(m_sm.ExecString("ThisNameWillNotBeFoundSoThisCallShouldFail();") != S_OK);
    }
 
    void TestGetNumber()
    {
       double value;
 
-      m_sm.SetVar("foo", 123.456);
-      CPPUNIT_ASSERT(m_sm.GetVar("foo", &value));
+      m_sm.SetGlobal("foo", 123.456);
+      CPPUNIT_ASSERT(m_sm.GetGlobal("foo", &value) == S_OK);
       CPPUNIT_ASSERT(value == 123.456);
    }
 
@@ -485,12 +499,12 @@ private:
    {
       char szValue[16];
 
-      m_sm.SetVar("bar", "blah blah");
-      CPPUNIT_ASSERT(m_sm.GetVar("bar", szValue, _countof(szValue)));
+      m_sm.SetGlobal("bar", "blah blah");
+      CPPUNIT_ASSERT(m_sm.GetGlobal("bar", szValue, _countof(szValue)) == S_OK);
       CPPUNIT_ASSERT(strcmp(szValue, "blah blah") == 0);
 
-      m_sm.SetVar("bar", "blah blah blah blah blah blah blah blah");
-      CPPUNIT_ASSERT(m_sm.GetVar("bar", szValue, _countof(szValue)));
+      m_sm.SetGlobal("bar", "blah blah blah blah blah blah blah blah");
+      CPPUNIT_ASSERT(m_sm.GetGlobal("bar", szValue, _countof(szValue)) == S_OK);
       CPPUNIT_ASSERT(strcmp(szValue, "blah blah blah ") == 0);
    }
 
@@ -499,7 +513,7 @@ private:
 public:
    virtual void setUp()
    {
-      CPPUNIT_ASSERT(m_sm.Init());
+      CPPUNIT_ASSERT(m_sm.Init() == S_OK);
    }
 
    virtual void tearDown()
