@@ -19,10 +19,10 @@
 
 // for constructors/destructor
 #define HASHTABLE_TEMPLATE \
-   template <typename KEY, typename VALUE> cHashTable<KEY, VALUE>
+   template <typename KEY, typename VALUE, class ALLOCATOR> cHashTable<KEY, VALUE, ALLOCATOR>
 // for methods
 #define HASHTABLE_TEMPLATE_(RetType) \
-   template <typename KEY, typename VALUE> RetType cHashTable<KEY, VALUE>
+   template <typename KEY, typename VALUE, class ALLOCATOR> RetType cHashTable<KEY, VALUE, ALLOCATOR>
 
 ///////////////////////////////////////
 
@@ -31,7 +31,7 @@ const int kFullnessThreshold = 70;
 ///////////////////////////////////////
 
 HASHTABLE_TEMPLATE::cHashTable(int initialSize)
- : m_eltFull(NULL), m_elts(NULL), m_size(0), m_count(0)
+ : m_elts(NULL), m_size(0), m_count(0)
 #ifndef NDEBUG
    ,m_cItersActive(0)
 #endif
@@ -59,10 +59,8 @@ HASHTABLE_TEMPLATE_(void)::Reset(int newInitialSize)
 {
    Assert(m_cItersActive == 0); // don't clear while iterating
 
-   delete [] m_elts;
+   m_allocator.deallocate(m_elts, m_size);
    m_elts = NULL;
-   delete [] m_eltFull;
-   m_eltFull = NULL;
    m_size = 0;
    m_count = 0;
 
@@ -81,7 +79,7 @@ HASHTABLE_TEMPLATE_(bool)::Set(const KEY & k, const VALUE & v)
 
    m_elts[hash].key = k;
    m_elts[hash].value = v;
-   m_eltFull[hash] = true;
+   m_elts[hash].inUse = true;
 
    return true;
 }
@@ -109,7 +107,7 @@ HASHTABLE_TEMPLATE_(bool)::Lookup(const KEY & k, VALUE * v) const
 {
    uint hash = Probe(k);
 
-   if (!m_eltFull[hash])
+   if (!m_elts[hash].inUse)
       return false;
 
    if (v != NULL)
@@ -126,10 +124,10 @@ HASHTABLE_TEMPLATE_(bool)::Delete(const KEY & k)
 
    uint hash = Probe(k);
 
-   if (!m_eltFull[hash])
+   if (!m_elts[hash].inUse)
       return false;
 
-   m_eltFull[hash] = FALSE;
+   m_elts[hash].inUse = false;
    m_count--;
 
    // @TODO (dpalma 6/22/01): To be extra thorough, the value should be removed
@@ -157,10 +155,10 @@ HASHTABLE_TEMPLATE_(bool)::IterNext(HANDLE * phIter, KEY * pk, VALUE * pv) const
    unsigned int & index = (unsigned int &)*phIter;
    if (index < m_size)
    {
-      while (!m_eltFull[index] && index < m_size)
+      while (!m_elts[index].inUse && index < m_size)
          index++;
       if (index == m_size)
-         return FALSE;
+         return false;
       *pk = m_elts[index].key;
       *pv = m_elts[index].value;
       index++;
@@ -189,7 +187,7 @@ HASHTABLE_TEMPLATE_(uint)::Probe(const KEY & k) const
    // resolve collisions with linear probing
    // @TODO (dpalma 6/15/00): This doesn't handle the case where the hash table
    // is 100% full. Would likely go infinite in that case.
-   while (m_eltFull[hash] && !Equal(k, m_elts[hash].key))
+   while (m_elts[hash].inUse && !Equal(k, m_elts[hash].key))
    {
       hash++;
       if (hash == m_size)
@@ -201,32 +199,32 @@ HASHTABLE_TEMPLATE_(uint)::Probe(const KEY & k) const
 
 ///////////////////////////////////////
 
-HASHTABLE_TEMPLATE_(bool)::Grow(int newSize)
+HASHTABLE_TEMPLATE_(void)::Grow(int newSize)
 {
-   sHashElement * newElts = new sHashElement[newSize];
-   uint8 * newEltFull = new uint8[newSize];
-   memset(newEltFull, 0, sizeof(uint8) * newSize);
+   tHashElement * newElts = m_allocator.allocate(newSize, m_elts);
+
+   // Use placement new to call the constructor for each element
+#undef new
+   newElts = new(newElts)tHashElement[newSize];
+#define new DebugNew
 
    int oldSize = m_size;
    int oldCount = m_count;
-   uint8 * oldEltFull = m_eltFull;
-   sHashElement* oldElts = m_elts;
+   tHashElement * oldElts = m_elts;
 
    m_count = 0;
    m_size = newSize;
    m_elts = newElts;
-   m_eltFull = newEltFull;
 
    for (int i = 0; i < oldSize; i++)
    {
-      if (oldEltFull[i])
+      if (oldElts[i].inUse)
+      {
          Insert(oldElts[i].key, oldElts[i].value);
+      }
    }
 
-   delete [] oldElts;
-   delete [] oldEltFull;
-
-   return true;
+   m_allocator.deallocate(oldElts, oldSize);
 }
 
 ///////////////////////////////////////

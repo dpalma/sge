@@ -4,6 +4,8 @@
 #ifndef INCLUDED_HASHTBL_H
 #define INCLUDED_HASHTBL_H
 
+#include <memory>
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -18,6 +20,23 @@
 //
 
 template <typename KEY, typename VALUE>
+struct sHashElement
+{
+   sHashElement();
+
+   KEY key;
+   VALUE value;
+   bool inUse;
+};
+
+template <typename KEY, typename VALUE>
+sHashElement<KEY, VALUE>::sHashElement()
+ : inUse(false)
+{
+}
+
+template <typename KEY, typename VALUE,
+          class ALLOCATOR = std::allocator< sHashElement<KEY, VALUE> > >
 class cHashTable
 {
 public:
@@ -45,17 +64,14 @@ public:
 
 private:
    uint Probe(const KEY & k) const;
-   bool Grow(int newSize);
+   void Grow(int newSize);
    bool Equal(const KEY & k1, const KEY & k2) const;
 
-   struct sHashElement
-   {
-      KEY key;
-      VALUE value;
-   };
+   typedef struct sHashElement<KEY, VALUE> tHashElement;
 
-   uint8 * m_eltFull; // interpreted as bools
-   sHashElement * m_elts;
+   ALLOCATOR m_allocator;
+
+   tHashElement * m_elts;
    uint m_size;
    uint m_count;
 #ifndef NDEBUG
