@@ -15,6 +15,27 @@ Package=<4>
 
 ###############################################################################
 
+Project: "engine"=..\..\engine\engine.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name allguids
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name render
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name tech
+    End Project Dependency
+}}}
+
+###############################################################################
+
 Project: "ms3dview"=.\ms3dview.dsp - Package Owner=<4>
 
 Package=<5>
@@ -31,6 +52,9 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name allguids
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name engine
     End Project Dependency
 }}}
 
