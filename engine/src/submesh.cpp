@@ -30,7 +30,7 @@ public:
    friend ISubMesh * SubMeshCreate(uint nFaces, uint nVertices,
                                    IVertexDeclaration * pVertexDecl,
                                    IRenderDevice * pRenderDevice);
-   friend ISubMesh * SubMeshCreate(uint nFaces, IRenderDevice * pRenderDevice);
+   friend ISubMesh * SubMeshCreate(uint nFaces, uint usage, IRenderDevice * pRenderDevice);
    ~cSubMesh();
 
    virtual const char * GetMaterialName() const;
@@ -98,7 +98,7 @@ ISubMesh * SubMeshCreate(uint nFaces, uint nVertices,
       return NULL;
 
    cAutoIPtr<IIndexBuffer> pIndexBuffer;
-   if (pRenderDevice->CreateIndexBuffer(3 * nFaces, kIBF_16Bit, kBP_Auto, &pIndexBuffer) == S_OK)
+   if (pRenderDevice->CreateIndexBuffer(3 * nFaces, kBU_Default, kIBF_16Bit, kBP_Auto, &pIndexBuffer) == S_OK)
    {
       cAutoIPtr<IVertexBuffer> pVertexBuffer;
       if (pRenderDevice->CreateVertexBuffer(nVertices, kBU_Default, pVertexDecl, kBP_Auto, &pVertexBuffer) == S_OK)
@@ -112,12 +112,12 @@ ISubMesh * SubMeshCreate(uint nFaces, uint nVertices,
 
 ///////////////////////////////////////
 
-ISubMesh * SubMeshCreate(uint nFaces, IRenderDevice * pRenderDevice)
+ISubMesh * SubMeshCreate(uint nFaces, uint usage, IRenderDevice * pRenderDevice)
 {
    if ((nFaces > 0) && (pRenderDevice != NULL))
    {
       cAutoIPtr<IIndexBuffer> pIndexBuffer;
-      if (pRenderDevice->CreateIndexBuffer(3 * nFaces, kIBF_16Bit, kBP_Auto, &pIndexBuffer) == S_OK)
+      if (pRenderDevice->CreateIndexBuffer(3 * nFaces, usage, kIBF_16Bit, kBP_Auto, &pIndexBuffer) == S_OK)
       {
          return static_cast<ISubMesh *>(new cSubMesh(nFaces, 0, pIndexBuffer, NULL, NULL));
       }

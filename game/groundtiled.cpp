@@ -143,12 +143,12 @@ bool cTiledGround::Init(cHeightMap * pHeightMap)
       return false;
    }
 
-   if (AccessRenderDevice()->CreateIndexBuffer(kNumIndices, kIBF_32Bit, kBP_Auto, &m_pIndexBuffer) != S_OK)
+   if (AccessRenderDevice()->CreateIndexBuffer(kNumIndices, kBU_Default, kIBF_16Bit, kBP_System, &m_pIndexBuffer) != S_OK)
    {
       return false;
    }
 
-   uint * pIndexData = NULL;
+   uint16 * pIndexData = NULL;
    if (m_pIndexBuffer->Lock(kBL_Discard, (void * *)&pIndexData) == S_OK)
    {
       int iQuad = 0;

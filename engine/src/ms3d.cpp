@@ -319,7 +319,7 @@ tResult cMs3dFileReader::CreateMesh(IRenderDevice * pRenderDevice, IMesh * * ppM
       std::vector<cMs3dGroup>::const_iterator iter;
       for (iter = m_groups.begin(); iter != m_groups.end(); iter++)
       {
-         cAutoIPtr<ISubMesh> pSubMesh = SubMeshCreate(iter->GetNumTriangles(), pRenderDevice);
+         cAutoIPtr<ISubMesh> pSubMesh = SubMeshCreate(iter->GetNumTriangles(), kBU_Default, pRenderDevice);
          if (!!pSubMesh)
          {
             pSubMesh->SetMaterialName(m_materials[iter->GetMaterialIndex()].name);

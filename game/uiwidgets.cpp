@@ -409,7 +409,7 @@ bool cUIBitmapButton::SetBitmap(const char * pszName)
          m_pMat->SetTexture(0, pTex);
       }
 
-      if (AccessRenderDevice()->CreateIndexBuffer(kUIBitmapButtonIndices, kIBF_16Bit, kBP_Auto, &m_pIB) == S_OK)
+      if (AccessRenderDevice()->CreateIndexBuffer(kUIBitmapButtonIndices, kBU_Default, kIBF_16Bit, kBP_Auto, &m_pIB) == S_OK)
       {
          uint16 * pIndexData;
          if (m_pIB->Lock(kBL_Discard, (void * *)&pIndexData) == S_OK)
