@@ -387,6 +387,13 @@ tResult ScriptAddFunction(const char * pszName, tScriptFn pfn)
 
 ///////////////////////////////////////
 
+cScriptAutoAddFunction::cScriptAutoAddFunction(const char * pszName, tScriptFn pfn)
+{
+   ScriptAddFunction(pszName, pfn);
+}
+
+///////////////////////////////////////
+
 bool cLuaInterpreter::gm_bInitialized = false;
 
 ///////////////////////////////////////

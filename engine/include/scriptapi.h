@@ -121,16 +121,23 @@ ENGINE_API tResult ScriptAddFunction(const char * pszName, tScriptFn pfn);
 
 ///////////////////////////////////////
 
-struct sScriptAutoAddFunction
+class ENGINE_API cScriptAutoAddFunction
 {
-   sScriptAutoAddFunction(const char * pszName, tScriptFn pfn)
-   {
-      ScriptAddFunction(pszName, pfn);
-   }
+public:
+   cScriptAutoAddFunction(const char * pszName, tScriptFn pfn);
 };
 
+#ifdef __GNUC__
+#define PROTOTYPE_SCRIPTFUNCTION(fnName) \
+   extern int (fnName)(int, const cScriptVar *, int, cScriptVar *) __attribute__((used));
+#else
+#define PROTOTYPE_SCRIPTFUNCTION(fnName) \
+   extern int (fnName)(int, const cScriptVar *, int, cScriptVar *);
+#endif
+
 #define AUTOADD_SCRIPTFUNCTION(name, pfn) \
-   static sScriptAutoAddFunction g_auto##name##ScriptFn(#name, pfn)
+   PROTOTYPE_SCRIPTFUNCTION(pfn) \
+   cScriptAutoAddFunction __attribute__((used)) MAKE_UNIQUE(g_auto##name##ScriptFn)(#name, pfn)
 
 ///////////////////////////////////////////////////////////////////////////////
 
