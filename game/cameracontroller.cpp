@@ -61,21 +61,23 @@ void cGameCameraController::Connect()
 {
    UseGlobal(Sim);
    pSim->Connect(this);
-   UseGlobal(Input);
-   pInput->Connect(this);
+   UseGlobal(Scene);
+   pScene->AddInputListener(kSL_Object, this);
 }
 
 ///////////////////////////////////////
 
 void cGameCameraController::Disconnect()
 {
-   UseGlobal(Input);
-   pInput->Disconnect(this);
+   UseGlobal(Scene);
+   pScene->RemoveInputListener(kSL_Object, this);
    UseGlobal(Sim);
    pSim->Disconnect(this);
 }
 
 ///////////////////////////////////////
+// Very simple third-person camera model. Always looking down the -z axis
+// and slightly pitched over the x axis.
 
 void cGameCameraController::OnFrame(double elapsedTime)
 {
@@ -85,8 +87,6 @@ void cGameCameraController::OnFrame(double elapsedTime)
 
    m_eye = tVec3(m_focus.x, m_focus.y + m_elevation, m_focus.z + zOffset);
 
-   // Very simple third-person camera model. Always looking down the -z axis
-   // and slightly pitched over the x axis.
    tMatrix4 mt;
    MatrixTranslate(-m_eye.x, -m_eye.y, -m_eye.z, &mt);
 
@@ -117,9 +117,9 @@ bool cGameCameraController::OnMouseEvent(int x, int y, uint mouseState, double t
                   intersect.x, intersect.y, intersect.z);
             }
          }
-      }
 
-      return true;
+         return true;
+      }
    }
 
    return false;

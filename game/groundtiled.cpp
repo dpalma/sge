@@ -8,10 +8,13 @@
 
 #include "render.h"
 #include "material.h"
+#include "image.h"
 
 #include "vec2.h"
 #include "vec3.h"
 #include "techmath.h"
+#include "resmgr.h"
+#include "globalobj.h"
 
 #include "dbgalloc.h" // must be last header
 
@@ -44,7 +47,7 @@ public:
    cTiledGround();
    ~cTiledGround();
 
-   bool Init(cHeightMap * pHeightMap);
+   bool Init(cHeightMap * pHeightMap, const char * pszTexture);
 
    void Render(IRenderDevice * pRenderDevice);
 
@@ -71,11 +74,7 @@ cTiledGround::~cTiledGround()
 
 ///////////////////////////////////////
 
-static const float kRed = 0;
-static const float kGreen = 0.5f;
-static const float kBlue = 0;
-
-bool cTiledGround::Init(cHeightMap * pHeightMap)
+bool cTiledGround::Init(cHeightMap * pHeightMap, const char * pszTexture)
 {
    const int kStepSize = 16;
    const int kGroundSize = 1024;
@@ -84,6 +83,8 @@ bool cTiledGround::Init(cHeightMap * pHeightMap)
    const int kNumVerts = kNumQuads * 4;
    const int kNumIndices = kNumQuads * 6;
 
+   float kRed = 1, kGreen = 1, kBlue = 1;
+
    m_nVerts = kNumVerts;
    m_nIndices = kNumIndices;
 
@@ -91,6 +92,27 @@ bool cTiledGround::Init(cHeightMap * pHeightMap)
    if (!m_pMaterial)
    {
       return false;
+   }
+
+   if (pszTexture != NULL)
+   {
+      UseGlobal(ResourceManager);
+      cImage * pImage = ImageLoad(pResourceManager, pszTexture);
+      if (pImage != NULL)
+      {
+         cAutoIPtr<ITexture> pTexture;
+         if (AccessRenderDevice()->CreateTexture(pImage, &pTexture) == S_OK)
+         {
+            m_pMaterial->SetTexture(0, pTexture);
+         }
+
+         delete pImage;
+      }
+   }
+   else
+   {
+      kGreen = 0.5f;
+      kRed = kBlue = 0;
    }
 
    cAutoIPtr<IVertexDeclaration> pVertexDecl;
@@ -114,8 +136,8 @@ bool cTiledGround::Init(cHeightMap * pHeightMap)
       float z1 = 0;
       float z2 = kStepSize;
 
-      static const float kTileTexWidth = 1;
-      static const float kTileTexHeight = 1;
+      static const float kTileTexWidth = 0.125f;
+      static const float kTileTexHeight = 0.25f;
 
       for (int iz = 0; iz < kNumQuadsPerSide; iz++, z1 += kStepSize, z2 += kStepSize)
       {
@@ -124,9 +146,9 @@ bool cTiledGround::Init(cHeightMap * pHeightMap)
 
          for (int ix = 0; ix < kNumQuadsPerSide; ix++, x1 += kStepSize, x2 += kStepSize)
          {
-            //uint tile = 16 + (Rand() % 16);
-            uint tileRow = 0;//tile % 4;
-            uint tileCol = 0;//tile / 4;
+            uint tile = rand() & 15;
+            uint tileRow = tile % 4;
+            uint tileCol = tile / 4;
 
             pVertexData[index].uv = tVec2(tileCol * kTileTexWidth, tileRow * kTileTexHeight);
             pVertexData[index].rgb = tVec3(kRed,kGreen,kBlue);
@@ -201,12 +223,12 @@ void cTiledGround::Render(IRenderDevice * pRenderDevice)
 
 ///////////////////////////////////////
 
-cTerrainNode::cTerrainNode(cHeightMap * pHeightMap)
+cTerrainNode::cTerrainNode(cHeightMap * pHeightMap, const char * pszTexture)
  : m_pSceneEntity(SceneEntityCreate()),
    m_pHeightMap(pHeightMap),
    m_pGround(new cTiledGround)
 {
-   m_pGround->Init(pHeightMap);
+   m_pGround->Init(pHeightMap, pszTexture);
 }
 
 ///////////////////////////////////////
@@ -247,7 +269,7 @@ void cTerrainNode::Render(IRenderDevice * pRenderDevice)
 
 ///////////////////////////////////////
 
-cTerrainNode * TerrainNodeCreate(const char * pszHeightData, float heightScale)
+cTerrainNode * TerrainNodeCreate(const char * pszHeightData, float heightScale, const char * pszTexture)
 {
    cHeightMap * pHeightMap = new cHeightMap(heightScale);
 
@@ -257,7 +279,7 @@ cTerrainNode * TerrainNodeCreate(const char * pszHeightData, float heightScale)
       return NULL;
    }
 
-   return new cTerrainNode(pHeightMap);
+   return new cTerrainNode(pHeightMap, pszTexture);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

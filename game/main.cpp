@@ -228,6 +228,42 @@ SCRIPT_DEFINE_FUNCTION(ShowModalDialog)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+SCRIPT_DEFINE_FUNCTION(SetTerrain)
+{
+   if (ScriptArgc() == 1 
+      && ScriptArgIsString(0))
+   {
+      g_pTerrainRoot = TerrainNodeCreate(ScriptArgAsString(0), kGroundScaleY, NULL);
+   }
+   else if (ScriptArgc() == 2 
+      && ScriptArgIsString(0)
+      && ScriptArgIsNumber(1))
+   {
+      g_pTerrainRoot = TerrainNodeCreate(ScriptArgAsString(0), ScriptArgAsNumber(1), NULL);
+   }
+   else if (ScriptArgc() == 3 
+      && ScriptArgIsString(0)
+      && ScriptArgIsNumber(1)
+      && ScriptArgIsString(2))
+   {
+      g_pTerrainRoot = TerrainNodeCreate(ScriptArgAsString(0), ScriptArgAsNumber(1), ScriptArgAsString(2));
+   }
+   else
+   {
+      DebugMsg("Warning: Invalid parameters to SetTerrain\n");
+   }
+   
+   if (g_pTerrainRoot)
+   {
+      UseGlobal(Scene);
+      pScene->AddEntity(kSL_Terrain, g_pTerrainRoot);
+   }
+
+   return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 SCRIPT_DEFINE_FUNCTION(EntitySpawnTest)
 {
    if (ScriptArgc() == 3
@@ -400,6 +436,7 @@ bool MainInit(int argc, char * argv[])
       return false;
    }
 
+   // Registers functions that were added at static initialization time
    ScriptInit();
 
    if (ConfigGet("data", &temp) == S_OK)
@@ -461,18 +498,6 @@ bool MainInit(int argc, char * argv[])
       pWindowFullScreen->BeginFullScreen();
    }
 
-   if (ConfigGet("terrain", &temp) == S_OK)
-   {
-      g_pTerrainRoot = TerrainNodeCreate(temp, kGroundScaleY);
-      UseGlobal(Scene);
-      pScene->AddEntity(kSL_Terrain, g_pTerrainRoot);
-   }
-   else
-   {
-      DebugMsg("No terrain data\n");
-      return false;
-   }
-
    g_pUICamera = SceneCameraCreate();
    g_pUICamera->SetOrtho(0, width, height, 0, -99999, 99999);
 
@@ -486,6 +511,7 @@ bool MainInit(int argc, char * argv[])
    g_pGameCameraController->Connect();
 
    pScene->SetCamera(kSL_Terrain, g_pGameCamera);
+   pScene->SetCamera(kSL_InGameUI, g_pUICamera);
 
    ScriptCallFunction("GameInit");
 
@@ -539,18 +565,12 @@ void MainFrame()
    pSim->NextFrame();
 
    g_pRenderDevice->BeginScene();
-
    g_pRenderDevice->Clear();
 
    UseGlobal(Scene);
    pScene->Render(g_pRenderDevice);
 
-   g_pRenderDevice->SetProjectionMatrix(g_pUICamera->GetProjectionMatrix());
-   g_pRenderDevice->SetViewMatrix(g_pUICamera->GetViewMatrix());
-   // TODO: render UI
-
    g_pRenderDevice->EndScene();
-
    g_pWindow->SwapBuffers();
 }
 

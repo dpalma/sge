@@ -64,7 +64,7 @@ g_keyNames[] =
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static const char * Key2Name(long key)
+const char * Key2Name(long key)
 {
    static const int nNamedKeys = sizeof(g_keyNames) / sizeof(*g_keyNames);
    for (int i = 0; i < nNamedKeys; i++)
@@ -77,7 +77,7 @@ static const char * Key2Name(long key)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static long Name2Key(const char * pszKeyName)
+long Name2Key(const char * pszKeyName)
 {
    static const int nNamedKeys = sizeof(g_keyNames) / sizeof(*g_keyNames);
    for (int i = 0; i < nNamedKeys; i++)

@@ -3,26 +3,27 @@
 
 bind("q", "quit();");
 bind("escape", [[ShowModalDialog("maindlg.xml");]]);
-bind("TAB", "EntityCenterOnRandom();");
 
 gameMeshes = 
 {
-   "tree2.ms3d",
+   "tree.ms3d",
    "crate.ms3d",
    "face.3ds",
+   "zombie.ms3d",
 };
 
 function GameInit()
-
-   -- has to be done after the ground is set up
-   ViewSetPos(0.5,0.5);
+   SetTerrain("ground.tga", 0.2, "grass.tga");
 
    nGameMeshes = table.getn(gameMeshes);
-
-   for c=1,10 do
-      local meshFileName = gameMeshes[math.random(nGameMeshes)];
-      EntitySpawnTest(meshFileName, math.random(), math.random());
+   for i = 1, nGameMeshes do
+	  for m=1,5 do
+	     EntitySpawnTest(gameMeshes[i], math.random(), math.random());
+	  end
    end
+   
+   EntitySpawnTest("zombie.ms3d", 0.5, 0.4);
+   ViewSetPos(0.5, 0.4);
 end;
 
 -------------------------------------------------------------------------------
