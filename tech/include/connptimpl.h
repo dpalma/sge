@@ -57,16 +57,16 @@ bool remove_interface(CONTAINER & c, I * pI)
 // TEMPLATE: cConnectionPoint
 //
 
-template <class INTERFACE, class SINKINTERFACE, class CONTAINER = std::vector<SINKINTERFACE *> >
-class cConnectionPoint : public INTERFACE
+template <class INTRFC, class SINKINTRFC, class CONTAINER = std::vector<SINKINTRFC *> >
+class cConnectionPoint : public INTRFC
 {
 public:
-   tResult Connect(SINKINTERFACE * pSink)
+   tResult Connect(SINKINTRFC * pSink)
    {
       return add_interface(m_sinks, pSink) ? S_OK : E_FAIL;
    }
 
-   tResult Disconnect(SINKINTERFACE * pSink)
+   tResult Disconnect(SINKINTRFC * pSink)
    {
       return remove_interface(m_sinks, pSink) ? S_OK : E_FAIL;
    }
@@ -84,7 +84,7 @@ protected:
    }
 
    template <typename RETURN>
-   inline void ForEachConnection(RETURN (SINKINTERFACE::*pfnMethod)())
+   inline void ForEachConnection(RETURN (SINKINTRFC::*pfnMethod)())
    {
       typename CONTAINER::iterator iter;
       for (iter = m_sinks.begin(); iter != m_sinks.end(); iter++)
@@ -97,7 +97,7 @@ protected:
    }
 
    template <typename RETURN, typename ARG0>
-   inline void ForEachConnection(RETURN (SINKINTERFACE::*pfnMethod)(ARG0), ARG0 arg0)
+   inline void ForEachConnection(RETURN (SINKINTRFC::*pfnMethod)(ARG0), ARG0 arg0)
    {
       typename CONTAINER::iterator iter;
       for (iter = m_sinks.begin(); iter != m_sinks.end(); iter++)
@@ -108,7 +108,7 @@ protected:
    }
 
    template <typename RETURN, typename ARG0, typename ARG1>
-   inline void ForEachConnection(RETURN (SINKINTERFACE::*pfnMethod)(ARG0, ARG1), ARG0 arg0, ARG1 arg1)
+   inline void ForEachConnection(RETURN (SINKINTRFC::*pfnMethod)(ARG0, ARG1), ARG0 arg0, ARG1 arg1)
    {
       typename CONTAINER::iterator iter;
       for (iter = m_sinks.begin(); iter != m_sinks.end(); iter++)
@@ -119,7 +119,7 @@ protected:
    }
 
    template <typename RETURN, typename ARG0, typename ARG1, typename ARG2>
-   inline void ForEachConnection(RETURN (SINKINTERFACE::*pfnMethod)(ARG0, ARG1, ARG2), ARG0 arg0, ARG1 arg1, ARG2 arg2)
+   inline void ForEachConnection(RETURN (SINKINTRFC::*pfnMethod)(ARG0, ARG1, ARG2), ARG0 arg0, ARG1 arg1, ARG2 arg2)
    {
       typename CONTAINER::iterator iter;
       for (iter = m_sinks.begin(); iter != m_sinks.end(); iter++)
@@ -130,7 +130,7 @@ protected:
    }
 
    template <typename RETURN, typename ARG0, typename ARG1, typename ARG2, typename ARG3>
-   inline void ForEachConnection(RETURN (SINKINTERFACE::*pfnMethod)(ARG0, ARG1, ARG2, ARG3), ARG0 arg0, ARG1 arg1, ARG2 arg2, ARG3 arg3)
+   inline void ForEachConnection(RETURN (SINKINTRFC::*pfnMethod)(ARG0, ARG1, ARG2, ARG3), ARG0 arg0, ARG1 arg1, ARG2 arg2, ARG3 arg3)
    {
       typename CONTAINER::iterator iter;
       for (iter = m_sinks.begin(); iter != m_sinks.end(); iter++)
