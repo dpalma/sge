@@ -6,7 +6,7 @@
 
 #include "editorapi.h"
 #include "editorTools.h"
-#include "editorCtrlBars.h"
+#include "editorDockingWindows.h"
 #include "ToolPalette.h"
 
 #include <vector>
@@ -64,7 +64,7 @@ public:
    static tResult Factory(cDockingWindow * * ppDockingWindow);
 
    cToolPaletteBar();
-   virtual ~cToolPaletteBar();
+   ~cToolPaletteBar();
 
    virtual void OnDefaultTileSetChange(IEditorTileSet * pTileSet);
 
@@ -90,6 +90,8 @@ private:
    cButtonPanel m_buttonPanel;
 
    cToolPalette m_toolPalette;
+
+   HTOOLGROUP m_hTerrainTileGroup;
 
    CToolTipCtrl m_tooltip;
 };

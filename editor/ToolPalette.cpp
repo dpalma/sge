@@ -345,18 +345,24 @@ void cToolGroupRenderer::Render(const cToolGroup * pGroup)
 
          int iImage = pTool->GetImageIndex();
 
+         CRect textRect(toolRect);
+
          if ((hImageList != NULL) && (iImage > -1))
          {
-            // TODO: vertically center
-            ImageList_Draw(hImageList, iImage, m_dc, toolRect.left, toolRect.top, 0);
+            IMAGEINFO imageInfo;
+            if (ImageList_GetImageInfo(hImageList, iImage, &imageInfo))
+            {
+               int vertOffset = toolRect.Height() - (imageInfo.rcImage.bottom - imageInfo.rcImage.top);
+               ImageList_Draw(hImageList, iImage, m_dc, toolRect.left + 1, toolRect.top + vertOffset, 0);
+               textRect.left += imageInfo.rcImage.right - imageInfo.rcImage.left + 2;
+            }
          }
 
-         CRect r(toolRect);
-         r.left += kTextGap;
+         textRect.left += kTextGap;
 
          m_dc.SetTextColor(GetSysColor(COLOR_WINDOWTEXT));
          m_dc.SetBkMode(OPAQUE);
-         m_dc.DrawText(pTool->GetName(), -1, &r, DT_SINGLELINE | DT_LEFT | DT_VCENTER | DT_END_ELLIPSIS);
+         m_dc.DrawText(pTool->GetName(), -1, &textRect, DT_SINGLELINE | DT_LEFT | DT_VCENTER | DT_END_ELLIPSIS);
 
          toolRect.OffsetRect(0, toolRect.Height());
       }
@@ -476,6 +482,23 @@ void cToolPalette::OnSetFont(HFONT hFont, BOOL bRedraw)
          m_font.CreateFontIndirect(&logFont);
       }
    }
+}
+
+////////////////////////////////////////
+
+LRESULT cToolPalette::OnEraseBkgnd(CDCHandle dc)
+{
+   if (!dc.IsNull())
+   {
+      CRect rect;
+      GetClientRect(rect);
+
+      dc.FillSolidRect(rect, GetSysColor(COLOR_3DFACE));
+
+      return TRUE;
+   }
+
+   return FALSE;
 }
 
 ////////////////////////////////////////

@@ -162,8 +162,9 @@ public:
    BEGIN_MSG_MAP_EX(cToolPalette)
       MSG_WM_CREATE(OnCreate)
       MSG_WM_DESTROY(OnDestroy)
-	   MSG_WM_SIZE(OnSize)
+      MSG_WM_SIZE(OnSize)
       MSG_WM_SETFONT(OnSetFont)
+      MSG_WM_ERASEBKGND(OnEraseBkgnd);
       MSG_WM_PAINT(OnPaint)
       MSG_WM_MOUSEMOVE(OnMouseMove)
       MSG_WM_LBUTTONDOWN(OnLButtonDown)
@@ -174,6 +175,7 @@ public:
    void OnDestroy();
    void OnSize(UINT nType, CSize size);
    void OnSetFont(HFONT hFont, BOOL bRedraw);
+   LRESULT OnEraseBkgnd(CDCHandle dc);
    void OnPaint(CDCHandle dc);
    void OnMouseMove(UINT flags, CPoint point);
    void OnLButtonDown(UINT flags, CPoint point);

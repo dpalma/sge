@@ -5,7 +5,7 @@
 #define INCLUDED_OUTPUTBAR_H
 
 #include "LogWnd.h"
-#include "editorCtrlBars.h"
+#include "editorDockingWindows.h"
 
 #if _MSC_VER >= 1000
 #pragma once

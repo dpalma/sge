@@ -4,7 +4,6 @@
 #include "stdhdr.h"
 
 #include "OutputBar.h"
-#include "editorCtrlBars.h"
 
 #include "resource.h"       // main symbols
 
@@ -29,7 +28,7 @@ void OutputBarLogCallback(eLogSeverity severity, const tChar * pszMsg, size_t ms
 
 ////////////////////////////////////////
 
-AUTO_REGISTER_DOCKINGWINDOW(IDS_OUTPUT_BAR_TITLE, cOutputBar::Factory, kDWP_Bottom);
+AUTO_REGISTER_DOCKINGWINDOW_SIZED(IDS_OUTPUT_BAR_TITLE, cOutputBar::Factory, kDWP_Bottom, 150, 0);
 
 ////////////////////////////////////////
 

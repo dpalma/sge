@@ -3,18 +3,15 @@
 
 #include "stdhdr.h"
 
-#include "editorCtrlBars.h"
+#include "editorDockingWindows.h"
 
 #include "dbgalloc.h" // must be last header
 
 /////////////////////////////////////////////////////////////////////////////
 
-struct sDockingWindowDesc
+struct sDockingWindowDescNode : public sDockingWindowDesc
 {
-   uint titleStringId;
-   tDockingWindowFactoryFn pFactoryFn;
-   eDockingWindowPlacement placement;
-   struct sDockingWindowDesc * pNext;
+   struct sDockingWindowDescNode * pNext;
 };
 
 static bool operator ==(const struct sDockingWindowDesc & cb1,
@@ -23,85 +20,59 @@ static bool operator ==(const struct sDockingWindowDesc & cb1,
    return
       (cb1.titleStringId == cb2.titleStringId) &&
       (cb1.pFactoryFn == cb2.pFactoryFn) &&
-      (cb1.placement == cb2.placement);
+      (cb1.placement == cb2.placement) &&
+      (cb1.defaultSize.cx == cb2.defaultSize.cx) &&
+      (cb1.defaultSize.cy == cb2.defaultSize.cy);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-struct sDockingWindowDesc * g_pDockingWindowDescs = NULL;
+struct sDockingWindowDescNode * g_pDockingWindowDescs = NULL;
 
-struct sAutoDeleteDockingWindowDescs
+static class cAutoDeleteDockingWindowDescs
 {
-   ~sAutoDeleteDockingWindowDescs();
-};
-
-sAutoDeleteDockingWindowDescs::~sAutoDeleteDockingWindowDescs()
-{
-   while (g_pDockingWindowDescs != NULL)
+public:
+   ~cAutoDeleteDockingWindowDescs()
    {
-      struct sDockingWindowDesc * p = g_pDockingWindowDescs;
-      g_pDockingWindowDescs = g_pDockingWindowDescs->pNext;
-      delete p;
+      while (g_pDockingWindowDescs != NULL)
+      {
+         struct sDockingWindowDescNode * p = g_pDockingWindowDescs;
+         g_pDockingWindowDescs = g_pDockingWindowDescs->pNext;
+         delete p;
+      }
    }
-}
-
-sAutoDeleteDockingWindowDescs g_autoDeleteDockingWindowDescs;
+} g_autoDeleteDockingWindowDescs;
 
 /////////////////////////////////////////////////////////////////////////////
 
-tResult RegisterDockingWindow(uint titleStringId,
-                              tDockingWindowFactoryFn pFactoryFn,
-                              eDockingWindowPlacement placement)
+tResult RegisterDockingWindow(const sDockingWindowDesc & dwd)
 {
-   struct sDockingWindowDesc * pcb = new struct sDockingWindowDesc;
-   pcb->titleStringId = titleStringId;
-   pcb->pFactoryFn = pFactoryFn;
-   pcb->placement = placement;
-   pcb->pNext = g_pDockingWindowDescs;
-   g_pDockingWindowDescs = pcb;
+   struct sDockingWindowDescNode * pDWDN = new struct sDockingWindowDescNode;
+   if (pDWDN == NULL)
+   {
+      return E_OUTOFMEMORY;
+   }
+   static_cast<struct sDockingWindowDesc &>(*pDWDN) = dwd;
+   pDWDN->pNext = g_pDockingWindowDescs;
+   g_pDockingWindowDescs = pDWDN;
    return S_OK;
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void IterCtrlBarsBegin(HANDLE * phIter)
+void GetDockingWindowDescs(std::vector<sDockingWindowDesc> * pDWDescs)
 {
-   Assert(phIter != NULL);
-   *phIter = (HANDLE)g_pDockingWindowDescs;
-}
-
-bool IterNextCtrlBar(HANDLE * phIter,
-                     uint * pTitleStringId,
-                     tDockingWindowFactoryFn * ppFactoryFn,
-                     eDockingWindowPlacement * pPlacement)
-{
-   if (phIter != NULL && *phIter != NULL)
+   if (pDWDescs != NULL)
    {
-      struct sDockingWindowDesc * & pCtrlBar = (struct sDockingWindowDesc * &)*phIter;
+      pDWDescs->clear();
 
-      if (pTitleStringId != NULL)
+      struct sDockingWindowDescNode * pDWIter = g_pDockingWindowDescs;
+      while (pDWIter != NULL)
       {
-         *pTitleStringId = pCtrlBar->titleStringId;
+         pDWDescs->push_back(static_cast<sDockingWindowDesc>(*pDWIter));
+         pDWIter = pDWIter->pNext;
       }
-      if (ppFactoryFn != NULL)
-      {
-         *ppFactoryFn = pCtrlBar->pFactoryFn;
-      }
-      if (pPlacement != NULL)
-      {
-         *pPlacement = pCtrlBar->placement;
-      }
-
-      pCtrlBar = pCtrlBar->pNext;
-
-      return true;
    }
-
-   return false;
-}
-
-void IterCtrlBarsEnd(HANDLE hIter)
-{
 }
 
 /////////////////////////////////////////////////////////////////////////////

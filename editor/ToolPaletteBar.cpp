@@ -5,8 +5,6 @@
 
 #include "ToolPaletteBar.h"
 
-#include "editorCtrlBars.h"
-
 #include "globalobj.h"
 
 #include "resource.h"       // main symbols
@@ -139,7 +137,7 @@ void cButtonPanel::SetMargins(LPCRECT pMargins)
 
 ////////////////////////////////////////
 
-AUTO_REGISTER_DOCKINGWINDOW(IDS_TOOL_PALETTE_BAR_TITLE, cToolPaletteBar::Factory, kDWP_Right);
+AUTO_REGISTER_DOCKINGWINDOW_SIZED(IDS_TOOL_PALETTE_BAR_TITLE, cToolPaletteBar::Factory, kDWP_Right, 150, 0);
 
 ////////////////////////////////////////
 
@@ -161,6 +159,7 @@ tResult cToolPaletteBar::Factory(cDockingWindow * * ppDockingWindow)
 ////////////////////////////////////////
 
 cToolPaletteBar::cToolPaletteBar()
+ : m_hTerrainTileGroup(NULL)
 {
 }
 
@@ -176,11 +175,32 @@ void cToolPaletteBar::OnDefaultTileSetChange(IEditorTileSet * pTileSet)
 {
    ClearButtons();
 
+   if (m_toolPalette.IsWindow() && (m_hTerrainTileGroup != NULL))
+   {
+      Verify(m_toolPalette.RemoveGroup(m_hTerrainTileGroup));
+      m_hTerrainTileGroup = NULL;
+   }
+
    if (pTileSet != NULL)
    {
       uint nTiles = 0;
       if (pTileSet->GetTileCount(&nTiles) == S_OK)
       {
+         if (m_toolPalette.IsWindow())
+         {
+            cStr name;
+            HIMAGELIST hImageList = NULL;
+            if (pTileSet->GetName(&name) == S_OK
+               && pTileSet->GetImageList(16, &hImageList) == S_OK)
+            {
+               // cToolPalette::AddGroup() expects to take ownership of image
+               // list, by the tileset stores it internally; hence, the
+               // ImageList_Duplicate() call.
+               m_hTerrainTileGroup = m_toolPalette.AddGroup(name.c_str(),
+                  ImageList_Duplicate(hImageList));
+            }
+         }
+
          for (uint i = 0; i < nTiles; i++)
          {
             cAutoIPtr<IEditorTile> pTile;
@@ -191,6 +211,11 @@ void cToolPaletteBar::OnDefaultTileSetChange(IEditorTileSet * pTileSet)
                if (pTile->GetName(&tileName) == S_OK
                   && pTile->GetBitmap(kButtonSize, false, &hBitmap) == S_OK)
                {
+                  if (m_toolPalette.IsWindow() && (m_hTerrainTileGroup != NULL))
+                  {
+                     m_toolPalette.AddTool(m_hTerrainTileGroup, tileName.c_str(), i);
+                  }
+
                   CButton * pButton = new CButton();
                   if (pButton != NULL)
                   {

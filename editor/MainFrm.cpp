@@ -6,7 +6,7 @@
 #include "MainFrm.h"
 #include "MenuItemInfo.h"
 #include "editorView.h"
-#include "editorCtrlBars.h"
+#include "editorDockingWindows.h"
 #include "aboutdlg.h"
 #include "MapSettingsDlg.h"
 #include "editorTypes.h"
@@ -275,54 +275,48 @@ cMainFrame::~cMainFrame()
 
 void cMainFrame::CreateDockingWindows()
 {
-   static const uint placementMap[] =
+   std::vector<sDockingWindowDesc> defined, created;
+   GetDockingWindowDescs(&defined);
+
    {
-      dockwins::CDockingSide::sTop, // kCBP_Top
-      dockwins::CDockingSide::sLeft, // kCBP_Left
-      dockwins::CDockingSide::sRight, //kCBP_Right
-      dockwins::CDockingSide::sBottom, //kCBP_Bottom
-      dockwins::CDockingSide::sInvalid, //kCBP_Float
-   };
-
-   uint titleStringId;
-   tDockingWindowFactoryFn factoryFn;
-   eDockingWindowPlacement placement;
-
-   CRect defaultDockRect(0, 0, 100, 100);
-
-   std::vector<uint> dockSides;
-
-   HANDLE hIter;
-   IterCtrlBarsBegin(&hIter);
-   while (IterNextCtrlBar(&hIter, &titleStringId, &factoryFn, &placement))
-   {
-      CString title;
-      if (!title.LoadString(titleStringId))
+      std::vector<sDockingWindowDesc>::iterator iter = defined.begin();
+      std::vector<sDockingWindowDesc>::iterator end = defined.end();
+      for (; iter != end; iter++)
       {
-         title.Format("DockingWindow%d", titleStringId);
-      }
-
-      if (factoryFn != NULL && !IsBadCodePtr(reinterpret_cast<FARPROC>(factoryFn)))
-      {
-         cDockingWindow * pDockingWindow = NULL;
-         if (((*factoryFn)(&pDockingWindow) == S_OK) && (pDockingWindow != NULL))
+         CString title;
+         if (!title.LoadString(iter->titleStringId))
          {
-            if (pDockingWindow->Create(m_hWnd, defaultDockRect, title))
+            title.Format("DockingWindow%d", iter->titleStringId);
+         }
+
+         if (iter->pFactoryFn != NULL && !IsBadCodePtr(reinterpret_cast<FARPROC>(iter->pFactoryFn)))
+         {
+            cDockingWindow * pDockingWindow = NULL;
+            if (((*iter->pFactoryFn)(&pDockingWindow) == S_OK) && (pDockingWindow != NULL))
             {
-               dockSides.push_back(placementMap[placement]);
-               m_dockingWindows.push_back(pDockingWindow);
-            }
-            else
-            {
-               WarnMsg("Error creating docking window\n");
-               delete pDockingWindow;
+               if (pDockingWindow->Create(m_hWnd, rcDefault, title))
+               {
+                  created.push_back(*iter);
+                  m_dockingWindows.push_back(pDockingWindow);
+               }
+               else
+               {
+                  WarnMsg1("Error creating docking window \"%s\"\n", (LPCTSTR)title);
+                  delete pDockingWindow;
+               }
             }
          }
       }
    }
-   IterCtrlBarsEnd(hIter);
 
-   Assert(m_dockingWindows.size() == dockSides.size());
+   static const dockwins::CDockingSide placementMap[] =
+   {
+      dockwins::CDockingSide::sTop,       // kDWP_Top
+      dockwins::CDockingSide::sLeft,      // kDWP_Left
+      dockwins::CDockingSide::sRight,     // kDWP_Right
+      dockwins::CDockingSide::sBottom,    // kDWP_Bottom
+      dockwins::CDockingSide::sInvalid,   // kDWP_Float
+   };
 
    uint index = 0;
    tDockingWindows::iterator iter = m_dockingWindows.begin();
@@ -330,8 +324,15 @@ void cMainFrame::CreateDockingWindows()
    for (; iter != end; iter++, index++)
    {
       cDockingWindow * pDockingWindow = *iter;
-      DockWindow(*pDockingWindow, dockwins::CDockingSide(dockSides[index]),
-         0, 0.0f/*fPctPos*/,100/*nWidth*/,100/* nHeight*/);
+
+      const sDockingWindowDesc & dwd = created[index];
+
+      DockWindow(
+         *pDockingWindow,
+         placementMap[dwd.placement],
+         0, 0,
+         dwd.defaultSize.cx,
+         dwd.defaultSize.cy);
    }
 }
 
