@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // $Id$
 
-#ifndef INCLUDED_STDPCH_H
-#define INCLUDED_STDPCH_H
+#ifndef INCLUDED_STDHDR_H
+#define INCLUDED_STDHDR_H
 
 #include "techtypes.h"
 #include "techdebug.h"
@@ -11,4 +11,4 @@
 #pragma once
 #endif
 
-#endif // !INCLUDED_STDPCH_H
+#endif // !INCLUDED_STDHDR_H
