@@ -12,11 +12,13 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// compute hash for a memory block
-TECH_API uint Hash(const void * key, int size);
+typedef  unsigned long  int  ub4;   /* unsigned 4-byte quantities */
+typedef  unsigned       char ub1;   /* unsigned 1-byte quantities */
 
-// compute hash for a 4-byte value
-TECH_API uint Hash(const void * ptr);
+TECH_API ub4 hash(register ub1 * k, register ub4 length, register ub4 initval);
+
+inline uint Hash(const void * key, int size) { return hash((ub1*)key, size, 0xDEADBEEF); }
+inline uint Hash(const void * ptr) { return hash((ub1*)ptr, sizeof(ptr), 0xDEADBEEF); }
 
 ///////////////////////////////////////////////////////////////////////////////
 
