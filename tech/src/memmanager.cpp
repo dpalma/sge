@@ -371,7 +371,7 @@ public:
       }
       while (p != NULL);
 
-      for (int i = 0; i < (2 * pointers.size()); i++)
+      for (uint i = 0; i < (2 * pointers.size()); i++)
       {
          int s1 = rand() % pointers.size(), s2 = s1;
          while (s1 == s2)

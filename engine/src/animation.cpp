@@ -118,7 +118,7 @@ tResult cKeyFrameInterpolator::GetScaleKeys(sKeyFrameVec3 * pScaleKeys, uint * p
 {
    if (pScaleKeys != NULL && pnScaleKeys != NULL)
    {
-      int nKeyFramesToCopy = Min(m_scaleKeys.size(), *pnScaleKeys);
+      uint nKeyFramesToCopy = Min(m_scaleKeys.size(), *pnScaleKeys);
       memcpy(pScaleKeys, &m_scaleKeys[0], sizeof(sKeyFrameVec3) * nKeyFramesToCopy);
       *pnScaleKeys = nKeyFramesToCopy;
       return (nKeyFramesToCopy < m_scaleKeys.size()) ? S_FALSE : S_OK;
@@ -137,7 +137,7 @@ tResult cKeyFrameInterpolator::GetRotationKeys(sKeyFrameQuat * pRotationKeys, ui
 {
    if (pRotationKeys != NULL && pnRotationKeys != NULL)
    {
-      int nKeyFramesToCopy = Min(m_rotationKeys.size(), *pnRotationKeys);
+      uint nKeyFramesToCopy = Min(m_rotationKeys.size(), *pnRotationKeys);
       memcpy(pRotationKeys, &m_rotationKeys[0], sizeof(sKeyFrameQuat) * nKeyFramesToCopy);
       *pnRotationKeys = nKeyFramesToCopy;
       return (nKeyFramesToCopy < m_rotationKeys.size()) ? S_FALSE : S_OK;
@@ -156,7 +156,7 @@ tResult cKeyFrameInterpolator::GetTranslationKeys(sKeyFrameVec3 * pTranslationKe
 {
    if (pTranslationKeys != NULL && pnTranslationKeys != NULL)
    {
-      int nKeyFramesToCopy = Min(m_translationKeys.size(), *pnTranslationKeys);
+      uint nKeyFramesToCopy = Min(m_translationKeys.size(), *pnTranslationKeys);
       memcpy(pTranslationKeys, &m_translationKeys[0], sizeof(sKeyFrameVec3) * nKeyFramesToCopy);
       *pnTranslationKeys = nKeyFramesToCopy;
       return (nKeyFramesToCopy < m_translationKeys.size()) ? S_FALSE : S_OK;
