@@ -129,6 +129,8 @@ public:
    const char * GetName() const;
    void SetName(const char * pszName);
 
+   const cBone * GetParent() const;
+
    bool AddChild(const cBone * pChild);
 
    const tMatrix4 & GetLocalTransform() const;
@@ -158,6 +160,13 @@ inline void cBone::SetName(const char * pszName)
 
 ///////////////////////////////////////
 
+inline const cBone * cBone::GetParent() const
+{
+   return m_pParent;
+}
+
+///////////////////////////////////////
+
 inline const tMatrix4 & cBone::GetLocalTransform() const
 {
    return m_localTransform;
@@ -178,17 +187,17 @@ inline void cBone::SetLocalTransform(const tMatrix4 & matrix)
 
 class cMs3dBone : public cBone
 {
-   friend class cReadWriteOps<cMs3dBone>;
-
 public:
    cMs3dBone();
    cMs3dBone(const cMs3dBone & other);
    const cMs3dBone & operator =(const cMs3dBone & other);
 
    const char * GetParentName() const;
+   void SetParentName(const char * pszParentName);
+
    int GetParentIndex() const;
    void SetParentIndex(int index);
-   const tMatrix4 & GetLocalMatrix() const;
+
    void SetFinalMatrix(const tMatrix4 & m);
    const tMatrix4 & GetFinalMatrix() const;
 
@@ -207,6 +216,14 @@ inline const char * cMs3dBone::GetParentName() const
 
 ///////////////////////////////////////
 
+inline void cMs3dBone::SetParentName(const char * pszParentName)
+{
+   strncpy(parentName, pszParentName, _countof(parentName));
+   parentName[_countof(parentName) - 1] = 0;
+}
+
+///////////////////////////////////////
+
 inline int cMs3dBone::GetParentIndex() const
 {
    return m_iParent;
@@ -217,13 +234,6 @@ inline int cMs3dBone::GetParentIndex() const
 inline void cMs3dBone::SetParentIndex(int index)
 {
    m_iParent = index;
-}
-
-///////////////////////////////////////
-
-inline const tMatrix4 & cMs3dBone::GetLocalMatrix() const
-{
-   return cBone::GetLocalTransform();
 }
 
 ///////////////////////////////////////
