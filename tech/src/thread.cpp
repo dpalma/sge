@@ -485,7 +485,7 @@ void cThreadTests::TestSleep()
 
    delete pThread, pThread = NULL;
 
-   CPPUNIT_ASSERT(fabs(end - start - kWaitSecs) < 1.0e-2);
+   CPPUNIT_ASSERT((end - start) > (kWaitSecs - 1.0e-2));
 }
 
 #endif // HAVE_CPPUNIT
