@@ -47,7 +47,7 @@ struct sMs3dVertex
    tVec3::value_type u, v;
    tVec3 normal;
    tVec3 pos;
-   uint bone;
+   float bone;
 };
 
 sVertexElement g_ms3dVertexDecl[] =
@@ -55,7 +55,7 @@ sVertexElement g_ms3dVertexDecl[] =
    { kVDU_TexCoord, kVDT_Float2 },
    { kVDU_Normal, kVDT_Float3 },
    { kVDU_Position, kVDT_Float3 },
-   { kVDU_Index, kVDT_UnsignedByte4 },
+   { kVDU_Index, kVDT_Float1 },
 };
 
 static bool operator ==(const struct sMs3dVertex & v1,
