@@ -133,7 +133,7 @@ static char * CollapseDots(const char * pszPath, char * pszResult, int maxLen)
    {
       if (dirs[i] != NULL)
       {
-         int len = strcspn(dirs[i] + 1, szPathSeps) + 1;
+         size_t len = strcspn(dirs[i] + 1, szPathSeps) + 1;
          strncat(pszResult, dirs[i], Min(len, maxLen - strlen(pszResult)));
       }
    }

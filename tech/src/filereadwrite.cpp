@@ -39,13 +39,22 @@ void cFileReader::OnFinalRelease()
 
 ///////////////////////////////////////
 
-long cFileReader::Tell()
+tResult cFileReader::Tell(ulong * pPos)
 {
-   if (m_fp != NULL)
+   if (pPos == NULL)
    {
-      return ftell(m_fp);
+      return E_POINTER;
    }
-   return -1;
+   if (m_fp == NULL)
+   {
+      *pPos = 0;
+      return S_FALSE;
+   }
+   else
+   {
+      *pPos = ftell(m_fp);
+      return S_OK;
+   }
 }
 
 ///////////////////////////////////////
@@ -81,13 +90,27 @@ tResult cFileReader::Seek(long pos, eSeekOrigin origin)
 
 tResult cFileReader::Read(cStr * pValue, char stop)
 {
-   if (m_fp == NULL)
-      return E_FAIL;
+   if (pValue == NULL)
+   {
+      return E_POINTER;
+   }
 
-   long pos = Tell();
+   if (m_fp == NULL)
+   {
+      return E_FAIL;
+   }
+
+   ulong pos;
+   if (FAILED(Tell(&pos)))
+   {
+      return E_FAIL;
+   }
+
    uint len = 0;
    for (char c = fgetc(m_fp); c != stop && c != EOF; c = fgetc(m_fp))
+   {
       len++;
+   }
    Seek(pos, kSO_Set);
 
    char * pszBuffer = (char *)alloca(len + 1);
@@ -95,36 +118,43 @@ tResult cFileReader::Read(cStr * pValue, char stop)
    size_t nRead = fread(pszBuffer, 1, len + 1, m_fp);
 
    if (ferror(m_fp))
+   {
       return E_FAIL;
+   }
 
    pszBuffer[len] = 0; // ensure always null-terminated
    *pValue = pszBuffer;
 
-   if (feof(m_fp))
-      return S_FALSE;
-   else
-      return S_OK;
+   return feof(m_fp) ? S_FALSE : S_OK;
 }
 
 ///////////////////////////////////////
 
 tResult cFileReader::Read(void * pv, size_t nBytes, size_t * pnBytesRead)
 {
+   if (pv == NULL)
+   {
+      return E_POINTER;
+   }
+
    if (m_fp == NULL)
+   {
       return E_FAIL;
+   }
 
    size_t nBytesRead = fread(pv, sizeof(byte), nBytes, m_fp);
 
    if (ferror(m_fp))
-      return E_FAIL;
+   {
+     return E_FAIL;
+   }
 
    if (pnBytesRead != NULL)
+   {
       *pnBytesRead = nBytesRead;
+   }
 
-   if (feof(m_fp))
-      return S_FALSE;
-   else
-      return S_OK;
+   return feof(m_fp) ? S_FALSE : S_OK;
 }
 
 ///////////////////////////////////////

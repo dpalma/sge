@@ -15,7 +15,11 @@ static char * GetContents(IReader * pReader)
    Assert(pReader != NULL);
 
    pReader->Seek(0, kSO_End);
-   int length = pReader->Tell();
+   ulong length;
+   if (FAILED(pReader->Tell(&length)))
+   {
+      return NULL;
+   }
    pReader->Seek(0, kSO_Set);
 
    char * pszContents = new char[length + 1];

@@ -56,7 +56,7 @@ public:
 
 interface IReader : IUnknown
 {
-   virtual long Tell() = 0;
+   virtual tResult Tell(ulong * pPos) = 0;
    virtual tResult Seek(long pos, eSeekOrigin origin) = 0;
 
    template <typename T>

@@ -328,7 +328,7 @@ tResult cMs3dFileReader::CreateMesh(IRenderDevice * pRenderDevice, IMesh * * ppM
             uint16 * pFaces = NULL;
             if (pSubMesh->LockIndexBuffer(kBL_Discard, (void**)&pFaces) == S_OK)
             {
-               for (int i = 0; i < iter->GetNumTriangles(); i++)
+               for (uint i = 0; i < iter->GetNumTriangles(); i++)
                {
                   const ms3d_triangle_t & tri = m_triangles[iter->GetTriangle(i)];
                   for (int k = 0; k < 3; k++)

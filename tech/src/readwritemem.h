@@ -23,7 +23,7 @@ public:
 
    virtual void OnFinalRelease();
 
-   virtual long Tell();
+   virtual tResult Tell(ulong * pPos);
    virtual tResult Seek(long pos, eSeekOrigin origin);
 
    virtual tResult Read(cStr * pValue, char stop);
@@ -33,7 +33,7 @@ private:
    byte * m_pMem;
    size_t m_memSize;
    bool m_bOwn;
-   long m_readPos;
+   size_t m_readPos;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

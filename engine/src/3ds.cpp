@@ -149,7 +149,9 @@ static IMaterial * MaterialFrom3ds(const c3dsMaterial * p3dsMaterial,
 static long ChunkGetEnd(IReader * pReader, const s3dsChunkHeader & chunk)
 {
    Assert(pReader != NULL);
-   return pReader->Tell() + chunk.length - kSizeof3dsChunkHeader;
+   ulong pos;
+   Verify(SUCCEEDED(pReader->Tell(&pos)));
+   return pos + chunk.length - kSizeof3dsChunkHeader;
 }
 
 static void ChunkSkip(IReader * pReader, const s3dsChunkHeader & chunk)
@@ -225,11 +227,13 @@ static bool Load3dsPercentage(IReader * pReader, float * pPercentage)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static void Load3dsTexMap(IReader * pReader, long stop, c3dsMaterial * pMaterial)
+static void Load3dsTexMap(IReader * pReader, ulong stop, c3dsMaterial * pMaterial)
 {
    s3dsChunkHeader chunk;
 
-   while (pReader->Tell() < stop &&
+   ulong pos;
+   pReader->Tell(&pos);
+   while ((pos < stop) &&
           pReader->Read(&chunk) == S_OK)
    {
       switch (chunk.id)
@@ -249,16 +253,19 @@ static void Load3dsTexMap(IReader * pReader, long stop, c3dsMaterial * pMaterial
             break;
          }
       }
+      pReader->Tell(&pos);
    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static void Load3dsMaterial(IReader * pReader, long stop, c3dsMaterial * pMaterial)
+static void Load3dsMaterial(IReader * pReader, ulong stop, c3dsMaterial * pMaterial)
 {
    s3dsChunkHeader chunk;
 
-   while (pReader->Tell() < stop &&
+   ulong pos;
+   pReader->Tell(&pos);
+   while ((pos < stop) &&
           pReader->Read(&chunk) == S_OK)
    {
       switch (chunk.id)
@@ -319,6 +326,7 @@ static void Load3dsMaterial(IReader * pReader, long stop, c3dsMaterial * pMateri
             break;
          }
       }
+      pReader->Tell(&pos);
    }
 }
 
@@ -336,7 +344,7 @@ bool Load3dsMaterial(IReader * pReader, long stop, IRenderDevice * pRenderDevice
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool Load3dsTriangleMesh(IReader * pReader, long stop, IRenderDevice * pRenderDevice, IMesh * pMesh)
+bool Load3dsTriangleMesh(IReader * pReader, ulong stop, IRenderDevice * pRenderDevice, IMesh * pMesh)
 {
    bool bResult = false;
 
@@ -347,7 +355,9 @@ bool Load3dsTriangleMesh(IReader * pReader, long stop, IRenderDevice * pRenderDe
 
    s3dsChunkHeader chunk;
 
-   while (pReader->Tell() < stop &&
+   ulong pos;
+   pReader->Tell(&pos);
+   while ((pos < stop) &&
           pReader->Read(&chunk) == S_OK)
    {
       switch (chunk.id)
@@ -495,12 +505,15 @@ bool Load3dsTriangleMesh(IReader * pReader, long stop, IRenderDevice * pRenderDe
 
          default:
          {
+            ulong pos;
+            pReader->Tell(&pos);
             LocalMsg3("Skipping chunk %x, length %d at file position %d in triangle mesh\n",
-               chunk.id, chunk.length, pReader->Tell());
+               chunk.id, chunk.length, pos);
             ChunkSkip(pReader, chunk);
             break;
          }
       }
+      pReader->Tell(&pos);
    }
 
    return bResult;
@@ -508,7 +521,7 @@ bool Load3dsTriangleMesh(IReader * pReader, long stop, IRenderDevice * pRenderDe
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool Load3dsNamedObject(IReader * pReader, long stop, IRenderDevice * pRenderDevice, IMesh * pMesh)
+bool Load3dsNamedObject(IReader * pReader, ulong stop, IRenderDevice * pRenderDevice, IMesh * pMesh)
 {
    cStr name;
    pReader->Read(&name, 0);
@@ -517,7 +530,9 @@ bool Load3dsNamedObject(IReader * pReader, long stop, IRenderDevice * pRenderDev
 
    s3dsChunkHeader chunk;
 
-   while (pReader->Tell() < stop &&
+   ulong pos;
+   pReader->Tell(&pos);
+   while ((pos < stop) &&
           pReader->Read(&chunk) == S_OK)
    {
       switch (chunk.id)
@@ -538,6 +553,7 @@ bool Load3dsNamedObject(IReader * pReader, long stop, IRenderDevice * pRenderDev
             break;
          }
       }
+      pReader->Tell(&pos);
    }
 
    return true;
@@ -545,11 +561,13 @@ bool Load3dsNamedObject(IReader * pReader, long stop, IRenderDevice * pRenderDev
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool Load3dsMesh(IReader * pReader, long stop, IRenderDevice * pRenderDevice, IMesh * pMesh)
+bool Load3dsMesh(IReader * pReader, ulong stop, IRenderDevice * pRenderDevice, IMesh * pMesh)
 {
    s3dsChunkHeader chunk;
 
-   while (pReader->Tell() < stop &&
+   ulong pos;
+   pReader->Tell(&pos);
+   while ((pos < stop) &&
           pReader->Read(&chunk) == S_OK)
    {
       switch (chunk.id)
@@ -576,6 +594,7 @@ bool Load3dsMesh(IReader * pReader, long stop, IRenderDevice * pRenderDevice, IM
             break;
          }
       }
+      pReader->Tell(&pos);
    }
 
    return true;
@@ -602,11 +621,13 @@ bool Load3dsKeyFrameHeader(IReader * pReader, long stop, IMesh * pMesh)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool Load3dsKeyFrameData(IReader * pReader, long stop, IMesh * pMesh)
+bool Load3dsKeyFrameData(IReader * pReader, ulong stop, IMesh * pMesh)
 {
    s3dsChunkHeader chunk;
 
-   while (pReader->Tell() < stop &&
+   ulong pos;
+   pReader->Tell(&pos);
+   while ((pos < stop) &&
           pReader->Read(&chunk) == S_OK)
    {
       switch (chunk.id)
@@ -624,6 +645,7 @@ bool Load3dsKeyFrameData(IReader * pReader, long stop, IMesh * pMesh)
             break;
          }
       }
+      pReader->Tell(&pos);
    }
 
    return true;
@@ -631,12 +653,14 @@ bool Load3dsKeyFrameData(IReader * pReader, long stop, IMesh * pMesh)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool Load3dsMain(IReader * pReader, long stop, IRenderDevice * pRenderDevice, IMesh * pMesh)
+bool Load3dsMain(IReader * pReader, ulong stop, IRenderDevice * pRenderDevice, IMesh * pMesh)
 {
    s3dsChunkHeader chunk;
    bool bFoundMeshData = false;
 
-   while (pReader->Tell() < stop &&
+   ulong pos;
+   pReader->Tell(&pos);
+   while ((pos < stop) &&
           pReader->Read(&chunk) == S_OK)
    {
       switch (chunk.id)
@@ -668,6 +692,7 @@ bool Load3dsMain(IReader * pReader, long stop, IRenderDevice * pRenderDevice, IM
             break;
          }
       }
+      pReader->Tell(&pos);
    }
 
    return bFoundMeshData;
@@ -680,14 +705,25 @@ IMesh * Load3ds(IRenderDevice * pRenderDevice, IReader * pReader)
    Assert(pRenderDevice != NULL);
    Assert(pReader != NULL);
 
+   ulong originalPos;
+   if (FAILED(pReader->Tell(&originalPos)))
+   {
+      return NULL;
+   }
+
+   pReader->Seek(0, kSO_End);
+
+   ulong totalSize;
+   if (FAILED(pReader->Tell(&totalSize)))
+   {
+      return NULL;
+   }
+
+   pReader->Seek(originalPos, kSO_Set);
+
    IMesh * pMesh = MeshCreate();
 
    bool bValidated = false;
-
-   long originalPos = pReader->Tell();
-   pReader->Seek(0, kSO_End);
-   long totalSize = pReader->Tell();
-   pReader->Seek(originalPos, kSO_Set);
 
    s3dsChunkHeader chunk;
    while (pReader->Read(&chunk) == S_OK)

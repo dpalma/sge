@@ -24,7 +24,7 @@ public:
 
    virtual void OnFinalRelease();
 
-   virtual long Tell();
+   virtual tResult Tell(ulong * pPos);
    virtual tResult Seek(long pos, eSeekOrigin origin);
 
    virtual tResult Read(cStr * pValue, char stop);

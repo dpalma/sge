@@ -84,8 +84,8 @@ tResult cReadWriteOps<sTargaHeader>::Read(IReader * pReader, sTargaHeader * pVal
 template <>
 tResult cReadWriteOps<sNewTargaFooter>::Read(IReader * pReader, sNewTargaFooter * pValue)
 {
-   long pos = pReader->Tell();
-   if (pos < 0 ||
+   ulong pos;
+   if (FAILED(pReader->Tell(&pos)) ||
        pReader->Seek(-(int)(sizeof(sNewTargaFooter)), kSO_End) != S_OK)
    {
       return E_FAIL;

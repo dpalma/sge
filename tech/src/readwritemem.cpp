@@ -47,13 +47,22 @@ void cMemReader::OnFinalRelease()
 
 ////////////////////////////////////////
 
-long cMemReader::Tell()
+tResult cMemReader::Tell(ulong * pPos)
 {
-   if (m_pMem != NULL)
+   if (pPos == NULL)
    {
-      return m_readPos;
+      return E_POINTER;
    }
-   return -1;
+   if (m_pMem == NULL)
+   {
+      *pPos = 0;
+      return S_FALSE;
+   }
+   else
+   {
+      *pPos = m_readPos;
+      return S_OK;
+   }
 }
 
 ////////////////////////////////////////
@@ -88,12 +97,15 @@ tResult cMemReader::Read(cStr * pValue, char stop)
       return S_FALSE;
    }
 
-   long pos;
-   for (pos = Tell(); pos < m_memSize; pos++)
+   ulong pos;
+   if (SUCCEEDED(Tell(&pos)))
    {
-      if (m_pMem[pos] == stop)
+      for (; pos < m_memSize; pos++)
       {
-         break;
+         if (m_pMem[pos] == stop)
+         {
+            break;
+         }
       }
    }
 
