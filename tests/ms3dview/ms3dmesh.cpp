@@ -21,6 +21,7 @@
 #include <map>
 
 #include <GL/gl.h>
+#include "GL/glext.h"
 
 #include <Cg/cg.h>
 #include <Cg/cgGL.h>
@@ -34,6 +35,10 @@ static char THIS_FILE[] = __FILE__;
 // REFERENCES
 // http://nehe.gamedev.net/data/lessons/lesson.asp?lesson=31
 // http://rsn.gamedev.net/tutorials/ms3danim.asp
+
+extern PFNGLVERTEXWEIGHTFEXTPROC glVertexWeightfEXT;
+extern PFNGLVERTEXWEIGHTFVEXTPROC glVertexWeightfvEXT;
+extern PFNGLVERTEXWEIGHTPOINTEREXTPROC glVertexWeightPointerEXT;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -86,9 +91,9 @@ void cgErrorCallback()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static void MatrixFromAngles(tVec3 angles, sMatrix4 * pMatrix)
+static void MatrixFromAngles(tVec3 angles, tMatrix4 * pMatrix)
 {
-   sMatrix4 rotX, rotY, rotZ, temp1, temp2;
+   tMatrix4 rotX, rotY, rotZ, temp1, temp2;
    MatrixRotateX(Rad2Deg(angles.x), &rotX);
    MatrixRotateY(Rad2Deg(angles.y), &rotY);
    MatrixRotateZ(Rad2Deg(angles.z), &rotZ);
@@ -214,7 +219,7 @@ tResult cReadWriteOps<cMs3dJoint>::Read(IReader * pReader, cMs3dJoint * pJoint)
          pReader->Read(position, sizeof(position)) != S_OK)
          break;
 
-      sMatrix4 mt, mr;
+      tMatrix4 mt, mr;
       MatrixTranslate(position[0], position[1], position[2], &mt);
       MatrixFromAngles(tVec3(rotation), &mr);
       pJoint->m_local = mt * mr;
@@ -269,6 +274,20 @@ tResult cReadWriteOps<cMs3dJoint>::Read(IReader * pReader, cMs3dJoint * pJoint)
    while (0);
 
    return result;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cMs3dSkeleton
+//
+
+cMs3dSkeleton::cMs3dSkeleton()
+{
+}
+
+cMs3dSkeleton::~cMs3dSkeleton()
+{
 }
 
 
@@ -444,6 +463,7 @@ tResult cMs3dMesh::Read(IReader * pReader, IRenderDevice * pRenderDevice, IResou
 
       if (pMaterial != NULL)
       {
+         pMaterial->SetName(material.name);
          pMaterial->SetAmbient(cColor(material.ambient));
          pMaterial->SetDiffuse(cColor(material.diffuse));
          pMaterial->SetSpecular(cColor(material.specular));
@@ -556,8 +576,8 @@ void cMs3dMesh::SetupJoints()
       }
    }
 
-   std::vector<sMatrix4> absolutes(m_joints.size());
-   std::vector<sMatrix4> inverses(m_joints.size());
+   std::vector<tMatrix4> absolutes(m_joints.size());
+   std::vector<tMatrix4> inverses(m_joints.size());
 
    for (iter = m_joints.begin(), index = 0; iter != m_joints.end(); iter++, index++)
    {
@@ -576,7 +596,7 @@ void cMs3dMesh::SetupJoints()
 
       iter->SetParentJointIndex(iParent);
 
-      sMatrix4 absolute;
+      tMatrix4 absolute;
 
       if (iParent == -1)
       {
@@ -599,7 +619,7 @@ void cMs3dMesh::SetupJoints()
    {
       if (vertIter->boneId != -1)
       {
-         const sMatrix4 & m = inverses[vertIter->boneId];
+         const tMatrix4 & m = inverses[vertIter->boneId];
          tVec4 v2, v(vertIter->vertex[0], vertIter->vertex[1], vertIter->vertex[2], k4thDimension);
          v2 = m.Transform(v);
          vertIter->vertex[0] = v2.x;
@@ -617,7 +637,7 @@ void cMs3dMesh::SetupJoints()
          ms3d_vertex_t & v = m_vertices[triIter->vertexIndices[i]];
          if (v.boneId != -1)
          {
-            const sMatrix4 & m = inverses[v.boneId];
+            const tMatrix4 & m = inverses[v.boneId];
             tVec4 n(
                triIter->vertexNormals[i][0],
                triIter->vertexNormals[i][1],
@@ -647,7 +667,7 @@ void cMs3dMesh::SetFrame(float percent)
          percent * iter->AccessInterpolator()->GetPeriod(),
          NULL, &rotation, &translation) == S_OK)
       {
-         sMatrix4 mt, mr, mf, temp;
+         tMatrix4 mt, mr, mf, temp;
          MatrixTranslate(translation.x, translation.y, translation.z, &mt);
          rotation.ToMatrix(&mr);
          temp = mt * mr;
@@ -698,7 +718,7 @@ void cMs3dMesh::RenderSoftware() const
             }
             else
             {
-               const sMatrix4 & m = m_joints[vk.boneId].GetFinalMatrix();
+               const tMatrix4 & m = m_joints[vk.boneId].GetFinalMatrix();
 
                tVec4 nprime, n(tri.vertexNormals[k][0], tri.vertexNormals[k][1], tri.vertexNormals[k][2], k4thDimension);
                nprime = m.Transform(n);
@@ -749,7 +769,7 @@ void cMs3dMesh::RenderVertexProgram() const
             const ms3d_vertex_t & vk = m_vertices[tri.vertexIndices[k]];
             if (vk.boneId != -1)
             {
-               //const sMatrix4 & m = m_joints[vk.boneId].GetFinalMatrix();
+               //const tMatrix4 & m = m_joints[vk.boneId].GetFinalMatrix();
 
                glTexCoord2f(tri.s[k], 1.0f - tri.t[k]);
                glNormal3fv(tri.vertexNormals[k]);

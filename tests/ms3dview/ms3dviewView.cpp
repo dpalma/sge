@@ -27,6 +27,10 @@ const GLfloat kZFar = 2000;
 const int IDC_SLIDER = 1000;
 const int kSliderHeight = 30;
 
+PFNGLVERTEXWEIGHTFEXTPROC glVertexWeightfEXT = NULL;
+PFNGLVERTEXWEIGHTFVEXTPROC glVertexWeightfvEXT = NULL;
+PFNGLVERTEXWEIGHTPOINTEREXTPROC glVertexWeightPointerEXT = NULL;
+
 /////////////////////////////////////////////////////////////////////////////
 // CMs3dviewView
 
@@ -176,7 +180,12 @@ int CMs3dviewView::OnCreate(LPCREATESTRUCT lpCreateStruct)
       1);
 
    glEnable(GL_DEPTH_TEST);
-//   glEnable(GL_VERTEX_WEIGHTING_EXT);
+   glEnable(GL_VERTEX_WEIGHTING_EXT);
+   glEnable(GL_NORMALIZE); // required with vertex weighting
+
+   glVertexWeightfEXT = (PFNGLVERTEXWEIGHTFEXTPROC)wglGetProcAddress("glVertexWeightfEXT");
+   glVertexWeightfvEXT = (PFNGLVERTEXWEIGHTFVEXTPROC)wglGetProcAddress("glVertexWeightfvEXT");
+   glVertexWeightPointerEXT = (PFNGLVERTEXWEIGHTPOINTEREXTPROC)wglGetProcAddress("glVertexWeightPointerEXT");
 
 	return 0;
 }

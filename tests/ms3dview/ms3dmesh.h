@@ -182,16 +182,16 @@ inline const sMatrix4 & cMs3dJoint::GetLocalMatrix() const
 class cMs3dSkeleton
 {
    cMs3dSkeleton(const cMs3dSkeleton &); // private, un-implemented
-   const cMs3dSkeleton & operator=(const cMs3dSkeleton &); // private, un-implemented
+   const cMs3dSkeleton & operator =(const cMs3dSkeleton &); // private, un-implemented
 
 public:
    cMs3dSkeleton();
-   ~cMs3dSkeleton();
+   virtual ~cMs3dSkeleton();
 
    void SetNumJoints(int nJoints);
    void SetJoint(int index, const cMs3dJoint & joint);
 
-private:
+protected:
    typedef std::vector<cMs3dJoint> tJoints;
 
    tJoints m_joints;
@@ -203,10 +203,10 @@ private:
 // CLASS: cMs3dMesh
 //
 
-class cMs3dMesh
+class cMs3dMesh : public cMs3dSkeleton
 {
    cMs3dMesh(const cMs3dMesh &); // private, un-implemented
-   const cMs3dMesh & operator=(const cMs3dMesh &); // private, un-implemented
+   const cMs3dMesh & operator =(const cMs3dMesh &); // private, un-implemented
 
 public:
    ////////////////////////////////////
@@ -253,13 +253,11 @@ private:
    typedef std::vector<ms3d_triangle_t> tTriangles;
    typedef std::vector<cMs3dGroup> tGroups;
    typedef std::vector<IMaterial *> tMaterials;
-   typedef std::vector<cMs3dJoint> tJoints;
 
    tVertices m_vertices;
    tTriangles m_triangles;
    tGroups m_groups;
    tMaterials m_materials;
-   tJoints m_joints;
 
    mutable tVec3 m_maxs, m_mins;
    mutable bool m_bCalculatedAABB;
