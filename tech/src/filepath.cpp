@@ -6,8 +6,8 @@
 #include "filepath.h"
 #include "filespec.h"
 
-#include <string.h>
-#include <stdlib.h>
+#include <cstring>
+#include <cstdlib>
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -24,6 +24,13 @@
 #endif
 
 #include "dbgalloc.h" // must be last header
+
+#ifdef _WIN32
+static const char kPathSep = '\\';
+#else
+static const char kPathSep = '/';
+#endif
+static const char szPathSep[] = { kPathSep, 0 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -152,16 +159,29 @@ cFilePath::cFilePath(const char * pszPath)
 
 ///////////////////////////////////////
 
+cFilePath::cFilePath(const char * pszPath, int pathLen)
+{
+   if (pszPath != NULL && pathLen > 0)
+   {
+      int len = Min(pathLen, sizeof(m_szPath));
+      strncpy(m_szPath, pszPath, len);
+      m_szPath[len - 1] = '\0';
+   }
+}
+
+///////////////////////////////////////
+
 static void PathCat(char * pszDest, const char * pszSrc)
 {
    int destLen = strlen(pszDest);
 
-   if ((*pszSrc != '/') &&
-       (*pszSrc != '\\') &&
-       (pszDest[destLen - 1] != '/') &&
-       (pszDest[destLen - 1] != '\\'))
+   if (destLen > 0
+      && (*pszSrc != '/')
+      && (*pszSrc != '\\')
+      && (pszDest[destLen - 1] != '/')
+      && (pszDest[destLen - 1] != '\\'))
    {
-      strcat(pszDest, kPathSepStr);
+      strcat(pszDest, szPathSep);
    }
 
    strcat(pszDest, pszSrc);
@@ -230,7 +250,7 @@ cFilePath cFilePath::GetCwd()
 
 ///////////////////////////////////////
 
-int cFilePath::ListDirs(std::vector<std::string> * pDirs)
+int cFilePath::ListDirs(std::vector<std::string> * pDirs) const
 {
    Assert(pDirs != NULL);
    if (pDirs == NULL)

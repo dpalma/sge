@@ -30,18 +30,26 @@ public:
 
    int operator==(const cFileSpec & other) const;
 
-   const char * GetName() const { return m_szFullName; }
+   const char * GetName() const;
    const char * GetFileName() const;
    const char * GetFileExt() const;
    BOOL SetFileExt(const char * pszExt);
 
    void SetPath(const cFilePath & path);
+   cFilePath GetPath() const;
 
    bool Exists() const;
 
 private:
    char m_szFullName[kMaxPath];
 };
+
+///////////////////////////////////////
+
+inline const char * cFileSpec::GetName() const
+{
+   return m_szFullName;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 

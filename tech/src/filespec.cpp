@@ -6,14 +6,18 @@
 #include "filepath.h"
 #include "filespec.h"
 
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 
 #ifdef HAVE_CPPUNIT
 #include <cppunit/extensions/HelperMacros.h>
 #endif
 
 #include "dbgalloc.h" // must be last header
+
+static const char kExtensionSep = '.';
+static const char szExtensionSep[] = { kExtensionSep, 0 };
+static const char kPathSeps[] = "\\/";
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -66,22 +70,49 @@ int cFileSpec::operator==(const cFileSpec & other) const
 
 ///////////////////////////////////////
 
+const char * ReverseFindOneOf(const char * string, const char * strCharSet)
+{
+   const char * start = string;
+
+   string += strlen(string);
+
+   while (--string != start)
+   {
+      if (strchr(strCharSet, *string))
+      {
+         return string;
+      }
+   }
+
+   return NULL;
+}
+
 const char * cFileSpec::GetFileName() const
 {
-   const char * pszLastPathSep = strrchr(GetName(), kPathSepChar);
+   const char * pszLastPathSep = ReverseFindOneOf(GetName(), kPathSeps);
    if (pszLastPathSep != NULL)
+   {
       return ++pszLastPathSep;
-   return GetName();
+   }
+   else
+   {
+      return GetName();
+   }
 }
 
 ///////////////////////////////////////
 
 const char * cFileSpec::GetFileExt() const
 {
-   const char * pszExt = strrchr(GetName(), '.');
+   const char * pszExt = strrchr(GetName(), kExtensionSep);
    if (pszExt)
+   {
       return ++pszExt;
-   return "";
+   }
+   else
+   {
+      return "";
+   }
 }
 
 ///////////////////////////////////////
@@ -90,14 +121,14 @@ BOOL cFileSpec::SetFileExt(const char * pszExt)
 {
    if (strlen(GetName()) > 0)
    {
-      char * pszDest = strrchr(GetName(), '.');
+      char * pszDest = strrchr(GetName(), kExtensionSep);
       if (pszDest != NULL)
       {
          strcpy(++pszDest, pszExt);
       }
       else
       {
-         strcat(m_szFullName, ".");
+         strcat(m_szFullName, szExtensionSep);
          strcat(m_szFullName, pszExt);
       }
       return TRUE;
@@ -107,31 +138,26 @@ BOOL cFileSpec::SetFileExt(const char * pszExt)
 
 ///////////////////////////////////////
 
-#define nullterm(str) ((str)[sizeof(str) - 1] = '\0')
-
-#define endchr(str) ((str)[strlen(str) - 1])
-
 void cFileSpec::SetPath(const cFilePath & path)
 {
-   char szTempFName[kMaxFname];
-   const char * pszFName = GetFileName();
-   if (pszFName != NULL)
+   cFilePath temp(path);
+   temp.AddRelative(GetFileName());
+   *this = cFileSpec(temp.GetPath());
+}
+
+///////////////////////////////////////
+
+cFilePath cFileSpec::GetPath() const
+{
+   const char * pszFileName = GetFileName();
+   if (pszFileName != NULL)
    {
-      strncpy(szTempFName, pszFName, sizeof(szTempFName));
-      nullterm(szTempFName);
-
-      memset(m_szFullName, 0, sizeof(m_szFullName));
-      strncpy(m_szFullName, path.GetPath(), sizeof(m_szFullName));
-      nullterm(m_szFullName);
-
-      if (strlen(m_szFullName) > 0 && (endchr(m_szFullName) != kPathSepChar))
-      {
-         strncat(m_szFullName, kPathSepStr, sizeof(m_szFullName));
-         nullterm(m_szFullName);
-      }
-
-      strncat(m_szFullName, szTempFName, sizeof(m_szFullName));
-      nullterm(m_szFullName);
+      const char * pszFullName = GetName();
+      return cFilePath(pszFullName, pszFileName - pszFullName);
+   }
+   else
+   {
+      return cFilePath(GetName());
    }
 }
 
@@ -163,6 +189,7 @@ class cFileSpecTests : public CppUnit::TestCase
       CPPUNIT_TEST(TestGetFileName);
       CPPUNIT_TEST(TestGetSetFileExt);
       CPPUNIT_TEST(TestSetPath);
+      CPPUNIT_TEST(TestGetPath);
    CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -218,6 +245,11 @@ public:
          fs1.SetPath(cFilePath("D:\\path"));
          CPPUNIT_ASSERT(strcmp(fs1.GetName(), "D:\\path\\file.ext") == 0);
       }
+   }
+
+   void TestGetPath()
+   {
+      CPPUNIT_ASSERT(strcmp(cFileSpec("c:\\p1\\p2\\p3\\p4\\file.ext").GetPath().GetPath(), "c:\\p1\\p2\\p3\\p4") == 0);
    }
 };
 

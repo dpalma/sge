@@ -23,6 +23,7 @@ class TECH_API cFilePath
 public:
    cFilePath();
    cFilePath(const char * pszPath);
+   explicit cFilePath(const char * pszPath, int pathLen);
 
    const char * GetPath() const;
 
@@ -33,7 +34,7 @@ public:
 
    static cFilePath GetCwd();
 
-   int ListDirs(std::vector<std::string> * pDirs);
+   int ListDirs(std::vector<std::string> * pDirs) const;
 
 private:
    char m_szPath[kMaxPath];
@@ -41,7 +42,10 @@ private:
 
 ///////////////////////////////////////
 
-inline const char * cFilePath::GetPath() const { return m_szPath; }
+inline const char * cFilePath::GetPath() const
+{
+   return m_szPath;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 

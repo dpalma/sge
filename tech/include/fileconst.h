@@ -10,14 +10,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef _WIN32
-#define kPathSepChar '\\'
-#define kPathSepStr  "\\"
-#else
-#define kPathSepChar '/'
-#define kPathSepStr  "/"
-#endif
-
 #define kMaxPath     260   // max length of full pathname
 #define kMaxDrive    3     // max length of drive component
 #define kMaxDir      260   // max length of path component
