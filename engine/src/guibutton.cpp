@@ -251,30 +251,6 @@ tResult cGUIButtonRenderer::Render(IGUIElement * pElement, IRenderDevice * pRend
       tGUIRect rect2(rect.left, rect.top, rect.right, rect.bottom);
 
       UseGlobal(GUIRenderingTools);
-
-      cAutoIPtr<IRenderFont> pFont;
-
-      uint drawTextFlags = kDT_Center | kDT_VCenter | kDT_SingleLine;
-
-      cAutoIPtr<IGUIStyle> pStyle;
-      if (pElement->GetStyle(&pStyle) == S_OK)
-      {
-         pStyle->GetFont(&pFont);
-
-         uint dropShadow = 0;
-         if (pStyle->GetAttribute(kAttribDropShadow, &dropShadow) == S_OK
-            && dropShadow != 0)
-         {
-            drawTextFlags |= kDT_DropShadow;
-         }
-      }
-
-      if (!pFont)
-      {
-         UseGlobal(GUIRenderingTools);
-         pGUIRenderingTools->GetDefaultFont(&pFont);
-      }
-
       if (pButton->IsArmed() && pButton->IsMouseOver())
       {
          pGUIRenderingTools->Render3dRect(rect2, g_bevel, 
@@ -287,9 +263,26 @@ tResult cGUIButtonRenderer::Render(IGUIElement * pElement, IRenderDevice * pRend
             tGUIColor::LightGray, tGUIColor::DarkGray, tGUIColor::Gray);
       }
 
-      rect.left += Round(textOffset.x);
-      rect.top += Round(textOffset.y);
-      pFont->DrawText(pButton->GetText(), -1, drawTextFlags, &rect, tGUIColor::White);
+      cAutoIPtr<IRenderFont> pFont;
+      if (GetFont(pButton, &pFont) == S_OK)
+      {
+         uint drawTextFlags = kDT_Center | kDT_VCenter | kDT_SingleLine;
+
+         cAutoIPtr<IGUIStyle> pStyle;
+         if (pElement->GetStyle(&pStyle) == S_OK)
+         {
+            uint dropShadow = 0;
+            if (pStyle->GetAttribute(kAttribDropShadow, &dropShadow) == S_OK
+               && dropShadow != 0)
+            {
+               drawTextFlags |= kDT_DropShadow;
+            }
+         }
+
+         rect.left += Round(textOffset.x);
+         rect.top += Round(textOffset.y);
+         pFont->DrawText(pButton->GetText(), -1, drawTextFlags, &rect, tGUIColor::White);
+      }
 
       return S_OK;
    }
