@@ -7,6 +7,8 @@
 #include "enginedll.h"
 #include "comtools.h"
 
+#include <cstdarg>
+
 #ifdef _MSC_VER
 #pragma once
 #endif
