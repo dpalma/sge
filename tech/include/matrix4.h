@@ -112,7 +112,7 @@ const cMatrix4<T> & cMatrix4<T>::operator =(const cMatrix4 & other)
 template <typename T>
 const cMatrix4<T> & cMatrix4<T>::GetIdentity()
 {
-   static cMatrix4<T> identity(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1);
+   static const cMatrix4<T> identity(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1);
    return identity;
 }
 
@@ -152,24 +152,19 @@ void cMatrix4<T>::Multiply(const cMatrix4 & other, cMatrix4 * pResult) const
 ///////////////////////////////////////
 
 template <typename T>
-void cMatrix4<T>::Transform(const cVec3<T> & v, cVec3<T> * pResult) const
+inline void cMatrix4<T>::Transform(const cVec3<T> & v, cVec3<T> * pResult) const
 {
    Assert(pResult != NULL);
-   pResult->x = (v.x * m00) + (v.y * m01) + (v.z * m02) + m03;
-   pResult->y = (v.x * m10) + (v.y * m11) + (v.z * m12) + m13;
-   pResult->z = (v.x * m20) + (v.y * m21) + (v.z * m22) + m23;
+   MatrixTransform3(m, v.v, pResult->v);
 }
 
 ///////////////////////////////////////
 
 template <typename T>
-void cMatrix4<T>::Transform(const cVec4<T> & v, cVec4<T> * pResult) const
+inline void cMatrix4<T>::Transform(const cVec4<T> & v, cVec4<T> * pResult) const
 {
    Assert(pResult != NULL);
-   pResult->x = (v.x * m00) + (v.y * m01) + (v.z * m02) + (v.w * m03);
-   pResult->y = (v.x * m10) + (v.y * m11) + (v.z * m12) + (v.w * m13);
-   pResult->z = (v.x * m20) + (v.y * m21) + (v.z * m22) + (v.w * m23);
-   pResult->w = (v.x * m30) + (v.y * m31) + (v.z * m32) + (v.w * m33);
+   MatrixTransform4(m, v.v, pResult->v);
 }
 
 ///////////////////////////////////////
@@ -177,11 +172,7 @@ void cMatrix4<T>::Transform(const cVec4<T> & v, cVec4<T> * pResult) const
 template <typename T>
 inline void cMatrix4<T>::Transform3(const float * pV, float * pDest) const
 {
-   Assert(pV != NULL);
-   Assert(pDest != NULL);
-   pDest[0] = (pV[0] * m00) + (pV[1] * m01) + (pV[2] * m02) + m03;
-   pDest[1] = (pV[0] * m10) + (pV[1] * m11) + (pV[2] * m12) + m13;
-   pDest[2] = (pV[0] * m20) + (pV[1] * m21) + (pV[2] * m22) + m23;
+   MatrixTransform3(m, pV, pDest);
 }
 
 ///////////////////////////////////////
@@ -189,12 +180,7 @@ inline void cMatrix4<T>::Transform3(const float * pV, float * pDest) const
 template <typename T>
 inline void cMatrix4<T>::Transform4(const float * pV, float * pDest) const
 {
-   Assert(pV != NULL);
-   Assert(pDest != NULL);
-   pDest[0] = (pV[0] * m00) + (pV[1] * m01) + (pV[2] * m02) + (pV[3] * m03);
-   pDest[1] = (pV[0] * m10) + (pV[1] * m11) + (pV[2] * m12) + (pV[3] * m13);
-   pDest[2] = (pV[0] * m20) + (pV[1] * m21) + (pV[2] * m22) + (pV[3] * m23);
-   pDest[3] = (pV[0] * m30) + (pV[1] * m31) + (pV[2] * m32) + (pV[3] * m33);
+   MatrixTransform4(m, pV, pDest);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -202,6 +188,8 @@ inline void cMatrix4<T>::Transform4(const float * pV, float * pDest) const
 
 TECH_API bool MatrixInvert(const float * m, float * pResult);
 TECH_API void MatrixMultiply(const float * ml, const float * mr, float * pResult);
+TECH_API void MatrixTransform3(const float * m, const float * v, float * pResult);
+TECH_API void MatrixTransform4(const float * m, const float * v, float * pResult);
 
 ///////////////////////////////////////////////////////////////////////////////
 // 3D transformations

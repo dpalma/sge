@@ -16,7 +16,7 @@
 //
 
 template <typename T>
-class cVec2
+class TECH_API cVec2
 {
 public:
    typedef T value_type;
@@ -45,22 +45,6 @@ public:
       value_type v[2];
    };
 };
-
-///////////////////////////////////////
-
-#ifndef NO_EXPORT_VEC2
-#ifndef TECH_EXPORTS
-#pragma warning(disable:4231) // nonstandard extension used : 'extern' before template explicit instantiation
-extern
-#endif
-template class TECH_API cVec2<float>;
-#endif
-
-///////////////////////////////////////
-
-#ifndef NO_DEFAULT_VEC2
-typedef class cVec2<float> tVec2;
-#endif
 
 ///////////////////////////////////////
 
@@ -143,6 +127,12 @@ template <typename T>
 inline typename cVec2<T>::value_type cVec2<T>::Length() const
 {
    return sqrt(LengthSqr());
+}
+
+template <>
+inline float cVec2<float>::Length() const
+{
+   return sqrtf(LengthSqr());
 }
 
 ///////////////////////////////////////
@@ -243,6 +233,12 @@ inline cVec2<T> Vec2Lerp(const cVec2<T> & v1, const cVec2<T> & v2, T u)
 {
    return (v1 * (1 - u)) + (v2 * u);
 }
+
+///////////////////////////////////////
+
+#ifndef NO_DEFAULT_VEC2
+typedef class TECH_API cVec2<float> tVec2;
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -163,23 +163,39 @@ bool MatrixInvert(const float * m, float * pResult)
 
 void MatrixMultiplyDefault(const float * ml, const float * mr, float * pResult)
 {
+   Assert(ml != NULL);
+   Assert(mr != NULL);
    Assert(pResult != NULL);
 
-#define A(row,col)  ml[(col<<2)+row]
-#define B(row,col)  mr[(col<<2)+row]
-#define T(row,col)  pResult[(col<<2)+row]
+#define LHS(row,col)  ml[(col<<2)+row]
+#define RHS(row,col)  mr[(col<<2)+row]
 
-   for (int i = 0; i < 4; i++)
-   {
-      T(i, 0) = A(i, 0) * B(0, 0) + A(i, 1) * B(1, 0) + A(i, 2) * B(2, 0) + A(i, 3) * B(3, 0);
-      T(i, 1) = A(i, 0) * B(0, 1) + A(i, 1) * B(1, 1) + A(i, 2) * B(2, 1) + A(i, 3) * B(3, 1);
-      T(i, 2) = A(i, 0) * B(0, 2) + A(i, 1) * B(1, 2) + A(i, 2) * B(2, 2) + A(i, 3) * B(3, 2);
-      T(i, 3) = A(i, 0) * B(0, 3) + A(i, 1) * B(1, 3) + A(i, 2) * B(2, 3) + A(i, 3) * B(3, 3);
-   }
+   // lhsRow0 * rhsCol0
+   // lhsRow1 * rhsCol0
+   // lhsRow2 * rhsCol0
+   // lhsRow3 * rhsCol0
+   pResult[0] = LHS(0, 0) * RHS(0, 0) + LHS(0, 1) * RHS(1, 0) + LHS(0, 2) * RHS(2, 0) + LHS(0, 3) * RHS(3, 0);
+   pResult[1] = LHS(1, 0) * RHS(0, 0) + LHS(1, 1) * RHS(1, 0) + LHS(1, 2) * RHS(2, 0) + LHS(1, 3) * RHS(3, 0);
+   pResult[2] = LHS(2, 0) * RHS(0, 0) + LHS(2, 1) * RHS(1, 0) + LHS(2, 2) * RHS(2, 0) + LHS(2, 3) * RHS(3, 0);
+   pResult[3] = LHS(3, 0) * RHS(0, 0) + LHS(3, 1) * RHS(1, 0) + LHS(3, 2) * RHS(2, 0) + LHS(3, 3) * RHS(3, 0);
 
-#undef A
-#undef B
-#undef T
+   pResult[4] = LHS(0, 0) * RHS(0, 1) + LHS(0, 1) * RHS(1, 1) + LHS(0, 2) * RHS(2, 1) + LHS(0, 3) * RHS(3, 1);
+   pResult[5] = LHS(1, 0) * RHS(0, 1) + LHS(1, 1) * RHS(1, 1) + LHS(1, 2) * RHS(2, 1) + LHS(1, 3) * RHS(3, 1);
+   pResult[6] = LHS(2, 0) * RHS(0, 1) + LHS(2, 1) * RHS(1, 1) + LHS(2, 2) * RHS(2, 1) + LHS(2, 3) * RHS(3, 1);
+   pResult[7] = LHS(3, 0) * RHS(0, 1) + LHS(3, 1) * RHS(1, 1) + LHS(3, 2) * RHS(2, 1) + LHS(3, 3) * RHS(3, 1);
+
+   pResult[8] = LHS(0, 0) * RHS(0, 2) + LHS(0, 1) * RHS(1, 2) + LHS(0, 2) * RHS(2, 2) + LHS(0, 3) * RHS(3, 2);
+   pResult[9] = LHS(1, 0) * RHS(0, 2) + LHS(1, 1) * RHS(1, 2) + LHS(1, 2) * RHS(2, 2) + LHS(1, 3) * RHS(3, 2);
+   pResult[10] = LHS(2, 0) * RHS(0, 2) + LHS(2, 1) * RHS(1, 2) + LHS(2, 2) * RHS(2, 2) + LHS(2, 3) * RHS(3, 2);
+   pResult[11] = LHS(3, 0) * RHS(0, 2) + LHS(3, 1) * RHS(1, 2) + LHS(3, 2) * RHS(2, 2) + LHS(3, 3) * RHS(3, 2);
+
+   pResult[12] = LHS(0, 0) * RHS(0, 3) + LHS(0, 1) * RHS(1, 3) + LHS(0, 2) * RHS(2, 3) + LHS(0, 3) * RHS(3, 3);
+   pResult[13] = LHS(1, 0) * RHS(0, 3) + LHS(1, 1) * RHS(1, 3) + LHS(1, 2) * RHS(2, 3) + LHS(1, 3) * RHS(3, 3);
+   pResult[14] = LHS(2, 0) * RHS(0, 3) + LHS(2, 1) * RHS(1, 3) + LHS(2, 2) * RHS(2, 3) + LHS(2, 3) * RHS(3, 3);
+   pResult[15] = LHS(3, 0) * RHS(0, 3) + LHS(3, 1) * RHS(1, 3) + LHS(3, 2) * RHS(2, 3) + LHS(3, 3) * RHS(3, 3);
+
+#undef LHS
+#undef RHS
 }
 
 bool MatrixMultiplyDefaultSupported()
@@ -229,6 +245,114 @@ void MatrixMultiply(const float * ml, const float * mr, float * pResult)
    Assert(g_pfnMatrixMultiply != NULL);
    (*g_pfnMatrixMultiply)(ml, mr, pResult);
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+void MatrixTransform3Default(const float * m, const float * v, float * pResult)
+{
+   Assert(m != NULL);
+   Assert(v != NULL);
+   Assert(pResult != NULL);
+   // result.x = row0 * v
+   // result.y = row1 * v
+   // result.z = row2 * v
+   pResult[0] = (v[0] * m[0]) + (v[1] * m[4]) + (v[2] * m[8]) + m[12];
+   pResult[1] = (v[0] * m[1]) + (v[1] * m[5]) + (v[2] * m[9]) + m[13];
+   pResult[2] = (v[0] * m[2]) + (v[1] * m[6]) + (v[2] * m[10]) + m[14];
+}
+
+bool MatrixTransform3DefaultSupported()
+{
+   return true; // always supported
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void MatrixTransform3(const float * m, const float * v, float * pResult)
+{
+   static const struct
+   {
+      tMatrixMultiplyFn pfnTransform3;
+      tMatrixOpQuerySupportFn pfnSupport;
+   }
+   matrixTransform3Fns[] =
+   {
+      { MatrixTransform3Default, MatrixTransform3DefaultSupported },
+   };
+
+   static tMatrixMultiplyFn pfnMatrixTransform3 = NULL;
+
+   if (pfnMatrixTransform3 == NULL)
+   {
+      for (size_t i = 0; i < _countof(matrixTransform3Fns); i++)
+      {
+         if (matrixTransform3Fns[i].pfnSupport != NULL && 
+            (*matrixTransform3Fns[i].pfnSupport)())
+         {
+            pfnMatrixTransform3 = matrixTransform3Fns[i].pfnTransform3;
+            break;
+         }
+      }
+   }
+
+   (*pfnMatrixTransform3)(m, v, pResult);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+void MatrixTransform4Default(const float * m, const float * v, float * pResult)
+{
+   Assert(m != NULL);
+   Assert(v != NULL);
+   Assert(pResult != NULL);
+   // result.x = row0 * v
+   // result.y = row1 * v
+   // result.z = row2 * v
+   // result.w = row3 * v
+   pResult[0] = (v[0] * m[0]) + (v[1] * m[4]) + (v[2] * m[8]) + (v[3] * m[12]);
+   pResult[1] = (v[0] * m[1]) + (v[1] * m[5]) + (v[2] * m[9]) + (v[3] * m[13]);
+   pResult[2] = (v[0] * m[2]) + (v[1] * m[6]) + (v[2] * m[10]) + (v[3] * m[14]);
+   pResult[3] = (v[0] * m[3]) + (v[1] * m[7]) + (v[2] * m[11]) + (v[3] * m[15]);
+}
+
+bool MatrixTransform4DefaultSupported()
+{
+   return true; // always supported
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void MatrixTransform4(const float * m, const float * v, float * pResult)
+{
+   static const struct
+   {
+      tMatrixMultiplyFn pfnTransform4;
+      tMatrixOpQuerySupportFn pfnSupport;
+   }
+   matrixTransform4Fns[] =
+   {
+      { MatrixTransform4Default, MatrixTransform4DefaultSupported },
+   };
+
+   static tMatrixMultiplyFn pfnMatrixTransform4 = NULL;
+
+   if (pfnMatrixTransform4 == NULL)
+   {
+      for (size_t i = 0; i < _countof(matrixTransform4Fns); i++)
+      {
+         if (matrixTransform4Fns[i].pfnSupport != NULL && 
+            (*matrixTransform4Fns[i].pfnSupport)())
+         {
+            pfnMatrixTransform4 = matrixTransform4Fns[i].pfnTransform4;
+            break;
+         }
+      }
+   }
+
+   (*pfnMatrixTransform4)(m, v, pResult);
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
