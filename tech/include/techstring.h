@@ -5,6 +5,7 @@
 #define INCLUDED_STR_H
 
 #include "techdll.h"
+
 #include <string>
 
 #ifdef _MSC_VER
@@ -12,6 +13,9 @@
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cStr
+//
 
 #ifdef _UNICODE
 typedef std::wstring cStrBase;
@@ -19,22 +23,52 @@ typedef std::wstring cStrBase;
 typedef std::string cStrBase;
 #endif
 
-class TECH_API cStr : public cStrBase
+class cStr : public cStrBase
 {
 public:
-   cStr() {}
-   cStr(const tChar * psz) : cStrBase(psz) {}
+   cStr();
+   cStr(const tChar * psz);
 
-   operator const tChar *() const { return cStrBase::c_str(); }
+   operator const tChar *() const;
 
-   int GetLength() const { return cStrBase::length(); }
+   int GetLength() const;
 
-   void Empty() { cStrBase::erase(); }
-
-   tChar GetAt(int index) const { return cStrBase::operator[](index); }
-
-   void Delete(int index) { cStrBase::erase(index); }
+   void Empty();
 };
+
+///////////////////////////////////////
+
+inline cStr::cStr()
+{
+}
+
+///////////////////////////////////////
+
+inline cStr::cStr(const tChar * psz)
+ : cStrBase(psz)
+{
+}
+
+///////////////////////////////////////
+
+inline cStr::operator const tChar *() const
+{
+   return cStrBase::c_str();
+}
+
+///////////////////////////////////////
+
+inline int cStr::GetLength() const
+{
+   return cStrBase::length();
+}
+
+///////////////////////////////////////
+
+inline void cStr::Empty()
+{
+   cStrBase::erase();
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
