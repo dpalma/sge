@@ -6,6 +6,8 @@
 
 #include "keys.h"
 #include "script.h"
+#include "inputapi.h"
+#include "globalobj.h"
 
 #ifdef _MSC_VER
 #pragma once
@@ -29,7 +31,8 @@ cUIDragSemantics<T>::cUIDragSemantics()
 template <class T>
 cUIDragSemantics<T>::~cUIDragSemantics()
 {
-   Assert(!InputRemoveListener(this)); // should have already been removed
+   UseGlobal(Input);
+   Assert(pInput->Disconnect(this) != S_OK); // should have already been removed
 }
 
 ///////////////////////////////////////
@@ -43,7 +46,8 @@ bool cUIDragSemantics<T>::FilterEvent(const cUIEvent * pEvent, tUIResult * pResu
        pEvent->keyCode == kMouseLeft &&
        pT->QueryStartDrag(pEvent->mousePos))
    {
-      InputAddListener(this);
+      UseGlobal(Input);
+      pInput->Connect(this);
       m_bDragging = true;
       return true;
    }
@@ -99,7 +103,8 @@ bool cUIDragSemantics<T>::OnKeyEvent(long key, bool down, double time)
          if (!down)
          {
             pT->EndDrag(mousePos);
-            InputRemoveListener(this);
+            UseGlobal(Input);
+            pInput->Disconnect(this);
             m_bDragging = false;
          }
          return true;

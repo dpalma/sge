@@ -3,11 +3,8 @@
 
 #include "stdhdr.h"
 
-#include "script.h"
-#include "scriptvar.h"
 #include "input.h"
 #include "keys.h"
-#include "connptimpl.h"
 #include <string.h>
 #include <stdlib.h>
 #include <list>
@@ -25,6 +22,13 @@ EXTERN_C DECLSPEC_DLLIMPORT int CDECL _CrtIsValidHeapPointer(const void * userDa
 LOG_DEFINE_CHANNEL(KeyEvent);
 
 ///////////////////////////////////////////////////////////////////////////////
+
+static bool ScriptExecString(const char * pszCode)
+{
+   // TODO: Make this work
+   DebugMsg1("TODO: actually execute script code \"%s\"\n", pszCode);
+   return false;
+}
 
 static void KeyBind(long key, const char * pszKeyDownCmd, const char * pszKeyUpCmd);
 static void KeyUnbind(long key);
@@ -299,46 +303,6 @@ static void KeyUnbind(long key)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-SCRIPT_DEFINE_FUNCTION(bind)
-{
-   const char * pszKeyName = NULL;
-   const char * pszDownCmd = NULL;
-   const char * pszUpCmd = NULL;
-
-   if (ScriptArgc() == 2)
-   {
-      pszKeyName = ScriptArgIsString(0) ? ScriptArgAsString(0) : NULL;
-      pszDownCmd = ScriptArgIsString(1) ? ScriptArgAsString(1) : NULL;
-   }
-   else if (ScriptArgc() == 3)
-   {
-      pszKeyName = ScriptArgIsString(0) ? ScriptArgAsString(0) : NULL;
-      pszDownCmd = ScriptArgIsString(1) ? ScriptArgAsString(1) : NULL;
-      pszUpCmd = ScriptArgIsString(2) ? ScriptArgAsString(2) : NULL;
-   }
-
-   if (pszKeyName != NULL && (pszDownCmd != NULL || pszUpCmd != NULL))
-   {
-      KeyBind(Name2Key(pszKeyName), pszDownCmd, pszUpCmd);
-   }
-
-   return 0;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-SCRIPT_DEFINE_FUNCTION(unbind)
-{
-   if (ScriptArgc() == 1 && ScriptArgv(0).type == kString)
-   {
-      KeyUnbind(Name2Key(ScriptArgv(0).psz));
-   }
-
-   return 0;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 void InputAddListener(IInputListener * pListener)
 {
    Assert(pListener != NULL);
@@ -391,6 +355,91 @@ void InputTerm()
    }
 
    InputRemoveAllListeners();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cInput
+//
+
+///////////////////////////////////////
+
+cInput::cInput()
+{
+}
+
+///////////////////////////////////////
+
+tResult cInput::Init()
+{
+   InputInit();
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cInput::Term()
+{
+   InputTerm();
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+bool cInput::KeyIsDown(long key)
+{
+   return ::KeyIsDown(key);
+}
+
+///////////////////////////////////////
+
+void cInput::KeyBind(long key, const char * pszDownCmd, const char * pszUpCmd)
+{
+   ::KeyBind(key, pszDownCmd, pszUpCmd);
+}
+
+///////////////////////////////////////
+
+void cInput::KeyUnbind(long key)
+{
+   ::KeyUnbind(key);
+}
+
+///////////////////////////////////////
+
+tResult cInput::AddWindow(IWindow * pWindow)
+{
+   Assert(pWindow != NULL);
+   return pWindow->Connect(&m_windowSink);
+}
+
+///////////////////////////////////////
+
+tResult cInput::RemoveWindow(IWindow * pWindow)
+{
+   Assert(pWindow != NULL);
+   return pWindow->Disconnect(&m_windowSink);
+}
+
+///////////////////////////////////////
+
+void cInput::cWindowSink::OnKeyEvent(long key, bool down, double time)
+{
+   ::KeyEvent(key, down, time);
+}
+
+///////////////////////////////////////
+
+void cInput::cWindowSink::OnMouseEvent(int x, int y, uint mouseState, double time)
+{
+   ::MouseEvent(x, y, mouseState, time);
+}
+
+///////////////////////////////////////
+
+void InputCreate()
+{
+   cAutoIPtr<IInput> p(new cInput);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

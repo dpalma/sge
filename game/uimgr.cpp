@@ -9,7 +9,8 @@
 #include "uirender.h"
 #include "uiparse.h"
 #include "keys.h"
-#include "input.h"
+#include "inputapi.h"
+#include "globalobj.h"
 
 #include "dbgalloc.h" // must be last header
 
@@ -93,16 +94,20 @@ private:
 cUIManager::cUIManager()
  : m_pLastMouseOver(NULL)
 {
-   // if this happens too early (e.g., at static initialization time)
-   // it will likely cause problems
-   InputAddListener(this);
+//   // if this happens too early (e.g., at static initialization time)
+//   // it will likely cause problems
+//   InputAddListener(this);
+   UseGlobal(Input);
+   pInput->Connect(this);
 }
 
 ///////////////////////////////////////
 
 cUIManager::~cUIManager()
 {
-   InputRemoveListener(this);
+//   InputRemoveListener(this);
+   UseGlobal(Input);
+   pInput->Disconnect(this);
 }
 
 ///////////////////////////////////////

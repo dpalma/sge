@@ -6,7 +6,7 @@
 
 #include "comtools.h"
 #include "sim.h"
-#include "input.h"
+#include "inputapi.h"
 #include "matrix4.h"
 #include "vec3.h"
 

@@ -183,6 +183,10 @@ SOURCE=.\cameracontroller.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\cmds.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\game.rc
 # End Source File
 # Begin Source File
@@ -192,10 +196,6 @@ SOURCE=.\groundtiled.cpp
 # Begin Source File
 
 SOURCE=.\heightmap.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\input.cpp
 # End Source File
 # Begin Source File
 
@@ -278,10 +278,6 @@ SOURCE=.\groundtiled.h
 # Begin Source File
 
 SOURCE=.\heightmap.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\input.h
 # End Source File
 # Begin Source File
 

@@ -4,40 +4,51 @@
 #ifndef INCLUDED_INPUT_H
 #define INCLUDED_INPUT_H
 
-#include "comtools.h"
+#include "inputapi.h"
+#include "globalobj.h"
+#include "connptimpl.h"
+#include "window.h"
 
 #ifdef _MSC_VER
 #pragma once
 #endif
 
-F_DECLARE_INTERFACE(IInputListener);
-
 ///////////////////////////////////////////////////////////////////////////////
 //
-// INTERFACE: IInputListener
+// CLASS: cInput
 //
 
-interface IInputListener : IUnknown
+class cInput : public cGlobalObject<IMPLEMENTSCP(IInput, IInputListener)>
 {
-   virtual bool OnMouseEvent(int x, int y, uint mouseState, double time) = 0;
-   virtual bool OnKeyEvent(long key, bool down, double time) = 0;
+public:
+   cInput();
+
+   virtual tResult Init();
+   virtual tResult Term();
+
+   virtual bool KeyIsDown(long key);
+
+   virtual void KeyBind(long key, const char * pszDownCmd, const char * pszUpCmd);
+   virtual void KeyUnbind(long key);
+
+   virtual tResult AddWindow(IWindow * pWindow);
+   virtual tResult RemoveWindow(IWindow * pWindow);
+
+private:
+   class cWindowSink : public cComObject<IMPLEMENTS(IWindowSink)>
+   {
+   //protected:
+      virtual void DeleteThis() { /* do not delete */ }
+   public:
+      virtual void OnKeyEvent(long key, bool down, double time);
+      virtual void OnMouseEvent(int x, int y, uint mouseState, double time);
+      virtual void OnDestroy(double time) {}
+      virtual void OnResize(int width, int height, double time) {}
+      virtual void OnActivateApp(bool bActive, double time) {}
+   };
+
+   cWindowSink m_windowSink;
 };
-
-class cDefaultInputListener : public IInputListener
-{
-   virtual bool OnMouseEvent(int x, int y, uint mouseState, double time) { return false; }
-   virtual bool OnKeyEvent(long key, bool down, double time) { return false; }
-};
-
-///////////////////////////////////////////////////////////////////////////////
-
-bool KeyIsDown(long key);
-void KeyEvent(long key, bool down, double time);
-void MouseEvent(int x, int y, uint mouseState, double time);
-void InputAddListener(IInputListener * pListener);
-bool InputRemoveListener(IInputListener * pListener);
-void InputInit();
-void InputTerm();
 
 ///////////////////////////////////////////////////////////////////////////////
 

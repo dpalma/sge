@@ -7,7 +7,7 @@
 #include "comtools.h"
 #include <map>
 #include "uievent.h"
-#include "input.h"
+#include "inputapi.h"
 
 #ifdef _MSC_VER
 #pragma once

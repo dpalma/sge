@@ -8,7 +8,6 @@
 #include "uievent.h"
 #include "uiparse.h"
 #include "keys.h"
-#include "input.h"
 
 #include "dbgalloc.h" // must be last header
 

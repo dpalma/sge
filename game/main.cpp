@@ -6,7 +6,6 @@
 #include "ggl.h"
 #include "uimgr.h"
 #include "groundtiled.h"
-#include "input.h"
 #include "sys.h"
 #include "script.h"
 #include "cameracontroller.h"
@@ -14,6 +13,7 @@
 #include "sceneapi.h"
 #include "mesh.h"
 #include "sim.h"
+#include "inputapi.h"
 
 #include "render.h"
 
@@ -115,8 +115,6 @@ SCRIPT_DEFINE_FUNCTION(ViewSetPos)
 //
 // CLASS: cWindowInputBroker
 //
-// Receives event notifications from the Windows or X window and channels
-// them into the game input system.
 
 class cWindowInputBroker : public cComObject<IMPLEMENTS(IWindowSink)>
 {
@@ -130,12 +128,10 @@ public:
 
 void cWindowInputBroker::OnKeyEvent(long key, bool down, double time)
 {
-   KeyEvent(key, down, time);
 }
 
 void cWindowInputBroker::OnMouseEvent(int x, int y, uint mouseState, double time)
 {
-   MouseEvent(x, y, mouseState, time);
 }
 
 void cWindowInputBroker::OnDestroy(double time)
@@ -391,6 +387,7 @@ static bool RunUnitTests()
 
 static void RegisterGlobalObjects()
 {
+   InputCreate();
    SimCreate();
    ResourceManagerCreate();
    SceneCreate();
@@ -469,6 +466,9 @@ bool MainInit(int argc, char * argv[])
       SafeRelease(pSink);
    }
 
+   UseGlobal(Input);
+   pInput->AddWindow(g_pWindow);
+
    if (FAILED(g_pWindow->Create(width, height, bpp)))
    {
       return false;
@@ -484,11 +484,6 @@ bool MainInit(int argc, char * argv[])
    {
       pWindowFullScreen->BeginFullScreen();
    }
-
-   // call init functions after the autoexec script is loaded so they
-   // may reference constants defined in the script, and after the 
-   // display is created so that there is a gl context
-   InputInit();
 
    if (ConfigGet("terrain", &temp) == S_OK)
    {
@@ -538,7 +533,6 @@ void MainTerm()
    UseGlobal(Sim);
    pSim->Stop();
 
-   InputTerm();
    ScriptTerm();
    SafeRelease(g_pRenderDevice);
 

@@ -9,7 +9,7 @@
 #include "uiwidgutilstem.h"
 #include "uirender.h"
 #include "keys.h"
-#include "input.h"
+#include "inputapi.h"
 #include "font.h"
 #include "render.h"
 #include "material.h"
@@ -76,14 +76,16 @@ cUIDialog::cUIDialog()
          kDefaultMargin,
          kDefaultMargin));
 
-   InputAddListener(this);
+   UseGlobal(Input);
+   pInput->Connect(this);
 }
 
 ///////////////////////////////////////
 
 cUIDialog::~cUIDialog()
 {
-   InputRemoveListener(this);
+   UseGlobal(Input);
+   pInput->Disconnect(this);
 }
 
 ///////////////////////////////////////
@@ -620,7 +622,8 @@ bool cUIEdit::OnEvent(const cUIEvent * pEvent, tUIResult * pResult)
          }
          case kLeft:
          {
-            if (KeyIsDown(kCtrl))
+            UseGlobal(Input);
+            if (pInput->KeyIsDown(kCtrl))
             {
                m_selection.WordLeft();
             }
@@ -632,7 +635,8 @@ bool cUIEdit::OnEvent(const cUIEvent * pEvent, tUIResult * pResult)
          }
          case kRight:
          {
-            if (KeyIsDown(kCtrl))
+            UseGlobal(Input);
+            if (pInput->KeyIsDown(kCtrl))
             {
                m_selection.WordRight();               
             }
