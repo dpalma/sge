@@ -32,6 +32,8 @@ echo Backup to %BACKUPDEST%
 if "%ARGC%" == "0" then goto InvalidArgs
 if "%CVSREPOS%" == "" then goto NoRepository
 
+if "%BACKUPDEST%" neq "" pushd "%BACKUPDEST%"
+
 set BACKUPFILE=
 
 if exist "\cygwin\bin\nul" and exist "\cygwin\bin\tar.exe" (
@@ -75,18 +77,22 @@ goto NoBackupFile
 
 :TarBz2Backup
 tar -c %CVSREPOS% | bzip2 >%BACKUPFILE%
-goto Done
+goto BackupComplete
 
 :TarGzipBackup
 tar -c %CVSREPOS% | gzip >%BACKUPFILE%
-goto Done
+goto BackupComplete
 
 :WinZipBackup
 ..\bin\wzzip -rP %BACKUPFILE% %CVSREPOS%\*.*
-goto Done
+goto BackupComplete
 
 :PkZipBackup
 ..\bin\pkzipc -add -rec -path=full %BACKUPFILE% %CVSREPOS%\*.*
+goto BackupComplete
+
+:BackupComplete
+if not "%BACKUPDEST%" == "" popd
 goto Done
 
 :NoRepository
