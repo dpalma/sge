@@ -1,0 +1,38 @@
+' $Id$
+
+Sub Comment()
+'DESCRIPTION: Comments or un-comments the selected code
+
+	If ActiveDocument.Language <> dsCPP Then
+		MsgBox("Not a C++ source or header file.")
+		Exit Sub
+	End If
+
+	topLine = ActiveDocument.Selection.TopLine
+	bottomLine = ActiveDocument.Selection.BottomLine
+
+	commentedLines = 0
+
+	For line = topLine To bottomLine
+		ActiveDocument.Selection.GoToLine(line)
+		ActiveDocument.Selection.CharRight dsExtend, 2
+		If ActiveDocument.Selection = "//" Then
+			commentedLines = commentedLines + 1
+		End If
+	Next
+
+	If commentedLines = 0 Then
+		For line = topLine To bottomLine
+			ActiveDocument.Selection.GoToLine(line)
+			ActiveDocument.Selection = "//"
+		Next
+	ElseIf commentedLines = (bottomLine - topLine + 1) Then
+		For line = topLine To bottomLine
+			ActiveDocument.Selection.GoToLine(line)
+			ActiveDocument.Selection.Delete(2)
+		Next
+	Else
+		MsgBox("Selection's current commenting is not uniform.")
+	End If
+
+End Sub
