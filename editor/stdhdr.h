@@ -42,10 +42,16 @@ extern WTL::CAppModule _Module;
 #include <atlwin.h>
 
 #ifdef _DEBUG
+#if _MSC_VER > 1200
 #define DECLARE_DYNCREATE_EX(classname) \
    DECLARE_DYNCREATE(classname) \
    void * PASCAL operator new(size_t nSize, int type, LPCSTR lpszFileName, int nLine) { return ::operator new(nSize, type, lpszFileName, nLine); } \
    void PASCAL operator delete(void *p, int type, LPCSTR lpszFileName, int nLine) { ::operator delete(p); }
+#else
+#define DECLARE_DYNCREATE_EX(classname) \
+   DECLARE_DYNCREATE(classname) \
+   void * PASCAL operator new(size_t nSize, int type, LPCSTR lpszFileName, int nLine) { return ::operator new(nSize, type, lpszFileName, nLine); }
+#endif
 #define IMPLEMENT_DYNCREATE_EX(classname, baseclassname) \
    IMPLEMENT_DYNCREATE(classname, baseclassname)
 #else

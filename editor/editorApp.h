@@ -38,7 +38,9 @@ public:
 
 #if defined(_DEBUG)
    void * PASCAL operator new(size_t nSize, int type, LPCSTR lpszFileName, int nLine);
+#if _MSC_VER > 1200
    void PASCAL operator delete(void *p, int type, LPCSTR lpszFileName, int nLine);
+#endif
 #endif
 };
 
@@ -69,7 +71,7 @@ inline void * PASCAL cEditorSingleDocTemplate::operator new(size_t nSize, int ty
 
 ////////////////////////////////////////
 
-#if defined(_DEBUG)
+#if defined(_DEBUG) && (_MSC_VER > 1200)
 inline void PASCAL cEditorSingleDocTemplate::operator delete(void *p, int type, LPCSTR lpszFileName, int nLine)
 {
    ::operator delete(p);
