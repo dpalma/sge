@@ -24,26 +24,19 @@ class cLogWndItem
 {
 public:
    cLogWndItem();
-   explicit cLogWndItem(const std::string & string, const std::string & detail = "",
-      eLogSeverity severity = kInfo);
+   explicit cLogWndItem(eLogSeverity severity, const std::string & string);
    cLogWndItem(const cLogWndItem & other);
 
    ~cLogWndItem();
 
    const cLogWndItem & operator =(const cLogWndItem & other);
 
-   const tChar * GetString() const;
-   bool HasDetail() const;
-   const tChar * GetDetail() const;
    eLogSeverity GetSeverity() const;
-   bool IsExpanded() const;
-   void ToggleExpand();
+   const tChar * GetString() const;
 
 private:
-   std::string m_string;
-   std::string m_detail;
    eLogSeverity m_severity;
-   bool m_bExpanded;
+   std::string m_string;
 };
 
 
@@ -54,23 +47,25 @@ private:
 
 class cLogWndItemRender
 {
-   enum { DT_FLAGS = DT_LEFT | DT_TOP | DT_WORDBREAK };
-
 public:
-   cLogWndItemRender(CWindow wnd, WTL::CDCHandle dc, bool bCalcOnly = false);
+   enum
+   {
+      DT_FLAGS = DT_LEFT | DT_TOP | DT_WORDBREAK,
+      kLeftColumnWidth = 18,
+   };
 
+   cLogWndItemRender(WTL::CDCHandle dc, const CRect & startRect, HFONT hFont = NULL, bool bCalcOnly = false);
    cLogWndItemRender(const cLogWndItemRender & other);
-
    ~cLogWndItemRender();
 
    const cLogWndItemRender & operator =(const cLogWndItemRender & other);
 
    void operator ()(const cLogWndItem & item);
-
    void Invoke(const cLogWndItem & item);
 
-   const std::vector<CRect> & GetRects() const;
+   void RenderLeftColumn(const CRect & rect);
 
+   const std::vector<CRect> & GetRects() const;
    int GetTotalHeight() const;
 
 private:
@@ -100,7 +95,8 @@ public:
 
    cLogWnd();
 
-   tResult AddString(const tChar * pszString, size_t length = -1, COLORREF color = CLR_INVALID);
+   tResult AddString(const tChar * pszString, size_t length = -1);
+   tResult AddString(eLogSeverity severity, const tChar * pszString, size_t length = -1);
    tResult Clear();
 
    BOOL PreTranslateMessage(MSG * pMsg);

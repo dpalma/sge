@@ -599,11 +599,11 @@ tResult cEditorApp::GetMapSettings(cMapSettings * pMapSettings)
    std::vector<cStr> tileSets;
    ListTileSets(&tileSets);
 
-   if (tileSets.empty())
-   {
-      ErrorMsg("No tile sets defined, or they failed to load\n");
-      return E_FAIL;
-   }
+   //if (tileSets.empty())
+   //{
+   //   ErrorMsg("No tile sets defined, or they failed to load\n");
+   //   return E_FAIL;
+   //}
 
    if (m_bPromptMapSettings)
    {
@@ -632,7 +632,7 @@ tResult cEditorApp::GetMapSettings(cMapSettings * pMapSettings)
       *pMapSettings = cMapSettings(
          g_mapSizes[kDefaultMapSizeIndex].cx,
          g_mapSizes[kDefaultMapSizeIndex].cy,
-         tileSets[0],
+         tileSets.empty() ? "" : tileSets[0],
          kHeightData_None,
          NULL);
    }

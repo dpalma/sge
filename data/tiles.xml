@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
+<!--
 <tileset name="test">
 
     <tile
@@ -84,7 +85,6 @@
 
 </tileset>
 
-<!--
 <tileset name="WarCraft3">
 
     <tile

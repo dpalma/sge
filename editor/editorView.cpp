@@ -436,6 +436,11 @@ void cEditorView::OnInitialUpdate()
 	cEditorDoc * pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
+   if (pDoc->AccessTerrain() == NULL)
+   {
+      return;
+   }
+
    cAutoIPtr<IVertexDeclaration> pVertexDecl;
    if (TerrainVertexDeclarationCreate(AccessRenderDevice(), &pVertexDecl) == S_OK)
    {
@@ -503,9 +508,9 @@ void cEditorView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
          uint xDim, zDim;
          pDoc->AccessTerrain()->GetDimensions(&xDim, &zDim);
 
-         for (int iz = 0; iz < zDim; iz++)
+         for (uint iz = 0; iz < zDim; iz++)
          {
-            for (int ix = 0; ix < xDim; ix++, iQuad++)
+            for (uint ix = 0; ix < xDim; ix++, iQuad++)
             {
                pIndexData[(iQuad * 6) + 0] = (iQuad * 4) + 0;
                pIndexData[(iQuad * 6) + 1] = (iQuad * 4) + 3;

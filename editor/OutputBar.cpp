@@ -47,18 +47,9 @@ cOutputBar::~cOutputBar()
 {
 }
 
-static const COLORREF g_colors[] =
-{
-   RGB(255,0,0),     // kError
-   RGB(0,255,255),   // kWarning
-   RGB(0,0,0),       // kInfo
-   RGB(0,0,255),     // kDebug
-};
-
 void cOutputBar::HandleLogCallback(eLogSeverity severity, const tChar * pszMsg, size_t msgLen)
 {
-   m_wndChild.AddText(pszMsg, msgLen, g_colors[severity]);
-   m_logWnd.AddString(pszMsg, msgLen, g_colors[severity]);
+   m_logWnd.AddString(pszMsg, msgLen);
 
    if (m_nextLogCallback != NULL)
    {

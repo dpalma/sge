@@ -16,8 +16,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-const int kDefaultTreeWidth = 250;
-
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame
 

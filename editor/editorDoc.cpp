@@ -113,25 +113,29 @@ BOOL cEditorDoc::OnNewDocument()
       if (pEditorTileManager->GetTileSet(mapSettings.GetTileSet(), &pTileSet) == S_OK)
       {
          pEditorTileManager->SetDefaultTileSet(mapSettings.GetTileSet());
-      }
 
-      Assert(m_pTerrain == NULL);
-      m_pTerrain = new cTerrain;
-      if (m_pTerrain != NULL)
-      {
-         if (m_pTerrain->Create(mapSettings.GetXDimension(),
-                                mapSettings.GetZDimension(),
-                                kDefaultStepSize,
-                                pTileSet, 0, pHeightMap))
+         Assert(m_pTerrain == NULL);
+         m_pTerrain = new cTerrain;
+         if (m_pTerrain != NULL)
          {
-            Assert(!m_pMaterial);
-            if (pTileSet->GetMaterial(&m_pMaterial) != S_OK)
+            if (m_pTerrain->Create(mapSettings.GetXDimension(),
+                                 mapSettings.GetZDimension(),
+                                 kDefaultStepSize,
+                                 pTileSet, 0, pHeightMap))
             {
+               Assert(!m_pMaterial);
+               if (pTileSet->GetMaterial(&m_pMaterial) == S_OK)
+               {
+                  bResult = TRUE;
+               }
             }
-
-            bResult = TRUE;
          }
       }
+      else
+      {
+         bResult = TRUE;
+      }
+
    }
 
 	return bResult;

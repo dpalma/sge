@@ -302,7 +302,7 @@ void cThreadCallerTests::TestPostCall()
 
    CPPUNIT_ASSERT(g_nFooCalls == 0);
 
-   pThreadCaller->PostCall(pThread->GetThreadId(), MakeThreadCall<void>(Foo));
+   pThreadCaller->PostCall(pThread->GetThreadId(), Foo);
    pThread->Join();
 
    delete pThread, pThread = NULL;
