@@ -124,26 +124,31 @@ BOOL CMs3dviewDoc::OnOpenDocument(LPCTSTR lpszPathName)
 
    cAutoIPtr<IReader> pReader = pResourceManager->Find(file.GetFileName());
 
-   if (!pReader
-      || m_mesh.Read(pReader, pMs3dView->AccessRenderDevice(), pResourceManager) != S_OK)
+   SafeRelease(m_pMesh);
+
+   if (!!pReader)
    {
-      m_mesh.Reset();
-      return FALSE;
+      m_pMesh = new cMs3dMesh;
+      if (m_pMesh->Read(pReader, pMs3dView->AccessRenderDevice(), pResourceManager) == S_OK)
+      {
+      	return TRUE;
+      }
+      SafeRelease(m_pMesh);
    }
-	
-	return TRUE;
+
+   return FALSE;
 }
 
 void CMs3dviewDoc::DeleteContents() 
 {
-   m_mesh.Reset();
+   SafeRelease(m_pMesh);
 	
 	CDocument::DeleteContents();
 }
 
 void CMs3dviewDoc::OnUpdateRendering(CCmdUI * pCmdUI)
 {
-   UINT stringId = m_mesh.IsRenderingSoftware() ? IDS_RENDERING_SOFTWARE : IDS_RENDERING_VERTEX_PROGRAM;
+   UINT stringId = (m_pMesh != NULL) && m_pMesh->IsRenderingSoftware() ? IDS_RENDERING_SOFTWARE : IDS_RENDERING_VERTEX_PROGRAM;
    CString string;
    VERIFY(string.LoadString(stringId));
    pCmdUI->SetText(string);

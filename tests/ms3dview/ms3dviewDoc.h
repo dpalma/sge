@@ -19,7 +19,7 @@ protected: // create from serialization only
 
 // Attributes
 public:
-   inline cMs3dMesh * GetModel() { return &m_mesh; }
+   inline cMs3dMesh * GetModel() { return m_pMesh; }
 
 // Operations
 public:
@@ -55,7 +55,7 @@ protected:
    afx_msg void OnUpdateRendering(CCmdUI * pCmdUI);
 
 private:
-   cMs3dMesh m_mesh;
+   cAutoIPtr<cMs3dMesh> m_pMesh;
 };
 
 /////////////////////////////////////////////////////////////////////////////

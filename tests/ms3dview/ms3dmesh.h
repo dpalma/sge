@@ -4,6 +4,7 @@
 #ifndef INCLUDED_MS3DMESH_H
 #define INCLUDED_MS3DMESH_H
 
+#include "mesh.h"
 #include "skeleton.h"
 
 #include "readwriteapi.h"
@@ -118,7 +119,7 @@ private:
 // CLASS: cMs3dMesh
 //
 
-class cMs3dMesh
+class cMs3dMesh : public cComObject<IMPLEMENTS(IMesh)>
 {
    cMs3dMesh(const cMs3dMesh &); // private, un-implemented
    const cMs3dMesh & operator =(const cMs3dMesh &); // private, un-implemented
@@ -127,16 +128,15 @@ public:
    cMs3dMesh();
    ~cMs3dMesh();
 
-   void GetAABB(tVec3 * pMaxs, tVec3 * pMins) const;
-
-   inline void Render() const
-   {
-      (this->*m_pfnRender)();
-   }
+   virtual void GetAABB(tVec3 * pMaxs, tVec3 * pMins) const;
+   virtual void Render(IRenderDevice * pRenderDevice) const;
+   virtual tResult AddMaterial(IMaterial * pMaterial);
+   virtual tResult FindMaterial(const char * pszName, IMaterial * * ppMaterial) const;
+   virtual tResult AddSubMesh(ISubMesh * pSubMesh);
+   virtual tResult AttachSkeleton(ISkeleton * pSkeleton);
+   virtual tResult GetSkeleton(ISkeleton * * ppSkeleton);
 
    tResult Read(IReader * pReader, IRenderDevice * pRenderDevice, IResourceManager * pResourceManager);
-
-   void Reset();
 
    void SetFrame(float percent);
 
@@ -148,8 +148,6 @@ public:
 
    int GetGroupCount() const { return m_groups.size(); }
    const cMs3dGroup & GetGroup(int index) const { return m_groups[index]; }
-
-   ISkeleton * GetSkeleton() { return m_pSkeleton; }
 
 private:
    typedef void (cMs3dMesh:: * tRenderMethod)() const;

@@ -81,6 +81,13 @@ std::vector<IKeyFrameInterpolator *>::~vector()
    clear();
 }
 
+template <>
+std::vector<IMaterial *>::~vector()
+{
+   std::for_each(begin(), end(), CTInterfaceMethodRef(&IUnknown::Release));
+   clear();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 void cgErrorCallback()
@@ -396,16 +403,26 @@ cMs3dMesh::cMs3dMesh()
 {
 }
 
-template <>
-std::vector<IMaterial *>::~vector()
-{
-   std::for_each(begin(), end(), CTInterfaceMethodRef(&IUnknown::Release));
-   clear();
-}
-
 cMs3dMesh::~cMs3dMesh()
 {
-   Reset();
+   SafeRelease(m_pSkeleton);
+
+   m_vertices.clear();
+   m_triangles.clear();
+   m_groups.clear();
+
+   std::for_each(m_materials.begin(), m_materials.end(), CTInterfaceMethodRef(&IUnknown::Release));
+   m_materials.clear();
+
+   m_bCalculatedAABB = false;
+
+   if (m_program != NULL)
+   {
+      cgDestroyProgram(m_program);
+      m_program = NULL;
+   }
+
+   ReleaseCgContext();
 }
 
 void cMs3dMesh::GetAABB(tVec3 * pMaxs, tVec3 * pMins) const
@@ -440,6 +457,56 @@ void cMs3dMesh::GetAABB(tVec3 * pMaxs, tVec3 * pMins) const
    Assert(pMaxs && pMins);
    *pMaxs = m_maxs;
    *pMins = m_mins;
+}
+
+void cMs3dMesh::Render(IRenderDevice * pRenderDevice) const
+{
+   Assert(m_pfnRender != NULL);
+   (this->*m_pfnRender)();
+}
+
+tResult cMs3dMesh::AddMaterial(IMaterial * pMaterial)
+{
+   return E_NOTIMPL;
+}
+
+tResult cMs3dMesh::FindMaterial(const char * pszName, IMaterial * * ppMaterial) const
+{
+   return E_NOTIMPL;
+}
+
+tResult cMs3dMesh::AddSubMesh(ISubMesh * pSubMesh)
+{
+   return E_NOTIMPL;
+}
+
+tResult cMs3dMesh::AttachSkeleton(ISkeleton * pSkeleton)
+{
+   SafeRelease(m_pSkeleton);
+   m_pSkeleton = pSkeleton;
+   if (m_pSkeleton)
+   {
+      m_pSkeleton->AddRef();
+   }
+   return S_OK;
+}
+
+tResult cMs3dMesh::GetSkeleton(ISkeleton * * ppSkeleton)
+{
+   if (ppSkeleton != NULL)
+   {
+      *ppSkeleton = static_cast<ISkeleton *>(m_pSkeleton);
+      if (*ppSkeleton != NULL)
+      {
+         (*ppSkeleton)->AddRef();
+         return S_OK;
+      }
+      else
+      {
+         return S_FALSE;
+      }
+   }
+   return E_FAIL;
 }
 
 tResult cMs3dMesh::Read(IReader * pReader, IRenderDevice * pRenderDevice, IResourceManager * pResourceManager)
@@ -541,15 +608,18 @@ tResult cMs3dMesh::Read(IReader * pReader, IRenderDevice * pRenderDevice, IResou
    if (ReadSkeleton(pReader, &bones, &interpolators) != S_OK)
       return E_FAIL;
 
-   if (SkeletonCreate(&bones[0], bones.size(), &interpolators[0], interpolators.size(), &m_pSkeleton) == S_OK)
+   cAutoIPtr<ISkeleton> pSkeleton;
+   if (SkeletonCreate(&bones[0], bones.size(), &interpolators[0], interpolators.size(), &pSkeleton) == S_OK)
    {
-      m_boneMatrices.resize(GetSkeleton()->GetBoneCount());
+      AttachSkeleton(pSkeleton);
 
-      tMatrices inverses(GetSkeleton()->GetBoneCount());
+      m_boneMatrices.resize(pSkeleton->GetBoneCount());
+
+      tMatrices inverses(pSkeleton->GetBoneCount());
 
       for (int i = 0; i < inverses.size(); i++)
       {
-         MatrixInvert(GetSkeleton()->GetBoneWorldTransform(i), &inverses[i]);
+         MatrixInvert(pSkeleton->GetBoneWorldTransform(i), &inverses[i]);
       }
 
       // transform all vertices by the inverse of the affecting bone's absolute matrix
@@ -621,28 +691,6 @@ tResult cMs3dMesh::Read(IReader * pReader, IRenderDevice * pRenderDevice, IResou
    }
 
    return S_OK;
-}
-
-void cMs3dMesh::Reset()
-{
-   SafeRelease(m_pSkeleton);
-
-   m_vertices.clear();
-   m_triangles.clear();
-   m_groups.clear();
-
-   std::for_each(m_materials.begin(), m_materials.end(), CTInterfaceMethodRef(&IUnknown::Release));
-   m_materials.clear();
-
-   m_bCalculatedAABB = false;
-
-   if (m_program != NULL)
-   {
-      cgDestroyProgram(m_program);
-      m_program = NULL;
-   }
-
-   ReleaseCgContext();
 }
 
 void cMs3dMesh::SetFrame(float percent)
