@@ -12,9 +12,12 @@
 #include "editorTypes.h"
 
 #include "globalobj.h"
+#include "readwriteapi.h"
+#include "filespec.h"
 
 #include <DockMisc.h>
 #include <dwstate.h>
+#include <atldlgs.h>
 
 #ifdef HAVE_CPPUNIT
 #include <cppunit/extensions/HelperMacros.h>
@@ -88,24 +91,31 @@ static int FixAmpersands(const tChar * pszIn, CString * pOut)
       }
    }
 
+   if (nAmpersands == 0)
+   {
+      *pOut = pszIn;
+      return 0;
+   }
+
    tChar * pszTemp = static_cast<tChar *>(alloca(strlen(pszIn) + nAmpersands + 1));
+   tChar * pszDest = pszTemp;
    while (*pszIn)
    {
       if (*pszIn == '&')
       {
          // Add an extra ampersand for every one found
-         *pszTemp++ = '&';
+         *pszDest++ = '&';
       }
 
       if (_istlead(*pszIn))
       {
-         *pszTemp++ = *pszIn++;
+         *pszDest++ = *pszIn++;
       }
 
-      *pszTemp++ = *pszIn++;
+      *pszDest++ = *pszIn++;
    }
 
-   *pszTemp = 0;
+   *pszDest = 0;
    *pOut = pszTemp;
 
    return nAmpersands;
@@ -249,6 +259,13 @@ bool cDockingWindowMenu::UpdateMenu()
 }
 
 /////////////////////////////////////////////////////////////////////////////
+
+tResult CreateNewModel(IEditorModel * * ppModel)
+{
+   return CoCreateInstance(CLSID_EditorDoc, NULL, CLSCTX_ALL, IID_IEditorModel, (void**)ppModel);
+}
+
+/////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cMainFrame
 //
@@ -346,8 +363,9 @@ LRESULT cMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
    m_cmdBar.LoadImages(IDR_MAINFRAME);
    SetMenu(NULL);
 
-   // TODO: get rid of hard-coded two
-   HMENU hViewMenu = GetSubMenu(m_cmdBar.GetMenu(), 2);
+   static const int kViewMenuPosition = 2;
+
+   HMENU hViewMenu = GetSubMenu(m_cmdBar.GetMenu(), kViewMenuPosition);
    m_dockingWindowMenu.SetMenu(hViewMenu);
 
    if (!CreateSimpleStatusBar())
@@ -449,13 +467,6 @@ LRESULT cMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 LRESULT cMainFrame::OnFileNew(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled)
 {
-   CComPtr<IEditorModel> pModel;
-   if (CoCreateInstance(CLSID_EditorDoc, NULL, CLSCTX_ALL, IID_IEditorModel, (void**)&pModel) != S_OK)
-   {
-      ErrorMsg("Failed to create document object\n");
-      return -1;
-   }
-
    std::vector<cStr> tileSets;
    ListTileSets(&tileSets);
 
@@ -466,30 +477,37 @@ LRESULT cMainFrame::OnFileNew(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHa
 
    if (m_bPromptForMapSettings)
    {
-      cMapSettingsDlg dlg(g_mapSizes, _countof(g_mapSizes), kDefaultMapSizeIndex,
-         tileSets, 0, kHeightData_None);
+      cMapSettingsDlg dlg(g_mapSizes, _countof(g_mapSizes),
+         kDefaultMapSizeIndex, tileSets, 0, kHeightData_None);
 
       // Shouldn't be allowed to cancel the dialog
       Verify(dlg.DoModal(m_hWnd) == IDOK);
 
       SIZE mapSize;
       cStr tileSet, heightMap;
-
-      Verify(dlg.GetSelectedSize(&mapSize));
-      Verify(dlg.GetSelectedTileSet(&tileSet));
-      Verify(dlg.GetHeightDataFile(&heightMap));
-
-      mapSettings = cMapSettings(
-         mapSize.cx,
-         mapSize.cy,
-         tileSet,
-         dlg.GetHeightData(),
-         heightMap.empty() ? NULL : heightMap.c_str());
+      if (dlg.GetSelectedSize(&mapSize)
+         && dlg.GetSelectedTileSet(&tileSet)
+         && dlg.GetHeightDataFile(&heightMap))
+      {
+         mapSettings = cMapSettings(
+            mapSize.cx,
+            mapSize.cy,
+            tileSet,
+            dlg.GetHeightData(),
+            heightMap.empty() ? NULL : heightMap.c_str());
+      }
    }
 
-   Verify(SetModel(pModel) == S_OK);
+   cAutoIPtr<IEditorModel> pModel;
+   if (CreateNewModel(&pModel) != S_OK || pModel->New(&mapSettings) != S_OK)
+   {
+      ErrorMsg("Error creating new document\n");
+   }
+   else
+   {
+      Verify(SetModel(pModel) == S_OK);
+   }
 
-   // TODO
    return 0;
 }
 
@@ -497,7 +515,36 @@ LRESULT cMainFrame::OnFileNew(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHa
 
 LRESULT cMainFrame::OnFileOpen(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled)
 {
-   // TODO
+   CString filter;
+   Verify(filter.LoadString(IDS_FILTER));
+
+   for (int i = 0; i < filter.GetLength(); i++)
+   {
+      if (filter[i] == '|')
+      {
+         filter.SetAt(i, 0);
+      }
+   }
+
+	CFileDialog dlg(TRUE, NULL, NULL, OFN_HIDEREADONLY, filter);
+   if (dlg.DoModal(m_hWnd) == IDOK)
+   {
+      cFileSpec file(dlg.m_szFileName);
+
+      cAutoIPtr<IReader> pReader(FileCreateReader(file));
+      if (!!pReader)
+      {
+         cAutoIPtr<IEditorModel> pModel;
+         if (CreateNewModel(&pModel) == S_OK)
+         {
+            if (pModel->Open(pReader) != S_OK)
+            {
+               ErrorMsg1("Error opening %s\n", file.GetName());
+            }
+         }
+      }
+   }
+
    return 0;
 }
 

@@ -213,6 +213,8 @@ interface UUID("F131D72E-30A7-4758-A094-830F00A50D91") IEditorModel : IUnknown
    virtual tResult New(const cMapSettings * pMapSettings) = 0;
    virtual tResult Open(IReader * pReader) = 0;
    virtual tResult Save(IWriter * pWriter) = 0;
+   virtual tResult Reset() = 0;
+   virtual tResult IsModified() = 0;
 
    virtual cTerrain * AccessTerrain() = 0;
    virtual IMaterial * AccessMaterial() = 0;

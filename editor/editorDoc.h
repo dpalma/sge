@@ -46,6 +46,8 @@ public:
    virtual tResult New(const cMapSettings * pMapSettings);
    virtual tResult Open(IReader * pReader);
    virtual tResult Save(IWriter * pWriter);
+   virtual tResult Reset();
+   virtual tResult IsModified();
 
    const sTerrainVertex * GetVertexPointer() const;
    size_t GetVertexCount() const;
@@ -58,16 +60,6 @@ public:
 
    virtual tResult AddEditorModelListener(IEditorModelListener * pListener);
    virtual tResult RemoveEditorModelListener(IEditorModelListener * pListener);
-
-// Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(cEditorDoc)
-	public:
-	virtual BOOL OnNewDocument();
-	virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
-	virtual BOOL OnSaveDocument(LPCTSTR lpszPathName);
-	virtual void DeleteContents();
-	//}}AFX_VIRTUAL
 
    BEGIN_UPDATE_UI_MAP(cEditorDoc)
       UPDATE_ELEMENT(ID_EDIT_UNDO, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
@@ -84,6 +76,8 @@ protected:
 	//}}AFX_MSG
 
 private:
+   bool m_bModified;
+
    cHeightMap * m_pHeightMap;
 
    cAutoIPtr<IMaterial> m_pMaterial;
