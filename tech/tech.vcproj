@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8.00"
 	Name="tech"
-	ProjectGUID="{9509BD32-4EA8-4513-962A-90904724E827}"
+	ProjectGUID="{3FBF8274-6154-4681-A1C7-9DBD381310C6}"
 	>
 	<Platforms>
 		<Platform
@@ -45,7 +45,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories=".\include"
+				AdditionalIncludeDirectories=".\include,..\3rdparty\zlib\include"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;TECH_EXPORTS;WIN32;_WINDOWS;STRICT"
 				StringPooling="TRUE"
 				RuntimeLibrary="3"
@@ -75,7 +75,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="winmm.lib opengl32.lib"
+				AdditionalDependencies="$(OutDir)\zlibwapi.lib winmm.lib opengl32.lib"
 				OutputFile=".\..\Build.vc8\Opt/tech.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -134,7 +134,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".\include,..\3rdparty\cppunit\include"
+				AdditionalIncludeDirectories=".\include,..\3rdparty\zlib\include,..\3rdparty\cppunit\include"
 				PreprocessorDefinitions="STATIC_BUILD,_DEBUG,_USRDLL,TECH_EXPORTS,WIN32,_WINDOWS,STRICT,HAVE_CPPUNIT"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -213,7 +213,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories=".\include"
+				AdditionalIncludeDirectories=".\include,..\3rdparty\zlib\include"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;TECH_EXPORTS;WIN32;_WINDOWS;STRICT"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -242,7 +242,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="winmm.lib opengl32.lib"
+				AdditionalDependencies="$(OutDir)\zlibwapi.lib winmm.lib opengl32.lib"
 				OutputFile=".\..\Build.vc8\Release/tech.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -301,7 +301,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories=".\include"
+				AdditionalIncludeDirectories=".\include,..\3rdparty\zlib\include"
 				PreprocessorDefinitions="NDEBUG,STATIC_BUILD,_USRDLL,TECH_EXPORTS,WIN32,_WINDOWS,STRICT"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -380,7 +380,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".\include,..\3rdparty\cppunit\include"
+				AdditionalIncludeDirectories=".\include,..\3rdparty\zlib\include,..\3rdparty\cppunit\include"
 				PreprocessorDefinitions="_DEBUG;_USRDLL;TECH_EXPORTS;WIN32;_WINDOWS;STRICT;HAVE_CPPUNIT"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -409,7 +409,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\cppunit.lib winmm.lib opengl32.lib"
+				AdditionalDependencies="$(OutDir)\cppunit.lib $(OutDir)\zlibwapi.lib winmm.lib opengl32.lib"
 				OutputFile=".\..\Build.vc8\Debug/tech.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -541,6 +541,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\readwritemem.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\src\resmgr.cpp"
 					>
 				</File>
@@ -648,6 +652,10 @@
 						/>
 					</FileConfiguration>
 				</File>
+				<File
+					RelativePath=".\src\ziparchive.cpp"
+					>
+				</File>
 			</Filter>
 			<Filter
 				Name="Header Files"
@@ -673,7 +681,15 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\readwritemem.h"
+					>
+				</File>
+				<File
 					RelativePath=".\src\stdhdr.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\ziparchive.h"
 					>
 				</File>
 			</Filter>
