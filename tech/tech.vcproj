@@ -356,9 +356,6 @@
 					RelativePath=".\src\resmgr.cpp">
 				</File>
 				<File
-					RelativePath=".\src\resourcemgr.cpp">
-				</File>
-				<File
 					RelativePath=".\src\scriptvar.cpp">
 				</File>
 				<File
@@ -393,12 +390,6 @@
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="1"/>
 					</FileConfiguration>
-				</File>
-				<File
-					RelativePath=".\src\storefilesys.cpp">
-				</File>
-				<File
-					RelativePath=".\src\storemgr.cpp">
 				</File>
 				<File
 					RelativePath=".\src\techdebug.cpp">
@@ -542,16 +533,10 @@
 				RelativePath=".\include\resmgr.h">
 			</File>
 			<File
-				RelativePath=".\include\resourceapi.h">
-			</File>
-			<File
 				RelativePath=".\include\scriptapi.h">
 			</File>
 			<File
 				RelativePath=".\include\scriptvar.h">
-			</File>
-			<File
-				RelativePath=".\include\storeapi.h">
 			</File>
 			<File
 				RelativePath=".\include\str.h">
