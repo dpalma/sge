@@ -62,10 +62,14 @@ static int CreateDefaultContext(HWND hWnd, int bpp, HDC * phDC, HGLRC * phGLRC)
 
    *phDC = GetDC(hWnd);
    if (!*phDC)
+   {
       return 0;
+   }
 
    if (bpp == 0)
+   {
       bpp = GetDeviceCaps(*phDC, BITSPIXEL);
+   }
 
    PIXELFORMATDESCRIPTOR pfd;
    memset(&pfd, 0, sizeof(pfd));
@@ -75,11 +79,18 @@ static int CreateDefaultContext(HWND hWnd, int bpp, HDC * phDC, HGLRC * phGLRC)
    pfd.iPixelType = PFD_TYPE_RGBA;
    pfd.cColorBits = bpp;
    pfd.cDepthBits = bpp;
+   pfd.cStencilBits = bpp;
    pfd.dwLayerMask = PFD_MAIN_PLANE;
 
    int pixelFormat = ChoosePixelFormat(*phDC, &pfd);
 
-   if (!pixelFormat ||
+   while ((pixelFormat == 0) && (pfd.cStencilBits > 0))
+   {
+      pfd.cStencilBits /= 2;
+      pixelFormat = ChoosePixelFormat(*phDC, &pfd);
+   }
+
+   if ((pixelFormat == 0) ||
        !SetPixelFormat(*phDC, pixelFormat, &pfd) ||
        !(*phGLRC = wglCreateContext(*phDC)))
    {
