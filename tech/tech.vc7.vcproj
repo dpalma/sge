@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.00"
 	Name="tech"
+	ProjectGUID="{57CC058A-6051-4C5C-992D-38F013DC3CD9}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -557,6 +558,9 @@
 			</File>
 			<File
 				RelativePath=".\include\resmgr.h">
+			</File>
+			<File
+				RelativePath="include\resourceapi.h">
 			</File>
 			<File
 				RelativePath=".\include\str.h">
