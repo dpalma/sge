@@ -253,44 +253,6 @@ bool cTerrain::Create(uint xDim, uint zDim, int stepSize,
    float tileTexWidth = 1.0f / pTile->GetHorizontalImageCount();
    float tileTexHeight = 1.0f / pTile->GetVerticalImageCount();
 
-   m_tiles.resize(xDim * zDim);
-
-   int iVertex = 0;
-   int iTile = 0;
-
-   float z1 = 0;
-   float z2 = stepSize;
-
-   for (int iz = 0; iz < zDim; iz++, z1 += stepSize, z2 += stepSize)
-   {
-      float x1 = 0;
-      float x2 = stepSize;
-
-      for (int ix = 0; ix < xDim; ix++, x1 += stepSize, x2 += stepSize)
-      {
-//         uint tile = rand() & (nTileImages - 1);
-         uint tile = 0;
-         uint tileRow = tile / pTile->GetHorizontalImageCount();
-         uint tileCol = tile % pTile->GetHorizontalImageCount();
-
-         int iTileVerts = iVertex;
-
-         m_vertices[iVertex].uv1 = tVec2(tileCol * tileTexWidth, tileRow * tileTexHeight);
-         m_vertices[iVertex++].color = color;
-
-         m_vertices[iVertex].uv1 = tVec2((tileCol + 1) * tileTexWidth, tileRow * tileTexHeight);
-         m_vertices[iVertex++].color = color;
-
-         m_vertices[iVertex].uv1 = tVec2((tileCol + 1) * tileTexWidth, (tileRow + 1) * tileTexHeight);
-         m_vertices[iVertex++].color = color;
-
-         m_vertices[iVertex].uv1 = tVec2(tileCol * tileTexWidth, (tileRow + 1) * tileTexHeight);
-         m_vertices[iVertex++].color = color;
-
-         m_tiles[iTile++].SetVertices(&m_vertices[iTileVerts]);
-      }
-   }
-
    m_tileSize = stepSize;
 
    if (xDim > kTilesPerChunk)
@@ -357,33 +319,24 @@ void cTerrain::GetTileIndices(float x, float z, uint * pix, uint * piz)
 
 ////////////////////////////////////////
 
-const sTerrainVertex * cTerrain::GetVertexPointer() const
-{
-   return &m_vertices[0];
-}
-
-////////////////////////////////////////
-
-size_t cTerrain::GetVertexCount() const
-{
-   return m_vertices.size();
-}
-
-////////////////////////////////////////
-
 tResult cTerrain::Render(IRenderDevice * pRenderDevice)
 {
    glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
 
    glEnable(GL_COLOR_MATERIAL);
 
-   std::vector<cTerrainTile>::iterator iter;
-   for (iter = m_tiles.begin(); iter != m_tiles.end(); iter++)
+   //std::vector<cTerrainTile>::iterator iter;
+   //for (iter = m_tiles.begin(); iter != m_tiles.end(); iter++)
+   //{
+   //   const sTerrainVertex * pVertices = iter->GetVertices();
+   tTerrainQuads::iterator iter = m_terrainQuads.begin();
+   tTerrainQuads::iterator end = m_terrainQuads.end();
+   for (; iter != end; iter++)
    {
-      const sTerrainVertex * pVertices = iter->GetVertices();
+      const sTerrainVertex * pVertices = iter->verts;
 
       cAutoIPtr<IEditorTile> pEditorTile;
-      if (m_pTileSet->GetTile(iter->GetTile(), &pEditorTile) == S_OK)
+      if (m_pTileSet->GetTile(iter->tile, &pEditorTile) == S_OK)
       {
          cAutoIPtr<ITexture> pTexture;
          if (pEditorTile->GetTexture(&pTexture) == S_OK)
@@ -427,15 +380,43 @@ tResult cTerrain::Render(IRenderDevice * pRenderDevice)
 
 ////////////////////////////////////////
 
-cTerrainTile * cTerrain::GetTile(uint ix, uint iz)
+uint cTerrain::SetTileTerrain(uint tx, uint tz, uint terrain)
 {
-   if (ix < m_xDim && iz < m_zDim)
+   if (tx < m_xDim && tz < m_zDim)
    {
-      uint index = (iz * m_zDim) + ix;
-      Assert(index < m_tiles.size());
-      return &m_tiles[index];
+      uint index = (tz * m_zDim) + tx;
+      if (index < m_terrainQuads.size())
+      {
+         uint formerTerrain = m_terrainQuads[index].tile;
+         m_terrainQuads[index].tile = terrain;
+         return formerTerrain;
+      }
    }
-   return NULL;
+   return kInvalidTerrain;
+}
+
+////////////////////////////////////////
+
+tResult cTerrain::GetTileVertices(uint tx, uint tz, tVec3 vertices[4]) const
+{
+   if (vertices == NULL)
+   {
+      return E_POINTER;
+   }
+   if (tx < m_xDim && tz < m_zDim)
+   {
+      uint index = (tz * m_zDim) + tx;
+      if (index < m_terrainQuads.size())
+      {
+         const sTerrainVertex * pVertices = m_terrainQuads[index].verts;
+         vertices[0] = pVertices[0].pos;
+         vertices[1] = pVertices[1].pos;
+         vertices[2] = pVertices[2].pos;
+         vertices[3] = pVertices[3].pos;
+         return S_OK;
+      }
+   }
+   return E_FAIL;
 }
 
 ////////////////////////////////////////
@@ -444,26 +425,43 @@ void cTerrain::InitializeVertices(uint xDim, uint zDim, int stepSize, cHeightMap
 {
    uint nQuads = xDim * zDim;
 
+   m_terrainQuads.resize(nQuads);
+
    m_vertices.resize(nQuads * 4);
 
-   int index = 0;
+   int index = 0, iQuad = 0;
 
-   float z1 = 0;
-   float z2 = stepSize;
-
-   for (int iz = 0; iz < zDim; iz++, z1 += stepSize, z2 += stepSize)
+   float z = 0;
+   float z2 = static_cast<float>(stepSize);
+   for (uint iz = 0; iz < zDim; iz++, z += stepSize, z2 += stepSize)
    {
-      float x1 = 0;
-      float x2 = stepSize;
-
-      for (int ix = 0; ix < xDim; ix++, x1 += stepSize, x2 += stepSize)
+      float x = 0;
+      float x2 = static_cast<float>(stepSize);
+      for (uint ix = 0; ix < xDim; ix++, x += stepSize, x2 += stepSize, iQuad++)
       {
+         m_terrainQuads[iQuad].tile = 0;
+
+         m_terrainQuads[iQuad].verts[0].color = ARGB(255,192,192,192);
+         m_terrainQuads[iQuad].verts[1].color = ARGB(255,192,192,192);
+         m_terrainQuads[iQuad].verts[2].color = ARGB(255,192,192,192);
+         m_terrainQuads[iQuad].verts[3].color = ARGB(255,192,192,192);
+
+         m_terrainQuads[iQuad].verts[0].uv1 = tVec2(0,0);
+         m_terrainQuads[iQuad].verts[1].uv1 = tVec2(1,0);
+         m_terrainQuads[iQuad].verts[2].uv1 = tVec2(1,1);
+         m_terrainQuads[iQuad].verts[3].uv1 = tVec2(0,1);
+
 #define Height(xx,zz) ((pHeightMap != NULL) ? pHeightMap->Height(Round(xx),Round(zz)) : 0)
 
-         m_vertices[index++].pos = tVec3(x1, Height(x1,z1), z1);
-         m_vertices[index++].pos = tVec3(x2, Height(x2,z1), z1);
+         m_terrainQuads[iQuad].verts[0].pos = tVec3(x, Height(x,z), z);
+         m_terrainQuads[iQuad].verts[1].pos = tVec3(x2, Height(x2,z), z);
+         m_terrainQuads[iQuad].verts[2].pos = tVec3(x2, Height(x2,z2), z2);
+         m_terrainQuads[iQuad].verts[3].pos = tVec3(x, Height(x,z2), z2);
+
+         m_vertices[index++].pos = tVec3(x, Height(x,z), z);
+         m_vertices[index++].pos = tVec3(x2, Height(x2,z), z);
          m_vertices[index++].pos = tVec3(x2, Height(x2,z2), z2);
-         m_vertices[index++].pos = tVec3(x1, Height(x1,z2), z2);
+         m_vertices[index++].pos = tVec3(x, Height(x,z2), z2);
 
 #undef Height
       }
@@ -479,40 +477,14 @@ bool cTerrain::CreateTerrainChunks()
 {
    Assert(m_xChunks > 0 && m_zChunks > 0);
 
-   for (int i = 0; i < m_zChunks; i++)
+   for (uint i = 0; i < m_zChunks; i++)
    {
-      for (int j = 0; j < m_xChunks; j++)
+      for (uint j = 0; j < m_xChunks; j++)
       {
       }
    }
 
    return false;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cTerrainTile
-//
-
-////////////////////////////////////////
-
-cTerrainTile::cTerrainTile()
- : m_tile(0)
-{
-}
-
-////////////////////////////////////////
-
-cTerrainTile::~cTerrainTile()
-{
-}
-
-////////////////////////////////////////
-
-void cTerrainTile::SetVertices(const sTerrainVertex * pVertices)
-{
-   memcpy(m_vertices, pVertices, 4 * sizeof(sTerrainVertex));
 }
 
 

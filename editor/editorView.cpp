@@ -61,7 +61,6 @@ cEditorView::cEditorView()
    m_center(0,0,0),
    m_eye(0,0,0),
    m_bRecalcEye(true),
-   m_nIndices(0),
    m_sceneEntity(this),
    m_highlitTileX(-1),
    m_highlitTileZ(-1)
@@ -293,9 +292,6 @@ void cEditorView::OnDestroy()
 
    SafeRelease(m_pCamera);
    SafeRelease(m_pRenderDevice);
-
-   SafeRelease(m_pVertexBuffer);
-   SafeRelease(m_pIndexBuffer);
 }
 
 ////////////////////////////////////////
@@ -366,54 +362,37 @@ void cEditorView::cSceneEntity::Render(IRenderDevice * pRenderDevice)
    Assert(m_pOuter != NULL);
 
    cAutoIPtr<IEditorModel> pModel;
-   if (m_pOuter->GetModel(&pModel) != S_OK)
+   if (m_pOuter->GetModel(&pModel) == S_OK)
    {
-      return;
-   }
-
-   tResult renderResult = S_FALSE;
-
-   if (pModel->AccessTerrain() != NULL)
-   {
-      renderResult = pModel->AccessTerrain()->Render(pRenderDevice);
-   }
-
-   if (renderResult != S_OK)
-   {
-      pRenderDevice->Render(
-         kRP_Triangles, 
-         pModel->AccessMaterial(), 
-         m_pOuter->m_nIndices, 
-         m_pOuter->m_pIndexBuffer,
-         0, 
-         m_pOuter->m_pVertexBuffer);
+      if (pModel->AccessTerrain() != NULL)
+      {
+         pModel->AccessTerrain()->Render(pRenderDevice);
+      }
    }
 
    if ((m_pOuter->m_highlitTileX != -1) && (m_pOuter->m_highlitTileZ != -1))
    {
-      cTerrainTile * pTile = pModel->AccessTerrain()->GetTile(m_pOuter->m_highlitTileX, m_pOuter->m_highlitTileZ);
-      if (pTile != NULL)
+      tVec3 verts[4];
+      if (pModel->AccessTerrain()->GetTileVertices(m_pOuter->m_highlitTileX, m_pOuter->m_highlitTileZ, verts) == S_OK)
       {
-         sTerrainVertex verts[4];
-         memcpy(verts, pTile->GetVertices(), 4 * sizeof(sTerrainVertex));
-
          static const float kOffsetY = 0.5f;
+         verts[0].y += kOffsetY;
+         verts[1].y += kOffsetY;
+         verts[2].y += kOffsetY;
+         verts[3].y += kOffsetY;
 
-         verts[0].pos.y += kOffsetY;
-         verts[1].pos.y += kOffsetY;
-         verts[2].pos.y += kOffsetY;
-         verts[3].pos.y += kOffsetY;
+         static const GLfloat highlitTileColor[] = { 0,1,0,.25f };
 
          glPushAttrib(GL_ENABLE_BIT);
          glEnable(GL_BLEND);
          glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
          glBegin(GL_QUADS);
-            glColor4f(0, 1, 0, 0.25f);
+            glColor4fv(highlitTileColor);
             glNormal3f(0, 1, 0);
-            glVertex3fv(verts[0].pos.v);
-            glVertex3fv(verts[3].pos.v);
-            glVertex3fv(verts[2].pos.v);
-            glVertex3fv(verts[1].pos.v);
+            glVertex3fv(verts[0].v);
+            glVertex3fv(verts[3].v);
+            glVertex3fv(verts[2].v);
+            glVertex3fv(verts[1].v);
          glEnd();
          glPopAttrib();
       }
@@ -424,45 +403,14 @@ void cEditorView::cSceneEntity::Render(IRenderDevice * pRenderDevice)
 
 void cEditorView::InitialUpdate() 
 {
-   SafeRelease(m_pVertexBuffer);
-   SafeRelease(m_pIndexBuffer);
-
    cAutoIPtr<IEditorModel> pModel;
    if (GetModel(&pModel) != S_OK || pModel->AccessTerrain() == NULL)
    {
       return;
    }
 
-   cAutoIPtr<IVertexDeclaration> pVertexDecl;
-   if (TerrainVertexDeclarationCreate(AccessRenderDevice(), &pVertexDecl) == S_OK)
-   {
-      if (AccessRenderDevice()->CreateVertexBuffer(pModel->GetVertexCount(),
-         kBU_Default, pVertexDecl, kBP_Auto, &m_pVertexBuffer) == S_OK)
-      {
-         void * pVertexData = NULL;
-         if (m_pVertexBuffer->Lock(kBL_Discard, (void * *)&pVertexData) == S_OK)
-         {
-            memset(pVertexData, 0, pModel->GetVertexCount() * sizeof(sTerrainVertex));
-            m_pVertexBuffer->Unlock();
-         }
-      }
-   }
-
    uint xDim, zDim;
    pModel->AccessTerrain()->GetDimensions(&xDim, &zDim);
-
-   m_nIndices = xDim * zDim * 6;
-
-   if (AccessRenderDevice()->CreateIndexBuffer(m_nIndices,
-      kBU_Default, kIBF_16Bit, kBP_System, &m_pIndexBuffer) == S_OK)
-   {
-      void * pIndexData = NULL;
-      if (m_pIndexBuffer->Lock(kBL_Discard, (void * *)&pIndexData) == S_OK)
-      {
-         memset(pIndexData, 0, m_nIndices * sizeof(uint16));
-         m_pIndexBuffer->Unlock();
-      }
-   }
 
    uint xExt, zExt;
    pModel->AccessTerrain()->GetExtents(&xExt, &zExt);
@@ -476,50 +424,6 @@ void cEditorView::InitialUpdate()
 
 void cEditorView::Update() 
 {
-   cAutoIPtr<IEditorModel> pModel;
-   if (GetModel(&pModel) != S_OK)
-   {
-      return;
-   }
-
-   if (!!m_pVertexBuffer)
-   {
-      void * pVertexData = NULL;
-      if (m_pVertexBuffer->Lock(kBL_Discard, (void * *)&pVertexData) == S_OK)
-      {
-         memcpy(pVertexData, pModel->GetVertexPointer(),
-            pModel->GetVertexCount() * sizeof(sTerrainVertex));
-         m_pVertexBuffer->Unlock();
-      }
-   }
-
-   if (!!m_pIndexBuffer)
-   {
-      uint16 * pIndexData = NULL;
-      if (m_pIndexBuffer->Lock(kBL_Discard, (void * *)&pIndexData) == S_OK)
-      {
-         int iQuad = 0;
-
-         uint xDim, zDim;
-         pModel->AccessTerrain()->GetDimensions(&xDim, &zDim);
-
-         for (uint iz = 0; iz < zDim; iz++)
-         {
-            for (uint ix = 0; ix < xDim; ix++, iQuad++)
-            {
-               pIndexData[(iQuad * 6) + 0] = (iQuad * 4) + 0;
-               pIndexData[(iQuad * 6) + 1] = (iQuad * 4) + 3;
-               pIndexData[(iQuad * 6) + 2] = (iQuad * 4) + 2;
-
-               pIndexData[(iQuad * 6) + 3] = (iQuad * 4) + 2;
-               pIndexData[(iQuad * 6) + 4] = (iQuad * 4) + 1;
-               pIndexData[(iQuad * 6) + 5] = (iQuad * 4) + 0;
-            }
-         }
-
-         m_pIndexBuffer->Unlock();
-      }
-   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

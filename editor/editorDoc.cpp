@@ -294,14 +294,14 @@ tResult cEditorDoc::Redo()
 
 const sTerrainVertex * cEditorDoc::GetVertexPointer() const
 {
-   return (m_pTerrain != NULL) ? m_pTerrain->GetVertexPointer() : NULL;
+   return NULL;
 }
 
 ////////////////////////////////////////
 
 size_t cEditorDoc::GetVertexCount() const
 {
-   return (m_pTerrain != NULL) ? m_pTerrain->GetVertexCount() : 0;
+   return 0;
 }
 
 ////////////////////////////////////////

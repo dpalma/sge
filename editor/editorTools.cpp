@@ -363,8 +363,7 @@ tResult cTerrainTileTool::OnMouseMove(const cEditorMouseEvent & mouseEvent, IEdi
    if (pView != NULL)
    {
       uint ix, iz;
-      cTerrainTile * pTile;
-      if (GetHitTile(mouseEvent.GetPoint(), pView, &ix, &iz, &pTile))
+      if (GetHitTile(mouseEvent.GetPoint(), pView, &ix, &iz))
       {
          pView->HighlightTile(ix, iz);
       }
@@ -402,7 +401,7 @@ tResult cTerrainTileTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEdit
    if (pView != NULL)
    {
       uint ix, iz;
-      if (GetHitTile(mouseEvent.GetPoint(), pView, &ix, &iz, NULL))
+      if (GetHitTile(mouseEvent.GetPoint(), pView, &ix, &iz))
       {
          if ((m_iLastHitX != ix) || (m_iLastHitZ != iz))
          {
@@ -428,7 +427,7 @@ tResult cTerrainTileTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEdit
 
 ////////////////////////////////////////
 
-bool cTerrainTileTool::GetHitTile(CPoint point, IEditorView * pView, uint * pix, uint * piz, cTerrainTile * * ppTile)
+bool cTerrainTileTool::GetHitTile(CPoint point, IEditorView * pView, uint * pix, uint * piz)
 {
    cAutoIPtr<IEditorModel> pModel;
    if (pView->GetModel(&pModel) == S_OK)
@@ -462,17 +461,10 @@ bool cTerrainTileTool::GetHitTile(CPoint point, IEditorView * pView, uint * pix,
                   {
                      *pix = ix;
                   }
-
                   if (piz != NULL)
                   {
                      *piz = iz;
                   }
-
-                  if (ppTile != NULL)
-                  {
-                     *ppTile = pTerrain->GetTile(ix, iz);
-                  }
-
                   return true;
                }
             }

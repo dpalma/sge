@@ -39,15 +39,9 @@ tResult cTerrainTileCommand::Do()
 {
    if (m_pTerrain != NULL)
    {
-      cTerrainTile * pTile = m_pTerrain->GetTile(m_ix, m_iz);
-      if (pTile != NULL)
-      {
-         m_oldTile = pTile->GetTile();
-         pTile->SetTile(m_tile);
-         return S_OK;
-      }
+      m_oldTile = m_pTerrain->SetTileTerrain(m_ix,m_iz,m_tile);
+      return S_OK;
    }
-
    return E_FAIL;
 }
 
@@ -64,14 +58,8 @@ tResult cTerrainTileCommand::Undo()
 {
    if (m_pTerrain != NULL)
    {
-      cTerrainTile * pTile = m_pTerrain->GetTile(m_ix, m_iz);
-      if (pTile != NULL)
-      {
-         pTile->SetTile(m_oldTile);
-         return S_OK;
-      }
+      m_pTerrain->SetTileTerrain(m_ix,m_iz,m_oldTile);
    }
-
    return E_FAIL;
 }
 

@@ -24,8 +24,10 @@ F_DECLARE_INTERFACE(IWriter);
 class cHeightMap;
 
 class cTerrain;
-class cTerrainTile;
 class cTerrainChunk;
+
+const uint kInvalidUintValue = ~0;
+const uint kInvalidTerrain = ~0;
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -50,6 +52,14 @@ tResult TerrainVertexDeclarationCreate(IRenderDevice * pRenderDevice,
 const int kDefaultStepSize = 32;
 const int kTilesPerChunk = 32;
 
+struct sTerrainQuad
+{
+   uint tile;
+   sTerrainVertex verts[4];
+};
+
+typedef std::vector<sTerrainQuad> tTerrainQuads;
+
 class cTerrain
 {
 public:
@@ -67,12 +77,10 @@ public:
 
    void GetTileIndices(float x, float z, uint * pix, uint * piz);
 
-   const sTerrainVertex * GetVertexPointer() const;
-   size_t GetVertexCount() const;
-
    tResult Render(IRenderDevice * pRenderDevice);
 
-   cTerrainTile * GetTile(uint ix, uint iz);
+   uint SetTileTerrain(uint tx, uint tz, uint terrain);
+   tResult GetTileVertices(uint tx, uint tz, tVec3 vertices[4]) const;
 
 protected:
    void InitializeVertices(uint xDim, uint zDim, int stepSize, cHeightMap * pHeightMap);
@@ -86,57 +94,13 @@ private:
 
    std::vector<sTerrainVertex> m_vertices;
 
+   tTerrainQuads m_terrainQuads;
+
    cStr m_tileSetName;
    cAutoIPtr<IEditorTileSet> m_pTileSet;
 
    cAutoIPtr<IMaterial> m_pMaterial;
-
-   std::vector<cTerrainTile> m_tiles;
 };
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cTerrainTile
-//
-
-class cTerrainTile
-{
-public:
-   cTerrainTile();
-   ~cTerrainTile();
-
-   void SetVertices(const sTerrainVertex * pVertices);
-   const sTerrainVertex * GetVertices() const;
-
-   void SetTile(uint tile);
-   uint GetTile() const;
-
-private:
-   sTerrainVertex m_vertices[4]; // one quad
-   uint m_tile;
-};
-
-///////////////////////////////////////
-
-inline const sTerrainVertex * cTerrainTile::GetVertices() const
-{
-   return m_vertices;
-}
-
-///////////////////////////////////////
-
-inline void cTerrainTile::SetTile(uint tile)
-{
-   m_tile = tile;
-}
-
-///////////////////////////////////////
-
-inline uint cTerrainTile::GetTile() const
-{
-   return m_tile;
-}
 
 
 /////////////////////////////////////////////////////////////////////////////

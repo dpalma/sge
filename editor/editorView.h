@@ -20,9 +20,6 @@
 #endif // _MSC_VER > 1000
 
 F_DECLARE_INTERFACE(IRenderDevice);
-F_DECLARE_INTERFACE(IVertexDeclaration);
-F_DECLARE_INTERFACE(IVertexBuffer);
-F_DECLARE_INTERFACE(IIndexBuffer);
 
 F_DECLARE_INTERFACE(ISceneCamera);
 
@@ -160,10 +157,6 @@ private:
    cAutoIPtr<ISceneCamera> m_pCamera;
 
    cSceneEntity m_sceneEntity;
-
-   cAutoIPtr<IVertexBuffer> m_pVertexBuffer;
-   cAutoIPtr<IIndexBuffer> m_pIndexBuffer;
-   uint m_nIndices;
 
    int m_highlitTileX, m_highlitTileZ;
 };
