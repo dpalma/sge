@@ -6,9 +6,9 @@
 #ifdef _DEBUG // (entire file)
 
 #include <climits>
-#include <stdarg.h>
-#include <stdio.h>
-#include <string.h>
+#include <cstdarg>
+#include <cstdio>
+#include <cstring>
 #include <ctime>
 #include <locale>
 
@@ -67,6 +67,25 @@ static bool * LogFindChannel(const char * pszName)
 
 ///////////////////////////////////////
 
+#ifdef _MSC_VER
+class cCrtIgnoreBlock
+{
+public:
+   cCrtIgnoreBlock()
+   {
+      m_crtDbgFlag = _CrtSetDbgFlag(0);
+   }
+
+   ~cCrtIgnoreBlock()
+   {
+      _CrtSetDbgFlag(m_crtDbgFlag);
+   }
+
+private:
+   int m_crtDbgFlag;
+};
+#endif
+
 bool LogDefineChannel(const char * pszName, bool * pbEnabled)
 {
    Assert(pszName != NULL && *pszName != 0);
@@ -75,6 +94,9 @@ bool LogDefineChannel(const char * pszName, bool * pbEnabled)
    bool * pb = LogFindChannel(pszName);
    if (pb == NULL)
    {
+#ifdef _MSC_VER
+      cCrtIgnoreBlock ignoreBlock;
+#endif
       sNamedLogChannel * p = new sNamedLogChannel;
       p->pszName = pszName;
       p->pbEnabled = pbEnabled;
