@@ -305,6 +305,9 @@
 					RelativePath="src\animation.cpp">
 				</File>
 				<File
+					RelativePath="src\cmds.cpp">
+				</File>
+				<File
 					RelativePath="src\frustum.cpp">
 				</File>
 				<File

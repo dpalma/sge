@@ -141,11 +141,11 @@ LINK32=link.exe
 # PROP Intermediate_Dir "..\Build\StaticDebug\engine"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-F90=df.exe
+LINK32=link.exe
 MTL=midl.exe
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
-LINK32=link.exe
+F90=df.exe
 CPP=cl.exe
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "_DEBUG" /D "STRICT" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "ENGINE_EXPORTS" /Yu"stdhdr.h" /FD /GZ /c
 # ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\3rdparty\cppunit\include" /I ".\include" /I "..\tech\include" /I "..\render\include" /I "..\3rdparty\lua\include" /I "..\3rdparty\tinyxml" /D "STATIC_BUILD" /D "_DEBUG" /D "HAVE_CPPUNIT" /D "_USRDLL" /D "ENGINE_EXPORTS" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "STRICT" /D "TIXML_USE_STL" /Yu"stdhdr.h" /FD /GZ /c
@@ -174,11 +174,11 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "..\Build\StaticRelease\engine"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-F90=df.exe
+LINK32=link.exe
 MTL=midl.exe
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
-LINK32=link.exe
+F90=df.exe
 CPP=cl.exe
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "NDEBUG" /D "STRICT" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "ENGINE_EXPORTS" /Yu"stdhdr.h" /FD /c
 # ADD CPP /nologo /MT /W3 /GX /O2 /I ".\include" /I "..\tech\include" /I "..\render\include" /I "..\3rdparty\lua\include" /I "..\3rdparty\tinyxml" /D "NDEBUG" /D "STATIC_BUILD" /D "_USRDLL" /D "ENGINE_EXPORTS" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "STRICT" /D "TIXML_USE_STL" /Yu"stdhdr.h" /FD /c
@@ -215,6 +215,10 @@ SOURCE=.\src\3ds.cpp
 # Begin Source File
 
 SOURCE=.\src\animation.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cmds.cpp
 # End Source File
 # Begin Source File
 
