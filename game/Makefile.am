@@ -12,7 +12,7 @@ game_PLATFORM_SOURCES = syslinux.cpp
 endif
 
 game_SOURCES = 3ds.cpp \
-               camera.cpp \
+               boundingvolume.cpp \
                frustum.cpp \
                groundtiled.cpp \
                guids.cpp \
@@ -22,6 +22,8 @@ game_SOURCES = 3ds.cpp \
                mesh.cpp \
                ms3d.cpp \
                raycast.cpp \
+               scenecamera.cpp \
+               scenemesh.cpp \
                scenegroup.cpp \
                scenenode.cpp \
                script.cpp \

@@ -16,7 +16,6 @@
 #include "scenenode.h"
 #include "scenecamera.h"
 #include "scenemesh.h"
-#include "camera.h"
 #include "script.h"
 #include "scriptvm.h"
 
