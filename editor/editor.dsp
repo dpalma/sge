@@ -275,6 +275,10 @@ SOURCE=.\stdhdr.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\terrain.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ToolPaletteBar.cpp
 # End Source File
 # End Group
@@ -380,6 +384,10 @@ SOURCE=.\splashwnd.h
 # Begin Source File
 
 SOURCE=.\stdhdr.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\terrain.h
 # End Source File
 # Begin Source File
 

@@ -5,6 +5,7 @@
 
 #include "editorDoc.h"
 #include "editorView.h"
+#include "terrain.h"
 
 #include "sceneapi.h"
 #include "ray.h"
