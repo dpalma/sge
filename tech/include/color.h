@@ -31,26 +31,29 @@ public:
    float GetBlue() const;
    float GetAlpha() const;
 
-   uint GetA8R8G8B8();
+   uint GetARGB();
 
    const float * GetPointer() const;
 
 private:
    float m_rgba[4];
-   mutable uint m_a8r8g8b8;
+   mutable bool m_bHaveARGB;
+   mutable uint m_argb;
 };
 
 ///////////////////////////////////////
 
 inline cColor::cColor()
- : m_a8r8g8b8(0)
+ : m_bHaveARGB(false),
+   m_argb(0)
 {
 }
 
 ///////////////////////////////////////
 
 inline cColor::cColor(float r, float g, float b)
- : m_a8r8g8b8(0)
+ : m_bHaveARGB(false),
+   m_argb(0)
 {
    m_rgba[0] = r;
    m_rgba[1] = g;
@@ -61,7 +64,8 @@ inline cColor::cColor(float r, float g, float b)
 ///////////////////////////////////////
 
 inline cColor::cColor(float r, float g, float b, float a)
- : m_a8r8g8b8(0)
+ : m_bHaveARGB(false),
+   m_argb(0)
 {
    m_rgba[0] = r;
    m_rgba[1] = g;
@@ -72,7 +76,8 @@ inline cColor::cColor(float r, float g, float b, float a)
 ///////////////////////////////////////
 
 inline cColor::cColor(const float rgba[4])
- : m_a8r8g8b8(0)
+ : m_bHaveARGB(false),
+   m_argb(0)
 {
    m_rgba[0] = rgba[0];
    m_rgba[1] = rgba[1];
@@ -83,7 +88,8 @@ inline cColor::cColor(const float rgba[4])
 ///////////////////////////////////////
 
 inline cColor::cColor(const cColor & other)
- : m_a8r8g8b8(other.m_a8r8g8b8)
+ : m_bHaveARGB(other.m_bHaveARGB),
+   m_argb(other.m_argb)
 {
    m_rgba[0] = other.m_rgba[0];
    m_rgba[1] = other.m_rgba[1];
@@ -99,7 +105,8 @@ inline const cColor & cColor::operator =(const cColor & other)
    m_rgba[1] = other.m_rgba[1];
    m_rgba[2] = other.m_rgba[2];
    m_rgba[3] = other.m_rgba[3];
-   m_a8r8g8b8 = other.m_a8r8g8b8;
+   m_bHaveARGB = other.m_bHaveARGB;
+   m_argb = other.m_argb;
    return *this;
 }
 
@@ -155,16 +162,17 @@ inline float cColor::GetAlpha() const
 
 ///////////////////////////////////////
 
-inline uint cColor::GetA8R8G8B8()
+inline uint cColor::GetARGB()
 {
-   if (m_a8r8g8b8 == 0)
+   if (!m_bHaveARGB)
    {
-      m_a8r8g8b8 = (((byte)(GetAlpha() * 255) & 0xFF) << 24)
+      m_bHaveARGB = true;
+      m_argb = (((byte)(GetAlpha() * 255) & 0xFF) << 24)
          | (((byte)(GetRed() * 255) & 0xFF) << 16)
          | (((byte)(GetGreen() * 255) & 0xFF) << 8)
          | ((byte)(GetBlue() * 255) & 0xFF);
    }
-   return m_a8r8g8b8;
+   return m_argb;
 }
 
 ///////////////////////////////////////
