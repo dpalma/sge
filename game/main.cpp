@@ -144,7 +144,10 @@ void cWindowInputBroker::OnDestroy(double time)
 
 void cWindowInputBroker::OnResize(int width, int height, double time)
 {
-   glViewport(0, 0, width, height);
+   if (AccessRenderDevice() != NULL)
+   {
+      AccessRenderDevice()->SetViewportSize(width, height);
+   }
 
    if (g_pGameCamera != NULL)
    {
@@ -357,6 +360,7 @@ static void RegisterGlobalObjects()
    TextureManagerCreate();
    GUIContextCreate();
    GUIFactoryCreate();
+   GUIRenderingToolsCreate();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -446,6 +450,8 @@ bool MainInit(int argc, char * argv[])
 
    UseGlobal(UIRenderingTools);
    pUIRenderingTools->SetRenderDevice(g_pRenderDevice);
+   UseGlobal(GUIRenderingTools);
+   pGUIRenderingTools->SetRenderDevice(g_pRenderDevice);
 
    cAutoIPtr<IWindowFullScreen> pWindowFullScreen;
    bool bFullScreen = (ConfigIsTrue("full_screen") && !IsDebuggerPresent());
