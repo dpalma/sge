@@ -52,6 +52,8 @@ public:
          v.x*m30 + v.y*m31 + v.z*m32 + v.w*m33);
    }
 
+   void Transform(const float * pSource, float * pDest) const;
+
    union
    {
       struct
@@ -116,6 +118,16 @@ void cMatrix4<T>::Transpose()
    temp = m30, m30 = m03, m03 = temp;
    temp = m31, m31 = m13, m13 = temp;
    temp = m32, m32 = m23, m23 = temp;
+}
+
+///////////////////////////////////////
+
+template <typename T>
+inline void cMatrix4<T>::Transform(const float * pSource, float * pDest) const
+{
+   pDest[0] = (pSource[0] * m00) + (pSource[1] * m01) + (pSource[2] * m02) + m03;
+   pDest[1] = (pSource[0] * m10) + (pSource[1] * m11) + (pSource[2] * m12) + m13;
+   pDest[2] = (pSource[0] * m20) + (pSource[1] * m21) + (pSource[2] * m22) + m23;
 }
 
 ///////////////////////////////////////
