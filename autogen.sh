@@ -19,8 +19,8 @@
 	exit 1
 }
 
-aclocal -I ./config
-    && libtoolize --force --copy
-    && autoheader 
-    && automake --add-missing --copy
-    && autoconf
+aclocal -I ./config \
+&& libtoolize --force --copy \
+&& autoheader \
+&& automake --add-missing --copy \
+&& autoconf
