@@ -146,16 +146,19 @@ cFilePath::cFilePath()
 {
    m_szPath[0] = 0;
 }
+   
+///////////////////////////////////////
+
+cFilePath::cFilePath(const cFilePath & other)
+{
+   strcpy(m_szPath, other.m_szPath);
+}
 
 ///////////////////////////////////////
 
 cFilePath::cFilePath(const char * pszPath)
 {
-   if (pszPath != NULL)
-   {
-      strncpy(m_szPath, pszPath, sizeof(m_szPath));
-      m_szPath[_countof(m_szPath) - 1] = 0;
-   }
+   operator =(pszPath);
 }
 
 ///////////////////////////////////////
@@ -172,6 +175,42 @@ cFilePath::cFilePath(const char * pszPath, int pathLen)
    {
       m_szPath[0] = 0;
    }
+}
+
+///////////////////////////////////////
+
+const cFilePath & cFilePath::operator =(const char * pszPath)
+{
+   if (pszPath != NULL)
+   {
+      strncpy(m_szPath, pszPath, sizeof(m_szPath));
+      m_szPath[_countof(m_szPath) - 1] = 0;
+   }
+   return *this;
+}
+
+///////////////////////////////////////
+
+static void StrCpyExcl(char * pDest, const char * pSrc, const char * pExcl)
+{
+   for (; *pSrc; pSrc++)
+   {
+      if (!strchr(pExcl, *pSrc))
+      {
+         *pDest++ = *pSrc;
+      }
+   }
+   *pDest = 0;
+}
+
+int cFilePath::Compare(const cFilePath & other) const
+{
+   char szTemp1[kMaxPath], szTemp2[kMaxPath];
+
+   StrCpyExcl(szTemp1, GetPath(), szPathSeps);
+   StrCpyExcl(szTemp2, other.GetPath(), szPathSeps);
+
+   return stricmp(szTemp1, szTemp2);
 }
 
 ///////////////////////////////////////
@@ -320,78 +359,52 @@ int cFilePath::ListDirs(std::vector<std::string> * pDirs) const
 
 #ifdef HAVE_CPPUNIT
 
-#define COLLAPSE_DOTS_COMPARE(path, collapsed) \
-   do { \
-      char sz[kMaxPath]; \
-      CollapseDots((path), sz, kMaxPath); \
-      CPPUNIT_ASSERT(strcmp((collapsed), sz) == 0); \
-   } while (0)
-
-#define COLLAPSE_DOTS_SAME(path) \
-   COLLAPSE_DOTS_COMPARE(path, path)
-
 class cCollapseDotsTests : public CppUnit::TestCase
 {
    CPPUNIT_TEST_SUITE(cCollapseDotsTests);
-      CPPUNIT_TEST(testCollapseDots);
-      CPPUNIT_TEST(testCollapseDotsBufferSize);
-      CPPUNIT_TEST(testCollapseDotsDriveLetters);
+      CPPUNIT_TEST(TestCollapseDots);
+      CPPUNIT_TEST(TestCollapseDotsBufferSize);
    CPPUNIT_TEST_SUITE_END();
 
-public:
-   void testCollapseDots()
+   static const char * gm_testStrings[];
+   static const int gm_nTestStrings;
+
+   void TestCollapseDots()
    {
-      // nothing to do
-      COLLAPSE_DOTS_SAME("/p1/p2/p3");
-
-      // parent directory at end
-      COLLAPSE_DOTS_COMPARE("/p1/p2/p3/..", "/p1/p2");
-
-      // parent directory at begining, can't collapse
-      COLLAPSE_DOTS_SAME("../p1/p2/p3");
-
-      // parent directory mid-string
-      COLLAPSE_DOTS_COMPARE("/p1/p2/../p3", "/p1/p3");
-
-      // multiple parent directories at end
-      COLLAPSE_DOTS_COMPARE("/p1/p2/p3/../..", "/p1");
-
-      // multiple parent directories at begining, can't collapse
-      COLLAPSE_DOTS_SAME("../../p1/p2/p3");
-
-      // multiple parent directories mid-string
-      COLLAPSE_DOTS_COMPARE("/p1/p2/../../p3", "/p3");
-
-      // total collapse
-      COLLAPSE_DOTS_COMPARE("/p1/p2/p3/../../..", "");
-
-      // ensure relative path does not become absolute
-      COLLAPSE_DOTS_COMPARE("p1/../p2/p3", "p2/p3");
-
-      COLLAPSE_DOTS_COMPARE("../../p1/../p2/p3", "../../p2/p3");
-
-      // too many levels
-//      COLLAPSE_DOTS_SAME("/p1/p2/../../../p3");
-
-#if 0
-      CollapseDots("./p1/p2", sz);
-      CPPUNIT_ASSERT(strcmp("p1/p2", sz) == 0);
-
-      CollapseDots("./p1/p2/../../p3", sz);
-      CPPUNIT_ASSERT(strcmp("p3", sz) == 0);
-#endif
+      for (int i = 0; i < gm_nTestStrings; i += 2)
+      {
+         char szTemp[kMaxPath];
+         CollapseDots(gm_testStrings[i], szTemp, kMaxPath);
+         CPPUNIT_ASSERT(strcmp(gm_testStrings[i + 1], szTemp) == 0);
+      }
    }
 
-   void testCollapseDotsBufferSize()
+   void TestCollapseDotsBufferSize()
    {
       // @TODO: ensure no buffer over-runs and return value is appropriate
    }
-
-   void testCollapseDotsDriveLetters()
-   {
-      // @TODO: test paths with drive letters
-   }
 };
+
+const char * cCollapseDotsTests::gm_testStrings[] =
+{
+   "/p1/p2/p3",            "/p1/p2/p3",         // nothing to do
+   "/p1/p2/p3/..",         "/p1/p2",            // parent directory at end
+   "../p1/p2/p3",          "../p1/p2/p3",       // parent directory at begining, can't collapse
+   "/p1/p2/../p3",         "/p1/p3",            // parent directory mid-string
+   "/p1/p2/p3/../..",      "/p1",               // multiple parent directories at end
+   "../../p1/p2/p3",       "../../p1/p2/p3",    // multiple parent directories at begining, can't collapse
+   "/p1/p2/../../p3",      "/p3",               // multiple parent directories mid-string
+   "/p1/p2/p3/../../..",   "",                  // total collapse
+   "p1/../p2/p3",          "p2/p3",             // ensure relative path does not become absolute
+   "../../p1/../p2/p3",    "../../p2/p3",       // collapse middle but not beginning
+#if 0
+   "/p1/p2/../../../p3",   "/p1/p2/../../../p3", // too many levels
+   "./p1/p2",              "p1/p2",
+   "./p1/p2/../../p3",     "p3",
+#endif
+};
+
+const int cCollapseDotsTests::gm_nTestStrings = _countof(gm_testStrings);
 
 CPPUNIT_TEST_SUITE_REGISTRATION(cCollapseDotsTests);
 
@@ -400,11 +413,11 @@ CPPUNIT_TEST_SUITE_REGISTRATION(cCollapseDotsTests);
 class cFilePathTests : public CppUnit::TestCase
 {
    CPPUNIT_TEST_SUITE(cFilePathTests);
-      CPPUNIT_TEST(testIsFullPath);
+      CPPUNIT_TEST(TestIsFullPath);
+      CPPUNIT_TEST(TestCompare);
    CPPUNIT_TEST_SUITE_END();
 
-public:
-   void testIsFullPath()
+   void TestIsFullPath()
    {
       CPPUNIT_ASSERT(cFilePath("C:\\p1\\p2").IsFullPath());
       CPPUNIT_ASSERT(!cFilePath("C:p1\\p2").IsFullPath());
@@ -412,6 +425,12 @@ public:
       CPPUNIT_ASSERT(cFilePath("/p1/p2/p3").IsFullPath());
       CPPUNIT_ASSERT(!cFilePath("p1/p2/p3").IsFullPath());
       CPPUNIT_ASSERT(!cFilePath("/p1/p2/../p3").IsFullPath());
+   }
+
+   void TestCompare()
+   {
+      CPPUNIT_ASSERT(cFilePath("c:\\p1\\p2\\p3").Compare(cFilePath("c:/p1/p2/p3")) == 0);
+      CPPUNIT_ASSERT(cFilePath("c:\\p1\\p2\\p3").Compare(cFilePath("c:\\p4\\p5\\p6")) < 0);
    }
 };
 

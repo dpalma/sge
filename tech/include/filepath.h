@@ -22,8 +22,13 @@ class TECH_API cFilePath
 {
 public:
    cFilePath();
-   cFilePath(const char * pszPath);
-   explicit cFilePath(const char * pszPath, int pathLen);
+   cFilePath(const cFilePath & other);
+   explicit cFilePath(const char * pszPath);
+   cFilePath(const char * pszPath, int pathLen);
+
+   const cFilePath & operator =(const char * pszPath);
+
+   int Compare(const cFilePath & other) const;
 
    const char * GetPath() const;
 
@@ -45,6 +50,13 @@ private:
 inline const char * cFilePath::GetPath() const
 {
    return m_szPath;
+}
+
+///////////////////////////////////////
+
+inline bool operator ==(const cFilePath & path1, const cFilePath & path2)
+{
+   return (path1.Compare(path2) == 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
