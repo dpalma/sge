@@ -5,7 +5,6 @@
 
 #include "guitextedit.h"
 #include "guielementbasetem.h"
-#include "guirender.h"
 #include "guielementtools.h"
 
 #include "inputapi.h"

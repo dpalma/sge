@@ -7,7 +7,6 @@
 #include "guielementbasetem.h"
 #include "guicontainerbasetem.h"
 #include "guielementenum.h"
-#include "guirender.h"
 #include "guielementtools.h"
 
 #include "font.h"
@@ -42,22 +41,6 @@ cGUIPanelElement::~cGUIPanelElement()
 }
 
 ///////////////////////////////////////
-
-class cSizeAndPlaceElement
-{
-public:
-   cSizeAndPlaceElement(const tGUIRect & rect) : m_rect(rect) {}
-
-   void operator()(IGUIElement * pGUIElement)
-   {
-      Assert(pGUIElement != NULL);
-      GUISizeElement(m_rect, pGUIElement);
-      GUIPlaceElement(m_rect, pGUIElement);
-   }
-
-private:
-   tGUIRect m_rect;
-};
 
 void cGUIPanelElement::SetSize(const tGUISize & size)
 {

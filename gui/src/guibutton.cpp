@@ -5,7 +5,6 @@
 
 #include "guibutton.h"
 #include "guielementbasetem.h"
-#include "guirender.h"
 #include "guielementtools.h"
 
 #include "font.h"

@@ -5,7 +5,6 @@
 
 #include "guilabel.h"
 #include "guielementbasetem.h"
-#include "guirender.h"
 #include "guielementtools.h"
 
 #include "font.h"
@@ -41,23 +40,35 @@ cGUILabelElement::~cGUILabelElement()
 tResult cGUILabelElement::GetRendererClass(tGUIString * pRendererClass)
 {
    if (pRendererClass == NULL)
+   {
       return E_POINTER;
+   }
    *pRendererClass = "label";
    return S_OK;
 }
 
 ///////////////////////////////////////
 
-const char * cGUILabelElement::GetText() const
+tResult cGUILabelElement::GetText(tGUIString * pText)
 {
-   return m_text;
+   if (pText == NULL)
+   {
+      return E_POINTER;
+   }
+   *pText = m_text;
+   return S_OK;
 }
 
 ///////////////////////////////////////
 
-void cGUILabelElement::SetText(const char * pszText)
+tResult cGUILabelElement::SetText(const char * pszText)
 {
+   if (pszText == NULL)
+   {
+      return E_POINTER;
+   }
    m_text = pszText;
+   return S_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -154,7 +165,11 @@ tResult cGUILabelStatelessRenderer::Render(IGUIElement * pElement, IRenderDevice
          pGUIRenderingTools->GetDefaultFont(&pFont);
       }
 
-      pFont->DrawText(pLabel->GetText(), -1, kDT_NoClip, &rect, color);
+      tGUIString text;
+      if (pLabel->GetText(&text) == S_OK)
+      {
+         pFont->DrawText(text, text.length(), kDT_NoClip, &rect, color);
+      }
 
       return S_OK;
    }
@@ -185,10 +200,14 @@ tGUISize cGUILabelStatelessRenderer::GetPreferredSize(IGUIElement * pElement)
             pGUIRenderingTools->GetDefaultFont(&pFont);
          }
 
-         tRect rect(0,0,0,0);
-         pFont->DrawText(pLabel->GetText(), -1, kDT_CalcRect, &rect, tGUIColor::White);
+         tGUIString text;
+         if (pLabel->GetText(&text) == S_OK)
+         {
+            tRect rect(0,0,0,0);
+            pFont->DrawText(text, text.length(), kDT_CalcRect, &rect, tGUIColor::White);
 
-         return tGUISize(rect.GetWidth(), rect.GetHeight());
+            return tGUISize(rect.GetWidth(), rect.GetHeight());
+         }
       }
    }
    return tGUISize(0,0);

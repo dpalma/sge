@@ -23,8 +23,8 @@ public:
 
    virtual tResult GetRendererClass(tGUIString * pRendererClass);
 
-   virtual const char * GetText() const;
-   virtual void SetText(const char * pszText);
+   virtual tResult GetText(tGUIString * pText);
+   virtual tResult SetText(const char * pszText);
 
 private:
    tGUIString m_text;

@@ -230,6 +230,10 @@ SOURCE=.\src\guicontext.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\guidialog.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\guielementenum.cpp
 # End Source File
 # Begin Source File
@@ -368,6 +372,10 @@ SOURCE=.\src\guicontainerbasetem.h
 # Begin Source File
 
 SOURCE=.\src\guicontext.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\guidialog.h
 # End Source File
 # Begin Source File
 

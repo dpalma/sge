@@ -23,6 +23,7 @@ F_DECLARE_INTERFACE(IGUIElementEnum);
 F_DECLARE_INTERFACE(IGUIEvent);
 F_DECLARE_INTERFACE(IGUIContainerElement);
 F_DECLARE_INTERFACE(IGUIPanelElement);
+F_DECLARE_INTERFACE(IGUIDialogElement);
 F_DECLARE_INTERFACE(IGUIButtonElement);
 F_DECLARE_INTERFACE(IGUILabelElement);
 F_DECLARE_INTERFACE(IGUITextEditElement);
@@ -267,6 +268,18 @@ interface IGUIPanelElement : IGUIContainerElement
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// INTERFACE: IGUIDialogElement
+//
+
+interface IGUIDialogElement : IGUIContainerElement
+{
+   virtual tResult GetInsets(tGUIInsets * pInsets) = 0;
+   virtual tResult SetInsets(const tGUIInsets & insets) = 0;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // INTERFACE: IGUIButtonElement
 //
 
@@ -290,8 +303,8 @@ interface IGUIButtonElement : IGUIElement
 
 interface IGUILabelElement : IGUIElement
 {
-   virtual const char * GetText() const = 0;
-   virtual void SetText(const char * pszText) = 0;
+   virtual tResult GetText(tGUIString * pText) = 0;
+   virtual tResult SetText(const char * pszText) = 0;
 };
 
 

@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "guipanel.h"
+#include "guidialog.h"
 #include "guielementbasetem.h"
 #include "guicontainerbasetem.h"
 #include "guielementenum.h"
@@ -17,24 +17,25 @@
 #include "parse.h"
 
 #include <tinyxml.h>
+#include <algorithm>
 
 #include "dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGUIPanelElement
+// CLASS: cGUIDialogElement
 //
 
 ///////////////////////////////////////
 
-cGUIPanelElement::cGUIPanelElement()
+cGUIDialogElement::cGUIDialogElement()
  : m_pInsets(NULL)
 {
 }
 
 ///////////////////////////////////////
 
-cGUIPanelElement::~cGUIPanelElement()
+cGUIDialogElement::~cGUIDialogElement()
 {
    delete m_pInsets;
    m_pInsets = NULL;
@@ -42,7 +43,7 @@ cGUIPanelElement::~cGUIPanelElement()
 
 ///////////////////////////////////////
 
-void cGUIPanelElement::SetSize(const tGUISize & size)
+void cGUIDialogElement::SetSize(const tGUISize & size)
 {
    tBaseClass::SetSize(size);
 
@@ -62,24 +63,24 @@ void cGUIPanelElement::SetSize(const tGUISize & size)
 
 ///////////////////////////////////////
 
-tResult cGUIPanelElement::OnEvent(IGUIEvent * pEvent)
+tResult cGUIDialogElement::OnEvent(IGUIEvent * pEvent)
 {
    return S_OK;
 }
 
 ///////////////////////////////////////
 
-tResult cGUIPanelElement::GetRendererClass(tGUIString * pRendererClass)
+tResult cGUIDialogElement::GetRendererClass(tGUIString * pRendererClass)
 {
    if (pRendererClass == NULL)
       return E_POINTER;
-   *pRendererClass = "panel";
+   *pRendererClass = "dialog";
    return S_OK;
 }
 
 ///////////////////////////////////////
 
-tResult cGUIPanelElement::GetInsets(tGUIInsets * pInsets)
+tResult cGUIDialogElement::GetInsets(tGUIInsets * pInsets)
 {
    if (pInsets == NULL)
    {
@@ -98,7 +99,7 @@ tResult cGUIPanelElement::GetInsets(tGUIInsets * pInsets)
 
 ///////////////////////////////////////
 
-tResult cGUIPanelElement::SetInsets(const tGUIInsets & insets)
+tResult cGUIDialogElement::SetInsets(const tGUIInsets & insets)
 {
    if (m_pInsets == NULL)
    {
@@ -117,13 +118,13 @@ tResult cGUIPanelElement::SetInsets(const tGUIInsets & insets)
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGUIPanelElementFactory
+// CLASS: cGUIDialogElementFactory
 //
 
-AUTOREGISTER_GUIELEMENTFACTORY(panel, cGUIPanelElementFactory);
+AUTOREGISTER_GUIELEMENTFACTORY(dialog, cGUIDialogElementFactory);
 
-tResult cGUIPanelElementFactory::CreateElement(const TiXmlElement * pXmlElement, 
-                                               IGUIElement * * ppElement)
+tResult cGUIDialogElementFactory::CreateElement(const TiXmlElement * pXmlElement, 
+                                                IGUIElement * * ppElement)
 {
    if (ppElement == NULL)
    {
@@ -132,57 +133,60 @@ tResult cGUIPanelElementFactory::CreateElement(const TiXmlElement * pXmlElement,
 
    if (pXmlElement != NULL)
    {
-      cAutoIPtr<IGUIPanelElement> pPanel = static_cast<IGUIPanelElement *>(new cGUIPanelElement);
-      if (!!pPanel)
+      if (strcmp(pXmlElement->Value(), "dialog") == 0)
       {
-         tResult result = S_OK;
-
-         GUIElementStandardAttributes(pXmlElement, pPanel);
-
-         if (pXmlElement->Attribute("insets"))
+         cAutoIPtr<IGUIDialogElement> pDialog = static_cast<IGUIDialogElement *>(new cGUIDialogElement);
+         if (!!pDialog)
          {
-            double insetVals[4];
-            if (ParseTuple(pXmlElement->Attribute("insets"), insetVals, _countof(insetVals)) == 4)
-            {
-               tGUIInsets insets;
-               insets.left = Round(insetVals[0]);
-               insets.top = Round(insetVals[1]);
-               insets.right = Round(insetVals[2]);
-               insets.bottom = Round(insetVals[3]);
-               pPanel->SetInsets(insets);
-            }
-         }
+            tResult result = S_OK;
 
-         UseGlobal(GUIFactory);
+            GUIElementStandardAttributes(pXmlElement, pDialog);
 
-         for (TiXmlElement * pXmlChild = pXmlElement->FirstChildElement(); 
-              pXmlChild != NULL; pXmlChild = pXmlChild->NextSiblingElement())
-         {
-            if (pXmlChild->Type() == TiXmlNode::ELEMENT)
+            if (pXmlElement->Attribute("insets"))
             {
-               cAutoIPtr<IGUIElement> pChildElement;
-               if (pGUIFactory->CreateElement(pXmlChild->Value(), pXmlChild, &pChildElement) == S_OK)
+               double insetVals[4];
+               if (ParseTuple(pXmlElement->Attribute("insets"), insetVals, _countof(insetVals)) == 4)
                {
-                  if ((result = pPanel->AddElement(pChildElement)) != S_OK)
+                  tGUIInsets insets;
+                  insets.left = insetVals[0];
+                  insets.top = insetVals[1];
+                  insets.right = insetVals[2];
+                  insets.bottom = insetVals[3];
+                  pDialog->SetInsets(insets);
+               }
+            }
+
+            UseGlobal(GUIFactory);
+
+            for (TiXmlElement * pXmlChild = pXmlElement->FirstChildElement(); 
+                 pXmlChild != NULL; pXmlChild = pXmlChild->NextSiblingElement())
+            {
+               if (pXmlChild->Type() == TiXmlNode::ELEMENT)
+               {
+                  cAutoIPtr<IGUIElement> pChildElement;
+                  if (pGUIFactory->CreateElement(pXmlChild->Value(), pXmlChild, &pChildElement) == S_OK)
                   {
-                     DebugMsg("WARNING: Error creating child element of panel\n");
-                     break;
+                     if ((result = pDialog->AddElement(pChildElement)) != S_OK)
+                     {
+                        DebugMsg("WARNING: Error creating child element of panel\n");
+                        break;
+                     }
                   }
                }
             }
-         }
 
-         if (result == S_OK)
-         {
-            *ppElement = CTAddRef(pPanel);
-         }
+            if (result == S_OK)
+            {
+               *ppElement = CTAddRef(pDialog);
+            }
 
-         return result;
+            return result;
+         }
       }
    }
    else
    {
-      *ppElement = static_cast<IGUIPanelElement *>(new cGUIPanelElement);
+      *ppElement = static_cast<IGUIDialogElement *>(new cGUIDialogElement);
       return (*ppElement != NULL) ? S_OK : E_FAIL;
    }
 
@@ -192,46 +196,47 @@ tResult cGUIPanelElementFactory::CreateElement(const TiXmlElement * pXmlElement,
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGUIPanelRenderer
+// CLASS: cGUIDialogRenderer
 //
 
 ///////////////////////////////////////
 
-cGUIPanelRenderer::cGUIPanelRenderer()
+cGUIDialogRenderer::cGUIDialogRenderer()
 {
 }
 
 ///////////////////////////////////////
 
-cGUIPanelRenderer::~cGUIPanelRenderer()
+cGUIDialogRenderer::~cGUIDialogRenderer()
 {
 }
 
 ///////////////////////////////////////
 
-tResult cGUIPanelRenderer::Render(IGUIElement * pElement, IRenderDevice * pRenderDevice)
+tResult cGUIDialogRenderer::Render(IGUIElement * pElement, IRenderDevice * pRenderDevice)
 {
    if (pElement == NULL || pRenderDevice == NULL)
    {
       return E_POINTER;
    }
 
-   cAutoIPtr<IGUIPanelElement> pPanel;
-   if (pElement->QueryInterface(IID_IGUIPanelElement, (void**)&pPanel) == S_OK)
+   cAutoIPtr<IGUIDialogElement> pDialog;
+   if (pElement->QueryInterface(IID_IGUIDialogElement, (void**)&pDialog) == S_OK)
    {
-      tGUIPoint pos = GUIElementAbsolutePosition(pPanel);
-      tGUISize size = pPanel->GetSize();
-      tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
+      tGUIPoint pos = GUIElementAbsolutePosition(pDialog);
+      tGUISize size = pDialog->GetSize();
 
       UseGlobal(GUIRenderingTools);
 
       // TODO HACK
-      pGUIRenderingTools->Render3dRect(rect, 4, tGUIColor::Yellow, tGUIColor::Green, tGUIColor::Blue);
+      pGUIRenderingTools->Render3dRect(
+         tGUIRect(pos.x, pos.y, pos.x + size.width, pos.y + size.height), 
+         4, tGUIColor::Yellow, tGUIColor::Green, tGUIColor::Blue);
 
       tResult result = S_OK;
 
       cAutoIPtr<IGUIElementEnum> pEnum;
-      if (pPanel->GetElements(&pEnum) == S_OK)
+      if (pDialog->GetElements(&pEnum) == S_OK)
       {
          cAutoIPtr<IGUIElement> pChild;
          ulong count = 0;
@@ -263,12 +268,12 @@ tResult cGUIPanelRenderer::Render(IGUIElement * pElement, IRenderDevice * pRende
 
 ///////////////////////////////////////
 
-tGUISize cGUIPanelRenderer::GetPreferredSize(IGUIElement * pElement)
+tGUISize cGUIDialogRenderer::GetPreferredSize(IGUIElement * pElement)
 {
    if (pElement != NULL)
    {
-      cAutoIPtr<IGUIPanelElement> pPanel;
-      if (pElement->QueryInterface(IID_IGUIPanelElement, (void**)&pPanel) == S_OK)
+      cAutoIPtr<IGUIDialogElement> pDialog;
+      if (pElement->QueryInterface(IID_IGUIDialogElement, (void**)&pDialog) == S_OK)
       {
          // TODO
       }
@@ -279,20 +284,20 @@ tGUISize cGUIPanelRenderer::GetPreferredSize(IGUIElement * pElement)
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGUIPanelRendererFactory
+// CLASS: cGUIDialogRendererFactory
 //
 
-AUTOREGISTER_GUIELEMENTRENDERERFACTORY(panel, cGUIPanelRendererFactory);
+AUTOREGISTER_GUIELEMENTRENDERERFACTORY(dialog, cGUIDialogRendererFactory);
 
-tResult cGUIPanelRendererFactory::CreateRenderer(IGUIElement * /*pElement*/, 
-                                                 IGUIElementRenderer * * ppRenderer)
+tResult cGUIDialogRendererFactory::CreateRenderer(IGUIElement * /*pElement*/, 
+                                                  IGUIElementRenderer * * ppRenderer)
 {
    if (ppRenderer == NULL)
    {
       return E_POINTER;
    }
 
-   *ppRenderer = static_cast<IGUIElementRenderer *>(new cGUIPanelRenderer);
+   *ppRenderer = static_cast<IGUIElementRenderer *>(new cGUIDialogRenderer);
    return (*ppRenderer != NULL) ? S_OK : E_OUTOFMEMORY;
 }
 
