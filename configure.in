@@ -14,6 +14,8 @@ AC_CONFIG_AUX_DIR(config)
 AM_CONFIG_HEADER(config/config.h)
 AM_INIT_AUTOMAKE(foe, $FOE_VERSION)
 
+AC_PREFIX_DEFAULT(/opt/foe)
+
 AC_CONFIG_SUBDIRS(3rdparty/lua)
 
 dnl Check for programs.
@@ -56,5 +58,5 @@ AM_CONDITIONAL(NO_X, test "$no_x" = "yes")
 MDL_HAVE_OPENGL
 CHECK_ZLIB
 
-AC_CONFIG_FILES([Makefile 3rdparty/Makefile 3rdparty/tinyxml/Makefile allguids/Makefile tech/Makefile render/Makefile engine/Makefile game/Makefile])
+AC_CONFIG_FILES([Makefile 3rdparty/Makefile 3rdparty/tinyxml/Makefile allguids/Makefile tech/Makefile render/Makefile engine/Makefile game/Makefile data/Makefile])
 AC_OUTPUT

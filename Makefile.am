@@ -6,12 +6,12 @@ AUTOMAKE_OPTIONS = foreign
 
 ACLOCAL_AMFLAGS = -I $(top_builddir)/config
 
-EXTRA_DIST = bootstrap data
+EXTRA_DIST = bootstrap autogen.sh
 
 dist-hook:
 	rm -rf `find $(distdir)/data -name CVS`
 
-SUBDIRS = 3rdparty allguids tech render engine game
+SUBDIRS = 3rdparty allguids tech render engine game data
 
 MAINTAINERCLEANFILES = Makefile.in aclocal.m4 configure
 
