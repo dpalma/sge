@@ -7,6 +7,7 @@
 #include "heightmap.h"
 #include "editorapi.h"
 #include "terrain.h"
+#include "editorTypes.h"
 
 #include "render.h"
 #include "material.h"

@@ -6,6 +6,7 @@
 #include "editorApp.h"
 #include "editorDoc.h"
 #include "editorView.h"
+#include "editorTypes.h"
 #include "MainFrm.h"
 #include "aboutdlg.h"
 #include "splashwnd.h"

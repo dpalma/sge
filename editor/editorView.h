@@ -65,6 +65,8 @@ public:
    virtual tResult GetCameraElevation(float * pElevation);
    virtual tResult SetCameraElevation(float elevation);
    virtual tResult GetModel(IEditorModel * * ppModel);
+   virtual tResult HighlightTile(int iTileX, int iTileZ);
+   virtual tResult ClearTileHighlight();
 
    // IEditorLoopClient
    virtual void OnFrame(double time, double elapsed);
@@ -149,6 +151,8 @@ private:
    cAutoIPtr<IVertexBuffer> m_pVertexBuffer;
    cAutoIPtr<IIndexBuffer> m_pIndexBuffer;
    uint m_nIndices;
+
+   int m_highlitTileX, m_highlitTileZ;
 };
 
 #ifndef _DEBUG  // debug version in editorView.cpp

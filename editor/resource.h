@@ -20,6 +20,7 @@
 #define IDS_TOOL_PALETTE_BAR_TITLE      5002
 #define IDS_HEIGHT_MAP_FILTER           5003
 #define ID_TOOLS_UNITTESTRUNNER         32771
+#define ID_EDIT_DELETE                  32773
 #define ID_VIEW_CONTROL_BAR_FIRST       0xC100
 #define ID_VIEW_CONTROL_BAR1            0xC100
 #define ID_VIEW_CONTROL_BAR2            0xC101
@@ -45,7 +46,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        131
-#define _APS_NEXT_COMMAND_VALUE         32773
+#define _APS_NEXT_COMMAND_VALUE         32774
 #define _APS_NEXT_CONTROL_VALUE         1012
 #define _APS_NEXT_SYMED_VALUE           104
 #endif

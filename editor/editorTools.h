@@ -10,6 +10,8 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+class cTerrainTile;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cMoveCameraTool
@@ -47,6 +49,9 @@ public:
    virtual tResult OnLButtonDown(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
 	virtual tResult OnLButtonUp(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
 	virtual tResult OnMouseMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+
+protected:
+   bool GetHitTile(CPoint point, IEditorView * pView, int * pix, int * piz, cTerrainTile * * ppTile);
 
 private:
    uint m_tile;

@@ -29,48 +29,14 @@ F_DECLARE_INTERFACE(ISceneCamera);
 F_DECLARE_INTERFACE(ITexture);
 F_DECLARE_INTERFACE(IMaterial);
 
+class cMapSettings;
+class cEditorKeyEvent;
+class cEditorMouseEvent;
+class cEditorMouseWheelEvent;
+
 class cTerrain;
 
 #define UUID(uuidstr) __declspec(uuid(uuidstr))
-
-typedef CPoint tPoint;
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cMapSettings
-//
-
-enum eHeightData
-{
-   // The order of these constants must match the order of the
-   // corresponding radio buttons in the map settings dialog box
-   kHeightData_None,
-   kHeightData_Noise,
-   kHeightData_HeightMap,
-};
-
-class cMapSettings
-{
-public:
-   cMapSettings();
-   cMapSettings(uint xDimension, uint zDimension, const tChar * pszTileSet,
-      eHeightData heightData, const tChar * pszHeightMapFile);
-   cMapSettings(const cMapSettings & mapSettings);
-   const cMapSettings & operator=(const cMapSettings & mapSettings);
-
-   inline uint GetXDimension() const { return m_xDimension; }
-   inline uint GetZDimension() const { return m_zDimension; }
-   inline const tChar * GetTileSet() const { return m_tileSet.c_str(); }
-   inline eHeightData GetHeightData() const { return m_heightData; }
-   inline const tChar * GetHeightMap() const { return m_heightMapFile.c_str(); }
-
-private:
-   uint m_xDimension, m_zDimension;
-   cStr m_tileSet;
-   eHeightData m_heightData;
-   cStr m_heightMapFile;
-};
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -217,6 +183,9 @@ interface UUID("78C29790-865D-4f81-9AF1-26EC23BB5FAC") IEditorView : IUnknown
    virtual tResult SetCameraElevation(float elevation) = 0;
 
    virtual tResult GetModel(IEditorModel * * ppModel) = 0;
+
+   virtual tResult HighlightTile(int iTileX, int iTileZ) = 0;
+   virtual tResult ClearTileHighlight() = 0;
 };
 
 
@@ -239,70 +208,6 @@ interface UUID("F131D72E-30A7-4758-A094-830F00A50D91") IEditorModel : IUnknown
 interface UUID("936BD53E-35B5-4f72-AFA4-AE304122E7D4") IEditorCommand : IUnknown
 {
    virtual tResult Execute() = 0;
-};
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cEditorKeyEvent
-//
-
-class cEditorKeyEvent
-{
-public:
-   cEditorKeyEvent(WPARAM wParam, LPARAM lParam)
-    : m_char(wParam), m_repeats(LOWORD(lParam)), m_flags(HIWORD(lParam))
-   {
-   }
-
-   uint GetChar() const { return m_char; }
-   uint GetRepeatCount() const { return m_repeats; }
-   uint GetFlags() const { return m_flags; }
-
-private:
-   uint m_char, m_repeats, m_flags;
-};
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cEditorMouseEvent
-//
-
-class cEditorMouseEvent
-{
-public:
-   cEditorMouseEvent(WPARAM wParam, LPARAM lParam)
-    : m_flags(wParam), m_point(lParam)
-   {
-   }
-
-   uint GetFlags() const { return m_flags; }
-   CPoint GetPoint() const { return m_point; }
-
-private:
-   uint m_flags;
-   CPoint m_point;
-};
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cEditorMouseWheelEvent
-//
-
-class cEditorMouseWheelEvent : public cEditorMouseEvent
-{
-public:
-   cEditorMouseWheelEvent(WPARAM wParam, LPARAM lParam)
-    : cEditorMouseEvent(LOWORD(wParam), lParam), m_zDelta(HIWORD(wParam))
-   {
-   }
-
-   short GetZDelta() const { return m_zDelta; }
-
-private:
-   short m_zDelta;
 };
 
 

@@ -4,6 +4,7 @@
 #include "stdhdr.h"
 
 #include "editorTools.h"
+#include "editorTypes.h"
 #include "terrain.h"
 
 #include "sceneapi.h"
@@ -16,6 +17,13 @@
 #include <GL/gl.h>
 
 #include "dbgalloc.h" // must be last header
+
+LOG_DEFINE_CHANNEL(EditorTools);
+#define LocalMsg(msg)            DebugMsgEx(EditorTools,(msg))
+#define LocalMsg1(msg,a)         DebugMsgEx1(EditorTools,(msg),(a))
+#define LocalMsg2(msg,a,b)       DebugMsgEx2(EditorTools,(msg),(a),(b))
+#define LocalMsg3(msg,a,b,c)     DebugMsgEx3(EditorTools,(msg),(a),(b),(c))
+#define LocalMsg4(msg,a,b,c,d)   DebugMsgEx4(EditorTools,(msg),(a),(b),(c),(d))
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -53,7 +61,7 @@ tResult cMoveCameraTool::OnLButtonDown(const cEditorMouseEvent & mouseEvent, IEd
 
 tResult cMoveCameraTool::OnLButtonUp(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
 {
-   if (pView != NULL && CTIsSameObject(pView, m_pView))
+   if ((pView != NULL) && (!!m_pView) && CTIsSameObject(pView, m_pView))
    {
       float camPlaceX, camPlaceZ;
       if ((pView != NULL) && pView->GetCameraPlacement(&camPlaceX, &camPlaceZ) == S_OK)
@@ -74,12 +82,7 @@ tResult cMoveCameraTool::OnLButtonUp(const cEditorMouseEvent & mouseEvent, IEdit
 
 tResult cMoveCameraTool::OnMouseMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
 {
-   if (!m_pView)
-   {
-      return S_EDITOR_TOOL_CONTINUE;
-   }
-
-   if (pView != NULL && CTIsSameObject(pView, m_pView))
+   if ((pView != NULL) && (!!m_pView) && CTIsSameObject(pView, m_pView))
    {
       CPoint delta = mouseEvent.GetPoint() - m_lastMousePoint;
 
@@ -192,49 +195,11 @@ tResult cTerrainTileTool::OnLButtonDown(const cEditorMouseEvent & mouseEvent,
       return S_EDITOR_TOOL_CONTINUE;
    }
 
-   cAutoIPtr<IEditorModel> pModel;
-   if (pView->GetModel(&pModel) == S_OK)
+   int ix, iz;
+   cTerrainTile * pTile;
+   if (GetHitTile(mouseEvent.GetPoint(), pView, &ix, &iz, &pTile))
    {
-      cAutoIPtr<ISceneCamera> pCamera;
-      if (pView->GetCamera(&pCamera) == S_OK)
-      {
-         float ndx, ndy;
-         ScreenToNormalizedDeviceCoords(mouseEvent.GetPoint().x,
-                                        mouseEvent.GetPoint().y,
-                                        &ndx, &ndy);
-
-         tVec3 pickDir;
-         if (GetPickVector(pCamera, ndx, ndy, &pickDir))
-         {
-            cRay pickRay(pView->GetCameraEyePosition(), pickDir);
-
-            tVec3 pointOnPlane;
-            if (pickRay.IntersectsPlane(tVec3(0,1,0), 0, &pointOnPlane))
-            {
-               DebugMsg3("Hit the ground at approximately (%.1f, %.1f, %.1f)\n",
-                  pointOnPlane.x, pointOnPlane.y, pointOnPlane.z);
-
-               cTerrain * pTerrain = pModel->AccessTerrain();
-               if (pTerrain != NULL)
-               {
-                  uint mapDimX, mapDimZ, mapExtX, mapExtZ;
-                  pTerrain->GetDimensions(&mapDimX, &mapDimZ);
-                  pTerrain->GetExtents(&mapExtX, &mapExtZ);
-
-                  uint tileWidth = mapExtX / mapDimX;
-                  uint tileDepth = mapExtZ / mapDimZ;
-
-                  int iTileX = Round(pointOnPlane.x / tileWidth);
-                  int iTileZ = Round(pointOnPlane.z / tileDepth);
-
-                  cTerrainTile * pTile = pTerrain->GetTile(iTileX, iTileZ);
-                  pTile->SetTile(m_tile);
-
-                  DebugMsg2("Hit tile (%d, %d)\n", iTileX, iTileZ);
-               }
-            }
-         }
-      }
+      pTile->SetTile(m_tile);
    }
 
    return S_EDITOR_TOOL_CONTINUE;
@@ -251,7 +216,85 @@ tResult cTerrainTileTool::OnLButtonUp(const cEditorMouseEvent & mouseEvent, IEdi
 
 tResult cTerrainTileTool::OnMouseMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
 {
+   if (pView != NULL)
+   {
+      int ix, iz;
+      cTerrainTile * pTile;
+      if (GetHitTile(mouseEvent.GetPoint(), pView, &ix, &iz, &pTile))
+      {
+         pView->HighlightTile(ix, iz);
+      }
+      else
+      {
+         pView->ClearTileHighlight();
+      }
+   }
+
    return S_EDITOR_TOOL_CONTINUE;
+}
+
+////////////////////////////////////////
+
+bool cTerrainTileTool::GetHitTile(CPoint point, IEditorView * pView, int * pix, int * piz, cTerrainTile * * ppTile)
+{
+   cAutoIPtr<IEditorModel> pModel;
+   if (pView->GetModel(&pModel) == S_OK)
+   {
+      cAutoIPtr<ISceneCamera> pCamera;
+      if (pView->GetCamera(&pCamera) == S_OK)
+      {
+         float ndx, ndy;
+         ScreenToNormalizedDeviceCoords(point.x, point.y, &ndx, &ndy);
+
+         tVec3 pickDir;
+         if (GetPickVector(pCamera, ndx, ndy, &pickDir))
+         {
+            cRay pickRay(pView->GetCameraEyePosition(), pickDir);
+
+            tVec3 pointOnPlane;
+            if (pickRay.IntersectsPlane(tVec3(0,1,0), 0, &pointOnPlane))
+            {
+               LocalMsg3("Hit the ground at approximately (%.1f, %.1f, %.1f)\n",
+                  pointOnPlane.x, pointOnPlane.y, pointOnPlane.z);
+
+               cTerrain * pTerrain = pModel->AccessTerrain();
+               if (pTerrain != NULL)
+               {
+                  uint mapDimX, mapDimZ, mapExtX, mapExtZ;
+                  pTerrain->GetDimensions(&mapDimX, &mapDimZ);
+                  pTerrain->GetExtents(&mapExtX, &mapExtZ);
+
+                  uint tileWidth = mapExtX / mapDimX;
+                  uint tileDepth = mapExtZ / mapDimZ;
+
+                  int ix = Round(pointOnPlane.x / tileWidth);
+                  int iz = Round(pointOnPlane.z / tileDepth);
+
+                  LocalMsg2("Hit tile (%d, %d)\n", ix, iz);
+
+                  if (pix != NULL)
+                  {
+                     *pix = ix;
+                  }
+
+                  if (piz != NULL)
+                  {
+                     *piz = iz;
+                  }
+
+                  if (ppTile != NULL)
+                  {
+                     *ppTile = pTerrain->GetTile(ix, iz);
+                  }
+
+                  return true;
+               }
+            }
+         }
+      }
+   }
+
+   return false;
 }
 
 /////////////////////////////////////////////////////////////////////////////

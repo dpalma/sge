@@ -18,6 +18,8 @@
 #include "keys.h"
 #include "techtime.h"
 
+#include <GL/gl.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -72,7 +74,9 @@ cEditorView::cEditorView()
    m_eye(0,0,0),
    m_bRecalcEye(true),
    m_nIndices(0),
-   m_sceneEntity(this)
+   m_sceneEntity(this),
+   m_highlitTileX(-1),
+   m_highlitTileZ(-1)
 {
 }
 
@@ -212,6 +216,24 @@ tResult cEditorView::GetModel(IEditorModel * * ppModel)
 
 ////////////////////////////////////////
 
+tResult cEditorView::HighlightTile(int iTileX, int iTileZ)
+{
+   m_highlitTileX = iTileX;
+   m_highlitTileZ = iTileZ;
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cEditorView::ClearTileHighlight()
+{
+   m_highlitTileX = -1;
+   m_highlitTileZ = -1;
+   return S_OK;
+}
+
+////////////////////////////////////////
+
 void cEditorView::OnFrame(double time, double elapsed)
 {
    if (!!m_pCamera)
@@ -320,6 +342,35 @@ void cEditorView::cSceneEntity::Render(IRenderDevice * pRenderDevice)
          m_pOuter->m_pIndexBuffer,
          0, 
          m_pOuter->m_pVertexBuffer);
+   }
+
+   if ((m_pOuter->m_highlitTileX != -1) && (m_pOuter->m_highlitTileZ != -1))
+   {
+      cTerrainTile * pTile = pDoc->AccessTerrain()->GetTile(m_pOuter->m_highlitTileX, m_pOuter->m_highlitTileZ);
+      if (pTile != NULL)
+      {
+         sTerrainVertex verts[4];
+         memcpy(verts, pTile->GetVertices(), 4 * sizeof(sTerrainVertex));
+
+         static const float kOffsetY = 0.2f;
+
+         verts[0].pos.y += kOffsetY;
+         verts[1].pos.y += kOffsetY;
+         verts[2].pos.y += kOffsetY;
+         verts[3].pos.y += kOffsetY;
+
+         glPushAttrib(GL_ENABLE_BIT);
+         glEnable(GL_BLEND);
+         glBegin(GL_QUADS);
+            glColor4f(0, 1, 0, 0.25f);
+            glNormal3f(0, 1, 0);
+            glVertex3fv(verts[0].pos.v);
+            glVertex3fv(verts[3].pos.v);
+            glVertex3fv(verts[2].pos.v);
+            glVertex3fv(verts[1].pos.v);
+         glEnd();
+         glPopAttrib();
+      }
    }
 }
 
