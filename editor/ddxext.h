@@ -99,6 +99,8 @@ public:
       {
          pT->OnDataExchangeError(id, bSave);
       }
+
+      return bSuccess;
    }
 };
 
