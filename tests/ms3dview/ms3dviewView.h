@@ -4,8 +4,12 @@
 #if !defined(AFX_MS3DVIEWVIEW_H__17A7D20E_9722_41CF_B129_799ABB1EC346__INCLUDED_)
 #define AFX_MS3DVIEWVIEW_H__17A7D20E_9722_41CF_B129_799ABB1EC346__INCLUDED_
 
-#include "vec3.h"
 #include "comtools.h"
+#include "connptimpl.h"
+#include "window.h"
+#include "vec3.h"
+
+#include "../../editor/afxcomtools.h"
 
 #if _MSC_VER > 1000
 #pragma once
@@ -13,9 +17,13 @@
 
 F_DECLARE_INTERFACE(IRenderDevice);
 
+F_DECLARE_INTERFACE(IWindow);
+F_DECLARE_INTERFACE(IWindowSink);
+
 class CMs3dviewDoc;
 
-class CMs3dviewView : public CView
+class CMs3dviewView : public CView,
+                      public cComObject<IMPLEMENTSCP(IWindow, IWindowSink), cAfxComServices<CMs3dviewView> >
 {
 protected: // create from serialization only
 	CMs3dviewView();
@@ -28,6 +36,11 @@ public:
 // Operations
 public:
    inline IRenderDevice * AccessRenderDevice() { return m_pRenderDevice; }
+
+   // IWindow
+   virtual tResult Create(int width, int height, int bpp, const char * pszTitle = NULL);
+   virtual tResult GetWindowInfo(sWindowInfo * pInfo) const;
+   virtual tResult SwapBuffers();
 
 // Overrides
 	// ClassWizard generated virtual function overrides

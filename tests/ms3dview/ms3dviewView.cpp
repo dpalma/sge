@@ -12,7 +12,6 @@
 
 #include <GL/gl.h>
 #include <GL/glu.h>
-#include "GL/glext.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -26,10 +25,6 @@ const GLfloat kZFar = 2000;
 
 const int IDC_SLIDER = 1000;
 const int kSliderHeight = 30;
-
-PFNGLVERTEXWEIGHTFEXTPROC glVertexWeightfEXT = NULL;
-PFNGLVERTEXWEIGHTFVEXTPROC glVertexWeightfvEXT = NULL;
-PFNGLVERTEXWEIGHTPOINTEREXTPROC glVertexWeightPointerEXT = NULL;
 
 /////////////////////////////////////////////////////////////////////////////
 // CMs3dviewView
@@ -68,6 +63,46 @@ BOOL CMs3dviewView::PreCreateWindow(CREATESTRUCT& cs)
 /////////////////////////////////////////////////////////////////////////////
 // CMs3dviewView operations
 
+////////////////////////////////////////
+
+tResult CMs3dviewView::Create(int width, int height, int bpp, const char * pszTitle)
+{
+   Assert(!"This should never be called");
+   return E_FAIL;
+}
+
+////////////////////////////////////////
+
+tResult CMs3dviewView::GetWindowInfo(sWindowInfo * pInfo) const
+{
+   if (pInfo == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (!IsWindow(GetSafeHwnd()))
+   {
+      return E_FAIL;
+   }
+
+   CRect rect;
+   GetClientRect(&rect);
+
+   pInfo->width = rect.Width();
+   pInfo->height = rect.Height();
+   pInfo->bpp = (m_hDC != NULL) ? GetDeviceCaps(m_hDC, BITSPIXEL) : 0;
+   pInfo->hWnd = GetSafeHwnd();
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult CMs3dviewView::SwapBuffers()
+{
+   return ::SwapBuffers(m_hDC) ? S_OK : E_FAIL;
+}
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CMs3dviewView drawing
@@ -102,7 +137,7 @@ void CMs3dviewView::OnDraw(CDC* pDC)
 
    glFinish();
 
-   SwapBuffers(m_hDC);
+   SwapBuffers();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -153,9 +188,10 @@ int CMs3dviewView::OnCreate(LPCREATESTRUCT lpCreateStruct)
    pfd.cColorBits = GetDeviceCaps(m_hDC, BITSPIXEL);
 
    int pixelFormat = ChoosePixelFormat(m_hDC, &pfd);
-
-   if (!pixelFormat)
+   if (pixelFormat == 0)
+   {
       return -1;
+   }
 
    if (pfd.dwFlags & PFD_NEED_PALETTE)
    {
@@ -164,16 +200,22 @@ int CMs3dviewView::OnCreate(LPCREATESTRUCT lpCreateStruct)
    }
 
    if (!SetPixelFormat(m_hDC, pixelFormat, &pfd)) 
+   {
       return -1;
+   }
 
    m_hRC = wglCreateContext(m_hDC);
    if (m_hRC == NULL)
+   {
       return -1;
+   }
 
    wglMakeCurrent(m_hDC, m_hRC);
 
    // Create the render device after setting up the GL context
-   if (RenderDeviceCreate(0, &m_pRenderDevice) != S_OK)
+   sRenderDeviceParameters params = {0};
+   params.pWindow = static_cast<IWindow *>(this);
+   if (RenderDeviceCreate(&params, &m_pRenderDevice) != S_OK)
    {
       TRACE0("Failed to create rendering device\n");
       return -1;
@@ -189,16 +231,6 @@ int CMs3dviewView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
    glEnable(GL_DEPTH_TEST);
    glEnable(GL_CULL_FACE);
-
-   glVertexWeightfEXT = (PFNGLVERTEXWEIGHTFEXTPROC)wglGetProcAddress("glVertexWeightfEXT");
-   glVertexWeightfvEXT = (PFNGLVERTEXWEIGHTFVEXTPROC)wglGetProcAddress("glVertexWeightfvEXT");
-   glVertexWeightPointerEXT = (PFNGLVERTEXWEIGHTPOINTEREXTPROC)wglGetProcAddress("glVertexWeightPointerEXT");
-
-   if (glVertexWeightfEXT != NULL && glVertexWeightfvEXT != NULL && glVertexWeightPointerEXT != NULL)
-   {
-      glEnable(GL_VERTEX_WEIGHTING_EXT);
-      glEnable(GL_NORMALIZE); // required with vertex weighting
-   }
 
 	return 0;
 }

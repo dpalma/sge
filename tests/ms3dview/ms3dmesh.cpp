@@ -15,7 +15,6 @@
 #include "vec4.h"
 
 #include <GL/gl.h>
-#include "GL/glext.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
