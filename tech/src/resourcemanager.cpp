@@ -26,7 +26,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static int ListDirs(const cFilePath & path, std::vector<std::string> * pDirs)
+static size_t ListDirs(const cFilePath & path, std::vector<std::string> * pDirs)
 {
    Assert(pDirs != NULL);
    if (pDirs == NULL)

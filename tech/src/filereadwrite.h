@@ -28,7 +28,7 @@ public:
    virtual tResult Seek(long pos, eSeekOrigin origin);
 
    virtual tResult Read(cStr * pValue, char stop);
-   virtual tResult Read(void * pv, ulong cb, ulong * pcbRead = NULL);
+   virtual tResult Read(void * pv, size_t cb, size_t * pcbRead = NULL);
 
 private:
    FILE * m_fp;
@@ -48,7 +48,7 @@ public:
    virtual void OnFinalRelease();
 
    virtual tResult Write(const char * value);
-   virtual tResult Write(void * pv, ulong cb, ulong * pcbWritten = NULL);
+   virtual tResult Write(void * pv, size_t cb, size_t * pcbWritten = NULL);
 
 private:
    FILE * m_fp;

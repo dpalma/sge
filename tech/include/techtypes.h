@@ -55,6 +55,12 @@ typedef char      tChar;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#define Stringize2(x) #x
+#define Stringize(x) Stringize2(x)
+#define PragmaMsg(msg) __FILE__ "(" Stringize(__LINE__) ") : " msg
+
+///////////////////////////////////////////////////////////////////////////////
+
 #define TOKEN_PASTE_2(x,y)       x##y
 #define TOKEN_PASTE_1(x,y)       TOKEN_PASTE_2(x,y)
 #define MAKE_UNIQUE(sym)         TOKEN_PASTE_1(sym,__LINE__)

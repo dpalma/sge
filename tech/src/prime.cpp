@@ -20,7 +20,7 @@ bool IsPrime(uint n)
    if ((n % 2) == 0) // anything evenly divisible by 2 is NOT a prime
       return false;
 
-   uint sqrtn = (uint)sqrt(n);
+   uint sqrtn = (uint)sqrt((double)n);
 
    // test only the odd numbers because we eliminated 2 already
    for (uint i = 3; i <= sqrtn; i += 2)

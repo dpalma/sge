@@ -315,7 +315,7 @@ static void DescribeElement(IGUIElement * pElement, char * psz, uint maxLength)
 ///////////////////////////////////////
 
 #ifdef _DEBUG
-template <typename CTYPE, const int SIZE>
+template <typename CTYPE, size_t SIZE>
 class cTextBuffer
 {
 public:
@@ -334,8 +334,9 @@ public:
       m_length = strlen(m_buffer);
       if (m_length > 0)
       {
-         strncat(m_buffer, "\n", _countof(m_buffer));
-         m_length += 1;
+         strncat(m_buffer, "\n", _countof(m_buffer) - m_length);
+         m_buffer[_countof(m_buffer) - 1] = 0;
+         m_length = strlen(m_buffer);
       }
       return m_buffer + m_length;
    }

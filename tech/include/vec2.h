@@ -212,20 +212,20 @@ inline typename cVec2<T>::value_type Vec2DistanceSqr(const cVec2<T> & v1, const 
 ///////////////////////////////////////
 
 template <typename T>
-inline typename cVec2<T>::value_type Vec2Distance(const cVec2<T> & v1, const cVec2<T> & v2)
+inline typename T Vec2Distance(const cVec2<T> & v1, const cVec2<T> & v2)
 {
    Assert(!"Don't use default version of Vec2Distance");
    return 0;
 }
 
 template <>
-inline cVec2<double>::value_type Vec2Distance(const cVec2<double> & v1, const cVec2<double> & v2)
+inline double Vec2Distance(const cVec2<double> & v1, const cVec2<double> & v2)
 {
    return sqrt(Vec2DistanceSqr(v1, v2));
 }
 
 template <>
-inline cVec2<float>::value_type Vec2Distance(const cVec2<float> & v1, const cVec2<float> & v2)
+inline float Vec2Distance(const cVec2<float> & v1, const cVec2<float> & v2)
 {
    return sqrtf(Vec2DistanceSqr(v1, v2));
 }

@@ -29,7 +29,7 @@ const int kMaxBoneName = 32;
 
 interface ISkeleton : IUnknown
 {
-   virtual int GetBoneCount() const = 0;
+   virtual size_t GetBoneCount() const = 0;
    virtual const char * GetBoneName(int index) const = 0;
    virtual const tMatrix4 & GetBoneWorldTransform(int index) const = 0;
 

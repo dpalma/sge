@@ -150,7 +150,7 @@ bool cFileSpec::SetFileExt(const char * pszExt)
    size_t len = strlen(GetName());
    if (len > 0)
    {
-      char * pszDest = strrchr(GetName(), kExtensionSep);
+      char * pszDest = strrchr(m_szFullName, kExtensionSep);
 #ifdef UNSAFE
       if (pszDest != NULL)
       {

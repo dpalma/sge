@@ -69,11 +69,7 @@ private:
 
    typedef std::map<KEY, tWeight> tEdges; // maps dest node to weight/cost to get to that node
 
-#ifdef __GNUC__
    typedef std::pair<typename tEdges::iterator, bool> tEdgeInsertResult;
-#else
-   typedef std::pair<tEdges::iterator, bool> tEdgeInsertResult;
-#endif
 
    struct sNode
    {
@@ -83,11 +79,7 @@ private:
 
    typedef std::map<KEY, sNode *> tNodes;
 
-#ifdef __GNUC__
    typedef std::pair<typename tNodes::iterator, bool> tNodeInsertResult;
-#else
-   typedef std::pair<tNodes::iterator, bool> tNodeInsertResult;
-#endif
 
    struct sEdgeIter
    {

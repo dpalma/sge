@@ -74,8 +74,8 @@ interface IReader : IUnknown
    tResult Read(byte * pValue);
 
    virtual tResult Read(cStr * pValue, char stop) = 0;
-   virtual tResult Read(void * pValue, ulong cbValue,
-                        ulong * pcbRead = NULL) = 0;
+   virtual tResult Read(void * pValue, size_t cbValue,
+                        size_t * pcbRead = NULL) = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -100,8 +100,8 @@ interface IWriter : IUnknown
    tResult Write(byte value);
 
    virtual tResult Write(const char * value) = 0;
-   virtual tResult Write(void * pValue, ulong cbValue,
-                         ulong * pcbWritten = NULL) = 0;
+   virtual tResult Write(void * pValue, size_t cbValue,
+                         size_t * pcbWritten = NULL) = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -31,7 +31,7 @@ public:
 
    operator const tChar *() const;
 
-   int GetLength() const;
+   size_t GetLength() const;
 
    void Empty();
 };
@@ -58,7 +58,7 @@ inline cStr::operator const tChar *() const
 
 ///////////////////////////////////////
 
-inline int cStr::GetLength() const
+inline size_t cStr::GetLength() const
 {
    return cStrBase::length();
 }

@@ -73,7 +73,7 @@ static bool SplitString(const char * psz, char split, cStr * pLeft, cStr * pRigh
    Assert(psz != NULL);
    Assert(pLeft != NULL);
    Assert(pRight != NULL);
-   char * pszSplit = strrchr(psz, split);
+   const char * pszSplit = strrchr(psz, split);
    if (pszSplit != NULL)
    {
       *pLeft = std::string(psz, pszSplit - psz).c_str();

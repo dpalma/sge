@@ -236,7 +236,7 @@ public:
 
    bool Create(const sBoneInfo * pBones, uint nBones);
 
-   int GetBoneCount() const;
+   size_t GetBoneCount() const;
 
    const char * GetBoneName(int index) const;
    const tMatrix4 & GetBoneWorldTransform(int index) const;
@@ -295,7 +295,7 @@ bool cSkeleton::Create(const sBoneInfo * pBones, uint nBones)
 
 ///////////////////////////////////////
 
-inline int cSkeleton::GetBoneCount() const
+inline size_t cSkeleton::GetBoneCount() const
 {
    return m_bones.size();
 }
@@ -367,7 +367,7 @@ void cSkeleton::GetBoneMatrices(float time, tMatrices * pBoneMatrices) const
       return;
    }
 
-   for (int i = 0; i < GetBoneCount(); i++)
+   for (size_t i = 0; i < GetBoneCount(); i++)
    {
       cAutoIPtr<IKeyFrameInterpolator> pInterp;
       if (m_pAnimation->GetInterpolator(i, &pInterp) == S_OK)

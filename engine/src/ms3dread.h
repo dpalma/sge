@@ -30,7 +30,7 @@ public:
 
    byte GetFlags() const;
    const char * GetName() const;
-   int GetNumTriangles() const;
+   size_t GetNumTriangles() const;
    uint GetTriangle(int index) const;
    int GetMaterialIndex() const;
 
@@ -57,7 +57,7 @@ inline const char * cMs3dGroup::GetName() const
 
 ///////////////////////////////////////
 
-inline int cMs3dGroup::GetNumTriangles() const
+inline size_t cMs3dGroup::GetNumTriangles() const
 {
    return triangleIndices.size();
 }

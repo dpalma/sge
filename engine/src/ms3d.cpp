@@ -73,7 +73,7 @@ static bool operator ==(const struct sMs3dVertex & v1,
 class cMs3dVertexList
 {
 public:
-   cMs3dVertexList(const ms3d_vertex_t * pVertices, uint nVertices);
+   cMs3dVertexList(const ms3d_vertex_t * pVertices, size_t nVertices);
 
    uint MapVertex(uint originalIndex, tVec3 normal, float s, float t);
 
@@ -89,7 +89,7 @@ private:
 
 ///////////////////////////////////////
 
-cMs3dVertexList::cMs3dVertexList(const ms3d_vertex_t * pVertices, uint nVertices)
+cMs3dVertexList::cMs3dVertexList(const ms3d_vertex_t * pVertices, size_t nVertices)
  : m_nOriginalVertices(nVertices)
 {
    Assert(pVertices != NULL);
@@ -154,7 +154,7 @@ uint cMs3dVertexList::MapVertex(uint originalIndex, tVec3 normal, float s, float
          // TODO: Tacking the the duplicated vertex onto the end
          // is totally not optimal with respect to vertex caches
          m_vertices.push_back(newVertex);
-         uint newIndex = m_vertices.size() - 1;
+         size_t newIndex = m_vertices.size() - 1;
          m_remap.insert(std::make_pair(h, newIndex));
          return newIndex;
       }

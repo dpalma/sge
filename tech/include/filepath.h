@@ -22,7 +22,7 @@ public:
    cFilePath();
    cFilePath(const cFilePath & other);
    explicit cFilePath(const char * pszPath);
-   cFilePath(const char * pszPath, int pathLen);
+   cFilePath(const char * pszPath, size_t pathLen);
 
    const cFilePath & operator =(const char * pszPath);
 

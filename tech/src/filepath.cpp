@@ -104,7 +104,7 @@ static char * CollapseDots(const char * pszPath, char * pszResult, int maxLen)
       char szDir[kMaxPath];
       if (i < (nDirs - 1))
       {
-         int len = dirs[i + 1] - dirs[i] + 1;
+         size_t len = dirs[i + 1] - dirs[i] + 1;
          strncpy(szDir, dirs[i], len);
          szDir[len - 1] = 0;
       }
@@ -134,9 +134,11 @@ static char * CollapseDots(const char * pszPath, char * pszResult, int maxLen)
       if (dirs[i] != NULL)
       {
          int len = strcspn(dirs[i] + 1, szPathSeps) + 1;
-         strncat(pszResult, dirs[i], len);
+         strncat(pszResult, dirs[i], Min(len, maxLen - strlen(pszResult)));
       }
    }
+
+   pszResult[maxLen - 1] = 0;
 
    if (!bHadLeadingSeparator && IsPathSep(*pszResult))
    {
@@ -174,11 +176,11 @@ cFilePath::cFilePath(const char * pszPath)
 
 ///////////////////////////////////////
 
-cFilePath::cFilePath(const char * pszPath, int pathLen)
+cFilePath::cFilePath(const char * pszPath, size_t pathLen)
 {
    if (pszPath != NULL && pathLen > 0)
    {
-      int len = Min(pathLen, sizeof(m_szPath));
+      size_t len = Min(pathLen, sizeof(m_szPath));
       strncpy(m_szPath, pszPath, len);
       m_szPath[len - 1] = 0;
    }

@@ -92,7 +92,7 @@ tResult cFileReader::Read(cStr * pValue, char stop)
 
    char * pszBuffer = (char *)alloca(len + 1);
 
-   uint nRead = fread(pszBuffer, 1, len + 1, m_fp);
+   size_t nRead = fread(pszBuffer, 1, len + 1, m_fp);
 
    if (ferror(m_fp))
       return E_FAIL;
@@ -108,12 +108,12 @@ tResult cFileReader::Read(cStr * pValue, char stop)
 
 ///////////////////////////////////////
 
-tResult cFileReader::Read(void * pv, ulong nBytes, ulong * pnBytesRead)
+tResult cFileReader::Read(void * pv, size_t nBytes, size_t * pnBytesRead)
 {
    if (m_fp == NULL)
       return E_FAIL;
 
-   uint nBytesRead = fread(pv, sizeof(byte), nBytes, m_fp);
+   size_t nBytesRead = fread(pv, sizeof(byte), nBytes, m_fp);
 
    if (ferror(m_fp))
       return E_FAIL;
@@ -168,7 +168,7 @@ tResult cFileWriter::Write(const char * value)
 {
    if (m_fp != NULL)
    {
-      uint writeLen = strlen(value) + 1;
+      size_t writeLen = strlen(value) + 1;
       if (fwrite(value, 1, writeLen, m_fp) == writeLen)
          return S_OK;
    }
@@ -177,11 +177,11 @@ tResult cFileWriter::Write(const char * value)
 
 ///////////////////////////////////////
 
-tResult cFileWriter::Write(void * pv, ulong nBytes, ulong * pnBytesWritten)
+tResult cFileWriter::Write(void * pv, size_t nBytes, size_t * pnBytesWritten)
 {
    if (m_fp != NULL)
    {
-      uint nBytesWritten = fwrite(pv, sizeof(byte), nBytes, m_fp);
+      size_t nBytesWritten = fwrite(pv, sizeof(byte), nBytes, m_fp);
       if (!ferror(m_fp) && nBytesWritten == nBytes)
       {
          if (pnBytesWritten != NULL)

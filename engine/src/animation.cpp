@@ -138,7 +138,7 @@ public:
    cKeyFrameInterpolator(const char * pszName, const sKeyFrame * pKeyFrames, uint nKeyFrames);
 
    virtual tTime GetPeriod() const;
-   virtual tResult GetKeyFrames(sKeyFrame * pKeyFrames, uint * pnKeyFrames) const;
+   virtual tResult GetKeyFrames(sKeyFrame * pKeyFrames, size_t * pnKeyFrames) const;
    virtual tResult Interpolate(tTime time, sKeyFrame * pInterpFrame) const;
 
 private:
@@ -189,11 +189,11 @@ tTime cKeyFrameInterpolator::GetPeriod() const
 
 ///////////////////////////////////////
 
-tResult cKeyFrameInterpolator::GetKeyFrames(sKeyFrame * pKeyFrames, uint * pnKeyFrames) const
+tResult cKeyFrameInterpolator::GetKeyFrames(sKeyFrame * pKeyFrames, size_t * pnKeyFrames) const
 {
    if (pKeyFrames != NULL && pnKeyFrames != NULL)
    {
-      uint nKeyFramesToCopy = Min(m_keyFrames.size(), *pnKeyFrames);
+      size_t nKeyFramesToCopy = Min(m_keyFrames.size(), *pnKeyFrames);
       memcpy(pKeyFrames, &m_keyFrames[0], sizeof(sKeyFrame) * nKeyFramesToCopy);
       *pnKeyFrames = nKeyFramesToCopy;
       return (nKeyFramesToCopy < m_keyFrames.size()) ? S_FALSE : S_OK;
@@ -241,7 +241,7 @@ tResult cKeyFrameInterpolator::Interpolate(tTime time, sKeyFrame * pInterpFrame)
 ///////////////////////////////////////
 
 tResult KeyFrameInterpolatorCreate(const char * pszName,
-                                   const sKeyFrame * pKeyFrames, uint nKeyFrames,
+                                   const sKeyFrame * pKeyFrames, size_t nKeyFrames,
                                    IKeyFrameInterpolator * * ppInterpolator)
 {
    if (ppInterpolator == NULL)

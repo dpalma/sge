@@ -50,7 +50,7 @@ interface IKeyFrameInterpolator : IUnknown
 {
    virtual tTime GetPeriod() const = 0;
 
-   virtual tResult GetKeyFrames(sKeyFrame * pKeyFrames, uint * pnKeyFrames) const = 0;
+   virtual tResult GetKeyFrames(sKeyFrame * pKeyFrames, size_t * pnKeyFrames) const = 0;
 
    virtual tResult Interpolate(tTime time, sKeyFrame * pInterpFrame) const = 0;
 };
@@ -58,7 +58,7 @@ interface IKeyFrameInterpolator : IUnknown
 ///////////////////////////////////////
 
 ENGINE_API tResult KeyFrameInterpolatorCreate(const char * pszName,
-                                              const sKeyFrame * pKeys, uint nKeys,
+                                              const sKeyFrame * pKeys, size_t nKeys,
                                               IKeyFrameInterpolator * * ppInterpolator);
 
 ///////////////////////////////////////////////////////////////////////////////

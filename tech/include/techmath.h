@@ -46,7 +46,7 @@ const float kRadiansPerDegree = 0.017453292519943295769236907684886f; // pi / 18
 template <typename T>
 inline T NearestPowerOfTwo(T t)
 {
-   T n = (T)(log(t) / log(2));
+   T n = (T)(log((double)t) / log(2.0));
    return 1 << n;
 }
 

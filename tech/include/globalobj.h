@@ -55,7 +55,7 @@ interface IGlobalObject : IUnknown
    virtual tResult Term() = 0;
 
    virtual const char * GetName() const = 0;
-   virtual int GetConstraints(std::vector<sConstraint> * pConstraints) const = 0;
+   virtual size_t GetConstraints(std::vector<sConstraint> * pConstraints) const = 0;
 };
 
 
@@ -71,7 +71,7 @@ public:
    virtual tResult Term();
 
    virtual const char * GetName() const;
-   virtual int GetConstraints(std::vector<sConstraint> * pConstraints) const;
+   virtual size_t GetConstraints(std::vector<sConstraint> * pConstraints) const;
 
 protected:
    void Construct(const GUID & guid, const tChar * pszName,
@@ -108,7 +108,7 @@ inline const char * cGlobalObjectBase::GetName() const
 
 ///////////////////////////////////////
 
-inline int cGlobalObjectBase::GetConstraints(std::vector<sConstraint> * pConstraints) const
+inline size_t cGlobalObjectBase::GetConstraints(std::vector<sConstraint> * pConstraints) const
 {
    Assert(pConstraints != NULL);
    if (pConstraints == NULL)
