@@ -3,7 +3,7 @@
 
 bin_PROGRAMS=game
 
-EXTRA_DIST = *.h *.lua game.rc game.ico game.dsp game.dsw
+EXTRA_DIST = *.h *.lua game.rc game.ico game.dsp game.dsw game.vcproj game.sln
 
 if NO_X
 game_PLATFORM_SOURCES = syswin.cpp
@@ -11,16 +11,13 @@ else
 game_PLATFORM_SOURCES = syslinux.cpp
 endif
 
-game_SOURCES = 3ds.cpp \
-               boundingvolume.cpp \
+game_SOURCES = boundingvolume.cpp \
                cameracontroller.cpp \
                frustum.cpp \
                groundtiled.cpp \
                heightmap.cpp \
                input.cpp \
                main.cpp \
-               mesh.cpp \
-               ms3d.cpp \
                raycast.cpp \
                scenecamera.cpp \
                scenemesh.cpp \
@@ -29,7 +26,6 @@ game_SOURCES = 3ds.cpp \
                script.cpp \
                scriptvm.cpp \
                sim.cpp \
-               stripify.cpp \
                ui.cpp \
                uievent.cpp \
                uimgr.cpp \
