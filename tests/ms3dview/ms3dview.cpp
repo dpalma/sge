@@ -1,5 +1,5 @@
-// ms3dview.cpp : Defines the class behaviors for the application.
-//
+/////////////////////////////////////////////////////////////////////////////
+// $Id$
 
 #include "stdafx.h"
 #include "ms3dview.h"
@@ -9,7 +9,6 @@
 
 #include "MainFrm.h"
 #include "ms3dviewDoc.h"
-#include "ms3dviewView.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -79,7 +78,7 @@ BOOL CMs3dviewApp::InitInstance()
 		IDR_MAINFRAME,
 		RUNTIME_CLASS(CMs3dviewDoc),
 		RUNTIME_CLASS(CMainFrame),       // main SDI frame window
-		RUNTIME_CLASS(CMs3dviewView));
+		RUNTIME_CLASS(CView));
 	AddDocTemplate(pDocTemplate);
 
 	// Parse command line for standard shell commands, DDE, file open

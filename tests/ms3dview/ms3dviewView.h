@@ -1,13 +1,11 @@
-// ms3dviewView.h : interface of the CMs3dviewView class
-//
 /////////////////////////////////////////////////////////////////////////////
+// $Id$
 
 #if !defined(AFX_MS3DVIEWVIEW_H__17A7D20E_9722_41CF_B129_799ABB1EC346__INCLUDED_)
 #define AFX_MS3DVIEWVIEW_H__17A7D20E_9722_41CF_B129_799ABB1EC346__INCLUDED_
 
 #include "vec3.h"
-#include "window.h"
-#include "ConnPtImpl.h"
+#include "comtools.h"
 
 #if _MSC_VER > 1000
 #pragma once
@@ -15,7 +13,9 @@
 
 F_DECLARE_INTERFACE(IRenderDevice);
 
-class CMs3dviewView : public CView, public CIUnknownImpl<CMs3dviewView, IWindow>
+class CMs3dviewDoc;
+
+class CMs3dviewView : public CView
 {
 protected: // create from serialization only
 	CMs3dviewView();
@@ -27,22 +27,6 @@ public:
 
 // Operations
 public:
-   tResult Connect(IWindowSink * pSink)
-   {
-		Assert(!"Not Supported");
-      return E_NOTIMPL;
-   }
-
-   tResult Disconnect(IWindowSink * pSink)
-   {
-		Assert(!"Not Supported");
-      return E_NOTIMPL;
-   }
-
-   virtual tResult Create(int width, int height, int bpp, const char * pszTitle = NULL);
-   virtual tResult GetWindowInfo(sWindowInfo * pInfo) const;
-   virtual tResult SwapBuffers();
-
    inline IRenderDevice * AccessRenderDevice() { return m_pRenderDevice; }
 
 // Overrides
@@ -74,8 +58,6 @@ protected:
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
-
-	DECLARE_INTERFACE_MAP()
 
 private:
    HDC m_hDC;

@@ -25,7 +25,10 @@ public:
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CMainFrame)
+	public:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+	protected:
+	virtual BOOL OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext);
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -39,6 +42,7 @@ public:
 protected:  // control bar embedded members
 	CStatusBar  m_wndStatusBar;
 	CToolBar    m_wndToolBar;
+   CSplitterWnd m_wndSplitter;
 
 // Generated message map functions
 protected:

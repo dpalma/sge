@@ -93,6 +93,8 @@ class cMs3dGroup
 public:
    cMs3dGroup();
 
+   const char * GetName() const { return name; }
+
    int GetMaterialIndex() const
    {
       return materialIndex;
@@ -169,7 +171,31 @@ inline const sMatrix4 & cMs3dJoint::GetLocalMatrix() const
 }
 
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cMs3dSkeleton
+//
+
+class cMs3dSkeleton
+{
+   cMs3dSkeleton(const cMs3dSkeleton &); // private, un-implemented
+   const cMs3dSkeleton & operator=(const cMs3dSkeleton &); // private, un-implemented
+
+public:
+   cMs3dSkeleton();
+   ~cMs3dSkeleton();
+
+   void SetNumJoints(int nJoints);
+   void SetJoint(int index, const cMs3dJoint & joint);
+
+private:
+   typedef std::vector<cMs3dJoint> tJoints;
+
+   tJoints m_joints;
+};
+
+
+//////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cMs3dMesh
 //
@@ -200,6 +226,15 @@ public:
 
    // using software or vertex program rendering?
    bool IsRenderingSoftware() const;
+
+   int GetMaterialCount() const { return m_materials.size(); }
+   IMaterial * AccessMaterial(int index) { return m_materials[index]; }
+
+   int GetGroupCount() const { return m_groups.size(); }
+   const cMs3dGroup & GetGroup(int index) const { return m_groups[index]; }
+
+   int GetJointCount() const { return m_joints.size(); }
+   const cMs3dJoint & GetJoint(int index) const { return m_joints[index]; }
 
 private:
    void SetupJoints();

@@ -100,6 +100,10 @@ SOURCE=.\ms3dmesh.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ms3dTreeView.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ms3dview.cpp
 # End Source File
 # Begin Source File
@@ -130,6 +134,10 @@ SOURCE=.\MainFrm.h
 # Begin Source File
 
 SOURCE=.\ms3dmesh.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\ms3dTreeView.h
 # End Source File
 # Begin Source File
 

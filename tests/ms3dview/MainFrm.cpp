@@ -1,16 +1,22 @@
-// MainFrm.cpp : implementation of the CMainFrame class
-//
+/////////////////////////////////////////////////////////////////////////////
+// $Id$
 
 #include "stdafx.h"
-#include "ms3dview.h"
 
 #include "MainFrm.h"
+
+#include "resource.h"       // main symbols
+
+#include "ms3dviewView.h"
+#include "ms3dTreeView.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+const int kDefaultTreeWidth = 250;
 
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame
@@ -106,3 +112,12 @@ void CMainFrame::Dump(CDumpContext& dc) const
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame message handlers
 
+BOOL CMainFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext) 
+{
+   CRect rect;
+   GetClientRect(rect);
+   CSize treeSize(min(kDefaultTreeWidth, rect.Width() / 4),0);
+   return m_wndSplitter.CreateStatic(this, 1, 2)
+      && m_wndSplitter.CreateView(0, 0, RUNTIME_CLASS(cMs3dTreeView), treeSize, pContext)
+      && m_wndSplitter.CreateView(0, 1, RUNTIME_CLASS(CMs3dviewView), CSize(0,0), pContext);
+}

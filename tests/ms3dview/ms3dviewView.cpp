@@ -12,6 +12,7 @@
 
 #include <GL/gl.h>
 #include <GL/glu.h>
+#include "GL/glext.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -41,10 +42,6 @@ BEGIN_MESSAGE_MAP(CMs3dviewView, CView)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
-BEGIN_INTERFACE_MAP(CMs3dviewView, CView)
-   IMPLEMENTS_INTERFACE(CMs3dviewView, IWindow)
-END_INTERFACE_MAP()
-
 /////////////////////////////////////////////////////////////////////////////
 // CMs3dviewView construction/destruction
 
@@ -67,44 +64,6 @@ BOOL CMs3dviewView::PreCreateWindow(CREATESTRUCT& cs)
 /////////////////////////////////////////////////////////////////////////////
 // CMs3dviewView operations
 
-tResult CMs3dviewView::Create(int width, int height, int bpp, const char * pszTitle)
-{
-   Assert(!"Should never be called when the window was created by MFC!");
-   return IsWindow(m_hWnd) ? S_OK : E_FAIL;
-}
-
-tResult CMs3dviewView::GetWindowInfo(sWindowInfo * pInfo) const
-{
-   if (pInfo != NULL)
-   {
-      Assert(AfxIsValidAddress(pInfo, sizeof(sWindowInfo), TRUE));
-
-      CRect rect;
-      GetClientRect(rect);
-
-      pInfo->width = rect.Width();
-      pInfo->height = rect.Height();
-      pInfo->bpp = (m_hDC != NULL) ? GetDeviceCaps(m_hDC, BITSPIXEL) : 0;
-      pInfo->hWnd = GetSafeHwnd();
-
-      return S_OK;
-   }
-   else
-   {
-      return E_POINTER;
-   }
-}
-
-tResult CMs3dviewView::SwapBuffers()
-{
-   if (m_hDC != NULL)
-   {
-      ::SwapBuffers(m_hDC);
-      return S_OK;
-   }
-
-   return E_FAIL;
-}
 
 /////////////////////////////////////////////////////////////////////////////
 // CMs3dviewView drawing
@@ -132,7 +91,7 @@ void CMs3dviewView::OnDraw(CDC* pDC)
 
    glFinish();
 
-   SwapBuffers();
+   SwapBuffers(m_hDC);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -217,6 +176,7 @@ int CMs3dviewView::OnCreate(LPCREATESTRUCT lpCreateStruct)
       1);
 
    glEnable(GL_DEPTH_TEST);
+//   glEnable(GL_VERTEX_WEIGHTING_EXT);
 
 	return 0;
 }

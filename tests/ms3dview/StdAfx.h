@@ -19,42 +19,8 @@
 #include <afxcmn.h>			// MFC support for Windows Common Controls
 #endif // _AFX_NO_AFXCMN_SUPPORT
 
-#include "TechTypes.h"
-#include "TechDebug.h"
-
-/////////////////////////////////////////////////////////////////////////////
-
-template <class Class, class Interface>
-class CIUnknownImpl : public Interface
-{
-public:
-   STDMETHOD_(ULONG, AddRef)() 
-   {
-      Class * pThis = static_cast<Class *>(this);
-      return pThis->ExternalAddRef(); 
-   }
-
-   STDMETHOD_(ULONG, Release)() 
-   {
-      Class * pThis = static_cast<Class *>(this);
-      return pThis->ExternalRelease(); 
-   }
-
-   STDMETHOD(QueryInterface)(REFIID iid, void * * ppvObj) 
-   {
-      Class * pThis = static_cast<Class *>(this);
-      return pThis->ExternalQueryInterface(&iid, ppvObj); 
-   }
-};
-
-#define INTERFACEOFFSET(Class, Interface) \
-   ((int)(((Interface *)((Class *)1))) - 1)
-
-#define IMPLEMENTS_INTERFACE(Class, Interface) \
-   IMPLEMENTS_INTERFACE_(Class, Interface, IID_##Interface)
-
-#define IMPLEMENTS_INTERFACE_(Class, Interface, iid) \
-   { &iid, INTERFACEOFFSET(Class, Interface) },
+#include "techtypes.h"
+#include "techdebug.h"
 
 /////////////////////////////////////////////////////////////////////////////
 
