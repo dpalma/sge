@@ -4,7 +4,7 @@
 # Don't require GNU-convention files like README, NEWS, ChangeLog, AUTHORS
 AUTOMAKE_OPTIONS = foreign
 
-ACLOCAL_AMFLAGS = -I$(top_builddir)/config
+ACLOCAL_AMFLAGS = -I $(top_builddir)/config
 
 EXTRA_DIST = bootstrap data
 
