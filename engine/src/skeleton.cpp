@@ -408,9 +408,10 @@ void cSkeleton::SetBoneParentChildRelationships()
    tBones::iterator iter;
    for (iter = m_bones.begin(); iter != m_bones.end(); iter++)
    {
-      if (iter->GetParentIndex() > -1)
+      cBone & bone = *iter;
+      if (bone.GetParentIndex() > -1)
       {
-         m_bones[iter->GetParentIndex()].AddChild(iter);
+         m_bones[bone.GetParentIndex()].AddChild(&bone);
       }
    }
 }
