@@ -10,3 +10,4 @@
 #include "renderguids.h"
 #include "engineguids.h"
 #include "gameguids.h"
+#include "editorguids.h"

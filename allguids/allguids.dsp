@@ -43,11 +43,11 @@ RSC=rc.exe
 # PROP Output_Dir "..\Build\Release"
 # PROP Intermediate_Dir "..\Build\Release\allguids"
 # PROP Target_Dir ""
-LINK32=link.exe
-MTL=midl.exe
 F90=df.exe
+MTL=midl.exe
+LINK32=link.exe
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I "..\tech\include" /I "..\render\include" /I "..\engine\include" /I "..\game" /D "NDEBUG" /D "STRICT" /D "WIN32" /D "_MBCS" /D "_LIB" /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /I "..\tech\include" /I "..\render\include" /I "..\engine\include" /I "..\game" /I "..\editor" /D "NDEBUG" /D "STRICT" /D "WIN32" /D "_MBCS" /D "_LIB" /FD /c
 # SUBTRACT CPP /Fr /YX
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
@@ -70,11 +70,11 @@ LIB32=link.exe -lib
 # PROP Output_Dir "..\Build\Debug"
 # PROP Intermediate_Dir "..\Build\Debug\allguids"
 # PROP Target_Dir ""
-LINK32=link.exe
-MTL=midl.exe
 F90=df.exe
+MTL=midl.exe
+LINK32=link.exe
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\tech\include" /I "..\render\include" /I "..\engine\include" /I "..\game" /D "_DEBUG" /D "STRICT" /D "WIN32" /D "_MBCS" /D "_LIB" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\tech\include" /I "..\render\include" /I "..\engine\include" /I "..\game" /I "..\editor" /D "_DEBUG" /D "STRICT" /D "WIN32" /D "_MBCS" /D "_LIB" /FD /GZ /c
 # SUBTRACT CPP /Fr /YX
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
@@ -97,12 +97,12 @@ LIB32=link.exe -lib
 # PROP Output_Dir "..\Build\Opt"
 # PROP Intermediate_Dir "..\Build\Opt\allguids"
 # PROP Target_Dir ""
-LINK32=link.exe
-MTL=midl.exe
 F90=df.exe
+MTL=midl.exe
+LINK32=link.exe
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "_DEBUG" /D "STRICT" /D "WIN32" /D "_MBCS" /D "_LIB" /FD /GZ /c
 # SUBTRACT BASE CPP /YX
-# ADD CPP /nologo /MDd /W3 /GX /Zi /O2 /I "..\tech\include" /I "..\render\include" /I "..\engine\include" /I "..\game" /D "STRICT" /D "_LIB" /D "OPT" /D "NDEBUG" /D "WIN32" /D "_MBCS" /FD /c
+# ADD CPP /nologo /MDd /W3 /GX /Zi /O2 /I "..\tech\include" /I "..\render\include" /I "..\engine\include" /I "..\game" /I "..\editor" /D "STRICT" /D "_LIB" /D "OPT" /D "NDEBUG" /D "WIN32" /D "_MBCS" /FD /c
 # SUBTRACT CPP /Fr
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
@@ -125,12 +125,12 @@ LIB32=link.exe -lib
 # PROP Output_Dir "..\Build\StaticDebug"
 # PROP Intermediate_Dir "..\Build\StaticDebug\allguids"
 # PROP Target_Dir ""
-LINK32=link.exe
-MTL=midl.exe
 F90=df.exe
+MTL=midl.exe
+LINK32=link.exe
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "_DEBUG" /D "STRICT" /D "WIN32" /D "_MBCS" /D "_LIB" /FD /GZ /c
 # SUBTRACT BASE CPP /YX
-# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\tech\include" /I "..\render\include" /I "..\engine\include" /I "..\game" /D "_DEBUG" /D "STRICT" /D "WIN32" /D "_MBCS" /D "_LIB" /D "STATIC_BUILD" /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\tech\include" /I "..\render\include" /I "..\engine\include" /I "..\game" /I "..\editor" /D "_DEBUG" /D "STRICT" /D "WIN32" /D "_MBCS" /D "_LIB" /D "STATIC_BUILD" /FD /GZ /c
 # SUBTRACT CPP /Fr /YX
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
@@ -153,12 +153,12 @@ LIB32=link.exe -lib
 # PROP Output_Dir "..\Build\StaticRelease"
 # PROP Intermediate_Dir "..\Build\StaticRelease\allguids"
 # PROP Target_Dir ""
-LINK32=link.exe
-MTL=midl.exe
 F90=df.exe
+MTL=midl.exe
+LINK32=link.exe
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "NDEBUG" /D "STRICT" /D "WIN32" /D "_MBCS" /D "_LIB" /FD /c
 # SUBTRACT BASE CPP /YX
-# ADD CPP /nologo /MT /W3 /GX /O2 /I "..\tech\include" /I "..\render\include" /I "..\engine\include" /I "..\game" /D "NDEBUG" /D "STRICT" /D "WIN32" /D "_MBCS" /D "_LIB" /D "STATIC_BUILD" /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /I "..\tech\include" /I "..\render\include" /I "..\engine\include" /I "..\game" /I "..\editor" /D "NDEBUG" /D "STRICT" /D "WIN32" /D "_MBCS" /D "_LIB" /D "STATIC_BUILD" /FD /c
 # SUBTRACT CPP /Fr /YX
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"

@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.00"
 	Name="allguids"
+	ProjectGUID="{719BB466-DA73-494D-B3DB-4E2338F69AAC}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -21,7 +22,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\tech\include,..\render\include,..\engine\include,..\game"
+				AdditionalIncludeDirectories="..\tech\include,..\render\include,..\engine\include,..\game,..\editor"
 				PreprocessorDefinitions="_DEBUG,STRICT,WIN32,_LIB,STATIC_BUILD"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -66,7 +67,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\tech\include,..\render\include,..\engine\include,..\game"
+				AdditionalIncludeDirectories="..\tech\include,..\render\include,..\engine\include,..\game,..\editor"
 				PreprocessorDefinitions="_DEBUG,STRICT,_LIB,WIN32,OPT"
 				StringPooling="TRUE"
 				RuntimeLibrary="3"
@@ -111,7 +112,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\tech\include,..\render\include,..\engine\include,..\game"
+				AdditionalIncludeDirectories="..\tech\include,..\render\include,..\engine\include,..\game,..\editor"
 				PreprocessorDefinitions="NDEBUG,STRICT,WIN32,_LIB"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -156,7 +157,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\tech\include,..\render\include,..\engine\include,..\game"
+				AdditionalIncludeDirectories="..\tech\include,..\render\include,..\engine\include,..\game,..\editor"
 				PreprocessorDefinitions="NDEBUG,STRICT,WIN32,_LIB,STATIC_BUILD"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -201,7 +202,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\tech\include,..\render\include,..\engine\include,..\game"
+				AdditionalIncludeDirectories="..\tech\include,..\render\include,..\engine\include,..\game,..\editor"
 				PreprocessorDefinitions="_DEBUG,STRICT,WIN32,_LIB"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
