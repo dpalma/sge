@@ -7,14 +7,19 @@
 #include "editorView.h"
 
 #include "sceneapi.h"
+#include "ray.h"
 
 #include "render.h"
 
 #include "globalobj.h"
 #include "matrix4.h"
 #include "vec2.h"
+#include "vec3.h"
+#include "vec4.h"
 #include "keys.h"
 #include "techtime.h"
+
+#include <GL/gl.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -25,6 +30,62 @@ static char THIS_FILE[] = __FILE__;
 const float kFov = 70;
 const float kZNear = 1;
 const float kZFar = 5000;
+
+/////////////////////////////////////////////////////////////////////////////
+
+static void ScreenToNormalizedDeviceCoords(int sx, int sy,
+                                           float * pndx, float * pndy)
+{
+   Assert(pndx != NULL);
+   Assert(pndy != NULL);
+
+   int viewport[4];
+   glGetIntegerv(GL_VIEWPORT, viewport);
+
+   sy = viewport[3] - sy;
+
+   // convert screen coords to normalized (origin at center, [-1..1])
+   float normx = (float)(sx - viewport[0]) * 2.f / viewport[2] - 1.f;
+   float normy = (float)(sy - viewport[1]) * 2.f / viewport[3] - 1.f;
+
+   *pndx = normx;
+   *pndy = normy;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+static bool GetPickVector(ISceneCamera * pCamera, float ndx, float ndy, tVec3 * pPickDir)
+{
+   Assert(pCamera != NULL);
+
+   const tMatrix4 & m = pCamera->GetViewProjectionInverseMatrix();
+
+   tVec4 n = m.Transform(tVec4(ndx, ndy, -1, 1));
+   if (n.w == 0.0f)
+   {
+      return false;
+   }
+   n.x /= n.w;
+   n.y /= n.w;
+   n.z /= n.w;
+
+   tVec4 f = m.Transform(tVec4(ndx, ndy, 1, 1));
+   if (f.w == 0.0f)
+   {
+      return false;
+   }
+   f.x /= f.w;
+   f.y /= f.w;
+   f.z /= f.w;
+
+   if (pPickDir != NULL)
+   {
+      *pPickDir = tVec3(f.x - n.x, f.y - n.y, f.z - n.z);
+      pPickDir->Normalize();
+   }
+
+   return true;
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // cEditorView
@@ -224,7 +285,7 @@ int cEditorView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (cGLView::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
-   if (RenderDeviceCreate(0, &m_pRenderDevice) != S_OK)
+   if (RenderDeviceCreate(kRDO_ShowStatistics, &m_pRenderDevice) != S_OK)
    {
       DebugMsg("Failed to create rendering device\n");
       return -1;
@@ -528,8 +589,34 @@ LRESULT cEditorView::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 
 void cEditorView::OnLButtonDown(UINT nFlags, CPoint point) 
 {
-	// TODO: Add your message handler code here and/or call default
-	
+	cEditorDoc * pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+
+   float ndx, ndy;
+   ScreenToNormalizedDeviceCoords(point.x, point.y, &ndx, &ndy);
+
+   tVec3 pickDir;
+   if (GetPickVector(m_pCamera, ndx, ndy, &pickDir))
+   {
+      cRay pickRay(m_eye, pickDir);
+
+      tVec3 pointOnPlane;
+      if (pickRay.IntersectsPlane(tVec3(0,1,0), 0, &pointOnPlane))
+      {
+         DebugMsg3("Hit the ground at approximately (%.1f, %.1f, %.1f)\n",
+            pointOnPlane.x, pointOnPlane.y, pointOnPlane.z);
+
+         uint mapDimX, mapDimZ, mapExtX, mapExtZ;
+         pDoc->GetMapDimensions(&mapDimX, &mapDimZ);
+         pDoc->GetMapExtents(&mapExtX, &mapExtZ);
+
+         int iTileX = Round(pointOnPlane.x / mapDimX);
+         int iTileZ = Round(pointOnPlane.z / mapDimZ);
+
+         DebugMsg2("Hit tile (%d, %d)\n", iTileX, iTileZ);
+      }
+   }
+
 	cGLView::OnLButtonDown(nFlags, point);
 }
 
@@ -546,7 +633,6 @@ void cEditorView::OnLButtonUp(UINT nFlags, CPoint point)
 
 void cEditorView::OnRButtonDown(UINT nFlags, CPoint point) 
 {
-	// TODO: Add your message handler code here and/or call default
    SetCapture();
    m_mouseAction = kMoveCamera;
    m_lastMousePoint = point;
@@ -558,7 +644,11 @@ void cEditorView::OnRButtonDown(UINT nFlags, CPoint point)
 
 void cEditorView::OnRButtonUp(UINT nFlags, CPoint point) 
 {
-	// TODO: Add your message handler code here and/or call default
+   if (m_mouseAction == kMoveCamera)
+   {
+      techlog.Print(kInfo, "Looking at point (%.2f, 0, %.2f)\n", m_center.x, m_center.z);
+   }
+
    Verify(ReleaseCapture());
    m_mouseAction = kNone;
 	
@@ -580,7 +670,6 @@ void cEditorView::OnMouseMove(UINT nFlags, CPoint point)
          m_eye.z += delta.y;
          m_center.x += delta.x;
          m_center.z += delta.y;
-         techlog.Print(kInfo, "Looking at point (%.2f, 0, %.2f)\n", m_center.x, m_center.z);
       }
 
       m_lastMousePoint = point;
