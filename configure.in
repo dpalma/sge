@@ -58,5 +58,5 @@ AM_CONDITIONAL(NO_X, test "$no_x" = "yes")
 MDL_HAVE_OPENGL
 CHECK_ZLIB
 
-AC_CONFIG_FILES([Makefile 3rdparty/Makefile 3rdparty/tinyxml/Makefile allguids/Makefile tech/Makefile render/Makefile engine/Makefile game/Makefile data/Makefile])
+AC_CONFIG_FILES([doxyfile Makefile 3rdparty/Makefile 3rdparty/tinyxml/Makefile allguids/Makefile tech/Makefile render/Makefile engine/Makefile game/Makefile data/Makefile])
 AC_OUTPUT
