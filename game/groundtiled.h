@@ -52,7 +52,8 @@ public:
    virtual const tMatrix4 & GetWorldTransform() const { return m_pSceneEntity->GetWorldTransform(); }
 
    virtual void Render(IRenderDevice * pRenderDevice);
-   virtual float GetBoundingRadius() const { return m_pSceneEntity->GetBoundingRadius(); }
+   virtual float GetBoundingRadius() const { return 9999999; }
+//   virtual float GetBoundingRadius() const { return m_pSceneEntity->GetBoundingRadius(); }
 
 private:
    cAutoIPtr<ISceneEntity> m_pSceneEntity;
