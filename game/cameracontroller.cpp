@@ -101,7 +101,7 @@ bool cGameCameraController::OnInputEvent(const sInputEvent * pEvent)
    if ((pEvent->key == kMouseLeft) && pEvent->down)
    {
       tVec3 dir;
-      if (BuildPickRay(pEvent->point.x, pEvent->point.y, &dir))
+      if (BuildPickRay(Round(pEvent->point.x), Round(pEvent->point.y), &dir))
       {
          cRay ray(GetEyePosition(), dir);
 
