@@ -20,6 +20,7 @@
 #include <map>
 #include <vector>
 #include <cfloat>
+#include <algorithm>
 
 #include "dbgalloc.h" // must be last header
 
@@ -47,6 +48,39 @@ struct s3dsMaterial
    short shading;
    float masterScale;
 };
+
+static IMaterial * MaterialFrom3ds(const char * pszMaterial, const s3dsMaterial * p3dsMaterial,
+                                   IRenderDevice * pRenderDevice)
+{
+   Assert(pszMaterial != NULL);
+   Assert(p3dsMaterial != NULL);
+
+   cAutoIPtr<ITexture> pTexture;
+
+   if (p3dsMaterial->szTexture[0] != 0)
+   {
+      UseGlobal(ResourceManager);
+
+      cImage texture;
+      if (ImageLoad(pResourceManager, p3dsMaterial->szTexture, &texture))
+      {
+         pRenderDevice->CreateTexture(&texture, &pTexture);
+      }
+   }
+
+   IMaterial * pMaterial = MaterialCreate();
+
+   if (pTexture != NULL)
+      pMaterial->SetTexture(0, pTexture);
+
+   pMaterial->SetName(pszMaterial);
+   pMaterial->SetAmbient(cColor(p3dsMaterial->ambient[0],p3dsMaterial->ambient[1],p3dsMaterial->ambient[2]));
+   pMaterial->SetDiffuse(cColor(p3dsMaterial->diffuse[0],p3dsMaterial->diffuse[1],p3dsMaterial->diffuse[2]));
+   pMaterial->SetSpecular(cColor(p3dsMaterial->specular[0],p3dsMaterial->specular[1],p3dsMaterial->specular[2]));
+   pMaterial->SetShininess(p3dsMaterial->shininess);
+
+   return pMaterial;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -87,9 +121,8 @@ public:
 
    virtual void GetAABB(tVec3 * pMaxs, tVec3 * pMins) const;
    virtual void Render(IRenderDevice * pRenderDevice) const;
-
-   void AddMaterial(const char * pszMaterial, const s3dsMaterial * p3dsMaterial);
-   IMaterial * GetMaterial(const char * pszMaterial);
+   virtual tResult AddMaterial(IMaterial * pMaterial);
+   virtual tResult FindMaterial(const char * pszName, IMaterial * * ppMaterial);
 
    void AddSubMesh(c3dsSubMesh * pSubMesh);
 
@@ -107,10 +140,8 @@ private:
 
    ////////////////////////////////////
 
-   std::vector<IMaterial *> m_materials;
-
-   typedef std::map<std::string, int> tMaterialNames;
-   tMaterialNames m_materialNames;
+   typedef std::vector<IMaterial *> tMaterials;
+   tMaterials m_materials;
 
    std::vector<c3dsSubMesh *> m_subMeshes;
 
@@ -218,14 +249,12 @@ void c3dsSubMesh::Render(IRenderDevice * pRenderDevice)
    {
       Assert(iter->m_pIB != NULL);
 
-      IMaterial * pMaterial = m_pParent->GetMaterial(iter->szMaterial);
-      if (pMaterial != NULL)
+      cAutoIPtr<IMaterial> pMaterial;
+      if (m_pParent->FindMaterial(iter->szMaterial, &pMaterial) == S_OK)
       {
          pRenderDevice->Render(kRP_Triangles, pMaterial,
             iter->nIndices, iter->m_pIB,
             0, GetVertexCount(), m_pVB);
-
-         pMaterial->Release();
       }
    }
 }
@@ -462,8 +491,16 @@ c3dsMesh::c3dsMesh(IRenderDevice * pRenderDevice)
 
 ///////////////////////////////////////
 
+static void ForEachRelease(IUnknown * p)
+{
+   p->Release();
+}
+
 c3dsMesh::~c3dsMesh()
 {
+   std::for_each(m_materials.begin(), m_materials.end(), ForEachRelease);
+   m_materials.clear();
+
    do
    {
       std::vector<c3dsSubMesh *>::iterator iter;
@@ -472,17 +509,6 @@ c3dsMesh::~c3dsMesh()
          delete *iter;
       }
       m_subMeshes.clear();
-   }
-   while (0);
-
-   do
-   {
-      std::vector<IMaterial *>::iterator iter;
-      for (iter = m_materials.begin(); iter != m_materials.end(); iter++)
-      {
-         (*iter)->Release();
-      }
-      m_materials.clear();
    }
    while (0);
 }
@@ -535,57 +561,35 @@ void c3dsMesh::Render(IRenderDevice * pRenderDevice) const
 
 ///////////////////////////////////////
 
-void c3dsMesh::AddMaterial(const char * pszMaterial, const s3dsMaterial * p3dsMaterial)
+tResult c3dsMesh::AddMaterial(IMaterial * pMaterial)
 {
-   Assert(pszMaterial != NULL);
-   Assert(p3dsMaterial != NULL);
-
-   // check for material with matching name already there
-   if (!cAutoIPtr<IMaterial>(GetMaterial(pszMaterial)))
-   {
-      cAutoIPtr<ITexture> pTexture;
-
-      if (p3dsMaterial->szTexture[0] != 0)
-      {
-         UseGlobal(ResourceManager);
-
-         cImage texture;
-         if (ImageLoad(pResourceManager, p3dsMaterial->szTexture, &texture))
-         {
-            AccessRenderDevice()->CreateTexture(&texture, &pTexture);
-         }
-      }
-
-      IMaterial * pMaterial = MaterialCreate();
-
-      if (pTexture != NULL)
-         pMaterial->SetTexture(0, pTexture);
-
-      pMaterial->SetAmbient(cColor(p3dsMaterial->ambient[0],p3dsMaterial->ambient[1],p3dsMaterial->ambient[2]));
-      pMaterial->SetDiffuse(cColor(p3dsMaterial->diffuse[0],p3dsMaterial->diffuse[1],p3dsMaterial->diffuse[2]));
-      pMaterial->SetSpecular(cColor(p3dsMaterial->specular[0],p3dsMaterial->specular[1],p3dsMaterial->specular[2]));
-      pMaterial->SetShininess(p3dsMaterial->shininess);
-
-      m_materials.push_back(pMaterial);
-      int index = m_materials.size() - 1; // just did a push_back
-      m_materialNames.insert(std::make_pair(pszMaterial, index));
-   }
+   if (pMaterial == NULL || FindMaterial(pMaterial->GetName(), NULL) == S_OK)
+      return E_FAIL;
+   m_materials.push_back(pMaterial);
+   pMaterial->AddRef();
+   return S_OK;
 }
 
 ///////////////////////////////////////
 
-IMaterial * c3dsMesh::GetMaterial(const char * pszMaterial)
+tResult c3dsMesh::FindMaterial(const char * pszName, IMaterial * * ppMaterial)
 {
-   Assert(pszMaterial != NULL);
-   tMaterialNames::const_iterator iter = m_materialNames.find(pszMaterial);
-   if (iter != m_materialNames.end())
+   if (pszName == NULL || pszName[0] == 0)
+      return E_FAIL;
+   tMaterials::iterator iter;
+   for (iter = m_materials.begin(); iter != m_materials.end(); iter++)
    {
-      IMaterial * pM = m_materials[iter->second];
-      Assert(pM != NULL);
-      pM->AddRef();
-      return pM;
+      if (strcmp(pszName, (*iter)->GetName()) == 0)
+      {
+         if (ppMaterial != NULL)
+         {
+            *ppMaterial = *iter;
+            (*ppMaterial)->AddRef();
+         }
+         return S_OK;
+      }
    }
-   return NULL;
+   return S_FALSE;
 }
 
 ///////////////////////////////////////
@@ -769,7 +773,7 @@ bool c3dsMesh::Load3dsMaterial(IReader * pReader, long stop, c3dsMesh * pMesh)
 
    if (!matName.empty())
    {
-      pMesh->AddMaterial(matName, &mat);
+      pMesh->AddMaterial(cAutoIPtr<IMaterial>(MaterialFrom3ds(matName, &mat, pMesh->AccessRenderDevice())));
       return true;
    }
 

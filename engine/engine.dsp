@@ -219,6 +219,10 @@ SOURCE=.\src\ms3d.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\ms3dread.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\stdhdr.cpp
 # ADD CPP /Yc"stdhdr.h"
 # End Source File
@@ -241,6 +245,10 @@ SOURCE=.\src\minigl.h
 # Begin Source File
 
 SOURCE=.\src\ms3d.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\ms3dread.h
 # End Source File
 # Begin Source File
 
