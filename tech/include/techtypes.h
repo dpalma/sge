@@ -8,6 +8,8 @@
 #include <tchar.h>
 #endif
 
+#include <cstddef>
+
 #ifdef _MSC_VER
 #pragma once
 #endif

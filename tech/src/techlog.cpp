@@ -5,6 +5,8 @@
 
 #include "techlog.h"
 
+#include <cstring>
+#include <cstdio>
 #include <cstdarg>
 
 #include "dbgalloc.h" // must be last header
