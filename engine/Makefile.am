@@ -26,7 +26,7 @@ libengine_la_SOURCES = src/3ds.cpp \
                        src/stdhdr.cpp \
                        src/submesh.cpp
 
-libengine_la_LIBADD = $(GL_LIBS) $(CORE_LIBS) -llua -llualib
+libengine_la_LIBADD = $(GL_LIBS) $(CORE_LIBS) -L@top_srcdir@/3rdparty/lua/lib -llua -llualib
 
 INCLUDES = $(GL_CFLAGS) \
            -DENGINE_EXPORTS \
