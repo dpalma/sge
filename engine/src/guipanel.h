@@ -25,7 +25,7 @@ public:
    cGUIPanelElement();
    ~cGUIPanelElement();
 
-   virtual bool Contains(const tGUIPoint & point);
+   virtual bool Contains(const tGUIPoint & point) const;
 
    virtual tResult OnEvent(IGUIEvent * pEvent);
 
@@ -34,6 +34,7 @@ public:
    virtual tResult AddElement(IGUIElement * pElement);
    virtual tResult RemoveElement(IGUIElement * pElement);
    virtual tResult GetElements(IGUIElementEnum * * ppElements);
+   virtual tResult HasElement(IGUIElement * pElement) const;
 
 private:
    typedef std::list<IGUIElement *> tGUIElementList;

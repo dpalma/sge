@@ -39,7 +39,7 @@ cGUIPanelElement::~cGUIPanelElement()
 
 ///////////////////////////////////////
 
-bool cGUIPanelElement::Contains(const tGUIPoint & point)
+bool cGUIPanelElement::Contains(const tGUIPoint & point) const
 {
    return false; // TODO
 }
@@ -70,13 +70,9 @@ tResult cGUIPanelElement::AddElement(IGUIElement * pElement)
       return E_POINTER;
    }
 
-   tGUIElementList::iterator iter;
-   for (iter = m_children.begin(); iter != m_children.end(); iter++)
+   if (HasElement(pElement) == S_OK)
    {
-      if (CTIsSameObject(*iter, pElement))
-      {
-         return S_FALSE;
-      }
+      return S_FALSE;
    }
 
    m_children.push_back(CTAddRef(pElement));
@@ -111,6 +107,27 @@ tResult cGUIPanelElement::RemoveElement(IGUIElement * pElement)
 tResult cGUIPanelElement::GetElements(IGUIElementEnum * * ppElements)
 {
    return GUIElementEnumCreate(m_children, ppElements);
+}
+
+///////////////////////////////////////
+
+tResult cGUIPanelElement::HasElement(IGUIElement * pElement) const
+{
+   if (pElement == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tGUIElementList::const_iterator iter;
+   for (iter = m_children.begin(); iter != m_children.end(); iter++)
+   {
+      if (CTIsSameObject(*iter, pElement))
+      {
+         return S_OK;
+      }
+   }
+
+   return S_FALSE;
 }
 
 

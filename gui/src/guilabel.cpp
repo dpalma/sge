@@ -63,7 +63,8 @@ void cGUILabelElement::SetText(const char * pszText)
 
 AUTOREGISTER_GUIELEMENTFACTORY(label, cGUILabelElementFactory);
 
-tResult cGUILabelElementFactory::CreateElement(const TiXmlElement * pXmlElement, IGUIElement * * ppElement)
+tResult cGUILabelElementFactory::CreateElement(const TiXmlElement * pXmlElement, 
+                                               IGUIElement * * ppElement)
 {
    if (ppElement == NULL)
    {
@@ -82,6 +83,15 @@ tResult cGUILabelElementFactory::CreateElement(const TiXmlElement * pXmlElement,
                pLabel->SetText(pXmlElement->Attribute("text"));
             }
 
+            if (pXmlElement->Attribute("style"))
+            {
+               cAutoIPtr<IGUIStyle> pStyle;
+               if (GUIStyleParse(pXmlElement->Attribute("style"), &pStyle) == S_OK)
+               {
+                  pLabel->SetStyle(pStyle);
+               }
+            }
+
             *ppElement = CTAddRef(pLabel);
             return S_OK;
          }
@@ -98,25 +108,25 @@ tResult cGUILabelElementFactory::CreateElement(const TiXmlElement * pXmlElement,
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGUILabelRenderer
+// CLASS: cGUILabelStatelessRenderer
 //
 
 ///////////////////////////////////////
 
-cGUILabelRenderer::cGUILabelRenderer()
+cGUILabelStatelessRenderer::cGUILabelStatelessRenderer()
  : m_pFont(FontCreateDefault())
 {
 }
 
 ///////////////////////////////////////
 
-cGUILabelRenderer::~cGUILabelRenderer()
+cGUILabelStatelessRenderer::~cGUILabelStatelessRenderer()
 {
 }
 
 ///////////////////////////////////////
 
-tResult cGUILabelRenderer::Render(IGUIElement * pElement, IRenderDevice * pRenderDevice)
+tResult cGUILabelStatelessRenderer::Render(IGUIElement * pElement, IRenderDevice * pRenderDevice)
 {
    if (pElement == NULL || pRenderDevice == NULL)
    {
@@ -130,7 +140,25 @@ tResult cGUILabelRenderer::Render(IGUIElement * pElement, IRenderDevice * pRende
       tGUISize size = pLabel->GetSize();
 
       tRect rect(pos.x, pos.y, pos.x + size.width, pos.y + size.height);
-      m_pFont->DrawText(pLabel->GetText(), -1, kDT_NoClip, &rect, cColor(1,1,1,1));
+
+      tGUIColor color(tGUIColor::White);
+
+      cAutoIPtr<IRenderFont> pFont;
+
+      cAutoIPtr<IGUIStyle> pStyle;
+      if (pElement->GetStyle(&pStyle) == S_OK)
+      {
+         pStyle->GetForegroundColor(&color);
+         pStyle->GetFont(&pFont);
+      }
+
+      if (!pFont)
+      {
+         pFont = CTAddRef(m_pFont);
+      }
+
+      pFont->DrawText(pLabel->GetText(), -1, kDT_NoClip, &rect, color);
+
       return S_OK;
    }
 
@@ -139,7 +167,7 @@ tResult cGUILabelRenderer::Render(IGUIElement * pElement, IRenderDevice * pRende
 
 ///////////////////////////////////////
 
-tGUISize cGUILabelRenderer::GetPreferredSize(IGUIElement * pElement)
+tGUISize cGUILabelStatelessRenderer::GetPreferredSize(IGUIElement * pElement)
 {
    if (pElement != NULL)
    {
@@ -156,20 +184,30 @@ tGUISize cGUILabelRenderer::GetPreferredSize(IGUIElement * pElement)
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGUILabelRendererFactory
+// CLASS: cGUILabelStatelessRendererFactory
 //
 
-AUTOREGISTER_GUIELEMENTRENDERERFACTORY(label, cGUILabelRendererFactory);
+AUTOREGISTER_GUIELEMENTRENDERERFACTORY(label, cGUILabelStatelessRendererFactory);
 
-tResult cGUILabelRendererFactory::CreateRenderer(IGUIElement * /*pElement*/, IGUIElementRenderer * * ppRenderer)
+tResult cGUILabelStatelessRendererFactory::CreateRenderer(IGUIElement * /*pElement*/, 
+                                                          IGUIElementRenderer * * ppRenderer)
 {
    if (ppRenderer == NULL)
    {
       return E_POINTER;
    }
 
-   *ppRenderer = static_cast<IGUIElementRenderer *>(new cGUILabelRenderer);
-   return (*ppRenderer != NULL) ? S_OK : E_OUTOFMEMORY;
+   if (!m_pStatelessLabelRenderer)
+   {
+      m_pStatelessLabelRenderer = static_cast<IGUIElementRenderer *>(new cGUILabelStatelessRenderer);
+      if (!m_pStatelessLabelRenderer)
+      {
+         return E_OUTOFMEMORY;
+      }
+   }
+
+   *ppRenderer = CTAddRef(m_pStatelessLabelRenderer);
+   return S_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

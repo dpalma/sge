@@ -42,7 +42,7 @@ public:
    virtual tGUISize GetSize() const;
    virtual void SetSize(const tGUISize & size);
 
-   virtual bool Contains(const tGUIPoint & point);
+   virtual bool Contains(const tGUIPoint & point) const;
 
    virtual tResult OnEvent(IGUIEvent * pEvent);
 
@@ -51,6 +51,9 @@ public:
 
    virtual tResult GetStyle(IGUIStyle * * ppStyle);
    virtual tResult SetStyle(IGUIStyle * pStyle);
+
+protected:
+   tGUIPoint GetAbsolutePosition() const;
 
 private:
    tGUIString m_id;

@@ -8,6 +8,10 @@
 #include "font.h"
 #include "color.h"
 
+#include "parse.h"
+
+#include <cstring>
+
 #ifdef HAVE_CPPUNIT
 #include <cppunit/extensions/HelperMacros.h>
 #endif
@@ -30,7 +34,7 @@ cGUIStyle::cGUIStyle()
    m_textVerticalAlignment(kGUIVertAlignTop),
    m_fontName(""),
    m_fontPointSize(0),
-   m_pFont()
+   m_pFont(NULL)
 {
 }
 
@@ -265,6 +269,10 @@ tResult cGUIStyle::GetFont(IRenderFont * * ppFont)
 {
    if (!m_pFont)
    {
+      if ((m_fontName.length() == 0) || (m_fontPointSize == 0))
+      {
+         return E_FAIL;
+      }
       m_pFont = FontCreate(m_fontName.c_str(), m_fontPointSize);
    }
    return m_pFont.GetPointer(ppFont);
@@ -287,6 +295,109 @@ inline const char * SkipSpaceBack(const char * psz)
    while (isspace(*(psz - 1)))
       psz--;
    return psz;
+}
+
+///////////////////////////////////////
+
+static eGUIAlignment String2Align(const char * psz)
+{
+   Assert(psz != NULL);
+   if (stricmp(psz, "left") == 0)
+   {
+      return kGUIAlignLeft;
+   }
+   else if (stricmp(psz, "right") == 0)
+   {
+      return kGUIAlignRight;
+   }
+   else if (stricmp(psz, "center") == 0)
+   {
+      return kGUIAlignCenter;
+   }
+   else
+   {
+      return kGUIAlignLeft;
+   }
+}
+
+static eGUIVerticalAlignment String2VAlign(const char * psz)
+{
+   Assert(psz != NULL);
+   if (stricmp(psz, "top") == 0)
+   {
+      return kGUIVertAlignTop;
+   }
+   else if (stricmp(psz, "bottom") == 0)
+   {
+      return kGUIVertAlignBottom;
+   }
+   else if (stricmp(psz, "center") == 0)
+   {
+      return kGUIVertAlignCenter;
+   }
+   else
+   {
+      return kGUIVertAlignTop;
+   }
+}
+
+///////////////////////////////////////
+
+static tResult String2Color(const char * psz, tGUIColor * pColor)
+{
+   double rgba[4];
+   int parseResult = ParseTuple(psz, rgba, _countof(rgba));
+   if (parseResult == 3)
+   {
+      *pColor = tGUIColor(rgba[0],rgba[1],rgba[2]);
+      return S_OK;
+   }
+   else if (parseResult == 4)
+   {
+      *pColor = tGUIColor(rgba[0],rgba[1],rgba[2],rgba[3]);
+      return S_OK;
+   }
+   else if (stricmp(psz, "black") == 0)
+   {
+      *pColor = tGUIColor::Black;
+      return S_OK;
+   }
+   else if (stricmp(psz, "red") == 0)
+   {
+      *pColor = tGUIColor::Red;
+      return S_OK;
+   }
+   else if (stricmp(psz, "green") == 0)
+   {
+      *pColor = tGUIColor::Green;
+      return S_OK;
+   }
+   else if (stricmp(psz, "yellow") == 0)
+   {
+      *pColor = tGUIColor::Yellow;
+      return S_OK;
+   }
+   else if (stricmp(psz, "blue") == 0)
+   {
+      *pColor = tGUIColor::Blue;
+      return S_OK;
+   }
+   else if (stricmp(psz, "magenta") == 0)
+   {
+      *pColor = tGUIColor::Magenta;
+      return S_OK;
+   }
+   else if (stricmp(psz, "cyan") == 0)
+   {
+      *pColor = tGUIColor::Cyan;
+      return S_OK;
+   }
+   else if (stricmp(psz, "white") == 0)
+   {
+      *pColor = tGUIColor::White;
+      return S_OK;
+   }
+   return E_FAIL;
 }
 
 ///////////////////////////////////////
@@ -316,12 +427,52 @@ static tResult GUIStyleParseAndSetAttribute(const char * pszAttrib, IGUIStyle * 
    strncpy(pszValue, pszValueStart, valueLength);
    pszValue[valueLength] = 0;
 
-   // TODO
-   if (stricmp(pszAttribName, "") == 0)
+   if (strcmp(pszAttribName, "align") == 0)
    {
+      return pStyle->SetAlignment(String2Align(pszValue));
+   }
+   else if (strcmp(pszAttribName, "verticalAlign") == 0)
+   {
+      return pStyle->SetVerticalAlignment(String2VAlign(pszValue));
+   }
+   else if (strcmp(pszAttribName, "background-color") == 0)
+   {
+      tGUIColor color;
+      if (String2Color(pszValue, &color) == S_OK)
+      {
+         return pStyle->SetBackgroundColor(color);
+      }
+   }
+   else if (strcmp(pszAttribName, "foreground-color") == 0)
+   {
+      tGUIColor color;
+      if (String2Color(pszValue, &color) == S_OK)
+      {
+         return pStyle->SetForegroundColor(color);
+      }
+   }
+   else if (strcmp(pszAttribName, "text-align") == 0)
+   {
+      return pStyle->SetTextAlignment(String2Align(pszValue));
+   }
+   else if (strcmp(pszAttribName, "text-verticalAlign") == 0)
+   {
+      return pStyle->SetTextVerticalAlignment(String2VAlign(pszValue));
+   }
+   else if (strcmp(pszAttribName, "font-name") == 0)
+   {
+      return pStyle->SetFontName(pszValue);
+   }
+   else if (strcmp(pszAttribName, "font-pointSize") == 0)
+   {
+      int pointSize;
+      if (sscanf(pszValue, "%d", &pointSize) == 1)
+      {
+         return pStyle->SetFontPointSize(pointSize);
+      }
    }
 
-   return S_OK;
+   return S_FALSE;
 }
 
 ///////////////////////////////////////
@@ -392,15 +543,37 @@ CPPUNIT_TEST_SUITE_REGISTRATION(cGUIStyleTests);
 void cGUIStyleTests::Test()
 {
    const char * pszTestStyleString = 
-      "color: Black;" \
-      "font-family: MS Gothic, sans-serif;" \
-      "font-size: 12px;" \
-      "font-weight: normal;" \
-      "text-align: left;";
+      "align : center;" \
+      "verticalAlign : center;  " \
+      "background-color : white;" \
+      "foreground-color : (0,0,0) ;" \
+      "text-align: right;" \
+      "text-verticalAlign: bottom;" \
+      "font-name: MS Sans Serif;" \
+      "font-pointSize: 14;";
 
    cAutoIPtr<IGUIStyle> pStyle;
 
    CPPUNIT_ASSERT(GUIStyleParse(pszTestStyleString, &pStyle) == S_OK);
+   uint temp;
+   CPPUNIT_ASSERT(pStyle->GetAlignment(&temp) == S_OK);
+   CPPUNIT_ASSERT(temp == kGUIAlignCenter);
+   CPPUNIT_ASSERT(pStyle->GetVerticalAlignment(&temp) == S_OK);
+   CPPUNIT_ASSERT(temp == kGUIVertAlignCenter);
+   tGUIColor color;
+   CPPUNIT_ASSERT(pStyle->GetBackgroundColor(&color) == S_OK);
+   CPPUNIT_ASSERT(color == tGUIColor::White);
+   CPPUNIT_ASSERT(pStyle->GetForegroundColor(&color) == S_OK);
+   CPPUNIT_ASSERT(color == tGUIColor(0,0,0));
+   CPPUNIT_ASSERT(pStyle->GetTextAlignment(&temp) == S_OK);
+   CPPUNIT_ASSERT(temp == kGUIAlignRight);
+   CPPUNIT_ASSERT(pStyle->GetTextVerticalAlignment(&temp) == S_OK);
+   CPPUNIT_ASSERT(temp == kGUIVertAlignBottom);
+   tGUIString fontName;
+   CPPUNIT_ASSERT(pStyle->GetFontName(&fontName) == S_OK);
+   CPPUNIT_ASSERT(strcmp(fontName.c_str(), "MS Sans Serif") == 0);
+   CPPUNIT_ASSERT(pStyle->GetFontPointSize(&temp) == S_OK);
+   CPPUNIT_ASSERT(temp == 14);
 }
 
 #endif // HAVE_CPPUNIT

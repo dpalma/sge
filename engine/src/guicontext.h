@@ -19,17 +19,25 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGUIContext
+// TEMPLATE: cGUIEventRouter
 //
+// Template base class that implements the IGUIEventRouter methods. Mainly
+// for testability. A derived class that includes the event routing parts but
+// excludes the connection to the real input system, etc. will be used by unit 
+// tests.
+//
+// The template parameter INTRFC is a derivative of IGUIEventRouter
+// (e.g., IGUIContext, which inherits from IGUIEventRouter)
 
-class cGUIContext : public cGlobalObject<IMPLEMENTSCP(IGUIContext, IGUIEventListener)>
+template <typename INTRFC>
+class cGUIEventRouter : public cConnectionPoint<INTRFC, IGUIEventListener>
 {
-public:
-   cGUIContext();
-   ~cGUIContext();
+protected:
+   cGUIEventRouter();
+   ~cGUIEventRouter();
 
-   virtual tResult Init();
-   virtual tResult Term();
+   ////////////////////////////////////
+   // IGUIEventRouter methods
 
    virtual tResult AddEventListener(IGUIEventListener * pListener);
    virtual tResult RemoveEventListener(IGUIEventListener * pListener);
@@ -40,12 +48,8 @@ public:
    virtual tResult GetCapture(IGUIElement * * ppElement);
    virtual tResult SetCapture(IGUIElement * pElement);
 
-   virtual tResult LoadFromResource(const char * psz);
-   virtual tResult LoadFromString(const char * psz);
+   ////////////////////////////////////
 
-   virtual tResult RenderGUI(IRenderDevice * pRenderDevice);
-
-private:
    tResult GetMouseOver(IGUIElement * * ppElement);
    tResult SetMouseOver(IGUIElement * pElement);
 
@@ -53,18 +57,26 @@ private:
    IGUIElement * AccessCapture();
    IGUIElement * AccessMouseOver();
 
+   tResult AddElement(IGUIElement * pElement);
+   void RemoveAllElements();
+
+   template <typename F>
+   void ForEachElement(F f)
+   {
+      tGUIElementList::iterator iter;
+      for (iter = m_elements.begin(); iter != m_elements.end(); iter++)
+      {
+         f(*iter);
+      }
+   }
+
+   tResult GetHitElement(const tGUIPoint & point, IGUIElement * * ppElement) const;
+
    bool BubbleEvent(IGUIEvent * pEvent);
    bool GetEventTarget(const sInputEvent * pEvent, IGUIElement * * ppElement);
    bool HandleInputEvent(const sInputEvent * pEvent);
 
-   class cInputListener : public cComObject<IMPLEMENTS(IInputListener)>
-   {
-      virtual bool OnInputEvent(const sInputEvent * pEvent);
-   };
-
-   friend class cInputListener;
-   cInputListener m_inputListener;
-
+private:
    typedef std::list<IGUIElement *> tGUIElementList;
    tGUIElementList m_elements;
 
@@ -73,24 +85,61 @@ private:
 
 ///////////////////////////////////////
 
-inline IGUIElement * cGUIContext::AccessFocus()
+template <typename INTRFC>
+inline IGUIElement * cGUIEventRouter<INTRFC>::AccessFocus()
 {
    return m_pFocus;
 }
 
 ///////////////////////////////////////
 
-inline IGUIElement * cGUIContext::AccessCapture()
+template <typename INTRFC>
+inline IGUIElement * cGUIEventRouter<INTRFC>::AccessCapture()
 {
    return m_pCapture;
 }
 
 ///////////////////////////////////////
 
-inline IGUIElement * cGUIContext::AccessMouseOver()
+template <typename INTRFC>
+inline IGUIElement * cGUIEventRouter<INTRFC>::AccessMouseOver()
 {
    return m_pMouseOver;
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cGUIContext
+//
+
+class cGUIContext : public cGlobalObject<cGUIEventRouter<IGUIContext>, &IID_IGUIContext>
+{
+   typedef cGlobalObject<cGUIEventRouter<IGUIContext>, &IID_IGUIContext> tBaseClass;
+
+public:
+   cGUIContext();
+   ~cGUIContext();
+
+   virtual tResult Init();
+   virtual tResult Term();
+
+   virtual tResult LoadFromResource(const char * psz);
+   virtual tResult LoadFromString(const char * psz);
+
+   virtual tResult RenderGUI(IRenderDevice * pRenderDevice);
+
+private:
+   class cInputListener : public cComObject<IMPLEMENTS(IInputListener)>
+   {
+      virtual bool OnInputEvent(const sInputEvent * pEvent);
+   };
+
+   friend class cInputListener;
+   cInputListener m_inputListener;
+
+   bool m_bNeedLayout;
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -16,7 +16,287 @@
 
 #include <tinyxml.h>
 
+#ifdef HAVE_CPPUNIT
+#include <cppunit/extensions/HelperMacros.h>
+#endif
+
 #include "dbgalloc.h" // must be last header
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// TEMPLATE: cGUIEventRouter
+//
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+cGUIEventRouter<INTRFC>::cGUIEventRouter()
+{
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+cGUIEventRouter<INTRFC>::~cGUIEventRouter()
+{
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+tResult cGUIEventRouter<INTRFC>::AddEventListener(IGUIEventListener * pListener)
+{
+   return Connect(pListener);
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+tResult cGUIEventRouter<INTRFC>::RemoveEventListener(IGUIEventListener * pListener)
+{
+   return Disconnect(pListener);
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+tResult cGUIEventRouter<INTRFC>::GetFocus(IGUIElement * * ppElement)
+{
+   return m_pFocus.GetPointer(ppElement);
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+tResult cGUIEventRouter<INTRFC>::SetFocus(IGUIElement * pElement)
+{
+   SafeRelease(m_pFocus);
+   m_pFocus = CTAddRef(pElement);
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+tResult cGUIEventRouter<INTRFC>::GetCapture(IGUIElement * * ppElement)
+{
+   return m_pCapture.GetPointer(ppElement);
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+tResult cGUIEventRouter<INTRFC>::SetCapture(IGUIElement * pElement)
+{
+   SafeRelease(m_pCapture);
+   m_pCapture = CTAddRef(pElement);
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+tResult cGUIEventRouter<INTRFC>::GetMouseOver(IGUIElement * * ppElement)
+{
+   return m_pMouseOver.GetPointer(ppElement);
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+tResult cGUIEventRouter<INTRFC>::SetMouseOver(IGUIElement * pElement)
+{
+   SafeRelease(m_pMouseOver);
+   m_pMouseOver = CTAddRef(pElement);
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+tResult cGUIEventRouter<INTRFC>::AddElement(IGUIElement * pElement)
+{
+   if (pElement == NULL)
+   {
+      return E_POINTER;
+   }
+   m_elements.push_back(CTAddRef(pElement));
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+void cGUIEventRouter<INTRFC>::RemoveAllElements()
+{
+   SafeRelease(m_pFocus);
+   SafeRelease(m_pCapture);
+   SafeRelease(m_pMouseOver);
+   std::for_each(m_elements.begin(), m_elements.end(), CTInterfaceMethodRef(&IGUIElement::Release));
+   m_elements.clear();
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+tResult cGUIEventRouter<INTRFC>::GetHitElement(const tGUIPoint & point, IGUIElement * * ppElement) const
+{
+   if (ppElement == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tGUIElementList::const_iterator iter;
+   for (iter = m_elements.begin(); iter != m_elements.end(); iter++)
+   {
+      if ((*iter)->Contains(point))
+      {
+         *ppElement = CTAddRef(*iter);
+         return S_OK;
+      }
+   }
+
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+bool cGUIEventRouter<INTRFC>::BubbleEvent(IGUIEvent * pEvent)
+{
+   Assert(pEvent != NULL);
+
+   tSinks::iterator iter;
+   for (iter = AccessSinks().begin(); iter != AccessSinks().end(); iter++)
+   {
+      if ((*iter)->OnEvent(pEvent) != S_OK)
+      {
+         return true;
+      }
+   }
+
+   cAutoIPtr<IGUIElement> pDispatchTo;
+   if (pEvent->GetSourceElement(&pDispatchTo) == S_OK)
+   {
+      while (!!pDispatchTo)
+      {
+         if (pDispatchTo->OnEvent(pEvent))
+         {
+            return true;
+         }
+
+         cAutoIPtr<IGUIElement> pNext;
+         if (pDispatchTo->GetParent(&pNext) != S_OK)
+         {
+            SafeRelease(pDispatchTo);
+         }
+         else
+         {
+            pDispatchTo = pNext;
+         }
+      }
+   }
+
+   return false;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+bool cGUIEventRouter<INTRFC>::GetEventTarget(const sInputEvent * pInputEvent, 
+                                             IGUIElement * * ppElement)
+{
+   Assert(pInputEvent != NULL);
+   Assert(ppElement != NULL);
+
+   if (GetCapture(ppElement) == S_OK)
+   {
+      return true;
+   }
+   else if (KeyIsMouse(pInputEvent->key))
+   {
+      return GetHitElement(pInputEvent->point, ppElement) == S_OK;
+   }
+   else if (GetFocus(ppElement) == S_OK)
+   {
+      return true;
+   }
+
+   return false;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+bool cGUIEventRouter<INTRFC>::HandleInputEvent(const sInputEvent * pInputEvent)
+{
+   tGUIEventCode eventCode = GUIEventCode(pInputEvent->key, pInputEvent->down);
+   if (eventCode == kGUIEventNone)
+   {
+      DebugMsg("WARNING: Invalid event code\n");
+      return false;
+   }
+
+   if (eventCode == kGUIEventMouseMove)
+   {
+      cAutoIPtr<IGUIElement> pMouseOver;
+      if ((GetMouseOver(&pMouseOver) == S_OK) && !pMouseOver->Contains(pInputEvent->point))
+      {
+         SetMouseOver(NULL);
+         cAutoIPtr<IGUIEvent> pMouseLeaveEvent;
+         if (GUIEventCreate(kGUIEventMouseLeave, pInputEvent->point, pInputEvent->key, 
+            pMouseOver, &pMouseLeaveEvent) == S_OK)
+         {
+            BubbleEvent(pMouseLeaveEvent);
+         }
+      }
+
+      cAutoIPtr<IGUIElement> pHit;
+      if ((GetHitElement(pInputEvent->point, &pHit) == S_OK)
+         && (AccessMouseOver() == NULL))
+      {
+         SetMouseOver(pHit);
+         cAutoIPtr<IGUIEvent> pMouseEnterEvent;
+         if (GUIEventCreate(kGUIEventMouseEnter, pInputEvent->point, pInputEvent->key, 
+            pHit, &pMouseEnterEvent) == S_OK)
+         {
+            BubbleEvent(pMouseEnterEvent);
+         }
+      }
+   }
+
+   cAutoIPtr<IGUIElement> pElement;
+   if (GetEventTarget(pInputEvent, &pElement))
+   {
+      if (eventCode == kGUIEventMouseDown)
+      {
+         SetFocus(pElement);
+      }
+      else if (eventCode == kGUIEventMouseUp)
+      {
+         if (pElement->Contains(pInputEvent->point))
+         {
+            // TODO: Doing this here, the click event will occur before the mouse up event
+            // Not sure if that is the right thing
+            cAutoIPtr<IGUIEvent> pClickEvent;
+            if (GUIEventCreate(kGUIEventClick, pInputEvent->point, pInputEvent->key, 
+               pElement, &pClickEvent) == S_OK)
+            {
+               BubbleEvent(pClickEvent);
+            }
+         }
+      }
+
+      cAutoIPtr<IGUIEvent> pEvent;
+      if (GUIEventCreate(eventCode, pInputEvent->point, pInputEvent->key, pElement, &pEvent) == S_OK)
+      {
+         return BubbleEvent(pEvent);
+      }
+   }
+
+   return false;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -30,7 +310,8 @@ END_CONSTRAINTS()
 ///////////////////////////////////////
 
 cGUIContext::cGUIContext()
- : cGlobalObject<IMPLEMENTSCP(IGUIContext, IGUIEventListener)>("GUIContext", CONSTRAINTS())
+ : tBaseClass("GUIContext", CONSTRAINTS()),
+   m_bNeedLayout(false)
 {
    UseGlobal(Scene);
    pScene->AddInputListener(kSL_InGameUI, &m_inputListener);
@@ -55,73 +336,7 @@ tResult cGUIContext::Init()
 
 tResult cGUIContext::Term()
 {
-   SafeRelease(m_pFocus);
-   SafeRelease(m_pCapture);
-   SafeRelease(m_pMouseOver);
-   std::for_each(m_elements.begin(), m_elements.end(), CTInterfaceMethodRef(&IGUIElement::Release));
-   m_elements.clear();
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cGUIContext::AddEventListener(IGUIEventListener * pListener)
-{
-   return Connect(pListener);
-}
-
-///////////////////////////////////////
-
-tResult cGUIContext::RemoveEventListener(IGUIEventListener * pListener)
-{
-   return Disconnect(pListener);
-}
-
-///////////////////////////////////////
-
-tResult cGUIContext::GetFocus(IGUIElement * * ppElement)
-{
-   return m_pFocus.GetPointer(ppElement);
-}
-
-///////////////////////////////////////
-
-tResult cGUIContext::SetFocus(IGUIElement * pElement)
-{
-   SafeRelease(m_pFocus);
-   m_pFocus = CTAddRef(pElement);
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cGUIContext::GetCapture(IGUIElement * * ppElement)
-{
-   return m_pCapture.GetPointer(ppElement);
-}
-
-///////////////////////////////////////
-
-tResult cGUIContext::SetCapture(IGUIElement * pElement)
-{
-   SafeRelease(m_pCapture);
-   m_pCapture = CTAddRef(pElement);
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cGUIContext::GetMouseOver(IGUIElement * * ppElement)
-{
-   return m_pMouseOver.GetPointer(ppElement);
-}
-
-///////////////////////////////////////
-
-tResult cGUIContext::SetMouseOver(IGUIElement * pElement)
-{
-   SafeRelease(m_pMouseOver);
-   m_pMouseOver = CTAddRef(pElement);
+   RemoveAllElements();
    return S_OK;
 }
 
@@ -183,15 +398,54 @@ tResult cGUIContext::LoadFromString(const char * psz)
          if (pGUIFactory->CreateElement(pXmlElement->Value(), pXmlElement, &pGUIElement) == S_OK)
          {
             nElementsCreated++;
-            m_elements.push_back(CTAddRef(pGUIElement));
+            AddElement(pGUIElement);
          }
       }
    }
+
+   m_bNeedLayout = (nElementsCreated > 0);
 
    return nElementsCreated;
 }
 
 ///////////////////////////////////////
+
+// TODO HACK: this is boneheaded simple and temporary
+struct sNaivelySetPreferredSize
+{
+   void operator()(IGUIElement * pGUIElement)
+   {
+      cAutoIPtr<IGUIElementRenderer> pRenderer;
+      if (pGUIElement->GetRenderer(&pRenderer) == S_OK)
+      {
+         pGUIElement->SetSize(pRenderer->GetPreferredSize(pGUIElement));
+      }
+   }
+};
+
+struct sRenderElement
+{
+   sRenderElement() : m_bError(false) {}
+
+   void operator()(IGUIElement * pGUIElement)
+   {
+      if (pGUIElement->IsVisible())
+      {
+         cAutoIPtr<IGUIElementRenderer> pRenderer;
+         if (pGUIElement->GetRenderer(&pRenderer) == S_OK)
+         {
+            if (pRenderer->Render(pGUIElement, m_pRenderDevice) != S_OK)
+            {
+               DebugMsg("WARNING: Error during GUI rendering\n");
+               m_bError = true;
+            }
+         }
+      }
+   }
+
+   cAutoIPtr<IRenderDevice> m_pRenderDevice;
+   bool m_bError;
+};
 
 tResult cGUIContext::RenderGUI(IRenderDevice * pRenderDevice)
 {
@@ -199,155 +453,25 @@ tResult cGUIContext::RenderGUI(IRenderDevice * pRenderDevice)
 
    tResult result = S_OK;
 
-   pRenderDevice->SetRenderState(kRS_EnableDepthBuffer, FALSE);
-
    uint vpWidth, vpHeight;
    Verify(pRenderDevice->GetViewportSize(&vpWidth, &vpHeight) == S_OK);
 
-   tGUIElementList::iterator iter;
-   for (iter = m_elements.begin(); iter != m_elements.end(); iter++)
+   if (m_bNeedLayout)
    {
-      if ((*iter)->IsVisible())
-      {
-         cAutoIPtr<IGUIElementRenderer> pRenderer;
-         if ((*iter)->GetRenderer(&pRenderer) == S_OK)
-         {
-            if ((result = pRenderer->Render(*iter, pRenderDevice)) != S_OK)
-            {
-               DebugMsg("WARNING: Error during GUI rendering\n");
-               break;
-            }
-         }
-      }
+      m_bNeedLayout = false;
+
+      ForEachElement(sNaivelySetPreferredSize());
    }
+
+   pRenderDevice->SetRenderState(kRS_EnableDepthBuffer, FALSE);
+
+   sRenderElement renderElementFunctor;
+   renderElementFunctor.m_pRenderDevice = CTAddRef(pRenderDevice);
+   ForEachElement(renderElementFunctor);
 
    pRenderDevice->SetRenderState(kRS_EnableDepthBuffer, TRUE);
 
    return result;
-}
-
-///////////////////////////////////////
-
-bool cGUIContext::BubbleEvent(IGUIEvent * pEvent)
-{
-   Assert(pEvent != NULL);
-
-   tSinks::iterator iter;
-   for (iter = AccessSinks().begin(); iter != AccessSinks().end(); iter++)
-   {
-      if ((*iter)->OnEvent(pEvent) != S_OK)
-      {
-         return true;
-      }
-   }
-
-   cAutoIPtr<IGUIElement> pDispatchTo;
-   if (pEvent->GetSourceElement(&pDispatchTo) == S_OK)
-   {
-      while (!!pDispatchTo)
-      {
-         if (pDispatchTo->OnEvent(pEvent))
-         {
-            return true;
-         }
-
-         if (pDispatchTo->GetParent(&pDispatchTo) != S_OK)
-         {
-            SafeRelease(pDispatchTo);
-         }
-      }
-   }
-
-   return false;
-}
-
-///////////////////////////////////////
-
-bool cGUIContext::GetEventTarget(const sInputEvent * pInputEvent, IGUIElement * * ppElement)
-{
-   Assert(pInputEvent != NULL);
-   Assert(ppElement != NULL);
-
-   if (KeyIsMouse(pInputEvent->key))
-   {
-      tGUIElementList::iterator iter;
-      for (iter = m_elements.begin(); iter != m_elements.end(); iter++)
-      {
-         if ((*iter)->Contains(pInputEvent->point))
-         {
-            *ppElement = CTAddRef(*iter);
-            return true;
-         }
-      }
-   }
-   else
-   {
-      if (GetFocus(ppElement) == S_OK)
-      {
-         return true;
-      }
-   }
-
-   return false;
-}
-
-///////////////////////////////////////
-
-bool cGUIContext::HandleInputEvent(const sInputEvent * pInputEvent)
-{
-   tGUIEventCode eventCode = GUIEventCode(pInputEvent->key, pInputEvent->down);
-   if (eventCode == kGUIEventNone)
-   {
-      DebugMsg("WARNING: Invalid event code\n");
-      return false;
-   }
-
-   cAutoIPtr<IGUIElement> pElement;
-   if (GetEventTarget(pInputEvent, &pElement))
-   {
-      if (eventCode == kGUIEventMouseMove)
-      {
-         if (!CTIsSameObject(pElement, AccessMouseOver()))
-         {
-            cAutoIPtr<IGUIElement> pMouseOver;
-            if (GetMouseOver(&pMouseOver) == S_OK)
-            {
-               cAutoIPtr<IGUIEvent> pMouseLeaveEvent;
-               if (GUIEventCreate(kGUIEventMouseLeave, pInputEvent->point, pInputEvent->key, 
-                  AccessMouseOver(), &pMouseLeaveEvent) == S_OK)
-               {
-                  BubbleEvent(pMouseLeaveEvent);
-               }
-            }
-
-            SetMouseOver(pElement);
-            eventCode = kGUIEventMouseEnter;
-         }
-      }
-      else if (eventCode == kGUIEventMouseDown)
-      {
-         SetFocus(pElement);
-      }
-      else if (eventCode == kGUIEventMouseUp)
-      {
-         if (CTIsSameObject(pElement, AccessFocus()))
-         {
-            cAutoIPtr<IGUIEvent> pClickEvent;
-            if (GUIEventCreate(kGUIEventClick, pInputEvent->point, pInputEvent->key, pElement, &pClickEvent) == S_OK)
-            {
-               BubbleEvent(pClickEvent);
-            }
-         }
-      }
-
-      cAutoIPtr<IGUIEvent> pEvent;
-      if (GUIEventCreate(eventCode, pInputEvent->point, pInputEvent->key, pElement, &pEvent) == S_OK)
-      {
-         return BubbleEvent(pEvent);
-      }
-   }
-
-   return false;
 }
 
 ///////////////////////////////////////
@@ -364,5 +488,21 @@ void GUIContextCreate()
 {
    cAutoIPtr<IGUIContext>(new cGUIContext);
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_CPPUNIT
+
+class cGUIEventRouterTests : public CppUnit::TestCase
+{
+   CPPUNIT_TEST_SUITE(cGUIEventRouterTests);
+   CPPUNIT_TEST_SUITE_END();
+};
+
+///////////////////////////////////////
+
+CPPUNIT_TEST_SUITE_REGISTRATION(cGUIEventRouterTests);
+
+#endif // HAVE_CPPUNIT
 
 ///////////////////////////////////////////////////////////////////////////////

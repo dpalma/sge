@@ -60,7 +60,7 @@ interface IGUIElement : IUnknown
    virtual tGUISize GetSize() const = 0;
    virtual void SetSize(const tGUISize & size) = 0;
 
-   virtual bool Contains(const tGUIPoint & point) = 0;
+   virtual bool Contains(const tGUIPoint & point) const = 0;
 
    virtual tResult OnEvent(IGUIEvent * pEvent) = 0;
 
@@ -99,6 +99,14 @@ enum eGUIDimensionSpec
 
 interface IGUIStyle : IUnknown
 {
+// TODO
+//   virtual tResult GetAttribute(const char * pszAttribute, tGUIString * pValue) = 0;
+//   virtual tResult GetAttribute(const char * pszAttribute, uint * pValue) = 0;
+//   virtual tResult GetAttribute(const char * pszAttribute, tGUIColor * pValue) = 0;
+//   virtual tResult SetAttribute(const char * pszAttribute, const char * pszValue) = 0;
+//   virtual tResult SetAttribute(const char * pszAttribute, uint value) = 0;
+//   virtual tResult SetAttribute(const char * pszAttribute, const tGUIColor & value) = 0;
+
    virtual tResult GetAlignment(uint * pAlignment) = 0;
    virtual tResult SetAlignment(uint alignment) = 0;
 
@@ -129,7 +137,7 @@ interface IGUIStyle : IUnknown
 ///////////////////////////////////////
 // Parse a CSS-like string to produce a GUI style object
 
-tResult GUIElementStyleParse(const char * pszStyle, IGUIStyle * * ppStyle);
+tResult GUIStyleParse(const char * pszStyle, IGUIStyle * * ppStyle);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -227,6 +235,7 @@ interface IGUIContainerElement : IGUIElement
    virtual tResult AddElement(IGUIElement * pElement) = 0;
    virtual tResult RemoveElement(IGUIElement * pElement) = 0;
    virtual tResult GetElements(IGUIElementEnum * * ppElements) = 0;
+   virtual tResult HasElement(IGUIElement * pElement) const = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

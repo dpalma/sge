@@ -45,14 +45,14 @@ public:
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGUILabelRenderer
+// CLASS: cGUILabelStatelessRenderer
 //
 
-class cGUILabelRenderer : public cComObject<IMPLEMENTS(IGUIElementRenderer)>
+class cGUILabelStatelessRenderer : public cComObject<IMPLEMENTS(IGUIElementRenderer)>
 {
 public:
-   cGUILabelRenderer();
-   ~cGUILabelRenderer();
+   cGUILabelStatelessRenderer();
+   ~cGUILabelStatelessRenderer();
 
    virtual tResult Render(IGUIElement * pElement, IRenderDevice * pRenderDevice);
 
@@ -64,13 +64,16 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGUILabelRendererFactory
+// CLASS: cGUILabelStatelessRendererFactory
 //
 
-class cGUILabelRendererFactory : public cComObject<IMPLEMENTS(IGUIElementRendererFactory)>
+class cGUILabelStatelessRendererFactory : public cComObject<IMPLEMENTS(IGUIElementRendererFactory)>
 {
 public:
    virtual tResult CreateRenderer(IGUIElement * pElement, IGUIElementRenderer * * ppRenderer);
+
+private:
+   cAutoIPtr<IGUIElementRenderer> m_pStatelessLabelRenderer;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

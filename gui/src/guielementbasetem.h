@@ -143,9 +143,18 @@ void cGUIElementBase<INTRFC>::SetSize(const tGUISize & size)
 ///////////////////////////////////////
 
 template <typename INTRFC>
-bool cGUIElementBase<INTRFC>::Contains(const tGUIPoint & point)
+bool cGUIElementBase<INTRFC>::Contains(const tGUIPoint & point) const
 {
-   return false; // TODO
+   tGUIPoint absPos = GetAbsolutePosition();
+   tGUISize size = GetSize();
+   return tRect(
+      absPos.x, 
+      absPos.y, 
+      absPos.x + size.width, 
+      absPos.y + size.height)
+      .PtInside(
+         point.x,
+         point.y);
 }
 
 ///////////////////////////////////////
@@ -190,6 +199,35 @@ tResult cGUIElementBase<INTRFC>::SetStyle(IGUIStyle * pStyle)
    SafeRelease(m_pStyle);
    m_pStyle = CTAddRef(pStyle);
    return S_OK;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+tGUIPoint cGUIElementBase<INTRFC>::GetAbsolutePosition() const
+{
+   tGUIPoint absolutePosition = GetPosition();
+
+   cAutoIPtr<IGUIElement> pParent;
+   if (const_cast<cGUIElementBase<INTRFC> *>(this)->GetParent(&pParent) == S_OK)
+   {
+      while (!!pParent)
+      {
+         absolutePosition += pParent->GetPosition();
+
+         cAutoIPtr<IGUIElement> pNext;
+         if (pParent->GetParent(&pNext) != S_OK)
+         {
+            SafeRelease(pParent);
+         }
+         else
+         {
+            pParent = pNext;
+         }
+      }
+   }
+
+   return absolutePosition;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
