@@ -8,6 +8,10 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#include "techtypes.h"
+#include "techdebug.h"
+#include "combase.h"
+
 #define WIN32_LEAN_AND_MEAN
 #define VC_EXTRALEAN
 

@@ -3,6 +3,7 @@
 // Used by msPlugIn.rc
 //
 #define IDS_ERR_NOTHINGTOEXPORT         1000
+#define IDS_ERR_RENDERDEVICEFAILCREATE  1001
 
 // Next default values for new objects
 // 

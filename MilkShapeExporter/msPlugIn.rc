@@ -28,12 +28,13 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    AFX_IDS_APP_TITLE       "Autodesk 3DS Exporter"
+    AFX_IDS_APP_TITLE       "Superior Foe Engine Exporter"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
     IDS_ERR_NOTHINGTOEXPORT "Nothing to export"
+    IDS_ERR_RENDERDEVICEFAILCREATE "Failed to create rendering device"
 END
 
 #endif    // English (U.S.) resources
