@@ -435,33 +435,29 @@ void MatrixLookAt(const tVec3 & eye, const tVec3 & center, const tVec3 & up,
    tVec3 newXAxis = newYAxis.Cross(newZAxis);
    newXAxis.Normalize();
 
-   Assert(pMatrix != NULL);
-   pMatrix->m00 = newXAxis.x;
-   pMatrix->m10 = newYAxis.x;
-   pMatrix->m20 = newZAxis.x;
-   pMatrix->m30 = 0;
-   pMatrix->m01 = newXAxis.y;
-   pMatrix->m11 = newYAxis.y;
-   pMatrix->m21 = newZAxis.y;
-   pMatrix->m31 = 0;
-   pMatrix->m02 = newXAxis.z;
-   pMatrix->m12 = newYAxis.z;
-   pMatrix->m22 = newZAxis.z;
-   pMatrix->m32 = 0;
-   pMatrix->m03 = 0;
-   pMatrix->m13 = 0;
-   pMatrix->m23 = 0;
-   pMatrix->m33 = 1;
+   tMatrix4 m;
+   m.m00 = newXAxis.x;
+   m.m10 = newYAxis.x;
+   m.m20 = newZAxis.x;
+   m.m30 = 0;
+   m.m01 = newXAxis.y;
+   m.m11 = newYAxis.y;
+   m.m21 = newZAxis.y;
+   m.m31 = 0;
+   m.m02 = newXAxis.z;
+   m.m12 = newYAxis.z;
+   m.m22 = newZAxis.z;
+   m.m32 = 0;
+   m.m03 = 0;
+   m.m13 = 0;
+   m.m23 = 0;
+   m.m33 = 1;
 
    tMatrix4 eyeTrans;
-   memcpy(eyeTrans.m, tMatrix4::GetIdentity().m, sizeof(eyeTrans.m));
-   eyeTrans.m03 = -eye.x;
-   eyeTrans.m13 = -eye.y;
-   eyeTrans.m23 = -eye.z;
+   MatrixTranslate(-eye.x, -eye.y, -eye.z, &eyeTrans);
 
-   tMatrix4 temp;
-   pMatrix->Multiply(eyeTrans, &temp);
-   *pMatrix = temp;
+   Assert(pMatrix != NULL);
+   m.Multiply(eyeTrans, pMatrix);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
