@@ -465,6 +465,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\cpufeatures.cpp"
+					>
+				</File>
+				<File
 					RelativePath="src\dictionary.cpp"
 					>
 				</File>
@@ -704,6 +708,10 @@
 			</File>
 			<File
 				RelativePath=".\include\constraints.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\cpufeatures.h"
 				>
 			</File>
 			<File
