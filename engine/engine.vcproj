@@ -21,8 +21,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\3rdparty\lua\include,..\tech\include,..\render\include,.\include"
-				PreprocessorDefinitions="NDEBUG;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT"
+				AdditionalIncludeDirectories="..\3rdparty\cppunit\include,..\3rdparty\lua\include,..\engine\include,..\render\include,..\tech\include,..\3rdparty\tinyxml"
+				PreprocessorDefinitions="NDEBUG;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL"
 				StringPooling="TRUE"
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="TRUE"
@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="opengl32.lib $(OutDir)\lua.lib"
+				AdditionalDependencies="$(OutDir)\tinyxml.lib"
 				OutputFile=".\..\Build.vc7\Opt/engine.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -83,8 +83,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\3rdparty\cppunit\include;..\3rdparty\lua\include;..\tech\include;..\render\include;.\include"
-				PreprocessorDefinitions="STATIC_BUILD,_DEBUG,_USRDLL,ENGINE_EXPORTS,WIN32,_WINDOWS,STRICT,HAVE_CPPUNIT"
+				AdditionalIncludeDirectories="..\3rdparty\cppunit\include,..\3rdparty\lua\include,..\engine\include,..\render\include,..\tech\include,..\3rdparty\tinyxml"
+				PreprocessorDefinitions="STATIC_BUILD,_DEBUG,_USRDLL,ENGINE_EXPORTS,WIN32,_WINDOWS,STRICT,HAVE_CPPUNIT;TIXML_USE_STL"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="3"
@@ -130,8 +130,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\3rdparty\cppunit\include;..\3rdparty\lua\include;..\tech\include;..\render\include;.\include"
-				PreprocessorDefinitions="_DEBUG;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT;HAVE_CPPUNIT"
+				AdditionalIncludeDirectories="..\3rdparty\cppunit\include,..\3rdparty\lua\include,..\engine\include,..\render\include,..\tech\include,..\3rdparty\tinyxml"
+				PreprocessorDefinitions="_DEBUG;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT;HAVE_CPPUNIT;TIXML_USE_STL"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="3"
@@ -150,7 +150,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="opengl32.lib $(OutDir)\lua.lib $(OutDir)\cppunit.lib"
+				AdditionalDependencies="$(OutDir)\cppunit.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib"
 				OutputFile=".\..\Build.vc7\Debug/engine.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -192,8 +192,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\3rdparty\lua\include,..\tech\include,..\render\include,.\include"
-				PreprocessorDefinitions="NDEBUG,STATIC_BUILD,_USRDLL,ENGINE_EXPORTS,WIN32,_WINDOWS,STRICT"
+				AdditionalIncludeDirectories="..\3rdparty\cppunit\include,..\3rdparty\lua\include,..\engine\include,..\render\include,..\tech\include,..\3rdparty\tinyxml"
+				PreprocessorDefinitions="NDEBUG,STATIC_BUILD,_USRDLL,ENGINE_EXPORTS,WIN32,_WINDOWS,STRICT;TIXML_USE_STL"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="TRUE"
@@ -239,8 +239,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\3rdparty\lua\include,..\tech\include,..\render\include,.\include"
-				PreprocessorDefinitions="NDEBUG;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT"
+				AdditionalIncludeDirectories="..\3rdparty\cppunit\include,..\3rdparty\lua\include,..\engine\include,..\render\include,..\tech\include,..\3rdparty\tinyxml"
+				PreprocessorDefinitions="NDEBUG;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
@@ -259,7 +259,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="opengl32.lib $(OutDir)\lua.lib"
+				AdditionalDependencies="$(OutDir)\tinyxml.lib"
 				OutputFile=".\..\Build.vc7\Release/engine.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -306,6 +306,42 @@
 				</File>
 				<File
 					RelativePath="src\frustum.cpp">
+				</File>
+				<File
+					RelativePath="src\guibutton.cpp">
+				</File>
+				<File
+					RelativePath="src\guicontext.cpp">
+				</File>
+				<File
+					RelativePath="src\guielementenum.cpp">
+				</File>
+				<File
+					RelativePath="src\guielementtools.cpp">
+				</File>
+				<File
+					RelativePath="src\guievent.cpp">
+				</File>
+				<File
+					RelativePath="src\guifactory.cpp">
+				</File>
+				<File
+					RelativePath="src\guilabel.cpp">
+				</File>
+				<File
+					RelativePath="src\guipanel.cpp">
+				</File>
+				<File
+					RelativePath="src\guirender.cpp">
+				</File>
+				<File
+					RelativePath="src\guistyle.cpp">
+				</File>
+				<File
+					RelativePath="src\guitextedit.cpp">
+				</File>
+				<File
+					RelativePath="src\guitypes.cpp">
 				</File>
 				<File
 					RelativePath="src\input.cpp">
@@ -399,6 +435,57 @@
 					RelativePath="src\frustum.h">
 				</File>
 				<File
+					RelativePath="src\guibutton.h">
+				</File>
+				<File
+					RelativePath="src\guicontainerbase.h">
+				</File>
+				<File
+					RelativePath="src\guicontainerbasetem.h">
+				</File>
+				<File
+					RelativePath="src\guicontext.h">
+				</File>
+				<File
+					RelativePath="src\guielementbase.h">
+				</File>
+				<File
+					RelativePath="src\guielementbasetem.h">
+				</File>
+				<File
+					RelativePath="src\guielementenum.h">
+				</File>
+				<File
+					RelativePath="src\guielementtools.h">
+				</File>
+				<File
+					RelativePath="src\guievent.h">
+				</File>
+				<File
+					RelativePath="src\guieventrouter.h">
+				</File>
+				<File
+					RelativePath="src\guieventroutertem.h">
+				</File>
+				<File
+					RelativePath="src\guifactory.h">
+				</File>
+				<File
+					RelativePath="src\guilabel.h">
+				</File>
+				<File
+					RelativePath="src\guipanel.h">
+				</File>
+				<File
+					RelativePath="src\guirender.h">
+				</File>
+				<File
+					RelativePath="src\guistyle.h">
+				</File>
+				<File
+					RelativePath="src\guitextedit.h">
+				</File>
+				<File
 					RelativePath="src\input.h">
 				</File>
 				<File
@@ -444,6 +531,12 @@
 			</File>
 			<File
 				RelativePath=".\include\engineguids.h">
+			</File>
+			<File
+				RelativePath="include\guiapi.h">
+			</File>
+			<File
+				RelativePath="include\guitypes.h">
 			</File>
 			<File
 				RelativePath="include\inputapi.h">

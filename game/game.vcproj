@@ -331,42 +331,6 @@
 				RelativePath=".\groundtiled.cpp">
 			</File>
 			<File
-				RelativePath="guibutton.cpp">
-			</File>
-			<File
-				RelativePath="guicontext.cpp">
-			</File>
-			<File
-				RelativePath="guielementenum.cpp">
-			</File>
-			<File
-				RelativePath="guielementtools.cpp">
-			</File>
-			<File
-				RelativePath="guievent.cpp">
-			</File>
-			<File
-				RelativePath="guifactory.cpp">
-			</File>
-			<File
-				RelativePath="guilabel.cpp">
-			</File>
-			<File
-				RelativePath="guipanel.cpp">
-			</File>
-			<File
-				RelativePath="guirender.cpp">
-			</File>
-			<File
-				RelativePath="guistyle.cpp">
-			</File>
-			<File
-				RelativePath="guitextedit.cpp">
-			</File>
-			<File
-				RelativePath="guitypes.cpp">
-			</File>
-			<File
 				RelativePath=".\heightmap.cpp">
 			</File>
 			<File
@@ -483,63 +447,6 @@
 			</File>
 			<File
 				RelativePath=".\groundtiled.h">
-			</File>
-			<File
-				RelativePath="guiapi.h">
-			</File>
-			<File
-				RelativePath="guibutton.h">
-			</File>
-			<File
-				RelativePath="guicontainerbase.h">
-			</File>
-			<File
-				RelativePath="guicontainerbasetem.h">
-			</File>
-			<File
-				RelativePath="guicontext.h">
-			</File>
-			<File
-				RelativePath="guielementbase.h">
-			</File>
-			<File
-				RelativePath="guielementbasetem.h">
-			</File>
-			<File
-				RelativePath="guielementenum.h">
-			</File>
-			<File
-				RelativePath="guielementtools.h">
-			</File>
-			<File
-				RelativePath="guievent.h">
-			</File>
-			<File
-				RelativePath="guieventrouter.h">
-			</File>
-			<File
-				RelativePath="guieventroutertem.h">
-			</File>
-			<File
-				RelativePath="guifactory.h">
-			</File>
-			<File
-				RelativePath="guilabel.h">
-			</File>
-			<File
-				RelativePath="guipanel.h">
-			</File>
-			<File
-				RelativePath="guirender.h">
-			</File>
-			<File
-				RelativePath="guistyle.h">
-			</File>
-			<File
-				RelativePath="guitextedit.h">
-			</File>
-			<File
-				RelativePath="guitypes.h">
 			</File>
 			<File
 				RelativePath=".\heightmap.h">
