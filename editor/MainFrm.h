@@ -20,6 +20,8 @@
 
 class cDockingWindow;
 
+typedef std::vector<cDockingWindow *> tDockingWindows;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cClientWnd
@@ -46,6 +48,31 @@ public:
       dc.FillSolidRect(&rect, GetSysColor(COLOR_WINDOW));
       dc.DrawText("Client Window", -1, &rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
    }
+};
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cDockingWindowMenu
+//
+
+class cDockingWindowMenu
+{
+   cDockingWindowMenu(const cDockingWindowMenu &);
+   operator =(const cDockingWindowMenu &);
+
+public:
+   cDockingWindowMenu(const tDockingWindows & dockingWindows, uint idFirst, uint idLast);
+   ~cDockingWindowMenu();
+
+   void SetMenu(HMENU hMenu);
+
+   bool UpdateMenu();
+
+private:
+   const tDockingWindows & m_dockingWindows;
+   uint m_idFirst, m_idLast;
+   CMenuHandle m_menu;
+   CString m_originalText;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -126,10 +153,9 @@ private:
    CCommandBarCtrl m_cmdBar;
    CRecentDocumentList m_recentDocuments;
 
-   typedef std::vector<cDockingWindow *> tDockingWindows;
+   cDockingWindowMenu m_dockingWindowMenu;
    tDockingWindows m_dockingWindows;
    sstate::CWindowStateMgr	m_dockingWindowStateMgr;
-   CString m_dockingWindowViewMenuText;
 
    cClientWnd m_clientWnd;
 };

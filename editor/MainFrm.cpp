@@ -23,6 +23,116 @@ static UINT indicators[] =
 };
 
 /////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cDockingWindowMenu
+//
+
+////////////////////////////////////////
+
+cDockingWindowMenu::cDockingWindowMenu(const tDockingWindows & dockingWindows,
+                                       uint idFirst, uint idLast)
+ : m_dockingWindows(dockingWindows),
+   m_idFirst(idFirst),
+   m_idLast(idLast)
+{
+}
+
+////////////////////////////////////////
+
+cDockingWindowMenu::~cDockingWindowMenu()
+{
+}
+
+////////////////////////////////////////
+
+void cDockingWindowMenu::SetMenu(HMENU hMenu)
+{
+   m_menu = hMenu;
+   m_originalText.Empty();
+}
+
+////////////////////////////////////////
+
+bool cDockingWindowMenu::UpdateMenu()
+{
+   if (m_menu.IsNull())
+   {
+      return false;
+   }
+
+   if (m_originalText.IsEmpty())
+   {
+      if (!m_menu.GetMenuString(m_idFirst, m_originalText, MF_BYCOMMAND))
+      {
+         m_originalText = _T("No Entries");
+      }
+   }
+
+   int nItems = m_menu.GetMenuItemCount();
+   int insertPoint;
+   for (insertPoint = 0; insertPoint < nItems; insertPoint++)
+   {
+      CMenuItemInfo mii;
+      mii.fMask = MIIM_ID;
+      if (!m_menu.GetMenuItemInfo(insertPoint, TRUE, &mii))
+      {
+         return false;
+      }
+      if (mii.wID == m_idFirst)
+         break;
+   }
+
+   if (insertPoint >= nItems)
+   {
+      WarnMsg1("No menu item with ID %d\n", m_idFirst);
+      return false;
+   }
+
+   if (m_dockingWindows.empty())
+   {
+      if (!m_originalText.IsEmpty())
+      {
+         CMenuItemInfo mii;
+         mii.fMask = MIIM_STRING | MIIM_STATE;
+         mii.fState = MFS_DISABLED;
+         mii.dwTypeData = const_cast<LPSTR>((LPCTSTR)m_originalText);
+         if (m_menu.SetMenuItemInfo(m_idFirst, FALSE, &mii))
+         {
+            return true;
+         }
+      }
+   }
+
+   // Start at one to keep the very first menu item
+   for (uint i = 1; i < m_dockingWindows.size(); i++)
+   {
+      m_menu.DeleteMenu(m_idFirst + i, MF_BYCOMMAND);
+   }
+
+   tDockingWindows::const_iterator iter = m_dockingWindows.begin();
+   tDockingWindows::const_iterator end = m_dockingWindows.end();
+   for (int index = 0; iter != end; iter++, index++)
+   {
+      uint len = (*iter)->GetWindowTextLength() + 1;
+      CString title;
+      (*iter)->GetWindowText(title.GetBuffer(len), len);
+
+      // TODO: double up all '&' characters so they don't appear underlined
+
+      CMenuItemInfo mii;
+      mii.fMask = MIIM_STRING | MIIM_STATE;
+      mii.fState = (*iter)->IsWindowVisible() ? MFS_CHECKED : MFS_UNCHECKED;
+      mii.dwTypeData = const_cast<LPSTR>((LPCTSTR)title);
+      if (!m_menu.InsertMenuItem(insertPoint + index, TRUE, &mii))
+      {
+         return false;
+      }
+   }
+
+   return false;
+}
+
+/////////////////////////////////////////////////////////////////////////////
 // CMainFrame message handlers
 
 #if 0
@@ -106,6 +216,7 @@ void CMainFrame::OnUpdateViewControlBarMenu(CCmdUI* pCmdUI)
 ////////////////////////////////////////
 
 cMainFrame::cMainFrame()
+ : m_dockingWindowMenu(m_dockingWindows, ID_VIEW_DOCKING_WINDOW_FIRST, ID_VIEW_DOCKING_WINDOW_LAST)
 {
 }
 
@@ -193,6 +304,10 @@ LRESULT cMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
    m_cmdBar.AttachMenu(GetMenu());
    m_cmdBar.LoadImages(IDR_MAINFRAME);
    SetMenu(NULL);
+
+   // TODO: get rid of hard-coded two
+   HMENU hViewMenu = GetSubMenu(m_cmdBar.GetMenu(), 2);
+   m_dockingWindowMenu.SetMenu(hViewMenu);
 
    if (!CreateSimpleStatusBar())
    {
@@ -394,6 +509,7 @@ BOOL cMainFrame::OnIdle()
    UIUpdateToolBar();
    //UISetCheck(ID_VIEW_TOOLBAR, IsToolbarVisible());
    //UISetCheck(ID_VIEW_STATUS_BAR, ::IsWindowVisible(m_hWndStatusBar));
+   m_dockingWindowMenu.UpdateMenu();
    return FALSE;
 }
 
