@@ -351,14 +351,9 @@ bool InputRemoveListener(IInputListener * pListener)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void ForEachRelease(IInputListener * p)
-{
-   p->Release();
-}
-
 void InputRemoveAllListeners()
 {
-   std::for_each(g_inputListeners.begin(), g_inputListeners.end(), ForEachRelease);
+   std::for_each(g_inputListeners.begin(), g_inputListeners.end(), CTInterfaceMethodRef(&IUnknown::Release));
    g_inputListeners.clear();
 }
 

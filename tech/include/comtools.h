@@ -207,6 +207,36 @@ public:
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// cCTInterfaceMethodRef
+//
+// Functor objects for use with STL algorithms. For example,
+//    std::for_each(objects.begin(), objects.end(), CTInterfaceMethodRef(&IUnknown::Release));
+
+template <typename RETURN, typename INTERFACE>
+class cCTInterfaceMethodRef
+{
+   typedef RETURN (STDMETHODCALLTYPE INTERFACE::*tMethod)();
+public:
+   explicit cCTInterfaceMethodRef(tMethod pfnMethod)
+     : m_pfnMethod(pfnMethod) {}
+   RETURN operator()(INTERFACE * pInterface)
+   {
+      return (pInterface->*m_pfnMethod)();
+   }
+private:
+   tMethod m_pfnMethod;
+};
+
+template <typename RETURN, typename INTERFACE>
+inline cCTInterfaceMethodRef<RETURN, INTERFACE>
+   CTInterfaceMethodRef(RETURN (STDMETHODCALLTYPE INTERFACE::*pfnMethod)())
+{
+   return cCTInterfaceMethodRef<RETURN, INTERFACE>(pfnMethod);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cAutoIPtr
 //
 

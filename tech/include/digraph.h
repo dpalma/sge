@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // $Id$
 
 #ifndef INCLUDED_DIGRAPH_H
@@ -37,16 +37,16 @@ class cDigraph
 public:
    typedef KEY tKey;
    typedef DATA tData;
+   typedef int tWeight;
 
    cDigraph();
    ~cDigraph();
 
-   void AddNode(const KEY & key, const DATA & data = DefaultData());
-
+   bool AddNode(const KEY & key, const DATA & data = DefaultData());
+   bool HasNode(const KEY & key) const;
    int CountNodes() const;
 
-   bool AddEdge(const KEY & from, const KEY & to, int weight = kDefaultEdgeWeight);
-
+   bool AddEdge(const KEY & from, const KEY & to, tWeight weight = kDefaultEdgeWeight);
    bool HasEdge(const KEY & from, const KEY & to) const;
 
    HNODEITER IterNodesBegin() const;
@@ -54,19 +54,26 @@ public:
    void IterNodesEnd(HNODEITER hIter) const;
 
    HEDGEITER IterEdgesBegin(const KEY & key) const;
-   bool IterNextEdge(HEDGEITER hIter, KEY * pTo, int * pWeight = NULL) const;
+   bool IterNextEdge(HEDGEITER hIter, KEY * pTo, tWeight * pWeight = NULL) const;
    void IterEdgesEnd(HEDGEITER hIter) const;
 
-   void SetNodeData(const KEY & key, const DATA & data);
-   const DATA & GetNodeData(const KEY & key) const;
+   bool SetNodeData(const KEY & key, const DATA & data);
+   bool GetNodeData(const KEY & key, DATA * pData) const;
    DATA * GetNodeDataPtr(const KEY & key);
+   const DATA * GetNodeDataPtr(const KEY & key) const;
 
 private:
    static const DATA & DefaultData();
 
    ////////////////////////////////////
 
-   typedef std::map<KEY, int> tEdges; // maps dest node to weight/cost to get to that node
+   typedef std::map<KEY, tWeight> tEdges; // maps dest node to weight/cost to get to that node
+
+#ifdef __GNUC__
+   typedef std::pair<typename tEdges::iterator, bool> tEdgeInsertResult;
+#else
+   typedef std::pair<tEdges::iterator, bool> tEdgeInsertResult;
+#endif
 
    struct sNode
    {
@@ -75,6 +82,12 @@ private:
    };
 
    typedef std::map<KEY, sNode *> tNodes;
+
+#ifdef __GNUC__
+   typedef std::pair<typename tNodes::iterator, bool> tNodeInsertResult;
+#else
+   typedef std::pair<tNodes::iterator, bool> tNodeInsertResult;
+#endif
 
    struct sEdgeIter
    {
@@ -110,11 +123,25 @@ cDigraph<KEY, DATA>::~cDigraph()
 ///////////////////////////////////////
 
 template <typename KEY, typename DATA>
-void cDigraph<KEY, DATA>::AddNode(const KEY & key, const DATA & data)
+bool cDigraph<KEY, DATA>::AddNode(const KEY & key, const DATA & data)
 {
-   sNode * pNode = new sNode;
-   pNode->data = data;
-   m_nodes.insert(std::make_pair(key, pNode));
+   if (!HasNode(key))
+   {
+      sNode * pNode = new sNode;
+      pNode->data = data;
+      tNodeInsertResult result = m_nodes.insert(std::make_pair(key, pNode));
+      return result.second;
+   }
+   return false;
+}
+
+///////////////////////////////////////
+
+template <typename KEY, typename DATA>
+bool cDigraph<KEY, DATA>::HasNode(const KEY & key) const
+{
+   typename tNodes::const_iterator iter = m_nodes.find(key);
+   return (iter != m_nodes.end());
 }
 
 ///////////////////////////////////////
@@ -133,14 +160,9 @@ bool cDigraph<KEY, DATA>::AddEdge(const KEY & from, const KEY & to, int weight)
    typename tNodes::iterator fromIter = m_nodes.find(from);
    if (fromIter != m_nodes.end())
    {
-      if (m_nodes.find(to) != m_nodes.end())
+      if (HasNode(to))
       {
-#ifdef __GNUC__
-         typedef std::pair<typename tEdges::iterator, bool> tInsertResult;
-#else
-         typedef std::pair<tEdges::iterator, bool> tInsertResult;
-#endif
-         tInsertResult result = fromIter->second->edges.insert(std::make_pair(to, weight));
+         tEdgeInsertResult result = fromIter->second->edges.insert(std::make_pair(to, weight));
          return result.second;
       }
    }
@@ -153,14 +175,11 @@ template <typename KEY, typename DATA>
 bool cDigraph<KEY, DATA>::HasEdge(const KEY & from, const KEY & to) const
 {
    typename tNodes::const_iterator fromIter = m_nodes.find(from);
-   if (fromIter != m_nodes.end())
+   if ((fromIter != m_nodes.end()) && HasNode(to))
    {
-      if (m_nodes.find(to) != m_nodes.end())
+      if (fromIter->second->edges.find(to) != fromIter->second->edges.end())
       {
-         if (fromIter->second->edges.find(to) != fromIter->second->edges.end())
-         {
-            return true;
-         }
+         return true;
       }
    }
    return false;
@@ -250,32 +269,51 @@ void cDigraph<KEY, DATA>::IterEdgesEnd(HEDGEITER hIter) const
 ///////////////////////////////////////
 
 template <typename KEY, typename DATA>
-void cDigraph<KEY, DATA>::SetNodeData(const KEY & key, const DATA & data)
+bool cDigraph<KEY, DATA>::SetNodeData(const KEY & key, const DATA & data)
 {
    typename tNodes::iterator iter = m_nodes.find(key);
    if (iter != m_nodes.end())
    {
       iter->second->data = data;
+      return true;
    }
+   return false;
 }
 
 ///////////////////////////////////////
 
 template <typename KEY, typename DATA>
-const DATA & cDigraph<KEY, DATA>::GetNodeData(const KEY & key) const
+bool cDigraph<KEY, DATA>::GetNodeData(const KEY & key, DATA * pData) const
 {
    typename tNodes::const_iterator iter = m_nodes.find(key);
    if (iter != m_nodes.end())
    {
-      return iter->second->data;
+      if (pData != NULL)
+      {
+         *pData = iter->second->data;
+      }
+      return true;
    }
-   return DefaultData(); // @HACK: not a very informative error for non-pointer types
+   return false;
 }
 
 ///////////////////////////////////////
 
 template <typename KEY, typename DATA>
 DATA * cDigraph<KEY, DATA>::GetNodeDataPtr(const KEY & key)
+{
+   typename tNodes::iterator iter = m_nodes.find(key);
+   if (iter != m_nodes.end())
+   {
+      return &iter->second->data;
+   }
+   return NULL;
+}
+
+///////////////////////////////////////
+
+template <typename KEY, typename DATA>
+const DATA * cDigraph<KEY, DATA>::GetNodeDataPtr(const KEY & key) const
 {
    typename tNodes::const_iterator iter = m_nodes.find(key);
    if (iter != m_nodes.end())

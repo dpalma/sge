@@ -5,6 +5,7 @@
 #define INCLUDED_CONNPTIMPL_H
 
 #include <vector>
+#include <algorithm>
 
 #ifdef _MSC_VER
 #pragma once
@@ -73,11 +74,7 @@ public:
 protected:
    ~cConnectionPoint()
    {
-      typename CONTAINER::iterator iter;
-      for (iter = m_sinks.begin(); iter != m_sinks.end(); iter++)
-      {
-         SafeRelease(*iter);
-      }
+      std::for_each(m_sinks.begin(), m_sinks.end(), CTInterfaceMethodRef(&IUnknown::Release));
       m_sinks.clear();
    }
 

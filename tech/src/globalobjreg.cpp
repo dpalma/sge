@@ -248,27 +248,29 @@ tResult cGlobalObjectRegistry::InitAll()
    Assert(m_initOrder.size() == 0);
    for (tInitOrderIIDVector::size_type i = 0; i < initOrderIIDs.size(); i++)
    {
-      IGlobalObject * pGlobalObj = initGraph.GetNodeData(initOrderIIDs[i]);
-
-      LocalMsg1("Initializing global object %s\n", pGlobalObj->GetName());
-
-      tResult initResult = pGlobalObj->Init();
-
-      if (initResult == S_OK)
+      IGlobalObject * pGlobalObj = NULL;
+      if (initGraph.GetNodeData(initOrderIIDs[i], &pGlobalObj))
       {
-         m_initOrder.push_back(pGlobalObj);
-      }
-      else if (initResult == S_FALSE)
-      {
-         m_objMap.erase(initOrderIIDs[i]);
-         pGlobalObj->Release();
-      }
-      else
-      {
-         // if the initialization failed, exit the loop and return an error
-         DebugMsg1("ERROR: %s failed to initialize\n", pGlobalObj->GetName());
-         result = E_FAIL;
-         break;
+         LocalMsg1("Initializing global object %s\n", pGlobalObj->GetName());
+
+         tResult initResult = pGlobalObj->Init();
+
+         if (initResult == S_OK)
+         {
+            m_initOrder.push_back(pGlobalObj);
+         }
+         else if (initResult == S_FALSE)
+         {
+            m_objMap.erase(initOrderIIDs[i]);
+            pGlobalObj->Release();
+         }
+         else
+         {
+            // if the initialization failed, exit the loop and return an error
+            DebugMsg1("ERROR: %s failed to initialize\n", pGlobalObj->GetName());
+            result = E_FAIL;
+            break;
+         }
       }
    }
 

@@ -13,6 +13,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <functional>
 #include <cstring>
 #include <cfloat>
 
@@ -141,17 +142,12 @@ cMesh::cMesh()
 
 ///////////////////////////////////////
 
-static void ForEachRelease(IUnknown * p)
-{
-   p->Release();
-}
-
 cMesh::~cMesh()
 {
-   std::for_each(m_materials.begin(), m_materials.end(), ForEachRelease);
+   std::for_each(m_materials.begin(), m_materials.end(), CTInterfaceMethodRef(&IUnknown::Release));
    m_materials.clear();
 
-   std::for_each(m_subMeshes.begin(), m_subMeshes.end(), ForEachRelease);
+   std::for_each(m_subMeshes.begin(), m_subMeshes.end(), CTInterfaceMethodRef(&IUnknown::Release));
    m_subMeshes.clear();
 }
 
