@@ -221,6 +221,11 @@ tResult cMs3dMesh::GetSkeleton(ISkeleton * * ppSkeleton)
    return m_pInnerMesh->GetSkeleton(ppSkeleton);
 }
 
+tResult cMs3dMesh::Optimize()
+{
+   return E_NOTIMPL;
+}
+
 tResult cMs3dMesh::Load(const char * pszMesh, IRenderDevice * pRenderDevice, IResourceManager * pResourceManager)
 {
    SafeRelease(m_pInnerMesh);

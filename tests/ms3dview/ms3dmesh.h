@@ -143,6 +143,7 @@ public:
    virtual tResult GetSubMesh(uint index, ISubMesh * * ppSubMesh) const;
    virtual tResult AttachSkeleton(ISkeleton * pSkeleton);
    virtual tResult GetSkeleton(ISkeleton * * ppSkeleton);
+   virtual tResult Optimize();
 
    tResult Load(const char * pszMesh, IRenderDevice * pRenderDevice, IResourceManager * pResourceManager);
 
