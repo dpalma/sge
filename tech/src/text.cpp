@@ -109,6 +109,7 @@ tResult cTextResourceFormat::GetSupportedFileExtensions(std::vector<cStr> * pExt
    pExtensions->clear();
    pExtensions->push_back(cStr("txt"));
    pExtensions->push_back(cStr("lua"));
+   pExtensions->push_back(cStr("xml"));
 
    return S_OK;
 }
