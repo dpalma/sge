@@ -172,9 +172,6 @@ tResult cTexture::UploadImage(const cImageData * pImageData)
 
    glBindTexture(GL_TEXTURE_2D, m_textureId);
 
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-
    // gluBuild2DMipmaps will scale the image if its dimensions are not powers of two
    int result = gluBuild2DMipmaps(
       GL_TEXTURE_2D,
@@ -187,6 +184,9 @@ tResult cTexture::UploadImage(const cImageData * pImageData)
 
    DebugMsgIf1(result != 0, "gluBuild2DMipmaps returned error: \n",
       (const char *)gluErrorString(glGetError()));
+
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
    return (result == 0) ? S_OK : E_FAIL;
 }
