@@ -222,14 +222,7 @@ tResult cGUIPanelElementFactory::CreateElement(const TiXmlElement * pXmlElement,
       {
          tResult result = S_OK;
 
-         if (pXmlElement->Attribute("style"))
-         {
-            cAutoIPtr<IGUIStyle> pStyle;
-            if (GUIStyleParse(pXmlElement->Attribute("style"), &pStyle) == S_OK)
-            {
-               pPanel->SetStyle(pStyle);
-            }
-         }
+         GUIElementStandardAttributes(pXmlElement, pPanel);
 
          if (pXmlElement->Attribute("insets"))
          {

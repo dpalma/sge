@@ -164,18 +164,11 @@ tResult cGUIButtonElementFactory::CreateElement(const TiXmlElement * pXmlElement
          cAutoIPtr<IGUIButtonElement> pButton = static_cast<IGUIButtonElement *>(new cGUIButtonElement);
          if (!!pButton)
          {
+            GUIElementStandardAttributes(pXmlElement, pButton);
+
             if (pXmlElement->Attribute("text"))
             {
                pButton->SetText(pXmlElement->Attribute("text"));
-            }
-
-            if (pXmlElement->Attribute("style"))
-            {
-               cAutoIPtr<IGUIStyle> pStyle;
-               if (GUIStyleParse(pXmlElement->Attribute("style"), &pStyle) == S_OK)
-               {
-                  pButton->SetStyle(pStyle);
-               }
             }
 
             *ppElement = CTAddRef(pButton);

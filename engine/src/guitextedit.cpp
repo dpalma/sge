@@ -515,18 +515,11 @@ tResult cGUITextEditElementFactory::CreateElement(const TiXmlElement * pXmlEleme
          cAutoIPtr<IGUITextEditElement> pTextEdit = static_cast<IGUITextEditElement *>(new cGUITextEditElement);
          if (!!pTextEdit)
          {
+            GUIElementStandardAttributes(pXmlElement, pTextEdit);
+
             if (pXmlElement->Attribute("text"))
             {
                pTextEdit->SetText(pXmlElement->Attribute("text"));
-            }
-
-            if (pXmlElement->Attribute("style"))
-            {
-               cAutoIPtr<IGUIStyle> pStyle;
-               if (GUIStyleParse(pXmlElement->Attribute("style"), &pStyle) == S_OK)
-               {
-                  pTextEdit->SetStyle(pStyle);
-               }
             }
 
             if (pXmlElement->Attribute("editSize"))

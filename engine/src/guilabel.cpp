@@ -82,18 +82,11 @@ tResult cGUILabelElementFactory::CreateElement(const TiXmlElement * pXmlElement,
          cAutoIPtr<IGUILabelElement> pLabel = static_cast<IGUILabelElement *>(new cGUILabelElement);
          if (!!pLabel)
          {
+            GUIElementStandardAttributes(pXmlElement, pLabel);
+
             if (pXmlElement->Attribute("text"))
             {
                pLabel->SetText(pXmlElement->Attribute("text"));
-            }
-
-            if (pXmlElement->Attribute("style"))
-            {
-               cAutoIPtr<IGUIStyle> pStyle;
-               if (GUIStyleParse(pXmlElement->Attribute("style"), &pStyle) == S_OK)
-               {
-                  pLabel->SetStyle(pStyle);
-               }
             }
 
             *ppElement = CTAddRef(pLabel);

@@ -4,6 +4,11 @@
 #include "stdhdr.h"
 
 #include "guielementtools.h"
+#include "guistyle.h"
+
+#include "parse.h"
+
+#include <tinyxml.h>
 
 #include "dbgalloc.h" // must be last header
 
@@ -134,6 +139,74 @@ tGUIPoint GUIElementAbsolutePosition(IGUIElement * pGUIElement)
    }
 
    return absolutePosition;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+static bool StringToBool(const char * psz)
+{
+   Assert(psz != NULL);
+   if (stricmp(psz, "true") == 0)
+   {
+      return true;
+   }
+   else if (strlen(psz) == 1)
+   {
+      if (psz[0] == 't' || psz[0] == 'T' || psz[0] == '1')
+      {
+         return true;
+      }
+   }
+   return false;
+}
+
+tResult GUIElementStandardAttributes(const TiXmlElement * pXmlElement, 
+                                     IGUIElement * pGUIElement)
+{
+   if (pXmlElement == NULL || pGUIElement == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (pXmlElement->Attribute("id"))
+   {
+      pGUIElement->SetId(pXmlElement->Attribute("id"));
+   }
+
+   if (pXmlElement->Attribute("visible"))
+   {
+      pGUIElement->SetVisible(StringToBool(pXmlElement->Attribute("visible")));
+   }
+
+   if (pXmlElement->Attribute("enabled"))
+   {
+      pGUIElement->SetEnabled(StringToBool(pXmlElement->Attribute("enabled")));
+   }
+
+   if (pXmlElement->Attribute("style"))
+   {
+      cAutoIPtr<IGUIStyle> pStyle;
+      if (GUIStyleParse(pXmlElement->Attribute("style"), &pStyle) == S_OK)
+      {
+         pGUIElement->SetStyle(pStyle);
+      }
+   }
+
+   if (pXmlElement->Attribute("insets"))
+   {
+      double insetVals[4];
+      if (ParseTuple(pXmlElement->Attribute("insets"), insetVals, _countof(insetVals)) == 4)
+      {
+         tGUIInsets insets;
+         insets.left = insetVals[0];
+         insets.top = insetVals[1];
+         insets.right = insetVals[2];
+         insets.bottom = insetVals[3];
+//         pGUIElement->SetInsets(insets);
+      }
+   }
+
+   return S_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
