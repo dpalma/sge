@@ -19,6 +19,15 @@
 #include <cstdio>
 #include <cstring>
 
+#ifdef HAVE_CPPUNIT
+#include <cppunit/extensions/TestFactoryRegistry.h>
+#include <cppunit/TestResultCollector.h>
+#include <cppunit/TestFailure.h>
+#include <cppunit/SourceLine.h>
+#include <cppunit/Exception.h>
+#include <cppunit/ui/text/TestRunner.h>
+#endif
+
 #include "dbgalloc.h" // must be last header
 
 #define SERVER_PORT 1500
@@ -134,11 +143,39 @@ int cClientThread::Run()
 
 ///////////////////////////////////////////////////////////////////////////////
 
+static bool RunUnitTests()
+{
+   CppUnit::TextUi::TestRunner runner;
+   runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
+   runner.run();
+   if (runner.result().testFailuresTotal() > 0)
+   {
+      techlog.Print(kError, "%d UNIT TESTS FAILED!\n", runner.result().testFailuresTotal());
+      CppUnit::TestResultCollector::TestFailures::const_iterator iter;
+      for (iter = runner.result().failures().begin(); iter != runner.result().failures().end(); iter++)
+      {
+         techlog.Print(kError, "%s(%d) : %s : %s\n",
+            (*iter)->sourceLine().fileName().c_str(),
+            (*iter)->sourceLine().isValid() ? (*iter)->sourceLine().lineNumber() : -1,
+            (*iter)->failedTestName().c_str(),
+            (*iter)->thrownException()->what());
+      }
+      return false;
+   }
+   else
+   {
+      techlog.Print(kInfo, "%d unit tests succeeded\n", runner.result().tests().size());
+      return true;
+   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 int main(int argc, char * argv[])
 {
    StartGlobalObjects();
 
-   /* Testing anonymous CVS access */
+   RunUnitTests();
 
    if (!cSocket::Init())
    {
