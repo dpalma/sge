@@ -309,7 +309,8 @@ tResult cMs3dFileReader::CreateMesh(IRenderDevice * pRenderDevice, IMesh * * ppM
    if (pRenderDevice->CreateVertexDeclaration(g_ms3dVertexDecl, 
       _countof(g_ms3dVertexDecl), &pVertexDecl) == S_OK)
    {
-      cAutoIPtr<IMesh> pMesh = MeshCreate(vertexList.GetVertexCount(), kVBO_Dynamic, pVertexDecl, pRenderDevice);
+      cAutoIPtr<IMesh> pMesh = MeshCreate(vertexList.GetVertexCount(), 
+         kVBO_Dynamic | kVBO_SoftwareProcessing, pVertexDecl, pRenderDevice);
       if (!pMesh)
       {
          return E_FAIL;

@@ -36,36 +36,23 @@ static tResult CalculateAABB(uint nVertices, IVertexBuffer * pVertexBuffer,
 
    tResult result = E_FAIL;
 
-   static const uint vertexDeclTypeSizes[] =
-   {
-      1 * sizeof(float), // kVDT_Float1
-      2 * sizeof(float), // kVDT_Float2
-      3 * sizeof(float), // kVDT_Float3
-      4 * sizeof(float), // kVDT_Float4
-      4 * sizeof(unsigned char), // kVDT_UnsignedByte4
-      2 * sizeof(short), // kVDT_Short2
-      4 * sizeof(short), // kVDT_Short4
-   };
-
    cAutoIPtr<IVertexDeclaration> pVertexDecl;
    if (pVertexBuffer->GetVertexDeclaration(&pVertexDecl) == S_OK)
    {
-      uint posOffset = 0, structSize;
-      sVertexElement elements[32];
+      uint posOffset = 0;
+      sVertexElement elements[256];
       int nElements = _countof(elements);
 
-      if (pVertexDecl->GetStructSize(&structSize, NULL) == S_OK
-         && pVertexDecl->GetElements(elements, &nElements) == S_OK)
+      if (pVertexDecl->GetElements(elements, &nElements) == S_OK)
       {
+         uint vertexSize = GetVertexSize(elements, nElements);
+
          for (int i = 0; i < nElements; i++)
          {
             if (elements[i].usage == kVDU_Position)
             {
+               posOffset = elements[i].offset;
                break;
-            }
-            else
-            {
-               posOffset += vertexDeclTypeSizes[elements[i].type];
             }
          }
 
@@ -75,7 +62,7 @@ static tResult CalculateAABB(uint nVertices, IVertexBuffer * pVertexBuffer,
             tVec3 max(FLT_MIN, FLT_MIN, FLT_MIN);
             tVec3 min(FLT_MAX, FLT_MAX, FLT_MAX);
 
-            for (uint i = 0; i < nVertices; i++, pVertexData += structSize)
+            for (uint i = 0; i < nVertices; i++, pVertexData += vertexSize)
             {
                float * pPos = (float *)(pVertexData + posOffset);
 
