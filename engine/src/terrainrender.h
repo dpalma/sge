@@ -93,17 +93,24 @@ private:
    friend class cSceneEntity;
    cSceneEntity m_sceneEntity;
 
-   class cTML : public cComObject<IMPLEMENTS(ITerrainModelListener)>
+   class cTerrainModelListener : public cComObject<IMPLEMENTS(ITerrainModelListener)>
    {
    public:
-      cTML(cTerrainRenderer * pOuter) : m_pOuter(pOuter) {}
+      cTerrainModelListener(cTerrainRenderer * pOuter) : m_pOuter(pOuter) {}
       virtual void DeleteThis() {}
-      virtual void OnTerrainChange() { if (m_pOuter != NULL) { m_pOuter->RegenerateChunks(); } }
+      virtual void OnTerrainChange()
+      {
+         if (m_pOuter != NULL)
+         {
+            m_pOuter->m_bTerrainChanged = true;
+            m_pOuter->RegenerateChunks();
+         }
+      }
    private:
       cTerrainRenderer * m_pOuter;
    };
-   friend class cTML;
-   cTML m_tml;
+   friend class cTerrainModelListener;
+   cTerrainModelListener m_tml;
 
    cAutoIPtr<ITerrainModel> m_pModel;
 
@@ -130,6 +137,9 @@ bool cTerrainRenderer::IsBlendingEnabled() const
 
 class cSplat
 {
+   cSplat(const cSplat &);
+   void operator =(const cSplat &);
+
 public:
    cSplat();
    ~cSplat();
@@ -147,8 +157,11 @@ private:
 
 class cSplatBuilder
 {
+   cSplatBuilder(const cSplatBuilder &);
+   void operator =(const cSplatBuilder &);
+
 public:
-   cSplatBuilder(ITexture * pTexture);
+   cSplatBuilder(uint tile, ITexture * pTexture);
    ~cSplatBuilder();
 
    tResult GetTexture(ITexture * * ppTexture);
@@ -160,7 +173,11 @@ public:
    size_t GetIndexCount() const;
    const uint * GetIndexPtr() const;
 
+   void BuildAlphaMap(const tTerrainQuads & quads, uint nQuadsX, uint nQuadsZ, 
+                      uint iChunkX, uint iChunkZ);
+
 private:
+   uint m_tile;
    std::vector<uint> m_indices;
    cAutoIPtr<ITexture> m_pTexture;
 };
@@ -174,15 +191,14 @@ private:
 class cTerrainChunk : public cComObject<IMPLEMENTS(ISceneEntity)>
 {
    cTerrainChunk(const cTerrainChunk &);
-   const cTerrainChunk & operator =(const cTerrainChunk &);
+   void operator =(const cTerrainChunk &);
 
 public:
    cTerrainChunk();
    ~cTerrainChunk();
 
-   static tResult Create(uint ix, uint iz, uint cx, uint cz,
-      const tTerrainQuads & quads, uint nQuadsX, uint nQuadsZ,
-      IEditorTileSet * pTileSet, cTerrainChunk * * ppChunk);
+   static tResult Create(const tTerrainQuads & quads, uint nQuadsX, uint nQuadsZ,
+      uint iChunkX, uint iChunkZ, IEditorTileSet * pTileSet, cTerrainChunk * * ppChunk);
 
    virtual ISceneEntity * AccessParent() { return NULL; }
    virtual tResult SetParent(ISceneEntity * pEntity) { return E_FAIL; }

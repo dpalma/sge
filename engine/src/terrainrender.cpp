@@ -131,8 +131,6 @@ tResult cTerrainRenderer::EnableBlending(bool bEnable)
 
 void cTerrainRenderer::RegenerateChunks()
 {
-   m_bTerrainChanged = true;
-   
    if (!m_bEnableBlending)
    {
       return;
@@ -160,9 +158,8 @@ void cTerrainRenderer::RegenerateChunks()
       for (uint ix = 0; ix < m_nChunksX; ix++)
       {
          cAutoIPtr<cTerrainChunk> pChunk;
-         if (cTerrainChunk::Create(ix * kTilesPerChunk, iz * kTilesPerChunk,
-            kTilesPerChunk, kTilesPerChunk, m_pModel->GetTerrainQuads(),
-            nTilesX, nTilesZ, pTileSet, &pChunk) == S_OK)
+         if (cTerrainChunk::Create(m_pModel->GetTerrainQuads(), nTilesX, nTilesZ,
+                                   ix, iz, pTileSet, &pChunk) == S_OK)
          {
             m_chunks.push_back(CTAddRef(pChunk));
          }
@@ -300,8 +297,9 @@ cSplat::~cSplat()
 
 ////////////////////////////////////////
 
-cSplatBuilder::cSplatBuilder(ITexture * pTexture)
- : m_pTexture(CTAddRef(pTexture))
+cSplatBuilder::cSplatBuilder(uint tile, ITexture * pTexture)
+ : m_tile(tile),
+   m_pTexture(CTAddRef(pTexture))
 {
 }
 
@@ -358,6 +356,15 @@ const uint * cSplatBuilder::GetIndexPtr() const
    return &m_indices[0];
 }
 
+////////////////////////////////////////
+
+void cSplatBuilder::BuildAlphaMap(const tTerrainQuads & quads,
+                                  uint nQuadsX, uint nQuadsZ,
+                                  uint iChunkX, uint iChunkZ)
+{
+   // TODO
+}
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -385,9 +392,9 @@ cTerrainChunk::~cTerrainChunk()
 
 ////////////////////////////////////////
 
-tResult cTerrainChunk::Create(uint ix, uint iz, uint cx, uint cz,
-                              const tTerrainQuads & quads,
+tResult cTerrainChunk::Create(const tTerrainQuads & quads,
                               uint nQuadsX, uint nQuadsZ,
+                              uint iChunkX, uint iChunkZ, 
                               IEditorTileSet * pTileSet,
                               cTerrainChunk * * ppChunk)
 {
@@ -402,17 +409,18 @@ tResult cTerrainChunk::Create(uint ix, uint iz, uint cx, uint cz,
       return E_OUTOFMEMORY;
    }
 
-   pChunk->m_vertices.resize(cx * cz * 4);
+   pChunk->m_vertices.resize(kTilesPerChunk * kTilesPerChunk * 4);
    uint iVert = 0;
 
    typedef std::map<uint, cSplatBuilder *> tSplatBuilderMap;
    tSplatBuilderMap splatBuilders;
 
+   uint ix = iChunkX * kTilesPerChunk;
+   uint iz = iChunkZ * kTilesPerChunk;
+   uint cx = kTilesPerChunk, cz = kTilesPerChunk;
+
    for (uint z = iz; z < (iz + cz); z++)
    {
-      uint zPrev = (z > iz) ? (z - 1) : (iz + cz - 1);
-      uint zNext = (z < (iz + cz - 1)) ? (z + 1) : iz;
-
       for (uint x = ix; x < (ix + cx); x++)
       {
          uint iQuad = (z * nQuadsZ) + x;
@@ -425,7 +433,7 @@ tResult cTerrainChunk::Create(uint ix, uint iz, uint cx, uint cz,
             cAutoIPtr<ITexture> pTexture;
             if (pTileSet->GetTileTexture(quad.tile, &pTexture) == S_OK)
             {
-               pSplatBuilder = new cSplatBuilder(pTexture);
+               pSplatBuilder = new cSplatBuilder(quad.tile, pTexture);
                if (pSplatBuilder != NULL)
                {
                   splatBuilders[quad.tile] = pSplatBuilder;
@@ -456,6 +464,7 @@ tResult cTerrainChunk::Create(uint ix, uint iz, uint cx, uint cz,
    tSplatBuilderMap::iterator end = splatBuilders.end();
    for (; iter != end; iter++)
    {
+      iter->second->BuildAlphaMap(quads, nQuadsX, nQuadsZ, iChunkX, iChunkZ);
       pChunk->m_splats.push_back(iter->second);
    }
    splatBuilders.clear();
