@@ -148,7 +148,9 @@ public:
    cTerrainChunk();
    ~cTerrainChunk();
 
-   static tResult Create(uint ix, uint iz, uint cx, uint cz, const tTerrainQuads & quads, cTerrainChunk * * ppChunk);
+   static tResult Create(uint ix, uint iz, uint cx, uint cz,
+      const tTerrainQuads & quads, uint nQuadsX, uint nQuadsZ,
+      IEditorTileSet * pTileSet, cTerrainChunk * * ppChunk);
 
 private:
    cAutoIPtr<IMaterial> m_pMaterial;

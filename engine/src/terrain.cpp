@@ -250,6 +250,15 @@ tResult cTerrain::Init(uint nTilesX, uint nTilesZ, IEditorTileSet * pTileSet, IH
    m_nTilesX = nTilesX;
    m_nTilesZ = nTilesZ;
 
+   Assert(!m_pTileSet);
+   Assert(m_tileSetName.empty());
+
+   m_pTileSet = CTAddRef(pTileSet);
+   if (pTileSet->GetName(&m_tileSetName) != S_OK)
+   {
+      return E_FAIL;
+   }
+
    m_nChunksX = m_nTilesX / kTilesPerChunk;
    m_nChunksZ = m_nTilesZ / kTilesPerChunk;
 
@@ -261,20 +270,12 @@ tResult cTerrain::Init(uint nTilesX, uint nTilesZ, IEditorTileSet * pTileSet, IH
       {
          cAutoIPtr<cTerrainChunk> pChunk;
          if (cTerrainChunk::Create(ix * kTilesPerChunk, iz * kTilesPerChunk,
-            kTilesPerChunk, kTilesPerChunk, m_terrainQuads, &pChunk) == S_OK)
+            kTilesPerChunk, kTilesPerChunk, m_terrainQuads,
+            m_nTilesX, m_nTilesZ, m_pTileSet, &pChunk) == S_OK)
          {
             m_chunks.push_back(pChunk);
          }
       }
-   }
-
-   Assert(!m_pTileSet);
-   Assert(m_tileSetName.empty());
-
-   m_pTileSet = CTAddRef(pTileSet);
-   if (pTileSet->GetName(&m_tileSetName) != S_OK)
-   {
-      return E_FAIL;
    }
 
    return S_OK;
@@ -303,22 +304,21 @@ tResult cTerrain::InitQuads(uint nTilesX, uint nTilesZ, IHeightMap * pHeightMap,
    uint extentZ = nTilesZ * stepSize;
 
    int iQuad = 0;
+
    float z = 0;
-   float z2 = static_cast<float>(stepSize);
-   for (uint iz = 0; iz < nTilesZ; iz++, z += stepSize, z2 += stepSize)
+   for (uint iz = 0; iz < nTilesZ; iz++, z += stepSize)
    {
       float x = 0;
-      float x2 = static_cast<float>(stepSize);
-      for (uint ix = 0; ix < nTilesX; ix++, x += stepSize, x2 += stepSize, iQuad++)
+      for (uint ix = 0; ix < nTilesX; ix++, x += stepSize, iQuad++)
       {
          sTerrainQuad & tq = pQuads->at(iQuad);
 
          tq.tile = 0;
 
          tq.verts[0].color = ARGB(255,192,192,192);
-         tq.verts[1].color = ARGB(255,192,192,192);
-         tq.verts[2].color = ARGB(255,192,192,192);
-         tq.verts[3].color = ARGB(255,192,192,192);
+         tq.verts[1].color = tq.verts[0].color;
+         tq.verts[2].color = tq.verts[0].color;
+         tq.verts[3].color = tq.verts[0].color;
 
          tq.verts[0].uv1 = tVec2(0,0);
          tq.verts[1].uv1 = tVec2(1,0);
@@ -327,9 +327,9 @@ tResult cTerrain::InitQuads(uint nTilesX, uint nTilesZ, IHeightMap * pHeightMap,
 
 #define Height(xx,zz) (pHeightMap->GetNormalizedHeight((xx)/extentX,(zz)/extentZ)*kMaxTerrainHeight)
          tq.verts[0].pos = tVec3(x, Height(x,z), z);
-         tq.verts[1].pos = tVec3(x2, Height(x2,z), z);
-         tq.verts[2].pos = tVec3(x2, Height(x2,z2), z2);
-         tq.verts[3].pos = tVec3(x, Height(x,z2), z2);
+         tq.verts[1].pos = tVec3(x+stepSize, Height(x+stepSize,z), z);
+         tq.verts[2].pos = tVec3(x+stepSize, Height(x+stepSize,z+stepSize), z+stepSize);
+         tq.verts[3].pos = tVec3(x, Height(x,z+stepSize), z+stepSize);
 #undef Height
       }
    }
@@ -541,11 +541,24 @@ cTerrainChunk::~cTerrainChunk()
 ////////////////////////////////////////
 
 tResult cTerrainChunk::Create(uint ix, uint iz, uint cx, uint cz,
-                              const tTerrainQuads & quads, cTerrainChunk * * ppChunk)
+                              const tTerrainQuads & quads,
+                              uint nQuadsX, uint nQuadsZ,
+                              IEditorTileSet * pTileSet,
+                              cTerrainChunk * * ppChunk)
 {
-   if (ppChunk == NULL)
+   if (pTileSet == NULL || ppChunk == NULL)
    {
       return E_POINTER;
+   }
+
+   for (uint z = iz; z < (iz + cz); z++)
+   {
+      for (uint x = ix; x < (ix + cx); x++)
+      {
+         uint iQuad = (z * nQuadsZ) + x;
+
+         const sTerrainQuad & quad = quads[iQuad];
+      }
    }
 
    return E_NOTIMPL;

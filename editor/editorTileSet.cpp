@@ -116,28 +116,17 @@ tResult cEditorTileSet::GetTile(uint index, IEditorTile * * ppTile)
 
 ///////////////////////////////////////
 
-tResult cEditorTileSet::GetMaterial(IMaterial * * ppMaterial)
+tResult cEditorTileSet::GetTileTexture(uint iTile, ITexture * * ppTexture)
 {
-   if (!m_pMaterial)
+   if (iTile >= m_tiles.size())
    {
-      if (FAILED(MaterialCreate(&m_pMaterial)))
-      {
-         return E_OUTOFMEMORY;
-      }
-
-      int index = 0;
-      tTiles::iterator iter;
-      for (iter = m_tiles.begin(); (iter != m_tiles.end()) && (index < kMaxTextures); iter++, index++)
-      {
-         cAutoIPtr<ITexture> pTexture;
-         if ((*iter)->GetTexture(&pTexture) == S_OK)
-         {
-            m_pMaterial->SetTexture(index, pTexture);
-         }
-      }
+      return E_INVALIDARG;
    }
-
-   return m_pMaterial.GetPointer(ppMaterial);
+   if (ppTexture == NULL)
+   {
+      return E_POINTER;
+   }
+   return m_tiles[iTile]->GetTexture(ppTexture);
 }
 
 ///////////////////////////////////////

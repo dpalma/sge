@@ -412,7 +412,7 @@ void cEditorView::InitialUpdate()
          pScene->AddEntity(kSL_Terrain, *iter);
       }
    }
-   std::for_each(entities.begin(), entities.end(), CTInterfaceMethod(&IUnknown::Release));
+   std::for_each(entities.begin(), entities.end(), CTInterfaceMethod(&ISceneEntity::Release));
 }
 
 /////////////////////////////////////////////////////////////////////////////
