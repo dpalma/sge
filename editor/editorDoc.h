@@ -4,9 +4,18 @@
 #if !defined(INCLUDED_EDITORDOC_H)
 #define INCLUDED_EDITORDOC_H
 
+#include "comtools.h"
+
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
+
+class cHeightMap;
+
+class cTiledGround;
+class cHeightMap;
+
+F_DECLARE_INTERFACE(IRenderDevice);
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -21,9 +30,13 @@ protected: // create from serialization only
 
 // Attributes
 public:
+   cTiledGround * AccessTiledGround() { return m_pGround; }
 
 // Operations
 public:
+   bool SetTerrain(IRenderDevice * pRenderDevice, const char * pszHeightData, float heightScale, const char * pszTexture);
+   float GetElevation(float nx, float nz) const;
+   bool GetDimensions(uint * pxd, uint * pzd) const;
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -54,6 +67,8 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
+   cHeightMap * m_pHeightMap;
+   cTiledGround * m_pGround;
 };
 
 /////////////////////////////////////////////////////////////////////////////

@@ -4,16 +4,15 @@
 #include "stdhdr.h"
 
 #include "editorDoc.h"
-
-#include "editorView.h" // @HACK: really need to access the view?
+#include "tiledground.h"
+#include "heightmap.h"
 
 #include "resmgr.h"
 #include "readwriteapi.h"
 #include "filespec.h"
 #include "filepath.h"
 #include "globalobj.h"
-
-#include "resource.h"
+#include "techmath.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -37,6 +36,8 @@ END_MESSAGE_MAP()
 // cEditorDoc construction/destruction
 
 cEditorDoc::cEditorDoc()
+ : m_pGround(NULL),
+   m_pHeightMap(NULL)
 {
 	// TODO: add one-time construction code here
 
@@ -44,6 +45,8 @@ cEditorDoc::cEditorDoc()
 
 cEditorDoc::~cEditorDoc()
 {
+   Assert(m_pGround == NULL);
+   Assert(m_pHeightMap == NULL);
 }
 
 BOOL cEditorDoc::OnNewDocument()
@@ -90,30 +93,79 @@ void cEditorDoc::Dump(CDumpContext& dc) const
 #endif //_DEBUG
 
 /////////////////////////////////////////////////////////////////////////////
+// cEditorDoc operations
+
+bool cEditorDoc::SetTerrain(IRenderDevice * pRenderDevice, 
+                            const char * pszHeightData, 
+                            float heightScale, 
+                            const char * pszTexture)
+{
+   Assert(pszHeightData != NULL);
+   Assert(m_pHeightMap == NULL);
+   Assert(m_pGround == NULL);
+
+   m_pHeightMap = new cHeightMap(heightScale);
+   if (m_pHeightMap != NULL)
+   {
+      if (m_pHeightMap->Load(pszHeightData))
+      {
+         m_pGround = new cTiledGround();
+         if (m_pGround != NULL)
+         {
+            return m_pGround->Init(pRenderDevice, m_pHeightMap, pszTexture);
+         }
+      }
+   }
+
+   return false;
+}
+
+float cEditorDoc::GetElevation(float nx, float nz) const
+{
+   Assert(m_pHeightMap != NULL);
+   uint size = m_pHeightMap->GetSize() - 1;
+   return m_pHeightMap->Height(Round(nx * size), Round(nz * size));
+}
+
+bool cEditorDoc::GetDimensions(uint * pxd, uint * pzd) const
+{
+   if (m_pHeightMap != NULL)
+   {
+      uint size = m_pHeightMap->GetSize();
+      if (pxd)
+         *pxd = size;
+      if (pzd)
+         *pzd = size;
+      return true;
+   }
+   return false;
+}
+
+/////////////////////////////////////////////////////////////////////////////
 // cEditorDoc commands
 
 BOOL cEditorDoc::OnOpenDocument(LPCTSTR lpszPathName) 
 {
 	if (!CDocument::OnOpenDocument(lpszPathName))
 		return FALSE;
-	
-   cEditorView * pEditorView = NULL;
 
-	POSITION pos = GetFirstViewPosition();
-   for (CView * pView = GetNextView(pos); pView != NULL; pView = GetNextView(pos))
-   {
-      pEditorView = DYNAMIC_DOWNCAST(cEditorView, pView);
-      if (pEditorView != NULL)
-      {
-         break;
-      }
-   }
+ //  cEditorView * pEditorView = NULL;
 
-   if (!pEditorView)
-   {
-      TRACE0("Have no cEditorView from which to get a rendering device\n");
-      return FALSE;
-   }
+	//POSITION pos = GetFirstViewPosition();
+ //  for (CView * pView = GetNextView(pos); pView != NULL; pView = GetNextView(pos))
+ //  {
+ //     pEditorView = DYNAMIC_DOWNCAST(cEditorView, pView);
+ //     if (pEditorView != NULL)
+ //     {
+ //        break;
+ //     }
+ //  }
+
+ //  if (!pEditorView)
+ //  {
+ //     TRACE0("Have no cEditorView from which to get a rendering device\n");
+ //     return FALSE;
+ //  }
 
    cFileSpec file(lpszPathName);
 
@@ -127,7 +179,8 @@ BOOL cEditorDoc::OnOpenDocument(LPCTSTR lpszPathName)
 
 void cEditorDoc::DeleteContents() 
 {
-   // TODO
-	
+   delete m_pGround, m_pGround = NULL;
+   delete m_pHeightMap, m_pHeightMap = NULL;
+
 	CDocument::DeleteContents();
 }

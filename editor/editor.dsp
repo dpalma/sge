@@ -203,10 +203,6 @@ SOURCE=.\glView.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\groundtiled.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\heightmap.cpp
 # End Source File
 # Begin Source File
@@ -217,6 +213,10 @@ SOURCE=.\MainFrm.cpp
 
 SOURCE=.\stdhdr.cpp
 # ADD CPP /Yc"stdhdr.h"
+# End Source File
+# Begin Source File
+
+SOURCE=.\tiledground.cpp
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -256,10 +256,6 @@ SOURCE=.\glView.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\groundtiled.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\heightmap.h
 # End Source File
 # Begin Source File
@@ -273,6 +269,10 @@ SOURCE=.\resource.h
 # Begin Source File
 
 SOURCE=.\stdhdr.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\tiledground.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

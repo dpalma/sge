@@ -330,9 +330,6 @@
 				RelativePath=".\glView.cpp">
 			</File>
 			<File
-				RelativePath=".\groundtiled.cpp">
-			</File>
-			<File
 				RelativePath=".\heightmap.cpp">
 			</File>
 			<File
@@ -368,6 +365,9 @@
 						UsePrecompiledHeader="1"/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath="tiledground.cpp">
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -400,9 +400,6 @@
 				RelativePath=".\glView.h">
 			</File>
 			<File
-				RelativePath=".\groundtiled.h">
-			</File>
-			<File
 				RelativePath=".\heightmap.h">
 			</File>
 			<File
@@ -410,6 +407,9 @@
 			</File>
 			<File
 				RelativePath=".\stdhdr.h">
+			</File>
+			<File
+				RelativePath="tiledground.h">
 			</File>
 		</Filter>
 		<Filter

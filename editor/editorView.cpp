@@ -5,6 +5,7 @@
 
 #include "editorDoc.h"
 #include "editorView.h"
+#include "tiledground.h"
 
 #include "sceneapi.h"
 
@@ -149,6 +150,39 @@ cEditorDoc* cEditorView::GetDocument() // non-debug version is inline
 #endif //_DEBUG
 
 /////////////////////////////////////////////////////////////////////////////
+
+cEditorView::cSceneEntity::cSceneEntity()
+ : m_translation(0,0,0),
+   m_rotation(0,0,0,1)
+{
+   m_transform.Identity();
+}
+
+cEditorView::cSceneEntity::~cSceneEntity()
+{
+}
+
+void cEditorView::cSceneEntity::Render(IRenderDevice * pRenderDevice)
+{
+   cEditorView * pEditorView = CTGetOuter(cEditorView, m_sceneEntity);
+
+	cEditorDoc * pDoc = pEditorView->GetDocument();
+	ASSERT_VALID(pDoc);
+
+   cTiledGround * pTG = pDoc->AccessTiledGround();
+   if (pTG != NULL)
+   {
+      pRenderDevice->Render(
+         kRP_Triangles, 
+         pTG->AccessMaterial(), 
+         pTG->GetIndexCount(), 
+         pTG->AccessIndexBuffer(), 
+         0, 
+         pTG->AccessVertexBuffer());
+   }
+}
+
+/////////////////////////////////////////////////////////////////////////////
 // cEditorView message handlers
 
 int cEditorView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
@@ -172,6 +206,8 @@ int cEditorView::OnCreate(LPCREATESTRUCT lpCreateStruct)
    UseGlobal(Scene);
    pScene->SetCamera(kSL_Terrain, m_pCamera);
 
+   pScene->AddEntity(kSL_Terrain, &m_sceneEntity);
+
    Assert(AccessEditorApp() != NULL);
    Verify(AccessEditorApp()->AddLoopClient(this) == S_OK);
 
@@ -181,6 +217,9 @@ int cEditorView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 void cEditorView::OnDestroy() 
 {
 	cGLView::OnDestroy();
+
+   UseGlobal(Scene);
+   pScene->RemoveEntity(kSL_Terrain, &m_sceneEntity);
 
    Assert(AccessEditorApp() != NULL);
    Verify(AccessEditorApp()->RemoveLoopClient(this) == S_OK);
@@ -220,16 +259,12 @@ void cEditorView::OnInitialUpdate()
 	cEditorDoc * pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-   Assert(!m_pTerrainRoot);
-   m_pTerrainRoot = TerrainNodeCreate(m_pRenderDevice, "ground.tga", 0.25, "grass.tga");
-   if (!!m_pTerrainRoot)
+   if (pDoc->SetTerrain(m_pRenderDevice, "ground.tga", 0.25, "grass.tga"))
    {
-      UseGlobal(Scene);
-      pScene->AddEntity(kSL_Terrain, m_pTerrainRoot);
+      uint xd, zd;
+      pDoc->GetDimensions(&xd, &zd);
 
-      tVec2 groundDims = m_pTerrainRoot->GetDimensions();
-
-      m_center = tVec3(groundDims.x / 2, 0, groundDims.y / 2);
+      m_center = tVec3((tVec3::value_type)xd / 2, 0, (tVec3::value_type)zd / 2);
       m_eye = CalcEyePoint(m_center);
    }
    else
