@@ -4,7 +4,7 @@
 
     <tile
        name="Dirt"
-       texture="dirt.bmp"
+       texture="dirt.tga"
        horizontalImages=1
        verticalImages=1
        >
@@ -12,7 +12,7 @@
 
     <tile
        name="Grass"
-       texture="grass.bmp"
+       texture="grass.tga"
        horizontalImages=1
        verticalImages=1
        >
@@ -20,64 +20,10 @@
 
     <tile
        name="Snow"
-       texture="snow.bmp"
+       texture="snow.tga"
        horizontalImages=1
        verticalImages=1
        >
     </tile>
 
 </tileset>
-
-<!--
-<tileset name="WarCraft3">
-
-    <tile
-       name="Dirt"
-       texture="Lords_Dirt.tga"
-       horizontalImages=8
-       verticalImages=4
-       >
-    </tile>
-
-    <tile
-       name="Dirt (Grass)"
-       texture="Lords_DirtGrass.tga"
-       horizontalImages=8
-       verticalImages=4
-       >
-    </tile>
-
-    <tile
-       name="Dirt (Rough)"
-       texture="Lords_DirtRough.tga"
-       horizontalImages=8
-       verticalImages=4
-       >
-    </tile>
-
-    <tile
-       name="Grass"
-       texture="Lords_Grass.tga"
-       horizontalImages=8
-       verticalImages=4
-       >
-    </tile>
-
-    <tile
-       name="Grass (Dark)"
-       texture="Lords_GrassDark.tga"
-       horizontalImages=8
-       verticalImages=4
-       >
-    </tile>
-
-    <tile
-       name="Rock"
-       texture="Lords_Rock.tga"
-       horizontalImages=8
-       verticalImages=4
-       >
-    </tile>
-
-</tileset>
--->
