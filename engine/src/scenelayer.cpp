@@ -166,10 +166,19 @@ cRayTest::cRayTest(const cRay & ray, tSceneEntityList * pEntities)
 
 void cRayTest::operator()(ISceneEntity * pEntity)
 {
-   if (m_ray.IntersectsSphere(pEntity->GetWorldTranslation(), pEntity->GetBoundingRadius()))
+   tResult result = pEntity->Intersects(m_ray);
+
+   if (FAILED(result))
    {
-      pEntity->AddRef();
-      m_pEntities->push_back(pEntity);
+      if (m_ray.IntersectsSphere(pEntity->GetWorldTranslation(), pEntity->GetBoundingRadius()))
+      {
+         result = S_OK;
+      }
+   }
+
+   if (result == S_OK)
+   {
+      m_pEntities->push_back(CTAddRef(pEntity));
    }
 }
 

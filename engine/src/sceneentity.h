@@ -51,6 +51,8 @@ public:
    virtual void Render(IRenderDevice * pRenderDevice);
    virtual float GetBoundingRadius() const;
 
+   virtual tResult Intersects(const cRay & ray);
+
 private:
    ISceneEntity * m_pParent;
    tSceneEntityList m_children;

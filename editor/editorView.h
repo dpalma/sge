@@ -100,6 +100,8 @@ protected:
       virtual void Render(IRenderDevice * pRenderDevice);
       virtual float GetBoundingRadius() const { return 9999999; }
 
+      virtual tResult Intersects(const cRay & ray) { return E_NOTIMPL; }
+
    private:
       tVec3 m_translation;
       tQuat m_rotation;

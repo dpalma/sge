@@ -211,4 +211,14 @@ float cSceneEntity::GetBoundingRadius() const
    return 0;
 }
 
+///////////////////////////////////////
+
+tResult cSceneEntity::Intersects(const cRay & ray)
+{
+   // Returning neither S_OK nor S_FALSE tells the caller to do
+   // a default intersection test using the bounding sphere defined
+   // by GetWorldTranslation and GetBoundingRadius
+   return E_NOTIMPL;
+}
+
 ///////////////////////////////////////////////////////////////////////////////

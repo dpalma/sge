@@ -6,6 +6,8 @@
 #include "groundtiled.h"
 #include "heightmap.h"
 
+#include "ray.h"
+
 #include "render.h"
 #include "material.h"
 #include "textureapi.h"
@@ -257,6 +259,20 @@ void cTerrainNode::Render(IRenderDevice * pRenderDevice)
    {
       m_pGround->Render(pRenderDevice);
    }
+}
+
+///////////////////////////////////////
+
+tResult cTerrainNode::Intersects(const cRay & ray)
+{
+   tVec3 intersect;
+   if (ray.IntersectsPlane(tVec3(0,1,0), 0, &intersect))
+   {
+      DebugMsg3("Hit the ground at approximately (%.1f,%.1f,%.1f)\n",
+         intersect.x, intersect.y, intersect.z);
+   }
+
+   return E_NOTIMPL;
 }
 
 ///////////////////////////////////////

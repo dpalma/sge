@@ -96,6 +96,8 @@ interface ISceneEntity : IUnknown
 
    virtual void Render(IRenderDevice * pRenderDevice) = 0;
    virtual float GetBoundingRadius() const = 0;
+
+   virtual tResult Intersects(const cRay & ray) = 0;
 };
 
 ///////////////////////////////////////

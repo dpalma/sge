@@ -48,6 +48,8 @@ public:
    virtual void Render(IRenderDevice * pRenderDevice);
    virtual float GetBoundingRadius() const;
 
+   virtual tResult Intersects(const cRay & ray) { return m_pSceneEntity->Intersects(ray); }
+
    IMesh * AccessMesh();
 
 private:
