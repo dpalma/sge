@@ -127,17 +127,12 @@ public:
    cScriptAutoAddFunction(const char * pszName, tScriptFn pfn);
 };
 
-#ifdef __GNUC__
-#define PROTOTYPE_SCRIPTFUNCTION(fnName) \
-   extern int (fnName)(int, const cScriptVar *, int, cScriptVar *) __attribute__((used));
-#else
 #define PROTOTYPE_SCRIPTFUNCTION(fnName) \
    extern int (fnName)(int, const cScriptVar *, int, cScriptVar *);
-#endif
 
 #define AUTOADD_SCRIPTFUNCTION(name, pfn) \
    PROTOTYPE_SCRIPTFUNCTION(pfn) \
-   cScriptAutoAddFunction __attribute__((used)) MAKE_UNIQUE(g_auto##name##ScriptFn)(#name, pfn)
+   cScriptAutoAddFunction MAKE_UNIQUE(g_auto##name##ScriptFn)(#name, pfn)
 
 ///////////////////////////////////////////////////////////////////////////////
 
