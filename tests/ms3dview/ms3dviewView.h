@@ -8,8 +8,7 @@
 #include "connptimpl.h"
 #include "window.h"
 #include "vec3.h"
-
-#include "../../editor/afxcomtools.h"
+#include "afxcomtools.h"
 
 #if _MSC_VER > 1000
 #pragma once
