@@ -25,6 +25,8 @@
 
 /////////////////////////////////////////////////////////////////////////////
 
+const uint WM_GET_IEDITORVIEW = RegisterWindowMessage("WM_GET_IEDITORVIEW");
+
 const float kFov = 70;
 const float kZNear = 1;
 const float kZFar = 5000;
@@ -323,6 +325,20 @@ void cEditorView::OnPaint(HDC hDc)
    CPaintDC dc(m_hWnd);
 
    RenderScene();
+}
+
+////////////////////////////////////////
+
+LRESULT cEditorView::OnGetIEditorView(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled)
+{
+   bHandled = TRUE;
+   if (lParam != 0)
+   {
+      *reinterpret_cast<void**>(lParam) = static_cast<IEditorView *>(this);
+      AddRef();
+      return 0;
+   }
+   return -1;
 }
 
 /////////////////////////////////////////////////////////////////////////////

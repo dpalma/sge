@@ -273,6 +273,8 @@ public:
    void Render(tGroups::const_iterator from, tGroups::const_iterator to);
    void Render(const cToolGroup * pGroup);
 
+   int GetTotalHeight() const { return m_totalHeight; }
+
    inline void FlushCachedRects() { m_cachedRects.clear(); }
 
    inline void operator ()(const cToolGroup * pGroup) { Render(pGroup); }
@@ -312,18 +314,24 @@ public:
    DECLARE_WND_CLASS("ToolPalette")
 
    BEGIN_MSG_MAP_EX(cToolPalette)
+      CHAIN_MSG_MAP(tBase)
       CHAIN_MSG_MAP(cTrackMouseEvent<cToolPalette>)
       MSG_WM_CREATE(OnCreate)
       MSG_WM_DESTROY(OnDestroy)
       MSG_WM_SIZE(OnSize)
       MSG_WM_SETFONT(OnSetFont)
-      MSG_WM_ERASEBKGND(OnEraseBkgnd);
-      MSG_WM_PAINT(OnPaint)
+      MSG_WM_ERASEBKGND(OnEraseBkgnd)
       MSG_WM_MOUSELEAVE(OnMouseLeave)
-      MSG_WM_MOUSEMOVE(OnMouseMove)
-      MSG_WM_LBUTTONDOWN(OnLButtonDown)
-      MSG_WM_LBUTTONUP(OnLButtonUp)
-      CHAIN_MSG_MAP(tBase)
+      // Adjust mouse position for scrolling for all mouse messages
+      if (uMsg >= WM_MOUSEFIRST && uMsg <= WM_MOUSELAST)
+      {
+         CPoint ptAdjusted(lParam);
+         ptAdjusted += m_ptOffset;
+         lParam = MAKELPARAM(ptAdjusted.x, ptAdjusted.y);
+         MSG_WM_MOUSEMOVE(OnMouseMove)
+         MSG_WM_LBUTTONDOWN(OnLButtonDown)
+         MSG_WM_LBUTTONUP(OnLButtonUp)
+      }
    END_MSG_MAP()
 
    LRESULT OnCreate(LPCREATESTRUCT lpCreateStruct);
@@ -331,16 +339,21 @@ public:
    void OnSize(UINT nType, CSize size);
    void OnSetFont(HFONT hFont, BOOL bRedraw);
    LRESULT OnEraseBkgnd(CDCHandle dc);
-   void OnPaint(CDCHandle dc);
    void OnMouseLeave();
    void OnMouseMove(UINT flags, CPoint point);
    void OnLButtonDown(UINT flags, CPoint point);
    void OnLButtonUp(UINT flags, CPoint point);
 
+   bool GetMousePos(LPPOINT pMousePos) const;
+
+   // CScrollWindowImpl handles WM_PAINT and delegates to this method
+   void DoPaint(CDCHandle dc);
+
    bool ExclusiveCheck() const;
 
    HTOOLGROUP AddGroup(const tChar * pszGroup, HIMAGELIST hImageList);
    bool RemoveGroup(HTOOLGROUP hGroup);
+   uint GetGroupCount() const;
    HTOOLGROUP FindGroup(const tChar * pszGroup);
    bool IsGroup(HTOOLGROUP hGroup);
    bool IsTool(HTOOLITEM hTool);
@@ -363,6 +376,8 @@ private:
    tGroups m_groups;
 
    cToolPaletteRenderer m_renderer;
+
+   bool m_bUpdateScrollInfo;
 
    CFont m_font;
 

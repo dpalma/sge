@@ -179,7 +179,16 @@ void cToolPaletteBar::OnDefaultTileSetChange(IEditorTileSet * /*pTileSet*/)
    {
       if (m_toolPalette.IsWindow())
       {
-         m_toolPalette.Clear();
+#if 1
+         tToolGroups::iterator iter = m_terrainTileGroups.begin();
+         tToolGroups::iterator end = m_terrainTileGroups.end();
+         for (; iter != end; iter++)
+         {
+            m_toolPalette.RemoveGroup(*iter);
+         }
+#else
+         //m_toolPalette.Clear();
+#endif
       }
       else
       {
@@ -207,6 +216,8 @@ void cToolPaletteBar::OnDefaultTileSetChange(IEditorTileSet * /*pTileSet*/)
 
                   if (hGroup != NULL)
                   {
+                     m_terrainTileGroups.push_back(hGroup);
+
                      for (uint j = 0; j < nTiles; j++)
                      {
                         cAutoIPtr<IEditorTile> pTile;
@@ -246,46 +257,12 @@ LRESULT cToolPaletteBar::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL 
       HTOOLGROUP hStdGroup = m_toolPalette.AddGroup("", hStdImages);
       if (hStdGroup != NULL)
       {
-         HTOOLITEM hTool = m_toolPalette.AddTool(hStdGroup, "Select", 0, NULL);
+         HTOOLITEM hTool = m_toolPalette.AddTool(hStdGroup, "Select", 0, new cMoveCameraTool);
          if (hTool != NULL)
          {
          }
       }
    }
-
-   ////////////////////////////////////////
-   ////////////////////////////////////////
-   // FOR TESTING
-   ////////////////////////////////////////
-#if 1
-   for (int i = 0; i < 3; i++)
-   {
-      tChar szTemp[200];
-      wsprintf(szTemp, "Group %c", 'A' + i);
-      HTOOLGROUP hToolGroup = m_toolPalette.AddGroup(szTemp, NULL);
-      if (hToolGroup != NULL)
-      {
-         int nTools = 3 + (rand() & 3);
-         DebugMsg2("%s has %d tools\n", szTemp, nTools);
-         for (int j = 0; j < nTools; j++)
-         {
-            wsprintf(szTemp, "Tool %d", j);
-            HTOOLITEM hTool = m_toolPalette.AddTool(hToolGroup, szTemp, -1);
-            if (hTool != NULL)
-            {
-               if (j == 1)
-               {
-                  Verify(m_toolPalette.EnableTool(hTool, false));
-               }
-            }
-         }
-      }
-   }
-#endif
-   ////////////////////////////////////////
-   // END TESTING
-   ////////////////////////////////////////
-   ////////////////////////////////////////
 
    UseGlobal(EditorTileManager);
    pEditorTileManager->Connect(this);
@@ -305,6 +282,8 @@ LRESULT cToolPaletteBar::OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
 {
    UseGlobal(EditorTileManager);
    pEditorTileManager->Disconnect(this);
+
+   m_toolPalette.Clear();
 
    return 0;
 }
@@ -335,7 +314,22 @@ LRESULT cToolPaletteBar::OnToolPaletteNotify(int idCtrl, LPNMHDR pnmh, BOOL & bH
       {
          case kTPN_ItemCheck:
          {
-            DebugMsg1("Tool \"%s\" checked\n", tpi.szName);
+            cAutoIPtr<IEditorTool> pEditorTool;
+            if (tpi.pUserData != NULL)
+            {
+               IUnknown * pUnk = reinterpret_cast<IUnknown *>(tpi.pUserData);
+               if (pUnk->QueryInterface(&pEditorTool) == S_OK)
+               {
+                  UseGlobal(EditorApp);
+                  pEditorApp->SetActiveTool(pEditorTool);
+               }
+            }
+
+            if (!pEditorTool)
+            {
+               UseGlobal(EditorApp);
+               pEditorApp->SetActiveTool(NULL);
+            }
             break;
          }
 
@@ -353,8 +347,12 @@ LRESULT cToolPaletteBar::OnToolPaletteNotify(int idCtrl, LPNMHDR pnmh, BOOL & bH
 
          case kTPN_ItemDestroy:
          {
-            // TODO: release/free whatever is in user data
             DebugMsg1("Tool \"%s\" destroyed\n", tpi.szName);
+            if (tpi.pUserData != NULL)
+            {
+               IUnknown * pUnk = reinterpret_cast<IUnknown *>(tpi.pUserData);
+               pUnk->Release();
+            }
             break;
          }
       }

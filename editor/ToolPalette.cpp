@@ -442,6 +442,8 @@ void cToolPaletteRenderer::Render(const cToolGroup * pGroup)
 
          // All size/position calculation done, now draw
 
+         m_dc.FillSolidRect(toolRect, GetSysColor(COLOR_3DFACE));
+
          if (!pTool->IsDisabled())
          {
             if (pTool->IsChecked())
@@ -498,6 +500,11 @@ void cToolPaletteRenderer::Render(const cToolGroup * pGroup)
    }
 
    m_totalHeight = toolRect.top;
+
+   if (m_totalHeight < m_rect.Height())
+   {
+      m_dc.FillSolidRect(m_rect.left, m_totalHeight, m_rect.right, m_rect.bottom, GetSysColor(COLOR_3DFACE));
+   }
 }
 
 ////////////////////////////////////////
@@ -574,7 +581,8 @@ int cToolPaletteRenderer::RenderGroupHeading(CDCHandle dc, LPRECT pRect,
 ////////////////////////////////////////
 
 cToolPalette::cToolPalette()
- : m_hMouseOverItem(NULL),
+ : m_bUpdateScrollInfo(false),
+   m_hMouseOverItem(NULL),
    m_hClickCandidateItem(NULL)
 {
 }
@@ -605,6 +613,7 @@ void cToolPalette::OnDestroy()
 
 void cToolPalette::OnSize(UINT nType, CSize size)
 {
+   m_bUpdateScrollInfo = true;
    m_renderer.FlushCachedRects();
 }
 
@@ -637,42 +646,7 @@ void cToolPalette::OnSetFont(HFONT hFont, BOOL bRedraw)
 
 LRESULT cToolPalette::OnEraseBkgnd(CDCHandle dc)
 {
-   if (!dc.IsNull())
-   {
-      CRect rect;
-      GetClientRect(rect);
-
-      dc.FillSolidRect(rect, GetSysColor(COLOR_3DFACE));
-
-      return TRUE;
-   }
-
-   return FALSE;
-}
-
-////////////////////////////////////////
-
-void cToolPalette::OnPaint(CDCHandle dc)
-{
-   CPaintDC paintDC(m_hWnd);
-
-   CRect rect;
-   GetClientRect(rect);
-
-   const POINT * pMousePos = NULL;
-   CPoint mousePos;
-   if (GetCursorPos(&mousePos) && ::MapWindowPoints(NULL, m_hWnd, &mousePos, 1))
-   {
-      pMousePos = &mousePos;
-   }
-
-   HFONT hOldFont = paintDC.SelectFont(!m_font.IsNull() ? m_font : AtlGetDefaultGuiFont());
-
-   Verify(m_renderer.Begin(paintDC, rect, pMousePos));
-   m_renderer.Render(m_groups.begin(), m_groups.end());
-   Verify(m_renderer.End());
-
-   paintDC.SelectFont(hOldFont);
+   return TRUE;
 }
 
 ////////////////////////////////////////
@@ -718,6 +692,49 @@ void cToolPalette::OnLButtonUp(UINT flags, CPoint point)
 
 ////////////////////////////////////////
 
+bool cToolPalette::GetMousePos(LPPOINT pMousePos) const
+{
+   if (pMousePos != NULL)
+   {
+      if (GetCursorPos(pMousePos) && ::MapWindowPoints(NULL, m_hWnd, pMousePos, 1))
+      {
+         return true;
+      }
+   }
+   return false;
+}
+
+////////////////////////////////////////
+
+void cToolPalette::DoPaint(CDCHandle dc)
+{
+   CRect rect;
+   GetClientRect(rect);
+
+   const POINT * pMousePos = NULL;
+   CPoint mousePos;
+   if (GetMousePos(&mousePos))
+   {
+      pMousePos = &mousePos;
+   }
+
+   HFONT hOldFont = dc.SelectFont(!m_font.IsNull() ? m_font : AtlGetDefaultGuiFont());
+
+   Verify(m_renderer.Begin(dc, rect, pMousePos));
+   m_renderer.Render(m_groups.begin(), m_groups.end());
+   Verify(m_renderer.End());
+
+   dc.SelectFont(hOldFont);
+
+   if (m_bUpdateScrollInfo)
+   {
+      m_bUpdateScrollInfo = false;
+      SetScrollSize(1, m_renderer.GetTotalHeight());
+   }
+}
+
+////////////////////////////////////////
+
 bool cToolPalette::ExclusiveCheck() const
 {
    return (GetStyle() & kTPS_ExclusiveCheck) == kTPS_ExclusiveCheck;
@@ -738,6 +755,7 @@ HTOOLGROUP cToolPalette::AddGroup(const tChar * pszGroup, HIMAGELIST hImageList)
       cToolGroup * pGroup = new cToolGroup(pszGroup, hImageList);
       if (pGroup != NULL)
       {
+         m_bUpdateScrollInfo = true;
          m_groups.push_back(pGroup);
          return reinterpret_cast<HTOOLGROUP>(pGroup);
       }
@@ -767,11 +785,19 @@ bool cToolPalette::RemoveGroup(HTOOLGROUP hGroup)
             delete pRmGroup;
             m_groups.erase(iter);
             m_renderer.FlushCachedRects();
+            m_bUpdateScrollInfo = true;
             return true;
          }
       }
    }
    return false;
+}
+
+////////////////////////////////////////
+
+uint cToolPalette::GetGroupCount() const
+{
+   return m_groups.size();
 }
 
 ////////////////////////////////////////
@@ -844,6 +870,8 @@ void cToolPalette::Clear()
 
    // Still important to let the STL container do any internal cleanup
    m_groups.clear();
+
+   m_bUpdateScrollInfo = true;
 }
 
 ////////////////////////////////////////
@@ -867,6 +895,7 @@ HTOOLITEM cToolPalette::AddTool(HTOOLGROUP hGroup, const sToolPaletteItem * pTPI
       HTOOLITEM hItem = pGroup->AddTool(pTPI->szName, pTPI->iImage, pTPI->pUserData);
       if (hItem != NULL)
       {
+         m_bUpdateScrollInfo = true;
          Invalidate();
          return hItem;
       }
@@ -1021,6 +1050,7 @@ void cToolPalette::DoGroupClick(HTOOLGROUP hGroup, CPoint point)
 {
    cToolGroup * pGroup = reinterpret_cast<cToolGroup *>(hGroup);
    pGroup->ToggleExpandCollapse();
+   m_bUpdateScrollInfo = true;
    RECT rg;
    if (m_renderer.GetItemRect(hGroup, &rg))
    {
@@ -1126,9 +1156,13 @@ LRESULT cToolPalette::DoNotify(cToolItem * pTool, int code, CPoint point)
 class cToolPaletteTests : public CppUnit::TestCase
 {
    CPPUNIT_TEST_SUITE(cToolPaletteTests);
+      CPPUNIT_TEST(TestCallsWithBadHandles);
+      CPPUNIT_TEST(TestAddRemoveGroups);
       CPPUNIT_TEST(Test1);
    CPPUNIT_TEST_SUITE_END();
 
+   void TestCallsWithBadHandles();
+   void TestAddRemoveGroups();
    void Test1();
 
 public:
@@ -1154,6 +1188,69 @@ private:
 ////////////////////////////////////////
 
 CPPUNIT_TEST_SUITE_REGISTRATION(cToolPaletteTests);
+
+////////////////////////////////////////
+
+void cToolPaletteTests::TestCallsWithBadHandles()
+{
+   if (m_pToolPalette == NULL || !m_pToolPalette->IsWindow())
+   {
+      return;
+   }
+
+   std::string s;
+   sToolPaletteItem tpi;
+
+   HTOOLGROUP hBadGroup = (HTOOLGROUP)0xDEADBEEF;
+   HTOOLITEM hBadTool = (HTOOLITEM)0xDEADBEEF;
+
+   CPPUNIT_ASSERT(!m_pToolPalette->RemoveGroup(hBadGroup));
+   CPPUNIT_ASSERT(!m_pToolPalette->IsGroup(hBadGroup));
+   CPPUNIT_ASSERT(!m_pToolPalette->IsTool(hBadTool));
+   CPPUNIT_ASSERT(!m_pToolPalette->AddTool(hBadGroup, "foo", -1));
+   CPPUNIT_ASSERT(!m_pToolPalette->AddTool(hBadGroup, &tpi));
+   CPPUNIT_ASSERT(!m_pToolPalette->GetToolText(hBadTool, &s));
+   CPPUNIT_ASSERT(!m_pToolPalette->GetTool(hBadTool, &tpi));
+   CPPUNIT_ASSERT(!m_pToolPalette->RemoveTool(hBadTool));
+   CPPUNIT_ASSERT(!m_pToolPalette->EnableTool(hBadTool, true));
+}
+
+////////////////////////////////////////
+
+void cToolPaletteTests::TestAddRemoveGroups()
+{
+   if (m_pToolPalette == NULL || !m_pToolPalette->IsWindow())
+   {
+      return;
+   }
+
+   uint i, nGroupsAdd = 10 + (rand() % 90);
+
+   std::vector<HTOOLGROUP> groups;
+
+   for (i = 0; i < nGroupsAdd; i++)
+   {
+      tChar szTemp[200];
+      wsprintf(szTemp, "Group %d", i);
+      HTOOLGROUP hToolGroup = m_pToolPalette->AddGroup(szTemp, NULL);
+      CPPUNIT_ASSERT(hToolGroup != NULL);
+      groups.push_back(hToolGroup);
+   }
+
+   CPPUNIT_ASSERT(m_pToolPalette->GetGroupCount() == nGroupsAdd);
+
+   uint nGroupsRemove = nGroupsAdd - (rand() % (nGroupsAdd / 2));
+   CPPUNIT_ASSERT(nGroupsRemove < nGroupsAdd);
+
+   for (i = 0; i < nGroupsRemove; i++)
+   {
+      int iRemove = rand() % groups.size();
+      CPPUNIT_ASSERT(m_pToolPalette->RemoveGroup(groups[iRemove]));
+      groups.erase(groups.begin() + iRemove);
+   }
+
+   CPPUNIT_ASSERT(m_pToolPalette->GetGroupCount() == (nGroupsAdd - nGroupsRemove));
+}
 
 ////////////////////////////////////////
 

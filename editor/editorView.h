@@ -31,6 +31,8 @@ F_DECLARE_INTERFACE(ISceneCamera);
 // CLASS: cEditorView
 //
 
+extern const uint WM_GET_IEDITORVIEW;
+
 typedef CWinTraitsOR<0, WS_EX_CLIENTEDGE> tEditorViewTraits;
 
 class cEditorView : public CComObjectRoot,
@@ -91,12 +93,14 @@ public:
 	   MSG_WM_DESTROY(OnDestroy)
 	   MSG_WM_SIZE(OnSize)
       MSG_WM_PAINT(OnPaint)
+      MESSAGE_HANDLER(WM_GET_IEDITORVIEW, OnGetIEditorView)
    END_MSG_MAP()
 
    LRESULT OnCreate(LPCREATESTRUCT lpCreateStruct);
    void OnDestroy();
    void OnSize(UINT nType, CSize size);
    void OnPaint(HDC hDc);
+   LRESULT OnGetIEditorView(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
 
 // Overrides
 	// ClassWizard generated virtual function overrides

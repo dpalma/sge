@@ -193,6 +193,9 @@ tResult cEditorApp::Init()
       ErrorMsg("An error occured calling EditorInit()\n");
    }
 
+   CMessageLoop * pMessageLoop = _Module.GetMessageLoop();
+   pMessageLoop->AddMessageFilter(this);
+
 	m_mainWnd.ShowWindow(SW_SHOW);
 	m_mainWnd.UpdateWindow();
 
@@ -207,6 +210,9 @@ tResult cEditorApp::Term()
    {
       m_mainWnd.DestroyWindow();
    }
+
+   CMessageLoop * pMessageLoop = _Module.GetMessageLoop();
+   pMessageLoop->RemoveMessageFilter(this);
 
    return S_OK;
 }
@@ -250,6 +256,12 @@ BOOL cEditorApp::PreTranslateMessage(MSG * pMsg)
          {
             m_pCurrentToolView = CTAddRef(static_cast<IEditorView *>(pEditorView));
          }
+      }
+#else
+      cAutoIPtr<IEditorView> pView;
+      if (SendMessage(pMsg->hwnd, WM_GET_IEDITORVIEW, 0, (LPARAM)&pView) == 0)
+      {
+         m_pCurrentToolView = pView;
       }
 #endif
 

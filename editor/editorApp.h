@@ -20,7 +20,8 @@
 // CLASS: cEditorApp
 //
 
-class cEditorApp : public cGlobalObject<IMPLEMENTS(IEditorApp)>
+class cEditorApp : public cGlobalObject<IMPLEMENTS(IEditorApp)>,
+                   public CMessageFilter
 {
 public:
 	cEditorApp();
