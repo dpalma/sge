@@ -21,6 +21,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+static const int kTilesPerBlock = 6;
+
 /////////////////////////////////////////////////////////////////////////////
 
 sVertexElement g_mapVertexDecl[] =
@@ -41,7 +43,10 @@ uint g_nMapVertexMembers = _countof(g_mapVertexDecl);
 
 cTerrain::cTerrain()
  : m_xDim(0),
-   m_zDim(0)
+   m_zDim(0),
+   m_tileSize(0),
+   m_xBlocks(0),
+   m_zBlocks(0)
 {
 }
 
@@ -53,9 +58,12 @@ cTerrain::~cTerrain()
 
 ////////////////////////////////////////
 
-bool cTerrain::Create(uint xDim, uint zDim, IEditorTileSet * pTileSet,
-                      uint defaultTile, cHeightMap * pHeightMap)
+bool cTerrain::Create(uint xDim, uint zDim, int stepSize,
+                      IEditorTileSet * pTileSet, uint defaultTile,
+                      cHeightMap * pHeightMap)
 {
+   InitializeVertices(xDim, zDim, stepSize, pHeightMap);
+
    Assert(pTileSet != NULL);
 
    cAutoIPtr<IEditorTile> pTile;
@@ -64,7 +72,6 @@ bool cTerrain::Create(uint xDim, uint zDim, IEditorTileSet * pTileSet,
       return false;
    }
 
-   static const int kStepSize = 16;
    static const float kRed = 0.75f, kGreen = 0.75f, kBlue = 0.75f;
 
    uint nTileImages = pTile->GetHorizontalImageCount() * pTile->GetVerticalImageCount();
@@ -80,50 +87,47 @@ bool cTerrain::Create(uint xDim, uint zDim, IEditorTileSet * pTileSet,
    float tileTexWidth = 1.0f / pTile->GetHorizontalImageCount();
    float tileTexHeight = 1.0f / pTile->GetVerticalImageCount();
 
-   uint nQuads = xDim * zDim;
-
-   m_vertices.resize(nQuads * 4);
-
    int index = 0;
 
    float z1 = 0;
-   float z2 = kStepSize;
+   float z2 = stepSize;
 
-   for (int iz = 0; iz < zDim; iz++, z1 += kStepSize, z2 += kStepSize)
+   for (int iz = 0; iz < zDim; iz++, z1 += stepSize, z2 += stepSize)
    {
       float x1 = 0;
-      float x2 = kStepSize;
+      float x2 = stepSize;
 
-      for (int ix = 0; ix < xDim; ix++, x1 += kStepSize, x2 += kStepSize)
+      for (int ix = 0; ix < xDim; ix++, x1 += stepSize, x2 += stepSize)
       {
          uint tile = rand() & (nTileImages - 1);
          uint tileRow = tile / pTile->GetHorizontalImageCount();
          uint tileCol = tile % pTile->GetHorizontalImageCount();
 
-#define Height(xx,zz) ((pHeightMap != NULL) ? pHeightMap->Height(Round(xx),Round(zz)) : 0)
-
          m_vertices[index].uv1 = tVec2(tileCol * tileTexWidth, tileRow * tileTexHeight);
-         m_vertices[index].rgb = tVec3(kRed,kGreen,kBlue);
-         m_vertices[index++].pos = tVec3(x1, Height(x1,z1), z1);
+         m_vertices[index++].rgb = tVec3(kRed,kGreen,kBlue);
 
          m_vertices[index].uv1 = tVec2((tileCol + 1) * tileTexWidth, tileRow * tileTexHeight);
-         m_vertices[index].rgb = tVec3(kRed,kGreen,kBlue);
-         m_vertices[index++].pos = tVec3(x2, Height(x2,z1), z1);
+         m_vertices[index++].rgb = tVec3(kRed,kGreen,kBlue);
 
          m_vertices[index].uv1 = tVec2((tileCol + 1) * tileTexWidth, (tileRow + 1) * tileTexHeight);
-         m_vertices[index].rgb = tVec3(kRed,kGreen,kBlue);
-         m_vertices[index++].pos = tVec3(x2, Height(x2,z2), z2);
+         m_vertices[index++].rgb = tVec3(kRed,kGreen,kBlue);
 
          m_vertices[index].uv1 = tVec2(tileCol * tileTexWidth, (tileRow + 1) * tileTexHeight);
-         m_vertices[index].rgb = tVec3(kRed,kGreen,kBlue);
-         m_vertices[index++].pos = tVec3(x1, Height(x1,z2), z2);
-
-#undef Height
+         m_vertices[index++].rgb = tVec3(kRed,kGreen,kBlue);
       }
    }
 
-   m_xDim = xDim;
-   m_zDim = zDim;
+   m_tileSize = stepSize;
+
+   if (xDim > kTilesPerBlock)
+   {
+      m_xBlocks = xDim / kTilesPerBlock;
+   }
+
+   if (zDim > kTilesPerBlock)
+   {
+      m_zBlocks = zDim / kTilesPerBlock;
+   }
 
    return true;
 }
@@ -147,16 +151,14 @@ void cTerrain::GetDimensions(uint * pxd, uint * pzd) const
 
 void cTerrain::GetExtents(uint * px, uint * pz) const
 {
-   static const int kTerrainStepSize = 16; // TODO HACK hard-coded constant
-
    if (px != NULL)
    {
-      *px = kTerrainStepSize * m_xDim;
+      *px = m_tileSize * m_xDim;
    }
 
    if (pz != NULL)
    {
-      *pz = kTerrainStepSize * m_zDim;
+      *pz = m_tileSize * m_zDim;
    }
 }
 
@@ -172,6 +174,54 @@ const sMapVertex * cTerrain::GetVertexPointer() const
 size_t cTerrain::GetVertexCount() const
 {
    return m_vertices.size();
+}
+
+////////////////////////////////////////
+
+void cTerrain::Render(IRenderDevice * pRenderDevice)
+{
+}
+
+////////////////////////////////////////
+
+void cTerrain::InitializeVertices(uint xDim, uint zDim, int stepSize, cHeightMap * pHeightMap)
+{
+   uint nQuads = xDim * zDim;
+
+   m_vertices.resize(nQuads * 4);
+
+   int index = 0;
+
+   float z1 = 0;
+   float z2 = stepSize;
+
+   for (int iz = 0; iz < zDim; iz++, z1 += stepSize, z2 += stepSize)
+   {
+      float x1 = 0;
+      float x2 = stepSize;
+
+      for (int ix = 0; ix < xDim; ix++, x1 += stepSize, x2 += stepSize)
+      {
+#define Height(xx,zz) ((pHeightMap != NULL) ? pHeightMap->Height(Round(xx),Round(zz)) : 0)
+
+         m_vertices[index++].pos = tVec3(x1, Height(x1,z1), z1);
+         m_vertices[index++].pos = tVec3(x2, Height(x2,z1), z1);
+         m_vertices[index++].pos = tVec3(x2, Height(x2,z2), z2);
+         m_vertices[index++].pos = tVec3(x1, Height(x1,z2), z2);
+
+#undef Height
+      }
+   }
+
+   m_xDim = xDim;
+   m_zDim = zDim;
+}
+
+////////////////////////////////////////
+
+bool cTerrain::CreateTerrainBlocks()
+{
+   return false;
 }
 
 
@@ -252,7 +302,10 @@ BOOL cEditorDoc::OnNewDocument()
       m_pTerrain = new cTerrain;
       if (m_pTerrain != NULL)
       {
-         if (m_pTerrain->Create(mapSettings.GetXDimension(), mapSettings.GetZDimension(), pTileSet, 0, pHeightMap))
+         if (m_pTerrain->Create(mapSettings.GetXDimension(),
+                                mapSettings.GetZDimension(),
+                                kDefaultStepSize,
+                                pTileSet, 0, pHeightMap))
          {
             Assert(!m_pMaterial);
             if (pTileSet->GetMaterial(&m_pMaterial) != S_OK)
@@ -292,13 +345,6 @@ void cEditorDoc::Dump(CDumpContext& dc) const
 
 /////////////////////////////////////////////////////////////////////////////
 // cEditorDoc operations
-
-float cEditorDoc::GetElevation(float nx, float nz) const
-{
-   Assert(m_pHeightMap != NULL);
-   uint size = m_pHeightMap->GetSize() - 1;
-   return m_pHeightMap->Height(Round(nx * size), Round(nz * size));
-}
 
 void cEditorDoc::GetMapDimensions(uint * pXDim, uint * pZDim) const
 {

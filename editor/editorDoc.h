@@ -46,13 +46,15 @@ extern uint g_nMapVertexMembers;
 // generated transition tiles. Not a LOD terrain renderer implementing the
 // ROAM algorithm or anything like that.
 
+const int kDefaultStepSize = 16;
+
 class cTerrain
 {
 public:
    cTerrain();
    ~cTerrain();
 
-   bool Create(uint xDim, uint zDim, IEditorTileSet * pTileSet,
+   bool Create(uint xDim, uint zDim, int stepSize, IEditorTileSet * pTileSet,
       uint defaultTile, cHeightMap * pHeightMap);
 
    void GetDimensions(uint * pxd, uint * pzd) const;
@@ -61,9 +63,21 @@ public:
    const sMapVertex * GetVertexPointer() const;
    size_t GetVertexCount() const;
 
+   void Render(IRenderDevice * pRenderDevice);
+
+protected:
+   void InitializeVertices(uint xDim, uint zDim, int stepSize, cHeightMap * pHeightMap);
+   bool CreateTerrainBlocks();
+
 private:
    uint m_xDim, m_zDim;
+   uint m_tileSize;
+
+   uint m_xBlocks, m_zBlocks; // # of terrain blocks in the x, z directions
+
    std::vector<sMapVertex> m_vertices;
+
+   cAutoIPtr<IMaterial> m_pMaterial;
 };
 
 
@@ -96,9 +110,10 @@ public:
 
    IMaterial * AccessMaterial();
 
+   cTerrain * AccessTerrain();
+
 // Operations
 public:
-   float GetElevation(float nx, float nz) const;
    void GetMapDimensions(uint * pxd, uint * pzd) const;
    void GetMapExtents(uint * px, uint * pz) const;
 
@@ -156,6 +171,13 @@ inline size_t cEditorDoc::GetVertexCount() const
 inline IMaterial * cEditorDoc::AccessMaterial()
 {
    return m_pMaterial;
+}
+
+////////////////////////////////////////
+
+inline cTerrain * cEditorDoc::AccessTerrain()
+{
+   return m_pTerrain;
 }
 
 /////////////////////////////////////////////////////////////////////////////

@@ -268,6 +268,11 @@ void cEditorView::cSceneEntity::Render(IRenderDevice * pRenderDevice)
 	cEditorDoc * pDoc = m_pOuter->GetDocument();
 	ASSERT_VALID(pDoc);
 
+   if (pDoc->AccessTerrain() != NULL)
+   {
+      pDoc->AccessTerrain()->Render(pRenderDevice);
+   }
+
    pRenderDevice->Render(
       kRP_Triangles, 
       pDoc->AccessMaterial(), 
