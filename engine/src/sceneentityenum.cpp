@@ -45,7 +45,9 @@ cSceneEntityEnum::~cSceneEntityEnum()
 tResult cSceneEntityEnum::Next(ulong count, ISceneEntity * * ppEntities, ulong * pnEntities)
 {
    Assert(ppEntities != NULL && pnEntities != NULL);
+
    ulong nReturned = 0;
+
    for (uint i = 0; i < count; i++)
    {
       if (m_iterator == m_entities.end())
@@ -54,13 +56,18 @@ tResult cSceneEntityEnum::Next(ulong count, ISceneEntity * * ppEntities, ulong *
       }
       else
       {
-         *ppEntities = *m_iterator;
-         (*ppEntities)->AddRef();
+         *ppEntities = CTAddRef(*m_iterator);
          nReturned++;
          m_iterator++;
          ppEntities++;
       }
    }
+
+   if (pnEntities != NULL)
+   {
+      *pnEntities = nReturned;
+   }
+
    return (nReturned == count) ? S_OK : S_FALSE;
 }
 
