@@ -31,7 +31,8 @@ ISceneEntity * SceneEntityCreate(IMesh * pMesh)
 ///////////////////////////////////////
 
 cSceneMesh::cSceneMesh(IMesh * pMesh)
- : m_animationTime(0),
+ : m_simClient(this),
+   m_animationTime(0),
    m_boundingSphereRadius(0),
    m_pSceneEntity(SceneEntityCreate()),
    m_pMesh(pMesh)
@@ -82,12 +83,17 @@ void cSceneMesh::Animate(double elapsedTime)
 
 ///////////////////////////////////////
 
-#define GetOuter(Class, Member) ((Class *)((byte *)this - (byte *)&((Class *)NULL)->Member))
+cSceneMesh::cSimClient::cSimClient(cSceneMesh * pOuter)
+ : m_pOuter(pOuter)
+{
+}
+
+///////////////////////////////////////
 
 void cSceneMesh::cSimClient::OnFrame(double elapsedTime)
 {
-   cSceneMesh * pSceneMesh = GetOuter(cSceneMesh, m_simClient);
-   pSceneMesh->Animate(elapsedTime);
+   Assert(m_pOuter != NULL);
+   m_pOuter->Animate(elapsedTime);
 }
 
 ///////////////////////////////////////

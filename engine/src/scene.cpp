@@ -36,7 +36,8 @@ END_CONSTRAINTS()
 ///////////////////////////////////////
 
 cScene::cScene()
- : cGlobalObject<IMPLEMENTS(IScene)>("Scene", CONSTRAINTS())
+ : cGlobalObject<IMPLEMENTS(IScene)>("Scene", CONSTRAINTS()),
+   m_inputListener(this)
 {
 }
 
@@ -247,13 +248,20 @@ tResult cScene::Query(const cRay & ray, ISceneEntityEnum * * ppEnum)
 
 ///////////////////////////////////////
 
+cScene::cInputListener::cInputListener(cScene * pOuter)
+ : m_pOuter(pOuter)
+{
+}
+
+///////////////////////////////////////
+
 bool cScene::cInputListener::OnInputEvent(const sInputEvent * pEvent)
 {
-   cScene * pScene = CTGetOuter(cScene, m_inputListener);
+   Assert(m_pOuter != NULL);
 
-   for (int i = _countof(pScene->m_layers) - 1; i >= 0; i--)
+   for (int i = _countof(m_pOuter->m_layers) - 1; i >= 0; i--)
    {
-      if (pScene->m_layers[i].HandleInputEvent(pEvent))
+      if (m_pOuter->m_layers[i].HandleInputEvent(pEvent))
       {
          return true;
       }

@@ -118,7 +118,8 @@ cEditorView::cEditorView()
  : m_mouseAction(kNone),
    m_center(0,0,0),
    m_eye(0,0,0),
-   m_nIndices(0)
+   m_nIndices(0),
+   m_sceneEntity(this)
 {
 }
 
@@ -244,8 +245,9 @@ cEditorDoc* cEditorView::GetDocument() // non-debug version is inline
 
 ////////////////////////////////////////
 
-cEditorView::cSceneEntity::cSceneEntity()
- : m_translation(0,0,0),
+cEditorView::cSceneEntity::cSceneEntity(cEditorView * pOuter)
+ : m_pOuter(pOuter),
+   m_translation(0,0,0),
    m_rotation(0,0,0,1)
 {
    m_transform.Identity();
@@ -261,18 +263,18 @@ cEditorView::cSceneEntity::~cSceneEntity()
 
 void cEditorView::cSceneEntity::Render(IRenderDevice * pRenderDevice)
 {
-   cEditorView * pEditorView = CTGetOuter(cEditorView, m_sceneEntity);
+   Assert(m_pOuter != NULL);
 
-	cEditorDoc * pDoc = pEditorView->GetDocument();
+	cEditorDoc * pDoc = m_pOuter->GetDocument();
 	ASSERT_VALID(pDoc);
 
    pRenderDevice->Render(
       kRP_Triangles, 
       pDoc->AccessMaterial(), 
-      pEditorView->m_nIndices, 
-      pEditorView->m_pIndexBuffer,
+      m_pOuter->m_nIndices, 
+      m_pOuter->m_pIndexBuffer,
       0, 
-      pEditorView->m_pVertexBuffer);
+      m_pOuter->m_pVertexBuffer);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -319,7 +321,7 @@ void cEditorView::OnDestroy()
    pScene->RemoveEntity(kSL_Terrain, &m_sceneEntity);
 
    Assert(AccessEditorApp() != NULL);
-   Verify(AccessEditorApp()->RemoveLoopClient(this) == S_OK);
+   AccessEditorApp()->RemoveLoopClient(this);
 
    SafeRelease(m_pCamera);
    SafeRelease(m_pRenderDevice);

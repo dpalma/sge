@@ -248,7 +248,7 @@ void cGUITextSelection::Paste()
 
 cGUITextEditElement::cGUITextEditElement()
  : m_text(""),
-   m_editSize(-1),
+   m_editSize(~0),
    m_selection(&m_text)
 {
 }
@@ -560,7 +560,8 @@ static const uint kDefaultEditSize = 20;
 ///////////////////////////////////////
 
 cGUITextEditStatelessRenderer::cGUITextEditStatelessRenderer()
- : m_timeLastBlink(0),
+ : m_inputListener(this),
+   m_timeLastBlink(0),
    m_bCursorBlinkOn(true),
    m_bCursorForceOn(false)
 {
@@ -716,25 +717,32 @@ tGUISize cGUITextEditStatelessRenderer::GetPreferredSize(IGUIElement * pElement)
 
 ///////////////////////////////////////
 
+cGUITextEditStatelessRenderer::cInputListener::cInputListener(cGUITextEditStatelessRenderer * pOuter)
+ : m_pOuter(pOuter)
+{
+}
+
+///////////////////////////////////////
+
 bool cGUITextEditStatelessRenderer::cInputListener::OnInputEvent(const sInputEvent * pEvent)
 {
-   cGUITextEditStatelessRenderer * pOuter = CTGetOuter(cGUITextEditStatelessRenderer, m_inputListener);
+   Assert(m_pOuter != NULL);
 
    if (!KeyIsMouse(pEvent->key))
    {
       if (pEvent->down)
       {
          // Attempt to keep the cursor visible while the user is holding down a key
-         pOuter->m_bCursorForceOn = 
+         m_pOuter->m_bCursorForceOn = 
             (pEvent->key != kCtrl) && 
             (pEvent->key != kLShift) && 
             (pEvent->key != kRShift);
       }
       else
       {
-         pOuter->m_bCursorForceOn = false;
-         pOuter->m_bCursorBlinkOn = true;
-         pOuter->m_timeLastBlink = pEvent->time;
+         m_pOuter->m_bCursorForceOn = false;
+         m_pOuter->m_bCursorBlinkOn = true;
+         m_pOuter->m_timeLastBlink = pEvent->time;
       }
    }
 

@@ -82,7 +82,7 @@ protected:
    class cSceneEntity : public cComObject<IMPLEMENTS(ISceneEntity)>
    {
    public:
-      cSceneEntity();
+      cSceneEntity(cEditorView * pOuter);
       virtual ~cSceneEntity();
 
       virtual ISceneEntity * AccessParent() { return NULL; }
@@ -107,6 +107,7 @@ protected:
       virtual tResult Intersects(const cRay & ray) { return E_NOTIMPL; }
 
    private:
+      cEditorView * m_pOuter;
       tVec3 m_translation;
       tQuat m_rotation;
       tMatrix4 m_transform;

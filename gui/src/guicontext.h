@@ -61,6 +61,9 @@ private:
 
    class cInputListener : public cComObject<IMPLEMENTS(IInputListener)>
    {
+      friend class cGUIContext;
+      cGUIContext * m_pOuter;
+      cInputListener(cGUIContext * pOuter);
       virtual bool OnInputEvent(const sInputEvent * pEvent);
    };
 

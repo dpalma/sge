@@ -49,10 +49,6 @@ ulong SafeRelease(T & p)
 
 #define CTAddRef(p) (((p) != NULL) ? ((p)->AddRef(), (p)) : (p))
 
-///////////////////////////////////////
-
-#define CTGetOuter(Class, Member) ((Class *)((byte *)this - offsetof(Class, Member)))
-
 ///////////////////////////////////////////////////////////////////////////////
 
 inline bool CTIsSameObject(IUnknown * pUnk1, IUnknown * pUnk2)

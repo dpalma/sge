@@ -59,9 +59,9 @@ private:
 
    class cSimClient : public cComObject<IMPLEMENTS(ISimClient)>
    {
-      void CDECL operator delete(void *) { Assert(!"Should never be called"); }
+      cSceneMesh * m_pOuter;
    public:
-      virtual void DeleteThis() { /* do not delete */ }
+      cSimClient(cSceneMesh * pOuter);
       virtual void OnFrame(double elapsedTime);
    };
 

@@ -44,8 +44,9 @@ private:
 
    class cWindowSink : public cComObject<IMPLEMENTS(IWindowSink)>
    {
-      virtual void DeleteThis() { Assert(!"Should never be called"); }
+      cInput * m_pOuter;
    public:
+      cWindowSink(cInput * pOuter);
       virtual void OnKeyEvent(long key, bool down, double time);
       virtual void OnMouseEvent(int x, int y, uint mouseState, double time);
       virtual void OnDestroy(double time) {}

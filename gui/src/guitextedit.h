@@ -152,6 +152,9 @@ public:
 private:
    class cInputListener : public cComObject<IMPLEMENTS(IInputListener)>
    {
+      friend class cGUITextEditStatelessRenderer;
+      cGUITextEditStatelessRenderer * m_pOuter;
+      cInputListener(cGUITextEditStatelessRenderer * pOuter);
       virtual bool OnInputEvent(const sInputEvent * pEvent);
    };
 

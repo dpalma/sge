@@ -41,6 +41,7 @@ END_CONSTRAINTS()
 
 cGUIContext::cGUIContext()
  : tBaseClass("GUIContext", CONSTRAINTS()),
+   m_inputListener(this),
    m_bNeedLayout(false)
 #ifdef _DEBUG
    , m_bShowDebugInfo(false)
@@ -420,10 +421,17 @@ bool cGUIContext::HandleInputEvent(const sInputEvent * pEvent)
 
 ///////////////////////////////////////
 
+cGUIContext::cInputListener::cInputListener(cGUIContext * pOuter)
+ : m_pOuter(pOuter)
+{
+}
+
+///////////////////////////////////////
+
 bool cGUIContext::cInputListener::OnInputEvent(const sInputEvent * pEvent)
 {
-   cGUIContext * pOuter = CTGetOuter(cGUIContext, m_inputListener);
-   return pOuter->HandleInputEvent(pEvent);
+   Assert(m_pOuter != NULL);
+   return m_pOuter->HandleInputEvent(pEvent);
 }
 
 ///////////////////////////////////////

@@ -59,7 +59,8 @@ extern long Name2Key(const char * pszKeyName); // from cmds.cpp
 ///////////////////////////////////////
 
 cInput::cInput()
- : m_oldMouseState(0)
+ : m_windowSink(this),
+   m_oldMouseState(0)
 {
    memset(m_keyRepeats, 0, sizeof(m_keyRepeats));
    memset(m_keyDownBindings, 0, sizeof(m_keyDownBindings));
@@ -266,20 +267,25 @@ void cInput::HandleMouseEvent(int x, int y, uint mouseState, double time)
 
 ///////////////////////////////////////
 
-#define GetOuter(Class, Member) ((Class *)((byte *)this - (byte *)&((Class *)NULL)->Member))
+cInput::cWindowSink::cWindowSink(cInput * pOuter)
+ : m_pOuter(pOuter)
+{
+}
+
+///////////////////////////////////////
 
 void cInput::cWindowSink::OnKeyEvent(long key, bool down, double time)
 {
-   cInput * pOuter = GetOuter(cInput, m_windowSink);
-   pOuter->HandleKeyEvent(key, down, time);
+   Assert(m_pOuter != NULL);
+   m_pOuter->HandleKeyEvent(key, down, time);
 }
 
 ///////////////////////////////////////
 
 void cInput::cWindowSink::OnMouseEvent(int x, int y, uint mouseState, double time)
 {
-   cInput * pOuter = GetOuter(cInput, m_windowSink);
-   pOuter->HandleMouseEvent(x, y, mouseState, time);
+   Assert(m_pOuter != NULL);
+   m_pOuter->HandleMouseEvent(x, y, mouseState, time);
 }
 
 ///////////////////////////////////////

@@ -47,8 +47,9 @@ public:
 private:
    class cInputListener : public cComObject<cDefaultInputListener, &IID_IInputListener>
    {
-      void CDECL operator delete(void *) { Assert(!"Should never be called"); }
-   public:
+      friend class cScene;
+      cScene * m_pOuter;
+      cInputListener(cScene * pOuter);
       virtual bool OnInputEvent(const sInputEvent * pEvent);
    };
 
