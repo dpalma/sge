@@ -137,6 +137,11 @@ tResult cEditorApp::Init()
 
 tResult cEditorApp::Term()
 {
+	if (m_mainWnd.IsWindow())
+   {
+      m_mainWnd.DestroyWindow();
+   }
+
    return S_OK;
 }
 
@@ -714,6 +719,9 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/,
       return -1;
    }
 
+   CMessageLoop messageLoop;
+   _Module.AddMessageLoop(&messageLoop);
+
    RegisterGlobalObjects();
    if (FAILED(StartGlobalObjects()))
    {
@@ -725,9 +733,6 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/,
    {
       return -1;
    }
-
-   CMessageLoop messageLoop;
-   _Module.AddMessageLoop(&messageLoop);
 
    int result = messageLoop.Run();
 

@@ -261,16 +261,19 @@ void cEditorView::OnDestroy()
 
 void cEditorView::OnSize(UINT nType, CSize size) 
 {
-   float aspect = (float)size.cx / size.cy;
-
-   if (AccessRenderDevice() != NULL)
+   if (size.cy > 0)
    {
-      AccessRenderDevice()->SetViewportSize(size.cx, size.cy);
-   }
+      float aspect = (float)size.cx / size.cy;
 
-   if (!!m_pCamera)
-   {
-      m_pCamera->SetPerspective(kFov, aspect, kZNear, kZFar);
+      if (AccessRenderDevice() != NULL)
+      {
+         AccessRenderDevice()->SetViewportSize(size.cx, size.cy);
+      }
+
+      if (!!m_pCamera)
+      {
+         m_pCamera->SetPerspective(kFov, aspect, kZNear, kZFar);
+      }
    }
 }
 

@@ -104,6 +104,19 @@ void CMainFrame::OnUpdateViewControlBarMenu(CCmdUI* pCmdUI)
 
 ////////////////////////////////////////
 
+cMainFrame::cMainFrame()
+ : m_pView(NULL)
+{
+}
+
+////////////////////////////////////////
+
+cMainFrame::~cMainFrame()
+{
+}
+
+////////////////////////////////////////
+
 void cMainFrame::CreateDockingWindows()
 {
    static const uint ctrlBarPlacementMap[] =
@@ -120,13 +133,9 @@ void cMainFrame::CreateDockingWindows()
    eControlBarPlacement placement;
 
    uint ctrlBarId = IDW_DOCKINGWINDOW_FIRST + 32;
-
-   const CRect rect(0,0,0,0);
+   uint ctrlBarIndex = 0;
 
    static const DWORD ctrlBarStyle = WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN;
-
-//   const CString ctrlBarWndClass = AfxRegisterWndClass(CS_DBLCLKS,
-//      LoadCursor(NULL, IDC_ARROW), GetSysColorBrush(COLOR_BTNFACE), 0);
 
    std::vector<uint> dockBars;
    HANDLE hIter;
@@ -144,12 +153,12 @@ void cMainFrame::CreateDockingWindows()
          cDockingWindow * pCtrlBar = NULL;
          if (((*factoryFn)(&pCtrlBar) == S_OK) && (pCtrlBar != NULL))
          {
-            // TODO: use ctrlBarId
-		      if (pCtrlBar->Create(m_hWnd, rcDefault, title, ctrlBarStyle))
+		      if (pCtrlBar->Create(m_hWnd, rcDefault, title, ctrlBarStyle, 0, ctrlBarId))
             {
 		         DockWindow(*pCtrlBar, dockwins::CDockingSide(ctrlBarPlacementMap[placement]),
-						         0/*nBar*/,float(0.0)/*fPctPos*/,100/*nWidth*/,100/* nHeight*/);
+						        ctrlBarIndex, 0.0f/*fPctPos*/,100/*nWidth*/,100/* nHeight*/);
                ctrlBarId++;
+               ctrlBarIndex++;
                m_dockingWindows.push_back(pCtrlBar);
             }
             else
@@ -222,6 +231,14 @@ LRESULT cMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
    UIAddToolBar(hWndToolBar);
 
+   if (FAILED(CComObject<cEditorView>::CreateInstance(&m_pView))
+      || !m_pView->CWindowImpl<cEditorView>::Create(m_hWnd, NULL, "",
+      WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS))
+   {
+      ErrorMsg("Error creating view\n");
+      return -1;
+   }
+
    CMessageLoop * pMessageLoop = _Module.GetMessageLoop();
    pMessageLoop->AddIdleHandler(this);
    pMessageLoop->AddMessageFilter(this);
@@ -241,10 +258,33 @@ LRESULT cMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
    tDockingWindows::iterator end = m_dockingWindows.end();
    for (; iter != end; iter++)
    {
+      (*iter)->DestroyWindow();
       delete *iter;
    }
 
    m_dockingWindows.clear();
+
+   if (m_pView != NULL)
+   {
+      m_pView->DestroyWindow();
+//      m_pView->Release();
+   }
+
+   PostQuitMessage(0);
+
+   return 0;
+}
+
+////////////////////////////////////////
+
+LRESULT cMainFrame::OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL & /*bHandled*/)
+{
+   CSize size(lParam);
+
+   if (m_pView != NULL)
+   {
+      m_pView->MoveWindow(0, 0, size.cx, size.cy);
+   }
 
    return 0;
 }
@@ -293,7 +333,7 @@ LRESULT cMainFrame::OnFileRecent(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & 
 
 LRESULT cMainFrame::OnFileExit(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled)
 {
-   PostQuitMessage(0);
+   DestroyWindow();
    return 0;
 }
 
@@ -334,9 +374,9 @@ LRESULT cMainFrame::OnAppAbout(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bH
 
 LRESULT cMainFrame::OnViewControlBar(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled)
 {
-   Assert(id >= ID_VIEW_CONTROL_BAR1);
-   Assert(id < (ID_VIEW_CONTROL_BAR1 + m_dockingWindows.size()));
-   int index = id - ID_VIEW_CONTROL_BAR1;
+   Assert(id >= ID_VIEW_DOCKING_WINDOW1);
+   Assert(id < (ID_VIEW_DOCKING_WINDOW1 + m_dockingWindows.size()));
+   int index = id - ID_VIEW_DOCKING_WINDOW1;
    Assert(m_dockingWindows[index] != NULL);
    // TODO
 //   CControlBar * pCtrlBar = m_ctrlBars[index];

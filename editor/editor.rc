@@ -133,7 +133,7 @@ BEGIN
         MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
         MENUITEM SEPARATOR
-        MENUITEM "Control Bar",                 ID_VIEW_CONTROL_BAR1
+        MENUITEM "Control Bar",                 ID_VIEW_DOCKING_WINDOW1
     END
     POPUP "&Tools"
     BEGIN
@@ -420,22 +420,22 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    ID_VIEW_CONTROL_BAR1    "Show or hide this control bar"
-    ID_VIEW_CONTROL_BAR2    "Show or hide this control bar"
-    ID_VIEW_CONTROL_BAR3    "Show or hide this control bar"
-    ID_VIEW_CONTROL_BAR4    "Show or hide this control bar"
-    ID_VIEW_CONTROL_BAR5    "Show or hide this control bar"
-    ID_VIEW_CONTROL_BAR6    "Show or hide this control bar"
-    ID_VIEW_CONTROL_BAR7    "Show or hide this control bar"
-    ID_VIEW_CONTROL_BAR8    "Show or hide this control bar"
-    ID_VIEW_CONTROL_BAR9    "Show or hide this control bar"
-    ID_VIEW_CONTROL_BAR10   "Show or hide this control bar"
-    ID_VIEW_CONTROL_BAR11   "Show or hide this control bar"
-    ID_VIEW_CONTROL_BAR12   "Show or hide this control bar"
-    ID_VIEW_CONTROL_BAR13   "Show or hide this control bar"
-    ID_VIEW_CONTROL_BAR14   "Show or hide this control bar"
-    ID_VIEW_CONTROL_BAR15   "Show or hide this control bar"
-    ID_VIEW_CONTROL_BAR16   "Show or hide this control bar"
+    ID_VIEW_DOCKING_WINDOW1    "Show or hide this control bar"
+    ID_VIEW_DOCKING_WINDOW2    "Show or hide this control bar"
+    ID_VIEW_DOCKING_WINDOW3    "Show or hide this control bar"
+    ID_VIEW_DOCKING_WINDOW4    "Show or hide this control bar"
+    ID_VIEW_DOCKING_WINDOW5    "Show or hide this control bar"
+    ID_VIEW_DOCKING_WINDOW6    "Show or hide this control bar"
+    ID_VIEW_DOCKING_WINDOW7    "Show or hide this control bar"
+    ID_VIEW_DOCKING_WINDOW8    "Show or hide this control bar"
+    ID_VIEW_DOCKING_WINDOW9    "Show or hide this control bar"
+    ID_VIEW_DOCKING_WINDOW10   "Show or hide this control bar"
+    ID_VIEW_DOCKING_WINDOW11   "Show or hide this control bar"
+    ID_VIEW_DOCKING_WINDOW12   "Show or hide this control bar"
+    ID_VIEW_DOCKING_WINDOW13   "Show or hide this control bar"
+    ID_VIEW_DOCKING_WINDOW14   "Show or hide this control bar"
+    ID_VIEW_DOCKING_WINDOW15   "Show or hide this control bar"
+    ID_VIEW_DOCKING_WINDOW16   "Show or hide this control bar"
 END
 
 #endif    // English (U.S.) resources

@@ -38,11 +38,15 @@ class cMainFrame : public dockwins::CDockingFrameImpl<cMainFrame>,
    };
 
 public:
+   cMainFrame();
+   ~cMainFrame();
+
    DECLARE_FRAME_WND_CLASS(NULL, IDR_MAINFRAME);
 
    BEGIN_MSG_MAP_EX(cMainFrame)
       MESSAGE_HANDLER(WM_CREATE, OnCreate)
       MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
+      MESSAGE_HANDLER(WM_SIZE, OnSize)
       COMMAND_ID_HANDLER(ID_FILE_NEW, OnFileNew)
       COMMAND_ID_HANDLER(ID_FILE_OPEN, OnFileOpen)
       COMMAND_ID_HANDLER(ID_FILE_SAVE, OnFileSave)
@@ -53,7 +57,7 @@ public:
       COMMAND_ID_HANDLER(ID_VIEW_STATUS_BAR, OnViewStatusBar)
       COMMAND_ID_HANDLER(ID_TOOLS_UNITTESTRUNNER, OnToolsUnitTestRunner)
       COMMAND_ID_HANDLER(ID_APP_ABOUT, OnAppAbout)
-	   COMMAND_RANGE_HANDLER(ID_VIEW_CONTROL_BAR1, ID_VIEW_CONTROL_BAR16, OnViewControlBar)
+	   COMMAND_RANGE_HANDLER(ID_VIEW_DOCKING_WINDOW1, ID_VIEW_DOCKING_WINDOW16, OnViewControlBar)
       CHAIN_MSG_MAP(tFrameBase)
       CHAIN_MSG_MAP(tUpdateUIBase)
    END_MSG_MAP()
@@ -62,13 +66,14 @@ public:
       //UPDATE_ELEMENT(ID_xxx, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
       UPDATE_ELEMENT(ID_VIEW_TOOLBAR, UPDUI_MENUPOPUP)
       UPDATE_ELEMENT(ID_VIEW_STATUS_BAR, UPDUI_MENUPOPUP)
-	   UPDATE_ELEMENT(ID_VIEW_CONTROL_BAR1, UPDUI_MENUPOPUP)
+	   UPDATE_ELEMENT(ID_VIEW_DOCKING_WINDOW1, UPDUI_MENUPOPUP)
    END_UPDATE_UI_MAP()
 
    void CreateDockingWindows();
 
    LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
    LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
+   LRESULT OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
 
    LRESULT OnFileNew(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled);
    LRESULT OnFileOpen(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled);
@@ -93,6 +98,8 @@ private:
    typedef std::vector<cDockingWindow *> tDockingWindows;
    tDockingWindows m_dockingWindows;
    CString m_dockingWindowViewMenuText;
+
+   CComObject<cEditorView> * m_pView;
 };
 
 /////////////////////////////////////////////////////////////////////////////

@@ -40,19 +40,22 @@ class cEditorView : public CWindowImpl<cEditorView>,
                     public IEditorView,
                     public IEditorLoopClient
 {
-   typedef CWindowImpl<cEditorView> tWindowBase;
    typedef cGLContext<cEditorView> tGLBase;
 
 public:
 	cEditorView();
 	~cEditorView();
 
+   DECLARE_WND_CLASS("cEditorView")
+
+   DECLARE_NOT_AGGREGATABLE(cEditorView)
+
 // Attributes
 	cEditorDoc * GetDocument();
 
 // Operations
 public:
-   inline IRenderDevice * AccessRenderDevice() { return m_pRenderDevice; }
+   IRenderDevice * AccessRenderDevice();
 
    // IWindow
    virtual tResult Create(const sWindowCreateParams * pParams);
@@ -75,13 +78,10 @@ public:
    void RenderScene();
 
    BEGIN_MSG_MAP_EX(cEditorView)
+      CHAIN_MSG_MAP(tGLBase)
 	   MSG_WM_CREATE(OnCreate)
 	   MSG_WM_DESTROY(OnDestroy)
 	   MSG_WM_SIZE(OnSize)
-      CHAIN_MSG_MAP(tGLBase)
-      // TODO: Why getting the ProcessWindowMessage does not take 5 parameters error?
-//      CHAIN_MSG_MAP_ALT(tWindowBase, 0)
-      CHAIN_MSG_MAP(tWindowBase)
    END_MSG_MAP()
 
    LRESULT OnCreate(LPCREATESTRUCT lpCreateStruct);
@@ -165,6 +165,13 @@ private:
 inline cEditorDoc * cEditorView::GetDocument()
 {
    return m_pDocument;
+}
+
+////////////////////////////////////////
+
+inline IRenderDevice * cEditorView::AccessRenderDevice()
+{
+   return m_pRenderDevice;
 }
 
 /////////////////////////////////////////////////////////////////////////////
