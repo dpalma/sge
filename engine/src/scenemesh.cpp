@@ -28,7 +28,8 @@
 
 cSceneMesh::cSceneMesh()
  : m_animationTime(0),
-   m_boundingSphereRadius(0)
+   m_boundingSphereRadius(0),
+   m_pSceneEntity(SceneEntityCreate())
 {
    UseGlobal(Sim);
    pSim->Connect(&m_simClient);

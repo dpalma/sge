@@ -305,6 +305,9 @@
 					RelativePath="src\animation.cpp">
 				</File>
 				<File
+					RelativePath="src\frustum.cpp">
+				</File>
+				<File
 					RelativePath=".\src\mesh.cpp">
 				</File>
 				<File
@@ -315,6 +318,18 @@
 				</File>
 				<File
 					RelativePath="src\ray.cpp">
+				</File>
+				<File
+					RelativePath="src\scene.cpp">
+				</File>
+				<File
+					RelativePath="src\scenecamera.cpp">
+				</File>
+				<File
+					RelativePath="src\sceneentity.cpp">
+				</File>
+				<File
+					RelativePath="src\scenelayer.cpp">
 				</File>
 				<File
 					RelativePath="src\sim.cpp">
@@ -366,6 +381,9 @@
 					RelativePath=".\src\3ds.h">
 				</File>
 				<File
+					RelativePath="src\frustum.h">
+				</File>
+				<File
 					RelativePath=".\src\minigl.h">
 				</File>
 				<File
@@ -373,6 +391,18 @@
 				</File>
 				<File
 					RelativePath="src\ms3dread.h">
+				</File>
+				<File
+					RelativePath="src\scene.h">
+				</File>
+				<File
+					RelativePath="src\scenecamera.h">
+				</File>
+				<File
+					RelativePath="src\sceneentity.h">
+				</File>
+				<File
+					RelativePath="src\scenelayer.h">
 				</File>
 				<File
 					RelativePath=".\src\stdhdr.h">
@@ -396,6 +426,9 @@
 			</File>
 			<File
 				RelativePath="include\ray.h">
+			</File>
+			<File
+				RelativePath="include\sceneapi.h">
 			</File>
 			<File
 				RelativePath="include\sim.h">

@@ -24,6 +24,7 @@ F_DECLARE_INTERFACE(IRenderDevice);
 
 F_DECLARE_INTERFACE(IScene);
 F_DECLARE_INTERFACE(ISceneEntity);
+F_DECLARE_INTERFACE(ISceneCamera);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -45,6 +46,9 @@ interface IScene : IUnknown
 {
    virtual tResult AddEntity(eSceneLayer layer, ISceneEntity * pEntity) = 0;
    virtual tResult RemoveEntity(eSceneLayer layer, ISceneEntity * pEntity) = 0;
+
+   virtual tResult SetCamera(eSceneLayer layer, ISceneCamera * pCamera) = 0;
+   virtual tResult GetCamera(eSceneLayer layer, ISceneCamera * * ppCamera) = 0;
 
    virtual void Clear(eSceneLayer layer) = 0;
    virtual void Clear() = 0;
@@ -86,6 +90,35 @@ interface ISceneEntity : IUnknown
    virtual void Render() = 0;
    virtual float GetBoundingRadius() const = 0;
 };
+
+///////////////////////////////////////
+
+ENGINE_API ISceneEntity * SceneEntityCreate();
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: ISceneCamera
+//
+
+interface ISceneCamera : IUnknown
+{
+   virtual void SetPerspective(float fov, float aspect, float znear, float zfar) = 0;
+   virtual void SetOrtho(float left, float right, float bottom, float top, float znear, float zfar) = 0;
+
+   virtual const tMatrix4 & GetViewMatrix() const = 0;
+   virtual void SetViewMatrix(const tMatrix4 & view) = 0;
+
+   virtual const tMatrix4 & GetProjectionMatrix() const = 0;
+   virtual void SetProjectionMatrix(const tMatrix4 & projection) = 0;
+
+   virtual const tMatrix4 & GetViewProjectionMatrix() const = 0;
+   virtual const tMatrix4 & GetViewProjectionInverseMatrix() const = 0;
+};
+
+///////////////////////////////////////
+
+ENGINE_API ISceneCamera * SceneCameraCreate();
 
 ///////////////////////////////////////////////////////////////////////////////
 

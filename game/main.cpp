@@ -8,7 +8,6 @@
 #include "groundtiled.h"
 #include "input.h"
 #include "sys.h"
-#include "scenecamera.h"
 #include "scenemesh.h"
 #include "script.h"
 #include "cameracontroller.h"
@@ -67,8 +66,8 @@ static const char kszSelIndicatorMesh[] = "arrow.ms3d";
 
 cAutoIPtr<cGameCameraController> g_pGameCameraController;
 
-cSceneCamera * g_pGameCamera = NULL;
-cSceneCamera * g_pUICamera = NULL;
+cAutoIPtr<ISceneCamera> g_pGameCamera;
+cAutoIPtr<ISceneCamera> g_pUICamera;
 
 cAutoIPtr<cTerrainNode> g_pTerrainRoot;
 
@@ -307,16 +306,37 @@ SCRIPT_DEFINE_FUNCTION(quit)
 // CLASS: cUIManagerSceneNode
 //
 
-class cUIManagerSceneNode : public cSceneNode
+class cUIManagerSceneNode : public cComObject<IMPLEMENTS(ISceneEntity)>
 {
 public:
    cUIManagerSceneNode();
    virtual ~cUIManagerSceneNode();
 
+   virtual ISceneEntity * AccessParent() { return m_pSceneEntity->AccessParent(); }
+   virtual tResult SetParent(ISceneEntity * pEntity) { return m_pSceneEntity->SetParent(pEntity); }
+   virtual tResult IsChild(ISceneEntity * pEntity) const { return m_pSceneEntity->IsChild(pEntity); }
+   virtual tResult AddChild(ISceneEntity * pEntity) { return m_pSceneEntity->AddChild(pEntity); }
+   virtual tResult RemoveChild(ISceneEntity * pEntity) { return m_pSceneEntity->RemoveChild(pEntity); }
+
+   virtual const tVec3 & GetLocalTranslation() const { return m_pSceneEntity->GetLocalTranslation(); }
+   virtual void SetLocalTranslation(const tVec3 & translation) { m_pSceneEntity->SetLocalTranslation(translation); }
+   virtual const tQuat & GetLocalRotation() const { return m_pSceneEntity->GetLocalRotation(); }
+   virtual void SetLocalRotation(const tQuat & rotation) { m_pSceneEntity->SetLocalRotation(rotation); }
+   virtual const tMatrix4 & GetLocalTransform() const { return m_pSceneEntity->GetLocalTransform(); }
+
+   virtual const tVec3 & GetWorldTranslation() const { return m_pSceneEntity->GetWorldTranslation(); }
+   virtual const tQuat & GetWorldRotation() const { return m_pSceneEntity->GetWorldRotation(); }
+   virtual const tMatrix4 & GetWorldTransform() const { return m_pSceneEntity->GetWorldTransform(); }
+
    virtual void Render();
+   virtual float GetBoundingRadius() const { return m_pSceneEntity->GetBoundingRadius(); }
+
+private:
+   cAutoIPtr<ISceneEntity> m_pSceneEntity;
 };
 
 cUIManagerSceneNode::cUIManagerSceneNode()
+ : m_pSceneEntity(SceneEntityCreate())
 {
    g_pUIManager = UIManagerCreate();
 }
@@ -474,9 +494,6 @@ bool MainInit(int argc, char * argv[])
    // display is created so that there is a gl context
    InputInit();
 
-   g_pGameCamera = new cSceneCamera;
-   g_pGameCamera->SetPerspective(g_fov, (float)width / height, kZNear, kZFar);
-
    if (ConfigGet("terrain", &temp) == S_OK)
    {
       g_pTerrainRoot = TerrainNodeCreate(temp, kGroundScaleY);
@@ -489,14 +506,19 @@ bool MainInit(int argc, char * argv[])
       return false;
    }
 
-   g_pGameCameraController = new cGameCameraController(g_pGameCamera);
-   g_pGameCameraController->Connect();
-
-   g_pUICamera = new cSceneCamera;
+   g_pUICamera = SceneCameraCreate();
    g_pUICamera->SetOrtho(0, width, height, 0, -99999, 99999);
 
    UseGlobal(Scene);
    pScene->AddEntity(kSL_InGameUI, cAutoIPtr<ISceneEntity>(new cUIManagerSceneNode));
+
+   g_pGameCamera = SceneCameraCreate();
+   g_pGameCamera->SetPerspective(g_fov, (float)width / height, kZNear, kZFar);
+
+   g_pGameCameraController = new cGameCameraController(g_pGameCamera);
+   g_pGameCameraController->Connect();
+
+   pScene->SetCamera(kSL_Terrain, g_pGameCamera);
 
    ScriptCallFunction("GameInit");
 
@@ -538,10 +560,6 @@ void MainTerm()
    if (g_pGameCameraController)
       g_pGameCameraController->Disconnect();
 
-   delete g_pGameCamera, g_pGameCamera = NULL;
-
-   delete g_pUICamera, g_pUICamera = NULL;
-
    StopGlobalObjects();
 }
 
@@ -558,8 +576,6 @@ void MainFrame()
 
    g_pRenderDevice->Clear();
 
-   g_pRenderDevice->SetProjectionMatrix(g_pGameCamera->GetProjectionMatrix());
-   g_pRenderDevice->SetViewMatrix(g_pGameCamera->GetViewMatrix());
    UseGlobal(Scene);
    pScene->Render(g_pRenderDevice);
 

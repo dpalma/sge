@@ -15,6 +15,13 @@
 
 ///////////////////////////////////////
 
+ISceneCamera * SceneCameraCreate()
+{
+   return static_cast<ISceneCamera *>(new cSceneCamera);
+}
+
+///////////////////////////////////////
+
 cSceneCamera::cSceneCamera()
 {
    m_projection.Identity();

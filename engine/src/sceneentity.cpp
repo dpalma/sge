@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "scenenode.h"
+#include "sceneentity.h"
 
 #include <algorithm>
 
@@ -11,12 +11,17 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cSceneNode
+// CLASS: cSceneEntity
 //
+
+ISceneEntity * SceneEntityCreate()
+{
+   return static_cast<ISceneEntity *>(new cSceneEntity);
+}
 
 ///////////////////////////////////////
 
-cSceneNode::cSceneNode()
+cSceneEntity::cSceneEntity()
  : m_pParent(NULL),
    m_localTranslation(0,0,0),
    m_localRotation(0,0,0,1),
@@ -30,7 +35,7 @@ cSceneNode::cSceneNode()
 
 ///////////////////////////////////////
 
-cSceneNode::~cSceneNode()
+cSceneEntity::~cSceneEntity()
 {
    std::for_each(m_children.begin(), m_children.end(), CTInterfaceMethodRef(&IUnknown::Release));
    m_children.clear();
@@ -38,14 +43,14 @@ cSceneNode::~cSceneNode()
 
 ///////////////////////////////////////
 
-ISceneEntity * cSceneNode::AccessParent()
+ISceneEntity * cSceneEntity::AccessParent()
 {
    return m_pParent;
 }
 
 ///////////////////////////////////////
 
-tResult cSceneNode::SetParent(ISceneEntity * pEntity)
+tResult cSceneEntity::SetParent(ISceneEntity * pEntity)
 {
    if (pEntity != NULL)
    {
@@ -60,7 +65,7 @@ tResult cSceneNode::SetParent(ISceneEntity * pEntity)
 
 ///////////////////////////////////////
 
-tResult cSceneNode::IsChild(ISceneEntity * pEntity) const
+tResult cSceneEntity::IsChild(ISceneEntity * pEntity) const
 {
    // TODO: Use some sort of lookup to do this, instead of a linear search
    Assert(pEntity != NULL);
@@ -77,7 +82,7 @@ tResult cSceneNode::IsChild(ISceneEntity * pEntity) const
 
 ///////////////////////////////////////
 
-tResult cSceneNode::AddChild(ISceneEntity * pEntity)
+tResult cSceneEntity::AddChild(ISceneEntity * pEntity)
 {
    if (pEntity != NULL)
    {
@@ -92,7 +97,7 @@ tResult cSceneNode::AddChild(ISceneEntity * pEntity)
 
 ///////////////////////////////////////
 
-tResult cSceneNode::RemoveChild(ISceneEntity * pEntity)
+tResult cSceneEntity::RemoveChild(ISceneEntity * pEntity)
 {
    Assert(pEntity != NULL);
    tSceneEntityList::iterator iter;
@@ -111,7 +116,7 @@ tResult cSceneNode::RemoveChild(ISceneEntity * pEntity)
 
 ///////////////////////////////////////
 
-const tMatrix4 & cSceneNode::GetLocalTransform() const
+const tMatrix4 & cSceneEntity::GetLocalTransform() const
 {
    if (!m_bHaveLocalTransform)
    {
@@ -132,7 +137,7 @@ const tMatrix4 & cSceneNode::GetLocalTransform() const
 
 ///////////////////////////////////////
 
-const tVec3 & cSceneNode::GetWorldTranslation() const
+const tVec3 & cSceneEntity::GetWorldTranslation() const
 {
    if (!m_bHaveWorldTranslation)
    {
@@ -153,7 +158,7 @@ const tVec3 & cSceneNode::GetWorldTranslation() const
 
 ///////////////////////////////////////
 
-const tQuat & cSceneNode::GetWorldRotation() const
+const tQuat & cSceneEntity::GetWorldRotation() const
 {
    if (!m_bHaveWorldRotation)
    {
@@ -174,7 +179,7 @@ const tQuat & cSceneNode::GetWorldRotation() const
 
 ///////////////////////////////////////
 
-const tMatrix4 & cSceneNode::GetWorldTransform() const
+const tMatrix4 & cSceneEntity::GetWorldTransform() const
 {
    if (!m_bHaveWorldTransform)
    {
@@ -195,13 +200,13 @@ const tMatrix4 & cSceneNode::GetWorldTransform() const
 
 ///////////////////////////////////////
 
-void cSceneNode::Render()
+void cSceneEntity::Render()
 {
 }
 
 ///////////////////////////////////////
 
-float cSceneNode::GetBoundingRadius() const
+float cSceneEntity::GetBoundingRadius() const
 {
    return 0;
 }

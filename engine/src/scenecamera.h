@@ -4,6 +4,7 @@
 #ifndef INCLUDED_SCENECAMERA_H
 #define INCLUDED_SCENECAMERA_H
 
+#include "sceneapi.h"
 #include "frustum.h"
 #include "matrix4.h"
 
@@ -16,7 +17,7 @@
 // CLASS: cSceneCamera
 //
 
-class cSceneCamera
+class cSceneCamera : public cComObject<IMPLEMENTS(ISceneCamera)>
 {
    cSceneCamera(const cSceneCamera &);
    const cSceneCamera & operator =(const cSceneCamera &);

@@ -7,11 +7,14 @@ EXTRA_DIST = engine.dsp engine.vcproj include/*.h src/*.h
 
 libengine_la_SOURCES = src/3ds.cpp \
                        src/animation.cpp \
+                       src/frustum.cpp \
                        src/mesh.cpp \
                        src/ms3d.cpp \
                        src/ms3dread.cpp \
                        src/ray.cpp \
                        src/scene.cpp \
+                       src/scenecamera.cpp \
+                       src/scenelayer.cpp \
                        src/sim.cpp \
                        src/skeleton.cpp \
                        src/stdhdr.cpp \

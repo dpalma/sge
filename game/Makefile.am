@@ -12,12 +12,10 @@ game_PLATFORM_SOURCES = syslinux.cpp
 endif
 
 game_SOURCES = cameracontroller.cpp \
-               frustum.cpp \
                groundtiled.cpp \
                heightmap.cpp \
                input.cpp \
                main.cpp \
-               scenecamera.cpp \
                scenemesh.cpp \
                scenenode.cpp \
                script.cpp \

@@ -183,10 +183,6 @@ SOURCE=.\cameracontroller.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\frustum.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\game.rc
 # End Source File
 # Begin Source File
@@ -207,15 +203,7 @@ SOURCE=.\main.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\scenecamera.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\scenemesh.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\scenenode.cpp
 # End Source File
 # Begin Source File
 
@@ -277,10 +265,6 @@ SOURCE=.\cameracontroller.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\frustum.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\gameguids.h
 # End Source File
 # Begin Source File
@@ -305,15 +289,7 @@ SOURCE=.\input.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\scenecamera.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\scenemesh.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\scenenode.h
 # End Source File
 # Begin Source File
 

@@ -218,6 +218,10 @@ SOURCE=.\src\animation.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\frustum.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\mesh.cpp
 # End Source File
 # Begin Source File
@@ -235,6 +239,18 @@ SOURCE=.\src\ray.cpp
 # Begin Source File
 
 SOURCE=.\src\scene.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\scenecamera.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sceneentity.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\scenelayer.cpp
 # End Source File
 # Begin Source File
 
@@ -267,6 +283,10 @@ SOURCE=.\src\3ds.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\frustum.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\ms3d.h
 # End Source File
 # Begin Source File
@@ -276,6 +296,18 @@ SOURCE=.\src\ms3dread.h
 # Begin Source File
 
 SOURCE=.\src\scene.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\scenecamera.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sceneentity.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\scenelayer.h
 # End Source File
 # Begin Source File
 

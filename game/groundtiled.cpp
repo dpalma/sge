@@ -21,8 +21,8 @@ extern IRenderDevice * AccessRenderDevice();
 
 struct sTerrainVertex
 {
-   float u, v;
-   float r, g, b;
+   tVec2 uv;
+   tVec3 rgb;
    tVec3 pos;
 };
 
@@ -32,7 +32,6 @@ sVertexElement g_terrainVertexDecl[] =
    { kVDU_Color, kVDT_Float3 },
    { kVDU_Position, kVDT_Float3 }
 };
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -115,6 +114,9 @@ bool cTiledGround::Init(cHeightMap * pHeightMap)
       float z1 = 0;
       float z2 = kStepSize;
 
+      static const float kTileTexWidth = 1;
+      static const float kTileTexHeight = 1;
+
       for (int iz = 0; iz < kNumQuadsPerSide; iz++, z1 += kStepSize, z2 += kStepSize)
       {
          float x1 = 0;
@@ -122,32 +124,24 @@ bool cTiledGround::Init(cHeightMap * pHeightMap)
 
          for (int ix = 0; ix < kNumQuadsPerSide; ix++, x1 += kStepSize, x2 += kStepSize)
          {
-            pVertexData[index].u = 0;
-            pVertexData[index].v = 0;
-            pVertexData[index].r = kRed;
-            pVertexData[index].g = kGreen;
-            pVertexData[index].b = kBlue;
+            //uint tile = 16 + (Rand() % 16);
+            uint tileRow = 0;//tile % 4;
+            uint tileCol = 0;//tile / 4;
+
+            pVertexData[index].uv = tVec2(tileCol * kTileTexWidth, tileRow * kTileTexHeight);
+            pVertexData[index].rgb = tVec3(kRed,kGreen,kBlue);
             pVertexData[index++].pos = tVec3(x1, pHeightMap->Height(Round(x1),Round(z1)), z1);
 
-            pVertexData[index].u = 1;
-            pVertexData[index].v = 0;
-            pVertexData[index].r = kRed;
-            pVertexData[index].g = kGreen;
-            pVertexData[index].b = kBlue;
+            pVertexData[index].uv = tVec2((tileCol + 1) * kTileTexWidth, tileRow * kTileTexHeight);
+            pVertexData[index].rgb = tVec3(kRed,kGreen,kBlue);
             pVertexData[index++].pos = tVec3(x2, pHeightMap->Height(Round(x2),Round(z1)), z1);
 
-            pVertexData[index].u = 1;
-            pVertexData[index].v = 1;
-            pVertexData[index].r = kRed;
-            pVertexData[index].g = kGreen;
-            pVertexData[index].b = kBlue;
+            pVertexData[index].uv = tVec2((tileCol + 1) * kTileTexWidth, (tileRow + 1) * kTileTexHeight);
+            pVertexData[index].rgb = tVec3(kRed,kGreen,kBlue);
             pVertexData[index++].pos = tVec3(x2, pHeightMap->Height(Round(x2),Round(z2)), z2);
 
-            pVertexData[index].u = 0;
-            pVertexData[index].v = 1;
-            pVertexData[index].r = kRed;
-            pVertexData[index].g = kGreen;
-            pVertexData[index].b = kBlue;
+            pVertexData[index].uv = tVec2(tileCol * kTileTexWidth, (tileRow + 1) * kTileTexHeight);
+            pVertexData[index].rgb = tVec3(kRed,kGreen,kBlue);
             pVertexData[index++].pos = tVec3(x1, pHeightMap->Height(Round(x1),Round(z2)), z2);
          }
       }
@@ -208,7 +202,8 @@ void cTiledGround::Render()
 ///////////////////////////////////////
 
 cTerrainNode::cTerrainNode(cHeightMap * pHeightMap)
- : m_pHeightMap(pHeightMap),
+ : m_pSceneEntity(SceneEntityCreate()),
+   m_pHeightMap(pHeightMap),
    m_pGround(new cTiledGround)
 {
    m_pGround->Init(pHeightMap);

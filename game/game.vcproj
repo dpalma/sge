@@ -322,9 +322,6 @@
 				RelativePath=".\cameracontroller.cpp">
 			</File>
 			<File
-				RelativePath=".\frustum.cpp">
-			</File>
-			<File
 				RelativePath=".\game.rc">
 			</File>
 			<File
@@ -340,13 +337,7 @@
 				RelativePath=".\main.cpp">
 			</File>
 			<File
-				RelativePath=".\scenecamera.cpp">
-			</File>
-			<File
 				RelativePath=".\scenemesh.cpp">
-			</File>
-			<File
-				RelativePath=".\scenenode.cpp">
 			</File>
 			<File
 				RelativePath=".\script.cpp">
@@ -385,39 +376,6 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="1"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\stripify.cpp">
-				<FileConfiguration
-					Name="StaticRelease|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Opt|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="StaticDebug|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -485,9 +443,6 @@
 				RelativePath=".\cameracontroller.h">
 			</File>
 			<File
-				RelativePath=".\frustum.h">
-			</File>
-			<File
 				RelativePath=".\gameguids.h">
 			</File>
 			<File
@@ -506,13 +461,7 @@
 				RelativePath=".\input.h">
 			</File>
 			<File
-				RelativePath=".\scenecamera.h">
-			</File>
-			<File
 				RelativePath=".\scenemesh.h">
-			</File>
-			<File
-				RelativePath=".\scenenode.h">
 			</File>
 			<File
 				RelativePath=".\script.h">
@@ -522,9 +471,6 @@
 			</File>
 			<File
 				RelativePath=".\stdhdr.h">
-			</File>
-			<File
-				RelativePath=".\stripify.h">
 			</File>
 			<File
 				RelativePath=".\sys.h">

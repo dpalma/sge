@@ -4,7 +4,6 @@
 #include "stdhdr.h"
 
 #include "cameracontroller.h"
-#include "scenecamera.h"
 #include "globalobj.h"
 #include "ray.h"
 #include "ggl.h"
@@ -34,7 +33,7 @@ static const float kDefaultSpeed = 50;
 
 ///////////////////////////////////////
 
-cGameCameraController::cGameCameraController(cSceneCamera * pCamera)
+cGameCameraController::cGameCameraController(ISceneCamera * pCamera)
  : m_pitch(kDefaultPitch),
    m_oneOverTangentPitch(0),
    m_elevation(kDefaultElevation),
@@ -42,6 +41,8 @@ cGameCameraController::cGameCameraController(cSceneCamera * pCamera)
    m_velocity(0,0,0),
    m_pCamera(pCamera)
 {
+   if (pCamera != NULL)
+      pCamera->AddRef();
    ConfigGet("view_elevation", &m_elevation);
    ConfigGet("view_pitch", &m_pitch);
    MatrixRotateX(m_pitch, &m_rotation);

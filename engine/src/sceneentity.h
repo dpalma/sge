@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // $Id$
 
-#ifndef INCLUDED_SCENENODE_H
-#define INCLUDED_SCENENODE_H
+#ifndef INCLUDED_SCENEENTITY_H
+#define INCLUDED_SCENEENTITY_H
 
 #include "sceneapi.h"
 
@@ -16,17 +16,17 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cSceneNode
+// CLASS: cSceneEntity
 //
 
-class cSceneNode : public cComObject<IMPLEMENTS(ISceneEntity)>
+class cSceneEntity : public cComObject<IMPLEMENTS(ISceneEntity)>
 {
-   cSceneNode(const cSceneNode &);
-   const cSceneNode & operator =(const cSceneNode &);
+   cSceneEntity(const cSceneEntity &);
+   const cSceneEntity & operator =(const cSceneEntity &);
 
 public:
-   cSceneNode();
-   virtual ~cSceneNode();
+   cSceneEntity();
+   virtual ~cSceneEntity();
 
    virtual ISceneEntity * AccessParent();
    virtual tResult SetParent(ISceneEntity * pEntity);
@@ -69,14 +69,14 @@ private:
 
 ///////////////////////////////////////
 
-inline const tVec3 & cSceneNode::GetLocalTranslation() const
+inline const tVec3 & cSceneEntity::GetLocalTranslation() const
 {
    return m_localTranslation;
 }
 
 ///////////////////////////////////////
 
-inline void cSceneNode::SetLocalTranslation(const tVec3 & translation)
+inline void cSceneEntity::SetLocalTranslation(const tVec3 & translation)
 {
    m_localTranslation = translation;
    m_bHaveLocalTransform = false;
@@ -86,14 +86,14 @@ inline void cSceneNode::SetLocalTranslation(const tVec3 & translation)
 
 ///////////////////////////////////////
 
-inline const tQuat & cSceneNode::GetLocalRotation() const
+inline const tQuat & cSceneEntity::GetLocalRotation() const
 {
    return m_localRotation;
 }
 
 ///////////////////////////////////////
 
-inline void cSceneNode::SetLocalRotation(const tQuat & rotation)
+inline void cSceneEntity::SetLocalRotation(const tQuat & rotation)
 {
    m_localRotation = rotation;
    m_bHaveLocalTransform = false;
@@ -103,4 +103,4 @@ inline void cSceneNode::SetLocalRotation(const tQuat & rotation)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // !INCLUDED_SCENENODE_H
+#endif // !INCLUDED_SCENEENTITY_H

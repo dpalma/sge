@@ -5,9 +5,8 @@
 #define INCLUDED_SCENE_H
 
 #include "sceneapi.h"
+#include "scenelayer.h"
 #include "globalobj.h"
-
-#include <list>
 
 #ifdef _MSC_VER
 #pragma once
@@ -27,7 +26,8 @@ public:
    virtual tResult AddEntity(eSceneLayer layer, ISceneEntity * pEntity);
    virtual tResult RemoveEntity(eSceneLayer layer, ISceneEntity * pEntity);
 
-   tResult HasEntity(ISceneEntity * pEntity) const;
+   virtual tResult SetCamera(eSceneLayer layer, ISceneCamera * pCamera);
+   virtual tResult GetCamera(eSceneLayer layer, ISceneCamera * * ppCamera);
 
    virtual void Clear(eSceneLayer layer);
    virtual void Clear();
@@ -38,6 +38,7 @@ public:
 
 private:
    tSceneEntityList m_entities;
+   cSceneLayer m_layers[kMAXSCENELAYERS];
 };
 
 ///////////////////////////////////////////////////////////////////////////////
