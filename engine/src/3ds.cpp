@@ -45,8 +45,12 @@ VERTEXDECL_BEGIN(g_3dsVertexDecl)
    VERTEXDECL_ELEMENT(kVDU_Position, kVDT_Float3)
 VERTEXDECL_END()
 
-struct s3dsMaterial
+////////////////////////////////////////////////////////////////////////////////
+class c3dsMaterial
 {
+public:
+   c3dsMaterial();
+
    cStr name;
    char szTexture[256];
    float ambient[3];
@@ -57,6 +61,21 @@ struct s3dsMaterial
    float masterScale;
 };
 
+////////////////////////////////////////
+
+c3dsMaterial::c3dsMaterial()
+ : name(""), 
+   shininess(0), 
+   shading(0), 
+   masterScale(0)
+{
+   memset(szTexture, 0, sizeof(szTexture));
+   memset(ambient, 0, sizeof(ambient));
+   memset(diffuse, 0, sizeof(diffuse));
+   memset(specular, 0, sizeof(specular));
+}
+
+////////////////////////////////////////////////////////////////////////////////
 static void CalcVertexNormals(int * pFaces, int nFaces, s3dsVertex * pVerts, int nVerts)
 {
    int i;
@@ -94,7 +113,7 @@ static void CalcVertexNormals(int * pFaces, int nFaces, s3dsVertex * pVerts, int
    }
 }
 
-static IMaterial * MaterialFrom3ds(const s3dsMaterial * p3dsMaterial,
+static IMaterial * MaterialFrom3ds(const c3dsMaterial * p3dsMaterial,
                                    IRenderDevice * pRenderDevice)
 {
    Assert(p3dsMaterial != NULL);
@@ -201,7 +220,7 @@ static bool Load3dsPercentage(IReader * pReader, float * pPercentage)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static void Load3dsTexMap(IReader * pReader, long stop, s3dsMaterial * pMaterial)
+static void Load3dsTexMap(IReader * pReader, long stop, c3dsMaterial * pMaterial)
 {
    s3dsChunkHeader chunk;
 
@@ -230,7 +249,7 @@ static void Load3dsTexMap(IReader * pReader, long stop, s3dsMaterial * pMaterial
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static void Load3dsMaterial(IReader * pReader, long stop, s3dsMaterial * pMaterial)
+static void Load3dsMaterial(IReader * pReader, long stop, c3dsMaterial * pMaterial)
 {
    s3dsChunkHeader chunk;
 
@@ -302,9 +321,7 @@ static void Load3dsMaterial(IReader * pReader, long stop, s3dsMaterial * pMateri
 
 bool Load3dsMaterial(IReader * pReader, long stop, IRenderDevice * pRenderDevice, IMesh * pMesh)
 {
-   s3dsMaterial mat;
-   memset(&mat, 0, sizeof(mat));
-
+   c3dsMaterial mat;
    ::Load3dsMaterial(pReader, stop, &mat);
 
    cAutoIPtr<IMaterial> pMaterial(MaterialFrom3ds(&mat, pRenderDevice));
