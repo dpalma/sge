@@ -3,25 +3,19 @@
 
 #include "stdhdr.h"
 
-#include "minigl.h"
-
 #include "ms3dread.h"
 #include "ms3d.h"
 #include "mesh.h"
 #include "material.h"
 #include "readwriteapi.h"
-#include "str.h"
 #include "vec3.h"
 #include "image.h"
-#include "matrix4.h"
 #include "color.h"
 #include "render.h"
 #include "resmgr.h"
 #include "globalobj.h"
 
-#include <cfloat>
 #include <vector>
-#include <algorithm>
 
 #include "dbgalloc.h" // must be last header
 
@@ -35,178 +29,30 @@ static const char g_MS3D[] = "MS3D000000";
 // when ms3d.h was compiled.
 AssertOnce(sizeof(ms3d_header_t) == 14);
 
+extern ISubMesh * SubMeshCreate(uint nFaces, uint nVertices,
+                                IVertexDeclaration * pVertexDecl,
+                                IRenderDevice * pRenderDevice);
+
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cMs3dMesh
-//
 
-class cMs3dMesh : public cComObject<IMPLEMENTS(IMesh)>
+struct sMs3dVertex
 {
-   cMs3dMesh(const cMs3dMesh &); // private, un-implemented
-   const cMs3dMesh & operator=(const cMs3dMesh &); // private, un-implemented
-
-public:
-   ////////////////////////////////////
-
-   cMs3dMesh();
-   virtual ~cMs3dMesh();
-
-   virtual void GetAABB(tVec3 * pMaxs, tVec3 * pMins) const;
-   virtual void Render(IRenderDevice * pRenderDevice) const;
-   virtual tResult AddMaterial(IMaterial * pMaterial);
-   virtual tResult FindMaterial(const char * pszName, IMaterial * * ppMaterial) const;
-   virtual tResult AddSubMesh(ISubMesh * pSubMesh);
-
-   tResult Read(IRenderDevice * pRenderDevice, IReader * pReader);
-
-private:
-   typedef std::vector<ms3d_vertex_t> tVertices;
-   typedef std::vector<ms3d_triangle_t> tTriangles;
-   typedef std::vector<cMs3dGroup> tGroups;
-   typedef std::vector<IMaterial *> tMaterials;
-   typedef std::vector<cMs3dJoint> tJoints;
-
-   tVertices m_vertices;
-   tTriangles m_triangles;
-   tGroups m_groups;
-   tMaterials m_materials;
-   tJoints m_joints;
-
-   mutable tVec3 m_maxs, m_mins;
-   mutable bool m_bCalculatedAABB;
+   tVec3::value_type u, v;
+   tVec3 normal;
+   tVec3 pos;
 };
 
-cMs3dMesh::cMs3dMesh()
- : m_bCalculatedAABB(false)
+sVertexElement g_ms3dVertexDecl[] =
 {
-}
+   { kVDU_TexCoord, kVDT_Float2 },
+   { kVDU_Normal, kVDT_Float3 },
+   { kVDU_Position, kVDT_Float3 }
+};
 
-static void ForEachRelease(IUnknown * p)
+///////////////////////////////////////////////////////////////////////////////
+
+tResult Ms3dFileRead(IRenderDevice * pRenderDevice, IReader * pReader, IMesh * * ppMesh)
 {
-   p->Release();
-}
-
-cMs3dMesh::~cMs3dMesh()
-{
-   std::for_each(m_materials.begin(), m_materials.end(), ForEachRelease);
-   m_materials.clear();
-}
-
-void cMs3dMesh::GetAABB(tVec3 * pMaxs, tVec3 * pMins) const
-{
-   if (!m_bCalculatedAABB)
-   {
-      m_maxs = tVec3(FLT_MIN, FLT_MIN, FLT_MIN);
-      m_mins = tVec3(FLT_MAX, FLT_MAX, FLT_MAX);
-
-      tVertices::const_iterator iter;
-      for (iter = m_vertices.begin(); iter != m_vertices.end(); iter++)
-      {
-         if (m_maxs.x < iter->vertex[0])
-            m_maxs.x = iter->vertex[0];
-         if (m_mins.x > iter->vertex[0])
-            m_mins.x = iter->vertex[0];
-
-         if (m_maxs.y < iter->vertex[1])
-            m_maxs.y = iter->vertex[1];
-         if (m_mins.y > iter->vertex[1])
-            m_mins.y = iter->vertex[1];
-
-         if (m_maxs.z < iter->vertex[2])
-            m_maxs.z = iter->vertex[2];
-         if (m_mins.z > iter->vertex[2])
-            m_mins.z = iter->vertex[2];
-      }
-
-      m_bCalculatedAABB = true;
-   }
-
-   Assert(pMaxs && pMins);
-   *pMaxs = m_maxs;
-   *pMins = m_mins;
-}
-
-void cMs3dMesh::Render(IRenderDevice * pRenderDevice) const
-{
-   tGroups::const_iterator iter;
-   for (iter = m_groups.begin(); iter != m_groups.end(); iter++)
-   {
-      glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
-
-      if (iter->GetMaterialIndex() > -1)
-      {
-         IMaterial * pMaterial = const_cast<IMaterial *>(m_materials[iter->GetMaterialIndex()]);
-         GlMaterial(pMaterial);
-      }
-
-      glBegin(GL_TRIANGLES);
-
-      for (int i = 0; i < iter->GetNumTriangles(); i++)
-      {
-         const ms3d_triangle_t & tri = m_triangles[iter->GetTriangle(i)];
-
-         glNormal3fv(tri.vertexNormals[0]);
-         glTexCoord2f(tri.s[0], 1.0f - tri.t[0]);
-         glVertex3fv(m_vertices[tri.vertexIndices[0]].vertex);
-
-         glNormal3fv(tri.vertexNormals[1]);
-         glTexCoord2f(tri.s[1], 1.0f - tri.t[1]);
-         glVertex3fv(m_vertices[tri.vertexIndices[1]].vertex);
-
-         glNormal3fv(tri.vertexNormals[2]);
-         glTexCoord2f(tri.s[2], 1.0f - tri.t[2]);
-         glVertex3fv(m_vertices[tri.vertexIndices[2]].vertex);
-      }
-
-      glEnd();
-
-      glPopAttrib();
-   }
-}
-
-tResult cMs3dMesh::AddMaterial(IMaterial * pMaterial)
-{
-   if (pMaterial == NULL || FindMaterial(pMaterial->GetName(), NULL) == S_OK)
-      return E_FAIL;
-   m_materials.push_back(pMaterial);
-   pMaterial->AddRef();
-   return S_OK;
-}
-
-tResult cMs3dMesh::FindMaterial(const char * pszName, IMaterial * * ppMaterial) const
-{
-   if (pszName == NULL || pszName[0] == 0)
-      return E_FAIL;
-   tMaterials::const_iterator iter;
-   for (iter = m_materials.begin(); iter != m_materials.end(); iter++)
-   {
-      if (strcmp(pszName, (*iter)->GetName()) == 0)
-      {
-         if (ppMaterial != NULL)
-         {
-            *ppMaterial = *iter;
-            (*ppMaterial)->AddRef();
-         }
-         return S_OK;
-      }
-   }
-   return S_FALSE;
-}
-
-tResult cMs3dMesh::AddSubMesh(ISubMesh * pSubMesh)
-{
-   // TODO
-   return E_NOTIMPL;
-}
-
-tResult cMs3dMesh::Read(IRenderDevice * pRenderDevice, IReader * pReader)
-{
-   Assert(m_vertices.empty());
-   Assert(m_triangles.empty());
-   Assert(m_groups.empty());
-   Assert(m_materials.empty());
-   Assert(m_joints.empty());
-
    ms3d_header_t header;
    if (pReader->Read(&header, sizeof(header)) != S_OK ||
       memcmp(g_MS3D, header.id, _countof(header.id)) != 0)
@@ -217,8 +63,8 @@ tResult cMs3dMesh::Read(IRenderDevice * pRenderDevice, IReader * pReader)
       || nVertices == 0)
       return E_FAIL;
 
-   m_vertices.resize(nVertices);
-   if (pReader->Read(&m_vertices[0], m_vertices.size() * sizeof(ms3d_vertex_t)) != S_OK)
+   std::vector<ms3d_vertex_t> vertices(nVertices);
+   if (pReader->Read(&vertices[0], vertices.size() * sizeof(ms3d_vertex_t)) != S_OK)
       return E_FAIL;
 
    uint16 nTriangles;
@@ -226,8 +72,8 @@ tResult cMs3dMesh::Read(IRenderDevice * pRenderDevice, IReader * pReader)
       || nTriangles == 0)
       return E_FAIL;
 
-   m_triangles.resize(nTriangles);
-   if (pReader->Read(&m_triangles[0], m_triangles.size() * sizeof(ms3d_triangle_t)) != S_OK)
+   std::vector<ms3d_triangle_t> triangles(nTriangles);
+   if (pReader->Read(&triangles[0], triangles.size() * sizeof(ms3d_triangle_t)) != S_OK)
       return E_FAIL;
 
    uint16 nGroups;
@@ -236,10 +82,10 @@ tResult cMs3dMesh::Read(IRenderDevice * pRenderDevice, IReader * pReader)
 
    uint i;
 
-   m_groups.resize(nGroups);
+   std::vector<cMs3dGroup> groups(nGroups);
    for (i = 0; i < nGroups; i++)
    {
-      if (pReader->Read(&m_groups[i]) != S_OK)
+      if (pReader->Read(&groups[i]) != S_OK)
          return E_FAIL;
    }
 
@@ -247,11 +93,84 @@ tResult cMs3dMesh::Read(IRenderDevice * pRenderDevice, IReader * pReader)
    if (pReader->Read(&nMaterials, sizeof(nMaterials)) != S_OK)
       return E_FAIL;
 
+   std::vector<ms3d_material_t> materials(nMaterials);
+   if (pReader->Read(&materials[0], materials.size() * sizeof(ms3d_material_t)) != S_OK)
+      return E_FAIL;
+
+   std::vector<sMs3dVertex> vertices2(nVertices);
+   for (i = 0; i < nVertices; i++)
+   {
+      vertices2[i].pos = tVec3(vertices[i].vertex);
+   }
+
+   // TODO: A vertex position could have a slightly different normal or 
+   // texture coordinates for each triangle it's shared by. In that case,
+   // the vertex should be duplicated and the indices remapped. For now,
+   // keep a single copy of the vertex and ignore any discrepancies in
+   // the normal or texture coordinates. Seems to work OK.
+   for (i = 0; i < nTriangles; i++)
+   {
+      const ms3d_triangle_t & tri = triangles[i];
+      for (int j = 0; j < 3; j++)
+      {
+         sMs3dVertex * pVertex = &vertices2[tri.vertexIndices[j]];
+         pVertex->normal = tVec3(tri.vertexNormals[j]);
+         pVertex->u = tri.s[j];
+         pVertex->v = 1 - tri.t[j];
+      }
+   }
+
+   cAutoIPtr<IMesh> pMesh = MeshCreate();
+   if (!pMesh)
+   {
+      return E_FAIL;
+   }
+
+   std::vector<cMs3dGroup>::iterator iter;
+   for (iter = groups.begin(); iter != groups.end(); iter++)
+   {
+      cAutoIPtr<IVertexDeclaration> pVertexDecl;
+      if (pRenderDevice->CreateVertexDeclaration(g_ms3dVertexDecl, 
+         _countof(g_ms3dVertexDecl), &pVertexDecl) == S_OK)
+      {
+         cAutoIPtr<ISubMesh> pSubMesh = SubMeshCreate(iter->GetNumTriangles(),
+            vertices2.size(), pVertexDecl, pRenderDevice);
+         if (!!pSubMesh)
+         {
+            pSubMesh->SetMaterialName(materials[iter->GetMaterialIndex()].name);
+
+            sMs3dVertex * pVertexData = NULL;
+            if (pSubMesh->LockVertexBuffer((void * *)&pVertexData) == S_OK)
+            {
+               // TODO: This gives every sub-mesh a copy of the entire top-level
+               // vertex array. Should either be a single shared vertex array,
+               // or each sub-mesh should be given an array of only its relevant 
+               // vertices.
+               memcpy(pVertexData, &vertices2[0], vertices2.size() * sizeof(sMs3dVertex));
+               pSubMesh->UnlockVertexBuffer();
+
+               int * pFaces = NULL;
+               if (pSubMesh->LockIndexBuffer((void**)&pFaces) == S_OK)
+               {
+                  for (int i = 0; i < iter->GetNumTriangles(); i++)
+                  {
+                     const ms3d_triangle_t & tri = triangles[iter->GetTriangle(i)];
+                     pFaces[i * 3 + 0] = tri.vertexIndices[0];
+                     pFaces[i * 3 + 1] = tri.vertexIndices[1];
+                     pFaces[i * 3 + 2] = tri.vertexIndices[2];
+                  }
+                  pSubMesh->UnlockIndexBuffer();
+
+                  pMesh->AddSubMesh(pSubMesh);
+               }
+            }
+         }
+      }
+   }
+
    for (i = 0; i < nMaterials; i++)
    {
-      ms3d_material_t material;
-      if (pReader->Read(&material, sizeof(material)) != S_OK)
-         return E_FAIL;
+      const ms3d_material_t & material = materials[i];
 
       cAutoIPtr<ITexture> pTexture;
 
@@ -276,11 +195,15 @@ tResult cMs3dMesh::Read(IRenderDevice * pRenderDevice, IReader * pReader)
          pMaterial->SetEmissive(cColor(material.emissive));
          pMaterial->SetShininess(material.shininess);
          pMaterial->SetTexture(0, pTexture);
-         AddMaterial(pMaterial);
+         pMesh->AddMaterial(pMaterial);
       }
    }
 
-   Assert(m_materials.size() == nMaterials);
+   if (ppMesh != NULL)
+   {
+      *ppMesh = pMesh;
+      pMesh->AddRef();
+   }
 
    float animationFPS;
    float currentTime;
@@ -292,19 +215,18 @@ tResult cMs3dMesh::Read(IRenderDevice * pRenderDevice, IReader * pReader)
       || pReader->Read(&nJoints, sizeof(nJoints)) != S_OK)
       return E_FAIL;
 
-   m_joints.resize(nJoints);
+   std::vector<cMs3dJoint> joints(nJoints);
    for (i = 0; i < nJoints; i++)
    {
-      if (pReader->Read(&m_joints[i]) != S_OK)
+      if (pReader->Read(&joints[i]) != S_OK)
          break;
 #ifdef _DEBUG
-      m_joints[i].DebugPrint();
+      joints[i].DebugPrint();
 #endif
    }
 
    return S_OK;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -312,16 +234,10 @@ IMesh * LoadMs3d(IRenderDevice * pRenderDevice, IReader * pReader)
 {
    Assert(pReader != NULL);
 
-   cMs3dMesh * pMesh = new cMs3dMesh;
-
-   if (pMesh != NULL)
+   cAutoIPtr<IMesh> pMesh;
+   if (Ms3dFileRead(pRenderDevice, pReader, &pMesh) == S_OK)
    {
-      if (pMesh->Read(pRenderDevice, pReader) != S_OK)
-      {
-         delete pMesh;
-         return NULL;
-      }
-
+      pMesh->AddRef();
       return pMesh;
    }
 

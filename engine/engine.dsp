@@ -244,10 +244,6 @@ SOURCE=.\src\3ds.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\minigl.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\ms3d.h
 # End Source File
 # Begin Source File
