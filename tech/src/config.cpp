@@ -17,8 +17,8 @@
 class cStackConfig : public cConfig
 {
 public:
-   virtual ULONG STDMETHODCALLTYPE AddRef() { return 2; }
-   virtual ULONG STDMETHODCALLTYPE Release() { return 1; }
+   virtual ulong STDMETHODCALLTYPE AddRef() { return 2; }
+   virtual ulong STDMETHODCALLTYPE Release() { return 1; }
 };
 
 cStackConfig g_config;

@@ -363,8 +363,8 @@ bool cGlobalObjectRegistry::LookupByName(const char * pszName, IUnknown * * ppUn
 class cStackGlobalObjectRegistry : public cGlobalObjectRegistry
 {
 public:
-   virtual ULONG STDMETHODCALLTYPE AddRef() { return 2; }
-   virtual ULONG STDMETHODCALLTYPE Release() { return 1; }
+   virtual ulong STDMETHODCALLTYPE AddRef() { return 2; }
+   virtual ulong STDMETHODCALLTYPE Release() { return 1; }
 };
 
 static cStackGlobalObjectRegistry g_globalObjectRegistry;

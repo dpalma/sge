@@ -20,54 +20,58 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Macros for defining COM error codes. Taken from winerror.h.
+// COM error codes. Values should match those in winerror.h.
 //
 
-#ifdef RC_INVOKED
-#define _HRESULT_TYPEDEF_(_sc) _sc
-#else // RC_INVOKED
-#define _HRESULT_TYPEDEF_(_sc) ((HRESULT)_sc)
-#endif // RC_INVOKED
+#undef S_OK
+#undef S_FALSE
+#undef E_UNEXPECTED
+#undef E_NOTIMPL
+#undef E_OUTOFMEMORY
+#undef E_INVALIDARG
+#undef E_NOINTERFACE
+#undef E_POINTER
+#undef E_HANDLE
+#undef E_ABORT
+#undef E_FAIL
+#undef E_ACCESSDENIED
 
-// Windows SDK version of <winerror.h> defines _WINERROR_
-// Cygwin version of <winerror.h> defines _WINERROR_H
-#if !defined(_WINERROR_) && !defined(_WINERROR_H)
-#define S_OK                              ((HRESULT)0x00000000L)
-#define S_FALSE                           ((HRESULT)0x00000001L)
-#define E_UNEXPECTED                      _HRESULT_TYPEDEF_(0x8000FFFFL)
+enum eCOMErrorCode
+{
+   S_OK                              = 0x00000000L,
+   S_FALSE                           = 0x00000001L,
+   E_UNEXPECTED                      = 0x8000FFFFL,
 #if defined(_WIN32) && !defined(_MAC)
-#define E_NOTIMPL                         _HRESULT_TYPEDEF_(0x80004001L)
-#define E_OUTOFMEMORY                     _HRESULT_TYPEDEF_(0x8007000EL)
-#define E_INVALIDARG                      _HRESULT_TYPEDEF_(0x80070057L)
-#define E_NOINTERFACE                     _HRESULT_TYPEDEF_(0x80004002L)
-#define E_POINTER                         _HRESULT_TYPEDEF_(0x80004003L)
-#define E_HANDLE                          _HRESULT_TYPEDEF_(0x80070006L)
-#define E_ABORT                           _HRESULT_TYPEDEF_(0x80004004L)
-#define E_FAIL                            _HRESULT_TYPEDEF_(0x80004005L)
-#define E_ACCESSDENIED                    _HRESULT_TYPEDEF_(0x80070005L)
+   E_NOTIMPL                         = 0x80004001L,
+   E_OUTOFMEMORY                     = 0x8007000EL,
+   E_INVALIDARG                      = 0x80070057L,
+   E_NOINTERFACE                     = 0x80004002L,
+   E_POINTER                         = 0x80004003L,
+   E_HANDLE                          = 0x80070006L,
+   E_ABORT                           = 0x80004004L,
+   E_FAIL                            = 0x80004005L,
+   E_ACCESSDENIED                    = 0x80070005L,
 #else
-#define E_NOTIMPL                         _HRESULT_TYPEDEF_(0x80000001L)
-#define E_OUTOFMEMORY                     _HRESULT_TYPEDEF_(0x80000002L)
-#define E_INVALIDARG                      _HRESULT_TYPEDEF_(0x80000003L)
-#define E_NOINTERFACE                     _HRESULT_TYPEDEF_(0x80000004L)
-#define E_POINTER                         _HRESULT_TYPEDEF_(0x80000005L)
-#define E_HANDLE                          _HRESULT_TYPEDEF_(0x80000006L)
-#define E_ABORT                           _HRESULT_TYPEDEF_(0x80000007L)
-#define E_FAIL                            _HRESULT_TYPEDEF_(0x80000008L)
-#define E_ACCESSDENIED                    _HRESULT_TYPEDEF_(0x80000009L)
+   E_NOTIMPL                         = 0x80000001L,
+   E_OUTOFMEMORY                     = 0x80000002L,
+   E_INVALIDARG                      = 0x80000003L,
+   E_NOINTERFACE                     = 0x80000004L,
+   E_POINTER                         = 0x80000005L,
+   E_HANDLE                          = 0x80000006L,
+   E_ABORT                           = 0x80000007L,
+   E_FAIL                            = 0x80000008L,
+   E_ACCESSDENIED                    = 0x80000009L,
 #endif
-#endif // !_WINERROR_
+};
 
-typedef long HRESULT;
-
-typedef HRESULT tResult;
+typedef long tResult;
 
 // Generic test for success on any status value
 // (non-negative numbers indicate success).
-#define SUCCEEDED(Status) ((HRESULT)(Status) >= 0)
+inline bool SUCCEEDED(tResult result) { return result >= 0; }
 
 // and the inverse
-#define FAILED(Status) ((HRESULT)(Status)<0)
+inline bool FAILED(tResult result) { return result < 0; }
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -147,18 +151,13 @@ typedef struct _GUID
    #define PURE                    __attribute__((stdcall)) = 0
 #endif
 
-#define STDMETHOD(method)       virtual HRESULT STDMETHODCALLTYPE method
-#define STDMETHOD_(type,method) virtual type STDMETHODCALLTYPE method
-
 #ifdef DEFINE_IID_IUNKNOWN
 DEFINE_GUID(IID_IUnknown, 0x00000000, 0x0000, 0x0000, 0xC, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x46);
 #else
 F_DECLARE_GUID(IID_IUnknown);
 #endif
 
-#ifndef NO_ULONG
-typedef unsigned long ULONG;
-#endif
+typedef unsigned long ulong;
 
 #ifndef __IUnknown_INTERFACE_DEFINED__
 #define __IUnknown_INTERFACE_DEFINED__
@@ -169,11 +168,11 @@ interface __declspec(uuid("{00000000-0000-0000-0C00-000000000046}")) IUnknown
 interface IUnknown
 #endif
 {
-   STDMETHOD(QueryInterface)(REFIID riid, void * * ppvObject) PURE;
+   virtual tResult STDMETHODCALLTYPE QueryInterface(REFIID riid, void * * ppvObject) PURE;
 
-   STDMETHOD_(ULONG, AddRef)() PURE;
+   virtual ulong STDMETHODCALLTYPE AddRef() PURE;
 
-   STDMETHOD_(ULONG, Release)() PURE;
+   virtual ulong STDMETHODCALLTYPE Release() PURE;
 };
 
 typedef IUnknown * LPUNKNOWN;

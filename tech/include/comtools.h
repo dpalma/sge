@@ -85,7 +85,7 @@ struct sQIPair
    const IID * pIID;
 };
 
-inline HRESULT CTQueryInterface(const sQIPair * pPairs, int nPairs,
+inline tResult CTQueryInterface(const sQIPair * pPairs, int nPairs,
                                 REFIID iid, void * * ppvObject)
 {
    for (int i = 0; i < nPairs; i++)
@@ -124,18 +124,18 @@ protected:
    {
    }
 
-   HRESULT DoQueryInterface(const sQIPair * pPairs, int nPairs,
+   tResult DoQueryInterface(const sQIPair * pPairs, int nPairs,
                             REFIID iid, void * * ppvObject)
    {
       return CTQueryInterface(pPairs, nPairs, iid, ppvObject);
    }
 
-   ULONG DoAddRef()
+   ulong DoAddRef()
    {
       return ++m_cRef;
    }
 
-   ULONG DoRelease()
+   ulong DoRelease()
    {
       if (--m_cRef)
          return m_cRef;
@@ -154,7 +154,7 @@ protected:
    }
 
 private:
-   ULONG m_cRef;
+   ulong m_cRef;
 };
 
 typedef cNonDelegatingComServices cDefaultComServices;
@@ -178,9 +178,9 @@ class cComObject : public INTRFC, public SERVICES
 {
 public:
    virtual ~cComObject() {}
-   virtual ULONG STDMETHODCALLTYPE AddRef() { return DoAddRef(); }
-   virtual ULONG STDMETHODCALLTYPE Release() { return DoRelease(); }
-   virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid,
+   virtual ulong STDMETHODCALLTYPE AddRef() { return DoAddRef(); }
+   virtual ulong STDMETHODCALLTYPE Release() { return DoRelease(); }
+   virtual tResult STDMETHODCALLTYPE QueryInterface(REFIID iid,
                                                     void * * ppvObject)
    {
       const struct sQIPair pairs[] =
@@ -198,9 +198,9 @@ class cComObject2 : public INTRFC1, public INTRFC2, public SERVICES
 {
 public:
    virtual ~cComObject2() {}
-   virtual ULONG STDMETHODCALLTYPE AddRef() { return DoAddRef(); }
-   virtual ULONG STDMETHODCALLTYPE Release() { return DoRelease(); }
-   virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid,
+   virtual ulong STDMETHODCALLTYPE AddRef() { return DoAddRef(); }
+   virtual ulong STDMETHODCALLTYPE Release() { return DoRelease(); }
+   virtual tResult STDMETHODCALLTYPE QueryInterface(REFIID iid,
                                                     void * * ppvObject)
    {
       const struct sQIPair pairs[] =
@@ -220,9 +220,9 @@ class cComObject3 : public INTRFC1, public INTRFC2, public INTRFC3, public SERVI
 {
 public:
    virtual ~cComObject3() {}
-   virtual ULONG STDMETHODCALLTYPE AddRef() { return DoAddRef(); }
-   virtual ULONG STDMETHODCALLTYPE Release() { return DoRelease(); }
-   virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid,
+   virtual ulong STDMETHODCALLTYPE AddRef() { return DoAddRef(); }
+   virtual ulong STDMETHODCALLTYPE Release() { return DoRelease(); }
+   virtual tResult STDMETHODCALLTYPE QueryInterface(REFIID iid,
                                                     void * * ppvObject)
    {
       const struct sQIPair pairs[] =
@@ -244,9 +244,9 @@ class cComObject4 : public INTRFC1, public INTRFC2, public INTRFC3, public INTRF
 {
 public:
    virtual ~cComObject4() {}
-   virtual ULONG STDMETHODCALLTYPE AddRef() { return DoAddRef(); }
-   virtual ULONG STDMETHODCALLTYPE Release() { return DoRelease(); }
-   virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid,
+   virtual ulong STDMETHODCALLTYPE AddRef() { return DoAddRef(); }
+   virtual ulong STDMETHODCALLTYPE Release() { return DoRelease(); }
+   virtual tResult STDMETHODCALLTYPE QueryInterface(REFIID iid,
                                                     void * * ppvObject)
    {
       const struct sQIPair pairs[] =

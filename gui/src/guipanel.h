@@ -25,7 +25,7 @@ public:
    cGUIPanelElement();
    ~cGUIPanelElement();
 
-   virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid,
+   virtual tResult STDMETHODCALLTYPE QueryInterface(REFIID iid,
                                                     void * * ppvObject)
    {
       const struct sQIPair pairs[] =
