@@ -16,7 +16,6 @@ game_SOURCES = cameracontroller.cpp \
                heightmap.cpp \
                main.cpp \
                script.cpp \
-               scriptvm.cpp \
                ui.cpp \
                uievent.cpp \
                uimgr.cpp \
