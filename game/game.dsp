@@ -195,6 +195,18 @@ SOURCE=.\groundtiled.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\guibutton.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\guicontext.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\guifactory.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\heightmap.cpp
 # End Source File
 # Begin Source File
@@ -270,6 +282,26 @@ SOURCE=.\ggl.h
 # Begin Source File
 
 SOURCE=.\groundtiled.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\guiapi.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\guibutton.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\guicontext.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\guifactory.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\guitypes.h
 # End Source File
 # Begin Source File
 

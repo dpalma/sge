@@ -10,6 +10,7 @@
 #include "script.h"
 #include "cameracontroller.h"
 #include "uirender.h"
+#include "guiapi.h"
 
 #include "sceneapi.h"
 #include "mesh.h"
@@ -354,6 +355,8 @@ static void RegisterGlobalObjects()
    ScriptInterpreterCreate();
    UIRenderingToolsCreate();
    TextureManagerCreate();
+   GUIContextCreate();
+   GUIFactoryCreate();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
