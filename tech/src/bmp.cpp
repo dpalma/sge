@@ -6,6 +6,8 @@
 #include "imagedata.h"
 #include "readwriteapi.h"
 
+#include <cstring> // required w/ gcc for memcpy
+
 #include "dbgalloc.h" // must be last header
 
 struct sBmpPaletteEntry
