@@ -39,7 +39,7 @@ ulong SafeRelease(T & p)
    if (!!p)
    {
       ulong result = p->Release();
-      p = NULL;
+      (void * &)p = NULL;
       return result;
    }
    return (ulong)-1;
@@ -213,7 +213,11 @@ public:
 template <class INTERFACE>
 class cAutoIPtr
 {
+#ifdef __GNUC__
+   typedef void * NullType;
+#else
    typedef int NullType;
+#endif
 
 public:
    cAutoIPtr();
