@@ -9,7 +9,7 @@
 #include "ModelTreeInfo.h"
 
 #include "meshapi.h"
-#include "material.h"
+#include "materialapi.h"
 #include "renderapi.h"
 #include "color.h"
 #include "comtools.h"
