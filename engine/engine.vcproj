@@ -329,6 +329,9 @@
 					RelativePath="src\guilabel.cpp">
 				</File>
 				<File
+					RelativePath="src\guilayout.cpp">
+				</File>
+				<File
 					RelativePath="src\guipanel.cpp">
 				</File>
 				<File
@@ -472,6 +475,9 @@
 				</File>
 				<File
 					RelativePath="src\guilabel.h">
+				</File>
+				<File
+					RelativePath="src\guilayout.h">
 				</File>
 				<File
 					RelativePath="src\guipanel.h">
