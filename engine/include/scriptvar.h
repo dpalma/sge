@@ -4,7 +4,7 @@
 #ifndef INCLUDED_SCRIPTVAR_H
 #define INCLUDED_SCRIPTVAR_H
 
-#include "techdll.h"
+#include "enginedll.h"
 
 #ifdef _MSC_VER
 #pragma once

@@ -170,21 +170,6 @@ SCRIPT_DEFINE_FUNCTION(ShowModalDialog)
    return 0;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-
-SCRIPT_DEFINE_FUNCTION(LogEnableChannel)
-{
-   if (ScriptArgc() == 1 && ScriptArgIsString(0))
-   {
-      LogEnableChannel(ScriptArgAsString(0), true);
-   }
-   else if (ScriptArgc() == 2 && ScriptArgIsString(0) && ScriptArgIsNumber(1))
-   {
-      LogEnableChannel(ScriptArgAsString(0), ScriptArgAsNumber(1) ? true : false);
-   }
-   return 0;
-}
-
 
 /////////////////////////////////////////////////////////////////////////////////
 ////
@@ -280,15 +265,6 @@ SCRIPT_DEFINE_FUNCTION(EntitySpawnTest)
       }
    }
 
-   return 0;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-SCRIPT_DEFINE_FUNCTION(quit)
-{
-   SysQuit();
    return 0;
 }
 
@@ -391,6 +367,7 @@ static void RegisterGlobalObjects()
    SimCreate();
    ResourceManagerCreate();
    SceneCreate();
+   ScriptInterpreterCreate();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -417,14 +394,14 @@ bool MainInit(int argc, char * argv[])
    srand(time(NULL));
    SeedRand(time(NULL));
 
-   ScriptInit();
-
    RegisterGlobalObjects();
    if (FAILED(StartGlobalObjects()))
    {
       DebugMsg("One or more application-level services failed to start!\n");
       return false;
    }
+
+   ScriptInit();
 
    if (ConfigGet("data", &temp) == S_OK)
    {

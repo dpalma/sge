@@ -28,7 +28,6 @@ libtech_la_SOURCES = src/comtools.cpp \
                      src/prime.cpp \
                      src/rand.cpp \
                      src/resmgr.cpp \
-                     src/scriptvar.cpp \
                      src/techdebug.cpp \
                      src/techtime.cpp \
                      $(libtech_PLATFORM_SOURCES)

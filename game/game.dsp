@@ -207,10 +207,6 @@ SOURCE=.\script.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\scriptvm.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\stdhdr.cpp
 # ADD CPP /Yc"stdhdr.h"
 # End Source File
@@ -282,10 +278,6 @@ SOURCE=.\heightmap.h
 # Begin Source File
 
 SOURCE=.\script.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\scriptvm.h
 # End Source File
 # Begin Source File
 

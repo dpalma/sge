@@ -19,6 +19,7 @@ libengine_la_SOURCES = src/3ds.cpp \
                        src/sceneentityenum.cpp \
                        src/scenelayer.cpp \
                        src/scenemesh.cpp \
+                       src/scriptvar.cpp \
                        src/sim.cpp \
                        src/skeleton.cpp \
                        src/stdhdr.cpp \

@@ -4,7 +4,8 @@
 #include "stdhdr.h"
 
 #include "script.h"
-#include "scriptvm.h"
+#include "scriptapi.h"
+#include "globalobj.h"
 
 #include <cstdarg>
 
@@ -12,7 +13,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-cScriptMachine g_scriptMachine;
 bool g_bScriptMachineInitialized = false;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -47,12 +47,6 @@ struct sQueuedFunctionsAutoCleanup
 
 void ScriptInit()
 {
-   if (FAILED(g_scriptMachine.Init()))
-   {
-      DebugMsg("WARNING: Error initializing script machine\n");
-      return;
-   }
-
    g_bScriptMachineInitialized = true;
 
    while (g_pQueuedFunctions != NULL)
@@ -69,30 +63,32 @@ void ScriptInit()
 void ScriptTerm()
 {
    g_bScriptMachineInitialized = false;
-   g_scriptMachine.Term();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 bool ScriptExecFile(const char * pszFile)
 {
-   return g_scriptMachine.ExecFile(pszFile) == S_OK;
+   UseGlobal(ScriptInterpreter);
+   return pScriptInterpreter->ExecFile(pszFile) == S_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 bool ScriptExecString(const char * pszCode)
 {
-   return g_scriptMachine.ExecString(pszCode) == S_OK;
+   UseGlobal(ScriptInterpreter);
+   return pScriptInterpreter->ExecString(pszCode) == S_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 void ScriptCallFunction(const char * pszName, const char * pszArgDesc, ...)
 {
+   UseGlobal(ScriptInterpreter);
    va_list args;
    va_start(args, pszArgDesc);
-   g_scriptMachine.CallFunction(pszName, pszArgDesc, args);
+   pScriptInterpreter->CallFunction(pszName, pszArgDesc, args);
    va_end(args);
 }
 
@@ -102,7 +98,8 @@ void ScriptAddFunction(const char * pszName, tScriptFn pfn)
 {
    if (g_bScriptMachineInitialized)
    {
-      g_scriptMachine.AddFunction(pszName, pfn);
+      UseGlobal(ScriptInterpreter);
+      pScriptInterpreter->AddFunction(pszName, pfn);
    }
    else
    {

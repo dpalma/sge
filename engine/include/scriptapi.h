@@ -4,8 +4,8 @@
 #ifndef INCLUDED_SCRIPTAPI_H
 #define INCLUDED_SCRIPTAPI_H
 
+#include "enginedll.h"
 #include "comtools.h"
-#include <cstdarg>
 
 #ifdef _MSC_VER
 #pragma once
@@ -50,9 +50,6 @@ interface IScriptable : IUnknown
 
 interface IScriptInterpreter : IUnknown
 {
-   virtual tResult Init() = 0;
-   virtual void Term() = 0;
-
    virtual tResult ExecFile(const char * pszFile) = 0;
    virtual tResult ExecString(const char * pszCode) = 0;
 
@@ -70,6 +67,8 @@ interface IScriptInterpreter : IUnknown
    virtual tResult RegisterCustomClass(const tChar * pszClassName, IScriptableFactory * pFactory) = 0;
    virtual tResult RevokeCustomClass(const tChar * pszClassName) = 0;
 };
+
+ENGINE_API void ScriptInterpreterCreate();
 
 ///////////////////////////////////////////////////////////////////////////////
 

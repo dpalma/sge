@@ -3,6 +3,7 @@
 
 #include "stdhdr.h"
 
+#include "sys.h"
 #include "script.h"
 #include "scriptvar.h"
 #include "inputapi.h"
@@ -128,6 +129,29 @@ SCRIPT_DEFINE_FUNCTION(unbind)
       pInput->KeyUnbind(Name2Key(ScriptArgv(0).psz));
    }
 
+   return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+SCRIPT_DEFINE_FUNCTION(LogEnableChannel)
+{
+   if (ScriptArgc() == 1 && ScriptArgIsString(0))
+   {
+      LogEnableChannel(ScriptArgAsString(0), true);
+   }
+   else if (ScriptArgc() == 2 && ScriptArgIsString(0) && ScriptArgIsNumber(1))
+   {
+      LogEnableChannel(ScriptArgAsString(0), ScriptArgAsNumber(1) ? true : false);
+   }
+   return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+SCRIPT_DEFINE_FUNCTION(quit)
+{
+   SysQuit();
    return 0;
 }
 

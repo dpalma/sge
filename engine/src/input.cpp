@@ -5,6 +5,7 @@
 
 #include "input.h"
 #include "keys.h"
+#include "scriptapi.h"
 
 #include <cstring>
 #include <cstdlib>
@@ -26,9 +27,8 @@ LOG_DEFINE_CHANNEL(KeyEvent);
 
 static bool ScriptExecString(const char * pszCode)
 {
-   // TODO: Make this work
-   DebugMsg1("TODO: actually execute script code \"%s\"\n", pszCode);
-   return false;
+   UseGlobal(ScriptInterpreter);
+   return (pScriptInterpreter->ExecString(pszCode) == S_OK);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

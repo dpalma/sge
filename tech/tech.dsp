@@ -282,10 +282,6 @@ SOURCE=.\src\resmgr.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\scriptvar.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\stdhdr.cpp
 # ADD CPP /Yc"stdhdr.h"
 # End Source File
@@ -426,14 +422,6 @@ SOURCE=.\include\readwriteapi.h
 # Begin Source File
 
 SOURCE=.\include\resmgr.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\include\scriptapi.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\include\scriptvar.h
 # End Source File
 # Begin Source File
 

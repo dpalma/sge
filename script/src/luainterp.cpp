@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // $Id$
 
-#include "TechDebug.h"
-#include "TechTypes.h"
+#include "stdhdr.h"
+
 #include "luainterp.h"
 #include "scriptvar.h"
 
@@ -24,6 +24,7 @@ extern "C"
 
 ///////////////////////////////////////////////////////////////////////////////
 
+const int kMaxArgs = 16;
 const int kMaxResults = 8;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -65,16 +66,14 @@ static int LuaThunkInvoke(lua_State * L)
    // the name of the method to call is at the top of the stack
    const char * pszMethodName = lua_tostring(L, lua_upvalueindex(1));
 
+   cScriptVar args[kMaxArgs];
+
+   // Subtract one to exclude the "this" pointer while construction
+   // the argument array
    int nArgs = lua_gettop(L) - 1;
 
-#ifdef DBGALLOC_MAPPED
-#undef new
-#endif
-   void * pArgMem = alloca(nArgs * sizeof(cScriptVar));
-   cScriptVar * pArgs = new(pArgMem) cScriptVar[nArgs];
-#ifdef DBGALLOC_MAPPED
-#define new DebugNew
-#endif
+   if (nArgs > kMaxArgs)
+      nArgs = kMaxArgs;
 
    int i, iArg;
    for (i = 0, iArg = -1; i < nArgs; i++, iArg--)
@@ -83,21 +82,21 @@ static int LuaThunkInvoke(lua_State * L)
       {
          case LUA_TNUMBER:
          {
-            pArgs[i].type = kNumber;
-            pArgs[i].d = lua_tonumber(L, iArg);
+            args[i].type = kNumber;
+            args[i].d = lua_tonumber(L, iArg);
             break;
          }
 
          case LUA_TSTRING:
          {
-            pArgs[i].type = kString;
-            pArgs[i].psz = const_cast<char *>(lua_tostring(L, iArg));
+            args[i].type = kString;
+            args[i].psz = const_cast<char *>(lua_tostring(L, iArg));
             break;
          }
 
          default:
          {
-            pArgs[i].type = kEmpty;
+            args[i].type = kEmpty;
             DebugMsg2("Arg %d of unsupported type %s\n", iArg, lua_typename(L, lua_type(L, iArg)));
             break;
          }
@@ -109,7 +108,7 @@ static int LuaThunkInvoke(lua_State * L)
 
    cScriptVar results[kMaxResults];
 
-   tResult result = pScr->Invoke(pszMethodName, nArgs, pArgs, kMaxResults, results);
+   tResult result = pScr->Invoke(pszMethodName, nArgs, args, kMaxResults, results);
 
    if (FAILED(result))
    {
@@ -234,21 +233,16 @@ static int LuaThunkFunction(lua_State * L)
       return 0; // no C function to call
 
    int nArgs = lua_gettop(L);
-   cScriptVar * pArgs = NULL;
+
+   if (nArgs > kMaxArgs)
+      nArgs = kMaxArgs;
 
    cScriptVar results[kMaxResults];
    int result = -1;
 
    if (nArgs > 0)
    {
-#ifdef DBGALLOC_MAPPED
-#undef new
-#endif
-      void * pArgMem = alloca(nArgs * sizeof(cScriptVar));
-      pArgs = new(pArgMem) cScriptVar[nArgs];
-#ifdef DBGALLOC_MAPPED
-#define new DebugNew
-#endif
+      cScriptVar args[kMaxArgs];
 
       for (int i = 0; i < nArgs; i++)
       {
@@ -256,15 +250,15 @@ static int LuaThunkFunction(lua_State * L)
          {
             case LUA_TNUMBER:
             {
-               pArgs[i].type = kNumber;
-               pArgs[i].d = lua_tonumber(L, i + 1);
+               args[i].type = kNumber;
+               args[i].d = lua_tonumber(L, i + 1);
                break;
             }
 
             case LUA_TSTRING:
             {
-               pArgs[i].type = kString;
-               pArgs[i].psz = const_cast<char *>(lua_tostring(L, i + 1));
+               args[i].type = kString;
+               args[i].psz = const_cast<char *>(lua_tostring(L, i + 1));
                break;
             }
 
@@ -285,7 +279,7 @@ static int LuaThunkFunction(lua_State * L)
 
             default:
             {
-               pArgs[i].type = kEmpty;
+               args[i].type = kEmpty;
                break;
             }
          }
@@ -293,7 +287,7 @@ static int LuaThunkFunction(lua_State * L)
 
       lua_pop(L, nArgs);
 
-      result = (*pfn)(nArgs, pArgs, kMaxResults, results);
+      result = (*pfn)(nArgs, args, kMaxResults, results);
    }
    else
    {
@@ -328,6 +322,13 @@ static int LuaThunkFunction(lua_State * L)
 //
 // CLASS: cLuaInterpreter
 //
+
+///////////////////////////////////////
+
+void ScriptInterpreterCreate()
+{
+   cAutoIPtr<IScriptInterpreter> p(new cLuaInterpreter);
+}
 
 ///////////////////////////////////////
 
@@ -376,11 +377,12 @@ tResult cLuaInterpreter::Init()
 
 ///////////////////////////////////////
 
-void cLuaInterpreter::Term()
+tResult cLuaInterpreter::Term()
 {
    if (m_L != NULL)
       lua_close(m_L);
    m_L = NULL;
+   return S_OK;
 }
 
 ///////////////////////////////////////
@@ -833,6 +835,8 @@ private:
       CPPUNIT_ASSERT(g_foo == 3.1415);
 
       CPPUNIT_ASSERT(m_pInterp->RevokeCustomClass("foo") == S_OK);
+
+      CPPUNIT_ASSERT(m_pInterp->ExecString("f = foo(); f:SetFoo(99);") != S_OK);
    }
 
    void TestCustomClass2()
@@ -863,13 +867,11 @@ public:
    virtual void setUp()
    {
       CPPUNIT_ASSERT(!m_pInterp);
-      m_pInterp = new cLuaInterpreter;
-      CPPUNIT_ASSERT(m_pInterp->Init() == S_OK);
+      m_pInterp = (IScriptInterpreter *)FindGlobalObject(IID_IScriptInterpreter);
    }
 
    virtual void tearDown()
    {
-      m_pInterp->Term();
       SafeRelease(m_pInterp);
    }
 };

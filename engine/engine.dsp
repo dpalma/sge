@@ -46,7 +46,7 @@ CFG=engine - Win32 StaticDebug
 F90=df.exe
 CPP=cl.exe
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "ENGINE_EXPORTS" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I ".\include" /I "..\tech\include" /I "..\render\include" /D "NDEBUG" /D "_USRDLL" /D "ENGINE_EXPORTS" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "STRICT" /Yu"stdhdr.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /I ".\include" /I "..\tech\include" /I "..\render\include" /I "..\3rdparty\lua\include" /D "NDEBUG" /D "_USRDLL" /D "ENGINE_EXPORTS" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "STRICT" /Yu"stdhdr.h" /FD /c
 # SUBTRACT CPP /Fr
 MTL=midl.exe
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
@@ -59,7 +59,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winmm.lib opengl32.lib /nologo /dll /map:"..\Build\Release/engine.map" /machine:I386 /opt:ref
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winmm.lib opengl32.lib $(OutDir)\lua.lib /nologo /dll /map:"..\Build\Release/engine.map" /machine:I386 /opt:ref
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "engine - Win32 Debug"
@@ -78,7 +78,7 @@ LINK32=link.exe
 F90=df.exe
 CPP=cl.exe
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "ENGINE_EXPORTS" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\3rdparty\cppunit\include" /I ".\include" /I "..\tech\include" /I "..\render\include" /D "_DEBUG" /D "_USRDLL" /D "ENGINE_EXPORTS" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "STRICT" /D "HAVE_CPPUNIT" /Yu"stdhdr.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\3rdparty\cppunit\include" /I ".\include" /I "..\tech\include" /I "..\render\include" /I "..\3rdparty\lua\include" /D "_DEBUG" /D "_USRDLL" /D "ENGINE_EXPORTS" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "STRICT" /D "HAVE_CPPUNIT" /Yu"stdhdr.h" /FD /GZ /c
 # SUBTRACT CPP /Fr
 MTL=midl.exe
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
@@ -91,7 +91,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 $(OutDir)\cppunit.lib kernel32.lib user32.lib gdi32.lib winmm.lib opengl32.lib /nologo /dll /map:"..\Build\Debug/engine.map" /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 $(OutDir)\cppunit.lib kernel32.lib user32.lib gdi32.lib winmm.lib opengl32.lib $(OutDir)\lua.lib /nologo /dll /map:"..\Build\Debug/engine.map" /debug /machine:I386 /pdbtype:sept
 # SUBTRACT LINK32 /profile
 
 !ELSEIF  "$(CFG)" == "engine - Win32 Opt"
@@ -111,7 +111,7 @@ LINK32=link.exe
 F90=df.exe
 CPP=cl.exe
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "_DEBUG" /D "STRICT" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "ENGINE_EXPORTS" /Yu"stdhdr.h" /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /GX /Zi /O2 /I ".\include" /I "..\tech\include" /I "..\render\include" /D "_USRDLL" /D "ENGINE_EXPORTS" /D "STRICT" /D "_WINDOWS" /D "NDEBUG" /D "WIN32" /D "_MBCS" /Yu"stdhdr.h" /FD /c
+# ADD CPP /nologo /MDd /W3 /GX /Zi /O2 /I ".\include" /I "..\tech\include" /I "..\render\include" /I "..\3rdparty\lua\include" /D "_USRDLL" /D "ENGINE_EXPORTS" /D "STRICT" /D "_WINDOWS" /D "NDEBUG" /D "WIN32" /D "_MBCS" /Yu"stdhdr.h" /FD /c
 # SUBTRACT CPP /Fr
 MTL=midl.exe
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
@@ -125,7 +125,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winmm.lib /nologo /dll /debug /machine:I386 /pdbtype:sept /libpath:"..\..\3rdparty\dx7sdk\lib"
 # SUBTRACT BASE LINK32 /profile
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winmm.lib opengl32.lib /nologo /dll /profile /map:"..\Build\Opt/engine.map" /debug /machine:I386
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winmm.lib opengl32.lib $(OutDir)\lua.lib /nologo /dll /profile /map:"..\Build\Opt/engine.map" /debug /machine:I386
 
 !ELSEIF  "$(CFG)" == "engine - Win32 StaticDebug"
 
@@ -148,7 +148,7 @@ MTL=midl.exe
 LINK32=link.exe
 CPP=cl.exe
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "_DEBUG" /D "STRICT" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "ENGINE_EXPORTS" /Yu"stdhdr.h" /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\3rdparty\cppunit\include" /I ".\include" /I "..\tech\include" /I "..\render\include" /D "STATIC_BUILD" /D "_DEBUG" /D "_USRDLL" /D "ENGINE_EXPORTS" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "STRICT" /D "HAVE_CPPUNIT" /Yu"stdhdr.h" /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\3rdparty\cppunit\include" /I ".\include" /I "..\tech\include" /I "..\render\include" /I "..\3rdparty\lua\include" /D "STATIC_BUILD" /D "_DEBUG" /D "_USRDLL" /D "ENGINE_EXPORTS" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "STRICT" /D "HAVE_CPPUNIT" /Yu"stdhdr.h" /FD /GZ /c
 # SUBTRACT CPP /Fr
 RSC=rc.exe
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
@@ -181,7 +181,7 @@ MTL=midl.exe
 LINK32=link.exe
 CPP=cl.exe
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "NDEBUG" /D "STRICT" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "ENGINE_EXPORTS" /Yu"stdhdr.h" /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /I ".\include" /I "..\tech\include" /I "..\render\include" /D "NDEBUG" /D "STATIC_BUILD" /D "_USRDLL" /D "ENGINE_EXPORTS" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "STRICT" /Yu"stdhdr.h" /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /I ".\include" /I "..\tech\include" /I "..\render\include" /I "..\3rdparty\lua\include" /D "NDEBUG" /D "STATIC_BUILD" /D "_USRDLL" /D "ENGINE_EXPORTS" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "STRICT" /Yu"stdhdr.h" /FD /c
 # SUBTRACT CPP /Fr
 RSC=rc.exe
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -223,6 +223,10 @@ SOURCE=.\src\frustum.cpp
 # Begin Source File
 
 SOURCE=.\src\input.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\luainterp.cpp
 # End Source File
 # Begin Source File
 
@@ -303,6 +307,10 @@ SOURCE=.\src\input.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\luainterp.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\ms3d.h
 # End Source File
 # Begin Source File
@@ -373,6 +381,14 @@ SOURCE=.\include\ray.h
 # Begin Source File
 
 SOURCE=.\include\sceneapi.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\scriptapi.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\scriptvar.h
 # End Source File
 # Begin Source File
 
