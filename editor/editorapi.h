@@ -111,6 +111,7 @@ interface UUID("CA3DFC7D-CF34-43cd-AE46-FA1AF6A34F27") IEditorTileManager : IUnk
    virtual tResult CreateTileSet(const tChar * pszName, IEditorTileSet * * ppTileSet) = 0;
    virtual tResult GetTileSet(const tChar * pszName, IEditorTileSet * * ppTileSet) = 0;
    virtual tResult GetDefaultTileSet(IEditorTileSet * * ppTileSet) = 0;
+   virtual tResult GetDefaultTileSet(cStr * pName) const = 0;
    virtual tResult SetDefaultTileSet(const tChar * pszName) = 0;
    virtual tResult GetTileSetCount(uint * pTileSets) = 0;
    virtual tResult GetTileSet(uint index, IEditorTileSet * * ppTileSet) = 0;

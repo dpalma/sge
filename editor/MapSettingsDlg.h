@@ -11,13 +11,12 @@
 
 #include <atlframe.h>
 
-#include <vector>
-
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
 
 enum eHeightData;
+class cMapSettings;
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -31,14 +30,10 @@ class cMapSettingsDlg : public CDialogImpl<cMapSettingsDlg>,
 public:
    enum { IDD = IDD_MAPSETTINGS, kNoIndex = ~0 };
 
-   cMapSettingsDlg(const SIZE * pSizes, size_t nSizes, int sizeSelectIndex,
-      const std::vector<cStr> & tileSets, int tileSetSelectIndex,
-      eHeightData heightData);
+   cMapSettingsDlg(eHeightData heightData);
 
-   bool GetSelectedSize(SIZE * pSize) const;
-   bool GetSelectedTileSet(cStr * pTileSet) const;
-   eHeightData GetHeightData() const;
-   bool GetHeightDataFile(cStr * pHeightData) const;
+   tResult GetMapSettings(cMapSettings * pMapSettings) const;
+
 
    BEGIN_MSG_MAP(cMapSettingsDlg)
       MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
@@ -67,7 +62,7 @@ public:
 
    BEGIN_DDX_MAP(cMapSettingsDlg)
       DDX_CONTROL_HANDLE(IDC_MAP_INITIAL_TILE, m_initialTileComboBox);
-      DDX_COMBO_INDEX(IDC_MAP_TILESET, m_tileSetIndex);
+      DDX_COMBO_STRING(IDC_MAP_TILESET, m_tileSet);
       DDX_RADIO(IDC_HEIGHT_NONE, m_heightData);
       DDX_TEXT(IDC_HEIGHT_MAP_FILE, m_heightMapFile);
       DDX_TEXT_LEN(IDC_HEIGHT_MAP_FILE, m_heightMapFile, MAX_PATH);
@@ -82,18 +77,16 @@ public:
    LRESULT OnOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL & bHandled);
    LRESULT OnCancel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL & bHandled);
 
-   void PopulateInitialTileComboBox(bool bForce);
+   void PopulateTileSetComboBox();
+   void PopulateInitialTileComboBox();
 
 private:
    CComboBoxEx m_initialTileComboBox;
-   uint m_tileSetIndex;
+   cStr m_tileSet;
    int m_heightData;
-   CString  m_heightMapFile;
+   CString m_heightMapFile;
    uint m_mapHeightIndex;
    uint m_mapWidthIndex;
-
-   std::vector<SIZE> m_mapSizes;
-   std::vector<cStr> m_tileSets;
 };
 
 /////////////////////////////////////////////////////////////////////////////

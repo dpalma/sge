@@ -34,46 +34,6 @@ static UINT indicators[] =
 };
 
 //////////////////////////////////////////////////////////////////////////////
-
-static const SIZE g_mapSizes[] =
-{
-   { 64, 64 },
-   { 128, 128 },
-   { 192, 192 },
-   { 256, 256 },
-};
-
-static const uint kDefaultMapSizeIndex = 0;
-
-//////////////////////////////////////////////////////////////////////////////
-
-template <typename CONTAINER>
-void ListTileSets(CONTAINER * pContainer)
-{
-   UseGlobal(EditorTileManager);
-
-   uint nTileSets = 0;
-   if (pEditorTileManager->GetTileSetCount(&nTileSets) == S_OK && nTileSets > 0)
-   {
-      for (uint i = 0; i < nTileSets; i++)
-      {
-         cAutoIPtr<IEditorTileSet> pTileSet;
-         if (pEditorTileManager->GetTileSet(i, &pTileSet) == S_OK)
-         {
-            Assert(!!pTileSet);
-            cStr name;
-            Verify(pTileSet->GetName(&name) == S_OK);
-            pContainer->push_back(name);
-         }
-         else
-         {
-            WarnMsg1("Error getting tile set %d\n", i);
-         }
-      }
-   }
-}
-
-//////////////////////////////////////////////////////////////////////////////
 // double up any '&' characters so they do not get underlined in menus
 
 static int FixAmpersands(const tChar * pszIn, CString * pOut)
@@ -457,13 +417,8 @@ LRESULT cMainFrame::OnSetFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 
 LRESULT cMainFrame::OnFileNew(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled)
 {
-   std::vector<cStr> tileSets;
-   ListTileSets(&tileSets);
-
-   cMapSettings mapSettings(
-      g_mapSizes[kDefaultMapSizeIndex].cx,
-      g_mapSizes[kDefaultMapSizeIndex].cy,
-      tileSets.empty() ? "default" : tileSets[0]);
+   // HACK: hard-coded 64
+   cMapSettings mapSettings(64, 64, "");
 
    if (!m_bPromptForMapSettings)
    {
@@ -472,25 +427,12 @@ LRESULT cMainFrame::OnFileNew(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHa
    }
    else
    {
-      cMapSettingsDlg dlg(g_mapSizes, _countof(g_mapSizes),
-         kDefaultMapSizeIndex, tileSets, 0, kHeightData_None);
+      cMapSettingsDlg dlg(kHeightData_None);
 
       // Shouldn't be allowed to cancel the dialog
       Verify(dlg.DoModal(m_hWnd) == IDOK);
 
-      SIZE mapSize;
-      cStr tileSet, heightMap;
-      if (dlg.GetSelectedSize(&mapSize)
-         && dlg.GetSelectedTileSet(&tileSet)
-         && dlg.GetHeightDataFile(&heightMap))
-      {
-         mapSettings = cMapSettings(
-            mapSize.cx,
-            mapSize.cy,
-            tileSet,
-            dlg.GetHeightData(),
-            heightMap.empty() ? NULL : heightMap.c_str());
-      }
+      dlg.GetMapSettings(&mapSettings);
    }
 
    cAutoIPtr<IEditorModel> pModel;

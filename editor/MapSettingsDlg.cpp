@@ -16,6 +16,18 @@
 
 #include "dbgalloc.h" // must be last header
 
+//////////////////////////////////////////////////////////////////////////////
+
+static const SIZE g_mapSizes[] =
+{
+   { 64, 64 },
+   { 128, 128 },
+   { 192, 192 },
+   { 256, 256 },
+};
+
+static const uint kDefaultMapSizeIndex = 0;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cMapSettingsDlg
@@ -23,98 +35,33 @@
 
 ////////////////////////////////////////
 
-cMapSettingsDlg::cMapSettingsDlg(const SIZE * pSizes, size_t nSizes, int sizeSelectIndex,
-                                 const std::vector<cStr> & tileSets, int tileSetSelectIndex,
-                                 eHeightData heightData)
- :	m_tileSetIndex(kNoIndex),
-	m_heightData(-1),
+cMapSettingsDlg::cMapSettingsDlg(eHeightData heightData)
+ :	m_heightData(heightData),
 	m_heightMapFile(_T("")),
-	m_mapHeightIndex(kNoIndex),
-	m_mapWidthIndex(kNoIndex)
+	m_mapHeightIndex(kDefaultMapSizeIndex),
+	m_mapWidthIndex(kDefaultMapSizeIndex)
 {
-   if (pSizes != NULL && nSizes > 0)
-   {
-      Assert(!IsBadReadPtr(pSizes, nSizes * sizeof(SIZE)));
-      m_mapSizes.resize(nSizes);
-      for (uint i = 0; i < nSizes; i++)
-      {
-         m_mapSizes[i] = pSizes[i];
-      }
-
-      m_mapWidthIndex = sizeSelectIndex;
-      m_mapHeightIndex = sizeSelectIndex;
-   }
-
-   if (!tileSets.empty())
-   {
-      m_tileSets.resize(tileSets.size());
-      std::copy(tileSets.begin(), tileSets.end(), m_tileSets.begin());
-      m_tileSetIndex = tileSetSelectIndex;
-   }
-
-   m_heightData = heightData;
+   UseGlobal(EditorTileManager);
+   pEditorTileManager->GetDefaultTileSet(&m_tileSet);
 }
 
 ////////////////////////////////////////
 
-bool cMapSettingsDlg::GetSelectedSize(SIZE * pSize) const
+tResult cMapSettingsDlg::GetMapSettings(cMapSettings * pMapSettings) const
 {
-   Assert(pSize != NULL);
-   if (pSize == NULL)
+   if (pMapSettings == NULL)
    {
-      return false;
+      return E_POINTER;
    }
 
-   if ((m_mapWidthIndex >= 0) && (m_mapWidthIndex < m_mapSizes.size())
-      && (m_mapHeightIndex >= 0) && (m_mapHeightIndex < m_mapSizes.size()))
-   {
-      pSize->cx = m_mapSizes[m_mapWidthIndex].cx;
-      pSize->cy = m_mapSizes[m_mapHeightIndex].cy;
-      return true;
-   }
+   *pMapSettings = cMapSettings(
+      g_mapSizes[m_mapWidthIndex].cx,
+      g_mapSizes[m_mapHeightIndex].cy,
+      m_tileSet,
+      (eHeightData)m_heightData,
+      m_heightMapFile);
 
-   return false;
-}
-
-////////////////////////////////////////
-
-bool cMapSettingsDlg::GetSelectedTileSet(cStr * pTileSet) const
-{
-   Assert(pTileSet != NULL);
-   if (pTileSet == NULL)
-   {
-      return false;
-   }
-
-   if (m_tileSetIndex >= 0 && m_tileSetIndex < m_tileSets.size())
-   {
-      *pTileSet = m_tileSets[m_tileSetIndex];
-      return true;
-   }
-
-   return false;
-}
-
-////////////////////////////////////////
-
-eHeightData cMapSettingsDlg::GetHeightData() const
-{
-   Assert(m_heightData == kHeightData_None ||
-      m_heightData == kHeightData_HeightMap ||
-      m_heightData == kHeightData_Noise);
-   return (eHeightData)m_heightData;
-}
-
-////////////////////////////////////////
-
-bool cMapSettingsDlg::GetHeightDataFile(cStr * pHeightData) const
-{
-   if (pHeightData != NULL)
-   {
-      *pHeightData = (LPCTSTR)m_heightMapFile;
-      return true;
-   }
-   return false;
+   return S_OK;
 }
 
 ////////////////////////////////////////
@@ -132,27 +79,16 @@ LRESULT cMapSettingsDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
    CWindow(GetDlgItem(IDC_MAP_HEIGHT)).ModifyStyle(CBS_SORT, 0);
    CWindow(GetDlgItem(IDC_MAP_TILESET)).ModifyStyle(CBS_SORT, 0);
 
-   if (!m_mapSizes.empty())
+   for (uint i = 0; i < _countof(g_mapSizes); i++)
    {
-      std::vector<SIZE>::iterator iter;
-      for (iter = m_mapSizes.begin(); iter != m_mapSizes.end(); iter++)
-      {
-         CString str;
-         str.Format("%d", iter->cx);
-         SendDlgItemMessage(IDC_MAP_WIDTH, CB_ADDSTRING, 0, (LPARAM)(LPCTSTR)str);
-         str.Format("%d", iter->cy);
-         SendDlgItemMessage(IDC_MAP_HEIGHT, CB_ADDSTRING, 0, (LPARAM)(LPCTSTR)str);
-      }
+      CString str;
+      str.Format("%d", g_mapSizes[i].cx);
+      SendDlgItemMessage(IDC_MAP_WIDTH, CB_ADDSTRING, 0, (LPARAM)(LPCTSTR)str);
+      str.Format("%d", g_mapSizes[i].cy);
+      SendDlgItemMessage(IDC_MAP_HEIGHT, CB_ADDSTRING, 0, (LPARAM)(LPCTSTR)str);
    }
 
-   if (!m_tileSets.empty())
-   {
-      std::vector<cStr>::iterator iter;
-      for (iter = m_tileSets.begin(); iter != m_tileSets.end(); iter++)
-      {
-         SendDlgItemMessage(IDC_MAP_TILESET, CB_ADDSTRING, 0, (LPARAM)iter->c_str());
-      }
-   }
+   PopulateTileSetComboBox();
 
    // Update the dialog controls from the member variables
    // after populating drop-lists, etc.
@@ -160,7 +96,7 @@ LRESULT cMapSettingsDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 
    BOOL unused;
    DoRadioButtonEnabling(0,0,NULL,unused);
-   PopulateInitialTileComboBox(true);
+   PopulateInitialTileComboBox();
 
    CenterWindow(GetParent());
 
@@ -187,7 +123,8 @@ LRESULT cMapSettingsDlg::DoRadioButtonEnabling(WORD wNotifyCode, WORD wID, HWND 
 
 LRESULT cMapSettingsDlg::OnSelectTileSet(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL & bHandled)
 {
-   PopulateInitialTileComboBox(false);
+   DoDataExchange(TRUE);
+   PopulateInitialTileComboBox();
    return 0;
 }
 
@@ -214,6 +151,7 @@ LRESULT cMapSettingsDlg::OnBrowseHeightMap(WORD wNotifyCode, WORD wID, HWND hWnd
 
 LRESULT cMapSettingsDlg::OnOK(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL & /*bHandled*/)
 {
+   DoDataExchange(TRUE);
    EndDialog(IDOK);
    return 0;
 }
@@ -229,57 +167,76 @@ LRESULT cMapSettingsDlg::OnCancel(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 
 ////////////////////////////////////////
 
-void cMapSettingsDlg::PopulateInitialTileComboBox(bool bForce)
+void cMapSettingsDlg::PopulateTileSetComboBox()
+{
+   SendDlgItemMessage(IDC_MAP_TILESET, CB_RESETCONTENT);
+
+   uint nTileSets = 0;
+   UseGlobal(EditorTileManager);
+   if (pEditorTileManager->GetTileSetCount(&nTileSets) == S_OK && nTileSets > 0)
+   {
+      for (uint i = 0; i < nTileSets; i++)
+      {
+         cStr name;
+         cAutoIPtr<IEditorTileSet> pTileSet;
+         if (pEditorTileManager->GetTileSet(i, &pTileSet) == S_OK
+            && pTileSet->GetName(&name) == S_OK)
+         {
+            SendDlgItemMessage(IDC_MAP_TILESET, CB_ADDSTRING, 0, (LPARAM)name.c_str());
+         }
+         else
+         {
+            WarnMsg1("Error getting tile set %d\n", i);
+         }
+      }
+   }
+}
+
+////////////////////////////////////////
+
+void cMapSettingsDlg::PopulateInitialTileComboBox()
 {
    int sel = SendDlgItemMessage(IDC_MAP_TILESET, CB_GETCURSEL);
-   if ((sel != CB_ERR) && ((sel != m_tileSetIndex) || bForce))
+   if (sel != CB_ERR)
    {
       m_initialTileComboBox.ResetContent();
 
-      int length = SendDlgItemMessage(IDC_MAP_TILESET, CB_GETLBTEXTLEN, sel);
-      if (length > 0)
+      cAutoIPtr<IEditorTileSet> pTileSet;
+      UseGlobal(EditorTileManager);
+      if (pEditorTileManager->GetTileSet(m_tileSet, &pTileSet) == S_OK)
       {
-         char * pszTileSet = (char *)alloca(length + 1);
-         SendDlgItemMessage(IDC_MAP_TILESET, CB_GETLBTEXT, sel, (LPARAM)pszTileSet);
+         int imageSize = m_initialTileComboBox.GetItemHeight(0);
 
-         cAutoIPtr<IEditorTileSet> pTileSet;
-
-         UseGlobal(EditorTileManager);
-         if (pEditorTileManager->GetTileSet(pszTileSet, &pTileSet) == S_OK)
+         HIMAGELIST hImageList = NULL;
+         if (pTileSet->GetImageList(imageSize, &hImageList) == S_OK)
          {
-            int imageSize = m_initialTileComboBox.GetItemHeight(0);
+            m_initialTileComboBox.SetImageList(hImageList);
+         }
 
-            HIMAGELIST hImageList = NULL;
-            if (pTileSet->GetImageList(imageSize, &hImageList) == S_OK)
+         uint nTiles = 0;
+         if (pTileSet->GetTileCount(&nTiles) == S_OK)
+         {
+            for (uint i = 0; i < nTiles; i++)
             {
-               m_initialTileComboBox.SetImageList(hImageList);
-            }
-
-            uint nTiles = 0;
-            if (pTileSet->GetTileCount(&nTiles) == S_OK)
-            {
-               for (uint i = 0; i < nTiles; i++)
+               cAutoIPtr<IEditorTile> pTile;
+               if (pTileSet->GetTile(i, &pTile) == S_OK)
                {
-                  cAutoIPtr<IEditorTile> pTile;
-                  if (pTileSet->GetTile(i, &pTile) == S_OK)
-                  {
-                     cStr tileName;
-                     Verify(pTile->GetName(&tileName) == S_OK);
+                  cStr tileName;
+                  Verify(pTile->GetName(&tileName) == S_OK);
 
-                     COMBOBOXEXITEM item;
-                     item.mask = CBEIF_TEXT | CBEIF_IMAGE | CBEIF_SELECTEDIMAGE;
-                     item.iItem = i;
-                     item.pszText = const_cast<char *>(tileName.c_str());
-                     item.cchTextMax = tileName.length();
-                     item.iImage = i;
-                     item.iSelectedImage = i;
+                  COMBOBOXEXITEM item;
+                  item.mask = CBEIF_TEXT | CBEIF_IMAGE | CBEIF_SELECTEDIMAGE;
+                  item.iItem = i;
+                  item.pszText = const_cast<char *>(tileName.c_str());
+                  item.cchTextMax = tileName.length();
+                  item.iImage = i;
+                  item.iSelectedImage = i;
 
-                     Verify(m_initialTileComboBox.InsertItem(&item) != CB_ERR);
-                  }
+                  Verify(m_initialTileComboBox.InsertItem(&item) != CB_ERR);
                }
-
-               m_initialTileComboBox.SetCurSel(0);
             }
+
+            m_initialTileComboBox.SetCurSel(0);
          }
       }
    }

@@ -104,6 +104,19 @@ tResult cEditorTileManager::GetDefaultTileSet(IEditorTileSet * * ppTileSet)
 
 ///////////////////////////////////////
 
+tResult cEditorTileManager::GetDefaultTileSet(cStr * pName) const
+{
+   if (pName == NULL)
+   {
+      return E_POINTER;
+   }
+
+   *pName = m_defaultTileSet;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
 tResult cEditorTileManager::SetDefaultTileSet(const tChar * pszName)
 {
    if (pszName != NULL)
