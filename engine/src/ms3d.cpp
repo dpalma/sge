@@ -123,6 +123,10 @@ uint cMs3dVertexList::MapVertex(uint originalIndex, tVec3 normal, float s, float
 {
    Assert(originalIndex < m_nOriginalVertices);
    Assert(m_nOriginalVertices == m_haveVertex.size());
+
+   // Use the complement of what is actually stored in the Milkshape file
+   t = 1 - t;
+
    if (!m_haveVertex[originalIndex])
    {
       m_haveVertex[originalIndex] = true;
@@ -131,8 +135,8 @@ uint cMs3dVertexList::MapVertex(uint originalIndex, tVec3 normal, float s, float
       m_vertices[originalIndex].v = t;
       return originalIndex;
    }
-   else if (/*(m_vertices[originalIndex].normal == normal)
-      &&*/ (m_vertices[originalIndex].u == s)
+   else if ((m_vertices[originalIndex].normal == normal)
+      && (m_vertices[originalIndex].u == s)
       && (m_vertices[originalIndex].v == t))
    {
       return originalIndex;
@@ -147,19 +151,17 @@ uint cMs3dVertexList::MapVertex(uint originalIndex, tVec3 normal, float s, float
       std::map<uint, uint>::iterator f = m_remap.find(h);
       if (f != m_remap.end())
       {
-         DebugMsg1("Using mapped vertex at index %d\n", f->second);
          Assert(f->second < m_vertices.size());
-//         return f->second;
-         return originalIndex;
+         return f->second;
       }
       else
       {
+         // TODO: Tacking the the duplicated vertex onto the end
+         // is totally not optimal with respect to vertex caches
          m_vertices.push_back(newVertex);
          uint newIndex = m_vertices.size() - 1;
-         DebugMsg2("Variant of vertex %d at index %d\n", originalIndex, newIndex);
          m_remap.insert(std::make_pair(h, newIndex));
-//         return newIndex;
-         return originalIndex;
+         return newIndex;
       }
    }
 }
@@ -284,16 +286,23 @@ tResult cMs3dFileReader::CreateMesh(IRenderDevice * pRenderDevice, IMesh * * ppM
    cMs3dVertexList vertexList(&m_vertices[0], m_vertices.size());
 
    {
+      // Have to construct the mapping up front so that the result of GetVertexCount() 
+      // will be accurate when the vertex buffer is constructed.
       std::vector<ms3d_triangle_t>::const_iterator iter;
       for (iter = m_triangles.begin(); iter != m_triangles.end(); iter++)
       {
-         const ms3d_triangle_t & tri = *iter;
          for (int k = 0; k < 3; k++)
          {
-            vertexList.MapVertex(tri.vertexIndices[k], tri.vertexNormals[k], tri.s[k], tri.t[k]);
+            vertexList.MapVertex(
+               iter->vertexIndices[k], 
+               iter->vertexNormals[k], 
+               iter->s[k], 
+               iter->t[k]);
          }
       }
    }
+
+   DebugMsg2("%d vertices became %d\n", m_vertices.size(), vertexList.GetVertexCount());
 
    cAutoIPtr<IMesh> pMesh = MeshCreate();
    if (!pMesh)
@@ -332,7 +341,11 @@ tResult cMs3dFileReader::CreateMesh(IRenderDevice * pRenderDevice, IMesh * * ppM
                      const ms3d_triangle_t & tri = m_triangles[iter->GetTriangle(i)];
                      for (int k = 0; k < 3; k++)
                      {
-                        pFaces[i * 3 + k] = vertexList.MapVertex(tri.vertexIndices[k], tri.vertexNormals[k], tri.s[k], tri.t[k]);
+                        pFaces[i * 3 + k] = vertexList.MapVertex(
+                           tri.vertexIndices[k], 
+                           tri.vertexNormals[k], 
+                           tri.s[k], 
+                           tri.t[k]);
                      }
                   }
                   pSubMesh->UnlockIndexBuffer();
