@@ -43,6 +43,14 @@ cScriptVar::cScriptVar(char * _psz)
 
 ///////////////////////////////////////
 
+cScriptVar::cScriptVar(IUnknown * _pUnk)
+{
+   type = kInterface;
+   pUnk = CTAddRef(_pUnk);
+}
+
+///////////////////////////////////////
+
 cScriptVar::cScriptVar(const cScriptVar & other)
 {
    operator =(other);
@@ -50,8 +58,16 @@ cScriptVar::cScriptVar(const cScriptVar & other)
 
 ///////////////////////////////////////
 
+cScriptVar::~cScriptVar()
+{
+   Clear();
+}
+
+///////////////////////////////////////
+
 const cScriptVar & cScriptVar::operator =(double _d)
 {
+   Clear();
    type = kNumber;
    d = _d;
    return *this;
@@ -61,6 +77,7 @@ const cScriptVar & cScriptVar::operator =(double _d)
 
 const cScriptVar & cScriptVar::operator =(char * _psz)
 {
+   Clear();
    type = kString;
    psz = _psz;
    return *this;
@@ -68,13 +85,32 @@ const cScriptVar & cScriptVar::operator =(char * _psz)
 
 ///////////////////////////////////////
 
+const cScriptVar & cScriptVar::operator =(IUnknown * _pUnk)
+{
+   Clear();
+   type = kInterface;
+   pUnk = CTAddRef(_pUnk);
+   return *this;
+}
+
+///////////////////////////////////////
+
 const cScriptVar & cScriptVar::operator =(const cScriptVar & other)
 {
+   Clear();
    type = other.type;
    if (type == kString)
+   {
       psz = other.psz;
-   else
+   }
+   else if (type == kNumber)
+   {
       d = other.d;
+   }
+   else if (type = kInterface)
+   {
+      pUnk = CTAddRef(other.pUnk);
+   }
    return *this;
 }
 
@@ -86,9 +122,14 @@ cScriptVar::operator double() const
    {
       return strtod(psz, NULL);
    }
-   else
+   else if (type == kNumber)
    {
       return d;
+   }
+   else
+   {
+      DebugMsg("WARNING: attempt to access %d scriptvar as double\n");
+      return 0;
    }
 }
 
@@ -96,17 +137,44 @@ cScriptVar::operator double() const
 
 cScriptVar::operator const char *() const
 {
+   static const char kBufferSize = 50;
    static int index = 0;
-   static char szBuffers[50][4];
+   static char szBuffers[kBufferSize][4];
    if (type == kNumber)
    {
       index = (index + 1) & 3;
-      sprintf(szBuffers[index], "%f", d);
+      snprintf(szBuffers[index], kBufferSize, "%f", d);
       return szBuffers[index];
+   }
+   else if (type == kString)
+   {
+      return psz;
    }
    else
    {
-      return psz;
+      DebugMsg("WARNING: attempt to access %d scriptvar as string\n");
+      return NULL;
+   }
+}
+
+///////////////////////////////////////
+
+cScriptVar::operator IUnknown *() const
+{
+   if (type == kInterface)
+   {
+      return pUnk;
+   }
+   return NULL;
+}
+
+///////////////////////////////////////
+
+void cScriptVar::Clear()
+{
+   if (type == kInterface)
+   {
+      SafeRelease(pUnk);
    }
 }
 
@@ -122,28 +190,31 @@ class cScriptVarTests : public CppUnit::TestCase
       CPPUNIT_TEST(TestCastString);
    CPPUNIT_TEST_SUITE_END();
 
-private:
-   void TestAssignment()
-   {
-      cScriptVar test;
-      CPPUNIT_ASSERT((double)(test = 3.1415) == 3.1415);
-      CPPUNIT_ASSERT(strcmp((test = "3.1415"), "3.1415") == 0);
-   }
-
-   void TestCastDouble()
-   {
-      CPPUNIT_ASSERT((double)cScriptVar(3.1415) == 3.1415);
-      CPPUNIT_ASSERT((double)cScriptVar("3.1415") == 3.1415);
-   }
-
-   void TestCastString()
-   {
-      CPPUNIT_ASSERT(strcmp((const char *)cScriptVar(3.1415), "3.141500") == 0);
-      CPPUNIT_ASSERT(strcmp((const char *)cScriptVar("3.1415"), "3.1415") == 0);
-   }
+   void TestAssignment();
+   void TestCastDouble();
+   void TestCastString();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(cScriptVarTests);
+
+void cScriptVarTests::TestAssignment()
+{
+   cScriptVar test;
+   CPPUNIT_ASSERT((double)(test = 3.1415) == 3.1415);
+   CPPUNIT_ASSERT(strcmp((test = "3.1415"), "3.1415") == 0);
+}
+
+void cScriptVarTests::TestCastDouble()
+{
+   CPPUNIT_ASSERT((double)cScriptVar(3.1415) == 3.1415);
+   CPPUNIT_ASSERT((double)cScriptVar("3.1415") == 3.1415);
+}
+
+void cScriptVarTests::TestCastString()
+{
+   CPPUNIT_ASSERT(strcmp((const char *)cScriptVar(3.1415), "3.141500") == 0);
+   CPPUNIT_ASSERT(strcmp((const char *)cScriptVar("3.1415"), "3.1415") == 0);
+}
 
 #endif // HAVE_CPPUNIT
 

@@ -6,6 +6,8 @@
 #include "luainterp.h"
 #include "scriptvar.h"
 
+#include "dictionaryapi.h"
+
 extern "C"
 {
 #include <lualib.h>
@@ -236,12 +238,16 @@ static int LuaThunkFunction(lua_State * L)
 {
    tScriptFn pfn = (tScriptFn)lua_touserdata(L, lua_upvalueindex(1));
    if (pfn == NULL)
+   {
       return 0; // no C function to call
+   }
 
    int nArgs = lua_gettop(L);
 
    if (nArgs > kMaxArgs)
+   {
       nArgs = kMaxArgs;
+   }
 
    cScriptVar results[kMaxResults];
    int result = -1;
@@ -266,20 +272,31 @@ static int LuaThunkFunction(lua_State * L)
                break;
             }
 
-            /*
             case LUA_TTABLE:
             {
-               lua_pushnil(L);
-               while (lua_next(L, i + 1))
+               cAutoIPtr<IDictionary> pDict(DictionaryCreate());
+               if (!!pDict)
                {
-                  const char * key = lua_tostring(L, -2);
-                  // value at -1
-                  // ...
-                  lua_pop(L, 1);
+                  lua_pushnil(L);
+                  while (lua_next(L, i + 1))
+                  {
+                     const char * pszKey = lua_tostring(L, -2);
+                     const char * pszVal = lua_tostring(L, -1);
+                     pDict->Set(pszKey, pszVal);
+                     lua_pop(L, 1);
+                  }
+                  args[i] = CTAddRef(pDict);
+               }
+               else
+               {
+                  // if failed to create dictionary object, indicate that
+                  // the script function should have received an interface
+                  // pointer
+                  args[i].type = kInterface;
+                  args[i].pUnk = NULL;
                }
                break;
             }
-            */
 
             default:
             {
@@ -299,7 +316,9 @@ static int LuaThunkFunction(lua_State * L)
    }
 
    if (result <= 0)
+   {
       return 0; // we are not returning any values on the stack
+   }
 
    for (int i = 0; i < result; i++)
    {
