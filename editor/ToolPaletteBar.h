@@ -30,7 +30,7 @@ public:
 
    void Clear();
 
-   void Reposition(LPCRECT pRect, BOOL bRepaint = TRUE);
+   int Reposition(LPCRECT pRect, BOOL bRepaint = TRUE);
 
    void HandleClick(uint buttonId);
 
@@ -88,6 +88,8 @@ public:
 
 private:
    cButtonPanel m_buttonPanel;
+
+   cToolPalette m_toolPalette;
 
    CToolTipCtrl m_tooltip;
 };

@@ -59,7 +59,7 @@ void cButtonPanel::Clear()
 
 ////////////////////////////////////////
 
-void cButtonPanel::Reposition(LPCRECT pRect, BOOL bRepaint)
+int cButtonPanel::Reposition(LPCRECT pRect, BOOL bRepaint)
 {
    CRect buttonRect;
    buttonRect.left = pRect->left + m_margins.left;
@@ -86,6 +86,8 @@ void cButtonPanel::Reposition(LPCRECT pRect, BOOL bRepaint)
          }
       }
    }
+
+   return buttonRect.bottom;
 }
 
 ////////////////////////////////////////
@@ -227,7 +229,12 @@ void cToolPaletteBar::RepositionButtons(BOOL bRepaint)
 {
    CRect rect;
    GetClientRect(rect);
-   m_buttonPanel.Reposition(rect, bRepaint);
+   int bottom = m_buttonPanel.Reposition(rect, bRepaint);
+   if (m_toolPalette.IsWindow())
+   {
+      rect.top = bottom;
+      m_toolPalette.MoveWindow(rect);
+   }
 }
 
 ////////////////////////////////////////
@@ -237,6 +244,12 @@ LRESULT cToolPaletteBar::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL 
    if (!m_tooltip.Create(m_hWnd))
    {
       ErrorMsg1("Unable to create tooltip control (error %d)\n", GetLastError());
+      return -1;
+   }
+
+   if (!m_toolPalette.Create(m_hWnd, CWindow::rcDefault))
+   {
+      ErrorMsg1("Unable to create tool palette control (error %d)\n", GetLastError());
       return -1;
    }
 
