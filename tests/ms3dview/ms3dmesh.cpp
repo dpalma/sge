@@ -356,7 +356,6 @@ cMs3dSkeleton::~cMs3dSkeleton()
 void cMs3dSkeleton::Reset()
 {
    m_bones.clear();
-
    std::for_each(m_interpolators.begin(), m_interpolators.end(), CTInterfaceMethodRef(&IUnknown::Release));
    m_interpolators.clear();
 }
@@ -511,6 +510,13 @@ cMs3dMesh::cMs3dMesh()
 {
 }
 
+template <>
+std::vector<IMaterial *>::~vector()
+{
+   std::for_each(begin(), end(), CTInterfaceMethodRef(&IUnknown::Release));
+   clear();
+}
+
 cMs3dMesh::~cMs3dMesh()
 {
    Reset();
@@ -645,6 +651,8 @@ tResult cMs3dMesh::Read(IReader * pReader, IRenderDevice * pRenderDevice, IResou
    if (cReadWriteOps<cMs3dSkeleton>::Read(pReader, this) != S_OK)
       return E_FAIL;
 
+   m_boneMatrices.resize(GetBoneCount());
+
    cgSetErrorCallback(cgErrorCallback);
 
    g_cgProfile = cgGLGetLatestProfile(CG_GL_VERTEX);
@@ -721,6 +729,8 @@ tResult cMs3dMesh::Read(IReader * pReader, IRenderDevice * pRenderDevice, IResou
             }
          }
       }
+
+      SetFrame(0);
    }
 
    return S_OK;
@@ -730,15 +740,11 @@ void cMs3dMesh::Reset()
 {
    cMs3dSkeleton::Reset();
 
-   tMaterials::iterator iter;
-   for (iter = m_materials.begin(); iter != m_materials.end(); iter++)
-   {
-      (*iter)->Release();
-   }
-
    m_vertices.clear();
    m_triangles.clear();
    m_groups.clear();
+
+   std::for_each(m_materials.begin(), m_materials.end(), CTInterfaceMethodRef(&IUnknown::Release));
    m_materials.clear();
 
    m_bCalculatedAABB = false;
@@ -755,6 +761,7 @@ void cMs3dMesh::Reset()
 void cMs3dMesh::SetFrame(float percent)
 {
    Assert(percent >= 0 && percent <= 1);
+   Assert(m_boneMatrices.size() == GetBoneCount());
 
    for (int i = 0; i < GetBoneCount(); i++)
    {
@@ -781,12 +788,11 @@ void cMs3dMesh::SetFrame(float percent)
 
          if (pBone->GetParentIndex() == -1)
          {
-            pBone->SetFinalMatrix(mf);
+            m_boneMatrices[i] = mf;
          }
          else
          {
-            temp = GetBonePtr(pBone->GetParentIndex())->GetFinalMatrix() * mf;
-            pBone->SetFinalMatrix(temp);
+            m_boneMatrices[i] = m_boneMatrices[pBone->GetParentIndex()] * mf;
          }
       }
    }
@@ -824,7 +830,7 @@ void cMs3dMesh::RenderSoftware() const
             }
             else
             {
-               const tMatrix4 & m = GetBone(vk.boneId).GetFinalMatrix();
+               const tMatrix4 & m = m_boneMatrices[vk.boneId];
 
                tVec4 nprime, n(tri.vertexNormals[k][0], tri.vertexNormals[k][1], tri.vertexNormals[k][2], k4thDimension);
                nprime = m.Transform(n);

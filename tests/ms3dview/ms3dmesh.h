@@ -4,8 +4,7 @@
 #ifndef INCLUDED_MS3DMESH_H
 #define INCLUDED_MS3DMESH_H
 
-#include "ComTools.h"
-#include "ReadWriteAPI.h"
+#include "readwriteapi.h"
 #include "matrix4.h"
 #include "vec3.h"
 
@@ -264,6 +263,8 @@ public:
    int GetGroupCount() const { return m_groups.size(); }
    const cMs3dGroup & GetGroup(int index) const { return m_groups[index]; }
 
+   const cMs3dSkeleton * GetSkeleton() const { return this; }
+
 private:
    typedef void (cMs3dMesh:: * tRenderMethod)() const;
 
@@ -276,6 +277,7 @@ private:
    typedef std::vector<ms3d_triangle_t> tTriangles;
    typedef std::vector<cMs3dGroup> tGroups;
    typedef std::vector<IMaterial *> tMaterials;
+   typedef std::vector<tMatrix4> tMatrices;
 
    tVertices m_vertices;
    tTriangles m_triangles;
@@ -284,6 +286,8 @@ private:
 
    mutable tVec3 m_maxs, m_mins;
    mutable bool m_bCalculatedAABB;
+
+   tMatrices m_boneMatrices;
 
    CGprogram m_program;
    CGparameter m_modelViewProjParam;
