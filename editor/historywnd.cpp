@@ -298,7 +298,7 @@ bool cHistoryWnd::GetSelection(CString * pSel)
       Assert(pSel != NULL);
       pSel->Empty();
 
-      for (int i = m_startSel.iEntry; i < m_entries.size(); i++)
+      for (uint i = m_startSel.iEntry; i < m_entries.size(); i++)
       {
          int iStart, iEnd;
 
@@ -514,7 +514,7 @@ bool cHistoryWnd::HitTestSelection(const CPoint & point)
 
    if (m_startSel.iEntry > -1)
    {
-      for (int i = m_startSel.iEntry; i < m_entries.size(); i++)
+      for (uint i = m_startSel.iEntry; i < m_entries.size(); i++)
       {
          if (i == m_startSel.iEntry)
          {
@@ -910,7 +910,7 @@ void cHistoryWnd::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
    SCROLLINFO info;
    GetScrollInfo(SB_VERT, &info);
 
-   if (info.nPos >= (info.nMax - info.nPage))
+   if (info.nPos >= (int)(info.nMax - info.nPage))
    {
       m_bAtEnd = true;
    }

@@ -35,7 +35,7 @@ public:
    COLORREF GetBkColor() const;
 
    void SetMaxEntries(int max);
-   int GetMaxEntries() const;
+   size_t GetMaxEntries() const;
 
    void SetFont(CFont * pFont, BOOL bRedraw = TRUE);
 
@@ -115,7 +115,7 @@ protected:
 
 private:
    COLORREF m_textColor, m_bkColor;
-   int m_nMaxEntries;
+   size_t m_nMaxEntries;
    tEntries m_entries;
 
    CFont m_font;
@@ -167,7 +167,7 @@ inline COLORREF cHistoryWnd::GetBkColor() const
 
 ///////////////////////////////////////
 
-inline int cHistoryWnd::GetMaxEntries() const
+inline size_t cHistoryWnd::GetMaxEntries() const
 {
    return m_nMaxEntries;
 }
