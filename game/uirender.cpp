@@ -4,13 +4,11 @@
 #include "stdhdr.h"
 
 #include "ggl.h"
+#include "uirender.h"
 
 #include "font.h"
 #include "render.h"
 
-#include "uirender.h"
-#include "techmath.h"
-#include "matrix4.h"
 #include "globalobj.h"
 
 #include "dbgalloc.h" // must be last header
@@ -27,48 +25,24 @@ cUISize UIGetRootContainerSize()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void UIPushClipRect(const cUIRect & rect)
-{
-   glPushAttrib(GL_SCISSOR_BIT);
-
-   glEnable(GL_SCISSOR_TEST);
-   glScissor(
-      Round(rect.left),
-      // @HACK: the call to glOrtho made at the beginning of each UI render
-      // cycle makes the UPPER left corner (0,0).  glScissor seems to assume
-      // that (0,0) is always the LOWER left corner.
-      Round(UIGetRootContainerSize().height - rect.bottom),
-      Round(rect.GetWidth()),
-      Round(rect.GetHeight()));
-}
-
-void UIPopClipRect()
-{
-   glPopAttrib();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 cUISize UIMeasureText(const char * pszText, int textLen, IRenderFont * pFont /*=NULL*/)
 {
    Assert(pszText != NULL);
 
-   if (textLen < 0)
-      textLen = strlen(pszText);
+   static cColor nocolor;
 
-   float textWidth = 0, textHeight = 0;
-
+   tRect rect(0,0,0,0);
    if (pFont == NULL)
    {
       cAutoIPtr<IRenderFont> pFont2 = FontCreateDefault();
-      pFont2->MeasureText(pszText, textLen, &textWidth, &textHeight);
+      pFont2->DrawText(pszText, textLen, kDT_CalcRect, &rect, nocolor);
    }
    else
    {
-      pFont->MeasureText(pszText, textLen, &textWidth, &textHeight);
+      pFont->DrawText(pszText, textLen, kDT_CalcRect, &rect, nocolor);
    }
 
-   return cUISize(textWidth, textHeight);
+   return cUISize(rect.GetWidth(), rect.GetHeight());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -78,42 +52,8 @@ void UIDrawText(const char * pszText, int textLen,
                 IRenderFont * pFont /*=NULL*/,
                 const cUIColor & color /*=cUIColor(1,1,1,1)*/)
 {
-   Assert(pszText != NULL);
-   Assert(pRect != NULL);
-   Assert(pFont != NULL);
-
-   if (pszText == NULL
-      || pRect == NULL
-      || pFont == NULL)
-      return;
-
-   float textWidth, textHeight;
-   pFont->MeasureText(pszText, textLen, &textWidth, &textHeight);
-
-   float textX =  pRect->left;
-   if (flags & kTextCenter)
-      textX += (pRect->GetWidth() - textWidth) * 0.5;
-   float textY = pRect->top;
-   if (flags & kTextVCenter)
-      textY += (pRect->GetHeight() - textHeight) * 0.5;
-
-   glPushAttrib(GL_SCISSOR_BIT | GL_CURRENT_BIT);
-
-   if (!(flags & kTextNoClip))
-   {
-      glEnable(GL_SCISSOR_TEST);
-      glScissor(
-         Round(pRect->left),
-         Round(UIGetRootContainerSize().height - pRect->bottom), //@HACK
-         Round(pRect->GetWidth()),
-         Round(pRect->GetHeight()));
-   }
-
-   glColor4fv(color.GetPointer());
-
-   pFont->DrawText(textX, textY, pszText, textLen);
-
-   glPopAttrib();
+   tRect rect(Round(pRect->left),Round(pRect->top),Round(pRect->right),Round(pRect->bottom));
+   pFont->DrawText(pszText, textLen, flags, &rect, color);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

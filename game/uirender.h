@@ -13,6 +13,7 @@
 
 F_DECLARE_INTERFACE(ITexture);
 F_DECLARE_INTERFACE(IRenderFont);
+F_DECLARE_INTERFACE(IRenderDevice);
 F_DECLARE_INTERFACE(IVertexDeclaration);
 F_DECLARE_INTERFACE(IVertexBuffer);
 F_DECLARE_INTERFACE(IIndexBuffer);
@@ -23,21 +24,10 @@ F_DECLARE_INTERFACE(IUIRenderingTools);
 
 cUISize UIGetRootContainerSize();
 
-void UIPushClipRect(const cUIRect & rect);
-void UIPopClipRect();
-
-enum eDrawTextFlags
-{
-   kTextDefault = 0,
-   kTextCenter = (1<<0),
-   kTextVCenter = (1<<1),
-   kTextNoClip = (1<<2),
-};
-
 cUISize UIMeasureText(const char * pszText, int textLen, IRenderFont * pFont = NULL);
 
 void UIDrawText(const char * pszText, int textLen,
-                const cUIRect * pRect, uint flags = kTextDefault,
+                const cUIRect * pRect, uint flags = 0,
                 IRenderFont * pFont = NULL,
                 const cUIColor & color = cUIColor(1,1,1,1));
 

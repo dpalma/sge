@@ -66,7 +66,8 @@ void cUIDialog::Render(IRenderDevice * pRenderDevice)
    if (!m_title.empty())
    {
       UIDrawText(m_title.c_str(), m_title.length(), &captionRect,
-         kTextCenter | kTextVCenter, AccessStyle()->AccessFont(), AccessStyle()->GetCaptionText());
+         kDT_Center | kDT_VCenter | kDT_SingleLine, 
+         AccessStyle()->AccessFont(), AccessStyle()->GetCaptionText());
    }
 
    tBase::Render(pRenderDevice);
@@ -103,17 +104,17 @@ void cUILabel::Render(IRenderDevice * pRenderDevice)
 {
    cUIRect rect = GetScreenRect();
    UIDrawText(m_text.c_str(), m_text.length(), &rect,
-      kTextCenter | kTextVCenter, AccessStyle()->AccessFont(), AccessStyle()->GetText());
+      kDT_Center | kDT_VCenter | kDT_SingleLine, AccessStyle()->AccessFont(), AccessStyle()->GetText());
 }
 
 ///////////////////////////////////////
 
 cUISize cUILabel::GetPreferredSize() const
 {
-   float textWidth, textHeight;
-   AccessStyle()->AccessFont()->MeasureText(m_text.c_str(), m_text.length(), &textWidth, &textHeight);
-
-   return cUISize(textWidth, textHeight);
+   tRect rect(0,0,0,0);
+   AccessStyle()->AccessFont()->DrawText(m_text.c_str(), m_text.length(), 
+      kDT_CalcRect | kDT_SingleLine, &rect, AccessStyle()->GetText());
+   return cUISize(rect.GetWidth(), rect.GetHeight());
 }
 
 
@@ -209,10 +210,9 @@ void cUIButton::Render(IRenderDevice * pRenderDevice)
    {
       screenRect.left += offset.x;
       screenRect.top += offset.y;
-      UIDrawText(m_text.c_str(), 
-         m_text.length(), 
+      UIDrawText(m_text.c_str(), m_text.length(), 
          &screenRect,
-         kTextCenter | kTextVCenter, 
+         kDT_Center | kDT_VCenter | kDT_SingleLine, 
          AccessStyle()->AccessFont(), 
          IsMouseOver() ? AccessStyle()->GetHot() : AccessStyle()->GetText());
    }
@@ -247,11 +247,11 @@ bool cUIButton::OnEvent(const cUIEvent * pEvent)
 
 cUISize cUIButton::GetPreferredSize() const
 {
-   float textWidth, textHeight;
-   AccessStyle()->AccessFont()->MeasureText(GetText(), -1, &textWidth, &textHeight);
-
-   return cUISize(textWidth + (2 * kTextBorderHorz),
-                  textHeight + (2 * kTextBorderVert));
+   tRect rect(0,0,0,0);
+   AccessStyle()->AccessFont()->DrawText(m_text.c_str(), m_text.length(), 
+      kDT_CalcRect | kDT_SingleLine, &rect, AccessStyle()->GetText());
+   return cUISize(rect.GetWidth() + (2 * kTextBorderHorz), 
+                  rect.GetHeight() + (2 * kTextBorderVert));
 }
 
 
@@ -402,29 +402,29 @@ void cUIEdit::Render(IRenderDevice * pRenderDevice)
    rect.right -= g_3dEdge + kHorzInset;
    rect.bottom -= kVertInset;
 
-   UIPushClipRect(rect);
+   tRect scissor(Round(rect.left), Round(rect.top), Round(rect.right), Round(rect.bottom));
+   pRenderDevice->SetScissorRect(&scissor);
 
    static const float kCursorWidth = 1.f;
 
-//   cUISize size = UIMeasureText(m_text.c_str(), m_selection.GetCursorIndex(), kTextNoClip, AccessStyle()->GetFont());
+   // Determine the width of the text up to the cursor and offset the left edge
+   // if necessary so that the cursor is always in view.
    cUISize size = UIMeasureText(m_text.c_str(), m_selection.GetCursorIndex(), AccessStyle()->AccessFont());
    if (size.width >= rect.GetWidth())
    {
       rect.left -= size.width - rect.GetWidth() + kCursorWidth;
    }
 
-   // don't do clipping in the UIDrawText call because it's already done (above)
-   UIDrawText(m_text.c_str(), m_text.length(), &rect, kTextNoClip, AccessStyle()->AccessFont(), AccessStyle()->GetText());
+   // Don't clip because it's already done above
+   UIDrawText(m_text.c_str(), m_text.length(), &rect, kDT_NoClip, AccessStyle()->AccessFont(), AccessStyle()->GetText());
 
-   // render the cursor if this widget has focus and it's 'on' in its blink cycle
+   // Render the cursor if this widget has focus and its blink cycle is 'on'
    if (IsFocussed() && (m_bCursorBlinkOn || m_bCursorForceOn))
    {
-      cUISize textSize = UIMeasureText(m_text.c_str(), m_selection.GetCursorIndex(), AccessStyle()->AccessFont());
-
       cUIRect cursorRect(
-         rect.left + textSize.width,
+         rect.left + size.width,
          rect.top + kCursorWidth,
-         rect.left + textSize.width + kCursorWidth,
+         rect.left + size.width + kCursorWidth,
          rect.bottom - kCursorWidth);
 
       static const cUIColor BLACK(0,0,0,1);
@@ -448,7 +448,7 @@ void cUIEdit::Render(IRenderDevice * pRenderDevice)
       m_timeLastBlink = time;
    }
 
-   UIPopClipRect();
+   pRenderDevice->SetScissorRect(NULL);
 }
 
 ///////////////////////////////////////
@@ -462,12 +462,17 @@ bool cUIEdit::OnEvent(const cUIEvent * pEvent)
    else if (pEvent->code == kEventKeyUp)
    {
       m_bCursorForceOn = false;
+      m_bCursorBlinkOn = true;
+      m_timeLastBlink = TimeGetSecs();
    }
    else if (pEvent->code == kEventKeyDown)
    {
       // attempt to keep the cursor visible if the user is going to
       // hold down any key for a number of repeat characters
-      m_bCursorForceOn = true;
+      m_bCursorForceOn = 
+         (pEvent->keyCode != kCtrl) && 
+         (pEvent->keyCode != kLShift) && 
+         (pEvent->keyCode != kRShift);
 
       switch (pEvent->keyCode)
       {
@@ -544,11 +549,13 @@ cUISize cUIEdit::GetPreferredSize() const
 {
    char * psz = reinterpret_cast<char *>(alloca(m_size * sizeof(char)));
    memset(psz, 'M', m_size);
-   cUISize size;
-   AccessStyle()->AccessFont()->MeasureText(psz, m_size, &size.width, &size.height);
-   size.width += kHorzInset * 2;
-   size.height += kVertInset * 2;
-   return size;
+
+   tRect rect(0,0,0,0);
+   AccessStyle()->AccessFont()->DrawText(psz, m_size, 
+      kDT_CalcRect | kDT_SingleLine, &rect, AccessStyle()->GetText());
+
+   return cUISize(rect.GetWidth() + (kHorzInset * 2), 
+                  rect.GetHeight() + (kVertInset * 2));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -94,85 +94,35 @@ inline bool cUISize::operator ==(const cUISize & other) const
 // CLASS: cUIRect
 //
 
-struct sUIRect
-{
-   float left, top, right, bottom;
-};
-
-///////////////////////////////////////
-
-class cUIRect : public sUIRect
+class cUIRect : public tRectf
 {
 public:
    cUIRect();
    cUIRect(float l, float t, float r, float b);
    cUIRect(const cUIPoint & topLeft, const cUISize & size);
    bool PtInside(const cUIPoint & point) const;
-   void Offset(float x, float y);
-   float GetWidth() const;
-   float GetHeight() const;
    cUIPoint GetTopLeft() const;
 };
 
 ///////////////////////////////////////
 
-inline cUIRect::cUIRect()
-{
-}
-
-///////////////////////////////////////
-
 inline cUIRect::cUIRect(float l, float t, float r, float b)
+ : tRectf(l, t, r, b)
 {
-   left = l;
-   top = t;
-   right = r;
-   bottom = b;
 }
 
 ///////////////////////////////////////
 
 inline cUIRect::cUIRect(const cUIPoint & topLeft, const cUISize & size)
+ : tRectf(topLeft.x, topLeft.y, topLeft.x + size.width, topLeft.y + size.height)
 {
-   left = topLeft.x;
-   top = topLeft.y;
-   right = topLeft.x + size.width;
-   bottom = topLeft.y + size.height;
 }
 
 ///////////////////////////////////////
 
 inline bool cUIRect::PtInside(const cUIPoint & point) const
 {
-   if (point.x >= left && point.x <= right &&
-       point.y >= top && point.y <= bottom)
-      return true;
-   else
-      return false;
-}
-
-///////////////////////////////////////
-
-inline void cUIRect::Offset(float x, float y)
-{
-   left += x;
-   top += y;
-   right += x;
-   bottom += y;
-}
-
-///////////////////////////////////////
-
-inline float cUIRect::GetWidth() const
-{
-   return right - left;
-}
-
-///////////////////////////////////////
-
-inline float cUIRect::GetHeight() const
-{
-   return bottom - top;
+   return tRectf::PtInside(point.x, point.y);
 }
 
 ///////////////////////////////////////
