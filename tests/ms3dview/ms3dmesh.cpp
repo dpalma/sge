@@ -104,6 +104,29 @@ static void MatrixFromAngles(tVec3 angles, tMatrix4 * pMatrix)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+static char * GetResource(const char * pResId, const char * pResType)
+{
+   HRSRC hR = FindResource(AfxGetInstanceHandle(), pResId, pResType);
+   if (hR)
+   {
+      uint resSize = SizeofResource(AfxGetInstanceHandle(), hR);
+      HGLOBAL hG = LoadResource(AfxGetInstanceHandle(), hR);
+      if (hG)
+      {
+         void * pResData = LockResource(hG);
+         if (pResData)
+         {
+            char * pszContents = new char[resSize + 1];
+            strcpy(pszContents, (const char *)pResData);
+            return pszContents;
+         }
+      }
+   }
+   return NULL;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cMs3dGroup
 //
@@ -253,43 +276,19 @@ tResult cReadWriteOps<cMs3dBone>::Read(IReader * pReader, cMs3dBone * pBone)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cMs3dJoint
-//
 
-///////////////////////////////////////
-
-cMs3dJoint::cMs3dJoint()
-{
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cReadWriteOps<cMs3dJoint>
-//
-
-template <>
-class cReadWriteOps<cMs3dJoint>
-{
-public:
-   static tResult Read(IReader * pReader, cMs3dJoint * pJoint);
-};
-
-///////////////////////////////////////
-
-tResult cReadWriteOps<cMs3dJoint>::Read(IReader * pReader, cMs3dJoint * pJoint)
+static tResult ReadKeyFrames(IReader * pReader, 
+                             std::vector<sKeyFrameVec3> * pTranslationFrames,
+                             std::vector<sKeyFrameQuat> * pRotationFrames)
 {
    Assert(pReader != NULL);
-   Assert(pJoint != NULL);
+   Assert(pTranslationFrames != NULL);
+   Assert(pRotationFrames != NULL);
 
    tResult result = E_FAIL;
 
    do
    {
-      if (cReadWriteOps<cMs3dBone>::Read(pReader, pJoint) != S_OK)
-         break;
-
       uint16 nKeyFramesRot, nKeyFramesTrans;
 
       if (pReader->Read(&nKeyFramesRot, sizeof(nKeyFramesRot)) != S_OK)
@@ -311,28 +310,18 @@ tResult cReadWriteOps<cMs3dJoint>::Read(IReader * pReader, cMs3dJoint * pJoint)
       if (pReader->Read(&translationKeys[0], translationKeys.size() * sizeof(ms3d_keyframe_pos_t)) != S_OK)
          break;
 
-      sKeyFrameVec3 * pTranslationFrames = (sKeyFrameVec3 *)alloca(nKeyFramesTrans * sizeof(sKeyFrameVec3));
+      pTranslationFrames->resize(nKeyFramesTrans);
       for (unsigned i = 0; i < nKeyFramesTrans; i++)
       {
-         pTranslationFrames[i].time = translationKeys[i].time;
-         pTranslationFrames[i].value = tVec3(translationKeys[i].position);
+         (*pTranslationFrames)[i].time = translationKeys[i].time;
+         (*pTranslationFrames)[i].value = tVec3(translationKeys[i].position);
       }
 
-      sKeyFrameQuat * pRotationFrames = (sKeyFrameQuat *)alloca(nKeyFramesRot * sizeof(sKeyFrameQuat));
+      pRotationFrames->resize(nKeyFramesRot);
       for (i = 0; i < nKeyFramesRot; i++)
       {
-         pRotationFrames[i].time = rotationKeys[i].time;
-         pRotationFrames[i].value = QuatFromEulerAngles(tVec3(rotationKeys[i].rotation));
-      }
-
-      if (KeyFrameInterpolatorCreate(
-         pJoint->GetName(),
-         NULL, 0,
-         pRotationFrames, nKeyFramesRot,
-         pTranslationFrames, nKeyFramesTrans,
-         &pJoint->m_pInterpolator) != S_OK)
-      {
-         break;
+         (*pRotationFrames)[i].time = rotationKeys[i].time;
+         (*pRotationFrames)[i].value = QuatFromEulerAngles(tVec3(rotationKeys[i].rotation));
       }
 
       result = S_OK;
@@ -352,6 +341,13 @@ cMs3dSkeleton::cMs3dSkeleton()
 {
 }
 
+template <>
+std::vector<IKeyFrameInterpolator *>::~vector()
+{
+   std::for_each(begin(), end(), CTInterfaceMethodRef(&IUnknown::Release));
+   clear();
+}
+
 cMs3dSkeleton::~cMs3dSkeleton()
 {
    Reset();
@@ -359,7 +355,7 @@ cMs3dSkeleton::~cMs3dSkeleton()
 
 void cMs3dSkeleton::Reset()
 {
-   m_joints.clear();
+   m_bones.clear();
 
    std::for_each(m_interpolators.begin(), m_interpolators.end(), CTInterfaceMethodRef(&IUnknown::Release));
    m_interpolators.clear();
@@ -367,41 +363,40 @@ void cMs3dSkeleton::Reset()
 
 void cMs3dSkeleton::SetupJoints()
 {
-   if (m_joints.empty())
+   if (m_bones.empty())
    {
       return;
    }
 
-   typedef std::map<std::string, int> tJointNames;
-
-   tJointNames jointNames;
+   typedef std::map<std::string, int> tBoneNames;
+   tBoneNames boneNames;
 
    int index;
-   std::vector<cMs3dJoint>::iterator iter;
+   std::vector<cMs3dBone>::iterator iter;
 
-   for (iter = m_joints.begin(), index = 0; iter != m_joints.end(); iter++, index++)
+   for (iter = m_bones.begin(), index = 0; iter != m_bones.end(); iter++, index++)
    {
-      const char * pszJointName = iter->GetName();
-      if (pszJointName && *pszJointName)
+      const char * pszBoneName = iter->GetName();
+      if (pszBoneName && *pszBoneName)
       {
-         jointNames.insert(std::make_pair(pszJointName, index));
+         boneNames.insert(std::make_pair(pszBoneName, index));
       }
    }
 
-   std::vector<tMatrix4> absolutes(m_joints.size());
+   std::vector<tMatrix4> absolutes(m_bones.size());
 
-   for (iter = m_joints.begin(), index = 0; iter != m_joints.end(); iter++, index++)
+   for (iter = m_bones.begin(), index = 0; iter != m_bones.end(); iter++, index++)
    {
       int iParent = -1;
 
-      const char * pszParentJointName = iter->GetParentName();
-      if (pszParentJointName && *pszParentJointName)
+      const char * pszParentName = iter->GetParentName();
+      if (pszParentName && *pszParentName)
       {
-         tJointNames::iterator pjni = jointNames.find(pszParentJointName);
-         if (pjni != jointNames.end())
+         tBoneNames::iterator pjni = boneNames.find(pszParentName);
+         if (pjni != boneNames.end())
          {
             iParent = pjni->second;
-            Assert(iParent >= 0 && iParent < m_joints.size());
+            Assert(iParent >= 0 && iParent < m_bones.size());
          }
       }
 
@@ -444,7 +439,8 @@ tResult cReadWriteOps<cMs3dSkeleton>::Read(IReader * pReader, cMs3dSkeleton * pS
    Assert(pReader != NULL);
    Assert(pSkeleton != NULL);
 
-   Assert(pSkeleton->m_joints.empty());
+   Assert(pSkeleton->m_bones.empty());
+   Assert(pSkeleton->m_interpolators.empty());
 
    tResult result = E_FAIL;
 
@@ -464,12 +460,33 @@ tResult cReadWriteOps<cMs3dSkeleton>::Read(IReader * pReader, cMs3dSkeleton * pS
 
       pSkeleton->m_bones.resize(nJoints);
 
-      pSkeleton->m_joints.resize(nJoints);
       for (uint i = 0; i < nJoints; i++)
       {
-         if (pReader->Read(&pSkeleton->m_joints[i]) != S_OK)
+         if (pReader->Read(&pSkeleton->m_bones[i]) != S_OK)
             break;
+
+         std::vector<sKeyFrameVec3> translationFrames;
+         std::vector<sKeyFrameQuat> rotationFrames;
+         if (ReadKeyFrames(pReader, &translationFrames, &rotationFrames) != S_OK)
+         {
+            break;
+         }
+
+         IKeyFrameInterpolator * pInterpolator = NULL;
+         if (KeyFrameInterpolatorCreate(
+            pSkeleton->m_bones[i].GetName(),
+            NULL, 0,
+            &rotationFrames[0], rotationFrames.size(),
+            &translationFrames[0], rotationFrames.size(),
+            &pInterpolator) != S_OK)
+         {
+            SafeRelease(pInterpolator);
+            break;
+         }
+
+         pSkeleton->m_interpolators.push_back(pInterpolator);
       }
+
       if (i < nJoints)
          break;
 
@@ -531,50 +548,6 @@ void cMs3dMesh::GetAABB(tVec3 * pMaxs, tVec3 * pMins) const
    Assert(pMaxs && pMins);
    *pMaxs = m_maxs;
    *pMins = m_mins;
-}
-
-static char * GetResource(const char * pResId, const char * pResType)
-{
-   HRSRC hR = FindResource(AfxGetInstanceHandle(), pResId, pResType);
-   if (hR)
-   {
-      uint resSize = SizeofResource(AfxGetInstanceHandle(), hR);
-      HGLOBAL hG = LoadResource(AfxGetInstanceHandle(), hR);
-      if (hG)
-      {
-         void * pResData = LockResource(hG);
-         if (pResData)
-         {
-            char * pszContents = new char[resSize + 1];
-            strcpy(pszContents, (const char *)pResData);
-            return pszContents;
-         }
-      }
-   }
-   return NULL;
-}
-
-static char * GetFileContents(const cFileSpec & file)
-{
-   cAutoIPtr<IReader> pReader = FileCreateReader(file);
-   if (pReader)
-   {
-      pReader->Seek(0, kSO_End);
-      long size = pReader->Tell();
-      pReader->Seek(0, kSO_Set);
-
-      char * pszContents = new char[size + 1];
-
-      if (pReader->Read(pszContents, size) == S_OK)
-      {
-         pszContents[size] = 0;
-         return pszContents;
-      }
-
-      delete [] pszContents;
-   }
-
-   return NULL;
 }
 
 tResult cMs3dMesh::Read(IReader * pReader, IRenderDevice * pRenderDevice, IResourceManager * pResourceManager)
@@ -703,11 +676,11 @@ tResult cMs3dMesh::Read(IReader * pReader, IRenderDevice * pRenderDevice, IResou
       SetupJoints();
 
       typedef std::vector<tMatrix4> tMatrices;
-      tMatrices inverses(GetJointCount());
+      tMatrices inverses(GetBoneCount());
 
       for (int i = 0; i < inverses.size(); i++)
       {
-         MatrixInvert(GetJoint(i).GetFinalMatrix(), &inverses[i]);
+         MatrixInvert(GetBone(i).GetFinalMatrix(), &inverses[i]);
       }
 
       // transform all vertices by the inverse of the affecting bone's absolute matrix
@@ -783,31 +756,37 @@ void cMs3dMesh::SetFrame(float percent)
 {
    Assert(percent >= 0 && percent <= 1);
 
-   for (int i = 0; i < GetJointCount(); i++)
+   for (int i = 0; i < GetBoneCount(); i++)
    {
       tQuat rotation;
       tVec3 translation;
 
-      cMs3dJoint * pJoint = GetJointPtr(i);
+      cMs3dBone * pBone = GetBonePtr(i);
 
-      if (pJoint->AccessInterpolator()->Interpolate(
-         percent * pJoint->AccessInterpolator()->GetPeriod(),
+      IKeyFrameInterpolator * pInterpolator = AccessInterpolator(i);
+
+      if (pInterpolator->Interpolate(
+         percent * pInterpolator->GetPeriod(),
          NULL, &rotation, &translation) == S_OK)
       {
-         tMatrix4 mt, mr, mf, temp;
+         tMatrix4 mt;
          MatrixTranslate(translation.x, translation.y, translation.z, &mt);
-         rotation.ToMatrix(&mr);
-         temp = mt * mr;
-         mf = pJoint->GetLocalMatrix() * temp;
 
-         if (pJoint->GetParentIndex() == -1)
+         tMatrix4 mr;
+         rotation.ToMatrix(&mr);
+
+         tMatrix4 temp = mt * mr;
+
+         tMatrix4 mf = pBone->GetLocalMatrix() * temp;
+
+         if (pBone->GetParentIndex() == -1)
          {
-            pJoint->SetFinalMatrix(mf);
+            pBone->SetFinalMatrix(mf);
          }
          else
          {
-            temp = GetJointPtr(pJoint->GetParentIndex())->GetFinalMatrix() * mf;
-            pJoint->SetFinalMatrix(temp);
+            temp = GetBonePtr(pBone->GetParentIndex())->GetFinalMatrix() * mf;
+            pBone->SetFinalMatrix(temp);
          }
       }
    }
@@ -845,7 +824,7 @@ void cMs3dMesh::RenderSoftware() const
             }
             else
             {
-               const tMatrix4 & m = GetJoint(vk.boneId).GetFinalMatrix();
+               const tMatrix4 & m = GetBone(vk.boneId).GetFinalMatrix();
 
                tVec4 nprime, n(tri.vertexNormals[k][0], tri.vertexNormals[k][1], tri.vertexNormals[k][2], k4thDimension);
                nprime = m.Transform(n);

@@ -194,25 +194,6 @@ inline const tMatrix4 & cMs3dBone::GetFinalMatrix() const
 }
 
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cMs3dJoint
-//
-
-class cMs3dJoint : public cMs3dBone
-{
-   friend class cReadWriteOps<cMs3dJoint>;
-
-public:
-   cMs3dJoint();
-
-   IKeyFrameInterpolator * AccessInterpolator() { return m_pInterpolator; }
-
-private:
-   cAutoIPtr<IKeyFrameInterpolator> m_pInterpolator;
-};
-
-
 ////////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cMs3dSkeleton
@@ -229,12 +210,11 @@ public:
    cMs3dSkeleton();
    virtual ~cMs3dSkeleton();
 
-   void SetNumJoints(int nJoints);
-   void SetJoint(int index, const cMs3dJoint & joint);
+   int GetBoneCount() const { return m_bones.size(); }
+   const cMs3dBone & GetBone(int index) const { return m_bones[index]; }
+   cMs3dBone * GetBonePtr(int index) { return &m_bones[index]; }
 
-   int GetJointCount() const { return m_joints.size(); }
-   const cMs3dJoint & GetJoint(int index) const { return m_joints[index]; }
-   cMs3dJoint * GetJointPtr(int index) { return &m_joints[index]; }
+   IKeyFrameInterpolator * AccessInterpolator(int index) { return m_interpolators[index]; }
 
    void Reset();
    void SetupJoints();
@@ -245,9 +225,6 @@ private:
 
    typedef std::vector<IKeyFrameInterpolator *> tInterpolators;
    tInterpolators m_interpolators;
-
-   typedef std::vector<cMs3dJoint> tJoints;
-   tJoints m_joints;
 };
 
 
