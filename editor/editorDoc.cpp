@@ -216,35 +216,28 @@ cEditorDoc::~cEditorDoc()
 
 tResult cEditorDoc::New(const cMapSettings * pMapSettings)
 {
+   if (pMapSettings == NULL)
+   {
+      return E_POINTER;
+   }
+
    Verify(Reset() == S_OK);
+
+   UseGlobal(Terrain);
+   if (!pTerrain)
+   {
+      return E_FAIL;
+   }
+
+   pTerrain->Set(*pMapSettings);
 
    m_pTerrain = new cTerrain;
    if (m_pTerrain == NULL)
    {
       return E_OUTOFMEMORY;
    }
-   else
-   {
-      UseGlobal(EditorTileManager);
-      cAutoIPtr<IEditorTileSet> pTileSet;
-      if (pEditorTileManager->GetTileSet(pMapSettings->GetTileSet(), &pTileSet) != S_OK)
-      {
-         WarnMsg1("Unable to find tile set \"%s\"; using default instead\n",
-            pMapSettings->GetTileSet() == NULL ? "(NULL)" : pMapSettings->GetTileSet());
-         pEditorTileManager->GetDefaultTileSet(&pTileSet);
-      }
 
-      cAutoIPtr<IHeightMap> pHeightMap;
-      if (pMapSettings->GetHeightMap(&pHeightMap) == S_OK)
-      {
-         return m_pTerrain->Init(pMapSettings->GetXDimension(),
-                                 pMapSettings->GetZDimension(),
-                                 pTileSet,
-                                 pHeightMap);
-      }
-   }
-
-   return E_FAIL;
+   return m_pTerrain->Init(*pMapSettings);
 }
 
 ////////////////////////////////////////

@@ -6,6 +6,7 @@
 #include "terrain.h"
 #include "editorapi.h"
 #include "terrainapi.h"
+#include "editorTypes.h"
 
 #include "materialapi.h"
 #include "renderapi.h"
@@ -136,6 +137,72 @@ tResult cReadWriteOps<tTerrainVertexVector>::Write(IWriter * pWriter,
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: cTerrainGlobal
+//
+
+////////////////////////////////////////
+
+tResult TerrainCreate()
+{
+   cAutoIPtr<ITerrain> p(new cTerrainGlobal);
+   if (!p)
+   {
+      return E_OUTOFMEMORY;
+   }
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+BEGIN_CONSTRAINTS()
+   AFTER_GUID(IID_IScene)
+END_CONSTRAINTS()
+
+////////////////////////////////////////
+
+cTerrainGlobal::cTerrainGlobal()
+ : cGlobalObject<IMPLEMENTS(ITerrain)>("Terrain", CONSTRAINTS())
+{
+}
+
+////////////////////////////////////////
+
+cTerrainGlobal::~cTerrainGlobal()
+{
+}
+
+////////////////////////////////////////
+
+tResult cTerrainGlobal::Init()
+{
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainGlobal::Term()
+{
+   Reset();
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainGlobal::Set(const cMapSettings & mapSettings)
+{
+   return E_NOTIMPL;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainGlobal::Reset()
+{
+   return E_NOTIMPL;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cTerrain
 //
 
@@ -235,35 +302,39 @@ tResult cTerrain::Write(IWriter * pWriter)
 
 ////////////////////////////////////////
 
-tResult cTerrain::Init(uint nTilesX, uint nTilesZ, IEditorTileSet * pTileSet, IHeightMap * pHeightMap)
+tResult cTerrain::Init(const cMapSettings & mapSettings)
 {
-   if (nTilesX == 0 || nTilesZ == 0)
+   Assert(!m_pTileSet);
+   Assert(m_tileSetName.empty());
+   Assert(m_nTilesX == 0 && m_nTilesZ == 0);
+
+   UseGlobal(EditorTileManager);
+   if (pEditorTileManager->GetTileSet(mapSettings.GetTileSet(), &m_pTileSet) != S_OK)
    {
-      return E_INVALIDARG;
+      WarnMsg1("Unable to find tile set \"%s\"; using default instead\n",
+         mapSettings.GetTileSet() == NULL ? "(NULL)" : mapSettings.GetTileSet());
+      pEditorTileManager->GetDefaultTileSet(&m_pTileSet);
    }
 
-   if (pTileSet == NULL || pHeightMap == NULL)
+   if (!m_pTileSet || m_pTileSet->GetName(&m_tileSetName) != S_OK)
    {
-      return E_POINTER;
+      return E_FAIL;
    }
 
-   if (FAILED(InitQuads(nTilesX, nTilesZ, pHeightMap, &m_terrainQuads)))
+   cAutoIPtr<IHeightMap> pHeightMap;
+   if (mapSettings.GetHeightMap(&pHeightMap) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   if (FAILED(InitQuads(mapSettings.GetXDimension(), mapSettings.GetZDimension(), pHeightMap, &m_terrainQuads)))
    {
       return E_FAIL;
    }
 
    m_tileSize = kDefaultStepSize;
-   m_nTilesX = nTilesX;
-   m_nTilesZ = nTilesZ;
-
-   Assert(!m_pTileSet);
-   Assert(m_tileSetName.empty());
-
-   m_pTileSet = CTAddRef(pTileSet);
-   if (pTileSet->GetName(&m_tileSetName) != S_OK)
-   {
-      return E_FAIL;
-   }
+   m_nTilesX = mapSettings.GetXDimension();
+   m_nTilesZ = mapSettings.GetZDimension();
 
    m_nChunksX = m_nTilesX / kTilesPerChunk;
    m_nChunksZ = m_nTilesZ / kTilesPerChunk;

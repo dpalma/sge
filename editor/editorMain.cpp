@@ -4,6 +4,7 @@
 #include "stdhdr.h"
 
 #include "editorapi.h"
+#include "terrainapi.h"
 #include "editorMessageLoop.h"
 
 #if _ATL_VER < 0x0700
@@ -67,6 +68,7 @@ static void RegisterGlobalObjects()
    EditorTileManagerCreate();
    ThreadCallerCreate();
    EditorAppCreate();
+   TerrainCreate();
 }
 
 /////////////////////////////////////////////////////////////////////////////

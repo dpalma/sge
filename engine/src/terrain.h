@@ -4,9 +4,11 @@
 #if !defined(INCLUDED_TERRAIN_H)
 #define INCLUDED_TERRAIN_H
 
+#include "terrainapi.h"
+
 #include "sceneapi.h"
 
-#include "comtools.h"
+#include "globalobj.h"
 #include "vec2.h"
 #include "vec3.h"
 #include "quat.h"
@@ -28,6 +30,8 @@ F_DECLARE_INTERFACE(ITexture);
 F_DECLARE_INTERFACE(IReader);
 F_DECLARE_INTERFACE(IWriter);
 
+class cMapSettings;
+
 class cTerrain;
 class cTerrainChunk;
 
@@ -42,11 +46,6 @@ struct sTerrainVertex
    tVec3 pos;
 };
 
-/////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cTerrain
-//
-
 const int kDefaultStepSize = 32;
 const int kTilesPerChunk = 32;
 
@@ -58,6 +57,31 @@ struct sTerrainQuad
 
 typedef std::vector<sTerrainQuad> tTerrainQuads;
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cTerrainGlobal
+//
+
+class cTerrainGlobal : public cGlobalObject<IMPLEMENTS(ITerrain)>
+{
+public:
+   cTerrainGlobal();
+   ~cTerrainGlobal();
+
+   virtual tResult Init();
+   virtual tResult Term();
+
+   virtual tResult Set(const cMapSettings & mapSettings);
+   virtual tResult Reset();
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cTerrain
+//
+
 class cTerrain
 {
 public:
@@ -67,7 +91,7 @@ public:
    tResult Read(IReader * pReader);
    tResult Write(IWriter * pWriter);
 
-   tResult Init(uint nTilesX, uint nTilesZ, IEditorTileSet * pTileSet, IHeightMap * pHeightMap);
+   tResult Init(const cMapSettings & mapSettings);
    static tResult InitQuads(uint nTilesX, uint nTilesZ, IHeightMap * pHeightMap, tTerrainQuads * pQuads);
    tResult RegenerateChunks();
 

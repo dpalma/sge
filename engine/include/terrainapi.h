@@ -12,7 +12,27 @@
 
 #define TERRAIN_API // temporary
 
+F_DECLARE_INTERFACE(ITerrain);
 F_DECLARE_INTERFACE(IHeightMap);
+
+class cMapSettings;
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: ITerrain
+//
+
+interface ITerrain : IUnknown
+{
+   virtual tResult Set(const cMapSettings & mapSettings) = 0;
+   virtual tResult Reset() = 0;
+};
+
+////////////////////////////////////////
+
+TERRAIN_API tResult TerrainCreate();
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
