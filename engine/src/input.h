@@ -35,9 +35,14 @@ public:
    virtual tResult RemoveWindow(IWindow * pWindow);
 
 private:
+   void DispatchKeyEvent(long key, bool down, double time);
+   void DispatchMouseEvent(int x, int y, uint mouseState, double time);
+
+   const char * KeyGetDownBinding(long key) const;
+   const char * KeyGetUpBinding(long key) const;
+
    class cWindowSink : public cComObject<IMPLEMENTS(IWindowSink)>
    {
-   //protected:
       virtual void DeleteThis() { /* do not delete */ }
    public:
       virtual void OnKeyEvent(long key, bool down, double time);
@@ -47,8 +52,37 @@ private:
       virtual void OnActivateApp(bool bActive, double time) {}
    };
 
+   friend class cWindowSink;
+
    cWindowSink m_windowSink;
+
+   enum { kMaxKeys = 256 };
+   ulong m_keyRepeats[kMaxKeys];
+   char * m_keyDownBindings[kMaxKeys];
+   char * m_keyUpBindings[kMaxKeys];
 };
+
+///////////////////////////////////////
+
+inline const char * cInput::KeyGetDownBinding(long key) const
+{
+   Assert(key > -1 && key < kMaxKeys);
+   if (key > -1 && key < kMaxKeys)
+      return m_keyDownBindings[key];
+   else
+      return NULL;
+}
+
+///////////////////////////////////////
+
+inline const char * cInput::KeyGetUpBinding(long key) const
+{
+   Assert(key > -1 && key < kMaxKeys);
+   if (key > -1 && key < kMaxKeys)
+      return m_keyUpBindings[key];
+   else
+      return NULL;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 

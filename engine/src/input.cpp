@@ -5,18 +5,19 @@
 
 #include "input.h"
 #include "keys.h"
-#include <string.h>
-#include <stdlib.h>
-#include <list>
+
+#include <cstring>
+#include <cstdlib>
 #include <locale>
-#include <algorithm>
 
 #include "dbgalloc.h" // must be last header
+
+///////////////////////////////////////////////////////////////////////////////
 
 #if !defined(NDEBUG) && defined(_MSC_VER)
 EXTERN_C DECLSPEC_DLLIMPORT int CDECL _CrtIsValidHeapPointer(const void * userData);
 #else
-#define _CrtIsValidHeapPointer(userData) (true)
+#define _CrtIsValidHeapPointer(userData) ((int)1)
 #endif
 
 LOG_DEFINE_CHANNEL(KeyEvent);
@@ -30,42 +31,13 @@ static bool ScriptExecString(const char * pszCode)
    return false;
 }
 
-static void KeyBind(long key, const char * pszKeyDownCmd, const char * pszKeyUpCmd);
-static void KeyUnbind(long key);
-
-const int kMaxKeys = 256;
-ulong g_keyRepeats[kMaxKeys] = { 0 };
-char * g_keyDownBindings[kMaxKeys] = { 0 };
-char * g_keyUpBindings[kMaxKeys] = { 0 };
-typedef std::list<IInputListener *> tInputListeners;
-tInputListeners g_inputListeners;
-
 ///////////////////////////////////////////////////////////////////////////////
-
-inline const char * KeyGetDownBinding(long key)
-{
-   Assert(key > -1 && key < kMaxKeys);
-   if (key > -1 && key < kMaxKeys)
-      return g_keyDownBindings[key];
-   else
-      return NULL;
-}
-
-inline const char * KeyGetUpBinding(long key)
-{
-   Assert(key > -1 && key < kMaxKeys);
-   if (key > -1 && key < kMaxKeys)
-      return g_keyUpBindings[key];
-   else
-      return NULL;
-}
 
 inline long KeyGetBindable(long key)
 {
    // not allowed to bind uppercase keys
    if (isalpha(key))
    {
-      Assert(KeyGetDownBinding(toupper(key)) == NULL);
       return tolower(key);
    }
    else
@@ -153,18 +125,117 @@ static long Name2Key(const char * pszKeyName)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cInput
+//
 
-bool KeyIsDown(long key)
+///////////////////////////////////////
+
+cInput::cInput()
+{
+   memset(m_keyDownBindings, 0, sizeof(m_keyDownBindings));
+   memset(m_keyUpBindings, 0, sizeof(m_keyUpBindings));
+}
+
+///////////////////////////////////////
+
+tResult cInput::Init()
+{
+#if !defined(NDEBUG) && defined(_WIN32)
+   Assert(_countof(m_keyDownBindings) == kMaxKeys);
+   Assert(_countof(m_keyDownBindings) == _countof(m_keyUpBindings));
+   for (int i = 0; i < _countof(m_keyDownBindings); i++)
+   {
+      Assert(_CrtIsValidHeapPointer(m_keyDownBindings[i]) || m_keyDownBindings[i] == NULL);
+      Assert(_CrtIsValidHeapPointer(m_keyUpBindings[i]) || m_keyUpBindings[i] == NULL);
+   }
+#endif
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cInput::Term()
+{
+   Assert(_countof(m_keyDownBindings) == _countof(m_keyUpBindings));
+   for (int i = 0; i < _countof(m_keyDownBindings); i++)
+   {
+      delete [] m_keyDownBindings[i];
+      m_keyDownBindings[i] = NULL;
+      delete [] m_keyUpBindings[i];
+      m_keyUpBindings[i] = NULL;
+   }
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+bool cInput::KeyIsDown(long key)
 {
    if (key > -1 && key < kMaxKeys)
-      return g_keyRepeats[key] > 0;
+      return m_keyRepeats[key] > 0;
    else
       return false;
 }
 
-///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////
 
-void KeyEvent(long key, bool down, double time)
+void cInput::KeyBind(long key, const char * pszDownCmd, const char * pszUpCmd)
+{
+   Assert(key > -1 && key < kMaxKeys);
+
+   Assert(KeyGetDownBinding(toupper(key)) == NULL);
+   key = KeyGetBindable(key);
+
+   KeyUnbind(key);
+
+   if (pszDownCmd != NULL && *pszDownCmd != 0)
+   {
+      m_keyDownBindings[key] = new char[strlen(pszDownCmd) + 1];
+      strcpy(m_keyDownBindings[key], pszDownCmd);
+   }
+
+   if (pszUpCmd != NULL && *pszUpCmd != 0)
+   {
+      m_keyUpBindings[key] = new char[strlen(pszUpCmd) + 1];
+      strcpy(m_keyUpBindings[key], pszUpCmd);
+   }
+}
+
+///////////////////////////////////////
+
+void cInput::KeyUnbind(long key)
+{
+   Assert(key > -1 && key < kMaxKeys);
+
+   key = KeyGetBindable(key);
+
+   delete [] m_keyDownBindings[key];
+   m_keyDownBindings[key] = NULL;
+
+   delete [] m_keyUpBindings[key];
+   m_keyUpBindings[key] = NULL;
+}
+
+///////////////////////////////////////
+
+tResult cInput::AddWindow(IWindow * pWindow)
+{
+   Assert(pWindow != NULL);
+   return pWindow->Connect(&m_windowSink);
+}
+
+///////////////////////////////////////
+
+tResult cInput::RemoveWindow(IWindow * pWindow)
+{
+   Assert(pWindow != NULL);
+   return pWindow->Disconnect(&m_windowSink);
+}
+
+///////////////////////////////////////
+
+void cInput::DispatchKeyEvent(long key, bool down, double time)
 {
 #ifndef NDEBUG
    const char * pszKey = Key2Name(key);
@@ -183,16 +254,16 @@ void KeyEvent(long key, bool down, double time)
 
    if (down)
    {
-      g_keyRepeats[key]++;
+      m_keyRepeats[key]++;
    }
    else
    {
-      g_keyRepeats[key] = 0;
+      m_keyRepeats[key] = 0;
    }
 
    // iterate in reverse order so the most recently added listener gets first crack
-   tInputListeners::reverse_iterator iter;
-   for (iter = g_inputListeners.rbegin(); iter != g_inputListeners.rend(); iter++)
+   tSinks::reverse_iterator iter;
+   for (iter = AccessSinks().rbegin(); iter != AccessSinks().rend(); iter++)
    {
       if ((*iter)->OnKeyEvent(key, down, time))
       {
@@ -220,16 +291,17 @@ void KeyEvent(long key, bool down, double time)
    }
 }
 
-///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////
 
-void MouseEvent(int x, int y, uint mouseState, double time)
+void cInput::DispatchMouseEvent(int x, int y, uint mouseState, double time)
 {
    static uint oldMouseState = 0;
 
    bool bListenerShortCircuit = false;
 
-   tInputListeners::iterator iter;
-   for (iter = g_inputListeners.begin(); iter != g_inputListeners.end(); iter++)
+   // iterate in reverse order so the most recently added listener gets first crack
+   tSinks::reverse_iterator iter;
+   for (iter = AccessSinks().rbegin(); iter != AccessSinks().rend(); iter++)
    {
       if ((*iter)->OnMouseEvent(x, y, mouseState, time))
       {
@@ -242,197 +314,43 @@ void MouseEvent(int x, int y, uint mouseState, double time)
    {
       // Up/down doesn't matter for mouse motion. Use false so that the
       // repeat count doesn't get incremented wildly.
-      KeyEvent(kMouseMove, false, time);
+      DispatchKeyEvent(kMouseMove, false, time);
 
       if ((mouseState & kLMouseDown) && !(oldMouseState & kLMouseDown))
-         KeyEvent(kMouseLeft, true, time);
+         DispatchKeyEvent(kMouseLeft, true, time);
       else if (!(mouseState & kLMouseDown) && (oldMouseState & kLMouseDown))
-         KeyEvent(kMouseLeft, false, time);
+         DispatchKeyEvent(kMouseLeft, false, time);
 
       if ((mouseState & kRMouseDown) && !(oldMouseState & kRMouseDown))
-         KeyEvent(kMouseRight, true, time);
+         DispatchKeyEvent(kMouseRight, true, time);
       else if (!(mouseState & kRMouseDown) && (oldMouseState & kRMouseDown))
-         KeyEvent(kMouseRight, false, time);
+         DispatchKeyEvent(kMouseRight, false, time);
 
       if ((mouseState & kMMouseDown) && !(oldMouseState & kMMouseDown))
-         KeyEvent(kMouseMiddle, true, time);
+         DispatchKeyEvent(kMouseMiddle, true, time);
       else if (!(mouseState & kMMouseDown) && (oldMouseState & kMMouseDown))
-         KeyEvent(kMouseMiddle, false, time);
+         DispatchKeyEvent(kMouseMiddle, false, time);
    }
 
    oldMouseState = mouseState;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-
-static void KeyBind(long key, const char * pszKeyDownCmd, const char * pszKeyUpCmd)
-{
-   Assert(key > -1 && key < kMaxKeys);
-
-   key = KeyGetBindable(key);
-
-   KeyUnbind(key);
-
-   if (pszKeyDownCmd != NULL && *pszKeyDownCmd != 0)
-   {
-      g_keyDownBindings[key] = new char[strlen(pszKeyDownCmd) + 1];
-      strcpy(g_keyDownBindings[key], pszKeyDownCmd);
-   }
-
-   if (pszKeyUpCmd != NULL && *pszKeyUpCmd != 0)
-   {
-      g_keyUpBindings[key] = new char[strlen(pszKeyUpCmd) + 1];
-      strcpy(g_keyUpBindings[key], pszKeyUpCmd);
-   }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-static void KeyUnbind(long key)
-{
-   Assert(key > -1 && key < kMaxKeys);
-
-   key = KeyGetBindable(key);
-
-   delete [] g_keyDownBindings[key];
-   g_keyDownBindings[key] = NULL;
-
-   delete [] g_keyUpBindings[key];
-   g_keyUpBindings[key] = NULL;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void InputAddListener(IInputListener * pListener)
-{
-   Assert(pListener != NULL);
-   add_interface(g_inputListeners, pListener);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-bool InputRemoveListener(IInputListener * pListener)
-{
-   Assert(pListener != NULL);
-   return remove_interface(g_inputListeners, pListener);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void InputRemoveAllListeners()
-{
-   std::for_each(g_inputListeners.begin(), g_inputListeners.end(), CTInterfaceMethodRef(&IUnknown::Release));
-   g_inputListeners.clear();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void InputInit()
-{
-#if !defined(NDEBUG) && defined(_WIN32)
-   Assert(_countof(g_keyDownBindings) == kMaxKeys);
-   Assert(_countof(g_keyDownBindings) == _countof(g_keyUpBindings));
-   for (int i = 0; i < _countof(g_keyDownBindings); i++)
-   {
-      Assert(_CrtIsValidHeapPointer(g_keyDownBindings[i]) || g_keyDownBindings[i] == NULL);
-      Assert(_CrtIsValidHeapPointer(g_keyUpBindings[i]) || g_keyUpBindings[i] == NULL);
-   }
-#endif
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void InputTerm()
-{
-   Assert(_countof(g_keyDownBindings) == kMaxKeys);
-   Assert(_countof(g_keyDownBindings) == _countof(g_keyUpBindings));
-   for (int i = 0; i < _countof(g_keyDownBindings); i++)
-   {
-      delete [] g_keyDownBindings[i];
-      g_keyDownBindings[i] = NULL;
-      delete [] g_keyUpBindings[i];
-      g_keyUpBindings[i] = NULL;
-   }
-
-   InputRemoveAllListeners();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cInput
-//
-
 ///////////////////////////////////////
 
-cInput::cInput()
-{
-}
-
-///////////////////////////////////////
-
-tResult cInput::Init()
-{
-   InputInit();
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cInput::Term()
-{
-   InputTerm();
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-bool cInput::KeyIsDown(long key)
-{
-   return ::KeyIsDown(key);
-}
-
-///////////////////////////////////////
-
-void cInput::KeyBind(long key, const char * pszDownCmd, const char * pszUpCmd)
-{
-   ::KeyBind(key, pszDownCmd, pszUpCmd);
-}
-
-///////////////////////////////////////
-
-void cInput::KeyUnbind(long key)
-{
-   ::KeyUnbind(key);
-}
-
-///////////////////////////////////////
-
-tResult cInput::AddWindow(IWindow * pWindow)
-{
-   Assert(pWindow != NULL);
-   return pWindow->Connect(&m_windowSink);
-}
-
-///////////////////////////////////////
-
-tResult cInput::RemoveWindow(IWindow * pWindow)
-{
-   Assert(pWindow != NULL);
-   return pWindow->Disconnect(&m_windowSink);
-}
-
-///////////////////////////////////////
+#define GetOuter(Class, Member) ((Class *)((byte *)this - (byte *)&((Class *)NULL)->Member))
 
 void cInput::cWindowSink::OnKeyEvent(long key, bool down, double time)
 {
-   ::KeyEvent(key, down, time);
+   cInput * pOuter = GetOuter(cInput, m_windowSink);
+   pOuter->DispatchKeyEvent(key, down, time);
 }
 
 ///////////////////////////////////////
 
 void cInput::cWindowSink::OnMouseEvent(int x, int y, uint mouseState, double time)
 {
-   ::MouseEvent(x, y, mouseState, time);
+   cInput * pOuter = GetOuter(cInput, m_windowSink);
+   pOuter->DispatchMouseEvent(x, y, mouseState, time);
 }
 
 ///////////////////////////////////////
