@@ -28,6 +28,9 @@ public:
    virtual bool HasFocus() const;
    virtual void SetFocus(bool bFocus);
 
+   virtual bool IsMouseOver() const;
+   virtual void SetMouseOver(bool bMouseOver);
+
    virtual bool IsVisible() const;
    virtual void SetVisible(bool bVisible);
 
@@ -59,6 +62,7 @@ protected:
 private:
    tGUIString m_id;
    bool m_bFocus;
+   bool m_bMouseOver;
    bool m_bVisible;
    bool m_bEnabled;
    IGUIElement * m_pParent;

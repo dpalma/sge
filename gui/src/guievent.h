@@ -42,11 +42,15 @@ public:
    virtual tResult GetKeyCode(long * pKeyCode);
    virtual tResult GetSourceElement(IGUIElement * * ppElement);
 
+   virtual tResult GetCancelBubble();
+   virtual tResult SetCancelBubble(bool bCancel);
+
 private:
    tGUIEventCode m_eventCode;
    tGUIPoint m_mousePos;
    long m_keyCode;
    cAutoIPtr<IGUIElement> m_pSource;
+   bool m_bCancelBubble;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

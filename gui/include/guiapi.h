@@ -55,6 +55,9 @@ interface IGUIElement : IUnknown
    virtual bool HasFocus() const = 0;
    virtual void SetFocus(bool bFocus) = 0;
 
+   virtual bool IsMouseOver() const = 0;
+   virtual void SetMouseOver(bool bMouseOver) = 0;
+
    virtual bool IsVisible() const = 0;
    virtual void SetVisible(bool bVisible) = 0;
 
@@ -226,6 +229,11 @@ enum eGUIEventCode
    kGUIEventKeyDown,
    kGUIEventClick,
    kGUIEventHover,
+   kGUIEventDragStart,
+   kGUIEventDragEnd,
+   kGUIEventDragMove,
+   kGUIEventDragOver,
+   kGUIEventDrop,
 };
 
 typedef enum eGUIEventCode tGUIEventCode;
@@ -236,6 +244,9 @@ interface IGUIEvent : IUnknown
    virtual tResult GetMousePosition(tGUIPoint * pMousePos) = 0;
    virtual tResult GetKeyCode(long * pKeyCode) = 0;
    virtual tResult GetSourceElement(IGUIElement * * ppElement) = 0;
+
+   virtual tResult GetCancelBubble() = 0;
+   virtual tResult SetCancelBubble(bool bCancel) = 0;
 };
 
 ///////////////////////////////////////
@@ -349,9 +360,6 @@ interface IGUIButtonElement : IGUIElement
    virtual bool IsArmed() const = 0;
    virtual void SetArmed(bool bArmed) = 0;
 
-   virtual bool IsMouseOver() const = 0;
-   virtual void SetMouseOver(bool bMouseOver) = 0;
-
    virtual const char * GetText() const = 0;
    virtual void SetText(const char * pszText) = 0;
 
@@ -403,9 +411,6 @@ interface IGUIEventRouter : IUnknown
 
    virtual tResult GetFocus(IGUIElement * * ppElement) = 0;
    virtual tResult SetFocus(IGUIElement * pElement) = 0;
-
-   virtual tResult GetCapture(IGUIElement * * ppElement) = 0;
-   virtual tResult SetCapture(IGUIElement * pElement) = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

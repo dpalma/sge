@@ -31,7 +31,6 @@ LOG_DEFINE_CHANNEL(GUIButtonEvents);
 
 cGUIButtonElement::cGUIButtonElement()
  : m_bArmed(false),
-   m_bMouseOver(false),
    m_text("")
 {
 }
@@ -53,41 +52,21 @@ tResult cGUIButtonElement::OnEvent(IGUIEvent * pEvent)
    tGUIEventCode eventCode;
    Verify(pEvent->GetEventCode(&eventCode) == S_OK);
 
-   if (eventCode == kGUIEventMouseEnter)
+   if (eventCode == kGUIEventDragStart)
    {
-      LocalMsg("Mouse enter button\n");
-      SetMouseOver(true);
-      result = S_FALSE;
-   }
-   else if (eventCode == kGUIEventMouseLeave)
-   {
-      LocalMsg("Mouse leave button\n");
-      SetMouseOver(false);
-      result = S_FALSE;
-   }
-   else if (eventCode == kGUIEventMouseDown)
-   {
-      LocalMsg("Mouse down button\n");
-      UseGlobal(GUIContext);
-      pGUIContext->SetCapture(this);
       SetArmed(true);
+      pEvent->SetCancelBubble(true);
+      result = S_FALSE;
    }
-   else if (eventCode == kGUIEventMouseUp)
+   else if (eventCode == kGUIEventDragEnd)
    {
-      LocalMsg("Mouse up button\n");
-      UseGlobal(GUIContext);
-      cAutoIPtr<IGUIElement> pCapture;
-      if (pGUIContext->GetCapture(&pCapture) == S_OK)
-      {
-         if (CTIsSameObject(this, pCapture))
-         {
-            pGUIContext->SetCapture(NULL);
-         }
-      }
       SetArmed(false);
+      pEvent->SetCancelBubble(true);
+      result = S_FALSE;
    }
    else if (eventCode == kGUIEventClick)
    {
+      SetArmed(false);
       LocalMsg("Mouse click button\n");
       tGUIString onClick;
       if (GetOnClick(&onClick) == S_OK)
@@ -98,6 +77,17 @@ tResult cGUIButtonElement::OnEvent(IGUIEvent * pEvent)
       }
    }
 
+#ifdef _DEBUG
+   if (eventCode == kGUIEventMouseEnter)
+   {
+      LocalMsg("Mouse enter button\n");
+   }
+   else if (eventCode == kGUIEventMouseLeave)
+   {
+      LocalMsg("Mouse leave button\n");
+   }
+#endif
+
    return result;
 }
 
@@ -106,7 +96,9 @@ tResult cGUIButtonElement::OnEvent(IGUIEvent * pEvent)
 tResult cGUIButtonElement::GetRendererClass(tGUIString * pRendererClass)
 {
    if (pRendererClass == NULL)
+   {
       return E_POINTER;
+   }
    *pRendererClass = "button";
    return S_OK;
 }
@@ -123,20 +115,6 @@ bool cGUIButtonElement::IsArmed() const
 void cGUIButtonElement::SetArmed(bool bArmed)
 {
    m_bArmed = bArmed;
-}
-
-///////////////////////////////////////
-
-bool cGUIButtonElement::IsMouseOver() const
-{
-   return m_bMouseOver;
-}
-
-///////////////////////////////////////
-
-void cGUIButtonElement::SetMouseOver(bool bMouseOver)
-{
-   m_bMouseOver = bMouseOver;
 }
 
 ///////////////////////////////////////

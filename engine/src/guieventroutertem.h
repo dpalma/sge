@@ -82,24 +82,6 @@ tResult cGUIEventRouter<INTRFC>::SetFocus(IGUIElement * pElement)
 ///////////////////////////////////////
 
 template <typename INTRFC>
-tResult cGUIEventRouter<INTRFC>::GetCapture(IGUIElement * * ppElement)
-{
-   return m_pCapture.GetPointer(ppElement);
-}
-
-///////////////////////////////////////
-
-template <typename INTRFC>
-tResult cGUIEventRouter<INTRFC>::SetCapture(IGUIElement * pElement)
-{
-   SafeRelease(m_pCapture);
-   m_pCapture = CTAddRef(pElement);
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-template <typename INTRFC>
 tResult cGUIEventRouter<INTRFC>::GetMouseOver(IGUIElement * * ppElement)
 {
    return m_pMouseOver.GetPointer(ppElement);
@@ -112,6 +94,24 @@ tResult cGUIEventRouter<INTRFC>::SetMouseOver(IGUIElement * pElement)
 {
    SafeRelease(m_pMouseOver);
    m_pMouseOver = CTAddRef(pElement);
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+tResult cGUIEventRouter<INTRFC>::GetDrag(IGUIElement * * ppElement)
+{
+   return m_pDrag.GetPointer(ppElement);
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+tResult cGUIEventRouter<INTRFC>::SetDrag(IGUIElement * pElement)
+{
+   SafeRelease(m_pDrag);
+   m_pDrag = CTAddRef(pElement);
    return S_OK;
 }
 
@@ -229,6 +229,7 @@ void cGUIEventRouter<INTRFC>::RemoveAllElements()
    SafeRelease(m_pFocus);
    SafeRelease(m_pCapture);
    SafeRelease(m_pMouseOver);
+   SafeRelease(m_pDrag);
    std::for_each(m_elements.begin(), m_elements.end(), CTInterfaceMethod(&IGUIElement::Release));
    m_elements.clear();
    std::for_each(m_dialogs.begin(), m_dialogs.end(), CTInterfaceMethod(&IGUIDialogElement::Release));
@@ -239,32 +240,17 @@ void cGUIEventRouter<INTRFC>::RemoveAllElements()
 
 template <typename INTRFC>
 tResult cGUIEventRouter<INTRFC>::GetHitElement(const tGUIPoint & screenPoint, 
-                                               IGUIElement * * ppElement) const
+                                               IGUIElement * * ppElement)
 {
    if (ppElement == NULL)
    {
       return E_POINTER;
    }
 
-   tGUIElementList::const_iterator iter;
-   for (iter = m_elements.begin(); iter != m_elements.end(); iter++)
+   cAutoIPtr<IGUIElementEnum> pEnum;
+   if (GetElements(&pEnum) == S_OK)
    {
-      tGUIPoint relative(screenPoint - (*iter)->GetPosition());
-
-      if ((*iter)->Contains(relative))
-      {
-         cAutoIPtr<IGUIContainerElement> pContainer;
-         if ((*iter)->QueryInterface(IID_IGUIContainerElement, (void**)&pContainer) == S_OK)
-         {
-            if (GetHitChild(relative, pContainer, ppElement) == S_OK)
-            {
-               return S_OK;
-            }
-         }
-
-         *ppElement = CTAddRef(*iter);
-         return S_OK;
-      }
+      return GetHitElement(screenPoint, pEnum, ppElement);
    }
 
    return S_FALSE;
@@ -273,9 +259,9 @@ tResult cGUIEventRouter<INTRFC>::GetHitElement(const tGUIPoint & screenPoint,
 ///////////////////////////////////////
 
 template <typename INTRFC>
-tResult cGUIEventRouter<INTRFC>::GetHitChild(const tGUIPoint & containerPoint, 
-                                             IGUIContainerElement * pContainer, 
-                                             IGUIElement * * ppElement) const
+tResult cGUIEventRouter<INTRFC>::GetHitElement(const tGUIPoint & containerPoint, 
+                                               IGUIContainerElement * pContainer, 
+                                               IGUIElement * * ppElement)
 {
    Assert(pContainer != NULL);
    Assert(ppElement != NULL);
@@ -283,31 +269,46 @@ tResult cGUIEventRouter<INTRFC>::GetHitChild(const tGUIPoint & containerPoint,
    cAutoIPtr<IGUIElementEnum> pEnum;
    if (pContainer->GetElements(&pEnum) == S_OK)
    {
-      cAutoIPtr<IGUIElement> pChild;
-      ulong count = 0;
+      return GetHitElement(containerPoint, pEnum, ppElement);
+   }
 
-      while ((pEnum->Next(1, &pChild, &count) == S_OK) && (count == 1))
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+tResult cGUIEventRouter<INTRFC>::GetHitElement(const tGUIPoint & point, 
+                                               IGUIElementEnum * pEnum, 
+                                               IGUIElement * * ppElement)
+{
+   Assert(pEnum != NULL);
+   Assert(ppElement != NULL);
+
+   cAutoIPtr<IGUIElement> pChild;
+   ulong count = 0;
+
+   while ((pEnum->Next(1, &pChild, &count) == S_OK) && (count == 1))
+   {
+      tGUIPoint relative(point - pChild->GetPosition());
+
+      if (pChild->Contains(relative))
       {
-         tGUIPoint childRelative(containerPoint - pChild->GetPosition());
-
-         if (pChild->Contains(childRelative))
+         cAutoIPtr<IGUIContainerElement> pChildContainer;
+         if (pChild->QueryInterface(IID_IGUIContainerElement, (void**)&pChildContainer) == S_OK)
          {
-            cAutoIPtr<IGUIContainerElement> pChildContainer;
-            if (pChild->QueryInterface(IID_IGUIContainerElement, (void**)&pChildContainer) == S_OK)
+            if (GetHitElement(relative, pChildContainer, ppElement) == S_OK)
             {
-               if (GetHitChild(childRelative, pChildContainer, ppElement) == S_OK)
-               {
-                  return S_OK;
-               }
+               return S_OK;
             }
-
-            *ppElement = CTAddRef(pChild);
-            return S_OK;
          }
 
-         SafeRelease(pChild);
-         count = 0;
+         *ppElement = CTAddRef(pChild);
+         return S_OK;
       }
+
+      SafeRelease(pChild);
+      count = 0;
    }
 
    return S_FALSE;
@@ -335,7 +336,7 @@ bool cGUIEventRouter<INTRFC>::DoEvent(IGUIEvent * pEvent)
    {
       if (!!pDispatchTo)
       {
-         if (pDispatchTo->OnEvent(pEvent))
+         if (pDispatchTo->OnEvent(pEvent) != S_OK)
          {
             return true;
          }
@@ -352,6 +353,23 @@ bool cGUIEventRouter<INTRFC>::BubbleEvent(IGUIEvent * pEvent)
 {
    Assert(pEvent != NULL);
 
+   cAutoIPtr<IGUIElement> pEventSrc;
+   if (pEvent->GetSourceElement(&pEventSrc) == S_OK)
+   {
+      return BubbleEvent(pEventSrc, pEvent);
+   }
+
+   return false;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+bool cGUIEventRouter<INTRFC>::BubbleEvent(IGUIElement * pStartElement, IGUIEvent * pEvent)
+{
+   Assert(pStartElement != NULL);
+   Assert(pEvent != NULL);
+
    tSinksIterator iter;
    for (iter = AccessSinks().begin(); iter != AccessSinks().end(); iter++)
    {
@@ -361,29 +379,51 @@ bool cGUIEventRouter<INTRFC>::BubbleEvent(IGUIEvent * pEvent)
       }
    }
 
-   cAutoIPtr<IGUIElement> pDispatchTo;
-   if (pEvent->GetSourceElement(&pDispatchTo) == S_OK)
+   cAutoIPtr<IGUIElement> pDispatchTo(CTAddRef(pStartElement));
+   while (!!pDispatchTo)
    {
-      while (!!pDispatchTo)
+      if (pDispatchTo->OnEvent(pEvent) != S_OK)
       {
-         if (pDispatchTo->OnEvent(pEvent))
-         {
-            return true;
-         }
+         return true;
+      }
 
-         cAutoIPtr<IGUIElement> pNext;
-         if (pDispatchTo->GetParent(&pNext) != S_OK)
-         {
-            SafeRelease(pDispatchTo);
-         }
-         else
-         {
-            pDispatchTo = pNext;
-         }
+      if (pEvent->GetCancelBubble() == S_OK)
+      {
+         break;
+      }
+
+      cAutoIPtr<IGUIElement> pNext;
+      if (pDispatchTo->GetParent(&pNext) != S_OK)
+      {
+         SafeRelease(pDispatchTo);
+      }
+      else
+      {
+         pDispatchTo = pNext;
       }
    }
 
    return false;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+bool cGUIEventRouter<INTRFC>::GetActiveModalDialog(IGUIDialogElement * * ppModalDialog)
+{
+   Assert(ppModalDialog != NULL);
+
+   tGUIDialogList::reverse_iterator iter;
+   for (iter = m_dialogs.rbegin(); iter != m_dialogs.rend(); iter++)
+   {
+      if ((*iter)->IsModal() == S_OK)
+      {
+         *ppModalDialog = CTAddRef(*iter);
+         return S_OK;
+      }
+   }
+
+   return S_FALSE;
 }
 
 ///////////////////////////////////////
@@ -420,28 +460,66 @@ inline bool IsDescendant(IGUIContainerElement * pParent, IGUIElement * pElement)
    return false;
 }
 
-template <typename INTRFC>
-bool cGUIEventRouter<INTRFC>::GetEventTarget(const sInputEvent * pInputEvent, 
-                                             IGUIElement * * ppElement)
-{
-   Assert(pInputEvent != NULL);
-   Assert(ppElement != NULL);
+//template <typename INTRFC>
+//bool cGUIEventRouter<INTRFC>::GetEventTarget(const sInputEvent * pInputEvent, 
+//                                             IGUIElement * * ppElement)
+//{
+//   Assert(pInputEvent != NULL);
+//   Assert(ppElement != NULL);
+//
+//   if (GetCapture(ppElement) == S_OK)
+//   {
+//      return true;
+//   }
+//   else if (KeyIsMouse(pInputEvent->key))
+//   {
+//      return GetHitElement(pInputEvent->point, ppElement) == S_OK;
+//   }
+//   else if (GetFocus(ppElement) == S_OK)
+//   {
+//      return true;
+//   }
+//
+//   return false;
+//}
 
-   if (GetCapture(ppElement) == S_OK)
-   {
-      return true;
-   }
-   else if (KeyIsMouse(pInputEvent->key))
-   {
-      return GetHitElement(pInputEvent->point, ppElement) == S_OK;
-   }
-   else if (GetFocus(ppElement) == S_OK)
-   {
-      return true;
-   }
+///////////////////////////////////////
 
-   return false;
-}
+//template <typename INTRFC>
+//bool cGUIEventRouter<INTRFC>::DispatchToCapture(const sInputEvent * pInputEvent)
+//{
+//   cAutoIPtr<IGUIElement> pCapture;
+//   if (GetCapture(&pCapture) == S_OK)
+//   {
+//      cAutoIPtr<IGUIElement> pEventSource;
+//
+//      if (KeyIsMouse(pInputEvent->key))
+//      {
+//         if (GetHitElement(pInputEvent->point, &pEventSource) != S_OK)
+//         {
+//            Assert(!pEventSource);
+//         }
+//
+//         if (pInputEvent->key == kMouseMove)
+//         {
+//            DoMouseEnterExit(pInputEvent, pCapture);
+//         }
+//      }
+//
+//      tGUIEventCode eventCode = GUIEventCode(pInputEvent->key, pInputEvent->down);
+//      Assert(eventCode != kGUIEventNone);
+//
+//      cAutoIPtr<IGUIEvent> pEvent;
+//      if (GUIEventCreate(eventCode, pInputEvent->point, pInputEvent->key, pEventSource, &pEvent) == S_OK)
+//      {
+//         BubbleEvent(pCapture, pEvent);
+//      }
+//
+//      return true;
+//   }
+//
+//   return false;
+//}
 
 ///////////////////////////////////////
 
@@ -449,6 +527,8 @@ inline tGUIPoint ScreenToElement(IGUIElement * pGUIElement, const tGUIPoint & po
 {
    return point - GUIElementAbsolutePosition(pGUIElement);
 }
+
+///////////////////////////////////////
 
 template <typename INTRFC>
 bool cGUIEventRouter<INTRFC>::HandleInputEvent(const sInputEvent * pInputEvent)
@@ -460,9 +540,168 @@ bool cGUIEventRouter<INTRFC>::HandleInputEvent(const sInputEvent * pInputEvent)
       return false;
    }
 
+   cAutoIPtr<IGUIElement> pMouseOver;
+   if (GetHitElement(pInputEvent->point, &pMouseOver) != S_OK)
+   {
+      Assert(!pMouseOver);
+   }
+
+   bool bHandled = false;
+
+   cAutoIPtr<IGUIElement> pDrag;
+   if (GetDrag(&pDrag) == S_OK)
+   {
+      if (eventCode == kGUIEventMouseMove)
+      {
+         DoMouseEnterExit(pInputEvent, pMouseOver, pDrag);
+
+         // Send drag move to dragging element
+         cAutoIPtr<IGUIEvent> pDragMoveEvent;
+         if (GUIEventCreate(kGUIEventDragMove, pInputEvent->point, 
+            pInputEvent->key, pDrag, &pDragMoveEvent) == S_OK)
+         {
+            if (!BubbleEvent(pDragMoveEvent))
+            {
+               // Send drag over to moused-over element
+               if (!!pMouseOver)
+               {
+                  cAutoIPtr<IGUIEvent> pDragOverEvent;
+                  if (GUIEventCreate(kGUIEventDragOver, pInputEvent->point, 
+                     pInputEvent->key, pMouseOver, &pDragOverEvent) == S_OK)
+                  {
+                     return BubbleEvent(pDragOverEvent);
+                  }
+               }
+            }
+         }
+      }
+      else if (eventCode == kGUIEventMouseUp)
+      {
+         if (!!pMouseOver)
+         {
+            // If moused-over same as dragging element
+            if (CTIsSameObject(pMouseOver, pDrag))
+            {
+               // Send click to moused-over/dragging element
+               // TODO: Doing this here, the click event will occur before the mouse up event
+               cAutoIPtr<IGUIEvent> pClickEvent;
+               if (GUIEventCreate(kGUIEventClick, pInputEvent->point, 
+                  pInputEvent->key, pMouseOver, &pClickEvent) == S_OK)
+               {
+                  BubbleEvent(pClickEvent);
+               }
+            }
+            else
+            {
+               cAutoIPtr<IGUIEvent> pDragEndEvent;
+               if (GUIEventCreate(kGUIEventDragEnd, pInputEvent->point, 
+                  pInputEvent->key, pDrag, &pDragEndEvent) == S_OK)
+               {
+                  if (!BubbleEvent(pDragEndEvent))
+                  {
+                     // Send drop to moused-over element
+                     cAutoIPtr<IGUIEvent> pEvent;
+                     if (GUIEventCreate(kGUIEventDrop, pInputEvent->point, 
+                        pInputEvent->key, pMouseOver, &pEvent) == S_OK)
+                     {
+                        return BubbleEvent(pEvent);
+                     }
+                  }
+               }
+            }
+         }
+      }
+      else if (eventCode == kGUIEventKeyDown)
+      {
+         // If key is escape stop dragging
+         if (pInputEvent->key == kEscape)
+         {
+            cAutoIPtr<IGUIEvent> pDragEndEvent;
+            if (GUIEventCreate(kGUIEventDragEnd, pInputEvent->point, 
+               pInputEvent->key, pDrag, &pDragEndEvent) == S_OK)
+            {
+               BubbleEvent(pDragEndEvent);
+            }
+            SetDrag(NULL);
+            return true;
+         }
+      }
+   }
+
+   // If have an active modal dialog
+   // TODO
+
+   if (KeyIsMouse(pInputEvent->key) && !!pMouseOver)
+   {
+      if (eventCode == kGUIEventMouseDown)
+      {
+         SetFocus(pMouseOver);
+
+         cAutoIPtr<IGUIEvent> pDragStartEvent;
+         if (GUIEventCreate(kGUIEventDragStart, pInputEvent->point, 
+            pInputEvent->key, pMouseOver, &pDragStartEvent) == S_OK)
+         {
+            BubbleEvent(pDragStartEvent);
+            SetDrag(pMouseOver);
+            return true;
+         }
+      }
+      else if (eventCode == kGUIEventMouseMove)
+      {
+         DoMouseEnterExit(pInputEvent, pMouseOver, NULL);
+      }
+
+      cAutoIPtr<IGUIEvent> pEvent;
+      if (GUIEventCreate(eventCode, pInputEvent->point, 
+         pInputEvent->key, pMouseOver, &pEvent) == S_OK)
+      {
+         return BubbleEvent(pEvent);
+      }
+   }
+   else
+   {
+      cAutoIPtr<IGUIElement> pFocus;
+      if (GetFocus(&pFocus) == S_OK)
+      {
+         cAutoIPtr<IGUIEvent> pEvent;
+         if (GUIEventCreate(eventCode, pInputEvent->point, 
+            pInputEvent->key, pFocus, &pEvent) == S_OK)
+         {
+            return BubbleEvent(pEvent);
+         }
+      }
+   }
+
+   /*
+   if (DispatchToCapture(pInputEvent))
+   {
+      return true;
+   }
+   */
+   //cAutoIPtr<IGUIElement> pCapture;
+   //if (GetCapture(&pCapture) == S_OK)
+   //{
+   //   cAutoIPtr<IGUIElement> pEventSource;
+
+   //   if (KeyIsMouse(pInputEvent->key))
+   //   {
+   //      if (GetHitElement(pInputEvent->point, &pEventSource) != S_OK)
+   //      {
+   //         Assert(!pEventSource);
+   //      }
+   //   }
+
+   //   cAutoIPtr<IGUIEvent> pEvent;
+   //   if (GUIEventCreate(eventCode, pInputEvent->point, pInputEvent->key, pEventSource, &pEvent) == S_OK)
+   //   {
+   //      return BubbleEvent(pCapture, pEvent);
+   //   }
+   //}
+
+   /*
    if (eventCode == kGUIEventMouseMove)
    {
-      DoMouseEnterExit(pInputEvent);
+      DoMouseEnterExit(pInputEvent, NULL);
    }
 
    cAutoIPtr<IGUIElement> pElement;
@@ -493,43 +732,52 @@ bool cGUIEventRouter<INTRFC>::HandleInputEvent(const sInputEvent * pInputEvent)
          return BubbleEvent(pEvent);
       }
    }
+   */
 
-   return false;
+   return bHandled;
 }
 
 ///////////////////////////////////////
 
 template <typename INTRFC>
-void cGUIEventRouter<INTRFC>::DoMouseEnterExit(const sInputEvent * pInputEvent)
+void cGUIEventRouter<INTRFC>::DoMouseEnterExit(const sInputEvent * pInputEvent, 
+                                               IGUIElement * pMouseOver, 
+                                               IGUIElement * pRestrictTo)
 {
-   cAutoIPtr<IGUIElement> pHit;
-   if (GetHitElement(pInputEvent->point, &pHit) == S_OK)
+   if (pMouseOver != NULL)
    {
       bool bMouseOverSame = false;
 
-      cAutoIPtr<IGUIElement> pMouseOver;
-      if (GetMouseOver(&pMouseOver) == S_OK)
+      cAutoIPtr<IGUIElement> pOldMouseOver;
+      if (GetMouseOver(&pOldMouseOver) == S_OK)
       {
-         bMouseOverSame = CTIsSameObject(pMouseOver, pHit);
+         bMouseOverSame = CTIsSameObject(pMouseOver, pOldMouseOver);
 
          if (!bMouseOverSame)
          {
+            SetMouseOver(NULL);
+
+            pOldMouseOver->SetMouseOver(false);
+
             cAutoIPtr<IGUIEvent> pMouseLeaveEvent;
             if (GUIEventCreate(kGUIEventMouseLeave, pInputEvent->point, pInputEvent->key, 
-               pMouseOver, &pMouseLeaveEvent) == S_OK)
+               pOldMouseOver, &pMouseLeaveEvent) == S_OK)
             {
                DoEvent(pMouseLeaveEvent);
             }
          }
       }
 
-      if (!bMouseOverSame)
+      if (!bMouseOverSame 
+         && ((pRestrictTo == NULL) || (CTIsSameObject(pMouseOver, pRestrictTo))))
       {
-         SetMouseOver(pHit);
+         SetMouseOver(pMouseOver);
+
+         pMouseOver->SetMouseOver(true);
 
          cAutoIPtr<IGUIEvent> pMouseEnterEvent;
          if (GUIEventCreate(kGUIEventMouseEnter, pInputEvent->point, pInputEvent->key, 
-            pHit, &pMouseEnterEvent) == S_OK)
+            pMouseOver, &pMouseEnterEvent) == S_OK)
          {
             DoEvent(pMouseEnterEvent);
          }
@@ -537,16 +785,18 @@ void cGUIEventRouter<INTRFC>::DoMouseEnterExit(const sInputEvent * pInputEvent)
    }
    else
    {
-      cAutoIPtr<IGUIElement> pMouseOver;
-      if (GetMouseOver(&pMouseOver) == S_OK)
+      cAutoIPtr<IGUIElement> pOldMouseOver;
+      if (GetMouseOver(&pOldMouseOver) == S_OK)
       {
-         Assert(!pMouseOver->Contains(ScreenToElement(pMouseOver, pInputEvent->point)));
+         Assert(!pOldMouseOver->Contains(ScreenToElement(pOldMouseOver, pInputEvent->point)));
 
          SetMouseOver(NULL);
 
+         pOldMouseOver->SetMouseOver(false);
+
          cAutoIPtr<IGUIEvent> pMouseLeaveEvent;
          if (GUIEventCreate(kGUIEventMouseLeave, pInputEvent->point, pInputEvent->key, 
-            pMouseOver, &pMouseLeaveEvent) == S_OK)
+            pOldMouseOver, &pMouseLeaveEvent) == S_OK)
          {
             DoEvent(pMouseLeaveEvent);
          }

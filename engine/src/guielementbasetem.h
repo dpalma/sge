@@ -21,6 +21,7 @@ template <typename INTRFC>
 cGUIElementBase<INTRFC>::cGUIElementBase()
  : m_id(""),
    m_bFocus(false),
+   m_bMouseOver(false),
    m_bVisible(true),
    m_bEnabled(true),
    m_pParent(NULL),
@@ -59,6 +60,22 @@ template <typename INTRFC>
 void cGUIElementBase<INTRFC>::SetFocus(bool bFocus)
 {
    m_bFocus = bFocus;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+bool cGUIElementBase<INTRFC>::IsMouseOver() const
+{
+   return m_bMouseOver;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+void cGUIElementBase<INTRFC>::SetMouseOver(bool bMouseOver)
+{
+   m_bMouseOver = bMouseOver;
 }
 
 ///////////////////////////////////////

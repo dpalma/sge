@@ -83,15 +83,7 @@ tResult cGUIDialogElement::OnEvent(IGUIEvent * pEvent)
    tGUIPoint mousePos;
    Verify(pEvent->GetMousePosition(&mousePos) == S_OK);
 
-   if (eventCode == kGUIEventMouseEnter)
-   {
-      LocalMsg("Mouse enter dialog\n");
-   }
-   else if (eventCode == kGUIEventMouseLeave)
-   {
-      LocalMsg("Mouse leave dialog\n");
-   }
-   else if (eventCode == kGUIEventMouseMove)
+   if (eventCode == kGUIEventMouseMove)
    {
       LocalMsg("Mouse move dialog\n");
       if (m_bDragging)
@@ -105,8 +97,6 @@ tResult cGUIDialogElement::OnEvent(IGUIEvent * pEvent)
       tGUIRect captionRect = GetCaptionRectAbsolute();
       if (captionRect.PtInside(Round(mousePos.x), Round(mousePos.y)))
       {
-         UseGlobal(GUIContext);
-         pGUIContext->SetCapture(this);
          m_bDragging = true;
          m_dragOffset = mousePos - tGUIPoint(captionRect.left, captionRect.top);
          result = S_FALSE; // now eat this event
@@ -115,8 +105,6 @@ tResult cGUIDialogElement::OnEvent(IGUIEvent * pEvent)
    else if (eventCode == kGUIEventMouseUp)
    {
       LocalMsg("Mouse up dialog\n");
-      UseGlobal(GUIContext);
-      pGUIContext->SetCapture(NULL);
       m_bDragging = false;
       result = S_FALSE; // now eat this event
    }
@@ -140,6 +128,17 @@ tResult cGUIDialogElement::OnEvent(IGUIEvent * pEvent)
          LocalMsg("ESC KEY --> Cancel\n");
       }
    }
+
+#ifdef _DEBUG
+   if (eventCode == kGUIEventMouseEnter)
+   {
+      LocalMsg("Mouse enter dialog\n");
+   }
+   else if (eventCode == kGUIEventMouseLeave)
+   {
+      LocalMsg("Mouse leave dialog\n");
+   }
+#endif
 
    return result;
 }

@@ -28,9 +28,6 @@ public:
    virtual bool IsArmed() const;
    virtual void SetArmed(bool bArmed);
 
-   virtual bool IsMouseOver() const;
-   virtual void SetMouseOver(bool bMouseOver);
-
    virtual const char * GetText() const;
    virtual void SetText(const char * pszText);
 
@@ -39,7 +36,6 @@ public:
 
 private:
    bool m_bArmed;
-   bool m_bMouseOver;
    tGUIString m_text;
    tGUIString m_onClick;
 };

@@ -147,7 +147,8 @@ cGUIEvent::cGUIEvent(tGUIEventCode eventCode, const tGUIPoint & mousePos, long k
  : m_eventCode(eventCode),
    m_mousePos(mousePos),
    m_keyCode(keyCode),
-   m_pSource(CTAddRef(pSource))
+   m_pSource(CTAddRef(pSource)),
+   m_bCancelBubble(false)
 {
 }
 
@@ -203,6 +204,21 @@ tResult cGUIEvent::GetKeyCode(long * pKeyCode)
 tResult cGUIEvent::GetSourceElement(IGUIElement * * ppElement)
 {
    return m_pSource.GetPointer(ppElement);
+}
+
+///////////////////////////////////////
+
+tResult cGUIEvent::GetCancelBubble()
+{
+   return m_bCancelBubble ? S_OK : S_FALSE;
+}
+
+///////////////////////////////////////
+
+tResult cGUIEvent::SetCancelBubble(bool bCancel)
+{
+   m_bCancelBubble = bCancel;
+   return S_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -44,18 +44,18 @@ public:
    virtual tResult GetFocus(IGUIElement * * ppElement);
    virtual tResult SetFocus(IGUIElement * pElement);
 
-   virtual tResult GetCapture(IGUIElement * * ppElement);
-   virtual tResult SetCapture(IGUIElement * pElement);
-
 protected:
    ////////////////////////////////////
 
    tResult GetMouseOver(IGUIElement * * ppElement);
    tResult SetMouseOver(IGUIElement * pElement);
 
+   tResult GetDrag(IGUIElement * * ppElement);
+   tResult SetDrag(IGUIElement * pElement);
+
    IGUIElement * AccessFocus();
-   IGUIElement * AccessCapture();
    IGUIElement * AccessMouseOver();
+   IGUIElement * AccessDrag();
 
    tResult AddElement(IGUIElement * pElement);
    tResult RemoveElement(IGUIElement * pElement);
@@ -73,14 +73,21 @@ protected:
       }
    }
 
-   tResult GetHitElement(const tGUIPoint & point, IGUIElement * * ppElement) const;
-   tResult GetHitChild(const tGUIPoint & point, IGUIContainerElement * pContainer, IGUIElement * * ppElement) const;
+   tResult GetHitElement(const tGUIPoint & point, IGUIElement * * ppElement);
+   tResult GetHitElement(const tGUIPoint & point, IGUIContainerElement * pContainer, IGUIElement * * ppElement);
+   tResult GetHitElement(const tGUIPoint & point, IGUIElementEnum * pEnum, IGUIElement * * ppElement);
 
    bool DoEvent(IGUIEvent * pEvent);
    bool BubbleEvent(IGUIEvent * pEvent);
-   bool GetEventTarget(const sInputEvent * pInputEvent, IGUIElement * * ppElement);
+   bool BubbleEvent(IGUIElement * pStartElement, IGUIEvent * pEvent);
+
+   bool GetActiveModalDialog(IGUIDialogElement * * ppModalDialog);
+
+   //bool GetEventTarget(const sInputEvent * pInputEvent, IGUIElement * * ppElement);
+   void DoMouseEnterExit(const sInputEvent * pInputEvent, IGUIElement * pMouseOver, IGUIElement * pRestrictTo);
+   //bool DispatchToCapture(const sInputEvent * pInputEvent);
+
    bool HandleInputEvent(const sInputEvent * pInputEvent);
-   void DoMouseEnterExit(const sInputEvent * pInputEvent);
 
 private:
    typedef std::list<IGUIElement *> tGUIElementList;
@@ -89,7 +96,7 @@ private:
    typedef std::list<IGUIDialogElement *> tGUIDialogList;
    tGUIDialogList m_dialogs;
 
-   cAutoIPtr<IGUIElement> m_pFocus, m_pCapture, m_pMouseOver;
+   cAutoIPtr<IGUIElement> m_pFocus, m_pCapture, m_pMouseOver, m_pDrag;
 };
 
 ///////////////////////////////////////
@@ -103,17 +110,17 @@ inline IGUIElement * cGUIEventRouter<INTRFC>::AccessFocus()
 ///////////////////////////////////////
 
 template <typename INTRFC>
-inline IGUIElement * cGUIEventRouter<INTRFC>::AccessCapture()
+inline IGUIElement * cGUIEventRouter<INTRFC>::AccessMouseOver()
 {
-   return m_pCapture;
+   return m_pMouseOver;
 }
 
 ///////////////////////////////////////
 
 template <typename INTRFC>
-inline IGUIElement * cGUIEventRouter<INTRFC>::AccessMouseOver()
+inline IGUIElement * cGUIEventRouter<INTRFC>::AccessDrag()
 {
-   return m_pMouseOver;
+   return m_pDrag;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
