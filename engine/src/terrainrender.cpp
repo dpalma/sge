@@ -22,6 +22,10 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+// REFERENCES
+// http://cbloom.com/3d/techdocs/splatting.txt
+// http://oss.sgi.com/projects/ogl-sample/registry/ARB/texture_env_combine.txt
+
 const int kTilesPerChunk = 32;
 
 const uint kNoIndex = ~0;
@@ -535,6 +539,13 @@ void cSplatBuilder::BuildAlphaMap(const tTerrainQuads & quads,
       return;
    }
 
+   DIBSECTION dibSection = {0};
+   Verify(GetObject(hBitmap, sizeof(dibSection), &dibSection));
+
+   uint redMask = dibSection.dsBitfields[0];
+   uint greenMask = dibSection.dsBitfields[1];
+   uint blueMask = dibSection.dsBitfields[2];
+
    uint zStart = iChunkZ * kTilesPerChunk;
    uint zEnd = zStart + kTilesPerChunk;
    uint xStart = iChunkX * kTilesPerChunk;
@@ -622,10 +633,12 @@ void cSplatBuilder::BuildAlphaMap(const tTerrainQuads & quads,
          uint iz = (z - zStart) * 2;
          uint ix = (x - xStart) * 2;
 
-         byte * p0 = pBitmapBits + (iz * bmi.bmiHeader.biWidth * 3) + (ix * 3);
-         byte * p1 = pBitmapBits + (iz * bmi.bmiHeader.biWidth * 3) + ((ix+1) * 3);
-         byte * p2 = pBitmapBits + ((iz+1) * bmi.bmiHeader.biWidth * 3) + (ix * 3);
-         byte * p3 = pBitmapBits + ((iz+1) * bmi.bmiHeader.biWidth * 3) + ((ix+1) * 3);
+         uint m = bmi.bmiHeader.biBitCount / 8;
+
+         byte * p0 = pBitmapBits + (iz * bmi.bmiHeader.biWidth * m) + (ix * m);
+         byte * p1 = pBitmapBits + (iz * bmi.bmiHeader.biWidth * m) + ((ix+1) * m);
+         byte * p2 = pBitmapBits + ((iz+1) * bmi.bmiHeader.biWidth * m) + (ix * m);
+         byte * p3 = pBitmapBits + ((iz+1) * bmi.bmiHeader.biWidth * m) + ((ix+1) * m);
 
          p0[0] = p0[1] = p0[2] = p0[3] = (texelDivisors[0] > 0) ? (byte)(255 * (texelWeights[0] / texelDivisors[0])) : 0;
          p1[0] = p1[1] = p1[2] = p1[3] = (texelDivisors[1] > 0) ? (byte)(255 * (texelWeights[1] / texelDivisors[1])) : 0;
@@ -778,6 +791,8 @@ void cTerrainChunk::Render(IRenderDevice * pRenderDevice)
 
    glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
 
+   glEnable(GL_BLEND);
+
    glDisableClientState(GL_EDGE_FLAG_ARRAY);
    glDisableClientState(GL_INDEX_ARRAY);
    glDisableClientState(GL_VERTEX_ARRAY);
@@ -813,9 +828,14 @@ void cTerrainChunk::Render(IRenderDevice * pRenderDevice)
             if (pTexture->GetTextureHandle(&tex) == S_OK)
             {
                pfnglActiveTextureARB(GL_TEXTURE0_ARB);
-               glEnable(GL_TEXTURE_2D);
                glBindTexture(GL_TEXTURE_2D, (uint)tex);
-               //glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB, GL_TEXTURE);
+               glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+               glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB, GL_REPLACE);
+               glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_ARB, GL_MODULATE);
+               glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB, GL_TEXTURE0_ARB);
+               glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_ARB, GL_SRC_COLOR);
+               glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_ARB, GL_PREVIOUS_ARB);
+               glEnable(GL_TEXTURE_2D);
             }
          }
       }
@@ -828,9 +848,15 @@ void cTerrainChunk::Render(IRenderDevice * pRenderDevice)
             if (pAlphaMap->GetTextureHandle(&alpha) == S_OK)
             {
                pfnglActiveTextureARB(GL_TEXTURE1_ARB);
-               glEnable(GL_TEXTURE_2D);
                glBindTexture(GL_TEXTURE_2D, (uint)alpha);
-               //glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_ARB, GL_TEXTURE);
+               glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+               glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB, GL_MODULATE);
+               glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_ARB, GL_REPLACE);
+               glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB, GL_PREVIOUS_ARB);
+               glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_ARB, GL_SRC_COLOR);
+               glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_ARB, GL_TEXTURE1_ARB);
+               glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_ARB, GL_SRC_ALPHA);
+               glEnable(GL_TEXTURE_2D);
             }
          }
       }
