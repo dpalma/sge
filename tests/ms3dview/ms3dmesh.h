@@ -7,6 +7,7 @@
 #include "readwriteapi.h"
 #include "matrix4.h"
 #include "vec3.h"
+#include "str.h"
 
 #include <vector>
 
@@ -115,10 +116,67 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: cBone
+//
+
+class cBone
+{
+public:
+   cBone();
+   cBone(const cBone & other);
+   const cBone & operator =(const cBone & other);
+
+   const char * GetName() const;
+   void SetName(const char * pszName);
+
+   bool AddChild(const cBone * pChild);
+
+   const tMatrix4 & GetLocalTransform() const;
+   void SetLocalTransform(const tMatrix4 & matrix);
+
+private:
+   cStr m_name;
+   const cBone * m_pParent;
+   typedef std::vector<const cBone *> tChildren;
+   tChildren m_children;
+   tMatrix4 m_localTransform;
+};
+
+///////////////////////////////////////
+
+inline const char * cBone::GetName() const
+{
+   return m_name;
+}
+
+///////////////////////////////////////
+
+inline void cBone::SetName(const char * pszName)
+{
+   m_name = (pszName != NULL) ? pszName : "";
+}
+
+///////////////////////////////////////
+
+inline const tMatrix4 & cBone::GetLocalTransform() const
+{
+   return m_localTransform;
+}
+
+///////////////////////////////////////
+
+inline void cBone::SetLocalTransform(const tMatrix4 & matrix)
+{
+   m_localTransform = matrix;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cMs3dBone
 //
 
-class cMs3dBone
+class cMs3dBone : public cBone
 {
    friend class cReadWriteOps<cMs3dBone>;
 
@@ -127,7 +185,6 @@ public:
    cMs3dBone(const cMs3dBone & other);
    const cMs3dBone & operator =(const cMs3dBone & other);
 
-   const char * GetName() const;
    const char * GetParentName() const;
    int GetParentIndex() const;
    void SetParentIndex(int index);
@@ -136,19 +193,10 @@ public:
    const tMatrix4 & GetFinalMatrix() const;
 
 private:
-   char name[kMaxBoneName];
    char parentName[kMaxBoneName];
    int m_iParent;
-   tMatrix4 local; // local reference matrix
    tMatrix4 final;
 };
-
-///////////////////////////////////////
-
-inline const char * cMs3dBone::GetName() const
-{
-   return name;
-}
 
 ///////////////////////////////////////
 
@@ -175,7 +223,7 @@ inline void cMs3dBone::SetParentIndex(int index)
 
 inline const tMatrix4 & cMs3dBone::GetLocalMatrix() const
 {
-   return local;
+   return cBone::GetLocalTransform();
 }
 
 ///////////////////////////////////////
@@ -207,7 +255,7 @@ class cMs3dSkeleton
 
 public:
    cMs3dSkeleton();
-   virtual ~cMs3dSkeleton();
+   ~cMs3dSkeleton();
 
    int GetBoneCount() const { return m_bones.size(); }
    const cMs3dBone & GetBone(int index) const { return m_bones[index]; }
@@ -232,14 +280,14 @@ private:
 // CLASS: cMs3dMesh
 //
 
-class cMs3dMesh : public cMs3dSkeleton
+class cMs3dMesh
 {
    cMs3dMesh(const cMs3dMesh &); // private, un-implemented
    const cMs3dMesh & operator =(const cMs3dMesh &); // private, un-implemented
 
 public:
    cMs3dMesh();
-   virtual ~cMs3dMesh();
+   ~cMs3dMesh();
 
    void GetAABB(tVec3 * pMaxs, tVec3 * pMins) const;
 
@@ -263,7 +311,7 @@ public:
    int GetGroupCount() const { return m_groups.size(); }
    const cMs3dGroup & GetGroup(int index) const { return m_groups[index]; }
 
-   const cMs3dSkeleton * GetSkeleton() const { return this; }
+   const cMs3dSkeleton * GetSkeleton() const { return &m_skeleton; }
 
 private:
    typedef void (cMs3dMesh:: * tRenderMethod)() const;
@@ -286,6 +334,8 @@ private:
 
    mutable tVec3 m_maxs, m_mins;
    mutable bool m_bCalculatedAABB;
+
+   cMs3dSkeleton m_skeleton;
 
    tMatrices m_boneMatrices;
 

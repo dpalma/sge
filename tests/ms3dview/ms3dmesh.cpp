@@ -190,6 +190,62 @@ tResult cReadWriteOps<cMs3dGroup>::Read(IReader * pReader, cMs3dGroup * pGroup)
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: cBone
+//
+
+///////////////////////////////////////
+
+cBone::cBone()
+ : m_pParent(NULL)
+{
+}
+
+///////////////////////////////////////
+
+cBone::cBone(const cBone & other)
+{
+   operator =(other);
+}
+
+///////////////////////////////////////
+
+const cBone & cBone::operator =(const cBone & other)
+{
+   m_name = other.m_name;
+   m_pParent = other.m_pParent;
+   m_children.resize(other.m_children.size());
+   std::copy(other.m_children.begin(), other.m_children.end(), m_children.begin());
+   m_localTransform = other.m_localTransform;
+   return *this;
+}
+
+///////////////////////////////////////
+
+bool cBone::AddChild(const cBone * pChild)
+{
+   if (pChild != NULL)
+   {
+      tChildren::iterator iter;
+      for (iter = m_children.begin(); iter != m_children.end(); iter++)
+      {
+         if ((*iter == pChild) || (strcmp((*iter)->GetName(), pChild->GetName()) == 0))
+         {
+            return false;
+         }
+      }
+
+      m_children.push_back(pChild);
+      const_cast<cBone *>(pChild)->m_pParent = this;
+
+      return true;
+   }
+
+   return false;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cMs3dBone
 //
 
@@ -198,9 +254,7 @@ tResult cReadWriteOps<cMs3dGroup>::Read(IReader * pReader, cMs3dGroup * pGroup)
 cMs3dBone::cMs3dBone()
  : m_iParent(-1)
 {
-   name[0] = 0;
    parentName[0] = 0;
-   local.Identity();
    final.Identity();
 }
 
@@ -215,10 +269,9 @@ cMs3dBone::cMs3dBone(const cMs3dBone & other)
 
 const cMs3dBone & cMs3dBone::operator =(const cMs3dBone & other)
 {
-   strcpy(name, other.name);
+   cBone::operator =(static_cast<const cBone &>(other));
    strcpy(parentName, other.parentName);
    m_iParent = other.m_iParent;
-   local = other.local;
    final = other.final;
    return *this;
 }
@@ -251,8 +304,11 @@ tResult cReadWriteOps<cMs3dBone>::Read(IReader * pReader, cMs3dBone * pBone)
       if (pReader->Read(&flags, sizeof(flags)) != S_OK)
          break;
 
-      if (pReader->Read(pBone->name, sizeof(pBone->name)) != S_OK)
+      char name[kMaxBoneName];
+      if (pReader->Read(name, sizeof(name)) != S_OK)
          break;
+
+      pBone->SetName(name);
 
       if (pReader->Read(pBone->parentName, sizeof(pBone->parentName)) != S_OK)
          break;
@@ -265,7 +321,8 @@ tResult cReadWriteOps<cMs3dBone>::Read(IReader * pReader, cMs3dBone * pBone)
       tMatrix4 mt, mr;
       MatrixTranslate(position[0], position[1], position[2], &mt);
       MatrixFromAngles(tVec3(rotation), &mr);
-      pBone->local = mt * mr;
+
+      pBone->SetLocalTransform(mt * mr);
 
       result = S_OK;
    }
@@ -648,10 +705,10 @@ tResult cMs3dMesh::Read(IReader * pReader, IRenderDevice * pRenderDevice, IResou
 
    Assert(m_materials.size() == nMaterials);
 
-   if (cReadWriteOps<cMs3dSkeleton>::Read(pReader, this) != S_OK)
+   if (pReader->Read(&m_skeleton) != S_OK)
       return E_FAIL;
 
-   m_boneMatrices.resize(GetBoneCount());
+   m_boneMatrices.resize(GetSkeleton()->GetBoneCount());
 
    cgSetErrorCallback(cgErrorCallback);
 
@@ -681,14 +738,14 @@ tResult cMs3dMesh::Read(IReader * pReader, IRenderDevice * pRenderDevice, IResou
    }
    else
    {
-      SetupJoints();
+      m_skeleton.SetupJoints();
 
       typedef std::vector<tMatrix4> tMatrices;
-      tMatrices inverses(GetBoneCount());
+      tMatrices inverses(GetSkeleton()->GetBoneCount());
 
       for (int i = 0; i < inverses.size(); i++)
       {
-         MatrixInvert(GetBone(i).GetFinalMatrix(), &inverses[i]);
+         MatrixInvert(GetSkeleton()->GetBone(i).GetFinalMatrix(), &inverses[i]);
       }
 
       // transform all vertices by the inverse of the affecting bone's absolute matrix
@@ -738,7 +795,7 @@ tResult cMs3dMesh::Read(IReader * pReader, IRenderDevice * pRenderDevice, IResou
 
 void cMs3dMesh::Reset()
 {
-   cMs3dSkeleton::Reset();
+   m_skeleton.Reset();
 
    m_vertices.clear();
    m_triangles.clear();
@@ -761,16 +818,16 @@ void cMs3dMesh::Reset()
 void cMs3dMesh::SetFrame(float percent)
 {
    Assert(percent >= 0 && percent <= 1);
-   Assert(m_boneMatrices.size() == GetBoneCount());
+   Assert(m_boneMatrices.size() == GetSkeleton()->GetBoneCount());
 
-   for (int i = 0; i < GetBoneCount(); i++)
+   for (int i = 0; i < GetSkeleton()->GetBoneCount(); i++)
    {
       tQuat rotation;
       tVec3 translation;
 
-      cMs3dBone * pBone = GetBonePtr(i);
+      cMs3dBone * pBone = m_skeleton.GetBonePtr(i);
 
-      IKeyFrameInterpolator * pInterpolator = AccessInterpolator(i);
+      IKeyFrameInterpolator * pInterpolator = m_skeleton.AccessInterpolator(i);
 
       if (pInterpolator->Interpolate(
          percent * pInterpolator->GetPeriod(),
