@@ -8,6 +8,7 @@
 #include <cstdio>
 
 #ifdef HAVE_CPPUNIT
+#include "filespec.h"
 #include <cppunit/extensions/HelperMacros.h>
 #endif
 
@@ -27,7 +28,8 @@ bool cDictionary::cStringLessNoCase::operator()(const cStr & lhs, const cStr & r
 
 ///////////////////////////////////////
 
-cDictionary::cDictionary()
+cDictionary::cDictionary(tPersistence defaultPersist)
+ : m_defaultPersist(defaultPersist)
 {
 }
 
@@ -39,100 +41,146 @@ cDictionary::~cDictionary()
 
 ///////////////////////////////////////
 
-tResult cDictionary::Get(const tChar * pszKey, char * pVal, int maxLength)
+tResult cDictionary::Get(const tChar * pszKey, char * pVal, int maxLength, tPersistence * pPersist)
 {
    if (pszKey == NULL)
    {
       return E_POINTER;
    }
+
    tMap::iterator iter = m_vars.find(pszKey);
    if (iter != m_vars.end())
    {
+      if (FAILED(GetPersistence(pszKey, pPersist)))
+      {
+         DebugMsg1("ERROR: Could not find persistence value for %s\n", pszKey);
+         return E_FAIL;
+      }
+
       if (pVal != NULL && maxLength > 0)
       {
          strncpy(pVal, iter->second.c_str(), maxLength);
          pVal[maxLength - 1] = 0;
       }
+
       return S_OK;
    }
+
    return S_FALSE;
 }
 
 ///////////////////////////////////////
 
-tResult cDictionary::Get(const tChar * pszKey, cStr * pVal)
+tResult cDictionary::Get(const tChar * pszKey, cStr * pVal, tPersistence * pPersist)
 {
    if (pszKey == NULL)
    {
       return E_POINTER;
    }
+
    tMap::iterator iter = m_vars.find(pszKey);
    if (iter != m_vars.end())
    {
+      if (FAILED(GetPersistence(pszKey, pPersist)))
+      {
+         DebugMsg1("ERROR: Could not find persistence value for %s\n", pszKey);
+         return E_FAIL;
+      }
+
       if (pVal != NULL)
       {
          *pVal = iter->second.c_str();
       }
+
       return S_OK;
    }
+
    return S_FALSE;
 }
 
 ///////////////////////////////////////
 
-tResult cDictionary::Get(const tChar * pszKey, int * pVal)
+tResult cDictionary::Get(const tChar * pszKey, int * pVal, tPersistence * pPersist)
 {
    if (pszKey == NULL)
    {
       return E_POINTER;
    }
+
    tMap::iterator iter = m_vars.find(pszKey);
    if (iter != m_vars.end())
    {
+      if (FAILED(GetPersistence(pszKey, pPersist)))
+      {
+         DebugMsg1("ERROR: Could not find persistence value for %s\n", pszKey);
+         return E_FAIL;
+      }
+
       if (pVal != NULL)
       {
          *pVal = atoi(iter->second.c_str());
       }
+
       return S_OK;
    }
+
    return S_FALSE;
 }
 
 ///////////////////////////////////////
 
-tResult cDictionary::Get(const tChar * pszKey, float * pVal)
+tResult cDictionary::Get(const tChar * pszKey, float * pVal, tPersistence * pPersist)
 {
    if (pszKey == NULL)
    {
       return E_POINTER;
    }
+
    tMap::iterator iter = m_vars.find(pszKey);
    if (iter != m_vars.end())
    {
+      if (FAILED(GetPersistence(pszKey, pPersist)))
+      {
+         DebugMsg1("ERROR: Could not find persistence value for %s\n", pszKey);
+         return E_FAIL;
+      }
+
       if (pVal != NULL)
       {
          *pVal = (float)atof(iter->second.c_str());
       }
+
       return S_OK;
    }
+
    return S_FALSE;
 }
 
 ///////////////////////////////////////
 
-tResult cDictionary::Set(const tChar * pszKey, const char * val)
+tResult cDictionary::Set(const tChar * pszKey, const char * val, tPersistence persist)
 {
    if (pszKey == NULL || val == NULL)
    {
       return E_POINTER;
    }
+   if (persist == kUseDefault)
+   {
+      persist = m_defaultPersist;
+   }
+   else if (persist != kPermanent && persist != kTransitory)
+   {
+      DebugMsg1("ERROR: Invalid persistence argument %d\n", persist);
+      return E_INVALIDARG;
+   }
    m_vars[pszKey] = val;
+   m_persistenceMap[pszKey] = persist;
    return S_OK;
 }
 
 ///////////////////////////////////////
 
-tResult cDictionary::Set(const tChar * pszKey, int val)
+tResult cDictionary::Set(const tChar * pszKey, int val, tPersistence persist)
 {
    if (pszKey == NULL)
    {
@@ -140,12 +188,12 @@ tResult cDictionary::Set(const tChar * pszKey, int val)
    }
    tChar szBuffer[64];
    snprintf(szBuffer, _countof(szBuffer), "%d", val);
-   return Set(pszKey, szBuffer);
+   return Set(pszKey, szBuffer, persist);
 }
 
 ///////////////////////////////////////
 
-tResult cDictionary::Set(const tChar * pszKey, float val)
+tResult cDictionary::Set(const tChar * pszKey, float val, tPersistence persist)
 {
    if (pszKey == NULL)
    {
@@ -153,7 +201,7 @@ tResult cDictionary::Set(const tChar * pszKey, float val)
    }
    tChar szBuffer[64];
    snprintf(szBuffer, _countof(szBuffer), "%f", val);
-   return Set(pszKey, szBuffer);
+   return Set(pszKey, szBuffer, persist);
 }
 
 ///////////////////////////////////////
@@ -203,9 +251,33 @@ tResult cDictionary::GetKeys(std::list<cStr> * pKeys)
 
 ///////////////////////////////////////
 
-IDictionary * DictionaryCreate()
+tResult cDictionary::GetPersistence(const tChar * pszKey, tPersistence * pPersist)
 {
-   return static_cast<IDictionary *>(new cDictionary);
+   if (pPersist == NULL)
+   {
+      return S_FALSE;
+   }
+   else
+   {
+      tPersistenceMap::iterator piter = m_persistenceMap.find(pszKey);
+      if (piter != m_persistenceMap.end())
+      {
+         *pPersist = piter->second;
+         return S_OK;
+      }
+      else
+      {
+         DebugMsg1("ERROR: Could not find persistence value for %s\n", pszKey);
+         return E_FAIL;
+      }
+   }
+}
+
+///////////////////////////////////////
+
+IDictionary * DictionaryCreate(tPersistence defaultPersist)
+{
+   return static_cast<IDictionary *>(new cDictionary(defaultPersist));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -217,10 +289,12 @@ class cDictionaryTests : public CppUnit::TestCase
    CPPUNIT_TEST_SUITE(cDictionaryTests);
       CPPUNIT_TEST(TestBadArgs);
       CPPUNIT_TEST(TestSet);
+      CPPUNIT_TEST(TestPersistence);
    CPPUNIT_TEST_SUITE_END();
 
    void TestBadArgs();
    void TestSet();
+   void TestPersistence();
 };
 
 ///////////////////////////////////////
@@ -269,6 +343,90 @@ void cDictionaryTests::TestSet()
    // verify
    CPPUNIT_ASSERT(pDict->Get(szKey, &value) == S_OK);
    CPPUNIT_ASSERT(strcmp(value.c_str(), szValue2) == 0);
+}
+
+///////////////////////////////////////
+
+void cDictionaryTests::TestPersistence()
+{
+   static const int kNumTestVars = 4;
+   static const char szPermKeyFormat[] = "perm%d";
+   static const char szPermValFormat[] = "pval%d";
+   static const char szTempKeyFormat[] = "temp%d";
+   static const char szTempValFormat[] = "tval%d";
+
+   cAutoIPtr<IDictionary> pSaveDict(DictionaryCreate());
+
+   int i;
+   char szKey[100], szValue[100];
+
+   for (i = 0; i < kNumTestVars; i++)
+   {
+      snprintf(szKey, _countof(szKey), szPermKeyFormat, i);
+      snprintf(szValue, _countof(szValue), szPermValFormat, i);
+      CPPUNIT_ASSERT(pSaveDict->Set(szKey, szValue, kPermanent) == S_OK);
+
+      snprintf(szKey, _countof(szKey), szTempKeyFormat, i);
+      snprintf(szValue, _countof(szValue), szTempValFormat, i);
+      CPPUNIT_ASSERT(pSaveDict->Set(szKey, szValue, kTransitory) == S_OK);
+   }
+
+   for (i = 0; i < kNumTestVars; i++)
+   {
+      cStr value;
+      tPersistence persist;
+
+      snprintf(szKey, _countof(szKey), szPermKeyFormat, i);
+      snprintf(szValue, _countof(szValue), szPermValFormat, i);
+      CPPUNIT_ASSERT(pSaveDict->Get(szKey, &value, &persist) == S_OK);
+      CPPUNIT_ASSERT(strcmp(value.c_str(), szValue) == 0);
+      CPPUNIT_ASSERT(persist == kPermanent);
+
+      snprintf(szKey, _countof(szKey), szTempKeyFormat, i);
+      snprintf(szValue, _countof(szValue), szTempValFormat, i);
+      CPPUNIT_ASSERT(pSaveDict->Get(szKey, &value, &persist) == S_OK);
+      CPPUNIT_ASSERT(strcmp(value.c_str(), szValue) == 0);
+      CPPUNIT_ASSERT(persist == kTransitory);
+   }
+
+   char szStore[TMP_MAX];
+   CPPUNIT_ASSERT(tmpnam(szStore) != NULL);
+
+   try
+   {
+      cAutoIPtr<IDictionaryStore> pSaveStore(DictionaryStoreCreate(cFileSpec(szStore)));
+      CPPUNIT_ASSERT(pSaveStore->Save(pSaveDict) == S_OK);
+      SafeRelease(pSaveStore);
+      SafeRelease(pSaveDict);
+
+      cAutoIPtr<IDictionary> pLoadDict(DictionaryCreate());
+      cAutoIPtr<IDictionaryStore> pLoadStore(DictionaryStoreCreate(cFileSpec(szStore)));
+      CPPUNIT_ASSERT(pLoadStore->Load(pLoadDict) == S_OK);
+
+      for (i = 0; i < kNumTestVars; i++)
+      {
+         cStr value;
+         tPersistence persist;
+
+         snprintf(szKey, _countof(szKey), szPermKeyFormat, i);
+         snprintf(szValue, _countof(szValue), szPermValFormat, i);
+         CPPUNIT_ASSERT(pLoadDict->Get(szKey, &value, &persist) == S_OK);
+         CPPUNIT_ASSERT(strcmp(value.c_str(), szValue) == 0);
+         CPPUNIT_ASSERT(persist == kPermanent);
+
+         snprintf(szKey, _countof(szKey), szTempKeyFormat, i);
+         snprintf(szValue, _countof(szValue), szTempValFormat, i);
+         CPPUNIT_ASSERT(pLoadDict->Get(szKey, &value, &persist) == S_FALSE);
+      }
+
+      CPPUNIT_ASSERT(unlink(szStore) == 0);
+   }
+   catch (...)
+   {
+      // attempt to ensure the temp file is always deleted
+      unlink(szStore);
+      throw;
+   }
 }
 
 #endif // HAVE_CPPUNIT

@@ -40,7 +40,7 @@ tResult ParseCommandLine(int argc, char *argv[], IConfig * pConfig)
          // set currently accumulating key/value
          if (curKey.GetLength() > 0)
          {
-            pConfig->Set(curKey, curVal);
+            pConfig->Set(curKey, curVal, kTransitory);
             curKey.erase();
             curVal.erase();
          }
@@ -56,7 +56,7 @@ tResult ParseCommandLine(int argc, char *argv[], IConfig * pConfig)
             }
             else
             {
-               pConfig->Set(key, value);
+               pConfig->Set(key, value, kTransitory);
                curKey.erase();
                curVal.erase();
                bLastWasKey = false;
@@ -86,7 +86,7 @@ tResult ParseCommandLine(int argc, char *argv[], IConfig * pConfig)
    // set final key
    if (bLastWasKey && curKey.GetLength() > 0)
    {
-      pConfig->Set(curKey, curVal);
+      pConfig->Set(curKey, curVal, kTransitory);
    }
 
    return S_OK;
@@ -143,8 +143,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION(cConfigTests);
 void cConfigTests::TestParseCmdLine()
 {
    cAutoIPtr<IDictionary> pDict(DictionaryCreate());
-   pDict->Set("test1", "val1");
-   pDict->Set("test2", "val2");
+   pDict->Set("test1", "val1", kTransitory);
+   pDict->Set("test2", "val2", kTransitory);
    static char *argv[] =
    {
       "+data=../data",
@@ -154,10 +154,15 @@ void cConfigTests::TestParseCmdLine()
    CPPUNIT_ASSERT(ParseCommandLine(_countof(argv), argv, pDict) == S_OK);
    CPPUNIT_ASSERT(pDict->IsSet("test1") == S_FALSE);
    cStr temp;
-   CPPUNIT_ASSERT(pDict->Get("test2", &temp) == S_OK);
+   tPersistence persist;
+   CPPUNIT_ASSERT(pDict->Get("test2", &temp, &persist) == S_OK);
    CPPUNIT_ASSERT(strcmp(temp.c_str(), "val2") == 0);
-   CPPUNIT_ASSERT(pDict->Get("test3", &temp) == S_OK);
+   CPPUNIT_ASSERT(persist == kTransitory);
+   persist = kUseDefault;
+   temp.erase();
+   CPPUNIT_ASSERT(pDict->Get("test3", &temp, &persist) == S_OK);
    CPPUNIT_ASSERT(strcmp(temp.c_str(), "val3") == 0);
+   CPPUNIT_ASSERT(persist == kTransitory);
 }
 
 ///////////////////////////////////////

@@ -21,17 +21,17 @@
 class cDictionary : public cComObject<IMPLEMENTS(IDictionary)>
 {
 public:
-   cDictionary();
+   cDictionary(tPersistence defaultPersist);
    virtual ~cDictionary();
 
-   virtual tResult Get(const tChar * pszKey, tChar * pVal, int maxLength);
-   virtual tResult Get(const tChar * pszKey, cStr * pVal);
-   virtual tResult Get(const tChar * pszKey, int * pVal);
-   virtual tResult Get(const tChar * pszKey, float * pVal);
+   virtual tResult Get(const tChar * pszKey, tChar * pVal, int maxLength, tPersistence * pPersist = NULL);
+   virtual tResult Get(const tChar * pszKey, cStr * pVal, tPersistence * pPersist = NULL);
+   virtual tResult Get(const tChar * pszKey, int * pVal, tPersistence * pPersist = NULL);
+   virtual tResult Get(const tChar * pszKey, float * pVal, tPersistence * pPersist = NULL);
 
-   virtual tResult Set(const tChar * pszKey, const tChar * val);
-   virtual tResult Set(const tChar * pszKey, int val);
-   virtual tResult Set(const tChar * pszKey, float val);
+   virtual tResult Set(const tChar * pszKey, const tChar * val, tPersistence persist = kPermanent);
+   virtual tResult Set(const tChar * pszKey, int val, tPersistence persist = kPermanent);
+   virtual tResult Set(const tChar * pszKey, float val, tPersistence persist = kPermanent);
 
    virtual tResult Delete(const tChar * pszKey);
 
@@ -40,6 +40,8 @@ public:
    virtual tResult GetKeys(std::list<cStr> * pKeys);
 
 private:
+   tResult GetPersistence(const tChar * pszKey, tPersistence * pPersist);
+
    class cStringLessNoCase
    {
    public:
@@ -48,6 +50,11 @@ private:
 
    typedef std::map<cStr, cStr, cStringLessNoCase> tMap;
    tMap m_vars;
+
+   typedef std::map<cStr, tPersistence> tPersistenceMap;
+   tPersistenceMap m_persistenceMap;
+
+   tPersistence m_defaultPersist;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

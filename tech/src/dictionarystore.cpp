@@ -149,9 +149,13 @@ tResult cDictionaryTextStore::Save(IDictionary * pDictionary)
       for (iter = keys.begin(); iter != keys.end(); iter++)
       {
          cStr value;
-         if (pDictionary->Get(iter->c_str(), &value) == S_OK)
+         tPersistence persist;
+         if (pDictionary->Get(iter->c_str(), &value, &persist) == S_OK)
          {
-            fprintf(fp, "%s = %s", iter->c_str(), value.c_str());
+            if (persist == kPermanent)
+            {
+               fprintf(fp, "%s=%s\n", iter->c_str(), value.c_str());
+            }
          }
       }
 
