@@ -9,6 +9,11 @@
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
+
+#define ARGB(a,r,g,b) \
+   (((((a)&0xff)<<24)|(((r)&0xff)<<16)|(((g)&0xff)<<8)|((b)&0xff)))
+
+///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cColor
 //
@@ -167,10 +172,10 @@ inline uint cColor::GetARGB()
    if (!m_bHaveARGB)
    {
       m_bHaveARGB = true;
-      m_argb = (((byte)(GetAlpha() * 255) & 0xFF) << 24)
-         | (((byte)(GetRed() * 255) & 0xFF) << 16)
-         | (((byte)(GetGreen() * 255) & 0xFF) << 8)
-         | ((byte)(GetBlue() * 255) & 0xFF);
+      m_argb = ARGB((byte)(GetAlpha() * 255),
+                    (byte)(GetRed() * 255),
+                    (byte)(GetGreen() * 255),
+                    (byte)(GetBlue() * 255));
    }
    return m_argb;
 }
