@@ -5,6 +5,7 @@
 
 #include "msPlugInImpl.h"
 #include "resource.h"
+#include "msPlugInExportDlg.h"
 
 #include "mesh.h"
 #include "material.h"
@@ -77,10 +78,9 @@ int cPlugIn::Execute(msModel * pModel)
       return -1;
    }
 
-   cAutoIPtr<IRenderDevice> pRenderDevice;
-   if (FAILED(RenderDeviceCreate(&pRenderDevice)))
+   cMsPlugInExportDlg dlg;
+   if (dlg.DoModal() != IDOK)
    {
-      AfxMessageBox(IDS_ERR_RENDERDEVICEFAILCREATE);
       return -1;
    }
 
@@ -122,6 +122,15 @@ int cPlugIn::Execute(msModel * pModel)
          pMesh->AddMaterial(pMaterial);
       }
    }
+
+#if 0
+   cAutoIPtr<IRenderDevice> pRenderDevice;
+   if (FAILED(RenderDeviceCreate(&pRenderDevice)))
+   {
+      AfxMessageBox(IDS_ERR_RENDERDEVICEFAILCREATE);
+      return -1;
+   }
+#endif
 
    for (i = 0; i < nMeshes; i++)
    {
