@@ -7,6 +7,7 @@
 #include "comtools.h"
 #include "vec2.h"
 #include "vec3.h"
+#include "str.h"
 
 #include <vector>
 
@@ -18,7 +19,13 @@ F_DECLARE_INTERFACE(IEditorTileSet);
 F_DECLARE_INTERFACE(IMaterial);
 F_DECLARE_INTERFACE(IRenderDevice);
 F_DECLARE_INTERFACE(IVertexDeclaration);
+F_DECLARE_INTERFACE(IReader);
+F_DECLARE_INTERFACE(IWriter);
 class cHeightMap;
+
+class cTerrain;
+class cTerrainTile;
+class cTerrainChunk;
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -49,6 +56,9 @@ public:
    cTerrain();
    ~cTerrain();
 
+   tResult Read(IReader * pReader);
+   tResult Write(IWriter * pWriter);
+
    bool Create(uint xDim, uint zDim, int stepSize, IEditorTileSet * pTileSet,
       uint defaultTile, cHeightMap * pHeightMap);
 
@@ -72,7 +82,22 @@ private:
 
    std::vector<sTerrainVertex> m_vertices;
 
+   cStr m_tilesetName;
+
    cAutoIPtr<IMaterial> m_pMaterial;
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cTerrainTile
+//
+
+class cTerrainTile
+{
+public:
+   cTerrainTile();
+   ~cTerrainTile();
 };
 
 

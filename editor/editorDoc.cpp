@@ -183,7 +183,21 @@ BOOL cEditorDoc::OnOpenDocument(LPCTSTR lpszPathName)
       return FALSE;
    }
 
-   // TODO
+   Assert(m_pTerrain == NULL);
+   m_pTerrain = new cTerrain;
+   if (m_pTerrain == NULL)
+   {
+      ErrorMsg("Error allocating new terrain object\n");
+      return FALSE;
+   }
+   else
+   {
+      if (FAILED(m_pTerrain->Read(pReader)))
+      {
+         ErrorMsg1("Error loading document %s\n", lpszPathName);
+         return FALSE;
+      }
+   }
 
    SetModifiedFlag(FALSE); // start off as unmodified
 
@@ -198,7 +212,14 @@ BOOL cEditorDoc::OnSaveDocument(LPCTSTR lpszPathName)
       return FALSE;
    }
 
-   // TODO
+   if (m_pTerrain != NULL)
+   {
+      if (FAILED(m_pTerrain->Write(pWriter)))
+      {
+         ErrorMsg1("Error saving document %s\n", lpszPathName);
+         return FALSE;
+      }
+   }
 
    SetModifiedFlag(FALSE); // not modified anymore
 

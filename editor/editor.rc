@@ -291,7 +291,7 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    IDR_MAINFRAME           "editor\n\nEdito\n\n\nEditor.Document\nEdito Document"
+    IDR_MAINFRAME           "editor\n\nxxx\nSGE Editor Files (*.sgm)\n.sgm\nSGE.Editor.Document\nSGE Editor Document"
 END
 
 STRINGTABLE DISCARDABLE 
