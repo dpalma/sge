@@ -6,6 +6,8 @@
 
 #include "editorapi.h"
 
+#include "material.h"
+
 #include "comtools.h"
 #include "str.h"
 
@@ -36,10 +38,15 @@ public:
    virtual tResult GetTileCount(uint * pTileCount) const;
    virtual tResult GetTile(uint index, IEditorTile * * ppTile);
 
+   virtual tResult GetMaterial(IMaterial * * ppMaterial);
+
+   virtual tResult GetImageList(uint dimension, HIMAGELIST * phImageList);
+
 private:
    cStr m_name;
    typedef std::vector<IEditorTile *> tTiles;
    tTiles m_tiles;
+   cAutoIPtr<IMaterial> m_pMaterial;
 };
 
 /////////////////////////////////////////////////////////////////////////////

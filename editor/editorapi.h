@@ -17,6 +17,9 @@ F_DECLARE_INTERFACE(IEditorTileManager);
 F_DECLARE_INTERFACE(IEditorTileSet);
 F_DECLARE_INTERFACE(IEditorTile);
 
+F_DECLARE_INTERFACE(ITexture);
+F_DECLARE_INTERFACE(IMaterial);
+
 #define UUID(uuidstr) __declspec(uuid(uuidstr))
 
 /////////////////////////////////////////////////////////////////////////////
@@ -111,6 +114,10 @@ interface UUID("61B488AA-AB50-41c5-AA42-45F07C982F6A") IEditorTileSet : IUnknown
 
    virtual tResult GetTileCount(uint * pTileCount) const = 0;
    virtual tResult GetTile(uint index, IEditorTile * * ppTile) = 0;
+
+   virtual tResult GetMaterial(IMaterial * * ppMaterial) = 0;
+
+   virtual tResult GetImageList(uint dimension, HIMAGELIST * phImageList) = 0;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -122,6 +129,8 @@ interface UUID("CDEB5694-56D2-4750-BEF8-85F286364C23") IEditorTile : IUnknown
 {
    virtual tResult GetName(cStr * pName) const = 0;
    virtual tResult GetTexture(cStr * pTexture) const = 0;
+
+   virtual tResult GetTexture(ITexture * * ppTexture) = 0;
 
    virtual tResult GetBitmap(uint dimension, HBITMAP * phBitmap) = 0;
 };

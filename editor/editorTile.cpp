@@ -86,6 +86,22 @@ tResult cEditorTile::GetTexture(cStr * pTexture) const
 
 ///////////////////////////////////////
 
+tResult cEditorTile::GetTexture(ITexture * * ppTexture)
+{
+   if (!m_pTexture && !m_texture.empty())
+   {
+      UseGlobal(TextureManager);
+      if (FAILED(pTextureManager->GetTexture(m_texture.c_str(), &m_pTexture)))
+      {
+         return E_FAIL;
+      }
+   }
+
+   return m_pTexture.GetPointer(ppTexture);
+}
+
+///////////////////////////////////////
+
 tResult cEditorTile::GetBitmap(uint dimension, HBITMAP * phBitmap)
 {
    if (dimension == 0)

@@ -6,6 +6,8 @@
 
 #include "editorapi.h"
 
+#include "textureapi.h"
+
 #include "comtools.h"
 #include "str.h"
 
@@ -31,6 +33,8 @@ public:
    virtual tResult GetName(cStr * pName) const;
    virtual tResult GetTexture(cStr * pTexture) const;
 
+   virtual tResult GetTexture(ITexture * * ppTexture);
+
    virtual tResult GetBitmap(uint dimension, HBITMAP * phBitmap);
 
 private:
@@ -40,6 +44,8 @@ private:
    int m_horzImages, m_vertImages;
 
    cImageData * m_pImageData;
+
+   cAutoIPtr<ITexture> m_pTexture;
 
    HBITMAP m_hBitmap;
 

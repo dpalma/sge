@@ -46,9 +46,9 @@ static char THIS_FILE[] = __FILE__;
 
 static const SIZE g_mapSizes[] =
 {
-   { 32, 32 },
    { 64, 64 },
    { 128, 128 },
+   { 192, 192 },
    { 256, 256 },
 };
 

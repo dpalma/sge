@@ -107,4 +107,38 @@ tResult cEditorTileSet::GetTile(uint index, IEditorTile * * ppTile)
    return S_OK;
 }
 
+///////////////////////////////////////
+
+tResult cEditorTileSet::GetMaterial(IMaterial * * ppMaterial)
+{
+   if (!m_pMaterial)
+   {
+      m_pMaterial = MaterialCreate();
+      if (!m_pMaterial)
+      {
+         return E_OUTOFMEMORY;
+      }
+
+      int index = 0;
+      tTiles::iterator iter;
+      for (iter = m_tiles.begin(); (iter != m_tiles.end()) && (index < kMaxTextures); iter++, index++)
+      {
+         cAutoIPtr<ITexture> pTexture;
+         if ((*iter)->GetTexture(&pTexture) == S_OK)
+         {
+            m_pMaterial->SetTexture(index, pTexture);
+         }
+      }
+   }
+
+   return m_pMaterial.GetPointer(ppMaterial);
+}
+
+///////////////////////////////////////
+
+tResult cEditorTileSet::GetImageList(uint dimension, HIMAGELIST * phImageList)
+{
+   return E_NOTIMPL; // TODO
+}
+
 ///////////////////////////////////////////////////////////////////////////////

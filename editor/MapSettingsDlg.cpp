@@ -6,6 +6,8 @@
 #include "MapSettingsDlg.h"
 #include "editorapi.h"
 
+#include "globalobj.h"
+
 #include <algorithm>
 #include <functional>
 
@@ -84,10 +86,11 @@ cMapSettingsDlg::cMapSettingsDlg(const SIZE * pSizes, size_t nSizes, int sizeSel
  : CDialog(cMapSettingsDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(cMapSettingsDlg)
-	m_mapSizeIndex = -1;
 	m_tileSetIndex = -1;
 	m_heightData = -1;
 	m_heightMapFile = _T("");
+	m_mapHeightIndex = -1;
+	m_mapWidthIndex = -1;
 	//}}AFX_DATA_INIT
 
    if (pSizes != NULL && nSizes > 0)
@@ -99,7 +102,8 @@ cMapSettingsDlg::cMapSettingsDlg(const SIZE * pSizes, size_t nSizes, int sizeSel
          m_mapSizes[i] = pSizes[i];
       }
 
-      m_mapSizeIndex = sizeSelectIndex;
+      m_mapWidthIndex = sizeSelectIndex;
+      m_mapHeightIndex = sizeSelectIndex;
    }
 
    if (!tileSets.empty())
@@ -118,11 +122,13 @@ void cMapSettingsDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(cMapSettingsDlg)
-	DDX_CBIndex(pDX, IDC_MAP_SIZE, m_mapSizeIndex);
+	DDX_Control(pDX, IDC_MAP_INITIAL_TILE, m_initialTileComboBox);
 	DDX_CBIndex(pDX, IDC_MAP_TILESET, m_tileSetIndex);
 	DDX_Radio(pDX, IDC_HEIGHT_NONE, m_heightData);
 	DDX_Text(pDX, IDC_HEIGHT_MAP_FILE, m_heightMapFile);
 	DDV_MaxChars(pDX, m_heightMapFile, MAX_PATH);
+	DDX_CBIndex(pDX, IDC_MAP_HEIGHT, m_mapHeightIndex);
+	DDX_CBIndex(pDX, IDC_MAP_WIDTH, m_mapWidthIndex);
 	//}}AFX_DATA_MAP
 }
 
@@ -135,6 +141,7 @@ BEGIN_MESSAGE_MAP(cMapSettingsDlg, CDialog)
    ON_BN_CLICKED(IDC_HEIGHT_NONE, DoRadioButtonEnabling)
    ON_BN_CLICKED(IDC_HEIGHT_NOISE, DoRadioButtonEnabling)
    ON_BN_CLICKED(IDC_IMPORT_HEIGHT_MAP, DoRadioButtonEnabling)
+   ON_CBN_SELCHANGE(IDC_MAP_TILESET, OnSelectTileSet)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -150,9 +157,11 @@ bool cMapSettingsDlg::GetSelectedSize(SIZE * pSize) const
       return false;
    }
 
-   if (m_mapSizeIndex >= 0 && m_mapSizeIndex < m_mapSizes.size())
+   if ((m_mapWidthIndex >= 0) && (m_mapWidthIndex < m_mapSizes.size())
+      && (m_mapHeightIndex >= 0) && (m_mapHeightIndex < m_mapSizes.size()))
    {
-      *pSize = m_mapSizes[m_mapSizeIndex];
+      pSize->cx = m_mapSizes[m_mapWidthIndex].cx;
+      pSize->cy = m_mapSizes[m_mapHeightIndex].cy;
       return true;
    }
 
@@ -216,9 +225,11 @@ BOOL cMapSettingsDlg::OnInitDialog()
 	
    // Don't sort the drop-lists because selection is defined and
    // returned as indices into the lists given in the constructor
-   ASSERT_VALID(GetDlgItem(IDC_MAP_SIZE));
+   ASSERT_VALID(GetDlgItem(IDC_MAP_WIDTH));
+   ASSERT_VALID(GetDlgItem(IDC_MAP_HEIGHT));
    ASSERT_VALID(GetDlgItem(IDC_MAP_TILESET));
-   GetDlgItem(IDC_MAP_SIZE)->ModifyStyle(CBS_SORT, 0);
+   GetDlgItem(IDC_MAP_WIDTH)->ModifyStyle(CBS_SORT, 0);
+   GetDlgItem(IDC_MAP_HEIGHT)->ModifyStyle(CBS_SORT, 0);
    GetDlgItem(IDC_MAP_TILESET)->ModifyStyle(CBS_SORT, 0);
 
    if (!m_mapSizes.empty())
@@ -227,8 +238,10 @@ BOOL cMapSettingsDlg::OnInitDialog()
       for (iter = m_mapSizes.begin(); iter != m_mapSizes.end(); iter++)
       {
          CString str;
-         str.Format("%d x %d\n", iter->cx, iter->cy);
-         SendDlgItemMessage(IDC_MAP_SIZE, CB_ADDSTRING, 0, (LPARAM)(LPCTSTR)str);
+         str.Format("%d", iter->cx);
+         SendDlgItemMessage(IDC_MAP_WIDTH, CB_ADDSTRING, 0, (LPARAM)(LPCTSTR)str);
+         str.Format("%d", iter->cy);
+         SendDlgItemMessage(IDC_MAP_HEIGHT, CB_ADDSTRING, 0, (LPARAM)(LPCTSTR)str);
       }
    }
 
@@ -246,7 +259,8 @@ BOOL cMapSettingsDlg::OnInitDialog()
    UpdateData(FALSE);
 
    DoRadioButtonEnabling();
-	
+   PopulateInitialTileComboBox(true);
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -285,6 +299,61 @@ void cMapSettingsDlg::DoRadioButtonEnabling()
    {
       GetDlgItem(IDC_BROWSE_HEIGHT_MAP)->EnableWindow(FALSE);
       GetDlgItem(IDC_HEIGHT_MAP_FILE)->EnableWindow(FALSE);
+   }
+}
+
+////////////////////////////////////////
+
+void cMapSettingsDlg::OnSelectTileSet()
+{
+   PopulateInitialTileComboBox(false);
+}
+
+////////////////////////////////////////
+
+void cMapSettingsDlg::PopulateInitialTileComboBox(bool bForce)
+{
+   int sel = SendDlgItemMessage(IDC_MAP_TILESET, CB_GETCURSEL);
+   if ((sel != CB_ERR) && ((sel != m_tileSetIndex) || bForce))
+   {
+      m_initialTileComboBox.ResetContent();
+
+      int length = SendDlgItemMessage(IDC_MAP_TILESET, CB_GETLBTEXTLEN, sel);
+      if (length > 0)
+      {
+         char * pszTileSet = (char *)alloca(length + 1);
+         SendDlgItemMessage(IDC_MAP_TILESET, CB_GETLBTEXT, sel, (LPARAM)pszTileSet);
+
+         cAutoIPtr<IEditorTileSet> pTileSet;
+
+         UseGlobal(EditorTileManager);
+         if (pEditorTileManager->GetTileSet(pszTileSet, &pTileSet) == S_OK)
+         {
+            uint nTiles = 0;
+            if (pTileSet->GetTileCount(&nTiles) == S_OK)
+            {
+               for (uint i = 0; i < nTiles; i++)
+               {
+                  cAutoIPtr<IEditorTile> pTile;
+                  if (pTileSet->GetTile(i, &pTile) == S_OK)
+                  {
+                     cStr tileName;
+                     Verify(pTile->GetName(&tileName) == S_OK);
+
+                     COMBOBOXEXITEM item;
+                     item.mask = CBEIF_TEXT;
+                     item.iItem = i;
+                     item.pszText = const_cast<char *>(tileName.c_str());
+                     item.cchTextMax = tileName.length();
+
+                     Verify(m_initialTileComboBox.InsertItem(&item) != CB_ERR);
+                  }
+               }
+
+               m_initialTileComboBox.SetCurSel(0);
+            }
+         }
+      }
    }
 }
 

@@ -39,10 +39,12 @@ private:
 // Dialog Data
 	//{{AFX_DATA(cMapSettingsDlg)
 	enum { IDD = IDD_MAPSETTINGS };
-	int		m_mapSizeIndex;
+	CComboBoxEx	m_initialTileComboBox;
 	int		m_tileSetIndex;
 	int		m_heightData;
 	CString	m_heightMapFile;
+	int		m_mapHeightIndex;
+	int		m_mapWidthIndex;
 	//}}AFX_DATA
 
 // Overrides
@@ -65,6 +67,9 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
    afx_msg void DoRadioButtonEnabling();
+   afx_msg void OnSelectTileSet();
+
+   void PopulateInitialTileComboBox(bool bForce);
 
 private:
    std::vector<SIZE> m_mapSizes;
