@@ -41,6 +41,10 @@ extern WTL::CAppModule _Module;
 
 #include <atlwin.h>
 
+#ifndef _AFX_CLIENT_BLOCK
+#define _AFX_CLIENT_BLOCK _CLIENT_BLOCK
+#endif
+
 #ifdef _DEBUG
 #if _MSC_VER > 1300
 #define DECLARE_DYNCREATE_EX(classname) \
