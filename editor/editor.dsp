@@ -72,7 +72,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /Yu"stdhdr.h" /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /I "..\tech\include" /I "..\engine\include" /I "..\render\include" /I "..\3rdparty\cppunit\include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "HAVE_CPPUNIT" /Yu"stdhdr.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /I "..\3rdparty\cppunit\include" /I "..\tech\include" /I "..\engine\include" /I "..\render\include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "HAVE_CPPUNIT" /Yu"stdhdr.h" /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG" /d "_AFXDLL"
@@ -199,6 +199,10 @@ SOURCE=.\editorDoc.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\editorTileManager.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\editorView.cpp
 # End Source File
 # Begin Source File
@@ -211,7 +215,96 @@ SOURCE=.\heightmap.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\historywnd.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\MainFrm.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\scbarcf.cpp
+
+!IF  "$(CFG)" == "editor - Win32 Release"
+
+# ADD CPP /Yu"stdhdr.h"
+
+!ELSEIF  "$(CFG)" == "editor - Win32 Debug"
+
+# ADD CPP /Yu"stdhdr.h"
+
+!ELSEIF  "$(CFG)" == "editor - Win32 Opt"
+
+# ADD CPP /Yu"stdhdr.h"
+
+!ELSEIF  "$(CFG)" == "editor - Win32 StaticDebug"
+
+# ADD CPP /Yu"stdhdr.h"
+
+!ELSEIF  "$(CFG)" == "editor - Win32 StaticRelease"
+
+# ADD CPP /Yu"stdhdr.h"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\scbarg.cpp
+
+!IF  "$(CFG)" == "editor - Win32 Release"
+
+# ADD CPP /Yu"stdhdr.h"
+
+!ELSEIF  "$(CFG)" == "editor - Win32 Debug"
+
+# ADD CPP /Yu"stdhdr.h"
+
+!ELSEIF  "$(CFG)" == "editor - Win32 Opt"
+
+# ADD CPP /Yu"stdhdr.h"
+
+!ELSEIF  "$(CFG)" == "editor - Win32 StaticDebug"
+
+# ADD CPP /Yu"stdhdr.h"
+
+!ELSEIF  "$(CFG)" == "editor - Win32 StaticRelease"
+
+# ADD CPP /Yu"stdhdr.h"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\scrollwnd.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\sizecbar.cpp
+
+!IF  "$(CFG)" == "editor - Win32 Release"
+
+# ADD CPP /Yu"stdhdr.h"
+
+!ELSEIF  "$(CFG)" == "editor - Win32 Debug"
+
+# ADD CPP /Yu"stdhdr.h"
+
+!ELSEIF  "$(CFG)" == "editor - Win32 Opt"
+
+# ADD CPP /Yu"stdhdr.h"
+
+!ELSEIF  "$(CFG)" == "editor - Win32 StaticDebug"
+
+# ADD CPP /Yu"stdhdr.h"
+
+!ELSEIF  "$(CFG)" == "editor - Win32 StaticRelease"
+
+# ADD CPP /Yu"stdhdr.h"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -252,6 +345,10 @@ SOURCE=.\editorguids.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\editorTileManager.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\editorView.h
 # End Source File
 # Begin Source File
@@ -264,11 +361,31 @@ SOURCE=.\heightmap.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\historywnd.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\MainFrm.h
 # End Source File
 # Begin Source File
 
 SOURCE=.\resource.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\scbarcf.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\scbarg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\scrollwnd.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sizecbar.h
 # End Source File
 # Begin Source File
 

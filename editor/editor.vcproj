@@ -315,6 +315,9 @@
 				RelativePath=".\aboutdlg.cpp">
 			</File>
 			<File
+				RelativePath="cmds.cpp">
+			</File>
+			<File
 				RelativePath=".\editor.rc">
 			</File>
 			<File
@@ -324,6 +327,9 @@
 				RelativePath=".\editorDoc.cpp">
 			</File>
 			<File
+				RelativePath="editorTileManager.cpp">
+			</File>
+			<File
 				RelativePath=".\editorView.cpp">
 			</File>
 			<File
@@ -331,6 +337,21 @@
 			</File>
 			<File
 				RelativePath=".\heightmap.cpp">
+			</File>
+			<File
+				RelativePath="historywnd.cpp">
+			</File>
+			<File
+				RelativePath="scbarcf.cpp">
+			</File>
+			<File
+				RelativePath="scbarg.cpp">
+			</File>
+			<File
+				RelativePath="scrollwnd.cpp">
+			</File>
+			<File
+				RelativePath="sizecbar.cpp">
 			</File>
 			<File
 				RelativePath=".\stdhdr.cpp">
@@ -388,6 +409,9 @@
 				RelativePath=".\editorDoc.h">
 			</File>
 			<File
+				RelativePath="editorTileManager.h">
+			</File>
+			<File
 				RelativePath=".\editorView.h">
 			</File>
 			<File
@@ -403,7 +427,22 @@
 				RelativePath=".\heightmap.h">
 			</File>
 			<File
+				RelativePath="historywnd.h">
+			</File>
+			<File
 				RelativePath=".\resource.h">
+			</File>
+			<File
+				RelativePath="scbarcf.h">
+			</File>
+			<File
+				RelativePath="scbarg.h">
+			</File>
+			<File
+				RelativePath="scrollwnd.h">
+			</File>
+			<File
+				RelativePath="sizecbar.h">
 			</File>
 			<File
 				RelativePath=".\stdhdr.h">
