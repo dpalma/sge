@@ -25,7 +25,6 @@ game_SOURCES = boundingvolume.cpp \
                scenenode.cpp \
                script.cpp \
                scriptvm.cpp \
-               sim.cpp \
                ui.cpp \
                uievent.cpp \
                uimgr.cpp \

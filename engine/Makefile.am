@@ -6,9 +6,12 @@ lib_LTLIBRARIES = libengine.la
 EXTRA_DIST = engine.dsp engine.vcproj include/*.h src/*.h
 
 libengine_la_SOURCES = src/3ds.cpp \
+                       src/animation.cpp \
                        src/mesh.cpp \
                        src/ms3d.cpp \
                        src/ms3dread.cpp \
+                       src/sim.cpp \
+                       src/skeleton.cpp \
                        src/stdhdr.cpp \
                        src/submesh.cpp
 

@@ -81,8 +81,9 @@ cKeyFrameInterpolator::cKeyFrameInterpolator(const char * pszName,
       memcpy(&m_translationKeys[0], pTranslationKeys, sizeof(sKeyFrameVec3) * nTranslationKeys);
    }
 
+   uint i;
    tTime maxScaleTime = FLT_MIN;
-   for (uint i = 0; i < nScaleKeys; i++)
+   for (i = 0; i < nScaleKeys; i++)
    {
       if (pScaleKeys[i].time > maxScaleTime)
          maxScaleTime = pScaleKeys[i].time;

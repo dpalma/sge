@@ -99,6 +99,7 @@ static tResult ReadKeyFrames(IReader * pReader,
 
    do
    {
+      uint i;
       uint16 nKeyFramesRot, nKeyFramesTrans;
 
       if (pReader->Read(&nKeyFramesRot, sizeof(nKeyFramesRot)) != S_OK)
@@ -121,7 +122,7 @@ static tResult ReadKeyFrames(IReader * pReader,
          break;
 
       pTranslationFrames->resize(nKeyFramesTrans);
-      for (unsigned i = 0; i < nKeyFramesTrans; i++)
+      for (i = 0; i < nKeyFramesTrans; i++)
       {
          (*pTranslationFrames)[i].time = translationKeys[i].time;
          (*pTranslationFrames)[i].value = tVec3(translationKeys[i].position);
@@ -184,7 +185,7 @@ tResult ReadSkeleton(IReader * pReader,
 
       std::vector<sMs3dBoneInfo> boneInfo(nJoints);
 
-      pInterpolators->resize(nJoints);
+      pInterpolators->clear();
 
       uint i;
       for (i = 0; i < nJoints; i++)
@@ -210,8 +211,10 @@ tResult ReadSkeleton(IReader * pReader,
             SafeRelease(pInterpolator);
             break;
          }
-
-         (*pInterpolators)[i] = pInterpolator;
+         else
+         {
+            pInterpolators->push_back(pInterpolator);
+         }
       }
 
       if (i < nJoints)
