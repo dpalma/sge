@@ -51,7 +51,7 @@ bool AssertFail(const char * pszFile, int line, const char * pszExpr)
       PostQuitMessage(msg.wParam);
 #else
    bool bResult = false;
-   DebugPrintf(pszFile, line, "ASSERTION FAILURE: %s\n", pszExpr);
+   techlog.Print(pszFile, line, kError, "ASSERTION FAILURE: %s\n", pszExpr);
 #endif
    return bResult;
 }
