@@ -28,6 +28,7 @@
 #include "threadcallapi.h"
 
 #include <algorithm>
+#include <zmouse.h>
 
 #ifdef HAVE_CPPUNIT
 #ifdef USE_MFC_TESTRUNNER

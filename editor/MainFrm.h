@@ -7,6 +7,7 @@
 #include "editorView.h"
 
 #include <DockingFrame.h>
+#include <sstate.h>
 
 #include <vector>
 
@@ -35,6 +36,7 @@ class cMainFrame : public dockwins::CDockingFrameImpl<cMainFrame>,
    {
       IDW_DOCKINGWINDOW_FIRST = 0xE800,
       IDW_DOCKINGWINDOW_LAST = 0xE8FF,
+      WM_POST_CREATE = WMDF_LAST + 1
    };
 
 public:
@@ -45,8 +47,8 @@ public:
 
    BEGIN_MSG_MAP_EX(cMainFrame)
       MESSAGE_HANDLER(WM_CREATE, OnCreate)
+      MESSAGE_HANDLER(WM_POST_CREATE, OnPostCreate)
       MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
-      MESSAGE_HANDLER(WM_SIZE, OnSize)
       COMMAND_ID_HANDLER(ID_FILE_NEW, OnFileNew)
       COMMAND_ID_HANDLER(ID_FILE_OPEN, OnFileOpen)
       COMMAND_ID_HANDLER(ID_FILE_SAVE, OnFileSave)
@@ -72,8 +74,8 @@ public:
    void CreateDockingWindows();
 
    LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
+   LRESULT OnPostCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
    LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
-   LRESULT OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
 
    LRESULT OnFileNew(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled);
    LRESULT OnFileOpen(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled);
@@ -97,6 +99,7 @@ private:
 
    typedef std::vector<cDockingWindow *> tDockingWindows;
    tDockingWindows m_dockingWindows;
+   sstate::CWindowStateMgr	m_dockingWindowStateMgr;
    CString m_dockingWindowViewMenuText;
 
    CComObject<cEditorView> * m_pView;

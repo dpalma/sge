@@ -10,6 +10,7 @@
 #include "aboutdlg.h"
 
 #include <DockMisc.h>
+#include <dwstate.h>
 
 #include "dbgalloc.h" // must be last header
 
@@ -135,7 +136,8 @@ void cMainFrame::CreateDockingWindows()
    uint ctrlBarId = IDW_DOCKINGWINDOW_FIRST + 32;
    uint ctrlBarIndex = 0;
 
-   static const DWORD ctrlBarStyle = WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN;
+//   static const DWORD ctrlBarStyle = WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN;
+   static const DWORD ctrlBarStyle = WS_OVERLAPPEDWINDOW | WS_POPUP| WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 
    std::vector<uint> dockBars;
    HANDLE hIter;
@@ -153,10 +155,10 @@ void cMainFrame::CreateDockingWindows()
          cDockingWindow * pCtrlBar = NULL;
          if (((*factoryFn)(&pCtrlBar) == S_OK) && (pCtrlBar != NULL))
          {
-		      if (pCtrlBar->Create(m_hWnd, rcDefault, title, ctrlBarStyle, 0, ctrlBarId))
+            if (pCtrlBar->Create(m_hWnd, rcDefault, title, ctrlBarStyle, 0, ctrlBarId))
             {
-		         DockWindow(*pCtrlBar, dockwins::CDockingSide(ctrlBarPlacementMap[placement]),
-						        ctrlBarIndex, 0.0f/*fPctPos*/,100/*nWidth*/,100/* nHeight*/);
+               DockWindow(*pCtrlBar, dockwins::CDockingSide(ctrlBarPlacementMap[placement]),
+                          0, 0.0f/*fPctPos*/,100/*nWidth*/,100/* nHeight*/);
                ctrlBarId++;
                ctrlBarIndex++;
                m_dockingWindows.push_back(pCtrlBar);
@@ -229,13 +231,24 @@ LRESULT cMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
       return -1;
    }
 
+   CreateSimpleReBar(ATL_SIMPLE_REBAR_NOBORDER_STYLE);
+   AddSimpleReBarBand(hWndCmdBar);
+   AddSimpleReBarBand(hWndToolBar, NULL, TRUE);
+
    UIAddToolBar(hWndToolBar);
 
-   if (FAILED(CComObject<cEditorView>::CreateInstance(&m_pView))
-      || !m_pView->CWindowImpl<cEditorView>::Create(m_hWnd, NULL, "",
-      WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS))
+   if (FAILED(CComObject<cEditorView>::CreateInstance(&m_pView)))
    {
-      ErrorMsg("Error creating view\n");
+      ErrorMsg("Error creating IEditorView instance\n");
+      return -1;
+   }
+
+   m_hWndClient = m_pView->CWindowImpl<cEditorView>::Create(m_hWnd, rcDefault, NULL,
+      WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
+
+   if (m_hWndClient == NULL)
+   {
+      ErrorMsg("Error creating view window\n");
       return -1;
    }
 
@@ -246,6 +259,31 @@ LRESULT cMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
    InitializeDockingFrame();
 
    CreateDockingWindows();
+
+   PostMessage(WM_POST_CREATE);
+
+   return 0;
+}
+
+////////////////////////////////////////
+
+LRESULT cMainFrame::OnPostCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/)
+{
+   sstate::CDockWndMgr dockWndMgr;
+   tDockingWindows::iterator iter = m_dockingWindows.begin();
+   tDockingWindows::iterator end = m_dockingWindows.end();
+   for (; iter != end; iter++)
+   {
+      dockWndMgr.Add(sstate::CDockingWindowStateAdapter<cDockingWindow>(*(*iter)));
+   }
+
+   m_dockingWindowStateMgr.Initialize(_T("SOFTWARE\\SGE"), m_hWnd);
+//   m_dockingWindowStateMgr.Add(sstate::CRebarStateAdapter(m_hWndToolBar));
+//   m_dockingWindowStateMgr.Add(sstate::CToggleWindowAdapter(m_hWndStatusBar));
+   m_dockingWindowStateMgr.Add(dockWndMgr);
+   m_dockingWindowStateMgr.Restore();
+
+   UpdateLayout();
 
    return 0;
 }
@@ -271,20 +309,6 @@ LRESULT cMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
    }
 
    PostQuitMessage(0);
-
-   return 0;
-}
-
-////////////////////////////////////////
-
-LRESULT cMainFrame::OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL & /*bHandled*/)
-{
-   CSize size(lParam);
-
-   if (m_pView != NULL)
-   {
-      m_pView->MoveWindow(0, 0, size.cx, size.cy);
-   }
 
    return 0;
 }
@@ -388,6 +412,16 @@ LRESULT cMainFrame::OnViewControlBar(WORD notifyCode, WORD id, HWND hWndCtl, BOO
 
 BOOL cMainFrame::PreTranslateMessage(MSG * pMsg)
 {
+   if (tFrameBase::PreTranslateMessage(pMsg))
+   {
+      return TRUE;
+   }
+
+//   if ((m_pView != NULL) && m_pView->PreTranslateMessage(pMsg))
+//   {
+//      return TRUE;
+//   }
+
    return FALSE;
 }
 
@@ -395,6 +429,9 @@ BOOL cMainFrame::PreTranslateMessage(MSG * pMsg)
 
 BOOL cMainFrame::OnIdle()
 {
+   UIUpdateToolBar();
+   //UISetCheck(ID_VIEW_TOOLBAR, IsToolbarVisible());
+   //UISetCheck(ID_VIEW_STATUS_BAR, ::IsWindowVisible(m_hWndStatusBar));
    return FALSE;
 }
 

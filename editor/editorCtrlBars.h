@@ -20,10 +20,10 @@ class cDockingWindow :
 	typedef dockwins::CTitleDockingWindowImpl<cDockingWindow, CWindow, dockwins::CVC6LikeTitleDockingWindowTraits> tBaseClass;
 
 public:
-   DECLARE_WND_CLASS(_T("cDockingWindow"))
+   DECLARE_WND_CLASS(_T("DockingWindow"))
 
-   BEGIN_MSG_MAP(thisClass)
-      CHAIN_MSG_MAP(baseClass)
+   BEGIN_MSG_MAP(cDockingWindow)
+      CHAIN_MSG_MAP(tBaseClass)
 	END_MSG_MAP()
 };
 

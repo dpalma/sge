@@ -40,18 +40,12 @@ END
 
 3 TEXTINCLUDE MOVEABLE PURE 
 BEGIN
-    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
-    "#define _AFX_NO_OLE_RESOURCES\r\n"
-    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
-    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
-    "\r\n"
     "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
     "#ifdef _WIN32\r\n"
     "LANGUAGE 9, 1\r\n"
     "#pragma code_page(1252)\r\n"
     "#endif //_WIN32\r\n"
     "#include ""res\\editor.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
-    "#include <atlres.rc>         // Standard components\r\n"
     "#endif\r\n"
     "\0"
 END
@@ -134,6 +128,7 @@ BEGIN
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
         MENUITEM SEPARATOR
         MENUITEM "Control Bar",                 ID_VIEW_DOCKING_WINDOW1
+        , GRAYED
     END
     POPUP "&Tools"
     BEGIN
@@ -186,7 +181,7 @@ FONT 8, "MS Sans Serif"
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
     LTEXT           "editor Version 1.0",IDC_STATIC,40,10,119,8,SS_NOPREFIX
-    LTEXT           "Copyright (C) 2004",IDC_STATIC,40,25,119,8
+    LTEXT           "Copyright (C) 2004-2005",IDC_STATIC,40,25,119,8
     DEFPUSHBUTTON   "OK",IDOK,178,7,50,14,WS_GROUP
 END
 
@@ -242,15 +237,20 @@ VS_VERSION_INFO VERSIONINFO
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
-        BLOCK "040904B0"
+        BLOCK "040904b0"
         BEGIN
-            VALUE "FileDescription", "editor MFC Application\0"
+            VALUE "Comments", "\0"
+            VALUE "CompanyName", "\0"
+            VALUE "FileDescription", "editor Application\0"
             VALUE "FileVersion", "1, 0, 0, 1\0"
             VALUE "InternalName", "editor\0"
-            VALUE "LegalCopyright", "Copyright (C) 2003\0"
+            VALUE "LegalCopyright", "Copyright (C) 2004-2005\0"
+            VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "editor.EXE\0"
+            VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "editor Application\0"
             VALUE "ProductVersion", "1, 0, 0, 1\0"
+            VALUE "SpecialBuild", "\0"
         END
     END
     BLOCK "VarFileInfo"
@@ -303,7 +303,18 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    IDS_APP_TITLE       "editor"
+    IDS_NO_UNIT_TESTS       "Unit tests not available in this build"
+    IDS_OUTPUT_BAR_TITLE    "Output"
+    IDS_TOOL_PALETTE_BAR_TITLE "Tool Palette"
+    IDS_HEIGHT_MAP_FILTER   "Targa Files (*.tga)|*.tga|BMP Files (*.bmp)|*.bmp|All Files (*.*)|*.*||"
+    IDS_UNDO_TEXT           "Undo %s\tCtrl+Z"
+    IDS_REDO_TEXT           "Redo %s\tCtrl+Y"
+    IDS_TERRAIN_TILE_COMMAND_LABEL "Terrain Texture"
+    IDS_APP_TITLE           "editor"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
     ATL_IDS_IDLEMESSAGE     "Ready"
 END
 
@@ -409,33 +420,22 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    IDS_NO_UNIT_TESTS       "Unit tests not available in this build"
-    IDS_OUTPUT_BAR_TITLE    "Output"
-    IDS_TOOL_PALETTE_BAR_TITLE "Tool Palette"
-    IDS_HEIGHT_MAP_FILTER   "Targa Files (*.tga)|*.tga|BMP Files (*.bmp)|*.bmp|All Files (*.*)|*.*||"
-    IDS_UNDO_TEXT           "Undo %s\tCtrl+Z"
-    IDS_REDO_TEXT           "Redo %s\tCtrl+Y"
-    IDS_TERRAIN_TILE_COMMAND_LABEL "Terrain Texture"
-END
-
-STRINGTABLE DISCARDABLE 
-BEGIN
-    ID_VIEW_DOCKING_WINDOW1    "Show or hide this control bar"
-    ID_VIEW_DOCKING_WINDOW2    "Show or hide this control bar"
-    ID_VIEW_DOCKING_WINDOW3    "Show or hide this control bar"
-    ID_VIEW_DOCKING_WINDOW4    "Show or hide this control bar"
-    ID_VIEW_DOCKING_WINDOW5    "Show or hide this control bar"
-    ID_VIEW_DOCKING_WINDOW6    "Show or hide this control bar"
-    ID_VIEW_DOCKING_WINDOW7    "Show or hide this control bar"
-    ID_VIEW_DOCKING_WINDOW8    "Show or hide this control bar"
-    ID_VIEW_DOCKING_WINDOW9    "Show or hide this control bar"
-    ID_VIEW_DOCKING_WINDOW10   "Show or hide this control bar"
-    ID_VIEW_DOCKING_WINDOW11   "Show or hide this control bar"
-    ID_VIEW_DOCKING_WINDOW12   "Show or hide this control bar"
-    ID_VIEW_DOCKING_WINDOW13   "Show or hide this control bar"
-    ID_VIEW_DOCKING_WINDOW14   "Show or hide this control bar"
-    ID_VIEW_DOCKING_WINDOW15   "Show or hide this control bar"
-    ID_VIEW_DOCKING_WINDOW16   "Show or hide this control bar"
+    ID_VIEW_DOCKING_WINDOW1 "Show or hide this control bar"
+    ID_VIEW_DOCKING_WINDOW2 "Show or hide this control bar"
+    ID_VIEW_DOCKING_WINDOW3 "Show or hide this control bar"
+    ID_VIEW_DOCKING_WINDOW4 "Show or hide this control bar"
+    ID_VIEW_DOCKING_WINDOW5 "Show or hide this control bar"
+    ID_VIEW_DOCKING_WINDOW6 "Show or hide this control bar"
+    ID_VIEW_DOCKING_WINDOW7 "Show or hide this control bar"
+    ID_VIEW_DOCKING_WINDOW8 "Show or hide this control bar"
+    ID_VIEW_DOCKING_WINDOW9 "Show or hide this control bar"
+    ID_VIEW_DOCKING_WINDOW10 "Show or hide this control bar"
+    ID_VIEW_DOCKING_WINDOW11 "Show or hide this control bar"
+    ID_VIEW_DOCKING_WINDOW12 "Show or hide this control bar"
+    ID_VIEW_DOCKING_WINDOW13 "Show or hide this control bar"
+    ID_VIEW_DOCKING_WINDOW14 "Show or hide this control bar"
+    ID_VIEW_DOCKING_WINDOW15 "Show or hide this control bar"
+    ID_VIEW_DOCKING_WINDOW16 "Show or hide this control bar"
 END
 
 #endif    // English (U.S.) resources
@@ -448,18 +448,12 @@ END
 //
 // Generated from the TEXTINCLUDE 3 resource.
 //
-#define _AFX_NO_SPLITTER_RESOURCES
-#define _AFX_NO_OLE_RESOURCES
-#define _AFX_NO_TRACKER_RESOURCES
-#define _AFX_NO_PROPERTY_RESOURCES
-
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
 LANGUAGE 9, 1
 #pragma code_page(1252)
 #endif //_WIN32
 #include "res\editor.rc2"  // non-Microsoft Visual C++ edited resources
-#include <atlres.rc>         // Standard components
 #endif
 
 /////////////////////////////////////////////////////////////////////////////

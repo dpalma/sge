@@ -46,7 +46,7 @@ public:
 	cEditorView();
 	~cEditorView();
 
-   DECLARE_WND_CLASS("cEditorView")
+   DECLARE_WND_CLASS(NULL)
 
    DECLARE_NOT_AGGREGATABLE(cEditorView)
 
@@ -82,11 +82,13 @@ public:
 	   MSG_WM_CREATE(OnCreate)
 	   MSG_WM_DESTROY(OnDestroy)
 	   MSG_WM_SIZE(OnSize)
+      MSG_WM_PAINT(OnPaint)
    END_MSG_MAP()
 
    LRESULT OnCreate(LPCREATESTRUCT lpCreateStruct);
    void OnDestroy();
    void OnSize(UINT nType, CSize size);
+   void OnPaint(HDC hDc);
 
    BEGIN_COM_MAP(cEditorView)
       COM_INTERFACE_ENTRY_IID(IID_IWindow, IWindow)

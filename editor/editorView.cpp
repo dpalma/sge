@@ -19,6 +19,7 @@
 #include "techtime.h"
 
 #include <GL/gl.h>
+#include <zmouse.h>
 
 #include "dbgalloc.h" // must be last header
 
@@ -48,7 +49,8 @@ static tVec3 CalcEyePoint(const tVec3 & center,
 ////////////////////////////////////////
 
 cEditorView::cEditorView()
- : m_cameraElevation(kDefaultCameraElevation),
+ : m_pDocument(NULL),
+   m_cameraElevation(kDefaultCameraElevation),
    m_center(0,0,0),
    m_eye(0,0,0),
    m_bRecalcEye(true),
@@ -201,13 +203,17 @@ void cEditorView::OnFrame(double time, double elapsed)
 
 void cEditorView::RenderScene()
 {
-   AccessRenderDevice()->BeginScene();
-   AccessRenderDevice()->Clear();
+   cAutoIPtr<IRenderDevice> pDevice(CTAddRef(AccessRenderDevice()));
+   if (!!pDevice)
+   {
+      pDevice->BeginScene();
+      pDevice->Clear();
 
-   UseGlobal(Scene);
-   pScene->Render(AccessRenderDevice());
+      UseGlobal(Scene);
+      pScene->Render(pDevice);
 
-   AccessRenderDevice()->EndScene();
+      pDevice->EndScene();
+   }
 }
 
 ////////////////////////////////////////
@@ -275,6 +281,15 @@ void cEditorView::OnSize(UINT nType, CSize size)
          m_pCamera->SetPerspective(kFov, aspect, kZNear, kZFar);
       }
    }
+}
+
+////////////////////////////////////////
+
+void cEditorView::OnPaint(HDC hDc)
+{
+   CPaintDC dc(m_hWnd);
+
+   RenderScene();
 }
 
 /////////////////////////////////////////////////////////////////////////////

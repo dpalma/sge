@@ -32,8 +32,6 @@ extern WTL::CAppModule _Module;
 #include <atlcrack.h>
 #include <atlframe.h>
 
-#include <zmouse.h>
-
 #pragma warning(disable:4355) // 'this' : used in base member initializer list
 
 /////////////////////////////////////////////////////////////////////////////
