@@ -273,15 +273,44 @@ void cEditorDoc::DeleteContents()
    CDocument::DeleteContents();
 }
 
+static void UndoRedoHelper(tResult (IEditorCommand::*pfnDoMethod)(),
+                           tCommandStack * pSourceStack,
+                           tCommandStack * pDestStack)
+{
+   Assert(pfnDoMethod != NULL);
+   Assert(pSourceStack != NULL);
+   Assert(pDestStack != NULL);
+
+   IEditorCommand * pPrevious = NULL;
+   while (!pSourceStack->empty())
+   {
+      IEditorCommand * pCommand = pSourceStack->top();
+
+      if (pPrevious != NULL)
+      {
+         if (pCommand->Compare(pPrevious) != S_OK)
+         {
+            break;
+         }
+      }
+
+      if ((pCommand->*pfnDoMethod)() == S_OK)
+      {
+         pSourceStack->pop();
+         pDestStack->push(pCommand);
+      }
+      else
+      {
+         break;
+      }
+
+      pPrevious = pCommand;
+   }
+}
+
 void cEditorDoc::OnEditUndo() 
 {
-   Assert(!m_undoStack.empty());
-   IEditorCommand * pCommand = m_undoStack.top();
-   if (pCommand->Undo() == S_OK)
-   {
-      m_undoStack.pop();
-      m_redoStack.push(pCommand);
-   }
+   UndoRedoHelper(&IEditorCommand::Undo, &m_undoStack, &m_redoStack);
 }
 
 void cEditorDoc::OnUpdateEditUndo(CCmdUI* pCmdUI) 
@@ -312,13 +341,7 @@ void cEditorDoc::OnUpdateEditUndo(CCmdUI* pCmdUI)
 
 void cEditorDoc::OnEditRedo() 
 {
-   Assert(!m_redoStack.empty());
-   IEditorCommand * pCommand = m_redoStack.top();
-   if (pCommand->Do() == S_OK)
-   {
-      m_redoStack.pop();
-      m_undoStack.push(pCommand);
-   }
+   UndoRedoHelper(&IEditorCommand::Do, &m_redoStack, &m_undoStack);
 }
 
 void cEditorDoc::OnUpdateEditRedo(CCmdUI* pCmdUI) 

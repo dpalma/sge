@@ -38,8 +38,11 @@ protected:
 
    IEditorView * AccessView();
 
+   ulong GetNextStamp();
+
 private:
    cAutoIPtr<IEditorView> m_pView;
+   ulong m_nextStamp;
 };
 
 
@@ -97,6 +100,7 @@ protected:
 private:
    uint m_iLastHitX, m_iLastHitZ;
    uint m_tile;
+   ulong m_currentStamp;
 };
 
 /////////////////////////////////////////////////////////////////////////////

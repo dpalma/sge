@@ -415,6 +415,7 @@ BEGIN
     IDS_HEIGHT_MAP_FILTER   "Targa Files (*.tga)|*.tga|BMP Files (*.bmp)|*.bmp|All Files (*.*)|*.*||"
     IDS_UNDO_TEXT           "Undo %s\tCtrl+Z"
     IDS_REDO_TEXT           "Redo %s\tCtrl+Y"
+    IDS_TERRAIN_TILE_COMMAND_LABEL "Terrain Texture"
 END
 
 STRINGTABLE DISCARDABLE 

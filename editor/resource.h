@@ -21,6 +21,7 @@
 #define IDS_HEIGHT_MAP_FILTER           5003
 #define IDS_UNDO_TEXT                   5004
 #define IDS_REDO_TEXT                   5005
+#define IDS_TERRAIN_TILE_COMMAND_LABEL  5006
 #define ID_TOOLS_UNITTESTRUNNER         32771
 #define ID_EDIT_DELETE                  32773
 #define ID_VIEW_CONTROL_BAR_FIRST       0xC100

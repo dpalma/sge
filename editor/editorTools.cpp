@@ -34,6 +34,7 @@ LOG_DEFINE_CHANNEL(EditorTools);
 ////////////////////////////////////////
 
 cDragTool::cDragTool()
+ : m_nextStamp(0)
 {
 }
 
@@ -103,6 +104,13 @@ bool cDragTool::IsDragging()
 IEditorView * cDragTool::AccessView()
 {
    return m_pView;
+}
+
+////////////////////////////////////////
+
+ulong cDragTool::GetNextStamp()
+{
+   return ++m_nextStamp;
 }
 
 
@@ -366,6 +374,7 @@ tResult cTerrainTileTool::OnMouseMove(const cEditorMouseEvent & mouseEvent, IEdi
 
 tResult cTerrainTileTool::OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
 {
+   m_currentStamp = GetNextStamp();
    return S_EDITOR_TOOL_CONTINUE;
 }
 
@@ -374,7 +383,9 @@ tResult cTerrainTileTool::OnDragStart(const cEditorMouseEvent & mouseEvent, IEdi
 tResult cTerrainTileTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
 {
    // Do what is done on a move
-   return OnDragMove(mouseEvent, pView);
+   tResult result = OnDragMove(mouseEvent, pView);
+   m_currentStamp = 0;
+   return result;
 }
 
 ////////////////////////////////////////
@@ -394,7 +405,8 @@ tResult cTerrainTileTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEdit
             cAutoIPtr<IEditorModel> pModel;
             if (pView->GetModel(&pModel) == S_OK)
             {
-               cAutoIPtr<IEditorCommand> pCommand(new cTerrainTileCommand(pModel->AccessTerrain(), ix, iz, m_tile));
+               cAutoIPtr<IEditorCommand> pCommand(new cTerrainTileCommand(
+                  pModel->AccessTerrain(), ix, iz, m_tile, m_currentStamp));
                if (!!pCommand)
                {
                   pModel->AddCommand(pCommand);

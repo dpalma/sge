@@ -23,6 +23,7 @@ F_DECLARE_INTERFACE(IEditorTile);
 F_DECLARE_INTERFACE(IEditorView);
 F_DECLARE_INTERFACE(IEditorModel);
 F_DECLARE_INTERFACE(IEditorCommand);
+F_DECLARE_INTERFACE(IEditorTerrainTileCommand);
 F_DECLARE_INTERFACE(IEditorTool);
 
 F_DECLARE_INTERFACE(ISceneCamera);
@@ -216,6 +217,23 @@ interface UUID("936BD53E-35B5-4f72-AFA4-AE304122E7D4") IEditorCommand : IUnknown
    virtual tResult Undo() = 0;
 
    virtual tResult GetLabel(cStr * pLabel) = 0;
+
+   /// @brief Answers the question "can this command be undone at the same time as the given one?"
+   virtual tResult Compare(IEditorCommand * pOther) = 0;
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IEditorTerrainTileCommand
+//
+
+interface UUID("006903F2-48A1-4e92-9AC3-DF2D29989E56") IEditorTerrainTileCommand : IEditorCommand
+{
+   virtual tResult GetTile(uint * pTile) = 0;
+
+   /// @brief Used to identify commands issued as part of the same drag operation, for example
+   virtual tResult GetStamp(ulong * pStamp) = 0;
 };
 
 

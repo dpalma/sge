@@ -20,6 +20,8 @@ struct sTerrainVertex;
 
 F_DECLARE_INTERFACE(IMaterial);
 
+typedef std::stack<IEditorCommand *> tCommandStack;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cEditorDoc
@@ -81,8 +83,6 @@ private:
    cAutoIPtr<IMaterial> m_pMaterial;
 
    cTerrain * m_pTerrain;
-
-   typedef std::stack<IEditorCommand *> tCommandStack;
 
    tCommandStack m_undoStack, m_redoStack;
 
