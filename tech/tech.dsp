@@ -222,6 +222,10 @@ SOURCE=.\src\config.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\cpufeatures.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\dictionary.cpp
 # End Source File
 # Begin Source File
@@ -378,6 +382,10 @@ SOURCE=.\include\connptimpl.h
 # Begin Source File
 
 SOURCE=.\include\constraints.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\cpufeatures.h
 # End Source File
 # Begin Source File
 
