@@ -7,6 +7,7 @@
 #include "techdll.h"
 #include "comtools.h"
 #include "connpt.h"
+#include "str.h"
 
 #ifdef _MSC_VER
 #pragma once
@@ -31,33 +32,32 @@ typedef union _XEvent XEvent;
 // INTERFACE: IWindow
 //
 
-struct sWindowInfo
+enum eWindowCreateFlags
+{
+   kWCF_None = 0,
+   kWCF_CreateGlContext = 1 << 0
+};
+
+struct sWindowCreateParams
 {
    int width;
    int height;
    int bpp;
-#ifdef _WIN32
-   HWND hWnd;
-#else
-   Display * display;
-   Window window;
-#endif
+   uint flags;
+   cStr title;
 };
 
 interface IWindow : IUnknown
 {
    DECLARE_CONNECTION_POINT(IWindowSink);
 
-   virtual tResult Create(int width, int height, int bpp, const char * pszTitle = NULL) = 0;
-
-   virtual tResult GetWindowInfo(sWindowInfo * pInfo) const = 0;
+   virtual tResult Create(const sWindowCreateParams * pParams) = 0;
 
    virtual tResult SwapBuffers() = 0;
 };
 
 TECH_API IWindow * WindowCreate();
-
-TECH_API IWindow * WindowCreate(int width, int height, int bpp, const char * pszTitle = NULL);
+TECH_API IWindow * WindowCreate(const sWindowCreateParams * pParams);
 
 ///////////////////////////////////////////////////////////////////////////////
 //

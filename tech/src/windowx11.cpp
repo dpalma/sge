@@ -123,8 +123,7 @@ public:
 
    virtual void OnFinalRelease();
 
-   virtual tResult Create(int width, int height, int bpp, const char * pszTitle = NULL);
-   virtual tResult GetWindowInfo(sWindowInfo * pInfo) const;
+   virtual tResult Create(const sWindowCreateParams * pParams);
    virtual tResult SwapBuffers();
 
    virtual void DispatchEvent(const XEvent * pXEvent);
@@ -199,18 +198,23 @@ void cWindowX11::OnFinalRelease()
 
 ///////////////////////////////////////
 
-tResult cWindowX11::Create(int width, int height, int bpp, const char * pszTitle /*= NULL*/)
+tResult cWindowX11::Create(const sWindowCreateParams * pParams)
 {
+   if (pParams == NULL)
+   {
+      return E_POINTER;
+   }
+
    if (m_window != 0)
    {
       DebugMsg("WARNING: Window already created!\n");
       return E_FAIL;
    }
 
-   if (width == 0 || height == 0)
+   if (pParams->width == 0 || pParams->height == 0)
    {
       DebugMsg("One or more invalid arguments\n");
-      return E_FAIL;
+      return E_INVALIDARG;
    }
 
    if (gm_display == NULL)
@@ -259,28 +263,28 @@ tResult cWindowX11::Create(int width, int height, int bpp, const char * pszTitle
                     KeyPressMask | KeyReleaseMask |
                     PointerMotionMask | StructureNotifyMask;
 
-   int x = (screenWidth - width) / 2;
-   int y = (screenHeight - height) / 2;
+   int x = (screenWidth - pParams->width) / 2;
+   int y = (screenHeight - pParams->height) / 2;
 
    m_window = XCreateWindow(
       gm_display, RootWindow(gm_display, pVi->screen),
-      x, y, width, height, 0, pVi->depth, InputOutput,
+      x, y, pParams->width, pParams->height, 0, pVi->depth, InputOutput,
       pVi->visual, CWBorderPixel | CWColormap | CWEventMask, &swa);
 
    std::pair<tWindowMap::iterator, bool> result = gm_windowMap.insert(std::make_pair(m_window, this));
    Assert(result.second);
 
-   if (pszTitle != NULL)
+   if (!pParams->title.empty())
    {
-      XStoreName(gm_display, m_window, pszTitle);
+      XStoreName(gm_display, m_window, pParams->title.c_str());
    }
 
    XSizeHints sizeHints;
    sizeHints.flags = PPosition | PSize;
    sizeHints.x = x;
    sizeHints.y = y;
-   sizeHints.width = width;
-   sizeHints.height = height;
+   sizeHints.width = pParams->width;
+   sizeHints.height = pParams->height;
    XSetNormalHints(gm_display, m_window, &sizeHints);
 
    m_context = glXCreateContext(gm_display, pVi, None, GL_TRUE);
@@ -298,25 +302,7 @@ tResult cWindowX11::Create(int width, int height, int bpp, const char * pszTitle
 
    XMapRaised(gm_display, m_window);
 
-   m_bpp = bpp;
-
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cWindowX11::GetWindowInfo(sWindowInfo * pInfo) const
-{
-   Assert(pInfo != NULL);
-
-   XWindowAttributes attr;
-   XGetWindowAttributes(gm_display, m_window, &attr);
-
-   pInfo->width = attr.width;
-   pInfo->height = attr.height;
-   pInfo->bpp = m_bpp;
-   pInfo->display = gm_display;
-   pInfo->window = m_window;
+   m_bpp = pParams->bpp;
 
    return S_OK;
 }
@@ -439,14 +425,17 @@ IWindow * WindowCreate()
    return static_cast<IWindow *>(new cWindowX11);
 }
 
-IWindow * WindowCreate(int width, int height, int bpp, const char * pszTitle /*= NULL*/)
+IWindow * WindowCreate(const sWindowCreateParams * pParams)
 {
    IWindow * pWnd = WindowCreate();
 
-   if (FAILED(pWnd->Create(width, height, bpp, pszTitle)))
+   if (pWnd != NULL)
    {
-      SafeRelease(pWnd);
-      return NULL;
+      if (FAILED(pWnd->Create(pParams)))
+      {
+         SafeRelease(pWnd);
+         return NULL;
+      }
    }
 
    return pWnd;

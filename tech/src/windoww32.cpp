@@ -337,9 +337,8 @@ public:
 
    virtual void OnFinalRelease();
 
-   virtual tResult Create(int width, int height, int bpp, const char * pszTitle = NULL);
+   virtual tResult Create(const sWindowCreateParams * pParams);
 
-   virtual tResult GetWindowInfo(sWindowInfo * pInfo) const;
    virtual tResult SwapBuffers();
 
    virtual tResult BeginFullScreen();
@@ -390,8 +389,13 @@ void cWindowWin32::OnFinalRelease()
 
 ///////////////////////////////////////
 
-tResult cWindowWin32::Create(int width, int height, int bpp, const char * pszTitle /*= NULL*/)
+tResult cWindowWin32::Create(const sWindowCreateParams * pParams)
 {
+   if (pParams == NULL)
+   {
+      return E_POINTER;
+   }
+
    if (m_hWnd != NULL)
    {
       DebugMsg("WARNING: Window already created!\n");
@@ -414,13 +418,13 @@ tResult cWindowWin32::Create(int width, int height, int bpp, const char * pszTit
    DWORD style = WS_CAPTION | WS_SYSMENU;
 
    RECT rect;
-   SetRect(&rect, 0, 0, width, height);
+   SetRect(&rect, 0, 0, pParams->width, pParams->height);
    AdjustWindowRectEx(&rect, style, FALSE, 0);
 
    m_hWnd = CreateWindowEx(
       0,
       wndClassName.c_str(),
-      (pszTitle != NULL) ? pszTitle : wndClassName.c_str(),
+      pParams->title.empty() ? wndClassName.c_str() : pParams->title.c_str(),
       style,
       (GetSystemMetrics(SM_CXSCREEN) - (rect.right - rect.left)) / 2,
       (GetSystemMetrics(SM_CYSCREEN) - (rect.bottom - rect.top)) / 2,
@@ -435,31 +439,16 @@ tResult cWindowWin32::Create(int width, int height, int bpp, const char * pszTit
       return E_FAIL;
    }
 
-   if (!m_context.Create(m_hWnd, bpp) || !m_context.MakeCurrent())
+   if ((pParams->flags & kWCF_CreateGlContext) == kWCF_CreateGlContext)
    {
-      return E_FAIL;
+      if (!m_context.Create(m_hWnd, pParams->bpp) || !m_context.MakeCurrent())
+      {
+         return E_FAIL;
+      }
    }
 
    ShowWindow(m_hWnd, SW_SHOW);
    UpdateWindow(m_hWnd);
-
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cWindowWin32::GetWindowInfo(sWindowInfo * pInfo) const
-{
-   Assert(pInfo != NULL);
-   Assert(IsWindow(m_hWnd));
-
-   RECT rect;
-   GetClientRect(m_hWnd, &rect);
-
-   pInfo->width = rect.right - rect.left;
-   pInfo->height = rect.bottom - rect.top;
-   pInfo->bpp = m_context.GetBpp();
-   pInfo->hWnd = m_hWnd;
 
    return S_OK;
 }
@@ -693,6 +682,8 @@ LRESULT CALLBACK cWindowWin32::WndProc(HWND hWnd, UINT message, WPARAM wParam, L
    return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 ///////////////////////////////////////
 
 IWindow * WindowCreate()
@@ -700,14 +691,19 @@ IWindow * WindowCreate()
    return static_cast<IWindow *>(new cWindowWin32);
 }
 
-IWindow * WindowCreate(int width, int height, int bpp, const char * pszTitle /*= NULL*/)
+///////////////////////////////////////
+
+IWindow * WindowCreate(const sWindowCreateParams * pParams)
 {
    IWindow * pWnd = WindowCreate();
 
-   if (FAILED(pWnd->Create(width, height, bpp, pszTitle)))
+   if (pWnd != NULL)
    {
-      SafeRelease(pWnd);
-      return NULL;
+      if (FAILED(pWnd->Create(pParams)))
+      {
+         SafeRelease(pWnd);
+         return NULL;
+      }
    }
 
    return pWnd;
