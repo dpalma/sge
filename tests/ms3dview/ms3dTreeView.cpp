@@ -169,12 +169,12 @@ void cMs3dTreeView::OnInitialUpdate()
          {
             for (int i = 0; i < nBones; i++)
             {
-               const cMs3dBone & bone = pDoc->GetModel()->GetSkeleton()->GetBone(i);
+               const cBone & bone = pDoc->GetModel()->GetSkeleton()->GetBone(i);
                HTREEITEM hBone = GetTreeCtrl().InsertItem(bone.GetName(), hBones);
                if (hBone != NULL)
                {
-                  IKeyFrameInterpolator * pInterp = const_cast<cMs3dSkeleton *>(pDoc->GetModel()->GetSkeleton())->AccessInterpolator(i);
-                  if (pInterp != NULL)
+                  cAutoIPtr<IKeyFrameInterpolator> pInterp;
+                  if (pDoc->GetModel()->GetSkeleton()->GetInterpolator(i, &pInterp) == S_OK)
                   {
                      uint n;
                      CString str;

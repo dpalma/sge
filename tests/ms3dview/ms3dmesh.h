@@ -23,6 +23,8 @@ F_DECLARE_INTERFACE(IRenderDevice);
 typedef struct _CGprogram * CGprogram;
 typedef struct _CGparameter * CGparameter;
 
+typedef std::vector<tMatrix4> tMatrices;
+
 const int kMaxBoneName = 32;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -255,22 +257,38 @@ public:
    cMs3dSkeleton();
    ~cMs3dSkeleton();
 
-   int GetBoneCount() const { return m_bones.size(); }
-   const cMs3dBone & GetBone(int index) const { return m_bones[index]; }
-   cMs3dBone * GetBonePtr(int index) { return &m_bones[index]; }
+   int GetBoneCount() const;
+   const cBone & GetBone(int index) const;
 
-   IKeyFrameInterpolator * AccessInterpolator(int index) { return m_interpolators[index]; }
+   void GetBoneMatrices(float percent, tMatrices * pBoneMatrices) const;
+
+   tResult GetInterpolator(int index, IKeyFrameInterpolator * * ppInterpolator) const;
 
    void Reset();
-   void SetupJoints();
 
 private:
+   void SetupJoints();
+
    typedef std::vector<cMs3dBone> tBones;
    tBones m_bones;
 
    typedef std::vector<IKeyFrameInterpolator *> tInterpolators;
    tInterpolators m_interpolators;
 };
+
+///////////////////////////////////////
+
+inline int cMs3dSkeleton::GetBoneCount() const
+{
+   return m_bones.size();
+}
+
+///////////////////////////////////////
+
+inline const cBone & cMs3dSkeleton::GetBone(int index) const
+{
+   return m_bones[index];
+}
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -323,7 +341,6 @@ private:
    typedef std::vector<ms3d_triangle_t> tTriangles;
    typedef std::vector<cMs3dGroup> tGroups;
    typedef std::vector<IMaterial *> tMaterials;
-   typedef std::vector<tMatrix4> tMatrices;
 
    tVertices m_vertices;
    tTriangles m_triangles;

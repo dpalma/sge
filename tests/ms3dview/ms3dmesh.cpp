@@ -417,6 +417,60 @@ cMs3dSkeleton::~cMs3dSkeleton()
    Reset();
 }
 
+void cMs3dSkeleton::GetBoneMatrices(float percent, tMatrices * pBoneMatrices) const
+{
+   Assert(percent >= 0 && percent <= 1);
+   Assert(pBoneMatrices != NULL);
+   Assert(pBoneMatrices->size() == GetBoneCount());
+
+   for (int i = 0; i < GetBoneCount(); i++)
+   {
+      tQuat rotation;
+      tVec3 translation;
+
+      IKeyFrameInterpolator * pInterpolator = m_interpolators[i];
+
+      if (pInterpolator->Interpolate(
+         percent * pInterpolator->GetPeriod(),
+         NULL, &rotation, &translation) == S_OK)
+      {
+         tMatrix4 mt;
+         MatrixTranslate(translation.x, translation.y, translation.z, &mt);
+
+         tMatrix4 mr;
+         rotation.ToMatrix(&mr);
+
+         tMatrix4 temp = mt * mr;
+
+         const cBone & bone = GetBone(i);
+
+         tMatrix4 mf = bone.GetLocalTransform() * temp;
+
+         if (bone.GetParent() == NULL)
+         {
+            temp = mf;
+         }
+         else
+         {
+            temp = (*pBoneMatrices)[bone.GetParent()->GetIndex()] * mf;
+         }
+
+         (*pBoneMatrices)[i] = temp;
+      }
+   }
+}
+
+tResult cMs3dSkeleton::GetInterpolator(int index, IKeyFrameInterpolator * * ppInterpolator) const
+{
+   if (index >= 0 && index < m_interpolators.size() && ppInterpolator != NULL)
+   {
+      *ppInterpolator = m_interpolators[index];
+      (*ppInterpolator)->AddRef();
+      return S_OK;
+   }
+   return E_FAIL;
+}
+
 void cMs3dSkeleton::Reset()
 {
    m_bones.clear();
@@ -426,38 +480,34 @@ void cMs3dSkeleton::Reset()
 
 void cMs3dSkeleton::SetupJoints()
 {
-   if (m_bones.empty())
+   if (!m_bones.empty())
    {
-      return;
-   }
+      typedef std::map<std::string, cBone *> tBoneNames;
+      tBoneNames boneNames;
 
-   typedef std::map<std::string, int> tBoneNames;
-   tBoneNames boneNames;
+      std::vector<cMs3dBone>::iterator iter;
 
-   int index;
-   std::vector<cMs3dBone>::iterator iter;
-
-   for (iter = m_bones.begin(), index = 0; iter != m_bones.end(); iter++, index++)
-   {
-      const char * pszBoneName = iter->GetName();
-      Assert(pszBoneName != NULL);
-      if (strlen(pszBoneName) > 0)
+      for (iter = m_bones.begin(); iter != m_bones.end(); iter++)
       {
-         boneNames.insert(std::make_pair(pszBoneName, index));
-      }
-   }
-
-   for (iter = m_bones.begin(), index = 0; iter != m_bones.end(); iter++, index++)
-   {
-      const char * pszParentName = iter->GetParentName();
-      Assert(pszParentName != NULL);
-      if (strlen(pszParentName) > 0)
-      {
-         tBoneNames::iterator n = boneNames.find(pszParentName);
-         if (n != boneNames.end())
+         const char * pszBoneName = iter->GetName();
+         Assert(pszBoneName != NULL);
+         if (strlen(pszBoneName) > 0)
          {
-            cBone * pParent = &m_bones[n->second];
-            pParent->AddChild(iter);
+            boneNames.insert(std::make_pair(pszBoneName, iter));
+         }
+      }
+
+      for (iter = m_bones.begin(); iter != m_bones.end(); iter++)
+      {
+         const char * pszParentName = iter->GetParentName();
+         Assert(pszParentName != NULL);
+         if (strlen(pszParentName) > 0)
+         {
+            tBoneNames::iterator n = boneNames.find(pszParentName);
+            if (n != boneNames.end())
+            {
+               n->second->AddChild(iter);
+            }
          }
       }
    }
@@ -544,6 +594,8 @@ tResult cReadWriteOps<cMs3dSkeleton>::Read(IReader * pReader, cMs3dSkeleton * pS
 
       if (i < nJoints)
          break;
+
+      pSkeleton->SetupJoints();
 
       result = S_OK;
    }
@@ -737,8 +789,6 @@ tResult cMs3dMesh::Read(IReader * pReader, IRenderDevice * pRenderDevice, IResou
    }
    else
    {
-      m_skeleton.SetupJoints();
-
       tMatrices inverses(GetSkeleton()->GetBoneCount());
 
       for (int i = 0; i < inverses.size(); i++)
@@ -815,44 +865,7 @@ void cMs3dMesh::Reset()
 
 void cMs3dMesh::SetFrame(float percent)
 {
-   Assert(percent >= 0 && percent <= 1);
-   Assert(m_boneMatrices.size() == GetSkeleton()->GetBoneCount());
-
-   for (int i = 0; i < GetSkeleton()->GetBoneCount(); i++)
-   {
-      tQuat rotation;
-      tVec3 translation;
-
-      IKeyFrameInterpolator * pInterpolator = m_skeleton.AccessInterpolator(i);
-
-      if (pInterpolator->Interpolate(
-         percent * pInterpolator->GetPeriod(),
-         NULL, &rotation, &translation) == S_OK)
-      {
-         tMatrix4 mt;
-         MatrixTranslate(translation.x, translation.y, translation.z, &mt);
-
-         tMatrix4 mr;
-         rotation.ToMatrix(&mr);
-
-         tMatrix4 temp = mt * mr;
-
-         cMs3dBone * pBone = m_skeleton.GetBonePtr(i);
-
-         tMatrix4 mf = pBone->GetLocalTransform() * temp;
-
-         if (pBone->GetParent() == NULL)
-         {
-            temp = mf;
-         }
-         else
-         {
-            temp = m_boneMatrices[pBone->GetParent()->GetIndex()] * mf;
-         }
-
-         m_boneMatrices[i] = temp;
-      }
-   }
+   m_skeleton.GetBoneMatrices(percent, &m_boneMatrices);
 }
 
 void cMs3dMesh::RenderSoftware() const
