@@ -61,27 +61,21 @@ interface IGlobalObject : IUnknown
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// TEMPLATE: cGlobalObject
+// CLASS: cGlobalObjectBase
 //
-// Global object base class
 
-template <class INTERFACE, const IID * PIID, class SERVICES = cDefaultComServices>
-class cGlobalObject : public cComObject2<INTERFACE, PIID,
-                                         IMPLEMENTS(IGlobalObject),
-                                         SERVICES>
+class cGlobalObjectBase : public IGlobalObject
 {
 public:
-   cGlobalObject(const tChar * pszName = NULL,
-                 const sConstraint * pConstraints = NULL,
-                 int nConstraints = 0,
-                 IGlobalObjectRegistry * pRegistry = NULL);
-   virtual ~cGlobalObject();
-
    virtual tResult Init();
    virtual tResult Term();
 
    virtual const char * GetName() const;
    virtual int GetConstraints(std::vector<sConstraint> * pConstraints) const;
+
+protected:
+   void Construct(const GUID & guid, const tChar * pszName,
+                  const sConstraint * pConstraints, int nConstraints);
 
 private:
    enum { kMaxGlobalObjName = 150 }; // should be big enough for a GUID if necessary
@@ -91,60 +85,7 @@ private:
 
 ///////////////////////////////////////
 
-// for constructors/destructor
-#define GLOBALOBJECT_TEMPLATE \
-   template <class INTERFACE, const IID * PIID, class SERVICES> cGlobalObject<INTERFACE, PIID, SERVICES>
-// for methods
-#define GLOBALOBJECT_TEMPLATE_(RetType) \
-   template <class INTERFACE, const IID * PIID, class SERVICES> RetType cGlobalObject<INTERFACE, PIID, SERVICES>
-
-///////////////////////////////////////
-
-GLOBALOBJECT_TEMPLATE::cGlobalObject(const tChar * pszName, 
-                                     const sConstraint * pConstraints, 
-                                     int nConstraints,
-                                     IGlobalObjectRegistry * pRegistry)
-{
-   m_szName[0] = 0;
-
-   if (pszName != NULL)
-   {
-      strncpy(m_szName, pszName, _countof(m_szName) - 1);
-      m_szName[_countof(m_szName) - 1] = 0;
-   }
-   else
-   {
-      Verify(GUIDToString(*PIID, m_szName, _countof(m_szName)));
-   }
-
-   if (pConstraints != NULL && nConstraints > 0)
-   {
-      for (int i = 0; i < nConstraints; ++i)
-      {
-         m_constraints.push_back(pConstraints[i]);
-      }
-   }
-
-   if (pRegistry == NULL)
-   {
-      pRegistry = AccessGlobalObjectRegistry();
-   }
-
-   if (pRegistry != NULL)
-   {
-      Verify(SUCCEEDED(pRegistry->Register(*PIID, static_cast<INTERFACE *>(this))));
-   }
-}
-
-///////////////////////////////////////
-
-GLOBALOBJECT_TEMPLATE::~cGlobalObject()
-{
-}
-
-///////////////////////////////////////
-
-GLOBALOBJECT_TEMPLATE_(tResult)::Init()
+inline tResult cGlobalObjectBase::Init()
 {
    // Derived classes may do something here
    return S_OK;
@@ -152,7 +93,7 @@ GLOBALOBJECT_TEMPLATE_(tResult)::Init()
 
 ///////////////////////////////////////
 
-GLOBALOBJECT_TEMPLATE_(tResult)::Term()
+inline tResult cGlobalObjectBase::Term()
 {
    // Derived classes may do something here
    return S_OK;
@@ -160,14 +101,14 @@ GLOBALOBJECT_TEMPLATE_(tResult)::Term()
 
 ///////////////////////////////////////
 
-GLOBALOBJECT_TEMPLATE_(const char *)::GetName() const
+inline const char * cGlobalObjectBase::GetName() const
 {
    return m_szName;
 }
 
 ///////////////////////////////////////
 
-GLOBALOBJECT_TEMPLATE_(int)::GetConstraints(std::vector<sConstraint> * pConstraints) const
+inline int cGlobalObjectBase::GetConstraints(std::vector<sConstraint> * pConstraints) const
 {
    Assert(pConstraints != NULL);
    if (pConstraints == NULL)
@@ -181,6 +122,65 @@ GLOBALOBJECT_TEMPLATE_(int)::GetConstraints(std::vector<sConstraint> * pConstrai
       std::copy(m_constraints.begin(), m_constraints.end(), pConstraints->begin());
    }
    return pConstraints->size();
+}
+
+///////////////////////////////////////
+
+inline void cGlobalObjectBase::Construct(const GUID & guid, const tChar * pszName,
+                                         const sConstraint * pConstraints, int nConstraints)
+{
+   if (pszName != NULL)
+   {
+      strncpy(m_szName, pszName, _countof(m_szName) - 1);
+      m_szName[_countof(m_szName) - 1] = 0;
+   }
+   else
+   {
+      Verify(GUIDToString(guid, m_szName, _countof(m_szName)));
+   }
+
+   if (pConstraints != NULL && nConstraints > 0)
+   {
+      for (int i = 0; i < nConstraints; ++i)
+      {
+         m_constraints.push_back(pConstraints[i]);
+      }
+   }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// TEMPLATE: cGlobalObject
+//
+
+template <class INTERFACE, const IID * PIID, class SERVICES = cDefaultComServices>
+class cGlobalObject : public cComObject2<INTERFACE, PIID,
+                                         cGlobalObjectBase, &IID_IGlobalObject,
+                                         SERVICES>
+{
+public:
+   cGlobalObject(const tChar * pszName = NULL,
+                 const sConstraint * pConstraints = NULL,
+                 int nConstraints = 0,
+                 IGlobalObjectRegistry * pRegistry = AccessGlobalObjectRegistry());
+};
+
+///////////////////////////////////////
+
+template <class INTERFACE, const IID * PIID, class SERVICES>
+cGlobalObject<INTERFACE, PIID, SERVICES>::cGlobalObject(const tChar * pszName, 
+                                                        const sConstraint * pConstraints, 
+                                                        int nConstraints,
+                                                        IGlobalObjectRegistry * pRegistry)
+{
+   Construct(*PIID, pszName, pConstraints, nConstraints);
+
+   Assert(pRegistry != NULL);
+   if (pRegistry != NULL)
+   {
+      Verify(SUCCEEDED(pRegistry->Register(*PIID, static_cast<INTERFACE *>(this))));
+   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
