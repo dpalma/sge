@@ -17,6 +17,8 @@
 
 class cHeightMap;
 struct sVertexElement;
+class cTerrain;
+class cTerrainBlock;
 
 F_DECLARE_INTERFACE(IEditorTileSet);
 
@@ -34,6 +36,47 @@ struct sMapVertex
 
 extern sVertexElement g_mapVertexDecl[];
 extern uint g_nMapVertexMembers;
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cTerrain
+//
+// Simple terrain data class. For rendering tile-based terrain with artist-
+// generated transition tiles. Not a LOD terrain renderer implementing the
+// ROAM algorithm or anything like that.
+
+class cTerrain
+{
+public:
+   cTerrain();
+   ~cTerrain();
+
+   bool Create(uint xDim, uint zDim, IEditorTileSet * pTileSet,
+      uint defaultTile, cHeightMap * pHeightMap);
+
+   void GetDimensions(uint * pxd, uint * pzd) const;
+   void GetExtents(uint * px, uint * pz) const;
+
+   const sMapVertex * GetVertexPointer() const;
+   size_t GetVertexCount() const;
+
+private:
+   uint m_xDim, m_zDim;
+   std::vector<sMapVertex> m_vertices;
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cTerrainBlock
+//
+
+class cTerrainBlock
+{
+public:
+};
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -66,6 +109,7 @@ public:
 	virtual BOOL OnNewDocument();
 	virtual void Serialize(CArchive& ar);
 	virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
+	virtual BOOL OnSaveDocument(LPCTSTR lpszPathName);
 	virtual void DeleteContents();
 	//}}AFX_VIRTUAL
 
@@ -76,10 +120,6 @@ public:
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;
 #endif
-
-protected:
-   bool InitializeVertices(uint xDim, uint zDim, IEditorTileSet * pTileSet,
-      uint defaultTile, cHeightMap * pHeightMap);
 
 // Generated message map functions
 protected:
@@ -92,25 +132,23 @@ protected:
 private:
    cHeightMap * m_pHeightMap;
 
-   uint m_xDim, m_zDim;
-
    cAutoIPtr<IMaterial> m_pMaterial;
 
-   std::vector<sMapVertex> m_vertices;
+   cTerrain * m_pTerrain;
 };
 
 ////////////////////////////////////////
 
 inline const sMapVertex * cEditorDoc::GetVertexPointer() const
 {
-   return &m_vertices[0];
+   return (m_pTerrain != NULL) ? m_pTerrain->GetVertexPointer() : NULL;
 }
 
 ////////////////////////////////////////
 
 inline size_t cEditorDoc::GetVertexCount() const
 {
-   return m_vertices.size();
+   return (m_pTerrain != NULL) ? m_pTerrain->GetVertexCount() : 0;
 }
 
 ////////////////////////////////////////

@@ -10,7 +10,6 @@
 #include "render.h"
 #include "material.h"
 
-#include "resmgr.h"
 #include "readwriteapi.h"
 #include "filespec.h"
 #include "filepath.h"
@@ -34,106 +33,33 @@ sVertexElement g_mapVertexDecl[] =
 uint g_nMapVertexMembers = _countof(g_mapVertexDecl);
 
 /////////////////////////////////////////////////////////////////////////////
-// cEditorDoc
+//
+// CLASS: cTerrain
+//
 
-IMPLEMENT_DYNCREATE(cEditorDoc, CDocument)
+////////////////////////////////////////
 
-BEGIN_MESSAGE_MAP(cEditorDoc, CDocument)
-	//{{AFX_MSG_MAP(cEditorDoc)
-		// NOTE - the ClassWizard will add and remove mapping macros here.
-		//    DO NOT EDIT what you see in these blocks of generated code!
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// cEditorDoc construction/destruction
-
-cEditorDoc::cEditorDoc()
- : m_pHeightMap(NULL),
-   m_xDim(0),
+cTerrain::cTerrain()
+ : m_xDim(0),
    m_zDim(0)
 {
-	// TODO: add one-time construction code here
-
 }
 
-cEditorDoc::~cEditorDoc()
+////////////////////////////////////////
+
+cTerrain::~cTerrain()
 {
-   Assert(m_pHeightMap == NULL);
 }
 
-BOOL cEditorDoc::OnNewDocument()
-{
-	if (!CDocument::OnNewDocument())
-		return FALSE;
+////////////////////////////////////////
 
-	// TODO: add reinitialization code here
-	// (SDI documents will reuse this document)
-
-   Assert(AccessEditorApp() != NULL);
-
-   SafeRelease(m_pMaterial);
-
-   delete m_pHeightMap, m_pHeightMap = NULL;
-
-   m_xDim = 0;
-   m_zDim = 0;
-
-   BOOL bResult = FALSE;
-
-   cMapSettings mapSettings;
-
-   if (AccessEditorApp()->GetMapSettings(&mapSettings) == S_OK)
-   {
-      cHeightMap * pHeightMap = NULL;
-      if (mapSettings.GetHeightData() == kHeightData_HeightMap)
-      {
-         pHeightMap = new cHeightMap(0.25f); // TODO: hard-coded height scale
-         if (pHeightMap != NULL)
-         {
-            if (!pHeightMap->Load(mapSettings.GetHeightMap()))
-            {
-               delete pHeightMap;
-               pHeightMap = NULL;
-            }
-         }
-      }
-
-      m_pHeightMap = pHeightMap;
-
-      cAutoIPtr<IEditorTileSet> pTileSet;
-
-      UseGlobal(EditorTileManager);
-      if (pEditorTileManager->GetTileSet(mapSettings.GetTileSet(), &pTileSet) == S_OK)
-      {
-         pEditorTileManager->SetDefaultTileSet(mapSettings.GetTileSet());
-      }
-
-      m_xDim = mapSettings.GetXDimension();
-      m_zDim = mapSettings.GetZDimension();
-
-      if (InitializeVertices(m_xDim, m_zDim, pTileSet, 0, pHeightMap))
-      {
-         bResult = TRUE;
-      }
-   }
-
-	return bResult;
-}
-
-bool cEditorDoc::InitializeVertices(uint xDim, uint zDim, IEditorTileSet * pTileSet,
-                                    uint defaultTile, cHeightMap * pHeightMap)
+bool cTerrain::Create(uint xDim, uint zDim, IEditorTileSet * pTileSet,
+                      uint defaultTile, cHeightMap * pHeightMap)
 {
    Assert(pTileSet != NULL);
 
    cAutoIPtr<IEditorTile> pTile;
    if (pTileSet->GetTile(defaultTile, &pTile) != S_OK)
-   {
-      return false;
-   }
-
-   Assert(!m_pMaterial);
-   if (pTileSet->GetMaterial(&m_pMaterial) != S_OK)
    {
       return false;
    }
@@ -196,7 +122,149 @@ bool cEditorDoc::InitializeVertices(uint xDim, uint zDim, IEditorTileSet * pTile
       }
    }
 
+   m_xDim = xDim;
+   m_zDim = zDim;
+
    return true;
+}
+
+////////////////////////////////////////
+
+void cTerrain::GetDimensions(uint * pxd, uint * pzd) const
+{
+   if (pxd != NULL)
+   {
+      *pxd = m_xDim;
+   }
+
+   if (pzd != NULL)
+   {
+      *pzd = m_zDim;
+   }
+}
+
+////////////////////////////////////////
+
+void cTerrain::GetExtents(uint * px, uint * pz) const
+{
+   static const int kTerrainStepSize = 16; // TODO HACK hard-coded constant
+
+   if (px != NULL)
+   {
+      *px = kTerrainStepSize * m_xDim;
+   }
+
+   if (pz != NULL)
+   {
+      *pz = kTerrainStepSize * m_zDim;
+   }
+}
+
+////////////////////////////////////////
+
+const sMapVertex * cTerrain::GetVertexPointer() const
+{
+   return &m_vertices[0];
+}
+
+////////////////////////////////////////
+
+size_t cTerrain::GetVertexCount() const
+{
+   return m_vertices.size();
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cEditorDoc
+//
+
+IMPLEMENT_DYNCREATE(cEditorDoc, CDocument)
+
+BEGIN_MESSAGE_MAP(cEditorDoc, CDocument)
+	//{{AFX_MSG_MAP(cEditorDoc)
+		// NOTE - the ClassWizard will add and remove mapping macros here.
+		//    DO NOT EDIT what you see in these blocks of generated code!
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// cEditorDoc construction/destruction
+
+cEditorDoc::cEditorDoc()
+ : m_pHeightMap(NULL),
+   m_pTerrain(NULL)
+{
+}
+
+cEditorDoc::~cEditorDoc()
+{
+   Assert(m_pHeightMap == NULL);
+}
+
+BOOL cEditorDoc::OnNewDocument()
+{
+	if (!CDocument::OnNewDocument())
+		return FALSE;
+
+	// Add reinitialization code here (SDI documents will reuse this document)
+
+   Assert(AccessEditorApp() != NULL);
+
+   SafeRelease(m_pMaterial);
+
+   delete m_pTerrain, m_pTerrain = NULL;
+
+   delete m_pHeightMap, m_pHeightMap = NULL;
+
+   BOOL bResult = FALSE;
+
+   cMapSettings mapSettings;
+
+   if (AccessEditorApp()->GetMapSettings(&mapSettings) == S_OK)
+   {
+      cHeightMap * pHeightMap = NULL;
+      if (mapSettings.GetHeightData() == kHeightData_HeightMap)
+      {
+         pHeightMap = new cHeightMap(0.25f); // TODO: hard-coded height scale
+         if (pHeightMap != NULL)
+         {
+            if (!pHeightMap->Load(mapSettings.GetHeightMap()))
+            {
+               delete pHeightMap;
+               pHeightMap = NULL;
+            }
+         }
+      }
+
+      m_pHeightMap = pHeightMap;
+
+      cAutoIPtr<IEditorTileSet> pTileSet;
+
+      UseGlobal(EditorTileManager);
+      if (pEditorTileManager->GetTileSet(mapSettings.GetTileSet(), &pTileSet) == S_OK)
+      {
+         pEditorTileManager->SetDefaultTileSet(mapSettings.GetTileSet());
+      }
+
+      Assert(m_pTerrain == NULL);
+      m_pTerrain = new cTerrain;
+      if (m_pTerrain != NULL)
+      {
+         if (m_pTerrain->Create(mapSettings.GetXDimension(), mapSettings.GetZDimension(), pTileSet, 0, pHeightMap))
+         {
+            Assert(!m_pMaterial);
+            if (pTileSet->GetMaterial(&m_pMaterial) != S_OK)
+            {
+            }
+
+            bResult = TRUE;
+         }
+      }
+   }
+
+	return bResult;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -204,14 +272,7 @@ bool cEditorDoc::InitializeVertices(uint xDim, uint zDim, IEditorTileSet * pTile
 
 void cEditorDoc::Serialize(CArchive& ar)
 {
-	if (ar.IsStoring())
-	{
-		// TODO: add storing code here
-	}
-	else
-	{
-		// TODO: add loading code here
-	}
+   Assert(!"This method should never be called");
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -241,29 +302,17 @@ float cEditorDoc::GetElevation(float nx, float nz) const
 
 void cEditorDoc::GetMapDimensions(uint * pXDim, uint * pZDim) const
 {
-   if (pXDim != NULL)
+   if (m_pTerrain != NULL)
    {
-      *pXDim = m_xDim;
-   }
-
-   if (pZDim != NULL)
-   {
-      *pZDim = m_zDim;
+      m_pTerrain->GetDimensions(pXDim, pZDim);
    }
 }
 
-static const int kStepSize = 16; // TODO HACK hard-coded constant
-
 void cEditorDoc::GetMapExtents(uint * pXExt, uint * pZExt) const
 {
-   if (pXExt != NULL)
+   if (m_pTerrain != NULL)
    {
-      *pXExt = kStepSize * m_xDim;
-   }
-
-   if (pZExt != NULL)
-   {
-      *pZExt = kStepSize * m_zDim;
+      m_pTerrain->GetExtents(pXExt, pZExt);
    }
 }
 
@@ -275,26 +324,25 @@ BOOL cEditorDoc::OnOpenDocument(LPCTSTR lpszPathName)
 	if (!CDocument::OnOpenDocument(lpszPathName))
 		return FALSE;
 
-   cFileSpec file(lpszPathName);
-
-   UseGlobal(ResourceManager);
-   pResourceManager->AddSearchPath(file.GetPath().GetPath());
-
    // TODO
 
    return TRUE;
+}
+
+BOOL cEditorDoc::OnSaveDocument(LPCTSTR lpszPathName) 
+{
+	// TODO: Add your specialized code here and/or call the base class
+
+	return CDocument::OnSaveDocument(lpszPathName);
 }
 
 void cEditorDoc::DeleteContents() 
 {
    delete m_pHeightMap, m_pHeightMap = NULL;
 
-   m_xDim = 0;
-   m_zDim = 0;
+   delete m_pTerrain, m_pTerrain = NULL;
 
    SafeRelease(m_pMaterial);
-
-   m_vertices.clear();
 
 	CDocument::DeleteContents();
 }
