@@ -41,10 +41,6 @@ interface IGUIRenderingTools : IUnknown
       const tGUIColor & topLeft, const tGUIColor & bottomRight, const tGUIColor & face) = 0;
 };
 
-///////////////////////////////////////
-
-void GUIRenderingToolsCreate();
-
 ///////////////////////////////////////////////////////////////////////////////
 
 #endif // INCLUDED_GUIRENDER_H

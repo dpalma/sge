@@ -195,54 +195,6 @@ SOURCE=.\groundtiled.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\guibutton.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\guicontext.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\guielementenum.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\guielementtools.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\guievent.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\guifactory.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\guilabel.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\guipanel.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\guirender.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\guistyle.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\guitextedit.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\guitypes.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\heightmap.cpp
 # End Source File
 # Begin Source File
@@ -318,82 +270,6 @@ SOURCE=.\ggl.h
 # Begin Source File
 
 SOURCE=.\groundtiled.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\guiapi.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\guibutton.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\guicontainerbase.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\guicontainerbasetem.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\guicontext.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\guielementbase.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\guielementbasetem.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\guielementenum.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\guielementtools.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\guievent.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\guieventrouter.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\guieventroutertem.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\guifactory.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\guilabel.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\guipanel.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\guirender.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\guistyle.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\guitextedit.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\guitypes.h
 # End Source File
 # Begin Source File
 

@@ -4,6 +4,8 @@
 #ifndef INCLUDED_GUIAPI_H
 #define INCLUDED_GUIAPI_H
 
+#include "enginedll.h"
+
 #include "comtools.h"
 
 #include "guitypes.h"
@@ -32,6 +34,10 @@ F_DECLARE_INTERFACE(IGUIContext);
 F_DECLARE_INTERFACE(IRenderDevice);
 F_DECLARE_INTERFACE(IRenderFont);
 class TiXmlElement;
+
+///////////////////////////////////////////////////////////////////////////////
+
+ENGINE_API void GUIRenderingToolsCreate();
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -141,7 +147,7 @@ interface IGUIStyle : IUnknown
 ///////////////////////////////////////
 // Parse a CSS-like string to produce a GUI style object
 
-tResult GUIStyleParse(const char * pszStyle, IGUIStyle * * ppStyle);
+ENGINE_API tResult GUIStyleParse(const char * pszStyle, IGUIStyle * * ppStyle);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -227,8 +233,11 @@ interface IGUIEvent : IUnknown
 
 ///////////////////////////////////////
 
-tResult GUIEventCreate(tGUIEventCode eventCode, tGUIPoint mousePos, long keyCode, 
-                       IGUIElement * pSource, IGUIEvent * * ppEvent);
+ENGINE_API tResult GUIEventCreate(tGUIEventCode eventCode, 
+                                  tGUIPoint mousePos, 
+                                  long keyCode, 
+                                  IGUIElement * pSource, 
+                                  IGUIEvent * * ppEvent);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -350,7 +359,7 @@ interface IGUIFactory : IUnknown
 
 ///////////////////////////////////////
 
-void GUIFactoryCreate();
+ENGINE_API void GUIFactoryCreate();
 
 ///////////////////////////////////////
 
@@ -399,7 +408,7 @@ interface IGUIContext : IGUIEventRouter
 
 ///////////////////////////////////////
 
-void GUIContextCreate();
+ENGINE_API void GUIContextCreate();
 
 ///////////////////////////////////////////////////////////////////////////////
 

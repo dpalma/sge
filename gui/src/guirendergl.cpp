@@ -3,13 +3,19 @@
 
 #include "stdhdr.h"
 
-#include "ggl.h"
 #include "guirender.h"
+#include "guiapi.h"
 
 #include "font.h"
 #include "render.h"
 
 #include "globalobj.h"
+
+// TODO: HACK: get rid of this <windows.h>
+#ifdef _WIN32
+#include <windows.h>
+#endif
+#include <GL/gl.h>
 
 #include "dbgalloc.h" // must be last header
 
