@@ -207,6 +207,13 @@ BOOL cEditorApp::InitInstance()
 
       pSplashThread->SetBitmap(hSplashBitmap);
       pSplashThread->ResumeThread();
+
+      int splashDelay = 0;
+      if (ConfigGet("splash_delay_ms", &splashDelay) == S_OK
+         && splashDelay > 0)
+      {
+         Sleep(splashDelay);
+      }
    }
 
 	// Register the application's document templates.  Document templates

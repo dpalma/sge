@@ -14,6 +14,7 @@
 F_DECLARE_INTERFACE(IEditorApp);
 F_DECLARE_INTERFACE(IEditorLoopClient);
 F_DECLARE_INTERFACE(IEditorTileManager);
+F_DECLARE_INTERFACE(IEditorTileSet);
 
 #define UUID(uuidstr) __declspec(uuid(uuidstr))
 
@@ -45,6 +46,19 @@ interface UUID("ED1B3A1A-E2D8-4eec-AABD-648A548729E8") IEditorLoopClient : IUnkn
 // INTERFACE: IEditorTileManager
 //
 
+interface UUID("CA3DFC7D-CF34-43cd-AE46-FA1AF6A34F27") IEditorTileManager : IUnknown
+{
+   virtual tResult CreateTileSet(const tChar * pszName, IEditorTileSet * * ppTileSet) = 0;
+   virtual tResult GetTileSet(const tChar * pszName, IEditorTileSet * * ppTileSet) = 0;
+};
+
+void EditorTileManagerCreate();
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IEditorTileSet
+//
+
 struct sTileDefinition
 {
    cStr name;
@@ -53,14 +67,13 @@ struct sTileDefinition
    int vertImages;
 };
 
-interface UUID("CA3DFC7D-CF34-43cd-AE46-FA1AF6A34F27") IEditorTileManager : IUnknown
+interface UUID("61B488AA-AB50-41c5-AA42-45F07C982F6A") IEditorTileSet : IUnknown
 {
-   virtual tResult AddTile(const tChar * pszName,
-                           const tChar * pszTexture,
-                           int horzImages, int vertImages) = 0;
+   virtual tResult AddTileTexture(const tChar * pszName,
+                                  const tChar * pszTexture,
+                                  int horzImages,
+                                  int vertImages) = 0;
 };
-
-void EditorTileManagerCreate();
 
 /////////////////////////////////////////////////////////////////////////////
 

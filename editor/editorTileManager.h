@@ -6,6 +6,9 @@
 
 #include "editorapi.h"
 #include "globalobj.h"
+#include "str.h"
+
+#include <map>
 
 #ifdef _MSC_VER
 #pragma once
@@ -24,9 +27,12 @@ public:
    virtual tResult Init();
    virtual tResult Term();
 
-   virtual tResult AddTile(const tChar * pszName,
-                           const tChar * pszTexture,
-                           int horzImages, int vertImages);
+   virtual tResult CreateTileSet(const tChar * pszName, IEditorTileSet * * ppTileSet);
+   virtual tResult GetTileSet(const tChar * pszName, IEditorTileSet * * ppTileSet);
+
+private:
+   typedef std::map<cStr, IEditorTileSet *> tTileSetMap;
+   tTileSetMap m_tileSetMap;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -38,11 +38,42 @@ tResult cEditorTileManager::Term()
 
 ///////////////////////////////////////
 
-tResult cEditorTileManager::AddTile(const tChar * pszName,
-                                    const tChar * pszTexture,
-                                    int horzImages, int vertImages)
+tResult cEditorTileManager::CreateTileSet(const tChar * pszName, IEditorTileSet * * ppTileSet)
 {
-   return S_OK;
+   if (pszName == NULL || ppTileSet == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tTileSetMap::iterator f = m_tileSetMap.find(pszName);
+
+   if (f != m_tileSetMap.end())
+   {
+      *ppTileSet = CTAddRef(f->second);
+      return S_FALSE;
+   }
+
+   return E_NOTIMPL;
+}
+
+///////////////////////////////////////
+
+tResult cEditorTileManager::GetTileSet(const tChar * pszName, IEditorTileSet * * ppTileSet)
+{
+   if (pszName == NULL || ppTileSet == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tTileSetMap::iterator f = m_tileSetMap.find(pszName);
+
+   if (f != m_tileSetMap.end())
+   {
+      *ppTileSet = CTAddRef(f->second);
+      return S_OK;
+   }
+
+   return S_FALSE;
 }
 
 ///////////////////////////////////////
