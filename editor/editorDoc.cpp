@@ -11,7 +11,7 @@
 
 #include "resource.h"
 
-#include "render.h"
+#include "renderapi.h"
 #include "material.h"
 
 #include "readwriteapi.h"

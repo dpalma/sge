@@ -8,7 +8,7 @@
 #include "heightmap.h"
 
 #include "material.h"
-#include "render.h"
+#include "renderapi.h"
 #include "textureapi.h"
 #include "color.h"
 

@@ -12,7 +12,7 @@
 #include "sceneapi.h"
 #include "ray.h"
 
-#include "render.h"
+#include "renderapi.h"
 
 #include "globalobj.h"
 #include "keys.h"
