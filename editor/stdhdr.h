@@ -20,6 +20,13 @@
 #include <afxcmn.h>			// MFC support for Windows Common Controls
 #endif // _AFX_NO_AFXCMN_SUPPORT
 
+// The sizeable control bar files sometimes contain only "stdafx.h"
+// so the headers are included here to minimize changing the (3rd party)
+// source. See http://www.datamekanix.com/sizecbar/ for more info.
+#include "sizecbar.h"
+#include "scbarg.h"
+#include "scbarcf.h"
+
 /////////////////////////////////////////////////////////////////////////////
 
 //{{AFX_INSERT_LOCATION}}
