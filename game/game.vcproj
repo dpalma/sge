@@ -495,58 +495,6 @@
 				RelativePath=".\game.ico">
 			</File>
 		</Filter>
-		<Filter
-			Name="Lua Scripts"
-			Filter="lua">
-			<File
-				RelativePath=".\autoexec.lua">
-				<FileConfiguration
-					Name="StaticRelease|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Compiling $(InputPath)"
-						CommandLine="..\tools\bin\luac.exe -o $(OutDir)\$(InputName).luo $(InputPath)
-"
-						Outputs="$(OutDir)\$(InputName).luo"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Opt|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Compiling $(InputPath)"
-						CommandLine="..\tools\bin\luac.exe -o $(OutDir)\$(InputName).luo $(InputPath)
-"
-						Outputs="$(OutDir)\$(InputName).luo"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Compiling $(InputPath)"
-						CommandLine="..\tools\bin\luac.exe -o $(OutDir)\$(InputName).luo $(InputPath)
-"
-						Outputs="$(OutDir)\$(InputName).luo"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="StaticDebug|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Compiling $(InputPath)"
-						CommandLine="..\tools\bin\luac.exe -o $(OutDir)\$(InputName).luo $(InputPath)
-"
-						Outputs="$(OutDir)\$(InputName).luo"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Compiling $(InputPath)"
-						CommandLine="..\tools\bin\luac.exe -o $(OutDir)\$(InputName).luo $(InputPath)
-"
-						Outputs="$(OutDir)\$(InputName).luo"/>
-				</FileConfiguration>
-			</File>
-		</Filter>
 	</Files>
 	<Globals>
 	</Globals>
