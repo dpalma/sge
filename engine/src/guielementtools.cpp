@@ -294,10 +294,10 @@ tResult GUIElementStandardAttributes(const TiXmlElement * pXmlElement,
          if (ParseTuple(pXmlElement->Attribute("insets"), insetVals, _countof(insetVals)) == 4)
          {
             tGUIInsets insets;
-            insets.left = insetVals[0];
-            insets.top = insetVals[1];
-            insets.right = insetVals[2];
-            insets.bottom = insetVals[3];
+            insets.left = Round(insetVals[0]);
+            insets.top = Round(insetVals[1]);
+            insets.right = Round(insetVals[2]);
+            insets.bottom = Round(insetVals[3]);
             pContainer->SetInsets(insets);
          }
       }

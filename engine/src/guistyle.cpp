@@ -18,7 +18,7 @@
 
 #include "dbgalloc.h" // must be last header
 
-static tResult GUIStyleParseColor(const char * psz, tGUIColor * pColor);
+static const uint NO_DIMENSION = (uint)-1;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -37,10 +37,10 @@ cGUIStyle::cGUIStyle()
    m_fontName(""),
    m_fontPointSize(0),
    m_pFont(NULL),
-   m_width(-1), 
-   m_height(-1),
-   m_widthSpec(-1), 
-   m_heightSpec(-1)
+   m_width(NO_DIMENSION), 
+   m_height(NO_DIMENSION),
+   m_widthSpec(NO_DIMENSION), 
+   m_heightSpec(NO_DIMENSION)
 {
 }
 
@@ -381,7 +381,7 @@ tResult cGUIStyle::GetWidth(uint * pWidth, uint * pSpec)
       return E_POINTER;
    }
 
-   if ((m_width == -1) || (m_widthSpec == -1))
+   if ((m_width == NO_DIMENSION) || (m_widthSpec == NO_DIMENSION))
    {
       return S_FALSE;
    }
@@ -416,7 +416,7 @@ tResult cGUIStyle::GetHeight(uint * pHeight, uint * pSpec)
       return E_POINTER;
    }
 
-   if ((m_height == -1) || (m_heightSpec == -1))
+   if ((m_height == NO_DIMENSION) || (m_heightSpec == NO_DIMENSION))
    {
       return S_FALSE;
    }

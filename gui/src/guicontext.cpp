@@ -247,22 +247,22 @@ static void DescribeElement(IGUIElement * pElement, char * psz, uint maxLength)
    const char * pszId = pElement->GetId();
    if (pElement->QueryInterface(IID_IGUIButtonElement, (void**)&pButton) == S_OK)
    {
-      _snprintf(psz, maxLength, "Button \"%s\"", pButton->GetText());
+      snprintf(psz, maxLength, "Button \"%s\"", pButton->GetText());
    }
    else if (pElement->QueryInterface(IID_IGUIPanelElement, (void**)&pPanel) == S_OK)
    {
-      _snprintf(psz, maxLength, "Panel '%s'", strlen(pszId) > 0 ? pszId : "<no id>");
+      snprintf(psz, maxLength, "Panel '%s'", strlen(pszId) > 0 ? pszId : "<no id>");
    }
    else if (pElement->QueryInterface(IID_IGUILabelElement, (void**)&pLabel) == S_OK)
    {
       tGUIString text;
       if (pLabel->GetText(&text) == S_OK)
       {
-         _snprintf(psz, maxLength, "Label \"%s\"", text.c_str());
+         snprintf(psz, maxLength, "Label \"%s\"", text.c_str());
       }
       else
       {
-         _snprintf(psz, maxLength, "Label '%s'", strlen(pszId) > 0 ? pszId : "<no id>");
+         snprintf(psz, maxLength, "Label '%s'", strlen(pszId) > 0 ? pszId : "<no id>");
       }
    }
    else if (pElement->QueryInterface(IID_IGUIDialogElement, (void**)&pDialog) == S_OK)
@@ -270,16 +270,16 @@ static void DescribeElement(IGUIElement * pElement, char * psz, uint maxLength)
       tGUIString title;
       if (pDialog->GetTitle(&title) == S_OK)
       {
-         _snprintf(psz, maxLength, "Dialog \"%s\"", title.c_str());
+         snprintf(psz, maxLength, "Dialog \"%s\"", title.c_str());
       }
       else
       {
-         _snprintf(psz, maxLength, "Dialog '%s'", strlen(pszId) > 0 ? pszId : "<no id>");
+         snprintf(psz, maxLength, "Dialog '%s'", strlen(pszId) > 0 ? pszId : "<no id>");
       }
    }
    else
    {
-      _snprintf(psz, maxLength, "Element '%s'", strlen(pszId) > 0 ? pszId : "<no id>");
+      snprintf(psz, maxLength, "Element '%s'", strlen(pszId) > 0 ? pszId : "<no id>");
    }
 }
 #endif
@@ -340,7 +340,7 @@ void cGUIContext::RenderDebugInfo(IRenderDevice * pRenderDevice)
    {
       cTextBuffer<char, 200> text;
 
-      _snprintf(text.NextPointer(), text.MaxLength(), "Mouse: (%d, %d)", 
+      snprintf(text.NextPointer(), text.MaxLength(), "Mouse: (%d, %d)", 
          Round(m_lastMousePos.x), Round(m_lastMousePos.y));
 
       cAutoIPtr<IGUIElement> pHitElement;
@@ -349,19 +349,19 @@ void cGUIContext::RenderDebugInfo(IRenderDevice * pRenderDevice)
          DescribeElement(pHitElement, text.NextPointer(), text.MaxLength());
 
          tGUIPoint pos = pHitElement->GetPosition();
-         _snprintf(text.NextPointer(), text.MaxLength(), "Position: (%d, %d)", 
+         snprintf(text.NextPointer(), text.MaxLength(), "Position: (%d, %d)", 
             Round(pos.x), Round(pos.y));
 
          tGUIPoint absPos = GUIElementAbsolutePosition(pHitElement);
-         _snprintf(text.NextPointer(), text.MaxLength(), "Absolute Position: (%d, %d)",
+         snprintf(text.NextPointer(), text.MaxLength(), "Absolute Position: (%d, %d)",
             Round(absPos.x), Round(absPos.y));
 
          tGUIPoint relPoint(m_lastMousePos - absPos);
          bool bContainsResult = pHitElement->Contains(relPoint);
-         _snprintf(text.NextPointer(), text.MaxLength(), "Contains() returns %s",
+         snprintf(text.NextPointer(), text.MaxLength(), "Contains() returns %s",
             bContainsResult ? "true" : "false");
 
-         _snprintf(text.NextPointer(), text.MaxLength(), "Mouse (relative): (%d, %d)",
+         snprintf(text.NextPointer(), text.MaxLength(), "Mouse (relative): (%d, %d)",
             Round(relPoint.x), Round(relPoint.y));
 
          text.NullTerminate();
