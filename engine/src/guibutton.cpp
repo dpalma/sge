@@ -6,6 +6,7 @@
 #include "guibutton.h"
 #include "guielementbasetem.h"
 #include "guielementtools.h"
+#include "scriptapi.h"
 
 #include "font.h"
 #include "color.h"
@@ -47,6 +48,8 @@ tResult cGUIButtonElement::OnEvent(IGUIEvent * pEvent)
 {
    Assert(pEvent != NULL);
 
+   tResult result = S_OK; // allow event processing to continue
+
    tGUIEventCode eventCode;
    Verify(pEvent->GetEventCode(&eventCode) == S_OK);
 
@@ -54,11 +57,13 @@ tResult cGUIButtonElement::OnEvent(IGUIEvent * pEvent)
    {
       LocalMsg("Mouse enter button\n");
       SetMouseOver(true);
+      result = S_FALSE;
    }
    else if (eventCode == kGUIEventMouseLeave)
    {
       LocalMsg("Mouse leave button\n");
       SetMouseOver(false);
+      result = S_FALSE;
    }
    else if (eventCode == kGUIEventMouseDown)
    {
@@ -84,9 +89,16 @@ tResult cGUIButtonElement::OnEvent(IGUIEvent * pEvent)
    else if (eventCode == kGUIEventClick)
    {
       LocalMsg("Mouse click button\n");
+      tGUIString onClick;
+      if (GetOnClick(&onClick) == S_OK)
+      {
+         UseGlobal(ScriptInterpreter);
+         pScriptInterpreter->ExecString(onClick.c_str());
+         result = S_FALSE;
+      }
    }
 
-   return S_OK;
+   return result;
 }
 
 ///////////////////////////////////////
@@ -141,6 +153,28 @@ void cGUIButtonElement::SetText(const char * pszText)
    m_text = pszText;
 }
 
+///////////////////////////////////////
+
+tResult cGUIButtonElement::GetOnClick(tGUIString * pOnClick) const
+{
+   if (pOnClick == NULL)
+      return E_POINTER;
+   if (m_onClick.empty())
+      return S_FALSE;
+   *pOnClick = m_onClick;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIButtonElement::SetOnClick(const char * pszOnClick)
+{
+   if (pszOnClick == NULL)
+      return E_POINTER;
+   m_onClick = pszOnClick;
+   return S_OK;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -165,9 +199,16 @@ tResult cGUIButtonElementFactory::CreateElement(const TiXmlElement * pXmlElement
          {
             GUIElementStandardAttributes(pXmlElement, pButton);
 
-            if (pXmlElement->Attribute("text"))
+            const char * pszAttribute;
+
+            if ((pszAttribute = pXmlElement->Attribute("text")) != NULL)
             {
-               pButton->SetText(pXmlElement->Attribute("text"));
+               pButton->SetText(pszAttribute);
+            }
+
+            if ((pszAttribute = pXmlElement->Attribute("onclick")) != NULL)
+            {
+               pButton->SetOnClick(pszAttribute);
             }
 
             *ppElement = CTAddRef(pButton);
@@ -193,7 +234,6 @@ tResult cGUIButtonElementFactory::CreateElement(const TiXmlElement * pXmlElement
 ///////////////////////////////////////
 
 cGUIButtonRenderer::cGUIButtonRenderer()
- : m_pFont(FontCreateDefault())
 {
 }
 
@@ -227,6 +267,20 @@ tResult cGUIButtonRenderer::Render(IGUIElement * pElement, IRenderDevice * pRend
 
       UseGlobal(GUIRenderingTools);
 
+      cAutoIPtr<IRenderFont> pFont;
+
+      cAutoIPtr<IGUIStyle> pStyle;
+      if (pElement->GetStyle(&pStyle) == S_OK)
+      {
+         pStyle->GetFont(&pFont);
+      }
+
+      if (!pFont)
+      {
+         UseGlobal(GUIRenderingTools);
+         pGUIRenderingTools->GetDefaultFont(&pFont);
+      }
+
       if (pButton->IsArmed() && pButton->IsMouseOver())
       {
          pGUIRenderingTools->Render3dRect(rect2, g_bevel, 
@@ -241,7 +295,7 @@ tResult cGUIButtonRenderer::Render(IGUIElement * pElement, IRenderDevice * pRend
 
       rect.left += Round(textOffset.x);
       rect.top += Round(textOffset.y);
-      m_pFont->DrawText(pButton->GetText(), -1, kDT_Center | kDT_VCenter | 
+      pFont->DrawText(pButton->GetText(), -1, kDT_Center | kDT_VCenter | 
          kDT_SingleLine, &rect, tGUIColor::White);
 
       return S_OK;
@@ -259,8 +313,23 @@ tGUISize cGUIButtonRenderer::GetPreferredSize(IGUIElement * pElement)
       cAutoIPtr<IGUIButtonElement> pButton;
       if (pElement->QueryInterface(IID_IGUIButtonElement, (void**)&pButton) == S_OK)
       {
+         cAutoIPtr<IRenderFont> pFont;
+
+         cAutoIPtr<IGUIStyle> pStyle;
+         if (pElement->GetStyle(&pStyle) == S_OK)
+         {
+            pStyle->GetFont(&pFont);
+         }
+
+         if (!pFont)
+         {
+            UseGlobal(GUIRenderingTools);
+            pGUIRenderingTools->GetDefaultFont(&pFont);
+         }
+
          tRect rect(0,0,0,0);
-         m_pFont->DrawText(pButton->GetText(), -1, kDT_CalcRect, &rect, tGUIColor::White);
+         pFont->DrawText(pButton->GetText(), -1, kDT_CalcRect, &rect, tGUIColor::White);
+
          return tGUISize(rect.GetWidth() + rect.GetHeight(), rect.GetHeight() * 1.5f);
       }
    }

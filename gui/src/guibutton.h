@@ -10,8 +10,6 @@
 #pragma once
 #endif
 
-F_DECLARE_INTERFACE(IRenderFont);
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUIButtonElement
@@ -36,10 +34,14 @@ public:
    virtual const char * GetText() const;
    virtual void SetText(const char * pszText);
 
+   virtual tResult GetOnClick(tGUIString * pOnClick) const;
+   virtual tResult SetOnClick(const char * pszOnClick);
+
 private:
    bool m_bArmed;
    bool m_bMouseOver;
    tGUIString m_text;
+   tGUIString m_onClick;
 };
 
 
@@ -69,9 +71,6 @@ public:
    virtual tResult Render(IGUIElement * pElement, IRenderDevice * pRenderDevice);
 
    virtual tGUISize GetPreferredSize(IGUIElement * pElement);
-
-private:
-   cAutoIPtr<IRenderFont> m_pFont;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -344,6 +344,9 @@ interface IGUIButtonElement : IGUIElement
 
    virtual const char * GetText() const = 0;
    virtual void SetText(const char * pszText) = 0;
+
+   virtual tResult GetOnClick(tGUIString * pOnClick) const = 0;
+   virtual tResult SetOnClick(const char * pszOnClick) = 0;
 };
 
 

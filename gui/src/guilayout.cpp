@@ -11,6 +11,49 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+static tResult GUIGridLayoutManagerCreate(const TiXmlElement * pXmlElement, IGUILayoutManager * * ppLayout)
+{
+   if (pXmlElement == NULL || ppLayout == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tResult result = E_FAIL;
+
+   cAutoIPtr<IGUIGridLayoutManager> pGridLayout;
+   if ((result = GUIGridLayoutManagerCreate(&pGridLayout)) == S_OK)
+   {
+      int value;
+
+      if (pXmlElement->QueryIntAttribute("hgap", &value) == TIXML_SUCCESS)
+      {
+         pGridLayout->SetHGap(value);
+      }
+      
+      if (pXmlElement->QueryIntAttribute("vgap", &value) == TIXML_SUCCESS)
+      {
+         pGridLayout->SetVGap(value);
+      }
+      
+      if (pXmlElement->QueryIntAttribute("columns", &value) == TIXML_SUCCESS)
+      {
+         pGridLayout->SetColumns(value);
+      }
+      
+      if (pXmlElement->QueryIntAttribute("rows", &value) == TIXML_SUCCESS)
+      {
+         pGridLayout->SetRows(value);
+      }
+
+      *ppLayout = CTAddRef(pGridLayout);
+      return S_OK;
+   }
+
+   return result;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 tResult GUILayoutManagerCreate(const TiXmlElement * pXmlElement, IGUILayoutManager * * ppLayout)
 {
    if (pXmlElement == NULL || ppLayout == NULL)
@@ -28,38 +71,7 @@ tResult GUILayoutManagerCreate(const TiXmlElement * pXmlElement, IGUILayoutManag
    {
       if (stricmp(pszType, "grid") == 0)
       {
-         tResult result = E_FAIL;
-
-         cAutoIPtr<IGUIGridLayoutManager> pGridLayout;
-         if ((result = GUIGridLayoutManagerCreate(&pGridLayout)) == S_OK)
-         {
-            int value;
-
-            if (pXmlElement->QueryIntAttribute("hgap", &value) == TIXML_SUCCESS)
-            {
-               pGridLayout->SetHGap(value);
-            }
-            
-            if (pXmlElement->QueryIntAttribute("vgap", &value) == TIXML_SUCCESS)
-            {
-               pGridLayout->SetVGap(value);
-            }
-            
-            if (pXmlElement->QueryIntAttribute("columns", &value) == TIXML_SUCCESS)
-            {
-               pGridLayout->SetColumns(value);
-            }
-            
-            if (pXmlElement->QueryIntAttribute("rows", &value) == TIXML_SUCCESS)
-            {
-               pGridLayout->SetRows(value);
-            }
-
-            *ppLayout = CTAddRef(pGridLayout);
-            return S_OK;
-         }
-
-         return result;
+         return GUIGridLayoutManagerCreate(pXmlElement, ppLayout);
       }
    }
 

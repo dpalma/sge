@@ -197,6 +197,8 @@ tResult cGUIDialogElementFactory::CreateElement(const TiXmlElement * pXmlElement
 // CLASS: cGUIDialogRenderer
 //
 
+static const int k3dEdge = 2;
+
 ///////////////////////////////////////
 
 cGUIDialogRenderer::cGUIDialogRenderer()
@@ -229,7 +231,7 @@ tResult cGUIDialogRenderer::Render(IGUIElement * pElement, IRenderDevice * pRend
       // TODO: use colors from style
       pGUIRenderingTools->Render3dRect(
          tGUIRect(pos.x, pos.y, pos.x + size.width, pos.y + size.height), 
-         4, tGUIColor::Yellow, tGUIColor::Green, tGUIColor::Blue);
+         k3dEdge, tGUIColor::LightGray, tGUIColor::DarkGray, tGUIColor::Gray);
 
       if (GUIElementRenderChildren(pDialog, pRenderDevice) == S_OK)
       {
