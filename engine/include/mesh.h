@@ -60,6 +60,7 @@ interface IMesh : IUnknown
 ENGINE_API IMesh * MeshCreate();
 
 ENGINE_API IMesh * MeshCreate(uint nVertices, 
+                              uint options, 
                               IVertexDeclaration * pVertexDecl, 
                               IRenderDevice * pRenderDevice);
 

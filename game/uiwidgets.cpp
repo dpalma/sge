@@ -422,7 +422,7 @@ bool cUIBitmapButton::SetBitmap(const char * pszName)
          }
       }
 
-      if (AccessRenderDevice()->CreateVertexBuffer(kNumVerts, UIAccessVertexDecl(), kMP_Auto, &m_pVB) == S_OK)
+      if (AccessRenderDevice()->CreateVertexBuffer(kNumVerts, kVBO_Default, UIAccessVertexDecl(), kMP_Auto, &m_pVB) == S_OK)
       {
          float w = m_size.width;
          float h = m_size.height / 4;

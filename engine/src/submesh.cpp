@@ -101,7 +101,7 @@ ISubMesh * SubMeshCreate(uint nFaces, uint nVertices,
    if (pRenderDevice->CreateIndexBuffer(3 * nFaces, kIBF_16Bit, kMP_Auto, &pIndexBuffer) == S_OK)
    {
       cAutoIPtr<IVertexBuffer> pVertexBuffer;
-      if (pRenderDevice->CreateVertexBuffer(nVertices, pVertexDecl, kMP_Auto, &pVertexBuffer) == S_OK)
+      if (pRenderDevice->CreateVertexBuffer(nVertices, kVBO_Default, pVertexDecl, kMP_Auto, &pVertexBuffer) == S_OK)
       {
          return static_cast<ISubMesh *>(new cSubMesh(nFaces, nVertices, pIndexBuffer, pVertexBuffer, NULL));
       }

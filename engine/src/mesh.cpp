@@ -511,13 +511,14 @@ IMesh * MeshCreate()
 ///////////////////////////////////////
 
 IMesh * MeshCreate(uint nVertices, 
+                   uint options, 
                    IVertexDeclaration * pVertexDecl, 
                    IRenderDevice * pRenderDevice)
 {
    if ((nVertices > 0) && (pVertexDecl != NULL) && (pRenderDevice != NULL))
    {
       cAutoIPtr<IVertexBuffer> pVertexBuffer;
-      if (pRenderDevice->CreateVertexBuffer(nVertices, pVertexDecl, kMP_Auto, &pVertexBuffer) == S_OK)
+      if (pRenderDevice->CreateVertexBuffer(nVertices, options, pVertexDecl, kMP_Auto, &pVertexBuffer) == S_OK)
       {
          return static_cast<IMesh *>(new cMesh(nVertices, pVertexBuffer));
       }

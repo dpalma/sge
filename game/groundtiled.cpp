@@ -98,7 +98,7 @@ bool cTiledGround::Init(cHeightMap * pHeightMap)
    }
 
    if (AccessRenderDevice()->CreateVertexBuffer(kNumVerts,
-      m_pVertexDecl, kMP_Auto, &m_pVertexBuffer) != S_OK)
+      kVBO_Default, m_pVertexDecl, kMP_Auto, &m_pVertexBuffer) != S_OK)
    {
       return false;
    }
