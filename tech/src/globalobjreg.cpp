@@ -2,12 +2,15 @@
 // $Id$
 
 #include "stdhdr.h"
+
 #include "globalobjreg.h"
 #include "globalobj.h"
 #include "digraph.h"
 #include "toposort.h"
+
 #include <vector>
 #include <map>
+#include <algorithm>
 
 #ifdef HAVE_CPPUNIT
 #include <cppunit/extensions/HelperMacros.h>
@@ -66,7 +69,8 @@ private:
    {
       kPreInit,
       kLive,
-      kPostTerm,
+      kTerminating,
+      kTerminated
    };
 
    void SetState(eState state) { m_state = state; }
@@ -285,17 +289,12 @@ tResult cGlobalObjectRegistry::TermAll()
    {
       Assert(m_objMap.size() == m_initOrder.size());
       // Terminate in reverse order
-      tInitOrder::reverse_iterator riter;
-      for (riter = m_initOrder.rbegin(); riter != m_initOrder.rend(); riter++)
-      {
-         IGlobalObject * p = (*riter);
-         LocalMsg1("Releasing global object %s\n", p->GetName());
-         (*riter)->Term();
-         (*riter)->Release();
-      }
+      SetState(kTerminating);
+      std::for_each(m_initOrder.rbegin(), m_initOrder.rend(), std::mem_fun(&IGlobalObject::Term));
+      std::for_each(m_initOrder.rbegin(), m_initOrder.rend(), CTInterfaceMethodRef(&IGlobalObject::Release));
+      SetState(kTerminated);
       m_initOrder.clear();
       m_objMap.clear();
-      SetState(kPostTerm);
    }
 #ifndef NDEBUG
    else
