@@ -164,9 +164,9 @@ typedef cNonDelegatingComServices cDefaultComServices;
 
 #define IMPLEMENTS(Interface) Interface, &IID_##Interface
 
-template <class INTERFACE, const IID * PIID, 
+template <class INTRFC, const IID * PIID, 
           class SERVICES = cDefaultComServices>
-class cComObject : public INTERFACE, public SERVICES
+class cComObject : public INTRFC, public SERVICES
 {
 public:
    virtual ~cComObject() {}
@@ -177,16 +177,16 @@ public:
    {
       const struct sQIPair pairs[] =
       {
-         { static_cast<INTERFACE *>(this), PIID },
+         { static_cast<INTRFC *>(this), PIID },
       };
       return DoQueryInterface(pairs, _countof(pairs), iid, ppvObject);
    }
 };
 
-template <class INTERFACE1, const IID * PIID1, 
-          class INTERFACE2, const IID * PIID2,
+template <class INTRFC1, const IID * PIID1, 
+          class INTRFC2, const IID * PIID2,
           class SERVICES = cDefaultComServices>
-class cComObject2 : public INTERFACE1, public INTERFACE2, public SERVICES
+class cComObject2 : public INTRFC1, public INTRFC2, public SERVICES
 {
 public:
    virtual ~cComObject2() {}
@@ -197,8 +197,8 @@ public:
    {
       const struct sQIPair pairs[] =
       {
-         { static_cast<INTERFACE1 *>(this), PIID1 },
-         { static_cast<INTERFACE2 *>(this), PIID2 }
+         { static_cast<INTRFC1 *>(this), PIID1 },
+         { static_cast<INTRFC2 *>(this), PIID2 }
       };
       return DoQueryInterface(pairs, _countof(pairs), iid, ppvObject);
    }
