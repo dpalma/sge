@@ -3,9 +3,7 @@
 
 bin_PROGRAMS = game
 
-EXTRA_DIST = *.rc *.ico *.dsp *.dsw *.vcproj *.sln
-
-noinst_HEADERS = *.h
+EXTRA_DIST = *.rc *.ico *.dsp *.dsw *.vcproj *.sln *.h
 
 if NO_X
 game_PLATFORM_SOURCES = syswin.cpp
