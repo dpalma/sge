@@ -18,6 +18,10 @@
 #include <cstring>
 #include <cfloat>
 
+#ifdef HAVE_CPPUNIT
+#include <cppunit/extensions/HelperMacros.h>
+#endif
+
 #include "dbgalloc.h" // must be last header
 
 IMesh * Load3ds(IRenderDevice * pRenderDevice, IReader * pReader);
@@ -386,5 +390,30 @@ IMesh * MeshLoad(IResourceManager * pResMgr, IRenderDevice * pRenderDevice, cons
    DebugMsg1("Unsupported mesh file format: \"%s\"\n", meshFile.GetFileExt());
    return NULL;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_CPPUNIT
+
+class cMeshTests : public CppUnit::TestCase
+{
+   CPPUNIT_TEST_SUITE(cMeshTests);
+      CPPUNIT_TEST(TestSave);
+   CPPUNIT_TEST_SUITE_END();
+
+   void TestSave();
+};
+
+CPPUNIT_TEST_SUITE_REGISTRATION(cMeshTests);
+
+void cMeshTests::TestSave()
+{
+	cAutoIPtr<IMesh> pMesh = MeshCreate();
+	if (!!pMesh)
+	{
+	}
+}
+
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////

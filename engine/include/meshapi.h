@@ -16,6 +16,7 @@ template <typename T> class cVec3;
 typedef class cVec3<float> tVec3;
 F_DECLARE_INTERFACE(IResourceManager);
 F_DECLARE_INTERFACE(IRenderDevice);
+F_DECLARE_INTERFACE(IVertexDeclaration);
 F_DECLARE_INTERFACE(IVertexBuffer);
 F_DECLARE_INTERFACE(IIndexBuffer);
 F_DECLARE_INTERFACE(IMaterial);
@@ -43,6 +44,8 @@ interface IMesh : IUnknown
    virtual tResult AttachSkeleton(ISkeleton * pSkeleton) = 0;
    virtual tResult GetSkeleton(ISkeleton * * ppSkeleton) = 0;
 };
+
+///////////////////////////////////////
 
 ENGINE_API IMesh * MeshCreate();
 
@@ -75,6 +78,12 @@ interface ISubMesh : IUnknown
    virtual tResult LockIndexBuffer(void * * ppData) = 0;
    virtual tResult UnlockIndexBuffer() = 0;
 };
+
+///////////////////////////////////////
+
+ENGINE_API ISubMesh * SubMeshCreate(uint nFaces, uint nVertices,
+									IVertexDeclaration * pVertexDecl,
+									IRenderDevice * pRenderDevice);
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -278,6 +278,9 @@ cSkeleton::~cSkeleton()
 bool cSkeleton::Create(const sBoneInfo * pBones, uint nBones, 
                        IKeyFrameInterpolator * * pInterpolators, uint nInterpolators)
 {
+   Assert(m_bones.empty());
+   Assert(m_interpolators.empty());
+
    if ((pInterpolators != NULL) && (nInterpolators > 0))
    {
       m_interpolators.resize(nInterpolators);

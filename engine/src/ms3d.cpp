@@ -31,16 +31,12 @@ static const char g_MS3D[] = "MS3D000000";
 // when ms3d.h was compiled.
 AssertOnce(sizeof(ms3d_header_t) == 14);
 
-extern ISubMesh * SubMeshCreate(uint nFaces, uint nVertices,
-                                IVertexDeclaration * pVertexDecl,
-                                IRenderDevice * pRenderDevice);
-
 ///////////////////////////////////////////////////////////////////////////////
 
 template <>
 std::vector<IKeyFrameInterpolator *>::~vector()
 {
-   std::for_each(begin(), end(), CTInterfaceMethodRef(&IUnknown::Release));
+   std::for_each(begin(), end(), CTInterfaceMethodRef(&IKeyFrameInterpolator::Release));
    clear();
 }
 
@@ -60,9 +56,180 @@ sVertexElement g_ms3dVertexDecl[] =
    { kVDU_Position, kVDT_Float3 }
 };
 
-///////////////////////////////////////////////////////////////////////////////
+static bool operator ==(const struct sMs3dVertex & v1,
+                        const struct sMs3dVertex & v2)
+{
+   return v1.u == v2.u
+      && v1.v == v2.v
+      && v1.normal.x == v2.normal.x
+      && v1.normal.y == v2.normal.y
+      && v1.normal.z == v2.normal.z
+      && v1.pos.x == v2.pos.x
+      && v1.pos.y == v2.pos.y
+      && v1.pos.z == v2.pos.z;
+}
 
-tResult Ms3dFileRead(IRenderDevice * pRenderDevice, IReader * pReader, IMesh * * ppMesh)
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cMs3dVertexInfo
+//
+// Used to compile information on vertices stored in Milkshape3D files.
+// Milkshape files store some vertex information in the polygon structure.
+
+class cMs3dVertexInfo
+{
+public:
+   cMs3dVertexInfo();
+   cMs3dVertexInfo(const cMs3dVertexInfo & other);
+
+   const cMs3dVertexInfo & operator =(const cMs3dVertexInfo & other);
+
+   void SetPosition(const float pos[3]);
+   const tVec3 & GetPosition() const;
+
+   void SetBone(int bone);
+   int GetBone() const;
+
+   void AddReferringTriangle(int triIndex, int vertIndex, const float normal[3], float s, float t);
+
+   void Digest();
+
+private:
+   uint m_index;
+   tVec3 m_position;
+   int m_bone;
+
+   struct sReferringTriangle
+   {
+      int triIndex;
+      int vertIndex;
+      tVec3 normal;
+      float s;
+      float t;
+   };
+
+   std::vector<sReferringTriangle> m_tris;
+};
+
+///////////////////////////////////////
+
+cMs3dVertexInfo::cMs3dVertexInfo()
+ : m_bone(-1)
+{
+}
+
+///////////////////////////////////////
+
+cMs3dVertexInfo::cMs3dVertexInfo(const cMs3dVertexInfo & other)
+ : m_position(other.m_position),
+   m_bone(other.m_bone)
+{
+   m_tris.resize(other.m_tris.size());
+   std::copy(other.m_tris.begin(), other.m_tris.end(), m_tris.begin());
+}
+
+///////////////////////////////////////
+
+const cMs3dVertexInfo & cMs3dVertexInfo::operator =(const cMs3dVertexInfo & other)
+{
+   m_position = other.m_position;
+   m_bone = other.m_bone;
+   m_tris.resize(other.m_tris.size());
+   std::copy(other.m_tris.begin(), other.m_tris.end(), m_tris.begin());
+   return *this;
+}
+
+///////////////////////////////////////
+
+void cMs3dVertexInfo::SetPosition(const float pos[3])
+{
+   Assert(pos != NULL);
+   m_position = tVec3(pos);
+}
+
+///////////////////////////////////////
+
+const tVec3 & cMs3dVertexInfo::GetPosition() const
+{
+   return m_position;
+}
+
+///////////////////////////////////////
+
+void cMs3dVertexInfo::SetBone(int bone)
+{
+   m_bone = bone;
+}
+
+///////////////////////////////////////
+
+int cMs3dVertexInfo::GetBone() const
+{
+   return m_bone;
+}
+
+///////////////////////////////////////
+
+void cMs3dVertexInfo::AddReferringTriangle(int triIndex,
+                                           int vertIndex, 
+                                           const float normal[3], 
+                                           float s, float t)
+{
+   sReferringTriangle tri;
+   tri.triIndex = triIndex;
+   tri.vertIndex = vertIndex;
+   tri.normal = tVec3(normal);
+   tri.s = s;
+   tri.t = t;
+   m_tris.push_back(tri);
+}
+
+///////////////////////////////////////
+
+void cMs3dVertexInfo::Digest()
+{
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cMs3dFileReader
+//
+
+class cMs3dFileReader
+{
+   friend tResult Ms3dFileRead(IRenderDevice * pRenderDevice, IReader * pReader, IMesh * * ppMesh);
+
+public:
+   cMs3dFileReader();
+   ~cMs3dFileReader();
+
+   tResult Read(IReader * pReader, IRenderDevice * pRenderDevice);
+
+private:
+   std::vector<ms3d_vertex_t> m_vertices;
+   std::vector<ms3d_triangle_t> m_triangles;
+   std::vector<cMs3dGroup> m_groups;
+   std::vector<ms3d_material_t> m_materials;
+   std::vector<sBoneInfo> m_bones;
+   std::vector<IKeyFrameInterpolator *> m_interpolators;
+};
+
+///////////////////////////////////////
+
+cMs3dFileReader::cMs3dFileReader()
+{
+}
+
+///////////////////////////////////////
+
+cMs3dFileReader::~cMs3dFileReader()
+{
+}
+
+///////////////////////////////////////
+
+tResult cMs3dFileReader::Read(IReader * pReader, IRenderDevice * pRenderDevice)
 {
    ms3d_header_t header;
    if (pReader->Read(&header, sizeof(header)) != S_OK ||
@@ -74,8 +241,8 @@ tResult Ms3dFileRead(IRenderDevice * pRenderDevice, IReader * pReader, IMesh * *
       || nVertices == 0)
       return E_FAIL;
 
-   std::vector<ms3d_vertex_t> vertices(nVertices);
-   if (pReader->Read(&vertices[0], vertices.size() * sizeof(ms3d_vertex_t)) != S_OK)
+   m_vertices.resize(nVertices);
+   if (pReader->Read(&m_vertices[0], m_vertices.size() * sizeof(ms3d_vertex_t)) != S_OK)
       return E_FAIL;
 
    uint16 nTriangles;
@@ -83,20 +250,18 @@ tResult Ms3dFileRead(IRenderDevice * pRenderDevice, IReader * pReader, IMesh * *
       || nTriangles == 0)
       return E_FAIL;
 
-   std::vector<ms3d_triangle_t> triangles(nTriangles);
-   if (pReader->Read(&triangles[0], triangles.size() * sizeof(ms3d_triangle_t)) != S_OK)
+   m_triangles.resize(nTriangles);
+   if (pReader->Read(&m_triangles[0], m_triangles.size() * sizeof(ms3d_triangle_t)) != S_OK)
       return E_FAIL;
 
    uint16 nGroups;
    if (pReader->Read(&nGroups, sizeof(nGroups)) != S_OK)
       return E_FAIL;
 
-   uint i;
-
-   std::vector<cMs3dGroup> groups(nGroups);
-   for (i = 0; i < nGroups; i++)
+   m_groups.resize(nGroups);
+   for (uint i = 0; i < nGroups; i++)
    {
-      if (pReader->Read(&groups[i]) != S_OK)
+      if (pReader->Read(&m_groups[i]) != S_OK)
          return E_FAIL;
    }
 
@@ -104,14 +269,33 @@ tResult Ms3dFileRead(IRenderDevice * pRenderDevice, IReader * pReader, IMesh * *
    if (pReader->Read(&nMaterials, sizeof(nMaterials)) != S_OK)
       return E_FAIL;
 
-   std::vector<ms3d_material_t> materials(nMaterials);
-   if (pReader->Read(&materials[0], materials.size() * sizeof(ms3d_material_t)) != S_OK)
+   m_materials.resize(nMaterials);
+   if (pReader->Read(&m_materials[0], m_materials.size() * sizeof(ms3d_material_t)) != S_OK)
       return E_FAIL;
 
-   std::vector<sMs3dVertex> vertices2(nVertices);
-   for (i = 0; i < nVertices; i++)
+   if (ReadSkeleton(pReader, &m_bones, &m_interpolators) != S_OK)
+      return E_FAIL;
+
+   return S_OK;
+}
+
+tResult Ms3dFileRead(IRenderDevice * pRenderDevice, IReader * pReader, IMesh * * ppMesh)
+{
+   cMs3dFileReader ms3dReader;
+
+   if (ms3dReader.Read(pReader, pRenderDevice) != S_OK)
+      return E_FAIL;
+
+   std::vector<cMs3dVertexInfo> vertexInfo(ms3dReader.m_vertices.size());
    {
-      vertices2[i].pos = tVec3(vertices[i].vertex);
+      uint index;
+      std::vector<ms3d_vertex_t>::iterator iter;
+      for (index = 0, iter = ms3dReader.m_vertices.begin(); iter != ms3dReader.m_vertices.end(); index++, iter++)
+      {
+         cMs3dVertexInfo * pV = &vertexInfo[index];
+         pV->SetPosition(iter->vertex);
+         pV->SetBone(iter->boneId);
+      }
    }
 
    // TODO: A vertex position could have a slightly different normal or 
@@ -119,15 +303,35 @@ tResult Ms3dFileRead(IRenderDevice * pRenderDevice, IReader * pReader, IMesh * *
    // the vertex should be duplicated and the indices remapped. For now,
    // keep a single copy of the vertex and ignore any discrepancies in
    // the normal or texture coordinates. Seems to work OK.
-   for (i = 0; i < nTriangles; i++)
+   uint i;
+   bool bHaveBoneAssignments = false;
+   std::vector<sMs3dVertex> vertices2(ms3dReader.m_vertices.size());
+   for (i = 0; i < ms3dReader.m_triangles.size(); i++)
    {
-      const ms3d_triangle_t & tri = triangles[i];
+      const ms3d_triangle_t & tri = ms3dReader.m_triangles[i];
       for (int j = 0; j < 3; j++)
       {
+         if (ms3dReader.m_vertices[tri.vertexIndices[j]].boneId >= 0)
+         {
+            bHaveBoneAssignments = true;
+         }
+
+         cMs3dVertexInfo * pV = &vertexInfo[tri.vertexIndices[j]];
+         pV->AddReferringTriangle(i, j, tri.vertexNormals[j], tri.s[j], tri.t[j]);
+
          sMs3dVertex * pVertex = &vertices2[tri.vertexIndices[j]];
+         pVertex->pos = tVec3(ms3dReader.m_vertices[tri.vertexIndices[j]].vertex);
          pVertex->normal = tVec3(tri.vertexNormals[j]);
          pVertex->u = tri.s[j];
          pVertex->v = 1 - tri.t[j];
+      }
+   }
+
+   {
+      std::vector<cMs3dVertexInfo>::iterator iter;
+      for (iter = vertexInfo.begin(); iter != vertexInfo.end(); iter++)
+      {
+         iter->Digest();
       }
    }
 
@@ -138,7 +342,7 @@ tResult Ms3dFileRead(IRenderDevice * pRenderDevice, IReader * pReader, IMesh * *
    }
 
    std::vector<cMs3dGroup>::iterator iter;
-   for (iter = groups.begin(); iter != groups.end(); iter++)
+   for (iter = ms3dReader.m_groups.begin(); iter != ms3dReader.m_groups.end(); iter++)
    {
       cAutoIPtr<IVertexDeclaration> pVertexDecl;
       if (pRenderDevice->CreateVertexDeclaration(g_ms3dVertexDecl, 
@@ -148,7 +352,7 @@ tResult Ms3dFileRead(IRenderDevice * pRenderDevice, IReader * pReader, IMesh * *
             vertices2.size(), pVertexDecl, pRenderDevice);
          if (!!pSubMesh)
          {
-            pSubMesh->SetMaterialName(materials[iter->GetMaterialIndex()].name);
+            pSubMesh->SetMaterialName(ms3dReader.m_materials[iter->GetMaterialIndex()].name);
 
             sMs3dVertex * pVertexData = NULL;
             if (pSubMesh->LockVertexBuffer((void * *)&pVertexData) == S_OK)
@@ -165,7 +369,7 @@ tResult Ms3dFileRead(IRenderDevice * pRenderDevice, IReader * pReader, IMesh * *
                {
                   for (int i = 0; i < iter->GetNumTriangles(); i++)
                   {
-                     const ms3d_triangle_t & tri = triangles[iter->GetTriangle(i)];
+                     const ms3d_triangle_t & tri = ms3dReader.m_triangles[iter->GetTriangle(i)];
                      pFaces[i * 3 + 0] = tri.vertexIndices[0];
                      pFaces[i * 3 + 1] = tri.vertexIndices[1];
                      pFaces[i * 3 + 2] = tri.vertexIndices[2];
@@ -179,9 +383,9 @@ tResult Ms3dFileRead(IRenderDevice * pRenderDevice, IReader * pReader, IMesh * *
       }
    }
 
-   for (i = 0; i < nMaterials; i++)
+   for (i = 0; i < ms3dReader.m_materials.size(); i++)
    {
-      const ms3d_material_t & material = materials[i];
+      const ms3d_material_t & material = ms3dReader.m_materials[i];
 
       cAutoIPtr<ITexture> pTexture;
 
@@ -211,14 +415,10 @@ tResult Ms3dFileRead(IRenderDevice * pRenderDevice, IReader * pReader, IMesh * *
       }
    }
 
-   std::vector<sBoneInfo> bones;
-   std::vector<IKeyFrameInterpolator *> interpolators;
-
-   if (ReadSkeleton(pReader, &bones, &interpolators) != S_OK)
-      return E_FAIL;
-
    cAutoIPtr<ISkeleton> pSkeleton;
-   if (SkeletonCreate(&bones[0], bones.size(), &interpolators[0], interpolators.size(), &pSkeleton) == S_OK)
+   if (SkeletonCreate(&ms3dReader.m_bones[0], ms3dReader.m_bones.size(), 
+                      &ms3dReader.m_interpolators[0], ms3dReader.m_interpolators.size(), 
+                      &pSkeleton) == S_OK)
    {
       pMesh->AttachSkeleton(pSkeleton);
    }

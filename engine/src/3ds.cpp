@@ -31,10 +31,6 @@ LOG_DEFINE_CHANNEL(3DSLoad);
 
 ///////////////////////////////////////////////////////////////////////////////
 
-extern ISubMesh * SubMeshCreate(uint nFaces, uint nVertices,
-                                IVertexDeclaration * pVertexDecl,
-                                IRenderDevice * pRenderDevice);
-
 struct s3dsVertex
 {
    tVec3::value_type u, v;
