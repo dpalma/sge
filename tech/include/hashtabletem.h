@@ -147,7 +147,10 @@ HASHTABLE_TEMPLATE_(bool)::IterNext(HANDLE * phIter, KEY * pKey, VALUE * pValue)
    unsigned int & index = (unsigned int &)*phIter;
    if (index < m_size)
    {
-      while (!m_elts[index].inUse && (index < m_size))
+      // It is important to do the (index < m_size) test first. Otherwise,
+      // the !inUse test would read past the end of the m_elts array on the
+      // last element (i.e., at [m_size - 1]).
+      while ((index < m_size) && !m_elts[index].inUse)
       {
          index++;
       }
