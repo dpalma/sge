@@ -213,7 +213,7 @@ tResult cGUIButtonRenderer::Render(IGUIElement * pElement, IRenderDevice * pRend
       return E_POINTER;
    }
 
-   static const int g_bevel = 2;
+   static const float g_bevel = 2;
 
    cAutoIPtr<IGUIButtonElement> pButton;
    if (pElement->QueryInterface(IID_IGUIButtonElement, (void**)&pButton) == S_OK)
@@ -221,10 +221,10 @@ tResult cGUIButtonRenderer::Render(IGUIElement * pElement, IRenderDevice * pRend
       tGUIPoint pos = GUIElementAbsolutePosition(pButton);
       tGUISize size = pButton->GetSize();
 
-      tGUIPoint textOffset(0,0);
+      tVec2 textOffset(0,0);
 
-      tRect rect(pos.x, pos.y, pos.x + size.width, pos.y + size.height);
-      tGUIRect rect2(pos.x, pos.y, pos.x + size.width, pos.y + size.height);
+      tRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
+      tGUIRect rect2(rect.left, rect.top, rect.right, rect.bottom);
 
       UseGlobal(GUIRenderingTools);
 
@@ -232,7 +232,7 @@ tResult cGUIButtonRenderer::Render(IGUIElement * pElement, IRenderDevice * pRend
       {
          pGUIRenderingTools->Render3dRect(rect2, g_bevel, 
             tGUIColor::DarkGray, tGUIColor::LightGray, tGUIColor::Gray);
-         textOffset = tGUIPoint(g_bevel,g_bevel);
+         textOffset = tVec2(g_bevel, g_bevel);
       }
       else
       {
@@ -240,8 +240,8 @@ tResult cGUIButtonRenderer::Render(IGUIElement * pElement, IRenderDevice * pRend
             tGUIColor::LightGray, tGUIColor::DarkGray, tGUIColor::Gray);
       }
 
-      rect.left += textOffset.x;
-      rect.top += textOffset.y;
+      rect.left += Round(textOffset.x);
+      rect.top += Round(textOffset.y);
       m_pFont->DrawText(pButton->GetText(), -1, kDT_Center | kDT_VCenter | 
          kDT_SingleLine, &rect, tGUIColor::White);
 
@@ -262,7 +262,7 @@ tGUISize cGUIButtonRenderer::GetPreferredSize(IGUIElement * pElement)
       {
          tRect rect(0,0,0,0);
          m_pFont->DrawText(pButton->GetText(), -1, kDT_CalcRect, &rect, tGUIColor::White);
-         return tGUISize(rect.GetWidth() + rect.GetHeight(), rect.GetHeight() * 1.5);
+         return tGUISize(rect.GetWidth() + rect.GetHeight(), rect.GetHeight() * 1.5f);
       }
    }
    return tGUISize(0,0);
