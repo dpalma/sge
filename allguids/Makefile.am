@@ -1,11 +1,11 @@
 ###############################################################################
 # $Id$
 
-lib_LTLIBRARIES = liballguids.la
+lib_LIBRARIES = liballguids.a
 
 EXTRA_DIST = allguids.dsp
 
-liballguids_la_SOURCES = allguids.cpp
+liballguids_a_SOURCES = allguids.cpp
 
 INCLUDES = -I$(top_srcdir)/tech/include \
            -I$(top_srcdir)/render/include \
