@@ -248,7 +248,7 @@ void cSpinner::OnFrame(double elapsedTime)
 {
    Assert(m_pNode != NULL);
    tQuat q = QuatFromEulerAngles(tVec3(0, m_radiansPerSec * elapsedTime, 0));
-   m_pNode->SetRotation(m_pNode->GetRotation() * q);
+   m_pNode->SetLocalRotation(m_pNode->GetLocalRotation() * q);
 }
 
 
@@ -272,7 +272,7 @@ cSelectionIndicatorNode::cSelectionIndicatorNode(float y)
  : m_pSpinner(new cSpinner(this, kRotateDegreesPerSec))
 {
    SetPickable(false);
-   SetTranslation(tVec3(0, y, 0));
+   SetLocalTranslation(tVec3(0, y, 0));
 }
 
 cSelectionIndicatorNode::~cSelectionIndicatorNode()
@@ -363,7 +363,7 @@ SCRIPT_DEFINE_FUNCTION(EntitySpawnTest)
             cSelectableSceneNode * pNode = new cSelectableSceneNode;
 
             pNode->SetMesh(ScriptArgAsString(0));
-            pNode->SetTranslation(tVec3(x,y,z));
+            pNode->SetLocalTranslation(tVec3(x,y,z));
 
             Assert(g_pGameGroup != NULL);
             g_pGameGroup->AddChild(pNode);

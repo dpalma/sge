@@ -11,8 +11,7 @@ else
 game_PLATFORM_SOURCES = syslinux.cpp
 endif
 
-game_SOURCES = boundingvolume.cpp \
-               cameracontroller.cpp \
+game_SOURCES = cameracontroller.cpp \
                frustum.cpp \
                groundtiled.cpp \
                heightmap.cpp \
@@ -21,7 +20,6 @@ game_SOURCES = boundingvolume.cpp \
                raycast.cpp \
                scenecamera.cpp \
                scenemesh.cpp \
-               scenegroup.cpp \
                scenenode.cpp \
                script.cpp \
                scriptvm.cpp \

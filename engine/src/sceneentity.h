@@ -16,7 +16,6 @@
 
 class cSceneNode;
 class cSceneNodeVisitor;
-class cBoundingVolume;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -42,13 +41,17 @@ public:
    cSceneNode();
    virtual ~cSceneNode();
 
-   const tVec3 & GetTranslation() const;
-   void SetTranslation(const tVec3 & translation);
+   const tVec3 & GetLocalTranslation() const;
+   void SetLocalTranslation(const tVec3 & translation);
 
-   const tQuat & GetRotation() const;
-   void SetRotation(const tQuat & rotation);
+   const tQuat & GetLocalRotation() const;
+   void SetLocalRotation(const tQuat & rotation);
 
-   const sMatrix4 & GetTransform() const;
+   const tMatrix4 & GetLocalTransform() const;
+
+   const tVec3 & GetWorldTranslation() const;
+   const tQuat & GetWorldRotation() const;
+   const tMatrix4 & GetWorldTransform() const;
 
    bool IsPickable() const;
    void SetPickable(bool pickable);
@@ -59,11 +62,10 @@ public:
    bool AddChild(cSceneNode * pNode);
    bool RemoveChild(cSceneNode * pNode);
 
-   virtual void Traverse(cSceneNodeVisitor * pVisitor);
+   void Traverse(cSceneNodeVisitor * pVisitor);
 
    virtual void Render();
 
-   virtual const cBoundingVolume * GetBoundingVolume() const { return NULL; }
    virtual float GetBoundingSphereRadius() const { return 0; }
 
    // @TODO: should this be pushed further down the class hierarchy?
@@ -71,15 +73,28 @@ public:
    virtual void ClearHitState() {}
 
 protected:
+   const cSceneNode * GetParent() const;
+
    typedef std::list<cSceneNode *> tChildren;
    tChildren m_children;
 
 private:
-   tVec3 m_translation;
-   tQuat m_rotation;
+   cSceneNode * m_pParent;
 
-   mutable bool m_bUpdateLocalTransform;
-   mutable sMatrix4 m_localTransform;
+   tVec3 m_localTranslation;
+   tQuat m_localRotation;
+
+   mutable bool m_bHaveLocalTransform;
+   mutable tMatrix4 m_localTransform;
+
+   mutable tVec3 m_worldTranslation;
+   mutable bool m_bHaveWorldTranslation;
+
+   mutable tQuat m_worldRotation;
+   mutable bool m_bHaveWorldRotation;
+
+   mutable bool m_bHaveWorldTransform;
+   mutable tMatrix4 m_worldTransform;
 
    uint m_caps;
    uint m_state;
@@ -87,32 +102,36 @@ private:
 
 ///////////////////////////////////////
 
-inline const tVec3 & cSceneNode::GetTranslation() const
+inline const tVec3 & cSceneNode::GetLocalTranslation() const
 {
-   return m_translation;
+   return m_localTranslation;
 }
 
 ///////////////////////////////////////
 
-inline void cSceneNode::SetTranslation(const tVec3 & translation)
+inline void cSceneNode::SetLocalTranslation(const tVec3 & translation)
 {
-   m_translation = translation;
-   m_bUpdateLocalTransform = true;
+   m_localTranslation = translation;
+   m_bHaveLocalTransform = false;
+   m_bHaveWorldTranslation = false;
+   m_bHaveWorldTransform = false;
 }
 
 ///////////////////////////////////////
 
-inline const tQuat & cSceneNode::GetRotation() const
+inline const tQuat & cSceneNode::GetLocalRotation() const
 {
-   return m_rotation;
+   return m_localRotation;
 }
 
 ///////////////////////////////////////
 
-inline void cSceneNode::SetRotation(const tQuat & rotation)
+inline void cSceneNode::SetLocalRotation(const tQuat & rotation)
 {
-   m_rotation = rotation;
-   m_bUpdateLocalTransform = true;
+   m_localRotation = rotation;
+   m_bHaveLocalTransform = false;
+   m_bHaveWorldRotation = false;
+   m_bHaveWorldTransform = false;
 }
 
 ///////////////////////////////////////
@@ -149,6 +168,13 @@ inline void cSceneNode::SetSelected(bool selected)
    else
       newState &= ~kSNS_Selected;
    m_state = newState;
+}
+
+///////////////////////////////////////
+
+inline const cSceneNode * cSceneNode::GetParent() const
+{
+   return m_pParent;
 }
 
 

@@ -6,7 +6,6 @@
 #include "cameracontroller.h"
 #include "scenecamera.h"
 #include "globalobj.h"
-#include "boundingvolume.h"
 #include "raycast.h"
 #include "ggl.h"
 #include "scenenode.h"
@@ -48,18 +47,14 @@ void cPickNodeVisitor::VisitSceneNode(cSceneNode * pNode)
 
    if (pNode->IsPickable())
    {
-      const cBoundingVolume * pBounds = pNode->GetBoundingVolume();
-      if (pBounds != NULL)
+      if (RayIntersectSphere(m_rayOrigin, m_rayDir, pNode->GetWorldTranslation(), pNode->GetBoundingSphereRadius(), NULL))
       {
-         if (pBounds->Intersects(m_rayOrigin, m_rayDir))
-         {
-            pNode->Hit();
-            m_hitNodes.push_back(pNode);
-         }
-         else
-         {
-            pNode->ClearHitState();
-         }
+         pNode->Hit();
+         m_hitNodes.push_back(pNode);
+      }
+      else
+      {
+         pNode->ClearHitState();
       }
    }
 }

@@ -4,7 +4,6 @@
 #ifndef INCLUDED_SCENEMESH_H
 #define INCLUDED_SCENEMESH_H
 
-#include "boundingvolume.h"
 #include "scenenode.h"
 #include "comtools.h"
 #include "sim.h"
@@ -36,7 +35,6 @@ public:
 
    virtual void Render();
 
-   virtual const cBoundingVolume * GetBoundingVolume() const;
    virtual float GetBoundingSphereRadius() const;
 
 private:
@@ -56,8 +54,6 @@ private:
    cSimClient m_simClient;
 
    cAutoIPtr<IMesh> m_pMesh;
-   tVec3 m_centroid;
-   mutable cBoundingSphere m_bounds;
    float m_boundingSphereRadius;
 
    std::vector<tMatrix4> m_boneMatrices;

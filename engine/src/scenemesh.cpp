@@ -62,11 +62,7 @@ bool cSceneMesh::SetMesh(const char * pszMesh)
 
       tVec3 diff = maxs - mins;
 
-      m_centroid = mins + (diff * 0.5f);
-
       m_boundingSphereRadius = 0.5f * Max(diff.x, Max(diff.y, diff.z));
-
-      m_bounds.SetRadius(m_boundingSphereRadius);
 
       return true;
    }
@@ -213,7 +209,7 @@ void cSceneMesh::Render()
    if (m_pMesh != NULL)
    {
       glPushMatrix();
-      glMultMatrixf(GetTransform().m);
+      glMultMatrixf(GetLocalTransform().m);
 
       AccessRenderDevice()->SetBlendMatrices(m_boneMatrices.size(), &m_boneMatrices[0]);
       m_pMesh->Render(AccessRenderDevice());
@@ -226,14 +222,6 @@ void cSceneMesh::Render()
       
       glPopMatrix();
    }
-}
-
-///////////////////////////////////////
-
-const cBoundingVolume * cSceneMesh::GetBoundingVolume() const
-{
-   m_bounds.SetCenter(GetTranslation() + m_centroid);
-   return &m_bounds;
 }
 
 ///////////////////////////////////////
