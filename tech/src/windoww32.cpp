@@ -55,8 +55,10 @@ static HWND CreateDummyWindow()
 ///////////////////////////////////////////////////////////////////////////////
 // Create a default OpenGL context using the Win32 function ChoosePixelFormat
 
-static int CreateDefaultContext(HWND hWnd, int bpp, HDC * phDC, HGLRC * phGLRC)
+static int CreateDefaultContext(HWND hWnd, int * pBpp, HDC * phDC, HGLRC * phGLRC)
 {
+   Assert(hWnd != NULL);
+   Assert(pBpp != NULL);
    Assert(phDC != NULL);
    Assert(phGLRC != NULL);
 
@@ -66,9 +68,9 @@ static int CreateDefaultContext(HWND hWnd, int bpp, HDC * phDC, HGLRC * phGLRC)
       return 0;
    }
 
-   if (bpp == 0)
+   if (*pBpp == 0)
    {
-      bpp = GetDeviceCaps(*phDC, BITSPIXEL);
+      *pBpp = GetDeviceCaps(*phDC, BITSPIXEL);
    }
 
    PIXELFORMATDESCRIPTOR pfd;
@@ -77,9 +79,9 @@ static int CreateDefaultContext(HWND hWnd, int bpp, HDC * phDC, HGLRC * phGLRC)
    pfd.nVersion = 1;
    pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
    pfd.iPixelType = PFD_TYPE_RGBA;
-   pfd.cColorBits = bpp;
-   pfd.cDepthBits = bpp;
-   pfd.cStencilBits = bpp;
+   pfd.cColorBits = *pBpp;
+   pfd.cDepthBits = *pBpp;
+   pfd.cStencilBits = *pBpp;
    pfd.dwLayerMask = PFD_MAIN_PLANE;
 
    int pixelFormat = ChoosePixelFormat(*phDC, &pfd);
@@ -102,6 +104,107 @@ static int CreateDefaultContext(HWND hWnd, int bpp, HDC * phDC, HGLRC * phGLRC)
 
    return pixelFormat;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cGlContext
+//
+
+class cGlContext
+{
+public:
+   cGlContext();
+   ~cGlContext();
+
+   bool Create(HWND hWnd, int bpp);
+   bool Destroy();
+
+   bool MakeCurrent();
+
+   inline int GetBpp() const { return m_bpp; }
+   inline HDC GetHdc() { return m_hDc; }
+
+private:
+   HWND m_hWnd;
+   int m_bpp;
+   HDC m_hDc;
+   HGLRC m_hGlrc;
+   int m_pixelFormat;
+};
+
+///////////////////////////////////////
+
+cGlContext::cGlContext()
+ : m_hWnd(NULL),
+   m_bpp(0),
+   m_hDc(NULL),
+   m_hGlrc(NULL),
+   m_pixelFormat(0)
+{
+}
+
+///////////////////////////////////////
+
+cGlContext::~cGlContext()
+{
+}
+
+///////////////////////////////////////
+
+bool cGlContext::Create(HWND hWnd, int bpp)
+{
+   if (m_hWnd != NULL || m_pixelFormat != 0 || m_hDc != NULL || m_hGlrc != NULL)
+   {
+      return false;
+   }
+
+   if (!IsWindow(hWnd))
+   {
+      return false;
+   }
+
+   // WS_CLIPCHILDREN and WS_CLIPSIBLINGS required by gl
+   DWORD style = GetWindowLong(hWnd, GWL_STYLE);
+   style |= WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+   SetWindowLong(hWnd, GWL_STYLE, style);
+
+   m_hWnd = hWnd;
+   m_bpp = bpp;
+
+   m_pixelFormat = CreateDefaultContext(m_hWnd, &m_bpp, &m_hDc, &m_hGlrc);
+
+   return (m_pixelFormat != 0);
+}
+
+///////////////////////////////////////
+
+bool cGlContext::Destroy()
+{
+   if (m_hDc != NULL)
+   {
+      wglMakeCurrent(m_hDc, NULL);
+      ReleaseDC(m_hWnd, m_hDc);
+      m_hDc = NULL;
+   }
+
+   if (m_hGlrc != NULL)
+   {
+      wglDeleteContext(m_hGlrc);
+      m_hGlrc = NULL;
+   }
+
+   m_hWnd = NULL;
+
+   return true;
+}
+
+///////////////////////////////////////
+
+bool cGlContext::MakeCurrent()
+{
+   return wglMakeCurrent(m_hDc, m_hGlrc) ? true : false;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // The characters mapped here should be handled in WM_KEYDOWN, else in WM_CHAR
@@ -260,22 +363,16 @@ private:
    ////////////////////////////////////
 
    HWND GetHwnd() const { return m_hWnd; }
-   HDC GetHdc() const { return m_hDC; }
-   HGLRC GetHglrc() const { return m_hGLRC; }
 
-   int m_bpp;
    HWND m_hWnd;
-   HDC m_hDC;
-   HGLRC m_hGLRC;
+
+   cGlContext m_context;
 };
 
 ///////////////////////////////////////
 
 cWindowWin32::cWindowWin32()
- : m_bpp(0),
-   m_hWnd(NULL),
-   m_hDC(NULL),
-   m_hGLRC(NULL)
+ : m_hWnd(NULL)
 {
 }
 
@@ -285,23 +382,10 @@ void cWindowWin32::OnFinalRelease()
 {
    FullScreenEnd(m_hWnd);
 
-   if (GetHdc() != NULL)
-   {
-      wglMakeCurrent(GetHdc(), NULL);
-      ReleaseDC(GetHwnd(), GetHdc());
-      m_hDC = NULL;
-   }
-
-   if (GetHglrc() != NULL)
-   {
-      wglDeleteContext(GetHglrc());
-      m_hGLRC = NULL;
-   }
+   m_context.Destroy();
 
    DestroyWindow(m_hWnd);
    m_hWnd = NULL;
-
-   m_bpp = 0;
 }
 
 ///////////////////////////////////////
@@ -327,8 +411,7 @@ tResult cWindowWin32::Create(int width, int height, int bpp, const char * pszTit
       return E_FAIL;
    }
 
-   // WS_CLIPCHILDREN and WS_CLIPSIBLINGS required by gl
-   DWORD style = WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+   DWORD style = WS_CAPTION | WS_SYSMENU;
 
    RECT rect;
    SetRect(&rect, 0, 0, width, height);
@@ -348,16 +431,14 @@ tResult cWindowWin32::Create(int width, int height, int bpp, const char * pszTit
       this);
 
    if (m_hWnd == NULL)
+   {
       return E_FAIL;
+   }
 
-   int pixelFormat = CreateDefaultContext(m_hWnd, bpp, &m_hDC, &m_hGLRC);
-
-   if (!pixelFormat)
+   if (!m_context.Create(m_hWnd, bpp) || !m_context.MakeCurrent())
+   {
       return E_FAIL;
-
-   wglMakeCurrent(GetHdc(), GetHglrc());
-
-   m_bpp = bpp;
+   }
 
    ShowWindow(m_hWnd, SW_SHOW);
    UpdateWindow(m_hWnd);
@@ -377,7 +458,7 @@ tResult cWindowWin32::GetWindowInfo(sWindowInfo * pInfo) const
 
    pInfo->width = rect.right - rect.left;
    pInfo->height = rect.bottom - rect.top;
-   pInfo->bpp = m_bpp;
+   pInfo->bpp = m_context.GetBpp();
    pInfo->hWnd = m_hWnd;
 
    return S_OK;
@@ -387,7 +468,7 @@ tResult cWindowWin32::GetWindowInfo(sWindowInfo * pInfo) const
 
 tResult cWindowWin32::SwapBuffers()
 {
-   ::SwapBuffers(GetHdc());
+   ::SwapBuffers(m_context.GetHdc());
    return S_OK;
 }
 
@@ -397,7 +478,7 @@ tResult cWindowWin32::BeginFullScreen()
 {
    RECT rect;
    GetClientRect(m_hWnd, &rect);
-   if (!FullScreenBegin(m_hWnd, rect.right - rect.left, rect.bottom - rect.top, m_bpp))
+   if (!FullScreenBegin(m_hWnd, rect.right - rect.left, rect.bottom - rect.top, m_context.GetBpp()))
       return E_FAIL;
    return S_OK;
 }
@@ -486,7 +567,9 @@ bool cWindowWin32::RegisterWindowClass(const char * pszClassName,
    wc.lpszClassName = pszClassName;
 
    if (!RegisterClass(&wc))
+   {
       return false;
+   }
 
    return true;
 }
@@ -499,7 +582,9 @@ LRESULT CALLBACK cWindowWin32::WndProc(HWND hWnd, UINT message, WPARAM wParam, L
 
    // if get registered variant of mouse wheel message, handle it as WM_MOUSEWHEEL
    if (message == g_mouseWheelMsg)
+   {
       message = WM_MOUSEWHEEL;
+   }
 
    cWindowWin32 * pWnd = (cWindowWin32 *)GetWindowLong(hWnd, GWL_USERDATA);
 
