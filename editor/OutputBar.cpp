@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "outputbar.h"
+#include "OutputBar.h"
 #include "editorCtrlBars.h"
 
 #include "resource.h"       // main symbols
@@ -65,7 +65,7 @@ cOutputBar::~cOutputBar()
 
 void cOutputBar::HandleLogCallback(eLogSeverity severity, const tChar * pszMsg, size_t msgLen)
 {
-   m_logWnd.AddString(pszMsg, msgLen);
+   m_logWnd.AddString(severity, pszMsg, msgLen);
 
    if (m_nextLogCallback != NULL)
    {
@@ -77,13 +77,11 @@ void cOutputBar::HandleLogCallback(eLogSeverity severity, const tChar * pszMsg, 
 
 LRESULT cOutputBar::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled)
 {
-   if (m_logWnd.Create(m_hWnd, CWindow::rcDefault, NULL, WS_CHILD | WS_VISIBLE) == NULL)
+   if (!m_logWnd.Create(m_hWnd, CWindow::rcDefault))
    {
-      DebugMsg("Error creating child window\n");
+      ErrorMsg("Error creating child window\n");
       return -1;
    }
-
-   m_logWnd.ModifyStyleEx(0, WS_EX_CLIENTEDGE);
 
    g_pOutputBar = this;
    m_nextLogCallback = techlog.SetCallback(OutputBarLogCallback);
