@@ -7,31 +7,18 @@
 #ifndef INCLUDED_GGL_H
 #define INCLUDED_GGL_H
 
-#include "techtypes.h"
-
-#ifdef _WIN32
+#if defined(_WIN32)
+   #define DECLSPEC_IMPORT __declspec(dllimport)
+   #define WINGDIAPI DECLSPEC_IMPORT
    #define WINAPI __stdcall
-   #define CALLBACK __stdcall
-   #ifdef _MSC_VER
-      #define APIENTRY WINAPI
-      #define DECLSPEC_IMPORT __declspec(dllimport)
-      #define WINGDIAPI DECLSPEC_IMPORT
-   #else
-      #define APIENTRY __stdcall
-      #define WINGDIAPI
+   #define APIENTRY WINAPI
+   typedef long LONG;
+   typedef short SHORT;
+   #ifdef VOID
+   #undef VOID
    #endif
-   F_DECLARE_HANDLE(HDC);
-   F_DECLARE_HANDLE(HGLRC);
-   typedef unsigned int UINT;
-   typedef float FLOAT;
-   #define VOID void
-#else
-   #if defined(__CYGWIN__) || defined(__MINGW32__)
-      #define APIENTRY
-   #else
-      #define APIENTRY __attribute__ ((__stdcall__))
-   #endif
-#endif // _WIN32
+   typedef void VOID;
+#endif
 
 #ifdef _WINDOWS_
 #define WINDOWS_H_ALREADY_INCLUDED

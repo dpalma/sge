@@ -16,14 +16,10 @@
 
 #include "dbgalloc.h" // must be last header
 
-#if !defined(NDEBUG) && defined(_WIN32)
-extern "C"
-{
-#ifdef _DLL
-__declspec(dllimport)
-#endif
-int CDECL _CrtIsValidHeapPointer(const void * userData);
-}
+#if !defined(NDEBUG) && defined(_MSC_VER)
+EXTERN_C DECLSPEC_DLLIMPORT int CDECL _CrtIsValidHeapPointer(const void * userData);
+#else
+#define _CrtIsValidHeapPointer(userData) (true)
 #endif
 
 LOG_DEFINE_CHANNEL(KeyEvent);
