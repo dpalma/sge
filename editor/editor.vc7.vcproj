@@ -341,6 +341,9 @@
 				RelativePath=".\editorApp.cpp">
 			</File>
 			<File
+				RelativePath="editorCommands.cpp">
+			</File>
+			<File
 				RelativePath=".\editorCtrlBars.cpp">
 			</File>
 			<File
@@ -451,6 +454,9 @@
 			</File>
 			<File
 				RelativePath=".\editorApp.h">
+			</File>
+			<File
+				RelativePath="editorCommands.h">
 			</File>
 			<File
 				RelativePath=".\editorCtrlBars.h">
