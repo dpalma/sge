@@ -269,18 +269,23 @@ void cEditorView::cSceneEntity::Render(IRenderDevice * pRenderDevice)
 	cEditorDoc * pDoc = m_pOuter->GetDocument();
 	ASSERT_VALID(pDoc);
 
+   tResult renderResult = S_FALSE;
+
    if (pDoc->AccessTerrain() != NULL)
    {
-      pDoc->AccessTerrain()->Render(pRenderDevice);
+      renderResult = pDoc->AccessTerrain()->Render(pRenderDevice);
    }
 
-   pRenderDevice->Render(
-      kRP_Triangles, 
-      pDoc->AccessMaterial(), 
-      m_pOuter->m_nIndices, 
-      m_pOuter->m_pIndexBuffer,
-      0, 
-      m_pOuter->m_pVertexBuffer);
+   if (renderResult != S_OK)
+   {
+      pRenderDevice->Render(
+         kRP_Triangles, 
+         pDoc->AccessMaterial(), 
+         m_pOuter->m_nIndices, 
+         m_pOuter->m_pIndexBuffer,
+         0, 
+         m_pOuter->m_pVertexBuffer);
+   }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -619,6 +624,13 @@ void cEditorView::OnLButtonDown(UINT nFlags, CPoint point)
 
          int iTileX = Round(pointOnPlane.x / mapDimX);
          int iTileZ = Round(pointOnPlane.z / mapDimZ);
+
+         cTerrain * pTerrain = pDoc->AccessTerrain();
+         if (pTerrain != NULL)
+         {
+            cTerrainTile * pTile = pTerrain->GetTile(iTileX, iTileZ);
+            pTile->SetTile(3); // TODO HACK hard-coded
+         }
 
          DebugMsg2("Hit tile (%d, %d)\n", iTileX, iTileZ);
       }

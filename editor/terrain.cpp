@@ -9,8 +9,11 @@
 
 #include "material.h"
 #include "render.h"
+#include "textureapi.h"
 
 #include "readwriteapi.h"
+
+#include <GL/gl.h>
 
 #include "dbgalloc.h" // must be last header
 
@@ -182,7 +185,7 @@ tResult cTerrain::Read(IReader * pReader)
       pReader->Read(&m_xChunks) != S_OK ||
       pReader->Read(&m_zChunks) != S_OK ||
       pReader->Read(&m_vertices) != S_OK ||
-      pReader->Read(&m_tilesetName, 0) != S_OK)
+      pReader->Read(&m_tileSetName, 0) != S_OK)
    {
       return E_FAIL;
    }
@@ -207,7 +210,7 @@ tResult cTerrain::Write(IWriter * pWriter)
       pWriter->Write(m_xChunks) != S_OK ||
       pWriter->Write(m_zChunks) != S_OK ||
       pWriter->Write(m_vertices) != S_OK ||
-      pWriter->Write(m_tilesetName.c_str()) != S_OK)
+      pWriter->Write(m_tileSetName.c_str()) != S_OK)
    {
       return E_FAIL;
    }
@@ -231,7 +234,8 @@ bool cTerrain::Create(uint xDim, uint zDim, int stepSize,
       return false;
    }
 
-   pTileSet->GetName(&m_tilesetName);
+   pTileSet->GetName(&m_tileSetName);
+   m_pTileSet = CTAddRef(pTileSet);
 
    static const float kRed = 0.75f, kGreen = 0.75f, kBlue = 0.75f;
 
@@ -248,7 +252,10 @@ bool cTerrain::Create(uint xDim, uint zDim, int stepSize,
    float tileTexWidth = 1.0f / pTile->GetHorizontalImageCount();
    float tileTexHeight = 1.0f / pTile->GetVerticalImageCount();
 
-   int index = 0;
+   m_tiles.resize(xDim * zDim);
+
+   int iVertex = 0;
+   int iTile = 0;
 
    float z1 = 0;
    float z2 = stepSize;
@@ -260,21 +267,26 @@ bool cTerrain::Create(uint xDim, uint zDim, int stepSize,
 
       for (int ix = 0; ix < xDim; ix++, x1 += stepSize, x2 += stepSize)
       {
-         uint tile = rand() & (nTileImages - 1);
+//         uint tile = rand() & (nTileImages - 1);
+         uint tile = 0;
          uint tileRow = tile / pTile->GetHorizontalImageCount();
          uint tileCol = tile % pTile->GetHorizontalImageCount();
 
-         m_vertices[index].uv1 = tVec2(tileCol * tileTexWidth, tileRow * tileTexHeight);
-         m_vertices[index++].rgb = tVec3(kRed,kGreen,kBlue);
+         int iTileVerts = iVertex;
 
-         m_vertices[index].uv1 = tVec2((tileCol + 1) * tileTexWidth, tileRow * tileTexHeight);
-         m_vertices[index++].rgb = tVec3(kRed,kGreen,kBlue);
+         m_vertices[iVertex].uv1 = tVec2(tileCol * tileTexWidth, tileRow * tileTexHeight);
+         m_vertices[iVertex++].rgb = tVec3(kRed,kGreen,kBlue);
 
-         m_vertices[index].uv1 = tVec2((tileCol + 1) * tileTexWidth, (tileRow + 1) * tileTexHeight);
-         m_vertices[index++].rgb = tVec3(kRed,kGreen,kBlue);
+         m_vertices[iVertex].uv1 = tVec2((tileCol + 1) * tileTexWidth, tileRow * tileTexHeight);
+         m_vertices[iVertex++].rgb = tVec3(kRed,kGreen,kBlue);
 
-         m_vertices[index].uv1 = tVec2(tileCol * tileTexWidth, (tileRow + 1) * tileTexHeight);
-         m_vertices[index++].rgb = tVec3(kRed,kGreen,kBlue);
+         m_vertices[iVertex].uv1 = tVec2((tileCol + 1) * tileTexWidth, (tileRow + 1) * tileTexHeight);
+         m_vertices[iVertex++].rgb = tVec3(kRed,kGreen,kBlue);
+
+         m_vertices[iVertex].uv1 = tVec2(tileCol * tileTexWidth, (tileRow + 1) * tileTexHeight);
+         m_vertices[iVertex++].rgb = tVec3(kRed,kGreen,kBlue);
+
+         m_tiles[iTile++].SetVertices(&m_vertices[iTileVerts]);
       }
    }
 
@@ -341,8 +353,71 @@ size_t cTerrain::GetVertexCount() const
 
 ////////////////////////////////////////
 
-void cTerrain::Render(IRenderDevice * pRenderDevice)
+tResult cTerrain::Render(IRenderDevice * pRenderDevice)
 {
+   glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
+
+   glEnable(GL_COLOR_MATERIAL);
+
+   std::vector<cTerrainTile>::iterator iter;
+   for (iter = m_tiles.begin(); iter != m_tiles.end(); iter++)
+   {
+      const sTerrainVertex * pVertices = iter->GetVertices();
+
+      cAutoIPtr<IEditorTile> pEditorTile;
+      if (m_pTileSet->GetTile(iter->GetTile(), &pEditorTile) == S_OK)
+      {
+         cAutoIPtr<ITexture> pTexture;
+         if (pEditorTile->GetTexture(&pTexture) == S_OK)
+         {
+            HANDLE tex;
+            if (pTexture->GetTextureHandle(&tex) == S_OK)
+            {
+               glEnable(GL_TEXTURE_2D);
+               glBindTexture(GL_TEXTURE_2D, (uint)tex);
+            }
+         }
+      }
+
+      glBegin(GL_QUADS);
+
+      glNormal3f(1,1,1);
+
+      glColor3fv(pVertices[0].rgb.v);
+      glTexCoord2fv(pVertices[0].uv1.v);
+      glVertex3fv(pVertices[0].pos.v);
+
+      glColor3fv(pVertices[3].rgb.v);
+      glTexCoord2fv(pVertices[3].uv1.v);
+      glVertex3fv(pVertices[3].pos.v);
+
+      glColor3fv(pVertices[2].rgb.v);
+      glTexCoord2fv(pVertices[2].uv1.v);
+      glVertex3fv(pVertices[2].pos.v);
+
+      glColor3fv(pVertices[1].rgb.v);
+      glTexCoord2fv(pVertices[1].uv1.v);
+      glVertex3fv(pVertices[1].pos.v);
+
+      glEnd();
+   }
+
+   glPopAttrib();
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+cTerrainTile * cTerrain::GetTile(uint ix, uint iz)
+{
+   if (ix < m_xDim && iz < m_zDim)
+   {
+      uint index = (iz * m_zDim) + ix;
+      Assert(index < m_tiles.size());
+      return &m_tiles[index];
+   }
+   return NULL;
 }
 
 ////////////////////////////////////////
@@ -405,6 +480,7 @@ bool cTerrain::CreateTerrainChunks()
 ////////////////////////////////////////
 
 cTerrainTile::cTerrainTile()
+ : m_tile(0)
 {
 }
 
@@ -412,6 +488,13 @@ cTerrainTile::cTerrainTile()
 
 cTerrainTile::~cTerrainTile()
 {
+}
+
+////////////////////////////////////////
+
+void cTerrainTile::SetVertices(const sTerrainVertex * pVertices)
+{
+   memcpy(m_vertices, pVertices, 4 * sizeof(sTerrainVertex));
 }
 
 

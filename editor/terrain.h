@@ -47,7 +47,7 @@ tResult TerrainVertexDeclarationCreate(IRenderDevice * pRenderDevice,
 // generated transition tiles. Not a LOD terrain renderer implementing the
 // ROAM algorithm or anything like that.
 
-const int kDefaultStepSize = 16;
+const int kDefaultStepSize = 32;
 const int kTilesPerChunk = 32;
 
 class cTerrain
@@ -68,7 +68,9 @@ public:
    const sTerrainVertex * GetVertexPointer() const;
    size_t GetVertexCount() const;
 
-   void Render(IRenderDevice * pRenderDevice);
+   tResult Render(IRenderDevice * pRenderDevice);
+
+   cTerrainTile * GetTile(uint ix, uint iz);
 
 protected:
    void InitializeVertices(uint xDim, uint zDim, int stepSize, cHeightMap * pHeightMap);
@@ -82,9 +84,12 @@ private:
 
    std::vector<sTerrainVertex> m_vertices;
 
-   cStr m_tilesetName;
+   cStr m_tileSetName;
+   cAutoIPtr<IEditorTileSet> m_pTileSet;
 
    cAutoIPtr<IMaterial> m_pMaterial;
+
+   std::vector<cTerrainTile> m_tiles;
 };
 
 
@@ -98,7 +103,38 @@ class cTerrainTile
 public:
    cTerrainTile();
    ~cTerrainTile();
+
+   void SetVertices(const sTerrainVertex * pVertices);
+   const sTerrainVertex * GetVertices() const;
+
+   void SetTile(uint tile);
+   uint GetTile() const;
+
+private:
+   sTerrainVertex m_vertices[4]; // one quad
+   uint m_tile;
 };
+
+///////////////////////////////////////
+
+inline const sTerrainVertex * cTerrainTile::GetVertices() const
+{
+   return m_vertices;
+}
+
+///////////////////////////////////////
+
+inline void cTerrainTile::SetTile(uint tile)
+{
+   m_tile = tile;
+}
+
+///////////////////////////////////////
+
+inline uint cTerrainTile::GetTile() const
+{
+   return m_tile;
+}
 
 
 /////////////////////////////////////////////////////////////////////////////
