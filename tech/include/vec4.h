@@ -16,7 +16,7 @@
 //
 
 template <typename T>
-class TECH_API cVec4
+class cVec4
 {
 public:
    typedef T value_type;
