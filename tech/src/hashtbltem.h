@@ -5,6 +5,9 @@
 #define INCLUDED_HASHTBLTEM_H
 
 #include "hash.h"
+#include "techmath.h"
+
+#include <cmath>
 
 #include "dbgalloc.h" // must be last header
 
@@ -33,7 +36,7 @@ const int kFullnessThreshold = 70;
 HASHTABLE_TEMPLATE::cHashTable(int initialSize)
  : m_elts(NULL), m_size(0), m_count(0)
 #ifndef NDEBUG
-   ,m_cItersActive(0)
+   ,m_nItersActive(0)
 #endif
 {
    Grow(initialSize);
@@ -57,7 +60,7 @@ HASHTABLE_TEMPLATE_(void)::Clear()
 
 HASHTABLE_TEMPLATE_(void)::Reset(int newInitialSize)
 {
-   Assert(m_cItersActive == 0); // don't clear while iterating
+   Assert(m_nItersActive == 0); // don't clear while iterating
 
    m_allocator.deallocate(m_elts, m_size);
    m_elts = NULL;
@@ -88,7 +91,7 @@ HASHTABLE_TEMPLATE_(bool)::Set(const KEY & k, const VALUE & v)
 
 HASHTABLE_TEMPLATE_(bool)::Insert(const KEY & k, const VALUE & v)
 {
-   Assert(m_cItersActive == 0); // don't insert while iterating
+   Assert(m_nItersActive == 0); // don't insert while iterating
 
    if (!Lookup(k, NULL))
    {
@@ -120,7 +123,7 @@ HASHTABLE_TEMPLATE_(bool)::Lookup(const KEY & k, VALUE * v) const
 
 HASHTABLE_TEMPLATE_(bool)::Delete(const KEY & k)
 {
-   Assert(m_cItersActive == 0); // don't delete while iterating
+   Assert(m_nItersActive == 0); // don't delete while iterating
 
    uint hash = Probe(k);
 
@@ -130,11 +133,6 @@ HASHTABLE_TEMPLATE_(bool)::Delete(const KEY & k)
    m_elts[hash].inUse = false;
    m_count--;
 
-   // @TODO (dpalma 6/22/01): To be extra thorough, the value should be removed
-   // from m_elts. However, we can probably get away with just marking it as
-   // not used, because to remove it would (i think) require re-hashing all
-   // remaining elements.
-
    return true;
 }
 
@@ -143,7 +141,7 @@ HASHTABLE_TEMPLATE_(bool)::Delete(const KEY & k)
 HASHTABLE_TEMPLATE_(void)::IterBegin(HANDLE * phIter) const
 {
 #ifndef NDEBUG
-   m_cItersActive++;
+   m_nItersActive++;
 #endif
    *phIter = 0;
 }
@@ -173,7 +171,7 @@ HASHTABLE_TEMPLATE_(void)::IterEnd(HANDLE * phIter) const
 {
    *phIter = (HANDLE)-1;
 #ifndef NDEBUG
-   m_cItersActive--;
+   m_nItersActive--;
 #endif
 }
 
@@ -182,16 +180,33 @@ HASHTABLE_TEMPLATE_(void)::IterEnd(HANDLE * phIter) const
 
 HASHTABLE_TEMPLATE_(uint)::Probe(const KEY & k) const
 {
-   uint hash = ::Hash(k) % m_size;
+   Assert(IsPowerOfTwo(m_size));
+   uint hash = Hash(k) & (m_size - 1);
+
+#ifdef _DEBUG
+   uint start = hash;
+   bool wrapped = false;
+#endif
 
    // resolve collisions with linear probing
-   // @TODO (dpalma 6/15/00): This doesn't handle the case where the hash table
-   // is 100% full. Would likely go infinite in that case.
    while (m_elts[hash].inUse && !Equal(k, m_elts[hash].key))
    {
       hash++;
       if (hash == m_size)
+      {
          hash = 0;
+#ifdef _DEBUG
+         wrapped = true;
+#endif
+      }
+
+#ifdef _DEBUG
+      if (wrapped && (hash >= start))
+      {
+         DebugMsg("ERROR: cHashTable is 100% full!!!\n");
+         Assert(!"ERROR: cHashTable is 100% full!!!");
+      }
+#endif
    }
 
    return hash;
@@ -199,8 +214,12 @@ HASHTABLE_TEMPLATE_(uint)::Probe(const KEY & k) const
 
 ///////////////////////////////////////
 
-HASHTABLE_TEMPLATE_(void)::Grow(int newSize)
+HASHTABLE_TEMPLATE_(void)::Grow(uint newSize)
 {
+   uint actualNewSize = NearestPowerOfTwo(newSize);
+   Assert(actualNewSize <= newSize); // NearestPowerOfTwo returns lower than argument
+   newSize = actualNewSize * 2;
+
    tHashElement * newElts = m_allocator.allocate(newSize, m_elts);
 
    // Use placement new to call the constructor for each element

@@ -42,9 +42,9 @@ class cHashTable
 public:
    enum
    {
-      kInitialSizeSmall = 10,
-      kInitialSizeMed   = 200,
-      kInitialSizeLarge = 1000,
+      kInitialSizeSmall = 16,
+      kInitialSizeMed   = 256,
+      kInitialSizeLarge = 1024,
    };
 
    cHashTable(int initialSize = kInitialSizeSmall);
@@ -64,7 +64,7 @@ public:
 
 private:
    uint Probe(const KEY & k) const;
-   void Grow(int newSize);
+   void Grow(uint newSize);
    bool Equal(const KEY & k1, const KEY & k2) const;
 
    typedef struct sHashElement<KEY, VALUE> tHashElement;
@@ -75,7 +75,7 @@ private:
    uint m_size;
    uint m_count;
 #ifndef NDEBUG
-   mutable ulong m_cItersActive;
+   mutable ulong m_nItersActive;
 #endif
 };
 
