@@ -24,6 +24,112 @@ static const CRect buttonMargins(5,5,5,5);
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: cButtonPanel
+//
+
+////////////////////////////////////////
+
+cButtonPanel::cButtonPanel()
+ : m_margins(buttonMargins)
+{
+}
+
+////////////////////////////////////////
+
+cButtonPanel::~cButtonPanel()
+{
+   Assert(m_buttons.empty());
+}
+
+////////////////////////////////////////
+
+void cButtonPanel::AddButton(CButton * pButton)
+{
+   ASSERT_VALID(pButton);
+   m_buttons.push_back(pButton);
+}
+
+////////////////////////////////////////
+
+void cButtonPanel::Clear()
+{
+   tButtons::iterator iter;
+   for (iter = m_buttons.begin(); iter != m_buttons.end(); iter++)
+   {
+      (*iter)->DestroyWindow();
+      delete *iter;
+   }
+   m_buttons.clear();
+}
+
+////////////////////////////////////////
+
+void cButtonPanel::Reposition(LPCRECT pRect, BOOL bRepaint)
+{
+   CRect buttonRect;
+   buttonRect.left = pRect->left + m_margins.left;
+   buttonRect.top = pRect->top + m_margins.top;
+   buttonRect.right = buttonRect.left + kButtonSize;
+   buttonRect.bottom = buttonRect.top + kButtonSize;
+
+   tButtons::iterator iter;
+   for (iter = m_buttons.begin(); iter != m_buttons.end(); iter++)
+   {
+      if (((*iter) != NULL) && IsWindow((*iter)->GetSafeHwnd()))
+      {
+         (*iter)->MoveWindow(buttonRect, bRepaint);
+
+         buttonRect.OffsetRect(buttonRect.Width(), 0);
+
+         if (buttonRect.left > (pRect->right - m_margins.right)
+            || buttonRect.right > (pRect->right - m_margins.right))
+         {
+            buttonRect.left = pRect->left + m_margins.left;
+            buttonRect.top += kButtonSize;;
+            buttonRect.right = buttonRect.left + kButtonSize;
+            buttonRect.bottom = buttonRect.top + kButtonSize;
+         }
+      }
+   }
+}
+
+////////////////////////////////////////
+
+void cButtonPanel::HandleClick(uint buttonId)
+{
+   CButton * pClickedButton = NULL;
+
+   tButtons::iterator iter;
+   for (iter = m_buttons.begin(); iter != m_buttons.end(); iter++)
+   {
+      if (((*iter) != NULL) && IsWindow((*iter)->GetSafeHwnd()) && (*iter)->GetDlgCtrlID() != buttonId)
+      {
+         (*iter)->SendMessage(BM_SETSTATE, FALSE);
+      }
+
+      if ((*iter)->GetDlgCtrlID() == buttonId)
+      {
+         pClickedButton = *iter;
+      }
+   }
+
+   ASSERT_VALID(pClickedButton);
+   pClickedButton->SendMessage(BM_SETSTATE, TRUE);
+}
+
+////////////////////////////////////////
+
+void cButtonPanel::SetMargins(LPCRECT pMargins)
+{
+   if (pMargins != NULL)
+   {
+      m_margins = *pMargins;
+   }
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cToolPaletteBar
 //
 
@@ -80,7 +186,7 @@ void cToolPaletteBar::OnDefaultTileSetChange(IEditorTileSet * pTileSet)
 
                         m_tooltip.AddTool(pButton, tileName.c_str());
 
-                        m_buttons.push_back(pButton);
+                        m_buttonPanel.AddButton(pButton);
                      }
                      else
                      {
@@ -98,13 +204,7 @@ void cToolPaletteBar::OnDefaultTileSetChange(IEditorTileSet * pTileSet)
 
 void cToolPaletteBar::ClearButtons()
 {
-   tButtons::iterator iter;
-   for (iter = m_buttons.begin(); iter != m_buttons.end(); iter++)
-   {
-      (*iter)->DestroyWindow();
-      delete *iter;
-   }
-   m_buttons.clear();
+   m_buttonPanel.Clear();
 }
 
 void cToolPaletteBar::RepositionButtons(BOOL bRepaint)
@@ -112,31 +212,7 @@ void cToolPaletteBar::RepositionButtons(BOOL bRepaint)
    CRect rect;
    GetClientRect(rect);
 
-   CRect buttonRect;
-   buttonRect.left = rect.left + buttonMargins.left;
-   buttonRect.top = rect.top + buttonMargins.top;
-   buttonRect.right = buttonRect.left + kButtonSize;
-   buttonRect.bottom = buttonRect.top + kButtonSize;
-
-   tButtons::iterator iter;
-   for (iter = m_buttons.begin(); iter != m_buttons.end(); iter++)
-   {
-      if (((*iter) != NULL) && IsWindow((*iter)->GetSafeHwnd()))
-      {
-         (*iter)->MoveWindow(buttonRect, bRepaint);
-
-         buttonRect.OffsetRect(buttonRect.Width(), 0);
-
-         if (buttonRect.left > (rect.right - buttonMargins.right)
-            || buttonRect.right > (rect.right - buttonMargins.right))
-         {
-            buttonRect.left = rect.left + buttonMargins.left;
-            buttonRect.top += kButtonSize;;
-            buttonRect.right = buttonRect.left + kButtonSize;
-            buttonRect.bottom = buttonRect.top + kButtonSize;
-         }
-      }
-   }
+   m_buttonPanel.Reposition(rect, bRepaint);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -178,21 +254,7 @@ void cToolPaletteBar::OnSize(UINT nType, int cx, int cy)
 
 void cToolPaletteBar::OnButtonClicked(uint buttonId)
 {
-   Assert(buttonId >= kButtonFirstId && buttonId < (kButtonFirstId + m_buttons.size()));
-
-   DebugMsg1("Button %d clicked\n", buttonId);
-
-   tButtons::iterator iter;
-   for (iter = m_buttons.begin(); iter != m_buttons.end(); iter++)
-   {
-      if (((*iter) != NULL) && IsWindow((*iter)->GetSafeHwnd()) && (*iter)->GetDlgCtrlID() != buttonId)
-      {
-         (*iter)->SendMessage(BM_SETSTATE, FALSE);
-      }
-   }
-
-   ASSERT_VALID(m_buttons[buttonId - kButtonFirstId]);
-   m_buttons[buttonId - kButtonFirstId]->SendMessage(BM_SETSTATE, TRUE);
+   m_buttonPanel.HandleClick(buttonId);
 }
 
 BOOL cToolPaletteBar::PreTranslateMessage(MSG* pMsg) 
