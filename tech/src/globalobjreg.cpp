@@ -303,9 +303,9 @@ tResult cGlobalObjectRegistry::TermAll()
       Assert(m_initOrder.empty());
       Assert(m_objMap.empty());
       Assert(GetState() == kTerminated);
-      return S_FALSE;
    }
 #endif
+    return S_FALSE;
 }
 
 ///////////////////////////////////////
