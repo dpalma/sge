@@ -6,8 +6,6 @@
 
 #include "techdll.h"
 #include "fileconst.h"
-#include <vector>
-#include <string>
 
 #ifdef _MSC_VER
 #pragma once
