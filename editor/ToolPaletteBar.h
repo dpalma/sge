@@ -7,6 +7,8 @@
 #include "afxcomtools.h"
 #include "editorapi.h"
 
+#include <vector>
+
 #if _MSC_VER >= 1000
 #pragma once
 #endif // _MSC_VER >= 1000
@@ -35,7 +37,9 @@ public:
 // Overrides
    // ClassWizard generated virtual function overrides
    //{{AFX_VIRTUAL(cToolPaletteBar)
-   //}}AFX_VIRTUAL
+	public:
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	//}}AFX_VIRTUAL
 
 // Implementation
 public:
@@ -50,10 +54,19 @@ protected:
    //{{AFX_MSG(cToolPaletteBar)
    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnDestroy();
+	afx_msg void OnSize(UINT nType, int cx, int cy);
 	//}}AFX_MSG
+   afx_msg void OnButtonClicked(uint buttonId);
    DECLARE_MESSAGE_MAP()
 
+   void ClearButtons();
+   void RepositionButtons(BOOL bRepaint = TRUE);
+
 private:
+   typedef std::vector<CButton *> tButtons;
+   tButtons m_buttons;
+
+   CToolTipCtrl m_tooltip;
 };
 
 /////////////////////////////////////////////////////////////////////////////
