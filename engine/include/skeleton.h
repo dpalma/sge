@@ -37,7 +37,7 @@ interface ISkeleton : IUnknown
    virtual tResult GetAnimation(IKeyFrameAnimation * * ppAnimation) = 0;
 
    // TODO: Pull out animation-related methods into separate interfaces
-   virtual void GetBoneMatrices(float percent, tMatrices * pBoneMatrices) const = 0;
+   virtual void GetBoneMatrices(float time, tMatrices * pBoneMatrices) const = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

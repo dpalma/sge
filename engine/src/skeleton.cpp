@@ -244,7 +244,7 @@ public:
    virtual tResult SetAnimation(IKeyFrameAnimation * pAnimation);
    virtual tResult GetAnimation(IKeyFrameAnimation * * ppAnimation);
 
-   void GetBoneMatrices(float percent, tMatrices * pBoneMatrices) const;
+   void GetBoneMatrices(float time, tMatrices * pBoneMatrices) const;
 
 private:
    const cBone & GetBone(int index) const;
@@ -356,9 +356,9 @@ tResult cSkeleton::GetAnimation(IKeyFrameAnimation * * ppAnimation)
 
 ///////////////////////////////////////
 
-void cSkeleton::GetBoneMatrices(float percent, tMatrices * pBoneMatrices) const
+void cSkeleton::GetBoneMatrices(float time, tMatrices * pBoneMatrices) const
 {
-   Assert(percent >= 0 && percent <= 1);
+   Assert(time >= 0);
    Assert(pBoneMatrices != NULL);
    Assert(pBoneMatrices->size() == GetBoneCount());
 
@@ -372,8 +372,10 @@ void cSkeleton::GetBoneMatrices(float percent, tMatrices * pBoneMatrices) const
       cAutoIPtr<IKeyFrameInterpolator> pInterp;
       if (m_pAnimation->GetInterpolator(i, &pInterp) == S_OK)
       {
+         Assert(time <= pInterp->GetPeriod());
+
          sKeyFrame frame;
-         if (pInterp->Interpolate(percent * pInterp->GetPeriod(), &frame) == S_OK)
+         if (pInterp->Interpolate(time, &frame) == S_OK)
          {
             tMatrix4 mt, mr;
 

@@ -9,6 +9,7 @@
 
 #include "mesh.h"
 #include "skeleton.h"
+#include "animation.h"
 
 #include "render.h"
 
@@ -27,7 +28,8 @@
 ///////////////////////////////////////
 
 cSceneMesh::cSceneMesh()
- : m_percent(0)
+ : m_animationTime(0),
+   m_boundingSphereRadius(0)
 {
    UseGlobal(Sim);
    pSim->Connect(&m_simClient);
@@ -62,7 +64,9 @@ bool cSceneMesh::SetMesh(const char * pszMesh)
 
       m_centroid = mins + (diff * 0.5f);
 
-      m_bounds.SetRadius(0.5f * Max(diff.x, Max(diff.y, diff.z)));
+      m_boundingSphereRadius = 0.5f * Max(diff.x, Max(diff.y, diff.z));
+
+      m_bounds.SetRadius(m_boundingSphereRadius);
 
       return true;
    }
@@ -72,15 +76,29 @@ bool cSceneMesh::SetMesh(const char * pszMesh)
 
 ///////////////////////////////////////
 
+void cSceneMesh::Animate(double elapsedTime)
+{
+   cAutoIPtr<ISkeleton> pSkeleton;
+   cAutoIPtr<IKeyFrameAnimation> pAnimation;
+   if (m_pMesh->GetSkeleton(&pSkeleton) == S_OK
+      && pSkeleton->GetAnimation(&pAnimation) == S_OK)
+   {
+      tTime period = pAnimation->GetPeriod();
+      m_animationTime += elapsedTime;
+      while (m_animationTime > period)
+         m_animationTime -= period;
+      pSkeleton->GetBoneMatrices(m_animationTime, &m_boneMatrices);
+   }
+}
+
+///////////////////////////////////////
+
 #define GetOuter(Class, Member) ((Class *)((byte *)this - (byte *)&((Class *)NULL)->Member))
 
 void cSceneMesh::cSimClient::OnFrame(double elapsedTime)
 {
    cSceneMesh * pSceneMesh = GetOuter(cSceneMesh, m_simClient);
-   pSceneMesh->m_percent += elapsedTime;
-   if (pSceneMesh->m_percent > 1.0f)
-      pSceneMesh->m_percent = 0;
-   pSceneMesh->SetFrame(pSceneMesh->m_percent);
+   pSceneMesh->Animate(elapsedTime);
 }
 
 ///////////////////////////////////////
@@ -175,21 +193,10 @@ tResult cSceneMesh::PostRead()
          }
       }
 
-      SetFrame(0);
+      Animate(0);
    }
 
    return S_OK;
-}
-
-///////////////////////////////////////
-
-void cSceneMesh::SetFrame(float percent)
-{
-   cAutoIPtr<ISkeleton> pSkeleton;
-   if (m_pMesh->GetSkeleton(&pSkeleton) == S_OK)
-   {
-      pSkeleton->GetBoneMatrices(percent, &m_boneMatrices);
-   }
 }
 
 ///////////////////////////////////////
@@ -227,6 +234,13 @@ const cBoundingVolume * cSceneMesh::GetBoundingVolume() const
 {
    m_bounds.SetCenter(GetTranslation() + m_centroid);
    return &m_bounds;
+}
+
+///////////////////////////////////////
+
+float cSceneMesh::GetBoundingSphereRadius() const
+{
+   return m_boundingSphereRadius;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -17,6 +17,8 @@
 F_DECLARE_INTERFACE(IKeyFrameAnimation);
 F_DECLARE_INTERFACE(IKeyFrameInterpolator);
 
+typedef double tTime;
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // INTERFACE: IKeyFrameAnimation
@@ -24,6 +26,8 @@ F_DECLARE_INTERFACE(IKeyFrameInterpolator);
 
 interface IKeyFrameAnimation : IUnknown
 {
+   virtual tTime GetPeriod() const = 0;
+
    virtual tResult GetInterpolator(int index, IKeyFrameInterpolator * * ppInterpolator) const = 0;
 };
 
@@ -34,8 +38,6 @@ ENGINE_API tResult KeyFrameAnimationCreate(IKeyFrameInterpolator * * ppInterpola
 //
 // INTERFACE: IKeyFrameInterpolator
 //
-
-typedef double tTime;
 
 struct sKeyFrame
 {

@@ -37,13 +37,16 @@ public:
    virtual void Render();
 
    virtual const cBoundingVolume * GetBoundingVolume() const;
+   virtual float GetBoundingSphereRadius() const;
 
 private:
    tResult PostRead();
-   void SetFrame(float percent);
+
+   void Animate(double elapsedTime);
 
    class cSimClient : public cComObject<IMPLEMENTS(ISimClient)>
    {
+      void CDECL operator delete(void *) { Assert(!"Should never be called"); }
    public:
       virtual void DeleteThis() { /* do not delete */ }
       virtual void OnFrame(double elapsedTime);
@@ -55,9 +58,10 @@ private:
    cAutoIPtr<IMesh> m_pMesh;
    tVec3 m_centroid;
    mutable cBoundingSphere m_bounds;
+   float m_boundingSphereRadius;
 
    std::vector<tMatrix4> m_boneMatrices;
-   float m_percent;
+   float m_animationTime;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

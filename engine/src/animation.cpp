@@ -30,9 +30,13 @@ public:
 
    bool Create(IKeyFrameInterpolator * * ppInterpolators, uint nInterpolators);
 
-   tResult GetInterpolator(int index, IKeyFrameInterpolator * * ppInterpolator) const;
+   virtual tTime GetPeriod() const;
+
+   virtual tResult GetInterpolator(int index, IKeyFrameInterpolator * * ppInterpolator) const;
 
 private:
+   tTime m_period;
+
    typedef std::vector<IKeyFrameInterpolator *> tInterpolators;
    tInterpolators m_interpolators;
 };
@@ -40,6 +44,7 @@ private:
 ///////////////////////////////////////
 
 cKeyFrameAnimation::cKeyFrameAnimation()
+ : m_period(0)
 {
 }
 
@@ -59,17 +64,31 @@ bool cKeyFrameAnimation::Create(IKeyFrameInterpolator * * ppInterpolators, uint 
 
    if ((ppInterpolators != NULL) && (nInterpolators > 0))
    {
+      m_period = 0;
+
       m_interpolators.resize(nInterpolators);
       for (uint i = 0; i < nInterpolators; i++)
       {
          m_interpolators[i] = ppInterpolators[i];
          m_interpolators[i]->AddRef();
+
+         if (m_interpolators[i]->GetPeriod() > m_period)
+         {
+            m_period = m_interpolators[i]->GetPeriod();
+         }
       }
 
       return true;
    }
 
    return false;
+}
+
+///////////////////////////////////////
+
+tTime cKeyFrameAnimation::GetPeriod() const
+{
+   return m_period;
 }
 
 ///////////////////////////////////////
