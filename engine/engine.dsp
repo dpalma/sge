@@ -254,6 +254,10 @@ SOURCE=.\src\guilabel.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\guilayout.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\guipanel.cpp
 # End Source File
 # Begin Source File
@@ -412,6 +416,10 @@ SOURCE=.\src\guifactory.h
 # Begin Source File
 
 SOURCE=.\src\guilabel.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\guilayout.h
 # End Source File
 # Begin Source File
 

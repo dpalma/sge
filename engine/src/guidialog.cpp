@@ -6,7 +6,6 @@
 #include "guidialog.h"
 #include "guielementbasetem.h"
 #include "guicontainerbasetem.h"
-#include "guielementenum.h"
 #include "guielementtools.h"
 
 #include "font.h"
@@ -14,12 +13,17 @@
 #include "render.h"
 
 #include "globalobj.h"
-#include "parse.h"
+#include "keys.h"
 
 #include <tinyxml.h>
-#include <algorithm>
 
 #include "dbgalloc.h" // must be last header
+
+LOG_DEFINE_CHANNEL(GUIDialogEvents);
+
+#define LocalMsg(msg) DebugMsgEx(GUIDialogEvents, (msg))
+#define LocalMsg1(msg,a1) DebugMsgEx1(GUIDialogEvents, (msg), (a1))
+#define LocalMsg2(msg,a1,a2) DebugMsgEx2(GUIDialogEvents, (msg), (a1), (a2))
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -29,7 +33,6 @@
 ///////////////////////////////////////
 
 cGUIDialogElement::cGUIDialogElement()
- : m_pInsets(NULL)
 {
 }
 
@@ -37,8 +40,6 @@ cGUIDialogElement::cGUIDialogElement()
 
 cGUIDialogElement::~cGUIDialogElement()
 {
-   delete m_pInsets;
-   m_pInsets = NULL;
 }
 
 ///////////////////////////////////////
@@ -47,24 +48,65 @@ void cGUIDialogElement::SetSize(const tGUISize & size)
 {
    tBaseClass::SetSize(size);
 
-   tGUIRect rect(0, 0, Round(size.width), Round(size.height));
-
-   tGUIInsets insets;
-   if (GetInsets(&insets) == S_OK)
+   cAutoIPtr<IGUILayoutManager> pLayout;
+   if (GetLayout(&pLayout) == S_OK)
    {
-      rect.left += insets.left;
-      rect.top += insets.top;
-      rect.right -= insets.right;
-      rect.bottom -= insets.bottom;
+      if (pLayout->Layout(this) != S_OK)
+      {
+         DebugMsg("ERROR: IGUILayoutManager::Layout() call failed for dialog box\n");
+      }
    }
-
-   ForEachElement(cSizeAndPlaceElement(rect));
 }
 
 ///////////////////////////////////////
 
 tResult cGUIDialogElement::OnEvent(IGUIEvent * pEvent)
 {
+   Assert(pEvent != NULL);
+
+   tGUIEventCode eventCode;
+   Verify(pEvent->GetEventCode(&eventCode) == S_OK);
+
+   long keyCode;
+   Verify(pEvent->GetKeyCode(&keyCode) == S_OK);
+
+   if (eventCode == kGUIEventMouseEnter)
+   {
+      LocalMsg("Mouse enter dialog\n");
+   }
+   else if (eventCode == kGUIEventMouseLeave)
+   {
+      LocalMsg("Mouse leave dialog\n");
+   }
+   else if (eventCode == kGUIEventMouseDown)
+   {
+      LocalMsg("Mouse down dialog\n");
+   }
+   else if (eventCode == kGUIEventMouseUp)
+   {
+      LocalMsg("Mouse up dialog\n");
+   }
+   else if (eventCode == kGUIEventClick)
+   {
+      LocalMsg("Mouse click dialog\n");
+   }
+   else if (eventCode == kGUIEventKeyUp)
+   {
+      LocalMsg("Key up dialog\n");
+      if (keyCode == kEnter)
+      {
+         LocalMsg("ENTER KEY --> OK\n");
+      }
+   }
+   else if (eventCode == kGUIEventKeyDown)
+   {
+      LocalMsg("Key down dialog\n");
+      if (keyCode == kEscape)
+      {
+         LocalMsg("ESC KEY --> Cancel\n");
+      }
+   }
+
    return S_OK;
 }
 
@@ -80,38 +122,25 @@ tResult cGUIDialogElement::GetRendererClass(tGUIString * pRendererClass)
 
 ///////////////////////////////////////
 
-tResult cGUIDialogElement::GetInsets(tGUIInsets * pInsets)
+tResult cGUIDialogElement::GetTitle(tGUIString * pTitle)
 {
-   if (pInsets == NULL)
+   if (pTitle == NULL)
    {
       return E_POINTER;
    }
-
-   if (m_pInsets == NULL)
-   {
-      return S_FALSE;
-   }
-
-   *pInsets = *m_pInsets;
-
+   *pTitle = m_title;
    return S_OK;
 }
 
 ///////////////////////////////////////
 
-tResult cGUIDialogElement::SetInsets(const tGUIInsets & insets)
+tResult cGUIDialogElement::SetTitle(const char * pszTitle)
 {
-   if (m_pInsets == NULL)
+   if (pszTitle == NULL)
    {
-      m_pInsets = new tGUIInsets;
-      if (m_pInsets == NULL)
-      {
-         return E_OUTOFMEMORY;
-      }
+      return E_POINTER;
    }
-
-   *m_pInsets = insets;
-
+   m_title = pszTitle;
    return S_OK;
 }
 
@@ -138,49 +167,18 @@ tResult cGUIDialogElementFactory::CreateElement(const TiXmlElement * pXmlElement
          cAutoIPtr<IGUIDialogElement> pDialog = static_cast<IGUIDialogElement *>(new cGUIDialogElement);
          if (!!pDialog)
          {
-            tResult result = S_OK;
-
             GUIElementStandardAttributes(pXmlElement, pDialog);
 
-            if (pXmlElement->Attribute("insets"))
+            if (pXmlElement->Attribute("title"))
             {
-               double insetVals[4];
-               if (ParseTuple(pXmlElement->Attribute("insets"), insetVals, _countof(insetVals)) == 4)
-               {
-                  tGUIInsets insets;
-                  insets.left = insetVals[0];
-                  insets.top = insetVals[1];
-                  insets.right = insetVals[2];
-                  insets.bottom = insetVals[3];
-                  pDialog->SetInsets(insets);
-               }
+               pDialog->SetTitle(pXmlElement->Attribute("title"));
             }
 
-            UseGlobal(GUIFactory);
-
-            for (TiXmlElement * pXmlChild = pXmlElement->FirstChildElement(); 
-                 pXmlChild != NULL; pXmlChild = pXmlChild->NextSiblingElement())
-            {
-               if (pXmlChild->Type() == TiXmlNode::ELEMENT)
-               {
-                  cAutoIPtr<IGUIElement> pChildElement;
-                  if (pGUIFactory->CreateElement(pXmlChild->Value(), pXmlChild, &pChildElement) == S_OK)
-                  {
-                     if ((result = pDialog->AddElement(pChildElement)) != S_OK)
-                     {
-                        DebugMsg("WARNING: Error creating child element of panel\n");
-                        break;
-                     }
-                  }
-               }
-            }
-
-            if (result == S_OK)
+            if (GUIElementCreateChildren(pXmlElement, pDialog) == S_OK)
             {
                *ppElement = CTAddRef(pDialog);
+               return S_OK;
             }
-
-            return result;
          }
       }
    }
@@ -228,39 +226,15 @@ tResult cGUIDialogRenderer::Render(IGUIElement * pElement, IRenderDevice * pRend
 
       UseGlobal(GUIRenderingTools);
 
-      // TODO HACK
+      // TODO: use colors from style
       pGUIRenderingTools->Render3dRect(
          tGUIRect(pos.x, pos.y, pos.x + size.width, pos.y + size.height), 
          4, tGUIColor::Yellow, tGUIColor::Green, tGUIColor::Blue);
 
-      tResult result = S_OK;
-
-      cAutoIPtr<IGUIElementEnum> pEnum;
-      if (pDialog->GetElements(&pEnum) == S_OK)
+      if (GUIElementRenderChildren(pDialog, pRenderDevice) == S_OK)
       {
-         cAutoIPtr<IGUIElement> pChild;
-         ulong count = 0;
-
-         while ((pEnum->Next(1, &pChild, &count) == S_OK) && (count == 1))
-         {
-            if (pChild->IsVisible())
-            {
-               cAutoIPtr<IGUIElementRenderer> pChildRenderer;
-               if (pChild->GetRenderer(&pChildRenderer) == S_OK)
-               {
-                  if ((result = pChildRenderer->Render(pChild, pRenderDevice)) != S_OK)
-                  {
-                     break;
-                  }
-               }
-            }
-
-            SafeRelease(pChild);
-            count = 0;
-         }
+         return S_OK;
       }
-
-      return result;
    }
 
    return E_FAIL;
@@ -275,7 +249,15 @@ tGUISize cGUIDialogRenderer::GetPreferredSize(IGUIElement * pElement)
       cAutoIPtr<IGUIDialogElement> pDialog;
       if (pElement->QueryInterface(IID_IGUIDialogElement, (void**)&pDialog) == S_OK)
       {
-         // TODO
+         cAutoIPtr<IGUILayoutManager> pLayout;
+         if (pDialog->GetLayout(&pLayout) == S_OK)
+         {
+            tGUISize size(0,0);
+            if (pLayout->GetPreferredSize(pDialog, &size) == S_OK)
+            {
+               return size;
+            }
+         }
       }
    }
 

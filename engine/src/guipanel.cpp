@@ -6,7 +6,6 @@
 #include "guipanel.h"
 #include "guielementbasetem.h"
 #include "guicontainerbasetem.h"
-#include "guielementenum.h"
 #include "guielementtools.h"
 
 #include "font.h"
@@ -14,7 +13,6 @@
 #include "render.h"
 
 #include "globalobj.h"
-#include "parse.h"
 
 #include <tinyxml.h>
 
@@ -28,7 +26,6 @@
 ///////////////////////////////////////
 
 cGUIPanelElement::cGUIPanelElement()
- : m_pInsets(NULL)
 {
 }
 
@@ -36,8 +33,6 @@ cGUIPanelElement::cGUIPanelElement()
 
 cGUIPanelElement::~cGUIPanelElement()
 {
-   delete m_pInsets;
-   m_pInsets = NULL;
 }
 
 ///////////////////////////////////////
@@ -77,43 +72,6 @@ tResult cGUIPanelElement::GetRendererClass(tGUIString * pRendererClass)
    return S_OK;
 }
 
-///////////////////////////////////////
-
-tResult cGUIPanelElement::GetInsets(tGUIInsets * pInsets)
-{
-   if (pInsets == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (m_pInsets == NULL)
-   {
-      return S_FALSE;
-   }
-
-   *pInsets = *m_pInsets;
-
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cGUIPanelElement::SetInsets(const tGUIInsets & insets)
-{
-   if (m_pInsets == NULL)
-   {
-      m_pInsets = new tGUIInsets;
-      if (m_pInsets == NULL)
-      {
-         return E_OUTOFMEMORY;
-      }
-   }
-
-   *m_pInsets = insets;
-
-   return S_OK;
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -135,49 +93,13 @@ tResult cGUIPanelElementFactory::CreateElement(const TiXmlElement * pXmlElement,
       cAutoIPtr<IGUIPanelElement> pPanel = static_cast<IGUIPanelElement *>(new cGUIPanelElement);
       if (!!pPanel)
       {
-         tResult result = S_OK;
-
          GUIElementStandardAttributes(pXmlElement, pPanel);
 
-         if (pXmlElement->Attribute("insets"))
-         {
-            double insetVals[4];
-            if (ParseTuple(pXmlElement->Attribute("insets"), insetVals, _countof(insetVals)) == 4)
-            {
-               tGUIInsets insets;
-               insets.left = Round(insetVals[0]);
-               insets.top = Round(insetVals[1]);
-               insets.right = Round(insetVals[2]);
-               insets.bottom = Round(insetVals[3]);
-               pPanel->SetInsets(insets);
-            }
-         }
-
-         UseGlobal(GUIFactory);
-
-         for (TiXmlElement * pXmlChild = pXmlElement->FirstChildElement(); 
-              pXmlChild != NULL; pXmlChild = pXmlChild->NextSiblingElement())
-         {
-            if (pXmlChild->Type() == TiXmlNode::ELEMENT)
-            {
-               cAutoIPtr<IGUIElement> pChildElement;
-               if (pGUIFactory->CreateElement(pXmlChild->Value(), pXmlChild, &pChildElement) == S_OK)
-               {
-                  if ((result = pPanel->AddElement(pChildElement)) != S_OK)
-                  {
-                     DebugMsg("WARNING: Error creating child element of panel\n");
-                     break;
-                  }
-               }
-            }
-         }
-
-         if (result == S_OK)
+         if (GUIElementCreateChildren(pXmlElement, pPanel) == S_OK)
          {
             *ppElement = CTAddRef(pPanel);
+            return S_OK;
          }
-
-         return result;
       }
    }
    else
@@ -228,34 +150,10 @@ tResult cGUIPanelRenderer::Render(IGUIElement * pElement, IRenderDevice * pRende
       // TODO HACK
       pGUIRenderingTools->Render3dRect(rect, 4, tGUIColor::Yellow, tGUIColor::Green, tGUIColor::Blue);
 
-      tResult result = S_OK;
-
-      cAutoIPtr<IGUIElementEnum> pEnum;
-      if (pPanel->GetElements(&pEnum) == S_OK)
+      if (GUIElementRenderChildren(pPanel, pRenderDevice) == S_OK)
       {
-         cAutoIPtr<IGUIElement> pChild;
-         ulong count = 0;
-
-         while ((pEnum->Next(1, &pChild, &count) == S_OK) && (count == 1))
-         {
-            if (pChild->IsVisible())
-            {
-               cAutoIPtr<IGUIElementRenderer> pChildRenderer;
-               if (pChild->GetRenderer(&pChildRenderer) == S_OK)
-               {
-                  if ((result = pChildRenderer->Render(pChild, pRenderDevice)) != S_OK)
-                  {
-                     break;
-                  }
-               }
-            }
-
-            SafeRelease(pChild);
-            count = 0;
-         }
+         return S_OK;
       }
-
-      return result;
    }
 
    return E_FAIL;

@@ -22,6 +22,8 @@ F_DECLARE_INTERFACE(IGUIElementRendererFactory);
 F_DECLARE_INTERFACE(IGUIElementEnum);
 F_DECLARE_INTERFACE(IGUIEvent);
 F_DECLARE_INTERFACE(IGUIContainerElement);
+F_DECLARE_INTERFACE(IGUILayoutManager);
+F_DECLARE_INTERFACE(IGUIGridLayoutManager);
 F_DECLARE_INTERFACE(IGUIPanelElement);
 F_DECLARE_INTERFACE(IGUIDialogElement);
 F_DECLARE_INTERFACE(IGUIButtonElement);
@@ -252,7 +254,57 @@ interface IGUIContainerElement : IGUIElement
    virtual tResult RemoveElement(IGUIElement * pElement) = 0;
    virtual tResult GetElements(IGUIElementEnum * * ppElements) = 0;
    virtual tResult HasElement(IGUIElement * pElement) const = 0;
+
+   virtual tResult GetLayout(IGUILayoutManager * * ppLayout) = 0;
+   virtual tResult SetLayout(IGUILayoutManager * pLayout) = 0;
+
+   virtual tResult GetInsets(tGUIInsets * pInsets) = 0;
+   virtual tResult SetInsets(const tGUIInsets & insets) = 0;
 };
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IGUILayoutManager
+//
+
+interface IGUILayoutManager : IUnknown
+{
+   virtual tResult Layout(IGUIContainerElement * pContainer) = 0;
+   virtual tResult GetPreferredSize(IGUIContainerElement * pContainer, tGUISize * pSize) = 0;
+};
+
+///////////////////////////////////////
+// Create a layout manager from an XML fragment
+
+ENGINE_API tResult GUILayoutManagerCreate(const TiXmlElement * pXmlElement, IGUILayoutManager * * ppLayout);
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IGUIGridLayoutManager
+//
+
+interface IGUIGridLayoutManager : IGUILayoutManager
+{
+   virtual tResult GetHGap(uint * pHGap) = 0;
+   virtual tResult SetHGap(uint hGap) = 0;
+
+   virtual tResult GetVGap(uint * pVGap) = 0;
+   virtual tResult SetVGap(uint vGap) = 0;
+
+   virtual tResult GetColumns(uint * pColumns) = 0;
+   virtual tResult SetColumns(uint columns) = 0;
+
+   virtual tResult GetRows(uint * pRows) = 0;
+   virtual tResult SetRows(uint rows) = 0;
+};
+
+///////////////////////////////////////
+
+ENGINE_API tResult GUIGridLayoutManagerCreate(IGUIGridLayoutManager * * ppLayout);
+ENGINE_API tResult GUIGridLayoutManagerCreate(uint columns, uint rows, IGUIGridLayoutManager * * ppLayout);
+ENGINE_API tResult GUIGridLayoutManagerCreate(uint columns, uint rows, uint hGap, uint vGap, IGUIGridLayoutManager * * ppLayout);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -262,9 +314,8 @@ interface IGUIContainerElement : IGUIElement
 
 interface IGUIPanelElement : IGUIContainerElement
 {
-   virtual tResult GetInsets(tGUIInsets * pInsets) = 0;
-   virtual tResult SetInsets(const tGUIInsets & insets) = 0;
 };
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -273,8 +324,8 @@ interface IGUIPanelElement : IGUIContainerElement
 
 interface IGUIDialogElement : IGUIContainerElement
 {
-   virtual tResult GetInsets(tGUIInsets * pInsets) = 0;
-   virtual tResult SetInsets(const tGUIInsets & insets) = 0;
+   virtual tResult GetTitle(tGUIString * pTitle) = 0;
+   virtual tResult SetTitle(const char * pszTitle) = 0;
 };
 
 

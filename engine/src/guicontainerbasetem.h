@@ -23,6 +23,7 @@
 
 template <typename INTRFC>
 cGUIContainerBase<INTRFC>::cGUIContainerBase()
+ : m_pInsets(NULL)
 {
 }
 
@@ -33,6 +34,9 @@ cGUIContainerBase<INTRFC>::~cGUIContainerBase()
 {
    std::for_each(m_children.begin(), m_children.end(), CTInterfaceMethod(&IGUIElement::Release));
    m_children.clear();
+
+   delete m_pInsets;
+   m_pInsets = NULL;
 }
 
 ///////////////////////////////////////
@@ -113,6 +117,63 @@ tResult cGUIContainerBase<INTRFC>::HasElement(IGUIElement * pElement) const
    }
 
    return S_FALSE;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+tResult cGUIContainerBase<INTRFC>::GetLayout(IGUILayoutManager * * ppLayout)
+{
+   return m_pLayout.GetPointer(ppLayout);
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+tResult cGUIContainerBase<INTRFC>::SetLayout(IGUILayoutManager * pLayout)
+{
+   SafeRelease(m_pLayout);
+   m_pLayout = CTAddRef(pLayout);
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+tResult cGUIContainerBase<INTRFC>::GetInsets(tGUIInsets * pInsets)
+{
+   if (pInsets == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (m_pInsets == NULL)
+   {
+      return S_FALSE;
+   }
+
+   *pInsets = *m_pInsets;
+
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+tResult cGUIContainerBase<INTRFC>::SetInsets(const tGUIInsets & insets)
+{
+   if (m_pInsets == NULL)
+   {
+      m_pInsets = new tGUIInsets;
+      if (m_pInsets == NULL)
+      {
+         return E_OUTOFMEMORY;
+      }
+   }
+
+   *m_pInsets = insets;
+
+   return S_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

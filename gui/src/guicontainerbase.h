@@ -37,6 +37,12 @@ public:
    virtual tResult GetElements(IGUIElementEnum * * ppElements);
    virtual tResult HasElement(IGUIElement * pElement) const;
 
+   virtual tResult GetLayout(IGUILayoutManager * * ppLayout);
+   virtual tResult SetLayout(IGUILayoutManager * pLayout);
+
+   virtual tResult GetInsets(tGUIInsets * pInsets);
+   virtual tResult SetInsets(const tGUIInsets & insets);
+
 protected:
    template <typename F>
    void ForEachElement(F f)
@@ -47,6 +53,10 @@ protected:
 private:
    typedef std::list<IGUIElement *> tGUIElementList;
    tGUIElementList m_children;
+
+   cAutoIPtr<IGUILayoutManager> m_pLayout;
+
+   tGUIInsets * m_pInsets;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

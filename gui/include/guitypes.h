@@ -22,7 +22,8 @@ typedef class cVec2<float> tVec2;
 typedef tVec2 tGUIPoint;
 
 template <typename T> class cGUISize;
-typedef class cGUISize<float> tGUISize;
+typedef float tGUISizeType;
+typedef class cGUISize<tGUISizeType> tGUISize;
 
 typedef tRect tGUIRect;
 

@@ -40,12 +40,6 @@ public:
    virtual tResult OnEvent(IGUIEvent * pEvent);
 
    virtual tResult GetRendererClass(tGUIString * pRendererClass);
-
-   virtual tResult GetInsets(tGUIInsets * pInsets);
-   virtual tResult SetInsets(const tGUIInsets & insets);
-
-private:
-   tGUIInsets * m_pInsets;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

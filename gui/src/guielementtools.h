@@ -12,6 +12,12 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+tResult GUIElementCreateChildren(const TiXmlElement * pXmlElement, 
+                                 IGUIContainerElement * pContainer);
+
+tResult GUIElementRenderChildren(IGUIContainerElement * pContainer,
+                                 IRenderDevice * pRenderDevice);
+
 void GUISizeElement(const tGUIRect & field, IGUIElement * pGUIElement);
 
 void GUIPlaceElement(const tGUIRect & field, IGUIElement * pGUIElement);

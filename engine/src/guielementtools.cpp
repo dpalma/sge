@@ -7,10 +7,103 @@
 #include "guistyle.h"
 
 #include "parse.h"
+#include "globalobj.h"
 
 #include <tinyxml.h>
 
+#ifdef HAVE_CPPUNIT
+#include <cppunit/extensions/HelperMacros.h>
+#endif
+
 #include "dbgalloc.h" // must be last header
+
+///////////////////////////////////////////////////////////////////////////////
+
+tResult GUIElementCreateChildren(const TiXmlElement * pXmlElement, 
+                                 IGUIContainerElement * pContainer)
+{
+   if (pXmlElement == NULL || pContainer == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tResult result = E_FAIL;
+
+   UseGlobal(GUIFactory);
+
+   for (TiXmlElement * pXmlChild = pXmlElement->FirstChildElement(); 
+        pXmlChild != NULL; pXmlChild = pXmlChild->NextSiblingElement())
+   {
+      if (pXmlChild->Type() == TiXmlNode::ELEMENT)
+      {
+         cAutoIPtr<IGUIElement> pChildElement;
+         if (pGUIFactory->CreateElement(pXmlChild->Value(), pXmlChild, &pChildElement) == S_OK)
+         {
+            if ((result = pContainer->AddElement(pChildElement)) != S_OK)
+            {
+               DebugMsg("WARNING: Error creating child element\n");
+               return result;
+            }
+         }
+         else if (stricmp(pXmlChild->Value(), "layout") == 0)
+         {
+            cAutoIPtr<IGUILayoutManager> pLayout;
+            if (GUILayoutManagerCreate(pXmlChild, &pLayout) == S_OK)
+            {
+               if ((result = pContainer->SetLayout(pLayout)) != S_OK)
+               {
+                  // Don't return the error result because the layout manager
+                  // creating failing shouldn't be a fatal error
+                  DebugMsg("WARNING: Error creating layout manager\n");
+               }
+            }
+         }
+      }
+   }
+
+   return S_OK;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+tResult GUIElementRenderChildren(IGUIContainerElement * pContainer,
+                                 IRenderDevice * pRenderDevice)
+{
+   if (pContainer == NULL || pRenderDevice == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tResult result = E_FAIL;
+
+   cAutoIPtr<IGUIElementEnum> pEnum;
+   if (pContainer->GetElements(&pEnum) == S_OK)
+   {
+      cAutoIPtr<IGUIElement> pChild;
+      ulong count = 0;
+
+      while ((pEnum->Next(1, &pChild, &count) == S_OK) && (count == 1))
+      {
+         if (pChild->IsVisible())
+         {
+            cAutoIPtr<IGUIElementRenderer> pChildRenderer;
+            if (pChild->GetRenderer(&pChildRenderer) == S_OK)
+            {
+               if ((result = pChildRenderer->Render(pChild, pRenderDevice)) != S_OK)
+               {
+                  DebugMsg("WARNING: Error rendering child element\n");
+                  return result;
+               }
+            }
+         }
+
+         SafeRelease(pChild);
+         count = 0;
+      }
+   }
+
+   return S_OK;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -192,21 +285,62 @@ tResult GUIElementStandardAttributes(const TiXmlElement * pXmlElement,
       }
    }
 
-   if (pXmlElement->Attribute("insets"))
+   cAutoIPtr<IGUIContainerElement> pContainer;
+   if (pGUIElement->QueryInterface(IID_IGUIContainerElement, (void**)&pContainer) == S_OK)
    {
-      double insetVals[4];
-      if (ParseTuple(pXmlElement->Attribute("insets"), insetVals, _countof(insetVals)) == 4)
+      if (pXmlElement->Attribute("insets"))
       {
-         tGUIInsets insets;
-         insets.left = insetVals[0];
-         insets.top = insetVals[1];
-         insets.right = insetVals[2];
-         insets.bottom = insetVals[3];
-//         pGUIElement->SetInsets(insets);
+         double insetVals[4];
+         if (ParseTuple(pXmlElement->Attribute("insets"), insetVals, _countof(insetVals)) == 4)
+         {
+            tGUIInsets insets;
+            insets.left = insetVals[0];
+            insets.top = insetVals[1];
+            insets.right = insetVals[2];
+            insets.bottom = insetVals[3];
+            pContainer->SetInsets(insets);
+         }
       }
    }
 
    return S_OK;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_CPPUNIT
+
+class cGUIElementToolsTests : public CppUnit::TestCase
+{
+   CPPUNIT_TEST_SUITE(cGUIElementToolsTests);
+      CPPUNIT_TEST(TestParseBool);
+   CPPUNIT_TEST_SUITE_END();
+
+   void TestParseBool();
+};
+
+///////////////////////////////////////
+
+CPPUNIT_TEST_SUITE_REGISTRATION(cGUIElementToolsTests);
+
+///////////////////////////////////////
+
+void cGUIElementToolsTests::TestParseBool()
+{
+   CPPUNIT_ASSERT(StringToBool("T"));
+   CPPUNIT_ASSERT(StringToBool("t"));
+   CPPUNIT_ASSERT(StringToBool("1"));
+   CPPUNIT_ASSERT(StringToBool("true"));
+   CPPUNIT_ASSERT(StringToBool("TRUE"));
+   CPPUNIT_ASSERT(!StringToBool("F"));
+   CPPUNIT_ASSERT(!StringToBool("f"));
+   CPPUNIT_ASSERT(!StringToBool("0"));
+   CPPUNIT_ASSERT(!StringToBool("false"));
+   CPPUNIT_ASSERT(!StringToBool("FALSE"));
+   CPPUNIT_ASSERT(!StringToBool("tttttt"));
+   CPPUNIT_ASSERT(!StringToBool("abcdefg"));
+}
+
+#endif // HAVE_CPPUNIT
 
 ///////////////////////////////////////////////////////////////////////////////
