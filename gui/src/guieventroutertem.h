@@ -279,6 +279,38 @@ tResult cGUIEventRouter<INTRFC>::GetHitChild(const tGUIPoint & containerPoint,
 }
 
 ///////////////////////////////////////
+// Similar to BubbleEvent but doesn't walk up the parent chain
+
+template <typename INTRFC>
+bool cGUIEventRouter<INTRFC>::DoEvent(IGUIEvent * pEvent)
+{
+   Assert(pEvent != NULL);
+
+   tSinksIterator iter;
+   for (iter = AccessSinks().begin(); iter != AccessSinks().end(); iter++)
+   {
+      if ((*iter)->OnEvent(pEvent) != S_OK)
+      {
+         return true;
+      }
+   }
+
+   cAutoIPtr<IGUIElement> pDispatchTo;
+   if (pEvent->GetSourceElement(&pDispatchTo) == S_OK)
+   {
+      if (!!pDispatchTo)
+      {
+         if (pDispatchTo->OnEvent(pEvent))
+         {
+            return true;
+         }
+      }
+   }
+
+   return false;
+}
+
+///////////////////////////////////////
 
 template <typename INTRFC>
 bool cGUIEventRouter<INTRFC>::BubbleEvent(IGUIEvent * pEvent)
@@ -363,34 +395,7 @@ bool cGUIEventRouter<INTRFC>::HandleInputEvent(const sInputEvent * pInputEvent)
 
    if (eventCode == kGUIEventMouseMove)
    {
-      // TODO BUG: This code doesn't handle MouseEnter/MouseLeave 
-      // for child elements properly
-
-      cAutoIPtr<IGUIElement> pMouseOver;
-      if ((GetMouseOver(&pMouseOver) == S_OK) 
-         && !pMouseOver->Contains(ScreenToElement(pMouseOver, pInputEvent->point)))
-      {
-         SetMouseOver(NULL);
-         cAutoIPtr<IGUIEvent> pMouseLeaveEvent;
-         if (GUIEventCreate(kGUIEventMouseLeave, pInputEvent->point, pInputEvent->key, 
-            pMouseOver, &pMouseLeaveEvent) == S_OK)
-         {
-            BubbleEvent(pMouseLeaveEvent);
-         }
-      }
-
-      cAutoIPtr<IGUIElement> pHit;
-      if ((GetHitElement(pInputEvent->point, &pHit) == S_OK)
-         && (AccessMouseOver() == NULL))
-      {
-         SetMouseOver(pHit);
-         cAutoIPtr<IGUIEvent> pMouseEnterEvent;
-         if (GUIEventCreate(kGUIEventMouseEnter, pInputEvent->point, pInputEvent->key, 
-            pHit, &pMouseEnterEvent) == S_OK)
-         {
-            BubbleEvent(pMouseEnterEvent);
-         }
-      }
+      DoMouseEnterExit(pInputEvent);
    }
 
    cAutoIPtr<IGUIElement> pElement;
@@ -423,6 +428,63 @@ bool cGUIEventRouter<INTRFC>::HandleInputEvent(const sInputEvent * pInputEvent)
    }
 
    return false;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+void cGUIEventRouter<INTRFC>::DoMouseEnterExit(const sInputEvent * pInputEvent)
+{
+   cAutoIPtr<IGUIElement> pHit;
+   if (GetHitElement(pInputEvent->point, &pHit) == S_OK)
+   {
+      bool bMouseOverSame = false;
+
+      cAutoIPtr<IGUIElement> pMouseOver;
+      if (GetMouseOver(&pMouseOver) == S_OK)
+      {
+         bMouseOverSame = CTIsSameObject(pMouseOver, pHit);
+
+         if (!bMouseOverSame)
+         {
+            cAutoIPtr<IGUIEvent> pMouseLeaveEvent;
+            if (GUIEventCreate(kGUIEventMouseLeave, pInputEvent->point, pInputEvent->key, 
+               pMouseOver, &pMouseLeaveEvent) == S_OK)
+            {
+               DoEvent(pMouseLeaveEvent);
+            }
+         }
+      }
+
+      if (!bMouseOverSame)
+      {
+         SetMouseOver(pHit);
+
+         cAutoIPtr<IGUIEvent> pMouseEnterEvent;
+         if (GUIEventCreate(kGUIEventMouseEnter, pInputEvent->point, pInputEvent->key, 
+            pHit, &pMouseEnterEvent) == S_OK)
+         {
+            DoEvent(pMouseEnterEvent);
+         }
+      }
+   }
+   else
+   {
+      cAutoIPtr<IGUIElement> pMouseOver;
+      if (GetMouseOver(&pMouseOver) == S_OK)
+      {
+         Assert(!pMouseOver->Contains(ScreenToElement(pMouseOver, pInputEvent->point)));
+
+         SetMouseOver(NULL);
+
+         cAutoIPtr<IGUIEvent> pMouseLeaveEvent;
+         if (GUIEventCreate(kGUIEventMouseLeave, pInputEvent->point, pInputEvent->key, 
+            pMouseOver, &pMouseLeaveEvent) == S_OK)
+         {
+            DoEvent(pMouseLeaveEvent);
+         }
+      }
+   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

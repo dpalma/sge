@@ -76,9 +76,11 @@ protected:
    tResult GetHitElement(const tGUIPoint & point, IGUIElement * * ppElement) const;
    tResult GetHitChild(const tGUIPoint & point, IGUIContainerElement * pContainer, IGUIElement * * ppElement) const;
 
+   bool DoEvent(IGUIEvent * pEvent);
    bool BubbleEvent(IGUIEvent * pEvent);
-   bool GetEventTarget(const sInputEvent * pEvent, IGUIElement * * ppElement);
-   bool HandleInputEvent(const sInputEvent * pEvent);
+   bool GetEventTarget(const sInputEvent * pInputEvent, IGUIElement * * ppElement);
+   bool HandleInputEvent(const sInputEvent * pInputEvent);
+   void DoMouseEnterExit(const sInputEvent * pInputEvent);
 
 private:
    typedef std::list<IGUIElement *> tGUIElementList;
