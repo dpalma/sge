@@ -1,5 +1,7 @@
 // $Id$
 
+#pragma warning(disable:4786)
+
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
 #include <windows.h>
 #include <malloc.h>
@@ -17,39 +19,40 @@ extern "C"
 #include <lauxlib.h>
 }
 
-#ifndef EXTERN_C
-#define EXTERN_C extern "C"
-#endif
+#include <map>
+#include <string>
 
 #ifndef DECLSPEC_DLLEXPORT
 #define DECLSPEC_DLLEXPORT __declspec(dllexport)
 #endif
 
 
+// NOTE: the first argument (at index 1) to all of these functions is a
+// table that represents all the functions in this library.
+
 
 static int autobld_GetRegistryValue(lua_State *L)
 {
    int result = 0;
 
-   HKEY hBaseKey = NULL;
-   const char * pszKey = NULL;
+   int top = lua_gettop(L);
+   if (top < 3)
+   {
+      lua_pushliteral(L, "Invalid number of arguments to getregistryvalue");
+      lua_error(L);
+   }
+
+   // See note above about what's at index 1
+   luaL_checknumber(L, 2);
+   HKEY hBaseKey = (HKEY)(long)lua_tonumber(L, 2);
+   luaL_checkstring(L, 3);
+   const char * pszKey = lua_tostring(L, 3);
    const char * pszValue = NULL;
 
    if (lua_gettop(L) > 3)
    {
-      luaL_checknumber(L, -3);
-      luaL_checkstring(L, -2);
       luaL_checkstring(L, -1);
-      hBaseKey = (HKEY)(long)lua_tonumber(L, -3);
-      pszKey = lua_tostring(L, -2);
       pszValue =  lua_tostring(L, -1);
-   }
-   else
-   {
-      luaL_checknumber(L, -2);
-      luaL_checkstring(L, -1);
-      hBaseKey = (HKEY)(long)lua_tonumber(L, -2);
-      pszKey = lua_tostring(L, -1);
    }
 
    if (hBaseKey == HKEY_LOCAL_MACHINE || hBaseKey == HKEY_CURRENT_USER)
@@ -127,7 +130,7 @@ static int autobld_Dir(lua_State *L)
 }
 
 
-static void PushError(lua_State *L, DWORD dwError)
+static void PushError(lua_State * L, DWORD dwError)
 {
    char buffer[128];
    if (FormatMessage(FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_FROM_SYSTEM,
@@ -142,7 +145,7 @@ static void PushError(lua_State *L, DWORD dwError)
 }
 
 
-static int autobld_Mkdir(lua_State *L)
+static int autobld_Mkdir(lua_State * L)
 {
    const char * pszDir = NULL;
    bool bFailOnExisting = false;
@@ -178,7 +181,7 @@ static int autobld_Mkdir(lua_State *L)
 
 
 
-static int autobld_Cwd(lua_State *L)
+static int autobld_Cwd(lua_State * L)
 {
    char szCwd[MAX_PATH];
    if (!GetCurrentDirectory(sizeof(szCwd) / sizeof(szCwd[0]), szCwd))
@@ -211,6 +214,96 @@ static int autobld_Setenv(lua_State * L)
 }
 
 
+
+static int autobld_Spawn(lua_State * L)
+{
+   int top = lua_gettop(L);
+   if (top < 2)
+   {
+      lua_pushliteral(L, "Invalid number of arguments to spawn");
+      lua_error(L);
+   }
+
+   // See note above about what's at index 1
+
+   luaL_checkstring(L, 2);
+   const char * pszCmd = lua_tostring(L, 2);
+
+   typedef std::map<std::string, std::string> tEnv;
+   tEnv env;
+
+   if (lua_istable(L, 3))
+   {
+      lua_pushnil(L);
+      while (lua_next(L, 3))
+      {
+         const char * pszKey = lua_tostring(L, -2);
+         const char * pszVal = lua_tostring(L, -1);
+         if (pszKey != NULL && pszVal != NULL)
+         {
+            env.insert(std::make_pair(pszKey, pszVal));
+         }
+         lua_pop(L, 1);
+      }
+   }
+
+   char * pEnv = NULL;
+   if (!env.empty())
+   {
+      unsigned envSize = 1;
+
+      tEnv::iterator iter = env.begin();
+      tEnv::iterator end = env.end();
+      for (; iter != end; iter++)
+      {
+         envSize += iter->first.length();
+         envSize += iter->second.length();
+         envSize += 2; // for equal sign and null terminator
+      }
+
+      pEnv = new char[envSize];
+      if (pEnv == NULL)
+      {
+         lua_pushliteral(L, "Error allocating environment");
+         lua_error(L);
+      }
+
+      char * p = pEnv;
+
+      iter = env.begin();
+      end = env.end();
+      for (; iter != end; iter++)
+      {
+         unsigned l = iter->first.length() + iter->second.length() + 1;
+         wsprintf(p, "%s=%s", iter->first.c_str(), iter->second.c_str());
+         p += (l + 1);
+      }
+
+      *p = 0;
+   }
+
+   STARTUPINFO si = {0};
+   PROCESS_INFORMATION pi = {0};
+   BOOL bResult = CreateProcess(NULL, const_cast<char*>(pszCmd), NULL, NULL, FALSE, 0, pEnv, NULL, &si, &pi);
+
+   delete [] pEnv;
+   pEnv = NULL;
+
+   if (!bResult)
+   {
+      PushError(L, GetLastError());
+      lua_error(L);
+   }
+
+   CloseHandle(pi.hThread);
+   CloseHandle(pi.hProcess);
+
+   lua_pushnumber(L, pi.dwProcessId);
+   return 1;
+}
+
+
+
 static const luaL_reg autobld_funcs[] =
 {
    { "getregistryvalue", autobld_GetRegistryValue },
@@ -218,12 +311,13 @@ static const luaL_reg autobld_funcs[] =
    { "mkdir", autobld_Mkdir },
    { "cwd", autobld_Cwd },
    { "setenv", autobld_Setenv },
+   { "spawn", autobld_Spawn },
    { NULL, NULL }
 };
 
 
 #define LUA_AUTOBLDLIBNAME "autobld"
-EXTERN_C DECLSPEC_DLLEXPORT int init(lua_State *L)
+extern "C" DECLSPEC_DLLEXPORT int init(lua_State *L)
 {
    luaL_openlib(L, LUA_AUTOBLDLIBNAME, autobld_funcs, 0);
 
