@@ -14,29 +14,35 @@
 #include <sched.h>
 #endif
 
+#ifdef HAVE_CPPUNIT
+#include "techtime.h"
+#include <cppunit/extensions/HelperMacros.h>
+#endif
+
 #include "dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cThread
-//
 
-///////////////////////////////////////
-
-cThread::cThread()
+void ThreadSleep(uint milliseconds)
+{
 #ifdef _WIN32
- : m_hThread(NULL)
+   Sleep(milliseconds);
+#else
+#error ("Need platform-specific thread sleep function")
 #endif
-{
 }
 
-///////////////////////////////////////
-
-cThread::~cThread()
+uint ThreadGetCurrentId()
 {
+#ifdef _WIN32
+   return GetCurrentThreadId();
+#else
+#error ("Need platform-specific get current thread ID function")
+   return 0;
+#endif
 }
 
-///////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
 static int MapThreadPriority(int priority)
 {
@@ -78,6 +84,28 @@ static int MapThreadPriority(int priority)
 #endif
 }
 
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cThread
+//
+
+////////////////////////////////////////
+
+cThread::cThread()
+#ifdef _WIN32
+ : m_hThread(NULL)
+#endif
+{
+}
+
+////////////////////////////////////////
+
+cThread::~cThread()
+{
+}
+
+////////////////////////////////////////
+
 bool cThread::Create(int priority, uint stackSize)
 {
 #ifdef _WIN32
@@ -111,7 +139,7 @@ bool cThread::Create(int priority, uint stackSize)
 #endif
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 void cThread::Join()
 {
@@ -122,7 +150,7 @@ void cThread::Join()
 #endif
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 bool cThread::Terminate()
 {
@@ -140,7 +168,7 @@ bool cThread::Terminate()
 #endif
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 #ifdef _WIN32
 ulong STDCALL cThread::ThreadEntry(void * param)
@@ -161,5 +189,157 @@ void * cThread::ThreadEntry(void * param)
    int result = pThread->Run();
 }
 #endif
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cThreadEvent
+//
+
+////////////////////////////////////////
+
+cThreadEvent::cThreadEvent()
+ : m_hEvent(NULL)
+{
+}
+
+////////////////////////////////////////
+
+cThreadEvent::~cThreadEvent()
+{
+#ifdef _WIN32
+   if (m_hEvent != NULL)
+   {
+      CloseHandle(m_hEvent);
+      m_hEvent = NULL;
+   }
+#endif
+}
+
+////////////////////////////////////////
+
+bool cThreadEvent::Create()
+{
+#ifdef _WIN32
+   if (m_hEvent != NULL)
+   {
+      return false;
+   }
+
+   m_hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+
+   return (m_hEvent != NULL);
+#else
+#error ("Need platform-specific event create function")
+#endif
+}
+
+////////////////////////////////////////
+
+bool cThreadEvent::Set()
+{
+#ifdef _WIN32
+   if ((m_hEvent != NULL) && SetEvent(m_hEvent))
+   {
+      return true;
+   }
+#else
+#error ("Need platform-specific event reset function")
+#endif
+   return false;
+}
+
+////////////////////////////////////////
+
+bool cThreadEvent::Reset()
+{
+#ifdef _WIN32
+   if ((m_hEvent != NULL) && ResetEvent(m_hEvent))
+   {
+      return true;
+   }
+#else
+#error ("Need platform-specific event reset function")
+#endif
+   return false;
+}
+
+////////////////////////////////////////
+
+void cThreadEvent::Wait(uint timeout)
+{
+#ifdef _WIN32
+   if (m_hEvent != NULL)
+   {
+      WaitForSingleObject(m_hEvent, timeout);
+   }
+#else
+#error ("Need platform-specific event wait function")
+#endif
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_CPPUNIT
+
+class cThreadTests : public CppUnit::TestCase
+{
+   CPPUNIT_TEST_SUITE(cThreadTests);
+      CPPUNIT_TEST(TestSleep);
+   CPPUNIT_TEST_SUITE_END();
+
+   void TestSleep();
+};
+
+////////////////////////////////////////
+
+CPPUNIT_TEST_SUITE_REGISTRATION(cThreadTests);
+
+////////////////////////////////////////
+
+void cThreadTests::TestSleep()
+{
+   cThreadEvent event;
+
+   CPPUNIT_ASSERT(event.Create());
+
+#define kWaitMillis 2000
+
+   class cSleepThread : public cThread
+   {
+   public:
+      cSleepThread(cThreadEvent * pEvent)
+        : m_pEvent(pEvent)
+      {
+         CPPUNIT_ASSERT(pEvent != NULL);
+      }
+
+      virtual int Run()
+      {
+         ThreadSleep(kWaitMillis);
+         CPPUNIT_ASSERT(m_pEvent->Set());
+         return 0;
+      }
+
+   private:
+      cThreadEvent * m_pEvent;
+   };
+
+   double start = TimeGetSecs();
+
+   cSleepThread * pThread = new cSleepThread(&event);
+   CPPUNIT_ASSERT(pThread->Create());
+
+   event.Wait();
+
+   double end = TimeGetSecs();
+
+   delete pThread, pThread = NULL;
+
+   CPPUNIT_ASSERT(((end - start) * 1000) >= kWaitMillis);
+}
+
+#endif // HAVE_CPPUNIT
 
 ///////////////////////////////////////////////////////////////////////////////

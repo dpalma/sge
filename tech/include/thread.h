@@ -4,6 +4,8 @@
 #ifndef INCLUDED_THREAD_H
 #define INCLUDED_THREAD_H
 
+#include "techdll.h"
+
 #ifndef _WIN32
 #include <pthread.h>
 #endif
@@ -13,11 +15,17 @@
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
+
+const uint kInfiniteTimeout = (uint)-1;
+
+TECH_API void ThreadSleep(uint milliseconds);
+
+TECH_API uint ThreadGetCurrentId();
+
+///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cThread
 //
-
-const uint kInfiniteTimeout = (uint)-1;
 
 enum eThreadPriority
 {
@@ -26,7 +34,7 @@ enum eThreadPriority
    kTP_Normal = (kTP_Lowest + kTP_Highest) / 2,
 };
 
-class cThread
+class TECH_API cThread
 {
 public:
    cThread();
@@ -48,6 +56,31 @@ private:
 #else
    static void * ThreadEntry(void * param);
    pthread_t m_thread;
+#endif
+};
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cThreadEvent
+//
+
+class TECH_API cThreadEvent
+{
+public:
+   cThreadEvent();
+   ~cThreadEvent();
+
+   bool Create();
+
+   bool Set();
+   bool Reset();
+
+   void Wait(uint timeout = kInfiniteTimeout);
+
+private:
+#ifdef _WIN32
+   HANDLE m_hEvent;
+#else
 #endif
 };
 
