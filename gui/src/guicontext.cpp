@@ -493,15 +493,104 @@ void GUIContextCreate()
 
 #ifdef HAVE_CPPUNIT
 
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS cGUITestableEventRouter
+//
+
+class cGUITestableEventRouter : public cComObject<cGUIEventRouter<IGUIEventRouter>, &IID_IGUIEventRouter>
+{
+public:
+   cGUITestableEventRouter();
+
+   void FireInputEvent(long key, bool down, tVec2 point);
+
+private:
+   ulong m_time;
+};
+
+///////////////////////////////////////
+
+cGUITestableEventRouter::cGUITestableEventRouter()
+ : m_time(0)
+{
+}
+
+///////////////////////////////////////
+
+void cGUITestableEventRouter::FireInputEvent(long key, bool down, tVec2 point)
+{
+   sInputEvent event;
+   event.key = key;
+   event.down = down;
+   event.point = point;
+   event.time = m_time++;
+   HandleInputEvent(&event);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS cGUITestEventListener
+//
+
+class cGUITestEventListener : public cComObject<IMPLEMENTS(IGUIEventListener)>
+{
+public:
+   virtual tResult OnEvent(IGUIEvent * pEvent);
+};
+
+///////////////////////////////////////
+
+tResult cGUITestEventListener::OnEvent(IGUIEvent * pEvent)
+{
+   return S_OK;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 class cGUIEventRouterTests : public CppUnit::TestCase
 {
    CPPUNIT_TEST_SUITE(cGUIEventRouterTests);
    CPPUNIT_TEST_SUITE_END();
+
+private:
+   virtual void setUp();
+   virtual void tearDown();
+
+   cAutoIPtr<cGUITestableEventRouter> m_pEventRouter;
+   cAutoIPtr<cGUITestEventListener> m_pEventListener;
 };
 
 ///////////////////////////////////////
 
 CPPUNIT_TEST_SUITE_REGISTRATION(cGUIEventRouterTests);
+
+///////////////////////////////////////
+
+void cGUIEventRouterTests::setUp()
+{
+   CPPUNIT_ASSERT(!m_pEventRouter);
+   m_pEventRouter = new cGUITestableEventRouter;
+
+   CPPUNIT_ASSERT(!m_pEventListener);
+   m_pEventListener = new cGUITestEventListener;
+   m_pEventRouter->AddEventListener(m_pEventListener);
+}
+
+///////////////////////////////////////
+
+void cGUIEventRouterTests::tearDown()
+{
+   if (m_pEventRouter && m_pEventListener)
+   {
+      m_pEventRouter->RemoveEventListener(m_pEventListener);
+   }
+
+   SafeRelease(m_pEventRouter);
+   SafeRelease(m_pEventListener);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 
 #endif // HAVE_CPPUNIT
 

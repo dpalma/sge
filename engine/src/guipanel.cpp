@@ -39,13 +39,6 @@ cGUIPanelElement::~cGUIPanelElement()
 
 ///////////////////////////////////////
 
-bool cGUIPanelElement::Contains(const tGUIPoint & point) const
-{
-   return false; // TODO
-}
-
-///////////////////////////////////////
-
 tResult cGUIPanelElement::OnEvent(IGUIEvent * pEvent)
 {
    return S_OK;

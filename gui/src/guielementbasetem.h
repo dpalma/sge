@@ -104,6 +104,14 @@ template <typename INTRFC>
 tResult cGUIElementBase<INTRFC>::SetParent(IGUIElement * pParent)
 {
    SafeRelease(m_pParent);
+   if (pParent != NULL)
+   {
+      cAutoIPtr<IGUIContainerElement> pContainer;
+      if (pParent->QueryInterface(IID_IGUIContainerElement, (void**)&pContainer) == S_OK)
+      {
+         pContainer->AddElement(this);
+      }
+   }
    m_pParent = CTAddRef(pParent);
    return S_OK;
 }

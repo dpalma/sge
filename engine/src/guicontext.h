@@ -32,7 +32,7 @@
 template <typename INTRFC>
 class cGUIEventRouter : public cConnectionPoint<INTRFC, IGUIEventListener>
 {
-protected:
+public:
    cGUIEventRouter();
    ~cGUIEventRouter();
 
@@ -48,6 +48,7 @@ protected:
    virtual tResult GetCapture(IGUIElement * * ppElement);
    virtual tResult SetCapture(IGUIElement * pElement);
 
+protected:
    ////////////////////////////////////
 
    tResult GetMouseOver(IGUIElement * * ppElement);

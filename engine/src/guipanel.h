@@ -25,7 +25,16 @@ public:
    cGUIPanelElement();
    ~cGUIPanelElement();
 
-   virtual bool Contains(const tGUIPoint & point) const;
+   virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid,
+                                                    void * * ppvObject)
+   {
+      const struct sQIPair pairs[] =
+      {
+         { static_cast<IGUIPanelElement *>(this), &IID_IGUIPanelElement },
+         { static_cast<IGUIContainerElement *>(this), &IID_IGUIContainerElement }
+      };
+      return DoQueryInterface(pairs, _countof(pairs), iid, ppvObject);
+   }
 
    virtual tResult OnEvent(IGUIEvent * pEvent);
 

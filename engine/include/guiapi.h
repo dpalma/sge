@@ -99,7 +99,6 @@ enum eGUIDimensionSpec
 
 interface IGUIStyle : IUnknown
 {
-// TODO
 //   virtual tResult GetAttribute(const char * pszAttribute, tGUIString * pValue) = 0;
 //   virtual tResult GetAttribute(const char * pszAttribute, uint * pValue) = 0;
 //   virtual tResult GetAttribute(const char * pszAttribute, tGUIColor * pValue) = 0;

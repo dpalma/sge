@@ -311,8 +311,8 @@ tResult cGUIButtonRenderer::Render(IGUIElement * pElement, IRenderDevice * pRend
       }
 
       rect.left += textOffset.x;
-      rect.left += textOffset.y;
-      m_pFont->DrawText(pButton->GetText(), -1, kDT_Center | kDT_VCenter | kDT_SingleLine, &rect, cColor(1,1,1,1));
+      rect.top += textOffset.y;
+      m_pFont->DrawText(pButton->GetText(), -1, kDT_Center | kDT_VCenter | kDT_SingleLine, &rect, tGUIColor::White);
 
       return S_OK;
    }
