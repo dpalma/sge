@@ -23,6 +23,8 @@
 
 static uint g_mouseWheelMsg = RegisterWindowMessage(MSH_MOUSEWHEEL);
 
+#define IsFlagSet(var, bit) (((var) & (bit)) == (bit))
+
 ///////////////////////////////////////////////////////////////////////////////
 
 static HWND CreateDummyWindow()
@@ -163,10 +165,12 @@ bool cGlContext::Create(HWND hWnd, int bpp)
       return false;
    }
 
-   // WS_CLIPCHILDREN and WS_CLIPSIBLINGS required by gl
+   // WS_CLIPCHILDREN and WS_CLIPSIBLINGS required by OpenGL
    DWORD style = GetWindowLong(hWnd, GWL_STYLE);
-   style |= WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
-   SetWindowLong(hWnd, GWL_STYLE, style);
+   if (!IsFlagSet(style, WS_CLIPCHILDREN) || !IsFlagSet(style, WS_CLIPSIBLINGS))
+   {
+      return false;
+   }
 
    m_hWnd = hWnd;
    m_bpp = bpp;
@@ -419,6 +423,12 @@ tResult cWindowWin32::Create(const sWindowCreateParams * pParams)
    }
 
    DWORD style = WS_CAPTION | WS_SYSMENU;
+
+   // WS_CLIPCHILDREN and WS_CLIPSIBLINGS required by OpenGL
+   if (IsFlagSet(pParams->flags, kWCF_CreateGlContext))
+   {
+      style |= WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+   }
 
    RECT rect;
    SetRect(&rect, 0, 0, pParams->width, pParams->height);
