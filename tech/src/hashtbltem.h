@@ -33,7 +33,7 @@ const int kFullnessThreshold = 70;
 
 ///////////////////////////////////////
 
-HASHTABLE_TEMPLATE::cHashTable(int initialSize)
+HASHTABLE_TEMPLATE::cHashTable(uint initialSize)
  : m_elts(NULL), m_size(0), m_count(0)
 #ifndef NDEBUG
    ,m_nItersActive(0)
@@ -60,14 +60,17 @@ HASHTABLE_TEMPLATE_(void)::Clear()
 
 HASHTABLE_TEMPLATE_(bool)::Set(const KEY & k, const VALUE & v)
 {
-   if (m_count*100 > m_size*kFullnessThreshold)
-      Grow(m_size + m_count*100/kFullnessThreshold); // grow in proportion to fullness
+   if ((m_count * 100) > (m_size * kFullnessThreshold))
+   {
+      // grow in proportion to fullness
+      Grow(m_size + (m_count * 100 / kFullnessThreshold));
+   }
 
-   uint hash = Probe(k);
+   uint h = Probe(k);
 
-   m_elts[hash].key = k;
-   m_elts[hash].value = v;
-   m_elts[hash].inUse = true;
+   m_elts[h].key = k;
+   m_elts[h].value = v;
+   m_elts[h].inUse = true;
 
    return true;
 }
@@ -93,13 +96,17 @@ HASHTABLE_TEMPLATE_(bool)::Insert(const KEY & k, const VALUE & v)
 
 HASHTABLE_TEMPLATE_(bool)::Lookup(const KEY & k, VALUE * v) const
 {
-   uint hash = Probe(k);
+   uint h = Probe(k);
 
-   if (!m_elts[hash].inUse)
+   if (!m_elts[h].inUse)
+   {
       return false;
+   }
 
    if (v != NULL)
-      *v = m_elts[hash].value;
+   {
+      *v = m_elts[h].value;
+   }
 
    return true;
 }
@@ -110,12 +117,14 @@ HASHTABLE_TEMPLATE_(bool)::Delete(const KEY & k)
 {
    Assert(m_nItersActive == 0); // don't delete while iterating
 
-   uint hash = Probe(k);
+   uint h = Probe(k);
 
-   if (!m_elts[hash].inUse)
+   if (!m_elts[h].inUse)
+   {
       return false;
+   }
 
-   m_elts[hash].inUse = false;
+   m_elts[h].inUse = false;
    m_count--;
 
    return true;
@@ -133,17 +142,28 @@ HASHTABLE_TEMPLATE_(void)::IterBegin(HANDLE * phIter) const
 
 ///////////////////////////////////////
 
-HASHTABLE_TEMPLATE_(bool)::IterNext(HANDLE * phIter, KEY * pk, VALUE * pv) const
+HASHTABLE_TEMPLATE_(bool)::IterNext(HANDLE * phIter, KEY * pKey, VALUE * pValue) const
 {
    unsigned int & index = (unsigned int &)*phIter;
    if (index < m_size)
    {
-      while (!m_elts[index].inUse && index < m_size)
+      while (!m_elts[index].inUse && (index < m_size))
+      {
          index++;
+      }
+      Assert(index <= m_size);
       if (index == m_size)
+      {
          return false;
-      *pk = m_elts[index].key;
-      *pv = m_elts[index].value;
+      }
+      if (pKey != NULL)
+      {
+         *pKey = m_elts[index].key;
+      }
+      if (pValue != NULL)
+      {
+         *pValue = m_elts[index].value;
+      }
       index++;
       return true;
    }
@@ -166,27 +186,27 @@ HASHTABLE_TEMPLATE_(void)::IterEnd(HANDLE * phIter) const
 HASHTABLE_TEMPLATE_(uint)::Probe(const KEY & k) const
 {
    Assert(IsPowerOfTwo(m_size));
-   uint hash = Hash(k) & (m_size - 1);
+   uint h = Hash(k) & (m_size - 1);
 
 #ifdef _DEBUG
-   uint start = hash;
+   uint start = h;
    bool wrapped = false;
 #endif
 
    // resolve collisions with linear probing
-   while (m_elts[hash].inUse && !Equal(k, m_elts[hash].key))
+   while (m_elts[h].inUse && !Equal(k, m_elts[h].key))
    {
-      hash++;
-      if (hash == m_size)
+      h++;
+      if (h == m_size)
       {
-         hash = 0;
+         h = 0;
 #ifdef _DEBUG
          wrapped = true;
 #endif
       }
 
 #ifdef _DEBUG
-      if (wrapped && (hash >= start))
+      if (wrapped && (h >= start))
       {
          DebugMsg("ERROR: cHashTable is 100% full!!!\n");
          Assert(!"ERROR: cHashTable is 100% full!!!");
@@ -194,7 +214,7 @@ HASHTABLE_TEMPLATE_(uint)::Probe(const KEY & k) const
 #endif
    }
 
-   return hash;
+   return h;
 }
 
 ///////////////////////////////////////
@@ -203,21 +223,31 @@ HASHTABLE_TEMPLATE_(void)::Grow(uint newSize)
 {
    uint actualNewSize = NearestPowerOfTwo(newSize);
    Assert(actualNewSize <= newSize); // NearestPowerOfTwo returns lower than argument
-   newSize = actualNewSize * 2;
 
-   tHashElement * newElts = m_allocator.allocate(newSize, m_elts);
+   if (actualNewSize < newSize)
+   {
+      actualNewSize *= 2;
+   }
+
+   tHashElement * newElts = m_allocator.allocate(actualNewSize, m_elts);
 
    // Use placement new to call the constructor for each element
+#ifdef DBGALLOC_MAPPED
 #undef new
-   newElts = new(newElts)tHashElement[newSize];
+#endif
+   newElts = new(newElts)tHashElement[actualNewSize];
+#ifdef DBGALLOC_MAPPED
 #define new DebugNew
+#endif
 
-   int oldSize = m_size;
+#ifdef _DEBUG
    int oldCount = m_count;
+#endif
+   int oldSize = m_size;
    tHashElement * oldElts = m_elts;
 
    m_count = 0;
-   m_size = newSize;
+   m_size = actualNewSize;
    m_elts = newElts;
 
    for (int i = 0; i < oldSize; i++)
@@ -227,6 +257,8 @@ HASHTABLE_TEMPLATE_(void)::Grow(uint newSize)
          Insert(oldElts[i].key, oldElts[i].value);
       }
    }
+
+   Assert(m_count == oldCount);
 
    m_allocator.deallocate(oldElts, oldSize);
 }
@@ -240,7 +272,7 @@ HASHTABLE_TEMPLATE_(bool)::Equal(const KEY & k1, const KEY & k2) const
 
 ///////////////////////////////////////
 
-HASHTABLE_TEMPLATE_(void)::Reset(int newInitialSize)
+HASHTABLE_TEMPLATE_(void)::Reset(uint newInitialSize)
 {
    Assert(m_nItersActive == 0); // don't clear while iterating
 
@@ -250,7 +282,9 @@ HASHTABLE_TEMPLATE_(void)::Reset(int newInitialSize)
    m_count = 0;
 
    if (newInitialSize > 0)
+   {
       Grow(newInitialSize);
+   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

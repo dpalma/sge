@@ -29,11 +29,15 @@ struct sHashElement
    bool inUse;
 };
 
+////////////////////////////////////////
+
 template <typename KEY, typename VALUE>
 sHashElement<KEY, VALUE>::sHashElement()
  : inUse(false)
 {
 }
+
+////////////////////////////////////////
 
 template <typename KEY, typename VALUE,
           class ALLOCATOR = std::allocator< sHashElement<KEY, VALUE> > >
@@ -47,7 +51,7 @@ public:
       kInitialSizeLarge = 1024,
    };
 
-   cHashTable(int initialSize = kInitialSizeSmall);
+   cHashTable(uint initialSize = kInitialSizeSmall);
    ~cHashTable();
 
    void Clear();
@@ -66,7 +70,7 @@ private:
    void Grow(uint newSize);
    bool Equal(const KEY & k1, const KEY & k2) const;
 
-   void Reset(int newInitialSize = kInitialSizeSmall);
+   void Reset(uint newInitialSize = kInitialSizeSmall);
 
    typedef struct sHashElement<KEY, VALUE> tHashElement;
 
