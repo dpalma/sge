@@ -127,6 +127,10 @@ public:
 
    virtual void GetAABB(tVec3 * pMaxs, tVec3 * pMins) const;
    virtual void Render(IRenderDevice * pRenderDevice) const;
+   virtual uint GetVertexCount() const;
+   virtual tResult GetVertexBuffer(IVertexBuffer * * ppVertexBuffer);
+   virtual tResult LockVertexBuffer(void * * ppData);
+   virtual tResult UnlockVertexBuffer();
    virtual tResult AddMaterial(IMaterial * pMaterial);
    virtual tResult FindMaterial(const char * pszName, IMaterial * * ppMaterial) const;
    virtual uint GetMaterialCount() const;
@@ -138,6 +142,9 @@ public:
    virtual tResult GetSkeleton(ISkeleton * * ppSkeleton);
 
 private:
+   uint m_nVerts;
+   cAutoIPtr<IVertexBuffer> m_pVertexBuffer;
+
    typedef std::vector<IMaterial *> tMaterials;
    tMaterials m_materials;
 
@@ -150,6 +157,7 @@ private:
 ///////////////////////////////////////
 
 cMesh::cMesh()
+ : m_nVerts(0)
 {
 }
 
@@ -252,10 +260,9 @@ void cRenderSubMesh::operator()(ISubMesh * pSubMesh)
       cAutoIPtr<IVertexBuffer> pVertexBuffer;
       if (pSubMesh->GetVertexBuffer(&pVertexBuffer) == S_OK)
       {
-         m_pRenderDevice->Render(
-            kRP_Triangles, pMaterial,
+         m_pRenderDevice->Render(kRP_Triangles, pMaterial, 
             pSubMesh->GetIndexCount(), pIndexBuffer,
-            0, pSubMesh->GetVertexCount(), pVertexBuffer);
+            0, pVertexBuffer);
       }
    }
 }
@@ -266,6 +273,34 @@ void cMesh::Render(IRenderDevice * pRenderDevice) const
 {
    std::for_each(m_subMeshes.begin(), m_subMeshes.end(),
       cRenderSubMesh(const_cast<cMesh *>(this), pRenderDevice));
+}
+
+///////////////////////////////////////
+
+uint cMesh::GetVertexCount() const
+{
+   return 0;
+}
+
+///////////////////////////////////////
+
+tResult cMesh::GetVertexBuffer(IVertexBuffer * * ppVertexBuffer)
+{
+   return E_NOTIMPL;
+}
+
+///////////////////////////////////////
+
+tResult cMesh::LockVertexBuffer(void * * ppData)
+{
+   return E_NOTIMPL;
+}
+
+///////////////////////////////////////
+
+tResult cMesh::UnlockVertexBuffer()
+{
+   return E_NOTIMPL;
 }
 
 ///////////////////////////////////////

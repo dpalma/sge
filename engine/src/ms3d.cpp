@@ -311,12 +311,12 @@ tResult cMs3dFileReader::CreateMesh(IRenderDevice * pRenderDevice, IMesh * * ppM
       return E_FAIL;
    }
 
-   std::vector<cMs3dGroup>::const_iterator iter;
-   for (iter = m_groups.begin(); iter != m_groups.end(); iter++)
+   cAutoIPtr<IVertexDeclaration> pVertexDecl;
+   if (pRenderDevice->CreateVertexDeclaration(g_ms3dVertexDecl, 
+      _countof(g_ms3dVertexDecl), &pVertexDecl) == S_OK)
    {
-      cAutoIPtr<IVertexDeclaration> pVertexDecl;
-      if (pRenderDevice->CreateVertexDeclaration(g_ms3dVertexDecl, 
-         _countof(g_ms3dVertexDecl), &pVertexDecl) == S_OK)
+      std::vector<cMs3dGroup>::const_iterator iter;
+      for (iter = m_groups.begin(); iter != m_groups.end(); iter++)
       {
          cAutoIPtr<ISubMesh> pSubMesh = SubMeshCreate(iter->GetNumTriangles(),
             vertexList.GetVertexCount(), pVertexDecl, pRenderDevice);

@@ -22,12 +22,16 @@ class cSubMesh : public cComObject<IMPLEMENTS(ISubMesh)>
    const cSubMesh & operator=(const cSubMesh &); // un-implemented
 
    cSubMesh(uint nFaces, uint nVertices,
-            IIndexBuffer * pIndexBuffer, IVertexBuffer * pVertexBuffer,
+            IIndexBuffer * pIndexBuffer, 
+            IVertexBuffer * pVertexBuffer,
             IVertexDeclaration * pVertexDecl);
 
 public:
    friend ISubMesh * SubMeshCreate(uint nFaces, uint nVertices,
                                    IVertexDeclaration * pVertexDecl,
+                                   IRenderDevice * pRenderDevice);
+   friend ISubMesh * SubMeshCreate(uint nFaces, uint nVertices, 
+                                   IVertexBuffer * pVertexBuffer, 
                                    IRenderDevice * pRenderDevice);
    ~cSubMesh();
 
@@ -72,9 +76,9 @@ private:
 ///////////////////////////////////////
 
 cSubMesh::cSubMesh(uint nFaces, uint nVertices,
-                         IIndexBuffer * pIndexBuffer,
-                         IVertexBuffer * pVertexBuffer,
-                         IVertexDeclaration * pVertexDecl)
+                   IIndexBuffer * pIndexBuffer,
+                   IVertexBuffer * pVertexBuffer,
+                   IVertexDeclaration * pVertexDecl)
  : m_nVerts(nVertices),
    m_nIndices(nFaces * 3),
    m_pIndexBuffer(pIndexBuffer),
@@ -101,10 +105,19 @@ ISubMesh * SubMeshCreate(uint nFaces, uint nVertices,
       cAutoIPtr<IVertexBuffer> pVertexBuffer;
       if (pRenderDevice->CreateVertexBuffer(nVertices, pVertexDecl, kMP_Auto, &pVertexBuffer) == S_OK)
       {
-         return static_cast<ISubMesh *>(new cSubMesh(nFaces, nVertices, pIndexBuffer, pVertexBuffer, pVertexDecl));
+         return static_cast<ISubMesh *>(new cSubMesh(nFaces, nVertices, pIndexBuffer, pVertexBuffer, NULL));
       }
    }
 
+   return NULL;
+}
+
+///////////////////////////////////////
+
+ISubMesh * SubMeshCreate(uint nFaces, uint nVertices, 
+                         IVertexBuffer * pVertexBuffer, 
+                         IRenderDevice * pRenderDevice)
+{
    return NULL;
 }
 
