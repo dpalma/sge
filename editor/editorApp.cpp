@@ -52,7 +52,7 @@ static const SIZE g_mapSizes[] =
    { 256, 256 },
 };
 
-static const uint kDefaultMapSizeIndex = 2;
+static const uint kDefaultMapSizeIndex = 0;
 
 /////////////////////////////////////////////////////////////////////////////
 

@@ -29,9 +29,11 @@ F_DECLARE_INTERFACE(IMaterial);
 
 enum eHeightData
 {
+   // The order of these constants must match the order of the
+   // corresponding radio buttons in the map settings dialog box
    kHeightData_None,
-   kHeightData_HeightMap,
    kHeightData_Noise,
+   kHeightData_HeightMap,
 };
 
 class cMapSettings
@@ -129,6 +131,9 @@ interface UUID("CDEB5694-56D2-4750-BEF8-85F286364C23") IEditorTile : IUnknown
 {
    virtual tResult GetName(cStr * pName) const = 0;
    virtual tResult GetTexture(cStr * pTexture) const = 0;
+
+   virtual uint GetHorizontalImageCount() const = 0;
+   virtual uint GetVerticalImageCount() const = 0;
 
    virtual tResult GetTexture(ITexture * * ppTexture) = 0;
 

@@ -265,19 +265,13 @@ void cEditorView::OnInitialUpdate()
 	cEditorDoc * pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-   if (pDoc->SetTerrain(m_pRenderDevice, "ground.tga", 0.25, "grass.tga"))
-   {
-      uint xd, zd;
-      pDoc->GetDimensions(&xd, &zd);
+   Verify(pDoc->AccessTiledGround()->CreateBuffers(m_pRenderDevice));
 
-      m_center = tVec3((tVec3::value_type)xd / 2, 0, (tVec3::value_type)zd / 2);
-      m_eye = CalcEyePoint(m_center);
-   }
-   else
-   {
-      m_center = tVec3(0,0,0);
-      m_eye = tVec3(0,0,0);
-   }
+   uint xd, zd;
+   pDoc->GetDimensions(&xd, &zd);
+
+   m_center = tVec3((tVec3::value_type)xd / 2, 0, (tVec3::value_type)zd / 2);
+   m_eye = CalcEyePoint(m_center);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -33,6 +33,9 @@ public:
    virtual tResult GetName(cStr * pName) const;
    virtual tResult GetTexture(cStr * pTexture) const;
 
+   virtual uint GetHorizontalImageCount() const;
+   virtual uint GetVerticalImageCount() const;
+
    virtual tResult GetTexture(ITexture * * ppTexture);
 
    virtual tResult GetBitmap(uint dimension, bool bEntire, HBITMAP * phBitmap);

@@ -5,6 +5,7 @@
 
 #include "tiledground.h"
 #include "heightmap.h"
+#include "editorapi.h"
 
 #include "render.h"
 #include "material.h"
@@ -17,11 +18,15 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-VERTEXDECL_BEGIN(g_terrainVertexDecl)
-   VERTEXDECL_ELEMENT(kVDU_TexCoord, kVDT_Float2)
-   VERTEXDECL_ELEMENT(kVDU_Color, kVDT_Float3)
-   VERTEXDECL_ELEMENT(kVDU_Position, kVDT_Float3)
-VERTEXDECL_END()
+sVertexElement g_terrainVertexDecl[] =
+{
+   { kVDU_TexCoord, kVDT_Float2, 0 },
+//   { kVDU_TexCoord, kVDT_Float2, 1 },
+//   { kVDU_TexCoord, kVDT_Float2, 2 },
+//   { kVDU_TexCoord, kVDT_Float2, 3 },
+   { kVDU_Color, kVDT_Float3 },
+   { kVDU_Position, kVDT_Float3 },
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -33,9 +38,7 @@ VERTEXDECL_END()
 cTiledGround::cTiledGround()
  : m_xDim(0),
    m_zDim(0),
-   m_nVertices(0),
-   m_nIndices(0),
-   m_bInitialized(false)
+   m_nIndices(0)
 {
 }
 
@@ -47,50 +50,48 @@ cTiledGround::~cTiledGround()
 
 ///////////////////////////////////////
 
-bool cTiledGround::SetTexture(const char * pszTexture)
+bool cTiledGround::Init(uint xDim, uint zDim,
+                        IEditorTileSet * pTileSet,
+                        uint defaultTile,
+                        cHeightMap * pHeightMap)
 {
-   bool result = false;
+   Assert(pTileSet != NULL);
 
-   cAutoIPtr<IMaterial> pNewMaterial = MaterialCreate();
-   if (!!pNewMaterial)
+   cAutoIPtr<IEditorTile> pTile;
+   if (pTileSet->GetTile(defaultTile, &pTile) != S_OK)
    {
-      if (pszTexture != NULL)
-      {
-         UseGlobal(TextureManager);
-         cAutoIPtr<ITexture> pTexture;
-         if (pTextureManager->GetTexture(pszTexture, &pTexture) == S_OK)
-         {
-            if (pNewMaterial->SetTexture(0, pTexture) == S_OK)
-            {
-               SafeRelease(m_pMaterial);
-               m_pMaterial = CTAddRef(pNewMaterial);
-               result = true;
-            }
-         }
-      }
+      return false;
    }
 
-   return result;
-}
+   Assert(!m_pMaterial);
+   if (pTileSet->GetMaterial(&m_pMaterial) != S_OK)
+   {
+      return false;
+   }
 
-///////////////////////////////////////
+   static const int kStepSize = 16;
+   static const float kRed = 0.75f, kGreen = 0.75f, kBlue = 0.75f;
 
-static const int kStepSize = 16;
-static const float kRed = 1, kGreen = 1, kBlue = 1;
+   uint nTileImages = pTile->GetHorizontalImageCount() * pTile->GetVerticalImageCount();
 
-static const float kTileTexWidth = 0.125f;
-static const float kTileTexHeight = 0.25f;
+   Assert(IsPowerOfTwo(nTileImages));
 
-bool cTiledGround::Init(uint xDim, uint zDim, cHeightMap * pHeightMap)
-{
+   if (!IsPowerOfTwo(nTileImages))
+   {
+      DebugMsg("Number of variations in a tile must be a power of two\n");
+      return false;
+   }
+
+   float tileTexWidth = 1.0f / pTile->GetHorizontalImageCount();
+   float tileTexHeight = 1.0f / pTile->GetVerticalImageCount();
+
    m_xDim = xDim;
    m_zDim = zDim;
 
    uint nQuads = xDim * zDim;
-   m_nVertices = nQuads * 4;
    m_nIndices = nQuads * 6;
 
-   m_vertices.resize(m_nVertices);
+   m_vertices.resize(nQuads * 4);
 
    int index = 0;
 
@@ -104,29 +105,43 @@ bool cTiledGround::Init(uint xDim, uint zDim, cHeightMap * pHeightMap)
 
       for (int ix = 0; ix < xDim; ix++, x1 += kStepSize, x2 += kStepSize)
       {
-         uint tile = rand() & 15;
-         uint tileRow = tile % 4;
-         uint tileCol = tile / 4;
+         uint tile = rand() & (nTileImages - 1);
+         uint tileRow = tile / pTile->GetHorizontalImageCount();
+         uint tileCol = tile % pTile->GetHorizontalImageCount();
 
-         m_vertices[index].uv = tVec2(tileCol * kTileTexWidth, tileRow * kTileTexHeight);
-         m_vertices[index].rgb = tVec3(kRed,kGreen,kBlue);
-         m_vertices[index++].pos = tVec3(x1, pHeightMap->Height(Round(x1),Round(z1)), z1);
+#define Height(xx,zz) ((pHeightMap != NULL) ? pHeightMap->Height(Round(xx),Round(zz)) : 0)
 
-         m_vertices[index].uv = tVec2((tileCol + 1) * kTileTexWidth, tileRow * kTileTexHeight);
+         m_vertices[index].uv1 = tVec2(tileCol * tileTexWidth, tileRow * tileTexHeight);
+//         m_vertices[index].uv2 = tVec2(0,0);
+//         m_vertices[index].uv3 = tVec2(0,0);
+//         m_vertices[index].uv4 = tVec2(0,0);
          m_vertices[index].rgb = tVec3(kRed,kGreen,kBlue);
-         m_vertices[index++].pos = tVec3(x2, pHeightMap->Height(Round(x2),Round(z1)), z1);
+         m_vertices[index++].pos = tVec3(x1, Height(x1,z1), z1);
 
-         m_vertices[index].uv = tVec2((tileCol + 1) * kTileTexWidth, (tileRow + 1) * kTileTexHeight);
+         m_vertices[index].uv1 = tVec2((tileCol + 1) * tileTexWidth, tileRow * tileTexHeight);
+//         m_vertices[index].uv2 = tVec2(0,0);
+//         m_vertices[index].uv3 = tVec2(0,0);
+//         m_vertices[index].uv4 = tVec2(0,0);
          m_vertices[index].rgb = tVec3(kRed,kGreen,kBlue);
-         m_vertices[index++].pos = tVec3(x2, pHeightMap->Height(Round(x2),Round(z2)), z2);
+         m_vertices[index++].pos = tVec3(x2, Height(x2,z1), z1);
 
-         m_vertices[index].uv = tVec2(tileCol * kTileTexWidth, (tileRow + 1) * kTileTexHeight);
+         m_vertices[index].uv1 = tVec2((tileCol + 1) * tileTexWidth, (tileRow + 1) * tileTexHeight);
+//         m_vertices[index].uv2 = tVec2(0,0);
+//         m_vertices[index].uv3 = tVec2(0,0);
+//         m_vertices[index].uv4 = tVec2(0,0);
          m_vertices[index].rgb = tVec3(kRed,kGreen,kBlue);
-         m_vertices[index++].pos = tVec3(x1, pHeightMap->Height(Round(x1),Round(z2)), z2);
+         m_vertices[index++].pos = tVec3(x2, Height(x2,z2), z2);
+
+         m_vertices[index].uv1 = tVec2(tileCol * tileTexWidth, (tileRow + 1) * tileTexHeight);
+//         m_vertices[index].uv2 = tVec2(0,0);
+//         m_vertices[index].uv3 = tVec2(0,0);
+//         m_vertices[index].uv4 = tVec2(0,0);
+         m_vertices[index].rgb = tVec3(kRed,kGreen,kBlue);
+         m_vertices[index++].pos = tVec3(x1, Height(x1,z2), z2);
+
+#undef Height
       }
    }
-
-   m_bInitialized = true;
 
    return true;
 }
@@ -145,7 +160,7 @@ bool cTiledGround::CreateBuffers(IRenderDevice * pRenderDevice)
       return false;
    }
 
-   if (pRenderDevice->CreateVertexBuffer(m_nVertices,
+   if (pRenderDevice->CreateVertexBuffer(m_vertices.size(),
       kBU_Default, pVertexDecl, kBP_Auto, &m_pVertexBuffer) != S_OK)
    {
       return false;

@@ -60,25 +60,51 @@ BOOL cEditorDoc::OnNewDocument()
 
    Assert(AccessEditorApp() != NULL);
 
+   delete m_pHeightMap, m_pHeightMap = NULL;
+   delete m_pGround, m_pGround = NULL;
+
+   BOOL bResult = FALSE;
+
    cMapSettings mapSettings;
 
-   tResult result = AccessEditorApp()->GetMapSettings(&mapSettings);
-   if (result == S_OK)
+   if (AccessEditorApp()->GetMapSettings(&mapSettings) == S_OK)
    {
-      DebugMsg3("Create %d x %d map with tileset \"%s\"\n",
-         mapSettings.GetXDimension(),
-         mapSettings.GetZDimension(),
-         mapSettings.GetTileSet());
-   }
-   else
-   {
-      ErrorMsg("Error getting map settings\n");
-      return FALSE;
+      cHeightMap * pHeightMap = NULL;
+      if (mapSettings.GetHeightData() == kHeightData_HeightMap)
+      {
+         pHeightMap = new cHeightMap(0.25f); // TODO: hard-coded height scale
+         if (pHeightMap != NULL)
+         {
+            if (!pHeightMap->Load(mapSettings.GetHeightMap()))
+            {
+               delete pHeightMap;
+               pHeightMap = NULL;
+            }
+         }
+      }
+
+      m_pHeightMap = pHeightMap;
+
+      cAutoIPtr<IEditorTileSet> pTileSet;
+
+      UseGlobal(EditorTileManager);
+      pEditorTileManager->GetTileSet(mapSettings.GetTileSet(), &pTileSet);
+
+      m_pGround = new cTiledGround();
+      if (m_pGround != NULL)
+      {
+         if (m_pGround->Init(mapSettings.GetXDimension(),
+                             mapSettings.GetZDimension(),
+                             pTileSet, 0,
+                             pHeightMap))
+         {
+            bResult = TRUE;
+         }
+      }
    }
 
-	return TRUE;
+	return bResult;
 }
-
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -114,37 +140,6 @@ void cEditorDoc::Dump(CDumpContext& dc) const
 /////////////////////////////////////////////////////////////////////////////
 // cEditorDoc operations
 
-bool cEditorDoc::SetTerrain(IRenderDevice * pRenderDevice, 
-                            const char * pszHeightData, 
-                            float heightScale, 
-                            const char * pszTexture)
-{
-   Assert(pszHeightData != NULL);
-   Assert(m_pHeightMap == NULL);
-   Assert(m_pGround == NULL);
-
-   m_pHeightMap = new cHeightMap(heightScale);
-   if (m_pHeightMap != NULL)
-   {
-      if (m_pHeightMap->Load(pszHeightData))
-      {
-         m_pGround = new cTiledGround();
-         if (m_pGround != NULL)
-         {
-            if (m_pGround->SetTexture(pszTexture))
-            {
-               if (m_pGround->Init(64, 64, m_pHeightMap))
-               {
-                  return m_pGround->CreateBuffers(pRenderDevice);
-               }
-            }
-         }
-      }
-   }
-
-   return false;
-}
-
 float cEditorDoc::GetElevation(float nx, float nz) const
 {
    Assert(m_pHeightMap != NULL);
@@ -154,19 +149,21 @@ float cEditorDoc::GetElevation(float nx, float nz) const
 
 bool cEditorDoc::GetDimensions(uint * pxd, uint * pzd) const
 {
-   if (m_pHeightMap != NULL)
+   if (m_pGround != NULL)
    {
-      uint size = m_pHeightMap->GetSize();
       if (pxd != NULL)
       {
-         *pxd = size;
+         *pxd = m_pGround->GetXDimension();
       }
+
       if (pzd != NULL)
       {
-         *pzd = size;
+         *pzd = m_pGround->GetZDimension();
       }
+
       return true;
    }
+
    return false;
 }
 
@@ -177,24 +174,6 @@ BOOL cEditorDoc::OnOpenDocument(LPCTSTR lpszPathName)
 {
 	if (!CDocument::OnOpenDocument(lpszPathName))
 		return FALSE;
-
- //  cEditorView * pEditorView = NULL;
-
-	//POSITION pos = GetFirstViewPosition();
- //  for (CView * pView = GetNextView(pos); pView != NULL; pView = GetNextView(pos))
- //  {
- //     pEditorView = DYNAMIC_DOWNCAST(cEditorView, pView);
- //     if (pEditorView != NULL)
- //     {
- //        break;
- //     }
- //  }
-
- //  if (!pEditorView)
- //  {
- //     TRACE0("Have no cEditorView from which to get a rendering device\n");
- //     return FALSE;
- //  }
 
    cFileSpec file(lpszPathName);
 

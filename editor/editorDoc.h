@@ -32,7 +32,6 @@ public:
 
 // Operations
 public:
-   bool SetTerrain(IRenderDevice * pRenderDevice, const char * pszHeightData, float heightScale, const char * pszTexture);
    float GetElevation(float nx, float nz) const;
    bool GetDimensions(uint * pxd, uint * pzd) const;
 

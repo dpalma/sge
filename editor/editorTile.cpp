@@ -86,6 +86,20 @@ tResult cEditorTile::GetTexture(cStr * pTexture) const
 
 ///////////////////////////////////////
 
+uint cEditorTile::GetHorizontalImageCount() const
+{
+   return m_horzImages;
+}
+
+///////////////////////////////////////
+
+uint cEditorTile::GetVerticalImageCount() const
+{
+   return m_vertImages;
+}
+
+///////////////////////////////////////
+
 tResult cEditorTile::GetTexture(ITexture * * ppTexture)
 {
    if (!m_pTexture && !m_texture.empty())

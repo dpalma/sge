@@ -10,6 +10,8 @@
        >
     </tile>
 
+<!-- TODO: un-comment these textures when they're properly handled via multitexturing -->
+<!--
     <tile
        name="Dirt (Grass)"
        texture="Lords_DirtGrass.tga"
@@ -49,5 +51,6 @@
        verticalImages=4
        >
     </tile>
+-->
 
 </tileset>
