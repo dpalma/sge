@@ -4,41 +4,70 @@
 #ifndef INCLUDED_GUIRENDER_H
 #define INCLUDED_GUIRENDER_H
 
-#include "comtools.h"
-#include "guitypes.h"
+#include "guiapi.h"
+
+#include "render.h"
+
+#include "globalobj.h"
 
 #ifdef _MSC_VER
 #pragma once
 #endif
 
-F_DECLARE_INTERFACE(IRenderFont);
-F_DECLARE_INTERFACE(IRenderDevice);
-F_DECLARE_INTERFACE(IVertexDeclaration);
-F_DECLARE_INTERFACE(IVertexBuffer);
-F_DECLARE_INTERFACE(IIndexBuffer);
-
-F_DECLARE_INTERFACE(IGUIRenderingTools);
-
 ///////////////////////////////////////////////////////////////////////////////
 //
-// INTERFACE: IGUIRenderingTools
+// CLASS: cGUIRenderingTools
 //
 
-interface IGUIRenderingTools : IUnknown
+class cGUIRenderingTools : public cGlobalObject<IMPLEMENTS(IGUIRenderingTools)>
 {
-   virtual tResult SetRenderDevice(IRenderDevice * pRenderDevice) = 0;
-   virtual tResult GetRenderDevice(IRenderDevice * * ppRenderDevice) = 0;
+public:
+   cGUIRenderingTools();
+   ~cGUIRenderingTools();
 
-   virtual tResult SetDefaultFont(IRenderFont * pFont) = 0;
-   virtual tResult GetDefaultFont(IRenderFont * * ppFont) = 0;
+   virtual tResult Init();
+   virtual tResult Term();
 
-   // All bitmap buttons everywhere can share the same vertex and index
-   // buffers by varying the material and start vertex used in the render call
-   virtual tResult GetBitmapButtonIndexBuffer(IIndexBuffer * * ppIndexBuffer) = 0;
-   virtual tResult GetBitmapButtonVertexBuffer(const tGUIRect & rect, IVertexBuffer * * ppVertexBuffer) = 0;
+   virtual tResult SetRenderDevice(IRenderDevice * pRenderDevice);
+   virtual tResult GetRenderDevice(IRenderDevice * * ppRenderDevice);
+
+   virtual tResult SetDefaultFont(IRenderFont * pFont);
+   virtual tResult GetDefaultFont(IRenderFont * * ppFont);
+
+   virtual tResult GetBitmapButtonIndexBuffer(IIndexBuffer * * ppIndexBuffer);
+   virtual tResult GetBitmapButtonVertexBuffer(const tGUIRect & rect, IVertexBuffer * * ppVertexBuffer);
 
    virtual tResult Render3dRect(const tGUIRect & rect, int bevel, 
-      const tGUIColor & topLeft, const tGUIColor & bottomRight, const tGUIColor & face) = 0;
+      const tGUIColor & topLeft, const tGUIColor & bottomRight, const tGUIColor & face);
+
+private:
+   inline IRenderDevice * AccessRenderDevice() { return m_pRenderDevice; }
+
+   tResult GetVertexDeclaration(IVertexDeclaration * * ppVertexDecl);
+   tResult GetTexVertexDeclaration(IVertexDeclaration * * ppVertexDecl);
+
+   struct sGUIVertex
+   {
+      float rgba[4];
+      tVec2 pos;
+   };
+
+   struct sGUITexVertex
+   {
+      float u,v;
+      float rgba[4];
+      tVec2 pos;
+   };
+
+   static sVertexElement gm_vertexDecl[];
+   static sVertexElement gm_texVertexDecl[];
+
+   cAutoIPtr<IRenderDevice> m_pRenderDevice;
+   cAutoIPtr<IVertexDeclaration> m_pVertexDecl;
+   cAutoIPtr<IVertexDeclaration> m_pTexVertexDecl;
+   cAutoIPtr<IVertexBuffer> m_pBitmapButtonVB;
+   cAutoIPtr<IIndexBuffer> m_pBitmapButtonIB;
+   cAutoIPtr<IRenderFont> m_pFont;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
