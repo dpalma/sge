@@ -15,7 +15,9 @@
 #include "resmgr.h"
 #include "globalobj.h"
 #include "animation.h"
+#include "hash.h"
 
+#include <map>
 #include <vector>
 #include <algorithm>
 
@@ -67,125 +69,113 @@ static bool operator ==(const struct sMs3dVertex & v1,
       && v1.pos.z == v2.pos.z;
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cMs3dVertexInfo
+// CLASS: cMs3dVertexList
 //
-// Used to compile information on vertices stored in Milkshape3D files.
-// Milkshape files store some vertex information in the polygon structure.
 
-class cMs3dVertexInfo
+class cMs3dVertexList
 {
 public:
-   cMs3dVertexInfo();
-   cMs3dVertexInfo(const cMs3dVertexInfo & other);
+   cMs3dVertexList(const ms3d_vertex_t * pVertices, uint nVertices);
 
-   const cMs3dVertexInfo & operator =(const cMs3dVertexInfo & other);
+   uint MapVertex(uint originalIndex, tVec3 normal, float s, float t);
 
-   void SetPosition(const float pos[3]);
-   const tVec3 & GetPosition() const;
-
-   void SetBone(int bone);
-   int GetBone() const;
-
-   void AddReferringTriangle(int triIndex, int vertIndex, const float normal[3], float s, float t);
-
-   void Digest();
+   const void * GetVertexData() const;
+   uint GetVertexCount() const;
 
 private:
-   uint m_index;
-   tVec3 m_position;
-   int m_bone;
-
-   struct sReferringTriangle
-   {
-      int triIndex;
-      int vertIndex;
-      tVec3 normal;
-      float s;
-      float t;
-   };
-
-   std::vector<sReferringTriangle> m_tris;
+   uint m_nOriginalVertices;
+   std::vector<sMs3dVertex> m_vertices;
+   std::vector<bool> m_haveVertex;
+   std::map<uint, uint> m_remap;
 };
 
 ///////////////////////////////////////
 
-cMs3dVertexInfo::cMs3dVertexInfo()
- : m_bone(-1)
+cMs3dVertexList::cMs3dVertexList(const ms3d_vertex_t * pVertices, uint nVertices)
+ : m_nOriginalVertices(nVertices)
 {
+   Assert(pVertices != NULL);
+   Assert(nVertices > 0);
+
+   m_vertices.resize(nVertices);
+   m_haveVertex.resize(nVertices, false);
+
+   for (uint i = 0; i < nVertices; i++)
+   {
+      m_vertices[i].pos = pVertices[i].vertex;
+//      m_vertices[i].boneId = pVertices[i].boneId;
+   }
 }
 
 ///////////////////////////////////////
 
-cMs3dVertexInfo::cMs3dVertexInfo(const cMs3dVertexInfo & other)
- : m_position(other.m_position),
-   m_bone(other.m_bone)
+static bool operator ==(const tVec3 & v1, const tVec3 & v2)
 {
-   m_tris.resize(other.m_tris.size());
-   std::copy(other.m_tris.begin(), other.m_tris.end(), m_tris.begin());
+   return (v1.x == v2.x) && (v1.y == v2.y) && (v1.z == v2.z);
 }
 
 ///////////////////////////////////////
 
-const cMs3dVertexInfo & cMs3dVertexInfo::operator =(const cMs3dVertexInfo & other)
+uint cMs3dVertexList::MapVertex(uint originalIndex, tVec3 normal, float s, float t)
 {
-   m_position = other.m_position;
-   m_bone = other.m_bone;
-   m_tris.resize(other.m_tris.size());
-   std::copy(other.m_tris.begin(), other.m_tris.end(), m_tris.begin());
-   return *this;
+   Assert(originalIndex < m_nOriginalVertices);
+   Assert(m_nOriginalVertices == m_haveVertex.size());
+   if (!m_haveVertex[originalIndex])
+   {
+      m_haveVertex[originalIndex] = true;
+      m_vertices[originalIndex].normal = normal;
+      m_vertices[originalIndex].u = s;
+      m_vertices[originalIndex].v = t;
+      return originalIndex;
+   }
+   else if (/*(m_vertices[originalIndex].normal == normal)
+      &&*/ (m_vertices[originalIndex].u == s)
+      && (m_vertices[originalIndex].v == t))
+   {
+      return originalIndex;
+   }
+   else
+   {
+      sMs3dVertex newVertex = m_vertices[originalIndex];
+      newVertex.normal = normal;
+      newVertex.u = s;
+      newVertex.v = t;
+      uint h = Hash(&newVertex, sizeof(newVertex));
+      std::map<uint, uint>::iterator f = m_remap.find(h);
+      if (f != m_remap.end())
+      {
+         DebugMsg1("Using mapped vertex at index %d\n", f->second);
+         Assert(f->second < m_vertices.size());
+//         return f->second;
+         return originalIndex;
+      }
+      else
+      {
+         m_vertices.push_back(newVertex);
+         uint newIndex = m_vertices.size() - 1;
+         DebugMsg2("Variant of vertex %d at index %d\n", originalIndex, newIndex);
+         m_remap.insert(std::make_pair(h, newIndex));
+//         return newIndex;
+         return originalIndex;
+      }
+   }
 }
 
 ///////////////////////////////////////
 
-void cMs3dVertexInfo::SetPosition(const float pos[3])
+const void * cMs3dVertexList::GetVertexData() const
 {
-   Assert(pos != NULL);
-   m_position = tVec3(pos);
+   return reinterpret_cast<const void *>(&m_vertices[0]);
 }
 
 ///////////////////////////////////////
 
-const tVec3 & cMs3dVertexInfo::GetPosition() const
+uint cMs3dVertexList::GetVertexCount() const
 {
-   return m_position;
-}
-
-///////////////////////////////////////
-
-void cMs3dVertexInfo::SetBone(int bone)
-{
-   m_bone = bone;
-}
-
-///////////////////////////////////////
-
-int cMs3dVertexInfo::GetBone() const
-{
-   return m_bone;
-}
-
-///////////////////////////////////////
-
-void cMs3dVertexInfo::AddReferringTriangle(int triIndex,
-                                           int vertIndex, 
-                                           const float normal[3], 
-                                           float s, float t)
-{
-   sReferringTriangle tri;
-   tri.triIndex = triIndex;
-   tri.vertIndex = vertIndex;
-   tri.normal = tVec3(normal);
-   tri.s = s;
-   tri.t = t;
-   m_tris.push_back(tri);
-}
-
-///////////////////////////////////////
-
-void cMs3dVertexInfo::Digest()
-{
+   return m_vertices.size();
 }
 
 
@@ -291,52 +281,17 @@ tResult cMs3dFileReader::Read(IReader * pReader)
 
 tResult cMs3dFileReader::CreateMesh(IRenderDevice * pRenderDevice, IMesh * * ppMesh) const
 {
-   std::vector<cMs3dVertexInfo> vertexInfo(m_vertices.size());
-   {
-      uint index;
-      std::vector<ms3d_vertex_t>::const_iterator iter;
-      for (index = 0, iter = m_vertices.begin(); iter != m_vertices.end(); index++, iter++)
-      {
-         cMs3dVertexInfo * pV = &vertexInfo[index];
-         pV->SetPosition(iter->vertex);
-         pV->SetBone(iter->boneId);
-      }
-   }
+   cMs3dVertexList vertexList(&m_vertices[0], m_vertices.size());
 
-   // TODO: A vertex position could have a slightly different normal or 
-   // texture coordinates for each triangle it's shared by. In that case,
-   // the vertex should be duplicated and the indices remapped. For now,
-   // keep a single copy of the vertex and ignore any discrepancies in
-   // the normal or texture coordinates. Seems to work OK.
-   uint i;
-   bool bHaveBoneAssignments = false;
-   std::vector<sMs3dVertex> vertices2(m_vertices.size());
-   for (i = 0; i < m_triangles.size(); i++)
    {
-      const ms3d_triangle_t & tri = m_triangles[i];
-      for (int j = 0; j < 3; j++)
+      std::vector<ms3d_triangle_t>::const_iterator iter;
+      for (iter = m_triangles.begin(); iter != m_triangles.end(); iter++)
       {
-         if (m_vertices[tri.vertexIndices[j]].boneId >= 0)
+         const ms3d_triangle_t & tri = *iter;
+         for (int k = 0; k < 3; k++)
          {
-            bHaveBoneAssignments = true;
+            vertexList.MapVertex(tri.vertexIndices[k], tri.vertexNormals[k], tri.s[k], tri.t[k]);
          }
-
-         cMs3dVertexInfo * pV = &vertexInfo[tri.vertexIndices[j]];
-         pV->AddReferringTriangle(i, j, tri.vertexNormals[j], tri.s[j], tri.t[j]);
-
-         sMs3dVertex * pVertex = &vertices2[tri.vertexIndices[j]];
-         pVertex->pos = tVec3(m_vertices[tri.vertexIndices[j]].vertex);
-         pVertex->normal = tVec3(tri.vertexNormals[j]);
-         pVertex->u = tri.s[j];
-         pVertex->v = 1 - tri.t[j];
-      }
-   }
-
-   {
-      std::vector<cMs3dVertexInfo>::iterator iter;
-      for (iter = vertexInfo.begin(); iter != vertexInfo.end(); iter++)
-      {
-         iter->Digest();
       }
    }
 
@@ -354,7 +309,7 @@ tResult cMs3dFileReader::CreateMesh(IRenderDevice * pRenderDevice, IMesh * * ppM
          _countof(g_ms3dVertexDecl), &pVertexDecl) == S_OK)
       {
          cAutoIPtr<ISubMesh> pSubMesh = SubMeshCreate(iter->GetNumTriangles(),
-            vertices2.size(), pVertexDecl, pRenderDevice);
+            vertexList.GetVertexCount(), pVertexDecl, pRenderDevice);
          if (!!pSubMesh)
          {
             pSubMesh->SetMaterialName(m_materials[iter->GetMaterialIndex()].name);
@@ -366,7 +321,7 @@ tResult cMs3dFileReader::CreateMesh(IRenderDevice * pRenderDevice, IMesh * * ppM
                // vertex array. Should either be a single shared vertex array,
                // or each sub-mesh should be given an array of only its relevant 
                // vertices.
-               memcpy(pVertexData, &vertices2[0], vertices2.size() * sizeof(sMs3dVertex));
+               memcpy(pVertexData, vertexList.GetVertexData(), vertexList.GetVertexCount() * sizeof(sMs3dVertex));
                pSubMesh->UnlockVertexBuffer();
 
                int * pFaces = NULL;
@@ -375,9 +330,10 @@ tResult cMs3dFileReader::CreateMesh(IRenderDevice * pRenderDevice, IMesh * * ppM
                   for (int i = 0; i < iter->GetNumTriangles(); i++)
                   {
                      const ms3d_triangle_t & tri = m_triangles[iter->GetTriangle(i)];
-                     pFaces[i * 3 + 0] = tri.vertexIndices[0];
-                     pFaces[i * 3 + 1] = tri.vertexIndices[1];
-                     pFaces[i * 3 + 2] = tri.vertexIndices[2];
+                     for (int k = 0; k < 3; k++)
+                     {
+                        pFaces[i * 3 + k] = vertexList.MapVertex(tri.vertexIndices[k], tri.vertexNormals[k], tri.s[k], tri.t[k]);
+                     }
                   }
                   pSubMesh->UnlockIndexBuffer();
 
