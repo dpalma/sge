@@ -5,6 +5,7 @@
 
 #include "readwriteapi.h"
 #include "resourceapi.h"
+#include "globalobj.h"
 
 #include "dbgalloc.h" // must be last header
 
@@ -36,110 +37,30 @@ static char * GetContents(IReader * pReader)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cTextResource
-//
 
-class cTextResource : public cComObject<IMPLEMENTS(IResource)>
+void * TextLoad(IReader * pReader)
 {
-public:
-   cTextResource(IReader * pReader);
-
-   virtual eResourceClass GetClass() const;
-
-   virtual tResult GetData(void * * ppData);
-
-private:
-   cAutoIPtr<IReader> m_pReader;
-};
-
-////////////////////////////////////////
-
-cTextResource::cTextResource(IReader * pReader)
- : m_pReader(CTAddRef(pReader))
-{
-}
-
-////////////////////////////////////////
-
-eResourceClass cTextResource::GetClass() const
-{
-   return kRC_Text;
-}
-
-////////////////////////////////////////
-
-tResult cTextResource::GetData(void * * ppData)
-{
-   if (ppData == NULL)
+   if (pReader != NULL)
    {
-      return E_POINTER;
+      return GetContents(pReader);
    }
 
-   if (!m_pReader)
-   {
-      return E_FAIL;
-   }
-
-   // TODO: return something better than a pointer to allocated memory
-   *ppData = GetContents(m_pReader);
-
-   return (*ppData != NULL) ? S_OK : E_OUTOFMEMORY;
+   return NULL;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cTextResourceFormat
-//
-
-class cTextResourceFormat : public cComObject<IMPLEMENTS(IResourceFormat)>
+void TextUnload(void * pData)
 {
-public:
-   virtual tResult GetSupportedFileExtensions(std::vector<cStr> * pExtensions);
-
-   virtual tResult Load(const tResKey & key, IReader * pReader, IResource * * ppResource);
-};
-
-////////////////////////////////////////
-
-tResult cTextResourceFormat::GetSupportedFileExtensions(std::vector<cStr> * pExtensions)
-{
-   if (pExtensions == NULL)
-   {
-      return E_POINTER;
-   }
-
-   pExtensions->clear();
-   pExtensions->push_back(cStr("txt"));
-   pExtensions->push_back(cStr("lua"));
-   pExtensions->push_back(cStr("xml"));
-
-   return S_OK;
+   delete [] reinterpret_cast<char *>(pData);
 }
 
-////////////////////////////////////////
-
-tResult cTextResourceFormat::Load(const tResKey & key, IReader * pReader, IResource * * ppResource)
+TECH_API tResult TextFormatRegister(const char * pszExtension)
 {
-   if (pReader == NULL || ppResource == NULL)
+   UseGlobal(ResourceManager2);
+   if (!!pResourceManager2)
    {
-      return E_POINTER;
+      return pResourceManager2->RegisterFormat(kRC_Text, pszExtension, TextLoad, NULL, TextUnload);
    }
-
-   IResource * pResource = static_cast<IResource *>(new cTextResource(pReader));
-   if (pResource == NULL)
-   {
-      return E_OUTOFMEMORY;
-   }
-
-   *ppResource = pResource;
-
-   return S_OK;
+   return E_FAIL;
 }
-
-////////////////////////////////////////
-
-AUTOREGISTER_RESOURCEFORMAT(kRC_Text, cTextResourceFormat);
 
 ///////////////////////////////////////////////////////////////////////////////

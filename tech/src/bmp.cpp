@@ -6,6 +6,7 @@
 #include "imagedata.h"
 #include "readwriteapi.h"
 #include "resourceapi.h"
+#include "globalobj.h"
 
 #include <cstring> // required w/ gcc for memcpy
 
@@ -216,105 +217,34 @@ cImageData * LoadBmp(IReader * pReader)
       DebugMsg1("Un-supported BMP image format (%d bits per pixel)\n", info.biBitCount);
       return NULL;
    }
-
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cBmpImage
-//
-
-class cBmpImage : public cComObject<IMPLEMENTS(IResource)>
-{
-public:
-   cBmpImage(IReader * pReader);
-
-   virtual eResourceClass GetClass() const { return kRC_Image; }
-
-   virtual tResult GetData(void * * ppData);
-
-private:
-   cAutoIPtr<IReader> m_pReader;
-};
-
-////////////////////////////////////////
-
-cBmpImage::cBmpImage(IReader * pReader)
- : m_pReader(CTAddRef(pReader))
-{
-}
-
-////////////////////////////////////////
-
-tResult cBmpImage::GetData(void * * ppData)
-{
-   if (ppData == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (!m_pReader)
-   {
-      return E_FAIL;
-   }
-
-   *ppData = LoadBmp(m_pReader);
-
-   return (*ppData != NULL) ? S_OK : E_FAIL;
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cImageFormatBmp
-//
 
-class cImageFormatBmp : public cComObject<IMPLEMENTS(IResourceFormat)>
+void * BmpLoad(IReader * pReader)
 {
-public:
-   virtual tResult GetSupportedFileExtensions(std::vector<cStr> * pExtensions);
-
-   virtual tResult Load(const tResKey & key, IReader * pReader, IResource * * ppResource);
-};
-
-////////////////////////////////////////
-
-tResult cImageFormatBmp::GetSupportedFileExtensions(std::vector<cStr> * pExtensions)
-{
-   if (pExtensions == NULL)
+   if (pReader != NULL)
    {
-      return E_POINTER;
+      return LoadBmp(pReader);
    }
 
-   pExtensions->clear();
-   pExtensions->push_back(cStr("bmp"));
-
-   return S_OK;
+   return NULL;
 }
 
-////////////////////////////////////////
-
-tResult cImageFormatBmp::Load(const tResKey & key, IReader * pReader, IResource * * ppResource)
+void BmpUnload(void * pData)
 {
-   if (pReader == NULL || ppResource == NULL)
-   {
-      return E_POINTER;
-   }
-
-   cBmpImage * pImg = new cBmpImage(pReader);
-   if (pImg == NULL)
-   {
-      return E_OUTOFMEMORY;
-   }
-
-   *ppResource = static_cast<IResource *>(pImg);
-
-   return S_OK;
+   delete reinterpret_cast<cImageData *>(pData);
 }
 
-////////////////////////////////////////
-
-AUTOREGISTER_RESOURCEFORMAT(kRC_Image, cImageFormatBmp);
-
+TECH_API tResult BmpFormatRegister()
+{
+   UseGlobal(ResourceManager2);
+   if (!!pResourceManager2)
+   {
+      return pResourceManager2->RegisterFormat(kRC_Image, "bmp", BmpLoad, NULL, BmpUnload);
+   }
+   return E_FAIL;
+}
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -564,15 +564,10 @@ tResult HeightMapLoad(const tChar * pszHeightData, IHeightMap * * ppHeightMap)
    };
 
    cImageData * pHeightData = NULL;
-   cAutoIPtr<IResource> pRes;
    UseGlobal(ResourceManager2);
-   if (pResourceManager2->Load(tResKey(pszHeightData, kRC_Image), &pRes) == S_OK)
+   if (pResourceManager2->Load(tResKey(pszHeightData, kRC_Image), (void**)&pHeightData) != S_OK)
    {
-      if ((pRes->GetData((void**)&pHeightData) != S_OK)
-         || (pHeightData == NULL))
-      {
-         return E_FAIL;
-      }
+      return E_FAIL;
    }
 
    *ppHeightMap = static_cast<IHeightMap *>(new cHeightMap(pHeightData));

@@ -24,7 +24,7 @@
 #include "scriptvar.h"
 #include "techmath.h"
 #include "window.h"
-#include "resmgr.h"
+#include "resourceapi.h"
 #include "configapi.h"
 #include "filespec.h"
 #include "filepath.h"
@@ -434,10 +434,16 @@ bool MainInit(int argc, char * argv[])
       return false;
    }
 
+   TargaFormatRegister();
+   BmpFormatRegister();
+   TextFormatRegister("txt");
+   TextFormatRegister("lua");
+   TextFormatRegister("xml");
+
    if (ConfigGet("data", &temp) == S_OK)
    {
-      UseGlobal(ResourceManager);
-      pResourceManager->AddSearchPath(temp);
+      UseGlobal(ResourceManager2);
+      pResourceManager2->AddDirectoryTreeFlattened(temp);
    }
 
    g_fov = kDefaultFov;

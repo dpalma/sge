@@ -178,17 +178,10 @@ void cEditorTile::LazyInit()
       {
          Assert(m_hBitmap == NULL);
 
-         cAutoIPtr<IResource> pRes;
          UseGlobal(ResourceManager2);
-         if (pResourceManager2->Load(tResKey(m_texture.c_str(), kRC_Image), &pRes) == S_OK)
+         if (pResourceManager2->Load(tResKey(m_texture.c_str(), kRC_Image), (void**)&m_pImageData) == S_OK)
          {
-            if (pRes->GetData((void**)&m_pImageData) == S_OK && m_pImageData != NULL)
-            {
-               if (m_pImageData != NULL)
-               {
-                  m_bLoadBitmapFailed = !LoadBitmap(m_pImageData, &m_hBitmap);
-               }
-            }
+            m_bLoadBitmapFailed = !LoadBitmap(m_pImageData, &m_hBitmap);
          }
       }
    }

@@ -16,24 +16,24 @@
 
 F_DECLARE_INTERFACE(IReader);
 
-F_DECLARE_INTERFACE(IResource);
-F_DECLARE_INTERFACE(IResourceFormat);
 F_DECLARE_INTERFACE(IResourceManager2);
 
 ///////////////////////////////////////////////////////////////////////////////
 
-enum eResourceStorePriority
-{
-   kRSP_System,
-   kRSP_User
-};
+TECH_API tResult TargaFormatRegister();
+TECH_API tResult BmpFormatRegister();
+TECH_API tResult TextFormatRegister(const char * pszExtension);
+
+///////////////////////////////////////////////////////////////////////////////
 
 enum eResourceClass
 {
    kRC_Image,
+   kRC_Texture,
    kRC_Mesh,
    kRC_Text,
-   kRC_Font
+   kRC_Font,
+   kNUMRESOURCECLASSES, // Add new values above this line
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -44,12 +44,12 @@ enum eResourceClass
 class cResourceKey
 {
 public:
-   cResourceKey(const char * pszName, eResourceClass type);
+   cResourceKey(const char * pszName, eResourceClass rc);
    cResourceKey(const cResourceKey & other);
 
-   const cResourceKey & operator=(const cResourceKey & other);
+   const cResourceKey & operator =(const cResourceKey & other);
 
-   bool operator==(const cResourceKey & other);
+   bool operator ==(const cResourceKey & other);
 
    const char * GetName() const;
    eResourceClass GetClass() const;
@@ -65,9 +65,9 @@ typedef cResourceKey tResKey;
 
 ///////////////////////////////////////
 
-inline cResourceKey::cResourceKey(const char * pszName, eResourceClass type)
+inline cResourceKey::cResourceKey(const char * pszName, eResourceClass rc)
  : m_name(pszName != NULL ? pszName : ""),
-   m_class(type)
+   m_class(rc)
 {
 }
 
@@ -115,62 +115,33 @@ inline eResourceClass cResourceKey::GetClass() const
 // INTERFACE: IResourceManager
 //
 
+typedef void * (* tResourceLoad)(IReader * pReader);
+typedef void * (* tResourcePostload)(void * pData, int dataLength, void * param);
+typedef void   (* tResourceUnload)(void * pData);
+
 interface IResourceManager2 : IUnknown
 {
-   virtual tResult AddResourceStore(const char * pszName, eResourceStorePriority priority) = 0;
+   virtual tResult AddDirectory(const char * pszDir) = 0;
+   // HACK: This AddDirectoryTreeFlattened is to support the legacy behavior
+   virtual tResult AddDirectoryTreeFlattened(const char * pszDir) = 0;
+   virtual tResult AddArchive(const char * pszArchive) = 0;
 
-   virtual tResult Load(const tResKey & key, IResource * * ppResource) = 0;
+   // TODO: Make this type-safe. Maybe pass in a GUID sort of like QueryInterface
+   virtual tResult Load(const tResKey & key, void * * ppData) = 0;
+   virtual tResult Unload(const tResKey & key) = 0;
 
-   virtual tResult RegisterResourceFormat(eResourceClass resClass,
-                                          IResourceFormat * pResFormat) = 0;
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// INTERFACE: IResourceFormat
-//
-
-interface IResourceFormat : IUnknown
-{
-   virtual tResult GetSupportedFileExtensions(std::vector<cStr> * pExtensions) = 0;
-
-   virtual tResult Load(const tResKey & key, IReader * pReader, IResource * * ppResource) = 0;
+   virtual tResult RegisterFormat(eResourceClass rc,
+                                  const char * pszExtension,
+                                  tResourceLoad pfnLoad,
+                                  tResourcePostload pfnPostload,
+                                  tResourceUnload pfnUnload) = 0;
 };
 
 ////////////////////////////////////////
 
-TECH_API tResult RegisterResourceFormat(eResourceClass resClass,
-                                        IResourceFormat * pResFormat);
+#define kResourceManagerName "ResourceManager"
+TECH_API void ResourceManagerCreate();
 
-////////////////////////////////////////
-
-struct sAutoRegisterResourceFormat
-{
-   sAutoRegisterResourceFormat(eResourceClass resClass,
-                               IResourceFormat * pResFormat)
-   {
-      RegisterResourceFormat(resClass, pResFormat);
-      SafeRelease(pResFormat);
-   }
-};
-
-#define AUTOREGISTER_RESOURCEFORMAT(resClass, resFormatClass) \
-   void * ReferenceSymbol##resFormatClass() { return NULL; } \
-   static sAutoRegisterResourceFormat MAKE_UNIQUE(g_autoRegResFormat)( \
-      resClass, static_cast<IResourceFormat *>(new (resFormatClass)))
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// INTERFACE: IResource
-//
-
-interface IResource : IUnknown
-{
-   virtual eResourceClass GetClass() const = 0;
-
-   virtual tResult GetData(void * * ppData) = 0;
-};
 
 ///////////////////////////////////////////////////////////////////////////////
 

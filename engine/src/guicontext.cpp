@@ -109,17 +109,13 @@ tResult cGUIContext::HasElement(IGUIElement * pElement) const
 
 tResult cGUIContext::LoadFromResource(const char * psz)
 {
-   cAutoIPtr<IResource> pResource;
+   char * pszXml = NULL;
    UseGlobal(ResourceManager2);
-   if (pResourceManager2->Load(tResKey(psz, kRC_Text), &pResource) == S_OK)
+   if (pResourceManager2->Load(tResKey(psz, kRC_Text), (void**)&pszXml) == S_OK)
    {
-      char * pszXml;
-      if (pResource->GetData((void**)&pszXml) == S_OK)
-      {
-         tResult result = LoadFromString(pszXml);
-         delete [] pszXml;
-         return result;
-      }
+      tResult result = LoadFromString(pszXml);
+      delete [] pszXml;
+      return result;
    }
    return E_FAIL;
 }

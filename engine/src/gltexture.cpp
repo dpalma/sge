@@ -364,26 +364,22 @@ tResult cTextureManager::GetTexture(const char * pszName, ITexture * * ppTexture
          return E_OUTOFMEMORY;
       }
 
-      cAutoIPtr<IResource> pRes;
+      cImageData * pImageData = NULL;
       UseGlobal(ResourceManager2);
-      if (pResourceManager2->Load(tResKey(pszName, kRC_Image), &pRes) == S_OK)
+      if (pResourceManager2->Load(tResKey(pszName, kRC_Image), (void**)&pImageData) == S_OK)
       {
-         cImageData * pImageData = NULL;
-         if (pRes->GetData((void**)&pImageData) == S_OK && pImageData != NULL)
+         tResult result = E_FAIL;
+
+         if (pTex->UploadImage(pImageData) == S_OK)
          {
-            tResult result = E_FAIL;
-
-            if (pTex->UploadImage(pImageData) == S_OK)
-            {
-               m_texObjMap.insert(std::make_pair(cStr(pszName), CTAddRef(pTex.operator->())));
-               *ppTexture = CTAddRef(pTex);
-               result = S_OK;
-            }
-
-            delete pImageData;
-
-            return result;
+            m_texObjMap.insert(std::make_pair(cStr(pszName), CTAddRef(pTex.operator->())));
+            *ppTexture = CTAddRef(pTex);
+            result = S_OK;
          }
+
+         delete pImageData;
+
+         return result;
       }
    }
 

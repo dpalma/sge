@@ -19,7 +19,7 @@
 
 #include "textureapi.h"
 
-#include "resmgr.h"
+#include "resourceapi.h"
 #include "configapi.h"
 #include "techtime.h"
 #include "connptimpl.h"
@@ -148,16 +148,15 @@ static char * GetEntireContents(IReader * pReader)
 
 static bool ScriptExecResource(const char * pszResource)
 {
-   UseGlobal(ResourceManager);
-   cAutoIPtr<IReader> pReader = pResourceManager->Find(pszResource);
-   if (!pReader)
-      return false;
-   char * pszCode = GetEntireContents(pReader);
-   if (pszCode == NULL)
-      return false;
-   bool result = ScriptExecString(pszCode);
-   delete [] pszCode;
-   return result;
+   bool bResult = false;
+   char * pszCode = NULL;
+   UseGlobal(ResourceManager2);
+   if (pResourceManager2->Load(tResKey(pszResource, kRC_Text), (void**)&pszCode) == S_OK)
+   {
+      bResult = ScriptExecString(pszCode);
+      delete [] pszCode;
+   }
+   return bResult;
 }
 
 ////////////////////////////////////////
@@ -215,6 +214,12 @@ BOOL cEditorApp::InitInstance()
       return FALSE;
    }
 
+   TargaFormatRegister();
+   BmpFormatRegister();
+   TextFormatRegister("txt");
+   TextFormatRegister("lua");
+   TextFormatRegister("xml");
+
    UseGlobal(ThreadCaller);
    pThreadCaller->ThreadInit();
 
@@ -235,8 +240,12 @@ BOOL cEditorApp::InitInstance()
    cStr temp;
    if (ConfigGet("data", &temp) == S_OK)
    {
-      UseGlobal(ResourceManager);
-      pResourceManager->AddSearchPath(temp);
+      UseGlobal(ResourceManager2);
+      if (FAILED(pResourceManager2->AddDirectoryTreeFlattened(temp)))
+      {
+         ErrorMsg1("Unable to set up resource directory %s\n", temp.c_str());
+         return FALSE;
+      }
    }
 
    cSplashThread * pSplashThread = NULL;

@@ -8,7 +8,7 @@
 #include "scriptapi.h"
 #include "scriptvar.h"
 
-#include "resmgr.h"
+#include "resourceapi.h"
 #include "dictionaryapi.h"
 #include "readwriteapi.h"
 #include "globalobj.h"
@@ -110,34 +110,20 @@ int LoadTiles(int argc, const cScriptVar * argv,
 {
    if (argc == 1 && argv[0].type == kString)
    {
-      UseGlobal(ResourceManager);
-      cAutoIPtr<IReader> pReader = pResourceManager->Find(argv[0].psz);
-      if (!!pReader)
+      UseGlobal(ResourceManager2);
+      char * pszContents = NULL;
+      if (pResourceManager2->Load(tResKey(argv[0].psz, kRC_Text), (void**)&pszContents) == S_OK)
       {
-         pReader->Seek(0, kSO_End);
-         ulong length;
-         pReader->Tell(&length);
-         pReader->Seek(0, kSO_Set);
+         TiXmlDocument doc;
+         doc.Parse(pszContents);
 
-         char * pszContents = new char[length + 1];
-         if (pszContents != NULL)
+         if (!doc.Error())
          {
-            if (pReader->Read(pszContents, length) == S_OK)
-            {
-               pszContents[length] = 0;
-
-               TiXmlDocument doc;
-               doc.Parse(pszContents);
-
-               if (!doc.Error())
-               {
-                  uint nTileSets = LoadTileSets(doc);
-               }
-            }
-
-            delete [] pszContents;
-            pszContents = NULL;
+            uint nTileSets = LoadTileSets(doc);
          }
+
+         delete [] pszContents;
+         pszContents = NULL;
       }
    }
 

@@ -5,8 +5,8 @@
 
 #include "imagedata.h"
 #include "readwriteapi.h"
-#include "resmgr.h"
 #include "resourceapi.h"
+#include "globalobj.h"
 
 #include <cstdlib>
 #include <memory.h>
@@ -435,134 +435,38 @@ cImageData * LoadTarga(IReader * pReader)
    return NULL;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cTargaImage
-//
 
-class cTargaImage : public cComObject<IMPLEMENTS(IResource)>
+void * TargaLoad(IReader * pReader)
 {
-public:
-   cTargaImage(IReader * pReader);
-
-   virtual eResourceClass GetClass() const { return kRC_Image; }
-
-   virtual tResult GetData(void * * ppData);
-
-private:
-   cAutoIPtr<IReader> m_pReader;
-};
-
-////////////////////////////////////////
-
-cTargaImage::cTargaImage(IReader * pReader)
- : m_pReader(CTAddRef(pReader))
-{
-}
-
-////////////////////////////////////////
-
-tResult cTargaImage::GetData(void * * ppData)
-{
-   if (ppData == NULL)
+   if (pReader != NULL)
    {
-      return E_POINTER;
-   }
-
-   if (!m_pReader)
-   {
-      return E_FAIL;
-   }
-
-   cTargaReader tgaReader(m_pReader);
-
-   if (tgaReader.ReadHeader())
-   {
-      if (tgaReader.ReadFooter())
+      cTargaReader targaReader(pReader);
+      if (targaReader.ReadHeader()
+         && targaReader.ReadFooter()
+         && targaReader.ReadColorMap()
+         && targaReader.ReadImageData())
       {
-         if (tgaReader.ReadColorMap())
-         {
-            if (tgaReader.ReadImageData())
-            {
-               *ppData = tgaReader.CreateImage();
-               return S_OK;
-            }
-         }
+         return targaReader.CreateImage();
       }
    }
 
+   return NULL;
+}
+
+void TargaUnload(void * pData)
+{
+   delete reinterpret_cast<cImageData *>(pData);
+}
+
+TECH_API tResult TargaFormatRegister()
+{
+   UseGlobal(ResourceManager2);
+   if (!!pResourceManager2)
+   {
+      return pResourceManager2->RegisterFormat(kRC_Image, "tga", TargaLoad, NULL, TargaUnload);
+   }
    return E_FAIL;
 }
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cImageFormatTarga
-//
-
-class cImageFormatTarga : public cComObject<IMPLEMENTS(IResourceFormat)>
-{
-public:
-   virtual tResult GetSupportedFileExtensions(std::vector<cStr> * pExtensions);
-
-   virtual tResult Load(const tResKey & key, IReader * pReader, IResource * * ppResource);
-};
-
-////////////////////////////////////////
-
-tResult cImageFormatTarga::GetSupportedFileExtensions(std::vector<cStr> * pExtensions)
-{
-   if (pExtensions == NULL)
-   {
-      return E_POINTER;
-   }
-
-   pExtensions->clear();
-   pExtensions->push_back(cStr("tga"));
-
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cImageFormatTarga::Load(const tResKey & key, IReader * pReader, IResource * * ppResource)
-{
-   if (pReader == NULL || ppResource == NULL)
-   {
-      return E_POINTER;
-   }
-
-   cTargaImage * pImg = new cTargaImage(pReader);
-   if (pImg == NULL)
-   {
-      return E_OUTOFMEMORY;
-   }
-
-   *ppResource = static_cast<IResource *>(pImg);
-
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-AUTOREGISTER_RESOURCEFORMAT(kRC_Image, cImageFormatTarga);
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-#ifdef HAVE_CPPUNIT
-
-class cTargaTests : public CppUnit::TestCase
-{
-   CPPUNIT_TEST_SUITE(cTargaTests);
-   CPPUNIT_TEST_SUITE_END();
-};
-
-////////////////////////////////////////
-
-CPPUNIT_TEST_SUITE_REGISTRATION(cTargaTests);
-
-#endif // HAVE_CPPUNIT
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -8,6 +8,7 @@
 #include "ziparchive.h"
 #include "filepath.h"
 #include "filespec.h"
+#include "fileiter.h"
 #include "readwriteapi.h"
 #include "globalobj.h"
 
@@ -15,6 +16,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <algorithm>
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -27,13 +29,18 @@
 
 #include "dbgalloc.h" // must be last header
 
-LOG_DEFINE_ENABLE_CHANNEL(ResourceManager, false);
+LOG_DEFINE_CHANNEL(ResourceManager);
 
 #define LocalMsg(msg)            DebugMsgEx(ResourceManager,(msg))
 #define LocalMsg1(msg,a)         DebugMsgEx1(ResourceManager,(msg),(a))
 #define LocalMsg2(msg,a,b)       DebugMsgEx2(ResourceManager,(msg),(a),(b))
 #define LocalMsg3(msg,a,b,c)     DebugMsgEx3(ResourceManager,(msg),(a),(b),(c))
 #define LocalMsg4(msg,a,b,c,d)   DebugMsgEx4(ResourceManager,(msg),(a),(b),(c),(d))
+
+const uint kNoIndex = ~0;
+
+// REFERENCES
+// "Game Developer Magazine", February 2005, "Inner Product" column
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -109,9 +116,6 @@ class cResourceManager : public cComObject3<IMPLEMENTS(IResourceManager),
                                             IMPLEMENTS(IResourceManager2),
                                             cGlobalObjectBase, &IID_IGlobalObject>
 {
-   friend tResult RegisterResourceFormat(eResourceClass resClass,
-                                         IResourceFormat * pResFormat);
-
 public:
    cResourceManager();
    virtual ~cResourceManager();
@@ -124,53 +128,38 @@ public:
    virtual void AddSearchPath(const char * pszPath);
 
    // IResourceManager2 methods
-   virtual tResult AddResourceStore(const char * pszName, eResourceStorePriority priority);
-   virtual tResult Load(const tResKey & key, IResource * * ppResource);
-   virtual tResult RegisterResourceFormat(eResourceClass resClass,
-                                          IResourceFormat * pResFormat);
+   virtual tResult AddDirectory(const char * pszDir);
+   virtual tResult AddDirectoryTreeFlattened(const char * pszDir);
+   virtual tResult AddArchive(const char * pszArchive);
+   virtual tResult Load(const tResKey & key, void * * ppData);
+   virtual tResult Unload(const tResKey & key);
+   virtual tResult RegisterFormat(eResourceClass rc,
+                                  const char * pszExtension,
+                                  tResourceLoad pfnLoad,
+                                  tResourcePostload pfnPostload,
+                                  tResourceUnload pfnUnload);
 
 private:
-   void ConsumeDeferredResourceFormats();
-   static void DiscardDeferredResourceFormats();
-
-   struct sDeferredResourceFormat
-   {
-      eResourceClass resClass;
-      IResourceFormat * pResFormat;
-      sDeferredResourceFormat * pNext;
-   };
-
-   static struct sDeferredResourceFormat * gm_pDeferredResourceFormats;
-
-   static bool gm_bInitialized;
+   uint GetExtensionId(const char * pszExtension);
 
    typedef std::multimap<eResourceClass, cStr> tResClassExtMap;
-
-   class cStrLessNoCase
-   {
-   public:
-      bool operator()(const cStr & lhs, const cStr & rhs) const
-      {
-         return (stricmp(lhs.c_str(), rhs.c_str()) < 0) ? true : false;
-      }
-   };
-
-   typedef std::map<cStr, IResourceFormat *, cStrLessNoCase> tResExtFormatMap;
-
    tResClassExtMap m_resClassExtMap;
-   tResExtFormatMap m_resExtFormatMap;
 
    std::vector<cFilePath> m_searchPaths;
    std::vector<cZipArchive *> m_zipArchives;
+
+   struct sFormat
+   {
+      eResourceClass rc;
+      uint extensionId;
+      tResourceLoad pfnLoad;
+      tResourcePostload pfnPostload;
+      tResourceUnload pfnUnload;
+   };
+   std::vector<sFormat> m_formats;
+
+   std::vector<cStr> m_extensions;
 };
-
-////////////////////////////////////////
-
-cResourceManager::sDeferredResourceFormat * cResourceManager::gm_pDeferredResourceFormats = NULL;
-
-////////////////////////////////////////
-
-bool cResourceManager::gm_bInitialized = false;
 
 ////////////////////////////////////////
 
@@ -196,10 +185,6 @@ cResourceManager::~cResourceManager()
 
 tResult cResourceManager::Init()
 {
-   gm_bInitialized = true;
-
-   ConsumeDeferredResourceFormats();
-
    return S_OK;
 }
 
@@ -214,18 +199,7 @@ tResult cResourceManager::Term()
    }
    m_zipArchives.clear();
 
-   tResExtFormatMap::iterator iter2;
-   for (iter2 = m_resExtFormatMap.begin(); iter2 != m_resExtFormatMap.end(); iter2++)
-   {
-      SafeRelease(iter2->second);
-   }
-   m_resExtFormatMap.clear();
-
    m_resClassExtMap.clear();
-
-   DiscardDeferredResourceFormats();
-
-   gm_bInitialized = false;
 
    return S_OK;
 }
@@ -272,6 +246,93 @@ IReader * cResourceManager::Find(const char * pszName)
 
 void cResourceManager::AddSearchPath(const char * pszPath)
 {
+   Verify(AddDirectoryTreeFlattened(pszPath) == S_OK);
+}
+
+////////////////////////////////////////
+
+tResult cResourceManager::AddDirectory(const char * pszDir)
+{
+   if (pszDir == NULL)
+   {
+      return E_POINTER;
+   }
+
+   // HACK: support the legacy behavior
+   m_searchPaths.push_back(cFilePath(pszDir));
+
+   cFileIter * pFileIter = FileIterCreate();
+   if (pFileIter == NULL)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   cFileSpec spec("*.*");
+   spec.SetPath(cFilePath(pszDir));
+
+   char szFile[kMaxPath];
+   uint attribs;
+
+   pFileIter->IterBegin(spec.GetName());
+   while (pFileIter->IterNext(szFile, _countof(szFile), &attribs))
+   {
+      // TODO: do something; cache information about the file
+      if ((attribs & kFA_Directory) == kFA_Directory)
+      {
+         DebugMsg1("Dir: %s\n", szFile);
+      }
+      else
+      {
+         DebugMsg1("File: %s\n", szFile);
+      }
+   }
+   pFileIter->IterEnd();
+
+   delete pFileIter;
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cResourceManager::AddDirectoryTreeFlattened(const char * pszDir)
+{
+   if (pszDir == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cFilePath root(pszDir);
+   root.MakeFullPath();
+   if (AddDirectory(root.GetPath()) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   std::vector<std::string> dirs;
+   if (ListDirs(root, &dirs) > 0)
+   {
+      std::vector<std::string>::iterator iter;
+      for (iter = dirs.begin(); iter != dirs.end(); iter++)
+      {
+         cFilePath p(root);
+         p.AddRelative(iter->c_str());
+         if (AddDirectoryTreeFlattened(p.GetPath()) != S_OK)
+         {
+            return E_FAIL;
+         }
+      }
+   }
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cResourceManager::AddArchive(const char * pszArchive)
+{
+   // TODO
+#if 0
    cFileSpec f(pszPath);
    if (strcmp(f.GetFileExt(), "zip") == 0)
    {
@@ -288,86 +349,65 @@ void cResourceManager::AddSearchPath(const char * pszPath)
          }
       }
    }
-   else
-   {
-      cFilePath path(pszPath);
-      path.MakeFullPath();
-
-      m_searchPaths.push_back(path);
-
-      std::vector<std::string> dirs;
-      if (ListDirs(path, &dirs) > 0)
-      {
-         std::vector<std::string>::iterator iter;
-         for (iter = dirs.begin(); iter != dirs.end(); iter++)
-         {
-            cFilePath searchPath(path);
-            searchPath.AddRelative(iter->c_str());
-
-            AddSearchPath(searchPath.GetPath());
-         }
-      }
-   }
-}
-
-////////////////////////////////////////
-
-tResult cResourceManager::AddResourceStore(const char * pszName, eResourceStorePriority priority)
-{
-   // TODO
+#endif
    return E_NOTIMPL;
 }
 
 ////////////////////////////////////////
-// Given key no file extension
-//    Get all possible extensions and corresponding IResourceFormat interfaces
-//    Try each
-// Given key with extension
-//    Get specific IResourceFormat for that extension
 
-tResult cResourceManager::Load(const tResKey & key, IResource * * ppResource)
+tResult cResourceManager::Load(const tResKey & key, void * * ppData)
 {
-   if (ppResource == NULL)
+   if (ppData == NULL)
    {
       return E_POINTER;
    }
 
+   uint extensionId = kNoIndex;
    static const char kExtSep = '.';
-
    const char * pszExt = strrchr(key.GetName(), kExtSep);
    if (pszExt != NULL)
    {
-      cStr ext(++pszExt);
-
-      tResExtFormatMap::iterator f = m_resExtFormatMap.find(ext);
-      if (f != m_resExtFormatMap.end())
-      {
-         cAutoIPtr<IReader> pReader(Find(key.GetName()));
-
-         if (!!pReader)
-         {
-            return f->second->Load(key, pReader, ppResource);
-         }
-      }
+      extensionId = GetExtensionId(++pszExt);
    }
-   else
+
+   if (extensionId == kNoIndex)
    {
-      tResClassExtMap::iterator iter = m_resClassExtMap.lower_bound(key.GetClass());
-      tResClassExtMap::iterator end = m_resClassExtMap.upper_bound(key.GetClass());
-      for (; iter != end; iter++)
+      // TODO: look for possible extensions for the resource class
+      return E_FAIL;
+   }
+
+   cFileSpec file(key.GetName());
+
+   std::vector<cFilePath>::iterator iter = m_searchPaths.begin();
+   std::vector<cFilePath>::iterator end = m_searchPaths.end();
+   for (; iter != end; iter++)
+   {
+      file.SetPath(*iter);
+      if (file.Exists())
       {
-         cStr name(key.GetName());
-         name += kExtSep;
-         name += iter->second;
-
-         cAutoIPtr<IReader> pReader(Find(name.c_str()));
-
-         if (!!pReader)
+         cAutoIPtr<IReader> pReader(FileCreateReader(file));
+         if (!pReader)
          {
-            tResExtFormatMap::iterator f = m_resExtFormatMap.find(iter->second);
-            if (f != m_resExtFormatMap.end())
+            return E_OUTOFMEMORY;
+         }
+
+         std::vector<sFormat>::iterator fIter = m_formats.begin();
+         std::vector<sFormat>::iterator fEnd = m_formats.end();
+         for (; fIter != fEnd; fIter++)
+         {
+            if (fIter->extensionId == extensionId && fIter->rc == key.GetClass())
             {
-               return f->second->Load(tResKey(name, key.GetClass()), pReader, ppResource);
+               if (fIter->pfnLoad != NULL)
+               {
+                  if ((*ppData = (*fIter->pfnLoad)(pReader)) != NULL)
+                  {
+                     return S_OK;
+                  }
+                  else
+                  {
+                     return E_FAIL;
+                  }
+               }
             }
          }
       }
@@ -378,11 +418,20 @@ tResult cResourceManager::Load(const tResKey & key, IResource * * ppResource)
 
 ////////////////////////////////////////
 
+tResult cResourceManager::Unload(const tResKey & key)
+{
+   return E_NOTIMPL;
+}
+
+////////////////////////////////////////
+
+AssertOnce(kNUMRESOURCECLASSES == 5); // If this fails, GetResourceClassName may need to be updated
 static const char * GetResourceClassName(eResourceClass rc)
 {
    switch (rc)
    {
    case kRC_Image: return "Image";
+   case kRC_Texture: return "Texture";
    case kRC_Mesh: return "Mesh";
    case kRC_Text: return "Text";
    case kRC_Font: return "Font";
@@ -390,116 +439,71 @@ static const char * GetResourceClassName(eResourceClass rc)
    }
 }
 
-tResult cResourceManager::RegisterResourceFormat(eResourceClass resClass,
-                                                 IResourceFormat * pResFormat)
+////////////////////////////////////////
+
+tResult cResourceManager::RegisterFormat(eResourceClass rc,
+                                         const char * pszExtension,
+                                         tResourceLoad pfnLoad,
+                                         tResourcePostload pfnPostload,
+                                         tResourceUnload pfnUnload)
 {
-   if (pResFormat == NULL)
+   if (pfnLoad == NULL)
    {
+      // Must have at least a load function
+      WarnMsg1("No load function specified when registering resource %s\n",
+            pszExtension != NULL ? pszExtension : "<NONE>");
       return E_POINTER;
    }
 
-   std::vector<cStr> extensions;
-   if (pResFormat->GetSupportedFileExtensions(&extensions) == S_OK)
+   if (pfnUnload == NULL)
    {
-      std::vector<cStr>::iterator iter = extensions.begin();
-      std::vector<cStr>::iterator end = extensions.end();
-      for (; iter != end; iter++)
+      WarnMsg1("No unload function specified for resource %s\n",
+            pszExtension != NULL ? pszExtension : "<NONE>");
+   }
+
+   uint extensionId = kNoIndex;
+   if (pszExtension != NULL)
+   {
+      extensionId = GetExtensionId(pszExtension);
+   }
+
+   std::vector<sFormat>::iterator iter = m_formats.begin();
+   std::vector<sFormat>::iterator end = m_formats.end();
+   for (; iter != end; iter++)
+   {
+      if (iter->extensionId == extensionId)
       {
-         const cStr & extension = *iter;
-
-         if (m_resExtFormatMap.find(extension) != m_resExtFormatMap.end())
-         {
-            WarnMsg1("Extension %s already registered to a different resource format\n", extension.c_str());
-            return S_FALSE;
-         }
-
-         tResClassExtMap::iterator iter = m_resClassExtMap.lower_bound(resClass);
-         tResClassExtMap::iterator end = m_resClassExtMap.upper_bound(resClass);
-         for (; iter != end; iter++)
-         {
-            if (iter->second == extension)
-            {
-               WarnMsg2("Extension %s already registered as resource class %s\n",
-                  extension.c_str(), GetResourceClassName(iter->first));
-               return S_FALSE;
-            }
-         }
-
-         LocalMsg3("File extension \"%s\" registered as type %s to resource format 0x%08x\n",
-            extension.c_str(), GetResourceClassName(resClass), pResFormat);
-
-         m_resClassExtMap.insert(std::make_pair(resClass, extension));
-         m_resExtFormatMap.insert(std::make_pair(extension, CTAddRef(pResFormat)));
+         WarnMsg1("Resource format with file extension %s already registered\n",
+            pszExtension != NULL ? pszExtension : "<NONE>");
+         return E_FAIL;
       }
    }
+
+   sFormat format;
+   format.rc = rc;
+   format.extensionId = extensionId;
+   format.pfnLoad = pfnLoad;
+   format.pfnPostload = pfnPostload;
+   format.pfnUnload = pfnUnload;
+   m_formats.push_back(format);
 
    return S_OK;
 }
 
 ////////////////////////////////////////
 
-tResult RegisterResourceFormat(eResourceClass resClass,
-                               IResourceFormat * pResFormat)
+uint cResourceManager::GetExtensionId(const char * pszExtension)
 {
-   if (pResFormat == NULL)
+   Assert(pszExtension != NULL);
+
+   std::vector<cStr>::iterator f = std::find(m_extensions.begin(), m_extensions.end(), pszExtension);
+   if (f == m_extensions.end())
    {
-      return E_POINTER;
+      m_extensions.push_back(pszExtension);
+      return m_extensions.size() - 1;
    }
 
-   // If resource manager is already up, register it directly.
-   // Otherwise, add it to the deferred list.
-   if (cResourceManager::gm_bInitialized)
-   {
-      UseGlobal(ResourceManager2);
-      return pResourceManager2->RegisterResourceFormat(resClass, pResFormat);
-   }
-   else
-   {
-      cResourceManager::sDeferredResourceFormat * p = new cResourceManager::sDeferredResourceFormat;
-      if (p == NULL)
-      {
-         return E_OUTOFMEMORY;
-      }
-
-      p->resClass = resClass;
-      p->pResFormat = CTAddRef(pResFormat);
-      p->pNext = cResourceManager::gm_pDeferredResourceFormats;
-      cResourceManager::gm_pDeferredResourceFormats = p;
-      return S_OK;
-   }
-
-   return E_FAIL;
-}
-
-////////////////////////////////////////
-
-void cResourceManager::ConsumeDeferredResourceFormats()
-{
-   while (gm_pDeferredResourceFormats != NULL)
-   {
-      RegisterResourceFormat(
-         gm_pDeferredResourceFormats->resClass, 
-         gm_pDeferredResourceFormats->pResFormat);
-
-      SafeRelease(gm_pDeferredResourceFormats->pResFormat);
-
-      sDeferredResourceFormat * p = gm_pDeferredResourceFormats;
-      gm_pDeferredResourceFormats = gm_pDeferredResourceFormats->pNext;
-      delete p;
-   }
-}
-
-////////////////////////////////////////
-
-void cResourceManager::DiscardDeferredResourceFormats()
-{
-   sDeferredResourceFormat * p = gm_pDeferredResourceFormats;
-   while (p != NULL)
-   {
-      gm_pDeferredResourceFormats = gm_pDeferredResourceFormats->pNext;
-      delete p;
-      p = gm_pDeferredResourceFormats;
-   }
+   return f - m_extensions.begin();
 }
 
 ////////////////////////////////////////

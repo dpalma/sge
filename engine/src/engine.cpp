@@ -47,16 +47,12 @@ static bool ScriptExecResource(IScriptInterpreter * pInterpreter, const char * p
 {
    bool bResult = false;
 
-   cAutoIPtr<IResource> pResource;
+   char * pszCode = NULL;
    UseGlobal(ResourceManager2);
-   if (pResourceManager2->Load(tResKey(pszResource, kRC_Text), &pResource) == S_OK)
+   if (pResourceManager2->Load(tResKey(pszResource, kRC_Text), (void**)&pszCode) == S_OK)
    {
-      char * pszCode;
-      if (pResource->GetData((void**)&pszCode) == S_OK)
-      {
-         bResult = SUCCEEDED(pInterpreter->ExecString(pszCode));
-         delete [] pszCode;
-      }
+      bResult = SUCCEEDED(pInterpreter->ExecString(pszCode));
+      delete [] pszCode;
    }
 
    return bResult;

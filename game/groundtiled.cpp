@@ -17,7 +17,6 @@
 #include "vec2.h"
 #include "vec3.h"
 #include "techmath.h"
-#include "resmgr.h"
 #include "globalobj.h"
 
 #include "dbgalloc.h" // must be last header

@@ -298,16 +298,12 @@ bool LoadBitmap(const tChar * pszBitmap, HBITMAP * phBitmap)
 
    bool bResult = false;
 
-   cAutoIPtr<IResource> pRes;
+   cImageData * pImageData = NULL;
    UseGlobal(ResourceManager2);
-   if (pResourceManager2->Load(tResKey(pszBitmap, kRC_Image), &pRes) == S_OK)
+   if (pResourceManager2->Load(tResKey(pszBitmap, kRC_Image), (void**)&pImageData) == S_OK)
    {
-      cImageData * pImageData = NULL;
-      if (pRes->GetData((void**)&pImageData) == S_OK && pImageData != NULL)
-      {
-         bResult = LoadBitmap(pImageData, phBitmap);
-         delete pImageData;
-      }
+      bResult = LoadBitmap(pImageData, phBitmap);
+      delete pImageData;
    }
 
    if (!bResult)
