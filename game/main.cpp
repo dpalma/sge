@@ -4,7 +4,6 @@
 #include "stdhdr.h"
 
 #include "ggl.h"
-#include "gcommon.h"
 #include "uimgr.h"
 #include "sim.h"
 #include "groundtiled.h"
@@ -67,8 +66,10 @@ static const char kszSelIndicatorMesh[] = "arrow.ms3d";
 
 cAutoIPtr<cGameCameraController> g_pGameCameraController;
 
-cSceneCameraGroup * g_pGameCamera = NULL;
-cSceneCameraGroup * g_pUICamera = NULL;
+cSceneCamera * g_pGameCamera = NULL;
+cSceneGroup * g_pGameGroup = NULL;
+cSceneCamera * g_pUICamera = NULL;
+cSceneGroup * g_pUIGroup = NULL;
 
 cTerrainNode * g_pTerrainRoot = NULL;
 
@@ -262,7 +263,7 @@ void cSpinner::OnFrame(double elapsedTime)
 class cSelectionIndicatorNode : public cSceneMesh
 {
 public:
-   cSelectionIndicatorNode();
+   cSelectionIndicatorNode(float y);
    ~cSelectionIndicatorNode();
 
 private:
@@ -270,11 +271,11 @@ private:
    cSpinner * m_pSpinner;
 };
 
-cSelectionIndicatorNode::cSelectionIndicatorNode()
+cSelectionIndicatorNode::cSelectionIndicatorNode(float y)
  : m_pSpinner(new cSpinner(this, kRotateDegreesPerSec))
 {
    SetPickable(false);
-   // TODO: SetTranslation(tVec3(0, parentY, 0));
+   SetTranslation(tVec3(0, y, 0));
 }
 
 cSelectionIndicatorNode::~cSelectionIndicatorNode()
@@ -317,7 +318,7 @@ void cSelectableSceneNode::Hit()
 {
    if (m_pSel == NULL)
    {
-      m_pSel = new cSelectionIndicatorNode;
+      m_pSel = new cSelectionIndicatorNode(2 * GetBoundingSphereRadius());
       m_pSel->SetMesh(kszSelIndicatorMesh);
       AddChild(m_pSel);
    }
@@ -365,8 +366,8 @@ SCRIPT_DEFINE_FUNCTION(EntitySpawnTest)
             pNode->SetMesh(ScriptArgAsString(0));
             pNode->SetTranslation(tVec3(x,y,z));
 
-            Assert(g_pGameCamera != NULL);
-            g_pGameCamera->AddChild(pNode);
+            Assert(g_pGameGroup != NULL);
+            g_pGameGroup->AddChild(pNode);
          }
       }
       else
@@ -559,13 +560,15 @@ bool MainInit(int argc, char * argv[])
    // display is created so that there is a gl context
    InputInit();
 
-   g_pGameCamera = new cSceneCameraGroup;
+   g_pGameGroup = new cSceneGroup;
+
+   g_pGameCamera = new cSceneCamera;
    g_pGameCamera->SetPerspective(g_fov, (float)width / height, kZNear, kZFar);
 
    if (ConfigGet("terrain", &temp) == S_OK)
    {
       g_pTerrainRoot = TerrainNodeCreate(temp, kGroundScaleY);
-      g_pGameCamera->AddChild(g_pTerrainRoot);
+      g_pGameGroup->AddChild(g_pTerrainRoot);
    }
    else
    {
@@ -576,10 +579,11 @@ bool MainInit(int argc, char * argv[])
    g_pGameCameraController = new cGameCameraController(g_pGameCamera);
    g_pGameCameraController->Connect();
 
-   g_pUICamera = new cSceneCameraGroup;
+   g_pUICamera = new cSceneCamera;
    g_pUICamera->SetOrtho(0, width, height, 0, -99999, 99999);
 
-   g_pUICamera->AddChild(new cUIManagerSceneNode);
+   g_pUIGroup = new cSceneGroup;
+   g_pUIGroup->AddChild(new cUIManagerSceneNode);
 
    ScriptCallFunction("GameInit");
 
@@ -621,8 +625,10 @@ void MainTerm()
    if (g_pGameCameraController)
       g_pGameCameraController->Disconnect();
 
+   delete g_pGameGroup, g_pGameGroup = NULL;
    delete g_pGameCamera, g_pGameCamera = NULL;
 
+   delete g_pUIGroup, g_pUIGroup= NULL;
    delete g_pUICamera, g_pUICamera = NULL;
 
    StopGlobalObjects();
@@ -641,9 +647,13 @@ void MainFrame()
 
    g_pRenderDevice->Clear();
 
-   g_pGameCamera->Render();
+   g_pRenderDevice->SetProjectionMatrix(g_pGameCamera->GetProjectionMatrix());
+   g_pRenderDevice->SetViewMatrix(g_pGameCamera->GetModelViewMatrix());
+   g_pGameGroup->Render();
 
-   g_pUICamera->Render();
+   g_pRenderDevice->SetProjectionMatrix(g_pUICamera->GetProjectionMatrix());
+   g_pRenderDevice->SetViewMatrix(g_pUICamera->GetModelViewMatrix());
+   g_pUIGroup->Render();
 
    g_pRenderDevice->EndScene();
 

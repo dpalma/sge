@@ -13,8 +13,6 @@
 #include "vec3.h"
 #include "techmath.h"
 
-#include "ggl.h"
-
 #include "dbgalloc.h" // must be last header
 
 extern IRenderDevice * AccessRenderDevice();
@@ -24,12 +22,14 @@ extern IRenderDevice * AccessRenderDevice();
 struct sTerrainVertex
 {
    float u, v;
+   float r, g, b;
    tVec3 pos;
 };
 
 sVertexElement g_terrainVertexDecl[] =
 {
    { kVDU_TexCoord, kVDT_Float2 },
+   { kVDU_Color, kVDT_Float3 },
    { kVDU_Position, kVDT_Float3 }
 };
 
@@ -50,7 +50,6 @@ public:
    virtual void Render();
 
 private:
-   cAutoIPtr<IVertexDeclaration> m_pVertexDecl;
    cAutoIPtr<IVertexBuffer> m_pVertexBuffer;
    cAutoIPtr<IIndexBuffer> m_pIndexBuffer;
    cAutoIPtr<IMaterial> m_pMaterial;
@@ -73,6 +72,10 @@ cTiledGround::~cTiledGround()
 
 ///////////////////////////////////////
 
+static const float kRed = 0;
+static const float kGreen = 0.5f;
+static const float kBlue = 0;
+
 bool cTiledGround::Init(cHeightMap * pHeightMap)
 {
    const int kStepSize = 16;
@@ -91,14 +94,15 @@ bool cTiledGround::Init(cHeightMap * pHeightMap)
       return false;
    }
 
+   cAutoIPtr<IVertexDeclaration> pVertexDecl;
    if (AccessRenderDevice()->CreateVertexDeclaration(g_terrainVertexDecl,
-      _countof(g_terrainVertexDecl), &m_pVertexDecl) != S_OK)
+      _countof(g_terrainVertexDecl), &pVertexDecl) != S_OK)
    {
       return false;
    }
 
    if (AccessRenderDevice()->CreateVertexBuffer(kNumVerts,
-      kBU_Default, m_pVertexDecl, kBP_Auto, &m_pVertexBuffer) != S_OK)
+      kBU_Default, pVertexDecl, kBP_Auto, &m_pVertexBuffer) != S_OK)
    {
       return false;
    }
@@ -120,18 +124,30 @@ bool cTiledGround::Init(cHeightMap * pHeightMap)
          {
             pVertexData[index].u = 0;
             pVertexData[index].v = 0;
+            pVertexData[index].r = kRed;
+            pVertexData[index].g = kGreen;
+            pVertexData[index].b = kBlue;
             pVertexData[index++].pos = tVec3(x1, pHeightMap->Height(Round(x1),Round(z1)), z1);
 
             pVertexData[index].u = 1;
             pVertexData[index].v = 0;
+            pVertexData[index].r = kRed;
+            pVertexData[index].g = kGreen;
+            pVertexData[index].b = kBlue;
             pVertexData[index++].pos = tVec3(x2, pHeightMap->Height(Round(x2),Round(z1)), z1);
 
             pVertexData[index].u = 1;
             pVertexData[index].v = 1;
+            pVertexData[index].r = kRed;
+            pVertexData[index].g = kGreen;
+            pVertexData[index].b = kBlue;
             pVertexData[index++].pos = tVec3(x2, pHeightMap->Height(Round(x2),Round(z2)), z2);
 
             pVertexData[index].u = 0;
             pVertexData[index].v = 1;
+            pVertexData[index].r = kRed;
+            pVertexData[index].g = kGreen;
+            pVertexData[index].b = kBlue;
             pVertexData[index++].pos = tVec3(x1, pHeightMap->Height(Round(x1),Round(z2)), z2);
          }
       }
@@ -230,10 +246,7 @@ void cTerrainNode::Render()
 {
    if (m_pGround != NULL)
    {
-      glPushAttrib(GL_CURRENT_BIT);
-      glColor3f(0,0.5,0);
       m_pGround->Render();
-      glPopAttrib();
    }
 }
 

@@ -9,6 +9,7 @@
 #include "boundingvolume.h"
 #include "raycast.h"
 #include "ggl.h"
+#include "scenegroup.h"
 
 #include "vec4.h"
 #include "configapi.h"
@@ -19,6 +20,8 @@
 #endif
 
 #include "dbgalloc.h" // must be last header
+
+extern cSceneGroup * g_pGameGroup; // HACK
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -68,7 +71,7 @@ void cPickNodeVisitor::VisitSceneNode(cSceneNode * pNode)
 
 ///////////////////////////////////////
 
-cGameCameraController::cGameCameraController(cSceneCameraGroup * pCamera)
+cGameCameraController::cGameCameraController(cSceneCamera * pCamera)
  : m_pitch(kDefaultPitch),
    m_oneOverTangentPitch(0),
    m_elevation(kDefaultElevation),
@@ -135,7 +138,7 @@ bool cGameCameraController::OnMouseEvent(int x, int y, uint mouseState, double t
       if (BuildPickRay(x, y, &dir))
       {
          cPickNodeVisitor pickVisitor(dir, GetEyePosition());
-         m_pCamera->Traverse(&pickVisitor);
+         g_pGameGroup->Traverse(&pickVisitor);
 
          if (pickVisitor.m_hitNodes.empty())
          {

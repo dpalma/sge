@@ -5,8 +5,6 @@
 
 #include "scenenode.h"
 
-#include "render.h"
-
 #include "dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -19,8 +17,7 @@ static const int kDefaultCaps = kSNC_Pickable;
 ///////////////////////////////////////
 
 cSceneNode::cSceneNode()
- : m_pParent(NULL),
-   m_caps(kDefaultCaps),
+ : m_caps(kDefaultCaps),
    m_state(0)
 {
 }
@@ -37,27 +34,6 @@ void cSceneNode::Traverse(cSceneNodeVisitor * pVisitor)
 {
    Assert(pVisitor != NULL);
    pVisitor->VisitSceneNode(this);
-}
-
-///////////////////////////////////////
-
-void cSceneNode::Render()
-{
-}
-
-///////////////////////////////////////
-
-void cSceneNode::SetParent(cSceneNode * pParent)
-{
-   if (pParent != m_pParent)
-   {
-      if (m_pParent != NULL)
-      {
-   // TODO
-   //      m_pParent->RemoveChild(this);
-      }
-      m_pParent = pParent;
-   }
 }
 
 

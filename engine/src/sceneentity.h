@@ -40,9 +40,6 @@ public:
    cSceneNode();
    virtual ~cSceneNode() = 0;
 
-   const cSceneNode * GetParent() const;
-   void SetParent(cSceneNode * pParent);
-
    bool IsPickable() const;
    void SetPickable(bool pickable);
 
@@ -51,30 +48,19 @@ public:
 
    virtual void Traverse(cSceneNodeVisitor * pVisitor);
 
-   virtual void Render();
+   virtual void Render() = 0;
 
    virtual const cBoundingVolume * GetBoundingVolume() const { return NULL; }
+   virtual float GetBoundingSphereRadius() const { return 0; }
 
    // @TODO: should this be pushed further down the class hierarchy?
    virtual void Hit() {}
    virtual void ClearHitState() {}
 
-protected:
-   virtual bool QueryStateChange(uint newState) { return true; }
-
 private:
-   cSceneNode * m_pParent;
-
    uint m_caps;
    uint m_state;
 };
-
-///////////////////////////////////////
-
-inline const cSceneNode * cSceneNode::GetParent() const
-{
-   return m_pParent;
-}
 
 ///////////////////////////////////////
 
@@ -109,8 +95,7 @@ inline void cSceneNode::SetSelected(bool selected)
       newState |= kSNS_Selected;
    else
       newState &= ~kSNS_Selected;
-   if (QueryStateChange(newState))
-      m_state = newState;
+   m_state = newState;
 }
 
 

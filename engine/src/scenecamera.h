@@ -4,7 +4,6 @@
 #ifndef INCLUDED_SCENECAMERA_H
 #define INCLUDED_SCENECAMERA_H
 
-#include "scenegroup.h"
 #include "frustum.h"
 #include "matrix4.h"
 
@@ -12,21 +11,19 @@
 #pragma once
 #endif
 
-class cSceneNode;
-
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cSceneCameraGroup
+// CLASS: cSceneCamera
 //
 
-class cSceneCameraGroup : public cSceneGroup
+class cSceneCamera
 {
-   cSceneCameraGroup(const cSceneCameraGroup &);
-   const cSceneCameraGroup & operator =(const cSceneCameraGroup &);
+   cSceneCamera(const cSceneCamera &);
+   const cSceneCamera & operator =(const cSceneCamera &);
 
 public:
-   cSceneCameraGroup();
-   virtual ~cSceneCameraGroup();
+   cSceneCamera();
+   ~cSceneCamera();
 
    void SetPerspective(float fov, float aspect, float znear, float zfar);
    void SetOrtho(float left, float right, float bottom, float top, float znear, float zfar);
@@ -39,8 +36,6 @@ public:
 
    const sMatrix4 & GetModelViewProjectionMatrix() const;
    const sMatrix4 & GetModelViewProjectionInverseMatrix() const;
-
-   virtual void Render();
 
 private:
    void UpdateCompositeMatrices();
@@ -56,14 +51,14 @@ private:
 
 ///////////////////////////////////////
 
-inline const sMatrix4 & cSceneCameraGroup::GetModelViewMatrix() const
+inline const sMatrix4 & cSceneCamera::GetModelViewMatrix() const
 {
    return m_modelView;
 }
 
 ///////////////////////////////////////
 
-inline void cSceneCameraGroup::SetModelViewMatrix(const sMatrix4 & modelView)
+inline void cSceneCamera::SetModelViewMatrix(const sMatrix4 & modelView)
 {
    m_modelView = modelView;
    UpdateCompositeMatrices();
@@ -71,14 +66,14 @@ inline void cSceneCameraGroup::SetModelViewMatrix(const sMatrix4 & modelView)
 
 ///////////////////////////////////////
 
-inline const sMatrix4 & cSceneCameraGroup::GetProjectionMatrix() const
+inline const sMatrix4 & cSceneCamera::GetProjectionMatrix() const
 {
    return m_projection;
 }
 
 ///////////////////////////////////////
 
-inline void cSceneCameraGroup::SetProjectionMatrix(const sMatrix4 & projection)
+inline void cSceneCamera::SetProjectionMatrix(const sMatrix4 & projection)
 {
    m_projection = projection;
    UpdateCompositeMatrices();
@@ -86,14 +81,14 @@ inline void cSceneCameraGroup::SetProjectionMatrix(const sMatrix4 & projection)
 
 ///////////////////////////////////////
 
-inline const sMatrix4 & cSceneCameraGroup::GetModelViewProjectionMatrix() const
+inline const sMatrix4 & cSceneCamera::GetModelViewProjectionMatrix() const
 {
    return m_modelViewProjection;
 }
 
 ///////////////////////////////////////
 
-inline const sMatrix4 & cSceneCameraGroup::GetModelViewProjectionInverseMatrix() const
+inline const sMatrix4 & cSceneCamera::GetModelViewProjectionInverseMatrix() const
 {
    return m_modelViewProjectionInverse;
 }

@@ -5,18 +5,17 @@
 
 #include "render.h"
 #include "scenecamera.h"
-#include "gcommon.h"
 
 #include "dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cSceneCameraGroup
+// CLASS: cSceneCamera
 //
 
 ///////////////////////////////////////
 
-cSceneCameraGroup::cSceneCameraGroup()
+cSceneCamera::cSceneCamera()
 {
    m_projection.Identity();
    m_modelView.Identity();
@@ -24,13 +23,13 @@ cSceneCameraGroup::cSceneCameraGroup()
 
 ///////////////////////////////////////
 
-cSceneCameraGroup::~cSceneCameraGroup()
+cSceneCamera::~cSceneCamera()
 {
 }
 
 ///////////////////////////////////////
 
-void cSceneCameraGroup::SetPerspective(float fov, float aspect, float znear, float zfar)
+void cSceneCamera::SetPerspective(float fov, float aspect, float znear, float zfar)
 {
    MatrixPerspective(fov, aspect, znear, zfar, &m_projection);
    UpdateCompositeMatrices();
@@ -38,7 +37,7 @@ void cSceneCameraGroup::SetPerspective(float fov, float aspect, float znear, flo
 
 ///////////////////////////////////////
 
-void cSceneCameraGroup::SetOrtho(float left, float right, float bottom, float top, float znear, float zfar)
+void cSceneCamera::SetOrtho(float left, float right, float bottom, float top, float znear, float zfar)
 {
    MatrixOrtho(left, right, bottom, top, znear, zfar, &m_projection);
    UpdateCompositeMatrices();
@@ -46,20 +45,11 @@ void cSceneCameraGroup::SetOrtho(float left, float right, float bottom, float to
 
 ///////////////////////////////////////
 
-void cSceneCameraGroup::UpdateCompositeMatrices()
+void cSceneCamera::UpdateCompositeMatrices()
 {
    m_modelViewProjection = GetProjectionMatrix() * GetModelViewMatrix();
    MatrixInvert(GetModelViewProjectionMatrix(), &m_modelViewProjectionInverse);
    m_frustum.ExtractPlanes(GetModelViewProjectionMatrix());
-}
-
-///////////////////////////////////////
-
-void cSceneCameraGroup::Render()
-{
-   AccessRenderDevice()->SetProjectionMatrix(GetProjectionMatrix());
-   AccessRenderDevice()->SetViewMatrix(GetModelViewMatrix());
-   cSceneGroup::Render();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

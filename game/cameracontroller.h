@@ -14,7 +14,7 @@
 #pragma once
 #endif
 
-class cSceneCameraGroup;
+class cSceneCamera;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -27,7 +27,7 @@ class cGameCameraController : public cComObject2<IMPLEMENTS(ISimClient), IMPLEME
    const cGameCameraController & operator =(const cGameCameraController &);
 
 public:
-   cGameCameraController(cSceneCameraGroup * pCamera);
+   cGameCameraController(cSceneCamera * pCamera);
    ~cGameCameraController();
 
    void Connect();
@@ -57,7 +57,7 @@ private:
 
    sMatrix4 m_rotation;
 
-   cSceneCameraGroup * m_pCamera;
+   cSceneCamera * m_pCamera;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

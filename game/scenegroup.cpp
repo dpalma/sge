@@ -39,7 +39,6 @@ void cSceneGroup::AddChild(cSceneNode * pNode)
 {
    Assert(pNode != NULL);
    m_children.push_back(pNode);
-   pNode->SetParent(this);
 }
 
 ///////////////////////////////////////
