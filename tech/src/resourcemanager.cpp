@@ -140,7 +140,17 @@ private:
    static bool gm_bInitialized;
 
    typedef std::multimap<eResourceClass, cStr> tResClassExtMap;
-   typedef std::map<cStr, IResourceFormat *> tResExtFormatMap;
+
+   class cStrLessNoCase
+   {
+   public:
+      bool operator()(const cStr & lhs, const cStr & rhs) const
+      {
+         return (stricmp(lhs.c_str(), rhs.c_str()) < 0) ? true : false;
+      }
+   };
+
+   typedef std::map<cStr, IResourceFormat *, cStrLessNoCase> tResExtFormatMap;
 
    tResClassExtMap m_resClassExtMap;
    tResExtFormatMap m_resExtFormatMap;
