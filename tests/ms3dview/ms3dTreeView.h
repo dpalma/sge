@@ -35,7 +35,6 @@ public:
 	virtual void OnInitialUpdate();
 	protected:
 	virtual void OnDraw(CDC* pDC);      // overridden to draw this view
-	virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	//}}AFX_VIRTUAL
 

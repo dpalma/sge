@@ -9,6 +9,10 @@
 #include "material.h"
 #include "color.h"
 
+#include "animation.h"
+
+#include <vector>
+
 #include "resource.h"       // main symbols
 
 #ifdef _DEBUG
@@ -156,14 +160,58 @@ void cMs3dTreeView::OnInitialUpdate()
             }
          }
       }
-   }
-}
 
-void cMs3dTreeView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
-{
-	// TODO: Add your specialized code here and/or call the base class
-	
-	
+      int nJoints = pDoc->GetModel()->GetJointCount();
+      if (nJoints > 0)
+      {
+         HTREEITEM hJoints = GetTreeCtrl().InsertItem("Joints");
+         if (hJoints != NULL)
+         {
+            for (int i = 0; i < nJoints; i++)
+            {
+               const cMs3dJoint & joint = pDoc->GetModel()->GetJoint(i);
+               HTREEITEM hJoint = GetTreeCtrl().InsertItem(joint.GetName(), hJoints);
+               if (hJoint != NULL)
+               {
+                  IKeyFrameInterpolator * pInterp = const_cast<cMs3dJoint &>(joint).AccessInterpolator();
+                  if (pInterp != NULL)
+                  {
+                     uint n;
+                     CString str;
+                     if ((pInterp->GetRotationKeys(NULL, &n) == S_OK) && (n > 0))
+                     {
+                        str.Format("Rotation keys (%d)", n);
+                        HTREEITEM hRotations = GetTreeCtrl().InsertItem(str, hJoint);
+                        if (hRotations != NULL)
+                        {
+                           std::vector<sKeyFrameQuat> keys(n);
+                           if (pInterp->GetRotationKeys(&keys[0], &n) == S_OK)
+                           {
+                              std::vector<sKeyFrameQuat>::iterator iter;
+                              for (iter = keys.begin(); iter != keys.end(); iter++)
+                              {
+                                 str.Format("Time %.2f: <%.2f, %.2f, %.2f, %.2f>",
+                                    iter->time, iter->value.x, iter->value.y, iter->value.z, iter->value.w);
+                                 GetTreeCtrl().InsertItem(str, hRotations);
+                              }
+                           }
+                        }
+                     }
+                     if ((pInterp->GetTranslationKeys(NULL, &n) == S_OK) && (n > 0))
+                     {
+                        str.Format("Translation keys (%d)", n);
+                        HTREEITEM hTranslations = GetTreeCtrl().InsertItem(str, hJoint);
+                        if (hTranslations != NULL)
+                        {
+                           // TODO
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      }
+   }
 }
 
 BOOL cMs3dTreeView::PreCreateWindow(CREATESTRUCT& cs) 
