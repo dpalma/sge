@@ -48,9 +48,19 @@ tResult ParseCommandLine(int argc, char *argv[], IConfig * pConfig)
          cStr key, value;
          if (ParseDictionaryLine(argv[i] + 1, &key, &value, NULL) && !key.empty())
          {
-            curKey = key;
-            curVal = value.empty() ? value : "1";
-            bLastWasKey = true;
+            if (value.empty())
+            {
+               curKey = key;
+               curVal = "1";
+               bLastWasKey = true;
+            }
+            else
+            {
+               pConfig->Set(key, value);
+               curKey.erase();
+               curVal.erase();
+               bLastWasKey = false;
+            }
          }
       }
       else if (argv[i][0] == '-')
@@ -74,7 +84,7 @@ tResult ParseCommandLine(int argc, char *argv[], IConfig * pConfig)
    }
 
    // set final key
-   if (curKey.GetLength() > 0)
+   if (bLastWasKey && curKey.GetLength() > 0)
    {
       pConfig->Set(curKey, curVal);
    }
@@ -133,7 +143,21 @@ CPPUNIT_TEST_SUITE_REGISTRATION(cConfigTests);
 void cConfigTests::TestParseCmdLine()
 {
    cAutoIPtr<IDictionary> pDict(DictionaryCreate());
-   // TODO
+   pDict->Set("test1", "val1");
+   pDict->Set("test2", "val2");
+   static char *argv[] =
+   {
+      "+data=../data",
+      "-test1",
+      "+test3 = val3",
+   };
+   CPPUNIT_ASSERT(ParseCommandLine(_countof(argv), argv, pDict) == S_OK);
+   CPPUNIT_ASSERT(pDict->IsSet("test1") == S_FALSE);
+   cStr temp;
+   CPPUNIT_ASSERT(pDict->Get("test2", &temp) == S_OK);
+   CPPUNIT_ASSERT(strcmp(temp.c_str(), "val2") == 0);
+   CPPUNIT_ASSERT(pDict->Get("test3", &temp) == S_OK);
+   CPPUNIT_ASSERT(strcmp(temp.c_str(), "val3") == 0);
 }
 
 ///////////////////////////////////////

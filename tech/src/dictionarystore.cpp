@@ -23,16 +23,20 @@ static const char kSepChar = '=';
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static bool SplitString(const char * psz, char split, cStr * pLeft, cStr * pRight)
+static bool SplitString(const tChar * psz, char split, cStr * pLeft, cStr * pRight)
 {
    Assert(psz != NULL);
-   Assert(pLeft != NULL);
-   Assert(pRight != NULL);
    const char * pszSplit = strrchr(psz, split);
    if (pszSplit != NULL)
    {
-      *pLeft = std::string(psz, pszSplit - psz).c_str();
-      *pRight = pszSplit + 1;
+      if (pLeft != NULL)
+      {
+         *pLeft = std::string(psz, pszSplit - psz).c_str();
+      }
+      if (pRight != NULL)
+      {
+         *pRight = pszSplit + 1;
+      }
       return true;
    }
    return false;
@@ -43,7 +47,9 @@ static void TrimLeadingSpace(cStr * pStr)
    Assert(pStr != NULL);
    cStr::size_type index = pStr->find_first_not_of(" \t\r\n");
    if (index != cStr::npos)
+   {
       pStr->erase(0, index);
+   }
 }
 
 static void TrimTrailingSpace(cStr * pStr)
@@ -51,7 +57,9 @@ static void TrimTrailingSpace(cStr * pStr)
    Assert(pStr != NULL);
    cStr::size_type index = pStr->find_last_not_of(" \t\r\n");
    if (index != cStr::npos)
+   {
       pStr->erase(index + 1);
+   }
 }
 
 inline void TrimSpace(cStr * pStr)
@@ -65,17 +73,19 @@ bool ParseDictionaryLine(const tChar * psz, cStr * pKey, cStr * pValue, cStr * p
    Assert(psz != NULL);
    Assert(pKey != NULL);
    Assert(pValue != NULL);
-   Assert(pComment != NULL);
    cStr temp;
    if (SplitString(psz, kCommentChar, &temp, pComment))
    {
       psz = temp.c_str();
+      if (pComment != NULL)
+      {
+         TrimSpace(pComment);
+      }
    }
    if (SplitString(psz, kSepChar, pKey, pValue))
    {
       TrimSpace(pKey);
       TrimSpace(pValue);
-      TrimSpace(pComment);
       return true;
    }
    return false;
