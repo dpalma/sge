@@ -322,6 +322,9 @@
 				RelativePath=".\cameracontroller.cpp">
 			</File>
 			<File
+				RelativePath="cmds.cpp">
+			</File>
+			<File
 				RelativePath=".\game.rc">
 			</File>
 			<File
