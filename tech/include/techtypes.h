@@ -146,13 +146,11 @@ typedef void * HANDLE;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#if defined(__CYGWIN__)
-#include <alloca.h>
-#elif defined(__MINGW32__)
-#include <malloc.h>
-#elif defined(_MSC_VER)
+#if defined(_MSC_VER) || defined(__MINGW32__)
 #include <malloc.h>
 #define alloca _alloca
+#elif defined(__GNUC__)
+#include <alloca.h>
 #else
 #error ("Need compiler-specific function prototype for alloca()")
 #endif

@@ -9,6 +9,10 @@
 #include <cstdlib>
 #include <locale>
 
+#ifndef _WIN32
+#include <unistd.h>
+#endif
+
 #ifdef HAVE_CPPUNIT
 #include <cppunit/extensions/HelperMacros.h>
 #endif

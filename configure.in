@@ -1,6 +1,6 @@
 dnl $Id$
 
-AC_PREREQ(2.54)
+#AC_PREREQ(2.54)
 AC_INIT(Makefile.am)
 
 AC_ARG_PROGRAM
