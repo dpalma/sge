@@ -120,8 +120,7 @@ tResult cEditorTileSet::GetMaterial(IMaterial * * ppMaterial)
 {
    if (!m_pMaterial)
    {
-      m_pMaterial = MaterialCreate();
-      if (!m_pMaterial)
+      if (FAILED(MaterialCreate(&m_pMaterial)))
       {
          return E_OUTOFMEMORY;
       }

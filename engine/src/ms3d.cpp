@@ -394,8 +394,9 @@ tResult cMs3dFileReader::CreateMaterials(IRenderDevice * pRenderDevice, IMesh * 
    std::vector<ms3d_material_t>::const_iterator iter;
    for (iter = m_materials.begin(); iter != m_materials.end(); iter++)
    {
-      cAutoIPtr<IMaterial> pMaterial = MaterialCreate();
-      if (pMaterial != NULL)
+      cAutoIPtr<IMaterial> pMaterial;
+
+      if (MaterialCreate(&pMaterial) == S_OK)
       {
          pMaterial->SetName(iter->name);
          pMaterial->SetAmbient(cColor(iter->ambient));

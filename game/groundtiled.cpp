@@ -89,8 +89,7 @@ bool cTiledGround::Init(IRenderDevice * pRenderDevice, cHeightMap * pHeightMap, 
    m_nVerts = kNumVerts;
    m_nIndices = kNumIndices;
 
-   m_pMaterial = MaterialCreate();
-   if (!m_pMaterial)
+   if (MaterialCreate(&m_pMaterial) != S_OK)
    {
       return false;
    }

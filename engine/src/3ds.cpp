@@ -118,9 +118,9 @@ static IMaterial * MaterialFrom3ds(const c3dsMaterial * p3dsMaterial,
 {
    Assert(p3dsMaterial != NULL);
 
-   IMaterial * pMaterial = MaterialCreate();
-
-   if (pMaterial == NULL)
+   IMaterial * pMaterial = NULL;
+   
+   if (MaterialCreate(&pMaterial) != S_OK)
    {
       return NULL;
    }

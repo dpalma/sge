@@ -94,35 +94,37 @@ int cPlugIn::Execute(msModel * pModel)
       msMaterial * pMsMaterial = msModel_GetMaterialAt(pModel, i);
       if (pMsMaterial != NULL)
       {
-         cAutoIPtr<IMaterial> pMaterial = MaterialCreate();
+         cAutoIPtr<IMaterial> pMaterial;
+         if (MaterialCreate(&pMaterial) == S_OK)
+         {
+            char szName[MS_MAX_NAME];
+            msMaterial_GetName(pMsMaterial, szName, MS_MAX_NAME);
+            pMaterial->SetName(szName);
 
-         char szName[MS_MAX_NAME];
-         msMaterial_GetName(pMsMaterial, szName, MS_MAX_NAME);
-         pMaterial->SetName(szName);
+            msVec4 ambient;
+            msMaterial_GetAmbient(pMsMaterial, ambient);
+            pMaterial->SetAmbient(cColor(ambient));
 
-         msVec4 ambient;
-         msMaterial_GetAmbient(pMsMaterial, ambient);
-         pMaterial->SetAmbient(cColor(ambient));
+            msVec4 diffuse;
+            msMaterial_GetDiffuse(pMsMaterial, diffuse);
+            pMaterial->SetDiffuse(cColor(diffuse));
 
-         msVec4 diffuse;
-         msMaterial_GetDiffuse(pMsMaterial, diffuse);
-         pMaterial->SetDiffuse(cColor(diffuse));
+            msVec4 specular;
+            msMaterial_GetSpecular(pMsMaterial, specular);
+            pMaterial->SetSpecular(cColor(specular));
 
-         msVec4 specular;
-         msMaterial_GetSpecular(pMsMaterial, specular);
-         pMaterial->SetSpecular(cColor(specular));
+            msVec4 emissive;
+            msMaterial_GetEmissive(pMsMaterial, emissive);
+            pMaterial->SetEmissive(cColor(emissive));
 
-         msVec4 emissive;
-         msMaterial_GetEmissive(pMsMaterial, emissive);
-         pMaterial->SetEmissive(cColor(emissive));
+            pMaterial->SetShininess(msMaterial_GetShininess(pMsMaterial));
 
-         pMaterial->SetShininess(msMaterial_GetShininess(pMsMaterial));
+            char szTexture[MS_MAX_PATH];
+            msMaterial_GetDiffuseTexture(pMsMaterial, szTexture, MS_MAX_PATH);
+            // TODO: pMaterial->SetTexture(0, szTexture);
 
-         char szTexture[MS_MAX_PATH];
-         msMaterial_GetDiffuseTexture(pMsMaterial, szTexture, MS_MAX_PATH);
-         // TODO: pMaterial->SetTexture(0, szTexture);
-
-         pMesh->AddMaterial(pMaterial);
+            pMesh->AddMaterial(pMaterial);
+         }
       }
    }
 
