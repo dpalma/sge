@@ -47,13 +47,15 @@ struct sMs3dVertex
    tVec3::value_type u, v;
    tVec3 normal;
    tVec3 pos;
+   uint bone;
 };
 
 sVertexElement g_ms3dVertexDecl[] =
 {
    { kVDU_TexCoord, kVDT_Float2 },
    { kVDU_Normal, kVDT_Float3 },
-   { kVDU_Position, kVDT_Float3 }
+   { kVDU_Position, kVDT_Float3 },
+   { kVDU_Index, kVDT_UnsignedByte4 },
 };
 
 static bool operator ==(const struct sMs3dVertex & v1,
@@ -66,7 +68,8 @@ static bool operator ==(const struct sMs3dVertex & v1,
       && v1.normal.z == v2.normal.z
       && v1.pos.x == v2.pos.x
       && v1.pos.y == v2.pos.y
-      && v1.pos.z == v2.pos.z;
+      && v1.pos.z == v2.pos.z
+      && v1.bone == v2.bone;
 }
 
 
@@ -106,7 +109,7 @@ cMs3dVertexList::cMs3dVertexList(const ms3d_vertex_t * pVertices, uint nVertices
    for (uint i = 0; i < nVertices; i++)
    {
       m_vertices[i].pos = pVertices[i].vertex;
-//      m_vertices[i].boneId = pVertices[i].boneId;
+      m_vertices[i].bone = pVertices[i].boneId;
    }
 }
 
@@ -302,8 +305,6 @@ tResult cMs3dFileReader::CreateMesh(IRenderDevice * pRenderDevice, IMesh * * ppM
       }
    }
 
-   DebugMsg2("%d vertices became %d\n", m_vertices.size(), vertexList.GetVertexCount());
-
    cAutoIPtr<IMesh> pMesh = MeshCreate();
    if (!pMesh)
    {
@@ -333,7 +334,7 @@ tResult cMs3dFileReader::CreateMesh(IRenderDevice * pRenderDevice, IMesh * * ppM
                memcpy(pVertexData, vertexList.GetVertexData(), vertexList.GetVertexCount() * sizeof(sMs3dVertex));
                pSubMesh->UnlockVertexBuffer();
 
-               int * pFaces = NULL;
+               uint16 * pFaces = NULL;
                if (pSubMesh->LockIndexBuffer((void**)&pFaces) == S_OK)
                {
                   for (int i = 0; i < iter->GetNumTriangles(); i++)
