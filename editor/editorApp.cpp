@@ -21,7 +21,6 @@
 
 #include "resmgr.h"
 #include "configapi.h"
-#include "globalobj.h"
 #include "techtime.h"
 #include "connptimpl.h"
 #include "readwriteapi.h"
@@ -63,51 +62,6 @@ static const tChar g_szRegistryKey[] = _T("SGE");
 /////////////////////////////////////////////////////////////////////////////
 
 WTL::CAppModule _Module;
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cEditorSingleDocTemplate
-//
-
-class cEditorSingleDocTemplate : public CSingleDocTemplate
-{
-public:
-	cEditorSingleDocTemplate(UINT nIDResource, CRuntimeClass * pDocClass,
-		CRuntimeClass * pFrameClass, CRuntimeClass * pViewClass);
-   ~cEditorSingleDocTemplate();
-
-   void * operator new(size_t nSize, int type, LPCSTR lpszFileName, int nLine);
-   void operator delete(void *p, int type, LPCSTR lpszFileName, int nLine);
-};
-
-////////////////////////////////////////
-
-cEditorSingleDocTemplate::cEditorSingleDocTemplate(UINT nIDResource, CRuntimeClass * pDocClass,
-                                                   CRuntimeClass * pFrameClass, CRuntimeClass * pViewClass)
- : CSingleDocTemplate(nIDResource, pDocClass, pFrameClass, pViewClass)
-{
-}
-
-////////////////////////////////////////
-
-cEditorSingleDocTemplate::~cEditorSingleDocTemplate()
-{
-}
-
-////////////////////////////////////////
-
-void * cEditorSingleDocTemplate::operator new(size_t nSize, int type, LPCSTR lpszFileName, int nLine)
-{
-   return ::operator new(nSize, type, lpszFileName, nLine);
-}
-
-////////////////////////////////////////
-
-void cEditorSingleDocTemplate::operator delete(void *p, int type, LPCSTR lpszFileName, int nLine)
-{
-   ::operator delete(p);
-}
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -236,7 +190,7 @@ BOOL cEditorApp::InitInstance()
 {
    if (FAILED(_Module.Init(NULL, AfxGetInstanceHandle())))
    {
-      DebugMsg("Error initializing main ATL module object\n");
+      ErrorMsg("Error initializing ATL module object\n");
       return FALSE;
    }
 
@@ -263,7 +217,7 @@ BOOL cEditorApp::InitInstance()
    RegisterGlobalObjects();
    if (FAILED(StartGlobalObjects()))
    {
-      DebugMsg("One or more application-level services failed to start!\n");
+      ErrorMsg("One or more application-level services failed to start!\n");
       return FALSE;
    }
 
@@ -453,10 +407,10 @@ BOOL cEditorApp::PreTranslateMessage(MSG * pMsg)
    {
       pTool = CTAddRef(AccessActiveTool());
    }
-   else if (AccessDefaultTool() != NULL)
-   {
-      pTool = CTAddRef(AccessDefaultTool());
-   }
+   //else if (AccessDefaultTool() != NULL)
+   //{
+   //   pTool = CTAddRef(AccessDefaultTool());
+   //}
 
    if (!!pTool)
    {

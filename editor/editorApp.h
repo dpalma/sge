@@ -7,6 +7,8 @@
 #include "editorapi.h"
 #include "afxcomtools.h"
 
+#include "globalobj.h"
+
 #include <afxdisp.h>
 
 #include <vector>
@@ -21,11 +23,66 @@
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: cEditorSingleDocTemplate
+//
+
+class cEditorSingleDocTemplate : public CSingleDocTemplate
+{
+   cEditorSingleDocTemplate(const cEditorSingleDocTemplate &);
+   void operator =(const cEditorSingleDocTemplate &);
+
+public:
+   cEditorSingleDocTemplate(UINT nIDResource, CRuntimeClass * pDocClass,
+      CRuntimeClass * pFrameClass, CRuntimeClass * pViewClass);
+   ~cEditorSingleDocTemplate();
+
+#if defined(_DEBUG)
+   void * PASCAL operator new(size_t nSize, int type, LPCSTR lpszFileName, int nLine);
+   void PASCAL operator delete(void *p, int type, LPCSTR lpszFileName, int nLine);
+#endif
+};
+
+////////////////////////////////////////
+
+inline cEditorSingleDocTemplate::cEditorSingleDocTemplate(UINT nIDResource,
+                                                          CRuntimeClass * pDocClass,
+                                                          CRuntimeClass * pFrameClass,
+                                                          CRuntimeClass * pViewClass)
+ : CSingleDocTemplate(nIDResource, pDocClass, pFrameClass, pViewClass)
+{
+}
+
+////////////////////////////////////////
+
+inline cEditorSingleDocTemplate::~cEditorSingleDocTemplate()
+{
+}
+
+////////////////////////////////////////
+
+#if defined(_DEBUG)
+inline void * PASCAL cEditorSingleDocTemplate::operator new(size_t nSize, int type, LPCSTR lpszFileName, int nLine)
+{
+   return ::operator new(nSize, type, lpszFileName, nLine);
+}
+#endif
+
+////////////////////////////////////////
+
+#if defined(_DEBUG)
+inline void PASCAL cEditorSingleDocTemplate::operator delete(void *p, int type, LPCSTR lpszFileName, int nLine)
+{
+   ::operator delete(p);
+}
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cEditorApp
 //
 
 class cEditorApp : public CWinApp, 
-                   public cComObject<IMPLEMENTS(IEditorApp), cAfxComServices<cEditorApp> >
+                   public cGlobalObject<IMPLEMENTS(IEditorApp), cAfxComServices<cEditorApp> >
 {
 public:
 	cEditorApp();

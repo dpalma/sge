@@ -52,10 +52,10 @@ void cOutputBar::HandleLogCallback(eLogSeverity severity, const tChar * pszMsg, 
 {
    static const COLORREF colors[] =
    {
-      RGB(255,0,0),     // kError
-      RGB(0,255,255),   // kWarning
-      RGB(0,0,0),       // kInfo
-      RGB(0,0,255),     // kDebug
+      RGB(255,0,0),                    // kError
+      GetSysColor(COLOR_WINDOWTEXT),   // kWarning
+      GetSysColor(COLOR_WINDOWTEXT),   // kInfo
+      RGB(0,0,255),                    // kDebug
    };
 
    m_wndChild.AddText(pszMsg, msgLen, colors[severity]);
