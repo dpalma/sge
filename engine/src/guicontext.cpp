@@ -11,6 +11,8 @@
 #include "resmgr.h"
 #include "readwriteapi.h"
 
+#include <tinyxml.h>
+
 #include "dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -50,6 +52,8 @@ tResult cGUIContext::Init()
 
 tResult cGUIContext::Term()
 {
+   std::for_each(m_elements.begin(), m_elements.end(), CTInterfaceMethodRef(&IGUIElement::Release));
+   m_elements.clear();
    return S_OK;
 }
 
@@ -99,14 +103,66 @@ tResult cGUIContext::SetCapture(IGUIElement * pElement)
 
 tResult cGUIContext::LoadFromResource(const char * psz)
 {
-   return E_NOTIMPL;
+   UseGlobal(ResourceManager);
+   cAutoIPtr<IReader> pReader = pResourceManager->Find(psz);
+   if (!pReader)
+      return E_FAIL;
+
+   pReader->Seek(0, kSO_End);
+   int len = pReader->Tell();
+   pReader->Seek(0, kSO_Set);
+
+   char * pszContents = new char[len + 1];
+   if (pszContents == NULL)
+      return E_OUTOFMEMORY;
+
+   if (pReader->Read(pszContents, len) != S_OK)
+   {
+      delete [] pszContents;
+      return E_FAIL;
+   }
+
+   pszContents[len] = 0;
+
+   tResult result = LoadFromString(pszContents);
+
+   delete [] pszContents;
+
+   return result;
 }
 
 ///////////////////////////////////////
 
 tResult cGUIContext::LoadFromString(const char * psz)
 {
-   return E_NOTIMPL;
+   TiXmlDocument doc;
+   doc.Parse(psz);
+
+   if (doc.Error())
+   {
+      DebugMsg1("TiXml parse error: %s\n", doc.ErrorDesc());
+      return E_FAIL;
+   }
+
+   UseGlobal(GUIFactory);
+
+   ulong nElementsCreated = 0;
+
+   TiXmlElement * pXmlElement;
+   for (pXmlElement = doc.FirstChildElement(); pXmlElement != NULL; pXmlElement = pXmlElement->NextSiblingElement())
+   {
+      if (pXmlElement->Type() == TiXmlNode::ELEMENT)
+      {
+         cAutoIPtr<IGUIElement> pGUIElement;
+         if (pGUIFactory->CreateElement(pXmlElement->Value(), pXmlElement, &pGUIElement) == S_OK)
+         {
+            nElementsCreated++;
+            m_elements.push_back(CTAddRef(pGUIElement));
+         }
+      }
+   }
+
+   return nElementsCreated;
 }
 
 ///////////////////////////////////////
@@ -128,7 +184,7 @@ bool cGUIContext::HandleInputEvent(const sInputEvent * pEvent)
 bool cGUIContext::cInputListener::OnInputEvent(const sInputEvent * pEvent)
 {
    cGUIContext * pOuter = CTGetOuter(cGUIContext, m_inputListener);
-   return false;
+   return pOuter->HandleInputEvent(pEvent);
 }
 
 ///////////////////////////////////////

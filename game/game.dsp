@@ -207,6 +207,10 @@ SOURCE=.\guifactory.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\guilabel.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\heightmap.cpp
 # End Source File
 # Begin Source File
@@ -298,6 +302,10 @@ SOURCE=.\guicontext.h
 # Begin Source File
 
 SOURCE=.\guifactory.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\guilabel.h
 # End Source File
 # Begin Source File
 

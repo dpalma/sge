@@ -17,6 +17,7 @@ F_DECLARE_INTERFACE(IGUIElementFactory);
 F_DECLARE_INTERFACE(IGUIContainerElement);
 F_DECLARE_INTERFACE(IGUIPanelElement);
 F_DECLARE_INTERFACE(IGUIButtonElement);
+F_DECLARE_INTERFACE(IGUILabelElement);
 F_DECLARE_INTERFACE(IGUIEventRouter);
 F_DECLARE_INTERFACE(IGUIEventListener);
 F_DECLARE_INTERFACE(IGUIFactory);
@@ -119,8 +120,6 @@ interface IGUILabelElement : IGUIElement
    virtual const char * GetText() const = 0;
    virtual void SetText(const char * pszText) = 0;
 };
-
-void GUIRegisterStandardElementFactories();
 
 ///////////////////////////////////////////////////////////////////////////////
 //
