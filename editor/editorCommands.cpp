@@ -58,7 +58,8 @@ tResult cTerrainTileCommand::Undo()
 {
    if (m_pTerrain != NULL)
    {
-      m_pTerrain->SetTileTerrain(m_ix,m_iz,m_oldTile);
+      Verify(m_pTerrain->SetTileTerrain(m_ix,m_iz,m_oldTile) == m_tile);
+      return S_OK;
    }
    return E_FAIL;
 }
