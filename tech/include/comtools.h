@@ -212,14 +212,14 @@ public:
 // Functor objects for use with STL algorithms. For example,
 //    std::for_each(objects.begin(), objects.end(), CTInterfaceMethodRef(&IUnknown::Release));
 
-template <typename RETURN, typename INTERFACE>
+template <typename RETURN, typename INTRFC>
 class cCTInterfaceMethodRef
 {
-   typedef RETURN (STDMETHODCALLTYPE INTERFACE::*tMethod)();
+   typedef RETURN (STDMETHODCALLTYPE INTRFC::*tMethod)();
 public:
    explicit cCTInterfaceMethodRef(tMethod pfnMethod)
      : m_pfnMethod(pfnMethod) {}
-   RETURN operator()(INTERFACE * pInterface)
+   RETURN operator()(INTRFC * pInterface)
    {
       return (pInterface->*m_pfnMethod)();
    }
@@ -227,11 +227,11 @@ private:
    tMethod m_pfnMethod;
 };
 
-template <typename RETURN, typename INTERFACE>
-inline cCTInterfaceMethodRef<RETURN, INTERFACE>
-   CTInterfaceMethodRef(RETURN (STDMETHODCALLTYPE INTERFACE::*pfnMethod)())
+template <typename RETURN, typename INTRFC>
+inline cCTInterfaceMethodRef<RETURN, INTRFC>
+   CTInterfaceMethodRef(RETURN (STDMETHODCALLTYPE INTRFC::*pfnMethod)())
 {
-   return cCTInterfaceMethodRef<RETURN, INTERFACE>(pfnMethod);
+   return cCTInterfaceMethodRef<RETURN, INTRFC>(pfnMethod);
 }
 
 
@@ -240,7 +240,7 @@ inline cCTInterfaceMethodRef<RETURN, INTERFACE>
 // CLASS: cAutoIPtr
 //
 
-template <class INTERFACE>
+template <class INTRFC>
 class cAutoIPtr
 {
 #ifdef __GNUC__
@@ -251,31 +251,31 @@ class cAutoIPtr
 
 public:
    cAutoIPtr();
-   cAutoIPtr(INTERFACE * pI);
-   cAutoIPtr(const cAutoIPtr<INTERFACE> & p);
+   cAutoIPtr(INTRFC * pI);
+   cAutoIPtr(const cAutoIPtr<INTRFC> & p);
 
    ~cAutoIPtr();
 
-   const cAutoIPtr<INTERFACE> & operator =(NullType); // assign to NULL
-   const cAutoIPtr<INTERFACE> & operator =(INTERFACE * pI);
-   const cAutoIPtr<INTERFACE> & operator =(const cAutoIPtr<INTERFACE> & p);
+   const cAutoIPtr<INTRFC> & operator =(NullType); // assign to NULL
+   const cAutoIPtr<INTRFC> & operator =(INTRFC * pI);
+   const cAutoIPtr<INTRFC> & operator =(const cAutoIPtr<INTRFC> & p);
 
-   INTERFACE ** operator &();
-   INTERFACE * operator ->();
-   const INTERFACE * operator ->() const;
-   operator INTERFACE *();
-   operator const INTERFACE *() const;
+   INTRFC ** operator &();
+   INTRFC * operator ->();
+   const INTRFC * operator ->() const;
+   operator INTRFC *();
+   operator const INTRFC *() const;
    bool operator !() const;
    bool operator !=(NullType) const; // if (p != NULL) ...
 
 private:
-   INTERFACE * m_pInterface;
+   INTRFC * m_pInterface;
 };
 
 ///////////////////////////////////////
 
-template <class INTERFACE>
-inline cAutoIPtr<INTERFACE>::cAutoIPtr()
+template <class INTRFC>
+inline cAutoIPtr<INTRFC>::cAutoIPtr()
  : m_pInterface(NULL)
 {
 }
@@ -283,8 +283,8 @@ inline cAutoIPtr<INTERFACE>::cAutoIPtr()
 ///////////////////////////////////////
 // when receiving raw interface pointer, assume ownership of existing reference
 
-template <class INTERFACE>
-inline cAutoIPtr<INTERFACE>::cAutoIPtr(INTERFACE * pI)
+template <class INTRFC>
+inline cAutoIPtr<INTRFC>::cAutoIPtr(INTRFC * pI)
  : m_pInterface(pI)
 {
 }
@@ -292,8 +292,8 @@ inline cAutoIPtr<INTERFACE>::cAutoIPtr(INTERFACE * pI)
 ///////////////////////////////////////
 // when copying smart pointer, obtain own reference
 
-template <class INTERFACE>
-inline cAutoIPtr<INTERFACE>::cAutoIPtr(const cAutoIPtr<INTERFACE> & p)
+template <class INTRFC>
+inline cAutoIPtr<INTRFC>::cAutoIPtr(const cAutoIPtr<INTRFC> & p)
  : m_pInterface(p.m_pInterface)
 {
    if (m_pInterface != NULL)
@@ -302,16 +302,16 @@ inline cAutoIPtr<INTERFACE>::cAutoIPtr(const cAutoIPtr<INTERFACE> & p)
 
 ///////////////////////////////////////
 
-template <class INTERFACE>
-inline cAutoIPtr<INTERFACE>::~cAutoIPtr()
+template <class INTRFC>
+inline cAutoIPtr<INTRFC>::~cAutoIPtr()
 {
    SafeRelease(m_pInterface);
 }
 
 ///////////////////////////////////////
 
-template <class INTERFACE>
-inline const cAutoIPtr<INTERFACE> & cAutoIPtr<INTERFACE>::operator =(NullType null)
+template <class INTRFC>
+inline const cAutoIPtr<INTRFC> & cAutoIPtr<INTRFC>::operator =(NullType null)
 {
    Assert(null == NULL);
    m_pInterface = NULL;
@@ -321,10 +321,10 @@ inline const cAutoIPtr<INTERFACE> & cAutoIPtr<INTERFACE>::operator =(NullType nu
 ///////////////////////////////////////
 // when receiving raw interface pointer, assume ownership of existing reference
 
-template <class INTERFACE>
-inline const cAutoIPtr<INTERFACE> & cAutoIPtr<INTERFACE>::operator =(INTERFACE * pI)
+template <class INTRFC>
+inline const cAutoIPtr<INTRFC> & cAutoIPtr<INTRFC>::operator =(INTRFC * pI)
 {
-   INTERFACE * pFormer = m_pInterface;
+   INTRFC * pFormer = m_pInterface;
    m_pInterface = pI;
    SafeRelease(pFormer);
    return *this;
@@ -333,10 +333,10 @@ inline const cAutoIPtr<INTERFACE> & cAutoIPtr<INTERFACE>::operator =(INTERFACE *
 ///////////////////////////////////////
 // when copying smart pointer, obtain own reference
 
-template <class INTERFACE>
-inline const cAutoIPtr<INTERFACE> & cAutoIPtr<INTERFACE>::operator =(const cAutoIPtr<INTERFACE> & p)
+template <class INTRFC>
+inline const cAutoIPtr<INTRFC> & cAutoIPtr<INTRFC>::operator =(const cAutoIPtr<INTRFC> & p)
 {
-   INTERFACE * pFormer = m_pInterface;
+   INTRFC * pFormer = m_pInterface;
    m_pInterface = p.m_pInterface;
    if (m_pInterface != NULL)
       m_pInterface->AddRef();
@@ -346,8 +346,8 @@ inline const cAutoIPtr<INTERFACE> & cAutoIPtr<INTERFACE>::operator =(const cAuto
 
 ///////////////////////////////////////
 
-template <class INTERFACE>
-inline INTERFACE ** cAutoIPtr<INTERFACE>::operator &()
+template <class INTRFC>
+inline INTRFC * * cAutoIPtr<INTRFC>::operator &()
 {
    // Taking the address of the inner pointer most likely means that the pointer
    // is about to be filled in a la QueryInterface. Better not have a managed
@@ -358,8 +358,8 @@ inline INTERFACE ** cAutoIPtr<INTERFACE>::operator &()
 
 ///////////////////////////////////////
 
-template <class INTERFACE>
-inline INTERFACE * cAutoIPtr<INTERFACE>::operator ->()
+template <class INTRFC>
+inline INTRFC * cAutoIPtr<INTRFC>::operator ->()
 {
    Assert(m_pInterface != NULL);
    return m_pInterface;
@@ -367,8 +367,8 @@ inline INTERFACE * cAutoIPtr<INTERFACE>::operator ->()
 
 ///////////////////////////////////////
 
-template <class INTERFACE>
-inline const INTERFACE * cAutoIPtr<INTERFACE>::operator ->() const
+template <class INTRFC>
+inline const INTRFC * cAutoIPtr<INTRFC>::operator ->() const
 {
    Assert(m_pInterface != NULL);
    return m_pInterface;
@@ -376,32 +376,32 @@ inline const INTERFACE * cAutoIPtr<INTERFACE>::operator ->() const
 
 ///////////////////////////////////////
 
-template <class INTERFACE>
-inline cAutoIPtr<INTERFACE>::operator INTERFACE *()
+template <class INTRFC>
+inline cAutoIPtr<INTRFC>::operator INTRFC *()
 {
    return m_pInterface;
 }
 
 ///////////////////////////////////////
 
-template <class INTERFACE>
-inline cAutoIPtr<INTERFACE>::operator const INTERFACE *() const
+template <class INTRFC>
+inline cAutoIPtr<INTRFC>::operator const INTRFC *() const
 {
    return m_pInterface;
 }
 
 ///////////////////////////////////////
 
-template <class INTERFACE>
-inline bool cAutoIPtr<INTERFACE>::operator !() const
+template <class INTRFC>
+inline bool cAutoIPtr<INTRFC>::operator !() const
 {
    return (m_pInterface == NULL);
 }
 
 ///////////////////////////////////////
 
-template <class INTERFACE>
-inline bool cAutoIPtr<INTERFACE>::operator !=(NullType null) const
+template <class INTRFC>
+inline bool cAutoIPtr<INTRFC>::operator !=(NullType null) const
 {
    Assert(null == NULL);
    return (m_pInterface != NULL);
