@@ -155,7 +155,12 @@ cTerrain::cTerrain()
 
 cTerrain::~cTerrain()
 {
+   // HACK
+   UseGlobal(Scene);
+   pScene->RemoveEntity(kSL_Terrain, &m_sceneEntity);
+
    std::for_each(m_chunks.begin(), m_chunks.end(), CTInterfaceMethod(&cTerrainChunk::Release));
+   m_chunks.clear();
 }
 
 ////////////////////////////////////////
