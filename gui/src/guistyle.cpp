@@ -18,6 +18,8 @@
 
 #include "dbgalloc.h" // must be last header
 
+static tResult GUIStyleParseColor(const char * psz, tGUIColor * pColor);
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUIStyle
@@ -48,6 +50,94 @@ cGUIStyle::~cGUIStyle()
 {
    delete m_pBackground, m_pBackground = NULL;
    delete m_pForeground, m_pForeground = NULL;
+}
+
+///////////////////////////////////////
+
+tResult cGUIStyle::GetAttribute(const char * pszAttribute, tGUIString * pValue)
+{
+   if (pszAttribute == NULL || pValue == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tAttributeMap::iterator f = m_attributeMap.find(pszAttribute);
+
+   if (f == m_attributeMap.end())
+   {
+      return S_FALSE;
+   }
+
+   *pValue = f->second;
+
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIStyle::GetAttribute(const char * pszAttribute, uint * pValue)
+{
+   if (pszAttribute == NULL || pValue == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tAttributeMap::iterator f = m_attributeMap.find(pszAttribute);
+
+   if (f == m_attributeMap.end())
+   {
+      return S_FALSE;
+   }
+
+   if (sscanf(f->second, "%d", pValue) == 1)
+   {
+      return S_OK;
+   }
+
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
+tResult cGUIStyle::GetAttribute(const char * pszAttribute, tGUIColor * pValue)
+{
+   if (pszAttribute == NULL || pValue == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tAttributeMap::iterator f = m_attributeMap.find(pszAttribute);
+
+   if (f == m_attributeMap.end())
+   {
+      return S_FALSE;
+   }
+
+   if (GUIStyleParseColor(f->second, pValue) == S_OK)
+   {
+      return S_OK;
+   }
+
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
+tResult cGUIStyle::SetAttribute(const char * pszAttribute, const char * pszValue)
+{
+   if (pszAttribute == NULL || pszValue == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (strlen(pszAttribute) == 0)
+   {
+      return E_INVALIDARG;
+   }
+
+   m_attributeMap[pszAttribute] = pszValue;
+
+   return S_OK;
 }
 
 ///////////////////////////////////////
@@ -466,6 +556,21 @@ static tResult GUIStyleParseColor(const char * psz, tGUIColor * pColor)
       *pColor = tGUIColor::Cyan;
       return S_OK;
    }
+   else if (stricmp(psz, "darkgray") == 0)
+   {
+      *pColor = tGUIColor::DarkGray;
+      return S_OK;
+   }
+   else if (stricmp(psz, "gray") == 0)
+   {
+      *pColor = tGUIColor::Gray;
+      return S_OK;
+   }
+   else if (stricmp(psz, "lightgray") == 0)
+   {
+      *pColor = tGUIColor::LightGray;
+      return S_OK;
+   }
    else if (stricmp(psz, "white") == 0)
    {
       *pColor = tGUIColor::White;
@@ -586,6 +691,10 @@ static tResult GUIStyleParseAndSetAttribute(const char * pszAttrib, IGUIStyle * 
          return pStyle->SetHeight(height, spec);
       }
    }
+   else
+   {
+      return pStyle->SetAttribute(pszAttribName, pszValue);
+   }
 
    return S_FALSE;
 }
@@ -645,10 +754,12 @@ class cGUIStyleTests : public CppUnit::TestCase
    CPPUNIT_TEST_SUITE(cGUIStyleTests);
       CPPUNIT_TEST(TestFactoryFunction);
       CPPUNIT_TEST(TestParseDimension);
+      CPPUNIT_TEST(TestCustomAttributes);
    CPPUNIT_TEST_SUITE_END();
 
    void TestFactoryFunction();
    void TestParseDimension();
+   void TestCustomAttributes();
 };
 
 ///////////////////////////////////////
@@ -709,6 +820,54 @@ void cGUIStyleTests::TestParseDimension()
    CPPUNIT_ASSERT((dim == 50) && (spec == kGUIDimensionPixels));
    CPPUNIT_ASSERT(GUIStyleParseDimension("25%", &dim, &spec) == S_OK);
    CPPUNIT_ASSERT((dim == 25) && (spec == kGUIDimensionPercent));
+}
+
+///////////////////////////////////////
+
+void cGUIStyleTests::TestCustomAttributes()
+{
+   tGUIString string;
+   uint number;
+   tGUIColor color;
+
+   cAutoIPtr<IGUIStyle> pStyle;
+
+   CPPUNIT_ASSERT(GUIStyleParse("", &pStyle) == S_OK);
+
+   // general tests
+   CPPUNIT_ASSERT(pStyle->GetAttribute("DOES_NOT_EXIST", &string) == S_FALSE);
+   CPPUNIT_ASSERT(pStyle->SetAttribute(NULL, "value") == E_POINTER);
+   CPPUNIT_ASSERT(pStyle->SetAttribute("attrib", NULL) == E_POINTER);
+   CPPUNIT_ASSERT(pStyle->SetAttribute("", "value") == E_INVALIDARG);
+
+   // test setting a string value
+   CPPUNIT_ASSERT(pStyle->SetAttribute("string1", "blah blah blah") == S_OK);
+   CPPUNIT_ASSERT(pStyle->GetAttribute("string1", &string) == S_OK);
+   CPPUNIT_ASSERT(strcmp(string.c_str(), "blah blah blah") == 0);
+
+   CPPUNIT_ASSERT(pStyle->GetAttribute("string1", &number) == S_FALSE);
+   CPPUNIT_ASSERT(pStyle->GetAttribute("string1", &color) == S_FALSE);
+
+   // test changing an existing attribute
+   CPPUNIT_ASSERT(pStyle->SetAttribute("string1", "xxx") == S_OK);
+   CPPUNIT_ASSERT(pStyle->GetAttribute("string1", &string) == S_OK);
+   CPPUNIT_ASSERT(strcmp(string.c_str(), "xxx") == 0);
+
+   // test setting a numeric value
+   CPPUNIT_ASSERT(pStyle->SetAttribute("number1", "99") == S_OK);
+   CPPUNIT_ASSERT(pStyle->GetAttribute("number1", &string) == S_OK);
+   CPPUNIT_ASSERT(strcmp(string.c_str(), "99") == 0);
+   CPPUNIT_ASSERT(pStyle->GetAttribute("number1", &number) == S_OK);
+   CPPUNIT_ASSERT(number == 99);
+   CPPUNIT_ASSERT(pStyle->GetAttribute("number1", &color) == S_FALSE);
+
+   // test setting a color value
+   CPPUNIT_ASSERT(pStyle->SetAttribute("color1", "(0.75,0.75,0.75,1)") == S_OK);
+   CPPUNIT_ASSERT(pStyle->GetAttribute("color1", &string) == S_OK);
+   CPPUNIT_ASSERT(strcmp(string.c_str(), "(0.75,0.75,0.75,1)") == 0);
+   CPPUNIT_ASSERT(pStyle->GetAttribute("color1", &number) == S_FALSE);
+   CPPUNIT_ASSERT(pStyle->GetAttribute("color1", &color) == S_OK);
+   CPPUNIT_ASSERT(color == tGUIColor(0.75,0.75,0.75,1));
 }
 
 #endif // HAVE_CPPUNIT

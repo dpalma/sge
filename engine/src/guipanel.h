@@ -44,9 +44,13 @@ public:
    virtual tResult GetElements(IGUIElementEnum * * ppElements);
    virtual tResult HasElement(IGUIElement * pElement) const;
 
+   virtual tResult GetInsets(tGUIInsets * pInsets);
+   virtual tResult SetInsets(const tGUIInsets & insets);
+
 private:
    typedef std::list<IGUIElement *> tGUIElementList;
    tGUIElementList m_children;
+   tGUIInsets * m_pInsets;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

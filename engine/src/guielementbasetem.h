@@ -4,6 +4,8 @@
 #ifndef INCLUDED_GUIELEMENTBASETEM_H
 #define INCLUDED_GUIELEMENTBASETEM_H
 
+#include "dbgalloc.h" // must be last header
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -252,5 +254,7 @@ tGUIPoint cGUIElementBase<INTRFC>::GetAbsolutePosition() const
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+#include "undbgalloc.h"
 
 #endif // !INCLUDED_GUIELEMENTBASETEM_H

@@ -235,6 +235,10 @@ SOURCE=.\guistyle.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\guitextedit.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\guitypes.cpp
 # End Source File
 # Begin Source File
@@ -374,6 +378,10 @@ SOURCE=.\guirender.h
 # Begin Source File
 
 SOURCE=.\guistyle.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\guitextedit.h
 # End Source File
 # Begin Source File
 

@@ -6,6 +6,8 @@
 
 #include "guiapi.h"
 
+#include <map>
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -22,6 +24,11 @@ class cGUIStyle : public cComObject<IMPLEMENTS(IGUIStyle)>
 public:
    cGUIStyle();
    ~cGUIStyle();
+
+   virtual tResult GetAttribute(const char * pszAttribute, tGUIString * pValue);
+   virtual tResult GetAttribute(const char * pszAttribute, uint * pValue);
+   virtual tResult GetAttribute(const char * pszAttribute, tGUIColor * pValue);
+   virtual tResult SetAttribute(const char * pszAttribute, const char * pszValue);
 
    virtual tResult GetAlignment(uint * pAlignment);
    virtual tResult SetAlignment(uint alignment);
@@ -56,6 +63,8 @@ public:
    virtual tResult SetHeight(uint height, uint spec);
 
 private:
+   typedef std::map<cStr, cStr> tAttributeMap;
+   tAttributeMap m_attributeMap;
    uint m_alignment, m_verticalAlignment;
    tGUIColor * m_pBackground, * m_pForeground;
    uint m_textAlignment, m_textVerticalAlignment;

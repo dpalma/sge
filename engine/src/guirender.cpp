@@ -319,67 +319,85 @@ tResult cGUIRenderingTools::Render3dRect(const tGUIRect & rect, int bevel,
                                          const tGUIColor & bottomRight, 
                                          const tGUIColor & face)
 {
-   static const kNumVertices = 30;
-   sGUIVertex vertices[kNumVertices];
+   static const kMaxVertices = 32;
+   sGUIVertex vertices[kMaxVertices];
 
-   float x0 = rect.left;
-   float x1 = rect.left + bevel;
-   float x2 = rect.right - bevel;
-   float x3 = rect.right;
-
-   float y0 = rect.top;
-   float y1 = rect.top + bevel;
-   float y2 = rect.bottom - bevel;
-   float y3 = rect.bottom;
+   uint nVertices = 0;
 
 #define FillVertex(index, x, y, color) \
    do { \
-      vertices[(index)].rgba[0] = color.GetRed(); \
-      vertices[(index)].rgba[1] = color.GetGreen(); \
-      vertices[(index)].rgba[2] = color.GetBlue(); \
-      vertices[(index)].rgba[3] = color.GetAlpha(); \
-      vertices[(index)].pos = tVec2((x),(y)); \
+      Assert(index == nVertices); \
+      Assert(nVertices < kMaxVertices); \
+      vertices[nVertices].rgba[0] = color.GetRed(); \
+      vertices[nVertices].rgba[1] = color.GetGreen(); \
+      vertices[nVertices].rgba[2] = color.GetBlue(); \
+      vertices[nVertices].rgba[3] = color.GetAlpha(); \
+      vertices[nVertices].pos = tVec2((x),(y)); \
+      nVertices++; \
    } while (0)
 
-   FillVertex(0, x0, y0, topLeft);
-   FillVertex(1, x0, y3, topLeft);
-   FillVertex(2, x1, y2, topLeft);
+   if (bevel == 0)
+   {
+      FillVertex(0, rect.left, rect.top, face);
+      FillVertex(1, rect.left, rect.bottom, face);
+      FillVertex(2, rect.right, rect.bottom, face);
 
-   FillVertex(3, x0, y0, topLeft);
-   FillVertex(4, x1, y2, topLeft);
-   FillVertex(5, x1, y1, topLeft);
+      FillVertex(3, rect.right, rect.bottom, face);
+      FillVertex(4, rect.right, rect.top, face);
+      FillVertex(5, rect.left, rect.top, face);
+   }
+   else
+   {
+      float x0 = rect.left;
+      float x1 = rect.left + bevel;
+      float x2 = rect.right - bevel;
+      float x3 = rect.right;
 
-   FillVertex(6, x0, y0, topLeft);
-   FillVertex(7, x2, y1, topLeft);
-   FillVertex(8, x3, y0, topLeft);
+      float y0 = rect.top;
+      float y1 = rect.top + bevel;
+      float y2 = rect.bottom - bevel;
+      float y3 = rect.bottom;
 
-   FillVertex(9, x0, y0, topLeft);
-   FillVertex(10, x1, y1, topLeft);
-   FillVertex(11, x2, y1, topLeft);
+      FillVertex(0, x0, y0, topLeft);
+      FillVertex(1, x0, y3, topLeft);
+      FillVertex(2, x1, y2, topLeft);
 
-   FillVertex(12, x0, y3, bottomRight);
-   FillVertex(13, x3, y3, bottomRight);
-   FillVertex(14, x1, y2, bottomRight);
+      FillVertex(3, x0, y0, topLeft);
+      FillVertex(4, x1, y2, topLeft);
+      FillVertex(5, x1, y1, topLeft);
 
-   FillVertex(15, x1, y2, bottomRight);
-   FillVertex(16, x3, y3, bottomRight);
-   FillVertex(17, x2, y2, bottomRight);
+      FillVertex(6, x0, y0, topLeft);
+      FillVertex(7, x2, y1, topLeft);
+      FillVertex(8, x3, y0, topLeft);
 
-   FillVertex(18, x3, y0, bottomRight);
-   FillVertex(19, x2, y1, bottomRight);
-   FillVertex(20, x3, y3, bottomRight);
+      FillVertex(9, x0, y0, topLeft);
+      FillVertex(10, x1, y1, topLeft);
+      FillVertex(11, x2, y1, topLeft);
 
-   FillVertex(21, x2, y1, bottomRight);
-   FillVertex(22, x2, y2, bottomRight);
-   FillVertex(23, x3, y3, bottomRight);
+      FillVertex(12, x0, y3, bottomRight);
+      FillVertex(13, x3, y3, bottomRight);
+      FillVertex(14, x1, y2, bottomRight);
 
-   FillVertex(24, x1, y1, face);
-   FillVertex(25, x2, y2, face);
-   FillVertex(26, x2, y1, face);
+      FillVertex(15, x1, y2, bottomRight);
+      FillVertex(16, x3, y3, bottomRight);
+      FillVertex(17, x2, y2, bottomRight);
 
-   FillVertex(27, x2, y2, face);
-   FillVertex(28, x1, y1, face);
-   FillVertex(29, x1, y2, face);
+      FillVertex(18, x3, y0, bottomRight);
+      FillVertex(19, x2, y1, bottomRight);
+      FillVertex(20, x3, y3, bottomRight);
+
+      FillVertex(21, x2, y1, bottomRight);
+      FillVertex(22, x2, y2, bottomRight);
+      FillVertex(23, x3, y3, bottomRight);
+
+      FillVertex(24, x1, y1, face);
+      FillVertex(25, x2, y2, face);
+      FillVertex(26, x2, y1, face);
+
+      FillVertex(27, x2, y2, face);
+      FillVertex(28, x1, y1, face);
+      FillVertex(29, x1, y2, face);
+   }
 
 #undef FillVertex
 
@@ -389,7 +407,7 @@ tResult cGUIRenderingTools::Render3dRect(const tGUIRect & rect, int bevel,
    glEnableClientState(GL_VERTEX_ARRAY);
    glVertexPointer(2, GL_FLOAT, sizeof(sGUIVertex), (byte*)vertices + (4*sizeof(float)));
 
-   glDrawArrays(GL_TRIANGLES, 0, kNumVertices);
+   glDrawArrays(GL_TRIANGLES, 0, nVertices);
 
 #if 0
    cAutoIPtr<IVertexDeclaration> pVertexDecl;

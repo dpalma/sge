@@ -8,6 +8,8 @@
 
 #include "inputapi.h"
 
+#include "dbgalloc.h" // must be last header
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -52,6 +54,7 @@ tResult cGUIEventRouter<INTRFC>::RemoveEventListener(IGUIEventListener * pListen
 template <typename INTRFC>
 tResult cGUIEventRouter<INTRFC>::GetFocus(IGUIElement * * ppElement)
 {
+   Assert(!m_pFocus || m_pFocus->HasFocus());
    return m_pFocus.GetPointer(ppElement);
 }
 
@@ -60,8 +63,16 @@ tResult cGUIEventRouter<INTRFC>::GetFocus(IGUIElement * * ppElement)
 template <typename INTRFC>
 tResult cGUIEventRouter<INTRFC>::SetFocus(IGUIElement * pElement)
 {
+   if (!!m_pFocus)
+   {
+      m_pFocus->SetFocus(false);
+   }
    SafeRelease(m_pFocus);
    m_pFocus = CTAddRef(pElement);
+   if (pElement != NULL)
+   {
+      pElement->SetFocus(true);
+   }
    return S_OK;
 }
 
@@ -344,5 +355,7 @@ bool cGUIEventRouter<INTRFC>::HandleInputEvent(const sInputEvent * pInputEvent)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+#include "undbgalloc.h"
 
 #endif // !INCLUDED_GUIEVENTROUTERTEM_H

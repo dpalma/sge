@@ -23,6 +23,7 @@ F_DECLARE_INTERFACE(IGUIContainerElement);
 F_DECLARE_INTERFACE(IGUIPanelElement);
 F_DECLARE_INTERFACE(IGUIButtonElement);
 F_DECLARE_INTERFACE(IGUILabelElement);
+F_DECLARE_INTERFACE(IGUITextEditElement);
 F_DECLARE_INTERFACE(IGUIEventRouter);
 F_DECLARE_INTERFACE(IGUIEventListener);
 F_DECLARE_INTERFACE(IGUIFactory);
@@ -99,12 +100,10 @@ enum eGUIDimensionSpec
 
 interface IGUIStyle : IUnknown
 {
-//   virtual tResult GetAttribute(const char * pszAttribute, tGUIString * pValue) = 0;
-//   virtual tResult GetAttribute(const char * pszAttribute, uint * pValue) = 0;
-//   virtual tResult GetAttribute(const char * pszAttribute, tGUIColor * pValue) = 0;
-//   virtual tResult SetAttribute(const char * pszAttribute, const char * pszValue) = 0;
-//   virtual tResult SetAttribute(const char * pszAttribute, uint value) = 0;
-//   virtual tResult SetAttribute(const char * pszAttribute, const tGUIColor & value) = 0;
+   virtual tResult GetAttribute(const char * pszAttribute, tGUIString * pValue) = 0;
+   virtual tResult GetAttribute(const char * pszAttribute, uint * pValue) = 0;
+   virtual tResult GetAttribute(const char * pszAttribute, tGUIColor * pValue) = 0;
+   virtual tResult SetAttribute(const char * pszAttribute, const char * pszValue) = 0;
 
    virtual tResult GetAlignment(uint * pAlignment) = 0;
    virtual tResult SetAlignment(uint alignment) = 0;
@@ -253,6 +252,8 @@ interface IGUIContainerElement : IGUIElement
 
 interface IGUIPanelElement : IGUIContainerElement
 {
+   virtual tResult GetInsets(tGUIInsets * pInsets) = 0;
+   virtual tResult SetInsets(const tGUIInsets & insets) = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -272,6 +273,7 @@ interface IGUIButtonElement : IGUIElement
    virtual void SetText(const char * pszText) = 0;
 };
 
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // INTERFACE: IGUILabelElement
@@ -282,6 +284,26 @@ interface IGUILabelElement : IGUIElement
    virtual const char * GetText() const = 0;
    virtual void SetText(const char * pszText) = 0;
 };
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IGUITextEditElement
+//
+
+interface IGUITextEditElement : IGUIElement
+{
+   // The number of characters that the element will be sized to accomodate
+   virtual tResult GetEditSize(uint * pEditSize) = 0;
+   virtual tResult SetEditSize(uint editSize) = 0;
+
+   virtual tResult GetSelection(uint * pStart, uint * pEnd) = 0;
+   virtual tResult SetSelection(uint start, uint end) = 0;
+
+   virtual const char * GetText() const = 0;
+   virtual void SetText(const char * pszText) = 0;
+};
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //

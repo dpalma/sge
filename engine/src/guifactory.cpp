@@ -45,7 +45,8 @@ tResult cGUIFactory::Init()
 
    while (gm_pElementFactoryMapEntries != NULL)
    {
-      RegisterElementFactory(gm_pElementFactoryMapEntries->szType, gm_pElementFactoryMapEntries->pFactory);
+      RegisterElementFactory(gm_pElementFactoryMapEntries->szType, 
+         gm_pElementFactoryMapEntries->pFactory);
       SafeRelease(gm_pElementFactoryMapEntries->pFactory);
       sElementFactoryMapEntry * p = gm_pElementFactoryMapEntries;
       gm_pElementFactoryMapEntries = gm_pElementFactoryMapEntries->pNext;
@@ -54,7 +55,8 @@ tResult cGUIFactory::Init()
 
    while (gm_pRendererFactoryMapEntries != NULL)
    {
-      RegisterElementRendererFactory(gm_pRendererFactoryMapEntries->szRenderer, gm_pRendererFactoryMapEntries->pFactory);
+      RegisterElementRendererFactory(gm_pRendererFactoryMapEntries->szRenderer, 
+         gm_pRendererFactoryMapEntries->pFactory);
       SafeRelease(gm_pRendererFactoryMapEntries->pFactory);
       sRendererFactoryMapEntry * p = gm_pRendererFactoryMapEntries;
       gm_pRendererFactoryMapEntries = gm_pRendererFactoryMapEntries->pNext;
@@ -123,14 +125,16 @@ tResult cGUIFactory::CreateElement(const char * pszType, const TiXmlElement * pX
 
 ///////////////////////////////////////
 
-tResult cGUIFactory::RegisterElementFactory(const char * pszType, IGUIElementFactory * pFactory)
+tResult cGUIFactory::RegisterElementFactory(const char * pszType, 
+                                            IGUIElementFactory * pFactory)
 {
    if (pszType == NULL || pFactory == NULL)
    {
       return E_POINTER;
    }
 
-   std::pair<tGUIElementFactoryMap::iterator, bool> result = m_elementFactoryMap.insert(std::make_pair(pszType, pFactory));
+   std::pair<tGUIElementFactoryMap::iterator, bool> result = 
+      m_elementFactoryMap.insert(std::make_pair(pszType, pFactory));
 
    if (result.second)
    {
@@ -138,6 +142,8 @@ tResult cGUIFactory::RegisterElementFactory(const char * pszType, IGUIElementFac
 
       return S_OK;
    }
+
+   DebugMsg1("WARNING: Failed to register \"%s\" element factory\n", pszType);
 
    return E_FAIL;
 }
@@ -160,14 +166,16 @@ tResult cGUIFactory::RevokeElementFactory(const char * pszType)
 
 ///////////////////////////////////////
 
-tResult cGUIFactory::RegisterElementRendererFactory(const char * pszRenderer, IGUIElementRendererFactory * pFactory)
+tResult cGUIFactory::RegisterElementRendererFactory(const char * pszRenderer, 
+                                                    IGUIElementRendererFactory * pFactory)
 {
    if (pszRenderer == NULL || pFactory == NULL)
    {
       return E_POINTER;
    }
 
-   std::pair<tGUIRendererFactoryMap::iterator, bool> result = m_rendererFactoryMap.insert(std::make_pair(pszRenderer, pFactory));
+   std::pair<tGUIRendererFactoryMap::iterator, bool> result = 
+      m_rendererFactoryMap.insert(std::make_pair(pszRenderer, pFactory));
 
    if (result.second)
    {
@@ -175,6 +183,8 @@ tResult cGUIFactory::RegisterElementRendererFactory(const char * pszRenderer, IG
 
       return S_OK;
    }
+
+   DebugMsg1("WARNING: Failed to register \"%s\" renderer factory\n", pszRenderer);
 
    return E_FAIL;
 }

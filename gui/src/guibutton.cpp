@@ -18,6 +18,10 @@
 
 #include "dbgalloc.h" // must be last header
 
+LOG_DEFINE_CHANNEL(GUIButtonEvents);
+
+#define LocalMsg(msg) DebugMsgEx(GUIButtonEvents, (msg))
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUIButtonElement
@@ -49,24 +53,24 @@ tResult cGUIButtonElement::OnEvent(IGUIEvent * pEvent)
 
    if (eventCode == kGUIEventMouseEnter)
    {
-      DebugMsg("Mouse enter button\n");
+      LocalMsg("Mouse enter button\n");
       SetMouseOver(true);
    }
    else if (eventCode == kGUIEventMouseLeave)
    {
-      DebugMsg("Mouse leave button\n");
+      LocalMsg("Mouse leave button\n");
       SetMouseOver(false);
    }
    else if (eventCode == kGUIEventMouseDown)
    {
-      DebugMsg("Mouse down button\n");
+      LocalMsg("Mouse down button\n");
       UseGlobal(GUIContext);
       pGUIContext->SetCapture(this);
       SetArmed(true);
    }
    else if (eventCode == kGUIEventMouseUp)
    {
-      DebugMsg("Mouse up button\n");
+      LocalMsg("Mouse up button\n");
       UseGlobal(GUIContext);
       cAutoIPtr<IGUIElement> pCapture;
       if (pGUIContext->GetCapture(&pCapture) == S_OK)
@@ -80,7 +84,7 @@ tResult cGUIButtonElement::OnEvent(IGUIEvent * pEvent)
    }
    else if (eventCode == kGUIEventClick)
    {
-      DebugMsg("Mouse click button\n");
+      LocalMsg("Mouse click button\n");
    }
 
    return S_OK;
@@ -209,10 +213,6 @@ cGUIButtonRenderer::~cGUIButtonRenderer()
 
 ///////////////////////////////////////
 
-static const tGUIColor kGray(0.75,0.75,0.75);
-static const tGUIColor kDarkGray(0.5,0.5,0.5);
-static const tGUIColor kLightGray(0.87f,0.87f,0.87f);
-
 tResult cGUIButtonRenderer::Render(IGUIElement * pElement, IRenderDevice * pRenderDevice)
 {
    if (pElement == NULL || pRenderDevice == NULL)
@@ -237,17 +237,20 @@ tResult cGUIButtonRenderer::Render(IGUIElement * pElement, IRenderDevice * pRend
 
       if (pButton->IsArmed() && pButton->IsMouseOver())
       {
-         pGUIRenderingTools->Render3dRect(rect2, g_bevel, kDarkGray, kLightGray, kGray);
+         pGUIRenderingTools->Render3dRect(rect2, g_bevel, 
+            tGUIColor::DarkGray, tGUIColor::LightGray, tGUIColor::Gray);
          textOffset = tGUIPoint(g_bevel,g_bevel);
       }
       else
       {
-         pGUIRenderingTools->Render3dRect(rect2, g_bevel, kLightGray, kDarkGray, kGray);
+         pGUIRenderingTools->Render3dRect(rect2, g_bevel, 
+            tGUIColor::LightGray, tGUIColor::DarkGray, tGUIColor::Gray);
       }
 
       rect.left += textOffset.x;
       rect.top += textOffset.y;
-      m_pFont->DrawText(pButton->GetText(), -1, kDT_Center | kDT_VCenter | kDT_SingleLine, &rect, tGUIColor::White);
+      m_pFont->DrawText(pButton->GetText(), -1, kDT_Center | kDT_VCenter | 
+         kDT_SingleLine, &rect, tGUIColor::White);
 
       return S_OK;
    }
