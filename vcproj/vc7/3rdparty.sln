@@ -13,8 +13,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "3rdpartyZlib", "3rdpartyZli
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "3rdpartyZlibwapi", "3rdpartyZlibwapi.vcproj", "{9F0EFC71-B400-4DCD-9963-B93549DBC70E}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "3rdpartyMsvcrt7", "3rdpartyMsvcrt7.vcproj", "{0A78A8DE-CCC9-4AF0-9C92-AF78304EDA06}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "3rdpartyCg", "3rdpartyCg.vcproj", "{281AC579-4D4A-4408-B651-EA5E100CDD3C}"
 EndProject
 Global
@@ -99,16 +97,6 @@ Global
 		{9F0EFC71-B400-4DCD-9963-B93549DBC70E}.StaticDebug.Build.0 = StaticDebug|Win32
 		{9F0EFC71-B400-4DCD-9963-B93549DBC70E}.StaticRelease.ActiveCfg = StaticRelease|Win32
 		{9F0EFC71-B400-4DCD-9963-B93549DBC70E}.StaticRelease.Build.0 = StaticRelease|Win32
-		{0A78A8DE-CCC9-4AF0-9C92-AF78304EDA06}.Debug.ActiveCfg = Debug|Win32
-		{0A78A8DE-CCC9-4AF0-9C92-AF78304EDA06}.Debug.Build.0 = Debug|Win32
-		{0A78A8DE-CCC9-4AF0-9C92-AF78304EDA06}.Opt.ActiveCfg = Opt|Win32
-		{0A78A8DE-CCC9-4AF0-9C92-AF78304EDA06}.Opt.Build.0 = Opt|Win32
-		{0A78A8DE-CCC9-4AF0-9C92-AF78304EDA06}.Release.ActiveCfg = Release|Win32
-		{0A78A8DE-CCC9-4AF0-9C92-AF78304EDA06}.Release.Build.0 = Release|Win32
-		{0A78A8DE-CCC9-4AF0-9C92-AF78304EDA06}.StaticDebug.ActiveCfg = StaticDebug|Win32
-		{0A78A8DE-CCC9-4AF0-9C92-AF78304EDA06}.StaticDebug.Build.0 = StaticDebug|Win32
-		{0A78A8DE-CCC9-4AF0-9C92-AF78304EDA06}.StaticRelease.ActiveCfg = StaticRelease|Win32
-		{0A78A8DE-CCC9-4AF0-9C92-AF78304EDA06}.StaticRelease.Build.0 = StaticRelease|Win32
 		{281AC579-4D4A-4408-B651-EA5E100CDD3C}.Debug.ActiveCfg = Debug|Win32
 		{281AC579-4D4A-4408-B651-EA5E100CDD3C}.Debug.Build.0 = Debug|Win32
 		{281AC579-4D4A-4408-B651-EA5E100CDD3C}.Opt.ActiveCfg = Opt|Win32
