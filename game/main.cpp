@@ -643,11 +643,15 @@ void MainFrame()
    UseGlobal(Sim);
    pSim->NextFrame();
 
+   g_pRenderDevice->BeginScene();
+
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
    g_pGameCamera->Render();
 
    g_pUICamera->Render();
+
+   g_pRenderDevice->EndScene();
 
    g_pWindow->SwapBuffers();
 }
