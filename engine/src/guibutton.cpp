@@ -4,6 +4,7 @@
 #include "stdhdr.h"
 
 #include "guibutton.h"
+#include "guielementbasetem.h"
 
 #include "font.h"
 #include "color.h"
@@ -21,13 +22,7 @@
 ///////////////////////////////////////
 
 cGUIButtonElement::cGUIButtonElement()
- : m_id(""),
-   m_bHasFocus(false),
-   m_bVisible(true),
-   m_bEnabled(true),
-   m_position(0,0),
-   m_size(0,0),
-   m_bArmed(false),
+ : m_bArmed(false),
    m_bMouseOver(false),
    m_text("")
 {
@@ -37,113 +32,6 @@ cGUIButtonElement::cGUIButtonElement()
 
 cGUIButtonElement::~cGUIButtonElement()
 {
-}
-
-///////////////////////////////////////
-
-const char * cGUIButtonElement::GetId() const
-{
-   return m_id;
-}
-
-///////////////////////////////////////
-
-void cGUIButtonElement::SetId(const char * pszId)
-{
-   m_id = pszId;
-}
-
-///////////////////////////////////////
-
-bool cGUIButtonElement::HasFocus() const
-{
-   return m_bHasFocus;
-}
-
-///////////////////////////////////////
-
-void cGUIButtonElement::SetFocus(bool bFocus)
-{
-   m_bHasFocus = bFocus;
-}
-
-///////////////////////////////////////
-
-bool cGUIButtonElement::IsVisible() const
-{
-   return m_bVisible;
-}
-
-///////////////////////////////////////
-
-void cGUIButtonElement::SetVisible(bool bVisible)
-{
-   m_bVisible = bVisible;
-}
-
-///////////////////////////////////////
-
-bool cGUIButtonElement::IsEnabled() const
-{
-   return m_bEnabled;
-}
-
-///////////////////////////////////////
-
-void cGUIButtonElement::SetEnabled(bool bEnabled)
-{
-   m_bEnabled = bEnabled;
-}
-
-///////////////////////////////////////
-
-tResult cGUIButtonElement::GetParent(IGUIElement * * ppParent)
-{
-   return m_pParent.GetPointer(ppParent);
-}
-
-///////////////////////////////////////
-
-tResult cGUIButtonElement::SetParent(IGUIElement * pParent)
-{
-   SafeRelease(m_pParent);
-   m_pParent = CTAddRef(pParent);
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tGUIPoint cGUIButtonElement::GetPosition() const
-{
-   return m_position;
-}
-
-///////////////////////////////////////
-
-void cGUIButtonElement::SetPosition(const tGUIPoint & point)
-{
-   m_position = point;
-}
-
-///////////////////////////////////////
-
-tGUISize cGUIButtonElement::GetSize() const
-{
-   return m_size;
-}
-
-///////////////////////////////////////
-
-void cGUIButtonElement::SetSize(const tGUISize & size)
-{
-   m_size = size;
-}
-
-///////////////////////////////////////
-
-bool cGUIButtonElement::Contains(const tGUIPoint & point)
-{
-   return false; // TODO
 }
 
 ///////////////////////////////////////
@@ -160,22 +48,6 @@ tResult cGUIButtonElement::GetRendererClass(tGUIString * pRendererClass)
    if (pRendererClass == NULL)
       return E_POINTER;
    *pRendererClass = "button";
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cGUIButtonElement::GetRenderer(IGUIElementRenderer * * ppRenderer)
-{
-   return m_pRenderer.GetPointer(ppRenderer);
-}
-
-///////////////////////////////////////
-
-tResult cGUIButtonElement::SetRenderer(IGUIElementRenderer * pRenderer)
-{
-   SafeRelease(m_pRenderer);
-   m_pRenderer = CTAddRef(pRenderer);
    return S_OK;
 }
 

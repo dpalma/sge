@@ -4,7 +4,7 @@
 #ifndef INCLUDED_GUIBUTTON_H
 #define INCLUDED_GUIBUTTON_H
 
-#include "guiapi.h"
+#include "guielementbase.h"
 
 #ifdef _MSC_VER
 #pragma once
@@ -17,40 +17,15 @@ F_DECLARE_INTERFACE(IRenderFont);
 // CLASS: cGUIButtonElement
 //
 
-class cGUIButtonElement : public cComObject<IMPLEMENTS(IGUIButtonElement)>
+class cGUIButtonElement : public cComObject<cGUIElementBase<IGUIButtonElement>, &IID_IGUIButtonElement>
 {
 public:
    cGUIButtonElement();
    ~cGUIButtonElement();
 
-   virtual const char * GetId() const;
-   virtual void SetId(const char * pszId);
-
-   virtual bool HasFocus() const;
-   virtual void SetFocus(bool bFocus);
-
-   virtual bool IsVisible() const;
-   virtual void SetVisible(bool bVisible);
-
-   virtual bool IsEnabled() const;
-   virtual void SetEnabled(bool bEnabled);
-
-   virtual tResult GetParent(IGUIElement * * ppParent);
-   virtual tResult SetParent(IGUIElement * pParent);
-
-   virtual tGUIPoint GetPosition() const;
-   virtual void SetPosition(const tGUIPoint & point);
-
-   virtual tGUISize GetSize() const;
-   virtual void SetSize(const tGUISize & size);
-
-   virtual bool Contains(const tGUIPoint & point);
-
    virtual tResult OnEvent(IGUIEvent * pEvent);
 
    virtual tResult GetRendererClass(tGUIString * pRendererClass);
-   virtual tResult GetRenderer(IGUIElementRenderer * * ppRenderer);
-   virtual tResult SetRenderer(IGUIElementRenderer * pRenderer);
 
    virtual bool IsArmed() const;
    virtual void SetArmed(bool bArmed);
@@ -62,14 +37,6 @@ public:
    virtual void SetText(const char * pszText);
 
 private:
-   tGUIString m_id;
-   bool m_bHasFocus;
-   bool m_bVisible;
-   bool m_bEnabled;
-   cAutoIPtr<IGUIElement> m_pParent;
-   tGUIPoint m_position;
-   tGUISize m_size;
-   cAutoIPtr<IGUIElementRenderer> m_pRenderer;
    bool m_bArmed;
    bool m_bMouseOver;
    tGUIString m_text;

@@ -4,6 +4,7 @@
 #include "stdhdr.h"
 
 #include "guilabel.h"
+#include "guielementbasetem.h"
 
 #include "font.h"
 #include "color.h"
@@ -21,12 +22,7 @@
 ///////////////////////////////////////
 
 cGUILabelElement::cGUILabelElement()
- : m_id(""),
-   m_bVisible(true),
-   m_bEnabled(true),
-   m_position(0,0),
-   m_size(0,0),
-   m_text("")
+ : m_text("")
 {
 }
 
@@ -38,140 +34,11 @@ cGUILabelElement::~cGUILabelElement()
 
 ///////////////////////////////////////
 
-const char * cGUILabelElement::GetId() const
-{
-   return m_id;
-}
-
-///////////////////////////////////////
-
-void cGUILabelElement::SetId(const char * pszId)
-{
-   m_id = pszId;
-}
-
-///////////////////////////////////////
-
-bool cGUILabelElement::HasFocus() const
-{
-   return false;
-}
-
-///////////////////////////////////////
-
-void cGUILabelElement::SetFocus(bool /*bFocus*/)
-{
-}
-
-///////////////////////////////////////
-
-bool cGUILabelElement::IsVisible() const
-{
-   return m_bVisible;
-}
-
-///////////////////////////////////////
-
-void cGUILabelElement::SetVisible(bool bVisible)
-{
-   m_bVisible = bVisible;
-}
-
-///////////////////////////////////////
-
-bool cGUILabelElement::IsEnabled() const
-{
-   return m_bEnabled;
-}
-
-///////////////////////////////////////
-
-void cGUILabelElement::SetEnabled(bool bEnabled)
-{
-   m_bEnabled = bEnabled;
-}
-
-///////////////////////////////////////
-
-tResult cGUILabelElement::GetParent(IGUIElement * * ppParent)
-{
-   return m_pParent.GetPointer(ppParent);
-}
-
-///////////////////////////////////////
-
-tResult cGUILabelElement::SetParent(IGUIElement * pParent)
-{
-   SafeRelease(m_pParent);
-   m_pParent = CTAddRef(pParent);
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tGUIPoint cGUILabelElement::GetPosition() const
-{
-   return m_position;
-}
-
-///////////////////////////////////////
-
-void cGUILabelElement::SetPosition(const tGUIPoint & point)
-{
-   m_position = point;
-}
-
-///////////////////////////////////////
-
-tGUISize cGUILabelElement::GetSize() const
-{
-   return m_size;
-}
-
-///////////////////////////////////////
-
-void cGUILabelElement::SetSize(const tGUISize & size)
-{
-   m_size = size;
-}
-
-///////////////////////////////////////
-
-bool cGUILabelElement::Contains(const tGUIPoint & point)
-{
-   return false; // TODO
-}
-
-///////////////////////////////////////
-
-tResult cGUILabelElement::OnEvent(IGUIEvent * pEvent)
-{
-   return S_OK;
-}
-
-///////////////////////////////////////
-
 tResult cGUILabelElement::GetRendererClass(tGUIString * pRendererClass)
 {
    if (pRendererClass == NULL)
       return E_POINTER;
    *pRendererClass = "label";
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cGUILabelElement::GetRenderer(IGUIElementRenderer * * ppRenderer)
-{
-   return m_pRenderer.GetPointer(ppRenderer);
-}
-
-///////////////////////////////////////
-
-tResult cGUILabelElement::SetRenderer(IGUIElementRenderer * pRenderer)
-{
-   SafeRelease(m_pRenderer);
-   m_pRenderer = CTAddRef(pRenderer);
    return S_OK;
 }
 

@@ -50,8 +50,10 @@ cGUIElementEnum::~cGUIElementEnum()
 tResult cGUIElementEnum::Next(ulong count, IGUIElement * * ppElements, ulong * pnElements)
 {
    Assert(ppElements != NULL && pnElements != NULL);
+
    ulong nReturned = 0;
-   for (uint i = 0; i < count; i++)
+
+   for (ulong i = 0; i < count; i++)
    {
       if (m_iterator == m_elements.end())
       {
@@ -59,13 +61,18 @@ tResult cGUIElementEnum::Next(ulong count, IGUIElement * * ppElements, ulong * p
       }
       else
       {
-         *ppElements = *m_iterator;
-         (*ppElements)->AddRef();
+         *ppElements = CTAddRef(*m_iterator);
          nReturned++;
          m_iterator++;
          ppElements++;
       }
    }
+
+   if (pnElements != NULL)
+   {
+      *pnElements = nReturned;
+   }
+
    return (nReturned == count) ? S_OK : S_FALSE;
 }
 

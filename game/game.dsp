@@ -313,6 +313,14 @@ SOURCE=.\guicontext.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\guielementbase.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\guielementbasetem.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\guielementenum.h
 # End Source File
 # Begin Source File

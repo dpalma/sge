@@ -201,6 +201,9 @@ tResult cGUIContext::RenderGUI(IRenderDevice * pRenderDevice)
 
    pRenderDevice->SetRenderState(kRS_EnableDepthBuffer, FALSE);
 
+   uint vpWidth, vpHeight;
+   Verify(pRenderDevice->GetViewportSize(&vpWidth, &vpHeight) == S_OK);
+
    tGUIElementList::iterator iter;
    for (iter = m_elements.begin(); iter != m_elements.end(); iter++)
    {
