@@ -32,6 +32,9 @@ public:
    virtual tResult GetDefaultTileSet(IEditorTileSet * * ppTileSet);
    virtual tResult SetDefaultTileSet(const tChar * pszName);
 
+   virtual tResult GetTileSetCount(uint * pTileSets);
+   virtual tResult GetTileSet(uint index, IEditorTileSet * * ppTileSet);
+
 private:
    typedef std::map<cStr, IEditorTileSet *> tTileSetMap;
    tTileSetMap m_tileSetMap;

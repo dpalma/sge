@@ -6,6 +6,7 @@
 #include "editorDoc.h"
 #include "tiledground.h"
 #include "heightmap.h"
+#include "editorapi.h"
 
 #include "resmgr.h"
 #include "readwriteapi.h"
@@ -56,6 +57,22 @@ BOOL cEditorDoc::OnNewDocument()
 
 	// TODO: add reinitialization code here
 	// (SDI documents will reuse this document)
+
+   Assert(AccessEditorApp() != NULL);
+
+   uint xDimension, zDimension;
+   cStr tileSet;
+
+   tResult result = AccessEditorApp()->GetMapSettings(&xDimension, &zDimension, &tileSet);
+   if (result == S_OK)
+   {
+      DebugMsg3("Create %d x %d map with tileset \"%s\"\n", xDimension, zDimension, tileSet.c_str());
+   }
+   else
+   {
+      ErrorMsg("Error getting map settings\n");
+      return FALSE;
+   }
 
 	return TRUE;
 }

@@ -46,12 +46,16 @@ public:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
-   tResult AddLoopClient(IEditorLoopClient * pLoopClient);
-   tResult RemoveLoopClient(IEditorLoopClient * pLoopClient);
+   virtual tResult AddLoopClient(IEditorLoopClient * pLoopClient);
+   virtual tResult RemoveLoopClient(IEditorLoopClient * pLoopClient);
+
+   virtual tResult GetMapSettings(uint * pXDimension, uint * pZDimension, cStr * pTileSet);
 
 private:
    typedef std::vector<IEditorLoopClient *> tEditorLoopClients;
    tEditorLoopClients m_loopClients;
+
+   bool m_bPromptMapSettings;
 };
 
 /////////////////////////////////////////////////////////////////////////////

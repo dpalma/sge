@@ -183,6 +183,20 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,178,7,50,14,WS_GROUP
 END
 
+IDD_MAPSETTINGS DIALOG DISCARDABLE  0, 0, 186, 102
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
+CAPTION "New Map Settings"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,129,81,50,14
+    LTEXT           "Size",IDC_STATIC,7,19,14,8
+    COMBOBOX        IDC_MAP_SIZE,40,17,48,68,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    LTEXT           "Tile Set",IDC_STATIC,7,50,25,8
+    COMBOBOX        IDC_MAP_TILESET,40,48,139,30,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+END
+
 
 #ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
@@ -239,6 +253,15 @@ BEGIN
         RIGHTMARGIN, 228
         TOPMARGIN, 7
         BOTTOMMARGIN, 48
+    END
+
+    IDD_MAPSETTINGS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        VERTGUIDE, 40
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 95
     END
 END
 #endif    // APSTUDIO_INVOKED

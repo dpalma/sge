@@ -28,6 +28,8 @@ interface UUID("2A04E541-6BA1-41e9-92FA-E7B3D493F1A2") IEditorApp : IUnknown
 {
    virtual tResult AddLoopClient(IEditorLoopClient * pLoopClient) = 0;
    virtual tResult RemoveLoopClient(IEditorLoopClient * pLoopClient) = 0;
+
+   virtual tResult GetMapSettings(uint * pXDimension, uint * pZDimension, cStr * pTileSet) = 0;
 };
 
 IEditorApp * AccessEditorApp();
@@ -53,6 +55,8 @@ interface UUID("CA3DFC7D-CF34-43cd-AE46-FA1AF6A34F27") IEditorTileManager : IUnk
    virtual tResult GetTileSet(const tChar * pszName, IEditorTileSet * * ppTileSet) = 0;
    virtual tResult GetDefaultTileSet(IEditorTileSet * * ppTileSet) = 0;
    virtual tResult SetDefaultTileSet(const tChar * pszName) = 0;
+   virtual tResult GetTileSetCount(uint * pTileSets) = 0;
+   virtual tResult GetTileSet(uint index, IEditorTileSet * * ppTileSet) = 0;
 };
 
 void EditorTileManagerCreate();

@@ -98,14 +98,62 @@ tResult cEditorTileManager::GetTileSet(const tChar * pszName, IEditorTileSet * *
 
 tResult cEditorTileManager::GetDefaultTileSet(IEditorTileSet * * ppTileSet)
 {
-   return E_NOTIMPL;
+   return E_NOTIMPL; // TODO
 }
 
 ///////////////////////////////////////
 
 tResult cEditorTileManager::SetDefaultTileSet(const tChar * pszName)
 {
-   return E_NOTIMPL;
+   return E_NOTIMPL; // TODO
+}
+
+///////////////////////////////////////
+
+tResult cEditorTileManager::GetTileSetCount(uint * pTileSets)
+{
+   if (pTileSets == NULL)
+   {
+      return E_POINTER;
+   }
+   else
+   {
+      *pTileSets = m_tileSetMap.size();
+      return S_OK;
+   }
+}
+
+///////////////////////////////////////
+
+tResult cEditorTileManager::GetTileSet(uint index, IEditorTileSet * * ppTileSet)
+{
+   if (ppTileSet == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (index >= m_tileSetMap.size())
+   {
+      DebugMsg1("Index %d out of range in cEditorTileManager::GetTileSet()\n", index);
+      *ppTileSet = NULL;
+      return S_FALSE;
+   }
+
+   tTileSetMap::iterator iter = m_tileSetMap.begin();
+   for (uint i = 0; i < index; i++, iter++)
+   {
+      // do nothing
+   }
+
+   if (iter == m_tileSetMap.end())
+   {
+      *ppTileSet = NULL;
+      return S_FALSE;
+   }
+
+   *ppTileSet = CTAddRef(iter->second);
+
+   return (*ppTileSet) != NULL ? S_OK : S_FALSE;
 }
 
 ///////////////////////////////////////

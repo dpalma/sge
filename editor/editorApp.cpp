@@ -10,6 +10,7 @@
 #include "aboutdlg.h"
 #include "splashwnd.h"
 #include "BitmapUtils.h"
+#include "MapSettingsDlg.h"
 
 #include "sceneapi.h"
 #include "inputapi.h"
@@ -42,6 +43,46 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
+
+static const SIZE g_mapSizes[] =
+{
+   { 32, 32 },
+   { 64, 64 },
+   { 128, 128 },
+   { 256, 256 },
+};
+
+static const uint kDefaultMapSizeIndex = 2;
+
+/////////////////////////////////////////////////////////////////////////////
+
+template <typename CONTAINER>
+void ListTileSets(CONTAINER * pContainer)
+{
+   UseGlobal(EditorTileManager);
+
+   uint nTileSets = 0;
+   if (pEditorTileManager->GetTileSetCount(&nTileSets) == S_OK && nTileSets > 0)
+   {
+      for (uint i = 0; i < nTileSets; i++)
+      {
+         cAutoIPtr<IEditorTileSet> pTileSet;
+         if (pEditorTileManager->GetTileSet(i, &pTileSet) == S_OK)
+         {
+            Assert(!!pTileSet);
+            cStr name;
+            Verify(pTileSet->GetName(&name) == S_OK);
+            pContainer->push_back(name);
+         }
+         else
+         {
+            WarnMsg1("Error getting tile set %d\n", i);
+         }
+      }
+   }
+}
+
+/////////////////////////////////////////////////////////////////////////////
 // cEditorApp
 
 BEGIN_MESSAGE_MAP(cEditorApp, CWinApp)
@@ -58,6 +99,7 @@ END_MESSAGE_MAP()
 // cEditorApp construction
 
 cEditorApp::cEditorApp()
+ : m_bPromptMapSettings(false)
 {
 	// TODO: add construction code here,
 	// Place all significant initialization in InitInstance
@@ -82,11 +124,15 @@ static bool ScriptExecFile(const char * pszFile)
    return pScriptInterpreter->ExecFile(pszFile) == S_OK;
 }
 
+////////////////////////////////////////
+
 static bool ScriptExecString(const char * pszCode)
 {
    UseGlobal(ScriptInterpreter);
    return pScriptInterpreter->ExecString(pszCode) == S_OK;
 }
+
+////////////////////////////////////////
 
 static void ScriptCallFunction(const char * pszName, const char * pszArgDesc, ...)
 {
@@ -96,6 +142,8 @@ static void ScriptCallFunction(const char * pszName, const char * pszArgDesc, ..
    pScriptInterpreter->CallFunction(pszName, pszArgDesc, args);
    va_end(args);
 }
+
+////////////////////////////////////////
 
 static char * GetEntireContents(IReader * pReader)
 {
@@ -118,6 +166,8 @@ static char * GetEntireContents(IReader * pReader)
    return pszContents;
 }
 
+////////////////////////////////////////
+
 static bool ScriptExecResource(const char * pszResource)
 {
    UseGlobal(ResourceManager);
@@ -132,6 +182,8 @@ static bool ScriptExecResource(const char * pszResource)
    return result;
 }
 
+////////////////////////////////////////
+
 static void RegisterGlobalObjects()
 {
    InputCreate();
@@ -145,6 +197,8 @@ static void RegisterGlobalObjects()
 //   GUIRenderingToolsCreate();
    EditorTileManagerCreate();
 }
+
+////////////////////////////////////////
 
 BOOL cEditorApp::InitInstance()
 {
@@ -257,8 +311,12 @@ BOOL cEditorApp::InitInstance()
       pSplashThread->HideSplash();
    }
 
+   m_bPromptMapSettings = true;
+
 	return TRUE;
 }
+
+////////////////////////////////////////
 
 int cEditorApp::ExitInstance() 
 {
@@ -275,6 +333,8 @@ void cEditorApp::OnAppAbout()
 {
 	CAboutDlg().DoModal();
 }
+
+////////////////////////////////////////
 
 int cEditorApp::Run() 
 {
@@ -338,15 +398,66 @@ int cEditorApp::Run()
    Assert(!"Should never reach this point!"); // not reachable
 }
 
+////////////////////////////////////////
+
 tResult cEditorApp::AddLoopClient(IEditorLoopClient * pLoopClient)
 {
    return add_interface(m_loopClients, pLoopClient) ? S_OK : E_FAIL;
 }
 
+////////////////////////////////////////
+
 tResult cEditorApp::RemoveLoopClient(IEditorLoopClient * pLoopClient)
 {
    return remove_interface(m_loopClients, pLoopClient) ? S_OK : E_FAIL;
 }
+
+////////////////////////////////////////
+
+tResult cEditorApp::GetMapSettings(uint * pXDimension, uint * pZDimension, cStr * pTileSet)
+{
+   if (pXDimension == NULL || pZDimension == NULL || pTileSet == NULL)
+   {
+      return E_POINTER;
+   }
+
+   std::vector<cStr> tileSets;
+   ListTileSets(&tileSets);
+
+   if (tileSets.empty())
+   {
+      ErrorMsg("No tile sets defined, or they failed to load\n");
+      return E_FAIL;
+   }
+
+   if (m_bPromptMapSettings)
+   {
+      cMapSettingsDlg dlg(g_mapSizes, _countof(g_mapSizes), kDefaultMapSizeIndex, tileSets, 0, AfxGetMainWnd());
+
+      // Shouldn't be allowed to cancel the dialog
+      Verify(dlg.DoModal() == IDOK);
+
+      SIZE mapSize;
+      cStr tileSet;
+
+      Verify(dlg.GetSelectedSize(&mapSize));
+      Verify(dlg.GetSelectedTileSet(&tileSet));
+
+      *pXDimension = mapSize.cx;
+      *pZDimension = mapSize.cy;
+      *pTileSet = tileSet;
+   }
+   else
+   {
+      *pXDimension = g_mapSizes[kDefaultMapSizeIndex].cx;
+      *pZDimension = g_mapSizes[kDefaultMapSizeIndex].cy;
+      *pTileSet = tileSets[0];
+   }
+
+   return S_OK;
+}
+
+////////////////////////////////////////
 
 void cEditorApp::OnToolsUnitTestRunner() 
 {

@@ -5,6 +5,9 @@
 #define IDD_ABOUTBOX                    100
 #define IDR_MAINFRAME                   128
 #define IDR_EDITOTYPE                   129
+#define IDD_MAPSETTINGS                 130
+#define IDC_MAP_SIZE                    1000
+#define IDC_MAP_TILESET                 1001
 #define IDS_NO_UNIT_TESTS               5000
 #define IDS_OUTPUT_BAR_TITLE            5001
 #define IDS_TOOL_PALETTE_BAR_TITLE      5002
@@ -33,9 +36,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        130
+#define _APS_NEXT_RESOURCE_VALUE        131
 #define _APS_NEXT_COMMAND_VALUE         32773
-#define _APS_NEXT_CONTROL_VALUE         1000
+#define _APS_NEXT_CONTROL_VALUE         1002
 #define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif

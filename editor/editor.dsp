@@ -239,6 +239,10 @@ SOURCE=.\MainFrm.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\MapSettingsDlg.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\OutputBar.cpp
 # End Source File
 # Begin Source File
@@ -344,6 +348,10 @@ SOURCE=.\historywnd.h
 # Begin Source File
 
 SOURCE=.\MainFrm.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\MapSettingsDlg.h
 # End Source File
 # Begin Source File
 
