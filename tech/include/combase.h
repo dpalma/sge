@@ -110,8 +110,11 @@ typedef struct _GUID
 
 #ifndef DEFINE_GUID
 #ifndef INITGUID
+// Keep the FAR to be compatible with the <objbase.h> definition and not
+// cause a C4005: 'DEFINE_GUID' : macro redefinition warning.
+#define FAR 
 #define DEFINE_GUID(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
-   EXTERN_C const GUID name
+   EXTERN_C const GUID FAR name
 #else
 #define DEFINE_GUID(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
    EXTERN_C const GUID name \
