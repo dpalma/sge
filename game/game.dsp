@@ -183,6 +183,10 @@ SOURCE=.\3ds.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\boundingvolume.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\camera.cpp
 # End Source File
 # Begin Source File
@@ -227,7 +231,15 @@ SOURCE=.\raycast.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\scenecamera.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\scenegroup.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\scenemesh.cpp
 # End Source File
 # Begin Source File
 
@@ -301,6 +313,10 @@ SOURCE=.\3ds.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\boundingvolume.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\camera.h
 # End Source File
 # Begin Source File
@@ -345,7 +361,15 @@ SOURCE=.\raycast.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\scenecamera.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\scenegroup.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\scenemesh.h
 # End Source File
 # Begin Source File
 

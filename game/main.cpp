@@ -14,7 +14,8 @@
 #include "raycast.h"
 #include "mesh.h"
 #include "scenenode.h"
-#include "scenegroup.h"
+#include "scenecamera.h"
+#include "scenemesh.h"
 #include "camera.h"
 #include "script.h"
 #include "scriptvm.h"
@@ -62,13 +63,12 @@ const float kZFar = 2000;
 
 static const float kRotateDegreesPerSec = 20;
 
+static const char kszSelIndicatorMesh[] = "arrow.ms3d";
+
 ///////////////////////////////////////////////////////////////////////////////
 
-cSceneGroup * g_pGameScene = NULL;
-cCamera * g_pGameCamera = NULL;
-
-cSceneGroup * g_pUIScene = NULL;
-cCamera * g_pUICamera = NULL;
+cSceneCameraGroup * g_pGameCamera = NULL;
+cSceneCameraGroup * g_pUICamera = NULL;
 
 double g_fov;
 
@@ -116,16 +116,21 @@ void cPickNodeVisitor::VisitSceneNode(cSceneNode * pNode)
 {
    Assert(pNode != NULL);
 
-   float radius = pNode->GetBoundingSphereRadius();
-
-   if (RayIntersectSphere(m_rayOrigin, m_rayDir, pNode->GetTranslation(), radius, NULL))
+   if (pNode->IsPickable())
    {
-      pNode->Hit();
-      m_hitNodes.push_back(pNode);
-   }
-   else
-   {
-      pNode->ClearHitState();
+      const cBoundingVolume * pBounds = pNode->GetBoundingVolume();
+      if (pBounds != NULL)
+      {
+         if (pBounds->Intersects(m_rayOrigin, m_rayDir))
+         {
+            pNode->Hit();
+            m_hitNodes.push_back(pNode);
+         }
+         else
+         {
+            pNode->ClearHitState();
+         }
+      }
    }
 }
 
@@ -179,7 +184,7 @@ class cGameCameraController : public cComObject2<IMPLEMENTS(ISimClient), IMPLEME
    const cGameCameraController & operator =(const cGameCameraController &);
 
 public:
-   cGameCameraController(cCamera * pCamera);
+   cGameCameraController(cSceneCameraGroup * pCamera);
    ~cGameCameraController();
 
    void Connect();
@@ -207,14 +212,14 @@ private:
 
    sMatrix4 m_rotation;
 
-   cCamera * m_pCamera;
+   cSceneCameraGroup * m_pCamera;
 };
 
 cAutoIPtr<cGameCameraController> g_pGameCameraController;
 
 ///////////////////////////////////////
 
-cGameCameraController::cGameCameraController(cCamera * pCamera)
+cGameCameraController::cGameCameraController(cSceneCameraGroup * pCamera)
  : m_pitch(kDefaultPitch),
    m_oneOverTangentPitch(0),
    m_elevation(kDefaultElevation),
@@ -279,7 +284,7 @@ bool cGameCameraController::OnMouseEvent(int x, int y, uint mouseState, double t
       if (BuildPickRay(x, y, &dir))
       {
          cPickNodeVisitor pickVisitor(dir, GetEyePosition());
-         g_pGameScene->Traverse(&pickVisitor);
+         g_pGameCamera->Traverse(&pickVisitor);
 
          if (pickVisitor.m_hitNodes.empty())
          {
@@ -472,18 +477,12 @@ SCRIPT_DEFINE_FUNCTION(LogEnableChannel)
 // CLASS: cSelectionIndicatorNode
 //
 
-static const char kszSelIndicatorMesh[] = "arrow.ms3d";
-
-class cSelectionIndicatorNode : public cSceneNode
+class cSelectionIndicatorNode : public cSceneMesh
 {
 public:
    cSelectionIndicatorNode();
 
-   bool SetMesh(const char * pszMesh);
-   IMesh * AccessMesh();
-
    virtual void Update(float timeDelta);
-   virtual void Render();
 
 private:
    cAutoIPtr<IMesh> m_pMesh;
@@ -491,20 +490,8 @@ private:
 
 cSelectionIndicatorNode::cSelectionIndicatorNode()
 {
-}
-
-bool cSelectionIndicatorNode::SetMesh(const char * pszMesh)
-{
-   SafeRelease(m_pMesh);
-   m_pMesh = MeshLoad(AccessResourceManager(), pszMesh);
-   float parentY = 2 * GetParent()->GetBoundingSphereRadius();
-   SetTranslation(tVec3(0, parentY, 0));
-   return (!!m_pMesh);
-}
-
-IMesh * cSelectionIndicatorNode::AccessMesh()
-{
-   return m_pMesh;
+   SetPickable(false);
+   // TODO: SetTranslation(tVec3(0, parentY, 0));
 }
 
 void cSelectionIndicatorNode::Update(float timeDelta)
@@ -513,95 +500,35 @@ void cSelectionIndicatorNode::Update(float timeDelta)
    SetRotation(GetRotation() * q);
 }
 
-void cSelectionIndicatorNode::Render()
-{
-   if (AccessMesh() != NULL)
-   {
-      glPushMatrix();
-      glMultMatrixf(GetWorldTransform().m);
-      AccessMesh()->Render();
-      glPopMatrix();
-   }
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cSimpleSceneNode
 //
 
-class cSimpleSceneNode : public cSceneGroup
+class cSimpleSceneNode : public cSceneMesh
 {
 public:
    cSimpleSceneNode();
 
-   bool SetMesh(const char * pszMesh);
-   IMesh * AccessMesh();
-
    virtual void Update(float timeDelta);
-   virtual void Render();
-
-   // @HACK: need a better, more flexible bounding volume solution
-   virtual float GetBoundingSphereRadius() const;
 
    virtual void Hit();
    virtual void ClearHitState();
 
 private:
-   cAutoIPtr<IMesh> m_pMesh;
-   bool m_bSelected;
    cSelectionIndicatorNode * m_pSel;
 };
 
 cSimpleSceneNode::cSimpleSceneNode()
- : m_bSelected(false),
-   m_pSel(NULL)
+ : m_pSel(NULL)
 {
-}
-
-bool cSimpleSceneNode::SetMesh(const char * pszMesh)
-{
-   SafeRelease(m_pMesh);
-   m_pMesh = MeshLoad(AccessResourceManager(), pszMesh);
-   return (!!m_pMesh);
-}
-
-IMesh * cSimpleSceneNode::AccessMesh()
-{
-   return m_pMesh;
 }
 
 void cSimpleSceneNode::Update(float timeDelta)
 {
    tQuat q = QuatFromEulerAngles(tVec3(0, Deg2Rad(kRotateDegreesPerSec * timeDelta), 0));
    SetRotation(GetRotation() * q);
-}
-
-void cSimpleSceneNode::Render()
-{
-   if (m_pMesh != NULL)
-   {
-      glPushMatrix();
-      glMultMatrixf(GetWorldTransform().m);
-      m_pMesh->Render();
-      glPopMatrix();
-   }
-}
-
-// @HACK: need a better, more flexible bounding volume solution
-float cSimpleSceneNode::GetBoundingSphereRadius() const
-{
-   if (m_pMesh != NULL)
-   {
-      tVec3 maxs, mins;
-      m_pMesh->GetAABB(&maxs, &mins);
-
-      tVec3 diff = maxs - mins;
-
-      return 0.5f * Max(diff.x, Max(diff.y, diff.z));
-   }
-
-   return 0;
 }
 
 void cSimpleSceneNode::Hit()
@@ -617,12 +544,10 @@ void cSimpleSceneNode::Hit()
       RemoveChild(m_pSel);
       delete m_pSel, m_pSel = NULL;
    }
-   m_bSelected = !m_bSelected;
 }
 
 void cSimpleSceneNode::ClearHitState()
 {
-   m_bSelected = false;
    if (m_pSel != NULL)
    {
       RemoveChild(m_pSel);
@@ -658,7 +583,7 @@ SCRIPT_DEFINE_FUNCTION(EntitySpawnTest)
          pNode->SetTranslation(tVec3(x,y,z));
 
          Assert(g_pGameCamera != NULL);
-         g_pGameScene->AddChild(pNode);
+         g_pGameCamera->AddChild(pNode);
       }
       else
       {
@@ -667,79 +592,6 @@ SCRIPT_DEFINE_FUNCTION(EntitySpawnTest)
    }
 }
 
-///////////////////////////////////////////////////////////////////////////////
-
-class cCountNodesVisitor : public cSceneNodeVisitor
-{
-public:
-   cCountNodesVisitor();
-
-   virtual void VisitSceneNode(cSceneNode * pNode);
-
-   int m_nNodes;
-};
-
-cCountNodesVisitor::cCountNodesVisitor()
- : m_nNodes(0)
-{
-}
-
-void cCountNodesVisitor::VisitSceneNode(cSceneNode * pNode)
-{
-   Assert(pNode != NULL);
-   m_nNodes++;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-class cGetNodeVisitor : public cSceneNodeVisitor
-{
-public:
-   cGetNodeVisitor(int iNode);
-
-   virtual void VisitSceneNode(cSceneNode * pNode);
-
-   int m_iCurNode, m_iGetNode;
-   cSceneNode * m_pNode;
-};
-
-cGetNodeVisitor::cGetNodeVisitor(int iNode)
- : m_iCurNode(0),
-   m_iGetNode(iNode),
-   m_pNode(NULL)
-{
-}
-
-void cGetNodeVisitor::VisitSceneNode(cSceneNode * pNode)
-{
-   Assert(pNode != NULL);
-   if (m_iCurNode == m_iGetNode)
-   {
-      m_pNode = pNode;
-   }
-   m_iCurNode++;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-SCRIPT_DEFINE_FUNCTION(EntityCenterOnRandom)
-{
-   cCountNodesVisitor countVisitor;
-   g_pGameScene->Traverse(&countVisitor);
-
-   if (countVisitor.m_nNodes > 0)
-   {
-      cGetNodeVisitor getNodeVisitor(Rand() % countVisitor.m_nNodes);
-      g_pGameScene->Traverse(&getNodeVisitor);
-
-      if (getNodeVisitor.m_pNode != NULL)
-      {
-         tVec3 pos = getNodeVisitor.m_pNode->GetTranslation();
-
-         g_pGameCameraController->LookAtPoint(pos.x, pos.z);
-      }
-   }
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -903,22 +755,19 @@ bool MainInit(int argc, char * argv[])
    // display is created so that there is a gl context
    InputInit();
 
-   g_pUIManager = UIManagerCreate();
-
-   g_pGameScene = new cSceneGroup;
-   g_pGameScene->AddChild(TerrainRootNodeCreate());
-
-   g_pGameCamera = new cCamera;
+   g_pGameCamera = new cSceneCameraGroup;
    g_pGameCamera->SetPerspective(g_fov, (float)width / height, kZNear, kZFar);
+
+   g_pGameCamera->AddChild(TerrainRootNodeCreate());
 
    g_pGameCameraController = new cGameCameraController(g_pGameCamera);
    g_pGameCameraController->Connect();
 
-   g_pUIScene = new cSceneGroup;
-   g_pUIScene->AddChild(new cUIManagerSceneNode);
-
-   g_pUICamera = new cCamera;
+   g_pUICamera = new cSceneCameraGroup;
    g_pUICamera->SetOrtho(0, width, height, 0, -99999, 99999);
+
+   g_pUIManager = UIManagerCreate();
+   g_pUICamera->AddChild(new cUIManagerSceneNode);
 
    if (ConfigGet("terrain", &temp) == S_OK)
    {
@@ -967,13 +816,11 @@ void MainTerm()
 
    SafeRelease(g_pResourceManager);
 
-   delete g_pGameCamera, g_pGameCamera = NULL;
-   delete g_pGameScene, g_pGameScene = NULL;
-
    g_pGameCameraController->Disconnect();
 
+   delete g_pGameCamera, g_pGameCamera = NULL;
+
    delete g_pUICamera, g_pUICamera = NULL;
-   delete g_pUIScene, g_pUIScene = NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -999,13 +846,13 @@ void MainFrame()
    g_sim.NextFrame();
 
    cUpdateVisitor updateVisitor;
-   g_pGameScene->Traverse(&updateVisitor);
+   g_pGameCamera->Traverse(&updateVisitor);
 
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-   g_pGameCamera->Render(AccessRenderDevice(), g_pGameScene);
+   g_pGameCamera->Render();
 
-   g_pUICamera->Render(AccessRenderDevice(), g_pUIScene);
+   g_pUICamera->Render();
 
    g_pWindow->SwapBuffers();
 }
