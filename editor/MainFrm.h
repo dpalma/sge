@@ -4,6 +4,8 @@
 #if !defined(INCLUDED_MAINFRM_H)
 #define INCLUDED_MAINFRM_H
 
+#include "OutputBar.h"
+
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
@@ -38,6 +40,7 @@ public:
 #endif
 
 protected:  // control bar embedded members
+   cOutputBar m_wndLogBar;
 	CStatusBar  m_wndStatusBar;
 	CToolBar    m_wndToolBar;
    CSplitterWnd m_wndSplitter;

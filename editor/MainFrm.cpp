@@ -74,10 +74,22 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;      // fail to create
 	}
 
+   CString title;
+   Verify(title.LoadString(IDS_OUTPUT_BAR_TITLE));
+   if (!m_wndLogBar.Create(title, this, AFX_IDW_CONTROLBAR_FIRST + 32))
+	{
+		TRACE0("Failed to create log bar\n");
+		return -1;		// fail to create
+	}
+   m_wndLogBar.SetBarStyle(m_wndLogBar.GetBarStyle() |
+      CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
+
 	// TODO: Delete these three lines if you don't want the toolbar to
 	//  be dockable
+	m_wndLogBar.EnableDocking(CBRS_ALIGN_TOP | CBRS_ALIGN_BOTTOM);
 	m_wndToolBar.EnableDocking(CBRS_ALIGN_ANY);
 	EnableDocking(CBRS_ALIGN_ANY);
+	DockControlBar(&m_wndLogBar, AFX_IDW_DOCKBAR_BOTTOM);
 	DockControlBar(&m_wndToolBar);
 
 	return 0;

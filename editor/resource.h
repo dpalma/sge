@@ -6,6 +6,7 @@
 #define IDR_MAINFRAME                   128
 #define IDR_EDITOTYPE                   129
 #define IDS_NO_UNIT_TESTS               5000
+#define IDS_OUTPUT_BAR_TITLE            5001
 #define ID_TOOLS_UNITTESTRUNNER         32771
 
 // Next default values for new objects

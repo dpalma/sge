@@ -223,57 +223,17 @@ SOURCE=.\MainFrm.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\OutputBar.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\scbarcf.cpp
-
-!IF  "$(CFG)" == "editor - Win32 Release"
-
 # ADD CPP /Yu"stdhdr.h"
-
-!ELSEIF  "$(CFG)" == "editor - Win32 Debug"
-
-# ADD CPP /Yu"stdhdr.h"
-
-!ELSEIF  "$(CFG)" == "editor - Win32 Opt"
-
-# ADD CPP /Yu"stdhdr.h"
-
-!ELSEIF  "$(CFG)" == "editor - Win32 StaticDebug"
-
-# ADD CPP /Yu"stdhdr.h"
-
-!ELSEIF  "$(CFG)" == "editor - Win32 StaticRelease"
-
-# ADD CPP /Yu"stdhdr.h"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\scbarg.cpp
-
-!IF  "$(CFG)" == "editor - Win32 Release"
-
 # ADD CPP /Yu"stdhdr.h"
-
-!ELSEIF  "$(CFG)" == "editor - Win32 Debug"
-
-# ADD CPP /Yu"stdhdr.h"
-
-!ELSEIF  "$(CFG)" == "editor - Win32 Opt"
-
-# ADD CPP /Yu"stdhdr.h"
-
-!ELSEIF  "$(CFG)" == "editor - Win32 StaticDebug"
-
-# ADD CPP /Yu"stdhdr.h"
-
-!ELSEIF  "$(CFG)" == "editor - Win32 StaticRelease"
-
-# ADD CPP /Yu"stdhdr.h"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -282,29 +242,7 @@ SOURCE=.\scrollwnd.cpp
 # Begin Source File
 
 SOURCE=.\sizecbar.cpp
-
-!IF  "$(CFG)" == "editor - Win32 Release"
-
 # ADD CPP /Yu"stdhdr.h"
-
-!ELSEIF  "$(CFG)" == "editor - Win32 Debug"
-
-# ADD CPP /Yu"stdhdr.h"
-
-!ELSEIF  "$(CFG)" == "editor - Win32 Opt"
-
-# ADD CPP /Yu"stdhdr.h"
-
-!ELSEIF  "$(CFG)" == "editor - Win32 StaticDebug"
-
-# ADD CPP /Yu"stdhdr.h"
-
-!ELSEIF  "$(CFG)" == "editor - Win32 StaticRelease"
-
-# ADD CPP /Yu"stdhdr.h"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -366,6 +304,10 @@ SOURCE=.\historywnd.h
 # Begin Source File
 
 SOURCE=.\MainFrm.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\OutputBar.h
 # End Source File
 # Begin Source File
 

@@ -360,6 +360,7 @@ END
 STRINGTABLE DISCARDABLE 
 BEGIN
     IDS_NO_UNIT_TESTS       "Unit tests not available in this build"
+    IDS_OUTPUT_BAR_TITLE    "Output"
 END
 
 #endif    // English (U.S.) resources
