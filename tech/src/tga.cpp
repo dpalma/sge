@@ -338,6 +338,7 @@ cImageData * cTargaReader::CreateImage()
       if (GetHeader().PixelDepth == 32 ||
           GetHeader().PixelDepth == 24)
       {
+#if NO_BGR_FORMATS
          uint8 bytesPerPixel = GetHeader().PixelDepth / 8;
          for (int i = 0; i < (GetHeader().Width * GetHeader().Height); i++)
          {
@@ -348,6 +349,9 @@ cImageData * cTargaReader::CreateImage()
             *pBlue = temp;
          }
          pixelFormat = (GetHeader().PixelDepth == 24) ? kPF_RGB888 : kPF_RGBA8888;
+#else
+         pixelFormat = (GetHeader().PixelDepth == 24) ? kPF_BGR888 : kPF_BGRA8888;
+#endif
       }
       else if (GetHeader().PixelDepth == 16)
       {
