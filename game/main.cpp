@@ -14,6 +14,7 @@
 #include "meshapi.h"
 #include "sim.h"
 #include "inputapi.h"
+#include "engineapi.h"
 
 #include "render.h"
 #include "textureapi.h"
@@ -286,45 +287,6 @@ static bool RunUnitTests()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static char * GetEntireContents(IReader * pReader)
-{
-   Assert(pReader != NULL);
-
-   pReader->Seek(0, kSO_End);
-   int length = pReader->Tell();
-   pReader->Seek(0, kSO_Set);
-
-   char * pszContents = new char[length + 1];
-
-   if (pReader->Read(pszContents, length) != S_OK)
-   {
-      delete [] pszContents;
-      return NULL;
-   }
-
-   pszContents[length] = 0;
-
-   return pszContents;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-static bool ScriptExecResource(const char * pszResource)
-{
-   UseGlobal(ResourceManager);
-   cAutoIPtr<IReader> pReader = pResourceManager->Find(pszResource);
-   if (!pReader)
-      return false;
-   char * pszCode = GetEntireContents(pReader);
-   if (pszCode == NULL)
-      return false;
-   bool result = ScriptExecString(pszCode);
-   delete [] pszCode;
-   return result;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 static void RegisterGlobalObjects()
 {
    InputCreate();
@@ -337,11 +299,90 @@ static void RegisterGlobalObjects()
    GUIFactoryCreate();
    GUIRenderingToolsCreate();
    EntityManagerCreate();
+   EngineCreate();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cEngineConfiguration
+//
+
+class cEngineConfiguration : public cComObject<IMPLEMENTS(IEngineConfiguration)>
+{
+public:
+   cEngineConfiguration();
+
+   virtual tResult GetStartupScript(cStr * pScript);
+
+   virtual tResult GetPreferredRenderDevice(uint * pPreferDevice);
+   virtual tResult GetRenderDeviceParameters(sRenderDeviceParameters * pParams);
+};
+
+///////////////////////////////////////
+
+cEngineConfiguration::cEngineConfiguration()
+{
+}
+
+///////////////////////////////////////
+
+tResult cEngineConfiguration::GetStartupScript(cStr * pScript)
+{
+   if (pScript == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (ConfigGet("autoexec_script", pScript) != S_OK)
+   {
+      *pScript = kAutoExecScript;
+   }
+
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cEngineConfiguration::GetPreferredRenderDevice(uint * pPreferDevice)
+{
+   if (pPreferDevice == NULL)
+   {
+      return E_POINTER;
+   }
+
+   return ConfigIsTrue("use_d3d") ? kRD_Direct3D : kRD_OpenGL;
+}
+
+///////////////////////////////////////
+
+tResult cEngineConfiguration::GetRenderDeviceParameters(sRenderDeviceParameters * pParams)
+{
+   if (pParams == NULL)
+   {
+      return E_POINTER;
+   }
+
+   int width = kDefaultWidth;
+   int height = kDefaultHeight;
+   int bpp = kDefaultBpp;
+
+   ConfigGet("screen_width", &width);
+   ConfigGet("screen_height", &height);
+   ConfigGet("screen_bpp", &bpp);
+
+   pParams->width = width;
+   pParams->height = height;
+   pParams->bpp = bpp;
+   pParams->bFullScreen = ConfigIsTrue("full_screen") && !IsDebuggerPresent();
+   pParams->options = kRDO_ShowStatistics;
+   pParams->pWindow = NULL;
+
+   return S_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool MainInit(int argc, char * argv[])
+static tResult InitGlobalConfig(int argc, char * argv[])
 {
    Assert(argc > 0);
 
@@ -352,11 +393,21 @@ bool MainInit(int argc, char * argv[])
    cAutoIPtr<IDictionaryStore> pStore = DictionaryStoreCreate(file);
    if (!pStore)
    {
-      return false;
+      return E_OUTOFMEMORY;
    }
    pStore->Load(g_pConfig);
 
    ParseCommandLine(argc, argv, g_pConfig);
+
+   return S_OK;
+}
+
+bool MainInit(int argc, char * argv[])
+{
+   if (InitGlobalConfig(argc, argv) != S_OK)
+   {
+      return false;
+   }
 
    cStr temp;
    if (ConfigGet("debug_log", &temp) == S_OK)
@@ -380,37 +431,28 @@ bool MainInit(int argc, char * argv[])
       pResourceManager->AddSearchPath(temp);
    }
 
-   cStr autoExecScript(kAutoExecScript);
-   ConfigGet("autoexec_script", &autoExecScript);
-
-   if (!ScriptExecFile(autoExecScript))
-   {
-      if (!ScriptExecResource(autoExecScript))
-      {
-         DebugMsg1("Error parsing or executing %s\n", autoExecScript.c_str());
-         return false;
-      }
-   }
-
    g_fov = kDefaultFov;
    ConfigGet("fov", (float *)&g_fov); // @HACK: cast to float pointer
 
    int width = kDefaultWidth;
    int height = kDefaultHeight;
-   int bpp = kDefaultBpp;
 
    ConfigGet("screen_width", &width);
    ConfigGet("screen_height", &height);
-   ConfigGet("screen_bpp", &bpp);
 
-   sRenderDeviceParameters params = {0};
-   params.width = width;
-   params.height = height;
-   params.bpp = bpp;
-   params.bFullScreen = ConfigIsTrue("full_screen") && !IsDebuggerPresent();
-   params.options = kRDO_ShowStatistics;
+   cAutoIPtr<IEngineConfiguration> pEngineConfig(new cEngineConfiguration);
+   if (!pEngineConfig)
+   {
+      return false;
+   }
 
-   if (RenderDeviceCreate(&params, &g_pRenderDevice) != S_OK)
+   UseGlobal(Engine);
+   if (FAILED(pEngine->Startup(pEngineConfig)))
+   {
+      return false;
+   }
+
+   if (FAILED(pEngine->GetRenderDevice(&g_pRenderDevice)))
    {
       return false;
    }
@@ -428,9 +470,6 @@ bool MainInit(int argc, char * argv[])
 
    UseGlobal(Input);
    pInput->AddWindow(g_pWindow);
-
-   UseGlobal(GUIRenderingTools);
-   pGUIRenderingTools->SetRenderDevice(g_pRenderDevice);
 
    g_pUICamera = SceneCameraCreate();
    g_pUICamera->SetOrtho(0, width, height, 0, -99999, 99999);
@@ -475,6 +514,9 @@ void MainTerm()
    {
       g_pGameCameraController->Disconnect();
    }
+
+   UseGlobal(Engine);
+   pEngine->Shutdown();
 
    StopGlobalObjects();
 }

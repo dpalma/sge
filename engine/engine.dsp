@@ -222,6 +222,10 @@ SOURCE=.\src\cmds.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\engine.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\frustum.cpp
 # End Source File
 # Begin Source File
@@ -363,6 +367,10 @@ SOURCE=.\src\3ds.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\engine.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\frustum.h
 # End Source File
 # Begin Source File
@@ -501,6 +509,10 @@ SOURCE=.\src\stripify.h
 # Begin Source File
 
 SOURCE=.\include\animation.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\engineapi.h
 # End Source File
 # Begin Source File
 

@@ -8,6 +8,7 @@ EXTRA_DIST = *.dsp *.dsw *.vcproj *.sln include/*.h src/*.h
 libengine_la_SOURCES = src/3ds.cpp \
                        src/animation.cpp \
                        src/cmds.cpp \
+                       src/engine.cpp \
                        src/frustum.cpp \
                        src/guibutton.cpp \
                        src/guicontext.cpp \
