@@ -291,7 +291,7 @@ tResult GUIElementStandardAttributes(const TiXmlElement * pXmlElement,
    {
       if (pXmlElement->Attribute("insets"))
       {
-         double insetVals[4];
+         float insetVals[4];
          if (ParseTuple(pXmlElement->Attribute("insets"), insetVals, _countof(insetVals)) == 4)
          {
             tGUIInsets insets;

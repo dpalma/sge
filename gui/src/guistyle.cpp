@@ -660,7 +660,7 @@ tResult GUIStyleParseColor(const char * psz, tGUIColor * pColor)
       sNamedColor(kValueColorWhite, tGUIColor::White),
    };
 
-   double rgba[4];
+   float rgba[4];
    int parseResult = ParseTuple(psz, rgba, _countof(rgba));
    if (parseResult == 3)
    {

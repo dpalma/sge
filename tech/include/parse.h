@@ -6,6 +6,9 @@
 
 #include "techdll.h"
 
+#include <vector>
+#include <string>
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -18,7 +21,9 @@ enum eParseTupleError
    kPTE_UnmatchedBrackets = -2,
 };
 
+int TECH_API ParseTuple(const char * psz, std::vector<std::string> * pStrings);
 int TECH_API ParseTuple(const char * psz, double * pNumbers, int nMaxNumbers);
+int TECH_API ParseTuple(const char * psz, float * pNumbers, int nMaxNumbers);
 
 ///////////////////////////////////////////////////////////////////////////////
 
