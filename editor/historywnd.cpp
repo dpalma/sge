@@ -84,7 +84,8 @@ BEGIN_MESSAGE_MAP(cHistoryWnd, CScrollWnd)
    ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, OnUpdateEditCopy)
    ON_COMMAND(ID_EDIT_CLEAR, OnEditClear)
    ON_WM_DESTROY()
-   //}}AFX_MSG_MAP
+	ON_WM_SIZE()
+	//}}AFX_MSG_MAP
    ON_MESSAGE(WM_SETFONT, OnSetFont)
 END_MESSAGE_MAP()
 
@@ -115,29 +116,52 @@ cHistoryWnd::~cHistoryWnd()
 
 ///////////////////////////////////////
 
-void cHistoryWnd::AddLine(LPCTSTR pszLine, COLORREF textColor)
+void cHistoryWnd::AddText(LPCTSTR pszText, int textLength, COLORREF textColor)
 {
+   Assert(AfxIsValidString(pszText, lstrlen(pszText)));
+   Assert((textLength < 0) || (textLength <= lstrlen(pszText)));
+
+   static const tChar szLineBreakChars[] = _T("\r\n");
+
+   if (textLength < 0)
+   {
+      textLength = lstrlen(pszText);
+   }
+
    if (textColor == CLR_INVALID)
    {
       textColor = GetTextColor();
    }
-   cEntry * pEntry = new cEntry(pszLine, textColor);
-   m_entries.push_back(pEntry);
 
-   if (pEntry->GetTextLen() > m_nMaxEntryLen)
+   CClientDC dc(this);
+   CFont * pOldFont = dc.SelectObject(&m_font);
+
+   int breakLength = _tcscspn(pszText, szLineBreakChars);
+   while ((breakLength <= textLength) && (breakLength > 0))
    {
-      m_nMaxEntryLen = pEntry->GetTextLen();
+      cEntry * pEntry = new cEntry(pszText, breakLength, textColor);
+      m_entries.push_back(pEntry);
+
+      if (breakLength > m_nMaxEntryLen)
+      {
+         m_nMaxEntryLen = breakLength;
+      }
+
+      CSize extent = dc.GetTextExtent(pszText, breakLength);
+      if (extent.cx > m_maxEntrySize)
+      {
+         m_maxEntrySize = extent.cx;
+      }
+
+      pszText += breakLength;
+      while ((*pszText != 0) && (_tcschr(szLineBreakChars, *pszText) != NULL))
+      {
+         pszText++;
+      }
+      breakLength = _tcscspn(pszText, szLineBreakChars);
    }
 
-   CDC * pDC = GetDC();
-   CFont * pOldFont = pDC->SelectObject(&m_font);
-   CSize s = pDC->GetTextExtent(pszLine, lstrlen(pszLine));
-   if (s.cx > m_maxEntrySize)
-   {
-      m_maxEntrySize = s.cx;
-   }
-   pDC->SelectObject(pOldFont);
-   ReleaseDC(pDC);
+   dc.SelectObject(pOldFont);
 
    EnforceMaxEntries();
 
@@ -337,7 +361,9 @@ void cHistoryWnd::EnforceMaxEntries()
          {
             CSize size = pDC->GetTextExtent((*iter)->GetText());
             if (size.cx > m_maxEntrySize)
+            {
                m_maxEntrySize = size.cx;
+            }
          }
       }
 
@@ -811,6 +837,12 @@ void cHistoryWnd::OnPaint()
       r.OffsetRect(0, r.Height());
    }
 
+   if (r.top < client.bottom)
+   {
+      r.bottom = client.bottom;
+      dc.FillSolidRect(r, GetBkColor());
+   }
+
    dc.RestoreDC(savedDC);
 
    dc.SelectObject(pOldFont);
@@ -855,6 +887,15 @@ void cHistoryWnd::OnDestroy()
    CScrollWnd::OnDestroy();
 
    AfxOleTerm();
+}
+
+///////////////////////////////////////
+
+void cHistoryWnd::OnSize(UINT nType, int cx, int cy) 
+{
+   CScrollWnd::OnSize(nType, cx, cy);
+
+   UpdateScrollInfo();
 }
 
 ///////////////////////////////////////

@@ -25,7 +25,7 @@ public:
    cHistoryWnd();
    virtual ~cHistoryWnd();
 
-   void AddLine(LPCTSTR pszLine, COLORREF textColor = CLR_INVALID);
+   void AddText(LPCTSTR pszText, int textLength = -1, COLORREF textColor = CLR_INVALID);
    void Clear();
 
    COLORREF SetTextColor(COLORREF color);
@@ -46,7 +46,7 @@ protected:
    class cEntry
    {
    public:
-      cEntry(LPCTSTR pszText, COLORREF textColor);
+      cEntry(LPCTSTR pszText, int textLength, COLORREF textColor);
 
       const CString & GetText() const;
       int GetTextLen() const;
@@ -108,7 +108,8 @@ protected:
    afx_msg void OnUpdateEditCopy(CCmdUI* pCmdUI);
    afx_msg void OnEditClear();
    afx_msg void OnDestroy();
-   //}}AFX_MSG
+	afx_msg void OnSize(UINT nType, int cx, int cy);
+	//}}AFX_MSG
 
    LRESULT OnSetFont(WPARAM wParam, LPARAM lParam);
 
@@ -173,8 +174,8 @@ inline int cHistoryWnd::GetMaxEntries() const
 
 ///////////////////////////////////////
 
-inline cHistoryWnd::cEntry::cEntry(LPCTSTR pszText, COLORREF textColor)
- : m_text(pszText), m_textColor(textColor)
+inline cHistoryWnd::cEntry::cEntry(LPCTSTR pszText, int textLength, COLORREF textColor)
+ : m_text(pszText, textLength), m_textColor(textColor)
 {
 }
 

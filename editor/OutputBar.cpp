@@ -57,7 +57,7 @@ static const COLORREF g_colors[] =
 
 void cOutputBar::HandleLogCallback(eLogSeverity severity, const tChar * pszMsg, size_t msgLen)
 {
-   m_wndChild.AddLine(pszMsg, g_colors[severity]);
+   m_wndChild.AddText(pszMsg, msgLen, g_colors[severity]);
 
    if (m_nextLogCallback != NULL)
    {
