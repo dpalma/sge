@@ -270,6 +270,10 @@ SOURCE=.\src\scenemesh.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\scriptvar.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\sim.cpp
 # End Source File
 # Begin Source File
