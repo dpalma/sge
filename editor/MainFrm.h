@@ -4,6 +4,8 @@
 #if !defined(INCLUDED_MAINFRM_H)
 #define INCLUDED_MAINFRM_H
 
+#include "editorView.h"
+
 #include <atlframe.h>
 #include <atlmisc.h>
 
