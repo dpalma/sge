@@ -52,6 +52,8 @@ private:
 
    HBITMAP m_hBitmap;
 
+   bool m_bLoadBitmapFailed;
+
    typedef std::map<uint, HBITMAP> tBitmaps;
    tBitmaps m_bitmaps;
 };

@@ -26,7 +26,8 @@ cEditorTile::cEditorTile(const tChar * pszName, const tChar * pszTexture,
    m_horzImages(horzImages),
    m_vertImages(vertImages),
    m_pImageData(NULL),
-   m_hBitmap(NULL)
+   m_hBitmap(NULL),
+   m_bLoadBitmapFailed(false)
 {
 }
 
@@ -169,7 +170,7 @@ void cEditorTile::LazyInit()
 {
    if (!m_texture.empty())
    {
-      if (m_pImageData == NULL)
+      if (m_pImageData == NULL && !m_bLoadBitmapFailed)
       {
          Assert(m_hBitmap == NULL);
 
@@ -179,7 +180,7 @@ void cEditorTile::LazyInit()
 
          if (m_pImageData != NULL)
          {
-            Verify(LoadBitmap(m_pImageData, &m_hBitmap));
+            m_bLoadBitmapFailed = !LoadBitmap(m_pImageData, &m_hBitmap);
          }
       }
    }
