@@ -12,7 +12,7 @@ template <typename T> class cVec3;
 typedef class cVec3<float> tVec3;
 
 template <typename T> class cMatrix4;
-typedef class cMatrix4<float> sMatrix4;
+typedef class cMatrix4<float> tMatrix4;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -36,7 +36,7 @@ public:
 class cFrustum
 {
 public:
-   void ExtractPlanes(const sMatrix4 & modelviewProjection);
+   void ExtractPlanes(const tMatrix4 & viewProjection);
 
    bool PointInFrustum(const tVec3 & point) const;
    bool SphereInFrustum(const tVec3 & center, float radius) const;

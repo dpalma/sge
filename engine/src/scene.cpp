@@ -81,9 +81,21 @@ tResult cScene::SetCamera(eSceneLayer layer, ISceneCamera * pCamera)
 
 ///////////////////////////////////////
 
+AssertOnce(kSL_Terrain == 0);
+AssertOnce(kSL_Object == 1);
+AssertOnce(kSL_InGameUI == 2);
+AssertOnce(kSL_FogOfWar == 3);
+
 tResult cScene::GetCamera(eSceneLayer layer, ISceneCamera * * ppCamera)
 {
-   return m_layers[layer].GetCamera(ppCamera);
+   for (int i = layer; i >= 0; i--)
+   {
+	   if (m_layers[i].GetCamera(ppCamera) == S_OK)
+	   {
+		   return S_OK;
+	   }
+   }
+   return S_FALSE;
 }
 
 ///////////////////////////////////////
@@ -173,11 +185,9 @@ tResult cScene::Query(const cRay & ray, ISceneEntityEnum * * ppEnum)
 
 ///////////////////////////////////////
 
-#define GetOuter(Class, Member) ((Class *)((byte *)this - offsetof(Class, Member)))
-
 bool cScene::cInputListener::OnInputEvent(const sInputEvent * pEvent)
 {
-   cScene * pScene = GetOuter(cScene, m_inputListener);
+   cScene * pScene = CTGetOuter(cScene, m_inputListener);
 
    for (int i = _countof(pScene->m_layers) - 1; i >= 0; i--)
    {

@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "scene.h"
+#include "scenelayer.h"
 #include "ray.h"
 #include "inputapi.h"
 
@@ -153,13 +153,9 @@ private:
 };
 
 cRenderEntity::cRenderEntity(IRenderDevice * pRenderDevice)
- : m_pRenderDevice(pRenderDevice)
+ : m_pRenderDevice(CTAddRef(pRenderDevice))
 {
    Assert(m_pRenderDevice != NULL);
-   if (m_pRenderDevice != NULL)
-   {
-      m_pRenderDevice->AddRef();
-   }
 }
 
 void cRenderEntity::operator()(ISceneEntity * pEntity)

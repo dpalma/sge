@@ -405,9 +405,6 @@
 					RelativePath="src\luainterp.h">
 				</File>
 				<File
-					RelativePath=".\src\minigl.h">
-				</File>
-				<File
 					RelativePath=".\src\ms3d.h">
 				</File>
 				<File

@@ -36,48 +36,48 @@ void cPlane::Normalize()
 
 ///////////////////////////////////////
 
-void cFrustum::ExtractPlanes(const sMatrix4 & modelviewProjection)
+void cFrustum::ExtractPlanes(const tMatrix4 & viewProjection)
 {
    // Determine the right plane
-   m_planes[0].a = modelviewProjection.m[3] - modelviewProjection.m[0];
-   m_planes[0].b = modelviewProjection.m[7] - modelviewProjection.m[4];
-   m_planes[0].c = modelviewProjection.m[11] - modelviewProjection.m[8];
-   m_planes[0].d = modelviewProjection.m[15] - modelviewProjection.m[12];
+   m_planes[0].a = viewProjection.m[3] - viewProjection.m[0];
+   m_planes[0].b = viewProjection.m[7] - viewProjection.m[4];
+   m_planes[0].c = viewProjection.m[11] - viewProjection.m[8];
+   m_planes[0].d = viewProjection.m[15] - viewProjection.m[12];
    m_planes[0].Normalize();
 
    // Determine the left plane
-   m_planes[1].a = modelviewProjection.m[3] + modelviewProjection.m[0];
-   m_planes[1].b = modelviewProjection.m[7] + modelviewProjection.m[4];
-   m_planes[1].c = modelviewProjection.m[11] + modelviewProjection.m[8];
-   m_planes[1].d = modelviewProjection.m[15] + modelviewProjection.m[12];
+   m_planes[1].a = viewProjection.m[3] + viewProjection.m[0];
+   m_planes[1].b = viewProjection.m[7] + viewProjection.m[4];
+   m_planes[1].c = viewProjection.m[11] + viewProjection.m[8];
+   m_planes[1].d = viewProjection.m[15] + viewProjection.m[12];
    m_planes[1].Normalize();
 
    // Determine the bottom plane
-   m_planes[2].a = modelviewProjection.m[3] + modelviewProjection.m[1];
-   m_planes[2].b = modelviewProjection.m[7] + modelviewProjection.m[5];
-   m_planes[2].c = modelviewProjection.m[11] + modelviewProjection.m[9];
-   m_planes[2].d = modelviewProjection.m[15] + modelviewProjection.m[13];
+   m_planes[2].a = viewProjection.m[3] + viewProjection.m[1];
+   m_planes[2].b = viewProjection.m[7] + viewProjection.m[5];
+   m_planes[2].c = viewProjection.m[11] + viewProjection.m[9];
+   m_planes[2].d = viewProjection.m[15] + viewProjection.m[13];
    m_planes[2].Normalize();
 
    // Determine the top plane
-   m_planes[3].a = modelviewProjection.m[3] - modelviewProjection.m[1];
-   m_planes[3].b = modelviewProjection.m[7] - modelviewProjection.m[5];
-   m_planes[3].c = modelviewProjection.m[11] - modelviewProjection.m[9];
-   m_planes[3].d = modelviewProjection.m[15] - modelviewProjection.m[13];
+   m_planes[3].a = viewProjection.m[3] - viewProjection.m[1];
+   m_planes[3].b = viewProjection.m[7] - viewProjection.m[5];
+   m_planes[3].c = viewProjection.m[11] - viewProjection.m[9];
+   m_planes[3].d = viewProjection.m[15] - viewProjection.m[13];
    m_planes[3].Normalize();
 
    // Determine the far plane
-   m_planes[4].a = modelviewProjection.m[3] - modelviewProjection.m[2];
-   m_planes[4].b = modelviewProjection.m[7] - modelviewProjection.m[6];
-   m_planes[4].c = modelviewProjection.m[11] - modelviewProjection.m[10];
-   m_planes[4].d = modelviewProjection.m[15] - modelviewProjection.m[14];
+   m_planes[4].a = viewProjection.m[3] - viewProjection.m[2];
+   m_planes[4].b = viewProjection.m[7] - viewProjection.m[6];
+   m_planes[4].c = viewProjection.m[11] - viewProjection.m[10];
+   m_planes[4].d = viewProjection.m[15] - viewProjection.m[14];
    m_planes[4].Normalize();
 
    // Determine the near plane
-   m_planes[5].a = modelviewProjection.m[3] + modelviewProjection.m[2];
-   m_planes[5].b = modelviewProjection.m[7] + modelviewProjection.m[6];
-   m_planes[5].c = modelviewProjection.m[11] + modelviewProjection.m[10];
-   m_planes[5].d = modelviewProjection.m[15] + modelviewProjection.m[14];
+   m_planes[5].a = viewProjection.m[3] + viewProjection.m[2];
+   m_planes[5].b = viewProjection.m[7] + viewProjection.m[6];
+   m_planes[5].c = viewProjection.m[11] + viewProjection.m[10];
+   m_planes[5].d = viewProjection.m[15] + viewProjection.m[14];
    m_planes[5].Normalize();
 }
 
