@@ -257,8 +257,6 @@ void cEditorView::RenderScene()
    pScene->Render(AccessRenderDevice());
 
    AccessRenderDevice()->EndScene();
-
-   SwapBuffers();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -384,7 +382,15 @@ int cEditorView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (cGLView::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
-   if (RenderDeviceCreate(kRDO_ShowStatistics, &m_pRenderDevice) != S_OK)
+   sRenderDeviceParameters params = {0};
+   params.width = 0;
+   params.height = 0;
+   params.bpp = 0;
+   params.bFullScreen = false;
+   params.options = kRDO_ShowStatistics;
+   params.pWindow = static_cast<IWindow *>(this);
+
+   if (RenderDeviceCreate(&params, &m_pRenderDevice) != S_OK)
    {
       DebugMsg("Failed to create rendering device\n");
       return -1;

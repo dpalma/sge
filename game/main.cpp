@@ -447,12 +447,21 @@ bool MainInit(int argc, char * argv[])
    ConfigGet("screen_height", &height);
    ConfigGet("screen_bpp", &bpp);
 
-   g_pWindow = WindowCreate();
+   sRenderDeviceParameters params = {0};
+   params.width = width;
+   params.height = height;
+   params.bpp = bpp;
+   params.bFullScreen = ConfigIsTrue("full_screen") && !IsDebuggerPresent();
+   params.options = kRDO_ShowStatistics;
 
-   if (!g_pWindow)
+   if (RenderDeviceCreate(&params, &g_pRenderDevice) != S_OK)
    {
       return false;
    }
+
+   g_pRenderDevice->GetWindow(&g_pWindow);
+
+   SysAppActivate(true);
 
    cWindowInputBroker * pSink = new cWindowInputBroker;
    if (pSink != NULL)
@@ -464,24 +473,8 @@ bool MainInit(int argc, char * argv[])
    UseGlobal(Input);
    pInput->AddWindow(g_pWindow);
 
-   if (FAILED(g_pWindow->Create(width, height, bpp)))
-   {
-      return false;
-   }
-
-   if (RenderDeviceCreate(kRDO_ShowStatistics, &g_pRenderDevice) != S_OK)
-      return false;
-
    UseGlobal(GUIRenderingTools);
    pGUIRenderingTools->SetRenderDevice(g_pRenderDevice);
-
-   cAutoIPtr<IWindowFullScreen> pWindowFullScreen;
-   bool bFullScreen = (ConfigIsTrue("full_screen") && !IsDebuggerPresent());
-   if (bFullScreen
-      && g_pWindow->QueryInterface(IID_IWindowFullScreen, (void * *)&pWindowFullScreen) == S_OK)
-   {
-      pWindowFullScreen->BeginFullScreen();
-   }
 
    g_pUICamera = SceneCameraCreate();
    g_pUICamera->SetOrtho(0, width, height, 0, -99999, 99999);
@@ -518,18 +511,9 @@ void MainTerm()
    UseGlobal(Sim);
    pSim->Stop();
 
+   SafeRelease(g_pWindow);
+
    SafeRelease(g_pRenderDevice);
-
-   if (g_pWindow)
-   {
-      cAutoIPtr<IWindowFullScreen> pWindowFullScreen;
-      if (g_pWindow->QueryInterface(IID_IWindowFullScreen, (void * *)&pWindowFullScreen) == S_OK)
-      {
-         pWindowFullScreen->EndFullScreen();
-      }
-
-      SafeRelease(g_pWindow);
-   }
 
    if (g_pGameCameraController)
    {
@@ -558,7 +542,6 @@ void MainFrame()
    pGUIContext->RenderGUI(g_pRenderDevice);
 
    g_pRenderDevice->EndScene();
-   g_pWindow->SwapBuffers();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
