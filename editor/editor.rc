@@ -69,6 +69,7 @@ IDR_EDITOTYPE           ICON    DISCARDABLE     "res\\editorDoc.ico"
 //
 
 IDR_MAINFRAME           BITMAP  MOVEABLE PURE   "res\\toolbar.bmp"
+IDB_STD_TOOLS           BITMAP  DISCARDABLE     "res\\stdtools.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //

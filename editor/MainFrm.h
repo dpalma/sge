@@ -7,7 +7,6 @@
 #include "editorapi.h"
 
 #include <DockingFrame.h>
-#include <sstate.h>
 
 #include <vector>
 
@@ -67,7 +66,6 @@ class cMainFrame : public dockwins::CDockingFrameImpl<cMainFrame>,
    {
       IDW_DOCKINGWINDOW_FIRST = 0xE800,
       IDW_DOCKINGWINDOW_LAST = 0xE8FF,
-      WM_POST_CREATE = WMDF_LAST + 1,
       kStandardToolbarBandId = ATL_IDW_BAND_FIRST + 1, // plus 1 because it's after the menu bar
    };
 
@@ -79,7 +77,6 @@ public:
 
    BEGIN_MSG_MAP_EX(cMainFrame)
       MESSAGE_HANDLER(WM_CREATE, OnCreate)
-      MESSAGE_HANDLER(WM_POST_CREATE, OnPostCreate)
       MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
       COMMAND_ID_HANDLER(ID_FILE_NEW, OnFileNew)
       COMMAND_ID_HANDLER(ID_FILE_OPEN, OnFileOpen)
@@ -110,7 +107,6 @@ public:
    void CreateDockingWindows();
 
    LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
-   LRESULT OnPostCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
    LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
 
    LRESULT OnFileNew(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled);
@@ -143,7 +139,6 @@ private:
 
    cDockingWindowMenu m_dockingWindowMenu;
    tDockingWindows m_dockingWindows;
-   sstate::CWindowStateMgr	m_dockingWindowStateMgr;
 
    cAutoIPtr<IEditorView> m_pMainView;
    cAutoIPtr<IEditorModel> m_pModel;

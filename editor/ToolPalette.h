@@ -26,6 +26,25 @@ DECLARE_HANDLE(HTOOLITEM);
 
 ///////////////////////////////////////////////////////////////////////////////
 
+const int kMaxName = 50;
+
+enum eToolPaletteToolState
+{
+   kTPTS_None = 0,
+   kTPTS_Disabled = (1<<0),
+   kTPTS_Checked = (1<<1),
+};
+
+struct sToolPaletteItem
+{
+   char szName[kMaxName];
+   uint state;
+   int iImage;
+   void * pUserData;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
 enum eToolPaletteNotifyCodes
 {
    kTPN_ItemClick = 0xD100,
@@ -63,14 +82,18 @@ public:
    cToolItem(cToolGroup * pGroup, const tChar * pszName, int iImage, void * pUserData);
    ~cToolItem();
 
+   void SetState(uint mask, uint state);
+
    cToolGroup * GetGroup() const;
    const tChar * GetName() const;
+   uint GetState() const;
    int GetImageIndex() const;
    void * GetUserData() const;
 
 private:
    cToolGroup * m_pGroup;
    std::string m_name;
+   uint m_state;
    int m_iImage;
    void * m_pUserData;
 };
@@ -87,6 +110,13 @@ inline cToolGroup * cToolItem::GetGroup() const
 inline const tChar * cToolItem::GetName() const
 {
    return m_name.c_str();
+}
+
+////////////////////////////////////////
+
+inline uint cToolItem::GetState() const
+{
+   return m_state;
 }
 
 ////////////////////////////////////////
@@ -285,7 +315,9 @@ public:
    bool IsTool(HTOOLITEM hTool);
    void Clear();
    HTOOLITEM AddTool(HTOOLGROUP hGroup, const tChar * pszTool, int iImage, void * pUserData = NULL);
+   HTOOLITEM AddTool(HTOOLGROUP hGroup, const sToolPaletteItem * pTPI);
    bool GetToolText(HTOOLITEM hTool, std::string * pText);
+   bool GetTool(HTOOLITEM hTool, sToolPaletteItem * pTPI);
    bool RemoveTool(HTOOLITEM hTool);
    bool EnableTool(HTOOLITEM hTool);
 

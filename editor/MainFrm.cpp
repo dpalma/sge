@@ -403,36 +403,10 @@ LRESULT cMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
    UIEnable(ID_EDIT_PASTE, FALSE);
    UIEnable(ID_EDIT_DELETE, FALSE);
 
-   // App starts off with a File->New command
-   SendMessage(WM_COMMAND, ID_FILE_NEW);
-
-   // Once the app starts, every File->New should prompt for map settings
-   m_bPromptForMapSettings = true;
-
-   PostMessage(WM_POST_CREATE);
-
-   return 0;
-}
-
-////////////////////////////////////////
-
-LRESULT cMainFrame::OnPostCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/)
-{
-   sstate::CDockWndMgr dockWndMgr;
-   tDockingWindows::iterator iter = m_dockingWindows.begin();
-   tDockingWindows::iterator end = m_dockingWindows.end();
-   for (; iter != end; iter++)
-   {
-      dockWndMgr.Add(sstate::CDockingWindowStateAdapter<cDockingWindow>(*(*iter)));
-   }
-
-   m_dockingWindowStateMgr.Initialize(_T("SOFTWARE\\SGE"), m_hWnd);
-//   m_dockingWindowStateMgr.Add(sstate::CRebarStateAdapter(m_hWndToolBar));
-   m_dockingWindowStateMgr.Add(sstate::CToggleWindowAdapter(m_hWndStatusBar));
-   m_dockingWindowStateMgr.Add(dockWndMgr);
-   m_dockingWindowStateMgr.Restore();
-
-   UpdateLayout();
+   // A File->New command starts off the app. Important to post the message
+   // because it won't succeed until after EditorInit() is called to load
+   // the tile sets.
+   PostMessage(WM_COMMAND, ID_FILE_NEW);
 
    return 0;
 }
@@ -446,6 +420,8 @@ LRESULT cMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
       m_pMainView->Destroy();
       SafeRelease(m_pMainView);
    }
+
+   SafeRelease(m_pModel);
 
    tDockingWindows::iterator iter = m_dockingWindows.begin();
    tDockingWindows::iterator end = m_dockingWindows.end();
@@ -476,9 +452,14 @@ LRESULT cMainFrame::OnFileNew(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHa
    cMapSettings mapSettings(
       g_mapSizes[kDefaultMapSizeIndex].cx,
       g_mapSizes[kDefaultMapSizeIndex].cy,
-      tileSets.empty() ? "" : tileSets[0]);
+      tileSets.empty() ? "default" : tileSets[0]);
 
-   if (m_bPromptForMapSettings)
+   if (!m_bPromptForMapSettings)
+   {
+      // Once the app starts, every File->New should prompt for map settings
+      m_bPromptForMapSettings = true;
+   }
+   else
    {
       cMapSettingsDlg dlg(g_mapSizes, _countof(g_mapSizes),
          kDefaultMapSizeIndex, tileSets, 0, kHeightData_None);

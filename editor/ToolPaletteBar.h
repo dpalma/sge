@@ -51,7 +51,6 @@ private:
 //
 
 class cToolPaletteBar : public cDockingWindow,
-                        public CMessageFilter,
                         public cComObject<IMPLEMENTS(IEditorTileManagerListener)>
 {
    enum
@@ -80,14 +79,12 @@ public:
    LRESULT OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
    LRESULT OnToolPaletteNotify(int idCtrl, LPNMHDR pnmh, BOOL & bHandled);
 
-   virtual BOOL PreTranslateMessage(MSG * pMsg);
-
 private:
    cToolPalette m_toolPalette;
 
-   HTOOLGROUP m_hTerrainTileGroup;
+   typedef std::vector<HTOOLGROUP> tToolGroups;
 
-   CToolTipCtrl m_tooltip;
+   tToolGroups m_terrainTileGroups;
 };
 
 /////////////////////////////////////////////////////////////////////////////

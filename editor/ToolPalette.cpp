@@ -154,6 +154,13 @@ cToolItem::~cToolItem()
 {
 }
 
+////////////////////////////////////////
+
+void cToolItem::SetState(uint mask, uint state)
+{
+   m_state = (m_state & ~mask) | (state & mask);
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -781,6 +788,7 @@ bool cToolPalette::RemoveGroup(HTOOLGROUP hGroup)
             }
             delete pRmGroup;
             m_groups.erase(iter);
+            m_renderer.FlushCachedRects();
             return true;
          }
       }
@@ -861,10 +869,21 @@ void cToolPalette::Clear()
 
 HTOOLITEM cToolPalette::AddTool(HTOOLGROUP hGroup, const tChar * pszTool, int iImage, void * pUserData)
 {
-   if (IsGroup(hGroup))
+   sToolPaletteItem tpi = {0};
+   lstrcpyn(tpi.szName, pszTool, _countof(tpi.szName));
+   tpi.iImage = iImage;
+   tpi.pUserData = pUserData;
+   return AddTool(hGroup, &tpi);
+}
+
+////////////////////////////////////////
+
+HTOOLITEM cToolPalette::AddTool(HTOOLGROUP hGroup, const sToolPaletteItem * pTPI)
+{
+   if (IsGroup(hGroup) && (pTPI != NULL))
    {
       cToolGroup * pGroup = reinterpret_cast<cToolGroup *>(hGroup);
-      HTOOLITEM hItem = pGroup->AddTool(pszTool, iImage, pUserData);
+      HTOOLITEM hItem = pGroup->AddTool(pTPI->szName, pTPI->iImage, pTPI->pUserData);
       if (hItem != NULL)
       {
          Invalidate();
@@ -897,9 +916,32 @@ bool cToolPalette::GetToolText(HTOOLITEM hTool, std::string * pText)
 
 ////////////////////////////////////////
 
+bool cToolPalette::GetTool(HTOOLITEM hTool, sToolPaletteItem * pTPI)
+{
+   if (IsTool(hTool))
+   {
+      cToolItem * pTool = reinterpret_cast<cToolItem *>(hTool);
+      Assert(IsGroup(reinterpret_cast<HTOOLGROUP>(pTool->GetGroup())));
+
+      if (pTPI != NULL)
+      {
+         lstrcpyn(pTPI->szName, pTool->GetName(), _countof(pTPI->szName));
+         pTPI->iImage = pTool->GetImageIndex();
+         pTPI->state = 0;
+         pTPI->pUserData = pTool->GetUserData();
+         return true;
+      }
+   }
+
+   return false;
+}
+
+////////////////////////////////////////
+
 bool cToolPalette::RemoveTool(HTOOLITEM hTool)
 {
    // TODO
+   WarnMsg("UNSUPPORTED FUNCTION CALLED: \n");
    return false;
 }
 
@@ -917,18 +959,26 @@ void cToolPalette::SetMouseOverItem(HANDLE hItem)
 {
    if (hItem != m_hMouseOverItem)
    {
-      CRect oldItemRect;
-      if ((m_hMouseOverItem != NULL) && m_renderer.GetItemRect(m_hMouseOverItem, &oldItemRect))
+      // remove this if-statement if group headings ever have a mouse-over effect
+      if (!IsGroup(reinterpret_cast<HTOOLGROUP>(m_hMouseOverItem)))
       {
-         InvalidateRect(oldItemRect, TRUE);
+         CRect oldItemRect;
+         if ((m_hMouseOverItem != NULL) && m_renderer.GetItemRect(m_hMouseOverItem, &oldItemRect))
+         {
+            InvalidateRect(oldItemRect, TRUE);
+         }
       }
 
       m_hMouseOverItem = hItem;
 
-      CRect itemRect;
-      if ((hItem != NULL) && m_renderer.GetItemRect(hItem, &itemRect))
+      // remove this if-statement if group headings ever have a mouse-over effect
+      if (!IsGroup(reinterpret_cast<HTOOLGROUP>(hItem)))
       {
-         InvalidateRect(itemRect, FALSE);
+         CRect itemRect;
+         if ((hItem != NULL) && m_renderer.GetItemRect(hItem, &itemRect))
+         {
+            InvalidateRect(itemRect, FALSE);
+         }
       }
    }
 }

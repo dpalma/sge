@@ -159,7 +159,6 @@ tResult cToolPaletteBar::Factory(cDockingWindow * * ppDockingWindow)
 ////////////////////////////////////////
 
 cToolPaletteBar::cToolPaletteBar()
- : m_hTerrainTileGroup(NULL)
 {
 }
 
@@ -171,47 +170,55 @@ cToolPaletteBar::~cToolPaletteBar()
 
 ////////////////////////////////////////
 
-void cToolPaletteBar::OnDefaultTileSetChange(IEditorTileSet * pTileSet)
+void cToolPaletteBar::OnDefaultTileSetChange(IEditorTileSet * /*pTileSet*/)
 {
-   if (m_toolPalette.IsWindow() && (m_hTerrainTileGroup != NULL))
-   {
-      Verify(m_toolPalette.RemoveGroup(m_hTerrainTileGroup));
-      m_hTerrainTileGroup = NULL;
-   }
+   UseGlobal(EditorTileManager);
 
-   if (pTileSet != NULL)
+   uint nTileSets = 0;
+   if (pEditorTileManager->GetTileSetCount(&nTileSets) == S_OK && nTileSets > 0)
    {
-      uint nTiles = 0;
-      if (pTileSet->GetTileCount(&nTiles) == S_OK)
+      if (m_toolPalette.IsWindow())
       {
-         if (m_toolPalette.IsWindow())
-         {
-            cStr name;
-            HIMAGELIST hImageList = NULL;
-            if (pTileSet->GetName(&name) == S_OK
-               && pTileSet->GetImageList(16, &hImageList) == S_OK)
-            {
-               // cToolPalette::AddGroup() expects to take ownership of image
-               // list, by the tileset stores it internally; hence, the
-               // ImageList_Duplicate() call.
-               m_hTerrainTileGroup = m_toolPalette.AddGroup(name.c_str(),
-                  ImageList_Duplicate(hImageList));
-            }
-         }
+         m_toolPalette.Clear();
+      }
+      else
+      {
+         return;
+      }
 
-         for (uint i = 0; i < nTiles; i++)
+      for (uint i = 0; i < nTileSets; i++)
+      {
+         cAutoIPtr<IEditorTileSet> pTileSet;
+         if (pEditorTileManager->GetTileSet(i, &pTileSet) == S_OK)
          {
-            cAutoIPtr<IEditorTile> pTile;
-            if (pTileSet->GetTile(i, &pTile) == S_OK)
+            uint nTiles = 0;
+            if (pTileSet->GetTileCount(&nTiles) == S_OK && nTiles > 0)
             {
-               cStr tileName;
-               HBITMAP hBitmap = NULL;
-               if (pTile->GetName(&tileName) == S_OK
-                  && pTile->GetBitmap(kButtonSize, false, &hBitmap) == S_OK)
+               cStr tileSetName;
+               HIMAGELIST hTileSetImages = NULL;
+               if (pTileSet->GetName(&tileSetName) == S_OK
+                  && pTileSet->GetImageList(16, &hTileSetImages) == S_OK)
                {
-                  if (m_toolPalette.IsWindow() && (m_hTerrainTileGroup != NULL))
+                  // cToolPalette::AddGroup() expects to take ownership of image
+                  // list, but the tileset stores it internally; hence, the
+                  // ImageList_Duplicate() call.
+                  HTOOLGROUP hGroup = m_toolPalette.AddGroup(tileSetName.c_str(),
+                     ImageList_Duplicate(hTileSetImages));
+
+                  if (hGroup != NULL)
                   {
-                     m_toolPalette.AddTool(m_hTerrainTileGroup, tileName.c_str(), i);
+                     for (uint j = 0; j < nTiles; j++)
+                     {
+                        cAutoIPtr<IEditorTile> pTile;
+                        if (pTileSet->GetTile(j, &pTile) == S_OK)
+                        {
+                           cStr tileName;
+                           if (pTile->GetName(&tileName) == S_OK)
+                           {
+                              m_toolPalette.AddTool(hGroup, tileName.c_str(), j);
+                           }
+                        }
+                     }
                   }
                }
             }
@@ -224,34 +231,34 @@ void cToolPaletteBar::OnDefaultTileSetChange(IEditorTileSet * pTileSet)
 
 LRESULT cToolPaletteBar::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled)
 {
-   if (!m_tooltip.Create(m_hWnd))
-   {
-      ErrorMsg1("Unable to create tooltip control (error %d)\n", GetLastError());
-      return -1;
-   }
-
    if (!m_toolPalette.Create(m_hWnd, CWindow::rcDefault, "", 0, 0, kToolPaletteId))
    {
       ErrorMsg1("Unable to create tool palette control (error %d)\n", GetLastError());
       return -1;
    }
 
+   HIMAGELIST hStdImages = ImageList_LoadBitmap(_Module.GetResourceInstance(),
+      MAKEINTRESOURCE(IDB_STD_TOOLS), 16, 0, RGB(255,0,255));
+
+   // TODO: Come up with a better way for creating the standard tools
+   if (hStdImages != NULL)
+   {
+      HTOOLGROUP hStdGroup = m_toolPalette.AddGroup("", NULL);
+      if (hStdGroup != NULL)
+      {
+         HTOOLITEM hTool = m_toolPalette.AddTool(hStdGroup, "Select", 0, NULL);
+      }
+   }
+
    ////////////////////////////////////////
    ////////////////////////////////////////
-   // TESTING
+   // FOR TESTING
    ////////////////////////////////////////
 #if 1
    for (int i = 0; i < 3; i++)
    {
       tChar szTemp[200];
-      if (i == 0)
-      {
-         ZeroMemory(szTemp, sizeof(szTemp));
-      }
-      else
-      {
-         wsprintf(szTemp, "Group %c", 'A' + i);
-      }
+      wsprintf(szTemp, "Group %c", 'A' + i);
       HTOOLGROUP hToolGroup = m_toolPalette.AddGroup(szTemp, NULL);
       if (hToolGroup != NULL)
       {
@@ -279,9 +286,6 @@ LRESULT cToolPaletteBar::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL 
       OnDefaultTileSetChange(pTileSet);
    }
 
-   CMessageLoop * pMessageLoop = _Module.GetMessageLoop();
-   pMessageLoop->AddMessageFilter(this);
-
    return 0;
 }
 
@@ -289,9 +293,6 @@ LRESULT cToolPaletteBar::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL 
 
 LRESULT cToolPaletteBar::OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled)
 {
-   CMessageLoop * pMessageLoop = _Module.GetMessageLoop();
-   pMessageLoop->RemoveMessageFilter(this);
-
    UseGlobal(EditorTileManager);
    pEditorTileManager->Disconnect(this);
 
@@ -317,42 +318,28 @@ LRESULT cToolPaletteBar::OnToolPaletteNotify(int idCtrl, LPNMHDR pnmh, BOOL & bH
 {
    Assert(pnmh != NULL);
 
-   std::string temp;
+   sToolPaletteItem tpi;
 
-   switch (pnmh->code)
+   if (m_toolPalette.GetTool(((sNMToolPaletteItemClick *)pnmh)->hTool, &tpi))
    {
-      case kTPN_ItemClick:
+      switch (pnmh->code)
       {
-         if (m_toolPalette.GetToolText(((sNMToolPaletteItemClick *)pnmh)->hTool, &temp))
+         case kTPN_ItemClick:
          {
-            DebugMsg1("Tool \"%s\" clicked\n", temp.c_str());
+            DebugMsg1("Tool \"%s\" clicked\n", tpi.szName);
+            break;
          }
-         break;
-      }
 
-      case kTPN_ItemDestroy:
-      {
-         // TODO: release/free whatever is in user data
-         break;
+         case kTPN_ItemDestroy:
+         {
+            // TODO: release/free whatever is in user data
+            DebugMsg1("Tool \"%s\" destroyed\n", tpi.szName);
+            break;
+         }
       }
    }
 
    return 0;
-}
-
-////////////////////////////////////////
-
-BOOL cToolPaletteBar::PreTranslateMessage(MSG* pMsg) 
-{
-   if (m_tooltip.IsWindow())
-   {
-      if (pMsg->message == WM_LBUTTONDOWN || pMsg->message == WM_LBUTTONUP || pMsg->message == WM_MOUSEMOVE)
-      {
-         m_tooltip.RelayEvent(pMsg);
-      }
-   }
-
-   return FALSE;
 }
 
 /////////////////////////////////////////////////////////////////////////////
