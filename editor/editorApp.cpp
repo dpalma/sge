@@ -109,7 +109,8 @@ END_MESSAGE_MAP()
 // cEditorApp construction
 
 cEditorApp::cEditorApp()
- : m_bPromptMapSettings(false)
+ : m_bPromptMapSettings(false),
+   m_hCurrentToolWnd(NULL)
 {
 	// TODO: add construction code here,
 	// Place all significant initialization in InitInstance
@@ -412,18 +413,32 @@ int cEditorApp::Run()
 
 BOOL cEditorApp::PreTranslateMessage(MSG * pMsg) 
 {
-   if (AccessActiveTool() != NULL)
+   cAutoIPtr<IEditorTool> pTool;
+   if (AccessToolCapture() != NULL)
    {
-      cAutoIPtr<IEditorTool> pTool(CTAddRef(AccessActiveTool()));
+      pTool = CTAddRef(AccessToolCapture());
+   }
+   else if (AccessActiveTool() != NULL)
+   {
+      pTool = CTAddRef(AccessActiveTool());
+   }
+   else if (AccessDefaultTool() != NULL)
+   {
+      pTool = CTAddRef(AccessDefaultTool());
+   }
 
-      cAutoIPtr<IEditorView> pView;
+   if (!!pTool)
+   {
+      m_hCurrentToolWnd = pMsg->hwnd;
+
+      Assert(!m_pCurrentToolView);
       CWnd * pWnd = CWnd::FromHandlePermanent(pMsg->hwnd);
       if (pWnd != NULL)
       {
          cEditorView * pEditorView = DYNAMIC_DOWNCAST(cEditorView, pWnd);
          if (pEditorView != NULL)
          {
-            pView = CTAddRef(static_cast<IEditorView *>(pEditorView));
+            m_pCurrentToolView = CTAddRef(static_cast<IEditorView *>(pEditorView));
          }
       }
 
@@ -433,68 +448,71 @@ BOOL cEditorApp::PreTranslateMessage(MSG * pMsg)
       {
          case WM_KEYDOWN:
          {
-            toolResult = pTool->OnKeyDown(cEditorKeyEvent(pMsg->wParam, pMsg->lParam), pView);
+            toolResult = pTool->OnKeyDown(cEditorKeyEvent(pMsg->wParam, pMsg->lParam), m_pCurrentToolView);
             break;
          }
 
          case WM_KEYUP:
          {
-            toolResult = pTool->OnKeyUp(cEditorKeyEvent(pMsg->wParam, pMsg->lParam), pView);
+            toolResult = pTool->OnKeyUp(cEditorKeyEvent(pMsg->wParam, pMsg->lParam), m_pCurrentToolView);
             break;
          }
 
          case WM_LBUTTONDBLCLK:
          {
-            toolResult = pTool->OnLButtonDblClk(cEditorMouseEvent(pMsg->wParam, pMsg->lParam), pView);
+            toolResult = pTool->OnLButtonDblClk(cEditorMouseEvent(pMsg->wParam, pMsg->lParam), m_pCurrentToolView);
             break;
          }
 
          case WM_LBUTTONDOWN:
          {
-            toolResult = pTool->OnLButtonDown(cEditorMouseEvent(pMsg->wParam, pMsg->lParam), pView);
+            toolResult = pTool->OnLButtonDown(cEditorMouseEvent(pMsg->wParam, pMsg->lParam), m_pCurrentToolView);
             break;
          }
 
          case WM_LBUTTONUP:
          {
-            toolResult = pTool->OnLButtonUp(cEditorMouseEvent(pMsg->wParam, pMsg->lParam), pView);
+            toolResult = pTool->OnLButtonUp(cEditorMouseEvent(pMsg->wParam, pMsg->lParam), m_pCurrentToolView);
             break;
          }
 
          case WM_RBUTTONDBLCLK:
          {
-            toolResult = pTool->OnRButtonDblClk(cEditorMouseEvent(pMsg->wParam, pMsg->lParam), pView);
+            toolResult = pTool->OnRButtonDblClk(cEditorMouseEvent(pMsg->wParam, pMsg->lParam), m_pCurrentToolView);
             break;
          }
 
          case WM_RBUTTONDOWN:
          {
-            toolResult = pTool->OnRButtonDown(cEditorMouseEvent(pMsg->wParam, pMsg->lParam), pView);
+            toolResult = pTool->OnRButtonDown(cEditorMouseEvent(pMsg->wParam, pMsg->lParam), m_pCurrentToolView);
             break;
          }
 
          case WM_RBUTTONUP:
          {
-            toolResult = pTool->OnRButtonUp(cEditorMouseEvent(pMsg->wParam, pMsg->lParam), pView);
+            toolResult = pTool->OnRButtonUp(cEditorMouseEvent(pMsg->wParam, pMsg->lParam), m_pCurrentToolView);
             break;
          }
 
          case WM_MOUSEMOVE:
          {
-            toolResult = pTool->OnMouseMove(cEditorMouseEvent(pMsg->wParam, pMsg->lParam), pView);
+            toolResult = pTool->OnMouseMove(cEditorMouseEvent(pMsg->wParam, pMsg->lParam), m_pCurrentToolView);
             break;
          }
 
          case WM_MOUSEWHEEL:
          {
-            toolResult = pTool->OnMouseWheel(cEditorMouseWheelEvent(pMsg->wParam, pMsg->lParam), pView);
+            toolResult = pTool->OnMouseWheel(cEditorMouseWheelEvent(pMsg->wParam, pMsg->lParam), m_pCurrentToolView);
             break;
          }
+      }
 
-         if (toolResult == S_EDITOR_TOOL_HANDLED)
-         {
-            return TRUE;
-         }
+      m_hCurrentToolWnd = NULL;
+      SafeRelease(m_pCurrentToolView);
+
+      if (toolResult == S_EDITOR_TOOL_HANDLED)
+      {
+         return TRUE;
       }
    }
 
@@ -655,6 +673,76 @@ tResult cEditorApp::SetActiveTool(IEditorTool * pTool)
    m_pActiveTool = CTAddRef(pTool);
 
    return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cEditorApp::GetDefaultTool(IEditorTool * * ppTool)
+{
+   return m_pDefaultTool.GetPointer(ppTool);
+}
+
+////////////////////////////////////////
+
+tResult cEditorApp::SetDefaultTool(IEditorTool * pTool)
+{
+   if (pTool == NULL)
+   {
+      return E_POINTER;
+   }
+
+   SafeRelease(m_pDefaultTool);
+
+   m_pDefaultTool = CTAddRef(pTool);
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cEditorApp::GetToolCapture(IEditorTool * * ppTool)
+{
+   return m_pToolCapture.GetPointer(ppTool);
+}
+
+////////////////////////////////////////
+
+tResult cEditorApp::SetToolCapture(IEditorTool * pTool)
+{
+   if (pTool == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (!IsWindow(m_hCurrentToolWnd))
+   {
+      DebugMsg("No valid window handle in SetToolCapture\n");
+      return E_FAIL;
+   }
+
+   ::SetCapture(m_hCurrentToolWnd);
+
+   SafeRelease(m_pToolCapture);
+
+   m_pToolCapture = CTAddRef(pTool);
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cEditorApp::ReleaseToolCapture()
+{
+   if (!m_pToolCapture)
+   {
+      return S_FALSE;
+   }
+   else
+   {
+      ReleaseCapture();
+      SafeRelease(m_pToolCapture);
+      return S_OK;
+   }
 }
 
 ////////////////////////////////////////

@@ -219,6 +219,10 @@ SOURCE=.\editorTileSet.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\editorTools.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\editorView.cpp
 # End Source File
 # Begin Source File
@@ -328,6 +332,10 @@ SOURCE=.\editorTileManager.h
 # Begin Source File
 
 SOURCE=.\editorTileSet.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\editorTools.h
 # End Source File
 # Begin Source File
 

@@ -6,14 +6,13 @@
 
 #include "afxcomtools.h"
 #include "editorapi.h"
+#include "editorTools.h"
 
 #include <vector>
 
 #if _MSC_VER >= 1000
 #pragma once
 #endif // _MSC_VER >= 1000
-
-class cTerrainTileTool;
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -43,28 +42,6 @@ private:
    CRect m_margins;
 
    cAutoIPtr<cTerrainTileTool> m_pTool;
-};
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cTerrainTileTool
-//
-
-class cTerrainTileTool : public cComObject<cDefaultEditorTool, &IID_IEditorTool>
-{
-public:
-   cTerrainTileTool();
-   ~cTerrainTileTool();
-
-   void SetTile(uint tile);
-
-   virtual tResult OnLButtonDown(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
-	virtual tResult OnLButtonUp(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
-	virtual tResult OnMouseMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
-
-private:
-   uint m_tile;
 };
 
 /////////////////////////////////////////////////////////////////////////////

@@ -7,6 +7,7 @@
 #include "editorView.h"
 #include "terrain.h"
 #include "editorapi.h"
+#include "editorTools.h"
 
 #include "sceneapi.h"
 #include "ray.h"
@@ -23,12 +24,28 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+/////////////////////////////////////////////////////////////////////////////
+
 const float kFov = 70;
 const float kZNear = 1;
 const float kZFar = 5000;
 
+const float kDefaultCameraElevation = 100;
+const float kDefaultCameraPitch = 70;
+
 /////////////////////////////////////////////////////////////////////////////
-// cEditorView
+
+static tVec3 CalcEyePoint(const tVec3 & center,
+                          tVec3::value_type elevation = kDefaultCameraElevation,
+                          tVec3::value_type pitch = kDefaultCameraPitch)
+{
+   return center + tVec3(0, elevation, elevation / tanf(pitch));
+}
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cEditorView
+//
 
 ////////////////////////////////////////
 
@@ -41,9 +58,6 @@ BEGIN_MESSAGE_MAP(cEditorView, cGLView)
 	ON_WM_CREATE()
 	ON_WM_DESTROY()
 	ON_WM_SIZE()
-	ON_WM_RBUTTONDOWN()
-	ON_WM_RBUTTONUP()
-	ON_WM_MOUSEMOVE()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -53,9 +67,10 @@ END_MESSAGE_MAP()
 ////////////////////////////////////////
 
 cEditorView::cEditorView()
- : m_mouseAction(kNone),
+ : m_cameraElevation(kDefaultCameraElevation),
    m_center(0,0,0),
    m_eye(0,0,0),
+   m_bRecalcEye(true),
    m_nIndices(0),
    m_sceneEntity(this)
 {
@@ -112,16 +127,66 @@ tResult cEditorView::SwapBuffers()
 
 ////////////////////////////////////////
 
+tResult cEditorView::GetCamera(ISceneCamera * * ppCamera)
+{
+   return m_pCamera.GetPointer(ppCamera);
+}
+
+////////////////////////////////////////
+
 tVec3 cEditorView::GetCameraEyePosition() const
 {
+   if (m_bRecalcEye)
+   {
+      m_eye = CalcEyePoint(m_center, m_cameraElevation);
+      m_bRecalcEye = false;
+   }
    return m_eye;
 }
 
 ////////////////////////////////////////
 
-tResult cEditorView::GetCamera(ISceneCamera * * ppCamera)
+tResult cEditorView::GetCameraPlacement(float * px, float * pz)
 {
-   return m_pCamera.GetPointer(ppCamera);
+   if (px == NULL || pz == NULL)
+   {
+      return E_POINTER;
+   }
+   *px = m_center.x;
+   *pz = m_center.z;
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cEditorView::PlaceCamera(float x, float z)
+{
+   m_center.x = x;
+   m_center.z = z;
+   m_bRecalcEye = true;
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cEditorView::GetCameraElevation(float * pElevation)
+{
+   if (pElevation == NULL)
+   {
+      return E_POINTER;
+   }
+
+   *pElevation = m_cameraElevation;
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cEditorView::SetCameraElevation(float elevation)
+{
+   m_cameraElevation = elevation;
+   m_bRecalcEye = true;
+   return S_OK;
 }
 
 ////////////////////////////////////////
@@ -149,12 +214,10 @@ tResult cEditorView::GetModel(IEditorModel * * ppModel)
 
 void cEditorView::OnFrame(double time, double elapsed)
 {
-//   DebugMsg2("cEditorView::OnFrame(%f, %f)\n", time, elapsed);
-
    if (!!m_pCamera)
    {
       tMatrix4 view;
-      MatrixLookAt(m_eye, m_center, tVec3(0,1,0), &view);
+      MatrixLookAt(GetCameraEyePosition(), m_center, tVec3(0,1,0), &view);
       m_pCamera->SetViewMatrix(view);
    }
 
@@ -291,6 +354,8 @@ int cEditorView::OnCreate(LPCREATESTRUCT lpCreateStruct)
    Assert(AccessEditorApp() != NULL);
    Verify(AccessEditorApp()->AddLoopClient(this) == S_OK);
 
+   AccessEditorApp()->SetDefaultTool(static_cast<IEditorTool *>(new cMoveCameraTool));
+
 	return 0;
 }
 
@@ -330,15 +395,6 @@ void cEditorView::OnSize(UINT nType, int cx, int cy)
    {
       m_pCamera->SetPerspective(kFov, aspect, kZNear, kZFar);
    }
-}
-
-////////////////////////////////////////
-
-static tVec3 CalcEyePoint(const tVec3 & lookAt,
-                          tVec3::value_type elevation = 100,
-                          tVec3::value_type pitch = 70)
-{
-   return lookAt + tVec3(0, elevation, elevation / tanf(pitch));
 }
 
 ////////////////////////////////////////
@@ -385,8 +441,7 @@ void cEditorView::OnInitialUpdate()
    uint xExt, zExt;
    pDoc->AccessTerrain()->GetExtents(&xExt, &zExt);
 
-   m_center = tVec3((tVec3::value_type)xExt / 2, 0, (tVec3::value_type)zExt / 2);
-   m_eye = CalcEyePoint(m_center);
+   PlaceCamera((float)xExt / 2, (float)zExt / 2);
 
 	CView::OnInitialUpdate();
 }
@@ -565,53 +620,6 @@ LRESULT cEditorView::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
          break;
       }
    }
-	
+
 	return cGLView::WindowProc(message, wParam, lParam);
-}
-
-////////////////////////////////////////
-
-void cEditorView::OnRButtonDown(UINT nFlags, CPoint point) 
-{
-   SetCapture();
-   m_mouseAction = kMoveCamera;
-   m_lastMousePoint = point;
-	
-	cGLView::OnRButtonDown(nFlags, point);
-}
-
-////////////////////////////////////////
-
-void cEditorView::OnRButtonUp(UINT nFlags, CPoint point) 
-{
-   if (m_mouseAction == kMoveCamera)
-   {
-      techlog.Print(kInfo, "Looking at point (%.2f, 0, %.2f)\n", m_center.x, m_center.z);
-   }
-
-   Verify(ReleaseCapture());
-   m_mouseAction = kNone;
-	
-	cGLView::OnRButtonUp(nFlags, point);
-}
-
-////////////////////////////////////////
-
-void cEditorView::OnMouseMove(UINT nFlags, CPoint point) 
-{
-   if (GetCapture() == this)
-   {
-      if (m_mouseAction == kMoveCamera)
-      {
-         CPoint delta = point - m_lastMousePoint;
-         m_eye.x += delta.x;
-         m_eye.z += delta.y;
-         m_center.x += delta.x;
-         m_center.z += delta.y;
-      }
-
-      m_lastMousePoint = point;
-   }
-	
-	cGLView::OnMouseMove(nFlags, point);
 }

@@ -92,6 +92,13 @@ interface UUID("2A04E541-6BA1-41e9-92FA-E7B3D493F1A2") IEditorApp : IUnknown
 
    virtual tResult GetActiveTool(IEditorTool * * ppTool) = 0;
    virtual tResult SetActiveTool(IEditorTool * pTool) = 0;
+
+   virtual tResult GetDefaultTool(IEditorTool * * ppTool) = 0;
+   virtual tResult SetDefaultTool(IEditorTool * pTool) = 0;
+
+   virtual tResult GetToolCapture(IEditorTool * * ppTool) = 0;
+   virtual tResult SetToolCapture(IEditorTool * pTool) = 0;
+   virtual tResult ReleaseToolCapture() = 0;
 };
 
 ////////////////////////////////////////
@@ -202,9 +209,12 @@ interface UUID("CDEB5694-56D2-4750-BEF8-85F286364C23") IEditorTile : IUnknown
 
 interface UUID("78C29790-865D-4f81-9AF1-26EC23BB5FAC") IEditorView : IUnknown
 {
-   virtual tVec3 GetCameraEyePosition() const = 0;
-
    virtual tResult GetCamera(ISceneCamera * * ppCamera) = 0;
+   virtual tVec3 GetCameraEyePosition() const = 0;
+   virtual tResult GetCameraPlacement(float * px, float * pz) = 0;
+   virtual tResult PlaceCamera(float x, float z) = 0;
+   virtual tResult GetCameraElevation(float * pElevation) = 0;
+   virtual tResult SetCameraElevation(float elevation) = 0;
 
    virtual tResult GetModel(IEditorModel * * ppModel) = 0;
 };
