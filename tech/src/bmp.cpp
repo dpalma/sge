@@ -10,11 +10,13 @@
 
 #include "dbgalloc.h" // must be last header
 
+////////////////////////////////////////////////////////////////////////////////
+
 struct sBmpPaletteEntry
 {
-   byte peRed;
-   byte peGreen;
    byte peBlue;
+   byte peGreen;
+   byte peRed;
    byte peFlags;
 };
 
@@ -44,27 +46,13 @@ struct sBmpInfoHeader
    uint32 biClrImportant;
 };
 
-cImageData * LoadBmp(IReader * pReader)
+////////////////////////////////////////////////////////////////////////////////
+
+static cImageData * LoadBmp24Bit(IReader * pReader,
+                                 const sBmpFileHeader & header,
+                                 const sBmpInfoHeader & info)
 {
-   Assert(pReader != NULL);
-
-   sBmpFileHeader header;
-   sBmpInfoHeader info;
-
-   if (pReader->Read(&header, sizeof(header)) != S_OK ||
-       header.bfType != 0x4D42 ||
-       pReader->Read(&info, sizeof(info)) != S_OK)
-   {
-      return NULL;
-   }
-
-   if (info.biBitCount != 24)
-   {
-      DebugMsg1("Un-supported BMP image format (%d bits per pixel)\n", info.biBitCount);
-      return NULL;
-   }
-
-   cImageData * pImage = NULL;
+   cImageData * pImageData = NULL;
 
    ulong memSize = header.bfSize - header.bfOffBits;
 
@@ -93,11 +81,11 @@ cImageData * LoadBmp(IReader * pReader)
 
             if (unalignedScanLine == alignedScanLine)
             {
-               pImage = new cImageData;
-               if (!pImage->Create(info.biWidth, info.biHeight, kPF_BGR888, pAlignedImageBits))
+               pImageData = new cImageData;
+               if (!pImageData->Create(info.biWidth, info.biHeight, kPF_BGR888, pAlignedImageBits))
                {
-                  delete pImage;
-                  pImage = NULL;
+                  delete pImageData;
+                  pImageData = NULL;
                }
             }
             else
@@ -112,11 +100,11 @@ cImageData * LoadBmp(IReader * pReader)
                   pAligned += alignedScanLine;
                }
 
-               pImage = new cImageData;
-               if (!pImage->Create(info.biWidth, info.biHeight, kPF_BGR888, pUnalignedImageBits))
+               pImageData = new cImageData;
+               if (!pImageData->Create(info.biWidth, info.biHeight, kPF_BGR888, pUnalignedImageBits))
                {
-                  delete pImage;
-                  pImage = NULL;
+                  delete pImageData;
+                  pImageData = NULL;
                }
             }
 
@@ -127,5 +115,107 @@ cImageData * LoadBmp(IReader * pReader)
       delete [] pAlignedImageBits;
    }
 
-   return pImage;
+   return pImageData;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+static cImageData * LoadBmp8BitAs24(IReader * pReader,
+                                    const sBmpFileHeader & header,
+                                    const sBmpInfoHeader & info)
+{
+   Assert(pReader != NULL);
+   Assert(info.biBitCount == 8);
+
+   uint nColors = (info.biClrUsed > 0) ? info.biClrUsed : (1 << info.biBitCount);
+   if (nColors == 0)
+   {
+      return NULL;
+   }
+
+   sBmpPaletteEntry * pPaletteEntries = new sBmpPaletteEntry[nColors];
+   if (pPaletteEntries == NULL)
+   {
+      return NULL;
+   }
+
+   cImageData * pImageData = NULL;
+
+   uint nRead;
+   if (pReader->Read(pPaletteEntries, nColors * sizeof(sBmpPaletteEntry), &nRead) == S_OK)
+   {
+      ulong palIndexDataSize = header.bfSize - header.bfOffBits;
+      byte * pPalIndexData = new byte[palIndexDataSize];
+      if (pPalIndexData != NULL)
+      {
+         if (pReader->Read(pPalIndexData, palIndexDataSize, &nRead) == S_OK)
+         {
+            size_t imageSize24 = info.biWidth * info.biHeight * 3;
+
+            byte * pImageBits24 = new byte[imageSize24];
+            if (pImageBits24 != NULL)
+            {
+               byte * pPixel24 = pImageBits24;
+
+               for (uint i = 0; i < palIndexDataSize; i++, pPixel24 += 3)
+               {
+                  byte palIndex = pPalIndexData[i];
+
+                  pPixel24[0] = pPaletteEntries[palIndex].peBlue;
+                  pPixel24[1] = pPaletteEntries[palIndex].peGreen;
+                  pPixel24[2] = pPaletteEntries[palIndex].peRed;
+               }
+
+               pImageData = new cImageData;
+               if (!pImageData->Create(info.biWidth, info.biHeight, kPF_BGR888, pImageBits24))
+               {
+                  delete pImageData;
+                  pImageData = NULL;
+               }
+
+               delete [] pImageBits24;
+            }
+         }
+
+         delete [] pPalIndexData;
+      }
+   }
+
+   delete [] pPaletteEntries;
+
+   return pImageData;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+cImageData * LoadBmp(IReader * pReader)
+{
+   Assert(pReader != NULL);
+
+   sBmpFileHeader header;
+   sBmpInfoHeader info;
+
+   if (pReader->Read(&header, sizeof(header)) != S_OK ||
+       header.bfType != 0x4D42 ||
+       pReader->Read(&info, sizeof(info)) != S_OK)
+   {
+      return NULL;
+   }
+
+   if (info.biBitCount == 24)
+   {
+      return LoadBmp24Bit(pReader, header, info);
+   }
+   else if (info.biBitCount == 8)
+   {
+      return LoadBmp8BitAs24(pReader, header, info);
+   }
+   else
+   {
+      DebugMsg1("Un-supported BMP image format (%d bits per pixel)\n", info.biBitCount);
+      return NULL;
+   }
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
