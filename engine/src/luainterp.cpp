@@ -105,7 +105,7 @@ static int LuaThunkInvoke(lua_State * L)
    }
 
    // the "this" pointer is at the bottom of the stack
-   IScriptableObject * pScr = static_cast<IScriptableObject *>(lua_unboxpointer(L, 1));
+   IScriptable * pScr = static_cast<IScriptable *>(lua_unboxpointer(L, 1));
 
    cScriptVar results[kMaxResults];
 
@@ -113,7 +113,7 @@ static int LuaThunkInvoke(lua_State * L)
 
    if (FAILED(result))
    {
-      DebugMsg2("IScriptableObject[0x%08X]->Invoke(%s, ...) failed\n", pScr, pszMethodName);
+      DebugMsg2("IScriptable[0x%08X]->Invoke(%s, ...) failed\n", pScr, pszMethodName);
       return 0;
    }
 
@@ -145,7 +145,7 @@ static int LuaThunkInvoke(lua_State * L)
 
 static int LuaIndex(lua_State * L)
 {
-   // pop the user data associated with the tag method (IScriptableObject* pointer)
+   // pop the user data associated with the tag method (IScriptable* pointer)
    // leave the method name on the stack to be an upvalue for the thunk function
    lua_pushcclosure(L, LuaThunkInvoke, 1);
    return 1;
@@ -154,7 +154,7 @@ static int LuaIndex(lua_State * L)
 ///////////////////////////////////////////////////////////////////////////////
 // returns the number of items on the stack when the function exits
 
-static int LuaPublishObject(lua_State * L, IScriptableObject * pInstance)
+static int LuaPublishObject(lua_State * L, IScriptable * pInstance)
 {
    lua_boxpointer(L, pInstance);
    pInstance->AddRef();
@@ -178,10 +178,10 @@ static int LuaPublishObject(lua_State * L, IScriptableObject * pInstance)
 
 static int LuaConstructObject(lua_State * L)
 {
-   IScriptableObjectFactory * pFactory =
-      static_cast<IScriptableObjectFactory *>(lua_touserdata(L, lua_upvalueindex(1)));
+   IScriptableFactory * pFactory =
+      static_cast<IScriptableFactory *>(lua_touserdata(L, lua_upvalueindex(1)));
 
-   cAutoIPtr<IScriptableObject> pInstance = NULL;
+   cAutoIPtr<IScriptable> pInstance = NULL;
    if (pFactory->CreateInstance((void * *)&pInstance) != S_OK || pInstance == NULL)
    {
       DebugMsg("ERROR: CreateInstance failed for lua class\n");
@@ -606,7 +606,7 @@ void cLuaInterpreter::SetGlobal(const char * pszName, const char * pszValue)
 ///////////////////////////////////////
 
 tResult cLuaInterpreter::RegisterCustomClass(const tChar * pszClassName,
-                                             IScriptableObjectFactory * pFactory)
+                                             IScriptableFactory * pFactory)
 {
    if (pszClassName == NULL && pFactory == NULL)
       return E_INVALIDARG;
@@ -650,7 +650,7 @@ tResult cLuaInterpreter::RevokeCustomClass(const tChar * pszClassName)
 
 double g_foo;
 
-class cFoo : public cComObject<IMPLEMENTS(IScriptableObject)>
+class cFoo : public cComObject<IMPLEMENTS(IScriptable)>
 {
 public:
    virtual tResult Invoke(const char * pszMethodName,
@@ -670,7 +670,7 @@ public:
    }
 };
 
-class cFooFactory : public cComObject<IMPLEMENTS(IScriptableObjectFactory)>
+class cFooFactory : public cComObject<IMPLEMENTS(IScriptableFactory)>
 {
 public:
    virtual tResult CreateInstance(void * * ppvInstance)
@@ -686,7 +686,7 @@ public:
 // CLASS: cRNG
 //
 
-class cRNG : public cComObject<IMPLEMENTS(IScriptableObject)>
+class cRNG : public cComObject<IMPLEMENTS(IScriptable)>
 {
 public:
    static const char LuaClassName[];
@@ -734,7 +734,7 @@ tResult cRNG::Invoke(const char * pszMethodName,
 // CLASS: cRNGFactory
 //
 
-class cRNGFactory : public cComObject<IMPLEMENTS(IScriptableObjectFactory)>
+class cRNGFactory : public cComObject<IMPLEMENTS(IScriptableFactory)>
 {
 public:
    virtual tResult CreateInstance(void * * ppvInstance);
@@ -822,7 +822,7 @@ private:
 
    void TestCustomClass()
    {
-      cAutoIPtr<IScriptableObjectFactory> pFooFactory = new cFooFactory;
+      cAutoIPtr<IScriptableFactory> pFooFactory = new cFooFactory;
 
       CPPUNIT_ASSERT(m_pInterp->RegisterCustomClass("foo", pFooFactory) == S_OK);
 
@@ -837,7 +837,7 @@ private:
 
    void TestCustomClass2()
    {
-      cAutoIPtr<IScriptableObjectFactory> pRNGFactory = new cRNGFactory;
+      cAutoIPtr<IScriptableFactory> pRNGFactory = new cRNGFactory;
 
       CPPUNIT_ASSERT(m_pInterp->RegisterCustomClass(cRNG::LuaClassName, pRNGFactory) == S_OK);
 

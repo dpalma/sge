@@ -38,7 +38,7 @@ public:
    void SetGlobal(const char * pszName, double value);
    void SetGlobal(const char * pszName, const char * pszValue);
 
-   tResult RegisterCustomClass(const tChar * pszClassName, IScriptableObjectFactory * pFactory);
+   tResult RegisterCustomClass(const tChar * pszClassName, IScriptableFactory * pFactory);
    tResult RevokeCustomClass(const tChar * pszClassName);
 
 private:

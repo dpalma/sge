@@ -13,8 +13,8 @@
 
 class cScriptVar;
 
-F_DECLARE_INTERFACE(IScriptableObject);
-F_DECLARE_INTERFACE(IScriptableObjectFactory);
+F_DECLARE_INTERFACE(IScriptable);
+F_DECLARE_INTERFACE(IScriptableFactory);
 F_DECLARE_INTERFACE(IScriptInterpreter);
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -23,20 +23,20 @@ typedef int (* tScriptFn)(int, const cScriptVar *, int, cScriptVar *);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// INTERFACE: IScriptableObjectFactory
+// INTERFACE: IScriptableFactory
 //
 
-interface IScriptableObjectFactory : IUnknown
+interface IScriptableFactory : IUnknown
 {
    virtual tResult CreateInstance(void * * ppvInstance) = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// INTERFACE: IScriptableObject
+// INTERFACE: IScriptable
 //
 
-interface IScriptableObject : IUnknown
+interface IScriptable : IUnknown
 {
    virtual tResult Invoke(const char * pszMethodName,
                           int nArgs, const cScriptVar * pArgs,
@@ -67,7 +67,7 @@ interface IScriptInterpreter : IUnknown
    virtual void SetGlobal(const char * pszName, double value) = 0;
    virtual void SetGlobal(const char * pszName, const char * pszValue) = 0;
 
-   virtual tResult RegisterCustomClass(const tChar * pszClassName, IScriptableObjectFactory * pFactory) = 0;
+   virtual tResult RegisterCustomClass(const tChar * pszClassName, IScriptableFactory * pFactory) = 0;
    virtual tResult RevokeCustomClass(const tChar * pszClassName) = 0;
 };
 
