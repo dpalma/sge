@@ -173,6 +173,15 @@ interface IUnknown
    virtual ulong STDMETHODCALLTYPE AddRef() PURE;
 
    virtual ulong STDMETHODCALLTYPE Release() PURE;
+
+   // For Visual C++ 7.0 and later when using ATL
+#if _MSC_VER >= 1300
+   template<class Q>
+   tResult STDMETHODCALLTYPE QueryInterface(Q** pp)
+   {
+      return QueryInterface(__uuidof(Q), (void **)pp);
+   }
+#endif
 };
 
 typedef IUnknown * LPUNKNOWN;
