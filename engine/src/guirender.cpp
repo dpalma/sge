@@ -8,12 +8,6 @@
 #include "font.h"
 #include "color.h"
 
-// TODO: HACK: get rid of this <windows.h>
-#ifdef _WIN32
-#include <windows.h>
-#endif
-#include <GL/gl.h>
-
 #include "dbgalloc.h" // must be last header
 
 const uint kNumBitmapButtonIndices = 4;
@@ -356,13 +350,14 @@ tResult cGUIRenderingTools::Render3dRect(const tGUIRect & rect, int bevel,
 
 #undef FillVertex
 
-   glEnableClientState(GL_COLOR_ARRAY);
-   glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(sGUIVertex), vertices);
-
-   glEnableClientState(GL_VERTEX_ARRAY);
-   glVertexPointer(2, GL_FLOAT, sizeof(sGUIVertex), (byte *)vertices + sizeof(uint32));
-
-   glDrawArrays(GL_TRIANGLES, 0, nVertices);
+   if (!!m_pRenderDevice)
+   {
+      cAutoIPtr<IVertexDeclaration> pVertexDecl;
+      if (GetVertexDeclaration(&pVertexDecl) == S_OK)
+      {
+         m_pRenderDevice->Render(kRP_Triangles, nVertices / 3, NULL, pVertexDecl, vertices);
+      }
+   }
 
    return S_OK;
 }
@@ -371,11 +366,6 @@ tResult cGUIRenderingTools::Render3dRect(const tGUIRect & rect, int bevel,
 
 tResult cGUIRenderingTools::GetVertexDeclaration(IVertexDeclaration * * ppVertexDecl)
 {
-   if (ppVertexDecl == NULL)
-   {
-      return E_POINTER;
-   }
-
    if (!m_pVertexDecl)
    {
       if (m_pRenderDevice != NULL)
@@ -396,11 +386,6 @@ tResult cGUIRenderingTools::GetVertexDeclaration(IVertexDeclaration * * ppVertex
 
 tResult cGUIRenderingTools::GetTexVertexDeclaration(IVertexDeclaration * * ppVertexDecl)
 {
-   if (ppVertexDecl == NULL)
-   {
-      return E_POINTER;
-   }
-
    if (!m_pTexVertexDecl)
    {
       if (m_pRenderDevice != NULL)
