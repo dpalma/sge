@@ -567,6 +567,30 @@ LRESULT cMainFrame::OnFileExit(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bH
 
 ////////////////////////////////////////
 
+LRESULT cMainFrame::OnEditUndo(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled)
+{
+   cAutoIPtr<IEditorModel> pModel;
+   if (GetModel(&pModel) == S_OK)
+   {
+      pModel->Undo();
+   }
+   return 0;
+}
+
+////////////////////////////////////////
+
+LRESULT cMainFrame::OnEditRedo(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled)
+{
+   cAutoIPtr<IEditorModel> pModel;
+   if (GetModel(&pModel) == S_OK)
+   {
+      pModel->Redo();
+   }
+   return 0;
+}
+
+////////////////////////////////////////
+
 LRESULT cMainFrame::OnViewToolBar(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled)
 {
    ToggleToolbar();
@@ -637,6 +661,56 @@ BOOL cMainFrame::OnIdle()
    UISetCheck(ID_VIEW_TOOLBAR, IsToolbarVisible());
    UISetCheck(ID_VIEW_STATUS_BAR, ::IsWindowVisible(m_hWndStatusBar));
    m_dockingWindowMenu.UpdateMenu();
+
+   if (m_origUndoText.IsEmpty() && m_cmdBar.IsWindow() && !m_cmdBar.GetMenu().IsNull())
+   {
+      m_cmdBar.GetMenu().GetMenuString(ID_EDIT_UNDO, m_origUndoText, MF_BYCOMMAND);
+   }
+   if (m_origRedoText.IsEmpty() && m_cmdBar.IsWindow() && !m_cmdBar.GetMenu().IsNull())
+   {
+      m_cmdBar.GetMenu().GetMenuString(ID_EDIT_REDO, m_origRedoText, MF_BYCOMMAND);
+   }
+
+   cAutoIPtr<IEditorModel> pModel;
+   if (GetModel(&pModel) == S_OK && m_cmdBar.IsWindow() && !m_cmdBar.GetMenu().IsNull())
+   {
+      {
+         cStr undoLabel;
+         BOOL bCanUndo = (pModel->CanUndo(&undoLabel) == S_OK);
+         if (bCanUndo)
+         {
+            CString menuText;
+            menuText.Format(IDS_UNDO_TEXT, undoLabel.c_str());
+            cMenuItemInfoEx mii(ID_EDIT_UNDO, menuText);
+            m_cmdBar.GetMenu().SetMenuItemInfo(ID_EDIT_UNDO, FALSE, &mii);
+         }
+         else
+         {
+            cMenuItemInfoEx mii(ID_EDIT_UNDO, m_origUndoText);
+            m_cmdBar.GetMenu().SetMenuItemInfo(ID_EDIT_UNDO, FALSE, &mii);
+         }
+         UIEnable(ID_EDIT_UNDO, bCanUndo);
+      }
+
+      {
+         cStr redoLabel;
+         BOOL bCanRedo = (pModel->CanRedo(&redoLabel) == S_OK);
+         if (bCanRedo)
+         {
+            CString menuText;
+            menuText.Format(IDS_REDO_TEXT, redoLabel.c_str());
+            cMenuItemInfoEx mii(ID_EDIT_REDO, menuText);
+            m_cmdBar.GetMenu().SetMenuItemInfo(ID_EDIT_REDO, FALSE, &mii);
+         }
+         else
+         {
+            cMenuItemInfoEx mii(ID_EDIT_REDO, m_origRedoText);
+            m_cmdBar.GetMenu().SetMenuItemInfo(ID_EDIT_REDO, FALSE, &mii);
+         }
+         UIEnable(ID_EDIT_REDO, bCanRedo);
+      }
+   }
+
    return FALSE;
 }
 

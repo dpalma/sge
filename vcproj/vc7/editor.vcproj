@@ -458,6 +458,9 @@
 				RelativePath="..\..\editor\MapSettingsDlg.h">
 			</File>
 			<File
+				RelativePath="..\..\editor\MenuItemInfo.h">
+			</File>
+			<File
 				RelativePath="..\..\editor\OutputBar.h">
 			</File>
 			<File

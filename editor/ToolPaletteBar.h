@@ -17,36 +17,6 @@
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cButtonPanel
-//
-
-class cButtonPanel
-{
-public:
-   cButtonPanel();
-   ~cButtonPanel();
-
-   void AddButton(CButton * pButton);
-
-   void Clear();
-
-   int Reposition(LPCRECT pRect, BOOL bRepaint = TRUE);
-
-   void HandleClick(uint buttonId);
-
-   void SetMargins(LPCRECT pMargins);
-
-private:
-   typedef std::vector<CButton *> tButtons;
-   tButtons m_buttons;
-
-   CRect m_margins;
-
-   cAutoIPtr<cTerrainTileTool> m_pTool;
-};
-
-/////////////////////////////////////////////////////////////////////////////
-//
 // CLASS: cToolPaletteBar
 //
 

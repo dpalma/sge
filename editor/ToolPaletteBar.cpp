@@ -11,125 +11,6 @@
 
 #include "dbgalloc.h" // must be last header
 
-static const uint kButtonSize = 32;
-static const CRect buttonMargins(5,5,5,5);
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cButtonPanel
-//
-
-////////////////////////////////////////
-
-cButtonPanel::cButtonPanel()
- : m_margins(buttonMargins),
-   m_pTool(new cTerrainTileTool)
-{
-}
-
-////////////////////////////////////////
-
-cButtonPanel::~cButtonPanel()
-{
-   Assert(m_buttons.empty());
-}
-
-////////////////////////////////////////
-
-void cButtonPanel::AddButton(CButton * pButton)
-{
-   Assert(pButton != NULL);
-   m_buttons.push_back(pButton);
-}
-
-////////////////////////////////////////
-
-void cButtonPanel::Clear()
-{
-   tButtons::iterator iter;
-   for (iter = m_buttons.begin(); iter != m_buttons.end(); iter++)
-   {
-      (*iter)->DestroyWindow();
-      delete *iter;
-   }
-   m_buttons.clear();
-}
-
-////////////////////////////////////////
-
-int cButtonPanel::Reposition(LPCRECT pRect, BOOL bRepaint)
-{
-   CRect buttonRect;
-   buttonRect.left = pRect->left + m_margins.left;
-   buttonRect.top = pRect->top + m_margins.top;
-   buttonRect.right = buttonRect.left + kButtonSize;
-   buttonRect.bottom = buttonRect.top + kButtonSize;
-
-   tButtons::iterator iter;
-   for (iter = m_buttons.begin(); iter != m_buttons.end(); iter++)
-   {
-      if (((*iter) != NULL) && IsWindow((*iter)->m_hWnd))
-      {
-         (*iter)->MoveWindow(buttonRect, bRepaint);
-
-         buttonRect.OffsetRect(buttonRect.Width(), 0);
-
-         if (buttonRect.left > (pRect->right - m_margins.right)
-            || buttonRect.right > (pRect->right - m_margins.right))
-         {
-            buttonRect.left = pRect->left + m_margins.left;
-            buttonRect.top += kButtonSize;;
-            buttonRect.right = buttonRect.left + kButtonSize;
-            buttonRect.bottom = buttonRect.top + kButtonSize;
-         }
-      }
-   }
-
-   return buttonRect.bottom;
-}
-
-////////////////////////////////////////
-
-void cButtonPanel::HandleClick(uint buttonId)
-{
-   Assert(!!m_pTool);
-
-   UseGlobal(EditorApp);
-   pEditorApp->SetActiveTool(m_pTool);
-
-   m_pTool->SetTile(buttonId - m_buttons[0]->GetDlgCtrlID());
-
-   CButton * pClickedButton = NULL;
-
-   tButtons::iterator iter;
-   for (iter = m_buttons.begin(); iter != m_buttons.end(); iter++)
-   {
-      if (((*iter) != NULL) && IsWindow((*iter)->m_hWnd) && (*iter)->GetDlgCtrlID() != buttonId)
-      {
-         (*iter)->SendMessage(BM_SETSTATE, FALSE);
-      }
-
-      if ((*iter)->GetDlgCtrlID() == buttonId)
-      {
-         pClickedButton = *iter;
-      }
-   }
-
-   Assert(pClickedButton != NULL);
-   pClickedButton->SendMessage(BM_SETSTATE, TRUE);
-}
-
-////////////////////////////////////////
-
-void cButtonPanel::SetMargins(LPCRECT pMargins)
-{
-   if (pMargins != NULL)
-   {
-      m_margins = *pMargins;
-   }
-}
-
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cToolPaletteBar
@@ -179,16 +60,13 @@ void cToolPaletteBar::OnDefaultTileSetChange(IEditorTileSet * /*pTileSet*/)
    {
       if (m_toolPalette.IsWindow())
       {
-#if 1
          tToolGroups::iterator iter = m_terrainTileGroups.begin();
          tToolGroups::iterator end = m_terrainTileGroups.end();
          for (; iter != end; iter++)
          {
             m_toolPalette.RemoveGroup(*iter);
          }
-#else
-         //m_toolPalette.Clear();
-#endif
+         m_terrainTileGroups.clear();
       }
       else
       {
@@ -226,7 +104,12 @@ void cToolPaletteBar::OnDefaultTileSetChange(IEditorTileSet * /*pTileSet*/)
                            cStr tileName;
                            if (pTile->GetName(&tileName) == S_OK)
                            {
-                              m_toolPalette.AddTool(hGroup, tileName.c_str(), j);
+                              cTerrainTileTool * pTerrainTool = new cTerrainTileTool;
+                              if (pTerrainTool != NULL)
+                              {
+                                 pTerrainTool->SetTile(j);
+                                 m_toolPalette.AddTool(hGroup, tileName.c_str(), j, pTerrainTool);
+                              }
                            }
                         }
                      }

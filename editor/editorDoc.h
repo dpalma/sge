@@ -28,8 +28,7 @@ typedef std::stack<IEditorCommand *> tCommandStack;
 
 class cEditorDoc : public CComObjectRoot,
                    public CComCoClass<cEditorDoc, &CLSID_EditorDoc>,
-                   public cConnectionPoint<IEditorModel, IEditorModelListener>,
-                   public CUpdateUI<cEditorDoc>
+                   public cConnectionPoint<IEditorModel, IEditorModelListener>
 {
 public:
 	cEditorDoc();
@@ -49,6 +48,11 @@ public:
    virtual tResult Reset();
    virtual tResult IsModified();
 
+   virtual tResult CanUndo(cStr * pLabel);
+   virtual tResult Undo();
+   virtual tResult CanRedo(cStr * pLabel);
+   virtual tResult Redo();
+
    const sTerrainVertex * GetVertexPointer() const;
    size_t GetVertexCount() const;
 
@@ -61,20 +65,6 @@ public:
    virtual tResult AddEditorModelListener(IEditorModelListener * pListener);
    virtual tResult RemoveEditorModelListener(IEditorModelListener * pListener);
 
-   BEGIN_UPDATE_UI_MAP(cEditorDoc)
-      UPDATE_ELEMENT(ID_EDIT_UNDO, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
-      UPDATE_ELEMENT(ID_EDIT_REDO, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
-   END_UPDATE_UI_MAP()
-
-// Generated message map functions
-protected:
-	//{{AFX_MSG(cEditorDoc)
-	void OnEditUndo();
-	void OnUpdateEditUndo();
-	void OnEditRedo();
-	void OnUpdateEditRedo();
-	//}}AFX_MSG
-
 private:
    bool m_bModified;
 
@@ -85,8 +75,6 @@ private:
    cTerrain * m_pTerrain;
 
    tCommandStack m_undoStack, m_redoStack;
-
-   CString m_originalUndoText, m_originalRedoText;
 };
 
 ////////////////////////////////////////

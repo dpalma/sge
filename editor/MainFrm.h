@@ -84,6 +84,8 @@ public:
       COMMAND_ID_HANDLER(ID_FILE_SAVE_AS, OnFileSaveAs)
       COMMAND_RANGE_HANDLER(ID_FILE_MRU_FIRST, ID_FILE_MRU_LAST, OnFileRecent)
       COMMAND_ID_HANDLER(ID_APP_EXIT, OnFileExit)
+      COMMAND_ID_HANDLER(ID_EDIT_UNDO, OnEditUndo)
+      COMMAND_ID_HANDLER(ID_EDIT_REDO, OnEditRedo)
       COMMAND_ID_HANDLER(ID_VIEW_TOOLBAR, OnViewToolBar)
       COMMAND_ID_HANDLER(ID_VIEW_STATUS_BAR, OnViewStatusBar)
       COMMAND_ID_HANDLER(ID_TOOLS_UNITTESTRUNNER, OnToolsUnitTestRunner)
@@ -115,6 +117,8 @@ public:
    LRESULT OnFileSaveAs(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled);
    LRESULT OnFileRecent(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled);
    LRESULT OnFileExit(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled);
+   LRESULT OnEditUndo(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled);
+   LRESULT OnEditRedo(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled);
    LRESULT OnViewToolBar(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled);
    LRESULT OnViewStatusBar(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled);
    LRESULT OnToolsUnitTestRunner(WORD notifyCode, WORD id, HWND hWndCtl, BOOL & bHandled);
@@ -136,6 +140,9 @@ private:
 
    CCommandBarCtrl m_cmdBar;
    CRecentDocumentList m_recentDocuments;
+
+   CString m_origUndoText;
+   CString m_origRedoText;
 
    cDockingWindowMenu m_dockingWindowMenu;
    tDockingWindows m_dockingWindows;

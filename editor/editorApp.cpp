@@ -237,10 +237,10 @@ BOOL cEditorApp::PreTranslateMessage(MSG * pMsg)
    {
       pTool = CTAddRef(AccessActiveTool());
    }
-   else if (AccessDefaultTool() != NULL)
-   {
-      pTool = CTAddRef(AccessDefaultTool());
-   }
+//   else if (AccessDefaultTool() != NULL)
+//   {
+//      pTool = CTAddRef(AccessDefaultTool());
+//   }
 
    if (!!pTool)
    {
