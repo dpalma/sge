@@ -79,6 +79,7 @@ protected:
    bool HitTestSelection(const CPoint & point);
    void ClearSel();
    void UpdateSelDrag(const CPoint & point);
+   void GetVisibleRange(int * pStart, int * pEnd);
    virtual void AddContextMenuItems(CMenu * pMenu);
 
 #ifdef _DEBUG

@@ -103,6 +103,7 @@ cHistoryWnd::cHistoryWnd()
    m_pSelAnchor(NULL),
    m_pSelDrag(NULL)
 {
+   m_entries.reserve(m_nMaxEntries);
 }
 
 ///////////////////////////////////////
@@ -193,6 +194,7 @@ void cHistoryWnd::Clear()
 void cHistoryWnd::SetMaxEntries(int max)
 {
    m_nMaxEntries = max;
+   m_entries.reserve(max);
    EnforceMaxEntries();
 }
 
@@ -606,6 +608,20 @@ void cHistoryWnd::UpdateSelDrag(const CPoint & point)
 
 ///////////////////////////////////////
 
+void cHistoryWnd::GetVisibleRange(int * pStart, int * pEnd)
+{
+   Assert(pStart != NULL);
+   Assert(pEnd != NULL);
+   CPoint scroll = GetScrollPosition();
+   CRect rect;
+   GetClientRect(rect);
+   Assert(m_nCharHeight > 0);
+   *pStart = scroll.y / m_nCharHeight;
+   *pEnd = (scroll.y + rect.Height()) / m_nCharHeight;
+}
+
+///////////////////////////////////////
+
 void cHistoryWnd::AddContextMenuItems(CMenu* pMenu)
 {
    ASSERT_VALID(pMenu);
@@ -669,8 +685,11 @@ void cHistoryWnd::OnPaint()
 
    CFont * pOldFont = dc.SelectObject(&m_font);
 
+   int start, end;
+   GetVisibleRange(&start, &end);
+
    CRect r;
-   r.SetRect(0, 0, m_totalDev.cx, m_totalDev.cy);
+   r.SetRect(0, start * m_nCharHeight, m_totalDev.cx, m_totalDev.cy);
 
    r.bottom = r.top + m_nCharHeight;
 
@@ -678,7 +697,9 @@ void cHistoryWnd::OnPaint()
 
    int index;
    tEntries::iterator iter;
-   for (index = 0, iter = m_entries.begin(); iter != m_entries.end(); index++, iter++)
+   for (index = 0, iter = (m_entries.begin() + start);
+        iter != m_entries.end();
+        index++, iter++)
    {
       if ((index == m_startSel.iEntry) && (index == m_endSel.iEntry))
       {
@@ -852,8 +873,7 @@ void cHistoryWnd::OnContextMenu(CWnd* pWnd, CPoint point)
    // We're purposely NOT calling CScrollWnd::OnContextMenu because its
    // context menu has all kinds of scroll zooming wackiness that we don't want.
 
-   // @TODO (dpalma 2-7-00): Make the context menu route through the
-   // command system
+   // TODO Make the context menu route through the command system
 
    CMenu contextMenu;
    VERIFY(contextMenu.CreatePopupMenu());

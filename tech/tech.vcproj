@@ -341,6 +341,9 @@
 					RelativePath="src\imagedata.cpp">
 				</File>
 				<File
+					RelativePath="src\log.cpp">
+				</File>
+				<File
 					RelativePath=".\src\matrix4.cpp">
 				</File>
 				<File
@@ -555,6 +558,9 @@
 			</File>
 			<File
 				RelativePath=".\include\techguids.h">
+			</File>
+			<File
+				RelativePath="include\techlog.h">
 			</File>
 			<File
 				RelativePath=".\include\techmath.h">

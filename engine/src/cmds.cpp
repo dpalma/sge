@@ -166,11 +166,11 @@ int LogEnableChannel(int argc, const cScriptVar * argv,
 {
    if (argc == 1 && ScriptArgIsString(0))
    {
-      LogEnableChannel(ScriptArgAsString(0), true);
+      techlog.EnableChannel(ScriptArgAsString(0), true);
    }
    else if (argc == 2 && ScriptArgIsString(0) && ScriptArgIsNumber(1))
    {
-      LogEnableChannel(ScriptArgAsString(0), ScriptArgAsNumber(1) ? true : false);
+      techlog.EnableChannel(ScriptArgAsString(0), ScriptArgAsNumber(1) ? true : false);
    }
    return 0;
 }

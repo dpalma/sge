@@ -455,6 +455,7 @@ void cEditorView::OnMouseMove(UINT nFlags, CPoint point)
          m_eye.z += delta.y;
          m_center.x += delta.x;
          m_center.z += delta.y;
+         techlog.Print(kInfo, "Looking at point (%.2f, 0, %.2f)\n", m_center.x, m_center.z);
       }
 
       m_lastMousePoint = point;

@@ -312,11 +312,11 @@ static bool RunUnitTests()
    runner.run();
    if (runner.result().testFailuresTotal() > 0)
    {
-      DebugPrintf(NULL, 0, "WARNING: %d UNIT TESTS FAILED!\n", runner.result().testFailuresTotal());
+      techlog.Print(kError, "%d UNIT TESTS FAILED!\n", runner.result().testFailuresTotal());
       CppUnit::TestResultCollector::TestFailures::const_iterator iter;
       for (iter = runner.result().failures().begin(); iter != runner.result().failures().end(); iter++)
       {
-         DebugPrintf(NULL, 0, "%s(%d) : %s : %s\n",
+         techlog.Print(kError, "%s(%d) : %s : %s\n",
             (*iter)->sourceLine().fileName().c_str(),
             (*iter)->sourceLine().isValid() ? (*iter)->sourceLine().lineNumber() : -1,
             (*iter)->failedTestName().c_str(),
@@ -326,7 +326,7 @@ static bool RunUnitTests()
    }
    else
    {
-      DebugPrintf(NULL, 0, "%d unit tests succeeded\n", runner.result().tests().size());
+      techlog.Print(kInfo, "%d unit tests succeeded\n", runner.result().tests().size());
       return true;
    }
 }

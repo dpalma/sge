@@ -26,6 +26,7 @@ public:
 
 // Operations
 public:
+   void HandleLogCallback(eLogSeverity severity, const tChar * pszMsg, size_t msgLen);
 
 // Overrides
    // ClassWizard generated virtual function overrides
@@ -37,15 +38,18 @@ public:
    virtual ~cOutputBar();
 
 protected:
-   CEdit m_wndChild;
-   CFont m_font;
+   cHistoryWnd m_wndChild;
 
    // Generated message map functions
 protected:
    //{{AFX_MSG(cOutputBar)
    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-   //}}AFX_MSG
+	afx_msg void OnDestroy();
+	//}}AFX_MSG
    DECLARE_MESSAGE_MAP()
+
+private:
+   tLogCallbackFn m_nextLogCallback;
 };
 
 /////////////////////////////////////////////////////////////////////////////

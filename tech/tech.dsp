@@ -266,6 +266,10 @@ SOURCE=.\src\imagedata.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\log.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\matrix4.cpp
 # End Source File
 # Begin Source File
@@ -445,6 +449,10 @@ SOURCE=.\include\readwriteapi.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\include\rect.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\include\resmgr.h
 # End Source File
 # Begin Source File
@@ -462,6 +470,10 @@ SOURCE=.\include\techdll.h
 # Begin Source File
 
 SOURCE=.\include\techguids.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\techlog.h
 # End Source File
 # Begin Source File
 

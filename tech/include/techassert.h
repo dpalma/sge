@@ -5,6 +5,7 @@
 #define INCLUDED_TECHDEBUG_H
 
 #include "techdll.h"
+#include "techlog.h"
 
 #ifdef _MSC_VER
 #pragma once
@@ -19,28 +20,28 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #if defined(__GNUC__)
-   inline void DbgBreak() { asm("int $3"); }
+inline void DbgBreak()  { asm("int $3"); }
 #else
-   #define DbgBreak()      __asm { int 3h }
+#define DbgBreak()      __asm { int 3h }
 #endif
 
 #ifdef _WIN32
-extern "C" __declspec(dllimport) int __stdcall IsDebuggerPresent();
+extern "C" DECLSPEC_DLLIMPORT int STDCALL IsDebuggerPresent();
 #else
-#define IsDebuggerPresent() (FALSE)
+#define IsDebuggerPresent() (false)
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // Assert & verify macros
 
 #ifdef _DEBUG
-#define Assert(expr)    do { if (!(expr)) { if (AssertFail(__FILE__, __LINE__, #expr)) DbgBreak(); } } while(0)
-#define AssertMsg(expr, msg) do { if (!(expr)) { if (AssertFail(__FILE__, __LINE__, #expr "\n" msg)) DbgBreak(); } } while(0)
-#define Verify(expr)    Assert(expr)
+#define Assert(expr)          do { if (!(expr)) { if (AssertFail(__FILE__, __LINE__, #expr)) DbgBreak(); } } while(0)
+#define AssertMsg(expr,msg)   do { if (!(expr)) { if (AssertFail(__FILE__, __LINE__, #expr "\n" msg)) DbgBreak(); } } while(0)
+#define Verify(expr)          Assert(expr)
 #else
-#define Assert(expr)    ((void)0)
-#define AssertMsg(expr, msg) ((void)0)
-#define Verify(expr)    (expr)
+#define Assert(expr)          ((void)0)
+#define AssertMsg(expr,msg)   ((void)0)
+#define Verify(expr)          (expr)
 #endif
 
 #ifdef _DEBUG
@@ -74,32 +75,27 @@ extern "C" __declspec(dllimport) int __stdcall IsDebuggerPresent();
 #ifdef _DEBUG
 
 TECH_API bool AssertFail(const char * pszFile, int line, const char * pszExpr);
-TECH_API void DebugPrintf(const char * pszFile, int line,
-                          const char * pszFormat, ...);
-
 TECH_API void DebugEchoFileStart(const char * pszFile);
 TECH_API void DebugEchoFileStop();
 
 #else
 
 inline bool AssertFail(const char *, int, const char *) { return false; }
-inline void DebugPrintf(const char *, int, const char *, ...) {}
 #define DebugEchoFileStart(pszFile) ((void)0)
 #define DebugEchoFileStop() ((void)0)
 
 #endif
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // Debug output
 
 #ifndef NDEBUG
-#define DebugMsgIf(expr,fmt)                                do { if (expr) { DebugPrintf(__FILE__,__LINE__,fmt); } } while(0)
-#define DebugMsgIf1(expr,fmt,arg1)                          do { if (expr) { DebugPrintf(__FILE__,__LINE__,fmt,(arg1)); } } while(0)
-#define DebugMsgIf2(expr,fmt,arg1,arg2)                     do { if (expr) { DebugPrintf(__FILE__,__LINE__,fmt,(arg1),(arg2)); } } while(0)
-#define DebugMsgIf3(expr,fmt,arg1,arg2,arg3)                do { if (expr) { DebugPrintf(__FILE__,__LINE__,fmt,(arg1),(arg2),(arg3)); } } while(0)
-#define DebugMsgIf4(expr,fmt,arg1,arg2,arg3,arg4)           do { if (expr) { DebugPrintf(__FILE__,__LINE__,fmt,(arg1),(arg2),(arg3),(arg4)); } } while(0)
-#define DebugMsgIf5(expr,fmt,arg1,arg2,arg3,arg4,arg5)      do { if (expr) { DebugPrintf(__FILE__,__LINE__,fmt,(arg1),(arg2),(arg3),(arg4),(arg5)); } } while(0)
+#define DebugMsgIf(expr,fmt)                                do { if (expr) { techlog.Print(__FILE__,__LINE__,kDebug,(fmt)); } } while(0)
+#define DebugMsgIf1(expr,fmt,arg1)                          do { if (expr) { techlog.Print(__FILE__,__LINE__,kDebug,(fmt),(arg1)); } } while(0)
+#define DebugMsgIf2(expr,fmt,arg1,arg2)                     do { if (expr) { techlog.Print(__FILE__,__LINE__,kDebug,(fmt),(arg1),(arg2)); } } while(0)
+#define DebugMsgIf3(expr,fmt,arg1,arg2,arg3)                do { if (expr) { techlog.Print(__FILE__,__LINE__,kDebug,(fmt),(arg1),(arg2),(arg3)); } } while(0)
+#define DebugMsgIf4(expr,fmt,arg1,arg2,arg3,arg4)           do { if (expr) { techlog.Print(__FILE__,__LINE__,kDebug,(fmt),(arg1),(arg2),(arg3),(arg4)); } } while(0)
+#define DebugMsgIf5(expr,fmt,arg1,arg2,arg3,arg4,arg5)      do { if (expr) { techlog.Print(__FILE__,__LINE__,kDebug,(fmt),(arg1),(arg2),(arg3),(arg4),(arg5)); } } while(0)
 #else
 #define DebugMsgIf(expr,fmt)                                ((void)0)
 #define DebugMsgIf1(expr,fmt,arg1)                          ((void)0)
@@ -130,12 +126,9 @@ inline void DebugPrintf(const char *, int, const char *, ...) {}
 
 #ifndef NDEBUG
 
-TECH_API bool LogDefineChannel(const char * pszLogChannel, bool * pbEnable);
-TECH_API void LogEnableChannel(const char * pszLogChannel, bool bEnabled);
-
 #define LOG_DEFINE_ENABLE_CHANNEL(channel, enable) \
    bool g_bLogChannel##channel = (enable); \
-   bool MAKE_UNIQUE(ignore##channel) = LogDefineChannel(#channel, &(g_bLogChannel##channel))
+   bool MAKE_UNIQUE(log##channel) = techlog.DefineChannel(#channel, &(g_bLogChannel##channel))
 
 #define LOG_DEFINE_CHANNEL(channel) \
    LOG_DEFINE_ENABLE_CHANNEL(channel, false)
@@ -144,15 +137,12 @@ TECH_API void LogEnableChannel(const char * pszLogChannel, bool bEnabled);
    extern bool g_bLogChannel##channel
 
 #define LOG_ENABLE_CHANNEL(channel, enable) \
-   LogEnableChannel(#channel, (enable))
+   techlog.EnableChannel(#channel, (enable))
 
 #define LOG_IS_CHANNEL_ENABLED(channel) \
    g_bLogChannel##channel
 
 #else
-
-inline bool LogDefineChannel(const char * pszLogChannel, bool * pbEnable) { return false; }
-inline void LogEnableChannel(const char * pszLogChannel, bool bEnable) {}
 
 #define LOG_DEFINE_ENABLE_CHANNEL(channel, enable)
 #define LOG_DEFINE_CHANNEL(channel)

@@ -24,6 +24,7 @@ libtech_la_SOURCES = src/bmp.cpp \
                      src/graphtest.cpp \
                      src/hash.cpp \
                      src/imagedata.cpp \
+                     src/log.cpp \
                      src/matrix4.cpp \
                      src/memmanager.cpp \
                      src/parse.cpp \

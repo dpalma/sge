@@ -222,8 +222,8 @@ int LuaPrintEx(lua_State * L)
 
 #ifndef NDEBUG
       if (i>1)
-         DebugPrintf(0, 0, "\t");
-      DebugPrintf(0, 0, s);
+         techlog.Print(kInfo, "\t");
+      techlog.Print(kInfo, s);
 #endif
 
       lua_pop(L, 1);  /* pop result */
