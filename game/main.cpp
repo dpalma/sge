@@ -499,7 +499,7 @@ bool MainInit(int argc, char * argv[])
    if (ConfigGet("data", &temp) == S_OK)
    {
       UseGlobal(ResourceManager);
-      pResourceManager->AddSearchPath(temp, true);
+      pResourceManager->AddSearchPath(temp);
    }
 
    cStr autoExecScript(kAutoExecScript);
