@@ -22,7 +22,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\wtl\include"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;TIXML_USE_STL"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -80,7 +80,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\wtl\include"
 				PreprocessorDefinitions="_DEBUG;HAVE_CPPUNIT;WIN32;_WINDOWS;TIXML_USE_STL"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -140,7 +140,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\wtl\include"
 				PreprocessorDefinitions="STATIC_BUILD,_DEBUG,WIN32,_WINDOWS,TIXML_USE_STL"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -199,7 +199,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\wtl\include"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;TIXML_USE_STL"
 				StringPooling="TRUE"
 				RuntimeLibrary="3"
@@ -260,7 +260,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\wtl\include"
 				PreprocessorDefinitions="STATIC_BUILD,NDEBUG,WIN32,_WINDOWS,TIXML_USE_STL"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -315,6 +315,9 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 			<File
 				RelativePath="..\..\editor\BitmapUtils.cpp">
+			</File>
+			<File
+				RelativePath="..\..\editor\LogWnd.cpp">
 			</File>
 			<File
 				RelativePath="..\..\editor\MainFrm.cpp">
@@ -463,6 +466,9 @@
 			Filter="h;hpp;hxx;hm;inl">
 			<File
 				RelativePath="..\..\editor\BitmapUtils.h">
+			</File>
+			<File
+				RelativePath="..\..\editor\LogWnd.h">
 			</File>
 			<File
 				RelativePath="..\..\editor\MainFrm.h">

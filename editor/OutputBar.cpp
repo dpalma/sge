@@ -58,7 +58,7 @@ static const COLORREF g_colors[] =
 void cOutputBar::HandleLogCallback(eLogSeverity severity, const tChar * pszMsg, size_t msgLen)
 {
    m_wndChild.AddText(pszMsg, msgLen, g_colors[severity]);
-   m_fooWnd.AddString(pszMsg, msgLen, g_colors[severity]);
+   m_logWnd.AddString(pszMsg, msgLen, g_colors[severity]);
 
    if (m_nextLogCallback != NULL)
    {
@@ -83,13 +83,13 @@ int cOutputBar::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
    SetSCBStyle(GetSCBStyle() | SCBS_SIZECHILD);
 
-   if (m_fooWnd.Create(GetSafeHwnd(), CWindow::rcDefault, NULL, WS_CHILD | WS_VISIBLE, 0, kChildId) == NULL)
+   if (m_logWnd.Create(GetSafeHwnd(), CWindow::rcDefault, NULL, WS_CHILD | WS_VISIBLE, 0, kChildId) == NULL)
    {
       DebugMsg("Error creating child window\n");
       return -1;
    }
 
-   m_fooWnd.ModifyStyleEx(0, WS_EX_CLIENTEDGE);
+   m_logWnd.ModifyStyleEx(0, WS_EX_CLIENTEDGE);
 
    CFont font;
    if (!font.CreateStockObject(DEFAULT_GUI_FONT))

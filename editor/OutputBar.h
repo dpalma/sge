@@ -5,7 +5,7 @@
 #define INCLUDED_OUTPUTBAR_H
 
 #include "historywnd.h"
-#include "FooWnd.h"
+#include "LogWnd.h"
 
 #if _MSC_VER >= 1000
 #pragma once
@@ -42,7 +42,7 @@ public:
 
 protected:
    cHistoryWnd m_wndChild;
-   cFooWnd m_fooWnd;
+   cLogWnd m_logWnd;
 
    // Generated message map functions
 protected:
