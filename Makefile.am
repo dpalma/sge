@@ -4,14 +4,14 @@
 # Don't require GNU-convention files like README, NEWS, ChangeLog, AUTHORS
 AUTOMAKE_OPTIONS = foreign
 
-ACLOCAL_AMFLAGS = -I ./config
+ACLOCAL_AMFLAGS = -I$(top_builddir)/config
 
 EXTRA_DIST = bootstrap data
 
 dist-hook:
 	rm -rf `find $(distdir)/data -name CVS`
 
-SUBDIRS = 3rdparty allguids tech render engine game tests
+SUBDIRS = 3rdparty allguids tech render engine game
 
 MAINTAINERCLEANFILES = Makefile.in aclocal.m4 configure
 

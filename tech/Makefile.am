@@ -36,6 +36,6 @@ libtech_la_LIBADD = $(GL_LIBS) $(CORE_LIBS)
 
 INCLUDES = $(GL_CFLAGS) \
            -DTECH_EXPORTS \
-           -I ./include \
-           -I ./src \
-           -I @top_srcdir@/3rdparty/zlib/include
+           -I$(top_srcdir)/tech/include \
+           -I$(top_srcdir)/tech/src \
+           -I$(top_srcdir)/3rdparty/zlib/include

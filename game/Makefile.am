@@ -26,16 +26,18 @@ game_SOURCES = cameracontroller.cpp \
                uiwidgutils.cpp \
                $(game_PLATFORM_SOURCES)
 
-game_LDFLAGS = -L@top_srcdir@/3rdparty/lua/lib \
-               -L@top_srcdir@/3rdparty/tinyxml \
-               -L@top_srcdir@/engine \
-               -L@top_srcdir@/render \
-               -L@top_srcdir@/tech \
-               -L@top_srcdir@/allguids
+game_LDFLAGS = -L$(top_builddir)/3rdparty/lua/src \
+               -L$(top_builddir)/3rdparty/lua/src/lib \
+               -L$(top_builddir)/3rdparty/tinyxml \
+               -L$(top_builddir)/engine \
+               -L$(top_builddir)/render \
+               -L$(top_builddir)/tech \
+               -L$(top_builddir)/allguids
 
 if HAVE_RC
 RES = game.$(OBJEXT)
-game.$(OBJEXT): game.rc
+game.$(OBJEXT): $(top_srcdir)/game/game.rc
+	cp $(top_srcdir)/game/game.ico $(top_builddir)/game
 	$(RC) -i $< -o $@
 else
 RES =
@@ -44,8 +46,8 @@ endif
 game_LDADD = $(RES) $(CORE_LIBS) $(GL_LIBS) -llua -llualib -ltinyxml -lrender -lengine -ltech -lallguids
 
 INCLUDES = $(GL_CFLAGS) \
-           -I@top_srcdir@/3rdparty/lua/include \
-           -I@top_srcdir@/3rdparty/tinyxml \
-           -I@top_srcdir@/engine/include \
-           -I@top_srcdir@/render/include \
-           -I@top_srcdir@/tech/include
+           -I$(top_srcdir)/3rdparty/lua/include \
+           -I$(top_srcdir)/3rdparty/tinyxml \
+           -I$(top_srcdir)/engine/include \
+           -I$(top_srcdir)/render/include \
+           -I$(top_srcdir)/tech/include
