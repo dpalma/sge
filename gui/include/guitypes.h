@@ -4,6 +4,8 @@
 #ifndef INCLUDED_GUITYPES_H
 #define INCLUDED_GUITYPES_H
 
+#include "enginedll.h"
+
 #include "color.h"
 #include "str.h"
 #include "vec2.h"
@@ -46,7 +48,9 @@ typedef struct sGUIInsets tGUIInsets;
 // CLASS: cGUIColor
 //
 
-class cGUIColor : public cColor
+#pragma warning(disable:4275) // non dll-interface class 'X' used as base for dll-interface class 'Y'
+
+class ENGINE_API cGUIColor : public cColor
 {
 public:
    cGUIColor() : cColor() {}

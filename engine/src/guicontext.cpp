@@ -12,6 +12,10 @@
 
 #include "render.h"
 
+#ifdef _DEBUG
+#include "font.h"
+#endif
+
 #include "keys.h"
 #include "resmgr.h"
 #include "readwriteapi.h"
@@ -38,6 +42,12 @@ END_CONSTRAINTS()
 cGUIContext::cGUIContext()
  : tBaseClass("GUIContext", CONSTRAINTS()),
    m_bNeedLayout(false)
+#ifdef _DEBUG
+   , m_bShowDebugInfo(false)
+   , m_debugInfoPlacement(0,0)
+   , m_debugInfoTextColor(tGUIColor::White)
+   , m_lastMousePos(0,0)
+#endif
 {
    UseGlobal(Scene);
    pScene->AddInputListener(kSL_InGameUI, &m_inputListener);
@@ -136,22 +146,6 @@ tResult cGUIContext::LoadFromString(const char * psz)
 
 ///////////////////////////////////////
 
-struct sSizeAndPlaceElement
-{
-   sSizeAndPlaceElement(uint width, uint height)
-     : m_contextField(0,0,width,height) {}
-
-   void operator()(IGUIElement * pGUIElement)
-   {
-      GUISizeElement(m_contextField, pGUIElement);
-      GUIPlaceElement(m_contextField, pGUIElement);
-   }
-
-   const tGUIRect m_contextField;
-};
-
-///////////////////////////////////////
-
 struct sRenderElement
 {
    sRenderElement() : m_bError(false) {}
@@ -178,6 +172,56 @@ struct sRenderElement
 
 ///////////////////////////////////////
 
+#ifdef _DEBUG
+static void DescribeElement(IGUIElement * pElement, char * psz, uint maxLength)
+{
+   Assert(pElement != NULL);
+   cAutoIPtr<IGUIButtonElement> pButton;
+   cAutoIPtr<IGUIPanelElement> pPanel;
+   cAutoIPtr<IGUILabelElement> pLabel;
+   cAutoIPtr<IGUIDialogElement> pDialog;
+   const char * pszId = pElement->GetId();
+   if (pElement->QueryInterface(IID_IGUIButtonElement, (void**)&pButton) == S_OK)
+   {
+      _snprintf(psz, maxLength, "Button \"%s\"", pButton->GetText());
+   }
+   else if (pElement->QueryInterface(IID_IGUIPanelElement, (void**)&pPanel) == S_OK)
+   {
+      _snprintf(psz, maxLength, "Panel '%s'", strlen(pszId) > 0 ? pszId : "<no id>");
+   }
+   else if (pElement->QueryInterface(IID_IGUILabelElement, (void**)&pLabel) == S_OK)
+   {
+      tGUIString text;
+      if (pLabel->GetText(&text) == S_OK)
+      {
+         _snprintf(psz, maxLength, "Label \"%s\"", text.c_str());
+      }
+      else
+      {
+         _snprintf(psz, maxLength, "Label '%s'", strlen(pszId) > 0 ? pszId : "<no id>");
+      }
+   }
+   else if (pElement->QueryInterface(IID_IGUIDialogElement, (void**)&pDialog) == S_OK)
+   {
+      tGUIString title;
+      if (pDialog->GetTitle(&title) == S_OK)
+      {
+         _snprintf(psz, maxLength, "Dialog \"%s\"", title.c_str());
+      }
+      else
+      {
+         _snprintf(psz, maxLength, "Dialog '%s'", strlen(pszId) > 0 ? pszId : "<no id>");
+      }
+   }
+   else
+   {
+      _snprintf(psz, maxLength, "Element '%s'", strlen(pszId) > 0 ? pszId : "<no id>");
+   }
+}
+#endif
+
+///////////////////////////////////////
+
 tResult cGUIContext::RenderGUI(IRenderDevice * pRenderDevice)
 {
    Assert(pRenderDevice != NULL);
@@ -191,7 +235,7 @@ tResult cGUIContext::RenderGUI(IRenderDevice * pRenderDevice)
       uint vpWidth, vpHeight;
       Verify(pRenderDevice->GetViewportSize(&vpWidth, &vpHeight) == S_OK);
 
-      sSizeAndPlaceElement sizeAndPlaceFunctor(vpWidth, vpHeight);
+      cSizeAndPlaceElement sizeAndPlaceFunctor(tGUIRect(0,0,vpWidth,vpHeight));
       ForEachElement(sizeAndPlaceFunctor);
    }
 
@@ -203,8 +247,85 @@ tResult cGUIContext::RenderGUI(IRenderDevice * pRenderDevice)
 
    pRenderDevice->SetRenderState(kRS_EnableDepthBuffer, TRUE);
 
+#ifdef _DEBUG
+   if (m_bShowDebugInfo)
+   {
+      cAutoIPtr<IRenderFont> pFont;
+      UseGlobal(GUIRenderingTools);
+      if (pGUIRenderingTools->GetDefaultFont(&pFont) == S_OK)
+      {
+         char szText[200];
+         sprintf(szText, "Mouse: (%d, %d)", Round(m_lastMousePos.x), Round(m_lastMousePos.y));
+
+         cAutoIPtr<IGUIElement> pHitElement;
+         if (GetHitElement(m_lastMousePos, &pHitElement) == S_OK)
+         {
+            char szHit[100] = {0};
+            DescribeElement(pHitElement, szHit, _countof(szHit));
+
+            if (strlen(szHit) > 0)
+            {
+               strcat(szText, "\n");
+               uint len = strlen(szText);
+               strncpy(szText + len, szHit, _countof(szText) - len);
+               szText[_countof(szText) - 1] = 0;
+            }
+         }
+
+         tGUIRect rect(m_debugInfoPlacement.x, m_debugInfoPlacement.y, 0, 0);
+         pFont->DrawText(szText, -1, kDT_NoClip, &rect, m_debugInfoTextColor);
+      }
+   }
+#endif
+
    return result;
 }
+
+///////////////////////////////////////
+
+tResult cGUIContext::ShowDebugInfo(const tGUIPoint & placement, const tGUIColor & textColor)
+{
+#ifdef _DEBUG
+   if (!m_bShowDebugInfo)
+   {
+      m_bShowDebugInfo = true;
+      m_debugInfoPlacement = placement;
+      m_debugInfoTextColor = textColor;
+      return S_OK;
+   }
+#endif
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
+tResult cGUIContext::HideDebugInfo()
+{
+#ifdef _DEBUG
+   if (m_bShowDebugInfo)
+   {
+      m_bShowDebugInfo = false;
+      return S_OK;
+   }
+#endif
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
+#ifdef _DEBUG
+bool cGUIContext::HandleInputEvent(const sInputEvent * pEvent)
+{
+   Assert(pEvent != NULL);
+
+   if (pEvent->key == kMouseMove)
+   {
+      m_lastMousePos = pEvent->point;
+   }
+
+   return cGUIEventRouter<IGUIContext>::HandleInputEvent(pEvent);
+}
+#endif
 
 ///////////////////////////////////////
 

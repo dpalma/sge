@@ -38,7 +38,17 @@ public:
 
    virtual tResult RenderGUI(IRenderDevice * pRenderDevice);
 
+   virtual tResult ShowDebugInfo(const tGUIPoint & placement, const tGUIColor & textColor);
+   virtual tResult HideDebugInfo();
+
 private:
+#ifdef _DEBUG
+   // Over-riding the cGUIEventRouter method even though it isn't virtual.
+   // OK because it is only called through a cGUIContext* pointer in 
+   // cInputListener::OnInputEvent
+   bool HandleInputEvent(const sInputEvent * pEvent);
+#endif
+
    class cInputListener : public cComObject<IMPLEMENTS(IInputListener)>
    {
       virtual bool OnInputEvent(const sInputEvent * pEvent);
@@ -48,6 +58,13 @@ private:
    cInputListener m_inputListener;
 
    bool m_bNeedLayout;
+
+#ifdef _DEBUG
+   bool m_bShowDebugInfo;
+   tGUIPoint m_debugInfoPlacement;
+   tGUIColor m_debugInfoTextColor;
+   tGUIPoint m_lastMousePos;
+#endif
 };
 
 ///////////////////////////////////////////////////////////////////////////////
