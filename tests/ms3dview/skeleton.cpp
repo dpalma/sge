@@ -9,6 +9,7 @@
 #include "str.h"
 
 #include <algorithm>
+#include <map>
 
 #include "dbgalloc.h" // must be last header
 
@@ -20,6 +21,47 @@ const GUID IID_ISkeleton =
 //
 // CLASS: cBone
 //
+
+class cBone
+{
+   friend class cSkeleton;
+
+public:
+   cBone();
+   cBone(const cBone & other);
+   const cBone & operator =(const cBone & other);
+   const cBone & operator =(const sBoneInfo & boneInfo);
+
+   const char * GetName() const;
+   void SetName(const char * pszName);
+
+   // The index of this bone in its containing skeleton
+   int GetIndex() const;
+   void SetIndex(int index);
+
+   int GetParentIndex() const;
+   void SetParentIndex(int parentIndex);
+
+   const tMatrix4 & GetLocalTransform() const;
+   void SetLocalTransform(const tMatrix4 & matrix);
+
+   const tMatrix4 & GetWorldTransform() const;
+
+private:
+   const cBone * GetParent() const;
+
+   bool AddChild(const cBone * pChild);
+
+   cStr m_name;
+   int m_index;
+   int m_parentIndex;
+   const cBone * m_pParent;
+   typedef std::vector<const cBone *> tChildren;
+   tChildren m_children;
+   tMatrix4 m_localTransform;
+   mutable tMatrix4 m_worldTransform;
+   mutable bool m_bHaveWorldTransform;
+};
 
 ///////////////////////////////////////
 
@@ -52,6 +94,84 @@ const cBone & cBone::operator =(const cBone & other)
    m_worldTransform = other.m_worldTransform;
    m_bHaveWorldTransform = other.m_bHaveWorldTransform;
    return *this;
+}
+
+///////////////////////////////////////
+
+const cBone & cBone::operator =(const sBoneInfo & boneInfo)
+{
+   m_name = boneInfo.name;
+   m_index = -1;
+   m_parentIndex = boneInfo.parentIndex;
+   m_pParent = NULL;
+   m_children.clear();
+   m_localTransform = boneInfo.localTransform;
+   m_bHaveWorldTransform = false;
+   return *this;
+}
+
+///////////////////////////////////////
+
+inline const char * cBone::GetName() const
+{
+   return m_name;
+}
+
+///////////////////////////////////////
+
+inline void cBone::SetName(const char * pszName)
+{
+   m_name = (pszName != NULL) ? pszName : "";
+}
+
+///////////////////////////////////////
+
+inline int cBone::GetIndex() const
+{
+   return m_index;
+}
+
+///////////////////////////////////////
+
+inline void cBone::SetIndex(int index)
+{
+   m_index = index;
+}
+
+///////////////////////////////////////
+
+inline int cBone::GetParentIndex() const
+{
+   return m_parentIndex;
+}
+
+///////////////////////////////////////
+
+inline void cBone::SetParentIndex(int parentIndex)
+{
+   m_parentIndex = parentIndex;
+}
+
+///////////////////////////////////////
+
+inline const tMatrix4 & cBone::GetLocalTransform() const
+{
+   return m_localTransform;
+}
+
+///////////////////////////////////////
+
+inline void cBone::SetLocalTransform(const tMatrix4 & matrix)
+{
+   m_localTransform = matrix;
+   m_bHaveWorldTransform = false;
+}
+
+///////////////////////////////////////
+
+inline const cBone * cBone::GetParent() const
+{
+   return m_pParent;
 }
 
 ///////////////////////////////////////
@@ -119,7 +239,7 @@ public:
    cSkeleton();
    ~cSkeleton();
 
-   bool Create(const cBone * pBones, uint nBones, 
+   bool Create(const sBoneInfo * pBones, uint nBones, 
       IKeyFrameInterpolator * * pInterpolators, uint nInterpolators);
 
    int GetBoneCount() const;
@@ -160,7 +280,7 @@ cSkeleton::~cSkeleton()
 
 ///////////////////////////////////////
 
-bool cSkeleton::Create(const cBone * pBones, uint nBones, 
+bool cSkeleton::Create(const sBoneInfo * pBones, uint nBones, 
                        IKeyFrameInterpolator * * pInterpolators, uint nInterpolators)
 {
    if ((pInterpolators != NULL) && (nInterpolators > 0))
@@ -175,10 +295,19 @@ bool cSkeleton::Create(const cBone * pBones, uint nBones,
 
    if ((pBones != NULL) && (nBones > 0))
    {
+      std::map<cStr, uint> boneNames; // map bone names to indices
+
+      uint i;
+      for (i = 0; i < nBones; i++)
+      {
+         boneNames.insert(std::make_pair(cStr(pBones[i].name), i));
+      }
+
       m_bones.resize(nBones);
-      for (uint i = 0; i < nBones; i++)
+      for ( i = 0; i < nBones; i++)
       {
          m_bones[i] = pBones[i];
+         m_bones[i].SetIndex(i);
       }
 
       SetupJoints();
@@ -297,7 +426,7 @@ void cSkeleton::SetupJoints()
 
 ///////////////////////////////////////
 
-tResult SkeletonCreate(const cBone * pBones, uint nBones, 
+tResult SkeletonCreate(const sBoneInfo * pBones, uint nBones, 
    IKeyFrameInterpolator * * pInterpolators, uint nInterpolators,
    ISkeleton * * ppSkeleton)
 {

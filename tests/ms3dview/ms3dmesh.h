@@ -24,8 +24,6 @@ F_DECLARE_INTERFACE(IRenderDevice);
 typedef struct _CGprogram * CGprogram;
 typedef struct _CGparameter * CGparameter;
 
-const int kMaxBoneName = 32;
-
 ///////////////////////////////////////////////////////////////////////////////
 // MS3D file format structs
 

@@ -10,6 +10,7 @@
 #include "techmath.h"
 #include "animation.h"
 #include "vec4.h"
+#include "str.h"
 
 #include "render.h"
 #include "material.h"
@@ -290,7 +291,7 @@ tResult cReadWriteOps<sMs3dBoneInfo>::Read(IReader * pReader, sMs3dBoneInfo * pB
 }
 
 static tResult ReadSkeleton(IReader * pReader, 
-                            std::vector<cBone> * pBones,
+                            std::vector<sBoneInfo> * pBones,
                             std::vector<IKeyFrameInterpolator *> * pInterpolators)
 {
    Assert(pReader != NULL);
@@ -354,8 +355,7 @@ static tResult ReadSkeleton(IReader * pReader,
 
       for (i = 0; i < nJoints; i++)
       {
-         (*pBones)[i].SetName(boneInfo[i].name);
-         (*pBones)[i].SetIndex(i);
+         strcpy((*pBones)[i].name, boneInfo[i].name);
 
          if (strlen(boneInfo[i].parentName) > 0)
          {
@@ -363,7 +363,7 @@ static tResult ReadSkeleton(IReader * pReader,
             if (n != boneNames.end())
             {
                Assert(strcmp(boneInfo[n->second].name, boneInfo[i].parentName) == 0);
-               (*pBones)[i].SetParentIndex(n->second);
+               (*pBones)[i].parentIndex = n->second;
             }
          }
 
@@ -371,7 +371,7 @@ static tResult ReadSkeleton(IReader * pReader,
          MatrixTranslate(boneInfo[i].position[0], boneInfo[i].position[1], boneInfo[i].position[2], &mt);
          MatrixFromAngles(tVec3(boneInfo[i].rotation), &mr);
 
-         (*pBones)[i].SetLocalTransform(mt * mr);
+         (*pBones)[i].localTransform = mt * mr;
       }
 
       result = S_OK;
@@ -535,7 +535,7 @@ tResult cMs3dMesh::Read(IReader * pReader, IRenderDevice * pRenderDevice, IResou
 
    Assert(m_materials.size() == nMaterials);
 
-   std::vector<cBone> bones;
+   std::vector<sBoneInfo> bones;
    std::vector<IKeyFrameInterpolator *> interpolators;
 
    if (ReadSkeleton(pReader, &bones, &interpolators) != S_OK)
