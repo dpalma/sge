@@ -12,6 +12,7 @@
 #endif
 
 class cFilePath;
+class cStr;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -32,6 +33,7 @@ public:
 
    const char * GetName() const;
    const char * GetFileName() const;
+   bool GetFileNameNoExt(cStr * pFileName) const;
    const char * GetFileExt() const;
    bool SetFileExt(const char * pszExt);
 

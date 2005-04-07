@@ -154,7 +154,7 @@ static bool ScriptExecResource(const char * pszResource)
    if (pResourceManager->Load(tResKey(pszResource, kRC_Text), (void**)&pszCode) == S_OK)
    {
       bResult = ScriptExecString(pszCode);
-      delete [] pszCode;
+      pResourceManager->Unload(tResKey(pszResource, kRC_Text));
    }
    return bResult;
 }

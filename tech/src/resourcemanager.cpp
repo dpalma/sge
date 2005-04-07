@@ -4,17 +4,16 @@
 #include "stdhdr.h"
 
 #include "resourceapi.h"
-#include "ziparchive.h"
 #include "filepath.h"
 #include "filespec.h"
 #include "fileiter.h"
 #include "readwriteapi.h"
 #include "globalobj.h"
+#include "techtime.h"
 
 #include <cstdio>
 #include <vector>
 #include <string>
-#include <map>
 #include <algorithm>
 
 #ifdef _WIN32
@@ -43,7 +42,8 @@ const uint kNoIndex = ~0;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static size_t ListDirs(const cFilePath & path, std::vector<std::string> * pDirs)
+typedef std::vector<std::string> tStrings;
+static size_t ListDirs(const cFilePath & path, tStrings * pDirs)
 {
    Assert(pDirs != NULL);
    if (pDirs == NULL)
@@ -121,10 +121,6 @@ public:
    virtual tResult Term();
 
    // IResourceManager methods
-   virtual IReader * Find(const char * pszName);
-   virtual void AddSearchPath(const char * pszPath);
-
-   // IResourceManager2 methods
    virtual tResult AddDirectory(const char * pszDir);
    virtual tResult AddDirectoryTreeFlattened(const char * pszDir);
    virtual tResult AddArchive(const char * pszArchive);
@@ -137,13 +133,15 @@ public:
                                   tResourceUnload pfnUnload);
 
 private:
+   struct sResource;
+   sResource * InternalFindResource(const tResKey & key);
+   tResult DoLoadFromFile(const cFileSpec & file, eResourceClass rc, void * param, sResource * pResource);
+
    uint GetExtensionId(const char * pszExtension);
+   uint GetDirectoryId(const char * pszDir);
 
-   typedef std::multimap<eResourceClass, cStr> tResClassExtMap;
-   tResClassExtMap m_resClassExtMap;
-
-   std::vector<cFilePath> m_searchPaths;
-   std::vector<cZipArchive *> m_zipArchives;
+   std::vector<cStr> m_extensions;
+   std::vector<cFilePath> m_dirs;
 
    struct sFormat
    {
@@ -155,7 +153,19 @@ private:
    };
    std::vector<sFormat> m_formats;
 
-   std::vector<cStr> m_extensions;
+   struct sResource
+   {
+      uint extensionId;
+      uint dirId;
+      cStr name;
+      sFormat * pFormat;
+      ulong refCount;
+      void * pData;
+      ulong dataSize;
+      double timeLastUsed;
+   };
+   typedef std::vector<sResource> tCache;
+   tCache m_cache;
 };
 
 ////////////////////////////////////////
@@ -169,7 +179,6 @@ cResourceManager::cResourceManager()
 
 cResourceManager::~cResourceManager()
 {
-   Assert(m_zipArchives.empty());
 }
 
 ////////////////////////////////////////
@@ -183,61 +192,20 @@ tResult cResourceManager::Init()
 
 tResult cResourceManager::Term()
 {
-   std::vector<cZipArchive *>::iterator iter;
-   for (iter = m_zipArchives.begin(); iter != m_zipArchives.end(); iter++)
+   tCache::iterator cacheIter = m_cache.begin();
+   tCache::iterator cacheEnd = m_cache.end();
+   for (; cacheIter != cacheEnd; cacheIter++)
    {
-      delete (*iter);
+      if (cacheIter->pFormat != NULL && cacheIter->pFormat->pfnUnload != NULL)
+      {
+         (*cacheIter->pFormat->pfnUnload)(cacheIter->pData);
+         cacheIter->pData = NULL;
+         cacheIter->dataSize = 0;
+      }
    }
-   m_zipArchives.clear();
-
-   m_resClassExtMap.clear();
+   m_cache.clear();
 
    return S_OK;
-}
-
-////////////////////////////////////////
-
-IReader * cResourceManager::Find(const char * pszName)
-{
-   if (!m_zipArchives.empty())
-   {
-      std::vector<cZipArchive *>::iterator iter;
-      for (iter = m_zipArchives.begin(); iter != m_zipArchives.end(); iter++)
-      {
-         IReader * pReader = NULL;
-         if ((*iter)->OpenMember(pszName, &pReader) == S_OK)
-         {
-            return pReader;
-         }
-      }
-   }
-   else
-   {
-      if (cFileSpec(pszName).Exists())
-      {
-         return FileCreateReader(cFileSpec(pszName));
-      }
-
-      std::vector<cFilePath>::iterator iter;
-      for (iter = m_searchPaths.begin(); iter != m_searchPaths.end(); iter++)
-      {
-         cFileSpec file(pszName);
-         file.SetPath(*iter);
-         if (file.Exists())
-         {
-            return FileCreateReader(file);
-         }
-      }
-   }
-
-   return NULL;
-}
-
-////////////////////////////////////////
-
-void cResourceManager::AddSearchPath(const char * pszPath)
-{
-   Verify(AddDirectoryTreeFlattened(pszPath) == S_OK);
 }
 
 ////////////////////////////////////////
@@ -248,9 +216,6 @@ tResult cResourceManager::AddDirectory(const char * pszDir)
    {
       return E_POINTER;
    }
-
-   // HACK: support the legacy behavior
-   m_searchPaths.push_back(cFilePath(pszDir));
 
    cFileIter * pFileIter = FileIterCreate();
    if (pFileIter == NULL)
@@ -267,7 +232,6 @@ tResult cResourceManager::AddDirectory(const char * pszDir)
    pFileIter->IterBegin(spec.GetName());
    while (pFileIter->IterNext(szFile, _countof(szFile), &attribs))
    {
-      // TODO: do something; cache information about the file
       if ((attribs & kFA_Directory) == kFA_Directory)
       {
          LocalMsg1("Dir: %s\n", szFile);
@@ -275,6 +239,23 @@ tResult cResourceManager::AddDirectory(const char * pszDir)
       else
       {
          LocalMsg1("File: %s\n", szFile);
+
+         cFileSpec file(szFile);
+         sResource res;
+         res.extensionId = kNoIndex;
+         const char * pExt = file.GetFileExt();
+         if (pExt && strlen(pExt) > 0)
+         {
+            res.extensionId = GetExtensionId(pExt);
+         }
+         res.dirId = GetDirectoryId(pszDir);
+         Verify(file.GetFileNameNoExt(&res.name));
+         res.pFormat = NULL;
+         res.refCount = 0;
+         res.pData = 0;
+         res.dataSize = 0;
+         res.timeLastUsed = 0;
+         m_cache.push_back(res);
       }
    }
    pFileIter->IterEnd();
@@ -300,10 +281,10 @@ tResult cResourceManager::AddDirectoryTreeFlattened(const char * pszDir)
       return E_FAIL;
    }
 
-   std::vector<std::string> dirs;
+   tStrings dirs;
    if (ListDirs(root, &dirs) > 0)
    {
-      std::vector<std::string>::iterator iter;
+      tStrings::iterator iter;
       for (iter = dirs.begin(); iter != dirs.end(); iter++)
       {
          cFilePath p(root);
@@ -367,60 +348,28 @@ tResult cResourceManager::Load(const tResKey & key, void * param, void * * ppDat
       return E_FAIL;
    }
 
-   cFileSpec file(key.GetName());
+   cStr name;
+   cFileSpec(key.GetName()).GetFileNameNoExt(&name);
 
-   std::vector<cFilePath>::iterator iter = m_searchPaths.begin();
-   std::vector<cFilePath>::iterator end = m_searchPaths.end();
-   for (; iter != end; iter++)
+   sResource * pRes = InternalFindResource(key);
+   if (pRes != NULL)
    {
-      file.SetPath(*iter);
-      if (file.Exists())
+      if (pRes->pData == NULL)
       {
-         cAutoIPtr<IReader> pReader(FileCreateReader(file));
-         if (!pReader)
+         cFileSpec file(key.GetName());
+         file.SetPath(m_dirs[pRes->dirId]);
+         if (DoLoadFromFile(file, key.GetClass(), param, pRes) != S_OK)
          {
-            return E_OUTOFMEMORY;
+            return E_FAIL;
          }
+      }
 
-         std::vector<sFormat>::iterator fIter = m_formats.begin();
-         std::vector<sFormat>::iterator fEnd = m_formats.end();
-         for (; fIter != fEnd; fIter++)
-         {
-            if (fIter->extensionId == extensionId && fIter->rc == key.GetClass())
-            {
-               if (fIter->pfnLoad != NULL)
-               {
-                  void * pData = (*fIter->pfnLoad)(pReader);
-                  if (pData != NULL)
-                  {
-                     if (fIter->pfnPostload == NULL)
-                     {
-                        *ppData = pData;
-                        return S_OK;
-                     }
-                     else
-                     {
-                        pReader->Seek(0, kSO_End);
-                        ulong dataLength;
-                        if (pReader->Tell(&dataLength) == S_OK)
-                        {
-                           pReader->Seek(0, kSO_Set);
-                           void * pNewData = (*fIter->pfnPostload)(pData, dataLength, param);
-                           if (pNewData != NULL)
-                           {
-                              *ppData = pNewData;
-                              return S_OK;
-                           }
-                        }
-                     }
-                  }
-                  else
-                  {
-                     return E_FAIL;
-                  }
-               }
-            }
-         }
+      if (pRes->pData != NULL)
+      {
+         pRes->refCount += 1;
+         pRes->timeLastUsed = TimeGetSecs();
+         *ppData = pRes->pData;
+         return S_OK;
       }
    }
 
@@ -431,7 +380,30 @@ tResult cResourceManager::Load(const tResKey & key, void * param, void * * ppDat
 
 tResult cResourceManager::Unload(const tResKey & key)
 {
-   return E_NOTIMPL;
+   sResource * pRes = InternalFindResource(key);
+   if (pRes != NULL)
+   {
+      if (pRes->refCount == 0)
+      {
+         return S_FALSE;
+      }
+      else
+      {
+         pRes->refCount -= 1;
+         if (pRes->refCount == 0)
+         {
+            if (pRes->pFormat != NULL && pRes->pFormat->pfnUnload != NULL)
+            {
+               (*pRes->pFormat->pfnUnload)(pRes->pData);
+               pRes->pData = NULL;
+               pRes->dataSize = 0;
+               return S_OK;
+            }
+         }
+      }
+   }
+
+   return E_FAIL;
 }
 
 ////////////////////////////////////////
@@ -503,6 +475,106 @@ tResult cResourceManager::RegisterFormat(eResourceClass rc,
 
 ////////////////////////////////////////
 
+cResourceManager::sResource * cResourceManager::InternalFindResource(const tResKey & key)
+{
+   uint extensionId = kNoIndex;
+   static const char kExtSep = '.';
+   const char * pszExt = strrchr(key.GetName(), kExtSep);
+   if (pszExt != NULL)
+   {
+      extensionId = GetExtensionId(++pszExt);
+   }
+
+   if (extensionId == kNoIndex)
+   {
+      // TODO: look for possible extensions for the resource class
+      return NULL;
+   }
+
+   cStr name;
+   cFileSpec(key.GetName()).GetFileNameNoExt(&name);
+
+   tCache::iterator cacheIter =  m_cache.begin();
+   tCache::iterator cacheEnd =  m_cache.end();
+   for (; cacheIter != cacheEnd; cacheIter++)
+   {
+      if (cacheIter->extensionId == extensionId && cacheIter->name.compare(name) == 0)
+      {
+         return &m_cache[cacheIter - m_cache.begin()];
+      }
+   }
+
+   return NULL;
+}
+
+////////////////////////////////////////
+
+tResult cResourceManager::DoLoadFromFile(const cFileSpec & file, eResourceClass rc,
+                                         void * param, sResource * pResource)
+{
+   if (pResource == NULL)
+   {
+      return E_POINTER;
+   }
+
+   Assert(pResource->pData == NULL);
+   Assert(pResource->dataSize == 0);
+
+   cAutoIPtr<IReader> pReader(FileCreateReader(file));
+   if (!pReader)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   pReader->Seek(0, kSO_End);
+   ulong dataSize;
+   if (pReader->Tell(&dataSize) != S_OK)
+   {
+      return E_FAIL;
+   }
+   pReader->Seek(0, kSO_Set);
+
+   std::vector<sFormat>::iterator fIter = m_formats.begin();
+   std::vector<sFormat>::iterator fEnd = m_formats.end();
+   for (; fIter != fEnd; fIter++)
+   {
+      if (fIter->extensionId == pResource->extensionId && fIter->rc == rc)
+      {
+         if (fIter->pfnLoad != NULL)
+         {
+            void * pData = (*fIter->pfnLoad)(pReader);
+            if (pData != NULL)
+            {
+               if (fIter->pfnPostload != NULL)
+               {
+                  void * pNewData = (*fIter->pfnPostload)(pData, dataSize, param);
+                  if (pNewData == NULL)
+                  {
+                     // Postload must succeed in order to cache anything about
+                     // the resource
+                     return E_FAIL;
+                  }
+
+                  // Assume the postload function cleaned up pData
+                  // (or just passed it through to pNewData)
+                  pData = pNewData;
+               }
+
+               // Cache the resource data
+               pResource->pFormat = &m_formats[fIter - m_formats.begin()];
+               pResource->pData = pData;
+               pResource->dataSize = dataSize;
+               return S_OK;
+            }
+         }
+      }
+   }
+
+   return E_FAIL;
+}
+
+////////////////////////////////////////
+
 uint cResourceManager::GetExtensionId(const char * pszExtension)
 {
    Assert(pszExtension != NULL);
@@ -515,6 +587,24 @@ uint cResourceManager::GetExtensionId(const char * pszExtension)
    }
 
    return f - m_extensions.begin();
+}
+
+////////////////////////////////////////
+
+uint cResourceManager::GetDirectoryId(const char * pszDir)
+{
+   Assert(pszDir != NULL);
+
+   cFilePath dir(pszDir);
+
+   std::vector<cFilePath>::iterator f = std::find(m_dirs.begin(), m_dirs.end(), dir);
+   if (f == m_dirs.end())
+   {
+      m_dirs.push_back(dir);
+      return m_dirs.size() - 1;
+   }
+
+   return f - m_dirs.begin();
 }
 
 ////////////////////////////////////////

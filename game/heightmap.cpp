@@ -53,7 +53,7 @@ bool cHeightMap::Load(const char * pszFilename)
          return true;
       }
 
-      delete pHeightImage;
+      pResourceManager->Unload(tResKey(pszFilename, kRC_Image));
    }
 
    return false;

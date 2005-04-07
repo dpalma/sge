@@ -49,8 +49,9 @@ cEditorTile::~cEditorTile()
    }
    m_bitmaps.clear();
 
-   delete m_pImageData;
-   m_pImageData = NULL;
+   m_pImageData = NULL; // Don't delete this pointer--it's cached by the resource manager
+   UseGlobal(ResourceManager);
+   pResourceManager->Unload(tResKey(m_texture.c_str(), kRC_Image));
 
    if (m_hBitmap != NULL)
    {

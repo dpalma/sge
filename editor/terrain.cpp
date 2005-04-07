@@ -530,8 +530,7 @@ tResult HeightMapLoad(const tChar * pszHeightData, IHeightMap * * ppHeightMap)
 
       ~cHeightMap()
       {
-         delete m_pHeightData;
-         m_pHeightData = NULL;
+         m_pHeightData = NULL; // Don't delete this--it's a cached resource
       }
 
       virtual float GetNormalizedHeight(float nx, float nz) const

@@ -377,7 +377,7 @@ tResult cTextureManager::GetTexture(const char * pszName, ITexture * * ppTexture
             result = S_OK;
          }
 
-         delete pImageData;
+         pResourceManager->Unload(tResKey(pszName, kRC_Image));
 
          return result;
       }

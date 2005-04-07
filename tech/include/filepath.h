@@ -26,6 +26,8 @@ public:
 
    const cFilePath & operator =(const char * pszPath);
 
+   bool operator ==(const cFilePath & other);
+
    int Compare(const cFilePath & other) const;
    int CompareNoCase(const cFilePath & other) const;
 
@@ -41,6 +43,13 @@ public:
 private:
    char m_szPath[kMaxPath];
 };
+
+///////////////////////////////////////
+
+inline bool cFilePath::operator ==(const cFilePath & other)
+{
+   return Compare(other) == 0;
+}
 
 ///////////////////////////////////////
 

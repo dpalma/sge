@@ -122,8 +122,7 @@ int LoadTiles(int argc, const cScriptVar * argv,
             uint nTileSets = LoadTileSets(doc);
          }
 
-         delete [] pszContents;
-         pszContents = NULL;
+         pResourceManager->Unload(tResKey(argv[0].psz, kRC_Text));
       }
    }
 

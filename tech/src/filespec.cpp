@@ -5,6 +5,7 @@
 
 #include "filepath.h"
 #include "filespec.h"
+#include "str.h"
 
 #include <cstdio>
 #include <cstring>
@@ -124,6 +125,31 @@ const char * cFileSpec::GetFileName() const
    {
       return GetName();
    }
+}
+
+///////////////////////////////////////
+
+bool cFileSpec::GetFileNameNoExt(cStr * pFileName) const
+{
+   if (pFileName != NULL)
+   {
+      const char * p = GetFileName();
+      Assert(p != NULL);
+      const char * pExt = strrchr(p, kExtensionSep);
+      if (pExt != NULL)
+      {
+         char * pTemp = reinterpret_cast<char*>(alloca(pExt - p + 1));
+         strncpy(pTemp, p, pExt - p);
+         pTemp[pExt - p] = 0;
+         *pFileName = pTemp;
+      }
+      else
+      {
+         *pFileName = p;
+      }
+      return true;
+   }
+   return false;
 }
 
 ///////////////////////////////////////

@@ -52,7 +52,7 @@ static bool ScriptExecResource(IScriptInterpreter * pInterpreter, const char * p
    if (pResourceManager->Load(tResKey(pszResource, kRC_Text), (void**)&pszCode) == S_OK)
    {
       bResult = SUCCEEDED(pInterpreter->ExecString(pszCode));
-      delete [] pszCode;
+      pResourceManager->Unload(tResKey(pszResource, kRC_Text));
    }
 
    return bResult;

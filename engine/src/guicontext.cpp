@@ -114,7 +114,7 @@ tResult cGUIContext::LoadFromResource(const char * psz)
    if (pResourceManager->Load(tResKey(psz, kRC_Text), (void**)&pszXml) == S_OK)
    {
       tResult result = LoadFromString(pszXml);
-      delete [] pszXml;
+      pResourceManager->Unload(tResKey(psz, kRC_Text));
       return result;
    }
    return E_FAIL;
