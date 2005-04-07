@@ -609,9 +609,6 @@
 				RelativePath="..\..\tech\include\rect.h">
 			</File>
 			<File
-				RelativePath="..\..\tech\include\resmgr.h">
-			</File>
-			<File
 				RelativePath="..\..\tech\include\resourceapi.h">
 			</File>
 			<File
