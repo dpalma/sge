@@ -630,6 +630,16 @@ void cSplatBuilder::BuildAlphaMap(const tTerrainQuads & quads,
             }
          }
 
+//         if (texelDivisors[0] != 0) texelWeights[0] /= texelDivisors[0];
+//         if (texelDivisors[1] != 0) texelWeights[1] /= texelDivisors[1];
+//         if (texelDivisors[2] != 0) texelWeights[2] /= texelDivisors[2];
+//         if (texelDivisors[3] != 0) texelWeights[3] /= texelDivisors[3];
+
+         texelWeights[0] = Clamp(texelWeights[0], 0.f, 1.f);
+         texelWeights[1] = Clamp(texelWeights[1], 0.f, 1.f);
+         texelWeights[2] = Clamp(texelWeights[2], 0.f, 1.f);
+         texelWeights[3] = Clamp(texelWeights[3], 0.f, 1.f);
+
          uint iz = (z - zStart) * 2;
          uint ix = (x - xStart) * 2;
 
@@ -640,10 +650,10 @@ void cSplatBuilder::BuildAlphaMap(const tTerrainQuads & quads,
          byte * p2 = pBitmapBits + ((iz+1) * bmi.bmiHeader.biWidth * m) + (ix * m);
          byte * p3 = pBitmapBits + ((iz+1) * bmi.bmiHeader.biWidth * m) + ((ix+1) * m);
 
-         p0[0] = p0[1] = p0[2] = p0[3] = (texelDivisors[0] > 0) ? (byte)(255 * (texelWeights[0] / texelDivisors[0])) : 0;
-         p1[0] = p1[1] = p1[2] = p1[3] = (texelDivisors[1] > 0) ? (byte)(255 * (texelWeights[1] / texelDivisors[1])) : 0;
-         p2[0] = p2[1] = p2[2] = p2[3] = (texelDivisors[2] > 0) ? (byte)(255 * (texelWeights[2] / texelDivisors[2])) : 0;
-         p3[0] = p3[1] = p3[2] = p3[3] = (texelDivisors[3] > 0) ? (byte)(255 * (texelWeights[3] / texelDivisors[3])) : 0;
+         p0[0] = p0[1] = p0[2] = p0[3] = (byte)(255 * texelWeights[0]);
+         p1[0] = p1[1] = p1[2] = p1[3] = (byte)(255 * texelWeights[1]);
+         p2[0] = p2[1] = p2[2] = p2[3] = (byte)(255 * texelWeights[2]);
+         p3[0] = p3[1] = p3[2] = p3[3] = (byte)(255 * texelWeights[3]);
       }
    }
 
@@ -754,10 +764,10 @@ tResult cTerrainChunk::Create(const tTerrainQuads & quads,
             pSplatBuilder->AddTriangle(iVert+0,iVert+3,iVert+2);
          }
 
-         pChunk->m_vertices[iVert+0].uv2 = tVec2((float)(x-ix) / (kTilesPerChunk*2), (float)(z-iz) / (kTilesPerChunk*2));
-         pChunk->m_vertices[iVert+1].uv2 = tVec2((float)(x-ix+1) / (kTilesPerChunk*2), (float)(z-iz) / (kTilesPerChunk*2));
-         pChunk->m_vertices[iVert+2].uv2 = tVec2((float)(x-ix+1) / (kTilesPerChunk*2), (float)(z-iz+1) / (kTilesPerChunk*2));
-         pChunk->m_vertices[iVert+3].uv2 = tVec2((float)(x-ix) / (kTilesPerChunk*2), (float)(z-iz+1) / (kTilesPerChunk*2));
+         pChunk->m_vertices[iVert+0].uv2 = tVec2((float)(x-ix) / kTilesPerChunk, (float)(z-iz) / kTilesPerChunk);
+         pChunk->m_vertices[iVert+1].uv2 = tVec2((float)(x-ix+1) / kTilesPerChunk, (float)(z-iz) / kTilesPerChunk);
+         pChunk->m_vertices[iVert+2].uv2 = tVec2((float)(x-ix+1) / kTilesPerChunk, (float)(z-iz+1) / kTilesPerChunk);
+         pChunk->m_vertices[iVert+3].uv2 = tVec2((float)(x-ix) / kTilesPerChunk, (float)(z-iz+1) / kTilesPerChunk);
 
          pChunk->m_vertices[iVert++] = quad.verts[0];
          pChunk->m_vertices[iVert++] = quad.verts[1];
@@ -829,12 +839,7 @@ void cTerrainChunk::Render(IRenderDevice * pRenderDevice)
             {
                pfnglActiveTextureARB(GL_TEXTURE0_ARB);
                glBindTexture(GL_TEXTURE_2D, (uint)tex);
-               glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-               glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB, GL_REPLACE);
-               glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_ARB, GL_MODULATE);
-               glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB, GL_TEXTURE0_ARB);
-               glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_ARB, GL_SRC_COLOR);
-               glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_ARB, GL_PREVIOUS_ARB);
+               glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
                glEnable(GL_TEXTURE_2D);
             }
          }
