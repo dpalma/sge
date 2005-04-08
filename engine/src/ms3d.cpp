@@ -407,9 +407,9 @@ tResult cMs3dFileReader::CreateMaterials(IRenderDevice * pRenderDevice, IMesh * 
 
          if (iter->texture[0] != 0)
          {
-            UseGlobal(TextureManager);
+            UseGlobal(ResourceManager);
             cAutoIPtr<ITexture> pTexture;
-            if (pTextureManager->GetTexture(iter->texture, &pTexture) == S_OK)
+            if (pResourceManager->Load(tResKey(iter->texture, kRC_Texture), (void**)&pTexture) == S_OK)
             {
                pMaterial->SetTexture(0, pTexture);
             }

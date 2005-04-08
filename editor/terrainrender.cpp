@@ -671,8 +671,7 @@ void cSplatBuilder::BuildAlphaMap(const tTerrainQuads & quads,
    {
       if (pImage->Create(bmi.bmiHeader.biWidth, abs(bmi.bmiHeader.biHeight), kPF_RGBA8888, pBitmapBits))
       {
-         UseGlobal(TextureManager);
-         pTextureManager->CreateTexture(szFile, pImage, &m_pAlphaMap);
+         TextureCreate(pImage, &m_pAlphaMap);
       }
 
       delete pImage;

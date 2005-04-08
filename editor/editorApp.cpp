@@ -219,6 +219,7 @@ BOOL cEditorApp::InitInstance()
    TextFormatRegister("txt");
    TextFormatRegister("lua");
    TextFormatRegister("xml");
+   GlTextureResourceRegister();
 
    UseGlobal(ThreadCaller);
    pThreadCaller->ThreadInit();

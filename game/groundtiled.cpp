@@ -13,6 +13,7 @@
 #include "textureapi.h"
 #include "color.h"
 
+#include "resourceapi.h"
 #include "imagedata.h"
 #include "vec2.h"
 #include "vec3.h"
@@ -95,9 +96,9 @@ bool cTiledGround::Init(IRenderDevice * pRenderDevice, cHeightMap * pHeightMap, 
 
    if (pszTexture != NULL)
    {
-      UseGlobal(TextureManager);
+      UseGlobal(ResourceManager);
       cAutoIPtr<ITexture> pTexture;
-      if (pTextureManager->GetTexture(pszTexture, &pTexture) == S_OK)
+      if (pResourceManager->Load(tResKey(pszTexture, kRC_Texture), (void**)&pTexture) == S_OK)
       {
          m_pMaterial->SetTexture(0, pTexture);
       }

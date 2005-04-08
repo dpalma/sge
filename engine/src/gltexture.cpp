@@ -260,6 +260,65 @@ void cTexture::ReleaseTextureId()
    m_textureId = 0;
 }
 
+///////////////////////////////////////
+
+tResult TextureCreate(const cImageData * pImageData, ITexture * * ppTexture)
+{
+   if (pImageData == NULL || ppTexture == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cAutoIPtr<cTexture> pTex(new cTexture);
+   if (!pTex)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   if (pTex->UploadImage(pImageData) == S_OK)
+   {
+      *ppTexture = CTAddRef(pTex);
+      return S_OK;
+   }
+
+   return E_FAIL;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+void * GlTextureFromImageData(void * pData, int dataLength, void * param)
+{
+   cImageData * pImageData = reinterpret_cast<cImageData*>(pData);
+
+   cAutoIPtr<cTexture> pTex(new cTexture);
+   if (!pTex || pTex->UploadImage(pImageData) != S_OK)
+   {
+      return NULL;
+   }
+
+   return CTAddRef(static_cast<ITexture*>(pTex));
+}
+
+void GlTextureUnload(void * pData)
+{
+   ITexture * pTexture = reinterpret_cast<ITexture*>(pData);
+   if (pTexture != NULL)
+   {
+      pTexture->Release();
+   }
+}
+
+tResult GlTextureResourceRegister()
+{
+   UseGlobal(ResourceManager);
+   if (!!pResourceManager)
+   {
+      return pResourceManager->RegisterFormat(kRC_Texture, kRC_Image, NULL, NULL, GlTextureFromImageData, GlTextureUnload);
+   }
+   return E_FAIL;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -272,19 +331,7 @@ public:
    cTextureManager();
    ~cTextureManager();
 
-   virtual tResult Init();
-   virtual tResult Term();
-
-   virtual tResult CreateTexture(const char * pszName, const cImageData * pImageData, ITexture * * ppTexture);
    virtual tResult GetTexture(const char * pszName, ITexture * * ppTexture);
-
-   virtual tResult FreeAll();
-
-   virtual tResult PrioritizeTextures();
-
-private:
-   typedef std::map<cStr, cTexture *> tTexObjMap;
-   tTexObjMap m_texObjMap;
 };
 
 ///////////////////////////////////////
@@ -301,48 +348,6 @@ cTextureManager::~cTextureManager()
 
 ///////////////////////////////////////
 
-tResult cTextureManager::Init()
-{
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cTextureManager::Term()
-{
-   FreeAll();
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cTextureManager::CreateTexture(const char * pszName,
-                                       const cImageData * pImageData,
-                                       ITexture * * ppTexture)
-{
-   if (pszName == NULL || pImageData == NULL || ppTexture == NULL)
-   {
-      return E_POINTER;
-   }
-
-   cAutoIPtr<cTexture> pTex(new cTexture);
-   if (!pTex)
-   {
-      return E_OUTOFMEMORY;
-   }
-
-   if (pTex->UploadImage(pImageData) == S_OK)
-   {
-      m_texObjMap.insert(std::make_pair(cStr(pszName), CTAddRef(pTex.operator->())));
-      *ppTexture = CTAddRef(pTex);
-      return S_OK;
-   }
-
-   return E_FAIL;
-}
-
-///////////////////////////////////////
-
 tResult cTextureManager::GetTexture(const char * pszName, ITexture * * ppTexture)
 {
    if (pszName == NULL || ppTexture == NULL)
@@ -350,89 +355,14 @@ tResult cTextureManager::GetTexture(const char * pszName, ITexture * * ppTexture
       return E_POINTER;
    }
 
-   tTexObjMap::iterator iter = m_texObjMap.find(pszName);
-   if (iter != m_texObjMap.end())
+   UseGlobal(ResourceManager);
+   if (pResourceManager->Load(tResKey(pszName, kRC_Texture), (void**)ppTexture) == S_OK)
    {
-      *ppTexture = CTAddRef(iter->second);
+      CTAddRef(*ppTexture);
       return S_OK;
-   }
-   else
-   {
-      cAutoIPtr<cTexture> pTex(new cTexture);
-      if (!pTex)
-      {
-         return E_OUTOFMEMORY;
-      }
-
-      cImageData * pImageData = NULL;
-      UseGlobal(ResourceManager);
-      if (pResourceManager->Load(tResKey(pszName, kRC_Image), (void**)&pImageData) == S_OK)
-      {
-         tResult result = E_FAIL;
-
-         if (pTex->UploadImage(pImageData) == S_OK)
-         {
-            m_texObjMap.insert(std::make_pair(cStr(pszName), CTAddRef(pTex.operator->())));
-            *ppTexture = CTAddRef(pTex);
-            result = S_OK;
-         }
-
-         pResourceManager->Unload(tResKey(pszName, kRC_Image));
-
-         return result;
-      }
    }
 
    return E_FAIL;
-}
-
-///////////////////////////////////////
-
-tResult cTextureManager::FreeAll()
-{
-   tTexObjMap::iterator iter;
-   for (iter = m_texObjMap.begin(); iter != m_texObjMap.end(); iter++)
-   {
-      iter->second->Release();
-   }
-   m_texObjMap.clear();
-
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cTextureManager::PrioritizeTextures()
-{
-   size_t nTextures = m_texObjMap.size();
-
-   uint * pTextureIds = new uint[nTextures];
-   if (pTextureIds == NULL)
-   {
-      return E_OUTOFMEMORY;
-   }
-
-   float * pPriorities = new float[nTextures];
-   if (pPriorities == NULL)
-   {
-      delete [] pTextureIds;
-      return E_OUTOFMEMORY;
-   }
-
-   int index = 0;
-   tTexObjMap::iterator iter;
-   for (iter = m_texObjMap.begin(); iter != m_texObjMap.end(); iter++, index++)
-   {
-      pTextureIds[index] = iter->second->GetTextureId();
-      Verify(iter->second->GetPriority(&pPriorities[index]) == S_OK);
-   }
-
-   glPrioritizeTextures(nTextures, pTextureIds, pPriorities);
-
-   delete [] pTextureIds;
-   delete [] pPriorities;
-
-   return S_OK;
 }
 
 ///////////////////////////////////////

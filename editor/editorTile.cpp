@@ -110,8 +110,8 @@ tResult cEditorTile::GetTexture(ITexture * * ppTexture)
 {
    if (!m_pTexture && !m_texture.empty())
    {
-      UseGlobal(TextureManager);
-      if (FAILED(pTextureManager->GetTexture(m_texture.c_str(), &m_pTexture)))
+      UseGlobal(ResourceManager);
+      if (FAILED(pResourceManager->Load(tResKey(m_texture.c_str(), kRC_Texture), (void**)&m_pTexture)))
       {
          return E_FAIL;
       }

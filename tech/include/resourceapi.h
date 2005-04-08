@@ -28,12 +28,14 @@ TECH_API tResult TextFormatRegister(const char * pszExtension);
 
 enum eResourceClass
 {
+   kRC_Unknown,
    kRC_Image,
    kRC_Texture,
    kRC_Mesh,
    kRC_Text,
    kRC_Font,
-   kNUMRESOURCECLASSES, // Add new values above this line
+   // Add new values above this line
+   kNUMRESOURCECLASSES,
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -81,7 +83,7 @@ inline cResourceKey::cResourceKey(const cResourceKey & other)
 
 ///////////////////////////////////////
 
-inline const cResourceKey & cResourceKey::operator=(const cResourceKey & other)
+inline const cResourceKey & cResourceKey::operator =(const cResourceKey & other)
 {
    m_name = other.m_name;
    m_class = other.m_class;
@@ -90,7 +92,7 @@ inline const cResourceKey & cResourceKey::operator=(const cResourceKey & other)
 
 ///////////////////////////////////////
 
-inline bool cResourceKey::operator==(const cResourceKey & other)
+inline bool cResourceKey::operator ==(const cResourceKey & other)
 {
    return (m_name.compare(other.m_name) == 0) && (m_class == other.m_class);
 }
@@ -139,10 +141,17 @@ interface IResourceManager : IUnknown
    virtual tResult Unlock(const tResKey & key) = 0;
 
    virtual tResult RegisterFormat(eResourceClass rc,
+                                  eResourceClass rcDepend,
                                   const char * pszExtension,
                                   tResourceLoad pfnLoad,
                                   tResourcePostload pfnPostload,
                                   tResourceUnload pfnUnload) = 0;
+
+   tResult RegisterFormat(eResourceClass rc, const char * pszExtension,
+      tResourceLoad pfnLoad, tResourcePostload pfnPostload, tResourceUnload pfnUnload)
+   {
+      return RegisterFormat(rc, kRC_Unknown, pszExtension, pfnLoad, pfnPostload, pfnUnload);
+   }
 };
 
 ////////////////////////////////////////

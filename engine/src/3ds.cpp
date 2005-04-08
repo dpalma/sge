@@ -127,9 +127,9 @@ static IMaterial * MaterialFrom3ds(const c3dsMaterial * p3dsMaterial,
 
    if (p3dsMaterial->szTexture[0] != 0)
    {
-      UseGlobal(TextureManager);
+      UseGlobal(ResourceManager);
       cAutoIPtr<ITexture> pTexture;
-      if (pTextureManager->GetTexture(p3dsMaterial->szTexture, &pTexture) == S_OK)
+      if (pResourceManager->Load(tResKey(p3dsMaterial->szTexture, kRC_Texture), (void**)&pTexture) == S_OK)
       {
          pMaterial->SetTexture(0, pTexture);
       }
