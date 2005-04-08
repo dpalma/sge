@@ -17,6 +17,7 @@ AM_INIT_AUTOMAKE(sge, $SGE_VERSION)
 AC_PREFIX_DEFAULT(/opt/sge)
 
 AC_CONFIG_SUBDIRS(3rdparty/lua)
+AC_CONFIG_SUBDIRS(3rdparty/zlib)
 
 dnl Check for programs.
 AC_PROG_CC
@@ -57,18 +58,5 @@ AM_CONDITIONAL(NO_X, test "$no_x" = "yes")
 MDL_HAVE_OPENGL
 CHECK_ZLIB
 
-AC_CONFIG_FILES([
-   doxyfile \
-   Makefile \
-   3rdparty/Makefile \
-   3rdparty/tinyxml/Makefile \
-   3rdparty/zlib/contrib/minizip/Makefile \
-   allguids/Makefile \
-   tech/Makefile \
-   render/Makefile \
-   render/gl/Makefile \
-   engine/Makefile \
-   game/Makefile \
-   data/Makefile \
-])
+AC_CONFIG_FILES([doxyfile Makefile 3rdparty/Makefile 3rdparty/tinyxml/Makefile 3rdparty/zlib/Makefile allguids/Makefile tech/Makefile render/Makefile render/gl/Makefile engine/Makefile game/Makefile data/Makefile])
 AC_OUTPUT

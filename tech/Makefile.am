@@ -36,8 +36,10 @@ libtech_la_SOURCES = src/bmp.cpp \
                      src/resmgr.cpp \
                      src/techdebug.cpp \
                      src/techtime.cpp \
+                     src/text.cpp \
                      src/tga.cpp \
-                     src/ziparchive.cpp \
+                     src/thread.cpp \
+                     src/threadcaller.cpp \
                      $(libtech_PLATFORM_SOURCES)
 
 libtech_la_LIBADD = $(GL_LIBS) $(CORE_LIBS)
@@ -46,4 +48,5 @@ INCLUDES = $(GL_CFLAGS) \
            -DTECH_EXPORTS \
            -I$(top_srcdir)/tech/include \
            -I$(top_srcdir)/tech/src \
-           -I$(top_srcdir)/3rdparty/zlib/include
+           -I$(top_srcdir)/3rdparty/zlib \
+           -I$(top_srcdir)/3rdparty/zlib/contrib/minizip
