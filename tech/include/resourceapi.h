@@ -135,6 +135,9 @@ interface IResourceManager : IUnknown
       return Load(key, NULL, ppData);
    }
 
+   virtual tResult Lock(const tResKey & key) = 0;
+   virtual tResult Unlock(const tResKey & key) = 0;
+
    virtual tResult RegisterFormat(eResourceClass rc,
                                   const char * pszExtension,
                                   tResourceLoad pfnLoad,

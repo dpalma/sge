@@ -456,9 +456,6 @@
 							Name="VCCLCompilerTool"/>
 					</FileConfiguration>
 				</File>
-				<File
-					RelativePath="..\..\tech\src\ziparchive.cpp">
-				</File>
 			</Filter>
 			<Filter
 				Name="Header Files"
@@ -486,9 +483,6 @@
 				</File>
 				<File
 					RelativePath="..\..\tech\src\threadcaller.h">
-				</File>
-				<File
-					RelativePath="..\..\tech\src\ziparchive.h">
 				</File>
 			</Filter>
 		</Filter>

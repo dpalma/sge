@@ -9,7 +9,6 @@
 #include "fileiter.h"
 #include "readwriteapi.h"
 #include "globalobj.h"
-#include "techtime.h"
 
 #include <cstdio>
 #include <vector>
@@ -25,6 +24,9 @@
 #include <sys/stat.h>
 #endif
 
+#define ZLIB_WINAPI
+#include <unzip.h>
+
 #include "dbgalloc.h" // must be last header
 
 LOG_DEFINE_CHANNEL(ResourceManager);
@@ -36,6 +38,7 @@ LOG_DEFINE_CHANNEL(ResourceManager);
 #define LocalMsg4(msg,a,b,c,d)   DebugMsgEx4(ResourceManager,(msg),(a),(b),(c),(d))
 
 const uint kNoIndex = ~0;
+const ulong kNoIndexL = ~0;
 
 // REFERENCES
 // "Game Developer Magazine", February 2005, "Inner Product" column
@@ -126,6 +129,8 @@ public:
    virtual tResult AddArchive(const char * pszArchive);
    virtual tResult Load(const tResKey & key, void * param, void * * ppData);
    virtual tResult Unload(const tResKey & key);
+   virtual tResult Lock(const tResKey & key);
+   virtual tResult Unlock(const tResKey & key);
    virtual tResult RegisterFormat(eResourceClass rc,
                                   const char * pszExtension,
                                   tResourceLoad pfnLoad,
@@ -136,12 +141,23 @@ private:
    struct sResource;
    sResource * InternalFindResource(const tResKey & key);
    tResult DoLoadFromFile(const cFileSpec & file, eResourceClass rc, void * param, sResource * pResource);
+   tResult DoLoadFromArchive(const tResKey & key, void * param, sResource * pResource);
+   tResult DoLoadFromReader(IReader * pReader, eResourceClass rc, ulong dataSize, void * param, sResource * pResource);
 
    uint GetExtensionId(const char * pszExtension);
    uint GetDirectoryId(const char * pszDir);
+   uint GetArchiveId(const char * pszArchive);
 
    std::vector<cStr> m_extensions;
    std::vector<cFilePath> m_dirs;
+
+   struct sArchiveInfo
+   {
+      cStr archive;
+      unzFile handle;
+   };
+   typedef std::vector<sArchiveInfo> tArchives;
+   tArchives m_archives;
 
    struct sFormat
    {
@@ -155,14 +171,27 @@ private:
 
    struct sResource
    {
-      uint extensionId;
-      uint dirId;
+      sResource()
+      {
+         extensionId = kNoIndex;
+         pFormat = NULL;
+         dirId = archiveId = kNoIndex;
+         offset = index = kNoIndexL;
+         lockCount = 0;
+         pData = NULL;
+         dataSize = 0;
+      }
+
       cStr name;
+      uint extensionId;
       sFormat * pFormat;
-      ulong refCount;
+      uint dirId;
+      uint archiveId;
+      ulong offset;
+      ulong index;
+      ulong lockCount;
       void * pData;
       ulong dataSize;
-      double timeLastUsed;
    };
    typedef std::vector<sResource> tCache;
    tCache m_cache;
@@ -205,6 +234,18 @@ tResult cResourceManager::Term()
    }
    m_cache.clear();
 
+   tArchives::iterator arIter = m_archives.begin();
+   tArchives::iterator arEnd = m_archives.end();
+   for (; arIter != arEnd; arIter++)
+   {
+      if (arIter->handle != NULL)
+      {
+         unzClose(arIter->handle);
+         arIter->handle = NULL;
+      }
+   }
+   m_archives.clear();
+
    return S_OK;
 }
 
@@ -239,22 +280,15 @@ tResult cResourceManager::AddDirectory(const char * pszDir)
       else
       {
          LocalMsg1("File: %s\n", szFile);
-
          cFileSpec file(szFile);
          sResource res;
-         res.extensionId = kNoIndex;
-         const char * pExt = file.GetFileExt();
-         if (pExt && strlen(pExt) > 0)
+         Verify(file.GetFileNameNoExt(&res.name));
+         const char * pszExt = file.GetFileExt();
+         if (pszExt != NULL && strlen(pszExt) > 0)
          {
-            res.extensionId = GetExtensionId(pExt);
+            res.extensionId = GetExtensionId(pszExt);
          }
          res.dirId = GetDirectoryId(pszDir);
-         Verify(file.GetFileNameNoExt(&res.name));
-         res.pFormat = NULL;
-         res.refCount = 0;
-         res.pData = 0;
-         res.dataSize = 0;
-         res.timeLastUsed = 0;
          m_cache.push_back(res);
       }
    }
@@ -303,26 +337,48 @@ tResult cResourceManager::AddDirectoryTreeFlattened(const char * pszDir)
 
 tResult cResourceManager::AddArchive(const char * pszArchive)
 {
-   // TODO
-#if 0
-   cFileSpec f(pszPath);
-   if (strcmp(f.GetFileExt(), "zip") == 0)
+   uint archiveId = GetArchiveId(pszArchive);
+
+   unzFile uf = NULL;
+   if (m_archives[archiveId].handle != NULL)
    {
-      cZipArchive * pZip = new cZipArchive;
-      if (pZip != NULL)
+      uf = m_archives[archiveId].handle;
+   }
+   else
+   {
+      uf = m_archives[archiveId].handle = unzOpen(pszArchive);
+      if (uf == NULL)
       {
-         if (pZip->Open(f) == S_OK)
-         {
-            m_zipArchives.push_back(pZip);
-         }
-         else
-         {
-            delete pZip;
-         }
+         return E_FAIL;
       }
    }
-#endif
-   return E_NOTIMPL;
+
+   do
+   {
+      unz_file_pos filePos;
+      unz_file_info fileInfo;
+      char szFile[kMaxPath];
+      if (unzGetFilePos(uf, &filePos) == UNZ_OK &&
+         unzGetCurrentFileInfo(uf, &fileInfo, szFile, _countof(szFile), NULL, 0, NULL, 0) == UNZ_OK)
+      {
+         LocalMsg3("%s(%d): %s\n", pszArchive, filePos.num_of_file, szFile);
+         cFileSpec file(szFile);
+         sResource res;
+         Verify(file.GetFileNameNoExt(&res.name));
+         const char * pszExt = file.GetFileExt();
+         if (pszExt != NULL && strlen(pszExt) > 0)
+         {
+            res.extensionId = GetExtensionId(pszExt);
+         }
+         res.archiveId = archiveId;
+         res.offset = filePos.pos_in_zip_directory;
+         res.index = filePos.num_of_file;
+         m_cache.push_back(res);
+      }
+   }
+   while (unzGoToNextFile(uf) == UNZ_OK);
+
+   return S_OK;
 }
 
 ////////////////////////////////////////
@@ -334,20 +390,6 @@ tResult cResourceManager::Load(const tResKey & key, void * param, void * * ppDat
       return E_POINTER;
    }
 
-   uint extensionId = kNoIndex;
-   static const char kExtSep = '.';
-   const char * pszExt = strrchr(key.GetName(), kExtSep);
-   if (pszExt != NULL)
-   {
-      extensionId = GetExtensionId(++pszExt);
-   }
-
-   if (extensionId == kNoIndex)
-   {
-      // TODO: look for possible extensions for the resource class
-      return E_FAIL;
-   }
-
    cStr name;
    cFileSpec(key.GetName()).GetFileNameNoExt(&name);
 
@@ -356,18 +398,26 @@ tResult cResourceManager::Load(const tResKey & key, void * param, void * * ppDat
    {
       if (pRes->pData == NULL)
       {
-         cFileSpec file(key.GetName());
-         file.SetPath(m_dirs[pRes->dirId]);
-         if (DoLoadFromFile(file, key.GetClass(), param, pRes) != S_OK)
+         if (pRes->dirId != kNoIndex)
          {
-            return E_FAIL;
+            cFileSpec file(key.GetName());
+            file.SetPath(m_dirs[pRes->dirId]);
+            if (DoLoadFromFile(file, key.GetClass(), param, pRes) != S_OK)
+            {
+               return E_FAIL;
+            }
+         }
+         else if (pRes->archiveId != kNoIndex)
+         {
+            if (DoLoadFromArchive(key, param, pRes) != S_OK)
+            {
+               return E_FAIL;
+            }
          }
       }
 
       if (pRes->pData != NULL)
       {
-         pRes->refCount += 1;
-         pRes->timeLastUsed = TimeGetSecs();
          *ppData = pRes->pData;
          return S_OK;
       }
@@ -383,27 +433,70 @@ tResult cResourceManager::Unload(const tResKey & key)
    sResource * pRes = InternalFindResource(key);
    if (pRes != NULL)
    {
-      if (pRes->refCount == 0)
+      if (pRes->lockCount > 0)
       {
+         // Locked. Cannot unload.
          return S_FALSE;
       }
       else
       {
-         pRes->refCount -= 1;
-         if (pRes->refCount == 0)
+         if (pRes->pFormat != NULL && pRes->pFormat->pfnUnload != NULL)
          {
-            if (pRes->pFormat != NULL && pRes->pFormat->pfnUnload != NULL)
-            {
-               (*pRes->pFormat->pfnUnload)(pRes->pData);
-               pRes->pData = NULL;
-               pRes->dataSize = 0;
-               return S_OK;
-            }
+            (*pRes->pFormat->pfnUnload)(pRes->pData);
+            pRes->pData = NULL;
+            pRes->dataSize = 0;
+            return S_OK;
          }
       }
    }
 
    return E_FAIL;
+}
+
+////////////////////////////////////////
+
+tResult cResourceManager::Lock(const tResKey & key)
+{
+   sResource * pRes = InternalFindResource(key);
+   if (pRes == NULL)
+   {
+      return E_FAIL;
+   }
+
+   if (pRes->pData == NULL)
+   {
+      return E_FAIL;
+   }
+
+   pRes->lockCount += 1;
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cResourceManager::Unlock(const tResKey & key)
+{
+   sResource * pRes = InternalFindResource(key);
+   if (pRes == NULL)
+   {
+      return E_FAIL;
+   }
+
+   if (pRes->pData == NULL)
+   {
+      return E_FAIL;
+   }
+
+   if (pRes->lockCount == 0)
+   {
+      WarnMsg("Too many resource unlock calls\n");
+      return S_FALSE;
+   }
+
+   pRes->lockCount -= 1;
+
+   return S_OK;
 }
 
 ////////////////////////////////////////
@@ -534,8 +627,78 @@ tResult cResourceManager::DoLoadFromFile(const cFileSpec & file, eResourceClass 
    }
    pReader->Seek(0, kSO_Set);
 
-   std::vector<sFormat>::iterator fIter = m_formats.begin();
-   std::vector<sFormat>::iterator fEnd = m_formats.end();
+   return DoLoadFromReader(pReader, rc, dataSize, param, pResource);
+}
+
+////////////////////////////////////////
+
+tResult cResourceManager::DoLoadFromArchive(const tResKey & key, void * param, sResource * pResource)
+{
+   if (pResource == NULL)
+   {
+      return E_POINTER;
+   }
+
+   Assert(pResource->pData == NULL);
+   Assert(pResource->dataSize == 0);
+
+   unzFile uf = m_archives[pResource->archiveId].handle;
+   if (uf == NULL)
+   {
+      // Could actually reload the zip file on the fly using unzOpen(m_archives[...].archive)
+      return E_FAIL;
+   }
+
+   unz_file_pos filePos;
+   filePos.pos_in_zip_directory = pResource->offset;
+   filePos.num_of_file = pResource->index;
+   if (unzGoToFilePos(uf, &filePos) != UNZ_OK)
+   {
+      return E_FAIL;
+   }
+
+   tResult result = E_FAIL;
+
+   unz_file_info fileInfo;
+   char szFile[kMaxPath];
+   if (unzGetCurrentFileInfo(uf, &fileInfo, szFile, _countof(szFile), NULL, 0, NULL, 0) == UNZ_OK)
+   {
+      byte * pBuffer = new byte[fileInfo.uncompressed_size];
+      if (pBuffer == NULL)
+      {
+         return E_OUTOFMEMORY;
+      }
+
+      if (unzOpenCurrentFile(uf) == UNZ_OK)
+      {
+         cAutoIPtr<IReader> pReader;
+         if (unzReadCurrentFile(uf, pBuffer, fileInfo.uncompressed_size) >= 0
+            && ReaderCreateMem(pBuffer, fileInfo.uncompressed_size, false, &pReader) == S_OK)
+         {
+            result = DoLoadFromReader(pReader, key.GetClass(), fileInfo.uncompressed_size, param, pResource);
+         }
+
+         unzCloseCurrentFile(uf);
+      }
+
+      delete [] pBuffer;
+   }
+
+   return result;
+}
+
+////////////////////////////////////////
+
+tResult cResourceManager::DoLoadFromReader(IReader * pReader, eResourceClass rc, ulong dataSize,
+                                           void * param, sResource * pResource)
+{
+   if (pReader == NULL || pResource == NULL)
+   {
+      return E_POINTER;
+   }
+
+   std::vector<sFormat>::const_iterator fIter = m_formats.begin();
+   std::vector<sFormat>::const_iterator fEnd = m_formats.end();
    for (; fIter != fEnd; fIter++)
    {
       if (fIter->extensionId == pResource->extensionId && fIter->rc == rc)
@@ -583,7 +746,9 @@ uint cResourceManager::GetExtensionId(const char * pszExtension)
    if (f == m_extensions.end())
    {
       m_extensions.push_back(pszExtension);
-      return m_extensions.size() - 1;
+      uint index = m_extensions.size() - 1;
+      LocalMsg2("File extension %s has id %d\n", pszExtension, index);
+      return index;
    }
 
    return f - m_extensions.begin();
@@ -605,6 +770,29 @@ uint cResourceManager::GetDirectoryId(const char * pszDir)
    }
 
    return f - m_dirs.begin();
+}
+
+////////////////////////////////////////
+
+uint cResourceManager::GetArchiveId(const char * pszArchive)
+{
+   Assert(pszArchive != NULL);
+
+   tArchives::iterator iter = m_archives.begin();
+   tArchives::iterator end = m_archives.end();
+   for (uint index = 0; iter != end; iter++)
+   {
+      if (stricmp(pszArchive, iter->archive.c_str()) == 0)
+      {
+         return index;
+      }
+   }
+
+   sArchiveInfo archiveInfo;
+   archiveInfo.archive = pszArchive;
+   archiveInfo.handle = NULL;
+   m_archives.push_back(archiveInfo);
+   return m_archives.size() - 1;
 }
 
 ////////////////////////////////////////
