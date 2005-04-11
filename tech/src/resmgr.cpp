@@ -617,7 +617,8 @@ cResourceManager::sResource * cResourceManager::FindResourceWithFormat(
    {
       if (resIter->name.compare(name) == 0)
       {
-         if (resIter->pFormat == NULL)
+         if (resIter->pFormat == NULL && pFormat->rcDepend == kRC_Unknown
+            && (resIter->archiveId != kNoIndex || resIter->dirId != kNoIndex))
          {
             pPotentialMatch = &m_resources[resIter - m_resources.begin()];
          }
