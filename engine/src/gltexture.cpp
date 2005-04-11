@@ -69,20 +69,12 @@ static const GLenum g_glTexFormats[] =
 class cTexture : public cComObject<IMPLEMENTS(ITexture)>
 {
 public:
-   cTexture(float priority = kTexPriorityHighest);
+   cTexture();
    ~cTexture();
 
    virtual void OnFinalRelease();
 
-   virtual tResult UploadImage(const cImageData * pImageData);
-
-   virtual tResult HasAlphaComponent();
-
-   virtual uint GetWidth();
-   virtual uint GetHeight();
-
-   virtual tResult SetPriority(float priority);
-   virtual tResult GetPriority(float * pPriority);
+   tResult UploadImage(const cImageData * pImageData);
 
    virtual tResult GetTextureHandle(HANDLE * phTexture) const;
 
@@ -91,7 +83,6 @@ public:
 private:
    void ReleaseTextureId();
 
-   float m_priority;
    bool m_bHasAlpha;
    uint m_width, m_height;
    uint m_textureId;
@@ -99,9 +90,8 @@ private:
 
 ///////////////////////////////////////
 
-cTexture::cTexture(float priority)
- : m_priority(priority),
-   m_bHasAlpha(false),
+cTexture::cTexture()
+ : m_bHasAlpha(false),
    m_width(0),
    m_height(0),
    m_textureId(0)
@@ -131,7 +121,6 @@ tResult cTexture::UploadImage(const cImageData * pImageData)
    }
 
    ePixelFormat pixelFormat = pImageData->GetPixelFormat();
-
    if (pixelFormat == kPF_ERROR)
    {
       WarnMsg("Invalid image format while creating texture\n");
@@ -189,51 +178,6 @@ tResult cTexture::UploadImage(const cImageData * pImageData)
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
    return (result == 0) ? S_OK : E_FAIL;
-}
-
-///////////////////////////////////////
-
-tResult cTexture::HasAlphaComponent()
-{
-   return m_bHasAlpha ? S_OK : S_FALSE;
-}
-
-///////////////////////////////////////
-
-uint cTexture::GetWidth()
-{
-   return m_width;
-}
-
-///////////////////////////////////////
-
-uint cTexture::GetHeight()
-{
-   return m_height;
-}
-
-///////////////////////////////////////
-
-tResult cTexture::SetPriority(float priority)
-{
-   if (priority < 0.0f || priority > 1.0f)
-   {
-      return E_INVALIDARG;
-   }
-   m_priority = priority;
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cTexture::GetPriority(float * pPriority)
-{
-   if (pPriority == NULL)
-   {
-      return E_POINTER;
-   }
-   *pPriority = m_priority;
-   return S_OK;
 }
 
 ///////////////////////////////////////
@@ -319,57 +263,5 @@ tResult GlTextureResourceRegister()
    return E_FAIL;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cTextureManager
-//
-
-class cTextureManager : public cGlobalObject<IMPLEMENTS(ITextureManager)>
-{
-public:
-   cTextureManager();
-   ~cTextureManager();
-
-   virtual tResult GetTexture(const char * pszName, ITexture * * ppTexture);
-};
-
-///////////////////////////////////////
-
-cTextureManager::cTextureManager()
-{
-}
-
-///////////////////////////////////////
-
-cTextureManager::~cTextureManager()
-{
-}
-
-///////////////////////////////////////
-
-tResult cTextureManager::GetTexture(const char * pszName, ITexture * * ppTexture)
-{
-   if (pszName == NULL || ppTexture == NULL)
-   {
-      return E_POINTER;
-   }
-
-   UseGlobal(ResourceManager);
-   if (pResourceManager->Load(tResKey(pszName, kRC_Texture), (void**)ppTexture) == S_OK)
-   {
-      CTAddRef(*ppTexture);
-      return S_OK;
-   }
-
-   return E_FAIL;
-}
-
-///////////////////////////////////////
-
-void TextureManagerCreate()
-{
-   cAutoIPtr<ITextureManager>(new cTextureManager);
-}
 
 ///////////////////////////////////////////////////////////////////////////////

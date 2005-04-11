@@ -303,7 +303,6 @@ static void RegisterGlobalObjects()
    ResourceManagerCreate();
    SceneCreate();
    ScriptInterpreterCreate();
-   TextureManagerCreate();
    GUIContextCreate();
    GUIFactoryCreate();
    GUIRenderingToolsCreate();
