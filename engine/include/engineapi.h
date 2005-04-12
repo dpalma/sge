@@ -46,6 +46,8 @@ interface IEngine : IUnknown
 
 ENGINE_API void EngineCreate();
 
+ENGINE_API tResult EngineRegisterResourceFormats();
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //

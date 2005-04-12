@@ -34,6 +34,8 @@ enum eResourceClass
    kRC_Mesh,
    kRC_Text,
    kRC_Font,
+   kRC_TiXml,        // a tinyxml document
+   kRC_GlTexture,    // a GL texture handle (GLuint)
    // Add new values above this line
    kNUMRESOURCECLASSES,
 };

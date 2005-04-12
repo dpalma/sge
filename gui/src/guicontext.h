@@ -17,6 +17,8 @@
 #pragma once
 #endif
 
+class TiXmlDocument;
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUIContext
@@ -40,6 +42,8 @@ public:
 
    virtual tResult LoadFromResource(const char * psz);
    virtual tResult LoadFromString(const char * psz);
+
+   uint LoadFromTiXmlDoc(TiXmlDocument * pTiXmlDoc);
 
    virtual tResult RenderGUI(IRenderDevice * pRenderDevice);
 

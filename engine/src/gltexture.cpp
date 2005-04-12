@@ -113,9 +113,9 @@ void cTexture::OnFinalRelease()
 
 ///////////////////////////////////////
 
-tResult cTexture::UploadImage(const cImageData * pImageData)
+tResult GlTextureCreate(const cImageData * pImageData, uint * pTexId)
 {
-   if (pImageData == NULL)
+   if (pImageData == NULL || pTexId == NULL)
    {
       return E_POINTER;
    }
@@ -141,25 +141,8 @@ tResult cTexture::UploadImage(const cImageData * pImageData)
       return E_FAIL;
    }
 
-   // TODO: Support kPF_RGBA1555 and kPF_BGRA1555?
-   if (pixelFormat == kPF_RGBA8888 || pixelFormat == kPF_BGRA8888)
-   {
-      m_bHasAlpha = true;
-   }
-   else
-   {
-      m_bHasAlpha = false;
-   }
-
-   m_width = pImageData->GetWidth();
-   m_height = pImageData->GetHeight();
-
-   if ((m_textureId == 0) || !glIsTexture(m_textureId))
-   {
-      glGenTextures(1, &m_textureId);
-   }
-
-   glBindTexture(GL_TEXTURE_2D, m_textureId);
+   glGenTextures(1, pTexId);
+   glBindTexture(GL_TEXTURE_2D, *pTexId);
 
    // gluBuild2DMipmaps will scale the image if its dimensions are not powers of two
    int result = gluBuild2DMipmaps(
@@ -178,6 +161,11 @@ tResult cTexture::UploadImage(const cImageData * pImageData)
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
    return (result == 0) ? S_OK : E_FAIL;
+}
+
+tResult cTexture::UploadImage(const cImageData * pImageData)
+{
+   return GlTextureCreate(pImageData, &m_textureId);
 }
 
 ///////////////////////////////////////
@@ -235,6 +223,30 @@ void * GlTextureFromImageData(void * pData, int dataLength, void * param)
 {
    cImageData * pImageData = reinterpret_cast<cImageData*>(pData);
 
+   uint texId;
+   if (GlTextureCreate(pImageData, &texId) == S_OK)
+   {
+      return reinterpret_cast<void*>(texId);
+   }
+
+   return NULL;
+}
+
+void GlTextureUnload(void * pData)
+{
+   uint tex = reinterpret_cast<uint>(pData);
+   if (glIsTexture(tex))
+   {
+      glDeleteTextures(1, &tex);
+   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void * ITextureFromImageData(void * pData, int dataLength, void * param)
+{
+   cImageData * pImageData = reinterpret_cast<cImageData*>(pData);
+
    cAutoIPtr<cTexture> pTex(new cTexture);
    if (!pTex || pTex->UploadImage(pImageData) != S_OK)
    {
@@ -244,7 +256,7 @@ void * GlTextureFromImageData(void * pData, int dataLength, void * param)
    return CTAddRef(static_cast<ITexture*>(pTex));
 }
 
-void GlTextureUnload(void * pData)
+void ITextureUnload(void * pData)
 {
    ITexture * pTexture = reinterpret_cast<ITexture*>(pData);
    if (pTexture != NULL)
@@ -253,12 +265,18 @@ void GlTextureUnload(void * pData)
    }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 tResult GlTextureResourceRegister()
 {
    UseGlobal(ResourceManager);
    if (!!pResourceManager)
    {
-      return pResourceManager->RegisterFormat(kRC_Texture, kRC_Image, NULL, NULL, GlTextureFromImageData, GlTextureUnload);
+      if (SUCCEEDED(pResourceManager->RegisterFormat(kRC_Texture, kRC_Image, NULL, NULL, ITextureFromImageData, ITextureUnload))
+         && SUCCEEDED(pResourceManager->RegisterFormat(kRC_GlTexture, kRC_Image, NULL, NULL, GlTextureFromImageData, GlTextureUnload)))
+      {
+         return S_OK;
+      }
    }
    return E_FAIL;
 }

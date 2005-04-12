@@ -440,6 +440,7 @@ bool MainInit(int argc, char * argv[])
    TextFormatRegister("xml");
    Ms3dFormatRegister();
    GlTextureResourceRegister();
+   EngineRegisterResourceFormats();
 
    if (ConfigGet("data", &temp) == S_OK)
    {

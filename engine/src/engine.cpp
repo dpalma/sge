@@ -12,6 +12,8 @@
 #include "resourceapi.h"
 #include "readwriteapi.h"
 
+#include <tinyxml.h>
+
 #include "dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -174,6 +176,48 @@ tResult cEngine::GetRenderDevice(IRenderDevice * * ppRenderDevice)
 void EngineCreate()
 {
    cAutoIPtr<IEngine> p(new cEngine);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void * TiXmlDocumentFromText(void * pData, int dataLength, void * param)
+{
+   char * psz = reinterpret_cast<char*>(pData);
+   if (psz != NULL && strlen(psz) > 0)
+   {
+      TiXmlDocument * pDoc = new TiXmlDocument;
+      if (pDoc != NULL)
+      {
+         pDoc->Parse(psz);
+         bool bError = pDoc->Error();
+         if (bError)
+         {
+            delete pDoc;
+            pDoc = NULL;
+         }
+         return pDoc;
+      }
+   }
+
+   return NULL;
+}
+
+void TiXmlDocumentUnload(void * pData)
+{
+   TiXmlDocument * pDoc = reinterpret_cast<TiXmlDocument*>(pData);
+   delete pDoc;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+tResult EngineRegisterResourceFormats()
+{
+   UseGlobal(ResourceManager);
+   if (!!pResourceManager)
+   {
+      return pResourceManager->RegisterFormat(kRC_TiXml, kRC_Text, NULL, NULL, TiXmlDocumentFromText, TiXmlDocumentUnload);
+   }
+   return E_FAIL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

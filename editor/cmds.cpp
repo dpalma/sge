@@ -110,19 +110,13 @@ int LoadTiles(int argc, const cScriptVar * argv,
 {
    if (argc == 1 && argv[0].type == kString)
    {
-      char * pszContents = NULL;
+      tResKey rk(argv[0].psz, kRC_TiXml);
+      TiXmlDocument * pTiXmlDoc = NULL;
       UseGlobal(ResourceManager);
-      if (pResourceManager->Load(tResKey(argv[0].psz, kRC_Text), (void**)&pszContents) == S_OK)
+      if (pResourceManager->Load(rk, (void**)&pTiXmlDoc) == S_OK)
       {
-         TiXmlDocument doc;
-         doc.Parse(pszContents);
-
-         if (!doc.Error())
-         {
-            uint nTileSets = LoadTileSets(doc);
-         }
-
-         pResourceManager->Unload(tResKey(argv[0].psz, kRC_Text));
+         LoadTileSets(*pTiXmlDoc);
+         pResourceManager->Unload(rk);
       }
    }
 

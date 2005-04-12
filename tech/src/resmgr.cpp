@@ -511,7 +511,7 @@ tResult cResourceManager::Unlock(const tResKey & key)
 
 ////////////////////////////////////////
 
-AssertOnce(kNUMRESOURCECLASSES == 6); // If this fails, GetResourceClassName may need to be updated
+AssertOnce(kNUMRESOURCECLASSES == 8); // If this fails, GetResourceClassName may need to be updated
 static const char * GetResourceClassName(eResourceClass rc)
 {
    switch (rc)
@@ -521,6 +521,8 @@ static const char * GetResourceClassName(eResourceClass rc)
    case kRC_Mesh:       return "Mesh";
    case kRC_Text:       return "Text";
    case kRC_Font:       return "Font";
+   case kRC_TiXml:      return "TinyXML";
+   case kRC_GlTexture:  return "GLTexture";
    case kRC_Unknown:    return "Unknown";
    default:             return "ERROR";
    }
@@ -567,17 +569,17 @@ tResult cResourceManager::RegisterFormat(eResourceClass rc,
    if (pszExtension != NULL)
    {
       extensionId = GetExtensionId(pszExtension);
-   }
 
-   std::vector<sFormat>::iterator iter = m_formats.begin();
-   std::vector<sFormat>::iterator end = m_formats.end();
-   for (; iter != end; iter++)
-   {
-      if (iter->extensionId == extensionId)
+      std::vector<sFormat>::iterator iter = m_formats.begin();
+      std::vector<sFormat>::iterator end = m_formats.end();
+      for (; iter != end; iter++)
       {
-         WarnMsg1("Resource format with file extension %s already registered\n",
-            pszExtension != NULL ? pszExtension : "<NONE>");
-         return E_FAIL;
+         if (iter->extensionId == extensionId)
+         {
+            WarnMsg1("Resource format with file extension %s already registered\n",
+               pszExtension != NULL ? pszExtension : "<NONE>");
+            return E_FAIL;
+         }
       }
    }
 

@@ -109,13 +109,14 @@ tResult cGUIContext::HasElement(IGUIElement * pElement) const
 
 tResult cGUIContext::LoadFromResource(const char * psz)
 {
-   char * pszXml = NULL;
+   tResKey rk(psz, kRC_TiXml);
+   TiXmlDocument * pTiXmlDoc = NULL;
    UseGlobal(ResourceManager);
-   if (pResourceManager->Load(tResKey(psz, kRC_Text), (void**)&pszXml) == S_OK)
+   if (pResourceManager->Load(rk, (void**)&pTiXmlDoc) == S_OK)
    {
-      tResult result = LoadFromString(pszXml);
-      pResourceManager->Unload(tResKey(psz, kRC_Text));
-      return result;
+      uint nCreated = LoadFromTiXmlDoc(pTiXmlDoc);
+      pResourceManager->Unload(rk);
+      return (nCreated > 0) ? S_OK : S_FALSE;
    }
    return E_FAIL;
 }
@@ -133,12 +134,21 @@ tResult cGUIContext::LoadFromString(const char * psz)
       return E_FAIL;
    }
 
+   uint nCreated = LoadFromTiXmlDoc(&doc);
+   return (nCreated > 0) ? S_OK : S_FALSE;
+}
+
+///////////////////////////////////////
+
+uint cGUIContext::LoadFromTiXmlDoc(TiXmlDocument * pTiXmlDoc)
+{
+   Assert(pTiXmlDoc != NULL);
+
    UseGlobal(GUIFactory);
 
-   ulong nElementsCreated = 0;
-
+   uint nElementsCreated = 0;
    TiXmlElement * pXmlElement;
-   for (pXmlElement = doc.FirstChildElement(); pXmlElement != NULL; pXmlElement = pXmlElement->NextSiblingElement())
+   for (pXmlElement = pTiXmlDoc->FirstChildElement(); pXmlElement != NULL; pXmlElement = pXmlElement->NextSiblingElement())
    {
       if (pXmlElement->Type() == TiXmlNode::ELEMENT)
       {

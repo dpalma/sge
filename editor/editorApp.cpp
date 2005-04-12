@@ -16,6 +16,7 @@
 #include "sceneapi.h"
 #include "inputapi.h"
 #include "scriptapi.h"
+#include "engineapi.h"
 
 #include "textureapi.h"
 
@@ -219,6 +220,7 @@ BOOL cEditorApp::InitInstance()
    TextFormatRegister("lua");
    TextFormatRegister("xml");
    GlTextureResourceRegister();
+   EngineRegisterResourceFormats();
 
    UseGlobal(ThreadCaller);
    pThreadCaller->ThreadInit();
