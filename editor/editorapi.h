@@ -30,7 +30,6 @@ F_DECLARE_INTERFACE(IEditorTool);
 F_DECLARE_INTERFACE(ITerrainModel);
 
 F_DECLARE_INTERFACE(ISceneCamera);
-F_DECLARE_INTERFACE(ITexture);
 F_DECLARE_INTERFACE(IMaterial);
 
 F_DECLARE_INTERFACE(IReader);
@@ -142,7 +141,7 @@ interface UUID("61B488AA-AB50-41c5-AA42-45F07C982F6A") IEditorTileSet : IUnknown
                            int vertImages) = 0;
 
    virtual tResult GetTileCount(uint * pTileCount) const = 0;
-   virtual tResult GetTileTexture(uint iTile, ITexture * * ppTexture) = 0;
+   virtual tResult GetTileTexture(uint iTile, cStr * pTexture) const = 0;
    virtual tResult GetTileName(uint iTile, cStr * pName) const = 0;
 
    virtual tResult GetImageList(uint dimension, HIMAGELIST * phImageList) = 0;
@@ -161,10 +160,6 @@ interface UUID("CDEB5694-56D2-4750-BEF8-85F286364C23") IEditorTile : IUnknown
 
    virtual uint GetHorizontalImageCount() const = 0;
    virtual uint GetVerticalImageCount() const = 0;
-
-   virtual tResult GetTexture(ITexture * * ppTexture) = 0;
-
-   virtual tResult GetBitmap(uint dimension, bool bEntire, HBITMAP * phBitmap) = 0;
 };
 
 

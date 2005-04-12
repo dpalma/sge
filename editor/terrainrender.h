@@ -12,6 +12,7 @@
 #include "vec3.h"
 #include "quat.h"
 #include "matrix4.h"
+#include "str.h"
 
 #include <vector>
 
@@ -24,7 +25,6 @@ F_DECLARE_INTERFACE(IEditorTileSet);
 F_DECLARE_INTERFACE(IMaterial);
 F_DECLARE_INTERFACE(IRenderDevice);
 F_DECLARE_INTERFACE(IIndexBuffer);
-F_DECLARE_INTERFACE(ITexture);
 
 class cTerrainChunk;
 
@@ -164,8 +164,8 @@ public:
    cSplatBuilder(IEditorTileSet * pTileSet, uint tile);
    ~cSplatBuilder();
 
-   tResult GetTexture(ITexture * * ppTexture);
-   tResult GetAlphaMap(ITexture * * ppTexture);
+   tResult GetGlTexture(uint * pTexId);
+   tResult GetAlphaMap(uint * pAlphaMapId);
 
    void AddTriangle(uint i0, uint i1, uint i2);
 
@@ -181,8 +181,8 @@ private:
    cAutoIPtr<IEditorTileSet> m_pTileSet;
    uint m_tile;
    std::vector<uint> m_indices;
-   cAutoIPtr<ITexture> m_pTexture;
-   cAutoIPtr<ITexture> m_pAlphaMap;
+   cStr m_texture;
+   uint m_alphaMapId;
 };
 
 

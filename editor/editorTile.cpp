@@ -4,11 +4,6 @@
 #include "stdhdr.h"
 
 #include "editorTile.h"
-#include "BitmapUtils.h"
-
-#include "resourceapi.h"
-#include "imagedata.h"
-#include "globalobj.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -28,10 +23,7 @@ cEditorTile::cEditorTile(const tChar * pszName, const tChar * pszTexture,
  : m_name(pszName != NULL ? pszName : ""),
    m_texture(pszTexture != NULL ? pszTexture : ""),
    m_horzImages(horzImages),
-   m_vertImages(vertImages),
-   m_pImageData(NULL),
-   m_hBitmap(NULL),
-   m_bLoadBitmapFailed(false)
+   m_vertImages(vertImages)
 {
 }
 
@@ -39,25 +31,6 @@ cEditorTile::cEditorTile(const tChar * pszName, const tChar * pszTexture,
 
 cEditorTile::~cEditorTile()
 {
-   tBitmaps::iterator iter;
-   for (iter = m_bitmaps.begin(); iter != m_bitmaps.end(); iter++)
-   {
-      if (iter->second != NULL)
-      {
-         DeleteObject(iter->second);
-      }
-   }
-   m_bitmaps.clear();
-
-   m_pImageData = NULL; // Don't delete this pointer--it's cached by the resource manager
-   UseGlobal(ResourceManager);
-   pResourceManager->Unload(tResKey(m_texture.c_str(), kRC_Image));
-
-   if (m_hBitmap != NULL)
-   {
-      DeleteObject(m_hBitmap);
-      m_hBitmap = NULL;
-   }
 }
 
 ///////////////////////////////////////
@@ -102,90 +75,6 @@ uint cEditorTile::GetHorizontalImageCount() const
 uint cEditorTile::GetVerticalImageCount() const
 {
    return m_vertImages;
-}
-
-///////////////////////////////////////
-
-tResult cEditorTile::GetTexture(ITexture * * ppTexture)
-{
-   if (!m_pTexture && !m_texture.empty())
-   {
-      UseGlobal(ResourceManager);
-      if (FAILED(pResourceManager->Load(tResKey(m_texture.c_str(), kRC_Texture), (void**)&m_pTexture)))
-      {
-         return E_FAIL;
-      }
-   }
-
-   return m_pTexture.GetPointer(ppTexture);
-}
-
-///////////////////////////////////////
-
-tResult cEditorTile::GetBitmap(uint dimension, bool bEntire, HBITMAP * phBitmap)
-{
-   if (dimension == 0)
-   {
-      return E_INVALIDARG;
-   }
-
-   if (phBitmap == NULL)
-   {
-      return E_POINTER;
-   }
-
-   LazyInit();
-
-   if (m_hBitmap == NULL)
-   {
-      return E_FAIL;
-   }
-
-   Assert(m_pImageData != NULL);
-
-   tBitmaps::iterator f = m_bitmaps.find(dimension);
-   if (f != m_bitmaps.end())
-   {
-      *phBitmap = f->second;
-      return S_OK;
-   }
-
-   uint tileWidth = m_pImageData->GetWidth() / m_horzImages;
-   uint tileHeight = m_pImageData->GetHeight() / m_vertImages;
-
-   HBITMAP hbm = StretchCopyBitmap(dimension, dimension, m_hBitmap, 0, 0,
-      bEntire ? tileWidth : min(dimension, tileWidth),
-      bEntire ? tileHeight : min(dimension, tileHeight));
-
-   if (hbm == NULL)
-   {
-      return E_FAIL;
-   }
-
-   m_bitmaps.insert(std::make_pair(dimension, hbm));
-
-   *phBitmap = hbm;
-
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-void cEditorTile::LazyInit()
-{
-   if (!m_texture.empty())
-   {
-      if (m_pImageData == NULL && !m_bLoadBitmapFailed)
-      {
-         Assert(m_hBitmap == NULL);
-
-         UseGlobal(ResourceManager);
-         if (pResourceManager->Load(tResKey(m_texture.c_str(), kRC_Image), (void**)&m_pImageData) == S_OK)
-         {
-            m_bLoadBitmapFailed = !LoadBitmap(m_pImageData, &m_hBitmap);
-         }
-      }
-   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

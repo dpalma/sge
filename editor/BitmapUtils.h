@@ -10,8 +10,6 @@
 
 F_DECLARE_HANDLE(HBITMAP);
 
-class cImageData;
-
 ///////////////////////////////////////////////////////////////////////////////
 
 #define GetRValue16(color) ((uint16)(GetRValue((color))<<8))
@@ -25,11 +23,11 @@ byte GrayLevel(COLORREF color);
 // STDCALL to match the signature of ImageList_Draw exactly
 BOOL STDCALL ImageList_DrawDisabled(HIMAGELIST hImageList, int iImage, HDC hDC, int x, int y, uint drawStyle);
 
-bool LoadBitmap(const cImageData * pImageData, HBITMAP * phBitmap);
-
 bool LoadBitmap(const tChar * pszBitmap, HBITMAP * phBitmap);
 
 HBITMAP StretchCopyBitmap(uint width, uint height, HBITMAP hSrcBitmap, uint srcX, uint srcY, uint srcWidth, uint srcHeight);
+
+tResult BitmapUtilsRegisterResourceFormats();
 
 /////////////////////////////////////////////////////////////////////////////
 

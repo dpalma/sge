@@ -221,6 +221,7 @@ BOOL cEditorApp::InitInstance()
    TextFormatRegister("xml");
    GlTextureResourceRegister();
    EngineRegisterResourceFormats();
+   BitmapUtilsRegisterResourceFormats();
 
    UseGlobal(ThreadCaller);
    pThreadCaller->ThreadInit();

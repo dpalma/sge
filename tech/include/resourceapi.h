@@ -36,6 +36,7 @@ enum eResourceClass
    kRC_Font,
    kRC_TiXml,        // a tinyxml document
    kRC_GlTexture,    // a GL texture handle (GLuint)
+   kRC_HBitmap,      // a Windows HBITMAP
    // Add new values above this line
    kNUMRESOURCECLASSES,
 };

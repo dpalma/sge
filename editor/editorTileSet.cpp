@@ -5,6 +5,11 @@
 
 #include "editorTileSet.h"
 #include "editorTile.h"
+#include "BitmapUtils.h"
+
+#include "resourceapi.h"
+#include "imagedata.h"
+#include "globalobj.h"
 
 #include <algorithm>
 
@@ -104,17 +109,17 @@ tResult cEditorTileSet::GetTileCount(uint * pTileCount) const
 
 ///////////////////////////////////////
 
-tResult cEditorTileSet::GetTileTexture(uint iTile, ITexture * * ppTexture)
+tResult cEditorTileSet::GetTileTexture(uint iTile, cStr * pTexture) const
 {
    if (iTile >= m_tiles.size())
    {
       return E_INVALIDARG;
    }
-   if (ppTexture == NULL)
+   if (pTexture == NULL)
    {
       return E_POINTER;
    }
-   return m_tiles[iTile]->GetTexture(ppTexture);
+   return m_tiles[iTile]->GetTexture(pTexture);
 }
 
 ///////////////////////////////////////
@@ -159,13 +164,25 @@ tResult cEditorTileSet::GetImageList(uint dimension, HIMAGELIST * phImageList)
       return E_FAIL;
    }
 
+   UseGlobal(ResourceManager);
+
    tTiles::iterator iter;
    for (iter = m_tiles.begin(); iter != m_tiles.end(); iter++)
    {
-      HBITMAP hTileBitmap;
-      if ((*iter)->GetBitmap(dimension, false, &hTileBitmap) == S_OK)
+      cStr texture;
+      HBITMAP hbm = NULL;
+      if ((*iter)->GetTexture(&texture) == S_OK &&
+         pResourceManager->Load(tResKey(texture.c_str(), kRC_HBitmap), (void**)&hbm) == S_OK)
       {
-         Verify(ImageList_Add(hImageList, hTileBitmap, NULL) >= 0);
+         BITMAP bm;
+         GetObject(hbm, sizeof(bm), &bm);
+         HBITMAP hSizedBm = StretchCopyBitmap(dimension, dimension, hbm, 0, 0,
+            min(dimension, (uint)bm.bmWidth), min(dimension, (uint)bm.bmHeight));
+         if (hSizedBm != NULL)
+         {
+            Verify(ImageList_Add(hImageList, hSizedBm, NULL) >= 0);
+            DeleteObject(hSizedBm);
+         }
       }
    }
 

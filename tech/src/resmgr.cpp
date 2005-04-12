@@ -511,7 +511,7 @@ tResult cResourceManager::Unlock(const tResKey & key)
 
 ////////////////////////////////////////
 
-AssertOnce(kNUMRESOURCECLASSES == 8); // If this fails, GetResourceClassName may need to be updated
+AssertOnce(kNUMRESOURCECLASSES == 9); // If this fails, GetResourceClassName may need to be updated
 static const char * GetResourceClassName(eResourceClass rc)
 {
    switch (rc)
@@ -523,6 +523,7 @@ static const char * GetResourceClassName(eResourceClass rc)
    case kRC_Font:       return "Font";
    case kRC_TiXml:      return "TinyXML";
    case kRC_GlTexture:  return "GLTexture";
+   case kRC_HBitmap:    return "HBITMAP";
    case kRC_Unknown:    return "Unknown";
    default:             return "ERROR";
    }

@@ -350,7 +350,6 @@ HBITMAP StretchCopyBitmap(uint width, uint height, HBITMAP hSrcBitmap,
    HBITMAP hBitmap = NULL;
 
    HDC hScreenDC = GetDC(NULL);
-
    if (hScreenDC != NULL)
    {
       hBitmap = CreateCompatibleBitmap(hScreenDC, width, height);
@@ -390,6 +389,42 @@ HBITMAP StretchCopyBitmap(uint width, uint height, HBITMAP hSrcBitmap,
    }
 
    return hBitmap;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void * HBitmapFromImageData(void * pData, int dataLength, void * param)
+{
+   cImageData * pImageData = reinterpret_cast<cImageData*>(pData);
+
+   HBITMAP hbm = NULL;
+   if (LoadBitmap(pImageData, &hbm))
+   {
+      return hbm;
+   }
+
+   return NULL;
+}
+
+void HBitmapUnload(void * pData)
+{
+   HBITMAP hBitmap = reinterpret_cast<HBITMAP>(pData);
+   if (GetObjectType(hBitmap) == OBJ_BITMAP)
+   {
+      DeleteObject(hBitmap);
+   }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+tResult BitmapUtilsRegisterResourceFormats()
+{
+   UseGlobal(ResourceManager);
+   if (!!pResourceManager)
+   {
+      return pResourceManager->RegisterFormat(kRC_HBitmap, kRC_Image, NULL, NULL, HBitmapFromImageData, HBitmapUnload);
+   }
+   return E_FAIL;
 }
 
 /////////////////////////////////////////////////////////////////////////////

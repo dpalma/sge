@@ -11,6 +11,7 @@
 #include "textureapi.h"
 
 #include "imagedata.h"
+#include "resourceapi.h"
 
 #include <algorithm>
 #include <GL/gl.h>
@@ -229,24 +230,24 @@ tResult cTerrainRenderer::Render(IRenderDevice * pRenderDevice)
 
       glEnable(GL_COLOR_MATERIAL);
 
+      UseGlobal(ResourceManager);
+
       tTerrainQuads::const_iterator iter = m_pModel->GetTerrainQuads().begin();
       tTerrainQuads::const_iterator end = m_pModel->GetTerrainQuads().end();
       for (; iter != end; iter++)
       {
          const sTerrainVertex * pVertices = iter->verts;
 
+         cStr texture;
          cAutoIPtr<IEditorTileSet> pEditorTileSet;
-         if (m_pModel->GetTileSet(&pEditorTileSet) == S_OK)
+         if (m_pModel->GetTileSet(&pEditorTileSet) == S_OK
+            && pEditorTileSet->GetTileTexture(iter->tile, &texture) == S_OK)
          {
-            cAutoIPtr<ITexture> pTexture;
-            if (pEditorTileSet->GetTileTexture(iter->tile, &pTexture) == S_OK)
+            GLuint tex;
+            if (pResourceManager->Load(tResKey(texture.c_str(), kRC_GlTexture), (void**)&tex) == S_OK)
             {
-               HANDLE tex;
-               if (pTexture->GetTextureHandle(&tex) == S_OK)
-               {
-                  glEnable(GL_TEXTURE_2D);
-                  glBindTexture(GL_TEXTURE_2D, (uint)tex);
-               }
+               glEnable(GL_TEXTURE_2D);
+               glBindTexture(GL_TEXTURE_2D, tex);
             }
          }
 
@@ -334,11 +335,12 @@ cSplat::~cSplat()
 
 cSplatBuilder::cSplatBuilder(IEditorTileSet * pTileSet, uint tile)
  : m_pTileSet(CTAddRef(pTileSet)),
-   m_tile(tile)
+   m_tile(tile),
+   m_alphaMapId(0)
 {
    if (pTileSet != NULL)
    {
-      pTileSet->GetTileTexture(tile, &m_pTexture);
+      pTileSet->GetTileTexture(tile, &m_texture);
    }
 }
 
@@ -350,16 +352,22 @@ cSplatBuilder::~cSplatBuilder()
 
 ////////////////////////////////////////
 
-tResult cSplatBuilder::GetTexture(ITexture * * ppTexture)
+tResult cSplatBuilder::GetGlTexture(uint * pTexId)
 {
-   return m_pTexture.GetPointer(ppTexture);
+   UseGlobal(ResourceManager);
+   return pResourceManager->Load(tResKey(m_texture.c_str(), kRC_GlTexture), (void**)pTexId);
 }
 
 ////////////////////////////////////////
 
-tResult cSplatBuilder::GetAlphaMap(ITexture * * ppTexture)
+tResult cSplatBuilder::GetAlphaMap(uint * pAlphaMapId)
 {
-   return m_pAlphaMap.GetPointer(ppTexture);
+   if (pAlphaMapId == NULL)
+   {
+      return E_POINTER;
+   }
+   *pAlphaMapId = m_alphaMapId;
+   return S_OK;
 }
 
 ////////////////////////////////////////
@@ -671,7 +679,7 @@ void cSplatBuilder::BuildAlphaMap(const tTerrainQuads & quads,
    {
       if (pImage->Create(bmi.bmiHeader.biWidth, abs(bmi.bmiHeader.biHeight), kPF_RGBA8888, pBitmapBits))
       {
-         TextureCreate(pImage, &m_pAlphaMap);
+         GlTextureCreate(pImage, &m_alphaMapId);
       }
 
       delete pImage;
@@ -830,38 +838,30 @@ void cTerrainChunk::Render(IRenderDevice * pRenderDevice)
    for (; iter != end; iter++)
    {
       {
-         cAutoIPtr<ITexture> pTexture;
-         if ((*iter)->GetTexture(&pTexture) == S_OK)
+         GLuint texId;
+         if ((*iter)->GetGlTexture(&texId) == S_OK)
          {
-            HANDLE tex;
-            if (pTexture->GetTextureHandle(&tex) == S_OK)
-            {
-               pfnglActiveTextureARB(GL_TEXTURE0_ARB);
-               glBindTexture(GL_TEXTURE_2D, (uint)tex);
-               glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-               glEnable(GL_TEXTURE_2D);
-            }
+            pfnglActiveTextureARB(GL_TEXTURE0_ARB);
+            glBindTexture(GL_TEXTURE_2D, texId);
+            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+            glEnable(GL_TEXTURE_2D);
          }
       }
 
       {
-         cAutoIPtr<ITexture> pAlphaMap;
-         if ((*iter)->GetAlphaMap(&pAlphaMap) == S_OK)
+         GLuint alphaMapId;
+         if ((*iter)->GetAlphaMap(&alphaMapId) == S_OK)
          {
-            HANDLE alpha;
-            if (pAlphaMap->GetTextureHandle(&alpha) == S_OK)
-            {
-               pfnglActiveTextureARB(GL_TEXTURE1_ARB);
-               glBindTexture(GL_TEXTURE_2D, (uint)alpha);
-               glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-               glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB, GL_MODULATE);
-               glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_ARB, GL_REPLACE);
-               glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB, GL_PREVIOUS_ARB);
-               glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_ARB, GL_SRC_COLOR);
-               glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_ARB, GL_TEXTURE1_ARB);
-               glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_ARB, GL_SRC_ALPHA);
-               glEnable(GL_TEXTURE_2D);
-            }
+            pfnglActiveTextureARB(GL_TEXTURE1_ARB);
+            glBindTexture(GL_TEXTURE_2D, alphaMapId);
+            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+            glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB, GL_MODULATE);
+            glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_ARB, GL_REPLACE);
+            glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB, GL_PREVIOUS_ARB);
+            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_ARB, GL_SRC_COLOR);
+            glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_ARB, GL_TEXTURE1_ARB);
+            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_ARB, GL_SRC_ALPHA);
+            glEnable(GL_TEXTURE_2D);
          }
       }
 
