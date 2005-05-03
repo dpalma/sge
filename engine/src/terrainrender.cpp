@@ -254,20 +254,17 @@ tResult cTerrainRenderer::Render(IRenderDevice * pRenderDevice)
          glBegin(GL_QUADS);
 
          glNormal3f(1,1,1);
+         glColor4f(1,1,1,1);
 
-         glColor4ubv((const byte *)&pVertices[0].color);
          glTexCoord2fv(pVertices[0].uv1.v);
          glVertex3fv(pVertices[0].pos.v);
 
-         glColor4ubv((const byte *)&pVertices[3].color);
          glTexCoord2fv(pVertices[3].uv1.v);
          glVertex3fv(pVertices[3].pos.v);
 
-         glColor4ubv((const byte *)&pVertices[2].color);
          glTexCoord2fv(pVertices[2].uv1.v);
          glVertex3fv(pVertices[2].pos.v);
 
-         glColor4ubv((const byte *)&pVertices[1].color);
          glTexCoord2fv(pVertices[1].uv1.v);
          glVertex3fv(pVertices[1].pos.v);
 
@@ -771,10 +768,14 @@ tResult cTerrainChunk::Create(const tTerrainQuads & quads,
             pSplatBuilder->AddTriangle(iVert+0,iVert+3,iVert+2);
          }
 
-         pChunk->m_vertices[iVert+0].uv2 = tVec2((float)(x-ix) / kTilesPerChunk, (float)(z-iz) / kTilesPerChunk);
-         pChunk->m_vertices[iVert+1].uv2 = tVec2((float)(x-ix+1) / kTilesPerChunk, (float)(z-iz) / kTilesPerChunk);
-         pChunk->m_vertices[iVert+2].uv2 = tVec2((float)(x-ix+1) / kTilesPerChunk, (float)(z-iz+1) / kTilesPerChunk);
-         pChunk->m_vertices[iVert+3].uv2 = tVec2((float)(x-ix) / kTilesPerChunk, (float)(z-iz+1) / kTilesPerChunk);
+         static const float d = 1.0f / kTilesPerChunk;
+         float u = d * (x - ix);
+         float v = d * (z - iz);
+
+         pChunk->m_vertices[iVert+0].uv2 = tVec2(u, v);
+         pChunk->m_vertices[iVert+1].uv2 = tVec2(u+d, v);
+         pChunk->m_vertices[iVert+2].uv2 = tVec2(u+d, v+d);
+         pChunk->m_vertices[iVert+3].uv2 = tVec2(u, v+d);
 
          pChunk->m_vertices[iVert++] = quad.verts[0];
          pChunk->m_vertices[iVert++] = quad.verts[1];
@@ -809,6 +810,7 @@ void cTerrainChunk::Render(IRenderDevice * pRenderDevice)
    glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
 
    glEnable(GL_BLEND);
+   glDisable(GL_COLOR_MATERIAL);
 
    glDisableClientState(GL_EDGE_FLAG_ARRAY);
    glDisableClientState(GL_INDEX_ARRAY);
@@ -822,50 +824,33 @@ void cTerrainChunk::Render(IRenderDevice * pRenderDevice)
    glEnableClientState(GL_VERTEX_ARRAY);
    glVertexPointer(3, GL_FLOAT, sizeof(sTerrainVertex), pVertexData + offsetof(sTerrainVertex, pos));
 
-   glEnableClientState(GL_COLOR_ARRAY);
-   glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(sTerrainVertex), pVertexData + offsetof(sTerrainVertex, color));
-
-   pfnglClientActiveTextureARB(GL_TEXTURE0_ARB);
-   glTexCoordPointer(2, GL_FLOAT, sizeof(sTerrainVertex), pVertexData + offsetof(sTerrainVertex, uv1));
-   glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-
-   pfnglClientActiveTextureARB(GL_TEXTURE1_ARB);
-   glTexCoordPointer(2, GL_FLOAT, sizeof(sTerrainVertex), pVertexData + offsetof(sTerrainVertex, uv2));
-   glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+   glColor4f(1,1,1,1);
 
    tSplatBuilders::iterator iter = m_splats.begin();
    tSplatBuilders::iterator end = m_splats.end();
    for (; iter != end; iter++)
    {
+      GLuint alphaMapId;
+      if (0 && (*iter)->GetAlphaMap(&alphaMapId) == S_OK)
       {
-         GLuint texId;
-         if ((*iter)->GetGlTexture(&texId) == S_OK)
-         {
-            pfnglActiveTextureARB(GL_TEXTURE0_ARB);
-            glBindTexture(GL_TEXTURE_2D, texId);
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-            glEnable(GL_TEXTURE_2D);
-         }
+         glTexCoordPointer(2, GL_FLOAT, sizeof(sTerrainVertex), pVertexData + offsetof(sTerrainVertex, uv2));
+         glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+         glBindTexture(GL_TEXTURE_2D, alphaMapId);
+         glEnable(GL_TEXTURE_2D);
+//         glBlendFunc(GL_SRC_COLOR, GL_ZERO);
+         glDrawElements(GL_TRIANGLES, (*iter)->GetIndexCount(), GL_UNSIGNED_INT, (*iter)->GetIndexPtr());
       }
 
+      GLuint texId;
+      if ((*iter)->GetGlTexture(&texId) == S_OK)
       {
-         GLuint alphaMapId;
-         if ((*iter)->GetAlphaMap(&alphaMapId) == S_OK)
-         {
-            pfnglActiveTextureARB(GL_TEXTURE1_ARB);
-            glBindTexture(GL_TEXTURE_2D, alphaMapId);
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-            glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB, GL_MODULATE);
-            glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_ARB, GL_REPLACE);
-            glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB, GL_PREVIOUS_ARB);
-            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_ARB, GL_SRC_COLOR);
-            glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_ARB, GL_TEXTURE1_ARB);
-            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_ARB, GL_SRC_ALPHA);
-            glEnable(GL_TEXTURE_2D);
-         }
+         glTexCoordPointer(2, GL_FLOAT, sizeof(sTerrainVertex), pVertexData + offsetof(sTerrainVertex, uv2));
+         glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+         glBindTexture(GL_TEXTURE_2D, texId);
+         glEnable(GL_TEXTURE_2D);
+         glBlendFunc(GL_DST_ALPHA, GL_ONE_MINUS_DST_ALPHA);
+         glDrawElements(GL_TRIANGLES, (*iter)->GetIndexCount(), GL_UNSIGNED_INT, (*iter)->GetIndexPtr());
       }
-
-      glDrawElements(GL_TRIANGLES, (*iter)->GetIndexCount(), GL_UNSIGNED_INT, (*iter)->GetIndexPtr());
    }
 
    glPopAttrib();

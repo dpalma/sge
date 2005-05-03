@@ -417,11 +417,6 @@ tResult cTerrainModel::InitQuads(uint nTilesX, uint nTilesZ, IHeightMap * pHeigh
 
          tq.tile = 0;
 
-         tq.verts[0].color = ARGB(255,192,192,192);
-         tq.verts[1].color = tq.verts[0].color;
-         tq.verts[2].color = tq.verts[0].color;
-         tq.verts[3].color = tq.verts[0].color;
-
          tq.verts[0].uv1 = tVec2(0,0);
          tq.verts[1].uv1 = tVec2(1,0);
          tq.verts[2].uv1 = tVec2(1,1);

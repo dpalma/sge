@@ -31,7 +31,6 @@ struct sTerrainVertex
 {
    tVec2 uv1;
    tVec2 uv2;
-   uint32 color;
    tVec3 pos;
 };
 
