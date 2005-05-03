@@ -269,7 +269,7 @@ void cEditorView::RenderScene()
                verts[2].y += kOffsetY;
                verts[3].y += kOffsetY;
 
-               glPushAttrib(GL_ENABLE_BIT);
+               glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
                glEnable(GL_BLEND);
                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                glBegin(GL_QUADS);
