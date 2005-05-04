@@ -21,6 +21,9 @@
 #include "readwriteapi.h"
 
 #include <tinyxml.h>
+#include <windows.h> // HACK
+#undef DrawText
+#include <GL/gl.h>
 
 #ifdef HAVE_CPPUNIT
 #include <cppunit/extensions/HelperMacros.h>
@@ -227,11 +230,10 @@ tResult cGUIContext::RenderGUI(IRenderDevice * pRenderDevice)
       }
    }
 
-   pRenderDevice->SetRenderState(kRS_EnableDepthBuffer, FALSE);
-
+   glPushAttrib(GL_ENABLE_BIT);
+   glDisable(GL_DEPTH_TEST);
    ForEachElement(cRenderElement(pRenderDevice));
-
-   pRenderDevice->SetRenderState(kRS_EnableDepthBuffer, TRUE);
+   glPopAttrib();
 
 #ifdef _DEBUG
    RenderDebugInfo(pRenderDevice);

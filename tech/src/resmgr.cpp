@@ -516,6 +516,7 @@ static const char * GetResourceClassName(eResourceClass rc)
 {
    switch (rc)
    {
+   case kRC_Unknown:    return "Unknown";
    case kRC_Image:      return "Image";
    case kRC_Texture:    return "Texture";
    case kRC_Mesh:       return "Mesh";
@@ -524,7 +525,8 @@ static const char * GetResourceClassName(eResourceClass rc)
    case kRC_TiXml:      return "TinyXML";
    case kRC_GlTexture:  return "GLTexture";
    case kRC_HBitmap:    return "HBITMAP";
-   case kRC_Unknown:    return "Unknown";
+   case kRC_CgProgram:  return "CgProgram";
+   case kRC_CgEffect:   return "CgEffect";
    default:             return "ERROR";
    }
 }

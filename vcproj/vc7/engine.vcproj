@@ -21,7 +21,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL"
 				StringPooling="TRUE"
 				RuntimeLibrary="3"
@@ -41,10 +41,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="winmm.lib opengl32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib"
+				AdditionalDependencies="winmm.lib opengl32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib cg.lib cgGL.lib"
 				OutputFile=".\..\..\Build.vc7\Opt/engine.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="..\..\3rdparty\Cg\lib"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\..\..\Build.vc7\Opt/engine.pdb"
 				GenerateMapFile="TRUE"
@@ -83,7 +84,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include"
 				PreprocessorDefinitions="STATIC_BUILD,_DEBUG,HAVE_CPPUNIT,_USRDLL,ENGINE_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -129,7 +130,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include"
 				PreprocessorDefinitions="_DEBUG;HAVE_CPPUNIT;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -148,10 +149,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\cppunit.lib winmm.lib opengl32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib"
+				AdditionalDependencies="$(OutDir)\cppunit.lib winmm.lib opengl32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib cg.lib cgGL.lib"
 				OutputFile=".\..\..\Build.vc7\Debug/engine.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="..\..\3rdparty\Cg\lib"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\..\..\Build.vc7\Debug/engine.pdb"
 				GenerateMapFile="TRUE"
@@ -190,7 +192,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include"
 				PreprocessorDefinitions="NDEBUG,STATIC_BUILD,_USRDLL,ENGINE_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -236,7 +238,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -255,10 +257,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="winmm.lib opengl32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib"
+				AdditionalDependencies="winmm.lib opengl32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib cg.lib cgGL.lib"
 				OutputFile=".\..\..\Build.vc7\Release/engine.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="..\..\3rdparty\Cg\lib"
 				ProgramDatabaseFile=".\..\..\Build.vc7\Release/engine.pdb"
 				GenerateMapFile="TRUE"
 				MapFileName="..\..\Build.vc7\Release/engine.map"

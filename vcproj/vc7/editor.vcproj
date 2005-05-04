@@ -165,10 +165,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="atl.lib $(OutDir)\cppunit.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib"
+				AdditionalDependencies="atl.lib $(OutDir)\cppunit.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib cg.lib cgGL.lib"
 				OutputFile=".\..\..\Build.vc7\StaticDebug/editor.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="..\..\3rdparty\Cg\lib"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\..\..\Build.vc7\StaticDebug/editor.pdb"
 				SubSystem="2"/>
@@ -291,10 +292,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="atl.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib"
+				AdditionalDependencies="atl.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib cg.lib cgGL.lib"
 				OutputFile=".\..\..\Build.vc7\StaticRelease/editor.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="..\..\3rdparty\Cg\lib"
 				GenerateMapFile="TRUE"
 				MapFileName="..\..\Build.vc7\StaticRelease\editor.map"
 				SubSystem="2"/>
