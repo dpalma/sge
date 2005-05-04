@@ -618,7 +618,7 @@ cResourceManager::sResource * cResourceManager::FindResourceWithFormat(
    tResources::iterator resEnd = m_resources.end();
    for (; resIter != resEnd; resIter++)
    {
-      if (resIter->name.compare(name) == 0)
+      if (resIter->name == name)
       {
          if (resIter->pFormat == NULL && pFormat->rcDepend == kRC_Unknown
             && (resIter->archiveId != kNoIndex || resIter->dirId != kNoIndex))

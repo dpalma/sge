@@ -352,9 +352,6 @@
 					RelativePath="..\..\tech\src\memmanager.cpp">
 				</File>
 				<File
-					RelativePath="..\..\tech\src\parse.cpp">
-				</File>
-				<File
 					RelativePath="..\..\tech\src\prime.cpp">
 				</File>
 				<File
@@ -404,6 +401,9 @@
 				</File>
 				<File
 					RelativePath="..\..\tech\src\techdebug.cpp">
+				</File>
+				<File
+					RelativePath="..\..\tech\src\techstring.cpp">
 				</File>
 				<File
 					RelativePath="..\..\tech\src\techtime.cpp">
@@ -468,12 +468,6 @@
 				</File>
 				<File
 					RelativePath="..\..\tech\src\filereadwrite.h">
-				</File>
-				<File
-					RelativePath="..\..\tech\src\hashtbl.h">
-				</File>
-				<File
-					RelativePath="..\..\tech\src\hashtbltem.h">
 				</File>
 				<File
 					RelativePath="..\..\tech\src\readwritemem.h">
@@ -562,9 +556,6 @@
 				RelativePath="..\..\tech\include\memmanager.h">
 			</File>
 			<File
-				RelativePath="..\..\tech\include\parse.h">
-			</File>
-			<File
 				RelativePath="..\..\tech\include\quat.h">
 			</File>
 			<File
@@ -575,9 +566,6 @@
 			</File>
 			<File
 				RelativePath="..\..\tech\include\resourceapi.h">
-			</File>
-			<File
-				RelativePath="..\..\tech\include\str.h">
 			</File>
 			<File
 				RelativePath="..\..\tech\include\techdebug.h">
@@ -593,6 +581,9 @@
 			</File>
 			<File
 				RelativePath="..\..\tech\include\techmath.h">
+			</File>
+			<File
+				RelativePath="..\..\tech\include\techstring.h">
 			</File>
 			<File
 				RelativePath="..\..\tech\include\techtime.h">

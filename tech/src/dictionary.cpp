@@ -21,13 +21,6 @@
 
 ///////////////////////////////////////
 
-bool cDictionary::cStringLessNoCase::operator()(const cStr & lhs, const cStr & rhs) const
-{
-   return (stricmp(lhs.c_str(), rhs.c_str()) < 0) ? true : false;
-}
-
-///////////////////////////////////////
-
 cDictionary::cDictionary(tPersistence defaultPersist)
  : m_defaultPersist(defaultPersist)
 {
@@ -89,7 +82,7 @@ tResult cDictionary::Get(const tChar * pszKey, cStr * pVal, tPersistence * pPers
 
       if (pVal != NULL)
       {
-         *pVal = iter->second.c_str();
+         *pVal = iter->second;
       }
 
       return S_OK;
@@ -118,7 +111,7 @@ tResult cDictionary::Get(const tChar * pszKey, int * pVal, tPersistence * pPersi
 
       if (pVal != NULL)
       {
-         *pVal = atoi(iter->second.c_str());
+         *pVal = iter->second.ToInt();
       }
 
       return S_OK;
@@ -147,7 +140,7 @@ tResult cDictionary::Get(const tChar * pszKey, float * pVal, tPersistence * pPer
 
       if (pVal != NULL)
       {
-         *pVal = (float)atof(iter->second.c_str());
+         *pVal = iter->second.ToFloat();
       }
 
       return S_OK;

@@ -7,7 +7,6 @@
 #include "editorapi.h"
 #include "connptimpl.h"
 #include "globalobj.h"
-#include "str.h"
 
 #include <map>
 

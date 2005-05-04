@@ -12,7 +12,7 @@
 #include "vec3.h"
 #include "quat.h"
 #include "matrix4.h"
-#include "str.h"
+#include "techstring.h"
 
 #include <vector>
 

@@ -12,7 +12,7 @@
 #include "filespec.h"
 #include "filepath.h"
 #include "fileiter.h"
-#include "str.h"
+#include "techstring.h"
 
 #include "dbgalloc.h" // must be last header
 

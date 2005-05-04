@@ -170,7 +170,7 @@ tResult cGUILabelStatelessRenderer::Render(IGUIElement * pElement, IRenderDevice
       tGUIString text;
       if (pLabel->GetText(&text) == S_OK)
       {
-         pFont->DrawText(text, text.length(), kDT_NoClip, &rect, color);
+         pFont->DrawText(text.c_str(), text.length(), kDT_NoClip, &rect, color);
       }
 
       return S_OK;
@@ -195,7 +195,7 @@ tGUISize cGUILabelStatelessRenderer::GetPreferredSize(IGUIElement * pElement)
             if (pLabel->GetText(&text) == S_OK)
             {
                tRect rect(0,0,0,0);
-               pFont->DrawText(text, text.length(), kDT_CalcRect, &rect, tGUIColor::White);
+               pFont->DrawText(text.c_str(), text.length(), kDT_CalcRect, &rect, tGUIColor::White);
 
                return tGUISize((tGUISizeType)rect.GetWidth(), (tGUISizeType)rect.GetHeight());
             }

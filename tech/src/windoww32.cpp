@@ -352,10 +352,10 @@ public:
    virtual tResult GetHwnd(HWND * phWnd);
 
 private:
-   static std::string GenerateWindowClassName(uint classStyle,
+   static cStr GenerateWindowClassName(uint classStyle,
       HCURSOR hCursor, HBRUSH hbrBackground, HICON hIcon);
 
-   static std::string RegisterWindowClass(uint classStyle,
+   static cStr RegisterWindowClass(uint classStyle,
       HCURSOR hCursor = NULL, HBRUSH hbrBackground = NULL, HICON hIcon = NULL);
 
    static bool RegisterWindowClass(const char * pszClassName,
@@ -411,13 +411,13 @@ tResult cWindowWin32::Create(const sWindowCreateParams * pParams)
 
    HINSTANCE hInstance = (HINSTANCE)GetModuleHandle(NULL);
 
-   std::string wndClassName = RegisterWindowClass(
+   cStr wndClassName = RegisterWindowClass(
       CS_HREDRAW | CS_VREDRAW,
       LoadCursor(NULL, IDC_ARROW),
       NULL,
       LoadIcon(hInstance, MAKEINTRESOURCE(1)));
 
-   if (wndClassName.empty())
+   if (wndClassName.IsEmpty())
    {
       return E_FAIL;
    }
@@ -437,7 +437,7 @@ tResult cWindowWin32::Create(const sWindowCreateParams * pParams)
    m_hWnd = CreateWindowEx(
       0,
       wndClassName.c_str(),
-      pParams->title.empty() ? wndClassName.c_str() : pParams->title.c_str(),
+      pParams->title.IsEmpty() ? wndClassName.c_str() : pParams->title.c_str(),
       style,
       (GetSystemMetrics(SM_CXSCREEN) - (rect.right - rect.left)) / 2,
       (GetSystemMetrics(SM_CYSCREEN) - (rect.bottom - rect.top)) / 2,
@@ -508,8 +508,10 @@ tResult cWindowWin32::GetHwnd(HWND * phWnd)
 
 ///////////////////////////////////////
 
-std::string cWindowWin32::GenerateWindowClassName(uint classStyle,
-   HCURSOR hCursor, HBRUSH hbrBackground, HICON hIcon)
+cStr cWindowWin32::GenerateWindowClassName(uint classStyle,
+                                           HCURSOR hCursor,
+                                           HBRUSH hbrBackground,
+                                           HICON hIcon)
 {
    char szModule[kMaxPath];
    Verify(GetModuleFileName(NULL, szModule, _countof(szModule)));
@@ -529,25 +531,25 @@ std::string cWindowWin32::GenerateWindowClassName(uint classStyle,
          hCursor, hbrBackground, hIcon);
    }
 
-   return std::string(szWndClassName);
+   return cStr(szWndClassName);
 }
 
 ///////////////////////////////////////
 
-std::string cWindowWin32::RegisterWindowClass(uint classStyle,
-                                              HCURSOR hCursor,
-                                              HBRUSH hbrBackground,
-                                              HICON hIcon)
+cStr cWindowWin32::RegisterWindowClass(uint classStyle,
+                                       HCURSOR hCursor,
+                                       HBRUSH hbrBackground,
+                                       HICON hIcon)
 {
-   std::string wndClassName = GenerateWindowClassName(classStyle, hCursor, hbrBackground, hIcon);
+   cStr wndClassName = GenerateWindowClassName(classStyle, hCursor, hbrBackground, hIcon);
 
    if (RegisterWindowClass(wndClassName.c_str(), classStyle, hCursor, hbrBackground, hIcon))
    {
-      return std::string(wndClassName);
+      return cStr(wndClassName);
    }
    else
    {
-      return std::string("");
+      return cStr("");
    }
 }
 

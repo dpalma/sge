@@ -5,7 +5,7 @@
 
 #include "filepath.h"
 #include "filespec.h"
-#include "str.h"
+#include "techstring.h"
 
 #include <cstdio>
 #include <cstring>

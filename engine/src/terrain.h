@@ -8,7 +8,7 @@
 
 #include "vec2.h"
 #include "vec3.h"
-#include "str.h"
+#include "techstring.h"
 
 #include <vector>
 

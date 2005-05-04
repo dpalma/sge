@@ -374,7 +374,7 @@ tResult cGUITextEditElement::SetSelection(uint start, uint end)
 
 const char * cGUITextEditElement::GetText() const
 {
-   return m_text;
+   return m_text.c_str();
 }
 
 ///////////////////////////////////////

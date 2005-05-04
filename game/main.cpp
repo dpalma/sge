@@ -28,7 +28,7 @@
 #include "configapi.h"
 #include "filespec.h"
 #include "filepath.h"
-#include "str.h"
+#include "techstring.h"
 #include "globalobj.h"
 #include "readwriteapi.h"
 #include "threadcallapi.h"
@@ -420,7 +420,7 @@ bool MainInit(int argc, char * argv[])
    cStr temp;
    if (ConfigGet("debug_log", &temp) == S_OK)
    {
-      DebugEchoFileStart(temp);
+      DebugEchoFileStart(temp.c_str());
    }
 
    srand(time(NULL));
@@ -445,7 +445,7 @@ bool MainInit(int argc, char * argv[])
    if (ConfigGet("data", &temp) == S_OK)
    {
       UseGlobal(ResourceManager);
-      pResourceManager->AddDirectoryTreeFlattened(temp);
+      pResourceManager->AddDirectoryTreeFlattened(temp.c_str());
    }
 
    g_fov = kDefaultFov;

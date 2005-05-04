@@ -7,6 +7,7 @@
 #include "techdll.h"
 
 #include <string>
+#include <vector>
 
 #ifdef _MSC_VER
 #pragma once
@@ -17,16 +18,18 @@
 // CLASS: cStr
 //
 
-class cStr : private std::string
-{
-   typedef std::string tBase;
+#ifdef _UNICODE
+typedef std::wstring cStrBase;
+#else
+typedef std::string cStrBase;
+#endif
 
+class TECH_API cStr : public cStrBase
+{
 public:
    cStr();
    cStr(const tChar * psz);
    cStr(const tChar * psz, uint length);
-
-   operator const tChar *() const;
 
    bool operator ==(const cStr & other) const;
    bool operator !=(const cStr & other) const;
@@ -45,10 +48,12 @@ public:
    int ToInt() const;
    float ToFloat() const;
 
+   int ParseTuple(std::vector<cStr> * pStrings) const;
+   int ParseTuple(double * pDoubles, int nMaxDoubles) const;
+   int ParseTuple(float * pFloats, int nMaxFloats) const;
+
    static const cStr gm_whitespace;
 };
-
-__declspec(selectany) const cStr cStr::gm_whitespace(" \t\r\n");
 
 ///////////////////////////////////////
 
@@ -59,22 +64,15 @@ inline cStr::cStr()
 ///////////////////////////////////////
 
 inline cStr::cStr(const tChar * psz)
- : tBase(psz)
+ : cStrBase(psz)
 {
 }
 
 ///////////////////////////////////////
 
 inline cStr::cStr(const tChar * psz, uint length)
- : tBase(psz, length)
+ : cStrBase(psz, length)
 {
-}
-
-///////////////////////////////////////
-
-inline cStr::operator const tChar *() const
-{
-   return Get();
 }
 
 ///////////////////////////////////////
@@ -144,8 +142,8 @@ inline void cStr::Append(const tChar * psz)
 
 inline void cStr::TrimLeadingSpace()
 {
-   tBase::size_type index = find_first_not_of(gm_whitespace);
-   if (index != tBase::npos)
+   cStrBase::size_type index = find_first_not_of(gm_whitespace);
+   if (index != cStrBase::npos)
    {
       erase(0, index);
    }
@@ -155,8 +153,8 @@ inline void cStr::TrimLeadingSpace()
 
 inline void cStr::TrimTrailingSpace()
 {
-   tBase::size_type index = find_last_not_of(gm_whitespace);
-   if (index != tBase::npos)
+   cStrBase::size_type index = find_last_not_of(gm_whitespace);
+   if (index != cStrBase::npos)
    {
       erase(index + 1);
    }
@@ -188,7 +186,7 @@ public:
 
 inline bool cStrLessNoCase::operator()(const cStr & lhs, const cStr & rhs) const
 {
-   return (stricmp(lhs, rhs) < 0) ? true : false;
+   return (stricmp(lhs.c_str(), rhs.c_str()) < 0) ? true : false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

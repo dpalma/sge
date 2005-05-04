@@ -35,7 +35,7 @@ cGUIElementBase<INTRFC>::cGUIElementBase()
 template <typename INTRFC>
 const char * cGUIElementBase<INTRFC>::GetId() const
 {
-   return m_id;
+   return m_id.c_str();
 }
 
 ///////////////////////////////////////

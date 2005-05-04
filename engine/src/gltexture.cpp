@@ -8,7 +8,7 @@
 #include "imagedata.h"
 #include "techmath.h"
 #include "globalobj.h"
-#include "str.h"
+#include "techstring.h"
 #include "resourceapi.h"
 
 #include "stdgl.h"

@@ -7,7 +7,7 @@
 #include "enginedll.h"
 
 #include "color.h"
-#include "str.h"
+#include "techstring.h"
 #include "vec2.h"
 #include "rect.h"
 

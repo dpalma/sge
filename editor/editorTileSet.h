@@ -6,8 +6,6 @@
 
 #include "editorapi.h"
 
-#include "str.h"
-
 #include <vector>
 #include <map>
 

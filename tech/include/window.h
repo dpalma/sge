@@ -7,7 +7,7 @@
 #include "techdll.h"
 #include "comtools.h"
 #include "connpt.h"
-#include "str.h"
+#include "techstring.h"
 
 #ifdef _MSC_VER
 #pragma once

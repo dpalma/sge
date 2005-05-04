@@ -6,7 +6,7 @@
 
 #include "techdll.h"
 #include "comtools.h"
-#include "str.h"
+#include "techstring.h"
 
 #include <vector>
 
@@ -97,7 +97,7 @@ inline const cResourceKey & cResourceKey::operator =(const cResourceKey & other)
 
 inline bool cResourceKey::operator ==(const cResourceKey & other)
 {
-   return (m_name.compare(other.m_name) == 0) && (m_class == other.m_class);
+   return (m_name == other.m_name) && (m_class == other.m_class);
 }
 
 ///////////////////////////////////////

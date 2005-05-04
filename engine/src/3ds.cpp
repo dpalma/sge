@@ -9,7 +9,7 @@
 #include "materialapi.h"
 #include "textureapi.h"
 #include "readwriteapi.h"
-#include "str.h"
+#include "techstring.h"
 #include "vec3.h"
 #include "imagedata.h"
 #include "color.h"
@@ -135,7 +135,7 @@ static IMaterial * MaterialFrom3ds(const c3dsMaterial * p3dsMaterial,
       }
    }
 
-   pMaterial->SetName(p3dsMaterial->name);
+   pMaterial->SetName(p3dsMaterial->name.c_str());
    pMaterial->SetAmbient(cColor(p3dsMaterial->ambient[0],p3dsMaterial->ambient[1],p3dsMaterial->ambient[2]));
    pMaterial->SetDiffuse(cColor(p3dsMaterial->diffuse[0],p3dsMaterial->diffuse[1],p3dsMaterial->diffuse[2]));
    pMaterial->SetSpecular(cColor(p3dsMaterial->specular[0],p3dsMaterial->specular[1],p3dsMaterial->specular[2]));
@@ -474,7 +474,7 @@ bool Load3dsTriangleMesh(IReader * pReader, ulong stop, IRenderDevice * pRenderD
 
                if (!!pSubMesh)
                {
-                  pSubMesh->SetMaterialName(materialName);
+                  pSubMesh->SetMaterialName(materialName.c_str());
 
                   s3dsVertex * pVertexData = NULL;
                   if (pSubMesh->LockVertexBuffer(kBL_Discard, (void * *)&pVertexData) == S_OK)

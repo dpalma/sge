@@ -7,7 +7,7 @@
 #include "renderapi.h"
 #include "materialapi.h"
 #include "comtools.h"
-#include "str.h"
+#include "techstring.h"
 
 #include "dbgalloc.h" // must be last header
 
@@ -135,7 +135,7 @@ cSubMesh::~cSubMesh()
 
 const char * cSubMesh::GetMaterialName() const
 {
-   return m_materialName;
+   return m_materialName.c_str();
 }
 
 ///////////////////////////////////////

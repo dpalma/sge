@@ -5,7 +5,7 @@
 
 #include "dictionarystore.h"
 #include "readwriteapi.h"
-#include "str.h"
+#include "techstring.h"
 
 #include <locale>
 #include <list>
@@ -43,30 +43,10 @@ static bool SplitString(const tChar * psz, char split, cStr * pLeft, cStr * pRig
    return false;
 }
 
-static void TrimLeadingSpace(cStr * pStr)
-{
-   Assert(pStr != NULL);
-   cStr::size_type index = pStr->find_first_not_of(kWhitespace);
-   if (index != cStr::npos)
-   {
-      pStr->erase(0, index);
-   }
-}
-
-static void TrimTrailingSpace(cStr * pStr)
-{
-   Assert(pStr != NULL);
-   cStr::size_type index = pStr->find_last_not_of(kWhitespace);
-   if (index != cStr::npos)
-   {
-      pStr->erase(index + 1);
-   }
-}
-
 inline void TrimSpace(cStr * pStr)
 {
-   TrimLeadingSpace(pStr);
-   TrimTrailingSpace(pStr);
+   pStr->TrimLeadingSpace();
+   pStr->TrimTrailingSpace();
 }
 
 bool ParseDictionaryLine(const tChar * psz, cStr * pKey, cStr * pValue, cStr * pComment)
@@ -97,7 +77,7 @@ bool ParseDictionaryLine(const tChar * psz, cStr * pKey, cStr * pValue, cStr * p
       {
          return true;
       }
-      pKey->erase();
+      pKey->Empty();
    }
    return false;
 }
@@ -128,7 +108,7 @@ tResult cDictionaryTextStore::Load(IDictionary * pDictionary)
       {
          cStr key, value, comment;
          if (ParseDictionaryLine(line.c_str(), &key, &value, &comment)
-             && !key.empty() && !value.empty())
+             && !key.IsEmpty() && !value.IsEmpty())
          {
             DebugMsgEx2(DictionaryStore, "Read dictionary entry '%s' = '%s'\n", key.c_str(), value.c_str());
             pDictionary->Set(key.c_str(), value.c_str());
@@ -165,7 +145,7 @@ tResult cDictionaryTextStore::Save(IDictionary * pDictionary)
          {
             if (persist == kPermanent)
             {
-               fprintf(fp, "%s=%s\n", iter->c_str(), value.c_str());
+               fprintf(fp, "%s=%s\n", iter->Get(), value.Get());
             }
          }
       }
@@ -217,7 +197,7 @@ bool ParseIniSectionLine(tChar * pszBuffer, cStr * pSection, cStr * pComment)
          *pComment = p;
       }
    }
-   TrimTrailingSpace(pComment);
+   pComment->TrimTrailingSpace();
 
    if (pszBuffer[0] != '[') // do not allow whitespace before "[section name]"
       return false;
@@ -232,7 +212,7 @@ bool ParseIniSectionLine(tChar * pszBuffer, cStr * pSection, cStr * pComment)
    *p = 0;
 
    *pSection = pszBuffer;
-   TrimTrailingSpace(pSection);
+   pSection->TrimTrailingSpace();
 
    return true;
 }
@@ -280,7 +260,7 @@ tResult cDictionaryIniStore::Load(IDictionary * pDictionary)
          cStr key, value, comment;
 
          if (ParseDictionaryLine(buffer, &key, &value, &comment)
-             && !key.empty() && !value.empty())
+             && !key.IsEmpty() && !value.IsEmpty())
          {
             DebugMsgEx2(DictionaryStore, "Read dictionary entry '%s' = '%s'\n", key.c_str(), value.c_str());
             pDictionary->Set(key.c_str(), value.c_str());
@@ -344,29 +324,29 @@ void cDictionaryStoreTests::TestParseDictionaryLine()
 {
    cStr key, value, comment;
 
-   key.erase();
-   value.erase();
-   comment.erase();
+   key.Empty();
+   value.Empty();
+   comment.Empty();
    CPPUNIT_ASSERT(ParseDictionaryLine("key=value", &key, &value, &comment));
    CPPUNIT_ASSERT(key == "key");
    CPPUNIT_ASSERT(value == "value");
-   CPPUNIT_ASSERT(comment.empty());
+   CPPUNIT_ASSERT(comment.IsEmpty());
 
-   key.erase();
-   value.erase();
-   comment.erase();
+   key.Empty();
+   value.Empty();
+   comment.Empty();
    CPPUNIT_ASSERT(ParseDictionaryLine("  key  =  value  # this is a comment   ", &key, &value, &comment));
    CPPUNIT_ASSERT(key == "key");
    CPPUNIT_ASSERT(value == "value");
    CPPUNIT_ASSERT(comment == "this is a comment");
 
-   key.erase();
-   value.erase();
-   comment.erase();
+   key.Empty();
+   value.Empty();
+   comment.Empty();
    CPPUNIT_ASSERT(ParseDictionaryLine("definition", &key, &value, &comment));
    CPPUNIT_ASSERT(key == "definition");
-   CPPUNIT_ASSERT(value.empty());
-   CPPUNIT_ASSERT(comment.empty());
+   CPPUNIT_ASSERT(value.IsEmpty());
+   CPPUNIT_ASSERT(comment.IsEmpty());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

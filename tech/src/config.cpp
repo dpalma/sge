@@ -4,7 +4,7 @@
 #include "stdhdr.h"
 
 #include "configapi.h"
-#include "str.h"
+#include "techstring.h"
 
 #include <cstdio>
 
@@ -40,15 +40,15 @@ tResult ParseCommandLine(int argc, char *argv[], IConfig * pConfig)
          // set currently accumulating key/value
          if (curKey.GetLength() > 0)
          {
-            pConfig->Set(curKey, curVal, kTransitory);
-            curKey.erase();
-            curVal.erase();
+            pConfig->Set(curKey.c_str(), curVal.c_str(), kTransitory);
+            curKey.Empty();
+            curVal.Empty();
          }
 
          cStr key, value;
-         if (ParseDictionaryLine(argv[i] + 1, &key, &value, NULL) && !key.empty())
+         if (ParseDictionaryLine(argv[i] + 1, &key, &value, NULL) && !key.IsEmpty())
          {
-            if (value.empty())
+            if (value.IsEmpty())
             {
                curKey = key;
                curVal = "1";
@@ -56,9 +56,9 @@ tResult ParseCommandLine(int argc, char *argv[], IConfig * pConfig)
             }
             else
             {
-               pConfig->Set(key, value, kTransitory);
-               curKey.erase();
-               curVal.erase();
+               pConfig->Set(key.c_str(), value.c_str(), kTransitory);
+               curKey.Empty();
+               curVal.Empty();
                bLastWasKey = false;
             }
          }
@@ -72,8 +72,8 @@ tResult ParseCommandLine(int argc, char *argv[], IConfig * pConfig)
       {
          if (!bLastWasKey)
          {
-            curVal += " ";
-            curVal += argv[i];
+            curVal.Append(" ");
+            curVal.Append(argv[i]);
          }
          else
          {
@@ -86,7 +86,7 @@ tResult ParseCommandLine(int argc, char *argv[], IConfig * pConfig)
    // set final key
    if (bLastWasKey && curKey.GetLength() > 0)
    {
-      pConfig->Set(curKey, curVal, kTransitory);
+      pConfig->Set(curKey.c_str(), curVal.c_str(), kTransitory);
    }
 
    return S_OK;

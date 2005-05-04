@@ -6,7 +6,7 @@
 #include "skeleton.h"
 
 #include "animation.h"
-#include "str.h"
+#include "techstring.h"
 
 #include <algorithm>
 
@@ -109,7 +109,7 @@ const cBone & cBone::operator =(const sBoneInfo & boneInfo)
 
 inline const char * cBone::GetName() const
 {
-   return m_name;
+   return m_name.c_str();
 }
 
 ///////////////////////////////////////

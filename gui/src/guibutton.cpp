@@ -128,7 +128,7 @@ void cGUIButtonElement::SetArmed(bool bArmed)
 
 const char * cGUIButtonElement::GetText() const
 {
-   return m_text;
+   return m_text.c_str();
 }
 
 ///////////////////////////////////////

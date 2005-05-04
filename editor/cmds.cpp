@@ -12,7 +12,6 @@
 #include "dictionaryapi.h"
 #include "readwriteapi.h"
 #include "globalobj.h"
-#include "str.h"
 
 #include <tinyxml.h>
 

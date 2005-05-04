@@ -9,7 +9,7 @@
 #include "animation.h"
 #include "matrix4.h"
 #include "vec3.h"
-#include "str.h"
+#include "techstring.h"
 
 #include <map>
 

@@ -27,7 +27,6 @@
 #include "readwriteapi.h"
 #include "filespec.h"
 #include "filepath.h"
-#include "str.h"
 #include "threadcallapi.h"
 
 #include <algorithm>
@@ -245,9 +244,9 @@ BOOL cEditorApp::InitInstance()
    {
       UseGlobal(ResourceManager);
       // Attempt to load as archive
-      if (FAILED(pResourceManager->AddArchive(temp)))
+      if (FAILED(pResourceManager->AddArchive(temp.c_str())))
       {
-         if (FAILED(pResourceManager->AddDirectoryTreeFlattened(temp)))
+         if (FAILED(pResourceManager->AddDirectoryTreeFlattened(temp.c_str())))
          {
             ErrorMsg1("Unable to set up resource directory %s\n", temp.c_str());
             return FALSE;
@@ -290,9 +289,9 @@ BOOL cEditorApp::InitInstance()
    cStr autoexecScript("editor.lua");
    ConfigGet("editor_autoexec_script", &autoexecScript);
 
-   if (!ScriptExecFile(autoexecScript))
+   if (!ScriptExecFile(autoexecScript.c_str()))
    {
-      if (!ScriptExecResource(autoexecScript))
+      if (!ScriptExecResource(autoexecScript.c_str()))
       {
          WarnMsg1("Error parsing or executing %s\n", autoexecScript.c_str());
       }

@@ -6,7 +6,6 @@
 #include "guielementtools.h"
 #include "guistyle.h"
 
-#include "parse.h"
 #include "globalobj.h"
 
 #include <tinyxml.h>
@@ -291,8 +290,10 @@ tResult GUIElementStandardAttributes(const TiXmlElement * pXmlElement,
    {
       if (pXmlElement->Attribute("insets"))
       {
+         const cStr insets(pXmlElement->Attribute("insets"));
+
          float insetVals[4];
-         if (ParseTuple(pXmlElement->Attribute("insets"), insetVals, _countof(insetVals)) == 4)
+         if (insets.ParseTuple(insetVals, _countof(insetVals)) == 4)
          {
             tGUIInsets insets;
             insets.left = Round(insetVals[0]);

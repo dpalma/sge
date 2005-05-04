@@ -5,7 +5,7 @@
 
 #include "filereadwrite.h"
 #include "filespec.h"
-#include "str.h"
+#include "techstring.h"
 
 #include "dbgalloc.h" // must be last header
 

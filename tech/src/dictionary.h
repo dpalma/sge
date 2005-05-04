@@ -5,7 +5,7 @@
 #define INCLUDED_DICTIONARY_H
 
 #include "dictionaryapi.h"
-#include "str.h"
+#include "techstring.h"
 
 #include <map>
 
@@ -42,16 +42,10 @@ public:
 private:
    tResult GetPersistence(const tChar * pszKey, tPersistence * pPersist);
 
-   class cStringLessNoCase
-   {
-   public:
-      bool operator()(const cStr & lhs, const cStr & rhs) const;
-   };
-
-   typedef std::map<cStr, cStr, cStringLessNoCase> tMap;
+   typedef std::map<cStr, cStr, cStrLessNoCase> tMap;
    tMap m_vars;
 
-   typedef std::map<cStr, tPersistence> tPersistenceMap;
+   typedef std::map<cStr, tPersistence, cStrLessNoCase> tPersistenceMap;
    tPersistenceMap m_persistenceMap;
 
    tPersistence m_defaultPersist;

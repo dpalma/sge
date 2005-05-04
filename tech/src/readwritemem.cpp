@@ -4,7 +4,7 @@
 #include "stdhdr.h"
 
 #include "readwritemem.h"
-#include "str.h"
+#include "techstring.h"
 
 #include "dbgalloc.h" // must be last header
 

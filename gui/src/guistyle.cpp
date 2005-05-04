@@ -10,7 +10,6 @@
 #include "color.h"
 #include "renderapi.h"
 
-#include "parse.h"
 #include "globalobj.h"
 
 #include <cstring>
@@ -99,7 +98,7 @@ tResult cGUIStyle::GetAttribute(const char * pszAttribute, uint * pValue)
       return S_FALSE;
    }
 
-   if (sscanf(f->second, "%d", pValue) == 1)
+   if (sscanf(f->second.c_str(), "%d", pValue) == 1)
    {
       return S_OK;
    }
@@ -123,7 +122,7 @@ tResult cGUIStyle::GetAttribute(const char * pszAttribute, tGUIColor * pValue)
       return S_FALSE;
    }
 
-   if (GUIStyleParseColor(f->second, pValue) == S_OK)
+   if (GUIStyleParseColor(f->second.c_str(), pValue) == S_OK)
    {
       return S_OK;
    }
@@ -661,7 +660,7 @@ tResult GUIStyleParseColor(const char * psz, tGUIColor * pColor)
    };
 
    float rgba[4];
-   int parseResult = ParseTuple(psz, rgba, _countof(rgba));
+   int parseResult = cStr(psz).ParseTuple(rgba, _countof(rgba));
    if (parseResult == 3)
    {
       *pColor = tGUIColor(rgba[0],rgba[1],rgba[2]);
