@@ -243,6 +243,13 @@ CGprofile g_CgProfile = CG_PROFILE_UNKNOWN;
 
 void * CgProgramFromText(void * pData, int dataLength, void * param)
 {
+   // Must get the Cg context first
+   CGcontext cgContext = CgGetContext();
+   if (cgContext == NULL)
+   {
+      return NULL;
+   }
+
    if (g_CgProfile == CG_PROFILE_UNKNOWN)
    {
       g_CgProfile = cgGLGetLatestProfile(CG_GL_VERTEX);
@@ -250,12 +257,6 @@ void * CgProgramFromText(void * pData, int dataLength, void * param)
       {
          return NULL;
       }
-   }
-
-   CGcontext cgContext = CgGetContext();
-   if (cgContext == NULL)
-   {
-      return NULL;
    }
 
    char * psz = reinterpret_cast<char*>(pData);
