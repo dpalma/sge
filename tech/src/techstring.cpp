@@ -178,8 +178,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(cStrTests);
 
 void cStrTests::TestParseBadArgs()
 {
-   CPPUNIT_ASSERT(cStr(NULL).ParseTuple((double *)0xDEADBEEF, 1) == E_INVALIDARG);
-   CPPUNIT_ASSERT(cStr("blah").ParseTuple((double *)NULL, 1) == E_INVALIDARG);
+   CPPUNIT_ASSERT(cStr("blah").ParseTuple((double *)NULL, 1) == E_POINTER);
    double n[4];
    CPPUNIT_ASSERT(cStr("[1,2]").ParseTuple(n, 0) == E_INVALIDARG);
    CPPUNIT_ASSERT(cStr("[1,2,3").ParseTuple(n, _countof(n)) == E_INVALIDARG);
