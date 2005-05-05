@@ -511,7 +511,7 @@ tResult cResourceManager::Unlock(const tResKey & key)
 
 ////////////////////////////////////////
 
-AssertOnce(kNUMRESOURCECLASSES == 9); // If this fails, GetResourceClassName may need to be updated
+AssertOnce(kNUMRESOURCECLASSES == 11); // If this fails, values may have been added to eResourceClass
 static const char * GetResourceClassName(eResourceClass rc)
 {
    switch (rc)
