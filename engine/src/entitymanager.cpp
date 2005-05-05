@@ -97,7 +97,7 @@ tResult cEntityManager::SpawnEntity(const char * pszMesh, const tVec3 & location
 {
    cAutoIPtr<IMesh> pMesh;
    UseGlobal(ResourceManager);
-   if (pResourceManager->Load(tResKey(pszMesh, kRC_Mesh), AccessRenderDevice(), (void**)&pMesh) != S_OK)
+   if (pResourceManager->LoadUncached(tResKey(pszMesh, kRC_Mesh), AccessRenderDevice(), (void**)&pMesh, NULL) != S_OK)
    {
       DebugMsg1("Error loading mesh \"%s\"\n", pszMesh);
       return E_FAIL;

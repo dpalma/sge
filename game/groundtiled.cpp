@@ -98,7 +98,7 @@ bool cTiledGround::Init(IRenderDevice * pRenderDevice, cHeightMap * pHeightMap, 
    {
       UseGlobal(ResourceManager);
       cAutoIPtr<ITexture> pTexture;
-      if (pResourceManager->Load(tResKey(pszTexture, kRC_Texture), (void**)&pTexture) == S_OK)
+      if (pResourceManager->LoadUncached(tResKey(pszTexture, kRC_Texture), (void**)&pTexture) == S_OK)
       {
          m_pMaterial->SetTexture(0, pTexture);
       }
