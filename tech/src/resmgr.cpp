@@ -127,6 +127,7 @@ public:
    virtual tResult AddDirectory(const char * pszDir);
    virtual tResult AddDirectoryTreeFlattened(const char * pszDir);
    virtual tResult AddArchive(const char * pszArchive);
+   virtual tResult LoadUncached(const tResKey & key, void * param, void * * ppData, ulong * pDataSize);
    virtual tResult Load(const tResKey & key, void * param, void * * ppData);
    virtual tResult Unload(const tResKey & key);
    virtual tResult Lock(const tResKey & key);
@@ -393,6 +394,75 @@ tResult cResourceManager::AddArchive(const char * pszArchive)
 
 ////////////////////////////////////////
 
+tResult cResourceManager::LoadUncached(const tResKey & key, void * param, void * * ppData, ulong * pDataSize)
+{
+   if (ppData == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tResult result = E_FAIL;
+   sFormat * pFormat = NULL;
+   if (DeduceFormats(key, &pFormat, 1) == 1)
+   {
+      const sResource * pRes = FindResourceWithFormat(key, pFormat);
+
+      // If no resource and format specifies a dependent type then it
+      // may not have been loaded in AddDirectory or AddArchive. Do it now.
+      if (pRes == NULL && pFormat->rcDepend != kRC_Unknown)
+      {
+         sResource res;
+         cFileSpec(key.GetName()).GetFileNameNoExt(&res.name);
+         res.extensionId = GetExtensionIdForKey(key);
+         res.pFormat = pFormat;
+         m_resources.push_back(res);
+         pRes = &m_resources[m_resources.size() - 1];
+      }
+
+      Assert(pRes != NULL);
+
+      ulong dataSize = 0;
+      void * pData = NULL;
+
+      if (pFormat->rcDepend != kRC_Unknown)
+      {
+         tResKey key2(key.GetName(), pFormat->rcDepend);
+         if (Load(key2, param, &pData) == S_OK)
+         {
+            pData = (*pFormat->pfnPostload)(pData, 0, param);
+            Assert(pRes->pFormat == pFormat); // should have been set above
+            result = S_OK;
+         }
+      }
+      else
+      {
+         if (pRes->dirId != kNoIndex)
+         {
+            cFileSpec file(key.GetName());
+            file.SetPath(m_dirs[pRes->dirId]);
+            result = DoLoadFromFile(file, pFormat, param, &dataSize, &pData);
+         }
+         else if (pRes->archiveId != kNoIndex)
+         {
+            result = DoLoadFromArchive(pRes->archiveId, pRes->offset, pRes->index, pFormat, param, &dataSize, &pData);
+         }
+      }
+
+      if (result == S_OK)
+      {
+         *ppData = pData;
+         if (pDataSize != NULL)
+         {
+            *pDataSize = dataSize;
+         }
+      }
+   }
+
+   return result;
+}
+
+////////////////////////////////////////
+
 tResult cResourceManager::Load(const tResKey & key, void * param, void * * ppData)
 {
    if (ppData == NULL)
@@ -424,11 +494,13 @@ tResult cResourceManager::Load(const tResKey & key, void * param, void * * ppDat
 
       if (pRes != NULL)
       {
+         ulong dataSize = 0;
+         void * pData = NULL;
+
          if (formats[0]->rcDepend != kRC_Unknown)
          {
             if (pRes->pData == NULL)
             {
-               void * pData = NULL;
                tResKey key2(key.GetName(), formats[0]->rcDepend);
                if (Load(key2, param, &pData) == S_OK)
                {
@@ -442,8 +514,6 @@ tResult cResourceManager::Load(const tResKey & key, void * param, void * * ppDat
             if (pRes->pData == NULL)
             {
                tResult result = E_FAIL;
-               ulong dataSize = 0;
-               void * pData = NULL;
 
                if (pRes->dirId != kNoIndex)
                {

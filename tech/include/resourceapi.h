@@ -4,6 +4,9 @@
 #ifndef INCLUDED_RESOURCEAPI_H
 #define INCLUDED_RESOURCEAPI_H
 
+/// @file resourceapi.h
+/// Interface and class declarations for the caching resource loader
+
 #include "techdll.h"
 #include "comtools.h"
 #include "techstring.h"
@@ -133,9 +136,17 @@ interface IResourceManager : IUnknown
    virtual tResult AddDirectoryTreeFlattened(const char * pszDir) = 0;
    virtual tResult AddArchive(const char * pszArchive) = 0;
 
-   // TODO: Make this type-safe. Maybe pass in a GUID sort of like QueryInterface
+   /// @brief Load the resource from disk, bypassing the cache (not updating it either)
+   /// @remarks The caller is expected know what is returned in ppData and how to clean it up.
+   virtual tResult LoadUncached(const tResKey & key, void * param, void * * ppData, ulong * pDataSize) = 0;
+
    virtual tResult Load(const tResKey & key, void * param, void * * ppData) = 0;
    virtual tResult Unload(const tResKey & key) = 0;
+
+   tResult LoadUncached(const tResKey & key, void * * ppData)
+   {
+      return LoadUncached(key, NULL, ppData, NULL);
+   }
 
    tResult Load(const tResKey & key, void * * ppData)
    {
