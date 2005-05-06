@@ -396,7 +396,7 @@
 					RelativePath="..\..\tech\src\readwritemem.cpp">
 				</File>
 				<File
-					RelativePath="..\..\tech\src\resmgr.cpp">
+					RelativePath="..\..\tech\src\resourcemanager.cpp">
 				</File>
 				<File
 					RelativePath="..\..\tech\src\stdhdr.cpp">
@@ -509,6 +509,9 @@
 				</File>
 				<File
 					RelativePath="..\..\tech\src\readwritemem.h">
+				</File>
+				<File
+					RelativePath="..\..\tech\src\resourcemanager.h">
 				</File>
 				<File
 					RelativePath="..\..\tech\src\stdhdr.h">
