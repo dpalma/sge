@@ -164,7 +164,7 @@ static cStr FilteredCopy(const cStr & str, const cStr & excluded)
    {
       if (excluded.find(str[i]) == cStr::npos)
       {
-         result.push_back(str[i]);
+         result.append(1, str[i]);
       }
    }
    return result;
