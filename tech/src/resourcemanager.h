@@ -1,0 +1,122 @@
+///////////////////////////////////////////////////////////////////////////////
+// $Id$
+
+#ifndef INCLUDED_RESOURCEMANAGER_H
+#define INCLUDED_RESOURCEMANAGER_H
+
+#include "resourceapi.h"
+#include "filepath.h"
+#include "globalobj.h"
+
+#define ZLIB_WINAPI
+#include <unzip.h>
+
+#ifdef _MSC_VER
+#pragma once
+#endif
+
+class cFileSpec;
+
+const uint kNoIndex = ~0;
+const ulong kNoIndexL = ~0;
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cResourceManager
+//
+
+class cResourceManager : public cGlobalObject<IMPLEMENTS(IResourceManager)>
+{
+public:
+   cResourceManager();
+   virtual ~cResourceManager();
+
+   virtual tResult Init();
+   virtual tResult Term();
+
+   // IResourceManager methods
+   virtual tResult AddDirectory(const char * pszDir);
+   virtual tResult AddDirectoryTreeFlattened(const char * pszDir);
+   virtual tResult AddArchive(const char * pszArchive);
+   virtual tResult LoadUncached(const tResKey & key, void * param, void * * ppData, ulong * pDataSize);
+   virtual tResult Load(const tResKey & key, void * param, void * * ppData);
+   virtual tResult Unload(const tResKey & key);
+   virtual tResult Lock(const tResKey & key);
+   virtual tResult Unlock(const tResKey & key);
+   virtual tResult RegisterFormat(eResourceClass rc,
+                                  eResourceClass rcDepend,
+                                  const char * pszExtension,
+                                  tResourceLoad pfnLoad,
+                                  tResourcePostload pfnPostload,
+                                  tResourceUnload pfnUnload);
+
+private:
+   struct sFormat;
+   struct sResource;
+
+   sResource * FindResourceWithFormat(const tResKey & key, sFormat * pFormat);
+   tResult DoLoadFromFile(const cFileSpec & file, sFormat * pFormat, void * param, ulong * pDataSize, void * * ppData);
+   tResult DoLoadFromArchive(uint archiveId, ulong offset, ulong index, sFormat * pFormat, void * param, ulong * pDataSize, void * * ppData);
+   tResult DoLoadFromReader(IReader * pReader, sFormat * pFormat, ulong dataSize, void * param, void * * ppData);
+
+   uint DeduceFormats(const tResKey & key, sFormat * * ppFormats, uint nMaxFormats);
+
+   uint GetExtensionId(const char * pszExtension);
+   uint GetExtensionIdForKey(const tResKey & key);
+   uint GetDirectoryId(const char * pszDir);
+   uint GetArchiveId(const char * pszArchive);
+
+   std::vector<cStr> m_extensions;
+   std::vector<cFilePath> m_dirs;
+
+   struct sArchiveInfo
+   {
+      cStr archive;
+      unzFile handle;
+   };
+   typedef std::vector<sArchiveInfo> tArchives;
+   tArchives m_archives;
+
+   struct sFormat
+   {
+      eResourceClass rc;
+      eResourceClass rcDepend; // i.e., this format fills requests for rc by converting from rcDepend
+      uint extensionId;
+      tResourceLoad pfnLoad;
+      tResourcePostload pfnPostload;
+      tResourceUnload pfnUnload;
+   };
+   typedef std::vector<sFormat> tFormats;
+   tFormats m_formats;
+
+   struct sResource
+   {
+      sResource()
+      {
+         extensionId = kNoIndex;
+         pFormat = NULL;
+         dirId = archiveId = kNoIndex;
+         offset = index = kNoIndexL;
+         lockCount = 0;
+         pData = NULL;
+         dataSize = 0;
+      }
+      cStr name;
+      uint extensionId;
+      sFormat * pFormat;
+      uint dirId;
+      uint archiveId;
+      ulong offset;
+      ulong index;
+      ulong lockCount;
+      void * pData;
+      ulong dataSize;
+   };
+   typedef std::vector<sResource> tResources;
+   tResources m_resources;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+#endif // !INCLUDED_RESOURCEMANAGER_H
