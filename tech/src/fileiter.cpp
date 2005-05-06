@@ -124,7 +124,7 @@ BOOL cFileIterWin32::IterNext(char * pszResult, uint maxResult, uint * pAttribs)
          cFileSpec foundFile(m_findData.cFileName);
          foundFile.SetPath(GetPath());
 
-         strncpy(pszResult, foundFile.GetName(), maxResult);
+         strncpy(pszResult, foundFile.c_str(), maxResult);
          pszResult[maxResult - 1] = 0;
          if (pAttribs != NULL)
             *pAttribs = m_findData.dwFileAttributes;

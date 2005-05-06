@@ -5,6 +5,7 @@
 #define INCLUDED_FILESPEC_H
 
 #include "techdll.h"
+#include "techstring.h"
 #include "fileconst.h"
 
 #ifdef _MSC_VER
@@ -12,26 +13,24 @@
 #endif
 
 class cFilePath;
-class cStr;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cFileSpec
 //
 
-class TECH_API cFileSpec
+class TECH_API cFileSpec : public cStr
 {
 public:
    cFileSpec();
    explicit cFileSpec(const char * pszFile);
    cFileSpec(const cFileSpec & other);
 
-   const cFileSpec & operator =(const char * pszFile);
+   const cFileSpec & operator =(const cFileSpec & other);
 
    int Compare(const cFileSpec & other) const;
    int CompareNoCase(const cFileSpec & other) const;
 
-   const char * GetName() const;
    const char * GetFileName() const;
    bool GetFileNameNoExt(cStr * pFileName) const;
    const char * GetFileExt() const;
@@ -39,19 +38,7 @@ public:
 
    void SetPath(const cFilePath & path);
    cFilePath GetPath() const;
-
-   bool Exists() const;
-
-private:
-   char m_szFullName[kMaxPath];
 };
-
-///////////////////////////////////////
-
-inline const char * cFileSpec::GetName() const
-{
-   return m_szFullName;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 

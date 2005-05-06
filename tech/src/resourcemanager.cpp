@@ -59,7 +59,7 @@ static size_t ListDirs(const cFilePath & path, tStrings * pDirs)
    wildcard.SetPath(path);
 
    WIN32_FIND_DATA findData;
-   HANDLE hFinder = FindFirstFile(wildcard.GetName(), &findData);
+   HANDLE hFinder = FindFirstFile(wildcard.c_str(), &findData);
    if (hFinder != INVALID_HANDLE_VALUE)
    {
       do
@@ -281,7 +281,7 @@ tResult cResourceManager::AddDirectory(const char * pszDir)
    char szFile[kMaxPath];
    uint attribs;
 
-   pFileIter->IterBegin(spec.GetName());
+   pFileIter->IterBegin(spec.c_str());
    while (pFileIter->IterNext(szFile, _countof(szFile), &attribs))
    {
       if ((attribs & kFA_Directory) == kFA_Directory)

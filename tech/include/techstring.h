@@ -31,8 +31,10 @@ public:
    cStr(const tChar * psz);
    cStr(const tChar * psz, uint length);
 
+   const cStr & operator =(const cStr & other);
    bool operator ==(const cStr & other) const;
    bool operator !=(const cStr & other) const;
+   const cStr & operator =(const tChar * psz);
    bool operator ==(const tChar * psz) const;
    bool operator !=(const tChar * psz) const;
 
@@ -77,6 +79,14 @@ inline cStr::cStr(const tChar * psz, uint length)
 
 ///////////////////////////////////////
 
+inline const cStr & cStr::operator =(const cStr & other)
+{
+   assign(other);
+   return *this;
+}
+
+///////////////////////////////////////
+
 inline bool cStr::operator ==(const cStr & other) const
 {
    return compare(other) == 0;
@@ -87,6 +97,14 @@ inline bool cStr::operator ==(const cStr & other) const
 inline bool cStr::operator !=(const cStr & other) const
 {
    return compare(other) != 0;
+}
+
+///////////////////////////////////////
+
+inline const cStr & cStr::operator =(const tChar * psz)
+{
+   assign(psz);
+   return *this;
 }
 
 ///////////////////////////////////////
@@ -175,6 +193,9 @@ inline float cStr::ToFloat() const
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cStrLessNoCase
+//
 
 class cStrLessNoCase
 {

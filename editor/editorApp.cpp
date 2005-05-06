@@ -234,7 +234,7 @@ BOOL cEditorApp::InitInstance()
    cAutoIPtr<IDictionaryStore> pStore = DictionaryStoreCreate(file);
    if (pStore->Load(g_pConfig) != S_OK)
    {
-      DebugMsg1("Error loading settings from %s\n", file.GetName());
+      DebugMsg1("Error loading settings from %s\n", file.c_str());
    }
 
    ::ParseCommandLine(__argc, __argv, g_pConfig);

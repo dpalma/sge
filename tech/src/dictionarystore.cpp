@@ -124,7 +124,7 @@ tResult cDictionaryTextStore::Load(IDictionary * pDictionary)
 
 tResult cDictionaryTextStore::Save(IDictionary * pDictionary)
 {
-   FILE * fp = fopen(m_file.GetName(), "w");
+   FILE * fp = fopen(m_file.c_str(), "w");
 
    if (fp == NULL)
    {
@@ -231,7 +231,7 @@ cDictionaryIniStore::cDictionaryIniStore(const cFileSpec & file,
 
 tResult cDictionaryIniStore::Load(IDictionary * pDictionary)
 {
-   FILE * fp = fopen(m_file.GetName(), "r");
+   FILE * fp = fopen(m_file.c_str(), "r");
 
    if (fp == NULL)
       return E_FAIL;

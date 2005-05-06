@@ -7,7 +7,6 @@
 #include "filespec.h"
 #include "techstring.h"
 
-#include <cstdio>
 #include <cstring>
 
 #ifdef HAVE_CPPUNIT
@@ -29,16 +28,13 @@ static const char kPathSeps[] = "\\/";
 
 cFileSpec::cFileSpec()
 {
-   memset(m_szFullName, 0, sizeof(m_szFullName));
 }
 
 ///////////////////////////////////////
 
 cFileSpec::cFileSpec(const char * pszFile)
+ : cStr(pszFile)
 {
-   static const size_t max = _countof(m_szFullName);
-   strncpy(m_szFullName, pszFile, max);
-   m_szFullName[max - 1] = 0;
 }
 
 ///////////////////////////////////////
@@ -50,10 +46,9 @@ cFileSpec::cFileSpec(const cFileSpec & other)
 
 ///////////////////////////////////////
 
-const cFileSpec & cFileSpec::operator =(const char * pszFile)
+const cFileSpec & cFileSpec::operator =(const cFileSpec & other)
 {
-   strncpy(m_szFullName, pszFile, _countof(m_szFullName));
-   m_szFullName[_countof(m_szFullName) - 1] = 0;
+   assign(other.c_str());
    return *this;
 }
 
@@ -77,8 +72,8 @@ int cFileSpec::Compare(const cFileSpec & other) const
 {
    char szTemp1[kMaxPath], szTemp2[kMaxPath];
 
-   StrCpyExcl(szTemp1, GetName(), kPathSeps);
-   StrCpyExcl(szTemp2, other.GetName(), kPathSeps);
+   StrCpyExcl(szTemp1, c_str(), kPathSeps);
+   StrCpyExcl(szTemp2, other.c_str(), kPathSeps);
 
    return strcmp(szTemp1, szTemp2);
 }
@@ -89,41 +84,24 @@ int cFileSpec::CompareNoCase(const cFileSpec & other) const
 {
    char szTemp1[kMaxPath], szTemp2[kMaxPath];
 
-   StrCpyExcl(szTemp1, GetName(), kPathSeps);
-   StrCpyExcl(szTemp2, other.GetName(), kPathSeps);
+   StrCpyExcl(szTemp1, c_str(), kPathSeps);
+   StrCpyExcl(szTemp2, other.c_str(), kPathSeps);
 
    return stricmp(szTemp1, szTemp2);
 }
 
 ///////////////////////////////////////
 
-const char * ReverseFindOneOf(const char * string, const char * strCharSet)
-{
-   const char * start = string;
-
-   string += strlen(string);
-
-   while (--string != start)
-   {
-      if (strchr(strCharSet, *string))
-      {
-         return string;
-      }
-   }
-
-   return NULL;
-}
-
 const char * cFileSpec::GetFileName() const
 {
-   const char * pszLastPathSep = ReverseFindOneOf(GetName(), kPathSeps);
-   if (pszLastPathSep != NULL)
+   size_type i = find_last_of(kPathSeps);
+   if (i != npos)
    {
-      return ++pszLastPathSep;
+      return c_str() + i + 1;
    }
    else
    {
-      return GetName();
+      return c_str();
    }
 }
 
@@ -156,7 +134,7 @@ bool cFileSpec::GetFileNameNoExt(cStr * pFileName) const
 
 const char * cFileSpec::GetFileExt() const
 {
-   const char * pszExt = strrchr(GetName(), kExtensionSep);
+   const char * pszExt = strrchr(c_str(), kExtensionSep);
    if (pszExt)
    {
       return ++pszExt;
@@ -169,38 +147,18 @@ const char * cFileSpec::GetFileExt() const
 
 ///////////////////////////////////////
 
-//#define UNSAFE
-
 bool cFileSpec::SetFileExt(const char * pszExt)
 {
-   size_t len = strlen(GetName());
+   size_t len = length();
    if (len > 0)
    {
-      char * pszDest = strrchr(m_szFullName, kExtensionSep);
-#ifdef UNSAFE
-      if (pszDest != NULL)
+      size_type i = rfind(kExtensionSep);
+      if (i != npos)
       {
-         strcpy(++pszDest, pszExt);
+         erase(i);
       }
-      else
-      {
-         strcat(m_szFullName, szExtensionSep);
-         strcat(m_szFullName, pszExt);
-      }
-#else
-      if (pszDest != NULL)
-      {
-         uint max = _countof(m_szFullName) - len;
-         strncpy(++pszDest, pszExt, max);
-      }
-      else
-      {
-         char szTemp[kMaxPath];
-         snprintf(szTemp, _countof(szTemp), "%s%s%s", m_szFullName, szExtensionSep, pszExt);
-         strncpy(m_szFullName, szTemp, _countof(m_szFullName));
-      }
-      m_szFullName[_countof(m_szFullName) - 1] = 0;
-#endif
+      append(szExtensionSep);
+      append(pszExt);
       return true;
    }
    return false;
@@ -222,26 +180,13 @@ cFilePath cFileSpec::GetPath() const
    const char * pszFileName = GetFileName();
    if (pszFileName != NULL)
    {
-      const char * pszFullName = GetName();
+      const char * pszFullName = c_str();
       return cFilePath(pszFullName, pszFileName - pszFullName);
    }
    else
    {
-      return cFilePath(GetName());
+      return cFilePath(c_str());
    }
-}
-
-///////////////////////////////////////
-
-bool cFileSpec::Exists() const
-{
-   FILE * fp = fopen(GetName(), "r");
-   if (fp != NULL)
-   {
-      fclose(fp);
-      return true;
-   }
-   return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -292,7 +237,7 @@ void cFileSpecTests::TestGetSetFileExt()
       CPPUNIT_ASSERT(strlen(fs.GetFileExt()) == 0);
       CPPUNIT_ASSERT(fs.SetFileExt("ext"));
       CPPUNIT_ASSERT(strcmp(fs.GetFileExt(), "ext") == 0);
-      CPPUNIT_ASSERT(strcmp(fs.GetName(), "c:\\path1\\path2\\file.ext") == 0);
+      CPPUNIT_ASSERT(strcmp(fs.c_str(), "c:\\path1\\path2\\file.ext") == 0);
    }
 
    {
@@ -300,7 +245,7 @@ void cFileSpecTests::TestGetSetFileExt()
       CPPUNIT_ASSERT(strcmp(fs.GetFileExt(), "TST") == 0);
       CPPUNIT_ASSERT(fs.SetFileExt("ext"));
       CPPUNIT_ASSERT(strcmp(fs.GetFileExt(), "ext") == 0);
-      CPPUNIT_ASSERT(strcmp(fs.GetName(), "c:\\path1\\path2\\file.ext") == 0);
+      CPPUNIT_ASSERT(strcmp(fs.c_str(), "c:\\path1\\path2\\file.ext") == 0);
    }
 }
 
@@ -311,13 +256,13 @@ void cFileSpecTests::TestSetPath()
    {
       cFileSpec fs1("c:\\p1\\p2\\p3\\p4\\file.ext");
       fs1.SetPath(cFilePath());
-      CPPUNIT_ASSERT(strcmp(fs1.GetName(), "file.ext") == 0);
+      CPPUNIT_ASSERT(strcmp(fs1.c_str(), "file.ext") == 0);
    }
 
    {
       cFileSpec fs1("c:\\p1\\p2\\p3\\p4\\file.ext");
       fs1.SetPath(cFilePath("D:\\path"));
-      CPPUNIT_ASSERT(strcmp(fs1.GetName(), "D:\\path\\file.ext") == 0);
+      CPPUNIT_ASSERT(strcmp(fs1.c_str(), "D:\\path\\file.ext") == 0);
    }
 }
 
