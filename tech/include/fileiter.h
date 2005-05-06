@@ -10,6 +10,8 @@
 #pragma once
 #endif
 
+class cFileSpec;
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // ENUM: eFileAttribute
@@ -36,9 +38,9 @@ class cFileIter
 {
 public:
    virtual ~cFileIter() = 0;
-   virtual void IterBegin(const char * pszSpec) = 0;
-   virtual BOOL IterNext(char * pszResult, uint maxResult, uint * pAttribs) = 0;
-   virtual void IterEnd() = 0;
+   virtual void Begin(const cFileSpec & spec) = 0;
+   virtual bool Next(cFileSpec * pFileSpec, uint * pAttribs) = 0;
+   virtual void End() = 0;
 };
 
 ///////////////////////////////////////

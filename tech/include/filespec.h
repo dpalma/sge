@@ -6,7 +6,6 @@
 
 #include "techdll.h"
 #include "techstring.h"
-#include "fileconst.h"
 
 #ifdef _MSC_VER
 #pragma once
@@ -28,8 +27,8 @@ public:
 
    const cFileSpec & operator =(const cFileSpec & other);
 
-   int Compare(const cFileSpec & other) const;
-   int CompareNoCase(const cFileSpec & other) const;
+   bool operator ==(const cFileSpec & other);
+   bool operator !=(const cFileSpec & other);
 
    const char * GetFileName() const;
    bool GetFileNameNoExt(cStr * pFileName) const;
@@ -39,6 +38,20 @@ public:
    void SetPath(const cFilePath & path);
    cFilePath GetPath() const;
 };
+
+///////////////////////////////////////
+
+inline bool cFileSpec::operator ==(const cFileSpec & other)
+{
+   return filepathcmp(*this, other) == 0;
+}
+
+///////////////////////////////////////
+
+inline bool cFileSpec::operator !=(const cFileSpec & other)
+{
+   return filepathcmp(*this, other) != 0;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 

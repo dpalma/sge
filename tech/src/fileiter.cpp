@@ -47,9 +47,9 @@ class cFileIterWin32 : public cFileIter
 public:
    cFileIterWin32();
 
-   void IterBegin(const char * pszSpec);
-   BOOL IterNext(char * pszResult, uint maxResult, uint * pAttribs);
-   void IterEnd();
+   void Begin(const cFileSpec & spec);
+   bool Next(cFileSpec * pFileSpec, uint * pAttribs);
+   void End();
 
 private:
    const cFilePath & GetPath() const { return m_path; }
@@ -70,32 +70,18 @@ cFileIterWin32::cFileIterWin32()
 
 ///////////////////////////////////////
 
-void cFileIterWin32::IterBegin(const char * pszSpec)
+void cFileIterWin32::Begin(const cFileSpec & spec)
 {
-   Assert(pszSpec != NULL);
    Assert(m_hFinder == NULL);
-
-   m_spec = pszSpec;
-
-   const char * p = strrchr(pszSpec, '\\');
-   if (p != NULL)
-   {
-      int len = p - pszSpec;
-      if (len < MAX_PATH)
-      {
-         char szPath[MAX_PATH];
-         strncpy(szPath, pszSpec, len);
-         szPath[len] = 0;
-         m_path = szPath;
-      }
-   }
+   m_spec = spec;
+   m_path = spec.GetPath();
 }
 
 ///////////////////////////////////////
 
-BOOL cFileIterWin32::IterNext(char * pszResult, uint maxResult, uint * pAttribs)
+bool cFileIterWin32::Next(cFileSpec * pFileSpec, uint * pAttribs)
 {
-   BOOL bFound = FALSE;
+   bool bFound = false;
 
    do
    {
@@ -103,11 +89,16 @@ BOOL cFileIterWin32::IterNext(char * pszResult, uint maxResult, uint * pAttribs)
       {
          m_hFinder = FindFirstFile(GetSpec(), &m_findData);
          if (m_hFinder != INVALID_HANDLE_VALUE)
-            bFound = TRUE;
+         {
+            bFound = true;
+         }
       }
       else
       {
-         bFound = FindNextFile(m_hFinder, &m_findData);
+         if (FindNextFile(m_hFinder, &m_findData))
+         {
+            bFound = true;
+         }
       }
 
       if (bFound)
@@ -118,27 +109,33 @@ BOOL cFileIterWin32::IterNext(char * pszResult, uint maxResult, uint * pAttribs)
          {
             if (strcmp(m_findData.cFileName, ".") == 0 ||
                 strcmp(m_findData.cFileName, "..") == 0)
+            {
                continue;
+            }
          }
 
-         cFileSpec foundFile(m_findData.cFileName);
-         foundFile.SetPath(GetPath());
+         if (pFileSpec != NULL)
+         {
+            *pFileSpec = cFileSpec(m_findData.cFileName);
+            pFileSpec->SetPath(GetPath());
+         }
 
-         strncpy(pszResult, foundFile.c_str(), maxResult);
-         pszResult[maxResult - 1] = 0;
          if (pAttribs != NULL)
+         {
             *pAttribs = m_findData.dwFileAttributes;
-         return TRUE;
+         }
+
+         return true;
       }
    }
    while (bFound);
 
-   return FALSE;
+   return false;
 }
 
 ///////////////////////////////////////
 
-void cFileIterWin32::IterEnd()
+void cFileIterWin32::End()
 {
    if (m_hFinder != NULL && m_hFinder != INVALID_HANDLE_VALUE)
    {

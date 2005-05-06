@@ -40,6 +40,8 @@ LOG_DEFINE_CHANNEL(ResourceManager);
 const uint kNoIndex = ~0;
 const ulong kNoIndexL = ~0;
 
+static const int kUnzMaxPath = 260;
+
 // REFERENCES
 // "Game Developer Magazine", February 2005, "Inner Product" column
 
@@ -278,20 +280,19 @@ tResult cResourceManager::AddDirectory(const char * pszDir)
    cFileSpec spec("*.*");
    spec.SetPath(cFilePath(pszDir));
 
-   char szFile[kMaxPath];
+   cFileSpec file;
    uint attribs;
 
-   pFileIter->IterBegin(spec.c_str());
-   while (pFileIter->IterNext(szFile, _countof(szFile), &attribs))
+   pFileIter->Begin(spec);
+   while (pFileIter->Next(&file, &attribs))
    {
       if ((attribs & kFA_Directory) == kFA_Directory)
       {
-         LocalMsg1("Dir: %s\n", szFile);
+         LocalMsg1("Dir: %s\n", file.c_str());
       }
       else
       {
-         LocalMsg1("File: %s\n", szFile);
-         cFileSpec file(szFile);
+         LocalMsg1("File: %s\n", file.c_str());
          sResource res;
          Verify(file.GetFileNameNoExt(&res.name));
          const char * pszExt = file.GetFileExt();
@@ -303,7 +304,7 @@ tResult cResourceManager::AddDirectory(const char * pszDir)
          m_resources.push_back(res);
       }
    }
-   pFileIter->IterEnd();
+   pFileIter->End();
 
    delete pFileIter;
 
@@ -321,7 +322,7 @@ tResult cResourceManager::AddDirectoryTreeFlattened(const char * pszDir)
 
    cFilePath root(pszDir);
    root.MakeFullPath();
-   if (AddDirectory(root.GetPath()) != S_OK)
+   if (AddDirectory(root.c_str()) != S_OK)
    {
       return E_FAIL;
    }
@@ -334,7 +335,7 @@ tResult cResourceManager::AddDirectoryTreeFlattened(const char * pszDir)
       {
          cFilePath p(root);
          p.AddRelative(iter->c_str());
-         if (AddDirectoryTreeFlattened(p.GetPath()) != S_OK)
+         if (AddDirectoryTreeFlattened(p.c_str()) != S_OK)
          {
             return E_FAIL;
          }
@@ -368,7 +369,7 @@ tResult cResourceManager::AddArchive(const char * pszArchive)
    {
       unz_file_pos filePos;
       unz_file_info fileInfo;
-      char szFile[kMaxPath];
+      char szFile[kUnzMaxPath];
       if (unzGetFilePos(uf, &filePos) == UNZ_OK &&
          unzGetCurrentFileInfo(uf, &fileInfo, szFile, _countof(szFile), NULL, 0, NULL, 0) == UNZ_OK)
       {
@@ -774,7 +775,7 @@ tResult cResourceManager::DoLoadFromArchive(uint archiveId, ulong offset, ulong 
    tResult result = E_FAIL;
 
    unz_file_info fileInfo;
-   char szFile[kMaxPath];
+   char szFile[kUnzMaxPath];
    if (unzGetCurrentFileInfo(uf, &fileInfo, szFile, _countof(szFile), NULL, 0, NULL, 0) == UNZ_OK)
    {
       byte * pBuffer = new byte[fileInfo.uncompressed_size];

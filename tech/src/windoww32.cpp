@@ -513,7 +513,7 @@ cStr cWindowWin32::GenerateWindowClassName(uint classStyle,
                                            HBRUSH hbrBackground,
                                            HICON hIcon)
 {
-   char szModule[kMaxPath];
+   char szModule[MAX_PATH];
    Verify(GetModuleFileName(NULL, szModule, _countof(szModule)));
 
    strupr(szModule);

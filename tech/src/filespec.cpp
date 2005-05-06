@@ -68,30 +68,6 @@ static void StrCpyExcl(char * pDest, const char * pSrc, const char * pExcl)
 
 ///////////////////////////////////////
 
-int cFileSpec::Compare(const cFileSpec & other) const
-{
-   char szTemp1[kMaxPath], szTemp2[kMaxPath];
-
-   StrCpyExcl(szTemp1, c_str(), kPathSeps);
-   StrCpyExcl(szTemp2, other.c_str(), kPathSeps);
-
-   return strcmp(szTemp1, szTemp2);
-}
-
-///////////////////////////////////////
-
-int cFileSpec::CompareNoCase(const cFileSpec & other) const
-{
-   char szTemp1[kMaxPath], szTemp2[kMaxPath];
-
-   StrCpyExcl(szTemp1, c_str(), kPathSeps);
-   StrCpyExcl(szTemp2, other.c_str(), kPathSeps);
-
-   return stricmp(szTemp1, szTemp2);
-}
-
-///////////////////////////////////////
-
 const char * cFileSpec::GetFileName() const
 {
    size_type i = find_last_of(kPathSeps);
@@ -170,7 +146,7 @@ void cFileSpec::SetPath(const cFilePath & path)
 {
    cFilePath temp(path);
    temp.AddRelative(GetFileName());
-   *this = cFileSpec(temp.GetPath());
+   *this = cFileSpec(temp.c_str());
 }
 
 ///////////////////////////////////////
@@ -270,17 +246,19 @@ void cFileSpecTests::TestSetPath()
 
 void cFileSpecTests::TestGetPath()
 {
-   CPPUNIT_ASSERT(strcmp(cFileSpec("c:\\p1\\p2\\p3\\p4\\file.ext").GetPath().GetPath(), "c:\\p1\\p2\\p3\\p4") == 0);
+   cFileSpec test("c:\\p1\\p2\\p3\\p4\\file.ext");
+   cFilePath testPath(test.GetPath());
+   CPPUNIT_ASSERT(filepathcmp(testPath.c_str(), "c:\\p1\\p2\\p3\\p4") == 0);
 }
 
 ///////////////////////////////////////
 
 void cFileSpecTests::TestCompare()
 {
-   CPPUNIT_ASSERT(cFileSpec("c:\\p1\\p2\\p3.ext").Compare(cFileSpec("c:/p1/p2/p3.ext")) == 0);
-   CPPUNIT_ASSERT(cFileSpec("C:\\P1\\P2\\P3.EXT").Compare(cFileSpec("c:/p1/p2/p3.ext")) != 0);
-   CPPUNIT_ASSERT(cFileSpec("C:\\P1\\P2\\P3.EXT").CompareNoCase(cFileSpec("c:/p1/p2/p3.ext")) == 0);
-   CPPUNIT_ASSERT(cFileSpec("c:\\p1\\p2.p3").Compare(cFileSpec("c:\\p4\\p5.p6")) < 0);
+   CPPUNIT_ASSERT(cFileSpec("c:\\p1\\p2\\p3.ext") == cFileSpec("c:/p1/p2/p3.ext"));
+   CPPUNIT_ASSERT(cFileSpec("C:\\P1\\P2\\P3.EXT") != cFileSpec("c:/p1/p2/p3.ext"));
+   CPPUNIT_ASSERT(filepathicmp(cFileSpec("C:\\P1\\P2\\P3.EXT"), cFileSpec("c:/p1/p2/p3.ext")) == 0);
+   CPPUNIT_ASSERT(filepathcmp(cFileSpec("c:\\p1\\p2.p3"), cFileSpec("c:\\p4\\p5.p6")) < 0);
 }
 
 ///////////////////////////////////////
@@ -306,7 +284,7 @@ void cFileSpecTests::TestSetFileExtBufferOverrunAttack()
 
    struct sAttack
    {
-      char szExt[kMaxPath - 4]; // the 4 is the length of "foo." in szTestFileName
+      char szExt[260 - 4]; // the 4 is the length of "foo." in szTestFileName
       void * pStackFrame;
       void * pReturnAddress;
    };

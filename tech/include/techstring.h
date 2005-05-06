@@ -39,7 +39,7 @@ public:
    bool operator !=(const tChar * psz) const;
 
    const tChar * Get() const;
-   int GetLength() const;
+   uint GetLength() const;
    void Empty();
    bool IsEmpty() const;
 
@@ -130,7 +130,7 @@ inline const tChar * cStr::Get() const
 
 ///////////////////////////////////////
 
-inline int cStr::GetLength() const
+inline uint cStr::GetLength() const
 {
    return length();
 }
@@ -209,6 +209,11 @@ inline bool cStrLessNoCase::operator()(const cStr & lhs, const cStr & rhs) const
 {
    return (stricmp(lhs.c_str(), rhs.c_str()) < 0) ? true : false;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+TECH_API int filepathcmp(const cStr & f1, const cStr & f2);
+TECH_API int filepathicmp(const cStr & f1, const cStr & f2);
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -157,6 +157,41 @@ int cStr::ParseTuple(float * pFloats, int nMaxFloats) const
 
 ///////////////////////////////////////////////////////////////////////////////
 
+static cStr FilteredCopy(const cStr & str, const cStr & excluded)
+{
+   cStr result;
+   for (uint i = 0; i < str.GetLength(); ++i)
+   {
+      if (excluded.find(str[i]) == cStr::npos)
+      {
+         result.push_back(str[i]);
+      }
+   }
+   return result;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+static const cStr g_fileSeps("\\/");
+
+int filepathcmp(const cStr & f1, const cStr & f2)
+{
+   cStr cf1(FilteredCopy(f1, g_fileSeps));
+   cStr cf2(FilteredCopy(f2, g_fileSeps));
+   return strcmp(cf1.c_str(), cf2.c_str());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+int filepathicmp(const cStr & f1, const cStr & f2)
+{
+   cStr cf1(FilteredCopy(f1, g_fileSeps));
+   cStr cf2(FilteredCopy(f2, g_fileSeps));
+   return stricmp(cf1.c_str(), cf2.c_str());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 #ifdef HAVE_CPPUNIT
 
 class cStrTests : public CppUnit::TestCase
@@ -164,10 +199,12 @@ class cStrTests : public CppUnit::TestCase
    CPPUNIT_TEST_SUITE(cStrTests);
       CPPUNIT_TEST(TestParseBadArgs);
       CPPUNIT_TEST(TestParseSuccessCases);
+      CPPUNIT_TEST(TestFilePathCompare);
    CPPUNIT_TEST_SUITE_END();
 
    void TestParseBadArgs();
    void TestParseSuccessCases();
+   void TestFilePathCompare();
 };
 
 ////////////////////////////////////////
@@ -212,6 +249,16 @@ void cStrTests::TestParseSuccessCases()
    CPPUNIT_ASSERT(n[0] == 1000);
    CPPUNIT_ASSERT(n[1] == 2000);
    CPPUNIT_ASSERT(n[2] == 3000);
+}
+
+////////////////////////////////////////
+
+void cStrTests::TestFilePathCompare()
+{
+   CPPUNIT_ASSERT(filepathcmp("c:\\p1\\p2\\p3", "c:/p1/p2/p3") == 0);
+   CPPUNIT_ASSERT(filepathcmp("C:\\P1\\P2\\P3", "c:/p1/p2/p3") != 0);
+   CPPUNIT_ASSERT(filepathicmp("C:\\P1\\P2\\P3", "c:/p1/p2/p3") == 0);
+   CPPUNIT_ASSERT(filepathcmp("c:\\p1\\p2\\p3", "c:\\p4\\p5\\p6") < 0);
 }
 
 #endif // HAVE_CPPUNIT
