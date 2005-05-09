@@ -103,6 +103,7 @@ void CMs3dviewView::OnDraw(CDC* pDC)
 
    if (pDoc->GetModel() != NULL)
    {
+      AccessRenderDevice()->SetBlendMatrices(pDoc->GetBlendMatrixCount(), pDoc->GetBlendMatrices());
       pDoc->GetModel()->Render(AccessRenderDevice());
    }
 
@@ -262,9 +263,9 @@ void CMs3dviewView::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 	   CMs3dviewDoc * pDoc = GetDocument();
 	   ASSERT_VALID(pDoc);
 
-      if (pDoc && pDoc->GetModel())
+      if (pDoc)
       {
-         pDoc->GetModel()->SetFrame(percent);
+         pDoc->SetFrame(percent);
          Invalidate(FALSE);
       }
    }

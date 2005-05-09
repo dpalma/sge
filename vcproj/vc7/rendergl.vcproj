@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.00"
 	Name="rendergl"
+	ProjectGUID="{2FAD7D2D-CFA5-4FD4-9029-B0FE814615B9}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>

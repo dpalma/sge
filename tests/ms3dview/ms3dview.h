@@ -1,5 +1,5 @@
-// ms3dview.h : main header file for the MS3DVIEW application
-//
+/////////////////////////////////////////////////////////////////////////////
+// $Id$
 
 #if !defined(AFX_MS3DVIEW_H__13F759AF_83D0_4CA1_AD79_CA508A9530EB__INCLUDED_)
 #define AFX_MS3DVIEW_H__13F759AF_83D0_4CA1_AD79_CA508A9530EB__INCLUDED_

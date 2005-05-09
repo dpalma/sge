@@ -1,6 +1,5 @@
-// MainFrm.h : interface of the CMainFrame class
-//
 /////////////////////////////////////////////////////////////////////////////
+// $Id$
 
 #if !defined(AFX_MAINFRM_H__91014EC0_0BD7_444D_A84C_E7DA1E640B3F__INCLUDED_)
 #define AFX_MAINFRM_H__91014EC0_0BD7_444D_A84C_E7DA1E640B3F__INCLUDED_
@@ -11,7 +10,6 @@
 
 class CMainFrame : public CFrameWnd
 {
-	
 protected: // create from serialization only
 	CMainFrame();
 	DECLARE_DYNCREATE(CMainFrame)

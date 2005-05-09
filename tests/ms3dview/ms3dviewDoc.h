@@ -4,7 +4,10 @@
 #if !defined(INCLUDED_MS3DVIEWDOC_H)
 #define INCLUDED_MS3DVIEWDOC_H
 
-#include "ms3dmesh.h"
+#include "meshapi.h"
+#include "animation.h"
+#include "skeleton.h"
+#include "comtools.h"
 
 #if _MSC_VER > 1000
 #pragma once
@@ -18,7 +21,10 @@ protected: // create from serialization only
 
 // Attributes
 public:
-   inline cMs3dMesh * GetModel() { return m_pMesh; }
+   inline IMesh * GetModel() { return m_pMesh; }
+   void SetFrame(float pct);
+   const tMatrix4 * GetBlendMatrices() { return &m_boneMatrices[0]; }
+   uint GetBlendMatrixCount() const { return m_boneMatrices.size(); }
 
 // Operations
 public:
@@ -41,6 +47,7 @@ public:
 #endif
 
 protected:
+   tResult PostRead();
 
 // Generated message map functions
 protected:
@@ -53,7 +60,8 @@ protected:
    afx_msg void OnUpdateRendering(CCmdUI * pCmdUI);
 
 private:
-   cAutoIPtr<cMs3dMesh> m_pMesh;
+   cAutoIPtr<IMesh> m_pMesh;
+   tMatrices m_boneMatrices;
 };
 
 /////////////////////////////////////////////////////////////////////////////

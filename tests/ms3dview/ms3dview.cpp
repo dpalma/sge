@@ -4,9 +4,11 @@
 #include "stdafx.h"
 #include "ms3dview.h"
 
+#include "engineapi.h"
+
 #include "textureapi.h"
 
-#include "resmgr.h"
+#include "resourceapi.h"
 #include "globalobj.h"
 
 #include "MainFrm.h"
@@ -56,10 +58,12 @@ BOOL CMs3dviewApp::InitInstance()
 	//  of your final executable, you should remove from the following
 	//  the specific initialization routines you do not need.
 
+#if _MFC_VER < 0x0700
 #ifdef _AFXDLL
 	Enable3dControls();			// Call this when using MFC in a shared DLL
 #else
 	Enable3dControlsStatic();	// Call this when linking to MFC statically
+#endif
 #endif
 
 	// Change the registry key under which our settings are stored.
@@ -69,9 +73,17 @@ BOOL CMs3dviewApp::InitInstance()
 
 	LoadStdProfileSettings();  // Load standard INI file options (including MRU)
 
-   TextureManagerCreate();
    ResourceManagerCreate();
    StartGlobalObjects();
+
+   TargaFormatRegister();
+   BmpFormatRegister();
+   TextFormatRegister("txt");
+   TextFormatRegister("lua");
+   TextFormatRegister("xml");
+   GlTextureResourceRegister();
+   EngineRegisterResourceFormats();
+   Ms3dFormatRegister();
 
 	// Register the application's document templates.  Document templates
 	//  serve as the connection between documents, frame windows and views.

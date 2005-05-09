@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.00"
 	Name="3rdpartyTinyxml"
+	ProjectGUID="{38F4DB86-0B20-4C29-8512-F29A6F40E1CD}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>

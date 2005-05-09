@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.00"
 	Name="3rdpartyCppunit"
+	ProjectGUID="{E6F07DED-6CDD-4448-A5D4-C9BCE20BA57B}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -362,10 +363,10 @@
 				RelativePath="..\..\3rdparty\cppunit\src\cppunit\TextTestRunner.cpp">
 			</File>
 			<File
-				RelativePath="..\..\3rdparty\cppunit\include\cppunit\ui\text\TextTestRunner.h">
+				RelativePath="..\..\3rdparty\cppunit\include\cppunit\TextTestRunner.h">
 			</File>
 			<File
-				RelativePath="..\..\3rdparty\cppunit\include\cppunit\TextTestRunner.h">
+				RelativePath="..\..\3rdparty\cppunit\include\cppunit\ui\text\TextTestRunner.h">
 			</File>
 		</Filter>
 		<Filter
@@ -725,10 +726,10 @@
 			</File>
 		</Filter>
 		<File
-			RelativePath="..\..\3rdparty\cppunit\include\cppunit\Makefile.am">
+			RelativePath="..\..\3rdparty\cppunit\src\cppunit\Makefile.am">
 		</File>
 		<File
-			RelativePath="..\..\3rdparty\cppunit\src\cppunit\Makefile.am">
+			RelativePath="..\..\3rdparty\cppunit\include\cppunit\Makefile.am">
 		</File>
 		<File
 			RelativePath="..\..\3rdparty\cppunit\configure.in">
