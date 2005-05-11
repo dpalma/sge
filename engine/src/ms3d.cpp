@@ -404,17 +404,7 @@ tResult cMs3dFileReader::CreateMaterials(IRenderDevice * pRenderDevice, IMesh * 
          pMaterial->SetSpecular(cColor(iter->specular));
          pMaterial->SetEmissive(cColor(iter->emissive));
          pMaterial->SetShininess(iter->shininess);
-
-         if (iter->texture[0] != 0)
-         {
-            UseGlobal(ResourceManager);
-            cAutoIPtr<ITexture> pTexture;
-            if (pResourceManager->Load(tResKey(iter->texture, kRC_Texture), (void**)&pTexture) == S_OK)
-            {
-               pMaterial->SetTexture(0, pTexture);
-            }
-         }
-
+         pMaterial->SetTexture(0, iter->texture);
          pMesh->AddMaterial(pMaterial);
       }
    }

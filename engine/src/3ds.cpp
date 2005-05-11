@@ -125,21 +125,12 @@ static IMaterial * MaterialFrom3ds(const c3dsMaterial * p3dsMaterial,
       return NULL;
    }
 
-   if (p3dsMaterial->szTexture[0] != 0)
-   {
-      UseGlobal(ResourceManager);
-      cAutoIPtr<ITexture> pTexture;
-      if (pResourceManager->Load(tResKey(p3dsMaterial->szTexture, kRC_Texture), (void**)&pTexture) == S_OK)
-      {
-         pMaterial->SetTexture(0, pTexture);
-      }
-   }
-
    pMaterial->SetName(p3dsMaterial->name.c_str());
    pMaterial->SetAmbient(cColor(p3dsMaterial->ambient[0],p3dsMaterial->ambient[1],p3dsMaterial->ambient[2]));
    pMaterial->SetDiffuse(cColor(p3dsMaterial->diffuse[0],p3dsMaterial->diffuse[1],p3dsMaterial->diffuse[2]));
    pMaterial->SetSpecular(cColor(p3dsMaterial->specular[0],p3dsMaterial->specular[1],p3dsMaterial->specular[2]));
    pMaterial->SetShininess(p3dsMaterial->shininess);
+   pMaterial->SetTexture(0, p3dsMaterial->szTexture);
 
    return pMaterial;
 }
