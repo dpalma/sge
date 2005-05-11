@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "textureapi.h"
+#include "renderapi.h"
 
 #include "imagedata.h"
 #include "techmath.h"
@@ -13,9 +13,6 @@
 
 #include "stdgl.h"
 #include <GL/glu.h>
-
-#include <map>
-#include <vector>
 
 #include "dbgalloc.h" // must be last header
 
@@ -62,56 +59,6 @@ static const GLenum g_glTexFormats[] =
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cTexture
-//
-
-class cTexture : public cComObject<IMPLEMENTS(ITexture)>
-{
-public:
-   cTexture();
-   ~cTexture();
-
-   virtual void OnFinalRelease();
-
-   tResult UploadImage(const cImageData * pImageData);
-
-   virtual tResult GetTextureHandle(HANDLE * phTexture) const;
-
-   GLuint GetTextureId() const { return m_textureId; }
-
-private:
-   void ReleaseTextureId();
-
-   bool m_bHasAlpha;
-   uint m_width, m_height;
-   uint m_textureId;
-};
-
-///////////////////////////////////////
-
-cTexture::cTexture()
- : m_bHasAlpha(false),
-   m_width(0),
-   m_height(0),
-   m_textureId(0)
-{
-}
-
-///////////////////////////////////////
-
-cTexture::~cTexture()
-{
-}
-
-///////////////////////////////////////
-
-void cTexture::OnFinalRelease()
-{
-   ReleaseTextureId();
-}
-
-///////////////////////////////////////
 
 tResult GlTextureCreate(const cImageData * pImageData, uint * pTexId)
 {
@@ -163,60 +110,6 @@ tResult GlTextureCreate(const cImageData * pImageData, uint * pTexId)
    return (result == 0) ? S_OK : E_FAIL;
 }
 
-tResult cTexture::UploadImage(const cImageData * pImageData)
-{
-   return GlTextureCreate(pImageData, &m_textureId);
-}
-
-///////////////////////////////////////
-
-tResult cTexture::GetTextureHandle(HANDLE * phTexture) const
-{
-   if (phTexture == NULL)
-   {
-      return E_POINTER;
-   }
-
-   *phTexture = (HANDLE)m_textureId;
-   return (m_textureId != 0) ? S_OK : S_FALSE;
-}
-
-///////////////////////////////////////
-
-void cTexture::ReleaseTextureId()
-{
-   if (glIsTexture(m_textureId))
-   {
-      glDeleteTextures(1, &m_textureId);
-   }
-   m_textureId = 0;
-}
-
-///////////////////////////////////////
-
-tResult TextureCreate(const cImageData * pImageData, ITexture * * ppTexture)
-{
-   if (pImageData == NULL || ppTexture == NULL)
-   {
-      return E_POINTER;
-   }
-
-   cAutoIPtr<cTexture> pTex(new cTexture);
-   if (!pTex)
-   {
-      return E_OUTOFMEMORY;
-   }
-
-   if (pTex->UploadImage(pImageData) == S_OK)
-   {
-      *ppTexture = CTAddRef(pTex);
-      return S_OK;
-   }
-
-   return E_FAIL;
-}
-
-
 ///////////////////////////////////////////////////////////////////////////////
 
 void * GlTextureFromImageData(void * pData, int dataLength, void * param)
@@ -243,37 +136,12 @@ void GlTextureUnload(void * pData)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void * ITextureFromImageData(void * pData, int dataLength, void * param)
-{
-   cImageData * pImageData = reinterpret_cast<cImageData*>(pData);
-
-   cAutoIPtr<cTexture> pTex(new cTexture);
-   if (!pTex || pTex->UploadImage(pImageData) != S_OK)
-   {
-      return NULL;
-   }
-
-   return CTAddRef(static_cast<ITexture*>(pTex));
-}
-
-void ITextureUnload(void * pData)
-{
-   ITexture * pTexture = reinterpret_cast<ITexture*>(pData);
-   if (pTexture != NULL)
-   {
-      pTexture->Release();
-   }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 tResult GlTextureResourceRegister()
 {
    UseGlobal(ResourceManager);
    if (!!pResourceManager)
    {
-      if (SUCCEEDED(pResourceManager->RegisterFormat(kRC_Texture, kRC_Image, NULL, NULL, ITextureFromImageData, ITextureUnload))
-         && SUCCEEDED(pResourceManager->RegisterFormat(kRC_GlTexture, kRC_Image, NULL, NULL, GlTextureFromImageData, GlTextureUnload)))
+      if (SUCCEEDED(pResourceManager->RegisterFormat(kRC_GlTexture, kRC_Image, NULL, NULL, GlTextureFromImageData, GlTextureUnload)))
       {
          return S_OK;
       }

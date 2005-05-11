@@ -33,7 +33,6 @@ enum eResourceClass
 {
    kRC_Unknown,
    kRC_Image,
-   kRC_Texture,
    kRC_Mesh,
    kRC_Text,
    kRC_Font,

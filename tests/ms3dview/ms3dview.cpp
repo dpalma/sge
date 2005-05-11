@@ -6,8 +6,6 @@
 
 #include "engineapi.h"
 
-#include "textureapi.h"
-
 #include "resourceapi.h"
 #include "globalobj.h"
 

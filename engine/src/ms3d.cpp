@@ -7,7 +7,6 @@
 #include "ms3d.h"
 #include "meshapi.h"
 #include "materialapi.h"
-#include "textureapi.h"
 #include "readwriteapi.h"
 #include "vec3.h"
 #include "imagedata.h"

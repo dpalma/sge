@@ -482,14 +482,13 @@ tResult cResourceManager::Unlock(const tResKey & key)
 
 ////////////////////////////////////////
 
-AssertOnce(kNUMRESOURCECLASSES == 11); // If this fails, values may have been added to eResourceClass
+AssertOnce(kNUMRESOURCECLASSES == 10); // If this fails, values may have been added to eResourceClass
 static const char * GetResourceClassName(eResourceClass rc)
 {
    switch (rc)
    {
    case kRC_Unknown:    return "Unknown";
    case kRC_Image:      return "Image";
-   case kRC_Texture:    return "Texture";
    case kRC_Mesh:       return "Mesh";
    case kRC_Text:       return "Text";
    case kRC_Font:       return "Font";

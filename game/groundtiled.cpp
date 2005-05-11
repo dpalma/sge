@@ -10,7 +10,6 @@
 
 #include "renderapi.h"
 #include "materialapi.h"
-#include "textureapi.h"
 #include "color.h"
 
 #include "resourceapi.h"

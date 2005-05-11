@@ -18,7 +18,7 @@
 #include "scriptapi.h"
 #include "engineapi.h"
 
-#include "textureapi.h"
+#include "renderapi.h"
 
 #include "resourceapi.h"
 #include "configapi.h"

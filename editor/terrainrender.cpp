@@ -8,7 +8,6 @@
 
 #include "materialapi.h"
 #include "renderapi.h"
-#include "textureapi.h"
 
 #include "imagedata.h"
 #include "resourceapi.h"
