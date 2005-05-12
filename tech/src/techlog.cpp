@@ -14,6 +14,7 @@
 #ifdef _WIN32
 extern "C" uint STDCALL OutputDebugStringA(const char *);
 extern "C" uint STDCALL OutputDebugStringW(const wchar_t *);
+#define vsnprintf _vsnprintf
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////

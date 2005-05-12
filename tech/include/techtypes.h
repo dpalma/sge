@@ -110,6 +110,9 @@ typedef long long       int64;
 #error ("Need platform definition for 64-bit integer")
 #endif
 
+typedef float           real32;
+typedef double          real64;
+
 #ifndef NO_BOOL
 typedef int    BOOL;
 #define TRUE   1
@@ -176,9 +179,7 @@ typedef void * HANDLE;
 
 #ifdef _MSC_VER
 #define snprintf _snprintf
-#define vsnprintf _vsnprintf
 EXTERN_C CRT_IMPORT int CDECL _snprintf(char *, size_t, const char * , ...);
-EXTERN_C CRT_IMPORT int CDECL _vsnprintf(char *, size_t, const char *, va_list);
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
