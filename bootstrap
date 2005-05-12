@@ -1,4 +1,0 @@
-#!/bin/sh
-# $Id$
-# Run the autogen.sh scripts in the project root and Lua directories
-cd ./3rdparty/lua && ./autogen.sh && cd ../.. && ./autogen.sh
