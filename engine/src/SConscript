@@ -1,0 +1,58 @@
+#############################################################################
+# $Id$
+
+Import('*')
+
+sources = Split("""
+   3ds.cpp
+   animation.cpp
+   cmds.cpp
+   engine.cpp
+   frustum.cpp
+   guibutton.cpp
+   guicontext.cpp
+   guidialog.cpp
+   guielementenum.cpp
+   guielementtools.cpp
+   guievent.cpp
+   guifactory.cpp
+   guilabel.cpp
+   guilayout.cpp
+   guipanel.cpp
+   guirender.cpp
+   guistyle.cpp
+   guitextedit.cpp
+   guitypes.cpp
+   input.cpp
+   luainterp.cpp
+   mesh.cpp
+   ms3d.cpp
+   ms3dread.cpp
+   ray.cpp
+   scene.cpp
+   scenecamera.cpp
+   sceneentity.cpp
+   sceneentityenum.cpp
+   scenelayer.cpp
+   scenemesh.cpp
+   scriptvar.cpp
+   sim.cpp
+   skeleton.cpp
+   stripify.cpp
+   submesh.cpp
+""")
+
+includePaths = Split("""
+   #3rdparty/sgi
+   #3rdparty/Cg/include
+   #3rdparty/lua/include
+   #3rdparty/tinyxml
+   #engine/include
+   #render/include
+   #tech/include
+""")
+
+env = env.Copy()
+env.Append(CPPPATH = includePaths)
+env.Append(CPPDEFINES = ['STATIC_BUILD'])
+env.Library('engine', sources)

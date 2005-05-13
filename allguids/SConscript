@@ -1,0 +1,17 @@
+Import('*')
+
+sources = Split("""
+   allguids.cpp
+""")
+           
+includePaths = Split("""
+   ../tech/include
+   ../render/include
+   ../engine/include
+   ../game
+   ../editor
+""")
+
+env = env.Copy()
+env.Append(CPPPATH = includePaths)
+env.Library('allguids', sources)
