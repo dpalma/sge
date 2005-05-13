@@ -176,8 +176,10 @@ tResult cScene::Render(IRenderDevice * pRenderDevice)
       cAutoIPtr<ISceneCamera> pCamera;
       if (m_layers[i].GetCamera(&pCamera) == S_OK)
       {
-         pRenderDevice->SetProjectionMatrix(pCamera->GetProjectionMatrix());
-         pRenderDevice->SetViewMatrix(pCamera->GetViewMatrix());
+         glMatrixMode(GL_PROJECTION);
+         glLoadMatrixf(pCamera->GetProjectionMatrix().m);
+         glMatrixMode(GL_MODELVIEW);
+         glLoadMatrixf(pCamera->GetViewMatrix().m);
          if (pCamera->GetProjectionType() == kPT_Perspective)
          {
             frustum.ExtractPlanes(pCamera->GetViewProjectionMatrix());

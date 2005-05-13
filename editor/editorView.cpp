@@ -247,7 +247,6 @@ void cEditorView::RenderScene()
    if (!!pDevice)
    {
       pDevice->BeginScene();
-      pDevice->Clear();
 
       UseGlobal(Scene);
       pScene->Render(pDevice);

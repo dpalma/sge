@@ -356,12 +356,6 @@
 				RelativePath="..\..\render\gl\renderdevice.cpp">
 			</File>
 			<File
-				RelativePath="..\..\render\gl\renderop.cpp">
-			</File>
-			<File
-				RelativePath="..\..\render\gl\renderqueue.cpp">
-			</File>
-			<File
 				RelativePath="..\..\render\gl\rendertypes.cpp">
 			</File>
 			<File
@@ -430,12 +424,6 @@
 			</File>
 			<File
 				RelativePath="..\..\render\gl\renderdevice.h">
-			</File>
-			<File
-				RelativePath="..\..\render\gl\renderop.h">
-			</File>
-			<File
-				RelativePath="..\..\render\gl\renderqueue.h">
 			</File>
 			<File
 				RelativePath="..\..\render\gl\softwarevertexblend.h">

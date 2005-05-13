@@ -512,7 +512,6 @@ void MainFrame()
    pSim->NextFrame();
 
    g_pRenderDevice->BeginScene();
-   g_pRenderDevice->Clear();
 
    UseGlobal(Scene);
    pScene->Render(g_pRenderDevice);
