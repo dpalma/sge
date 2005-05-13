@@ -306,84 +306,24 @@ static void RegisterGlobalObjects()
    GUIFactoryCreate();
    GUIRenderingToolsCreate();
    EntityManagerCreate();
-   EngineCreate();
    ThreadCallerCreate();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cEngineConfiguration
-//
 
-class cEngineConfiguration : public cComObject<IMPLEMENTS(IEngineConfiguration)>
+static bool ScriptExecResource(IScriptInterpreter * pInterpreter, const char * pszResource)
 {
-public:
-   cEngineConfiguration();
+   bool bResult = false;
 
-   virtual tResult GetStartupScript(cStr * pScript);
-
-   virtual tResult GetPreferredRenderDevice(uint * pPreferDevice);
-   virtual tResult GetRenderDeviceParameters(sRenderDeviceParameters * pParams);
-};
-
-///////////////////////////////////////
-
-cEngineConfiguration::cEngineConfiguration()
-{
-}
-
-///////////////////////////////////////
-
-tResult cEngineConfiguration::GetStartupScript(cStr * pScript)
-{
-   if (pScript == NULL)
+   char * pszCode = NULL;
+   UseGlobal(ResourceManager);
+   if (pResourceManager->Load(tResKey(pszResource, kRC_Text), (void**)&pszCode) == S_OK)
    {
-      return E_POINTER;
+      bResult = SUCCEEDED(pInterpreter->ExecString(pszCode));
+      pResourceManager->Unload(tResKey(pszResource, kRC_Text));
    }
 
-   if (ConfigGet("autoexec_script", pScript) != S_OK)
-   {
-      *pScript = kAutoExecScript;
-   }
-
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cEngineConfiguration::GetPreferredRenderDevice(uint * pPreferDevice)
-{
-   if (pPreferDevice == NULL)
-   {
-      return E_POINTER;
-   }
-
-   return ConfigIsTrue("use_d3d") ? kRD_Direct3D : kRD_OpenGL;
-}
-
-///////////////////////////////////////
-
-tResult cEngineConfiguration::GetRenderDeviceParameters(sRenderDeviceParameters * pParams)
-{
-   if (pParams == NULL)
-   {
-      return E_POINTER;
-   }
-
-   int width = kDefaultWidth;
-   int height = kDefaultHeight;
-   int bpp = kDefaultBpp;
-
-   ConfigGet("screen_width", &width);
-   ConfigGet("screen_height", &height);
-   ConfigGet("screen_bpp", &bpp);
-
-   pParams->width = width;
-   pParams->height = height;
-   pParams->bpp = bpp;
-   pParams->bFullScreen = ConfigIsTrue("full_screen") && !IsDebuggerPresent();
-
-   return S_OK;
+   return bResult;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -446,31 +386,43 @@ bool MainInit(int argc, char * argv[])
       pResourceManager->AddDirectoryTreeFlattened(temp.c_str());
    }
 
+   cStr script(kAutoExecScript);
+   ConfigGet("autoexec_script", &script);
+   if (!script.empty())
+   {
+      UseGlobal(ScriptInterpreter);
+      if (pScriptInterpreter->ExecFile(script.c_str()) != S_OK)
+      {
+         if (!ScriptExecResource(pScriptInterpreter, script.c_str()))
+         {
+            return false;
+         }
+      }
+   }
+
    g_fov = kDefaultFov;
    ConfigGet("fov", (float *)&g_fov); // @HACK: cast to float pointer
 
    int width = kDefaultWidth;
    int height = kDefaultHeight;
-
+   int bpp = kDefaultBpp;
    ConfigGet("screen_width", &width);
    ConfigGet("screen_height", &height);
+   ConfigGet("screen_bpp", &bpp);
+   bool bFullScreen = ConfigIsTrue("full_screen") && !IsDebuggerPresent();
 
-   cAutoIPtr<IEngineConfiguration> pEngineConfig(new cEngineConfiguration);
-   if (!pEngineConfig)
+   sRenderDeviceParameters params;
+   params.width = width;
+   params.height = height;
+   params.bpp = bpp;
+   params.bFullScreen = bFullScreen;
+   if (RenderDeviceCreate(&params, &g_pRenderDevice) != S_OK)
    {
       return false;
    }
 
-   UseGlobal(Engine);
-   if (FAILED(pEngine->Startup(pEngineConfig)))
-   {
-      return false;
-   }
-
-   if (FAILED(pEngine->GetRenderDevice(&g_pRenderDevice)))
-   {
-      return false;
-   }
+   UseGlobal(GUIRenderingTools);
+   pGUIRenderingTools->SetRenderDevice(g_pRenderDevice);
 
    g_pRenderDevice->GetWindow(&g_pWindow);
 
@@ -546,9 +498,6 @@ void MainTerm()
    {
       g_pGameCameraController->Disconnect();
    }
-
-   UseGlobal(Engine);
-   pEngine->Shutdown();
 
    StopGlobalObjects();
 }
