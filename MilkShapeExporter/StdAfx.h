@@ -8,6 +8,10 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+// Include <afx.h> first because it has pragmas to link
+// the MFC and CRT libraries in the correct order
+#include <afx.h>
+
 #include "techtypes.h"
 #include "techdebug.h"
 #include "combase.h"

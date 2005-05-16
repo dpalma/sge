@@ -12,6 +12,10 @@
 #define _WIN32_WINNT 0x0400
 #define _WIN32_IE 0x0400
 
+// Include <afx.h> first because it has pragmas to link
+// the MFC and CRT libraries in the correct order
+#include <afx.h>
+
 #define QI_TEMPLATE_METHOD_FOR_ATL
 
 #include "techtypes.h"

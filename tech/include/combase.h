@@ -68,10 +68,14 @@ typedef long tResult;
 
 // Generic test for success on any status value
 // (non-negative numbers indicate success).
+#ifndef SUCCEEDED
 inline bool SUCCEEDED(tResult result) { return result >= 0; }
+#endif
 
 // and the inverse
+#ifndef FAILED
 inline bool FAILED(tResult result) { return result < 0; }
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -4,19 +4,40 @@
 Import('*')
 
 sources = Split("""
-   cameracontroller.cpp
+   aboutdlg.cpp
+   BitmapUtils.cpp
    cmds.cpp
-   entitymgr.cpp
-   groundquadtree.cpp
-   groundtiled.cpp
-   heightmap.cpp
-   main.cpp
-   script.cpp
-   syswin.cpp
+   DynamicLink.cpp
+   editorApp.cpp
+   editorCommands.cpp
+   editorCtrlBars.cpp
+   editorDoc.cpp
+   editorTile.cpp
+   editorTileManager.cpp
+   editorTileSet.cpp
+   editorTools.cpp
+   editorTypes.cpp
+   editorView.cpp
+   glView.cpp
+   historywnd.cpp
+   MainFrm.cpp
+   MapSettingsDlg.cpp
+   OutputBar.cpp
+   scbarcf.cpp
+   scbarg.cpp
+   scrollwnd.cpp
+   sizecbar.cpp
+   splashwnd.cpp
+   stdhdr.cpp
+   terrain.cpp
+   terrainrender.cpp
+   ToolPalette.cpp
+   ToolPaletteBar.cpp
 """)
 
 includePaths = Split("""
    #3rdparty/sgi
+   #3rdparty/wtl/include
    #3rdparty/Cg/include
    #3rdparty/lua/include
    #3rdparty/tinyxml
@@ -59,4 +80,4 @@ env.Append(CPPPATH = includePaths)
 env.Append(CPPDEFINES = ['STATIC_BUILD'])
 env.Append(LIBPATH = libPaths)
 env.Append(LIBS = libs)
-env.Program('game', sources + env.RES('game.rc'))
+env.Program('editor', sources + env.RES('editor.rc'))

@@ -4,19 +4,17 @@
 Import('*')
 
 sources = Split("""
-   cameracontroller.cpp
-   cmds.cpp
-   entitymgr.cpp
-   groundquadtree.cpp
-   groundtiled.cpp
-   heightmap.cpp
-   main.cpp
-   script.cpp
-   syswin.cpp
+   ModelTreeInfo.cpp
+   msPlugInApp.cpp
+   msPlugInExportDlg.cpp
+   msPlugInImpl.cpp
+   StdAfx.cpp
+   msPlugIn.def
 """)
 
 includePaths = Split("""
    #3rdparty/sgi
+   #3rdparty/ms3dsdk/msLib
    #3rdparty/Cg/include
    #3rdparty/lua/include
    #3rdparty/tinyxml
@@ -26,6 +24,7 @@ includePaths = Split("""
 """)
 
 libPaths = Split("""
+   #3rdparty/ms3dsdk/msLib/lib
    #3rdparty/Cg/lib
    #3rdparty/tinyxml
    #3rdparty/lua/src
@@ -37,6 +36,7 @@ libPaths = Split("""
 """)
 
 libs = Split("""
+   msModelLib.lib
    allguids.lib
    tech.lib
    rendergl.lib
@@ -59,4 +59,4 @@ env.Append(CPPPATH = includePaths)
 env.Append(CPPDEFINES = ['STATIC_BUILD'])
 env.Append(LIBPATH = libPaths)
 env.Append(LIBS = libs)
-env.Program('game', sources + env.RES('game.rc'))
+env.SharedLibrary('msSGEExporter', sources + env.RES('msPlugIn.rc'))

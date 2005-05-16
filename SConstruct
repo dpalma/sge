@@ -19,8 +19,10 @@ opts.Update(env)
 
 Help("Usage: scons <debug=yes|no>" + opts.GenerateHelpText(env))
 
+win32_modules = ''
 platform = str(Platform())
 if platform == 'win32':
+   win32_modules = 'MilkShapeExporter editor'
    env.Append(CCFLAGS=['/GX', '/FD'], CPPDEFINES=['_WIN32', 'WIN32', '_MBCS', 'STRICT']);
    env.Append(CPPDEFINES=['TIXML_USE_STL'])
    if env.get('debug'):
@@ -32,5 +34,14 @@ else:
    print 'Unsupported platform'
    Exit(1)
 
+modules = Split("""
+   3rdparty
+   allguids
+   tech
+   render
+   engine
+   game
+""" + win32_modules)
+
 Export('env')
-SConscript(dirs=['3rdparty', 'allguids', 'tech', 'render', 'engine', 'game'])
+SConscript(dirs = modules)
