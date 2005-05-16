@@ -581,21 +581,20 @@ ENGINE_API void GUIContextCreate();
 // INTERFACE: IGUIRenderingTools
 //
 
+ENGINE_API void GlRender3dRect(const tGUIRect & rect, int bevel, const tGUIColor & topLeft,
+                               const tGUIColor & bottomRight, const tGUIColor & face);
+
 interface IGUIRenderingTools : IUnknown
 {
-   virtual tResult SetRenderDevice(IRenderDevice * pRenderDevice) = 0;
-   virtual tResult GetRenderDevice(IRenderDevice * * ppRenderDevice) = 0;
-
    virtual tResult SetDefaultFont(IRenderFont * pFont) = 0;
    virtual tResult GetDefaultFont(IRenderFont * * ppFont) = 0;
 
-   // All bitmap buttons everywhere can share the same vertex and index
-   // buffers by varying the material and start vertex used in the render call
-   virtual tResult GetBitmapButtonIndexBuffer(IIndexBuffer * * ppIndexBuffer) = 0;
-   virtual tResult GetBitmapButtonVertexBuffer(const tGUIRect & rect, IVertexBuffer * * ppVertexBuffer) = 0;
-
-   virtual tResult Render3dRect(const tGUIRect & rect, int bevel, 
-      const tGUIColor & topLeft, const tGUIColor & bottomRight, const tGUIColor & face) = 0;
+   tResult Render3dRect(const tGUIRect & rect, int bevel, 
+      const tGUIColor & topLeft, const tGUIColor & bottomRight, const tGUIColor & face)
+   {
+      GlRender3dRect(rect, bevel, topLeft, bottomRight, face);
+      return S_OK;
+   }
 };
 
 ///////////////////////////////////////

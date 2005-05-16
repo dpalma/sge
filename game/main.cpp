@@ -443,16 +443,13 @@ bool MainInit(int argc, char * argv[])
       return false;
    }
 
-   UseGlobal(GUIRenderingTools);
-   pGUIRenderingTools->SetRenderDevice(g_pRenderDevice);
-
    UseGlobal(ThreadCaller);
    if (FAILED(pThreadCaller->ThreadInit()))
    {
       return false;
    }
 
-   if (FAILED(FontCreateDefault(g_pRenderDevice, &g_pFont)))
+   if (FAILED(FontCreateDefault(&g_pFont)))
    {
       WarnMsg("Failed to create default font for rendering frame stats\n");
       return false;

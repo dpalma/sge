@@ -483,18 +483,10 @@ tResult cGUIStyle::GetFont(IRenderFont * * ppFont)
    if (!m_pFont)
    {
       cFontDesc fontDesc;
-      if (GetFontDesc(&fontDesc) == S_OK)
+      if (GetFontDesc(&fontDesc) != S_OK
+         || FontCreate(fontDesc, &m_pFont) != S_OK)
       {
-         UseGlobal(GUIRenderingTools);
-
-         cAutoIPtr<IRenderDevice> pRenderDevice;
-         if (pGUIRenderingTools->GetRenderDevice(&pRenderDevice) == S_OK)
-         {
-            if (FontCreate(pRenderDevice, fontDesc, &m_pFont) != S_OK)
-            {
-               pGUIRenderingTools->GetDefaultFont(&m_pFont);
-            }
-         }
+         FontCreateDefault(&m_pFont);
       }
    }
 
