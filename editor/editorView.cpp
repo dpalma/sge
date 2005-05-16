@@ -285,6 +285,7 @@ void cEditorView::RenderScene()
       }
 
       pDevice->EndScene();
+      SwapBuffers();
    }
 }
 
@@ -337,7 +338,7 @@ int cEditorView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (cGLView::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
-   if (RenderDeviceCreate(static_cast<IWindow *>(this), &m_pRenderDevice) != S_OK)
+   if (RenderDeviceCreate(&m_pRenderDevice) != S_OK)
    {
       DebugMsg("Failed to create rendering device\n");
       return -1;

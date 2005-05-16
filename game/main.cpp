@@ -411,20 +411,40 @@ bool MainInit(int argc, char * argv[])
    ConfigGet("screen_bpp", &bpp);
    bool bFullScreen = ConfigIsTrue("full_screen") && !IsDebuggerPresent();
 
-   sRenderDeviceParameters params;
+   sWindowCreateParams params;
    params.width = width;
    params.height = height;
    params.bpp = bpp;
-   params.bFullScreen = bFullScreen;
-   if (RenderDeviceCreate(&params, &g_pRenderDevice) != S_OK)
+   params.flags = kWCF_CreateGlContext;
+   g_pWindow = WindowCreate(&params);
+   if (!g_pWindow)
+   {
+      return false;
+   }
+
+   // TODO: enable full-screen code
+#if 0
+   cAutoIPtr<IWindowFullScreen> pWindowFullScreen;
+   if (pParams->bFullScreen
+      && pWindow->QueryInterface(IID_IWindowFullScreen, (void * *)&pWindowFullScreen) == S_OK)
+   {
+      pWindowFullScreen->BeginFullScreen();
+   }
+
+   cAutoIPtr<IWindowFullScreen> pWindowFullScreen;
+   if (m_pWindow->QueryInterface(IID_IWindowFullScreen, (void**)&pWindowFullScreen) == S_OK)
+   {
+      pWindowFullScreen->EndFullScreen();
+   }
+#endif
+
+   if (RenderDeviceCreate(&g_pRenderDevice) != S_OK)
    {
       return false;
    }
 
    UseGlobal(GUIRenderingTools);
    pGUIRenderingTools->SetRenderDevice(g_pRenderDevice);
-
-   g_pRenderDevice->GetWindow(&g_pWindow);
 
    UseGlobal(ThreadCaller);
    if (FAILED(pThreadCaller->ThreadInit()))
@@ -543,6 +563,7 @@ void MainFrame()
    }
 
    g_pRenderDevice->EndScene();
+   g_pWindow->SwapBuffers();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

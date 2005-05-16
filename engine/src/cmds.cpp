@@ -199,12 +199,10 @@ int LoadGUI(int argc, const cScriptVar * argv,
       UseGlobal(GUIContext);
       if (!!pGUIContext)
       {
-         if (pGUIContext->LoadFromString(argv[0]) == 0)
+         if (pGUIContext->LoadFromString(argv[0]) == S_OK
+            || pGUIContext->LoadFromResource(argv[0]) == S_OK)
          {
-            if (pGUIContext->LoadFromResource(argv[0]) == 0)
-            {
-               DebugMsg1("Loading GUI definitions from %s\n", argv[0]);
-            }
+            DebugMsg1("Loading GUI definitions from %s\n", static_cast<const tChar *>(argv[0]));
          }
       }
    }
