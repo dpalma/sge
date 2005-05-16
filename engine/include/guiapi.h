@@ -581,8 +581,11 @@ ENGINE_API void GUIContextCreate();
 // INTERFACE: IGUIRenderingTools
 //
 
-ENGINE_API void GlRender3dRect(const tGUIRect & rect, int bevel, const tGUIColor & topLeft,
-                               const tGUIColor & bottomRight, const tGUIColor & face);
+ENGINE_API void GlRenderBevelledRect(const tGUIRect & rect, int bevel, const tGUIColor & topLeft,
+                                     const tGUIColor & bottomRight, const tGUIColor & face);
+
+ENGINE_API void GlBegin2D();
+ENGINE_API void GlEnd2D();
 
 interface IGUIRenderingTools : IUnknown
 {
@@ -592,7 +595,7 @@ interface IGUIRenderingTools : IUnknown
    tResult Render3dRect(const tGUIRect & rect, int bevel, 
       const tGUIColor & topLeft, const tGUIColor & bottomRight, const tGUIColor & face)
    {
-      GlRender3dRect(rect, bevel, topLeft, bottomRight, face);
+      GlRenderBevelledRect(rect, bevel, topLeft, bottomRight, face);
       return S_OK;
    }
 };

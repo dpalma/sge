@@ -80,24 +80,23 @@ static uint32 PackColor(const tGUIColor & color)
    return ARGB(a,b,g,r);
 }
 
-void GlRender3dRect(const tGUIRect & rect, int bevel, const tGUIColor & topLeft,
-                    const tGUIColor & bottomRight, const tGUIColor & face)
+void GlRenderBevelledRect(const tGUIRect & rect, int bevel, const tGUIColor & topLeft,
+                          const tGUIColor & bottomRight, const tGUIColor & face)
 {
-#define FillVertex(index, x, y, clr) \
-   do { \
-      glColor4fv(clr.GetPointer()); \
-      glVertex2i(x, y); \
-   } while (0)
+   glBegin(GL_TRIANGLES);
 
    if (bevel == 0)
    {
-      FillVertex(0, rect.left, rect.top, face);
-      FillVertex(1, rect.left, rect.bottom, face);
-      FillVertex(2, rect.right, rect.bottom, face);
+      glColor4fv(face.GetPointer());
 
-      FillVertex(3, rect.right, rect.bottom, face);
-      FillVertex(4, rect.right, rect.top, face);
-      FillVertex(5, rect.left, rect.top, face);
+      glVertex2i(rect.left, rect.top);
+      glVertex2i(rect.left, rect.bottom);
+      glVertex2i(rect.right, rect.bottom);
+
+      glVertex2i(rect.right, rect.bottom);
+      glVertex2i(rect.right, rect.top);
+      glVertex2i(rect.left, rect.top);
+
    }
    else
    {
@@ -111,48 +110,54 @@ void GlRender3dRect(const tGUIRect & rect, int bevel, const tGUIColor & topLeft,
       int y2 = rect.bottom - bevel;
       int y3 = rect.bottom;
 
-      FillVertex(0, x0, y0, topLeft);
-      FillVertex(1, x0, y3, topLeft);
-      FillVertex(2, x1, y2, topLeft);
+      glColor4fv(topLeft.GetPointer());
 
-      FillVertex(3, x0, y0, topLeft);
-      FillVertex(4, x1, y2, topLeft);
-      FillVertex(5, x1, y1, topLeft);
+      glVertex2i(x0, y0);
+      glVertex2i(x0, y3);
+      glVertex2i(x1, y2);
 
-      FillVertex(6, x0, y0, topLeft);
-      FillVertex(7, x2, y1, topLeft);
-      FillVertex(8, x3, y0, topLeft);
+      glVertex2i(x0, y0);
+      glVertex2i(x1, y2);
+      glVertex2i(x1, y1);
 
-      FillVertex(9, x0, y0, topLeft);
-      FillVertex(10, x1, y1, topLeft);
-      FillVertex(11, x2, y1, topLeft);
+      glVertex2i(x0, y0);
+      glVertex2i(x2, y1);
+      glVertex2i(x3, y0);
 
-      FillVertex(12, x0, y3, bottomRight);
-      FillVertex(13, x3, y3, bottomRight);
-      FillVertex(14, x1, y2, bottomRight);
+      glVertex2i(x0, y0);
+      glVertex2i(x1, y1);
+      glVertex2i(x2, y1);
 
-      FillVertex(15, x1, y2, bottomRight);
-      FillVertex(16, x3, y3, bottomRight);
-      FillVertex(17, x2, y2, bottomRight);
+      glColor4fv(bottomRight.GetPointer());
 
-      FillVertex(18, x3, y0, bottomRight);
-      FillVertex(19, x2, y1, bottomRight);
-      FillVertex(20, x3, y3, bottomRight);
+      glVertex2i(x0, y3);
+      glVertex2i(x3, y3);
+      glVertex2i(x1, y2);
 
-      FillVertex(21, x2, y1, bottomRight);
-      FillVertex(22, x2, y2, bottomRight);
-      FillVertex(23, x3, y3, bottomRight);
+      glVertex2i(x1, y2);
+      glVertex2i(x3, y3);
+      glVertex2i(x2, y2);
 
-      FillVertex(24, x1, y1, face);
-      FillVertex(25, x2, y2, face);
-      FillVertex(26, x2, y1, face);
+      glVertex2i(x3, y0);
+      glVertex2i(x2, y1);
+      glVertex2i(x3, y3);
 
-      FillVertex(27, x2, y2, face);
-      FillVertex(28, x1, y1, face);
-      FillVertex(29, x1, y2, face);
+      glVertex2i(x2, y1);
+      glVertex2i(x2, y2);
+      glVertex2i(x3, y3);
+
+      glColor4fv(face.GetPointer());
+
+      glVertex2i(x1, y1);
+      glVertex2i(x2, y2);
+      glVertex2i(x2, y1);
+
+      glVertex2i(x2, y2);
+      glVertex2i(x1, y1);
+      glVertex2i(x1, y2);
    }
 
-#undef FillVertex
+   glEnd();
 }
 
 
@@ -161,6 +166,35 @@ void GlRender3dRect(const tGUIRect & rect, int bevel, const tGUIColor & topLeft,
 void GUIRenderingToolsCreate()
 {
    cAutoIPtr<IGUIRenderingTools>(new cGUIRenderingTools);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void GlBegin2D()
+{
+   glPushAttrib(GL_ENABLE_BIT);
+
+   glDisable(GL_DEPTH_TEST);
+   glDisable(GL_LIGHTING);
+   glDisable(GL_CULL_FACE);
+
+   GLint viewport[4];
+   glGetIntegerv(GL_VIEWPORT, viewport);
+
+   GLdouble width = static_cast<GLdouble>(viewport[2]);
+   GLdouble height = static_cast<GLdouble>(viewport[3]);
+
+   glMatrixMode(GL_PROJECTION);
+   glLoadIdentity();
+   glOrtho(0, width, height, 0, -99999, 99999);
+
+   glMatrixMode(GL_MODELVIEW);
+   glLoadIdentity();
+}
+
+void GlEnd2D()
+{
+   glPopAttrib();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

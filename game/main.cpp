@@ -69,7 +69,6 @@ static const cColor kDefStatsColor(1,1,1,1);
 cAutoIPtr<cGameCameraController> g_pGameCameraController;
 
 cAutoIPtr<ISceneCamera> g_pGameCamera;
-cAutoIPtr<ISceneCamera> g_pUICamera;
 
 cAutoIPtr<cTerrainNode> g_pTerrainRoot;
 
@@ -156,11 +155,6 @@ void cWindowInputBroker::OnResize(int width, int height, double time)
    if (g_pGameCamera != NULL)
    {
       g_pGameCamera->SetPerspective(g_fov, (float)width / height, kZNear, kZFar);
-   }
-
-   if (g_pUICamera != NULL)
-   {
-      g_pUICamera->SetOrtho(0, width, height, 0, -99999, 99999);
    }
 }
 
@@ -467,9 +461,6 @@ bool MainInit(int argc, char * argv[])
    UseGlobal(Input);
    pInput->AddWindow(g_pWindow);
 
-   g_pUICamera = SceneCameraCreate();
-   g_pUICamera->SetOrtho(0, width, height, 0, -99999, 99999);
-
    g_pGameCamera = SceneCameraCreate();
    g_pGameCamera->SetPerspective(g_fov, (float)width / height, kZNear, kZFar);
 
@@ -478,7 +469,6 @@ bool MainInit(int argc, char * argv[])
 
    UseGlobal(Scene);
    pScene->SetCamera(kSL_Terrain, g_pGameCamera);
-   pScene->SetCamera(kSL_InGameUI, g_pUICamera);
 
    ScriptCallFunction("GameInit");
 
@@ -533,6 +523,8 @@ void MainFrame()
    UseGlobal(Scene);
    pScene->Render(g_pRenderDevice);
 
+   GlBegin2D();
+
    UseGlobal(GUIContext);
    pGUIContext->RenderGUI(g_pRenderDevice);
 
@@ -558,6 +550,8 @@ void MainFrame()
          g_pFont->DrawText(szStats, strlen(szStats), kDT_NoClip | kDT_DropShadow, &rect, kDefStatsColor);
       }
    }
+
+   GlEnd2D();
 
    g_pRenderDevice->EndScene();
    g_pWindow->SwapBuffers();
