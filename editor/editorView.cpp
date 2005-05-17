@@ -92,21 +92,6 @@ cEditorView::~cEditorView()
 
 ////////////////////////////////////////
 
-tResult cEditorView::Create(const sWindowCreateParams * /*pParams*/)
-{
-   Assert(!"This should never be called");
-   return E_FAIL;
-}
-
-////////////////////////////////////////
-
-tResult cEditorView::SwapBuffers()
-{
-   return ::SwapBuffers(GetSafeHdc()) ? S_OK : E_FAIL;
-}
-
-////////////////////////////////////////
-
 tResult cEditorView::GetCamera(ISceneCamera * * ppCamera)
 {
    return m_pCamera.GetPointer(ppCamera);
@@ -285,7 +270,7 @@ void cEditorView::RenderScene()
       }
 
       pDevice->EndScene();
-      SwapBuffers();
+      ::SwapBuffers(GetSafeHdc());
    }
 }
 

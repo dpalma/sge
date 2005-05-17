@@ -7,7 +7,6 @@
 #include "inputapi.h"
 #include "globalobj.h"
 #include "connptimpl.h"
-#include "window.h"
 
 #ifdef _MSC_VER
 #pragma once
@@ -31,32 +30,14 @@ public:
    virtual void KeyBind(long key, const char * pszDownCmd, const char * pszUpCmd);
    virtual void KeyUnbind(long key);
 
-   virtual tResult AddWindow(IWindow * pWindow);
-   virtual tResult RemoveWindow(IWindow * pWindow);
+   virtual void ReportKeyEvent(long key, bool down, double time);
+   virtual void ReportMouseEvent(int x, int y, uint mouseState, double time);
 
 private:
    bool DispatchInputEvent(int x, int y, long key, bool down, double time);
-   void HandleKeyEvent(long key, bool down, double time);
-   void HandleMouseEvent(int x, int y, uint mouseState, double time);
 
    const char * KeyGetDownBinding(long key) const;
    const char * KeyGetUpBinding(long key) const;
-
-   class cWindowSink : public cComObject<IMPLEMENTS(IWindowSink)>
-   {
-      cInput * m_pOuter;
-   public:
-      cWindowSink(cInput * pOuter);
-      virtual void OnKeyEvent(long key, bool down, double time);
-      virtual void OnMouseEvent(int x, int y, uint mouseState, double time);
-      virtual void OnDestroy(double time) {}
-      virtual void OnResize(int width, int height, double time) {}
-      virtual void OnActivateApp(bool bActive, double time) {}
-   };
-
-   friend class cWindowSink;
-
-   cWindowSink m_windowSink;
 
    enum { kMaxKeys = 256 };
    ulong m_keyRepeats[kMaxKeys];

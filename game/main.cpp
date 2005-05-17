@@ -22,7 +22,6 @@
 
 #include "scriptvar.h"
 #include "techmath.h"
-#include "window.h"
 #include "resourceapi.h"
 #include "configapi.h"
 #include "filespec.h"
@@ -77,7 +76,6 @@ cAutoIPtr<IRenderFont> g_pFont;
 double g_fov;
 
 cAutoIPtr<IRenderDevice> g_pRenderDevice;
-cAutoIPtr<IWindow> g_pWindow;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -118,34 +116,8 @@ SCRIPT_DEFINE_FUNCTION(ViewSetPos)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cWindowInputBroker
-//
 
-class cWindowInputBroker : public cComObject<IMPLEMENTS(IWindowSink)>
-{
-public:
-   virtual void OnKeyEvent(long key, bool down, double time);
-   virtual void OnMouseEvent(int x, int y, uint mouseState, double time);
-   virtual void OnDestroy(double time);
-   virtual void OnResize(int width, int height, double time);
-   virtual void OnActivateApp(bool bActive, double time);
-};
-
-void cWindowInputBroker::OnKeyEvent(long key, bool down, double time)
-{
-}
-
-void cWindowInputBroker::OnMouseEvent(int x, int y, uint mouseState, double time)
-{
-}
-
-void cWindowInputBroker::OnDestroy(double time)
-{
-   SysQuit();
-}
-
-void cWindowInputBroker::OnResize(int width, int height, double time)
+void ResizeHack(int width, int height)
 {
    if (AccessRenderDevice() != NULL)
    {
@@ -156,11 +128,6 @@ void cWindowInputBroker::OnResize(int width, int height, double time)
    {
       g_pGameCamera->SetPerspective(g_fov, (float)width / height, kZNear, kZFar);
    }
-}
-
-void cWindowInputBroker::OnActivateApp(bool bActive, double time)
-{
-   SysAppActivate(bActive);
 }
 
 
@@ -405,13 +372,7 @@ bool MainInit(int argc, char * argv[])
    ConfigGet("screen_bpp", &bpp);
    bool bFullScreen = ConfigIsTrue("full_screen") && !IsDebuggerPresent();
 
-   sWindowCreateParams params;
-   params.width = width;
-   params.height = height;
-   params.bpp = bpp;
-   params.flags = kWCF_CreateGlContext;
-   g_pWindow = WindowCreate(&params);
-   if (!g_pWindow)
+   if (!SysCreateWindow("Game", width, height))
    {
       return false;
    }
@@ -451,16 +412,6 @@ bool MainInit(int argc, char * argv[])
 
    SysAppActivate(true);
 
-   cWindowInputBroker * pSink = new cWindowInputBroker;
-   if (pSink != NULL)
-   {
-      g_pWindow->Connect(pSink);
-      SafeRelease(pSink);
-   }
-
-   UseGlobal(Input);
-   pInput->AddWindow(g_pWindow);
-
    g_pGameCamera = SceneCameraCreate();
    g_pGameCamera->SetPerspective(g_fov, (float)width / height, kZNear, kZFar);
 
@@ -494,8 +445,6 @@ void MainTerm()
 
    UseGlobal(ThreadCaller);
    pThreadCaller->ThreadTerm();
-
-   SafeRelease(g_pWindow);
 
    SafeRelease(g_pFont);
 
@@ -554,7 +503,7 @@ void MainFrame()
    GlEnd2D();
 
    g_pRenderDevice->EndScene();
-   g_pWindow->SwapBuffers();
+   SysSwapBuffers();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

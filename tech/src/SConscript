@@ -34,7 +34,6 @@ sources = Split("""
    tga.cpp
    thread.cpp
    threadcaller.cpp
-   windoww32.cpp
 """)
 
 includePaths = Split("""

@@ -17,6 +17,10 @@ LOG_DEFINE_CHANNEL(XEvents);
 bool g_bExiting = false;
 long g_mousex, g_mousey;
 
+Display * g_display = NULL;
+Window g_window = NULL;
+GLXContext g_context = NULL;
+
 ///////////////////////////////////////////////////////////////////////////////
 
 bool IsExiting()
@@ -64,6 +68,18 @@ bool SysGetClipboardString(char * psz, int max)
 bool SysSetClipboardString(const char * psz)
 {
    return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height)
+{
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void SysSwapBuffers()
+{
 }
 
 ///////////////////////////////////////////////////////////////////////////////

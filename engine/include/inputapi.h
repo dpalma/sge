@@ -19,8 +19,6 @@ typedef class cVec2<float> tVec2;
 F_DECLARE_INTERFACE(IInput);
 F_DECLARE_INTERFACE(IInputListener);
 
-F_DECLARE_INTERFACE(IWindow);
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // INTERFACE: IInput
@@ -35,8 +33,8 @@ interface IInput : IUnknown
    virtual void KeyBind(long key, const char * pszDownCmd, const char * pszUpCmd) = 0;
    virtual void KeyUnbind(long key) = 0;
 
-   virtual tResult AddWindow(IWindow * pWindow) = 0;
-   virtual tResult RemoveWindow(IWindow * pWindow) = 0;
+   virtual void ReportKeyEvent(long key, bool down, double time) = 0;
+   virtual void ReportMouseEvent(int x, int y, uint mouseState, double time) = 0;
 };
 
 ENGINE_API void InputCreate();

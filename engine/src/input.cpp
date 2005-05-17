@@ -59,8 +59,7 @@ extern long Name2Key(const char * pszKeyName); // from cmds.cpp
 ///////////////////////////////////////
 
 cInput::cInput()
- : m_windowSink(this),
-   m_oldMouseState(0)
+ : m_oldMouseState(0)
 {
    memset(m_keyRepeats, 0, sizeof(m_keyRepeats));
    memset(m_keyDownBindings, 0, sizeof(m_keyDownBindings));
@@ -149,22 +148,6 @@ void cInput::KeyUnbind(long key)
 
 ///////////////////////////////////////
 
-tResult cInput::AddWindow(IWindow * pWindow)
-{
-   Assert(pWindow != NULL);
-   return pWindow->Connect(&m_windowSink);
-}
-
-///////////////////////////////////////
-
-tResult cInput::RemoveWindow(IWindow * pWindow)
-{
-   Assert(pWindow != NULL);
-   return pWindow->Disconnect(&m_windowSink);
-}
-
-///////////////////////////////////////
-
 bool cInput::DispatchInputEvent(int x, int y, long key, bool down, double time)
 {
 #ifndef NDEBUG
@@ -211,7 +194,7 @@ bool cInput::DispatchInputEvent(int x, int y, long key, bool down, double time)
 
 ///////////////////////////////////////
 
-void cInput::HandleKeyEvent(long key, bool down, double time)
+void cInput::ReportKeyEvent(long key, bool down, double time)
 {
    // TODO: Provide mouse position even for key events
    if (DispatchInputEvent(0, 0, key, down, time))
@@ -241,7 +224,7 @@ void cInput::HandleKeyEvent(long key, bool down, double time)
 
 ///////////////////////////////////////
 
-void cInput::HandleMouseEvent(int x, int y, uint mouseState, double time)
+void cInput::ReportMouseEvent(int x, int y, uint mouseState, double time)
 {
    // Up/down doesn't matter for mouse motion. Use false so that the
    // repeat count doesn't get incremented wildly.
@@ -263,29 +246,6 @@ void cInput::HandleMouseEvent(int x, int y, uint mouseState, double time)
       DispatchInputEvent(x, y, kMouseMiddle, false, time);
 
    m_oldMouseState = mouseState;
-}
-
-///////////////////////////////////////
-
-cInput::cWindowSink::cWindowSink(cInput * pOuter)
- : m_pOuter(pOuter)
-{
-}
-
-///////////////////////////////////////
-
-void cInput::cWindowSink::OnKeyEvent(long key, bool down, double time)
-{
-   Assert(m_pOuter != NULL);
-   m_pOuter->HandleKeyEvent(key, down, time);
-}
-
-///////////////////////////////////////
-
-void cInput::cWindowSink::OnMouseEvent(int x, int y, uint mouseState, double time)
-{
-   Assert(m_pOuter != NULL);
-   m_pOuter->HandleMouseEvent(x, y, mouseState, time);
 }
 
 ///////////////////////////////////////

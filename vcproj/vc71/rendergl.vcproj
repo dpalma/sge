@@ -493,9 +493,6 @@
 			<File
 				RelativePath="..\..\render\include\rendertypes.h">
 			</File>
-			<File
-				RelativePath="..\..\render\include\textureapi.h">
-			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"

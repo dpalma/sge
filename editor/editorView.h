@@ -9,7 +9,6 @@
 #include "afxcomtools.h"
 
 #include "matrix4.h"
-#include "window.h"
 
 #if _MSC_VER > 1000
 #pragma once
@@ -27,8 +26,7 @@ class cEditorDoc;
 //
 
 class cEditorView : public cGLView,
-                    public cComObject3<IMPLEMENTS(IWindow),
-                                       IMPLEMENTS(IEditorView),
+                    public cComObject2<IMPLEMENTS(IEditorView),
                                        IMPLEMENTS(IEditorLoopClient),
                                        cAfxComServices<cEditorView> >
 {
@@ -43,12 +41,6 @@ public:
 // Operations
 public:
    inline IRenderDevice * AccessRenderDevice() { return m_pRenderDevice; }
-
-   // IWindow
-   virtual tResult Connect(IWindowSink *) { Assert(!"DON'T CALL THIS!"); return E_NOTIMPL; }
-   virtual tResult Disconnect(IWindowSink *) { Assert(!"DON'T CALL THIS!"); return E_NOTIMPL; }
-   virtual tResult Create(const sWindowCreateParams * pParams);
-   virtual tResult SwapBuffers();
 
    // IEditorView
    virtual tResult GetCamera(ISceneCamera * * ppCamera);
