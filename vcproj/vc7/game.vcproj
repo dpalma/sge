@@ -329,9 +329,6 @@
 				RelativePath="..\..\game\cmds.cpp">
 			</File>
 			<File
-				RelativePath="..\..\game\entitymgr.cpp">
-			</File>
-			<File
 				RelativePath="..\..\game\game.rc">
 				<FileConfiguration
 					Name="StaticRelease|Win32">
@@ -451,12 +448,6 @@
 			Filter="h;hpp;hxx;hm;inl">
 			<File
 				RelativePath="..\..\game\cameracontroller.h">
-			</File>
-			<File
-				RelativePath="..\..\game\entityapi.h">
-			</File>
-			<File
-				RelativePath="..\..\game\entitymgr.h">
 			</File>
 			<File
 				RelativePath="..\..\game\gameguids.h">

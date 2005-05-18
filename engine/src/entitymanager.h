@@ -28,10 +28,15 @@ public:
    virtual tResult Init();
    virtual tResult Term();
 
-   virtual tResult SpawnEntity(const char * pszMesh, const tVec3 & location);
+   virtual void SetRenderDeviceHack(IRenderDevice *);
+   virtual void SetTerrainLocatorHack(cTerrainLocatorHack *);
+
+   virtual tResult SpawnEntity(const char * pszMesh, float x, float z);
 
 private:
    ulong m_nextId;
+   IRenderDevice * m_pRenderDevice;
+   cTerrainLocatorHack * m_pTerrainLocatorHack;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

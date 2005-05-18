@@ -311,6 +311,9 @@
 					RelativePath="..\..\engine\src\engine.cpp">
 				</File>
 				<File
+					RelativePath="..\..\engine\src\entitymanager.cpp">
+				</File>
+				<File
 					RelativePath="..\..\engine\src\frustum.cpp">
 				</File>
 				<File
@@ -480,6 +483,9 @@
 					RelativePath="..\..\engine\src\engine.h">
 				</File>
 				<File
+					RelativePath="..\..\engine\src\entitymanager.h">
+				</File>
+				<File
 					RelativePath="..\..\engine\src\frustum.h">
 				</File>
 				<File
@@ -594,6 +600,9 @@
 			</File>
 			<File
 				RelativePath="..\..\engine\include\engineguids.h">
+			</File>
+			<File
+				RelativePath="..\..\engine\include\entityapi.h">
 			</File>
 			<File
 				RelativePath="..\..\engine\include\guiapi.h">

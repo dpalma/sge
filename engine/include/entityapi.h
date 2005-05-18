@@ -4,14 +4,22 @@
 #ifndef INCLUDED_ENTITYAPI_H
 #define INCLUDED_ENTITYAPI_H
 
+#include "enginedll.h"
 #include "comtools.h"
-#include "vec3.h"
 
 #ifdef _MSC_VER
 #pragma once
 #endif
 
 F_DECLARE_INTERFACE(IEntityManager);
+
+F_DECLARE_INTERFACE(IRenderDevice);
+
+class cTerrainLocatorHack
+{
+public:
+   virtual void Locate(float nx, float nz, float * px, float * py, float * pz) = 0;
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -20,12 +28,15 @@ F_DECLARE_INTERFACE(IEntityManager);
 
 interface IEntityManager : IUnknown
 {
-   virtual tResult SpawnEntity(const char * pszMesh, const tVec3 & location) = 0;
+   virtual void SetRenderDeviceHack(IRenderDevice *) = 0;
+   virtual void SetTerrainLocatorHack(cTerrainLocatorHack *) = 0;
+
+   virtual tResult SpawnEntity(const char * pszMesh, float x, float z) = 0;
 };
 
 ////////////////////////////////////////
 
-void EntityManagerCreate();
+ENGINE_API void EntityManagerCreate();
 
 ///////////////////////////////////////////////////////////////////////////////
 

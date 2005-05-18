@@ -3,6 +3,7 @@
 
 #include "stdhdr.h"
 
+#include "entityapi.h"
 #include "guiapi.h"
 #include "inputapi.h"
 #include "scriptapi.h"
@@ -10,6 +11,7 @@
 
 #include "globalobj.h"
 #include "keys.h"
+#include "vec3.h"
 
 #include "dbgalloc.h" // must be last header
 
@@ -261,6 +263,35 @@ AUTOADD_SCRIPTFUNCTION(ToggleGUIDebugInfo, ToggleGUIDebugInfo);
 
 ///////////////////////////////////////////////////////////////////////////////
 
+int EntitySpawnTest(int argc, const cScriptVar * argv, 
+                    int nMaxResults, cScriptVar * pResults)
+{
+   if (argc == 3
+      && ScriptArgIsString(0)
+      && ScriptArgIsNumber(1)
+      && ScriptArgIsNumber(2))
+   {
+      float x = argv[1];
+      float z = argv[2];
+
+      if (x < 0 || x > 1 || z < 0 || z > 1)
+      {
+         ErrorMsg2("EntitySpawnTest arguments %f, %f, out of range\n", x, z);
+      }
+      else
+      {
+         UseGlobal(EntityManager);
+         pEntityManager->SpawnEntity(argv[0], argv[1], argv[2]);
+      }
+   }
+
+   return 0;
+}
+
+AUTOADD_SCRIPTFUNCTION(EntitySpawnTest, EntitySpawnTest);
+
+///////////////////////////////////////////////////////////////////////////////
+
 sScriptReg cmds[] =
 {
    { "bind", BindKey },
@@ -268,6 +299,7 @@ sScriptReg cmds[] =
    { "LogChannel", LogEnableChannel },
    { "LoadGUI", LoadGUI },
    { "ToggleGUIDebugInfo", ToggleGUIDebugInfo },
+   { "EntitySpawnTest", EntitySpawnTest },
 };
 
 ///////////////////////////////////////////////////////////////////////////////

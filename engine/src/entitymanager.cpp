@@ -3,60 +3,17 @@
 
 #include "stdhdr.h"
 
-#include "entitymgr.h"
-#include "script.h"
-#include "groundtiled.h"
+#include "entitymanager.h"
 
 #include "meshapi.h"
 #include "sceneapi.h"
-#include "scriptvar.h"
 
 #include "resourceapi.h"
 #include "vec2.h"
+#include "vec3.h"
 
 #include "dbgalloc.h" // must be last header
 
-F_DECLARE_INTERFACE(IRenderDevice);
-extern IRenderDevice * AccessRenderDevice();
-
-extern cAutoIPtr<cTerrainNode> g_pTerrainRoot;
-
-///////////////////////////////////////////////////////////////////////////////
-
-SCRIPT_DEFINE_FUNCTION(EntitySpawnTest)
-{
-   if (ScriptArgc() == 3
-      && ScriptArgIsString(0)
-      && ScriptArgIsNumber(1)
-      && ScriptArgIsNumber(2))
-   {
-      const char * pszMesh = ScriptArgAsString(0);
-      float x = ScriptArgAsNumber(1);
-      float z = ScriptArgAsNumber(2);
-
-      if (x >= 0 && x <= 1 && z >= 0 && z <= 1)
-      {
-         if (g_pTerrainRoot != NULL)
-         {
-            float y = g_pTerrainRoot->GetElevation(Round(x), Round(z));
-
-            tVec2 groundDims = g_pTerrainRoot->GetDimensions();
-
-            x *= groundDims.x;
-            z *= groundDims.y;
-
-            UseGlobal(EntityManager);
-            pEntityManager->SpawnEntity(pszMesh, tVec3(x,y,z));
-         }
-      }
-      else
-      {
-         DebugMsg2("EntitySpawnTest arguments %f, %f, out of range\n", x, z);
-      }
-   }
-
-   return 0;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -67,7 +24,9 @@ SCRIPT_DEFINE_FUNCTION(EntitySpawnTest)
 
 cEntityManager::cEntityManager()
  : cGlobalObject<IMPLEMENTS(IEntityManager)>("EntityManager"),
-   m_nextId(0)
+   m_nextId(0),
+   m_pRenderDevice(NULL),
+   m_pTerrainLocatorHack(NULL)
 {
 }
 
@@ -93,11 +52,32 @@ tResult cEntityManager::Term()
 
 ///////////////////////////////////////
 
-tResult cEntityManager::SpawnEntity(const char * pszMesh, const tVec3 & location)
+void cEntityManager::SetRenderDeviceHack(IRenderDevice * pRenderDevice)
 {
+   m_pRenderDevice = pRenderDevice;
+}
+
+///////////////////////////////////////
+
+void cEntityManager::SetTerrainLocatorHack(cTerrainLocatorHack * pTerrainLocatorHack)
+{
+   m_pTerrainLocatorHack = pTerrainLocatorHack;
+}
+
+///////////////////////////////////////
+
+tResult cEntityManager::SpawnEntity(const char * pszMesh, float x, float z)
+{
+   tVec3 location(0,0,0);
+
+   if (m_pTerrainLocatorHack != NULL)
+   {
+      m_pTerrainLocatorHack->Locate(x, z, &location.x, &location.y, &location.z);
+   }
+
    cAutoIPtr<IMesh> pMesh;
    UseGlobal(ResourceManager);
-   if (pResourceManager->LoadUncached(tResKey(pszMesh, kRC_Mesh), AccessRenderDevice(), (void**)&pMesh, NULL) != S_OK)
+   if (pResourceManager->LoadUncached(tResKey(pszMesh, kRC_Mesh), m_pRenderDevice, (void**)&pMesh, NULL) != S_OK)
    {
       DebugMsg1("Error loading mesh \"%s\"\n", pszMesh);
       return E_FAIL;

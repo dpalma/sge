@@ -79,6 +79,25 @@ cAutoIPtr<IRenderDevice> g_pRenderDevice;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+class cTiledGroundLocator : public cTerrainLocatorHack
+{
+public:
+   virtual void Locate(float nx, float nz, float * px, float * py, float * pz)
+   {
+      if (g_pTerrainRoot != NULL)
+      {
+         tVec2 groundDims = g_pTerrainRoot->GetDimensions();
+         *px = nx * groundDims.x;
+         *py = g_pTerrainRoot->GetElevation(nx, nz);
+         *pz = nz * groundDims.y;
+      }
+   }
+};
+
+cTiledGroundLocator g_terrainLocator;
+
+///////////////////////////////////////////////////////////////////////////////
+
 IRenderDevice * AccessRenderDevice()
 {
    return static_cast<IRenderDevice *>(g_pRenderDevice);
@@ -403,6 +422,10 @@ bool MainInit(int argc, char * argv[])
    {
       return false;
    }
+
+   UseGlobal(EntityManager);
+   pEntityManager->SetTerrainLocatorHack(&g_terrainLocator);
+   pEntityManager->SetRenderDeviceHack(g_pRenderDevice);
 
    if (FAILED(FontCreateDefault(&g_pFont)))
    {

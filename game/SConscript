@@ -6,7 +6,6 @@ Import('*')
 sources = Split("""
    cameracontroller.cpp
    cmds.cpp
-   entitymgr.cpp
    groundquadtree.cpp
    groundtiled.cpp
    heightmap.cpp

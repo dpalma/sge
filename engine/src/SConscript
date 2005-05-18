@@ -8,6 +8,7 @@ sources = Split("""
    animation.cpp
    cmds.cpp
    engine.cpp
+   entitymanager.cpp
    frustum.cpp
    guibutton.cpp
    guicontext.cpp
