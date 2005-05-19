@@ -124,6 +124,10 @@ inline eResourceClass cResourceKey::GetClass() const
 // INTERFACE: IResourceManager
 //
 
+typedef const char * tResourceType;
+
+#define MAKERESOURCETYPE(i) (tResourceType)((ulong *)((uint16)(i)))
+
 typedef void * (* tResourceLoad)(IReader * pReader);
 typedef void * (* tResourcePostload)(void * pData, int dataLength, void * param);
 typedef void   (* tResourceUnload)(void * pData);
@@ -137,14 +141,24 @@ interface IResourceManager : IUnknown
 
    /// @brief Load the resource from disk, bypassing the cache (not updating it either)
    /// @remarks The caller is expected know what is returned in ppData and how to clean it up.
-   virtual tResult LoadUncached(const tResKey & key, void * param, void * * ppData, ulong * pDataSize) = 0;
+   virtual tResult LoadUncached(const char * pszName, tResourceType type, void * param, void * * ppData, ulong * pDataSize) = 0;
 
-   virtual tResult Load(const tResKey & key, void * param, void * * ppData) = 0;
-   virtual tResult Unload(const tResKey & key) = 0;
+   virtual tResult Load(const char * pszName, tResourceType type, void * param, void * * ppData) = 0;
+   virtual tResult Unload(const char * pszName, tResourceType type) = 0;
+
+   tResult LoadUncached(const tResKey & key, void * param, void * * ppData, ulong * pDataSize)
+   {
+      return LoadUncached(key.GetName(), MAKERESOURCETYPE(key.GetClass()), param, ppData, pDataSize);
+   }
 
    tResult LoadUncached(const tResKey & key, void * * ppData)
    {
       return LoadUncached(key, NULL, ppData, NULL);
+   }
+
+   tResult Load(const tResKey & key, void * param, void * * ppData)
+   {
+      return Load(key.GetName(), MAKERESOURCETYPE(key.GetClass()), param, ppData);
    }
 
    tResult Load(const tResKey & key, void * * ppData)
@@ -152,20 +166,44 @@ interface IResourceManager : IUnknown
       return Load(key, NULL, ppData);
    }
 
-   virtual tResult Lock(const tResKey & key) = 0;
-   virtual tResult Unlock(const tResKey & key) = 0;
+   tResult Unload(const tResKey & key)
+   {
+      return Unload(key.GetName(), MAKERESOURCETYPE(key.GetClass()));
+   }
 
-   virtual tResult RegisterFormat(eResourceClass rc,
-                                  eResourceClass rcDepend,
+   /// @remarks Not implemented
+   virtual tResult Lock(const char * pszName, tResourceType type) = 0;
+   /// @remarks Not implemented
+   virtual tResult Unlock(const char * pszName, tResourceType type) = 0;
+
+   virtual tResult RegisterFormat(tResourceType type,
+                                  tResourceType typeDepend,
                                   const char * pszExtension,
                                   tResourceLoad pfnLoad,
                                   tResourcePostload pfnPostload,
                                   tResourceUnload pfnUnload) = 0;
 
+   tResult RegisterFormat(tResourceType type, const char * pszExtension,
+      tResourceLoad pfnLoad, tResourcePostload pfnPostload, tResourceUnload pfnUnload)
+   {
+      return RegisterFormat(type, NULL, pszExtension, pfnLoad, pfnPostload, pfnUnload);
+   }
+
+   tResult RegisterFormat(eResourceClass rc,
+                          eResourceClass rcDepend,
+                          const char * pszExtension,
+                          tResourceLoad pfnLoad,
+                          tResourcePostload pfnPostload,
+                          tResourceUnload pfnUnload)
+   {
+      return RegisterFormat(MAKERESOURCETYPE(rc), MAKERESOURCETYPE(rcDepend),
+         pszExtension, pfnLoad, pfnPostload, pfnUnload);
+   }
+
    tResult RegisterFormat(eResourceClass rc, const char * pszExtension,
       tResourceLoad pfnLoad, tResourcePostload pfnPostload, tResourceUnload pfnUnload)
    {
-      return RegisterFormat(rc, kRC_Unknown, pszExtension, pfnLoad, pfnPostload, pfnUnload);
+      return RegisterFormat(MAKERESOURCETYPE(rc), pszExtension, pfnLoad, pfnPostload, pfnUnload);
    }
 };
 

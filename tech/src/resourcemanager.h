@@ -38,13 +38,13 @@ public:
    virtual tResult AddDirectory(const char * pszDir);
    virtual tResult AddDirectoryTreeFlattened(const char * pszDir);
    virtual tResult AddArchive(const char * pszArchive);
-   virtual tResult LoadUncached(const tResKey & key, void * param, void * * ppData, ulong * pDataSize);
-   virtual tResult Load(const tResKey & key, void * param, void * * ppData);
-   virtual tResult Unload(const tResKey & key);
-   virtual tResult Lock(const tResKey & key);
-   virtual tResult Unlock(const tResKey & key);
-   virtual tResult RegisterFormat(eResourceClass rc,
-                                  eResourceClass rcDepend,
+   virtual tResult LoadUncached(const char * pszName, tResourceType type, void * param, void * * ppData, ulong * pDataSize);
+   virtual tResult Load(const char * pszName, tResourceType type, void * param, void * * ppData);
+   virtual tResult Unload(const char * pszName, tResourceType type);
+   virtual tResult Lock(const char * pszName, tResourceType type);
+   virtual tResult Unlock(const char * pszName, tResourceType type);
+   virtual tResult RegisterFormat(tResourceType type,
+                                  tResourceType typeDepend,
                                   const char * pszExtension,
                                   tResourceLoad pfnLoad,
                                   tResourcePostload pfnPostload,
@@ -54,15 +54,15 @@ private:
    struct sFormat;
    struct sResource;
 
-   sResource * FindResourceWithFormat(const tResKey & key, sFormat * pFormat);
+   sResource * FindResourceWithFormat(const char * pszName, tResourceType type, sFormat * pFormat);
    tResult DoLoadFromFile(const cFileSpec & file, sFormat * pFormat, void * param, ulong * pDataSize, void * * ppData);
    tResult DoLoadFromArchive(uint archiveId, ulong offset, ulong index, sFormat * pFormat, void * param, ulong * pDataSize, void * * ppData);
    tResult DoLoadFromReader(IReader * pReader, sFormat * pFormat, ulong dataSize, void * param, void * * ppData);
 
-   uint DeduceFormats(const tResKey & key, sFormat * * ppFormats, uint nMaxFormats);
+   uint DeduceFormats(const char * pszName, tResourceType type, sFormat * * ppFormats, uint nMaxFormats);
 
    uint GetExtensionId(const char * pszExtension);
-   uint GetExtensionIdForKey(const tResKey & key);
+   uint GetExtensionIdForName(const char * pszName);
    uint GetDirectoryId(const char * pszDir);
    uint GetArchiveId(const char * pszArchive);
 
@@ -79,8 +79,8 @@ private:
 
    struct sFormat
    {
-      eResourceClass rc;
-      eResourceClass rcDepend; // i.e., this format fills requests for rc by converting from rcDepend
+      tResourceType type;
+      tResourceType typeDepend; // if not NULL, this format loads 'type' by converting from 'typeDepend'
       uint extensionId;
       tResourceLoad pfnLoad;
       tResourcePostload pfnPostload;

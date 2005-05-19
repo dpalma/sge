@@ -103,6 +103,30 @@ static size_t ListDirs(const cFilePath & path, tStrings * pDirs)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+static bool SameType(tResourceType lhs, tResourceType rhs)
+{
+   if (lhs != NULL && rhs != NULL)
+   {
+      uint16 lhsHiWord = (uint16)(((ulong)lhs >> 16) & 0xFFFF);
+      uint16 rhsHiWord = (uint16)(((ulong)rhs >> 16) & 0xFFFF);
+      if (lhsHiWord == 0 && rhsHiWord == 0)
+      {
+         return lhs == rhs;
+      }
+      return strcmp(lhs, rhs) == 0;
+   }
+   else if (lhs == NULL && rhs == NULL)
+   {
+      return true;
+   }
+   else
+   {
+      return false;
+   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cResourceManager
 //
@@ -295,26 +319,32 @@ tResult cResourceManager::AddArchive(const char * pszArchive)
 
 ////////////////////////////////////////
 
-tResult cResourceManager::LoadUncached(const tResKey & key, void * param, void * * ppData, ulong * pDataSize)
+tResult cResourceManager::LoadUncached(const char * pszName, tResourceType type,
+                                       void * param, void * * ppData, ulong * pDataSize)
 {
-   if (ppData == NULL)
+   if (pszName == NULL || ppData == NULL)
    {
       return E_POINTER;
    }
 
+   if (!type)
+   {
+      return E_INVALIDARG;
+   }
+
    tResult result = E_FAIL;
    sFormat * pFormat = NULL;
-   if (DeduceFormats(key, &pFormat, 1) == 1)
+   if (DeduceFormats(pszName, type, &pFormat, 1) == 1)
    {
-      const sResource * pRes = FindResourceWithFormat(key, pFormat);
+      const sResource * pRes = FindResourceWithFormat(pszName, type, pFormat);
 
       // If no resource and format specifies a dependent type then it
       // may not have been loaded in AddDirectory or AddArchive. Do it now.
-      if (pRes == NULL && pFormat->rcDepend != kRC_Unknown)
+      if (pRes == NULL && pFormat->typeDepend)
       {
          sResource res;
-         cFileSpec(key.GetName()).GetFileNameNoExt(&res.name);
-         res.extensionId = GetExtensionIdForKey(key);
+         cFileSpec(pszName).GetFileNameNoExt(&res.name);
+         res.extensionId = GetExtensionIdForName(pszName);
          res.pFormat = pFormat;
          m_resources.push_back(res);
          pRes = &m_resources[m_resources.size() - 1];
@@ -325,10 +355,9 @@ tResult cResourceManager::LoadUncached(const tResKey & key, void * param, void *
       ulong dataSize = 0;
       void * pData = NULL;
 
-      if (pFormat->rcDepend != kRC_Unknown)
+      if (pFormat->typeDepend)
       {
-         tResKey key2(key.GetName(), pFormat->rcDepend);
-         if (Load(key2, param, &pData) == S_OK)
+         if (Load(pszName, pFormat->typeDepend, param, &pData) == S_OK)
          {
             pData = (*pFormat->pfnPostload)(pData, 0, param);
             Assert(pRes->pFormat == pFormat); // should have been set above
@@ -339,7 +368,7 @@ tResult cResourceManager::LoadUncached(const tResKey & key, void * param, void *
       {
          if (pRes->dirId != kNoIndex)
          {
-            cFileSpec file(key.GetName());
+            cFileSpec file(pszName);
             file.SetPath(m_dirs[pRes->dirId]);
             result = DoLoadFromFile(file, pFormat, param, &dataSize, &pData);
          }
@@ -364,31 +393,32 @@ tResult cResourceManager::LoadUncached(const tResKey & key, void * param, void *
 
 ////////////////////////////////////////
 
-tResult cResourceManager::Load(const tResKey & key, void * param, void * * ppData)
+tResult cResourceManager::Load(const char * pszName, tResourceType type,
+                               void * param, void * * ppData)
 {
-   if (ppData == NULL)
+   if (pszName == NULL || ppData == NULL)
    {
       return E_POINTER;
    }
 
-   sFormat * formats[10];
-   uint nFormats = DeduceFormats(key, formats, _countof(formats));
-   if (nFormats == 0)
+   if (!type)
    {
-      return E_FAIL;
+      return E_INVALIDARG;
    }
-   else if (nFormats == 1)
+
+   sFormat * pFormat = NULL;
+   if (DeduceFormats(pszName, type, &pFormat, 1) == 1)
    {
-      sResource * pRes = FindResourceWithFormat(key, formats[0]);
+      sResource * pRes = FindResourceWithFormat(pszName, type, pFormat);
 
       // If no resource and format specifies a dependent type then it
       // may not have been loaded in AddDirectory or AddArchive. Do it now.
-      if (pRes == NULL && formats[0]->rcDepend != kRC_Unknown)
+      if (pRes == NULL && pFormat->typeDepend)
       {
          sResource res;
-         cFileSpec(key.GetName()).GetFileNameNoExt(&res.name);
-         res.extensionId = GetExtensionIdForKey(key);
-         res.pFormat = formats[0];
+         cFileSpec(pszName).GetFileNameNoExt(&res.name);
+         res.extensionId = GetExtensionIdForName(pszName);
+         res.pFormat = pFormat;
          m_resources.push_back(res);
          pRes = &m_resources[m_resources.size() - 1];
       }
@@ -398,15 +428,14 @@ tResult cResourceManager::Load(const tResKey & key, void * param, void * * ppDat
          ulong dataSize = 0;
          void * pData = NULL;
 
-         if (formats[0]->rcDepend != kRC_Unknown)
+         if (pFormat->typeDepend)
          {
             if (pRes->pData == NULL)
             {
-               tResKey key2(key.GetName(), formats[0]->rcDepend);
-               if (Load(key2, param, &pData) == S_OK)
+               if (Load(pszName, pFormat->typeDepend, param, &pData) == S_OK)
                {
-                  pRes->pData = (*formats[0]->pfnPostload)(pData, 0, param);
-                  Assert(pRes->pFormat == formats[0]); // should have been set above
+                  pRes->pData = (*pFormat->pfnPostload)(pData, 0, param);
+                  Assert(pRes->pFormat == pFormat); // should have been set above
                }
             }
          }
@@ -418,19 +447,19 @@ tResult cResourceManager::Load(const tResKey & key, void * param, void * * ppDat
 
                if (pRes->dirId != kNoIndex)
                {
-                  cFileSpec file(key.GetName());
+                  cFileSpec file(pszName);
                   file.SetPath(m_dirs[pRes->dirId]);
-                  result = DoLoadFromFile(file, formats[0], param, &dataSize, &pData);
+                  result = DoLoadFromFile(file, pFormat, param, &dataSize, &pData);
                }
                else if (pRes->archiveId != kNoIndex)
                {
-                  result = DoLoadFromArchive(pRes->archiveId, pRes->offset, pRes->index, formats[0], param, &dataSize, &pData);
+                  result = DoLoadFromArchive(pRes->archiveId, pRes->offset, pRes->index, pFormat, param, &dataSize, &pData);
                }
 
                if (result == S_OK)
                {
                   // Cache the resource data
-                  pRes->pFormat = formats[0];
+                  pRes->pFormat = pFormat;
                   pRes->pData = pData;
                   pRes->dataSize = dataSize;
                }
@@ -444,21 +473,13 @@ tResult cResourceManager::Load(const tResKey & key, void * param, void * * ppDat
          }
       }
    }
-   else
-   {
-      for (uint i = 0; i < nFormats; i++)
-      {
-         // TODO
-      }
-      return E_NOTIMPL;
-   }
 
    return E_FAIL;
 }
 
 ////////////////////////////////////////
 
-tResult cResourceManager::Unload(const tResKey & key)
+tResult cResourceManager::Unload(const char * pszName, tResourceType type)
 {
    // TODO: For now resources unloaded only on exit
    return E_NOTIMPL;
@@ -466,7 +487,7 @@ tResult cResourceManager::Unload(const tResKey & key)
 
 ////////////////////////////////////////
 
-tResult cResourceManager::Lock(const tResKey & key)
+tResult cResourceManager::Lock(const char * pszName, tResourceType type)
 {
    // TODO
    return E_NOTIMPL;
@@ -474,7 +495,7 @@ tResult cResourceManager::Lock(const tResKey & key)
 
 ////////////////////////////////////////
 
-tResult cResourceManager::Unlock(const tResKey & key)
+tResult cResourceManager::Unlock(const char * pszName, tResourceType type)
 {
    // TODO
    return E_NOTIMPL;
@@ -482,40 +503,19 @@ tResult cResourceManager::Unlock(const tResKey & key)
 
 ////////////////////////////////////////
 
-AssertOnce(kNUMRESOURCECLASSES == 10); // If this fails, values may have been added to eResourceClass
-static const char * GetResourceClassName(eResourceClass rc)
-{
-   switch (rc)
-   {
-   case kRC_Unknown:    return "Unknown";
-   case kRC_Image:      return "Image";
-   case kRC_Mesh:       return "Mesh";
-   case kRC_Text:       return "Text";
-   case kRC_Font:       return "Font";
-   case kRC_TiXml:      return "TinyXML";
-   case kRC_GlTexture:  return "GLTexture";
-   case kRC_HBitmap:    return "HBITMAP";
-   case kRC_CgProgram:  return "CgProgram";
-   case kRC_CgEffect:   return "CgEffect";
-   default:             return "ERROR";
-   }
-}
-
-////////////////////////////////////////
-
-tResult cResourceManager::RegisterFormat(eResourceClass rc,
-                                         eResourceClass rcDepend,
+tResult cResourceManager::RegisterFormat(tResourceType type,
+                                         tResourceType typeDepend,
                                          const char * pszExtension,
                                          tResourceLoad pfnLoad,
                                          tResourcePostload pfnPostload,
                                          tResourceUnload pfnUnload)
 {
-   if (rc == kRC_Unknown)
+   if (!type)
    {
       return E_INVALIDARG;
    }
 
-   if (rcDepend != kRC_Unknown)
+   if (typeDepend)
    {
       if (pfnLoad != NULL)
       {
@@ -524,17 +524,17 @@ tResult cResourceManager::RegisterFormat(eResourceClass rc,
       }
    }
 
-   if (pfnLoad == NULL && rcDepend == kRC_Unknown)
+   if (pfnLoad == NULL && !typeDepend)
    {
       // Must have at least a load function
-      WarnMsg1("No load function specified when registering resource %s\n",
+      WarnMsg1("No load function specified when registering \"%s\" resource format\n",
             pszExtension != NULL ? pszExtension : "<NONE>");
       return E_POINTER;
    }
 
    if (pfnUnload == NULL)
    {
-      WarnMsg1("No unload function specified for resource %s\n",
+      WarnMsg1("No unload function specified for \"%s\" resource format\n",
             pszExtension != NULL ? pszExtension : "<NONE>");
    }
 
@@ -543,13 +543,13 @@ tResult cResourceManager::RegisterFormat(eResourceClass rc,
    {
       extensionId = GetExtensionId(pszExtension);
 
-      std::vector<sFormat>::iterator iter = m_formats.begin();
-      std::vector<sFormat>::iterator end = m_formats.end();
+      std::vector<sFormat>::const_iterator iter = m_formats.begin();
+      std::vector<sFormat>::const_iterator end = m_formats.end();
       for (; iter != end; iter++)
       {
          if (iter->extensionId == extensionId)
          {
-            WarnMsg1("Resource format with file extension %s already registered\n",
+            WarnMsg1("Resource format with file extension \"%s\" already registered\n",
                pszExtension != NULL ? pszExtension : "<NONE>");
             return E_FAIL;
          }
@@ -557,8 +557,8 @@ tResult cResourceManager::RegisterFormat(eResourceClass rc,
    }
 
    sFormat format;
-   format.rc = rc;
-   format.rcDepend = rcDepend;
+   format.type = type;
+   format.typeDepend = typeDepend;
    format.extensionId = extensionId;
    format.pfnLoad = pfnLoad;
    format.pfnPostload = pfnPostload;
@@ -571,35 +571,40 @@ tResult cResourceManager::RegisterFormat(eResourceClass rc,
 ////////////////////////////////////////
 
 cResourceManager::sResource * cResourceManager::FindResourceWithFormat(
-   const tResKey & key, sFormat * pFormat)
+   const char * pszName, tResourceType type, sFormat * pFormat)
 {
-   uint extensionId = GetExtensionIdForKey(key);
+   if (pszName == NULL)
+   {
+      return NULL;
+   }
+
+   uint extensionId = GetExtensionIdForName(pszName);
    if (extensionId == kNoIndex)
    {
-      // TODO: look for possible extensions for the resource class
+      // TODO: Could deduce possible extensions using the type
       return NULL;
    }
 
    cStr name;
-   cFileSpec(key.GetName()).GetFileNameNoExt(&name);
+   cFileSpec(pszName).GetFileNameNoExt(&name);
 
    // Will point to an unloaded resource at the end of the loop
    sResource * pPotentialMatch = NULL;
 
    tResources::iterator resIter = m_resources.begin();
    tResources::iterator resEnd = m_resources.end();
-   for (; resIter != resEnd; resIter++)
+   for (int index = 0; resIter != resEnd; index++, resIter++)
    {
       if (resIter->name == name)
       {
-         if (resIter->pFormat == NULL && pFormat->rcDepend == kRC_Unknown
+         if (resIter->pFormat == NULL && !pFormat->typeDepend
             && (resIter->archiveId != kNoIndex || resIter->dirId != kNoIndex))
          {
-            pPotentialMatch = &m_resources[resIter - m_resources.begin()];
+            pPotentialMatch = &m_resources[index];
          }
          else if (resIter->extensionId == extensionId && resIter->pFormat == pFormat)
          {
-            return &m_resources[resIter - m_resources.begin()];
+            return &m_resources[index];
          }
       }
    }
@@ -740,14 +745,15 @@ tResult cResourceManager::DoLoadFromReader(IReader * pReader, sFormat * pFormat,
 
 ////////////////////////////////////////
 
-uint cResourceManager::DeduceFormats(const tResKey & key, sFormat * * ppFormats, uint nMaxFormats)
+uint cResourceManager::DeduceFormats(const char * pszName, tResourceType type,
+                                     sFormat * * ppFormats, uint nMaxFormats)
 {
-   if (ppFormats == NULL || nMaxFormats == 0)
+   if (pszName == NULL || !type || ppFormats == NULL || nMaxFormats == 0)
    {
       return 0;
    }
 
-   uint extensionId = GetExtensionIdForKey(key);
+   uint extensionId = GetExtensionIdForName(pszName);
 
    // if name has file extension, resource class plus extension determines format
    // plus, include all formats that can generate the resource class from a dependent type
@@ -758,10 +764,12 @@ uint cResourceManager::DeduceFormats(const tResKey & key, sFormat * * ppFormats,
       uint iFormat = 0;
       for (; (fIter != fEnd) && (iFormat < nMaxFormats); fIter++)
       {
-         if ((fIter->rc == key.GetClass() && fIter->extensionId == extensionId)
-            || (fIter->rc == key.GetClass() && fIter->rcDepend != kRC_Unknown))
+         if (SameType(fIter->type, type))
          {
-            ppFormats[iFormat++] = &m_formats[fIter - m_formats.begin()];
+            if ((fIter->extensionId == extensionId) || fIter->typeDepend)
+            {
+               ppFormats[iFormat++] = &m_formats[fIter - m_formats.begin()];
+            }
          }
       }
       return iFormat;
@@ -774,7 +782,7 @@ uint cResourceManager::DeduceFormats(const tResKey & key, sFormat * * ppFormats,
       uint iFormat = 0;
       for (; (fIter != fEnd) && (iFormat < nMaxFormats); fIter++)
       {
-         if (fIter->rc == key.GetClass())
+         if (SameType(fIter->type, type))
          {
             ppFormats[iFormat++] = &m_formats[fIter - m_formats.begin()];
          }
@@ -791,7 +799,7 @@ uint cResourceManager::GetExtensionId(const char * pszExtension)
 {
    Assert(pszExtension != NULL);
 
-   std::vector<cStr>::iterator f = std::find(m_extensions.begin(), m_extensions.end(), pszExtension);
+   std::vector<cStr>::const_iterator f = std::find(m_extensions.begin(), m_extensions.end(), pszExtension);
    if (f == m_extensions.end())
    {
       m_extensions.push_back(pszExtension);
@@ -805,10 +813,14 @@ uint cResourceManager::GetExtensionId(const char * pszExtension)
 
 ////////////////////////////////////////
 
-uint cResourceManager::GetExtensionIdForKey(const tResKey & key)
+uint cResourceManager::GetExtensionIdForName(const char * pszName)
 {
+   if (pszName == NULL)
+   {
+      return kNoIndex;
+   }
    static const char kExtSep = '.';
-   const char * pszExt = strrchr(key.GetName(), kExtSep);
+   const char * pszExt = strrchr(pszName, kExtSep);
    if (pszExt != NULL)
    {
       return GetExtensionId(++pszExt);
