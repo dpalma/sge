@@ -114,16 +114,17 @@ static bool SameType(tResourceType lhs, tResourceType rhs)
       {
          return lhs == rhs;
       }
-      return strcmp(lhs, rhs) == 0;
+      else if (lhsHiWord != 0 && rhsHiWord != 0)
+      {
+         return strcmp(lhs, rhs) == 0;
+      }
    }
    else if (lhs == NULL && rhs == NULL)
    {
       return true;
    }
-   else
-   {
-      return false;
-   }
+
+   return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -547,7 +548,7 @@ tResult cResourceManager::RegisterFormat(tResourceType type,
       std::vector<sFormat>::const_iterator end = m_formats.end();
       for (; iter != end; iter++)
       {
-         if (iter->extensionId == extensionId)
+         if (iter->extensionId == extensionId && SameType(iter->type, type))
          {
             WarnMsg1("Resource format with file extension \"%s\" already registered\n",
                pszExtension != NULL ? pszExtension : "<NONE>");
