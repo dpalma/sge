@@ -4,6 +4,7 @@
 #include "stdhdr.h"
 
 #include "entitymanager.h"
+#include "model.h"
 
 #include "meshapi.h"
 #include "sceneapi.h"
@@ -82,6 +83,9 @@ tResult cEntityManager::SpawnEntity(const char * pszMesh, float x, float z)
       DebugMsg1("Error loading mesh \"%s\"\n", pszMesh);
       return E_FAIL;
    }
+
+   cModel * pModel;
+   pResourceManager->LoadUncached(pszMesh, kRT_Model, NULL, (void**)&pModel, NULL);
 
    cAutoIPtr<ISceneEntity> pEntity = SceneEntityCreate(pMesh);
    pEntity->SetLocalTranslation(location);

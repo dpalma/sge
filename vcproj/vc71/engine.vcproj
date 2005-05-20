@@ -399,6 +399,9 @@
 					RelativePath="..\..\engine\src\mesh.cpp">
 				</File>
 				<File
+					RelativePath="..\..\engine\src\model.cpp">
+				</File>
+				<File
 					RelativePath="..\..\engine\src\ms3d.cpp">
 				</File>
 				<File
@@ -646,6 +649,9 @@
 			</File>
 			<File
 				RelativePath="..\..\engine\include\meshapi.h">
+			</File>
+			<File
+				RelativePath="..\..\engine\include\model.h">
 			</File>
 			<File
 				RelativePath="..\..\engine\include\ray.h">
