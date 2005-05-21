@@ -18,12 +18,7 @@
 
 F_DECLARE_INTERFACE(IReader);
 
-//template class ENGINE_API cMatrix4<float>;
-//template class ENGINE_API std::allocator< cMatrix4<float> >;
-//template class ENGINE_API std::vector< cMatrix4<float> >;
-
-#define kRT_Model "Model" // resource type
-
+///////////////////////////////////////////////////////////////////////////////
 
 struct sModelVertex
 {
@@ -34,10 +29,27 @@ struct sModelVertex
 };
 
 
+#if _MSC_VER >= 1300
+template class ENGINE_API cMatrix4<float>;
+template class ENGINE_API std::allocator< cMatrix4<float> >;
+template class ENGINE_API std::vector< cMatrix4<float> >;
+template class ENGINE_API std::allocator<sModelVertex>;
+template class ENGINE_API std::vector<sModelVertex>;
+#else
+#pragma warning(push)
+#pragma warning(disable:4251)
+#endif
+
+typedef std::vector< cMatrix4<float> > tMatrices;
+typedef std::vector<sModelVertex> tModelVertices;
+
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cModel
 //
+
+#define kRT_Model "Model" // resource type
 
 class ENGINE_API cModel
 {
@@ -66,8 +78,14 @@ private:
    std::vector<sModelVertex> m_vertices;
 
    float m_animationTime;
-   std::vector<tMatrix4> m_boneMatrices;
+   std::vector< cMatrix4<float> > m_boneMatrices;
 };
+
+
+#if _MSC_VER < 1300
+#pragma warning(pop)
+#endif
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
