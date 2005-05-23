@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\zlibwapi.lib winmm.lib opengl32.lib"
+				AdditionalDependencies="$(OutDir)\zlibwapi.lib winmm.lib"
 				OutputFile=".\..\..\Build.vc71\Opt/tech.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -160,7 +160,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\zlibwapi.lib winmm.lib opengl32.lib"
+				AdditionalDependencies="$(OutDir)\zlibwapi.lib winmm.lib"
 				OutputFile=".\..\..\Build.vc71\Release/tech.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -279,7 +279,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\cppunit.lib $(OutDir)\zlibwapi.lib winmm.lib opengl32.lib"
+				AdditionalDependencies="$(OutDir)\cppunit.lib $(OutDir)\zlibwapi.lib winmm.lib"
 				OutputFile=".\..\..\Build.vc71\Debug/tech.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
