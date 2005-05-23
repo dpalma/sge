@@ -6,6 +6,7 @@
 
 #include "readwriteapi.h"
 #include "skeleton.h"
+#include "ms3d.h"
 
 #include <vector>
 
@@ -92,6 +93,89 @@ class cReadWriteOps<cMs3dGroup>
 public:
    static tResult Read(IReader * pReader, cMs3dGroup * pGroup);
 };
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cMs3dJoint
+//
+
+class cMs3dJoint
+{
+   friend class cReadWriteOps<cMs3dJoint>;
+
+   cMs3dJoint(const cMs3dJoint &);
+   operator =(const cMs3dJoint &);
+
+public:
+   cMs3dJoint();
+   ~cMs3dJoint();
+
+   byte GetFlags() const;
+   const char * GetName() const;
+   const char * GetParentName() const;
+   const float * GetRotation() const;
+   const float * GetPosition() const;
+   const std::vector<ms3d_keyframe_rot_t> & GetKeyFramesRot() const;
+   const std::vector<ms3d_keyframe_pos_t> & GetKeyFramesTrans() const;
+
+private:
+   byte flags;
+   char name[32];
+   char parentName[32];
+   float rotation[3];
+   float position[3];
+   std::vector<ms3d_keyframe_rot_t> keyFramesRot;
+   std::vector<ms3d_keyframe_pos_t> keyFramesTrans;
+};
+
+///////////////////////////////////////
+
+inline byte cMs3dJoint::GetFlags() const
+{
+   return flags;
+}
+
+///////////////////////////////////////
+
+inline const char * cMs3dJoint::GetName() const
+{
+   return name;
+}
+
+///////////////////////////////////////
+
+inline const char * cMs3dJoint::GetParentName() const
+{
+   return parentName;
+}
+
+///////////////////////////////////////
+
+inline const float * cMs3dJoint::GetRotation() const
+{
+   return rotation;
+}
+
+///////////////////////////////////////
+
+inline const float * cMs3dJoint::GetPosition() const
+{
+   return position;
+}
+
+///////////////////////////////////////
+
+inline const std::vector<ms3d_keyframe_rot_t> & cMs3dJoint::GetKeyFramesRot() const
+{
+   return keyFramesRot;
+}
+
+///////////////////////////////////////
+
+inline const std::vector<ms3d_keyframe_pos_t> & cMs3dJoint::GetKeyFramesTrans() const
+{
+   return keyFramesTrans;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////

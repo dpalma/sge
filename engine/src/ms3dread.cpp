@@ -4,7 +4,6 @@
 #include "stdhdr.h"
 
 #include "ms3dread.h"
-#include "ms3d.h"
 
 #include "animation.h"
 #include "matrix4.h"
@@ -55,6 +54,71 @@ tResult cReadWriteOps<cMs3dGroup>::Read(IReader * pReader, cMs3dGroup * pGroup)
 
       if (pReader->Read(&pGroup->materialIndex, sizeof(pGroup->materialIndex)) != S_OK)
          break;
+
+      result = S_OK;
+   }
+   while (0);
+
+   return result;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cMs3dJoint
+//
+
+///////////////////////////////////////
+
+cMs3dJoint::cMs3dJoint()
+ : flags(0)
+{
+}
+
+///////////////////////////////////////
+
+cMs3dJoint::~cMs3dJoint()
+{
+}
+
+///////////////////////////////////////
+
+tResult cReadWriteOps<cMs3dJoint>::Read(IReader * pReader, cMs3dJoint * pJoint)
+{
+   Assert(pReader != NULL);
+   Assert(pJoint != NULL);
+
+   tResult result = E_FAIL;
+
+   do
+   {
+      uint16 nKeyFramesRot;
+      uint16 nKeyFramesTrans;
+
+      if (pReader->Read(&pJoint->flags, sizeof(pJoint->flags)) != S_OK
+         || pReader->Read(pJoint->name, sizeof(pJoint->name)) != S_OK
+         || pReader->Read(pJoint->parentName, sizeof(pJoint->parentName)) != S_OK
+         || pReader->Read(pJoint->rotation, sizeof(pJoint->rotation)) != S_OK
+         || pReader->Read(pJoint->position, sizeof(pJoint->position)) != S_OK
+         || pReader->Read(&nKeyFramesRot) != S_OK
+         || pReader->Read(&nKeyFramesTrans) != S_OK)
+      {
+         break;
+      }
+
+      if (nKeyFramesRot != nKeyFramesTrans)
+      {
+         break;
+      }
+
+      pJoint->keyFramesRot.resize(nKeyFramesRot);
+      pJoint->keyFramesTrans.resize(nKeyFramesTrans);
+
+      if (pReader->Read(&pJoint->keyFramesRot[0], nKeyFramesRot * sizeof(uint16)) != S_OK
+         || pReader->Read(&pJoint->keyFramesTrans[0], nKeyFramesTrans * sizeof(uint16)) != S_OK)
+      {
+         break;
+      }
 
       result = S_OK;
    }
