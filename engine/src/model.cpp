@@ -16,10 +16,145 @@
 #include "resourceapi.h"
 #include "readwriteapi.h"
 #include "globalobj.h"
+#include "filespec.h"
 
 #include <map>
+#include <windows.h> // HACK
+#include <GL/gl.h>
 
 #include "dbgalloc.h" // must be last header
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cModelMaterial
+//
+
+///////////////////////////////////////
+
+cModelMaterial::cModelMaterial()
+{
+}
+
+///////////////////////////////////////
+
+cModelMaterial::cModelMaterial(const cModelMaterial & other)
+{
+   operator =(other);
+}
+
+///////////////////////////////////////
+// Common case: diffuse and texture only
+
+cModelMaterial::cModelMaterial(const float diffuse[4], const tChar * pszTexture)
+ : m_texture(pszTexture != NULL ? pszTexture : "")
+{
+   memcpy(m_diffuse, diffuse, sizeof(m_diffuse));
+}
+
+///////////////////////////////////////
+// All color components
+
+cModelMaterial::cModelMaterial(const float diffuse[4], const float ambient[4],
+                               const float specular[4], const float emissive[4],
+                               float shininess, const tChar * pszTexture)
+ : m_shininess(shininess),
+   m_texture(pszTexture != NULL ? pszTexture : "")
+{
+   memcpy(m_diffuse, diffuse, sizeof(m_diffuse));
+   memcpy(m_ambient, ambient, sizeof(m_ambient));
+   memcpy(m_specular, specular, sizeof(m_specular));
+   memcpy(m_emissive, emissive, sizeof(m_emissive));
+}
+
+///////////////////////////////////////
+
+cModelMaterial::~cModelMaterial()
+{
+}
+
+///////////////////////////////////////
+
+const cModelMaterial & cModelMaterial::operator =(const cModelMaterial & other)
+{
+   memcpy(m_diffuse, other.m_diffuse, sizeof(m_diffuse));
+   memcpy(m_ambient, other.m_ambient, sizeof(m_ambient));
+   memcpy(m_specular, other.m_specular, sizeof(m_specular));
+   memcpy(m_emissive, other.m_emissive, sizeof(m_emissive));
+   m_shininess = other.m_shininess;
+   m_texture = other.m_texture;
+   return *this;
+}
+
+///////////////////////////////////////
+// Apply diffuse color (for glEnable(GL_COLOR_MATERIAL)) and texture
+
+void cModelMaterial::GlDiffuseAndTexture()
+{
+   glColor4fv(m_diffuse);
+   uint textureId = 0;
+   UseGlobal(ResourceManager);
+   if (pResourceManager->Load(tResKey(m_texture.c_str(), kRC_GlTexture), (void**)&textureId) == S_OK)
+   {
+      glBindTexture(GL_TEXTURE_2D, textureId);
+   }
+}
+
+///////////////////////////////////////
+// Apply all components with glMaterial
+
+void cModelMaterial::GlMaterialAndTexture()
+{
+   glMaterialfv(GL_FRONT, GL_DIFFUSE, m_diffuse);
+   glMaterialfv(GL_FRONT, GL_AMBIENT, m_ambient);
+   glMaterialfv(GL_FRONT, GL_SPECULAR, m_specular);
+   glMaterialfv(GL_FRONT, GL_EMISSION, m_emissive);
+   glMaterialfv(GL_FRONT, GL_SHININESS, &m_shininess);
+   uint textureId = 0;
+   UseGlobal(ResourceManager);
+   if (pResourceManager->Load(tResKey(m_texture.c_str(), kRC_GlTexture), (void**)&textureId) == S_OK)
+   {
+      glBindTexture(GL_TEXTURE_2D, textureId);
+   }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cModelMesh
+//
+
+///////////////////////////////////////
+
+cModelMesh::cModelMesh()
+{
+}
+
+///////////////////////////////////////
+
+cModelMesh::cModelMesh(const cModelMesh & other)
+ : m_indices(other.m_indices.size()),
+   m_materialIndex(other.m_materialIndex)
+{
+   std::copy(other.m_indices.begin(), other.m_indices.end(), m_indices.begin());
+}
+
+///////////////////////////////////////
+
+cModelMesh::cModelMesh(const std::vector<uint16> & indices, int8 materialIndex)
+ : m_indices(indices.size()),
+   m_materialIndex(materialIndex)
+{
+   std::copy(indices.begin(), indices.end(), m_indices.begin());
+}
+
+///////////////////////////////////////
+
+cModelMesh::~cModelMesh()
+{
+}
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -33,10 +168,45 @@ cModel::cModel()
 {
 }
 
+cModel::cModel(const tModelVertices & verts,
+               const tModelMaterials & materials,
+               const tModelMeshes & meshes)
+ : m_vertices(verts.size()),
+   m_materials(materials.size()),
+   m_meshes(meshes.size())
+{
+   std::copy(verts.begin(), verts.end(), m_vertices.begin());
+   std::copy(materials.begin(), materials.end(), m_materials.begin());
+   std::copy(meshes.begin(), meshes.end(), m_meshes.begin());
+}
+
 ///////////////////////////////////////
 
 cModel::~cModel()
 {
+}
+
+///////////////////////////////////////
+
+tResult cModel::Create(const tModelVertices & verts,
+                       const tModelMaterials & materials,
+                       const tModelMeshes & meshes,
+                       cModel * * ppModel)
+{
+   if (ppModel == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cModel * pModel = new cModel(verts, materials, meshes);
+   if (pModel == NULL)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   delete pModel;
+
+   return E_NOTIMPL;
 }
 
 ///////////////////////////////////////
@@ -338,23 +508,130 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
 
    uint16 nGroups;
    if (pReader->Read(&nGroups, sizeof(nGroups)) != S_OK)
+   {
       return NULL;
+   }
 
    cMs3dGroup groups[MAX_GROUPS];
    for (uint i = 0; i < nGroups; i++)
    {
       if (pReader->Read(&groups[i]) != S_OK)
+      {
          return NULL;
+      }
    }
+
+   //////////////////////////////
+   // Prepare the groups for the model
+
+   tModelMeshes meshes(nGroups);
+
+   for (uint i = 0; i < nGroups; i++)
+   {
+      const cMs3dGroup & group = groups[i];
+      meshes[i] = cModelMesh(group.GetTriangles(), group.GetMaterialIndex());
+   }
+
+   //////////////////////////////
+   // Read the materials
 
    uint16 nMaterials;
    if (pReader->Read(&nMaterials, sizeof(nMaterials)) != S_OK)
+   {
       return NULL;
+   }
 
-   ms3d_material_t materials[MAX_MATERIALS];
-   if (pReader->Read(&materials[0], nMaterials * sizeof(ms3d_material_t)) != S_OK)
+   std::vector<cModelMaterial> materials(nMaterials);
+
+   if (nMaterials > 0)
+   {
+      for (uint i = 0; i < nMaterials; i++)
+      {
+         ms3d_material_t ms3dMat;
+         if (pReader->Read(&ms3dMat, sizeof(ms3d_material_t)) != S_OK)
+         {
+            return NULL;
+         }
+
+         cStr texture;
+         cFileSpec(ms3dMat.texture).GetFileNameNoExt(&texture);
+
+         materials[i] = cModelMaterial(ms3dMat.diffuse, texture.c_str());
+      }
+   }
+
+   //////////////////////////////
+   // Read the animation info
+
+   float animationFPS;
+   float currentTime;
+   int nTotalFrames;
+   if (pReader->Read(&animationFPS, sizeof(animationFPS)) != S_OK
+      || pReader->Read(&currentTime, sizeof(currentTime)) != S_OK
+      || pReader->Read(&nTotalFrames, sizeof(nTotalFrames)) != S_OK)
+   {
       return NULL;
+   }
 
+   //////////////////////////////
+   // Read the joints
+
+   uint16 nJoints;
+   if (pReader->Read(&nJoints, sizeof(nJoints)) != S_OK)
+   {
+      return NULL;
+   }
+
+   if (nJoints > 0)
+   {
+      for (uint i = 0; i < nJoints; i++)
+      {
+         byte flags;
+         char name[32];
+         char parentName[32];
+         float rotation[3];
+         float position[3];
+         uint16 nKeyFramesRot;
+         uint16 nKeyFramesTrans;
+
+         if (pReader->Read(&flags) != S_OK
+            || pReader->Read(name, sizeof(name)) != S_OK
+            || pReader->Read(parentName, sizeof(parentName)) != S_OK
+            || pReader->Read(rotation, sizeof(rotation)) != S_OK
+            || pReader->Read(position, sizeof(position)) != S_OK
+            || pReader->Read(&nKeyFramesRot) != S_OK
+            || pReader->Read(&nKeyFramesTrans) != S_OK)
+         {
+            return NULL;
+         }
+
+         if (nKeyFramesRot != nKeyFramesTrans)
+         {
+            return NULL;
+         }
+
+         std::vector<ms3d_keyframe_rot_t> keyFramesRot(nKeyFramesRot);
+         std::vector<ms3d_keyframe_pos_t> keyFramesTrans(nKeyFramesTrans);
+
+         if (pReader->Read(&keyFramesRot[0], nKeyFramesRot * sizeof(ms3d_keyframe_rot_t)) != S_OK
+            || pReader->Read(&keyFramesTrans[0], nKeyFramesTrans * sizeof(ms3d_keyframe_pos_t)) != S_OK)
+         {
+            return NULL;
+         }
+
+      }
+   }
+
+#if 0
+   //////////////////////////////
+   // Create the model
+
+   cModel * pModel = NULL;
+   if (cModel::Create(vertices, materials, meshes, &pModel) == S_OK)
+   {
+      return pModel;
+   }
+#endif
 
    return NULL;
 }
