@@ -7,6 +7,7 @@
 #include "enginedll.h"
 #include "comtools.h"
 
+#include "quat.h"
 #include "vec3.h"
 #include "matrix4.h"
 #include "techstring.h"
@@ -117,6 +118,8 @@ public:
 
    ~cModelMesh();
 
+   const cModelMesh & operator =(const cModelMesh & other);
+
 private:
    GLenum m_glPrimitive;
    std::vector<uint16> m_indices;
@@ -129,6 +132,78 @@ template class ENGINE_API std::vector<cModelMesh>;
 #endif
 
 typedef std::vector<cModelMesh> tModelMeshes;
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// STRUCT: sModelKeyFrame
+//
+
+struct sModelKeyFrame
+{
+   double time;
+   tVec3 translation;
+   tQuat rotation;
+};
+
+#if _MSC_VER > 1300
+template class ENGINE_API std::allocator<sModelKeyFrame>;
+template class ENGINE_API std::vector<sModelKeyFrame>;
+#endif
+
+typedef std::vector<sModelKeyFrame> tModelKeyFrames;
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cModelJoint
+//
+
+
+class ENGINE_API cModelJoint
+{
+public:
+   cModelJoint();
+   cModelJoint(const cModelJoint & other);
+
+   cModelJoint(int parentIndex, const tMatrix4 & localTransform, const tModelKeyFrames & keyFrames);
+
+   ~cModelJoint();
+
+   const cModelJoint & operator =(const cModelJoint & other);
+
+   int GetParentIndex() const;
+   const tMatrix4 & GetLocalTransform() const;
+
+   tResult GetKeyFrame(uint index, sModelKeyFrame * pFrame);
+
+   tResult Interpolate(double time, tVec3 * pTrans, tQuat * pRot);
+
+
+private:
+   int m_parentIndex;
+   tMatrix4 m_localTransform;
+
+   std::vector<sModelKeyFrame> m_keyFrames;
+};
+
+inline int cModelJoint::GetParentIndex() const
+{
+   return m_parentIndex;
+}
+
+inline const tMatrix4 & cModelJoint::GetLocalTransform() const
+{
+   return m_localTransform;
+}
+
+
+#if _MSC_VER > 1300
+template class ENGINE_API std::allocator<cModelJoint>;
+template class ENGINE_API std::vector<cModelJoint>;
+#endif
+
+typedef std::vector<cModelJoint> tModelJoints;
 
 
 
@@ -145,9 +220,15 @@ class ENGINE_API cModel
    const cModel & operator =(const cModel &);
 
    cModel();
+
    cModel(const tModelVertices & verts,
           const tModelMaterials & materials,
           const tModelMeshes & meshes);
+
+   cModel(const tModelVertices & verts,
+          const tModelMaterials & materials,
+          const tModelMeshes & meshes,
+          const tModelJoints & joints);
 
 public:
    virtual ~cModel();
@@ -155,6 +236,12 @@ public:
    static tResult Create(const tModelVertices & verts,
                          const tModelMaterials & materials,
                          const tModelMeshes & meshes,
+                         cModel * * ppModel);
+
+   static tResult Create(const tModelVertices & verts,
+                         const tModelMaterials & materials,
+                         const tModelMeshes & meshes,
+                         const tModelJoints & joints,
                          cModel * * ppModel);
 
    void Animate(double elapsedTime);
@@ -173,6 +260,7 @@ private:
    std::vector<sModelVertex> m_vertices;
    std::vector<cModelMaterial> m_materials;
    std::vector<cModelMesh> m_meshes;
+   std::vector<cModelJoint> m_joints;
 
    double m_animationTime;
    std::vector< cMatrix4<float> > m_blendMatrices;

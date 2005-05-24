@@ -156,6 +156,119 @@ cModelMesh::~cModelMesh()
 {
 }
 
+///////////////////////////////////////
+
+const cModelMesh & cModelMesh::operator =(const cModelMesh & other)
+{
+   m_glPrimitive = other.m_glPrimitive;
+   m_materialIndex = other.m_materialIndex;
+   m_indices.resize(other.m_indices.size());
+   std::copy(other.m_indices.begin(), other.m_indices.end(), m_indices.begin());
+   return *this;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cModelJoint
+//
+
+///////////////////////////////////////
+
+cModelJoint::cModelJoint()
+{
+}
+
+///////////////////////////////////////
+
+cModelJoint::cModelJoint(const cModelJoint & other)
+ : m_parentIndex(other.m_parentIndex),
+   m_localTransform(other.m_localTransform),
+   m_keyFrames(other.m_keyFrames.size())
+{
+   std::copy(other.m_keyFrames.begin(), other.m_keyFrames.end(), m_keyFrames.begin());
+}
+
+///////////////////////////////////////
+
+cModelJoint::cModelJoint(int parentIndex, const tMatrix4 & localTransform, const tModelKeyFrames & keyFrames)
+ : m_parentIndex(parentIndex),
+   m_localTransform(localTransform),
+   m_keyFrames(keyFrames.size())
+{
+   std::copy(keyFrames.begin(), keyFrames.end(), m_keyFrames.begin());
+}
+
+///////////////////////////////////////
+
+cModelJoint::~cModelJoint()
+{
+}
+
+///////////////////////////////////////
+
+const cModelJoint & cModelJoint::operator =(const cModelJoint & other)
+{
+   m_parentIndex = other.m_parentIndex;
+   m_localTransform = other.m_localTransform;
+   m_keyFrames.resize(other.m_keyFrames.size());
+   std::copy(other.m_keyFrames.begin(), other.m_keyFrames.end(), m_keyFrames.begin());
+   return *this;
+}
+
+///////////////////////////////////////
+
+tResult cModelJoint::GetKeyFrame(uint index, sModelKeyFrame * pFrame)
+{
+   if (pFrame == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (index >= m_keyFrames.size())
+   {
+      return E_INVALIDARG;
+   }
+
+   *pFrame = m_keyFrames[index];
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cModelJoint::Interpolate(double time, tVec3 * pTrans, tQuat * pRot)
+{
+   if (pTrans == NULL || pRot == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tModelKeyFrames::const_iterator iter = m_keyFrames.begin();
+   tModelKeyFrames::const_iterator prev = iter;
+   tModelKeyFrames::const_iterator end = m_keyFrames.end();
+   for (; iter != end; prev = iter, iter++)
+   {
+      if (iter->time >= time)
+      {
+         if (iter == prev)
+         {
+            *pRot = iter->rotation;
+            *pTrans = iter->translation;
+         }
+         else
+         {
+            double u = (time - prev->time) / (iter->time - prev->time);
+            *pRot = QuatSlerp(prev->rotation, iter->rotation, static_cast<float>(u));
+            *pTrans = Vec3Lerp(prev->translation, iter->translation, (tVec3::value_type)u);
+         }
+
+         return S_OK;
+      }
+   }
+
+   return E_FAIL;
+}
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -184,6 +297,23 @@ cModel::cModel(const tModelVertices & verts,
 
 ///////////////////////////////////////
 
+cModel::cModel(const tModelVertices & verts,
+               const tModelMaterials & materials,
+               const tModelMeshes & meshes,
+               const tModelJoints & joints)
+ : m_vertices(verts.size()),
+   m_materials(materials.size()),
+   m_meshes(meshes.size()),
+   m_joints(joints.size())
+{
+   std::copy(verts.begin(), verts.end(), m_vertices.begin());
+   std::copy(materials.begin(), materials.end(), m_materials.begin());
+   std::copy(meshes.begin(), meshes.end(), m_meshes.begin());
+   std::copy(joints.begin(), joints.end(), m_joints.begin());
+}
+
+///////////////////////////////////////
+
 cModel::~cModel()
 {
 }
@@ -206,9 +336,47 @@ tResult cModel::Create(const tModelVertices & verts,
       return E_OUTOFMEMORY;
    }
 
-   delete pModel;
+   *ppModel = pModel;
+   return S_OK;
+}
 
-   return E_NOTIMPL;
+///////////////////////////////////////
+
+tResult cModel::Create(const tModelVertices & verts,
+                       const tModelMaterials & materials,
+                       const tModelMeshes & meshes,
+                       const tModelJoints & joints,
+                       cModel * * ppModel)
+{
+   if (ppModel == NULL)
+   {
+      return E_POINTER;
+   }
+
+   int iRootJoint = -1;
+   tModelJoints::const_iterator iter = joints.begin();
+   tModelJoints::const_iterator end = joints.end();
+   for (int i = 0; iter != end; iter++, i++)
+   {
+      if (iter->GetParentIndex() < 0)
+      {
+         if (iRootJoint >= 0)
+         {
+            ErrorMsg("No unique root joint");
+            return E_FAIL;
+         }
+         iRootJoint = i;
+      }
+   }
+
+   cModel * pModel = new cModel(verts, materials, meshes, joints);
+   if (pModel == NULL)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   *ppModel = pModel;
+   return S_OK;
 }
 
 ///////////////////////////////////////
@@ -355,6 +523,8 @@ tResult cModel::RegisterResourceFormat()
    return pResourceManager->RegisterFormat(kRT_Model, "ms3d", ModelLoadMs3d, NULL, ModelUnload);
 }
 
+
+
 ///////////////////////////////////////
 
 static const char g_ms3dId[] = "MS3D000000";
@@ -372,6 +542,18 @@ static bool ModelVertsEqual(const sModelVertex & vert1, const sModelVertex & ver
    }
    return false;
 }
+
+static void MatrixFromAngles(tVec3 angles, tMatrix4 * pMatrix)
+{
+   tMatrix4 rotX, rotY, rotZ, temp1, temp2;
+   MatrixRotateX(Rad2Deg(angles.x), &rotX);
+   MatrixRotateY(Rad2Deg(angles.y), &rotY);
+   MatrixRotateZ(Rad2Deg(angles.z), &rotZ);
+   temp1 = rotZ;
+   temp1.Multiply(rotY, &temp2);
+   temp2.Multiply(rotX, pMatrix);
+}
+
 
 void * cModel::ModelLoadMs3d(IReader * pReader)
 {
@@ -584,50 +766,81 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
       return NULL;
    }
 
+   std::vector<cModelJoint> joints(nJoints);
+
    if (nJoints > 0)
    {
-      std::vector<cMs3dJoint> joints(nJoints);
+      std::vector<cMs3dJoint> ms3dJoints(nJoints);
 
-      std::map<cStr, uint> jointNameMap;
+      std::map<cStr, int> jointNameMap;
 
       for (uint i = 0; i < nJoints; i++)
       {
-         if (pReader->Read(&joints[i]) != S_OK)
+         if (pReader->Read(&ms3dJoints[i]) != S_OK)
          {
             return NULL;
          }
 
-         AssertMsg(joints[i].GetKeyFramesRot().size() == joints[i].GetKeyFramesTrans().size(),
-            "Should have been rejected by cMs3dJoint reader");
-
-         jointNameMap.insert(std::make_pair(joints[i].GetName(), i));
+         jointNameMap.insert(std::make_pair(ms3dJoints[i].GetName(), i));
 
       }
 
-      std::vector<cMs3dJoint>::iterator iter = joints.begin();
-      std::vector<cMs3dJoint>::iterator end = joints.end();
-      for (; iter != end; iter++)
+      std::vector<cMs3dJoint>::iterator iter = ms3dJoints.begin();
+      std::vector<cMs3dJoint>::iterator end = ms3dJoints.end();
+      for (uint i = 0; iter != end; iter++, i++)
       {
-         std::map<cStr, uint>::iterator found = jointNameMap.find(iter->GetParentName());
-         if (found == jointNameMap.end())
+         int parentIndex = -1;
+
+         if (strlen(iter->GetParentName()) > 0)
          {
-            continue;
+            std::map<cStr, int>::iterator found = jointNameMap.find(iter->GetParentName());
+            if (found != jointNameMap.end())
+            {
+               parentIndex = found->second;
+            }
          }
 
-         uint parentIndex = found->second;
+         tMatrix4 mt, mr, local;
+         MatrixTranslate(iter->GetPosition()[0], iter->GetPosition()[1], iter->GetPosition()[2], &mt);
+         MatrixFromAngles(tVec3(iter->GetRotation()), &mr);
+         mt.Multiply(mr, &local);
+
+         AssertMsg(iter->GetKeyFramesRot().size() == iter->GetKeyFramesTrans().size(),
+            "Should have been rejected by cMs3dJoint reader");
+
+         tModelKeyFrames keyFrames(iter->GetKeyFramesRot().size());
+
+         const std::vector<ms3d_keyframe_rot_t> & keyFramesRot = iter->GetKeyFramesRot();
+         const std::vector<ms3d_keyframe_pos_t> & keyFramesTrans = iter->GetKeyFramesTrans();
+         for (uint j = 0; j < keyFrames.size(); j++)
+         {
+            keyFrames[j].time = keyFramesRot[j].time;
+            keyFrames[j].translation = tVec3(keyFramesTrans[j].position);
+            keyFrames[j].rotation = QuatFromEulerAngles(tVec3(keyFramesRot[j].rotation));
+         }
+
+         joints[i] = cModelJoint(parentIndex, local, keyFrames);
       }
    }
 
-#if 0
    //////////////////////////////
    // Create the model
 
    cModel * pModel = NULL;
-   if (cModel::Create(vertices, materials, meshes, &pModel) == S_OK)
+   if (nJoints > 0)
    {
-      return pModel;
+      if (cModel::Create(vertices, materials, meshes, joints, &pModel) == S_OK)
+      {
+         return pModel;
+      }
    }
-#endif
+   else
+   {
+      if (cModel::Create(vertices, materials, meshes, &pModel) == S_OK)
+      {
+         return pModel;
+      }
+   }
 
    return NULL;
 }
