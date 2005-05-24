@@ -26,8 +26,13 @@ class cMs3dGroup
 {
    friend class cReadWriteOps<cMs3dGroup>;
 
+
 public:
    cMs3dGroup();
+   cMs3dGroup(const cMs3dGroup & other);
+   ~cMs3dGroup();
+
+   const cMs3dGroup & operator =(const cMs3dGroup & other);
 
    byte GetFlags() const;
    const char * GetName() const;
@@ -94,6 +99,7 @@ public:
    static tResult Read(IReader * pReader, cMs3dGroup * pGroup);
 };
 
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cMs3dJoint
@@ -103,11 +109,11 @@ class cMs3dJoint
 {
    friend class cReadWriteOps<cMs3dJoint>;
 
-   cMs3dJoint(const cMs3dJoint &);
    operator =(const cMs3dJoint &);
 
 public:
    cMs3dJoint();
+   cMs3dJoint(const cMs3dJoint & other);
    ~cMs3dJoint();
 
    byte GetFlags() const;
@@ -176,6 +182,15 @@ inline const std::vector<ms3d_keyframe_pos_t> & cMs3dJoint::GetKeyFramesTrans() 
 {
    return keyFramesTrans;
 }
+
+///////////////////////////////////////
+
+template <>
+class cReadWriteOps<cMs3dJoint>
+{
+public:
+   static tResult Read(IReader * pReader, cMs3dJoint * pJoint);
+};
 
 
 ///////////////////////////////////////////////////////////////////////////////

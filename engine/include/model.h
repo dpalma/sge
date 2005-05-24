@@ -17,13 +17,28 @@
 #pragma once
 #endif
 
-
-F_DECLARE_INTERFACE(IReader);
-
 #if _MSC_VER <= 1300
 #pragma warning(push)
 #pragma warning(disable:4251)
 #endif
+
+
+F_DECLARE_INTERFACE(IReader);
+
+typedef uint GLenum;
+
+///////////////////////////////////////////////////////////////////////////////
+
+#if _MSC_VER > 1300
+template class ENGINE_API cMatrix4<float>;
+template class ENGINE_API std::allocator< cMatrix4<float> >;
+template class ENGINE_API std::vector< cMatrix4<float> >;
+template class ENGINE_API std::allocator<uint16>;
+template class ENGINE_API std::vector<uint16>;
+#endif
+
+typedef std::vector< cMatrix4<float> > tMatrices;
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -37,14 +52,10 @@ struct sModelVertex
 
 
 #if _MSC_VER > 1300
-template class ENGINE_API cMatrix4<float>;
-template class ENGINE_API std::allocator< cMatrix4<float> >;
-template class ENGINE_API std::vector< cMatrix4<float> >;
 template class ENGINE_API std::allocator<sModelVertex>;
 template class ENGINE_API std::vector<sModelVertex>;
 #endif
 
-typedef std::vector< cMatrix4<float> > tMatrices;
 typedef std::vector<sModelVertex> tModelVertices;
 
 
@@ -102,11 +113,12 @@ public:
    cModelMesh();
    cModelMesh(const cModelMesh & other);
 
-   cModelMesh(const std::vector<uint16> & indices, int8 materialIndex);
+   cModelMesh(GLenum glPrimitive, const std::vector<uint16> & indices, int8 materialIndex);
 
    ~cModelMesh();
 
 private:
+   GLenum m_glPrimitive;
    std::vector<uint16> m_indices;
    int8 m_materialIndex;
 };
@@ -153,8 +165,6 @@ public:
 
 private:
 
-   tResult PostRead();
-
    static void * ModelLoadMs3d(IReader * pReader);
 
    static void ModelUnload(void * pData);
@@ -164,8 +174,8 @@ private:
    std::vector<cModelMaterial> m_materials;
    std::vector<cModelMesh> m_meshes;
 
-   float m_animationTime;
-   std::vector< cMatrix4<float> > m_boneMatrices;
+   double m_animationTime;
+   std::vector< cMatrix4<float> > m_blendMatrices;
 };
 
 

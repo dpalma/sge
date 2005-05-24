@@ -133,7 +133,8 @@ cModelMesh::cModelMesh()
 ///////////////////////////////////////
 
 cModelMesh::cModelMesh(const cModelMesh & other)
- : m_indices(other.m_indices.size()),
+ : m_glPrimitive(other.m_glPrimitive),
+   m_indices(other.m_indices.size()),
    m_materialIndex(other.m_materialIndex)
 {
    std::copy(other.m_indices.begin(), other.m_indices.end(), m_indices.begin());
@@ -141,8 +142,9 @@ cModelMesh::cModelMesh(const cModelMesh & other)
 
 ///////////////////////////////////////
 
-cModelMesh::cModelMesh(const std::vector<uint16> & indices, int8 materialIndex)
- : m_indices(indices.size()),
+cModelMesh::cModelMesh(GLenum glPrimitive, const std::vector<uint16> & indices, int8 materialIndex)
+ : m_glPrimitive(glPrimitive),
+   m_indices(indices.size()),
    m_materialIndex(materialIndex)
 {
    std::copy(indices.begin(), indices.end(), m_indices.begin());
@@ -230,8 +232,8 @@ void cModel::Animate(double elapsedTime)
 
 ///////////////////////////////////////
 
-tResult cModel::PostRead()
-{
+//tResult cModel::PostRead()
+//{
    //cAutoIPtr<ISkeleton> pSkeleton;
    //if (m_pMesh->GetSkeleton(&pSkeleton) == S_OK)
    //{
@@ -328,8 +330,8 @@ tResult cModel::PostRead()
    //   Animate(0);
    //}
 
-   return S_OK;
-}
+   //return S_OK;
+//}
 
 ///////////////////////////////////////
 
@@ -529,7 +531,7 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
    for (uint i = 0; i < nGroups; i++)
    {
       const cMs3dGroup & group = groups[i];
-      meshes[i] = cModelMesh(group.GetTriangles(), group.GetMaterialIndex());
+      meshes[i] = cModelMesh(GL_TRIANGLES, group.GetTriangles(), group.GetMaterialIndex());
    }
 
    //////////////////////////////
@@ -584,41 +586,35 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
 
    if (nJoints > 0)
    {
+      std::vector<cMs3dJoint> joints(nJoints);
+
+      std::map<cStr, uint> jointNameMap;
+
       for (uint i = 0; i < nJoints; i++)
       {
-         byte flags;
-         char name[32];
-         char parentName[32];
-         float rotation[3];
-         float position[3];
-         uint16 nKeyFramesRot;
-         uint16 nKeyFramesTrans;
-
-         if (pReader->Read(&flags) != S_OK
-            || pReader->Read(name, sizeof(name)) != S_OK
-            || pReader->Read(parentName, sizeof(parentName)) != S_OK
-            || pReader->Read(rotation, sizeof(rotation)) != S_OK
-            || pReader->Read(position, sizeof(position)) != S_OK
-            || pReader->Read(&nKeyFramesRot) != S_OK
-            || pReader->Read(&nKeyFramesTrans) != S_OK)
+         if (pReader->Read(&joints[i]) != S_OK)
          {
             return NULL;
          }
 
-         if (nKeyFramesRot != nKeyFramesTrans)
+         AssertMsg(joints[i].GetKeyFramesRot().size() == joints[i].GetKeyFramesTrans().size(),
+            "Should have been rejected by cMs3dJoint reader");
+
+         jointNameMap.insert(std::make_pair(joints[i].GetName(), i));
+
+      }
+
+      std::vector<cMs3dJoint>::iterator iter = joints.begin();
+      std::vector<cMs3dJoint>::iterator end = joints.end();
+      for (; iter != end; iter++)
+      {
+         std::map<cStr, uint>::iterator found = jointNameMap.find(iter->GetParentName());
+         if (found == jointNameMap.end())
          {
-            return NULL;
+            continue;
          }
 
-         std::vector<ms3d_keyframe_rot_t> keyFramesRot(nKeyFramesRot);
-         std::vector<ms3d_keyframe_pos_t> keyFramesTrans(nKeyFramesTrans);
-
-         if (pReader->Read(&keyFramesRot[0], nKeyFramesRot * sizeof(ms3d_keyframe_rot_t)) != S_OK
-            || pReader->Read(&keyFramesTrans[0], nKeyFramesTrans * sizeof(ms3d_keyframe_pos_t)) != S_OK)
-         {
-            return NULL;
-         }
-
+         uint parentIndex = found->second;
       }
    }
 

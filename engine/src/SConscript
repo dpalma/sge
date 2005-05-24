@@ -27,6 +27,7 @@ sources = Split("""
    input.cpp
    luainterp.cpp
    mesh.cpp
+   model.cpp
    ms3d.cpp
    ms3dread.cpp
    ray.cpp
@@ -39,7 +40,6 @@ sources = Split("""
    scriptvar.cpp
    sim.cpp
    skeleton.cpp
-   stripify.cpp
    submesh.cpp
 """)
 

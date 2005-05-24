@@ -28,6 +28,35 @@ cMs3dGroup::cMs3dGroup()
 
 ///////////////////////////////////////
 
+cMs3dGroup::cMs3dGroup(const cMs3dGroup & other)
+ : flags(other.flags),
+   triangleIndices(other.triangleIndices.size()),
+   materialIndex(other.materialIndex)
+{
+   memcpy(name, other.name, sizeof(name));
+   std::copy(other.triangleIndices.begin(), other.triangleIndices.end(), triangleIndices.begin());
+}
+
+///////////////////////////////////////
+
+cMs3dGroup::~cMs3dGroup()
+{
+}
+
+///////////////////////////////////////
+
+const cMs3dGroup & cMs3dGroup::operator =(const cMs3dGroup & other)
+{
+   flags = other.flags;
+   materialIndex = other.materialIndex;
+   memcpy(name, other.name, sizeof(name));
+   triangleIndices.resize(other.triangleIndices.size()),
+   std::copy(other.triangleIndices.begin(), other.triangleIndices.end(), triangleIndices.begin());
+   return *this;
+}
+
+///////////////////////////////////////
+
 tResult cReadWriteOps<cMs3dGroup>::Read(IReader * pReader, cMs3dGroup * pGroup)
 {
    Assert(pReader != NULL);
@@ -77,6 +106,21 @@ cMs3dJoint::cMs3dJoint()
 
 ///////////////////////////////////////
 
+cMs3dJoint::cMs3dJoint(const cMs3dJoint & other)
+ : flags(other.flags),
+   keyFramesRot(other.keyFramesRot.size()),
+   keyFramesTrans(other.keyFramesTrans.size())
+{
+   memcpy(name, other.name, sizeof(name));
+   memcpy(parentName, other.parentName, sizeof(parentName));
+   memcpy(rotation, other.rotation, sizeof(rotation));
+   memcpy(position, other.position, sizeof(position));
+   std::copy(other.keyFramesRot.begin(), other.keyFramesRot.end(), keyFramesRot.begin());
+   std::copy(other.keyFramesTrans.begin(), other.keyFramesTrans.end(), keyFramesTrans.begin());
+}
+
+///////////////////////////////////////
+
 cMs3dJoint::~cMs3dJoint()
 {
 }
@@ -111,11 +155,16 @@ tResult cReadWriteOps<cMs3dJoint>::Read(IReader * pReader, cMs3dJoint * pJoint)
          break;
       }
 
+      if (nKeyFramesRot == 0)
+      {
+         return S_OK;
+      }
+
       pJoint->keyFramesRot.resize(nKeyFramesRot);
       pJoint->keyFramesTrans.resize(nKeyFramesTrans);
 
-      if (pReader->Read(&pJoint->keyFramesRot[0], nKeyFramesRot * sizeof(uint16)) != S_OK
-         || pReader->Read(&pJoint->keyFramesTrans[0], nKeyFramesTrans * sizeof(uint16)) != S_OK)
+      if (pReader->Read(&pJoint->keyFramesRot[0], nKeyFramesRot * sizeof(ms3d_keyframe_rot_t)) != S_OK
+         || pReader->Read(&pJoint->keyFramesTrans[0], nKeyFramesTrans * sizeof(ms3d_keyframe_pos_t)) != S_OK)
       {
          break;
       }
