@@ -63,20 +63,6 @@ BOOL CMs3dviewView::PreCreateWindow(CREATESTRUCT& cs)
 /////////////////////////////////////////////////////////////////////////////
 // CMs3dviewView operations
 
-////////////////////////////////////////
-
-tResult CMs3dviewView::Create(const sWindowCreateParams * pParams)
-{
-   Assert(!"This should never be called");
-   return E_FAIL;
-}
-
-////////////////////////////////////////
-
-tResult CMs3dviewView::SwapBuffers()
-{
-   return ::SwapBuffers(m_hDC) ? S_OK : E_FAIL;
-}
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -112,6 +98,8 @@ void CMs3dviewView::OnDraw(CDC* pDC)
    glPopMatrix();
 
    glFinish();
+
+   ::SwapBuffers(m_hDC);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -187,7 +175,7 @@ int CMs3dviewView::OnCreate(LPCREATESTRUCT lpCreateStruct)
    wglMakeCurrent(m_hDC, m_hRC);
 
    // Create the render device after setting up the GL context
-   if (RenderDeviceCreate(static_cast<IWindow *>(this), &m_pRenderDevice) != S_OK)
+   if (RenderDeviceCreate(&m_pRenderDevice) != S_OK)
    {
       TRACE0("Failed to create rendering device\n");
       return -1;

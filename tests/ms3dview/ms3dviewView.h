@@ -5,10 +5,7 @@
 #define AFX_MS3DVIEWVIEW_H__17A7D20E_9722_41CF_B129_799ABB1EC346__INCLUDED_
 
 #include "comtools.h"
-#include "connptimpl.h"
-#include "window.h"
 #include "vec3.h"
-#include "afxcomtools.h"
 
 #if _MSC_VER > 1000
 #pragma once
@@ -16,13 +13,9 @@
 
 F_DECLARE_INTERFACE(IRenderDevice);
 
-F_DECLARE_INTERFACE(IWindow);
-F_DECLARE_INTERFACE(IWindowSink);
-
 class CMs3dviewDoc;
 
-class CMs3dviewView : public CView,
-                      public cComObject<IMPLEMENTSCP(IWindow, IWindowSink), cAfxComServices<CMs3dviewView> >
+class CMs3dviewView : public CView
 {
 protected: // create from serialization only
 	CMs3dviewView();
@@ -35,10 +28,6 @@ public:
 // Operations
 public:
    inline IRenderDevice * AccessRenderDevice() { return m_pRenderDevice; }
-
-   // IWindow
-   virtual tResult Create(const sWindowCreateParams * pParams);
-   virtual tResult SwapBuffers();
 
 // Overrides
 	// ClassWizard generated virtual function overrides
