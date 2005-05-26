@@ -244,6 +244,8 @@ public:
                          const tModelJoints & joints,
                          cModel * * ppModel);
 
+   bool IsAnimated() const;
+
    void Animate(double elapsedTime);
 
    void Render();
@@ -251,6 +253,10 @@ public:
    static tResult RegisterResourceFormat();
 
 private:
+
+   // Transform every vertex by the inverse of its affecting
+   // joint's absolute transform
+   void PreApplyJoints();
 
    static void * ModelLoadMs3d(IReader * pReader);
 
@@ -265,6 +271,11 @@ private:
    double m_animationTime;
    std::vector< cMatrix4<float> > m_blendMatrices;
 };
+
+inline bool cModel::IsAnimated() const
+{
+   return !m_joints.empty();
+}
 
 
 #if _MSC_VER <= 1300

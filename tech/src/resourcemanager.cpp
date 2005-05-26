@@ -596,14 +596,14 @@ cResourceManager::sResource * cResourceManager::FindResourceWithFormat(
    tResources::iterator resEnd = m_resources.end();
    for (int index = 0; resIter != resEnd; index++, resIter++)
    {
-      if (resIter->name == name)
+      if (resIter->name == name && resIter->extensionId == extensionId)
       {
          if (resIter->pFormat == NULL && !pFormat->typeDepend
             && (resIter->archiveId != kNoIndex || resIter->dirId != kNoIndex))
          {
             pPotentialMatch = &m_resources[index];
          }
-         else if (resIter->extensionId == extensionId && resIter->pFormat == pFormat)
+         else if (resIter->pFormat == pFormat)
          {
             return &m_resources[index];
          }

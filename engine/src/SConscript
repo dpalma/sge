@@ -37,6 +37,7 @@ sources = Split("""
    sceneentityenum.cpp
    scenelayer.cpp
    scenemesh.cpp
+   scenemodel.cpp
    scriptvar.cpp
    sim.cpp
    skeleton.cpp

@@ -84,14 +84,18 @@ tResult cEntityManager::SpawnEntity(const char * pszMesh, float x, float z)
       return E_FAIL;
    }
 
-   cModel * pModel;
-   pResourceManager->LoadUncached(pszMesh, kRT_Model, NULL, (void**)&pModel, NULL);
-
    cAutoIPtr<ISceneEntity> pEntity = SceneEntityCreate(pMesh);
    pEntity->SetLocalTranslation(location);
 
    UseGlobal(Scene);
    pScene->AddEntity(kSL_Object, pEntity);
+
+   // HACK: add a cModel-based entity too to test new code
+   {
+      cAutoIPtr<ISceneEntity> pModelTestEntity = SceneEntityCreate(pszMesh);
+      pModelTestEntity->SetLocalTranslation(location);
+      pScene->AddEntity(kSL_Object, pModelTestEntity);
+   }
 
    return S_OK;
 }

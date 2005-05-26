@@ -17,8 +17,11 @@
 #include "readwriteapi.h"
 #include "globalobj.h"
 #include "filespec.h"
+#include "techmath.h"
 
 #include <map>
+#include <stack>
+#include <cfloat>
 #include <windows.h> // HACK
 #include <GL/gl.h>
 
@@ -375,6 +378,8 @@ tResult cModel::Create(const tModelVertices & verts,
       return E_OUTOFMEMORY;
    }
 
+   pModel->PreApplyJoints();
+
    *ppModel = pModel;
    return S_OK;
 }
@@ -523,6 +528,92 @@ tResult cModel::RegisterResourceFormat()
    return pResourceManager->RegisterFormat(kRT_Model, "ms3d", ModelLoadMs3d, NULL, ModelUnload);
 }
 
+///////////////////////////////////////
+// TODO: How does this work for more than one joint per vertex with blend weights?
+
+void cModel::PreApplyJoints()
+{
+   if (m_joints.empty())
+   {
+      return;
+   }
+
+   int iRootJoint = -1;
+   std::multimap<int, int> jointChildMap;
+   tModelJoints::iterator iter = m_joints.begin();
+   tModelJoints::iterator end = m_joints.end();
+   for (int i = 0; iter != end; iter++, i++)
+   {
+      int iParent = iter->GetParentIndex();
+      if (iParent >= 0)
+      {
+         jointChildMap.insert(std::make_pair(iParent, i));
+      }
+      else
+      {
+         Assert(iRootJoint == -1);
+         iRootJoint = i;
+      }
+   }
+
+   if (iRootJoint == -1)
+   {
+      ErrorMsg("Bad set of joints: no root\n");
+      return;
+   }
+
+   {
+      tMatrices absolutes(m_joints.size(), tMatrix4::GetIdentity());
+      tMatrices inverses(m_joints.size(), tMatrix4::GetIdentity());
+
+      std::stack<int> s;
+      s.push(iRootJoint);
+      while (!s.empty())
+      {
+         int iJoint = s.top();
+         s.pop();
+
+         int iParent = m_joints[iJoint].GetParentIndex();
+         if (iParent == -1)
+         {
+            absolutes[iJoint] = m_joints[iJoint].GetLocalTransform();
+         }
+         else
+         {
+            absolutes[iParent].Multiply(m_joints[iJoint].GetLocalTransform(), &absolutes[iJoint]);
+         }
+
+         std::multimap<int, int>::iterator iter = jointChildMap.lower_bound(iJoint);
+         std::multimap<int, int>::iterator end = jointChildMap.upper_bound(iJoint);
+         for (; iter != end; iter++)
+         {
+            s.push(iter->second);
+         }
+      }
+
+      for (uint i = 0; i < inverses.size(); i++)
+      {
+         MatrixInvert(absolutes[i].m, inverses[i].m);
+      }
+
+      tModelVertices::iterator iter = m_vertices.begin();
+      tModelVertices::iterator end = m_vertices.end();
+      for (; iter != end; iter++)
+      {
+         int index = Round(iter->bone);
+         if (index >= 0)
+         {
+            tVec3 xformNormal;
+            inverses[index].Transform(iter->normal, &xformNormal);
+            iter->normal = xformNormal;
+
+            tVec3 xformPos;
+            inverses[index].Transform(iter->pos, &xformPos);
+            iter->pos = xformPos;
+         }
+      }
+   }
+}
 
 
 ///////////////////////////////////////
@@ -532,11 +623,15 @@ static const int g_ms3dVer = 4;
 
 static bool ModelVertsEqual(const sModelVertex & vert1, const sModelVertex & vert2)
 {
-   if ((vert1.normal.x == vert2.normal.x)
+   if ((vert1.u == vert2.u)
+      && (vert1.v == vert2.v)
+      && (vert1.normal.x == vert2.normal.x)
       && (vert1.normal.y == vert2.normal.y)
       && (vert1.normal.z == vert2.normal.z)
-      && (vert1.u == vert2.u)
-      && (vert1.v == vert2.v))
+      && (vert1.pos.x == vert2.pos.x)
+      && (vert1.pos.y == vert2.pos.y)
+      && (vert1.pos.z == vert2.pos.z)
+      && (vert1.bone == vert2.bone))
    {
       return true;
    }
@@ -785,6 +880,8 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
 
       }
 
+      float maxTime = FLT_MIN; // actually, the total length of the animation
+
       std::vector<cMs3dJoint>::iterator iter = ms3dJoints.begin();
       std::vector<cMs3dJoint>::iterator end = ms3dJoints.end();
       for (uint i = 0; iter != end; iter++, i++)
@@ -814,13 +911,26 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
          const std::vector<ms3d_keyframe_pos_t> & keyFramesTrans = iter->GetKeyFramesTrans();
          for (uint j = 0; j < keyFrames.size(); j++)
          {
+            if (keyFramesRot[j].time != keyFramesTrans[j].time)
+            {
+               ErrorMsg("Time of rotation key frame not same as translation key frame\n");
+               return NULL;
+            }
+
             keyFrames[j].time = keyFramesRot[j].time;
             keyFrames[j].translation = tVec3(keyFramesTrans[j].position);
             keyFrames[j].rotation = QuatFromEulerAngles(tVec3(keyFramesRot[j].rotation));
+
+            if (keyFrames[j].time > maxTime)
+            {
+               maxTime = keyFrames[j].time;
+            }
          }
 
          joints[i] = cModelJoint(parentIndex, local, keyFrames);
       }
+
+      int nFramesTotal = Round(maxTime * animationFPS);
    }
 
    //////////////////////////////

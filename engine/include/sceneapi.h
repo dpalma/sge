@@ -104,6 +104,7 @@ interface ISceneEntity : IUnknown
 
 ENGINE_API ISceneEntity * SceneEntityCreate();
 ENGINE_API ISceneEntity * SceneEntityCreate(IMesh * pMesh);
+ENGINE_API ISceneEntity * SceneEntityCreate(const tChar * pszModel);
 
 
 ///////////////////////////////////////////////////////////////////////////////

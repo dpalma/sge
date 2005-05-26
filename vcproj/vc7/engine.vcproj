@@ -398,6 +398,9 @@
 					RelativePath="..\..\engine\src\scenemesh.cpp">
 				</File>
 				<File
+					RelativePath="..\..\engine\src\scenemodel.cpp">
+				</File>
+				<File
 					RelativePath="..\..\engine\src\scriptvar.cpp">
 				</File>
 				<File
@@ -437,39 +440,6 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="1"/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="..\..\engine\src\stripify.cpp">
-					<FileConfiguration
-						Name="Opt|Win32"
-						ExcludedFromBuild="TRUE">
-						<Tool
-							Name="VCCLCompilerTool"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="StaticDebug|Win32"
-						ExcludedFromBuild="TRUE">
-						<Tool
-							Name="VCCLCompilerTool"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						ExcludedFromBuild="TRUE">
-						<Tool
-							Name="VCCLCompilerTool"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="StaticRelease|Win32"
-						ExcludedFromBuild="TRUE">
-						<Tool
-							Name="VCCLCompilerTool"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
-						ExcludedFromBuild="TRUE">
-						<Tool
-							Name="VCCLCompilerTool"/>
 					</FileConfiguration>
 				</File>
 				<File
@@ -582,10 +552,10 @@
 					RelativePath="..\..\engine\src\scenemesh.h">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\stdhdr.h">
+					RelativePath="..\..\engine\src\scenemodel.h">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\stripify.h">
+					RelativePath="..\..\engine\src\stdhdr.h">
 				</File>
 			</Filter>
 		</Filter>
