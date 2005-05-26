@@ -33,7 +33,8 @@ cSceneModel::cSceneModel(const tChar * pszModel)
    m_pSceneEntity(SceneEntityCreate()),
    m_model(pszModel),
    m_pModel(NULL),
-   m_animationTime(0)
+   m_animationTime(0),
+   m_animationLength(0)
 {
    UseGlobal(Sim);
    pSim->Connect(&m_simClient);
@@ -53,6 +54,16 @@ cSceneModel::~cSceneModel()
 
 void cSceneModel::Animate(double elapsedTime)
 {
+   if (m_pModel != NULL)
+   {
+      m_animationTime += elapsedTime;
+      while (m_animationTime > m_animationLength)
+      {
+         m_animationTime -= m_animationLength;
+      }
+
+      m_pModel->InterpolateJointMatrices(m_animationTime, &m_blendMatrices);
+   }
 }
 
 ///////////////////////////////////////
@@ -81,6 +92,8 @@ void cSceneModel::Render(IRenderDevice * /*pRenderDevice*/)
       {
          return;
       }
+
+      m_animationLength = m_pModel->GetTotalAnimationLength();
    }
 
    m_pModel->Render();

@@ -69,7 +69,7 @@ private:
 
    cStr m_model;
    cModel * m_pModel;
-   double m_animationTime;
+   double m_animationTime, m_animationLength;
    std::vector<tMatrix4> m_blendMatrices;
 };
 

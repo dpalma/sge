@@ -175,9 +175,10 @@ public:
    int GetParentIndex() const;
    const tMatrix4 & GetLocalTransform() const;
 
-   tResult GetKeyFrame(uint index, sModelKeyFrame * pFrame);
+   uint GetKeyFrameCount() const;
+   tResult GetKeyFrame(uint index, sModelKeyFrame * pFrame) const;
 
-   tResult Interpolate(double time, tVec3 * pTrans, tQuat * pRot);
+   tResult Interpolate(double time, tVec3 * pTrans, tQuat * pRot) const;
 
 
 private:
@@ -195,6 +196,11 @@ inline int cModelJoint::GetParentIndex() const
 inline const tMatrix4 & cModelJoint::GetLocalTransform() const
 {
    return m_localTransform;
+}
+
+inline uint cModelJoint::GetKeyFrameCount() const
+{
+   return m_keyFrames.size();
 }
 
 
@@ -245,8 +251,9 @@ public:
                          cModel * * ppModel);
 
    bool IsAnimated() const;
+   double GetTotalAnimationLength() const;
 
-   void Animate(double elapsedTime);
+   tResult InterpolateJointMatrices(double time, tMatrices * pMatrices) const;
 
    void Render();
 
@@ -267,9 +274,6 @@ private:
    std::vector<cModelMaterial> m_materials;
    std::vector<cModelMesh> m_meshes;
    std::vector<cModelJoint> m_joints;
-
-   double m_animationTime;
-   std::vector< cMatrix4<float> > m_blendMatrices;
 };
 
 inline bool cModel::IsAnimated() const

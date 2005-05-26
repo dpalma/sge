@@ -221,7 +221,7 @@ const cModelJoint & cModelJoint::operator =(const cModelJoint & other)
 
 ///////////////////////////////////////
 
-tResult cModelJoint::GetKeyFrame(uint index, sModelKeyFrame * pFrame)
+tResult cModelJoint::GetKeyFrame(uint index, sModelKeyFrame * pFrame) const
 {
    if (pFrame == NULL)
    {
@@ -239,7 +239,7 @@ tResult cModelJoint::GetKeyFrame(uint index, sModelKeyFrame * pFrame)
 
 ///////////////////////////////////////
 
-tResult cModelJoint::Interpolate(double time, tVec3 * pTrans, tQuat * pRot)
+tResult cModelJoint::Interpolate(double time, tVec3 * pTrans, tQuat * pRot) const
 {
    if (pTrans == NULL || pRot == NULL)
    {
@@ -282,7 +282,6 @@ tResult cModelJoint::Interpolate(double time, tVec3 * pTrans, tQuat * pRot)
 ///////////////////////////////////////
 
 cModel::cModel()
- : m_animationTime(0)
 {
 }
 
@@ -386,125 +385,87 @@ tResult cModel::Create(const tModelVertices & verts,
 
 ///////////////////////////////////////
 
-void cModel::Animate(double elapsedTime)
+double cModel::GetTotalAnimationLength() const
 {
-   //cAutoIPtr<ISkeleton> pSkeleton;
-   //cAutoIPtr<IKeyFrameAnimation> pAnimation;
-   //if (m_pMesh->GetSkeleton(&pSkeleton) == S_OK
-   //   && pSkeleton->GetAnimation(&pAnimation) == S_OK)
-   //{
-   //   tTime period = pAnimation->GetPeriod();
-   //   m_animationTime += elapsedTime;
-   //   while (m_animationTime > period)
-   //   {
-   //      m_animationTime -= period;
-   //   }
-   //   pSkeleton->GetBoneMatrices(m_animationTime, &m_boneMatrices);
-   //}
+   if (m_joints.empty())
+   {
+      return 0;
+   }
+
+   double maxTime = DBL_MIN;
+
+   tModelJoints::const_iterator iter = m_joints.begin();
+   tModelJoints::const_iterator end = m_joints.end();
+   for (; iter != end; iter++)
+   {
+      uint nKeyFrames = iter->GetKeyFrameCount();
+      if (nKeyFrames > 0)
+      {
+         sModelKeyFrame keyFrame;
+         if (iter->GetKeyFrame(nKeyFrames - 1, &keyFrame) == S_OK)
+         {
+            if (keyFrame.time > maxTime)
+            {
+               maxTime = keyFrame.time;
+            }
+         }
+      }
+   }
+
+   return maxTime;
 }
 
 ///////////////////////////////////////
 
-//tResult cModel::PostRead()
-//{
-   //cAutoIPtr<ISkeleton> pSkeleton;
-   //if (m_pMesh->GetSkeleton(&pSkeleton) == S_OK)
-   //{
-   //   m_boneMatrices.resize(pSkeleton->GetBoneCount());
+tResult cModel::InterpolateJointMatrices(double time, tMatrices * pMatrices) const
+{
+   if (pMatrices == NULL)
+   {
+      return E_POINTER;
+   }
 
-   //   tMatrices inverses(pSkeleton->GetBoneCount());
+   if (m_joints.empty())
+   {
+      return E_FAIL;
+   }
 
-   //   for (uint i = 0; i < inverses.size(); i++)
-   //   {
-   //      MatrixInvert(pSkeleton->GetBoneWorldTransform(i).m, inverses[i].m);
-   //   }
+   pMatrices->resize(m_joints.size());
 
-   //   if (m_pMesh)
-   //   {
-   //      cAutoIPtr<IVertexBuffer> pVB;
-   //      cAutoIPtr<IVertexDeclaration> pVertexDecl;
+   tModelJoints::const_iterator iter = m_joints.begin();
+   tModelJoints::const_iterator end = m_joints.end();
+   for (uint i = 0; iter != end; iter++, i++)
+   {
+      tVec3 position;
+      tQuat rotation;
+      if (iter->Interpolate(time, &position, &rotation) == S_OK)
+      {
+         tMatrix4 mt, mr;
 
-   //      // TODO: Handle sub-meshes too (not all meshes have a single shared vertex buffer)
+         rotation.ToMatrix(&mr);
+         MatrixTranslate(position.x, position.y, position.z, &mt);
 
-   //      if (m_pMesh->GetVertexBuffer(&pVB) == S_OK)
-   //      {
-   //         sVertexElement elements[256];
-   //         int nElements = _countof(elements);
-   //         uint vertexSize;
+         tMatrix4 temp;
+         mt.Multiply(mr, &temp);
 
-   //         if (pVB->GetVertexDeclaration(&pVertexDecl) == S_OK
-   //            && pVertexDecl->GetElements(elements, &nElements) == S_OK
-   //            && pVertexDecl->GetVertexSize(&vertexSize) == S_OK)
-   //         {
-   //            uint positionOffset, normalOffset, indexOffset;
+         tMatrix4 mf;
+         iter->GetLocalTransform().Multiply(temp, &mf);
 
-   //            for (int i = 0; i < nElements; i++)
-   //            {
-   //               switch (elements[i].usage)
-   //               {
-   //                  case kVDU_Position:
-   //                  {
-   //                     positionOffset = elements[i].offset;
-   //                     break;
-   //                  }
+         int iParent = iter->GetParentIndex();
+         if (iParent < 0)
+         {
+            temp = mf;
+         }
+         else
+         {
+            (*pMatrices)[iParent].Multiply(mf, &temp);
+         }
 
-   //                  case kVDU_Normal:
-   //                  {
-   //                     normalOffset = elements[i].offset;
-   //                     break;
-   //                  }
+         (*pMatrices)[i] = temp;
+      }
+   }
 
-   //                  case kVDU_Index:
-   //                  {
-   //                     indexOffset = elements[i].offset;
-   //                     break;
-   //                  }
-   //               }
-   //            }
-
-   //            // transform all vertices by the inverse of the affecting bone's absolute matrix
-   //            byte * pVertexData;
-   //            if (m_pMesh->LockVertexBuffer(kBL_Default, (void**)&pVertexData) == S_OK)
-   //            {
-   //               for (uint i = 0; i < m_pMesh->GetVertexCount(); i++)
-   //               {
-   //                  byte * pVertexBase = pVertexData + (i * vertexSize);
-
-   //                  float * pPosition = reinterpret_cast<float *>(pVertexBase + positionOffset);
-   //                  float * pNormal = reinterpret_cast<float *>(pVertexBase + normalOffset);
-   //                  const float * pIndex = reinterpret_cast<const float *>(pVertexBase + indexOffset);
-
-   //                  int index = (int)*pIndex;
-
-   //                  // TODO: No size-checking is done for position and normal members
-   //                  // (i.e., float1, float2, float3, etc.)
-
-   //                  if (index >= 0)
-   //                  {
-   //                     tVec4 normal(pNormal[0],pNormal[1],pNormal[2],1);
-   //                     tVec4 position(pPosition[0],pPosition[1],pPosition[2],1);
-
-   //                     tVec4 nprime;
-   //                     inverses[index].Transform(normal, &nprime);
-   //                     memcpy(pNormal, nprime.v, 3 * sizeof(float));
-
-   //                     tVec4 vprime;
-   //                     inverses[index].Transform(position, &vprime);
-   //                     memcpy(pPosition, vprime.v, 3 * sizeof(float));
-   //                  }
-   //               }
-
-   //               m_pMesh->UnlockVertexBuffer();
-   //            }
-   //         }
-   //      }
-   //   }
-
-   //   Animate(0);
-   //}
-
-   //return S_OK;
-//}
+   return S_OK;
+}
 
 ///////////////////////////////////////
 
@@ -791,8 +752,9 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
       return NULL;
    }
 
+   uint i;
    cMs3dGroup groups[MAX_GROUPS];
-   for (uint i = 0; i < nGroups; i++)
+   for (i = 0; i < nGroups; i++)
    {
       if (pReader->Read(&groups[i]) != S_OK)
       {
@@ -805,7 +767,7 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
 
    tModelMeshes meshes(nGroups);
 
-   for (uint i = 0; i < nGroups; i++)
+   for (i = 0; i < nGroups; i++)
    {
       const cMs3dGroup & group = groups[i];
       meshes[i] = cModelMesh(GL_TRIANGLES, group.GetTriangles(), group.GetMaterialIndex());
@@ -824,7 +786,7 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
 
    if (nMaterials > 0)
    {
-      for (uint i = 0; i < nMaterials; i++)
+      for (i = 0; i < nMaterials; i++)
       {
          ms3d_material_t ms3dMat;
          if (pReader->Read(&ms3dMat, sizeof(ms3d_material_t)) != S_OK)
@@ -869,7 +831,7 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
 
       std::map<cStr, int> jointNameMap;
 
-      for (uint i = 0; i < nJoints; i++)
+      for (i = 0; i < nJoints; i++)
       {
          if (pReader->Read(&ms3dJoints[i]) != S_OK)
          {
@@ -880,11 +842,9 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
 
       }
 
-      float maxTime = FLT_MIN; // actually, the total length of the animation
-
       std::vector<cMs3dJoint>::iterator iter = ms3dJoints.begin();
       std::vector<cMs3dJoint>::iterator end = ms3dJoints.end();
-      for (uint i = 0; iter != end; iter++, i++)
+      for (i = 0; iter != end; iter++, i++)
       {
          int parentIndex = -1;
 
@@ -921,16 +881,12 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
             keyFrames[j].translation = tVec3(keyFramesTrans[j].position);
             keyFrames[j].rotation = QuatFromEulerAngles(tVec3(keyFramesRot[j].rotation));
 
-            if (keyFrames[j].time > maxTime)
-            {
-               maxTime = keyFrames[j].time;
-            }
+//            int frame = Round(static_cast<float>(keyFrames[j].time) * animationFPS);
+//            DebugMsg2("Key frame at %.3f is #%d\n", keyFrames[j].time, frame);
          }
 
          joints[i] = cModelJoint(parentIndex, local, keyFrames);
       }
-
-      int nFramesTotal = Round(maxTime * animationFPS);
    }
 
    //////////////////////////////
