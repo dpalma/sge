@@ -48,16 +48,30 @@ struct sModelVertex
    tVec3::value_type u, v;
    tVec3 normal;
    tVec3 pos;
-   float bone;
+   float bone; // TODO: call these bones or joints?
+};
+
+// for software vertex blending: bone indices not needed after blending
+struct sBlendedVertex
+{
+   tVec3::value_type u, v;
+   tVec3 normal;
+   tVec3 pos;
 };
 
 
 #if _MSC_VER > 1300
 template class ENGINE_API std::allocator<sModelVertex>;
 template class ENGINE_API std::vector<sModelVertex>;
+template class ENGINE_API std::allocator<sBlendedVertex>;
+template class ENGINE_API std::vector<sBlendedVertex>;
 #endif
 
 typedef std::vector<sModelVertex> tModelVertices;
+typedef std::vector<sBlendedVertex> tBlendedVertices;
+
+ENGINE_API void GlSubmitModelVertices(const tModelVertices & verts);
+ENGINE_API void GlSubmitBlendedVertices(const tBlendedVertices & verts);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -84,10 +98,10 @@ public:
    const cModelMaterial & operator =(const cModelMaterial & other);
 
    // Apply diffuse color (for glEnable(GL_COLOR_MATERIAL)) and bind the texture
-   void GlDiffuseAndTexture();
+   void GlDiffuseAndTexture() const;
 
    // Apply all components with glMaterial and bind the texture
-   void GlMaterialAndTexture();
+   void GlMaterialAndTexture() const;
 
 private:
    float m_diffuse[4], m_ambient[4], m_specular[4], m_emissive[4], m_shininess;
@@ -120,11 +134,37 @@ public:
 
    const cModelMesh & operator =(const cModelMesh & other);
 
+   GLenum GetGlPrimitive() const;
+   const uint16 * GetIndexData() const;
+   uint GetIndexCount() const;
+   int8 GetMaterialIndex() const;
+
 private:
    GLenum m_glPrimitive;
    std::vector<uint16> m_indices;
    int8 m_materialIndex;
 };
+
+inline GLenum cModelMesh::GetGlPrimitive() const
+{
+   return m_glPrimitive;
+}
+
+inline const uint16 * cModelMesh::GetIndexData() const
+{
+   return &m_indices[0];
+}
+
+inline uint cModelMesh::GetIndexCount() const
+{
+   return m_indices.size();
+}
+
+inline int8 cModelMesh::GetMaterialIndex() const
+{
+   return m_materialIndex;
+}
+
 
 #if _MSC_VER > 1300
 template class ENGINE_API std::allocator<cModelMesh>;
@@ -132,6 +172,11 @@ template class ENGINE_API std::vector<cModelMesh>;
 #endif
 
 typedef std::vector<cModelMesh> tModelMeshes;
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+ENGINE_API bool GlValidateIndices(const uint16 * pIndices, uint nIndices, uint nVertices);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -253,9 +298,15 @@ public:
    bool IsAnimated() const;
    double GetTotalAnimationLength() const;
 
-   tResult InterpolateJointMatrices(double time, tMatrices * pMatrices) const;
+   void InterpolateJointMatrices(double time, tMatrices * pMatrices) const;
+   void ApplyJointMatrices(const tMatrices & matrices, tBlendedVertices * pVertices) const;
 
-   void Render();
+   const tModelVertices & GetVertices() const;
+
+   const cModelMaterial & GetMaterial(int index);
+
+   tModelMeshes::const_iterator BeginMeshses() const;
+   tModelMeshes::const_iterator EndMeshses() const;
 
    static tResult RegisterResourceFormat();
 
@@ -279,6 +330,26 @@ private:
 inline bool cModel::IsAnimated() const
 {
    return !m_joints.empty();
+}
+
+inline const tModelVertices & cModel::GetVertices() const
+{
+   return m_vertices;
+}
+
+inline const cModelMaterial & cModel::GetMaterial(int index)
+{
+   return m_materials[index];
+}
+
+inline tModelMeshes::const_iterator cModel::BeginMeshses() const
+{
+   return m_meshes.begin();
+}
+
+inline tModelMeshes::const_iterator cModel::EndMeshses() const
+{
+   return m_meshes.end();
 }
 
 

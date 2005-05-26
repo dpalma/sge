@@ -6,6 +6,7 @@
 
 #include "sceneapi.h"
 #include "sim.h"
+#include "model.h"
 
 #include "techstring.h"
 
@@ -70,6 +71,7 @@ private:
    cStr m_model;
    cModel * m_pModel;
    double m_animationTime, m_animationLength;
+   tBlendedVertices m_blendedVerts;
    std::vector<tMatrix4> m_blendMatrices;
 };
 

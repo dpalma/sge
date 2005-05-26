@@ -29,6 +29,53 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////
+
+void GlSubmitModelVertices(const tModelVertices & verts)
+{
+   glDisableClientState(GL_EDGE_FLAG_ARRAY);
+   glDisableClientState(GL_INDEX_ARRAY);
+   glDisableClientState(GL_COLOR_ARRAY);
+
+   static const uint posOffset = offsetof(sModelVertex, pos);
+   static const uint normalOffset = offsetof(sModelVertex, normal);
+   static const uint texCoordOffset = offsetof(sModelVertex, u);
+
+   const byte * pVertexData = reinterpret_cast<const byte *>(&verts[0]);
+
+   glEnableClientState(GL_VERTEX_ARRAY);
+   glVertexPointer(3, GL_FLOAT, sizeof(sModelVertex), pVertexData + posOffset);
+
+   glEnableClientState(GL_NORMAL_ARRAY);
+   glNormalPointer(GL_FLOAT, sizeof(sModelVertex), pVertexData + normalOffset);
+
+   glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+   glTexCoordPointer(2, GL_FLOAT, sizeof(sModelVertex), pVertexData + texCoordOffset);
+}
+
+void GlSubmitBlendedVertices(const tBlendedVertices & verts)
+{
+   glDisableClientState(GL_EDGE_FLAG_ARRAY);
+   glDisableClientState(GL_INDEX_ARRAY);
+   glDisableClientState(GL_COLOR_ARRAY);
+
+   static const uint posOffset = offsetof(sBlendedVertex, pos);
+   static const uint normalOffset = offsetof(sBlendedVertex, normal);
+   static const uint texCoordOffset = offsetof(sBlendedVertex, u);
+
+   const byte * pVertexData = reinterpret_cast<const byte *>(&verts[0]);
+
+   glEnableClientState(GL_VERTEX_ARRAY);
+   glVertexPointer(3, GL_FLOAT, sizeof(sBlendedVertex), pVertexData + posOffset);
+
+   glEnableClientState(GL_NORMAL_ARRAY);
+   glNormalPointer(GL_FLOAT, sizeof(sBlendedVertex), pVertexData + normalOffset);
+
+   glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+   glTexCoordPointer(2, GL_FLOAT, sizeof(sBlendedVertex), pVertexData + texCoordOffset);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cModelMaterial
 //
@@ -92,7 +139,7 @@ const cModelMaterial & cModelMaterial::operator =(const cModelMaterial & other)
 ///////////////////////////////////////
 // Apply diffuse color (for glEnable(GL_COLOR_MATERIAL)) and texture
 
-void cModelMaterial::GlDiffuseAndTexture()
+void cModelMaterial::GlDiffuseAndTexture() const
 {
    glColor4fv(m_diffuse);
    uint textureId = 0;
@@ -106,7 +153,7 @@ void cModelMaterial::GlDiffuseAndTexture()
 ///////////////////////////////////////
 // Apply all components with glMaterial
 
-void cModelMaterial::GlMaterialAndTexture()
+void cModelMaterial::GlMaterialAndTexture() const
 {
    glMaterialfv(GL_FRONT, GL_DIFFUSE, m_diffuse);
    glMaterialfv(GL_FRONT, GL_AMBIENT, m_ambient);
@@ -168,6 +215,23 @@ const cModelMesh & cModelMesh::operator =(const cModelMesh & other)
    m_indices.resize(other.m_indices.size());
    std::copy(other.m_indices.begin(), other.m_indices.end(), m_indices.begin());
    return *this;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+bool GlValidateIndices(const uint16 * pIndices, uint nIndices, uint nVertices)
+{
+   for (uint i = 0; i < nIndices; i++)
+   {
+      if (pIndices[i] >= nVertices)
+      {
+         ErrorMsg2("INDEX %d OUTSIDE OF VERTEX ARRAY (size %d)!!!\n", pIndices[i], nVertices);
+         return false;
+      }
+   }
+
+   return true;
 }
 
 
@@ -417,18 +481,8 @@ double cModel::GetTotalAnimationLength() const
 
 ///////////////////////////////////////
 
-tResult cModel::InterpolateJointMatrices(double time, tMatrices * pMatrices) const
+void cModel::InterpolateJointMatrices(double time, tMatrices * pMatrices) const
 {
-   if (pMatrices == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (m_joints.empty())
-   {
-      return E_FAIL;
-   }
-
    pMatrices->resize(m_joints.size());
 
    tModelJoints::const_iterator iter = m_joints.begin();
@@ -463,22 +517,34 @@ tResult cModel::InterpolateJointMatrices(double time, tMatrices * pMatrices) con
          (*pMatrices)[i] = temp;
       }
    }
-
-   return S_OK;
 }
 
 ///////////////////////////////////////
 
-void cModel::Render()
+void cModel::ApplyJointMatrices(const tMatrices & matrices, tBlendedVertices * pVertices) const
 {
-   //if (m_pMesh != NULL)
-   //{
-   //   if (!m_boneMatrices.empty())
-   //   {
-   //      pRenderDevice->SetBlendMatrices(m_boneMatrices.size(), &m_boneMatrices[0]);
-   //   }
-   //   m_pMesh->Render(pRenderDevice);
-   //}
+   pVertices->resize(m_vertices.size());
+
+   tModelVertices::const_iterator iter = m_vertices.begin();
+   tModelVertices::const_iterator end = m_vertices.end();
+   for (uint i = 0; iter != end; iter++, i++)
+   {
+      sBlendedVertex & v = (*pVertices)[i];
+      v.u = iter->u;
+      v.v = iter->v;
+      // TODO: call them bones or joints???
+      int iJoint = Round(iter->bone);
+      if (iJoint < 0)
+      {
+         v.normal = iter->normal;
+         v.pos = iter->pos;
+      }
+      else
+      {
+         matrices[iJoint].Transform(iter->normal, &v.normal);
+         matrices[iJoint].Transform(iter->pos, &v.pos);
+      }
+   }
 }
 
 ///////////////////////////////////////
@@ -491,6 +557,7 @@ tResult cModel::RegisterResourceFormat()
 
 ///////////////////////////////////////
 // TODO: How does this work for more than one joint per vertex with blend weights?
+// (Answer: I don't think you can pre-apply like this.)
 
 void cModel::PreApplyJoints()
 {
@@ -579,9 +646,6 @@ void cModel::PreApplyJoints()
 
 ///////////////////////////////////////
 
-static const char g_ms3dId[] = "MS3D000000";
-static const int g_ms3dVer = 4;
-
 static bool ModelVertsEqual(const sModelVertex & vert1, const sModelVertex & vert2)
 {
    if ((vert1.u == vert2.u)
@@ -611,6 +675,9 @@ static void MatrixFromAngles(tVec3 angles, tMatrix4 * pMatrix)
 }
 
 
+static const char g_ms3dId[] = "MS3D000000";
+static const int g_ms3dVer = 4; // ms3d files this version or later are supported
+
 void * cModel::ModelLoadMs3d(IReader * pReader)
 {
    if (pReader == NULL)
@@ -624,7 +691,7 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
    ms3d_header_t header;
    if (pReader->Read(&header, sizeof(header)) != S_OK ||
       memcmp(g_ms3dId, header.id, _countof(header.id)) != 0 ||
-      header.version != g_ms3dVer)
+      header.version < g_ms3dVer)
    {
       return NULL;
    }
@@ -665,8 +732,12 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
    // Re-map the vertices based on the triangles because Milkshape file
    // triangles contain some vertex info.
 
+   // TODO: clean up this vertex mapping code !!!!!!!
+
    std::vector<sModelVertex> vertices;
    vertices.resize(nVertices);
+
+   cMs3dVertexMapper vertexMapper(ms3dVerts);
 
    typedef std::multimap<uint, uint> tVertexMap;
    tVertexMap vertexMap;
@@ -676,6 +747,12 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
    {
       for (int k = 0; k < 3; k++)
       {
+         vertexMapper.MapVertex(
+            iter->vertexIndices[k], 
+            iter->vertexNormals[k], 
+            iter->s[k], 
+            iter->t[k]);
+
          uint index = iter->vertexIndices[k];
          if (vertexMap.find(index) == vertexMap.end())
          {
@@ -741,7 +818,7 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
       }
    }
 
-   DebugMsg2("Mapped vertex array has %d members (originally %d)\n", vertices.size(), ms3dVerts.size());
+//   DebugMsg2("Mapped vertex array has %d members (originally %d)\n", vertices.size(), ms3dVerts.size());
 
    //////////////////////////////
    // Read the groups
@@ -770,7 +847,20 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
    for (i = 0; i < nGroups; i++)
    {
       const cMs3dGroup & group = groups[i];
-      meshes[i] = cModelMesh(GL_TRIANGLES, group.GetTriangles(), group.GetMaterialIndex());
+
+      std::vector<uint16> mappedIndices;
+      for (uint j = 0; j < group.GetNumTriangles(); j++)
+      {
+         const ms3d_triangle_t & tri = tris[group.GetTriangle(j)];
+         for (int k = 0; k < 3; k++)
+         {
+            mappedIndices.push_back(vertexMapper.MapVertex(
+               tri.vertexIndices[k], tri.vertexNormals[k], 
+               tri.s[k], tri.t[k]));
+         }
+      }
+
+      meshes[i] = cModelMesh(GL_TRIANGLES, mappedIndices, group.GetMaterialIndex());
    }
 
    //////////////////////////////

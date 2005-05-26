@@ -33,14 +33,6 @@ AssertOnce(sizeof(ms3d_header_t) == 14);
 
 ///////////////////////////////////////////////////////////////////////////////
 
-struct sMs3dVertex
-{
-   tVec3::value_type u, v;
-   tVec3 normal;
-   tVec3 pos;
-   float bone;
-};
-
 sVertexElement g_ms3dVertexDecl[] =
 {
    { kVDU_TexCoord, kVDT_Float2 },
@@ -66,29 +58,12 @@ static bool operator ==(const struct sMs3dVertex & v1,
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cMs3dVertexList
+// CLASS: cMs3dVertexMapper
 //
-
-class cMs3dVertexList
-{
-public:
-   cMs3dVertexList(const ms3d_vertex_t * pVertices, size_t nVertices);
-
-   uint MapVertex(uint originalIndex, tVec3 normal, float s, float t);
-
-   const void * GetVertexData() const;
-   uint GetVertexCount() const;
-
-private:
-   uint m_nOriginalVertices;
-   std::vector<sMs3dVertex> m_vertices;
-   std::vector<bool> m_haveVertex;
-   std::map<uint, uint> m_remap;
-};
 
 ///////////////////////////////////////
 
-cMs3dVertexList::cMs3dVertexList(const ms3d_vertex_t * pVertices, size_t nVertices)
+cMs3dVertexMapper::cMs3dVertexMapper(const ms3d_vertex_t * pVertices, size_t nVertices)
  : m_nOriginalVertices(nVertices)
 {
    Assert(pVertices != NULL);
@@ -106,6 +81,22 @@ cMs3dVertexList::cMs3dVertexList(const ms3d_vertex_t * pVertices, size_t nVertic
 
 ///////////////////////////////////////
 
+cMs3dVertexMapper::cMs3dVertexMapper(const std::vector<ms3d_vertex_t> & vertices)
+ : m_nOriginalVertices(vertices.size()),
+   m_vertices(vertices.size()),
+   m_haveVertex(vertices.size(), false)
+{
+   std::vector<ms3d_vertex_t>::const_iterator iter = vertices.begin();
+   std::vector<ms3d_vertex_t>::const_iterator end = vertices.end();
+   for (uint i = 0; iter != end; iter++, i++)
+   {
+      m_vertices[i].pos = iter->vertex;
+      m_vertices[i].bone = iter->boneId;
+   }
+}
+
+///////////////////////////////////////
+
 static bool operator ==(const tVec3 & v1, const tVec3 & v2)
 {
    return (v1.x == v2.x) && (v1.y == v2.y) && (v1.z == v2.z);
@@ -113,7 +104,7 @@ static bool operator ==(const tVec3 & v1, const tVec3 & v2)
 
 ///////////////////////////////////////
 
-uint cMs3dVertexList::MapVertex(uint originalIndex, tVec3 normal, float s, float t)
+uint cMs3dVertexMapper::MapVertex(uint originalIndex, const float normal[3], float s, float t)
 {
    Assert(originalIndex < m_nOriginalVertices);
    Assert(m_nOriginalVertices == m_haveVertex.size());
@@ -162,14 +153,14 @@ uint cMs3dVertexList::MapVertex(uint originalIndex, tVec3 normal, float s, float
 
 ///////////////////////////////////////
 
-const void * cMs3dVertexList::GetVertexData() const
+const void * cMs3dVertexMapper::GetVertexData() const
 {
    return reinterpret_cast<const void *>(&m_vertices[0]);
 }
 
 ///////////////////////////////////////
 
-uint cMs3dVertexList::GetVertexCount() const
+uint cMs3dVertexMapper::GetVertexCount() const
 {
    return m_vertices.size();
 }
@@ -279,7 +270,7 @@ tResult cMs3dFileReader::Read(IReader * pReader)
 
 tResult cMs3dFileReader::CreateMesh(IRenderDevice * pRenderDevice, IMesh * * ppMesh) const
 {
-   cMs3dVertexList vertexList(&m_vertices[0], m_vertices.size());
+   cMs3dVertexMapper vertexMapper(m_vertices);
 
    {
       // Have to construct the mapping up front so that the result of GetVertexCount() 
@@ -289,7 +280,7 @@ tResult cMs3dFileReader::CreateMesh(IRenderDevice * pRenderDevice, IMesh * * ppM
       {
          for (int k = 0; k < 3; k++)
          {
-            vertexList.MapVertex(
+            vertexMapper.MapVertex(
                iter->vertexIndices[k], 
                iter->vertexNormals[k], 
                iter->s[k], 
@@ -302,7 +293,7 @@ tResult cMs3dFileReader::CreateMesh(IRenderDevice * pRenderDevice, IMesh * * ppM
    if (pRenderDevice->CreateVertexDeclaration(g_ms3dVertexDecl, 
       _countof(g_ms3dVertexDecl), &pVertexDecl) == S_OK)
    {
-      cAutoIPtr<IMesh> pMesh = MeshCreate(vertexList.GetVertexCount(), 
+      cAutoIPtr<IMesh> pMesh = MeshCreate(vertexMapper.GetVertexCount(), 
          kBU_Dynamic | kBU_SoftwareProcessing, pVertexDecl, pRenderDevice);
       if (!pMesh)
       {
@@ -312,7 +303,7 @@ tResult cMs3dFileReader::CreateMesh(IRenderDevice * pRenderDevice, IMesh * * ppM
       sMs3dVertex * pVertexData = NULL;
       if (pMesh->LockVertexBuffer(kBL_Discard, (void * *)&pVertexData) == S_OK)
       {
-         memcpy(pVertexData, vertexList.GetVertexData(), vertexList.GetVertexCount() * sizeof(sMs3dVertex));
+         memcpy(pVertexData, vertexMapper.GetVertexData(), vertexMapper.GetVertexCount() * sizeof(sMs3dVertex));
          pMesh->UnlockVertexBuffer();
       }
 
@@ -332,7 +323,7 @@ tResult cMs3dFileReader::CreateMesh(IRenderDevice * pRenderDevice, IMesh * * ppM
                   const ms3d_triangle_t & tri = m_triangles[iter->GetTriangle(i)];
                   for (int k = 0; k < 3; k++)
                   {
-                     pFaces[i * 3 + k] = vertexList.MapVertex(
+                     pFaces[i * 3 + k] = vertexMapper.MapVertex(
                         tri.vertexIndices[k], 
                         tri.vertexNormals[k], 
                         tri.s[k], 

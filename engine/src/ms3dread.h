@@ -8,6 +8,7 @@
 #include "skeleton.h"
 #include "ms3d.h"
 
+#include <map>
 #include <vector>
 
 #ifdef _MSC_VER
@@ -16,6 +17,38 @@
 
 F_DECLARE_INTERFACE(IReader);
 F_DECLARE_INTERFACE(IKeyFrameInterpolator);
+
+struct sMs3dVertex
+{
+   tVec3::value_type u, v;
+   tVec3 normal;
+   tVec3 pos;
+   float bone;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cMs3dVertexMapper
+//
+
+class cMs3dVertexMapper
+{
+public:
+   cMs3dVertexMapper(const ms3d_vertex_t * pVertices, size_t nVertices);
+   cMs3dVertexMapper(const std::vector<ms3d_vertex_t> & vertices);
+
+   uint MapVertex(uint originalIndex, const float normal[3], float s, float t);
+
+   const void * GetVertexData() const;
+   uint GetVertexCount() const;
+
+private:
+   uint m_nOriginalVertices;
+   std::vector<sMs3dVertex> m_vertices;
+   std::vector<bool> m_haveVertex;
+   std::map<uint, uint> m_remap;
+};
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
