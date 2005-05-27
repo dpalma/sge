@@ -74,8 +74,12 @@ public:
 protected:
    typedef CONTAINER tSinks;
    typedef typename CONTAINER::iterator tSinksIterator;
+   typedef typename CONTAINER::reverse_iterator tSinksReverseIterator;
 
-   inline tSinks & AccessSinks() { return m_sinks; }
+   inline tSinksIterator BeginSinks() { return m_sinks.begin(); }
+   inline tSinksIterator EndSinks() { return m_sinks.end(); }
+   inline tSinksReverseIterator RBeginSinks() { return m_sinks.rbegin(); }
+   inline tSinksReverseIterator REndSinks() { return m_sinks.rend(); }
 
    ~cConnectionPoint()
    {

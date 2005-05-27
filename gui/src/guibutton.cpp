@@ -251,17 +251,14 @@ tResult cGUIButtonRenderer::Render(IGUIElement * pElement, IRenderDevice * pRend
       tRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
       tGUIRect rect2(rect.left, rect.top, rect.right, rect.bottom);
 
-      UseGlobal(GUIRenderingTools);
       if (pButton->IsArmed() && pButton->IsMouseOver())
       {
-         pGUIRenderingTools->Render3dRect(rect2, g_bevel, 
-            tGUIColor::DarkGray, tGUIColor::LightGray, tGUIColor::Gray);
+         GlRenderBevelledRect(rect2, g_bevel, tGUIColor::DarkGray, tGUIColor::LightGray, tGUIColor::Gray);
          textOffset = tVec2(g_bevelf, g_bevelf);
       }
       else
       {
-         pGUIRenderingTools->Render3dRect(rect2, g_bevel, 
-            tGUIColor::LightGray, tGUIColor::DarkGray, tGUIColor::Gray);
+         GlRenderBevelledRect(rect2, g_bevel, tGUIColor::LightGray, tGUIColor::DarkGray, tGUIColor::Gray);
       }
 
       cAutoIPtr<IRenderFont> pFont;

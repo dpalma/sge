@@ -12,7 +12,7 @@
 
 #include "renderapi.h"
 
-#ifdef _DEBUG
+#ifdef GUI_DEBUG
 #include "font.h"
 #endif
 
@@ -46,7 +46,7 @@ cGUIContext::cGUIContext()
  : tBaseClass("GUIContext", CONSTRAINTS()),
    m_inputListener(this),
    m_bNeedLayout(false)
-#ifdef _DEBUG
+#ifdef GUI_DEBUG
    , m_bShowDebugInfo(false)
    , m_debugInfoPlacement(0,0)
    , m_debugInfoTextColor(tGUIColor::White)
@@ -84,6 +84,18 @@ tResult cGUIContext::Term()
 
 tResult cGUIContext::AddElement(IGUIElement * pElement)
 {
+#ifndef NDEBUG
+   {
+      // Check that all sink interface pointers are valid
+      tSinksIterator iter = BeginSinks();
+      tSinksIterator end = EndSinks();
+      for (; iter != end; iter++)
+      {
+         (*iter)->AddRef();
+         (*iter)->Release();
+      }
+   }
+#endif
    return tBaseClass::AddElement(pElement);
 }
 
@@ -91,7 +103,20 @@ tResult cGUIContext::AddElement(IGUIElement * pElement)
 
 tResult cGUIContext::RemoveElement(IGUIElement * pElement)
 {
-   return tBaseClass::RemoveElement(pElement);
+   tResult result = tBaseClass::RemoveElement(pElement);
+#ifndef NDEBUG
+   {
+      // Check that all sink interface pointers are valid
+      tSinksIterator iter = BeginSinks();
+      tSinksIterator end = EndSinks();
+      for (; iter != end; iter++)
+      {
+         (*iter)->AddRef();
+         (*iter)->Release();
+      }
+   }
+#endif
+   return result;
 }
 
 ///////////////////////////////////////
@@ -171,6 +196,14 @@ uint cGUIContext::LoadFromTiXmlDoc(TiXmlDocument * pTiXmlDoc)
 
 ///////////////////////////////////////
 
+void cGUIContext::ClearGUI()
+{
+   RemoveAllElements();
+   m_bNeedLayout = true;
+}
+
+///////////////////////////////////////
+
 class cRenderElement
 {
 public:
@@ -217,8 +250,6 @@ tResult cGUIContext::RenderGUI(IRenderDevice * pRenderDevice)
 {
    Assert(pRenderDevice != NULL);
 
-   tResult result = S_OK;
-
    if (m_bNeedLayout)
    {
       m_bNeedLayout = false;
@@ -230,23 +261,22 @@ tResult cGUIContext::RenderGUI(IRenderDevice * pRenderDevice)
       }
    }
 
-   glPushAttrib(GL_ENABLE_BIT);
+   glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
    glDisable(GL_DEPTH_TEST);
    ForEachElement(cRenderElement(pRenderDevice));
-   glPopAttrib();
-
-#ifdef _DEBUG
+#ifdef GUI_DEBUG
    RenderDebugInfo(pRenderDevice);
 #endif
+   glPopAttrib();
 
-   return result;
+   return S_OK;
 }
 
 ///////////////////////////////////////
 
 tResult cGUIContext::ShowDebugInfo(const tGUIPoint & placement, const tGUIColor & textColor)
 {
-#ifdef _DEBUG
+#ifdef GUI_DEBUG
    if (!m_bShowDebugInfo)
    {
       m_bShowDebugInfo = true;
@@ -262,7 +292,7 @@ tResult cGUIContext::ShowDebugInfo(const tGUIPoint & placement, const tGUIColor 
 
 tResult cGUIContext::HideDebugInfo()
 {
-#ifdef _DEBUG
+#ifdef GUI_DEBUG
    if (m_bShowDebugInfo)
    {
       m_bShowDebugInfo = false;
@@ -274,7 +304,7 @@ tResult cGUIContext::HideDebugInfo()
 
 ///////////////////////////////////////
 
-#ifdef _DEBUG
+#ifdef GUI_DEBUG
 static void DescribeElement(IGUIElement * pElement, char * psz, uint maxLength)
 {
    Assert(pElement != NULL);
@@ -324,7 +354,7 @@ static void DescribeElement(IGUIElement * pElement, char * psz, uint maxLength)
 
 ///////////////////////////////////////
 
-#ifdef _DEBUG
+#ifdef GUI_DEBUG
 template <typename CTYPE, size_t SIZE>
 class cTextBuffer
 {
@@ -414,7 +444,7 @@ void cGUIContext::RenderDebugInfo(IRenderDevice * pRenderDevice)
 
 ///////////////////////////////////////
 
-#ifdef _DEBUG
+#ifdef GUI_DEBUG
 bool cGUIContext::HandleInputEvent(const sInputEvent * pEvent)
 {
    Assert(pEvent != NULL);

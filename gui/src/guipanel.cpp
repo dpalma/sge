@@ -141,14 +141,19 @@ tResult cGUIPanelRenderer::Render(IGUIElement * pElement, IRenderDevice * pRende
    cAutoIPtr<IGUIPanelElement> pPanel;
    if (pElement->QueryInterface(IID_IGUIPanelElement, (void**)&pPanel) == S_OK)
    {
+      tGUIColor bkColor(tGUIColor::Magenta);
+
+      cAutoIPtr<IGUIStyle> pStyle;
+      if (pElement->GetStyle(&pStyle) == S_OK)
+      {
+         pStyle->GetBackgroundColor(&bkColor);
+      }
+
       tGUIPoint pos = GUIElementAbsolutePosition(pPanel);
       tGUISize size = pPanel->GetSize();
       tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
 
-      UseGlobal(GUIRenderingTools);
-
-      // TODO HACK
-      pGUIRenderingTools->Render3dRect(rect, 4, tGUIColor::Yellow, tGUIColor::Green, tGUIColor::Blue);
+      GlRenderBevelledRect(rect, 0, tGUIColor::Magenta, tGUIColor::Magenta, bkColor);
 
       if (GUIElementRenderChildren(pPanel, pRenderDevice) == S_OK)
       {

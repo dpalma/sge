@@ -216,6 +216,21 @@ AUTOADD_SCRIPTFUNCTION(LoadGUI, LoadGUI);
 
 ///////////////////////////////////////////////////////////////////////////////
 
+int ClearGUI(int argc, const cScriptVar * argv, 
+             int nMaxResults, cScriptVar * pResults)
+{
+   UseGlobal(GUIContext);
+   if (!!pGUIContext)
+   {
+      pGUIContext->ClearGUI();
+   }
+   return 0;
+}
+
+AUTOADD_SCRIPTFUNCTION(ClearGUI, ClearGUI);
+
+///////////////////////////////////////////////////////////////////////////////
+
 int ToggleGUIDebugInfo(int argc, const cScriptVar * argv, 
                        int nMaxResults, cScriptVar * pResults)
 {

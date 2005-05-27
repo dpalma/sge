@@ -351,8 +351,9 @@ bool cGUIEventRouter<INTRFC>::DoEvent(IGUIEvent * pEvent)
 {
    Assert(pEvent != NULL);
 
-   typename cConnectionPoint<INTRFC, IGUIEventListener>::tSinksIterator iter;
-   for (iter = AccessSinks().begin(); iter != AccessSinks().end(); iter++)
+   typename cConnectionPoint<INTRFC, IGUIEventListener>::tSinksIterator iter = BeginSinks();
+   typename cConnectionPoint<INTRFC, IGUIEventListener>::tSinksIterator end = EndSinks();
+   for (; iter != end; iter++)
    {
       if ((*iter)->OnEvent(pEvent) != S_OK)
       {
@@ -399,8 +400,9 @@ bool cGUIEventRouter<INTRFC>::BubbleEvent(IGUIElement * pStartElement, IGUIEvent
    Assert(pStartElement != NULL);
    Assert(pEvent != NULL);
 
-   typename cConnectionPoint<INTRFC, IGUIEventListener>::tSinksIterator iter;
-   for (iter = AccessSinks().begin(); iter != AccessSinks().end(); iter++)
+   typename cConnectionPoint<INTRFC, IGUIEventListener>::tSinksIterator iter = BeginSinks();
+   typename cConnectionPoint<INTRFC, IGUIEventListener>::tSinksIterator end = EndSinks();
+   for (; iter != end; iter++)
    {
       if ((*iter)->OnEvent(pEvent) != S_OK)
       {

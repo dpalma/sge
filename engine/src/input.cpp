@@ -180,8 +180,9 @@ bool cInput::DispatchInputEvent(int x, int y, long key, bool down, double time)
    event.time = time;
 
    // iterate in reverse order so the most recently added listener gets first crack
-   tSinks::reverse_iterator iter;
-   for (iter = AccessSinks().rbegin(); iter != AccessSinks().rend(); iter++)
+   tSinksReverseIterator iter = RBeginSinks();
+   tSinksReverseIterator end = REndSinks();
+   for (; iter != end; iter++)
    {
       if ((*iter)->OnInputEvent(&event))
       {

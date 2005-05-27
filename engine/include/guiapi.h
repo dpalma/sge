@@ -566,6 +566,8 @@ interface IGUIContext : IGUIEventRouter
    virtual tResult LoadFromResource(const char * psz) = 0;
    virtual tResult LoadFromString(const char * psz) = 0;
 
+   virtual void ClearGUI() = 0;
+
    virtual tResult RenderGUI(IRenderDevice * pRenderDevice) = 0;
 
    virtual tResult ShowDebugInfo(const tGUIPoint & placement, const tGUIColor & textColor) = 0;

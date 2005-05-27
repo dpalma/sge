@@ -19,6 +19,10 @@
 
 class TiXmlDocument;
 
+#ifdef _DEBUG
+#define GUI_DEBUG
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUIContext
@@ -45,13 +49,15 @@ public:
 
    uint LoadFromTiXmlDoc(TiXmlDocument * pTiXmlDoc);
 
+   virtual void ClearGUI();
+
    virtual tResult RenderGUI(IRenderDevice * pRenderDevice);
 
    virtual tResult ShowDebugInfo(const tGUIPoint & placement, const tGUIColor & textColor);
    virtual tResult HideDebugInfo();
 
 private:
-#ifdef _DEBUG
+#ifdef GUI_DEBUG
    void RenderDebugInfo(IRenderDevice * pRenderDevice);
 
    // Over-riding the cGUIEventRouter method even though it isn't virtual.
@@ -60,13 +66,10 @@ private:
    bool HandleInputEvent(const sInputEvent * pEvent);
 #endif
 
-   typedef std::list<IGUIElement *> tGUIElementList;
-   tGUIElementList m_children;
-
    class cInputListener : public cComObject<IMPLEMENTS(IInputListener)>
    {
-      friend class cGUIContext;
       cGUIContext * m_pOuter;
+   public:
       cInputListener(cGUIContext * pOuter);
       virtual bool OnInputEvent(const sInputEvent * pEvent);
    };
@@ -76,7 +79,7 @@ private:
 
    bool m_bNeedLayout;
 
-#ifdef _DEBUG
+#ifdef GUI_DEBUG
    bool m_bShowDebugInfo;
    tGUIPoint m_debugInfoPlacement;
    tGUIColor m_debugInfoTextColor;

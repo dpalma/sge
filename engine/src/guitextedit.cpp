@@ -591,12 +591,9 @@ tResult cGUITextEditStatelessRenderer::Render(IGUIElement * pElement, IRenderDev
    {
       tGUIPoint pos = GUIElementAbsolutePosition(pTextEdit);
       tGUISize size = pTextEdit->GetSize();
-
       tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
 
-      UseGlobal(GUIRenderingTools);
-
-      pGUIRenderingTools->Render3dRect(rect, k3dEdge, tGUIColor::DarkGray, tGUIColor::Gray, tGUIColor::White);
+      GlRenderBevelledRect(rect, k3dEdge, tGUIColor::DarkGray, tGUIColor::Gray, tGUIColor::White);
 
       rect.left += k3dEdge + kHorzInset;
       rect.top += kVertInset;
@@ -618,6 +615,7 @@ tResult cGUITextEditStatelessRenderer::Render(IGUIElement * pElement, IRenderDev
 
       if (!pFont)
       {
+         UseGlobal(GUIRenderingTools);
          pGUIRenderingTools->GetDefaultFont(&pFont);
       }
 
@@ -646,8 +644,7 @@ tResult cGUITextEditStatelessRenderer::Render(IGUIElement * pElement, IRenderDev
             rect.left + leftOfCursor.GetWidth() + kCursorWidth,
             rect.bottom - 1);
 
-         pGUIRenderingTools->Render3dRect(cursorRect, 0, tGUIColor::Black, 
-            tGUIColor::Black, tGUIColor::Black);
+         GlRenderBevelledRect(cursorRect, 0, tGUIColor::Black, tGUIColor::Black, tGUIColor::Black);
       }
 
       pRenderDevice->SetScissorRect(NULL);

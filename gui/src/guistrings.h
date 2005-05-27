@@ -11,11 +11,11 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 const char kAttribAlign[] = "align";
-const char kAttribVerticalAlign[] = "verticalAlign";
+const char kAttribVerticalAlign[] = "vertical-align";
 const char kAttribBackgroundColor[] = "background-color";
 const char kAttribForegroundColor[] = "foreground-color";
 const char kAttribTextAlign[] = "text-align";
-const char kAttribTextVerticalAlign[] = "text-verticalAlign";
+const char kAttribTextVerticalAlign[] = "text-vertical-align";
 const char kAttribFontName[] = "font-name";
 const char kAttribFontPointSize[] = "font-pointSize";
 const char kAttribFontBold[] = "font-bold";

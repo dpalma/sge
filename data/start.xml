@@ -1,0 +1,23 @@
+<!-- $Id$ -->
+
+<panel
+    style="width:100%;height:100%;background-color:white;foreground-color:black;">
+
+    <label
+		text="(Entry Screen)"
+		style="align:left;vertical-align:center;"
+	/>
+
+    <button
+		text="Begin"
+		style="align:right;vertical-align:center;"
+		onclick="LoadSampleLevel();"
+	/>
+
+    <button
+		text="Exit"
+		style="align:right;vertical-align:bottom;"
+		onclick="QuitWithConfirm();"
+	/>
+
+</panel>

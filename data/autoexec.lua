@@ -1,8 +1,12 @@
 -------------------------------------------------------------------------------
 -- $Id$
 
+function QuitWithConfirm()
+   ConfirmedQuit("quitdlg.xml");
+end;
+
 bind("q", "quit();");
-bind("escape", [[ConfirmedQuit("quitdlg.xml");]]);
+bind("escape", [[QuitWithConfirm();]]);
 
 bind("d", [[ToggleGUIDebugInfo(5, 200, "yellow");]]);
 
@@ -17,7 +21,8 @@ gameMeshes =
    "zombie.ms3d",
 };
 
-function GameInit()
+function LoadSampleLevel()
+   ClearGUI();
    LoadGUI("guitest.xml");
 
    SetTerrain("ground.tga", 0.2, "grass.tga");
@@ -31,6 +36,12 @@ function GameInit()
    
    EntitySpawnTest("zombie.ms3d", 0.5, 0.4);
    ViewSetPos(0.5, 0.4);
+end;
+
+-- Called automatically at start-up by the game engine
+function GameInit()
+   ClearGUI();
+   LoadGUI("start.xml");
 end;
 
 -------------------------------------------------------------------------------
