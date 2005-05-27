@@ -22,7 +22,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\ms3dsdk\msLib,..\..\tech\include,..\..\render\include,..\..\engine\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\ms3dsdk\msLib,..\..\3rdparty\NvTriStrip\include,..\..\3rdparty\wtl\include,..\..\tech\include,..\..\render\include,..\..\engine\include"
 				PreprocessorDefinitions="NDEBUG;STATIC_BUILD;_USRDLL;WIN32;_WINDOWS;STRICT"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="msModelLib.lib $(OutDir)/tinyxml.lib opengl32.lib glu32.lib winmm.lib"
+				AdditionalDependencies="msModelLib.lib $(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib opengl32.lib glu32.lib winmm.lib"
 				OutputFile="..\..\Build.vc71\StaticRelease/msSGEExporter.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -90,7 +90,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\ms3dsdk\msLib,..\..\tech\include,..\..\render\include,..\..\engine\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\ms3dsdk\msLib,..\..\3rdparty\NvTriStrip\include,..\..\3rdparty\wtl\include,..\..\tech\include,..\..\render\include,..\..\engine\include"
 				PreprocessorDefinitions="_USRDLL;STRICT;_WINDOWS;NDEBUG;WIN32"
 				StringPooling="TRUE"
 				RuntimeLibrary="3"
@@ -110,7 +110,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="msModelLib.lib $(OutDir)/tinyxml.lib opengl32.lib glu32.lib winmm.lib"
+				AdditionalDependencies="msModelLib.lib $(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib opengl32.lib glu32.lib winmm.lib"
 				OutputFile="..\..\Build.vc71\Opt/msSGEExporter.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -160,7 +160,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\ms3dsdk\msLib,..\..\tech\include,..\..\render\include,..\..\engine\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\ms3dsdk\msLib,..\..\3rdparty\NvTriStrip\include,..\..\3rdparty\wtl\include,..\..\tech\include,..\..\render\include,..\..\engine\include"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;WIN32;_WINDOWS;STRICT"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -179,7 +179,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="msModelLib.lib $(OutDir)/tinyxml.lib opengl32.lib glu32.lib winmm.lib"
+				AdditionalDependencies="msModelLib.lib $(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib opengl32.lib glu32.lib winmm.lib"
 				OutputFile="..\..\Build.vc71\Release/msSGEExporter.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -229,7 +229,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\3rdparty\ms3dsdk\msLib,..\..\tech\include,..\..\render\include,..\..\engine\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\3rdparty\ms3dsdk\msLib,..\..\3rdparty\NvTriStrip\include,..\..\3rdparty\wtl\include,..\..\tech\include,..\..\render\include,..\..\engine\include"
 				PreprocessorDefinitions="_DEBUG;STATIC_BUILD;_USRDLL;WIN32;_WINDOWS;STRICT"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -248,7 +248,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\cppunit.lib msModelLib.lib $(OutDir)/tinyxml.lib opengl32.lib glu32.lib winmm.lib"
+				AdditionalDependencies="$(OutDir)\cppunit.lib msModelLib.lib $(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib opengl32.lib glu32.lib winmm.lib"
 				OutputFile="..\..\Build.vc71\StaticDebug/msSGEExporter.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -298,7 +298,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\3rdparty\ms3dsdk\msLib,..\..\tech\include,..\..\render\include,..\..\engine\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\3rdparty\ms3dsdk\msLib,..\..\3rdparty\NvTriStrip\include,..\..\3rdparty\wtl\include,..\..\tech\include,..\..\render\include,..\..\engine\include"
 				PreprocessorDefinitions="_DEBUG;_USRDLL;WIN32;_WINDOWS;STRICT"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -317,7 +317,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="msModelLib.lib $(OutDir)/tinyxml.lib opengl32.lib glu32.lib winmm.lib"
+				AdditionalDependencies="msModelLib.lib $(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib opengl32.lib glu32.lib winmm.lib"
 				OutputFile="..\..\Build.vc71\Debug/msSGEExporter.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
