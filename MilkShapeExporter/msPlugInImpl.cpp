@@ -4,27 +4,20 @@
 #include "stdafx.h"
 
 #include "msPlugInImpl.h"
-#include "resource.h"
 #include "msPlugInExportDlg.h"
-#include "ModelTreeInfo.h"
 
-#include "meshapi.h"
-#include "materialapi.h"
-#include "renderapi.h"
-#include "color.h"
-#include "comtools.h"
+#include "model.h"
+
+#include "readwriteapi.h"
 
 #include "msLib.h"
+#include "NvTriStrip.h"
 
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include "dbgalloc.h" // must be last header
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -35,7 +28,6 @@ static char THIS_FILE[] = __FILE__;
 
 cPlugIn::cPlugIn()
 {
-   VERIFY(m_title.LoadString(AFX_IDS_APP_TITLE));
 }
 
 ///////////////////////////////////////
@@ -55,87 +47,70 @@ int cPlugIn::GetType()
 
 const char * cPlugIn::GetTitle()
 {
-   return m_title;
+   if (!m_title.IsEmpty() || (m_title.IsEmpty() && m_title.LoadString(IDS_TITLE)))
+   {
+      return m_title;
+   }
+   else
+   {
+      return "SGE Exporter";
+   }
 }
 
 ///////////////////////////////////////
 
 int cPlugIn::Execute(msModel * pModel)
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
    if (pModel == NULL)
    {
       return -1;
    }
 
    int nMeshes = msModel_GetMeshCount(pModel);
-
    int nMaterials = msModel_GetMaterialCount(pModel);
 
    if (nMeshes == 0 && nMaterials == 0)
    {
-      AfxMessageBox(IDS_ERR_NOTHINGTOEXPORT);
+      AtlMessageBox(GetFocus(), IDS_ERR_NOTHINGTOEXPORT);
       return -1;
    }
 
-   cModelTreeInfo modelTreeInfo(pModel);
-
-   cMsPlugInExportDlg dlg(&modelTreeInfo);
+   cMsPlugInExportDlg dlg;
    if (dlg.DoModal() != IDOK)
    {
       return -1;
    }
 
-   cAutoIPtr<IMesh> pMesh = MeshCreate();
+   tModelMaterials materials(nMaterials);
 
    for (int i = 0; i < nMaterials; i++)
    {
       msMaterial * pMsMaterial = msModel_GetMaterialAt(pModel, i);
       if (pMsMaterial != NULL)
       {
-         cAutoIPtr<IMaterial> pMaterial;
-         if (MaterialCreate(&pMaterial) == S_OK)
-         {
-            char szName[MS_MAX_NAME];
-            msMaterial_GetName(pMsMaterial, szName, MS_MAX_NAME);
-            pMaterial->SetName(szName);
+         char szName[MS_MAX_NAME];
+         msMaterial_GetName(pMsMaterial, szName, MS_MAX_NAME);
 
-            msVec4 ambient;
-            msMaterial_GetAmbient(pMsMaterial, ambient);
-            pMaterial->SetAmbient(cColor(ambient));
+         msVec4 ambient;
+         msMaterial_GetAmbient(pMsMaterial, ambient);
 
-            msVec4 diffuse;
-            msMaterial_GetDiffuse(pMsMaterial, diffuse);
-            pMaterial->SetDiffuse(cColor(diffuse));
+         msVec4 diffuse;
+         msMaterial_GetDiffuse(pMsMaterial, diffuse);
 
-            msVec4 specular;
-            msMaterial_GetSpecular(pMsMaterial, specular);
-            pMaterial->SetSpecular(cColor(specular));
+         msVec4 specular;
+         msMaterial_GetSpecular(pMsMaterial, specular);
 
-            msVec4 emissive;
-            msMaterial_GetEmissive(pMsMaterial, emissive);
-            pMaterial->SetEmissive(cColor(emissive));
+         msVec4 emissive;
+         msMaterial_GetEmissive(pMsMaterial, emissive);
 
-            pMaterial->SetShininess(msMaterial_GetShininess(pMsMaterial));
+         float shininess = msMaterial_GetShininess(pMsMaterial);
 
-            char szTexture[MS_MAX_PATH];
-            msMaterial_GetDiffuseTexture(pMsMaterial, szTexture, MS_MAX_PATH);
-            // TODO: pMaterial->SetTexture(0, szTexture);
+         char szTexture[MS_MAX_PATH];
+         msMaterial_GetDiffuseTexture(pMsMaterial, szTexture, MS_MAX_PATH);
 
-            pMesh->AddMaterial(pMaterial);
-         }
+         materials[i] = cModelMaterial(diffuse, ambient, specular, emissive, shininess, szTexture);
       }
    }
-
-#if 0
-   cAutoIPtr<IRenderDevice> pRenderDevice;
-   if (FAILED(RenderDeviceCreate(&pRenderDevice)))
-   {
-      AfxMessageBox(IDS_ERR_RENDERDEVICEFAILCREATE);
-      return -1;
-   }
-#endif
 
    for (i = 0; i < nMeshes; i++)
    {
@@ -147,7 +122,7 @@ int cPlugIn::Execute(msModel * pModel)
 
          if (nVertices != nNormals)
          {
-            AfxMessageBox("# vertices != # normals");
+            AtlMessageBox(GetFocus(), "# vertices != # normals");
             return -1;
          }
 

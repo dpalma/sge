@@ -5,30 +5,17 @@
 
 #include "msPlugInApp.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include "dbgalloc.h" // must be last header
 
 /////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cMsPlugInApp
-//
 
-BEGIN_MESSAGE_MAP(cMsPlugInApp, CWinApp)
-	//{{AFX_MSG_MAP(cMsPlugInApp)
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+WTL::CAppModule _Module;
 
-///////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
 
-cMsPlugInApp::cMsPlugInApp()
+BOOL WINAPI DllMain(HINSTANCE, DWORD dwReason, LPVOID)
 {
+   return TRUE;
 }
-
-///////////////////////////////////////
-
-cMsPlugInApp theApp;
 
 /////////////////////////////////////////////////////////////////////////////

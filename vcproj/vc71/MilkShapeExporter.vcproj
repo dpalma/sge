@@ -16,7 +16,7 @@
 			OutputDirectory=".\..\..\Build.vc71\StaticRelease"
 			IntermediateDirectory=".\..\..\Build.vc71\StaticRelease\MilkShapeExporter"
 			ConfigurationType="2"
-			UseOfMFC="1"
+			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
@@ -84,7 +84,7 @@
 			OutputDirectory=".\..\..\Build.vc71\Opt"
 			IntermediateDirectory=".\..\..\Build.vc71\Opt\MilkShapeExporter"
 			ConfigurationType="2"
-			UseOfMFC="2"
+			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
@@ -154,7 +154,7 @@
 			OutputDirectory=".\..\..\Build.vc71\Release"
 			IntermediateDirectory=".\..\..\Build.vc71\Release\MilkShapeExporter"
 			ConfigurationType="2"
-			UseOfMFC="2"
+			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
@@ -223,7 +223,7 @@
 			OutputDirectory=".\..\..\Build.vc71\StaticDebug"
 			IntermediateDirectory=".\..\..\Build.vc71\StaticDebug\MilkShapeExporter"
 			ConfigurationType="2"
-			UseOfMFC="1"
+			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
@@ -292,7 +292,7 @@
 			OutputDirectory=".\..\..\Build.vc71\Debug"
 			IntermediateDirectory=".\..\..\Build.vc71\Debug\MilkShapeExporter"
 			ConfigurationType="2"
-			UseOfMFC="2"
+			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
@@ -363,9 +363,6 @@
 		<Filter
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
-			<File
-				RelativePath="..\..\MilkShapeExporter\ModelTreeInfo.cpp">
-			</File>
 			<File
 				RelativePath="..\..\MilkShapeExporter\msPlugIn.def">
 			</File>
@@ -449,9 +446,6 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl">
 			<File
-				RelativePath="..\..\MilkShapeExporter\ModelTreeInfo.h">
-			</File>
-			<File
 				RelativePath="..\..\MilkShapeExporter\msPlugInApp.h">
 			</File>
 			<File
@@ -471,37 +465,7 @@
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 			<File
-				RelativePath="..\..\MilkShapeExporter\addanim.bmp">
-			</File>
-			<File
-				RelativePath="..\..\MilkShapeExporter\res\addanimd.bmp">
-			</File>
-			<File
-				RelativePath="..\..\MilkShapeExporter\res\addanimf.bmp">
-			</File>
-			<File
-				RelativePath="..\..\MilkShapeExporter\res\addanimu.bmp">
-			</File>
-			<File
-				RelativePath="..\..\MilkShapeExporter\res\addanimx.bmp">
-			</File>
-			<File
 				RelativePath="..\..\MilkShapeExporter\res\msPlugIn.rc2">
-			</File>
-			<File
-				RelativePath="..\..\MilkShapeExporter\res\rmanim.bmp">
-			</File>
-			<File
-				RelativePath="..\..\MilkShapeExporter\res\rmanimd.bmp">
-			</File>
-			<File
-				RelativePath="..\..\MilkShapeExporter\res\rmanimf.bmp">
-			</File>
-			<File
-				RelativePath="..\..\MilkShapeExporter\res\rmanimu.bmp">
-			</File>
-			<File
-				RelativePath="..\..\MilkShapeExporter\res\rmanimx.bmp">
 			</File>
 		</Filter>
 	</Files>

@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -26,37 +26,20 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Dialog
 //
 
-IDD_EXPORT DIALOG DISCARDABLE  0, 0, 350, 230
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_EXPORT DIALOGEX 0, 0, 300, 170
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Export"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    LTEXT           "&File Name:",IDC_STATIC,124,7,34,8
-    EDITTEXT        IDC_FILENAME,124,20,160,14,ES_AUTOHSCROLL
-    PUSHBUTTON      "Browse...",IDC_BROWSE,293,20,50,14
-    CONTROL         "Export &Materials",IDC_EXPORTMATERIALS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,124,42,66,10
-    CONTROL         "&Export Skeleton",IDC_EXPORTSKELETON,"Button",
-                    BS_AUTORADIOBUTTON,124,66,66,10
-    CONTROL         "&Use Skeleton",IDC_USESKELETON,"Button",
-                    BS_AUTORADIOBUTTON,124,82,59,10
-    EDITTEXT        IDC_SKELETONFILENAME,193,80,90,14,ES_AUTOHSCROLL
-    PUSHBUTTON      "Browse...",IDC_BROWSESKELETON,293,80,50,14
-    CONTROL         "Export Animation &Sequences",IDC_EXPORTANIMATIONS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,124,109,107,10
+    LTEXT           "&File Name:",IDC_STATIC,6,7,34,8
+    EDITTEXT        IDC_FILENAME,6,20,206,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "Browse...",IDC_BROWSE,243,20,50,14
+    CONTROL         "Export &Animation Data",IDC_EXPORTANIMATIONS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,6,42,86,10
     CONTROL         "List1",IDC_ANIMATIONS,"SysListView32",LVS_REPORT | 
-                    LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,124,124,219,76
-    DEFPUSHBUTTON   "OK",IDOK,237,209,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,293,209,50,14
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,124,58,219,1
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,124,100,219,1
-    CONTROL         "ADDANIM",IDC_ADDANIMATION,"Button",BS_OWNERDRAW | 
-                    WS_TABSTOP,303,107,17,14
-    CONTROL         "RMANIM",IDC_REMOVEANIMATION,"Button",BS_OWNERDRAW | 
-                    WS_TABSTOP,326,107,17,14
-    CONTROL         "Tree1",IDC_MODEL_INFO_TREE,"SysTreeView32",
-                    TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | 
-                    WS_BORDER | WS_TABSTOP,7,7,106,193
+                    LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,6,57,287,83
+    DEFPUSHBUTTON   "OK",IDOK,187,149,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,243,149,50,14
 END
 
 
@@ -66,16 +49,14 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO DISCARDABLE 
+GUIDELINES DESIGNINFO 
 BEGIN
     IDD_EXPORT, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 343
-        VERTGUIDE, 124
+        LEFTMARGIN, 6
+        RIGHTMARGIN, 293
         TOPMARGIN, 7
-        BOTTOMMARGIN, 223
-        HORZGUIDE, 200
+        BOTTOMMARGIN, 163
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -83,32 +64,13 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Bitmap
-//
-
-ADDANIMU                BITMAP  DISCARDABLE     "res\\addanimu.bmp"
-RMANIMU                 BITMAP  DISCARDABLE     "res\\rmanimu.bmp"
-ADDANIMD                BITMAP  DISCARDABLE     "res\\addanimd.bmp"
-ADDANIMF                BITMAP  DISCARDABLE     "res\\addanimf.bmp"
-ADDANIMX                BITMAP  DISCARDABLE     "res\\addanimx.bmp"
-RMANIMD                 BITMAP  DISCARDABLE     "res\\rmanimd.bmp"
-RMANIMF                 BITMAP  DISCARDABLE     "res\\rmanimf.bmp"
-RMANIMX                 BITMAP  DISCARDABLE     "res\\rmanimx.bmp"
-
-/////////////////////////////////////////////////////////////////////////////
-//
 // String Table
 //
 
-STRINGTABLE DISCARDABLE 
-BEGIN
-    AFX_IDS_APP_TITLE       "SGE Mesh..."
-END
-
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_ERR_NOTHINGTOEXPORT "Nothing to export"
-    IDS_ERR_RENDERDEVICEFAILCREATE "Failed to create rendering device"
+    IDS_TITLE               "SGE Mesh..."
     IDS_MATERIALS           "Materials"
     IDS_AMBIENT             "Ambient: %f, %f, %f, %f"
     IDS_DIFFUSE             "Diffuse: %f, %f, %f, %f"
@@ -117,7 +79,7 @@ BEGIN
     IDS_SHININESS           "Shininess: %f"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_TEXTURE             "Texture: %s"
     IDS_MESHES              "Meshes"
@@ -156,18 +118,18 @@ LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_SWISS
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE DISCARDABLE 
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE DISCARDABLE 
+2 TEXTINCLUDE 
 BEGIN
     "#include ""afxres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE 
+3 TEXTINCLUDE 
 BEGIN
     "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
     "#define _AFX_NO_OLE_RESOURCES\r\n"
@@ -180,7 +142,6 @@ BEGIN
     "#pragma code_page(1252)\r\n"
     "#endif //_WIN32\r\n"
     "#include ""res\\msPlugIn.rc2""  // Nicht mit Microsoft Visual C++ bearbeitete Ressourcen\r\n"
-    "#include ""l.deu\\afxres.rc""          // Standardkomponenten\r\n"
     "#endif\r\n"
     "\0"
 END
@@ -208,7 +169,6 @@ LANGUAGE 7, 1
 #pragma code_page(1252)
 #endif //_WIN32
 #include "res\msPlugIn.rc2"  // Nicht mit Microsoft Visual C++ bearbeitete Ressourcen
-#include "l.deu\afxres.rc"          // Standardkomponenten
 #endif
 
 /////////////////////////////////////////////////////////////////////////////

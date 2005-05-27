@@ -8,19 +8,34 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-// Include <afx.h> first because it has pragmas to link
-// the MFC and CRT libraries in the correct order
-#include <afx.h>
+#define WINVER 0x0400
+#define _WIN32_WINNT 0x0400
+#define _WIN32_IE 0x0400
+
+#define QI_TEMPLATE_METHOD_FOR_ATL
 
 #include "techtypes.h"
 #include "techdebug.h"
 #include "combase.h"
 
-#define WIN32_LEAN_AND_MEAN
-#define VC_EXTRALEAN
+#define _WTL_USE_CSTRING
 
-#include <afxwin.h>
-#include <afxext.h>
-#include <afxcmn.h>
+#include <atlbase.h>
+#include <atlapp.h>
+
+extern WTL::CAppModule _Module;
+
+#include <atlcom.h>
+#include <atlwin.h>
+#include <atlgdi.h>
+#include <atlmisc.h>
+#include <atlctrls.h>
+#include <atlctrlw.h>
+#include <atlctrlx.h>
+#include <atlcrack.h>
+#include <atlframe.h>
+#include <atlres.h>
+
+/////////////////////////////////////////////////////////////////////////////
 
 #endif // !INCLUDED_STDAFX_H

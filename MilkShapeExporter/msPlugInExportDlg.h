@@ -4,63 +4,60 @@
 #ifndef INCLUDED_MSPLUGINEXPORTDLG_H
 #define INCLUDED_MSPLUGINEXPORTDLG_H
 
+#include "resource.h"
+
+#include <atlddx.h>
+
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
-
-class cModelTreeInfo;
-
-BOOL ChooseExportFileName(CString * pFileName);
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cMsPlugInExportDlg
 //
 
-class cMsPlugInExportDlg : public CDialog
+class cMsPlugInExportDlg : public CDialogImpl<cMsPlugInExportDlg>,
+                           public CDialogResize<cMsPlugInExportDlg>,
+                           public CWinDataExchange<cMsPlugInExportDlg>
 {
-// Construction
 public:
-	cMsPlugInExportDlg(cModelTreeInfo * pModelTreeInfo, CWnd* pParent = NULL);   // standard constructor
+   cMsPlugInExportDlg();
+   ~cMsPlugInExportDlg();
 
-// Dialog Data
-	//{{AFX_DATA(cMsPlugInExportDlg)
-	enum { IDD = IDD_EXPORT };
-	CTreeCtrl	m_modelInfo;
-	CListCtrl	m_animations;
-	BOOL	m_bExportAnimations;
-	BOOL	m_bExportMaterials;
-	CString	m_exportFileName;
-	CString	m_skeletonFileName;
-	//}}AFX_DATA
-	CBitmapButton	m_addAnimationButton;
-	CBitmapButton	m_removeAnimationButton;
-
-// Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(cMsPlugInExportDlg)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	//}}AFX_VIRTUAL
-
-// Implementation
-protected:
-
-	// Generated message map functions
-	//{{AFX_MSG(cMsPlugInExportDlg)
-	afx_msg void OnBrowse();
-	afx_msg void OnBrowseSkeleton();
-	afx_msg void OnAddAnimation();
-	afx_msg void OnRemoveAnimation();
-	virtual BOOL OnInitDialog();
-	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
+   enum { IDD = IDD_EXPORT };
 
 private:
-   cModelTreeInfo * m_pModelTreeInfo;
+   BEGIN_MSG_MAP(cMsPlugInExportDlg)
+      MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
+      COMMAND_ID_HANDLER(IDOK, OnOK)
+      COMMAND_ID_HANDLER(IDCANCEL, OnCancel)
+      COMMAND_ID_HANDLER(IDC_BROWSE, OnBrowse)
+      CHAIN_MSG_MAP(CDialogResize<cMsPlugInExportDlg>)
+   END_MSG_MAP()
+
+   BEGIN_DLGRESIZE_MAP(cMsPlugInExportDlg)
+      DLGRESIZE_CONTROL(IDC_BROWSE, DLSZ_MOVE_X | DLSZ_MOVE_Y)
+      DLGRESIZE_CONTROL(IDOK, DLSZ_MOVE_X | DLSZ_MOVE_Y)
+      DLGRESIZE_CONTROL(IDCANCEL, DLSZ_MOVE_X | DLSZ_MOVE_Y)
+   END_DLGRESIZE_MAP()
+
+   BEGIN_DDX_MAP(cMsPlugInExportDlg)
+      DDX_TEXT(IDC_FILENAME, m_exportFileName);
+      DDX_TEXT_LEN(IDC_FILENAME, m_exportFileName, MAX_PATH);
+   END_DDX_MAP()
+
+   LRESULT OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
+   LRESULT OnOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL & bHandled);
+   LRESULT OnCancel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL & bHandled);
+   LRESULT OnBrowse(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL & bHandled);
+
+private:
+   CString m_exportFileName;
+   BOOL m_bExportAnimations;
+   CListViewCtrl m_animations;
 };
 
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
+/////////////////////////////////////////////////////////////////////////////
 
 #endif // !INCLUDED_MSPLUGINEXPORTDLG_H

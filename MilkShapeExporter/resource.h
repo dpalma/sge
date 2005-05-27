@@ -1,9 +1,10 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
+// Microsoft Visual C++ generated include file.
 // Used by msPlugIn.rc
 //
 #define IDS_ERR_NOTHINGTOEXPORT         1000
 #define IDS_ERR_RENDERDEVICEFAILCREATE  1001
+#define IDS_TITLE                       1001
 #define IDS_MATERIALS                   1002
 #define IDS_AMBIENT                     1003
 #define IDS_DIFFUSE                     1004

@@ -4,7 +4,6 @@
 Import('*')
 
 sources = Split("""
-   ModelTreeInfo.cpp
    msPlugInApp.cpp
    msPlugInExportDlg.cpp
    msPlugInImpl.cpp
@@ -13,11 +12,10 @@ sources = Split("""
 """)
 
 includePaths = Split("""
-   #3rdparty/sgi
    #3rdparty/ms3dsdk/msLib
-   #3rdparty/Cg/include
-   #3rdparty/lua/include
+   #3rdparty/NvTriStrip/include
    #3rdparty/tinyxml
+   #3rdparty/wtl/include
    #engine/include
    #render/include
    #tech/include
@@ -25,9 +23,8 @@ includePaths = Split("""
 
 libPaths = Split("""
    #3rdparty/ms3dsdk/msLib/lib
-   #3rdparty/Cg/lib
+   #3rdparty/NvTriStrip/src/NvTriStrip
    #3rdparty/tinyxml
-   #3rdparty/lua/src
    #3rdparty/zlib
    #allguids
    #tech/src
@@ -37,21 +34,19 @@ libPaths = Split("""
 
 libs = Split("""
    msModelLib.lib
+   NvTriStrip.lib
    allguids.lib
    tech.lib
    rendergl.lib
    engine.lib
-   lua.lib
    tinyxml.lib
    zlibwapi.lib
    user32.lib
    kernel32.lib
    gdi32.lib
-   winmm.lib
+   comdlg32.lib
    opengl32.lib
    glu32.lib
-   cg.lib
-   cgGL.lib
 """)
 
 env = env.Copy()
