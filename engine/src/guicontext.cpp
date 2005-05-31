@@ -8,8 +8,6 @@
 #include "guielementtools.h"
 #include "guieventroutertem.h"
 
-#include "sceneapi.h"
-
 #include "renderapi.h"
 
 #ifdef GUI_DEBUG
@@ -37,7 +35,7 @@
 //
 
 BEGIN_CONSTRAINTS()
-   AFTER_GUID(IID_IScene)
+   AFTER_GUID(IID_IInput)
 END_CONSTRAINTS()
 
 ///////////////////////////////////////
@@ -53,22 +51,20 @@ cGUIContext::cGUIContext()
    , m_lastMousePos(0,0)
 #endif
 {
-   UseGlobal(Scene);
-   pScene->AddInputListener(kSL_InGameUI, &m_inputListener);
 }
 
 ///////////////////////////////////////
 
 cGUIContext::~cGUIContext()
 {
-   UseGlobal(Scene);
-   pScene->RemoveInputListener(kSL_InGameUI, &m_inputListener);
 }
 
 ///////////////////////////////////////
 
 tResult cGUIContext::Init()
 {
+   UseGlobal(Input);
+   pInput->SetGUIInputListener(&m_inputListener);
    return S_OK;
 }
 
@@ -76,6 +72,8 @@ tResult cGUIContext::Init()
 
 tResult cGUIContext::Term()
 {
+   UseGlobal(Input);
+   pInput->SetGUIInputListener(NULL);
    RemoveAllElements();
    return S_OK;
 }

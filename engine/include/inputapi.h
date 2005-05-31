@@ -28,6 +28,10 @@ interface IInput : IUnknown
 {
    DECLARE_CONNECTION_POINT(IInputListener);
 
+   /// @remarks The GUI input listener gets first crack at input messages
+   /// because the in-game user interface overlays the game
+   virtual void SetGUIInputListener(IInputListener * pListener) = 0;
+
    virtual bool KeyIsDown(long key) = 0;
 
    virtual void KeyBind(long key, const char * pszDownCmd, const char * pszUpCmd) = 0;

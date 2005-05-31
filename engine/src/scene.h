@@ -6,7 +6,6 @@
 
 #include "sceneapi.h"
 #include "scenelayer.h"
-#include "inputapi.h"
 #include "globalobj.h"
 
 #ifdef _MSC_VER
@@ -36,26 +35,12 @@ public:
    virtual void Clear(eSceneLayer layer);
    virtual void Clear();
 
-   virtual tResult AddInputListener(eSceneLayer layer, IInputListener * pListener);
-   virtual tResult RemoveInputListener(eSceneLayer layer, IInputListener * pListener);
-
    virtual tResult Render(IRenderDevice * pRenderDevice);
 
    virtual tResult Query(const cRay & ray, tSceneEntityList * pEntities);
    virtual tResult Query(const cRay & ray, ISceneEntityEnum * * ppEnum);
 
 private:
-   class cInputListener : public cComObject<cDefaultInputListener, &IID_IInputListener>
-   {
-      friend class cScene;
-      cScene * m_pOuter;
-      cInputListener(cScene * pOuter);
-      virtual bool OnInputEvent(const sInputEvent * pEvent);
-   };
-
-   friend class cInputListener;
-   cInputListener m_inputListener;
-
    tSceneEntityList m_entities;
    cSceneLayer m_layers[kMAXSCENELAYERS];
 };

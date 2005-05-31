@@ -14,8 +14,6 @@
 
 class cFrustum;
 
-struct sInputEvent;
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cSceneLayer
@@ -38,23 +36,15 @@ public:
 
    void Clear();
 
-   tResult AddInputListener(IInputListener * pListener);
-   tResult RemoveInputListener(IInputListener * pListener);
-
    tResult Query(const cRay & ray, tSceneEntityList * pEntities);
 
    void Cull(const cFrustum & frustum, tSceneEntityList * pEntities);
 
    void GetAll(tSceneEntityList * pEntities);
 
-   bool HandleInputEvent(const sInputEvent * pEvent);
-
 private:
    tSceneEntityList m_entities;
    cAutoIPtr<ISceneCamera> m_pCamera;
-
-   typedef std::list<IInputListener *> tInputListeners;
-   tInputListeners m_inputListeners;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

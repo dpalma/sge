@@ -25,6 +25,8 @@ public:
    virtual tResult Init();
    virtual tResult Term();
 
+   virtual void SetGUIInputListener(IInputListener * pListener);
+
    virtual bool KeyIsDown(long key);
 
    virtual void KeyBind(long key, const char * pszDownCmd, const char * pszUpCmd);
@@ -45,6 +47,8 @@ private:
    char * m_keyUpBindings[kMaxKeys];
 
    uint m_oldMouseState;
+
+   cAutoIPtr<IInputListener> m_pGUIListener;
 };
 
 ///////////////////////////////////////

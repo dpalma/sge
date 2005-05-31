@@ -6,12 +6,10 @@
 #include "scenelayer.h"
 #include "ray.h"
 #include "frustum.h"
-#include "inputapi.h"
 
 #include "renderapi.h"
 
 #include "matrix4.h"
-#include "connptimpl.h"
 
 #include <algorithm>
 #include <functional>
@@ -34,9 +32,6 @@ cSceneLayer::cSceneLayer()
 cSceneLayer::~cSceneLayer()
 {
    Clear();
-
-   std::for_each(m_inputListeners.begin(), m_inputListeners.end(), CTInterfaceMethod(&IUnknown::Release));
-   m_inputListeners.clear();
 }
 
 ///////////////////////////////////////
@@ -118,20 +113,6 @@ void cSceneLayer::Clear()
 {
    std::for_each(m_entities.begin(), m_entities.end(), CTInterfaceMethod(&::IUnknown::Release));
    m_entities.clear();
-}
-
-///////////////////////////////////////
-
-tResult cSceneLayer::AddInputListener(IInputListener * pListener)
-{
-   return add_interface(m_inputListeners, pListener) ? S_OK : E_FAIL;
-}
-
-///////////////////////////////////////
-
-tResult cSceneLayer::RemoveInputListener(IInputListener * pListener)
-{
-   return remove_interface(m_inputListeners, pListener) ? S_OK : E_FAIL;
 }
 
 ///////////////////////////////////////
@@ -246,22 +227,6 @@ void cSceneLayer::GetAll(tSceneEntityList * pEntities)
    pEntities->resize(m_entities.size());
    std::copy(m_entities.begin(), m_entities.end(), pEntities->begin());
    std::for_each(pEntities->begin(), pEntities->end(), CTInterfaceMethod(&::IUnknown::AddRef));
-}
-
-///////////////////////////////////////
-
-bool cSceneLayer::HandleInputEvent(const sInputEvent * pEvent)
-{
-   tInputListeners::reverse_iterator iter;
-   for (iter = m_inputListeners.rbegin(); iter != m_inputListeners.rend(); iter++)
-   {
-      if ((*iter)->OnInputEvent(pEvent))
-      {
-         return true;
-      }
-   }
-
-   return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

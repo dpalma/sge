@@ -23,7 +23,6 @@ F_DECLARE_INTERFACE(IRenderDevice);
 F_DECLARE_INTERFACE(IMesh);
 
 class cRay;
-F_DECLARE_INTERFACE(IInputListener);
 F_DECLARE_INTERFACE(IScene);
 F_DECLARE_INTERFACE(ISceneEntity);
 F_DECLARE_INTERFACE(ISceneEntityEnum);
@@ -53,12 +52,6 @@ interface IScene : IUnknown
 
    virtual void Clear(eSceneLayer layer) = 0;
    virtual void Clear() = 0;
-
-   // The scene layers also define a z-order for input handling.  The UI
-   // layer handles events before the object layer, which handles events before
-   // the terrain layer, etc.
-   virtual tResult AddInputListener(eSceneLayer layer, IInputListener * pListener) = 0;
-   virtual tResult RemoveInputListener(eSceneLayer layer, IInputListener * pListener) = 0;
 
    virtual tResult Query(const cRay & ray, ISceneEntityEnum * * ppEnum) = 0;
 

@@ -99,6 +99,14 @@ tResult cInput::Term()
 
 ///////////////////////////////////////
 
+void cInput::SetGUIInputListener(IInputListener * pListener)
+{
+   SafeRelease(m_pGUIListener);
+   m_pGUIListener = CTAddRef(pListener);
+}
+
+///////////////////////////////////////
+
 bool cInput::KeyIsDown(long key)
 {
    if (key > -1 && key < kMaxKeys)
@@ -178,6 +186,14 @@ bool cInput::DispatchInputEvent(int x, int y, long key, bool down, double time)
    event.down = down;
    event.point = tVec2(static_cast<float>(x), static_cast<float>(y));
    event.time = time;
+
+   if (!!m_pGUIListener)
+   {
+      if (m_pGUIListener->OnInputEvent(&event))
+      {
+         return true;
+      }
+   }
 
    // iterate in reverse order so the most recently added listener gets first crack
    tSinksReverseIterator iter = RBeginSinks();

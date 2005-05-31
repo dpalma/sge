@@ -20,8 +20,6 @@
 
 #include "dbgalloc.h" // must be last header
 
-F_DECLARE_INTERFACE(IInput);
-
 extern ISceneEntityEnum * SceneEntityEnumCreate(const tSceneEntityList & entities);
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -30,14 +28,13 @@ extern ISceneEntityEnum * SceneEntityEnumCreate(const tSceneEntityList & entitie
 //
 
 BEGIN_CONSTRAINTS()
-   AFTER_GUID(IID_IInput)
+   AFTER_GUID(GUID_NULL)
 END_CONSTRAINTS()
 
 ///////////////////////////////////////
 
 cScene::cScene()
- : cGlobalObject<IMPLEMENTS(IScene)>("Scene", CONSTRAINTS()),
-   m_inputListener(this)
+ : cGlobalObject<IMPLEMENTS(IScene)>("Scene", CONSTRAINTS())
 {
 }
 
@@ -51,8 +48,6 @@ cScene::~cScene()
 
 tResult cScene::Init()
 {
-   UseGlobal(Input);
-   pInput->Connect(&m_inputListener);
    return S_OK;
 }
 
@@ -60,11 +55,7 @@ tResult cScene::Init()
 
 tResult cScene::Term()
 {
-   UseGlobal(Input);
-   pInput->Disconnect(&m_inputListener);
-
    Clear();
-
    return S_OK;
 }
 
@@ -123,20 +114,6 @@ void cScene::Clear()
    {
       m_layers[i].Clear();
    }
-}
-
-///////////////////////////////////////
-
-tResult cScene::AddInputListener(eSceneLayer layer, IInputListener * pListener)
-{
-   return m_layers[layer].AddInputListener(pListener);
-}
-
-///////////////////////////////////////
-
-tResult cScene::RemoveInputListener(eSceneLayer layer, IInputListener * pListener)
-{
-   return m_layers[layer].RemoveInputListener(pListener);
 }
 
 ///////////////////////////////////////
@@ -246,30 +223,6 @@ tResult cScene::Query(const cRay & ray, ISceneEntityEnum * * ppEnum)
    std::for_each(entities.begin(), entities.end(), CTInterfaceMethod(&::IUnknown::Release));
 
    return result;
-}
-
-///////////////////////////////////////
-
-cScene::cInputListener::cInputListener(cScene * pOuter)
- : m_pOuter(pOuter)
-{
-}
-
-///////////////////////////////////////
-
-bool cScene::cInputListener::OnInputEvent(const sInputEvent * pEvent)
-{
-   Assert(m_pOuter != NULL);
-
-   for (int i = _countof(m_pOuter->m_layers) - 1; i >= 0; i--)
-   {
-      if (m_pOuter->m_layers[i].HandleInputEvent(pEvent))
-      {
-         return true;
-      }
-   }
-
-   return false;
 }
 
 ///////////////////////////////////////

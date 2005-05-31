@@ -4,9 +4,10 @@
 #include "stdhdr.h"
 
 #include "cameracontroller.h"
-#include "globalobj.h"
-#include "ray.h"
 #include "ggl.h"
+
+#include "ray.h"
+#include "inputapi.h"
 #include "sceneapi.h"
 
 #include "configapi.h"
@@ -79,16 +80,16 @@ void cGameCameraController::Connect()
 {
    UseGlobal(Sim);
    pSim->Connect(this);
-   UseGlobal(Scene);
-   pScene->AddInputListener(kSL_Object, this);
+   UseGlobal(Input);
+   pInput->Connect(this);
 }
 
 ///////////////////////////////////////
 
 void cGameCameraController::Disconnect()
 {
-   UseGlobal(Scene);
-   pScene->RemoveInputListener(kSL_Object, this);
+   UseGlobal(Input);
+   pInput->Disconnect(this);
    UseGlobal(Sim);
    pSim->Disconnect(this);
 }
