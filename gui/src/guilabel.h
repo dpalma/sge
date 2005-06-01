@@ -21,8 +21,6 @@ public:
    cGUILabelElement();
    ~cGUILabelElement();
 
-   virtual tResult GetRendererClass(tGUIString * pRendererClass);
-
    virtual tResult GetText(tGUIString * pText);
    virtual tResult SetText(const char * pszText);
 
@@ -39,39 +37,6 @@ class cGUILabelElementFactory : public cComObject<IMPLEMENTS(IGUIElementFactory)
 {
 public:
    virtual tResult CreateElement(const TiXmlElement * pXmlElement, IGUIElement * * ppElement);
-};
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUILabelStatelessRenderer
-//
-
-class cGUILabelStatelessRenderer : public cComObject<IMPLEMENTS(IGUIElementRenderer)>
-{
-public:
-   cGUILabelStatelessRenderer();
-   ~cGUILabelStatelessRenderer();
-
-   virtual tResult Render(IGUIElement * pElement, IRenderDevice * pRenderDevice);
-
-   virtual tGUISize GetPreferredSize(IGUIElement * pElement);
-
-private:
-   tResult GetFont(IGUILabelElement * pLabelElement, IRenderFont * * ppFont);
-};
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUILabelStatelessRendererFactory
-//
-
-class cGUILabelStatelessRendererFactory : public cComObject<IMPLEMENTS(IGUIElementRendererFactory)>
-{
-public:
-   virtual tResult CreateRenderer(IGUIElement * pElement, IGUIElementRenderer * * ppRenderer);
-
-private:
-   cAutoIPtr<IGUIElementRenderer> m_pStatelessLabelRenderer;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

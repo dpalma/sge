@@ -110,6 +110,7 @@ interface IGUIElement : IUnknown
    /// one and using SetRenderer to replace the default.
    /// @see IGUIElementRenderer
    virtual tResult GetRendererClass(tGUIString * pRendererClass) = 0;
+   virtual tResult SetRendererClass(const tChar * pszRendererClass) = 0;
 
    virtual tResult GetRenderer(IGUIElementRenderer * * ppRenderer) = 0;
    virtual tResult SetRenderer(IGUIElementRenderer * pRenderer) = 0;
@@ -227,7 +228,7 @@ interface IGUIElementFactory : IUnknown
 
 interface IGUIElementRenderer : IUnknown
 {
-   virtual tResult Render(IGUIElement * pElement, IRenderDevice * pRenderDevice) = 0;
+   virtual tResult Render(IGUIElement * pElement) = 0;
 
    virtual tGUISize GetPreferredSize(IGUIElement * pElement) = 0;
 };
@@ -593,13 +594,6 @@ interface IGUIRenderingTools : IUnknown
 {
    virtual tResult SetDefaultFont(IRenderFont * pFont) = 0;
    virtual tResult GetDefaultFont(IRenderFont * * ppFont) = 0;
-
-   tResult Render3dRect(const tGUIRect & rect, int bevel, 
-      const tGUIColor & topLeft, const tGUIColor & bottomRight, const tGUIColor & face)
-   {
-      GlRenderBevelledRect(rect, bevel, topLeft, bottomRight, face);
-      return S_OK;
-   }
 };
 
 ///////////////////////////////////////

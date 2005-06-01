@@ -50,6 +50,9 @@ public:
 
    virtual tResult OnEvent(IGUIEvent * pEvent);
 
+   virtual tResult GetRendererClass(tGUIString * pRendererClass);
+   virtual tResult SetRendererClass(const tChar * pszRendererClass);
+
    virtual tResult GetRenderer(IGUIElementRenderer * * ppRenderer);
    virtual tResult SetRenderer(IGUIElementRenderer * pRenderer);
 
@@ -68,6 +71,7 @@ private:
    IGUIElement * m_pParent;
    tGUIPoint m_position;
    tGUISize m_size;
+   tGUIString m_rendererClass;
    cAutoIPtr<IGUIElementRenderer> m_pRenderer;
    cAutoIPtr<IGUIStyle> m_pStyle;
 };

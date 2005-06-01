@@ -145,7 +145,7 @@ public:
    cGUITextEditStatelessRenderer();
    ~cGUITextEditStatelessRenderer();
 
-   virtual tResult Render(IGUIElement * pElement, IRenderDevice * pRenderDevice);
+   virtual tResult Render(IGUIElement * pElement);
 
    virtual tGUISize GetPreferredSize(IGUIElement * pElement);
 

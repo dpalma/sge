@@ -15,8 +15,7 @@
 tResult GUIElementCreateChildren(const TiXmlElement * pXmlElement, 
                                  IGUIContainerElement * pContainer);
 
-tResult GUIElementRenderChildren(IGUIContainerElement * pContainer,
-                                 IRenderDevice * pRenderDevice);
+tResult GUIElementRenderChildren(IGUIContainerElement * pContainer);
 
 void GUISizeElement(const tGUIRect & field, IGUIElement * pGUIElement);
 

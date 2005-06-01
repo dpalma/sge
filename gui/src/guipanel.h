@@ -38,8 +38,6 @@ public:
 
    virtual void SetSize(const tGUISize & size);
    virtual tResult OnEvent(IGUIEvent * pEvent);
-
-   virtual tResult GetRendererClass(tGUIString * pRendererClass);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -51,33 +49,6 @@ class cGUIPanelElementFactory : public cComObject<IMPLEMENTS(IGUIElementFactory)
 {
 public:
    virtual tResult CreateElement(const TiXmlElement * pXmlElement, IGUIElement * * ppElement);
-};
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUIPanelRenderer
-//
-
-class cGUIPanelRenderer : public cComObject<IMPLEMENTS(IGUIElementRenderer)>
-{
-public:
-   cGUIPanelRenderer();
-   ~cGUIPanelRenderer();
-
-   virtual tResult Render(IGUIElement * pElement, IRenderDevice * pRenderDevice);
-
-   virtual tGUISize GetPreferredSize(IGUIElement * pElement);
-};
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUIPanelRendererFactory
-//
-
-class cGUIPanelRendererFactory : public cComObject<IMPLEMENTS(IGUIElementRendererFactory)>
-{
-public:
-   virtual tResult CreateRenderer(IGUIElement * pElement, IGUIElementRenderer * * ppRenderer);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

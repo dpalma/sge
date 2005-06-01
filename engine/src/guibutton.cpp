@@ -9,10 +9,6 @@
 #include "scriptapi.h"
 #include "guistrings.h"
 
-#include "font.h"
-#include "color.h"
-#include "renderapi.h"
-
 #include "globalobj.h"
 
 #include <tinyxml.h>
@@ -96,18 +92,6 @@ tResult cGUIButtonElement::OnEvent(IGUIEvent * pEvent)
    }
 
    return result;
-}
-
-///////////////////////////////////////
-
-tResult cGUIButtonElement::GetRendererClass(tGUIString * pRendererClass)
-{
-   if (pRendererClass == NULL)
-   {
-      return E_POINTER;
-   }
-   *pRendererClass = "button";
-   return S_OK;
 }
 
 ///////////////////////////////////////
@@ -208,154 +192,6 @@ tResult cGUIButtonElementFactory::CreateElement(const TiXmlElement * pXmlElement
    }
 
    return E_FAIL;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUIButtonRenderer
-//
-
-///////////////////////////////////////
-
-cGUIButtonRenderer::cGUIButtonRenderer()
-{
-}
-
-///////////////////////////////////////
-
-cGUIButtonRenderer::~cGUIButtonRenderer()
-{
-}
-
-///////////////////////////////////////
-
-tResult cGUIButtonRenderer::Render(IGUIElement * pElement, IRenderDevice * pRenderDevice)
-{
-   if (pElement == NULL || pRenderDevice == NULL)
-   {
-      return E_POINTER;
-   }
-
-   static const int g_bevel = 2;
-   static const float g_bevelf = static_cast<float>(g_bevel);
-
-   cAutoIPtr<IGUIButtonElement> pButton;
-   if (pElement->QueryInterface(IID_IGUIButtonElement, (void**)&pButton) == S_OK)
-   {
-      tGUIPoint pos = GUIElementAbsolutePosition(pButton);
-      tGUISize size = pButton->GetSize();
-
-      tVec2 textOffset(0,0);
-
-      tRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
-      tGUIRect rect2(rect.left, rect.top, rect.right, rect.bottom);
-
-      if (pButton->IsArmed() && pButton->IsMouseOver())
-      {
-         GlRenderBevelledRect(rect2, g_bevel, tGUIColor::DarkGray, tGUIColor::LightGray, tGUIColor::Gray);
-         textOffset = tVec2(g_bevelf, g_bevelf);
-      }
-      else
-      {
-         GlRenderBevelledRect(rect2, g_bevel, tGUIColor::LightGray, tGUIColor::DarkGray, tGUIColor::Gray);
-      }
-
-      cAutoIPtr<IRenderFont> pFont;
-      if (GetFont(pButton, &pFont) == S_OK)
-      {
-         uint drawTextFlags = kDT_Center | kDT_VCenter | kDT_SingleLine;
-
-         cAutoIPtr<IGUIStyle> pStyle;
-         if (pElement->GetStyle(&pStyle) == S_OK)
-         {
-            uint dropShadow = 0;
-            if (pStyle->GetAttribute(kAttribDropShadow, &dropShadow) == S_OK
-               && dropShadow != 0)
-            {
-               drawTextFlags |= kDT_DropShadow;
-            }
-         }
-
-         rect.left += Round(textOffset.x);
-         rect.top += Round(textOffset.y);
-         pFont->DrawText(pButton->GetText(), -1, drawTextFlags, &rect, tGUIColor::White);
-      }
-
-      return S_OK;
-   }
-
-   return E_FAIL;
-}
-
-///////////////////////////////////////
-
-tGUISize cGUIButtonRenderer::GetPreferredSize(IGUIElement * pElement)
-{
-   if (pElement != NULL)
-   {
-      cAutoIPtr<IGUIButtonElement> pButton;
-      if (pElement->QueryInterface(IID_IGUIButtonElement, (void**)&pButton) == S_OK)
-      {
-         cAutoIPtr<IRenderFont> pFont;
-         if (GetFont(pButton, &pFont) == S_OK)
-         {
-            tRect rect(0,0,0,0);
-            pFont->DrawText(pButton->GetText(), -1, kDT_CalcRect, &rect, tGUIColor::White);
-
-            return tGUISize(static_cast<tGUISizeType>(rect.GetWidth() + rect.GetHeight()),
-                            rect.GetHeight() * 1.5f);
-         }
-      }
-   }
-   return tGUISize(0,0);
-}
-
-///////////////////////////////////////
-
-tResult cGUIButtonRenderer::GetFont(IGUIButtonElement * pButtonElement,
-                                    IRenderFont * * ppFont)
-{
-   if (pButtonElement == NULL || ppFont == NULL)
-   {
-      return E_POINTER;
-   }
-
-   cAutoIPtr<IGUIStyle> pStyle;
-   if (pButtonElement->GetStyle(&pStyle) == S_OK)
-   {
-      if (pStyle->GetFont(ppFont) == S_OK)
-      {
-         return S_OK;
-      }
-   }
-
-   UseGlobal(GUIRenderingTools);
-   if (pGUIRenderingTools->GetDefaultFont(ppFont) == S_OK)
-   {
-      return S_OK;
-   }
-
-   return E_FAIL;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUIButtonRendererFactory
-//
-
-AUTOREGISTER_GUIELEMENTRENDERERFACTORY(button, cGUIButtonRendererFactory);
-
-tResult cGUIButtonRendererFactory::CreateRenderer(IGUIElement * /*pElement*/, IGUIElementRenderer * * ppRenderer)
-{
-   if (ppRenderer == NULL)
-   {
-      return E_POINTER;
-   }
-
-   *ppRenderer = static_cast<IGUIElementRenderer *>(new cGUIButtonRenderer);
-   return (*ppRenderer != NULL) ? S_OK : E_OUTOFMEMORY;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

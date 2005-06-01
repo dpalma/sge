@@ -26,7 +26,8 @@ cGUIElementBase<INTRFC>::cGUIElementBase()
    m_bEnabled(true),
    m_pParent(NULL),
    m_position(0,0),
-   m_size(0,0)
+   m_size(0,0),
+   m_rendererClass("beveled")
 {
 }
 
@@ -194,6 +195,32 @@ bool cGUIElementBase<INTRFC>::Contains(const tGUIPoint & point) const
 template <typename INTRFC>
 tResult cGUIElementBase<INTRFC>::OnEvent(IGUIEvent * pEvent)
 {
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+tResult cGUIElementBase<INTRFC>::GetRendererClass(tGUIString * pRendererClass)
+{
+   if (pRendererClass == NULL)
+   {
+      return E_POINTER;
+   }
+   *pRendererClass = m_rendererClass;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+tResult cGUIElementBase<INTRFC>::SetRendererClass(const tChar * pszRendererClass)
+{
+   if (pszRendererClass == NULL)
+   {
+      return E_POINTER;
+   }
+   m_rendererClass = pszRendererClass;
    return S_OK;
 }
 

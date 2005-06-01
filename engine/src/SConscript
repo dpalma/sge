@@ -10,6 +10,7 @@ sources = Split("""
    engine.cpp
    entitymanager.cpp
    frustum.cpp
+   guibeveledrenderer.cpp
    guibutton.cpp
    guicontext.cpp
    guidialog.cpp

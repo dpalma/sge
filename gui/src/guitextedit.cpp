@@ -20,6 +20,11 @@
 #include <tinyxml.h>
 #include <locale>
 
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h> // HACK
+#include <GL/gl.h>
+#undef DrawText
+
 #ifdef HAVE_CPPUNIT
 #include <cppunit/extensions/HelperMacros.h>
 #endif
@@ -579,9 +584,9 @@ cGUITextEditStatelessRenderer::~cGUITextEditStatelessRenderer()
 
 ///////////////////////////////////////
 
-tResult cGUITextEditStatelessRenderer::Render(IGUIElement * pElement, IRenderDevice * pRenderDevice)
+tResult cGUITextEditStatelessRenderer::Render(IGUIElement * pElement)
 {
-   if (pElement == NULL || pRenderDevice == NULL)
+   if (pElement == NULL)
    {
       return E_POINTER;
    }
@@ -600,7 +605,18 @@ tResult cGUITextEditStatelessRenderer::Render(IGUIElement * pElement, IRenderDev
       rect.right -= k3dEdge + kHorzInset;
       rect.bottom -= kVertInset;
 
-      pRenderDevice->SetScissorRect(&rect);
+      int viewport[4];
+      glGetIntegerv(GL_VIEWPORT, viewport);
+
+      glEnable(GL_SCISSOR_TEST);
+      glScissor(
+         rect.left,
+         // @HACK: the call to glOrtho made at the beginning of each UI render
+         // cycle typically makes the UPPER left corner (0,0).  glScissor seems 
+         // to assume that (0,0) is always the LOWER left corner.
+         viewport[3] - rect.bottom,
+         rect.GetWidth(),
+         rect.GetHeight());
 
       tGUIColor textColor(tGUIColor::Black);
 
@@ -647,7 +663,7 @@ tResult cGUITextEditStatelessRenderer::Render(IGUIElement * pElement, IRenderDev
          GlRenderBevelledRect(cursorRect, 0, tGUIColor::Black, tGUIColor::Black, tGUIColor::Black);
       }
 
-      pRenderDevice->SetScissorRect(NULL);
+      glDisable(GL_SCISSOR_TEST);
 
       double time = TimeGetSecs();
 

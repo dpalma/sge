@@ -9,10 +9,6 @@
 #include "guielementtools.h"
 #include "scriptapi.h"
 
-#include "font.h"
-#include "color.h"
-#include "renderapi.h"
-
 #include "globalobj.h"
 #include "keys.h"
 
@@ -34,8 +30,6 @@ LOG_DEFINE_CHANNEL(GUIDialogEvents);
 //
 // CLASS: cGUIDialogElement
 //
-
-static const int kDialog3dEdge = 2;
 
 static const uint kNoCaptionHeight = (uint)-1;
 
@@ -173,18 +167,6 @@ tResult cGUIDialogElement::OnEvent(IGUIEvent * pEvent)
    }
 
    return result;
-}
-
-///////////////////////////////////////
-
-tResult cGUIDialogElement::GetRendererClass(tGUIString * pRendererClass)
-{
-   if (pRendererClass == NULL)
-   {
-      return E_POINTER;
-   }
-   *pRendererClass = "dialog";
-   return S_OK;
 }
 
 ///////////////////////////////////////
@@ -347,6 +329,8 @@ tResult cGUIDialogElement::SetOnCancel(const char * pszOnCancel)
 
 ///////////////////////////////////////
 
+const int kHackBevelValue = 2; // duplicates constant in beveled renderer
+
 tGUIRect cGUIDialogElement::GetCaptionRectAbsolute()
 {
    uint captionHeight;
@@ -356,9 +340,9 @@ tGUIRect cGUIDialogElement::GetCaptionRectAbsolute()
       tGUISize size = GetSize();
 
       tGUIRect captionRect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
-      captionRect.left += kDialog3dEdge;
-      captionRect.top += kDialog3dEdge;
-      captionRect.right -= kDialog3dEdge;
+      captionRect.left += kHackBevelValue;
+      captionRect.top += kHackBevelValue;
+      captionRect.right -= kHackBevelValue;
       captionRect.bottom = captionRect.top + captionHeight;
 
       return captionRect;
@@ -464,171 +448,5 @@ tResult cGUIDialogElementFactory::CreateElement(const TiXmlElement * pXmlElement
    return E_FAIL;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUIDialogRenderer
-//
-
-///////////////////////////////////////
-
-cGUIDialogRenderer::cGUIDialogRenderer()
-{
-}
-
-///////////////////////////////////////
-
-cGUIDialogRenderer::~cGUIDialogRenderer()
-{
-}
-
-///////////////////////////////////////
-
-tResult cGUIDialogRenderer::Render(IGUIElement * pElement, IRenderDevice * pRenderDevice)
-{
-   if (pElement == NULL || pRenderDevice == NULL)
-   {
-      return E_POINTER;
-   }
-
-   cAutoIPtr<IGUIDialogElement> pDialog;
-   if (pElement->QueryInterface(IID_IGUIDialogElement, (void**)&pDialog) == S_OK)
-   {
-      tGUIPoint pos = GUIElementAbsolutePosition(pDialog);
-      tGUISize size = pDialog->GetSize();
-      tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
-
-      UseGlobal(GUIRenderingTools);
-
-      tGUIColor topLeft(tGUIColor::LightGray);
-      tGUIColor bottomRight(tGUIColor::DarkGray);
-      tGUIColor face(tGUIColor::Gray);
-      tGUIColor caption(tGUIColor::Blue);
-
-      cAutoIPtr<IRenderFont> pFont;
-
-      cAutoIPtr<IGUIStyle> pStyle;
-      if (pElement->GetStyle(&pStyle) == S_OK)
-      {
-         pStyle->GetFont(&pFont);
-         pStyle->GetAttribute("frame-top-left-color", &topLeft);
-         pStyle->GetAttribute("frame-bottom-right-color", &bottomRight);
-         pStyle->GetAttribute("frame-face-color", &face);
-         pStyle->GetAttribute("caption-color", &caption);
-      }
-
-      if (!pFont)
-      {
-         UseGlobal(GUIRenderingTools);
-         pGUIRenderingTools->GetDefaultFont(&pFont);
-      }
-
-      pGUIRenderingTools->Render3dRect(rect, kDialog3dEdge, topLeft, bottomRight, face);
-
-      uint captionHeight;
-      if ((pDialog->GetCaptionHeight(&captionHeight) == S_OK)
-         && (captionHeight > 0))
-      {
-         tGUIRect captionRect(rect);
-
-         captionRect.left += kDialog3dEdge;
-         captionRect.top += kDialog3dEdge;
-         captionRect.right -= kDialog3dEdge;
-         captionRect.bottom = captionRect.top + captionHeight;
-
-         pGUIRenderingTools->Render3dRect(captionRect, 0, caption, caption, caption);
-
-         tGUIString title;
-         if (pDialog->GetTitle(&title) == S_OK)
-         {
-            pFont->DrawText(title.c_str(), -1, 0, &captionRect, tGUIColor::White);
-         }
-      }
-
-      if (GUIElementRenderChildren(pDialog, pRenderDevice) == S_OK)
-      {
-         return S_OK;
-      }
-   }
-
-   return E_FAIL;
-}
-
-///////////////////////////////////////
-
-tGUISize cGUIDialogRenderer::GetPreferredSize(IGUIElement * pElement)
-{
-   if (pElement != NULL)
-   {
-      cAutoIPtr<IGUIDialogElement> pDialog;
-      if (pElement->QueryInterface(IID_IGUIDialogElement, (void**)&pDialog) == S_OK)
-      {
-         cAutoIPtr<IRenderFont> pFont;
-
-         cAutoIPtr<IGUIStyle> pStyle;
-         if (pElement->GetStyle(&pStyle) == S_OK)
-         {
-            pStyle->GetFont(&pFont);
-         }
-
-         if (!pFont)
-         {
-            UseGlobal(GUIRenderingTools);
-            pGUIRenderingTools->GetDefaultFont(&pFont);
-         }
-
-         cAutoIPtr<IGUILayoutManager> pLayout;
-         if (pDialog->GetLayout(&pLayout) == S_OK)
-         {
-            tGUISize size(0,0);
-            if (pLayout->GetPreferredSize(pDialog, &size) == S_OK)
-            {
-               uint captionHeight;
-               if (pDialog->GetCaptionHeight(&captionHeight) == S_OK)
-               {
-                  size.height += captionHeight;
-               }
-               else
-               {
-                  tGUIString title;
-                  if (pDialog->GetTitle(&title) == S_OK)
-                  {
-                     tRect rect(0,0,0,0);
-                     pFont->DrawText(title.c_str(), -1, kDT_CalcRect, &rect, tGUIColor::White);
-
-                     captionHeight = rect.GetHeight();
-
-                     pDialog->SetCaptionHeight(captionHeight);
-                     size.height += captionHeight;
-                  }
-               }
-
-               return size;
-            }
-         }
-      }
-   }
-
-   return tGUISize(0,0);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUIDialogRendererFactory
-//
-
-AUTOREGISTER_GUIELEMENTRENDERERFACTORY(dialog, cGUIDialogRendererFactory);
-
-tResult cGUIDialogRendererFactory::CreateRenderer(IGUIElement * /*pElement*/, 
-                                                  IGUIElementRenderer * * ppRenderer)
-{
-   if (ppRenderer == NULL)
-   {
-      return E_POINTER;
-   }
-
-   *ppRenderer = static_cast<IGUIElementRenderer *>(new cGUIDialogRenderer);
-   return (*ppRenderer != NULL) ? S_OK : E_OUTOFMEMORY;
-}
 
 ///////////////////////////////////////////////////////////////////////////////

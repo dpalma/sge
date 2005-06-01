@@ -317,6 +317,9 @@
 					RelativePath="..\..\engine\src\frustum.cpp">
 				</File>
 				<File
+					RelativePath="..\..\engine\src\guibeveledrenderer.cpp">
+				</File>
+				<File
 					RelativePath="..\..\engine\src\guibutton.cpp">
 				</File>
 				<File
@@ -460,6 +463,9 @@
 				</File>
 				<File
 					RelativePath="..\..\engine\src\frustum.h">
+				</File>
+				<File
+					RelativePath="..\..\engine\src\guibeveledrenderer.h">
 				</File>
 				<File
 					RelativePath="..\..\engine\src\guibutton.h">

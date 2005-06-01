@@ -8,10 +8,6 @@
 #include "guicontainerbasetem.h"
 #include "guielementtools.h"
 
-#include "font.h"
-#include "color.h"
-#include "renderapi.h"
-
 #include "globalobj.h"
 
 #include <tinyxml.h>
@@ -62,16 +58,6 @@ tResult cGUIPanelElement::OnEvent(IGUIEvent * pEvent)
    return S_OK;
 }
 
-///////////////////////////////////////
-
-tResult cGUIPanelElement::GetRendererClass(tGUIString * pRendererClass)
-{
-   if (pRendererClass == NULL)
-      return E_POINTER;
-   *pRendererClass = "panel";
-   return S_OK;
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -111,92 +97,5 @@ tResult cGUIPanelElementFactory::CreateElement(const TiXmlElement * pXmlElement,
    return E_FAIL;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUIPanelRenderer
-//
-
-///////////////////////////////////////
-
-cGUIPanelRenderer::cGUIPanelRenderer()
-{
-}
-
-///////////////////////////////////////
-
-cGUIPanelRenderer::~cGUIPanelRenderer()
-{
-}
-
-///////////////////////////////////////
-
-tResult cGUIPanelRenderer::Render(IGUIElement * pElement, IRenderDevice * pRenderDevice)
-{
-   if (pElement == NULL || pRenderDevice == NULL)
-   {
-      return E_POINTER;
-   }
-
-   cAutoIPtr<IGUIPanelElement> pPanel;
-   if (pElement->QueryInterface(IID_IGUIPanelElement, (void**)&pPanel) == S_OK)
-   {
-      tGUIColor bkColor(tGUIColor::Magenta);
-
-      cAutoIPtr<IGUIStyle> pStyle;
-      if (pElement->GetStyle(&pStyle) == S_OK)
-      {
-         pStyle->GetBackgroundColor(&bkColor);
-      }
-
-      tGUIPoint pos = GUIElementAbsolutePosition(pPanel);
-      tGUISize size = pPanel->GetSize();
-      tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
-
-      GlRenderBevelledRect(rect, 0, tGUIColor::Magenta, tGUIColor::Magenta, bkColor);
-
-      if (GUIElementRenderChildren(pPanel, pRenderDevice) == S_OK)
-      {
-         return S_OK;
-      }
-   }
-
-   return E_FAIL;
-}
-
-///////////////////////////////////////
-
-tGUISize cGUIPanelRenderer::GetPreferredSize(IGUIElement * pElement)
-{
-   if (pElement != NULL)
-   {
-      cAutoIPtr<IGUIPanelElement> pPanel;
-      if (pElement->QueryInterface(IID_IGUIPanelElement, (void**)&pPanel) == S_OK)
-      {
-         // TODO
-      }
-   }
-
-   return tGUISize(0,0);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUIPanelRendererFactory
-//
-
-AUTOREGISTER_GUIELEMENTRENDERERFACTORY(panel, cGUIPanelRendererFactory);
-
-tResult cGUIPanelRendererFactory::CreateRenderer(IGUIElement * /*pElement*/, 
-                                                 IGUIElementRenderer * * ppRenderer)
-{
-   if (ppRenderer == NULL)
-   {
-      return E_POINTER;
-   }
-
-   *ppRenderer = static_cast<IGUIElementRenderer *>(new cGUIPanelRenderer);
-   return (*ppRenderer != NULL) ? S_OK : E_OUTOFMEMORY;
-}
 
 ///////////////////////////////////////////////////////////////////////////////

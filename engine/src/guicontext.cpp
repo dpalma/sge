@@ -205,16 +205,11 @@ void cGUIContext::ClearGUI()
 class cRenderElement
 {
 public:
-   cRenderElement(IRenderDevice * pRenderDevice);
-
+   cRenderElement();
    tResult operator()(IGUIElement * pGUIElement);
-
-private:
-   cAutoIPtr<IRenderDevice> m_pRenderDevice;
 };
 
-cRenderElement::cRenderElement(IRenderDevice * pRenderDevice)
- : m_pRenderDevice(CTAddRef(pRenderDevice))
+cRenderElement::cRenderElement()
 {
 }
 
@@ -233,7 +228,7 @@ tResult cRenderElement::operator()(IGUIElement * pGUIElement)
    cAutoIPtr<IGUIElementRenderer> pRenderer;
    if (pGUIElement->GetRenderer(&pRenderer) == S_OK)
    {
-      if (pRenderer->Render(pGUIElement, m_pRenderDevice) == S_OK)
+      if (pRenderer->Render(pGUIElement) == S_OK)
       {
          return S_OK;
       }
@@ -261,7 +256,7 @@ tResult cGUIContext::RenderGUI(IRenderDevice * pRenderDevice)
 
    glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
    glDisable(GL_DEPTH_TEST);
-   ForEachElement(cRenderElement(pRenderDevice));
+   ForEachElement(cRenderElement());
 #ifdef GUI_DEBUG
    RenderDebugInfo(pRenderDevice);
 #endif

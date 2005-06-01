@@ -23,8 +23,6 @@ public:
 
    virtual tResult OnEvent(IGUIEvent * pEvent);
 
-   virtual tResult GetRendererClass(tGUIString * pRendererClass);
-
    virtual bool IsArmed() const;
    virtual void SetArmed(bool bArmed);
 
@@ -52,36 +50,6 @@ public:
    virtual tResult CreateElement(const TiXmlElement * pXmlElement, IGUIElement * * ppElement);
 };
 
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUIButtonRenderer
-//
-
-class cGUIButtonRenderer : public cComObject<IMPLEMENTS(IGUIElementRenderer)>
-{
-public:
-   cGUIButtonRenderer();
-   ~cGUIButtonRenderer();
-
-   virtual tResult Render(IGUIElement * pElement, IRenderDevice * pRenderDevice);
-
-   virtual tGUISize GetPreferredSize(IGUIElement * pElement);
-
-private:
-   tResult GetFont(IGUIButtonElement * pButtonElement, IRenderFont * * ppFont);
-};
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUIButtonRendererFactory
-//
-
-class cGUIButtonRendererFactory : public cComObject<IMPLEMENTS(IGUIElementRendererFactory)>
-{
-public:
-   virtual tResult CreateRenderer(IGUIElement * pElement, IGUIElementRenderer * * ppRenderer);
-};
 
 ///////////////////////////////////////////////////////////////////////////////
 

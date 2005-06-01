@@ -5,6 +5,7 @@
 
 #include "guielementtools.h"
 #include "guistyle.h"
+#include "guistrings.h"
 
 #include "globalobj.h"
 
@@ -40,7 +41,7 @@ tResult GUIElementCreateChildren(const TiXmlElement * pXmlElement,
          {
             if ((result = pContainer->AddElement(pChildElement)) != S_OK)
             {
-               DebugMsg("WARNING: Error creating child element\n");
+               WarnMsg("Error creating child element\n");
                return result;
             }
          }
@@ -53,7 +54,7 @@ tResult GUIElementCreateChildren(const TiXmlElement * pXmlElement,
                {
                   // Don't return the error result because the layout manager
                   // creating failing shouldn't be a fatal error
-                  DebugMsg("WARNING: Error creating layout manager\n");
+                  WarnMsg("Error creating layout manager\n");
                }
             }
          }
@@ -65,10 +66,9 @@ tResult GUIElementCreateChildren(const TiXmlElement * pXmlElement,
 
 ///////////////////////////////////////////////////////////////////////////////
 
-tResult GUIElementRenderChildren(IGUIContainerElement * pContainer,
-                                 IRenderDevice * pRenderDevice)
+tResult GUIElementRenderChildren(IGUIContainerElement * pContainer)
 {
-   if (pContainer == NULL || pRenderDevice == NULL)
+   if (pContainer == NULL)
    {
       return E_POINTER;
    }
@@ -88,7 +88,7 @@ tResult GUIElementRenderChildren(IGUIContainerElement * pContainer,
             cAutoIPtr<IGUIElementRenderer> pChildRenderer;
             if (pChild->GetRenderer(&pChildRenderer) == S_OK)
             {
-               result = pChildRenderer->Render(pChild, pRenderDevice);
+               result = pChildRenderer->Render(pChild);
                if (FAILED(result))
                {
                   SafeRelease(pChild);
@@ -261,36 +261,41 @@ tResult GUIElementStandardAttributes(const TiXmlElement * pXmlElement,
       return E_POINTER;
    }
 
-   if (pXmlElement->Attribute("id"))
+   if (pXmlElement->Attribute(kAttribId))
    {
-      pGUIElement->SetId(pXmlElement->Attribute("id"));
+      pGUIElement->SetId(pXmlElement->Attribute(kAttribId));
    }
 
-   if (pXmlElement->Attribute("visible"))
+   if (pXmlElement->Attribute(kAttribVisible))
    {
-      pGUIElement->SetVisible(StringToBool(pXmlElement->Attribute("visible")));
+      pGUIElement->SetVisible(StringToBool(pXmlElement->Attribute(kAttribVisible)));
    }
 
-   if (pXmlElement->Attribute("enabled"))
+   if (pXmlElement->Attribute(kAttribEnabled))
    {
-      pGUIElement->SetEnabled(StringToBool(pXmlElement->Attribute("enabled")));
+      pGUIElement->SetEnabled(StringToBool(pXmlElement->Attribute(kAttribEnabled)));
    }
 
-   if (pXmlElement->Attribute("style"))
+   if (pXmlElement->Attribute(kAttribStyle))
    {
       cAutoIPtr<IGUIStyle> pStyle;
-      if (GUIStyleParse(pXmlElement->Attribute("style"), &pStyle) == S_OK)
+      if (GUIStyleParse(pXmlElement->Attribute(kAttribStyle), &pStyle) == S_OK)
       {
          pGUIElement->SetStyle(pStyle);
       }
    }
 
+   if (pXmlElement->Attribute(kAttribRendererClass))
+   {
+      pGUIElement->SetRendererClass(pXmlElement->Attribute(kAttribRendererClass));
+   }
+
    cAutoIPtr<IGUIContainerElement> pContainer;
    if (pGUIElement->QueryInterface(IID_IGUIContainerElement, (void**)&pContainer) == S_OK)
    {
-      if (pXmlElement->Attribute("insets"))
+      if (pXmlElement->Attribute(kAttribInsets))
       {
-         const cStr insets(pXmlElement->Attribute("insets"));
+         const cStr insets(pXmlElement->Attribute(kAttribInsets));
 
          float insetVals[4];
          if (insets.ParseTuple(insetVals, _countof(insetVals)) == 4)
