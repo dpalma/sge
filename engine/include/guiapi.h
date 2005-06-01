@@ -461,6 +461,9 @@ interface IGUITextEditElement : IGUIElement
 
    virtual const char * GetText() const = 0;
    virtual void SetText(const char * pszText) = 0;
+
+   virtual void UpdateBlinkingCursor() = 0;
+   virtual bool ShowBlinkingCursor() const = 0;
 };
 
 

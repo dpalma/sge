@@ -31,11 +31,13 @@ private:
    tResult Render(IGUIDialogElement * pDialogElement);
    tResult Render(IGUILabelElement * pLabelElement);
    tResult Render(IGUIPanelElement * pPanelElement);
+   tResult Render(IGUITextEditElement * pTextEditElement);
 
    tGUISize GetPreferredSize(IGUIButtonElement * pButtonElement);
    tGUISize GetPreferredSize(IGUIDialogElement * pDialogElement);
    tGUISize GetPreferredSize(IGUILabelElement * pLabelElement);
    tGUISize GetPreferredSize(IGUIPanelElement * pPanelElement);
+   tGUISize GetPreferredSize(IGUITextEditElement * pTextEditElement);
 
    tResult GetFont(IGUIElement * pElement, IRenderFont * * ppFont);
 
@@ -51,6 +53,9 @@ class cGUIBeveledRendererFactory : public cComObject<IMPLEMENTS(IGUIElementRende
 {
 public:
    virtual tResult CreateRenderer(IGUIElement * pElement, IGUIElementRenderer * * ppRenderer);
+
+private:
+   cAutoIPtr<IGUIElementRenderer> m_pStatelessBeveledRenderer;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

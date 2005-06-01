@@ -13,6 +13,7 @@
 const char kAttribAlign[]              = "align";
 const char kAttribBackgroundColor[]    = "background-color";
 const char kAttribDropShadow[]         = "drop-shadow";
+const char kAttribEditSize[]           = "editsize";
 const char kAttribEnabled[]            = "enabled";
 const char kAttribId[]                 = "id";
 const char kAttribInsets[]             = "insets";

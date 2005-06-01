@@ -16,7 +16,6 @@ REFERENCE_GUIELEMENTFACTORY(panel);
 REFERENCE_GUIELEMENTFACTORY(textedit);
 
 REFERENCE_GUIELEMENTRENDERERFACTORY(beveled);
-REFERENCE_GUIELEMENTRENDERERFACTORY(textedit);
 
 ///////////////////////////////////////////////////////////////////////////////
 //

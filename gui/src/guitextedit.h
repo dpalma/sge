@@ -101,8 +101,6 @@ public:
 
    virtual tResult OnEvent(IGUIEvent * pEvent);
 
-   virtual tResult GetRendererClass(tGUIString * pRendererClass);
-
    virtual tResult GetEditSize(uint * pEditSize);
    virtual tResult SetEditSize(uint editSize);
 
@@ -111,6 +109,9 @@ public:
 
    virtual const char * GetText() const;
    virtual void SetText(const char * pszText);
+
+   virtual void UpdateBlinkingCursor();
+   virtual bool ShowBlinkingCursor() const;
 
 private:
    tResult HandleKeyDown(long keyCode);
@@ -121,6 +122,9 @@ private:
 
    tGUIString m_text;
    cGUITextSelection m_selection;
+
+   double m_timeLastBlink;
+   bool m_bCursorBlinkOn, m_bCursorForceOn;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -132,53 +136,6 @@ class cGUITextEditElementFactory : public cComObject<IMPLEMENTS(IGUIElementFacto
 {
 public:
    virtual tResult CreateElement(const TiXmlElement * pXmlElement, IGUIElement * * ppElement);
-};
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUITextEditStatelessRenderer
-//
-
-class cGUITextEditStatelessRenderer : public cComObject<IMPLEMENTS(IGUIElementRenderer)>
-{
-public:
-   cGUITextEditStatelessRenderer();
-   ~cGUITextEditStatelessRenderer();
-
-   virtual tResult Render(IGUIElement * pElement);
-
-   virtual tGUISize GetPreferredSize(IGUIElement * pElement);
-
-private:
-   tResult GetFont(IGUITextEditElement * pTextEditElement, IRenderFont * * ppFont);
-
-   class cInputListener : public cComObject<IMPLEMENTS(IInputListener)>
-   {
-      friend class cGUITextEditStatelessRenderer;
-      cGUITextEditStatelessRenderer * m_pOuter;
-      cInputListener(cGUITextEditStatelessRenderer * pOuter);
-      virtual bool OnInputEvent(const sInputEvent * pEvent);
-   };
-
-   friend class cInputListener;
-   cInputListener m_inputListener;
-
-   double m_timeLastBlink;
-   bool m_bCursorBlinkOn, m_bCursorForceOn;
-};
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUITextEditStatelessRendererFactory
-//
-
-class cGUITextEditStatelessRendererFactory : public cComObject<IMPLEMENTS(IGUIElementRendererFactory)>
-{
-public:
-   virtual tResult CreateRenderer(IGUIElement * pElement, IGUIElementRenderer * * ppRenderer);
-
-private:
-   cAutoIPtr<IGUIElementRenderer> m_pStatelessLabelRenderer;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

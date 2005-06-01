@@ -15,6 +15,11 @@
 
 #include <tinyxml.h>
 
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h> // HACK
+#include <GL/gl.h>
+#undef DrawText
+
 #include "dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -24,6 +29,11 @@
 
 static const int g_bevel = 2;
 static const float g_bevelf = static_cast<float>(g_bevel);
+
+static const uint kDefaultEditSize = 20;
+static const uint kVertInset = 2; // TODO make this part of the style
+static const uint kHorzInset = 2; // TODO make this part of the style
+static const uint kCursorWidth = 1;
 
 ///////////////////////////////////////
 
@@ -79,6 +89,14 @@ tResult cGUIBeveledRenderer::Render(IGUIElement * pElement)
       }
    }
 
+   {
+      cAutoIPtr<IGUITextEditElement> pTextEditElement;
+      if (pElement->QueryInterface(IID_IGUITextEditElement, (void**)&pTextEditElement) == S_OK)
+      {
+         return Render(pTextEditElement);
+      }
+   }
+
    return E_FAIL;
 }
 
@@ -117,6 +135,14 @@ tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIElement * pElement)
          if (pElement->QueryInterface(IID_IGUIPanelElement, (void**)&pPanelElement) == S_OK)
          {
             return GetPreferredSize(pPanelElement);
+         }
+      }
+
+      {
+         cAutoIPtr<IGUITextEditElement> pTextEditElement;
+         if (pElement->QueryInterface(IID_IGUITextEditElement, (void**)&pTextEditElement) == S_OK)
+         {
+            return GetPreferredSize(pTextEditElement);
          }
       }
    }
@@ -275,6 +301,85 @@ tResult cGUIBeveledRenderer::Render(IGUIPanelElement * pPanelElement)
 
 ///////////////////////////////////////
 
+tResult cGUIBeveledRenderer::Render(IGUITextEditElement * pTextEditElement)
+{
+   tGUIPoint pos = GUIElementAbsolutePosition(pTextEditElement);
+   tGUISize size = pTextEditElement->GetSize();
+   tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
+
+   GlRenderBevelledRect(rect, g_bevel, tGUIColor::DarkGray, tGUIColor::Gray, tGUIColor::White);
+
+   rect.left += g_bevel + kHorzInset;
+   rect.top += kVertInset;
+   rect.right -= g_bevel + kHorzInset;
+   rect.bottom -= kVertInset;
+
+   int viewport[4];
+   glGetIntegerv(GL_VIEWPORT, viewport);
+
+   glEnable(GL_SCISSOR_TEST);
+   glScissor(
+      rect.left,
+      // @HACK: the call to glOrtho made at the beginning of each UI render
+      // cycle typically makes the UPPER left corner (0,0).  glScissor seems 
+      // to assume that (0,0) is always the LOWER left corner.
+      viewport[3] - rect.bottom,
+      rect.GetWidth(),
+      rect.GetHeight());
+
+   tGUIColor textColor(tGUIColor::Black);
+
+   cAutoIPtr<IRenderFont> pFont;
+
+   cAutoIPtr<IGUIStyle> pStyle;
+   if (pTextEditElement->GetStyle(&pStyle) == S_OK)
+   {
+      pStyle->GetForegroundColor(&textColor);
+      pStyle->GetFont(&pFont);
+   }
+
+   if (!pFont)
+   {
+      pFont = CTAddRef(m_pDefaultFont);
+   }
+
+   uint selStart, selEnd;
+   Verify(pTextEditElement->GetSelection(&selStart, &selEnd) == S_OK);
+
+   // Determine the width of the text up to the cursor
+   tRect leftOfCursor(0,0,0,0);
+   pFont->DrawText(pTextEditElement->GetText(), selEnd, kDT_NoClip | kDT_CalcRect, 
+      &leftOfCursor, tGUIColor::White);
+
+   // Offset the left edge so that the cursor is always in view.
+   if (leftOfCursor.GetWidth() >= rect.GetWidth())
+   {
+      rect.left -= leftOfCursor.GetWidth() - rect.GetWidth() + kCursorWidth;
+   }
+
+   pFont->DrawText(pTextEditElement->GetText(), -1, kDT_NoClip, &rect, textColor);
+
+   // Render the cursor if this widget has focus and its blink cycle is on
+   if (pTextEditElement->HasFocus() && pTextEditElement->ShowBlinkingCursor())
+   {
+      tGUIRect cursorRect(
+         rect.left + leftOfCursor.GetWidth(),
+         rect.top + 1,
+         rect.left + leftOfCursor.GetWidth() + kCursorWidth,
+         rect.bottom - 1);
+
+      GlRenderBevelledRect(cursorRect, 0, tGUIColor::Black, tGUIColor::Black, tGUIColor::Black);
+   }
+
+   glDisable(GL_SCISSOR_TEST);
+
+   pTextEditElement->UpdateBlinkingCursor();
+
+   return S_OK;
+}
+
+///////////////////////////////////////
+
 tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIButtonElement * pButtonElement)
 {
    cAutoIPtr<IRenderFont> pFont;
@@ -369,6 +474,32 @@ tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIPanelElement * pPanelElement)
 
 ///////////////////////////////////////
 
+tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUITextEditElement * pTextEditElement)
+{
+   uint editSize;
+   if (pTextEditElement->GetEditSize(&editSize) != S_OK)
+   {
+      editSize = kDefaultEditSize;
+   }
+
+   cAutoIPtr<IRenderFont> pFont;
+   if (GetFont(pTextEditElement, &pFont) == S_OK)
+   {
+      char * psz = reinterpret_cast<char *>(alloca(editSize * sizeof(char)));
+      memset(psz, 'M', editSize * sizeof(char));
+
+      tRect rect(0,0,0,0);
+      pFont->DrawText(psz, editSize, kDT_CalcRect | kDT_SingleLine, &rect, tGUIColor::White);
+
+      return tGUISize(static_cast<tGUISizeType>(rect.GetWidth() + (kHorzInset * 2)),
+                        static_cast<tGUISizeType>(rect.GetHeight() + (kVertInset * 2)));
+   }
+
+   return tGUISize(0,0);
+}
+
+///////////////////////////////////////
+
 tResult cGUIBeveledRenderer::GetFont(IGUIElement * pElement,
                                      IRenderFont * * ppFont)
 {
@@ -398,6 +529,8 @@ tResult cGUIBeveledRenderer::GetFont(IGUIElement * pElement,
 
 AUTOREGISTER_GUIELEMENTRENDERERFACTORY(beveled, cGUIBeveledRendererFactory);
 
+////////////////////////////////////////
+
 tResult cGUIBeveledRendererFactory::CreateRenderer(IGUIElement * /*pElement*/, IGUIElementRenderer * * ppRenderer)
 {
    if (ppRenderer == NULL)
@@ -405,8 +538,18 @@ tResult cGUIBeveledRendererFactory::CreateRenderer(IGUIElement * /*pElement*/, I
       return E_POINTER;
    }
 
-   *ppRenderer = static_cast<IGUIElementRenderer *>(new cGUIBeveledRenderer);
-   return (*ppRenderer != NULL) ? S_OK : E_OUTOFMEMORY;
+   // Since the renderer is stateless, a single instance can serve all GUI elements
+   if (!m_pStatelessBeveledRenderer)
+   {
+      m_pStatelessBeveledRenderer = static_cast<IGUIElementRenderer *>(new cGUIBeveledRenderer);
+      if (!m_pStatelessBeveledRenderer)
+      {
+         return E_OUTOFMEMORY;
+      }
+   }
+
+   *ppRenderer = CTAddRef(m_pStatelessBeveledRenderer);
+   return S_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
