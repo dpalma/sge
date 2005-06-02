@@ -312,11 +312,10 @@ static tResult InitGlobalConfig(int argc, char * argv[])
 {
    Assert(argc > 0);
 
-   cFileSpec file(argv[0]);
-   file.SetPath(cFilePath());
-   file.SetFileExt("cfg");
+   cFileSpec cfgFile(argv[0]);
+   cfgFile.SetFileExt("cfg");
 
-   cAutoIPtr<IDictionaryStore> pStore = DictionaryStoreCreate(file);
+   cAutoIPtr<IDictionaryStore> pStore = DictionaryStoreCreate(cfgFile);
    if (!pStore)
    {
       return E_OUTOFMEMORY;
