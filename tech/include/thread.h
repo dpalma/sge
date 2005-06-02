@@ -17,7 +17,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifdef _WIN32
-typedef uint tThreadId;
+typedef ulong tThreadId;
 #else
 typedef pthread_t tThreadId;
 #endif

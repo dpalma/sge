@@ -12,7 +12,7 @@
 #include "functor.h"
 
 #ifdef _WIN32
-typedef uint tThreadId;
+typedef ulong tThreadId;
 #else
 #include <sys/types.h>
 typedef pthread_t tThreadId;
