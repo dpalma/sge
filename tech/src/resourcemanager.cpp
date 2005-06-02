@@ -11,6 +11,7 @@
 #include <cstdio>
 #include <vector>
 #include <algorithm>
+#include <set>
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -449,6 +450,7 @@ tResult cResourceManager::Load(const char * pszName, tResourceType type,
                if (pRes->dirId != kNoIndex)
                {
                   cFileSpec file(pszName);
+                  file.SetFileExt(m_extensions[pRes->extensionId].c_str());
                   file.SetPath(m_dirs[pRes->dirId]);
                   result = DoLoadFromFile(file, pFormat, param, &dataSize, &pData);
                }
@@ -544,6 +546,11 @@ tResult cResourceManager::RegisterFormat(tResourceType type,
    {
       extensionId = GetExtensionId(pszExtension);
 
+      if (!typeDepend)
+      {
+         m_extsForType.insert(std::make_pair(type, extensionId));
+      }
+
       std::vector<sFormat>::const_iterator iter = m_formats.begin();
       std::vector<sFormat>::const_iterator end = m_formats.end();
       for (; iter != end; iter++)
@@ -579,11 +586,17 @@ cResourceManager::sResource * cResourceManager::FindResourceWithFormat(
       return NULL;
    }
 
+   std::set<uint> extsPossible;
    uint extensionId = GetExtensionIdForName(pszName);
    if (extensionId == kNoIndex)
    {
-      // TODO: Could deduce possible extensions using the type
-      return NULL;
+      // Deduce possible extensions using the type
+      tExtsForType::iterator iter = m_extsForType.lower_bound(type);
+      tExtsForType::iterator end = m_extsForType.upper_bound(type);
+      for (; iter != end; ++iter)
+      {
+         extsPossible.insert(iter->second);
+      }
    }
 
    cStr name;
@@ -596,16 +609,24 @@ cResourceManager::sResource * cResourceManager::FindResourceWithFormat(
    tResources::iterator resEnd = m_resources.end();
    for (int index = 0; resIter != resEnd; index++, resIter++)
    {
-      if (resIter->name == name && resIter->extensionId == extensionId)
+      if (resIter->name == name)
       {
-         if (resIter->pFormat == NULL && !pFormat->typeDepend
-            && (resIter->archiveId != kNoIndex || resIter->dirId != kNoIndex))
+         if (extensionId == kNoIndex
+            && (extsPossible.find(resIter->extensionId) != extsPossible.end()))
          {
             pPotentialMatch = &m_resources[index];
          }
-         else if (resIter->pFormat == pFormat)
+         else if (extensionId == resIter->extensionId)
          {
-            return &m_resources[index];
+            if (resIter->pFormat == NULL && !pFormat->typeDepend
+               && (resIter->archiveId != kNoIndex || resIter->dirId != kNoIndex))
+            {
+               pPotentialMatch = &m_resources[index];
+            }
+            else if (resIter->pFormat == pFormat)
+            {
+               return &m_resources[index];
+            }
          }
       }
    }

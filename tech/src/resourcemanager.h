@@ -8,6 +8,8 @@
 #include "filepath.h"
 #include "globalobj.h"
 
+#include <map>
+
 #define ZLIB_WINAPI
 #include <unzip.h>
 
@@ -88,6 +90,9 @@ private:
    };
    typedef std::vector<sFormat> tFormats;
    tFormats m_formats;
+
+   typedef std::multimap<tResourceType, uint> tExtsForType;
+   tExtsForType m_extsForType;
 
    struct sResource
    {
