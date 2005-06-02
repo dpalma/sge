@@ -89,7 +89,7 @@ tResult cThreadCaller::ThreadInit()
    cMutexLock lock(&m_mutex);
    if (lock.Acquire())
    {
-      uint threadId = ThreadGetCurrentId();
+      tThreadId threadId = ThreadGetCurrentId();
 
       if (m_receiptEvents.find(threadId) != m_receiptEvents.end())
       {
@@ -124,7 +124,7 @@ tResult cThreadCaller::ThreadTerm()
    cMutexLock lock(&m_mutex);
    if (lock.Acquire())
    {
-      uint threadId = ThreadGetCurrentId();
+      tThreadId threadId = ThreadGetCurrentId();
 
       m_calls.erase(threadId);
 
@@ -143,7 +143,7 @@ tResult cThreadCaller::ThreadTerm()
 
 ////////////////////////////////////////
 
-tResult cThreadCaller::ThreadIsInitialized(uint threadId)
+tResult cThreadCaller::ThreadIsInitialized(tThreadId threadId)
 {
    cMutexLock lock(&m_mutex);
    if (lock.Acquire())
@@ -167,7 +167,7 @@ tResult cThreadCaller::ReceiveCalls(uint * pnCalls)
    cMutexLock lock(&m_mutex);
    if (lock.Acquire())
    {
-      uint threadId = ThreadGetCurrentId();
+      tThreadId threadId = ThreadGetCurrentId();
 
       tReceiptEventMap::iterator iterReceiptEvent = m_receiptEvents.find(threadId);
       if (iterReceiptEvent == m_receiptEvents.end())
@@ -203,7 +203,7 @@ tResult cThreadCaller::ReceiveCalls(uint * pnCalls)
 
 ////////////////////////////////////////
 
-tResult cThreadCaller::PostCall(uint threadId, cFunctor * pFunctor)
+tResult cThreadCaller::PostCall(tThreadId threadId, cFunctor * pFunctor)
 {
    if (pFunctor == NULL)
    {

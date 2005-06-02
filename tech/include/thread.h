@@ -16,11 +16,17 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifdef _WIN32
+typedef uint tThreadId;
+#else
+typedef pthread_t tThreadId;
+#endif
+
 const uint kInfiniteTimeout = ~0;
 
 TECH_API void ThreadSleep(uint milliseconds);
 
-TECH_API uint ThreadGetCurrentId();
+TECH_API tThreadId ThreadGetCurrentId();
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -46,7 +52,7 @@ public:
 
    bool Create(int priority = kTP_Normal, uint stackSize = 0);
 
-   ulong GetThreadId() const;
+   tThreadId GetThreadId() const;
 
    void Join();
 
@@ -56,7 +62,7 @@ protected:
    virtual int Run() = 0;
 
 private:
-   ulong m_threadId;
+   tThreadId m_threadId;
 #ifdef _WIN32
    static ulong STDCALL ThreadEntry(void * param);
    HANDLE m_hThread;
@@ -68,10 +74,11 @@ private:
 
 ////////////////////////////////////////
 
-inline ulong cThread::GetThreadId() const
+inline tThreadId cThread::GetThreadId() const
 {
    return m_threadId;
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -98,6 +105,7 @@ private:
 #endif
 };
 
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cThreadMutex
@@ -118,6 +126,7 @@ private:
 #ifdef _WIN32
    HANDLE m_hMutex;
 #else
+   pthread_mutex_t m_mutex;
 #endif
 };
 

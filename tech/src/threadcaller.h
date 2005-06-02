@@ -30,17 +30,17 @@ public:
 
    virtual tResult ThreadInit();
    virtual tResult ThreadTerm();
-   virtual tResult ThreadIsInitialized(uint threadId);
+   virtual tResult ThreadIsInitialized(tThreadId threadId);
 
    virtual tResult ReceiveCalls(uint * pnCalls);
 
-   virtual tResult PostCall(uint threadId, cFunctor * pFunctor);
+   virtual tResult PostCall(tThreadId threadId, cFunctor * pFunctor);
 
 private:
-   typedef std::multimap<uint, cFunctor *> tThreadCalls;
+   typedef std::multimap<tThreadId, cFunctor *> tThreadCalls;
    tThreadCalls m_calls;
 
-   typedef std::map<uint, cThreadEvent *> tReceiptEventMap;
+   typedef std::map<tThreadId, cThreadEvent *> tReceiptEventMap;
    tReceiptEventMap m_receiptEvents;
 
    cThreadMutex m_mutex;

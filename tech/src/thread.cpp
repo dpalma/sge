@@ -10,7 +10,6 @@
 #include <windows.h>
 #else
 #include <sys/types.h>
-#include <pthread.h>
 #include <sched.h>
 #endif
 
@@ -30,17 +29,21 @@ void ThreadSleep(uint milliseconds)
 #ifdef _WIN32
    Sleep(milliseconds);
 #else
-#error ("Need platform-specific thread sleep function")
+   uint secs = milliseconds / 1000;
+   if (milliseconds > 0 && secs == 0)
+   {
+      secs = 1;
+   }
+   sleep(secs);
 #endif
 }
 
-uint ThreadGetCurrentId()
+tThreadId ThreadGetCurrentId()
 {
 #ifdef _WIN32
    return GetCurrentThreadId();
 #else
-#error ("Need platform-specific get current thread ID function")
-   return 0;
+   return pthread_self();
 #endif
 }
 
@@ -202,7 +205,9 @@ void * cThread::ThreadEntry(void * param)
 ////////////////////////////////////////
 
 cThreadEvent::cThreadEvent()
+#ifdef _WIN32
  : m_hEvent(NULL)
+#endif
 {
 }
 
@@ -233,7 +238,7 @@ bool cThreadEvent::Create()
 
    return (m_hEvent != NULL);
 #else
-#error ("Need platform-specific event create function")
+#pragma message("Need platform-specific event create function")
 #endif
 }
 
@@ -250,7 +255,7 @@ bool cThreadEvent::Wait(uint timeout)
       }
    }
 #else
-#error ("Need platform-specific event wait function")
+#pragma message("Need platform-specific event wait function")
 #endif
    return false;
 }
@@ -265,7 +270,7 @@ bool cThreadEvent::Set()
       return true;
    }
 #else
-#error ("Need platform-specific event reset function")
+#pragma message("Need platform-specific event reset function")
 #endif
    return false;
 }
@@ -280,7 +285,7 @@ bool cThreadEvent::Reset()
       return true;
    }
 #else
-#error ("Need platform-specific event reset function")
+#pragma message("Need platform-specific event reset function")
 #endif
    return false;
 }
@@ -295,7 +300,7 @@ bool cThreadEvent::Pulse()
       return true;
    }
 #else
-#error ("Need platform-specific event pulse function")
+#pragma message("Need platform-specific event pulse function")
 #endif
    return false;
 }
@@ -309,7 +314,9 @@ bool cThreadEvent::Pulse()
 ////////////////////////////////////////
 
 cThreadMutex::cThreadMutex()
+#ifdef _WIN32
  : m_hMutex(NULL)
+#endif
 {
 }
 
@@ -323,6 +330,8 @@ cThreadMutex::~cThreadMutex()
       CloseHandle(m_hMutex);
       m_hMutex = NULL;
    }
+#else
+   pthread_mutex_destroy(&m_mutex);
 #endif
 }
 
@@ -340,9 +349,10 @@ bool cThreadMutex::Create()
       }
    }
 #else
-#error ("Need platform-specific mutex create function")
+   pthread_mutex_init(&m_mutex, NULL);
+   // TODO: test return value
+   return true;
 #endif
-   return false;
 }
 
 ////////////////////////////////////////
@@ -358,9 +368,10 @@ bool cThreadMutex::Acquire(uint timeout)
       }
    }
 #else
-#error ("Need platform-specific mutex acquire function")
+   pthread_mutex_lock(&m_mutex);
+   // TODO: test return value
+   return true;
 #endif
-   return false;
 }
 
 ////////////////////////////////////////
@@ -375,8 +386,11 @@ bool cThreadMutex::Release()
          return true;
       }
    }
+#else
+   pthread_mutex_unlock(&m_mutex);
+   // TODO: test return value
+   return true;
 #endif
-   return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
