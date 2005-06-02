@@ -83,6 +83,9 @@ static uint32 PackColor(const tGUIColor & color)
 void GlRenderBevelledRect(const tGUIRect & rect, int bevel, const tGUIColor & topLeft,
                           const tGUIColor & bottomRight, const tGUIColor & face)
 {
+   glPushAttrib(GL_ENABLE_BIT);
+   glDisable(GL_TEXTURE_2D);
+
    glBegin(GL_TRIANGLES);
 
    if (bevel == 0)
@@ -158,6 +161,7 @@ void GlRenderBevelledRect(const tGUIRect & rect, int bevel, const tGUIColor & to
    }
 
    glEnd();
+   glPopAttrib();
 }
 
 
@@ -172,7 +176,7 @@ void GUIRenderingToolsCreate()
 
 void GlBegin2D()
 {
-   glPushAttrib(GL_ENABLE_BIT);
+   glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
 
    glDisable(GL_DEPTH_TEST);
    glDisable(GL_LIGHTING);

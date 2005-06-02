@@ -12,6 +12,7 @@
 #include "resourceapi.h"
 #include "vec2.h"
 #include "vec3.h"
+#include "configapi.h"
 
 #include "dbgalloc.h" // must be last header
 
@@ -70,30 +71,32 @@ void cEntityManager::SetTerrainLocatorHack(cTerrainLocatorHack * pTerrainLocator
 tResult cEntityManager::SpawnEntity(const char * pszMesh, float x, float z)
 {
    tVec3 location(0,0,0);
-
    if (m_pTerrainLocatorHack != NULL)
    {
       m_pTerrainLocatorHack->Locate(x, z, &location.x, &location.y, &location.z);
    }
 
-   cAutoIPtr<IMesh> pMesh;
-   UseGlobal(ResourceManager);
-   if (pResourceManager->LoadUncached(tResKey(pszMesh, kRC_Mesh), m_pRenderDevice, (void**)&pMesh, NULL) != S_OK)
+   if (ConfigIsTrue("use_old_mesh_code"))
    {
-      DebugMsg1("Error loading mesh \"%s\"\n", pszMesh);
-      return E_FAIL;
+      cAutoIPtr<IMesh> pMesh;
+      UseGlobal(ResourceManager);
+      if (pResourceManager->LoadUncached(tResKey(pszMesh, kRC_Mesh), m_pRenderDevice, (void**)&pMesh, NULL) != S_OK)
+      {
+         DebugMsg1("Error loading mesh \"%s\"\n", pszMesh);
+         return E_FAIL;
+      }
+
+      cAutoIPtr<ISceneEntity> pEntity = SceneEntityCreate(pMesh);
+      pEntity->SetLocalTranslation(location);
+
+      UseGlobal(Scene);
+      pScene->AddEntity(kSL_Object, pEntity);
    }
-
-   cAutoIPtr<ISceneEntity> pEntity = SceneEntityCreate(pMesh);
-   pEntity->SetLocalTranslation(location);
-
-   UseGlobal(Scene);
-   pScene->AddEntity(kSL_Object, pEntity);
-
-   // HACK: add a cModel-based entity too to test new code
+   else
    {
       cAutoIPtr<ISceneEntity> pModelTestEntity = SceneEntityCreate(pszMesh);
       pModelTestEntity->SetLocalTranslation(location);
+      UseGlobal(Scene);
       pScene->AddEntity(kSL_Object, pModelTestEntity);
    }
 

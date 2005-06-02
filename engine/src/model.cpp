@@ -141,12 +141,19 @@ const cModelMaterial & cModelMaterial::operator =(const cModelMaterial & other)
 
 void cModelMaterial::GlDiffuseAndTexture() const
 {
+   glEnable(GL_COLOR_MATERIAL);
+   glColorMaterial(GL_FRONT, GL_DIFFUSE);
    glColor4fv(m_diffuse);
    uint textureId = 0;
    UseGlobal(ResourceManager);
    if (pResourceManager->Load(tResKey(m_texture.c_str(), kRC_GlTexture), (void**)&textureId) == S_OK)
    {
+      glEnable(GL_TEXTURE_2D);
       glBindTexture(GL_TEXTURE_2D, textureId);
+   }
+   else
+   {
+      glDisable(GL_TEXTURE_2D);
    }
 }
 
@@ -155,6 +162,7 @@ void cModelMaterial::GlDiffuseAndTexture() const
 
 void cModelMaterial::GlMaterialAndTexture() const
 {
+   glDisable(GL_COLOR_MATERIAL);
    glMaterialfv(GL_FRONT, GL_DIFFUSE, m_diffuse);
    glMaterialfv(GL_FRONT, GL_AMBIENT, m_ambient);
    glMaterialfv(GL_FRONT, GL_SPECULAR, m_specular);
@@ -164,7 +172,12 @@ void cModelMaterial::GlMaterialAndTexture() const
    UseGlobal(ResourceManager);
    if (pResourceManager->Load(tResKey(m_texture.c_str(), kRC_GlTexture), (void**)&textureId) == S_OK)
    {
+      glEnable(GL_TEXTURE_2D);
       glBindTexture(GL_TEXTURE_2D, textureId);
+   }
+   else
+   {
+      glDisable(GL_TEXTURE_2D);
    }
 }
 
