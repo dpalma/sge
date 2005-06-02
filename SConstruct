@@ -18,11 +18,11 @@ platform = str(Platform())
 if platform == 'win32':
    glIncludePaths = ['#3rdparty/Cg/include']
    glLibPaths = ['#3rdparty/Cg/lib']
-   glLibs = ['opengl32.lib', 'glu32.lib', 'cg.lib', 'cgGL.lib']
+   glLibs = ['opengl32.lib', 'glu32.lib', 'Cg.lib', 'CgGL.lib']
 elif platform == 'cygwin':
    glIncludePaths = ['/usr/include', '/usr/X11R6/include']
    glLibPaths = ['/usr/lib', '/usr/X11R6/lib']
-   glLibs = ['opengl32.lib', 'glu32.lib', 'cg.lib', 'cgGL.lib']
+   glLibs = ['opengl32', 'glu32', 'Cg', 'CgGL']
 else:
    print 'Unsupported platform'
    Exit(1)

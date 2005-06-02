@@ -82,7 +82,7 @@ struct sQIPair
 };
 
 inline tResult CTQueryInterface(const sQIPair * pPairs, int nPairs,
-                                REFIID iid, void * * ppvObject)
+                                REFGUID iid, void * * ppvObject)
 {
    for (int i = 0; i < nPairs; i++)
    {
@@ -121,7 +121,7 @@ protected:
    }
 
    tResult DoQueryInterface(const sQIPair * pPairs, int nPairs,
-                            REFIID iid, void * * ppvObject)
+                            REFGUID iid, void * * ppvObject)
    {
       return CTQueryInterface(pPairs, nPairs, iid, ppvObject);
    }
@@ -176,7 +176,7 @@ public:
    virtual ~cComObject() {}
    virtual ulong STDMETHODCALLTYPE AddRef() { return DoAddRef(); }
    virtual ulong STDMETHODCALLTYPE Release() { return DoRelease(); }
-   virtual tResult STDMETHODCALLTYPE QueryInterface(REFIID iid,
+   virtual tResult STDMETHODCALLTYPE QueryInterface(REFGUID iid,
                                                     void * * ppvObject)
    {
       const struct sQIPair pairs[] =
@@ -196,7 +196,7 @@ public:
    virtual ~cComObject2() {}
    virtual ulong STDMETHODCALLTYPE AddRef() { return DoAddRef(); }
    virtual ulong STDMETHODCALLTYPE Release() { return DoRelease(); }
-   virtual tResult STDMETHODCALLTYPE QueryInterface(REFIID iid,
+   virtual tResult STDMETHODCALLTYPE QueryInterface(REFGUID iid,
                                                     void * * ppvObject)
    {
       const struct sQIPair pairs[] =
@@ -218,7 +218,7 @@ public:
    virtual ~cComObject3() {}
    virtual ulong STDMETHODCALLTYPE AddRef() { return DoAddRef(); }
    virtual ulong STDMETHODCALLTYPE Release() { return DoRelease(); }
-   virtual tResult STDMETHODCALLTYPE QueryInterface(REFIID iid,
+   virtual tResult STDMETHODCALLTYPE QueryInterface(REFGUID iid,
                                                     void * * ppvObject)
    {
       const struct sQIPair pairs[] =
@@ -242,7 +242,7 @@ public:
    virtual ~cComObject4() {}
    virtual ulong STDMETHODCALLTYPE AddRef() { return DoAddRef(); }
    virtual ulong STDMETHODCALLTYPE Release() { return DoRelease(); }
-   virtual tResult STDMETHODCALLTYPE QueryInterface(REFIID iid,
+   virtual tResult STDMETHODCALLTYPE QueryInterface(REFGUID iid,
                                                     void * * ppvObject)
    {
       const struct sQIPair pairs[] =

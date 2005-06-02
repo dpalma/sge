@@ -25,7 +25,7 @@ inline void DbgBreak()  { asm("int $3"); }
 #define DbgBreak()      __asm { int 3h }
 #endif
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
 extern "C" DECLSPEC_DLLIMPORT int STDCALL IsDebuggerPresent();
 #else
 #define IsDebuggerPresent() (false)

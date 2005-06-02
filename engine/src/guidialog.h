@@ -26,7 +26,7 @@ public:
    cGUIDialogElement();
    ~cGUIDialogElement();
 
-   virtual tResult STDMETHODCALLTYPE QueryInterface(REFIID iid,
+   virtual tResult STDMETHODCALLTYPE QueryInterface(REFGUID iid,
                                                     void * * ppvObject)
    {
       const struct sQIPair pairs[] =

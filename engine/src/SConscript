@@ -47,13 +47,12 @@ sources = Split("""
 
 includePaths = Split("""
    #3rdparty/sgi
-   #3rdparty/Cg/include
    #3rdparty/lua/include
    #3rdparty/tinyxml
    #engine/include
    #render/include
    #tech/include
-""")
+""") + glIncludePaths
 
 env = env.Copy()
 env.Append(CPPPATH = includePaths)

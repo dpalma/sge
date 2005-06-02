@@ -142,7 +142,7 @@ class cMs3dJoint
 {
    friend class cReadWriteOps<cMs3dJoint>;
 
-   operator =(const cMs3dJoint &);
+   void operator =(const cMs3dJoint &);
 
 public:
    cMs3dJoint();

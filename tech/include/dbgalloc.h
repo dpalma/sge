@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // $Id$
 
-#if defined(_WIN32) && !defined(_WIN32_WCE)
+#if defined(_WIN32) && !defined(_WIN32_WCE) && !defined(__GNUC__)
 
 #include <crtdbg.h>
 

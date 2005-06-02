@@ -27,14 +27,10 @@ extern ISceneEntityEnum * SceneEntityEnumCreate(const tSceneEntityList & entitie
 // CLASS: cScene
 //
 
-BEGIN_CONSTRAINTS()
-   AFTER_GUID(GUID_NULL)
-END_CONSTRAINTS()
-
 ///////////////////////////////////////
 
 cScene::cScene()
- : cGlobalObject<IMPLEMENTS(IScene)>("Scene", CONSTRAINTS())
+ : cGlobalObject<IMPLEMENTS(IScene)>("Scene")
 {
 }
 

@@ -37,8 +37,8 @@ public:
    cGlobalObjectRegistry();
    ~cGlobalObjectRegistry();
 
-   virtual tResult Register(REFIID iid, IUnknown * pUnk);
-   virtual IUnknown * Lookup(REFIID iid);
+   virtual tResult Register(REFGUID iid, IUnknown * pUnk);
+   virtual IUnknown * Lookup(REFGUID iid);
 
    virtual tResult InitAll();
    virtual tResult TermAll();
@@ -96,7 +96,7 @@ cGlobalObjectRegistry::~cGlobalObjectRegistry()
 
 ///////////////////////////////////////
 
-tResult cGlobalObjectRegistry::Register(REFIID iid, IUnknown * pUnk)
+tResult cGlobalObjectRegistry::Register(REFGUID iid, IUnknown * pUnk)
 {
    if (CTIsEqualUnknown(iid))
    {
@@ -237,7 +237,7 @@ tResult cGlobalObjectRegistry::TermAll()
 
 ///////////////////////////////////////
 
-IUnknown * cGlobalObjectRegistry::Lookup(REFIID iid)
+IUnknown * cGlobalObjectRegistry::Lookup(REFGUID iid)
 {
    tObjMap::iterator iter = m_objMap.find(&iid);
    if (iter != m_objMap.end())

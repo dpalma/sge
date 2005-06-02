@@ -33,7 +33,7 @@ inline tResult StopGlobalObjects()
    return AccessGlobalObjectRegistry()->TermAll();
 }
 
-inline IUnknown * FindGlobalObject(REFIID iid)
+inline IUnknown * FindGlobalObject(REFGUID iid)
 {
    return AccessGlobalObjectRegistry()->Lookup(iid);
 }

@@ -22,7 +22,7 @@
 ///////////////////////////////////////
 
 cMs3dGroup::cMs3dGroup()
- : flags(0), materialIndex(-1)
+ : flags(0), materialIndex(~0)
 {
 }
 

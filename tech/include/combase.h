@@ -107,15 +107,7 @@ typedef struct _GUID
    #endif
 #endif // !_REFGUID_DEFINED
 
-#ifndef _REFIID_DEFINED
-   typedef GUID IID;
-   #define _REFIID_DEFINED
-   #if defined(__cplusplus)
-      typedef const IID & REFIID;
-   #else
-      typedef const IID * REFIID;
-   #endif
-#endif // !_REFIID_DEFINED
+typedef GUID IID;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -179,7 +171,7 @@ interface __declspec(uuid("{00000000-0000-0000-0C00-000000000046}")) IUnknown
 interface IUnknown
 #endif
 {
-   virtual tResult STDMETHODCALLTYPE QueryInterface(REFIID riid, void * * ppvObject) PURE;
+   virtual tResult STDMETHODCALLTYPE QueryInterface(REFGUID riid, void * * ppvObject) PURE;
 
    virtual ulong STDMETHODCALLTYPE AddRef() PURE;
 

@@ -20,8 +20,8 @@ F_DECLARE_INTERFACE(IGlobalObjectRegistry);
 
 interface IGlobalObjectRegistry : IUnknown
 {
-   virtual tResult Register(REFIID iid, IUnknown * pUnk) = 0;
-   virtual IUnknown * Lookup(REFIID iid) = 0;
+   virtual tResult Register(REFGUID iid, IUnknown * pUnk) = 0;
+   virtual IUnknown * Lookup(REFGUID iid) = 0;
 
    virtual tResult InitAll() = 0;
    virtual tResult TermAll() = 0;
