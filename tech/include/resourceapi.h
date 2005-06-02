@@ -126,7 +126,7 @@ inline eResourceClass cResourceKey::GetClass() const
 
 typedef const char * tResourceType;
 
-#define MAKERESOURCETYPE(i) (tResourceType)((ulong *)((uint16)(i)))
+#define MAKERESOURCETYPE(i) (tResourceType)((ulong *)((ulong)(i)))
 
 typedef void * (* tResourceLoad)(IReader * pReader);
 typedef void * (* tResourcePostload)(void * pData, int dataLength, void * param);

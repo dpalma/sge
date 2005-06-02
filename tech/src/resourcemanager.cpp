@@ -71,7 +71,7 @@ static size_t ListDirs(const cFilePath & path, tStrings * pDirs)
       FindClose(hFinder);
    }
 #else
-   DIR * dir = opendir(path.GetPath());
+   DIR * dir = opendir(path.c_str());
    if (dir)
    {
       struct dirent * ent = readdir(dir);
@@ -83,7 +83,7 @@ static size_t ListDirs(const cFilePath & path, tStrings * pDirs)
             file.SetPath(path);
 
             struct stat fstat;
-            if (stat(file.GetName(), &fstat) == 0)
+            if (stat(file.c_str(), &fstat) == 0)
             {
                if (S_ISDIR(fstat.st_mode))
                {

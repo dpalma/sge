@@ -6,26 +6,27 @@ Import('*')
 sources = Split("""
    cameracontroller.cpp
    cmds.cpp
-   groundquadtree.cpp
    groundtiled.cpp
    heightmap.cpp
    main.cpp
    script.cpp
-   syswin.cpp
 """)
+
+if env['PLATFORM'] == 'win32':
+   sources = sources + ['syswin.cpp'] + env.RES('game.rc')
+elif env['PLATFORM'] == 'cygwin':
+   sources = sources + ['syslinux.cpp']
 
 includePaths = Split("""
    #3rdparty/sgi
-   #3rdparty/Cg/include
    #3rdparty/lua/include
    #3rdparty/tinyxml
    #engine/include
    #render/include
    #tech/include
-""")
+""") + glIncludePaths
 
 libPaths = Split("""
-   #3rdparty/Cg/lib
    #3rdparty/tinyxml
    #3rdparty/lua/src
    #3rdparty/zlib
@@ -33,29 +34,25 @@ libPaths = Split("""
    #tech/src
    #render/gl
    #engine/src
-""")
+""") + glLibPaths
 
 libs = Split("""
-   allguids.lib
-   tech.lib
-   rendergl.lib
-   engine.lib
-   lua.lib
-   tinyxml.lib
-   zlibwapi.lib
+   allguids
+   tech
+   rendergl
+   engine
+   lua
+   tinyxml
+   zlibwapi
    user32.lib
    kernel32.lib
    gdi32.lib
    winmm.lib
-   opengl32.lib
-   glu32.lib
-   cg.lib
-   cgGL.lib
-""")
+""") + glLibs
 
 env = env.Copy()
 env.Append(CPPPATH = includePaths)
 env.Append(CPPDEFINES = ['STATIC_BUILD'])
 env.Append(LIBPATH = libPaths)
 env.Append(LIBS = libs)
-env.Program('game', sources + env.RES('game.rc'))
+env.Program('game', sources)
