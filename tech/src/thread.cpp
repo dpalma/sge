@@ -348,6 +348,7 @@ bool cThreadMutex::Create()
          return true;
       }
    }
+   return false;
 #else
    pthread_mutex_init(&m_mutex, NULL);
    // TODO: test return value
@@ -367,6 +368,7 @@ bool cThreadMutex::Acquire(uint timeout)
          return true;
       }
    }
+   return false;
 #else
    pthread_mutex_lock(&m_mutex);
    // TODO: test return value
@@ -386,6 +388,7 @@ bool cThreadMutex::Release()
          return true;
       }
    }
+   return false;
 #else
    pthread_mutex_unlock(&m_mutex);
    // TODO: test return value
