@@ -18,7 +18,6 @@
 
 #include "font.h"
 #include "renderapi.h"
-#include "rendertypes.h"
 
 #include "scriptvar.h"
 #include "techmath.h"
@@ -30,6 +29,7 @@
 #include "globalobj.h"
 #include "readwriteapi.h"
 #include "threadcallapi.h"
+#include "techtime.h"
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
 #define WIN32_LEAN_AND_MEAN
@@ -79,7 +79,7 @@ cAutoIPtr<cTerrainNode> g_pTerrainRoot;
 
 cAutoIPtr<IRenderFont> g_pFont;
 
-double g_fov;
+float g_fov;
 
 cAutoIPtr<IRenderDevice> g_pRenderDevice;
 
@@ -144,14 +144,9 @@ SCRIPT_DEFINE_FUNCTION(ViewSetPos)
 
 void ResizeHack(int width, int height)
 {
-   if (AccessRenderDevice() != NULL)
-   {
-      AccessRenderDevice()->SetViewportSize(width, height);
-   }
-
    if (g_pGameCamera != NULL)
    {
-      g_pGameCamera->SetPerspective(g_fov, (float)width / height, kZNear, kZFar);
+      g_pGameCamera->SetPerspective(g_fov, static_cast<float>(width) / height, kZNear, kZFar);
    }
 }
 
@@ -312,6 +307,53 @@ static bool ScriptExecResource(IScriptInterpreter * pInterpreter, const char * p
    return bResult;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+
+static double fpsLast = 0;
+static double fpsWorst = 99999;//DBL_MAX;
+static double fpsBest = 0;
+static double fpsAverage = 0;
+
+static double FPS()
+{
+   static double lastTime = 0;
+   static double frameCount = 0;
+
+   double time = TimeGetSecs();
+   double elapsed = time - lastTime;
+   frameCount++;
+
+   double fps = 0;
+   if (elapsed >= 0.5) // update about 2x per second
+   {
+      if (lastTime != 0.0)
+      {
+         double fps = frameCount / elapsed;
+         if (fpsAverage == 0)
+         {
+            fpsAverage = fps;
+         }
+         else
+         {
+            fpsAverage = (fps + fpsLast) * 0.5;
+         }
+         if (fps > fpsBest)
+         {
+            fpsBest = fps;
+         }
+         if (fps < fpsWorst)
+         {
+            fpsWorst = fps;
+         }
+         fpsLast = fps;
+      }
+      lastTime = time;
+      frameCount = 0;
+   }
+   return fps;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 static tResult InitGlobalConfig(int argc, char * argv[])
@@ -386,7 +428,7 @@ static bool MainInit(int argc, char * argv[])
    }
 
    g_fov = kDefaultFov;
-   ConfigGet("fov", (float *)&g_fov); // @HACK: cast to float pointer
+   ConfigGet("fov", &g_fov);
 
    int width = kDefaultWidth;
    int height = kDefaultHeight;
@@ -487,29 +529,25 @@ static void MainFrame()
    GlBegin2D();
 
    UseGlobal(GUIContext);
-   pGUIContext->RenderGUI(g_pRenderDevice);
+   pGUIContext->RenderGUI();
 
    if (!!g_pFont)
    {
-      sFrameStats frameStats;
-      if (g_pRenderDevice->GetFrameStats(&frameStats) == S_OK)
-      {
-         char szStats[100];
-         snprintf(szStats, _countof(szStats),
-            "%.2f fps\n"
-            "%.2f worst\n"
-            "%.2f best\n"
-            "%.2f average\n"
-            "%d triangles", 
-            frameStats.fps, 
-            frameStats.worst,
-            frameStats.best, 
-            frameStats.average,
-            frameStats.nTriangles);
+      FPS();
 
-         tRect rect(kDefStatsX, kDefStatsY, 0, 0);
-         g_pFont->DrawText(szStats, strlen(szStats), kDT_NoClip | kDT_DropShadow, &rect, kDefStatsColor);
-      }
+      char szStats[100];
+      snprintf(szStats, _countof(szStats),
+         "%.2f fps\n"
+         "%.2f worst\n"
+         "%.2f best\n"
+         "%.2f average",
+         fpsLast, 
+         fpsWorst,
+         fpsBest, 
+         fpsAverage);
+
+      tRect rect(kDefStatsX, kDefStatsY, 0, 0);
+      g_pFont->DrawText(szStats, strlen(szStats), kDT_NoClip | kDT_DropShadow, &rect, kDefStatsColor);
    }
 
    GlEnd2D();

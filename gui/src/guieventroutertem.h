@@ -9,7 +9,6 @@
 /// This file is intended to be included only by cpp files, not other headers.
 
 #include "guiapi.h"
-
 #include "guielementenum.h"
 
 #include "inputapi.h"
@@ -224,14 +223,6 @@ tResult cGUIEventRouter<INTRFC>::RemoveElement(IGUIElement * pElement)
 ///////////////////////////////////////
 
 template <typename INTRFC>
-tResult cGUIEventRouter<INTRFC>::GetElements(IGUIElementEnum * * ppElements)
-{
-   return GUIElementEnumCreate(m_elements, ppElements);
-}
-
-///////////////////////////////////////
-
-template <typename INTRFC>
 tResult cGUIEventRouter<INTRFC>::HasElement(IGUIElement * pElement) const
 {
    if (pElement == NULL)
@@ -276,10 +267,26 @@ tResult cGUIEventRouter<INTRFC>::GetHitElement(const tGUIPoint & screenPoint,
       return E_POINTER;
    }
 
-   cAutoIPtr<IGUIElementEnum> pEnum;
-   if (GetElements(&pEnum) == S_OK)
+   tGUIElementList::iterator iter = m_elements.begin();
+   tGUIElementList::iterator end = m_elements.end();
+   for (; iter != end; iter++)
    {
-      return GetHitElement(screenPoint, pEnum, ppElement);
+      tGUIPoint relative(screenPoint - (*iter)->GetPosition());
+
+      if ((*iter)->Contains(relative))
+      {
+         cAutoIPtr<IGUIContainerElement> pChildContainer;
+         if ((*iter)->QueryInterface(IID_IGUIContainerElement, (void**)&pChildContainer) == S_OK)
+         {
+            if (GetHitElement(relative, pChildContainer, ppElement) == S_OK)
+            {
+               return S_OK;
+            }
+         }
+
+         *ppElement = CTAddRef(*iter);
+         return S_OK;
+      }
    }
 
    return S_FALSE;
@@ -506,7 +513,7 @@ bool cGUIEventRouter<INTRFC>::HandleInputEvent(const sInputEvent * pInputEvent)
    tGUIEventCode eventCode = GUIEventCode(pInputEvent->key, pInputEvent->down);
    if (eventCode == kGUIEventNone)
    {
-      DebugMsg("WARNING: Invalid event code\n");
+      WarnMsg("Invalid event code\n");
       return false;
    }
 

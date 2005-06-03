@@ -11,8 +11,6 @@
 
 #include "globalobj.h"
 
-#include <list>
-
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -41,7 +39,6 @@ public:
 
    virtual tResult AddElement(IGUIElement * pElement);
    virtual tResult RemoveElement(IGUIElement * pElement);
-   virtual tResult GetElements(IGUIElementEnum * * ppElements);
    virtual tResult HasElement(IGUIElement * pElement) const;
 
    virtual tResult LoadFromResource(const char * psz);
@@ -51,14 +48,14 @@ public:
 
    virtual void ClearGUI();
 
-   virtual tResult RenderGUI(IRenderDevice * pRenderDevice);
+   virtual tResult RenderGUI();
 
    virtual tResult ShowDebugInfo(const tGUIPoint & placement, const tGUIColor & textColor);
    virtual tResult HideDebugInfo();
 
 private:
 #ifdef GUI_DEBUG
-   void RenderDebugInfo(IRenderDevice * pRenderDevice);
+   void RenderDebugInfo();
 
    // Over-riding the cGUIEventRouter method even though it isn't virtual.
    // OK because it is only called through a cGUIContext* pointer in 

@@ -8,8 +8,6 @@
 #include "guielementtools.h"
 #include "guieventroutertem.h"
 
-#include "renderapi.h"
-
 #ifdef GUI_DEBUG
 #include "font.h"
 #endif
@@ -33,6 +31,8 @@
 //
 // CLASS: cGUIContext
 //
+
+///////////////////////////////////////
 
 BEGIN_CONSTRAINTS()
    AFTER_GUID(IID_IInput)
@@ -119,13 +119,6 @@ tResult cGUIContext::RemoveElement(IGUIElement * pElement)
 
 ///////////////////////////////////////
 
-tResult cGUIContext::GetElements(IGUIElementEnum * * ppElements)
-{
-   return tBaseClass::GetElements(ppElements);
-}
-
-///////////////////////////////////////
-
 tResult cGUIContext::HasElement(IGUIElement * pElement) const
 {
    return tBaseClass::HasElement(pElement);
@@ -181,8 +174,10 @@ uint cGUIContext::LoadFromTiXmlDoc(TiXmlDocument * pTiXmlDoc)
          cAutoIPtr<IGUIElement> pGUIElement;
          if (pGUIFactory->CreateElement(pXmlElement->Value(), pXmlElement, &pGUIElement) == S_OK)
          {
-            nElementsCreated++;
-            AddElement(pGUIElement);
+            if (AddElement(pGUIElement) == S_OK)
+            {
+               nElementsCreated++;
+            }
          }
       }
    }
@@ -239,26 +234,23 @@ tResult cRenderElement::operator()(IGUIElement * pGUIElement)
 
 ///////////////////////////////////////
 
-tResult cGUIContext::RenderGUI(IRenderDevice * pRenderDevice)
+tResult cGUIContext::RenderGUI()
 {
-   Assert(pRenderDevice != NULL);
-
    if (m_bNeedLayout)
    {
       m_bNeedLayout = false;
 
-      uint vpWidth, vpHeight;
-      if (pRenderDevice->GetViewportSize(&vpWidth, &vpHeight) == S_OK)
-      {
-         ForEachElement(cSizeAndPlaceElement(tGUIRect(0,0,vpWidth,vpHeight)));
-      }
+      int viewport[4];
+      glGetIntegerv(GL_VIEWPORT, viewport);
+
+      ForEachElement(cSizeAndPlaceElement(tGUIRect(0,0,viewport[2],viewport[3])));
    }
 
    glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
    glDisable(GL_DEPTH_TEST);
    ForEachElement(cRenderElement());
 #ifdef GUI_DEBUG
-   RenderDebugInfo(pRenderDevice);
+   RenderDebugInfo();
 #endif
    glPopAttrib();
 
@@ -389,7 +381,7 @@ private:
    CTYPE m_buffer[SIZE];
 };
 
-void cGUIContext::RenderDebugInfo(IRenderDevice * pRenderDevice)
+void cGUIContext::RenderDebugInfo()
 {
    if (!m_bShowDebugInfo)
    {

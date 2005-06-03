@@ -62,7 +62,6 @@ protected:
 
    tResult AddElement(IGUIElement * pElement);
    tResult RemoveElement(IGUIElement * pElement);
-   tResult GetElements(IGUIElementEnum * * ppElements);
    tResult HasElement(IGUIElement * pElement) const;
    void RemoveAllElements();
 

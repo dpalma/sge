@@ -39,7 +39,6 @@ F_DECLARE_INTERFACE(IGUIFactory);
 F_DECLARE_INTERFACE(IGUIContext);
 F_DECLARE_INTERFACE(IGUIRenderingTools);
 
-F_DECLARE_INTERFACE(IRenderDevice);
 F_DECLARE_INTERFACE(IRenderFont);
 F_DECLARE_INTERFACE(IVertexDeclaration);
 F_DECLARE_INTERFACE(IVertexBuffer);
@@ -564,7 +563,6 @@ interface IGUIContext : IGUIEventRouter
 {
    virtual tResult AddElement(IGUIElement * pElement) = 0;
    virtual tResult RemoveElement(IGUIElement * pElement) = 0;
-   virtual tResult GetElements(IGUIElementEnum * * ppElements) = 0;
    virtual tResult HasElement(IGUIElement * pElement) const = 0;
 
    virtual tResult LoadFromResource(const char * psz) = 0;
@@ -572,7 +570,7 @@ interface IGUIContext : IGUIEventRouter
 
    virtual void ClearGUI() = 0;
 
-   virtual tResult RenderGUI(IRenderDevice * pRenderDevice) = 0;
+   virtual tResult RenderGUI() = 0;
 
    virtual tResult ShowDebugInfo(const tGUIPoint & placement, const tGUIColor & textColor) = 0;
    virtual tResult HideDebugInfo() = 0;

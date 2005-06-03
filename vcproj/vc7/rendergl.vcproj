@@ -356,9 +356,6 @@
 				RelativePath="..\..\render\gl\renderdevice.cpp">
 			</File>
 			<File
-				RelativePath="..\..\render\gl\rendertypes.cpp">
-			</File>
-			<File
 				RelativePath="..\..\render\gl\softwarevertexblend.cpp">
 			</File>
 			<File
@@ -458,9 +455,6 @@
 			</File>
 			<File
 				RelativePath="..\..\render\include\renderguids.h">
-			</File>
-			<File
-				RelativePath="..\..\render\include\rendertypes.h">
 			</File>
 		</Filter>
 		<Filter

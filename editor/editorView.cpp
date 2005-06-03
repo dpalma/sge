@@ -366,11 +366,6 @@ void cEditorView::OnSize(UINT nType, int cx, int cy)
 
    float aspect = (float)cx / cy;
 
-   if (AccessRenderDevice() != NULL)
-   {
-      AccessRenderDevice()->SetViewportSize(cx, cy);
-   }
-
    if (!!m_pCamera)
    {
       m_pCamera->SetPerspective(kFov, aspect, kZNear, kZFar);
