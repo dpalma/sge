@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "gcommon.h"
+#include "sys.h"
 
 #include "inputapi.h"
 
@@ -24,8 +24,8 @@
 
 LOG_DEFINE_CHANNEL(XEvents);
 
-bool g_bExiting = false;
-int g_mousex = 0, g_mousey = 0;
+bool              g_bExiting = false;
+int               g_mousex = 0, g_mousey = 0;
 
 Display *         g_display = NULL;
 Window            g_window = 0;
@@ -58,13 +58,6 @@ void SysGetMousePos(int * px, int * py)
 {
    *px = g_mousex;
    *py = g_mousey;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-HANDLE SysGetInstanceHandle()
-{
-   return NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -320,14 +313,8 @@ static bool SysMapXKeysym(KeySym keysym, long * pKeyCode)
 
 extern void ResizeHack(int width, int height);
 
-int main(int argc, char * argv[])
+int SysEventLoop(void (* pfnFrameHandler)())
 {
-   if (!MainInit(argc, argv))
-   {
-      MainTerm();
-      return EXIT_FAILURE;
-   }
-
    if (!g_display || !g_window)
    {
       // Window should have been created during MainInit().
@@ -365,6 +352,7 @@ int main(int argc, char * argv[])
             case ConfigureNotify:
             {
                DebugMsg1("Window configured at %.3f\n", eventTime);
+               ResizeHack(event.xconfigure.width, event.xconfigure.height);
                break;
             }
 
@@ -414,11 +402,9 @@ int main(int argc, char * argv[])
       }
       else
       {
-         MainFrame();
+         (*pfnFrameHandler)();
       }
    }
-
-   MainTerm();
 
    return EXIT_SUCCESS;
 }

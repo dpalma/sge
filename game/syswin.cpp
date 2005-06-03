@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "gcommon.h"
+#include "sys.h"
 
 #include "inputapi.h"
 
@@ -19,8 +19,7 @@
 
 #include "dbgalloc.h" // must be last header
 
-HINSTANCE g_hInstance = NULL;
-bool g_bAppActive = false;
+bool           g_bAppActive = false;
 
 HWND           g_hWnd = NULL;
 HDC            g_hDC = NULL;
@@ -46,18 +45,11 @@ void SysGetMousePos(int * px, int * py)
 {
    POINT cursor;
    GetCursorPos(&cursor);
-   ScreenToClient(GetFocus(), &cursor);
+   ScreenToClient(g_hWnd, &cursor);
    if (px != NULL)
       *px = cursor.x;
    if (py != NULL)
       *py = cursor.y;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-HANDLE SysGetInstanceHandle()
-{
-   return g_hInstance;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -101,7 +93,7 @@ bool SysSetClipboardString(const char * psz)
 
    bool bResult = false;
 
-   if (OpenClipboard(NULL))
+   if (OpenClipboard(g_hWnd))
    {
       HANDLE hData = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, strlen(psz) + 1);
 
@@ -126,7 +118,10 @@ bool SysSetClipboardString(const char * psz)
          }
       }
 
-      Verify(CloseClipboard());
+      if (!CloseClipboard())
+      {
+         bResult = false;
+      }
    }
 
    return bResult;
@@ -354,10 +349,12 @@ HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height)
 {
    if (g_hWnd == NULL)
    {
+      HINSTANCE hInst = GetModuleHandle(NULL);
+
       static const char SysWndClass[] = "SYSWNDCLASS";
 
       WNDCLASS wc;
-	   if (GetClassInfo(g_hInstance, SysWndClass, &wc))
+	   if (GetClassInfo(hInst, SysWndClass, &wc))
       {
          ErrorMsg("Window not created but window class is registered\n");
          return NULL;
@@ -366,8 +363,8 @@ HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height)
       ZeroMemory(&wc, sizeof(wc));
       wc.style = CS_HREDRAW | CS_VREDRAW;
       wc.lpfnWndProc = SysWndProc;
-      wc.hInstance = g_hInstance;
-      wc.hIcon = LoadIcon(g_hInstance, MAKEINTRESOURCE(1));
+      wc.hInstance = hInst;
+      wc.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(1));
       wc.hCursor = LoadCursor(NULL, IDC_ARROW);
       wc.lpszClassName = SysWndClass;
       if (!RegisterClass(&wc))
@@ -387,7 +384,7 @@ HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height)
          (GetSystemMetrics(SM_CXSCREEN) - (rect.right - rect.left)) / 2,
          (GetSystemMetrics(SM_CYSCREEN) - (rect.bottom - rect.top)) / 2,
          rect.right - rect.left, rect.bottom - rect.top,
-         NULL, NULL, g_hInstance, NULL);
+         NULL, NULL, hInst, NULL);
 
       if (g_hWnd != NULL)
       {
@@ -495,17 +492,8 @@ bool SysFullScreenEnd(HWND hWnd)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
-                   LPSTR lpCmdLine, int nShowCmd)
+int SysEventLoop(void (* pfnFrameHandler)())
 {
-   g_hInstance = hInstance;
-
-   if (!MainInit(__argc, __argv))
-   {
-      MainTerm();
-      return -1;
-   }
-
    MSG msg;
 
    for (;;)
@@ -513,7 +501,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
       if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
       {
          if (msg.message == WM_QUIT)
-            break;
+         {
+            return msg.wParam;
+         }
 
          TranslateMessage(&msg);
          DispatchMessage(&msg);
@@ -522,7 +512,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
       {
          if (g_bAppActive)
          {
-            MainFrame();
+            (*pfnFrameHandler)();
          }
          else
          {
@@ -531,9 +521,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
       }
    }
 
-   MainTerm();
-
-   return msg.wParam;
+   return -1;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

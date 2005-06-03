@@ -158,6 +158,10 @@ DEFINE_GUID(IID_IGUITextEditElement,
 DEFINE_GUID(IID_IGUIRenderingTools, 
 0x6195a8ee, 0x838, 0x484e, 0xbf, 0xc9, 0x3a, 0x28, 0xcd, 0x51, 0x7, 0xc6);
 
+// {92DB7247-E01C-4935-B35C-EB233295A4BE}
+DEFINE_GUID(IID_IEntityManager, 
+0x92db7247, 0xe01c, 0x4935, 0xb3, 0x5c, 0xeb, 0x23, 0x32, 0x95, 0xa4, 0xbe);
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #endif // !INCLUDED_ENGINEGUIDS_H

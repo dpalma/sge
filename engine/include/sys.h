@@ -14,11 +14,11 @@
 void SysAppActivate(bool active);
 void SysQuit();
 void SysGetMousePos(int * px, int * py);
-HANDLE SysGetInstanceHandle();
 bool SysGetClipboardString(char * psz, int max);
 bool SysSetClipboardString(const char * psz);
 HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height);
 void SysSwapBuffers();
+int SysEventLoop(void (* pfnFrameHandler)());
 
 ///////////////////////////////////////////////////////////////////////////////
 

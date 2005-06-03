@@ -31,6 +31,12 @@
 #include "readwriteapi.h"
 #include "threadcallapi.h"
 
+#if defined(_WIN32) && !defined(__CYGWIN__)
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#undef DrawText
+#endif
+
 #include <ctime>
 
 #ifdef HAVE_CPPUNIT
@@ -327,7 +333,7 @@ static tResult InitGlobalConfig(int argc, char * argv[])
    return S_OK;
 }
 
-bool MainInit(int argc, char * argv[])
+static bool MainInit(int argc, char * argv[])
 {
    if (InitGlobalConfig(argc, argv) != S_OK)
    {
@@ -395,22 +401,6 @@ bool MainInit(int argc, char * argv[])
       return false;
    }
 
-   // TODO: enable full-screen code
-#if 0
-   cAutoIPtr<IWindowFullScreen> pWindowFullScreen;
-   if (pParams->bFullScreen
-      && pWindow->QueryInterface(IID_IWindowFullScreen, (void * *)&pWindowFullScreen) == S_OK)
-   {
-      pWindowFullScreen->BeginFullScreen();
-   }
-
-   cAutoIPtr<IWindowFullScreen> pWindowFullScreen;
-   if (m_pWindow->QueryInterface(IID_IWindowFullScreen, (void**)&pWindowFullScreen) == S_OK)
-   {
-      pWindowFullScreen->EndFullScreen();
-   }
-#endif
-
    if (RenderDeviceCreate(&g_pRenderDevice) != S_OK)
    {
       return false;
@@ -460,7 +450,7 @@ bool MainInit(int argc, char * argv[])
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void MainTerm()
+static void MainTerm()
 {
    UseGlobal(Sim);
    pSim->Stop();
@@ -482,7 +472,7 @@ void MainTerm()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void MainFrame()
+static void MainFrame()
 {
    Assert(g_pRenderDevice != NULL);
 
@@ -527,5 +517,44 @@ void MainFrame()
    g_pRenderDevice->EndScene();
    SysSwapBuffers();
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+#if defined(_WIN32) && !defined(__CYGWIN__)
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
+                   LPSTR lpCmdLine, int nShowCmd)
+{
+   if (!MainInit(__argc, __argv))
+   {
+      MainTerm();
+      return -1;
+   }
+
+   int result = SysEventLoop(MainFrame);
+
+   MainTerm();
+
+   return result;
+}
+#endif
+
+///////////////////////////////////////////////////////////////////////////////
+
+#if defined(__CYGWIN__)
+int main(int argc, char * argv[])
+{
+   if (!MainInit(argc, argv))
+   {
+      MainTerm();
+      return EXIT_FAILURE;
+   }
+
+   int result = SysEventLoop(MainFrame);
+
+   MainTerm();
+
+   return result;
+}
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -453,9 +453,6 @@
 				RelativePath="..\..\game\gameguids.h">
 			</File>
 			<File
-				RelativePath="..\..\game\gcommon.h">
-			</File>
-			<File
 				RelativePath="..\..\game\ggl.h">
 			</File>
 			<File
