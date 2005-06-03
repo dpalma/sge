@@ -54,4 +54,6 @@ env.Append(CPPPATH = includePaths)
 env.Append(CPPDEFINES = ['STATIC_BUILD'])
 env.Append(LIBPATH = libPaths)
 env.Append(LIBS = libs)
+if env.get('debug'):
+   env['PDB'] = 'msSGEExporter.pdb'
 env.SharedLibrary('msSGEExporter', sources + env.RES('msPlugIn.rc'))
