@@ -25,6 +25,8 @@ HWND           g_hWnd = NULL;
 HDC            g_hDC = NULL;
 HGLRC          g_hGLRC = NULL;
 
+void (* g_pfnResizeHack)(int, int) = NULL;
+
 ///////////////////////////////////////////////////////////////////////////////
 
 void SysAppActivate(bool active)
@@ -37,19 +39,6 @@ void SysAppActivate(bool active)
 void SysQuit()
 {
    PostQuitMessage(0);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void SysGetMousePos(int * px, int * py)
-{
-   POINT cursor;
-   GetCursorPos(&cursor);
-   ScreenToClient(g_hWnd, &cursor);
-   if (px != NULL)
-      *px = cursor.x;
-   if (py != NULL)
-      *py = cursor.y;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -168,8 +157,6 @@ static long MapKey(long keydata)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-extern void ResizeHack(int width, int height);
-
 LRESULT CALLBACK SysWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
    static uint msWheelMsg = RegisterWindowMessage(MSH_MOUSEWHEEL);
@@ -209,7 +196,10 @@ LRESULT CALLBACK SysWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 
       case WM_SIZE:
       {
-         ResizeHack(LOWORD(lParam), HIWORD(lParam));
+         if (g_pfnResizeHack != NULL)
+         {
+            (*g_pfnResizeHack)(LOWORD(lParam), HIWORD(lParam));
+         }
          break;
       }
 
@@ -492,7 +482,7 @@ bool SysFullScreenEnd(HWND hWnd)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int SysEventLoop(void (* pfnFrameHandler)())
+int SysEventLoop(void (* pfnFrameHandler)(), void (* pfnResizeHack)(int, int))
 {
    MSG msg;
 

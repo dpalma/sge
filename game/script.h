@@ -14,11 +14,6 @@ class cScriptVar;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool ScriptExecFile(const char * pszFile);
-bool ScriptExecString(const char * pszCode);
-void ScriptCallFunction(const char * pszName,
-                        const char * pszArgDesc = NULL, ...);
-
 #define SCRIPT_FUNCTION_NAME(name) name
 
 #define SCRIPT_DEFINE_FUNCTION_NO_AUTOADD(name) \

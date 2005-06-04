@@ -8,6 +8,7 @@
 #include "inputapi.h"
 #include "scriptapi.h"
 #include "scriptvar.h"
+#include "sys.h"
 
 #include "globalobj.h"
 #include "keys.h"
@@ -172,6 +173,39 @@ int UnbindKey(int argc, const cScriptVar * argv,
 }
 
 AUTOADD_SCRIPTFUNCTION(unbind, UnbindKey);
+
+///////////////////////////////////////////////////////////////////////////////
+
+int Quit(int argc, const cScriptVar * argv, 
+         int nMaxResults, cScriptVar * pResults)
+{
+   SysQuit();
+   return 0;
+}
+
+AUTOADD_SCRIPTFUNCTION(quit, Quit);
+
+///////////////////////////////////////////////////////////////////////////////
+
+int ConfirmedQuit(int argc, const cScriptVar * argv, 
+                  int nMaxResults, cScriptVar * pResults)
+{
+   if (argc == 1 && argv[0].IsString())
+   {
+      UseGlobal(GUIContext);
+      if (pGUIContext->LoadFromString(argv[0]) != S_OK)
+      {
+         if (pGUIContext->LoadFromResource(argv[0]) != S_OK)
+         {
+            DebugMsg1("Error showing quit dialog %s\n", argv[0].psz);
+         }
+      }
+   }
+
+   return 0;
+}
+
+AUTOADD_SCRIPTFUNCTION(ConfirmedQuit, ConfirmedQuit);
 
 ///////////////////////////////////////////////////////////////////////////////
 

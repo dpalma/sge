@@ -475,7 +475,8 @@ static bool MainInit(int argc, char * argv[])
    UseGlobal(Scene);
    pScene->SetCamera(kSL_Terrain, g_pGameCamera);
 
-   ScriptCallFunction("GameInit");
+   UseGlobal(ScriptInterpreter);
+   pScriptInterpreter->CallFunction("GameInit");
 
    UseGlobal(Sim);
    pSim->Go();
@@ -568,7 +569,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
       return -1;
    }
 
-   int result = SysEventLoop(MainFrame);
+   int result = SysEventLoop(MainFrame, ResizeHack);
 
    MainTerm();
 
@@ -587,7 +588,7 @@ int main(int argc, char * argv[])
       return EXIT_FAILURE;
    }
 
-   int result = SysEventLoop(MainFrame);
+   int result = SysEventLoop(MainFrame, ResizeHack);
 
    MainTerm();
 

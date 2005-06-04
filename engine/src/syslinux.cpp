@@ -25,7 +25,6 @@
 LOG_DEFINE_CHANNEL(XEvents);
 
 bool              g_bExiting = false;
-int               g_mousex = 0, g_mousey = 0;
 
 Display *         g_display = NULL;
 Window            g_window = 0;
@@ -50,14 +49,6 @@ void SysAppActivate(bool active)
 void SysQuit()
 {
    g_bExiting = true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void SysGetMousePos(int * px, int * py)
-{
-   *px = g_mousex;
-   *py = g_mousey;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -311,9 +302,7 @@ static bool SysMapXKeysym(KeySym keysym, long * pKeyCode)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-extern void ResizeHack(int width, int height);
-
-int SysEventLoop(void (* pfnFrameHandler)())
+int SysEventLoop(void (* pfnFrameHandler)(), void (* pfnResizeHack)(int, int))
 {
    if (!g_display || !g_window)
    {
@@ -335,12 +324,6 @@ int SysEventLoop(void (* pfnFrameHandler)())
 
          DebugMsgEx2(XEvents, "Event %s at %f\n", XEventName(event.type), eventTime);
 
-         if (event.type == MotionNotify)
-         {
-            g_mousex = event.xmotion.x;
-            g_mousey = event.xmotion.y;
-         }
-
          switch (event.type)
          {
             case DestroyNotify:
@@ -352,7 +335,10 @@ int SysEventLoop(void (* pfnFrameHandler)())
             case ConfigureNotify:
             {
                DebugMsg1("Window configured at %.3f\n", eventTime);
-               ResizeHack(event.xconfigure.width, event.xconfigure.height);
+               if (pfnResizeHack != NULL)
+               {
+                  (*pfnResizeHack)(event.xconfigure.width, event.xconfigure.height);
+               }
                break;
             }
 

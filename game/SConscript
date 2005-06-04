@@ -13,9 +13,7 @@ sources = Split("""
 """)
 
 if env['PLATFORM'] == 'win32':
-   sources = sources + ['syswin.cpp'] + env.RES('game.rc')
-elif env['PLATFORM'] == 'cygwin':
-   sources = sources + ['syslinux.cpp']
+   sources = sources + env.RES('game.rc')
 
 includePaths = Split("""
    #3rdparty/sgi

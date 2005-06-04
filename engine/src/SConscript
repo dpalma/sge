@@ -54,6 +54,11 @@ includePaths = Split("""
    #tech/include
 """) + glIncludePaths
 
+if env['PLATFORM'] == 'win32':
+   sources = sources + ['syswin.cpp']
+elif env['PLATFORM'] == 'cygwin':
+   sources = sources + ['syslinux.cpp']
+
 env = env.Copy()
 env.Append(CPPPATH = includePaths)
 env.Append(CPPDEFINES = ['STATIC_BUILD'])
