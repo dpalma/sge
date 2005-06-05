@@ -484,6 +484,8 @@ bool SysFullScreenEnd(HWND hWnd)
 
 int SysEventLoop(void (* pfnFrameHandler)(), void (* pfnResizeHack)(int, int))
 {
+   g_pfnResizeHack = pfnResizeHack;
+
    MSG msg;
 
    for (;;)
