@@ -204,8 +204,6 @@ tResult cGUIBeveledRenderer::Render(IGUIDialogElement * pDialogElement)
    tGUISize size = pDialogElement->GetSize();
    tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
 
-   UseGlobal(GUIRenderingTools);
-
    tGUIColor topLeft(tGUIColor::LightGray);
    tGUIColor bottomRight(tGUIColor::DarkGray);
    tGUIColor face(tGUIColor::Gray);

@@ -25,6 +25,7 @@ public:
 
    virtual tResult Render(IGUIElement * pElement);
    virtual tGUISize GetPreferredSize(IGUIElement * pElement);
+   virtual tResult GetFont(IGUIElement * pElement, IRenderFont * * ppFont);
 
 private:
    tResult Render(IGUIButtonElement * pButtonElement);
@@ -38,8 +39,6 @@ private:
    tGUISize GetPreferredSize(IGUILabelElement * pLabelElement);
    tGUISize GetPreferredSize(IGUIPanelElement * pPanelElement);
    tGUISize GetPreferredSize(IGUITextEditElement * pTextEditElement);
-
-   tResult GetFont(IGUIElement * pElement, IRenderFont * * ppFont);
 
    cAutoIPtr<IRenderFont> m_pDefaultFont;
 };

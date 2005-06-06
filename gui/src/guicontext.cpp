@@ -389,8 +389,7 @@ void cGUIContext::RenderDebugInfo()
    }
 
    cAutoIPtr<IRenderFont> pFont;
-   UseGlobal(GUIRenderingTools);
-   if (pGUIRenderingTools->GetDefaultFont(&pFont) == S_OK)
+   if (FontCreateDefault(&pFont) == S_OK)
    {
       cTextBuffer<char, 200> text;
 

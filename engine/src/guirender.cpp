@@ -3,10 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "guirender.h"
-
-#include "font.h"
-#include "color.h"
+#include "guiapi.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h> // HACK
@@ -15,70 +12,6 @@
 #include "dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUIRenderingTools
-//
-
-///////////////////////////////////////
-
-cGUIRenderingTools::cGUIRenderingTools()
-{
-}
-
-///////////////////////////////////////
-
-cGUIRenderingTools::~cGUIRenderingTools()
-{
-}
-
-///////////////////////////////////////
-
-tResult cGUIRenderingTools::Init()
-{
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cGUIRenderingTools::Term()
-{
-   SafeRelease(m_pFont);
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cGUIRenderingTools::SetDefaultFont(IRenderFont * pFont)
-{
-   SafeRelease(m_pFont);
-   m_pFont = CTAddRef(pFont);
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cGUIRenderingTools::GetDefaultFont(IRenderFont * * ppFont)
-{
-   if (!m_pFont)
-   {
-      if (FAILED(FontCreateDefault(&m_pFont)))
-      {
-         return E_FAIL;
-      }
-   }
-   return m_pFont.GetPointer(ppFont);
-}
-
-///////////////////////////////////////
-
-static uint32 PackColor(const tGUIColor & color)
-{
-   byte r = (byte)(color.GetRed() * 255);
-   byte g = (byte)(color.GetGreen() * 255);
-   byte b = (byte)(color.GetBlue() * 255);
-   byte a = (byte)(color.GetAlpha() * 255);
-   return ARGB(a,b,g,r);
-}
 
 void GlRenderBevelledRect(const tGUIRect & rect, int bevel, const tGUIColor & topLeft,
                           const tGUIColor & bottomRight, const tGUIColor & face)
@@ -164,13 +97,6 @@ void GlRenderBevelledRect(const tGUIRect & rect, int bevel, const tGUIColor & to
    glPopAttrib();
 }
 
-
-///////////////////////////////////////
-
-void GUIRenderingToolsCreate()
-{
-   cAutoIPtr<IGUIRenderingTools>(new cGUIRenderingTools);
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 

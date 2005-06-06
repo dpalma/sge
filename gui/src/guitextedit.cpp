@@ -493,36 +493,30 @@ tResult cGUITextEditElement::HandleKeyDown(long keyCode)
 
 bool cGUITextEditElement::HitTest(const tGUIPoint & point, int * pIndex)
 {
-   cAutoIPtr<IRenderFont> pFont;
-
-   cAutoIPtr<IGUIStyle> pStyle;
-   if (GetStyle(&pStyle) == S_OK)
+   cAutoIPtr<IGUIElementRenderer> pRenderer;
+   if (GetRenderer(&pRenderer) == S_OK)
    {
-      pStyle->GetFont(&pFont);
-   }
-
-   if (!pFont)
-   {
-      UseGlobal(GUIRenderingTools);
-      pGUIRenderingTools->GetDefaultFont(&pFont);
-   }
-
-   float charPos = 0;
-   for (uint i = 0; i < m_text.length(); ++i)
-   {
-      tRect charRect(0,0,0,0);
-      pFont->DrawText(&(m_text.at(i)), 1, kDT_CalcRect, &charRect, tGUIColor::White);
-
-      if ((point.x > charPos) && (point.x <= charPos + charRect.GetWidth()))
+      cAutoIPtr<IRenderFont> pFont;
+      if (pRenderer->GetFont(static_cast<IGUIElement*>(this), &pFont) == S_OK)
       {
-         if (pIndex != NULL)
+         float charPos = 0;
+         for (uint i = 0; i < m_text.length(); ++i)
          {
-            *pIndex = i;
-         }
-         return true;
-      }
+            tRect charRect(0,0,0,0);
+            pFont->DrawText(&(m_text.at(i)), 1, kDT_CalcRect, &charRect, tGUIColor::White);
 
-      charPos += charRect.GetWidth();
+            if ((point.x > charPos) && (point.x <= charPos + charRect.GetWidth()))
+            {
+               if (pIndex != NULL)
+               {
+                  *pIndex = i;
+               }
+               return true;
+            }
+
+            charPos += charRect.GetWidth();
+         }
+      }
    }
 
    return false;

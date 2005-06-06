@@ -37,12 +37,8 @@ F_DECLARE_INTERFACE(IGUIEventRouter);
 F_DECLARE_INTERFACE(IGUIEventListener);
 F_DECLARE_INTERFACE(IGUIFactory);
 F_DECLARE_INTERFACE(IGUIContext);
-F_DECLARE_INTERFACE(IGUIRenderingTools);
 
 F_DECLARE_INTERFACE(IRenderFont);
-F_DECLARE_INTERFACE(IVertexDeclaration);
-F_DECLARE_INTERFACE(IVertexBuffer);
-F_DECLARE_INTERFACE(IIndexBuffer);
 class TiXmlElement;
 class cFontDesc;
 
@@ -230,6 +226,8 @@ interface IGUIElementRenderer : IUnknown
    virtual tResult Render(IGUIElement * pElement) = 0;
 
    virtual tGUISize GetPreferredSize(IGUIElement * pElement) = 0;
+
+   virtual tResult GetFont(IGUIElement * pElement, IRenderFont * * ppFont) = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -581,25 +579,12 @@ interface IGUIContext : IGUIEventRouter
 ENGINE_API void GUIContextCreate();
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// INTERFACE: IGUIRenderingTools
-//
 
 ENGINE_API void GlRenderBevelledRect(const tGUIRect & rect, int bevel, const tGUIColor & topLeft,
                                      const tGUIColor & bottomRight, const tGUIColor & face);
 
 ENGINE_API void GlBegin2D();
 ENGINE_API void GlEnd2D();
-
-interface IGUIRenderingTools : IUnknown
-{
-   virtual tResult SetDefaultFont(IRenderFont * pFont) = 0;
-   virtual tResult GetDefaultFont(IRenderFont * * ppFont) = 0;
-};
-
-///////////////////////////////////////
-
-ENGINE_API void GUIRenderingToolsCreate();
 
 ///////////////////////////////////////////////////////////////////////////////
 
