@@ -27,6 +27,8 @@ bool LoadBitmap(const tChar * pszBitmap, HBITMAP * phBitmap);
 
 HBITMAP StretchCopyBitmap(uint width, uint height, HBITMAP hSrcBitmap, uint srcX, uint srcY, uint srcWidth, uint srcHeight);
 
+#define kRT_HBitmap "HBitmap"
+
 tResult BitmapUtilsRegisterResourceFormats();
 
 /////////////////////////////////////////////////////////////////////////////

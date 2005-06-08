@@ -35,12 +35,8 @@ enum eResourceClass
    kRC_Image,
    kRC_Mesh,
    kRC_Text,
-   kRC_Font,
    kRC_TiXml,        // a tinyxml document
    kRC_GlTexture,    // a GL texture handle (GLuint)
-   kRC_HBitmap,      // a Windows HBITMAP
-   kRC_CgProgram,    // a Cg program
-   kRC_CgEffect,     // a CgFX effect
    // Add new values above this line
    kNUMRESOURCECLASSES,
 };

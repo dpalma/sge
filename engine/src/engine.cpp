@@ -175,8 +175,8 @@ tResult EngineRegisterResourceFormats()
       if (cModel::RegisterResourceFormat() == S_OK
          && TextFormatRegister("cg") == S_OK
          && TextFormatRegister("fx") == S_OK
-         && pResourceManager->RegisterFormat(kRC_CgProgram, kRC_Text, NULL, NULL, CgProgramFromText, CgProgramUnload) == S_OK
-         && pResourceManager->RegisterFormat(kRC_CgEffect, kRC_Text, NULL, NULL, CgEffectFromText, CgEffectUnload) == S_OK
+         && pResourceManager->RegisterFormat(kRT_CgProgram, MAKERESOURCETYPE(kRC_Text), NULL, NULL, CgProgramFromText, CgProgramUnload) == S_OK
+         && pResourceManager->RegisterFormat(kRT_CgEffect, MAKERESOURCETYPE(kRC_Text), NULL, NULL, CgEffectFromText, CgEffectUnload) == S_OK
          && pResourceManager->RegisterFormat(kRC_TiXml, kRC_Text, NULL, NULL, TiXmlDocumentFromText, TiXmlDocumentUnload) == S_OK)
       {
          return S_OK;

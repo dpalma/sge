@@ -172,7 +172,7 @@ tResult cEditorTileSet::GetImageList(uint dimension, HIMAGELIST * phImageList)
       cStr texture;
       HBITMAP hbm = NULL;
       if ((*iter)->GetTexture(&texture) == S_OK &&
-         pResourceManager->Load(tResKey(texture.c_str(), kRC_HBitmap), (void**)&hbm) == S_OK)
+         pResourceManager->Load(texture.c_str(), kRT_HBitmap, NULL, (void**)&hbm) == S_OK)
       {
          BITMAP bm;
          GetObject(hbm, sizeof(bm), &bm);

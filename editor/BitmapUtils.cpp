@@ -422,7 +422,7 @@ tResult BitmapUtilsRegisterResourceFormats()
    UseGlobal(ResourceManager);
    if (!!pResourceManager)
    {
-      return pResourceManager->RegisterFormat(kRC_HBitmap, kRC_Image, NULL, NULL, HBitmapFromImageData, HBitmapUnload);
+      return pResourceManager->RegisterFormat(kRT_HBitmap, MAKERESOURCETYPE(kRC_Image), NULL, NULL, HBitmapFromImageData, HBitmapUnload);
    }
    return E_FAIL;
 }
