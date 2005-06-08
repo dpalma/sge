@@ -5,11 +5,9 @@ Import('*')
 
 sources = Split("""
    cameracontroller.cpp
-   cmds.cpp
    groundtiled.cpp
    heightmap.cpp
    main.cpp
-   script.cpp
 """)
 
 if env['PLATFORM'] == 'win32':
