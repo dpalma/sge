@@ -5,33 +5,35 @@
 #define INCLUDED_QUAT_H
 
 #include "techdll.h"
+#include "matrix4.h"
+#include "vec3.h"
 
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
 
-template <typename T> class cMatrix4;
-typedef class cMatrix4<float> tMatrix4;
+/////////////////////////////////////////////////////////////////////////////
 
-typedef class cQuat tQuat;
-
-template <typename T> class cVec3;
-typedef class cVec3<float> tVec3;
+#ifndef NO_DEFAULT_QUAT
+template <typename T> class cQuat;
+typedef cQuat<float> tQuat;
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cQuat
 //
 
-class TECH_API cQuat
+template <typename T>
+class cQuat
 {
 public:
-   typedef float value_type;
+   typedef T value_type;
 
    cQuat();
    cQuat(const tVec3 & v, value_type _w);
    cQuat(value_type _x, value_type _y, value_type _z, value_type _w);
-   cQuat::cQuat(const cQuat & other);
+   cQuat(const cQuat & other);
 
    const cQuat & operator =(const cQuat & other);
 
@@ -49,27 +51,39 @@ public:
 
 ///////////////////////////////////////
 
-inline cQuat::cQuat()
+template <typename T>
+inline cQuat<T>::cQuat()
 {
 }
 
 ///////////////////////////////////////
 
-inline cQuat::cQuat(value_type _x, value_type _y, value_type _z, value_type _w)
+template <typename T>
+inline cQuat<T>::cQuat(const tVec3 & v, value_type _w)
+ : x(v.x), y(v.y), z(v.z), w(_w)
+{
+}
+
+///////////////////////////////////////
+
+template <typename T>
+inline cQuat<T>::cQuat(value_type _x, value_type _y, value_type _z, value_type _w)
  : x(_x), y(_y), z(_z), w(_w)
 {
 }
 
 ///////////////////////////////////////
 
-inline cQuat::cQuat(const cQuat & other) 
+template <typename T>
+inline cQuat<T>::cQuat(const cQuat & other) 
 {
    operator =(other);
 }
 
 ///////////////////////////////////////
 
-inline const cQuat & cQuat::operator =(const cQuat & other) 
+template <typename T>
+inline const cQuat<T> & cQuat<T>::operator =(const cQuat & other) 
 {
    w = other.w;
    x = other.x;
@@ -80,38 +94,86 @@ inline const cQuat & cQuat::operator =(const cQuat & other)
 
 ///////////////////////////////////////
 
-inline bool cQuat::operator ==(const cQuat & other) const
+template <typename T>
+inline bool cQuat<T>::operator ==(const cQuat & other) const
 {
    return w == other.w && x == other.x && y == other.y && z == other.z;
 }
 
 ///////////////////////////////////////
 
-inline bool cQuat::operator !=(const cQuat & other) const
+template <typename T>
+inline bool cQuat<T>::operator !=(const cQuat & other) const
 {
    return w != other.w || x != other.x || y != other.y || z != other.z;
 }
 
 ///////////////////////////////////////
 
-inline cQuat::value_type cQuat::Dot(const cQuat & other) const
+template <typename T>
+inline T cQuat<T>::Dot(const cQuat & other) const
 {
    return (w * other.w) + (x * other.x) + (y * other.y) + (z * other.z);
 }
 
 ///////////////////////////////////////
 
-inline cQuat::value_type cQuat::Norm() const
+template <typename T>
+inline T cQuat<T>::Norm() const
 {
    return (w * w) + (x * x) + (y * y) + (z * z);
 }
 
 ///////////////////////////////////////
 
-inline cQuat cQuat::Inverse() const
+template <typename T>
+inline cQuat<T> cQuat<T>::Inverse() const
 {
    value_type d = (value_type)1 / Norm();
    return cQuat(-x * d, -y * d, -z * d, w);
+}
+
+///////////////////////////////////////
+
+template <typename T>
+inline void cQuat<T>::ToMatrix(tMatrix4 * pMatrix) const
+{
+   tQuat::value_type s = 2.0f / Norm();
+   tQuat::value_type xs = x*s;
+   tQuat::value_type ys = y*s;
+   tQuat::value_type zs = z*s;
+
+   tQuat::value_type wx = w*xs;
+   tQuat::value_type wy = w*ys;
+   tQuat::value_type wz = w*zs;
+
+   tQuat::value_type xx = x*xs;
+   tQuat::value_type xy = x*ys;
+   tQuat::value_type xz = x*zs;
+
+   tQuat::value_type yy = y*ys;
+   tQuat::value_type yz = y*zs;
+   tQuat::value_type zz = z*zs;
+
+   pMatrix->m[0] = 1 - (yy + zz);
+   pMatrix->m[1] = xy + wz;
+   pMatrix->m[2] = xz - wy;
+   pMatrix->m[3] = 0;
+
+   pMatrix->m[4] = xy - wz;
+   pMatrix->m[5] = 1 - (xx + zz);
+   pMatrix->m[6] = yz + wx;
+   pMatrix->m[7] = 0;
+
+   pMatrix->m[8] = xz + wy;
+   pMatrix->m[9] = yz - wx;
+   pMatrix->m[10] = 1 - (xx + yy);
+   pMatrix->m[11] = 0;
+
+   pMatrix->m[12] = 0;
+   pMatrix->m[13] = 0;
+   pMatrix->m[14] = 0;
+   pMatrix->m[15] = 1;
 }
 
 ///////////////////////////////////////

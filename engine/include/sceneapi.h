@@ -17,7 +17,8 @@ template <typename T> class cVec3;
 typedef class cVec3<float> tVec3;
 template <typename T> class cMatrix4;
 typedef cMatrix4<float> tMatrix4;
-typedef class cQuat tQuat;
+template <typename T> class cQuat;
+typedef cQuat<float> tQuat;
 
 F_DECLARE_INTERFACE(IRenderDevice);
 F_DECLARE_INTERFACE(IMesh);

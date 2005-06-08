@@ -4,8 +4,6 @@
 #include "stdhdr.h"
 
 #include "quat.h"
-#include "vec3.h"
-#include "matrix4.h"
 
 #include <cmath>
 
@@ -13,60 +11,6 @@
 
 // REFERENCES
 // "Rotating Objects Using Quaternions", February, 1998 "Game Developer", pp. 34-42
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cQuat
-//
-
-///////////////////////////////////////
-
-cQuat::cQuat(const tVec3 & v, value_type _w)
- : x(v.x), y(v.y), z(v.z), w(_w)
-{
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void cQuat::ToMatrix(tMatrix4 * pMatrix) const
-{
-   tQuat::value_type s = 2.0f / Norm();
-   tQuat::value_type xs = x*s;
-   tQuat::value_type ys = y*s;
-   tQuat::value_type zs = z*s;
-
-   tQuat::value_type wx = w*xs;
-   tQuat::value_type wy = w*ys;
-   tQuat::value_type wz = w*zs;
-
-   tQuat::value_type xx = x*xs;
-   tQuat::value_type xy = x*ys;
-   tQuat::value_type xz = x*zs;
-
-   tQuat::value_type yy = y*ys;
-   tQuat::value_type yz = y*zs;
-   tQuat::value_type zz = z*zs;
-
-   pMatrix->m[0] = 1 - (yy + zz);
-   pMatrix->m[1] = xy + wz;
-   pMatrix->m[2] = xz - wy;
-   pMatrix->m[3] = 0;
-
-   pMatrix->m[4] = xy - wz;
-   pMatrix->m[5] = 1 - (xx + zz);
-   pMatrix->m[6] = yz + wx;
-   pMatrix->m[7] = 0;
-
-   pMatrix->m[8] = xz + wy;
-   pMatrix->m[9] = yz - wx;
-   pMatrix->m[10] = 1 - (xx + yy);
-   pMatrix->m[11] = 0;
-
-   pMatrix->m[12] = 0;
-   pMatrix->m[13] = 0;
-   pMatrix->m[14] = 0;
-   pMatrix->m[15] = 1;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 
