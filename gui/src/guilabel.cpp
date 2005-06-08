@@ -6,6 +6,7 @@
 #include "guilabel.h"
 #include "guielementbasetem.h"
 #include "guielementtools.h"
+#include "guistrings.h"
 
 #include "globalobj.h"
 
@@ -72,16 +73,16 @@ tResult cGUILabelElementFactory::CreateElement(const TiXmlElement * pXmlElement,
 
    if (pXmlElement != NULL)
    {
-      if (strcmp(pXmlElement->Value(), "label") == 0)
+      if (strcmp(pXmlElement->Value(), kElementLabel) == 0)
       {
          cAutoIPtr<IGUILabelElement> pLabel = static_cast<IGUILabelElement *>(new cGUILabelElement);
          if (!!pLabel)
          {
             GUIElementStandardAttributes(pXmlElement, pLabel);
 
-            if (pXmlElement->Attribute("text"))
+            if (pXmlElement->Attribute(kAttribText))
             {
-               pLabel->SetText(pXmlElement->Attribute("text"));
+               pLabel->SetText(pXmlElement->Attribute(kAttribText));
             }
 
             *ppElement = CTAddRef(pLabel);

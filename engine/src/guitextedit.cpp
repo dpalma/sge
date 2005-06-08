@@ -539,7 +539,7 @@ tResult cGUITextEditElementFactory::CreateElement(const TiXmlElement * pXmlEleme
 
    if (pXmlElement != NULL)
    {
-      if (strcmp(pXmlElement->Value(), "textedit") == 0)
+      if (strcmp(pXmlElement->Value(), kElementTextEdit) == 0)
       {
          cAutoIPtr<IGUITextEditElement> pTextEdit = static_cast<IGUITextEditElement *>(new cGUITextEditElement);
          if (!!pTextEdit)

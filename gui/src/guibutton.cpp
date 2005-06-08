@@ -161,7 +161,7 @@ tResult cGUIButtonElementFactory::CreateElement(const TiXmlElement * pXmlElement
 
    if (pXmlElement != NULL)
    {
-      if (strcmp(pXmlElement->Value(), "button") == 0)
+      if (strcmp(pXmlElement->Value(), kElementButton) == 0)
       {
          cAutoIPtr<IGUIButtonElement> pButton = static_cast<IGUIButtonElement *>(new cGUIButtonElement);
          if (!!pButton)

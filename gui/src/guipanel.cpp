@@ -7,6 +7,7 @@
 #include "guielementbasetem.h"
 #include "guicontainerbasetem.h"
 #include "guielementtools.h"
+#include "guistrings.h"
 
 #include "globalobj.h"
 
@@ -76,15 +77,18 @@ tResult cGUIPanelElementFactory::CreateElement(const TiXmlElement * pXmlElement,
 
    if (pXmlElement != NULL)
    {
-      cAutoIPtr<IGUIPanelElement> pPanel = static_cast<IGUIPanelElement *>(new cGUIPanelElement);
-      if (!!pPanel)
+      if (strcmp(pXmlElement->Value(), kElementPanel) == 0)
       {
-         GUIElementStandardAttributes(pXmlElement, pPanel);
-
-         if (GUIElementCreateChildren(pXmlElement, pPanel) == S_OK)
+         cAutoIPtr<IGUIPanelElement> pPanel = static_cast<IGUIPanelElement *>(new cGUIPanelElement);
+         if (!!pPanel)
          {
-            *ppElement = CTAddRef(pPanel);
-            return S_OK;
+            GUIElementStandardAttributes(pXmlElement, pPanel);
+
+            if (GUIElementCreateChildren(pXmlElement, pPanel) == S_OK)
+            {
+               *ppElement = CTAddRef(pPanel);
+               return S_OK;
+            }
          }
       }
    }

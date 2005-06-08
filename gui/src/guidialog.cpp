@@ -7,6 +7,7 @@
 #include "guielementbasetem.h"
 #include "guicontainerbasetem.h"
 #include "guielementtools.h"
+#include "guistrings.h"
 #include "scriptapi.h"
 
 #include "globalobj.h"
@@ -402,7 +403,7 @@ tResult cGUIDialogElementFactory::CreateElement(const TiXmlElement * pXmlElement
 
    if (pXmlElement != NULL)
    {
-      if (strcmp(pXmlElement->Value(), "dialog") == 0)
+      if (strcmp(pXmlElement->Value(), kElementDialog) == 0)
       {
          cAutoIPtr<IGUIDialogElement> pDialog = static_cast<IGUIDialogElement *>(new cGUIDialogElement);
          if (!!pDialog)
@@ -410,23 +411,23 @@ tResult cGUIDialogElementFactory::CreateElement(const TiXmlElement * pXmlElement
             GUIElementStandardAttributes(pXmlElement, pDialog);
 
             const char * pszValue;
-            if ((pszValue = pXmlElement->Attribute("title")) != NULL)
+            if ((pszValue = pXmlElement->Attribute(kAttribTitle)) != NULL)
             {
                pDialog->SetTitle(pszValue);
             }
 
-            if ((pszValue = pXmlElement->Attribute("onok")) != NULL)
+            if ((pszValue = pXmlElement->Attribute(kAttribOnOk)) != NULL)
             {
                pDialog->SetOnOK(pszValue);
             }
 
-            if ((pszValue = pXmlElement->Attribute("oncancel")) != NULL)
+            if ((pszValue = pXmlElement->Attribute(kAttribOnCancel)) != NULL)
             {
                pDialog->SetOnCancel(pszValue);
             }
 
             bool bIsModal;
-            if (QueryBoolAttribute(pXmlElement, "ismodal", &bIsModal) == S_OK)
+            if (QueryBoolAttribute(pXmlElement, kAttribIsModal, &bIsModal) == S_OK)
             {
                pDialog->SetModal(bIsModal);
             }

@@ -410,10 +410,7 @@ void cGUIContext::RenderDebugInfo()
             Round(absPos.x), Round(absPos.y));
 
          tGUIPoint relPoint(m_lastMousePos - absPos);
-         bool bContainsResult = pHitElement->Contains(relPoint);
-         snprintf(text.NextPointer(), text.MaxLength(), "Contains() returns %s",
-            bContainsResult ? "true" : "false");
-
+         Assert(pHitElement->Contains(relPoint));
          snprintf(text.NextPointer(), text.MaxLength(), "Mouse (relative): (%d, %d)",
             Round(relPoint.x), Round(relPoint.y));
 

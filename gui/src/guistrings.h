@@ -25,12 +25,16 @@ const char kAttribFontPointSize[]      = "font-pointSize";
 const char kAttribFontShadow[]         = "font-shadow";
 const char kAttribForegroundColor[]    = "foreground-color";
 const char kAttribHeight[]             = "height";
+const char kAttribIsModal[]            = "ismodal";
+const char kAttribOnCancel[]           = "oncancel";
 const char kAttribOnClick[]            = "onclick";
+const char kAttribOnOk[]               = "onok";
 const char kAttribRendererClass[]      = "renderer";
 const char kAttribStyle[]              = "style";
 const char kAttribText[]               = "text";
 const char kAttribTextAlign[]          = "text-align";
 const char kAttribTextVerticalAlign[]  = "text-vertical-align";
+const char kAttribTitle[]              = "title";
 const char kAttribVerticalAlign[]      = "vertical-align";
 const char kAttribVisible[]            = "visible";
 const char kAttribWidth[]              = "width";
@@ -54,6 +58,12 @@ const char kValueColorDarkGray[]       = "darkgray";
 const char kValueColorGray[]           = "gray";
 const char kValueColorLightGray[]      = "lightgray";
 const char kValueColorWhite[]          = "white";
+
+const char kElementButton[]            = "button";
+const char kElementDialog[]            = "dialog";
+const char kElementLabel[]             = "label";
+const char kElementPanel[]             = "panel";
+const char kElementTextEdit[]          = "textedit";
 
 ///////////////////////////////////////////////////////////////////////////////
 
