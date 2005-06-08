@@ -79,6 +79,7 @@ public:
 	//{{AFX_MSG(cEditorApp)
 	afx_msg void OnAppAbout();
 	afx_msg void OnToolsUnitTestRunner();
+	afx_msg void OnToolsExecuteScriptCommand();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

@@ -345,6 +345,9 @@
 				RelativePath="..\..\editor\OutputBar.cpp">
 			</File>
 			<File
+				RelativePath="..\..\editor\ScriptCmdDlg.cpp">
+			</File>
+			<File
 				RelativePath="..\..\editor\ToolPalette.cpp">
 			</File>
 			<File
@@ -499,6 +502,9 @@
 				RelativePath="..\..\editor\OutputBar.h">
 			</File>
 			<File
+				RelativePath="..\..\editor\ScriptCmdDlg.h">
+			</File>
+			<File
 				RelativePath="..\..\editor\ToolPalette.h">
 			</File>
 			<File
@@ -597,6 +603,9 @@
 			</File>
 			<File
 				RelativePath="..\..\editor\res\editorDoc.ico">
+			</File>
+			<File
+				RelativePath="..\..\editor\res\stdtools.bmp">
 			</File>
 			<File
 				RelativePath="..\..\editor\res\toolbar.bmp">

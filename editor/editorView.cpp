@@ -221,17 +221,18 @@ void cEditorView::OnFrame(double time, double elapsed)
       m_pCamera->SetViewMatrix(view);
    }
 
-   RenderScene();
+   Render();
 }
 
 ////////////////////////////////////////
 
-void cEditorView::RenderScene()
+void cEditorView::Render()
 {
    cAutoIPtr<IRenderDevice> pDevice(CTAddRef(AccessRenderDevice()));
    if (!!pDevice)
    {
       pDevice->BeginScene();
+//      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
       UseGlobal(Scene);
       pScene->Render(pDevice);
@@ -270,7 +271,7 @@ void cEditorView::RenderScene()
       }
 
       pDevice->EndScene();
-      ::SwapBuffers(GetSafeHdc());
+      SwapBuffers(GetSafeHdc());
    }
 }
 
@@ -282,7 +283,7 @@ void cEditorView::OnDraw(CDC * pDC)
 //	cEditorDoc * pDoc = GetDocument();
 //	ASSERT_VALID(pDoc);
 
-   RenderScene();
+   Render();
 }
 
 /////////////////////////////////////////////////////////////////////////////

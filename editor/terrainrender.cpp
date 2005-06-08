@@ -13,6 +13,7 @@
 #include "resourceapi.h"
 
 #include <algorithm>
+#include <functional>
 #include <GL/gl.h>
 #include <GL/glext.h>
 
@@ -29,25 +30,6 @@ static char THIS_FILE[] = __FILE__;
 const int kTilesPerChunk = 32;
 
 const uint kNoIndex = ~0;
-
-/////////////////////////////////////////////////////////////////////////////
-// HACK: this stuff will go away when the code is converted to using
-// IRenderDevice, IMaterial, etc.
-typedef void (APIENTRY * tglActiveTextureARB) (GLenum texture);
-typedef void (APIENTRY * tglClientActiveTextureARB) (GLenum texture);
-tglActiveTextureARB pfnglActiveTextureARB = NULL;
-tglClientActiveTextureARB pfnglClientActiveTextureARB = NULL;
-void InitGLExtensions()
-{
-   if (pfnglActiveTextureARB == NULL)
-   {
-      pfnglActiveTextureARB = (tglActiveTextureARB)wglGetProcAddress("glActiveTextureARB");
-   }
-   if (pfnglClientActiveTextureARB == NULL)
-   {
-      pfnglClientActiveTextureARB = (tglClientActiveTextureARB)wglGetProcAddress("glClientActiveTextureARB");
-   }
-}
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -110,7 +92,10 @@ tResult cTerrainRenderer::Term()
    UseGlobal(Scene);
    pScene->RemoveEntity(kSL_Terrain, &m_sceneEntity);
 
-   std::for_each(m_chunks.begin(), m_chunks.end(), CTInterfaceMethod(&cTerrainChunk::Release));
+   for (tChunks::iterator iter = m_chunks.begin(); iter != m_chunks.end(); iter++)
+   {
+      delete *iter;
+   }
    m_chunks.clear();
 
    SetModel(NULL);
@@ -169,7 +154,10 @@ void cTerrainRenderer::RegenerateChunks()
       return;
    }
 
-   std::for_each(m_chunks.begin(), m_chunks.end(), CTInterfaceMethod(&cTerrainChunk::Release));
+   for (tChunks::iterator iter = m_chunks.begin(); iter != m_chunks.end(); iter++)
+   {
+      delete *iter;
+   }
    m_chunks.clear();
 
    uint nTilesX, nTilesZ;
@@ -185,11 +173,11 @@ void cTerrainRenderer::RegenerateChunks()
    {
       for (uint ix = 0; ix < m_nChunksX; ix++)
       {
-         cAutoIPtr<cTerrainChunk> pChunk;
+         cTerrainChunk * pChunk = NULL;
          if (cTerrainChunk::Create(m_pModel->GetTerrainQuads(), nTilesX, nTilesZ,
                                    ix, iz, pTileSet, &pChunk) == S_OK)
          {
-            m_chunks.push_back(CTAddRef(pChunk));
+            m_chunks.push_back(pChunk);
          }
       }
    }
@@ -199,22 +187,14 @@ void cTerrainRenderer::RegenerateChunks()
 
 ////////////////////////////////////////
 
-tResult cTerrainRenderer::Render(IRenderDevice * pRenderDevice)
+void cTerrainRenderer::Render()
 {
    if (m_bEnableBlending)
    {
       if (!m_chunks.empty())
       {
-         tChunks::iterator iter = m_chunks.begin();
-         tChunks::iterator end = m_chunks.end();
-         for (; iter != end; iter++)
-         {
-            (*iter)->Render(pRenderDevice);
-         }
-         return S_OK;
+         std::for_each(m_chunks.begin(), m_chunks.end(), std::mem_fun(&cTerrainChunk::Render));
       }
-
-      return E_FAIL;
    }
    else
    {
@@ -227,12 +207,12 @@ tResult cTerrainRenderer::Render(IRenderDevice * pRenderDevice)
       glDisableClientState(GL_TEXTURE_COORD_ARRAY);
       glDisableClientState(GL_COLOR_ARRAY);
 
-      glEnable(GL_COLOR_MATERIAL);
+//      glEnable(GL_COLOR_MATERIAL);
 
       UseGlobal(ResourceManager);
 
-      tTerrainQuads::const_iterator iter = m_pModel->GetTerrainQuads().begin();
-      tTerrainQuads::const_iterator end = m_pModel->GetTerrainQuads().end();
+      tTerrainQuads::const_iterator iter = m_pModel->BeginTerrainQuads();
+      tTerrainQuads::const_iterator end = m_pModel->EndTerrainQuads();
       for (; iter != end; iter++)
       {
          const sTerrainVertex * pVertices = iter->verts;
@@ -271,8 +251,6 @@ tResult cTerrainRenderer::Render(IRenderDevice * pRenderDevice)
       }
 
       glPopAttrib();
-
-      return S_OK;
    }
 }
 
@@ -297,29 +275,9 @@ cTerrainRenderer::cSceneEntity::~cSceneEntity()
 void cTerrainRenderer::cSceneEntity::Render(IRenderDevice * pRenderDevice)
 {
    Assert(m_pOuter != NULL);
-   if (m_pOuter->Render(pRenderDevice) == S_OK)
-   {
-   }
+   m_pOuter->Render();
 }
 
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cSplat
-//
-
-////////////////////////////////////////
-
-cSplat::cSplat()
-{
-}
-
-////////////////////////////////////////
-
-cSplat::~cSplat()
-{
-}
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -373,23 +331,6 @@ void cSplatBuilder::AddTriangle(uint i0, uint i1, uint i2)
    m_indices.push_back(i0);
    m_indices.push_back(i1);
    m_indices.push_back(i2);
-}
-
-////////////////////////////////////////
-
-tResult cSplatBuilder::CreateIndexBuffer(IIndexBuffer * * ppIndexBuffer)
-{
-   if (ppIndexBuffer == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if ((m_indices.size() % 3) != 0)
-   {
-      return E_FAIL;
-   }
-
-   return E_NOTIMPL;
 }
 
 ////////////////////////////////////////
@@ -723,7 +664,7 @@ tResult cTerrainChunk::Create(const tTerrainQuads & quads,
       return E_POINTER;
    }
 
-   cAutoIPtr<cTerrainChunk> pChunk(new cTerrainChunk);
+   cTerrainChunk * pChunk = new cTerrainChunk;
    if (!pChunk)
    {
       return E_OUTOFMEMORY;
@@ -794,18 +735,15 @@ tResult cTerrainChunk::Create(const tTerrainQuads & quads,
    }
    splatBuilders.clear();
 
-   *ppChunk = CTAddRef(pChunk);
+   *ppChunk = pChunk;
 
    return S_OK;
 }
 
 ////////////////////////////////////////
 
-void cTerrainChunk::Render(IRenderDevice * pRenderDevice)
+void cTerrainChunk::Render()
 {
-   // HACK: see comments above
-   InitGLExtensions();
-
    glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
 
    glEnable(GL_BLEND);

@@ -8,9 +8,6 @@
 #include "terrainapi.h"
 #include "editorTypes.h"
 
-#include "renderapi.h"
-#include "color.h"
-
 #include "resourceapi.h"
 #include "imagedata.h"
 #include "readwriteapi.h"
@@ -45,33 +42,6 @@ kTerrainFileIdGenerator = { { 's', 'g', 'e', 'm' } };
 static const kTerrainFileId = kTerrainFileIdGenerator.v;
 
 static const uint kTerrainFileVersion = MAKELONG(1,0);
-
-/////////////////////////////////////////////////////////////////////////////
-
-sVertexElement g_terrainVertexDecl[] =
-{
-   { kVDU_TexCoord, kVDT_Float2, 0 },
-   { kVDU_Color, kVDT_Color },
-   { kVDU_Position, kVDT_Float3 },
-};
-
-uint g_nTerrainVertexMembers = _countof(g_terrainVertexDecl);
-
-////////////////////////////////////////
-
-tResult TerrainVertexDeclarationCreate(IRenderDevice * pRenderDevice,
-                                       IVertexDeclaration * * ppVertexDecl)
-{
-   if (pRenderDevice == NULL || ppVertexDecl == NULL)
-   {
-      return E_POINTER;
-   }
-
-   return pRenderDevice->CreateVertexDeclaration(g_terrainVertexDecl,
-                                                 g_nTerrainVertexMembers,
-                                                 ppVertexDecl);
-}
-
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -280,6 +250,18 @@ tResult cTerrainModel::GetTileSet(IEditorTileSet * * ppTileSet)
 const tTerrainQuads & cTerrainModel::GetTerrainQuads() const
 {
    return m_terrainQuads;
+}
+
+////////////////////////////////////////
+
+tTerrainQuads::const_iterator cTerrainModel::BeginTerrainQuads() const
+{
+   return m_terrainQuads.begin();
+}
+
+tTerrainQuads::const_iterator cTerrainModel::EndTerrainQuads() const
+{
+   return m_terrainQuads.end();
 }
 
 ////////////////////////////////////////

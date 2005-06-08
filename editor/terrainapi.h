@@ -25,7 +25,12 @@ F_DECLARE_INTERFACE(ITerrainModel);
 F_DECLARE_INTERFACE(ITerrainModelListener);
 F_DECLARE_INTERFACE(IHeightMap);
 
+F_DECLARE_INTERFACE(IReader);
+F_DECLARE_INTERFACE(IWriter);
+
 class cMapSettings;
+
+/////////////////////////////////////////////////////////////////////////////
 
 struct sTerrainVertex
 {
@@ -54,6 +59,8 @@ interface ITerrainRenderer : IUnknown
    virtual tResult GetModel(ITerrainModel * * ppTerrainModel) = 0;
 
    virtual tResult EnableBlending(bool bEnable) = 0;
+
+   virtual void Render() = 0;
 };
 
 ////////////////////////////////////////
@@ -78,6 +85,9 @@ interface ITerrainModel : IUnknown
 
    // sort of a hack
    virtual const tTerrainQuads & GetTerrainQuads() const = 0;
+
+   virtual tTerrainQuads::const_iterator BeginTerrainQuads() const = 0;
+   virtual tTerrainQuads::const_iterator EndTerrainQuads() const = 0;
 
    virtual tResult SetTileTerrain(uint tx, uint tz, uint terrain, uint * pFormer) = 0;
 

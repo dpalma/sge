@@ -30,10 +30,6 @@ F_DECLARE_INTERFACE(IEditorTool);
 F_DECLARE_INTERFACE(ITerrainModel);
 
 F_DECLARE_INTERFACE(ISceneCamera);
-F_DECLARE_INTERFACE(IMaterial);
-
-F_DECLARE_INTERFACE(IReader);
-F_DECLARE_INTERFACE(IWriter);
 
 class cEditorKeyEvent;
 class cEditorMouseEvent;

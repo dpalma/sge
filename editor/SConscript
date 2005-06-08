@@ -25,6 +25,7 @@ sources = Split("""
    OutputBar.cpp
    scbarcf.cpp
    scbarg.cpp
+   ScriptCmdDlg.cpp
    scrollwnd.cpp
    sizecbar.cpp
    splashwnd.cpp

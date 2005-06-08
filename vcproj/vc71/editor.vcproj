@@ -447,6 +447,9 @@
 				RelativePath="..\..\editor\scbarg.cpp">
 			</File>
 			<File
+				RelativePath="..\..\editor\ScriptCmdDlg.cpp">
+			</File>
+			<File
 				RelativePath="..\..\editor\scrollwnd.cpp">
 			</File>
 			<File
@@ -575,6 +578,9 @@
 			</File>
 			<File
 				RelativePath="..\..\editor\scbarg.h">
+			</File>
+			<File
+				RelativePath="..\..\editor\ScriptCmdDlg.h">
 			</File>
 			<File
 				RelativePath="..\..\editor\scrollwnd.h">

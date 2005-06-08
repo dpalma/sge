@@ -12,6 +12,7 @@
 #include "splashwnd.h"
 #include "BitmapUtils.h"
 #include "terrainapi.h"
+#include "ScriptCmdDlg.h"
 
 #include "sceneapi.h"
 #include "inputapi.h"
@@ -71,6 +72,7 @@ BEGIN_MESSAGE_MAP(cEditorApp, CWinApp)
 	//{{AFX_MSG_MAP(cEditorApp)
 	ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
 	ON_COMMAND(ID_TOOLS_UNITTESTRUNNER, OnToolsUnitTestRunner)
+	ON_COMMAND(ID_TOOLS_EXECUTESCRIPTCOMMAND, OnToolsExecuteScriptCommand)
 	//}}AFX_MSG_MAP
 	// Standard file based document commands
 	ON_COMMAND(ID_FILE_NEW, CWinApp::OnFileNew)
@@ -705,6 +707,21 @@ void cEditorApp::OnToolsUnitTestRunner()
 #else
    AfxMessageBox(IDS_NO_UNIT_TESTS);
 #endif
+}
+
+////////////////////////////////////////
+
+void cEditorApp::OnToolsExecuteScriptCommand()
+{
+   cScriptCmdDlg dlg(GetMainWnd());
+   if (dlg.DoModal() == IDOK)
+   {
+      UseGlobal(ScriptInterpreter);
+      if (FAILED(pScriptInterpreter->ExecString(dlg.m_scriptCommand)))
+      {
+         MessageBeep(MB_ICONSTOP);
+      }
+   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

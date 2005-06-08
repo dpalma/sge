@@ -57,7 +57,7 @@ public:
    // IEditorLoopClient
    virtual void OnFrame(double time, double elapsed);
 
-   void RenderScene();
+   void Render();
 
 // Overrides
 	// ClassWizard generated virtual function overrides

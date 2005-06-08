@@ -16,14 +16,6 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-/////////////////////////////////////////////////////////////////////////////
-F_DECLARE_INTERFACE(IEditorTileSet);
-
-F_DECLARE_INTERFACE(IHeightMap);
-F_DECLARE_INTERFACE(IReader);
-F_DECLARE_INTERFACE(IWriter);
-
-class cMapSettings;
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -43,6 +35,8 @@ public:
    virtual tResult GetExtents(uint * px, uint * pz) const;
    virtual tResult GetTileSet(IEditorTileSet * * ppTileSet);
    virtual const tTerrainQuads & GetTerrainQuads() const;
+   virtual tTerrainQuads::const_iterator BeginTerrainQuads() const;
+   virtual tTerrainQuads::const_iterator EndTerrainQuads() const;
    virtual tResult AddTerrainModelListener(ITerrainModelListener * pListener);
    virtual tResult RemoveTerrainModelListener(ITerrainModelListener * pListener);
    virtual tResult SetTileTerrain(uint tx, uint tz, uint terrain, uint * pFormer);

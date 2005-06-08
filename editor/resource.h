@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
+// Microsoft Visual C++ generated include file.
 // Used by editor.rc
 //
 #define IDD_ABOUTBOX                    100
@@ -7,6 +7,7 @@
 #define IDR_EDITOTYPE                   129
 #define IDD_MAPSETTINGS                 130
 #define IDB_STD_TOOLS                   131
+#define IDD_SCRIPTCOMMAND               133
 #define IDC_MAP_TILESET                 1001
 #define IDC_HEIGHT_NONE                 1002
 #define IDC_IMPORT_HEIGHT_MAP           1003
@@ -17,6 +18,8 @@
 #define IDC_MAP_WIDTH                   1009
 #define IDC_MAP_HEIGHT                  1011
 #define IDC_CREDITS                     1012
+#define IDC_EDIT1                       1012
+#define IDC_SCRIPT_COMMAND              1013
 #define IDS_NO_UNIT_TESTS               5000
 #define IDS_OUTPUT_BAR_TITLE            5001
 #define IDS_TOOL_PALETTE_BAR_TITLE      5002
@@ -25,6 +28,7 @@
 #define IDS_REDO_TEXT                   5005
 #define IDS_TERRAIN_TILE_COMMAND_LABEL  5006
 #define ID_TOOLS_UNITTESTRUNNER         32771
+#define ID_TOOLS_EXECUTESCRIPTCOMMAND   32772
 #define ID_EDIT_DELETE                  32773
 #define ID_VIEW_CONTROL_BAR_FIRST       0xC100
 #define ID_VIEW_CONTROL_BAR1            0xC100
@@ -50,9 +54,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        132
+#define _APS_NEXT_RESOURCE_VALUE        134
 #define _APS_NEXT_COMMAND_VALUE         32774
-#define _APS_NEXT_CONTROL_VALUE         1012
+#define _APS_NEXT_CONTROL_VALUE         1014
 #define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif
