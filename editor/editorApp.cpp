@@ -14,7 +14,6 @@
 #include "terrainapi.h"
 #include "ScriptCmdDlg.h"
 
-#include "sceneapi.h"
 #include "inputapi.h"
 #include "scriptapi.h"
 #include "engineapi.h"
@@ -168,7 +167,6 @@ static void RegisterGlobalObjects()
    InputCreate();
 //   SimCreate();
    ResourceManagerCreate();
-   SceneCreate();
    ScriptInterpreterCreate();
 //   GUIContextCreate();
 //   GUIFactoryCreate();

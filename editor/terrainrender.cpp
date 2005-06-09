@@ -6,7 +6,6 @@
 #include "terrainrender.h"
 #include "editorapi.h"
 
-#include "materialapi.h"
 #include "renderapi.h"
 
 #include "imagedata.h"
@@ -50,15 +49,8 @@ tResult TerrainRendererCreate()
 
 ////////////////////////////////////////
 
-BEGIN_CONSTRAINTS()
-   AFTER_GUID(IID_IScene)
-END_CONSTRAINTS()
-
-////////////////////////////////////////
-
 cTerrainRenderer::cTerrainRenderer()
- : cGlobalObject<IMPLEMENTS(ITerrainRenderer)>("TerrainRenderer", CONSTRAINTS()),
-   m_sceneEntity(this),
+ : cGlobalObject<IMPLEMENTS(ITerrainRenderer)>("TerrainRenderer"),
    m_tml(this),
    m_nChunksX(0),
    m_nChunksZ(0),
@@ -77,10 +69,6 @@ cTerrainRenderer::~cTerrainRenderer()
 
 tResult cTerrainRenderer::Init()
 {
-   // HACK
-   UseGlobal(Scene);
-   pScene->AddEntity(kSL_Terrain, &m_sceneEntity);
-
    return S_OK;
 }
 
@@ -88,10 +76,6 @@ tResult cTerrainRenderer::Init()
 
 tResult cTerrainRenderer::Term()
 {
-   // HACK
-   UseGlobal(Scene);
-   pScene->RemoveEntity(kSL_Terrain, &m_sceneEntity);
-
    for (tChunks::iterator iter = m_chunks.begin(); iter != m_chunks.end(); iter++)
    {
       delete *iter;
@@ -252,30 +236,6 @@ void cTerrainRenderer::Render()
 
       glPopAttrib();
    }
-}
-
-////////////////////////////////////////
-
-cTerrainRenderer::cSceneEntity::cSceneEntity(cTerrainRenderer * pOuter)
- : m_pOuter(pOuter),
-   m_translation(0,0,0),
-   m_rotation(0,0,0,1),
-   m_transform(tMatrix4::GetIdentity())
-{
-}
-
-////////////////////////////////////////
-
-cTerrainRenderer::cSceneEntity::~cSceneEntity()
-{
-}
-
-////////////////////////////////////////
-
-void cTerrainRenderer::cSceneEntity::Render(IRenderDevice * pRenderDevice)
-{
-   Assert(m_pOuter != NULL);
-   m_pOuter->Render();
 }
 
 

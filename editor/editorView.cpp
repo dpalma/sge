@@ -5,18 +5,15 @@
 
 #include "editorDoc.h"
 #include "editorView.h"
-#include "terrain.h"
+#include "terrainapi.h"
 #include "editorapi.h"
 #include "editorTools.h"
 
-#include "sceneapi.h"
 #include "ray.h"
 
-#include "renderapi.h"
-
 #include "globalobj.h"
-#include "keys.h"
 #include "techtime.h"
+#include "vec4.h"
 
 #include <GL/gl.h>
 
@@ -92,13 +89,6 @@ cEditorView::~cEditorView()
 
 ////////////////////////////////////////
 
-tResult cEditorView::GetCamera(ISceneCamera * * ppCamera)
-{
-   return m_pCamera.GetPointer(ppCamera);
-}
-
-////////////////////////////////////////
-
 tVec3 cEditorView::GetCameraEyePosition() const
 {
    if (m_bRecalcEye)
@@ -151,6 +141,53 @@ tResult cEditorView::SetCameraElevation(float elevation)
 {
    m_cameraElevation = elevation;
    m_bRecalcEye = true;
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cEditorView::GeneratePickRay(float ndx, float ndy, cRay * pRay) const
+{
+   if (pRay == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tMatrix4 viewProj, viewProjInverse;
+   m_proj.Multiply(m_view, &viewProj);
+   MatrixInvert(viewProj.m, viewProjInverse.m);
+
+   tVec4 n;
+   viewProjInverse.Transform(tVec4(ndx, ndy, -1, 1), &n);
+   if (n.w == 0.0f)
+   {
+      return E_FAIL;
+   }
+   n.x /= n.w;
+   n.y /= n.w;
+   n.z /= n.w;
+
+   tVec4 f;
+   viewProjInverse.Transform(tVec4(ndx, ndy, 1, 1), &f);
+   if (f.w == 0.0f)
+   {
+      return E_FAIL;
+   }
+   f.x /= f.w;
+   f.y /= f.w;
+   f.z /= f.w;
+
+   tMatrix4 viewInverse;
+   MatrixInvert(m_view.m, viewInverse.m);
+
+   tVec4 eye;
+   viewInverse.Transform(tVec4(0,0,0,1), &eye);
+
+   tVec3 dir(f.x - n.x, f.y - n.y, f.z - n.z);
+   dir.Normalize();
+
+   *pRay = cRay(tVec3(eye.x,eye.y,eye.z), dir);
+
    return S_OK;
 }
 
@@ -214,13 +251,7 @@ tResult cEditorView::ClearTileHighlight()
 
 void cEditorView::OnFrame(double time, double elapsed)
 {
-   if (!!m_pCamera)
-   {
-      tMatrix4 view;
-      MatrixLookAt(GetCameraEyePosition(), m_center, tVec3(0,1,0), &view);
-      m_pCamera->SetViewMatrix(view);
-   }
-
+   MatrixLookAt(GetCameraEyePosition(), m_center, tVec3(0,1,0), &m_view);
    Render();
 }
 
@@ -228,51 +259,48 @@ void cEditorView::OnFrame(double time, double elapsed)
 
 void cEditorView::Render()
 {
-   cAutoIPtr<IRenderDevice> pDevice(CTAddRef(AccessRenderDevice()));
-   if (!!pDevice)
+   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+   glMatrixMode(GL_MODELVIEW);
+   glLoadMatrixf(m_view.m);
+
+   UseGlobal(TerrainRenderer);
+   pTerrainRenderer->Render();
+
+   cAutoIPtr<IEditorModel> pEditModel;
+   cAutoIPtr<ITerrainModel> pTerrModel;
+   if (GetModel(&pEditModel) == S_OK
+      && pEditModel->GetTerrainModel(&pTerrModel) == S_OK)
    {
-      pDevice->BeginScene();
-//      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-      UseGlobal(Scene);
-      pScene->Render(pDevice);
-
-      cAutoIPtr<IEditorModel> pEditModel;
-      cAutoIPtr<ITerrainModel> pTerrModel;
-      if (GetModel(&pEditModel) == S_OK
-         && pEditModel->GetTerrainModel(&pTerrModel) == S_OK)
+      int iHlx, iHlz;
+      if (GetHighlightTile(&iHlx, &iHlz) == S_OK)
       {
-         int iHlx, iHlz;
-         if (GetHighlightTile(&iHlx, &iHlz) == S_OK)
+         tVec3 verts[4];
+         if (pTerrModel->GetTileVertices(iHlx, iHlz, verts) == S_OK)
          {
-            tVec3 verts[4];
-            if (pTerrModel->GetTileVertices(iHlx, iHlz, verts) == S_OK)
-            {
-               static const float kOffsetY = 0.5f;
-               verts[0].y += kOffsetY;
-               verts[1].y += kOffsetY;
-               verts[2].y += kOffsetY;
-               verts[3].y += kOffsetY;
+            static const float kOffsetY = 0.5f;
+            verts[0].y += kOffsetY;
+            verts[1].y += kOffsetY;
+            verts[2].y += kOffsetY;
+            verts[3].y += kOffsetY;
 
-               glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
-               glEnable(GL_BLEND);
-               glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-               glBegin(GL_QUADS);
-                  glColor4fv(kHighlightTileColor);
-                  glNormal3f(0, 1, 0);
-                  glVertex3fv(verts[0].v);
-                  glVertex3fv(verts[3].v);
-                  glVertex3fv(verts[2].v);
-                  glVertex3fv(verts[1].v);
-               glEnd();
-               glPopAttrib();
-            }
+            glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glBegin(GL_QUADS);
+               glColor4fv(kHighlightTileColor);
+               glNormal3f(0, 1, 0);
+               glVertex3fv(verts[0].v);
+               glVertex3fv(verts[3].v);
+               glVertex3fv(verts[2].v);
+               glVertex3fv(verts[1].v);
+            glEnd();
+            glPopAttrib();
          }
       }
-
-      pDevice->EndScene();
-      SwapBuffers(GetSafeHdc());
    }
+
+   SwapBuffers(GetSafeHdc());
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -324,22 +352,6 @@ int cEditorView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (cGLView::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
-   if (RenderDeviceCreate(&m_pRenderDevice) != S_OK)
-   {
-      DebugMsg("Failed to create rendering device\n");
-      return -1;
-   }
-
-   m_pCamera = SceneCameraCreate();
-   if (!m_pCamera)
-   {
-      DebugMsg("ERROR: Failed to create camera\n");
-      return -1;
-   }
-
-   UseGlobal(Scene);
-   pScene->SetCamera(kSL_Terrain, m_pCamera);
-
    UseGlobal(EditorApp);
    Verify(pEditorApp->AddLoopClient(this) == S_OK);
 
@@ -354,9 +366,6 @@ void cEditorView::OnDestroy()
 
    UseGlobal(EditorApp);
    pEditorApp->RemoveLoopClient(this);
-
-   SafeRelease(m_pCamera);
-   SafeRelease(m_pRenderDevice);
 }
 
 ////////////////////////////////////////
@@ -372,10 +381,10 @@ void cEditorView::OnSize(UINT nType, int cx, int cy)
 
       float aspect = static_cast<float>(cx) / cy;
 
-      if (!!m_pCamera)
-      {
-         m_pCamera->SetPerspective(kFov, aspect, kZNear, kZFar);
-      }
+      MatrixPerspective(kFov, aspect, kZNear, kZFar, &m_proj);
+
+      glMatrixMode(GL_PROJECTION);
+      glLoadMatrixf(m_proj.m);
    }
 }
 

@@ -8,7 +8,6 @@
 #include "editorCommands.h"
 #include "terrainapi.h"
 
-#include "sceneapi.h"
 #include "ray.h"
 
 #include "globalobj.h"
@@ -418,36 +417,32 @@ bool cTerrainTileTool::GetHitTile(CPoint point, IEditorView * pView, uint * pix,
    if (pView->GetModel(&pEditModel) == S_OK
       && pEditModel->GetTerrainModel(&pTerrModel) == S_OK)
    {
-      cAutoIPtr<ISceneCamera> pCamera;
-      if (pView->GetCamera(&pCamera) == S_OK)
+      float ndx, ndy;
+      ScreenToNormalizedDeviceCoords(point.x, point.y, &ndx, &ndy);
+
+      cRay pickRay;
+      if (pView->GeneratePickRay(ndx, ndy, &pickRay) == S_OK)
       {
-         float ndx, ndy;
-         ScreenToNormalizedDeviceCoords(point.x, point.y, &ndx, &ndy);
-
-         cRay pickRay;
-         if (pCamera->GeneratePickRay(ndx, ndy, &pickRay) == S_OK)
+         tVec3 pointOnPlane;
+         if (pickRay.IntersectsPlane(tVec3(0,1,0), 0, &pointOnPlane))
          {
-            tVec3 pointOnPlane;
-            if (pickRay.IntersectsPlane(tVec3(0,1,0), 0, &pointOnPlane))
+            LocalMsg3("Hit the ground at approximately (%.1f, %.1f, %.1f)\n",
+               pointOnPlane.x, pointOnPlane.y, pointOnPlane.z);
+
+            uint ix, iz;
+            pTerrModel->GetTileIndices(pointOnPlane.x, pointOnPlane.z, &ix, &iz);
+
+            LocalMsg2("Hit tile (%d, %d)\n", ix, iz);
+
+            if (pix != NULL)
             {
-               LocalMsg3("Hit the ground at approximately (%.1f, %.1f, %.1f)\n",
-                  pointOnPlane.x, pointOnPlane.y, pointOnPlane.z);
-
-               uint ix, iz;
-               pTerrModel->GetTileIndices(pointOnPlane.x, pointOnPlane.z, &ix, &iz);
-
-               LocalMsg2("Hit tile (%d, %d)\n", ix, iz);
-
-               if (pix != NULL)
-               {
-                  *pix = ix;
-               }
-               if (piz != NULL)
-               {
-                  *piz = iz;
-               }
-               return true;
+               *pix = ix;
             }
+            if (piz != NULL)
+            {
+               *piz = iz;
+            }
+            return true;
          }
       }
    }

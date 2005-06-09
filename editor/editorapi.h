@@ -29,11 +29,11 @@ F_DECLARE_INTERFACE(IEditorTool);
 
 F_DECLARE_INTERFACE(ITerrainModel);
 
-F_DECLARE_INTERFACE(ISceneCamera);
-
 class cEditorKeyEvent;
 class cEditorMouseEvent;
 class cEditorMouseWheelEvent;
+
+class cRay;
 
 #define UUID(uuidstr) __declspec(uuid(uuidstr))
 
@@ -166,12 +166,13 @@ interface UUID("CDEB5694-56D2-4750-BEF8-85F286364C23") IEditorTile : IUnknown
 
 interface UUID("78C29790-865D-4f81-9AF1-26EC23BB5FAC") IEditorView : IUnknown
 {
-   virtual tResult GetCamera(ISceneCamera * * ppCamera) = 0;
    virtual tVec3 GetCameraEyePosition() const = 0;
    virtual tResult GetCameraPlacement(float * px, float * pz) = 0;
    virtual tResult PlaceCamera(float x, float z) = 0;
    virtual tResult GetCameraElevation(float * pElevation) = 0;
    virtual tResult SetCameraElevation(float elevation) = 0;
+
+   virtual tResult GeneratePickRay(float ndx, float ndy, cRay * pRay) const = 0;
 
    virtual tResult GetModel(IEditorModel * * ppModel) = 0;
 

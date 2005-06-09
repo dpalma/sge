@@ -14,10 +14,6 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-F_DECLARE_INTERFACE(IRenderDevice);
-
-F_DECLARE_INTERFACE(ISceneCamera);
-
 class cEditorDoc;
 
 /////////////////////////////////////////////////////////////////////////////
@@ -40,15 +36,13 @@ public:
 
 // Operations
 public:
-   inline IRenderDevice * AccessRenderDevice() { return m_pRenderDevice; }
-
    // IEditorView
-   virtual tResult GetCamera(ISceneCamera * * ppCamera);
    virtual tVec3 GetCameraEyePosition() const;
    virtual tResult GetCameraPlacement(float * px, float * pz);
    virtual tResult PlaceCamera(float x, float z);
    virtual tResult GetCameraElevation(float * pElevation);
    virtual tResult SetCameraElevation(float elevation);
+   virtual tResult GeneratePickRay(float ndx, float ndy, cRay * pRay) const;
    virtual tResult GetModel(IEditorModel * * ppModel);
    virtual tResult GetHighlightTile(int * piTileX, int * piTileZ) const;
    virtual tResult HighlightTile(int iTileX, int iTileZ);
@@ -89,13 +83,12 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
-   cAutoIPtr<IRenderDevice> m_pRenderDevice;
-
    float m_cameraElevation;
    tVec3 m_center;
    mutable tVec3 m_eye;
    mutable bool m_bRecalcEye; // recalculate camera eye position when placement/elevation changes
-   cAutoIPtr<ISceneCamera> m_pCamera;
+
+   tMatrix4 m_proj, m_view;
 
    int m_highlitTileX, m_highlitTileZ;
 

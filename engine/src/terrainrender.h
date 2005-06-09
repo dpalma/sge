@@ -6,8 +6,6 @@
 
 #include "terrainapi.h"
 
-#include "sceneapi.h"
-
 #include "globalobj.h"
 #include "vec3.h"
 #include "quat.h"
@@ -21,8 +19,6 @@
 #endif // _MSC_VER > 1000
 
 F_DECLARE_INTERFACE(IEditorTileSet);
-
-F_DECLARE_INTERFACE(IRenderDevice);
 
 class cTerrainChunk;
 
@@ -52,44 +48,6 @@ private:
 
    void RegenerateChunks();
    ITerrainModel * AccessModel() { return m_pModel; }
-
-   class cSceneEntity : public cComObject<IMPLEMENTS(ISceneEntity)>
-   {
-   public:
-      cSceneEntity(cTerrainRenderer * pOuter);
-      virtual ~cSceneEntity();
-
-      virtual void DeleteThis() {}
-
-      virtual ISceneEntity * AccessParent() { return NULL; }
-      virtual tResult SetParent(ISceneEntity * pEntity) { return E_FAIL; }
-      virtual tResult IsChild(ISceneEntity * pEntity) const { return E_FAIL; }
-      virtual tResult AddChild(ISceneEntity * pEntity) { return E_FAIL; }
-      virtual tResult RemoveChild(ISceneEntity * pEntity) { return E_FAIL; }
-
-      virtual const tVec3 & GetLocalTranslation() const { return m_translation; }
-      virtual void SetLocalTranslation(const tVec3 & translation) { m_translation = translation; }
-      virtual const tQuat & GetLocalRotation() const { return m_rotation; }
-      virtual void SetLocalRotation(const tQuat & rotation) { m_rotation = rotation; }
-      virtual const tMatrix4 & GetLocalTransform() const { return m_transform; }
-
-      virtual const tVec3 & GetWorldTranslation() const { return GetLocalTranslation(); }
-      virtual const tQuat & GetWorldRotation() const { return GetLocalRotation(); }
-      virtual const tMatrix4 & GetWorldTransform() const { return GetLocalTransform(); }
-
-      virtual void Render(IRenderDevice * pRenderDevice);
-      virtual float GetBoundingRadius() const { return 9999999; }
-
-      virtual tResult Intersects(const cRay & ray) { return E_NOTIMPL; }
-
-   private:
-      cTerrainRenderer * m_pOuter;
-      tVec3 m_translation;
-      tQuat m_rotation;
-      tMatrix4 m_transform;
-   };
-   friend class cSceneEntity;
-   cSceneEntity m_sceneEntity;
 
    class cTerrainModelListener : public cComObject<IMPLEMENTS(ITerrainModelListener)>
    {
