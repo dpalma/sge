@@ -53,7 +53,7 @@ static tVec3 CalcEyePoint(const tVec3 & center,
 
 ////////////////////////////////////////
 
-IMPLEMENT_DYNCREATE(cEditorView, CView)
+IMPLEMENT_DYNCREATE(cEditorView, cGLView)
 
 ////////////////////////////////////////
 
@@ -365,11 +365,17 @@ void cEditorView::OnSize(UINT nType, int cx, int cy)
 {
 	cGLView::OnSize(nType, cx, cy);
 
-   float aspect = (float)cx / cy;
-
-   if (!!m_pCamera)
+   // cy cannot be zero because it will be a divisor (in aspect ratio)
+   if (cy > 0)
    {
-      m_pCamera->SetPerspective(kFov, aspect, kZNear, kZFar);
+      glViewport(0, 0, cx, cy);
+
+      float aspect = static_cast<float>(cx) / cy;
+
+      if (!!m_pCamera)
+      {
+         m_pCamera->SetPerspective(kFov, aspect, kZNear, kZFar);
+      }
    }
 }
 
