@@ -8,7 +8,6 @@
 
 #include "globalobj.h"
 #include "vec3.h"
-#include "quat.h"
 #include "matrix4.h"
 #include "techstring.h"
 
@@ -93,11 +92,13 @@ bool cTerrainRenderer::IsBlendingEnabled() const
 
 class cSplatBuilder
 {
+   friend class cTerrainChunk;
+
    cSplatBuilder(const cSplatBuilder &);
    void operator =(const cSplatBuilder &);
 
 public:
-   cSplatBuilder(IEditorTileSet * pTileSet, uint tile);
+   cSplatBuilder(uint tile, const char * pszTexture);
    ~cSplatBuilder();
 
    tResult GetGlTexture(uint * pTexId);
@@ -108,14 +109,13 @@ public:
    size_t GetIndexCount() const;
    const uint * GetIndexPtr() const;
 
-   void BuildAlphaMap(const tTerrainQuads & quads, uint nQuadsX, uint nQuadsZ, 
-                      uint iChunkX, uint iChunkZ);
+   void BuildAlphaMap(const tTerrainQuads & quads, uint nQuadsX,
+      uint nQuadsZ, uint iChunkX, uint iChunkZ);
 
 private:
-   cAutoIPtr<IEditorTileSet> m_pTileSet;
    uint m_tile;
+   cStr m_tileTexture;
    std::vector<uint> m_indices;
-   cStr m_texture;
    uint m_alphaMapId;
 };
 

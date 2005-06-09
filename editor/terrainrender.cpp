@@ -247,15 +247,11 @@ void cTerrainRenderer::Render()
 
 ////////////////////////////////////////
 
-cSplatBuilder::cSplatBuilder(IEditorTileSet * pTileSet, uint tile)
- : m_pTileSet(CTAddRef(pTileSet)),
-   m_tile(tile),
+cSplatBuilder::cSplatBuilder(uint tile, const char * pszTexture)
+ : m_tile(tile),
+   m_tileTexture(pszTexture ? pszTexture : ""),
    m_alphaMapId(0)
 {
-   if (pTileSet != NULL)
-   {
-      pTileSet->GetTileTexture(tile, &m_texture);
-   }
 }
 
 ////////////////////////////////////////
@@ -269,7 +265,7 @@ cSplatBuilder::~cSplatBuilder()
 tResult cSplatBuilder::GetGlTexture(uint * pTexId)
 {
    UseGlobal(ResourceManager);
-   return pResourceManager->Load(tResKey(m_texture.c_str(), kRC_GlTexture), (void**)pTexId);
+   return pResourceManager->Load(tResKey(m_tileTexture.c_str(), kRC_GlTexture), (void**)pTexId);
 }
 
 ////////////////////////////////////////
@@ -562,14 +558,11 @@ void cSplatBuilder::BuildAlphaMap(const tTerrainQuads & quads,
       }
    }
 
-   cStr tileName;
-   Verify(m_pTileSet->GetTileName(m_tile, &tileName) == S_OK);
-
-   tChar szFile[MAX_PATH];
-   wsprintf(szFile, "%sAlpha%d%d.bmp", tileName.c_str(), iChunkX, iChunkZ);
-#ifdef _DEBUG
-   WriteBitmapFile(szFile, &bmi, pBitmapBits);
-#endif
+//#ifdef _DEBUG
+//   tChar szFile[MAX_PATH];
+//   wsprintf(szFile, "%sAlpha%d%d.bmp", m_tileName.c_str(), iChunkX, iChunkZ);
+//   WriteBitmapFile(szFile, &bmi, pBitmapBits);
+//#endif
 
    cImageData * pImage = new cImageData;
    if (pImage != NULL)
@@ -651,7 +644,9 @@ tResult cTerrainChunk::Create(const tTerrainQuads & quads,
 
          if (splatBuilders.find(quad.tile) == splatBuilders.end())
          {
-            pSplatBuilder = new cSplatBuilder(pTileSet, quad.tile);
+            cStr tileTexture;
+            Verify(pTileSet->GetTileTexture(quad.tile, &tileTexture) == S_OK);
+            pSplatBuilder = new cSplatBuilder(quad.tile, tileTexture.c_str());
             if (pSplatBuilder != NULL)
             {
                splatBuilders[quad.tile] = pSplatBuilder;
@@ -705,9 +700,7 @@ tResult cTerrainChunk::Create(const tTerrainQuads & quads,
 void cTerrainChunk::Render()
 {
    glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
-
-   glEnable(GL_BLEND);
-   glDisable(GL_COLOR_MATERIAL);
+   glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT);
 
    glDisableClientState(GL_EDGE_FLAG_ARRAY);
    glDisableClientState(GL_INDEX_ARRAY);
@@ -721,14 +714,17 @@ void cTerrainChunk::Render()
    glEnableClientState(GL_VERTEX_ARRAY);
    glVertexPointer(3, GL_FLOAT, sizeof(sTerrainVertex), pVertexData + offsetof(sTerrainVertex, pos));
 
-   glColor4f(1,1,1,1);
+//   glColor4f(1,1,1,1);
 
    tSplatBuilders::iterator iter = m_splats.begin();
    tSplatBuilders::iterator end = m_splats.end();
    for (; iter != end; iter++)
    {
+      glDisable(GL_BLEND);
+      glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE);
+
       GLuint alphaMapId;
-      if (0 && (*iter)->GetAlphaMap(&alphaMapId) == S_OK)
+      if ((*iter)->GetAlphaMap(&alphaMapId) == S_OK)
       {
          glTexCoordPointer(2, GL_FLOAT, sizeof(sTerrainVertex), pVertexData + offsetof(sTerrainVertex, uv2));
          glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -738,18 +734,22 @@ void cTerrainChunk::Render()
          glDrawElements(GL_TRIANGLES, (*iter)->GetIndexCount(), GL_UNSIGNED_INT, (*iter)->GetIndexPtr());
       }
 
+      glEnable(GL_BLEND);
+      glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
       GLuint texId;
       if ((*iter)->GetGlTexture(&texId) == S_OK)
       {
-         glTexCoordPointer(2, GL_FLOAT, sizeof(sTerrainVertex), pVertexData + offsetof(sTerrainVertex, uv2));
+         glTexCoordPointer(2, GL_FLOAT, sizeof(sTerrainVertex), pVertexData + offsetof(sTerrainVertex, uv1));
          glEnableClientState(GL_TEXTURE_COORD_ARRAY);
          glBindTexture(GL_TEXTURE_2D, texId);
          glEnable(GL_TEXTURE_2D);
-         glBlendFunc(GL_DST_ALPHA, GL_ONE_MINUS_DST_ALPHA);
+//         glBlendFunc(GL_SRC_COLOR, GL_DST_ALPHA);
          glDrawElements(GL_TRIANGLES, (*iter)->GetIndexCount(), GL_UNSIGNED_INT, (*iter)->GetIndexPtr());
       }
    }
 
+   glPopClientAttrib();
    glPopAttrib();
 }
 

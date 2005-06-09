@@ -44,6 +44,7 @@ public:
    virtual tResult GetTileVertices(uint tx, uint tz, tVec3 vertices[4]) const;
 
    tResult Init(const cMapSettings & mapSettings);
+   tResult Init(uint nTilesX, uint nTilesZ, IHeightMap * pHeightMap);
    static tResult InitQuads(uint nTilesX, uint nTilesZ, IHeightMap * pHeightMap, tTerrainQuads * pQuads);
    tResult RegenerateChunks();
 

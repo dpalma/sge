@@ -34,14 +34,15 @@ static const uint kMaxTerrainHeight = 30;
 
 static const union
 {
-   byte b[sizeof(uint)];
-   uint v;
+   byte b[8];
+   uint32 id1, id2;
 }
-kTerrainFileIdGenerator = { { 's', 'g', 'e', 'm' } };
+kTerrainFileIdGenerator = { { 's', 'g', 'e', 0, 'm', 'a', 'p', 0 } };
 
-static const kTerrainFileId = kTerrainFileIdGenerator.v;
+static const kTerrainFileId1 = kTerrainFileIdGenerator.id1;
+static const kTerrainFileId2 = kTerrainFileIdGenerator.id2;
 
-static const uint kTerrainFileVersion = MAKELONG(1,0);
+static const uint32 kTerrainFileVersion = 1;
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -139,15 +140,17 @@ tResult cTerrainModel::Read(IReader * pReader)
       return E_POINTER;
    }
 
-   uint terrainFileId = 0;
-   if (pReader->Read(&terrainFileId) != S_OK)
+   uint32 terrainFileId1 = 0, terrainFileId2 = 0;
+   if (pReader->Read(&terrainFileId1) != S_OK
+      || pReader->Read(&terrainFileId1) != S_OK)
    {
       return E_FAIL;
    }
 
-   if (terrainFileId != kTerrainFileId)
+   if (terrainFileId1 != kTerrainFileId1
+      || terrainFileId2 != kTerrainFileId2)
    {
-      DebugMsg("Not a terrain map file\n");
+      ErrorMsg("Not a terrain map file\n");
       return E_FAIL;
    }
 
@@ -183,7 +186,8 @@ tResult cTerrainModel::Write(IWriter * pWriter)
       return E_POINTER;
    }
 
-   if (pWriter->Write(kTerrainFileId) != S_OK ||
+   if (pWriter->Write(kTerrainFileId1) != S_OK ||
+      pWriter->Write(kTerrainFileId1) != S_OK ||
       pWriter->Write(kTerrainFileVersion) != S_OK ||
       pWriter->Write(m_tileSize) != S_OK ||
       pWriter->Write(m_nTilesX) != S_OK ||
@@ -351,14 +355,21 @@ tResult cTerrainModel::Init(const cMapSettings & mapSettings)
       return E_FAIL;
    }
 
-   if (FAILED(InitQuads(mapSettings.GetXDimension(), mapSettings.GetZDimension(), pHeightMap, &m_terrainQuads)))
+   return Init(mapSettings.GetXDimension(), mapSettings.GetZDimension(), pHeightMap);
+}
+
+////////////////////////////////////////
+
+tResult cTerrainModel::Init(uint nTilesX, uint nTilesZ, IHeightMap * pHeightMap)
+{
+   if (FAILED(InitQuads(nTilesX, nTilesZ, pHeightMap, &m_terrainQuads)))
    {
       return E_FAIL;
    }
 
    m_tileSize = kDefaultStepSize;
-   m_nTilesX = mapSettings.GetXDimension();
-   m_nTilesZ = mapSettings.GetZDimension();
+   m_nTilesX = nTilesX;
+   m_nTilesZ = nTilesZ;
 
    NotifyListeners();
 
