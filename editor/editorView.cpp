@@ -50,15 +50,16 @@ static tVec3 CalcEyePoint(const tVec3 & center,
 
 ////////////////////////////////////////
 
-IMPLEMENT_DYNCREATE(cEditorView, cGLView)
+IMPLEMENT_DYNCREATE(cEditorView, CScrollView)
 
 ////////////////////////////////////////
 
-BEGIN_MESSAGE_MAP(cEditorView, cGLView)
+BEGIN_MESSAGE_MAP(cEditorView, CScrollView)
 	//{{AFX_MSG_MAP(cEditorView)
 	ON_WM_CREATE()
 	ON_WM_DESTROY()
 	ON_WM_SIZE()
+	ON_WM_ERASEBKGND()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -68,7 +69,9 @@ END_MESSAGE_MAP()
 ////////////////////////////////////////
 
 cEditorView::cEditorView()
- : m_cameraElevation(kDefaultCameraElevation),
+ : m_hDC(NULL),
+   m_hRC(NULL),
+   m_cameraElevation(kDefaultCameraElevation),
    m_center(0,0,0),
    m_eye(0,0,0),
    m_bRecalcEye(true),
@@ -82,6 +85,16 @@ cEditorView::cEditorView()
 
 cEditorView::~cEditorView()
 {
+}
+
+////////////////////////////////////////
+
+BOOL cEditorView::PreCreateWindow(CREATESTRUCT & cs)
+{
+   // Style bits required by OpenGL
+   cs.style |= (WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
+
+	return CScrollView::PreCreateWindow(cs);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -300,7 +313,7 @@ void cEditorView::Render()
       }
    }
 
-   SwapBuffers(GetSafeHdc());
+   SwapBuffers(m_hDC);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -322,14 +335,14 @@ void cEditorView::OnDraw(CDC * pDC)
 
 void cEditorView::AssertValid() const
 {
-	cGLView::AssertValid();
+	CScrollView::AssertValid();
 }
 
 ////////////////////////////////////////
 
 void cEditorView::Dump(CDumpContext& dc) const
 {
-	cGLView::Dump(dc);
+	CScrollView::Dump(dc);
 }
 
 ////////////////////////////////////////
@@ -349,8 +362,47 @@ cEditorDoc* cEditorView::GetDocument() // non-debug version is inline
 
 int cEditorView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
-	if (cGLView::OnCreate(lpCreateStruct) == -1)
+	if (CScrollView::OnCreate(lpCreateStruct) == -1)
 		return -1;
+
+   m_hDC = ::GetDC(m_hWnd);
+   if (m_hDC == NULL)
+   {
+      return -1;
+   }
+
+   PIXELFORMATDESCRIPTOR pfd = {0};
+   pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
+   pfd.nVersion = 1;
+   pfd.dwFlags = PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER | PFD_DRAW_TO_WINDOW;
+   pfd.dwLayerMask = PFD_MAIN_PLANE;
+   pfd.iPixelType = PFD_TYPE_RGBA;
+   pfd.cColorBits = GetDeviceCaps(m_hDC, BITSPIXEL);
+
+   int pixelFormat = ChoosePixelFormat(m_hDC, &pfd);
+   if (!pixelFormat)
+   {
+      return -1;
+   }
+
+   if (pfd.dwFlags & PFD_NEED_PALETTE)
+   {
+      AfxMessageBox("Needs palette");
+      return -1;
+   }
+
+   if (!SetPixelFormat(m_hDC, pixelFormat, &pfd))
+   {
+      return -1;
+   }
+
+   m_hRC = wglCreateContext(m_hDC);
+   if (m_hRC == NULL)
+   {
+      return -1;
+   }
+
+   wglMakeCurrent(m_hDC, m_hRC);
 
    UseGlobal(EditorApp);
    Verify(pEditorApp->AddLoopClient(this) == S_OK);
@@ -362,17 +414,31 @@ int cEditorView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 void cEditorView::OnDestroy() 
 {
-	cGLView::OnDestroy();
+	CScrollView::OnDestroy();
 
    UseGlobal(EditorApp);
    pEditorApp->RemoveLoopClient(this);
+
+   wglMakeCurrent(NULL, NULL);
+
+   if (m_hRC != NULL)
+   {
+      wglDeleteContext(m_hRC);
+      m_hRC = NULL;
+   }
+
+   if (m_hDC != NULL)
+   {
+      ::ReleaseDC(m_hWnd, m_hDC);
+      m_hDC = NULL;
+   }
 }
 
 ////////////////////////////////////////
 
 void cEditorView::OnSize(UINT nType, int cx, int cy) 
 {
-	cGLView::OnSize(nType, cx, cy);
+	CScrollView::OnSize(nType, cx, cy);
 
    // cy cannot be zero because it will be a divisor (in aspect ratio)
    if (cy > 0)
@@ -386,6 +452,13 @@ void cEditorView::OnSize(UINT nType, int cx, int cy)
       glMatrixMode(GL_PROJECTION);
       glLoadMatrixf(m_proj.m);
    }
+}
+
+////////////////////////////////////////
+
+BOOL cEditorView::OnEraseBkgnd(CDC * pDC) 
+{
+   return TRUE;
 }
 
 ////////////////////////////////////////

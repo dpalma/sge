@@ -4,7 +4,6 @@
 #if !defined(INCLUDED_EDITORVIEW_H)
 #define INCLUDED_EDITORVIEW_H
 
-#include "glView.h"
 #include "editorapi.h"
 #include "afxcomtools.h"
 
@@ -21,7 +20,7 @@ class cEditorDoc;
 // CLASS: cEditorView
 //
 
-class cEditorView : public cGLView,
+class cEditorView : public CScrollView,
                     public cComObject2<IMPLEMENTS(IEditorView),
                                        IMPLEMENTS(IEditorLoopClient),
                                        cAfxComServices<cEditorView> >
@@ -57,6 +56,7 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(cEditorView)
 	public:
+	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
 	virtual void OnInitialUpdate();
    virtual void OnFinalRelease();
@@ -79,10 +79,14 @@ protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnDestroy();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
 private:
+   HDC m_hDC;
+   HGLRC	m_hRC;
+
    float m_cameraElevation;
    tVec3 m_center;
    mutable tVec3 m_eye;

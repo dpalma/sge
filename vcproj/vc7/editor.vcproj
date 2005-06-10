@@ -423,9 +423,6 @@
 				RelativePath="..\..\editor\editorView.cpp">
 			</File>
 			<File
-				RelativePath="..\..\editor\glView.cpp">
-			</File>
-			<File
 				RelativePath="..\..\editor\historywnd.cpp">
 			</File>
 			<File
@@ -554,9 +551,6 @@
 			</File>
 			<File
 				RelativePath="..\..\editor\editorguids.h">
-			</File>
-			<File
-				RelativePath="..\..\editor\glView.h">
 			</File>
 			<File
 				RelativePath="..\..\editor\historywnd.h">
