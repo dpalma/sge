@@ -41,6 +41,7 @@ public:
    virtual tResult EnableBlending(bool bEnable);
 
    virtual void Render();
+   virtual void Render(IDirect3DDevice9 * pD3dDevice);
 
 private:
    bool IsBlendingEnabled() const;

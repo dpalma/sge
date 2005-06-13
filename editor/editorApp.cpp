@@ -306,6 +306,17 @@ BOOL cEditorApp::InitInstance()
 	if (!ProcessShellCommand(cmdInfo))
 		return FALSE;
 
+   CFrameWnd * pMainFrame = DYNAMIC_DOWNCAST(CFrameWnd, m_pMainWnd);
+   if (pMainFrame == NULL)
+   {
+      return FALSE;
+   }
+   cEditorView * pEditorView = DYNAMIC_DOWNCAST(cEditorView, pMainFrame->GetActiveView());
+   if (!pEditorView->Initialize())
+   {
+      return FALSE;
+   }
+
 	// The one and only window has been initialized, so show and update it.
 	m_pMainWnd->ShowWindow(SW_SHOW);
 	m_pMainWnd->UpdateWindow();

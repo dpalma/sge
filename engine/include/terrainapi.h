@@ -30,6 +30,8 @@ F_DECLARE_INTERFACE(IWriter);
 
 class cMapSettings;
 
+F_DECLARE_INTERFACE(IDirect3DDevice9);
+
 /////////////////////////////////////////////////////////////////////////////
 
 struct sTerrainVertex
@@ -61,6 +63,7 @@ interface ITerrainRenderer : IUnknown
    virtual tResult EnableBlending(bool bEnable) = 0;
 
    virtual void Render() = 0;
+   virtual void Render(IDirect3DDevice9 * pD3dDevice) = 0;
 };
 
 ////////////////////////////////////////

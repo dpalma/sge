@@ -11,11 +11,16 @@
 
 #include "ray.h"
 
+#include "configapi.h"
 #include "globalobj.h"
 #include "techtime.h"
 #include "vec4.h"
 
 #include <GL/gl.h>
+
+#ifdef HAVE_DIRECTX
+#include <d3d9.h>
+#endif
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -69,8 +74,11 @@ END_MESSAGE_MAP()
 ////////////////////////////////////////
 
 cEditorView::cEditorView()
- : m_hDC(NULL),
+ : m_bInitialized(false),
+   m_bUsingD3d(false),
+   m_hDC(NULL),
    m_hRC(NULL),
+   m_hD3d9(NULL),
    m_cameraElevation(kDefaultCameraElevation),
    m_center(0,0,0),
    m_eye(0,0,0),
@@ -265,14 +273,25 @@ tResult cEditorView::ClearTileHighlight()
 void cEditorView::OnFrame(double time, double elapsed)
 {
    MatrixLookAt(GetCameraEyePosition(), m_center, tVec3(0,1,0), &m_view);
-   Render();
+#ifdef HAVE_DIRECTX
+   if (m_bUsingD3d)
+   {
+      RenderD3D();
+   }
+   else
+   {
+      RenderGL();
+   }
+#else
+   RenderGL();
+#endif
 }
 
 ////////////////////////////////////////
 
-void cEditorView::Render()
+void cEditorView::RenderGL()
 {
-   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
    glMatrixMode(GL_MODELVIEW);
    glLoadMatrixf(m_view.m);
@@ -316,6 +335,21 @@ void cEditorView::Render()
    SwapBuffers(m_hDC);
 }
 
+////////////////////////////////////////
+
+void cEditorView::RenderD3D()
+{
+   m_pD3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1, 0);
+
+   if (m_pD3dDevice->BeginScene() == D3D_OK)
+   {
+      // TODO
+
+      m_pD3dDevice->EndScene();
+      m_pD3dDevice->Present(NULL, NULL, NULL, NULL);
+   }
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // cEditorView drawing
 
@@ -324,7 +358,18 @@ void cEditorView::OnDraw(CDC * pDC)
 //	cEditorDoc * pDoc = GetDocument();
 //	ASSERT_VALID(pDoc);
 
-   Render();
+#ifdef HAVE_DIRECTX
+   if (m_bUsingD3d)
+   {
+      RenderD3D();
+   }
+   else
+   {
+      RenderGL();
+   }
+#else
+   RenderGL();
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -355,6 +400,41 @@ cEditorDoc* cEditorView::GetDocument() // non-debug version is inline
 #endif //_DEBUG
 
 
+////////////////////////////////////////
+
+bool cEditorView::Initialize()
+{
+   if (!m_bInitialized)
+   {
+#ifdef HAVE_DIRECTX
+      if (ConfigIsTrue("use_d3d"))
+      {
+         if (!InitD3D())
+         {
+            return false;
+         }
+
+         m_bUsingD3d = true;
+      }
+      else
+      {
+         if (!InitGL())
+         {
+            return false;
+         }
+      }
+#else
+      if (!InitGL())
+      {
+         return false;
+      }
+#endif
+   }
+
+   m_bInitialized = true;
+   return true;
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // cEditorView message handlers
 
@@ -365,47 +445,19 @@ int cEditorView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CScrollView::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
-   m_hDC = ::GetDC(m_hWnd);
-   if (m_hDC == NULL)
-   {
-      return -1;
-   }
-
-   PIXELFORMATDESCRIPTOR pfd = {0};
-   pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-   pfd.nVersion = 1;
-   pfd.dwFlags = PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER | PFD_DRAW_TO_WINDOW;
-   pfd.dwLayerMask = PFD_MAIN_PLANE;
-   pfd.iPixelType = PFD_TYPE_RGBA;
-   pfd.cColorBits = GetDeviceCaps(m_hDC, BITSPIXEL);
-
-   int pixelFormat = ChoosePixelFormat(m_hDC, &pfd);
-   if (!pixelFormat)
-   {
-      return -1;
-   }
-
-   if (pfd.dwFlags & PFD_NEED_PALETTE)
-   {
-      AfxMessageBox("Needs palette");
-      return -1;
-   }
-
-   if (!SetPixelFormat(m_hDC, pixelFormat, &pfd))
-   {
-      return -1;
-   }
-
-   m_hRC = wglCreateContext(m_hDC);
-   if (m_hRC == NULL)
-   {
-      return -1;
-   }
-
-   wglMakeCurrent(m_hDC, m_hRC);
-
    UseGlobal(EditorApp);
    Verify(pEditorApp->AddLoopClient(this) == S_OK);
+
+   // GL can (and should) be initialized during WM_CREATE handling, so do
+   // so and set the flag so that later Initialize() calls don't do anything.
+   if (!ConfigIsTrue("use_d3d"))
+   {
+      if (!InitGL())
+      {
+         return -1;
+      }
+      m_bInitialized = true;
+   }
 
 	return 0;
 }
@@ -418,6 +470,16 @@ void cEditorView::OnDestroy()
 
    UseGlobal(EditorApp);
    pEditorApp->RemoveLoopClient(this);
+
+   SafeRelease(m_pD3dDevice);
+   SafeRelease(m_pD3d);
+   if (m_hD3d9 != NULL)
+   {
+      FreeLibrary(m_hD3d9);
+      m_hD3d9 = NULL;
+   }
+
+   m_bUsingD3d = false;
 
    wglMakeCurrent(NULL, NULL);
 
@@ -443,11 +505,10 @@ void cEditorView::OnSize(UINT nType, int cx, int cy)
    // cy cannot be zero because it will be a divisor (in aspect ratio)
    if (cy > 0)
    {
-      glViewport(0, 0, cx, cy);
-
       float aspect = static_cast<float>(cx) / cy;
-
       MatrixPerspective(kFov, aspect, kZNear, kZFar, &m_proj);
+
+      glViewport(0, 0, cx, cy);
 
       glMatrixMode(GL_PROJECTION);
       glLoadMatrixf(m_proj.m);
@@ -465,6 +526,10 @@ BOOL cEditorView::OnEraseBkgnd(CDC * pDC)
 
 void cEditorView::OnInitialUpdate() 
 {
+   // Have to be initialized before placing the camera, for instance, and
+   // initialization requires no parameters, so just call it.
+   Initialize();
+
    CRect rect;
    GetClientRect(rect);
    SetScaleToFitSize(rect.Size());
@@ -508,6 +573,111 @@ void cEditorView::PostNcDestroy()
    Assert(!m_bInPostNcDestroy);
    m_bInPostNcDestroy = true;
    Release();
+}
+
+////////////////////////////////////////
+
+bool cEditorView::InitGL()
+{
+   m_hDC = ::GetDC(m_hWnd);
+   if (m_hDC == NULL)
+   {
+      return false;
+   }
+
+   PIXELFORMATDESCRIPTOR pfd = {0};
+   pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
+   pfd.nVersion = 1;
+   pfd.dwFlags = PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER | PFD_DRAW_TO_WINDOW;
+   pfd.dwLayerMask = PFD_MAIN_PLANE;
+   pfd.iPixelType = PFD_TYPE_RGBA;
+   pfd.cColorBits = GetDeviceCaps(m_hDC, BITSPIXEL);
+
+   int pixelFormat = ChoosePixelFormat(m_hDC, &pfd);
+   if (!pixelFormat)
+   {
+      return false;
+   }
+
+   if (pfd.dwFlags & PFD_NEED_PALETTE)
+   {
+      ErrorMsg("GL context needs palette\n");
+      return false;
+   }
+
+   if (!SetPixelFormat(m_hDC, pixelFormat, &pfd))
+   {
+      return false;
+   }
+
+   m_hRC = wglCreateContext(m_hDC);
+   if (m_hRC == NULL)
+   {
+      return false;
+   }
+
+   if (!wglMakeCurrent(m_hDC, m_hRC))
+   {
+      return false;
+   }
+
+   return true;
+}
+
+////////////////////////////////////////
+
+bool cEditorView::InitD3D()
+{
+   Assert(m_hD3d9 == NULL); // This method should be called only once
+   m_hD3d9 = LoadLibrary("d3d9.dll");
+   if (m_hD3d9 == NULL)
+   {
+      return false;
+   }
+
+   tDirect3DCreate9Fn pfnDirect3DCreate9 = reinterpret_cast<tDirect3DCreate9Fn>(
+      GetProcAddress(m_hD3d9, "Direct3DCreate9"));
+   if (pfnDirect3DCreate9 == NULL)
+   {
+      return false;
+   }
+
+   Assert(!m_pD3d); // This method should be called only once
+   m_pD3d = (*pfnDirect3DCreate9)(DIRECT3D_VERSION);
+   if (!m_pD3d)
+   {
+      return false;
+   }
+
+   D3DDISPLAYMODE displayMode;
+   if (FAILED(m_pD3d->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &displayMode)))
+   {
+      return false;
+   }
+
+   D3DPRESENT_PARAMETERS presentParams = {0};
+   presentParams.BackBufferCount = 1;
+   presentParams.BackBufferFormat = displayMode.Format;
+   presentParams.SwapEffect = D3DSWAPEFFECT_DISCARD;
+   presentParams.Windowed = TRUE;
+   presentParams.EnableAutoDepthStencil = TRUE;
+   presentParams.AutoDepthStencilFormat = D3DFMT_D16;
+   presentParams.hDeviceWindow = m_hWnd;
+   presentParams.Flags = D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL | D3DPRESENTFLAG_DEVICECLIP;
+
+   HRESULT hr = m_pD3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, m_hWnd,
+      D3DCREATE_SOFTWARE_VERTEXPROCESSING, &presentParams, &m_pD3dDevice);
+   if (FAILED(hr))
+   {
+      hr = m_pD3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_REF, m_hWnd,
+         D3DCREATE_SOFTWARE_VERTEXPROCESSING, &presentParams, &m_pD3dDevice);
+      {
+         ErrorMsg1("D3D error %x\n", hr);
+         return false;
+      }
+   }
+
+   return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

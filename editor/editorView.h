@@ -15,6 +15,11 @@
 
 class cEditorDoc;
 
+F_DECLARE_INTERFACE(IDirect3D9);
+F_DECLARE_INTERFACE(IDirect3DDevice9);
+
+typedef IDirect3D9 * (WINAPI * tDirect3DCreate9Fn)(UINT);
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cEditorView
@@ -35,6 +40,8 @@ public:
 
 // Operations
 public:
+   bool Initialize();
+
    // IEditorView
    virtual tVec3 GetCameraEyePosition() const;
    virtual tResult GetCameraPlacement(float * px, float * pz);
@@ -50,7 +57,8 @@ public:
    // IEditorLoopClient
    virtual void OnFrame(double time, double elapsed);
 
-   void Render();
+   void RenderGL();
+   void RenderD3D();
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -83,9 +91,19 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
+   bool InitGL();
+   bool InitD3D();
+
 private:
+   bool m_bInitialized;
+   bool m_bUsingD3d;
+
    HDC m_hDC;
    HGLRC	m_hRC;
+
+   HMODULE m_hD3d9;
+   cAutoIPtr<IDirect3D9> m_pD3d;
+   cAutoIPtr<IDirect3DDevice9> m_pD3dDevice;
 
    float m_cameraElevation;
    tVec3 m_center;
