@@ -107,7 +107,9 @@ cEditorView::cEditorView()
    m_bUsingD3d(false),
    m_hDC(NULL),
    m_hRC(NULL),
+#ifdef HAVE_DIRECTX
    m_d3d9Lib("d3d9"),
+#endif
    m_cameraElevation(kDefaultCameraElevation),
    m_center(0,0,0),
    m_eye(0,0,0),
@@ -368,6 +370,7 @@ void cEditorView::RenderGL()
 
 void cEditorView::RenderD3D()
 {
+#ifdef HAVE_DIRECTX
    m_pD3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1, 0);
 
    if (m_pD3dDevice->BeginScene() == D3D_OK)
@@ -415,6 +418,7 @@ void cEditorView::RenderD3D()
       m_pD3dDevice->EndScene();
       m_pD3dDevice->Present(NULL, NULL, NULL, NULL);
    }
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -538,8 +542,10 @@ void cEditorView::OnDestroy()
    UseGlobal(EditorApp);
    pEditorApp->RemoveLoopClient(this);
 
+#ifdef HAVE_DIRECTX
    SafeRelease(m_pD3dDevice);
    SafeRelease(m_pD3d);
+#endif
 
    m_bUsingD3d = false;
 
@@ -713,6 +719,7 @@ bool cEditorView::InitGL()
 
 bool cEditorView::InitD3D()
 {
+#ifdef HAVE_DIRECTX
    tDirect3DCreate9Fn pfnDirect3DCreate9 = reinterpret_cast<tDirect3DCreate9Fn>(
       m_d3d9Lib.GetProcAddress("Direct3DCreate9"));
    if (pfnDirect3DCreate9 == NULL)
@@ -756,6 +763,9 @@ bool cEditorView::InitD3D()
    }
 
    return true;
+#else
+   return false;
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

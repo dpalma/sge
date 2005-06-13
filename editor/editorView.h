@@ -105,10 +105,12 @@ private:
    HDC m_hDC;
    HGLRC	m_hRC;
 
+#ifdef HAVE_DIRECTX
    cDynamicLink m_d3d9Lib;
    cAutoIPtr<IDirect3D9> m_pD3d;
    cAutoIPtr<IDirect3DDevice9> m_pD3dDevice;
    D3DPRESENT_PARAMETERS m_presentParams;
+#endif
 
    float m_cameraElevation;
    tVec3 m_center;
