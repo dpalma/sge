@@ -6,8 +6,14 @@
 
 #include "editorapi.h"
 #include "afxcomtools.h"
+#include "DynamicLink.h"
 
 #include "matrix4.h"
+
+#ifdef HAVE_DIRECTX
+#include <d3d9.h>
+#include <d3dx9.h>
+#endif
 
 #if _MSC_VER > 1000
 #pragma once
@@ -17,8 +23,6 @@ class cEditorDoc;
 
 F_DECLARE_INTERFACE(IDirect3D9);
 F_DECLARE_INTERFACE(IDirect3DDevice9);
-
-typedef IDirect3D9 * (WINAPI * tDirect3DCreate9Fn)(UINT);
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -101,9 +105,10 @@ private:
    HDC m_hDC;
    HGLRC	m_hRC;
 
-   HMODULE m_hD3d9;
+   cDynamicLink m_d3d9Lib;
    cAutoIPtr<IDirect3D9> m_pD3d;
    cAutoIPtr<IDirect3DDevice9> m_pD3dDevice;
+   D3DPRESENT_PARAMETERS m_presentParams;
 
    float m_cameraElevation;
    tVec3 m_center;

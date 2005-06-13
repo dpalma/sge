@@ -18,15 +18,19 @@
 
 #include <GL/gl.h>
 
-#ifdef HAVE_DIRECTX
-#include <d3d9.h>
-#endif
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+#ifdef HAVE_DIRECTX
+#pragma comment(lib, "d3dx9")
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+
+typedef IDirect3D9 * (WINAPI * tDirect3DCreate9Fn)(UINT);
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -47,6 +51,31 @@ static tVec3 CalcEyePoint(const tVec3 & center,
 {
    return center + tVec3(0, elevation, elevation / tanf(pitch));
 }
+
+/////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_DIRECTX
+static void MatrixTranspose(const tMatrix4 & m, D3DMATRIX * pT)
+{
+   pT->_11 = m.m00;
+   pT->_12 = m.m10;
+   pT->_13 = m.m20;
+   pT->_14 = m.m30;
+   pT->_21 = m.m01;
+   pT->_22 = m.m11;
+   pT->_23 = m.m21;
+   pT->_24 = m.m31;
+   pT->_31 = m.m02;
+   pT->_32 = m.m12;
+   pT->_33 = m.m22;
+   pT->_34 = m.m32;
+   pT->_41 = m.m03;
+   pT->_42 = m.m13;
+   pT->_43 = m.m23;
+   pT->_44 = m.m33;
+}
+#endif
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -78,7 +107,7 @@ cEditorView::cEditorView()
    m_bUsingD3d(false),
    m_hDC(NULL),
    m_hRC(NULL),
-   m_hD3d9(NULL),
+   m_d3d9Lib("d3d9"),
    m_cameraElevation(kDefaultCameraElevation),
    m_center(0,0,0),
    m_eye(0,0,0),
@@ -343,7 +372,45 @@ void cEditorView::RenderD3D()
 
    if (m_pD3dDevice->BeginScene() == D3D_OK)
    {
-      // TODO
+      D3DMATRIX view;
+      MatrixTranspose(m_view, &view);
+      m_pD3dDevice->SetTransform(D3DTS_VIEW, &view);
+
+      UseGlobal(TerrainRenderer);
+      pTerrainRenderer->Render(m_pD3dDevice);
+
+      cAutoIPtr<IEditorModel> pEditModel;
+      cAutoIPtr<ITerrainModel> pTerrModel;
+      if (GetModel(&pEditModel) == S_OK
+         && pEditModel->GetTerrainModel(&pTerrModel) == S_OK)
+      {
+         int iHlx, iHlz;
+         if (GetHighlightTile(&iHlx, &iHlz) == S_OK)
+         {
+            tVec3 verts[4];
+            if (pTerrModel->GetTileVertices(iHlx, iHlz, verts) == S_OK)
+            {
+               static const float kOffsetY = 0.5f;
+               verts[0].y += kOffsetY;
+               verts[1].y += kOffsetY;
+               verts[2].y += kOffsetY;
+               verts[3].y += kOffsetY;
+
+               //glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
+               //glEnable(GL_BLEND);
+               //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+               //glBegin(GL_QUADS);
+               //   glColor4fv(kHighlightTileColor);
+               //   glNormal3f(0, 1, 0);
+               //   glVertex3fv(verts[0].v);
+               //   glVertex3fv(verts[3].v);
+               //   glVertex3fv(verts[2].v);
+               //   glVertex3fv(verts[1].v);
+               //glEnd();
+               //glPopAttrib();
+            }
+         }
+      }
 
       m_pD3dDevice->EndScene();
       m_pD3dDevice->Present(NULL, NULL, NULL, NULL);
@@ -473,11 +540,6 @@ void cEditorView::OnDestroy()
 
    SafeRelease(m_pD3dDevice);
    SafeRelease(m_pD3d);
-   if (m_hD3d9 != NULL)
-   {
-      FreeLibrary(m_hD3d9);
-      m_hD3d9 = NULL;
-   }
 
    m_bUsingD3d = false;
 
@@ -502,16 +564,39 @@ void cEditorView::OnSize(UINT nType, int cx, int cy)
 {
 	CScrollView::OnSize(nType, cx, cy);
 
+   if (!m_bInitialized)
+   {
+      return;
+   }
+
    // cy cannot be zero because it will be a divisor (in aspect ratio)
    if (cy > 0)
    {
       float aspect = static_cast<float>(cx) / cy;
       MatrixPerspective(kFov, aspect, kZNear, kZFar, &m_proj);
 
-      glViewport(0, 0, cx, cy);
+      if (m_bUsingD3d)
+      {
+#ifdef HAVE_DIRECTX
+         m_presentParams.BackBufferWidth = cx;
+         m_presentParams.BackBufferHeight = cy;
+         m_pD3dDevice->Reset(&m_presentParams);
 
-      glMatrixMode(GL_PROJECTION);
-      glLoadMatrixf(m_proj.m);
+         D3DXMATRIX projTest;
+         D3DXMatrixPerspectiveFovRH(&projTest, kFov, aspect, kZNear, kZFar);
+
+         D3DMATRIX proj;
+         MatrixTranspose(m_proj, &proj);
+         m_pD3dDevice->SetTransform(D3DTS_PROJECTION, &proj);
+#endif
+      }
+      else
+      {
+         glViewport(0, 0, cx, cy);
+
+         glMatrixMode(GL_PROJECTION);
+         glLoadMatrixf(m_proj.m);
+      }
    }
 }
 
@@ -628,15 +713,8 @@ bool cEditorView::InitGL()
 
 bool cEditorView::InitD3D()
 {
-   Assert(m_hD3d9 == NULL); // This method should be called only once
-   m_hD3d9 = LoadLibrary("d3d9.dll");
-   if (m_hD3d9 == NULL)
-   {
-      return false;
-   }
-
    tDirect3DCreate9Fn pfnDirect3DCreate9 = reinterpret_cast<tDirect3DCreate9Fn>(
-      GetProcAddress(m_hD3d9, "Direct3DCreate9"));
+      m_d3d9Lib.GetProcAddress("Direct3DCreate9"));
    if (pfnDirect3DCreate9 == NULL)
    {
       return false;
@@ -655,22 +733,22 @@ bool cEditorView::InitD3D()
       return false;
    }
 
-   D3DPRESENT_PARAMETERS presentParams = {0};
-   presentParams.BackBufferCount = 1;
-   presentParams.BackBufferFormat = displayMode.Format;
-   presentParams.SwapEffect = D3DSWAPEFFECT_DISCARD;
-   presentParams.Windowed = TRUE;
-   presentParams.EnableAutoDepthStencil = TRUE;
-   presentParams.AutoDepthStencilFormat = D3DFMT_D16;
-   presentParams.hDeviceWindow = m_hWnd;
-   presentParams.Flags = D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL | D3DPRESENTFLAG_DEVICECLIP;
+   memset(&m_presentParams, 0, sizeof(m_presentParams));
+   m_presentParams.BackBufferCount = 1;
+   m_presentParams.BackBufferFormat = displayMode.Format;
+   m_presentParams.SwapEffect = D3DSWAPEFFECT_DISCARD;
+   m_presentParams.Windowed = TRUE;
+   m_presentParams.EnableAutoDepthStencil = TRUE;
+   m_presentParams.AutoDepthStencilFormat = D3DFMT_D16;
+   m_presentParams.hDeviceWindow = m_hWnd;
+   m_presentParams.Flags = D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL | D3DPRESENTFLAG_DEVICECLIP;
 
    HRESULT hr = m_pD3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, m_hWnd,
-      D3DCREATE_SOFTWARE_VERTEXPROCESSING, &presentParams, &m_pD3dDevice);
+      D3DCREATE_SOFTWARE_VERTEXPROCESSING, &m_presentParams, &m_pD3dDevice);
    if (FAILED(hr))
    {
       hr = m_pD3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_REF, m_hWnd,
-         D3DCREATE_SOFTWARE_VERTEXPROCESSING, &presentParams, &m_pD3dDevice);
+         D3DCREATE_SOFTWARE_VERTEXPROCESSING, &m_presentParams, &m_pD3dDevice);
       {
          ErrorMsg1("D3D error %x\n", hr);
          return false;
