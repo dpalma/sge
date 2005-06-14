@@ -114,6 +114,7 @@ cEditorView::cEditorView()
    m_center(0,0,0),
    m_eye(0,0,0),
    m_bRecalcEye(true),
+   m_bUpdateCompositeMatrices(true),
    m_highlitTileX(-1),
    m_highlitTileZ(-1),
    m_bInPostNcDestroy(false)
@@ -171,6 +172,7 @@ tResult cEditorView::PlaceCamera(float x, float z)
    m_center.x = x;
    m_center.z = z;
    m_bRecalcEye = true;
+   m_bUpdateCompositeMatrices = true;
    return S_OK;
 }
 
@@ -193,24 +195,23 @@ tResult cEditorView::SetCameraElevation(float elevation)
 {
    m_cameraElevation = elevation;
    m_bRecalcEye = true;
+   m_bUpdateCompositeMatrices = true;
    return S_OK;
 }
 
 ////////////////////////////////////////
 
-tResult cEditorView::GeneratePickRay(float ndx, float ndy, cRay * pRay) const
+tResult cEditorView::GeneratePickRay(float ndx, float ndy, cRay * pRay)
 {
    if (pRay == NULL)
    {
       return E_POINTER;
    }
 
-   tMatrix4 viewProj, viewProjInverse;
-   m_proj.Multiply(m_view, &viewProj);
-   MatrixInvert(viewProj.m, viewProjInverse.m);
+   UpdateCompositeMatrices();
 
    tVec4 n;
-   viewProjInverse.Transform(tVec4(ndx, ndy, -1, 1), &n);
+   m_viewProjInverse.Transform(tVec4(ndx, ndy, -1, 1), &n);
    if (n.w == 0.0f)
    {
       return E_FAIL;
@@ -220,7 +221,7 @@ tResult cEditorView::GeneratePickRay(float ndx, float ndy, cRay * pRay) const
    n.z /= n.w;
 
    tVec4 f;
-   viewProjInverse.Transform(tVec4(ndx, ndy, 1, 1), &f);
+   m_viewProjInverse.Transform(tVec4(ndx, ndy, 1, 1), &f);
    if (f.w == 0.0f)
    {
       return E_FAIL;
@@ -229,11 +230,8 @@ tResult cEditorView::GeneratePickRay(float ndx, float ndy, cRay * pRay) const
    f.y /= f.w;
    f.z /= f.w;
 
-   tMatrix4 viewInverse;
-   MatrixInvert(m_view.m, viewInverse.m);
-
    tVec4 eye;
-   viewInverse.Transform(tVec4(0,0,0,1), &eye);
+   m_viewInverse.Transform(tVec4(0,0,0,1), &eye);
 
    tVec3 dir(f.x - n.x, f.y - n.y, f.z - n.z);
    dir.Normalize();
@@ -581,6 +579,8 @@ void cEditorView::OnSize(UINT nType, int cx, int cy)
       float aspect = static_cast<float>(cx) / cy;
       MatrixPerspective(kFov, aspect, kZNear, kZFar, &m_proj);
 
+      m_bUpdateCompositeMatrices = true;
+
       if (m_bUsingD3d)
       {
 #ifdef HAVE_DIRECTX
@@ -766,6 +766,19 @@ bool cEditorView::InitD3D()
 #else
    return false;
 #endif
+}
+
+////////////////////////////////////////
+
+void cEditorView::UpdateCompositeMatrices()
+{
+   if (m_bUpdateCompositeMatrices)
+   {
+      MatrixInvert(m_view.m, m_viewInverse.m);
+      m_proj.Multiply(m_view, &m_viewProj);
+      MatrixInvert(m_viewProj.m, m_viewProjInverse.m);
+      m_bUpdateCompositeMatrices = false;
+   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

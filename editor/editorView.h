@@ -52,7 +52,7 @@ public:
    virtual tResult PlaceCamera(float x, float z);
    virtual tResult GetCameraElevation(float * pElevation);
    virtual tResult SetCameraElevation(float elevation);
-   virtual tResult GeneratePickRay(float ndx, float ndy, cRay * pRay) const;
+   virtual tResult GeneratePickRay(float ndx, float ndy, cRay * pRay);
    virtual tResult GetModel(IEditorModel * * ppModel);
    virtual tResult GetHighlightTile(int * piTileX, int * piTileZ) const;
    virtual tResult HighlightTile(int iTileX, int iTileZ);
@@ -98,6 +98,8 @@ protected:
    bool InitGL();
    bool InitD3D();
 
+   void UpdateCompositeMatrices();
+
 private:
    bool m_bInitialized;
    bool m_bUsingD3d;
@@ -118,6 +120,8 @@ private:
    mutable bool m_bRecalcEye; // recalculate camera eye position when placement/elevation changes
 
    tMatrix4 m_proj, m_view;
+   tMatrix4 m_viewInverse, m_viewProj, m_viewProjInverse;
+   bool m_bUpdateCompositeMatrices;
 
    int m_highlitTileX, m_highlitTileZ;
 
