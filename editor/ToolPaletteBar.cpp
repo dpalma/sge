@@ -83,11 +83,8 @@ void cToolPaletteBar::OnDefaultTileSetChange(IEditorTileSet * pTileSet)
                if (pTileSet->GetName(&tileSetName) == S_OK
                   && pTileSet->GetImageList(16, &hTileSetImages) == S_OK)
                {
-                  // cToolPalette::AddGroup() expects to take ownership of image
-                  // list, but the tileset stores it internally; hence, the
-                  // ImageList_Duplicate() call.
                   HTOOLGROUP hGroup = m_toolPalette.AddGroup(tileSetName.c_str(),
-                     ImageList_Duplicate(hTileSetImages));
+                     hTileSetImages);
 
                   if (hGroup != NULL)
                   {

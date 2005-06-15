@@ -19,7 +19,6 @@ F_DECLARE_INTERFACE(IEditorAppListener);
 F_DECLARE_INTERFACE(IEditorTileManager);
 F_DECLARE_INTERFACE(IEditorTileManagerListener);
 F_DECLARE_INTERFACE(IEditorTileSet);
-F_DECLARE_INTERFACE(IEditorTile);
 F_DECLARE_INTERFACE(IEditorView);
 F_DECLARE_INTERFACE(IEditorModel);
 F_DECLARE_INTERFACE(IEditorModelListener);
@@ -97,13 +96,23 @@ interface UUID("14E9EE21-4E6F-4b04-8F5C-742DFFA955BE") IEditorAppListener : IUnk
 interface UUID("CA3DFC7D-CF34-43cd-AE46-FA1AF6A34F27") IEditorTileManager : IUnknown
 {
    DECLARE_CONNECTION_POINT(IEditorTileManagerListener);
-   virtual tResult CreateTileSet(const tChar * pszName, IEditorTileSet * * ppTileSet) = 0;
+
+   virtual tResult AddTileSet(IEditorTileSet * pTileSet) = 0;
    virtual tResult GetTileSet(const tChar * pszName, IEditorTileSet * * ppTileSet) = 0;
-   virtual tResult GetDefaultTileSet(IEditorTileSet * * ppTileSet) = 0;
    virtual tResult GetDefaultTileSet(cStr * pName) const = 0;
    virtual tResult SetDefaultTileSet(const tChar * pszName) = 0;
    virtual tResult GetTileSetCount(uint * pTileSets) = 0;
    virtual tResult GetTileSet(uint index, IEditorTileSet * * ppTileSet) = 0;
+
+   tResult GetDefaultTileSet(IEditorTileSet * * ppTileSet)
+   {
+      cStr s;
+      if (GetDefaultTileSet(&s) == S_OK)
+      {
+         return GetTileSet(s.c_str(), ppTileSet);
+      }
+      return E_FAIL;
+   }
 };
 
 ////////////////////////////////////////
@@ -121,6 +130,12 @@ interface UUID("8EA33056-3151-4090-8F38-BA8B9CB08F77") IEditorTileManagerListene
    virtual void OnDefaultTileSetChange(IEditorTileSet * pTileSet) = 0;
 };
 
+/////////////////////////////////////////////////////////////////////////////
+
+tResult EditorTileSetCreate(const char * pszName,
+                            const std::vector<cStr> & textures,
+                            IEditorTileSet * * ppTileSet);
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -131,31 +146,11 @@ interface UUID("61B488AA-AB50-41c5-AA42-45F07C982F6A") IEditorTileSet : IUnknown
 {
    virtual tResult GetName(cStr * pName) const = 0;
 
-   virtual tResult AddTile(const tChar * pszName,
-                           const tChar * pszTexture,
-                           int horzImages,
-                           int vertImages) = 0;
-
    virtual tResult GetTileCount(uint * pTileCount) const = 0;
    virtual tResult GetTileTexture(uint iTile, cStr * pTexture) const = 0;
    virtual tResult GetTileName(uint iTile, cStr * pName) const = 0;
 
    virtual tResult GetImageList(uint dimension, HIMAGELIST * phImageList) = 0;
-};
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// INTERFACE: IEditorTile
-//
-
-interface UUID("CDEB5694-56D2-4750-BEF8-85F286364C23") IEditorTile : IUnknown
-{
-   virtual tResult GetName(cStr * pName) const = 0;
-   virtual tResult GetTexture(cStr * pTexture) const = 0;
-
-   virtual uint GetHorizontalImageCount() const = 0;
-   virtual uint GetVerticalImageCount() const = 0;
 };
 
 

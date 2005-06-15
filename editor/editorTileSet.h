@@ -21,15 +21,10 @@
 class cEditorTileSet : public cComObject<IMPLEMENTS(IEditorTileSet)>
 {
 public:
-   cEditorTileSet(const tChar * pszName);
+   cEditorTileSet(const tChar * pszName, const std::vector<cStr> & textures);
    ~cEditorTileSet();
 
    virtual tResult GetName(cStr * pName) const;
-
-   virtual tResult AddTile(const tChar * pszName,
-                           const tChar * pszTexture,
-                           int horzImages,
-                           int vertImages);
 
    virtual tResult GetTileCount(uint * pTileCount) const;
    virtual tResult GetTileTexture(uint iTile, cStr * pTexture) const;
@@ -39,9 +34,7 @@ public:
 
 private:
    cStr m_name;
-
-   typedef std::vector<IEditorTile *> tTiles;
-   tTiles m_tiles;
+   std::vector<cStr> m_textures;
 
    typedef std::map<uint, HIMAGELIST> tImageLists;
    tImageLists m_imageLists;

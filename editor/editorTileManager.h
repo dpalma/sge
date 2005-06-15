@@ -27,9 +27,8 @@ public:
    virtual tResult Init();
    virtual tResult Term();
 
-   virtual tResult CreateTileSet(const tChar * pszName, IEditorTileSet * * ppTileSet);
+   virtual tResult AddTileSet(IEditorTileSet * pTileSet);
    virtual tResult GetTileSet(const tChar * pszName, IEditorTileSet * * ppTileSet);
-   virtual tResult GetDefaultTileSet(IEditorTileSet * * ppTileSet);
    virtual tResult GetDefaultTileSet(cStr * pName) const;
    virtual tResult SetDefaultTileSet(const tChar * pszName);
 

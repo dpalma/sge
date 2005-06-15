@@ -4,7 +4,6 @@
 #include "stdhdr.h"
 
 #include "editorTileSet.h"
-#include "editorTile.h"
 #include "BitmapUtils.h"
 
 #include "resourceapi.h"
@@ -26,17 +25,17 @@ static char THIS_FILE[] = __FILE__;
 
 ///////////////////////////////////////
 
-cEditorTileSet::cEditorTileSet(const tChar * pszName)
- : m_name(pszName != NULL ? pszName : "")
+cEditorTileSet::cEditorTileSet(const tChar * pszName, const std::vector<cStr> & textures)
+ : m_name(pszName != NULL ? pszName : ""),
+   m_textures(textures.size())
 {
+   std::copy(textures.begin(), textures.end(), m_textures.begin());
 }
 
 ///////////////////////////////////////
 
 cEditorTileSet::~cEditorTileSet()
 {
-   std::for_each(m_tiles.begin(), m_tiles.end(), CTInterfaceMethod(&IEditorTile::Release));
-
    tImageLists::iterator iter;
    for (iter = m_imageLists.begin(); iter != m_imageLists.end(); iter++)
    {
@@ -62,43 +61,11 @@ tResult cEditorTileSet::GetName(cStr * pName) const
 
 ///////////////////////////////////////
 
-tResult cEditorTileSet::AddTile(const tChar * pszName,
-                                const tChar * pszTexture,
-                                int horzImages,
-                                int vertImages)
-{
-//   DebugMsg4("AddTile(\"%s\", \"%s\", %d, %d)\n", pszName, pszTexture, horzImages, vertImages);
-   cAutoIPtr<IEditorTile> pTile(new cEditorTile(pszName, pszTexture, horzImages, vertImages));
-   if (!pTile)
-   {
-      return E_OUTOFMEMORY;
-   }
-   else
-   {
-      tTiles::iterator iter;
-      for (iter = m_tiles.begin(); iter != m_tiles.end(); iter++)
-      {
-         cStr name, texture;
-         Verify((*iter)->GetName(&name) == S_OK);
-         Verify((*iter)->GetTexture(&texture) == S_OK);
-         if (strcmp(pszName, name.c_str()) == 0
-            || strcmp(pszTexture, texture.c_str()) == 0)
-         {
-            return S_FALSE;
-         }
-      }
-      m_tiles.push_back(CTAddRef(pTile));
-      return S_OK;
-   }
-}
-
-///////////////////////////////////////
-
 tResult cEditorTileSet::GetTileCount(uint * pTileCount) const
 {
    if (pTileCount != NULL)
    {
-      *pTileCount = m_tiles.size();
+      *pTileCount = m_textures.size();
       return S_OK;
    }
    else
@@ -111,7 +78,7 @@ tResult cEditorTileSet::GetTileCount(uint * pTileCount) const
 
 tResult cEditorTileSet::GetTileTexture(uint iTile, cStr * pTexture) const
 {
-   if (iTile >= m_tiles.size())
+   if (iTile >= m_textures.size())
    {
       return E_INVALIDARG;
    }
@@ -119,14 +86,15 @@ tResult cEditorTileSet::GetTileTexture(uint iTile, cStr * pTexture) const
    {
       return E_POINTER;
    }
-   return m_tiles[iTile]->GetTexture(pTexture);
+   *pTexture = m_textures[iTile];
+   return S_OK;
 }
 
 ///////////////////////////////////////
 
 tResult cEditorTileSet::GetTileName(uint iTile, cStr * pName) const
 {
-   if (iTile >= m_tiles.size())
+   if (iTile >= m_textures.size())
    {
       return E_INVALIDARG;
    }
@@ -134,7 +102,14 @@ tResult cEditorTileSet::GetTileName(uint iTile, cStr * pName) const
    {
       return E_POINTER;
    }
-   return m_tiles[iTile]->GetName(pName);
+   *pName = m_textures[iTile];
+   int iDot = pName->rfind('.');
+   if (iDot != cStr::npos)
+   {
+      pName->erase(iDot);
+   }
+   (*pName)[0] = toupper(pName->at(0));
+   return S_OK;
 }
 
 ///////////////////////////////////////
@@ -154,11 +129,12 @@ tResult cEditorTileSet::GetImageList(uint dimension, HIMAGELIST * phImageList)
    tImageLists::iterator f = m_imageLists.find(dimension);
    if (f != m_imageLists.end())
    {
-      *phImageList = f->second;
+      // Return a copy
+      *phImageList = ImageList_Duplicate(f->second);
       return S_OK;
    }
 
-   HIMAGELIST hImageList = ImageList_Create(dimension, dimension, ILC_COLOR24, m_tiles.size(), 0);
+   HIMAGELIST hImageList = ImageList_Create(dimension, dimension, ILC_COLOR24, m_textures.size(), 0);
    if (hImageList == NULL)
    {
       return E_FAIL;
@@ -166,16 +142,15 @@ tResult cEditorTileSet::GetImageList(uint dimension, HIMAGELIST * phImageList)
 
    UseGlobal(ResourceManager);
 
-   tTiles::iterator iter;
-   for (iter = m_tiles.begin(); iter != m_tiles.end(); iter++)
+   std::vector<cStr>::iterator iter = m_textures.begin();
+   std::vector<cStr>::iterator end = m_textures.end();
+   for (; iter != end; ++iter)
    {
-      cStr texture;
       HBITMAP hbm = NULL;
-      if ((*iter)->GetTexture(&texture) == S_OK &&
-         pResourceManager->Load(texture.c_str(), kRT_HBitmap, NULL, (void**)&hbm) == S_OK)
+      if (pResourceManager->Load(iter->c_str(), kRT_HBitmap, NULL, (void**)&hbm) == S_OK)
       {
          BITMAP bm;
-         GetObject(hbm, sizeof(bm), &bm);
+         Verify(GetObject(hbm, sizeof(bm), &bm));
          HBITMAP hSizedBm = StretchCopyBitmap(dimension, dimension, hbm, 0, 0,
             min(dimension, (uint)bm.bmWidth), min(dimension, (uint)bm.bmHeight));
          if (hSizedBm != NULL)
@@ -188,8 +163,30 @@ tResult cEditorTileSet::GetImageList(uint dimension, HIMAGELIST * phImageList)
 
    m_imageLists.insert(std::make_pair(dimension, hImageList));
 
-   *phImageList = hImageList;
+   // Return a copy
+   *phImageList = ImageList_Duplicate(hImageList);
 
+   return S_OK;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+tResult EditorTileSetCreate(const char * pszName,
+                            const std::vector<cStr> & textures,
+                            IEditorTileSet * * ppTileSet)
+{
+   if (pszName == NULL || ppTileSet == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cAutoIPtr<cEditorTileSet> pTileSet(new cEditorTileSet(pszName, textures));
+   if (!pTileSet)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   *ppTileSet = CTAddRef(static_cast<IEditorTileSet *>(pTileSet));
    return S_OK;
 }
 

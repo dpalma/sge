@@ -16,6 +16,7 @@ static char THIS_FILE[] = __FILE__;
 
 LOG_DEFINE_CHANNEL(EditorTileManager);
 
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cEditorTileManager
@@ -50,32 +51,26 @@ tResult cEditorTileManager::Term()
 
 ///////////////////////////////////////
 
-tResult cEditorTileManager::CreateTileSet(const tChar * pszName, IEditorTileSet * * ppTileSet)
+tResult cEditorTileManager::AddTileSet(IEditorTileSet * pTileSet)
 {
-   if (pszName == NULL || ppTileSet == NULL)
+   if (pTileSet == NULL)
    {
       return E_POINTER;
    }
 
-   tTileSetMap::iterator f = m_tileSetMap.find(pszName);
+   cStr name;
+   if (pTileSet->GetName(&name) != S_OK)
+   {
+      return E_FAIL;
+   }
 
+   tTileSetMap::iterator f = m_tileSetMap.find(name);
    if (f != m_tileSetMap.end())
    {
-      *ppTileSet = CTAddRef(f->second);
       return S_FALSE;
    }
 
-   cAutoIPtr<IEditorTileSet> pTileSet(new cEditorTileSet(pszName));
-
-   if (!pTileSet)
-   {
-      return E_OUTOFMEMORY;
-   }
-
-   m_tileSetMap[cStr(pszName)] = CTAddRef(static_cast<IEditorTileSet *>(pTileSet));
-
-   *ppTileSet = CTAddRef(static_cast<IEditorTileSet *>(pTileSet));
-
+   m_tileSetMap[name] = CTAddRef(pTileSet);
    return S_OK;
 }
 
@@ -97,13 +92,6 @@ tResult cEditorTileManager::GetTileSet(const tChar * pszName, IEditorTileSet * *
    }
 
    return S_FALSE;
-}
-
-///////////////////////////////////////
-
-tResult cEditorTileManager::GetDefaultTileSet(IEditorTileSet * * ppTileSet)
-{
-   return GetTileSet(m_defaultTileSet.c_str(), ppTileSet);
 }
 
 ///////////////////////////////////////

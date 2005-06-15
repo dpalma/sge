@@ -408,9 +408,6 @@
 				RelativePath="..\..\editor\editorDoc.cpp">
 			</File>
 			<File
-				RelativePath="..\..\editor\editorTile.cpp">
-			</File>
-			<File
 				RelativePath="..\..\editor\editorTileManager.cpp">
 			</File>
 			<File
@@ -533,9 +530,6 @@
 			</File>
 			<File
 				RelativePath="..\..\editor\editorguids.h">
-			</File>
-			<File
-				RelativePath="..\..\editor\editorTile.h">
 			</File>
 			<File
 				RelativePath="..\..\editor\editorTileManager.h">

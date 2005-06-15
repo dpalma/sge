@@ -2,5 +2,6 @@
 -- $Id$
 
 function EditorInit()
-   LoadTiles([[tiles.xml]]);
+   CreateTileSet("Terrain", "grass.tga", "snow.tga", "dirt.tga");
+   SetDefaultTileSet("Terrain");
 end;
