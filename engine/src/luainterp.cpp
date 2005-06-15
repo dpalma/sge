@@ -288,15 +288,38 @@ static int LuaThunkFunction(lua_State * L)
                cAutoIPtr<IDictionary> pDict(DictionaryCreate());
                if (!!pDict)
                {
+                  int nDictEntries = 0;
                   lua_pushnil(L);
                   while (lua_next(L, i + 1))
                   {
-                     const char * pszKey = lua_tostring(L, -2);
                      const char * pszVal = lua_tostring(L, -1);
-                     pDict->Set(pszKey, pszVal);
+                     // It's best not to call lua_tostring for the key because
+                     // it changes the stack, potentially confusing lua_next.
+                     // For now, only string keys are supported because that's
+                     // more naturaly for IDictionary. Numeric keys mean that
+                     // an array was passed in.
+                     int keyType = lua_type(L, -2);
+                     switch (keyType)
+                     {
+                        case LUA_TSTRING:
+                        {
+                           const char * pszKey = lua_tostring(L, -2);
+                           pDict->Set(pszKey, pszVal);
+                           nDictEntries++;
+                           break;
+                        }
+                        case LUA_TNUMBER:
+                        {
+                           double key = lua_tonumber(L, -2);
+                           break;
+                        }
+                     }
                      lua_pop(L, 1);
                   }
-                  args[i] = CTAddRef(pDict);
+                  if (nDictEntries > 0)
+                  {
+                     args[i] = CTAddRef(pDict);
+                  }
                }
                else
                {
