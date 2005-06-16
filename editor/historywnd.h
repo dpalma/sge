@@ -14,6 +14,78 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: cHistoryWndItem
+//
+
+class cHistoryWndItem
+{
+public:
+   cHistoryWndItem(LPCTSTR pszText, int textLength, COLORREF textColor);
+   cHistoryWndItem(const cHistoryWndItem & other);
+   ~cHistoryWndItem();
+
+   const cHistoryWndItem & operator =(const cHistoryWndItem & other);
+
+   const CString & GetText() const;
+   int GetTextLen() const;
+   COLORREF GetTextColor() const;
+
+private:
+   CString m_text;
+   COLORREF m_textColor;
+};
+
+///////////////////////////////////////
+
+typedef std::vector<cHistoryWndItem *> tHistoryWndItems;
+
+///////////////////////////////////////
+
+inline const CString & cHistoryWndItem::GetText() const
+{
+   return m_text;
+}
+
+///////////////////////////////////////
+
+inline int cHistoryWndItem::GetTextLen() const
+{
+   return GetText().GetLength();
+}
+
+///////////////////////////////////////
+
+inline COLORREF cHistoryWndItem::GetTextColor() const
+{
+   return m_textColor;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cHistoryWndHitTestInfo
+//
+
+class cHistoryWndHitTestInfo
+{
+public:
+   cHistoryWndHitTestInfo();
+   cHistoryWndHitTestInfo(const cHistoryWndHitTestInfo & other);
+   ~cHistoryWndHitTestInfo();
+
+   const cHistoryWndHitTestInfo & operator =(const cHistoryWndHitTestInfo & other);
+
+   void Reset();
+
+   int iItem; // index of the item hit
+   int iChar; // index of the character within the item that was hit
+   CRect rect;
+   int charX;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cHistoryWnd
 //
 
@@ -43,39 +115,10 @@ public:
    bool GetSelection(CString * pSel);
 
 protected:
-   class cEntry
-   {
-   public:
-      cEntry(LPCTSTR pszText, int textLength, COLORREF textColor);
-
-      const CString & GetText() const;
-      int GetTextLen() const;
-      COLORREF GetTextColor() const;
-
-   private:
-      CString m_text;
-      COLORREF m_textColor;
-   };
-
-   typedef std::vector<cEntry *> tEntries;
-
-   struct sHitTestInfo
-   {
-      sHitTestInfo();
-
-      void Reset();
-
-      cEntry * pEntryHit; // pointer to the entry that was hit
-      int iEntry; // index of the entry hit
-      int iCharHit; // index of the character within the entry that was hit
-      CRect rectHit; // rectangle containing the line hit
-      int charX;
-   };
-
    void EnforceMaxEntries();
    void UpdateScrollInfo();
    void UpdateFontMetrics();
-   bool HitTest(const CPoint & point, sHitTestInfo * pHitTest);
+   bool HitTest(const CPoint & point, cHistoryWndHitTestInfo * pHitTest);
    bool HitTestSelection(const CPoint & point);
    void ClearSel();
    void UpdateSelDrag(const CPoint & point);
@@ -115,8 +158,8 @@ protected:
 
 private:
    COLORREF m_textColor, m_bkColor;
-   size_t m_nMaxEntries;
-   tEntries m_entries;
+   tHistoryWndItems::size_type m_nMaxEntries;
+   tHistoryWndItems m_entries;
 
    CFont m_font;
    int m_nCharHeight; // height of the tallest character in the current font (I think)
@@ -126,10 +169,10 @@ private:
    bool m_bAtEnd; // is the window scrolled to the very bottom?
    int m_nAddsSinceLastPaint;
 
-   sHitTestInfo m_startSel;
-   sHitTestInfo m_endSel;
-   sHitTestInfo * m_pSelAnchor;
-   sHitTestInfo * m_pSelDrag;
+   cHistoryWndHitTestInfo m_startSel;
+   cHistoryWndHitTestInfo m_endSel;
+   cHistoryWndHitTestInfo * m_pSelAnchor;
+   cHistoryWndHitTestInfo * m_pSelDrag;
    bool m_bDragGTEAnchor; // is drag point >= (i.e. right and bottom of) anchor point?
 };
 
@@ -170,34 +213,6 @@ inline COLORREF cHistoryWnd::GetBkColor() const
 inline size_t cHistoryWnd::GetMaxEntries() const
 {
    return m_nMaxEntries;
-}
-
-///////////////////////////////////////
-
-inline cHistoryWnd::cEntry::cEntry(LPCTSTR pszText, int textLength, COLORREF textColor)
- : m_text(pszText, textLength), m_textColor(textColor)
-{
-}
-
-///////////////////////////////////////
-
-inline const CString & cHistoryWnd::cEntry::GetText() const
-{
-   return m_text;
-}
-
-///////////////////////////////////////
-
-inline int cHistoryWnd::cEntry::GetTextLen() const
-{
-   return GetText().GetLength();
-}
-
-///////////////////////////////////////
-
-inline COLORREF cHistoryWnd::cEntry::GetTextColor() const
-{
-   return m_textColor;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -62,6 +62,97 @@ bool cTextDataSource::SetText(const tChar * pszText)
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: cHistoryWndItem
+//
+
+///////////////////////////////////////
+
+cHistoryWndItem::cHistoryWndItem(LPCTSTR pszText, int textLength, COLORREF textColor)
+ : m_text(pszText, textLength),
+   m_textColor(textColor)
+{
+}
+
+///////////////////////////////////////
+
+cHistoryWndItem::cHistoryWndItem(const cHistoryWndItem & other)
+ : m_text(other.m_text),
+   m_textColor(other.m_textColor)
+{
+}
+
+///////////////////////////////////////
+
+cHistoryWndItem::~cHistoryWndItem()
+{
+}
+
+///////////////////////////////////////
+
+const cHistoryWndItem & cHistoryWndItem::operator =(const cHistoryWndItem & other)
+{
+   m_text = other.m_text;
+   m_textColor = other.m_textColor;
+   return *this;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cHistoryWndHitTestInfo
+//
+
+///////////////////////////////////////
+
+cHistoryWndHitTestInfo::cHistoryWndHitTestInfo()
+ : iItem(-1),
+   iChar(-1),
+   rect(0,0,0,0),
+   charX(-1)
+{
+}
+
+///////////////////////////////////////
+
+cHistoryWndHitTestInfo::cHistoryWndHitTestInfo(const cHistoryWndHitTestInfo & other)
+ : iItem(other.iItem),
+   iChar(other.iChar),
+   rect(other.rect),
+   charX(other.charX)
+{
+}
+
+///////////////////////////////////////
+
+cHistoryWndHitTestInfo::~cHistoryWndHitTestInfo()
+{
+}
+
+///////////////////////////////////////
+
+const cHistoryWndHitTestInfo & cHistoryWndHitTestInfo::operator =(const cHistoryWndHitTestInfo & other)
+{
+   iItem = other.iItem;
+   iChar = other.iChar;
+   rect = other.rect;
+   charX = other.charX;
+   return *this;
+}
+
+///////////////////////////////////////
+
+void cHistoryWndHitTestInfo::Reset()
+{
+   iItem = -1;
+   iChar = -1;
+   rect.SetRectEmpty();
+   charX = -1;
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cHistoryWnd
 //
 
@@ -144,7 +235,7 @@ void cHistoryWnd::AddText(LPCTSTR pszText, int textLength, COLORREF textColor)
    int breakLength = _tcscspn(pszText, szLineBreakChars);
    while ((breakLength <= textLength) && (breakLength > 0))
    {
-      cEntry * pEntry = new cEntry(pszText, breakLength, textColor);
+      cHistoryWndItem * pEntry = new cHistoryWndItem(pszText, breakLength, textColor);
       m_entries.push_back(pEntry);
 
       if (breakLength > m_nMaxEntryLen)
@@ -199,7 +290,7 @@ void cHistoryWnd::Clear()
    m_nMaxEntryLen = 0;
    m_maxEntrySize = 0;
 
-   tEntries::iterator iter;
+   tHistoryWndItems::iterator iter;
    for (iter = m_entries.begin(); iter != m_entries.end(); iter++)
    {
       delete *iter;
@@ -293,22 +384,22 @@ bool cHistoryWnd::CopySelection()
 
 bool cHistoryWnd::GetSelection(CString * pSel)
 {
-   if (m_startSel.iEntry > -1 && m_endSel.iEntry > -1)
+   if (m_startSel.iItem > -1 && m_endSel.iItem > -1)
    {
       Assert(pSel != NULL);
       pSel->Empty();
 
-      for (uint i = m_startSel.iEntry; i < m_entries.size(); i++)
+      for (uint i = m_startSel.iItem; i < m_entries.size(); i++)
       {
          int iStart, iEnd;
 
-         if (i == m_startSel.iEntry)
-            iStart = m_startSel.iCharHit;
+         if (i == m_startSel.iItem)
+            iStart = m_startSel.iChar;
          else
             iStart = 0;
 
-         if (i == m_endSel.iEntry)
-            iEnd = m_endSel.iCharHit;
+         if (i == m_endSel.iItem)
+            iEnd = m_endSel.iChar;
          else
             iEnd = m_entries[i]->GetTextLen();
 
@@ -319,7 +410,7 @@ bool cHistoryWnd::GetSelection(CString * pSel)
          *pSel += s;
 
          // if we just did the last entry in the selection, break out of the loop
-         if (i == m_endSel.iEntry)
+         if (i == m_endSel.iItem)
             break;
       }
 
@@ -336,7 +427,7 @@ void cHistoryWnd::EnforceMaxEntries()
    while (!m_entries.empty() && m_entries.size() > GetMaxEntries())
    {
       Assert(m_entries[0] != NULL);
-      cEntry * pRemoved = m_entries[0];
+      cHistoryWndItem * pRemoved = m_entries[0];
       m_entries.erase(m_entries.begin());
 
       // if the entry removed was the longest one, find the new longest entry
@@ -344,7 +435,7 @@ void cHistoryWnd::EnforceMaxEntries()
       {
          m_nMaxEntryLen = 0;
 
-         tEntries::iterator iter;
+         tHistoryWndItems::iterator iter;
          for (iter = m_entries.begin(); iter != m_entries.end(); iter++)
          {
             m_nMaxEntryLen = max((*iter)->GetTextLen(), m_nMaxEntryLen);
@@ -361,7 +452,7 @@ void cHistoryWnd::EnforceMaxEntries()
       {
          m_maxEntrySize = 0;
 
-         tEntries::iterator iter;
+         tHistoryWndItems::iterator iter;
          for (iter = m_entries.begin(); iter != m_entries.end(); iter++)
          {
             CSize size = pDC->GetTextExtent((*iter)->GetText());
@@ -425,7 +516,7 @@ void cHistoryWnd::UpdateFontMetrics()
 
 ///////////////////////////////////////
 
-bool cHistoryWnd::HitTest(const CPoint & point, sHitTestInfo * pHitTest)
+bool cHistoryWnd::HitTest(const CPoint & point, cHistoryWndHitTestInfo * pHitTest)
 {
    CPoint origin = GetScrollPosition();
 
@@ -442,7 +533,7 @@ bool cHistoryWnd::HitTest(const CPoint & point, sHitTestInfo * pHitTest)
 
    bool bHit = false;
    int index;
-   tEntries::iterator iter;
+   tHistoryWndItems::iterator iter;
    for (index = 0, iter = m_entries.begin(); iter != m_entries.end(); index++, iter++)
    {
       if (test.y >= r.top && test.y < r.bottom)
@@ -451,8 +542,7 @@ bool cHistoryWnd::HitTest(const CPoint & point, sHitTestInfo * pHitTest)
          {
             pHitTest->Reset();
 
-            pHitTest->pEntryHit = *iter;
-            pHitTest->iEntry = index;
+            pHitTest->iItem = index;
 
             CSize charSize;
             LPCTSTR pChar = (*iter)->GetText();
@@ -462,7 +552,7 @@ bool cHistoryWnd::HitTest(const CPoint & point, sHitTestInfo * pHitTest)
 
                if ((test.x >= charX) && (test.x < (charX + charSize.cx)))
                {
-                  pHitTest->iCharHit = pChar - (*iter)->GetText();
+                  pHitTest->iChar = pChar - (*iter)->GetText();
                   pHitTest->charX = charX;
                   break;
                }
@@ -471,11 +561,11 @@ bool cHistoryWnd::HitTest(const CPoint & point, sHitTestInfo * pHitTest)
             if (*pChar == '\0')
             {
                pChar--;
-               pHitTest->iCharHit = (*iter)->GetTextLen();// - 1;
+               pHitTest->iChar = (*iter)->GetTextLen();// - 1;
                pHitTest->charX = charX;
             }
 
-            pHitTest->rectHit = r;
+            pHitTest->rect = r;
 
             bHit = true;
          }
@@ -497,7 +587,7 @@ bool cHistoryWnd::HitTest(const CPoint & point, sHitTestInfo * pHitTest)
 
 bool cHistoryWnd::HitTestSelection(const CPoint & point)
 {
-   if (m_startSel.iEntry < 0 || m_endSel.iEntry < 0)
+   if (m_startSel.iItem < 0 || m_endSel.iItem < 0)
       return false;
 
    CPoint origin = GetScrollPosition();
@@ -508,15 +598,15 @@ bool cHistoryWnd::HitTestSelection(const CPoint & point)
 
    CFont * pOldFont = pDC->SelectObject(&m_font);
 
-   CRect r = m_startSel.rectHit;
+   CRect r = m_startSel.rect;
 
    bool bHit = false;
 
-   if (m_startSel.iEntry > -1)
+   if (m_startSel.iItem > -1)
    {
-      for (uint i = m_startSel.iEntry; i < m_entries.size(); i++)
+      for (uint i = m_startSel.iItem; i < m_entries.size(); i++)
       {
-         if (i == m_startSel.iEntry)
+         if (i == m_startSel.iItem)
          {
             r.left = m_startSel.charX;
          }
@@ -525,7 +615,7 @@ bool cHistoryWnd::HitTestSelection(const CPoint & point)
             r.left = 0;
          }
 
-         if (i == m_endSel.iEntry)
+         if (i == m_endSel.iItem)
          {
             r.right = m_endSel.charX;
          }
@@ -542,7 +632,7 @@ bool cHistoryWnd::HitTestSelection(const CPoint & point)
          }
 
          // if we just did the last entry in the selection, break out of the loop
-         if (i == m_endSel.iEntry)
+         if (i == m_endSel.iItem)
          {
             break;
          }
@@ -608,19 +698,19 @@ void cHistoryWnd::UpdateSelDrag(const CPoint & point)
 
    if (HitTest(point, m_pSelDrag))
    {
-      int iAnchorEntry = m_pSelAnchor->iEntry;
-      int iDragEntry = m_pSelDrag->iEntry;
+      int iAnchorEntry = m_pSelAnchor->iItem;
+      int iDragEntry = m_pSelDrag->iItem;
 
       // is the drag pos less than the anchor pos?
       bool bDragLTAnchor = (iDragEntry < iAnchorEntry) || 
-         ((iDragEntry == iAnchorEntry) && (m_pSelDrag->iCharHit < m_pSelAnchor->iCharHit));
+         ((iDragEntry == iAnchorEntry) && (m_pSelDrag->iChar < m_pSelAnchor->iChar));
 
       // is the drag pos equal to the anchor pos?
-      bool bDragEqAnchor = (iDragEntry == iAnchorEntry) && (m_pSelDrag->iCharHit == m_pSelAnchor->iCharHit);
+      bool bDragEqAnchor = (iDragEntry == iAnchorEntry) && (m_pSelDrag->iChar == m_pSelAnchor->iChar);
 
       // is the drag pos greater than the anchor pos?
       bool bDragGTAnchor = (iDragEntry > iAnchorEntry) || 
-         ((iDragEntry == iAnchorEntry) && (m_pSelDrag->iCharHit > m_pSelAnchor->iCharHit));
+         ((iDragEntry == iAnchorEntry) && (m_pSelDrag->iChar > m_pSelAnchor->iChar));
 
       if ((m_bDragGTEAnchor && bDragLTAnchor) ||
           (!m_bDragGTEAnchor && (bDragGTAnchor || bDragEqAnchor)))
@@ -720,30 +810,23 @@ void cHistoryWnd::OnPaint()
 
    CFont * pOldFont = dc.SelectObject(&m_font);
 
-   int start, end;
-   GetVisibleRange(&start, &end);
+   int iStart, iEnd;
+   GetVisibleRange(&iStart, &iEnd);
 
    CRect client;
    GetClientRect(client);
 
-//   CRect r(0, start * m_nCharHeight, m_totalDev.cx, m_totalDev.cy);
-   CRect r(client.left, start * m_nCharHeight, client.right, 0);
-
+   CRect r(client.left, iStart * m_nCharHeight, client.right, 0);
    r.bottom = r.top + m_nCharHeight;
 
    bool bInSel = false;
 
-   int index;
-   tEntries::iterator iter;
-   for (index = 0, iter = (m_entries.begin() + start);
-        iter != m_entries.end();
-        index++, iter++)
+   tHistoryWndItems::iterator iter = m_entries.begin() + iStart;
+   for (int index = 0; (iter != m_entries.end()) && (index != iEnd); index++, iter++)
    {
-      if ((index == m_startSel.iEntry) && (index == m_endSel.iEntry))
+      if ((index == m_startSel.iItem) && (index == m_endSel.iItem))
       {
-         CRect clip;
-
-         clip = r;
+         CRect clip(r);
          clip.right = m_startSel.charX;
 
          dc.SetBkColor(GetBkColor());
@@ -764,13 +847,11 @@ void cHistoryWnd::OnPaint()
          dc.SetTextColor((*iter)->GetTextColor());
          dc.ExtTextOut(r.left, r.top, ETO_OPAQUE | ETO_CLIPPED, &clip, (*iter)->GetText(), (*iter)->GetTextLen(), NULL);
       }
-      else if (index == m_startSel.iEntry)
+      else if (index == m_startSel.iItem)
       {
          bInSel = true;
 
-         CRect clip;
-
-         clip = r;
+         CRect clip(r);
          clip.right = m_startSel.charX;
 
          dc.SetBkColor(GetBkColor());
@@ -792,13 +873,11 @@ void cHistoryWnd::OnPaint()
 
          dc.ExtTextOut(r.left, r.top, ETO_OPAQUE | ETO_CLIPPED, &clip, NULL, 0, NULL);
       }
-      else if (index == m_endSel.iEntry)
+      else if (index == m_endSel.iItem)
       {
          bInSel = false;
 
-         CRect clip;
-
-         clip = r;
+         CRect clip(r);
          clip.right = m_endSel.charX;
 
          dc.SetBkColor(GetSysColor(COLOR_HIGHLIGHT));
@@ -818,8 +897,7 @@ void cHistoryWnd::OnPaint()
          {
             CSize textSize = dc.GetTextExtent((*iter)->GetText(), (*iter)->GetTextLen());
 
-            CRect clip;
-            clip = r;
+            CRect clip(r);
             clip.right = textSize.cx;
 
             dc.SetBkColor(GetSysColor(COLOR_HIGHLIGHT));
@@ -978,17 +1056,16 @@ void cHistoryWnd::OnLButtonUp(UINT nFlags, CPoint point)
 {
    if (GetCapture() == this)
    {
-      if (m_startSel.pEntryHit == NULL)
+      if (m_startSel.iItem == -1)
       {
          if (!m_entries.empty())
          {
-            m_startSel.pEntryHit = m_entries[0];
-            m_startSel.iEntry = 0;
-            m_startSel.iCharHit = 0;
+            m_startSel.iItem = 0;
+            m_startSel.iChar = 0;
          }
       }
 
-      if (m_endSel.pEntryHit == NULL)
+      if (m_endSel.iItem == -1)
       {
          ClearSel();
          Invalidate(FALSE);
@@ -1046,7 +1123,7 @@ void cHistoryWnd::OnEditCopy()
 
 void cHistoryWnd::OnUpdateEditCopy(CCmdUI* pCmdUI) 
 {
-   pCmdUI->Enable((m_startSel.iEntry > -1) && (m_endSel.iEntry > -1));
+   pCmdUI->Enable((m_startSel.iItem > -1) && (m_endSel.iItem > -1));
 }
 
 ///////////////////////////////////////
@@ -1062,28 +1139,6 @@ LRESULT cHistoryWnd::OnSetFont(WPARAM wParam, LPARAM lParam)
 {
    SetFont(CFont::FromHandle((HFONT)wParam), LOWORD(lParam));
    return 0;
-}
-
-///////////////////////////////////////
-
-cHistoryWnd::sHitTestInfo::sHitTestInfo()
- : pEntryHit(NULL),
-   iEntry(-1),
-   iCharHit(-1),
-   rectHit(0,0,0,0),
-   charX(-1)
-{
-}
-
-///////////////////////////////////////
-
-void cHistoryWnd::sHitTestInfo::Reset()
-{
-   pEntryHit = NULL;
-   iEntry = -1;
-   iCharHit = -1;
-   rectHit.SetRectEmpty();
-   charX = -1;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
