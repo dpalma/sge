@@ -22,6 +22,8 @@ public:
 
    CString m_scriptCommand;
 
+   static CString m_lastScriptCommand;
+
 // Dialog Data
 	//{{AFX_DATA(cScriptCmdDlg)
 	enum { IDD = IDD_SCRIPTCOMMAND };
@@ -31,6 +33,7 @@ public:
 	//{{AFX_VIRTUAL(cScriptCmdDlg)
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void OnOK();
 	//}}AFX_VIRTUAL
 
 // Implementation

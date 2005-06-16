@@ -16,6 +16,8 @@ static char THIS_FILE[] = __FILE__;
 // CLASS: cScriptCmdDlg
 //
 
+CString cScriptCmdDlg::m_lastScriptCommand;
+
 ////////////////////////////////////////
 
 BEGIN_MESSAGE_MAP(cScriptCmdDlg, CDialog)
@@ -26,7 +28,8 @@ END_MESSAGE_MAP()
 ////////////////////////////////////////
 
 cScriptCmdDlg::cScriptCmdDlg(CWnd * pParentWnd)
- : CDialog(cScriptCmdDlg::IDD, pParentWnd)
+ : CDialog(cScriptCmdDlg::IDD, pParentWnd),
+   m_scriptCommand(m_lastScriptCommand)
 {
 	//{{AFX_DATA_INIT(cScriptCmdDlg)
 	//}}AFX_DATA_INIT
@@ -40,6 +43,14 @@ void cScriptCmdDlg::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(cScriptCmdDlg)
 	DDX_Text(pDX, IDC_SCRIPT_COMMAND, m_scriptCommand);
 	//}}AFX_DATA_MAP
+}
+
+////////////////////////////////////////
+
+void cScriptCmdDlg::OnOK()
+{
+   CDialog::OnOK();
+   m_lastScriptCommand = m_scriptCommand;
 }
 
 ////////////////////////////////////////
