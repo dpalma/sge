@@ -22,7 +22,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\sgi,..\..\3rdparty\wtl\include"
+				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\sgi,..\..\3rdparty\wtl\include,..\..\3rdparty\glew\include"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;TIXML_USE_STL"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib"
+				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib $(OutDir)\glew.lib cg.lib cgGL.lib"
 				OutputFile=".\..\..\Build.vc71\Release/editor.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -87,7 +87,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\sgi,..\..\3rdparty\wtl\include"
+				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\sgi,..\..\3rdparty\wtl\include,..\..\3rdparty\glew\include"
 				PreprocessorDefinitions="_DEBUG;HAVE_CPPUNIT;WIN32;_WINDOWS;TIXML_USE_STL"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -107,7 +107,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\cppunit.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib"
+				AdditionalDependencies="$(OutDir)\cppunit.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib $(OutDir)\glew.lib cg.lib cgGL.lib"
 				OutputFile=".\..\..\Build.vc71\Debug/editor.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -154,7 +154,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\sgi,..\..\3rdparty\wtl\include"
+				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\sgi,..\..\3rdparty\wtl\include,..\..\3rdparty\glew\include"
 				PreprocessorDefinitions="STATIC_BUILD,_DEBUG,WIN32,_WINDOWS,TIXML_USE_STL"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -173,7 +173,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\cppunit.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib cg.lib cgGL.lib"
+				AdditionalDependencies="$(OutDir)\cppunit.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib $(OutDir)\glew.lib cg.lib cgGL.lib"
 				OutputFile=".\..\..\Build.vc71\StaticDebug/editor.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -220,7 +220,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\sgi,..\..\3rdparty\wtl\include"
+				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\sgi,..\..\3rdparty\wtl\include,..\..\3rdparty\glew\include"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;TIXML_USE_STL"
 				StringPooling="TRUE"
 				RuntimeLibrary="3"
@@ -240,7 +240,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib"
+				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib $(OutDir)\glew.lib cg.lib cgGL.lib"
 				OutputFile=".\..\..\Build.vc71\Opt/editor.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -288,7 +288,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\sgi,..\..\3rdparty\wtl\include"
+				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\cppunit\include,..\..\3rdparty\sgi,..\..\3rdparty\wtl\include,..\..\3rdparty\glew\include"
 				PreprocessorDefinitions="STATIC_BUILD,NDEBUG,WIN32,_WINDOWS,TIXML_USE_STL"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -307,7 +307,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib cg.lib cgGL.lib"
+				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib $(OutDir)\glew.lib cg.lib cgGL.lib"
 				OutputFile=".\..\..\Build.vc71\StaticRelease/editor.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
