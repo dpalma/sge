@@ -22,8 +22,7 @@
 #include <map>
 #include <stack>
 #include <cfloat>
-#include <windows.h> // HACK
-#include <GL/gl.h>
+#include <GL/glew.h>
 
 #include "dbgalloc.h" // must be last header
 
