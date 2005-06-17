@@ -336,6 +336,9 @@
 				RelativePath="..\..\editor\DynamicLink.cpp">
 			</File>
 			<File
+				RelativePath="..\..\editor\LogWnd.cpp">
+			</File>
+			<File
 				RelativePath="..\..\editor\MainFrm.cpp">
 			</File>
 			<File
@@ -420,16 +423,10 @@
 				RelativePath="..\..\editor\editorView.cpp">
 			</File>
 			<File
-				RelativePath="..\..\editor\historywnd.cpp">
-			</File>
-			<File
 				RelativePath="..\..\editor\scbarcf.cpp">
 			</File>
 			<File
 				RelativePath="..\..\editor\scbarg.cpp">
-			</File>
-			<File
-				RelativePath="..\..\editor\scrollwnd.cpp">
 			</File>
 			<File
 				RelativePath="..\..\editor\sizecbar.cpp">
@@ -485,6 +482,9 @@
 			</File>
 			<File
 				RelativePath="..\..\editor\DynamicLink.h">
+			</File>
+			<File
+				RelativePath="..\..\editor\LogWnd.h">
 			</File>
 			<File
 				RelativePath="..\..\editor\MainFrm.h">
@@ -547,9 +547,6 @@
 				RelativePath="..\..\editor\editorguids.h">
 			</File>
 			<File
-				RelativePath="..\..\editor\historywnd.h">
-			</File>
-			<File
 				RelativePath="..\..\editor\resource.h">
 			</File>
 			<File
@@ -557,9 +554,6 @@
 			</File>
 			<File
 				RelativePath="..\..\editor\scbarg.h">
-			</File>
-			<File
-				RelativePath="..\..\editor\scrollwnd.h">
 			</File>
 			<File
 				RelativePath="..\..\editor\sizecbar.h">
