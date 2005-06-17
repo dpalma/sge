@@ -12,21 +12,18 @@ sources = Split("""
    editorCommands.cpp
    editorCtrlBars.cpp
    editorDoc.cpp
-   editorTile.cpp
    editorTileManager.cpp
    editorTileSet.cpp
    editorTools.cpp
    editorTypes.cpp
    editorView.cpp
-   glView.cpp
-   historywnd.cpp
+   LogWnd.cpp
    MainFrm.cpp
    MapSettingsDlg.cpp
    OutputBar.cpp
    scbarcf.cpp
    scbarg.cpp
    ScriptCmdDlg.cpp
-   scrollwnd.cpp
    sizecbar.cpp
    splashwnd.cpp
    stdhdr.cpp

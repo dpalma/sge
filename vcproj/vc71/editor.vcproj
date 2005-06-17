@@ -423,7 +423,7 @@
 				RelativePath="..\..\editor\editorView.cpp">
 			</File>
 			<File
-				RelativePath="..\..\editor\historywnd.cpp">
+				RelativePath="..\..\editor\LogWnd.cpp">
 			</File>
 			<File
 				RelativePath="..\..\editor\MainFrm.cpp">
@@ -442,9 +442,6 @@
 			</File>
 			<File
 				RelativePath="..\..\editor\ScriptCmdDlg.cpp">
-			</File>
-			<File
-				RelativePath="..\..\editor\scrollwnd.cpp">
 			</File>
 			<File
 				RelativePath="..\..\editor\sizecbar.cpp">
@@ -547,7 +544,7 @@
 				RelativePath="..\..\editor\editorView.h">
 			</File>
 			<File
-				RelativePath="..\..\editor\historywnd.h">
+				RelativePath="..\..\editor\LogWnd.h">
 			</File>
 			<File
 				RelativePath="..\..\editor\MainFrm.h">
@@ -569,9 +566,6 @@
 			</File>
 			<File
 				RelativePath="..\..\editor\ScriptCmdDlg.h">
-			</File>
-			<File
-				RelativePath="..\..\editor\scrollwnd.h">
 			</File>
 			<File
 				RelativePath="..\..\editor\sizecbar.h">

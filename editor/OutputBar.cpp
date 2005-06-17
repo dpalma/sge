@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "outputbar.h"
+#include "OutputBar.h"
 
 #include "editorCtrlBars.h"
 
@@ -15,7 +15,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-const uint kChildId = 256;
+const uint kLogWndId = 256;
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -57,7 +57,7 @@ void cOutputBar::HandleLogCallback(eLogSeverity severity, const tChar * pszMsg, 
       RGB(0,0,255),                    // kDebug
    };
 
-   m_wndChild.AddText(pszMsg, msgLen, colors[severity]);
+   m_logWnd.AddText(pszMsg, msgLen, colors[severity]);
 
    if (m_nextLogCallback != NULL)
    {
@@ -92,14 +92,14 @@ int cOutputBar::OnCreate(LPCREATESTRUCT lpCreateStruct)
       }
    }
 
-   if (!m_wndChild.Create(NULL, NULL, WS_CHILD | WS_VISIBLE, CRect(0,0,0,0), this, kChildId))
+   if (!m_logWnd.Create(m_hWnd, CWindow::rcDefault, "", 0, 0, kLogWndId))
    {
       return -1;
    }
 
-   m_wndChild.ModifyStyleEx(0, WS_EX_CLIENTEDGE);
+   m_logWnd.ModifyStyleEx(0, WS_EX_CLIENTEDGE);
 
-   m_wndChild.SetFont(&font);
+   m_logWnd.SetFont(font);
 
    g_pOutputBar = this;
    m_nextLogCallback = techlog.SetCallback(OutputBarLogCallback);

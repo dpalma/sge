@@ -5,11 +5,10 @@
 #define INCLUDED_LOGWND_H
 
 #include <atlgdi.h>
+#include <atlcrack.h>
 #include <atlscrl.h>
 
 #include <vector>
-#include <string>
-#include <algorithm>
 
 #if _MSC_VER > 1000
 #pragma once
@@ -17,65 +16,73 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cLogWndItem
+// CLASS: cLogWndLine
 //
 
-class cLogWndItem
+class cLogWndLine
 {
 public:
-   cLogWndItem();
-   explicit cLogWndItem(eLogSeverity severity, const std::string & string);
-   cLogWndItem(const cLogWndItem & other);
+   cLogWndLine(LPCTSTR pszText, int textLength, COLORREF textColor);
+   cLogWndLine(const cLogWndLine & other);
+   ~cLogWndLine();
 
-   ~cLogWndItem();
+   const cLogWndLine & operator =(const cLogWndLine & other);
 
-   const cLogWndItem & operator =(const cLogWndItem & other);
-
-   eLogSeverity GetSeverity() const;
-   const tChar * GetString() const;
+   const CString & GetText() const;
+   int GetTextLen() const;
+   COLORREF GetTextColor() const;
 
 private:
-   eLogSeverity m_severity;
-   std::string m_string;
+   CString m_text;
+   COLORREF m_textColor;
 };
+
+///////////////////////////////////////
+
+typedef std::vector<cLogWndLine *> tLogWndLines;
+
+///////////////////////////////////////
+
+inline const CString & cLogWndLine::GetText() const
+{
+   return m_text;
+}
+
+///////////////////////////////////////
+
+inline int cLogWndLine::GetTextLen() const
+{
+   return GetText().GetLength();
+}
+
+///////////////////////////////////////
+
+inline COLORREF cLogWndLine::GetTextColor() const
+{
+   return m_textColor;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cLogWndItemRender
+// CLASS: cLogWndHitTestInfo
 //
 
-class cLogWndItemRender
+class cLogWndHitTestInfo
 {
 public:
-   enum
-   {
-      DT_FLAGS = DT_LEFT | DT_TOP | DT_WORDBREAK,
-      kLeftColumnWidth = 18,
-   };
+   cLogWndHitTestInfo();
+   cLogWndHitTestInfo(const cLogWndHitTestInfo & other);
+   ~cLogWndHitTestInfo();
 
-   cLogWndItemRender(WTL::CDCHandle dc, const CRect & startRect, HFONT hFont = NULL, bool bCalcOnly = false);
-   cLogWndItemRender(const cLogWndItemRender & other);
-   ~cLogWndItemRender();
+   const cLogWndHitTestInfo & operator =(const cLogWndHitTestInfo & other);
 
-   const cLogWndItemRender & operator =(const cLogWndItemRender & other);
+   void Reset();
 
-   void operator ()(const cLogWndItem & item);
-   void Invoke(const cLogWndItem & item);
-
-   void RenderLeftColumn(const CRect & rect);
-
-   const std::vector<CRect> & GetRects() const;
-   int GetTotalHeight() const;
-
-private:
-   WTL::CDCHandle m_dc;
-   HFONT m_hOldFont;
-   CRect m_rect;
-   bool m_bCalcOnly;
-   int m_rightSide;
-   std::vector<CRect> m_rects;
-   int m_totalHeight;
+   int iItem; // index of the item hit
+   int iChar; // index of the character within the item that was hit
+   CRect rect;
+   int charX;
 };
 
 
@@ -88,32 +95,128 @@ class cLogWnd : public WTL::CScrollWindowImpl<cLogWnd>
 {
    typedef WTL::CScrollWindowImpl<cLogWnd> tBase;
 
-   enum { kMaxItems = 1000 };
-
 public:
+   cLogWnd();
+   ~cLogWnd();
+
    DECLARE_WND_CLASS(NULL)
 
-   cLogWnd();
+   void AddText(LPCTSTR pszText, int textLength = -1, COLORREF textColor = CLR_INVALID);
+   void Clear();
 
-   tResult AddString(const tChar * pszString, size_t length = -1);
-   tResult AddString(eLogSeverity severity, const tChar * pszString, size_t length = -1);
-   tResult Clear();
+   COLORREF SetTextColor(COLORREF textColor);
+   COLORREF GetTextColor() const;
 
-   BOOL PreTranslateMessage(MSG * pMsg);
+   COLORREF SetBkColor(COLORREF bkColor);
+   COLORREF GetBkColor() const;
 
-   BEGIN_MSG_MAP(cLogWnd)
-      CHAIN_MSG_MAP(tBase)
-   END_MSG_MAP()
+   void SetMaxLines(int nMaxLines);
+   uint GetMaxLines() const;
 
+   void SetFont(HFONT hFont, BOOL bRedraw = TRUE);
+
+   bool CopySelection();
+   bool GetSelection(CString * pSel);
+
+   // CScrollWindowImpl handles WM_PAINT and delegates to this method
    void DoPaint(WTL::CDCHandle dc);
 
+   void DoScroll(int nType, int nScrollCode, int& cxyOffset, int cxySizeAll, int cxySizePage, int cxySizeLine);
+
 protected:
+   void EnforceMaxLines();
    void UpdateScrollInfo();
+   void UpdateFontMetrics();
+   bool HitTest(const CPoint & point, cLogWndHitTestInfo * pHitTest);
+   bool HitTestSelection(const CPoint & point);
+   void ClearSel();
+   void UpdateSelDrag(const CPoint & point);
+   void GetVisibleRange(int * pStart, int * pEnd);
+   virtual void AddContextMenuItems(WTL::CMenu * pMenu);
+
+   BEGIN_MSG_MAP_EX(cLogWnd)
+      CHAIN_MSG_MAP(tBase)
+      MSG_WM_CREATE(OnCreate)
+      MSG_WM_DESTROY(OnDestroy)
+      MSG_WM_SETFONT(OnSetFont)
+      MSG_WM_ERASEBKGND(OnEraseBkgnd)
+      MSG_WM_CONTEXTMENU(OnContextMenu)
+      MSG_WM_SETCURSOR(OnSetCursor)
+      MSG_WM_MOUSEMOVE(OnMouseMove)
+      MSG_WM_LBUTTONDOWN(OnLButtonDown)
+      MSG_WM_LBUTTONUP(OnLButtonUp)
+      COMMAND_ID_HANDLER_EX(ID_EDIT_COPY, OnEditCopy)
+      COMMAND_ID_HANDLER_EX(ID_EDIT_CLEAR_ALL, OnEditClearAll)
+   END_MSG_MAP()
+
+   LRESULT OnCreate(LPCREATESTRUCT lpCreateStruct);
+   void OnDestroy();
+   void OnSetFont(HFONT hFont, BOOL bRedraw);
+   LRESULT OnEraseBkgnd(WTL::CDCHandle dc);
+   void OnContextMenu(HWND hWnd, CPoint point);
+   LRESULT OnSetCursor(HWND hWnd, UINT hitTest, UINT message);
+   void OnMouseMove(UINT flags, CPoint point);
+   void OnLButtonDown(UINT flags, CPoint point);
+   void OnLButtonUp(UINT flags, CPoint point);
+   void OnEditCopy(UINT code, int id, HWND hWnd);
+   void OnEditClearAll(UINT code, int id, HWND hWnd);
 
 private:
-   typedef std::vector<cLogWndItem> tItems;
-   tItems m_items;
+   COLORREF m_textColor, m_bkColor;
+   tLogWndLines::size_type m_nMaxLines;
+   tLogWndLines m_lines;
+
+   WTL::CFont m_font;
+   int m_lineHeight; // height of a single line; determined by the selected font
+   int m_maxEntrySize; // horizontal size of the entry with the largest font dimensions
+   bool m_bAtEnd; // is the window scrolled to the very bottom?
+   int m_nAddsSinceLastPaint;
+
+   cLogWndHitTestInfo m_startSel;
+   cLogWndHitTestInfo m_endSel;
+   cLogWndHitTestInfo * m_pSelAnchor;
+   cLogWndHitTestInfo * m_pSelDrag;
+   bool m_bDragGTEAnchor; // is drag point >= (i.e. right and bottom of) anchor point?
 };
+
+///////////////////////////////////////
+
+inline COLORREF cLogWnd::SetTextColor(COLORREF textColor) 
+{
+   COLORREF c = m_textColor;
+   m_textColor = textColor;
+   return c;
+}
+
+///////////////////////////////////////
+
+inline COLORREF cLogWnd::GetTextColor() const
+{
+   return m_textColor;
+}
+
+///////////////////////////////////////
+
+inline COLORREF cLogWnd::SetBkColor(COLORREF bkColor) 
+{
+   COLORREF c = m_bkColor;
+   m_bkColor = bkColor;
+   return c;
+}
+
+///////////////////////////////////////
+
+inline COLORREF cLogWnd::GetBkColor() const
+{
+   return m_bkColor;
+}
+
+///////////////////////////////////////
+
+inline uint cLogWnd::GetMaxLines() const
+{
+   return m_nMaxLines;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
