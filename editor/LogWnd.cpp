@@ -99,56 +99,39 @@ const cLogWndLine & cLogWndLine::operator =(const cLogWndLine & other)
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cLogWndHitTestInfo
+// CLASS: cLogWndLocation
 //
 
 ///////////////////////////////////////
 
-cLogWndHitTestInfo::cLogWndHitTestInfo()
- : iItem(-1),
-   iChar(-1),
-   rect(0,0,0,0),
-   charX(-1)
+cLogWndLocation::cLogWndLocation()
+ : iLine(-1),
+   iChar(-1)
 {
 }
 
 ///////////////////////////////////////
 
-cLogWndHitTestInfo::cLogWndHitTestInfo(const cLogWndHitTestInfo & other)
- : iItem(other.iItem),
-   iChar(other.iChar),
-   rect(other.rect),
-   charX(other.charX)
+cLogWndLocation::cLogWndLocation(const cLogWndLocation & other)
+ : iLine(other.iLine),
+   iChar(other.iChar)
 {
 }
 
 ///////////////////////////////////////
 
-cLogWndHitTestInfo::~cLogWndHitTestInfo()
+cLogWndLocation::~cLogWndLocation()
 {
 }
 
 ///////////////////////////////////////
 
-const cLogWndHitTestInfo & cLogWndHitTestInfo::operator =(const cLogWndHitTestInfo & other)
+const cLogWndLocation & cLogWndLocation::operator =(const cLogWndLocation & other)
 {
-   iItem = other.iItem;
+   iLine = other.iLine;
    iChar = other.iChar;
-   rect = other.rect;
-   charX = other.charX;
    return *this;
 }
-
-///////////////////////////////////////
-
-void cLogWndHitTestInfo::Reset()
-{
-   iItem = -1;
-   iChar = -1;
-   rect.SetRectEmpty();
-   charX = -1;
-}
-
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -352,16 +335,16 @@ bool cLogWnd::CopySelection()
 
 bool cLogWnd::GetSelection(CString * pSel)
 {
-   if (m_startSel.iItem > -1 && m_endSel.iItem > -1)
+   if (m_startSel.iLine > -1 && m_endSel.iLine > -1)
    {
       Assert(pSel != NULL);
       pSel->Empty();
 
-      for (uint i = m_startSel.iItem; i < m_lines.size(); i++)
+      for (uint i = m_startSel.iLine; i < m_lines.size(); i++)
       {
          int iStart, iEnd;
 
-         if (i == m_startSel.iItem)
+         if (i == m_startSel.iLine)
          {
             iStart = m_startSel.iChar;
          }
@@ -370,7 +353,7 @@ bool cLogWnd::GetSelection(CString * pSel)
             iStart = 0;
          }
 
-         if (i == m_endSel.iItem)
+         if (i == m_endSel.iLine)
          {
             iEnd = m_endSel.iChar;
          }
@@ -388,7 +371,7 @@ bool cLogWnd::GetSelection(CString * pSel)
          *pSel += s;
 
          // if we just did the last entry in the selection, break out of the loop
-         if (i == m_endSel.iItem)
+         if (i == m_endSel.iLine)
          {
             break;
          }
@@ -472,102 +455,118 @@ void cLogWnd::UpdateFontMetrics()
 
 ///////////////////////////////////////
 
-bool cLogWnd::HitTest(const CPoint & point, cLogWndHitTestInfo * pHitTest)
+bool cLogWnd::GetHitLocation(const CPoint & point, cLogWndLocation * pHitTest)
 {
-   WTL::CDC dc(::GetDC(m_hWnd));
-   HFONT hOldFont = dc.SelectFont(m_font);
+   return GetHitLocation(point, &pHitTest->iLine, &pHitTest->iChar);
+}
 
-   CRect r;
-   GetClientRect(&r);
+///////////////////////////////////////
 
-   r.bottom = r.top + m_lineHeight;
-
+bool cLogWnd::GetHitLocation(const CPoint & point, int * piLine, int * piChar) const
+{
    bool bHit = false;
-   int index;
-   tLogWndLines::iterator iter;
-   for (index = 0, iter = m_lines.begin(); iter != m_lines.end(); index++, iter++)
+
+   int iLine;
+   if (GetHitLine(point, &iLine))
    {
-      if (point.y >= r.top && point.y < r.bottom)
+      WTL::CDC dc(::GetDC(m_hWnd));
+      HFONT hOldFont = dc.SelectFont(m_font);
+
+      DWORD gcpFlags = GetFontLanguageInfo(dc);
+      gcpFlags |= GCP_MAXEXTENT;
+
+      GCP_RESULTS gcpResults = {0};
+      gcpResults.lStructSize = sizeof(GCP_RESULTS);
+      gcpResults.nGlyphs = m_lines[iLine]->GetTextLen();
+
+      if (GetCharacterPlacement(dc, m_lines[iLine]->GetText(),
+         m_lines[iLine]->GetTextLen(), point.x, &gcpResults, gcpFlags))
       {
-         if (pHitTest)
+         bHit = true;
+
+         if (piLine != NULL)
          {
-            pHitTest->Reset();
-
-            pHitTest->iItem = index;
-
-            CSize charSize;
-            LPCTSTR pChar = (*iter)->GetText();
-            for (int charX = 0; *pChar != '\0'; pChar++, charX += charSize.cx)
-            {
-               dc.GetTextExtent(pChar, 1, &charSize);
-
-               if ((point.x >= charX) && (point.x < (charX + charSize.cx)))
-               {
-                  pHitTest->iChar = pChar - (*iter)->GetText();
-                  pHitTest->charX = charX;
-                  break;
-               }
-            }
-
-            if (*pChar == '\0')
-            {
-               pChar--;
-               pHitTest->iChar = (*iter)->GetTextLen();// - 1;
-               pHitTest->charX = charX;
-            }
-
-            pHitTest->rect = r;
-
-            bHit = true;
+            *piLine = iLine;
          }
 
-         break;
+         if (piChar != NULL)
+         {
+            *piChar = gcpResults.nMaxFit;
+         }
       }
 
-      r.OffsetRect(0, r.Height());
+      dc.SelectFont(hOldFont);
    }
-
-   dc.SelectFont(hOldFont);
 
    return bHit;
 }
 
 ///////////////////////////////////////
 
+bool cLogWnd::GetHitLine(const CPoint & point, int * piLine) const
+{
+   CRect r;
+   GetClientRect(&r);
+   if (r.PtInRect(point))
+   {
+      int iHitLine = point.y / m_lineHeight;
+      if (iHitLine >= 0 && iHitLine < static_cast<int>(m_lines.size()))
+      {
+         if (piLine != NULL)
+         {
+            *piLine = iHitLine;
+         }
+         return true;
+      }
+   }
+   return false;
+}
+
+///////////////////////////////////////
+
 bool cLogWnd::HitTestSelection(const CPoint & point)
 {
-   if (m_startSel.iItem < 0 || m_endSel.iItem < 0)
+   if (m_startSel.iLine < 0 || m_endSel.iLine < 0)
       return false;
 
    WTL::CDC dc(::GetDC(m_hWnd));
    HFONT hOldFont = dc.SelectFont(m_font);
 
-   CRect r = m_startSel.rect;
+   CRect rect;
+   GetClientRect(rect);
+
+   CRect r(rect);
+   r.top = m_startSel.iLine * m_lineHeight;
+   r.bottom = r.top + m_lineHeight;
 
    bool bHit = false;
 
-   if (m_startSel.iItem > -1)
+   if (m_startSel.iLine > -1)
    {
-      for (uint i = m_startSel.iItem; i < m_lines.size(); i++)
+      for (uint i = m_startSel.iLine; i < m_lines.size(); i++)
       {
-         if (i == m_startSel.iItem)
+         if (i == m_startSel.iLine)
          {
-            r.left = m_startSel.charX;
+            CSize extent;
+            dc.GetTextExtent(m_lines[m_startSel.iLine]->GetText(), m_startSel.iChar, &extent);
+            r.left = extent.cx;
          }
          else
          {
             r.left = 0;
          }
 
-         if (i == m_endSel.iItem)
+         if (i == m_endSel.iLine)
          {
-            r.right = m_endSel.charX;
+            CSize extent;
+            dc.GetTextExtent(m_lines[m_endSel.iLine]->GetText(), m_endSel.iChar, &extent);
+            r.right = extent.cx;
          }
          else
          {
-            CSize size;
-            dc.GetTextExtent(m_lines[i]->GetText(), -1, &size);
-            r.right = size.cx;
+            CSize extent;
+            dc.GetTextExtent(m_lines[i]->GetText(), -1, &extent);
+            r.right = extent.cx;
          }
 
          if (r.PtInRect(point))
@@ -577,7 +576,7 @@ bool cLogWnd::HitTestSelection(const CPoint & point)
          }
 
          // if we just did the last entry in the selection, break out of the loop
-         if (i == m_endSel.iItem)
+         if (i == m_endSel.iLine)
          {
             break;
          }
@@ -596,8 +595,8 @@ bool cLogWnd::HitTestSelection(const CPoint & point)
 
 void cLogWnd::ClearSel()
 {
-   m_startSel.Reset();
-   m_endSel.Reset();
+   m_startSel = cLogWndLocation();
+   m_endSel = cLogWndLocation();
 
    m_pSelAnchor = NULL;
    m_pSelDrag = NULL;
@@ -639,10 +638,10 @@ void cLogWnd::UpdateSelDrag(const CPoint & point)
       ScrollLineLeft();
    }
 
-   if (HitTest(point, m_pSelDrag))
+   if (GetHitLocation(point, m_pSelDrag))
    {
-      int iAnchorEntry = m_pSelAnchor->iItem;
-      int iDragEntry = m_pSelDrag->iItem;
+      int iAnchorEntry = m_pSelAnchor->iLine;
+      int iDragEntry = m_pSelDrag->iLine;
 
       // is the drag pos less than the anchor pos?
       bool bDragLTAnchor = (iDragEntry < iAnchorEntry) || 
@@ -673,14 +672,14 @@ void cLogWnd::UpdateSelDrag(const CPoint & point)
 void cLogWnd::GetVisibleRange(int * pStart, int * pEnd)
 {
    Assert(m_lineHeight > 0);
-   CRect rect;
-   GetClientRect(rect);
    if (pStart != NULL)
    {
       *pStart = m_ptOffset.y / m_lineHeight;
    }
    if (pEnd != NULL)
    {
+      CRect rect;
+      GetClientRect(rect);
       *pEnd = (m_ptOffset.y + rect.Height()) / m_lineHeight;
    }
 }
@@ -739,17 +738,23 @@ void cLogWnd::DoPaint(WTL::CDCHandle dc)
    tLogWndLines::iterator iter = m_lines.begin() + iStart;
    for (int index = 0; (iter != m_lines.end()) && (index <= iEnd); index++, iter++)
    {
-      if ((index == m_startSel.iItem) && (index == m_endSel.iItem))
+      if ((index == m_startSel.iLine) && (index == m_endSel.iLine))
       {
+         CSize startSelExtent;
+         dc.GetTextExtent(m_lines[m_startSel.iLine]->GetText(), m_startSel.iChar, &startSelExtent);
+
          CRect clip(r);
-         clip.right = m_startSel.charX;
+         clip.right = startSelExtent.cx;
 
          dc.SetBkColor(GetBkColor());
          dc.SetTextColor((*iter)->GetTextColor());
          dc.ExtTextOut(r.left, r.top, ETO_OPAQUE | ETO_CLIPPED, &clip, (*iter)->GetText(), (*iter)->GetTextLen(), NULL);
 
+         CSize endSelExtent;
+         dc.GetTextExtent(m_lines[m_endSel.iLine]->GetText(), m_endSel.iChar, &endSelExtent);
+
          clip.left = clip.right;
-         clip.right = m_endSel.charX;
+         clip.right = endSelExtent.cx;
 
          dc.SetBkColor(GetSysColor(COLOR_HIGHLIGHT));
          dc.SetTextColor(GetSysColor(COLOR_HIGHLIGHTTEXT));
@@ -762,12 +767,15 @@ void cLogWnd::DoPaint(WTL::CDCHandle dc)
          dc.SetTextColor((*iter)->GetTextColor());
          dc.ExtTextOut(r.left, r.top, ETO_OPAQUE | ETO_CLIPPED, &clip, (*iter)->GetText(), (*iter)->GetTextLen(), NULL);
       }
-      else if (index == m_startSel.iItem)
+      else if (index == m_startSel.iLine)
       {
          bInSel = true;
 
+         CSize startSelExtent;
+         dc.GetTextExtent(m_lines[m_startSel.iLine]->GetText(), m_startSel.iChar, &startSelExtent);
+
          CRect clip(r);
-         clip.right = m_startSel.charX;
+         clip.right = startSelExtent.cx;
 
          dc.SetBkColor(GetBkColor());
          dc.SetTextColor((*iter)->GetTextColor());
@@ -777,7 +785,7 @@ void cLogWnd::DoPaint(WTL::CDCHandle dc)
          dc.GetTextExtent((*iter)->GetText(), (*iter)->GetTextLen(), &textSize);
 
          clip = r;
-         clip.left = m_startSel.charX;
+         clip.left = startSelExtent.cx;
          clip.right = textSize.cx;
 
          dc.SetBkColor(GetSysColor(COLOR_HIGHLIGHT));
@@ -789,19 +797,22 @@ void cLogWnd::DoPaint(WTL::CDCHandle dc)
 
          dc.ExtTextOut(r.left, r.top, ETO_OPAQUE | ETO_CLIPPED, &clip, NULL, 0, NULL);
       }
-      else if (index == m_endSel.iItem)
+      else if (index == m_endSel.iLine)
       {
          bInSel = false;
 
+         CSize endSelExtent;
+         dc.GetTextExtent(m_lines[m_endSel.iLine]->GetText(), m_endSel.iChar, &endSelExtent);
+
          CRect clip(r);
-         clip.right = m_endSel.charX;
+         clip.right = endSelExtent.cx;
 
          dc.SetBkColor(GetSysColor(COLOR_HIGHLIGHT));
          dc.SetTextColor(GetSysColor(COLOR_HIGHLIGHTTEXT));
          dc.ExtTextOut(r.left, r.top, ETO_OPAQUE | ETO_CLIPPED, &clip, (*iter)->GetText(), (*iter)->GetTextLen(), NULL);
 
          clip = r;
-         clip.left = m_endSel.charX;
+         clip.left = endSelExtent.cx;
 
          dc.SetBkColor(GetBkColor());
          dc.SetTextColor((*iter)->GetTextColor());
@@ -914,7 +925,7 @@ void cLogWnd::OnContextMenu(HWND hWnd, CPoint point)
 
    AddContextMenuItems(&contextMenu);
 
-   if ((m_startSel.iItem > -1) && (m_endSel.iItem > -1))
+   if ((m_startSel.iLine > -1) && (m_endSel.iLine > -1))
    {
       contextMenu.EnableMenuItem(ID_EDIT_COPY, MF_BYCOMMAND | MF_ENABLED);
    }
@@ -978,7 +989,7 @@ void cLogWnd::OnLButtonDown(UINT flags, CPoint point)
       Invalidate(FALSE);
       UpdateWindow();
 
-      if (HitTest(point, &m_startSel))
+      if (GetHitLocation(point, &m_startSel))
       {
          SetCapture();
 
@@ -995,16 +1006,16 @@ void cLogWnd::OnLButtonUp(UINT flags, CPoint point)
 {
    if (GetCapture() == m_hWnd)
    {
-      if (m_startSel.iItem == -1)
+      if (m_startSel.iLine == -1)
       {
          if (!m_lines.empty())
          {
-            m_startSel.iItem = 0;
+            m_startSel.iLine = 0;
             m_startSel.iChar = 0;
          }
       }
 
-      if (m_endSel.iItem == -1)
+      if (m_endSel.iLine == -1)
       {
          ClearSel();
          Invalidate(FALSE);

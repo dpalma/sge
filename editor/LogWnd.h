@@ -65,24 +65,20 @@ inline COLORREF cLogWndLine::GetTextColor() const
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cLogWndHitTestInfo
+// CLASS: cLogWndLocation
 //
 
-class cLogWndHitTestInfo
+class cLogWndLocation
 {
 public:
-   cLogWndHitTestInfo();
-   cLogWndHitTestInfo(const cLogWndHitTestInfo & other);
-   ~cLogWndHitTestInfo();
+   cLogWndLocation();
+   cLogWndLocation(const cLogWndLocation & other);
+   ~cLogWndLocation();
 
-   const cLogWndHitTestInfo & operator =(const cLogWndHitTestInfo & other);
+   const cLogWndLocation & operator =(const cLogWndLocation & other);
 
-   void Reset();
-
-   int iItem; // index of the item hit
-   int iChar; // index of the character within the item that was hit
-   CRect rect;
-   int charX;
+   int iLine; // index of the line hit
+   int iChar; // index of the character within the line that was hit
 };
 
 
@@ -127,7 +123,9 @@ protected:
    void EnforceMaxLines();
    void UpdateScrollInfo();
    void UpdateFontMetrics();
-   bool HitTest(const CPoint & point, cLogWndHitTestInfo * pHitTest);
+   bool GetHitLocation(const CPoint & point, cLogWndLocation * pHitTest);
+   bool GetHitLocation(const CPoint & point, int * piLine, int * piChar) const;
+   bool GetHitLine(const CPoint & point, int * piLine) const;
    bool HitTestSelection(const CPoint & point);
    void ClearSel();
    void UpdateSelDrag(const CPoint & point);
@@ -172,10 +170,10 @@ private:
    bool m_bAtEnd; // is the window scrolled to the very bottom?
    int m_nAddsSinceLastPaint;
 
-   cLogWndHitTestInfo m_startSel;
-   cLogWndHitTestInfo m_endSel;
-   cLogWndHitTestInfo * m_pSelAnchor;
-   cLogWndHitTestInfo * m_pSelDrag;
+   cLogWndLocation m_startSel;
+   cLogWndLocation m_endSel;
+   cLogWndLocation * m_pSelAnchor;
+   cLogWndLocation * m_pSelDrag;
    bool m_bDragGTEAnchor; // is drag point >= (i.e. right and bottom of) anchor point?
 };
 
