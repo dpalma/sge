@@ -75,11 +75,11 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
    static const uint ctrlBarPlacementMap[] =
    {
-      AFX_IDW_DOCKBAR_TOP, // kCBP_Top
-      AFX_IDW_DOCKBAR_LEFT, // kCBP_Left
-      AFX_IDW_DOCKBAR_RIGHT, //kCBP_Right
-      AFX_IDW_DOCKBAR_BOTTOM, //kCBP_Bottom
-      AFX_IDW_DOCKBAR_FLOAT, //kCBP_Float
+      AFX_IDW_DOCKBAR_TOP,    // kCBP_Top
+      AFX_IDW_DOCKBAR_LEFT,   // kCBP_Left
+      AFX_IDW_DOCKBAR_RIGHT,  // kCBP_Right
+      AFX_IDW_DOCKBAR_BOTTOM, // kCBP_Bottom
+      AFX_IDW_DOCKBAR_FLOAT,  // kCBP_Float
    };
 
    uint titleStringId;
@@ -88,12 +88,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
    uint ctrlBarId = AFX_IDW_CONTROLBAR_FIRST + 32;
 
-   const CRect rect(0,0,0,0);
-
-   static const DWORD ctrlBarStyle = WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN;
-
-   const CString ctrlBarWndClass = AfxRegisterWndClass(CS_DBLCLKS,
-      LoadCursor(NULL, IDC_ARROW), GetSysColorBrush(COLOR_BTNFACE), 0);
+   static const DWORD kCtrlBarStyle = WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | CBRS_TOP;
 
    std::vector<uint> dockBars;
    HANDLE hIter;
@@ -108,24 +103,22 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
       if (pRuntimeClass != NULL && pRuntimeClass->m_pfnCreateObject != NULL)
       {
-         CControlBar * pCtrlBar = DYNAMIC_DOWNCAST(CControlBar, pRuntimeClass->CreateObject());
+         CSizingControlBar * pCtrlBar = DYNAMIC_DOWNCAST(CSizingControlBar, pRuntimeClass->CreateObject());
          if (pCtrlBar != NULL)
          {
-            if (pCtrlBar->Create(ctrlBarWndClass, title, ctrlBarStyle, rect, this, ctrlBarId))
+            if (pCtrlBar->Create(title, this, ctrlBarId, kCtrlBarStyle))
             {
                pCtrlBar->EnableDocking(CBRS_ALIGN_ANY);
-#if _MFC_VER < 0x0700
                pCtrlBar->SetBarStyle(pCtrlBar->GetBarStyle() |
                   CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
-#endif
-
                ctrlBarId++;
                m_ctrlBars.push_back(pCtrlBar);
                dockBars.push_back(ctrlBarPlacementMap[placement]);
             }
             else
             {
-               DebugMsg1("Error creating control bar of type %s\n", pRuntimeClass->m_lpszClassName);
+               ErrorMsgIf1(pRuntimeClass->m_lpszClassName != NULL,
+                  "Error creating control bar of type \"%s\"\n", pRuntimeClass->m_lpszClassName);
                delete pCtrlBar;
             }
          }
