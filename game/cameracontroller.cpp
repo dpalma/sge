@@ -4,7 +4,6 @@
 #include "stdhdr.h"
 
 #include "cameracontroller.h"
-#include "ggl.h"
 
 #include "ray.h"
 #include "inputapi.h"
@@ -15,6 +14,8 @@
 #include "globalobj.h"
 
 #include <algorithm>
+
+#include <GL/glew.h>
 
 #ifdef HAVE_CPPUNIT
 #include <cppunit/extensions/HelperMacros.h>
