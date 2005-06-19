@@ -6,10 +6,7 @@
 #include "engine.h"
 #include "model.h"
 
-#include "renderapi.h"
-
 #include "resourceapi.h"
-#include "readwriteapi.h"
 #include "globalobj.h"
 
 #include <tinyxml.h>
@@ -167,12 +164,15 @@ void CgEffectUnload(void * pData)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+extern tResult GlTextureResourceRegister(); // gltexture.cpp
+
 tResult EngineRegisterResourceFormats()
 {
    UseGlobal(ResourceManager);
    if (!!pResourceManager)
    {
       if (cModel::RegisterResourceFormat() == S_OK
+         && GlTextureResourceRegister()
          && TextFormatRegister("cg") == S_OK
          && TextFormatRegister("fx") == S_OK
          && pResourceManager->RegisterFormat(kRT_CgProgram, MAKERESOURCETYPE(kRC_Text), NULL, NULL, CgProgramFromText, CgProgramUnload) == S_OK

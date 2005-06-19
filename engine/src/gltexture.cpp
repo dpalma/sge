@@ -3,16 +3,14 @@
 
 #include "stdhdr.h"
 
-#include "renderapi.h"
+#include "engineapi.h"
 
 #include "imagedata.h"
 #include "techmath.h"
 #include "globalobj.h"
-#include "techstring.h"
 #include "resourceapi.h"
 
-#include "stdgl.h"
-#include <GL/glu.h>
+#include <GL/glew.h>
 
 #include "dbgalloc.h" // must be last header
 
@@ -141,7 +139,8 @@ tResult GlTextureResourceRegister()
    UseGlobal(ResourceManager);
    if (!!pResourceManager)
    {
-      if (SUCCEEDED(pResourceManager->RegisterFormat(kRC_GlTexture, kRC_Image, NULL, NULL, GlTextureFromImageData, GlTextureUnload)))
+      if (pResourceManager->RegisterFormat(kRT_GlTexture, MAKERESOURCETYPE(kRC_Image),
+         NULL, NULL, GlTextureFromImageData, GlTextureUnload) == S_OK)
       {
          return S_OK;
       }

@@ -15,6 +15,7 @@
 
 #define kRT_CgProgram   "CgProgram"
 #define kRT_CgEffect    "CgEffect"
+#define kRT_GlTexture   "GlTexture"
 
 ENGINE_API tResult EngineRegisterResourceFormats();
 
