@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="winmm.lib opengl32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib cg.lib cgGL.lib"
+				AdditionalDependencies="winmm.lib opengl32.lib glu32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib cg.lib cgGL.lib"
 				OutputFile=".\..\..\Build.vc7\Opt/engine.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -150,7 +150,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\cppunit.lib winmm.lib opengl32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib cg.lib cgGL.lib"
+				AdditionalDependencies="$(OutDir)\cppunit.lib winmm.lib opengl32.lib glu32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib cg.lib cgGL.lib"
 				OutputFile=".\..\..\Build.vc7\Debug/engine.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -258,7 +258,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="winmm.lib opengl32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib cg.lib cgGL.lib"
+				AdditionalDependencies="winmm.lib opengl32.lib glu32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib cg.lib cgGL.lib"
 				OutputFile=".\..\..\Build.vc7\Release/engine.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -315,6 +315,9 @@
 				</File>
 				<File
 					RelativePath="..\..\engine\src\frustum.cpp">
+				</File>
+				<File
+					RelativePath="..\..\engine\src\gltexture.cpp">
 				</File>
 				<File
 					RelativePath="..\..\engine\src\guibeveledrenderer.cpp">
