@@ -15,6 +15,8 @@
 #include <windows.h>
 #include <zmouse.h>
 
+#include <GL/glew.h>
+
 #include <cstdlib>
 
 #include "dbgalloc.h" // must be last header
@@ -381,12 +383,21 @@ HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height)
          int bpp = 0;
          if (CreateDefaultContext(g_hWnd, &bpp, &g_hDC, &g_hGLRC) == 0)
          {
+            ErrorMsg("An error occurred creating the GL context\n");
             DestroyWindow(g_hWnd);
             g_hWnd = NULL;
             return NULL;
          }
 
          wglMakeCurrent(g_hDC, g_hGLRC);
+
+         if (glewInit() != GLEW_OK)
+         {
+            ErrorMsg("GLEW library failed to initialize\n");
+            DestroyWindow(g_hWnd);
+            g_hWnd = NULL;
+            return NULL;
+         }
 
          ShowWindow(g_hWnd, SW_SHOW);
          UpdateWindow(g_hWnd);
