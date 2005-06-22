@@ -172,7 +172,7 @@ tResult EngineRegisterResourceFormats()
    if (!!pResourceManager)
    {
       if (cModel::RegisterResourceFormat() == S_OK
-         && GlTextureResourceRegister()
+         && GlTextureResourceRegister() == S_OK
          && TextFormatRegister("cg") == S_OK
          && TextFormatRegister("fx") == S_OK
          && pResourceManager->RegisterFormat(kRT_CgProgram, MAKERESOURCETYPE(kRC_Text), NULL, NULL, CgProgramFromText, CgProgramUnload) == S_OK
