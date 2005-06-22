@@ -4,10 +4,8 @@
 #include "stdhdr.h"
 
 #include "groundtiled.h"
-#include "sys.h"
 #include "script.h"
 #include "cameracontroller.h"
-#include "entityapi.h"
 
 #include "guiapi.h"
 #include "sceneapi.h"
@@ -15,11 +13,12 @@
 #include "sim.h"
 #include "inputapi.h"
 #include "engineapi.h"
+#include "entityapi.h"
+#include "scriptvar.h"
+#include "sys.h"
 
-#include "font.h"
 #include "renderapi.h"
 
-#include "scriptvar.h"
 #include "techmath.h"
 #include "resourceapi.h"
 #include "configapi.h"
@@ -30,12 +29,6 @@
 #include "readwriteapi.h"
 #include "threadcallapi.h"
 #include "techtime.h"
-
-#if defined(_WIN32) && !defined(__CYGWIN__)
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#undef DrawText
-#endif
 
 #include <ctime>
 
@@ -51,6 +44,10 @@
 #include "dbgalloc.h" // must be last header
 
 #pragma warning(disable:4355) // 'this' used in base member initializer list
+
+// The following definitions are required for WinMain
+F_DECLARE_HANDLE(HINSTANCE);
+typedef char * LPSTR;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -77,7 +74,7 @@ cAutoIPtr<ISceneCamera> g_pGameCamera;
 
 cAutoIPtr<cTerrainNode> g_pTerrainRoot;
 
-cAutoIPtr<IRenderFont> g_pFont;
+cAutoIPtr<IGUIFont> g_pFont;
 
 float g_fov;
 
@@ -457,9 +454,9 @@ static bool MainInit(int argc, char * argv[])
    pEntityManager->SetTerrainLocatorHack(&g_terrainLocator);
    pEntityManager->SetRenderDeviceHack(g_pRenderDevice);
 
-   if (FAILED(FontCreateDefault(&g_pFont)))
+   if (FAILED(GUIFontGetDefault(&g_pFont)))
    {
-      WarnMsg("Failed to create default font for rendering frame stats\n");
+      WarnMsg("Failed to get a default font interface pointer for showing frame stats\n");
       return false;
    }
 
@@ -547,7 +544,7 @@ static void MainFrame()
          fpsAverage);
 
       tRect rect(kDefStatsX, kDefStatsY, 0, 0);
-      g_pFont->DrawText(szStats, strlen(szStats), kDT_NoClip | kDT_DropShadow, &rect, kDefStatsColor);
+      g_pFont->RenderText(szStats, strlen(szStats), &rect, kRT_NoClip | kRT_DropShadow, kDefStatsColor);
    }
 
    GlEnd2D();
@@ -559,8 +556,8 @@ static void MainFrame()
 ///////////////////////////////////////////////////////////////////////////////
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
-                   LPSTR lpCmdLine, int nShowCmd)
+int STDCALL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
+                    LPSTR lpCmdLine, int nShowCmd)
 {
    if (!MainInit(__argc, __argv))
    {

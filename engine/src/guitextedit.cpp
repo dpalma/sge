@@ -10,7 +10,6 @@
 
 #include "inputapi.h"
 
-#include "font.h"
 #include "color.h"
 #include "renderapi.h"
 
@@ -496,14 +495,14 @@ bool cGUITextEditElement::HitTest(const tGUIPoint & point, int * pIndex)
    cAutoIPtr<IGUIElementRenderer> pRenderer;
    if (GetRenderer(&pRenderer) == S_OK)
    {
-      cAutoIPtr<IRenderFont> pFont;
+      cAutoIPtr<IGUIFont> pFont;
       if (pRenderer->GetFont(static_cast<IGUIElement*>(this), &pFont) == S_OK)
       {
          float charPos = 0;
          for (uint i = 0; i < m_text.length(); ++i)
          {
             tRect charRect(0,0,0,0);
-            pFont->DrawText(&(m_text.at(i)), 1, kDT_CalcRect, &charRect, tGUIColor::White);
+            pFont->RenderText(&(m_text.at(i)), 1, &charRect, kRT_CalcRect, tGUIColor::White);
 
             if ((point.x > charPos) && (point.x <= charPos + charRect.GetWidth()))
             {

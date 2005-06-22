@@ -8,18 +8,12 @@
 #include "guielementtools.h"
 #include "guieventroutertem.h"
 
-#ifdef GUI_DEBUG
-#include "font.h"
-#endif
-
 #include "keys.h"
 #include "resourceapi.h"
 #include "readwriteapi.h"
 
 #include <tinyxml.h>
-#include <windows.h> // HACK
-#undef DrawText
-#include <GL/gl.h>
+#include <GL/glew.h>
 
 #ifdef HAVE_CPPUNIT
 #include <cppunit/extensions/HelperMacros.h>
@@ -388,8 +382,8 @@ void cGUIContext::RenderDebugInfo()
       return;
    }
 
-   cAutoIPtr<IRenderFont> pFont;
-   if (FontCreateDefault(&pFont) == S_OK)
+   cAutoIPtr<IGUIFont> pFont;
+   if (GUIFontGetDefault(&pFont) == S_OK)
    {
       cTextBuffer<char, 200> text;
 
@@ -418,7 +412,7 @@ void cGUIContext::RenderDebugInfo()
       }
 
       tGUIRect rect(Round(m_debugInfoPlacement.x), Round(m_debugInfoPlacement.y), 0, 0);
-      pFont->DrawText(text.GetBuffer(), -1, kDT_NoClip, &rect, m_debugInfoTextColor);
+      pFont->RenderText(text.GetBuffer(), -1, &rect, kRT_NoClip, m_debugInfoTextColor);
    }
 }
 #endif

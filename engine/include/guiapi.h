@@ -20,6 +20,7 @@
 
 F_DECLARE_INTERFACE(IGUIElement);
 F_DECLARE_INTERFACE(IGUIStyle);
+F_DECLARE_INTERFACE(IGUIFont);
 F_DECLARE_INTERFACE(IGUIElementFactory);
 F_DECLARE_INTERFACE(IGUIElementRenderer);
 F_DECLARE_INTERFACE(IGUIElementRendererFactory);
@@ -38,9 +39,8 @@ F_DECLARE_INTERFACE(IGUIEventListener);
 F_DECLARE_INTERFACE(IGUIFactory);
 F_DECLARE_INTERFACE(IGUIContext);
 
-F_DECLARE_INTERFACE(IRenderFont);
 class TiXmlElement;
-class cFontDesc;
+class cGUIFontDesc;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -114,6 +114,7 @@ interface IGUIElement : IUnknown
    virtual tResult SetStyle(IGUIStyle * pStyle) = 0;
 };
 
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // INTERFACE: IGUIStyle
@@ -182,8 +183,8 @@ interface IGUIStyle : IUnknown
    virtual tResult GetFontOutline(uint * pB) = 0;
    virtual tResult SetFontOutline(bool b) = 0;
 
-   virtual tResult GetFontDesc(cFontDesc * pFontDesc) = 0;
-   virtual tResult GetFont(IRenderFont * * ppFont) = 0;
+   virtual tResult GetFontDesc(cGUIFontDesc * pFontDesc) = 0;
+   virtual tResult GetFont(IGUIFont * * ppFont) = 0;
 
    virtual tResult GetWidth(uint * pWidth, uint * pSpec) = 0;
    virtual tResult SetWidth(uint width, uint spec) = 0;
@@ -208,6 +209,38 @@ ENGINE_API tResult GUIStyleParse(const char * pszStyle, IGUIStyle * * ppStyle);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// INTERFACE: IGUIFont
+//
+
+enum eGUIFontRenderTextFlags
+{
+   kRT_Center        = (1<<0),
+   kRT_VCenter       = (1<<1),
+   kRT_NoClip        = (1<<2),
+   kRT_CalcRect      = (1<<3),
+   kRT_SingleLine    = (1<<4),
+   kRT_Bottom        = (1<<5),
+   kRT_NoBlend       = (1<<6),
+   kRT_DropShadow    = (1<<7),
+};
+
+interface IGUIFont : IUnknown
+{
+   virtual tResult RenderText(const char * pszText, int textLength, tRect * pRect,
+                              uint flags, const cColor & color) const = 0;
+   virtual tResult RenderText(const wchar_t * pszText, int textLength, tRect * pRect,
+                              uint flags, const cColor & color) const = 0;
+};
+
+///////////////////////////////////////
+
+ENGINE_API tResult GUIFontCreate(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont);
+
+ENGINE_API tResult GUIFontGetDefault(IGUIFont * * ppFont);
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // INTERFACE: IGUIElementFactory
 //
 
@@ -227,7 +260,7 @@ interface IGUIElementRenderer : IUnknown
 
    virtual tGUISize GetPreferredSize(IGUIElement * pElement) = 0;
 
-   virtual tResult GetFont(IGUIElement * pElement, IRenderFont * * ppFont) = 0;
+   virtual tResult GetFont(IGUIElement * pElement, IGUIFont * * ppFont) = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

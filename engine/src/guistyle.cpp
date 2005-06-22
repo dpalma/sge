@@ -6,7 +6,6 @@
 #include "guistyle.h"
 #include "guistrings.h"
 
-#include "font.h"
 #include "color.h"
 #include "renderapi.h"
 
@@ -448,45 +447,46 @@ tResult cGUIStyle::SetFontOutline(bool b)
 
 ///////////////////////////////////////
 
-tResult cGUIStyle::GetFontDesc(cFontDesc * pFontDesc)
+tResult cGUIStyle::GetFontDesc(cGUIFontDesc * pFontDesc)
 {
    if (pFontDesc == NULL)
    {
       return E_POINTER;
    }
-   uint effects = kFE_None;
+   uint effects = kGFE_None;
    if (m_bFontBold)
    {
-      effects |= kFE_Bold;
+      effects |= kGFE_Bold;
    }
    if (m_bFontItalic)
    {
-      effects |= kFE_Italic;
+      effects |= kGFE_Italic;
    }
    if (m_bFontShadow)
    {
-      effects |= kFE_Shadow;
+      effects |= kGFE_Shadow;
    }
    if (m_bFontOutline)
    {
-      effects |= kFE_Outline;
+      effects |= kGFE_Outline;
    }
-   *pFontDesc = cFontDesc(m_fontName.c_str(), m_fontPointSize,
-      effects, kDefaultGlyphFirst, kDefaultGlyphLast);
+   *pFontDesc = cGUIFontDesc(m_fontName.c_str(), m_fontPointSize, effects);
    return S_OK;
 }
 
 ///////////////////////////////////////
 
-tResult cGUIStyle::GetFont(IRenderFont * * ppFont)
+tResult cGUIStyle::GetFont(IGUIFont * * ppFont)
 {
    if (!m_pFont)
    {
-      cFontDesc fontDesc;
-      if (GetFontDesc(&fontDesc) != S_OK
-         || FontCreate(fontDesc, &m_pFont) != S_OK)
+      cGUIFontDesc fontDesc;
+      if (GetFontDesc(&fontDesc) == S_OK)
       {
-         FontCreateDefault(&m_pFont);
+         if (GUIFontCreate(fontDesc, &m_pFont) != S_OK)
+         {
+            Assert(!m_pFont);
+         }
       }
    }
 

@@ -8,8 +8,7 @@
 #include "resourceapi.h"
 #include "globalobj.h"
 
-#include <windows.h> // HACK
-#include <GL/gl.h>
+#include <GL/glew.h>
 
 #include "dbgalloc.h" // must be last header
 

@@ -8,17 +8,12 @@
 #include "scriptapi.h"
 #include "guistrings.h"
 
-#include "font.h"
 #include "color.h"
 
 #include "globalobj.h"
 
 #include <tinyxml.h>
-
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h> // HACK
-#include <GL/gl.h>
-#undef DrawText
+#include <GL/glew.h>
 
 #include "dbgalloc.h" // must be last header
 
@@ -39,7 +34,6 @@ static const uint kCursorWidth = 1;
 
 cGUIBeveledRenderer::cGUIBeveledRenderer()
 {
-   FontCreateDefault(&m_pDefaultFont);
 }
 
 ///////////////////////////////////////
@@ -172,10 +166,10 @@ tResult cGUIBeveledRenderer::Render(IGUIButtonElement * pButtonElement)
       GlRenderBevelledRect(rect2, g_bevel, tGUIColor::LightGray, tGUIColor::DarkGray, tGUIColor::Gray);
    }
 
-   cAutoIPtr<IRenderFont> pFont;
+   cAutoIPtr<IGUIFont> pFont;
    if (GetFont(pButtonElement, &pFont) == S_OK)
    {
-      uint drawTextFlags = kDT_Center | kDT_VCenter | kDT_SingleLine;
+      uint renderTextFlags = kRT_Center | kRT_VCenter | kRT_SingleLine;
 
       cAutoIPtr<IGUIStyle> pStyle;
       if (pButtonElement->GetStyle(&pStyle) == S_OK)
@@ -184,13 +178,13 @@ tResult cGUIBeveledRenderer::Render(IGUIButtonElement * pButtonElement)
          if (pStyle->GetAttribute(kAttribDropShadow, &dropShadow) == S_OK
             && dropShadow != 0)
          {
-            drawTextFlags |= kDT_DropShadow;
+            renderTextFlags |= kRT_DropShadow;
          }
       }
 
       rect.left += Round(textOffset.x);
       rect.top += Round(textOffset.y);
-      pFont->DrawText(pButtonElement->GetText(), -1, drawTextFlags, &rect, tGUIColor::White);
+      pFont->RenderText(pButtonElement->GetText(), -1, &rect, renderTextFlags, tGUIColor::White);
    }
 
    return S_OK;
@@ -209,7 +203,7 @@ tResult cGUIBeveledRenderer::Render(IGUIDialogElement * pDialogElement)
    tGUIColor face(tGUIColor::Gray);
    tGUIColor caption(tGUIColor::Blue);
 
-   cAutoIPtr<IRenderFont> pFont;
+   cAutoIPtr<IGUIFont> pFont;
 
    cAutoIPtr<IGUIStyle> pStyle;
    if (pDialogElement->GetStyle(&pStyle) == S_OK)
@@ -223,7 +217,7 @@ tResult cGUIBeveledRenderer::Render(IGUIDialogElement * pDialogElement)
 
    if (!pFont)
    {
-      pFont = CTAddRef(m_pDefaultFont);
+      pFont = CTAddRef(AccessDefaultFont());
    }
 
    GlRenderBevelledRect(rect, g_bevel, topLeft, bottomRight, face);
@@ -244,7 +238,7 @@ tResult cGUIBeveledRenderer::Render(IGUIDialogElement * pDialogElement)
       tGUIString title;
       if (pDialogElement->GetTitle(&title) == S_OK)
       {
-         pFont->DrawText(title.c_str(), -1, 0, &captionRect, tGUIColor::White);
+         pFont->RenderText(title.c_str(), -1, &captionRect, 0, tGUIColor::White);
       }
    }
 
@@ -261,7 +255,7 @@ tResult cGUIBeveledRenderer::Render(IGUILabelElement * pLabelElement)
 
    tGUIColor color(tGUIColor::Black);
 
-   cAutoIPtr<IRenderFont> pFont;
+   cAutoIPtr<IGUIFont> pFont;
 
    cAutoIPtr<IGUIStyle> pStyle;
    if (pLabelElement->GetStyle(&pStyle) == S_OK)
@@ -278,7 +272,7 @@ tResult cGUIBeveledRenderer::Render(IGUILabelElement * pLabelElement)
    tGUIString text;
    if (pLabelElement->GetText(&text) == S_OK)
    {
-      pFont->DrawText(text.c_str(), text.length(), kDT_NoClip, &rect, color);
+      pFont->RenderText(text.c_str(), text.length(), &rect, kRT_NoClip, color);
    }
 
    return S_OK;
@@ -327,7 +321,7 @@ tResult cGUIBeveledRenderer::Render(IGUITextEditElement * pTextEditElement)
 
    tGUIColor textColor(tGUIColor::Black);
 
-   cAutoIPtr<IRenderFont> pFont;
+   cAutoIPtr<IGUIFont> pFont;
 
    cAutoIPtr<IGUIStyle> pStyle;
    if (pTextEditElement->GetStyle(&pStyle) == S_OK)
@@ -338,7 +332,7 @@ tResult cGUIBeveledRenderer::Render(IGUITextEditElement * pTextEditElement)
 
    if (!pFont)
    {
-      pFont = CTAddRef(m_pDefaultFont);
+      pFont = CTAddRef(AccessDefaultFont());
    }
 
    uint selStart, selEnd;
@@ -346,8 +340,8 @@ tResult cGUIBeveledRenderer::Render(IGUITextEditElement * pTextEditElement)
 
    // Determine the width of the text up to the cursor
    tRect leftOfCursor(0,0,0,0);
-   pFont->DrawText(pTextEditElement->GetText(), selEnd, kDT_NoClip | kDT_CalcRect, 
-      &leftOfCursor, tGUIColor::White);
+   pFont->RenderText(pTextEditElement->GetText(), selEnd, &leftOfCursor,
+      kRT_NoClip | kRT_CalcRect, tGUIColor::White);
 
    // Offset the left edge so that the cursor is always in view.
    if (leftOfCursor.GetWidth() >= rect.GetWidth())
@@ -355,7 +349,7 @@ tResult cGUIBeveledRenderer::Render(IGUITextEditElement * pTextEditElement)
       rect.left -= leftOfCursor.GetWidth() - rect.GetWidth() + kCursorWidth;
    }
 
-   pFont->DrawText(pTextEditElement->GetText(), -1, kDT_NoClip, &rect, textColor);
+   pFont->RenderText(pTextEditElement->GetText(), -1, &rect, kRT_NoClip, textColor);
 
    // Render the cursor if this widget has focus and its blink cycle is on
    if (pTextEditElement->HasFocus() && pTextEditElement->ShowBlinkingCursor())
@@ -380,11 +374,11 @@ tResult cGUIBeveledRenderer::Render(IGUITextEditElement * pTextEditElement)
 
 tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIButtonElement * pButtonElement)
 {
-   cAutoIPtr<IRenderFont> pFont;
+   cAutoIPtr<IGUIFont> pFont;
    if (GetFont(pButtonElement, &pFont) == S_OK)
    {
       tRect rect(0,0,0,0);
-      pFont->DrawText(pButtonElement->GetText(), -1, kDT_CalcRect, &rect, tGUIColor::White);
+      pFont->RenderText(pButtonElement->GetText(), -1, &rect, kRT_CalcRect, tGUIColor::White);
 
       return tGUISize(static_cast<tGUISizeType>(rect.GetWidth() + rect.GetHeight()),
                       rect.GetHeight() * 1.5f);
@@ -397,7 +391,7 @@ tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIButtonElement * pButtonElemen
 
 tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIDialogElement * pDialogElement)
 {
-   cAutoIPtr<IRenderFont> pFont;
+   cAutoIPtr<IGUIFont> pFont;
 
    cAutoIPtr<IGUIStyle> pStyle;
    if (pDialogElement->GetStyle(&pStyle) == S_OK)
@@ -407,7 +401,7 @@ tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIDialogElement * pDialogElemen
 
    if (!pFont)
    {
-      pFont = CTAddRef(m_pDefaultFont);
+      pFont = CTAddRef(AccessDefaultFont());
    }
 
    cAutoIPtr<IGUILayoutManager> pLayout;
@@ -427,7 +421,7 @@ tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIDialogElement * pDialogElemen
             if (pDialogElement->GetTitle(&title) == S_OK)
             {
                tRect rect(0,0,0,0);
-               pFont->DrawText(title.c_str(), -1, kDT_CalcRect, &rect, tGUIColor::White);
+               pFont->RenderText(title.c_str(), -1, &rect, kRT_CalcRect, tGUIColor::White);
 
                captionHeight = rect.GetHeight();
 
@@ -447,14 +441,14 @@ tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIDialogElement * pDialogElemen
 
 tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUILabelElement * pLabelElement)
 {
-   cAutoIPtr<IRenderFont> pFont;
+   cAutoIPtr<IGUIFont> pFont;
    if (GetFont(pLabelElement, &pFont) == S_OK)
    {
       tGUIString text;
       if (pLabelElement->GetText(&text) == S_OK)
       {
          tRect rect(0,0,0,0);
-         pFont->DrawText(text.c_str(), text.length(), kDT_CalcRect, &rect, tGUIColor::White);
+         pFont->RenderText(text.c_str(), text.length(), &rect, kRT_CalcRect, tGUIColor::White);
 
          return tGUISize((tGUISizeType)rect.GetWidth(), (tGUISizeType)rect.GetHeight());
       }
@@ -480,14 +474,14 @@ tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUITextEditElement * pTextEditEl
       editSize = kDefaultEditSize;
    }
 
-   cAutoIPtr<IRenderFont> pFont;
+   cAutoIPtr<IGUIFont> pFont;
    if (GetFont(pTextEditElement, &pFont) == S_OK)
    {
       char * psz = reinterpret_cast<char *>(alloca(editSize * sizeof(char)));
       memset(psz, 'M', editSize * sizeof(char));
 
       tRect rect(0,0,0,0);
-      pFont->DrawText(psz, editSize, kDT_CalcRect | kDT_SingleLine, &rect, tGUIColor::White);
+      pFont->RenderText(psz, editSize, &rect, kRT_CalcRect | kRT_SingleLine, tGUIColor::White);
 
       return tGUISize(static_cast<tGUISizeType>(rect.GetWidth() + (kHorzInset * 2)),
                         static_cast<tGUISizeType>(rect.GetHeight() + (kVertInset * 2)));
@@ -499,7 +493,7 @@ tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUITextEditElement * pTextEditEl
 ///////////////////////////////////////
 
 tResult cGUIBeveledRenderer::GetFont(IGUIElement * pElement,
-                                     IRenderFont * * ppFont)
+                                     IGUIFont * * ppFont)
 {
    if (pElement == NULL || ppFont == NULL)
    {
@@ -515,8 +509,19 @@ tResult cGUIBeveledRenderer::GetFont(IGUIElement * pElement,
       }
    }
 
-   *ppFont = CTAddRef(m_pDefaultFont);
+   *ppFont = CTAddRef(AccessDefaultFont());
    return S_OK;
+}
+
+///////////////////////////////////////
+
+IGUIFont * cGUIBeveledRenderer::AccessDefaultFont()
+{
+   if (!m_pDefaultFont)
+   {
+      GUIFontGetDefault(&m_pDefaultFont);
+   }
+   return m_pDefaultFont;
 }
 
 

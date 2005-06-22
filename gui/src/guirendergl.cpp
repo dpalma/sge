@@ -5,9 +5,7 @@
 
 #include "guiapi.h"
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h> // HACK
-#include <GL/gl.h>
+#include <GL/glew.h>
 
 #include "dbgalloc.h" // must be last header
 

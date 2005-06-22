@@ -12,8 +12,6 @@
 #pragma once
 #endif
 
-F_DECLARE_INTERFACE(IRenderFont);
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUIStyle
@@ -66,8 +64,8 @@ public:
    virtual tResult GetFontOutline(uint * pB);
    virtual tResult SetFontOutline(bool b);
 
-   virtual tResult GetFontDesc(cFontDesc * pFontDesc);
-   virtual tResult GetFont(IRenderFont * * ppFont);
+   virtual tResult GetFontDesc(cGUIFontDesc * pFontDesc);
+   virtual tResult GetFont(IGUIFont * * ppFont);
 
    virtual tResult GetWidth(uint * pWidth, uint * pSpec);
    virtual tResult SetWidth(uint width, uint spec);
@@ -84,7 +82,7 @@ private:
    tGUIString m_fontName;
    uint m_fontPointSize;
    bool m_bFontBold, m_bFontItalic, m_bFontShadow, m_bFontOutline;
-   cAutoIPtr<IRenderFont> m_pFont;
+   cAutoIPtr<IGUIFont> m_pFont;
    uint m_width, m_widthSpec;
    uint m_height, m_heightSpec;
 };

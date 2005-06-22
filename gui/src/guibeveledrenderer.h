@@ -10,8 +10,6 @@
 #pragma once
 #endif
 
-F_DECLARE_INTERFACE(IRenderFont);
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUIBeveledRenderer
@@ -25,7 +23,7 @@ public:
 
    virtual tResult Render(IGUIElement * pElement);
    virtual tGUISize GetPreferredSize(IGUIElement * pElement);
-   virtual tResult GetFont(IGUIElement * pElement, IRenderFont * * ppFont);
+   virtual tResult GetFont(IGUIElement * pElement, IGUIFont * * ppFont);
 
 private:
    tResult Render(IGUIButtonElement * pButtonElement);
@@ -40,7 +38,9 @@ private:
    tGUISize GetPreferredSize(IGUIPanelElement * pPanelElement);
    tGUISize GetPreferredSize(IGUITextEditElement * pTextEditElement);
 
-   cAutoIPtr<IRenderFont> m_pDefaultFont;
+   IGUIFont * AccessDefaultFont();
+
+   cAutoIPtr<IGUIFont> m_pDefaultFont;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

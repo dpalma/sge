@@ -141,5 +141,150 @@ inline bool cGUISize<T>::operator ==(const cGUISize & other) const
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cGUIFontDesc
+//
+
+enum eGUIFontEffects
+{
+   kGFE_None      = (0<<0),
+   kGFE_Bold      = (1<<0),
+   kGFE_Italic    = (1<<1),
+   kGFE_Shadow    = (1<<2),
+   kGFE_Outline   = (1<<3),
+};
+
+class ENGINE_API cGUIFontDesc
+{
+public:
+   enum
+   {
+      kANSIGlyphFirst = 32,
+      kANSIGlyphLast = 128,
+   };
+
+   cGUIFontDesc();
+   cGUIFontDesc(const char * pszFace, int pointSize, uint effects,
+      uint glyphFirst = kANSIGlyphFirst, uint glyphLast = kANSIGlyphLast);
+   cGUIFontDesc(const cGUIFontDesc & other);
+
+   const cGUIFontDesc & operator =(const cGUIFontDesc & other);
+
+   const char * GetFace() const;
+   int GetPointSize() const;
+   bool GetBold() const;
+   bool GetItalic() const;
+   bool GetShadow() const;
+   bool GetOutline() const;
+   uint GetGlyphFirst() const;
+   uint GetGlyphLast() const;
+
+private:
+   cStr m_typeFace;
+   int m_pointSize;
+   uint m_effects;
+   uint m_glyphFirst;
+   uint m_glyphLast;
+};
+
+////////////////////////////////////////
+
+inline cGUIFontDesc::cGUIFontDesc()
+ : m_pointSize(0),
+   m_effects(0),
+   m_glyphFirst(0),
+   m_glyphLast(0)
+{
+}
+
+////////////////////////////////////////
+
+inline cGUIFontDesc::cGUIFontDesc(const char * pszFace, int pointSize, uint effects, uint glyphFirst, uint glyphLast)
+ : m_typeFace(pszFace),
+   m_pointSize(pointSize),
+   m_effects(effects),
+   m_glyphFirst(glyphFirst),
+   m_glyphLast(glyphLast)
+{
+}
+
+////////////////////////////////////////
+
+inline cGUIFontDesc::cGUIFontDesc(const cGUIFontDesc & other)
+ : m_typeFace(other.m_typeFace),
+   m_pointSize(other.m_pointSize),
+   m_glyphFirst(other.m_glyphFirst),
+   m_glyphLast(other.m_glyphLast)
+{
+}
+
+////////////////////////////////////////
+
+inline const cGUIFontDesc & cGUIFontDesc::operator =(const cGUIFontDesc & other)
+{
+   m_typeFace = other.m_typeFace;
+   m_pointSize = other.m_pointSize;
+   m_glyphFirst = other.m_glyphFirst;
+   m_glyphLast = other.m_glyphLast;
+   return *this;
+}
+
+////////////////////////////////////////
+
+inline const char * cGUIFontDesc::GetFace() const
+{
+   return m_typeFace.c_str();
+}
+
+////////////////////////////////////////
+
+inline int cGUIFontDesc::GetPointSize() const
+{
+   return m_pointSize;
+}
+
+////////////////////////////////////////
+
+inline bool cGUIFontDesc::GetBold() const
+{
+   return (m_effects & kGFE_Bold) == kGFE_Bold;
+}
+
+////////////////////////////////////////
+
+inline bool cGUIFontDesc::GetItalic() const
+{
+   return (m_effects & kGFE_Italic) == kGFE_Italic;
+}
+
+////////////////////////////////////////
+
+inline bool cGUIFontDesc::GetShadow() const
+{
+   return (m_effects & kGFE_Shadow) == kGFE_Shadow;
+}
+
+////////////////////////////////////////
+
+inline bool cGUIFontDesc::GetOutline() const
+{
+   return (m_effects & kGFE_Outline) == kGFE_Outline;
+}
+
+////////////////////////////////////////
+
+inline uint cGUIFontDesc::GetGlyphFirst() const
+{
+   return m_glyphFirst;
+}
+
+////////////////////////////////////////
+
+inline uint cGUIFontDesc::GetGlyphLast() const
+{
+   return m_glyphLast;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 
 #endif // INCLUDED_GUITYPES_H
