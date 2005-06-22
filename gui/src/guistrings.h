@@ -12,11 +12,10 @@
 
 const char kAttribAlign[]              = "align";
 const char kAttribBackgroundColor[]    = "background-color";
+const char kAttribColumns[]            = "columns";
 const char kAttribDropShadow[]         = "drop-shadow";
 const char kAttribEditSize[]           = "editsize";
 const char kAttribEnabled[]            = "enabled";
-const char kAttribId[]                 = "id";
-const char kAttribInsets[]             = "insets";
 const char kAttribFontBold[]           = "font-bold";
 const char kAttribFontItalic[]         = "font-italic";
 const char kAttribFontName[]           = "font-name";
@@ -25,17 +24,24 @@ const char kAttribFontPointSize[]      = "font-pointSize";
 const char kAttribFontShadow[]         = "font-shadow";
 const char kAttribForegroundColor[]    = "foreground-color";
 const char kAttribHeight[]             = "height";
+const char kAttribHgap[]               = "hgap";
+const char kAttribId[]                 = "id";
+const char kAttribInsets[]             = "insets";
 const char kAttribIsModal[]            = "ismodal";
+const char kAttribLayout[]             = "layout";
 const char kAttribOnCancel[]           = "oncancel";
 const char kAttribOnClick[]            = "onclick";
 const char kAttribOnOk[]               = "onok";
 const char kAttribRendererClass[]      = "renderer";
+const char kAttribRows[]               = "rows";
 const char kAttribStyle[]              = "style";
 const char kAttribText[]               = "text";
 const char kAttribTextAlign[]          = "text-align";
 const char kAttribTextVerticalAlign[]  = "text-vertical-align";
 const char kAttribTitle[]              = "title";
+const char kAttribType[]               = "type";
 const char kAttribVerticalAlign[]      = "vertical-align";
+const char kAttribVgap[]               = "vgap";
 const char kAttribVisible[]            = "visible";
 const char kAttribWidth[]              = "width";
 
@@ -46,6 +52,8 @@ const char kValueAlignCenter[]         = "center";
 const char kValueVertAlignTop[]        = "top";
 const char kValueVertAlignBottom[]     = "bottom";
 const char kValueVertAlignCenter[]     = "center";
+
+const char kValueGrid[]                = "grid";
 
 const char kValueColorBlack[]          = "black";
 const char kValueColorRed[]            = "red";

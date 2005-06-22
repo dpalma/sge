@@ -4,6 +4,8 @@
 #include "stdhdr.h"
 
 #include "guilayout.h"
+#include "guielementtools.h"
+#include "guistrings.h"
 
 #include <tinyxml.h>
 
@@ -25,22 +27,22 @@ static tResult GUIGridLayoutManagerCreate(const TiXmlElement * pXmlElement, IGUI
    {
       int value;
 
-      if (pXmlElement->QueryIntAttribute("hgap", &value) == TIXML_SUCCESS)
+      if (pXmlElement->QueryIntAttribute(kAttribHgap, &value) == TIXML_SUCCESS)
       {
          pGridLayout->SetHGap(value);
       }
-      
-      if (pXmlElement->QueryIntAttribute("vgap", &value) == TIXML_SUCCESS)
+
+      if (pXmlElement->QueryIntAttribute(kAttribVgap, &value) == TIXML_SUCCESS)
       {
          pGridLayout->SetVGap(value);
       }
-      
-      if (pXmlElement->QueryIntAttribute("columns", &value) == TIXML_SUCCESS)
+
+      if (pXmlElement->QueryIntAttribute(kAttribColumns, &value) == TIXML_SUCCESS)
       {
          pGridLayout->SetColumns(value);
       }
-      
-      if (pXmlElement->QueryIntAttribute("rows", &value) == TIXML_SUCCESS)
+
+      if (pXmlElement->QueryIntAttribute(kAttribRows, &value) == TIXML_SUCCESS)
       {
          pGridLayout->SetRows(value);
       }
@@ -61,15 +63,15 @@ tResult GUILayoutManagerCreate(const TiXmlElement * pXmlElement, IGUILayoutManag
       return E_POINTER;
    }
 
-   if (stricmp(pXmlElement->Value(), "layout") != 0)
+   if (stricmp(pXmlElement->Value(), kAttribLayout) != 0)
    {
       return E_INVALIDARG;
    }
 
    const char * pszType;
-   if ((pszType = pXmlElement->Attribute("type")) != NULL)
+   if ((pszType = pXmlElement->Attribute(kAttribType)) != NULL)
    {
-      if (stricmp(pszType, "grid") == 0)
+      if (stricmp(pszType, kValueGrid) == 0)
       {
          return GUIGridLayoutManagerCreate(pXmlElement, ppLayout);
       }
@@ -132,16 +134,17 @@ tResult cGUIGridLayoutManager::Layout(IGUIContainerElement * pContainer)
       return E_POINTER;
    }
 
-   uint iRow = 0, iCol = 0;
-   float rowHeight = 0;
-   tGUIPoint pos(0,0);
+   tGUISize size = pContainer->GetSize();
 
    tGUIInsets insets = {0};
    if (pContainer->GetInsets(&insets) == S_OK)
    {
-      pos.x = (tVec2::value_type)insets.left;
-      pos.y = (tVec2::value_type)insets.top;
+      size.width -= (insets.left + insets.right);
+      size.height -= (insets.top + insets.bottom);
    }
+
+   float cellWidth = size.width > 0 ? (size.width - ((m_columns - 1) * m_hGap)) / m_columns : 0;
+   float cellHeight = size.height > 0 ? (size.height - ((m_rows - 1) * m_vGap)) / m_rows : 0;
 
    cAutoIPtr<IGUIElementEnum> pEnum;
    if (pContainer->GetElements(&pEnum) == S_OK)
@@ -149,37 +152,25 @@ tResult cGUIGridLayoutManager::Layout(IGUIContainerElement * pContainer)
       cAutoIPtr<IGUIElement> pChild;
       ulong count = 0;
 
+      uint iRow = 0, iCol = 0;
       while ((pEnum->Next(1, &pChild, &count) == S_OK) && (count == 1))
       {
          if (pChild->IsVisible())
          {
-            cAutoIPtr<IGUIElementRenderer> pChildRenderer;
-            if (pChild->GetRenderer(&pChildRenderer) == S_OK)
+            float x = insets.left + iCol * (cellWidth + m_hGap);
+            float y = insets.top + iRow * (cellHeight + m_vGap);
+
+            tGUIRect cellRect(x, y, x + cellWidth, y + cellHeight);
+
+            GUISizeElement(cellRect, pChild);
+            GUIPlaceElement(cellRect, pChild);
+
+            if (++iCol >= m_columns)
             {
-               tGUISize childSize = pChildRenderer->GetPreferredSize(pChild);
-
-               if (childSize.height > rowHeight)
+               iCol = 0;
+               if (++iRow >= m_rows)
                {
-                  rowHeight = childSize.height;
-               }
-
-               pChild->SetPosition(pos);
-               pChild->SetSize(childSize);
-
-               pos.x += childSize.width + m_hGap;
-
-               if (++iCol >= m_columns)
-               {
-                  pos.y += rowHeight + m_vGap;
-                  rowHeight = 0;
-
-                  pos.x = (tVec2::value_type)insets.left;
-
-                  iCol = 0;
-                  if (++iRow >= m_rows)
-                  {
-                     break;
-                  }
+                  break;
                }
             }
          }
