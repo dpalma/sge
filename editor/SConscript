@@ -35,10 +35,11 @@ sources = Split("""
 
 includePaths = Split("""
    #3rdparty/sgi
-   #3rdparty/wtl/include
+   #3rdparty/glew/include
    #3rdparty/Cg/include
    #3rdparty/lua/include
    #3rdparty/tinyxml
+   #3rdparty/wtl/include
    #engine/include
    #render/include
    #tech/include
@@ -46,6 +47,7 @@ includePaths = Split("""
 
 libPaths = Split("""
    #3rdparty/Cg/lib
+   #3rdparty/glew/src
    #3rdparty/tinyxml
    #3rdparty/lua/src
    #3rdparty/zlib
@@ -62,6 +64,7 @@ libs = Split("""
    engine.lib
    lua.lib
    tinyxml.lib
+   glew.lib
    zlibwapi.lib
    user32.lib
    kernel32.lib

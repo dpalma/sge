@@ -47,6 +47,7 @@ sources = Split("""
 
 includePaths = Split("""
    #3rdparty/sgi
+   #3rdparty/glew/include
    #3rdparty/lua/include
    #3rdparty/tinyxml
    #engine/include
@@ -55,9 +56,9 @@ includePaths = Split("""
 """) + glIncludePaths
 
 if env['PLATFORM'] == 'win32':
-   sources = sources + ['syswin.cpp']
+   sources = sources + ['syswin.cpp', 'guifontw32.cpp']
 elif env['PLATFORM'] == 'cygwin':
-   sources = sources + ['syslinux.cpp']
+   sources = sources + ['syslinux.cpp', 'guifontx11.cpp']
 
 env = env.Copy()
 env.Append(CPPPATH = includePaths)

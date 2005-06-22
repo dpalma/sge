@@ -15,6 +15,7 @@ if env['PLATFORM'] == 'win32':
 
 includePaths = Split("""
    #3rdparty/sgi
+   #3rdparty/glew/include
    #3rdparty/lua/include
    #3rdparty/tinyxml
    #engine/include
@@ -23,6 +24,7 @@ includePaths = Split("""
 """) + glIncludePaths
 
 libPaths = Split("""
+   #3rdparty/glew/src
    #3rdparty/tinyxml
    #3rdparty/lua/src
    #3rdparty/zlib
@@ -37,6 +39,7 @@ libs = Split("""
    tech
    rendergl
    engine
+   glew
    lua
    tinyxml
    zlibwapi

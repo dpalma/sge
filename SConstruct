@@ -31,7 +31,7 @@ else:
 
 if platform == 'win32':
    env.Append(CCFLAGS=['/GX', '/FD'], CPPDEFINES=['_WIN32', 'WIN32', '_MBCS', 'STRICT']);
-   env.Append(CPPDEFINES=['TIXML_USE_STL'])
+   env.Append(CPPDEFINES=['TIXML_USE_STL', 'GLEW_STATIC'])
    if env.get('debug'):
       env.Append(CCFLAGS=['/MTd', '/Od', '/GZ'], CPPDEFINES=['DEBUG', '_DEBUG'])
    else:
