@@ -18,6 +18,8 @@
 class cGUIGridLayoutManager : public cComObject<IMPLEMENTS(IGUIGridLayoutManager)>
 {
 public:
+   static tResult Create(const TiXmlElement * pXmlElement, IGUILayoutManager * * ppLayout);
+
    cGUIGridLayoutManager();
    cGUIGridLayoutManager(uint columns, uint rows);
    cGUIGridLayoutManager(uint columns, uint rows, uint hGap, uint vGap);
@@ -41,6 +43,33 @@ public:
 private:
    uint m_hGap, m_vGap;
    uint m_columns, m_rows;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cGUIFlowLayoutManager
+//
+
+class cGUIFlowLayoutManager : public cComObject<IMPLEMENTS(IGUIFlowLayoutManager)>
+{
+public:
+   static tResult Create(const TiXmlElement * pXmlElement, IGUILayoutManager * * ppLayout);
+
+   cGUIFlowLayoutManager();
+   cGUIFlowLayoutManager(uint hGap, uint vGap);
+   ~cGUIFlowLayoutManager();
+
+   virtual tResult Layout(IGUIContainerElement * pContainer);
+   virtual tResult GetPreferredSize(IGUIContainerElement * pContainer, tGUISize * pSize);
+
+   virtual tResult GetHGap(uint * pHGap);
+   virtual tResult SetHGap(uint hGap);
+
+   virtual tResult GetVGap(uint * pVGap);
+   virtual tResult SetVGap(uint vGap);
+
+private:
+   uint m_hGap, m_vGap;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

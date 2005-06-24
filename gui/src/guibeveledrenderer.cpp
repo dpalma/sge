@@ -5,8 +5,8 @@
 
 #include "guibeveledrenderer.h"
 #include "guielementtools.h"
-#include "scriptapi.h"
 #include "guistrings.h"
+#include "scriptapi.h"
 
 #include "color.h"
 
@@ -40,108 +40,6 @@ cGUIBeveledRenderer::cGUIBeveledRenderer()
 
 cGUIBeveledRenderer::~cGUIBeveledRenderer()
 {
-}
-
-///////////////////////////////////////
-
-tResult cGUIBeveledRenderer::Render(IGUIElement * pElement)
-{
-   if (pElement == NULL)
-   {
-      return E_POINTER;
-   }
-
-   {
-      cAutoIPtr<IGUIButtonElement> pButtonElement;
-      if (pElement->QueryInterface(IID_IGUIButtonElement, (void**)&pButtonElement) == S_OK)
-      {
-         return Render(pButtonElement);
-      }
-   }
-
-   {
-      cAutoIPtr<IGUIDialogElement> pDialogElement;
-      if (pElement->QueryInterface(IID_IGUIDialogElement, (void**)&pDialogElement) == S_OK)
-      {
-         return Render(pDialogElement);
-      }
-   }
-
-   {
-      cAutoIPtr<IGUILabelElement> pLabelElement;
-      if (pElement->QueryInterface(IID_IGUILabelElement, (void**)&pLabelElement) == S_OK)
-      {
-         return Render(pLabelElement);
-      }
-   }
-
-   {
-      cAutoIPtr<IGUIPanelElement> pPanelElement;
-      if (pElement->QueryInterface(IID_IGUIPanelElement, (void**)&pPanelElement) == S_OK)
-      {
-         return Render(pPanelElement);
-      }
-   }
-
-   {
-      cAutoIPtr<IGUITextEditElement> pTextEditElement;
-      if (pElement->QueryInterface(IID_IGUITextEditElement, (void**)&pTextEditElement) == S_OK)
-      {
-         return Render(pTextEditElement);
-      }
-   }
-
-   return E_FAIL;
-}
-
-///////////////////////////////////////
-
-tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIElement * pElement)
-{
-   if (pElement != NULL)
-   {
-      {
-         cAutoIPtr<IGUIButtonElement> pButtonElement;
-         if (pElement->QueryInterface(IID_IGUIButtonElement, (void**)&pButtonElement) == S_OK)
-         {
-            return GetPreferredSize(pButtonElement);
-         }
-      }
-
-      {
-         cAutoIPtr<IGUIDialogElement> pDialogElement;
-         if (pElement->QueryInterface(IID_IGUIDialogElement, (void**)&pDialogElement) == S_OK)
-         {
-            return GetPreferredSize(pDialogElement);
-         }
-      }
-
-      {
-         cAutoIPtr<IGUILabelElement> pLabelElement;
-         if (pElement->QueryInterface(IID_IGUILabelElement, (void**)&pLabelElement) == S_OK)
-         {
-            return GetPreferredSize(pLabelElement);
-         }
-      }
-
-      {
-         cAutoIPtr<IGUIPanelElement> pPanelElement;
-         if (pElement->QueryInterface(IID_IGUIPanelElement, (void**)&pPanelElement) == S_OK)
-         {
-            return GetPreferredSize(pPanelElement);
-         }
-      }
-
-      {
-         cAutoIPtr<IGUITextEditElement> pTextEditElement;
-         if (pElement->QueryInterface(IID_IGUITextEditElement, (void**)&pTextEditElement) == S_OK)
-         {
-            return GetPreferredSize(pTextEditElement);
-         }
-      }
-   }
-
-   return tGUISize(0,0);
 }
 
 ///////////////////////////////////////
@@ -204,20 +102,17 @@ tResult cGUIBeveledRenderer::Render(IGUIDialogElement * pDialogElement)
    tGUIColor caption(tGUIColor::Blue);
 
    cAutoIPtr<IGUIFont> pFont;
-
    cAutoIPtr<IGUIStyle> pStyle;
    if (pDialogElement->GetStyle(&pStyle) == S_OK)
    {
-      pStyle->GetFont(&pFont);
+      if (pStyle->GetFont(&pFont) != S_OK)
+      {
+         pFont = CTAddRef(AccessDefaultFont());
+      }
       pStyle->GetAttribute("frame-top-left-color", &topLeft);
       pStyle->GetAttribute("frame-bottom-right-color", &bottomRight);
       pStyle->GetAttribute("frame-face-color", &face);
       pStyle->GetAttribute("caption-color", &caption);
-   }
-
-   if (!pFont)
-   {
-      pFont = CTAddRef(AccessDefaultFont());
    }
 
    GlRenderBevelledRect(rect, g_bevel, topLeft, bottomRight, face);
@@ -256,17 +151,14 @@ tResult cGUIBeveledRenderer::Render(IGUILabelElement * pLabelElement)
    tGUIColor color(tGUIColor::Black);
 
    cAutoIPtr<IGUIFont> pFont;
-
    cAutoIPtr<IGUIStyle> pStyle;
    if (pLabelElement->GetStyle(&pStyle) == S_OK)
    {
       pStyle->GetForegroundColor(&color);
-      pStyle->GetFont(&pFont);
-   }
-
-   if (!pFont)
-   {
-      return E_FAIL;
+      if (pStyle->GetFont(&pFont) != S_OK)
+      {
+         pFont = CTAddRef(AccessDefaultFont());
+      }
    }
 
    tGUIString text;
@@ -322,17 +214,14 @@ tResult cGUIBeveledRenderer::Render(IGUITextEditElement * pTextEditElement)
    tGUIColor textColor(tGUIColor::Black);
 
    cAutoIPtr<IGUIFont> pFont;
-
    cAutoIPtr<IGUIStyle> pStyle;
    if (pTextEditElement->GetStyle(&pStyle) == S_OK)
    {
       pStyle->GetForegroundColor(&textColor);
-      pStyle->GetFont(&pFont);
-   }
-
-   if (!pFont)
-   {
-      pFont = CTAddRef(AccessDefaultFont());
+      if (pStyle->GetFont(&pFont) != S_OK)
+      {
+         pFont = CTAddRef(AccessDefaultFont());
+      }
    }
 
    uint selStart, selEnd;
@@ -391,19 +280,6 @@ tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIButtonElement * pButtonElemen
 
 tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIDialogElement * pDialogElement)
 {
-   cAutoIPtr<IGUIFont> pFont;
-
-   cAutoIPtr<IGUIStyle> pStyle;
-   if (pDialogElement->GetStyle(&pStyle) == S_OK)
-   {
-      pStyle->GetFont(&pFont);
-   }
-
-   if (!pFont)
-   {
-      pFont = CTAddRef(AccessDefaultFont());
-   }
-
    cAutoIPtr<IGUILayoutManager> pLayout;
    if (pDialogElement->GetLayout(&pLayout) == S_OK)
    {
@@ -420,13 +296,17 @@ tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIDialogElement * pDialogElemen
             tGUIString title;
             if (pDialogElement->GetTitle(&title) == S_OK)
             {
-               tRect rect(0,0,0,0);
-               pFont->RenderText(title.c_str(), -1, &rect, kRT_CalcRect, tGUIColor::White);
+               cAutoIPtr<IGUIFont> pFont;
+               if (GetFont(pDialogElement, &pFont) == S_OK)
+               {
+                  tRect rect(0,0,0,0);
+                  pFont->RenderText(title.c_str(), -1, &rect, kRT_CalcRect, tGUIColor::White);
 
-               captionHeight = rect.GetHeight();
+                  captionHeight = rect.GetHeight();
 
-               pDialogElement->SetCaptionHeight(captionHeight);
-               size.height += captionHeight;
+                  pDialogElement->SetCaptionHeight(captionHeight);
+                  size.height += captionHeight;
+               }
             }
          }
 
@@ -461,7 +341,7 @@ tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUILabelElement * pLabelElement)
 
 tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIPanelElement * pPanelElement)
 {
-   return tGUISize(0,0);
+   return cGUIElementRenderer<cGUIBeveledRenderer>::GetPreferredSize(static_cast<IGUIContainerElement*>(pPanelElement));
 }
 
 ///////////////////////////////////////
@@ -488,40 +368,6 @@ tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUITextEditElement * pTextEditEl
    }
 
    return tGUISize(0,0);
-}
-
-///////////////////////////////////////
-
-tResult cGUIBeveledRenderer::GetFont(IGUIElement * pElement,
-                                     IGUIFont * * ppFont)
-{
-   if (pElement == NULL || ppFont == NULL)
-   {
-      return E_POINTER;
-   }
-
-   cAutoIPtr<IGUIStyle> pStyle;
-   if (pElement->GetStyle(&pStyle) == S_OK)
-   {
-      if (pStyle->GetFont(ppFont) == S_OK)
-      {
-         return S_OK;
-      }
-   }
-
-   *ppFont = CTAddRef(AccessDefaultFont());
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-IGUIFont * cGUIBeveledRenderer::AccessDefaultFont()
-{
-   if (!m_pDefaultFont)
-   {
-      GUIFontGetDefault(&m_pDefaultFont);
-   }
-   return m_pDefaultFont;
 }
 
 

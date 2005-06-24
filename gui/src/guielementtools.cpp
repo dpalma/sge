@@ -107,6 +107,63 @@ tResult GUIElementRenderChildren(IGUIContainerElement * pContainer)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+tResult GUIElementSizeFromStyle(IGUIElement * pElement,
+                                const tGUISize & relativeTo,
+                                tGUISize * pSize)
+{
+   if (pElement == NULL || pSize == NULL)
+   {
+      return E_POINTER;
+   }
+
+   bool bHaveWidth = false, bHaveHeight = false;
+   tGUISizeType width, height;
+
+   cAutoIPtr<IGUIStyle> pStyle;
+   if (pElement->GetStyle(&pStyle) == S_OK)
+   {
+      uint styleWidth, styleWidthSpec;
+      if (pStyle->GetWidth(&styleWidth, &styleWidthSpec) == S_OK)
+      {
+         if (styleWidthSpec == kGUIDimensionPixels)
+         {
+            width = static_cast<tGUISizeType>(styleWidth);
+            bHaveWidth = true;
+         }
+         else if (styleWidthSpec == kGUIDimensionPercent)
+         {
+            width = static_cast<tGUISizeType>((styleWidth * relativeTo.width) / 100);
+            bHaveWidth = true;
+         }
+      }
+
+      uint styleHeight, styleHeightSpec;
+      if (pStyle->GetHeight(&styleHeight, &styleHeightSpec) == S_OK)
+      {
+         if (styleHeightSpec == kGUIDimensionPixels)
+         {
+            height = static_cast<tGUISizeType>(styleHeight);
+            bHaveHeight = true;
+         }
+         else if (styleHeightSpec == kGUIDimensionPercent)
+         {
+            height = static_cast<tGUISizeType>((styleHeight * relativeTo.height) / 100);
+            bHaveHeight = true;
+         }
+      }
+   }
+
+   if (bHaveWidth && bHaveHeight)
+   {
+      *pSize = tGUISize(width, height);
+      return S_OK;
+   }
+
+   return S_FALSE;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 void GUISizeElement(const tGUIRect & field, IGUIElement * pGUIElement)
 {
    Assert(pGUIElement != NULL);
@@ -119,35 +176,8 @@ void GUISizeElement(const tGUIRect & field, IGUIElement * pGUIElement)
       size = pRenderer->GetPreferredSize(pGUIElement);
    }
 
-   cAutoIPtr<IGUIStyle> pStyle;
-   if (pGUIElement->GetStyle(&pStyle) == S_OK)
-   {
-      uint width, widthSpec;
-      if (pStyle->GetWidth(&width, &widthSpec) == S_OK)
-      {
-         if (widthSpec == kGUIDimensionPixels)
-         {
-            size.width = static_cast<tGUISizeType>(width);
-         }
-         else if (widthSpec == kGUIDimensionPercent)
-         {
-            size.width = static_cast<tGUISizeType>((width * field.GetWidth()) / 100);
-         }
-      }
-
-      uint height, heightSpec;
-      if (pStyle->GetHeight(&height, &heightSpec) == S_OK)
-      {
-         if (heightSpec == kGUIDimensionPixels)
-         {
-            size.height = static_cast<tGUISizeType>(height);
-         }
-         else if (heightSpec == kGUIDimensionPercent)
-         {
-            size.height = static_cast<tGUISizeType>((height * field.GetHeight()) / 100);
-         }
-      }
-   }
+   tGUISize relTo(static_cast<tGUISizeType>(field.GetWidth()), static_cast<tGUISizeType>(field.GetHeight()));
+   GUIElementSizeFromStyle(pGUIElement, relTo, &size);
 
    pGUIElement->SetSize(size);
 }

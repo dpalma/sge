@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // $Id$
 
-#ifndef INCLUDED_GUIBEVELEDRENDERER_H
-#define INCLUDED_GUIBEVELEDRENDERER_H
+#ifndef INCLUDED_GUIBASICRENDERER_H
+#define INCLUDED_GUIBASICRENDERER_H
 
 #include "guirender.h"
 
@@ -12,15 +12,15 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGUIBeveledRenderer
+// CLASS: cGUIBasicRenderer
 //
 
-class cGUIBeveledRenderer : public cComObject<cGUIElementRenderer<cGUIBeveledRenderer>,
-                                              &IID_IGUIElementRenderer>
+class cGUIBasicRenderer : public cComObject<cGUIElementRenderer<cGUIBasicRenderer>,
+                                            &IID_IGUIElementRenderer>
 {
 public:
-   cGUIBeveledRenderer();
-   ~cGUIBeveledRenderer();
+   cGUIBasicRenderer();
+   ~cGUIBasicRenderer();
 
    tResult Render(IGUIButtonElement * pButtonElement);
    tResult Render(IGUIDialogElement * pDialogElement);
@@ -37,18 +37,18 @@ public:
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGUIBeveledRendererFactory
+// CLASS: cGUIBasicRendererFactory
 //
 
-class cGUIBeveledRendererFactory : public cComObject<IMPLEMENTS(IGUIElementRendererFactory)>
+class cGUIBasicRendererFactory : public cComObject<IMPLEMENTS(IGUIElementRendererFactory)>
 {
 public:
    virtual tResult CreateRenderer(IGUIElement * pElement, IGUIElementRenderer * * ppRenderer);
 
 private:
-   cAutoIPtr<IGUIElementRenderer> m_pStatelessBeveledRenderer;
+   cAutoIPtr<IGUIElementRenderer> m_pStatelessBasicRenderer;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // !INCLUDED_GUIBEVELEDRENDERER_H
+#endif // !INCLUDED_GUIBASICRENDERER_H

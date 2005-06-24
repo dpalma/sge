@@ -7,23 +7,88 @@
 #include "guielementtools.h"
 #include "guistrings.h"
 
+#include "techmath.h"
+
 #include <tinyxml.h>
+#include <map>
 
 #include "dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static tResult GUIGridLayoutManagerCreate(const TiXmlElement * pXmlElement, IGUILayoutManager * * ppLayout)
+static const int kHGapDefault = 0;
+static const int kVGapDefault = 0;
+
+///////////////////////////////////////////////////////////////////////////////
+
+typedef std::map<cStr, tGUILayoutManagerFactoryFn> tGUILayoutManagerFactories;
+static tGUILayoutManagerFactories g_guiLayoutManagerFactories;
+
+///////////////////////////////////////////////////////////////////////////////
+
+tResult GUILayoutManagerCreate(const TiXmlElement * pXmlElement, IGUILayoutManager * * ppLayout)
 {
    if (pXmlElement == NULL || ppLayout == NULL)
    {
       return E_POINTER;
    }
 
-   tResult result = E_FAIL;
+   if (stricmp(pXmlElement->Value(), kAttribLayout) != 0)
+   {
+      return E_INVALIDARG;
+   }
+
+   const char * pszType;
+   if ((pszType = pXmlElement->Attribute(kAttribType)) != NULL)
+   {
+      tGUILayoutManagerFactories::iterator f = g_guiLayoutManagerFactories.find(cStr(pszType));
+      if (f != g_guiLayoutManagerFactories.end())
+      {
+         return (*(f->second))(pXmlElement, ppLayout);
+      }
+   }
+
+   return E_FAIL;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+tResult GUILayoutManagerRegister(const tChar * pszName, tGUILayoutManagerFactoryFn pfn)
+{
+   if (pszName == NULL || pfn == NULL)
+   {
+      return E_POINTER;
+   }
+
+   g_guiLayoutManagerFactories[cStr(pszName)] = pfn;
+   return S_OK;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void GUILayoutManagerRegisterBuiltInTypes()
+{
+   GUILayoutManagerRegister(kValueGrid, cGUIGridLayoutManager::Create);
+   GUILayoutManagerRegister(kValueFlow, cGUIFlowLayoutManager::Create);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cGUIGridLayoutManager
+//
+
+///////////////////////////////////////
+
+tResult cGUIGridLayoutManager::Create(const TiXmlElement * pXmlElement, IGUILayoutManager * * ppLayout)
+{
+   if (pXmlElement == NULL || ppLayout == NULL)
+   {
+      return E_POINTER;
+   }
 
    cAutoIPtr<IGUIGridLayoutManager> pGridLayout;
-   if ((result = GUIGridLayoutManagerCreate(&pGridLayout)) == S_OK)
+   if (GUIGridLayoutManagerCreate(&pGridLayout) == S_OK)
    {
       int value;
 
@@ -51,43 +116,8 @@ static tResult GUIGridLayoutManagerCreate(const TiXmlElement * pXmlElement, IGUI
       return S_OK;
    }
 
-   return result;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-tResult GUILayoutManagerCreate(const TiXmlElement * pXmlElement, IGUILayoutManager * * ppLayout)
-{
-   if (pXmlElement == NULL || ppLayout == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (stricmp(pXmlElement->Value(), kAttribLayout) != 0)
-   {
-      return E_INVALIDARG;
-   }
-
-   const char * pszType;
-   if ((pszType = pXmlElement->Attribute(kAttribType)) != NULL)
-   {
-      if (stricmp(pszType, kValueGrid) == 0)
-      {
-         return GUIGridLayoutManagerCreate(pXmlElement, ppLayout);
-      }
-   }
-
    return E_FAIL;
 }
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUIEvent
-//
-
-static const int kHGapDefault = 5;
-static const int kVGapDefault = 5;
 
 ///////////////////////////////////////
 
@@ -143,8 +173,8 @@ tResult cGUIGridLayoutManager::Layout(IGUIContainerElement * pContainer)
       size.height -= (insets.top + insets.bottom);
    }
 
-   float cellWidth = size.width > 0 ? (size.width - ((m_columns - 1) * m_hGap)) / m_columns : 0;
-   float cellHeight = size.height > 0 ? (size.height - ((m_rows - 1) * m_vGap)) / m_rows : 0;
+   int cellWidth = size.width > 0 ? Round((size.width - ((m_columns - 1) * m_hGap)) / m_columns) : 0;
+   int cellHeight = size.height > 0 ? Round((size.height - ((m_rows - 1) * m_vGap)) / m_rows) : 0;
 
    cAutoIPtr<IGUIElementEnum> pEnum;
    if (pContainer->GetElements(&pEnum) == S_OK)
@@ -157,8 +187,8 @@ tResult cGUIGridLayoutManager::Layout(IGUIContainerElement * pContainer)
       {
          if (pChild->IsVisible())
          {
-            float x = insets.left + iCol * (cellWidth + m_hGap);
-            float y = insets.top + iRow * (cellHeight + m_vGap);
+            int x = insets.left + iCol * (cellWidth + m_hGap);
+            int y = insets.top + iRow * (cellHeight + m_vGap);
 
             tGUIRect cellRect(x, y, x + cellWidth, y + cellHeight);
 
@@ -188,81 +218,9 @@ tResult cGUIGridLayoutManager::Layout(IGUIContainerElement * pContainer)
 tResult cGUIGridLayoutManager::GetPreferredSize(IGUIContainerElement * pContainer, 
                                                 tGUISize * pSize)
 {
-   if (pContainer == NULL || pSize == NULL)
-   {
-      return E_POINTER;
-   }
-
-   uint iRow = 0, iCol = 0;
-   tGUISizeType curRowWidth = 0;
-   tGUISizeType maxRowWidth = 0;
-   tGUISizeType rowHeight = 0;
-   tGUISizeType totalHeight = 0;
-
-   cAutoIPtr<IGUIElementEnum> pEnum;
-   if (pContainer->GetElements(&pEnum) == S_OK)
-   {
-      cAutoIPtr<IGUIElement> pChild;
-      ulong count = 0;
-
-      while ((pEnum->Next(1, &pChild, &count) == S_OK) && (count == 1))
-      {
-         if (pChild->IsVisible())
-         {
-            cAutoIPtr<IGUIElementRenderer> pChildRenderer;
-            if (pChild->GetRenderer(&pChildRenderer) == S_OK)
-            {
-               tGUISize childSize = pChildRenderer->GetPreferredSize(pChild);
-
-               if (childSize.height > rowHeight)
-               {
-                  rowHeight = childSize.height;
-               }
-
-               curRowWidth += childSize.width;
-
-               if (++iCol >= m_columns)
-               {
-                  totalHeight += rowHeight;
-                  rowHeight = 0;
-
-                  if (curRowWidth > maxRowWidth)
-                  {
-                     maxRowWidth = curRowWidth;
-                  }
-                  curRowWidth = 0;
-
-                  iCol = 0;
-                  if (++iRow >= m_rows)
-                  {
-                     break;
-                  }
-               }
-            }
-         }
-
-         SafeRelease(pChild);
-         count = 0;
-      }
-   }
-
-   tGUIInsets insets;
-   if (pContainer->GetInsets(&insets) == S_OK)
-   {
-      if (m_columns > 0)
-      {
-         maxRowWidth += ((m_columns - 1) * m_hGap) + insets.right + insets.left;
-      }
-
-      if (m_rows > 0)
-      {
-         totalHeight += ((m_rows - 1) * m_vGap) + insets.top + insets.bottom;
-      }
-   }
-
-   Assert(pSize != NULL);
-   *pSize = tGUISize(maxRowWidth, totalHeight);
-   return S_OK;
+   // A grid layout simply divides up whatever space is available.
+   // It has no opinion what the size should be.
+   return E_NOTIMPL;
 }
 
 ///////////////////////////////////////
@@ -373,6 +331,169 @@ tResult GUIGridLayoutManagerCreate(uint columns, uint rows, uint hGap, uint vGap
    if (!pLayout)
       return E_OUTOFMEMORY;
    *ppLayout = CTAddRef(pLayout);
+   return S_OK;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cGUIFlowLayoutManager
+//
+
+///////////////////////////////////////
+
+tResult cGUIFlowLayoutManager::Create(const TiXmlElement * pXmlElement, IGUILayoutManager * * ppLayout)
+{
+   if (pXmlElement == NULL || ppLayout == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cAutoIPtr<IGUIFlowLayoutManager> pFlowLayout(new cGUIFlowLayoutManager);
+   if (!pFlowLayout)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   int value;
+   if (pXmlElement->QueryIntAttribute(kAttribHgap, &value) == TIXML_SUCCESS)
+   {
+      pFlowLayout->SetHGap(value);
+   }
+
+   if (pXmlElement->QueryIntAttribute(kAttribVgap, &value) == TIXML_SUCCESS)
+   {
+      pFlowLayout->SetVGap(value);
+   }
+
+   *ppLayout = CTAddRef(pFlowLayout);
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+cGUIFlowLayoutManager::cGUIFlowLayoutManager()
+ : m_hGap(kHGapDefault), 
+   m_vGap(kVGapDefault)
+{
+}
+
+///////////////////////////////////////
+
+cGUIFlowLayoutManager::cGUIFlowLayoutManager(uint hGap, uint vGap)
+ : m_hGap(hGap), 
+   m_vGap(vGap)
+{
+}
+
+///////////////////////////////////////
+
+cGUIFlowLayoutManager::~cGUIFlowLayoutManager()
+{
+}
+
+///////////////////////////////////////
+
+tResult cGUIFlowLayoutManager::Layout(IGUIContainerElement * pContainer)
+{
+   if (pContainer == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tGUISize size = pContainer->GetSize();
+
+   tGUIInsets insets = {0};
+   if (pContainer->GetInsets(&insets) == S_OK)
+   {
+      size.width -= (insets.left + insets.right);
+      size.height -= (insets.top + insets.bottom);
+   }
+
+   int leftSide = insets.left;
+   int rightSide = Round(size.width) - insets.right;
+
+   cAutoIPtr<IGUIElementEnum> pEnum;
+   if (pContainer->GetElements(&pEnum) == S_OK)
+   {
+      int x = leftSide;
+      int y = insets.top;
+
+      int nChildrenThisRow = 0;
+
+      cAutoIPtr<IGUIElement> pChild;
+      ulong count = 0;
+
+      while ((pEnum->Next(1, &pChild, &count) == S_OK) && (count == 1))
+      {
+         if (pChild->IsVisible())
+         {
+            tGUISize childSize;
+            if (GUIElementSizeFromStyle(pChild, size, &childSize) == S_OK)
+            {
+               pChild->SetSize(childSize);
+               tGUIRect rect(x, y, x + childSize.width, y + childSize.height);
+               GUIPlaceElement(rect, pChild);
+               x += childSize.width;
+               nChildrenThisRow++;
+               if (x >= rightSide)
+               {
+                  y += childSize.height;
+                  x = leftSide;
+                  nChildrenThisRow = 0;
+               }
+            }
+         }
+
+         SafeRelease(pChild);
+         count = 0;
+      }
+   }
+
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIFlowLayoutManager::GetPreferredSize(IGUIContainerElement * pContainer, 
+                                                tGUISize * pSize)
+{
+   return E_NOTIMPL;
+}
+
+///////////////////////////////////////
+
+tResult cGUIFlowLayoutManager::GetHGap(uint * pHGap)
+{
+   if (pHGap == NULL)
+      return E_POINTER;
+   *pHGap = m_hGap;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIFlowLayoutManager::SetHGap(uint hGap)
+{
+   m_hGap = hGap;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIFlowLayoutManager::GetVGap(uint * pVGap)
+{
+   if (pVGap == NULL)
+      return E_POINTER;
+   *pVGap = m_vGap;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIFlowLayoutManager::SetVGap(uint vGap)
+{
+   m_vGap = vGap;
    return S_OK;
 }
 

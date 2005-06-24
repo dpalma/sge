@@ -17,6 +17,10 @@ tResult GUIElementCreateChildren(const TiXmlElement * pXmlElement,
 
 tResult GUIElementRenderChildren(IGUIContainerElement * pContainer);
 
+tResult GUIElementSizeFromStyle(IGUIElement * pElement,
+                                const tGUISize & relativeTo,
+                                tGUISize * pSize);
+
 void GUISizeElement(const tGUIRect & field, IGUIElement * pGUIElement);
 
 void GUIPlaceElement(const tGUIRect & field, IGUIElement * pGUIElement);

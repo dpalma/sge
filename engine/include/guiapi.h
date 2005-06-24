@@ -29,6 +29,7 @@ F_DECLARE_INTERFACE(IGUIEvent);
 F_DECLARE_INTERFACE(IGUIContainerElement);
 F_DECLARE_INTERFACE(IGUILayoutManager);
 F_DECLARE_INTERFACE(IGUIGridLayoutManager);
+F_DECLARE_INTERFACE(IGUIFlowLayoutManager);
 F_DECLARE_INTERFACE(IGUIPanelElement);
 F_DECLARE_INTERFACE(IGUIDialogElement);
 F_DECLARE_INTERFACE(IGUIButtonElement);
@@ -378,6 +379,12 @@ interface IGUILayoutManager : IUnknown
 
 ENGINE_API tResult GUILayoutManagerCreate(const TiXmlElement * pXmlElement, IGUILayoutManager * * ppLayout);
 
+///////////////////////////////////////
+
+typedef tResult (* tGUILayoutManagerFactoryFn)(const TiXmlElement * pXmlElement, IGUILayoutManager * * ppLayout);
+ENGINE_API tResult GUILayoutManagerRegister(const tChar * pszName, tGUILayoutManagerFactoryFn pfn);
+ENGINE_API void GUILayoutManagerRegisterBuiltInTypes();
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -404,6 +411,21 @@ interface IGUIGridLayoutManager : IGUILayoutManager
 ENGINE_API tResult GUIGridLayoutManagerCreate(IGUIGridLayoutManager * * ppLayout);
 ENGINE_API tResult GUIGridLayoutManagerCreate(uint columns, uint rows, IGUIGridLayoutManager * * ppLayout);
 ENGINE_API tResult GUIGridLayoutManagerCreate(uint columns, uint rows, uint hGap, uint vGap, IGUIGridLayoutManager * * ppLayout);
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IGUIFlowLayoutManager
+//
+
+interface IGUIFlowLayoutManager : IGUILayoutManager
+{
+   virtual tResult GetHGap(uint * pHGap) = 0;
+   virtual tResult SetHGap(uint hGap) = 0;
+
+   virtual tResult GetVGap(uint * pVGap) = 0;
+   virtual tResult SetVGap(uint vGap) = 0;
+};
 
 
 ///////////////////////////////////////////////////////////////////////////////

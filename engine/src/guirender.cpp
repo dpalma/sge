@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "guiapi.h"
+#include "guirender.h"
 
 #include <GL/glew.h>
 

@@ -53,6 +53,7 @@ const char kValueVertAlignTop[]        = "top";
 const char kValueVertAlignBottom[]     = "bottom";
 const char kValueVertAlignCenter[]     = "center";
 
+const char kValueFlow[]                = "flow";
 const char kValueGrid[]                = "grid";
 
 const char kValueColorBlack[]          = "black";

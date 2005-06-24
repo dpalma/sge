@@ -59,6 +59,7 @@ tResult cGUIContext::Init()
 {
    UseGlobal(Input);
    pInput->SetGUIInputListener(&m_inputListener);
+   GUILayoutManagerRegisterBuiltInTypes();
    return S_OK;
 }
 
