@@ -351,6 +351,9 @@
 					RelativePath="..\..\engine\src\gltexture.cpp">
 				</File>
 				<File
+					RelativePath="..\..\engine\src\guibasicrenderer.cpp">
+				</File>
+				<File
 					RelativePath="..\..\engine\src\guibeveledrenderer.cpp">
 				</File>
 				<File
@@ -569,6 +572,9 @@
 				</File>
 				<File
 					RelativePath="..\..\engine\src\frustum.h">
+				</File>
+				<File
+					RelativePath="..\..\engine\src\guibasicrenderer.h">
 				</File>
 				<File
 					RelativePath="..\..\engine\src\guibeveledrenderer.h">
