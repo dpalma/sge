@@ -372,6 +372,12 @@ interface IGUILayoutManager : IUnknown
 {
    virtual tResult Layout(IGUIContainerElement * pContainer) = 0;
    virtual tResult GetPreferredSize(IGUIContainerElement * pContainer, tGUISize * pSize) = 0;
+
+   virtual tResult GetHGap(uint * pHGap) = 0;
+   virtual tResult SetHGap(uint hGap) = 0;
+
+   virtual tResult GetVGap(uint * pVGap) = 0;
+   virtual tResult SetVGap(uint vGap) = 0;
 };
 
 ///////////////////////////////////////
@@ -393,12 +399,6 @@ ENGINE_API void GUILayoutManagerRegisterBuiltInTypes();
 
 interface IGUIGridLayoutManager : IGUILayoutManager
 {
-   virtual tResult GetHGap(uint * pHGap) = 0;
-   virtual tResult SetHGap(uint hGap) = 0;
-
-   virtual tResult GetVGap(uint * pVGap) = 0;
-   virtual tResult SetVGap(uint vGap) = 0;
-
    virtual tResult GetColumns(uint * pColumns) = 0;
    virtual tResult SetColumns(uint columns) = 0;
 
@@ -420,11 +420,6 @@ ENGINE_API tResult GUIGridLayoutManagerCreate(uint columns, uint rows, uint hGap
 
 interface IGUIFlowLayoutManager : IGUILayoutManager
 {
-   virtual tResult GetHGap(uint * pHGap) = 0;
-   virtual tResult SetHGap(uint hGap) = 0;
-
-   virtual tResult GetVGap(uint * pVGap) = 0;
-   virtual tResult SetVGap(uint vGap) = 0;
 };
 
 
@@ -477,8 +472,8 @@ interface IGUIButtonElement : IGUIElement
    virtual bool IsArmed() const = 0;
    virtual void SetArmed(bool bArmed) = 0;
 
-   virtual const char * GetText() const = 0;
-   virtual void SetText(const char * pszText) = 0;
+   virtual tResult GetText(tGUIString * pText) const = 0;
+   virtual tResult SetText(const char * pszText) = 0;
 
    virtual tResult GetOnClick(tGUIString * pOnClick) const = 0;
    virtual tResult SetOnClick(const char * pszOnClick) = 0;

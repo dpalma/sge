@@ -110,16 +110,30 @@ void cGUIButtonElement::SetArmed(bool bArmed)
 
 ///////////////////////////////////////
 
-const char * cGUIButtonElement::GetText() const
+tResult cGUIButtonElement::GetText(tGUIString * pText) const
 {
-   return m_text.c_str();
+   if (pText == NULL)
+   {
+      return E_POINTER;
+   }
+   if (m_text.empty())
+   {
+      return S_FALSE;
+   }
+   *pText = m_text;
+   return S_OK;
 }
 
 ///////////////////////////////////////
 
-void cGUIButtonElement::SetText(const char * pszText)
+tResult cGUIButtonElement::SetText(const char * pszText)
 {
+   if (pszText == NULL)
+   {
+      return E_POINTER;
+   }
    m_text = pszText;
+   return S_OK;
 }
 
 ///////////////////////////////////////

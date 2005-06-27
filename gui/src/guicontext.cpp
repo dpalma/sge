@@ -285,97 +285,38 @@ tResult cGUIContext::HideDebugInfo()
 ///////////////////////////////////////
 
 #ifdef GUI_DEBUG
-static void DescribeElement(IGUIElement * pElement, char * psz, uint maxLength)
+static bool GUIElementType(IUnknown * pUnkElement, cStr * pType)
 {
-   Assert(pElement != NULL);
-   cAutoIPtr<IGUIButtonElement> pButton;
-   cAutoIPtr<IGUIPanelElement> pPanel;
-   cAutoIPtr<IGUILabelElement> pLabel;
-   cAutoIPtr<IGUIDialogElement> pDialog;
-   const char * pszId = pElement->GetId();
-   if (pElement->QueryInterface(IID_IGUIButtonElement, (void**)&pButton) == S_OK)
+   static const struct
    {
-      snprintf(psz, maxLength, "Button \"%s\"", pButton->GetText());
+      const GUID * pIID;
+      const tChar * pszType;
    }
-   else if (pElement->QueryInterface(IID_IGUIPanelElement, (void**)&pPanel) == S_OK)
+   guiElementTypes[] =
    {
-      snprintf(psz, maxLength, "Panel '%s'", strlen(pszId) > 0 ? pszId : "<no id>");
-   }
-   else if (pElement->QueryInterface(IID_IGUILabelElement, (void**)&pLabel) == S_OK)
+      { &IID_IGUIButtonElement,     "Button" },
+      { &IID_IGUIDialogElement,     "Dialog" },
+      { &IID_IGUILabelElement,      "Label" },
+      { &IID_IGUIPanelElement,      "Panel" },
+      { &IID_IGUITextEditElement,   "TextEdit" },
+      { &IID_IGUIContainerElement,  "Container" },
+   };
+   for (int i = 0; i < _countof(guiElementTypes); i++)
    {
-      tGUIString text;
-      if (pLabel->GetText(&text) == S_OK)
+      cAutoIPtr<IUnknown> pUnk;
+      if (pUnkElement->QueryInterface(*guiElementTypes[i].pIID, (void**)&pUnk) == S_OK)
       {
-         snprintf(psz, maxLength, "Label \"%s\"", text.c_str());
-      }
-      else
-      {
-         snprintf(psz, maxLength, "Label '%s'", strlen(pszId) > 0 ? pszId : "<no id>");
+         *pType = guiElementTypes[i].pszType;
+         return true;
       }
    }
-   else if (pElement->QueryInterface(IID_IGUIDialogElement, (void**)&pDialog) == S_OK)
-   {
-      tGUIString title;
-      if (pDialog->GetTitle(&title) == S_OK)
-      {
-         snprintf(psz, maxLength, "Dialog \"%s\"", title.c_str());
-      }
-      else
-      {
-         snprintf(psz, maxLength, "Dialog '%s'", strlen(pszId) > 0 ? pszId : "<no id>");
-      }
-   }
-   else
-   {
-      snprintf(psz, maxLength, "Element '%s'", strlen(pszId) > 0 ? pszId : "<no id>");
-   }
+   return false;
 }
 #endif
 
 ///////////////////////////////////////
 
 #ifdef GUI_DEBUG
-template <typename CTYPE, size_t SIZE>
-class cTextBuffer
-{
-public:
-   cTextBuffer() : m_length(0)
-   {
-      m_buffer[0] = 0;
-   }
-
-   const CTYPE * GetBuffer() const
-   {
-      return m_buffer;
-   }
-
-   CTYPE * NextPointer()
-   {
-      m_length = strlen(m_buffer);
-      if (m_length > 0)
-      {
-         strncat(m_buffer, "\n", _countof(m_buffer) - m_length);
-         m_buffer[_countof(m_buffer) - 1] = 0;
-         m_length = strlen(m_buffer);
-      }
-      return m_buffer + m_length;
-   }
-
-   uint MaxLength() const
-   {
-      return SIZE - m_length;
-   }
-
-   void NullTerminate()
-   {
-      m_buffer[SIZE - 1] = 0;
-   }
-
-private:
-   uint m_length;
-   CTYPE m_buffer[SIZE];
-};
-
 void cGUIContext::RenderDebugInfo()
 {
    if (!m_bShowDebugInfo)
@@ -386,34 +327,48 @@ void cGUIContext::RenderDebugInfo()
    cAutoIPtr<IGUIFont> pFont;
    if (GUIFontGetDefault(&pFont) == S_OK)
    {
-      cTextBuffer<char, 200> text;
+      tGUIRect rect(0,0,0,0);
+      pFont->RenderText("Xy", -1, &rect, kRT_CalcRect, m_debugInfoTextColor);
 
-      snprintf(text.NextPointer(), text.MaxLength(), "Mouse: (%d, %d)", 
-         Round(m_lastMousePos.x), Round(m_lastMousePos.y));
+      const int lineHeight = rect.GetHeight();
+
+      rect = tGUIRect(Round(m_debugInfoPlacement.x), Round(m_debugInfoPlacement.y), 0, 0);
+
+      cStr temp;
+      temp.Format("Mouse: (%d, %d)", Round(m_lastMousePos.x), Round(m_lastMousePos.y));
+      pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
+      rect.Offset(0, lineHeight);
 
       cAutoIPtr<IGUIElement> pHitElement;
       if (GetHitElement(m_lastMousePos, &pHitElement) == S_OK)
       {
-         DescribeElement(pHitElement, text.NextPointer(), text.MaxLength());
+         if (GUIElementType(pHitElement, &temp))
+         {
+            pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
+            rect.Offset(0, lineHeight);
+         }
 
-         tGUIPoint pos = pHitElement->GetPosition();
-         snprintf(text.NextPointer(), text.MaxLength(), "Position: (%d, %d)", 
-            Round(pos.x), Round(pos.y));
+         tGUISize size(pHitElement->GetSize());
+         temp.Format("Size: %d x %d", Round(size.width), Round(size.height));
+         pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
+         rect.Offset(0, lineHeight);
 
-         tGUIPoint absPos = GUIElementAbsolutePosition(pHitElement);
-         snprintf(text.NextPointer(), text.MaxLength(), "Absolute Position: (%d, %d)",
-            Round(absPos.x), Round(absPos.y));
+         tGUIPoint pos(pHitElement->GetPosition());
+         temp.Format("Position: (%d, %d)", Round(pos.x), Round(pos.y));
+         pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
+         rect.Offset(0, lineHeight);
+
+         tGUIPoint absPos(GUIElementAbsolutePosition(pHitElement));
+         temp.Format("Absolute Position: (%d, %d)", Round(absPos.x), Round(absPos.y));
+         pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
+         rect.Offset(0, lineHeight);
 
          tGUIPoint relPoint(m_lastMousePos - absPos);
          Assert(pHitElement->Contains(relPoint));
-         snprintf(text.NextPointer(), text.MaxLength(), "Mouse (relative): (%d, %d)",
-            Round(relPoint.x), Round(relPoint.y));
-
-         text.NullTerminate();
+         temp.Format("Mouse (relative): (%d, %d)", Round(relPoint.x), Round(relPoint.y));
+         pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
+         rect.Offset(0, lineHeight);
       }
-
-      tGUIRect rect(Round(m_debugInfoPlacement.x), Round(m_debugInfoPlacement.y), 0, 0);
-      pFont->RenderText(text.GetBuffer(), -1, &rect, kRT_NoClip, m_debugInfoTextColor);
    }
 }
 #endif

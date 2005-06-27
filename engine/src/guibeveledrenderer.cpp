@@ -64,8 +64,10 @@ tResult cGUIBeveledRenderer::Render(IGUIButtonElement * pButtonElement)
       GlRenderBevelledRect(rect2, g_bevel, tGUIColor::LightGray, tGUIColor::DarkGray, tGUIColor::Gray);
    }
 
+   tGUIString text;
    cAutoIPtr<IGUIFont> pFont;
-   if (GetFont(pButtonElement, &pFont) == S_OK)
+   if (pButtonElement->GetText(&text) == S_OK
+      && GetFont(pButtonElement, &pFont) == S_OK)
    {
       uint renderTextFlags = kRT_Center | kRT_VCenter | kRT_SingleLine;
 
@@ -82,7 +84,7 @@ tResult cGUIBeveledRenderer::Render(IGUIButtonElement * pButtonElement)
 
       rect.left += Round(textOffset.x);
       rect.top += Round(textOffset.y);
-      pFont->RenderText(pButtonElement->GetText(), -1, &rect, renderTextFlags, tGUIColor::White);
+      pFont->RenderText(text.c_str(), text.length(), &rect, renderTextFlags, tGUIColor::White);
    }
 
    return S_OK;
@@ -263,11 +265,13 @@ tResult cGUIBeveledRenderer::Render(IGUITextEditElement * pTextEditElement)
 
 tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIButtonElement * pButtonElement)
 {
+   tGUIString text;
    cAutoIPtr<IGUIFont> pFont;
-   if (GetFont(pButtonElement, &pFont) == S_OK)
+   if (pButtonElement->GetText(&text) == S_OK
+      && GetFont(pButtonElement, &pFont) == S_OK)
    {
       tRect rect(0,0,0,0);
-      pFont->RenderText(pButtonElement->GetText(), -1, &rect, kRT_CalcRect, tGUIColor::White);
+      pFont->RenderText(text.c_str(), text.length(), &rect, kRT_CalcRect, tGUIColor::White);
 
       return tGUISize(static_cast<tGUISizeType>(rect.GetWidth() + rect.GetHeight()),
                       rect.GetHeight() * 1.5f);

@@ -434,11 +434,11 @@ tResult cGUIFlowLayoutManager::Layout(IGUIContainerElement * pContainer)
                pChild->SetSize(childSize);
                tGUIRect rect(x, y, x + childSize.width, y + childSize.height);
                GUIPlaceElement(rect, pChild);
-               x += childSize.width;
+               x += childSize.width + m_hGap;
                nChildrenThisRow++;
                if (x >= rightSide)
                {
-                  y += childSize.height;
+                  y += childSize.height + m_vGap;
                   x = leftSide;
                   nChildrenThisRow = 0;
                }

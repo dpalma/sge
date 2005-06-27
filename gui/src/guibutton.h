@@ -26,8 +26,8 @@ public:
    virtual bool IsArmed() const;
    virtual void SetArmed(bool bArmed);
 
-   virtual const char * GetText() const;
-   virtual void SetText(const char * pszText);
+   virtual tResult GetText(tGUIString * pText) const;
+   virtual tResult SetText(const char * pszText);
 
    virtual tResult GetOnClick(tGUIString * pOnClick) const;
    virtual tResult SetOnClick(const char * pszOnClick);
