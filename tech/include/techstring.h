@@ -54,6 +54,8 @@ public:
    int ParseTuple(double * pDoubles, int nMaxDoubles) const;
    int ParseTuple(float * pFloats, int nMaxFloats) const;
 
+   int CDECL Format(const tChar * pszFormat, ...);
+
    static const cStr gm_whitespace;
 };
 

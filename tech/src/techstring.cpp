@@ -8,6 +8,7 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <cstdarg>
 #include <locale>
 
 #ifdef HAVE_CPPUNIT
@@ -155,6 +156,31 @@ int cStr::ParseTuple(float * pFloats, int nMaxFloats) const
    return result;
 }
 
+///////////////////////////////////////
+
+#ifdef _MSC_VER
+inline int FormatLength(const tChar * pszFormat, va_list args)
+{
+   return _vscprintf(pszFormat, args);
+}
+#else
+#error ("Need platform-specific implementation of _vscprintf")
+#endif
+
+///////////////////////////////////////
+
+int CDECL cStr::Format(const tChar * pszFormat, ...)
+{
+   va_list args;
+   va_start(args, pszFormat);
+   int length = FormatLength(pszFormat, args) + 1; // plus one for null terminator
+   tChar * pszTemp = reinterpret_cast<tChar*>(alloca(length * sizeof(tChar)));
+   _vsnprintf(pszTemp, length, pszFormat, args);
+   va_end(args);
+   *this = cStr(pszTemp);
+   return length;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 static cStr FilteredCopy(const cStr & str, const cStr & excluded)
@@ -200,11 +226,13 @@ class cStrTests : public CppUnit::TestCase
       CPPUNIT_TEST(TestParseBadArgs);
       CPPUNIT_TEST(TestParseSuccessCases);
       CPPUNIT_TEST(TestFilePathCompare);
+      CPPUNIT_TEST(TestFormat);
    CPPUNIT_TEST_SUITE_END();
 
    void TestParseBadArgs();
    void TestParseSuccessCases();
    void TestFilePathCompare();
+   void TestFormat();
 };
 
 ////////////////////////////////////////
@@ -259,6 +287,36 @@ void cStrTests::TestFilePathCompare()
    CPPUNIT_ASSERT(filepathcmp("C:\\P1\\P2\\P3", "c:/p1/p2/p3") != 0);
    CPPUNIT_ASSERT(filepathicmp("C:\\P1\\P2\\P3", "c:/p1/p2/p3") == 0);
    CPPUNIT_ASSERT(filepathcmp("c:\\p1\\p2\\p3", "c:\\p4\\p5\\p6") < 0);
+}
+
+////////////////////////////////////////
+
+void cStrTests::TestFormat()
+{
+   cStr temp;
+   CPPUNIT_ASSERT(temp.Format("%c", 'X') > 0);
+   CPPUNIT_ASSERT(temp.compare("X") == 0);
+   CPPUNIT_ASSERT(temp.Format("%d", 1000) > 0);
+   CPPUNIT_ASSERT(temp.compare("1000") == 0);
+   CPPUNIT_ASSERT(temp.Format("%i", 1000) > 0);
+   CPPUNIT_ASSERT(temp.compare("1000") == 0);
+   CPPUNIT_ASSERT(temp.Format("%o", 1000) > 0);
+   CPPUNIT_ASSERT(temp.compare("1750") == 0);
+   CPPUNIT_ASSERT(temp.Format("%u", 1000) > 0);
+   CPPUNIT_ASSERT(temp.compare("1000") == 0);
+   CPPUNIT_ASSERT(temp.Format("%u", -1000) > 0);
+   CPPUNIT_ASSERT(temp.compare("4294966296") == 0);
+   CPPUNIT_ASSERT(temp.Format("%x", -1000) > 0);
+   CPPUNIT_ASSERT(temp.compare("fffffc18") == 0);
+   CPPUNIT_ASSERT(temp.Format("%X", -1000) > 0);
+   CPPUNIT_ASSERT(temp.compare("FFFFFC18") == 0);
+   CPPUNIT_ASSERT(temp.Format("%e", 9999.0 * 3.14159) > 0);
+   CPPUNIT_ASSERT(temp.compare("3.141276e+004") == 0);
+   CPPUNIT_ASSERT(temp.Format("%E", 9999.0 * 3.14159) > 0);
+   CPPUNIT_ASSERT(temp.compare("3.141276E+004") == 0);
+
+   CPPUNIT_ASSERT(temp.Format("abcd%shijkl", "efg") > 0);
+   CPPUNIT_ASSERT(temp.compare("abcdefghijkl") == 0);
 }
 
 #endif // HAVE_CPPUNIT
