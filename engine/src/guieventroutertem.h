@@ -10,12 +10,14 @@
 
 #include "guiapi.h"
 #include "guielementenum.h"
+#include "guielementtools.h"
 
 #include "inputapi.h"
 
 #include "techtime.h"
 
 #include <algorithm>
+#include <queue>
 
 #include "dbgalloc.h" // must be last header
 
@@ -259,7 +261,63 @@ void cGUIEventRouter<INTRFC>::RemoveAllElements()
 ///////////////////////////////////////
 
 template <typename INTRFC>
-tResult cGUIEventRouter<INTRFC>::GetHitElement(const tGUIPoint & screenPoint, 
+tResult cGUIEventRouter<INTRFC>::GetHitElements(const tGUIPoint & point,
+                                                std::list<IGUIElement*> * pElements)
+{
+   if (pElements == NULL)
+   {
+      return E_POINTER;
+   }
+
+   std::queue<IGUIElement*> q;
+
+   tGUIElementList::const_iterator iter = m_elements.begin();
+   tGUIElementList::const_iterator end = m_elements.end();
+   for (; iter != end; iter++)
+   {
+      q.push(CTAddRef(*iter));
+   }
+
+   while (!q.empty())
+   {
+      cAutoIPtr<IGUIElement> pElement(q.front());
+      q.pop();
+
+      tGUIPoint pos(GUIElementAbsolutePosition(pElement));
+      tGUIPoint relative(point - pos);
+
+      if (pElement->Contains(relative))
+      {
+         cAutoIPtr<IGUIContainerElement> pContainer;
+         if (pElement->QueryInterface(IID_IGUIContainerElement, (void**)&pContainer) == S_OK)
+         {
+            cAutoIPtr<IGUIElementEnum> pEnum;
+            if (pContainer->GetElements(&pEnum) == S_OK)
+            {
+               IGUIElement * pChildren[32];
+               ulong count = 0;
+               while (SUCCEEDED(pEnum->Next(_countof(pChildren), &pChildren[0], &count)) && (count > 0))
+               {
+                  for (ulong i = 0; i < count; i++)
+                  {
+                     q.push(pChildren[i]);
+                  }
+                  count = 0;
+               }
+            }
+         }
+
+         pElements->push_front(CTAddRef(pElement));
+      }
+   }
+
+   return pElements->empty() ? S_FALSE : S_OK;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+tResult cGUIEventRouter<INTRFC>::GetHitElement(const tGUIPoint & point, 
                                                IGUIElement * * ppElement)
 {
    if (ppElement == NULL)
@@ -267,84 +325,13 @@ tResult cGUIEventRouter<INTRFC>::GetHitElement(const tGUIPoint & screenPoint,
       return E_POINTER;
    }
 
-   tGUIElementList::iterator iter = m_elements.begin();
-   tGUIElementList::iterator end = m_elements.end();
-   for (; iter != end; iter++)
+   std::list<IGUIElement*> hitElements;
+   if (GetHitElements(point, &hitElements) == S_OK)
    {
-      tGUIPoint relative(screenPoint - (*iter)->GetPosition());
-
-      if ((*iter)->Contains(relative))
-      {
-         cAutoIPtr<IGUIContainerElement> pChildContainer;
-         if ((*iter)->QueryInterface(IID_IGUIContainerElement, (void**)&pChildContainer) == S_OK)
-         {
-            if (GetHitElement(relative, pChildContainer, ppElement) == S_OK)
-            {
-               return S_OK;
-            }
-         }
-
-         *ppElement = CTAddRef(*iter);
-         return S_OK;
-      }
-   }
-
-   return S_FALSE;
-}
-
-///////////////////////////////////////
-
-template <typename INTRFC>
-tResult cGUIEventRouter<INTRFC>::GetHitElement(const tGUIPoint & containerPoint, 
-                                               IGUIContainerElement * pContainer, 
-                                               IGUIElement * * ppElement)
-{
-   Assert(pContainer != NULL);
-   Assert(ppElement != NULL);
-
-   cAutoIPtr<IGUIElementEnum> pEnum;
-   if (pContainer->GetElements(&pEnum) == S_OK)
-   {
-      return GetHitElement(containerPoint, pEnum, ppElement);
-   }
-
-   return S_FALSE;
-}
-
-///////////////////////////////////////
-
-template <typename INTRFC>
-tResult cGUIEventRouter<INTRFC>::GetHitElement(const tGUIPoint & point, 
-                                               IGUIElementEnum * pEnum, 
-                                               IGUIElement * * ppElement)
-{
-   Assert(pEnum != NULL);
-   Assert(ppElement != NULL);
-
-   cAutoIPtr<IGUIElement> pChild;
-   ulong count = 0;
-
-   while ((pEnum->Next(1, &pChild, &count) == S_OK) && (count == 1))
-   {
-      tGUIPoint relative(point - pChild->GetPosition());
-
-      if (pChild->Contains(relative))
-      {
-         cAutoIPtr<IGUIContainerElement> pChildContainer;
-         if (pChild->QueryInterface(IID_IGUIContainerElement, (void**)&pChildContainer) == S_OK)
-         {
-            if (GetHitElement(relative, pChildContainer, ppElement) == S_OK)
-            {
-               return S_OK;
-            }
-         }
-
-         *ppElement = CTAddRef(pChild);
-         return S_OK;
-      }
-
-      SafeRelease(pChild);
-      count = 0;
+      Assert(!hitElements.empty());
+      *ppElement = CTAddRef(hitElements.front());
+      std::for_each(hitElements.begin(), hitElements.end(), CTInterfaceMethod(&IGUIElement::Release));
+      return S_OK;
    }
 
    return S_FALSE;

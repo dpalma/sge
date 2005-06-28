@@ -339,35 +339,63 @@ void cGUIContext::RenderDebugInfo()
       pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
       rect.Offset(0, lineHeight);
 
-      cAutoIPtr<IGUIElement> pHitElement;
-      if (GetHitElement(m_lastMousePos, &pHitElement) == S_OK)
+      std::list<IGUIElement*> hitElements;
+      if (GetHitElements(m_lastMousePos, &hitElements) == S_OK)
       {
-         if (GUIElementType(pHitElement, &temp))
+         std::list<IGUIElement*>::const_iterator iter = hitElements.begin();
+         std::list<IGUIElement*>::const_iterator end = hitElements.end();
+         for (int index = 0; iter != end; ++iter, ++index)
          {
-            pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
-            rect.Offset(0, lineHeight);
+            if (GUIElementType(*iter, &temp))
+            {
+               cStr type, temp;
+               if (GUIElementType(*iter, &type))
+               {
+                  temp.Format("Element %d: %s", index, type.c_str());
+               }
+               else
+               {
+                  temp.Format("Element %d", index);
+               }
+               pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
+               rect.Offset(0, lineHeight);
+            }
+
+//            if (index == 0)
+            {
+               rect.left += lineHeight;
+
+               tGUISize size((*iter)->GetSize());
+               temp.Format("Size: %d x %d", Round(size.width), Round(size.height));
+               pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
+               rect.Offset(0, lineHeight);
+
+               tGUIPoint pos((*iter)->GetPosition());
+               temp.Format("Position: (%d, %d)", Round(pos.x), Round(pos.y));
+               pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
+               rect.Offset(0, lineHeight);
+
+               uint nParents = 0;
+               tGUIPoint absPos(GUIElementAbsolutePosition(*iter, &nParents));
+               temp.Format("Absolute Position: (%d, %d)", Round(absPos.x), Round(absPos.y));
+               pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
+               rect.Offset(0, lineHeight);
+
+               temp.Format("# Parents: %d", nParents);
+               pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
+               rect.Offset(0, lineHeight);
+
+               tGUIPoint relPoint(m_lastMousePos - absPos);
+               Assert((*iter)->Contains(relPoint));
+               temp.Format("Mouse (relative): (%d, %d)", Round(relPoint.x), Round(relPoint.y));
+               pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
+               rect.Offset(0, lineHeight);
+
+               rect.left -= lineHeight;
+            }
          }
 
-         tGUISize size(pHitElement->GetSize());
-         temp.Format("Size: %d x %d", Round(size.width), Round(size.height));
-         pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
-         rect.Offset(0, lineHeight);
-
-         tGUIPoint pos(pHitElement->GetPosition());
-         temp.Format("Position: (%d, %d)", Round(pos.x), Round(pos.y));
-         pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
-         rect.Offset(0, lineHeight);
-
-         tGUIPoint absPos(GUIElementAbsolutePosition(pHitElement));
-         temp.Format("Absolute Position: (%d, %d)", Round(absPos.x), Round(absPos.y));
-         pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
-         rect.Offset(0, lineHeight);
-
-         tGUIPoint relPoint(m_lastMousePos - absPos);
-         Assert(pHitElement->Contains(relPoint));
-         temp.Format("Mouse (relative): (%d, %d)", Round(relPoint.x), Round(relPoint.y));
-         pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
-         rect.Offset(0, lineHeight);
+         std::for_each(hitElements.begin(), hitElements.end(), CTInterfaceMethod(&IGUIElement::Release));
       }
    }
 }

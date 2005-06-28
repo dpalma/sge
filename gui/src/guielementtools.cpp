@@ -235,10 +235,11 @@ void GUIPlaceElement(const tGUIRect & field, IGUIElement * pGUIElement)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-tGUIPoint GUIElementAbsolutePosition(IGUIElement * pGUIElement)
+tGUIPoint GUIElementAbsolutePosition(IGUIElement * pGUIElement, uint * pnParents)
 {
    Assert(pGUIElement != NULL);
 
+   uint nParents = 0;
    tGUIPoint absolutePosition = pGUIElement->GetPosition();
 
    cAutoIPtr<IGUIElement> pParent;
@@ -247,6 +248,7 @@ tGUIPoint GUIElementAbsolutePosition(IGUIElement * pGUIElement)
       do
       {
          absolutePosition += pParent->GetPosition();
+         nParents++;
 
          cAutoIPtr<IGUIElement> pNext;
          if (pParent->GetParent(&pNext) != S_OK)
@@ -259,6 +261,11 @@ tGUIPoint GUIElementAbsolutePosition(IGUIElement * pGUIElement)
          }
       }
       while (!!pParent);
+   }
+
+   if (pnParents != NULL)
+   {
+      *pnParents = nParents;
    }
 
    return absolutePosition;
