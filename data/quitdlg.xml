@@ -4,9 +4,9 @@
    title="Quit?" 
    ismodal="true"
    insets="(4,4,4,4)" 
-   style="align:center;verticalAlign:center;frame-face-color:(.93,.91,.847);frame-top-left-color:(1,1,1);frame-bottom-right-color:(.675,.659,.6);"
+   style="align:center;vertical-align:center;width:220;height:150;"
    onok="quit();">
-   <layout type="grid" hgap="3" vgap="3" columns="1" rows="2" />
-   <label text="Are you sure you want to quit?" style="foreground-color:red;"/>
-   <button id="ok" text="Quit"/>
+   <layout type="grid" columns="1" rows="2" />
+   <label text="Are you sure you want to quit?" style="align:center;"/>
+   <button style="align:center;vertical-align:bottom;" id="ok" text="Quit"/>
 </dialog>

@@ -4,7 +4,7 @@
 #ifndef INCLUDED_GUICONTAINERBASETEM_H
 #define INCLUDED_GUICONTAINERBASETEM_H
 
-#include "guiapi.h"
+#include "guielementbasetem.h"
 
 #include "guielementenum.h"
 
@@ -22,8 +22,9 @@
 ///////////////////////////////////////
 
 template <typename INTRFC>
-cGUIContainerBase<INTRFC>::cGUIContainerBase()
- : m_pInsets(NULL)
+cGUIContainerBase<INTRFC>::cGUIContainerBase(IGUILayoutManager * pLayout)
+ : m_pLayout(CTAddRef(pLayout)),
+   m_pInsets(NULL)
 {
 }
 
@@ -44,6 +45,35 @@ cGUIContainerBase<INTRFC>::~cGUIContainerBase()
 
    delete m_pInsets;
    m_pInsets = NULL;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+void cGUIContainerBase<INTRFC>::SetSize(const tGUISize & size)
+{
+   cGUIElementBase<INTRFC>::SetSize(size);
+
+   cAutoIPtr<IGUILayoutManager> pLayout;
+   if (GetLayout(&pLayout) == S_OK)
+   {
+      pLayout->Layout(this);
+   }
+   else
+   {
+      tGUIRect rect(0, 0, Round(size.width), Round(size.height));
+
+      tGUIInsets insets;
+      if (GetInsets(&insets) == S_OK)
+      {
+         rect.left += insets.left;
+         rect.top += insets.top;
+         rect.right -= insets.right;
+         rect.bottom -= insets.bottom;
+      }
+
+      ForEachElement(cSizeAndPlaceElement(rect));
+   }
 }
 
 ///////////////////////////////////////

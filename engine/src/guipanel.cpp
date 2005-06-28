@@ -34,34 +34,6 @@ cGUIPanelElement::~cGUIPanelElement()
 
 ///////////////////////////////////////
 
-void cGUIPanelElement::SetSize(const tGUISize & size)
-{
-   tBaseClass::SetSize(size);
-
-   cAutoIPtr<IGUILayoutManager> pLayout;
-   if (GetLayout(&pLayout) == S_OK)
-   {
-      pLayout->Layout(this);
-   }
-   else
-   {
-      tGUIRect rect(0, 0, Round(size.width), Round(size.height));
-
-      tGUIInsets insets;
-      if (GetInsets(&insets) == S_OK)
-      {
-         rect.left += insets.left;
-         rect.top += insets.top;
-         rect.right -= insets.right;
-         rect.bottom -= insets.bottom;
-      }
-
-      ForEachElement(cSizeAndPlaceElement(rect));
-   }
-}
-
-///////////////////////////////////////
-
 tResult cGUIPanelElement::OnEvent(IGUIEvent * pEvent)
 {
    return S_OK;

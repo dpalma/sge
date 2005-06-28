@@ -16,11 +16,10 @@
 // CLASS: cGUIPanelElement
 //
 
-class cGUIPanelElement : public cComObject<cGUIElementBase< cGUIContainerBase<IGUIPanelElement> >, 
-                                           &IID_IGUIPanelElement>
+typedef cGUIContainerBase<IGUIPanelElement> tGUIPanelBase;
+
+class cGUIPanelElement : public cComObject<tGUIPanelBase, &IID_IGUIPanelElement>
 {
-   typedef cComObject<cGUIElementBase< cGUIContainerBase<IGUIPanelElement> >, 
-                      &IID_IGUIPanelElement> tBaseClass;
 public:
    cGUIPanelElement();
    ~cGUIPanelElement();
@@ -36,7 +35,6 @@ public:
       return DoQueryInterface(pairs, _countof(pairs), iid, ppvObject);
    }
 
-   virtual void SetSize(const tGUISize & size);
    virtual tResult OnEvent(IGUIEvent * pEvent);
 };
 

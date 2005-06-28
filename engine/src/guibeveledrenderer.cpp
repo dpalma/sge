@@ -284,41 +284,33 @@ tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIButtonElement * pButtonElemen
 
 tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIDialogElement * pDialogElement)
 {
-   cAutoIPtr<IGUILayoutManager> pLayout;
-   if (pDialogElement->GetLayout(&pLayout) == S_OK)
+   tGUISize size(cGUIElementRenderer<cGUIBeveledRenderer>::GetPreferredSize(static_cast<IGUIContainerElement*>(pDialogElement)));
+
+   uint captionHeight;
+   if (pDialogElement->GetCaptionHeight(&captionHeight) == S_OK)
    {
-      tGUISize size(0,0);
-      if (pLayout->GetPreferredSize(pDialogElement, &size) == S_OK)
+      size.height += captionHeight;
+   }
+   else
+   {
+      tGUIString title;
+      if (pDialogElement->GetTitle(&title) == S_OK)
       {
-         uint captionHeight;
-         if (pDialogElement->GetCaptionHeight(&captionHeight) == S_OK)
+         cAutoIPtr<IGUIFont> pFont;
+         if (GetFont(pDialogElement, &pFont) == S_OK)
          {
+            tRect rect(0,0,0,0);
+            pFont->RenderText(title.c_str(), title.length(), &rect, kRT_CalcRect, tGUIColor::White);
+
+            captionHeight = rect.GetHeight();
+
+            pDialogElement->SetCaptionHeight(captionHeight);
             size.height += captionHeight;
          }
-         else
-         {
-            tGUIString title;
-            if (pDialogElement->GetTitle(&title) == S_OK)
-            {
-               cAutoIPtr<IGUIFont> pFont;
-               if (GetFont(pDialogElement, &pFont) == S_OK)
-               {
-                  tRect rect(0,0,0,0);
-                  pFont->RenderText(title.c_str(), -1, &rect, kRT_CalcRect, tGUIColor::White);
-
-                  captionHeight = rect.GetHeight();
-
-                  pDialogElement->SetCaptionHeight(captionHeight);
-                  size.height += captionHeight;
-               }
-            }
-         }
-
-         return size;
       }
    }
 
-   return tGUISize(0,0);
+   return size;
 }
 
 ///////////////////////////////////////
@@ -334,7 +326,7 @@ tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUILabelElement * pLabelElement)
          tRect rect(0,0,0,0);
          pFont->RenderText(text.c_str(), text.length(), &rect, kRT_CalcRect, tGUIColor::White);
 
-         return tGUISize((tGUISizeType)rect.GetWidth(), (tGUISizeType)rect.GetHeight());
+         return tGUISize(static_cast<tGUISizeType>(rect.GetWidth()), static_cast<tGUISizeType>(rect.GetHeight()));
       }
    }
 

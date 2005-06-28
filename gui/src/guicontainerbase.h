@@ -4,7 +4,7 @@
 #ifndef INCLUDED_GUICONTAINERBASE_H
 #define INCLUDED_GUICONTAINERBASE_H
 
-#include "guiapi.h"
+#include "guielementbase.h"
 
 #include <list>
 #include <algorithm>
@@ -23,11 +23,16 @@
 // (e.g., IGUIPanelElement or IGUIDialogElement)
 
 template <typename INTRFC>
-class cGUIContainerBase : public INTRFC
+class cGUIContainerBase : public cGUIElementBase<INTRFC>
 {
 public:
-   cGUIContainerBase();
+   cGUIContainerBase(IGUILayoutManager * pLayout = NULL);
    ~cGUIContainerBase();
+
+   ////////////////////////////////////
+   // IGUIElement over-rides
+
+   virtual void SetSize(const tGUISize & size);
 
    ////////////////////////////////////
    // IGUIContainerElement methods

@@ -22,7 +22,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static const uint NO_DIMENSION = (uint)-1;
+static const uint kInvalidUint = ~0u;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -45,10 +45,10 @@ cGUIStyle::cGUIStyle()
    m_bFontShadow(false),
    m_bFontOutline(false),
    m_pFont(NULL),
-   m_width(NO_DIMENSION), 
-   m_height(NO_DIMENSION),
-   m_widthSpec(NO_DIMENSION), 
-   m_heightSpec(NO_DIMENSION)
+   m_width(kInvalidUint), 
+   m_height(kInvalidUint),
+   m_widthSpec(kInvalidUint), 
+   m_heightSpec(kInvalidUint)
 {
 }
 
@@ -502,7 +502,7 @@ tResult cGUIStyle::GetWidth(uint * pWidth, uint * pSpec)
       return E_POINTER;
    }
 
-   if ((m_width == NO_DIMENSION) || (m_widthSpec == NO_DIMENSION))
+   if ((m_width == kInvalidUint) || (m_widthSpec == kInvalidUint))
    {
       return S_FALSE;
    }
@@ -537,7 +537,7 @@ tResult cGUIStyle::GetHeight(uint * pHeight, uint * pSpec)
       return E_POINTER;
    }
 
-   if ((m_height == NO_DIMENSION) || (m_heightSpec == NO_DIMENSION))
+   if ((m_height == kInvalidUint) || (m_heightSpec == kInvalidUint))
    {
       return S_FALSE;
    }
@@ -717,20 +717,37 @@ tResult GUIStyleParseBool(const char * psz, bool * pBool)
 
 static tResult GUIStyleParseDimension(const char * psz, uint * pDimension, uint * pSpec)
 {
-   Assert(psz != NULL);
-   Assert(pDimension != NULL);
-   Assert(pSpec != NULL);
-
-   if (sscanf(psz, "%d", pDimension) == 1)
+   if (psz == NULL || pDimension == NULL || pSpec == NULL)
    {
-      if (strstr(psz, "px"))
+      return E_POINTER;
+   }
+
+   uint dimension = kInvalidUint;
+   char szSpec[32];
+
+   // the 32 must match the size of 'szSpec'
+   int nParsed = sscanf(psz, "%d%32s", &dimension, szSpec);
+   if (nParsed == 2)
+   {
+      if (strcmp(szSpec, "%") == 0)
       {
+         *pDimension = dimension;
+         *pSpec = kGUIDimensionPercent;
+         return S_OK;
+      }
+      else
+      {
+         *pDimension = dimension;
          *pSpec = kGUIDimensionPixels;
          return S_OK;
       }
-      else if (strchr(psz, '%'))
+   }
+   else if (nParsed == 1)
+   {
+      if (dimension != kInvalidUint)
       {
-         *pSpec = kGUIDimensionPercent;
+         *pDimension = dimension;
+         *pSpec = kGUIDimensionPixels;
          return S_OK;
       }
    }
@@ -994,8 +1011,12 @@ void cGUIStyleTests::TestFactoryFunction()
 void cGUIStyleTests::TestParseDimension()
 {
    uint dim, spec;
-   CPPUNIT_ASSERT(GUIStyleParseDimension("50px", &dim, &spec) == S_OK);
-   CPPUNIT_ASSERT((dim == 50) && (spec == kGUIDimensionPixels));
+   CPPUNIT_ASSERT(GUIStyleParseDimension("150", &dim, &spec) == S_OK);
+   CPPUNIT_ASSERT((dim == 150) && (spec == kGUIDimensionPixels));
+   CPPUNIT_ASSERT(GUIStyleParseDimension("250px", &dim, &spec) == S_OK);
+   CPPUNIT_ASSERT((dim == 250) && (spec == kGUIDimensionPixels));
+   CPPUNIT_ASSERT(GUIStyleParseDimension("350 px", &dim, &spec) == S_OK);
+   CPPUNIT_ASSERT((dim == 350) && (spec == kGUIDimensionPixels));
    CPPUNIT_ASSERT(GUIStyleParseDimension("25%", &dim, &spec) == S_OK);
    CPPUNIT_ASSERT((dim == 25) && (spec == kGUIDimensionPercent));
 }

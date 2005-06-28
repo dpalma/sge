@@ -16,12 +16,10 @@
 // CLASS: cGUIDialogElement
 //
 
-class cGUIDialogElement : public cComObject<cGUIElementBase< cGUIContainerBase<IGUIDialogElement> >, 
-                                            &IID_IGUIDialogElement>
-{
-   typedef cComObject<cGUIElementBase< cGUIContainerBase<IGUIDialogElement> >, 
-                      &IID_IGUIDialogElement> tBaseClass;
+typedef cGUIContainerBase<IGUIDialogElement> tGUIDialogBase;
 
+class cGUIDialogElement : public cComObject<tGUIDialogBase, &IID_IGUIDialogElement>
+{
 public:
    cGUIDialogElement();
    ~cGUIDialogElement();
@@ -37,7 +35,6 @@ public:
       return DoQueryInterface(pairs, _countof(pairs), iid, ppvObject);
    }
 
-   virtual void SetSize(const tGUISize & size);
    virtual tResult OnEvent(IGUIEvent * pEvent);
 
    virtual tResult GetInsets(tGUIInsets * pInsets);

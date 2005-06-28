@@ -32,7 +32,7 @@ LOG_DEFINE_CHANNEL(GUIDialogEvents);
 // CLASS: cGUIDialogElement
 //
 
-static const uint kNoCaptionHeight = (uint)-1;
+static const uint kNoCaptionHeight = ~0u;
 
 ///////////////////////////////////////
 
@@ -48,22 +48,6 @@ cGUIDialogElement::cGUIDialogElement()
 
 cGUIDialogElement::~cGUIDialogElement()
 {
-}
-
-///////////////////////////////////////
-
-void cGUIDialogElement::SetSize(const tGUISize & size)
-{
-   tBaseClass::SetSize(size);
-
-   cAutoIPtr<IGUILayoutManager> pLayout;
-   if (GetLayout(&pLayout) == S_OK)
-   {
-      if (pLayout->Layout(this) != S_OK)
-      {
-         DebugMsg("ERROR: IGUILayoutManager::Layout() call failed for dialog box\n");
-      }
-   }
 }
 
 ///////////////////////////////////////
@@ -175,7 +159,7 @@ tResult cGUIDialogElement::OnEvent(IGUIEvent * pEvent)
 tResult cGUIDialogElement::GetInsets(tGUIInsets * pInsets)
 {
    tResult result;
-   if ((result = cGUIContainerBase<IGUIDialogElement>::GetInsets(pInsets)) == S_OK)
+   if ((result = tGUIDialogBase::GetInsets(pInsets)) == S_OK)
    {
       // Add in the caption height so that the layout manager can account for it
       // when sizing and positioning child elements
@@ -360,6 +344,8 @@ tGUIRect cGUIDialogElement::GetCaptionRectAbsolute()
 
 AUTOREGISTER_GUIELEMENTFACTORY(dialog, cGUIDialogElementFactory);
 
+extern tResult GUIStyleParseBool(const char * psz, bool * pBool);
+
 static tResult QueryBoolAttribute(const TiXmlElement * pXmlElement, const char * pszAttrib, bool * pBool)
 {
    Assert(pXmlElement != NULL);
@@ -377,16 +363,7 @@ static tResult QueryBoolAttribute(const TiXmlElement * pXmlElement, const char *
       const char * pszValue = pXmlElement->Attribute(pszAttrib);
       if (pszValue != NULL)
       {
-         if (stricmp(pszValue, "true") == 0)
-         {
-            *pBool = true;
-            return S_OK;
-         }
-         else if (stricmp(pszValue, "false") == 0)
-         {
-            *pBool = false;
-            return S_OK;
-         }
+         return GUIStyleParseBool(pszValue, pBool);
       }
    }
 
