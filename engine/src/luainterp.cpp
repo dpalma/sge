@@ -33,6 +33,18 @@ void * pReferenceCmds = (void *)cmds;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+LOG_DEFINE_CHANNEL(LuaInterp);
+
+#define LocalMsg(msg)                  DebugMsgEx(LuaInterp,(msg))
+#define LocalMsg1(msg,a1)              DebugMsgEx1(LuaInterp,(msg),(a1))
+#define LocalMsg2(msg,a1,a2)           DebugMsgEx2(LuaInterp,(msg),(a1),(a2))
+
+#define LocalMsgIf(cond,msg)           DebugMsgIfEx(LuaInterp,(cond),(msg))
+#define LocalMsgIf1(cond,msg,a1)       DebugMsgIfEx1(LuaInterp,(cond),(msg),(a1))
+#define LocalMsgIf2(cond,msg,a1,a2)    DebugMsgIfEx2(LuaInterp,(cond),(msg),(a1),(a2))
+
+///////////////////////////////////////////////////////////////////////////////
+
 static const int kMaxArgs = 16;
 static const int kMaxResults = 8;
 
@@ -112,7 +124,7 @@ static int LuaThunkInvoke(lua_State * L)
             default:
             {
                args[i].type = kEmpty;
-               DebugMsg2("Arg %d of unsupported type %s\n", iArg, lua_typename(L, lua_type(L, iArg)));
+               WarnMsg2("Arg %d of unsupported type %s\n", iArg, lua_typename(L, lua_type(L, iArg)));
                break;
             }
          }
@@ -129,7 +141,7 @@ static int LuaThunkInvoke(lua_State * L)
 
    if (FAILED(result))
    {
-      DebugMsg2("IScriptable[0x%08X]->Invoke(%s, ...) failed\n", pInstance, pszMethodName);
+      WarnMsg2("IScriptable[%p]->Invoke(%s, ...) failed\n", pInstance, pszMethodName);
       return 0;
    }
 
@@ -400,7 +412,7 @@ tResult ScriptAddFunction(const char * pszName, tScriptFn pfn)
    if (cLuaInterpreter::gm_bInitialized)
    {
       UseGlobal(ScriptInterpreter);
-      return pScriptInterpreter->AddFunction(pszName, pfn);
+      return pScriptInterpreter->AddNamedItem(pszName, pfn);
    }
    else
    {
@@ -466,7 +478,7 @@ cLuaInterpreter::cLuaInterpreter()
 
 cLuaInterpreter::~cLuaInterpreter()
 {
-   DebugMsgIf(m_L != NULL, "WARNING: script machine destructor called before Term!\n");
+   WarnMsgIf(m_L != NULL, "Script machine destructor called before Term!\n");
 }
 
 ///////////////////////////////////////
@@ -502,7 +514,7 @@ tResult cLuaInterpreter::Init()
 
    while (gm_pPreRegisteredFunctions != NULL)
    {
-      AddFunction(gm_pPreRegisteredFunctions->szName, gm_pPreRegisteredFunctions->pfn);
+      AddNamedItem(gm_pPreRegisteredFunctions->szName, gm_pPreRegisteredFunctions->pfn);
       sPreRegisteredFunction * p = gm_pPreRegisteredFunctions;
       gm_pPreRegisteredFunctions = gm_pPreRegisteredFunctions->pNext;
       delete p;
@@ -549,9 +561,12 @@ tResult cLuaInterpreter::ExecString(const char * pszCode)
 
 ///////////////////////////////////////
 
-tResult cLuaInterpreter::CallFunction(const char * pszName, const char * pszArgDesc, ...)
+tResult CDECL cLuaInterpreter::CallFunction(const char * pszName, const char * pszArgDesc, ...)
 {
-   Assert(pszName != NULL);
+   if (pszName == NULL)
+   {
+      return E_POINTER;
+   }
    va_list args;
    va_start(args, pszArgDesc);
    tResult result = CallFunction(pszName, pszArgDesc, args);
@@ -638,39 +653,145 @@ tResult cLuaInterpreter::CallFunction(const char * pszName, const char * pszArgD
 
 ///////////////////////////////////////
 
-tResult cLuaInterpreter::AddFunction(const char * pszName, tScriptFn pfn)
+tResult cLuaInterpreter::RegisterCustomClass(const tChar * pszClassName,
+                                             IScriptableFactory * pFactory)
 {
-   Assert(pszName != NULL);
-   if (m_L != NULL)
-   {
-      lua_pushlightuserdata(m_L, (void *)pfn);
-      lua_pushcclosure(m_L, LuaThunkFunction, 1);
-      lua_setglobal(m_L, pszName);
-      return S_OK;
-   }
-   return E_FAIL;
+   if (pszClassName == NULL && pFactory == NULL)
+      return E_POINTER;
+
+   if (m_L == NULL)
+      return E_FAIL;
+
+   pFactory->AddRef();
+   lua_pushlightuserdata(m_L, pFactory);
+   lua_pushcclosure(m_L, LuaConstructObject, 1);
+   lua_setglobal(m_L, pszClassName);
+
+   return S_OK;
 }
 
 ///////////////////////////////////////
 
-tResult cLuaInterpreter::RemoveFunction(const char * pszName)
+tResult cLuaInterpreter::RevokeCustomClass(const tChar * pszClassName)
 {
-   Assert(pszName != NULL);
-   if (m_L != NULL)
-   {
-      lua_pushnil(m_L);
-      lua_setglobal(m_L, pszName);
-      return S_OK;
-   }
-   return E_FAIL;
+   if (pszClassName == NULL)
+      return E_POINTER;
+
+   if (m_L == NULL)
+      return E_FAIL;
+
+   lua_getglobal(m_L, pszClassName);
+   lua_getupvalue(m_L, -1, 1);
+   IUnknown * pUnkFactory = static_cast<IUnknown *>(lua_touserdata(m_L, -1));
+   lua_pop(m_L, 2); // pop the function and the up-value (getglobal and getupvalue results)
+
+   lua_pushnil(m_L);
+   lua_setglobal(m_L, pszClassName);
+
+   Assert(pUnkFactory != NULL);
+   SafeRelease(pUnkFactory);
+
+   return S_OK;
 }
 
 ///////////////////////////////////////
 
-tResult cLuaInterpreter::GetGlobal(const char * pszName, cScriptVar * pValue)
+tResult cLuaInterpreter::AddNamedItem(const char * pszName, double value)
 {
-   Assert(pszName != NULL);
-   Assert(pValue != NULL);
+   if (pszName == NULL)
+   {
+      return E_POINTER;
+   }
+   if (m_L == NULL)
+   {
+      return E_FAIL;
+   }
+   lua_pushnumber(m_L, value);
+   lua_setglobal(m_L, pszName);
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cLuaInterpreter::AddNamedItem(const char * pszName, const char * pszValue)
+{
+   if (pszName == NULL || pszValue == NULL)
+   {
+      return E_POINTER;
+   }
+   if (m_L == NULL)
+   {
+      return E_FAIL;
+   }
+   lua_pushstring(m_L, pszValue);
+   lua_setglobal(m_L, pszName);
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cLuaInterpreter::AddNamedItem(const char * pszName, tScriptFn pfn)
+{
+   if (pszName == NULL || pfn == NULL)
+   {
+      return E_POINTER;
+   }
+   if (m_L == NULL)
+   {
+      return E_FAIL;
+   }
+   lua_pushlightuserdata(m_L, static_cast<void*>(pfn));
+   lua_pushcclosure(m_L, LuaThunkFunction, 1);
+   lua_setglobal(m_L, pszName);
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cLuaInterpreter::AddNamedItem(const char * pszName, IScriptable * pObject)
+{
+   if (pszName == NULL || pObject == NULL)
+   {
+      return E_POINTER;
+   }
+   if (m_L == NULL)
+   {
+      return E_FAIL;
+   }
+   // LuaPublishObject AddRefs the instance pointer so don't do so here
+   if (LuaPublishObject(m_L, pObject) != 1)
+   {
+      return E_FAIL;
+   }
+   lua_setglobal(m_L, pszName);
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cLuaInterpreter::RemoveNamedItem(const char * pszName)
+{
+   if (pszName == NULL)
+   {
+      return E_POINTER;
+   }
+   if (m_L == NULL)
+   {
+      return E_FAIL;
+   }
+   lua_pushnil(m_L);
+   lua_setglobal(m_L, pszName);
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cLuaInterpreter::GetNamedItem(const char * pszName, cScriptVar * pValue) const
+{
+   if (pszName == NULL || pValue == NULL)
+   {
+      return E_POINTER;
+   }
    bool bFound = false;
    if (m_L != NULL)
    {
@@ -706,10 +827,12 @@ tResult cLuaInterpreter::GetGlobal(const char * pszName, cScriptVar * pValue)
 
 ///////////////////////////////////////
 
-tResult cLuaInterpreter::GetGlobal(const char * pszName, double * pValue)
+tResult cLuaInterpreter::GetNamedItem(const char * pszName, double * pValue) const
 {
-   Assert(pszName != NULL);
-   Assert(pValue != NULL);
+   if (pszName == NULL || pValue == NULL)
+   {
+      return E_POINTER;
+   }
    if (m_L != NULL)
    {
       lua_getglobal(m_L, pszName);
@@ -726,10 +849,12 @@ tResult cLuaInterpreter::GetGlobal(const char * pszName, double * pValue)
 
 ///////////////////////////////////////
 
-tResult cLuaInterpreter::GetGlobal(const char * pszName, char * pValue, int cbMaxValue)
+tResult cLuaInterpreter::GetNamedItem(const char * pszName, char * pValue, int cbMaxValue) const
 {
-   Assert(pszName != NULL);
-   Assert(pValue != NULL);
+   if (pszName == NULL || pValue == NULL)
+   {
+      return E_POINTER;
+   }
    if (m_L != NULL)
    {
       lua_getglobal(m_L, pszName);
@@ -744,73 +869,6 @@ tResult cLuaInterpreter::GetGlobal(const char * pszName, char * pValue, int cbMa
       lua_pop(m_L, 1);
    }
    return S_FALSE;
-}
-
-///////////////////////////////////////
-
-void cLuaInterpreter::SetGlobal(const char * pszName, double value)
-{
-   Assert(pszName != NULL);
-   if (m_L != NULL)
-   {
-      lua_pushnumber(m_L, value);
-      lua_setglobal(m_L, pszName);
-   }
-}
-
-///////////////////////////////////////
-
-void cLuaInterpreter::SetGlobal(const char * pszName, const char * pszValue)
-{
-   Assert(pszName != NULL);
-   if (m_L != NULL)
-   {
-      lua_pushstring(m_L, pszValue);
-      lua_setglobal(m_L, pszName);
-   }
-}
-
-///////////////////////////////////////
-
-tResult cLuaInterpreter::RegisterCustomClass(const tChar * pszClassName,
-                                             IScriptableFactory * pFactory)
-{
-   if (pszClassName == NULL && pFactory == NULL)
-      return E_INVALIDARG;
-
-   if (m_L == NULL)
-      return E_FAIL;
-
-   pFactory->AddRef();
-   lua_pushlightuserdata(m_L, pFactory);
-   lua_pushcclosure(m_L, LuaConstructObject, 1);
-   lua_setglobal(m_L, pszClassName);
-
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cLuaInterpreter::RevokeCustomClass(const tChar * pszClassName)
-{
-   if (pszClassName == NULL)
-      return E_INVALIDARG;
-
-   if (m_L == NULL)
-      return E_FAIL;
-
-   lua_getglobal(m_L, pszClassName);
-   lua_getupvalue(m_L, -1, 1);
-   IUnknown * pUnkFactory = static_cast<IUnknown *>(lua_touserdata(m_L, -1));
-   lua_pop(m_L, 2); // pop the function and the up-value (getglobal and getupvalue results)
-
-   lua_pushnil(m_L);
-   lua_setglobal(m_L, pszClassName);
-
-   Assert(pUnkFactory != NULL);
-   SafeRelease(pUnkFactory);
-
-   return S_OK;
 }
 
 ///////////////////////////////////////
@@ -956,6 +1014,7 @@ class cLuaInterpreterTests : public CppUnit::TestCase
       CPPUNIT_TEST(TestGetString);
       CPPUNIT_TEST(TestCustomClass);
       CPPUNIT_TEST(TestCustomClass2);
+      CPPUNIT_TEST(TestPublishObject);
    CPPUNIT_TEST_SUITE_END();
 
    static bool gm_bCalled;
@@ -969,6 +1028,7 @@ class cLuaInterpreterTests : public CppUnit::TestCase
    void TestGetString();
    void TestCustomClass();
    void TestCustomClass2();
+   void TestPublishObject();
 
    cAutoIPtr<IScriptInterpreter> m_pInterp;
 
@@ -1005,20 +1065,20 @@ int cLuaInterpreterTests::RemoveThisFunction(int, const cScriptVar *, int, cScri
 
 void cLuaInterpreterTests::TestCallFunction()
 {
-   CPPUNIT_ASSERT(m_pInterp->AddFunction("CallThisFunction", CallThisFunction) == S_OK);
+   CPPUNIT_ASSERT(m_pInterp->AddNamedItem("CallThisFunction", CallThisFunction) == S_OK);
    gm_bCalled = false;
    CPPUNIT_ASSERT(m_pInterp->ExecString("CallThisFunction();") == S_OK);
    CPPUNIT_ASSERT(gm_bCalled);
-   CPPUNIT_ASSERT(m_pInterp->RemoveFunction("CallThisFunction") == S_OK);
+   CPPUNIT_ASSERT(m_pInterp->RemoveNamedItem("CallThisFunction") == S_OK);
 }
 
 ////////////////////////////////////////
 
 void cLuaInterpreterTests::TestRemoveFunction()
 {
-   CPPUNIT_ASSERT(m_pInterp->AddFunction("RemoveThisFunction", RemoveThisFunction) == S_OK);
+   CPPUNIT_ASSERT(m_pInterp->AddNamedItem("RemoveThisFunction", RemoveThisFunction) == S_OK);
    CPPUNIT_ASSERT(m_pInterp->ExecString("RemoveThisFunction();") == S_OK);
-   CPPUNIT_ASSERT(m_pInterp->RemoveFunction("RemoveThisFunction") == S_OK);
+   CPPUNIT_ASSERT(m_pInterp->RemoveNamedItem("RemoveThisFunction") == S_OK);
    CPPUNIT_ASSERT(m_pInterp->ExecString("RemoveThisFunction();") != S_OK);
 
    CPPUNIT_ASSERT(m_pInterp->ExecString("ThisNameWillNotBeFoundSoThisCallShouldFail();") != S_OK);
@@ -1030,8 +1090,8 @@ void cLuaInterpreterTests::TestGetNumber()
 {
    double value;
 
-   m_pInterp->SetGlobal("foo", 123.456);
-   CPPUNIT_ASSERT(m_pInterp->GetGlobal("foo", &value) == S_OK);
+   m_pInterp->AddNamedItem("foo", 123.456);
+   CPPUNIT_ASSERT(m_pInterp->GetNamedItem("foo", &value) == S_OK);
    CPPUNIT_ASSERT(value == 123.456);
 }
 
@@ -1041,12 +1101,12 @@ void cLuaInterpreterTests::TestGetString()
 {
    char szValue[16];
 
-   m_pInterp->SetGlobal("bar", "blah blah");
-   CPPUNIT_ASSERT(m_pInterp->GetGlobal("bar", szValue, _countof(szValue)) == S_OK);
+   m_pInterp->AddNamedItem("bar", "blah blah");
+   CPPUNIT_ASSERT(m_pInterp->GetNamedItem("bar", szValue, _countof(szValue)) == S_OK);
    CPPUNIT_ASSERT(strcmp(szValue, "blah blah") == 0);
 
-   m_pInterp->SetGlobal("bar", "blah blah blah blah blah blah blah blah");
-   CPPUNIT_ASSERT(m_pInterp->GetGlobal("bar", szValue, _countof(szValue)) == S_OK);
+   m_pInterp->AddNamedItem("bar", "blah blah blah blah blah blah blah blah");
+   CPPUNIT_ASSERT(m_pInterp->GetNamedItem("bar", szValue, _countof(szValue)) == S_OK);
    CPPUNIT_ASSERT(strcmp(szValue, "blah blah blah ") == 0);
 }
 
@@ -1089,9 +1149,32 @@ void cLuaInterpreterTests::TestCustomClass2()
    sprintf(szScript, scriptSpec, time(NULL));
 
    CPPUNIT_ASSERT(m_pInterp->ExecString(szScript) == S_OK);
-
    CPPUNIT_ASSERT(m_pInterp->RevokeCustomClass(cRNG::LuaClassName) == S_OK);
+   CPPUNIT_ASSERT(m_pInterp->ExecString(szScript) != S_OK);
+}
 
+////////////////////////////////////////
+
+void cLuaInterpreterTests::TestPublishObject()
+{
+   cAutoIPtr<IScriptable> pRNG = new cRNG;
+   CPPUNIT_ASSERT(!!pRNG);
+
+   static const char kRNG[] = "rngObject";
+   CPPUNIT_ASSERT(m_pInterp->AddNamedItem(kRNG, pRNG) == S_OK);
+
+   static const char kScriptSpec[] =
+   {
+      "%s:Seed(%d);" \
+      "local r = %s:Rand();" \
+      "print([[%s() returned ]] .. r .. [[\r\n]]);"
+   };
+
+   char szScript[1024];
+   snprintf(szScript, _countof(szScript), kScriptSpec, kRNG, time(NULL), kRNG, kRNG);
+
+   CPPUNIT_ASSERT(m_pInterp->ExecString(szScript) == S_OK);
+   CPPUNIT_ASSERT(m_pInterp->RemoveNamedItem(kRNG) == S_OK);
    CPPUNIT_ASSERT(m_pInterp->ExecString(szScript) != S_OK);
 }
 

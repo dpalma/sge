@@ -10,8 +10,6 @@
 #include "enginedll.h"
 #include "comtools.h"
 
-#include <cstdarg>
-
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -94,28 +92,25 @@ interface IScriptInterpreter : IUnknown
    /// UseGlobal(pScriptInterpreter);
    /// pScriptInterpreter->CallFunction("Square", "ff", 100.0, 50.9);
    /// @endcode
-   virtual tResult CallFunction(const char * pszName, const char * pszArgDesc = NULL, ...) = 0;
-   /*!
-    * @overload tResult CallFunction(const char * pszName, const char * pszArgDesc, va_list args);
-    */
-   virtual tResult CallFunction(const char * pszName, const char * pszArgDesc, va_list args) = 0;
-
-   /// @brief Expose a global function to script code using the given name
-   /// @param pszName is the name script code will use to invoke the function
-   /// @param pfn is a pointer to the function's C++ implementation
-   virtual tResult AddFunction(const char * pszName, tScriptFn pfn) = 0;
-   /// @brief Revoke a previously registered function
-   /// @param pszName is the name of the function to be removed
-   virtual tResult RemoveFunction(const char * pszName) = 0;
-
-   virtual tResult GetGlobal(const char * pszName, cScriptVar * pValue) = 0;
-   virtual tResult GetGlobal(const char * pszName, double * pValue) = 0;
-   virtual tResult GetGlobal(const char * pszName, char * pValue, int cbMaxValue) = 0;
-   virtual void SetGlobal(const char * pszName, double value) = 0;
-   virtual void SetGlobal(const char * pszName, const char * pszValue) = 0;
+   virtual tResult CDECL CallFunction(const char * pszName, const char * pszArgDesc = NULL, ...) = 0;
 
    virtual tResult RegisterCustomClass(const tChar * pszClassName, IScriptableFactory * pFactory) = 0;
    virtual tResult RevokeCustomClass(const tChar * pszClassName) = 0;
+
+   /// @brief Add a new item to the script's namespace
+   /// @param pszName is the name used to reference the item in script code
+   virtual tResult AddNamedItem(const char * pszName, double value) = 0;
+   virtual tResult AddNamedItem(const char * pszName, const char * pszValue) = 0;
+   virtual tResult AddNamedItem(const char * pszName, tScriptFn pfn) = 0;
+   virtual tResult AddNamedItem(const char * pszName, IScriptable * pObject) = 0;
+
+   /// @brief Remove a named item from the script's namespace
+   /// @param pszName is the name of the item to be removed
+   virtual tResult RemoveNamedItem(const char * pszName) = 0;
+
+   virtual tResult GetNamedItem(const char * pszName, cScriptVar * pValue) const = 0;
+   virtual tResult GetNamedItem(const char * pszName, double * pValue) const = 0;
+   virtual tResult GetNamedItem(const char * pszName, char * pValue, int cbMaxValue) const = 0;
 };
 
 ///////////////////////////////////////

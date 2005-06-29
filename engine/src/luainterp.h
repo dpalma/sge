@@ -7,6 +7,8 @@
 #include "scriptapi.h"
 #include "globalobj.h"
 
+#include <cstdarg>
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -29,21 +31,22 @@ public:
    virtual tResult Init();
    virtual tResult Term();
 
-   tResult ExecFile(const char * pszFile);
-   tResult ExecString(const char * pszCode);
-   tResult CallFunction(const char * pszName, const char * pszArgDesc = NULL, ...);
+   virtual tResult ExecFile(const char * pszFile);
+   virtual tResult ExecString(const char * pszCode);
+   virtual tResult CDECL CallFunction(const char * pszName, const char * pszArgDesc, ...);
    tResult CallFunction(const char * pszName, const char * pszArgDesc, va_list args);
-   tResult AddFunction(const char * pszName, tScriptFn pfn);
-   tResult RemoveFunction(const char * pszName);
 
-   tResult GetGlobal(const char * pszName, cScriptVar * pValue);
-   tResult GetGlobal(const char * pszName, double * pValue);
-   tResult GetGlobal(const char * pszName, char * pValue, int cbMaxValue);
-   void SetGlobal(const char * pszName, double value);
-   void SetGlobal(const char * pszName, const char * pszValue);
+   virtual tResult RegisterCustomClass(const tChar * pszClassName, IScriptableFactory * pFactory);
+   virtual tResult RevokeCustomClass(const tChar * pszClassName);
 
-   tResult RegisterCustomClass(const tChar * pszClassName, IScriptableFactory * pFactory);
-   tResult RevokeCustomClass(const tChar * pszClassName);
+   virtual tResult AddNamedItem(const char * pszName, double value);
+   virtual tResult AddNamedItem(const char * pszName, const char * pszValue);
+   virtual tResult AddNamedItem(const char * pszName, tScriptFn pfn);
+   virtual tResult AddNamedItem(const char * pszName, IScriptable * pObject);
+   virtual tResult RemoveNamedItem(const char * pszName);
+   virtual tResult GetNamedItem(const char * pszName, cScriptVar * pValue) const;
+   virtual tResult GetNamedItem(const char * pszName, double * pValue) const;
+   virtual tResult GetNamedItem(const char * pszName, char * pValue, int cbMaxValue) const;
 
 private:
    static void CleanupPreRegisteredFunctions();
