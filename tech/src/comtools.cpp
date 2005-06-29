@@ -116,17 +116,24 @@ bool GUIDToString(REFGUID guid, char * psz, int maxLen)
 
 #ifdef HAVE_CPPUNIT
 
-class cGuidTests : public CppUnit::TestCase
+class cComToolsTests : public CppUnit::TestCase
 {
-   CPPUNIT_TEST_SUITE(cGuidTests);
-      CPPUNIT_TEST(AllTests);
+   CPPUNIT_TEST_SUITE(cComToolsTests);
+      CPPUNIT_TEST(TestcGuidToString);
+      CPPUNIT_TEST(TestIsSameObject);
    CPPUNIT_TEST_SUITE_END();
 
-public:
-   void AllTests();
+   void TestcGuidToString();
+   void TestIsSameObject();
 };
 
-void cGuidTests::AllTests()
+////////////////////////////////////////
+
+CPPUNIT_TEST_SUITE_REGISTRATION(cComToolsTests);
+
+////////////////////////////////////////
+
+void cComToolsTests::TestcGuidToString()
 {
    // {B40B6831-FCB2-4082-AE07-61A7FC4D3AEB}
    static const cGuid kTestGuidA(0xb40b6831, 0xfcb2, 0x4082, 0xae, 0x7, 0x61, 0xa7, 0xfc, 0x4d, 0x3a, 0xeb);
@@ -146,7 +153,42 @@ void cGuidTests::AllTests()
    CPPUNIT_ASSERT(kTestGuidA != kTestGuidB);
 }
 
-CPPUNIT_TEST_SUITE_REGISTRATION(cGuidTests);
+////////////////////////////////////////
+
+GUID IID_ISameObjectTest1a = 
+{ 0x4e4c5299, 0x18bd, 0x4477, { 0x9c, 0x4b, 0x2b, 0x40, 0xa6, 0x98, 0x82, 0x4b } };
+GUID IID_ISameObjectTest1b = 
+{ 0xdad942b, 0xd626, 0x4cfe, { 0x92, 0xe6, 0xca, 0xad, 0x88, 0xd3, 0xab, 0x29 } };
+GUID IID_ISameObjectTest2 = 
+{ 0x3eb94c5f, 0x2e2c, 0x4fbc, { 0xbe, 0x49, 0x1c, 0xc0, 0xc8, 0xad, 0x6f, 0xde } };
+
+interface ISameObjectTest1a : IUnknown {};
+interface ISameObjectTest1b : IUnknown {};
+class cSameObjectTest1 : public cComObject2<IMPLEMENTS(ISameObjectTest1a), IMPLEMENTS(ISameObjectTest1b)> {};
+interface ISameObjectTest2 : IUnknown {};
+class cSameObjectTest2 : public cComObject<IMPLEMENTS(ISameObjectTest2)> {};
+
+void cComToolsTests::TestIsSameObject()
+{
+   cAutoIPtr<cSameObjectTest1> pObj1(new cSameObjectTest1);
+
+   cAutoIPtr<ISameObjectTest1a> pObj1a;
+   CPPUNIT_ASSERT(pObj1->QueryInterface(IID_ISameObjectTest1a, (void**)&pObj1a) == S_OK);
+
+   cAutoIPtr<ISameObjectTest1b> pObj1b;
+   CPPUNIT_ASSERT(pObj1->QueryInterface(IID_ISameObjectTest1b, (void**)&pObj1b) == S_OK);
+
+   CPPUNIT_ASSERT(CTIsSameObject(static_cast<ISameObjectTest1b*>(pObj1), pObj1a));
+   CPPUNIT_ASSERT(CTIsSameObject(static_cast<ISameObjectTest1a*>(pObj1), pObj1b));
+   CPPUNIT_ASSERT(CTIsSameObject(pObj1a, pObj1b));
+
+   cAutoIPtr<cSameObjectTest2> pObj2(new cSameObjectTest2);
+
+   CPPUNIT_ASSERT(!CTIsSameObject(static_cast<ISameObjectTest1a*>(pObj1), pObj2));
+   CPPUNIT_ASSERT(!CTIsSameObject(pObj1a, pObj2));
+   CPPUNIT_ASSERT(!CTIsSameObject(pObj1b, pObj2));
+
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -174,7 +216,6 @@ class cAutoIPtrTests : public CppUnit::TestCase
       static int gm_nDummies;
    };
 
-public:
    void MakeDummy(cDummy * * ppDummy);
 
    void TestAutoIPtrAssignExisting();

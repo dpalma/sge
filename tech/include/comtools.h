@@ -56,6 +56,13 @@ inline bool CTIsSameObject(IUnknown * pUnk1, IUnknown * pUnk2)
    if (pUnk1 == pUnk2)
       return true;
 
+   // If both are NULL, then equality test above would have already
+   // returned true. This test covers one NULL and the other non-NULL.
+   if (pUnk1 == NULL || pUnk2 == NULL)
+   {
+      return false;
+   }
+
    IUnknown * pQueryUnk1 = NULL;
    IUnknown * pQueryUnk2 = NULL;
 
@@ -64,8 +71,10 @@ inline bool CTIsSameObject(IUnknown * pUnk1, IUnknown * pUnk2)
 
    bool bIsSame = false;
 
-   if (pUnk1 == pUnk2)
+   if (pQueryUnk1 == pQueryUnk2)
+   {
       bIsSame = true;
+   }
 
    SafeRelease(pQueryUnk1);
    SafeRelease(pQueryUnk2);
