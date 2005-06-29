@@ -39,12 +39,11 @@ public:
 
    virtual tResult AddElement(IGUIElement * pElement);
    virtual tResult RemoveElement(IGUIElement * pElement);
-   virtual tResult HasElement(IGUIElement * pElement) const;
 
-   virtual tResult LoadFromResource(const char * psz);
-   virtual tResult LoadFromString(const char * psz);
+   virtual tResult LoadFromResource(const char * psz, bool bVisible);
+   virtual tResult LoadFromString(const char * psz, bool bVisible);
 
-   uint LoadFromTiXmlDoc(TiXmlDocument * pTiXmlDoc);
+   uint LoadFromTiXmlDoc(TiXmlDocument * pTiXmlDoc, bool bVisible);
 
    virtual void ClearGUI();
 

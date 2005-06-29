@@ -37,7 +37,7 @@ tResult GUIElementCreateChildren(const TiXmlElement * pXmlElement,
       if (pXmlChild->Type() == TiXmlNode::ELEMENT)
       {
          cAutoIPtr<IGUIElement> pChildElement;
-         if (pGUIFactory->CreateElement(pXmlChild->Value(), pXmlChild, &pChildElement) == S_OK)
+         if (pGUIFactory->CreateElement(pXmlChild, &pChildElement) == S_OK)
          {
             if ((result = pContainer->AddElement(pChildElement)) != S_OK)
             {

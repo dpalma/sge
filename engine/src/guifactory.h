@@ -28,7 +28,7 @@ public:
    virtual tResult Init();
    virtual tResult Term();
 
-   virtual tResult CreateElement(const char * pszType, const TiXmlElement * pXmlElement, IGUIElement * * ppElement);
+   virtual tResult CreateElement(const TiXmlElement * pXmlElement, IGUIElement * * ppElement);
 
    virtual tResult RegisterElementFactory(const char * pszType, IGUIElementFactory * pFactory);
    virtual tResult RevokeElementFactory(const char * pszType);

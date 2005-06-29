@@ -114,21 +114,14 @@ tResult cGUIContext::RemoveElement(IGUIElement * pElement)
 
 ///////////////////////////////////////
 
-tResult cGUIContext::HasElement(IGUIElement * pElement) const
-{
-   return tBaseClass::HasElement(pElement);
-}
-
-///////////////////////////////////////
-
-tResult cGUIContext::LoadFromResource(const char * psz)
+tResult cGUIContext::LoadFromResource(const char * psz, bool bVisible)
 {
    tResKey rk(psz, kRC_TiXml);
    TiXmlDocument * pTiXmlDoc = NULL;
    UseGlobal(ResourceManager);
    if (pResourceManager->Load(rk, (void**)&pTiXmlDoc) == S_OK)
    {
-      uint nCreated = LoadFromTiXmlDoc(pTiXmlDoc);
+      uint nCreated = LoadFromTiXmlDoc(pTiXmlDoc, bVisible);
       pResourceManager->Unload(rk);
       return (nCreated > 0) ? S_OK : S_FALSE;
    }
@@ -137,7 +130,7 @@ tResult cGUIContext::LoadFromResource(const char * psz)
 
 ///////////////////////////////////////
 
-tResult cGUIContext::LoadFromString(const char * psz)
+tResult cGUIContext::LoadFromString(const char * psz, bool bVisible)
 {
    TiXmlDocument doc;
    doc.Parse(psz);
@@ -148,13 +141,13 @@ tResult cGUIContext::LoadFromString(const char * psz)
       return E_FAIL;
    }
 
-   uint nCreated = LoadFromTiXmlDoc(&doc);
+   uint nCreated = LoadFromTiXmlDoc(&doc, bVisible);
    return (nCreated > 0) ? S_OK : S_FALSE;
 }
 
 ///////////////////////////////////////
 
-uint cGUIContext::LoadFromTiXmlDoc(TiXmlDocument * pTiXmlDoc)
+uint cGUIContext::LoadFromTiXmlDoc(TiXmlDocument * pTiXmlDoc, bool bVisible)
 {
    Assert(pTiXmlDoc != NULL);
 
@@ -162,13 +155,15 @@ uint cGUIContext::LoadFromTiXmlDoc(TiXmlDocument * pTiXmlDoc)
 
    uint nElementsCreated = 0;
    TiXmlElement * pXmlElement;
-   for (pXmlElement = pTiXmlDoc->FirstChildElement(); pXmlElement != NULL; pXmlElement = pXmlElement->NextSiblingElement())
+   for (pXmlElement = pTiXmlDoc->FirstChildElement(); pXmlElement != NULL;
+        pXmlElement = pXmlElement->NextSiblingElement())
    {
       if (pXmlElement->Type() == TiXmlNode::ELEMENT)
       {
          cAutoIPtr<IGUIElement> pGUIElement;
-         if (pGUIFactory->CreateElement(pXmlElement->Value(), pXmlElement, &pGUIElement) == S_OK)
+         if (pGUIFactory->CreateElement(pXmlElement, &pGUIElement) == S_OK)
          {
+            pGUIElement->SetVisible(bVisible);
             if (AddElement(pGUIElement) == S_OK)
             {
                nElementsCreated++;

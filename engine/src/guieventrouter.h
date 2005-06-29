@@ -84,8 +84,8 @@ protected:
       return result;
    }
 
-   tResult GetHitElements(const tGUIPoint & point, std::list<IGUIElement*> * pElements);
-   tResult GetHitElement(const tGUIPoint & point, IGUIElement * * ppElement);
+   tResult GetHitElements(const tGUIPoint & point, std::list<IGUIElement*> * pElements) const;
+   tResult GetHitElement(const tGUIPoint & point, IGUIElement * * ppElement) const;
 
    bool DoEvent(IGUIEvent * pEvent);
    bool BubbleEvent(IGUIEvent * pEvent);

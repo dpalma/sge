@@ -262,7 +262,7 @@ void cGUIEventRouter<INTRFC>::RemoveAllElements()
 
 template <typename INTRFC>
 tResult cGUIEventRouter<INTRFC>::GetHitElements(const tGUIPoint & point,
-                                                std::list<IGUIElement*> * pElements)
+                                                std::list<IGUIElement*> * pElements) const
 {
    if (pElements == NULL)
    {
@@ -318,7 +318,7 @@ tResult cGUIEventRouter<INTRFC>::GetHitElements(const tGUIPoint & point,
 
 template <typename INTRFC>
 tResult cGUIEventRouter<INTRFC>::GetHitElement(const tGUIPoint & point, 
-                                               IGUIElement * * ppElement)
+                                               IGUIElement * * ppElement) const
 {
    if (ppElement == NULL)
    {

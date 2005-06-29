@@ -5,6 +5,8 @@
 
 #include "guifactory.h"
 
+#include <tinyxml.h>
+
 #include "dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -16,6 +18,7 @@ REFERENCE_GUIELEMENTFACTORY(panel);
 REFERENCE_GUIELEMENTFACTORY(textedit);
 
 REFERENCE_GUIELEMENTRENDERERFACTORY(beveled);
+REFERENCE_GUIELEMENTRENDERERFACTORY(basic);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -87,16 +90,16 @@ tResult cGUIFactory::Term()
 
 ///////////////////////////////////////
 
-tResult cGUIFactory::CreateElement(const char * pszType, const TiXmlElement * pXmlElement, IGUIElement * * ppElement)
+tResult cGUIFactory::CreateElement(const TiXmlElement * pXmlElement, IGUIElement * * ppElement)
 {
-   if (pszType == NULL || ppElement == NULL)
+   if (ppElement == NULL)
    {
       return E_POINTER;
    }
 
    *ppElement = NULL;
 
-   tGUIElementFactoryMap::iterator iter = m_elementFactoryMap.find(pszType);
+   tGUIElementFactoryMap::iterator iter = m_elementFactoryMap.find(pXmlElement->Value());
    if (iter == m_elementFactoryMap.end())
    {
       return E_FAIL;

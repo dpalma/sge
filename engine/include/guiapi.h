@@ -545,7 +545,7 @@ interface IGUIEventListener : IUnknown
 
 interface IGUIFactory : IUnknown
 {
-   virtual tResult CreateElement(const char * pszType, const TiXmlElement * pXmlElement, IGUIElement * * ppElement) = 0;
+   virtual tResult CreateElement(const TiXmlElement * pXmlElement, IGUIElement * * ppElement) = 0;
 
    virtual tResult RegisterElementFactory(const char * pszType, IGUIElementFactory * pFactory) = 0;
    virtual tResult RevokeElementFactory(const char * pszType) = 0;
@@ -613,8 +613,8 @@ interface IGUIContext : IGUIEventRouter
    virtual tResult RemoveElement(IGUIElement * pElement) = 0;
    virtual tResult HasElement(IGUIElement * pElement) const = 0;
 
-   virtual tResult LoadFromResource(const char * psz) = 0;
-   virtual tResult LoadFromString(const char * psz) = 0;
+   virtual tResult LoadFromResource(const char * psz, bool bVisible = true) = 0;
+   virtual tResult LoadFromString(const char * psz, bool bVisible = true) = 0;
 
    virtual void ClearGUI() = 0;
 
