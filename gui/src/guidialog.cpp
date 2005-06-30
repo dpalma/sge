@@ -19,13 +19,13 @@
 
 LOG_DEFINE_CHANNEL(GUIDialogEvents);
 
-#define LocalMsg(msg) DebugMsgEx(GUIDialogEvents, (msg))
-#define LocalMsg1(msg,a1) DebugMsgEx1(GUIDialogEvents, (msg), (a1))
-#define LocalMsg2(msg,a1,a2) DebugMsgEx2(GUIDialogEvents, (msg), (a1), (a2))
+#define LocalMsg(msg)                  DebugMsgEx(GUIDialogEvents, (msg))
+#define LocalMsg1(msg,a1)              DebugMsgEx1(GUIDialogEvents, (msg), (a1))
+#define LocalMsg2(msg,a1,a2)           DebugMsgEx2(GUIDialogEvents, (msg), (a1), (a2))
 
-#define LocalMsgIf(cond,msg) DebugMsgIfEx(GUIDialogEvents, (cond), (msg))
-#define LocalMsgIf1(cond,msg,a1) DebugMsgIfEx1(GUIDialogEvents, (cond), (msg), (a1))
-#define LocalMsgIf2(cond,msg,a1,a2) DebugMsgIfEx2(GUIDialogEvents, (cond), (msg), (a1), (a2))
+#define LocalMsgIf(cond,msg)           DebugMsgIfEx(GUIDialogEvents, (cond), (msg))
+#define LocalMsgIf1(cond,msg,a1)       DebugMsgIfEx1(GUIDialogEvents, (cond), (msg), (a1))
+#define LocalMsgIf2(cond,msg,a1,a2)    DebugMsgIfEx2(GUIDialogEvents, (cond), (msg), (a1), (a2))
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -137,12 +137,12 @@ tResult cGUIDialogElement::OnEvent(IGUIEvent * pEvent)
          cAutoIPtr<IGUIButtonElement> pButtonElement;
          if (pSrcElement->QueryInterface(IID_IGUIButtonElement, (void**)&pButtonElement) == S_OK)
          {
-            if (stricmp(pButtonElement->GetId(), "ok") == 0)
+            if (GUIElementIdMatch(pButtonElement, "ok"))
             {
                pEvent->SetCancelBubble(true);
                Accept();
             }
-            else if (stricmp(pButtonElement->GetId(), "cancel") == 0)
+            else if (GUIElementIdMatch(pButtonElement, "cancel"))
             {
                pEvent->SetCancelBubble(true);
                Cancel();

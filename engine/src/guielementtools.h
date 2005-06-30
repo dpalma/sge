@@ -12,6 +12,8 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+bool GUIElementIdMatch(IGUIElement * pElement, const tChar * pszId);
+
 tResult GUIElementCreateChildren(const TiXmlElement * pXmlElement, 
                                  IGUIContainerElement * pContainer);
 

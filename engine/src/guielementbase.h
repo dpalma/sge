@@ -22,7 +22,7 @@ class cGUIElementBase : public INTRFC
 public:
    cGUIElementBase();
 
-   virtual const char * GetId() const;
+   virtual tResult GetId(tGUIString * pId) const;
    virtual void SetId(const char * pszId);
 
    virtual bool HasFocus() const;

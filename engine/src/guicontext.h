@@ -44,9 +44,6 @@ public:
                           int nArgs, const cScriptVar * pArgs,
                           int nMaxResults, cScriptVar * pResults);
 
-   virtual tResult AddElement(IGUIElement * pElement);
-   virtual tResult RemoveElement(IGUIElement * pElement);
-
    virtual tResult LoadFromResource(const char * psz, bool bVisible);
    virtual tResult LoadFromString(const char * psz, bool bVisible);
 

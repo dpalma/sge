@@ -19,6 +19,21 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+bool GUIElementIdMatch(IGUIElement * pElement, const tChar * pszId)
+{
+   if (pElement != NULL && pszId != NULL)
+   {
+      tGUIString id;
+      if (pElement->GetId(&id) == S_OK && id.compare(pszId) == 0)
+      {
+         return true;
+      }
+   }
+   return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 tResult GUIElementCreateChildren(const TiXmlElement * pXmlElement, 
                                  IGUIContainerElement * pContainer)
 {

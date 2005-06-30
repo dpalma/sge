@@ -5,7 +5,8 @@
    ismodal="true"
    insets="(4,4,4,4)" 
    style="align:center;vertical-align:center;width:220;height:150;"
-   onok="quit();">
+   onok="quit();"
+   renderer="beveled">
    <layout type="grid" columns="1" rows="2" />
    <label text="Are you sure you want to quit?" style="align:center;"/>
    <button style="align:center;vertical-align:bottom;" id="ok" text="Quit"/>

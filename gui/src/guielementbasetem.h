@@ -4,6 +4,8 @@
 #ifndef INCLUDED_GUIELEMENTBASETEM_H
 #define INCLUDED_GUIELEMENTBASETEM_H
 
+#include "globalobj.h"
+
 #include "dbgalloc.h" // must be last header
 
 #ifdef _MSC_VER
@@ -19,24 +21,31 @@
 
 template <typename INTRFC>
 cGUIElementBase<INTRFC>::cGUIElementBase()
- : m_id(""),
-   m_bFocus(false),
+ : m_bFocus(false),
    m_bMouseOver(false),
    m_bVisible(true),
    m_bEnabled(true),
    m_pParent(NULL),
    m_position(0,0),
-   m_size(0,0),
-   m_rendererClass("beveled")
+   m_size(0,0)
 {
 }
 
 ///////////////////////////////////////
 
 template <typename INTRFC>
-const char * cGUIElementBase<INTRFC>::GetId() const
+tResult cGUIElementBase<INTRFC>::GetId(tGUIString * pId) const
 {
-   return m_id.c_str();
+   if (pId == NULL)
+   {
+      return E_POINTER;
+   }
+   if (m_id.empty())
+   {
+      return S_FALSE;
+   }
+   *pId = m_id;
+   return S_OK;
 }
 
 ///////////////////////////////////////
@@ -44,7 +53,14 @@ const char * cGUIElementBase<INTRFC>::GetId() const
 template <typename INTRFC>
 void cGUIElementBase<INTRFC>::SetId(const char * pszId)
 {
-   m_id = pszId;
+   if (pszId != NULL)
+   {
+      m_id = pszId;
+   }
+   else
+   {
+      m_id.erase();
+   }
 }
 
 ///////////////////////////////////////
@@ -207,8 +223,21 @@ tResult cGUIElementBase<INTRFC>::GetRendererClass(tGUIString * pRendererClass)
    {
       return E_POINTER;
    }
-   *pRendererClass = m_rendererClass;
-   return S_OK;
+
+   if (!m_rendererClass.empty())
+   {
+      *pRendererClass = m_rendererClass;
+      return S_OK;
+   }
+
+   cAutoIPtr<IGUIElement> pParent;
+   if (GetParent(&pParent) == S_OK
+      && pParent->GetRendererClass(pRendererClass) == S_OK)
+   {
+      return S_OK;
+   }
+
+   return S_FALSE;
 }
 
 ///////////////////////////////////////
@@ -216,12 +245,19 @@ tResult cGUIElementBase<INTRFC>::GetRendererClass(tGUIString * pRendererClass)
 template <typename INTRFC>
 tResult cGUIElementBase<INTRFC>::SetRendererClass(const tChar * pszRendererClass)
 {
-   if (pszRendererClass == NULL)
+   if (pszRendererClass == NULL && !m_rendererClass.empty())
    {
-      return E_POINTER;
+      SafeRelease(m_pRenderer);
+      m_rendererClass.erase();
+      return S_OK;
    }
-   m_rendererClass = pszRendererClass;
-   return S_OK;
+   else if (m_rendererClass.compare(pszRendererClass) != 0)
+   {
+      SafeRelease(m_pRenderer);
+      m_rendererClass = pszRendererClass;
+      return S_OK;
+   }
+   return S_FALSE;
 }
 
 ///////////////////////////////////////
@@ -229,6 +265,15 @@ tResult cGUIElementBase<INTRFC>::SetRendererClass(const tChar * pszRendererClass
 template <typename INTRFC>
 tResult cGUIElementBase<INTRFC>::GetRenderer(IGUIElementRenderer * * ppRenderer)
 {
+   if (!m_pRenderer)
+   {
+      tGUIString rendererClass;
+      if (GetRendererClass(&rendererClass) == S_OK)
+      {
+         UseGlobal(GUIFactory);
+         pGUIFactory->CreateRenderer(rendererClass.c_str(), static_cast<INTRFC*>(this), &m_pRenderer);
+      }
+   }
    return m_pRenderer.GetPointer(ppRenderer);
 }
 

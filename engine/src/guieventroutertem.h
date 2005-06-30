@@ -145,6 +145,33 @@ tResult cGUIEventRouter<INTRFC>::SetDrag(IGUIElement * pElement)
 ///////////////////////////////////////
 
 template <typename INTRFC>
+tResult cGUIEventRouter<INTRFC>::GetElement(const tChar * pszId, IGUIElement * * ppElement)
+{
+   if (pszId == NULL)
+   {
+      return E_POINTER;
+   }
+
+   // TODO: construct a map to do this
+   tGUIElementList::iterator iter;
+   for (iter = m_elements.begin(); iter != m_elements.end(); iter++)
+   {
+      if (GUIElementIdMatch(*iter, pszId))
+      {
+         if (ppElement != NULL)
+         {
+            *ppElement = CTAddRef(*iter);
+         }
+         return S_OK;
+      }
+   }
+
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
 tResult cGUIEventRouter<INTRFC>::AddElement(IGUIElement * pElement)
 {
    if (pElement == NULL)

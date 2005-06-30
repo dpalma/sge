@@ -60,6 +60,7 @@ protected:
    IGUIElement * AccessMouseOver();
    IGUIElement * AccessDrag();
 
+   tResult GetElement(const tChar * pszId, IGUIElement * * ppElement);
    tResult AddElement(IGUIElement * pElement);
    tResult RemoveElement(IGUIElement * pElement);
    tResult HasElement(IGUIElement * pElement) const;

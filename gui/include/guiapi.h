@@ -54,7 +54,7 @@ class cGUIFontDesc;
 interface IGUIElement : IUnknown
 {
    /// @return The semi-unique identifier assigned to this element
-   virtual const char * GetId() const = 0;
+   virtual tResult GetId(tGUIString * pId) const = 0;
    virtual void SetId(const char * pszId) = 0;
 
    /// @return A boolean value representing whether the element presently has input focus
@@ -547,6 +547,8 @@ interface IGUIFactory : IUnknown
 {
    virtual tResult CreateElement(const TiXmlElement * pXmlElement, IGUIElement * * ppElement) = 0;
 
+   virtual tResult CreateRenderer(const tChar * pszRendererClass, IGUIElement * pElement, IGUIElementRenderer * * ppRenderer) = 0;
+
    virtual tResult RegisterElementFactory(const char * pszType, IGUIElementFactory * pFactory) = 0;
    virtual tResult RevokeElementFactory(const char * pszType) = 0;
 
@@ -609,9 +611,10 @@ struct sAutoRegisterGUIElementRendererFactory
 
 interface IGUIContext : IGUIEventRouter
 {
-   virtual tResult AddElement(IGUIElement * pElement) = 0;
+   // TODO: needed only for the hacky dialog box implementation
    virtual tResult RemoveElement(IGUIElement * pElement) = 0;
-   virtual tResult HasElement(IGUIElement * pElement) const = 0;
+
+   virtual tResult GetElement(const tChar * pszId, IGUIElement * * ppElement) = 0;
 
    virtual tResult LoadFromResource(const char * psz, bool bVisible = true) = 0;
    virtual tResult LoadFromString(const char * psz, bool bVisible = true) = 0;

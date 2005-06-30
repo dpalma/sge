@@ -178,45 +178,6 @@ tResult cGUIContext::Invoke(const char * pszMethodName,
 
 ///////////////////////////////////////
 
-tResult cGUIContext::AddElement(IGUIElement * pElement)
-{
-#ifndef NDEBUG
-   {
-      // Check that all sink interface pointers are valid
-      tSinksIterator iter = BeginSinks();
-      tSinksIterator end = EndSinks();
-      for (; iter != end; iter++)
-      {
-         (*iter)->AddRef();
-         (*iter)->Release();
-      }
-   }
-#endif
-   return cGUIEventRouter<IGUIContext>::AddElement(pElement);
-}
-
-///////////////////////////////////////
-
-tResult cGUIContext::RemoveElement(IGUIElement * pElement)
-{
-   tResult result = cGUIEventRouter<IGUIContext>::RemoveElement(pElement);
-#ifndef NDEBUG
-   {
-      // Check that all sink interface pointers are valid
-      tSinksIterator iter = BeginSinks();
-      tSinksIterator end = EndSinks();
-      for (; iter != end; iter++)
-      {
-         (*iter)->AddRef();
-         (*iter)->Release();
-      }
-   }
-#endif
-   return result;
-}
-
-///////////////////////////////////////
-
 tResult cGUIContext::LoadFromResource(const char * psz, bool bVisible)
 {
    tResKey rk(psz, kRC_TiXml);

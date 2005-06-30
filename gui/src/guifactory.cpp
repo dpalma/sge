@@ -138,6 +138,24 @@ tResult cGUIFactory::CreateElement(const TiXmlElement * pXmlElement, IGUIElement
 
 ///////////////////////////////////////
 
+tResult cGUIFactory::CreateRenderer(const tChar * pszRendererClass, IGUIElement * pElement, IGUIElementRenderer * * ppRenderer)
+{
+   if (pszRendererClass == NULL || ppRenderer == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tGUIRendererFactoryMap::iterator iter = m_rendererFactoryMap.find(pszRendererClass);
+   if (iter == m_rendererFactoryMap.end())
+   {
+      return E_FAIL;
+   }
+
+   return iter->second->CreateRenderer(pElement, ppRenderer);
+}
+
+///////////////////////////////////////
+
 tResult cGUIFactory::RegisterElementFactory(const char * pszType, 
                                             IGUIElementFactory * pFactory)
 {
