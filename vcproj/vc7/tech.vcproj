@@ -467,9 +467,6 @@
 				RelativePath="..\..\tech\include\connptimpl.h">
 			</File>
 			<File
-				RelativePath="..\..\tech\include\constraints.h">
-			</File>
-			<File
 				RelativePath="..\..\tech\include\cpufeatures.h">
 			</File>
 			<File
@@ -500,7 +497,7 @@
 				RelativePath="..\..\tech\include\globalobj.h">
 			</File>
 			<File
-				RelativePath="..\..\tech\include\globalobjreg.h">
+				RelativePath="..\..\tech\include\globalobjdef.h">
 			</File>
 			<File
 				RelativePath="..\..\tech\include\hash.h">

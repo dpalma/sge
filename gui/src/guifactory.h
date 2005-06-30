@@ -6,7 +6,7 @@
 
 #include "guiapi.h"
 
-#include "globalobj.h"
+#include "globalobjdef.h"
 
 #include <map>
 
@@ -19,11 +19,14 @@
 // CLASS: cGUIFactory
 //
 
-class cGUIFactory : public cGlobalObject<IMPLEMENTS(IGUIFactory)>
+class cGUIFactory : public cComObject2<IMPLEMENTS(IGUIFactory), IMPLEMENTS(IGlobalObject)>
 {
 public:
    cGUIFactory();
    ~cGUIFactory();
+
+   DECLARE_NAME(GUIFactory)
+   DECLARE_NO_CONSTRAINTS()
 
    virtual tResult Init();
    virtual tResult Term();

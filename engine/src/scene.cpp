@@ -26,8 +26,8 @@ extern ISceneEntityEnum * SceneEntityEnumCreate(const tSceneEntityList & entitie
 ///////////////////////////////////////
 
 cScene::cScene()
- : cGlobalObject<IMPLEMENTS(IScene)>("Scene")
 {
+   RegisterGlobalObject(IID_IScene, static_cast<IGlobalObject*>(this));
 }
 
 ///////////////////////////////////////

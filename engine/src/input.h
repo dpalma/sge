@@ -5,7 +5,7 @@
 #define INCLUDED_INPUT_H
 
 #include "inputapi.h"
-#include "globalobj.h"
+#include "globalobjdef.h"
 #include "connptimpl.h"
 
 #ifdef _MSC_VER
@@ -17,10 +17,14 @@
 // CLASS: cInput
 //
 
-class cInput : public cGlobalObject<IMPLEMENTSCP(IInput, IInputListener)>
+class cInput : public cComObject2<IMPLEMENTSCP(IInput, IInputListener), IMPLEMENTS(IGlobalObject)>
 {
 public:
    cInput();
+   ~cInput();
+
+   DECLARE_NAME(Input)
+   DECLARE_NO_CONSTRAINTS()
 
    virtual tResult Init();
    virtual tResult Term();

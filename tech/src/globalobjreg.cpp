@@ -3,8 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "globalobjreg.h"
-#include "globalobj.h"
+#include "globalobjdef.h"
 #include "digraph.h"
 #include "toposort.h"
 
@@ -25,6 +24,71 @@ LOG_DEFINE_CHANNEL(GlobalObjReg);
 #define LocalMsg2(s,a,b)         DebugMsgEx2(GlobalObjReg,(s),(a),(b))
 #define LocalMsg3(s,a,b,c)       DebugMsgEx3(GlobalObjReg,(s),(a),(b),(c))
 #define LocalMsg4(s,a,b,c,d)     DebugMsgEx4(GlobalObjReg,(s),(a),(b),(c),(d))
+
+F_DECLARE_INTERFACE(IGlobalObjectRegistry);
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cGlobalObjectInitConstraint
+//
+
+////////////////////////////////////////
+
+cGlobalObjectInitConstraint::cGlobalObjectInitConstraint(const GUID * pGuid, eBeforeAfter beforeAfter)
+ : m_pGuid(pGuid),
+   m_pszName(NULL),
+   m_beforeAfter(beforeAfter)
+{
+}
+
+////////////////////////////////////////
+
+cGlobalObjectInitConstraint::cGlobalObjectInitConstraint(const tChar * pszName, eBeforeAfter beforeAfter)
+ : m_pGuid(NULL),
+   m_pszName(pszName),
+   m_beforeAfter(beforeAfter)
+{
+}
+
+////////////////////////////////////////
+
+cGlobalObjectInitConstraint::cGlobalObjectInitConstraint(const cGlobalObjectInitConstraint & other)
+ : m_pGuid(other.m_pGuid),
+   m_pszName(other.m_pszName),
+   m_beforeAfter(other.m_beforeAfter)
+{
+}
+
+////////////////////////////////////////
+
+cGlobalObjectInitConstraint::~cGlobalObjectInitConstraint()
+{
+}
+
+////////////////////////////////////////
+
+const cGlobalObjectInitConstraint & cGlobalObjectInitConstraint::operator =(const cGlobalObjectInitConstraint & other)
+{
+   m_pGuid = other.m_pGuid;
+   m_pszName = other.m_pszName;
+   m_beforeAfter = other.m_beforeAfter;
+   return *this;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IGlobalObjectRegistry
+//
+
+interface IGlobalObjectRegistry : IUnknown
+{
+   virtual tResult Register(REFGUID iid, IUnknown * pUnk) = 0;
+   virtual IUnknown * Lookup(REFGUID iid) = 0;
+
+   virtual tResult InitAll() = 0;
+   virtual tResult TermAll() = 0;
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -66,7 +130,7 @@ private:
    {
       bool operator()(const IID * pIID1, const IID * pIID2) const
       {
-         return (memcmp(pIID1, pIID2, sizeof(IID)) < 0) ? true : false;
+         return (memcmp(pIID1, pIID2, sizeof(IID)) < 0);
       }
    };
 
@@ -239,6 +303,10 @@ tResult cGlobalObjectRegistry::TermAll()
 
 IUnknown * cGlobalObjectRegistry::Lookup(REFGUID iid)
 {
+   if (GetState() == kTerminated)
+   {
+      return NULL;
+   }
    tObjMap::iterator iter = m_objMap.find(&iid);
    if (iter != m_objMap.end())
    {
@@ -296,36 +364,34 @@ void cGlobalObjectRegistry::BuildConstraintGraph(tConstraintGraph * pGraph)
       cAutoIPtr<IGlobalObject> pGlobalObj;
       Verify(SUCCEEDED(iter->second->QueryInterface(IID_IGlobalObject, (void**)&pGlobalObj)));
 
-      typedef std::vector<sConstraint> tConstraints;
-
-      tConstraints constraints;
+      tGlobalObjectInitConstraints constraints;
       if (pGlobalObj->GetConstraints(&constraints) > 0)
       {
-         tConstraints::iterator citer;
+         tGlobalObjectInitConstraints::iterator citer;
          for (citer = constraints.begin(); citer != constraints.end(); citer++)
          {
             const GUID * pTargetGuid = NULL;
 
-            if (citer->against == kCA_Guid)
+            if (citer->GetGuid() != NULL)
             {
-               cAutoIPtr<IUnknown> pTargetUnk(Lookup(*(citer->pGUID)));
+               cAutoIPtr<IUnknown> pTargetUnk(Lookup(*(citer->GetGuid())));
                if (!!pTargetUnk)
                {
-                  pTargetGuid = citer->pGUID;
+                  pTargetGuid = citer->GetGuid();
                }
             }
-            else if (citer->against == kCA_Name)
+            else if (citer->GetName() != NULL)
             {
-               LookupByName(citer->pszName, NULL, &pTargetGuid);
+               LookupByName(citer->GetName(), NULL, &pTargetGuid);
             }
 
             if (pTargetGuid != NULL)
             {
-               if (citer->when == kCW_Before)
+               if (citer->InitBefore())
                {
                   pGraph->AddEdge(iter->first, pTargetGuid);
                }
-               else if (citer->when == kCW_After)
+               else
                {
                   pGraph->AddEdge(pTargetGuid, iter->first);
                }
@@ -384,6 +450,8 @@ tResult cSingletonGlobalObjectRegistry::InitAll()
    return cGlobalObjectRegistry::InitAll();
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 ////////////////////////////////////////
 
 IGlobalObjectRegistry * AccessGlobalObjectRegistry()
@@ -391,9 +459,42 @@ IGlobalObjectRegistry * AccessGlobalObjectRegistry()
    return cSingletonGlobalObjectRegistry::Access();
 }
 
+////////////////////////////////////////
+
+IUnknown * FindGlobalObject(REFGUID iid)
+{
+   return AccessGlobalObjectRegistry()->Lookup(iid);
+}
+
+////////////////////////////////////////
+
+tResult RegisterGlobalObject(REFGUID iid, IUnknown * pUnk)
+{
+   return AccessGlobalObjectRegistry()->Register(iid, pUnk);
+}
+
+////////////////////////////////////////
+
+tResult StartGlobalObjects()
+{
+   return AccessGlobalObjectRegistry()->InitAll();
+}
+
+////////////////////////////////////////
+
+tResult StopGlobalObjects()
+{
+   return AccessGlobalObjectRegistry()->TermAll();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifdef HAVE_CPPUNIT
+
+///////////////////////////////////////////////////////////////////////////////
+
+// Used to track the order in which calls to IGlobalObject::Init are made
+static uint g_initCounter = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -408,27 +509,39 @@ interface IFooGlobalObj : IUnknown
 
 ////////////////////////////////////////
 
-class cFooGlobalObj : public cGlobalObject<IMPLEMENTS(IFooGlobalObj)>
+class cFooGlobalObj : public cComObject2<IMPLEMENTS(IFooGlobalObj), IMPLEMENTS(IGlobalObject)>
 {
 public:
-   cFooGlobalObj(IGlobalObjectRegistry * pReg);
+   cFooGlobalObj(IGlobalObjectRegistry * pRegistry);
    ~cFooGlobalObj();
+
+   static uint gm_initCount;
+
+   DECLARE_NAME(FooGlobalObj)
+   DECLARE_CONSTRAINTS()
+
+   virtual tResult Init();
+   virtual tResult Term();
 
    virtual void Foo();
 };
 
 ////////////////////////////////////////
 
-BEGIN_CONSTRAINTS_NAMED(g_fooConstraints)
-   BEFORE_NAME("BarGlobalObj")
+uint cFooGlobalObj::gm_initCount = 0;
+
+////////////////////////////////////////
+
+BEGIN_CONSTRAINTS(cFooGlobalObj)
+   BEFORE_NAME(BarGlobalObj)
 END_CONSTRAINTS()
 
 ////////////////////////////////////////
 
-cFooGlobalObj::cFooGlobalObj(IGlobalObjectRegistry * pReg)
- : cGlobalObject<IMPLEMENTS(IFooGlobalObj)>("FooGlobalObj", CONSTRAINTS_NAMED(g_fooConstraints), pReg)
+cFooGlobalObj::cFooGlobalObj(IGlobalObjectRegistry * pRegistry)
 {
    LocalMsg("cFooGlobalObj::cFooGlobalObj()\n");
+   Verify(pRegistry->Register(IID_IFooGlobalObj, static_cast<IFooGlobalObj*>(this)) == S_OK);
 }
 
 ////////////////////////////////////////
@@ -436,6 +549,23 @@ cFooGlobalObj::cFooGlobalObj(IGlobalObjectRegistry * pReg)
 cFooGlobalObj::~cFooGlobalObj()
 {
    LocalMsg("cFooGlobalObj::~cFooGlobalObj()\n");
+}
+
+////////////////////////////////////////
+
+tResult cFooGlobalObj::Init()
+{
+   LocalMsg("cFooGlobalObj::Init()\n");
+   gm_initCount = ++g_initCounter;
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cFooGlobalObj::Term()
+{
+   LocalMsg("cFooGlobalObj::Term()\n");
+   return S_OK;
 }
 
 ////////////////////////////////////////
@@ -458,27 +588,39 @@ interface IBarGlobalObj : IUnknown
 
 ////////////////////////////////////////
 
-class cBarGlobalObj : public cGlobalObject<IMPLEMENTS(IBarGlobalObj)>
+class cBarGlobalObj : public cComObject2<IMPLEMENTS(IBarGlobalObj), IMPLEMENTS(IGlobalObject)>
 {
 public:
-   cBarGlobalObj(IGlobalObjectRegistry * pReg);
+   cBarGlobalObj(IGlobalObjectRegistry * pRegistry);
    ~cBarGlobalObj();
+
+   static uint gm_initCount;
+
+   DECLARE_NAME(BarGlobalObj)
+   DECLARE_CONSTRAINTS()
+
+   virtual tResult Init();
+   virtual tResult Term();
 
    virtual void Bar();
 };
 
 ////////////////////////////////////////
 
-BEGIN_CONSTRAINTS_NAMED(g_barConstraints)
-   AFTER_GUID(IID_IFooGlobalObj) // redundant with BEFORE_NAME("Bar") above--for testing
+uint cBarGlobalObj::gm_initCount = 0;
+
+////////////////////////////////////////
+
+BEGIN_CONSTRAINTS(cBarGlobalObj)
+   AFTER_GUID(IID_IFooGlobalObj) // redundant with BEFORE_NAME(BarGlobalObj) above--for testing
 END_CONSTRAINTS()
 
 ////////////////////////////////////////
 
-cBarGlobalObj::cBarGlobalObj(IGlobalObjectRegistry * pReg)
- : cGlobalObject<IMPLEMENTS(IBarGlobalObj)>("BarGlobalObj", CONSTRAINTS_NAMED(g_barConstraints), pReg)
+cBarGlobalObj::cBarGlobalObj(IGlobalObjectRegistry * pRegistry)
 {
    LocalMsg("cBarGlobalObj::cBarGlobalObj()\n");
+   Verify(pRegistry->Register(IID_IBarGlobalObj, static_cast<IBarGlobalObj*>(this)) == S_OK);
 }
 
 ////////////////////////////////////////
@@ -486,6 +628,24 @@ cBarGlobalObj::cBarGlobalObj(IGlobalObjectRegistry * pReg)
 cBarGlobalObj::~cBarGlobalObj()
 {
    LocalMsg("cBarGlobalObj::~cBarGlobalObj()\n");
+}
+
+////////////////////////////////////////
+
+tResult cBarGlobalObj::Init()
+{
+   LocalMsg("cBarGlobalObj::Init()\n");
+   gm_initCount = ++g_initCounter;
+   LocalMsg("cBarGlobalObj::Init()\n");
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cBarGlobalObj::Term()
+{
+   LocalMsg("cBarGlobalObj::Term()\n");
+   return S_OK;
 }
 
 ////////////////////////////////////////
@@ -517,18 +677,27 @@ void cGlobalObjectRegistryTests::TestGlobalObjReg()
    cAutoIPtr<IGlobalObjectRegistry> pRegistry(
       static_cast<IGlobalObjectRegistry *>(new cGlobalObjectRegistry));
 
+   // Register the "Bar" object before "Foo" for testing because the 
+   // initialization constraints should actually make it's init happen after.
    cAutoIPtr<IBarGlobalObj> pBar(static_cast<IBarGlobalObj *>(new cBarGlobalObj(pRegistry)));
    cAutoIPtr<IFooGlobalObj> pFoo(static_cast<IFooGlobalObj *>(new cFooGlobalObj(pRegistry)));
 
    CPPUNIT_ASSERT(pRegistry->InitAll() == S_OK);
 
-   cAutoIPtr<IFooGlobalObj> pFoo2 = (IFooGlobalObj *)pRegistry->Lookup(IID_IFooGlobalObj);
+   cAutoIPtr<IFooGlobalObj> pFoo2(static_cast<IFooGlobalObj *>(pRegistry->Lookup(IID_IFooGlobalObj)));
    CPPUNIT_ASSERT(CTIsSameObject(pFoo, pFoo2));
 
-   cAutoIPtr<IBarGlobalObj> pBar2 = (IBarGlobalObj *)pRegistry->Lookup(IID_IBarGlobalObj);
+   cAutoIPtr<IBarGlobalObj> pBar2(static_cast<IBarGlobalObj *>(pRegistry->Lookup(IID_IBarGlobalObj)));
    CPPUNIT_ASSERT(CTIsSameObject(pBar, pBar2));
 
+   // "Bar" should be inititalized after "Foo"
+   CPPUNIT_ASSERT(cBarGlobalObj::gm_initCount > cFooGlobalObj::gm_initCount);
+
    CPPUNIT_ASSERT(pRegistry->TermAll() == S_OK);
+
+   // After "TermAll", nothing should work
+   CPPUNIT_ASSERT(pRegistry->Lookup(IID_IFooGlobalObj) == NULL);
+   CPPUNIT_ASSERT(pRegistry->Lookup(IID_IBarGlobalObj) == NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -472,6 +472,7 @@ struct cLuaInterpreter::sPreRegisteredFunction * cLuaInterpreter::gm_pPreRegiste
 cLuaInterpreter::cLuaInterpreter()
  : m_L(NULL)
 {
+   RegisterGlobalObject(IID_IScriptInterpreter, static_cast<IGlobalObject*>(this));
 }
 
 ///////////////////////////////////////

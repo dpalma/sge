@@ -86,7 +86,29 @@ cEditorApp::cEditorApp()
 {
 	// TODO: add construction code here,
 	// Place all significant initialization in InitInstance
+   RegisterGlobalObject(IID_IEditorApp, static_cast<IGlobalObject*>(this));
 }
+
+///////////////////////////////////////
+
+cEditorApp::~cEditorApp()
+{
+}
+
+///////////////////////////////////////
+
+tResult cEditorApp::Init()
+{
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cEditorApp::Term()
+{
+   return S_OK;
+}
+
 
 /////////////////////////////////////////////////////////////////////////////
 // The one and only cEditorApp object

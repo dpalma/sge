@@ -7,7 +7,7 @@
 #include "editorapi.h"
 #include "afxcomtools.h"
 
-#include "globalobj.h"
+#include "globalobjdef.h"
 
 #include <afxdisp.h>
 
@@ -60,10 +60,17 @@ inline cEditorSingleDocTemplate::~cEditorSingleDocTemplate()
 //
 
 class cEditorApp : public CWinApp, 
-                   public cGlobalObject<IMPLEMENTS(IEditorApp), cAfxComServices<cEditorApp> >
+                   public cComObject2<IMPLEMENTS(IEditorApp), IMPLEMENTS(IGlobalObject), cAfxComServices<cEditorApp> >
 {
 public:
 	cEditorApp();
+	~cEditorApp();
+
+   DECLARE_NAME(EditorApp)
+   DECLARE_NO_CONSTRAINTS()
+
+   virtual tResult Init();
+   virtual tResult Term();
 
 // Overrides
 	// ClassWizard generated virtual function overrides

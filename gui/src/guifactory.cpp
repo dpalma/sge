@@ -40,8 +40,8 @@ struct cGUIFactory::sRendererFactoryMapEntry * cGUIFactory::gm_pRendererFactoryM
 ///////////////////////////////////////
 
 cGUIFactory::cGUIFactory()
- : cGlobalObject<IMPLEMENTS(IGUIFactory)>("GUIFactory")
 {
+   RegisterGlobalObject(IID_IGUIFactory, static_cast<IGlobalObject*>(this));
 }
 
 ///////////////////////////////////////

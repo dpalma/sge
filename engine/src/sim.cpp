@@ -4,7 +4,7 @@
 #include "stdhdr.h"
 
 #include "techtime.h"
-#include "globalobj.h"
+#include "globalobjdef.h"
 #include "connptimpl.h"
 
 #include "sim.h"
@@ -16,10 +16,17 @@
 // CLASS: cSimGlobalObj
 //
 
-class cSimGlobalObj : public cGlobalObject<IMPLEMENTSCP(ISim, ISimClient)>
+class cSimGlobalObj : public cComObject2<IMPLEMENTSCP(ISim, ISimClient), IMPLEMENTS(IGlobalObject)>
 {
 public:
    cSimGlobalObj();
+   ~cSimGlobalObj();
+
+   DECLARE_NAME_STRING(kSimObjName)
+   DECLARE_NO_CONSTRAINTS()
+
+   virtual tResult Init();
+   virtual tResult Term();
 
    virtual void Go();
    virtual void Stop();
@@ -44,12 +51,32 @@ private:
 ///////////////////////////////////////
 
 cSimGlobalObj::cSimGlobalObj()
- : cGlobalObject<IMPLEMENTSCP(ISim, ISimClient)>(kSimObjName),
-   m_nStopCount(1),
+ : m_nStopCount(1),
    m_lastFrameTime(0), m_frameTime(0),
    m_totalTime(0),
    m_timeScale(1)
 {
+   RegisterGlobalObject(IID_ISim, static_cast<IGlobalObject*>(this));
+}
+
+///////////////////////////////////////
+
+cSimGlobalObj::~cSimGlobalObj()
+{
+}
+
+///////////////////////////////////////
+
+tResult cSimGlobalObj::Init()
+{
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cSimGlobalObj::Term()
+{
+   return S_OK;
 }
 
 ///////////////////////////////////////

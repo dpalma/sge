@@ -6,7 +6,7 @@
 
 #include "terrainapi.h"
 
-#include "globalobj.h"
+#include "globalobjdef.h"
 #include "vec3.h"
 #include "matrix4.h"
 #include "techstring.h"
@@ -26,11 +26,14 @@ class cTerrainChunk;
 // CLASS: cTerrainRenderer
 //
 
-class cTerrainRenderer : public cGlobalObject<IMPLEMENTS(ITerrainRenderer)>
+class cTerrainRenderer : public cComObject2<IMPLEMENTS(ITerrainRenderer), IMPLEMENTS(IGlobalObject)>
 {
 public:
    cTerrainRenderer();
    ~cTerrainRenderer();
+
+   DECLARE_NAME(TerrainRenderer)
+   DECLARE_NO_CONSTRAINTS()
 
    virtual tResult Init();
    virtual tResult Term();

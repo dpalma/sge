@@ -61,9 +61,16 @@ extern long Name2Key(const char * pszKeyName); // from cmds.cpp
 cInput::cInput()
  : m_oldMouseState(0)
 {
+   RegisterGlobalObject(IID_IInput, static_cast<IGlobalObject*>(this));
    memset(m_keyRepeats, 0, sizeof(m_keyRepeats));
    memset(m_keyDownBindings, 0, sizeof(m_keyDownBindings));
    memset(m_keyUpBindings, 0, sizeof(m_keyUpBindings));
+}
+
+///////////////////////////////////////
+
+cInput::~cInput()
+{
 }
 
 ///////////////////////////////////////

@@ -6,7 +6,7 @@
 
 #include "threadcallapi.h"
 #include "thread.h"
-#include "globalobj.h"
+#include "globalobjdef.h"
 
 #include <map>
 
@@ -19,11 +19,14 @@
 // CLASS: cThreadCaller
 //
 
-class cThreadCaller : public cGlobalObject<IMPLEMENTS(IThreadCaller)>
+class cThreadCaller : public cComObject2<IMPLEMENTS(IThreadCaller), IMPLEMENTS(IGlobalObject)>
 {
 public:
    cThreadCaller();
    virtual ~cThreadCaller();
+
+   DECLARE_NAME(ThreadCaller)
+   DECLARE_NO_CONSTRAINTS()
 
    virtual tResult Init();
    virtual tResult Term();

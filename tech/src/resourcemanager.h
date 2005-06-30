@@ -6,7 +6,7 @@
 
 #include "resourceapi.h"
 #include "filepath.h"
-#include "globalobj.h"
+#include "globalobjdef.h"
 
 #include <map>
 
@@ -27,11 +27,14 @@ const ulong kNoIndexL = ~0;
 // CLASS: cResourceManager
 //
 
-class cResourceManager : public cGlobalObject<IMPLEMENTS(IResourceManager)>
+class cResourceManager : public cComObject2<IMPLEMENTS(IResourceManager), IMPLEMENTS(IGlobalObject)>
 {
 public:
    cResourceManager();
    virtual ~cResourceManager();
+
+   DECLARE_NAME_STRING(kResourceManagerName)
+   DECLARE_NO_CONSTRAINTS()
 
    virtual tResult Init();
    virtual tResult Term();

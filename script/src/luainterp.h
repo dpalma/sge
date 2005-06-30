@@ -5,7 +5,7 @@
 #define INCLUDED_LUAINTERP_H
 
 #include "scriptapi.h"
-#include "globalobj.h"
+#include "globalobjdef.h"
 
 #include <cstdarg>
 
@@ -20,13 +20,16 @@ typedef struct lua_State lua_State;
 // CLASS: cLuaInterpreter
 //
 
-class cLuaInterpreter : public cGlobalObject<IMPLEMENTS(IScriptInterpreter)>
+class cLuaInterpreter : public cComObject2<IMPLEMENTS(IScriptInterpreter), IMPLEMENTS(IGlobalObject)>
 {
    friend tResult ScriptAddFunction(const char * pszName, tScriptFn pfn);
 
 public:
    cLuaInterpreter();
    ~cLuaInterpreter();
+
+   DECLARE_NAME(LuaInterpreter)
+   DECLARE_NO_CONSTRAINTS()
 
    virtual tResult Init();
    virtual tResult Term();

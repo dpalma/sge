@@ -50,13 +50,13 @@ tResult TerrainRendererCreate()
 ////////////////////////////////////////
 
 cTerrainRenderer::cTerrainRenderer()
- : cGlobalObject<IMPLEMENTS(ITerrainRenderer)>("TerrainRenderer"),
-   m_tml(this),
+ : m_tml(this),
    m_nChunksX(0),
    m_nChunksZ(0),
    m_bEnableBlending(true),
    m_bTerrainChanged(false)
 {
+   RegisterGlobalObject(IID_ITerrainRenderer, static_cast<IGlobalObject*>(this));
 }
 
 ////////////////////////////////////////

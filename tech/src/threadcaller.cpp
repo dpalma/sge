@@ -29,8 +29,8 @@ LOG_DEFINE_CHANNEL(ThreadCaller);
 ////////////////////////////////////////
 
 cThreadCaller::cThreadCaller()
- : cGlobalObject<IMPLEMENTS(IThreadCaller)>("ThreadCaller")
 {
+   RegisterGlobalObject(IID_IThreadCaller, static_cast<IGlobalObject*>(this));
 }
 
 ////////////////////////////////////////

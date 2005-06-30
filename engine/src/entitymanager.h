@@ -6,7 +6,7 @@
 
 #include "entityapi.h"
 
-#include "globalobj.h"
+#include "globalobjdef.h"
 
 #include <map>
 
@@ -19,11 +19,14 @@
 // CLASS: cEntityManager
 //
 
-class cEntityManager : public cGlobalObject<IMPLEMENTS(IEntityManager)>
+class cEntityManager : public cComObject2<IMPLEMENTS(IEntityManager), IMPLEMENTS(IGlobalObject)>
 {
 public:
    cEntityManager();
    ~cEntityManager();
+
+   DECLARE_NAME(EntityManager)
+   DECLARE_NO_CONSTRAINTS()
 
    virtual tResult Init();
    virtual tResult Term();

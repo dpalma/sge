@@ -6,7 +6,7 @@
 
 #include "editorapi.h"
 #include "connptimpl.h"
-#include "globalobj.h"
+#include "globalobjdef.h"
 
 #include <map>
 
@@ -19,10 +19,14 @@
 // CLASS: cEditorTileManager
 //
 
-class cEditorTileManager : public cGlobalObject<IMPLEMENTSCP(IEditorTileManager, IEditorTileManagerListener)>
+class cEditorTileManager : public cComObject2<IMPLEMENTSCP(IEditorTileManager, IEditorTileManagerListener), IMPLEMENTS(IGlobalObject)>
 {
 public:
    cEditorTileManager();
+   ~cEditorTileManager();
+
+   DECLARE_NAME(EditorTileManager)
+   DECLARE_NO_CONSTRAINTS()
 
    virtual tResult Init();
    virtual tResult Term();

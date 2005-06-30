@@ -6,7 +6,7 @@
 
 #include "sceneapi.h"
 #include "scenelayer.h"
-#include "globalobj.h"
+#include "globalobjdef.h"
 
 #ifdef _MSC_VER
 #pragma once
@@ -17,11 +17,14 @@
 // CLASS: cScene
 //
 
-class cScene : public cGlobalObject<IMPLEMENTS(IScene)>
+class cScene : public cComObject2<IMPLEMENTS(IScene), IMPLEMENTS(IGlobalObject)>
 {
 public:
    cScene();
    ~cScene();
+
+   DECLARE_NAME(Scene)
+   DECLARE_NO_CONSTRAINTS()
 
    virtual tResult Init();
    virtual tResult Term();

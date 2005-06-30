@@ -9,7 +9,7 @@
 
 #include "inputapi.h"
 
-#include "globalobj.h"
+#include "globalobjdef.h"
 
 #ifdef _MSC_VER
 #pragma once
@@ -26,13 +26,16 @@ class TiXmlDocument;
 // CLASS: cGUIContext
 //
 
-class cGUIContext : public cGlobalObject<cGUIEventRouter<IGUIContext>, &IID_IGUIContext>
+class cGUIContext : public cComObject2<cGUIEventRouter<IGUIContext>, &IID_IGUIContext, IMPLEMENTS(IGlobalObject)>
 {
-   typedef cGlobalObject<cGUIEventRouter<IGUIContext>, &IID_IGUIContext> tBaseClass;
+   typedef cComObject2<cGUIEventRouter<IGUIContext>, &IID_IGUIContext, IMPLEMENTS(IGlobalObject)> tBaseClass;
 
 public:
    cGUIContext();
    ~cGUIContext();
+
+   DECLARE_NAME(GUIContext)
+   DECLARE_CONSTRAINTS()
 
    virtual tResult Init();
    virtual tResult Term();

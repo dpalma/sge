@@ -25,11 +25,11 @@
 ///////////////////////////////////////
 
 cEntityManager::cEntityManager()
- : cGlobalObject<IMPLEMENTS(IEntityManager)>("EntityManager"),
-   m_nextId(0),
+ : m_nextId(0),
    m_pRenderDevice(NULL),
    m_pTerrainLocatorHack(NULL)
 {
+   RegisterGlobalObject(IID_IEntityManager, static_cast<IGlobalObject*>(this));
 }
 
 ///////////////////////////////////////

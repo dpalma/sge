@@ -28,15 +28,14 @@
 
 ///////////////////////////////////////
 
-BEGIN_CONSTRAINTS()
+BEGIN_CONSTRAINTS(cGUIContext)
    AFTER_GUID(IID_IInput)
 END_CONSTRAINTS()
 
 ///////////////////////////////////////
 
 cGUIContext::cGUIContext()
- : tBaseClass("GUIContext", CONSTRAINTS()),
-   m_inputListener(this),
+ : m_inputListener(this),
    m_bNeedLayout(false)
 #ifdef GUI_DEBUG
    , m_bShowDebugInfo(false)
@@ -45,6 +44,7 @@ cGUIContext::cGUIContext()
    , m_lastMousePos(0,0)
 #endif
 {
+   RegisterGlobalObject(IID_IGUIContext, static_cast<IGlobalObject*>(this));
 }
 
 ///////////////////////////////////////

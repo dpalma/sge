@@ -26,6 +26,13 @@ LOG_DEFINE_CHANNEL(EditorTileManager);
 
 cEditorTileManager::cEditorTileManager()
 {
+   RegisterGlobalObject(IID_IEditorTileManager, static_cast<IGlobalObject*>(this));
+}
+
+///////////////////////////////////////
+
+cEditorTileManager::~cEditorTileManager()
+{
 }
 
 ///////////////////////////////////////

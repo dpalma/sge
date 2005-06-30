@@ -136,8 +136,8 @@ static bool SameType(tResourceType lhs, tResourceType rhs)
 ////////////////////////////////////////
 
 cResourceManager::cResourceManager()
- : cGlobalObject<IMPLEMENTS(IResourceManager)>(kResourceManagerName)
 {
+   RegisterGlobalObject(IID_IResourceManager, static_cast<IGlobalObject*>(this));
 }
 
 ////////////////////////////////////////
