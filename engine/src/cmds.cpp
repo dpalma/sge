@@ -18,18 +18,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-LOG_DEFINE_CHANNEL(EngineCmds);
-
-#define LocalMsg(msg)                  DebugMsgEx(EngineCmds,(msg))
-#define LocalMsg1(msg,a1)              DebugMsgEx1(EngineCmds,(msg),(a1))
-#define LocalMsg2(msg,a1,a2)           DebugMsgEx2(EngineCmds,(msg),(a1),(a2))
-
-#define LocalMsgIf(cond,msg)           DebugMsgIfEx(EngineCmds,(cond),(msg))
-#define LocalMsgIf1(cond,msg,a1)       DebugMsgIfEx1(EngineCmds,(cond),(msg),(a1))
-#define LocalMsgIf2(cond,msg,a1,a2)    DebugMsgIfEx2(EngineCmds,(cond),(msg),(a1),(a2))
-
-///////////////////////////////////////////////////////////////////////////////
-
 #define ScriptArgIsString(iArg) (argv[iArg].IsString())
 #define ScriptArgIsNumber(iArg) (argv[iArg].IsNumber())
 
@@ -209,7 +197,7 @@ int ConfirmedQuit(int argc, const cScriptVar * argv,
       {
          if (pGUIContext->LoadFromResource(argv[0]) != S_OK)
          {
-            LocalMsg1("Error showing quit dialog %s\n", argv[0].psz);
+            ErrorMsg1("Error showing quit dialog %s\n", argv[0].psz);
          }
       }
    }
@@ -236,102 +224,6 @@ int LogEnableChannel(int argc, const cScriptVar * argv,
 }
 
 AUTOADD_SCRIPTFUNCTION(LogChannel, LogEnableChannel);
-
-///////////////////////////////////////////////////////////////////////////////
-
-int LoadGUI(int argc, const cScriptVar * argv, 
-            int nMaxResults, cScriptVar * pResults)
-{
-   UseGlobal(GUIContext);
-   if (!pGUIContext)
-   {
-      return 0;
-   }
-
-   if (argc == 1 && ScriptArgIsString(0))
-   {
-      if (pGUIContext->LoadFromString(argv[0]) == S_OK
-         || pGUIContext->LoadFromResource(argv[0]) == S_OK)
-      {
-         LocalMsg1("Loading GUI definitions from %s\n", static_cast<const tChar *>(argv[0]));
-      }
-   }
-   else if (argc == 2 && ScriptArgIsString(0) && ScriptArgIsNumber(1))
-   {
-      bool bVisible = (argv[1].ToInt() != 0);
-      if (pGUIContext->LoadFromString(argv[0], bVisible) == S_OK
-         || pGUIContext->LoadFromResource(argv[0], bVisible) == S_OK)
-      {
-         LocalMsg1("Loading GUI definitions from %s\n", static_cast<const tChar *>(argv[0]));
-      }
-   }
-
-   return 0;
-}
-
-AUTOADD_SCRIPTFUNCTION(LoadGUI, LoadGUI);
-
-///////////////////////////////////////////////////////////////////////////////
-
-int ClearGUI(int argc, const cScriptVar * argv, 
-             int nMaxResults, cScriptVar * pResults)
-{
-   UseGlobal(GUIContext);
-   if (!!pGUIContext)
-   {
-      pGUIContext->ClearGUI();
-   }
-   return 0;
-}
-
-AUTOADD_SCRIPTFUNCTION(ClearGUI, ClearGUI);
-
-///////////////////////////////////////////////////////////////////////////////
-
-int ToggleGUIDebugInfo(int argc, const cScriptVar * argv, 
-                       int nMaxResults, cScriptVar * pResults)
-{
-   tGUIPoint placement(0,0);
-   tGUIColor color(tGUIColor::White);
-
-   if (argc == 2 
-      && ScriptArgIsNumber(0) 
-      && ScriptArgIsNumber(1))
-   {
-      placement = tGUIPoint(argv[0], argv[1]);
-   }
-   else if (argc == 3 
-      && ScriptArgIsNumber(0) 
-      && ScriptArgIsNumber(1) 
-      && ScriptArgIsString(2))
-   {
-      placement = tGUIPoint(argv[0], argv[1]);
-      GUIStyleParseColor(argv[2], &color);
-   }
-   else if (argc == 5 
-      && ScriptArgIsNumber(0) 
-      && ScriptArgIsNumber(1) 
-      && ScriptArgIsNumber(2) 
-      && ScriptArgIsNumber(3) 
-      && ScriptArgIsNumber(4))
-   {
-      placement = tGUIPoint(argv[0], argv[1]);
-      color = tGUIColor(argv[2], argv[3], argv[4]);
-   }
-
-   UseGlobal(GUIContext);
-   if (!!pGUIContext)
-   {
-      if (pGUIContext->ShowDebugInfo(placement, color) == S_FALSE)
-      {
-         pGUIContext->HideDebugInfo();
-      }
-   }
-
-   return 0;
-}
-
-AUTOADD_SCRIPTFUNCTION(ToggleGUIDebugInfo, ToggleGUIDebugInfo);
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -369,8 +261,6 @@ sScriptReg cmds[] =
    { "bind", BindKey },
    { "unbind", UnbindKey },
    { "LogChannel", LogEnableChannel },
-   { "LoadGUI", LoadGUI },
-   { "ToggleGUIDebugInfo", ToggleGUIDebugInfo },
    { "EntitySpawnTest", EntitySpawnTest },
 };
 

@@ -84,6 +84,86 @@ static int LuaGarbageCollectInterface(lua_State * L)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+static void LuaGetArg(lua_State * L, int index, cScriptVar * pArg)
+{
+#ifndef NDEBUG
+   std::string typeName(lua_typename(L, lua_type(L, index)));
+   LocalMsg2("LuaGetArg: arg at index %d is type \"%s\"\n", index, typeName.c_str());
+#endif
+
+   switch (lua_type(L, index))
+   {
+      case LUA_TNUMBER:
+      {
+         *pArg = lua_tonumber(L, index);
+         break;
+      }
+
+      case LUA_TSTRING:
+      {
+         *pArg = const_cast<char *>(lua_tostring(L, index));
+         break;
+      }
+
+      case LUA_TTABLE:
+      {
+         cAutoIPtr<IDictionary> pDict(DictionaryCreate());
+         if (!!pDict)
+         {
+            int nDictEntries = 0;
+            lua_pushnil(L);
+            while (lua_next(L, index))
+            {
+               const char * pszVal = lua_tostring(L, -1);
+               // It's best not to call lua_tostring for the key because
+               // it changes the stack, potentially confusing lua_next.
+               // For now, only string keys are supported because that's
+               // more naturaly for IDictionary. Numeric keys mean that
+               // an array was passed in.
+               int keyType = lua_type(L, -2);
+               switch (keyType)
+               {
+                  case LUA_TSTRING:
+                  {
+                     const char * pszKey = lua_tostring(L, -2);
+                     pDict->Set(pszKey, pszVal);
+                     nDictEntries++;
+                     break;
+                  }
+                  case LUA_TNUMBER:
+                  {
+                     double key = lua_tonumber(L, -2);
+                     break;
+                  }
+               }
+               lua_pop(L, 1);
+            }
+            if (nDictEntries > 0)
+            {
+               *pArg = CTAddRef(pDict);
+            }
+         }
+         else
+         {
+            // if failed to create dictionary object, indicate that
+            // the script function should have received an interface
+            // pointer
+            pArg->type = kInterface;
+            pArg->pUnk = NULL;
+         }
+         break;
+      }
+
+      default:
+      {
+         pArg->type = kEmpty;
+         break;
+      }
+   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 static int LuaThunkInvoke(lua_State * L)
 {
    // the name of the method to call is at the top of the stack
@@ -93,10 +173,8 @@ static int LuaThunkInvoke(lua_State * L)
    IScriptable * pInstance = static_cast<IScriptable *>(lua_unboxpointer(L, 1));
 
    // Subtract one to exclude the "this" pointer
-   int nArgs = lua_gettop(L) - 1;
-
-   if (nArgs > kMaxArgs)
-      nArgs = kMaxArgs;
+   int nArgsOnStack = lua_gettop(L) - 1;
+   int nArgs = Min(kMaxArgs, nArgsOnStack);
 
    cScriptVar results[kMaxResults];
    int result = -1;
@@ -105,32 +183,12 @@ static int LuaThunkInvoke(lua_State * L)
    {
       cScriptVar args[kMaxArgs];
 
-      for (int i = 0, iArg = -1; i < nArgs; i++, iArg--)
+      for (int i = 0; i < nArgs; i++)
       {
-         switch (lua_type(L, iArg))
-         {
-            case LUA_TNUMBER:
-            {
-               args[i] = lua_tonumber(L, iArg);
-               break;
-            }
-
-            case LUA_TSTRING:
-            {
-               args[i] = const_cast<char *>(lua_tostring(L, iArg));
-               break;
-            }
-
-            default:
-            {
-               args[i].type = kEmpty;
-               WarnMsg2("Arg %d of unsupported type %s\n", iArg, lua_typename(L, lua_type(L, iArg)));
-               break;
-            }
-         }
+         LuaGetArg(L, i + 2, &args[i]);
       }
 
-      lua_pop(L, nArgs);
+      lua_pop(L, nArgsOnStack);
 
       result = pInstance->Invoke(pszMethodName, nArgs, args, kMaxResults, results);
    }
@@ -265,12 +323,8 @@ static int LuaThunkFunction(lua_State * L)
       return 0; // no C function to call
    }
 
-   int nArgs = lua_gettop(L);
-
-   if (nArgs > kMaxArgs)
-   {
-      nArgs = kMaxArgs;
-   }
+   int nArgsOnStack = lua_gettop(L);
+   int nArgs = Min(kMaxArgs, nArgsOnStack);
 
    cScriptVar results[kMaxResults];
    int result = -1;
@@ -281,78 +335,10 @@ static int LuaThunkFunction(lua_State * L)
 
       for (int i = 0; i < nArgs; i++)
       {
-         switch (lua_type(L, i + 1))
-         {
-            case LUA_TNUMBER:
-            {
-               args[i] = lua_tonumber(L, i + 1);
-               break;
-            }
-
-            case LUA_TSTRING:
-            {
-               args[i] = const_cast<char *>(lua_tostring(L, i + 1));
-               break;
-            }
-
-            case LUA_TTABLE:
-            {
-               cAutoIPtr<IDictionary> pDict(DictionaryCreate());
-               if (!!pDict)
-               {
-                  int nDictEntries = 0;
-                  lua_pushnil(L);
-                  while (lua_next(L, i + 1))
-                  {
-                     const char * pszVal = lua_tostring(L, -1);
-                     // It's best not to call lua_tostring for the key because
-                     // it changes the stack, potentially confusing lua_next.
-                     // For now, only string keys are supported because that's
-                     // more naturaly for IDictionary. Numeric keys mean that
-                     // an array was passed in.
-                     int keyType = lua_type(L, -2);
-                     switch (keyType)
-                     {
-                        case LUA_TSTRING:
-                        {
-                           const char * pszKey = lua_tostring(L, -2);
-                           pDict->Set(pszKey, pszVal);
-                           nDictEntries++;
-                           break;
-                        }
-                        case LUA_TNUMBER:
-                        {
-                           double key = lua_tonumber(L, -2);
-                           break;
-                        }
-                     }
-                     lua_pop(L, 1);
-                  }
-                  if (nDictEntries > 0)
-                  {
-                     args[i] = CTAddRef(pDict);
-                  }
-               }
-               else
-               {
-                  // if failed to create dictionary object, indicate that
-                  // the script function should have received an interface
-                  // pointer
-                  args[i].type = kInterface;
-                  args[i].pUnk = NULL;
-               }
-               break;
-            }
-
-            default:
-            {
-               args[i].type = kEmpty;
-               break;
-            }
-         }
+         LuaGetArg(L, i + 1, &args[i]);
       }
 
-      lua_pop(L, nArgs);
+      lua_pop(L, nArgsOnStack);
 
       result = (*pfn)(nArgs, args, kMaxResults, results);
    }

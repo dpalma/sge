@@ -7,6 +7,7 @@
 #include "guievent.h"
 #include "guielementtools.h"
 #include "guieventroutertem.h"
+#include "scriptvar.h"
 
 #include "keys.h"
 #include "resourceapi.h"
@@ -22,6 +23,18 @@
 #include "dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
+
+LOG_DEFINE_CHANNEL(GUIContext);
+
+#define LocalMsg(msg)                  DebugMsgEx(GUIContext,(msg))
+#define LocalMsg1(msg,a1)              DebugMsgEx1(GUIContext,(msg),(a1))
+#define LocalMsg2(msg,a1,a2)           DebugMsgEx2(GUIContext,(msg),(a1),(a2))
+
+#define LocalMsgIf(cond,msg)           DebugMsgIfEx(GUIContext,(cond),(msg))
+#define LocalMsgIf1(cond,msg,a1)       DebugMsgIfEx1(GUIContext,(cond),(msg),(a1))
+#define LocalMsgIf2(cond,msg,a1,a2)    DebugMsgIfEx2(GUIContext,(cond),(msg),(a1),(a2))
+
+///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUIContext
 //
@@ -30,6 +43,7 @@
 
 BEGIN_CONSTRAINTS(cGUIContext)
    AFTER_GUID(IID_IInput)
+   AFTER_GUID(IID_IScriptInterpreter)
 END_CONSTRAINTS()
 
 ///////////////////////////////////////
@@ -60,6 +74,8 @@ tResult cGUIContext::Init()
    UseGlobal(Input);
    pInput->SetGUIInputListener(&m_inputListener);
    GUILayoutManagerRegisterBuiltInTypes();
+   UseGlobal(ScriptInterpreter);
+   pScriptInterpreter->AddNamedItem(GetName(), static_cast<IScriptable*>(this));
    return S_OK;
 }
 
@@ -71,6 +87,93 @@ tResult cGUIContext::Term()
    pInput->SetGUIInputListener(NULL);
    RemoveAllElements();
    return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIContext::Invoke(const char * pszMethodName,
+                            int argc, const cScriptVar * argv,
+                            int nMaxResults, cScriptVar * pResults)
+{
+   if (pszMethodName == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (strcmp(pszMethodName, "Clear") == 0)
+   {
+      if (argc != 0)
+      {
+         return E_INVALIDARG;
+      }
+      ClearGUI();
+      return S_OK;
+   }
+   else if (strcmp(pszMethodName, "Load") == 0)
+   {
+      if (argc == 1 && argv[0].IsString())
+      {
+         if (LoadFromString(argv[0], true) == S_OK
+            || LoadFromResource(argv[0], true) == S_OK)
+         {
+            LocalMsg1("Loading GUI definitions from %s\n", static_cast<const tChar *>(argv[0]));
+         }
+      }
+      else if (argc == 2 && argv[0].IsString() && argv[1].IsNumber())
+      {
+         bool bVisible = (argv[1].ToInt() != 0);
+         if (LoadFromString(argv[0], bVisible) == S_OK
+            || LoadFromResource(argv[0], bVisible) == S_OK)
+         {
+            LocalMsg1("Loading GUI definitions from %s\n", static_cast<const tChar *>(argv[0]));
+         }
+      }
+      else
+      {
+         return E_INVALIDARG;
+      }
+
+      return S_OK;
+   }
+   else if (strcmp(pszMethodName, "ToggleDebugInfo") == 0)
+   {
+      tGUIPoint placement(0,0);
+      tGUIColor color(tGUIColor::White);
+
+      if (argc == 2 
+         && argv[0].IsNumber() 
+         && argv[1].IsNumber())
+      {
+         placement = tGUIPoint(argv[0], argv[1]);
+      }
+      else if (argc == 3 
+         && argv[0].IsNumber() 
+         && argv[1].IsNumber()
+         && argv[2].IsString())
+      {
+         placement = tGUIPoint(argv[0], argv[1]);
+         GUIStyleParseColor(argv[2], &color);
+      }
+      else if (argc == 5 
+         && argv[0].IsNumber() 
+         && argv[1].IsNumber()
+         && argv[2].IsNumber() 
+         && argv[3].IsNumber()
+         && argv[4].IsNumber())
+      {
+         placement = tGUIPoint(argv[0], argv[1]);
+         color = tGUIColor(argv[2], argv[3], argv[4]);
+      }
+
+      if (ShowDebugInfo(placement, color) == S_FALSE)
+      {
+         HideDebugInfo();
+      }
+
+      return S_OK;
+   }
+
+   return E_FAIL;
 }
 
 ///////////////////////////////////////
@@ -89,14 +192,14 @@ tResult cGUIContext::AddElement(IGUIElement * pElement)
       }
    }
 #endif
-   return tBaseClass::AddElement(pElement);
+   return cGUIEventRouter<IGUIContext>::AddElement(pElement);
 }
 
 ///////////////////////////////////////
 
 tResult cGUIContext::RemoveElement(IGUIElement * pElement)
 {
-   tResult result = tBaseClass::RemoveElement(pElement);
+   tResult result = cGUIEventRouter<IGUIContext>::RemoveElement(pElement);
 #ifndef NDEBUG
    {
       // Check that all sink interface pointers are valid

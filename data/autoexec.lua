@@ -8,8 +8,9 @@ end;
 bind("q", "quit();");
 bind("escape", [[QuitWithConfirm();]]);
 
-bind("d", [[ToggleGUIDebugInfo(5, 200, "yellow");]]);
+bind("F4", [[GUIContext:ToggleDebugInfo(5, 200, "yellow");]]);
 
+--LogChannel([[LuaInterp]]);
 --LogChannel([[GUIButtonEvents]]);
 --LogChannel([[GUIDialogEvents]]);
 
@@ -22,8 +23,8 @@ gameMeshes =
 };
 
 function LoadSampleLevel()
-   ClearGUI();
-   LoadGUI("guitest.xml");
+   GUIContext:Clear();
+   GUIContext:Load("guitest.xml");
 
    SetTerrain("ground.tga", 0.2, "grass.tga");
 
@@ -40,8 +41,8 @@ end;
 
 -- Called automatically at start-up by the game engine
 function GameInit()
-   ClearGUI();
-   LoadGUI("start.xml");
+   GUIContext:Clear();
+   GUIContext:Load("start.xml");
 end;
 
 -------------------------------------------------------------------------------

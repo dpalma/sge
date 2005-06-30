@@ -8,6 +8,7 @@
 #include "guieventrouter.h"
 
 #include "inputapi.h"
+#include "scriptapi.h"
 
 #include "globalobjdef.h"
 
@@ -26,10 +27,9 @@ class TiXmlDocument;
 // CLASS: cGUIContext
 //
 
-class cGUIContext : public cComObject2<cGUIEventRouter<IGUIContext>, &IID_IGUIContext, IMPLEMENTS(IGlobalObject)>
+class cGUIContext : public cComObject3<cGUIEventRouter<IGUIContext>, &IID_IGUIContext,
+                                       IMPLEMENTS(IGlobalObject), IMPLEMENTS(IScriptable)>
 {
-   typedef cComObject2<cGUIEventRouter<IGUIContext>, &IID_IGUIContext, IMPLEMENTS(IGlobalObject)> tBaseClass;
-
 public:
    cGUIContext();
    ~cGUIContext();
@@ -39,6 +39,10 @@ public:
 
    virtual tResult Init();
    virtual tResult Term();
+
+   virtual tResult Invoke(const char * pszMethodName,
+                          int nArgs, const cScriptVar * pArgs,
+                          int nMaxResults, cScriptVar * pResults);
 
    virtual tResult AddElement(IGUIElement * pElement);
    virtual tResult RemoveElement(IGUIElement * pElement);
