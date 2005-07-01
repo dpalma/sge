@@ -114,16 +114,16 @@ typedef float           real32;
 typedef double          real64;
 
 #ifndef NO_BOOL
-typedef int    BOOL;
+#ifdef __CYGWIN__
+typedef unsigned char   BOOL;
+#else
+typedef int             BOOL;
+#endif
 #define TRUE   1
 #define FALSE  0
 #endif // !NO_BOOL
 
 ///////////////////////////////////////
-
-#define F_DECLARE_WIN32_STRUCT(type) \
-   struct tag##type; \
-   typedef struct tag##type type, * LP##type
 
 #ifndef EXTERN_C
 #define EXTERN_C extern "C"

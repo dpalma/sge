@@ -11,10 +11,12 @@
 
 #include <tinyxml.h>
 
+#ifdef HAVE_CG
 #include <Cg/cg.h>
 #include <Cg/cgGL.h>
 #include <CgFX/ICgFX.h>
 #include <CgFX/ICgFXEffect.h>
+#endif
 
 #include "dbgalloc.h" // must be last header
 
@@ -49,6 +51,8 @@ void TiXmlDocumentUnload(void * pData)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_CG
 
 CGcontext g_CgContext = NULL;
 ulong g_CgContextRef = 0;
@@ -99,7 +103,11 @@ void CgReleaseContext()
    }
 }
 
+#endif // HAVE_CG
+
 ///////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_CG
 
 CGprofile g_CgProfile = CG_PROFILE_UNKNOWN;
 
@@ -162,6 +170,8 @@ void CgEffectUnload(void * pData)
 //   delete pDoc;
 }
 
+#endif // HAVE_CG
+
 ///////////////////////////////////////////////////////////////////////////////
 
 extern tResult GlTextureResourceRegister(); // gltexture.cpp
@@ -173,10 +183,12 @@ tResult EngineRegisterResourceFormats()
    {
       if (cModel::RegisterResourceFormat() == S_OK
          && GlTextureResourceRegister() == S_OK
+#ifdef HAVE_CG
          && TextFormatRegister("cg") == S_OK
          && TextFormatRegister("fx") == S_OK
          && pResourceManager->RegisterFormat(kRT_CgProgram, MAKERESOURCETYPE(kRC_Text), NULL, NULL, CgProgramFromText, CgProgramUnload) == S_OK
          && pResourceManager->RegisterFormat(kRT_CgEffect, MAKERESOURCETYPE(kRC_Text), NULL, NULL, CgEffectFromText, CgEffectUnload) == S_OK
+#endif
          && pResourceManager->RegisterFormat(kRC_TiXml, kRC_Text, NULL, NULL, TiXmlDocumentFromText, TiXmlDocumentUnload) == S_OK)
       {
          return S_OK;

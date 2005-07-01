@@ -22,7 +22,7 @@ if platform == 'win32':
 elif platform == 'cygwin':
    glIncludePaths = ['/usr/include', '/usr/X11R6/include']
    glLibPaths = ['/usr/lib', '/usr/X11R6/lib']
-   glLibs = ['opengl32', 'glu32', 'Cg', 'CgGL']
+   glLibs = ['GL', 'GLU', 'X11']
 else:
    print 'Unsupported platform'
    Exit(1)

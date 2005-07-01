@@ -5,7 +5,7 @@
 #define INCLUDED_GUICONTAINERBASETEM_H
 
 #include "guielementbasetem.h"
-
+#include "guielementtools.h"
 #include "guielementenum.h"
 
 #include "dbgalloc.h" // must be last header
@@ -71,7 +71,6 @@ void cGUIContainerBase<INTRFC>::SetSize(const tGUISize & size)
          rect.right -= insets.right;
          rect.bottom -= insets.bottom;
       }
-
       ForEachElement(cSizeAndPlaceElement(rect));
    }
 }

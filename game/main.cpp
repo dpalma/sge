@@ -432,7 +432,12 @@ static bool MainInit(int argc, char * argv[])
    ConfigGet("screen_width", &width);
    ConfigGet("screen_height", &height);
    ConfigGet("screen_bpp", &bpp);
+#ifdef __CYGWIN__
+// HACK
+   bool bFullScreen = ConfigIsTrue("full_screen");
+#else
    bool bFullScreen = ConfigIsTrue("full_screen") && !IsDebuggerPresent();
+#endif
 
    if (!SysCreateWindow("Game", width, height))
    {

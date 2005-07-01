@@ -87,8 +87,8 @@ static int LuaGarbageCollectInterface(lua_State * L)
 static void LuaGetArg(lua_State * L, int index, cScriptVar * pArg)
 {
 #ifndef NDEBUG
-   std::string typeName(lua_typename(L, lua_type(L, index)));
-   LocalMsg2("LuaGetArg: arg at index %d is type \"%s\"\n", index, typeName.c_str());
+   const char * pszTypeName = lua_typename(L, lua_type(L, index));
+   LocalMsg2("LuaGetArg: arg at index %d is type \"%s\"\n", index, pszTypeName);
 #endif
 
    switch (lua_type(L, index))
@@ -727,7 +727,11 @@ tResult cLuaInterpreter::AddNamedItem(const char * pszName, tScriptFn pfn)
    {
       return E_FAIL;
    }
-   lua_pushlightuserdata(m_L, static_cast<void*>(pfn));
+   // The old-fashioned C-style cast is required for gcc, which distinguishes
+   // between pointers-to-functions and pointers-to-objects. The real solution
+   // would be to have a struct that contains the function pointer as a field.
+   // This would require a Lua "__gc" handler to free the struct.
+   lua_pushlightuserdata(m_L, (void*)pfn);
    lua_pushcclosure(m_L, LuaThunkFunction, 1);
    lua_setglobal(m_L, pszName);
    return S_OK;

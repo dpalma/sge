@@ -12,7 +12,8 @@
 #include "comtools.h"
 #include "techmath.h"
 
-#include "stdgl.h"
+#include <GL/glew.h>
+#include <GL/glxew.h>
 
 #include <cstring>
 
