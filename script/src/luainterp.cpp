@@ -204,6 +204,10 @@ static int LuaThunkInvoke(lua_State * L)
    }
 
    Assert(result <= kMaxResults);
+   if (result > kMaxResults)
+   {
+      result = kMaxResults;
+   }
 
    for (int i = 0; i < result; i++)
    {
@@ -218,6 +222,12 @@ static int LuaThunkInvoke(lua_State * L)
          case kString:
          {
             lua_pushstring(L, results[i]);
+            break;
+         }
+
+         case kNil:
+         {
+            lua_pushnil(L);
             break;
          }
       }
@@ -365,6 +375,12 @@ static int LuaThunkFunction(lua_State * L)
          case kString:
          {
             lua_pushstring(L, results[i]);
+            break;
+         }
+
+         case kNil:
+         {
+            lua_pushnil(L);
             break;
          }
       }
