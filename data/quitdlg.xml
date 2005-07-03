@@ -2,7 +2,6 @@
 
 <dialog 
    title="Quit?" 
-   ismodal="true"
    insets="(4,4,4,4)" 
    style="align:center;vertical-align:center;width:220;height:150;"
    onok="quit();"

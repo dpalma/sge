@@ -60,6 +60,8 @@ protected:
    IGUIElement * AccessMouseOver();
    IGUIElement * AccessDrag();
 
+   uint GetElementCount() const;
+
    tResult GetElement(const tChar * pszId, IGUIElement * * ppElement);
    tResult AddElement(IGUIElement * pElement);
    tResult RemoveElement(IGUIElement * pElement);
@@ -92,7 +94,7 @@ protected:
    bool BubbleEvent(IGUIEvent * pEvent);
    bool BubbleEvent(IGUIElement * pStartElement, IGUIEvent * pEvent);
 
-   bool GetActiveModalDialog(IGUIDialogElement * * ppModalDialog);
+   tResult GetActiveModalDialog(IGUIDialogElement * * ppModalDialog);
 
    void DoDragDrop(const sInputEvent * pInputEvent, tGUIEventCode eventCode, IGUIElement * pMouseOver, IGUIElement * pDrag);
    void DoMouseEnterExit(const sInputEvent * pInputEvent, IGUIElement * pMouseOver, IGUIElement * pRestrictTo);
@@ -131,6 +133,14 @@ template <typename INTRFC>
 inline IGUIElement * cGUIEventRouter<INTRFC>::AccessDrag()
 {
    return m_pDrag;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+inline uint cGUIEventRouter<INTRFC>::GetElementCount() const
+{
+   return m_elements.size();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

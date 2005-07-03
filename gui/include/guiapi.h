@@ -354,6 +354,7 @@ interface IGUIContainerElement : IGUIElement
    virtual tResult RemoveElement(IGUIElement * pElement) = 0;
    virtual tResult GetElements(IGUIElementEnum * * ppElements) = 0;
    virtual tResult HasElement(IGUIElement * pElement) const = 0;
+   virtual tResult GetElement(const tChar * pszId, IGUIElement * * ppElement) const = 0;
 
    virtual tResult GetLayout(IGUILayoutManager * * ppLayout) = 0;
    virtual tResult SetLayout(IGUILayoutManager * pLayout) = 0;
@@ -445,20 +446,6 @@ interface IGUIDialogElement : IGUIContainerElement
 
    virtual tResult GetCaptionHeight(uint * pHeight) = 0;
    virtual tResult SetCaptionHeight(uint height) = 0;
-
-   virtual tResult SetModal(bool bModal) = 0;
-   virtual bool IsModal() = 0;
-
-   /// The programmatic equivalent of clicking the OK button or pressing Enter
-   virtual tResult Accept() = 0;
-   /// The programmatic equivalent of clicking the Cancel button or pressing Esc
-   virtual tResult Cancel() = 0;
-
-   virtual tResult GetOnOK(tGUIString * pOnOK) const = 0;
-   virtual tResult SetOnOK(const char * pszOnOK) = 0;
-
-   virtual tResult GetOnCancel(tGUIString * pOnCancel) const = 0;
-   virtual tResult SetOnCancel(const char * pszOnCancel) = 0;
 };
 
 
@@ -616,8 +603,13 @@ interface IGUIContext : IGUIEventRouter
 
    virtual tResult GetElement(const tChar * pszId, IGUIElement * * ppElement) = 0;
 
-   virtual tResult LoadFromResource(const char * psz, bool bVisible = true) = 0;
-   virtual tResult LoadFromString(const char * psz, bool bVisible = true) = 0;
+   virtual tResult ShowModalDialog(const tChar * pszDialog) = 0;
+
+   /// @brief Loads GUI elements from either an XML fragment or file
+   /// @param pszXmlStringOrFile specifies either an XML fragment or file name
+   /// @param bVisible determines whether the loaded elements will be intially visible
+   /// @return S_OK, S_FALSE if no error and no elements loaded, or an E_xxx code
+   virtual tResult LoadElements(const char * pszXmlStringOrFile, bool bVisible) = 0;
 
    virtual void ClearGUI() = 0;
 

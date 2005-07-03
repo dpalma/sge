@@ -516,7 +516,7 @@ static void MainTerm()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static void MainFrame()
+static bool MainFrame()
 {
    Assert(g_pRenderDevice != NULL);
 
@@ -556,6 +556,8 @@ static void MainFrame()
 
    g_pRenderDevice->EndScene();
    SysSwapBuffers();
+
+   return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

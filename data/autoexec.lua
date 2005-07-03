@@ -2,7 +2,9 @@
 -- $Id$
 
 function QuitWithConfirm()
-   ConfirmedQuit("quitdlg.xml");
+   if GUIContext:ShowConfirmDialog("Are you sure you want to quit?", "Confirm") then
+      quit();
+   end
 end;
 
 bind("q", "quit();");

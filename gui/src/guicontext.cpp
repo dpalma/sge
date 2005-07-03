@@ -6,8 +6,10 @@
 #include "guicontext.h"
 #include "guievent.h"
 #include "guielementtools.h"
+#include "guielementscriptproxy.h"
 #include "guieventroutertem.h"
 #include "scriptvar.h"
+#include "sys.h"
 
 #include "keys.h"
 #include "resourceapi.h"
@@ -15,6 +17,8 @@
 
 #include <tinyxml.h>
 #include <GL/glew.h>
+
+#include <vector>
 
 #ifdef HAVE_CPPUNIT
 #include <cppunit/extensions/HelperMacros.h>
@@ -35,6 +39,189 @@ LOG_DEFINE_CHANNEL(GUIContext);
 #define LocalMsgIf2(cond,msg,a1,a2)    DebugMsgIfEx2(GUIContext,(cond),(msg),(a1),(a2))
 
 ///////////////////////////////////////////////////////////////////////////////
+
+static tResult LoadElements(TiXmlDocument * pTiXmlDoc, std::vector<IGUIElement*> * pElements)
+{
+   if (pTiXmlDoc == NULL || pElements == NULL)
+   {
+      return E_POINTER;
+   }
+
+   UseGlobal(GUIFactory);
+
+   uint nCreated = 0;
+   TiXmlElement * pXmlElement;
+   for (pXmlElement = pTiXmlDoc->FirstChildElement(); pXmlElement != NULL;
+        pXmlElement = pXmlElement->NextSiblingElement())
+   {
+      if (pXmlElement->Type() == TiXmlNode::ELEMENT)
+      {
+         cAutoIPtr<IGUIElement> pGuiElement;
+         if (pGUIFactory->CreateElement(pXmlElement, &pGuiElement) == S_OK)
+         {
+            pElements->push_back(CTAddRef(pGuiElement));
+            nCreated++;
+         }
+      }
+   }
+
+   return nCreated;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+static tResult LoadElements(const char * psz, std::vector<IGUIElement*> * pElements)
+{
+   if (psz == NULL || pElements == NULL)
+   {
+      return E_POINTER;
+   }
+
+   TiXmlDocument doc;
+   doc.Parse(psz);
+
+   if (doc.Error())
+   {
+      ErrorMsg1("TiXml parse error: %s\n", doc.ErrorDesc());
+      return E_FAIL;
+   }
+
+   uint nCreated = LoadElements(&doc, pElements);
+   if (nCreated > 0)
+   {
+      return S_OK;
+   }
+   else
+   {
+      tResKey rk(psz, kRC_TiXml);
+      TiXmlDocument * pTiXmlDoc = NULL;
+      UseGlobal(ResourceManager);
+      if (pResourceManager->Load(rk, (void**)&pTiXmlDoc) == S_OK)
+      {
+         nCreated = LoadElements(pTiXmlDoc, pElements);
+      }
+   }
+
+   return (nCreated > 0) ? S_OK : S_FALSE;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+static bool g_bExitModalLoop = false;
+
+static bool GUIModalLoopFrameHandler()
+{
+   if (g_bExitModalLoop)
+   {
+      return false;
+   }
+   return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cGUIModalLoopEventListener
+//
+
+enum eGUIModalDialogResult
+{
+   kGUIModalDlgError,
+   kGUIModalDlgOK,
+   kGUIModalDlgCancel
+};
+
+////////////////////////////////////////
+
+class cGUIModalLoopEventListener : public cComObject<IMPLEMENTS(IGUIEventListener)>
+{
+public:
+   cGUIModalLoopEventListener(eGUIModalDialogResult * pResult);
+   ~cGUIModalLoopEventListener();
+
+   virtual tResult OnEvent(IGUIEvent * pEvent);
+
+private:
+   eGUIModalDialogResult * m_pResult;
+};
+
+////////////////////////////////////////
+
+cGUIModalLoopEventListener::cGUIModalLoopEventListener(eGUIModalDialogResult * pResult)
+ : m_pResult(pResult)
+{
+}
+
+////////////////////////////////////////
+
+cGUIModalLoopEventListener::~cGUIModalLoopEventListener()
+{
+}
+
+////////////////////////////////////////
+
+tResult cGUIModalLoopEventListener::OnEvent(IGUIEvent * pEvent)
+{
+   bool bEatEvent = false;
+
+   tGUIEventCode eventCode;
+   Verify(pEvent->GetEventCode(&eventCode) == S_OK);
+
+   long keyCode;
+   Verify(pEvent->GetKeyCode(&keyCode) == S_OK);
+
+   switch (eventCode)
+   {
+      case kGUIEventKeyUp:
+      {
+         if (keyCode == kEnter)
+         {
+            *m_pResult = kGUIModalDlgOK;
+            g_bExitModalLoop = true;
+            bEatEvent = true;
+         }
+         break;
+      }
+      case kGUIEventKeyDown:
+      {
+         if (keyCode == kEscape)
+         {
+            *m_pResult = kGUIModalDlgCancel;
+            g_bExitModalLoop = true;
+            bEatEvent = true;
+         }
+         break;
+      }
+      case kGUIEventClick:
+      {
+         cAutoIPtr<IGUIElement> pSrcElement;
+         if (pEvent->GetSourceElement(&pSrcElement) == S_OK)
+         {
+            cAutoIPtr<IGUIButtonElement> pButtonElement;
+            if (pSrcElement->QueryInterface(IID_IGUIButtonElement, (void**)&pButtonElement) == S_OK)
+            {
+               if (GUIElementIdMatch(pButtonElement, "ok"))
+               {
+                  *m_pResult = kGUIModalDlgOK;
+                  g_bExitModalLoop = true;
+                  bEatEvent = true;
+               }
+               else if (GUIElementIdMatch(pButtonElement, "cancel"))
+               {
+                  *m_pResult = kGUIModalDlgCancel;
+                  g_bExitModalLoop = true;
+                  bEatEvent = true;
+               }
+            }
+         }
+         break;
+      }
+   }
+
+   return bEatEvent ? S_FALSE : S_OK;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUIContext
 //
@@ -50,7 +237,8 @@ END_CONSTRAINTS()
 
 cGUIContext::cGUIContext()
  : m_inputListener(this),
-   m_bNeedLayout(false)
+   m_nElementsLastLayout(0),
+   m_bShowingModalDialog(false)
 #ifdef GUI_DEBUG
    , m_bShowDebugInfo(false)
    , m_debugInfoPlacement(0,0)
@@ -100,77 +288,28 @@ tResult cGUIContext::Invoke(const char * pszMethodName,
       return E_POINTER;
    }
 
-   if (strcmp(pszMethodName, "Clear") == 0)
+   typedef tResult (cGUIContext::*tInvokeMethod)(int argc, const cScriptVar * argv,
+                                                 int nMaxResults, cScriptVar * pResults);
+
+   static const struct
    {
-      if (argc != 0)
-      {
-         return E_INVALIDARG;
-      }
-      ClearGUI();
-      return S_OK;
+      const tChar * pszMethodName;
+      tInvokeMethod pfnMethod;
    }
-   else if (strcmp(pszMethodName, "Load") == 0)
+   invokeMethods[] =
    {
-      if (argc == 1 && argv[0].IsString())
-      {
-         if (LoadFromString(argv[0], true) == S_OK
-            || LoadFromResource(argv[0], true) == S_OK)
-         {
-            LocalMsg1("Loading GUI definitions from %s\n", static_cast<const tChar *>(argv[0]));
-         }
-      }
-      else if (argc == 2 && argv[0].IsString() && argv[1].IsNumber())
-      {
-         bool bVisible = (argv[1].ToInt() != 0);
-         if (LoadFromString(argv[0], bVisible) == S_OK
-            || LoadFromResource(argv[0], bVisible) == S_OK)
-         {
-            LocalMsg1("Loading GUI definitions from %s\n", static_cast<const tChar *>(argv[0]));
-         }
-      }
-      else
-      {
-         return E_INVALIDARG;
-      }
+      { "ShowConfirmDialog",  InvokeShowConfirmDialog },
+      { "Clear",              InvokeClear },
+      { "Load",               InvokeLoad },
+      { "ToggleDebugInfo",    InvokeToggleDebugInfo },
+   };
 
-      return S_OK;
-   }
-   else if (strcmp(pszMethodName, "ToggleDebugInfo") == 0)
+   for (int i = 0; i < _countof(invokeMethods); i++)
    {
-      tGUIPoint placement(0,0);
-      tGUIColor color(tGUIColor::White);
-
-      if (argc == 2 
-         && argv[0].IsNumber() 
-         && argv[1].IsNumber())
+      if (strcmp(invokeMethods[i].pszMethodName, pszMethodName) == 0)
       {
-         placement = tGUIPoint(argv[0], argv[1]);
+         return (this->*invokeMethods[i].pfnMethod)(argc, argv, nMaxResults, pResults);
       }
-      else if (argc == 3 
-         && argv[0].IsNumber() 
-         && argv[1].IsNumber()
-         && argv[2].IsString())
-      {
-         placement = tGUIPoint(argv[0], argv[1]);
-         GUIStyleParseColor(argv[2], &color);
-      }
-      else if (argc == 5 
-         && argv[0].IsNumber() 
-         && argv[1].IsNumber()
-         && argv[2].IsNumber() 
-         && argv[3].IsNumber()
-         && argv[4].IsNumber())
-      {
-         placement = tGUIPoint(argv[0], argv[1]);
-         color = tGUIColor(argv[2], argv[3], argv[4]);
-      }
-
-      if (ShowDebugInfo(placement, color) == S_FALSE)
-      {
-         HideDebugInfo();
-      }
-
-      return S_OK;
    }
 
    return E_FAIL;
@@ -178,67 +317,222 @@ tResult cGUIContext::Invoke(const char * pszMethodName,
 
 ///////////////////////////////////////
 
-tResult cGUIContext::LoadFromResource(const char * psz, bool bVisible)
+tResult cGUIContext::InvokeShowConfirmDialog(int argc, const cScriptVar * argv,
+                                             int nMaxResults, cScriptVar * pResults)
 {
-   tResKey rk(psz, kRC_TiXml);
-   TiXmlDocument * pTiXmlDoc = NULL;
-   UseGlobal(ResourceManager);
-   if (pResourceManager->Load(rk, (void**)&pTiXmlDoc) == S_OK)
+   Assert(nMaxResults >= 1);
+
+   tGUIString message, title;
+
+   if (argc == 1 && argv[0].IsString())
    {
-      uint nCreated = LoadFromTiXmlDoc(pTiXmlDoc, bVisible);
-      pResourceManager->Unload(rk);
-      return (nCreated > 0) ? S_OK : S_FALSE;
+      message = argv[0];
+      title = "Confirm";
    }
-   return E_FAIL;
+   else if (argc == 2 && argv[0].IsString() && argv[1].IsString())
+   {
+      message = argv[0];
+      title = argv[1];
+   }
+
+   static const tChar dialogElementSpec[] =
+      "<dialog "
+         "title=\"%s\" "
+         "style=\"align:center;vertical-align:center;width:220;height:150;\" "
+         "renderer=\"beveled\" "
+         ">"
+         "<layout type=\"grid\" rows=2 columns=1 />"
+         "<label text=\"%s\" style=\"width:100%;align:center;\" />"
+         "<panel style=\"width:100%;height:30;\">"
+            "<layout type=\"grid\" rows=1 columns=2 />"
+            "<button style=\"vertical-align:bottom;\" id=\"ok\" text=\"Yes\" />"
+            "<button style=\"vertical-align:bottom;\" id=\"cancel\" text=\"No\" />"
+         "</panel>"
+      "</dialog>";
+
+   tGUIString dialogElement;
+   dialogElement.Format(dialogElementSpec, title.c_str(), message.c_str());
+
+   tResult result = ShowModalDialog(dialogElement.c_str());
+   if (result == S_OK)
+   {
+      *pResults = cScriptVar(true);
+      result = 1; // # of return values
+   }
+   else if (result == S_FALSE)
+   {
+      *pResults = cScriptVar::Nil;
+      result = 1; // # of return values
+   }
+
+   return result;
 }
 
 ///////////////////////////////////////
 
-tResult cGUIContext::LoadFromString(const char * psz, bool bVisible)
+tResult cGUIContext::InvokeClear(int argc, const cScriptVar * argv,
+                                 int nMaxResults, cScriptVar * pResults)
 {
-   TiXmlDocument doc;
-   doc.Parse(psz);
-
-   if (doc.Error())
+   if (argc != 0)
    {
-      DebugMsg1("TiXml parse error: %s\n", doc.ErrorDesc());
+      return E_INVALIDARG;
+   }
+   ClearGUI();
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIContext::InvokeLoad(int argc, const cScriptVar * argv,
+                                int nMaxResults, cScriptVar * pResults)
+{
+   if (argc == 1 && argv[0].IsString())
+   {
+      if (LoadElements(argv[0], true) == S_OK)
+      {
+         LocalMsg1("Loading GUI definitions from %s\n", argv[0].psz);
+      }
+   }
+   else if (argc == 2 && argv[0].IsString() && argv[1].IsNumber())
+   {
+      bool bVisible = (argv[1].ToInt() != 0);
+      if (LoadElements(argv[0], bVisible) == S_OK)
+      {
+         LocalMsg1("Loading GUI definitions from %s\n", argv[0].psz);
+      }
+   }
+   else
+   {
+      return E_INVALIDARG;
+   }
+
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIContext::InvokeToggleDebugInfo(int argc, const cScriptVar * argv,
+                                           int nMaxResults, cScriptVar * pResults)
+{
+   tGUIPoint placement(0,0);
+   tGUIColor color(tGUIColor::White);
+
+   if (argc == 2 
+      && argv[0].IsNumber() 
+      && argv[1].IsNumber())
+   {
+      placement = tGUIPoint(argv[0], argv[1]);
+   }
+   else if (argc == 3 
+      && argv[0].IsNumber() 
+      && argv[1].IsNumber()
+      && argv[2].IsString())
+   {
+      placement = tGUIPoint(argv[0], argv[1]);
+      GUIStyleParseColor(argv[2], &color);
+   }
+   else if (argc == 5 
+      && argv[0].IsNumber() 
+      && argv[1].IsNumber()
+      && argv[2].IsNumber() 
+      && argv[3].IsNumber()
+      && argv[4].IsNumber())
+   {
+      placement = tGUIPoint(argv[0], argv[1]);
+      color = tGUIColor(argv[2], argv[3], argv[4]);
+   }
+
+   if (ShowDebugInfo(placement, color) == S_FALSE)
+   {
+      HideDebugInfo();
+   }
+
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIContext::ShowModalDialog(const tChar * pszDialog)
+{
+   if (pszDialog == NULL)
+   {
+      return E_POINTER;
+   }
+
+   // Only one at a time supported now
+   if (m_bShowingModalDialog)
+   {
+      WarnMsg("Attempt to show multiple confirm dialogs\n");
       return E_FAIL;
    }
 
-   uint nCreated = LoadFromTiXmlDoc(&doc, bVisible);
-   return (nCreated > 0) ? S_OK : S_FALSE;
+   tResult result = E_FAIL;
+
+   std::vector<IGUIElement*> elements;
+   if (::LoadElements(pszDialog, &elements) == S_OK && elements.size() == 1)
+   {
+      m_bShowingModalDialog = true;
+
+      AddElement(elements.front());
+
+      eGUIModalDialogResult modalDialogResult = kGUIModalDlgError;
+      cGUIModalLoopEventListener listener(&modalDialogResult);
+      AddEventListener(&listener);
+
+      g_bExitModalLoop = false;
+
+      // This function won't return until the modal loop is ended by
+      // some user action (Enter, Esc, OK button click, etc.)
+      SysEventLoop(GUIModalLoopFrameHandler, NULL);
+
+      if (modalDialogResult == kGUIModalDlgOK)
+      {
+         result = S_OK;
+      }
+      else if (modalDialogResult == kGUIModalDlgCancel)
+      {
+         result = S_FALSE;
+      }
+
+      RemoveEventListener(&listener);
+
+      RemoveElement(elements.front());
+
+      m_bShowingModalDialog = false;
+   }
+
+   std::for_each(elements.begin(), elements.end(), CTInterfaceMethod(&IGUIElement::Release));
+
+   return result;
 }
 
 ///////////////////////////////////////
 
-uint cGUIContext::LoadFromTiXmlDoc(TiXmlDocument * pTiXmlDoc, bool bVisible)
+tResult cGUIContext::LoadElements(const char * pszXmlStringOrFile, bool bVisible)
 {
-   Assert(pTiXmlDoc != NULL);
-
-   UseGlobal(GUIFactory);
-
-   uint nElementsCreated = 0;
-   TiXmlElement * pXmlElement;
-   for (pXmlElement = pTiXmlDoc->FirstChildElement(); pXmlElement != NULL;
-        pXmlElement = pXmlElement->NextSiblingElement())
+   if (pszXmlStringOrFile == NULL)
    {
-      if (pXmlElement->Type() == TiXmlNode::ELEMENT)
-      {
-         cAutoIPtr<IGUIElement> pGUIElement;
-         if (pGUIFactory->CreateElement(pXmlElement, &pGUIElement) == S_OK)
-         {
-            pGUIElement->SetVisible(bVisible);
-            if (AddElement(pGUIElement) == S_OK)
-            {
-               nElementsCreated++;
-            }
-         }
-      }
+      return E_POINTER;
    }
 
-   m_bNeedLayout = (nElementsCreated > 0);
+   std::vector<IGUIElement*> elements;
+   if (::LoadElements(pszXmlStringOrFile, &elements) == S_OK)
+   {
+      std::vector<IGUIElement*>::iterator iter = elements.begin();
+      std::vector<IGUIElement*>::iterator end = elements.end();
+      for (; iter != end; iter++)
+      {
+         (*iter)->SetVisible(bVisible);
+         AddElement(*iter);
+         (*iter)->Release();
+      }
 
-   return nElementsCreated;
+      elements.clear();
+
+      return S_OK;
+   }
+
+   return S_FALSE;
 }
 
 ///////////////////////////////////////
@@ -246,7 +540,6 @@ uint cGUIContext::LoadFromTiXmlDoc(TiXmlDocument * pTiXmlDoc, bool bVisible)
 void cGUIContext::ClearGUI()
 {
    RemoveAllElements();
-   m_bNeedLayout = true;
 }
 
 ///////////////////////////////////////
@@ -290,9 +583,10 @@ tResult cRenderElement::operator()(IGUIElement * pGUIElement)
 
 tResult cGUIContext::RenderGUI()
 {
-   if (m_bNeedLayout)
+   uint nElements = GetElementCount();
+   if (nElements != m_nElementsLastLayout)
    {
-      m_bNeedLayout = false;
+      m_nElementsLastLayout = nElements;
 
       int viewport[4];
       glGetIntegerv(GL_VIEWPORT, viewport);

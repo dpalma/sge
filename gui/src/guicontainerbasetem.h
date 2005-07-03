@@ -158,6 +158,30 @@ tResult cGUIContainerBase<INTRFC>::HasElement(IGUIElement * pElement) const
 ///////////////////////////////////////
 
 template <typename INTRFC>
+tResult cGUIContainerBase<INTRFC>::GetElement(const tChar * pszId, IGUIElement * * ppElement) const
+{
+   if (pszId == NULL || ppElement != NULL)
+   {
+      return E_POINTER;
+   }
+
+   // TODO: construct a map to do this
+   tGUIElementList::const_iterator iter;
+   for (iter = m_children.begin(); iter != m_children.end(); iter++)
+   {
+      if (GUIElementIdMatch(*iter, pszId))
+      {
+         *ppElement = CTAddRef(*iter);
+         return S_OK;
+      }
+   }
+
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
 tResult cGUIContainerBase<INTRFC>::GetLayout(IGUILayoutManager * * ppLayout)
 {
    return m_pLayout.GetPointer(ppLayout);

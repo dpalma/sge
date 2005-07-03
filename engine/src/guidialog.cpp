@@ -39,8 +39,7 @@ static const uint kNoCaptionHeight = ~0u;
 cGUIDialogElement::cGUIDialogElement()
  : m_bDragging(false),
    m_dragOffset(0,0),
-   m_captionHeight(kNoCaptionHeight),
-   m_bModal(false)
+   m_captionHeight(kNoCaptionHeight)
 {
 }
 
@@ -106,48 +105,6 @@ tResult cGUIDialogElement::OnEvent(IGUIEvent * pEvent)
          m_bDragging = false;
          pEvent->SetCancelBubble(true);
          break;
-      }
-   }
-
-   if (eventCode == kGUIEventKeyUp)
-   {
-      LocalMsg("Key up dialog\n");
-      if (keyCode == kEnter)
-      {
-         LocalMsg("ENTER KEY --> OK\n");
-         pEvent->SetCancelBubble(true);
-         Accept();
-      }
-   }
-   else if (eventCode == kGUIEventKeyDown)
-   {
-      LocalMsg("Key down dialog\n");
-      if (keyCode == kEscape)
-      {
-         LocalMsg("ESC KEY --> Cancel\n");
-         pEvent->SetCancelBubble(true);
-         Cancel();
-      }
-   }
-   else if (eventCode == kGUIEventClick)
-   {
-      cAutoIPtr<IGUIElement> pSrcElement;
-      if (pEvent->GetSourceElement(&pSrcElement) == S_OK)
-      {
-         cAutoIPtr<IGUIButtonElement> pButtonElement;
-         if (pSrcElement->QueryInterface(IID_IGUIButtonElement, (void**)&pButtonElement) == S_OK)
-         {
-            if (GUIElementIdMatch(pButtonElement, "ok"))
-            {
-               pEvent->SetCancelBubble(true);
-               Accept();
-            }
-            else if (GUIElementIdMatch(pButtonElement, "cancel"))
-            {
-               pEvent->SetCancelBubble(true);
-               Cancel();
-            }
-         }
       }
    }
 
@@ -225,95 +182,6 @@ tResult cGUIDialogElement::SetCaptionHeight(uint height)
 
 ///////////////////////////////////////
 
-tResult cGUIDialogElement::SetModal(bool bModal)
-{
-   m_bModal = bModal;
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-bool cGUIDialogElement::IsModal()
-{
-   return m_bModal;
-}
-
-///////////////////////////////////////
-
-tResult cGUIDialogElement::Accept()
-{
-   tGUIString onOK;
-   if (GetOnOK(&onOK) == S_OK)
-   {
-      UseGlobal(ScriptInterpreter);
-      pScriptInterpreter->ExecString(onOK.c_str());
-   }
-   UseGlobal(GUIContext);
-   pGUIContext->RemoveElement(this);
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cGUIDialogElement::Cancel()
-{
-   tGUIString onCancel;
-   if (GetOnCancel(&onCancel) == S_OK)
-   {
-      UseGlobal(ScriptInterpreter);
-      pScriptInterpreter->ExecString(onCancel.c_str());
-   }
-   UseGlobal(GUIContext);
-   pGUIContext->RemoveElement(this);
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cGUIDialogElement::GetOnOK(tGUIString * pOnOK) const
-{
-   if (pOnOK == NULL)
-      return E_POINTER;
-   if (m_onOK.empty())
-      return S_FALSE;
-   *pOnOK = m_onOK;
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cGUIDialogElement::SetOnOK(const char * pszOnOK)
-{
-   if (pszOnOK == NULL)
-      return E_POINTER;
-   m_onOK = pszOnOK;
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cGUIDialogElement::GetOnCancel(tGUIString * pOnCancel) const
-{
-   if (pOnCancel == NULL)
-      return E_POINTER;
-   if (m_onCancel.empty())
-      return S_FALSE;
-   *pOnCancel = m_onCancel;
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cGUIDialogElement::SetOnCancel(const char * pszOnCancel)
-{
-   if (pszOnCancel == NULL)
-      return E_POINTER;
-   m_onCancel = pszOnCancel;
-   return S_OK;
-}
-
-///////////////////////////////////////
-
 const int kHackBevelValue = 2; // duplicates constant in beveled renderer
 
 tGUIRect cGUIDialogElement::GetCaptionRectAbsolute()
@@ -344,32 +212,6 @@ tGUIRect cGUIDialogElement::GetCaptionRectAbsolute()
 
 AUTOREGISTER_GUIELEMENTFACTORY(dialog, cGUIDialogElementFactory);
 
-extern tResult GUIStyleParseBool(const char * psz, bool * pBool);
-
-static tResult QueryBoolAttribute(const TiXmlElement * pXmlElement, const char * pszAttrib, bool * pBool)
-{
-   Assert(pXmlElement != NULL);
-   Assert(pszAttrib != NULL);
-   Assert(pBool != NULL);
-
-   int value;
-	if (pXmlElement->QueryIntAttribute(pszAttrib, &value) == TIXML_SUCCESS)
-   {
-      *pBool = value ? true : false;
-      return S_OK;
-   }
-   else
-   {
-      const char * pszValue = pXmlElement->Attribute(pszAttrib);
-      if (pszValue != NULL)
-      {
-         return GUIStyleParseBool(pszValue, pBool);
-      }
-   }
-
-   return S_FALSE;
-}
-
 tResult cGUIDialogElementFactory::CreateElement(const TiXmlElement * pXmlElement, 
                                                 IGUIElement * * ppElement)
 {
@@ -391,22 +233,6 @@ tResult cGUIDialogElementFactory::CreateElement(const TiXmlElement * pXmlElement
             if ((pszValue = pXmlElement->Attribute(kAttribTitle)) != NULL)
             {
                pDialog->SetTitle(pszValue);
-            }
-
-            if ((pszValue = pXmlElement->Attribute(kAttribOnOk)) != NULL)
-            {
-               pDialog->SetOnOK(pszValue);
-            }
-
-            if ((pszValue = pXmlElement->Attribute(kAttribOnCancel)) != NULL)
-            {
-               pDialog->SetOnCancel(pszValue);
-            }
-
-            bool bIsModal;
-            if (QueryBoolAttribute(pXmlElement, kAttribIsModal, &bIsModal) == S_OK)
-            {
-               pDialog->SetModal(bIsModal);
             }
 
             if (GUIElementCreateChildren(pXmlElement, pDialog) == S_OK)

@@ -411,7 +411,7 @@ tResult cGUIFlowLayoutManager::Layout(IGUIContainerElement * pContainer)
    }
 
    int leftSide = insets.left;
-   int rightSide = Round(size.width) - insets.right;
+   int rightSide = Round(leftSide + size.width);
 
    cAutoIPtr<IGUIElementEnum> pEnum;
    if (pContainer->GetElements(&pEnum) == S_OK)

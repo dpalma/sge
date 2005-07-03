@@ -147,7 +147,7 @@ tResult cGUIEventRouter<INTRFC>::SetDrag(IGUIElement * pElement)
 template <typename INTRFC>
 tResult cGUIEventRouter<INTRFC>::GetElement(const tChar * pszId, IGUIElement * * ppElement)
 {
-   if (pszId == NULL)
+   if (pszId == NULL || ppElement == NULL)
    {
       return E_POINTER;
    }
@@ -158,10 +158,7 @@ tResult cGUIEventRouter<INTRFC>::GetElement(const tChar * pszId, IGUIElement * *
    {
       if (GUIElementIdMatch(*iter, pszId))
       {
-         if (ppElement != NULL)
-         {
-            *ppElement = CTAddRef(*iter);
-         }
+         *ppElement = CTAddRef(*iter);
          return S_OK;
       }
    }
@@ -184,25 +181,14 @@ tResult cGUIEventRouter<INTRFC>::AddElement(IGUIElement * pElement)
       return S_FALSE;
    }
 
+   m_elements.push_back(CTAddRef(pElement));
+
    cAutoIPtr<IGUIDialogElement> pDialog;
    if (pElement->QueryInterface(IID_IGUIDialogElement, (void**)&pDialog) == S_OK)
    {
-#ifdef _DEBUG
-      tGUIDialogList::iterator dIter;
-      for (dIter = m_dialogs.begin(); dIter != m_dialogs.end(); dIter++)
-      {
-         if (CTIsSameObject(*dIter, pElement))
-         {
-            Assert(!"ERROR: GUI element should not be in dialog list if not in element list!");
-         }
-      }
-      AssertMsg(std::find_if(m_dialogs.begin(), m_dialogs.end(), cSameAs(pElement)) == m_dialogs.end(),
-         "ERROR: GUI element should not be in dialog list if not in element list!");
-#endif
       m_dialogs.push_back(CTAddRef(pDialog));
    }
 
-   m_elements.push_back(CTAddRef(pElement));
    return S_OK;
 }
 
@@ -218,31 +204,23 @@ tResult cGUIEventRouter<INTRFC>::RemoveElement(IGUIElement * pElement)
 
    tResult result = S_FALSE;
 
-   tGUIElementList::iterator iter;
-   for (iter = m_elements.begin(); iter != m_elements.end(); iter++)
+   // Remove from element list
    {
-      if (CTIsSameObject(*iter, pElement))
+      tGUIElementList::iterator f = std::find_if(m_elements.begin(), m_elements.end(), cSameAs(pElement));
+      if (f != m_elements.end())
       {
-         (*iter)->Release();
-         m_elements.erase(iter);
-         result = S_OK;
-         break;
+         (*f)->Release();
+         m_elements.erase(f);
       }
    }
 
    // Remove from dialog list too if necessary
-   cAutoIPtr<IGUIDialogElement> pDialog;
-   if (pElement->QueryInterface(IID_IGUIDialogElement, (void**)&pDialog) == S_OK)
    {
-      tGUIDialogList::iterator dIter;
-      for (dIter = m_dialogs.begin(); dIter != m_dialogs.end(); dIter++)
+      tGUIDialogList::iterator f = std::find_if(m_dialogs.begin(), m_dialogs.end(), cSameAs(pElement));
+      if (f != m_dialogs.end())
       {
-         if (CTIsSameObject(*dIter, pDialog))
-         {
-            (*dIter)->Release();
-            m_dialogs.erase(dIter);
-            break;
-         }
+         (*f)->Release();
+         m_dialogs.erase(f);
       }
    }
 
@@ -259,16 +237,8 @@ tResult cGUIEventRouter<INTRFC>::HasElement(IGUIElement * pElement) const
       return E_POINTER;
    }
 
-   tGUIElementList::const_iterator iter;
-   for (iter = m_elements.begin(); iter != m_elements.end(); iter++)
-   {
-      if (CTIsSameObject(*iter, pElement))
-      {
-         return S_OK;
-      }
-   }
-
-   return S_FALSE;
+   tGUIElementList::const_iterator f = std::find_if(m_elements.begin(), m_elements.end(), cSameAs(pElement));
+   return (f != m_elements.end()) ? S_OK : S_FALSE;
 }
 
 ///////////////////////////////////////
@@ -461,21 +431,20 @@ bool cGUIEventRouter<INTRFC>::BubbleEvent(IGUIElement * pStartElement, IGUIEvent
 ///////////////////////////////////////
 
 template <typename INTRFC>
-bool cGUIEventRouter<INTRFC>::GetActiveModalDialog(IGUIDialogElement * * ppModalDialog)
+tResult cGUIEventRouter<INTRFC>::GetActiveModalDialog(IGUIDialogElement * * ppModalDialog)
 {
-   Assert(ppModalDialog != NULL);
-
-   tGUIDialogList::reverse_iterator iter;
-   for (iter = m_dialogs.rbegin(); iter != m_dialogs.rend(); iter++)
+   if (ppModalDialog == NULL)
    {
-      if ((*iter)->IsModal())
-      {
-         *ppModalDialog = CTAddRef(*iter);
-         return true;
-      }
+      return E_POINTER;
    }
 
-   return false;
+   if (m_dialogs.empty())
+   {
+      return S_FALSE;
+   }
+
+   *ppModalDialog = CTAddRef(m_dialogs.back());
+   return S_OK;
 }
 
 ///////////////////////////////////////
@@ -550,7 +519,7 @@ bool cGUIEventRouter<INTRFC>::HandleInputEvent(const sInputEvent * pInputEvent)
 
    // If a modal dialog is active, restrict input to the dialog and its descendants
    cAutoIPtr<IGUIDialogElement> pModalDialog;
-   if (GetActiveModalDialog(&pModalDialog))
+   if (GetActiveModalDialog(&pModalDialog) == S_OK)
    {
       if (KeyIsMouse(pInputEvent->key))
       {

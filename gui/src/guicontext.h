@@ -16,8 +16,6 @@
 #pragma once
 #endif
 
-class TiXmlDocument;
-
 #ifdef _DEBUG
 #define GUI_DEBUG
 #endif
@@ -41,13 +39,21 @@ public:
    virtual tResult Term();
 
    virtual tResult Invoke(const char * pszMethodName,
-                          int nArgs, const cScriptVar * pArgs,
+                          int argc, const cScriptVar * argv,
                           int nMaxResults, cScriptVar * pResults);
 
-   virtual tResult LoadFromResource(const char * psz, bool bVisible);
-   virtual tResult LoadFromString(const char * psz, bool bVisible);
+   tResult InvokeShowConfirmDialog(int argc, const cScriptVar * argv,
+                                   int nMaxResults, cScriptVar * pResults);
+   tResult InvokeClear(int argc, const cScriptVar * argv,
+                       int nMaxResults, cScriptVar * pResults);
+   tResult InvokeLoad(int argc, const cScriptVar * argv,
+                      int nMaxResults, cScriptVar * pResults);
+   tResult InvokeToggleDebugInfo(int argc, const cScriptVar * argv,
+                                 int nMaxResults, cScriptVar * pResults);
 
-   uint LoadFromTiXmlDoc(TiXmlDocument * pTiXmlDoc, bool bVisible);
+   tResult ShowModalDialog(const tChar * pszDialog);
+
+   virtual tResult LoadElements(const char * pszXmlStringOrFile, bool bVisible);
 
    virtual void ClearGUI();
 
@@ -77,7 +83,9 @@ private:
    friend class cInputListener;
    cInputListener m_inputListener;
 
-   bool m_bNeedLayout;
+   uint m_nElementsLastLayout; // How many elements were there the last time they were laid out?
+
+   bool m_bShowingModalDialog;
 
 #ifdef GUI_DEBUG
    bool m_bShowDebugInfo;

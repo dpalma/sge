@@ -19,7 +19,7 @@ ENGINE_API bool SysGetClipboardString(char * psz, int max);
 ENGINE_API bool SysSetClipboardString(const char * psz);
 ENGINE_API HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height);
 ENGINE_API void SysSwapBuffers();
-ENGINE_API int SysEventLoop(void (* pfnFrameHandler)(), void (* pfnResizeHack)(int, int));
+ENGINE_API int SysEventLoop(bool (* pfnFrameHandler)(), void (* pfnResizeHack)(int, int));
 
 ///////////////////////////////////////////////////////////////////////////////
 

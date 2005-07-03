@@ -302,13 +302,17 @@ static bool SysMapXKeysym(KeySym keysym, long * pKeyCode)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int SysEventLoop(void (* pfnFrameHandler)(), void (* pfnResizeHack)(int, int))
+int SysEventLoop(bool (* pfnFrameHandler)(), void (* pfnResizeHack)(int, int))
 {
+   Assert(pfnFrameHandler != NULL);
+
    if (!g_display || !g_window)
    {
       // Window should have been created during MainInit().
       return EXIT_FAILURE;
    }
+
+   int result = EXIT_FAILURE;
 
    UseGlobal(Input);
 
@@ -388,11 +392,18 @@ int SysEventLoop(void (* pfnFrameHandler)(), void (* pfnResizeHack)(int, int))
       }
       else
       {
-         (*pfnFrameHandler)();
+         if (!(*pfnFrameHandler)())
+         {
+            result = EXIT_SUCCESS;
+            goto LExit;
+         }
       }
    }
 
-   return EXIT_SUCCESS;
+   result = EXIT_SUCCESS;
+
+LExit:
+   return result;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -27,8 +27,6 @@ HWND           g_hWnd = NULL;
 HDC            g_hDC = NULL;
 HGLRC          g_hGLRC = NULL;
 
-void (* g_pfnResizeHack)(int, int) = NULL;
-
 ///////////////////////////////////////////////////////////////////////////////
 
 void SysAppActivate(bool active)
@@ -196,15 +194,6 @@ LRESULT CALLBACK SysWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
          return 0;
       }
 
-      case WM_SIZE:
-      {
-         if (g_pfnResizeHack != NULL)
-         {
-            (*g_pfnResizeHack)(LOWORD(lParam), HIWORD(lParam));
-         }
-         break;
-      }
-
       case WM_PAINT:
       {
          ValidateRect(hWnd, NULL);
@@ -280,7 +269,9 @@ LRESULT CALLBACK SysWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
          if (wParam & MK_MBUTTON)
             mouseState |= kMMouseDown;
          UseGlobal(Input);
-         pInput->ReportMouseEvent((int)LOWORD(lParam), (int)HIWORD(lParam), mouseState, msgTime);
+         pInput->ReportMouseEvent(static_cast<int>(LOWORD(lParam)),
+                                  static_cast<int>(HIWORD(lParam)),
+                                  mouseState, msgTime);
          break;
       }
    }
@@ -493,11 +484,29 @@ bool SysFullScreenEnd(HWND hWnd)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int SysEventLoop(void (* pfnFrameHandler)(), void (* pfnResizeHack)(int, int))
+// Allow two nested event loops: the main loop, and an additional one to show
+// a modal dialog box.
+static const int kMaxEventLoops = 2;
+typedef bool (* tFrameHandlerFn)();
+tFrameHandlerFn g_frameHandlerStack[kMaxEventLoops];
+static int g_iCurrentFrameHandler = -1;
+
+int SysEventLoop(bool (* pfnFrameHandler)(), void (* pfnResizeHack)(int, int))
 {
-   g_pfnResizeHack = pfnResizeHack;
+   Assert(pfnFrameHandler != NULL);
+
+   if ((g_iCurrentFrameHandler + 1) < kMaxEventLoops)
+   {
+      g_frameHandlerStack[++g_iCurrentFrameHandler] = pfnFrameHandler;
+   }
+   else
+   {
+      ErrorMsg("Too many calls to SysEventLoop\n");
+      return -1;
+   }
 
    MSG msg;
+   int result = -1;
 
    for (;;)
    {
@@ -505,7 +514,21 @@ int SysEventLoop(void (* pfnFrameHandler)(), void (* pfnResizeHack)(int, int))
       {
          if (msg.message == WM_QUIT)
          {
-            return msg.wParam;
+            if (g_iCurrentFrameHandler > 0)
+            {
+               // Re-post the WM_QUIT for the main message loop to get it
+               PostQuitMessage(msg.wParam);
+            }
+            result = msg.wParam;
+            goto LExit;
+         }
+
+         if (msg.message == WM_SIZE)
+         {
+            if (pfnResizeHack != NULL)
+            {
+               (*pfnResizeHack)(LOWORD(msg.lParam), HIWORD(msg.lParam));
+            }
          }
 
          TranslateMessage(&msg);
@@ -515,7 +538,14 @@ int SysEventLoop(void (* pfnFrameHandler)(), void (* pfnResizeHack)(int, int))
       {
          if (g_bAppActive)
          {
-            (*pfnFrameHandler)();
+            for (int i = g_iCurrentFrameHandler; i >= 0; --i)
+            {
+               if (!(*g_frameHandlerStack[i])())
+               {
+                  result = 0;
+                  goto LExit;
+               }
+            }
          }
          else
          {
@@ -524,7 +554,10 @@ int SysEventLoop(void (* pfnFrameHandler)(), void (* pfnResizeHack)(int, int))
       }
    }
 
-   return -1;
+LExit:
+   Assert(g_frameHandlerStack[g_iCurrentFrameHandler] == pfnFrameHandler);
+   g_frameHandlerStack[g_iCurrentFrameHandler--] = NULL;
+   return result;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
