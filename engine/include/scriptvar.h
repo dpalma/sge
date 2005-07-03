@@ -22,6 +22,7 @@ enum eScriptVarType
    kNumber,
    kString,
    kInterface,
+   kNil, // Lua-specific; used as a return value because Lua's nil means false, too
 };
 
 struct sScriptVar
@@ -37,7 +38,12 @@ struct sScriptVar
 
 class ENGINE_API cScriptVar : public sScriptVar
 {
+   // private constructor used only to initialize statics (like Nil)
+   cScriptVar(eScriptVarType type);
+
 public:
+   static cScriptVar Nil; // Lua-specific; see comments for kNil above
+
    cScriptVar();
    cScriptVar(double _d);
    cScriptVar(char * _psz);
@@ -72,6 +78,8 @@ public:
 
    bool IsNumber() const;
    bool IsString() const;
+   bool IsInterface() const;
+   bool IsNil() const;
 
 private:
    void Clear();
@@ -149,6 +157,20 @@ inline bool cScriptVar::IsNumber() const
 inline bool cScriptVar::IsString() const
 {
    return (type == kString);
+}
+
+///////////////////////////////////////
+
+inline bool cScriptVar::IsInterface() const
+{
+   return (type == kInterface);
+}
+
+///////////////////////////////////////
+
+inline bool cScriptVar::IsNil() const
+{
+   return (type == kNil);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

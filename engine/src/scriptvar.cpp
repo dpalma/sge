@@ -22,6 +22,17 @@
 
 ///////////////////////////////////////
 
+cScriptVar cScriptVar::Nil(kNil);
+
+///////////////////////////////////////
+
+cScriptVar::cScriptVar(eScriptVarType type)
+{
+   this->type = type;
+}
+
+///////////////////////////////////////
+
 cScriptVar::cScriptVar()
 {
    type = kEmpty;
@@ -175,7 +186,7 @@ const cScriptVar & cScriptVar::operator =(const cScriptVar & other)
    {
       d = other.d;
    }
-   else if (type = kInterface)
+   else if (type == kInterface)
    {
       pUnk = CTAddRef(other.pUnk);
    }
