@@ -6,7 +6,6 @@
 #include "guicontext.h"
 #include "guievent.h"
 #include "guielementtools.h"
-#include "guielementscriptproxy.h"
 #include "guieventroutertem.h"
 #include "scriptvar.h"
 #include "sys.h"

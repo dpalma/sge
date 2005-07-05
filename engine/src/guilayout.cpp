@@ -192,7 +192,7 @@ tResult cGUIGridLayoutManager::Layout(IGUIContainerElement * pContainer)
 
             tGUIRect cellRect(x, y, x + cellWidth, y + cellHeight);
 
-            GUISizeElement(cellRect, pChild);
+            GUISizeElement(pChild, tGUISize(static_cast<tGUISizeType>(cellWidth), static_cast<tGUISizeType>(cellHeight)));
             GUIPlaceElement(cellRect, pChild);
 
             if (++iCol >= m_columns)
@@ -428,10 +428,9 @@ tResult cGUIFlowLayoutManager::Layout(IGUIContainerElement * pContainer)
       {
          if (pChild->IsVisible())
          {
-            tGUISize childSize;
-            if (GUIElementSizeFromStyle(pChild, size, &childSize) == S_OK)
+            if (GUISizeElement(pChild, size) == S_OK)
             {
-               pChild->SetSize(childSize);
+               tGUISize childSize(pChild->GetSize());
                tGUIRect rect(x, y, Round(x + childSize.width), Round(y + childSize.height));
                GUIPlaceElement(rect, pChild);
                x += Round(childSize.width + m_hGap);

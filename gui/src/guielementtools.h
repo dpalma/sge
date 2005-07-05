@@ -11,6 +11,9 @@
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cSameAs
+//
 
 class cSameAs
 {
@@ -37,11 +40,7 @@ tResult GUIElementCreateChildren(const TiXmlElement * pXmlElement,
 
 tResult GUIElementRenderChildren(IGUIContainerElement * pContainer);
 
-tResult GUIElementSizeFromStyle(IGUIElement * pElement,
-                                const tGUISize & relativeTo,
-                                tGUISize * pSize);
-
-void GUISizeElement(const tGUIRect & field, IGUIElement * pGUIElement);
+tResult GUISizeElement(IGUIElement * pElement, const tGUISize & relativeTo);
 
 void GUIPlaceElement(const tGUIRect & field, IGUIElement * pGUIElement);
 
@@ -50,21 +49,21 @@ tGUIPoint GUIElementAbsolutePosition(IGUIElement * pGUIElement, uint * pnParents
 tResult GUIElementStandardAttributes(const TiXmlElement * pXmlElement, 
                                      IGUIElement * pGUIElement);
 
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cSizeAndPlaceElement
+//
+
 class cSizeAndPlaceElement
 {
 public:
-   cSizeAndPlaceElement(const tGUIRect & rect) : m_rect(rect) {}
+   cSizeAndPlaceElement(const tGUIRect & rect);
 
-   tResult operator()(IGUIElement * pGUIElement)
-   {
-      Assert(pGUIElement != NULL);
-      GUISizeElement(m_rect, pGUIElement);
-      GUIPlaceElement(m_rect, pGUIElement);
-      return S_OK;
-   }
+   tResult operator()(IGUIElement * pElement);
 
 private:
-   tGUIRect m_rect;
+   const tGUIRect m_rect;
+   const tGUISize m_size;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

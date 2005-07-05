@@ -4,7 +4,6 @@
 #include "stdhdr.h"
 
 #include "guielementtools.h"
-#include "guistyle.h"
 #include "guistrings.h"
 
 #include "globalobj.h"
@@ -122,17 +121,23 @@ tResult GUIElementRenderChildren(IGUIContainerElement * pContainer)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-tResult GUIElementSizeFromStyle(IGUIElement * pElement,
-                                const tGUISize & relativeTo,
-                                tGUISize * pSize)
+tResult GUISizeElement(IGUIElement * pElement, const tGUISize & relativeTo)
 {
-   if (pElement == NULL || pSize == NULL)
+   if (pElement == NULL)
    {
       return E_POINTER;
    }
 
-   bool bHaveWidth = false, bHaveHeight = false;
-   tGUISizeType width, height;
+   bool bHavePreferred = false, bHaveStyle = false;
+
+   tGUISize size(0,0);
+
+   cAutoIPtr<IGUIElementRenderer> pRenderer;
+   if (pElement->GetRenderer(&pRenderer) == S_OK)
+   {
+      size = pRenderer->GetPreferredSize(pElement);
+      bHavePreferred = true;
+   }
 
    cAutoIPtr<IGUIStyle> pStyle;
    if (pElement->GetStyle(&pStyle) == S_OK)
@@ -142,13 +147,13 @@ tResult GUIElementSizeFromStyle(IGUIElement * pElement,
       {
          if (styleWidthSpec == kGUIDimensionPixels)
          {
-            width = static_cast<tGUISizeType>(styleWidth);
-            bHaveWidth = true;
+            size.width = static_cast<tGUISizeType>(styleWidth);
+            bHaveStyle = true;
          }
          else if (styleWidthSpec == kGUIDimensionPercent)
          {
-            width = static_cast<tGUISizeType>((styleWidth * relativeTo.width) / 100);
-            bHaveWidth = true;
+            size.width = static_cast<tGUISizeType>((styleWidth * relativeTo.width) / 100);
+            bHaveStyle = true;
          }
       }
 
@@ -157,44 +162,26 @@ tResult GUIElementSizeFromStyle(IGUIElement * pElement,
       {
          if (styleHeightSpec == kGUIDimensionPixels)
          {
-            height = static_cast<tGUISizeType>(styleHeight);
-            bHaveHeight = true;
+            size.height = static_cast<tGUISizeType>(styleHeight);
+            bHaveStyle = true;
          }
          else if (styleHeightSpec == kGUIDimensionPercent)
          {
-            height = static_cast<tGUISizeType>((styleHeight * relativeTo.height) / 100);
-            bHaveHeight = true;
+            size.height = static_cast<tGUISizeType>((styleHeight * relativeTo.height) / 100);
+            bHaveStyle = true;
          }
       }
    }
 
-   if (bHaveWidth && bHaveHeight)
+   if (bHavePreferred || bHaveStyle)
    {
-      *pSize = tGUISize(width, height);
-      return S_OK;
+      pElement->SetSize(size);
+      return  S_OK;
    }
-
-   return S_FALSE;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void GUISizeElement(const tGUIRect & field, IGUIElement * pGUIElement)
-{
-   Assert(pGUIElement != NULL);
-
-   tGUISize size(0, 0);
-
-   cAutoIPtr<IGUIElementRenderer> pRenderer;
-   if (pGUIElement->GetRenderer(&pRenderer) == S_OK)
+   else
    {
-      size = pRenderer->GetPreferredSize(pGUIElement);
+      return S_FALSE;
    }
-
-   tGUISize relTo(static_cast<tGUISizeType>(field.GetWidth()), static_cast<tGUISizeType>(field.GetHeight()));
-   GUIElementSizeFromStyle(pGUIElement, relTo, &size);
-
-   pGUIElement->SetSize(size);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -288,22 +275,7 @@ tGUIPoint GUIElementAbsolutePosition(IGUIElement * pGUIElement, uint * pnParents
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static bool StringToBool(const char * psz)
-{
-   Assert(psz != NULL);
-   if (stricmp(psz, "true") == 0)
-   {
-      return true;
-   }
-   else if (strlen(psz) == 1)
-   {
-      if (psz[0] == 't' || psz[0] == 'T' || psz[0] == '1')
-      {
-         return true;
-      }
-   }
-   return false;
-}
+extern tResult GUIStyleParseBool(const char * psz, bool * pBool);
 
 tResult GUIElementStandardAttributes(const TiXmlElement * pXmlElement, 
                                      IGUIElement * pGUIElement)
@@ -318,14 +290,15 @@ tResult GUIElementStandardAttributes(const TiXmlElement * pXmlElement,
       pGUIElement->SetId(pXmlElement->Attribute(kAttribId));
    }
 
-   if (pXmlElement->Attribute(kAttribVisible))
+   bool bBoolValue;
+   if (GUIStyleParseBool(pXmlElement->Attribute(kAttribVisible), &bBoolValue) == S_OK)
    {
-      pGUIElement->SetVisible(StringToBool(pXmlElement->Attribute(kAttribVisible)));
+      pGUIElement->SetVisible(bBoolValue);
    }
 
-   if (pXmlElement->Attribute(kAttribEnabled))
+   if (GUIStyleParseBool(pXmlElement->Attribute(kAttribEnabled), &bBoolValue) == S_OK)
    {
-      pGUIElement->SetEnabled(StringToBool(pXmlElement->Attribute(kAttribEnabled)));
+      pGUIElement->SetEnabled(bBoolValue);
    }
 
    if (pXmlElement->Attribute(kAttribStyle))
@@ -366,39 +339,45 @@ tResult GUIElementStandardAttributes(const TiXmlElement * pXmlElement,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cSizeAndPlaceElement
+//
+
+////////////////////////////////////////
+
+cSizeAndPlaceElement::cSizeAndPlaceElement(const tGUIRect & rect)
+ : m_rect(rect),
+   m_size(static_cast<tGUISizeType>(m_rect.GetWidth()), static_cast<tGUISizeType>(m_rect.GetHeight()))
+{
+}
+
+////////////////////////////////////////
+
+tResult cSizeAndPlaceElement::operator()(IGUIElement * pElement)
+{
+   if (pElement == NULL)
+   {
+      return E_POINTER;
+   }
+   GUISizeElement(pElement, m_size);
+   GUIPlaceElement(m_rect, pElement);
+   return S_OK;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 
 #ifdef HAVE_CPPUNIT
 
 class cGUIElementToolsTests : public CppUnit::TestCase
 {
    CPPUNIT_TEST_SUITE(cGUIElementToolsTests);
-      CPPUNIT_TEST(TestParseBool);
    CPPUNIT_TEST_SUITE_END();
-
-   void TestParseBool();
 };
 
 ///////////////////////////////////////
 
 CPPUNIT_TEST_SUITE_REGISTRATION(cGUIElementToolsTests);
-
-///////////////////////////////////////
-
-void cGUIElementToolsTests::TestParseBool()
-{
-   CPPUNIT_ASSERT(StringToBool("T"));
-   CPPUNIT_ASSERT(StringToBool("t"));
-   CPPUNIT_ASSERT(StringToBool("1"));
-   CPPUNIT_ASSERT(StringToBool("true"));
-   CPPUNIT_ASSERT(StringToBool("TRUE"));
-   CPPUNIT_ASSERT(!StringToBool("F"));
-   CPPUNIT_ASSERT(!StringToBool("f"));
-   CPPUNIT_ASSERT(!StringToBool("0"));
-   CPPUNIT_ASSERT(!StringToBool("false"));
-   CPPUNIT_ASSERT(!StringToBool("FALSE"));
-   CPPUNIT_ASSERT(!StringToBool("tttttt"));
-   CPPUNIT_ASSERT(!StringToBool("abcdefg"));
-}
 
 #endif // HAVE_CPPUNIT
 
