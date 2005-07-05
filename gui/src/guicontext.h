@@ -87,6 +87,7 @@ private:
    cInputListener m_inputListener;
 
    uint m_nElementsLastLayout; // How many elements were there the last time they were laid out?
+   bool m_bNeedsLayout; // Set to true to force re-doing the layout
 
    bool m_bShowingModalDialog;
 

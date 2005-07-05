@@ -23,7 +23,6 @@
 //
 
 static const int g_bevel = 2;
-static const float g_bevelf = static_cast<float>(g_bevel);
 
 static const uint kDefaultEditSize = 20;
 static const uint kVertInset = 2; // TODO make this part of the style
@@ -49,19 +48,18 @@ tResult cGUIBeveledRenderer::Render(IGUIButtonElement * pButtonElement)
    tGUIPoint pos = GUIElementAbsolutePosition(pButtonElement);
    tGUISize size = pButtonElement->GetSize();
 
-   tVec2 textOffset(0,0);
+   bool bPressed = false;
 
-   tRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
-   tGUIRect rect2(rect.left, rect.top, rect.right, rect.bottom);
+   tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
 
    if (pButtonElement->IsArmed() && pButtonElement->IsMouseOver())
    {
-      GlRenderBevelledRect(rect2, g_bevel, tGUIColor::DarkGray, tGUIColor::LightGray, tGUIColor::Gray);
-      textOffset = tVec2(g_bevelf, g_bevelf);
+      GlRenderBevelledRect(rect, g_bevel, tGUIColor::DarkGray, tGUIColor::LightGray, tGUIColor::Gray);
+      bPressed = true;
    }
    else
    {
-      GlRenderBevelledRect(rect2, g_bevel, tGUIColor::LightGray, tGUIColor::DarkGray, tGUIColor::Gray);
+      GlRenderBevelledRect(rect, g_bevel, tGUIColor::LightGray, tGUIColor::DarkGray, tGUIColor::Gray);
    }
 
    tGUIString text;
@@ -82,12 +80,18 @@ tResult cGUIBeveledRenderer::Render(IGUIButtonElement * pButtonElement)
          }
       }
 
-      rect.left += Round(textOffset.x);
-      rect.top += Round(textOffset.y);
+      if (bPressed)
+      {
+         rect.left += g_bevel;
+         rect.top += g_bevel;
+      }
+
       pFont->RenderText(text.c_str(), text.length(), &rect, renderTextFlags, tGUIColor::White);
+
+      return S_OK;
    }
 
-   return S_OK;
+   return E_FAIL;
 }
 
 ///////////////////////////////////////
@@ -103,14 +107,9 @@ tResult cGUIBeveledRenderer::Render(IGUIDialogElement * pDialogElement)
    tGUIColor face(tGUIColor::Gray);
    tGUIColor caption(tGUIColor::Blue);
 
-   cAutoIPtr<IGUIFont> pFont;
    cAutoIPtr<IGUIStyle> pStyle;
    if (pDialogElement->GetStyle(&pStyle) == S_OK)
    {
-      if (pStyle->GetFont(&pFont) != S_OK)
-      {
-         pFont = CTAddRef(AccessDefaultFont());
-      }
       pStyle->GetAttribute("frame-top-left-color", &topLeft);
       pStyle->GetAttribute("frame-bottom-right-color", &bottomRight);
       pStyle->GetAttribute("frame-face-color", &face);
@@ -132,10 +131,14 @@ tResult cGUIBeveledRenderer::Render(IGUIDialogElement * pDialogElement)
 
       GlRenderBevelledRect(captionRect, 0, caption, caption, caption);
 
-      tGUIString title;
-      if (pDialogElement->GetTitle(&title) == S_OK)
+      cAutoIPtr<IGUIFont> pFont;
+      if (GetFont(pDialogElement, &pFont) == S_OK)
       {
-         pFont->RenderText(title.c_str(), -1, &captionRect, 0, tGUIColor::White);
+         tGUIString title;
+         if (pDialogElement->GetTitle(&title) == S_OK)
+         {
+            pFont->RenderText(title.c_str(), -1, &captionRect, 0, tGUIColor::White);
+         }
       }
    }
 
@@ -152,24 +155,24 @@ tResult cGUIBeveledRenderer::Render(IGUILabelElement * pLabelElement)
 
    tGUIColor color(tGUIColor::Black);
 
-   cAutoIPtr<IGUIFont> pFont;
    cAutoIPtr<IGUIStyle> pStyle;
    if (pLabelElement->GetStyle(&pStyle) == S_OK)
    {
       pStyle->GetForegroundColor(&color);
-      if (pStyle->GetFont(&pFont) != S_OK)
+   }
+
+   cAutoIPtr<IGUIFont> pFont;
+   if (GetFont(pLabelElement, &pFont) == S_OK)
+   {
+      tGUIString text;
+      if (pLabelElement->GetText(&text) == S_OK)
       {
-         pFont = CTAddRef(AccessDefaultFont());
+         pFont->RenderText(text.c_str(), text.length(), &rect, kRT_NoClip, color);
+         return S_OK;
       }
    }
 
-   tGUIString text;
-   if (pLabelElement->GetText(&text) == S_OK)
-   {
-      pFont->RenderText(text.c_str(), text.length(), &rect, kRT_NoClip, color);
-   }
-
-   return S_OK;
+   return E_FAIL;
 }
 
 ///////////////////////////////////////
@@ -215,43 +218,42 @@ tResult cGUIBeveledRenderer::Render(IGUITextEditElement * pTextEditElement)
 
    tGUIColor textColor(tGUIColor::Black);
 
-   cAutoIPtr<IGUIFont> pFont;
    cAutoIPtr<IGUIStyle> pStyle;
    if (pTextEditElement->GetStyle(&pStyle) == S_OK)
    {
       pStyle->GetForegroundColor(&textColor);
-      if (pStyle->GetFont(&pFont) != S_OK)
-      {
-         pFont = CTAddRef(AccessDefaultFont());
-      }
    }
 
    uint selStart, selEnd;
    Verify(pTextEditElement->GetSelection(&selStart, &selEnd) == S_OK);
 
-   // Determine the width of the text up to the cursor
-   tRect leftOfCursor(0,0,0,0);
-   pFont->RenderText(pTextEditElement->GetText(), selEnd, &leftOfCursor,
-      kRT_NoClip | kRT_CalcRect, tGUIColor::White);
-
-   // Offset the left edge so that the cursor is always in view.
-   if (leftOfCursor.GetWidth() >= rect.GetWidth())
+   cAutoIPtr<IGUIFont> pFont;
+   if (GetFont(pTextEditElement, &pFont) == S_OK)
    {
-      rect.left -= leftOfCursor.GetWidth() - rect.GetWidth() + kCursorWidth;
-   }
+      // Determine the width of the text up to the cursor
+      tRect leftOfCursor(0,0,0,0);
+      pFont->RenderText(pTextEditElement->GetText(), selEnd, &leftOfCursor,
+         kRT_NoClip | kRT_CalcRect, tGUIColor::White);
 
-   pFont->RenderText(pTextEditElement->GetText(), -1, &rect, kRT_NoClip, textColor);
+      // Offset the left edge so that the cursor is always in view.
+      if (leftOfCursor.GetWidth() >= rect.GetWidth())
+      {
+         rect.left -= leftOfCursor.GetWidth() - rect.GetWidth() + kCursorWidth;
+      }
 
-   // Render the cursor if this widget has focus and its blink cycle is on
-   if (pTextEditElement->HasFocus() && pTextEditElement->ShowBlinkingCursor())
-   {
-      tGUIRect cursorRect(
-         rect.left + leftOfCursor.GetWidth(),
-         rect.top + 1,
-         rect.left + leftOfCursor.GetWidth() + kCursorWidth,
-         rect.bottom - 1);
+      pFont->RenderText(pTextEditElement->GetText(), -1, &rect, kRT_NoClip, textColor);
 
-      GlRenderBevelledRect(cursorRect, 0, tGUIColor::Black, tGUIColor::Black, tGUIColor::Black);
+      // Render the cursor if this widget has focus and its blink cycle is on
+      if (pTextEditElement->HasFocus() && pTextEditElement->ShowBlinkingCursor())
+      {
+         tGUIRect cursorRect(
+            rect.left + leftOfCursor.GetWidth(),
+            rect.top + 1,
+            rect.left + leftOfCursor.GetWidth() + kCursorWidth,
+            rect.bottom - 1);
+
+         GlRenderBevelledRect(cursorRect, 0, tGUIColor::Black, tGUIColor::Black, tGUIColor::Black);
+      }
    }
 
    glDisable(GL_SCISSOR_TEST);
@@ -360,7 +362,7 @@ tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUITextEditElement * pTextEditEl
       pFont->RenderText(psz, editSize, &rect, kRT_CalcRect | kRT_SingleLine, tGUIColor::White);
 
       return tGUISize(static_cast<tGUISizeType>(rect.GetWidth() + (kHorzInset * 2)),
-                        static_cast<tGUISizeType>(rect.GetHeight() + (kVertInset * 2)));
+                      static_cast<tGUISizeType>(rect.GetHeight() + (kVertInset * 2)));
    }
 
    return tGUISize(0,0);

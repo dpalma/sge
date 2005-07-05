@@ -16,6 +16,22 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+LOG_DEFINE_CHANNEL(GUILayout);
+
+#define LocalMsg(msg)                  DebugMsgEx(GUILayout,(msg))
+#define LocalMsg1(msg,a1)              DebugMsgEx1(GUILayout,(msg),(a1))
+#define LocalMsg2(msg,a1,a2)           DebugMsgEx2(GUILayout,(msg),(a1),(a2))
+#define LocalMsg3(msg,a1,a2,a3)        DebugMsgEx3(GUILayout,(msg),(a1),(a2),(a3))
+#define LocalMsg4(msg,a1,a2,a3,a4)     DebugMsgEx4(GUILayout,(msg),(a1),(a2),(a3),(a4))
+#define LocalMsg5(msg,a1,a2,a3,a4,a5)  DebugMsgEx5(GUILayout,(msg),(a1),(a2),(a3),(a4),(a5))
+
+#define LocalMsgIf(cond,msg)           DebugMsgIfEx(GUILayout,(cond),(msg))
+#define LocalMsgIf1(cond,msg,a1)       DebugMsgIfEx1(GUILayout,(cond),(msg),(a1))
+#define LocalMsgIf2(cond,msg,a1,a2)    DebugMsgIfEx2(GUILayout,(cond),(msg),(a1),(a2))
+#define LocalMsgIf3(cond,msg,a1,a2,a3) DebugMsgIfEx3(GUILayout,(cond),(msg),(a1),(a2),(a3))
+
+///////////////////////////////////////////////////////////////////////////////
+
 static const int kHGapDefault = 0;
 static const int kVGapDefault = 0;
 
@@ -173,8 +189,13 @@ tResult cGUIGridLayoutManager::Layout(IGUIContainerElement * pContainer)
       size.height -= (insets.top + insets.bottom);
    }
 
-   int cellWidth = size.width > 0 ? Round((size.width - ((m_columns - 1) * m_hGap)) / m_columns) : 0;
-   int cellHeight = size.height > 0 ? Round((size.height - ((m_rows - 1) * m_vGap)) / m_rows) : 0;
+   tGUISizeType cellWidth = size.width > 0 ? (size.width - ((m_columns - 1) * m_hGap)) / m_columns : 0;
+   tGUISizeType cellHeight = size.height > 0 ? (size.height - ((m_rows - 1) * m_vGap)) / m_rows : 0;
+
+   const tGUISize cellSize(cellWidth, cellHeight);
+
+   LocalMsg2("Grid Layout (%d rows, %d columns)\n", m_rows, m_columns);
+   LocalMsg2("   grid cell size = %.0f x %.0f\n", cellWidth, cellHeight);
 
    cAutoIPtr<IGUIElementEnum> pEnum;
    if (pContainer->GetElements(&pEnum) == S_OK)
@@ -187,21 +208,34 @@ tResult cGUIGridLayoutManager::Layout(IGUIContainerElement * pContainer)
       {
          if (pChild->IsVisible())
          {
-            int x = insets.left + iCol * (cellWidth + m_hGap);
-            int y = insets.top + iRow * (cellHeight + m_vGap);
+            int x = insets.left + iCol * (Round(cellWidth) + m_hGap);
+            int y = insets.top + iRow * (Round(cellHeight) + m_vGap);
 
-            tGUIRect cellRect(x, y, x + cellWidth, y + cellHeight);
+            tGUIRect cellRect(x, y, x + Round(cellWidth), y + Round(cellHeight));
 
-            GUISizeElement(pChild, tGUISize(static_cast<tGUISizeType>(cellWidth), static_cast<tGUISizeType>(cellHeight)));
+            GUISizeElement(pChild, cellSize);
             GUIPlaceElement(cellRect, pChild);
 
-            if (++iCol >= m_columns)
+#ifdef _DEBUG
+            tGUISize childSize(pChild->GetSize());
+            LocalMsg5("   grid cell[%d][%d]: %p, %.0f x %.0f\n", iRow, iCol, pChild, childSize.width, childSize.height);
+#endif
+         }
+#ifdef _DEBUG
+         else
+         {
+            LocalMsg3("   grid cell[%d][%d]: %p is invisible\n", iRow, iCol, pChild);
+         }
+#endif
+
+         // Invisible elements are allowed to occupy grid cells, so
+         // this is outside of the if(visible) block above
+         if (++iCol >= m_columns)
+         {
+            iCol = 0;
+            if (++iRow >= m_rows)
             {
-               iCol = 0;
-               if (++iRow >= m_rows)
-               {
-                  break;
-               }
+               break;
             }
          }
 

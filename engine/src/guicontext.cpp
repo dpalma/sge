@@ -237,6 +237,7 @@ END_CONSTRAINTS()
 cGUIContext::cGUIContext()
  : m_inputListener(this),
    m_nElementsLastLayout(0),
+   m_bNeedsLayout(false),
    m_bShowingModalDialog(false)
 #ifdef GUI_DEBUG
    , m_bShowDebugInfo(false)
@@ -513,6 +514,7 @@ tResult cGUIContext::LoadElements(const char * pszXmlStringOrFile, bool bVisible
 void cGUIContext::ClearGUI()
 {
    RemoveAllElements();
+   m_bNeedsLayout = true;
 }
 
 ///////////////////////////////////////
@@ -557,9 +559,10 @@ tResult cRenderElement::operator()(IGUIElement * pGUIElement)
 tResult cGUIContext::RenderGUI()
 {
    uint nElements = GetElementCount();
-   if (nElements != m_nElementsLastLayout)
+   if ((nElements != m_nElementsLastLayout) || m_bNeedsLayout)
    {
       m_nElementsLastLayout = nElements;
+      m_bNeedsLayout = false;
 
       int viewport[4];
       glGetIntegerv(GL_VIEWPORT, viewport);

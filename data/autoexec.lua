@@ -13,6 +13,7 @@ bind("escape", [[QuitWithConfirm();]]);
 bind("F4", [[GUIContext:ToggleDebugInfo(5, 200, "yellow");]]);
 
 --LogChannel([[LuaInterp]]);
+--LogChannel([[GUILayout]]);
 --LogChannel([[GUIButtonEvents]]);
 --LogChannel([[GUIDialogEvents]]);
 

@@ -3,10 +3,12 @@
 	<layout type="flow" />
 	<panel style="width:100%;height:70%;background-color:(0,0.6,0)" renderer="basic">
 		<label text="(Entry Screen)" style="align:left;vertical-align:center;" renderer="beveled" />
-		<button text="Begin" style="align:right;vertical-align:center;" onclick="LoadSampleLevel();" renderer="beveled"/>
-		<button text="Exit" style="align:right;vertical-align:bottom;" onclick="QuitWithConfirm();" renderer="beveled" />
 	</panel>
 	<panel style="width:100%;height:30%;background-color:black;" renderer="basic">
-		<label text="(PANEL TWO)" style="align:left;vertical-align:center;" renderer="beveled" />
+		<layout type="grid" rows="2" columns="2" />
+		<label text="(PANEL TWO)" style="foreground-color:white;align:left;vertical-align:center;" renderer="beveled" />
+		<button text="Begin" style="align:right;vertical-align:center;" onclick="LoadSampleLevel();" renderer="beveled"/>
+		<label text="0000" renderer="beveled" />
+		<button text="Exit" style="align:right;vertical-align:center;" onclick="QuitWithConfirm();" renderer="beveled" />
 	</panel>
 </panel>
