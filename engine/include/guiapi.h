@@ -598,11 +598,11 @@ struct sAutoRegisterGUIElementRendererFactory
 
 interface IGUIContext : IGUIEventRouter
 {
-   // TODO: needed only for the hacky dialog box implementation
-   virtual tResult RemoveElement(IGUIElement * pElement) = 0;
-
    virtual tResult GetElement(const tChar * pszId, IGUIElement * * ppElement) = 0;
 
+   /// @brief Show a modal dialog box
+   /// @param pszDialog specifies an XML fragment or file name
+   /// @return TODO
    virtual tResult ShowModalDialog(const tChar * pszDialog) = 0;
 
    /// @brief Loads GUI elements from either an XML fragment or file

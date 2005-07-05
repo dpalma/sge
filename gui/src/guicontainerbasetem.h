@@ -111,15 +111,12 @@ tResult cGUIContainerBase<INTRFC>::RemoveElement(IGUIElement * pElement)
       return E_POINTER;
    }
 
-   tGUIElementList::iterator iter;
-   for (iter = m_children.begin(); iter != m_children.end(); iter++)
+   tGUIElementList::iterator f = std::find_if(m_children.begin(), m_children.end(), cSameAs(pElement));
+   if (f != m_children.end())
    {
-      if (CTIsSameObject(*iter, pElement))
-      {
-         m_children.erase(iter);
-         pElement->Release();
-         return S_OK;
-      }
+      m_children.erase(f);
+      pElement->Release();
+      return S_OK;
    }
 
    return S_FALSE;
@@ -143,13 +140,10 @@ tResult cGUIContainerBase<INTRFC>::HasElement(IGUIElement * pElement) const
       return E_POINTER;
    }
 
-   tGUIElementList::const_iterator iter;
-   for (iter = m_children.begin(); iter != m_children.end(); iter++)
+   tGUIElementList::const_iterator f = std::find_if(m_children.begin(), m_children.end(), cSameAs(pElement));
+   if (f != m_children.end())
    {
-      if (CTIsSameObject(*iter, pElement))
-      {
-         return S_OK;
-      }
+      return S_OK;
    }
 
    return S_FALSE;
@@ -160,7 +154,7 @@ tResult cGUIContainerBase<INTRFC>::HasElement(IGUIElement * pElement) const
 template <typename INTRFC>
 tResult cGUIContainerBase<INTRFC>::GetElement(const tChar * pszId, IGUIElement * * ppElement) const
 {
-   if (pszId == NULL || ppElement != NULL)
+   if (pszId == NULL || ppElement == NULL)
    {
       return E_POINTER;
    }

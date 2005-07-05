@@ -42,8 +42,8 @@ public:
                           int argc, const cScriptVar * argv,
                           int nMaxResults, cScriptVar * pResults);
 
-   tResult InvokeShowConfirmDialog(int argc, const cScriptVar * argv,
-                                   int nMaxResults, cScriptVar * pResults);
+   tResult InvokeShowModalDialog(int argc, const cScriptVar * argv,
+                                 int nMaxResults, cScriptVar * pResults);
    tResult InvokeClear(int argc, const cScriptVar * argv,
                        int nMaxResults, cScriptVar * pResults);
    tResult InvokeLoad(int argc, const cScriptVar * argv,
@@ -51,7 +51,7 @@ public:
    tResult InvokeToggleDebugInfo(int argc, const cScriptVar * argv,
                                  int nMaxResults, cScriptVar * pResults);
 
-   tResult ShowModalDialog(const tChar * pszDialog);
+   virtual tResult ShowModalDialog(const tChar * pszDialog);
 
    virtual tResult LoadElements(const char * pszXmlStringOrFile, bool bVisible);
 
@@ -63,6 +63,9 @@ public:
    virtual tResult HideDebugInfo();
 
 private:
+   static tResult CheckModalDialog(IGUIElement * pElement);
+   static tResult CheckChild(IGUIContainerElement * pContainer, const tChar * pszId, REFGUID iid);
+
 #ifdef GUI_DEBUG
    void RenderDebugInfo();
 

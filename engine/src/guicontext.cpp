@@ -298,7 +298,7 @@ tResult cGUIContext::Invoke(const char * pszMethodName,
    }
    invokeMethods[] =
    {
-      { "ShowConfirmDialog",  InvokeShowConfirmDialog },
+      { "ShowModalDialog",    InvokeShowModalDialog },
       { "Clear",              InvokeClear },
       { "Load",               InvokeLoad },
       { "ToggleDebugInfo",    InvokeToggleDebugInfo },
@@ -317,43 +317,17 @@ tResult cGUIContext::Invoke(const char * pszMethodName,
 
 ///////////////////////////////////////
 
-tResult cGUIContext::InvokeShowConfirmDialog(int argc, const cScriptVar * argv,
-                                             int nMaxResults, cScriptVar * pResults)
+tResult cGUIContext::InvokeShowModalDialog(int argc, const cScriptVar * argv,
+                                           int nMaxResults, cScriptVar * pResults)
 {
    Assert(nMaxResults >= 1);
 
-   tGUIString message, title;
-
-   if (argc == 1 && argv[0].IsString())
+   if (argc != 1 || !argv[0].IsString())
    {
-      message = argv[0];
-      title = "Confirm";
-   }
-   else if (argc == 2 && argv[0].IsString() && argv[1].IsString())
-   {
-      message = argv[0];
-      title = argv[1];
+      return E_INVALIDARG;
    }
 
-   static const tChar dialogElementSpec[] =
-      "<dialog "
-         "title=\"%s\" "
-         "style=\"align:center;vertical-align:center;width:220;height:150;\" "
-         "renderer=\"beveled\" "
-         ">"
-         "<layout type=\"grid\" rows=2 columns=1 />"
-         "<label text=\"%s\" style=\"width:100%;align:center;\" />"
-         "<panel style=\"width:100%;height:30;\">"
-            "<layout type=\"grid\" rows=1 columns=2 />"
-            "<button style=\"vertical-align:bottom;\" id=\"ok\" text=\"Yes\" />"
-            "<button style=\"vertical-align:bottom;\" id=\"cancel\" text=\"No\" />"
-         "</panel>"
-      "</dialog>";
-
-   tGUIString dialogElement;
-   dialogElement.Format(dialogElementSpec, title.c_str(), message.c_str());
-
-   tResult result = ShowModalDialog(dialogElement.c_str());
+   tResult result = ShowModalDialog(argv[0]);
    if (result == S_OK)
    {
       *pResults = cScriptVar(true);
@@ -364,7 +338,6 @@ tResult cGUIContext::InvokeShowConfirmDialog(int argc, const cScriptVar * argv,
       *pResults = cScriptVar::Nil;
       result = 1; // # of return values
    }
-
    return result;
 }
 
@@ -469,7 +442,8 @@ tResult cGUIContext::ShowModalDialog(const tChar * pszDialog)
    tResult result = E_FAIL;
 
    std::vector<IGUIElement*> elements;
-   if (::LoadElements(pszDialog, &elements) == S_OK && elements.size() == 1)
+   if (::LoadElements(pszDialog, &elements) == S_OK && elements.size() == 1
+      && SUCCEEDED(CheckModalDialog(elements.front())))
    {
       m_bShowingModalDialog = true;
 
@@ -633,6 +607,56 @@ tResult cGUIContext::HideDebugInfo()
    }
 #endif
    return S_FALSE;
+}
+
+///////////////////////////////////////
+
+tResult cGUIContext::CheckModalDialog(IGUIElement * pElement)
+{
+   if (pElement == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cAutoIPtr<IGUIDialogElement> pDialog;
+   if (pElement->QueryInterface(IID_IGUIDialogElement, (void**)&pDialog) != S_OK)
+   {
+      return E_INVALIDARG;
+   }
+
+   // TODO: this won't find buttons inside nested containers, like a panel inside a dialog
+   if (CheckChild(pDialog, "ok", IID_IGUIButtonElement) != S_OK
+      && CheckChild(pDialog, "cancel", IID_IGUIButtonElement) != S_OK)
+   {
+      WarnMsg("Dialog box has no \"ok\" nor \"cancel\" button\n");
+      return S_FALSE;
+   }
+
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIContext::CheckChild(IGUIContainerElement * pContainer, const tChar * pszId, REFGUID iid)
+{
+   if (pContainer == NULL || pszId == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cAutoIPtr<IGUIElement> pElement;
+   if (pContainer->GetElement(pszId, &pElement) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   cAutoIPtr<IUnknown> pUnknown;
+   if (pElement->QueryInterface(iid, (void**)&pUnknown) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   return S_OK;
 }
 
 ///////////////////////////////////////

@@ -26,24 +26,6 @@
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
-
-class cSameAs
-{
-public:
-   cSameAs(IUnknown * pUnknown) : m_pUnknown(CTAddRef(pUnknown))
-   {
-   }
-
-   bool operator()(IUnknown * pUnknown2)
-   {
-      return CTIsSameObject(m_pUnknown, pUnknown2);
-   }
-
-private:
-   cAutoIPtr<IUnknown> m_pUnknown;
-};
-
-///////////////////////////////////////////////////////////////////////////////
 //
 // TEMPLATE: cGUIEventRouter
 //
