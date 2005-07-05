@@ -1,0 +1,15 @@
+<!-- $Id$ -->
+
+<dialog 
+   title="Quit?" 
+   style="align:center;vertical-align:center;width:220;height:150;"
+   renderer="beveled">
+   
+   <layout type="flow" />
+   
+   <label text="Are you sure you want to quit?" style="align:center;vertical-align:center;width:100%;"/>
+   
+   <button id="ok" text="Quit"/>
+   <button id="cancel" text="Cancel"/>
+   
+</dialog>
