@@ -297,10 +297,10 @@ tResult cGUIContext::Invoke(const char * pszMethodName,
    }
    invokeMethods[] =
    {
-      { "ShowModalDialog",    InvokeShowModalDialog },
-      { "Clear",              InvokeClear },
-      { "Load",               InvokeLoad },
-      { "ToggleDebugInfo",    InvokeToggleDebugInfo },
+      { "ShowModalDialog",    &cGUIContext::InvokeShowModalDialog },
+      { "Clear",              &cGUIContext::InvokeClear },
+      { "Load",               &cGUIContext::InvokeLoad },
+      { "ToggleDebugInfo",    &cGUIContext::InvokeToggleDebugInfo },
    };
 
    for (int i = 0; i < _countof(invokeMethods); i++)
