@@ -6,6 +6,8 @@
 #include "techstring.h"
 #include "combase.h"
 
+#include <cfloat>
+#include <climits>
 #include <cstdlib>
 #include <cstring>
 #include <cstdarg>
@@ -158,14 +160,139 @@ int cStr::ParseTuple(float * pFloats, int nMaxFloats) const
 
 ///////////////////////////////////////
 
-#ifdef _MSC_VER
-inline int FormatLength(const tChar * pszFormat, va_list args)
+AssertOnce(sizeof(int) == sizeof(uint));
+
+static int FormatLengthEstimate(const tChar * pszFormat, va_list args)
 {
-   return _vscprintf(pszFormat, args);
+   const uint l = strlen(pszFormat);
+
+   int formatLenEst = 0;
+   tChar last = 0;
+   bool bInFormatField = false;
+
+   for (uint i = 0; i < l; i++)
+   {
+      switch (pszFormat[i])
+      {
+         case '%':
+         {
+            if (last == '%')
+            {
+               // Escaped percent sign ("%%")
+               formatLenEst += 1;
+               Assert(bInFormatField);
+               bInFormatField = false;
+            }
+            else
+            {
+               Assert(!bInFormatField);
+               bInFormatField = true;
+            }
+            break;
+         }
+
+         case 'c':
+         {
+            if (last == '%')
+            {
+               Assert(bInFormatField);
+               bInFormatField = false;
+            }
+            // Add one regardless of whether this is the character 'c'
+            // or the format field "%c"--both will have length of one.
+            formatLenEst += 1;
+            break;
+         }
+
+         case 'd':
+         case 'i':
+         case 'o':
+         case 'u':
+         case 'x':
+         case 'X':
+         {
+            if (last == '%')
+            {
+               int intValue = va_arg(args, int);
+               Assert(bInFormatField);
+               bInFormatField = false;
+               // The #bits is a safe over-estimate of the max #digits
+               formatLenEst += sizeof(int) * CHAR_BIT;
+            }
+            else
+            {
+               formatLenEst += 1;
+            }
+            break;
+         }
+
+         case 'e':
+         case 'E':
+         case 'f':
+         case 'g':
+         case 'G':
+         {
+            if (last == '%')
+            {
+               double doubleValue = va_arg(args, double);
+               Assert(bInFormatField);
+               bInFormatField = false;
+               formatLenEst += (DBL_MANT_DIG * CHAR_BIT) + 1 + DBL_DIG;
+            }
+            else
+            {
+               formatLenEst += 1;
+            }
+            break;
+         }
+
+         case 's':
+         {
+            if (last == '%')
+            {
+               const tChar * pszValue = va_arg(args, const tChar *);
+               Assert(bInFormatField);
+               bInFormatField = false;
+               formatLenEst += strlen(pszValue);
+            }
+            else
+            {
+               formatLenEst += 1;
+            }
+            break;
+         }
+
+         default:
+         {
+            if (last == '%')
+            {
+               Assert(!"Un-supported format specifier in FormatLength");
+               Assert(bInFormatField);
+               bInFormatField = false;
+            }
+            else
+            {
+               formatLenEst += 1;
+            }
+            break;
+         }
+      }
+
+      if (last == '%' && pszFormat[i] == '%')
+      {
+         // Don't interpret the next character as a format field
+         last = 0;
+      }
+      else
+      {
+         last = pszFormat[i];
+      }
+   }
+
+   AssertMsg(formatLenEst < (4 * 1024), "Format string length estimate is very large");
+
+   return formatLenEst;
 }
-#else
-#error ("Need platform-specific implementation of _vscprintf")
-#endif
 
 ///////////////////////////////////////
 
@@ -173,7 +300,7 @@ int CDECL cStr::Format(const tChar * pszFormat, ...)
 {
    va_list args;
    va_start(args, pszFormat);
-   int length = FormatLength(pszFormat, args) + 1; // plus one for null terminator
+   int length = FormatLengthEstimate(pszFormat, args) + 1; // plus one for null terminator
    tChar * pszTemp = reinterpret_cast<tChar*>(alloca(length * sizeof(tChar)));
    _vsnprintf(pszTemp, length, pszFormat, args);
    va_end(args);
@@ -227,12 +354,14 @@ class cStrTests : public CppUnit::TestCase
       CPPUNIT_TEST(TestParseSuccessCases);
       CPPUNIT_TEST(TestFilePathCompare);
       CPPUNIT_TEST(TestFormat);
+      CPPUNIT_TEST(TestFormatLength);
    CPPUNIT_TEST_SUITE_END();
 
    void TestParseBadArgs();
    void TestParseSuccessCases();
    void TestFilePathCompare();
    void TestFormat();
+   void TestFormatLength();
 };
 
 ////////////////////////////////////////
@@ -317,6 +446,39 @@ void cStrTests::TestFormat()
 
    CPPUNIT_ASSERT(temp.Format("abcd%shijkl", "efg") > 0);
    CPPUNIT_ASSERT(temp.compare("abcdefghijkl") == 0);
+}
+
+////////////////////////////////////////
+
+static bool CDECL DoFormatLengthTest(const tChar * pszFormat, ...)
+{
+   int actual = INT_MIN, estimate = INT_MAX;
+   va_list args;
+   {
+      va_start(args, pszFormat);
+      actual = _vscprintf(pszFormat, args); // TODO: this is MS-specific
+      va_end(args);
+   }
+   {
+      va_start(args, pszFormat);
+      estimate = FormatLengthEstimate(pszFormat, args);
+      va_end(args);
+   }
+   // Over-estimating is OK, therefore the ">="
+   return (estimate >= actual);
+}
+
+////////////////////////////////////////
+
+void cStrTests::TestFormatLength()
+{
+   static const tChar szSample[] = "sample string";
+   CPPUNIT_ASSERT(::DoFormatLengthTest("simple"));
+   CPPUNIT_ASSERT(::DoFormatLengthTest("with integer: %d", INT_MAX));
+   CPPUNIT_ASSERT(::DoFormatLengthTest("with float: %f", DBL_MAX));
+   CPPUNIT_ASSERT(::DoFormatLengthTest("with string: %s", szSample));
+   CPPUNIT_ASSERT(::DoFormatLengthTest("%x %d %s (multiple)", UINT_MAX, INT_MIN, szSample));
+   CPPUNIT_ASSERT(::DoFormatLengthTest("%% escaped percents %%%%%%"));
 }
 
 #endif // HAVE_CPPUNIT
