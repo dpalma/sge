@@ -37,8 +37,8 @@ static const int kVGapDefault = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-typedef std::map<cStr, tGUILayoutManagerFactoryFn> tGUILayoutManagerFactories;
-static tGUILayoutManagerFactories g_guiLayoutManagerFactories;
+typedef std::map<cStr, tGUILayoutFactoryFn> tGUILayoutFactories;
+static tGUILayoutFactories g_guiLayoutFactories;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -57,8 +57,8 @@ tResult GUILayoutManagerCreate(const TiXmlElement * pXmlElement, IGUILayoutManag
    const char * pszType;
    if ((pszType = pXmlElement->Attribute(kAttribType)) != NULL)
    {
-      tGUILayoutManagerFactories::iterator f = g_guiLayoutManagerFactories.find(cStr(pszType));
-      if (f != g_guiLayoutManagerFactories.end())
+      tGUILayoutFactories::iterator f = g_guiLayoutFactories.find(cStr(pszType));
+      if (f != g_guiLayoutFactories.end())
       {
          return (*(f->second))(pXmlElement, ppLayout);
       }
@@ -69,42 +69,42 @@ tResult GUILayoutManagerCreate(const TiXmlElement * pXmlElement, IGUILayoutManag
 
 ///////////////////////////////////////////////////////////////////////////////
 
-tResult GUILayoutManagerRegister(const tChar * pszName, tGUILayoutManagerFactoryFn pfn)
+tResult GUILayoutRegister(const tChar * pszName, tGUILayoutFactoryFn pfn)
 {
    if (pszName == NULL || pfn == NULL)
    {
       return E_POINTER;
    }
 
-   g_guiLayoutManagerFactories[cStr(pszName)] = pfn;
+   g_guiLayoutFactories[cStr(pszName)] = pfn;
    return S_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void GUILayoutManagerRegisterBuiltInTypes()
+void GUILayoutRegisterBuiltInTypes()
 {
-   GUILayoutManagerRegister(kValueGrid, cGUIGridLayoutManager::Create);
-   GUILayoutManagerRegister(kValueFlow, cGUIFlowLayoutManager::Create);
+   GUILayoutRegister(kValueGrid, cGUIGridLayout::Create);
+   GUILayoutRegister(kValueFlow, cGUIFlowLayout::Create);
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGUIGridLayoutManager
+// CLASS: cGUIGridLayout
 //
 
 ///////////////////////////////////////
 
-tResult cGUIGridLayoutManager::Create(const TiXmlElement * pXmlElement, IGUILayoutManager * * ppLayout)
+tResult cGUIGridLayout::Create(const TiXmlElement * pXmlElement, IGUILayoutManager * * ppLayout)
 {
    if (pXmlElement == NULL || ppLayout == NULL)
    {
       return E_POINTER;
    }
 
-   cAutoIPtr<IGUIGridLayoutManager> pGridLayout;
-   if (GUIGridLayoutManagerCreate(&pGridLayout) == S_OK)
+   cAutoIPtr<IGUIGridLayout> pGridLayout;
+   if (GUIGridLayoutCreate(&pGridLayout) == S_OK)
    {
       int value;
 
@@ -137,7 +137,7 @@ tResult cGUIGridLayoutManager::Create(const TiXmlElement * pXmlElement, IGUILayo
 
 ///////////////////////////////////////
 
-cGUIGridLayoutManager::cGUIGridLayoutManager()
+cGUIGridLayout::cGUIGridLayout()
  : m_hGap(kHGapDefault), 
    m_vGap(kVGapDefault),
    m_columns(2), 
@@ -147,7 +147,7 @@ cGUIGridLayoutManager::cGUIGridLayoutManager()
 
 ///////////////////////////////////////
 
-cGUIGridLayoutManager::cGUIGridLayoutManager(uint columns, uint rows)
+cGUIGridLayout::cGUIGridLayout(uint columns, uint rows)
  : m_hGap(kHGapDefault), 
    m_vGap(kVGapDefault),
    m_columns(columns), 
@@ -157,7 +157,7 @@ cGUIGridLayoutManager::cGUIGridLayoutManager(uint columns, uint rows)
 
 ///////////////////////////////////////
 
-cGUIGridLayoutManager::cGUIGridLayoutManager(uint columns, uint rows, uint hGap, uint vGap)
+cGUIGridLayout::cGUIGridLayout(uint columns, uint rows, uint hGap, uint vGap)
  : m_hGap(hGap), 
    m_vGap(vGap),
    m_columns(columns), 
@@ -167,13 +167,13 @@ cGUIGridLayoutManager::cGUIGridLayoutManager(uint columns, uint rows, uint hGap,
 
 ///////////////////////////////////////
 
-cGUIGridLayoutManager::~cGUIGridLayoutManager()
+cGUIGridLayout::~cGUIGridLayout()
 {
 }
 
 ///////////////////////////////////////
 
-tResult cGUIGridLayoutManager::Layout(IGUIContainerElement * pContainer)
+tResult cGUIGridLayout::Layout(IGUIContainerElement * pContainer)
 {
    if (pContainer == NULL)
    {
@@ -249,7 +249,7 @@ tResult cGUIGridLayoutManager::Layout(IGUIContainerElement * pContainer)
 
 ///////////////////////////////////////
 
-tResult cGUIGridLayoutManager::GetPreferredSize(IGUIContainerElement * pContainer, 
+tResult cGUIGridLayout::GetPreferredSize(IGUIContainerElement * pContainer, 
                                                 tGUISize * pSize)
 {
    // A grid layout simply divides up whatever space is available.
@@ -259,7 +259,7 @@ tResult cGUIGridLayoutManager::GetPreferredSize(IGUIContainerElement * pContaine
 
 ///////////////////////////////////////
 
-tResult cGUIGridLayoutManager::GetHGap(uint * pHGap)
+tResult cGUIGridLayout::GetHGap(uint * pHGap)
 {
    if (pHGap == NULL)
       return E_POINTER;
@@ -269,7 +269,7 @@ tResult cGUIGridLayoutManager::GetHGap(uint * pHGap)
 
 ///////////////////////////////////////
 
-tResult cGUIGridLayoutManager::SetHGap(uint hGap)
+tResult cGUIGridLayout::SetHGap(uint hGap)
 {
    m_hGap = hGap;
    return S_OK;
@@ -277,7 +277,7 @@ tResult cGUIGridLayoutManager::SetHGap(uint hGap)
 
 ///////////////////////////////////////
 
-tResult cGUIGridLayoutManager::GetVGap(uint * pVGap)
+tResult cGUIGridLayout::GetVGap(uint * pVGap)
 {
    if (pVGap == NULL)
       return E_POINTER;
@@ -287,7 +287,7 @@ tResult cGUIGridLayoutManager::GetVGap(uint * pVGap)
 
 ///////////////////////////////////////
 
-tResult cGUIGridLayoutManager::SetVGap(uint vGap)
+tResult cGUIGridLayout::SetVGap(uint vGap)
 {
    m_vGap = vGap;
    return S_OK;
@@ -295,7 +295,7 @@ tResult cGUIGridLayoutManager::SetVGap(uint vGap)
 
 ///////////////////////////////////////
 
-tResult cGUIGridLayoutManager::GetColumns(uint * pColumns)
+tResult cGUIGridLayout::GetColumns(uint * pColumns)
 {
    if (pColumns == NULL)
       return E_POINTER;
@@ -305,7 +305,7 @@ tResult cGUIGridLayoutManager::GetColumns(uint * pColumns)
 
 ///////////////////////////////////////
 
-tResult cGUIGridLayoutManager::SetColumns(uint columns)
+tResult cGUIGridLayout::SetColumns(uint columns)
 {
    m_columns = columns;
    return S_OK;
@@ -313,7 +313,7 @@ tResult cGUIGridLayoutManager::SetColumns(uint columns)
 
 ///////////////////////////////////////
 
-tResult cGUIGridLayoutManager::GetRows(uint * pRows)
+tResult cGUIGridLayout::GetRows(uint * pRows)
 {
    if (pRows == NULL)
       return E_POINTER;
@@ -323,7 +323,7 @@ tResult cGUIGridLayoutManager::GetRows(uint * pRows)
 
 ///////////////////////////////////////
 
-tResult cGUIGridLayoutManager::SetRows(uint rows)
+tResult cGUIGridLayout::SetRows(uint rows)
 {
    m_rows = rows;
    return S_OK;
@@ -331,11 +331,11 @@ tResult cGUIGridLayoutManager::SetRows(uint rows)
 
 ///////////////////////////////////////
 
-tResult GUIGridLayoutManagerCreate(IGUIGridLayoutManager * * ppLayout)
+tResult GUIGridLayoutCreate(IGUIGridLayout * * ppLayout)
 {
    if (ppLayout == NULL)
       return E_POINTER;
-   cAutoIPtr<IGUIGridLayoutManager> pLayout = new cGUIGridLayoutManager;
+   cAutoIPtr<IGUIGridLayout> pLayout = new cGUIGridLayout;
    if (!pLayout)
       return E_OUTOFMEMORY;
    *ppLayout = CTAddRef(pLayout);
@@ -344,11 +344,11 @@ tResult GUIGridLayoutManagerCreate(IGUIGridLayoutManager * * ppLayout)
 
 ///////////////////////////////////////
 
-tResult GUIGridLayoutManagerCreate(uint columns, uint rows, IGUIGridLayoutManager * * ppLayout)
+tResult GUIGridLayoutCreate(uint columns, uint rows, IGUIGridLayout * * ppLayout)
 {
    if (ppLayout == NULL)
       return E_POINTER;
-   cAutoIPtr<IGUIGridLayoutManager> pLayout = new cGUIGridLayoutManager(columns, rows);
+   cAutoIPtr<IGUIGridLayout> pLayout = new cGUIGridLayout(columns, rows);
    if (!pLayout)
       return E_OUTOFMEMORY;
    *ppLayout = CTAddRef(pLayout);
@@ -357,11 +357,11 @@ tResult GUIGridLayoutManagerCreate(uint columns, uint rows, IGUIGridLayoutManage
 
 ///////////////////////////////////////
 
-tResult GUIGridLayoutManagerCreate(uint columns, uint rows, uint hGap, uint vGap, IGUIGridLayoutManager * * ppLayout)
+tResult GUIGridLayoutCreate(uint columns, uint rows, uint hGap, uint vGap, IGUIGridLayout * * ppLayout)
 {
    if (ppLayout == NULL)
       return E_POINTER;
-   cAutoIPtr<IGUIGridLayoutManager> pLayout = new cGUIGridLayoutManager(columns, rows, hGap, vGap);
+   cAutoIPtr<IGUIGridLayout> pLayout = new cGUIGridLayout(columns, rows, hGap, vGap);
    if (!pLayout)
       return E_OUTOFMEMORY;
    *ppLayout = CTAddRef(pLayout);
@@ -371,19 +371,19 @@ tResult GUIGridLayoutManagerCreate(uint columns, uint rows, uint hGap, uint vGap
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGUIFlowLayoutManager
+// CLASS: cGUIFlowLayout
 //
 
 ///////////////////////////////////////
 
-tResult cGUIFlowLayoutManager::Create(const TiXmlElement * pXmlElement, IGUILayoutManager * * ppLayout)
+tResult cGUIFlowLayout::Create(const TiXmlElement * pXmlElement, IGUILayoutManager * * ppLayout)
 {
    if (pXmlElement == NULL || ppLayout == NULL)
    {
       return E_POINTER;
    }
 
-   cAutoIPtr<IGUIFlowLayoutManager> pFlowLayout(new cGUIFlowLayoutManager);
+   cAutoIPtr<IGUIFlowLayout> pFlowLayout(new cGUIFlowLayout);
    if (!pFlowLayout)
    {
       return E_OUTOFMEMORY;
@@ -406,7 +406,7 @@ tResult cGUIFlowLayoutManager::Create(const TiXmlElement * pXmlElement, IGUILayo
 
 ///////////////////////////////////////
 
-cGUIFlowLayoutManager::cGUIFlowLayoutManager()
+cGUIFlowLayout::cGUIFlowLayout()
  : m_hGap(kHGapDefault), 
    m_vGap(kVGapDefault)
 {
@@ -414,7 +414,7 @@ cGUIFlowLayoutManager::cGUIFlowLayoutManager()
 
 ///////////////////////////////////////
 
-cGUIFlowLayoutManager::cGUIFlowLayoutManager(uint hGap, uint vGap)
+cGUIFlowLayout::cGUIFlowLayout(uint hGap, uint vGap)
  : m_hGap(hGap), 
    m_vGap(vGap)
 {
@@ -422,13 +422,13 @@ cGUIFlowLayoutManager::cGUIFlowLayoutManager(uint hGap, uint vGap)
 
 ///////////////////////////////////////
 
-cGUIFlowLayoutManager::~cGUIFlowLayoutManager()
+cGUIFlowLayout::~cGUIFlowLayout()
 {
 }
 
 ///////////////////////////////////////
 
-tResult cGUIFlowLayoutManager::Layout(IGUIContainerElement * pContainer)
+tResult cGUIFlowLayout::Layout(IGUIContainerElement * pContainer)
 {
    if (pContainer == NULL)
    {
@@ -488,7 +488,7 @@ tResult cGUIFlowLayoutManager::Layout(IGUIContainerElement * pContainer)
 
 ///////////////////////////////////////
 
-tResult cGUIFlowLayoutManager::GetPreferredSize(IGUIContainerElement * pContainer, 
+tResult cGUIFlowLayout::GetPreferredSize(IGUIContainerElement * pContainer, 
                                                 tGUISize * pSize)
 {
    return E_NOTIMPL;
@@ -496,7 +496,7 @@ tResult cGUIFlowLayoutManager::GetPreferredSize(IGUIContainerElement * pContaine
 
 ///////////////////////////////////////
 
-tResult cGUIFlowLayoutManager::GetHGap(uint * pHGap)
+tResult cGUIFlowLayout::GetHGap(uint * pHGap)
 {
    if (pHGap == NULL)
       return E_POINTER;
@@ -506,7 +506,7 @@ tResult cGUIFlowLayoutManager::GetHGap(uint * pHGap)
 
 ///////////////////////////////////////
 
-tResult cGUIFlowLayoutManager::SetHGap(uint hGap)
+tResult cGUIFlowLayout::SetHGap(uint hGap)
 {
    m_hGap = hGap;
    return S_OK;
@@ -514,7 +514,7 @@ tResult cGUIFlowLayoutManager::SetHGap(uint hGap)
 
 ///////////////////////////////////////
 
-tResult cGUIFlowLayoutManager::GetVGap(uint * pVGap)
+tResult cGUIFlowLayout::GetVGap(uint * pVGap)
 {
    if (pVGap == NULL)
       return E_POINTER;
@@ -524,7 +524,7 @@ tResult cGUIFlowLayoutManager::GetVGap(uint * pVGap)
 
 ///////////////////////////////////////
 
-tResult cGUIFlowLayoutManager::SetVGap(uint vGap)
+tResult cGUIFlowLayout::SetVGap(uint vGap)
 {
    m_vGap = vGap;
    return S_OK;

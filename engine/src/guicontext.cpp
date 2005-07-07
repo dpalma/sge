@@ -261,7 +261,7 @@ tResult cGUIContext::Init()
 {
    UseGlobal(Input);
    pInput->SetGUIInputListener(&m_inputListener);
-   GUILayoutManagerRegisterBuiltInTypes();
+   GUILayoutRegisterBuiltInTypes();
    UseGlobal(ScriptInterpreter);
    pScriptInterpreter->AddNamedItem(GetName(), static_cast<IScriptable*>(this));
    return S_OK;

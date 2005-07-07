@@ -382,17 +382,29 @@ tResult cGUITextEditElement::SetSelection(uint start, uint end)
 
 ///////////////////////////////////////
 
-const char * cGUITextEditElement::GetText() const
+tResult cGUITextEditElement::GetText(tGUIString * pText)
 {
-   return m_text.c_str();
+   if (pText == NULL)
+   {
+      return E_POINTER;
+   }
+   *pText = m_text;
+   return m_text.empty() ? S_FALSE : S_OK;
 }
 
 ///////////////////////////////////////
 
-void cGUITextEditElement::SetText(const char * pszText)
+tResult cGUITextEditElement::SetText(const char * pszText)
 {
-   m_text = pszText;
-   m_selection.Start();
+   if (pszText == NULL)
+   {
+      m_text.erase();
+   }
+   else
+   {
+      m_text = pszText;
+   }
+   return S_OK;
 }
 
 ///////////////////////////////////////

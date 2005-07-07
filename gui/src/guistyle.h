@@ -52,16 +52,16 @@ public:
    virtual tResult GetFontPointSize(uint * pFontPointSize);
    virtual tResult SetFontPointSize(uint fontPointSize);
 
-   virtual tResult GetFontBold(uint * pB);
+   virtual tResult GetFontBold(bool * pB);
    virtual tResult SetFontBold(bool b);
 
-   virtual tResult GetFontItalic(uint * pB);
+   virtual tResult GetFontItalic(bool * pB);
    virtual tResult SetFontItalic(bool b);
 
-   virtual tResult GetFontShadow(uint * pB);
+   virtual tResult GetFontShadow(bool * pB);
    virtual tResult SetFontShadow(bool b);
 
-   virtual tResult GetFontOutline(uint * pB);
+   virtual tResult GetFontOutline(bool * pB);
    virtual tResult SetFontOutline(bool b);
 
    virtual tResult GetFontDesc(cGUIFontDesc * pFontDesc);

@@ -367,7 +367,7 @@ tResult cGUIStyle::SetFontPointSize(uint fontPointSize)
 
 ///////////////////////////////////////
 
-tResult cGUIStyle::GetFontBold(uint * pB)
+tResult cGUIStyle::GetFontBold(bool * pB)
 {
    if (pB == NULL)
    {
@@ -387,7 +387,7 @@ tResult cGUIStyle::SetFontBold(bool b)
 
 ///////////////////////////////////////
 
-tResult cGUIStyle::GetFontItalic(uint * pB)
+tResult cGUIStyle::GetFontItalic(bool * pB)
 {
    if (pB == NULL)
    {
@@ -407,7 +407,7 @@ tResult cGUIStyle::SetFontItalic(bool b)
 
 ///////////////////////////////////////
 
-tResult cGUIStyle::GetFontShadow(uint * pB)
+tResult cGUIStyle::GetFontShadow(bool * pB)
 {
    if (pB == NULL)
    {
@@ -427,7 +427,7 @@ tResult cGUIStyle::SetFontShadow(bool b)
 
 ///////////////////////////////////////
 
-tResult cGUIStyle::GetFontOutline(uint * pB)
+tResult cGUIStyle::GetFontOutline(bool * pB)
 {
    if (pB == NULL)
    {

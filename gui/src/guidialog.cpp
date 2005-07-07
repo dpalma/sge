@@ -160,7 +160,7 @@ tResult cGUIDialogElement::GetTitle(tGUIString * pTitle)
       return E_POINTER;
    }
    *pTitle = m_title;
-   return S_OK;
+   return m_title.empty() ? S_FALSE : S_OK;
 }
 
 ///////////////////////////////////////
@@ -169,9 +169,12 @@ tResult cGUIDialogElement::SetTitle(const char * pszTitle)
 {
    if (pszTitle == NULL)
    {
-      return E_POINTER;
+      m_title.erase();
    }
-   m_title = pszTitle;
+   else
+   {
+      m_title = pszTitle;
+   }
    return S_OK;
 }
 

@@ -116,12 +116,8 @@ tResult cGUIButtonElement::GetText(tGUIString * pText) const
    {
       return E_POINTER;
    }
-   if (m_text.empty())
-   {
-      return S_FALSE;
-   }
    *pText = m_text;
-   return S_OK;
+   return m_text.empty() ? S_FALSE : S_OK;
 }
 
 ///////////////////////////////////////
@@ -130,9 +126,12 @@ tResult cGUIButtonElement::SetText(const char * pszText)
 {
    if (pszText == NULL)
    {
-      return E_POINTER;
+      m_text.erase();
    }
-   m_text = pszText;
+   else
+   {
+      m_text = pszText;
+   }
    return S_OK;
 }
 

@@ -107,8 +107,8 @@ public:
    virtual tResult GetSelection(uint * pStart, uint * pEnd);
    virtual tResult SetSelection(uint start, uint end);
 
-   virtual const char * GetText() const;
-   virtual void SetText(const char * pszText);
+   virtual tResult GetText(tGUIString * pText);
+   virtual tResult SetText(const char * pszText);
 
    virtual void UpdateBlinkingCursor();
    virtual bool ShowBlinkingCursor() const;

@@ -41,7 +41,7 @@ tResult cGUILabelElement::GetText(tGUIString * pText)
       return E_POINTER;
    }
    *pText = m_text;
-   return S_OK;
+   return m_text.empty() ? S_FALSE : S_OK;
 }
 
 ///////////////////////////////////////
@@ -50,9 +50,12 @@ tResult cGUILabelElement::SetText(const char * pszText)
 {
    if (pszText == NULL)
    {
-      return E_POINTER;
+      m_text.erase();
    }
-   m_text = pszText;
+   else
+   {
+      m_text = pszText;
+   }
    return S_OK;
 }
 

@@ -28,8 +28,8 @@ F_DECLARE_INTERFACE(IGUIElementEnum);
 F_DECLARE_INTERFACE(IGUIEvent);
 F_DECLARE_INTERFACE(IGUIContainerElement);
 F_DECLARE_INTERFACE(IGUILayoutManager);
-F_DECLARE_INTERFACE(IGUIGridLayoutManager);
-F_DECLARE_INTERFACE(IGUIFlowLayoutManager);
+F_DECLARE_INTERFACE(IGUIGridLayout);
+F_DECLARE_INTERFACE(IGUIFlowLayout);
 F_DECLARE_INTERFACE(IGUIPanelElement);
 F_DECLARE_INTERFACE(IGUIDialogElement);
 F_DECLARE_INTERFACE(IGUIButtonElement);
@@ -120,6 +120,8 @@ interface IGUIElement : IUnknown
 //
 // INTERFACE: IGUIStyle
 //
+/// @interface IGUIStyle
+/// @brief Contains the visual attributes, configured in XML, used to render an element.
 
 enum eGUIAlignment
 {
@@ -172,16 +174,16 @@ interface IGUIStyle : IUnknown
    virtual tResult GetFontPointSize(uint * pFontPointSize) = 0;
    virtual tResult SetFontPointSize(uint fontPointSize) = 0;
 
-   virtual tResult GetFontBold(uint * pB) = 0;
+   virtual tResult GetFontBold(bool * pB) = 0;
    virtual tResult SetFontBold(bool b) = 0;
 
-   virtual tResult GetFontItalic(uint * pB) = 0;
+   virtual tResult GetFontItalic(bool * pB) = 0;
    virtual tResult SetFontItalic(bool b) = 0;
 
-   virtual tResult GetFontShadow(uint * pB) = 0;
+   virtual tResult GetFontShadow(bool * pB) = 0;
    virtual tResult SetFontShadow(bool b) = 0;
 
-   virtual tResult GetFontOutline(uint * pB) = 0;
+   virtual tResult GetFontOutline(bool * pB) = 0;
    virtual tResult SetFontOutline(bool b) = 0;
 
    virtual tResult GetFontDesc(cGUIFontDesc * pFontDesc) = 0;
@@ -388,17 +390,18 @@ ENGINE_API tResult GUILayoutManagerCreate(const TiXmlElement * pXmlElement, IGUI
 
 ///////////////////////////////////////
 
-typedef tResult (* tGUILayoutManagerFactoryFn)(const TiXmlElement * pXmlElement, IGUILayoutManager * * ppLayout);
-ENGINE_API tResult GUILayoutManagerRegister(const tChar * pszName, tGUILayoutManagerFactoryFn pfn);
-ENGINE_API void GUILayoutManagerRegisterBuiltInTypes();
+typedef tResult (* tGUILayoutFactoryFn)(const TiXmlElement * pXmlElement, IGUILayoutManager * * ppLayout);
+ENGINE_API tResult GUILayoutRegister(const tChar * pszName, tGUILayoutFactoryFn pfn);
+
+ENGINE_API void GUILayoutRegisterBuiltInTypes();
 
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// INTERFACE: IGUIGridLayoutManager
+// INTERFACE: IGUIGridLayout
 //
 
-interface IGUIGridLayoutManager : IGUILayoutManager
+interface IGUIGridLayout : IGUILayoutManager
 {
    virtual tResult GetColumns(uint * pColumns) = 0;
    virtual tResult SetColumns(uint columns) = 0;
@@ -409,17 +412,17 @@ interface IGUIGridLayoutManager : IGUILayoutManager
 
 ///////////////////////////////////////
 
-ENGINE_API tResult GUIGridLayoutManagerCreate(IGUIGridLayoutManager * * ppLayout);
-ENGINE_API tResult GUIGridLayoutManagerCreate(uint columns, uint rows, IGUIGridLayoutManager * * ppLayout);
-ENGINE_API tResult GUIGridLayoutManagerCreate(uint columns, uint rows, uint hGap, uint vGap, IGUIGridLayoutManager * * ppLayout);
+ENGINE_API tResult GUIGridLayoutCreate(IGUIGridLayout * * ppLayout);
+ENGINE_API tResult GUIGridLayoutCreate(uint columns, uint rows, IGUIGridLayout * * ppLayout);
+ENGINE_API tResult GUIGridLayoutCreate(uint columns, uint rows, uint hGap, uint vGap, IGUIGridLayout * * ppLayout);
 
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// INTERFACE: IGUIFlowLayoutManager
+// INTERFACE: IGUIFlowLayout
 //
 
-interface IGUIFlowLayoutManager : IGUILayoutManager
+interface IGUIFlowLayout : IGUILayoutManager
 {
 };
 
@@ -493,8 +496,8 @@ interface IGUITextEditElement : IGUIElement
    virtual tResult GetSelection(uint * pStart, uint * pEnd) = 0;
    virtual tResult SetSelection(uint start, uint end) = 0;
 
-   virtual const char * GetText() const = 0;
-   virtual void SetText(const char * pszText) = 0;
+   virtual tResult GetText(tGUIString * pText) = 0;
+   virtual tResult SetText(const char * pszText) = 0;
 
    virtual void UpdateBlinkingCursor() = 0;
    virtual bool ShowBlinkingCursor() const = 0;

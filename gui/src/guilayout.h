@@ -12,18 +12,18 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGUIGridLayoutManager
+// CLASS: cGUIGridLayout
 //
 
-class cGUIGridLayoutManager : public cComObject<IMPLEMENTS(IGUIGridLayoutManager)>
+class cGUIGridLayout : public cComObject<IMPLEMENTS(IGUIGridLayout)>
 {
 public:
    static tResult Create(const TiXmlElement * pXmlElement, IGUILayoutManager * * ppLayout);
 
-   cGUIGridLayoutManager();
-   cGUIGridLayoutManager(uint columns, uint rows);
-   cGUIGridLayoutManager(uint columns, uint rows, uint hGap, uint vGap);
-   ~cGUIGridLayoutManager();
+   cGUIGridLayout();
+   cGUIGridLayout(uint columns, uint rows);
+   cGUIGridLayout(uint columns, uint rows, uint hGap, uint vGap);
+   ~cGUIGridLayout();
 
    virtual tResult Layout(IGUIContainerElement * pContainer);
    virtual tResult GetPreferredSize(IGUIContainerElement * pContainer, tGUISize * pSize);
@@ -47,17 +47,17 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGUIFlowLayoutManager
+// CLASS: cGUIFlowLayout
 //
 
-class cGUIFlowLayoutManager : public cComObject<IMPLEMENTS(IGUIFlowLayoutManager)>
+class cGUIFlowLayout : public cComObject<IMPLEMENTS(IGUIFlowLayout)>
 {
 public:
    static tResult Create(const TiXmlElement * pXmlElement, IGUILayoutManager * * ppLayout);
 
-   cGUIFlowLayoutManager();
-   cGUIFlowLayoutManager(uint hGap, uint vGap);
-   ~cGUIFlowLayoutManager();
+   cGUIFlowLayout();
+   cGUIFlowLayout(uint hGap, uint vGap);
+   ~cGUIFlowLayout();
 
    virtual tResult Layout(IGUIContainerElement * pContainer);
    virtual tResult GetPreferredSize(IGUIContainerElement * pContainer, tGUISize * pSize);
