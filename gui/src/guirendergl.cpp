@@ -125,4 +125,88 @@ void GlEnd2D()
    glPopAttrib();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cGUIRenderDeviceGL
+//
+
+////////////////////////////////////////
+
+tResult GUIRenderDeviceCreateGL(IGUIRenderDevice * * ppRenderDevice)
+{
+   if (ppRenderDevice == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cAutoIPtr<cGUIRenderDeviceGL> p(new cGUIRenderDeviceGL);
+   if (!p)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   *ppRenderDevice = static_cast<IGUIRenderDevice*>(CTAddRef(p));
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+cGUIRenderDeviceGL::cGUIRenderDeviceGL()
+{
+}
+
+////////////////////////////////////////
+
+cGUIRenderDeviceGL::~cGUIRenderDeviceGL()
+{
+}
+
+////////////////////////////////////////
+
+void cGUIRenderDeviceGL::PushScissorRect(const tGUIRect & rect)
+{
+   glPushAttrib(GL_SCISSOR_BIT);
+
+   int viewport[4];
+   glGetIntegerv(GL_VIEWPORT, viewport);
+
+   glEnable(GL_SCISSOR_TEST);
+   glScissor(
+      rect.left,
+      // @HACK: the call to glOrtho made at the beginning of each UI render
+      // cycle typically makes the UPPER left corner (0,0).  glScissor seems 
+      // to assume that (0,0) is always the LOWER left corner.
+      viewport[3] - rect.bottom,
+      rect.GetWidth(),
+      rect.GetHeight());
+}
+
+////////////////////////////////////////
+
+void cGUIRenderDeviceGL::PopScissorRect()
+{
+   glPopAttrib();
+}
+
+////////////////////////////////////////
+
+void cGUIRenderDeviceGL::RenderSolidRect(const tGUIRect & rect, const tGUIColor & color)
+{
+   GlRenderBevelledRect(rect, 0, color, color, color);
+}
+
+////////////////////////////////////////
+
+void cGUIRenderDeviceGL::RenderBeveledRect(const tGUIRect & rect, int bevel, const tGUIColor & topLeft,
+                                           const tGUIColor & bottomRight, const tGUIColor & face)
+{
+   GlRenderBevelledRect(rect, bevel, topLeft, bottomRight, face);
+}
+
+////////////////////////////////////////
+
+void cGUIRenderDeviceGL::FlushQueue()
+{
+}
+
 ///////////////////////////////////////////////////////////////////////////////

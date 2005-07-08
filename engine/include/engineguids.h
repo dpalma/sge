@@ -166,6 +166,10 @@ DEFINE_GUID(IID_IGUITextEditElement,
 DEFINE_GUID(IID_IEntityManager, 
 0x92db7247, 0xe01c, 0x4935, 0xb3, 0x5c, 0xeb, 0x23, 0x32, 0x95, 0xa4, 0xbe);
 
+// {1E13216E-23D1-469d-9961-D3EAB1839E26}
+DEFINE_GUID(IID_IGUIRenderDevice, 
+0x1e13216e, 0x23d1, 0x469d, 0x99, 0x61, 0xd3, 0xea, 0xb1, 0x83, 0x9e, 0x26);
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #endif // !INCLUDED_ENGINEGUIDS_H

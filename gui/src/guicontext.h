@@ -97,6 +97,8 @@ private:
    tGUIColor m_debugInfoTextColor;
    tGUIPoint m_lastMousePos;
 #endif
+
+   cAutoIPtr<IGUIRenderDevice> m_pRenderDevice;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

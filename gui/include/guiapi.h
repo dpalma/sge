@@ -38,6 +38,7 @@ F_DECLARE_INTERFACE(IGUITextEditElement);
 F_DECLARE_INTERFACE(IGUIEventRouter);
 F_DECLARE_INTERFACE(IGUIEventListener);
 F_DECLARE_INTERFACE(IGUIFactory);
+F_DECLARE_INTERFACE(IGUIRenderDevice);
 F_DECLARE_INTERFACE(IGUIContext);
 
 class TiXmlElement;
@@ -260,6 +261,12 @@ interface IGUIElementFactory : IUnknown
 interface IGUIElementRenderer : IUnknown
 {
    virtual tResult Render(IGUIElement * pElement) = 0;
+
+   // TODO: this is temporary
+   virtual tResult Render(IGUIRenderDevice * pRenderDevice, IGUIElement * pElement)
+   {
+      return Render(pElement);
+   }
 
    virtual tGUISize GetPreferredSize(IGUIElement * pElement) = 0;
 
@@ -593,6 +600,29 @@ struct sAutoRegisterGUIElementRendererFactory
    IGUIElementRendererFactory * Make##renderer##RendererFactory() \
    { return static_cast<IGUIElementRendererFactory *>(new (factoryClass)); } \
    static sAutoRegisterGUIElementRendererFactory g_auto##renderer##Renderer(#renderer, Make##renderer##RendererFactory())
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IGUIRenderDevice
+//
+
+interface IGUIRenderDevice : IUnknown
+{
+   virtual void PushScissorRect(const tGUIRect & rect) = 0;
+   virtual void PopScissorRect() = 0;
+
+   virtual void RenderSolidRect(const tGUIRect & rect, const tGUIColor & color) = 0;
+   virtual void RenderBeveledRect(const tGUIRect & rect, int bevel, const tGUIColor & topLeft,
+                                  const tGUIColor & bottomRight, const tGUIColor & face) = 0;
+
+   virtual void FlushQueue() = 0;
+};
+
+///////////////////////////////////////
+
+ENGINE_API tResult GUIRenderDeviceCreateGL(IGUIRenderDevice * * ppRenderDevice);
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //

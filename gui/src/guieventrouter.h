@@ -16,6 +16,8 @@
 
 struct sInputEvent;
 
+typedef std::list<IGUIElement *> tGUIElementList;
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // TEMPLATE: cGUIEventRouter
@@ -87,6 +89,9 @@ protected:
       return result;
    }
 
+   tGUIElementList::iterator BeginElements();
+   tGUIElementList::iterator EndElements();
+
    tResult GetHitElements(const tGUIPoint & point, std::list<IGUIElement*> * pElements) const;
    tResult GetHitElement(const tGUIPoint & point, IGUIElement * * ppElement) const;
 
@@ -102,7 +107,6 @@ protected:
    bool HandleInputEvent(const sInputEvent * pInputEvent);
 
 private:
-   typedef std::list<IGUIElement *> tGUIElementList;
    tGUIElementList m_elements;
 
    typedef std::list<IGUIDialogElement *> tGUIDialogList;
@@ -141,6 +145,22 @@ template <typename INTRFC>
 inline uint cGUIEventRouter<INTRFC>::GetElementCount() const
 {
    return m_elements.size();
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+inline tGUIElementList::iterator cGUIEventRouter<INTRFC>::BeginElements()
+{
+   return m_elements.begin();
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+inline tGUIElementList::iterator cGUIEventRouter<INTRFC>::EndElements()
+{
+   return m_elements.end();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

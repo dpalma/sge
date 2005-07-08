@@ -521,31 +521,43 @@ void cGUIContext::ClearGUI()
 
 class cRenderElement
 {
+   cRenderElement(const cRenderElement &);
+   void operator =(const cRenderElement &);
+
 public:
-   cRenderElement();
+   cRenderElement(void * pReserved);
+   ~cRenderElement();
+
    tResult operator()(IGUIElement * pGUIElement);
+
+private:
+   cAutoIPtr<IGUIRenderDevice> m_pRenderDevice;
 };
 
-cRenderElement::cRenderElement()
+cRenderElement::cRenderElement(void * pReserved)
 {
 }
 
-tResult cRenderElement::operator()(IGUIElement * pGUIElement)
+cRenderElement::~cRenderElement()
 {
-   if (pGUIElement == NULL)
+}
+
+tResult cRenderElement::operator()(IGUIElement * pElement)
+{
+   if (pElement == NULL)
    {
       return E_POINTER;
    }
 
-   if (!pGUIElement->IsVisible())
+   if (!pElement->IsVisible())
    {
       return S_FALSE;
    }
 
    cAutoIPtr<IGUIElementRenderer> pRenderer;
-   if (pGUIElement->GetRenderer(&pRenderer) == S_OK)
+   if (pElement->GetRenderer(&pRenderer) == S_OK)
    {
-      if (pRenderer->Render(pGUIElement) == S_OK)
+      if (pRenderer->Render(pElement) == S_OK)
       {
          return S_OK;
       }
@@ -558,6 +570,16 @@ tResult cRenderElement::operator()(IGUIElement * pGUIElement)
 
 tResult cGUIContext::RenderGUI()
 {
+   // Wait as long as possible to create the GUI rendering device to
+   // ensure there is a GL context.
+   if (!m_pRenderDevice)
+   {
+      if (FAILED(GUIRenderDeviceCreateGL(&m_pRenderDevice)))
+      {
+         return E_FAIL;
+      }
+   }
+
    uint nElements = GetElementCount();
    if ((nElements != m_nElementsLastLayout) || m_bNeedsLayout)
    {
@@ -572,11 +594,31 @@ tResult cGUIContext::RenderGUI()
 
    glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
    glDisable(GL_DEPTH_TEST);
-   ForEachElement(cRenderElement());
+
+   tGUIElementList::iterator iter = BeginElements();
+   tGUIElementList::iterator end = EndElements();
+   for (; iter != end; ++iter)
+   {
+      if ((*iter)->IsVisible())
+      {
+         cAutoIPtr<IGUIElementRenderer> pRenderer;
+         if ((*iter)->GetRenderer(&pRenderer) == S_OK)
+         {
+            if (pRenderer->Render(m_pRenderDevice, *iter) != S_OK)
+            {
+               ErrorMsg("A GUI element failed to render properly\n");
+            }
+         }
+      }
+   }
+
 #ifdef GUI_DEBUG
    RenderDebugInfo();
 #endif
+
    glPopAttrib();
+
+   m_pRenderDevice->FlushQueue();
 
    return S_OK;
 }
