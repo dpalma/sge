@@ -52,7 +52,7 @@ function emitcvsscript(script, cvscmd)
    io.write("@echo off" .. endl);
    io.write("setlocal" .. endl);
    io.write("pushd " .. thisBuildDir .. endl);
-   io.write("set CVSROOT=:pserver:anonymous@dpcvs.no-ip.org:/cvsstore" .. endl);
+   io.write("set CVSROOT=:sspi:anonymous@dpcvs.no-ip.org:/cvsstore" .. endl);
    io.write("cvs login <echo. 2>nul" .. endl);
    io.write(cvscmd .. endl);
    io.write("popd" .. endl);
@@ -286,4 +286,4 @@ function realbuild(autobuildDir)
    buildzips(thisBuildDir);
 end
 
-realbuild("c:\\autobuild");
+realbuild("c:\\autobld");
