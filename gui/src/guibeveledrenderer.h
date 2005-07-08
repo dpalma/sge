@@ -4,7 +4,7 @@
 #ifndef INCLUDED_GUIBEVELEDRENDERER_H
 #define INCLUDED_GUIBEVELEDRENDERER_H
 
-#include "guirender.h"
+#include "guiapi.h"
 
 #ifdef _MSC_VER
 #pragma once
@@ -15,13 +15,17 @@
 // CLASS: cGUIBeveledRenderer
 //
 
-class cGUIBeveledRenderer : public cComObject<cGUIElementRenderer<cGUIBeveledRenderer>,
-                                              &IID_IGUIElementRenderer>
+class cGUIBeveledRenderer : public cComObject<IMPLEMENTS(IGUIElementRenderer)>
 {
 public:
    cGUIBeveledRenderer();
    ~cGUIBeveledRenderer();
 
+   virtual tResult Render(IGUIElement * pElement);
+   virtual tGUISize GetPreferredSize(IGUIElement * pElement);
+   virtual tResult GetFont(IGUIElement * pElement, IGUIFont * * ppFont);
+
+private:
    tResult Render(IGUIButtonElement * pButtonElement);
    tResult Render(IGUIDialogElement * pDialogElement);
    tResult Render(IGUILabelElement * pLabelElement);
@@ -33,7 +37,23 @@ public:
    tGUISize GetPreferredSize(IGUILabelElement * pLabelElement);
    tGUISize GetPreferredSize(IGUIPanelElement * pPanelElement);
    tGUISize GetPreferredSize(IGUITextEditElement * pTextEditElement);
+   tGUISize GetPreferredSize(IGUIContainerElement * pContainerElement);
+
+   IGUIFont * AccessDefaultFont();
+
+   cAutoIPtr<IGUIFont> m_pDefaultFont;
 };
+
+///////////////////////////////////////
+
+inline IGUIFont * cGUIBeveledRenderer::AccessDefaultFont()
+{
+   if (!m_pDefaultFont)
+   {
+      GUIFontGetDefault(&m_pDefaultFont);
+   }
+   return m_pDefaultFont;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //

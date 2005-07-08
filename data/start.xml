@@ -1,14 +1,19 @@
 <!-- $Id$ -->
 <panel style="width:100%;height:100%" renderer="beveled">
 	<layout type="flow" />
-	<panel style="width:100%;height:70%;background-color:(0,0.6,0)" renderer="basic">
-		<label text="(Entry Screen)" style="align:left;vertical-align:center;" renderer="beveled" />
+	<panel style="width:100%;height:60%;background-color:(0,0.75,0)" renderer="basic">
+		<label text="Copyright (C) 2005, Daniel Palma" style="font-pointsize:8;align:right;vertical-align:top;" />
+		<label text=" {{TEST game}}" style="font-pointsize:36;align:left;vertical-align:bottom;" />
 	</panel>
 	<panel style="width:100%;height:30%;background-color:black;" renderer="basic">
+	<!--
+		<label text="(PANEL TWO)" style="foreground-color:white;align:left;vertical-align:center;" />
 		<layout type="grid" rows="2" columns="2" />
-		<label text="(PANEL TWO)" style="foreground-color:white;align:left;vertical-align:center;" renderer="beveled" />
+	-->
+	</panel>
+	<panel style="width:100%;height:10%;background-color:black;" renderer="basic">
+		<layout type="grid" rows="2" columns="2" />
 		<button text="Begin" style="align:right;vertical-align:center;" onclick="LoadSampleLevel();" renderer="beveled"/>
-		<label text="0000" renderer="beveled" />
 		<button text="Exit" style="align:right;vertical-align:center;" onclick="QuitWithConfirm();" renderer="beveled" />
 	</panel>
 </panel>

@@ -87,36 +87,43 @@ tResult GUIElementRenderChildren(IGUIContainerElement * pContainer)
       return E_POINTER;
    }
 
-   tResult result = E_FAIL;
-
    cAutoIPtr<IGUIElementEnum> pEnum;
    if (pContainer->GetElements(&pEnum) == S_OK)
    {
-      cAutoIPtr<IGUIElement> pChild;
+      IGUIElement * pChildren[32];
       ulong count = 0;
 
-      while ((pEnum->Next(1, &pChild, &count) == S_OK) && (count == 1))
+      while (SUCCEEDED((pEnum->Next(_countof(pChildren), &pChildren[0], &count))) && (count > 0))
       {
-         if (pChild->IsVisible())
+         for (ulong i = 0; i < count; i++)
          {
-            cAutoIPtr<IGUIElementRenderer> pChildRenderer;
-            if (pChild->GetRenderer(&pChildRenderer) == S_OK)
+            if (pChildren[i]->IsVisible())
             {
-               result = pChildRenderer->Render(pChild);
-               if (FAILED(result))
+               cAutoIPtr<IGUIElementRenderer> pChildRenderer;
+               if (pChildren[i]->GetRenderer(&pChildRenderer) == S_OK)
                {
-                  SafeRelease(pChild);
-                  break;
+                  if (FAILED(pChildRenderer->Render(pChildren[i])))
+                  {
+                     ErrorMsg("An error occured rendering a child GUI element\n");
+                     for (ulong j = i; j < count; j++)
+                     {
+                        SafeRelease(pChildren[j]);
+                     }
+                     return E_FAIL;
+                  }
                }
             }
+
+            SafeRelease(pChildren[i]);
          }
 
-         SafeRelease(pChild);
          count = 0;
       }
+
+      return S_OK;
    }
 
-   return result;
+   return E_FAIL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

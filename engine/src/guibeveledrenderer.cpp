@@ -43,6 +43,131 @@ cGUIBeveledRenderer::~cGUIBeveledRenderer()
 
 ///////////////////////////////////////
 
+tResult cGUIBeveledRenderer::Render(IGUIElement * pElement)
+{
+   if (pElement == NULL)
+   {
+      return E_POINTER;
+   }
+
+   {
+      cAutoIPtr<IGUIButtonElement> pButtonElement;
+      if (pElement->QueryInterface(IID_IGUIButtonElement, (void**)&pButtonElement) == S_OK)
+      {
+         return Render(pButtonElement);
+      }
+   }
+
+   {
+      cAutoIPtr<IGUIDialogElement> pDialogElement;
+      if (pElement->QueryInterface(IID_IGUIDialogElement, (void**)&pDialogElement) == S_OK)
+      {
+         return Render(pDialogElement);
+      }
+   }
+
+   {
+      cAutoIPtr<IGUILabelElement> pLabelElement;
+      if (pElement->QueryInterface(IID_IGUILabelElement, (void**)&pLabelElement) == S_OK)
+      {
+         return Render(pLabelElement);
+      }
+   }
+
+   {
+      cAutoIPtr<IGUIPanelElement> pPanelElement;
+      if (pElement->QueryInterface(IID_IGUIPanelElement, (void**)&pPanelElement) == S_OK)
+      {
+         return Render(pPanelElement);
+      }
+   }
+
+   {
+      cAutoIPtr<IGUITextEditElement> pTextEditElement;
+      if (pElement->QueryInterface(IID_IGUITextEditElement, (void**)&pTextEditElement) == S_OK)
+      {
+         return Render(pTextEditElement);
+      }
+   }
+
+   return E_FAIL;
+}
+
+///////////////////////////////////////
+
+tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIElement * pElement)
+{
+   if (pElement != NULL)
+   {
+      {
+         cAutoIPtr<IGUIButtonElement> pButtonElement;
+         if (pElement->QueryInterface(IID_IGUIButtonElement, (void**)&pButtonElement) == S_OK)
+         {
+            return GetPreferredSize(pButtonElement);
+         }
+      }
+
+      {
+         cAutoIPtr<IGUIDialogElement> pDialogElement;
+         if (pElement->QueryInterface(IID_IGUIDialogElement, (void**)&pDialogElement) == S_OK)
+         {
+            return GetPreferredSize(pDialogElement);
+         }
+      }
+
+      {
+         cAutoIPtr<IGUILabelElement> pLabelElement;
+         if (pElement->QueryInterface(IID_IGUILabelElement, (void**)&pLabelElement) == S_OK)
+         {
+            return GetPreferredSize(pLabelElement);
+         }
+      }
+
+      {
+         cAutoIPtr<IGUIPanelElement> pPanelElement;
+         if (pElement->QueryInterface(IID_IGUIPanelElement, (void**)&pPanelElement) == S_OK)
+         {
+            return GetPreferredSize(pPanelElement);
+         }
+      }
+
+      {
+         cAutoIPtr<IGUITextEditElement> pTextEditElement;
+         if (pElement->QueryInterface(IID_IGUITextEditElement, (void**)&pTextEditElement) == S_OK)
+         {
+            return GetPreferredSize(pTextEditElement);
+         }
+      }
+   }
+
+   return tGUISize(0,0);
+}
+
+///////////////////////////////////////
+
+tResult cGUIBeveledRenderer::GetFont(IGUIElement * pElement,
+                                     IGUIFont * * ppFont)
+{
+   if (pElement == NULL || ppFont == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cAutoIPtr<IGUIStyle> pStyle;
+   if (pElement->GetStyle(&pStyle) == S_OK)
+   {
+      if (pStyle->GetFont(ppFont) == S_OK)
+      {
+         return S_OK;
+      }
+   }
+
+   *ppFont = CTAddRef(AccessDefaultFont());
+   return S_OK;
+}
+
+///////////////////////////////////////
+
 tResult cGUIBeveledRenderer::Render(IGUIButtonElement * pButtonElement)
 {
    tGUIPoint pos = GUIElementAbsolutePosition(pButtonElement);
@@ -288,7 +413,7 @@ tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIButtonElement * pButtonElemen
 
 tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIDialogElement * pDialogElement)
 {
-   tGUISize size(cGUIElementRenderer<cGUIBeveledRenderer>::GetPreferredSize(static_cast<IGUIContainerElement*>(pDialogElement)));
+   tGUISize size(GetPreferredSize(static_cast<IGUIContainerElement*>(pDialogElement)));
 
    uint captionHeight;
    if (pDialogElement->GetCaptionHeight(&captionHeight) == S_OK)
@@ -341,7 +466,7 @@ tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUILabelElement * pLabelElement)
 
 tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIPanelElement * pPanelElement)
 {
-   return cGUIElementRenderer<cGUIBeveledRenderer>::GetPreferredSize(static_cast<IGUIContainerElement*>(pPanelElement));
+   return GetPreferredSize(static_cast<IGUIContainerElement*>(pPanelElement));
 }
 
 ///////////////////////////////////////
@@ -367,6 +492,22 @@ tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUITextEditElement * pTextEditEl
                       static_cast<tGUISizeType>(rect.GetHeight() + (kVertInset * 2)));
    }
 
+   return tGUISize(0,0);
+}
+
+///////////////////////////////////////
+
+tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIContainerElement * pContainerElement)
+{
+   cAutoIPtr<IGUILayoutManager> pLayout;
+   if (pContainerElement->GetLayout(&pLayout) == S_OK)
+   {
+      tGUISize size;
+      if (pLayout->GetPreferredSize(pContainerElement, &size) == S_OK)
+      {
+         return size;
+      }
+   }
    return tGUISize(0,0);
 }
 

@@ -49,7 +49,10 @@ cGUIElementEnum::~cGUIElementEnum()
 
 tResult cGUIElementEnum::Next(ulong count, IGUIElement * * ppElements, ulong * pnElements)
 {
-   Assert(ppElements != NULL && pnElements != NULL);
+   if (ppElements == NULL || pnElements == NULL)
+   {
+      return E_POINTER;
+   }
 
    ulong nReturned = 0;
 
@@ -101,7 +104,10 @@ tResult cGUIElementEnum::Reset()
 
 tResult cGUIElementEnum::Clone(IGUIElementEnum * * ppEnum)
 {
-   Assert(ppEnum != NULL);
+   if (ppEnum == NULL)
+   {
+      return E_POINTER;
+   }
    *ppEnum = static_cast<IGUIElementEnum *>(new cGUIElementEnum(m_elements));
    return S_OK;
 }
