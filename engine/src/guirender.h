@@ -32,6 +32,9 @@ public:
                                   const tGUIColor & bottomRight, const tGUIColor & face);
 
    virtual void FlushQueue();
+
+private:
+   long m_scissorRectStackDepth; // for debugging only
 };
 
 ///////////////////////////////////////////////////////////////////////////////

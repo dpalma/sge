@@ -12,9 +12,6 @@
 
 #include "globalobj.h"
 
-#include <tinyxml.h>
-#include <GL/glew.h>
-
 #include "dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -43,9 +40,9 @@ cGUIBeveledRenderer::~cGUIBeveledRenderer()
 
 ///////////////////////////////////////
 
-tResult cGUIBeveledRenderer::Render(IGUIElement * pElement)
+tResult cGUIBeveledRenderer::Render(IGUIElement * pElement, IGUIRenderDevice * pRenderDevice)
 {
-   if (pElement == NULL)
+   if (pRenderDevice == NULL || pElement == NULL)
    {
       return E_POINTER;
    }
@@ -54,7 +51,7 @@ tResult cGUIBeveledRenderer::Render(IGUIElement * pElement)
       cAutoIPtr<IGUIButtonElement> pButtonElement;
       if (pElement->QueryInterface(IID_IGUIButtonElement, (void**)&pButtonElement) == S_OK)
       {
-         return Render(pButtonElement);
+         return Render(pButtonElement, pRenderDevice);
       }
    }
 
@@ -62,7 +59,7 @@ tResult cGUIBeveledRenderer::Render(IGUIElement * pElement)
       cAutoIPtr<IGUIDialogElement> pDialogElement;
       if (pElement->QueryInterface(IID_IGUIDialogElement, (void**)&pDialogElement) == S_OK)
       {
-         return Render(pDialogElement);
+         return Render(pDialogElement, pRenderDevice);
       }
    }
 
@@ -70,7 +67,7 @@ tResult cGUIBeveledRenderer::Render(IGUIElement * pElement)
       cAutoIPtr<IGUILabelElement> pLabelElement;
       if (pElement->QueryInterface(IID_IGUILabelElement, (void**)&pLabelElement) == S_OK)
       {
-         return Render(pLabelElement);
+         return Render(pLabelElement, pRenderDevice);
       }
    }
 
@@ -78,7 +75,7 @@ tResult cGUIBeveledRenderer::Render(IGUIElement * pElement)
       cAutoIPtr<IGUIPanelElement> pPanelElement;
       if (pElement->QueryInterface(IID_IGUIPanelElement, (void**)&pPanelElement) == S_OK)
       {
-         return Render(pPanelElement);
+         return Render(pPanelElement, pRenderDevice);
       }
    }
 
@@ -86,7 +83,7 @@ tResult cGUIBeveledRenderer::Render(IGUIElement * pElement)
       cAutoIPtr<IGUITextEditElement> pTextEditElement;
       if (pElement->QueryInterface(IID_IGUITextEditElement, (void**)&pTextEditElement) == S_OK)
       {
-         return Render(pTextEditElement);
+         return Render(pTextEditElement, pRenderDevice);
       }
    }
 
@@ -168,7 +165,7 @@ tResult cGUIBeveledRenderer::GetFont(IGUIElement * pElement,
 
 ///////////////////////////////////////
 
-tResult cGUIBeveledRenderer::Render(IGUIButtonElement * pButtonElement)
+tResult cGUIBeveledRenderer::Render(IGUIButtonElement * pButtonElement, IGUIRenderDevice * pRenderDevice)
 {
    tGUIPoint pos = GUIElementAbsolutePosition(pButtonElement);
    tGUISize size = pButtonElement->GetSize();
@@ -179,12 +176,12 @@ tResult cGUIBeveledRenderer::Render(IGUIButtonElement * pButtonElement)
 
    if (pButtonElement->IsArmed() && pButtonElement->IsMouseOver())
    {
-      GlRenderBevelledRect(rect, g_bevel, tGUIColor::DarkGray, tGUIColor::LightGray, tGUIColor::Gray);
+      pRenderDevice->RenderBeveledRect(rect, g_bevel, tGUIColor::DarkGray, tGUIColor::LightGray, tGUIColor::Gray);
       bPressed = true;
    }
    else
    {
-      GlRenderBevelledRect(rect, g_bevel, tGUIColor::LightGray, tGUIColor::DarkGray, tGUIColor::Gray);
+      pRenderDevice->RenderBeveledRect(rect, g_bevel, tGUIColor::LightGray, tGUIColor::DarkGray, tGUIColor::Gray);
    }
 
    tGUIString text;
@@ -221,7 +218,7 @@ tResult cGUIBeveledRenderer::Render(IGUIButtonElement * pButtonElement)
 
 ///////////////////////////////////////
 
-tResult cGUIBeveledRenderer::Render(IGUIDialogElement * pDialogElement)
+tResult cGUIBeveledRenderer::Render(IGUIDialogElement * pDialogElement, IGUIRenderDevice * pRenderDevice)
 {
    tGUIPoint pos = GUIElementAbsolutePosition(pDialogElement);
    tGUISize size = pDialogElement->GetSize();
@@ -241,7 +238,7 @@ tResult cGUIBeveledRenderer::Render(IGUIDialogElement * pDialogElement)
       pStyle->GetAttribute("caption-color", &caption);
    }
 
-   GlRenderBevelledRect(rect, g_bevel, topLeft, bottomRight, face);
+   pRenderDevice->RenderBeveledRect(rect, g_bevel, topLeft, bottomRight, face);
 
    uint captionHeight;
    if ((pDialogElement->GetCaptionHeight(&captionHeight) == S_OK)
@@ -254,7 +251,7 @@ tResult cGUIBeveledRenderer::Render(IGUIDialogElement * pDialogElement)
       captionRect.right -= g_bevel;
       captionRect.bottom = captionRect.top + captionHeight;
 
-      GlRenderBevelledRect(captionRect, 0, caption, caption, caption);
+      pRenderDevice->RenderSolidRect(captionRect, caption);
 
       cAutoIPtr<IGUIFont> pFont;
       if (GetFont(pDialogElement, &pFont) == S_OK)
@@ -267,12 +264,12 @@ tResult cGUIBeveledRenderer::Render(IGUIDialogElement * pDialogElement)
       }
    }
 
-   return GUIElementRenderChildren(pDialogElement);
+   return GUIElementRenderChildren(pDialogElement, pRenderDevice);
 }
 
 ///////////////////////////////////////
 
-tResult cGUIBeveledRenderer::Render(IGUILabelElement * pLabelElement)
+tResult cGUIBeveledRenderer::Render(IGUILabelElement * pLabelElement, IGUIRenderDevice * pRenderDevice)
 {
    tGUIPoint pos = GUIElementAbsolutePosition(pLabelElement);
    tGUISize size = pLabelElement->GetSize();
@@ -302,44 +299,33 @@ tResult cGUIBeveledRenderer::Render(IGUILabelElement * pLabelElement)
 
 ///////////////////////////////////////
 
-tResult cGUIBeveledRenderer::Render(IGUIPanelElement * pPanelElement)
+tResult cGUIBeveledRenderer::Render(IGUIPanelElement * pPanelElement, IGUIRenderDevice * pRenderDevice)
 {
    tGUIPoint pos = GUIElementAbsolutePosition(pPanelElement);
    tGUISize size = pPanelElement->GetSize();
    tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
 
-   GlRenderBevelledRect(rect, g_bevel, tGUIColor::LightGray, tGUIColor::DarkGray, tGUIColor::Gray);
+   pRenderDevice->RenderBeveledRect(rect, g_bevel, tGUIColor::LightGray, tGUIColor::DarkGray, tGUIColor::Gray);
 
-   return GUIElementRenderChildren(pPanelElement);
+   return GUIElementRenderChildren(pPanelElement, pRenderDevice);
 }
 
 ///////////////////////////////////////
 
-tResult cGUIBeveledRenderer::Render(IGUITextEditElement * pTextEditElement)
+tResult cGUIBeveledRenderer::Render(IGUITextEditElement * pTextEditElement, IGUIRenderDevice * pRenderDevice)
 {
    tGUIPoint pos = GUIElementAbsolutePosition(pTextEditElement);
    tGUISize size = pTextEditElement->GetSize();
    tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
 
-   GlRenderBevelledRect(rect, g_bevel, tGUIColor::DarkGray, tGUIColor::Gray, tGUIColor::White);
+   pRenderDevice->RenderBeveledRect(rect, g_bevel, tGUIColor::DarkGray, tGUIColor::Gray, tGUIColor::White);
 
    rect.left += g_bevel + kHorzInset;
    rect.top += kVertInset;
    rect.right -= g_bevel + kHorzInset;
    rect.bottom -= kVertInset;
 
-   int viewport[4];
-   glGetIntegerv(GL_VIEWPORT, viewport);
-
-   glEnable(GL_SCISSOR_TEST);
-   glScissor(
-      rect.left,
-      // @HACK: the call to glOrtho made at the beginning of each UI render
-      // cycle typically makes the UPPER left corner (0,0).  glScissor seems 
-      // to assume that (0,0) is always the LOWER left corner.
-      viewport[3] - rect.bottom,
-      rect.GetWidth(),
-      rect.GetHeight());
+   pRenderDevice->PushScissorRect(rect);
 
    tGUIColor textColor(tGUIColor::Black);
 
@@ -379,11 +365,11 @@ tResult cGUIBeveledRenderer::Render(IGUITextEditElement * pTextEditElement)
             rect.left + leftOfCursor.GetWidth() + kCursorWidth,
             rect.bottom - 1);
 
-         GlRenderBevelledRect(cursorRect, 0, tGUIColor::Black, tGUIColor::Black, tGUIColor::Black);
+         pRenderDevice->RenderSolidRect(cursorRect, tGUIColor::Black);
       }
    }
 
-   glDisable(GL_SCISSOR_TEST);
+   pRenderDevice->PopScissorRect();
 
    pTextEditElement->UpdateBlinkingCursor();
 

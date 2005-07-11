@@ -21,16 +21,16 @@ public:
    cGUIBeveledRenderer();
    ~cGUIBeveledRenderer();
 
-   virtual tResult Render(IGUIElement * pElement);
+   virtual tResult Render(IGUIElement * pElement, IGUIRenderDevice * pRenderDevice);
    virtual tGUISize GetPreferredSize(IGUIElement * pElement);
    virtual tResult GetFont(IGUIElement * pElement, IGUIFont * * ppFont);
 
 private:
-   tResult Render(IGUIButtonElement * pButtonElement);
-   tResult Render(IGUIDialogElement * pDialogElement);
-   tResult Render(IGUILabelElement * pLabelElement);
-   tResult Render(IGUIPanelElement * pPanelElement);
-   tResult Render(IGUITextEditElement * pTextEditElement);
+   tResult Render(IGUIButtonElement * pButtonElement, IGUIRenderDevice * pRenderDevice);
+   tResult Render(IGUIDialogElement * pDialogElement, IGUIRenderDevice * pRenderDevice);
+   tResult Render(IGUILabelElement * pLabelElement, IGUIRenderDevice * pRenderDevice);
+   tResult Render(IGUIPanelElement * pPanelElement, IGUIRenderDevice * pRenderDevice);
+   tResult Render(IGUITextEditElement * pTextEditElement, IGUIRenderDevice * pRenderDevice);
 
    tGUISize GetPreferredSize(IGUIButtonElement * pButtonElement);
    tGUISize GetPreferredSize(IGUIDialogElement * pDialogElement);

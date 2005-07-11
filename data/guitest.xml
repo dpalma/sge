@@ -6,7 +6,7 @@
 
     <label text="label" style="vertical-align:bottom" />
 
-    <button style="align:right" text="Test" onclick="print([[Test button clicked]]);" />
+    <button style="align:right" text="Test" onclick='print("Test button clicked\n");' />
 
     <textedit style="vertical-align:top" id="text0" />
 

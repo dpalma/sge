@@ -9,92 +9,6 @@
 
 #include "dbgalloc.h" // must be last header
 
-///////////////////////////////////////////////////////////////////////////////
-
-void GlRenderBevelledRect(const tGUIRect & rect, int bevel, const tGUIColor & topLeft,
-                          const tGUIColor & bottomRight, const tGUIColor & face)
-{
-   glPushAttrib(GL_ENABLE_BIT);
-   glDisable(GL_TEXTURE_2D);
-
-   glBegin(GL_TRIANGLES);
-
-   if (bevel == 0)
-   {
-      glColor4fv(face.GetPointer());
-
-      glVertex2i(rect.left, rect.top);
-      glVertex2i(rect.left, rect.bottom);
-      glVertex2i(rect.right, rect.bottom);
-
-      glVertex2i(rect.right, rect.bottom);
-      glVertex2i(rect.right, rect.top);
-      glVertex2i(rect.left, rect.top);
-
-   }
-   else
-   {
-      int x0 = rect.left;
-      int x1 = rect.left + bevel;
-      int x2 = rect.right - bevel;
-      int x3 = rect.right;
-
-      int y0 = rect.top;
-      int y1 = rect.top + bevel;
-      int y2 = rect.bottom - bevel;
-      int y3 = rect.bottom;
-
-      glColor4fv(topLeft.GetPointer());
-
-      glVertex2i(x0, y0);
-      glVertex2i(x0, y3);
-      glVertex2i(x1, y2);
-
-      glVertex2i(x0, y0);
-      glVertex2i(x1, y2);
-      glVertex2i(x1, y1);
-
-      glVertex2i(x0, y0);
-      glVertex2i(x2, y1);
-      glVertex2i(x3, y0);
-
-      glVertex2i(x0, y0);
-      glVertex2i(x1, y1);
-      glVertex2i(x2, y1);
-
-      glColor4fv(bottomRight.GetPointer());
-
-      glVertex2i(x0, y3);
-      glVertex2i(x3, y3);
-      glVertex2i(x1, y2);
-
-      glVertex2i(x1, y2);
-      glVertex2i(x3, y3);
-      glVertex2i(x2, y2);
-
-      glVertex2i(x3, y0);
-      glVertex2i(x2, y1);
-      glVertex2i(x3, y3);
-
-      glVertex2i(x2, y1);
-      glVertex2i(x2, y2);
-      glVertex2i(x3, y3);
-
-      glColor4fv(face.GetPointer());
-
-      glVertex2i(x1, y1);
-      glVertex2i(x2, y2);
-      glVertex2i(x2, y1);
-
-      glVertex2i(x2, y2);
-      glVertex2i(x1, y1);
-      glVertex2i(x1, y2);
-   }
-
-   glEnd();
-   glPopAttrib();
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -152,6 +66,7 @@ tResult GUIRenderDeviceCreateGL(IGUIRenderDevice * * ppRenderDevice)
 ////////////////////////////////////////
 
 cGUIRenderDeviceGL::cGUIRenderDeviceGL()
+ : m_scissorRectStackDepth(0)
 {
 }
 
@@ -179,12 +94,17 @@ void cGUIRenderDeviceGL::PushScissorRect(const tGUIRect & rect)
       viewport[3] - rect.bottom,
       rect.GetWidth(),
       rect.GetHeight());
+
+   m_scissorRectStackDepth++;
 }
 
 ////////////////////////////////////////
 
 void cGUIRenderDeviceGL::PopScissorRect()
 {
+   Assert(m_scissorRectStackDepth > 0);
+   m_scissorRectStackDepth--;
+
    glPopAttrib();
 }
 
@@ -192,7 +112,17 @@ void cGUIRenderDeviceGL::PopScissorRect()
 
 void cGUIRenderDeviceGL::RenderSolidRect(const tGUIRect & rect, const tGUIColor & color)
 {
-   GlRenderBevelledRect(rect, 0, color, color, color);
+   glBegin(GL_TRIANGLES);
+      glColor4fv(color.GetPointer());
+
+      glVertex2i(rect.left, rect.top);
+      glVertex2i(rect.left, rect.bottom);
+      glVertex2i(rect.right, rect.bottom);
+
+      glVertex2i(rect.right, rect.bottom);
+      glVertex2i(rect.right, rect.top);
+      glVertex2i(rect.left, rect.top);
+   glEnd();
 }
 
 ////////////////////////////////////////
@@ -200,7 +130,77 @@ void cGUIRenderDeviceGL::RenderSolidRect(const tGUIRect & rect, const tGUIColor 
 void cGUIRenderDeviceGL::RenderBeveledRect(const tGUIRect & rect, int bevel, const tGUIColor & topLeft,
                                            const tGUIColor & bottomRight, const tGUIColor & face)
 {
-   GlRenderBevelledRect(rect, bevel, topLeft, bottomRight, face);
+   glPushAttrib(GL_ENABLE_BIT);
+   glDisable(GL_TEXTURE_2D);
+
+   if (bevel == 0)
+   {
+      RenderSolidRect(rect, face);
+   }
+   else
+   {
+      glBegin(GL_TRIANGLES);
+
+      int x0 = rect.left;
+      int x1 = rect.left + bevel;
+      int x2 = rect.right - bevel;
+      int x3 = rect.right;
+
+      int y0 = rect.top;
+      int y1 = rect.top + bevel;
+      int y2 = rect.bottom - bevel;
+      int y3 = rect.bottom;
+
+      glColor4fv(topLeft.GetPointer());
+
+      glVertex2i(x0, y0);
+      glVertex2i(x0, y3);
+      glVertex2i(x1, y2);
+
+      glVertex2i(x0, y0);
+      glVertex2i(x1, y2);
+      glVertex2i(x1, y1);
+
+      glVertex2i(x0, y0);
+      glVertex2i(x2, y1);
+      glVertex2i(x3, y0);
+
+      glVertex2i(x0, y0);
+      glVertex2i(x1, y1);
+      glVertex2i(x2, y1);
+
+      glColor4fv(bottomRight.GetPointer());
+
+      glVertex2i(x0, y3);
+      glVertex2i(x3, y3);
+      glVertex2i(x1, y2);
+
+      glVertex2i(x1, y2);
+      glVertex2i(x3, y3);
+      glVertex2i(x2, y2);
+
+      glVertex2i(x3, y0);
+      glVertex2i(x2, y1);
+      glVertex2i(x3, y3);
+
+      glVertex2i(x2, y1);
+      glVertex2i(x2, y2);
+      glVertex2i(x3, y3);
+
+      glColor4fv(face.GetPointer());
+
+      glVertex2i(x1, y1);
+      glVertex2i(x2, y2);
+      glVertex2i(x2, y1);
+
+      glVertex2i(x2, y2);
+      glVertex2i(x1, y1);
+      glVertex2i(x1, y2);
+
+      glEnd();
+   }
+
+   glPopAttrib();
 }
 
 ////////////////////////////////////////

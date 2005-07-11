@@ -106,6 +106,38 @@ static tResult LoadElements(const char * psz, std::vector<IGUIElement*> * pEleme
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifdef GUI_DEBUG
+static bool GUIElementType(IUnknown * pUnkElement, cStr * pType)
+{
+   static const struct
+   {
+      const GUID * pIID;
+      const tChar * pszType;
+   }
+   guiElementTypes[] =
+   {
+      { &IID_IGUIButtonElement,     "Button" },
+      { &IID_IGUIDialogElement,     "Dialog" },
+      { &IID_IGUILabelElement,      "Label" },
+      { &IID_IGUIPanelElement,      "Panel" },
+      { &IID_IGUITextEditElement,   "TextEdit" },
+      { &IID_IGUIContainerElement,  "Container" },
+   };
+   for (int i = 0; i < _countof(guiElementTypes); i++)
+   {
+      cAutoIPtr<IUnknown> pUnk;
+      if (pUnkElement->QueryInterface(*guiElementTypes[i].pIID, (void**)&pUnk) == S_OK)
+      {
+         *pType = guiElementTypes[i].pszType;
+         return true;
+      }
+   }
+   return false;
+}
+#endif
+
+///////////////////////////////////////////////////////////////////////////////
+
 static bool g_bExitModalLoop = false;
 
 static bool GUIModalLoopFrameHandler()
@@ -557,7 +589,7 @@ tResult cRenderElement::operator()(IGUIElement * pElement)
    cAutoIPtr<IGUIElementRenderer> pRenderer;
    if (pElement->GetRenderer(&pRenderer) == S_OK)
    {
-      if (pRenderer->Render(pElement) == S_OK)
+      if (pRenderer->Render(pElement, m_pRenderDevice) == S_OK)
       {
          return S_OK;
       }
@@ -604,7 +636,7 @@ tResult cGUIContext::RenderGUI()
          cAutoIPtr<IGUIElementRenderer> pRenderer;
          if ((*iter)->GetRenderer(&pRenderer) == S_OK)
          {
-            if (pRenderer->Render(m_pRenderDevice, *iter) != S_OK)
+            if (pRenderer->Render(*iter, m_pRenderDevice) != S_OK)
             {
                ErrorMsg("A GUI element failed to render properly\n");
             }
@@ -616,9 +648,9 @@ tResult cGUIContext::RenderGUI()
    RenderDebugInfo();
 #endif
 
-   glPopAttrib();
-
    m_pRenderDevice->FlushQueue();
+
+   glPopAttrib();
 
    return S_OK;
 }
@@ -702,38 +734,6 @@ tResult cGUIContext::CheckChild(IGUIContainerElement * pContainer, const tChar *
 
    return S_OK;
 }
-
-///////////////////////////////////////
-
-#ifdef GUI_DEBUG
-static bool GUIElementType(IUnknown * pUnkElement, cStr * pType)
-{
-   static const struct
-   {
-      const GUID * pIID;
-      const tChar * pszType;
-   }
-   guiElementTypes[] =
-   {
-      { &IID_IGUIButtonElement,     "Button" },
-      { &IID_IGUIDialogElement,     "Dialog" },
-      { &IID_IGUILabelElement,      "Label" },
-      { &IID_IGUIPanelElement,      "Panel" },
-      { &IID_IGUITextEditElement,   "TextEdit" },
-      { &IID_IGUIContainerElement,  "Container" },
-   };
-   for (int i = 0; i < _countof(guiElementTypes); i++)
-   {
-      cAutoIPtr<IUnknown> pUnk;
-      if (pUnkElement->QueryInterface(*guiElementTypes[i].pIID, (void**)&pUnk) == S_OK)
-      {
-         *pType = guiElementTypes[i].pszType;
-         return true;
-      }
-   }
-   return false;
-}
-#endif
 
 ///////////////////////////////////////
 

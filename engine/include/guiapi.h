@@ -260,13 +260,7 @@ interface IGUIElementFactory : IUnknown
 
 interface IGUIElementRenderer : IUnknown
 {
-   virtual tResult Render(IGUIElement * pElement) = 0;
-
-   // TODO: this is temporary
-   virtual tResult Render(IGUIRenderDevice * pRenderDevice, IGUIElement * pElement)
-   {
-      return Render(pElement);
-   }
+   virtual tResult Render(IGUIElement * pElement, IGUIRenderDevice * pRenderDevice) = 0;
 
    virtual tGUISize GetPreferredSize(IGUIElement * pElement) = 0;
 
@@ -657,9 +651,6 @@ interface IGUIContext : IGUIEventRouter
 ENGINE_API void GUIContextCreate();
 
 ///////////////////////////////////////////////////////////////////////////////
-
-ENGINE_API void GlRenderBevelledRect(const tGUIRect & rect, int bevel, const tGUIColor & topLeft,
-                                     const tGUIColor & bottomRight, const tGUIColor & face);
 
 ENGINE_API void GlBegin2D();
 ENGINE_API void GlEnd2D();

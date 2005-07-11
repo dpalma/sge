@@ -12,9 +12,6 @@
 
 #include "globalobj.h"
 
-#include <tinyxml.h>
-#include <GL/glew.h>
-
 #include "dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -38,9 +35,9 @@ cGUIBasicRenderer::~cGUIBasicRenderer()
 
 ///////////////////////////////////////
 
-tResult cGUIBasicRenderer::Render(IGUIElement * pElement)
+tResult cGUIBasicRenderer::Render(IGUIElement * pElement, IGUIRenderDevice * pRenderDevice)
 {
-   if (pElement == NULL)
+   if (pElement == NULL || pRenderDevice == NULL)
    {
       return E_POINTER;
    }
@@ -49,7 +46,7 @@ tResult cGUIBasicRenderer::Render(IGUIElement * pElement)
       cAutoIPtr<IGUIButtonElement> pButtonElement;
       if (pElement->QueryInterface(IID_IGUIButtonElement, (void**)&pButtonElement) == S_OK)
       {
-         return Render(pButtonElement);
+         return Render(pButtonElement, pRenderDevice);
       }
    }
 
@@ -57,7 +54,7 @@ tResult cGUIBasicRenderer::Render(IGUIElement * pElement)
       cAutoIPtr<IGUIDialogElement> pDialogElement;
       if (pElement->QueryInterface(IID_IGUIDialogElement, (void**)&pDialogElement) == S_OK)
       {
-         return Render(pDialogElement);
+         return Render(pDialogElement, pRenderDevice);
       }
    }
 
@@ -65,7 +62,7 @@ tResult cGUIBasicRenderer::Render(IGUIElement * pElement)
       cAutoIPtr<IGUILabelElement> pLabelElement;
       if (pElement->QueryInterface(IID_IGUILabelElement, (void**)&pLabelElement) == S_OK)
       {
-         return Render(pLabelElement);
+         return Render(pLabelElement, pRenderDevice);
       }
    }
 
@@ -73,7 +70,7 @@ tResult cGUIBasicRenderer::Render(IGUIElement * pElement)
       cAutoIPtr<IGUIPanelElement> pPanelElement;
       if (pElement->QueryInterface(IID_IGUIPanelElement, (void**)&pPanelElement) == S_OK)
       {
-         return Render(pPanelElement);
+         return Render(pPanelElement, pRenderDevice);
       }
    }
 
@@ -81,7 +78,7 @@ tResult cGUIBasicRenderer::Render(IGUIElement * pElement)
       cAutoIPtr<IGUITextEditElement> pTextEditElement;
       if (pElement->QueryInterface(IID_IGUITextEditElement, (void**)&pTextEditElement) == S_OK)
       {
-         return Render(pTextEditElement);
+         return Render(pTextEditElement, pRenderDevice);
       }
    }
 
@@ -163,21 +160,21 @@ tResult cGUIBasicRenderer::GetFont(IGUIElement * pElement,
 
 ///////////////////////////////////////
 
-tResult cGUIBasicRenderer::Render(IGUIButtonElement * pButtonElement)
+tResult cGUIBasicRenderer::Render(IGUIButtonElement * pButtonElement, IGUIRenderDevice * pRenderDevice)
 {
    return E_NOTIMPL;
 }
 
 ///////////////////////////////////////
 
-tResult cGUIBasicRenderer::Render(IGUIDialogElement * pDialogElement)
+tResult cGUIBasicRenderer::Render(IGUIDialogElement * pDialogElement, IGUIRenderDevice * pRenderDevice)
 {
    return E_NOTIMPL;
 }
 
 ///////////////////////////////////////
 
-tResult cGUIBasicRenderer::Render(IGUILabelElement * pLabelElement)
+tResult cGUIBasicRenderer::Render(IGUILabelElement * pLabelElement, IGUIRenderDevice * pRenderDevice)
 {
    tGUIPoint pos = GUIElementAbsolutePosition(pLabelElement);
    tGUISize size = pLabelElement->GetSize();
@@ -207,7 +204,7 @@ tResult cGUIBasicRenderer::Render(IGUILabelElement * pLabelElement)
 
 ///////////////////////////////////////
 
-tResult cGUIBasicRenderer::Render(IGUIPanelElement * pPanelElement)
+tResult cGUIBasicRenderer::Render(IGUIPanelElement * pPanelElement, IGUIRenderDevice * pRenderDevice)
 {
    tGUIPoint pos = GUIElementAbsolutePosition(pPanelElement);
    tGUISize size = pPanelElement->GetSize();
@@ -219,16 +216,16 @@ tResult cGUIBasicRenderer::Render(IGUIPanelElement * pPanelElement)
       tGUIColor bkColor;
       if (pStyle->GetBackgroundColor(&bkColor) == S_OK)
       {
-         GlRenderBevelledRect(rect, 0, bkColor, bkColor, bkColor);
+         pRenderDevice->RenderSolidRect(rect, bkColor);
       }
    }
 
-   return GUIElementRenderChildren(pPanelElement);
+   return GUIElementRenderChildren(pPanelElement, pRenderDevice);
 }
 
 ///////////////////////////////////////
 
-tResult cGUIBasicRenderer::Render(IGUITextEditElement * pTextEditElement)
+tResult cGUIBasicRenderer::Render(IGUITextEditElement * pTextEditElement, IGUIRenderDevice * pRenderDevice)
 {
    return E_NOTIMPL;
 }

@@ -80,9 +80,9 @@ tResult GUIElementCreateChildren(const TiXmlElement * pXmlElement,
 
 ///////////////////////////////////////////////////////////////////////////////
 
-tResult GUIElementRenderChildren(IGUIContainerElement * pContainer)
+tResult GUIElementRenderChildren(IGUIContainerElement * pContainer, IGUIRenderDevice * pRenderDevice)
 {
-   if (pContainer == NULL)
+   if (pContainer == NULL || pRenderDevice == NULL)
    {
       return E_POINTER;
    }
@@ -102,7 +102,7 @@ tResult GUIElementRenderChildren(IGUIContainerElement * pContainer)
                cAutoIPtr<IGUIElementRenderer> pChildRenderer;
                if (pChildren[i]->GetRenderer(&pChildRenderer) == S_OK)
                {
-                  if (FAILED(pChildRenderer->Render(pChildren[i])))
+                  if (FAILED(pChildRenderer->Render(pChildren[i], pRenderDevice)))
                   {
                      ErrorMsg("An error occured rendering a child GUI element\n");
                      for (ulong j = i; j < count; j++)
