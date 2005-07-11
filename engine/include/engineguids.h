@@ -170,6 +170,10 @@ DEFINE_GUID(IID_IEntityManager,
 DEFINE_GUID(IID_IGUIRenderDevice, 
 0x1e13216e, 0x23d1, 0x469d, 0x99, 0x61, 0xd3, 0xea, 0xb1, 0x83, 0x9e, 0x26);
 
+// {DF121A3B-362C-44c9-B806-4EFBD916397D}
+DEFINE_GUID(IID_IGUIRenderDeviceContext, 
+0xdf121a3b, 0x362c, 0x44c9, 0xb8, 0x6, 0x4e, 0xfb, 0xd9, 0x16, 0x39, 0x7d);
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #endif // !INCLUDED_ENGINEGUIDS_H

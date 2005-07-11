@@ -576,34 +576,3 @@ tResult GUIFontCreate(const cGUIFontDesc & fontDesc,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
-tResult GUIFontGetDefault(IGUIFont * * ppFont)
-{
-   static cAutoIPtr<IGUIFont> pDefaultFont;
-   if (!pDefaultFont)
-   {
-      char szTypeFace[32];
-      if (!ConfigGetString("default_font_win32", szTypeFace, _countof(szTypeFace)))
-      {
-         ConfigGetString("default_font", szTypeFace, _countof(szTypeFace));
-      }
-
-      int pointSize = 10;
-      if (!ConfigGet("default_font_size_win32", &pointSize))
-      {
-         ConfigGet("default_font_size", &pointSize);
-      }
-
-      int effects = kGFE_None;
-      if (!ConfigGet("default_font_effects_win32", &effects))
-      {
-         ConfigGet("default_font_effects", &effects);
-      }
-
-      GUIFontCreate(cGUIFontDesc(szTypeFace, pointSize, effects), &pDefaultFont);
-   }
-
-   return pDefaultFont.GetPointer(ppFont);
-}
-
-///////////////////////////////////////////////////////////////////////////////

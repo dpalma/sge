@@ -10,35 +10,6 @@
 #include "dbgalloc.h" // must be last header
 
 
-///////////////////////////////////////////////////////////////////////////////
-
-void GlBegin2D()
-{
-   glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
-
-   glDisable(GL_DEPTH_TEST);
-   glDisable(GL_LIGHTING);
-   glDisable(GL_CULL_FACE);
-
-   GLint viewport[4];
-   glGetIntegerv(GL_VIEWPORT, viewport);
-
-   GLdouble width = static_cast<GLdouble>(viewport[2]);
-   GLdouble height = static_cast<GLdouble>(viewport[3]);
-
-   glMatrixMode(GL_PROJECTION);
-   glLoadIdentity();
-   glOrtho(0, width, height, 0, -99999, 99999);
-
-   glMatrixMode(GL_MODELVIEW);
-   glLoadIdentity();
-}
-
-void GlEnd2D()
-{
-   glPopAttrib();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUIRenderDeviceGL
@@ -46,7 +17,7 @@ void GlEnd2D()
 
 ////////////////////////////////////////
 
-tResult GUIRenderDeviceCreateGL(IGUIRenderDevice * * ppRenderDevice)
+tResult GUIRenderDeviceCreateGL(IGUIRenderDeviceContext * * ppRenderDevice)
 {
    if (ppRenderDevice == NULL)
    {
@@ -59,7 +30,7 @@ tResult GUIRenderDeviceCreateGL(IGUIRenderDevice * * ppRenderDevice)
       return E_OUTOFMEMORY;
    }
 
-   *ppRenderDevice = static_cast<IGUIRenderDevice*>(CTAddRef(p));
+   *ppRenderDevice = static_cast<IGUIRenderDeviceContext*>(CTAddRef(p));
    return S_OK;
 }
 
@@ -82,16 +53,13 @@ void cGUIRenderDeviceGL::PushScissorRect(const tGUIRect & rect)
 {
    glPushAttrib(GL_SCISSOR_BIT);
 
-   int viewport[4];
-   glGetIntegerv(GL_VIEWPORT, viewport);
-
    glEnable(GL_SCISSOR_TEST);
    glScissor(
       rect.left,
       // @HACK: the call to glOrtho made at the beginning of each UI render
       // cycle typically makes the UPPER left corner (0,0).  glScissor seems 
       // to assume that (0,0) is always the LOWER left corner.
-      viewport[3] - rect.bottom,
+      m_viewport[3] - rect.bottom,
       rect.GetWidth(),
       rect.GetHeight());
 
@@ -207,6 +175,36 @@ void cGUIRenderDeviceGL::RenderBeveledRect(const tGUIRect & rect, int bevel, con
 
 void cGUIRenderDeviceGL::FlushQueue()
 {
+}
+
+////////////////////////////////////////
+
+void cGUIRenderDeviceGL::Begin2D()
+{
+   glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
+
+   glDisable(GL_DEPTH_TEST);
+   glDisable(GL_LIGHTING);
+   glDisable(GL_CULL_FACE);
+
+   glGetIntegerv(GL_VIEWPORT, m_viewport);
+
+   GLdouble width = static_cast<GLdouble>(m_viewport[2]);
+   GLdouble height = static_cast<GLdouble>(m_viewport[3]);
+
+   glMatrixMode(GL_PROJECTION);
+   glLoadIdentity();
+   glOrtho(0, width, height, 0, -99999, 99999);
+
+   glMatrixMode(GL_MODELVIEW);
+   glLoadIdentity();
+}
+
+////////////////////////////////////////
+
+void cGUIRenderDeviceGL::End2D()
+{
+   glPopAttrib();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

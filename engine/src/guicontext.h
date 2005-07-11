@@ -59,6 +59,10 @@ public:
 
    virtual tResult RenderGUI();
 
+   virtual tResult GetRenderDeviceContext(IGUIRenderDeviceContext * * ppRenderDeviceContext);
+
+   virtual tResult GetDefaultFont(IGUIFont * * ppFont);
+
    virtual tResult ShowDebugInfo(const tGUIPoint & placement, const tGUIColor & textColor);
    virtual tResult HideDebugInfo();
 
@@ -98,7 +102,9 @@ private:
    tGUIPoint m_lastMousePos;
 #endif
 
-   cAutoIPtr<IGUIRenderDevice> m_pRenderDevice;
+   cAutoIPtr<IGUIRenderDeviceContext> m_pRenderDeviceContext;
+
+   cAutoIPtr<IGUIFont> m_pDefaultFont;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

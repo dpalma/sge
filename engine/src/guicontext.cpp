@@ -13,6 +13,7 @@
 #include "keys.h"
 #include "resourceapi.h"
 #include "readwriteapi.h"
+#include "configapi.h"
 
 #include <tinyxml.h>
 #include <GL/glew.h>
@@ -602,16 +603,6 @@ tResult cRenderElement::operator()(IGUIElement * pElement)
 
 tResult cGUIContext::RenderGUI()
 {
-   // Wait as long as possible to create the GUI rendering device to
-   // ensure there is a GL context.
-   if (!m_pRenderDevice)
-   {
-      if (FAILED(GUIRenderDeviceCreateGL(&m_pRenderDevice)))
-      {
-         return E_FAIL;
-      }
-   }
-
    uint nElements = GetElementCount();
    if ((nElements != m_nElementsLastLayout) || m_bNeedsLayout)
    {
@@ -624,8 +615,13 @@ tResult cGUIContext::RenderGUI()
       ForEachElement(cSizeAndPlaceElement(tGUIRect(0,0,viewport[2],viewport[3])));
    }
 
-   glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
-   glDisable(GL_DEPTH_TEST);
+   cAutoIPtr<IGUIRenderDeviceContext> pRenderDeviceContext;
+   if (GetRenderDeviceContext(&pRenderDeviceContext) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   IGUIRenderDevice * pRenderDevice = static_cast<IGUIRenderDevice*>(pRenderDeviceContext);
 
    tGUIElementList::iterator iter = BeginElements();
    tGUIElementList::iterator end = EndElements();
@@ -636,7 +632,7 @@ tResult cGUIContext::RenderGUI()
          cAutoIPtr<IGUIElementRenderer> pRenderer;
          if ((*iter)->GetRenderer(&pRenderer) == S_OK)
          {
-            if (pRenderer->Render(*iter, m_pRenderDevice) != S_OK)
+            if (pRenderer->Render(*iter, pRenderDevice) != S_OK)
             {
                ErrorMsg("A GUI element failed to render properly\n");
             }
@@ -648,11 +644,54 @@ tResult cGUIContext::RenderGUI()
    RenderDebugInfo();
 #endif
 
-   m_pRenderDevice->FlushQueue();
-
-   glPopAttrib();
-
    return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIContext::GetRenderDeviceContext(IGUIRenderDeviceContext * * ppRenderDeviceContext)
+{
+   // Wait as long as possible to create the GUI rendering device to
+   // ensure there is a GL context.
+   if (!m_pRenderDeviceContext)
+   {
+      if (FAILED(GUIRenderDeviceCreateGL(&m_pRenderDeviceContext)))
+      {
+         return E_FAIL;
+      }
+   }
+
+   return m_pRenderDeviceContext.GetPointer(ppRenderDeviceContext);
+}
+
+///////////////////////////////////////
+
+tResult cGUIContext::GetDefaultFont(IGUIFont * * ppFont)
+{
+   if (!m_pDefaultFont)
+   {
+      char szTypeFace[32];
+      if (!ConfigGetString("default_font_win32", szTypeFace, _countof(szTypeFace)))
+      {
+         ConfigGetString("default_font", szTypeFace, _countof(szTypeFace));
+      }
+
+      int pointSize = 10;
+      if (!ConfigGet("default_font_size_win32", &pointSize))
+      {
+         ConfigGet("default_font_size", &pointSize);
+      }
+
+      int effects = kGFE_None;
+      if (!ConfigGet("default_font_effects_win32", &effects))
+      {
+         ConfigGet("default_font_effects", &effects);
+      }
+
+      GUIFontCreate(cGUIFontDesc(szTypeFace, pointSize, effects), &m_pDefaultFont);
+   }
+
+   return m_pDefaultFont.GetPointer(ppFont);
 }
 
 ///////////////////////////////////////
@@ -746,7 +785,7 @@ void cGUIContext::RenderDebugInfo()
    }
 
    cAutoIPtr<IGUIFont> pFont;
-   if (GUIFontGetDefault(&pFont) == S_OK)
+   if (GetDefaultFont(&pFont) == S_OK)
    {
       tGUIRect rect(0,0,0,0);
       pFont->RenderText("Xy", -1, &rect, kRT_CalcRect, m_debugInfoTextColor);

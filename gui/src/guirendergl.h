@@ -15,7 +15,7 @@
 // CLASS: cGUIRenderDeviceGL
 //
 
-class cGUIRenderDeviceGL : public cComObject<IMPLEMENTS(IGUIRenderDevice)>
+class cGUIRenderDeviceGL : public cComObject<IMPLEMENTS(IGUIRenderDeviceContext)>
 {
    cGUIRenderDeviceGL(const cGUIRenderDeviceGL &);
    void operator =(const cGUIRenderDeviceGL &);
@@ -33,8 +33,12 @@ public:
 
    virtual void FlushQueue();
 
+   virtual void Begin2D();
+   virtual void End2D();
+
 private:
    long m_scissorRectStackDepth; // for debugging only
+   int m_viewport[4];
 };
 
 ///////////////////////////////////////////////////////////////////////////////

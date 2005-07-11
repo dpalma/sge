@@ -9,7 +9,6 @@
 
 #include "guiapi.h"
 #include "sceneapi.h"
-#include "meshapi.h"
 #include "sim.h"
 #include "inputapi.h"
 #include "engineapi.h"
@@ -399,7 +398,6 @@ static bool MainInit(int argc, char * argv[])
    TextFormatRegister("txt");
    TextFormatRegister("lua");
    TextFormatRegister("xml");
-   Ms3dFormatRegister();
    GlTextureResourceRegister();
    EngineRegisterResourceFormats();
 
@@ -459,7 +457,8 @@ static bool MainInit(int argc, char * argv[])
    pEntityManager->SetTerrainLocatorHack(&g_terrainLocator);
    pEntityManager->SetRenderDeviceHack(g_pRenderDevice);
 
-   if (FAILED(GUIFontGetDefault(&g_pFont)))
+   UseGlobal(GUIContext);
+   if (FAILED(pGUIContext->GetDefaultFont(&g_pFont)))
    {
       WarnMsg("Failed to get a default font interface pointer for showing frame stats\n");
       return false;
@@ -528,31 +527,35 @@ static bool MainFrame()
    UseGlobal(Scene);
    pScene->Render(g_pRenderDevice);
 
-   GlBegin2D();
-
    UseGlobal(GUIContext);
-   pGUIContext->RenderGUI();
-
-   if (!!g_pFont)
+   cAutoIPtr<IGUIRenderDeviceContext> pRenderDeviceContext;
+   if (pGUIContext->GetRenderDeviceContext(&pRenderDeviceContext) == S_OK)
    {
-      FPS();
+      pRenderDeviceContext->Begin2D();
 
-      char szStats[100];
-      snprintf(szStats, _countof(szStats),
-         "%.2f fps\n"
-         "%.2f worst\n"
-         "%.2f best\n"
-         "%.2f average",
-         fpsLast, 
-         fpsWorst,
-         fpsBest, 
-         fpsAverage);
+      pGUIContext->RenderGUI();
 
-      tRect rect(kDefStatsX, kDefStatsY, 0, 0);
-      g_pFont->RenderText(szStats, strlen(szStats), &rect, kRT_NoClip | kRT_DropShadow, kDefStatsColor);
+      if (!!g_pFont)
+      {
+         FPS();
+
+         char szStats[100];
+         snprintf(szStats, _countof(szStats),
+            "%.2f fps\n"
+            "%.2f worst\n"
+            "%.2f best\n"
+            "%.2f average",
+            fpsLast, 
+            fpsWorst,
+            fpsBest, 
+            fpsAverage);
+
+         tRect rect(kDefStatsX, kDefStatsY, 0, 0);
+         g_pFont->RenderText(szStats, strlen(szStats), &rect, kRT_NoClip | kRT_DropShadow, kDefStatsColor);
+      }
+
+      pRenderDeviceContext->End2D();
    }
-
-   GlEnd2D();
 
    g_pRenderDevice->EndScene();
    SysSwapBuffers();

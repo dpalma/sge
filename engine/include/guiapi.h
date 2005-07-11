@@ -39,6 +39,7 @@ F_DECLARE_INTERFACE(IGUIEventRouter);
 F_DECLARE_INTERFACE(IGUIEventListener);
 F_DECLARE_INTERFACE(IGUIFactory);
 F_DECLARE_INTERFACE(IGUIRenderDevice);
+F_DECLARE_INTERFACE(IGUIRenderDeviceContext);
 F_DECLARE_INTERFACE(IGUIContext);
 
 class TiXmlElement;
@@ -239,8 +240,6 @@ interface IGUIFont : IUnknown
 ///////////////////////////////////////
 
 ENGINE_API tResult GUIFontCreate(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont);
-
-ENGINE_API tResult GUIFontGetDefault(IGUIFont * * ppFont);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -600,6 +599,10 @@ struct sAutoRegisterGUIElementRendererFactory
 //
 // INTERFACE: IGUIRenderDevice
 //
+/// @interface IGUIRenderDevice
+/// @brief Abstracts access to the platform 3D API (OpenGL, DirectX, etc.) for
+/// the purpose of rendering GUI widgets
+/// @see IGUIElementRenderer
 
 interface IGUIRenderDevice : IUnknown
 {
@@ -613,9 +616,25 @@ interface IGUIRenderDevice : IUnknown
    virtual void FlushQueue() = 0;
 };
 
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IGUIRenderDeviceContext
+//
+/// @interface IGUIRenderDeviceContext
+/// @brief Provides fuller access to platform 3D API features than IGUIRenderDevice
+/// @see IGUIRenderDevice
+/// @see IGUIElementRenderer
+
+interface IGUIRenderDeviceContext : IGUIRenderDevice
+{
+   virtual void Begin2D() = 0;
+   virtual void End2D() = 0;
+};
+
 ///////////////////////////////////////
 
-ENGINE_API tResult GUIRenderDeviceCreateGL(IGUIRenderDevice * * ppRenderDevice);
+ENGINE_API tResult GUIRenderDeviceCreateGL(IGUIRenderDeviceContext * * ppRenderDevice);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -642,6 +661,10 @@ interface IGUIContext : IGUIEventRouter
 
    virtual tResult RenderGUI() = 0;
 
+   virtual tResult GetRenderDeviceContext(IGUIRenderDeviceContext * * ppRenderDeviceContext) = 0;
+
+   virtual tResult GetDefaultFont(IGUIFont * * ppFont) = 0;
+
    virtual tResult ShowDebugInfo(const tGUIPoint & placement, const tGUIColor & textColor) = 0;
    virtual tResult HideDebugInfo() = 0;
 };
@@ -649,11 +672,6 @@ interface IGUIContext : IGUIEventRouter
 ///////////////////////////////////////
 
 ENGINE_API void GUIContextCreate();
-
-///////////////////////////////////////////////////////////////////////////////
-
-ENGINE_API void GlBegin2D();
-ENGINE_API void GlEnd2D();
 
 ///////////////////////////////////////////////////////////////////////////////
 

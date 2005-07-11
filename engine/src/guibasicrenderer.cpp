@@ -154,8 +154,8 @@ tResult cGUIBasicRenderer::GetFont(IGUIElement * pElement,
       }
    }
 
-   *ppFont = CTAddRef(AccessDefaultFont());
-   return S_OK;
+   UseGlobal(GUIContext);
+   return pGUIContext->GetDefaultFont(ppFont);
 }
 
 ///////////////////////////////////////

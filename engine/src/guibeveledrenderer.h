@@ -38,22 +38,7 @@ private:
    tGUISize GetPreferredSize(IGUIPanelElement * pPanelElement);
    tGUISize GetPreferredSize(IGUITextEditElement * pTextEditElement);
    tGUISize GetPreferredSize(IGUIContainerElement * pContainerElement);
-
-   IGUIFont * AccessDefaultFont();
-
-   cAutoIPtr<IGUIFont> m_pDefaultFont;
 };
-
-///////////////////////////////////////
-
-inline IGUIFont * cGUIBeveledRenderer::AccessDefaultFont()
-{
-   if (!m_pDefaultFont)
-   {
-      GUIFontGetDefault(&m_pDefaultFont);
-   }
-   return m_pDefaultFont;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 //
