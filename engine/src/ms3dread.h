@@ -4,9 +4,10 @@
 #ifndef INCLUDED_MS3DREAD_H
 #define INCLUDED_MS3DREAD_H
 
-#include "readwriteapi.h"
-#include "skeleton.h"
 #include "ms3d.h"
+
+#include "readwriteapi.h"
+#include "vec3.h"
 
 #include <map>
 #include <vector>
@@ -16,7 +17,6 @@
 #endif
 
 F_DECLARE_INTERFACE(IReader);
-F_DECLARE_INTERFACE(IKeyFrameInterpolator);
 
 struct sMs3dVertex
 {
@@ -58,7 +58,6 @@ private:
 class cMs3dGroup
 {
    friend class cReadWriteOps<cMs3dGroup>;
-
 
 public:
    cMs3dGroup();
@@ -225,29 +224,6 @@ public:
    static tResult Read(IReader * pReader, cMs3dJoint * pJoint);
 };
 
-
-///////////////////////////////////////////////////////////////////////////////
-
-struct sMs3dBoneInfo
-{
-   char name[kMaxBoneName];
-   char parentName[kMaxBoneName];
-   float rotation[3];
-   float position[3];
-};
-
-template <>
-class cReadWriteOps<sMs3dBoneInfo>
-{
-public:
-   static tResult Read(IReader * pReader, sMs3dBoneInfo * pBoneInfo);
-};
-
-///////////////////////////////////////////////////////////////////////////////
-
-tResult ReadSkeleton(IReader * pReader, 
-                     std::vector<sBoneInfo> * pBones,
-                     std::vector<IKeyFrameInterpolator *> * pInterpolators);
 
 ///////////////////////////////////////////////////////////////////////////////
 

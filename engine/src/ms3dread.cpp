@@ -5,14 +5,124 @@
 
 #include "ms3dread.h"
 
-#include "animation.h"
 #include "matrix4.h"
 #include "vec3.h"
-#include "techstring.h"
+#include "hash.h"
 
 #include <map>
 
 #include "dbgalloc.h" // must be last header
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cMs3dVertexMapper
+//
+
+///////////////////////////////////////
+
+cMs3dVertexMapper::cMs3dVertexMapper(const ms3d_vertex_t * pVertices, size_t nVertices)
+ : m_nOriginalVertices(nVertices)
+{
+   Assert(pVertices != NULL);
+   Assert(nVertices > 0);
+
+   m_vertices.resize(nVertices);
+   m_haveVertex.resize(nVertices, false);
+
+   for (uint i = 0; i < nVertices; i++)
+   {
+      m_vertices[i].pos = pVertices[i].vertex;
+      m_vertices[i].bone = pVertices[i].boneId;
+   }
+}
+
+///////////////////////////////////////
+
+cMs3dVertexMapper::cMs3dVertexMapper(const std::vector<ms3d_vertex_t> & vertices)
+ : m_nOriginalVertices(vertices.size()),
+   m_vertices(vertices.size()),
+   m_haveVertex(vertices.size(), false)
+{
+   std::vector<ms3d_vertex_t>::const_iterator iter = vertices.begin();
+   std::vector<ms3d_vertex_t>::const_iterator end = vertices.end();
+   for (uint i = 0; iter != end; iter++, i++)
+   {
+      m_vertices[i].pos = iter->vertex;
+      m_vertices[i].bone = iter->boneId;
+   }
+}
+
+///////////////////////////////////////
+
+static bool operator ==(const tVec3 & v1, const tVec3 & v2)
+{
+   return (v1.x == v2.x) && (v1.y == v2.y) && (v1.z == v2.z);
+}
+
+///////////////////////////////////////
+
+uint cMs3dVertexMapper::MapVertex(uint originalIndex, const float normal[3], float s, float t)
+{
+   Assert(originalIndex < m_nOriginalVertices);
+   Assert(m_nOriginalVertices == m_haveVertex.size());
+
+   // Use the complement of what is actually stored in the Milkshape file
+   t = 1 - t;
+
+   if (!m_haveVertex[originalIndex])
+   {
+      m_haveVertex[originalIndex] = true;
+      m_vertices[originalIndex].normal = normal;
+      m_vertices[originalIndex].u = s;
+      m_vertices[originalIndex].v = t;
+      return originalIndex;
+   }
+   else if ((m_vertices[originalIndex].normal == normal)
+      && (m_vertices[originalIndex].u == s)
+      && (m_vertices[originalIndex].v == t))
+   {
+      return originalIndex;
+   }
+   else
+   {
+      sMs3dVertex newVertex = m_vertices[originalIndex];
+      newVertex.normal = normal;
+      newVertex.u = s;
+      newVertex.v = t;
+      uint h = Hash(&newVertex, sizeof(newVertex));
+      std::map<uint, uint>::iterator f = m_remap.find(h);
+      if (f != m_remap.end())
+      {
+         Assert(f->second < m_vertices.size());
+         return f->second;
+      }
+      else
+      {
+         // TODO: Tacking the the duplicated vertex onto the end
+         // is totally not optimal with respect to vertex caches
+         m_vertices.push_back(newVertex);
+         size_t newIndex = m_vertices.size() - 1;
+         m_remap.insert(std::make_pair(h, newIndex));
+         return newIndex;
+      }
+   }
+}
+
+///////////////////////////////////////
+
+const void * cMs3dVertexMapper::GetVertexData() const
+{
+   return reinterpret_cast<const void *>(&m_vertices[0]);
+}
+
+///////////////////////////////////////
+
+uint cMs3dVertexMapper::GetVertexCount() const
+{
+   return m_vertices.size();
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -176,187 +286,5 @@ tResult cReadWriteOps<cMs3dJoint>::Read(IReader * pReader, cMs3dJoint * pJoint)
    return result;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////
-
-tResult cReadWriteOps<sMs3dBoneInfo>::Read(IReader * pReader, sMs3dBoneInfo * pBoneInfo)
-{
-   Assert(pReader != NULL);
-   Assert(pBoneInfo != NULL);
-
-   byte flags; // SELECTED | DIRTY
-
-   if (pReader->Read(&flags, sizeof(flags)) != S_OK
-      || pReader->Read(pBoneInfo->name, sizeof(pBoneInfo->name)) != S_OK
-      || pReader->Read(pBoneInfo->parentName, sizeof(pBoneInfo->parentName)) != S_OK
-      || pReader->Read(pBoneInfo->rotation, sizeof(pBoneInfo->rotation)) != S_OK
-      || pReader->Read(pBoneInfo->position, sizeof(pBoneInfo->position)) != S_OK)
-   {
-      return E_FAIL;
-   }
-
-   return S_OK;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-static tResult ReadKeyFrames(IReader * pReader, uint * pnKeyFrames, sKeyFrame * pKeyFrames)
-{
-   Assert(pReader != NULL);
-   Assert(pnKeyFrames != NULL);
-   Assert(pKeyFrames != NULL);
-
-   tResult result = E_FAIL;
-
-   do
-   {
-      uint i;
-      uint16 nKeyFramesRot, nKeyFramesTrans;
-
-      if (pReader->Read(&nKeyFramesRot, sizeof(nKeyFramesRot)) != S_OK)
-         break;
-      if (pReader->Read(&nKeyFramesTrans, sizeof(nKeyFramesTrans)) != S_OK)
-         break;
-
-      if (nKeyFramesRot != nKeyFramesTrans)
-      {
-         DebugMsg2("Have %d rotation and %d translation key frames\n", nKeyFramesRot, nKeyFramesTrans);
-         break;
-      }
-
-      uint nKeyFrames = Min(*pnKeyFrames, nKeyFramesRot);
-
-      ms3d_keyframe_rot_t rotationKeys[MAX_KEYFRAMES];
-      if (pReader->Read(rotationKeys, nKeyFramesRot * sizeof(ms3d_keyframe_rot_t)) != S_OK)
-         break;
-
-      ms3d_keyframe_pos_t translationKeys[MAX_KEYFRAMES];
-      if (pReader->Read(translationKeys, nKeyFramesTrans * sizeof(ms3d_keyframe_pos_t)) != S_OK)
-         break;
-
-      for (i = 0; i < nKeyFrames; i++)
-      {
-         pKeyFrames[i].time = translationKeys[i].time;
-         pKeyFrames[i].translation = tVec3(translationKeys[i].position);
-         pKeyFrames[i].rotation = QuatFromEulerAngles(tVec3(rotationKeys[i].rotation));
-      }
-
-      *pnKeyFrames = nKeyFrames;
-
-      result = S_OK;
-   }
-   while (0);
-
-   return result;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-static void MatrixFromAngles(tVec3 angles, tMatrix4 * pMatrix)
-{
-   tMatrix4 rotX, rotY, rotZ, temp1, temp2;
-   MatrixRotateX(Rad2Deg(angles.x), &rotX);
-   MatrixRotateY(Rad2Deg(angles.y), &rotY);
-   MatrixRotateZ(Rad2Deg(angles.z), &rotZ);
-   temp1 = rotZ;
-   temp1.Multiply(rotY, &temp2);
-   temp2.Multiply(rotX, pMatrix);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-tResult ReadSkeleton(IReader * pReader, 
-                     std::vector<sBoneInfo> * pBones,
-                     std::vector<IKeyFrameInterpolator *> * pInterpolators)
-{
-   Assert(pReader != NULL);
-   Assert(pBones != NULL);
-   Assert(pInterpolators != NULL);
-
-   tResult result = E_FAIL;
-
-   do
-   {
-      float animationFPS;
-      float currentTime;
-      int nTotalFrames;
-      uint16 nJoints;
-      if (pReader->Read(&animationFPS, sizeof(animationFPS)) != S_OK
-         || pReader->Read(&currentTime, sizeof(currentTime)) != S_OK
-         || pReader->Read(&nTotalFrames, sizeof(nTotalFrames)) != S_OK
-         || pReader->Read(&nJoints, sizeof(nJoints)) != S_OK)
-      {
-         break;
-      }
-
-      std::map<cStr, int> boneNames; // map bone names to indices
-
-      std::vector<sMs3dBoneInfo> boneInfo(nJoints);
-
-      pInterpolators->clear();
-
-      uint i;
-      for (i = 0; i < nJoints; i++)
-      {
-         if (pReader->Read(&boneInfo[i]) != S_OK)
-            break;
-
-         boneNames.insert(std::make_pair(cStr(boneInfo[i].name), i));
-
-         sKeyFrame keyFrames[MAX_KEYFRAMES];
-         uint nKeyFrames = _countof(keyFrames);
-         if (ReadKeyFrames(pReader, &nKeyFrames, keyFrames) != S_OK)
-         {
-            break;
-         }
-
-         IKeyFrameInterpolator * pInterpolator = NULL;
-         if (KeyFrameInterpolatorCreate(boneInfo[i].name, keyFrames, nKeyFrames, &pInterpolator) != S_OK)
-         {
-            SafeRelease(pInterpolator);
-            break;
-         }
-         else
-         {
-            pInterpolators->push_back(pInterpolator);
-         }
-      }
-
-      if (i < nJoints)
-         break;
-
-      pBones->resize(nJoints);
-
-      for (i = 0; i < nJoints; i++)
-      {
-         strcpy((*pBones)[i].name, boneInfo[i].name);
-
-         if (strlen(boneInfo[i].parentName) > 0)
-         {
-            std::map<cStr, int>::iterator n = boneNames.find(boneInfo[i].parentName);
-            if (n != boneNames.end())
-            {
-               Assert(strcmp(boneInfo[n->second].name, boneInfo[i].parentName) == 0);
-               (*pBones)[i].parentIndex = n->second;
-            }
-         }
-         else
-         {
-            (*pBones)[i].parentIndex = -1;
-         }
-
-         tMatrix4 mt, mr;
-         MatrixTranslate(boneInfo[i].position[0], boneInfo[i].position[1], boneInfo[i].position[2], &mt);
-         MatrixFromAngles(tVec3(boneInfo[i].rotation), &mr);
-
-         mt.Multiply(mr, &(*pBones)[i].localTransform);
-      }
-
-      result = S_OK;
-   }
-   while (0);
-
-   return result;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
