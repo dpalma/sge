@@ -350,9 +350,6 @@
 					RelativePath="..\..\tech\src\matrix4.cpp">
 				</File>
 				<File
-					RelativePath="..\..\tech\src\memmanager.cpp">
-				</File>
-				<File
 					RelativePath="..\..\tech\src\prime.cpp">
 				</File>
 				<File
@@ -516,9 +513,6 @@
 			</File>
 			<File
 				RelativePath="..\..\tech\include\matrix4.h">
-			</File>
-			<File
-				RelativePath="..\..\tech\include\memmanager.h">
 			</File>
 			<File
 				RelativePath="..\..\tech\include\quat.h">
