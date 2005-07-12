@@ -38,7 +38,7 @@ void SysAppActivate(bool active)
 
 void SysQuit()
 {
-   PostQuitMessage(0);
+   Verify(DestroyWindow(g_hWnd));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
