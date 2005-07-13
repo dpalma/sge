@@ -34,7 +34,7 @@ public:
    virtual tResult Init();
    virtual tResult Term();
 
-   virtual tResult ExecFile(const char * pszFile);
+   virtual tResult ExecFile(const tChar * pszFile);
    virtual tResult ExecString(const char * pszCode);
    virtual tResult CDECL CallFunction(const char * pszName, const char * pszArgDesc, ...);
    tResult CallFunction(const char * pszName, const char * pszArgDesc, va_list args);

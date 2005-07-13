@@ -11,6 +11,7 @@
 #include "imagedata.h"
 #include "resourceapi.h"
 
+#include <map>
 #include <algorithm>
 #include <functional>
 #include <GL/gl.h>

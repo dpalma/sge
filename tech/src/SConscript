@@ -21,7 +21,6 @@ sources = Split("""
    imagedata.cpp
    log.cpp
    matrix4.cpp
-   memmanager.cpp
    prime.cpp
    quat.cpp
    rand.cpp

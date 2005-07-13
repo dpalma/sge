@@ -63,22 +63,22 @@ interface IGlobalObject : IUnknown
    virtual tResult Init() = 0;
    virtual tResult Term() = 0;
 
-   virtual const char * GetName() const = 0;
+   virtual const tChar * GetName() const = 0;
    virtual size_t GetConstraints(tGlobalObjectInitConstraints * pConstraints) const = 0;
 };
 
 ///////////////////////////////////////
 
 #define DECLARE_NAME(name) \
-   virtual const char * GetName() const \
+   virtual const tChar * GetName() const \
    { \
-      return #name; \
+      return _T(#name); \
    }
 
 ///////////////////////////////////////
 
 #define DECLARE_NAME_STRING(szName) \
-   virtual const char * GetName() const \
+   virtual const tChar * GetName() const \
    { \
       return szName; \
    }

@@ -134,12 +134,12 @@ void cLog::Print(eLogSeverity severity, const tChar * pszFormat, ...)
 {
    va_list args;
    va_start(args, pszFormat);
-   vsnprintf(m_szBuffer, _countof(m_szBuffer), pszFormat, args);
+   _vsntprintf(m_szBuffer, _countof(m_szBuffer), pszFormat, args);
    va_end(args);
 
    if (m_callback != NULL)
    {
-      (*m_callback)(severity, m_szBuffer, strlen(m_szBuffer));
+      (*m_callback)(severity, m_szBuffer, _tcslen(m_szBuffer));
    }
 
 #ifdef _WIN32
@@ -158,17 +158,17 @@ void cLog::Print(const tChar * pszFile, int line, eLogSeverity severity, const t
    size_t len = 0;
    if (pszFile && line)
    {
-      len = snprintf(m_szBuffer, _countof(m_szBuffer), "%s(%d) : ", pszFile, line);
+      len = _sntprintf(m_szBuffer, _countof(m_szBuffer), _T("%s(%d) : "), pszFile, line);
    }
 
    va_list args;
    va_start(args, pszFormat);
-   vsnprintf(m_szBuffer + len, _countof(m_szBuffer) - len, pszFormat, args);
+   _vsntprintf(m_szBuffer + len, _countof(m_szBuffer) - len, pszFormat, args);
    va_end(args);
 
    if (m_callback != NULL)
    {
-      (*m_callback)(severity, m_szBuffer, strlen(m_szBuffer));
+      (*m_callback)(severity, m_szBuffer, _tcslen(m_szBuffer));
    }
 
 #ifdef _WIN32
@@ -198,7 +198,7 @@ bool * cLog::FindChannel(const tChar * pszChannel) const
    cLogChannel * pLogChannel = m_pChannels;
    while (pLogChannel != NULL)
    {
-      if (strcmp(pLogChannel->GetName(), pszChannel) == 0)
+      if (_tcscmp(pLogChannel->GetName(), pszChannel) == 0)
       {
          return pLogChannel->GetEnabledPointer();
       }

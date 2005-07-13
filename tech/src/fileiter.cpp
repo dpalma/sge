@@ -3,16 +3,16 @@
 
 #include "stdhdr.h"
 
+#include "fileiter.h"
+#include "filespec.h"
+#include "filepath.h"
+#include "techstring.h"
+
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #else
 #endif
-
-#include "filespec.h"
-#include "filepath.h"
-#include "fileiter.h"
-#include "techstring.h"
 
 #include "dbgalloc.h" // must be last header
 
@@ -53,7 +53,7 @@ public:
 
 private:
    const cFilePath & GetPath() const { return m_path; }
-   const char * GetSpec() const { return m_spec.c_str(); }
+   const tChar * GetSpec() const { return m_spec.c_str(); }
 
    cFilePath m_path;
    cStr m_spec;
@@ -107,8 +107,8 @@ bool cFileIterWin32::Next(cFileSpec * pFileSpec, uint * pAttribs)
 
          if (m_findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
          {
-            if (strcmp(m_findData.cFileName, ".") == 0 ||
-                strcmp(m_findData.cFileName, "..") == 0)
+            if (_tcscmp(m_findData.cFileName, _T(".")) == 0 ||
+                _tcscmp(m_findData.cFileName, _T("..")) == 0)
             {
                continue;
             }
@@ -143,7 +143,7 @@ void cFileIterWin32::End()
       m_hFinder = NULL;
    }
 
-   m_spec = "";
+   m_spec.erase();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

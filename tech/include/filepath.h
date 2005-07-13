@@ -21,15 +21,15 @@ class TECH_API cFilePath : public cStr
 public:
    cFilePath();
    cFilePath(const cFilePath & other);
-   explicit cFilePath(const char * pszPath);
-   cFilePath(const char * pszPath, size_t pathLen);
+   explicit cFilePath(const tChar * pszPath);
+   cFilePath(const tChar * pszPath, size_t pathLen);
 
    const cFilePath & operator =(const cFilePath & other);
 
    bool operator ==(const cFilePath & other);
    bool operator !=(const cFilePath & other);
 
-   void AddRelative(const char * pszDir);
+   void AddRelative(const tChar * pszDir);
 
    bool IsFullPath() const;
    void MakeFullPath();

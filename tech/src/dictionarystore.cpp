@@ -18,21 +18,21 @@
 
 LOG_DEFINE_CHANNEL(DictionaryStore);
 
-static const char kCommentChar = '#';
-static const char kSepChar = '=';
-static const char kWhitespace[] = " \t\r\n";
+static const tChar kCommentChar = _T('#');
+static const tChar kSepChar = _T('=');
+static const tChar kWhitespace[] = _T(" \t\r\n");
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static bool SplitString(const tChar * psz, char split, cStr * pLeft, cStr * pRight)
+static bool SplitString(const tChar * psz, tChar split, cStr * pLeft, cStr * pRight)
 {
    Assert(psz != NULL);
-   const char * pszSplit = strrchr(psz, split);
+   const tChar * pszSplit = _tcsrchr(psz, split);
    if (pszSplit != NULL)
    {
       if (pLeft != NULL)
       {
-         *pLeft = std::string(psz, pszSplit - psz).c_str();
+         *pLeft = cStr(psz, pszSplit - psz).c_str();
       }
       if (pRight != NULL)
       {
@@ -124,8 +124,7 @@ tResult cDictionaryTextStore::Load(IDictionary * pDictionary)
 
 tResult cDictionaryTextStore::Save(IDictionary * pDictionary)
 {
-   FILE * fp = fopen(m_file.c_str(), "w");
-
+   FILE * fp = _tfopen(m_file.c_str(), _T("w"));
    if (fp == NULL)
    {
       return E_FAIL;
@@ -187,11 +186,12 @@ bool ParseIniSectionLine(tChar * pszBuffer, cStr * pSection, cStr * pComment)
       *pComment = NULL;
    }
 
-   tChar * p = strrchr(pszBuffer, kCommentChar);
+   tChar * p = _tcsrchr(pszBuffer, kCommentChar);
 
    if (p != NULL)
    {
-      *p++ = 0;
+      *p = 0;
+      p = _tcsinc(p);
       if (pComment != NULL)
       {
          *pComment = p;
@@ -199,15 +199,18 @@ bool ParseIniSectionLine(tChar * pszBuffer, cStr * pSection, cStr * pComment)
    }
    pComment->TrimTrailingSpace();
 
-   if (pszBuffer[0] != '[') // do not allow whitespace before "[section name]"
+   if (pszBuffer[0] != _T('[')) // do not allow whitespace before "[section name]"
+   {
       return false;
+   }
 
-   pszBuffer++; // skip past the '['
+   pszBuffer = _tcsinc(pszBuffer); // skip past the '['
 
-   p = strchr(pszBuffer, ']');
-
+   p = _tcschr(pszBuffer, _T(']'));
    if (p == NULL)
+   {
       return false;
+   }
 
    *p = 0;
 
@@ -223,7 +226,7 @@ cDictionaryIniStore::cDictionaryIniStore(const cFileSpec & file,
                                          const tChar * pszSection)
  : m_file(file)
 {
-   strncpy(m_szSection, pszSection, _countof(m_szSection));
+   _tcsncpy(m_szSection, pszSection, _countof(m_szSection));
    m_szSection[_countof(m_szSection) - 1] = 0;
 }
 
@@ -231,22 +234,20 @@ cDictionaryIniStore::cDictionaryIniStore(const cFileSpec & file,
 
 tResult cDictionaryIniStore::Load(IDictionary * pDictionary)
 {
-   FILE * fp = fopen(m_file.c_str(), "r");
-
+   FILE * fp = _tfopen(m_file.c_str(), _T("r"));
    if (fp == NULL)
       return E_FAIL;
 
-   char buffer[1024];
+   tChar buffer[1024];
 
    bool bInSection = false;
 
-   while (fgets(buffer, sizeof(buffer), fp))
+   while (_fgetts(buffer, sizeof(buffer), fp))
    {
       cStr section;
-
       if (ParseIniSectionLine(buffer, &section, NULL))
       {
-         if (stricmp(section.c_str(), m_szSection) == 0)
+         if (_tcsicmp(section.c_str(), m_szSection) == 0)
          {
             bInSection = true;
          }
@@ -258,7 +259,6 @@ tResult cDictionaryIniStore::Load(IDictionary * pDictionary)
       else if (bInSection)
       {
          cStr key, value, comment;
-
          if (ParseDictionaryLine(buffer, &key, &value, &comment)
              && !key.IsEmpty() && !value.IsEmpty())
          {

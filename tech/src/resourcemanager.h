@@ -40,17 +40,17 @@ public:
    virtual tResult Term();
 
    // IResourceManager methods
-   virtual tResult AddDirectory(const char * pszDir);
-   virtual tResult AddDirectoryTreeFlattened(const char * pszDir);
-   virtual tResult AddArchive(const char * pszArchive);
-   virtual tResult LoadUncached(const char * pszName, tResourceType type, void * param, void * * ppData, ulong * pDataSize);
-   virtual tResult Load(const char * pszName, tResourceType type, void * param, void * * ppData);
-   virtual tResult Unload(const char * pszName, tResourceType type);
-   virtual tResult Lock(const char * pszName, tResourceType type);
-   virtual tResult Unlock(const char * pszName, tResourceType type);
+   virtual tResult AddDirectory(const tChar * pszDir);
+   virtual tResult AddDirectoryTreeFlattened(const tChar * pszDir);
+   virtual tResult AddArchive(const tChar * pszArchive);
+   virtual tResult LoadUncached(const tChar * pszName, tResourceType type, void * param, void * * ppData, ulong * pDataSize);
+   virtual tResult Load(const tChar * pszName, tResourceType type, void * param, void * * ppData);
+   virtual tResult Unload(const tChar * pszName, tResourceType type);
+   virtual tResult Lock(const tChar * pszName, tResourceType type);
+   virtual tResult Unlock(const tChar * pszName, tResourceType type);
    virtual tResult RegisterFormat(tResourceType type,
                                   tResourceType typeDepend,
-                                  const char * pszExtension,
+                                  const tChar * pszExtension,
                                   tResourceLoad pfnLoad,
                                   tResourcePostload pfnPostload,
                                   tResourceUnload pfnUnload);
@@ -59,17 +59,17 @@ private:
    struct sFormat;
    struct sResource;
 
-   sResource * FindResourceWithFormat(const char * pszName, tResourceType type, sFormat * pFormat);
+   sResource * FindResourceWithFormat(const tChar * pszName, tResourceType type, sFormat * pFormat);
    tResult DoLoadFromFile(const cFileSpec & file, sFormat * pFormat, void * param, ulong * pDataSize, void * * ppData);
    tResult DoLoadFromArchive(uint archiveId, ulong offset, ulong index, sFormat * pFormat, void * param, ulong * pDataSize, void * * ppData);
    tResult DoLoadFromReader(IReader * pReader, sFormat * pFormat, ulong dataSize, void * param, void * * ppData);
 
-   uint DeduceFormats(const char * pszName, tResourceType type, sFormat * * ppFormats, uint nMaxFormats);
+   uint DeduceFormats(const tChar * pszName, tResourceType type, sFormat * * ppFormats, uint nMaxFormats);
 
-   uint GetExtensionId(const char * pszExtension);
-   uint GetExtensionIdForName(const char * pszName);
-   uint GetDirectoryId(const char * pszDir);
-   uint GetArchiveId(const char * pszArchive);
+   uint GetExtensionId(const tChar * pszExtension);
+   uint GetExtensionIdForName(const tChar * pszName);
+   uint GetDirectoryId(const tChar * pszDir);
+   uint GetArchiveId(const tChar * pszArchive);
 
    std::vector<cStr> m_extensions;
    std::vector<cFilePath> m_dirs;

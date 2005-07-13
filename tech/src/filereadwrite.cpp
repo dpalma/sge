@@ -15,7 +15,7 @@
 //
 
 cFileReader::cFileReader(const cFileSpec & file)
- : m_fp(fopen(file.c_str(), "rb"))
+ : m_fp(_tfopen(file.c_str(), _T("rb")))
 {
 }
 
@@ -88,7 +88,7 @@ tResult cFileReader::Seek(long pos, eSeekOrigin origin)
 
 ///////////////////////////////////////
 
-tResult cFileReader::Read(cStr * pValue, char stop)
+tResult cFileReader::Read(cStr * pValue, tChar stop)
 {
    if (pValue == NULL)
    {
@@ -107,13 +107,13 @@ tResult cFileReader::Read(cStr * pValue, char stop)
    }
 
    uint len = 0;
-   for (char c = fgetc(m_fp); c != stop && c != EOF; c = fgetc(m_fp))
+   for (char c = _fgettc(m_fp); c != stop && c != EOF; c = _fgettc(m_fp))
    {
       len++;
    }
    Seek(pos, kSO_Set);
 
-   char * pszBuffer = (char *)alloca(len + 1);
+   tChar * pszBuffer = reinterpret_cast<tChar*>(alloca((len + 1) * sizeof(tChar)));
 
    size_t nRead = fread(pszBuffer, 1, len + 1, m_fp);
 
@@ -170,7 +170,7 @@ TECH_API IReader * FileCreateReader(const cFileSpec& file)
 //
 
 cFileWriter::cFileWriter(const cFileSpec & file)
- : m_fp(fopen(file.c_str(), "wb"))
+ : m_fp(_tfopen(file.c_str(), _T("wb")))
 {
 }
 

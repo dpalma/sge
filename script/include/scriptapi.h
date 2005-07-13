@@ -78,7 +78,7 @@ interface IScriptable : IUnknown
 interface IScriptInterpreter : IUnknown
 {
    /// @brief Execute a script code source file
-   virtual tResult ExecFile(const char * pszFile) = 0;
+   virtual tResult ExecFile(const tChar * pszFile) = 0;
    /// @brief Execute script code stored in a string variable
    virtual tResult ExecString(const char * pszCode) = 0;
 

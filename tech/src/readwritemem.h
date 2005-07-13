@@ -26,7 +26,7 @@ public:
    virtual tResult Tell(ulong * pPos);
    virtual tResult Seek(long pos, eSeekOrigin origin);
 
-   virtual tResult Read(cStr * pValue, char stop);
+   virtual tResult Read(cStr * pValue, tChar stop);
    virtual tResult Read(void * pv, size_t cb, size_t * pcbRead = NULL);
 
 private:

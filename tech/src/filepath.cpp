@@ -28,7 +28,7 @@ extern "C"
    __declspec(dllimport) uint STDCALL GetCurrentDirectoryA(uint, char *);
    __declspec(dllimport) uint STDCALL GetCurrentDirectoryW(uint, wchar_t *);
 }
-#ifdef UNICODE
+#ifdef _UNICODE
 #define GetCurrentDirectory  GetCurrentDirectoryW
 #else
 #define GetCurrentDirectory  GetCurrentDirectoryA
@@ -38,31 +38,25 @@ extern "C"
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifdef _WIN32
-static const char kPathSep = '\\';
+static const tChar kPathSep = _T('\\');
 #else
-static const char kPathSep = '/';
+static const tChar kPathSep = _T('/');
 #endif
-static const char szPathSep[] = { kPathSep, 0 };
-static const char szPathSeps[] = "\\/";
+static const tChar szPathSep[] = { kPathSep, 0 };
+static const tChar szPathSeps[] = _T("\\/");
 
 ///////////////////////////////////////////////////////////////////////////////
 
-inline bool IsPathSep(char c)
+inline bool IsPathSep(tChar c)
 {
-   if (c == '/' || c == '\\')
-      return true;
-   else
-      return false;
+   return (c == _T('/') || c == _T('\\'));
 }
 
-inline bool IsTwoDots(const char * psz)
+inline bool IsTwoDots(const tChar * psz)
 {
-   if (strncmp("/..", psz, 3) == 0 ||
-       strncmp("\\..", psz, 3) == 0 ||
-       strncmp("..", psz, 2) == 0)
-      return true;
-   else
-      return false;
+   return (_tcsncmp(_T("/.."), psz, 3) == 0 ||
+      _tcsncmp(_T("\\.."), psz, 3) == 0 ||
+      _tcsncmp(_T(".."), psz, 2) == 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -85,14 +79,14 @@ cFilePath::cFilePath(const cFilePath & other)
 
 ///////////////////////////////////////
 
-cFilePath::cFilePath(const char * pszPath)
+cFilePath::cFilePath(const tChar * pszPath)
  : cStr(pszPath)
 {
 }
 
 ///////////////////////////////////////
 
-cFilePath::cFilePath(const char * pszPath, size_t pathLen)
+cFilePath::cFilePath(const tChar * pszPath, size_t pathLen)
  : cStr(pszPath, pathLen)
 {
 }
@@ -107,31 +101,31 @@ const cFilePath & cFilePath::operator =(const cFilePath & other)
 
 ///////////////////////////////////////
 
-static void PathCat(char * pszDest, const char * pszSrc)
+static void PathCat(tChar * pszDest, const tChar * pszSrc)
 {
-   int destLen = strlen(pszDest);
+   int destLen = _tcslen(pszDest);
 
    if (destLen > 0
-      && (*pszSrc != '/')
-      && (*pszSrc != '\\')
-      && (pszDest[destLen - 1] != '/')
-      && (pszDest[destLen - 1] != '\\'))
+      && (*pszSrc != _T('/'))
+      && (*pszSrc != _T('\\'))
+      && (pszDest[destLen - 1] != _T('/'))
+      && (pszDest[destLen - 1] != _T('\\')))
    {
-      strcat(pszDest, szPathSep);
+      _tcscat(pszDest, szPathSep);
    }
 
-   strcat(pszDest, pszSrc);
+   _tcscat(pszDest, pszSrc);
 }
 
 ///////////////////////////////////////
 
-void cFilePath::AddRelative(const char * pszDir)
+void cFilePath::AddRelative(const tChar * pszDir)
 {
    if (!IsEmpty()
-      && (*pszDir != '/')
-      && (*pszDir != '\\')
-      && (at(length() - 1) != '/')
-      && (at(length() - 1) != '\\'))
+      && (*pszDir != _T('/'))
+      && (*pszDir != _T('\\'))
+      && (at(length() - 1) != _T('/'))
+      && (at(length() - 1) != _T('\\')))
    {
       append(szPathSep);
    }
@@ -144,14 +138,14 @@ bool cFilePath::IsFullPath() const
 {
    if (length() >= 3 &&
        isalpha(at(0)) &&
-       at(1) == ':' &&
+       at(1) == _T(':') &&
        IsPathSep(at(2)) &&
-       strstr(c_str(), "..") == NULL)
+       _tcsstr(c_str(), _T("..")) == NULL)
    {
       return true;
    }
 
-   if (IsPathSep(at(0)) && strstr(c_str(), "..") == NULL)
+   if (IsPathSep(at(0)) && _tcsstr(c_str(), _T("..")) == NULL)
    {
       return true;
    }
@@ -177,7 +171,7 @@ void cFilePath::MakeFullPath()
 cFilePath cFilePath::CollapseDots()
 {
    int nDirs = 0;
-   const char * * dirs = static_cast<const char**>(alloca(length() * sizeof(const char *)));
+   const tChar * * dirs = static_cast<const tChar**>(alloca(length() * sizeof(const tChar *)));
    memset(dirs, 0, sizeof(dirs));
 
    bool bHadLeadingSeparator = false;
@@ -186,9 +180,10 @@ cFilePath cFilePath::CollapseDots()
       bHadLeadingSeparator = true;
    }
 
-   const char * p = c_str();
-   dirs[nDirs++] = p++;
-   for (; *p != 0; p++)
+   const tChar * p = c_str();
+   dirs[nDirs++] = p;
+   p = _tcsinc(p);
+   for (; *p != 0; p = _tcsinc(p))
    {
       if (IsPathSep(*p))
       {
@@ -212,16 +207,16 @@ cFilePath cFilePath::CollapseDots()
 
    for (i = 0; i < nDirs; i++)
    {
-      char szDir[kMaxPath];
+      tChar szDir[kMaxPath];
       if (i < (nDirs - 1))
       {
          size_t len = dirs[i + 1] - dirs[i] + 1;
-         strncpy(szDir, dirs[i], len);
+         _tcsncpy(szDir, dirs[i], len);
          szDir[len - 1] = 0;
       }
       else
       {
-         strcpy(szDir, dirs[i]);
+         _tcscpy(szDir, dirs[i]);
       }
 
       if (IsTwoDots(szDir) && i > iFirstCollapsible)
@@ -248,7 +243,7 @@ cFilePath cFilePath::CollapseDots()
    {
       if (dirs[i] != NULL)
       {
-         size_t len = strcspn(dirs[i] + 1, szPathSeps) + 1;
+         size_t len = _tcscspn(dirs[i] + 1, szPathSeps) + 1;
          result.Append(cStr(dirs[i], len).c_str());
       }
    }
@@ -265,7 +260,7 @@ cFilePath cFilePath::CollapseDots()
 
 cFilePath cFilePath::GetCwd()
 {
-   char szCwd[kMaxPath];
+   tChar szCwd[kMaxPath];
 #ifdef _WIN32
    GetCurrentDirectory(_countof(szCwd), szCwd);
 #else

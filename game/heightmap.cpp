@@ -36,7 +36,7 @@ cHeightMap::~cHeightMap()
 
 ///////////////////////////////////////
 
-bool cHeightMap::Load(const char * pszFilename)
+bool cHeightMap::Load(const tChar * pszFilename)
 {
    cImageData * pHeightImage = NULL;
    UseGlobal(ResourceManager);

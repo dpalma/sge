@@ -3,8 +3,8 @@
 
 #include "stdhdr.h"
 
-#include "filepath.h"
 #include "filespec.h"
+#include "filepath.h"
 #include "techstring.h"
 
 #include <cstring>
@@ -15,9 +15,9 @@
 
 #include "dbgalloc.h" // must be last header
 
-static const char kExtensionSep = '.';
-static const char szExtensionSep[] = { kExtensionSep, 0 };
-static const char kPathSeps[] = "\\/";
+static const tChar kExtensionSep = _T('.');
+static const tChar szExtensionSep[] = { kExtensionSep, 0 };
+static const tChar kPathSeps[] = _T("\\/");
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -32,7 +32,7 @@ cFileSpec::cFileSpec()
 
 ///////////////////////////////////////
 
-cFileSpec::cFileSpec(const char * pszFile)
+cFileSpec::cFileSpec(const tChar * pszFile)
  : cStr(pszFile)
 {
 }
@@ -54,13 +54,14 @@ const cFileSpec & cFileSpec::operator =(const cFileSpec & other)
 
 ///////////////////////////////////////
 
-static void StrCpyExcl(char * pDest, const char * pSrc, const char * pExcl)
+static void StrCpyExcl(tChar * pDest, const tChar * pSrc, const tChar * pExcl)
 {
-   for (; *pSrc; pSrc++)
+   for (; *pSrc; pSrc = _tcsinc(pSrc))
    {
-      if (!strchr(pExcl, *pSrc))
+      if (!_tcschr(pExcl, *pSrc))
       {
-         *pDest++ = *pSrc;
+         *pDest = *pSrc;
+         pDest = _tcsinc(pDest);
       }
    }
    *pDest = 0;
@@ -68,7 +69,7 @@ static void StrCpyExcl(char * pDest, const char * pSrc, const char * pExcl)
 
 ///////////////////////////////////////
 
-const char * cFileSpec::GetFileName() const
+const tChar * cFileSpec::GetFileName() const
 {
    size_type i = find_last_of(kPathSeps);
    if (i != npos)
@@ -87,13 +88,13 @@ bool cFileSpec::GetFileNameNoExt(cStr * pFileName) const
 {
    if (pFileName != NULL)
    {
-      const char * p = GetFileName();
+      const tChar * p = GetFileName();
       Assert(p != NULL);
-      const char * pExt = strrchr(p, kExtensionSep);
+      const tChar * pExt = _tcsrchr(p, kExtensionSep);
       if (pExt != NULL)
       {
-         char * pTemp = reinterpret_cast<char*>(alloca(pExt - p + 1));
-         strncpy(pTemp, p, pExt - p);
+         tChar * pTemp = reinterpret_cast<tChar*>(alloca(pExt - p + 1));
+         _tcsncpy(pTemp, p, pExt - p);
          pTemp[pExt - p] = 0;
          *pFileName = pTemp;
       }
@@ -108,22 +109,22 @@ bool cFileSpec::GetFileNameNoExt(cStr * pFileName) const
 
 ///////////////////////////////////////
 
-const char * cFileSpec::GetFileExt() const
+const tChar * cFileSpec::GetFileExt() const
 {
-   const char * pszExt = strrchr(c_str(), kExtensionSep);
+   const tChar * pszExt = _tcsrchr(c_str(), kExtensionSep);
    if (pszExt)
    {
-      return ++pszExt;
+      return _tcsinc(pszExt);
    }
    else
    {
-      return "";
+      return _T("");
    }
 }
 
 ///////////////////////////////////////
 
-bool cFileSpec::SetFileExt(const char * pszExt)
+bool cFileSpec::SetFileExt(const tChar * pszExt)
 {
    size_t len = length();
    if (len > 0)
@@ -153,10 +154,10 @@ void cFileSpec::SetPath(const cFilePath & path)
 
 cFilePath cFileSpec::GetPath() const
 {
-   const char * pszFileName = GetFileName();
+   const tChar * pszFileName = GetFileName();
    if (pszFileName != NULL)
    {
-      const char * pszFullName = c_str();
+      const tChar * pszFullName = c_str();
       return cFilePath(pszFullName, pszFileName - pszFullName);
    }
    else

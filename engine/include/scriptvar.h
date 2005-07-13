@@ -47,6 +47,7 @@ public:
    cScriptVar();
    cScriptVar(double _d);
    cScriptVar(char * _psz);
+   cScriptVar(wchar_t * _pwsz);
    cScriptVar(IUnknown * _pUnk);
    cScriptVar(const cScriptVar & other);
    ~cScriptVar();
@@ -66,6 +67,7 @@ public:
    const cScriptVar & operator =(float value);
    const cScriptVar & operator =(double value);
    const cScriptVar & operator =(char * _psz);
+   const cScriptVar & operator =(wchar_t * _pwsz);
    const cScriptVar & operator =(IUnknown * _pUnk);
    const cScriptVar & operator =(const cScriptVar & other);
 
@@ -74,6 +76,7 @@ public:
    operator float() const;
    operator double() const;
    operator const char *() const;
+   operator const wchar_t *() const;
    operator IUnknown *() const;
 
    bool IsNumber() const;
@@ -83,6 +86,9 @@ public:
 
 private:
    void Clear();
+
+   void * m_pTempBuffer;
+   mutable void * m_pConversionBuffer;
 };
 
 ///////////////////////////////////////

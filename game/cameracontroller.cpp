@@ -63,8 +63,8 @@ cGameCameraController::cGameCameraController(ISceneCamera * pCamera)
    m_velocity(0,0,0),
    m_pCamera(CTAddRef(pCamera))
 {
-   ConfigGet("view_elevation", &m_elevation);
-   ConfigGet("view_pitch", &m_pitch);
+   ConfigGet(_T("view_elevation"), &m_elevation);
+   ConfigGet(_T("view_pitch"), &m_pitch);
    MatrixRotateX(m_pitch, &m_rotation);
    m_oneOverTangentPitch = 1.0f / tanf(m_pitch);
 }

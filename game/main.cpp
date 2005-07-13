@@ -50,7 +50,7 @@ typedef char * LPSTR;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define kAutoExecScript "autoexec.lua"
+#define kAutoExecScript _T("autoexec.lua")
 #define kDefaultWidth   800
 #define kDefaultHeight  600
 #define kDefaultBpp     16
@@ -209,20 +209,20 @@ SCRIPT_DEFINE_FUNCTION(SetTerrain)
    if (ScriptArgc() == 1 
       && ScriptArgIsString(0))
    {
-      g_pTerrainRoot = TerrainNodeCreate(AccessRenderDevice(), ScriptArgAsString(0), kGroundScaleY, NULL);
+      g_pTerrainRoot = TerrainNodeCreate(AccessRenderDevice(), argv[0], kGroundScaleY, NULL);
    }
    else if (ScriptArgc() == 2 
       && ScriptArgIsString(0)
       && ScriptArgIsNumber(1))
    {
-      g_pTerrainRoot = TerrainNodeCreate(AccessRenderDevice(), ScriptArgAsString(0), ScriptArgAsNumber(1), NULL);
+      g_pTerrainRoot = TerrainNodeCreate(AccessRenderDevice(), argv[0], ScriptArgAsNumber(1), NULL);
    }
    else if (ScriptArgc() == 3 
       && ScriptArgIsString(0)
       && ScriptArgIsNumber(1)
       && ScriptArgIsString(2))
    {
-      g_pTerrainRoot = TerrainNodeCreate(AccessRenderDevice(), ScriptArgAsString(0), ScriptArgAsNumber(1), ScriptArgAsString(2));
+      g_pTerrainRoot = TerrainNodeCreate(AccessRenderDevice(), argv[0], ScriptArgAsNumber(1), ScriptArgAsString(2));
    }
    else
    {
@@ -287,7 +287,7 @@ static void RegisterGlobalObjects()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static bool ScriptExecResource(IScriptInterpreter * pInterpreter, const char * pszResource)
+static bool ScriptExecResource(IScriptInterpreter * pInterpreter, const tChar * pszResource)
 {
    bool bResult = false;
 
@@ -351,12 +351,12 @@ static double FPS()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static tResult InitGlobalConfig(int argc, char * argv[])
+static tResult InitGlobalConfig(int argc, tChar * argv[])
 {
    Assert(argc > 0);
 
    cFileSpec cfgFile(argv[0]);
-   cfgFile.SetFileExt("cfg");
+   cfgFile.SetFileExt(_T("cfg"));
 
    cAutoIPtr<IDictionaryStore> pStore = DictionaryStoreCreate(cfgFile);
    if (!pStore)
@@ -370,7 +370,7 @@ static tResult InitGlobalConfig(int argc, char * argv[])
    return S_OK;
 }
 
-static bool MainInit(int argc, char * argv[])
+static bool MainInit(int argc, tChar * argv[])
 {
    if (InitGlobalConfig(argc, argv) != S_OK)
    {
@@ -378,7 +378,7 @@ static bool MainInit(int argc, char * argv[])
    }
 
    cStr temp;
-   if (ConfigGet("debug_log", &temp) == S_OK)
+   if (ConfigGet(_T("debug_log"), &temp) == S_OK)
    {
       DebugEchoFileStart(temp.c_str());
    }
@@ -401,14 +401,14 @@ static bool MainInit(int argc, char * argv[])
    GlTextureResourceRegister();
    EngineRegisterResourceFormats();
 
-   if (ConfigGet("data", &temp) == S_OK)
+   if (ConfigGet(_T("data"), &temp) == S_OK)
    {
       UseGlobal(ResourceManager);
       pResourceManager->AddDirectoryTreeFlattened(temp.c_str());
    }
 
    cStr script(kAutoExecScript);
-   ConfigGet("autoexec_script", &script);
+   ConfigGet(_T("autoexec_script"), &script);
    if (!script.empty())
    {
       UseGlobal(ScriptInterpreter);
@@ -422,22 +422,22 @@ static bool MainInit(int argc, char * argv[])
    }
 
    g_fov = kDefaultFov;
-   ConfigGet("fov", &g_fov);
+   ConfigGet(_T("fov"), &g_fov);
 
    int width = kDefaultWidth;
    int height = kDefaultHeight;
    int bpp = kDefaultBpp;
-   ConfigGet("screen_width", &width);
-   ConfigGet("screen_height", &height);
-   ConfigGet("screen_bpp", &bpp);
+   ConfigGet(_T("screen_width"), &width);
+   ConfigGet(_T("screen_height"), &height);
+   ConfigGet(_T("screen_bpp"), &bpp);
 #ifdef __CYGWIN__
 // HACK
-   bool bFullScreen = ConfigIsTrue("full_screen");
+   bool bFullScreen = ConfigIsTrue(_T("full_screen"));
 #else
-   bool bFullScreen = ConfigIsTrue("full_screen") && !IsDebuggerPresent();
+   bool bFullScreen = ConfigIsTrue(_T("full_screen")) && !IsDebuggerPresent();
 #endif
 
-   if (!SysCreateWindow("Game", width, height))
+   if (!SysCreateWindow(_T("Game"), width, height))
    {
       return false;
    }
@@ -510,6 +510,9 @@ static void MainTerm()
       g_pGameCameraController->Disconnect();
    }
 
+   // This will make sure the GL context is destroyed
+   SysQuit();
+
    StopGlobalObjects();
 }
 
@@ -569,7 +572,7 @@ static bool MainFrame()
 int STDCALL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
                     LPSTR lpCmdLine, int nShowCmd)
 {
-   if (!MainInit(__argc, __argv))
+   if (!MainInit(__argc, __targv))
    {
       MainTerm();
       return -1;

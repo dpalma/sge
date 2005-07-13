@@ -75,7 +75,7 @@ extern "C" DECLSPEC_DLLIMPORT int STDCALL IsDebuggerPresent();
 #ifdef _DEBUG
 
 TECH_API bool AssertFail(const char * pszFile, int line, const char * pszExpr);
-TECH_API void DebugEchoFileStart(const char * pszFile);
+TECH_API void DebugEchoFileStart(const tChar * pszFile);
 TECH_API void DebugEchoFileStop();
 
 #else
@@ -90,12 +90,12 @@ inline bool AssertFail(const char *, int, const char *) { return false; }
 // Debug output
 
 #ifndef NDEBUG
-#define DebugMsgIf(expr,fmt)                                do { if (expr) { techlog.Print(__FILE__,__LINE__,kDebug,(fmt)); } } while(0)
-#define DebugMsgIf1(expr,fmt,arg1)                          do { if (expr) { techlog.Print(__FILE__,__LINE__,kDebug,(fmt),(arg1)); } } while(0)
-#define DebugMsgIf2(expr,fmt,arg1,arg2)                     do { if (expr) { techlog.Print(__FILE__,__LINE__,kDebug,(fmt),(arg1),(arg2)); } } while(0)
-#define DebugMsgIf3(expr,fmt,arg1,arg2,arg3)                do { if (expr) { techlog.Print(__FILE__,__LINE__,kDebug,(fmt),(arg1),(arg2),(arg3)); } } while(0)
-#define DebugMsgIf4(expr,fmt,arg1,arg2,arg3,arg4)           do { if (expr) { techlog.Print(__FILE__,__LINE__,kDebug,(fmt),(arg1),(arg2),(arg3),(arg4)); } } while(0)
-#define DebugMsgIf5(expr,fmt,arg1,arg2,arg3,arg4,arg5)      do { if (expr) { techlog.Print(__FILE__,__LINE__,kDebug,(fmt),(arg1),(arg2),(arg3),(arg4),(arg5)); } } while(0)
+#define DebugMsgIf(expr,fmt)                                do { if (expr) { techlog.Print(_TFILE,__LINE__,kDebug,_T(fmt)); } } while(0)
+#define DebugMsgIf1(expr,fmt,arg1)                          do { if (expr) { techlog.Print(_TFILE,__LINE__,kDebug,_T(fmt),(arg1)); } } while(0)
+#define DebugMsgIf2(expr,fmt,arg1,arg2)                     do { if (expr) { techlog.Print(_TFILE,__LINE__,kDebug,_T(fmt),(arg1),(arg2)); } } while(0)
+#define DebugMsgIf3(expr,fmt,arg1,arg2,arg3)                do { if (expr) { techlog.Print(_TFILE,__LINE__,kDebug,_T(fmt),(arg1),(arg2),(arg3)); } } while(0)
+#define DebugMsgIf4(expr,fmt,arg1,arg2,arg3,arg4)           do { if (expr) { techlog.Print(_TFILE,__LINE__,kDebug,_T(fmt),(arg1),(arg2),(arg3),(arg4)); } } while(0)
+#define DebugMsgIf5(expr,fmt,arg1,arg2,arg3,arg4,arg5)      do { if (expr) { techlog.Print(_TFILE,__LINE__,kDebug,_T(fmt),(arg1),(arg2),(arg3),(arg4),(arg5)); } } while(0)
 #else
 #define DebugMsgIf(expr,fmt)                                ((void)0)
 #define DebugMsgIf1(expr,fmt,arg1)                          ((void)0)
@@ -129,7 +129,7 @@ inline bool AssertFail(const char *, int, const char *) { return false; }
 #define LOG_DEFINE_ENABLE_CHANNEL(channel, enable) \
    bool g_bLogChannel##channel = (enable); \
    static cLogInitializer MAKE_UNIQUE(g_##channel##Initializer); \
-   bool MAKE_UNIQUE(g_##channel##DefineResult) = techlog.DefineChannel(#channel, &(g_bLogChannel##channel))
+   bool MAKE_UNIQUE(g_##channel##DefineResult) = techlog.DefineChannel(_T(#channel), &(g_bLogChannel##channel))
 
 #define LOG_DEFINE_CHANNEL(channel) \
    LOG_DEFINE_ENABLE_CHANNEL(channel, false)
@@ -138,7 +138,7 @@ inline bool AssertFail(const char *, int, const char *) { return false; }
    extern bool g_bLogChannel##channel
 
 #define LOG_ENABLE_CHANNEL(channel, enable) \
-   techlog.EnableChannel(#channel, (enable))
+   techlog.EnableChannel(_T(#channel), (enable))
 
 #define LOG_IS_CHANNEL_ENABLED(channel) \
    g_bLogChannel##channel

@@ -49,14 +49,14 @@ enum eResourceClass
 class cResourceKey
 {
 public:
-   cResourceKey(const char * pszName, eResourceClass rc);
+   cResourceKey(const tChar * pszName, eResourceClass rc);
    cResourceKey(const cResourceKey & other);
 
    const cResourceKey & operator =(const cResourceKey & other);
 
    bool operator ==(const cResourceKey & other);
 
-   const char * GetName() const;
+   const tChar * GetName() const;
    eResourceClass GetClass() const;
 
 private:
@@ -70,8 +70,8 @@ typedef cResourceKey tResKey;
 
 ///////////////////////////////////////
 
-inline cResourceKey::cResourceKey(const char * pszName, eResourceClass rc)
- : m_name(pszName != NULL ? pszName : ""),
+inline cResourceKey::cResourceKey(const tChar * pszName, eResourceClass rc)
+ : m_name(pszName != NULL ? pszName : _T("")),
    m_class(rc)
 {
 }
@@ -102,7 +102,7 @@ inline bool cResourceKey::operator ==(const cResourceKey & other)
 
 ///////////////////////////////////////
 
-inline const char * cResourceKey::GetName() const
+inline const tChar * cResourceKey::GetName() const
 {
    return m_name.c_str();
 }
@@ -130,17 +130,17 @@ typedef void   (* tResourceUnload)(void * pData);
 
 interface IResourceManager : IUnknown
 {
-   virtual tResult AddDirectory(const char * pszDir) = 0;
+   virtual tResult AddDirectory(const tChar * pszDir) = 0;
    // HACK: This AddDirectoryTreeFlattened is to support the legacy behavior
-   virtual tResult AddDirectoryTreeFlattened(const char * pszDir) = 0;
-   virtual tResult AddArchive(const char * pszArchive) = 0;
+   virtual tResult AddDirectoryTreeFlattened(const tChar * pszDir) = 0;
+   virtual tResult AddArchive(const tChar * pszArchive) = 0;
 
    /// @brief Load the resource from disk, bypassing the cache (not updating it either)
    /// @remarks The caller is expected know what is returned in ppData and how to clean it up.
-   virtual tResult LoadUncached(const char * pszName, tResourceType type, void * param, void * * ppData, ulong * pDataSize) = 0;
+   virtual tResult LoadUncached(const tChar * pszName, tResourceType type, void * param, void * * ppData, ulong * pDataSize) = 0;
 
-   virtual tResult Load(const char * pszName, tResourceType type, void * param, void * * ppData) = 0;
-   virtual tResult Unload(const char * pszName, tResourceType type) = 0;
+   virtual tResult Load(const tChar * pszName, tResourceType type, void * param, void * * ppData) = 0;
+   virtual tResult Unload(const tChar * pszName, tResourceType type) = 0;
 
    tResult LoadUncached(const tResKey & key, void * param, void * * ppData, ulong * pDataSize)
    {
@@ -168,18 +168,18 @@ interface IResourceManager : IUnknown
    }
 
    /// @remarks Not implemented
-   virtual tResult Lock(const char * pszName, tResourceType type) = 0;
+   virtual tResult Lock(const tChar * pszName, tResourceType type) = 0;
    /// @remarks Not implemented
-   virtual tResult Unlock(const char * pszName, tResourceType type) = 0;
+   virtual tResult Unlock(const tChar * pszName, tResourceType type) = 0;
 
    virtual tResult RegisterFormat(tResourceType type,
                                   tResourceType typeDepend,
-                                  const char * pszExtension,
+                                  const tChar * pszExtension,
                                   tResourceLoad pfnLoad,
                                   tResourcePostload pfnPostload,
                                   tResourceUnload pfnUnload) = 0;
 
-   tResult RegisterFormat(tResourceType type, const char * pszExtension,
+   tResult RegisterFormat(tResourceType type, const tChar * pszExtension,
       tResourceLoad pfnLoad, tResourcePostload pfnPostload, tResourceUnload pfnUnload)
    {
       return RegisterFormat(type, NULL, pszExtension, pfnLoad, pfnPostload, pfnUnload);
@@ -187,7 +187,7 @@ interface IResourceManager : IUnknown
 
    tResult RegisterFormat(eResourceClass rc,
                           eResourceClass rcDepend,
-                          const char * pszExtension,
+                          const tChar * pszExtension,
                           tResourceLoad pfnLoad,
                           tResourcePostload pfnPostload,
                           tResourceUnload pfnUnload)
@@ -196,7 +196,7 @@ interface IResourceManager : IUnknown
          pszExtension, pfnLoad, pfnPostload, pfnUnload);
    }
 
-   tResult RegisterFormat(eResourceClass rc, const char * pszExtension,
+   tResult RegisterFormat(eResourceClass rc, const tChar * pszExtension,
       tResourceLoad pfnLoad, tResourcePostload pfnPostload, tResourceUnload pfnUnload)
    {
       return RegisterFormat(MAKERESOURCETYPE(rc), pszExtension, pfnLoad, pfnPostload, pfnUnload);
@@ -205,7 +205,7 @@ interface IResourceManager : IUnknown
 
 ////////////////////////////////////////
 
-#define kResourceManagerName "ResourceManager"
+#define kResourceManagerName _T("ResourceManager")
 TECH_API void ResourceManagerCreate();
 
 

@@ -6,22 +6,23 @@
 
 #include "guielementbase.h"
 
-#include "inputapi.h"
-
 #ifdef _MSC_VER
 #pragma once
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGUITextSelection
+// CLASS: cGUITextBuffer
 //
 
-class cGUITextSelection
+class cGUITextBuffer
 {
 public:
-   cGUITextSelection(tGUIString * pText);
-   ~cGUITextSelection();
+   cGUITextBuffer();
+   ~cGUITextBuffer();
+
+   tResult GetText(tGUIString * pText);
+   tResult SetText(const char * pszText);
 
    void SetCursorIndex(uint index);
    int GetCursorIndex() const;
@@ -46,44 +47,25 @@ public:
    void Paste();
 
 private:
-   tGUIString * GetText();
-   const tGUIString * GetText() const;
-
    tGUIString::iterator GetCursor();
    tGUIString::const_iterator GetCursor() const;
 
    ////////////////////////////////////
 
-   tGUIString * m_pText;
+   tGUIString m_text;
    tGUIString::iterator m_cursor;
 };
 
 ///////////////////////////////////////
 
-inline tGUIString * cGUITextSelection::GetText()
-{
-   Assert(m_pText != NULL);
-   return m_pText;
-}
-
-///////////////////////////////////////
-
-inline const tGUIString * cGUITextSelection::GetText() const
-{
-   Assert(m_pText != NULL);
-   return m_pText;
-}
-
-///////////////////////////////////////
-
-inline tGUIString::iterator cGUITextSelection::GetCursor()
+inline tGUIString::iterator cGUITextBuffer::GetCursor()
 {
    return m_cursor;
 }
 
 ///////////////////////////////////////
 
-inline tGUIString::const_iterator cGUITextSelection::GetCursor() const
+inline tGUIString::const_iterator cGUITextBuffer::GetCursor() const
 {
    return m_cursor;
 }
@@ -120,8 +102,7 @@ private:
 
    uint m_editSize;
 
-   tGUIString m_text;
-   cGUITextSelection m_selection;
+   cGUITextBuffer m_buffer;
 
    double m_timeLastBlink;
    bool m_bCursorBlinkOn, m_bCursorForceOn;

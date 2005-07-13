@@ -79,8 +79,8 @@ void DebugEchoFileLogCB(eLogSeverity severity, const tChar * pszMsg, size_t msgL
 {
    if (g_pDebugEchoFile != NULL)
    {
-      printf(pszMsg);
-      fprintf(g_pDebugEchoFile, pszMsg);
+      _tprintf(pszMsg);
+      _ftprintf(g_pDebugEchoFile, pszMsg);
    }
 
    if (g_pfnNextLogCB != NULL)
@@ -91,7 +91,7 @@ void DebugEchoFileLogCB(eLogSeverity severity, const tChar * pszMsg, size_t msgL
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void DebugEchoFileStart(const char * pszFile)
+void DebugEchoFileStart(const tChar * pszFile)
 {
    if (g_pfnNextLogCB == NULL)
    {
@@ -100,8 +100,7 @@ void DebugEchoFileStart(const char * pszFile)
 
    if (g_pDebugEchoFile == NULL)
    {
-      g_pDebugEchoFile = fopen(pszFile, "w");
-
+      g_pDebugEchoFile = _tfopen(pszFile, _T("w"));
       if (g_pDebugEchoFile != NULL)
       {
          char szTime[30];

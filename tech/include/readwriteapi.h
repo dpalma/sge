@@ -73,7 +73,7 @@ interface IReader : IUnknown
    tResult Read(ushort * pValue);
    tResult Read(byte * pValue);
 
-   virtual tResult Read(cStr * pValue, char stop) = 0;
+   virtual tResult Read(cStr * pValue, tChar stop) = 0;
    virtual tResult Read(void * pValue, size_t cbValue,
                         size_t * pcbRead = NULL) = 0;
 };

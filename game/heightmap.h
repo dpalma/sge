@@ -21,7 +21,7 @@ public:
    cHeightMap(float scale = 1);
    ~cHeightMap();
 
-   bool Load(const char * pszFilename);
+   bool Load(const tChar * pszFilename);
    uint GetSize() const;
    uint8 HeightSample(uint x, uint z) const;
    float Height(uint x, uint z) const;

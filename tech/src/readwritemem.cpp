@@ -80,7 +80,7 @@ tResult cMemReader::Seek(long pos, eSeekOrigin origin)
 
 ////////////////////////////////////////
 
-tResult cMemReader::Read(cStr * pValue, char stop)
+tResult cMemReader::Read(cStr * pValue, tChar stop)
 {
    if (pValue == NULL)
    {
@@ -110,10 +110,10 @@ tResult cMemReader::Read(cStr * pValue, char stop)
    }
 
    size_t len = pos - m_readPos + 1;
+   size_t size = (len + 1) * sizeof(tChar);
 
-   char * pszBuffer = (char *)alloca(len + 1);
-
-   memcpy(pszBuffer, m_pMem + m_readPos, len);
+   tChar * pszBuffer = reinterpret_cast<tChar*>(alloca(size));
+   memcpy(pszBuffer, m_pMem + m_readPos, size);
 
    m_readPos += len;
 

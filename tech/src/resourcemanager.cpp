@@ -26,20 +26,22 @@
 
 LOG_DEFINE_CHANNEL(ResourceManager);
 
-#define LocalMsg(msg)            DebugMsgEx(ResourceManager,(msg))
-#define LocalMsg1(msg,a)         DebugMsgEx1(ResourceManager,(msg),(a))
-#define LocalMsg2(msg,a,b)       DebugMsgEx2(ResourceManager,(msg),(a),(b))
-#define LocalMsg3(msg,a,b,c)     DebugMsgEx3(ResourceManager,(msg),(a),(b),(c))
-#define LocalMsg4(msg,a,b,c,d)   DebugMsgEx4(ResourceManager,(msg),(a),(b),(c),(d))
+#define LocalMsg(msg)            DebugMsgEx(ResourceManager,msg)
+#define LocalMsg1(msg,a)         DebugMsgEx1(ResourceManager,msg,(a))
+#define LocalMsg2(msg,a,b)       DebugMsgEx2(ResourceManager,msg,(a),(b))
+#define LocalMsg3(msg,a,b,c)     DebugMsgEx3(ResourceManager,msg,(a),(b),(c))
+#define LocalMsg4(msg,a,b,c,d)   DebugMsgEx4(ResourceManager,msg,(a),(b),(c),(d))
 
 static const int kUnzMaxPath = 260;
+
+static const tChar kExtSep = _T('.');
 
 // REFERENCES
 // "Game Developer Magazine", February 2005, "Inner Product" column
 
 ////////////////////////////////////////////////////////////////////////////////
 
-typedef std::vector<std::string> tStrings;
+typedef std::vector<cStr> tStrings;
 static size_t ListDirs(const cFilePath & path, tStrings * pDirs)
 {
    Assert(pDirs != NULL);
@@ -49,7 +51,7 @@ static size_t ListDirs(const cFilePath & path, tStrings * pDirs)
    pDirs->clear();
 
 #ifdef _WIN32
-   cFileSpec wildcard("*");
+   cFileSpec wildcard(_T("*"));
    wildcard.SetPath(path);
 
    WIN32_FIND_DATA findData;
@@ -60,8 +62,8 @@ static size_t ListDirs(const cFilePath & path, tStrings * pDirs)
       {
          if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
          {
-            if (strcmp(findData.cFileName, ".") &&
-                strcmp(findData.cFileName, ".."))
+            if (_tcscmp(findData.cFileName, _T(".")) &&
+                _tcscmp(findData.cFileName, _T("..")))
             {
                pDirs->push_back(findData.cFileName);
             }
@@ -190,7 +192,7 @@ tResult cResourceManager::Term()
 
 ////////////////////////////////////////
 
-tResult cResourceManager::AddDirectory(const char * pszDir)
+tResult cResourceManager::AddDirectory(const tChar * pszDir)
 {
    if (pszDir == NULL)
    {
@@ -203,7 +205,7 @@ tResult cResourceManager::AddDirectory(const char * pszDir)
       return E_OUTOFMEMORY;
    }
 
-   cFileSpec spec("*.*");
+   cFileSpec spec(_T("*.*"));
    spec.SetPath(cFilePath(pszDir));
 
    cFileSpec file;
@@ -221,8 +223,8 @@ tResult cResourceManager::AddDirectory(const char * pszDir)
          LocalMsg1("File: %s\n", file.c_str());
          sResource res;
          Verify(file.GetFileNameNoExt(&res.name));
-         const char * pszExt = file.GetFileExt();
-         if (pszExt != NULL && strlen(pszExt) > 0)
+         const tChar * pszExt = file.GetFileExt();
+         if (pszExt != NULL && _tcslen(pszExt) > 0)
          {
             res.extensionId = GetExtensionId(pszExt);
          }
@@ -239,7 +241,7 @@ tResult cResourceManager::AddDirectory(const char * pszDir)
 
 ////////////////////////////////////////
 
-tResult cResourceManager::AddDirectoryTreeFlattened(const char * pszDir)
+tResult cResourceManager::AddDirectoryTreeFlattened(const tChar * pszDir)
 {
    if (pszDir == NULL)
    {
@@ -273,7 +275,7 @@ tResult cResourceManager::AddDirectoryTreeFlattened(const char * pszDir)
 
 ////////////////////////////////////////
 
-tResult cResourceManager::AddArchive(const char * pszArchive)
+tResult cResourceManager::AddArchive(const tChar * pszArchive)
 {
    uint archiveId = GetArchiveId(pszArchive);
 
@@ -284,7 +286,14 @@ tResult cResourceManager::AddArchive(const char * pszArchive)
    }
    else
    {
+#ifdef _UNICODE
+      size_t size = (wcslen(pszArchive) + 1) * sizeof(char);
+      char * pszTemp = reinterpret_cast<char*>(alloca(size));
+      wcstombs(pszTemp, pszArchive, size);
+      uf = m_archives[archiveId].handle = unzOpen(pszTemp);
+#else
       uf = m_archives[archiveId].handle = unzOpen(pszArchive);
+#endif
       if (uf == NULL)
       {
          return E_FAIL;
@@ -300,11 +309,18 @@ tResult cResourceManager::AddArchive(const char * pszArchive)
          unzGetCurrentFileInfo(uf, &fileInfo, szFile, _countof(szFile), NULL, 0, NULL, 0) == UNZ_OK)
       {
          LocalMsg3("%s(%d): %s\n", pszArchive, filePos.num_of_file, szFile);
+#ifdef _UNICODE
+         size_t size = (strlen(szFile) + 1) * sizeof(wchar_t);
+         wchar_t * pszTemp = reinterpret_cast<wchar_t*>(alloca(size));
+         mbstowcs(pszTemp, szFile, size);
+         cFileSpec file(pszTemp);
+#else
          cFileSpec file(szFile);
+#endif
          sResource res;
          Verify(file.GetFileNameNoExt(&res.name));
-         const char * pszExt = file.GetFileExt();
-         if (pszExt != NULL && strlen(pszExt) > 0)
+         const tChar * pszExt = file.GetFileExt();
+         if (pszExt != NULL && _tcslen(pszExt) > 0)
          {
             res.extensionId = GetExtensionId(pszExt);
          }
@@ -321,7 +337,7 @@ tResult cResourceManager::AddArchive(const char * pszArchive)
 
 ////////////////////////////////////////
 
-tResult cResourceManager::LoadUncached(const char * pszName, tResourceType type,
+tResult cResourceManager::LoadUncached(const tChar * pszName, tResourceType type,
                                        void * param, void * * ppData, ulong * pDataSize)
 {
    if (pszName == NULL || ppData == NULL)
@@ -395,7 +411,7 @@ tResult cResourceManager::LoadUncached(const char * pszName, tResourceType type,
 
 ////////////////////////////////////////
 
-tResult cResourceManager::Load(const char * pszName, tResourceType type,
+tResult cResourceManager::Load(const tChar * pszName, tResourceType type,
                                void * param, void * * ppData)
 {
    if (pszName == NULL || ppData == NULL)
@@ -482,7 +498,7 @@ tResult cResourceManager::Load(const char * pszName, tResourceType type,
 
 ////////////////////////////////////////
 
-tResult cResourceManager::Unload(const char * pszName, tResourceType type)
+tResult cResourceManager::Unload(const tChar * pszName, tResourceType type)
 {
    // TODO: For now resources unloaded only on exit
    return E_NOTIMPL;
@@ -490,7 +506,7 @@ tResult cResourceManager::Unload(const char * pszName, tResourceType type)
 
 ////////////////////////////////////////
 
-tResult cResourceManager::Lock(const char * pszName, tResourceType type)
+tResult cResourceManager::Lock(const tChar * pszName, tResourceType type)
 {
    // TODO
    return E_NOTIMPL;
@@ -498,7 +514,7 @@ tResult cResourceManager::Lock(const char * pszName, tResourceType type)
 
 ////////////////////////////////////////
 
-tResult cResourceManager::Unlock(const char * pszName, tResourceType type)
+tResult cResourceManager::Unlock(const tChar * pszName, tResourceType type)
 {
    // TODO
    return E_NOTIMPL;
@@ -508,7 +524,7 @@ tResult cResourceManager::Unlock(const char * pszName, tResourceType type)
 
 tResult cResourceManager::RegisterFormat(tResourceType type,
                                          tResourceType typeDepend,
-                                         const char * pszExtension,
+                                         const tChar * pszExtension,
                                          tResourceLoad pfnLoad,
                                          tResourcePostload pfnPostload,
                                          tResourceUnload pfnUnload)
@@ -531,14 +547,14 @@ tResult cResourceManager::RegisterFormat(tResourceType type,
    {
       // Must have at least a load function
       WarnMsg1("No load function specified when registering \"%s\" resource format\n",
-            pszExtension != NULL ? pszExtension : "<NONE>");
+            pszExtension != NULL ? pszExtension : _T("<NONE>"));
       return E_POINTER;
    }
 
    if (pfnUnload == NULL)
    {
       WarnMsg1("No unload function specified for \"%s\" resource format\n",
-            pszExtension != NULL ? pszExtension : "<NONE>");
+            pszExtension != NULL ? pszExtension : _T("<NONE>"));
    }
 
    uint extensionId = kNoIndex;
@@ -558,7 +574,7 @@ tResult cResourceManager::RegisterFormat(tResourceType type,
          if (iter->extensionId == extensionId && SameType(iter->type, type))
          {
             WarnMsg1("Resource format with file extension \"%s\" already registered\n",
-               pszExtension != NULL ? pszExtension : "<NONE>");
+               pszExtension != NULL ? pszExtension : _T("<NONE>"));
             return E_FAIL;
          }
       }
@@ -579,7 +595,7 @@ tResult cResourceManager::RegisterFormat(tResourceType type,
 ////////////////////////////////////////
 
 cResourceManager::sResource * cResourceManager::FindResourceWithFormat(
-   const char * pszName, tResourceType type, sFormat * pFormat)
+   const tChar * pszName, tResourceType type, sFormat * pFormat)
 {
    if (pszName == NULL)
    {
@@ -767,7 +783,7 @@ tResult cResourceManager::DoLoadFromReader(IReader * pReader, sFormat * pFormat,
 
 ////////////////////////////////////////
 
-uint cResourceManager::DeduceFormats(const char * pszName, tResourceType type,
+uint cResourceManager::DeduceFormats(const tChar * pszName, tResourceType type,
                                      sFormat * * ppFormats, uint nMaxFormats)
 {
    if (pszName == NULL || !type || ppFormats == NULL || nMaxFormats == 0)
@@ -817,7 +833,7 @@ uint cResourceManager::DeduceFormats(const char * pszName, tResourceType type,
 
 ////////////////////////////////////////
 
-uint cResourceManager::GetExtensionId(const char * pszExtension)
+uint cResourceManager::GetExtensionId(const tChar * pszExtension)
 {
    Assert(pszExtension != NULL);
 
@@ -835,24 +851,23 @@ uint cResourceManager::GetExtensionId(const char * pszExtension)
 
 ////////////////////////////////////////
 
-uint cResourceManager::GetExtensionIdForName(const char * pszName)
+uint cResourceManager::GetExtensionIdForName(const tChar * pszName)
 {
    if (pszName == NULL)
    {
       return kNoIndex;
    }
-   static const char kExtSep = '.';
-   const char * pszExt = strrchr(pszName, kExtSep);
+   const tChar * pszExt = _tcsrchr(pszName, kExtSep);
    if (pszExt != NULL)
    {
-      return GetExtensionId(++pszExt);
+      return GetExtensionId(_tcsinc(pszExt));
    }
    return kNoIndex;
 }
 
 ////////////////////////////////////////
 
-uint cResourceManager::GetDirectoryId(const char * pszDir)
+uint cResourceManager::GetDirectoryId(const tChar * pszDir)
 {
    Assert(pszDir != NULL);
 
@@ -870,7 +885,7 @@ uint cResourceManager::GetDirectoryId(const char * pszDir)
 
 ////////////////////////////////////////
 
-uint cResourceManager::GetArchiveId(const char * pszArchive)
+uint cResourceManager::GetArchiveId(const tChar * pszArchive)
 {
    Assert(pszArchive != NULL);
 
@@ -878,7 +893,7 @@ uint cResourceManager::GetArchiveId(const char * pszArchive)
    tArchives::iterator end = m_archives.end();
    for (uint index = 0; iter != end; iter++)
    {
-      if (stricmp(pszArchive, iter->archive.c_str()) == 0)
+      if (_tcsicmp(pszArchive, iter->archive.c_str()) == 0)
       {
          return index;
       }

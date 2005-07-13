@@ -34,7 +34,7 @@ cDictionary::~cDictionary()
 
 ///////////////////////////////////////
 
-tResult cDictionary::Get(const tChar * pszKey, char * pVal, int maxLength, tPersistence * pPersist)
+tResult cDictionary::Get(const tChar * pszKey, tChar * pVal, int maxLength, tPersistence * pPersist)
 {
    if (pszKey == NULL)
    {
@@ -52,7 +52,7 @@ tResult cDictionary::Get(const tChar * pszKey, char * pVal, int maxLength, tPers
 
       if (pVal != NULL && maxLength > 0)
       {
-         strncpy(pVal, iter->second.c_str(), maxLength);
+         _tcsncpy(pVal, iter->second.c_str(), maxLength);
          pVal[maxLength - 1] = 0;
       }
 
@@ -151,7 +151,7 @@ tResult cDictionary::Get(const tChar * pszKey, float * pVal, tPersistence * pPer
 
 ///////////////////////////////////////
 
-tResult cDictionary::Set(const tChar * pszKey, const char * val, tPersistence persist)
+tResult cDictionary::Set(const tChar * pszKey, const tChar * val, tPersistence persist)
 {
    if (pszKey == NULL || val == NULL)
    {
@@ -179,9 +179,9 @@ tResult cDictionary::Set(const tChar * pszKey, int val, tPersistence persist)
    {
       return E_POINTER;
    }
-   tChar szBuffer[64];
-   snprintf(szBuffer, _countof(szBuffer), "%d", val);
-   return Set(pszKey, szBuffer, persist);
+   cStr temp;
+   temp.Format(_T("%d"), val);
+   return Set(pszKey, temp.c_str(), persist);
 }
 
 ///////////////////////////////////////
@@ -192,9 +192,9 @@ tResult cDictionary::Set(const tChar * pszKey, float val, tPersistence persist)
    {
       return E_POINTER;
    }
-   tChar szBuffer[64];
-   snprintf(szBuffer, _countof(szBuffer), "%f", val);
-   return Set(pszKey, szBuffer, persist);
+   cStr temp;
+   temp.Format(_T("%f"), val);
+   return Set(pszKey, temp.c_str(), persist);
 }
 
 ///////////////////////////////////////

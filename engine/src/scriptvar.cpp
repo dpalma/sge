@@ -5,6 +5,7 @@
 #include "scriptvar.h"
 
 #include "techmath.h"
+#include "techstring.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -27,6 +28,8 @@ cScriptVar cScriptVar::Nil(kNil);
 ///////////////////////////////////////
 
 cScriptVar::cScriptVar(eScriptVarType type)
+ : m_pTempBuffer(NULL),
+   m_pConversionBuffer(NULL)
 {
    this->type = type;
 }
@@ -34,6 +37,8 @@ cScriptVar::cScriptVar(eScriptVarType type)
 ///////////////////////////////////////
 
 cScriptVar::cScriptVar()
+ : m_pTempBuffer(NULL),
+   m_pConversionBuffer(NULL)
 {
    type = kEmpty;
 }
@@ -41,6 +46,8 @@ cScriptVar::cScriptVar()
 ///////////////////////////////////////
 
 cScriptVar::cScriptVar(double _d)
+ : m_pTempBuffer(NULL),
+   m_pConversionBuffer(NULL)
 {
    type = kNumber;
    d = _d;
@@ -49,14 +56,26 @@ cScriptVar::cScriptVar(double _d)
 ///////////////////////////////////////
 
 cScriptVar::cScriptVar(char * _psz)
+ : m_pTempBuffer(NULL),
+   m_pConversionBuffer(NULL)
 {
-   type = kString;
-   psz = _psz;
+   operator =(_psz);
+}
+
+///////////////////////////////////////
+
+cScriptVar::cScriptVar(wchar_t * _pwsz)
+ : m_pTempBuffer(NULL),
+   m_pConversionBuffer(NULL)
+{
+   operator =(_pwsz);
 }
 
 ///////////////////////////////////////
 
 cScriptVar::cScriptVar(IUnknown * _pUnk)
+ : m_pTempBuffer(NULL),
+   m_pConversionBuffer(NULL)
 {
    type = kInterface;
    pUnk = CTAddRef(_pUnk);
@@ -158,7 +177,25 @@ const cScriptVar & cScriptVar::operator =(char * _psz)
 {
    Clear();
    type = kString;
-   psz = _psz;
+   uint length = strlen(_psz);
+   uint bufferSize = (length + 1) * sizeof(char);
+   m_pTempBuffer = malloc(bufferSize);
+   psz = reinterpret_cast<char*>(m_pTempBuffer);
+   strcpy(psz, _psz);
+   return *this;
+}
+
+///////////////////////////////////////
+
+const cScriptVar & cScriptVar::operator =(wchar_t * _pwsz)
+{
+   Clear();
+   type = kString;
+   uint length = wcslen(_pwsz);
+   uint bufferSize = (length + 1) * sizeof(wchar_t);
+   m_pTempBuffer = malloc(bufferSize);
+   psz = reinterpret_cast<char*>(m_pTempBuffer);
+   wcstombs(psz, _pwsz, bufferSize);
    return *this;
 }
 
@@ -180,16 +217,20 @@ const cScriptVar & cScriptVar::operator =(const cScriptVar & other)
    type = other.type;
    if (type == kString)
    {
-      psz = other.psz;
+      Assert(other.m_pTempBuffer != NULL);
+      return operator =(other.psz);
    }
    else if (type == kNumber)
    {
+      AssertMsg(other.m_pTempBuffer == NULL, "If other's type is number, it shouldn't have a temp buffer");
       d = other.d;
    }
    else if (type == kInterface)
    {
+      AssertMsg(other.m_pTempBuffer == NULL, "If other's type is interface pointer, it shouldn't have a temp buffer");
       pUnk = CTAddRef(other.pUnk);
    }
+   // Do NOT copy the conversion buffer. Let it get filled on demand in this object.
    return *this;
 }
 
@@ -197,18 +238,61 @@ const cScriptVar & cScriptVar::operator =(const cScriptVar & other)
 
 cScriptVar::operator const char *() const
 {
-   static const char kBufferSize = 50;
-   static int index = 0;
-   static char szBuffers[kBufferSize][4];
    if (type == kNumber)
    {
-      index = (index + 1) & 3;
-      snprintf(szBuffers[index], kBufferSize, "%f", d);
-      return szBuffers[index];
+      if (m_pConversionBuffer == NULL)
+      {
+         cStr temp;
+         temp.Format("%f", d);
+         uint length = temp.length();
+         uint bufferSize = (length + 1) * sizeof(char);
+         m_pConversionBuffer = malloc(bufferSize);
+         strcpy(reinterpret_cast<char*>(m_pConversionBuffer), temp.c_str());
+      }
+      return reinterpret_cast<const char*>(m_pConversionBuffer);
    }
    else if (type == kString)
    {
       return psz;
+   }
+   else
+   {
+      ErrorMsg("Attempt to access incompatible ScriptVar as a string\n");
+      return NULL;
+   }
+}
+
+///////////////////////////////////////
+
+cScriptVar::operator const wchar_t *() const
+{
+   if (type == kNumber)
+   {
+      if (m_pConversionBuffer == NULL)
+      {
+         cStr temp;
+         temp.Format("%f", d);
+         uint length = temp.length();
+         uint bufferSize = (length + 1) * sizeof(wchar_t);
+         m_pConversionBuffer = malloc(bufferSize);
+#ifdef _UNICODE
+         wcscpy(reinterpret_cast<wchar_t*>(m_pConversionBuffer), temp.c_str());
+#else
+         mbstowcs(reinterpret_cast<wchar_t*>(m_pConversionBuffer), temp.c_str(), bufferSize);
+#endif
+      }
+      return reinterpret_cast<const wchar_t*>(m_pConversionBuffer);
+   }
+   else if (type == kString)
+   {
+      if (m_pConversionBuffer == NULL)
+      {
+         uint length = strlen(psz);
+         uint bufferSize = (length + 1) * sizeof(wchar_t);
+         m_pConversionBuffer = malloc(bufferSize);
+         mbstowcs(reinterpret_cast<wchar_t*>(m_pConversionBuffer), psz, bufferSize);
+      }
+      return reinterpret_cast<const wchar_t*>(m_pConversionBuffer);
    }
    else
    {
@@ -236,6 +320,16 @@ void cScriptVar::Clear()
    {
       SafeRelease(pUnk);
    }
+   if (m_pTempBuffer != NULL)
+   {
+      free(m_pTempBuffer);
+      m_pTempBuffer = NULL;
+   }
+   if (m_pConversionBuffer != NULL)
+   {
+      free(m_pConversionBuffer);
+      m_pConversionBuffer = NULL;
+   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -248,14 +342,22 @@ class cScriptVarTests : public CppUnit::TestCase
       CPPUNIT_TEST(TestAssignment);
       CPPUNIT_TEST(TestCastDouble);
       CPPUNIT_TEST(TestCastString);
+      CPPUNIT_TEST(TestCastWideCharString);
+      CPPUNIT_TEST(TestChangeType);
    CPPUNIT_TEST_SUITE_END();
 
    void TestAssignment();
    void TestCastDouble();
    void TestCastString();
+   void TestCastWideCharString();
+   void TestChangeType();
 };
 
+////////////////////////////////////////
+
 CPPUNIT_TEST_SUITE_REGISTRATION(cScriptVarTests);
+
+////////////////////////////////////////
 
 void cScriptVarTests::TestAssignment()
 {
@@ -264,16 +366,38 @@ void cScriptVarTests::TestAssignment()
    CPPUNIT_ASSERT(strcmp((test = "3.1415"), "3.1415") == 0);
 }
 
+////////////////////////////////////////
+
 void cScriptVarTests::TestCastDouble()
 {
    CPPUNIT_ASSERT((double)cScriptVar(3.1415) == 3.1415);
    CPPUNIT_ASSERT((double)cScriptVar("3.1415") == 3.1415);
 }
 
+////////////////////////////////////////
+
 void cScriptVarTests::TestCastString()
 {
    CPPUNIT_ASSERT(strcmp((const char *)cScriptVar(3.1415), "3.141500") == 0);
    CPPUNIT_ASSERT(strcmp((const char *)cScriptVar("3.1415"), "3.1415") == 0);
+}
+
+////////////////////////////////////////
+
+void cScriptVarTests::TestCastWideCharString()
+{
+   CPPUNIT_ASSERT(wcscmp((const wchar_t *)cScriptVar(3.1415), L"3.141500") == 0);
+   CPPUNIT_ASSERT(wcscmp((const wchar_t *)cScriptVar("3.1415"), L"3.1415") == 0);
+}
+
+////////////////////////////////////////
+
+void cScriptVarTests::TestChangeType()
+{
+   cScriptVar v(kPi);
+   CPPUNIT_ASSERT(v.ToFloat() == kPi);
+   v = L"3.141500";
+   CPPUNIT_ASSERT(wcscmp((const wchar_t *)cScriptVar(3.1415), L"3.141500") == 0);
 }
 
 #endif // HAVE_CPPUNIT

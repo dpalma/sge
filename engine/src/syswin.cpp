@@ -38,7 +38,10 @@ void SysAppActivate(bool active)
 
 void SysQuit()
 {
-   Verify(DestroyWindow(g_hWnd));
+   if (IsWindow(g_hWnd))
+   {
+      Verify(DestroyWindow(g_hWnd));
+   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

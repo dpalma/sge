@@ -164,13 +164,13 @@ public:
    };
 
    cGUIFontDesc();
-   cGUIFontDesc(const char * pszFace, int pointSize, uint effects,
+   cGUIFontDesc(const tChar * pszFace, int pointSize, uint effects,
       uint glyphFirst = kANSIGlyphFirst, uint glyphLast = kANSIGlyphLast);
    cGUIFontDesc(const cGUIFontDesc & other);
 
    const cGUIFontDesc & operator =(const cGUIFontDesc & other);
 
-   const char * GetFace() const;
+   const tChar * GetFace() const;
    int GetPointSize() const;
    bool GetBold() const;
    bool GetItalic() const;
@@ -199,7 +199,7 @@ inline cGUIFontDesc::cGUIFontDesc()
 
 ////////////////////////////////////////
 
-inline cGUIFontDesc::cGUIFontDesc(const char * pszFace, int pointSize, uint effects, uint glyphFirst, uint glyphLast)
+inline cGUIFontDesc::cGUIFontDesc(const tChar * pszFace, int pointSize, uint effects, uint glyphFirst, uint glyphLast)
  : m_typeFace(pszFace),
    m_pointSize(pointSize),
    m_effects(effects),
@@ -231,7 +231,7 @@ inline const cGUIFontDesc & cGUIFontDesc::operator =(const cGUIFontDesc & other)
 
 ////////////////////////////////////////
 
-inline const char * cGUIFontDesc::GetFace() const
+inline const tChar * cGUIFontDesc::GetFace() const
 {
    return m_typeFace.c_str();
 }

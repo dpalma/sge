@@ -464,7 +464,7 @@ TECH_API tResult TargaFormatRegister()
    UseGlobal(ResourceManager);
    if (!!pResourceManager)
    {
-      return pResourceManager->RegisterFormat(kRC_Image, "tga", TargaLoad, NULL, TargaUnload);
+      return pResourceManager->RegisterFormat(kRC_Image, _T("tga"), TargaLoad, NULL, TargaUnload);
    }
    return E_FAIL;
 }

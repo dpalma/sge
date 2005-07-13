@@ -7,9 +7,10 @@ env = Environment(ENV = os.environ)
 
 opts = Options()
 opts.AddOptions(BoolOption('debug', 'Build with debugging enabled', 0))
+opts.AddOptions(BoolOption('unicode', 'Build with _UNICODE defined', 0))
 opts.Update(env)
 
-Help("Usage: scons <debug=yes|no>" + opts.GenerateHelpText(env))
+Help("Usage: scons [debug] [unicode]" + opts.GenerateHelpText(env))
 
 ########################################
 
@@ -29,8 +30,13 @@ else:
 
 ########################################
 
+if env.get('unicode'):
+   env.Append(CPPDEFINES=['_UNICODE', 'UNICODE'])
+else:
+   env.Append(CPPDEFINES=['_MBCS'])
+
 if platform == 'win32':
-   env.Append(CCFLAGS=['/GX', '/FD'], CPPDEFINES=['_WIN32', 'WIN32', '_MBCS', 'STRICT']);
+   env.Append(CCFLAGS=['/GX', '/FD'], CPPDEFINES=['_WIN32', 'WIN32', 'STRICT']);
    env.Append(CPPDEFINES=['TIXML_USE_STL', 'GLEW_STATIC'])
    if env.get('debug'):
       env.Append(CCFLAGS=['/MTd', '/Od', '/GZ'], CPPDEFINES=['DEBUG', '_DEBUG'])

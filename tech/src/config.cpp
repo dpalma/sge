@@ -21,9 +21,11 @@ extern bool ParseDictionaryLine(const tChar * psz, cStr * pKey, cStr * pValue, c
 cAutoIPtr<IConfig> g_pAutoDeleteConfig(DictionaryCreate());
 IConfig * g_pConfig = static_cast<IConfig *>(g_pAutoDeleteConfig);
 
+static const tChar kTrueStr[] = _T("true");
+
 //////////////////////////////////////////////////////////////////////////////
 
-tResult ParseCommandLine(int argc, char *argv[], IConfig * pConfig)
+tResult ParseCommandLine(int argc, tChar *argv[], IConfig * pConfig)
 {
    if (argv == NULL || pConfig == NULL)
    {
@@ -51,7 +53,7 @@ tResult ParseCommandLine(int argc, char *argv[], IConfig * pConfig)
             if (value.IsEmpty())
             {
                curKey = key;
-               curVal = "1";
+               curVal = _T("1");
                bLastWasKey = true;
             }
             else
@@ -72,7 +74,7 @@ tResult ParseCommandLine(int argc, char *argv[], IConfig * pConfig)
       {
          if (!bLastWasKey)
          {
-            curVal.Append(" ");
+            curVal.Append(_T(" "));
             curVal.Append(argv[i]);
          }
          else
@@ -92,21 +94,21 @@ tResult ParseCommandLine(int argc, char *argv[], IConfig * pConfig)
    return S_OK;
 }
 
-static bool StringIsTrue(const char * psz)
+static bool StringIsTrue(const tChar * psz)
 {
    Assert(psz != NULL);
-   if (stricmp(psz, "true") == 0)
+   if (_tcsicmp(psz, kTrueStr) == 0)
    {
       return true;
    }
-   else if (stricmp(psz, "true") == 0)
+   else if (_tcsicmp(psz, kTrueStr) == 0)
    {
       return true;
    }
-   return atoi(psz) ? true : false;
+   return _ttoi(psz) ? true : false;
 }
 
-bool ConfigIsTrue(const char * pszName)
+bool ConfigIsTrue(const tChar * pszName)
 {
    if (g_pConfig != NULL)
    {

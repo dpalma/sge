@@ -53,7 +53,7 @@ void TextUnload(void * pData)
    delete [] reinterpret_cast<char *>(pData);
 }
 
-TECH_API tResult TextFormatRegister(const char * pszExtension)
+TECH_API tResult TextFormatRegister(const tChar * pszExtension)
 {
    UseGlobal(ResourceManager);
    if (!!pResourceManager)

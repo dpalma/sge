@@ -270,7 +270,7 @@ tResult cTerrainNode::Intersects(const cRay & ray)
 
 ///////////////////////////////////////
 
-cTerrainNode * TerrainNodeCreate(IRenderDevice * pRenderDevice, const char * pszHeightData, float heightScale, const char * pszTexture)
+cTerrainNode * TerrainNodeCreate(IRenderDevice * pRenderDevice, const tChar * pszHeightData, float heightScale, const char * pszTexture)
 {
    cHeightMap * pHeightMap = new cHeightMap(heightScale);
 

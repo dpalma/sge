@@ -22,7 +22,7 @@ class TECH_API cFileSpec : public cStr
 {
 public:
    cFileSpec();
-   explicit cFileSpec(const char * pszFile);
+   explicit cFileSpec(const tChar * pszFile);
    cFileSpec(const cFileSpec & other);
 
    const cFileSpec & operator =(const cFileSpec & other);
@@ -30,10 +30,10 @@ public:
    bool operator ==(const cFileSpec & other);
    bool operator !=(const cFileSpec & other);
 
-   const char * GetFileName() const;
+   const tChar * GetFileName() const;
    bool GetFileNameNoExt(cStr * pFileName) const;
-   const char * GetFileExt() const;
-   bool SetFileExt(const char * pszExt);
+   const tChar * GetFileExt() const;
+   bool SetFileExt(const tChar * pszExt);
 
    void SetPath(const cFilePath & path);
    cFilePath GetPath() const;

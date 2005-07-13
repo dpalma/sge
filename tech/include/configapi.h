@@ -15,7 +15,7 @@ typedef IDictionary IConfig;
 
 //////////////////////////////////////////////////////////////////////////////
 
-TECH_API tResult ParseCommandLine(int argc, char *argv[], IConfig * pConfig);
+TECH_API tResult ParseCommandLine(int argc, tChar *argv[], IConfig * pConfig);
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -24,7 +24,7 @@ extern TECH_API IConfig * g_pConfig;
 ///////////////////////////////////////
 
 template <typename T>
-tResult ConfigGet(const char * pszName, T * pValue)
+tResult ConfigGet(const tChar * pszName, T * pValue)
 {
    if (g_pConfig == NULL)
       return E_FAIL;
@@ -32,21 +32,21 @@ tResult ConfigGet(const char * pszName, T * pValue)
 }
 
 template <typename T>
-tResult ConfigSet(const char * pszName, T value)
+tResult ConfigSet(const tChar * pszName, T value)
 {
    if (g_pConfig == NULL)
       return E_FAIL;
    return g_pConfig->Set(pszName, value);
 }
 
-inline tResult ConfigGetString(const char * pszName, char * pValue, int maxValueLen)
+inline tResult ConfigGetString(const tChar * pszName, tChar * pValue, int maxValueLen)
 {
    if (g_pConfig == NULL)
       return E_FAIL;
    return g_pConfig->Get(pszName, pValue, maxValueLen);
 }
 
-TECH_API bool ConfigIsTrue(const char * pszName);
+TECH_API bool ConfigIsTrue(const tChar * pszName);
 
 ///////////////////////////////////////////////////////////////////////////////
 

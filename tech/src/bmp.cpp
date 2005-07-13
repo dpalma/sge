@@ -242,7 +242,7 @@ TECH_API tResult BmpFormatRegister()
    UseGlobal(ResourceManager);
    if (!!pResourceManager)
    {
-      return pResourceManager->RegisterFormat(kRC_Image, "bmp", BmpLoad, NULL, BmpUnload);
+      return pResourceManager->RegisterFormat(kRC_Image, _T("bmp"), BmpLoad, NULL, BmpUnload);
    }
    return E_FAIL;
 }

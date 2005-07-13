@@ -540,10 +540,20 @@ tResult cLuaInterpreter::Term()
 
 ///////////////////////////////////////
 
-tResult cLuaInterpreter::ExecFile(const char * pszFile)
+tResult cLuaInterpreter::ExecFile(const tChar * pszFile)
 {
-   if (m_L != NULL
-      && lua_dofile(m_L, pszFile) == 0)
+   if (m_L == NULL)
+   {
+      return E_FAIL;
+   }
+#ifdef _UNICODE
+   uint tempSize = (wcslen(pszFile) + 1) * sizeof(char);
+   char * pszTemp = reinterpret_cast<char*>(alloca(tempSize));
+   wcstombs(pszTemp, pszFile, tempSize);
+   if (lua_dofile(m_L, pszTemp) == 0)
+#else
+   if (lua_dofile(m_L, pszFile) == 0)
+#endif
    {
       return S_OK;
    }

@@ -180,20 +180,6 @@ inline void cStr::TrimTrailingSpace()
    }
 }
 
-///////////////////////////////////////
-
-inline int cStr::ToInt() const
-{
-   return atoi(Get());
-}
-
-///////////////////////////////////////
-
-inline float cStr::ToFloat() const
-{
-   return static_cast<float>(atof(Get()));
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cStrLessNoCase
@@ -209,7 +195,7 @@ public:
 
 inline bool cStrLessNoCase::operator()(const cStr & lhs, const cStr & rhs) const
 {
-   return (stricmp(lhs.c_str(), rhs.c_str()) < 0) ? true : false;
+   return (_tcsicmp(lhs.c_str(), rhs.c_str()) < 0) ? true : false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

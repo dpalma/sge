@@ -7,11 +7,8 @@
 #include "guielementbasetem.h"
 #include "guielementtools.h"
 #include "guistrings.h"
-
 #include "inputapi.h"
-
-#include "color.h"
-#include "renderapi.h"
+#include "sys.h"
 
 #include "globalobj.h"
 #include "techtime.h"
@@ -40,43 +37,68 @@ static const float kCursorBlinkPeriod = 1.f / kCursorBlinkFreq;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGUITextSelection
+// CLASS: cGUITextBuffer
 //
 
 ///////////////////////////////////////
 
-cGUITextSelection::cGUITextSelection(tGUIString * pText)
- : m_pText(pText)
+cGUITextBuffer::cGUITextBuffer()
 {
    End();
 }
 
 ///////////////////////////////////////
 
-cGUITextSelection::~cGUITextSelection()
+cGUITextBuffer::~cGUITextBuffer()
 {
-   m_pText = NULL;
 }
 
 ///////////////////////////////////////
 
-void cGUITextSelection::SetCursorIndex(uint index)
+tResult cGUITextBuffer::GetText(tGUIString * pText)
 {
-   m_cursor = GetText()->begin() + index;
+   if (pText == NULL)
+   {
+      return E_POINTER;
+   }
+   *pText = m_text;
+   return pText->empty() ? S_FALSE : S_OK;
 }
 
 ///////////////////////////////////////
 
-int cGUITextSelection::GetCursorIndex() const
+tResult cGUITextBuffer::SetText(const char * pszText)
 {
-   return GetCursor() - GetText()->begin();
+   if (pszText == NULL)
+   {
+      m_text.erase();
+   }
+   else
+   {
+      m_text.assign(pszText);
+   }
+   return S_OK;
 }
 
 ///////////////////////////////////////
 
-void cGUITextSelection::CharRight(int count)
+void cGUITextBuffer::SetCursorIndex(uint index)
 {
-   while (count-- && m_cursor != GetText()->end())
+   m_cursor = m_text.begin() + index;
+}
+
+///////////////////////////////////////
+
+int cGUITextBuffer::GetCursorIndex() const
+{
+   return GetCursor() - m_text.begin();
+}
+
+///////////////////////////////////////
+
+void cGUITextBuffer::CharRight(int count)
+{
+   while (count-- && m_cursor != m_text.end())
    {
       m_cursor++;
    }
@@ -84,9 +106,9 @@ void cGUITextSelection::CharRight(int count)
 
 ///////////////////////////////////////
 
-void cGUITextSelection::CharLeft(int count)
+void cGUITextBuffer::CharLeft(int count)
 {
-   while (count-- && m_cursor != GetText()->begin())
+   while (count-- && m_cursor != m_text.begin())
    {
       m_cursor--;
    }
@@ -94,127 +116,127 @@ void cGUITextSelection::CharLeft(int count)
 
 ///////////////////////////////////////
 
-void cGUITextSelection::WordRight()
+void cGUITextBuffer::WordRight()
 {
-   tGUIString::size_type start = GetCursor() - GetText()->begin();
+   tGUIString::size_type start = GetCursor() - m_text.begin();
 
-   tGUIString::size_type index = GetText()->find_first_of(kWhiteSpaceChars, start);
+   tGUIString::size_type index = m_text.find_first_of(kWhiteSpaceChars, start);
 
    if (index != std::string::npos)
    {
-      index = GetText()->find_first_not_of(kWhiteSpaceChars, index);
+      index = m_text.find_first_not_of(kWhiteSpaceChars, index);
 
       if (index != std::string::npos)
       {
-         m_cursor = GetText()->begin() + index;
+         m_cursor = m_text.begin() + index;
       }
       else
       {
-         m_cursor = GetText()->end();
+         m_cursor = m_text.end();
       }
    }
    else
    {
-      m_cursor = GetText()->end();
+      m_cursor = m_text.end();
    }
 }
 
 ///////////////////////////////////////
 
-void cGUITextSelection::WordLeft()
+void cGUITextBuffer::WordLeft()
 {
-   tGUIString::size_type index = GetText()->find_last_not_of(kWhiteSpaceChars, GetCursorIndex());
+   tGUIString::size_type index = m_text.find_last_not_of(kWhiteSpaceChars, GetCursorIndex());
 
    if (index > 0 && index == GetCursorIndex())
    {
-      index = GetText()->find_last_of(kWhiteSpaceChars, index - 1);
+      index = m_text.find_last_of(kWhiteSpaceChars, index - 1);
 
       if (index > 0 && index != std::string::npos)
       {
-         index = GetText()->find_last_not_of(kWhiteSpaceChars, index - 1);
+         index = m_text.find_last_not_of(kWhiteSpaceChars, index - 1);
       }
    }
 
    if (index != std::string::npos)
    {
-      index = GetText()->find_last_of(kWhiteSpaceChars, index);
+      index = m_text.find_last_of(kWhiteSpaceChars, index);
 
       if (index != std::string::npos)
       {
-         m_cursor = GetText()->begin() + index + 1;
+         m_cursor = m_text.begin() + index + 1;
       }
       else
       {
-         m_cursor = GetText()->begin();
+         m_cursor = m_text.begin();
       }
    }
 }
 
 ///////////////////////////////////////
 
-void cGUITextSelection::Start()
+void cGUITextBuffer::Start()
 {
-   m_cursor = GetText()->begin();
+   m_cursor = m_text.begin();
 }
 
 ///////////////////////////////////////
 
-void cGUITextSelection::End()
+void cGUITextBuffer::End()
 {
-   m_cursor = GetText()->end();
+   m_cursor = m_text.end();
 }
 
 ///////////////////////////////////////
 
-void cGUITextSelection::Backspace(int count)
+void cGUITextBuffer::Backspace(int count)
 {
-   while (count-- && m_cursor != GetText()->begin())
+   while (count-- && m_cursor != m_text.begin())
    {
-      m_cursor = GetText()->erase(--m_cursor);
+      m_cursor = m_text.erase(--m_cursor);
    }
 }
 
 ///////////////////////////////////////
 
-void cGUITextSelection::Delete(int count)
+void cGUITextBuffer::Delete(int count)
 {
-   GetText()->erase(GetCursor() - GetText()->begin(), count);
+   m_text.erase(GetCursor() - m_text.begin(), count);
 }
 
 ///////////////////////////////////////
 
-void cGUITextSelection::ReplaceSel(char c)
+void cGUITextBuffer::ReplaceSel(char c)
 {
-   if (m_cursor == GetText()->end())
+   if (m_cursor == m_text.end())
    {
-      GetText()->append(1, c);
-      m_cursor = GetText()->end();
+      m_text.append(1, c);
+      m_cursor = m_text.end();
    }
    else
    {
-      m_cursor = GetText()->insert(m_cursor, c);
+      m_cursor = m_text.insert(m_cursor, c);
       m_cursor++;
    }
 }
 
 ///////////////////////////////////////
 
-void cGUITextSelection::ReplaceSel(const char * psz)
+void cGUITextBuffer::ReplaceSel(const char * psz)
 {
    Assert(psz != NULL);
-   if (m_cursor == GetText()->end())
+   if (m_cursor == m_text.end())
    {
-      GetText()->append(psz);
-      m_cursor = GetText()->end();
+      m_text.append(psz);
+      m_cursor = m_text.end();
    }
    else
    {
 #ifdef _DEBUG
-      int preLength = GetText()->length();
+      int preLength = m_text.length();
 #endif
-      GetText()->insert(m_cursor - GetText()->begin(), psz);
+      m_text.insert(m_cursor - m_text.begin(), psz);
 #ifdef _DEBUG
-      int postLength = GetText()->length();
+      int postLength = m_text.length();
       Assert(postLength == (preLength + strlen(psz)));
 #endif
       m_cursor += strlen(psz);
@@ -223,21 +245,21 @@ void cGUITextSelection::ReplaceSel(const char * psz)
 
 ///////////////////////////////////////
 
-void cGUITextSelection::Cut()
+void cGUITextBuffer::Cut()
 {
    // TODO
 }
 
 ///////////////////////////////////////
 
-void cGUITextSelection::Copy()
+void cGUITextBuffer::Copy()
 {
    // TODO
 }
 
 ///////////////////////////////////////
 
-void cGUITextSelection::Paste()
+void cGUITextBuffer::Paste()
 {
    // TODO
 }
@@ -250,9 +272,7 @@ void cGUITextSelection::Paste()
 ///////////////////////////////////////
 
 cGUITextEditElement::cGUITextEditElement()
- : m_text(""),
-   m_editSize(~0),
-   m_selection(&m_text),
+ : m_editSize(~0),
    m_timeLastBlink(0),
    m_bCursorBlinkOn(true),
    m_bCursorForceOn(false)
@@ -289,7 +309,7 @@ tResult cGUITextEditElement::OnEvent(IGUIEvent * pEvent)
       if (HitTest(mouse - GetAbsolutePosition(), &index) && (index != -1))
       {
          LocalMsg1("Hit index %d\n", index);
-         m_selection.SetCursorIndex(index);
+         m_buffer.SetCursorIndex(index);
       }
    }
    else if (eventCode == kGUIEventMouseUp)
@@ -355,11 +375,11 @@ tResult cGUITextEditElement::GetSelection(uint * pStart, uint * pEnd)
    // TODO: see comments below about text selection
    if (pStart != NULL)
    {
-      *pStart = m_selection.GetCursorIndex();
+      *pStart = m_buffer.GetCursorIndex();
    }
    if (pEnd != NULL)
    {
-      *pEnd = m_selection.GetCursorIndex();
+      *pEnd = m_buffer.GetCursorIndex();
    }
    return S_OK;
 }
@@ -375,7 +395,7 @@ tResult cGUITextEditElement::SetSelection(uint start, uint end)
       return E_NOTIMPL;
    }
 
-   m_selection.SetCursorIndex(end);
+   m_buffer.SetCursorIndex(end);
 
    return S_OK;
 }
@@ -384,27 +404,14 @@ tResult cGUITextEditElement::SetSelection(uint start, uint end)
 
 tResult cGUITextEditElement::GetText(tGUIString * pText)
 {
-   if (pText == NULL)
-   {
-      return E_POINTER;
-   }
-   *pText = m_text;
-   return m_text.empty() ? S_FALSE : S_OK;
+   return m_buffer.GetText(pText);
 }
 
 ///////////////////////////////////////
 
 tResult cGUITextEditElement::SetText(const char * pszText)
 {
-   if (pszText == NULL)
-   {
-      m_text.erase();
-   }
-   else
-   {
-      m_text = pszText;
-   }
-   return S_OK;
+   return m_buffer.SetText(pszText);
 }
 
 ///////////////////////////////////////
@@ -438,12 +445,12 @@ tResult cGUITextEditElement::HandleKeyDown(long keyCode)
    {
       case kBackspace:
       {
-         m_selection.Backspace();
+         m_buffer.Backspace();
          break;
       }
       case kDelete:
       {
-         m_selection.Delete();
+         m_buffer.Delete();
          break;
       }
       case kLeft:
@@ -451,11 +458,11 @@ tResult cGUITextEditElement::HandleKeyDown(long keyCode)
          UseGlobal(Input);
          if (pInput->KeyIsDown(kCtrl))
          {
-            m_selection.WordLeft();
+            m_buffer.WordLeft();
          }
          else
          {
-            m_selection.CharLeft();
+            m_buffer.CharLeft();
          }
          break;
       }
@@ -464,22 +471,22 @@ tResult cGUITextEditElement::HandleKeyDown(long keyCode)
          UseGlobal(Input);
          if (pInput->KeyIsDown(kCtrl))
          {
-            m_selection.WordRight();               
+            m_buffer.WordRight();               
          }
          else
          {
-            m_selection.CharRight();
+            m_buffer.CharRight();
          }
          break;
       }
       case kHome:
       {
-         m_selection.Start();
+         m_buffer.Start();
          break;
       }
       case kEnd:
       {
-         m_selection.End();
+         m_buffer.End();
          break;
       }
       case kEscape:
@@ -491,7 +498,7 @@ tResult cGUITextEditElement::HandleKeyDown(long keyCode)
       {
          if (isprint(keyCode))
          {
-            m_selection.ReplaceSel((char)keyCode);
+            m_buffer.ReplaceSel((char)keyCode);
          }
          break;
       }
@@ -507,14 +514,16 @@ bool cGUITextEditElement::HitTest(const tGUIPoint & point, int * pIndex)
    cAutoIPtr<IGUIElementRenderer> pRenderer;
    if (GetRenderer(&pRenderer) == S_OK)
    {
+      tGUIString text;
       cAutoIPtr<IGUIFont> pFont;
-      if (pRenderer->GetFont(static_cast<IGUIElement*>(this), &pFont) == S_OK)
+      if (pRenderer->GetFont(static_cast<IGUIElement*>(this), &pFont) == S_OK
+         && m_buffer.GetText(&text) == S_OK)
       {
          float charPos = 0;
-         for (uint i = 0; i < m_text.length(); ++i)
+         for (uint i = 0; i < text.length(); ++i)
          {
             tRect charRect(0,0,0,0);
-            pFont->RenderText(&(m_text.at(i)), 1, &charRect, kRT_CalcRect, tGUIColor::White);
+            pFont->RenderText(&(text.at(i)), 1, &charRect, kRT_CalcRect, tGUIColor::White);
 
             if ((point.x > charPos) && (point.x <= charPos + charRect.GetWidth()))
             {
@@ -590,9 +599,9 @@ tResult cGUITextEditElementFactory::CreateElement(const TiXmlElement * pXmlEleme
 
 #ifdef HAVE_CPPUNIT
 
-class cGUITextSelectionTests : public CppUnit::TestCase
+class cGUITextBufferTests : public CppUnit::TestCase
 {
-   CPPUNIT_TEST_SUITE(cGUITextSelectionTests);
+   CPPUNIT_TEST_SUITE(cGUITextBufferTests);
       CPPUNIT_TEST(TestBackspace);
       CPPUNIT_TEST(TestBackspace2);
       CPPUNIT_TEST(TestBackspace3);
@@ -615,177 +624,208 @@ class cGUITextSelectionTests : public CppUnit::TestCase
 
 ///////////////////////////////////////
 
-CPPUNIT_TEST_SUITE_REGISTRATION(cGUITextSelectionTests);
+CPPUNIT_TEST_SUITE_REGISTRATION(cGUITextBufferTests);
 
 ///////////////////////////////////////
 
-void cGUITextSelectionTests::TestBackspace()
+void cGUITextBufferTests::TestBackspace()
 {
    char szTestString[] = "This is the test string";
-   tGUIString text(szTestString);
-   cGUITextSelection sel(&text);
+   tGUIString text;
+   cGUITextBuffer buffer;
+   buffer.SetText(szTestString);
 
    int i;
    const int nBackspaces = 4;
 
-   sel.Start();
+   buffer.Start();
    for (i = 0; i < nBackspaces; i++)
    {
-      sel.Backspace();
+      buffer.Backspace();
    }
+   CPPUNIT_ASSERT(buffer.GetText(&text) == S_OK);
    CPPUNIT_ASSERT(strcmp(text.c_str(), szTestString) == 0);
 
-   sel.End();
+   buffer.End();
    for (i = 0; i < nBackspaces; i++)
    {
-      sel.Backspace();
+      buffer.Backspace();
    }
    szTestString[strlen(szTestString) - nBackspaces] = 0;
+   CPPUNIT_ASSERT(buffer.GetText(&text) == S_OK);
    CPPUNIT_ASSERT(strcmp(text.c_str(), szTestString) == 0);
 }
 
 ///////////////////////////////////////
 
-void cGUITextSelectionTests::TestBackspace2()
+void cGUITextBufferTests::TestBackspace2()
 {
    char szTestString[] = "This is the test string";
-   tGUIString text(szTestString);
-   cGUITextSelection sel(&text);
+   tGUIString text;
+   cGUITextBuffer buffer;
+   buffer.SetText(szTestString);
 
    const int nBackspaces = 5;
 
-   sel.Start();
-   sel.Backspace(nBackspaces);
+   // Backspace at start should do nothing
+   buffer.Start();
+   buffer.Backspace(nBackspaces);
+   CPPUNIT_ASSERT(buffer.GetText(&text) == S_OK);
    CPPUNIT_ASSERT(strcmp(text.c_str(), szTestString) == 0);
 
-   sel.End();
-   sel.Backspace(nBackspaces);
-   szTestString[strlen(szTestString) - nBackspaces] = 0;
-   CPPUNIT_ASSERT(strcmp(text.c_str(), szTestString) == 0);
+   buffer.End();
+   buffer.Backspace(nBackspaces);
+   CPPUNIT_ASSERT(buffer.GetText(&text) == S_OK);
+   CPPUNIT_ASSERT(strncmp(text.c_str(), szTestString, strlen(szTestString) - nBackspaces) == 0);
 }
 
 ///////////////////////////////////////
 
-void cGUITextSelectionTests::TestBackspace3()
+void cGUITextBufferTests::TestBackspace3()
 {
-   tGUIString text("xxxHELLO");
-   cGUITextSelection sel(&text);
+   char szTestString[] = "xxxHELLO";
+   tGUIString text;
+   cGUITextBuffer buffer;
+   buffer.SetText(szTestString);
 
-   sel.Start();
-   sel.CharRight(3);
-   sel.Backspace(5);
-   CPPUNIT_ASSERT(strcmp(text.c_str(), "HELLO") == 0);
+   const int nRight = 3;
+
+   buffer.Start();
+   buffer.CharRight(nRight);
+   buffer.Backspace(nRight * 2);
+   CPPUNIT_ASSERT(buffer.GetText(&text) == S_OK);
+   CPPUNIT_ASSERT(strcmp(text.c_str(), szTestString + nRight) == 0);
 }
 
 ///////////////////////////////////////
 
-void cGUITextSelectionTests::TestDelete()
+void cGUITextBufferTests::TestDelete()
 {
    char szTestString[] = "This is the test string";
-   tGUIString text(szTestString);
-   cGUITextSelection sel(&text);
+   tGUIString text;
+   cGUITextBuffer buffer;
+   buffer.SetText(szTestString);
 
    int i;
    const int nDeletes = 4;
 
-   sel.End();
+   // Delete from end should do nothing
+   buffer.End();
    for (i = 0; i < nDeletes; i++)
    {
-      sel.Delete();
+      buffer.Delete();
    }
+   CPPUNIT_ASSERT(buffer.GetText(&text) == S_OK);
    CPPUNIT_ASSERT(strcmp(text.c_str(), szTestString) == 0);
 
-   sel.Start();
+   // Delete one-by-one from start
+   buffer.Start();
    for (i = 0; i < nDeletes; i++)
    {
-      sel.Delete();
+      buffer.Delete();
    }
+   CPPUNIT_ASSERT(buffer.GetText(&text) == S_OK);
    CPPUNIT_ASSERT(strcmp(text.c_str(), szTestString + nDeletes) == 0);
 }
 
 ///////////////////////////////////////
 
-void cGUITextSelectionTests::TestDelete2()
+void cGUITextBufferTests::TestDelete2()
 {
    char szTestString[] = "This is the test string";
-   tGUIString text(szTestString);
-   cGUITextSelection sel(&text);
+   tGUIString text;
+   cGUITextBuffer buffer;
+   buffer.SetText(szTestString);
 
    const int nDeletes = 7;
 
-   sel.End();
-   sel.Delete(nDeletes);
+   // Delete from end should do nothing
+   buffer.End();
+   buffer.Delete(nDeletes);
+   CPPUNIT_ASSERT(buffer.GetText(&text) == S_OK);
    CPPUNIT_ASSERT(strcmp(text.c_str(), szTestString) == 0);
 
-   sel.Start();
-   sel.Delete(nDeletes);
+   // Delete a # of characters from start
+   buffer.Start();
+   buffer.Delete(nDeletes);
+   CPPUNIT_ASSERT(buffer.GetText(&text) == S_OK);
    CPPUNIT_ASSERT(strcmp(text.c_str(), szTestString + nDeletes) == 0);
 }
 
 ///////////////////////////////////////
 
-void cGUITextSelectionTests::TestWordRight()
+void cGUITextBufferTests::TestWordRight()
 {
    char szTestString[] = "This is the test string";
-   tGUIString text(szTestString);
-   cGUITextSelection sel(&text);
+   tGUIString text;
+   cGUITextBuffer buffer;
+   buffer.SetText(szTestString);
 
-   sel.Start();
-   sel.WordRight();
-   sel.WordRight();
-   sel.WordRight();
-   sel.Delete(5);
+   buffer.Start();
+   buffer.WordRight();
+   buffer.WordRight();
+   buffer.WordRight();
+   buffer.Delete(5);
+   CPPUNIT_ASSERT(buffer.GetText(&text) == S_OK);
    CPPUNIT_ASSERT(strcmp(text.c_str(), "This is the string") == 0);
 
-   sel.Start();
-   sel.WordRight();
-   sel.Delete(3);
+   buffer.Start();
+   buffer.WordRight();
+   buffer.Delete(3);
+   CPPUNIT_ASSERT(buffer.GetText(&text) == S_OK);
    CPPUNIT_ASSERT(strcmp(text.c_str(), "This the string") == 0);
 }
 
 ///////////////////////////////////////
 
-void cGUITextSelectionTests::TestWordLeft()
+void cGUITextBufferTests::TestWordLeft()
 {
    char szTestString[] = "This is the test string";
-   tGUIString text(szTestString);
-   cGUITextSelection sel(&text);
+   tGUIString text;
+   cGUITextBuffer buffer;
+   buffer.SetText(szTestString);
 
-   sel.End();
-   sel.WordLeft();
-   sel.Delete(6);
+   buffer.End();
+   buffer.WordLeft();
+   buffer.Delete(6);
+   CPPUNIT_ASSERT(buffer.GetText(&text) == S_OK);
    CPPUNIT_ASSERT(strcmp(text.c_str(), "This is the test ") == 0);
 
-   sel.WordLeft();
-   sel.Delete(5);
+   buffer.WordLeft();
+   buffer.Delete(5);
+   CPPUNIT_ASSERT(buffer.GetText(&text) == S_OK);
    CPPUNIT_ASSERT(strcmp(text.c_str(), "This is the ") == 0);
 
-   sel.WordLeft();
-   sel.WordLeft();
-   sel.WordLeft();
-   sel.WordLeft();
-   sel.Delete(5);
+   buffer.WordLeft();
+   buffer.WordLeft();
+   buffer.WordLeft();
+   buffer.WordLeft();
+   buffer.Delete(5);
+   CPPUNIT_ASSERT(buffer.GetText(&text) == S_OK);
    CPPUNIT_ASSERT(strcmp(text.c_str(), "is the ") == 0);
 }
 
 ///////////////////////////////////////
 
-void cGUITextSelectionTests::TestReplace()
+void cGUITextBufferTests::TestReplace()
 {
    char szTestString[] = "This is the test string";
-   tGUIString text(szTestString);
-   cGUITextSelection sel(&text);
+   tGUIString text;
+   cGUITextBuffer buffer;
+   buffer.SetText(szTestString);
 
-   sel.Start();
-   sel.WordRight();
-   sel.Delete(2);
-   sel.ReplaceSel("was");
+   buffer.Start();
+   buffer.WordRight();
+   buffer.Delete(2);
+   buffer.ReplaceSel("was");
+   CPPUNIT_ASSERT(buffer.GetText(&text) == S_OK);
    CPPUNIT_ASSERT(strcmp(text.c_str(), "This was the test string") == 0);
 
-   sel.WordRight();
-   sel.WordRight();
-   sel.CharRight(4);
-   sel.ReplaceSel("ing");
+   buffer.WordRight();
+   buffer.WordRight();
+   buffer.CharRight(4);
+   buffer.ReplaceSel("ing");
+   CPPUNIT_ASSERT(buffer.GetText(&text) == S_OK);
    CPPUNIT_ASSERT(strcmp(text.c_str(), "This was the testing string") == 0);
 }
 

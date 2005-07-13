@@ -19,11 +19,11 @@
 
 LOG_DEFINE_CHANNEL(GlobalObjReg);
 
-#define LocalMsg(s)              DebugMsgEx(GlobalObjReg,(s))
-#define LocalMsg1(s,a)           DebugMsgEx1(GlobalObjReg,(s),(a))
-#define LocalMsg2(s,a,b)         DebugMsgEx2(GlobalObjReg,(s),(a),(b))
-#define LocalMsg3(s,a,b,c)       DebugMsgEx3(GlobalObjReg,(s),(a),(b),(c))
-#define LocalMsg4(s,a,b,c,d)     DebugMsgEx4(GlobalObjReg,(s),(a),(b),(c),(d))
+#define LocalMsg(s)              DebugMsgEx(GlobalObjReg,s)
+#define LocalMsg1(s,a)           DebugMsgEx1(GlobalObjReg,s,(a))
+#define LocalMsg2(s,a,b)         DebugMsgEx2(GlobalObjReg,s,(a),(b))
+#define LocalMsg3(s,a,b,c)       DebugMsgEx3(GlobalObjReg,s,(a),(b),(c))
+#define LocalMsg4(s,a,b,c,d)     DebugMsgEx4(GlobalObjReg,s,(a),(b),(c),(d))
 
 F_DECLARE_INTERFACE(IGlobalObjectRegistry);
 
@@ -108,7 +108,7 @@ public:
    virtual tResult TermAll();
 
 private:
-   bool LookupByName(const char * pszName, IUnknown * * ppUnk, const GUID * * ppGuid) const;
+   bool LookupByName(const tChar * pszName, IUnknown * * ppUnk, const GUID * * ppGuid) const;
 
    typedef cDigraph<const IID *> tConstraintGraph;
    void BuildConstraintGraph(tConstraintGraph * pGraph);
@@ -323,7 +323,7 @@ IUnknown * cGlobalObjectRegistry::Lookup(REFGUID iid)
 
 ///////////////////////////////////////
 
-bool cGlobalObjectRegistry::LookupByName(const char * pszName, IUnknown * * ppUnk, const GUID * * ppGuid) const
+bool cGlobalObjectRegistry::LookupByName(const tChar * pszName, IUnknown * * ppUnk, const GUID * * ppGuid) const
 {
    // TODO: Index by name as well as by GUID so a linear search isn't necessary
    for (tObjMap::const_iterator iter = m_objMap.begin(); iter != m_objMap.end(); iter++)
@@ -331,7 +331,7 @@ bool cGlobalObjectRegistry::LookupByName(const char * pszName, IUnknown * * ppUn
       cAutoIPtr<IGlobalObject> pGlobalObj;
       Verify(SUCCEEDED(iter->second->QueryInterface(IID_IGlobalObject, (void**)&pGlobalObj)));
 
-      if (strcmp(pGlobalObj->GetName(), pszName) == 0)
+      if (_tcscmp(pGlobalObj->GetName(), pszName) == 0)
       {
          if (ppUnk != NULL)
          {

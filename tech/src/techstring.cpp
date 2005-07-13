@@ -24,7 +24,25 @@
 // CLASS: cStr
 //
 
-const cStr cStr::gm_whitespace(" \t\r\n");
+const cStr cStr::gm_whitespace(_T(" \t\r\n"));
+
+///////////////////////////////////////
+
+int cStr::ToInt() const
+{
+   return _ttoi(Get());
+}
+
+///////////////////////////////////////
+
+float cStr::ToFloat() const
+{
+#ifdef _UNICODE
+   return static_cast<float>(_wtof(Get()));
+#else
+   return static_cast<float>(atof(Get()));
+#endif
+}
 
 ///////////////////////////////////////
 
@@ -37,22 +55,21 @@ int cStr::ParseTuple(std::vector<cStr> * pStrings) const
 
    pStrings->clear();
 
-   const char * psz = Get();
-
-   const char * pszStop = psz + strlen(psz);
+   const tChar * psz = Get();
+   const tChar * pszStop = psz + _tcslen(psz);
 
    // the open and close bracket strings must "line up"
    // for example, '<' and '>' both appear at index zero
-   static const char szOpenBrackets[]  = "<([{";
-   static const char szCloseBrackets[] = ">)]}";
+   static const tChar szOpenBrackets[]  = _T("<([{");
+   static const tChar szCloseBrackets[] = _T(">)]}");
 
-   const char * pszOpenBracket = strchr(szOpenBrackets, *psz);
+   const tChar * pszOpenBracket = _tcschr(szOpenBrackets, *psz);
    if (pszOpenBracket != NULL)
    {
       if (*(pszStop - 1) == szCloseBrackets[pszOpenBracket - szOpenBrackets])
       {
-         psz++;
-         pszStop--;
+         psz = _tcsinc(psz);
+         pszStop = _tcsdec(Get(), pszStop);
       }
       else
       {
@@ -67,24 +84,23 @@ int cStr::ParseTuple(std::vector<cStr> * pStrings) const
    {
       while (isspace(*psz))
       {
-         psz++;
+         psz = _tcsinc(psz);
       }
 
-      const char * psz2 = strpbrk(psz, ",;");
+      const tChar * psz2 = _tcspbrk(psz, _T(",;"));
       if (psz2 == NULL)
       {
          psz2 = pszStop;
       }
 
       int len = psz2 - psz;
-
       if (len > 0)
       {
          pStrings->push_back(cStr(psz, len));
          nParsed++;
       }
 
-      psz = psz2 + 1;
+      psz = _tcsinc(psz2);
    }
 
    Assert(nParsed == pStrings->size());
@@ -105,8 +121,6 @@ int cStr::ParseTuple(double * pDoubles, int nMaxDoubles) const
    {
       return E_INVALIDARG;
    }
-
-   const char * psz = Get();
 
    std::vector<cStr> strings;
    int result = ParseTuple(&strings);
@@ -139,8 +153,6 @@ int cStr::ParseTuple(float * pFloats, int nMaxFloats) const
       return E_INVALIDARG;
    }
 
-   const char * psz = Get();
-
    std::vector<cStr> strings;
    int result = ParseTuple(&strings);
    if (result > 0)
@@ -164,7 +176,7 @@ AssertOnce(sizeof(int) == sizeof(uint));
 
 static int FormatLengthEstimate(const tChar * pszFormat, va_list args)
 {
-   const uint l = strlen(pszFormat);
+   const uint l = _tcslen(pszFormat);
 
    int formatLenEst = 0;
    tChar last = 0;
@@ -253,7 +265,7 @@ static int FormatLengthEstimate(const tChar * pszFormat, va_list args)
                const tChar * pszValue = va_arg(args, const tChar *);
                Assert(bInFormatField);
                bInFormatField = false;
-               formatLenEst += strlen(pszValue);
+               formatLenEst += _tcslen(pszValue);
             }
             else
             {
@@ -302,7 +314,7 @@ int CDECL cStr::Format(const tChar * pszFormat, ...)
    va_start(args, pszFormat);
    int length = FormatLengthEstimate(pszFormat, args) + 1; // plus one for null terminator
    tChar * pszTemp = reinterpret_cast<tChar*>(alloca(length * sizeof(tChar)));
-   _vsnprintf(pszTemp, length, pszFormat, args);
+   _vsntprintf(pszTemp, length, pszFormat, args);
    va_end(args);
    *this = cStr(pszTemp);
    return length;
@@ -325,13 +337,13 @@ static cStr FilteredCopy(const cStr & str, const cStr & excluded)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static const cStr g_fileSeps("\\/");
+static const cStr g_fileSeps(_T("\\/"));
 
 int filepathcmp(const cStr & f1, const cStr & f2)
 {
    cStr cf1(FilteredCopy(f1, g_fileSeps));
    cStr cf2(FilteredCopy(f2, g_fileSeps));
-   return strcmp(cf1.c_str(), cf2.c_str());
+   return _tcscmp(cf1.c_str(), cf2.c_str());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -340,7 +352,7 @@ int filepathicmp(const cStr & f1, const cStr & f2)
 {
    cStr cf1(FilteredCopy(f1, g_fileSeps));
    cStr cf2(FilteredCopy(f2, g_fileSeps));
-   return stricmp(cf1.c_str(), cf2.c_str());
+   return _tcsicmp(cf1.c_str(), cf2.c_str());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
