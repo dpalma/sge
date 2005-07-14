@@ -4,7 +4,7 @@
 #ifndef INCLUDED_SOCKET_H
 #define INCLUDED_SOCKET_H
 
-#include "str.h"
+#include "techstring.h"
 
 #ifdef _MSC_VER
 #pragma once

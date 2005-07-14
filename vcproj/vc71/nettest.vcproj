@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding = "Windows-1252"?>
+<?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.00"
-	Name="network"
+	Version="7.10"
+	Name="nettest"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -12,8 +12,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\..\..\Build.vc7\Debug"
-			IntermediateDirectory=".\..\..\Build.vc7\Debug\network"
+			OutputDirectory=".\..\..\Build.vc71\Debug"
+			IntermediateDirectory=".\..\..\Build.vc71\Debug\nettest"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -21,16 +21,16 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\3rdparty\cppunit\include"
+				AdditionalIncludeDirectories="..\..\engine\include,..\..\tech\include,..\..\3rdparty\cppunit\include"
 				PreprocessorDefinitions="_DEBUG,WIN32,_CONSOLE,HAVE_CPPUNIT"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdhdr.h"
-				PrecompiledHeaderFile=".\..\..\Build.vc7\Debug\network/network.pch"
-				AssemblerListingLocation=".\..\..\Build.vc7\Debug\network/"
-				ObjectFile=".\..\..\Build.vc7\Debug\network/"
-				ProgramDataBaseFileName=".\..\..\Build.vc7\Debug\network/"
+				PrecompiledHeaderFile=".\..\..\Build.vc71\Debug\nettest/nettest.pch"
+				AssemblerListingLocation=".\..\..\Build.vc71\Debug\nettest/"
+				ObjectFile=".\..\..\Build.vc71\Debug\nettest/"
+				ProgramDataBaseFileName=".\..\..\Build.vc71\Debug\nettest/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="4"
@@ -41,15 +41,15 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="$(OutDir)\cppunit.lib wsock32.lib ws2_32.lib"
-				OutputFile=".\..\..\Build.vc7\Debug/network.exe"
+				OutputFile=".\..\..\Build.vc71\Debug/nettest.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\..\..\Build.vc7\Debug/network.pdb"
+				ProgramDatabaseFile=".\..\..\Build.vc71\Debug/nettest.pdb"
 				SubSystem="1"/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\..\..\Build.vc7\Debug/network.tlb"/>
+				TypeLibraryName=".\..\..\Build.vc71\Debug/nettest.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -63,12 +63,18 @@
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
 				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\..\..\Build.vc7\Release"
-			IntermediateDirectory=".\..\..\Build.vc7\Release\network"
+			OutputDirectory=".\..\..\Build.vc71\Release"
+			IntermediateDirectory=".\..\..\Build.vc71\Release\nettest"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -76,17 +82,17 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\3rdparty\cppunit\include"
+				AdditionalIncludeDirectories="..\..\engine\include,..\..\tech\include,..\..\3rdparty\cppunit\include"
 				PreprocessorDefinitions="NDEBUG,WIN32,_CONSOLE,HAVE_CPPUNIT"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdhdr.h"
-				PrecompiledHeaderFile=".\..\..\Build.vc7\Release\network/network.pch"
-				AssemblerListingLocation=".\..\..\Build.vc7\Release\network/"
-				ObjectFile=".\..\..\Build.vc7\Release\network/"
-				ProgramDataBaseFileName=".\..\..\Build.vc7\Release\network/"
+				PrecompiledHeaderFile=".\..\..\Build.vc71\Release\nettest/nettest.pch"
+				AssemblerListingLocation=".\..\..\Build.vc71\Release\nettest/"
+				ObjectFile=".\..\..\Build.vc71\Release\nettest/"
+				ProgramDataBaseFileName=".\..\..\Build.vc71\Release\nettest/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				CompileAs="0"/>
@@ -96,14 +102,14 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="$(OutDir)\cppunit.lib wsock32.lib ws2_32.lib"
-				OutputFile=".\..\..\Build.vc7\Release/network.exe"
+				OutputFile=".\..\..\Build.vc71\Release/nettest.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
-				ProgramDatabaseFile=".\..\..\Build.vc7\Release/network.pdb"
+				ProgramDatabaseFile=".\..\..\Build.vc71\Release/nettest.pdb"
 				SubSystem="1"/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\..\..\Build.vc7\Release/network.tlb"/>
+				TypeLibraryName=".\..\..\Build.vc71\Release/nettest.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -117,21 +123,29 @@
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
 				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 	</Configurations>
+	<References>
+	</References>
 	<Files>
 		<Filter
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 			<File
-				RelativePath=".\main.cpp">
+				RelativePath=".\..\..\tests\network\main.cpp">
 			</File>
 			<File
-				RelativePath=".\socket.cpp">
+				RelativePath="..\..\engine\src\socket.cpp">
 			</File>
 			<File
-				RelativePath=".\stdhdr.cpp">
+				RelativePath=".\..\..\tests\network\stdhdr.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
 					<Tool
@@ -150,7 +164,7 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl">
 			<File
-				RelativePath=".\socket.h">
+				RelativePath="..\..\engine\include\socket.h">
 			</File>
 			<File
 				RelativePath=".\stdhdr.h">

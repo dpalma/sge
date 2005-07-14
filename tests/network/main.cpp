@@ -4,8 +4,9 @@
 #include "stdhdr.h"
 
 #include "socket.h"
-#include "thread.h"
 
+#include "thread.h"
+#include "threadcallapi.h"
 #include "globalobj.h"
 
 #ifdef _WIN32
@@ -173,6 +174,7 @@ static bool RunUnitTests()
 
 int main(int argc, char * argv[])
 {
+   ThreadCallerCreate();
    StartGlobalObjects();
 
    RunUnitTests();
