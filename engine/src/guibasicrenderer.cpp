@@ -8,8 +8,6 @@
 #include "guistrings.h"
 #include "scriptapi.h"
 
-#include "color.h"
-
 #include "globalobj.h"
 
 #include "dbgalloc.h" // must be last header
