@@ -208,9 +208,10 @@ function enumbuilddirs(bldroot, f)
 end
 
 function buildzips(bldroot)
-   local wzzip = string.format("%q", autobld:getregistryvalue(
-      HKEY_LOCAL_MACHINE, "Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\wzzip.exe"));
+   local wzzip = autobld:getregistryvalue(HKEY_LOCAL_MACHINE,
+      "Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\wzzip.exe");
    if wzzip then
+      wzzip = string.format("%q", wzzip);
       enumbuilddirs(bldroot, function(baseDir, buildDir, buildCompiler)
          local shipDir = pathcat(baseDir, "Ship." .. buildCompiler);
          autobld:mkdir(shipDir);
@@ -230,28 +231,30 @@ end
 
 function buildinstallers(bldroot)
    local nsis = autobld:getregistryvalue(HKEY_LOCAL_MACHINE, "Software\\NSIS");
-   enumbuilddirs(bldroot, function(baseDir, buildDir, buildCompiler)
-      local shipDir = pathcat(baseDir, "Ship." .. buildCompiler);
-      autobld:mkdir(shipDir);
-      for i,targetDir in ipairs(autobld:dir(pathcat(baseDir, buildDir, "*"))) do
-         local shipTargetDir = pathcat(shipDir, targetDir);
-         autobld:mkdir(shipTargetDir);
-         local buildBinDir = pathcat(baseDir, buildDir, targetDir);
+   if nsis then
+      enumbuilddirs(bldroot, function(baseDir, buildDir, buildCompiler)
+         local shipDir = pathcat(baseDir, "Ship." .. buildCompiler);
+         autobld:mkdir(shipDir);
+         for i,targetDir in ipairs(autobld:dir(pathcat(baseDir, buildDir, "*"))) do
+            local shipTargetDir = pathcat(shipDir, targetDir);
+            autobld:mkdir(shipTargetDir);
+            local buildBinDir = pathcat(baseDir, buildDir, targetDir);
 
-         local instArgs = "/nocd ";
-         instArgs = instArgs .. " /DBUILD_ROOT=" .. baseDir;
-         instArgs = instArgs .. " /DBUILD_OUTDIR=" .. shipTargetDir;
-         instArgs = instArgs .. " /DBUILD_BINARIES=" .. buildBinDir;
-         instArgs = instArgs .. " /DBUILD_" .. string.upper(buildCompiler);
-         instArgs = instArgs .. " /DBUILD_" .. string.upper(targetDir);
+            local instArgs = "/nocd ";
+            instArgs = instArgs .. " /DBUILD_ROOT=" .. baseDir;
+            instArgs = instArgs .. " /DBUILD_OUTDIR=" .. shipTargetDir;
+            instArgs = instArgs .. " /DBUILD_BINARIES=" .. buildBinDir;
+            instArgs = instArgs .. " /DBUILD_" .. string.upper(buildCompiler);
+            instArgs = instArgs .. " /DBUILD_" .. string.upper(targetDir);
 
-         local instCmd = string.format("%q", pathcat(nsis, "makensis.exe"));
-         instCmd = instCmd .. " " .. "/O" .. pathcat(shipTargetDir, "makensis.log");
-         instCmd = instCmd .. " " .. instArgs;
-         instCmd = instCmd .. " " .. pathcat(baseDir, "installer\\sge.nsi");
-         autobld:spawn(instCmd);
-      end
-   end);
+            local instCmd = string.format("%q", pathcat(nsis, "makensis.exe"));
+            instCmd = instCmd .. " " .. "/O" .. pathcat(shipTargetDir, "makensis.log");
+            instCmd = instCmd .. " " .. instArgs;
+            instCmd = instCmd .. " " .. pathcat(baseDir, "installer\\sge.nsi");
+            autobld:spawn(instCmd);
+         end
+      end);
+   end
 end
 
 local buildfns =
