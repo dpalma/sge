@@ -1,0 +1,23 @@
+<!-- $Id$ -->
+
+<panel id="toppanel"
+    style="vertical-align:top;width:100%;height:28"
+    insets="(5,5,5,5)"
+    renderer="beveled">
+    
+   <layout type="grid" columns="5" rows="1" />
+   <label text="[[" />
+   <label text="]]" />
+   <label text="<Resources>" />
+   <label text="<Population>" />
+
+</panel>
+
+<panel id="bottompanel"
+    style="vertical-align:bottom;width:100%;height:20%"
+    insets="(5,5,5,5)"
+    renderer="beveled">
+
+   <button text="Exit" style="align:right;" onclick="QuitWithConfirm();" renderer="beveled" />
+
+</panel>

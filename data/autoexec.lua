@@ -12,32 +12,37 @@ bind("escape", [[QuitWithConfirm();]]);
 
 bind("F4", [[GUIContext:ToggleDebugInfo(5, 200, "yellow");]]);
 
---LogChannel([[LuaInterp]]);
+bind("F7", [[GUIContext:ShowModalDialog("guitest.xml")]]);
+
 --LogChannel([[GUILayout]]);
 --LogChannel([[GUIButtonEvents]]);
 --LogChannel([[GUIDialogEvents]]);
+--LogChannel([[LuaInterp]]);
+--LogChannel([[ResourceManager]]);
 
 gameMeshes = 
 {
    "tree2.ms3d",
    "crate.ms3d",
-   "face.3ds",
    "zombie.ms3d",
 };
 
 function LoadSampleLevel()
    GUIContext:Clear();
-   GUIContext:Load("guitest.xml");
+   GUIContext:Load("ingame.xml");
 
    SetTerrain("ground.tga", 0.2, "grass.tga");
+   
+   -- spawn this many entities
+   nEntities = 15;
 
    nGameMeshes = table.getn(gameMeshes);
-   for i = 1, nGameMeshes do
-	  for m=1,5 do
-	     EntitySpawnTest(gameMeshes[i], math.random(), math.random());
-	  end
-   end
+	for m=1,nEntities do
+	   mesh = gameMeshes[math.random(nGameMeshes)];
+	   EntitySpawnTest(mesh, math.random(), math.random());
+	end
    
+   -- Spawn an animated zombie and point the view at it
    EntitySpawnTest("zombie.ms3d", 0.5, 0.4);
    ViewSetPos(0.5, 0.4);
 end;
