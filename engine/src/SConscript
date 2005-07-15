@@ -4,8 +4,6 @@
 Import('*')
 
 sources = Split("""
-   3ds.cpp
-   animation.cpp
    cmds.cpp
    engine.cpp
    entitymanager.cpp
@@ -28,9 +26,7 @@ sources = Split("""
    guitypes.cpp
    input.cpp
    luainterp.cpp
-   mesh.cpp
    model.cpp
-   ms3d.cpp
    ms3dread.cpp
    ray.cpp
    scene.cpp
@@ -42,8 +38,6 @@ sources = Split("""
    scenemodel.cpp
    scriptvar.cpp
    sim.cpp
-   skeleton.cpp
-   submesh.cpp
 """)
 
 includePaths = Split("""

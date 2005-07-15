@@ -5,8 +5,6 @@
 
 #include "entitymanager.h"
 #include "model.h"
-
-#include "meshapi.h"
 #include "sceneapi.h"
 
 #include "resourceapi.h"
@@ -76,29 +74,10 @@ tResult cEntityManager::SpawnEntity(const char * pszMesh, float x, float z)
       m_pTerrainLocatorHack->Locate(x, z, &location.x, &location.y, &location.z);
    }
 
-   if (ConfigIsTrue("use_old_mesh_code"))
-   {
-      cAutoIPtr<IMesh> pMesh;
-      UseGlobal(ResourceManager);
-      if (pResourceManager->LoadUncached(tResKey(pszMesh, kRC_Mesh), m_pRenderDevice, (void**)&pMesh, NULL) != S_OK)
-      {
-         DebugMsg1("Error loading mesh \"%s\"\n", pszMesh);
-         return E_FAIL;
-      }
-
-      cAutoIPtr<ISceneEntity> pEntity = SceneEntityCreate(pMesh);
-      pEntity->SetLocalTranslation(location);
-
-      UseGlobal(Scene);
-      pScene->AddEntity(kSL_Object, pEntity);
-   }
-   else
-   {
-      cAutoIPtr<ISceneEntity> pModelTestEntity = SceneEntityCreate(pszMesh);
-      pModelTestEntity->SetLocalTranslation(location);
-      UseGlobal(Scene);
-      pScene->AddEntity(kSL_Object, pModelTestEntity);
-   }
+   cAutoIPtr<ISceneEntity> pModelTestEntity = SceneEntityCreate(pszMesh);
+   pModelTestEntity->SetLocalTranslation(location);
+   UseGlobal(Scene);
+   pScene->AddEntity(kSL_Object, pModelTestEntity);
 
    return S_OK;
 }

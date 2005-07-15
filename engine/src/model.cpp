@@ -6,10 +6,6 @@
 #include "model.h"
 #include "ms3dread.h"
 #include "ms3d.h"
-#include "skeleton.h"
-#include "animation.h"
-
-#include "renderapi.h"
 
 #include "vec4.h"
 #include "matrix4.h"

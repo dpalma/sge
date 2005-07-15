@@ -21,7 +21,6 @@ template <typename T> class cQuat;
 typedef cQuat<float> tQuat;
 
 F_DECLARE_INTERFACE(IRenderDevice);
-F_DECLARE_INTERFACE(IMesh);
 
 class cRay;
 F_DECLARE_INTERFACE(IScene);
@@ -97,7 +96,6 @@ interface ISceneEntity : IUnknown
 ///////////////////////////////////////
 
 ENGINE_API ISceneEntity * SceneEntityCreate();
-ENGINE_API ISceneEntity * SceneEntityCreate(IMesh * pMesh);
 ENGINE_API ISceneEntity * SceneEntityCreate(const tChar * pszModel);
 
 

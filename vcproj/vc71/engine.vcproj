@@ -330,12 +330,6 @@
 				Name="Source Files"
 				Filter="">
 				<File
-					RelativePath="..\..\engine\src\3ds.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\animation.cpp">
-				</File>
-				<File
 					RelativePath="..\..\engine\src\cmds.cpp">
 				</File>
 				<File
@@ -441,13 +435,7 @@
 					RelativePath="..\..\engine\src\luainterp.cpp">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\mesh.cpp">
-				</File>
-				<File
 					RelativePath="..\..\engine\src\model.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\ms3d.cpp">
 				</File>
 				<File
 					RelativePath="..\..\engine\src\ms3dread.cpp">
@@ -471,9 +459,6 @@
 					RelativePath="..\..\engine\src\scenelayer.cpp">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\scenemesh.cpp">
-				</File>
-				<File
 					RelativePath="..\..\engine\src\scenemodel.cpp">
 				</File>
 				<File
@@ -481,9 +466,6 @@
 				</File>
 				<File
 					RelativePath="..\..\engine\src\sim.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\skeleton.cpp">
 				</File>
 				<File
 					RelativePath="..\..\engine\src\stdhdr.cpp">
@@ -517,9 +499,6 @@
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="1"/>
 					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="..\..\engine\src\submesh.cpp">
 				</File>
 				<File
 					RelativePath="..\..\engine\src\syslinux.cpp">
@@ -561,9 +540,6 @@
 			<Filter
 				Name="Header Files"
 				Filter="">
-				<File
-					RelativePath="..\..\engine\src\3ds.h">
-				</File>
 				<File
 					RelativePath="..\..\engine\src\engine.h">
 				</File>
@@ -673,9 +649,6 @@
 					RelativePath="..\..\engine\src\scenelayer.h">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\scenemesh.h">
-				</File>
-				<File
 					RelativePath="..\..\engine\src\scenemodel.h">
 				</File>
 				<File
@@ -686,9 +659,6 @@
 		<Filter
 			Name=".\include"
 			Filter="h;hpp;hxx;hm;inl">
-			<File
-				RelativePath="..\..\engine\include\animation.h">
-			</File>
 			<File
 				RelativePath="..\..\engine\include\engineapi.h">
 			</File>
@@ -711,9 +681,6 @@
 				RelativePath="..\..\engine\include\inputapi.h">
 			</File>
 			<File
-				RelativePath="..\..\engine\include\meshapi.h">
-			</File>
-			<File
 				RelativePath="..\..\engine\include\model.h">
 			</File>
 			<File
@@ -730,9 +697,6 @@
 			</File>
 			<File
 				RelativePath="..\..\engine\include\sim.h">
-			</File>
-			<File
-				RelativePath="..\..\engine\include\skeleton.h">
 			</File>
 		</Filter>
 	</Files>

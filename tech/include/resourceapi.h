@@ -33,7 +33,6 @@ enum eResourceClass
 {
    kRC_Unknown,
    kRC_Image,
-   kRC_Mesh,
    kRC_Text,
    kRC_TiXml,        // a tinyxml document
    kRC_GlTexture,    // a GL texture handle (GLuint)
