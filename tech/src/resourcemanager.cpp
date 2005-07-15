@@ -32,6 +32,11 @@ LOG_DEFINE_CHANNEL(ResourceManager);
 #define LocalMsg3(msg,a,b,c)     DebugMsgEx3(ResourceManager,msg,(a),(b),(c))
 #define LocalMsg4(msg,a,b,c,d)   DebugMsgEx4(ResourceManager,msg,(a),(b),(c),(d))
 
+#define LocalMsgIf(cond,msg)           DebugMsgIfEx(ResourceManager,(cond),msg)
+#define LocalMsgIf1(cond,msg,a)        DebugMsgIfEx1(ResourceManager,(cond),msg,(a))
+#define LocalMsgIf2(cond,msg,a,b)      DebugMsgIfEx2(ResourceManager,(cond),msg,(a),(b))
+#define LocalMsgIf3(cond,msg,a,b,c)    DebugMsgIfEx3(ResourceManager,(cond),msg,(a),(b),(c))
+
 static const int kUnzMaxPath = 260;
 
 static const tChar kExtSep = _T('.');
@@ -129,6 +134,40 @@ static bool SameType(tResourceType lhs, tResourceType rhs)
 
    return false;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+static const tChar * ResourceTypeName(tResourceType rt)
+{
+   uint16 hiWord = (uint16)(((ulong)rt >> 16) & 0xFFFF);
+   if (hiWord == 0)
+   {
+      static const struct
+      {
+         eResourceClass rc;
+         const tChar * pszName;
+      }
+      builtInTypeNames[] =
+      {
+         { kRC_Unknown,    _T("Unknown") },
+         { kRC_Image,      _T("Image") },
+         { kRC_Mesh,       _T("Mesh") },
+         { kRC_Text,       _T("Text") },
+         { kRC_TiXml,      _T("TiXml") },
+         { kRC_GlTexture,  _T("GlTexture") },
+      };
+      if ((uint)rt >= _countof(builtInTypeNames))
+      {
+         rt = 0;
+      }
+      return builtInTypeNames[(uint)rt].pszName;
+   }
+   else
+   {
+      return rt;
+   }
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -287,7 +326,7 @@ tResult cResourceManager::AddArchive(const tChar * pszArchive)
    else
    {
 #ifdef _UNICODE
-      size_t size = (wcslen(pszArchive) + 1) * sizeof(char);
+      size_t size = wcstombs(NULL, pszArchive, 0);
       char * pszTemp = reinterpret_cast<char*>(alloca(size));
       wcstombs(pszTemp, pszArchive, size);
       uf = m_archives[archiveId].handle = unzOpen(pszTemp);
@@ -310,7 +349,7 @@ tResult cResourceManager::AddArchive(const tChar * pszArchive)
       {
          LocalMsg3("%s(%d): %s\n", pszArchive, filePos.num_of_file, szFile);
 #ifdef _UNICODE
-         size_t size = (strlen(szFile) + 1) * sizeof(wchar_t);
+         size_t size = mbstowcs(NULL, szFile, 0);
          wchar_t * pszTemp = reinterpret_cast<wchar_t*>(alloca(size));
          mbstowcs(pszTemp, szFile, size);
          cFileSpec file(pszTemp);
@@ -439,6 +478,8 @@ tResult cResourceManager::Load(const tChar * pszName, tResourceType type,
          res.pFormat = pFormat;
          m_resources.push_back(res);
          pRes = &m_resources[m_resources.size() - 1];
+         LocalMsg3("Request for \"%s\", %s will be converted from type %s\n",
+            pszName, ResourceTypeName(type), ResourceTypeName(pFormat->typeDepend));
       }
 
       if (pRes != NULL)
@@ -791,12 +832,15 @@ uint cResourceManager::DeduceFormats(const tChar * pszName, tResourceType type,
       return 0;
    }
 
+   LocalMsg2("Deduce Resource Formats for \"%s\", %s\n", pszName, ResourceTypeName(type));
+
    uint extensionId = GetExtensionIdForName(pszName);
 
    // if name has file extension, resource class plus extension determines format
    // plus, include all formats that can generate the resource class from a dependent type
    if (extensionId != kNoIndex)
    {
+      Assert(extensionId < m_extensions.size());
       tFormats::const_iterator fIter = m_formats.begin();
       tFormats::const_iterator fEnd = m_formats.end();
       uint iFormat = 0;
@@ -806,10 +850,13 @@ uint cResourceManager::DeduceFormats(const tChar * pszName, tResourceType type,
          {
             if ((fIter->extensionId == extensionId) || fIter->typeDepend)
             {
-               ppFormats[iFormat++] = &m_formats[fIter - m_formats.begin()];
+               sFormat * pFormat = &m_formats[fIter - m_formats.begin()];
+               LocalMsg2("   Format %d: \"%s\"\n", iFormat, ResourceTypeName(pFormat->type));
+               ppFormats[iFormat++] = pFormat;
             }
          }
       }
+      LocalMsgIf(iFormat == 0, "   No compatible formats\n");
       return iFormat;
    }
    // else resource class alone determines set of possible formats
@@ -822,9 +869,12 @@ uint cResourceManager::DeduceFormats(const tChar * pszName, tResourceType type,
       {
          if (SameType(fIter->type, type))
          {
-            ppFormats[iFormat++] = &m_formats[fIter - m_formats.begin()];
+            sFormat * pFormat = &m_formats[fIter - m_formats.begin()];
+            LocalMsg2("   Format %d: \"%s\"\n", iFormat, ResourceTypeName(pFormat->type));
+            ppFormats[iFormat++] = pFormat;
          }
       }
+      LocalMsgIf(iFormat == 0, "   No compatible formats\n");
       return iFormat;
    }
 
