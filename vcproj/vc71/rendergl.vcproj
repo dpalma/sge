@@ -423,9 +423,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\render\gl\texture.cpp">
-			</File>
-			<File
 				RelativePath="..\..\render\gl\vertexbuffer.cpp">
 			</File>
 			<File

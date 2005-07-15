@@ -5,6 +5,7 @@
 
 #include "terrainrender.h"
 #include "editorapi.h"
+#include "engineapi.h"
 
 #include "renderapi.h"
 
@@ -227,7 +228,7 @@ void cTerrainRenderer::Render()
             && pEditorTileSet->GetTileTexture(iter->tile, &texture) == S_OK)
          {
             GLuint tex;
-            if (pResourceManager->Load(tResKey(texture.c_str(), kRC_GlTexture), (void**)&tex) == S_OK)
+            if (pResourceManager->Load(texture.c_str(), kRT_GlTexture, NULL, (void**)&tex) == S_OK)
             {
                glEnable(GL_TEXTURE_2D);
                glBindTexture(GL_TEXTURE_2D, tex);
@@ -291,7 +292,7 @@ cSplatBuilder::~cSplatBuilder()
 tResult cSplatBuilder::GetGlTexture(uint * pTexId)
 {
    UseGlobal(ResourceManager);
-   return pResourceManager->Load(tResKey(m_tileTexture.c_str(), kRC_GlTexture), (void**)pTexId);
+   return pResourceManager->Load(m_tileTexture.c_str(), kRT_GlTexture, NULL, (void**)pTexId);
 }
 
 ////////////////////////////////////////

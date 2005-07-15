@@ -152,8 +152,6 @@ static const tChar * ResourceTypeName(tResourceType rt)
          { kRC_Unknown,    _T("Unknown") },
          { kRC_Image,      _T("Image") },
          { kRC_Text,       _T("Text") },
-         { kRC_TiXml,      _T("TiXml") },
-         { kRC_GlTexture,  _T("GlTexture") },
       };
       if ((uint)rt >= _countof(builtInTypeNames))
       {

@@ -9,6 +9,7 @@
 #include "guieventroutertem.h"
 #include "scriptvar.h"
 #include "sys.h"
+#include "engineapi.h"
 
 #include "keys.h"
 #include "resourceapi.h"
@@ -93,10 +94,9 @@ static tResult LoadElements(const char * psz, std::vector<IGUIElement*> * pEleme
    }
    else
    {
-      tResKey rk(psz, kRC_TiXml);
       TiXmlDocument * pTiXmlDoc = NULL;
       UseGlobal(ResourceManager);
-      if (pResourceManager->Load(rk, (void**)&pTiXmlDoc) == S_OK)
+      if (pResourceManager->Load(psz, kRT_TiXml, NULL, (void**)&pTiXmlDoc) == S_OK)
       {
          nCreated = LoadElements(pTiXmlDoc, pElements);
       }

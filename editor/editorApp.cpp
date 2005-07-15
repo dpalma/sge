@@ -18,8 +18,6 @@
 #include "scriptapi.h"
 #include "engineapi.h"
 
-#include "renderapi.h"
-
 #include "resourceapi.h"
 #include "configapi.h"
 #include "techtime.h"
@@ -239,7 +237,6 @@ BOOL cEditorApp::InitInstance()
    TextFormatRegister("txt");
    TextFormatRegister("lua");
    TextFormatRegister("xml");
-   GlTextureResourceRegister();
    EngineRegisterResourceFormats();
    BitmapUtilsRegisterResourceFormats();
 

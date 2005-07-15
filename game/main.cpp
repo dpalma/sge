@@ -398,7 +398,6 @@ static bool MainInit(int argc, tChar * argv[])
    TextFormatRegister("txt");
    TextFormatRegister("lua");
    TextFormatRegister("xml");
-   GlTextureResourceRegister();
    EngineRegisterResourceFormats();
 
    if (ConfigGet(_T("data"), &temp) == S_OK)

@@ -6,6 +6,7 @@
 #include "model.h"
 #include "ms3dread.h"
 #include "ms3d.h"
+#include "engineapi.h"
 
 #include "vec4.h"
 #include "matrix4.h"
@@ -141,7 +142,7 @@ void cModelMaterial::GlDiffuseAndTexture() const
    glColor4fv(m_diffuse);
    uint textureId = 0;
    UseGlobal(ResourceManager);
-   if (pResourceManager->Load(tResKey(m_texture.c_str(), kRC_GlTexture), (void**)&textureId) == S_OK)
+   if (pResourceManager->Load(m_texture.c_str(), kRT_GlTexture, NULL, (void**)&textureId) == S_OK)
    {
       glEnable(GL_TEXTURE_2D);
       glBindTexture(GL_TEXTURE_2D, textureId);
@@ -165,7 +166,7 @@ void cModelMaterial::GlMaterialAndTexture() const
    glMaterialfv(GL_FRONT, GL_SHININESS, &m_shininess);
    uint textureId = 0;
    UseGlobal(ResourceManager);
-   if (pResourceManager->Load(tResKey(m_texture.c_str(), kRC_GlTexture), (void**)&textureId) == S_OK)
+   if (pResourceManager->Load(m_texture.c_str(), kRT_GlTexture, NULL, (void**)&textureId) == S_OK)
    {
       glEnable(GL_TEXTURE_2D);
       glBindTexture(GL_TEXTURE_2D, textureId);
