@@ -43,7 +43,6 @@ public:
    virtual tResult AddDirectory(const tChar * pszDir);
    virtual tResult AddDirectoryTreeFlattened(const tChar * pszDir);
    virtual tResult AddArchive(const tChar * pszArchive);
-   virtual tResult LoadUncached(const tChar * pszName, tResourceType type, void * param, void * * ppData, ulong * pDataSize);
    virtual tResult Load(const tChar * pszName, tResourceType type, void * param, void * * ppData);
    virtual tResult Unload(const tChar * pszName, tResourceType type);
    virtual tResult Lock(const tChar * pszName, tResourceType type);

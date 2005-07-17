@@ -132,22 +132,8 @@ interface IResourceManager : IUnknown
    virtual tResult AddDirectoryTreeFlattened(const tChar * pszDir) = 0;
    virtual tResult AddArchive(const tChar * pszArchive) = 0;
 
-   /// @brief Load the resource from disk, bypassing the cache (not updating it either)
-   /// @remarks The caller is expected know what is returned in ppData and how to clean it up.
-   virtual tResult LoadUncached(const tChar * pszName, tResourceType type, void * param, void * * ppData, ulong * pDataSize) = 0;
-
    virtual tResult Load(const tChar * pszName, tResourceType type, void * param, void * * ppData) = 0;
    virtual tResult Unload(const tChar * pszName, tResourceType type) = 0;
-
-   tResult LoadUncached(const tResKey & key, void * param, void * * ppData, ulong * pDataSize)
-   {
-      return LoadUncached(key.GetName(), MAKERESOURCETYPE(key.GetClass()), param, ppData, pDataSize);
-   }
-
-   tResult LoadUncached(const tResKey & key, void * * ppData)
-   {
-      return LoadUncached(key, NULL, ppData, NULL);
-   }
 
    tResult Load(const tResKey & key, void * param, void * * ppData)
    {

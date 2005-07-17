@@ -47,14 +47,39 @@ cSceneModel::~cSceneModel()
    UseGlobal(Sim);
    pSim->Disconnect(&m_simClient);
 
-   delete m_pModel, m_pModel = NULL;
+   UseGlobal(ResourceManager);
+   pResourceManager->Unload(m_model.c_str(), kRT_Model);
 }
 
 ///////////////////////////////////////
 
 void cSceneModel::Animate(double elapsedTime)
 {
-   if (m_pModel != NULL && m_pModel->IsAnimated())
+   // TODO: When the resource manager is fast enough, this if test should be removed
+   // to get a new cModel pointer whenever the resource changes, e.g., by re-saving
+   // from a 3D modelling program (3DS Max, or MilkShape, or something).
+#if 1
+   if (m_pModel == NULL)
+#endif
+   {
+      UseGlobal(ResourceManager);
+      cModel * pModel = NULL;
+      if (pResourceManager->Load(m_model.c_str(), kRT_Model, NULL, (void**)&pModel) != S_OK)
+      {
+         m_pModel = NULL;
+         return;
+      }
+
+      AssertMsg(pModel != NULL, "Should have returned by now if ResourceManager->Load failed\n");
+
+      if (pModel != m_pModel)
+      {
+         m_pModel = pModel;
+         m_animationLength = pModel->GetTotalAnimationLength();
+      }
+   }
+
+   if (m_pModel->IsAnimated())
    {
       m_animationTime += elapsedTime;
       while (m_animationTime > m_animationLength)
@@ -86,16 +111,24 @@ void cSceneModel::cSimClient::OnFrame(double elapsedTime)
 
 void cSceneModel::Render(IRenderDevice * /*pRenderDevice*/)
 {
+   // TODO: When the resource manager is fast enough, this code should be used to
+   // get a new cModel pointer in case the resource was changed, e.g., by re-saving
+   // from a 3D modelling program (3DS Max, or MilkShape, or something).
+#if 0
+   UseGlobal(ResourceManager);
+   cModel * pModel = NULL;
+   if (pResourceManager->Load(m_model.c_str(), kRT_Model, NULL, (void**)&pModel) != S_OK
+      || (pModel != m_pModel))
+   {
+      m_pModel = NULL;
+      return;
+   }
+#else
    if (m_pModel == NULL)
    {
-      UseGlobal(ResourceManager);
-      if (pResourceManager->LoadUncached(m_model.c_str(), kRT_Model, NULL, (void**)&m_pModel, NULL) != S_OK)
-      {
-         return;
-      }
-
-      m_animationLength = m_pModel->GetTotalAnimationLength();
+      return;
    }
+#endif
 
    glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
    glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT);

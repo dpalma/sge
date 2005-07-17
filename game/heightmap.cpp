@@ -40,7 +40,7 @@ bool cHeightMap::Load(const tChar * pszFilename)
 {
    cImageData * pHeightImage = NULL;
    UseGlobal(ResourceManager);
-   if (pResourceManager->LoadUncached(tResKey(pszFilename, kRC_Image), (void**)&pHeightImage) == S_OK)
+   if (pResourceManager->Load(tResKey(pszFilename, kRC_Image), (void**)&pHeightImage) == S_OK)
    {
       // images used as height data must be square and grayscale format
       if (pHeightImage->GetWidth() == pHeightImage->GetHeight() &&
@@ -63,7 +63,7 @@ bool cHeightMap::Load(const tChar * pszFilename)
 
 void cHeightMap::Destroy()
 {
-   delete m_pImage;
+   // Don't delete m_pImage because it's managed by the resource system
    m_pImage = NULL;
    m_size = 0;
    m_pData = NULL;

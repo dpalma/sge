@@ -373,80 +373,6 @@ tResult cResourceManager::AddArchive(const tChar * pszArchive)
 
 ////////////////////////////////////////
 
-tResult cResourceManager::LoadUncached(const tChar * pszName, tResourceType type,
-                                       void * param, void * * ppData, ulong * pDataSize)
-{
-   if (pszName == NULL || ppData == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (!type)
-   {
-      return E_INVALIDARG;
-   }
-
-   tResult result = E_FAIL;
-   sFormat * pFormat = NULL;
-   if (DeduceFormats(pszName, type, &pFormat, 1) == 1)
-   {
-      const sResource * pRes = FindResourceWithFormat(pszName, type, pFormat);
-
-      // If no resource and format specifies a dependent type then it
-      // may not have been loaded in AddDirectory or AddArchive. Do it now.
-      if (pRes == NULL && pFormat->typeDepend)
-      {
-         sResource res;
-         cFileSpec(pszName).GetFileNameNoExt(&res.name);
-         res.extensionId = GetExtensionIdForName(pszName);
-         res.pFormat = pFormat;
-         m_resources.push_back(res);
-         pRes = &m_resources[m_resources.size() - 1];
-      }
-
-      Assert(pRes != NULL);
-
-      ulong dataSize = 0;
-      void * pData = NULL;
-
-      if (pFormat->typeDepend)
-      {
-         if (Load(pszName, pFormat->typeDepend, param, &pData) == S_OK)
-         {
-            pData = (*pFormat->pfnPostload)(pData, 0, param);
-            Assert(pRes->pFormat == pFormat); // should have been set above
-            result = S_OK;
-         }
-      }
-      else
-      {
-         if (pRes->dirId != kNoIndex)
-         {
-            cFileSpec file(pszName);
-            file.SetPath(m_dirs[pRes->dirId]);
-            result = DoLoadFromFile(file, pFormat, param, &dataSize, &pData);
-         }
-         else if (pRes->archiveId != kNoIndex)
-         {
-            result = DoLoadFromArchive(pRes->archiveId, pRes->offset, pRes->index, pFormat, param, &dataSize, &pData);
-         }
-      }
-
-      if (result == S_OK)
-      {
-         *ppData = pData;
-         if (pDataSize != NULL)
-         {
-            *pDataSize = dataSize;
-         }
-      }
-   }
-
-   return result;
-}
-
-////////////////////////////////////////
-
 tResult cResourceManager::Load(const tChar * pszName, tResourceType type,
                                void * param, void * * ppData)
 {
@@ -658,6 +584,7 @@ cResourceManager::sResource * cResourceManager::FindResourceWithFormat(
 
    // Will point to an unloaded resource at the end of the loop
    sResource * pPotentialMatch = NULL;
+   int nPotentialMatches = 0;
 
    tResources::iterator resIter = m_resources.begin();
    tResources::iterator resEnd = m_resources.end();
@@ -669,6 +596,7 @@ cResourceManager::sResource * cResourceManager::FindResourceWithFormat(
             && (extsPossible.find(resIter->extensionId) != extsPossible.end()))
          {
             pPotentialMatch = &m_resources[index];
+            nPotentialMatches++;
          }
          else if (extensionId == resIter->extensionId)
          {
@@ -684,6 +612,9 @@ cResourceManager::sResource * cResourceManager::FindResourceWithFormat(
          }
       }
    }
+
+   LocalMsgIf3(nPotentialMatches > 0, "%d potential matches for %s, %s\n",
+      nPotentialMatches, pszName, ResourceTypeName(type));
 
    return pPotentialMatch;
 }
