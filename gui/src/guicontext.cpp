@@ -666,6 +666,15 @@ tResult cGUIContext::GetRenderDeviceContext(IGUIRenderDeviceContext * * ppRender
 
 ///////////////////////////////////////
 
+tResult cGUIContext::SetRenderDeviceContext(IGUIRenderDeviceContext * pRenderDeviceContext)
+{
+   SafeRelease(m_pRenderDeviceContext);
+   m_pRenderDeviceContext = CTAddRef(pRenderDeviceContext);
+   return S_OK;
+}
+
+///////////////////////////////////////
+
 tResult cGUIContext::GetDefaultFont(IGUIFont * * ppFont)
 {
    if (!m_pDefaultFont)

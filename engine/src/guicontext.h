@@ -60,6 +60,7 @@ public:
    virtual tResult RenderGUI();
 
    virtual tResult GetRenderDeviceContext(IGUIRenderDeviceContext * * ppRenderDeviceContext);
+   virtual tResult SetRenderDeviceContext(IGUIRenderDeviceContext * pRenderDeviceContext);
 
    virtual tResult GetDefaultFont(IGUIFont * * ppFont);
 
