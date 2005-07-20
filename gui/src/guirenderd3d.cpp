@@ -6,8 +6,27 @@
 #include "d3dguirender.h"
 
 #include <d3d9.h>
+#include <d3dx9.h>
+
+#undef CreateFont
 
 #include "dbgalloc.h" // must be last header
+
+
+extern tResult GUIFontCreateD3D(IDirect3DDevice9 * pD3dDevice,
+                                const cGUIFontDesc & fontDesc,
+                                IGUIFont * * ppFont);
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+struct sGUIVertexD3D
+{
+   float x, y, z;
+   uint32 color;
+};
+
+static const uint kGUIVertexFVF = D3DFVF_XYZ | D3DFVF_DIFFUSE;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -45,6 +64,40 @@ cGUIRenderDeviceD3D::cGUIRenderDeviceD3D(IDirect3DDevice9 * pD3dDevice)
 
 cGUIRenderDeviceD3D::~cGUIRenderDeviceD3D()
 {
+   tFontMap::iterator iter = m_fontMap.begin();
+   tFontMap::iterator end = m_fontMap.end();
+   for (; iter != end; iter++)
+   {
+      SafeRelease(iter->second);
+   }
+   m_fontMap.clear();
+}
+
+////////////////////////////////////////
+
+tResult cGUIRenderDeviceD3D::CreateFont(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont)
+{
+   if (ppFont == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tFontMap::iterator f = m_fontMap.find(fontDesc);
+   if (f != m_fontMap.end())
+   {
+      *ppFont = CTAddRef(f->second);
+      return S_OK;
+   }
+
+   cAutoIPtr<IGUIFont> pFont;
+   if (GUIFontCreateD3D(m_pD3dDevice, fontDesc, &pFont) == S_OK)
+   {
+      m_fontMap[fontDesc] = CTAddRef(pFont);
+      *ppFont = CTAddRef(pFont);
+      return S_OK;
+   }
+
+   return E_FAIL;
 }
 
 ////////////////////////////////////////
@@ -86,18 +139,29 @@ void cGUIRenderDeviceD3D::PopScissorRect()
 
 void cGUIRenderDeviceD3D::RenderSolidRect(const tGUIRect & rect, const tGUIColor & color)
 {
-   // TODO
-   //glBegin(GL_TRIANGLES);
-   //   glColor4fv(color.GetPointer());
+   sGUIVertexD3D verts[6];
+   memset(verts, 0, sizeof(verts));
 
-   //   glVertex2i(rect.left, rect.top);
-   //   glVertex2i(rect.left, rect.bottom);
-   //   glVertex2i(rect.right, rect.bottom);
+   for (int i = 0; i < _countof(verts); i++)
+   {
+      verts[i].color = color.GetARGB();
+   }
 
-   //   glVertex2i(rect.right, rect.bottom);
-   //   glVertex2i(rect.right, rect.top);
-   //   glVertex2i(rect.left, rect.top);
-   //glEnd();
+   verts[0].x = rect.left;
+   verts[0].y = rect.top;
+   verts[1].x = rect.left;
+   verts[1].y = rect.bottom;
+   verts[2].x = rect.right;
+   verts[2].y = rect.bottom;
+   verts[3].x = rect.right;
+   verts[3].y = rect.bottom;
+   verts[4].x = rect.right;
+   verts[4].y = rect.top;
+   verts[5].x = rect.left;
+   verts[5].y = rect.top;
+
+   m_pD3dDevice->SetFVF(kGUIVertexFVF);
+   m_pD3dDevice->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, verts, sizeof(sGUIVertexD3D));
 }
 
 ////////////////////////////////////////
@@ -189,32 +253,40 @@ void cGUIRenderDeviceD3D::FlushQueue()
 
 void cGUIRenderDeviceD3D::Begin2D()
 {
-   // TODO
-   //glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
+   m_pD3dDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+   m_pD3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
-   //glDisable(GL_DEPTH_TEST);
-   //glDisable(GL_LIGHTING);
-   //glDisable(GL_CULL_FACE);
+   D3DVIEWPORT9 viewport;
+   m_pD3dDevice->GetViewport(&viewport);
 
-   //glGetIntegerv(GL_VIEWPORT, m_viewport);
+   D3DXMATRIX ortho;
+   D3DXMatrixOrthoRH(&ortho, viewport.Width, viewport.Height, viewport.MinZ, viewport.MaxZ);
 
-   //GLdouble width = static_cast<GLdouble>(m_viewport[2]);
-   //GLdouble height = static_cast<GLdouble>(m_viewport[3]);
-
-   //glMatrixMode(GL_PROJECTION);
-   //glLoadIdentity();
-   //glOrtho(0, width, height, 0, -99999, 99999);
-
-   //glMatrixMode(GL_MODELVIEW);
-   //glLoadIdentity();
+   m_pD3dDevice->SetTransform(D3DTS_PROJECTION, &ortho);
 }
 
 ////////////////////////////////////////
 
 void cGUIRenderDeviceD3D::End2D()
 {
-   // TODO
-   //glPopAttrib();
+}
+
+////////////////////////////////////////
+
+tResult cGUIRenderDeviceD3D::GetViewportSize(uint * pWidth, uint * pHeight)
+{
+   if (pWidth == NULL || pHeight == NULL)
+   {
+      return E_POINTER;
+   }
+
+   D3DVIEWPORT9 viewport;
+   m_pD3dDevice->GetViewport(&viewport);
+
+   *pWidth = viewport.Width;
+   *pHeight = viewport.Height;
+
+   return S_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
