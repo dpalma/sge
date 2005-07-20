@@ -170,6 +170,9 @@ public:
 
    const cGUIFontDesc & operator =(const cGUIFontDesc & other);
 
+   bool operator ==(const cGUIFontDesc & other) const;
+   bool operator <(const cGUIFontDesc & other) const;
+
    const tChar * GetFace() const;
    int GetPointSize() const;
    bool GetBold() const;
@@ -186,48 +189,6 @@ private:
    uint m_glyphFirst;
    uint m_glyphLast;
 };
-
-////////////////////////////////////////
-
-inline cGUIFontDesc::cGUIFontDesc()
- : m_pointSize(0),
-   m_effects(0),
-   m_glyphFirst(0),
-   m_glyphLast(0)
-{
-}
-
-////////////////////////////////////////
-
-inline cGUIFontDesc::cGUIFontDesc(const tChar * pszFace, int pointSize, uint effects, uint glyphFirst, uint glyphLast)
- : m_typeFace(pszFace),
-   m_pointSize(pointSize),
-   m_effects(effects),
-   m_glyphFirst(glyphFirst),
-   m_glyphLast(glyphLast)
-{
-}
-
-////////////////////////////////////////
-
-inline cGUIFontDesc::cGUIFontDesc(const cGUIFontDesc & other)
- : m_typeFace(other.m_typeFace),
-   m_pointSize(other.m_pointSize),
-   m_glyphFirst(other.m_glyphFirst),
-   m_glyphLast(other.m_glyphLast)
-{
-}
-
-////////////////////////////////////////
-
-inline const cGUIFontDesc & cGUIFontDesc::operator =(const cGUIFontDesc & other)
-{
-   m_typeFace = other.m_typeFace;
-   m_pointSize = other.m_pointSize;
-   m_glyphFirst = other.m_glyphFirst;
-   m_glyphLast = other.m_glyphLast;
-   return *this;
-}
 
 ////////////////////////////////////////
 
