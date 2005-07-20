@@ -207,4 +207,22 @@ void cGUIRenderDeviceGL::End2D()
    glPopAttrib();
 }
 
+////////////////////////////////////////
+
+tResult cGUIRenderDeviceGL::GetViewportSize(uint * pWidth, uint * pHeight)
+{
+   if (pWidth == NULL || pHeight == NULL)
+   {
+      return E_POINTER;
+   }
+
+   int viewport[4];
+   glGetIntegerv(GL_VIEWPORT, viewport);
+
+   *pWidth = viewport[2];
+   *pHeight = viewport[3];
+
+   return S_OK;
+}
+
 ///////////////////////////////////////////////////////////////////////////////

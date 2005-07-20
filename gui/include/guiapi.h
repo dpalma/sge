@@ -189,7 +189,6 @@ interface IGUIStyle : IUnknown
    virtual tResult SetFontOutline(bool b) = 0;
 
    virtual tResult GetFontDesc(cGUIFontDesc * pFontDesc) = 0;
-   virtual tResult GetFont(IGUIFont * * ppFont) = 0;
 
    virtual tResult GetWidth(uint * pWidth, uint * pSpec) = 0;
    virtual tResult SetWidth(uint width, uint spec) = 0;
@@ -630,6 +629,8 @@ interface IGUIRenderDeviceContext : IGUIRenderDevice
 {
    virtual void Begin2D() = 0;
    virtual void End2D() = 0;
+
+   virtual tResult GetViewportSize(uint * pWidth, uint * pHeight) = 0;
 };
 
 ///////////////////////////////////////

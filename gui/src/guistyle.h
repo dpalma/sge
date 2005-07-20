@@ -65,7 +65,6 @@ public:
    virtual tResult SetFontOutline(bool b);
 
    virtual tResult GetFontDesc(cGUIFontDesc * pFontDesc);
-   virtual tResult GetFont(IGUIFont * * ppFont);
 
    virtual tResult GetWidth(uint * pWidth, uint * pSpec);
    virtual tResult SetWidth(uint width, uint spec);
@@ -82,7 +81,6 @@ private:
    tGUIString m_fontName;
    uint m_fontPointSize;
    bool m_bFontBold, m_bFontItalic, m_bFontShadow, m_bFontOutline;
-   cAutoIPtr<IGUIFont> m_pFont;
    uint m_width, m_widthSpec;
    uint m_height, m_heightSpec;
 };

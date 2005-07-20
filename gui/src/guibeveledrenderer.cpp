@@ -153,9 +153,10 @@ tResult cGUIBeveledRenderer::GetFont(IGUIElement * pElement,
    cAutoIPtr<IGUIStyle> pStyle;
    if (pElement->GetStyle(&pStyle) == S_OK)
    {
-      if (pStyle->GetFont(ppFont) == S_OK)
+      cGUIFontDesc fontDesc;
+      if (pStyle->GetFontDesc(&fontDesc) == S_OK)
       {
-         return S_OK;
+         return GUIFontCreate(fontDesc, ppFont);
       }
    }
 

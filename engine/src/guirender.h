@@ -36,6 +36,8 @@ public:
    virtual void Begin2D();
    virtual void End2D();
 
+   virtual tResult GetViewportSize(uint * pWidth, uint * pHeight);
+
 private:
    long m_scissorRectStackDepth; // for debugging only
    int m_viewport[4];

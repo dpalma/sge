@@ -17,7 +17,6 @@
 #include "configapi.h"
 
 #include <tinyxml.h>
-#include <GL/glew.h>
 
 #include <vector>
 
@@ -603,22 +602,23 @@ tResult cRenderElement::operator()(IGUIElement * pElement)
 
 tResult cGUIContext::RenderGUI()
 {
-   uint nElements = GetElementCount();
-   if ((nElements != m_nElementsLastLayout) || m_bNeedsLayout)
-   {
-      m_nElementsLastLayout = nElements;
-      m_bNeedsLayout = false;
-
-      int viewport[4];
-      glGetIntegerv(GL_VIEWPORT, viewport);
-
-      ForEachElement(cSizeAndPlaceElement(tGUIRect(0,0,viewport[2],viewport[3])));
-   }
-
    cAutoIPtr<IGUIRenderDeviceContext> pRenderDeviceContext;
    if (GetRenderDeviceContext(&pRenderDeviceContext) != S_OK)
    {
       return E_FAIL;
+   }
+
+   uint nElements = GetElementCount();
+   if ((nElements != m_nElementsLastLayout) || m_bNeedsLayout)
+   {
+      uint w, h;
+      if (pRenderDeviceContext->GetViewportSize(&w, &h) == S_OK)
+      {
+         m_nElementsLastLayout = nElements;
+         m_bNeedsLayout = false;
+
+         ForEachElement(cSizeAndPlaceElement(tGUIRect(0,0,w,h)));
+      }
    }
 
    IGUIRenderDevice * pRenderDevice = static_cast<IGUIRenderDevice*>(pRenderDeviceContext);

@@ -44,7 +44,6 @@ cGUIStyle::cGUIStyle()
    m_bFontItalic(false),
    m_bFontShadow(false),
    m_bFontOutline(false),
-   m_pFont(NULL),
    m_width(kInvalidUint), 
    m_height(kInvalidUint),
    m_widthSpec(kInvalidUint), 
@@ -336,7 +335,6 @@ tResult cGUIStyle::SetFontName(const char * pszFontName)
    {
       return E_POINTER;
    }
-   SafeRelease(m_pFont);
    m_fontName = pszFontName;
    return m_fontName.length() > 0 ? S_OK : S_FALSE;
 }
@@ -360,7 +358,6 @@ tResult cGUIStyle::SetFontPointSize(uint fontPointSize)
       DebugMsg1("ERROR: Odd font point size requested: %d\n", fontPointSize);
       return E_INVALIDARG;
    }
-   SafeRelease(m_pFont);
    m_fontPointSize = fontPointSize;
    return S_OK;
 }
@@ -472,25 +469,6 @@ tResult cGUIStyle::GetFontDesc(cGUIFontDesc * pFontDesc)
    }
    *pFontDesc = cGUIFontDesc(m_fontName.c_str(), m_fontPointSize, effects);
    return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cGUIStyle::GetFont(IGUIFont * * ppFont)
-{
-   if (!m_pFont)
-   {
-      cGUIFontDesc fontDesc;
-      if (GetFontDesc(&fontDesc) == S_OK)
-      {
-         if (GUIFontCreate(fontDesc, &m_pFont) != S_OK)
-         {
-            Assert(!m_pFont);
-         }
-      }
-   }
-
-   return m_pFont.GetPointer(ppFont);
 }
 
 ///////////////////////////////////////
