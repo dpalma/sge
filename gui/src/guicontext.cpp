@@ -697,7 +697,8 @@ tResult cGUIContext::GetDefaultFont(IGUIFont * * ppFont)
          ConfigGet("default_font_effects", &effects);
       }
 
-      GUIFontCreate(cGUIFontDesc(szTypeFace, pointSize, effects), &m_pDefaultFont);
+      UseGlobal(GUIFontFactory);
+      pGUIFontFactory->CreateFont2(cGUIFontDesc(szTypeFace, pointSize, effects), &m_pDefaultFont);
    }
 
    return m_pDefaultFont.GetPointer(ppFont);

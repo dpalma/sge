@@ -21,6 +21,7 @@
 F_DECLARE_INTERFACE(IGUIElement);
 F_DECLARE_INTERFACE(IGUIStyle);
 F_DECLARE_INTERFACE(IGUIFont);
+F_DECLARE_INTERFACE(IGUIFontFactory);
 F_DECLARE_INTERFACE(IGUIElementFactory);
 F_DECLARE_INTERFACE(IGUIElementRenderer);
 F_DECLARE_INTERFACE(IGUIElementRendererFactory);
@@ -236,9 +237,21 @@ interface IGUIFont : IUnknown
                               uint flags, const cColor & color) const = 0;
 };
 
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IGUIFontFactory
+//
+
+interface IGUIFontFactory : IUnknown
+{
+   // The 2 is to side-step the "#define CreateFont CreateFontA" from windows.h
+   virtual tResult CreateFont2(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont) = 0;
+};
+
 ///////////////////////////////////////
 
-ENGINE_API tResult GUIFontCreate(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont);
+ENGINE_API void GUIFontFactoryCreateGL();
 
 
 ///////////////////////////////////////////////////////////////////////////////

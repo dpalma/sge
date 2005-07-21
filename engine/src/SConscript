@@ -16,6 +16,7 @@ sources = Split("""
    guielementenum.cpp
    guielementtools.cpp
    guievent.cpp
+   guifontfactorygl.cpp
    guifactory.cpp
    guilabel.cpp
    guilayout.cpp

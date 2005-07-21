@@ -552,8 +552,8 @@ tResult cGUITextureFontW32::SetDropShadowState(float offsetX, float offsetY, con
 
 ///////////////////////////////////////////////////////////////////////////////
 
-tResult GUIFontCreate(const cGUIFontDesc & fontDesc,
-                      IGUIFont * * ppFont)
+tResult GUIFontCreateGL(const cGUIFontDesc & fontDesc,
+                        IGUIFont * * ppFont)
 {
    if (ppFont == NULL)
    {

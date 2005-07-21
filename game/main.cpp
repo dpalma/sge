@@ -281,6 +281,7 @@ static void RegisterGlobalObjects()
    ScriptInterpreterCreate();
    GUIContextCreate();
    GUIFactoryCreate();
+   GUIFontFactoryCreateGL();
    EntityManagerCreate();
    ThreadCallerCreate();
 }
