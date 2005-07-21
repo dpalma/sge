@@ -98,29 +98,22 @@ void cGUIRenderDeviceD3D::PopScissorRect()
 
 void cGUIRenderDeviceD3D::RenderSolidRect(const tGUIRect & rect, const tGUIColor & color)
 {
-   sGUIVertexD3D verts[6];
-   memset(verts, 0, sizeof(verts));
+#define VERT(x,y) \
+   { static_cast<float>(x), static_cast<float>(y), 0, color.GetARGB() }
 
-   for (int i = 0; i < _countof(verts); i++)
+   sGUIVertexD3D verts[] =
    {
-      verts[i].color = color.GetARGB();
-   }
+      VERT(rect.left, rect.top),
+      VERT(rect.left, rect.bottom),
+      VERT(rect.right, rect.bottom),
+      VERT(rect.right, rect.bottom),
+      VERT(rect.right, rect.top),
+      VERT(rect.left, rect.top),
+   };
 
-   verts[0].x = rect.left;
-   verts[0].y = rect.top;
-   verts[1].x = rect.left;
-   verts[1].y = rect.bottom;
-   verts[2].x = rect.right;
-   verts[2].y = rect.bottom;
-   verts[3].x = rect.right;
-   verts[3].y = rect.bottom;
-   verts[4].x = rect.right;
-   verts[4].y = rect.top;
-   verts[5].x = rect.left;
-   verts[5].y = rect.top;
+#undef VERT
 
-   m_pD3dDevice->SetFVF(kGUIVertexFVF);
-   m_pD3dDevice->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, verts, sizeof(sGUIVertexD3D));
+   Verify(m_pD3dDevice->DrawPrimitiveUP(D3DPT_TRIANGLELIST, _countof(verts) / 3, verts, sizeof(verts[0])) == D3D_OK);
 }
 
 ////////////////////////////////////////
@@ -128,78 +121,72 @@ void cGUIRenderDeviceD3D::RenderSolidRect(const tGUIRect & rect, const tGUIColor
 void cGUIRenderDeviceD3D::RenderBeveledRect(const tGUIRect & rect, int bevel, const tGUIColor & topLeft,
                                             const tGUIColor & bottomRight, const tGUIColor & face)
 {
-   // TODO
-   //glPushAttrib(GL_ENABLE_BIT);
-   //glDisable(GL_TEXTURE_2D);
+   if (bevel == 0)
+   {
+      RenderSolidRect(rect, face);
+   }
+   else
+   {
+      int x0 = rect.left;
+      int x1 = rect.left + bevel;
+      int x2 = rect.right - bevel;
+      int x3 = rect.right;
 
-   //if (bevel == 0)
-   //{
-   //   RenderSolidRect(rect, face);
-   //}
-   //else
-   //{
-   //   glBegin(GL_TRIANGLES);
+      int y0 = rect.top;
+      int y1 = rect.top + bevel;
+      int y2 = rect.bottom - bevel;
+      int y3 = rect.bottom;
 
-   //   int x0 = rect.left;
-   //   int x1 = rect.left + bevel;
-   //   int x2 = rect.right - bevel;
-   //   int x3 = rect.right;
+#define VERT(x,y,c) \
+   { static_cast<float>(x), static_cast<float>(y), 0, c }
 
-   //   int y0 = rect.top;
-   //   int y1 = rect.top + bevel;
-   //   int y2 = rect.bottom - bevel;
-   //   int y3 = rect.bottom;
+      sGUIVertexD3D verts[] =
+      {
+         VERT(x0, y0, topLeft.GetARGB()),
+         VERT(x0, y3, topLeft.GetARGB()),
+         VERT(x1, y2, topLeft.GetARGB()),
 
-   //   glColor4fv(topLeft.GetPointer());
+         VERT(x0, y0, topLeft.GetARGB()),
+         VERT(x1, y2, topLeft.GetARGB()),
+         VERT(x1, y1, topLeft.GetARGB()),
 
-   //   glVertex2i(x0, y0);
-   //   glVertex2i(x0, y3);
-   //   glVertex2i(x1, y2);
+         VERT(x0, y0, topLeft.GetARGB()),
+         VERT(x2, y1, topLeft.GetARGB()),
+         VERT(x3, y0, topLeft.GetARGB()),
 
-   //   glVertex2i(x0, y0);
-   //   glVertex2i(x1, y2);
-   //   glVertex2i(x1, y1);
+         VERT(x0, y0, topLeft.GetARGB()),
+         VERT(x1, y1, topLeft.GetARGB()),
+         VERT(x2, y1, topLeft.GetARGB()),
 
-   //   glVertex2i(x0, y0);
-   //   glVertex2i(x2, y1);
-   //   glVertex2i(x3, y0);
+         VERT(x0, y3, bottomRight.GetARGB()),
+         VERT(x3, y3, bottomRight.GetARGB()),
+         VERT(x1, y2, bottomRight.GetARGB()),
 
-   //   glVertex2i(x0, y0);
-   //   glVertex2i(x1, y1);
-   //   glVertex2i(x2, y1);
+         VERT(x1, y2, bottomRight.GetARGB()),
+         VERT(x3, y3, bottomRight.GetARGB()),
+         VERT(x2, y2, bottomRight.GetARGB()),
 
-   //   glColor4fv(bottomRight.GetPointer());
+         VERT(x3, y0, bottomRight.GetARGB()),
+         VERT(x2, y1, bottomRight.GetARGB()),
+         VERT(x3, y3, bottomRight.GetARGB()),
 
-   //   glVertex2i(x0, y3);
-   //   glVertex2i(x3, y3);
-   //   glVertex2i(x1, y2);
+         VERT(x2, y1, bottomRight.GetARGB()),
+         VERT(x2, y2, bottomRight.GetARGB()),
+         VERT(x3, y3, bottomRight.GetARGB()),
 
-   //   glVertex2i(x1, y2);
-   //   glVertex2i(x3, y3);
-   //   glVertex2i(x2, y2);
+         VERT(x1, y1, face.GetARGB()),
+         VERT(x2, y2, face.GetARGB()),
+         VERT(x2, y1, face.GetARGB()),
 
-   //   glVertex2i(x3, y0);
-   //   glVertex2i(x2, y1);
-   //   glVertex2i(x3, y3);
+         VERT(x2, y2, face.GetARGB()),
+         VERT(x1, y1, face.GetARGB()),
+         VERT(x1, y2, face.GetARGB()),
+      };
 
-   //   glVertex2i(x2, y1);
-   //   glVertex2i(x2, y2);
-   //   glVertex2i(x3, y3);
+#undef VERT
 
-   //   glColor4fv(face.GetPointer());
-
-   //   glVertex2i(x1, y1);
-   //   glVertex2i(x2, y2);
-   //   glVertex2i(x2, y1);
-
-   //   glVertex2i(x2, y2);
-   //   glVertex2i(x1, y1);
-   //   glVertex2i(x1, y2);
-
-   //   glEnd();
-   //}
-
-   //glPopAttrib();
+      Verify(m_pD3dDevice->DrawPrimitiveUP(D3DPT_TRIANGLELIST, _countof(verts) / 3, verts, sizeof(verts[0])) == D3D_OK);
+   }
 }
 
 ////////////////////////////////////////
@@ -212,16 +199,33 @@ void cGUIRenderDeviceD3D::FlushQueue()
 
 void cGUIRenderDeviceD3D::Begin2D()
 {
-   m_pD3dDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-   m_pD3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+   if (!m_pStateBlock)
+   {
+      m_pD3dDevice->BeginStateBlock();
 
-   D3DVIEWPORT9 viewport;
-   m_pD3dDevice->GetViewport(&viewport);
+      m_pD3dDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+      m_pD3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+      m_pD3dDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
 
-   D3DXMATRIX ortho;
-   D3DXMatrixOrthoRH(&ortho, viewport.Width, viewport.Height, viewport.MinZ, viewport.MaxZ);
+      D3DVIEWPORT9 viewport;
+      m_pD3dDevice->GetViewport(&viewport);
 
-   m_pD3dDevice->SetTransform(D3DTS_PROJECTION, &ortho);
+      D3DXMATRIX ortho;
+      D3DXMatrixOrthoOffCenterLH(&ortho,
+         0, static_cast<float>(viewport.Width),
+         static_cast<float>(viewport.Height), 0,
+         viewport.MinZ, viewport.MaxZ);
+      m_pD3dDevice->SetTransform(D3DTS_PROJECTION, &ortho);
+
+      m_pD3dDevice->SetFVF(kGUIVertexFVF);
+
+      m_pD3dDevice->EndStateBlock(&m_pStateBlock);
+   }
+
+   if (!!m_pStateBlock)
+   {
+      m_pStateBlock->Apply();
+   }
 }
 
 ////////////////////////////////////////

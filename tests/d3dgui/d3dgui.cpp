@@ -43,7 +43,11 @@
 #pragma warning(disable:4355) // 'this' used in base member initializer list
 
 #pragma comment(lib, "d3d9")
+#ifdef D3D_DEBUG_INFO
+#pragma comment(lib, "d3dx9d")
+#else
 #pragma comment(lib, "d3dx9")
+#endif
 
 // The following definitions are required for WinMain
 F_DECLARE_HANDLE(HINSTANCE);
@@ -85,7 +89,7 @@ static tResult InitD3D(HWND hWnd, IDirect3D9 * * ppD3d, IDirect3DDevice9 * * ppD
       return E_POINTER;
    }
 
-   cAutoIPtr<IDirect3D9> pD3d(Direct3DCreate9(DIRECT3D_VERSION));
+   cAutoIPtr<IDirect3D9> pD3d(Direct3DCreate9(D3D_SDK_VERSION));
    if (!pD3d)
    {
       return E_FAIL;

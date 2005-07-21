@@ -14,6 +14,7 @@
 #endif
 
 F_DECLARE_INTERFACE(IDirect3DDevice9);
+F_DECLARE_INTERFACE(IDirect3DStateBlock9);
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -49,6 +50,7 @@ private:
    typedef std::stack<tGUIRect> tGUIRectStack;
    tGUIRectStack m_scissorRectStack;
    int m_viewport[4];
+   cAutoIPtr<IDirect3DStateBlock9> m_pStateBlock;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib $(OutDir)\glew.lib cg.lib cgGL.lib"
+				AdditionalDependencies="winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib"
 				OutputFile=".\..\..\Build.vc7\StaticRelease/d3dgui.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -101,7 +101,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="opengl32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib"
+				AdditionalDependencies="winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib"
 				OutputFile=".\..\..\Build.vc7\Opt/d3dgui.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -162,7 +162,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\cppunit.lib opengl32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib"
+				AdditionalDependencies="$(OutDir)\cppunit.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib"
 				OutputFile=".\..\..\Build.vc7\Debug/d3dgui.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -224,7 +224,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\cppunit.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib $(OutDir)\glew.lib cg.lib cgGL.lib"
+				AdditionalDependencies="$(OutDir)\cppunit.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib"
 				OutputFile=".\..\..\Build.vc7\StaticDebug/d3dgui.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -286,7 +286,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="opengl32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib"
+				AdditionalDependencies="winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib"
 				OutputFile=".\..\..\Build.vc7\Release/d3dgui.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
