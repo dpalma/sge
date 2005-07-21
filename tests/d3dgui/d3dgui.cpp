@@ -50,6 +50,7 @@ F_DECLARE_HANDLE(HINSTANCE);
 typedef char * LPSTR;
 
 extern tResult GUIRenderDeviceCreateD3D(IDirect3DDevice9 * pD3dDevice, IGUIRenderDeviceContext * * ppRenderDevice);
+extern void GUIFontFactoryCreateD3D();
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -168,6 +169,7 @@ static void RegisterGlobalObjects()
    ScriptInterpreterCreate();
    GUIContextCreate();
    GUIFactoryCreate();
+   GUIFontFactoryCreateD3D();
    ThreadCallerCreate();
 }
 
@@ -285,6 +287,13 @@ static bool d3dguiinit(int argc, tChar * argv[])
    if (InitD3D(g_hWnd, &g_pD3d, &g_pD3dDevice) != S_OK)
    {
       return false;
+   }
+
+   UseGlobal(GUIFontFactory);
+   cAutoIPtr<IGUIFontFactoryD3D> pGUIFontFactoryD3D;
+   if (pGUIFontFactory->QueryInterface(IID_IGUIFontFactoryD3D, (void**)&pGUIFontFactoryD3D) == S_OK)
+   {
+      pGUIFontFactoryD3D->SetD3DDevice(g_pD3dDevice);
    }
 
    UseGlobal(ThreadCaller);

@@ -365,6 +365,9 @@
 				RelativePath="..\..\tests\d3dgui\d3dguirender.cpp">
 			</File>
 			<File
+				RelativePath="..\..\tests\d3dgui\guifontfactoryd3d.cpp">
+			</File>
+			<File
 				RelativePath="..\..\tests\d3dgui\stdhdr.cpp">
 				<FileConfiguration
 					Name="StaticRelease|Win32">
@@ -406,6 +409,9 @@
 			</File>
 			<File
 				RelativePath="..\..\tests\d3dgui\d3dguirender.h">
+			</File>
+			<File
+				RelativePath="..\..\tests\d3dgui\guifontfactoryd3d.h">
 			</File>
 			<File
 				RelativePath="..\..\tests\d3dgui\stdhdr.h">
