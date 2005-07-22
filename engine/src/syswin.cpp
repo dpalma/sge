@@ -23,6 +23,9 @@
 
 #ifdef HAVE_CPPUNIT
 #include <cppunit/extensions/HelperMacros.h>
+#include <cppunit/TestFailure.h>
+#include <cppunit/TestResultCollector.h>
+#include <cppunit/ui/text/TestRunner.h>
 #endif
 
 #include <cstdlib>
@@ -39,6 +42,42 @@ HGLRC          g_hGLRC = NULL;
 HMODULE                       g_hD3D9 = NULL;
 cAutoIPtr<IDirect3D9>         g_pDirect3D9;
 cAutoIPtr<IDirect3DDevice9>   g_pDirect3DDevice9;
+#endif
+
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_CPPUNIT
+// TODO: This could probably be moved to a syscommon.cpp source file (not Win32 specific)
+tResult SysRunUnitTests()
+{
+   CppUnit::TextUi::TestRunner runner;
+   runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
+   runner.run();
+   if (runner.result().testFailuresTotal() > 0)
+   {
+      techlog.Print(kError, "%d UNIT TESTS FAILED!\n", runner.result().testFailuresTotal());
+      CppUnit::TestResultCollector::TestFailures::const_iterator iter;
+      for (iter = runner.result().failures().begin(); iter != runner.result().failures().end(); iter++)
+      {
+         techlog.Print(kError, "%s(%d) : %s : %s\n",
+            (*iter)->sourceLine().fileName().c_str(),
+            (*iter)->sourceLine().isValid() ? (*iter)->sourceLine().lineNumber() : -1,
+            (*iter)->failedTestName().c_str(),
+            (*iter)->thrownException()->what());
+      }
+      return E_FAIL;
+   }
+   else
+   {
+      techlog.Print(kInfo, "%d unit tests succeeded\n", runner.result().tests().size());
+      return S_OK;
+   }
+}
+#else
+tResult SysRunUnitTests()
+{
+   return S_OK;
+}
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -78,16 +117,18 @@ tResult SysGetClipboardString(cStr * pStr, ulong max)
 #endif
       if (hData != NULL)
       {
-         ulong size = GlobalSize(hData);
-         if ((max > 0) && (size > max))
-         {
-            size = max;
-         }
-
          const tChar * pszData = reinterpret_cast<const tChar *>(GlobalLock(hData));
          if (pszData != NULL)
          {
-            *pStr = cStr(pszData, size);
+            ulong size = GlobalSize(hData);
+            if ((max > 0) && (size > max))
+            {
+               pStr->assign(pszData, max);
+            }
+            else
+            {
+               pStr->assign(pszData);
+            }
             GlobalUnlock(hData);
             bSuccess = true;
          }
@@ -641,6 +682,69 @@ bool SysFullScreenEnd(HWND hWnd)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+static double fpsLast = 0;
+static double fpsWorst = 99999;//DBL_MAX;
+static double fpsBest = 0;
+static double fpsAverage = 0;
+
+static void SysUpdateFrameStats()
+{
+   static double lastTime = 0;
+   static double frameCount = 0;
+
+   double time = TimeGetSecs();
+   double elapsed = time - lastTime;
+   frameCount++;
+
+   double fps = 0;
+   if (elapsed >= 0.5) // update about 2x per second
+   {
+      if (lastTime != 0.0)
+      {
+         double fps = frameCount / elapsed;
+         if (fpsAverage == 0)
+         {
+            fpsAverage = fps;
+         }
+         else
+         {
+            fpsAverage = (fps + fpsLast) * 0.5;
+         }
+         if (fps > fpsBest)
+         {
+            fpsBest = fps;
+         }
+         if (fps < fpsWorst)
+         {
+            fpsWorst = fps;
+         }
+         fpsLast = fps;
+      }
+      lastTime = time;
+      frameCount = 0;
+   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void SysReportFrameStats(tChar * psz, ulong max)
+{
+   if (psz != NULL)
+   {
+      snprintf(psz, max,
+         "%.2f fps\n"
+         "%.2f worst\n"
+         "%.2f best\n"
+         "%.2f average",
+         fpsLast, 
+         fpsWorst,
+         fpsBest, 
+         fpsAverage);
+   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 // Allow two nested event loops: the main loop, and an additional one to show
 // a modal dialog box.
 static const int kMaxEventLoops = 2;
@@ -693,6 +797,8 @@ int SysEventLoop(bool (* pfnFrameHandler)(), void (* pfnResizeHack)(int, int))
       }
       else
       {
+         SysUpdateFrameStats();
+
          if (g_bAppActive)
          {
             for (int i = g_iCurrentFrameHandler; i >= 0; --i)
@@ -740,23 +846,27 @@ CPPUNIT_TEST_SUITE_REGISTRATION(cSysWinTests);
 
 void cSysWinTests::TestClipboard()
 {
+   static const ulong kInSize = 20;
+   static const ulong kTruncSize = 5;
+
 #ifdef _UNICODE
-   std::wstring in(4096, 'X');
+   std::wstring in(kInSize, 'X');
 #else
-   std::string in(4096, 'X');
+   std::string in(kInSize, 'X');
 #endif
 
    CPPUNIT_ASSERT(SysSetClipboardString(in.c_str()) == S_OK);
 
-   cStr out;
+   cStr out("garbage should be cleared/over-written");
    CPPUNIT_ASSERT(SysGetClipboardString(&out) == S_OK);
+   CPPUNIT_ASSERT(out.length() == in.length());
    CPPUNIT_ASSERT(out.compare(in) == 0);
 
-   CPPUNIT_ASSERT(SysGetClipboardString(&out, 40) == S_OK);
+   CPPUNIT_ASSERT(SysGetClipboardString(&out, kTruncSize) == S_OK);
 #ifdef _UNICODE
-   CPPUNIT_ASSERT(out.compare(std::wstring(40, 'X')) == 0);
+   CPPUNIT_ASSERT(out.compare(std::wstring(kTruncSize, 'X')) == 0);
 #else
-   CPPUNIT_ASSERT(out.compare(std::string(40, 'X')) == 0);
+   CPPUNIT_ASSERT(out.compare(std::string(kTruncSize, 'X')) == 0);
 #endif
 }
 

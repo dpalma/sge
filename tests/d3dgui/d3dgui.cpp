@@ -11,26 +11,18 @@
 #include "scriptvar.h"
 #include "sys.h"
 
-#include "techmath.h"
 #include "resourceapi.h"
 #include "configapi.h"
 #include "filespec.h"
 #include "filepath.h"
 #include "techstring.h"
 #include "globalobj.h"
-#include "readwriteapi.h"
 #include "threadcallapi.h"
-#include "techtime.h"
 
 #include <ctime>
 
 #ifdef HAVE_CPPUNIT
 #include <cppunit/extensions/TestFactoryRegistry.h>
-#include <cppunit/TestResultCollector.h>
-#include <cppunit/TestFailure.h>
-#include <cppunit/SourceLine.h>
-#include <cppunit/Exception.h>
-#include <cppunit/ui/text/TestRunner.h>
 #endif
 
 #define VC_EXTRALEAN
@@ -72,36 +64,6 @@ cAutoIPtr<IGUIFont> g_pFont;
 
 HWND g_hWnd = NULL;
 
-///////////////////////////////////////////////////////////////////////////////
-
-#ifdef HAVE_CPPUNIT
-static bool RunUnitTests()
-{
-   CppUnit::TextUi::TestRunner runner;
-   runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-   runner.run();
-   if (runner.result().testFailuresTotal() > 0)
-   {
-      techlog.Print(kError, "%d UNIT TESTS FAILED!\n", runner.result().testFailuresTotal());
-      CppUnit::TestResultCollector::TestFailures::const_iterator iter;
-      for (iter = runner.result().failures().begin(); iter != runner.result().failures().end(); iter++)
-      {
-         techlog.Print(kError, "%s(%d) : %s : %s\n",
-            (*iter)->sourceLine().fileName().c_str(),
-            (*iter)->sourceLine().isValid() ? (*iter)->sourceLine().lineNumber() : -1,
-            (*iter)->failedTestName().c_str(),
-            (*iter)->thrownException()->what());
-      }
-      return false;
-   }
-   else
-   {
-      techlog.Print(kInfo, "%d unit tests succeeded\n", runner.result().tests().size());
-      return true;
-   }
-}
-#endif
-
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -117,51 +79,6 @@ static void RegisterGlobalObjects()
    ThreadCallerCreate();
 }
 
-///////////////////////////////////////////////////////////////////////////////
-
-static double fpsLast = 0;
-static double fpsWorst = 99999;//DBL_MAX;
-static double fpsBest = 0;
-static double fpsAverage = 0;
-
-static double FPS()
-{
-   static double lastTime = 0;
-   static double frameCount = 0;
-
-   double time = TimeGetSecs();
-   double elapsed = time - lastTime;
-   frameCount++;
-
-   double fps = 0;
-   if (elapsed >= 0.5) // update about 2x per second
-   {
-      if (lastTime != 0.0)
-      {
-         double fps = frameCount / elapsed;
-         if (fpsAverage == 0)
-         {
-            fpsAverage = fps;
-         }
-         else
-         {
-            fpsAverage = (fps + fpsLast) * 0.5;
-         }
-         if (fps > fpsBest)
-         {
-            fpsBest = fps;
-         }
-         if (fps < fpsWorst)
-         {
-            fpsWorst = fps;
-         }
-         fpsLast = fps;
-      }
-      lastTime = time;
-      frameCount = 0;
-   }
-   return fps;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -260,7 +177,7 @@ static bool d3dguiinit(int argc, tChar * argv[])
    pSim->Go();
 
 #ifdef HAVE_CPPUNIT
-   if (!RunUnitTests())
+   if (FAILED(SysRunUnitTests()))
    {
       return false;
    }
@@ -315,18 +232,8 @@ static bool d3dguiframe()
 
          if (!!g_pFont)
          {
-            FPS();
-
             char szStats[100];
-            snprintf(szStats, _countof(szStats),
-               "%.2f fps\n"
-               "%.2f worst\n"
-               "%.2f best\n"
-               "%.2f average",
-               fpsLast, 
-               fpsWorst,
-               fpsBest, 
-               fpsAverage);
+            SysReportFrameStats(szStats, _countof(szStats));
 
             tRect rect(kDefStatsX, kDefStatsY, 0, 0);
             g_pFont->RenderText(szStats, strlen(szStats), &rect, kRT_NoClip | kRT_DropShadow, kDefStatsColor);
