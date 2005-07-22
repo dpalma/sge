@@ -7,6 +7,7 @@
 #include "enginedll.h"
 
 #include "comtools.h"
+#include "techstring.h"
 
 #ifdef _MSC_VER
 #pragma once
@@ -25,8 +26,8 @@ enum eSys3DAPI
 
 ENGINE_API void SysAppActivate(bool active);
 ENGINE_API void SysQuit();
-ENGINE_API bool SysGetClipboardString(char * psz, int max);
-ENGINE_API bool SysSetClipboardString(const char * psz);
+ENGINE_API tResult SysGetClipboardString(cStr * pStr, ulong max = 8192); // 8K max for sanity
+ENGINE_API tResult SysSetClipboardString(const tChar * psz);
 ENGINE_API HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI api = kOpenGL);
 ENGINE_API tResult SysGetDirect3DDevice9(IDirect3DDevice9 * * ppDevice);
 ENGINE_API void SysSwapBuffers();

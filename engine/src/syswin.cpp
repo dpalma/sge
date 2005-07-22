@@ -21,6 +21,10 @@
 #include <d3d9.h>
 #endif
 
+#ifdef HAVE_CPPUNIT
+#include <cppunit/extensions/HelperMacros.h>
+#endif
+
 #include <cstdlib>
 
 #include "dbgalloc.h" // must be last header
@@ -56,65 +60,81 @@ void SysQuit()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool SysGetClipboardString(char * psz, int max)
+tResult SysGetClipboardString(cStr * pStr, ulong max)
 {
-   Assert(psz != NULL && max > 0);
-
-   bool bResult = false;
-
-   if (OpenClipboard(NULL))
+   if (pStr == NULL)
    {
-      HANDLE hData = GetClipboardData(CF_TEXT);
+      return E_POINTER;
+   }
 
+   bool bSuccess = false;
+
+   if (OpenClipboard(g_hWnd))
+   {
+#ifdef _UNICODE
+      HANDLE hData = GetClipboardData(CF_UNICODETEXT);
+#else
+      HANDLE hData = GetClipboardData(CF_TEXT);
+#endif
       if (hData != NULL)
       {
-         const char * pszData = reinterpret_cast<const char *>(GlobalLock(hData));
+         ulong size = GlobalSize(hData);
+         if ((max > 0) && (size > max))
+         {
+            size = max;
+         }
 
+         const tChar * pszData = reinterpret_cast<const tChar *>(GlobalLock(hData));
          if (pszData != NULL)
          {
-            strncpy(psz, pszData, max);
-            psz[max - 1] = '\0';
-
+            *pStr = cStr(pszData, size);
             GlobalUnlock(hData);
-
-            bResult = true;
+            bSuccess = true;
          }
       }
 
-      Verify(CloseClipboard());
+      if (!CloseClipboard())
+      {
+         WarnMsg1("Error %d closing clipboard\n", GetLastError());
+      }
    }
 
-   return bResult;
+   return bSuccess ? S_OK : E_FAIL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool SysSetClipboardString(const char * psz)
+tResult SysSetClipboardString(const tChar * psz)
 {
-   Assert(psz != NULL);
+   if (psz == NULL)
+   {
+      return E_POINTER;
+   }
 
-   bool bResult = false;
+   bool bSuccess = false;
 
    if (OpenClipboard(g_hWnd))
    {
-      HANDLE hData = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, strlen(psz) + 1);
-
+      HANDLE hData = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, _tcslen(psz) + 1);
       if (hData != NULL)
       {
-         char * pszData = reinterpret_cast<char *>(GlobalLock(hData));
-
+         tChar * pszData = reinterpret_cast<tChar *>(GlobalLock(hData));
          if (pszData != NULL)
          {
-            strcpy(pszData, psz);
+            _tcscpy(pszData, psz);
             GlobalUnlock(hData);
 
+#ifdef _UNICODE
+            if (SetClipboardData(CF_UNICODETEXT, hData))
+#else
             if (SetClipboardData(CF_TEXT, hData))
+#endif
             {
-               bResult = true;
+               bSuccess = true;
             }
          }
 
-         if (!bResult)
+         if (!bSuccess)
          {
             GlobalFree(hData);
          }
@@ -122,11 +142,11 @@ bool SysSetClipboardString(const char * psz)
 
       if (!CloseClipboard())
       {
-         bResult = false;
+         WarnMsg1("Error %d closing clipboard\n", GetLastError());
       }
    }
 
-   return bResult;
+   return bSuccess ? S_OK : E_FAIL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -696,5 +716,50 @@ LExit:
    g_frameHandlerStack[g_iCurrentFrameHandler--] = NULL;
    return result;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_CPPUNIT
+
+///////////////////////////////////////////////////////////////////////////////
+
+class cSysWinTests : public CppUnit::TestCase
+{
+   CPPUNIT_TEST_SUITE(cSysWinTests);
+      CPPUNIT_TEST(TestClipboard);
+   CPPUNIT_TEST_SUITE_END();
+
+   void TestClipboard();
+};
+
+////////////////////////////////////////
+
+CPPUNIT_TEST_SUITE_REGISTRATION(cSysWinTests);
+
+////////////////////////////////////////
+
+void cSysWinTests::TestClipboard()
+{
+#ifdef _UNICODE
+   std::wstring in(4096, 'X');
+#else
+   std::string in(4096, 'X');
+#endif
+
+   CPPUNIT_ASSERT(SysSetClipboardString(in.c_str()) == S_OK);
+
+   cStr out;
+   CPPUNIT_ASSERT(SysGetClipboardString(&out) == S_OK);
+   CPPUNIT_ASSERT(out.compare(in) == 0);
+
+   CPPUNIT_ASSERT(SysGetClipboardString(&out, 40) == S_OK);
+#ifdef _UNICODE
+   CPPUNIT_ASSERT(out.compare(std::wstring(40, 'X')) == 0);
+#else
+   CPPUNIT_ASSERT(out.compare(std::string(40, 'X')) == 0);
+#endif
+}
+
+#endif // HAVE_CPPUNIT
 
 ///////////////////////////////////////////////////////////////////////////////
