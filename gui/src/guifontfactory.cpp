@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "guifontfactorygl.h"
+#include "guifontfactory.h"
 
 #ifdef HAVE_CPPUNIT
 #include <cppunit/extensions/HelperMacros.h>
@@ -15,35 +15,37 @@
 // defined in guifontw32.cpp for Windows, or guifontx11.cpp for Linux
 extern tResult GUIFontCreateGL(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont);
 
+extern tResult GUIFontCreateD3D(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont);
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGUIFontFactoryGL
+// CLASS: cGUIFontFactory
 //
 
 ////////////////////////////////////////
 
-cGUIFontFactoryGL::cGUIFontFactoryGL()
+cGUIFontFactory::cGUIFontFactory()
 {
    RegisterGlobalObject(IID_IGUIFontFactory, static_cast<IGlobalObject*>(this));
 }
 
 ////////////////////////////////////////
 
-cGUIFontFactoryGL::~cGUIFontFactoryGL()
+cGUIFontFactory::~cGUIFontFactory()
 {
 }
 
 ////////////////////////////////////////
 
-tResult cGUIFontFactoryGL::Init()
+tResult cGUIFontFactory::Init()
 {
    return S_OK;
 }
 
 ////////////////////////////////////////
 
-tResult cGUIFontFactoryGL::Term()
+tResult cGUIFontFactory::Term()
 {
    tFontMap::iterator iter = m_fontMap.begin();
    tFontMap::iterator end = m_fontMap.end();
@@ -57,7 +59,7 @@ tResult cGUIFontFactoryGL::Term()
 
 ////////////////////////////////////////
 
-tResult cGUIFontFactoryGL::CreateFont2(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont)
+tResult cGUIFontFactory::CreateFontA(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont)
 {
    if (ppFont == NULL)
    {
@@ -79,14 +81,28 @@ tResult cGUIFontFactoryGL::CreateFont2(const cGUIFontDesc & fontDesc, IGUIFont *
       return S_OK;
    }
 
+   if (GUIFontCreateD3D(fontDesc, &pFont) == S_OK)
+   {
+      m_fontMap[fontDesc] = CTAddRef(pFont);
+      *ppFont = CTAddRef(pFont);
+      return S_OK;
+   }
+
    return E_FAIL;
+}
+
+////////////////////////////////////////
+
+tResult cGUIFontFactory::CreateFontW(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont)
+{
+   return CreateFontA(fontDesc, ppFont);
 }
 
 ///////////////////////////////////////
 
-void GUIFontFactoryCreateGL()
+void GUIFontFactoryCreate()
 {
-   cAutoIPtr<IGUIFontFactory>(new cGUIFontFactoryGL);
+   cAutoIPtr<IGUIFontFactory>(new cGUIFontFactory);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

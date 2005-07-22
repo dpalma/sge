@@ -150,7 +150,7 @@ tResult cGUIBasicRenderer::GetFont(IGUIElement * pElement,
       if (pStyle->GetFontDesc(&fontDesc) == S_OK)
       {
          UseGlobal(GUIFontFactory);
-         return pGUIFontFactory->CreateFont2(fontDesc, ppFont);
+         return pGUIFontFactory->CreateFont(fontDesc, ppFont);
       }
    }
 

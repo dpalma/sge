@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // $Id$
 
-#ifndef INCLUDED_GUIFONTFACTORYGL_H
-#define INCLUDED_GUIFONTFACTORYGL_H
+#ifndef INCLUDED_GUIFONTFACTORY_H
+#define INCLUDED_GUIFONTFACTORY_H
 
 #include "guiapi.h"
 
@@ -16,17 +16,17 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGUIFontFactoryGL
+// CLASS: cGUIFontFactory
 //
 
-class cGUIFontFactoryGL : public cComObject2<IMPLEMENTS(IGUIFontFactory), IMPLEMENTS(IGlobalObject)>
+class cGUIFontFactory : public cComObject2<IMPLEMENTS(IGUIFontFactory), IMPLEMENTS(IGlobalObject)>
 {
-   cGUIFontFactoryGL(const cGUIFontFactoryGL &); // un-implemented
-   void operator=(const cGUIFontFactoryGL &); // un-implemented
+   cGUIFontFactory(const cGUIFontFactory &); // un-implemented
+   void operator=(const cGUIFontFactory &); // un-implemented
 
 public:
-   cGUIFontFactoryGL();
-   ~cGUIFontFactoryGL();
+   cGUIFontFactory();
+   ~cGUIFontFactory();
 
    DECLARE_NAME(GUIFontFactory)
    DECLARE_NO_CONSTRAINTS()
@@ -34,7 +34,8 @@ public:
    virtual tResult Init();
    virtual tResult Term();
 
-   virtual tResult CreateFont2(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont);
+   virtual tResult CreateFontA(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont);
+   virtual tResult CreateFontW(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont);
 
 private:
    typedef std::map<cGUIFontDesc, IGUIFont*> tFontMap;
@@ -43,4 +44,4 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // !INCLUDED_GUIFONTFACTORYGL_H
+#endif // !INCLUDED_GUIFONTFACTORY_H

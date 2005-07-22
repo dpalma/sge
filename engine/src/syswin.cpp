@@ -17,6 +17,10 @@
 
 #include <GL/glew.h>
 
+#if HAVE_DIRECTX
+#include <d3d9.h>
+#endif
+
 #include <cstdlib>
 
 #include "dbgalloc.h" // must be last header
@@ -26,6 +30,12 @@ bool           g_bAppActive = false;
 HWND           g_hWnd = NULL;
 HDC            g_hDC = NULL;
 HGLRC          g_hGLRC = NULL;
+
+#if HAVE_DIRECTX
+HMODULE                       g_hD3D9 = NULL;
+cAutoIPtr<IDirect3D9>         g_pDirect3D9;
+cAutoIPtr<IDirect3DDevice9>   g_pDirect3DDevice9;
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -191,6 +201,17 @@ LRESULT CALLBACK SysWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
             g_hGLRC = NULL;
          }
 
+#if HAVE_DIRECTX
+         SafeRelease(g_pDirect3DDevice9);
+         SafeRelease(g_pDirect3D9);
+
+         if (g_hD3D9 != NULL)
+         {
+            FreeLibrary(g_hD3D9);
+            g_hD3D9 = NULL;
+         }
+#endif
+
          g_hWnd = NULL;
 
          PostQuitMessage(0);
@@ -331,8 +352,88 @@ static int CreateDefaultContext(HWND hWnd, int * pBpp, HDC * phDC, HGLRC * phGLR
 
 ///////////////////////////////////////////////////////////////////////////////
 
-HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height)
+#if HAVE_DIRECTX
+static tResult InitDirect3D9(HWND hWnd, IDirect3D9 * * ppD3d, IDirect3DDevice9 * * ppDevice)
 {
+   if (!IsWindow(hWnd))
+   {
+      return E_INVALIDARG;
+   }
+
+   if (ppD3d == NULL || ppDevice == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (g_hD3D9 == NULL)
+   {
+      g_hD3D9 = LoadLibrary("d3d9.dll");
+      if (g_hD3D9 == NULL)
+      {
+         return E_FAIL;
+      }
+   }
+
+   typedef IDirect3D9 * (WINAPI * tDirect3DCreate9Fn)(UINT);
+   tDirect3DCreate9Fn pfnDirect3DCreate9 = reinterpret_cast<tDirect3DCreate9Fn>(GetProcAddress(g_hD3D9, "Direct3DCreate9"));
+   if (pfnDirect3DCreate9 == NULL)
+   {
+      return E_FAIL;
+   }
+
+   cAutoIPtr<IDirect3D9> pD3d((*pfnDirect3DCreate9)(D3D_SDK_VERSION));
+   if (!pD3d)
+   {
+      return E_FAIL;
+   }
+
+   tResult result = E_FAIL;
+   cAutoIPtr<IDirect3DDevice9> pD3dDevice;
+
+   D3DDISPLAYMODE displayMode;
+   if (pD3d->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &displayMode) == D3D_OK)
+   {
+      D3DPRESENT_PARAMETERS presentParams;
+      memset(&presentParams, 0, sizeof(presentParams));
+      presentParams.BackBufferCount = 1;
+      presentParams.BackBufferFormat = displayMode.Format;
+      presentParams.SwapEffect = D3DSWAPEFFECT_DISCARD;
+      presentParams.Windowed = TRUE;
+      presentParams.EnableAutoDepthStencil = TRUE;
+      presentParams.AutoDepthStencilFormat = D3DFMT_D16;
+      presentParams.hDeviceWindow = hWnd;
+      presentParams.Flags = D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL | D3DPRESENTFLAG_DEVICECLIP;
+
+      result = pD3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd,
+         D3DCREATE_SOFTWARE_VERTEXPROCESSING, &presentParams, &pD3dDevice);
+      if (FAILED(result))
+      {
+         // Try reference device if failed to create hardware device
+         result = pD3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_REF, hWnd,
+            D3DCREATE_SOFTWARE_VERTEXPROCESSING, &presentParams, &pD3dDevice);
+      }
+   }
+
+   if (FAILED(result))
+   {
+      ErrorMsg1("D3D error %x\n", result);
+   }
+   else
+   {
+      *ppD3d = CTAddRef(pD3d);
+      *ppDevice = CTAddRef(pD3dDevice);
+   }
+
+   return result;
+}
+#endif // HAVE_DIRECTX
+
+///////////////////////////////////////////////////////////////////////////////
+
+HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI api)
+{
+   AssertMsg(api == kOpenGL || api == kDirect3D9, "New 3D API added to enumerated type?");
+
    if (g_hWnd == NULL)
    {
       HINSTANCE hInst = GetModuleHandle(NULL);
@@ -374,20 +475,42 @@ HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height)
 
       if (g_hWnd != NULL)
       {
-         int bpp = 0;
-         if (CreateDefaultContext(g_hWnd, &bpp, &g_hDC, &g_hGLRC) == 0)
+         if (api == kOpenGL)
          {
-            ErrorMsg("An error occurred creating the GL context\n");
-            DestroyWindow(g_hWnd);
-            g_hWnd = NULL;
-            return NULL;
+            int bpp = 0;
+            if (CreateDefaultContext(g_hWnd, &bpp, &g_hDC, &g_hGLRC) == 0)
+            {
+               ErrorMsg("An error occurred creating the GL context\n");
+               DestroyWindow(g_hWnd);
+               g_hWnd = NULL;
+               return NULL;
+            }
+
+            wglMakeCurrent(g_hDC, g_hGLRC);
+
+            if (glewInit() != GLEW_OK)
+            {
+               ErrorMsg("GLEW library failed to initialize\n");
+               DestroyWindow(g_hWnd);
+               g_hWnd = NULL;
+               return NULL;
+            }
          }
-
-         wglMakeCurrent(g_hDC, g_hGLRC);
-
-         if (glewInit() != GLEW_OK)
+#if HAVE_DIRECTX
+         else if (api == kDirect3D9)
          {
-            ErrorMsg("GLEW library failed to initialize\n");
+            if (InitDirect3D9(g_hWnd, &g_pDirect3D9, &g_pDirect3DDevice9) != D3D_OK)
+            {
+               ErrorMsg("Direct3D failed to initialize\n");
+               DestroyWindow(g_hWnd);
+               g_hWnd = NULL;
+               return NULL;
+            }
+         }
+#endif
+         else
+         {
+            ErrorMsg1("Unknown 3D API %d\n", static_cast<int>(api));
             DestroyWindow(g_hWnd);
             g_hWnd = NULL;
             return NULL;
@@ -399,6 +522,17 @@ HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height)
    }
 
    return g_hWnd;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+tResult SysGetDirect3DDevice9(IDirect3DDevice9 * * ppDevice)
+{
+#if HAVE_DIRECTX
+   return g_pDirect3DDevice9.GetPointer(ppDevice);
+#else
+   return E_FAIL;
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

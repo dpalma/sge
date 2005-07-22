@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding = "Windows-1252"?>
+<?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.00"
+	Version="7.10"
 	Name="d3dgui"
 	SccProjectName=""
 	SccLocalPath="">
@@ -12,8 +12,8 @@
 	<Configurations>
 		<Configuration
 			Name="StaticRelease|Win32"
-			OutputDirectory=".\..\..\Build.vc7\StaticRelease"
-			IntermediateDirectory=".\..\..\Build.vc7\StaticRelease\d3dgui"
+			OutputDirectory=".\..\..\Build.vc71\StaticRelease"
+			IntermediateDirectory=".\..\..\Build.vc71\StaticRelease\d3dgui"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -28,10 +28,10 @@
 				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdhdr.h"
-				PrecompiledHeaderFile=".\..\..\Build.vc7\StaticRelease\d3dgui/d3dgui.pch"
-				AssemblerListingLocation=".\..\..\Build.vc7\StaticRelease\d3dgui/"
-				ObjectFile=".\..\..\Build.vc7\StaticRelease\d3dgui/"
-				ProgramDataBaseFileName=".\..\..\Build.vc7\StaticRelease\d3dgui/"
+				PrecompiledHeaderFile=".\..\..\Build.vc71\StaticRelease\d3dgui/d3dgui.pch"
+				AssemblerListingLocation=".\..\..\Build.vc71\StaticRelease\d3dgui/"
+				ObjectFile=".\..\..\Build.vc71\StaticRelease\d3dgui/"
+				ProgramDataBaseFileName=".\..\..\Build.vc71\StaticRelease\d3dgui/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				CompileAs="0"/>
@@ -41,12 +41,12 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib"
-				OutputFile=".\..\..\Build.vc7\StaticRelease/d3dgui.exe"
+				OutputFile=".\..\..\Build.vc71\StaticRelease/d3dgui.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\3rdparty\Cg\lib"
 				GenerateMapFile="TRUE"
-				MapFileName="..\..\Build.vc7\StaticRelease/d3dgui.map"
+				MapFileName="..\..\Build.vc71\StaticRelease/d3dgui.map"
 				SubSystem="2"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -54,7 +54,7 @@
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc7\StaticRelease/d3dgui.tlb"/>
+				TypeLibraryName=".\..\..\Build.vc71\StaticRelease/d3dgui.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -68,12 +68,18 @@
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
 				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Opt|Win32"
-			OutputDirectory=".\..\..\Build.vc7\Opt"
-			IntermediateDirectory=".\..\..\Build.vc7\Opt\d3dgui"
+			OutputDirectory=".\..\..\Build.vc71\Opt"
+			IntermediateDirectory=".\..\..\Build.vc71\Opt\d3dgui"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -88,10 +94,10 @@
 				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdhdr.h"
-				PrecompiledHeaderFile=".\..\..\Build.vc7\Opt\d3dgui/d3dgui.pch"
-				AssemblerListingLocation=".\..\..\Build.vc7\Opt\d3dgui/"
-				ObjectFile=".\..\..\Build.vc7\Opt\d3dgui/"
-				ProgramDataBaseFileName=".\..\..\Build.vc7\Opt\d3dgui/"
+				PrecompiledHeaderFile=".\..\..\Build.vc71\Opt\d3dgui/d3dgui.pch"
+				AssemblerListingLocation=".\..\..\Build.vc71\Opt\d3dgui/"
+				ObjectFile=".\..\..\Build.vc71\Opt\d3dgui/"
+				ProgramDataBaseFileName=".\..\..\Build.vc71\Opt\d3dgui/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"
@@ -102,13 +108,13 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib"
-				OutputFile=".\..\..\Build.vc7\Opt/d3dgui.exe"
+				OutputFile=".\..\..\Build.vc71\Opt/d3dgui.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\3rdparty\Cg\lib"
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
-				MapFileName="..\..\Build.vc7\Opt/d3dgui.map"
+				MapFileName="..\..\Build.vc71\Opt/d3dgui.map"
 				SubSystem="2"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -116,7 +122,7 @@
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc7\Opt/d3dgui.tlb"/>
+				TypeLibraryName=".\..\..\Build.vc71\Opt/d3dgui.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -130,12 +136,18 @@
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
 				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\..\..\Build.vc7\Debug"
-			IntermediateDirectory=".\..\..\Build.vc7\Debug\d3dgui"
+			OutputDirectory=".\..\..\Build.vc71\Debug"
+			IntermediateDirectory=".\..\..\Build.vc71\Debug\d3dgui"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -149,10 +161,10 @@
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdhdr.h"
-				PrecompiledHeaderFile=".\..\..\Build.vc7\Debug\d3dgui/d3dgui.pch"
-				AssemblerListingLocation=".\..\..\Build.vc7\Debug\d3dgui/"
-				ObjectFile=".\..\..\Build.vc7\Debug\d3dgui/"
-				ProgramDataBaseFileName=".\..\..\Build.vc7\Debug\d3dgui/"
+				PrecompiledHeaderFile=".\..\..\Build.vc71\Debug\d3dgui/d3dgui.pch"
+				AssemblerListingLocation=".\..\..\Build.vc71\Debug\d3dgui/"
+				ObjectFile=".\..\..\Build.vc71\Debug\d3dgui/"
+				ProgramDataBaseFileName=".\..\..\Build.vc71\Debug\d3dgui/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="4"
@@ -163,14 +175,14 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="$(OutDir)\cppunit.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib"
-				OutputFile=".\..\..\Build.vc7\Debug/d3dgui.exe"
+				OutputFile=".\..\..\Build.vc71\Debug/d3dgui.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\3rdparty\Cg\lib"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\..\..\Build.vc7\Debug/d3dgui.pdb"
+				ProgramDatabaseFile=".\..\..\Build.vc71\Debug/d3dgui.pdb"
 				GenerateMapFile="TRUE"
-				MapFileName="..\..\Build.vc7\Debug/d3dgui.map"
+				MapFileName="..\..\Build.vc71\Debug/d3dgui.map"
 				SubSystem="2"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -178,7 +190,7 @@
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc7\Debug/d3dgui.tlb"/>
+				TypeLibraryName=".\..\..\Build.vc71\Debug/d3dgui.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -192,12 +204,18 @@
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
 				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="StaticDebug|Win32"
-			OutputDirectory=".\..\..\Build.vc7\StaticDebug"
-			IntermediateDirectory=".\..\..\Build.vc7\StaticDebug\d3dgui"
+			OutputDirectory=".\..\..\Build.vc71\StaticDebug"
+			IntermediateDirectory=".\..\..\Build.vc71\StaticDebug\d3dgui"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -211,10 +229,10 @@
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdhdr.h"
-				PrecompiledHeaderFile=".\..\..\Build.vc7\StaticDebug\d3dgui/d3dgui.pch"
-				AssemblerListingLocation=".\..\..\Build.vc7\StaticDebug\d3dgui/"
-				ObjectFile=".\..\..\Build.vc7\StaticDebug\d3dgui/"
-				ProgramDataBaseFileName=".\..\..\Build.vc7\StaticDebug\d3dgui/"
+				PrecompiledHeaderFile=".\..\..\Build.vc71\StaticDebug\d3dgui/d3dgui.pch"
+				AssemblerListingLocation=".\..\..\Build.vc71\StaticDebug\d3dgui/"
+				ObjectFile=".\..\..\Build.vc71\StaticDebug\d3dgui/"
+				ProgramDataBaseFileName=".\..\..\Build.vc71\StaticDebug\d3dgui/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="4"
@@ -225,14 +243,14 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="$(OutDir)\cppunit.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib"
-				OutputFile=".\..\..\Build.vc7\StaticDebug/d3dgui.exe"
+				OutputFile=".\..\..\Build.vc71\StaticDebug/d3dgui.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\3rdparty\Cg\lib"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\..\..\Build.vc7\StaticDebug/d3dgui.pdb"
+				ProgramDatabaseFile=".\..\..\Build.vc71\StaticDebug/d3dgui.pdb"
 				GenerateMapFile="TRUE"
-				MapFileName="..\..\Build.vc7\StaticDebug/d3dgui.map"
+				MapFileName="..\..\Build.vc71\StaticDebug/d3dgui.map"
 				SubSystem="2"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -240,7 +258,7 @@
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc7\StaticDebug/d3dgui.tlb"/>
+				TypeLibraryName=".\..\..\Build.vc71\StaticDebug/d3dgui.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -254,12 +272,18 @@
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
 				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\..\..\Build.vc7\Release"
-			IntermediateDirectory=".\..\..\Build.vc7\Release\d3dgui"
+			OutputDirectory=".\..\..\Build.vc71\Release"
+			IntermediateDirectory=".\..\..\Build.vc71\Release\d3dgui"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -274,10 +298,10 @@
 				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdhdr.h"
-				PrecompiledHeaderFile=".\..\..\Build.vc7\Release\d3dgui/d3dgui.pch"
-				AssemblerListingLocation=".\..\..\Build.vc7\Release\d3dgui/"
-				ObjectFile=".\..\..\Build.vc7\Release\d3dgui/"
-				ProgramDataBaseFileName=".\..\..\Build.vc7\Release\d3dgui/"
+				PrecompiledHeaderFile=".\..\..\Build.vc71\Release\d3dgui/d3dgui.pch"
+				AssemblerListingLocation=".\..\..\Build.vc71\Release\d3dgui/"
+				ObjectFile=".\..\..\Build.vc71\Release\d3dgui/"
+				ProgramDataBaseFileName=".\..\..\Build.vc71\Release\d3dgui/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				CompileAs="0"/>
@@ -287,13 +311,13 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib"
-				OutputFile=".\..\..\Build.vc7\Release/d3dgui.exe"
+				OutputFile=".\..\..\Build.vc71\Release/d3dgui.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\3rdparty\Cg\lib"
-				ProgramDatabaseFile=".\..\..\Build.vc7\Release/d3dgui.pdb"
+				ProgramDatabaseFile=".\..\..\Build.vc71\Release/d3dgui.pdb"
 				GenerateMapFile="TRUE"
-				MapFileName="..\..\Build.vc7\Release/d3dgui.map"
+				MapFileName="..\..\Build.vc71\Release/d3dgui.map"
 				SubSystem="2"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -301,7 +325,7 @@
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc7\Release/d3dgui.tlb"/>
+				TypeLibraryName=".\..\..\Build.vc71\Release/d3dgui.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -315,9 +339,17 @@
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
 				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 	</Configurations>
+	<References>
+	</References>
 	<Files>
 		<Filter
 			Name="Source Files"

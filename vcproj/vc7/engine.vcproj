@@ -341,7 +341,10 @@
 					RelativePath="..\..\engine\src\guifactory.cpp">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\guifontfactorygl.cpp">
+					RelativePath="..\..\engine\src\guifontd3d.cpp">
+				</File>
+				<File
+					RelativePath="..\..\engine\src\guifontfactory.cpp">
 				</File>
 				<File
 					RelativePath="..\..\engine\src\guifontw32.cpp">
@@ -567,7 +570,10 @@
 					RelativePath="..\..\engine\src\guifactory.h">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\guifontfactorygl.h">
+					RelativePath="..\..\engine\src\guifontd3d.h">
+				</File>
+				<File
+					RelativePath="..\..\engine\src\guifontfactory.h">
 				</File>
 				<File
 					RelativePath="..\..\engine\src\guifontw32.h">

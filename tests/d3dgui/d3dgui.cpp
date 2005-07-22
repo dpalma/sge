@@ -54,7 +54,6 @@ F_DECLARE_HANDLE(HINSTANCE);
 typedef char * LPSTR;
 
 extern tResult GUIRenderDeviceCreateD3D(IDirect3DDevice9 * pD3dDevice, IGUIRenderDeviceContext * * ppRenderDevice);
-extern void GUIFontFactoryCreateD3D();
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -72,65 +71,6 @@ static const cColor kDefStatsColor(1,1,1,1);
 cAutoIPtr<IGUIFont> g_pFont;
 
 HWND g_hWnd = NULL;
-cAutoIPtr<IDirect3D9> g_pD3d;
-cAutoIPtr<IDirect3DDevice9> g_pD3dDevice;
-
-///////////////////////////////////////////////////////////////////////////////
-
-static tResult InitD3D(HWND hWnd, IDirect3D9 * * ppD3d, IDirect3DDevice9 * * ppDevice)
-{
-   if (!IsWindow(hWnd))
-   {
-      return E_INVALIDARG;
-   }
-
-   if (ppD3d == NULL || ppDevice == NULL)
-   {
-      return E_POINTER;
-   }
-
-   cAutoIPtr<IDirect3D9> pD3d(Direct3DCreate9(D3D_SDK_VERSION));
-   if (!pD3d)
-   {
-      return E_FAIL;
-   }
-
-   D3DDISPLAYMODE displayMode;
-   if (FAILED(pD3d->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &displayMode)))
-   {
-      return E_FAIL;
-   }
-
-   D3DPRESENT_PARAMETERS presentParams;
-   memset(&presentParams, 0, sizeof(presentParams));
-   presentParams.BackBufferCount = 1;
-   presentParams.BackBufferFormat = displayMode.Format;
-   presentParams.SwapEffect = D3DSWAPEFFECT_DISCARD;
-   presentParams.Windowed = TRUE;
-   presentParams.EnableAutoDepthStencil = TRUE;
-   presentParams.AutoDepthStencilFormat = D3DFMT_D16;
-   presentParams.hDeviceWindow = hWnd;
-   presentParams.Flags = D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL | D3DPRESENTFLAG_DEVICECLIP;
-
-   cAutoIPtr<IDirect3DDevice9> pD3dDevice;
-   HRESULT hr = pD3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd,
-      D3DCREATE_SOFTWARE_VERTEXPROCESSING, &presentParams, &pD3dDevice);
-   if (FAILED(hr))
-   {
-      hr = pD3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_REF, hWnd,
-         D3DCREATE_SOFTWARE_VERTEXPROCESSING, &presentParams, &pD3dDevice);
-      {
-         ErrorMsg1("D3D error %x\n", hr);
-         return hr;
-      }
-   }
-
-   *ppD3d = CTAddRef(pD3d);
-   *ppDevice = CTAddRef(pD3dDevice);
-
-   return S_OK;
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -173,7 +113,7 @@ static void RegisterGlobalObjects()
    ScriptInterpreterCreate();
    GUIContextCreate();
    GUIFactoryCreate();
-   GUIFontFactoryCreateD3D();
+   GUIFontFactoryCreate();
    ThreadCallerCreate();
 }
 
@@ -282,22 +222,21 @@ static bool d3dguiinit(int argc, tChar * argv[])
    ConfigGet(_T("screen_height"), &height);
    ConfigGet(_T("screen_bpp"), &bpp);
 
-   g_hWnd = reinterpret_cast<HWND>(SysCreateWindow(_T("D3D GUI Test"), width, height));
+   g_hWnd = reinterpret_cast<HWND>(SysCreateWindow(_T("D3D GUI Test"), width, height, kDirect3D9));
    if (g_hWnd == NULL)
    {
       return false;
    }
 
-   if (InitD3D(g_hWnd, &g_pD3d, &g_pD3dDevice) != S_OK)
+   cAutoIPtr<IDirect3DDevice9> pD3dDevice;
+   if (SysGetDirect3DDevice9(&pD3dDevice) == S_OK)
    {
-      return false;
-   }
-
-   UseGlobal(GUIFontFactory);
-   cAutoIPtr<IGUIFontFactoryD3D> pGUIFontFactoryD3D;
-   if (pGUIFontFactory->QueryInterface(IID_IGUIFontFactoryD3D, (void**)&pGUIFontFactoryD3D) == S_OK)
-   {
-      pGUIFontFactoryD3D->SetD3DDevice(g_pD3dDevice);
+      UseGlobal(GUIContext);
+      cAutoIPtr<IGUIRenderDeviceContext> pGuiRenderDevice;
+      if (GUIRenderDeviceCreateD3D(pD3dDevice, &pGuiRenderDevice) == S_OK)
+      {
+         pGUIContext->SetRenderDeviceContext(pGuiRenderDevice);
+      }
    }
 
    UseGlobal(ThreadCaller);
@@ -314,14 +253,6 @@ static bool d3dguiinit(int argc, tChar * argv[])
    }
 
    pGUIContext->LoadElements("start.xml", true);
-
-   cAutoIPtr<IGUIRenderDeviceContext> pGuiRenderDevice;
-   if (GUIRenderDeviceCreateD3D(g_pD3dDevice, &pGuiRenderDevice) != S_OK)
-   {
-      return false;
-   }
-
-   pGUIContext->SetRenderDeviceContext(pGuiRenderDevice);
 
    SysAppActivate(true);
 
@@ -350,9 +281,6 @@ static void d3dguiterm()
 
    SafeRelease(g_pFont);
 
-   SafeRelease(g_pD3d);
-   SafeRelease(g_pD3dDevice);
-
    // This will make sure the GL context is destroyed
    SysQuit();
 
@@ -366,15 +294,16 @@ static bool d3dguiframe()
    UseGlobal(Sim);
    pSim->NextFrame();
 
-   if (!g_pD3dDevice)
+   cAutoIPtr<IDirect3DDevice9> pD3dDevice;
+   if (SysGetDirect3DDevice9(&pD3dDevice) != S_OK)
    {
-      // D3D device not initialized yet
+      // D3D device not initialized yet?
       return true;
    }
 
-   g_pD3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1, 0);
+   pD3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1, 0);
 
-   if (g_pD3dDevice->BeginScene() == D3D_OK)
+   if (pD3dDevice->BeginScene() == D3D_OK)
    {
       UseGlobal(GUIContext);
       cAutoIPtr<IGUIRenderDeviceContext> pRenderDeviceContext;
@@ -406,11 +335,11 @@ static bool d3dguiframe()
          pRenderDeviceContext->End2D();
       }
 
-      g_pD3dDevice->EndScene();
-      g_pD3dDevice->Present(NULL, NULL, NULL, NULL);
+      pD3dDevice->EndScene();
+      pD3dDevice->Present(NULL, NULL, NULL, NULL);
    }
 
-//   SysSwapBuffers();
+   SysSwapBuffers();
 
    return true;
 }

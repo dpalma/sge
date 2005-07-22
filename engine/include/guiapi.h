@@ -245,13 +245,23 @@ interface IGUIFont : IUnknown
 
 interface IGUIFontFactory : IUnknown
 {
-   // The 2 is to side-step the "#define CreateFont CreateFontA" from windows.h
-   virtual tResult CreateFont2(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont) = 0;
+   virtual tResult CreateFontA(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont) = 0;
+   virtual tResult CreateFontW(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont) = 0;
 };
 
 ///////////////////////////////////////
 
-ENGINE_API void GUIFontFactoryCreateGL();
+#ifndef CreateFont
+#ifdef _UNICODE
+#define CreateFont CreateFontW
+#else
+#define CreateFont CreateFontA
+#endif
+#endif
+
+///////////////////////////////////////
+
+ENGINE_API void GUIFontFactoryCreate();
 
 
 ///////////////////////////////////////////////////////////////////////////////

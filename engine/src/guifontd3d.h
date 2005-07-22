@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // $Id$
 
-#ifndef INCLUDED_D3DGUIFONT_H
-#define INCLUDED_D3DGUIFONT_H
+#ifndef INCLUDED_GUIFONTD3D_H
+#define INCLUDED_GUIFONTD3D_H
 
 #include "guiapi.h"
 #include "color.h"
@@ -38,4 +38,4 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // !INCLUDED_D3DGUIFONT_H
+#endif // !INCLUDED_GUIFONTD3D_H

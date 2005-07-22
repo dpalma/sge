@@ -3,10 +3,8 @@
 
 #include "stdhdr.h"
 
-#include "d3dguifont.h"
-
-#include "techmath.h"
-#include "configapi.h"
+#include "guifontd3d.h"
+#include "sys.h"
 
 #ifndef _WIN32
 #error ("This file is for Windows compilation only")
@@ -15,22 +13,21 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-#include <d3d9.h>
+#if HAVE_DIRECTX
 #include <d3dx9.h>
+#endif
 
 #include <cstring>
 
 #include "dbgalloc.h" // must be last header
 
-///////////////////////////////////////////////////////////////////////////////
-
-#define IsBitFlagSet(var, bit) (((var) & (bit)) == (bit))
-
-///////////////////////////////////////////////////////////////////////////////
-
-const uint kDropShadowStencilRef = 0x7f;
-const uint kDropShadowStencilMask = 0xff;
-
+#if HAVE_DIRECTX
+#ifdef _DEBUG
+#pragma comment(lib, "d3dx9d")
+#else
+#pragma comment(lib, "d3dx9")
+#endif
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -40,7 +37,9 @@ const uint kDropShadowStencilMask = 0xff;
 ///////////////////////////////////////
 
 cGUIFontD3D::cGUIFontD3D(ID3DXFont * pD3dxFont)
+#if HAVE_DIRECTX
  : m_pD3dxFont(CTAddRef(pD3dxFont))
+#endif
 {
 }
 
@@ -55,6 +54,7 @@ cGUIFontD3D::~cGUIFontD3D()
 tResult cGUIFontD3D::RenderText(const char * pszText, int textLength, tRect * pRect,
                                 uint flags, const cColor & color) const
 {
+#if HAVE_DIRECTX
    if (!!m_pD3dxFont)
    {
       RECT rect;
@@ -83,6 +83,7 @@ tResult cGUIFontD3D::RenderText(const char * pszText, int textLength, tRect * pR
 
       return S_OK;
    }
+#endif // HAVE_DIRECTX
 
    return E_FAIL;
 }
@@ -97,10 +98,9 @@ tResult cGUIFontD3D::RenderText(const wchar_t * pszText, int textLength, tRect *
 
 ///////////////////////////////////////////////////////////////////////////////
 
-tResult GUIFontCreateD3D(IDirect3DDevice9 * pD3dDevice,
-                         const cGUIFontDesc & fontDesc,
-                         IGUIFont * * ppFont)
+tResult GUIFontCreateD3D(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont)
 {
+#if HAVE_DIRECTX
    if (ppFont == NULL)
    {
       return E_POINTER;
@@ -116,20 +116,25 @@ tResult GUIFontCreateD3D(IDirect3DDevice9 * pD3dDevice,
 
    ReleaseDC(NULL, hScreenDC), hScreenDC = NULL;
 
-   cAutoIPtr<ID3DXFont> pD3dxFont;
-   if (D3DXCreateFont(pD3dDevice, height, 0, fontDesc.GetBold() ? FW_EXTRABOLD : FW_NORMAL,
-      4, fontDesc.GetItalic(), DEFAULT_CHARSET, OUT_TT_PRECIS, PROOF_QUALITY,
-      DEFAULT_PITCH | FF_DONTCARE, fontDesc.GetFace(), &pD3dxFont) == S_OK)
+   cAutoIPtr<IDirect3DDevice9> pD3DDevice9;
+   if (SysGetDirect3DDevice9(&pD3DDevice9) == S_OK)
    {
-      cAutoIPtr<cGUIFontD3D> pFont(new cGUIFontD3D(pD3dxFont));
-      if (!pFont)
+      cAutoIPtr<ID3DXFont> pD3DXFont;
+      if (D3DXCreateFont(pD3DDevice9, height, 0, fontDesc.GetBold() ? FW_EXTRABOLD : FW_NORMAL,
+         4, fontDesc.GetItalic(), DEFAULT_CHARSET, OUT_TT_PRECIS, PROOF_QUALITY,
+         DEFAULT_PITCH | FF_DONTCARE, fontDesc.GetFace(), &pD3DXFont) == S_OK)
       {
-         return E_OUTOFMEMORY;
-      }
+         cAutoIPtr<cGUIFontD3D> pFont(new cGUIFontD3D(pD3DXFont));
+         if (!pFont)
+         {
+            return E_OUTOFMEMORY;
+         }
 
-      *ppFont = CTAddRef(pFont);
-      return S_OK;
+         *ppFont = CTAddRef(pFont);
+         return S_OK;
+      }
    }
+#endif // HAVE_DIRECTX
 
    return E_FAIL;
 }
