@@ -16,7 +16,7 @@
 #include "techtime.h"
 #include "vec4.h"
 
-#include <GL/gl.h>
+#include <GL/glew.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

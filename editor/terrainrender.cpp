@@ -15,8 +15,7 @@
 #include <map>
 #include <algorithm>
 #include <functional>
-#include <GL/gl.h>
-#include <GL/glext.h>
+#include <GL/glew.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

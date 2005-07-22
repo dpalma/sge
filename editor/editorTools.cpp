@@ -12,7 +12,7 @@
 
 #include "globalobj.h"
 
-#include <GL/gl.h>
+#include <GL/glew.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

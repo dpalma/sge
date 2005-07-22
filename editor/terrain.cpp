@@ -14,9 +14,9 @@
 #include "globalobj.h"
 #include "connptimpl.h"
 
-#include <GL/gl.h>
 #include <algorithm>
 #include <map>
+#include <GL/glew.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
