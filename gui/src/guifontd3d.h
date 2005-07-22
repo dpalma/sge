@@ -33,7 +33,9 @@ public:
    virtual tResult RenderText(const wchar_t * pszText, int textLength, tRect * pRect, uint flags, const cColor & color) const;
 
 private:
+#if HAVE_DIRECTX
    mutable cAutoIPtr<ID3DXFont> m_pD3dxFont;
+#endif
 };
 
 ///////////////////////////////////////////////////////////////////////////////
