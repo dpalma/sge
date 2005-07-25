@@ -123,7 +123,7 @@ function buildvc71(bldroot)
    local dxsdkdir = os.getenv("DXSDK_DIR");
    if dxsdkdir then
       io.write("set INCLUDE=%INCLUDE%;\"" .. pathcat(dxsdkdir, "Include") .. "\"" .. endl);
-      io.write("set LIB=%LIB%;\"" .. pathcat(dxsdkdir, "Lib") .. "\"" .. endl);
+      io.write("set LIB=%LIB%;\"" .. pathcat(dxsdkdir, "Lib", "x86") .. "\"" .. endl);
    end
    io.write("pushd " .. pathcat(bldroot, "sge\\vcproj\\vc71") .. endl);
    local cmdbase = "devenv 3rdparty.sln /useenv";
