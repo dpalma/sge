@@ -31,15 +31,14 @@ public:
    const CString & GetText() const;
    int GetTextLen() const;
    COLORREF GetTextColor() const;
+   void UpdateHorizontalExtent(HDC hDC);
+   int GetHorizontalExtent() const;
 
 private:
    CString m_text;
    COLORREF m_textColor;
+   int m_horizontalExtent;
 };
-
-///////////////////////////////////////
-
-typedef std::vector<cLogWndLine *> tLogWndLines;
 
 ///////////////////////////////////////
 
@@ -76,6 +75,12 @@ public:
    ~cLogWndLocation();
 
    const cLogWndLocation & operator =(const cLogWndLocation & other);
+
+   bool operator <(const cLogWndLocation & other) const;
+   bool operator >(const cLogWndLocation & other) const;
+   bool operator <=(const cLogWndLocation & other) const;
+   bool operator >=(const cLogWndLocation & other) const;
+   bool operator ==(const cLogWndLocation & other) const;
 
    int iLine; // index of the line hit
    int iChar; // index of the character within the line that was hit
@@ -161,12 +166,13 @@ protected:
 
 private:
    COLORREF m_textColor, m_bkColor;
+   typedef std::vector<cLogWndLine *> tLogWndLines;
    tLogWndLines::size_type m_nMaxLines;
    tLogWndLines m_lines;
 
    WTL::CFont m_font;
    int m_lineHeight; // height of a single line; determined by the selected font
-   int m_maxEntrySize; // horizontal size of the entry with the largest font dimensions
+   int m_maxLineHorizontalExtent; // horizontal size of the entry with the largest font dimensions
    bool m_bAtEnd; // is the window scrolled to the very bottom?
    int m_nAddsSinceLastPaint;
 

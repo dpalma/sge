@@ -5,6 +5,8 @@
 
 #include "LogWnd.h"
 
+#include "sys.h"
+
 #include <afxole.h>
 
 #ifdef _DEBUG
@@ -14,6 +16,17 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 const int kDefaultMaxLines = 1000;
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <class T>
+void Swap(T & a, T & b)
+{
+   T temp;
+   temp = a;
+   a = b;
+   b = temp;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -69,7 +82,8 @@ bool cTextDataSource::SetText(const tChar * pszText)
 
 cLogWndLine::cLogWndLine(LPCTSTR pszText, int textLength, COLORREF textColor)
  : m_text(pszText, textLength),
-   m_textColor(textColor)
+   m_textColor(textColor),
+   m_horizontalExtent(0)
 {
 }
 
@@ -77,7 +91,8 @@ cLogWndLine::cLogWndLine(LPCTSTR pszText, int textLength, COLORREF textColor)
 
 cLogWndLine::cLogWndLine(const cLogWndLine & other)
  : m_text(other.m_text),
-   m_textColor(other.m_textColor)
+   m_textColor(other.m_textColor),
+   m_horizontalExtent(other.m_horizontalExtent)
 {
 }
 
@@ -93,7 +108,29 @@ const cLogWndLine & cLogWndLine::operator =(const cLogWndLine & other)
 {
    m_text = other.m_text;
    m_textColor = other.m_textColor;
+   m_horizontalExtent = other.m_horizontalExtent;
    return *this;
+}
+
+///////////////////////////////////////
+
+void cLogWndLine::UpdateHorizontalExtent(HDC hDC)
+{
+   if (hDC != NULL)
+   {
+      SIZE extent;
+      if (::GetTextExtentPoint32(hDC, m_text, m_text.GetLength(), &extent))
+      {
+         m_horizontalExtent = extent.cx;
+      }
+   }
+}
+
+///////////////////////////////////////
+
+int cLogWndLine::GetHorizontalExtent() const
+{
+   return m_horizontalExtent;
 }
 
 
@@ -133,6 +170,41 @@ const cLogWndLocation & cLogWndLocation::operator =(const cLogWndLocation & othe
    return *this;
 }
 
+///////////////////////////////////////
+
+bool cLogWndLocation::operator <(const cLogWndLocation & other) const
+{
+   return iLine < other.iLine || (iLine == other.iLine && iChar < other.iChar);
+}
+
+///////////////////////////////////////
+
+bool cLogWndLocation::operator >(const cLogWndLocation & other) const
+{
+   return iLine > other.iLine || (iLine == other.iLine && iChar > other.iChar);
+}
+
+///////////////////////////////////////
+
+bool cLogWndLocation::operator <=(const cLogWndLocation & other) const
+{
+   return iLine < other.iLine || (iLine == other.iLine && iChar <= other.iChar);
+}
+
+///////////////////////////////////////
+
+bool cLogWndLocation::operator >=(const cLogWndLocation & other) const
+{
+   return iLine > other.iLine || (iLine == other.iLine && iChar >= other.iChar);
+}
+
+///////////////////////////////////////
+
+bool cLogWndLocation::operator ==(const cLogWndLocation & other) const
+{
+   return iLine == other.iLine && iChar == other.iChar;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -146,7 +218,7 @@ cLogWnd::cLogWnd()
    m_bkColor(GetSysColor(COLOR_WINDOW)),
    m_nMaxLines(kDefaultMaxLines),
    m_lineHeight(0),
-   m_maxEntrySize(0),
+   m_maxLineHorizontalExtent(0),
    m_bAtEnd(true),
    m_nAddsSinceLastPaint(0),
    m_pSelAnchor(NULL),
@@ -191,14 +263,13 @@ void cLogWnd::AddText(LPCTSTR pszText, int textLength, COLORREF textColor)
    int breakLength = _tcscspn(pszText, szLineBreakChars);
    while ((breakLength <= textLength) && (breakLength > 0))
    {
-      cLogWndLine * pEntry = new cLogWndLine(pszText, breakLength, textColor);
-      m_lines.push_back(pEntry);
+      cLogWndLine * pLine = new cLogWndLine(pszText, breakLength, textColor);
+      pLine->UpdateHorizontalExtent(dc);
+      m_lines.push_back(pLine);
 
-      CSize extent;
-      dc.GetTextExtent(pszText, breakLength, &extent);
-      if (extent.cx > m_maxEntrySize)
+      if (pLine->GetHorizontalExtent() > m_maxLineHorizontalExtent)
       {
-         m_maxEntrySize = extent.cx;
+         m_maxLineHorizontalExtent = pLine->GetHorizontalExtent();
       }
 
       pszText += breakLength;
@@ -237,7 +308,7 @@ void cLogWnd::Clear()
 {
    ClearSel();
 
-   m_maxEntrySize = 0;
+   m_maxLineHorizontalExtent = 0;
 
    tLogWndLines::iterator iter;
    for (iter = m_lines.begin(); iter != m_lines.end(); iter++)
@@ -277,15 +348,15 @@ void cLogWnd::SetFont(HFONT hFont, BOOL bRedraw)
       if (newFont.CreateFontIndirect(&lf))
       {
          m_font.Attach(newFont.Detach());
+
+         UpdateFontMetrics();
+         UpdateScrollInfo();
+
+         if (bRedraw)
+         {
+            Invalidate();
+         }
       }
-   }
-
-   UpdateFontMetrics();
-   UpdateScrollInfo();
-
-   if (bRedraw)
-   {
-      Invalidate();
    }
 }
 
@@ -303,29 +374,6 @@ bool cLogWnd::CopySelection()
       {
          tds.SetClipboard();
       }
-#if 0
-      if (OpenClipboard())
-      {
-         HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, sel.GetLength() + 1);
-         if (hMem)
-         {
-            char* pData = (char*)GlobalLock(hMem);
-            Assert(pData != NULL);
-            strcpy(pData, (LPCTSTR)sel);
-            GlobalUnlock(hMem);
-
-            result = (SetClipboardData(CF_TEXT, hMem) != NULL);
-
-            if (!result)
-            {
-               WarnMsg("SetClipboardData() failed. This is highly unusual.\n");
-               GlobalFree(hMem);
-            }
-         }
-
-         Verify(CloseClipboard());
-      }
-#endif
    }
 
    return result;
@@ -387,37 +435,40 @@ bool cLogWnd::GetSelection(CString * pSel)
 
 void cLogWnd::EnforceMaxLines()
 {
-   while (!m_lines.empty() && m_lines.size() > GetMaxLines())
+   bool bUpdateMaxEntrySize = false;
+
+   while (!m_lines.empty() && (m_lines.size() > GetMaxLines()))
    {
       Assert(m_lines[0] != NULL);
       cLogWndLine * pRemoved = m_lines[0];
       m_lines.erase(m_lines.begin());
 
-      // if the entry removed was the biggest one, find the new biggest entry
+      // if the entry removed was the biggest one, need to find the new biggest entry
+      if (pRemoved->GetHorizontalExtent() == m_maxLineHorizontalExtent)
+      {
+         bUpdateMaxEntrySize = true;
+      }
+
+      delete pRemoved;
+   }
+
+   if (bUpdateMaxEntrySize)
+   {
+      m_maxLineHorizontalExtent = 0;
+
       WTL::CDC dc(::GetDC(m_hWnd));
       HFONT hOldFont = dc.SelectFont(m_font);
 
-      CSize size;
-      dc.GetTextExtent(pRemoved->GetText(), -1, &size);
-
-      if (size.cx == m_maxEntrySize)
+      tLogWndLines::iterator iter;
+      for (iter = m_lines.begin(); iter != m_lines.end(); iter++)
       {
-         m_maxEntrySize = 0;
-
-         tLogWndLines::iterator iter;
-         for (iter = m_lines.begin(); iter != m_lines.end(); iter++)
+         if ((*iter)->GetHorizontalExtent() > m_maxLineHorizontalExtent)
          {
-            CSize size;
-            if (dc.GetTextExtent((*iter)->GetText(), -1, &size) && size.cx > m_maxEntrySize)
-            {
-               m_maxEntrySize = size.cx;
-            }
+            m_maxLineHorizontalExtent = (*iter)->GetHorizontalExtent();
          }
       }
 
       dc.SelectFont(hOldFont);
-
-      delete pRemoved;
    }
 }
 
@@ -425,16 +476,14 @@ void cLogWnd::EnforceMaxLines()
 
 void cLogWnd::UpdateScrollInfo()
 {
-   CRect r;
-   GetClientRect(&r);
+   CRect rect;
+   GetClientRect(&rect);
 
-   CSize total(
-      m_maxEntrySize,
-      m_lines.size() * m_lineHeight + r.Height() % m_lineHeight);
-
-   if (total.cx > 0 && total.cy > 0)
+   if (!rect.IsRectEmpty() && !m_lines.empty())
    {
-      SetScrollSize(total);
+      SetScrollSize(m_maxLineHorizontalExtent, m_lines.size() * m_lineHeight);
+      SetScrollLine(0, m_lineHeight);
+      SetScrollPage(0, m_lineHeight * 4);
    }
 }
 
@@ -445,10 +494,16 @@ void cLogWnd::UpdateFontMetrics()
    WTL::CDC dc(::GetDC(m_hWnd));
    HFONT hOldFont = dc.SelectFont(m_font);
 
+   tLogWndLines::iterator iter = m_lines.begin();
+   for (; iter != m_lines.end(); iter++)
+   {
+      (*iter)->UpdateHorizontalExtent(dc);
+   }
+
    TEXTMETRIC tm;
    dc.GetTextMetrics(&tm);
 
-   m_lineHeight = tm.tmHeight;
+   m_lineHeight = tm.tmHeight + tm.tmExternalLeading;
 
    dc.SelectFont(hOldFont);
 }
@@ -505,19 +560,14 @@ bool cLogWnd::GetHitLocation(const CPoint & point, int * piLine, int * piChar) c
 
 bool cLogWnd::GetHitLine(const CPoint & point, int * piLine) const
 {
-   CRect r;
-   GetClientRect(&r);
-   if (r.PtInRect(point))
+   int iHitLine = point.y / m_lineHeight;
+   if (iHitLine >= 0 && iHitLine < static_cast<int>(m_lines.size()))
    {
-      int iHitLine = point.y / m_lineHeight;
-      if (iHitLine >= 0 && iHitLine < static_cast<int>(m_lines.size()))
+      if (piLine != NULL)
       {
-         if (piLine != NULL)
-         {
-            *piLine = iHitLine;
-         }
-         return true;
+         *piLine = iHitLine;
       }
+      return true;
    }
    return false;
 }
@@ -604,36 +654,25 @@ void cLogWnd::ClearSel()
 
 ///////////////////////////////////////
 
-template <class T>
-void Swap(T & a, T & b)
-{
-   T temp;
-   temp = a;
-   a = b;
-   b = temp;
-}
-
-///////////////////////////////////////
-
 void cLogWnd::UpdateSelDrag(const CPoint & point)
 {
-   CRect r;
-   GetClientRect(&r);
+   CRect rect;
+   GetClientRect(&rect);
 
-   if (point.y < r.top)
+   if (point.y < rect.top)
    {
       ScrollLineUp();
    }
-   else if (point.y > r.bottom)
+   else if (point.y > rect.bottom)
    {
       ScrollLineDown();
    }
 
-   if (point.x > r.right)
+   if (point.x > rect.right)
    {
       ScrollLineRight();
    }
-   else if (point.x < r.left)
+   else if (point.x < rect.left)
    {
       ScrollLineLeft();
    }
@@ -943,9 +982,16 @@ LRESULT cLogWnd::OnSetCursor(HWND hWnd, UINT hitTest, UINT message)
 {
    if (hitTest == HTCLIENT)
    {
-      CPoint pt(GetMessagePos());
-      ScreenToClient(&pt);
-      if (HitTestSelection(pt))
+      CPoint point(GetMessagePos());
+      ScreenToClient(&point);
+
+      CPoint offset;
+      GetScrollOffset(offset);
+      point += offset;
+
+      cLogWndLocation hitLoc;
+      if (GetHitLocation(point, &hitLoc)
+         && hitLoc >= m_startSel && hitLoc < m_endSel)
       {
          SetCursor(LoadCursor(NULL, IDC_ARROW));
       }
@@ -953,6 +999,15 @@ LRESULT cLogWnd::OnSetCursor(HWND hWnd, UINT hitTest, UINT message)
       {
          SetCursor(LoadCursor(NULL, IDC_IBEAM));
       }
+
+      //if (HitTestSelection(point))
+      //{
+      //   SetCursor(LoadCursor(NULL, IDC_ARROW));
+      //}
+      //else
+      //{
+      //   SetCursor(LoadCursor(NULL, IDC_IBEAM));
+      //}
       return TRUE;
    }
 
@@ -979,7 +1034,7 @@ void cLogWnd::OnLButtonDown(UINT flags, CPoint point)
       if (GetSelection(&sel) && sel.GetLength() > 0)
       {
          cTextDataSource tds;
-         VERIFY(tds.SetText(sel));
+         Verify(tds.SetText(sel));
          tds.DoDragDrop();
       }
    }
