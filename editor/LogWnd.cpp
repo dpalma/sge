@@ -573,74 +573,6 @@ bool cLogWnd::GetHitLine(const CPoint & point, int * piLine) const
 }
 
 ///////////////////////////////////////
-
-bool cLogWnd::HitTestSelection(const CPoint & point)
-{
-   if (m_startSel.iLine < 0 || m_endSel.iLine < 0)
-      return false;
-
-   WTL::CDC dc(::GetDC(m_hWnd));
-   HFONT hOldFont = dc.SelectFont(m_font);
-
-   CRect rect;
-   GetClientRect(rect);
-
-   CRect r(rect);
-   r.top = m_startSel.iLine * m_lineHeight;
-   r.bottom = r.top + m_lineHeight;
-
-   bool bHit = false;
-
-   if (m_startSel.iLine > -1)
-   {
-      for (uint i = m_startSel.iLine; i < m_lines.size(); i++)
-      {
-         if (i == m_startSel.iLine)
-         {
-            CSize extent;
-            dc.GetTextExtent(m_lines[m_startSel.iLine]->GetText(), m_startSel.iChar, &extent);
-            r.left = extent.cx;
-         }
-         else
-         {
-            r.left = 0;
-         }
-
-         if (i == m_endSel.iLine)
-         {
-            CSize extent;
-            dc.GetTextExtent(m_lines[m_endSel.iLine]->GetText(), m_endSel.iChar, &extent);
-            r.right = extent.cx;
-         }
-         else
-         {
-            CSize extent;
-            dc.GetTextExtent(m_lines[i]->GetText(), -1, &extent);
-            r.right = extent.cx;
-         }
-
-         if (r.PtInRect(point))
-         {
-            bHit = true;
-            break;
-         }
-
-         // if we just did the last entry in the selection, break out of the loop
-         if (i == m_endSel.iLine)
-         {
-            break;
-         }
-
-         r.OffsetRect(0, r.Height());
-      }
-   }
-
-   dc.SelectFont(hOldFont);
-
-   return bHit;
-}
-
-///////////////////////////////////////
 // Clean up ALL selection data
 
 void cLogWnd::ClearSel()
@@ -907,7 +839,9 @@ void cLogWnd::DoScroll(int nType, int nScrollCode, int& cxyOffset, int cxySizeAl
    tBase::DoScroll(nType, nScrollCode, cxyOffset, cxySizeAll, cxySizePage, cxySizeLine);
 
    SCROLLINFO info;
-   GetScrollInfo(SB_VERT, &info);
+   info.cbSize = sizeof(SCROLLINFO);
+   info.fMask = SIF_PAGE | SIF_POS | SIF_RANGE;
+   Verify(GetScrollInfo(SB_VERT, &info));
 
    if (info.nPos >= (int)(info.nMax - info.nPage))
    {
@@ -985,10 +919,6 @@ LRESULT cLogWnd::OnSetCursor(HWND hWnd, UINT hitTest, UINT message)
       CPoint point(GetMessagePos());
       ScreenToClient(&point);
 
-      CPoint offset;
-      GetScrollOffset(offset);
-      point += offset;
-
       cLogWndLocation hitLoc;
       if (GetHitLocation(point, &hitLoc)
          && hitLoc >= m_startSel && hitLoc < m_endSel)
@@ -1000,14 +930,6 @@ LRESULT cLogWnd::OnSetCursor(HWND hWnd, UINT hitTest, UINT message)
          SetCursor(LoadCursor(NULL, IDC_IBEAM));
       }
 
-      //if (HitTestSelection(point))
-      //{
-      //   SetCursor(LoadCursor(NULL, IDC_ARROW));
-      //}
-      //else
-      //{
-      //   SetCursor(LoadCursor(NULL, IDC_IBEAM));
-      //}
       return TRUE;
    }
 
@@ -1028,24 +950,28 @@ void cLogWnd::OnMouseMove(UINT flags, CPoint point)
 
 void cLogWnd::OnLButtonDown(UINT flags, CPoint point)
 {
-   if (HitTestSelection(point))
+   cLogWndLocation hitLoc;
+   if (GetHitLocation(point, &hitLoc))
    {
-      CString sel;
-      if (GetSelection(&sel) && sel.GetLength() > 0)
+      if (hitLoc >= m_startSel && hitLoc < m_endSel)
       {
-         cTextDataSource tds;
-         Verify(tds.SetText(sel));
-         tds.DoDragDrop();
+         CString sel;
+         if (GetSelection(&sel) && sel.GetLength() > 0)
+         {
+            cTextDataSource tds;
+            Verify(tds.SetText(sel));
+            tds.DoDragDrop();
+         }
       }
-   }
-   else
-   {
-      ClearSel();
-      Invalidate(FALSE);
-      UpdateWindow();
-
-      if (GetHitLocation(point, &m_startSel))
+      else
       {
+         ClearSel();
+         Invalidate(FALSE);
+         UpdateWindow();
+
+         m_startSel = hitLoc;
+         m_endSel = hitLoc;
+
          SetCapture();
 
          m_bDragGTEAnchor = true;

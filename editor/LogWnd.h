@@ -131,7 +131,6 @@ protected:
    bool GetHitLocation(const CPoint & point, cLogWndLocation * pHitTest);
    bool GetHitLocation(const CPoint & point, int * piLine, int * piChar) const;
    bool GetHitLine(const CPoint & point, int * piLine) const;
-   bool HitTestSelection(const CPoint & point);
    void ClearSel();
    void UpdateSelDrag(const CPoint & point);
    void GetVisibleRange(int * pStart, int * pEnd);
