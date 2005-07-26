@@ -38,6 +38,9 @@ public:
    virtual tResult Init();
    virtual tResult Term();
 
+   virtual void SetTilesPerChunk(uint tilesPerChunk);
+   virtual uint GetTilesPerChunk() const;
+
    virtual tResult EnableBlending(bool bEnable);
 
    virtual void Render();
@@ -59,9 +62,9 @@ private:
       cTerrainRenderer * m_pOuter;
    };
    friend class cTerrainModelListener;
-   cTerrainModelListener m_tml;
+   cTerrainModelListener m_terrainModelListener;
 
-   uint m_nChunksX, m_nChunksZ; // # of chunks in the x,z directions
+   uint m_nTilesPerChunk;
    typedef std::vector<cTerrainChunk *> tChunks;
    tChunks m_chunks;
 
@@ -79,12 +82,59 @@ bool cTerrainRenderer::IsBlendingEnabled() const
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: cTerrainChunk
+//
+
+class cTerrainChunk
+{
+   cTerrainChunk(const cTerrainChunk &);
+   void operator =(const cTerrainChunk &);
+
+public:
+   cTerrainChunk();
+   virtual ~cTerrainChunk() = 0;
+
+   virtual void Render() = 0;
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cTerrainChunkSimple
+//
+
+class cTerrainChunkSimple : cTerrainChunk
+{
+   cTerrainChunkSimple(const cTerrainChunkSimple &);
+   void operator =(const cTerrainChunkSimple &);
+
+public:
+   static tResult Create(uint iChunkX, uint iChunkZ, cTerrainChunk * * ppChunk);
+
+   cTerrainChunkSimple();
+   ~cTerrainChunkSimple();
+
+   void Render();
+
+private:
+   struct sSimpleVertex
+   {
+      tVec2 uv;
+      tVec3 pos;
+   };
+   typedef std::vector<sSimpleVertex> tVertices;
+   tVertices m_vertices;
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cSplatBuilder
 //
 
 class cSplatBuilder
 {
-   friend class cTerrainChunk;
+   friend class cTerrainChunkBlended;
 
    cSplatBuilder(const cSplatBuilder &);
    void operator =(const cSplatBuilder &);
@@ -112,19 +162,20 @@ private:
 };
 
 
+
 /////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cTerrainChunk
+// CLASS: cTerrainChunkBlended
 //
 
-class cTerrainChunk
+class cTerrainChunkBlended : cTerrainChunk
 {
-   cTerrainChunk(const cTerrainChunk &);
-   void operator =(const cTerrainChunk &);
+   cTerrainChunkBlended(const cTerrainChunkBlended &);
+   void operator =(const cTerrainChunkBlended &);
 
 public:
-   cTerrainChunk();
-   ~cTerrainChunk();
+   cTerrainChunkBlended();
+   ~cTerrainChunkBlended();
 
    static tResult Create(const tTerrainQuads & quads, uint nQuadsX, uint nQuadsZ,
       uint iChunkX, uint iChunkZ, IEditorTileSet * pTileSet, cTerrainChunk * * ppChunk);

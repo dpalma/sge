@@ -371,7 +371,7 @@ tResult cTerrainModel::Initialize(const cTerrainSettings & terrainSettings)
    }
    else
    {
-      if (HeightMapCreateSimple(0, &pHeightMap) != S_OK)
+      if (HeightMapCreateFixed(0, &pHeightMap) != S_OK)
       {
          return E_FAIL;
       }
@@ -636,17 +636,17 @@ void cTerrainModel::NotifyListeners(void (ITerrainModelListener::*pfnListenerMet
 
 /////////////////////////////////////////////////////////////////////////////
 
-tResult HeightMapCreateSimple(float heightValue, IHeightMap * * ppHeightMap)
+tResult HeightMapCreateFixed(float heightValue, IHeightMap * * ppHeightMap)
 {
    if (ppHeightMap == NULL)
    {
       return E_POINTER;
    }
 
-   class cSimpleHeightMap : public cComObject<IMPLEMENTS(IHeightMap)>
+   class cFixedHeightMap : public cComObject<IMPLEMENTS(IHeightMap)>
    {
    public:
-      cSimpleHeightMap(float heightValue) : m_heightValue(heightValue)
+      cFixedHeightMap(float heightValue) : m_heightValue(heightValue)
       {
       }
 
@@ -659,7 +659,7 @@ tResult HeightMapCreateSimple(float heightValue, IHeightMap * * ppHeightMap)
       float m_heightValue;
    };
 
-   *ppHeightMap = static_cast<IHeightMap *>(new cSimpleHeightMap(heightValue));
+   *ppHeightMap = static_cast<IHeightMap *>(new cFixedHeightMap(heightValue));
    if (*ppHeightMap == NULL)
    {
       return E_OUTOFMEMORY;

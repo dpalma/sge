@@ -51,8 +51,20 @@ typedef std::vector<sTerrainQuad> tTerrainQuads;
 // INTERFACE: ITerrainRenderer
 //
 
+////////////////////////////////////////
+
+namespace TerrainRendererDefaults
+{
+   const uint kTerrainTilesPerChunk = 32;
+}
+
+////////////////////////////////////////
+
 interface ITerrainRenderer : IUnknown
 {
+   virtual void SetTilesPerChunk(uint tilesPerChunk) = 0;
+   virtual uint GetTilesPerChunk() const = 0;
+
    virtual tResult EnableBlending(bool bEnable) = 0;
 
    virtual void Render() = 0;
@@ -72,7 +84,7 @@ TERRAIN_API tResult TerrainRendererCreate();
 
 enum eTerrainHeightData
 {
-   kTHD_None,
+   kTHD_Fixed,
    kTHD_Noise,
    kTHD_HeightMap,
 };
@@ -84,7 +96,7 @@ namespace TerrainSettingsDefaults
    const uint kTerrainTileSize      = 32;
    const uint kTerrainTileCountX    = 64;
    const uint kTerrainTileCountZ    = 64;
-   const eTerrainHeightData kTerrainHeightData = kTHD_None;
+   const eTerrainHeightData kTerrainHeightData = kTHD_Fixed;
 }
 
 ////////////////////////////////////////
@@ -202,7 +214,7 @@ interface IHeightMap : IUnknown
 
 ////////////////////////////////////////
 
-TERRAIN_API tResult HeightMapCreateSimple(float heightValue, IHeightMap * * ppHeightMap);
+TERRAIN_API tResult HeightMapCreateFixed(float heightValue, IHeightMap * * ppHeightMap);
 TERRAIN_API tResult HeightMapLoad(const tChar * pszHeightData, IHeightMap * * ppHeightMap);
 
 /////////////////////////////////////////////////////////////////////////////
