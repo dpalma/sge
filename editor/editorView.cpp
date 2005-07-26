@@ -328,36 +328,31 @@ void cEditorView::RenderGL()
    UseGlobal(TerrainRenderer);
    pTerrainRenderer->Render();
 
-   cAutoIPtr<IEditorModel> pEditModel;
-   cAutoIPtr<ITerrainModel> pTerrModel;
-   if (GetModel(&pEditModel) == S_OK
-      && pEditModel->GetTerrainModel(&pTerrModel) == S_OK)
+   int iHlx, iHlz;
+   if (GetHighlightTile(&iHlx, &iHlz) == S_OK)
    {
-      int iHlx, iHlz;
-      if (GetHighlightTile(&iHlx, &iHlz) == S_OK)
+      UseGlobal(TerrainModel);
+      tVec3 verts[4];
+      if (pTerrainModel->GetTileVertices(iHlx, iHlz, verts) == S_OK)
       {
-         tVec3 verts[4];
-         if (pTerrModel->GetTileVertices(iHlx, iHlz, verts) == S_OK)
-         {
-            static const float kOffsetY = 0.5f;
-            verts[0].y += kOffsetY;
-            verts[1].y += kOffsetY;
-            verts[2].y += kOffsetY;
-            verts[3].y += kOffsetY;
+         static const float kOffsetY = 0.5f;
+         verts[0].y += kOffsetY;
+         verts[1].y += kOffsetY;
+         verts[2].y += kOffsetY;
+         verts[3].y += kOffsetY;
 
-            glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            glBegin(GL_QUADS);
-               glColor4fv(kHighlightTileColor);
-               glNormal3f(0, 1, 0);
-               glVertex3fv(verts[0].v);
-               glVertex3fv(verts[3].v);
-               glVertex3fv(verts[2].v);
-               glVertex3fv(verts[1].v);
-            glEnd();
-            glPopAttrib();
-         }
+         glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
+         glEnable(GL_BLEND);
+         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+         glBegin(GL_QUADS);
+            glColor4fv(kHighlightTileColor);
+            glNormal3f(0, 1, 0);
+            glVertex3fv(verts[0].v);
+            glVertex3fv(verts[3].v);
+            glVertex3fv(verts[2].v);
+            glVertex3fv(verts[1].v);
+         glEnd();
+         glPopAttrib();
       }
    }
 
@@ -373,45 +368,7 @@ void cEditorView::RenderD3D()
 
    if (m_pD3dDevice->BeginScene() == D3D_OK)
    {
-      D3DMATRIX view;
-      MatrixTranspose(m_view, &view);
-      m_pD3dDevice->SetTransform(D3DTS_VIEW, &view);
-
-      UseGlobal(TerrainRenderer);
-      pTerrainRenderer->Render(m_pD3dDevice);
-
-      cAutoIPtr<IEditorModel> pEditModel;
-      cAutoIPtr<ITerrainModel> pTerrModel;
-      if (GetModel(&pEditModel) == S_OK
-         && pEditModel->GetTerrainModel(&pTerrModel) == S_OK)
-      {
-         int iHlx, iHlz;
-         if (GetHighlightTile(&iHlx, &iHlz) == S_OK)
-         {
-            tVec3 verts[4];
-            if (pTerrModel->GetTileVertices(iHlx, iHlz, verts) == S_OK)
-            {
-               static const float kOffsetY = 0.5f;
-               verts[0].y += kOffsetY;
-               verts[1].y += kOffsetY;
-               verts[2].y += kOffsetY;
-               verts[3].y += kOffsetY;
-
-               //glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
-               //glEnable(GL_BLEND);
-               //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-               //glBegin(GL_QUADS);
-               //   glColor4fv(kHighlightTileColor);
-               //   glNormal3f(0, 1, 0);
-               //   glVertex3fv(verts[0].v);
-               //   glVertex3fv(verts[3].v);
-               //   glVertex3fv(verts[2].v);
-               //   glVertex3fv(verts[1].v);
-               //glEnd();
-               //glPopAttrib();
-            }
-         }
-      }
+      // TODO
 
       m_pD3dDevice->EndScene();
       m_pD3dDevice->Present(NULL, NULL, NULL, NULL);
@@ -628,14 +585,14 @@ void cEditorView::OnInitialUpdate()
 	cEditorDoc * pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-   cAutoIPtr<ITerrainModel> pTerrModel;
-   if (pDoc->GetTerrainModel(&pTerrModel) == S_OK)
-   {
-      uint xExt, zExt;
-      pTerrModel->GetExtents(&xExt, &zExt);
+   UseGlobal(TerrainModel);
+   cTerrainSettings terrainSettings;
+   pTerrainModel->GetTerrainSettings(&terrainSettings);
 
-      PlaceCamera((float)xExt / 2, (float)zExt / 2);
-   }
+   float centerX = static_cast<float>(terrainSettings.GetTileCountX() * terrainSettings.GetTileSize()) / 2;
+   float centerZ = static_cast<float>(terrainSettings.GetTileCountZ() * terrainSettings.GetTileSize()) / 2;
+
+   PlaceCamera(centerX, centerZ);
 
 	CView::OnInitialUpdate();
 }

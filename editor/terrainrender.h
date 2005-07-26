@@ -33,45 +33,33 @@ public:
    ~cTerrainRenderer();
 
    DECLARE_NAME(TerrainRenderer)
-   DECLARE_NO_CONSTRAINTS()
+   DECLARE_CONSTRAINTS()
 
    virtual tResult Init();
    virtual tResult Term();
 
-   virtual tResult SetModel(ITerrainModel * pTerrainModel);
-   virtual tResult GetModel(ITerrainModel * * ppTerrainModel);
-
    virtual tResult EnableBlending(bool bEnable);
 
    virtual void Render();
-   virtual void Render(IDirect3DDevice9 * pD3dDevice);
 
 private:
    bool IsBlendingEnabled() const;
 
    void RegenerateChunks();
-   ITerrainModel * AccessModel() { return m_pModel; }
 
    class cTerrainModelListener : public cComObject<IMPLEMENTS(ITerrainModelListener)>
    {
    public:
-      cTerrainModelListener(cTerrainRenderer * pOuter) : m_pOuter(pOuter) {}
-      virtual void DeleteThis() {}
-      virtual void OnTerrainChange()
-      {
-         if (m_pOuter != NULL)
-         {
-            m_pOuter->m_bTerrainChanged = true;
-            m_pOuter->RegenerateChunks();
-         }
-      }
+      cTerrainModelListener(cTerrainRenderer * pOuter);
+      virtual void DeleteThis() { /* Do not delete; Non-pointer member of cTerrainRenderer */ }
+      virtual void OnTerrainInitialize();
+      virtual void OnTerrainClear();
+      virtual void OnTerrainChange();
    private:
       cTerrainRenderer * m_pOuter;
    };
    friend class cTerrainModelListener;
    cTerrainModelListener m_tml;
-
-   cAutoIPtr<ITerrainModel> m_pModel;
 
    uint m_nChunksX, m_nChunksZ; // # of chunks in the x,z directions
    typedef std::vector<cTerrainChunk *> tChunks;

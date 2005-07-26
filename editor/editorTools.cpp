@@ -345,15 +345,6 @@ tResult cTerrainTileTool::OnMouseMove(const cEditorMouseEvent & mouseEvent, IEdi
 
 tResult cTerrainTileTool::OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
 {
-   Assert(!m_pTerrainModel);
-
-   cAutoIPtr<IEditorModel> pEditModel;
-   if (pView->GetModel(&pEditModel) != S_OK
-      || pEditModel->GetTerrainModel(&m_pTerrainModel) != S_OK)
-   {
-      return E_FAIL;
-   }
-
    UseGlobal(TerrainRenderer);
    pTerrainRenderer->EnableBlending(false);
 
@@ -371,8 +362,6 @@ tResult cTerrainTileTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEdito
    UseGlobal(TerrainRenderer);
    pTerrainRenderer->EnableBlending(true);
 
-   SafeRelease(m_pTerrainModel);
-
    m_currentStamp = 0;
    return result;
 }
@@ -381,7 +370,7 @@ tResult cTerrainTileTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEdito
 
 tResult cTerrainTileTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
 {
-   if (pView != NULL && !!m_pTerrainModel)
+   if (pView != NULL)
    {
       uint ix, iz;
       if (GetHitTile(mouseEvent.GetPoint(), pView, &ix, &iz))
@@ -391,8 +380,10 @@ tResult cTerrainTileTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEdit
             m_iLastHitX = ix;
             m_iLastHitZ = iz;
 
+            UseGlobal(TerrainModel);
+
             cAutoIPtr<IEditorCommand> pCommand(new cTerrainTileCommand(
-               m_pTerrainModel, ix, iz, m_tile, m_currentStamp));
+               pTerrainModel, ix, iz, m_tile, m_currentStamp));
             if (!!pCommand)
             {
                cAutoIPtr<IEditorModel> pEM;
@@ -412,38 +403,34 @@ tResult cTerrainTileTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEdit
 
 bool cTerrainTileTool::GetHitTile(CPoint point, IEditorView * pView, uint * pix, uint * piz)
 {
-   cAutoIPtr<IEditorModel> pEditModel;
-   cAutoIPtr<ITerrainModel> pTerrModel;
-   if (pView->GetModel(&pEditModel) == S_OK
-      && pEditModel->GetTerrainModel(&pTerrModel) == S_OK)
+   float ndx, ndy;
+   ScreenToNormalizedDeviceCoords(point.x, point.y, &ndx, &ndy);
+
+   cRay pickRay;
+   if (pView->GeneratePickRay(ndx, ndy, &pickRay) == S_OK)
    {
-      float ndx, ndy;
-      ScreenToNormalizedDeviceCoords(point.x, point.y, &ndx, &ndy);
-
-      cRay pickRay;
-      if (pView->GeneratePickRay(ndx, ndy, &pickRay) == S_OK)
+      tVec3 pointOnPlane;
+      if (pickRay.IntersectsPlane(tVec3(0,1,0), 0, &pointOnPlane))
       {
-         tVec3 pointOnPlane;
-         if (pickRay.IntersectsPlane(tVec3(0,1,0), 0, &pointOnPlane))
+         LocalMsg3("Hit the ground at approximately (%.1f, %.1f, %.1f)\n",
+            pointOnPlane.x, pointOnPlane.y, pointOnPlane.z);
+
+         UseGlobal(TerrainModel);
+
+         uint ix, iz;
+         pTerrainModel->GetTileIndices(pointOnPlane.x, pointOnPlane.z, &ix, &iz);
+
+         LocalMsg2("Hit tile (%d, %d)\n", ix, iz);
+
+         if (pix != NULL)
          {
-            LocalMsg3("Hit the ground at approximately (%.1f, %.1f, %.1f)\n",
-               pointOnPlane.x, pointOnPlane.y, pointOnPlane.z);
-
-            uint ix, iz;
-            pTerrModel->GetTileIndices(pointOnPlane.x, pointOnPlane.z, &ix, &iz);
-
-            LocalMsg2("Hit tile (%d, %d)\n", ix, iz);
-
-            if (pix != NULL)
-            {
-               *pix = ix;
-            }
-            if (piz != NULL)
-            {
-               *piz = iz;
-            }
-            return true;
+            *pix = ix;
          }
+         if (piz != NULL)
+         {
+            *piz = iz;
+         }
+         return true;
       }
    }
 

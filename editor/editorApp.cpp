@@ -192,6 +192,7 @@ static void RegisterGlobalObjects()
 //   GUIFactoryCreate();
    EditorTileManagerCreate();
    ThreadCallerCreate();
+   TerrainModelCreate();
    TerrainRendererCreate();
 }
 

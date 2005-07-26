@@ -113,15 +113,213 @@ tResult cReadWriteOps<tTerrainVertexVector>::Write(IWriter * pWriter,
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: cTerrainSettings
+//
+
+////////////////////////////////////////
+
+cTerrainSettings::cTerrainSettings()
+ : m_tileSize(TerrainSettingsDefaults::kTerrainTileSize),
+   m_nTilesX(TerrainSettingsDefaults::kTerrainTileCountX),
+   m_nTilesZ(TerrainSettingsDefaults::kTerrainTileCountZ),
+   m_heightData(TerrainSettingsDefaults::kTerrainHeightData)
+{
+}
+
+////////////////////////////////////////
+
+cTerrainSettings::cTerrainSettings(const cTerrainSettings & other)
+ : m_tileSize(other.m_tileSize),
+   m_nTilesX(other.m_nTilesX),
+   m_nTilesZ(other.m_nTilesZ),
+   m_tileSet(other.m_tileSet),
+   m_heightData(other.m_heightData),
+   m_heightMap(other.m_heightMap)
+{
+}
+
+////////////////////////////////////////
+
+cTerrainSettings::~cTerrainSettings()
+{
+}
+
+////////////////////////////////////////
+
+const cTerrainSettings & cTerrainSettings::operator =(const cTerrainSettings & other)
+{
+   m_tileSize = other.m_tileSize;
+   m_nTilesX = other.m_nTilesX;
+   m_nTilesZ = other.m_nTilesZ;
+   m_tileSet = other.m_tileSet;
+   m_heightData = other.m_heightData;
+   m_heightMap = other.m_heightMap;
+   return *this;
+}
+
+////////////////////////////////////////
+
+void cTerrainSettings::SetTileSize(uint tileSize)
+{
+   m_tileSize = tileSize;
+}
+
+////////////////////////////////////////
+
+uint cTerrainSettings::GetTileSize() const
+{
+   return m_tileSize;
+}
+
+////////////////////////////////////////
+
+void cTerrainSettings::SetTileCountX(uint tileCountX)
+{
+   m_nTilesX = tileCountX;
+}
+
+////////////////////////////////////////
+
+uint cTerrainSettings::GetTileCountX() const
+{
+   return m_nTilesX;
+}
+
+////////////////////////////////////////
+
+void cTerrainSettings::SetTileCountZ(uint tileCountZ)
+{
+   m_nTilesZ = tileCountZ;
+}
+
+////////////////////////////////////////
+
+uint cTerrainSettings::GetTileCountZ() const
+{
+   return m_nTilesZ;
+}
+
+////////////////////////////////////////
+
+void cTerrainSettings::SetTileSet(const tChar * pszTileSet)
+{
+   if (pszTileSet != NULL)
+   {
+      m_tileSet = pszTileSet;
+   }
+   else
+   {
+      m_tileSet.erase();
+   }
+}
+
+////////////////////////////////////////
+
+const tChar * cTerrainSettings::GetTileSet() const
+{
+   return m_tileSet.c_str();
+}
+
+////////////////////////////////////////
+
+void cTerrainSettings::SetHeightData(eTerrainHeightData heightData)
+{
+   m_heightData = heightData;
+}
+
+////////////////////////////////////////
+
+eTerrainHeightData cTerrainSettings::GetHeightData() const
+{
+   return m_heightData;
+}
+
+////////////////////////////////////////
+
+void cTerrainSettings::SetHeightMap(const tChar * pszHeightMap)
+{
+   if (pszHeightMap != NULL)
+   {
+      m_heightMap = pszHeightMap;
+   }
+   else
+   {
+      m_heightMap.erase();
+   }
+}
+
+////////////////////////////////////////
+
+const tChar * cTerrainSettings::GetHeightMap() const
+{
+   return m_heightMap.c_str();
+}
+
+////////////////////////////////////////
+
+tResult cReadWriteOps<cTerrainSettings>::Read(IReader * pReader, cTerrainSettings * pTerrainSettings)
+{
+   if (pReader == NULL || pTerrainSettings == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (pReader->Read(&pTerrainSettings->m_tileSize) == S_OK
+      && pReader->Read(&pTerrainSettings->m_nTilesX) == S_OK
+      && pReader->Read(&pTerrainSettings->m_nTilesZ) == S_OK
+      && pReader->Read(&pTerrainSettings->m_tileSet) == S_OK
+      && pReader->Read(&pTerrainSettings->m_heightData) == S_OK
+      && pReader->Read(&pTerrainSettings->m_heightMap) == S_OK)
+   {
+      return S_OK;
+   }
+
+   return E_FAIL;
+}
+
+////////////////////////////////////////
+
+tResult cReadWriteOps<cTerrainSettings>::Write(IWriter * pWriter, const cTerrainSettings & terrainSettings)
+{
+   if (pWriter == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (pWriter->Write(terrainSettings.m_tileSize) == S_OK
+      && pWriter->Write(terrainSettings.m_nTilesX) == S_OK
+      && pWriter->Write(terrainSettings.m_nTilesZ) == S_OK
+      && pWriter->Write(terrainSettings.m_tileSet) == S_OK
+      && pWriter->Write(terrainSettings.m_heightData) == S_OK
+      && pWriter->Write(terrainSettings.m_heightMap) == S_OK)
+   {
+      return S_OK;
+   }
+
+   return E_FAIL;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cTerrainModel
 //
 
 ////////////////////////////////////////
 
+tResult TerrainModelCreate()
+{
+   cAutoIPtr<ITerrainModel> p(new cTerrainModel);
+   if (!p)
+   {
+      return E_OUTOFMEMORY;
+   }
+   return RegisterGlobalObject(IID_ITerrainModel, static_cast<ITerrainModel*>(p));
+}
+
+////////////////////////////////////////
+
 cTerrainModel::cTerrainModel()
- : m_tileSize(0),
-   m_nTilesX(0),
-   m_nTilesZ(0)
 {
 }
 
@@ -129,6 +327,72 @@ cTerrainModel::cTerrainModel()
 
 cTerrainModel::~cTerrainModel()
 {
+}
+
+////////////////////////////////////////
+
+tResult cTerrainModel::Init()
+{
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainModel::Term()
+{
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainModel::Initialize(const cTerrainSettings & terrainSettings)
+{
+   Clear();
+
+   UseGlobal(EditorTileManager);
+   if (pEditorTileManager->GetTileSet(terrainSettings.GetTileSet(), &m_pTileSet) != S_OK)
+   {
+      WarnMsg1("Unable to find tile set \"%s\"; using default instead\n",
+         terrainSettings.GetTileSet() == NULL ? "(NULL)" : terrainSettings.GetTileSet());
+      pEditorTileManager->GetDefaultTileSet(&m_pTileSet);
+   }
+
+   cAutoIPtr<IHeightMap> pHeightMap;
+   if (terrainSettings.GetHeightData() == kTHD_HeightMap)
+   {
+      if (HeightMapLoad(terrainSettings.GetHeightMap(), &pHeightMap) != S_OK)
+      {
+         return E_FAIL;
+      }
+   }
+   else if (terrainSettings.GetHeightData() == kTHD_Noise)
+   {
+      return E_NOTIMPL;
+   }
+   else
+   {
+      if (HeightMapCreateSimple(0, &pHeightMap) != S_OK)
+      {
+         return E_FAIL;
+      }
+   }
+
+   if (InitQuads(terrainSettings.GetTileCountX(), terrainSettings.GetTileCountZ(), pHeightMap, &m_terrainQuads) == S_OK)
+   {
+      NotifyListeners(&ITerrainModelListener::OnTerrainInitialize);
+      return S_OK;
+   }
+
+   return E_FAIL;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainModel::Clear()
+{
+   NotifyListeners(&ITerrainModelListener::OnTerrainClear);
+
+   return E_NOTIMPL;
 }
 
 ////////////////////////////////////////
@@ -166,10 +430,7 @@ tResult cTerrainModel::Read(IReader * pReader)
       return E_FAIL;
    }
 
-   if (pReader->Read(&m_tileSize) != S_OK ||
-      pReader->Read(&m_nTilesX) != S_OK ||
-      pReader->Read(&m_nTilesZ) != S_OK ||
-      pReader->Read(&m_tileSetName, 0) != S_OK)
+   if (pReader->Read(&m_terrainSettings) != S_OK)
    {
       return E_FAIL;
    }
@@ -189,14 +450,23 @@ tResult cTerrainModel::Write(IWriter * pWriter)
    if (pWriter->Write(kTerrainFileId1) != S_OK ||
       pWriter->Write(kTerrainFileId1) != S_OK ||
       pWriter->Write(kTerrainFileVersion) != S_OK ||
-      pWriter->Write(m_tileSize) != S_OK ||
-      pWriter->Write(m_nTilesX) != S_OK ||
-      pWriter->Write(m_nTilesZ) != S_OK ||
-      pWriter->Write(m_tileSetName.c_str()) != S_OK)
+      pWriter->Write(m_terrainSettings) != S_OK)
    {
       return E_FAIL;
    }
 
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainModel::GetTerrainSettings(cTerrainSettings * pTerrainSettings) const
+{
+   if (pTerrainSettings == NULL)
+   {
+      return E_POINTER;
+   }
+   *pTerrainSettings = m_terrainSettings;
    return S_OK;
 }
 
@@ -212,34 +482,6 @@ tResult cTerrainModel::AddTerrainModelListener(ITerrainModelListener * pListener
 tResult cTerrainModel::RemoveTerrainModelListener(ITerrainModelListener * pListener)
 {
    return remove_interface(m_listeners, pListener) ? S_OK : E_FAIL;
-}
-
-////////////////////////////////////////
-
-tResult cTerrainModel::GetDimensions(uint * pxd, uint * pzd) const
-{
-   if (pxd == NULL || pzd == NULL)
-   {
-      return E_POINTER;
-   }
-
-   *pxd = m_nTilesX;
-   *pzd = m_nTilesZ;
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cTerrainModel::GetExtents(uint * px, uint * pz) const
-{
-   if (px == NULL || pz == NULL)
-   {
-      return E_POINTER;
-   }
-
-   *px = m_tileSize * m_nTilesX;
-   *pz = m_tileSize * m_nTilesZ;
-   return S_OK;
 }
 
 ////////////////////////////////////////
@@ -272,9 +514,9 @@ tTerrainQuads::const_iterator cTerrainModel::EndTerrainQuads() const
 
 tResult cTerrainModel::SetTileTerrain(uint tx, uint tz, uint terrain, uint * pFormer)
 {
-   if (tx < m_nTilesX && tz < m_nTilesZ)
+   if (tx < m_terrainSettings.GetTileCountX() && tz < m_terrainSettings.GetTileCountZ())
    {
-      uint index = (tz * m_nTilesZ) + tx;
+      uint index = (tz * m_terrainSettings.GetTileCountZ()) + tx;
       if (index < m_terrainQuads.size())
       {
          if (pFormer != NULL)
@@ -282,7 +524,7 @@ tResult cTerrainModel::SetTileTerrain(uint tx, uint tz, uint terrain, uint * pFo
             *pFormer = m_terrainQuads[index].tile;
          }
          m_terrainQuads[index].tile = terrain;
-         NotifyListeners();
+         NotifyListeners(&ITerrainModelListener::OnTerrainChange);
          return S_OK;
       }
    }
@@ -298,9 +540,9 @@ tResult cTerrainModel::GetTileIndices(float x, float z, uint * pix, uint * piz) 
       return E_POINTER;
    }
 
-   uint halfTile = m_tileSize >> 1;
-   *pix = Round((x - halfTile) / m_tileSize);
-   *piz = Round((z - halfTile) / m_tileSize);
+   uint halfTile = m_terrainSettings.GetTileSize() >> 1;
+   *pix = Round((x - halfTile) / m_terrainSettings.GetTileSize());
+   *piz = Round((z - halfTile) / m_terrainSettings.GetTileSize());
    return S_OK;
 }
 
@@ -312,9 +554,9 @@ tResult cTerrainModel::GetTileVertices(uint tx, uint tz, tVec3 vertices[4]) cons
    {
       return E_POINTER;
    }
-   if (tx < m_nTilesX && tz < m_nTilesZ)
+   if (tx < m_terrainSettings.GetTileCountX() && tz < m_terrainSettings.GetTileCountZ())
    {
-      uint index = (tz * m_nTilesZ) + tx;
+      uint index = (tz * m_terrainSettings.GetTileCountZ()) + tx;
       if (index < m_terrainQuads.size())
       {
          const sTerrainVertex * pVertices = m_terrainQuads[index].verts;
@@ -326,54 +568,6 @@ tResult cTerrainModel::GetTileVertices(uint tx, uint tz, tVec3 vertices[4]) cons
       }
    }
    return E_FAIL;
-}
-
-////////////////////////////////////////
-
-tResult cTerrainModel::Init(const cMapSettings & mapSettings)
-{
-   Assert(!m_pTileSet);
-   Assert(m_tileSetName.empty());
-   Assert(m_nTilesX == 0 && m_nTilesZ == 0);
-
-   UseGlobal(EditorTileManager);
-   if (pEditorTileManager->GetTileSet(mapSettings.GetTileSet(), &m_pTileSet) != S_OK)
-   {
-      WarnMsg1("Unable to find tile set \"%s\"; using default instead\n",
-         mapSettings.GetTileSet() == NULL ? "(NULL)" : mapSettings.GetTileSet());
-      pEditorTileManager->GetDefaultTileSet(&m_pTileSet);
-   }
-
-   if (!m_pTileSet || m_pTileSet->GetName(&m_tileSetName) != S_OK)
-   {
-      return E_FAIL;
-   }
-
-   cAutoIPtr<IHeightMap> pHeightMap;
-   if (mapSettings.GetHeightMap(&pHeightMap) != S_OK)
-   {
-      return E_FAIL;
-   }
-
-   return Init(mapSettings.GetXDimension(), mapSettings.GetZDimension(), pHeightMap);
-}
-
-////////////////////////////////////////
-
-tResult cTerrainModel::Init(uint nTilesX, uint nTilesZ, IHeightMap * pHeightMap)
-{
-   if (FAILED(InitQuads(nTilesX, nTilesZ, pHeightMap, &m_terrainQuads)))
-   {
-      return E_FAIL;
-   }
-
-   m_tileSize = kDefaultStepSize;
-   m_nTilesX = nTilesX;
-   m_nTilesZ = nTilesZ;
-
-   NotifyListeners();
-
-   return S_OK;
 }
 
 ////////////////////////////////////////
@@ -429,40 +623,16 @@ tResult cTerrainModel::InitQuads(uint nTilesX, uint nTilesZ, IHeightMap * pHeigh
 
 ////////////////////////////////////////
 
-void cTerrainModel::NotifyListeners()
+void cTerrainModel::NotifyListeners(void (ITerrainModelListener::*pfnListenerMethod)())
 {
    tListeners::iterator iter = m_listeners.begin();
    tListeners::iterator end = m_listeners.end();
    for (; iter != end; iter++)
    {
-      (*iter)->OnTerrainChange();
+      ((*iter)->*pfnListenerMethod)();
    }
 }
 
-////////////////////////////////////////
-
-tResult TerrainModelCreate(const cMapSettings & mapSettings, ITerrainModel * * ppTerrainModel)
-{
-   if (ppTerrainModel == NULL)
-   {
-      return E_POINTER;
-   }
-
-   cAutoIPtr<cTerrainModel> pTM(new cTerrainModel);
-   if (!pTM)
-   {
-      return E_OUTOFMEMORY;
-   }
-
-   if (pTM->Init(mapSettings) != S_OK)
-   {
-      return E_FAIL;
-   }
-
-   *ppTerrainModel = CTAddRef(static_cast<ITerrainModel*>(pTM));
-
-   return S_OK;
-}
 
 /////////////////////////////////////////////////////////////////////////////
 

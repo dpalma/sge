@@ -36,9 +36,6 @@ public:
 
 // Operations
 public:
-   virtual tResult SetTerrainModel(ITerrainModel * pTerrainModel);
-   virtual tResult GetTerrainModel(ITerrainModel * * ppTerrainModel);
-
    virtual tResult AddCommand(IEditorCommand * pCommand);
 
    virtual tResult AddEditorModelListener(IEditorModelListener * pListener);

@@ -14,8 +14,8 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-enum eHeightData;
-class cMapSettings;
+enum eTerrainHeightData;
+class cTerrainSettings;
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -26,9 +26,9 @@ class cMapSettingsDlg : public CDialog
 {
 // Construction
 public:
-	cMapSettingsDlg(eHeightData heightData, CWnd* pParent = NULL);   // standard constructor
+	cMapSettingsDlg(const cTerrainSettings & terrainSettings, CWnd* pParent = NULL);   // standard constructor
 
-   tResult GetMapSettings(cMapSettings * pMapSettings) const;
+   tResult GetTerrainSettings(cTerrainSettings * pTS) const;
 
 private:
 // Dialog Data

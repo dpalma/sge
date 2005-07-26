@@ -5,7 +5,7 @@
 
 #include "MapSettingsDlg.h"
 #include "editorapi.h"
-#include "editorTypes.h"
+#include "terrainapi.h"
 
 #include "globalobj.h"
 
@@ -37,25 +37,28 @@ static const uint kDefaultMapSizeIndex = 0;
 
 ////////////////////////////////////////
 
-cMapSettingsDlg::cMapSettingsDlg(eHeightData heightData, CWnd* pParent /*=NULL*/)
+cMapSettingsDlg::cMapSettingsDlg(const cTerrainSettings & terrainSettings, CWnd* pParent /*=NULL*/)
  : CDialog(cMapSettingsDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(cMapSettingsDlg)
-	m_heightData = -1;
-	m_heightMapFile = _T("");
+	m_tileSet = terrainSettings.GetTileSet();
+	m_heightData = static_cast<int>(terrainSettings.GetHeightData());
+	m_heightMapFile = terrainSettings.GetHeightMap();
 	m_mapHeightIndex = -1;
 	m_mapWidthIndex = -1;
 	//}}AFX_DATA_INIT
 
-   cStr tileSet;
-   UseGlobal(EditorTileManager);
-   pEditorTileManager->GetDefaultTileSet(&tileSet);
-   m_tileSet = tileSet.c_str();
-
-	m_mapHeightIndex = kDefaultMapSizeIndex;
-	m_mapWidthIndex = kDefaultMapSizeIndex;
-
-   m_heightData = heightData;
+   for (int i = 0; i < _countof(g_mapSizes); i++)
+   {
+      if (g_mapSizes[i].cx == terrainSettings.GetTileCountX())
+      {
+	      m_mapWidthIndex = i;
+      }
+      if (g_mapSizes[i].cy == terrainSettings.GetTileCountZ())
+      {
+	      m_mapHeightIndex = i;
+      }
+   }
 }
 
 ////////////////////////////////////////
@@ -86,27 +89,27 @@ BEGIN_MESSAGE_MAP(cMapSettingsDlg, CDialog)
    ON_CBN_SELCHANGE(IDC_MAP_TILESET, OnSelectTileSet)
 END_MESSAGE_MAP()
 
-/////////////////////////////////////////////////////////////////////////////
-// cMapSettingsDlg message handlers
-
 ////////////////////////////////////////
 
-tResult cMapSettingsDlg::GetMapSettings(cMapSettings * pMapSettings) const
+tResult cMapSettingsDlg::GetTerrainSettings(cTerrainSettings * pTS) const
 {
-   if (pMapSettings == NULL)
+   if (pTS == NULL)
    {
       return E_POINTER;
    }
 
-   *pMapSettings = cMapSettings(
-      g_mapSizes[m_mapWidthIndex].cx,
-      g_mapSizes[m_mapHeightIndex].cy,
-      m_tileSet,
-      (eHeightData)m_heightData,
-      m_heightMapFile);
+   //pTS->SetTileSize(); // Use default
+   pTS->SetTileCountX(g_mapSizes[m_mapWidthIndex].cx);
+   pTS->SetTileCountZ(g_mapSizes[m_mapHeightIndex].cy);
+   pTS->SetTileSet(m_tileSet);
+   pTS->SetHeightData(static_cast<eTerrainHeightData>(m_heightData));
+   pTS->SetHeightMap(m_heightMapFile);
 
    return S_OK;
 }
+
+/////////////////////////////////////////////////////////////////////////////
+// cMapSettingsDlg message handlers
 
 ////////////////////////////////////////
 

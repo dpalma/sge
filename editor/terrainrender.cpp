@@ -11,6 +11,7 @@
 
 #include "imagedata.h"
 #include "resourceapi.h"
+#include "globalobj.h"
 
 #include <map>
 #include <algorithm>
@@ -45,7 +46,7 @@ tResult TerrainRendererCreate()
    {
       return E_OUTOFMEMORY;
    }
-   return S_OK;
+   return RegisterGlobalObject(IID_ITerrainRenderer, static_cast<ITerrainRenderer*>(p));
 }
 
 ////////////////////////////////////////
@@ -57,7 +58,6 @@ cTerrainRenderer::cTerrainRenderer()
    m_bEnableBlending(true),
    m_bTerrainChanged(false)
 {
-   RegisterGlobalObject(IID_ITerrainRenderer, static_cast<IGlobalObject*>(this));
 }
 
 ////////////////////////////////////////
@@ -68,8 +68,17 @@ cTerrainRenderer::~cTerrainRenderer()
 
 ////////////////////////////////////////
 
+BEGIN_CONSTRAINTS(cTerrainRenderer)
+   AFTER_GUID(IID_ITerrainModel)
+END_CONSTRAINTS()
+
+////////////////////////////////////////
+
 tResult cTerrainRenderer::Init()
 {
+   UseGlobal(TerrainModel);
+   pTerrainModel->AddTerrainModelListener(&m_tml);
+
    return S_OK;
 }
 
@@ -77,40 +86,16 @@ tResult cTerrainRenderer::Init()
 
 tResult cTerrainRenderer::Term()
 {
+   UseGlobal(TerrainModel);
+   pTerrainModel->RemoveTerrainModelListener(&m_tml);
+
    for (tChunks::iterator iter = m_chunks.begin(); iter != m_chunks.end(); iter++)
    {
       delete *iter;
    }
    m_chunks.clear();
 
-   SetModel(NULL);
-
    return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cTerrainRenderer::SetModel(ITerrainModel * pTerrainModel)
-{
-   if (!!m_pModel)
-   {
-      m_pModel->RemoveTerrainModelListener(&m_tml);
-      SafeRelease(m_pModel);
-   }
-   if (pTerrainModel != NULL)
-   {
-      m_pModel = CTAddRef(pTerrainModel);
-      m_pModel->AddTerrainModelListener(&m_tml);
-      RegenerateChunks();
-   }
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cTerrainRenderer::GetModel(ITerrainModel * * ppTerrainModel)
-{
-   return m_pModel.GetPointer(ppTerrainModel);
 }
 
 ////////////////////////////////////////
@@ -134,10 +119,7 @@ void cTerrainRenderer::RegenerateChunks()
       return;
    }
 
-   if (!m_pModel)
-   {
-      return;
-   }
+   UseGlobal(TerrainModel);
 
    for (tChunks::iterator iter = m_chunks.begin(); iter != m_chunks.end(); iter++)
    {
@@ -145,22 +127,23 @@ void cTerrainRenderer::RegenerateChunks()
    }
    m_chunks.clear();
 
-   uint nTilesX, nTilesZ;
-   m_pModel->GetDimensions(&nTilesX, &nTilesZ);
+   cTerrainSettings terrainSettings;
+   Verify(pTerrainModel->GetTerrainSettings(&terrainSettings) == S_OK);
 
-   m_nChunksX = nTilesX / kTilesPerChunk;
-   m_nChunksZ = nTilesZ / kTilesPerChunk;
+   m_nChunksX = terrainSettings.GetTileCountX() / kTilesPerChunk;
+   m_nChunksZ = terrainSettings.GetTileCountZ() / kTilesPerChunk;
 
    cAutoIPtr<IEditorTileSet> pTileSet;
-   m_pModel->GetTileSet(&pTileSet);
+   pTerrainModel->GetTileSet(&pTileSet);
 
    for (uint iz = 0; iz < m_nChunksZ; iz++)
    {
       for (uint ix = 0; ix < m_nChunksX; ix++)
       {
          cTerrainChunk * pChunk = NULL;
-         if (cTerrainChunk::Create(m_pModel->GetTerrainQuads(), nTilesX, nTilesZ,
-                                   ix, iz, pTileSet, &pChunk) == S_OK)
+         if (cTerrainChunk::Create(pTerrainModel->GetTerrainQuads(),
+            terrainSettings.GetTileCountX(), terrainSettings.GetTileCountZ(),
+            ix, iz, pTileSet, &pChunk) == S_OK)
          {
             m_chunks.push_back(pChunk);
          }
@@ -214,16 +197,17 @@ void cTerrainRenderer::Render()
 //      glEnable(GL_COLOR_MATERIAL);
 
       UseGlobal(ResourceManager);
+      UseGlobal(TerrainModel);
 
-      tTerrainQuads::const_iterator iter = m_pModel->BeginTerrainQuads();
-      tTerrainQuads::const_iterator end = m_pModel->EndTerrainQuads();
+      tTerrainQuads::const_iterator iter = pTerrainModel->BeginTerrainQuads();
+      tTerrainQuads::const_iterator end = pTerrainModel->EndTerrainQuads();
       for (; iter != end; iter++)
       {
          const sTerrainVertex * pVertices = iter->verts;
 
          cStr texture;
          cAutoIPtr<IEditorTileSet> pEditorTileSet;
-         if (m_pModel->GetTileSet(&pEditorTileSet) == S_OK
+         if (pTerrainModel->GetTileSet(&pEditorTileSet) == S_OK
             && pEditorTileSet->GetTileTexture(iter->tile, &texture) == S_OK)
          {
             GLuint tex;
@@ -260,8 +244,42 @@ void cTerrainRenderer::Render()
 
 ////////////////////////////////////////
 
-void cTerrainRenderer::Render(IDirect3DDevice9 * pD3dDevice)
+cTerrainRenderer::cTerrainModelListener::cTerrainModelListener(cTerrainRenderer * pOuter)
+ : m_pOuter(pOuter)
 {
+}
+
+////////////////////////////////////////
+
+void cTerrainRenderer::cTerrainModelListener::OnTerrainInitialize()
+{
+   if (m_pOuter != NULL)
+   {
+      m_pOuter->m_bTerrainChanged = true;
+      m_pOuter->RegenerateChunks();
+   }
+}
+
+////////////////////////////////////////
+
+void cTerrainRenderer::cTerrainModelListener::OnTerrainClear()
+{
+   if (m_pOuter != NULL)
+   {
+      m_pOuter->m_bTerrainChanged = true;
+      m_pOuter->RegenerateChunks();
+   }
+}
+
+////////////////////////////////////////
+
+void cTerrainRenderer::cTerrainModelListener::OnTerrainChange()
+{
+   if (m_pOuter != NULL)
+   {
+      m_pOuter->m_bTerrainChanged = true;
+      m_pOuter->RegenerateChunks();
+   }
 }
 
 

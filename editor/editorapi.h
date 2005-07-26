@@ -184,9 +184,6 @@ interface UUID("78C29790-865D-4f81-9AF1-26EC23BB5FAC") IEditorView : IUnknown
 
 interface UUID("F131D72E-30A7-4758-A094-830F00A50D91") IEditorModel : IUnknown
 {
-   virtual tResult SetTerrainModel(ITerrainModel * pTerrainModel) = 0;
-   virtual tResult GetTerrainModel(ITerrainModel * * ppTerrainModel) = 0;
-
    virtual tResult AddCommand(IEditorCommand * pCommand) = 0;
 
    virtual tResult AddEditorModelListener(IEditorModelListener * pListener) = 0;

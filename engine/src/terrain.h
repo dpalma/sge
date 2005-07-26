@@ -9,6 +9,7 @@
 #include "vec2.h"
 #include "vec3.h"
 #include "techstring.h"
+#include "globalobjdef.h"
 
 #include <vector>
 
@@ -22,17 +23,26 @@
 // CLASS: cTerrainModel
 //
 
-class cTerrainModel : public cComObject<IMPLEMENTS(ITerrainModel)>
+class cTerrainModel : public cComObject2<IMPLEMENTS(ITerrainModel), IMPLEMENTS(IGlobalObject)>
 {
 public:
    cTerrainModel();
    ~cTerrainModel();
 
-   tResult Read(IReader * pReader);
-   tResult Write(IWriter * pWriter);
+   DECLARE_NAME(TerrainModel)
+   DECLARE_NO_CONSTRAINTS()
 
-   virtual tResult GetDimensions(uint * pxd, uint * pzd) const;
-   virtual tResult GetExtents(uint * px, uint * pz) const;
+   virtual tResult Init();
+   virtual tResult Term();
+
+   virtual tResult Initialize(const cTerrainSettings & terrainSettings);
+   virtual tResult Clear();
+
+   virtual tResult Read(IReader * pReader);
+   virtual tResult Write(IWriter * pWriter);
+
+   virtual tResult GetTerrainSettings(cTerrainSettings * pTerrainSettings) const;
+
    virtual tResult GetTileSet(IEditorTileSet * * ppTileSet);
    virtual const tTerrainQuads & GetTerrainQuads() const;
    virtual tTerrainQuads::const_iterator BeginTerrainQuads() const;
@@ -43,23 +53,19 @@ public:
    virtual tResult GetTileIndices(float x, float z, uint * pix, uint * piz) const;
    virtual tResult GetTileVertices(uint tx, uint tz, tVec3 vertices[4]) const;
 
-   tResult Init(const cMapSettings & mapSettings);
-   tResult Init(uint nTilesX, uint nTilesZ, IHeightMap * pHeightMap);
    static tResult InitQuads(uint nTilesX, uint nTilesZ, IHeightMap * pHeightMap, tTerrainQuads * pQuads);
    tResult RegenerateChunks();
 
 private:
-   void NotifyListeners();
+   void NotifyListeners(void (ITerrainModelListener::*pfnListenerMethod)());
 
    typedef std::vector<ITerrainModelListener *> tListeners;
    tListeners m_listeners;
 
-   uint m_tileSize; // dimensions of a single tile in terrain space
-   uint m_nTilesX, m_nTilesZ; // # of tiles in the x,z directions
+   cTerrainSettings m_terrainSettings;
 
    tTerrainQuads m_terrainQuads;
 
-   cStr m_tileSetName;
    cAutoIPtr<IEditorTileSet> m_pTileSet;
 };
 

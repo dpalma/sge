@@ -77,8 +77,7 @@ BOOL cEditorDoc::OnNewDocument()
 
    BOOL bResult = FALSE;
 
-   // HACK: hard-coded 64
-   cMapSettings mapSettings(64, 64, "");
+   cTerrainSettings terrainSettings;
 
    if (!m_bPromptForMapSettings)
    {
@@ -87,18 +86,17 @@ BOOL cEditorDoc::OnNewDocument()
    }
    else
    {
-      cMapSettingsDlg dlg(kHeightData_None);
+      cMapSettingsDlg dlg(terrainSettings);
 
       // Shouldn't be allowed to cancel the dialog
       Verify(dlg.DoModal() == IDOK);
 
-      dlg.GetMapSettings(&mapSettings);
+      dlg.GetTerrainSettings(&terrainSettings);
    }
 
-   cAutoIPtr<ITerrainModel> pTerrainModel;
-   if (TerrainModelCreate(mapSettings, &pTerrainModel) == S_OK)
+   UseGlobal(TerrainModel);
+   if (pTerrainModel->Initialize(terrainSettings) == S_OK)
    {
-      SetTerrainModel(pTerrainModel);
       bResult = TRUE;
    }
    else
@@ -134,26 +132,6 @@ void cEditorDoc::Dump(CDumpContext& dc) const
 
 /////////////////////////////////////////////////////////////////////////////
 // cEditorDoc operations
-
-tResult cEditorDoc::SetTerrainModel(ITerrainModel * pTerrainModel)
-{
-   SafeRelease(m_pTerrainModel);
-   m_pTerrainModel = CTAddRef(pTerrainModel);
-
-   // Tell the terrain renderer about the new terrain model
-   UseGlobal(TerrainRenderer);
-   if (!!pTerrainRenderer)
-   {
-      pTerrainRenderer->SetModel(pTerrainModel);
-   }
-
-   return S_OK;
-}
-
-tResult cEditorDoc::GetTerrainModel(ITerrainModel * * ppTerrainModel)
-{
-   return m_pTerrainModel.GetPointer(ppTerrainModel);
-}
 
 tResult cEditorDoc::AddCommand(IEditorCommand * pCommand)
 {
@@ -205,7 +183,12 @@ BOOL cEditorDoc::OnOpenDocument(LPCTSTR lpszPathName)
       return FALSE;
    }
 
-   // TODO
+   UseGlobal(TerrainModel);
+   if (FAILED(pTerrainModel->Read(pReader)))
+   {
+      ErrorMsg("An error occured reading the terrain data\n");
+      return FALSE;
+   }
 
    SetModifiedFlag(FALSE); // start off as unmodified
 
@@ -220,7 +203,12 @@ BOOL cEditorDoc::OnSaveDocument(LPCTSTR lpszPathName)
       return FALSE;
    }
 
-   // TODO
+   UseGlobal(TerrainModel);
+   if (FAILED(pTerrainModel->Write(pWriter)))
+   {
+      ErrorMsg("An error occured writing the terrain data\n");
+      return FALSE;
+   }
 
    FlushCommandStack(&m_undoStack);
    FlushCommandStack(&m_redoStack);
@@ -232,7 +220,8 @@ BOOL cEditorDoc::OnSaveDocument(LPCTSTR lpszPathName)
 
 void cEditorDoc::DeleteContents() 
 {
-   SetTerrainModel(NULL);
+   UseGlobal(TerrainModel);
+   pTerrainModel->Clear();
 
    FlushCommandStack(&m_undoStack);
    FlushCommandStack(&m_redoStack);

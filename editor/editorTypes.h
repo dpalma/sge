@@ -12,48 +12,6 @@
 
 typedef CPoint tPoint;
 
-F_DECLARE_INTERFACE(IHeightMap);
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cMapSettings
-//
-
-enum eHeightData
-{
-   // The order of these constants must match the order of the
-   // corresponding radio buttons in the map settings dialog box
-   kHeightData_None,
-   kHeightData_Noise,
-   kHeightData_HeightMap,
-};
-
-class cMapSettings
-{
-public:
-   cMapSettings();
-   cMapSettings(uint xDimension, uint zDimension, const tChar * pszTileSet,
-      eHeightData heightData = kHeightData_None, const tChar * pszHeightMapFile = NULL);
-   cMapSettings(const cMapSettings & mapSettings);
-   ~cMapSettings();
-
-   const cMapSettings & operator =(const cMapSettings & mapSettings);
-
-   inline uint GetXDimension() const { return m_xDimension; }
-   inline uint GetZDimension() const { return m_zDimension; }
-   inline const tChar * GetTileSet() const { return m_tileSet.c_str(); }
-   inline eHeightData GetHeightData() const { return m_heightData; }
-   inline const tChar * GetHeightMap() const { return m_heightMapFile.c_str(); }
-
-   tResult GetHeightMap(IHeightMap * * ppHeightMap) const;
-
-private:
-   uint m_xDimension, m_zDimension;
-   cStr m_tileSet;
-   eHeightData m_heightData;
-   cStr m_heightMapFile;
-};
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
