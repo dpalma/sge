@@ -314,96 +314,6 @@
 					RelativePath="..\..\engine\src\gltexture.cpp">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\guibasicrenderer.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guibeveledrenderer.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guibutton.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guicontext.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guidialog.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guielementenum.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guielementtools.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guievent.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guifactory.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guifontd3d.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guifontfactory.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guifontw32.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guifontx11.cpp">
-					<FileConfiguration
-						Name="Opt|Win32"
-						ExcludedFromBuild="TRUE">
-						<Tool
-							Name="VCCLCompilerTool"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="StaticDebug|Win32"
-						ExcludedFromBuild="TRUE">
-						<Tool
-							Name="VCCLCompilerTool"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						ExcludedFromBuild="TRUE">
-						<Tool
-							Name="VCCLCompilerTool"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="StaticRelease|Win32"
-						ExcludedFromBuild="TRUE">
-						<Tool
-							Name="VCCLCompilerTool"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
-						ExcludedFromBuild="TRUE">
-						<Tool
-							Name="VCCLCompilerTool"/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guilabel.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guilayout.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guipanel.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guirender.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guistyle.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guitextedit.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guitypes.cpp">
-				</File>
-				<File
 					RelativePath="..\..\engine\src\input.cpp">
 				</File>
 				<File
@@ -525,84 +435,6 @@
 					RelativePath="..\..\engine\src\frustum.h">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\guibasicrenderer.h">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guibeveledrenderer.h">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guibutton.h">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guicontainerbase.h">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guicontainerbasetem.h">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guicontext.h">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guidialog.h">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guielementbase.h">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guielementbasetem.h">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guielementenum.h">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guielementtools.h">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guievent.h">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guieventrouter.h">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guieventroutertem.h">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guifactory.h">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guifontd3d.h">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guifontfactory.h">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guifontw32.h">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guifontx11.h">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guilabel.h">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guilayout.h">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guipanel.h">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guirender.h">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guistrings.h">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guistyle.h">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\guitextedit.h">
-				</File>
-				<File
 					RelativePath="..\..\engine\src\input.h">
 				</File>
 				<File
@@ -651,12 +483,6 @@
 			</File>
 			<File
 				RelativePath="..\..\engine\include\entityapi.h">
-			</File>
-			<File
-				RelativePath="..\..\engine\include\guiapi.h">
-			</File>
-			<File
-				RelativePath="..\..\engine\include\guitypes.h">
 			</File>
 			<File
 				RelativePath="..\..\engine\include\inputapi.h">
