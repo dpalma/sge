@@ -66,7 +66,7 @@ void cEntityManager::SetTerrainLocatorHack(cTerrainLocatorHack * pTerrainLocator
 
 ///////////////////////////////////////
 
-tResult cEntityManager::SpawnEntity(const char * pszMesh, float x, float z)
+tResult cEntityManager::SpawnEntity(const tChar * pszMesh, float x, float z)
 {
    tVec3 location(0,0,0);
    if (m_pTerrainLocatorHack != NULL)

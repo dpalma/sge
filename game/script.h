@@ -24,15 +24,6 @@ class cScriptVar;
    AUTOADD_SCRIPTFUNCTION(name, SCRIPT_FUNCTION_NAME(name)); \
    SCRIPT_DEFINE_FUNCTION_NO_AUTOADD(name)
 
-#define ScriptArgc() argc
-#define ScriptArgv(arg) argv[arg]
-
-#define ScriptArgIsString(arg) (ScriptArgv(arg).type == kString)
-#define ScriptArgIsNumber(arg) (ScriptArgv(arg).type == kNumber)
-
-#define ScriptArgAsString(arg) (ScriptArgv(arg).psz)
-#define ScriptArgAsNumber(arg) (ScriptArgv(arg).d)
-
 ///////////////////////////////////////////////////////////////////////////////
 
 #endif // !INCLUDED_SCRIPT_H

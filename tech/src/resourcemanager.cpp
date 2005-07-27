@@ -124,7 +124,7 @@ static bool SameType(tResourceType lhs, tResourceType rhs)
       }
       else if (lhsHiWord != 0 && rhsHiWord != 0)
       {
-         return strcmp(lhs, rhs) == 0;
+         return _tcscmp(lhs, rhs) == 0;
       }
    }
    else if (lhs == NULL && rhs == NULL)

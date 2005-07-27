@@ -15,10 +15,10 @@ class cImageData;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define kRT_CgProgram   "CgProgram"
-#define kRT_CgEffect    "CgEffect"
-#define kRT_GlTexture   "GlTexture"
-#define kRT_TiXml       "TiXml"
+#define kRT_CgProgram   _T("CgProgram")
+#define kRT_CgEffect    _T("CgEffect")
+#define kRT_GlTexture   _T("GlTexture")
+#define kRT_TiXml       _T("TiXml")
 
 ENGINE_API tResult EngineRegisterResourceFormats();
 

@@ -34,7 +34,7 @@ public:
    virtual void SetRenderDeviceHack(IRenderDevice *);
    virtual void SetTerrainLocatorHack(cTerrainLocatorHack *);
 
-   virtual tResult SpawnEntity(const char * pszMesh, float x, float z);
+   virtual tResult SpawnEntity(const tChar * pszMesh, float x, float z);
 
 private:
    ulong m_nextId;

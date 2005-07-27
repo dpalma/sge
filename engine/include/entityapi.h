@@ -31,7 +31,7 @@ interface IEntityManager : IUnknown
    virtual void SetRenderDeviceHack(IRenderDevice *) = 0;
    virtual void SetTerrainLocatorHack(cTerrainLocatorHack *) = 0;
 
-   virtual tResult SpawnEntity(const char * pszMesh, float x, float z) = 0;
+   virtual tResult SpawnEntity(const tChar * pszMesh, float x, float z) = 0;
 };
 
 ////////////////////////////////////////

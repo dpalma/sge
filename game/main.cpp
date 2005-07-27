@@ -53,8 +53,8 @@ const float kZFar = 2000;
 
 static const float kGroundScaleY = 0.25f;
 
-static const float kDefStatsX = 25;
-static const float kDefStatsY = 25;
+static const int kDefStatsX = 25;
+static const int kDefStatsY = 25;
 static const cColor kDefStatsColor(1,1,1,1);
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -102,10 +102,10 @@ IRenderDevice * AccessRenderDevice()
 
 SCRIPT_DEFINE_FUNCTION(ViewSetPos)
 {
-   if (ScriptArgc() == 2 && ScriptArgIsNumber(0) && ScriptArgIsNumber(1))
+   if (argc == 2 && argv[0].IsNumber() && argv[1].IsNumber())
    {
-      float x = ScriptArgAsNumber(0);
-      float z = ScriptArgAsNumber(1);
+      float x = argv[0];
+      float z = argv[1];
 
       if (x >= 0 && x <= 1 && z >= 0 && z <= 1)
       {
@@ -198,23 +198,22 @@ void ResizeHack(int width, int height)
 
 SCRIPT_DEFINE_FUNCTION(SetTerrain)
 {
-   if (ScriptArgc() == 1 
-      && ScriptArgIsString(0))
+   if (argc == 1 && argv[0].IsString())
    {
       g_pTerrainRoot = TerrainNodeCreate(AccessRenderDevice(), argv[0], kGroundScaleY, NULL);
    }
-   else if (ScriptArgc() == 2 
-      && ScriptArgIsString(0)
-      && ScriptArgIsNumber(1))
+   else if (argc == 2 
+      && argv[0].IsString()
+      && argv[1].IsNumber())
    {
-      g_pTerrainRoot = TerrainNodeCreate(AccessRenderDevice(), argv[0], ScriptArgAsNumber(1), NULL);
+      g_pTerrainRoot = TerrainNodeCreate(AccessRenderDevice(), argv[0], argv[1], NULL);
    }
-   else if (ScriptArgc() == 3 
-      && ScriptArgIsString(0)
-      && ScriptArgIsNumber(1)
-      && ScriptArgIsString(2))
+   else if (argc == 3 
+      && argv[0].IsString()
+      && argv[1].IsNumber()
+      && argv[2].IsString())
    {
-      g_pTerrainRoot = TerrainNodeCreate(AccessRenderDevice(), argv[0], ScriptArgAsNumber(1), ScriptArgAsString(2));
+      g_pTerrainRoot = TerrainNodeCreate(AccessRenderDevice(), argv[0], argv[1], argv[2]);
    }
    else
    {
@@ -455,11 +454,11 @@ static bool MainFrame()
 
       if (!!g_pFont)
       {
-         char szStats[100];
+         tChar szStats[100];
          SysReportFrameStats(szStats, _countof(szStats));
 
          tRect rect(kDefStatsX, kDefStatsY, 0, 0);
-         g_pFont->RenderText(szStats, strlen(szStats), &rect, kRT_NoClip | kRT_DropShadow, kDefStatsColor);
+         g_pFont->RenderText(szStats, _tcslen(szStats), &rect, kRT_NoClip | kRT_DropShadow, kDefStatsColor);
       }
 
       pRenderDeviceContext->End2D();

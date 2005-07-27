@@ -28,7 +28,7 @@ class cTerrainNode : public cComObject<IMPLEMENTS(ISceneEntity)>
    const cTerrainNode & operator =(const cTerrainNode &);
 
 public:
-   cTerrainNode(IRenderDevice * pRenderDevice, cHeightMap * pHeightMap, const char * pszTexture);
+   cTerrainNode(IRenderDevice * pRenderDevice, cHeightMap * pHeightMap, const tChar * pszTexture);
    virtual ~cTerrainNode();
 
    float GetElevation(float nx, float nz) const;
@@ -64,7 +64,7 @@ private:
 
 ///////////////////////////////////////
 
-cTerrainNode * TerrainNodeCreate(IRenderDevice * pRenderDevice, const tChar * pszHeightData, float heightScale, const char * pszTexture);
+cTerrainNode * TerrainNodeCreate(IRenderDevice * pRenderDevice, const tChar * pszHeightData, float heightScale, const tChar * pszTexture);
 
 ///////////////////////////////////////////////////////////////////////////////
 

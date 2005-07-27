@@ -117,7 +117,7 @@ inline eResourceClass cResourceKey::GetClass() const
 // INTERFACE: IResourceManager
 //
 
-typedef const char * tResourceType;
+typedef const tChar * tResourceType;
 
 #define MAKERESOURCETYPE(i) (tResourceType)((ulong *)((ulong)(i)))
 

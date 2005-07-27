@@ -47,7 +47,7 @@ public:
    cTiledGround();
    ~cTiledGround();
 
-   bool Init(IRenderDevice * pRenderDevice, cHeightMap * pHeightMap, const char * pszTexture);
+   bool Init(IRenderDevice * pRenderDevice, cHeightMap * pHeightMap, const tChar * pszTexture);
 
    void Render(IRenderDevice * pRenderDevice);
 
@@ -74,7 +74,7 @@ cTiledGround::~cTiledGround()
 
 ///////////////////////////////////////
 
-bool cTiledGround::Init(IRenderDevice * pRenderDevice, cHeightMap * pHeightMap, const char * pszTexture)
+bool cTiledGround::Init(IRenderDevice * pRenderDevice, cHeightMap * pHeightMap, const tChar * pszTexture)
 {
    const int kStepSize = 16;
    const int kGroundSize = 1024;
@@ -210,7 +210,7 @@ void cTiledGround::Render(IRenderDevice * pRenderDevice)
 
 ///////////////////////////////////////
 
-cTerrainNode::cTerrainNode(IRenderDevice * pRenderDevice, cHeightMap * pHeightMap, const char * pszTexture)
+cTerrainNode::cTerrainNode(IRenderDevice * pRenderDevice, cHeightMap * pHeightMap, const tChar * pszTexture)
  : m_pSceneEntity(SceneEntityCreate()),
    m_pHeightMap(pHeightMap),
    m_pGround(new cTiledGround)
@@ -270,7 +270,7 @@ tResult cTerrainNode::Intersects(const cRay & ray)
 
 ///////////////////////////////////////
 
-cTerrainNode * TerrainNodeCreate(IRenderDevice * pRenderDevice, const tChar * pszHeightData, float heightScale, const char * pszTexture)
+cTerrainNode * TerrainNodeCreate(IRenderDevice * pRenderDevice, const tChar * pszHeightData, float heightScale, const tChar * pszTexture)
 {
    cHeightMap * pHeightMap = new cHeightMap(heightScale);
 
