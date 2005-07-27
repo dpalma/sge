@@ -1,4 +1,44 @@
 #############################################################################
 # $Id$
 
-SConscript(dirs=['src'])
+Import('*')
+
+sources = Split("""
+   src/guibasicrenderer.cpp
+   src/guibeveledrenderer.cpp
+   src/guibutton.cpp
+   src/guicontext.cpp
+   src/guidialog.cpp
+   src/guielementenum.cpp
+   src/guielementtools.cpp
+   src/guievent.cpp
+   src/guifontfactory.cpp
+   src/guifactory.cpp
+   src/guilabel.cpp
+   src/guilayout.cpp
+   src/guipanel.cpp
+   src/guirender.cpp
+   src/guistyle.cpp
+   src/guitextedit.cpp
+   src/guitypes.cpp
+""")
+
+includePaths = Split("""
+   #3rdparty/sgi
+   #3rdparty/glew/include
+   #3rdparty/lua/include
+   #3rdparty/tinyxml
+   #engine/include
+   #gui/include
+   #tech/include
+""") + glIncludePaths
+
+if env['PLATFORM'] == 'win32':
+   sources = sources + ['src/guifontw32.cpp']
+elif env['PLATFORM'] == 'cygwin':
+   sources = sources + ['src/guifontx11.cpp']
+
+env = env.Copy()
+env.Append(CPPPATH = includePaths)
+env.Append(CPPDEFINES = ['STATIC_BUILD'])
+env.Library('gui', sources)

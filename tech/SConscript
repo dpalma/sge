@@ -1,4 +1,47 @@
 #############################################################################
 # $Id$
 
-SConscript(dirs=['src'])
+Import('*')
+
+sources = Split("""
+   src/bmp.cpp
+   src/comtools.cpp
+   src/config.cpp
+   src/cpufeatures.cpp
+   src/dictionary.cpp
+   src/dictionarystore.cpp
+   src/fileiter.cpp
+   src/filepath.cpp
+   src/filespec.cpp
+   src/filereadwrite.cpp
+   src/functor.cpp
+   src/globalobjreg.cpp
+   src/graphtest.cpp
+   src/hash.cpp
+   src/imagedata.cpp
+   src/log.cpp
+   src/matrix4.cpp
+   src/prime.cpp
+   src/quat.cpp
+   src/rand.cpp
+   src/readwritemem.cpp
+   src/resourcemanager.cpp
+   src/techdebug.cpp
+   src/techstring.cpp
+   src/techtime.cpp
+   src/text.cpp
+   src/tga.cpp
+   src/thread.cpp
+   src/threadcaller.cpp
+""")
+
+includePaths = Split("""
+   #tech/include
+   #3rdparty/zlib
+   #3rdparty/zlib/contrib/minizip
+""")
+
+env = env.Copy()
+env.Append(CPPPATH = includePaths)
+env.Append(CPPDEFINES = ['STATIC_BUILD'])
+env.Library('tech', sources)

@@ -25,15 +25,15 @@ includePaths = Split("""
 """) + glIncludePaths
 
 libPaths = Split("""
-   #3rdparty/glew/src
+   #3rdparty/glew
    #3rdparty/tinyxml
-   #3rdparty/lua/src
+   #3rdparty/lua
    #3rdparty/zlib
    #allguids
-   #tech/src
-   #render/gl
-   #engine/src
-   #gui/src
+   #tech
+   #render
+   #engine
+   #gui
 """) + glLibPaths
 
 libs = Split("""

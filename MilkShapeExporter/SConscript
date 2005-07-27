@@ -23,13 +23,13 @@ includePaths = Split("""
 
 libPaths = Split("""
    #3rdparty/ms3dsdk/msLib/lib
-   #3rdparty/NvTriStrip/src/NvTriStrip
+   #3rdparty/NvTriStrip
    #3rdparty/tinyxml
    #3rdparty/zlib
    #allguids
-   #tech/src
-   #render/gl
-   #engine/src
+   #tech
+   #render
+   #engine
 """)
 
 libs = Split("""

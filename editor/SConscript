@@ -47,14 +47,14 @@ includePaths = Split("""
 
 libPaths = Split("""
    #3rdparty/Cg/lib
-   #3rdparty/glew/src
+   #3rdparty/glew
    #3rdparty/tinyxml
-   #3rdparty/lua/src
+   #3rdparty/lua
    #3rdparty/zlib
    #allguids
-   #tech/src
-   #render/gl
-   #engine/src
+   #tech
+   #render
+   #engine
 """)
 
 libs = Split("""

@@ -1,4 +1,46 @@
 #############################################################################
 # $Id$
 
-SConscript(dirs=['src'])
+Import('*')
+
+sources = Split("""
+   src/cmds.cpp
+   src/engine.cpp
+   src/entitymanager.cpp
+   src/frustum.cpp
+   src/gltexture.cpp
+   src/input.cpp
+   src/luainterp.cpp
+   src/model.cpp
+   src/ms3dread.cpp
+   src/ray.cpp
+   src/scene.cpp
+   src/scenecamera.cpp
+   src/sceneentity.cpp
+   src/sceneentityenum.cpp
+   src/scenelayer.cpp
+   src/scenemesh.cpp
+   src/scenemodel.cpp
+   src/scriptvar.cpp
+   src/sim.cpp
+""")
+
+if env['PLATFORM'] == 'win32':
+   sources = sources + ['src/syswin.cpp']
+elif env['PLATFORM'] == 'cygwin':
+   sources = sources + ['src/syslinux.cpp']
+
+includePaths = Split("""
+   #3rdparty/sgi
+   #3rdparty/glew/include
+   #3rdparty/lua/include
+   #3rdparty/tinyxml
+   #engine/include
+   #render/include
+   #tech/include
+""") + glIncludePaths
+
+env = env.Copy()
+env.Append(CPPPATH = includePaths)
+env.Append(CPPDEFINES = ['STATIC_BUILD'])
+env.Library('engine', sources)
