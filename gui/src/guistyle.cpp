@@ -7,7 +7,6 @@
 #include "guistrings.h"
 
 #include "color.h"
-#include "renderapi.h"
 
 #include "globalobj.h"
 

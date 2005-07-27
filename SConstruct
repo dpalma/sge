@@ -60,6 +60,7 @@ modules = Split("""
    tech
    render
    engine
+   gui
    game
 """)
 

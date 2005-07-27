@@ -4,25 +4,23 @@
 Import('*')
 
 sources = Split("""
-   cmds.cpp
-   engine.cpp
-   entitymanager.cpp
-   frustum.cpp
-   gltexture.cpp
-   input.cpp
-   luainterp.cpp
-   model.cpp
-   ms3dread.cpp
-   ray.cpp
-   scene.cpp
-   scenecamera.cpp
-   sceneentity.cpp
-   sceneentityenum.cpp
-   scenelayer.cpp
-   scenemesh.cpp
-   scenemodel.cpp
-   scriptvar.cpp
-   sim.cpp
+   guibasicrenderer.cpp
+   guibeveledrenderer.cpp
+   guibutton.cpp
+   guicontext.cpp
+   guidialog.cpp
+   guielementenum.cpp
+   guielementtools.cpp
+   guievent.cpp
+   guifontfactory.cpp
+   guifactory.cpp
+   guilabel.cpp
+   guilayout.cpp
+   guipanel.cpp
+   guirender.cpp
+   guistyle.cpp
+   guitextedit.cpp
+   guitypes.cpp
 """)
 
 includePaths = Split("""
@@ -31,16 +29,16 @@ includePaths = Split("""
    #3rdparty/lua/include
    #3rdparty/tinyxml
    #engine/include
-   #render/include
+   #gui/include
    #tech/include
 """) + glIncludePaths
 
 if env['PLATFORM'] == 'win32':
-   sources = sources + ['syswin.cpp']
+   sources = sources + ['guifontw32.cpp']
 elif env['PLATFORM'] == 'cygwin':
-   sources = sources + ['syslinux.cpp']
+   sources = sources + ['guifontx11.cpp']
 
 env = env.Copy()
 env.Append(CPPPATH = includePaths)
 env.Append(CPPDEFINES = ['STATIC_BUILD'])
-env.Library('engine', sources)
+env.Library('gui', sources)

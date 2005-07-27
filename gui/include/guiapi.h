@@ -8,7 +8,7 @@
 /// Interface definitions for graphical user interface elements plus the 
 /// core system itself
 
-#include "enginedll.h"
+#include "guidll.h"
 
 #include "comtools.h"
 
@@ -204,12 +204,12 @@ interface IGUIStyle : IUnknown
 /// can be in the range [0,255] or [0,1]. Certain standard colors are 
 /// supported, too. For example, "red", "green", "blue", etc.
 
-ENGINE_API tResult GUIStyleParseColor(const char * psz, tGUIColor * pColor);
+GUI_API tResult GUIStyleParseColor(const char * psz, tGUIColor * pColor);
 
 ///////////////////////////////////////
 /// Parse a CSS-like string to produce a GUI style object.
 
-ENGINE_API tResult GUIStyleParse(const char * pszStyle, IGUIStyle * * ppStyle);
+GUI_API tResult GUIStyleParse(const char * pszStyle, IGUIStyle * * ppStyle);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -261,7 +261,7 @@ interface IGUIFontFactory : IUnknown
 
 ///////////////////////////////////////
 
-ENGINE_API void GUIFontFactoryCreate();
+GUI_API void GUIFontFactoryCreate();
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -359,7 +359,7 @@ interface IGUIEvent : IUnknown
 
 ///////////////////////////////////////
 
-ENGINE_API tResult GUIEventCreate(tGUIEventCode eventCode, 
+GUI_API tResult GUIEventCreate(tGUIEventCode eventCode, 
                                   tGUIPoint mousePos, 
                                   long keyCode, 
                                   IGUIElement * pSource, 
@@ -408,14 +408,14 @@ interface IGUILayoutManager : IUnknown
 ///////////////////////////////////////
 // Create a layout manager from an XML fragment
 
-ENGINE_API tResult GUILayoutManagerCreate(const TiXmlElement * pXmlElement, IGUILayoutManager * * ppLayout);
+GUI_API tResult GUILayoutManagerCreate(const TiXmlElement * pXmlElement, IGUILayoutManager * * ppLayout);
 
 ///////////////////////////////////////
 
 typedef tResult (* tGUILayoutFactoryFn)(const TiXmlElement * pXmlElement, IGUILayoutManager * * ppLayout);
-ENGINE_API tResult GUILayoutRegister(const tChar * pszName, tGUILayoutFactoryFn pfn);
+GUI_API tResult GUILayoutRegister(const tChar * pszName, tGUILayoutFactoryFn pfn);
 
-ENGINE_API void GUILayoutRegisterBuiltInTypes();
+GUI_API void GUILayoutRegisterBuiltInTypes();
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -434,9 +434,9 @@ interface IGUIGridLayout : IGUILayoutManager
 
 ///////////////////////////////////////
 
-ENGINE_API tResult GUIGridLayoutCreate(IGUIGridLayout * * ppLayout);
-ENGINE_API tResult GUIGridLayoutCreate(uint columns, uint rows, IGUIGridLayout * * ppLayout);
-ENGINE_API tResult GUIGridLayoutCreate(uint columns, uint rows, uint hGap, uint vGap, IGUIGridLayout * * ppLayout);
+GUI_API tResult GUIGridLayoutCreate(IGUIGridLayout * * ppLayout);
+GUI_API tResult GUIGridLayoutCreate(uint columns, uint rows, IGUIGridLayout * * ppLayout);
+GUI_API tResult GUIGridLayoutCreate(uint columns, uint rows, uint hGap, uint vGap, IGUIGridLayout * * ppLayout);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -570,7 +570,7 @@ interface IGUIFactory : IUnknown
 
 ///////////////////////////////////////
 
-ENGINE_API void GUIFactoryCreate();
+GUI_API void GUIFactoryCreate();
 
 ///////////////////////////////////////
 
@@ -658,7 +658,7 @@ interface IGUIRenderDeviceContext : IGUIRenderDevice
 
 ///////////////////////////////////////
 
-ENGINE_API tResult GUIRenderDeviceCreateGL(IGUIRenderDeviceContext * * ppRenderDevice);
+GUI_API tResult GUIRenderDeviceCreateGL(IGUIRenderDeviceContext * * ppRenderDevice);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -696,7 +696,7 @@ interface IGUIContext : IGUIEventRouter
 
 ///////////////////////////////////////
 
-ENGINE_API void GUIContextCreate();
+GUI_API void GUIContextCreate();
 
 ///////////////////////////////////////////////////////////////////////////////
 

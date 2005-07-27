@@ -19,6 +19,7 @@ includePaths = Split("""
    #3rdparty/lua/include
    #3rdparty/tinyxml
    #engine/include
+   #gui/include
    #render/include
    #tech/include
 """) + glIncludePaths
@@ -32,6 +33,7 @@ libPaths = Split("""
    #tech/src
    #render/gl
    #engine/src
+   #gui/src
 """) + glLibPaths
 
 libs = Split("""
@@ -39,6 +41,7 @@ libs = Split("""
    tech
    rendergl
    engine
+   gui
    glew
    lua
    tinyxml

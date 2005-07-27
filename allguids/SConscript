@@ -8,6 +8,7 @@ includePaths = Split("""
    ../tech/include
    ../render/include
    ../engine/include
+   ../gui/include
    ../game
    ../editor
 """)

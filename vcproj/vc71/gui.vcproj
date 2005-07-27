@@ -2,7 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.10"
-	Name="engine"
+	Name="gui"
+	ProjectGUID="{061FA7FA-9924-4007-B1A5-EEDA41F92C7C}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -13,7 +14,7 @@
 		<Configuration
 			Name="Opt|Win32"
 			OutputDirectory=".\..\..\Build.vc71\Opt"
-			IntermediateDirectory=".\..\..\Build.vc71\Opt\engine"
+			IntermediateDirectory=".\..\..\Build.vc71\Opt\gui"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -21,17 +22,17 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
-				PreprocessorDefinitions="NDEBUG;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC;HAVE_DIRECTX"
+				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
+				PreprocessorDefinitions="NDEBUG;_USRDLL;GUI_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC;HAVE_DIRECTX"
 				StringPooling="TRUE"
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdhdr.h"
-				PrecompiledHeaderFile=".\..\..\Build.vc71\Opt\engine/engine.pch"
-				AssemblerListingLocation=".\..\..\Build.vc71\Opt\engine/"
-				ObjectFile=".\..\..\Build.vc71\Opt\engine/"
-				ProgramDataBaseFileName=".\..\..\Build.vc71\Opt\engine/"
+				PrecompiledHeaderFile=".\..\..\Build.vc71\Opt\gui/gui.pch"
+				AssemblerListingLocation=".\..\..\Build.vc71\Opt\gui/"
+				ObjectFile=".\..\..\Build.vc71\Opt\gui/"
+				ProgramDataBaseFileName=".\..\..\Build.vc71\Opt\gui/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"
@@ -42,22 +43,22 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="winmm.lib opengl32.lib glu32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib $(OutDir)\glew.lib cg.lib cgGL.lib"
-				OutputFile=".\..\..\Build.vc71\Opt/engine.dll"
+				OutputFile=".\..\..\Build.vc71\Opt/gui.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\3rdparty\Cg\lib"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\..\..\Build.vc71\Opt/engine.pdb"
+				ProgramDatabaseFile=".\..\..\Build.vc71\Opt/gui.pdb"
 				GenerateMapFile="TRUE"
-				MapFileName="..\..\Build.vc71\Opt/engine.map"
-				ImportLibrary=".\..\..\Build.vc71\Opt/engine.lib"/>
+				MapFileName="..\..\Build.vc71\Opt/gui.map"
+				ImportLibrary=".\..\..\Build.vc71\Opt/gui.lib"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="_DEBUG"
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc71\Opt/engine.tlb"/>
+				TypeLibraryName=".\..\..\Build.vc71\Opt/gui.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -82,7 +83,7 @@
 		<Configuration
 			Name="StaticDebug|Win32"
 			OutputDirectory=".\..\..\Build.vc71\StaticDebug"
-			IntermediateDirectory=".\..\..\Build.vc71\StaticDebug\engine"
+			IntermediateDirectory=".\..\..\Build.vc71\StaticDebug\gui"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -90,16 +91,16 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
-				PreprocessorDefinitions="STATIC_BUILD,_DEBUG,HAVE_CPPUNIT,_USRDLL,ENGINE_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL,GLEW_STATIC,HAVE_DIRECTX"
+				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
+				PreprocessorDefinitions="STATIC_BUILD,_DEBUG,HAVE_CPPUNIT,_USRDLL,GUI_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL,GLEW_STATIC,HAVE_DIRECTX"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdhdr.h"
-				PrecompiledHeaderFile=".\..\..\Build.vc71\StaticDebug\engine/engine.pch"
-				AssemblerListingLocation=".\..\..\Build.vc71\StaticDebug\engine/"
-				ObjectFile=".\..\..\Build.vc71\StaticDebug\engine/"
-				ProgramDataBaseFileName=".\..\..\Build.vc71\StaticDebug\engine/"
+				PrecompiledHeaderFile=".\..\..\Build.vc71\StaticDebug\gui/gui.pch"
+				AssemblerListingLocation=".\..\..\Build.vc71\StaticDebug\gui/"
+				ObjectFile=".\..\..\Build.vc71\StaticDebug\gui/"
+				ProgramDataBaseFileName=".\..\..\Build.vc71\StaticDebug\gui/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="4"
@@ -108,7 +109,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\..\..\Build.vc71\StaticDebug\engine.lib"
+				OutputFile=".\..\..\Build.vc71\StaticDebug\gui.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -134,7 +135,7 @@
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory=".\..\..\Build.vc71\Debug"
-			IntermediateDirectory=".\..\..\Build.vc71\Debug\engine"
+			IntermediateDirectory=".\..\..\Build.vc71\Debug\gui"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -142,16 +143,16 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
-				PreprocessorDefinitions="_DEBUG;HAVE_CPPUNIT;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC;HAVE_DIRECTX"
+				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
+				PreprocessorDefinitions="_DEBUG;HAVE_CPPUNIT;_USRDLL;GUI_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC;HAVE_DIRECTX"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdhdr.h"
-				PrecompiledHeaderFile=".\..\..\Build.vc71\Debug\engine/engine.pch"
-				AssemblerListingLocation=".\..\..\Build.vc71\Debug\engine/"
-				ObjectFile=".\..\..\Build.vc71\Debug\engine/"
-				ProgramDataBaseFileName=".\..\..\Build.vc71\Debug\engine/"
+				PrecompiledHeaderFile=".\..\..\Build.vc71\Debug\gui/gui.pch"
+				AssemblerListingLocation=".\..\..\Build.vc71\Debug\gui/"
+				ObjectFile=".\..\..\Build.vc71\Debug\gui/"
+				ProgramDataBaseFileName=".\..\..\Build.vc71\Debug\gui/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="4"
@@ -162,22 +163,22 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="$(OutDir)\cppunit.lib winmm.lib opengl32.lib glu32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib $(OutDir)\glew.lib cg.lib cgGL.lib"
-				OutputFile=".\..\..\Build.vc71\Debug/engine.dll"
+				OutputFile=".\..\..\Build.vc71\Debug/gui.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\3rdparty\Cg\lib"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\..\..\Build.vc71\Debug/engine.pdb"
+				ProgramDatabaseFile=".\..\..\Build.vc71\Debug/gui.pdb"
 				GenerateMapFile="TRUE"
-				MapFileName="..\..\Build.vc71\Debug/engine.map"
-				ImportLibrary=".\..\..\Build.vc71\Debug/engine.lib"/>
+				MapFileName="..\..\Build.vc71\Debug/gui.map"
+				ImportLibrary=".\..\..\Build.vc71\Debug/gui.lib"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="_DEBUG"
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc71\Debug/engine.tlb"/>
+				TypeLibraryName=".\..\..\Build.vc71\Debug/gui.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -202,7 +203,7 @@
 		<Configuration
 			Name="StaticRelease|Win32"
 			OutputDirectory=".\..\..\Build.vc71\StaticRelease"
-			IntermediateDirectory=".\..\..\Build.vc71\StaticRelease\engine"
+			IntermediateDirectory=".\..\..\Build.vc71\StaticRelease\gui"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -210,17 +211,17 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
-				PreprocessorDefinitions="NDEBUG,STATIC_BUILD,_USRDLL,ENGINE_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL,GLEW_STATIC,HAVE_DIRECTX"
+				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
+				PreprocessorDefinitions="NDEBUG,STATIC_BUILD,_USRDLL,GUI_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL,GLEW_STATIC,HAVE_DIRECTX"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdhdr.h"
-				PrecompiledHeaderFile=".\..\..\Build.vc71\StaticRelease\engine/engine.pch"
-				AssemblerListingLocation=".\..\..\Build.vc71\StaticRelease\engine/"
-				ObjectFile=".\..\..\Build.vc71\StaticRelease\engine/"
-				ProgramDataBaseFileName=".\..\..\Build.vc71\StaticRelease\engine/"
+				PrecompiledHeaderFile=".\..\..\Build.vc71\StaticRelease\gui/gui.pch"
+				AssemblerListingLocation=".\..\..\Build.vc71\StaticRelease\gui/"
+				ObjectFile=".\..\..\Build.vc71\StaticRelease\gui/"
+				ProgramDataBaseFileName=".\..\..\Build.vc71\StaticRelease\gui/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				CompileAs="0"/>
@@ -228,7 +229,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\..\..\Build.vc71\StaticRelease\engine.lib"
+				OutputFile=".\..\..\Build.vc71\StaticRelease\gui.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -254,7 +255,7 @@
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory=".\..\..\Build.vc71\Release"
-			IntermediateDirectory=".\..\..\Build.vc71\Release\engine"
+			IntermediateDirectory=".\..\..\Build.vc71\Release\gui"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -262,17 +263,17 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
-				PreprocessorDefinitions="NDEBUG;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC;HAVE_DIRECTX"
+				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
+				PreprocessorDefinitions="NDEBUG;_USRDLL;GUI_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC;HAVE_DIRECTX"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdhdr.h"
-				PrecompiledHeaderFile=".\..\..\Build.vc71\Release\engine/engine.pch"
-				AssemblerListingLocation=".\..\..\Build.vc71\Release\engine/"
-				ObjectFile=".\..\..\Build.vc71\Release\engine/"
-				ProgramDataBaseFileName=".\..\..\Build.vc71\Release\engine/"
+				PrecompiledHeaderFile=".\..\..\Build.vc71\Release\gui/gui.pch"
+				AssemblerListingLocation=".\..\..\Build.vc71\Release\gui/"
+				ObjectFile=".\..\..\Build.vc71\Release\gui/"
+				ProgramDataBaseFileName=".\..\..\Build.vc71\Release\gui/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				CompileAs="0"/>
@@ -282,22 +283,22 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="winmm.lib opengl32.lib glu32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib $(OutDir)\glew.lib cg.lib cgGL.lib"
-				OutputFile=".\..\..\Build.vc71\Release/engine.dll"
+				OutputFile=".\..\..\Build.vc71\Release/gui.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\3rdparty\Cg\lib"
-				ProgramDatabaseFile=".\..\..\Build.vc71\Release/engine.pdb"
+				ProgramDatabaseFile=".\..\..\Build.vc71\Release/gui.pdb"
 				GenerateMapFile="TRUE"
-				MapFileName="..\..\Build.vc71\Release/engine.map"
+				MapFileName="..\..\Build.vc71\Release/gui.map"
 				OptimizeReferences="2"
-				ImportLibrary=".\..\..\Build.vc71\Release/engine.lib"/>
+				ImportLibrary=".\..\..\Build.vc71\Release/gui.lib"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="NDEBUG"
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc71\Release/engine.tlb"/>
+				TypeLibraryName=".\..\..\Build.vc71\Release/gui.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -330,94 +331,43 @@
 				Name="Source Files"
 				Filter="">
 				<File
-					RelativePath="..\..\engine\src\cmds.cpp">
+					RelativePath="..\..\gui\src\guibasicrenderer.cpp">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\engine.cpp">
+					RelativePath="..\..\gui\src\guibeveledrenderer.cpp">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\entitymanager.cpp">
+					RelativePath="..\..\gui\src\guibutton.cpp">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\frustum.cpp">
+					RelativePath="..\..\gui\src\guicontext.cpp">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\gltexture.cpp">
+					RelativePath="..\..\gui\src\guidialog.cpp">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\input.cpp">
+					RelativePath="..\..\gui\src\guielementenum.cpp">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\luainterp.cpp">
+					RelativePath="..\..\gui\src\guielementtools.cpp">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\model.cpp">
+					RelativePath="..\..\gui\src\guievent.cpp">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\ms3dread.cpp">
+					RelativePath="..\..\gui\src\guifactory.cpp">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\ray.cpp">
+					RelativePath="..\..\gui\src\guifontd3d.cpp">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\scene.cpp">
+					RelativePath="..\..\gui\src\guifontfactory.cpp">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\scenecamera.cpp">
+					RelativePath="..\..\gui\src\guifontw32.cpp">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\sceneentity.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\sceneentityenum.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\scenelayer.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\scenemodel.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\scriptvar.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\sim.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\stdhdr.cpp">
-					<FileConfiguration
-						Name="Opt|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="1"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="StaticDebug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="1"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="1"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="StaticRelease|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="1"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="1"/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="..\..\engine\src\syslinux.cpp">
+					RelativePath="..\..\gui\src\guifontx11.cpp">
 					<FileConfiguration
 						Name="Opt|Win32"
 						ExcludedFromBuild="TRUE">
@@ -450,53 +400,143 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="..\..\engine\src\syswin.cpp">
+					RelativePath="..\..\gui\src\guilabel.cpp">
+				</File>
+				<File
+					RelativePath="..\..\gui\src\guilayout.cpp">
+				</File>
+				<File
+					RelativePath="..\..\gui\src\guipanel.cpp">
+				</File>
+				<File
+					RelativePath="..\..\gui\src\guirender.cpp">
+				</File>
+				<File
+					RelativePath="..\..\gui\src\guistyle.cpp">
+				</File>
+				<File
+					RelativePath="..\..\gui\src\guitextedit.cpp">
+				</File>
+				<File
+					RelativePath="..\..\gui\src\guitypes.cpp">
+				</File>
+				<File
+					RelativePath="..\..\gui\src\stdhdr.cpp">
+					<FileConfiguration
+						Name="Opt|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="1"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="StaticDebug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="1"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="1"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="StaticRelease|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="1"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="1"/>
+					</FileConfiguration>
 				</File>
 			</Filter>
 			<Filter
 				Name="Header Files"
 				Filter="">
 				<File
-					RelativePath="..\..\engine\src\engine.h">
+					RelativePath="..\..\gui\src\guibasicrenderer.h">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\entitymanager.h">
+					RelativePath="..\..\gui\src\guibeveledrenderer.h">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\frustum.h">
+					RelativePath="..\..\gui\src\guibutton.h">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\input.h">
+					RelativePath="..\..\gui\src\guicontainerbase.h">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\luainterp.h">
+					RelativePath="..\..\gui\src\guicontainerbasetem.h">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\ms3d.h">
+					RelativePath="..\..\gui\src\guicontext.h">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\ms3dread.h">
+					RelativePath="..\..\gui\src\guidialog.h">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\scene.h">
+					RelativePath="..\..\gui\src\guielementbase.h">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\scenecamera.h">
+					RelativePath="..\..\gui\src\guielementbasetem.h">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\sceneentity.h">
+					RelativePath="..\..\gui\src\guielementenum.h">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\sceneentityenum.h">
+					RelativePath="..\..\gui\src\guielementtools.h">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\scenelayer.h">
+					RelativePath="..\..\gui\src\guievent.h">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\scenemodel.h">
+					RelativePath="..\..\gui\src\guieventrouter.h">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\stdhdr.h">
+					RelativePath="..\..\gui\src\guieventroutertem.h">
+				</File>
+				<File
+					RelativePath="..\..\gui\src\guifactory.h">
+				</File>
+				<File
+					RelativePath="..\..\gui\src\guifontd3d.h">
+				</File>
+				<File
+					RelativePath="..\..\gui\src\guifontfactory.h">
+				</File>
+				<File
+					RelativePath="..\..\gui\src\guifontw32.h">
+				</File>
+				<File
+					RelativePath="..\..\gui\src\guifontx11.h">
+				</File>
+				<File
+					RelativePath="..\..\gui\src\guilabel.h">
+				</File>
+				<File
+					RelativePath="..\..\gui\src\guilayout.h">
+				</File>
+				<File
+					RelativePath="..\..\gui\src\guipanel.h">
+				</File>
+				<File
+					RelativePath="..\..\gui\src\guirender.h">
+				</File>
+				<File
+					RelativePath="..\..\gui\src\guistrings.h">
+				</File>
+				<File
+					RelativePath="..\..\gui\src\guistyle.h">
+				</File>
+				<File
+					RelativePath="..\..\gui\src\guitextedit.h">
+				</File>
+				<File
+					RelativePath="..\..\gui\src\stdhdr.h">
 				</File>
 			</Filter>
 		</Filter>
@@ -504,40 +544,16 @@
 			Name=".\include"
 			Filter="h;hpp;hxx;hm;inl">
 			<File
-				RelativePath="..\..\engine\include\engineapi.h">
+				RelativePath="..\..\gui\include\guiapi.h">
 			</File>
 			<File
-				RelativePath="..\..\engine\include\enginedll.h">
+				RelativePath="..\..\gui\include\guidll.h">
 			</File>
 			<File
-				RelativePath="..\..\engine\include\engineguids.h">
+				RelativePath="..\..\gui\include\guiguids.h">
 			</File>
 			<File
-				RelativePath="..\..\engine\include\entityapi.h">
-			</File>
-			<File
-				RelativePath="..\..\engine\include\inputapi.h">
-			</File>
-			<File
-				RelativePath="..\..\engine\include\model.h">
-			</File>
-			<File
-				RelativePath="..\..\engine\include\ray.h">
-			</File>
-			<File
-				RelativePath="..\..\engine\include\sceneapi.h">
-			</File>
-			<File
-				RelativePath="..\..\engine\include\scriptapi.h">
-			</File>
-			<File
-				RelativePath="..\..\engine\include\scriptvar.h">
-			</File>
-			<File
-				RelativePath="..\..\engine\include\sim.h">
-			</File>
-			<File
-				RelativePath="..\..\engine\include\sys.h">
+				RelativePath="..\..\gui\include\guitypes.h">
 			</File>
 		</Filter>
 	</Files>

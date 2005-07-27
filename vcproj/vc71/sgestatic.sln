@@ -21,6 +21,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "game", "game.vcproj", "{7DC
 		{D615B941-F76E-4631-BA24-ED30AB8CF0E0} = {D615B941-F76E-4631-BA24-ED30AB8CF0E0}
 		{5B1DB8CD-0522-43C7-91B1-D558CA7520EB} = {5B1DB8CD-0522-43C7-91B1-D558CA7520EB}
 		{BD5E5BCF-8648-48EA-8B35-04CFE1541E3A} = {BD5E5BCF-8648-48EA-8B35-04CFE1541E3A}
+		{061FA7FA-9924-4007-B1A5-EEDA41F92C7C} = {061FA7FA-9924-4007-B1A5-EEDA41F92C7C}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MilkShapeExporter", "MilkShapeExporter.vcproj", "{EC7ACF02-DBE4-488D-89A4-DAE00465DA0F}"
@@ -36,6 +37,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rendergl", "rendergl.vcproj
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tech", "tech.vcproj", "{5B1DB8CD-0522-43C7-91B1-D558CA7520EB}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gui", "gui.vcproj", "{061FA7FA-9924-4007-B1A5-EEDA41F92C7C}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
@@ -118,6 +123,16 @@ Global
 		{5B1DB8CD-0522-43C7-91B1-D558CA7520EB}.StaticDebug.Build.0 = StaticDebug|Win32
 		{5B1DB8CD-0522-43C7-91B1-D558CA7520EB}.StaticRelease.ActiveCfg = StaticRelease|Win32
 		{5B1DB8CD-0522-43C7-91B1-D558CA7520EB}.StaticRelease.Build.0 = StaticRelease|Win32
+		{061FA7FA-9924-4007-B1A5-EEDA41F92C7C}.Debug.ActiveCfg = Debug|Win32
+		{061FA7FA-9924-4007-B1A5-EEDA41F92C7C}.Debug.Build.0 = Debug|Win32
+		{061FA7FA-9924-4007-B1A5-EEDA41F92C7C}.Opt.ActiveCfg = Opt|Win32
+		{061FA7FA-9924-4007-B1A5-EEDA41F92C7C}.Opt.Build.0 = Opt|Win32
+		{061FA7FA-9924-4007-B1A5-EEDA41F92C7C}.Release.ActiveCfg = Release|Win32
+		{061FA7FA-9924-4007-B1A5-EEDA41F92C7C}.Release.Build.0 = Release|Win32
+		{061FA7FA-9924-4007-B1A5-EEDA41F92C7C}.StaticDebug.ActiveCfg = StaticDebug|Win32
+		{061FA7FA-9924-4007-B1A5-EEDA41F92C7C}.StaticDebug.Build.0 = StaticDebug|Win32
+		{061FA7FA-9924-4007-B1A5-EEDA41F92C7C}.StaticRelease.ActiveCfg = StaticRelease|Win32
+		{061FA7FA-9924-4007-B1A5-EEDA41F92C7C}.StaticRelease.Build.0 = StaticRelease|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

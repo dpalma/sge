@@ -4,7 +4,6 @@
 #include "stdhdr.h"
 
 #include "entityapi.h"
-#include "guiapi.h"
 #include "inputapi.h"
 #include "scriptapi.h"
 #include "scriptvar.h"

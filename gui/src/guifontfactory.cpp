@@ -15,7 +15,9 @@
 // defined in guifontw32.cpp for Windows, or guifontx11.cpp for Linux
 extern tResult GUIFontCreateGL(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont);
 
+#if HAVE_DIRECTX
 extern tResult GUIFontCreateD3D(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont);
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -81,12 +83,14 @@ tResult cGUIFontFactory::CreateFontA(const cGUIFontDesc & fontDesc, IGUIFont * *
       return S_OK;
    }
 
+#if HAVE_DIRECTX
    if (GUIFontCreateD3D(fontDesc, &pFont) == S_OK)
    {
       m_fontMap[fontDesc] = CTAddRef(pFont);
       *ppFont = CTAddRef(pFont);
       return S_OK;
    }
+#endif
 
    return E_FAIL;
 }

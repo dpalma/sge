@@ -4,7 +4,7 @@
 #ifndef INCLUDED_GUITYPES_H
 #define INCLUDED_GUITYPES_H
 
-#include "enginedll.h"
+#include "guidll.h"
 
 #include "color.h"
 #include "techstring.h"
@@ -48,7 +48,7 @@ typedef struct sGUIInsets tGUIInsets;
 
 #pragma warning(disable:4275) // non dll-interface class 'X' used as base for dll-interface class 'Y'
 
-class ENGINE_API cGUIColor : public cColor
+class GUI_API cGUIColor : public cColor
 {
 public:
    cGUIColor() : cColor() {}
@@ -154,7 +154,7 @@ enum eGUIFontEffects
    kGFE_Outline   = (1<<3),
 };
 
-class ENGINE_API cGUIFontDesc
+class GUI_API cGUIFontDesc
 {
 public:
    enum
