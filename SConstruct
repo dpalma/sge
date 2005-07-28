@@ -37,7 +37,7 @@ else:
 
 if platform == 'win32':
    env.Append(CCFLAGS=['/GX', '/FD'], CPPDEFINES=['_WIN32', 'WIN32', 'STRICT']);
-   env.Append(CPPDEFINES=['TIXML_USE_STL', 'GLEW_STATIC'])
+   env.Append(CPPDEFINES=['TIXML_USE_STL', 'GLEW_STATIC', 'NO_AUTO_EXPORTS'])
    if env.get('debug'):
       env.Append(CCFLAGS=['/MTd', '/Od', '/GZ'], CPPDEFINES=['DEBUG', '_DEBUG'])
    else:
@@ -49,7 +49,7 @@ elif platform == 'cygwin':
    else:
       env.Append(CCFLAGS=['-o3'])
 else:
-   print 'Unsupported platform'
+   print 'Unsupported platform ', platform
    Exit(1)
 
 ########################################
@@ -68,4 +68,6 @@ if platform == 'win32':
    modules = modules + ['MilkShapeExporter', 'editor']
 
 Export('env glIncludePaths glLibPaths glLibs')
-SConscript(dirs = modules)
+
+for m in modules:
+   SConscript(m+'/SConscript')

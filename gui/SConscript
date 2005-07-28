@@ -40,5 +40,4 @@ elif env['PLATFORM'] == 'cygwin':
 
 env = env.Copy()
 env.Append(CPPPATH = includePaths)
-env.Append(CPPDEFINES = ['STATIC_BUILD'])
 env.Library('gui', sources)

@@ -6,9 +6,9 @@
 // the ENGINE_EXPORTS symbol defined on the command line. this symbol should not
 // be defined on any project that uses this DLL. This way any other project
 // whose source files include this file see ENGINE_API functions as being
-// imported from a DLL, wheras this DLL sees symbols defined with this macro
+// imported from a DLL, whereas this DLL sees symbols defined with this macro
 // as being exported.
-#ifdef STATIC_BUILD
+#ifdef NO_AUTO_EXPORTS
 #define ENGINE_API
 #else
 #ifdef ENGINE_EXPORTS
