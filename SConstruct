@@ -104,4 +104,9 @@ if platform != 'win32':
          sconscripts.remove(script)
 
 for script in sconscripts:
+   # Backslashes must be escaped twice, once for re and once for Python itself
+   script = re.sub(re.escape(re.escape(os.getcwd())), '', re.escape(script))
+   # Get rid of leading backslash if present since script is a relative path now
+   # The os.path.normpath call converts double-backslashes back to single
+   script = re.sub(r'^\\{1,2}', '', os.path.normpath(script))
    SConscript(script)
