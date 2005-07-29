@@ -3,13 +3,18 @@
 
 #include "stdhdr.h"
 
-#include "d3dguirender.h"
+#include "guirenderd3d.h"
+#include "sys.h"
 
+#if HAVE_DIRECTX
 #include <d3d9.h>
 #include <d3dx9.h>
+#endif
 
 #include "dbgalloc.h" // must be last header
 
+
+#if HAVE_DIRECTX
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -29,11 +34,17 @@ static const uint kGUIVertexFVF = D3DFVF_XYZ | D3DFVF_DIFFUSE;
 
 ////////////////////////////////////////
 
-tResult GUIRenderDeviceCreateD3D(IDirect3DDevice9 * pD3dDevice, IGUIRenderDeviceContext * * ppRenderDevice)
+tResult GUIRenderDeviceCreateD3D(IGUIRenderDeviceContext * * ppRenderDevice)
 {
-   if (pD3dDevice == NULL || ppRenderDevice == NULL)
+   if (ppRenderDevice == NULL)
    {
       return E_POINTER;
+   }
+
+   cAutoIPtr<IDirect3DDevice9> pD3dDevice;
+   if (SysGetDirect3DDevice9(&pD3dDevice) != S_OK)
+   {
+      return E_FAIL;
    }
 
    cAutoIPtr<cGUIRenderDeviceD3D> p(new cGUIRenderDeviceD3D(pD3dDevice));
@@ -253,3 +264,14 @@ tResult cGUIRenderDeviceD3D::GetViewportSize(uint * pWidth, uint * pHeight)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+#else
+
+tResult GUIRenderDeviceCreateD3D(IGUIRenderDeviceContext * * /*ppRenderDevice*/)
+{
+   return E_FAIL;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+#endif // HAVE_DIRECTX

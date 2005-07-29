@@ -659,6 +659,7 @@ interface IGUIRenderDeviceContext : IGUIRenderDevice
 ///////////////////////////////////////
 
 GUI_API tResult GUIRenderDeviceCreateGL(IGUIRenderDeviceContext * * ppRenderDevice);
+GUI_API tResult GUIRenderDeviceCreateD3D(IGUIRenderDeviceContext * * ppRenderDevice);
 
 
 ///////////////////////////////////////////////////////////////////////////////

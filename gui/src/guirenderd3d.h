@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // $Id$
 
-#ifndef INCLUDED_D3DGUIRENDER_H
-#define INCLUDED_D3DGUIRENDER_H
+#ifndef INCLUDED_GUIRENDERD3D_H
+#define INCLUDED_GUIRENDERD3D_H
 
 #include "guiapi.h"
 #include "guitypes.h"
@@ -12,6 +12,8 @@
 #ifdef _MSC_VER
 #pragma once
 #endif
+
+#if HAVE_DIRECTX
 
 F_DECLARE_INTERFACE(IDirect3DDevice9);
 F_DECLARE_INTERFACE(IDirect3DStateBlock9);
@@ -53,6 +55,8 @@ private:
    cAutoIPtr<IDirect3DStateBlock9> m_pStateBlock;
 };
 
+#endif // HAVE_DIRECTX
+
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // INCLUDED_D3DGUIRENDER_H
+#endif // INCLUDED_GUIRENDERD3D_H

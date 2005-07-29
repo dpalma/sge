@@ -45,8 +45,6 @@
 F_DECLARE_HANDLE(HINSTANCE);
 typedef char * LPSTR;
 
-extern tResult GUIRenderDeviceCreateD3D(IDirect3DDevice9 * pD3dDevice, IGUIRenderDeviceContext * * ppRenderDevice);
-
 ///////////////////////////////////////////////////////////////////////////////
 
 #define kDefaultWidth   800
@@ -150,7 +148,7 @@ static bool d3dguiinit(int argc, tChar * argv[])
    {
       UseGlobal(GUIContext);
       cAutoIPtr<IGUIRenderDeviceContext> pGuiRenderDevice;
-      if (GUIRenderDeviceCreateD3D(pD3dDevice, &pGuiRenderDevice) == S_OK)
+      if (GUIRenderDeviceCreateD3D(&pGuiRenderDevice) == S_OK)
       {
          pGUIContext->SetRenderDeviceContext(pGuiRenderDevice);
       }
