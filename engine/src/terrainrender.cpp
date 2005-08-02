@@ -12,6 +12,7 @@
 #include "imagedata.h"
 #include "resourceapi.h"
 #include "globalobj.h"
+#include "filespec.h"
 
 #include <map>
 #include <algorithm>
@@ -453,35 +454,6 @@ const uint * cSplatBuilder::GetIndexPtr() const
 
 ////////////////////////////////////////
 
-#ifndef NDEBUG
-static void WriteBitmapFile(const char * pszFileName, BITMAPINFO * pBmInfo, void * pBits)
-{
-   int headerSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
-
-   int bitsSize = abs(pBmInfo->bmiHeader.biWidth * pBmInfo->bmiHeader.biHeight * pBmInfo->bmiHeader.biBitCount / 8);
-
-   BITMAPFILEHEADER fileHeader;
-   fileHeader.bfType = 0x4D42;
-   fileHeader.bfReserved1 = 0;
-   fileHeader.bfReserved2 = 0;
-   fileHeader.bfOffBits = headerSize;
-   fileHeader.bfSize = headerSize + bitsSize;
-
-   BITMAPINFOHEADER infoHeader;
-   memcpy(&infoHeader, &pBmInfo->bmiHeader, sizeof(BITMAPINFOHEADER));
-
-   HANDLE hFile = CreateFile(pszFileName, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-   if (hFile != NULL && hFile != INVALID_HANDLE_VALUE)
-   {
-      DWORD bytesWritten;
-      WriteFile(hFile, &fileHeader, sizeof(BITMAPFILEHEADER), &bytesWritten, NULL);
-      WriteFile(hFile, &infoHeader, sizeof(BITMAPINFOHEADER), &bytesWritten, NULL);
-      WriteFile(hFile, pBits, bitsSize, &bytesWritten, NULL);
-      CloseHandle(hFile);
-   }
-}
-#endif
-
 static float SplatTexelWeight(const tVec2 & pt1, const tVec2 & pt2)
 {
    static const float kOneOver175Sqr = 1.0f / (1.75f * 1.75f);
@@ -708,17 +680,18 @@ void cSplatBuilder::BuildAlphaMap(const tTerrainQuads & quads,
       }
    }
 
-//#ifdef _DEBUG
-//   tChar szFile[MAX_PATH];
-//   wsprintf(szFile, "%sAlpha%d%d.bmp", m_tileName.c_str(), iChunkX, iChunkZ);
-//   WriteBitmapFile(szFile, &bmi, pBitmapBits);
-//#endif
-
    cImageData * pImage = new cImageData;
    if (pImage != NULL)
    {
       if (pImage->Create(bmi.bmiHeader.biWidth, abs(bmi.bmiHeader.biHeight), kPF_RGBA8888, pBitmapBits))
       {
+#if 0 && defined(_DEBUG)
+         cStr file;
+         file.Format("%sAlpha%d%d.bmp", m_tileTexture.c_str(), iChunkX, iChunkZ);
+         cAutoIPtr<IWriter> pWriter(FileCreateWriter(cFileSpec(file.c_str())));
+         BmpWrite(pImage, pWriter);
+#endif
+
          GlTextureCreate(pImage, &m_alphaMapId);
       }
 

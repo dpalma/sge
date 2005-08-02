@@ -48,6 +48,16 @@ struct sBmpInfoHeader
    uint32 biClrImportant;
 };
 
+enum eBmpCompression
+{
+   BI_RGB        = 0L,
+   BI_RLE8       = 1L,
+   BI_RLE4       = 2L,
+   BI_BITFIELDS  = 3L,
+   BI_JPEG       = 4L,
+   BI_PNG        = 5L,
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 
 static cImageData * LoadBmp24Bit(IReader * pReader,
@@ -217,6 +227,67 @@ cImageData * LoadBmp(IReader * pReader)
       DebugMsg1("Un-supported BMP image format (%d bits per pixel)\n", info.biBitCount);
       return NULL;
    }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+tResult BmpWrite(const cImageData * pImageData, IWriter * pWriter)
+{
+   if (pImageData == NULL || pWriter == NULL)
+   {
+      return E_POINTER;
+   }
+
+   ePixelFormat pixelFormat = pImageData->GetPixelFormat();
+
+   if (pixelFormat != kPF_RGB888 && pixelFormat != kPF_BGR888
+      && pixelFormat != kPF_RGBA8888 && pixelFormat != kPF_BGRA8888)
+   {
+      return E_INVALIDARG;
+   }
+
+   static const uint bitCounts[] =
+   {
+      8,    // kPF_Grayscale
+      8,    // kPF_ColorMapped
+      16,   // kPF_RGB555
+      16,   // kPF_BGR555
+      16,   // kPF_RGB565
+      16,   // kPF_BGR565
+      16,   // kPF_RGBA1555
+      16,   // kPF_BGRA1555
+      24,   // kPF_RGB888
+      24,   // kPF_BGR888
+      32,   // kPF_RGBA8888
+      32,   // kPF_BGRA8888
+   };
+
+   int bitsSize = abs(pImageData->GetWidth() * pImageData->GetHeight() * bitCounts[pixelFormat] / 8);
+
+   sBmpFileHeader header;
+   header.bfType = 0x4D42;
+   header.bfReserved1 = 0;
+   header.bfReserved2 = 0;
+   header.bfOffBits = sizeof(sBmpFileHeader) + sizeof(sBmpInfoHeader);
+   header.bfSize = sizeof(sBmpFileHeader) + sizeof(sBmpInfoHeader) + bitsSize;
+
+   sBmpInfoHeader info;
+   info.biSize = sizeof(sBmpInfoHeader);
+   info.biWidth = pImageData->GetWidth();
+   info.biHeight = -static_cast<int>(pImageData->GetHeight());
+   info.biPlanes = 1;
+   info.biCompression = BI_RGB;
+   info.biBitCount = bitCounts[pixelFormat];
+
+   if (pWriter->Write(&header, sizeof(sBmpFileHeader)) == S_OK
+      && pWriter->Write(&info, sizeof(sBmpInfoHeader)) == S_OK
+      && pWriter->Write(const_cast<void*>(pImageData->GetData()), bitsSize) == S_OK)
+   {
+      return S_OK;
+   }
+
+   return E_FAIL;
 }
 
 
