@@ -172,17 +172,17 @@ void cTerrainRenderer::RegenerateChunks()
 // VC6 requires explicit instantiation of mem_fun_t for void return type
 #if _MSC_VER <= 1200
 template <>
-class std::mem_fun_t<void, cTerrainChunkBlended>
+class std::mem_fun_t<void, cTerrainChunk>
 {
 public:
-   mem_fun_t(void (cTerrainChunkBlended::*pfn)())
+   mem_fun_t(void (cTerrainChunk::*pfn)())
       : m_pfn(pfn) {}
-	void operator()(cTerrainChunkBlended * p) const
+	void operator()(cTerrainChunk * p) const
    {
       ((p->*m_pfn)());
    }
 private:
-	void (cTerrainChunkBlended::*m_pfn)();
+	void (cTerrainChunk::*m_pfn)();
 };
 #endif
 

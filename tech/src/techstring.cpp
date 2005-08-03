@@ -366,14 +366,18 @@ class cStrTests : public CppUnit::TestCase
       CPPUNIT_TEST(TestParseSuccessCases);
       CPPUNIT_TEST(TestFilePathCompare);
       CPPUNIT_TEST(TestFormat);
+#if _MSC_VER >= 1300
       CPPUNIT_TEST(TestFormatLength);
+#endif
    CPPUNIT_TEST_SUITE_END();
 
    void TestParseBadArgs();
    void TestParseSuccessCases();
    void TestFilePathCompare();
    void TestFormat();
+#if _MSC_VER >= 1300
    void TestFormatLength();
+#endif
 };
 
 ////////////////////////////////////////
@@ -462,6 +466,8 @@ void cStrTests::TestFormat()
 
 ////////////////////////////////////////
 
+#if _MSC_VER >= 1300
+
 static bool CDECL DoFormatLengthTest(const tChar * pszFormat, ...)
 {
    int actual = INT_MIN, estimate = INT_MAX;
@@ -492,6 +498,8 @@ void cStrTests::TestFormatLength()
    CPPUNIT_ASSERT(::DoFormatLengthTest("%x %d %s (multiple)", UINT_MAX, INT_MIN, szSample));
    CPPUNIT_ASSERT(::DoFormatLengthTest("%% escaped percents %%%%%%"));
 }
+
+#endif // _MSC_VER >= 1300
 
 #endif // HAVE_CPPUNIT
 
