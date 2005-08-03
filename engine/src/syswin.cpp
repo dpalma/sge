@@ -106,15 +106,22 @@ tResult SysGetClipboardString(cStr * pStr, ulong max)
       return E_POINTER;
    }
 
+#ifdef _UNICODE
+   const uint clipFormat = CF_UNICODETEXT;
+#else
+   const uint clipFormat = CF_TEXT;
+#endif
+
+   if (!IsClipboardFormatAvailable(clipFormat))
+   {
+      return S_FALSE;
+   }
+
    bool bSuccess = false;
 
    if (OpenClipboard(g_hWnd))
    {
-#ifdef _UNICODE
-      HANDLE hData = GetClipboardData(CF_UNICODETEXT);
-#else
-      HANDLE hData = GetClipboardData(CF_TEXT);
-#endif
+      HANDLE hData = GetClipboardData(clipFormat);
       if (hData != NULL)
       {
          const tChar * pszData = reinterpret_cast<const tChar *>(GlobalLock(hData));
@@ -152,32 +159,37 @@ tResult SysSetClipboardString(const tChar * psz)
       return E_POINTER;
    }
 
+#ifdef _UNICODE
+   const uint clipFormat = CF_UNICODETEXT;
+#else
+   const uint clipFormat = CF_TEXT;
+#endif
+
    bool bSuccess = false;
 
    if (OpenClipboard(g_hWnd))
    {
-      HANDLE hData = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, _tcslen(psz) + 1);
-      if (hData != NULL)
+      if (EmptyClipboard())
       {
-         tChar * pszData = reinterpret_cast<tChar *>(GlobalLock(hData));
-         if (pszData != NULL)
+         HANDLE hData = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, _tcslen(psz) + 1);
+         if (hData != NULL)
          {
-            _tcscpy(pszData, psz);
-            GlobalUnlock(hData);
-
-#ifdef _UNICODE
-            if (SetClipboardData(CF_UNICODETEXT, hData))
-#else
-            if (SetClipboardData(CF_TEXT, hData))
-#endif
+            tChar * pszData = reinterpret_cast<tChar *>(GlobalLock(hData));
+            if (pszData != NULL)
             {
-               bSuccess = true;
-            }
-         }
+               _tcscpy(pszData, psz);
+               GlobalUnlock(hData);
 
-         if (!bSuccess)
-         {
-            GlobalFree(hData);
+               if (SetClipboardData(clipFormat, hData))
+               {
+                  bSuccess = true;
+               }
+            }
+
+            if (!bSuccess)
+            {
+               GlobalFree(hData);
+            }
          }
       }
 
