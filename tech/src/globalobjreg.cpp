@@ -110,31 +110,18 @@ public:
 private:
    bool LookupByName(const tChar * pszName, IUnknown * * ppUnk, const GUID * * ppGuid) const;
 
-   typedef cDigraph<const IID *> tConstraintGraph;
-   void BuildConstraintGraph(tConstraintGraph * pGraph);
-
-   enum eState
+   struct sLessGuid
    {
-      kPreInit,
-      kLive,
-      kTerminating,
-      kTerminated
-   };
-
-   eState m_state;
-
-   void SetState(eState state) { m_state = state; }
-   eState GetState() const { return m_state; }
-
-   struct sLessIid
-   {
-      bool operator()(const IID * pIID1, const IID * pIID2) const
+      bool operator()(const GUID * pLhs, const GUID * pRhs) const
       {
-         return (memcmp(pIID1, pIID2, sizeof(IID)) < 0);
+         return (memcmp(pLhs, pRhs, sizeof(GUID)) < 0);
       }
    };
 
-   typedef std::map<const IID *, IUnknown *, sLessIid> tObjMap;
+   typedef cDigraph<const GUID *, sLessGuid> tConstraintGraph;
+   void BuildConstraintGraph(tConstraintGraph * pGraph);
+
+   typedef std::map<const GUID *, IUnknown *, sLessGuid> tObjMap;
    tObjMap m_objMap;
 
    typedef std::vector<const GUID *> tInitOrder;
@@ -144,7 +131,6 @@ private:
 ///////////////////////////////////////
 
 cGlobalObjectRegistry::cGlobalObjectRegistry()
- : m_state(kPreInit)
 {
 }
 
@@ -171,11 +157,6 @@ tResult cGlobalObjectRegistry::Register(REFGUID iid, IUnknown * pUnk)
    if (pUnk == NULL)
    {
       return E_POINTER;
-   }
-
-   if (GetState() != kPreInit)
-   {
-      return E_FAIL;
    }
 
    cAutoIPtr<IGlobalObject> pGO;
@@ -209,16 +190,10 @@ tResult cGlobalObjectRegistry::Register(REFGUID iid, IUnknown * pUnk)
 
 tResult cGlobalObjectRegistry::InitAll()
 {
-   Assert(GetState() == kPreInit);
-
    tConstraintGraph constraintGraph;
    BuildConstraintGraph(&constraintGraph);
 
    cTopoSorter<tConstraintGraph>().TopoSort(&constraintGraph, &m_initOrder);
-
-   // Let the state be live during initialization so the global objects
-   // may refer to each other.
-   SetState(kLive);
 
    tInitOrder::iterator iter;
    for (iter = m_initOrder.begin(); iter != m_initOrder.end(); iter++)
@@ -252,61 +227,42 @@ tResult cGlobalObjectRegistry::InitAll()
 
 tResult cGlobalObjectRegistry::TermAll()
 {
-   if (GetState() == kLive)
+   Assert(m_objMap.size() == m_initOrder.size());
+
+   // Terminate in reverse order
+   tInitOrder::reverse_iterator iter;
+   for (iter = m_initOrder.rbegin(); iter != m_initOrder.rend(); iter++)
    {
-      Assert(m_objMap.size() == m_initOrder.size());
-
-      SetState(kTerminating);
-
-      // Terminate in reverse order
-      tInitOrder::reverse_iterator iter;
-      for (iter = m_initOrder.rbegin(); iter != m_initOrder.rend(); iter++)
+      cAutoIPtr<IUnknown> pUnk(Lookup(*(*iter)));
+      if (!!pUnk)
       {
-         cAutoIPtr<IUnknown> pUnk(Lookup(*(*iter)));
-         if (!!pUnk)
+         cAutoIPtr<IGlobalObject> pGO;
+         if (pUnk->QueryInterface(IID_IGlobalObject, (void**)&pGO) == S_OK)
          {
-            cAutoIPtr<IGlobalObject> pGO;
-            if (pUnk->QueryInterface(IID_IGlobalObject, (void**)&pGO) == S_OK)
-            {
-               pGO->Term();
-            }
+            LocalMsg1("Terminating global object %s\n", pGO->GetName());
+
+            pGO->Term();
          }
       }
-
-      // Release references in m_objMap (order doesn't matter here)
-      tObjMap::iterator oiter;
-      for (oiter = m_objMap.begin(); oiter != m_objMap.end(); oiter++)
-      {
-         oiter->second->Release();
-      }
-
-      m_initOrder.clear();
-      m_objMap.clear();
-
-      SetState(kTerminated);
-
-      return S_OK;
    }
-#ifndef NDEBUG
-   else
+
+   // Release references in m_objMap (order doesn't matter here)
+   tObjMap::iterator oiter;
+   for (oiter = m_objMap.begin(); oiter != m_objMap.end(); oiter++)
    {
-      Assert(m_initOrder.empty());
-      Assert(m_objMap.empty());
-      Assert(GetState() == kTerminated);
+      oiter->second->Release();
    }
-#endif
 
-   return S_FALSE;
+   m_initOrder.clear();
+   m_objMap.clear();
+
+   return S_OK;
 }
 
 ///////////////////////////////////////
 
 IUnknown * cGlobalObjectRegistry::Lookup(REFGUID iid)
 {
-   if (GetState() == kTerminated)
-   {
-      return NULL;
-   }
    tObjMap::iterator iter = m_objMap.find(&iid);
    if (iter != m_objMap.end())
    {
@@ -357,6 +313,18 @@ void cGlobalObjectRegistry::BuildConstraintGraph(tConstraintGraph * pGraph)
    {
       pGraph->AddNode(iter->first);
    }
+
+   Assert(pGraph->GetNodeCount() == m_objMap.size());
+
+#ifdef _DEBUG
+   {
+      tObjMap::iterator iter;
+      for (iter = m_objMap.begin(); iter != m_objMap.end(); iter++)
+      {
+         Assert(pGraph->HasNode(iter->first));
+      }
+   }
+#endif
 
    // add constraints as edges
    for (iter = m_objMap.begin(); iter != m_objMap.end(); iter++)
