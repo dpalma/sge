@@ -13,15 +13,6 @@
 #include <algorithm>
 #include <set>
 
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#else
-#include <unistd.h>
-#include <dirent.h>
-#include <sys/stat.h>
-#endif
-
 #include "dbgalloc.h" // must be last header
 
 LOG_DEFINE_CHANNEL(ResourceManager);
@@ -51,61 +42,26 @@ static size_t ListDirs(const cFilePath & path, tStrings * pDirs)
 {
    Assert(pDirs != NULL);
    if (pDirs == NULL)
-      return ~0;
+      return 0;
 
    pDirs->clear();
 
-#ifdef _WIN32
    cFileSpec wildcard(_T("*"));
    wildcard.SetPath(path);
-
-   WIN32_FIND_DATA findData;
-   HANDLE hFinder = FindFirstFile(wildcard.c_str(), &findData);
-   if (hFinder != INVALID_HANDLE_VALUE)
+   cAutoIPtr<IEnumFiles> pEnumFiles;
+   if (EnumFiles(wildcard, &pEnumFiles) == S_OK)
    {
-      do
+      cFileSpec file;
+      uint attribs;
+      ulong nFiles;
+      while (pEnumFiles->Next(1, &file, &attribs, &nFiles) == S_OK)
       {
-         if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+         if ((attribs & kFA_Directory) == kFA_Directory)
          {
-            if (_tcscmp(findData.cFileName, _T(".")) &&
-                _tcscmp(findData.cFileName, _T("..")))
-            {
-               pDirs->push_back(findData.cFileName);
-            }
+            pDirs->push_back(file);
          }
       }
-      while (FindNextFile(hFinder, &findData));
-
-      FindClose(hFinder);
    }
-#else
-   DIR * dir = opendir(path.c_str());
-   if (dir)
-   {
-      struct dirent * ent = readdir(dir);
-      while (ent)
-      {
-         if (strcmp(ent->d_name, ".") && strcmp(ent->d_name, ".."))
-         {
-            cFileSpec file(ent->d_name);
-            file.SetPath(path);
-
-            struct stat fstat;
-            if (stat(file.c_str(), &fstat) == 0)
-            {
-               if (S_ISDIR(fstat.st_mode))
-               {
-                  pDirs->push_back(ent->d_name);
-               }
-            }
-         }
-
-         ent = readdir(dir);
-      }
-
-      closedir(dir);
-   }
-#endif
 
    return pDirs->size();
 }
@@ -235,42 +191,35 @@ tResult cResourceManager::AddDirectory(const tChar * pszDir)
       return E_POINTER;
    }
 
-   cFileIter * pFileIter = FileIterCreate();
-   if (pFileIter == NULL)
+   cFileSpec wildcard(_T("*.*"));
+   wildcard.SetPath(cFilePath(pszDir));
+   cAutoIPtr<IEnumFiles> pEnumFiles;
+   if (EnumFiles(wildcard, &pEnumFiles) == S_OK)
    {
-      return E_OUTOFMEMORY;
-   }
-
-   cFileSpec spec(_T("*.*"));
-   spec.SetPath(cFilePath(pszDir));
-
-   cFileSpec file;
-   uint attribs;
-
-   pFileIter->Begin(spec);
-   while (pFileIter->Next(&file, &attribs))
-   {
-      if ((attribs & kFA_Directory) == kFA_Directory)
+      cFileSpec file;
+      uint attribs;
+      ulong nFiles;
+      while (pEnumFiles->Next(1, &file, &attribs, &nFiles) == S_OK)
       {
-         LocalMsg1("Dir: %s\n", file.c_str());
-      }
-      else
-      {
-         LocalMsg1("File: %s\n", file.c_str());
-         sResource res;
-         Verify(file.GetFileNameNoExt(&res.name));
-         const tChar * pszExt = file.GetFileExt();
-         if (pszExt != NULL && _tcslen(pszExt) > 0)
+         if ((attribs & kFA_Directory) == kFA_Directory)
          {
-            res.extensionId = GetExtensionId(pszExt);
+            LocalMsg1("Dir: %s\n", file.c_str());
          }
-         res.dirId = GetDirectoryId(pszDir);
-         m_resources.push_back(res);
+         else
+         {
+            LocalMsg1("File: %s\n", file.c_str());
+            sResource res;
+            Verify(file.GetFileNameNoExt(&res.name));
+            const tChar * pszExt = file.GetFileExt();
+            if (pszExt != NULL && _tcslen(pszExt) > 0)
+            {
+               res.extensionId = GetExtensionId(pszExt);
+            }
+            res.dirId = GetDirectoryId(pszDir);
+            m_resources.push_back(res);
+         }
       }
    }
-   pFileIter->End();
-
-   delete pFileIter;
 
    return S_OK;
 }
@@ -297,9 +246,7 @@ tResult cResourceManager::AddDirectoryTreeFlattened(const tChar * pszDir)
       tStrings::iterator iter;
       for (iter = dirs.begin(); iter != dirs.end(); iter++)
       {
-         cFilePath p(root);
-         p.AddRelative(iter->c_str());
-         if (AddDirectoryTreeFlattened(p.c_str()) != S_OK)
+         if (AddDirectoryTreeFlattened(iter->c_str()) != S_OK)
          {
             return E_FAIL;
          }

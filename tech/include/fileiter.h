@@ -5,6 +5,7 @@
 #define INCLUDED_FILEITER_H
 
 #include "techdll.h"
+#include "comtools.h"
 
 #ifdef _MSC_VER
 #pragma once
@@ -12,10 +13,14 @@
 
 class cFileSpec;
 
+F_DECLARE_INTERFACE(IEnumFiles);
+
 ///////////////////////////////////////////////////////////////////////////////
 //
-// ENUM: eFileAttribute
+// INTERFACE: IEnumFiles
 //
+
+////////////////////////////////////////
 
 enum eFileAttribute
 {
@@ -29,23 +34,19 @@ enum eFileAttribute
    kFA_Compressed                = (1 << 11),
 };
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cFileIter
-//
+////////////////////////////////////////
 
-class cFileIter
+interface IEnumFiles : IUnknown
 {
-public:
-   virtual ~cFileIter() = 0;
-   virtual void Begin(const cFileSpec & spec) = 0;
-   virtual bool Next(cFileSpec * pFileSpec, uint * pAttribs) = 0;
-   virtual void End() = 0;
+   virtual tResult Next(ulong count, cFileSpec * pFileSpecs, uint * pAttribs, ulong * pnElements) = 0;
+   virtual tResult Skip(ulong count) = 0;
+   virtual tResult Reset() = 0;
+   virtual tResult Clone(IEnumFiles * * ppEnum) = 0;
 };
 
-///////////////////////////////////////
+////////////////////////////////////////
 
-TECH_API cFileIter * FileIterCreate();
+TECH_API tResult EnumFiles(const cFileSpec & spec, IEnumFiles * * ppEnumFiles);
 
 ///////////////////////////////////////////////////////////////////////////////
 
