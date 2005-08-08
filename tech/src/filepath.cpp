@@ -4,7 +4,6 @@
 #include "stdhdr.h"
 
 #include "filepath.h"
-#include "fileconst.h"
 
 #include <cstring>
 #include <cstdlib>
@@ -23,6 +22,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifdef _WIN32
+#define kMaxPath _MAX_PATH
 extern "C"
 {
    __declspec(dllimport) uint STDCALL GetCurrentDirectoryA(uint, char *);
@@ -33,6 +33,8 @@ extern "C"
 #else
 #define GetCurrentDirectory  GetCurrentDirectoryA
 #endif // !UNICODE
+#else
+#error ("Need maximum path length constant for platform/compiler")
 #endif // _WIN32
 
 ///////////////////////////////////////////////////////////////////////////////

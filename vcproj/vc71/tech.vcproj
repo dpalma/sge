@@ -510,9 +510,6 @@
 				RelativePath="..\..\tech\include\digraph.h">
 			</File>
 			<File
-				RelativePath="..\..\tech\include\fileconst.h">
-			</File>
-			<File
 				RelativePath="..\..\tech\include\fileiter.h">
 			</File>
 			<File
