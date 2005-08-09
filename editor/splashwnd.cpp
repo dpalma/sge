@@ -4,6 +4,11 @@
 #include "stdhdr.h"
 
 #include "splashwnd.h"
+#include "BitmapUtils.h"
+
+#include "configapi.h"
+#include "techstring.h"
+#include "thread.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -221,6 +226,91 @@ void cSplashThread::HideSplash()
 
    m_splashWnd.SetOKToClose();
    m_splashWnd.SendMessage(WM_CLOSE);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cEditorSplashScreen
+//
+
+///////////////////////////////////////
+
+cEditorSplashScreen::cEditorSplashScreen()
+ : m_pSplashThread(NULL)
+{
+}
+
+///////////////////////////////////////
+
+cEditorSplashScreen::~cEditorSplashScreen()
+{
+   if (m_pSplashThread != NULL)
+   {
+      m_pSplashThread->HideSplash();
+   }
+}
+
+///////////////////////////////////////
+
+tResult cEditorSplashScreen::Create(const tChar * pszBitmap, uint delay)
+{
+   Assert(pszBitmap != NULL);
+   Assert(m_pSplashThread == NULL);
+
+   HBITMAP hSplashBitmap = NULL;
+   if (::LoadBitmap(pszBitmap, &hSplashBitmap))
+   {
+      m_pSplashThread = DYNAMIC_DOWNCAST(cSplashThread, AfxBeginThread(
+         RUNTIME_CLASS(cSplashThread), THREAD_PRIORITY_NORMAL, CREATE_SUSPENDED));
+
+      if (m_pSplashThread)
+      {
+         ASSERT_VALID(m_pSplashThread);
+
+         m_pSplashThread->SetBitmap(hSplashBitmap);
+         m_pSplashThread->ResumeThread();
+
+         if (delay > 0)
+         {
+            ThreadSleep(delay);
+         }
+
+         return S_OK;
+      }
+   }
+
+   return E_FAIL;
+}
+
+///////////////////////////////////////
+
+tResult EditorSplashScreenCreate(IEditorSplashScreen * * ppEditorSplashScreen)
+{
+   if (ppEditorSplashScreen == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cAutoIPtr<cEditorSplashScreen> p(new cEditorSplashScreen);
+   if (!p)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   cStr splashImage;
+   if (ConfigGet("splash_image", &splashImage) == S_OK)
+   {
+      int splashDelay = 0;
+      ConfigGet("splash_delay_ms", &splashDelay);
+
+      if (FAILED(p->Create(splashImage.c_str(), splashDelay)))
+      {
+         return E_FAIL;
+      }
+   }
+
+   *ppEditorSplashScreen = CTAddRef(static_cast<IEditorSplashScreen*>(p));
+   return S_OK;
 }
 
 /////////////////////////////////////////////////////////////////////////////

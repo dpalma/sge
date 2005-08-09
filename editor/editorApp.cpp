@@ -9,7 +9,6 @@
 #include "editorTypes.h"
 #include "MainFrm.h"
 #include "aboutdlg.h"
-#include "splashwnd.h"
 #include "BitmapUtils.h"
 #include "terrainapi.h"
 #include "ScriptCmdDlg.h"
@@ -17,6 +16,7 @@
 #include "inputapi.h"
 #include "scriptapi.h"
 #include "engineapi.h"
+#include "sys.h"
 
 #include "resourceapi.h"
 #include "configapi.h"
@@ -32,15 +32,8 @@
 #ifdef HAVE_CPPUNIT
 #ifdef USE_MFC_TESTRUNNER
 #include <cppunit/ui/mfc/TestRunner.h>
-#else
-#include <cppunit/ui/text/TestRunner.h>
-#include <cppunit/TestResultCollector.h>
-#include <cppunit/TestFailure.h>
-#include <cppunit/SourceLine.h>
-#include <cppunit/Exception.h>
 #endif
 #include <cppunit/extensions/HelperMacros.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
 #endif
 
 #include "resource.h"       // main symbols
@@ -273,27 +266,8 @@ BOOL cEditorApp::InitInstance()
       }
    }
 
-   cSplashThread * pSplashThread = NULL;
-   HBITMAP hSplashBitmap = NULL;
-   if (ConfigGet("splash_image", &temp) == S_OK
-      && ::LoadBitmap(temp.c_str(), &hSplashBitmap))
-   {
-      pSplashThread = (cSplashThread *)AfxBeginThread(
-         RUNTIME_CLASS(cSplashThread),
-         THREAD_PRIORITY_NORMAL,
-         CREATE_SUSPENDED);
-      ASSERT_VALID(pSplashThread);
-
-      pSplashThread->SetBitmap(hSplashBitmap);
-      pSplashThread->ResumeThread();
-
-      int splashDelay = 0;
-      if (ConfigGet("splash_delay_ms", &splashDelay) == S_OK
-         && splashDelay > 0)
-      {
-         Sleep(splashDelay);
-      }
-   }
+   cAutoIPtr<IEditorSplashScreen> pEditorSplashScreen;
+   EditorSplashScreenCreate(&pEditorSplashScreen);
 
 	// Register the application's document templates.  Document templates
 	//  serve as the connection between documents, frame windows and views.
@@ -340,11 +314,6 @@ BOOL cEditorApp::InitInstance()
 	// The one and only window has been initialized, so show and update it.
 	m_pMainWnd->ShowWindow(SW_SHOW);
 	m_pMainWnd->UpdateWindow();
-
-   if (pSplashThread != NULL)
-   {
-      pSplashThread->HideSplash();
-   }
 
 	return TRUE;
 }
@@ -712,26 +681,7 @@ void cEditorApp::OnToolsUnitTestRunner()
    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
    runner.run();
 #else
-   CppUnit::TextUi::TestRunner runner;
-   runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-   runner.run();
-   if (runner.result().testFailuresTotal() > 0)
-   {
-      techlog.Print(kError, "%d UNIT TESTS FAILED!\n", runner.result().testFailuresTotal());
-      CppUnit::TestResultCollector::TestFailures::const_iterator iter;
-      for (iter = runner.result().failures().begin(); iter != runner.result().failures().end(); iter++)
-      {
-         techlog.Print(kError, "%s(%d) : %s : %s\n",
-            (*iter)->sourceLine().fileName().c_str(),
-            (*iter)->sourceLine().isValid() ? (*iter)->sourceLine().lineNumber() : -1,
-            (*iter)->failedTestName().c_str(),
-            (*iter)->thrownException()->what());
-      }
-   }
-   else
-   {
-      techlog.Print(kInfo, "%d unit tests succeeded\n", runner.result().tests().size());
-   }
+   SysRunUnitTests();
 #endif
 #else
    AfxMessageBox(IDS_NO_UNIT_TESTS);

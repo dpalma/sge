@@ -13,6 +13,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+F_DECLARE_INTERFACE(IEditorSplashScreen);
 F_DECLARE_INTERFACE(IEditorApp);
 F_DECLARE_INTERFACE(IEditorLoopClient);
 F_DECLARE_INTERFACE(IEditorAppListener);
@@ -35,6 +36,20 @@ class cEditorMouseWheelEvent;
 class cRay;
 
 #define UUID(uuidstr) __declspec(uuid(uuidstr))
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IEditorSplashScreen
+//
+
+interface UUID("5193B882-4229-4396-A062-17029546F4C8") IEditorSplashScreen : IUnknown
+{
+};
+
+////////////////////////////////////////
+
+tResult EditorSplashScreenCreate(IEditorSplashScreen * * ppEditorSplashScreen);
 
 
 /////////////////////////////////////////////////////////////////////////////

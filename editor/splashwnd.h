@@ -4,6 +4,8 @@
 #ifndef INCLUDED_SPLASHWND_H
 #define INCLUDED_SPLASHWND_H
 
+#include "editorapi.h"
+
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
@@ -15,6 +17,8 @@
 
 class cSplashWnd : public CWnd
 {
+   NO_COPY(cSplashWnd);
+
 public:
    cSplashWnd();
    ~cSplashWnd();
@@ -51,6 +55,8 @@ private:
 
 class cSplashThread : public CWinThread
 {
+   NO_COPY(cSplashThread);
+
 public:
    void HideSplash();
    HBITMAP SetBitmap(HBITMAP hBitmap);
@@ -73,6 +79,27 @@ protected:
 private:
    cSplashWnd m_splashWnd;
 };
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cEditorSplashScreen
+//
+
+class cEditorSplashScreen : public cComObject<IMPLEMENTS(IEditorSplashScreen)>
+{
+   NO_COPY(cEditorSplashScreen);
+
+public:
+   cEditorSplashScreen();
+   ~cEditorSplashScreen();
+
+   tResult Create(const tChar * pszBitmap, uint delay = 0);
+
+private:
+   cSplashThread * m_pSplashThread;
+};
+
 
 /////////////////////////////////////////////////////////////////////////////
 

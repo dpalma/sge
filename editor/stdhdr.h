@@ -59,6 +59,10 @@ extern WTL::CAppModule _Module;
 #define IMPLEMENT_DYNCREATE_EX(classname, baseclassname) \
    IMPLEMENT_DYNCREATE(classname, baseclassname)
 
+#define NO_COPY(classname) \
+   classname(const classname &); \
+   const classname & operator =(const classname &)
+
 #pragma warning(disable:4355) // 'this' : used in base member initializer list
 
 /////////////////////////////////////////////////////////////////////////////
