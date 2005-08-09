@@ -99,8 +99,11 @@ tResult GlTextureCreate(const cImageData * pImageData, uint * pTexId)
       GL_UNSIGNED_BYTE,
       pImageData->GetData());
 
-   DebugMsgIf1(result != 0, "gluBuild2DMipmaps returned error: \n",
-      (const char *)gluErrorString(glGetError()));
+   if (result != GL_NO_ERROR)
+   {
+      const char * pszGluError = reinterpret_cast<const char *>(gluErrorString(glGetError()));
+      ErrorMsg1("gluBuild2DMipmaps returned error: %s\n", pszGluError);
+   }
 
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
