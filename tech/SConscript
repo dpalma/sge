@@ -10,7 +10,7 @@ sources = Split("""
    src/cpufeatures.cpp
    src/dictionary.cpp
    src/dictionarystore.cpp
-   src/fileiter.cpp
+   src/fileenum.cpp
    src/filepath.cpp
    src/filespec.cpp
    src/filereadwrite.cpp

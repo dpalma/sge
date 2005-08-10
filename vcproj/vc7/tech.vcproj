@@ -314,7 +314,7 @@
 					RelativePath="..\..\tech\src\dictionarystore.cpp">
 				</File>
 				<File
-					RelativePath="..\..\tech\src\fileiter.cpp">
+					RelativePath="..\..\tech\src\fileenum.cpp">
 				</File>
 				<File
 					RelativePath="..\..\tech\src\filepath.cpp">
@@ -476,7 +476,7 @@
 				RelativePath="..\..\tech\include\digraph.h">
 			</File>
 			<File
-				RelativePath="..\..\tech\include\fileiter.h">
+				RelativePath="..\..\tech\include\fileenum.h">
 			</File>
 			<File
 				RelativePath="..\..\tech\include\filepath.h">

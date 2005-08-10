@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "fileiter.h"
+#include "fileenum.h"
 #include "filespec.h"
 #include "filepath.h"
 

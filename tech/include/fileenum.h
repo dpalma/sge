@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // $Id$
 
-#ifndef INCLUDED_FILEITER_H
-#define INCLUDED_FILEITER_H
+#ifndef INCLUDED_FILEENUM_H
+#define INCLUDED_FILEENUM_H
 
 #include "techdll.h"
 #include "comtools.h"
@@ -50,4 +50,4 @@ TECH_API tResult EnumFiles(const cFileSpec & spec, IEnumFiles * * ppEnumFiles);
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // !INCLUDED_FILEITER_H
+#endif // !INCLUDED_FILEENUM_H

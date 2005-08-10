@@ -4,8 +4,8 @@
 #include "stdhdr.h"
 
 #include "resourcemanager.h"
+#include "fileenum.h"
 #include "filespec.h"
-#include "fileiter.h"
 #include "readwriteapi.h"
 
 #include <cstdio>
