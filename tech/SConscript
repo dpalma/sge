@@ -37,10 +37,9 @@ sources = Split("""
 
 includePaths = Split("""
    #tech/include
-   #3rdparty/zlib
-   #3rdparty/zlib/contrib/minizip
 """)
 
 env = env.Copy()
+env.UseZLib()
 env.Append(CPPPATH = includePaths)
 env.Library('tech', sources)

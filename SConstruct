@@ -4,56 +4,54 @@
 import os
 import re
 
-env = Environment(ENV = os.environ)
-
-opts = Options()
-opts.AddOptions(BoolOption('debug', 'Build with debugging enabled', 0))
-opts.AddOptions(BoolOption('unicode', 'Build with _UNICODE defined', 0))
-opts.Update(env)
-
-Help("Usage: scons [debug] [unicode]" + opts.GenerateHelpText(env))
-
-########################################
+#############################################################################
 
 platform = str(Platform())
 
-if platform == 'win32':
-   glIncludePaths = ['#3rdparty/Cg/include']
-   glLibPaths = ['#3rdparty/Cg/lib']
-   glLibs = ['opengl32.lib', 'glu32.lib', 'Cg.lib', 'CgGL.lib']
-elif platform == 'cygwin':
-   glIncludePaths = ['/usr/include', '/usr/X11R6/include']
-   glLibPaths = ['/usr/lib', '/usr/X11R6/lib']
-   glLibs = ['GL', 'GLU', 'X11']
-else:
-   print 'Unsupported platform'
+if not platform in ['win32', 'cygwin']:
+   print 'Unsupported platform', platform
    Exit(1)
 
-########################################
 
-if env.get('unicode'):
-   env.Append(CPPDEFINES=['_UNICODE', 'UNICODE'])
-else:
-   env.Append(CPPDEFINES=['_MBCS'])
+#############################################################################
+#
+# CLASS: SGEEnvironment
+#
 
-if platform == 'win32':
-   env.Append(CCFLAGS=['/GX', '/FD'], CPPDEFINES=['_WIN32', 'WIN32', 'STRICT']);
-   env.Append(CPPDEFINES=['TIXML_USE_STL', 'GLEW_STATIC', 'NO_AUTO_EXPORTS'])
-   if env.get('debug'):
-      env.Append(CCFLAGS=['/MTd', '/Od', '/GZ'], CPPDEFINES=['DEBUG', '_DEBUG'])
-   else:
-      env.Append(CCFLAGS=['/MT', '/O2'], CPPDEFINES=['NDEBUG'])
-      env.Append(LINKFLAGS=['/opt:ref'])
-elif platform == 'cygwin':
-   if env.get('debug'):
-      env.Append(CCFLAGS=['-g'])
-   else:
-      env.Append(CCFLAGS=['-o3'])
-else:
-   print 'Unsupported platform ', platform
-   Exit(1)
+class SGEEnvironment(Environment):
 
-########################################
+   def UseTinyxml(self):
+      self.Append(CPPDEFINES = ['TIXML_USE_STL'])
+      self.Append(CPPPATH    = ['#3rdparty/tinyxml'])
+      self.Append(LIBPATH    = ['#3rdparty/tinyxml'])
+      self.Append(LIBS       = ['tinyxml'])
+      
+   def UseGL(self):
+      self.Append(CPPDEFINES = ['GLEW_STATIC'])
+      self.Append(CPPPATH    = ['#3rdparty/glew/include'])
+      self.Append(LIBPATH    = ['#3rdparty/glew'])
+      self.Append(LIBS       = ['glew'])
+      if platform == 'win32':
+         self.Append(CPPPATH = ['#3rdparty/Cg/include'])
+         self.Append(LIBPATH = ['#3rdparty/Cg/lib'])
+         self.Append(LIBS    = ['opengl32.lib', 'glu32.lib', 'Cg.lib', 'CgGL.lib'])
+      elif platform == 'cygwin':
+         self.Append(CPPPATH = ['/usr/include', '/usr/X11R6/include'])
+         self.Append(LIBPATH = ['/usr/lib', '/usr/X11R6/lib'])
+         self.Append(LIBS    = ['GL', 'GLU', 'X11'])
+         
+   def UseZLib(self):
+      self.Append(CPPPATH    = ['#3rdparty/zlib', '#3rdparty/zlib/contrib/minizip'])
+      self.Append(LIBPATH    = ['#3rdparty/zlib'])
+      self.Append(LIBS       = ['zlibwapi'])
+      
+   def UseLua(self):
+      self.Append(CPPPATH    = ['#3rdparty/lua/include'])
+      self.Append(LIBPATH    = ['#3rdparty/lua'])
+      self.Append(LIBS       = ['lua'])
+
+
+#############################################################################
 # From http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/52664
 
 def Walk( root, recurse=0, pattern='*', return_folders=0 ):
@@ -90,9 +88,40 @@ def Walk( root, recurse=0, pattern='*', return_folders=0 ):
 			
 	return result
 
+#############################################################################
+
+opts = Options()
+opts.AddOptions(BoolOption('debug', 'Build with debugging enabled', 0))
+opts.AddOptions(BoolOption('unicode', 'Build with _UNICODE defined', 0))
+
+env = SGEEnvironment(ENV = os.environ, OPTIONS = opts)
+
+Help("Usage: scons [debug] [unicode]" + opts.GenerateHelpText(env))
+
 ########################################
 
-Export('env glIncludePaths glLibPaths glLibs')
+if env.get('unicode'):
+   env.Append(CPPDEFINES=['_UNICODE', 'UNICODE'])
+else:
+   env.Append(CPPDEFINES=['_MBCS'])
+
+if platform == 'win32':
+   env.Append(CCFLAGS=['/GX', '/FD'], CPPDEFINES=['_WIN32', 'WIN32', 'STRICT']);
+   env.Append(CPPDEFINES=['NO_AUTO_EXPORTS'])
+   if env.get('debug'):
+      env.Append(CCFLAGS=['/MTd', '/Od', '/GZ'], CPPDEFINES=['DEBUG', '_DEBUG'])
+   else:
+      env.Append(CCFLAGS=['/MT', '/O2'], CPPDEFINES=['NDEBUG'])
+      env.Append(LINKFLAGS=['/opt:ref'])
+elif platform == 'cygwin':
+   if env.get('debug'):
+      env.Append(CCFLAGS=['-g'])
+   else:
+      env.Append(CCFLAGS=['-o3'])
+
+########################################
+
+Export('env')
 
 sconscripts = Walk(os.getcwd(), 1, 'SConscript', 0)
 

@@ -31,14 +31,14 @@ elif env['PLATFORM'] == 'cygwin':
    sources = sources + ['src/syslinux.cpp']
 
 includePaths = Split("""
-   #3rdparty/glew/include
-   #3rdparty/lua/include
-   #3rdparty/tinyxml
    #engine/include
    #render/include
    #tech/include
-""") + glIncludePaths
+""")
 
 env = env.Copy()
 env.Append(CPPPATH = includePaths)
+env.UseGL()
+env.UseLua()
+env.UseTinyxml()
 env.Library('engine', sources)

@@ -14,26 +14,19 @@ if env['PLATFORM'] == 'win32':
    sources = sources + env.RES('game.rc')
 
 includePaths = Split("""
-   #3rdparty/glew/include
-   #3rdparty/lua/include
-   #3rdparty/tinyxml
    #engine/include
    #gui/include
    #render/include
    #tech/include
-""") + glIncludePaths
+""")
 
 libPaths = Split("""
-   #3rdparty/glew
-   #3rdparty/tinyxml
-   #3rdparty/lua
-   #3rdparty/zlib
    #allguids
    #tech
    #render
    #engine
    #gui
-""") + glLibPaths
+""")
 
 libs = Split("""
    allguids
@@ -41,20 +34,20 @@ libs = Split("""
    rendergl
    engine
    gui
-   glew
-   lua
-   tinyxml
-   zlibwapi
    user32
    kernel32
    gdi32
    winmm
-""") + glLibs
+""")
 
 env = env.Copy()
 env.Append(CPPPATH = includePaths)
 env.Append(LIBPATH = libPaths)
 env.Append(LIBS = libs)
+env.UseGL()
+env.UseLua()
+env.UseTinyxml()
+env.UseZLib()
 if env.get('debug'):
    env['PDB'] = 'game.pdb'
 env.Program('game', sources)

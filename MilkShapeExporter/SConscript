@@ -14,7 +14,6 @@ sources = Split("""
 includePaths = Split("""
    #3rdparty/ms3dsdk/msLib
    #3rdparty/NvTriStrip/include
-   #3rdparty/tinyxml
    #3rdparty/wtl/include
    #engine/include
    #render/include
@@ -24,11 +23,8 @@ includePaths = Split("""
 libPaths = Split("""
    #3rdparty/ms3dsdk/msLib/lib
    #3rdparty/NvTriStrip
-   #3rdparty/tinyxml
-   #3rdparty/zlib
    #allguids
    #tech
-   #render
    #engine
 """)
 
@@ -37,22 +33,19 @@ libs = Split("""
    NvTriStrip.lib
    allguids.lib
    tech.lib
-   rendergl.lib
    engine.lib
-   tinyxml.lib
-   zlibwapi.lib
    user32.lib
    kernel32.lib
    gdi32.lib
    comdlg32.lib
-   opengl32.lib
-   glu32.lib
 """)
 
 env = env.Copy()
 env.Append(CPPPATH = includePaths)
 env.Append(LIBPATH = libPaths)
 env.Append(LIBS = libs)
+env.UseTinyxml()
+env.UseZLib()
 if env.get('debug'):
    env['PDB'] = 'msSGEExporter.pdb'
 env.SharedLibrary('msSGEExporter', sources + env.RES('msPlugIn.rc'))

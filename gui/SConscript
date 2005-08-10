@@ -25,13 +25,10 @@ sources = Split("""
 """)
 
 includePaths = Split("""
-   #3rdparty/glew/include
-   #3rdparty/lua/include
-   #3rdparty/tinyxml
    #engine/include
    #gui/include
    #tech/include
-""") + glIncludePaths
+""")
 
 if env['PLATFORM'] == 'win32':
    sources = sources + ['src/guifontw32.cpp']
@@ -39,5 +36,8 @@ elif env['PLATFORM'] == 'cygwin':
    sources = sources + ['src/guifontx11.cpp']
 
 env = env.Copy()
+env.UseGL()
+env.UseLua()
+env.UseTinyxml()
 env.Append(CPPPATH = includePaths)
 env.Library('gui', sources)
