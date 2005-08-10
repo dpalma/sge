@@ -22,8 +22,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\render\include,..\..\tech\include,..\..\3rdparty\sgi"
-				PreprocessorDefinitions="NDEBUG;_USRDLL;RENDER_EXPORTS;WIN32;_WINDOWS;STRICT"
+				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\3rdparty\glew\include,..\..\render\include,..\..\tech\include"
+				PreprocessorDefinitions="NDEBUG;_USRDLL;RENDER_EXPORTS;WIN32;_WINDOWS;STRICT;GLEW_STATIC"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="winmm.lib opengl32.lib glu32.lib"
+				AdditionalDependencies="$(OutDir)\glew.lib winmm.lib opengl32.lib glu32.lib"
 				OutputFile=".\..\..\Build.vc7\Release/rendergl.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -83,8 +83,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\render\include,..\..\tech\include,..\..\3rdparty\sgi"
-				PreprocessorDefinitions="_USRDLL;RENDER_EXPORTS;STRICT;_WINDOWS;NDEBUG;WIN32"
+				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\3rdparty\glew\include,..\..\render\include,..\..\tech\include"
+				PreprocessorDefinitions="_USRDLL;RENDER_EXPORTS;STRICT;_WINDOWS;NDEBUG;WIN32;GLEW_STATIC"
 				StringPooling="TRUE"
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="TRUE"
@@ -103,7 +103,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="winmm.lib opengl32.lib glu32.lib"
+				AdditionalDependencies="$(OutDir)\glew.lib winmm.lib opengl32.lib glu32.lib"
 				OutputFile=".\..\..\Build.vc7\Opt/rendergl.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -145,8 +145,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\render\include,..\..\tech\include,..\..\3rdparty\sgi"
-				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,_USRDLL,RENDER_EXPORTS,WIN32,_WINDOWS,STRICT"
+				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\3rdparty\glew\include,..\..\render\include,..\..\tech\include"
+				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,_USRDLL,RENDER_EXPORTS,WIN32,_WINDOWS,STRICT,GLEW_STATIC"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="TRUE"
@@ -191,8 +191,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\render\include,..\..\tech\include,..\..\3rdparty\sgi"
-				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,_USRDLL,RENDER_EXPORTS,WIN32,_WINDOWS,STRICT,HAVE_CPPUNIT"
+				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\3rdparty\glew\include,..\..\render\include,..\..\tech\include"
+				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,_USRDLL,RENDER_EXPORTS,WIN32,_WINDOWS,STRICT,HAVE_CPPUNIT,GLEW_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="3"
@@ -237,8 +237,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\render\include,..\..\tech\include,..\..\3rdparty\sgi"
-				PreprocessorDefinitions="_DEBUG;_USRDLL;RENDER_EXPORTS;WIN32;_WINDOWS;STRICT;HAVE_CPPUNIT"
+				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\3rdparty\glew\include,..\..\render\include,..\..\tech\include"
+				PreprocessorDefinitions="_DEBUG;_USRDLL;RENDER_EXPORTS;WIN32;_WINDOWS;STRICT;HAVE_CPPUNIT,GLEW_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="3"
@@ -256,7 +256,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\cppunit.lib winmm.lib opengl32.lib glu32.lib"
+				AdditionalDependencies="$(OutDir)\cppunit.lib $(OutDir)\glew.lib winmm.lib opengl32.lib glu32.lib"
 				OutputFile=".\..\..\Build.vc7\Debug/rendergl.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"

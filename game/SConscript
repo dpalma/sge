@@ -14,7 +14,6 @@ if env['PLATFORM'] == 'win32':
    sources = sources + env.RES('game.rc')
 
 includePaths = Split("""
-   #3rdparty/sgi
    #3rdparty/glew/include
    #3rdparty/lua/include
    #3rdparty/tinyxml

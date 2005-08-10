@@ -25,7 +25,6 @@ sources = Split("""
 """)
 
 includePaths = Split("""
-   #3rdparty/sgi
    #3rdparty/glew/include
    #3rdparty/lua/include
    #3rdparty/tinyxml
