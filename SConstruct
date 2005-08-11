@@ -90,11 +90,12 @@ def Walk( root, recurse=0, pattern='*', return_folders=0 ):
 
 #############################################################################
 
-opts = Options()
-opts.AddOptions(BoolOption('debug', 'Build with debugging enabled', 0))
-opts.AddOptions(BoolOption('unicode', 'Build with _UNICODE defined', 0))
+opts = Options(None, ARGUMENTS)
+opts.AddOptions(
+   BoolOption('debug', 'Build with debugging enabled', 0),
+   BoolOption('unicode', 'Build with _UNICODE defined', 0))
 
-env = SGEEnvironment(ENV = os.environ, OPTIONS = opts)
+env = SGEEnvironment(ENV = os.environ, options = opts)
 
 Help("Usage: scons [debug] [unicode]" + opts.GenerateHelpText(env))
 
@@ -121,8 +122,6 @@ elif platform == 'cygwin':
 
 ########################################
 
-Export('env')
-
 sconscripts = Walk(os.getcwd(), 1, 'SConscript', 0)
 
 # Remove Windows-specific projects if not building for Windows
@@ -138,4 +137,4 @@ for script in sconscripts:
    # Get rid of leading backslash if present since script is a relative path now
    # The os.path.normpath call converts double-backslashes back to single
    script = re.sub(r'^\\{1,2}', '', os.path.normpath(script))
-   SConscript(script)
+   SConscript(script, exports='env')
