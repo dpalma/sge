@@ -4,6 +4,7 @@
 #include "stdhdr.h"
 
 #include "comtools.h"
+#include "techstring.h"
 
 #include <cstdio>
 #include <cstring>
@@ -15,100 +16,24 @@
 #include "dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGuid
-//
 
-struct sGuid
+bool GUIDToString(REFGUID guid, tChar * psz, int maxLen)
 {
-   unsigned long Data1;
-   unsigned short Data2;
-   unsigned short Data3;
-   unsigned char Data4[8];
-};
-
-typedef struct _GUID GUID;
-
-class cGuid : public sGuid
-{
-   // private, un-implemented
-   cGuid(const cGuid &);
-   const cGuid & operator =(const cGuid &);
-
-public:
-   cGuid(unsigned long, unsigned short, unsigned short,
-      unsigned char, unsigned char, unsigned char, unsigned char,
-      unsigned char, unsigned char, unsigned char, unsigned char);
-
-   bool operator ==(const cGuid & other) const;
-   bool operator !=(const cGuid & other) const;
-
-   bool ToString(char * psz, int maxLen) const;
-
-   static cGuid Null;
-};
-
-///////////////////////////////////////
-
-cGuid cGuid::Null(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-
-///////////////////////////////////////
-
-cGuid::cGuid(unsigned long l, unsigned short w1, unsigned short w2,
-             unsigned char b1, unsigned char b2, unsigned char b3, unsigned char b4,
-             unsigned char b5, unsigned char b6, unsigned char b7, unsigned char b8)
-{
-   Data1 = l;
-   Data2 = w1;
-   Data3 = w2;
-   Data4[0] = b1;
-   Data4[1] = b2;
-   Data4[2] = b3;
-   Data4[3] = b4;
-   Data4[4] = b5;
-   Data4[5] = b6;
-   Data4[6] = b7;
-   Data4[7] = b8;
-}
-
-///////////////////////////////////////
-
-bool cGuid::operator ==(const cGuid & other) const
-{
-   return memcmp(static_cast<const sGuid *>(this),
-                 static_cast<const sGuid *>(&other),
-                 sizeof(sGuid)) == 0;
-}
-
-///////////////////////////////////////
-
-bool cGuid::operator !=(const cGuid & other) const
-{
-   return memcmp(static_cast<const sGuid *>(this),
-                 static_cast<const sGuid *>(&other),
-                 sizeof(sGuid)) != 0;
-}
-
-///////////////////////////////////////
-
-bool cGuid::ToString(char * psz, int maxLen) const
-{
-   int result = snprintf(psz, maxLen - 1, "{%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X}",
-      Data1, Data2, Data3,
-      Data4[0], Data4[1], Data4[2], Data4[3],
-      Data4[4], Data4[5], Data4[6], Data4[7]);
-   return result > 0;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-bool GUIDToString(REFGUID guid, char * psz, int maxLen)
-{
-   int result = snprintf(psz, maxLen - 1, "{%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X}",
+   cStr temp;
+   int result = temp.Format(_T("{%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X}"),
       guid.Data1, guid.Data2, guid.Data3,
       guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3],
       guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]);
-   return result > 0;
+   if (result > 0)
+   {
+      if (result < maxLen)
+      {
+         _tcscpy(psz, temp.c_str());
+         psz[result] = 0;
+         return true;
+      }
+   }
+   return false;
 }
 
 
@@ -119,11 +44,11 @@ bool GUIDToString(REFGUID guid, char * psz, int maxLen)
 class cComToolsTests : public CppUnit::TestCase
 {
    CPPUNIT_TEST_SUITE(cComToolsTests);
-      CPPUNIT_TEST(TestcGuidToString);
+      CPPUNIT_TEST(TestGuidToString);
       CPPUNIT_TEST(TestIsSameObject);
    CPPUNIT_TEST_SUITE_END();
 
-   void TestcGuidToString();
+   void TestGuidToString();
    void TestIsSameObject();
 };
 
@@ -133,24 +58,24 @@ CPPUNIT_TEST_SUITE_REGISTRATION(cComToolsTests);
 
 ////////////////////////////////////////
 
-void cComToolsTests::TestcGuidToString()
+void cComToolsTests::TestGuidToString()
 {
    // {B40B6831-FCB2-4082-AE07-61A7FC4D3AEB}
-   static const cGuid kTestGuidA(0xb40b6831, 0xfcb2, 0x4082, 0xae, 0x7, 0x61, 0xa7, 0xfc, 0x4d, 0x3a, 0xeb);
-   static const cGuid kTestGuidADupe(0xb40b6831, 0xfcb2, 0x4082, 0xae, 0x7, 0x61, 0xa7, 0xfc, 0x4d, 0x3a, 0xeb);
+   static const GUID kTestGuidA = {0xb40b6831, 0xfcb2, 0x4082, {0xae, 0x7, 0x61, 0xa7, 0xfc, 0x4d, 0x3a, 0xeb}};
+   static const GUID kTestGuidADupe = {0xb40b6831, 0xfcb2, 0x4082, {0xae, 0x7, 0x61, 0xa7, 0xfc, 0x4d, 0x3a, 0xeb}};
 
    // {DED26BAE-E83F-4c59-8B95-A309311B15A9}
-   static const cGuid kTestGuidB(0xded26bae, 0xe83f, 0x4c59, 0x8b, 0x95, 0xa3, 0x9, 0x31, 0x1b, 0x15, 0xa9);
+   static const GUID kTestGuidB = {0xded26bae, 0xe83f, 0x4c59, {0x8b, 0x95, 0xa3, 0x9, 0x31, 0x1b, 0x15, 0xa9}};
 
    char sz[kGuidStringLength];
-   CPPUNIT_ASSERT(kTestGuidA.ToString(sz, _countof(sz)));
+   CPPUNIT_ASSERT(GUIDToString(kTestGuidA, sz, _countof(sz)));
    CPPUNIT_ASSERT(strcmp(sz, "{B40B6831-FCB2-4082-AE07-61A7FC4D3AEB}") == 0);
 
    char szTooSmall[kGuidStringLength / 4];
-   CPPUNIT_ASSERT(!kTestGuidA.ToString(szTooSmall, _countof(szTooSmall)));
+   CPPUNIT_ASSERT(!GUIDToString(kTestGuidA, szTooSmall, _countof(szTooSmall)));
 
-   CPPUNIT_ASSERT(kTestGuidA == kTestGuidADupe);
-   CPPUNIT_ASSERT(kTestGuidA != kTestGuidB);
+   CPPUNIT_ASSERT(CTIsEqualGUID(kTestGuidA, kTestGuidADupe));
+   CPPUNIT_ASSERT(!CTIsEqualGUID(kTestGuidA, kTestGuidB));
 }
 
 ////////////////////////////////////////

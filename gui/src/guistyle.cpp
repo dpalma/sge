@@ -942,9 +942,8 @@ void cGUIStyleTests::TestFactoryFunction()
    static const char szFont[] = "MS Sans Serif";
    static const uint kPointSize = 14;
 
-   char szText[1024];
-
-   snprintf(szText, _countof(szText),
+   cStr text;
+   text.Format(
       "%s : %s;" \
       "%s : %s;  " \
       "%s : %s;" \
@@ -963,7 +962,7 @@ void cGUIStyleTests::TestFactoryFunction()
       kAttribFontPointSize, kPointSize
    );
 
-   CPPUNIT_ASSERT(GUIStyleParse(szText, &pStyle) == S_OK);
+   CPPUNIT_ASSERT(GUIStyleParse(text.c_str(), &pStyle) == S_OK);
    CPPUNIT_ASSERT(pStyle->GetAlignment(&temp) == S_OK);
    CPPUNIT_ASSERT(temp == kGUIAlignCenter);
    CPPUNIT_ASSERT(pStyle->GetVerticalAlignment(&temp) == S_OK);

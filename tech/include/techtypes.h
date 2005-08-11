@@ -84,10 +84,6 @@ typedef char      tChar;
 #define NULL 0
 #endif
 
-#ifndef interface
-#define interface struct
-#endif
-
 typedef unsigned char   byte;
 
 typedef unsigned char   uchar;
@@ -113,16 +109,6 @@ typedef long long       int64;
 typedef float           real32;
 typedef double          real64;
 
-#ifndef NO_BOOL
-#ifdef __CYGWIN__
-typedef unsigned char   BOOL;
-#else
-typedef int             BOOL;
-#endif
-#define TRUE   1
-#define FALSE  0
-#endif // !NO_BOOL
-
 ///////////////////////////////////////
 
 #ifndef EXTERN_C
@@ -139,12 +125,6 @@ typedef int             BOOL;
 #define DECLSPEC_DLLEXPORT __declspec(dllexport)
 #else
 #define DECLSPEC_DLLEXPORT
-#endif
-
-#ifdef _DLL
-#define CRT_IMPORT DECLSPEC_DLLIMPORT
-#else
-#define CRT_IMPORT
 #endif
 
 typedef void * HANDLE;
@@ -175,11 +155,6 @@ typedef void * HANDLE;
 #ifndef _MSC_VER
 #define stricmp strcasecmp
 #define strnicmp strncasecmp
-#endif
-
-#ifdef _MSC_VER
-#define snprintf _snprintf
-EXTERN_C CRT_IMPORT int CDECL _snprintf(char *, size_t, const char * , ...);
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////

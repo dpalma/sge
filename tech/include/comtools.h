@@ -13,11 +13,11 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-TECH_API bool GUIDToString(REFGUID guid, char * psz, int maxLen);
+TECH_API bool GUIDToString(REFGUID guid, tChar * psz, int maxLen);
 
 ///////////////////////////////////////
 
-inline BOOL CTIsEqualGUID(REFGUID rguid1, REFGUID rguid2)
+inline bool CTIsEqualGUID(REFGUID rguid1, REFGUID rguid2)
 {
    return (
 	  ((long*) &rguid1)[0] == ((long*) &rguid2)[0] &&
@@ -26,7 +26,7 @@ inline BOOL CTIsEqualGUID(REFGUID rguid1, REFGUID rguid2)
 	  ((long*) &rguid1)[3] == ((long*) &rguid2)[3]);
 }
 
-inline BOOL CTIsEqualUnknown(REFGUID rguid)
+inline bool CTIsEqualUnknown(REFGUID rguid)
 {
    return CTIsEqualGUID(rguid, IID_IUnknown);
 }

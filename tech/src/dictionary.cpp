@@ -351,34 +351,34 @@ void cDictionaryTests::TestPersistence()
    cAutoIPtr<IDictionary> pSaveDict(DictionaryCreate());
 
    int i;
-   char szKey[100], szValue[100];
+   cStr key, value;
 
    for (i = 0; i < kNumTestVars; i++)
    {
-      snprintf(szKey, _countof(szKey), szPermKeyFormat, i);
-      snprintf(szValue, _countof(szValue), szPermValFormat, i);
-      CPPUNIT_ASSERT(pSaveDict->Set(szKey, szValue, kPermanent) == S_OK);
+      key.Format(szPermKeyFormat, i);
+      value.Format(szPermValFormat, i);
+      CPPUNIT_ASSERT(pSaveDict->Set(key.c_str(), value.c_str(), kPermanent) == S_OK);
 
-      snprintf(szKey, _countof(szKey), szTempKeyFormat, i);
-      snprintf(szValue, _countof(szValue), szTempValFormat, i);
-      CPPUNIT_ASSERT(pSaveDict->Set(szKey, szValue, kTransitory) == S_OK);
+      key.Format(szTempKeyFormat, i);
+      value.Format(szTempValFormat, i);
+      CPPUNIT_ASSERT(pSaveDict->Set(key.c_str(), value.c_str(), kTransitory) == S_OK);
    }
 
    for (i = 0; i < kNumTestVars; i++)
    {
-      cStr value;
+      cStr value2;
       tPersistence persist;
 
-      snprintf(szKey, _countof(szKey), szPermKeyFormat, i);
-      snprintf(szValue, _countof(szValue), szPermValFormat, i);
-      CPPUNIT_ASSERT(pSaveDict->Get(szKey, &value, &persist) == S_OK);
-      CPPUNIT_ASSERT(strcmp(value.c_str(), szValue) == 0);
+      key.Format(szPermKeyFormat, i);
+      value.Format(szPermValFormat, i);
+      CPPUNIT_ASSERT(pSaveDict->Get(key.c_str(), &value2, &persist) == S_OK);
+      CPPUNIT_ASSERT(strcmp(value2.c_str(), value.c_str()) == 0);
       CPPUNIT_ASSERT(persist == kPermanent);
 
-      snprintf(szKey, _countof(szKey), szTempKeyFormat, i);
-      snprintf(szValue, _countof(szValue), szTempValFormat, i);
-      CPPUNIT_ASSERT(pSaveDict->Get(szKey, &value, &persist) == S_OK);
-      CPPUNIT_ASSERT(strcmp(value.c_str(), szValue) == 0);
+      key.Format(szTempKeyFormat, i);
+      value.Format(szTempValFormat, i);
+      CPPUNIT_ASSERT(pSaveDict->Get(key.c_str(), &value2, &persist) == S_OK);
+      CPPUNIT_ASSERT(strcmp(value2.c_str(), value.c_str()) == 0);
       CPPUNIT_ASSERT(persist == kTransitory);
    }
 
@@ -398,18 +398,18 @@ void cDictionaryTests::TestPersistence()
 
       for (i = 0; i < kNumTestVars; i++)
       {
-         cStr value;
+         cStr value2;
          tPersistence persist;
 
-         snprintf(szKey, _countof(szKey), szPermKeyFormat, i);
-         snprintf(szValue, _countof(szValue), szPermValFormat, i);
-         CPPUNIT_ASSERT(pLoadDict->Get(szKey, &value, &persist) == S_OK);
-         CPPUNIT_ASSERT(strcmp(value.c_str(), szValue) == 0);
+         key.Format(szPermKeyFormat, i);
+         value.Format(szPermValFormat, i);
+         CPPUNIT_ASSERT(pLoadDict->Get(key.c_str(), &value2, &persist) == S_OK);
+         CPPUNIT_ASSERT(strcmp(value2.c_str(), value.c_str()) == 0);
          CPPUNIT_ASSERT(persist == kPermanent);
 
-         snprintf(szKey, _countof(szKey), szTempKeyFormat, i);
-         snprintf(szValue, _countof(szValue), szTempValFormat, i);
-         CPPUNIT_ASSERT(pLoadDict->Get(szKey, &value, &persist) == S_FALSE);
+         key.Format(szTempKeyFormat, i);
+         value.Format(szTempValFormat, i);
+         CPPUNIT_ASSERT(pLoadDict->Get(key.c_str(), &value2, &persist) == S_FALSE);
       }
 
       CPPUNIT_ASSERT(unlink(szStore) == 0);

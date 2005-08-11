@@ -7,6 +7,7 @@
 #include "scriptvar.h"
 
 #include "dictionaryapi.h"
+#include "techstring.h"
 
 extern "C"
 {
@@ -1187,12 +1188,12 @@ void cLuaInterpreterTests::TestPublishObject()
       "print([[%s() returned ]] .. r .. [[\r\n]]);"
    };
 
-   char szScript[1024];
-   snprintf(szScript, _countof(szScript), kScriptSpec, kRNG, time(NULL), kRNG, kRNG);
+   cStr script;
+   script.Format(kScriptSpec, kRNG, time(NULL), kRNG, kRNG);
 
-   CPPUNIT_ASSERT(m_pInterp->ExecString(szScript) == S_OK);
+   CPPUNIT_ASSERT(m_pInterp->ExecString(script.c_str()) == S_OK);
    CPPUNIT_ASSERT(m_pInterp->RemoveNamedItem(kRNG) == S_OK);
-   CPPUNIT_ASSERT(m_pInterp->ExecString(szScript) != S_OK);
+   CPPUNIT_ASSERT(m_pInterp->ExecString(script.c_str()) != S_OK);
 }
 
 ////////////////////////////////////////

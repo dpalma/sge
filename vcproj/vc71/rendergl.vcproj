@@ -454,9 +454,6 @@
 				RelativePath="..\..\render\gl\softwarevertexblend.h">
 			</File>
 			<File
-				RelativePath="..\..\render\gl\stdgl.h">
-			</File>
-			<File
 				RelativePath="..\..\render\gl\stdhdr.h">
 			</File>
 			<File

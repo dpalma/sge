@@ -172,6 +172,23 @@ int cStr::ParseTuple(float * pFloats, int nMaxFloats) const
 
 ///////////////////////////////////////
 
+static int FormatOptionsLengthEstimate(const cStr & formatOptions, tChar type)
+{
+   if (formatOptions.empty())
+   {
+      return 0;
+   }
+
+   int i = formatOptions.ToInt();
+   if (i > 0)
+   {
+      return i;
+   }
+
+   // TODO: there are more cases to handle
+   return 0;
+}
+
 AssertOnce(sizeof(int) == sizeof(uint));
 
 static int FormatLengthEstimate(const tChar * pszFormat, va_list args)
@@ -181,6 +198,7 @@ static int FormatLengthEstimate(const tChar * pszFormat, va_list args)
    int formatLenEst = 0;
    tChar last = 0;
    bool bInFormatField = false;
+   cStr formatOptions; // stuff between percent and type-specifying character (e.g., 08 in %08x)
 
    for (uint i = 0; i < l; i++)
    {
@@ -199,6 +217,7 @@ static int FormatLengthEstimate(const tChar * pszFormat, va_list args)
             {
                Assert(!bInFormatField);
                bInFormatField = true;
+               formatOptions.erase();
             }
             break;
          }
@@ -223,13 +242,13 @@ static int FormatLengthEstimate(const tChar * pszFormat, va_list args)
          case 'x':
          case 'X':
          {
-            if (last == '%')
+            if (bInFormatField)
             {
                int intValue = va_arg(args, int);
-               Assert(bInFormatField);
                bInFormatField = false;
                // The #bits is a safe over-estimate of the max #digits
                formatLenEst += sizeof(int) * CHAR_BIT;
+               formatLenEst += FormatOptionsLengthEstimate(formatOptions.c_str(), pszFormat[i]);
             }
             else
             {
@@ -244,12 +263,12 @@ static int FormatLengthEstimate(const tChar * pszFormat, va_list args)
          case 'g':
          case 'G':
          {
-            if (last == '%')
+            if (bInFormatField)
             {
                double doubleValue = va_arg(args, double);
-               Assert(bInFormatField);
                bInFormatField = false;
                formatLenEst += (DBL_MANT_DIG * CHAR_BIT) + 1 + DBL_DIG;
+               formatLenEst += FormatOptionsLengthEstimate(formatOptions.c_str(), pszFormat[i]);
             }
             else
             {
@@ -260,12 +279,12 @@ static int FormatLengthEstimate(const tChar * pszFormat, va_list args)
 
          case 's':
          {
-            if (last == '%')
+            if (bInFormatField)
             {
                const tChar * pszValue = va_arg(args, const tChar *);
-               Assert(bInFormatField);
                bInFormatField = false;
                formatLenEst += _tcslen(pszValue);
+               formatLenEst += FormatOptionsLengthEstimate(formatOptions.c_str(), pszFormat[i]);
             }
             else
             {
@@ -276,11 +295,9 @@ static int FormatLengthEstimate(const tChar * pszFormat, va_list args)
 
          default:
          {
-            if (last == '%')
+            if (bInFormatField)
             {
-               Assert(!"Un-supported format specifier in FormatLength");
-               Assert(bInFormatField);
-               bInFormatField = false;
+               formatOptions.push_back(pszFormat[i]);
             }
             else
             {
@@ -314,10 +331,10 @@ int CDECL cStr::Format(const tChar * pszFormat, ...)
    va_start(args, pszFormat);
    int length = FormatLengthEstimate(pszFormat, args) + 1; // plus one for null terminator
    tChar * pszTemp = reinterpret_cast<tChar*>(alloca(length * sizeof(tChar)));
-   _vsntprintf(pszTemp, length, pszFormat, args);
+   int result = _vsntprintf(pszTemp, length, pszFormat, args);
    va_end(args);
-   *this = cStr(pszTemp);
-   return length;
+   assign(pszTemp);
+   return result;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -497,6 +514,7 @@ void cStrTests::TestFormatLength()
    CPPUNIT_ASSERT(::DoFormatLengthTest("with string: %s", szSample));
    CPPUNIT_ASSERT(::DoFormatLengthTest("%x %d %s (multiple)", UINT_MAX, INT_MIN, szSample));
    CPPUNIT_ASSERT(::DoFormatLengthTest("%% escaped percents %%%%%%"));
+   CPPUNIT_ASSERT(::DoFormatLengthTest("hex with specific width %08X", UINT_MAX / 22));
 }
 
 #endif // _MSC_VER >= 1300

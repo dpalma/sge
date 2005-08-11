@@ -743,7 +743,8 @@ void SysReportFrameStats(tChar * psz, ulong max)
 {
    if (psz != NULL)
    {
-      snprintf(psz, max,
+#ifdef _WIN32
+      _snprintf(psz, max,
          "%.2f fps\n"
          "%.2f worst\n"
          "%.2f best\n"
@@ -752,6 +753,19 @@ void SysReportFrameStats(tChar * psz, ulong max)
          fpsWorst,
          fpsBest, 
          fpsAverage);
+#else
+      // TODO: figure out a way to speed this up so the #ifdef and _snprintf call aren't needed
+      cStr temp;
+      temp.Format(
+         "%.2f fps\n"
+         "%.2f worst\n"
+         "%.2f best\n"
+         "%.2f average",
+         fpsLast, 
+         fpsWorst,
+         fpsBest, 
+         fpsAverage);
+#endif
    }
 }
 
