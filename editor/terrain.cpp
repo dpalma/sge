@@ -493,13 +493,6 @@ tResult cTerrainModel::GetTileSet(IEditorTileSet * * ppTileSet)
 
 ////////////////////////////////////////
 
-const tTerrainQuads & cTerrainModel::GetTerrainQuads() const
-{
-   return m_terrainQuads;
-}
-
-////////////////////////////////////////
-
 tTerrainQuads::const_iterator cTerrainModel::BeginTerrainQuads() const
 {
    return m_terrainQuads.begin();
@@ -512,23 +505,45 @@ tTerrainQuads::const_iterator cTerrainModel::EndTerrainQuads() const
 
 ////////////////////////////////////////
 
-tResult cTerrainModel::SetTileTerrain(uint tx, uint tz, uint terrain, uint * pFormer)
+tResult cTerrainModel::SetQuadTile(uint quadx, uint quadz, uint tile, uint * pFormer)
 {
-   if (tx < m_terrainSettings.GetTileCountX() && tz < m_terrainSettings.GetTileCountZ())
+   if (quadx < m_terrainSettings.GetTileCountX() && quadz < m_terrainSettings.GetTileCountZ())
    {
-      uint index = (tz * m_terrainSettings.GetTileCountZ()) + tx;
+      uint index = (quadz * m_terrainSettings.GetTileCountZ()) + quadx;
       if (index < m_terrainQuads.size())
       {
          if (pFormer != NULL)
          {
             *pFormer = m_terrainQuads[index].tile;
          }
-         m_terrainQuads[index].tile = terrain;
+         m_terrainQuads[index].tile = tile;
          NotifyListeners(&ITerrainModelListener::OnTerrainChange);
          return S_OK;
       }
    }
    return E_FAIL;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainModel::GetQuadTile(uint quadx, uint quadz, uint * pTile) const
+{
+   if (pTile == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (quadx >= m_terrainSettings.GetTileCountX()
+      || quadz >= m_terrainSettings.GetTileCountZ())
+   {
+      return E_INVALIDARG;
+   }
+
+   uint index = (quadz * m_terrainSettings.GetTileCountZ()) + quadx;
+   Assert(index < m_terrainQuads.size());
+
+   *pTile = m_terrainQuads[index].tile;
+   return S_OK;
 }
 
 ////////////////////////////////////////
@@ -548,26 +563,24 @@ tResult cTerrainModel::GetTileIndices(float x, float z, uint * pix, uint * piz) 
 
 ////////////////////////////////////////
 
-tResult cTerrainModel::GetTileVertices(uint tx, uint tz, tVec3 vertices[4]) const
+tResult cTerrainModel::GetQuadVertices(uint quadx, uint quadz, sTerrainVertex verts[4]) const
 {
-   if (vertices == NULL)
+   if (verts == NULL)
    {
       return E_POINTER;
    }
-   if (tx < m_terrainSettings.GetTileCountX() && tz < m_terrainSettings.GetTileCountZ())
+
+   if (quadx >= m_terrainSettings.GetTileCountX()
+      || quadz >= m_terrainSettings.GetTileCountZ())
    {
-      uint index = (tz * m_terrainSettings.GetTileCountZ()) + tx;
-      if (index < m_terrainQuads.size())
-      {
-         const sTerrainVertex * pVertices = m_terrainQuads[index].verts;
-         vertices[0] = pVertices[0].pos;
-         vertices[1] = pVertices[1].pos;
-         vertices[2] = pVertices[2].pos;
-         vertices[3] = pVertices[3].pos;
-         return S_OK;
-      }
+      return E_INVALIDARG;
    }
-   return E_FAIL;
+
+   uint index = (quadz * m_terrainSettings.GetTileCountZ()) + quadx;
+   Assert(index < m_terrainQuads.size());
+
+   memcpy(verts, m_terrainQuads[index].verts, 4 * sizeof(sTerrainVertex));
+   return S_OK;
 }
 
 ////////////////////////////////////////

@@ -332,14 +332,14 @@ void cEditorView::RenderGL()
    if (GetHighlightTile(&iHlx, &iHlz) == S_OK)
    {
       UseGlobal(TerrainModel);
-      tVec3 verts[4];
-      if (pTerrainModel->GetTileVertices(iHlx, iHlz, verts) == S_OK)
+      sTerrainVertex verts[4];
+      if (pTerrainModel->GetQuadVertices(iHlx, iHlz, verts) == S_OK)
       {
          static const float kOffsetY = 0.5f;
-         verts[0].y += kOffsetY;
-         verts[1].y += kOffsetY;
-         verts[2].y += kOffsetY;
-         verts[3].y += kOffsetY;
+         verts[0].pos.y += kOffsetY;
+         verts[1].pos.y += kOffsetY;
+         verts[2].pos.y += kOffsetY;
+         verts[3].pos.y += kOffsetY;
 
          glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
          glEnable(GL_BLEND);
@@ -347,10 +347,10 @@ void cEditorView::RenderGL()
          glBegin(GL_QUADS);
             glColor4fv(kHighlightTileColor);
             glNormal3f(0, 1, 0);
-            glVertex3fv(verts[0].v);
-            glVertex3fv(verts[3].v);
-            glVertex3fv(verts[2].v);
-            glVertex3fv(verts[1].v);
+            glVertex3fv(verts[0].pos.v);
+            glVertex3fv(verts[3].pos.v);
+            glVertex3fv(verts[2].pos.v);
+            glVertex3fv(verts[1].pos.v);
          glEnd();
          glPopAttrib();
       }

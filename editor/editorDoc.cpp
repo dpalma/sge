@@ -11,9 +11,6 @@
 
 #include "resource.h"
 
-#include "renderapi.h"
-#include "materialapi.h"
-
 #include "readwriteapi.h"
 #include "filespec.h"
 #include "filepath.h"

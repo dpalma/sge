@@ -23,6 +23,8 @@
 // CLASS: cTerrainModel
 //
 
+typedef std::vector<sTerrainQuad> tTerrainQuads;
+
 class cTerrainModel : public cComObject2<IMPLEMENTS(ITerrainModel), IMPLEMENTS(IGlobalObject)>
 {
 public:
@@ -44,14 +46,14 @@ public:
    virtual tResult GetTerrainSettings(cTerrainSettings * pTerrainSettings) const;
 
    virtual tResult GetTileSet(IEditorTileSet * * ppTileSet);
-   virtual const tTerrainQuads & GetTerrainQuads() const;
    virtual tTerrainQuads::const_iterator BeginTerrainQuads() const;
    virtual tTerrainQuads::const_iterator EndTerrainQuads() const;
    virtual tResult AddTerrainModelListener(ITerrainModelListener * pListener);
    virtual tResult RemoveTerrainModelListener(ITerrainModelListener * pListener);
-   virtual tResult SetTileTerrain(uint tx, uint tz, uint terrain, uint * pFormer);
+   virtual tResult SetQuadTile(uint quadx, uint quadz, uint tile, uint * pFormer);
+   virtual tResult GetQuadTile(uint quadx, uint quadz, uint * pTile) const;
    virtual tResult GetTileIndices(float x, float z, uint * pix, uint * piz) const;
-   virtual tResult GetTileVertices(uint tx, uint tz, tVec3 vertices[4]) const;
+   virtual tResult GetQuadVertices(uint quadx, uint quadz, sTerrainVertex verts[4]) const;
 
    static tResult InitQuads(uint nTilesX, uint nTilesZ, IHeightMap * pHeightMap, tTerrainQuads * pQuads);
    tResult RegenerateChunks();

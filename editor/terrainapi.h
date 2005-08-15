@@ -169,19 +169,16 @@ interface ITerrainModel : IUnknown
 
    virtual tResult GetTileSet(IEditorTileSet * * ppTileSet) = 0;
 
-   // sort of a hack
-   virtual const tTerrainQuads & GetTerrainQuads() const = 0;
-
    virtual tTerrainQuads::const_iterator BeginTerrainQuads() const = 0;
    virtual tTerrainQuads::const_iterator EndTerrainQuads() const = 0;
 
-   virtual tResult SetTileTerrain(uint tx, uint tz, uint terrain, uint * pFormer) = 0;
+   virtual tResult SetQuadTile(uint quadx, uint quadz, uint tile, uint * pFormer) = 0;
+   virtual tResult GetQuadTile(uint quadx, uint quadz, uint * pTile) const = 0;
 
    /// @brief Part of hit-testing; Gets the tile indices for a given point on the 2D terrain plane
    virtual tResult GetTileIndices(float x, float z, uint * pix, uint * piz) const = 0;
 
-   /// @brief Gets points that define a quad representing the tile at the given indices
-   virtual tResult GetTileVertices(uint tx, uint tz, tVec3 vertices[4]) const = 0;
+   virtual tResult GetQuadVertices(uint quadx, uint quadz, sTerrainVertex verts[4]) const = 0;
 };
 
 ////////////////////////////////////////

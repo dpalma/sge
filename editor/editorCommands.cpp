@@ -43,7 +43,7 @@ tResult cTerrainTileCommand::Do()
 {
    if (!!m_pModel)
    {
-      return m_pModel->SetTileTerrain(m_ix,m_iz,m_tile,&m_oldTile);
+      return m_pModel->SetQuadTile(m_ix,m_iz,m_tile,&m_oldTile);
    }
    return E_FAIL;
 }
@@ -62,7 +62,7 @@ tResult cTerrainTileCommand::Undo()
    if (!!m_pModel)
    {
       uint t;
-      tResult result = m_pModel->SetTileTerrain(m_ix,m_iz,m_oldTile,&t);
+      tResult result = m_pModel->SetQuadTile(m_ix,m_iz,m_oldTile,&t);
       Assert(t = m_tile);
       return result;
    }

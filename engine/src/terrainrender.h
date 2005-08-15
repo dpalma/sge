@@ -151,8 +151,7 @@ public:
    size_t GetIndexCount() const;
    const uint * GetIndexPtr() const;
 
-   void BuildAlphaMap(const tTerrainQuads & quads, uint nQuadsX,
-      uint nQuadsZ, uint iChunkX, uint iChunkZ);
+   void BuildAlphaMap(uint nQuadsX, uint nQuadsZ, uint iChunkX, uint iChunkZ);
 
 private:
    uint m_tile;
@@ -177,8 +176,8 @@ public:
    cTerrainChunkBlended();
    ~cTerrainChunkBlended();
 
-   static tResult Create(const tTerrainQuads & quads, uint nQuadsX, uint nQuadsZ,
-      uint iChunkX, uint iChunkZ, IEditorTileSet * pTileSet, cTerrainChunk * * ppChunk);
+   static tResult Create(uint nQuadsX, uint nQuadsZ, uint iChunkX, uint iChunkZ,
+      IEditorTileSet * pTileSet, cTerrainChunk * * ppChunk);
 
    void Render();
 

@@ -7,8 +7,6 @@
 #include "editorapi.h"
 #include "engineapi.h"
 
-#include "renderapi.h"
-
 #include "imagedata.h"
 #include "resourceapi.h"
 #include "globalobj.h"
@@ -155,9 +153,8 @@ void cTerrainRenderer::RegenerateChunks()
       for (uint ix = 0; ix < nChunksX; ix++)
       {
          cTerrainChunk * pChunk = NULL;
-         if (cTerrainChunkBlended::Create(pTerrainModel->GetTerrainQuads(),
-            terrainSettings.GetTileCountX(), terrainSettings.GetTileCountZ(),
-            ix, iz, pTileSet, &pChunk) == S_OK)
+         if (cTerrainChunkBlended::Create(terrainSettings.GetTileCountX(),
+            terrainSettings.GetTileCountZ(), ix, iz, pTileSet, &pChunk) == S_OK)
          {
             m_chunks.push_back(pChunk);
          }
@@ -358,8 +355,8 @@ tResult cTerrainChunkSimple::Create(uint iChunkX, uint iChunkZ, cTerrainChunk * 
       {
          uint iTileQuad = (iTileZ * terrainSettings.GetTileCountZ()) + iTileX;
 
-         tVec3 tileQuadVerts[4];
-         if (pTerrainModel->GetTileVertices(iTileX, iTileZ, tileQuadVerts) == S_OK)
+         sTerrainVertex quadVerts[4];
+         if (pTerrainModel->GetQuadVertices(iTileX, iTileZ, quadVerts) == S_OK)
          {
             // TODO
          }
@@ -530,22 +527,10 @@ static const float g_texelWeights[4][8] =
    },
 };
 
-static const sTerrainQuad * GetQuadPtr(uint x, uint z, const tTerrainQuads & quads, uint nQuadsX, uint nQuadsZ)
-{
-   if (x == kNoIndex || z == kNoIndex)
-   {
-      return NULL;
-   }
-   else
-   {
-      return &quads[(z * nQuadsZ) + x];
-   }
-}
-
-void cSplatBuilder::BuildAlphaMap(const tTerrainQuads & quads,
-                                  uint nQuadsX, uint nQuadsZ,
+void cSplatBuilder::BuildAlphaMap(uint nQuadsX, uint nQuadsZ,
                                   uint iChunkX, uint iChunkZ)
 {
+   UseGlobal(TerrainModel);
    UseGlobal(TerrainRenderer);
 
    BITMAPINFO bmi = {0};
@@ -618,16 +603,16 @@ void cSplatBuilder::BuildAlphaMap(const tTerrainQuads & quads,
             xNext = xEnd;
          }
 
-         const sTerrainQuad * neighbors[8] =
+         const uint neighborCoords[8][2] =
          {
-            GetQuadPtr(xPrev, zPrev, quads, nQuadsX, nQuadsZ),
-            GetQuadPtr(x,     zPrev, quads, nQuadsX, nQuadsZ),
-            GetQuadPtr(xNext, zPrev, quads, nQuadsX, nQuadsZ),
-            GetQuadPtr(xPrev, z,     quads, nQuadsX, nQuadsZ),
-            GetQuadPtr(xNext, z,     quads, nQuadsX, nQuadsZ),
-            GetQuadPtr(xPrev, zNext, quads, nQuadsX, nQuadsZ),
-            GetQuadPtr(x,     zNext, quads, nQuadsX, nQuadsZ),
-            GetQuadPtr(xNext, zNext, quads, nQuadsX, nQuadsZ),
+            {xPrev, zPrev},
+            {x,     zPrev},
+            {xNext, zPrev},
+            {xPrev, z,   },
+            {xNext, z,   },
+            {xPrev, zNext},
+            {x,     zNext},
+            {xNext, zNext},
          };
 
          float texelWeights[4];
@@ -636,19 +621,18 @@ void cSplatBuilder::BuildAlphaMap(const tTerrainQuads & quads,
          memset(texelWeights, 0, sizeof(texelWeights));
          memset(texelDivisors, 0, sizeof(texelDivisors));
 
-         for (int i = 0; i < _countof(neighbors); i++)
+         for (int i = 0; i < _countof(neighborCoords); i++)
          {
-            if (neighbors[i] == NULL)
+            uint tile, nx = neighborCoords[i][0], nz = neighborCoords[i][1];
+            if (pTerrainModel->GetQuadTile(nx, nz, &tile) == S_OK)
             {
-               continue;
-            }
-
-            if (neighbors[i]->tile == m_tile)
-            {
-               for (int j = 0; j < _countof(texelWeights); j++)
+               if (tile == m_tile)
                {
-                  texelWeights[j] += g_texelWeights[j][i];
-                  texelDivisors[j] += 1;
+                  for (int j = 0; j < _countof(texelWeights); j++)
+                  {
+                     texelWeights[j] += g_texelWeights[j][i];
+                     texelDivisors[j] += 1;
+                  }
                }
             }
          }
@@ -685,11 +669,14 @@ void cSplatBuilder::BuildAlphaMap(const tTerrainQuads & quads,
    {
       if (pImage->Create(bmi.bmiHeader.biWidth, abs(bmi.bmiHeader.biHeight), kPF_RGBA8888, pBitmapBits))
       {
-#if 0 && defined(_DEBUG)
-         cStr file;
-         file.Format("%sAlpha%d%d.bmp", m_tileTexture.c_str(), iChunkX, iChunkZ);
-         cAutoIPtr<IWriter> pWriter(FileCreateWriter(cFileSpec(file.c_str())));
-         BmpWrite(pImage, pWriter);
+#if defined(_DEBUG)
+         {
+            cStr temp, file;
+            cFileSpec(m_tileTexture.c_str()).GetFileNameNoExt(&temp);
+            file.Format("%sAlpha%d%d.bmp", temp.c_str(), iChunkX, iChunkZ);
+            cAutoIPtr<IWriter> pWriter(FileCreateWriter(cFileSpec(file.c_str())));
+            BmpWrite(pImage, pWriter);
+         }
 #endif
 
          GlTextureCreate(pImage, &m_alphaMapId);
@@ -728,11 +715,10 @@ cTerrainChunkBlended::~cTerrainChunkBlended()
 
 ////////////////////////////////////////
 
-tResult cTerrainChunkBlended::Create(const tTerrainQuads & quads,
-                              uint nQuadsX, uint nQuadsZ,
-                              uint iChunkX, uint iChunkZ, 
-                              IEditorTileSet * pTileSet,
-                              cTerrainChunk * * ppChunk)
+tResult cTerrainChunkBlended::Create(uint nQuadsX, uint nQuadsZ,
+                                     uint iChunkX, uint iChunkZ, 
+                                     IEditorTileSet * pTileSet,
+                                     cTerrainChunk * * ppChunk)
 {
    if (pTileSet == NULL || ppChunk == NULL)
    {
@@ -745,6 +731,7 @@ tResult cTerrainChunkBlended::Create(const tTerrainQuads & quads,
       return E_OUTOFMEMORY;
    }
 
+   UseGlobal(TerrainModel);
    UseGlobal(TerrainRenderer);
 
    pChunk->m_vertices.resize(pTerrainRenderer->GetTilesPerChunk() * pTerrainRenderer->GetTilesPerChunk() * 4);
@@ -761,26 +748,26 @@ tResult cTerrainChunkBlended::Create(const tTerrainQuads & quads,
 
    for (uint z = iz; z < (iz + cz); z++)
    {
-      for (uint x = ix; x < (ix + cx); x++)
+      for (uint x = ix; x < (ix + cx); x++, iVert += 4)
       {
-         uint iQuad = (z * nQuadsZ) + x;
-         const sTerrainQuad & quad = quads[iQuad];
+         uint tile;
+         Verify(pTerrainModel->GetQuadTile(x, z, &tile) == S_OK);
 
          cSplatBuilder * pSplatBuilder = NULL;
 
-         if (splatBuilders.find(quad.tile) == splatBuilders.end())
+         if (splatBuilders.find(tile) == splatBuilders.end())
          {
             cStr tileTexture;
-            Verify(pTileSet->GetTileTexture(quad.tile, &tileTexture) == S_OK);
-            pSplatBuilder = new cSplatBuilder(quad.tile, tileTexture.c_str());
+            Verify(pTileSet->GetTileTexture(tile, &tileTexture) == S_OK);
+            pSplatBuilder = new cSplatBuilder(tile, tileTexture.c_str());
             if (pSplatBuilder != NULL)
             {
-               splatBuilders[quad.tile] = pSplatBuilder;
+               splatBuilders[tile] = pSplatBuilder;
             }
          }
          else
          {
-            pSplatBuilder = splatBuilders[quad.tile];
+            pSplatBuilder = splatBuilders[tile];
          }
 
          if (pSplatBuilder != NULL)
@@ -792,15 +779,18 @@ tResult cTerrainChunkBlended::Create(const tTerrainQuads & quads,
          float u = d * (x - ix);
          float v = d * (z - iz);
 
+         sTerrainVertex verts[4];
+         pTerrainModel->GetQuadVertices(x, z, verts);
+
          pChunk->m_vertices[iVert+0].uv2 = tVec2(u, v);
          pChunk->m_vertices[iVert+1].uv2 = tVec2(u+d, v);
          pChunk->m_vertices[iVert+2].uv2 = tVec2(u+d, v+d);
          pChunk->m_vertices[iVert+3].uv2 = tVec2(u, v+d);
 
-         pChunk->m_vertices[iVert++] = quad.verts[0];
-         pChunk->m_vertices[iVert++] = quad.verts[1];
-         pChunk->m_vertices[iVert++] = quad.verts[2];
-         pChunk->m_vertices[iVert++] = quad.verts[3];
+         pChunk->m_vertices[iVert+0] = verts[0];
+         pChunk->m_vertices[iVert+1] = verts[1];
+         pChunk->m_vertices[iVert+2] = verts[2];
+         pChunk->m_vertices[iVert+3] = verts[3];
       }
    }
 
@@ -810,7 +800,7 @@ tResult cTerrainChunkBlended::Create(const tTerrainQuads & quads,
    tSplatBuilderMap::iterator end = splatBuilders.end();
    for (; iter != end; iter++)
    {
-      iter->second->BuildAlphaMap(quads, nQuadsX, nQuadsZ, iChunkX, iChunkZ);
+      iter->second->BuildAlphaMap(nQuadsX, nQuadsZ, iChunkX, iChunkZ);
       pChunk->m_splats.push_back(iter->second);
    }
    splatBuilders.clear();
