@@ -347,8 +347,6 @@ tResult cTerrainModel::Term()
 
 tResult cTerrainModel::Initialize(const cTerrainSettings & terrainSettings)
 {
-   Clear();
-
    UseGlobal(EditorTileManager);
    if (pEditorTileManager->GetTileSet(terrainSettings.GetTileSet(), &m_pTileSet) != S_OK)
    {
@@ -390,9 +388,9 @@ tResult cTerrainModel::Initialize(const cTerrainSettings & terrainSettings)
 
 tResult cTerrainModel::Clear()
 {
+   m_terrainQuads.clear();
    NotifyListeners(&ITerrainModelListener::OnTerrainClear);
-
-   return E_NOTIMPL;
+   return S_OK;
 }
 
 ////////////////////////////////////////
