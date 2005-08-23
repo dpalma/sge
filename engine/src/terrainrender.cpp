@@ -11,6 +11,7 @@
 #include "resourceapi.h"
 #include "globalobj.h"
 #include "filespec.h"
+#include "configapi.h"
 
 #include <algorithm>
 #include <functional>
@@ -347,71 +348,6 @@ cTerrainChunk::~cTerrainChunk()
 
 
 /////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cSplatBuilder
-//
-
-////////////////////////////////////////
-
-cSplatBuilder::cSplatBuilder(uint tile)
- : m_tile(tile),
-   m_alphaMapId(0)
-{
-}
-
-////////////////////////////////////////
-
-cSplatBuilder::~cSplatBuilder()
-{
-}
-
-////////////////////////////////////////
-
-tResult cSplatBuilder::GetGlTexture(IEditorTileSet * pTileSet, uint * pTexId)
-{
-   cStr tileTex;
-   if (pTileSet->GetTileTexture(m_tile, &tileTex) == S_OK)
-   {
-      UseGlobal(ResourceManager);
-      return pResourceManager->Load(tileTex.c_str(), kRT_GlTexture, NULL, (void**)pTexId);
-   }
-   return E_FAIL;
-}
-
-////////////////////////////////////////
-
-tResult cSplatBuilder::GetAlphaMap(uint * pAlphaMapId)
-{
-   if (pAlphaMapId == NULL)
-   {
-      return E_POINTER;
-   }
-   *pAlphaMapId = m_alphaMapId;
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-void cSplatBuilder::AddTriangle(uint i0, uint i1, uint i2)
-{
-   m_indices.push_back(i0);
-   m_indices.push_back(i1);
-   m_indices.push_back(i2);
-}
-
-////////////////////////////////////////
-
-size_t cSplatBuilder::GetIndexCount() const
-{
-   return m_indices.size();
-}
-
-////////////////////////////////////////
-
-const uint * cSplatBuilder::GetIndexPtr() const
-{
-   return &m_indices[0];
-}
 
 ////////////////////////////////////////
 
@@ -442,6 +378,8 @@ inline float STW(const tVec2 & pt1, const tVec2 & pt2)
 {
    return Clamp(SplatTexelWeight(pt1,pt2), 0.f, 1.f);
 }
+
+////////////////////////////////////////
 
 static const float g_texelWeights[4][8] =
 {
@@ -491,7 +429,9 @@ static const float g_texelWeights[4][8] =
    },
 };
 
-void cSplatBuilder::BuildAlphaMap(const cRange<uint> xRange, const cRange<uint> zRange)
+////////////////////////////////////////
+
+void BuildSplatAlphaMap(uint splatTile, const cRange<uint> xRange, const cRange<uint> zRange, uint * pAlphaMapId)
 {
    UseGlobal(TerrainModel);
    UseGlobal(TerrainRenderer);
@@ -593,7 +533,7 @@ void cSplatBuilder::BuildAlphaMap(const cRange<uint> xRange, const cRange<uint> 
             uint tile, nx = neighborCoords[i][0], nz = neighborCoords[i][1];
             if (pTerrainModel->GetQuadTile(nx, nz, &tile) == S_OK)
             {
-               if (tile == m_tile)
+               if (tile == splatTile)
                {
                   for (int j = 0; j < _countof(texelWeights); j++)
                   {
@@ -636,17 +576,16 @@ void cSplatBuilder::BuildAlphaMap(const cRange<uint> xRange, const cRange<uint> 
    {
       if (pImage->Create(bmi.bmiHeader.biWidth, abs(bmi.bmiHeader.biHeight), kPF_RGBA8888, pBitmapBits))
       {
-#if 0 && defined(_DEBUG)
+         if (ConfigIsTrue("debug_write_splat_alpha_maps"))
          {
-            cStr temp, file;
-            cFileSpec(m_tileTexture.c_str()).GetFileNameNoExt(&temp);
-            file.Format("%sAlpha%d%d.bmp", temp.c_str(), iChunkX, iChunkZ);
+            cStr file;
+            file.Format("SplatAlpha_%d_(%d,%d)-(%d,%d).bmp", splatTile,
+               xRange.GetStart(), zRange.GetStart(), xRange.GetEnd(),zRange.GetEnd());
             cAutoIPtr<IWriter> pWriter(FileCreateWriter(cFileSpec(file.c_str())));
             BmpWrite(pImage, pWriter);
          }
-#endif
 
-         GlTextureCreate(pImage, &m_alphaMapId);
+         GlTextureCreate(pImage, pAlphaMapId);
       }
 
       delete pImage;
@@ -654,6 +593,74 @@ void cSplatBuilder::BuildAlphaMap(const cRange<uint> xRange, const cRange<uint> 
    }
 
    DeleteObject(hBitmap), hBitmap = NULL;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cSplatBuilder
+//
+
+////////////////////////////////////////
+
+cSplatBuilder::cSplatBuilder(uint tile, uint alphaMapId)
+ : m_tile(tile),
+   m_alphaMapId(alphaMapId)
+{
+}
+
+////////////////////////////////////////
+
+cSplatBuilder::~cSplatBuilder()
+{
+}
+
+////////////////////////////////////////
+
+tResult cSplatBuilder::GetGlTexture(IEditorTileSet * pTileSet, uint * pTexId)
+{
+   cStr tileTex;
+   if (pTileSet->GetTileTexture(m_tile, &tileTex) == S_OK)
+   {
+      UseGlobal(ResourceManager);
+      return pResourceManager->Load(tileTex.c_str(), kRT_GlTexture, NULL, (void**)pTexId);
+   }
+   return E_FAIL;
+}
+
+////////////////////////////////////////
+
+tResult cSplatBuilder::GetAlphaMap(uint * pAlphaMapId)
+{
+   if (pAlphaMapId == NULL)
+   {
+      return E_POINTER;
+   }
+   *pAlphaMapId = m_alphaMapId;
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+void cSplatBuilder::AddTriangle(uint i0, uint i1, uint i2)
+{
+   m_indices.push_back(i0);
+   m_indices.push_back(i1);
+   m_indices.push_back(i2);
+}
+
+////////////////////////////////////////
+
+size_t cSplatBuilder::GetIndexCount() const
+{
+   return m_indices.size();
+}
+
+////////////////////////////////////////
+
+const uint * cSplatBuilder::GetIndexPtr() const
+{
+   return &m_indices[0];
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -682,7 +689,8 @@ cTerrainChunkBlended::~cTerrainChunkBlended()
 
 ////////////////////////////////////////
 
-tResult cTerrainChunkBlended::Create(const cRange<uint> xRange, const cRange<uint> zRange,
+tResult cTerrainChunkBlended::Create(const cRange<uint> xRange,
+                                     const cRange<uint> zRange,
                                      cTerrainChunk * * ppChunk)
 {
    if (ppChunk == NULL)
@@ -720,7 +728,10 @@ tResult cTerrainChunkBlended::Create(const cRange<uint> xRange, const cRange<uin
 
          if (splatBuilders.find(tile) == splatBuilders.end())
          {
-            pSplatBuilder = new cSplatBuilder(tile);
+            uint alphaMapId;
+            BuildSplatAlphaMap(tile, xRange, zRange, &alphaMapId);
+
+            pSplatBuilder = new cSplatBuilder(tile, alphaMapId);
             if (pSplatBuilder != NULL)
             {
                splatBuilders[tile] = pSplatBuilder;
@@ -758,7 +769,6 @@ tResult cTerrainChunkBlended::Create(const cRange<uint> xRange, const cRange<uin
    tSplatBuilderMap::iterator end = splatBuilders.end();
    for (; iter != end; iter++)
    {
-      iter->second->BuildAlphaMap(xRange, zRange);
       pChunk->m_splats.push_back(iter->second);
    }
    splatBuilders.clear();

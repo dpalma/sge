@@ -172,6 +172,9 @@ public:
    virtual void Render(IEditorTileSet *) = 0;
 };
 
+/////////////////////////////////////////////////////////////////////////////
+
+void BuildSplatAlphaMap(uint splatTile, const cRange<uint> xRange, const cRange<uint> zRange, uint * pAlphaMapId);
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -186,7 +189,7 @@ class cSplatBuilder
    void operator =(const cSplatBuilder &);
 
 public:
-   cSplatBuilder(uint tile);
+   cSplatBuilder(uint tile, uint alphaMapId);
    ~cSplatBuilder();
 
    tResult GetGlTexture(IEditorTileSet * pTileSet, uint * pTexId);
@@ -196,8 +199,6 @@ public:
 
    size_t GetIndexCount() const;
    const uint * GetIndexPtr() const;
-
-   void BuildAlphaMap(const cRange<uint> xRange, const cRange<uint> zRange);
 
 private:
    uint m_tile;
