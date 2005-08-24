@@ -255,7 +255,7 @@ inline void cToolGroup::ToggleExpandCollapse()
 //
 // CLASS: cToolPaletteRenderer
 //
-// Handles painting for cToolPalette. Called in a loop for each group to be
+// Handles painting for cToolPaletteImpl. Called in a loop for each group to be
 // rendered. Also caches size/position information for use in hit-testing.
 
 class cToolPaletteRenderer
@@ -300,25 +300,44 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cToolPalette
+// CLASS: cToolPaletteImpl
 //
 
 typedef CWinTraitsOR<kTPS_ExclusiveCheck, 0> tToolPaleteWinTraits;
 
-class cToolPalette : public WTL::CScrollWindowImpl<cToolPalette, CWindow, tToolPaleteWinTraits>,
-                     public cTrackMouseEvent<cToolPalette>
+template <class T, class TBase = CWindow, class TWinTraits = tToolPaleteWinTraits>
+class ATL_NO_VTABLE cToolPaletteImpl : public WTL::CScrollWindowImpl<T, TBase, TWinTraits>,
+                                       public cTrackMouseEvent<T>
 {
-   typedef WTL::CScrollWindowImpl<cToolPalette, CWindow, tToolPaleteWinTraits> tBase;
+   typedef WTL::CScrollWindowImpl<T, TBase, TWinTraits> tBase;
 
 public:
-   cToolPalette();
-   ~cToolPalette();
+	DECLARE_WND_SUPERCLASS(NULL, TBase::GetWndClassName())
 
-   DECLARE_WND_CLASS("ToolPalette")
+   cToolPaletteImpl();
+   ~cToolPaletteImpl();
 
-   BEGIN_MSG_MAP_EX(cToolPalette)
+   HTOOLGROUP AddGroup(const tChar * pszGroup, HIMAGELIST hImageList);
+   bool RemoveGroup(HTOOLGROUP hGroup);
+   uint GetGroupCount() const;
+   HTOOLGROUP FindGroup(const tChar * pszGroup);
+   bool IsGroup(HTOOLGROUP hGroup);
+   bool IsTool(HTOOLITEM hTool);
+   void Clear();
+   HTOOLITEM AddTool(HTOOLGROUP hGroup, const tChar * pszTool, int iImage, void * pUserData = NULL);
+   HTOOLITEM AddTool(HTOOLGROUP hGroup, const sToolPaletteItem * pTPI);
+   bool GetToolText(HTOOLITEM hTool, std::string * pText);
+   bool GetTool(HTOOLITEM hTool, sToolPaletteItem * pTPI);
+   bool RemoveTool(HTOOLITEM hTool);
+   bool EnableTool(HTOOLITEM hTool, bool bEnable);
+
+   // CScrollWindowImpl handles WM_PAINT and delegates to this method
+   void DoPaint(WTL::CDCHandle dc);
+
+protected:
+   BEGIN_MSG_MAP_EX(cToolPaletteImpl)
       CHAIN_MSG_MAP(tBase)
-      CHAIN_MSG_MAP(cTrackMouseEvent<cToolPalette>)
+      CHAIN_MSG_MAP(cTrackMouseEvent<T>)
       MSG_WM_CREATE(OnCreate)
       MSG_WM_DESTROY(OnDestroy)
       MSG_WM_SIZE(OnSize)
@@ -347,34 +366,22 @@ public:
    void OnLButtonDown(UINT flags, CPoint point);
    void OnLButtonUp(UINT flags, CPoint point);
 
-   bool GetMousePos(LPPOINT pMousePos) const;
-
-   // CScrollWindowImpl handles WM_PAINT and delegates to this method
-   void DoPaint(WTL::CDCHandle dc);
-
-   bool ExclusiveCheck() const;
-
-   HTOOLGROUP AddGroup(const tChar * pszGroup, HIMAGELIST hImageList);
-   bool RemoveGroup(HTOOLGROUP hGroup);
-   uint GetGroupCount() const;
-   HTOOLGROUP FindGroup(const tChar * pszGroup);
-   bool IsGroup(HTOOLGROUP hGroup);
-   bool IsTool(HTOOLITEM hTool);
-   void Clear();
-   HTOOLITEM AddTool(HTOOLGROUP hGroup, const tChar * pszTool, int iImage, void * pUserData = NULL);
-   HTOOLITEM AddTool(HTOOLGROUP hGroup, const sToolPaletteItem * pTPI);
-   bool GetToolText(HTOOLITEM hTool, std::string * pText);
-   bool GetTool(HTOOLITEM hTool, sToolPaletteItem * pTPI);
-   bool RemoveTool(HTOOLITEM hTool);
-   bool EnableTool(HTOOLITEM hTool, bool bEnable);
-
 private:
-   void SetMouseOverItem(HANDLE hItem);
    void GetCheckedItems(std::vector<HTOOLITEM> * pCheckedItems);
+
+   void SetMouseOverItem(HANDLE hItem);
+
    void DoClick(HANDLE hItem, CPoint point);
    void DoGroupClick(HTOOLGROUP hGroup, CPoint point);
    void DoItemClick(HTOOLITEM hTool, CPoint point);
    LRESULT DoNotify(cToolItem * pTool, int code, CPoint point = CPoint());
+
+   bool ExclusiveCheck() const
+   {
+      return (GetStyle() & kTPS_ExclusiveCheck) == kTPS_ExclusiveCheck;
+   }
+
+   ////////////////////////////////////
 
    tGroups m_groups;
 
@@ -387,6 +394,600 @@ private:
    HANDLE m_hMouseOverItem;
    HANDLE m_hClickCandidateItem;
 };
+
+////////////////////////////////////////
+
+template <class T, class TBase, class TWinTraits>
+cToolPaletteImpl<T, TBase, TWinTraits>::cToolPaletteImpl()
+ : m_bUpdateScrollInfo(false),
+   m_hMouseOverItem(NULL),
+   m_hClickCandidateItem(NULL)
+{
+}
+
+////////////////////////////////////////
+
+template <class T, class TBase, class TWinTraits>
+cToolPaletteImpl<T, TBase, TWinTraits>::~cToolPaletteImpl()
+{
+}
+
+////////////////////////////////////////
+
+template <class T, class TBase, class TWinTraits>
+HTOOLGROUP cToolPaletteImpl<T, TBase, TWinTraits>::AddGroup(const tChar * pszGroup, HIMAGELIST hImageList)
+{
+   if (pszGroup != NULL)
+   {
+      HTOOLGROUP hGroup = FindGroup(pszGroup);
+      if (hGroup != NULL)
+      {
+         return hGroup;
+      }
+
+      cToolGroup * pGroup = new cToolGroup(pszGroup, hImageList);
+      if (pGroup != NULL)
+      {
+         m_bUpdateScrollInfo = true;
+         m_groups.push_back(pGroup);
+         return reinterpret_cast<HTOOLGROUP>(pGroup);
+      }
+   }
+
+   return NULL;
+}
+
+////////////////////////////////////////
+
+template <class T, class TBase, class TWinTraits>
+bool cToolPaletteImpl<T, TBase, TWinTraits>::RemoveGroup(HTOOLGROUP hGroup)
+{
+   if (hGroup != NULL)
+   {
+      cToolGroup * pRmGroup = reinterpret_cast<cToolGroup *>(hGroup);
+      tGroups::iterator iter = m_groups.begin();
+      tGroups::iterator end = m_groups.end();
+      for (; iter != end; iter++)
+      {
+         if (*iter == pRmGroup)
+         {
+            uint nTools = pRmGroup->GetToolCount();
+            for (uint i = 0; i < nTools; i++)
+            {
+               DoNotify(pRmGroup->GetTool(i), kTPN_ItemDestroy);
+            }
+            delete pRmGroup;
+            m_groups.erase(iter);
+            m_renderer.FlushCachedRects();
+            m_bUpdateScrollInfo = true;
+            return true;
+         }
+      }
+   }
+   return false;
+}
+
+////////////////////////////////////////
+
+template <class T, class TBase, class TWinTraits>
+uint cToolPaletteImpl<T, TBase, TWinTraits>::GetGroupCount() const
+{
+   return m_groups.size();
+}
+
+////////////////////////////////////////
+
+template <class T, class TBase, class TWinTraits>
+HTOOLGROUP cToolPaletteImpl<T, TBase, TWinTraits>::FindGroup(const tChar * pszGroup)
+{
+   if (pszGroup != NULL)
+   {
+      tGroups::iterator iter = m_groups.begin();
+      tGroups::iterator end = m_groups.end();
+      for (; iter != end; iter++)
+      {
+         if (lstrcmp((*iter)->GetName(), pszGroup) == 0)
+         {
+            return reinterpret_cast<HTOOLGROUP>(*iter);
+         }
+      }
+   }
+   return NULL;
+}
+
+////////////////////////////////////////
+
+template <class T, class TBase, class TWinTraits>
+bool cToolPaletteImpl<T, TBase, TWinTraits>::IsGroup(HTOOLGROUP hGroup)
+{
+   if (hGroup != NULL)
+   {
+      cToolGroup * pGroup = reinterpret_cast<cToolGroup *>(hGroup);
+      tGroups::iterator iter = m_groups.begin();
+      tGroups::iterator end = m_groups.end();
+      for (; iter != end; iter++)
+      {
+         if (*iter == pGroup)
+         {
+            return true;
+         }
+      }
+   }
+   return false;
+}
+
+////////////////////////////////////////
+
+template <class T, class TBase, class TWinTraits>
+bool cToolPaletteImpl<T, TBase, TWinTraits>::IsTool(HTOOLITEM hTool)
+{
+   if (hTool != NULL)
+   {
+      tGroups::iterator iter = m_groups.begin();
+      tGroups::iterator end = m_groups.end();
+      for (; iter != end; iter++)
+      {
+         if ((*iter)->IsTool(hTool))
+         {
+            return true;
+         }
+      }
+   }
+   return false;
+}
+
+////////////////////////////////////////
+
+template <class T, class TBase, class TWinTraits>
+void cToolPaletteImpl<T, TBase, TWinTraits>::Clear()
+{
+   // Call RemoveGroup() for each so that all the item destroy notifications happen
+   while (!m_groups.empty())
+   {
+      RemoveGroup(reinterpret_cast<HTOOLGROUP>(m_groups.front()));
+   }
+
+   // Still important to let the STL container do any internal cleanup
+   m_groups.clear();
+
+   m_bUpdateScrollInfo = true;
+}
+
+////////////////////////////////////////
+
+template <class T, class TBase, class TWinTraits>
+HTOOLITEM cToolPaletteImpl<T, TBase, TWinTraits>::AddTool(HTOOLGROUP hGroup, const tChar * pszTool, int iImage, void * pUserData)
+{
+   sToolPaletteItem tpi = {0};
+   lstrcpyn(tpi.szName, pszTool, _countof(tpi.szName));
+   tpi.iImage = iImage;
+   tpi.pUserData = pUserData;
+   return AddTool(hGroup, &tpi);
+}
+
+////////////////////////////////////////
+
+template <class T, class TBase, class TWinTraits>
+HTOOLITEM cToolPaletteImpl<T, TBase, TWinTraits>::AddTool(HTOOLGROUP hGroup, const sToolPaletteItem * pTPI)
+{
+   if (IsGroup(hGroup) && (pTPI != NULL))
+   {
+      cToolGroup * pGroup = reinterpret_cast<cToolGroup *>(hGroup);
+      HTOOLITEM hItem = pGroup->AddTool(pTPI->szName, pTPI->iImage, pTPI->pUserData);
+      if (hItem != NULL)
+      {
+         m_bUpdateScrollInfo = true;
+         Invalidate();
+         return hItem;
+      }
+   }
+
+   return NULL;
+}
+
+////////////////////////////////////////
+
+template <class T, class TBase, class TWinTraits>
+bool cToolPaletteImpl<T, TBase, TWinTraits>::GetToolText(HTOOLITEM hTool, std::string * pText)
+{
+   if (IsTool(hTool))
+   {
+      cToolItem * pTool = reinterpret_cast<cToolItem *>(hTool);
+      Assert(IsGroup(reinterpret_cast<HTOOLGROUP>(pTool->GetGroup())));
+
+      if (pText != NULL)
+      {
+         *pText = pTool->GetName();
+      }
+
+      return true;
+   }
+
+   return false;
+}
+
+////////////////////////////////////////
+
+template <class T, class TBase, class TWinTraits>
+bool cToolPaletteImpl<T, TBase, TWinTraits>::GetTool(HTOOLITEM hTool, sToolPaletteItem * pTPI)
+{
+   if (IsTool(hTool))
+   {
+      cToolItem * pTool = reinterpret_cast<cToolItem *>(hTool);
+      Assert(IsGroup(reinterpret_cast<HTOOLGROUP>(pTool->GetGroup())));
+
+      if (pTPI != NULL)
+      {
+         lstrcpyn(pTPI->szName, pTool->GetName(), _countof(pTPI->szName));
+         pTPI->iImage = pTool->GetImageIndex();
+         pTPI->state = 0;
+         pTPI->pUserData = pTool->GetUserData();
+         return true;
+      }
+   }
+
+   return false;
+}
+
+////////////////////////////////////////
+
+template <class T, class TBase, class TWinTraits>
+bool cToolPaletteImpl<T, TBase, TWinTraits>::RemoveTool(HTOOLITEM hTool)
+{
+   // TODO
+   WarnMsg("Unsupported function called: cToolPalette::RemoveTool\n");
+   return false;
+}
+
+////////////////////////////////////////
+
+template <class T, class TBase, class TWinTraits>
+bool cToolPaletteImpl<T, TBase, TWinTraits>::EnableTool(HTOOLITEM hTool, bool bEnable)
+{
+   if (IsTool(hTool))
+   {
+      cToolItem * pTool = reinterpret_cast<cToolItem *>(hTool);
+      Assert(IsGroup(reinterpret_cast<HTOOLGROUP>(pTool->GetGroup())));
+
+      pTool->SetState(kTPTS_Disabled, bEnable ? 0 : kTPTS_Disabled);
+
+      return true;
+   }
+
+   return false;
+}
+
+////////////////////////////////////////
+
+template <class T, class TBase, class TWinTraits>
+void cToolPaletteImpl<T, TBase, TWinTraits>::DoPaint(WTL::CDCHandle dc)
+{
+   CRect rect;
+   GetClientRect(rect);
+
+   const POINT * pMousePos = NULL;
+   POINT mousePos;
+   if (GetCursorPos(&mousePos) && ::MapWindowPoints(NULL, m_hWnd, &mousePos, 1))
+   {
+      pMousePos = &mousePos;
+   }
+
+   HFONT hOldFont = dc.SelectFont(!m_font.IsNull() ? m_font : WTL::AtlGetDefaultGuiFont());
+
+   Verify(m_renderer.Begin(dc, rect, pMousePos));
+   m_renderer.Render(m_groups.begin(), m_groups.end());
+   Verify(m_renderer.End());
+
+   dc.SelectFont(hOldFont);
+
+   if (m_bUpdateScrollInfo)
+   {
+      m_bUpdateScrollInfo = false;
+      SetScrollSize(1, m_renderer.GetTotalHeight());
+   }
+}
+
+////////////////////////////////////////
+
+template <class T, class TBase, class TWinTraits>
+LRESULT cToolPaletteImpl<T, TBase, TWinTraits>::OnCreate(LPCREATESTRUCT lpCreateStruct)
+{
+   return 0;
+}
+
+////////////////////////////////////////
+
+template <class T, class TBase, class TWinTraits>
+void cToolPaletteImpl<T, TBase, TWinTraits>::OnDestroy()
+{
+   Clear();
+   SetFont(NULL, FALSE);
+   m_renderer.FlushCachedRects();
+}
+
+////////////////////////////////////////
+
+template <class T, class TBase, class TWinTraits>
+void cToolPaletteImpl<T, TBase, TWinTraits>::OnSize(UINT nType, CSize size)
+{
+   m_bUpdateScrollInfo = true;
+   m_renderer.FlushCachedRects();
+}
+
+////////////////////////////////////////
+
+template <class T, class TBase, class TWinTraits>
+void cToolPaletteImpl<T, TBase, TWinTraits>::OnSetFont(HFONT hFont, BOOL bRedraw)
+{
+   if (!m_font.IsNull())
+   {
+      Verify(m_font.DeleteObject());
+   }
+
+   if (hFont != NULL)
+   {
+      LOGFONT logFont = {0};
+      if (GetObject(hFont, sizeof(LOGFONT), &logFont))
+      {
+         m_font.CreateFontIndirect(&logFont);
+      }
+   }
+
+   if (bRedraw)
+   {
+      Invalidate();
+      UpdateWindow();
+   }
+}
+
+////////////////////////////////////////
+
+template <class T, class TBase, class TWinTraits>
+LRESULT cToolPaletteImpl<T, TBase, TWinTraits>::OnEraseBkgnd(WTL::CDCHandle dc)
+{
+   return TRUE;
+}
+
+////////////////////////////////////////
+
+template <class T, class TBase, class TWinTraits>
+void cToolPaletteImpl<T, TBase, TWinTraits>::OnMouseLeave()
+{
+   SetMouseOverItem(NULL);
+}
+
+////////////////////////////////////////
+
+template <class T, class TBase, class TWinTraits>
+void cToolPaletteImpl<T, TBase, TWinTraits>::OnMouseMove(UINT flags, CPoint point)
+{
+   SetMouseOverItem(m_renderer.GetHitItem(point));
+}
+
+////////////////////////////////////////
+
+template <class T, class TBase, class TWinTraits>
+void cToolPaletteImpl<T, TBase, TWinTraits>::OnLButtonDown(UINT flags, CPoint point)
+{
+   Assert(m_hClickCandidateItem == NULL);
+   m_hClickCandidateItem = m_renderer.GetHitItem(point);
+   if (m_hClickCandidateItem != NULL)
+   {
+      SetCapture();
+   }
+}
+
+////////////////////////////////////////
+
+template <class T, class TBase, class TWinTraits>
+void cToolPaletteImpl<T, TBase, TWinTraits>::OnLButtonUp(UINT flags, CPoint point)
+{
+   if (m_hClickCandidateItem != NULL)
+   {
+      ReleaseCapture();
+      if (m_hClickCandidateItem == m_renderer.GetHitItem(point))
+      {
+         DoClick(m_hClickCandidateItem, point);
+      }
+      m_hClickCandidateItem = NULL;
+   }
+}
+
+////////////////////////////////////////
+
+template <class T, class TBase, class TWinTraits>
+void cToolPaletteImpl<T, TBase, TWinTraits>::GetCheckedItems(std::vector<HTOOLITEM> * pCheckedItems)
+{
+   if (pCheckedItems != NULL)
+   {
+      pCheckedItems->clear();
+
+      tGroups::const_iterator iter = m_groups.begin();
+      tGroups::const_iterator end = m_groups.end();
+      for (; iter != end; iter++)
+      {
+         uint nTools = (*iter)->GetToolCount();
+         for (uint i = 0; i < nTools; i++)
+         {
+            cToolItem * pTool = (*iter)->GetTool(i);
+            if (pTool->IsChecked())
+            {
+               pCheckedItems->push_back(reinterpret_cast<HTOOLITEM>(pTool));
+            }
+         }
+      }
+   }
+}
+
+////////////////////////////////////////
+
+template <class T, class TBase, class TWinTraits>
+void cToolPaletteImpl<T, TBase, TWinTraits>::SetMouseOverItem(HANDLE hItem)
+{
+   if (hItem != m_hMouseOverItem)
+   {
+      // remove this if-statement if group headings ever have a mouse-over effect
+      if (!IsGroup(reinterpret_cast<HTOOLGROUP>(m_hMouseOverItem)))
+      {
+         CRect oldItemRect;
+         if ((m_hMouseOverItem != NULL) && m_renderer.GetItemRect(m_hMouseOverItem, &oldItemRect))
+         {
+            InvalidateRect(oldItemRect, TRUE);
+         }
+      }
+
+      m_hMouseOverItem = hItem;
+
+      // remove this if-statement if group headings ever have a mouse-over effect
+      if (!IsGroup(reinterpret_cast<HTOOLGROUP>(hItem)))
+      {
+         CRect itemRect;
+         if ((hItem != NULL) && m_renderer.GetItemRect(hItem, &itemRect))
+         {
+            InvalidateRect(itemRect, FALSE);
+         }
+      }
+   }
+}
+
+////////////////////////////////////////
+
+template <class T, class TBase, class TWinTraits>
+void cToolPaletteImpl<T, TBase, TWinTraits>::DoClick(HANDLE hItem, CPoint point)
+{
+   if (hItem != NULL)
+   {
+      if (IsGroup(reinterpret_cast<HTOOLGROUP>(hItem)))
+      {
+         DoGroupClick(reinterpret_cast<HTOOLGROUP>(hItem), point);
+      }
+      else
+      {
+         DoItemClick(reinterpret_cast<HTOOLITEM>(hItem), point);
+      }
+   }
+}
+
+////////////////////////////////////////
+
+template <class T, class TBase, class TWinTraits>
+void cToolPaletteImpl<T, TBase, TWinTraits>::DoGroupClick(HTOOLGROUP hGroup, CPoint point)
+{
+   cToolGroup * pGroup = reinterpret_cast<cToolGroup *>(hGroup);
+   pGroup->ToggleExpandCollapse();
+   m_bUpdateScrollInfo = true;
+   RECT rg;
+   if (m_renderer.GetItemRect(hGroup, &rg))
+   {
+      m_renderer.FlushCachedRects();
+      RECT rc;
+      GetClientRect(&rc);
+      rg.bottom = rc.bottom;
+      InvalidateRect(&rg);
+   }
+   else
+   {
+      m_renderer.FlushCachedRects();
+      Invalidate();
+   }
+}
+
+////////////////////////////////////////
+
+template <class T, class TBase, class TWinTraits>
+void cToolPaletteImpl<T, TBase, TWinTraits>::DoItemClick(HTOOLITEM hTool, CPoint point)
+{
+   cToolItem * pTool = reinterpret_cast<cToolItem *>(hTool);
+   Assert(IsGroup(reinterpret_cast<HTOOLGROUP>(pTool->GetGroup())));
+   if (!pTool->IsDisabled())
+   {
+      DoNotify(pTool, kTPN_ItemClick, point);
+      if (ExclusiveCheck())
+      {
+         std::vector<HTOOLITEM> checkedItems;
+         GetCheckedItems(&checkedItems);
+         Assert(checkedItems.size() <= 1);
+         if (!checkedItems.empty())
+         {
+            if (checkedItems[0] != hTool)
+            {
+               cToolItem * pUncheckTool = reinterpret_cast<cToolItem *>(checkedItems[0]);
+
+               DoNotify(pUncheckTool, kTPN_ItemUncheck);
+               pUncheckTool->SetState(kTPTS_Checked, 0);
+
+               RECT r;
+               if (m_renderer.GetItemRect(checkedItems[0], &r))
+               {
+                  InvalidateRect(&r);
+               }
+               else
+               {
+                  Invalidate();
+               }
+            }
+         }
+
+         if (!pTool->IsChecked())
+         {
+            DoNotify(pTool, kTPN_ItemCheck);
+            pTool->SetState(kTPTS_Checked, kTPTS_Checked);
+         }
+      }
+      else
+      {
+         DoNotify(pTool, pTool->IsChecked()? kTPN_ItemUncheck : kTPN_ItemCheck);
+         pTool->ToggleChecked();
+      }
+      RECT rt;
+      if (m_renderer.GetItemRect(hTool, &rt))
+      {
+         InvalidateRect(&rt);
+      }
+      else
+      {
+         Invalidate();
+      }
+   }
+}
+
+////////////////////////////////////////
+
+template <class T, class TBase, class TWinTraits>
+LRESULT cToolPaletteImpl<T, TBase, TWinTraits>::DoNotify(cToolItem * pTool, int code, CPoint point)
+{
+   Assert(code == kTPN_ItemClick || code == kTPN_ItemDestroy
+      || code == kTPN_ItemCheck || code == kTPN_ItemUncheck);
+   if (pTool != NULL)
+   {
+      HWND hWndParent = GetParent();
+      if (::IsWindow(hWndParent))
+      {
+         sNMToolPaletteItem nm = {0};
+         nm.hdr.hwndFrom = m_hWnd;
+         nm.hdr.code = code;
+         nm.hdr.idFrom = GetDlgCtrlID();
+         nm.pt = point;
+         nm.hTool = reinterpret_cast<HTOOLITEM>(pTool);
+         nm.pUserData = pTool->GetUserData();
+         return ::SendMessage(hWndParent, WM_NOTIFY, nm.hdr.idFrom, reinterpret_cast<LPARAM>(&nm));
+      }
+   }
+   return -1;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cToolPalette
+//
+
+class cToolPalette : public cToolPaletteImpl<cToolPalette>
+{
+public:
+	DECLARE_WND_SUPERCLASS(_T("ToolPalette"), GetWndClassName())
+};
+
 
 /////////////////////////////////////////////////////////////////////////////
 
