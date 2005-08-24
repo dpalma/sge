@@ -144,9 +144,6 @@ void cTerrainRenderer::RegenerateChunks()
    uint nChunksX = terrainSettings.GetTileCountX() / GetTilesPerChunk();
    uint nChunksZ = terrainSettings.GetTileCountZ() / GetTilesPerChunk();
 
-   cAutoIPtr<IEditorTileSet> pTileSet;
-   pTerrainModel->GetTileSet(&pTileSet);
-
    for (uint iz = 0; iz < nChunksZ; iz++)
    {
       cRange<uint> zr(iz * GetTilesPerChunk(), (iz+1) * GetTilesPerChunk());
@@ -187,26 +184,46 @@ class std::mem_fun_t<void, cTerrainChunk>
 public:
    mem_fun_t(void (cTerrainChunk::*pfn)())
       : m_pfn(pfn) {}
-	void operator()(cTerrainChunk * pChunk) const
+   void operator()(cTerrainChunk * pChunk) const
    {
       ((pChunk->*m_pfn)());
    }
 private:
-	void (cTerrainChunk::*m_pfn)();
+   void (cTerrainChunk::*m_pfn)();
 };
 
 template <>
 class std::mem_fun1_t<void, cTerrainChunk, IEditorTileSet*>
 {
 public:
+   typedef cTerrainChunk * first_argument_type;
+   typedef IEditorTileSet * second_argument_type;
+   typedef void result_type;
    mem_fun1_t(void (cTerrainChunk::*pfn)(IEditorTileSet*))
       : m_pfn(pfn) {}
-	void operator()(cTerrainChunk * pChunk, IEditorTileSet * pTileSet) const
+   void operator()(cTerrainChunk * pChunk, IEditorTileSet * pTileSet) const
    {
       ((pChunk->*m_pfn)(pTileSet));
    }
 private:
-	void (cTerrainChunk::*m_pfn)(IEditorTileSet*);
+   void (cTerrainChunk::*m_pfn)(IEditorTileSet*);
+};
+
+template <>
+class std::binder2nd< std::mem_fun1_t<void, cTerrainChunk, IEditorTileSet*> >
+{
+public:
+   binder2nd(const std::mem_fun1_t<void, cTerrainChunk, IEditorTileSet*> & op,
+      IEditorTileSet * value) : m_op(op), m_value(value)
+   {
+   }
+   void operator()(cTerrainChunk * _X) const
+   {
+      (m_op(_X, m_value));
+   }
+private:
+   std::mem_fun1_t<void, cTerrainChunk, IEditorTileSet*> m_op;
+   IEditorTileSet * m_value;
 };
 #endif
 
@@ -462,53 +479,13 @@ void BuildSplatAlphaMap(uint splatTile, const cRange<uint> xRange, const cRange<
 
    for (uint z = zRange.GetStart(); z < zRange.GetEnd(); z++)
    {
-      uint zPrev = kNoIndex;
-      if (z > zRange.GetStart())
-      {
-         zPrev = z - 1;
-      }
-      else if ((z == zRange.GetStart()) && (zRange.GetStart() > 0))
-      {
-         zPrev = zRange.GetStart() - 1;
-      }
-
-      uint zNext = kNoIndex;
-      if (z < (zRange.GetEnd() - 1))
-      {
-         zNext = z + 1;
-      }
-      else if ((z == (zRange.GetEnd() - 1)) && (zRange.GetEnd() < terrainSettings.GetTileCountZ()))
-      {
-         zNext = zRange.GetEnd();
-      }
-
-      Assert(zPrev == zRange.GetPrev(z, 0, kNoIndex));
-      Assert(zNext == zRange.GetNext(z, terrainSettings.GetTileCountZ(), kNoIndex));
+      uint zPrev = zRange.GetPrev(z, 0, kNoIndex);
+      uint zNext = zRange.GetNext(z, terrainSettings.GetTileCountZ(), kNoIndex);
 
       for (uint x = xRange.GetStart(); x < xRange.GetEnd(); x++)
       {
-         uint xPrev = kNoIndex;
-         if (x > xRange.GetStart())
-         {
-            xPrev = x - 1;
-         }
-         else if ((x == xRange.GetStart()) && (xRange.GetStart() > 0))
-         {
-            xPrev = xRange.GetStart() - 1;
-         }
-
-         uint xNext = kNoIndex;
-         if (x < (xRange.GetEnd() - 1))
-         {
-            xNext = x + 1;
-         }
-         else if ((x == (xRange.GetEnd() - 1)) && (xRange.GetEnd() < terrainSettings.GetTileCountX()))
-         {
-            xNext = xRange.GetEnd();
-         }
-
-         Assert(xPrev == xRange.GetPrev(x, 0, kNoIndex));
-         Assert(xNext == xRange.GetNext(x, terrainSettings.GetTileCountX(), kNoIndex));
+         uint xPrev = xRange.GetPrev(x, 0, kNoIndex);
+         uint xNext = xRange.GetNext(x, terrainSettings.GetTileCountX(), kNoIndex);
 
          const uint neighborCoords[8][2] =
          {
@@ -707,6 +684,9 @@ tResult cTerrainChunkBlended::Create(const cRange<uint> xRange,
    UseGlobal(TerrainModel);
    UseGlobal(TerrainRenderer);
 
+   cTerrainSettings terrainSettings;
+   Verify(pTerrainModel->GetTerrainSettings(&terrainSettings) == S_OK);
+
    pChunk->m_vertices.resize(xRange.GetLength() * zRange.GetLength() * 4);
 
    typedef std::map<uint, cSplatBuilder *> tSplatBuilderMap;
@@ -716,8 +696,14 @@ tResult cTerrainChunkBlended::Create(const cRange<uint> xRange,
 
    for (uint z = zRange.GetStart(); z < zRange.GetEnd(); z++)
    {
+      uint zPrev = zRange.GetPrev(z, 0, kNoIndex);
+      uint zNext = zRange.GetNext(z, terrainSettings.GetTileCountZ(), kNoIndex);
+
       for (uint x = xRange.GetStart(); x < xRange.GetEnd(); x++)
       {
+         uint xPrev = xRange.GetPrev(x, 0, kNoIndex);
+         uint xNext = xRange.GetNext(x, terrainSettings.GetTileCountX(), kNoIndex);
+
          uint tile;
          Verify(pTerrainModel->GetQuadTile(x, z, &tile) == S_OK);
 

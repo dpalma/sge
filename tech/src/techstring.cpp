@@ -297,7 +297,7 @@ static int FormatLengthEstimate(const tChar * pszFormat, va_list args)
          {
             if (bInFormatField)
             {
-               formatOptions.push_back(pszFormat[i]);
+               formatOptions += pszFormat[i];
             }
             else
             {
