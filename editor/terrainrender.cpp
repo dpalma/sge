@@ -580,8 +580,11 @@ void BuildSplatAlphaMap(uint splatTile, const cRange<uint> xRange, const cRange<
 
 ////////////////////////////////////////
 
-cSplatBuilder::cSplatBuilder(uint tile, uint alphaMapId)
- : m_tile(tile),
+cSplatBuilder::cSplatBuilder(const cRange<uint> xRange, const cRange<uint> zRange,
+                             uint tile, uint alphaMapId)
+ : m_xRange(xRange),
+   m_zRange(zRange),
+   m_tile(tile),
    m_alphaMapId(alphaMapId)
 {
 }
@@ -619,17 +622,24 @@ tResult cSplatBuilder::GetAlphaMap(uint * pAlphaMapId)
 
 ////////////////////////////////////////
 
-void cSplatBuilder::AddTriangle(uint i0, uint i1, uint i2)
+void cSplatBuilder::AddQuad(uint x, uint z)
 {
-   m_indices.push_back(i0);
-   m_indices.push_back(i1);
-   m_indices.push_back(i2);
+#ifdef _DEBUG
+   tSplatQuadSet::iterator f = m_quads.find(std::make_pair(x,z));
+   if (f != m_quads.end())
+   {
+      Assert(f->first == x && f->second == z);
+   }
+#endif
+   std::pair<tSplatQuadSet::iterator, bool> result = m_quads.insert(std::make_pair(x,z));
+   m_indices.clear();
 }
 
 ////////////////////////////////////////
 
 size_t cSplatBuilder::GetIndexCount() const
 {
+   GetIndexPtr();
    return m_indices.size();
 }
 
@@ -637,6 +647,21 @@ size_t cSplatBuilder::GetIndexCount() const
 
 const uint * cSplatBuilder::GetIndexPtr() const
 {
+   if (m_indices.empty())
+   {
+      tSplatQuadSet::const_iterator iter;
+      for (iter = m_quads.begin(); iter != m_quads.end(); iter++)
+      {
+         uint iVert = ((iter->second - m_zRange.GetStart()) * m_zRange.GetLength() + iter->first - m_xRange.GetStart()) * 4;
+         m_indices.push_back(iVert+2);
+         m_indices.push_back(iVert+1);
+         m_indices.push_back(iVert);
+         m_indices.push_back(iVert);
+         m_indices.push_back(iVert+3);
+         m_indices.push_back(iVert+2);
+      }
+   }
+
    return &m_indices[0];
 }
 
@@ -707,9 +732,6 @@ tResult cTerrainChunkBlended::Create(const cRange<uint> xRange,
          uint tile;
          Verify(pTerrainModel->GetQuadTile(x, z, &tile) == S_OK);
 
-         sTerrainVertex verts[4];
-         pTerrainModel->GetQuadVertices(x, z, verts);
-
          cSplatBuilder * pSplatBuilder = NULL;
 
          if (splatBuilders.find(tile) == splatBuilders.end())
@@ -717,7 +739,7 @@ tResult cTerrainChunkBlended::Create(const cRange<uint> xRange,
             uint alphaMapId;
             BuildSplatAlphaMap(tile, xRange, zRange, &alphaMapId);
 
-            pSplatBuilder = new cSplatBuilder(tile, alphaMapId);
+            pSplatBuilder = new cSplatBuilder(xRange, zRange, tile, alphaMapId);
             if (pSplatBuilder != NULL)
             {
                splatBuilders[tile] = pSplatBuilder;
@@ -728,26 +750,52 @@ tResult cTerrainChunkBlended::Create(const cRange<uint> xRange,
             pSplatBuilder = splatBuilders[tile];
          }
 
-         uint iVert = ((z - zRange.GetStart()) * zRange.GetLength() + x - xRange.GetStart()) * 4;
-
          if (pSplatBuilder != NULL)
          {
-            pSplatBuilder->AddTriangle(iVert+2,iVert+1,iVert+0);
-            pSplatBuilder->AddTriangle(iVert+0,iVert+3,iVert+2);
+            pSplatBuilder->AddQuad(x,z);
+
+            const uint neighbors[][2] =
+            {
+               {xPrev, zPrev},
+               {x,     zPrev},
+               {xNext, zPrev},
+               {xPrev, z,   },
+               {xNext, z,   },
+               {xPrev, zNext},
+               {x,     zNext},
+               {xNext, zNext},
+            };
+
+            for (int i = 0; i < _countof(neighbors); i++)
+            {
+               // Add bordering quads too (these provide some of the fade)
+               uint ntile, nx = neighbors[i][0], nz = neighbors[i][1];
+               if (pTerrainModel->GetQuadTile(nx, nz, &ntile) == S_OK
+                  && ntile != tile)
+               {
+                  pSplatBuilder->AddQuad(nx,nz);
+               }
+            }
          }
 
-         pChunk->m_vertices[iVert+0] = verts[0];
-         pChunk->m_vertices[iVert+1] = verts[1];
-         pChunk->m_vertices[iVert+2] = verts[2];
-         pChunk->m_vertices[iVert+3] = verts[3];
+         uint iVert = ((z - zRange.GetStart()) * zRange.GetLength() + x - xRange.GetStart()) * 4;
 
-         float u = d * (x - xRange.GetStart());
-         float v = d * (z - zRange.GetStart());
+         sTerrainVertex verts[4];
+         if (pTerrainModel->GetQuadVertices(x, z, verts) == S_OK)
+         {
+            pChunk->m_vertices[iVert+0] = verts[0];
+            pChunk->m_vertices[iVert+1] = verts[1];
+            pChunk->m_vertices[iVert+2] = verts[2];
+            pChunk->m_vertices[iVert+3] = verts[3];
 
-         pChunk->m_vertices[iVert+0].uv2 = tVec2(u, v);
-         pChunk->m_vertices[iVert+1].uv2 = tVec2(u+d, v);
-         pChunk->m_vertices[iVert+2].uv2 = tVec2(u+d, v+d);
-         pChunk->m_vertices[iVert+3].uv2 = tVec2(u, v+d);
+            float u = d * (x - xRange.GetStart());
+            float v = d * (z - zRange.GetStart());
+
+            pChunk->m_vertices[iVert+0].uv2 = tVec2(u, v);
+            pChunk->m_vertices[iVert+1].uv2 = tVec2(u+d, v);
+            pChunk->m_vertices[iVert+2].uv2 = tVec2(u+d, v+d);
+            pChunk->m_vertices[iVert+3].uv2 = tVec2(u, v+d);
+         }
       }
    }
 
@@ -789,37 +837,47 @@ void cTerrainChunkBlended::Render(IEditorTileSet * pTileSet)
    tSplatBuilders::iterator end = m_splats.end();
    for (; iter != end; iter++)
    {
-      glDisable(GL_BLEND);
-      glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE);
-
-      GLuint alphaMapId;
-      if ((*iter)->GetAlphaMap(&alphaMapId) == S_OK)
-      {
-         glTexCoordPointer(2, GL_FLOAT, sizeof(sTerrainVertex), pVertexData + offsetof(sTerrainVertex, uv2));
-         glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-         glBindTexture(GL_TEXTURE_2D, alphaMapId);
-         glEnable(GL_TEXTURE_2D);
-//         glBlendFunc(GL_SRC_COLOR, GL_ZERO);
-         glDrawElements(GL_TRIANGLES, (*iter)->GetIndexCount(), GL_UNSIGNED_INT, (*iter)->GetIndexPtr());
-      }
-
-      glEnable(GL_BLEND);
-      glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-
-      GLuint texId;
-      if ((*iter)->GetGlTexture(pTileSet, &texId) == S_OK)
-      {
-         glTexCoordPointer(2, GL_FLOAT, sizeof(sTerrainVertex), pVertexData + offsetof(sTerrainVertex, uv1));
-         glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-         glBindTexture(GL_TEXTURE_2D, texId);
-         glEnable(GL_TEXTURE_2D);
-//         glBlendFunc(GL_SRC_COLOR, GL_DST_ALPHA);
-         glDrawElements(GL_TRIANGLES, (*iter)->GetIndexCount(), GL_UNSIGNED_INT, (*iter)->GetIndexPtr());
-      }
+      RenderSplatDstAlpha(*iter, pTileSet, pVertexData);
    }
 
    glPopClientAttrib();
    glPopAttrib();
 }
+
+////////////////////////////////////////
+
+void cTerrainChunkBlended::RenderSplatDstAlpha(cSplatBuilder * pSplat, IEditorTileSet * pTileSet, const byte * pVertexData)
+{
+//   glDisable(GL_BLEND);
+   glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE);
+
+   GLuint alphaMapId;
+   if (pSplat->GetAlphaMap(&alphaMapId) == S_OK)
+   {
+      glTexCoordPointer(2, GL_FLOAT, sizeof(sTerrainVertex), pVertexData + offsetof(sTerrainVertex, uv2));
+      glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+      glBindTexture(GL_TEXTURE_2D, alphaMapId);
+      glEnable(GL_TEXTURE_2D);
+//      glBlendFunc(GL_SRC_COLOR, GL_ZERO);
+      glDrawElements(GL_TRIANGLES, pSplat->GetIndexCount(), GL_UNSIGNED_INT, pSplat->GetIndexPtr());
+   }
+
+   glEnable(GL_BLEND);
+//   glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
+   glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
+   GLuint texId;
+   if (pSplat->GetGlTexture(pTileSet, &texId) == S_OK)
+   {
+      glTexCoordPointer(2, GL_FLOAT, sizeof(sTerrainVertex), pVertexData + offsetof(sTerrainVertex, uv1));
+      glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+      glBindTexture(GL_TEXTURE_2D, texId);
+      glEnable(GL_TEXTURE_2D);
+      glBlendFunc(GL_DST_ALPHA, GL_ONE_MINUS_DST_ALPHA);
+//      glBlendFunc(GL_SRC_COLOR, GL_DST_ALPHA);
+      glDrawElements(GL_TRIANGLES, pSplat->GetIndexCount(), GL_UNSIGNED_INT, pSplat->GetIndexPtr());
+   }
+}
+
 
 /////////////////////////////////////////////////////////////////////////////

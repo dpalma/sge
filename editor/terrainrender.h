@@ -11,6 +11,7 @@
 #include "matrix4.h"
 #include "techstring.h"
 
+#include <set>
 #include <vector>
 
 #if _MSC_VER > 1000
@@ -189,20 +190,26 @@ class cSplatBuilder
    void operator =(const cSplatBuilder &);
 
 public:
-   cSplatBuilder(uint tile, uint alphaMapId);
+   cSplatBuilder(const cRange<uint> xRange, const cRange<uint> zRange, uint tile, uint alphaMapId);
    ~cSplatBuilder();
 
    tResult GetGlTexture(IEditorTileSet * pTileSet, uint * pTexId);
    tResult GetAlphaMap(uint * pAlphaMapId);
 
-   void AddTriangle(uint i0, uint i1, uint i2);
+   void AddQuad(uint x, uint z);
 
    size_t GetIndexCount() const;
    const uint * GetIndexPtr() const;
 
 private:
+   typedef std::pair<uint, uint> tXZ;
+   typedef std::set<tXZ> tSplatQuadSet;
+   tSplatQuadSet m_quads;
+
+   const cRange<uint> m_xRange, m_zRange;
+
    uint m_tile;
-   std::vector<uint> m_indices;
+   mutable std::vector<uint> m_indices;
    uint m_alphaMapId;
 };
 
@@ -226,6 +233,8 @@ public:
    void Render(IEditorTileSet *);
 
 private:
+   void RenderSplatDstAlpha(cSplatBuilder * pSplat, IEditorTileSet * pTileSet, const byte * pVertexData);
+
    typedef std::vector<sTerrainVertex> tVertices;
    tVertices m_vertices;
 
