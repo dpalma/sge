@@ -234,6 +234,7 @@ public:
 
 private:
    void RenderSplatDstAlpha(cSplatBuilder * pSplat, IEditorTileSet * pTileSet, const byte * pVertexData);
+   void RenderSplatMultiTexture(cSplatBuilder * pSplat, IEditorTileSet * pTileSet, const byte * pVertexData);
 
    typedef std::vector<sTerrainVertex> tVertices;
    tVertices m_vertices;

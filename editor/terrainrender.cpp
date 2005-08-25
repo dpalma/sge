@@ -473,6 +473,8 @@ void BuildSplatAlphaMap(uint splatTile, const cRange<uint> xRange, const cRange<
    DIBSECTION dibSection = {0};
    Verify(GetObject(hBitmap, sizeof(dibSection), &dibSection));
 
+   ZeroMemory(pBitmapBits, dibSection.dsBmih.biSizeImage);
+
    uint redMask = dibSection.dsBitfields[0];
    uint greenMask = dibSection.dsBitfields[1];
    uint blueMask = dibSection.dsBitfields[2];
@@ -837,7 +839,8 @@ void cTerrainChunkBlended::Render(IEditorTileSet * pTileSet)
    tSplatBuilders::iterator end = m_splats.end();
    for (; iter != end; iter++)
    {
-      RenderSplatDstAlpha(*iter, pTileSet, pVertexData);
+//      RenderSplatDstAlpha(*iter, pTileSet, pVertexData);
+      RenderSplatMultiTexture(*iter, pTileSet, pVertexData);
    }
 
    glPopClientAttrib();
@@ -879,5 +882,51 @@ void cTerrainChunkBlended::RenderSplatDstAlpha(cSplatBuilder * pSplat, IEditorTi
    }
 }
 
+////////////////////////////////////////
+
+void cTerrainChunkBlended::RenderSplatMultiTexture(cSplatBuilder * pSplat, IEditorTileSet * pTileSet, const byte * pVertexData)
+{
+   GLuint alphaMapId;
+   if (pSplat->GetAlphaMap(&alphaMapId) == S_OK)
+   {
+      glActiveTextureARB(GL_TEXTURE0);
+      glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+      glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_ARB, GL_TEXTURE0);
+      glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_ARB, GL_SRC_ALPHA);
+      glBindTexture(GL_TEXTURE_2D, alphaMapId);
+      glEnable(GL_TEXTURE_2D);
+
+      glClientActiveTextureARB(GL_TEXTURE0);
+      glTexCoordPointer(2, GL_FLOAT, sizeof(sTerrainVertex), pVertexData + offsetof(sTerrainVertex, uv2));
+      glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+   }
+
+   GLuint texId;
+   if (pSplat->GetGlTexture(pTileSet, &texId) == S_OK)
+   {
+      glActiveTextureARB(GL_TEXTURE1);
+      glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_ARB);
+      glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB, GL_MODULATE);
+      glTexEnvf(GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB, GL_PRIMARY_COLOR);
+      glTexEnvf(GL_TEXTURE_ENV, GL_OPERAND0_RGB_ARB, GL_SRC_COLOR);
+      glTexEnvf(GL_TEXTURE_ENV, GL_SOURCE1_RGB_ARB, GL_TEXTURE1);
+      glTexEnvf(GL_TEXTURE_ENV, GL_OPERAND1_RGB_ARB, GL_SRC_COLOR);
+      glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_ARB, GL_TEXTURE0);
+      glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_ARB, GL_SRC_ALPHA);
+      glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA_ARB, GL_TEXTURE0);
+      glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA_ARB, GL_SRC_ALPHA);
+      glBindTexture(GL_TEXTURE_2D, texId);
+      glEnable(GL_TEXTURE_2D);
+
+      glClientActiveTextureARB(GL_TEXTURE1);
+      glTexCoordPointer(2, GL_FLOAT, sizeof(sTerrainVertex), pVertexData + offsetof(sTerrainVertex, uv1));
+      glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+   }
+
+   glEnable(GL_BLEND);
+   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+   glDrawElements(GL_TRIANGLES, pSplat->GetIndexCount(), GL_UNSIGNED_INT, pSplat->GetIndexPtr());
+}
 
 /////////////////////////////////////////////////////////////////////////////
