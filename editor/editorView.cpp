@@ -669,6 +669,11 @@ bool cEditorView::InitGL()
       return false;
    }
 
+   if (glewInit() != GLEW_OK)
+   {
+      return false;
+   }
+
    return true;
 }
 
