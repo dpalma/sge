@@ -153,7 +153,7 @@ void cTerrainRenderer::RegenerateChunks()
          cRange<uint> xr(ix * GetTilesPerChunk(), (ix+1) * GetTilesPerChunk());
 
          cTerrainChunk * pChunk = NULL;
-         if (cTerrainChunkBlended::Create(xr, zr, &pChunk) == S_OK)
+         if (cTerrainChunk::Create(xr, zr, &pChunk) == S_OK)
          {
             m_chunks.push_back(pChunk);
          }
@@ -347,24 +347,6 @@ void cTerrainRenderer::cTerrainModelListener::OnTerrainChange()
 
 
 /////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cTerrainChunk
-//
-
-////////////////////////////////////////
-
-cTerrainChunk::cTerrainChunk()
-{
-}
-
-////////////////////////////////////////
-
-cTerrainChunk::~cTerrainChunk()
-{
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////
 
@@ -391,14 +373,18 @@ inline T Clamp(T value, T rangeFirst, T rangeLast)
    }
 }
 
+////////////////////////////////////////
+
 inline float STW(const tVec2 & pt1, const tVec2 & pt2)
 {
    return Clamp(SplatTexelWeight(pt1,pt2), 0.f, 1.f);
 }
 
 ////////////////////////////////////////
+// The four means that each tile in the map is represented by a 2x2 square
+// of pixels in the splat alpha map.
 
-static const float g_texelWeights[4][8] =
+static const float g_splatTexelWeights[4][9] =
 {
    {
       // from upper left texel (-.25, -.25)
@@ -406,6 +392,7 @@ static const float g_texelWeights[4][8] =
       STW(tVec2(-.25,-.25), tVec2( 0,-1)), // top mid
       STW(tVec2(-.25,-.25), tVec2( 1,-1)), // top right
       STW(tVec2(-.25,-.25), tVec2(-1, 0)), // left
+      STW(tVec2(-.25,-.25), tVec2( 0, 0)), // 
       STW(tVec2(-.25,-.25), tVec2( 1, 0)), // right
       STW(tVec2(-.25,-.25), tVec2(-1, 1)), // bottom left
       STW(tVec2(-.25,-.25), tVec2( 0, 1)), // bottom mid
@@ -417,6 +404,7 @@ static const float g_texelWeights[4][8] =
       STW(tVec2(.25,-.25), tVec2( 0,-1)), // top mid
       STW(tVec2(.25,-.25), tVec2( 1,-1)), // top right
       STW(tVec2(.25,-.25), tVec2(-1, 0)), // left
+      STW(tVec2(.25,-.25), tVec2( 0, 0)), // 
       STW(tVec2(.25,-.25), tVec2( 1, 0)), // right
       STW(tVec2(.25,-.25), tVec2(-1, 1)), // bottom left (could be zero)
       STW(tVec2(.25,-.25), tVec2( 0, 1)), // bottom mid
@@ -428,6 +416,7 @@ static const float g_texelWeights[4][8] =
       STW(tVec2(-.25,.25), tVec2( 0,-1)), // top mid
       STW(tVec2(-.25,.25), tVec2( 1,-1)), // top right (could be zero)
       STW(tVec2(-.25,.25), tVec2(-1, 0)), // left
+      STW(tVec2(-.25,.25), tVec2( 0, 0)), // 
       STW(tVec2(-.25,.25), tVec2( 1, 0)), // right
       STW(tVec2(-.25,.25), tVec2(-1, 1)), // bottom left
       STW(tVec2(-.25,.25), tVec2( 0, 1)), // bottom mid
@@ -439,6 +428,7 @@ static const float g_texelWeights[4][8] =
       STW(tVec2(.25,.25), tVec2( 0,-1)), // top mid
       STW(tVec2(.25,.25), tVec2( 1,-1)), // top right
       STW(tVec2(.25,.25), tVec2(-1, 0)), // left
+      STW(tVec2(.25,.25), tVec2( 0, 0)), // 
       STW(tVec2(.25,.25), tVec2( 1, 0)), // right
       STW(tVec2(.25,.25), tVec2(-1, 1)), // bottom left
       STW(tVec2(.25,.25), tVec2( 0, 1)), // bottom mid
@@ -455,6 +445,8 @@ void BuildSplatAlphaMap(uint splatTile, const cRange<uint> xRange, const cRange<
 
    cTerrainSettings terrainSettings;
    Verify(pTerrainModel->GetTerrainSettings(&terrainSettings) == S_OK);
+
+   Assert(xRange.GetLength() == zRange.GetLength());
 
    BITMAPINFO bmi = {0};
    bmi.bmiHeader.biSize = sizeof(bmi.bmiHeader);
@@ -489,15 +481,16 @@ void BuildSplatAlphaMap(uint splatTile, const cRange<uint> xRange, const cRange<
          uint xPrev = xRange.GetPrev(x, 0, kNoIndex);
          uint xNext = xRange.GetNext(x, terrainSettings.GetTileCountX(), kNoIndex);
 
-         const uint neighborCoords[8][2] =
+         const uint neighborCoords[9][2] =
          {
             {xPrev, zPrev},
-            {x,     zPrev},
+            {x    , zPrev},
             {xNext, zPrev},
-            {xPrev, z,   },
-            {xNext, z,   },
+            {xPrev, z    },
+            {x    , z    },
+            {xNext, z    },
             {xPrev, zNext},
-            {x,     zNext},
+            {x    , zNext},
             {xNext, zNext},
          };
 
@@ -509,24 +502,26 @@ void BuildSplatAlphaMap(uint splatTile, const cRange<uint> xRange, const cRange<
 
          for (int i = 0; i < _countof(neighborCoords); i++)
          {
-            uint tile, nx = neighborCoords[i][0], nz = neighborCoords[i][1];
-            if (pTerrainModel->GetQuadTile(nx, nz, &tile) == S_OK)
+            uint ntile, nx = neighborCoords[i][0], nz = neighborCoords[i][1];
+            if (pTerrainModel->GetQuadTile(nx, nz, &ntile) == S_OK)
             {
-               if (tile == splatTile)
+               if (ntile == splatTile)
                {
                   for (int j = 0; j < _countof(texelWeights); j++)
                   {
-                     texelWeights[j] += g_texelWeights[j][i];
+                     texelWeights[j] += g_splatTexelWeights[j][i];
                      texelDivisors[j] += 1;
                   }
                }
             }
          }
 
-//         if (texelDivisors[0] != 0) texelWeights[0] /= texelDivisors[0];
-//         if (texelDivisors[1] != 0) texelWeights[1] /= texelDivisors[1];
-//         if (texelDivisors[2] != 0) texelWeights[2] /= texelDivisors[2];
-//         if (texelDivisors[3] != 0) texelWeights[3] /= texelDivisors[3];
+#if 0
+         if (texelDivisors[0] != 0) texelWeights[0] /= texelDivisors[0];
+         if (texelDivisors[1] != 0) texelWeights[1] /= texelDivisors[1];
+         if (texelDivisors[2] != 0) texelWeights[2] /= texelDivisors[2];
+         if (texelDivisors[3] != 0) texelWeights[3] /= texelDivisors[3];
+#endif
 
          texelWeights[0] = Clamp(texelWeights[0], 0.f, 1.f);
          texelWeights[1] = Clamp(texelWeights[1], 0.f, 1.f);
@@ -669,18 +664,18 @@ const uint * cSplatBuilder::GetIndexPtr() const
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cTerrainChunkBlended
+// CLASS: cTerrainChunk
 //
 
 ////////////////////////////////////////
 
-cTerrainChunkBlended::cTerrainChunkBlended()
+cTerrainChunk::cTerrainChunk()
 {
 }
 
 ////////////////////////////////////////
 
-cTerrainChunkBlended::~cTerrainChunkBlended()
+cTerrainChunk::~cTerrainChunk()
 {
    tSplatBuilders::iterator iter = m_splats.begin();
    tSplatBuilders::iterator end = m_splats.end();
@@ -693,16 +688,16 @@ cTerrainChunkBlended::~cTerrainChunkBlended()
 
 ////////////////////////////////////////
 
-tResult cTerrainChunkBlended::Create(const cRange<uint> xRange,
-                                     const cRange<uint> zRange,
-                                     cTerrainChunk * * ppChunk)
+tResult cTerrainChunk::Create(const cRange<uint> xRange,
+                              const cRange<uint> zRange,
+                              cTerrainChunk * * ppChunk)
 {
    if (ppChunk == NULL)
    {
       return E_POINTER;
    }
 
-   cTerrainChunkBlended * pChunk = new cTerrainChunkBlended;
+   cTerrainChunk * pChunk = new cTerrainChunk;
    if (!pChunk)
    {
       return E_OUTOFMEMORY;
@@ -770,7 +765,7 @@ tResult cTerrainChunkBlended::Create(const cRange<uint> xRange,
 
             for (int i = 0; i < _countof(neighbors); i++)
             {
-               // Add bordering quads too (these provide some of the fade)
+               // Add bordering quads too (these provide the fade)
                uint ntile, nx = neighbors[i][0], nz = neighbors[i][1];
                if (pTerrainModel->GetQuadTile(nx, nz, &ntile) == S_OK
                   && ntile != tile)
@@ -816,7 +811,7 @@ tResult cTerrainChunkBlended::Create(const cRange<uint> xRange,
 
 ////////////////////////////////////////
 
-void cTerrainChunkBlended::Render(IEditorTileSet * pTileSet)
+void cTerrainChunk::Render(IEditorTileSet * pTileSet)
 {
    glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
    glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT);
@@ -833,13 +828,12 @@ void cTerrainChunkBlended::Render(IEditorTileSet * pTileSet)
    glEnableClientState(GL_VERTEX_ARRAY);
    glVertexPointer(3, GL_FLOAT, sizeof(sTerrainVertex), pVertexData + offsetof(sTerrainVertex, pos));
 
-//   glColor4f(1,1,1,1);
+   glColor4f(1,1,1,1);
 
    tSplatBuilders::iterator iter = m_splats.begin();
    tSplatBuilders::iterator end = m_splats.end();
    for (; iter != end; iter++)
    {
-//      RenderSplatDstAlpha(*iter, pTileSet, pVertexData);
       RenderSplatMultiTexture(*iter, pTileSet, pVertexData);
    }
 
@@ -849,42 +843,7 @@ void cTerrainChunkBlended::Render(IEditorTileSet * pTileSet)
 
 ////////////////////////////////////////
 
-void cTerrainChunkBlended::RenderSplatDstAlpha(cSplatBuilder * pSplat, IEditorTileSet * pTileSet, const byte * pVertexData)
-{
-//   glDisable(GL_BLEND);
-   glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE);
-
-   GLuint alphaMapId;
-   if (pSplat->GetAlphaMap(&alphaMapId) == S_OK)
-   {
-      glTexCoordPointer(2, GL_FLOAT, sizeof(sTerrainVertex), pVertexData + offsetof(sTerrainVertex, uv2));
-      glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-      glBindTexture(GL_TEXTURE_2D, alphaMapId);
-      glEnable(GL_TEXTURE_2D);
-//      glBlendFunc(GL_SRC_COLOR, GL_ZERO);
-      glDrawElements(GL_TRIANGLES, pSplat->GetIndexCount(), GL_UNSIGNED_INT, pSplat->GetIndexPtr());
-   }
-
-   glEnable(GL_BLEND);
-//   glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
-   glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-
-   GLuint texId;
-   if (pSplat->GetGlTexture(pTileSet, &texId) == S_OK)
-   {
-      glTexCoordPointer(2, GL_FLOAT, sizeof(sTerrainVertex), pVertexData + offsetof(sTerrainVertex, uv1));
-      glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-      glBindTexture(GL_TEXTURE_2D, texId);
-      glEnable(GL_TEXTURE_2D);
-      glBlendFunc(GL_DST_ALPHA, GL_ONE_MINUS_DST_ALPHA);
-//      glBlendFunc(GL_SRC_COLOR, GL_DST_ALPHA);
-      glDrawElements(GL_TRIANGLES, pSplat->GetIndexCount(), GL_UNSIGNED_INT, pSplat->GetIndexPtr());
-   }
-}
-
-////////////////////////////////////////
-
-void cTerrainChunkBlended::RenderSplatMultiTexture(cSplatBuilder * pSplat, IEditorTileSet * pTileSet, const byte * pVertexData)
+void cTerrainChunk::RenderSplatMultiTexture(cSplatBuilder * pSplat, IEditorTileSet * pTileSet, const byte * pVertexData)
 {
    GLuint alphaMapId;
    if (pSplat->GetAlphaMap(&alphaMapId) == S_OK)

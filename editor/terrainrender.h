@@ -157,23 +157,6 @@ bool cTerrainRenderer::IsBlendingEnabled() const
 
 
 /////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cTerrainChunk
-//
-
-class cTerrainChunk
-{
-   cTerrainChunk(const cTerrainChunk &);
-   void operator =(const cTerrainChunk &);
-
-public:
-   cTerrainChunk();
-   virtual ~cTerrainChunk() = 0;
-
-   virtual void Render(IEditorTileSet *) = 0;
-};
-
-/////////////////////////////////////////////////////////////////////////////
 
 void BuildSplatAlphaMap(uint splatTile, const cRange<uint> xRange, const cRange<uint> zRange, uint * pAlphaMapId);
 
@@ -184,7 +167,7 @@ void BuildSplatAlphaMap(uint splatTile, const cRange<uint> xRange, const cRange<
 
 class cSplatBuilder
 {
-   friend class cTerrainChunkBlended;
+   friend class cTerrainChunk;
 
    cSplatBuilder(const cSplatBuilder &);
    void operator =(const cSplatBuilder &);
@@ -216,24 +199,23 @@ private:
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cTerrainChunkBlended
+// CLASS: cTerrainChunk
 //
 
-class cTerrainChunkBlended : cTerrainChunk
+class cTerrainChunk
 {
-   cTerrainChunkBlended(const cTerrainChunkBlended &);
-   void operator =(const cTerrainChunkBlended &);
+   cTerrainChunk(const cTerrainChunk &);
+   void operator =(const cTerrainChunk &);
 
 public:
-   cTerrainChunkBlended();
-   ~cTerrainChunkBlended();
+   cTerrainChunk();
+   ~cTerrainChunk();
 
    static tResult Create(const cRange<uint> xRange, const cRange<uint> zRange, cTerrainChunk * * ppChunk);
 
    void Render(IEditorTileSet *);
 
 private:
-   void RenderSplatDstAlpha(cSplatBuilder * pSplat, IEditorTileSet * pTileSet, const byte * pVertexData);
    void RenderSplatMultiTexture(cSplatBuilder * pSplat, IEditorTileSet * pTileSet, const byte * pVertexData);
 
    typedef std::vector<sTerrainVertex> tVertices;
