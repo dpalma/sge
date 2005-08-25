@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // $Id$
 
-#ifndef INCLUDED_FILEREADWRITE_H
-#define INCLUDED_FILEREADWRITE_H
+#ifndef INCLUDED_READWRITEFILE_H
+#define INCLUDED_READWRITEFILE_H
 
 #include "readwriteapi.h"
 #include <stdio.h>
@@ -56,4 +56,4 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // !INCLUDED_FILEREADWRITE_H
+#endif // !INCLUDED_READWRITEFILE_H

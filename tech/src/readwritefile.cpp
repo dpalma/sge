@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "filereadwrite.h"
+#include "readwritefile.h"
 #include "filespec.h"
 #include "techstring.h"
 

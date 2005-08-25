@@ -351,9 +351,6 @@
 					RelativePath="..\..\tech\src\filepath.cpp">
 				</File>
 				<File
-					RelativePath="..\..\tech\src\filereadwrite.cpp">
-				</File>
-				<File
 					RelativePath="..\..\tech\src\filespec.cpp">
 				</File>
 				<File
@@ -388,6 +385,9 @@
 				</File>
 				<File
 					RelativePath="..\..\tech\src\rand.cpp">
+				</File>
+				<File
+					RelativePath="..\..\tech\src\readwritefile.cpp">
 				</File>
 				<File
 					RelativePath="..\..\tech\src\readwritemem.cpp">
@@ -460,13 +460,13 @@
 					RelativePath="..\..\tech\src\dictionarystore.h">
 				</File>
 				<File
-					RelativePath="..\..\tech\src\filereadwrite.h">
-				</File>
-				<File
 					RelativePath="..\..\tech\src\hashtbl.h">
 				</File>
 				<File
 					RelativePath="..\..\tech\src\hashtbltem.h">
+				</File>
+				<File
+					RelativePath="..\..\tech\src\readwritefile.h">
 				</File>
 				<File
 					RelativePath="..\..\tech\src\readwritemem.h">

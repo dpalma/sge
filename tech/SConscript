@@ -13,7 +13,6 @@ sources = Split("""
    src/fileenum.cpp
    src/filepath.cpp
    src/filespec.cpp
-   src/filereadwrite.cpp
    src/functor.cpp
    src/globalobjreg.cpp
    src/graphtest.cpp
@@ -24,6 +23,7 @@ sources = Split("""
    src/prime.cpp
    src/quat.cpp
    src/rand.cpp
+   src/readwritefile.cpp
    src/readwritemem.cpp
    src/resourcemanager.cpp
    src/techdebug.cpp
