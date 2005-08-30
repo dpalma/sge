@@ -67,29 +67,32 @@ cEditorDoc::~cEditorDoc()
 
 BOOL cEditorDoc::OnNewDocument()
 {
-	if (!CDocument::OnNewDocument())
-		return FALSE;
-
-	// Add reinitialization code here (SDI documents will reuse this document)
-
-   BOOL bResult = FALSE;
-
    cTerrainSettings terrainSettings;
+
+   if (m_bPromptForMapSettings)
+   {
+      cMapSettingsDlg dlg(terrainSettings);
+
+      if (dlg.DoModal() != IDOK)
+      {
+         return FALSE;
+      }
+
+      dlg.GetTerrainSettings(&terrainSettings);
+   }
 
    if (!m_bPromptForMapSettings)
    {
       // Once the app starts, every File->New should prompt for map settings
       m_bPromptForMapSettings = true;
    }
-   else
-   {
-      cMapSettingsDlg dlg(terrainSettings);
 
-      // Shouldn't be allowed to cancel the dialog
-      Verify(dlg.DoModal() == IDOK);
+	if (!CDocument::OnNewDocument())
+		return FALSE;
 
-      dlg.GetTerrainSettings(&terrainSettings);
-   }
+	// Add reinitialization code here (SDI documents will reuse this document)
+
+   BOOL bResult = FALSE;
 
    UseGlobal(TerrainModel);
    if (pTerrainModel->Initialize(terrainSettings) == S_OK)

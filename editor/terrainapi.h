@@ -124,6 +124,9 @@ public:
    void SetTileSet(const tChar * pszTileSet);
    const tChar * GetTileSet() const;
 
+   void SetInitialTile(int initialTile);
+   int GetInitialTile() const;
+
    void SetHeightData(eTerrainHeightData heightData);
    eTerrainHeightData GetHeightData() const;
 
@@ -134,6 +137,7 @@ private:
    uint m_tileSize;
    uint m_nTilesX, m_nTilesZ;
    cStr m_tileSet;
+   int m_initialTile;
    eTerrainHeightData m_heightData;
    cStr m_heightMap;
 };

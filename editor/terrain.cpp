@@ -122,6 +122,7 @@ cTerrainSettings::cTerrainSettings()
  : m_tileSize(TerrainSettingsDefaults::kTerrainTileSize),
    m_nTilesX(TerrainSettingsDefaults::kTerrainTileCountX),
    m_nTilesZ(TerrainSettingsDefaults::kTerrainTileCountZ),
+   m_initialTile(0),
    m_heightData(TerrainSettingsDefaults::kTerrainHeightData)
 {
 }
@@ -133,6 +134,7 @@ cTerrainSettings::cTerrainSettings(const cTerrainSettings & other)
    m_nTilesX(other.m_nTilesX),
    m_nTilesZ(other.m_nTilesZ),
    m_tileSet(other.m_tileSet),
+   m_initialTile(other.m_initialTile),
    m_heightData(other.m_heightData),
    m_heightMap(other.m_heightMap)
 {
@@ -152,6 +154,7 @@ const cTerrainSettings & cTerrainSettings::operator =(const cTerrainSettings & o
    m_nTilesX = other.m_nTilesX;
    m_nTilesZ = other.m_nTilesZ;
    m_tileSet = other.m_tileSet;
+   m_initialTile = other.m_initialTile;
    m_heightData = other.m_heightData;
    m_heightMap = other.m_heightMap;
    return *this;
@@ -222,6 +225,20 @@ const tChar * cTerrainSettings::GetTileSet() const
 
 ////////////////////////////////////////
 
+void cTerrainSettings::SetInitialTile(int initialTile)
+{
+   m_initialTile = initialTile;
+}
+
+////////////////////////////////////////
+
+int cTerrainSettings::GetInitialTile() const
+{
+   return m_initialTile;
+}
+
+////////////////////////////////////////
+
 void cTerrainSettings::SetHeightData(eTerrainHeightData heightData)
 {
    m_heightData = heightData;
@@ -268,6 +285,7 @@ tResult cReadWriteOps<cTerrainSettings>::Read(IReader * pReader, cTerrainSetting
       && pReader->Read(&pTerrainSettings->m_nTilesX) == S_OK
       && pReader->Read(&pTerrainSettings->m_nTilesZ) == S_OK
       && pReader->Read(&pTerrainSettings->m_tileSet) == S_OK
+      && pReader->Read(&pTerrainSettings->m_initialTile) == S_OK
       && pReader->Read(&pTerrainSettings->m_heightData) == S_OK
       && pReader->Read(&pTerrainSettings->m_heightMap) == S_OK)
    {
@@ -290,6 +308,7 @@ tResult cReadWriteOps<cTerrainSettings>::Write(IWriter * pWriter, const cTerrain
       && pWriter->Write(terrainSettings.m_nTilesX) == S_OK
       && pWriter->Write(terrainSettings.m_nTilesZ) == S_OK
       && pWriter->Write(terrainSettings.m_tileSet) == S_OK
+      && pWriter->Write(terrainSettings.m_initialTile) == S_OK
       && pWriter->Write(terrainSettings.m_heightData) == S_OK
       && pWriter->Write(terrainSettings.m_heightMap) == S_OK)
    {
@@ -375,7 +394,8 @@ tResult cTerrainModel::Initialize(const cTerrainSettings & terrainSettings)
       }
    }
 
-   if (InitQuads(terrainSettings.GetTileCountX(), terrainSettings.GetTileCountZ(), pHeightMap, &m_terrainQuads) == S_OK)
+   if (InitQuads(terrainSettings.GetTileCountX(), terrainSettings.GetTileCountZ(),
+      terrainSettings.GetInitialTile(), pHeightMap, &m_terrainQuads) == S_OK)
    {
       NotifyListeners(&ITerrainModelListener::OnTerrainInitialize);
       return S_OK;
@@ -388,6 +408,7 @@ tResult cTerrainModel::Initialize(const cTerrainSettings & terrainSettings)
 
 tResult cTerrainModel::Clear()
 {
+   SafeRelease(m_pTileSet);
    m_terrainQuads.clear();
    NotifyListeners(&ITerrainModelListener::OnTerrainClear);
    return S_OK;
@@ -583,7 +604,7 @@ tResult cTerrainModel::GetQuadVertices(uint quadx, uint quadz, sTerrainVertex ve
 
 ////////////////////////////////////////
 
-tResult cTerrainModel::InitQuads(uint nTilesX, uint nTilesZ, IHeightMap * pHeightMap, tTerrainQuads * pQuads)
+tResult cTerrainModel::InitQuads(uint nTilesX, uint nTilesZ, uint tile, IHeightMap * pHeightMap, tTerrainQuads * pQuads)
 {
    if (nTilesX == 0 || nTilesZ == 0)
    {
@@ -613,7 +634,7 @@ tResult cTerrainModel::InitQuads(uint nTilesX, uint nTilesZ, IHeightMap * pHeigh
       {
          sTerrainQuad & tq = pQuads->at(iQuad);
 
-         tq.tile = 0;
+         tq.tile = tile;
 
          tq.verts[0].uv1 = tVec2(0,0);
          tq.verts[1].uv1 = tVec2(1,0);

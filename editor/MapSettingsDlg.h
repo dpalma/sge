@@ -4,8 +4,6 @@
 #if !defined(INCLUDED_MAPSETTINGSDLG_H)
 #define INCLUDED_MAPSETTINGSDLG_H
 
-#include "resource.h"       // main symbols
-
 #include "techstring.h"
 
 #include <vector>
@@ -31,9 +29,9 @@ public:
    tResult GetTerrainSettings(cTerrainSettings * pTS) const;
 
 private:
+   static const uint IDD;
 // Dialog Data
 	//{{AFX_DATA(cMapSettingsDlg)
-	enum { IDD = IDD_MAPSETTINGS };
 	CComboBoxEx	m_initialTileComboBox;
 	CString	m_tileSet;
 	int		m_heightData;
@@ -41,6 +39,7 @@ private:
 	int		m_mapHeightIndex;
 	int		m_mapWidthIndex;
 	//}}AFX_DATA
+   int m_initialTile;
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -68,7 +67,6 @@ protected:
    void PopulateInitialTileComboBox();
 
 private:
-   std::vector<SIZE> m_mapSizes;
    std::vector<cStr> m_tileSets;
 };
 

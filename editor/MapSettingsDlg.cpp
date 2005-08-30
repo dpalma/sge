@@ -7,6 +7,8 @@
 #include "editorapi.h"
 #include "terrainapi.h"
 
+#include "resource.h"       // main symbols
+
 #include "globalobj.h"
 
 #include <algorithm>
@@ -35,10 +37,13 @@ static const uint kDefaultMapSizeIndex = 0;
 // CLASS: cMapSettingsDlg
 //
 
+const uint cMapSettingsDlg::IDD = IDD_MAPSETTINGS;
+
 ////////////////////////////////////////
 
 cMapSettingsDlg::cMapSettingsDlg(const cTerrainSettings & terrainSettings, CWnd* pParent /*=NULL*/)
- : CDialog(cMapSettingsDlg::IDD, pParent)
+ : CDialog(cMapSettingsDlg::IDD, pParent),
+   m_initialTile(-1)
 {
 	//{{AFX_DATA_INIT(cMapSettingsDlg)
 	m_tileSet = terrainSettings.GetTileSet();
@@ -75,6 +80,19 @@ void cMapSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_CBIndex(pDX, IDC_MAP_HEIGHT, m_mapHeightIndex);
 	DDX_CBIndex(pDX, IDC_MAP_WIDTH, m_mapWidthIndex);
 	//}}AFX_DATA_MAP
+
+   if (pDX->m_bSaveAndValidate)
+   {
+      int initialTileSel = m_initialTileComboBox.GetCurSel();
+      if (initialTileSel != CB_ERR)
+      {
+         m_initialTile = m_initialTileComboBox.GetItemData(initialTileSel);
+      }
+      else
+      {
+         m_initialTile = -1;
+      }
+   }
 }
 
 ////////////////////////////////////////
@@ -102,6 +120,7 @@ tResult cMapSettingsDlg::GetTerrainSettings(cTerrainSettings * pTS) const
    pTS->SetTileCountX(g_mapSizes[m_mapWidthIndex].cx);
    pTS->SetTileCountZ(g_mapSizes[m_mapHeightIndex].cy);
    pTS->SetTileSet(m_tileSet);
+   pTS->SetInitialTile(m_initialTile);
    pTS->SetHeightData(static_cast<eTerrainHeightData>(m_heightData));
    pTS->SetHeightMap(m_heightMapFile);
 
@@ -125,26 +144,24 @@ BOOL cMapSettingsDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 	
-   // Don't sort the drop-lists because selection is defined and
-   // returned as indices into the lists given in the constructor
-   ASSERT_VALID(GetDlgItem(IDC_MAP_WIDTH));
-   ASSERT_VALID(GetDlgItem(IDC_MAP_HEIGHT));
-   ASSERT_VALID(GetDlgItem(IDC_MAP_TILESET));
-   GetDlgItem(IDC_MAP_WIDTH)->ModifyStyle(CBS_SORT, 0);
-   GetDlgItem(IDC_MAP_HEIGHT)->ModifyStyle(CBS_SORT, 0);
-   GetDlgItem(IDC_MAP_TILESET)->ModifyStyle(CBS_SORT, 0);
+   Assert((GetDlgItem(IDC_MAP_WIDTH)->GetStyle() & CBS_SORT) == 0);
+   Assert((GetDlgItem(IDC_MAP_HEIGHT)->GetStyle() & CBS_SORT) == 0);
 
-   if (!m_mapSizes.empty())
+   CString temp;
+   for (uint i = 0; i < _countof(g_mapSizes); i++)
    {
-      std::vector<SIZE>::iterator iter;
-      for (iter = m_mapSizes.begin(); iter != m_mapSizes.end(); iter++)
-      {
-         CString str;
-         str.Format("%d", iter->cx);
-         SendDlgItemMessage(IDC_MAP_WIDTH, CB_ADDSTRING, 0, (LPARAM)(LPCTSTR)str);
-         str.Format("%d", iter->cy);
-         SendDlgItemMessage(IDC_MAP_HEIGHT, CB_ADDSTRING, 0, (LPARAM)(LPCTSTR)str);
-      }
+      temp.Format("%d", g_mapSizes[i].cx);
+      SendDlgItemMessage(IDC_MAP_WIDTH, CB_ADDSTRING, 0, (LPARAM)(LPCTSTR)temp);
+      temp.Format("%d", g_mapSizes[i].cy);
+      SendDlgItemMessage(IDC_MAP_HEIGHT, CB_ADDSTRING, 0, (LPARAM)(LPCTSTR)temp);
+   }
+
+   if (m_tileSet.IsEmpty())
+   {
+      cStr temp;
+      UseGlobal(EditorTileManager);
+      pEditorTileManager->GetDefaultTileSet(&temp);
+      m_tileSet = temp.c_str();
    }
 
    PopulateTileSetComboBox();
@@ -221,12 +238,22 @@ void cMapSettingsDlg::PopulateTileSetComboBox()
          if (pEditorTileManager->GetTileSet(i, &pTileSet) == S_OK
             && pTileSet->GetName(&name) == S_OK)
          {
-            SendDlgItemMessage(IDC_MAP_TILESET, CB_ADDSTRING, 0, (LPARAM)name.c_str());
+            int index = SendDlgItemMessage(IDC_MAP_TILESET, CB_ADDSTRING, 0, (LPARAM)name.c_str());
+            SendDlgItemMessage(IDC_MAP_TILESET, CB_SETITEMDATA, index, (LPARAM)i);
          }
          else
          {
-            WarnMsg1("Error getting tile set %d\n", i);
+            ErrorMsg1("Error getting tile set %d\n", i);
          }
+      }
+
+      if (!m_tileSet.IsEmpty())
+      {
+         SendDlgItemMessage(IDC_MAP_TILESET, CB_SELECTSTRING, -1, (LPARAM)(LPCTSTR)m_tileSet);
+      }
+      else
+      {
+         SendDlgItemMessage(IDC_MAP_TILESET, CB_SETCURSEL, 0);
       }
    }
 }
@@ -261,12 +288,13 @@ void cMapSettingsDlg::PopulateInitialTileComboBox()
                if (pTileSet->GetTileName(i, &tileName) == S_OK)
                {
                   COMBOBOXEXITEM item = {0};
-                  item.mask = CBEIF_TEXT | CBEIF_IMAGE | CBEIF_SELECTEDIMAGE;
+                  item.mask = CBEIF_TEXT | CBEIF_IMAGE | CBEIF_SELECTEDIMAGE | CBEIF_LPARAM;
                   item.iItem = i;
                   item.pszText = const_cast<char *>(tileName.c_str());
                   item.cchTextMax = tileName.length();
                   item.iImage = i;
                   item.iSelectedImage = i;
+                  item.lParam = i;
                   Verify(m_initialTileComboBox.InsertItem(&item) != CB_ERR);
                }
             }
