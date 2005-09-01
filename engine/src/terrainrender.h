@@ -104,7 +104,7 @@ private:
 class cTerrainRenderer : public cComObject2<IMPLEMENTS(ITerrainRenderer), IMPLEMENTS(IGlobalObject)>
 {
 public:
-   cTerrainRenderer();
+   cTerrainRenderer(bool bForEditor);
    ~cTerrainRenderer();
 
    DECLARE_NAME(TerrainRenderer)
@@ -121,6 +121,8 @@ public:
    virtual void Render();
 
 private:
+   bool RunningInEditor() const { return m_bInEditor; }
+
    bool IsBlendingEnabled() const;
 
    void RegenerateChunks();
@@ -133,7 +135,7 @@ private:
       virtual void DeleteThis() { /* Do not delete; Non-pointer member of cTerrainRenderer */ }
       virtual void OnTerrainInitialize();
       virtual void OnTerrainClear();
-      virtual void OnTerrainChange();
+      virtual void OnTerrainTileChange(uint quadx, uint quadz, uint tile);
    private:
       cTerrainRenderer * m_pOuter;
    };
@@ -144,6 +146,9 @@ private:
    typedef std::vector<cTerrainChunk *> tChunks;
    tChunks m_chunks;
 
+   cTerrainChunk * m_pWholeTerrainChunk;
+
+   bool m_bInEditor; // Is this terrain renderer running in the editor
    bool m_bEnableBlending;
    bool m_bTerrainChanged; // terrain changed while blending disabled?
 };
@@ -212,6 +217,9 @@ public:
    ~cTerrainChunk();
 
    static tResult Create(const cRange<uint> xRange, const cRange<uint> zRange, bool bNoBlending, cTerrainChunk * * ppChunk);
+
+   void BuildVertexBuffer(const cRange<uint> xRange, const cRange<uint> zRange);
+   void BuildSplats(const cRange<uint> xRange, const cRange<uint> zRange, bool bNoBlending);
 
    void Render(IEditorTileSet *);
 

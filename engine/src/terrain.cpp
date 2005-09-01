@@ -44,72 +44,6 @@ static const kTerrainFileId2 = kTerrainFileIdGenerator.id2;
 
 static const uint32 kTerrainFileVersion = 1;
 
-/////////////////////////////////////////////////////////////////////////////
-
-typedef std::vector<sTerrainVertex> tTerrainVertexVector;
-
-template <>
-class cReadWriteOps<tTerrainVertexVector>
-{
-public:
-   static tResult Read(IReader * pReader, tTerrainVertexVector * pVertices);
-   static tResult Write(IWriter * pWriter, const tTerrainVertexVector & vertices);
-};
-
-////////////////////////////////////////
-
-tResult cReadWriteOps<tTerrainVertexVector>::Read(IReader * pReader,
-                                                  tTerrainVertexVector * pVertices)
-{
-   Assert(pReader != NULL);
-   Assert(pVertices != NULL);
-
-   uint count = 0;
-   if (pReader->Read(&count) != S_OK)
-   {
-      return E_FAIL;
-   }
-
-   pVertices->resize(count);
-
-   for (uint i = 0; i < count; i++)
-   {
-      sTerrainVertex vertex;
-      if (pReader->Read(&vertex, sizeof(sTerrainVertex)) != S_OK)
-      {
-         return E_FAIL;
-      }
-
-      (*pVertices)[i] = vertex;
-   }
-
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cReadWriteOps<tTerrainVertexVector>::Write(IWriter * pWriter,
-                                                   const tTerrainVertexVector & vertices)
-{
-   Assert(pWriter != NULL);
-
-   if (pWriter->Write(vertices.size()) != S_OK)
-   {
-      return E_FAIL;
-   }
-
-   std::vector<sTerrainVertex>::const_iterator iter;
-   for (iter = vertices.begin(); iter != vertices.end(); iter++)
-   {
-      if (pWriter->Write((void *)&(*iter), sizeof(sTerrainVertex)) != S_OK)
-      {
-         return E_FAIL;
-      }
-   }
-
-   return S_OK;
-}
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -512,18 +446,6 @@ tResult cTerrainModel::GetTileSet(IEditorTileSet * * ppTileSet)
 
 ////////////////////////////////////////
 
-tTerrainQuads::const_iterator cTerrainModel::BeginTerrainQuads() const
-{
-   return m_terrainQuads.begin();
-}
-
-tTerrainQuads::const_iterator cTerrainModel::EndTerrainQuads() const
-{
-   return m_terrainQuads.end();
-}
-
-////////////////////////////////////////
-
 tResult cTerrainModel::SetQuadTile(uint quadx, uint quadz, uint tile, uint * pFormer)
 {
    if (quadx < m_terrainSettings.GetTileCountX() && quadz < m_terrainSettings.GetTileCountZ())
@@ -536,7 +458,14 @@ tResult cTerrainModel::SetQuadTile(uint quadx, uint quadz, uint tile, uint * pFo
             *pFormer = m_terrainQuads[index].tile;
          }
          m_terrainQuads[index].tile = tile;
-         NotifyListeners(&ITerrainModelListener::OnTerrainChange);
+
+         tListeners::iterator iter = m_listeners.begin();
+         tListeners::iterator end = m_listeners.end();
+         for (; iter != end; iter++)
+         {
+            (*iter)->OnTerrainTileChange(quadx, quadz, tile);
+         }
+
          return S_OK;
       }
    }
@@ -600,7 +529,7 @@ tResult cTerrainModel::GetQuadCorners(uint quadx, uint quadz, tVec3 corners[4]) 
 
    for (int i = 0; i < 4; i++)
    {
-      corners[i] = m_terrainQuads[index].verts[i].pos;
+      corners[i] = m_terrainQuads[index].corners[i];
    }
 
    return S_OK;
@@ -640,16 +569,11 @@ tResult cTerrainModel::InitQuads(uint nTilesX, uint nTilesZ, uint tile, IHeightM
 
          tq.tile = tile;
 
-         tq.verts[0].uv1 = tVec2(0,0);
-         tq.verts[1].uv1 = tVec2(1,0);
-         tq.verts[2].uv1 = tVec2(1,1);
-         tq.verts[3].uv1 = tVec2(0,1);
-
 #define Height(xx,zz) (pHeightMap->GetNormalizedHeight((xx)/extentX,(zz)/extentZ)*kMaxTerrainHeight)
-         tq.verts[0].pos = tVec3(x, Height(x,z), z);
-         tq.verts[1].pos = tVec3(x+stepSize, Height(x+stepSize,z), z);
-         tq.verts[2].pos = tVec3(x+stepSize, Height(x+stepSize,z+stepSize), z+stepSize);
-         tq.verts[3].pos = tVec3(x, Height(x,z+stepSize), z+stepSize);
+         tq.corners[0] = tVec3(x, Height(x,z), z);
+         tq.corners[1] = tVec3(x+stepSize, Height(x+stepSize,z), z);
+         tq.corners[2] = tVec3(x+stepSize, Height(x+stepSize,z+stepSize), z+stepSize);
+         tq.corners[3] = tVec3(x, Height(x,z+stepSize), z+stepSize);
 #undef Height
       }
    }

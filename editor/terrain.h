@@ -23,10 +23,15 @@
 // CLASS: cTerrainModel
 //
 
-typedef std::vector<sTerrainQuad> tTerrainQuads;
-
 class cTerrainModel : public cComObject2<IMPLEMENTS(ITerrainModel), IMPLEMENTS(IGlobalObject)>
 {
+   struct sTerrainQuad
+   {
+      uint tile;
+      tVec3 corners[4];
+   };
+   typedef std::vector<sTerrainQuad> tTerrainQuads;
+
 public:
    cTerrainModel();
    ~cTerrainModel();
@@ -46,8 +51,6 @@ public:
    virtual tResult GetTerrainSettings(cTerrainSettings * pTerrainSettings) const;
 
    virtual tResult GetTileSet(IEditorTileSet * * ppTileSet);
-   virtual tTerrainQuads::const_iterator BeginTerrainQuads() const;
-   virtual tTerrainQuads::const_iterator EndTerrainQuads() const;
    virtual tResult AddTerrainModelListener(ITerrainModelListener * pListener);
    virtual tResult RemoveTerrainModelListener(ITerrainModelListener * pListener);
    virtual tResult SetQuadTile(uint quadx, uint quadz, uint tile, uint * pFormer);
@@ -56,7 +59,6 @@ public:
    virtual tResult GetQuadCorners(uint quadx, uint quadz, tVec3 corners[4]) const;
 
    static tResult InitQuads(uint nTilesX, uint nTilesZ, uint tile, IHeightMap * pHeightMap, tTerrainQuads * pQuads);
-   tResult RegenerateChunks();
 
 private:
    void NotifyListeners(void (ITerrainModelListener::*pfnListenerMethod)());

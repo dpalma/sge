@@ -37,14 +37,6 @@ struct sTerrainVertex
    tVec3 pos;
 };
 
-struct sTerrainQuad
-{
-   uint tile;
-   sTerrainVertex verts[4];
-};
-
-typedef std::vector<sTerrainQuad> tTerrainQuads;
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -72,7 +64,7 @@ interface ITerrainRenderer : IUnknown
 
 ////////////////////////////////////////
 
-TERRAIN_API tResult TerrainRendererCreate();
+TERRAIN_API tResult TerrainRendererCreate(bool bForEditor = false);
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -173,9 +165,6 @@ interface ITerrainModel : IUnknown
 
    virtual tResult GetTileSet(IEditorTileSet * * ppTileSet) = 0;
 
-   virtual tTerrainQuads::const_iterator BeginTerrainQuads() const = 0;
-   virtual tTerrainQuads::const_iterator EndTerrainQuads() const = 0;
-
    virtual tResult SetQuadTile(uint quadx, uint quadz, uint tile, uint * pFormer) = 0;
    virtual tResult GetQuadTile(uint quadx, uint quadz, uint * pTile) const = 0;
 
@@ -198,8 +187,10 @@ TERRAIN_API tResult TerrainModelCreate();
 interface ITerrainModelListener : IUnknown
 {
    virtual void OnTerrainInitialize() = 0;
+
    virtual void OnTerrainClear() = 0;
-   virtual void OnTerrainChange() = 0;
+
+   virtual void OnTerrainTileChange(uint quadx, uint quadz, uint tile) = 0;
 };
 
 
