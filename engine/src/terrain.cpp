@@ -582,9 +582,9 @@ tResult cTerrainModel::GetTileIndices(float x, float z, uint * pix, uint * piz) 
 
 ////////////////////////////////////////
 
-tResult cTerrainModel::GetQuadVertices(uint quadx, uint quadz, sTerrainVertex verts[4]) const
+tResult cTerrainModel::GetQuadCorners(uint quadx, uint quadz, tVec3 corners[4]) const
 {
-   if (verts == NULL)
+   if (corners == NULL)
    {
       return E_POINTER;
    }
@@ -598,7 +598,11 @@ tResult cTerrainModel::GetQuadVertices(uint quadx, uint quadz, sTerrainVertex ve
    uint index = (quadz * m_terrainSettings.GetTileCountZ()) + quadx;
    Assert(index < m_terrainQuads.size());
 
-   memcpy(verts, m_terrainQuads[index].verts, 4 * sizeof(sTerrainVertex));
+   for (int i = 0; i < 4; i++)
+   {
+      corners[i] = m_terrainQuads[index].verts[i].pos;
+   }
+
    return S_OK;
 }
 

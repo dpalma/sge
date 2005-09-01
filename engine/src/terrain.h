@@ -53,7 +53,7 @@ public:
    virtual tResult SetQuadTile(uint quadx, uint quadz, uint tile, uint * pFormer);
    virtual tResult GetQuadTile(uint quadx, uint quadz, uint * pTile) const;
    virtual tResult GetTileIndices(float x, float z, uint * pix, uint * piz) const;
-   virtual tResult GetQuadVertices(uint quadx, uint quadz, sTerrainVertex verts[4]) const;
+   virtual tResult GetQuadCorners(uint quadx, uint quadz, tVec3 corners[4]) const;
 
    static tResult InitQuads(uint nTilesX, uint nTilesZ, uint tile, IHeightMap * pHeightMap, tTerrainQuads * pQuads);
    tResult RegenerateChunks();

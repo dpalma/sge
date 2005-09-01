@@ -182,7 +182,7 @@ interface ITerrainModel : IUnknown
    /// @brief Part of hit-testing; Gets the tile indices for a given point on the 2D terrain plane
    virtual tResult GetTileIndices(float x, float z, uint * pix, uint * piz) const = 0;
 
-   virtual tResult GetQuadVertices(uint quadx, uint quadz, sTerrainVertex verts[4]) const = 0;
+   virtual tResult GetQuadCorners(uint quadx, uint quadz, tVec3 corners[4]) const = 0;
 };
 
 ////////////////////////////////////////

@@ -153,7 +153,7 @@ void cTerrainRenderer::RegenerateChunks()
          cRange<uint> xr(ix * GetTilesPerChunk(), (ix+1) * GetTilesPerChunk());
 
          cTerrainChunk * pChunk = NULL;
-         if (cTerrainChunk::Create(xr, zr, &pChunk) == S_OK)
+         if (cTerrainChunk::Create(xr, zr, false, &pChunk) == S_OK)
          {
             m_chunks.push_back(pChunk);
          }
@@ -690,6 +690,7 @@ cTerrainChunk::~cTerrainChunk()
 
 tResult cTerrainChunk::Create(const cRange<uint> xRange,
                               const cRange<uint> zRange,
+                              bool bNoBlending,
                               cTerrainChunk * * ppChunk)
 {
    if (ppChunk == NULL)
@@ -733,8 +734,11 @@ tResult cTerrainChunk::Create(const cRange<uint> xRange,
 
          if (splatBuilders.find(tile) == splatBuilders.end())
          {
-            uint alphaMapId;
-            BuildSplatAlphaMap(tile, xRange, zRange, &alphaMapId);
+            uint alphaMapId = kNoIndex;
+            if (!bNoBlending)
+            {
+               BuildSplatAlphaMap(tile, xRange, zRange, &alphaMapId);
+            }
 
             pSplatBuilder = new cSplatBuilder(xRange, zRange, tile, alphaMapId);
             if (pSplatBuilder != NULL)
@@ -751,39 +755,47 @@ tResult cTerrainChunk::Create(const cRange<uint> xRange,
          {
             pSplatBuilder->AddQuad(x,z);
 
-            const uint neighbors[][2] =
+            if (!bNoBlending)
             {
-               {xPrev, zPrev},
-               {x,     zPrev},
-               {xNext, zPrev},
-               {xPrev, z,   },
-               {xNext, z,   },
-               {xPrev, zNext},
-               {x,     zNext},
-               {xNext, zNext},
-            };
-
-            for (int i = 0; i < _countof(neighbors); i++)
-            {
-               // Add bordering quads too (these provide the fade)
-               uint ntile, nx = neighbors[i][0], nz = neighbors[i][1];
-               if (pTerrainModel->GetQuadTile(nx, nz, &ntile) == S_OK
-                  && ntile != tile)
+               const uint neighbors[][2] =
                {
-                  pSplatBuilder->AddQuad(nx,nz);
+                  {xPrev, zPrev},
+                  {x,     zPrev},
+                  {xNext, zPrev},
+                  {xPrev, z,   },
+                  {xNext, z,   },
+                  {xPrev, zNext},
+                  {x,     zNext},
+                  {xNext, zNext},
+               };
+
+               for (int i = 0; i < _countof(neighbors); i++)
+               {
+                  // Add bordering quads too (these provide the fade)
+                  uint ntile, nx = neighbors[i][0], nz = neighbors[i][1];
+                  if (pTerrainModel->GetQuadTile(nx, nz, &ntile) == S_OK
+                     && ntile != tile)
+                  {
+                     pSplatBuilder->AddQuad(nx,nz);
+                  }
                }
             }
          }
 
          uint iVert = ((z - zRange.GetStart()) * zRange.GetLength() + x - xRange.GetStart()) * 4;
 
-         sTerrainVertex verts[4];
-         if (pTerrainModel->GetQuadVertices(x, z, verts) == S_OK)
+         tVec3 corners[4];
+         if (pTerrainModel->GetQuadCorners(x, z, corners) == S_OK)
          {
-            pChunk->m_vertices[iVert+0] = verts[0];
-            pChunk->m_vertices[iVert+1] = verts[1];
-            pChunk->m_vertices[iVert+2] = verts[2];
-            pChunk->m_vertices[iVert+3] = verts[3];
+            pChunk->m_vertices[iVert+0].pos = corners[0];
+            pChunk->m_vertices[iVert+1].pos = corners[1];
+            pChunk->m_vertices[iVert+2].pos = corners[2];
+            pChunk->m_vertices[iVert+3].pos = corners[3];
+
+            pChunk->m_vertices[iVert+0].uv1 = tVec2(0,0);
+            pChunk->m_vertices[iVert+1].uv1 = tVec2(1,0);
+            pChunk->m_vertices[iVert+2].uv1 = tVec2(1,1);
+            pChunk->m_vertices[iVert+3].uv1 = tVec2(0,1);
 
             float u = d * (x - xRange.GetStart());
             float v = d * (z - zRange.GetStart());
@@ -846,7 +858,7 @@ void cTerrainChunk::Render(IEditorTileSet * pTileSet)
 void cTerrainChunk::RenderSplatMultiTexture(cSplatBuilder * pSplat, IEditorTileSet * pTileSet, const byte * pVertexData)
 {
    GLuint alphaMapId;
-   if (pSplat->GetAlphaMap(&alphaMapId) == S_OK)
+   if (pSplat->GetAlphaMap(&alphaMapId) == S_OK && alphaMapId != kNoIndex)
    {
       glActiveTextureARB(GL_TEXTURE0);
       glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);

@@ -211,7 +211,7 @@ public:
    cTerrainChunk();
    ~cTerrainChunk();
 
-   static tResult Create(const cRange<uint> xRange, const cRange<uint> zRange, cTerrainChunk * * ppChunk);
+   static tResult Create(const cRange<uint> xRange, const cRange<uint> zRange, bool bNoBlending, cTerrainChunk * * ppChunk);
 
    void Render(IEditorTileSet *);
 
