@@ -59,9 +59,9 @@ private:
    struct sResource;
 
    sResource * FindResourceWithFormat(const tChar * pszName, tResourceType type, sFormat * pFormat);
-   tResult DoLoadFromFile(const cFileSpec & file, sFormat * pFormat, void * param, ulong * pDataSize, void * * ppData);
-   tResult DoLoadFromArchive(uint archiveId, ulong offset, ulong index, sFormat * pFormat, void * param, ulong * pDataSize, void * * ppData);
-   tResult DoLoadFromReader(IReader * pReader, sFormat * pFormat, ulong dataSize, void * param, void * * ppData);
+   tResult DoLoadFromFile(const cFileSpec & file, const sFormat * pFormat, void * param, ulong * pDataSize, void * * ppData);
+   tResult DoLoadFromArchive(uint archiveId, ulong offset, ulong index, const sFormat * pFormat, void * param, ulong * pDataSize, void * * ppData);
+   tResult DoLoadFromReader(IReader * pReader, const sFormat * pFormat, ulong dataSize, void * param, void * * ppData);
 
    uint DeduceFormats(const tChar * pszName, tResourceType type, sFormat * * ppFormats, uint nMaxFormats);
 
@@ -98,16 +98,12 @@ private:
 
    struct sResource
    {
-      sResource()
-      {
-         extensionId = kNoIndex;
-         pFormat = NULL;
-         dirId = archiveId = kNoIndex;
-         offset = index = kNoIndexL;
-         lockCount = 0;
-         pData = NULL;
-         dataSize = 0;
-      }
+      sResource();
+      sResource(const sResource &);
+      ~sResource();
+
+      const sResource & operator =(const sResource &);
+
       cStr name;
       uint extensionId;
       sFormat * pFormat;

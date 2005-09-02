@@ -15,7 +15,7 @@
 
 #include "dbgalloc.h" // must be last header
 
-LOG_DEFINE_CHANNEL(ResourceManager);
+LOG_DEFINE_ENABLE_CHANNEL(ResourceManager, TRUE);
 
 #define LocalMsg(msg)            DebugMsgEx(ResourceManager,msg)
 #define LocalMsg1(msg,a)         DebugMsgEx1(ResourceManager,msg,(a))
@@ -159,6 +159,7 @@ tResult cResourceManager::Term()
       {
          if (resIter->pFormat != NULL && resIter->pFormat->pfnUnload != NULL)
          {
+            LocalMsg2("Unloading \"%s\" (%s)\n", resIter->name.c_str(), ResourceTypeName(resIter->pFormat->type));
             (*resIter->pFormat->pfnUnload)(resIter->pData);
             resIter->pData = NULL;
             resIter->dataSize = 0;
@@ -342,30 +343,40 @@ tResult cResourceManager::Load(const tChar * pszName, tResourceType type,
       // may not have been loaded in AddDirectory or AddArchive. Do it now.
       if (pRes == NULL && pFormat->typeDepend)
       {
-         sResource res;
-         cFileSpec(pszName).GetFileNameNoExt(&res.name);
-         res.extensionId = GetExtensionIdForName(pszName);
-         res.pFormat = pFormat;
-         m_resources.push_back(res);
-         pRes = &m_resources[m_resources.size() - 1];
          LocalMsg3("Request for \"%s\", %s will be converted from type %s\n",
             pszName, ResourceTypeName(type), ResourceTypeName(pFormat->typeDepend));
+
+         // TODO: load the dependent data before adding a new resource
+         void * pDependData = NULL;
+         if (Load(pszName, pFormat->typeDepend, param, &pDependData) == S_OK)
+         {
+            void * pData = (*pFormat->pfnPostload)(pDependData, 0, param);
+            if (pData != NULL)
+            {
+               sResource res;
+               cFileSpec(pszName).GetFileNameNoExt(&res.name);
+               res.extensionId = GetExtensionIdForName(pszName);
+               res.pFormat = pFormat;
+               res.pData = pData;
+               m_resources.push_back(res);
+               *ppData = pData;
+               return S_OK;
+            }
+         }
       }
 
       if (pRes != NULL)
       {
-         ulong dataSize = 0;
-         void * pData = NULL;
-
          if (pFormat->typeDepend)
          {
             if (pRes->pData == NULL)
             {
-               if (Load(pszName, pFormat->typeDepend, param, &pData) == S_OK)
-               {
-                  pRes->pData = (*pFormat->pfnPostload)(pData, 0, param);
-                  Assert(pRes->pFormat == pFormat); // should have been set above
-               }
+               Assert(!"Shouldn't get here anymore");
+               //if (Load(pszName, pFormat->typeDepend, param, &pData) == S_OK)
+               //{
+               //   pRes->pData = (*pFormat->pfnPostload)(pData, 0, param);
+               //   Assert(pRes->pFormat == pFormat); // should have been set above
+               //}
             }
          }
          else
@@ -373,6 +384,8 @@ tResult cResourceManager::Load(const tChar * pszName, tResourceType type,
             if (pRes->pData == NULL)
             {
                tResult result = E_FAIL;
+               ulong dataSize = 0;
+               void * pData = NULL;
 
                if (pRes->dirId != kNoIndex)
                {
@@ -535,7 +548,7 @@ cResourceManager::sResource * cResourceManager::FindResourceWithFormat(
 
    tResources::iterator resIter = m_resources.begin();
    tResources::iterator resEnd = m_resources.end();
-   for (int index = 0; resIter != resEnd; index++, resIter++)
+   for (uint index = 0; resIter != resEnd; resIter++, index++)
    {
       if (resIter->name == name)
       {
@@ -554,7 +567,8 @@ cResourceManager::sResource * cResourceManager::FindResourceWithFormat(
             }
             else if (resIter->pFormat == pFormat)
             {
-               return &m_resources[index];
+               pPotentialMatch = &m_resources[index];
+               break;
             }
          }
       }
@@ -568,7 +582,7 @@ cResourceManager::sResource * cResourceManager::FindResourceWithFormat(
 
 ////////////////////////////////////////
 
-tResult cResourceManager::DoLoadFromFile(const cFileSpec & file, sFormat * pFormat,
+tResult cResourceManager::DoLoadFromFile(const cFileSpec & file, const sFormat * pFormat,
                                          void * param, ulong * pDataSize, void * * ppData)
 {
    if (pDataSize == NULL || ppData == NULL)
@@ -602,7 +616,7 @@ tResult cResourceManager::DoLoadFromFile(const cFileSpec & file, sFormat * pForm
 ////////////////////////////////////////
 
 tResult cResourceManager::DoLoadFromArchive(uint archiveId, ulong offset, ulong index,
-                                            sFormat * pFormat, void * param,
+                                            const sFormat * pFormat, void * param,
                                             ulong * pDataSize, void * * ppData)
 {
    if (archiveId == kNoIndex || offset == kNoIndexL || index == kNoIndexL)
@@ -666,7 +680,7 @@ tResult cResourceManager::DoLoadFromArchive(uint archiveId, ulong offset, ulong 
 
 ////////////////////////////////////////
 
-tResult cResourceManager::DoLoadFromReader(IReader * pReader, sFormat * pFormat, ulong dataSize,
+tResult cResourceManager::DoLoadFromReader(IReader * pReader, const sFormat * pFormat, ulong dataSize,
                                            void * param, void * * ppData)
 {
    if (pReader == NULL || ppData == NULL)
@@ -719,13 +733,13 @@ uint cResourceManager::DeduceFormats(const tChar * pszName, tResourceType type,
       tFormats::const_iterator fIter = m_formats.begin();
       tFormats::const_iterator fEnd = m_formats.end();
       uint iFormat = 0;
-      for (; (fIter != fEnd) && (iFormat < nMaxFormats); fIter++)
+      for (uint index = 0; (fIter != fEnd) && (iFormat < nMaxFormats); fIter++, index++)
       {
          if (SameType(fIter->type, type))
          {
             if ((fIter->extensionId == extensionId) || fIter->typeDepend)
             {
-               sFormat * pFormat = &m_formats[fIter - m_formats.begin()];
+               sFormat * pFormat = &m_formats[index];
                LocalMsg2("   Format %d: \"%s\"\n", iFormat, ResourceTypeName(pFormat->type));
                ppFormats[iFormat++] = pFormat;
             }
@@ -740,11 +754,11 @@ uint cResourceManager::DeduceFormats(const tChar * pszName, tResourceType type,
       tFormats::const_iterator fIter = m_formats.begin();
       tFormats::const_iterator fEnd = m_formats.end();
       uint iFormat = 0;
-      for (; (fIter != fEnd) && (iFormat < nMaxFormats); fIter++)
+      for (uint index = 0; (fIter != fEnd) && (iFormat < nMaxFormats); fIter++, index++)
       {
          if (SameType(fIter->type, type))
          {
-            sFormat * pFormat = &m_formats[fIter - m_formats.begin()];
+            sFormat * pFormat = &m_formats[index];
             LocalMsg2("   Format %d: \"%s\"\n", iFormat, ResourceTypeName(pFormat->type));
             ppFormats[iFormat++] = pFormat;
          }
@@ -837,5 +851,59 @@ void ResourceManagerCreate()
 {
    cAutoIPtr<IResourceManager>(new cResourceManager);
 }
+
+////////////////////////////////////////
+
+cResourceManager::sResource::sResource()
+ : extensionId(kNoIndex)
+ , pFormat(NULL)
+ , dirId(kNoIndex)
+ , archiveId(kNoIndex)
+ , offset(kNoIndexL)
+ , index(kNoIndexL)
+ , lockCount(0)
+ , pData(NULL)
+ , dataSize(0)
+{
+}
+
+////////////////////////////////////////
+
+cResourceManager::sResource::sResource(const sResource & other)
+ : extensionId(other.extensionId)
+ , pFormat(other.pFormat)
+ , dirId(other.dirId)
+ , archiveId(other.archiveId)
+ , offset(other.offset)
+ , index(other.index)
+ , lockCount(other.lockCount)
+ , pData(other.pData)
+ , dataSize(other.dataSize)
+{
+   AssertMsg(other.pData == NULL, "Copying resource data pointer");
+}
+
+////////////////////////////////////////
+
+cResourceManager::sResource::~sResource()
+{
+}
+
+////////////////////////////////////////
+
+const cResourceManager::sResource & cResourceManager::sResource::operator =(const sResource & other)
+{
+   extensionId = other.extensionId;
+   pFormat = other.pFormat;
+   dirId = other.dirId;
+   archiveId = other.archiveId;
+   offset = other.offset;
+   index = other.index;
+   lockCount = 0;
+   pData = NULL;
+   dataSize = 0;
+   return *this;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
