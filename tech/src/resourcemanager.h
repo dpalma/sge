@@ -22,12 +22,29 @@ class cFileSpec;
 const uint kNoIndex = ~0;
 const ulong kNoIndexL = ~0;
 
+F_DECLARE_INTERFACE(IResourceManagerDiagnostics);
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IResourceManagerDiagnostics
+//
+
+interface IResourceManagerDiagnostics : IUnknown
+{
+   virtual void DumpFormats() const = 0;
+   virtual void DumpCache() const = 0;
+};
+
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cResourceManager
 //
 
-class cResourceManager : public cComObject2<IMPLEMENTS(IResourceManager), IMPLEMENTS(IGlobalObject)>
+class cResourceManager : public cComObject3<IMPLEMENTS(IResourceManager),
+                                            IMPLEMENTS(IGlobalObject),
+                                            IMPLEMENTS(IResourceManagerDiagnostics)>
 {
 public:
    cResourceManager();
@@ -53,6 +70,9 @@ public:
                                   tResourceLoad pfnLoad,
                                   tResourcePostload pfnPostload,
                                   tResourceUnload pfnUnload);
+
+   virtual void DumpFormats() const;
+   virtual void DumpCache() const;
 
 private:
    struct sFormat;

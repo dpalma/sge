@@ -27,10 +27,16 @@ LOG_DEFINE_ENABLE_CHANNEL(ResourceManager, TRUE);
 #define LocalMsgIf1(cond,msg,a)        DebugMsgIfEx1(ResourceManager,(cond),msg,(a))
 #define LocalMsgIf2(cond,msg,a,b)      DebugMsgIfEx2(ResourceManager,(cond),msg,(a),(b))
 #define LocalMsgIf3(cond,msg,a,b,c)    DebugMsgIfEx3(ResourceManager,(cond),msg,(a),(b),(c))
+#define LocalMsgIf4(cond,msg,a,b,c,d)  DebugMsgIfEx4(ResourceManager,(cond),msg,(a),(b),(c),(d))
 
 static const int kUnzMaxPath = 260;
 
 static const tChar kExtSep = _T('.');
+
+// {93BA1F78-3FF1-415b-BA5B-56FED039E838}
+static const GUID IID_IResourceManagerDiagnostics = 
+{ 0x93ba1f78, 0x3ff1, 0x415b, { 0xba, 0x5b, 0x56, 0xfe, 0xd0, 0x39, 0xe8, 0x38 } };
+
 
 // REFERENCES
 // "Game Developer Magazine", February 2005, "Inner Product" column
@@ -131,7 +137,6 @@ static const tChar * ResourceTypeName(tResourceType rt)
 
 cResourceManager::cResourceManager()
 {
-   RegisterGlobalObject(IID_IResourceManager, static_cast<IGlobalObject*>(this));
 }
 
 ////////////////////////////////////////
@@ -518,6 +523,73 @@ tResult cResourceManager::RegisterFormat(tResourceType type,
 
 ////////////////////////////////////////
 
+void cResourceManager::DumpFormats() const
+{
+   techlog.Print(kInfo, "%d resource formats\n", m_formats.size());
+   static const int kTypeWidth = -20;
+   static const int kExtWidth = -5;
+   static const tChar kRowFormat[] = "%*s | %*s | %*s\n";
+   techlog.Print(kInfo, kRowFormat, kTypeWidth, "Type", kTypeWidth, "Dep. Type", kExtWidth, "Ext");
+   techlog.Print(kInfo, "----------------------------------------------------------------------\n");
+   tFormats::const_iterator iter = m_formats.begin();
+   tFormats::const_iterator end = m_formats.end();
+   for (uint index = 0; iter != end; iter++, index++)
+   {
+      techlog.Print(kInfo, kRowFormat,
+         kTypeWidth, ResourceTypeName(iter->type),
+         kTypeWidth, iter->typeDepend ? ResourceTypeName(iter->typeDepend) : "None",
+         kExtWidth, iter->extensionId != kNoIndex ? m_extensions[iter->extensionId].c_str() : "None");
+   }
+}
+
+////////////////////////////////////////
+
+void cResourceManager::DumpCache() const
+{
+   techlog.Print(kInfo, "%d resource cache entries\n", m_resources.size());
+   static const int kNameWidth = -30;
+   static const int kExtWidth = -5;
+   static const int kTypeWidth = -20;
+   static const tChar kRowFormat[] = "%*s | %*s | %*s\n";
+   techlog.Print(kInfo, kRowFormat, kNameWidth, "Name", kExtWidth, "Ext", kTypeWidth, "Type");
+   techlog.Print(kInfo, "----------------------------------------------------------------------\n");
+   tResources::const_iterator iter = m_resources.begin();
+   tResources::const_iterator end = m_resources.end();
+   for (uint index = 0; iter != end; iter++, index++)
+   {
+      techlog.Print(kInfo, kRowFormat,
+         kNameWidth, !iter->name.empty() ? iter->name.c_str() : "Empty",
+         kExtWidth, iter->extensionId != kNoIndex ? m_extensions[iter->extensionId].c_str() : "None",
+         kTypeWidth, iter->pFormat ? ResourceTypeName(iter->pFormat->type) : "Undetermined");
+   }
+}
+
+////////////////////////////////////////
+
+void DumpLoadedResources()
+{
+   cAutoIPtr<IResourceManagerDiagnostics> pResMgrDiag;
+   UseGlobal(ResourceManager);
+   if (pResourceManager->QueryInterface(IID_IResourceManagerDiagnostics, (void**)&pResMgrDiag) == S_OK)
+   {
+      pResMgrDiag->DumpCache();
+   }
+}
+
+////////////////////////////////////////
+
+void DumpResourceFormats()
+{
+   cAutoIPtr<IResourceManagerDiagnostics> pResMgrDiag;
+   UseGlobal(ResourceManager);
+   if (pResourceManager->QueryInterface(IID_IResourceManagerDiagnostics, (void**)&pResMgrDiag) == S_OK)
+   {
+      pResMgrDiag->DumpFormats();
+   }
+}
+
+////////////////////////////////////////
+
 cResourceManager::sResource * cResourceManager::FindResourceWithFormat(
    const tChar * pszName, tResourceType type, sFormat * pFormat)
 {
@@ -849,13 +921,15 @@ uint cResourceManager::GetArchiveId(const tChar * pszArchive)
 
 void ResourceManagerCreate()
 {
-   cAutoIPtr<IResourceManager>(new cResourceManager);
+   cAutoIPtr<IResourceManager> p(new cResourceManager);
+   RegisterGlobalObject(IID_IResourceManager, static_cast<IResourceManager*>(p));
 }
 
 ////////////////////////////////////////
 
 cResourceManager::sResource::sResource()
- : extensionId(kNoIndex)
+ : name() 
+ , extensionId(kNoIndex)
  , pFormat(NULL)
  , dirId(kNoIndex)
  , archiveId(kNoIndex)
@@ -870,7 +944,8 @@ cResourceManager::sResource::sResource()
 ////////////////////////////////////////
 
 cResourceManager::sResource::sResource(const sResource & other)
- : extensionId(other.extensionId)
+ : name(other.name)
+ , extensionId(other.extensionId)
  , pFormat(other.pFormat)
  , dirId(other.dirId)
  , archiveId(other.archiveId)
@@ -880,7 +955,6 @@ cResourceManager::sResource::sResource(const sResource & other)
  , pData(other.pData)
  , dataSize(other.dataSize)
 {
-   AssertMsg(other.pData == NULL, "Copying resource data pointer");
 }
 
 ////////////////////////////////////////
@@ -893,6 +967,8 @@ cResourceManager::sResource::~sResource()
 
 const cResourceManager::sResource & cResourceManager::sResource::operator =(const sResource & other)
 {
+   Assert(other.pData == NULL);
+   name = other.name;
    extensionId = other.extensionId;
    pFormat = other.pFormat;
    dirId = other.dirId;
