@@ -78,12 +78,12 @@ private:
    struct sFormat;
    struct sResource;
 
-   sResource * FindResourceWithFormat(const tChar * pszName, tResourceType type, sFormat * pFormat);
+   sResource * FindResourceWithFormat(const tChar * pszName, tResourceType type, uint formatId);
    tResult DoLoadFromFile(const cFileSpec & file, const sFormat * pFormat, void * param, ulong * pDataSize, void * * ppData);
    tResult DoLoadFromArchive(uint archiveId, ulong offset, ulong index, const sFormat * pFormat, void * param, ulong * pDataSize, void * * ppData);
    tResult DoLoadFromReader(IReader * pReader, const sFormat * pFormat, ulong dataSize, void * param, void * * ppData);
 
-   uint DeduceFormats(const tChar * pszName, tResourceType type, sFormat * * ppFormats, uint nMaxFormats);
+   uint DeduceFormats(const tChar * pszName, tResourceType type, uint * pFormatIds, uint nMaxFormats);
 
    uint GetExtensionId(const tChar * pszExtension);
    uint GetExtensionIdForName(const tChar * pszName);
@@ -126,7 +126,7 @@ private:
 
       cStr name;
       uint extensionId;
-      sFormat * pFormat;
+      uint formatId;
       uint dirId;
       uint archiveId;
       ulong offset;

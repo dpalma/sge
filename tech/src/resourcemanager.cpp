@@ -15,7 +15,7 @@
 
 #include "dbgalloc.h" // must be last header
 
-LOG_DEFINE_ENABLE_CHANNEL(ResourceManager, TRUE);
+LOG_DEFINE_CHANNEL(ResourceManager);
 
 #define LocalMsg(msg)            DebugMsgEx(ResourceManager,msg)
 #define LocalMsg1(msg,a)         DebugMsgEx1(ResourceManager,msg,(a))
@@ -162,12 +162,16 @@ tResult cResourceManager::Term()
    {
       if (resIter->pData != NULL)
       {
-         if (resIter->pFormat != NULL && resIter->pFormat->pfnUnload != NULL)
+         if (resIter->formatId != kNoIndex)
          {
-            LocalMsg2("Unloading \"%s\" (%s)\n", resIter->name.c_str(), ResourceTypeName(resIter->pFormat->type));
-            (*resIter->pFormat->pfnUnload)(resIter->pData);
-            resIter->pData = NULL;
-            resIter->dataSize = 0;
+            const sFormat & format = m_formats[resIter->formatId];
+            if (format.pfnUnload != NULL)
+            {
+               LocalMsg2("Unloading \"%s\" (%s)\n", resIter->name.c_str(), ResourceTypeName(format.type));
+               (*format.pfnUnload)(resIter->pData);
+               resIter->pData = NULL;
+               resIter->dataSize = 0;
+            }
          }
       }
    }
@@ -339,10 +343,12 @@ tResult cResourceManager::Load(const tChar * pszName, tResourceType type,
       return E_INVALIDARG;
    }
 
-   sFormat * pFormat = NULL;
-   if (DeduceFormats(pszName, type, &pFormat, 1) == 1)
+   uint formatId = kNoIndex;
+   if (DeduceFormats(pszName, type, &formatId, 1) == 1)
    {
-      sResource * pRes = FindResourceWithFormat(pszName, type, pFormat);
+      sResource * pRes = FindResourceWithFormat(pszName, type, formatId);
+
+      sFormat * pFormat = &m_formats[formatId];
 
       // If no resource and format specifies a dependent type then it
       // may not have been loaded in AddDirectory or AddArchive. Do it now.
@@ -361,7 +367,7 @@ tResult cResourceManager::Load(const tChar * pszName, tResourceType type,
                sResource res;
                cFileSpec(pszName).GetFileNameNoExt(&res.name);
                res.extensionId = GetExtensionIdForName(pszName);
-               res.pFormat = pFormat;
+               res.formatId = formatId;
                res.pData = pData;
                m_resources.push_back(res);
                *ppData = pData;
@@ -407,7 +413,7 @@ tResult cResourceManager::Load(const tChar * pszName, tResourceType type,
                if (result == S_OK)
                {
                   // Cache the resource data
-                  pRes->pFormat = pFormat;
+                  pRes->formatId = formatId;
                   pRes->pData = pData;
                   pRes->dataSize = dataSize;
                }
@@ -557,10 +563,11 @@ void cResourceManager::DumpCache() const
    tResources::const_iterator end = m_resources.end();
    for (uint index = 0; iter != end; iter++, index++)
    {
+      const sFormat * pFormat = (iter->formatId != kNoIndex) ? &m_formats[iter->formatId] : NULL;
       techlog.Print(kInfo, kRowFormat,
          kNameWidth, !iter->name.empty() ? iter->name.c_str() : "Empty",
          kExtWidth, iter->extensionId != kNoIndex ? m_extensions[iter->extensionId].c_str() : "None",
-         kTypeWidth, iter->pFormat ? ResourceTypeName(iter->pFormat->type) : "Undetermined");
+         kTypeWidth, pFormat ? ResourceTypeName(pFormat->type) : "Undetermined");
    }
 }
 
@@ -591,9 +598,9 @@ void DumpResourceFormats()
 ////////////////////////////////////////
 
 cResourceManager::sResource * cResourceManager::FindResourceWithFormat(
-   const tChar * pszName, tResourceType type, sFormat * pFormat)
+   const tChar * pszName, tResourceType type, uint formatId)
 {
-   if (pszName == NULL)
+   if (pszName == NULL || formatId == kNoIndex)
    {
       return NULL;
    }
@@ -632,12 +639,12 @@ cResourceManager::sResource * cResourceManager::FindResourceWithFormat(
          }
          else if (extensionId == resIter->extensionId)
          {
-            if (resIter->pFormat == NULL && !pFormat->typeDepend
+            if (resIter->formatId == kNoIndex && !m_formats[formatId].typeDepend
                && (resIter->archiveId != kNoIndex || resIter->dirId != kNoIndex))
             {
                pPotentialMatch = &m_resources[index];
             }
-            else if (resIter->pFormat == pFormat)
+            else if (resIter->formatId == formatId)
             {
                pPotentialMatch = &m_resources[index];
                break;
@@ -786,9 +793,9 @@ tResult cResourceManager::DoLoadFromReader(IReader * pReader, const sFormat * pF
 ////////////////////////////////////////
 
 uint cResourceManager::DeduceFormats(const tChar * pszName, tResourceType type,
-                                     sFormat * * ppFormats, uint nMaxFormats)
+                                     uint * pFormatIds, uint nMaxFormats)
 {
-   if (pszName == NULL || !type || ppFormats == NULL || nMaxFormats == 0)
+   if (pszName == NULL || !type || pFormatIds == NULL || nMaxFormats == 0)
    {
       return 0;
    }
@@ -811,9 +818,8 @@ uint cResourceManager::DeduceFormats(const tChar * pszName, tResourceType type,
          {
             if ((fIter->extensionId == extensionId) || fIter->typeDepend)
             {
-               sFormat * pFormat = &m_formats[index];
-               LocalMsg2("   Format %d: \"%s\"\n", iFormat, ResourceTypeName(pFormat->type));
-               ppFormats[iFormat++] = pFormat;
+               pFormatIds[iFormat] = index;
+               iFormat += 1;
             }
          }
       }
@@ -830,9 +836,8 @@ uint cResourceManager::DeduceFormats(const tChar * pszName, tResourceType type,
       {
          if (SameType(fIter->type, type))
          {
-            sFormat * pFormat = &m_formats[index];
-            LocalMsg2("   Format %d: \"%s\"\n", iFormat, ResourceTypeName(pFormat->type));
-            ppFormats[iFormat++] = pFormat;
+            pFormatIds[iFormat] = index;
+            iFormat += 1;
          }
       }
       LocalMsgIf(iFormat == 0, "   No compatible formats\n");
@@ -930,7 +935,7 @@ void ResourceManagerCreate()
 cResourceManager::sResource::sResource()
  : name() 
  , extensionId(kNoIndex)
- , pFormat(NULL)
+ , formatId(kNoIndex)
  , dirId(kNoIndex)
  , archiveId(kNoIndex)
  , offset(kNoIndexL)
@@ -946,7 +951,7 @@ cResourceManager::sResource::sResource()
 cResourceManager::sResource::sResource(const sResource & other)
  : name(other.name)
  , extensionId(other.extensionId)
- , pFormat(other.pFormat)
+ , formatId(other.formatId)
  , dirId(other.dirId)
  , archiveId(other.archiveId)
  , offset(other.offset)
@@ -970,7 +975,7 @@ const cResourceManager::sResource & cResourceManager::sResource::operator =(cons
    Assert(other.pData == NULL);
    name = other.name;
    extensionId = other.extensionId;
-   pFormat = other.pFormat;
+   formatId = other.formatId;
    dirId = other.dirId;
    archiveId = other.archiveId;
    offset = other.offset;
