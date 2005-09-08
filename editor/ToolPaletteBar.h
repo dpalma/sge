@@ -21,7 +21,7 @@
 //
 
 class cToolPaletteBar : public cEditorControlBar,
-                        public cComObject<IMPLEMENTS(IEditorTileManagerListener),
+                        public cComObject<IMPLEMENTS(IEditorTileSetsListener),
                                           cAfxComServices<cToolPaletteBar> >
 {
    DECLARE_DYNCREATE(cToolPaletteBar)
@@ -47,7 +47,7 @@ public:
 public:
    virtual ~cToolPaletteBar();
 
-   virtual void OnDefaultTileSetChange(IEditorTileSet * pTileSet);
+   virtual void OnSetDefaultTileSet(const tChar * pszTileSet);
 
    // Generated message map functions
 protected:

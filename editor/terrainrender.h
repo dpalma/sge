@@ -18,7 +18,6 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-F_DECLARE_INTERFACE(IEditorTileSet);
 
 class cTerrainChunk;
 
@@ -181,7 +180,7 @@ public:
    cSplatBuilder(const cRange<uint> xRange, const cRange<uint> zRange, uint tile, uint alphaMapId);
    ~cSplatBuilder();
 
-   tResult GetGlTexture(IEditorTileSet * pTileSet, uint * pTexId);
+   inline uint GetTile() const { return m_tile; }
    tResult GetAlphaMap(uint * pAlphaMapId);
 
    void AddQuad(uint x, uint z);
@@ -221,11 +220,9 @@ public:
    void BuildVertexBuffer(const cRange<uint> xRange, const cRange<uint> zRange);
    void BuildSplats(const cRange<uint> xRange, const cRange<uint> zRange, bool bNoBlending);
 
-   void Render(IEditorTileSet *);
+   void Render(ITerrainTileSet *);
 
 private:
-   void RenderSplatMultiTexture(cSplatBuilder * pSplat, IEditorTileSet * pTileSet, const byte * pVertexData);
-
    typedef std::vector<sTerrainVertex> tVertices;
    tVertices m_vertices;
 

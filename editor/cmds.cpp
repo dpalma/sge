@@ -18,48 +18,19 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+
 ///////////////////////////////////////////////////////////////////////////////
 
-int CreateTileSet(int argc, const cScriptVar * argv, 
-                  int nMaxResults, cScriptVar * pResults)
+int AddTileSet(int argc, const cScriptVar * argv, 
+               int nMaxResults, cScriptVar * pResults)
 {
-   if (argc > 1)
+   if (argc == 1 && argv[0].type == kString)
    {
-      if (argv[0].type != kString)
-      {
-         WarnMsg("Expected string value for tile set name\n");
-         return 0;
-      }
-      std::vector<cStr> textures;
-      UseGlobal(ResourceManager);
-      for (int i = 1; i < argc; i++)
-      {
-         if (argv[i].type != kString)
-         {
-            WarnMsg("Expected string value for terrain texture\n");
-            continue;
-         }
-         void * pTemp;
-         if (pResourceManager->Load(tResKey(argv[i], kRC_Image), (void**)&pTemp) != S_OK)
-         {
-            WarnMsg1("Unable to load terrain texture \"%s\"\n", argv[i].psz);
-            continue;
-         }
-         textures.push_back(argv[i].psz);
-      }
-      if (!textures.empty())
-      {
-         cAutoIPtr<IEditorTileSet> pTileSet;
-         if (EditorTileSetCreate(argv[0], textures, &pTileSet) == S_OK)
-         {
-            UseGlobal(EditorTileManager);
-            pEditorTileManager->AddTileSet(pTileSet);
-         }
-      }
+      UseGlobal(EditorTileSets);
+      pEditorTileSets->AddTileSet(argv[0]);
    }
    return 0;
 }
-
 ///////////////////////////////////////////////////////////////////////////////
 
 int SetDefaultTileSet(int argc, const cScriptVar * argv, 
@@ -67,8 +38,8 @@ int SetDefaultTileSet(int argc, const cScriptVar * argv,
 {
    if (argc == 1 && argv[0].type == kString)
    {
-      UseGlobal(EditorTileManager);
-      pEditorTileManager->SetDefaultTileSet(argv[0]);
+      UseGlobal(EditorTileSets);
+      pEditorTileSets->SetDefaultTileSet(argv[0]);
    }
    return 0;
 }
@@ -98,7 +69,7 @@ int EmitDebugMessages(int argc, const cScriptVar * argv,
 
 sScriptReg g_editorCmds[] =
 {
-   { "CreateTileSet", CreateTileSet },
+   { "AddTileSet", AddTileSet },
    { "SetDefaultTileSet", SetDefaultTileSet },
 #ifdef _DEBUG
    { "EmitDebugMessages", EmitDebugMessages },

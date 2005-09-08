@@ -183,7 +183,7 @@ static void RegisterGlobalObjects()
    ScriptInterpreterCreate();
 //   GUIContextCreate();
 //   GUIFactoryCreate();
-   EditorTileManagerCreate();
+   EditorTileSetsCreate();
    ThreadCallerCreate();
    TerrainModelCreate();
    TerrainRendererCreate(true);
@@ -233,6 +233,7 @@ BOOL cEditorApp::InitInstance()
    TextFormatRegister("xml");
    EngineRegisterResourceFormats();
    BitmapUtilsRegisterResourceFormats();
+   RegisterTerrainResourceFormats();
 
    UseGlobal(ThreadCaller);
    pThreadCaller->ThreadInit();

@@ -20,11 +20,10 @@
 
 /////////////////////////////////////////////////////////////////////////////
 
-F_DECLARE_INTERFACE(IEditorTileSet);
-
 F_DECLARE_INTERFACE(ITerrainRenderer);
 F_DECLARE_INTERFACE(ITerrainModel);
 F_DECLARE_INTERFACE(ITerrainModelListener);
+F_DECLARE_INTERFACE(ITerrainTileSet);
 F_DECLARE_INTERFACE(IHeightMap);
 
 
@@ -163,7 +162,7 @@ interface ITerrainModel : IUnknown
    virtual tResult AddTerrainModelListener(ITerrainModelListener * pListener) = 0;
    virtual tResult RemoveTerrainModelListener(ITerrainModelListener * pListener) = 0;
 
-   virtual tResult GetTileSet(IEditorTileSet * * ppTileSet) = 0;
+   virtual tResult GetTileSet(cStr * pTileSet) const = 0;
 
    virtual tResult SetQuadTile(uint quadx, uint quadz, uint tile, uint * pFormer) = 0;
    virtual tResult GetQuadTile(uint quadx, uint quadz, uint * pTile) const = 0;
@@ -191,6 +190,31 @@ interface ITerrainModelListener : IUnknown
    virtual void OnTerrainClear() = 0;
 
    virtual void OnTerrainTileChange(uint quadx, uint quadz, uint tile) = 0;
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: ITerrainTileSet
+//
+
+#define kRT_TerrainTileSet _T("TerrainTileSet") // resource type
+TERRAIN_API void RegisterTerrainResourceFormats();
+
+enum eTerrainTileFlags
+{
+   kTTF_None            = 0,
+   kTTF_Impassible      = (1<<0),
+};
+
+interface ITerrainTileSet : IUnknown
+{
+   virtual tResult GetName(cStr * pName) const = 0;
+
+   virtual tResult GetTileCount(uint * pTileCount) const = 0;
+   virtual tResult GetTileTexture(uint iTile, cStr * pTexture) const = 0;
+   virtual tResult GetTileName(uint iTile, cStr * pName) const = 0;
+   virtual tResult GetTileFlags(uint iTile, uint * pFlags) const = 0;
 };
 
 

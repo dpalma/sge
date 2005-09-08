@@ -10,6 +10,8 @@
 
 F_DECLARE_HANDLE(HBITMAP);
 
+F_DECLARE_INTERFACE(ITerrainTileSet);
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #define GetRValue16(color) ((uint16)(GetRValue((color))<<8))
@@ -30,6 +32,8 @@ HBITMAP StretchCopyBitmap(uint width, uint height, HBITMAP hSrcBitmap, uint srcX
 #define kRT_HBitmap "HBitmap"
 
 tResult BitmapUtilsRegisterResourceFormats();
+
+tResult TerrainTileSetCreateImageList(ITerrainTileSet * pTileSet, uint dimension, HIMAGELIST * phImageList);
 
 /////////////////////////////////////////////////////////////////////////////
 

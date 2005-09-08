@@ -5,6 +5,8 @@
 
 #include "BitmapUtils.h"
 
+#include "terrainapi.h"
+
 #include "resourceapi.h"
 #include "imagedata.h"
 #include "globalobj.h"
@@ -425,6 +427,59 @@ tResult BitmapUtilsRegisterResourceFormats()
       return pResourceManager->RegisterFormat(kRT_HBitmap, MAKERESOURCETYPE(kRC_Image), NULL, NULL, HBitmapFromImageData, HBitmapUnload);
    }
    return E_FAIL;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+tResult TerrainTileSetCreateImageList(ITerrainTileSet * pTileSet, uint dimension, HIMAGELIST * phImageList)
+{
+   if (pTileSet == NULL || phImageList == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (dimension == 0)
+   {
+      return E_INVALIDARG;
+   }
+
+   uint tileCount = 0;
+   if (pTileSet->GetTileCount(&tileCount) != S_OK || tileCount == 0)
+   {
+      return E_FAIL;
+   }
+
+   HIMAGELIST hImageList = ImageList_Create(dimension, dimension, ILC_COLOR24, tileCount, 0);
+   if (hImageList == NULL)
+   {
+      return E_FAIL;
+   }
+
+   UseGlobal(ResourceManager);
+
+   for (uint i = 0; i < tileCount; i++)
+   {
+      cStr tileTexture;
+      if (pTileSet->GetTileTexture(i, &tileTexture) == S_OK)
+      {
+         HBITMAP hbm = NULL;
+         BITMAP bm = {0};
+         if (pResourceManager->Load(tileTexture.c_str(), kRT_HBitmap, NULL, (void**)&hbm) == S_OK
+            && GetObject(hbm, sizeof(bm), &bm))
+         {
+            HBITMAP hSizedBm = StretchCopyBitmap(dimension, dimension, hbm, 0, 0,
+               min(dimension, (uint)bm.bmWidth), min(dimension, (uint)bm.bmHeight));
+            if (hSizedBm != NULL)
+            {
+               Verify(ImageList_Add(hImageList, hSizedBm, NULL) >= 0);
+               DeleteObject(hSizedBm);
+            }
+         }
+      }
+   }
+
+   *phImageList = hImageList;
+   return S_OK;
 }
 
 /////////////////////////////////////////////////////////////////////////////

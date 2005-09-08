@@ -6,10 +6,12 @@
 #include "MapSettingsDlg.h"
 #include "editorapi.h"
 #include "terrainapi.h"
+#include "BitmapUtils.h"
 
 #include "resource.h"       // main symbols
 
 #include "globalobj.h"
+#include "resourceapi.h"
 
 #include <algorithm>
 #include <functional>
@@ -159,8 +161,8 @@ BOOL cMapSettingsDlg::OnInitDialog()
    if (m_tileSet.IsEmpty())
    {
       cStr temp;
-      UseGlobal(EditorTileManager);
-      pEditorTileManager->GetDefaultTileSet(&temp);
+      UseGlobal(EditorTileSets);
+      pEditorTileSets->GetDefaultTileSet(&temp);
       m_tileSet = temp.c_str();
    }
 
@@ -228,17 +230,15 @@ void cMapSettingsDlg::PopulateTileSetComboBox()
    SendDlgItemMessage(IDC_MAP_TILESET, CB_RESETCONTENT);
 
    uint nTileSets = 0;
-   UseGlobal(EditorTileManager);
-   if (pEditorTileManager->GetTileSetCount(&nTileSets) == S_OK && nTileSets > 0)
+   UseGlobal(EditorTileSets);
+   if (pEditorTileSets->GetTileSetCount(&nTileSets) == S_OK && nTileSets > 0)
    {
       for (uint i = 0; i < nTileSets; i++)
       {
-         cStr name;
-         cAutoIPtr<IEditorTileSet> pTileSet;
-         if (pEditorTileManager->GetTileSet(i, &pTileSet) == S_OK
-            && pTileSet->GetName(&name) == S_OK)
+         cStr tileSet;
+         if (pEditorTileSets->GetTileSet(i, &tileSet) == S_OK)
          {
-            int index = SendDlgItemMessage(IDC_MAP_TILESET, CB_ADDSTRING, 0, (LPARAM)name.c_str());
+            int index = SendDlgItemMessage(IDC_MAP_TILESET, CB_ADDSTRING, 0, (LPARAM)tileSet.c_str());
             SendDlgItemMessage(IDC_MAP_TILESET, CB_SETITEMDATA, index, (LPARAM)i);
          }
          else
@@ -267,14 +267,14 @@ void cMapSettingsDlg::PopulateInitialTileComboBox()
    {
       m_initialTileComboBox.ResetContent();
 
-      cAutoIPtr<IEditorTileSet> pTileSet;
-      UseGlobal(EditorTileManager);
-      if (pEditorTileManager->GetTileSet(m_tileSet, &pTileSet) == S_OK)
+      ITerrainTileSet * pTileSet = NULL;
+      UseGlobal(ResourceManager);
+      if (pResourceManager->Load(m_tileSet, kRT_TerrainTileSet, NULL, (void**)&pTileSet) == S_OK)
       {
          int imageSize = m_initialTileComboBox.GetItemHeight(0);
 
          HIMAGELIST hImageList = NULL;
-         if (pTileSet->GetImageList(imageSize, &hImageList) == S_OK)
+         if (TerrainTileSetCreateImageList(pTileSet, imageSize, &hImageList) == S_OK)
          {
             m_initialTileComboBox.SetImageList(CImageList::FromHandle(hImageList));
          }

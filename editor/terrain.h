@@ -50,7 +50,7 @@ public:
 
    virtual tResult GetTerrainSettings(cTerrainSettings * pTerrainSettings) const;
 
-   virtual tResult GetTileSet(IEditorTileSet * * ppTileSet);
+   virtual tResult GetTileSet(cStr * pTileSet) const;
    virtual tResult AddTerrainModelListener(ITerrainModelListener * pListener);
    virtual tResult RemoveTerrainModelListener(ITerrainModelListener * pListener);
    virtual tResult SetQuadTile(uint quadx, uint quadz, uint tile, uint * pFormer);
@@ -70,8 +70,48 @@ private:
 
    tTerrainQuads m_terrainQuads;
 
-   cAutoIPtr<IEditorTileSet> m_pTileSet;
+   cStr m_tileSet;
 };
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS cTerrainTileSet
+//
+
+class cTerrainTileSet : public cComObject<IMPLEMENTS(ITerrainTileSet)>
+{
+public:
+   cTerrainTileSet(const tChar * pszName);
+   ~cTerrainTileSet();
+
+   virtual tResult GetName(cStr * pName) const;
+
+   virtual tResult GetTileCount(uint * pTileCount) const;
+   virtual tResult GetTileTexture(uint iTile, cStr * pTexture) const;
+   virtual tResult GetTileName(uint iTile, cStr * pName) const;
+   virtual tResult GetTileFlags(uint iTile, uint * pFlags) const;
+
+private:
+   friend void * TerrainTileSetFromXml(void * pData, int dataLength, void * param);
+   tResult AddTile(const tChar * pszName, const tChar * pszTexture, uint flags);
+
+   /////////////////////////////////////
+
+   cStr m_name; // name of the tile set
+
+   struct sTerrainTileInfo
+   {
+      cStr name;
+      cStr texture;
+      uint flags;
+   };
+
+   std::vector<sTerrainTileInfo> m_tiles;
+};
+
+void RegisterTerrainResourceFormats();
+
 
 /////////////////////////////////////////////////////////////////////////////
 

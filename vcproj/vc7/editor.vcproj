@@ -408,10 +408,7 @@
 				RelativePath="..\..\editor\editorDoc.cpp">
 			</File>
 			<File
-				RelativePath="..\..\editor\editorTileManager.cpp">
-			</File>
-			<File
-				RelativePath="..\..\editor\editorTileSet.cpp">
+				RelativePath="..\..\editor\editorTileSets.cpp">
 			</File>
 			<File
 				RelativePath="..\..\editor\editorTools.cpp">
@@ -526,10 +523,7 @@
 				RelativePath="..\..\editor\editorDoc.h">
 			</File>
 			<File
-				RelativePath="..\..\editor\editorTileManager.h">
-			</File>
-			<File
-				RelativePath="..\..\editor\editorTileSet.h">
+				RelativePath="..\..\editor\editorTileSets.h">
 			</File>
 			<File
 				RelativePath="..\..\editor\editorTools.h">

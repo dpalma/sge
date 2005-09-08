@@ -6,7 +6,8 @@
 #include "terrain.h"
 #include "editorapi.h"
 #include "terrainapi.h"
-#include "editorTypes.h"
+
+#include "engineapi.h"
 
 #include "resourceapi.h"
 #include "imagedata.h"
@@ -17,6 +18,7 @@
 #include <algorithm>
 #include <map>
 #include <GL/glew.h>
+#include <tinyxml.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -300,12 +302,11 @@ tResult cTerrainModel::Term()
 
 tResult cTerrainModel::Initialize(const cTerrainSettings & terrainSettings)
 {
-   UseGlobal(EditorTileManager);
-   if (pEditorTileManager->GetTileSet(terrainSettings.GetTileSet(), &m_pTileSet) != S_OK)
+   m_tileSet.assign(terrainSettings.GetTileSet());
+   if (m_tileSet.empty())
    {
-      WarnMsg1("Unable to find tile set \"%s\"; using default instead\n",
-         terrainSettings.GetTileSet() == NULL ? "(NULL)" : terrainSettings.GetTileSet());
-      pEditorTileManager->GetDefaultTileSet(&m_pTileSet);
+      UseGlobal(EditorTileSets);
+      pEditorTileSets->GetDefaultTileSet(&m_tileSet);
    }
 
    cAutoIPtr<IHeightMap> pHeightMap;
@@ -342,7 +343,7 @@ tResult cTerrainModel::Initialize(const cTerrainSettings & terrainSettings)
 
 tResult cTerrainModel::Clear()
 {
-   SafeRelease(m_pTileSet);
+   m_tileSet.erase();
    m_terrainQuads.clear();
    NotifyListeners(&ITerrainModelListener::OnTerrainClear);
    return S_OK;
@@ -439,9 +440,18 @@ tResult cTerrainModel::RemoveTerrainModelListener(ITerrainModelListener * pListe
 
 ////////////////////////////////////////
 
-tResult cTerrainModel::GetTileSet(IEditorTileSet * * ppTileSet)
+tResult cTerrainModel::GetTileSet(cStr * pTileSet) const
 {
-   return m_pTileSet.GetPointer(ppTileSet);
+   if (pTileSet == NULL)
+   {
+      return E_POINTER;
+   }
+   if (m_tileSet.empty())
+   {
+      return S_FALSE;
+   }
+   *pTileSet = m_tileSet;
+   return S_OK;
 }
 
 ////////////////////////////////////////
@@ -590,6 +600,211 @@ void cTerrainModel::NotifyListeners(void (ITerrainModelListener::*pfnListenerMet
    for (; iter != end; iter++)
    {
       ((*iter)->*pfnListenerMethod)();
+   }
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cTerrainTileSet
+//
+
+///////////////////////////////////////
+
+cTerrainTileSet::cTerrainTileSet(const tChar * pszName)
+ : m_name((pszName != NULL) ? pszName : "")
+{
+}
+
+///////////////////////////////////////
+
+cTerrainTileSet::~cTerrainTileSet()
+{
+}
+
+///////////////////////////////////////
+
+tResult cTerrainTileSet::GetName(cStr * pName) const
+{
+   if (pName != NULL)
+   {
+      *pName = m_name;
+      return S_OK;
+   }
+   else
+   {
+      return E_POINTER;
+   }
+}
+
+///////////////////////////////////////
+
+tResult cTerrainTileSet::GetTileCount(uint * pTileCount) const
+{
+   if (pTileCount != NULL)
+   {
+      *pTileCount = m_tiles.size();
+      return S_OK;
+   }
+   else
+   {
+      return E_POINTER;
+   }
+}
+
+///////////////////////////////////////
+
+tResult cTerrainTileSet::GetTileTexture(uint iTile, cStr * pTexture) const
+{
+   if (iTile >= m_tiles.size())
+   {
+      return E_INVALIDARG;
+   }
+   if (pTexture == NULL)
+   {
+      return E_POINTER;
+   }
+   *pTexture = m_tiles[iTile].texture;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cTerrainTileSet::GetTileName(uint iTile, cStr * pName) const
+{
+   if (iTile >= m_tiles.size())
+   {
+      return E_INVALIDARG;
+   }
+   if (pName == NULL)
+   {
+      return E_POINTER;
+   }
+   if (!m_tiles[iTile].name.empty())
+   {
+      *pName = m_tiles[iTile].name;
+   }
+   else
+   {
+      *pName = m_tiles[iTile].texture;
+      int iDot = pName->rfind('.');
+      if (iDot != cStr::npos)
+      {
+         pName->erase(iDot);
+      }
+      (*pName)[0] = toupper(pName->at(0));
+   }
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cTerrainTileSet::GetTileFlags(uint iTile, uint * pFlags) const
+{
+   if (iTile >= m_tiles.size())
+   {
+      return E_INVALIDARG;
+   }
+   if (pFlags == NULL)
+   {
+      return E_POINTER;
+   }
+   *pFlags = m_tiles[iTile].flags;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cTerrainTileSet::AddTile(const tChar * pszName, const tChar * pszTexture, uint flags)
+{
+   if (pszName == NULL || pszTexture == NULL)
+   {
+      return E_POINTER;
+   }
+
+   sTerrainTileInfo tileInfo;
+   tileInfo.name = pszName;
+   tileInfo.texture = pszTexture;
+   tileInfo.flags = flags;
+
+   m_tiles.push_back(tileInfo);
+
+   return S_OK;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+#define ELEMENT_TILESET    "tileset"
+#define ELEMENT_TILE       "tile"
+#define ATTRIB_NAME        "name"
+#define ATTRIB_TEXTURE     "texture"
+#define ATTRIB_FLAGS       "flags"
+
+void * TerrainTileSetFromXml(void * pData, int dataLength, void * param)
+{
+   TiXmlDocument * pTiXmlDoc = reinterpret_cast<TiXmlDocument *>(pData);
+   if (pTiXmlDoc != NULL)
+   {
+      for (TiXmlElement * pTiXmlElement = pTiXmlDoc->FirstChildElement();
+         pTiXmlElement != NULL; pTiXmlElement = pTiXmlElement->NextSiblingElement())
+      {
+         if (pTiXmlElement->Type() == TiXmlNode::ELEMENT
+            && strcmp(pTiXmlElement->Value(), ELEMENT_TILESET) == 0
+            ** pTiXmlElement->Attribute(ATTRIB_NAME))
+         {
+            cAutoIPtr<cTerrainTileSet> pTerrainTileSet(new cTerrainTileSet(pTiXmlElement->Attribute(ATTRIB_NAME)));
+            if (!pTerrainTileSet)
+            {
+               return NULL;
+            }
+
+            for (TiXmlElement * pChild = pTiXmlElement->FirstChildElement();
+               pChild != NULL; pChild = pChild->NextSiblingElement())
+            {
+               if (pChild->Type() == TiXmlNode::ELEMENT
+                  && strcmp(pChild->Value(), ELEMENT_TILE) == 0)
+               {
+                  if (pChild->Attribute(ATTRIB_NAME)
+                     && pChild->Attribute(ATTRIB_TEXTURE))
+                  {
+                     uint flags = 0;
+                     pTerrainTileSet->AddTile(pChild->Attribute(ATTRIB_NAME), pChild->Attribute(ATTRIB_TEXTURE), flags);
+                  }
+               }
+            }
+
+            uint tileCount = 0;
+            if ((pTerrainTileSet->GetTileCount(&tileCount) == S_OK) && (tileCount > 0))
+            {
+               return static_cast<ITerrainTileSet*>(CTAddRef(pTerrainTileSet));
+            }
+         }
+      }
+   }
+
+   return NULL;
+}
+
+void TerrainTileSetUnload(void * pData)
+{
+   ITerrainTileSet * pTerrainTileSet = reinterpret_cast<ITerrainTileSet *>(pData);
+   SafeRelease(pTerrainTileSet);
+}
+
+void RegisterTerrainResourceFormats()
+{
+   static bool bRegistered = false;
+   static uint8 nAttempts = 10;
+   if (!bRegistered && nAttempts)
+   {
+      nAttempts -= 1;
+      UseGlobal(ResourceManager);
+      if (pResourceManager->RegisterFormat(kRT_TerrainTileSet, kRT_TiXml, NULL, NULL,
+         TerrainTileSetFromXml, TerrainTileSetUnload) == S_OK)
+      {
+         bRegistered = true;
+      }
    }
 }
 

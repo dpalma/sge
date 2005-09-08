@@ -17,9 +17,8 @@ F_DECLARE_INTERFACE(IEditorSplashScreen);
 F_DECLARE_INTERFACE(IEditorApp);
 F_DECLARE_INTERFACE(IEditorLoopClient);
 F_DECLARE_INTERFACE(IEditorAppListener);
-F_DECLARE_INTERFACE(IEditorTileManager);
-F_DECLARE_INTERFACE(IEditorTileManagerListener);
-F_DECLARE_INTERFACE(IEditorTileSet);
+F_DECLARE_INTERFACE(IEditorTileSets);
+F_DECLARE_INTERFACE(IEditorTileSetsListener);
 F_DECLARE_INTERFACE(IEditorView);
 F_DECLARE_INTERFACE(IEditorModel);
 F_DECLARE_INTERFACE(IEditorModelListener);
@@ -28,6 +27,7 @@ F_DECLARE_INTERFACE(IEditorTerrainTileCommand);
 F_DECLARE_INTERFACE(IEditorTool);
 
 F_DECLARE_INTERFACE(ITerrainModel);
+F_DECLARE_INTERFACE(ITerrainTileSet);
 
 class cEditorKeyEvent;
 class cEditorMouseEvent;
@@ -105,67 +105,37 @@ interface UUID("14E9EE21-4E6F-4b04-8F5C-742DFFA955BE") IEditorAppListener : IUnk
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// INTERFACE: IEditorTileManager
+// INTERFACE: IEditorTileSets
 //
+// Holds the set of all available terrain tile sets for use by editor tools.
+// The actual tile sets (ITerrainTileSet) are loaded using the resource manager.
 
-interface UUID("CA3DFC7D-CF34-43cd-AE46-FA1AF6A34F27") IEditorTileManager : IUnknown
+interface UUID("C0CDE13A-010A-4dc6-A9C5-75DC3373288D") IEditorTileSets : IUnknown
 {
-   DECLARE_CONNECTION_POINT(IEditorTileManagerListener);
+   DECLARE_CONNECTION_POINT(IEditorTileSetsListener);
 
-   virtual tResult AddTileSet(IEditorTileSet * pTileSet) = 0;
-   virtual tResult GetTileSet(const tChar * pszName, IEditorTileSet * * ppTileSet) = 0;
-   virtual tResult GetDefaultTileSet(cStr * pName) const = 0;
-   virtual tResult SetDefaultTileSet(const tChar * pszName) = 0;
-   virtual tResult GetTileSetCount(uint * pTileSets) = 0;
-   virtual tResult GetTileSet(uint index, IEditorTileSet * * ppTileSet) = 0;
+   virtual tResult AddTileSet(const tChar * pszTileSet) = 0;
 
-   tResult GetDefaultTileSet(IEditorTileSet * * ppTileSet)
-   {
-      cStr s;
-      if (GetDefaultTileSet(&s) == S_OK)
-      {
-         return GetTileSet(s.c_str(), ppTileSet);
-      }
-      return E_FAIL;
-   }
+   virtual tResult GetTileSetCount(uint * pTileSetCount) const = 0;
+   virtual tResult GetTileSet(uint index, cStr * pTileSet) const = 0;
+
+   virtual tResult SetDefaultTileSet(const tChar * pszTileSet) = 0;
+   virtual tResult GetDefaultTileSet(cStr * pTileSet) const = 0;
 };
 
 ////////////////////////////////////////
 
-void EditorTileManagerCreate();
+void EditorTileSetsCreate();
 
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// INTERFACE: IEditorTileManagerListener
+// INTERFACE: IEditorTileSetsListener
 //
 
-interface UUID("8EA33056-3151-4090-8F38-BA8B9CB08F77") IEditorTileManagerListener : IUnknown
+interface UUID("CA332F5D-1E25-4825-ABD8-59C753B68544") IEditorTileSetsListener : IUnknown
 {
-   virtual void OnDefaultTileSetChange(IEditorTileSet * pTileSet) = 0;
-};
-
-/////////////////////////////////////////////////////////////////////////////
-
-tResult EditorTileSetCreate(const char * pszName,
-                            const std::vector<cStr> & textures,
-                            IEditorTileSet * * ppTileSet);
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// INTERFACE: IEditorTileSet
-//
-
-interface UUID("61B488AA-AB50-41c5-AA42-45F07C982F6A") IEditorTileSet : IUnknown
-{
-   virtual tResult GetName(cStr * pName) const = 0;
-
-   virtual tResult GetTileCount(uint * pTileCount) const = 0;
-   virtual tResult GetTileTexture(uint iTile, cStr * pTexture) const = 0;
-   virtual tResult GetTileName(uint iTile, cStr * pName) const = 0;
-
-   virtual tResult GetImageList(uint dimension, HIMAGELIST * phImageList) = 0;
+   virtual void OnSetDefaultTileSet(const tChar * pszTileSet) = 0;
 };
 
 
