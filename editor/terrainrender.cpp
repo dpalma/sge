@@ -442,28 +442,13 @@ void BuildSplatAlphaMap(uint splatTile, const cRange<uint> xRange, const cRange<
 
    Assert(xRange.GetLength() == zRange.GetLength());
 
-   BITMAPINFO bmi = {0};
-   bmi.bmiHeader.biSize = sizeof(bmi.bmiHeader);
-   bmi.bmiHeader.biWidth = pTerrainRenderer->GetTilesPerChunk() * 2;
-   bmi.bmiHeader.biHeight = -(static_cast<int>(pTerrainRenderer->GetTilesPerChunk()) * 2);
-   bmi.bmiHeader.biPlanes = 1;
-   bmi.bmiHeader.biCompression = BI_RGB;
-   bmi.bmiHeader.biBitCount = 32;
-   byte * pBitmapBits = NULL;
-   HBITMAP hBitmap = CreateDIBSection(NULL, &bmi, DIB_RGB_COLORS, (void**)&pBitmapBits, NULL, 0);
-   if (hBitmap == NULL)
-   {
-      return;
-   }
+   int imageWidth = pTerrainRenderer->GetTilesPerChunk() * 2;
+   int imageHeight = imageWidth;
+   int imageBitCount = 32;
+   int imageBytes = imageWidth * imageHeight * imageBitCount / 8;
 
-   DIBSECTION dibSection = {0};
-   Verify(GetObject(hBitmap, sizeof(dibSection), &dibSection));
-
-   ZeroMemory(pBitmapBits, dibSection.dsBmih.biSizeImage);
-
-   uint redMask = dibSection.dsBitfields[0];
-   uint greenMask = dibSection.dsBitfields[1];
-   uint blueMask = dibSection.dsBitfields[2];
+   byte * pBitmapBits = new byte[imageBytes];
+   memset(pBitmapBits, 0, imageBytes);
 
    for (uint z = zRange.GetStart(); z < zRange.GetEnd(); z++)
    {
@@ -525,12 +510,12 @@ void BuildSplatAlphaMap(uint splatTile, const cRange<uint> xRange, const cRange<
          uint iz = (z - zRange.GetStart()) * 2;
          uint ix = (x - xRange.GetStart()) * 2;
 
-         uint m = bmi.bmiHeader.biBitCount / 8;
+         uint m = imageBitCount / 8;
 
-         byte * p0 = pBitmapBits + (iz * bmi.bmiHeader.biWidth * m) + (ix * m);
-         byte * p1 = pBitmapBits + (iz * bmi.bmiHeader.biWidth * m) + ((ix+1) * m);
-         byte * p2 = pBitmapBits + ((iz+1) * bmi.bmiHeader.biWidth * m) + (ix * m);
-         byte * p3 = pBitmapBits + ((iz+1) * bmi.bmiHeader.biWidth * m) + ((ix+1) * m);
+         byte * p0 = pBitmapBits + (iz * imageWidth * m) + (ix * m);
+         byte * p1 = pBitmapBits + (iz * imageWidth * m) + ((ix+1) * m);
+         byte * p2 = pBitmapBits + ((iz+1) * imageWidth * m) + (ix * m);
+         byte * p3 = pBitmapBits + ((iz+1) * imageWidth * m) + ((ix+1) * m);
 
          p0[0] = p0[1] = p0[2] = p0[3] = (byte)(255 * texelWeights[0]);
          p1[0] = p1[1] = p1[2] = p1[3] = (byte)(255 * texelWeights[1]);
@@ -542,7 +527,7 @@ void BuildSplatAlphaMap(uint splatTile, const cRange<uint> xRange, const cRange<
    cImageData * pImage = new cImageData;
    if (pImage != NULL)
    {
-      if (pImage->Create(bmi.bmiHeader.biWidth, abs(bmi.bmiHeader.biHeight), kPF_RGBA8888, pBitmapBits))
+      if (pImage->Create(imageWidth, imageHeight, kPF_RGBA8888, pBitmapBits))
       {
          if (ConfigIsTrue("debug_write_splat_alpha_maps"))
          {
@@ -560,7 +545,7 @@ void BuildSplatAlphaMap(uint splatTile, const cRange<uint> xRange, const cRange<
       pImage = NULL;
    }
 
-   DeleteObject(hBitmap), hBitmap = NULL;
+   delete [] pBitmapBits;
 }
 
 
