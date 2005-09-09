@@ -4,7 +4,6 @@
 #include "stdhdr.h"
 
 #include "terrain.h"
-#include "editorapi.h"
 #include "terrainapi.h"
 
 #include "engineapi.h"
@@ -20,11 +19,7 @@
 #include <GL/glew.h>
 #include <tinyxml.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include "dbgalloc.h" // must be last header
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -302,12 +297,12 @@ tResult cTerrainModel::Term()
 
 tResult cTerrainModel::Initialize(const cTerrainSettings & terrainSettings)
 {
-   m_tileSet.assign(terrainSettings.GetTileSet());
-   if (m_tileSet.empty())
+   if (_tcslen(terrainSettings.GetTileSet()) == 0)
    {
-      UseGlobal(EditorTileSets);
-      pEditorTileSets->GetDefaultTileSet(&m_tileSet);
+      return E_FAIL;
    }
+
+   m_tileSet.assign(terrainSettings.GetTileSet());
 
    cAutoIPtr<IHeightMap> pHeightMap;
    if (terrainSettings.GetHeightData() == kTHD_HeightMap)

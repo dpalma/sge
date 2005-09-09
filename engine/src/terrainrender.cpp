@@ -4,7 +4,6 @@
 #include "stdhdr.h"
 
 #include "terrainrender.h"
-#include "editorapi.h"
 #include "engineapi.h"
 
 #include "imagedata.h"
@@ -19,11 +18,7 @@
 
 #include <GL/glew.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include "dbgalloc.h" // must be last header
 
 // REFERENCES
 // http://cbloom.com/3d/techdocs/splatting.txt
@@ -280,6 +275,9 @@ cTerrainRenderer::cTerrainModelListener::cTerrainModelListener(cTerrainRenderer 
 
 void cTerrainRenderer::cTerrainModelListener::OnTerrainInitialize()
 {
+   // HACK: should do this in a more sensible place
+   glewInit();
+
    if (m_pOuter != NULL)
    {
       m_pOuter->m_bTerrainChanged = true;

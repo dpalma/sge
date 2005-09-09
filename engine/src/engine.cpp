@@ -11,6 +11,8 @@
 
 #include <tinyxml.h>
 
+#include <GL/glew.h>
+
 #ifdef HAVE_CG
 #include <Cg/cg.h>
 #include <Cg/cgGL.h>

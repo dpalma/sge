@@ -4,6 +4,7 @@
 #if !defined(INCLUDED_TERRAINAPI_H)
 #define INCLUDED_TERRAINAPI_H
 
+#include "enginedll.h"
 #include "comtools.h"
 #include "vec2.h"
 #include "vec3.h"
@@ -15,8 +16,6 @@
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
-
-#define TERRAIN_API // temporary
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -63,7 +62,7 @@ interface ITerrainRenderer : IUnknown
 
 ////////////////////////////////////////
 
-TERRAIN_API tResult TerrainRendererCreate(bool bForEditor = false);
+ENGINE_API tResult TerrainRendererCreate(bool bForEditor = false);
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -92,7 +91,7 @@ namespace TerrainSettingsDefaults
 
 ////////////////////////////////////////
 
-class TERRAIN_API cTerrainSettings
+class ENGINE_API cTerrainSettings
 {
    friend class cReadWriteOps<cTerrainSettings>;
 
@@ -175,7 +174,7 @@ interface ITerrainModel : IUnknown
 
 ////////////////////////////////////////
 
-TERRAIN_API tResult TerrainModelCreate();
+ENGINE_API tResult TerrainModelCreate();
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -199,7 +198,7 @@ interface ITerrainModelListener : IUnknown
 //
 
 #define kRT_TerrainTileSet _T("TerrainTileSet") // resource type
-TERRAIN_API void RegisterTerrainResourceFormats();
+ENGINE_API void RegisterTerrainResourceFormats();
 
 enum eTerrainTileFlags
 {
@@ -230,8 +229,8 @@ interface IHeightMap : IUnknown
 
 ////////////////////////////////////////
 
-TERRAIN_API tResult HeightMapCreateFixed(float heightValue, IHeightMap * * ppHeightMap);
-TERRAIN_API tResult HeightMapLoad(const tChar * pszHeightData, IHeightMap * * ppHeightMap);
+ENGINE_API tResult HeightMapCreateFixed(float heightValue, IHeightMap * * ppHeightMap);
+ENGINE_API tResult HeightMapLoad(const tChar * pszHeightData, IHeightMap * * ppHeightMap);
 
 /////////////////////////////////////////////////////////////////////////////
 

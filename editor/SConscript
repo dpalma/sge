@@ -26,8 +26,6 @@ sources = Split("""
    sizecbar.cpp
    splashwnd.cpp
    stdhdr.cpp
-   terrain.cpp
-   terrainrender.cpp
    ToolPalette.cpp
    ToolPaletteBar.cpp
 """)

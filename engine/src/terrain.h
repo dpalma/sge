@@ -6,9 +6,6 @@
 
 #include "terrainapi.h"
 
-#include "vec2.h"
-#include "vec3.h"
-#include "techstring.h"
 #include "globalobjdef.h"
 
 #include <vector>
@@ -109,8 +106,6 @@ private:
 
    std::vector<sTerrainTileInfo> m_tiles;
 };
-
-void RegisterTerrainResourceFormats();
 
 
 /////////////////////////////////////////////////////////////////////////////

@@ -23,6 +23,8 @@ sources = Split("""
    src/scenemodel.cpp
    src/scriptvar.cpp
    src/sim.cpp
+   src/terrain.cpp
+   src/terrainrender.cpp
 """)
 
 if env['PLATFORM'] == 'win32':

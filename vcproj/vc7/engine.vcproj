@@ -421,6 +421,12 @@
 				<File
 					RelativePath="..\..\engine\src\syswin.cpp">
 				</File>
+				<File
+					RelativePath="..\..\engine\src\terrain.cpp">
+				</File>
+				<File
+					RelativePath="..\..\engine\src\terrainrender.cpp">
+				</File>
 			</Filter>
 			<Filter
 				Name="Header Files"
@@ -467,6 +473,12 @@
 				<File
 					RelativePath="..\..\engine\src\stdhdr.h">
 				</File>
+				<File
+					RelativePath="..\..\engine\src\terrain.h">
+				</File>
+				<File
+					RelativePath="..\..\engine\src\terrainrender.h">
+				</File>
 			</Filter>
 		</Filter>
 		<Filter
@@ -507,6 +519,9 @@
 			</File>
 			<File
 				RelativePath="..\..\engine\include\sys.h">
+			</File>
+			<File
+				RelativePath="..\..\engine\include\terrainapi.h">
 			</File>
 		</Filter>
 	</Files>

@@ -69,6 +69,13 @@ BOOL cEditorDoc::OnNewDocument()
 {
    cTerrainSettings terrainSettings;
 
+   cStr defaultTileSet;
+   UseGlobal(EditorTileSets);
+   if (pEditorTileSets->GetDefaultTileSet(&defaultTileSet) == S_OK)
+   {
+      terrainSettings.SetTileSet(defaultTileSet.c_str());
+   }
+
    if (m_bPromptForMapSettings)
    {
       cMapSettingsDlg dlg(terrainSettings);
