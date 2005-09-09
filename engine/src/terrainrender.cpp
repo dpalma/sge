@@ -197,37 +197,20 @@ private:
 };
 
 template <>
-class std::mem_fun1_t<void, cTerrainChunk, IEditorTileSet*>
+class std::mem_fun1_t<void, cTerrainChunk, ITerrainTileSet*>
 {
 public:
    typedef cTerrainChunk * first_argument_type;
-   typedef IEditorTileSet * second_argument_type;
+   typedef ITerrainTileSet * second_argument_type;
    typedef void result_type;
-   mem_fun1_t(void (cTerrainChunk::*pfn)(IEditorTileSet*))
+   mem_fun1_t(void (cTerrainChunk::*pfn)(ITerrainTileSet*))
       : m_pfn(pfn) {}
-   void operator()(cTerrainChunk * pChunk, IEditorTileSet * pTileSet) const
+   void operator()(cTerrainChunk * pChunk, ITerrainTileSet * pTileSet) const
    {
       ((pChunk->*m_pfn)(pTileSet));
    }
 private:
-   void (cTerrainChunk::*m_pfn)(IEditorTileSet*);
-};
-
-template <>
-class std::binder2nd< std::mem_fun1_t<void, cTerrainChunk, IEditorTileSet*> >
-{
-public:
-   binder2nd(const std::mem_fun1_t<void, cTerrainChunk, IEditorTileSet*> & op,
-      IEditorTileSet * value) : m_op(op), m_value(value)
-   {
-   }
-   void operator()(cTerrainChunk * _X) const
-   {
-      (m_op(_X, m_value));
-   }
-private:
-   std::mem_fun1_t<void, cTerrainChunk, IEditorTileSet*> m_op;
-   IEditorTileSet * m_value;
+   void (cTerrainChunk::*m_pfn)(ITerrainTileSet*);
 };
 
 template <>
