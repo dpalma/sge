@@ -11,6 +11,8 @@
 
 #include "resource.h"
 
+#include "saveloadapi.h"
+
 #include "readwriteapi.h"
 #include "filespec.h"
 #include "filepath.h"
@@ -190,10 +192,10 @@ BOOL cEditorDoc::OnOpenDocument(LPCTSTR lpszPathName)
       return FALSE;
    }
 
-   UseGlobal(TerrainModel);
-   if (FAILED(pTerrainModel->Read(pReader)))
+   UseGlobal(SaveLoadManager);
+   if (FAILED(pSaveLoadManager->Load(pReader)))
    {
-      ErrorMsg("An error occured reading the terrain data\n");
+      ErrorMsg("An error occured during load\n");
       return FALSE;
    }
 
@@ -210,10 +212,10 @@ BOOL cEditorDoc::OnSaveDocument(LPCTSTR lpszPathName)
       return FALSE;
    }
 
-   UseGlobal(TerrainModel);
-   if (FAILED(pTerrainModel->Write(pWriter)))
+   UseGlobal(SaveLoadManager);
+   if (FAILED(pSaveLoadManager->Save(pWriter)))
    {
-      ErrorMsg("An error occured writing the terrain data\n");
+      ErrorMsg("An error occured during save\n");
       return FALSE;
    }
 

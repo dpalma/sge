@@ -153,9 +153,6 @@ interface ITerrainModel : IUnknown
    virtual tResult Initialize(const cTerrainSettings & terrainSettings) = 0;
    virtual tResult Clear() = 0;
 
-   virtual tResult Read(IReader * pReader) = 0;
-   virtual tResult Write(IWriter * pWriter) = 0;
-
    virtual tResult GetTerrainSettings(cTerrainSettings * pTerrainSettings) const = 0;
 
    virtual tResult AddTerrainModelListener(ITerrainModelListener * pListener) = 0;

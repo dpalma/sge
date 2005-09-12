@@ -47,6 +47,9 @@ public:
 
    virtual void OnFinalRelease();
 
+   virtual tResult Tell(ulong * pPos);
+   virtual tResult Seek(long pos, eSeekOrigin origin);
+
    virtual tResult Write(const char * value);
    virtual tResult Write(void * pv, size_t cb, size_t * pcbWritten = NULL);
 

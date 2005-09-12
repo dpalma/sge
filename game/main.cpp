@@ -13,6 +13,7 @@
 #include "inputapi.h"
 #include "engineapi.h"
 #include "entityapi.h"
+#include "saveloadapi.h"
 #include "scriptvar.h"
 #include "sys.h"
 
@@ -244,6 +245,7 @@ static void RegisterGlobalObjects()
    GUIFontFactoryCreate();
    EntityManagerCreate();
    ThreadCallerCreate();
+   SaveLoadManagerCreate();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

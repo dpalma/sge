@@ -5,6 +5,7 @@
 #define INCLUDED_TERRAIN_H
 
 #include "terrainapi.h"
+#include "saveloadapi.h"
 
 #include "globalobjdef.h"
 
@@ -20,7 +21,9 @@
 // CLASS: cTerrainModel
 //
 
-class cTerrainModel : public cComObject2<IMPLEMENTS(ITerrainModel), IMPLEMENTS(IGlobalObject)>
+class cTerrainModel : public cComObject3<IMPLEMENTS(ITerrainModel),
+                                         IMPLEMENTS(IGlobalObject),
+                                         IMPLEMENTS(ISaveLoadParticipant)>
 {
    struct sTerrainQuad
    {
@@ -34,7 +37,7 @@ public:
    ~cTerrainModel();
 
    DECLARE_NAME(TerrainModel)
-   DECLARE_NO_CONSTRAINTS()
+   DECLARE_CONSTRAINTS()
 
    virtual tResult Init();
    virtual tResult Term();
@@ -42,8 +45,8 @@ public:
    virtual tResult Initialize(const cTerrainSettings & terrainSettings);
    virtual tResult Clear();
 
-   virtual tResult Read(IReader * pReader);
-   virtual tResult Write(IWriter * pWriter);
+   tResult Read(IReader * pReader);
+   tResult Write(IWriter * pWriter);
 
    virtual tResult GetTerrainSettings(cTerrainSettings * pTerrainSettings) const;
 
@@ -56,6 +59,10 @@ public:
    virtual tResult GetQuadCorners(uint quadx, uint quadz, tVec3 corners[4]) const;
 
    static tResult InitQuads(uint nTilesX, uint nTilesZ, uint tile, IHeightMap * pHeightMap, tTerrainQuads * pQuads);
+
+   // ISaveLoadParticipant methods
+   virtual tResult Save(IWriter *);
+   virtual tResult Load(IReader *, int version);
 
 private:
    void NotifyListeners(void (ITerrainModelListener::*pfnListenerMethod)());

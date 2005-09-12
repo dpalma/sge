@@ -14,6 +14,7 @@ sources = Split("""
    src/model.cpp
    src/ms3dread.cpp
    src/ray.cpp
+   src/saveloadmanager.cpp
    src/scene.cpp
    src/scenecamera.cpp
    src/sceneentity.cpp

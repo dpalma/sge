@@ -4,7 +4,7 @@
 #include "stdhdr.h"
 
 #include "editorCommands.h"
-#include "terrain.h"
+#include "terrainapi.h"
 
 #include "resource.h"
 

@@ -85,6 +85,9 @@ interface IReader : IUnknown
 
 interface IWriter : IUnknown
 {
+   virtual tResult Tell(ulong * pPos) = 0;
+   virtual tResult Seek(long pos, eSeekOrigin origin) = 0;
+
    template <typename T>
    tResult Write(T value)
    {

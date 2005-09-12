@@ -16,6 +16,7 @@
 #include "inputapi.h"
 #include "scriptapi.h"
 #include "engineapi.h"
+#include "saveloadapi.h"
 #include "sys.h"
 
 #include "resourceapi.h"
@@ -187,6 +188,7 @@ static void RegisterGlobalObjects()
    ThreadCallerCreate();
    TerrainModelCreate();
    TerrainRendererCreate(true);
+   SaveLoadManagerCreate();
 }
 
 ////////////////////////////////////////

@@ -238,10 +238,10 @@ tResult cReadWriteOps<cTerrainSettings>::Write(IWriter * pWriter, const cTerrain
    if (pWriter->Write(terrainSettings.m_tileSize) == S_OK
       && pWriter->Write(terrainSettings.m_nTilesX) == S_OK
       && pWriter->Write(terrainSettings.m_nTilesZ) == S_OK
-      && pWriter->Write(terrainSettings.m_tileSet) == S_OK
+      && pWriter->Write(terrainSettings.m_tileSet.c_str()) == S_OK
       && pWriter->Write(terrainSettings.m_initialTile) == S_OK
-      && pWriter->Write(terrainSettings.m_heightData) == S_OK
-      && pWriter->Write(terrainSettings.m_heightMap) == S_OK)
+      && pWriter->Write(static_cast<int>(terrainSettings.m_heightData)) == S_OK
+      && pWriter->Write(terrainSettings.m_heightMap.c_str()) == S_OK)
    {
       return S_OK;
    }
@@ -269,6 +269,22 @@ tResult TerrainModelCreate()
 
 ////////////////////////////////////////
 
+BEGIN_CONSTRAINTS(cTerrainModel)
+   AFTER_GUID(IID_ISaveLoadManager)
+END_CONSTRAINTS()
+
+////////////////////////////////////////
+
+// {79C13C86-71E5-455e-B763-927F31B74B82}
+static const GUID SAVELOADID_TerrainModel = {
+   0x79c13c86, 0x71e5, 0x455e, { 0xb7, 0x63, 0x92, 0x7f, 0x31, 0xb7, 0x4b, 0x82 } };
+//DEFINE_GUID(SAVELOADID_TerrainModel, 
+//0x79c13c86, 0x71e5, 0x455e, 0xb7, 0x63, 0x92, 0x7f, 0x31, 0xb7, 0x4b, 0x82);
+
+static const int g_terrainModelVer = 1;
+
+////////////////////////////////////////
+
 cTerrainModel::cTerrainModel()
 {
 }
@@ -283,6 +299,9 @@ cTerrainModel::~cTerrainModel()
 
 tResult cTerrainModel::Init()
 {
+   UseGlobal(SaveLoadManager);
+   pSaveLoadManager->RegisterSaveLoadParticipant(SAVELOADID_TerrainModel,
+      g_terrainModelVer, static_cast<ISaveLoadParticipant*>(this));
    return S_OK;
 }
 
@@ -290,6 +309,8 @@ tResult cTerrainModel::Init()
 
 tResult cTerrainModel::Term()
 {
+   UseGlobal(SaveLoadManager);
+   pSaveLoadManager->RevokeSaveLoadParticipant(SAVELOADID_TerrainModel, g_terrainModelVer);
    return S_OK;
 }
 
@@ -584,6 +605,36 @@ tResult cTerrainModel::InitQuads(uint nTilesX, uint nTilesZ, uint tile, IHeightM
    }
 
    return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainModel::Save(IWriter * pWriter)
+{
+   if (pWriter == NULL)
+   {
+      return E_POINTER;
+   }
+
+   return Write(pWriter);
+}
+
+////////////////////////////////////////
+
+tResult cTerrainModel::Load(IReader * pReader, int version)
+{
+   if (pReader == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (version != g_terrainModelVer)
+   {
+      // Would eventually handle upgrading here
+      return E_FAIL;
+   }
+
+   return Read(pReader);
 }
 
 ////////////////////////////////////////

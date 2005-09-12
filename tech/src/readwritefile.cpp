@@ -194,6 +194,38 @@ void cFileWriter::OnFinalRelease()
 
 ///////////////////////////////////////
 
+tResult cFileWriter::Tell(ulong * pPos)
+{
+   if (pPos == NULL)
+   {
+      return E_POINTER;
+   }
+   if (m_fp == NULL)
+   {
+      *pPos = 0;
+      return S_FALSE;
+   }
+   else
+   {
+      *pPos = ftell(m_fp);
+      return S_OK;
+   }
+}
+
+///////////////////////////////////////
+
+tResult cFileWriter::Seek(long pos, eSeekOrigin origin)
+{
+   if ((m_fp != NULL) &&
+       (fseek(m_fp, pos, StdioSeekOrigin(origin)) == 0))
+   {
+      return S_OK;
+   }
+   return E_FAIL;
+}
+
+///////////////////////////////////////
+
 tResult cFileWriter::Write(const char * value)
 {
    if (m_fp != NULL)
