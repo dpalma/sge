@@ -630,6 +630,8 @@ tResult cTerrainModel::Load(IReader * pReader, int version)
       return E_FAIL;
    }
 
+   NotifyListeners(&ITerrainModelListener::OnTerrainInitialize);
+
    return S_OK;
 }
 
