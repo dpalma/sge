@@ -275,6 +275,62 @@ static void ScreenToNormalizedDeviceCoords(int sx, int sy,
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: cTerrainTool
+//
+
+////////////////////////////////////////
+
+cTerrainTool::cTerrainTool()
+{
+}
+
+////////////////////////////////////////
+
+cTerrainTool::~cTerrainTool()
+{
+}
+
+////////////////////////////////////////
+
+bool cTerrainTool::GetHitQuad(CPoint point, IEditorView * pView, uint * pix, uint * piz)
+{
+   float ndx, ndy;
+   ScreenToNormalizedDeviceCoords(point.x, point.y, &ndx, &ndy);
+
+   cRay pickRay;
+   if (pView->GeneratePickRay(ndx, ndy, &pickRay) == S_OK)
+   {
+      tVec3 pointOnPlane;
+      if (pickRay.IntersectsPlane(tVec3(0,1,0), 0, &pointOnPlane))
+      {
+         LocalMsg3("Hit the ground at approximately (%.1f, %.1f, %.1f)\n",
+            pointOnPlane.x, pointOnPlane.y, pointOnPlane.z);
+
+         UseGlobal(TerrainModel);
+
+         uint ix, iz;
+         pTerrainModel->GetTileIndices(pointOnPlane.x, pointOnPlane.z, &ix, &iz);
+
+         LocalMsg2("Hit tile (%d, %d)\n", ix, iz);
+
+         if (pix != NULL)
+         {
+            *pix = ix;
+         }
+         if (piz != NULL)
+         {
+            *piz = iz;
+         }
+         return true;
+      }
+   }
+
+   return false;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cTerrainTileTool
 //
 
@@ -328,7 +384,7 @@ tResult cTerrainTileTool::OnMouseMove(const cEditorMouseEvent & mouseEvent, IEdi
    if (pView != NULL)
    {
       uint ix, iz;
-      if (GetHitTile(mouseEvent.GetPoint(), pView, &ix, &iz))
+      if (GetHitQuad(mouseEvent.GetPoint(), pView, &ix, &iz))
       {
          pView->HighlightTile(ix, iz);
       }
@@ -373,7 +429,7 @@ tResult cTerrainTileTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEdit
    if (pView != NULL)
    {
       uint ix, iz;
-      if (GetHitTile(mouseEvent.GetPoint(), pView, &ix, &iz))
+      if (GetHitQuad(mouseEvent.GetPoint(), pView, &ix, &iz))
       {
          if ((m_iLastHitX != ix) || (m_iLastHitZ != iz))
          {
@@ -397,44 +453,6 @@ tResult cTerrainTileTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEdit
    }
 
    return S_EDITOR_TOOL_HANDLED;
-}
-
-////////////////////////////////////////
-
-bool cTerrainTileTool::GetHitTile(CPoint point, IEditorView * pView, uint * pix, uint * piz)
-{
-   float ndx, ndy;
-   ScreenToNormalizedDeviceCoords(point.x, point.y, &ndx, &ndy);
-
-   cRay pickRay;
-   if (pView->GeneratePickRay(ndx, ndy, &pickRay) == S_OK)
-   {
-      tVec3 pointOnPlane;
-      if (pickRay.IntersectsPlane(tVec3(0,1,0), 0, &pointOnPlane))
-      {
-         LocalMsg3("Hit the ground at approximately (%.1f, %.1f, %.1f)\n",
-            pointOnPlane.x, pointOnPlane.y, pointOnPlane.z);
-
-         UseGlobal(TerrainModel);
-
-         uint ix, iz;
-         pTerrainModel->GetTileIndices(pointOnPlane.x, pointOnPlane.z, &ix, &iz);
-
-         LocalMsg2("Hit tile (%d, %d)\n", ix, iz);
-
-         if (pix != NULL)
-         {
-            *pix = ix;
-         }
-         if (piz != NULL)
-         {
-            *piz = iz;
-         }
-         return true;
-      }
-   }
-
-   return false;
 }
 
 /////////////////////////////////////////////////////////////////////////////

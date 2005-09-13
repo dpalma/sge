@@ -72,10 +72,26 @@ private:
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: cTerrainTool
+//
+
+class cTerrainTool : public cDragTool
+{
+public:
+   cTerrainTool();
+   ~cTerrainTool();
+
+protected:
+   static bool GetHitQuad(CPoint point, IEditorView * pView, uint * pix, uint * piz);
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cTerrainTileTool
 //
 
-class cTerrainTileTool : public cComObject<cDragTool, &IID_IEditorTool>
+class cTerrainTileTool : public cComObject<cTerrainTool, &IID_IEditorTool>
 {
 public:
    cTerrainTileTool();
@@ -92,8 +108,6 @@ protected:
    virtual tResult OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
    virtual tResult OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
    virtual tResult OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
-
-   bool GetHitTile(CPoint point, IEditorView * pView, uint * pix, uint * piz);
 
 private:
    uint m_iLastHitX, m_iLastHitZ;

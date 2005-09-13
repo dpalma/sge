@@ -299,6 +299,14 @@ tResult cEditorView::ClearTileHighlight()
 
 ////////////////////////////////////////
 
+tResult cEditorView::OnActiveToolChange(IEditorTool * pNewTool, IEditorTool * pFormerTool)
+{
+   ClearTileHighlight();
+   return S_OK;
+}
+
+////////////////////////////////////////
+
 void cEditorView::OnFrame(double time, double elapsed)
 {
    MatrixLookAt(GetCameraEyePosition(), m_center, tVec3(0,1,0), &m_view);

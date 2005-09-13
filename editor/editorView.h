@@ -30,7 +30,8 @@ F_DECLARE_INTERFACE(IDirect3DDevice9);
 //
 
 class cEditorView : public CScrollView,
-                    public cComObject2<IMPLEMENTS(IEditorView),
+                    public cComObject3<IMPLEMENTS(IEditorView),
+                                       IMPLEMENTS(IEditorAppListener),
                                        IMPLEMENTS(IEditorLoopClient),
                                        cAfxComServices<cEditorView> >
 {
@@ -57,6 +58,9 @@ public:
    virtual tResult GetHighlightTile(int * piTileX, int * piTileZ) const;
    virtual tResult HighlightTile(int iTileX, int iTileZ);
    virtual tResult ClearTileHighlight();
+
+   // IEditorAppListener
+   virtual tResult OnActiveToolChange(IEditorTool * pNewTool, IEditorTool * pFormerTool);
 
    // IEditorLoopClient
    virtual void OnFrame(double time, double elapsed);
