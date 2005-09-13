@@ -6,6 +6,7 @@
 
 #include "techdll.h"
 #include "comtools.h"
+#include "techstring.h"
 
 #ifdef _MSC_VER
 #pragma once
@@ -206,6 +207,41 @@ template <>
 inline tResult cReadWriteOps<byte>::Write(IWriter * pWriter, byte value)
 {
    return pWriter->Write(&value, sizeof(value));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <>
+class cReadWriteOps<cStr>
+{
+public:
+   static tResult Read(IReader * pReader, cStr * pValue);
+   static tResult Write(IWriter * pWriter, const cStr & value);
+};
+
+///////////////////////////////////////
+
+inline tResult cReadWriteOps<cStr>::Read(IReader * pReader, cStr * pValue)
+{
+   cStr::size_type length = 0;
+   if (pReader->Read(&length) == S_OK)
+   {
+      pValue->resize(length);
+      return pReader->Read(&(*pValue)[0], length * sizeof(cStr::value_type));
+   }
+   return E_FAIL;
+}
+
+///////////////////////////////////////
+
+inline tResult cReadWriteOps<cStr>::Write(IWriter * pWriter, const cStr & value)
+{
+   if (pWriter->Write(value.length()) == S_OK
+      && pWriter->Write((void*)value.c_str(), value.length() * sizeof(cStr::value_type)) == S_OK)
+   {
+      return S_OK;
+   }
+   return E_FAIL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

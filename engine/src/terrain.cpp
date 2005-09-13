@@ -27,20 +27,6 @@ const int kDefaultStepSize = 32;
 
 static const uint kMaxTerrainHeight = 30;
 
-/////////////////////////////////////////////////////////////////////////////
-
-static const union
-{
-   byte b[8];
-   uint32 id1, id2;
-}
-kTerrainFileIdGenerator = { { 's', 'g', 'e', 0, 'm', 'a', 'p', 0 } };
-
-static const kTerrainFileId1 = kTerrainFileIdGenerator.id1;
-static const kTerrainFileId2 = kTerrainFileIdGenerator.id2;
-
-static const uint32 kTerrainFileVersion = 1;
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -212,14 +198,17 @@ tResult cReadWriteOps<cTerrainSettings>::Read(IReader * pReader, cTerrainSetting
       return E_POINTER;
    }
 
+   int heightData = 0;
+
    if (pReader->Read(&pTerrainSettings->m_tileSize) == S_OK
       && pReader->Read(&pTerrainSettings->m_nTilesX) == S_OK
       && pReader->Read(&pTerrainSettings->m_nTilesZ) == S_OK
       && pReader->Read(&pTerrainSettings->m_tileSet) == S_OK
       && pReader->Read(&pTerrainSettings->m_initialTile) == S_OK
-      && pReader->Read(&pTerrainSettings->m_heightData) == S_OK
+      && pReader->Read(&heightData) == S_OK
       && pReader->Read(&pTerrainSettings->m_heightMap) == S_OK)
    {
+      pTerrainSettings->m_heightData = (eTerrainHeightData)heightData;
       return S_OK;
    }
 
@@ -238,10 +227,112 @@ tResult cReadWriteOps<cTerrainSettings>::Write(IWriter * pWriter, const cTerrain
    if (pWriter->Write(terrainSettings.m_tileSize) == S_OK
       && pWriter->Write(terrainSettings.m_nTilesX) == S_OK
       && pWriter->Write(terrainSettings.m_nTilesZ) == S_OK
-      && pWriter->Write(terrainSettings.m_tileSet.c_str()) == S_OK
+      && pWriter->Write(terrainSettings.m_tileSet) == S_OK
       && pWriter->Write(terrainSettings.m_initialTile) == S_OK
       && pWriter->Write(static_cast<int>(terrainSettings.m_heightData)) == S_OK
-      && pWriter->Write(terrainSettings.m_heightMap.c_str()) == S_OK)
+      && pWriter->Write(terrainSettings.m_heightMap) == S_OK)
+   {
+      return S_OK;
+   }
+
+   return E_FAIL;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+template <>
+class cReadWriteOps<tUints>
+{
+public:
+   static tResult Read(IReader * pReader, tUints * pUints);
+   static tResult Write(IWriter * pWriter, const tUints & uints);
+};
+
+////////////////////////////////////////
+
+tResult cReadWriteOps<tUints>::Read(IReader * pReader, tUints * pUints)
+{
+   if (pReader == NULL || pUints == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tUints::size_type nUints = 0;
+   if (pReader->Read(&nUints) == S_OK)
+   {
+      pUints->resize(nUints);
+      if (pReader->Read(&(*pUints)[0], nUints * sizeof(tUints::value_type)) == S_OK)
+      {
+         return S_OK;
+      }
+   }
+
+   return E_FAIL;
+}
+
+////////////////////////////////////////
+
+tResult cReadWriteOps<tUints>::Write(IWriter * pWriter, const tUints & uints)
+{
+   if (pWriter == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (pWriter->Write(uints.size()) == S_OK
+      && pWriter->Write((void*)&uints[0], uints.size() * sizeof(tUints::value_type)) == S_OK)
+   {
+      return S_OK;
+   }
+
+   return E_FAIL;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+template <>
+class cReadWriteOps<tVec3s>
+{
+public:
+   static tResult Read(IReader * pReader, tVec3s * pVec3s);
+   static tResult Write(IWriter * pWriter, const tVec3s & vec3s);
+};
+
+////////////////////////////////////////
+
+tResult cReadWriteOps<tVec3s>::Read(IReader * pReader, tVec3s * pVec3s)
+{
+   if (pReader == NULL || pVec3s == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tVec3s::size_type nVec3s = 0;
+   if (pReader->Read(&nVec3s) == S_OK)
+   {
+      pVec3s->resize(nVec3s);
+      if (pReader->Read(&(*pVec3s)[0], nVec3s * sizeof(tVec3s::value_type)) == S_OK)
+      {
+         return S_OK;
+      }
+   }
+
+   return E_FAIL;
+}
+
+////////////////////////////////////////
+
+tResult cReadWriteOps<tVec3s>::Write(IWriter * pWriter, const tVec3s & vec3s)
+{
+   if (pWriter == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (pWriter->Write(vec3s.size()) == S_OK
+      && pWriter->Write((void*)&vec3s[0], vec3s.size() * sizeof(tVec3s::value_type)) == S_OK)
    {
       return S_OK;
    }
@@ -323,8 +414,6 @@ tResult cTerrainModel::Initialize(const cTerrainSettings & terrainSettings)
       return E_FAIL;
    }
 
-   m_tileSet.assign(terrainSettings.GetTileSet());
-
    cAutoIPtr<IHeightMap> pHeightMap;
    if (terrainSettings.GetHeightData() == kTHD_HeightMap)
    {
@@ -345,86 +434,42 @@ tResult cTerrainModel::Initialize(const cTerrainSettings & terrainSettings)
       }
    }
 
-   if (InitQuads(terrainSettings.GetTileCountX(), terrainSettings.GetTileCountZ(),
-      terrainSettings.GetInitialTile(), pHeightMap, &m_terrainQuads) == S_OK)
+   m_quadTiles.resize(terrainSettings.GetTileCountX() * terrainSettings.GetTileCountZ(), terrainSettings.GetInitialTile());
+
+   uint nVertsX = terrainSettings.GetTileCountX() + 1, nVertsZ = terrainSettings.GetTileCountZ() + 1;
+   m_vertices.resize(nVertsX * nVertsZ);
+
+   uint extentX = terrainSettings.GetTileCountX() * terrainSettings.GetTileSize();
+   uint extentZ = terrainSettings.GetTileCountZ() * terrainSettings.GetTileSize();
+
+   float z = 0;
+   for (uint iz = 0; iz < nVertsZ; iz++, z += terrainSettings.GetTileSize())
    {
-      NotifyListeners(&ITerrainModelListener::OnTerrainInitialize);
-      return S_OK;
+      float x = 0;
+      for (uint ix = 0; ix < nVertsX; ix++, x += terrainSettings.GetTileSize())
+      {
+         uint index = nVertsZ * iz + ix;
+
+         float height = pHeightMap->GetNormalizedHeight(
+            static_cast<float>(x) / extentX,
+            static_cast<float>(z) / extentZ);
+
+         m_vertices[index] = tVec3(x, height, z);
+      }
    }
 
-   return E_FAIL;
+   m_terrainSettings = terrainSettings;
+   NotifyListeners(&ITerrainModelListener::OnTerrainInitialize);
+   return S_OK;
 }
 
 ////////////////////////////////////////
 
 tResult cTerrainModel::Clear()
 {
-   m_tileSet.erase();
-   m_terrainQuads.clear();
+   m_vertices.clear();
+   m_quadTiles.clear();
    NotifyListeners(&ITerrainModelListener::OnTerrainClear);
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cTerrainModel::Read(IReader * pReader)
-{
-   if (pReader == NULL)
-   {
-      return E_POINTER;
-   }
-
-   uint32 terrainFileId1 = 0, terrainFileId2 = 0;
-   if (pReader->Read(&terrainFileId1) != S_OK
-      || pReader->Read(&terrainFileId1) != S_OK)
-   {
-      return E_FAIL;
-   }
-
-   if (terrainFileId1 != kTerrainFileId1
-      || terrainFileId2 != kTerrainFileId2)
-   {
-      ErrorMsg("Not a terrain map file\n");
-      return E_FAIL;
-   }
-
-   uint terrainFileVer = 0;
-   if (pReader->Read(&terrainFileVer) != S_OK)
-   {
-      return E_FAIL;
-   }
-
-   if (terrainFileVer != kTerrainFileVersion)
-   {
-      DebugMsg("Incorrect version in file\n");
-      return E_FAIL;
-   }
-
-   if (pReader->Read(&m_terrainSettings) != S_OK)
-   {
-      return E_FAIL;
-   }
-
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cTerrainModel::Write(IWriter * pWriter)
-{
-   if (pWriter == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (pWriter->Write(kTerrainFileId1) != S_OK ||
-      pWriter->Write(kTerrainFileId1) != S_OK ||
-      pWriter->Write(kTerrainFileVersion) != S_OK ||
-      pWriter->Write(m_terrainSettings) != S_OK)
-   {
-      return E_FAIL;
-   }
-
    return S_OK;
 }
 
@@ -456,34 +501,18 @@ tResult cTerrainModel::RemoveTerrainModelListener(ITerrainModelListener * pListe
 
 ////////////////////////////////////////
 
-tResult cTerrainModel::GetTileSet(cStr * pTileSet) const
-{
-   if (pTileSet == NULL)
-   {
-      return E_POINTER;
-   }
-   if (m_tileSet.empty())
-   {
-      return S_FALSE;
-   }
-   *pTileSet = m_tileSet;
-   return S_OK;
-}
-
-////////////////////////////////////////
-
 tResult cTerrainModel::SetQuadTile(uint quadx, uint quadz, uint tile, uint * pFormer)
 {
    if (quadx < m_terrainSettings.GetTileCountX() && quadz < m_terrainSettings.GetTileCountZ())
    {
       uint index = (quadz * m_terrainSettings.GetTileCountZ()) + quadx;
-      if (index < m_terrainQuads.size())
+      if (index < m_quadTiles.size())
       {
          if (pFormer != NULL)
          {
-            *pFormer = m_terrainQuads[index].tile;
+            *pFormer = m_quadTiles[index];
          }
-         m_terrainQuads[index].tile = tile;
+         m_quadTiles[index] = tile;
 
          tListeners::iterator iter = m_listeners.begin();
          tListeners::iterator end = m_listeners.end();
@@ -514,9 +543,9 @@ tResult cTerrainModel::GetQuadTile(uint quadx, uint quadz, uint * pTile) const
    }
 
    uint index = (quadz * m_terrainSettings.GetTileCountZ()) + quadx;
-   Assert(index < m_terrainQuads.size());
+   Assert(index < m_quadTiles.size());
 
-   *pTile = m_terrainQuads[index].tile;
+   *pTile = m_quadTiles[index];
    return S_OK;
 }
 
@@ -550,59 +579,12 @@ tResult cTerrainModel::GetQuadCorners(uint quadx, uint quadz, tVec3 corners[4]) 
       return E_INVALIDARG;
    }
 
-   uint index = (quadz * m_terrainSettings.GetTileCountZ()) + quadx;
-   Assert(index < m_terrainQuads.size());
-
-   for (int i = 0; i < 4; i++)
-   {
-      corners[i] = m_terrainQuads[index].corners[i];
-   }
-
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cTerrainModel::InitQuads(uint nTilesX, uint nTilesZ, uint tile, IHeightMap * pHeightMap, tTerrainQuads * pQuads)
-{
-   if (nTilesX == 0 || nTilesZ == 0)
-   {
-      return E_INVALIDARG;
-   }
-
-   if (pHeightMap == NULL || pQuads == NULL)
-   {
-      return E_POINTER;
-   }
-
-   uint nQuads = nTilesX * nTilesZ;
-   pQuads->resize(nQuads);
-
-   static const uint stepSize = kDefaultStepSize;
-
-   uint extentX = nTilesX * stepSize;
-   uint extentZ = nTilesZ * stepSize;
-
-   int iQuad = 0;
-
-   float z = 0;
-   for (uint iz = 0; iz < nTilesZ; iz++, z += stepSize)
-   {
-      float x = 0;
-      for (uint ix = 0; ix < nTilesX; ix++, x += stepSize, iQuad++)
-      {
-         sTerrainQuad & tq = pQuads->at(iQuad);
-
-         tq.tile = tile;
-
-#define Height(xx,zz) (pHeightMap->GetNormalizedHeight((xx)/extentX,(zz)/extentZ)*kMaxTerrainHeight)
-         tq.corners[0] = tVec3(x, Height(x,z), z);
-         tq.corners[1] = tVec3(x+stepSize, Height(x+stepSize,z), z);
-         tq.corners[2] = tVec3(x+stepSize, Height(x+stepSize,z+stepSize), z+stepSize);
-         tq.corners[3] = tVec3(x, Height(x,z+stepSize), z+stepSize);
-#undef Height
-      }
-   }
+#define Index(qx, qz) (((qz) * (m_terrainSettings.GetTileCountZ() + 1)) + qx)
+   corners[0] = m_vertices[Index(quadx,   quadz)];
+   corners[1] = m_vertices[Index(quadx+1, quadz)];
+   corners[2] = m_vertices[Index(quadx+1, quadz+1)];
+   corners[3] = m_vertices[Index(quadx,   quadz+1)];
+#undef Index
 
    return S_OK;
 }
@@ -616,7 +598,14 @@ tResult cTerrainModel::Save(IWriter * pWriter)
       return E_POINTER;
    }
 
-   return Write(pWriter);
+   if (pWriter->Write(m_terrainSettings) != S_OK
+      || pWriter->Write(m_vertices) != S_OK
+      || pWriter->Write(m_quadTiles) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   return S_OK;
 }
 
 ////////////////////////////////////////
@@ -634,7 +623,14 @@ tResult cTerrainModel::Load(IReader * pReader, int version)
       return E_FAIL;
    }
 
-   return Read(pReader);
+   if (pReader->Read(&m_terrainSettings) != S_OK
+      || pReader->Read(&m_vertices) != S_OK
+      || pReader->Read(&m_quadTiles) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   return S_OK;
 }
 
 ////////////////////////////////////////

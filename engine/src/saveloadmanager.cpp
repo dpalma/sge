@@ -11,13 +11,6 @@
 
 
 ////////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cVersionedParticipant
-//
-
-///////////////////////////////////////
-
-static const uint g_saveLoadFileId     = 0x5A5E70AD;
 
 // {8542CD88-7986-450e-B3C3-5ED5BCC23F04}
 static const GUID SAVELOADID_SaveLoadFile = {
@@ -26,6 +19,14 @@ static const GUID SAVELOADID_SaveLoadFile = {
 //0x8542cd88, 0x7986, 0x450e, 0xb3, 0xc3, 0x5e, 0xd5, 0xbc, 0xc2, 0x3f, 0x4);
 
 static const int g_saveLoadFileVer     = 1;
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cVersionedParticipant
+//
+
+///////////////////////////////////////
 
 ///////////////////////////////////////
 
@@ -272,6 +273,14 @@ tResult cSaveLoadManager::Init()
 
 tResult cSaveLoadManager::Term()
 {
+   tParticipantMap::iterator iter = m_participantMap.begin();
+   tParticipantMap::iterator end = m_participantMap.end();
+   for (; iter != end; iter++)
+   {
+      delete iter->second;
+   }
+   m_participantMap.clear();
+
    return S_OK;
 }
 
@@ -424,7 +433,7 @@ tResult cSaveLoadManager::Save(IWriter * pWriter)
 
    // Re-write the file header now that the table size and position are known
    Assert(header.offset > 0);
-   header.length = entries.size();
+   header.length = entries.size() * sizeof(sFileEntry);
    if (pWriter->Seek(0, kSO_Set) != S_OK
       || pWriter->Write(header) != S_OK)
    {
@@ -444,7 +453,10 @@ tResult cSaveLoadManager::Load(IReader * pReader)
       return E_POINTER;
    }
 
-   // Read the file header
+   // Read the file header. The file header uses the same struct as for a table
+   // entry, but the offset field is the position of the table and the length
+   // field is the size of the table. That is, the # entries in the table is 
+   // header.length / sizeof(sFileEntry).
    sFileEntry header;
    if (pReader->Read(&header) != S_OK)
    {
@@ -469,7 +481,7 @@ tResult cSaveLoadManager::Load(IReader * pReader)
    }
 
    // Read the entry table itself
-   std::vector<sFileEntry> entries(header.length);
+   std::vector<sFileEntry> entries(header.length / sizeof(sFileEntry));
    if (pReader->Seek(header.offset, kSO_Set) != S_OK)
    {
       ErrorMsg("Failed to seek to the head of the file entry table\n");

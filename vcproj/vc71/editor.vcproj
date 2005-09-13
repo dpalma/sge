@@ -480,12 +480,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\editor\terrain.cpp">
-			</File>
-			<File
-				RelativePath="..\..\editor\terrainrender.cpp">
-			</File>
-			<File
 				RelativePath="..\..\editor\ToolPalette.cpp">
 			</File>
 			<File
@@ -569,15 +563,6 @@
 			</File>
 			<File
 				RelativePath="..\..\editor\stdhdr.h">
-			</File>
-			<File
-				RelativePath="..\..\editor\terrain.h">
-			</File>
-			<File
-				RelativePath="..\..\editor\terrainapi.h">
-			</File>
-			<File
-				RelativePath="..\..\editor\terrainrender.h">
 			</File>
 			<File
 				RelativePath="..\..\editor\ToolPalette.h">

@@ -232,15 +232,15 @@ void cTerrainRenderer::Render()
 {
    UseGlobal(TerrainModel);
 
-   cStr tileSet;
-   if (pTerrainModel->GetTileSet(&tileSet) != S_OK)
+   cTerrainSettings terrainSettings;
+   if (pTerrainModel->GetTerrainSettings(&terrainSettings) != S_OK)
    {
       return;
    }
 
    ITerrainTileSet * pTerrainTileSet = NULL;
    UseGlobal(ResourceManager);
-   if (pResourceManager->Load(tileSet.c_str(), kRT_TerrainTileSet, NULL, (void**)&pTerrainTileSet) != S_OK)
+   if (pResourceManager->Load(terrainSettings.GetTileSet(), kRT_TerrainTileSet, NULL, (void**)&pTerrainTileSet) != S_OK)
    {
       return;
    }

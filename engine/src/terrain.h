@@ -15,6 +15,9 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+typedef std::vector<tVec3> tVec3s;
+typedef std::vector<uint> tUints;
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -25,13 +28,6 @@ class cTerrainModel : public cComObject3<IMPLEMENTS(ITerrainModel),
                                          IMPLEMENTS(IGlobalObject),
                                          IMPLEMENTS(ISaveLoadParticipant)>
 {
-   struct sTerrainQuad
-   {
-      uint tile;
-      tVec3 corners[4];
-   };
-   typedef std::vector<sTerrainQuad> tTerrainQuads;
-
 public:
    cTerrainModel();
    ~cTerrainModel();
@@ -42,23 +38,18 @@ public:
    virtual tResult Init();
    virtual tResult Term();
 
+   // ITerrainModel methods
    virtual tResult Initialize(const cTerrainSettings & terrainSettings);
    virtual tResult Clear();
 
-   tResult Read(IReader * pReader);
-   tResult Write(IWriter * pWriter);
-
    virtual tResult GetTerrainSettings(cTerrainSettings * pTerrainSettings) const;
 
-   virtual tResult GetTileSet(cStr * pTileSet) const;
    virtual tResult AddTerrainModelListener(ITerrainModelListener * pListener);
    virtual tResult RemoveTerrainModelListener(ITerrainModelListener * pListener);
    virtual tResult SetQuadTile(uint quadx, uint quadz, uint tile, uint * pFormer);
    virtual tResult GetQuadTile(uint quadx, uint quadz, uint * pTile) const;
    virtual tResult GetTileIndices(float x, float z, uint * pix, uint * piz) const;
    virtual tResult GetQuadCorners(uint quadx, uint quadz, tVec3 corners[4]) const;
-
-   static tResult InitQuads(uint nTilesX, uint nTilesZ, uint tile, IHeightMap * pHeightMap, tTerrainQuads * pQuads);
 
    // ISaveLoadParticipant methods
    virtual tResult Save(IWriter *);
@@ -72,9 +63,8 @@ private:
 
    cTerrainSettings m_terrainSettings;
 
-   tTerrainQuads m_terrainQuads;
-
-   cStr m_tileSet;
+   tVec3s m_vertices;
+   tUints m_quadTiles;
 };
 
 

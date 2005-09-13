@@ -158,8 +158,6 @@ interface ITerrainModel : IUnknown
    virtual tResult AddTerrainModelListener(ITerrainModelListener * pListener) = 0;
    virtual tResult RemoveTerrainModelListener(ITerrainModelListener * pListener) = 0;
 
-   virtual tResult GetTileSet(cStr * pTileSet) const = 0;
-
    virtual tResult SetQuadTile(uint quadx, uint quadz, uint tile, uint * pFormer) = 0;
    virtual tResult GetQuadTile(uint quadx, uint quadz, uint * pTile) const = 0;
 
