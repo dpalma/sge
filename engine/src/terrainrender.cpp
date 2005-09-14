@@ -11,6 +11,7 @@
 #include "globalobj.h"
 #include "filespec.h"
 #include "configapi.h"
+#include "readwriteapi.h"
 
 #include <algorithm>
 #include <functional>

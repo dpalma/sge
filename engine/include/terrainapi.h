@@ -6,7 +6,6 @@
 
 #include "enginedll.h"
 #include "comtools.h"
-#include "vec2.h"
 #include "vec3.h"
 #include "techstring.h"
 #include "readwriteapi.h"
@@ -20,20 +19,13 @@
 /////////////////////////////////////////////////////////////////////////////
 
 F_DECLARE_INTERFACE(ITerrainRenderer);
+F_DECLARE_INTERFACE(IEnumTerrainQuads);
 F_DECLARE_INTERFACE(ITerrainModel);
 F_DECLARE_INTERFACE(ITerrainModelListener);
 F_DECLARE_INTERFACE(ITerrainTileSet);
 F_DECLARE_INTERFACE(IHeightMap);
 
-
-/////////////////////////////////////////////////////////////////////////////
-
-struct sTerrainVertex
-{
-   tVec2 uv1;
-   tVec2 uv2;
-   tVec3 pos;
-};
+class cRay;
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -132,14 +124,27 @@ private:
    cStr m_heightMap;
 };
 
-////////////////////////////////////////
 
-template <>
-class cReadWriteOps<cTerrainSettings>
+/////////////////////////////////////////////////////////////////////////////
+
+DECLARE_HANDLE(HTERRAINQUAD);
+DECLARE_HANDLE(HTERRAINVERTEX);
+
+const HTERRAINQUAD INVALID_HTERRAINQUAD = reinterpret_cast<HTERRAINQUAD>(~0);
+const HTERRAINVERTEX INVALID_HTERRAINVERTEX = reinterpret_cast<HTERRAINVERTEX>(~0);
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IEnumTerrainQuads
+//
+
+interface IEnumTerrainQuads : IUnknown
 {
-public:
-   static tResult Read(IReader * pReader, cTerrainSettings * pTerrainSettings);
-   static tResult Write(IWriter * pWriter, const cTerrainSettings & terrainSettings);
+   virtual tResult Next(ulong count, HTERRAINQUAD * pQuads, ulong * pnQuads) = 0;
+   virtual tResult Skip(ulong count) = 0;
+   virtual tResult Reset() = 0;
+   virtual tResult Clone(IEnumTerrainQuads * * ppEnum) = 0;
 };
 
 
@@ -158,12 +163,17 @@ interface ITerrainModel : IUnknown
    virtual tResult AddTerrainModelListener(ITerrainModelListener * pListener) = 0;
    virtual tResult RemoveTerrainModelListener(ITerrainModelListener * pListener) = 0;
 
-   virtual tResult SetQuadTile(uint quadx, uint quadz, uint tile, uint * pFormer) = 0;
+   virtual tResult EnumTerrainQuads(IEnumTerrainQuads * * ppEnum) = 0;
+   virtual tResult EnumTerrainQuads(uint xStart, uint xEnd, uint zStart, uint zEnd, IEnumTerrainQuads * * ppEnum) = 0;
+
+   virtual tResult GetQuadFromHitTest(const cRay & ray, HTERRAINQUAD * phQuad) const = 0;
+
+   virtual tResult SetQuadTile(HTERRAINQUAD hQuad, uint tile) = 0;
+   virtual tResult GetQuadTile(HTERRAINQUAD hQuad, uint * pTile) const = 0;
+
+   virtual tResult GetQuadCorners(HTERRAINQUAD hQuad, tVec3 corners[4]) const = 0;
+
    virtual tResult GetQuadTile(uint quadx, uint quadz, uint * pTile) const = 0;
-
-   /// @brief Part of hit-testing; Gets the tile indices for a given point on the 2D terrain plane
-   virtual tResult GetTileIndices(float x, float z, uint * pix, uint * piz) const = 0;
-
    virtual tResult GetQuadCorners(uint quadx, uint quadz, tVec3 corners[4]) const = 0;
 };
 

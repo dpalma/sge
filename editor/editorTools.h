@@ -6,9 +6,13 @@
 
 #include "editorapi.h"
 
+#include <set>
+
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
+
+F_DECLARE_HANDLE(HTERRAINQUAD);
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -82,7 +86,7 @@ public:
    ~cTerrainTool();
 
 protected:
-   static bool GetHitQuad(CPoint point, IEditorView * pView, uint * pix, uint * piz);
+   static bool GetHitQuad(CPoint point, IEditorView * pView, HTERRAINQUAD * phQuad);
 };
 
 
@@ -110,9 +114,9 @@ protected:
    virtual tResult OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
 
 private:
-   uint m_iLastHitX, m_iLastHitZ;
    uint m_tile;
    cAutoIPtr<IEditorCompositeCommand> m_pCommand;
+   std::set<HTERRAINQUAD> m_hitQuads;
 };
 
 /////////////////////////////////////////////////////////////////////////////

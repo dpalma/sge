@@ -7,6 +7,7 @@
 #include "terrainapi.h"
 
 #include "globalobjdef.h"
+#include "vec2.h"
 #include "vec3.h"
 #include "matrix4.h"
 #include "techstring.h"
@@ -205,6 +206,13 @@ private:
 //
 // CLASS: cTerrainChunk
 //
+
+struct sTerrainVertex
+{
+   tVec2 uv1;
+   tVec2 uv2;
+   tVec3 pos;
+};
 
 class cTerrainChunk
 {

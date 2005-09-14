@@ -27,7 +27,7 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 
-void FlushCommandStack(std::stack<IEditorCommand *> * pCommandStack)
+void ClearCommandStack(std::stack<IEditorCommand *> * pCommandStack)
 {
    if (pCommandStack != NULL)
    {
@@ -157,10 +157,10 @@ tResult cEditorDoc::AddCommand(IEditorCommand * pCommand, bool bDo)
       }
       else
       {
-         FlushCommandStack(&m_undoStack);
+         ClearCommandStack(&m_undoStack);
       }
 
-      FlushCommandStack(&m_redoStack);
+      ClearCommandStack(&m_redoStack);
 
       return S_OK;
    }
@@ -219,8 +219,8 @@ BOOL cEditorDoc::OnSaveDocument(LPCTSTR lpszPathName)
       return FALSE;
    }
 
-   FlushCommandStack(&m_undoStack);
-   FlushCommandStack(&m_redoStack);
+   ClearCommandStack(&m_undoStack);
+   ClearCommandStack(&m_redoStack);
 
    SetModifiedFlag(FALSE); // not modified anymore
 
@@ -232,8 +232,8 @@ void cEditorDoc::DeleteContents()
    UseGlobal(TerrainModel);
    pTerrainModel->Clear();
 
-   FlushCommandStack(&m_undoStack);
-   FlushCommandStack(&m_redoStack);
+   ClearCommandStack(&m_undoStack);
+   ClearCommandStack(&m_redoStack);
 
    CDocument::DeleteContents();
 }

@@ -4,9 +4,9 @@
 #include "stdhdr.h"
 
 #include "terrain.h"
-#include "terrainapi.h"
 
 #include "engineapi.h"
+#include "ray.h"
 
 #include "resourceapi.h"
 #include "imagedata.h"
@@ -23,9 +23,35 @@
 
 /////////////////////////////////////////////////////////////////////////////
 
+LOG_DEFINE_CHANNEL(TerrainModel);
+#define LocalMsg(msg)            DebugMsgEx(TerrainModel,(msg))
+#define LocalMsg1(msg,a)         DebugMsgEx1(TerrainModel,(msg),(a))
+#define LocalMsg2(msg,a,b)       DebugMsgEx2(TerrainModel,(msg),(a),(b))
+#define LocalMsg3(msg,a,b,c)     DebugMsgEx3(TerrainModel,(msg),(a),(b),(c))
+#define LocalMsg4(msg,a,b,c,d)   DebugMsgEx4(TerrainModel,(msg),(a),(b),(c),(d))
+
+/////////////////////////////////////////////////////////////////////////////
+
 const int kDefaultStepSize = 32;
 
 static const uint kMaxTerrainHeight = 30;
+
+
+/////////////////////////////////////////////////////////////////////////////
+
+template <typename HTYPE>
+inline void ComposeHandle(uint16 h, uint16 l, HTYPE * pHandle)
+{
+   *pHandle = (HTYPE)((((uint)h) << 16) | ((uint)l));
+}
+
+template <typename HTYPE>
+inline void DecomposeHandle(HTYPE handle, uint16 * ph, uint16 * pl)
+{
+   uint u = (uint)handle;
+   *ph = static_cast<uint16>((u >> 16) & 0xFFFF);
+   *pl = static_cast<uint16>(u & 0xFFFF);
+}
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -189,6 +215,16 @@ const tChar * cTerrainSettings::GetHeightMap() const
    return m_heightMap.c_str();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
+template <>
+class cReadWriteOps<cTerrainSettings>
+{
+public:
+   static tResult Read(IReader * pReader, cTerrainSettings * pTerrainSettings);
+   static tResult Write(IWriter * pWriter, const cTerrainSettings & terrainSettings);
+};
+
 ////////////////////////////////////////
 
 tResult cReadWriteOps<cTerrainSettings>::Read(IReader * pReader, cTerrainSettings * pTerrainSettings)
@@ -338,6 +374,130 @@ tResult cReadWriteOps<tVec3s>::Write(IWriter * pWriter, const tVec3s & vec3s)
    }
 
    return E_FAIL;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cEnumTerrainQuads
+//
+
+////////////////////////////////////////
+
+cEnumTerrainQuads::cEnumTerrainQuads(uint xStart, uint xEnd, uint zStart, uint zEnd)
+ : m_xStart(xStart)
+ , m_xEnd(xEnd)
+ , m_zStart(zStart)
+ , m_zEnd(zEnd)
+ , m_x(xStart)
+ , m_z(zStart)
+{
+}
+
+////////////////////////////////////////
+
+cEnumTerrainQuads::~cEnumTerrainQuads()
+{
+}
+
+////////////////////////////////////////
+
+tResult cEnumTerrainQuads::Next(ulong count, HTERRAINQUAD * pQuads, ulong * pnQuads)
+{
+   if (count == 0)
+   {
+      return S_FALSE;
+   }
+
+   if (pQuads == NULL || pnQuads == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (m_x == m_xEnd && m_z == m_zEnd)
+   {
+      return E_FAIL;
+   }
+
+   ulong index = 0;
+
+   while (count-- > 0)
+   {
+      if (m_z < m_zEnd && m_x < m_xEnd)
+      {
+         ComposeHandle(m_x, m_z, &pnQuads[index++]);
+         m_x++;
+         if (m_x == m_xEnd)
+         {
+            m_z++;
+            m_x = m_xStart;
+         }
+      }
+   }
+
+   *pnQuads = index;
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cEnumTerrainQuads::Skip(ulong count)
+{
+   if (count == 0)
+   {
+      return S_FALSE;
+   }
+
+   if (m_x == m_xEnd && m_z == m_zEnd)
+   {
+      return E_FAIL;
+   }
+
+   while (count-- > 0)
+   {
+      if (m_z < m_zEnd && m_x < m_xEnd)
+      {
+         m_x++;
+         if (m_x == m_xEnd)
+         {
+            m_z++;
+            m_x = m_xStart;
+         }
+      }
+   }
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cEnumTerrainQuads::Reset()
+{
+   m_x = m_xStart;
+   m_z = m_zStart;
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cEnumTerrainQuads::Clone(IEnumTerrainQuads * * ppEnum)
+{
+   if (ppEnum == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cAutoIPtr<IEnumTerrainQuads> pEnum(static_cast<IEnumTerrainQuads*>(
+      new cEnumTerrainQuads(m_xStart, m_xEnd, m_zStart, m_zEnd)));
+
+   if (!pEnum)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   *ppEnum = CTAddRef(pEnum);
+   return S_OK;
 }
 
 
@@ -497,6 +657,93 @@ tResult cTerrainModel::AddTerrainModelListener(ITerrainModelListener * pListener
 tResult cTerrainModel::RemoveTerrainModelListener(ITerrainModelListener * pListener)
 {
    return remove_interface(m_listeners, pListener) ? S_OK : E_FAIL;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainModel::EnumTerrainQuads(IEnumTerrainQuads * * ppEnum)
+{
+   return EnumTerrainQuads(
+      0, m_terrainSettings.GetTileCountX(),
+      0, m_terrainSettings.GetTileCountZ(),
+      ppEnum);
+}
+
+////////////////////////////////////////
+
+tResult cTerrainModel::EnumTerrainQuads(uint xStart, uint xEnd, uint zStart, uint zEnd,
+                                        IEnumTerrainQuads * * ppEnum)
+{
+   if (ppEnum == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cAutoIPtr<IEnumTerrainQuads> pEnum(static_cast<IEnumTerrainQuads*>(
+      new cEnumTerrainQuads(xStart, xEnd, zStart, zEnd)));
+
+   if (!pEnum)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   *ppEnum = CTAddRef(pEnum);
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainModel::GetQuadFromHitTest(const cRay & ray, HTERRAINQUAD * phQuad) const
+{
+   if (phQuad == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tVec3 pointOnPlane;
+   if (ray.IntersectsPlane(tVec3(0,1,0), 0, &pointOnPlane))
+   {
+      LocalMsg3("Hit the terrain at approximately (%.1f, %.1f, %.1f)\n",
+         pointOnPlane.x, pointOnPlane.y, pointOnPlane.z);
+
+      uint ix, iz;
+      GetTileIndices(pointOnPlane.x, pointOnPlane.z, &ix, &iz);
+
+      LocalMsg2("Hit tile (%d, %d)\n", ix, iz);
+
+      ComposeHandle(ix, iz, phQuad);
+
+      return S_OK;
+   }
+
+   return E_FAIL;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainModel::SetQuadTile(HTERRAINQUAD hQuad, uint tile)
+{
+   uint16 x, z;
+   DecomposeHandle(hQuad, &x, &z);
+   return SetQuadTile(x, z, tile, NULL);
+}
+
+////////////////////////////////////////
+
+tResult cTerrainModel::GetQuadTile(HTERRAINQUAD hQuad, uint * pTile) const
+{
+   uint16 x, z;
+   DecomposeHandle(hQuad, &x, &z);
+   return GetQuadTile(x, z, pTile);
+}
+
+////////////////////////////////////////
+
+tResult cTerrainModel::GetQuadCorners(HTERRAINQUAD hQuad, tVec3 corners[4]) const
+{
+   uint16 x, z;
+   DecomposeHandle(hQuad, &x, &z);
+   return GetQuadCorners(x, z, corners);
 }
 
 ////////////////////////////////////////

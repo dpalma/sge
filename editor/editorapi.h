@@ -35,6 +35,9 @@ class cEditorMouseWheelEvent;
 
 class cRay;
 
+F_DECLARE_HANDLE(HTERRAINQUAD);
+
+
 #define UUID(uuidstr) __declspec(uuid(uuidstr))
 
 
@@ -156,9 +159,8 @@ interface UUID("78C29790-865D-4f81-9AF1-26EC23BB5FAC") IEditorView : IUnknown
 
    virtual tResult GetModel(IEditorModel * * ppModel) = 0;
 
-   virtual tResult GetHighlightTile(int * piTileX, int * piTileZ) const = 0;
-   virtual tResult HighlightTile(int iTileX, int iTileZ) = 0;
-   virtual tResult ClearTileHighlight() = 0;
+   virtual tResult HighlightTerrainQuad(HTERRAINQUAD hQuad) = 0;
+   virtual tResult ClearHighlight() = 0;
 };
 
 

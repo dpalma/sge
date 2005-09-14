@@ -12,6 +12,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+F_DECLARE_HANDLE(HTERRAINQUAD);
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -46,10 +47,8 @@ private:
 class cTerrainTileCommand : public cComObject<IMPLEMENTS(IEditorCommand)>
 {
 public:
-   cTerrainTileCommand(uint ix, uint iz, uint tile);
+   cTerrainTileCommand(HTERRAINQUAD hQuad, uint tile);
    ~cTerrainTileCommand();
-
-   /////////////////////////////////////
 
    virtual tResult Do();
    virtual tResult CanUndo();
@@ -57,7 +56,8 @@ public:
    virtual tResult GetLabel(cStr * pLabel);
 
 private:
-   uint m_ix, m_iz, m_tile, m_oldTile;
+   HTERRAINQUAD m_hQuad;
+   uint m_tile, m_oldTile;
 };
 
 

@@ -292,36 +292,18 @@ cTerrainTool::~cTerrainTool()
 
 ////////////////////////////////////////
 
-bool cTerrainTool::GetHitQuad(CPoint point, IEditorView * pView, uint * pix, uint * piz)
+bool cTerrainTool::GetHitQuad(CPoint point, IEditorView * pView, HTERRAINQUAD * phQuad)
 {
    float ndx, ndy;
    ScreenToNormalizedDeviceCoords(point.x, point.y, &ndx, &ndy);
 
-   cRay pickRay;
-   if (pView->GeneratePickRay(ndx, ndy, &pickRay) == S_OK)
+   if (pView != NULL)
    {
-      tVec3 pointOnPlane;
-      if (pickRay.IntersectsPlane(tVec3(0,1,0), 0, &pointOnPlane))
+      cRay pickRay;
+      if (pView->GeneratePickRay(ndx, ndy, &pickRay) == S_OK)
       {
-         LocalMsg3("Hit the ground at approximately (%.1f, %.1f, %.1f)\n",
-            pointOnPlane.x, pointOnPlane.y, pointOnPlane.z);
-
          UseGlobal(TerrainModel);
-
-         uint ix, iz;
-         pTerrainModel->GetTileIndices(pointOnPlane.x, pointOnPlane.z, &ix, &iz);
-
-         LocalMsg2("Hit tile (%d, %d)\n", ix, iz);
-
-         if (pix != NULL)
-         {
-            *pix = ix;
-         }
-         if (piz != NULL)
-         {
-            *piz = iz;
-         }
-         return true;
+         return (pTerrainModel->GetQuadFromHitTest(pickRay, phQuad) == S_OK);
       }
    }
 
@@ -337,9 +319,7 @@ bool cTerrainTool::GetHitQuad(CPoint point, IEditorView * pView, uint * pix, uin
 ////////////////////////////////////////
 
 cTerrainTileTool::cTerrainTileTool()
- : m_iLastHitX(~0),
-   m_iLastHitZ(~0),
-   m_tile(0)
+ : m_tile(0)
 {
 }
 
@@ -371,7 +351,7 @@ tResult cTerrainTileTool::Deactivate()
    cAutoIPtr<IEditorView> pView;
    if (pEditorApp->GetActiveView(&pView) == S_OK)
    {
-      pView->ClearTileHighlight();
+      pView->ClearHighlight();
    }
 
    return S_OK;
@@ -383,14 +363,14 @@ tResult cTerrainTileTool::OnMouseMove(const cEditorMouseEvent & mouseEvent, IEdi
 {
    if (pView != NULL)
    {
-      uint ix, iz;
-      if (GetHitQuad(mouseEvent.GetPoint(), pView, &ix, &iz))
+      HTERRAINQUAD hQuad = NULL;
+      if (GetHitQuad(mouseEvent.GetPoint(), pView, &hQuad))
       {
-         pView->HighlightTile(ix, iz);
+         pView->HighlightTerrainQuad(hQuad);
       }
       else
       {
-         pView->ClearTileHighlight();
+         pView->ClearHighlight();
       }
    }
 
@@ -403,6 +383,8 @@ tResult cTerrainTileTool::OnDragStart(const cEditorMouseEvent & mouseEvent, IEdi
 {
    UseGlobal(TerrainRenderer);
    pTerrainRenderer->EnableBlending(false);
+
+   m_hitQuads.clear();
 
    Assert(!m_pCommand);
    if (EditorCompositeCommandCreate(&m_pCommand) != S_OK)
@@ -432,6 +414,8 @@ tResult cTerrainTileTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEdito
    }
    SafeRelease(m_pCommand);
 
+   m_hitQuads.clear();
+
    return result;
 }
 
@@ -441,32 +425,26 @@ tResult cTerrainTileTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEdit
 {
    Assert(!!m_pCommand);
 
-   if (pView != NULL)
+   HTERRAINQUAD hQuad = NULL;
+   if (GetHitQuad(mouseEvent.GetPoint(), pView, &hQuad)
+      && m_hitQuads.find(hQuad) == m_hitQuads.end())
    {
-      uint ix, iz;
-      if (GetHitQuad(mouseEvent.GetPoint(), pView, &ix, &iz))
+      m_hitQuads.insert(hQuad);
+
+      cAutoIPtr<IEditorCommand> pCommand(static_cast<IEditorCommand*>(
+         new cTerrainTileCommand(hQuad, m_tile)));
+
+      if (!pCommand)
       {
-         if ((m_iLastHitX != ix) || (m_iLastHitZ != iz))
-         {
-            m_iLastHitX = ix;
-            m_iLastHitZ = iz;
-
-            cAutoIPtr<IEditorCommand> pCommand(static_cast<IEditorCommand*>(
-               new cTerrainTileCommand(ix, iz, m_tile)));
-
-            if (!pCommand)
-            {
-               return E_OUTOFMEMORY;
-            }
-
-            if (pCommand->Do() != S_OK)
-            {
-               return E_FAIL;
-            }
-
-            m_pCommand->Add(pCommand);
-         }
+         return E_OUTOFMEMORY;
       }
+
+      if (pCommand->Do() != S_OK)
+      {
+         return E_FAIL;
+      }
+
+      m_pCommand->Add(pCommand);
    }
 
    return S_EDITOR_TOOL_HANDLED;

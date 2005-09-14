@@ -103,21 +103,20 @@ END_MESSAGE_MAP()
 ////////////////////////////////////////
 
 cEditorView::cEditorView()
- : m_bInitialized(false),
-   m_bUsingD3d(false),
-   m_hDC(NULL),
-   m_hRC(NULL),
+ : m_bInitialized(false)
+ , m_bUsingD3d(false)
+ , m_hDC(NULL)
+ , m_hRC(NULL)
 #ifdef HAVE_DIRECTX
-   m_d3d9Lib("d3d9"),
+ , m_d3d9Lib("d3d9")
 #endif
-   m_cameraElevation(kDefaultCameraElevation),
-   m_center(0,0,0),
-   m_eye(0,0,0),
-   m_bRecalcEye(true),
-   m_bUpdateCompositeMatrices(true),
-   m_highlitTileX(-1),
-   m_highlitTileZ(-1),
-   m_bInPostNcDestroy(false)
+ , m_cameraElevation(kDefaultCameraElevation)
+ , m_center(0,0,0)
+ , m_eye(0,0,0)
+ , m_bRecalcEye(true)
+ , m_bUpdateCompositeMatrices(true)
+ , m_highlightQuad(INVALID_HTERRAINQUAD)
+ , m_bInPostNcDestroy(false)
 {
 }
 
@@ -264,36 +263,17 @@ tResult cEditorView::GetModel(IEditorModel * * ppModel)
 
 ////////////////////////////////////////
 
-tResult cEditorView::GetHighlightTile(int * piTileX, int * piTileZ) const
+tResult cEditorView::HighlightTerrainQuad(HTERRAINQUAD hQuad)
 {
-   if (piTileX == NULL || piTileZ == NULL)
-   {
-      return E_POINTER;
-   }
-   if (m_highlitTileX < 0 || m_highlitTileZ < 0)
-   {
-      return S_FALSE;
-   }
-   *piTileX = m_highlitTileX;
-   *piTileZ = m_highlitTileZ;
+   m_highlightQuad = hQuad;
    return S_OK;
 }
 
 ////////////////////////////////////////
 
-tResult cEditorView::HighlightTile(int iTileX, int iTileZ)
+tResult cEditorView::ClearHighlight()
 {
-   m_highlitTileX = iTileX;
-   m_highlitTileZ = iTileZ;
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cEditorView::ClearTileHighlight()
-{
-   m_highlitTileX = -1;
-   m_highlitTileZ = -1;
+   m_highlightQuad = INVALID_HTERRAINQUAD;
    return S_OK;
 }
 
@@ -301,7 +281,7 @@ tResult cEditorView::ClearTileHighlight()
 
 tResult cEditorView::OnActiveToolChange(IEditorTool * pNewTool, IEditorTool * pFormerTool)
 {
-   ClearTileHighlight();
+   ClearHighlight();
    return S_OK;
 }
 
@@ -336,12 +316,11 @@ void cEditorView::RenderGL()
    UseGlobal(TerrainRenderer);
    pTerrainRenderer->Render();
 
-   int iHlx, iHlz;
-   if (GetHighlightTile(&iHlx, &iHlz) == S_OK)
+   if (m_highlightQuad != INVALID_HTERRAINQUAD)
    {
       UseGlobal(TerrainModel);
       tVec3 corners[4];
-      if (pTerrainModel->GetQuadCorners(iHlx, iHlz, corners) == S_OK)
+      if (pTerrainModel->GetQuadCorners(m_highlightQuad, corners) == S_OK)
       {
          static const float kOffsetY = 0.5f;
          corners[0].y += kOffsetY;

@@ -55,9 +55,8 @@ public:
    virtual tResult SetCameraElevation(float elevation);
    virtual tResult GeneratePickRay(float ndx, float ndy, cRay * pRay);
    virtual tResult GetModel(IEditorModel * * ppModel);
-   virtual tResult GetHighlightTile(int * piTileX, int * piTileZ) const;
-   virtual tResult HighlightTile(int iTileX, int iTileZ);
-   virtual tResult ClearTileHighlight();
+   virtual tResult HighlightTerrainQuad(HTERRAINQUAD hQuad);
+   virtual tResult ClearHighlight();
 
    // IEditorAppListener
    virtual tResult OnActiveToolChange(IEditorTool * pNewTool, IEditorTool * pFormerTool);
@@ -127,7 +126,7 @@ private:
    tMatrix4 m_viewInverse, m_viewProj, m_viewProjInverse;
    bool m_bUpdateCompositeMatrices;
 
-   int m_highlitTileX, m_highlitTileZ;
+   HTERRAINQUAD m_highlightQuad;
 
    bool m_bInPostNcDestroy;
 };

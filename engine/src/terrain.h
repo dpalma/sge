@@ -19,6 +19,33 @@ typedef std::vector<tVec3> tVec3s;
 typedef std::vector<uint> tUints;
 
 
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cEnumTerrainQuads
+//
+
+class cEnumTerrainQuads : public cComObject<IMPLEMENTS(IEnumTerrainQuads)>
+{
+   cEnumTerrainQuads(const cEnumTerrainQuads &);
+   void operator =(const cEnumTerrainQuads &);
+
+   friend class cTerrainModel;
+
+   cEnumTerrainQuads(uint xStart, uint xEnd, uint zStart, uint zEnd);
+   ~cEnumTerrainQuads();
+
+public:
+   virtual tResult Next(ulong count, HTERRAINQUAD * pQuads, ulong * pnQuads);
+   virtual tResult Skip(ulong count);
+   virtual tResult Reset();
+   virtual tResult Clone(IEnumTerrainQuads * * ppEnum);
+
+private:
+   uint m_xStart, m_xEnd, m_zStart, m_zEnd;
+   uint m_x, m_z;
+};
+
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cTerrainModel
@@ -46,7 +73,15 @@ public:
 
    virtual tResult AddTerrainModelListener(ITerrainModelListener * pListener);
    virtual tResult RemoveTerrainModelListener(ITerrainModelListener * pListener);
-   virtual tResult SetQuadTile(uint quadx, uint quadz, uint tile, uint * pFormer);
+
+   virtual tResult EnumTerrainQuads(IEnumTerrainQuads * * ppEnum);
+   virtual tResult EnumTerrainQuads(uint xStart, uint xEnd, uint zStart, uint zEnd, IEnumTerrainQuads * * ppEnum);
+   virtual tResult GetQuadFromHitTest(const cRay & ray, HTERRAINQUAD * phQuad) const;
+   virtual tResult SetQuadTile(HTERRAINQUAD hQuad, uint tile);
+   virtual tResult GetQuadTile(HTERRAINQUAD hQuad, uint * pTile) const;
+   virtual tResult GetQuadCorners(HTERRAINQUAD hQuad, tVec3 corners[4]) const;
+
+   tResult SetQuadTile(uint quadx, uint quadz, uint tile, uint * pFormer);
    virtual tResult GetQuadTile(uint quadx, uint quadz, uint * pTile) const;
    virtual tResult GetTileIndices(float x, float z, uint * pix, uint * piz) const;
    virtual tResult GetQuadCorners(uint quadx, uint quadz, tVec3 corners[4]) const;

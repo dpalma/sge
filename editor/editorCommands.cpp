@@ -173,9 +173,8 @@ tResult cEditorCompositeCommand::Remove(IEditorCommand * pCommand)
 
 ////////////////////////////////////////
 
-cTerrainTileCommand::cTerrainTileCommand(uint ix, uint iz, uint tile)
- : m_ix(ix)
- , m_iz(iz)
+cTerrainTileCommand::cTerrainTileCommand(HTERRAINQUAD hQuad, uint tile)
+ : m_hQuad(hQuad)
  , m_tile(tile)
  , m_oldTile(tile)
 {
@@ -192,7 +191,12 @@ cTerrainTileCommand::~cTerrainTileCommand()
 tResult cTerrainTileCommand::Do()
 {
    UseGlobal(TerrainModel);
-   return pTerrainModel->SetQuadTile(m_ix, m_iz, m_tile, &m_oldTile);
+   if (m_hQuad != INVALID_HTERRAINQUAD)
+   {
+      pTerrainModel->GetQuadTile(m_hQuad, &m_oldTile);
+      return pTerrainModel->SetQuadTile(m_hQuad, m_tile);
+   }
+   return E_FAIL;
 }
 
 ////////////////////////////////////////
@@ -207,10 +211,15 @@ tResult cTerrainTileCommand::CanUndo()
 tResult cTerrainTileCommand::Undo()
 {
    UseGlobal(TerrainModel);
-   uint t;
-   tResult result = pTerrainModel->SetQuadTile(m_ix, m_iz, m_oldTile, &t);
-   Assert(t == m_tile);
-   return result;
+   if (m_hQuad != INVALID_HTERRAINQUAD)
+   {
+      uint tile;
+      pTerrainModel->GetQuadTile(m_hQuad, &tile);
+      tResult result = pTerrainModel->SetQuadTile(m_hQuad, m_oldTile);
+      Assert(tile == m_tile);
+      return result;
+   }
+   return E_FAIL;
 }
 
 ////////////////////////////////////////
