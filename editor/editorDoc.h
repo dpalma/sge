@@ -36,7 +36,7 @@ public:
 
 // Operations
 public:
-   virtual tResult AddCommand(IEditorCommand * pCommand);
+   virtual tResult AddCommand(IEditorCommand * pCommand, bool bDo);
 
    virtual tResult AddEditorModelListener(IEditorModelListener * pListener);
    virtual tResult RemoveEditorModelListener(IEditorModelListener * pListener);

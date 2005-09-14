@@ -112,7 +112,7 @@ protected:
 private:
    uint m_iLastHitX, m_iLastHitZ;
    uint m_tile;
-   ulong m_currentStamp;
+   cAutoIPtr<IEditorCompositeCommand> m_pCommand;
 };
 
 /////////////////////////////////////////////////////////////////////////////

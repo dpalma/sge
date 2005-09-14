@@ -23,7 +23,7 @@ F_DECLARE_INTERFACE(IEditorView);
 F_DECLARE_INTERFACE(IEditorModel);
 F_DECLARE_INTERFACE(IEditorModelListener);
 F_DECLARE_INTERFACE(IEditorCommand);
-F_DECLARE_INTERFACE(IEditorTerrainTileCommand);
+F_DECLARE_INTERFACE(IEditorCompositeCommand);
 F_DECLARE_INTERFACE(IEditorTool);
 
 F_DECLARE_INTERFACE(ITerrainModel);
@@ -169,7 +169,7 @@ interface UUID("78C29790-865D-4f81-9AF1-26EC23BB5FAC") IEditorView : IUnknown
 
 interface UUID("F131D72E-30A7-4758-A094-830F00A50D91") IEditorModel : IUnknown
 {
-   virtual tResult AddCommand(IEditorCommand * pCommand) = 0;
+   virtual tResult AddCommand(IEditorCommand * pCommand, bool bDo) = 0;
 
    virtual tResult AddEditorModelListener(IEditorModelListener * pListener) = 0;
    virtual tResult RemoveEditorModelListener(IEditorModelListener * pListener) = 0;
@@ -200,24 +200,23 @@ interface UUID("936BD53E-35B5-4f72-AFA4-AE304122E7D4") IEditorCommand : IUnknown
    virtual tResult Undo() = 0;
 
    virtual tResult GetLabel(cStr * pLabel) = 0;
-
-   /// @brief Answers the question "can this command be undone at the same time as the given one?"
-   virtual tResult Compare(IEditorCommand * pOther) = 0;
 };
 
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// INTERFACE: IEditorTerrainTileCommand
+// INTERFACE: IEditorCompositeCommand
 //
 
-interface UUID("006903F2-48A1-4e92-9AC3-DF2D29989E56") IEditorTerrainTileCommand : IEditorCommand
+interface UUID("A0518634-6279-4aeb-879F-E2D560F58626") IEditorCompositeCommand : IEditorCommand
 {
-   virtual tResult GetTile(uint * pTile) = 0;
-
-   /// @brief Used to identify commands issued as part of the same drag operation, for example
-   virtual tResult GetStamp(ulong * pStamp) = 0;
+   virtual tResult Add(IEditorCommand * pCommand) = 0;
+   virtual tResult Remove(IEditorCommand * pCommand) = 0;
 };
+
+////////////////////////////////////////
+
+tResult EditorCompositeCommandCreate(IEditorCompositeCommand * * ppCommand);
 
 
 /////////////////////////////////////////////////////////////////////////////

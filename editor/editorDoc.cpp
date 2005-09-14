@@ -142,14 +142,14 @@ void cEditorDoc::Dump(CDumpContext& dc) const
 /////////////////////////////////////////////////////////////////////////////
 // cEditorDoc operations
 
-tResult cEditorDoc::AddCommand(IEditorCommand * pCommand)
+tResult cEditorDoc::AddCommand(IEditorCommand * pCommand, bool bDo)
 {
    if (pCommand == NULL)
    {
       return E_POINTER;
    }
 
-   if (pCommand->Do() == S_OK)
+   if (!bDo || pCommand->Do() == S_OK)
    {
       if (pCommand->CanUndo() == S_OK)
       {
@@ -238,39 +238,30 @@ void cEditorDoc::DeleteContents()
    CDocument::DeleteContents();
 }
 
-static void UndoRedoHelper(tResult (IEditorCommand::*pfnDoMethod)(),
-                           tCommandStack * pSourceStack,
-                           tCommandStack * pDestStack)
+static tResult UndoRedoHelper(tResult (IEditorCommand::*pfnDoMethod)(),
+                              tCommandStack * pSourceStack,
+                              tCommandStack * pDestStack)
 {
    Assert(pfnDoMethod != NULL);
    Assert(pSourceStack != NULL);
    Assert(pDestStack != NULL);
 
-   IEditorCommand * pPrevious = NULL;
-   while (!pSourceStack->empty())
+   if (pSourceStack->empty())
    {
-      IEditorCommand * pCommand = pSourceStack->top();
-
-      if (pPrevious != NULL)
-      {
-         if (pCommand->Compare(pPrevious) != S_OK)
-         {
-            break;
-         }
-      }
-
-      if ((pCommand->*pfnDoMethod)() == S_OK)
-      {
-         pSourceStack->pop();
-         pDestStack->push(pCommand);
-      }
-      else
-      {
-         break;
-      }
-
-      pPrevious = pCommand;
+      Assert(!"UndoRedoHelper called on empty stack\n");
+      return E_FAIL;
    }
+
+   IEditorCommand * pCommand = pSourceStack->top();
+
+   if ((pCommand->*pfnDoMethod)() == S_OK)
+   {
+      pSourceStack->pop();
+      pDestStack->push(pCommand);
+      return S_OK;
+   }
+
+   return E_FAIL;
 }
 
 void cEditorDoc::OnEditUndo() 
@@ -295,12 +286,14 @@ void cEditorDoc::OnUpdateEditUndo(CCmdUI* pCmdUI)
       pCmdUI->Enable(TRUE);
 
       cStr label;
-      if (m_undoStack.top()->GetLabel(&label) == S_OK)
+      if (m_undoStack.top()->GetLabel(&label) != S_OK)
       {
-         CString menuText;
-         menuText.Format(IDS_UNDO_TEXT, label.c_str());
-         pCmdUI->SetText(menuText);
+         label.assign(m_originalUndoText);
       }
+
+      CString menuText;
+      menuText.Format(IDS_UNDO_TEXT, label.c_str());
+      pCmdUI->SetText(menuText);
    }
 }
 
@@ -326,11 +319,13 @@ void cEditorDoc::OnUpdateEditRedo(CCmdUI* pCmdUI)
       pCmdUI->Enable(TRUE);
 
       cStr label;
-      if (m_redoStack.top()->GetLabel(&label) == S_OK)
+      if (m_redoStack.top()->GetLabel(&label) != S_OK)
       {
-         CString menuText;
-         menuText.Format(IDS_REDO_TEXT, label.c_str());
-         pCmdUI->SetText(menuText);
+         label.assign(m_originalRedoText);
       }
+
+      CString menuText;
+      menuText.Format(IDS_REDO_TEXT, label.c_str());
+      pCmdUI->SetText(menuText);
    }
 }

@@ -404,7 +404,13 @@ tResult cTerrainTileTool::OnDragStart(const cEditorMouseEvent & mouseEvent, IEdi
    UseGlobal(TerrainRenderer);
    pTerrainRenderer->EnableBlending(false);
 
-   m_currentStamp = GetNextStamp();
+   Assert(!m_pCommand);
+   if (EditorCompositeCommandCreate(&m_pCommand) != S_OK)
+   {
+      ErrorMsg("Error creating composite command\n");
+      return E_FAIL;
+   }
+
    return S_EDITOR_TOOL_CONTINUE;
 }
 
@@ -418,7 +424,14 @@ tResult cTerrainTileTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEdito
    UseGlobal(TerrainRenderer);
    pTerrainRenderer->EnableBlending(true);
 
-   m_currentStamp = 0;
+   Assert(!!m_pCommand);
+   cAutoIPtr<IEditorModel> pEditorModel;
+   if (pView->GetModel(&pEditorModel) == S_OK)
+   {
+      pEditorModel->AddCommand(m_pCommand, false);
+   }
+   SafeRelease(m_pCommand);
+
    return result;
 }
 
@@ -426,6 +439,8 @@ tResult cTerrainTileTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEdito
 
 tResult cTerrainTileTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
 {
+   Assert(!!m_pCommand);
+
    if (pView != NULL)
    {
       uint ix, iz;
@@ -436,18 +451,20 @@ tResult cTerrainTileTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEdit
             m_iLastHitX = ix;
             m_iLastHitZ = iz;
 
-            UseGlobal(TerrainModel);
+            cAutoIPtr<IEditorCommand> pCommand(static_cast<IEditorCommand*>(
+               new cTerrainTileCommand(ix, iz, m_tile)));
 
-            cAutoIPtr<IEditorCommand> pCommand(new cTerrainTileCommand(
-               pTerrainModel, ix, iz, m_tile, m_currentStamp));
-            if (!!pCommand)
+            if (!pCommand)
             {
-               cAutoIPtr<IEditorModel> pEM;
-               if (pView->GetModel(&pEM) == S_OK)
-               {
-                  pEM->AddCommand(pCommand);
-               }
+               return E_OUTOFMEMORY;
             }
+
+            if (pCommand->Do() != S_OK)
+            {
+               return E_FAIL;
+            }
+
+            m_pCommand->Add(pCommand);
          }
       }
    }

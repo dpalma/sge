@@ -5,6 +5,7 @@
 
 #include "editorCommands.h"
 #include "terrainapi.h"
+#include "globalobj.h"
 
 #include "resource.h"
 
@@ -14,6 +15,157 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cEditorCompositeCommand
+//
+
+////////////////////////////////////////
+
+tResult EditorCompositeCommandCreate(IEditorCompositeCommand * * ppCommand)
+{
+   if (ppCommand == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cAutoIPtr<IEditorCompositeCommand> p(new cEditorCompositeCommand);
+   if (!p)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   *ppCommand = CTAddRef(p);
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+cEditorCompositeCommand::cEditorCompositeCommand()
+{
+}
+
+////////////////////////////////////////
+
+cEditorCompositeCommand::~cEditorCompositeCommand()
+{
+   tCmds::iterator iter = m_cmds.begin();
+   tCmds::iterator end = m_cmds.end();
+   for (; iter != end; iter++)
+   {
+      (*iter)->Release();
+   }
+   m_cmds.clear();
+}
+
+////////////////////////////////////////
+
+tResult cEditorCompositeCommand::Do()
+{
+   tCmds::iterator iter = m_cmds.begin();
+   tCmds::iterator end = m_cmds.end();
+   for (; iter != end; iter++)
+   {
+      tResult result = (*iter)->Do();
+      if (result != S_OK)
+      {
+         return result;
+      }
+   }
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cEditorCompositeCommand::CanUndo()
+{
+   tCmds::iterator iter = m_cmds.begin();
+   tCmds::iterator end = m_cmds.end();
+   for (; iter != end; iter++)
+   {
+      tResult result = (*iter)->CanUndo();
+      if (result != S_OK)
+      {
+         return result;
+      }
+   }
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cEditorCompositeCommand::Undo()
+{
+   tCmds::iterator iter = m_cmds.begin();
+   tCmds::iterator end = m_cmds.end();
+   for (; iter != end; iter++)
+   {
+      tResult result = (*iter)->Undo();
+      if (result != S_OK)
+      {
+         return result;
+      }
+   }
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cEditorCompositeCommand::GetLabel(cStr * pLabel)
+{
+   if (pLabel == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (m_cmds.empty())
+   {
+      return E_FAIL;
+   }
+
+   return m_cmds.front()->GetLabel(pLabel);
+}
+
+////////////////////////////////////////
+
+tResult cEditorCompositeCommand::Add(IEditorCommand * pCommand)
+{
+   if (pCommand == NULL)
+   {
+      return E_POINTER;
+   }
+
+   m_cmds.push_back(CTAddRef(pCommand));
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cEditorCompositeCommand::Remove(IEditorCommand * pCommand)
+{
+   if (pCommand == NULL)
+   {
+      return E_POINTER;
+   }
+
+   uint nRemoved = 0;
+   tCmds::iterator iter = m_cmds.begin();
+   tCmds::iterator end = m_cmds.end();
+   for (; iter != end; iter++)
+   {
+      if (CTIsSameObject(*iter, pCommand))
+      {
+         (*iter)->Release();
+         iter = m_cmds.erase(iter);
+         nRemoved++;
+      }
+   }
+
+   return nRemoved > 0 ? S_OK : S_FALSE;
+}
+
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cTerrainTileCommand
@@ -21,13 +173,11 @@ static char THIS_FILE[] = __FILE__;
 
 ////////////////////////////////////////
 
-cTerrainTileCommand::cTerrainTileCommand(ITerrainModel * pTerrain, uint ix, uint iz, uint tile, ulong stamp)
- : m_pModel(CTAddRef(pTerrain)),
-   m_ix(ix),
-   m_iz(iz),
-   m_tile(tile),
-   m_oldTile(tile),
-   m_stamp(stamp)
+cTerrainTileCommand::cTerrainTileCommand(uint ix, uint iz, uint tile)
+ : m_ix(ix)
+ , m_iz(iz)
+ , m_tile(tile)
+ , m_oldTile(tile)
 {
 }
 
@@ -41,11 +191,8 @@ cTerrainTileCommand::~cTerrainTileCommand()
 
 tResult cTerrainTileCommand::Do()
 {
-   if (!!m_pModel)
-   {
-      return m_pModel->SetQuadTile(m_ix,m_iz,m_tile,&m_oldTile);
-   }
-   return E_FAIL;
+   UseGlobal(TerrainModel);
+   return pTerrainModel->SetQuadTile(m_ix, m_iz, m_tile, &m_oldTile);
 }
 
 ////////////////////////////////////////
@@ -59,14 +206,11 @@ tResult cTerrainTileCommand::CanUndo()
 
 tResult cTerrainTileCommand::Undo()
 {
-   if (!!m_pModel)
-   {
-      uint t;
-      tResult result = m_pModel->SetQuadTile(m_ix,m_iz,m_oldTile,&t);
-      Assert(t = m_tile);
-      return result;
-   }
-   return E_FAIL;
+   UseGlobal(TerrainModel);
+   uint t;
+   tResult result = pTerrainModel->SetQuadTile(m_ix, m_iz, m_oldTile, &t);
+   Assert(t == m_tile);
+   return result;
 }
 
 ////////////////////////////////////////
@@ -85,58 +229,6 @@ tResult cTerrainTileCommand::GetLabel(cStr * pLabel)
    }
 
    *pLabel = (LPCTSTR)label;
-
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cTerrainTileCommand::Compare(IEditorCommand * pOther)
-{
-   if (pOther == NULL)
-   {
-      return E_POINTER;
-   }
-
-   cAutoIPtr<IEditorTerrainTileCommand> pTTCmd;
-   if (pOther->QueryInterface(IID_IEditorTerrainTileCommand, (void**)&pTTCmd) == S_OK)
-   {
-      uint tile;
-      ulong stamp;
-      if ((pTTCmd->GetTile(&tile) == S_OK) && (pTTCmd->GetStamp(&stamp) == S_OK)
-         && (tile == m_tile) && (stamp == m_stamp))
-      {
-         return S_OK;
-      }
-   }
-
-   return S_FALSE;
-}
-
-////////////////////////////////////////
-
-tResult cTerrainTileCommand::GetTile(uint * pTile)
-{
-   if (pTile == NULL)
-   {
-      return E_POINTER;
-   }
-
-   *pTile = m_tile;
-
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cTerrainTileCommand::GetStamp(ulong * pStamp)
-{
-   if (pStamp == NULL)
-   {
-      return E_POINTER;
-   }
-
-   *pStamp = m_stamp;
 
    return S_OK;
 }

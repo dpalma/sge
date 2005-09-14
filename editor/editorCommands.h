@@ -6,21 +6,47 @@
 
 #include "editorapi.h"
 
+#include <list>
+
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
 
-F_DECLARE_INTERFACE(ITerrainModel);
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cEditorCompositeCommand
+//
+
+class cEditorCompositeCommand : public cComObject<IMPLEMENTS(IEditorCompositeCommand)>
+{
+public:
+   cEditorCompositeCommand();
+   ~cEditorCompositeCommand();
+
+   virtual tResult Do();
+   virtual tResult CanUndo();
+   virtual tResult Undo();
+   virtual tResult GetLabel(cStr * pLabel);
+
+   virtual tResult Add(IEditorCommand * pCommand);
+   virtual tResult Remove(IEditorCommand * pCommand);
+
+private:
+   typedef std::list<IEditorCommand *> tCmds;
+   tCmds m_cmds;
+};
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cTerrainTileCommand
 //
 
-class cTerrainTileCommand : public cComObject<IMPLEMENTS(IEditorTerrainTileCommand)>
+class cTerrainTileCommand : public cComObject<IMPLEMENTS(IEditorCommand)>
 {
 public:
-   cTerrainTileCommand(ITerrainModel * pTerrain, uint ix, uint iz, uint tile, ulong stamp);
+   cTerrainTileCommand(uint ix, uint iz, uint tile);
    ~cTerrainTileCommand();
 
    /////////////////////////////////////
@@ -29,17 +55,9 @@ public:
    virtual tResult CanUndo();
    virtual tResult Undo();
    virtual tResult GetLabel(cStr * pLabel);
-   virtual tResult Compare(IEditorCommand * pOther);
-
-   /////////////////////////////////////
-
-   virtual tResult GetTile(uint * pTile);
-   virtual tResult GetStamp(ulong * pStamp);
 
 private:
-   cAutoIPtr<ITerrainModel> m_pModel;
    uint m_ix, m_iz, m_tile, m_oldTile;
-   ulong m_stamp; // used to identify commands issued as part of the same drag operation
 };
 
 
