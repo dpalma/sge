@@ -679,37 +679,46 @@ tResult cTerrainChunk::Create(const cRange<uint> xRange,
 
 ////////////////////////////////////////
 
-void cTerrainChunk::BuildVertexBuffer(const cRange<uint> xRange,
-                                      const cRange<uint> zRange)
+tResult cTerrainChunk::BuildVertexBuffer(const cRange<uint> xRange,
+                                         const cRange<uint> zRange)
 {
    UseGlobal(TerrainModel);
-   UseGlobal(TerrainRenderer);
-
    cTerrainSettings terrainSettings;
    Verify(pTerrainModel->GetTerrainSettings(&terrainSettings) == S_OK);
 
    m_vertices.resize(xRange.GetLength() * zRange.GetLength() * 4);
 
-   float d = 1.0f / pTerrainRenderer->GetTilesPerChunk();
-
-   for (uint z = zRange.GetStart(); z < zRange.GetEnd(); z++)
+   cAutoIPtr<IEnumTerrainQuads> pEnumQuads;
+   if (pTerrainModel->EnumTerrainQuads(
+      xRange.GetStart(), xRange.GetEnd(),
+      zRange.GetStart(), zRange.GetEnd(),
+      &pEnumQuads) == S_OK)
    {
-      uint zPrev = zRange.GetPrev(z, 0, kNoIndex);
-      uint zNext = zRange.GetNext(z, terrainSettings.GetTileCountZ(), kNoIndex);
+      UseGlobal(TerrainRenderer);
+      float oneOverChunkExtentX = 1.0f / static_cast<float>(
+         pTerrainRenderer->GetTilesPerChunk() * terrainSettings.GetTileSize());
+      float oneOverChunkExtentZ = 1.0f / static_cast<float>(
+         pTerrainRenderer->GetTilesPerChunk() * terrainSettings.GetTileSize());
 
-      for (uint x = xRange.GetStart(); x < xRange.GetEnd(); x++)
+      bool bFirst = true;
+      tVec3 rangeStart(0,0,0);
+
+      uint iVert = 0;
+
+      HTERRAINQUAD hQuad = INVALID_HTERRAINQUAD;
+      ulong nQuads = 0;
+
+      while (pEnumQuads->Next(1, &hQuad, &nQuads) == S_OK && nQuads == 1)
       {
-         uint xPrev = xRange.GetPrev(x, 0, kNoIndex);
-         uint xNext = xRange.GetNext(x, terrainSettings.GetTileCountX(), kNoIndex);
-
-         uint tile;
-         Verify(pTerrainModel->GetQuadTile(x, z, &tile) == S_OK);
-
-         uint iVert = ((z - zRange.GetStart()) * zRange.GetLength() + x - xRange.GetStart()) * 4;
-
          tVec3 corners[4];
-         if (pTerrainModel->GetQuadCorners(x, z, corners) == S_OK)
+         if (pTerrainModel->GetQuadCorners(hQuad, corners) == S_OK)
          {
+            if (bFirst)
+            {
+               rangeStart = corners[0];
+               bFirst = false;
+            }
+
             m_vertices[iVert+0].pos = corners[0];
             m_vertices[iVert+1].pos = corners[1];
             m_vertices[iVert+2].pos = corners[2];
@@ -720,16 +729,21 @@ void cTerrainChunk::BuildVertexBuffer(const cRange<uint> xRange,
             m_vertices[iVert+2].uv1 = tVec2(1,1);
             m_vertices[iVert+3].uv1 = tVec2(0,1);
 
-            float u = d * (x - xRange.GetStart());
-            float v = d * (z - zRange.GetStart());
-
-            m_vertices[iVert+0].uv2 = tVec2(u, v);
-            m_vertices[iVert+1].uv2 = tVec2(u+d, v);
-            m_vertices[iVert+2].uv2 = tVec2(u+d, v+d);
-            m_vertices[iVert+3].uv2 = tVec2(u, v+d);
+            for (int j = 0; j < 4; j++)
+            {
+               m_vertices[iVert+j].uv2 = tVec2(
+                  (corners[j].x - rangeStart.x) * oneOverChunkExtentX,
+                  (corners[j].z - rangeStart.z) * oneOverChunkExtentZ);
+            }
          }
+
+         iVert += 4;
       }
+
+      return S_OK;
    }
+
+   return E_FAIL;
 }
 
 ////////////////////////////////////////

@@ -425,7 +425,7 @@ tResult cEnumTerrainQuads::Next(ulong count, HTERRAINQUAD * pQuads, ulong * pnQu
    {
       if (m_z < m_zEnd && m_x < m_xEnd)
       {
-         ComposeHandle(m_x, m_z, &pnQuads[index++]);
+         ComposeHandle(m_x, m_z, &pQuads[index++]);
          m_x++;
          if (m_x == m_xEnd)
          {

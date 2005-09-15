@@ -225,7 +225,7 @@ public:
 
    static tResult Create(const cRange<uint> xRange, const cRange<uint> zRange, bool bNoBlending, cTerrainChunk * * ppChunk);
 
-   void BuildVertexBuffer(const cRange<uint> xRange, const cRange<uint> zRange);
+   tResult BuildVertexBuffer(const cRange<uint> xRange, const cRange<uint> zRange);
    void BuildSplats(const cRange<uint> xRange, const cRange<uint> zRange, bool bNoBlending);
 
    void Render(ITerrainTileSet *);
