@@ -22,7 +22,7 @@ F_DECLARE_HANDLE(HTERRAINQUAD);
 class cEditorCompositeCommand : public cComObject<IMPLEMENTS(IEditorCompositeCommand)>
 {
 public:
-   cEditorCompositeCommand();
+   cEditorCompositeCommand(tEditorCompositeCommandCallback pfnCallback);
    ~cEditorCompositeCommand();
 
    virtual tResult Do();
@@ -34,8 +34,12 @@ public:
    virtual tResult Remove(IEditorCommand * pCommand);
 
 private:
+   void DoCallback(eEditorCompositeCommandCallback type);
+
    typedef std::list<IEditorCommand *> tCmds;
    tCmds m_cmds;
+
+   tEditorCompositeCommandCallback m_pfnCallback;
 };
 
 

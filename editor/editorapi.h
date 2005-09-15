@@ -220,6 +220,21 @@ interface UUID("A0518634-6279-4aeb-879F-E2D560F58626") IEditorCompositeCommand :
 
 tResult EditorCompositeCommandCreate(IEditorCompositeCommand * * ppCommand);
 
+////////////////////////////////////////
+
+enum eEditorCompositeCommandCallback
+{
+   kPreDo,
+   kPostDo,
+   kPreUndo,
+   kPostUndo
+};
+
+typedef void (* tEditorCompositeCommandCallback)(eEditorCompositeCommandCallback type);
+
+tResult EditorCompositeCommandCreate(tEditorCompositeCommandCallback pfnCallback,
+                                     IEditorCompositeCommand * * ppCommand);
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

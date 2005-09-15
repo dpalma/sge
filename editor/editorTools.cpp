@@ -379,6 +379,21 @@ tResult cTerrainTileTool::OnMouseMove(const cEditorMouseEvent & mouseEvent, IEdi
 
 ////////////////////////////////////////
 
+static void TerrainTileCompositeCommandCB(eEditorCompositeCommandCallback type)
+{
+   UseGlobal(TerrainRenderer);
+   if (type == kPreDo || type == kPreUndo)
+   {
+      pTerrainRenderer->EnableBlending(false);
+   }
+   else if (type == kPostDo || type == kPostUndo)
+   {
+      pTerrainRenderer->EnableBlending(true);
+   }
+}
+
+////////////////////////////////////////
+
 tResult cTerrainTileTool::OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
 {
    UseGlobal(TerrainRenderer);
@@ -387,7 +402,7 @@ tResult cTerrainTileTool::OnDragStart(const cEditorMouseEvent & mouseEvent, IEdi
    m_hitQuads.clear();
 
    Assert(!m_pCommand);
-   if (EditorCompositeCommandCreate(&m_pCommand) != S_OK)
+   if (EditorCompositeCommandCreate(TerrainTileCompositeCommandCB, &m_pCommand) != S_OK)
    {
       ErrorMsg("Error creating composite command\n");
       return E_FAIL;

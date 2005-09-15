@@ -25,12 +25,20 @@ static char THIS_FILE[] = __FILE__;
 
 tResult EditorCompositeCommandCreate(IEditorCompositeCommand * * ppCommand)
 {
+   return EditorCompositeCommandCreate(NULL, ppCommand);
+}
+
+////////////////////////////////////////
+
+tResult EditorCompositeCommandCreate(tEditorCompositeCommandCallback pfnCallback,
+                                     IEditorCompositeCommand * * ppCommand)
+{
    if (ppCommand == NULL)
    {
       return E_POINTER;
    }
 
-   cAutoIPtr<IEditorCompositeCommand> p(new cEditorCompositeCommand);
+   cAutoIPtr<IEditorCompositeCommand> p(new cEditorCompositeCommand(pfnCallback));
    if (!p)
    {
       return E_OUTOFMEMORY;
@@ -42,7 +50,8 @@ tResult EditorCompositeCommandCreate(IEditorCompositeCommand * * ppCommand)
 
 ////////////////////////////////////////
 
-cEditorCompositeCommand::cEditorCompositeCommand()
+cEditorCompositeCommand::cEditorCompositeCommand(tEditorCompositeCommandCallback pfnCallback)
+ : m_pfnCallback(pfnCallback)
 {
 }
 
@@ -57,12 +66,15 @@ cEditorCompositeCommand::~cEditorCompositeCommand()
       (*iter)->Release();
    }
    m_cmds.clear();
+
+   m_pfnCallback = NULL;
 }
 
 ////////////////////////////////////////
 
 tResult cEditorCompositeCommand::Do()
 {
+   DoCallback(kPreDo);
    tCmds::iterator iter = m_cmds.begin();
    tCmds::iterator end = m_cmds.end();
    for (; iter != end; iter++)
@@ -70,9 +82,11 @@ tResult cEditorCompositeCommand::Do()
       tResult result = (*iter)->Do();
       if (result != S_OK)
       {
+         DoCallback(kPostDo);
          return result;
       }
    }
+   DoCallback(kPostDo);
    return S_OK;
 }
 
@@ -97,6 +111,7 @@ tResult cEditorCompositeCommand::CanUndo()
 
 tResult cEditorCompositeCommand::Undo()
 {
+   DoCallback(kPreUndo);
    tCmds::iterator iter = m_cmds.begin();
    tCmds::iterator end = m_cmds.end();
    for (; iter != end; iter++)
@@ -104,9 +119,11 @@ tResult cEditorCompositeCommand::Undo()
       tResult result = (*iter)->Undo();
       if (result != S_OK)
       {
+         DoCallback(kPostUndo);
          return result;
       }
    }
+   DoCallback(kPostUndo);
    return S_OK;
 }
 
@@ -163,6 +180,16 @@ tResult cEditorCompositeCommand::Remove(IEditorCommand * pCommand)
    }
 
    return nRemoved > 0 ? S_OK : S_FALSE;
+}
+
+////////////////////////////////////////
+
+void cEditorCompositeCommand::DoCallback(eEditorCompositeCommandCallback type)
+{
+   if (m_pfnCallback != NULL)
+   {
+      (*m_pfnCallback)(type);
+   }
 }
 
 
