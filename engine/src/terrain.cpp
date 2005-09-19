@@ -748,6 +748,64 @@ tResult cTerrainModel::GetQuadCorners(HTERRAINQUAD hQuad, tVec3 corners[4]) cons
 
 ////////////////////////////////////////
 
+tResult cTerrainModel::GetQuadNeighbors(HTERRAINQUAD hQuad, HTERRAINQUAD neighbors[8]) const
+{
+   if (hQuad == INVALID_HTERRAINQUAD)
+   {
+      return E_INVALIDARG;
+   }
+
+   if (neighbors == NULL)
+   {
+      return E_POINTER;
+   }
+
+   uint16 x, z;
+   DecomposeHandle(hQuad, &x, &z);
+
+   if (x >= m_terrainSettings.GetTileCountX() || z >= m_terrainSettings.GetTileCountZ())
+   {
+      return E_INVALIDARG;
+   }
+
+   uint16 xPrev = x > 0 ? x - 1 : ~0;
+   uint16 xNext = x < (m_terrainSettings.GetTileCountX() - 1) ? x + 1 : ~0;
+
+   uint16 zPrev = z > 0 ? z - 1 : ~0;
+   uint16 zNext = z < (m_terrainSettings.GetTileCountZ() - 1) ? z + 1 : ~0;
+
+   const uint16 neighborCoords[8][2] =
+   {
+      {xPrev, zPrev},
+      {x    , zPrev},
+      {xNext, zPrev},
+      {xPrev, z    },
+      {xNext, z    },
+      {xPrev, zNext},
+      {x    , zNext},
+      {xNext, zNext},
+   };
+
+   for (int i = 0; i < _countof(neighborCoords); i++)
+   {
+      uint16 nx = neighborCoords[i][0];
+      uint16 nz = neighborCoords[i][1];
+
+      if (nx != ~0 && nz != ~0)
+      {
+         ComposeHandle(nx, nz, &neighbors[i]);
+      }
+      else
+      {
+         neighbors[i] = INVALID_HTERRAINQUAD;
+      }
+   }
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
 tResult cTerrainModel::SetQuadTile(uint quadx, uint quadz, uint tile, uint * pFormer)
 {
    if (quadx < m_terrainSettings.GetTileCountX() && quadz < m_terrainSettings.GetTileCountZ())

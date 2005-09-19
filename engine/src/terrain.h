@@ -80,11 +80,12 @@ public:
    virtual tResult SetQuadTile(HTERRAINQUAD hQuad, uint tile);
    virtual tResult GetQuadTile(HTERRAINQUAD hQuad, uint * pTile) const;
    virtual tResult GetQuadCorners(HTERRAINQUAD hQuad, tVec3 corners[4]) const;
+   virtual tResult GetQuadNeighbors(HTERRAINQUAD hQuad, HTERRAINQUAD neighbors[8]) const;
 
    tResult SetQuadTile(uint quadx, uint quadz, uint tile, uint * pFormer);
-   virtual tResult GetQuadTile(uint quadx, uint quadz, uint * pTile) const;
-   virtual tResult GetTileIndices(float x, float z, uint * pix, uint * piz) const;
-   virtual tResult GetQuadCorners(uint quadx, uint quadz, tVec3 corners[4]) const;
+   tResult GetQuadTile(uint quadx, uint quadz, uint * pTile) const;
+   tResult GetTileIndices(float x, float z, uint * pix, uint * piz) const;
+   tResult GetQuadCorners(uint quadx, uint quadz, tVec3 corners[4]) const;
 
    // ISaveLoadParticipant methods
    virtual tResult Save(IWriter *);

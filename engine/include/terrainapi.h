@@ -173,8 +173,7 @@ interface ITerrainModel : IUnknown
 
    virtual tResult GetQuadCorners(HTERRAINQUAD hQuad, tVec3 corners[4]) const = 0;
 
-   virtual tResult GetQuadTile(uint quadx, uint quadz, uint * pTile) const = 0;
-   virtual tResult GetQuadCorners(uint quadx, uint quadz, tVec3 corners[4]) const = 0;
+   virtual tResult GetQuadNeighbors(HTERRAINQUAD hQuad, HTERRAINQUAD neighbors[8]) const = 0;
 };
 
 ////////////////////////////////////////

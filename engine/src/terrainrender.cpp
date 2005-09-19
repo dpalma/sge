@@ -431,7 +431,10 @@ static const float g_splatTexelWeights[4][9] =
 
 ////////////////////////////////////////
 
-void BuildSplatAlphaMap(uint splatTile, const cRange<uint> xRange, const cRange<uint> zRange, uint * pAlphaMapId)
+void BuildSplatAlphaMap(uint splatTile,
+                        const cRange<uint> xRange,
+                        const cRange<uint> zRange,
+                        uint * pAlphaMapId)
 {
    UseGlobal(TerrainModel);
    UseGlobal(TerrainRenderer);
@@ -440,6 +443,15 @@ void BuildSplatAlphaMap(uint splatTile, const cRange<uint> xRange, const cRange<
    Verify(pTerrainModel->GetTerrainSettings(&terrainSettings) == S_OK);
 
    Assert(xRange.GetLength() == zRange.GetLength());
+
+   cAutoIPtr<IEnumTerrainQuads> pEnumQuads;
+   if (pTerrainModel->EnumTerrainQuads(
+      xRange.GetStart(), xRange.GetEnd(),
+      zRange.GetStart(), zRange.GetEnd(),
+      &pEnumQuads) != S_OK)
+   {
+      return;
+   }
 
    int imageWidth = pTerrainRenderer->GetTilesPerChunk() * 2;
    int imageHeight = imageWidth;
@@ -459,18 +471,12 @@ void BuildSplatAlphaMap(uint splatTile, const cRange<uint> xRange, const cRange<
          uint xPrev = xRange.GetPrev(x, 0, kNoIndex);
          uint xNext = xRange.GetNext(x, terrainSettings.GetTileCountX(), kNoIndex);
 
-         const uint neighborCoords[9][2] =
+         HTERRAINQUAD hQuad = INVALID_HTERRAINQUAD;
+         ulong nQuads = 0;
+         if (pEnumQuads->Next(1, &hQuad, &nQuads) != S_OK || nQuads != 1)
          {
-            {xPrev, zPrev},
-            {x    , zPrev},
-            {xNext, zPrev},
-            {xPrev, z    },
-            {x    , z    },
-            {xNext, z    },
-            {xPrev, zNext},
-            {x    , zNext},
-            {xNext, zNext},
-         };
+            continue;
+         }
 
          float texelWeights[4];
          int texelDivisors[4];
@@ -478,18 +484,26 @@ void BuildSplatAlphaMap(uint splatTile, const cRange<uint> xRange, const cRange<
          memset(texelWeights, 0, sizeof(texelWeights));
          memset(texelDivisors, 0, sizeof(texelDivisors));
 
-         for (int i = 0; i < _countof(neighborCoords); i++)
+         HTERRAINQUAD neighbors[9];
+         if (pTerrainModel->GetQuadNeighbors(hQuad, neighbors) != S_OK)
          {
-            uint ntile, nx = neighborCoords[i][0], nz = neighborCoords[i][1];
-            if (pTerrainModel->GetQuadTile(nx, nz, &ntile) == S_OK)
+            continue;
+         }
+
+         memmove(&neighbors[5], &neighbors[4], 4 * sizeof(HTERRAINQUAD));
+         neighbors[4] = hQuad;
+
+         for (int i = 0; i < _countof(neighbors); i++)
+         {
+            uint ntile;
+            if (neighbors[i] != INVALID_HTERRAINQUAD
+               && pTerrainModel->GetQuadTile(neighbors[i], &ntile) == S_OK
+               && ntile == splatTile)
             {
-               if (ntile == splatTile)
+               for (int j = 0; j < _countof(texelWeights); j++)
                {
-                  for (int j = 0; j < _countof(texelWeights); j++)
-                  {
-                     texelWeights[j] += g_splatTexelWeights[j][i];
-                     texelDivisors[j] += 1;
-                  }
+                  texelWeights[j] += g_splatTexelWeights[j][i];
+                  texelDivisors[j] += 1;
                }
             }
          }
@@ -555,11 +569,8 @@ void BuildSplatAlphaMap(uint splatTile, const cRange<uint> xRange, const cRange<
 
 ////////////////////////////////////////
 
-cSplatBuilder::cSplatBuilder(const cRange<uint> xRange, const cRange<uint> zRange,
-                             uint tile, uint alphaMapId)
- : m_xRange(xRange),
-   m_zRange(zRange),
-   m_tile(tile),
+cSplatBuilder::cSplatBuilder(uint tile, uint alphaMapId)
+ : m_tile(tile),
    m_alphaMapId(alphaMapId)
 {
 }
@@ -584,37 +595,37 @@ tResult cSplatBuilder::GetAlphaMap(uint * pAlphaMapId)
 
 ////////////////////////////////////////
 
-void cSplatBuilder::AddQuad(uint x, uint z)
+void cSplatBuilder::AddQuad(HTERRAINQUAD hQuad)
 {
-#ifdef _DEBUG
-   tSplatQuadSet::iterator f = m_quads.find(std::make_pair(x,z));
-   if (f != m_quads.end())
+   if (hQuad != INVALID_HTERRAINQUAD)
    {
-      Assert(f->first == x && f->second == z);
+      m_quads.insert(hQuad);
+      m_indices.clear();
    }
-#endif
-   std::pair<tSplatQuadSet::iterator, bool> result = m_quads.insert(std::make_pair(x,z));
-   m_indices.clear();
 }
 
 ////////////////////////////////////////
 
-size_t cSplatBuilder::GetIndexCount() const
+tResult cSplatBuilder::GetIndexBuffer(const tQuadVertexMap & qvm,
+                                      const uint * * ppIndices,
+                                      uint * pnIndices) const
 {
-   GetIndexPtr();
-   return m_indices.size();
-}
+   if (ppIndices == NULL || pnIndices == NULL)
+   {
+      return E_POINTER;
+   }
 
-////////////////////////////////////////
-
-const uint * cSplatBuilder::GetIndexPtr() const
-{
    if (m_indices.empty())
    {
-      tSplatQuadSet::const_iterator iter;
+      std::set<HTERRAINQUAD>::const_iterator iter;
       for (iter = m_quads.begin(); iter != m_quads.end(); iter++)
       {
-         uint iVert = ((iter->second - m_zRange.GetStart()) * m_zRange.GetLength() + iter->first - m_xRange.GetStart()) * 4;
+         tQuadVertexMap::const_iterator f = qvm.find(*iter);
+         if (f == qvm.end())
+         {
+            continue;
+         }
+         uint iVert = f->second;
          m_indices.push_back(iVert+2);
          m_indices.push_back(iVert+1);
          m_indices.push_back(iVert);
@@ -624,8 +635,11 @@ const uint * cSplatBuilder::GetIndexPtr() const
       }
    }
 
-   return &m_indices[0];
+   *ppIndices = &m_indices[0];
+   *pnIndices = m_indices.size();
+   return S_OK;
 }
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -688,6 +702,8 @@ tResult cTerrainChunk::BuildVertexBuffer(const cRange<uint> xRange,
 
    m_vertices.resize(xRange.GetLength() * zRange.GetLength() * 4);
 
+   m_quadVertexMap.clear();
+
    cAutoIPtr<IEnumTerrainQuads> pEnumQuads;
    if (pTerrainModel->EnumTerrainQuads(
       xRange.GetStart(), xRange.GetEnd(),
@@ -719,10 +735,7 @@ tResult cTerrainChunk::BuildVertexBuffer(const cRange<uint> xRange,
                bFirst = false;
             }
 
-            m_vertices[iVert+0].pos = corners[0];
-            m_vertices[iVert+1].pos = corners[1];
-            m_vertices[iVert+2].pos = corners[2];
-            m_vertices[iVert+3].pos = corners[3];
+            m_quadVertexMap.insert(std::make_pair(hQuad, iVert));
 
             m_vertices[iVert+0].uv1 = tVec2(0,0);
             m_vertices[iVert+1].uv1 = tVec2(1,0);
@@ -731,6 +744,8 @@ tResult cTerrainChunk::BuildVertexBuffer(const cRange<uint> xRange,
 
             for (int j = 0; j < 4; j++)
             {
+               m_vertices[iVert+j].pos = corners[j];
+
                m_vertices[iVert+j].uv2 = tVec2(
                   (corners[j].x - rangeStart.x) * oneOverChunkExtentX,
                   (corners[j].z - rangeStart.z) * oneOverChunkExtentZ);
@@ -769,18 +784,22 @@ void cTerrainChunk::BuildSplats(const cRange<uint> xRange, const cRange<uint> zR
    typedef std::map<uint, cSplatBuilder *> tSplatBuilderMap;
    tSplatBuilderMap splatBuilders;
 
-   for (uint z = zRange.GetStart(); z < zRange.GetEnd(); z++)
+   cAutoIPtr<IEnumTerrainQuads> pEnumQuads;
+   if (pTerrainModel->EnumTerrainQuads(
+      xRange.GetStart(), xRange.GetEnd(),
+      zRange.GetStart(), zRange.GetEnd(),
+      &pEnumQuads) == S_OK)
    {
-      uint zPrev = zRange.GetPrev(z, 0, kNoIndex);
-      uint zNext = zRange.GetNext(z, terrainSettings.GetTileCountZ(), kNoIndex);
+      HTERRAINQUAD hQuad = INVALID_HTERRAINQUAD;
+      ulong nQuads = 0;
 
-      for (uint x = xRange.GetStart(); x < xRange.GetEnd(); x++)
+      while (pEnumQuads->Next(1, &hQuad, &nQuads) == S_OK && nQuads == 1)
       {
-         uint xPrev = xRange.GetPrev(x, 0, kNoIndex);
-         uint xNext = xRange.GetNext(x, terrainSettings.GetTileCountX(), kNoIndex);
-
          uint tile;
-         Verify(pTerrainModel->GetQuadTile(x, z, &tile) == S_OK);
+         if (pTerrainModel->GetQuadTile(hQuad, &tile) != S_OK)
+         {
+            continue;
+         }
 
          cSplatBuilder * pSplatBuilder = NULL;
 
@@ -792,7 +811,7 @@ void cTerrainChunk::BuildSplats(const cRange<uint> xRange, const cRange<uint> zR
                BuildSplatAlphaMap(tile, xRange, zRange, &alphaMapId);
             }
 
-            pSplatBuilder = new cSplatBuilder(xRange, zRange, tile, alphaMapId);
+            pSplatBuilder = new cSplatBuilder(tile, alphaMapId);
             if (pSplatBuilder != NULL)
             {
                splatBuilders[tile] = pSplatBuilder;
@@ -805,32 +824,31 @@ void cTerrainChunk::BuildSplats(const cRange<uint> xRange, const cRange<uint> zR
 
          if (pSplatBuilder != NULL)
          {
-            pSplatBuilder->AddQuad(x,z);
+            pSplatBuilder->AddQuad(hQuad);
 
             if (!bNoBlending)
             {
-               const uint neighbors[][2] =
+               HTERRAINQUAD neighbors[8];
+               if (pTerrainModel->GetQuadNeighbors(hQuad, neighbors) == S_OK)
                {
-                  {xPrev, zPrev},
-                  {x,     zPrev},
-                  {xNext, zPrev},
-                  {xPrev, z,   },
-                  {xNext, z,   },
-                  {xPrev, zNext},
-                  {x,     zNext},
-                  {xNext, zNext},
-               };
-
-               for (int i = 0; i < _countof(neighbors); i++)
-               {
-                  // Add bordering quads too (these provide the fade)
-                  uint ntile, nx = neighbors[i][0], nz = neighbors[i][1];
-                  if (pTerrainModel->GetQuadTile(nx, nz, &ntile) == S_OK
-                     && ntile != tile)
+                  for (int i = 0; i < _countof(neighbors); i++)
                   {
-                     pSplatBuilder->AddQuad(nx,nz);
+                     // Add bordering quads too (these provide the fade)
+                     uint ntile;
+                     if (neighbors[i] != INVALID_HTERRAINQUAD
+                        && pTerrainModel->GetQuadTile(neighbors[i], &ntile) == S_OK
+                        && ntile != tile)
+                     {
+                        pSplatBuilder->AddQuad(neighbors[i]);
+                     }
                   }
                }
+#ifdef _DEBUG
+               else
+               {
+                  ErrorMsg("GetQuadNeighbors failed\n");
+               }
+#endif
             }
          }
       }
@@ -917,7 +935,13 @@ void cTerrainChunk::Render(ITerrainTileSet * pTileSet)
       glEnable(GL_BLEND);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-      glDrawElements(GL_TRIANGLES, (*iter)->GetIndexCount(), GL_UNSIGNED_INT, (*iter)->GetIndexPtr());
+      const uint * pIndices = NULL;
+      uint nIndices = 0;
+
+      if ((*iter)->GetIndexBuffer(m_quadVertexMap, &pIndices, &nIndices) == S_OK)
+      {
+         glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, pIndices);
+      }
    }
 
    glPopClientAttrib();

@@ -12,6 +12,7 @@
 #include "matrix4.h"
 #include "techstring.h"
 
+#include <map>
 #include <set>
 #include <vector>
 
@@ -21,6 +22,8 @@
 
 
 class cTerrainChunk;
+
+typedef std::map<HTERRAINQUAD, int> tQuadVertexMap;
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -172,32 +175,27 @@ void BuildSplatAlphaMap(uint splatTile, const cRange<uint> xRange, const cRange<
 
 class cSplatBuilder
 {
-   friend class cTerrainChunk;
-
    cSplatBuilder(const cSplatBuilder &);
    void operator =(const cSplatBuilder &);
 
 public:
-   cSplatBuilder(const cRange<uint> xRange, const cRange<uint> zRange, uint tile, uint alphaMapId);
+   cSplatBuilder(uint tile, uint alphaMapId);
    ~cSplatBuilder();
 
    inline uint GetTile() const { return m_tile; }
    tResult GetAlphaMap(uint * pAlphaMapId);
 
-   void AddQuad(uint x, uint z);
+   void AddQuad(HTERRAINQUAD hQuad);
 
-   size_t GetIndexCount() const;
-   const uint * GetIndexPtr() const;
+   tResult GetIndexBuffer(const tQuadVertexMap & qvm, const uint * * ppIndices, uint * pnIndices) const;
 
 private:
-   typedef std::pair<uint, uint> tXZ;
-   typedef std::set<tXZ> tSplatQuadSet;
-   tSplatQuadSet m_quads;
-
-   const cRange<uint> m_xRange, m_zRange;
+   std::set<HTERRAINQUAD> m_quads;
 
    uint m_tile;
+
    mutable std::vector<uint> m_indices;
+
    uint m_alphaMapId;
 };
 
@@ -236,6 +234,8 @@ private:
 
    typedef std::vector<cSplatBuilder *> tSplatBuilders;
    tSplatBuilders m_splats;
+
+   tQuadVertexMap m_quadVertexMap;
 };
 
 /////////////////////////////////////////////////////////////////////////////
