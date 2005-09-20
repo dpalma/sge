@@ -725,7 +725,16 @@ tResult cTerrainModel::SetQuadTile(HTERRAINQUAD hQuad, uint tile)
 {
    uint16 x, z;
    DecomposeHandle(hQuad, &x, &z);
-   return SetQuadTile(x, z, tile, NULL);
+   tResult result = SetQuadTile(x, z, tile, NULL);
+   if (result == S_OK)
+   {
+      tListeners::iterator iter = m_listeners.begin();
+      for (; iter != m_listeners.end(); iter++)
+      {
+         (*iter)->OnTerrainTileChange(hQuad);
+      }
+   }
+   return result;
 }
 
 ////////////////////////////////////////
@@ -818,13 +827,6 @@ tResult cTerrainModel::SetQuadTile(uint quadx, uint quadz, uint tile, uint * pFo
             *pFormer = m_quadTiles[index];
          }
          m_quadTiles[index] = tile;
-
-         tListeners::iterator iter = m_listeners.begin();
-         tListeners::iterator end = m_listeners.end();
-         for (; iter != end; iter++)
-         {
-            (*iter)->OnTerrainTileChange(quadx, quadz, tile);
-         }
 
          return S_OK;
       }

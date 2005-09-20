@@ -138,7 +138,7 @@ private:
       virtual void DeleteThis() { /* Do not delete; Non-pointer member of cTerrainRenderer */ }
       virtual void OnTerrainInitialize();
       virtual void OnTerrainClear();
-      virtual void OnTerrainTileChange(uint quadx, uint quadz, uint tile);
+      virtual void OnTerrainTileChange(HTERRAINQUAD hQuad);
    private:
       cTerrainRenderer * m_pOuter;
    };
@@ -179,15 +179,21 @@ class cSplatBuilder
    void operator =(const cSplatBuilder &);
 
 public:
-   cSplatBuilder(uint tile, uint alphaMapId);
+   cSplatBuilder(uint tile);
    ~cSplatBuilder();
 
    inline uint GetTile() const { return m_tile; }
-   tResult GetAlphaMap(uint * pAlphaMapId);
+
+   inline uint GetAlphaMap() const { return m_alphaMapId; }
+
+   void SetAlphaMap(uint alphaMapId);
+   tResult GetAlphaMap(uint * pAlphaMapId) const;
 
    void AddQuad(HTERRAINQUAD hQuad);
 
    tResult GetIndexBuffer(const tQuadVertexMap & qvm, const uint * * ppIndices, uint * pnIndices) const;
+
+   const std::vector<uint> GetIndices() const { return m_indices; }
 
 private:
    std::set<HTERRAINQUAD> m_quads;
@@ -197,6 +203,32 @@ private:
    mutable std::vector<uint> m_indices;
 
    uint m_alphaMapId;
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cSplat
+//
+
+class cSplat
+{
+   cSplat(const cSplat &);
+   void operator =(const cSplat &);
+
+public:
+   cSplat(const cStr & texture, uint alphaMap, const std::vector<uint> indices);
+   ~cSplat();
+
+   const cStr & GetTexture() const { return m_texture; }
+   uint GetAlphaMap() const { return m_alphaMap; }
+   const uint * GetIndexPtr() const { return &m_indices[0]; }
+   uint GetIndexCount() const { return m_indices.size(); }
+
+private:
+   const cStr m_texture;
+   const uint m_alphaMap;
+   const std::vector<uint> m_indices;
 };
 
 
@@ -221,19 +253,19 @@ public:
    cTerrainChunk();
    ~cTerrainChunk();
 
-   static tResult Create(const cRange<uint> xRange, const cRange<uint> zRange, bool bNoBlending, cTerrainChunk * * ppChunk);
+   static tResult Create(const cRange<uint> xRange, const cRange<uint> zRange, ITerrainTileSet * pTileSet, bool bNoBlending, cTerrainChunk * * ppChunk);
 
-   tResult BuildVertexBuffer(const cRange<uint> xRange, const cRange<uint> zRange);
-   void BuildSplats(const cRange<uint> xRange, const cRange<uint> zRange, bool bNoBlending);
+   tResult BuildVertexBuffer(const cRange<uint> xRange, const cRange<uint> zRange, tQuadVertexMap * pQuadVertexMap);
+   void BuildSplats(const cRange<uint> xRange, const cRange<uint> zRange, ITerrainTileSet * pTileSet, bool bNoBlending);
 
-   void Render(ITerrainTileSet *);
+   void Render();
 
 private:
    typedef std::vector<sTerrainVertex> tVertices;
    tVertices m_vertices;
 
-   typedef std::vector<cSplatBuilder *> tSplatBuilders;
-   tSplatBuilders m_splats;
+   typedef std::vector<cSplat *> tSplats;
+   tSplats m_splats2;
 
    tQuadVertexMap m_quadVertexMap;
 };

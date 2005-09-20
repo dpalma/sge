@@ -189,10 +189,8 @@ ENGINE_API tResult TerrainModelCreate();
 interface ITerrainModelListener : IUnknown
 {
    virtual void OnTerrainInitialize() = 0;
-
    virtual void OnTerrainClear() = 0;
-
-   virtual void OnTerrainTileChange(uint quadx, uint quadz, uint tile) = 0;
+   virtual void OnTerrainTileChange(HTERRAINQUAD hQuad) = 0;
 };
 
 
