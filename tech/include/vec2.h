@@ -236,6 +236,33 @@ inline cVec2<T> Vec2Lerp(const cVec2<T> & v1, const cVec2<T> & v2, T u)
 
 ///////////////////////////////////////
 
+template <typename T>
+inline bool AlmostEqual(const cVec2<T> & v1, const cVec2<T> & v2, int maxUnitsLastPlace)
+{
+   return AlmostEqual(v1.x, v2.x, maxUnitsLastPlace)
+      && AlmostEqual(v1.y, v2.y, maxUnitsLastPlace);
+}
+
+///////////////////////////////////////
+
+inline bool AlmostEqual(const cVec2<float> & v1, const cVec2<float> & v2,
+                        int maxUnitsLastPlace = kFloatMaxUnitsLastPlace)
+{
+   return AlmostEqual(v1.x, v2.x, maxUnitsLastPlace)
+      && AlmostEqual(v1.y, v2.y, maxUnitsLastPlace);
+}
+
+///////////////////////////////////////
+
+inline bool AlmostEqual(const cVec2<double> & v1, const cVec2<double> & v2,
+                        int maxUnitsLastPlace = kDoubleMaxUnitsLastPlace)
+{
+   return AlmostEqual(v1.x, v2.x, maxUnitsLastPlace)
+      && AlmostEqual(v1.y, v2.y, maxUnitsLastPlace);
+}
+
+///////////////////////////////////////
+
 #ifndef NO_DEFAULT_VEC2
 typedef class TECH_API cVec2<float> tVec2;
 #endif

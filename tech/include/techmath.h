@@ -81,7 +81,10 @@ inline int Round(float floatval)
 ///////////////////////////////////////////////////////////////////////////////
 // See http://www.cygnus-software.com/papers/comparingfloats/comparingfloats.htm
 
-inline bool AlmostEqual(float a, float b, int maxUnitsLastPlace)
+const int kFloatMaxUnitsLastPlace = 5;
+const int kDoubleMaxUnitsLastPlace = 10;
+
+inline bool AlmostEqual(float a, float b, int maxUnitsLastPlace = kFloatMaxUnitsLastPlace)
 {
    if (a == b)
    {
@@ -93,7 +96,7 @@ inline bool AlmostEqual(float a, float b, int maxUnitsLastPlace)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-inline bool AlmostEqual(double a, double b, int maxUnitsLastPlace)
+inline bool AlmostEqual(double a, double b, int maxUnitsLastPlace = kDoubleMaxUnitsLastPlace)
 {
    if (a == b)
    {

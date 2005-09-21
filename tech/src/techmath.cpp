@@ -116,6 +116,7 @@ void cMathTests::TestRandBitFrequency()
 
 void cMathTests::TestAlmostEqual()
 {
+   // Floats
    {
       static const struct
       {
@@ -126,9 +127,9 @@ void cMathTests::TestAlmostEqual()
       floatTests[] =
       {
          { .0f, .0f, 1, true },
-         { 3.1415927, 3.141593, 1, true },
-         { 3.1415927, 3.14159, 10, false },
-         { 3.1415927, 3.14159, 11, true },
+         { 3.1415927f, 3.141593f, 1, true },
+         { 3.1415927f, 3.14159f, 10, false },
+         { 3.1415927f, 3.14159f, 11, true },
       };
 
       for (int i = 0; i < _countof(floatTests); i++)
@@ -137,6 +138,7 @@ void cMathTests::TestAlmostEqual()
       }
    }
 
+   // Doubles
    {
       static const struct
       {

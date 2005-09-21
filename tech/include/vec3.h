@@ -265,6 +265,36 @@ inline cVec3<T> Vec3Lerp(const cVec3<T> & v1, const cVec3<T> & v2, T u)
 
 ///////////////////////////////////////
 
+template <typename T>
+inline bool AlmostEqual(const cVec3<T> & v1, const cVec3<T> & v2, int maxUnitsLastPlace)
+{
+   return AlmostEqual(v1.x, v2.x, maxUnitsLastPlace)
+      && AlmostEqual(v1.y, v2.y, maxUnitsLastPlace)
+      && AlmostEqual(v1.z, v2.z, maxUnitsLastPlace);
+}
+
+///////////////////////////////////////
+
+inline bool AlmostEqual(const cVec3<float> & v1, const cVec3<float> & v2,
+                        int maxUnitsLastPlace = kFloatMaxUnitsLastPlace)
+{
+   return AlmostEqual(v1.x, v2.x, maxUnitsLastPlace)
+      && AlmostEqual(v1.y, v2.y, maxUnitsLastPlace)
+      && AlmostEqual(v1.z, v2.z, maxUnitsLastPlace);
+}
+
+///////////////////////////////////////
+
+inline bool AlmostEqual(const cVec3<double> & v1, const cVec3<double> & v2,
+                        int maxUnitsLastPlace = kDoubleMaxUnitsLastPlace)
+{
+   return AlmostEqual(v1.x, v2.x, maxUnitsLastPlace)
+      && AlmostEqual(v1.y, v2.y, maxUnitsLastPlace)
+      && AlmostEqual(v1.z, v2.z, maxUnitsLastPlace);
+}
+
+///////////////////////////////////////
+
 #ifndef NO_DEFAULT_VEC3
 typedef class TECH_API cVec3<float> tVec3;
 #endif

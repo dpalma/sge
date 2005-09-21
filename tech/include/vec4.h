@@ -220,6 +220,39 @@ inline T Dot(const cVec4<T> & a, const cVec4<T> & b)
 
 ///////////////////////////////////////
 
+template <typename T>
+inline bool AlmostEqual(const cVec4<T> & v1, const cVec4<T> & v2, int maxUnitsLastPlace)
+{
+   return AlmostEqual(v1.x, v2.x, maxUnitsLastPlace)
+      && AlmostEqual(v1.y, v2.y, maxUnitsLastPlace)
+      && AlmostEqual(v1.z, v2.z, maxUnitsLastPlace)
+      && AlmostEqual(v1.w, v2.w, maxUnitsLastPlace);
+}
+
+///////////////////////////////////////
+
+inline bool AlmostEqual(const cVec4<float> & v1, const cVec4<float> & v2,
+                        int maxUnitsLastPlace = kFloatMaxUnitsLastPlace)
+{
+   return AlmostEqual(v1.x, v2.x, maxUnitsLastPlace)
+      && AlmostEqual(v1.y, v2.y, maxUnitsLastPlace)
+      && AlmostEqual(v1.z, v2.z, maxUnitsLastPlace)
+      && AlmostEqual(v1.w, v2.w, maxUnitsLastPlace);
+}
+
+///////////////////////////////////////
+
+inline bool AlmostEqual(const cVec4<double> & v1, const cVec4<double> & v2,
+                        int maxUnitsLastPlace = kDoubleMaxUnitsLastPlace)
+{
+   return AlmostEqual(v1.x, v2.x, maxUnitsLastPlace)
+      && AlmostEqual(v1.y, v2.y, maxUnitsLastPlace)
+      && AlmostEqual(v1.z, v2.z, maxUnitsLastPlace)
+      && AlmostEqual(v1.w, v2.w, maxUnitsLastPlace);
+}
+
+///////////////////////////////////////
+
 #ifndef NO_DEFAULT_VEC4
 typedef class TECH_API cVec4<float> tVec4;
 #endif
