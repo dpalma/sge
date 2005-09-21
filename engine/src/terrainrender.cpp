@@ -598,7 +598,6 @@ void BuildSplatAlphaMap(uint splatTile,
 
 cSplatBuilder::cSplatBuilder(uint tile)
  : m_tile(tile)
- , m_alphaMapId(kNoIndex)
 {
 }
 
@@ -610,68 +609,42 @@ cSplatBuilder::~cSplatBuilder()
 
 ////////////////////////////////////////
 
-void cSplatBuilder::SetAlphaMap(uint alphaMapId)
-{
-   WarnMsgIf1(m_alphaMapId != kNoIndex, "Losing GL texture id %d\n", m_alphaMapId);
-   m_alphaMapId = alphaMapId;
-}
-
-////////////////////////////////////////
-
-tResult cSplatBuilder::GetAlphaMap(uint * pAlphaMapId) const
-{
-   if (pAlphaMapId == NULL)
-   {
-      return E_POINTER;
-   }
-   *pAlphaMapId = m_alphaMapId;
-   return (m_alphaMapId != kNoIndex) ? S_OK : S_FALSE;
-}
-
-////////////////////////////////////////
-
 void cSplatBuilder::AddQuad(HTERRAINQUAD hQuad)
 {
    if (hQuad != INVALID_HTERRAINQUAD)
    {
       m_quads.insert(hQuad);
-      m_indices.clear();
    }
 }
 
 ////////////////////////////////////////
 
-tResult cSplatBuilder::GetIndexBuffer(const tQuadVertexMap & qvm,
-                                      const uint * * ppIndices,
-                                      uint * pnIndices) const
+tResult cSplatBuilder::BuildIndexBuffer(const tQuadVertexMap & qvm, std::vector<uint> * pIndices) const
 {
-   if (ppIndices == NULL || pnIndices == NULL)
+   if (pIndices == NULL)
    {
       return E_POINTER;
    }
 
-   if (m_indices.empty())
+   pIndices->clear();
+
+   std::set<HTERRAINQUAD>::const_iterator iter;
+   for (iter = m_quads.begin(); iter != m_quads.end(); iter++)
    {
-      std::set<HTERRAINQUAD>::const_iterator iter;
-      for (iter = m_quads.begin(); iter != m_quads.end(); iter++)
+      tQuadVertexMap::const_iterator f = qvm.find(*iter);
+      if (f == qvm.end())
       {
-         tQuadVertexMap::const_iterator f = qvm.find(*iter);
-         if (f == qvm.end())
-         {
-            continue;
-         }
-         uint iVert = f->second;
-         m_indices.push_back(iVert+2);
-         m_indices.push_back(iVert+1);
-         m_indices.push_back(iVert);
-         m_indices.push_back(iVert);
-         m_indices.push_back(iVert+3);
-         m_indices.push_back(iVert+2);
+         continue;
       }
+      uint iVert = f->second;
+      pIndices->push_back(iVert+2);
+      pIndices->push_back(iVert+1);
+      pIndices->push_back(iVert);
+      pIndices->push_back(iVert);
+      pIndices->push_back(iVert+3);
+      pIndices->push_back(iVert+2);
    }
 
-   *ppIndices = &m_indices[0];
-   *pnIndices = m_indices.size();
    return S_OK;
 }
 
@@ -713,12 +686,12 @@ cTerrainChunk::cTerrainChunk()
 cTerrainChunk::~cTerrainChunk()
 {
    {
-      tSplats::iterator iter = m_splats2.begin();
-      for (; iter != m_splats2.end(); iter++)
+      tSplats::iterator iter = m_splats.begin();
+      for (; iter != m_splats.end(); iter++)
       {
          delete *iter;
       }
-      m_splats2.clear();
+      m_splats.clear();
    }
 }
 
@@ -900,17 +873,17 @@ void cTerrainChunk::BuildSplats(const cRange<uint> xRange, const cRange<uint> zR
 
    // Clear any existing splats
    {
-      tSplats::iterator iter = m_splats2.begin();
-      for (; iter != m_splats2.end(); iter++)
+      tSplats::iterator iter = m_splats.begin();
+      for (; iter != m_splats.end(); iter++)
       {
          delete *iter;
       }
-      m_splats2.clear();
+      m_splats.clear();
    }
 
    // Store the new splats
    {
-      Assert(m_splats2.empty());
+      Assert(m_splats.empty());
 
       tSplatBuilderMap::iterator iter = splatBuilders.begin();
       for (; iter != splatBuilders.end(); iter++)
@@ -921,20 +894,18 @@ void cTerrainChunk::BuildSplats(const cRange<uint> xRange, const cRange<uint> zR
          if (!bNoBlending)
          {
             BuildSplatAlphaMap(pSplatBuilder->GetTile(), xRange, zRange, &alphaMapId);
-            pSplatBuilder->SetAlphaMap(alphaMapId);
          }
 
-         const uint * pIndices;
-         uint nIndices;
-         pSplatBuilder->GetIndexBuffer(m_quadVertexMap, &pIndices, &nIndices);
+         std::vector<uint> indices;
+         pSplatBuilder->BuildIndexBuffer(m_quadVertexMap, &indices);
 
          cStr tileTexture;
          if (pTileSet->GetTileTexture(pSplatBuilder->GetTile(), &tileTexture) == S_OK)
          {
-            cSplat * pSplat = new cSplat(tileTexture, alphaMapId, pSplatBuilder->GetIndices());
+            cSplat * pSplat = new cSplat(tileTexture, alphaMapId, indices);
             if (pSplat != NULL)
             {
-               m_splats2.push_back(pSplat);
+               m_splats.push_back(pSplat);
             }
          }
 
@@ -968,8 +939,8 @@ void cTerrainChunk::Render()
 
    UseGlobal(ResourceManager);
 
-   tSplats::iterator iter = m_splats2.begin();
-   for (; iter != m_splats2.end(); iter++)
+   tSplats::iterator iter = m_splats.begin();
+   for (; iter != m_splats.end(); iter++)
    {
       GLuint alphaMap = (*iter)->GetAlphaMap();
       if (alphaMap != kNoIndex)

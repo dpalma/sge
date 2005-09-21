@@ -185,25 +185,13 @@ public:
 
    inline uint GetTile() const { return m_tile; }
 
-   inline uint GetAlphaMap() const { return m_alphaMapId; }
-
-   void SetAlphaMap(uint alphaMapId);
-   tResult GetAlphaMap(uint * pAlphaMapId) const;
-
    void AddQuad(HTERRAINQUAD hQuad);
 
-   tResult GetIndexBuffer(const tQuadVertexMap & qvm, const uint * * ppIndices, uint * pnIndices) const;
-
-   const std::vector<uint> GetIndices() const { return m_indices; }
+   tResult BuildIndexBuffer(const tQuadVertexMap & qvm, std::vector<uint> * pIndices) const;
 
 private:
-   std::set<HTERRAINQUAD> m_quads;
-
    uint m_tile;
-
-   mutable std::vector<uint> m_indices;
-
-   uint m_alphaMapId;
+   std::set<HTERRAINQUAD> m_quads;
 };
 
 
@@ -266,7 +254,7 @@ private:
    tVertices m_vertices;
 
    typedef std::vector<cSplat *> tSplats;
-   tSplats m_splats2;
+   tSplats m_splats;
 
    tQuadVertexMap m_quadVertexMap;
 };
