@@ -87,6 +87,7 @@ public:
 
 protected:
    static bool GetHitQuad(CPoint point, IEditorView * pView, HTERRAINQUAD * phQuad);
+   static bool GetHitVertex(CPoint point, IEditorView * pView, HTERRAINVERTEX * phVertex);
 };
 
 
@@ -118,6 +119,35 @@ private:
    cAutoIPtr<IEditorCompositeCommand> m_pCommand;
    std::set<HTERRAINQUAD> m_hitQuads;
 };
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cTerrainElevationTool
+//
+
+class cTerrainElevationTool : public cComObject<cTerrainTool, &IID_IEditorTool>
+{
+public:
+   cTerrainElevationTool();
+   ~cTerrainElevationTool();
+
+   virtual tResult Activate();
+   virtual tResult Deactivate();
+
+	virtual tResult OnMouseMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+
+protected:
+   virtual tResult OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+   virtual tResult OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+   virtual tResult OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+
+private:
+   cAutoIPtr<IEditorCompositeCommand> m_pCommand;
+   HTERRAINVERTEX m_hHitVertex;
+   CPoint m_lastDragPoint;
+};
+
 
 /////////////////////////////////////////////////////////////////////////////
 

@@ -23,6 +23,99 @@ static char THIS_FILE[] = __FILE__;
 
 static const int kToolPaletteId = 1234;
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEMPLATE: cStandardToolDef
+//
+
+class cToolFactory
+{
+public:
+   virtual ~cToolFactory()
+   {
+   }
+
+   virtual const tChar * GetName() const = 0;
+   virtual int GetImageIndex() const = 0;
+   virtual tResult CreateTool(IEditorTool * * ppTool) const = 0;
+};
+
+template <class TOOL>
+class cStandardToolDef : public cToolFactory
+{
+   cStandardToolDef();
+
+public:
+   cStandardToolDef(const tChar * pszName, int imageIndex);
+   cStandardToolDef(uint nameStringId, int imageIndex);
+
+   const tChar * GetName() const { return m_name.c_str(); }
+   int GetImageIndex() const { return m_imageIndex; }
+
+   tResult CreateTool(IEditorTool * * ppTool) const;
+
+private:
+   cStr m_name;
+   int m_imageIndex;
+};
+
+////////////////////////////////////////
+
+template <class TOOL>
+cStandardToolDef<TOOL>::cStandardToolDef()
+ : m_imageIndex(-1)
+{
+}
+
+////////////////////////////////////////
+
+template <class TOOL>
+cStandardToolDef<TOOL>::cStandardToolDef(const tChar * pszName, int imageIndex)
+ : m_name(pszName)
+ , m_imageIndex(imageIndex)
+{
+}
+
+////////////////////////////////////////
+
+template <class TOOL>
+cStandardToolDef<TOOL>::cStandardToolDef(uint nameStringId, int imageIndex)
+ : m_imageIndex(imageIndex)
+{
+   CString temp;
+   if (temp.LoadString(nameStringId))
+   {
+      m_name.assign(temp);
+   }
+   else
+   {
+      ErrorMsg1("Error loading string resource, id = %d\n", nameStringId);
+      m_name.Format("STRING%d", nameStringId);
+   }
+}
+
+////////////////////////////////////////
+
+template <class TOOL>
+tResult cStandardToolDef<TOOL>::CreateTool(IEditorTool * * ppTool) const
+{
+   if (ppTool == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cAutoIPtr<IEditorTool> pTool(static_cast<IEditorTool*>(new TOOL));
+   if (!pTool)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   *ppTool = CTAddRef(pTool);
+   return S_OK;
+}
+
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cToolPaletteBar
@@ -154,21 +247,7 @@ int cToolPaletteBar::OnCreate(LPCREATESTRUCT lpCreateStruct)
       return -1;
    }
 
-   HIMAGELIST hStdImages = ImageList_LoadImage(_Module.GetResourceInstance(),
-      MAKEINTRESOURCE(IDB_STD_TOOLS), 16, 0, CLR_DEFAULT, IMAGE_BITMAP, 0);
-
-   // TODO: Come up with a better way for creating the standard tools
-   if (hStdImages != NULL)
-   {
-      HTOOLGROUP hStdGroup = m_toolPalette.AddGroup("", hStdImages);
-      if (hStdGroup != NULL)
-      {
-         HTOOLITEM hTool = m_toolPalette.AddTool(hStdGroup, "Select", 0, new cMoveCameraTool);
-         if (hTool != NULL)
-         {
-         }
-      }
-   }
+   CreateStandardToolGroup();
 
    UseGlobal(EditorTileSets);
    pEditorTileSets->Connect(this);
@@ -256,4 +335,47 @@ BOOL cToolPaletteBar::PreTranslateMessage(MSG* pMsg)
    }
 
    return cEditorControlBar::PreTranslateMessage(pMsg);
+}
+
+HTOOLGROUP cToolPaletteBar::CreateStandardToolGroup()
+{
+   HIMAGELIST hStdImages = ImageList_LoadImage(_Module.GetResourceInstance(),
+      MAKEINTRESOURCE(IDB_STD_TOOLS), 16, 0, CLR_DEFAULT, IMAGE_BITMAP, 0);
+   if (hStdImages == NULL)
+   {
+      ErrorMsg("Error loading image list for standard tools\n");
+      return NULL;
+   }
+
+   static const cStandardToolDef<cMoveCameraTool> moveCameraTool(IDS_SELECT_TOOL, 0);
+   static const cStandardToolDef<cTerrainElevationTool> terrainElevationTool(IDS_ELEVATION_TOOL, 1);
+
+   static const cToolFactory * stdTools[] =
+   {
+      &moveCameraTool,
+      &terrainElevationTool,
+   };
+
+   HTOOLGROUP hStdGroup = m_toolPalette.AddGroup("", hStdImages);
+   if (hStdGroup != NULL)
+   {
+      for (int i = 0; i < _countof(stdTools); i++)
+      {
+         cAutoIPtr<IEditorTool> pTool;
+         if (stdTools[i]->CreateTool(&pTool) != S_OK)
+         {
+            ErrorMsg1("Error creating \"%s\" tool\n", stdTools[i]->GetName());
+            continue;
+         }
+         HTOOLITEM hTool = m_toolPalette.AddTool(hStdGroup, stdTools[i]->GetName(),
+            stdTools[i]->GetImageIndex(), CTAddRef(pTool));
+         if (hTool == NULL)
+         {
+            pTool->Release(); // Release once for the CTAddRef above
+            ErrorMsg1("Error adding \"%s\" to toolbar\n", stdTools[i]->GetName());
+         }
+      }
+   }
+
+   return hStdGroup;
 }

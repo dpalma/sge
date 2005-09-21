@@ -310,6 +310,26 @@ bool cTerrainTool::GetHitQuad(CPoint point, IEditorView * pView, HTERRAINQUAD * 
    return false;
 }
 
+////////////////////////////////////////
+
+bool cTerrainTool::GetHitVertex(CPoint point, IEditorView * pView, HTERRAINVERTEX * phVertex)
+{
+   float ndx, ndy;
+   ScreenToNormalizedDeviceCoords(point.x, point.y, &ndx, &ndy);
+
+   if (pView != NULL)
+   {
+      cRay pickRay;
+      if (pView->GeneratePickRay(ndx, ndy, &pickRay) == S_OK)
+      {
+         UseGlobal(TerrainModel);
+         return (pTerrainModel->GetVertexFromHitTest(pickRay, phVertex) == S_OK);
+      }
+   }
+
+   return false;
+}
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -374,7 +394,7 @@ tResult cTerrainTileTool::OnMouseMove(const cEditorMouseEvent & mouseEvent, IEdi
       }
    }
 
-   return cDragTool::OnMouseMove(mouseEvent, pView);
+   return cTerrainTool::OnMouseMove(mouseEvent, pView);
 }
 
 ////////////////////////////////////////
@@ -464,5 +484,128 @@ tResult cTerrainTileTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEdit
 
    return S_EDITOR_TOOL_HANDLED;
 }
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cTerrainElevationTool
+//
+
+////////////////////////////////////////
+
+cTerrainElevationTool::cTerrainElevationTool()
+ : m_hHitVertex(INVALID_HTERRAINVERTEX)
+{
+}
+
+////////////////////////////////////////
+
+cTerrainElevationTool::~cTerrainElevationTool()
+{
+}
+
+////////////////////////////////////////
+
+tResult cTerrainElevationTool::Activate()
+{
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainElevationTool::Deactivate()
+{
+   UseGlobal(EditorApp);
+   cAutoIPtr<IEditorView> pView;
+   if (pEditorApp->GetActiveView(&pView) == S_OK)
+   {
+      pView->ClearHighlight();
+   }
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainElevationTool::OnMouseMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+{
+   if (pView != NULL)
+   {
+      if (!IsDragging())
+      {
+         if (GetHitVertex(mouseEvent.GetPoint(), pView, &m_hHitVertex))
+         {
+            pView->HighlightTerrainVertex(m_hHitVertex);
+         }
+         else
+         {
+            pView->ClearHighlight();
+         }
+      }
+   }
+
+   return cTerrainTool::OnMouseMove(mouseEvent, pView);
+}
+
+////////////////////////////////////////
+
+tResult cTerrainElevationTool::OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+{
+   // Should have hit-tested for a vertex in OnMouseMove
+   if (m_hHitVertex != INVALID_HTERRAINVERTEX)
+   {
+      UseGlobal(TerrainRenderer);
+      pTerrainRenderer->EnableBlending(false);
+
+      //Assert(!m_pCommand);
+      //if (EditorCompositeCommandCreate(TerrainTileCompositeCommandCB, &m_pCommand) != S_OK)
+      //{
+      //   ErrorMsg("Error creating composite command\n");
+      //   return E_FAIL;
+      //}
+
+      m_lastDragPoint = mouseEvent.GetPoint();
+   }
+
+   return S_EDITOR_TOOL_CONTINUE;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainElevationTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+{
+   // Do what is done on a move
+   tResult result = OnDragMove(mouseEvent, pView);
+
+   UseGlobal(TerrainRenderer);
+   pTerrainRenderer->EnableBlending(true);
+
+   //Assert(!!m_pCommand);
+   //cAutoIPtr<IEditorModel> pEditorModel;
+   //if (pView->GetModel(&pEditorModel) == S_OK)
+   //{
+   //   pEditorModel->AddCommand(m_pCommand, false);
+   //}
+   //SafeRelease(m_pCommand);
+
+   return result;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainElevationTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+{
+   if (m_hHitVertex != INVALID_HTERRAINVERTEX)
+   {
+      CPoint delta = mouseEvent.GetPoint() - m_lastDragPoint;
+      m_lastDragPoint = mouseEvent.GetPoint();
+
+      UseGlobal(TerrainModel);
+      pTerrainModel->ChangeVertexElevation(m_hHitVertex, static_cast<float>(-delta.y));
+   }
+
+   return S_EDITOR_TOOL_HANDLED;
+}
+
 
 /////////////////////////////////////////////////////////////////////////////

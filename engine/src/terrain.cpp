@@ -693,6 +693,92 @@ tResult cTerrainModel::EnumTerrainQuads(uint xStart, uint xEnd, uint zStart, uin
 
 ////////////////////////////////////////
 
+tResult cTerrainModel::GetVertexFromHitTest(const cRay & ray, HTERRAINVERTEX * phVertex) const
+{
+   if (phVertex == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tVec3 pointOnPlane;
+   if (ray.IntersectsPlane(tVec3(0,1,0), 0, &pointOnPlane))
+   {
+      LocalMsg3("Hit the terrain at approximately (%.1f, %.1f, %.1f)\n",
+         pointOnPlane.x, pointOnPlane.y, pointOnPlane.z);
+
+      uint ix = Round(pointOnPlane.x / m_terrainSettings.GetTileSize());
+      uint iz = Round(pointOnPlane.z / m_terrainSettings.GetTileSize());
+
+      LocalMsg2("Hit vertex (%d, %d)\n", ix, iz);
+      ComposeHandle(ix, iz, phVertex);
+      return S_OK;
+   }
+
+   return E_NOTIMPL;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainModel::GetVertexPosition(HTERRAINVERTEX hVertex, tVec3 * pPosition) const
+{
+   if (hVertex == INVALID_HTERRAINVERTEX)
+   {
+      return E_INVALIDARG;
+   }
+
+   if (pPosition == NULL)
+   {
+      return E_POINTER;
+   }
+
+   uint16 x, z;
+   DecomposeHandle(hVertex, &x, &z);
+
+   if (x > m_terrainSettings.GetTileCountX() || z > m_terrainSettings.GetTileCountZ())
+   {
+      return E_FAIL;
+   }
+
+   uint index = z * (m_terrainSettings.GetTileCountZ() + 1) + x;
+
+   *pPosition = m_vertices[index];
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainModel::ChangeVertexElevation(HTERRAINVERTEX hVertex, float elevDelta)
+{
+   if (hVertex == INVALID_HTERRAINVERTEX)
+   {
+      return E_INVALIDARG;
+   }
+
+   uint16 x, z;
+   DecomposeHandle(hVertex, &x, &z);
+
+   if (x > m_terrainSettings.GetTileCountX() || z > m_terrainSettings.GetTileCountZ())
+   {
+      return E_FAIL;
+   }
+
+   uint index = z * (m_terrainSettings.GetTileCountZ() + 1) + x;
+
+   m_vertices[index].y += elevDelta;
+
+   tListeners::iterator iter = m_listeners.begin();
+   tListeners::iterator end = m_listeners.end();
+   for (; iter != end; iter++)
+   {
+      (*iter)->OnTerrainElevationChange(hVertex);
+   }
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
 tResult cTerrainModel::GetQuadFromHitTest(const cRay & ray, HTERRAINQUAD * phQuad) const
 {
    if (phQuad == NULL)

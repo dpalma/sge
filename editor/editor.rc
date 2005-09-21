@@ -441,6 +441,7 @@ BEGIN
     IDS_UNDO_TEXT           "Undo %s\tCtrl+Z"
     IDS_REDO_TEXT           "Redo %s\tCtrl+Y"
     IDS_TERRAIN_TILE_COMMAND_LABEL "Terrain Texture"
+    IDS_SELECT_TOOL         "Select"
 END
 
 STRINGTABLE 
@@ -461,6 +462,11 @@ BEGIN
     ID_VIEW_CONTROL_BAR14   "Show or hide this control bar"
     ID_VIEW_CONTROL_BAR15   "Show or hide this control bar"
     ID_VIEW_CONTROL_BAR16   "Show or hide this control bar"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_ELEVATION_TOOL      "Elevation"
 END
 
 #endif    // English (U.S.) resources

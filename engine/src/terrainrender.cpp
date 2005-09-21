@@ -342,6 +342,29 @@ void cTerrainRenderer::cTerrainModelListener::OnTerrainTileChange(HTERRAINQUAD h
    }
 }
 
+////////////////////////////////////////
+
+void cTerrainRenderer::cTerrainModelListener::OnTerrainElevationChange(HTERRAINVERTEX hVertex)
+{
+   if (m_pOuter != NULL)
+   {
+      m_pOuter->m_bTerrainChanged = true;
+      m_pOuter->RegenerateChunks();
+
+      if (m_pOuter->m_pWholeTerrainChunk != NULL)
+      {
+         UseGlobal(TerrainModel);
+
+         cTerrainSettings terrainSettings;
+         Verify(pTerrainModel->GetTerrainSettings(&terrainSettings) == S_OK);
+
+         m_pOuter->m_pWholeTerrainChunk->BuildVertexBuffer(
+            cRange<uint>(0, terrainSettings.GetTileCountX()),
+            cRange<uint>(0, terrainSettings.GetTileCountZ()),
+            NULL);
+      }
+   }
+}
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -718,7 +741,6 @@ tResult cTerrainChunk::Create(const cRange<uint> xRange,
       return E_OUTOFMEMORY;
    }
 
-//   tQuadVertexMap quadVertexMap;
    pChunk->BuildVertexBuffer(xRange, zRange, &pChunk->m_quadVertexMap);
    pChunk->BuildSplats(xRange, zRange, pTileSet, bNoBlending);
 

@@ -56,6 +56,7 @@ public:
    virtual tResult GeneratePickRay(float ndx, float ndy, cRay * pRay);
    virtual tResult GetModel(IEditorModel * * ppModel);
    virtual tResult HighlightTerrainQuad(HTERRAINQUAD hQuad);
+   virtual tResult HighlightTerrainVertex(HTERRAINVERTEX hVertex);
    virtual tResult ClearHighlight();
 
    // IEditorAppListener
@@ -127,6 +128,7 @@ private:
    bool m_bUpdateCompositeMatrices;
 
    HTERRAINQUAD m_highlightQuad;
+   HTERRAINVERTEX m_highlightVertex;
 
    bool m_bInPostNcDestroy;
 };

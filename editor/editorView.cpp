@@ -41,7 +41,9 @@ const float kZFar = 5000;
 const float kDefaultCameraElevation = 100;
 const float kDefaultCameraPitch = 70;
 
-static const GLfloat kHighlightTileColor[] = { 0, 1, 0, 0.25f };
+static const GLfloat kHighlightTileColor[] = { 0, 1, 0, 0.25f }; // semi-transparent green
+static const GLfloat kHighlightVertexColor[] = { 0, 0, 1, 0.25f }; // semi-transparent blue
+static const GLfloat kHighlightOffsetY = 0.5f;
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -116,6 +118,7 @@ cEditorView::cEditorView()
  , m_bRecalcEye(true)
  , m_bUpdateCompositeMatrices(true)
  , m_highlightQuad(INVALID_HTERRAINQUAD)
+ , m_highlightVertex(INVALID_HTERRAINVERTEX)
  , m_bInPostNcDestroy(false)
 {
 }
@@ -266,6 +269,16 @@ tResult cEditorView::GetModel(IEditorModel * * ppModel)
 tResult cEditorView::HighlightTerrainQuad(HTERRAINQUAD hQuad)
 {
    m_highlightQuad = hQuad;
+   m_highlightVertex = INVALID_HTERRAINVERTEX;
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cEditorView::HighlightTerrainVertex(HTERRAINVERTEX hVertex)
+{
+   m_highlightQuad = INVALID_HTERRAINQUAD;
+   m_highlightVertex = hVertex;
    return S_OK;
 }
 
@@ -274,6 +287,7 @@ tResult cEditorView::HighlightTerrainQuad(HTERRAINQUAD hQuad)
 tResult cEditorView::ClearHighlight()
 {
    m_highlightQuad = INVALID_HTERRAINQUAD;
+   m_highlightVertex = INVALID_HTERRAINVERTEX;
    return S_OK;
 }
 
@@ -322,17 +336,53 @@ void cEditorView::RenderGL()
       tVec3 corners[4];
       if (pTerrainModel->GetQuadCorners(m_highlightQuad, corners) == S_OK)
       {
-         static const float kOffsetY = 0.5f;
-         corners[0].y += kOffsetY;
-         corners[1].y += kOffsetY;
-         corners[2].y += kOffsetY;
-         corners[3].y += kOffsetY;
+         corners[0].y += kHighlightOffsetY;
+         corners[1].y += kHighlightOffsetY;
+         corners[2].y += kHighlightOffsetY;
+         corners[3].y += kHighlightOffsetY;
 
          glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
          glEnable(GL_BLEND);
          glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
          glBegin(GL_QUADS);
             glColor4fv(kHighlightTileColor);
+            glNormal3f(0, 1, 0);
+            glVertex3fv(corners[0].v);
+            glVertex3fv(corners[3].v);
+            glVertex3fv(corners[2].v);
+            glVertex3fv(corners[1].v);
+         glEnd();
+         glPopAttrib();
+      }
+   }
+
+   if (m_highlightVertex != INVALID_HTERRAINVERTEX)
+   {
+      UseGlobal(TerrainModel);
+      tVec3 vertex;
+      if (pTerrainModel->GetVertexPosition(m_highlightVertex, &vertex) == S_OK)
+      {
+         static const tVec3 offsets[4] =
+         {
+            tVec3( -5, kHighlightOffsetY,  5 ),
+            tVec3(  5, kHighlightOffsetY,  5 ),
+            tVec3(  5, kHighlightOffsetY, -5 ),
+            tVec3( -5, kHighlightOffsetY, -5 ),
+         };
+
+         tVec3 corners[4] =
+         {
+            vertex + offsets[0],
+            vertex + offsets[1],
+            vertex + offsets[2],
+            vertex + offsets[3],
+         };
+
+         glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
+         glEnable(GL_BLEND);
+         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+         glBegin(GL_QUADS);
+            glColor4fv(kHighlightVertexColor);
             glNormal3f(0, 1, 0);
             glVertex3fv(corners[0].v);
             glVertex3fv(corners[3].v);

@@ -166,6 +166,11 @@ interface ITerrainModel : IUnknown
    virtual tResult EnumTerrainQuads(IEnumTerrainQuads * * ppEnum) = 0;
    virtual tResult EnumTerrainQuads(uint xStart, uint xEnd, uint zStart, uint zEnd, IEnumTerrainQuads * * ppEnum) = 0;
 
+   virtual tResult GetVertexFromHitTest(const cRay & ray, HTERRAINVERTEX * phVertex) const = 0;
+
+   virtual tResult GetVertexPosition(HTERRAINVERTEX hVertex, tVec3 * pPosition) const = 0;
+   virtual tResult ChangeVertexElevation(HTERRAINVERTEX hVertex, float elevDelta) = 0;
+
    virtual tResult GetQuadFromHitTest(const cRay & ray, HTERRAINQUAD * phQuad) const = 0;
 
    virtual tResult SetQuadTile(HTERRAINQUAD hQuad, uint tile) = 0;
@@ -191,6 +196,7 @@ interface ITerrainModelListener : IUnknown
    virtual void OnTerrainInitialize() = 0;
    virtual void OnTerrainClear() = 0;
    virtual void OnTerrainTileChange(HTERRAINQUAD hQuad) = 0;
+   virtual void OnTerrainElevationChange(HTERRAINVERTEX hVertex) = 0;
 };
 
 

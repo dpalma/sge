@@ -76,6 +76,11 @@ public:
 
    virtual tResult EnumTerrainQuads(IEnumTerrainQuads * * ppEnum);
    virtual tResult EnumTerrainQuads(uint xStart, uint xEnd, uint zStart, uint zEnd, IEnumTerrainQuads * * ppEnum);
+
+   virtual tResult GetVertexFromHitTest(const cRay & ray, HTERRAINVERTEX * phVertex) const;
+   virtual tResult GetVertexPosition(HTERRAINVERTEX hVertex, tVec3 * pPosition) const;
+   virtual tResult ChangeVertexElevation(HTERRAINVERTEX hVertex, float elevDelta);
+
    virtual tResult GetQuadFromHitTest(const cRay & ray, HTERRAINQUAD * phQuad) const;
    virtual tResult SetQuadTile(HTERRAINQUAD hQuad, uint tile);
    virtual tResult GetQuadTile(HTERRAINQUAD hQuad, uint * pTile) const;

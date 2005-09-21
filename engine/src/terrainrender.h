@@ -139,6 +139,7 @@ private:
       virtual void OnTerrainInitialize();
       virtual void OnTerrainClear();
       virtual void OnTerrainTileChange(HTERRAINQUAD hQuad);
+      virtual void OnTerrainElevationChange(HTERRAINVERTEX hVertex);
    private:
       cTerrainRenderer * m_pOuter;
    };

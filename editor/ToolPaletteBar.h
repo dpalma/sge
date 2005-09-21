@@ -60,6 +60,8 @@ protected:
    afx_msg void OnToolPaletteItemDestroy(NMHDR * pNmhdr, LRESULT * pResult);
    DECLARE_MESSAGE_MAP()
 
+   HTOOLGROUP CreateStandardToolGroup();
+
 private:
    CToolTipCtrl m_tooltip;
    cToolPalette m_toolPalette;
