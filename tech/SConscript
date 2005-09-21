@@ -22,11 +22,11 @@ sources = Split("""
    src/matrix4.cpp
    src/prime.cpp
    src/quat.cpp
-   src/rand.cpp
    src/readwritefile.cpp
    src/readwritemem.cpp
    src/resourcemanager.cpp
    src/techdebug.cpp
+   src/techmath.cpp
    src/techstring.cpp
    src/techtime.cpp
    src/text.cpp

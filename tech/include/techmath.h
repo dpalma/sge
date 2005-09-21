@@ -79,5 +79,30 @@ inline int Round(float floatval)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// See http://www.cygnus-software.com/papers/comparingfloats/comparingfloats.htm
+
+inline bool AlmostEqual(float a, float b, int maxUnitsLastPlace)
+{
+   if (a == b)
+   {
+      return true; 
+   }
+   int intDiff = abs(*(int*)&a - *(int*)&b);
+   return (intDiff <= maxUnitsLastPlace);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+inline bool AlmostEqual(double a, double b, int maxUnitsLastPlace)
+{
+   if (a == b)
+   {
+      return true; 
+   }
+   int intDiff = abs(*(int*)&a - *(int*)&b);
+   return (intDiff <= maxUnitsLastPlace);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 
 #endif // !INCLUDED_TECHMATH_H
