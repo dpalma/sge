@@ -243,7 +243,7 @@ void cTerrainRenderer::Render()
       if (!m_chunks.empty())
       {
          std::for_each(m_chunks.begin(), m_chunks.end(),
-            std::mem_fun<void, cTerrainChunk, ITerrainTileSet*>(&cTerrainChunk::Render));
+            std::mem_fun<void, cTerrainChunk>(&cTerrainChunk::Render));
       }
    }
    else
