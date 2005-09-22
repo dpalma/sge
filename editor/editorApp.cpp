@@ -418,10 +418,6 @@ BOOL cEditorApp::PreTranslateMessage(MSG * pMsg)
    {
       pTool = CTAddRef(AccessActiveTool());
    }
-   //else if (AccessDefaultTool() != NULL)
-   //{
-   //   pTool = CTAddRef(AccessDefaultTool());
-   //}
 
    if (!!pTool)
    {
@@ -442,6 +438,13 @@ BOOL cEditorApp::PreTranslateMessage(MSG * pMsg)
 
       switch (pMsg->message)
       {
+         case WM_CANCELMODE:
+         case WM_CAPTURECHANGED:
+         {
+            ReleaseToolCapture();
+            break;
+         }
+
          case WM_KEYDOWN:
          {
             toolResult = pTool->OnKeyDown(cEditorKeyEvent(pMsg->wParam, pMsg->lParam), m_pCurrentToolView);
