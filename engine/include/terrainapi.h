@@ -170,6 +170,7 @@ interface ITerrainModel : IUnknown
 
    virtual tResult GetVertexPosition(HTERRAINVERTEX hVertex, tVec3 * pPosition) const = 0;
    virtual tResult ChangeVertexElevation(HTERRAINVERTEX hVertex, float elevDelta) = 0;
+   virtual tResult SetVertexElevation(HTERRAINVERTEX hVertex, float elevation) = 0;
 
    virtual tResult GetQuadFromHitTest(const cRay & ray, HTERRAINQUAD * phQuad) const = 0;
 

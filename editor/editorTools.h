@@ -85,6 +85,9 @@ public:
    cTerrainTool();
    ~cTerrainTool();
 
+   virtual tResult Activate();
+   virtual tResult Deactivate();
+
 protected:
    static bool GetHitQuad(CPoint point, IEditorView * pView, HTERRAINQUAD * phQuad);
    static bool GetHitVertex(CPoint point, IEditorView * pView, HTERRAINVERTEX * phVertex);
@@ -103,9 +106,6 @@ public:
    ~cTerrainTileTool();
 
    void SetTile(uint tile);
-
-   virtual tResult Activate();
-   virtual tResult Deactivate();
 
 	virtual tResult OnMouseMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
 
@@ -132,8 +132,31 @@ public:
    cTerrainElevationTool();
    ~cTerrainElevationTool();
 
-   virtual tResult Activate();
-   virtual tResult Deactivate();
+	virtual tResult OnMouseMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+
+protected:
+   virtual tResult OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+   virtual tResult OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+   virtual tResult OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+
+private:
+   cAutoIPtr<IEditorCommand> m_pCommand;
+   HTERRAINVERTEX m_hHitVertex;
+   CPoint m_lastDragPoint;
+   float m_elevDelta;
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cTerrainPlateauTool
+//
+
+class cTerrainPlateauTool : public cComObject<cTerrainTool, &IID_IEditorTool>
+{
+public:
+   cTerrainPlateauTool();
+   ~cTerrainPlateauTool();
 
 	virtual tResult OnMouseMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
 
@@ -144,8 +167,7 @@ protected:
 
 private:
    cAutoIPtr<IEditorCompositeCommand> m_pCommand;
-   HTERRAINVERTEX m_hHitVertex;
-   CPoint m_lastDragPoint;
+   float m_elevation;
 };
 
 

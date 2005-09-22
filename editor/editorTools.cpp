@@ -292,6 +292,27 @@ cTerrainTool::~cTerrainTool()
 
 ////////////////////////////////////////
 
+tResult cTerrainTool::Activate()
+{
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainTool::Deactivate()
+{
+   UseGlobal(EditorApp);
+   cAutoIPtr<IEditorView> pView;
+   if (pEditorApp->GetActiveView(&pView) == S_OK)
+   {
+      pView->ClearHighlight();
+   }
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
 bool cTerrainTool::GetHitQuad(CPoint point, IEditorView * pView, HTERRAINQUAD * phQuad)
 {
    float ndx, ndy;
@@ -354,27 +375,6 @@ cTerrainTileTool::~cTerrainTileTool()
 void cTerrainTileTool::SetTile(uint tile)
 {
    m_tile = tile;
-}
-
-////////////////////////////////////////
-
-tResult cTerrainTileTool::Activate()
-{
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cTerrainTileTool::Deactivate()
-{
-   UseGlobal(EditorApp);
-   cAutoIPtr<IEditorView> pView;
-   if (pEditorApp->GetActiveView(&pView) == S_OK)
-   {
-      pView->ClearHighlight();
-   }
-
-   return S_OK;
 }
 
 ////////////////////////////////////////
@@ -495,6 +495,7 @@ tResult cTerrainTileTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEdit
 
 cTerrainElevationTool::cTerrainElevationTool()
  : m_hHitVertex(INVALID_HTERRAINVERTEX)
+ , m_elevDelta(0)
 {
 }
 
@@ -502,27 +503,6 @@ cTerrainElevationTool::cTerrainElevationTool()
 
 cTerrainElevationTool::~cTerrainElevationTool()
 {
-}
-
-////////////////////////////////////////
-
-tResult cTerrainElevationTool::Activate()
-{
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cTerrainElevationTool::Deactivate()
-{
-   UseGlobal(EditorApp);
-   cAutoIPtr<IEditorView> pView;
-   if (pEditorApp->GetActiveView(&pView) == S_OK)
-   {
-      pView->ClearHighlight();
-   }
-
-   return S_OK;
 }
 
 ////////////////////////////////////////
@@ -557,13 +537,6 @@ tResult cTerrainElevationTool::OnDragStart(const cEditorMouseEvent & mouseEvent,
       UseGlobal(TerrainRenderer);
       pTerrainRenderer->EnableBlending(false);
 
-      //Assert(!m_pCommand);
-      //if (EditorCompositeCommandCreate(TerrainTileCompositeCommandCB, &m_pCommand) != S_OK)
-      //{
-      //   ErrorMsg("Error creating composite command\n");
-      //   return E_FAIL;
-      //}
-
       m_lastDragPoint = mouseEvent.GetPoint();
    }
 
@@ -573,6 +546,123 @@ tResult cTerrainElevationTool::OnDragStart(const cEditorMouseEvent & mouseEvent,
 ////////////////////////////////////////
 
 tResult cTerrainElevationTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+{
+   // Do what is done on a move
+   tResult result = OnDragMove(mouseEvent, pView);
+
+   UseGlobal(TerrainRenderer);
+   pTerrainRenderer->EnableBlending(true);
+
+   if (!!m_pCommand)
+   {
+      cAutoIPtr<IEditorModel> pEditorModel;
+      if (pView->GetModel(&pEditorModel) == S_OK)
+      {
+         pEditorModel->AddCommand(m_pCommand, false);
+      }
+      SafeRelease(m_pCommand);
+   }
+
+   return result;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainElevationTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+{
+   if (m_hHitVertex != INVALID_HTERRAINVERTEX)
+   {
+      CPoint delta = mouseEvent.GetPoint() - m_lastDragPoint;
+      m_lastDragPoint = mouseEvent.GetPoint();
+
+      m_elevDelta -= static_cast<float>(delta.y);
+
+      if (!!m_pCommand)
+      {
+         Verify(SUCCEEDED(m_pCommand->Undo()));
+         SafeRelease(m_pCommand);
+      }
+
+      m_pCommand = static_cast<IEditorCommand*>(
+         new cTerrainChangeElevationCommand(m_hHitVertex, m_elevDelta));
+
+      if (!m_pCommand)
+      {
+         return E_OUTOFMEMORY;
+      }
+
+      if (m_pCommand->Do() != S_OK)
+      {
+         return E_FAIL;
+      }
+   }
+
+   return S_EDITOR_TOOL_HANDLED;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cTerrainPlateauTool
+//
+
+////////////////////////////////////////
+
+cTerrainPlateauTool::cTerrainPlateauTool()
+ : m_elevation(0)
+{
+}
+
+////////////////////////////////////////
+
+cTerrainPlateauTool::~cTerrainPlateauTool()
+{
+}
+
+////////////////////////////////////////
+
+tResult cTerrainPlateauTool::OnMouseMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+{
+   if (pView != NULL)
+   {
+      HTERRAINVERTEX hHitVertex;
+      if (GetHitVertex(mouseEvent.GetPoint(), pView, &hHitVertex))
+      {
+         pView->HighlightTerrainVertex(hHitVertex);
+      }
+      else
+      {
+         pView->ClearHighlight();
+      }
+   }
+
+   return cTerrainTool::OnMouseMove(mouseEvent, pView);
+}
+
+////////////////////////////////////////
+
+tResult cTerrainPlateauTool::OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+{
+   HTERRAINVERTEX hHitVertex;
+   if (GetHitVertex(mouseEvent.GetPoint(), pView, &hHitVertex))
+   {
+      tVec3 vertexPos;
+
+      UseGlobal(TerrainModel);
+      if (pTerrainModel->GetVertexPosition(hHitVertex, &vertexPos) != S_OK)
+      {
+         return E_FAIL;
+      }
+
+      m_elevation = vertexPos.y;
+   }
+
+   return S_EDITOR_TOOL_CONTINUE;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainPlateauTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
 {
    // Do what is done on a move
    tResult result = OnDragMove(mouseEvent, pView);
@@ -593,15 +683,13 @@ tResult cTerrainElevationTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, I
 
 ////////////////////////////////////////
 
-tResult cTerrainElevationTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+tResult cTerrainPlateauTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
 {
-   if (m_hHitVertex != INVALID_HTERRAINVERTEX)
+   HTERRAINVERTEX hHitVertex;
+   if (GetHitVertex(mouseEvent.GetPoint(), pView, &hHitVertex))
    {
-      CPoint delta = mouseEvent.GetPoint() - m_lastDragPoint;
-      m_lastDragPoint = mouseEvent.GetPoint();
-
       UseGlobal(TerrainModel);
-      pTerrainModel->ChangeVertexElevation(m_hHitVertex, static_cast<float>(-delta.y));
+      pTerrainModel->SetVertexElevation(hHitVertex, m_elevation);
    }
 
    return S_EDITOR_TOOL_HANDLED;

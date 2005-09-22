@@ -349,11 +349,13 @@ HTOOLGROUP cToolPaletteBar::CreateStandardToolGroup()
 
    static const cStandardToolDef<cMoveCameraTool> moveCameraTool(IDS_SELECT_TOOL, 0);
    static const cStandardToolDef<cTerrainElevationTool> terrainElevationTool(IDS_ELEVATION_TOOL, 1);
+   static const cStandardToolDef<cTerrainPlateauTool> terrainPlateauTool(IDS_PLATEAU_TOOL, 2);
 
    static const cToolFactory * stdTools[] =
    {
       &moveCameraTool,
       &terrainElevationTool,
+      &terrainPlateauTool,
    };
 
    HTOOLGROUP hStdGroup = m_toolPalette.AddGroup("", hStdImages);

@@ -779,6 +779,42 @@ tResult cTerrainModel::ChangeVertexElevation(HTERRAINVERTEX hVertex, float elevD
 
 ////////////////////////////////////////
 
+tResult cTerrainModel::SetVertexElevation(HTERRAINVERTEX hVertex, float elevation)
+{
+   if (hVertex == INVALID_HTERRAINVERTEX)
+   {
+      return E_INVALIDARG;
+   }
+
+   uint16 x, z;
+   DecomposeHandle(hVertex, &x, &z);
+
+   if (x > m_terrainSettings.GetTileCountX() || z > m_terrainSettings.GetTileCountZ())
+   {
+      return E_FAIL;
+   }
+
+   uint index = z * (m_terrainSettings.GetTileCountZ() + 1) + x;
+
+   if (AlmostEqual(m_vertices[index].y, elevation))
+   {
+      return S_FALSE;
+   }
+
+   m_vertices[index].y = elevation;
+
+   tListeners::iterator iter = m_listeners.begin();
+   tListeners::iterator end = m_listeners.end();
+   for (; iter != end; iter++)
+   {
+      (*iter)->OnTerrainElevationChange(hVertex);
+   }
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
 tResult cTerrainModel::GetQuadFromHitTest(const cRay & ray, HTERRAINQUAD * phQuad) const
 {
    if (phQuad == NULL)

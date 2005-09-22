@@ -13,6 +13,7 @@
 #endif // _MSC_VER > 1000
 
 F_DECLARE_HANDLE(HTERRAINQUAD);
+F_DECLARE_HANDLE(HTERRAINVERTEX);
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -62,6 +63,28 @@ public:
 private:
    HTERRAINQUAD m_hQuad;
    uint m_tile, m_oldTile;
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cTerrainChangeElevationCommand
+//
+
+class cTerrainChangeElevationCommand : public cComObject<IMPLEMENTS(IEditorCommand)>
+{
+public:
+   cTerrainChangeElevationCommand(HTERRAINVERTEX hVertex, float elevDelta);
+   ~cTerrainChangeElevationCommand();
+
+   virtual tResult Do();
+   virtual tResult CanUndo();
+   virtual tResult Undo();
+   virtual tResult GetLabel(cStr * pLabel);
+
+private:
+   HTERRAINVERTEX m_hVertex;
+   float m_elevDelta, m_oldElevation;
 };
 
 
