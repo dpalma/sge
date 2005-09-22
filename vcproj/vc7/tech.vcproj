@@ -347,13 +347,7 @@
 					RelativePath="..\..\tech\src\matrix4.cpp">
 				</File>
 				<File
-					RelativePath="..\..\tech\src\prime.cpp">
-				</File>
-				<File
 					RelativePath="..\..\tech\src\quat.cpp">
-				</File>
-				<File
-					RelativePath="..\..\tech\src\rand.cpp">
 				</File>
 				<File
 					RelativePath="..\..\tech\src\readwritefile.cpp">
@@ -399,6 +393,9 @@
 				</File>
 				<File
 					RelativePath="..\..\tech\src\techdebug.cpp">
+				</File>
+				<File
+					RelativePath="..\..\tech\src\techmath.cpp">
 				</File>
 				<File
 					RelativePath="..\..\tech\src\techstring.cpp">
