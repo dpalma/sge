@@ -12,6 +12,7 @@
 #include "filespec.h"
 #include "configapi.h"
 #include "readwriteapi.h"
+#include "vec4.h"
 
 #include <algorithm>
 #include <functional>
@@ -394,15 +395,10 @@ inline T Clamp(T value, T rangeFirst, T rangeLast)
 }
 
 ////////////////////////////////////////
-
-inline float STW(const tVec2 & pt1, const tVec2 & pt2)
-{
-   return Clamp(SplatTexelWeight(pt1,pt2), 0.f, 1.f);
-}
-
-////////////////////////////////////////
 // The four means that each tile in the map is represented by a 2x2 square
 // of pixels in the splat alpha map.
+
+#define STW(pt1, pt2) Clamp(SplatTexelWeight((pt1),(pt2)), 0.f, 9999.f)
 
 static const float g_splatTexelWeights[4][9] =
 {
@@ -456,6 +452,8 @@ static const float g_splatTexelWeights[4][9] =
    },
 };
 
+#undef STW
+
 ////////////////////////////////////////
 
 void BuildSplatAlphaMap(uint splatTile,
@@ -490,26 +488,14 @@ void BuildSplatAlphaMap(uint splatTile,
 
    for (uint z = zRange.GetStart(); z < zRange.GetEnd(); z++)
    {
-      uint zPrev = zRange.GetPrev(z, 0, kNoIndex);
-      uint zNext = zRange.GetNext(z, terrainSettings.GetTileCountZ(), kNoIndex);
-
       for (uint x = xRange.GetStart(); x < xRange.GetEnd(); x++)
       {
-         uint xPrev = xRange.GetPrev(x, 0, kNoIndex);
-         uint xNext = xRange.GetNext(x, terrainSettings.GetTileCountX(), kNoIndex);
-
          HTERRAINQUAD hQuad = INVALID_HTERRAINQUAD;
          ulong nQuads = 0;
          if (pEnumQuads->Next(1, &hQuad, &nQuads) != S_OK || nQuads != 1)
          {
             continue;
          }
-
-         float texelWeights[4];
-         int texelDivisors[4];
-
-         memset(texelWeights, 0, sizeof(texelWeights));
-         memset(texelDivisors, 0, sizeof(texelDivisors));
 
          HTERRAINQUAD neighbors[9];
          if (pTerrainModel->GetQuadNeighbors(hQuad, neighbors) != S_OK)
@@ -520,32 +506,46 @@ void BuildSplatAlphaMap(uint splatTile,
          memmove(&neighbors[5], &neighbors[4], 4 * sizeof(HTERRAINQUAD));
          neighbors[4] = hQuad;
 
+         std::map<uint, tVec4> texelWeightMap;
+         texelWeightMap[splatTile] = tVec4(0,0,0,0);
+
          for (int i = 0; i < _countof(neighbors); i++)
          {
-            uint ntile;
-            if (neighbors[i] != INVALID_HTERRAINQUAD
-               && pTerrainModel->GetQuadTile(neighbors[i], &ntile) == S_OK
-               && ntile == splatTile)
+            if (neighbors[i] == INVALID_HTERRAINQUAD)
             {
-               for (int j = 0; j < _countof(texelWeights); j++)
-               {
-                  texelWeights[j] += g_splatTexelWeights[j][i];
-                  texelDivisors[j] += 1;
-               }
+               continue;
             }
+
+            uint neighborTile;
+            if (pTerrainModel->GetQuadTile(neighbors[i], &neighborTile) != S_OK)
+            {
+               continue;
+            }
+
+            if (texelWeightMap.find(neighborTile) == texelWeightMap.end())
+            {
+               texelWeightMap[neighborTile] = tVec4(0,0,0,0);
+            }
+
+            texelWeightMap[neighborTile] += tVec4(
+               g_splatTexelWeights[0][i],
+               g_splatTexelWeights[1][i],
+               g_splatTexelWeights[2][i],
+               g_splatTexelWeights[3][i]);
          }
 
-#if 0
-         if (texelDivisors[0] != 0) texelWeights[0] /= texelDivisors[0];
-         if (texelDivisors[1] != 0) texelWeights[1] /= texelDivisors[1];
-         if (texelDivisors[2] != 0) texelWeights[2] /= texelDivisors[2];
-         if (texelDivisors[3] != 0) texelWeights[3] /= texelDivisors[3];
-#endif
+         tVec4 texelWeightTotals(0,0,0,0);
+         std::map<uint, tVec4>::iterator iter = texelWeightMap.begin();
+         for (; iter != texelWeightMap.end(); iter++)
+         {
+            texelWeightTotals += iter->second;
+         }
 
-         texelWeights[0] = Clamp(texelWeights[0], 0.f, 1.f);
-         texelWeights[1] = Clamp(texelWeights[1], 0.f, 1.f);
-         texelWeights[2] = Clamp(texelWeights[2], 0.f, 1.f);
-         texelWeights[3] = Clamp(texelWeights[3], 0.f, 1.f);
+         tVec4 & texelWeights = texelWeightMap[splatTile];
+         texelWeights.x /= texelWeightTotals.x;
+         texelWeights.y /= texelWeightTotals.y;
+         texelWeights.z /= texelWeightTotals.z;
+         texelWeights.w /= texelWeightTotals.w;
 
          uint iz = (z - zRange.GetStart()) * 2;
          uint ix = (x - xRange.GetStart()) * 2;
@@ -557,10 +557,10 @@ void BuildSplatAlphaMap(uint splatTile,
          byte * p2 = pBitmapBits + ((iz+1) * imageWidth * m) + (ix * m);
          byte * p3 = pBitmapBits + ((iz+1) * imageWidth * m) + ((ix+1) * m);
 
-         p0[0] = p0[1] = p0[2] = p0[3] = (byte)(255 * texelWeights[0]);
-         p1[0] = p1[1] = p1[2] = p1[3] = (byte)(255 * texelWeights[1]);
-         p2[0] = p2[1] = p2[2] = p2[3] = (byte)(255 * texelWeights[2]);
-         p3[0] = p3[1] = p3[2] = p3[3] = (byte)(255 * texelWeights[3]);
+         p0[0] = p0[1] = p0[2] = p0[3] = (byte)(255 * texelWeights.x);
+         p1[0] = p1[1] = p1[2] = p1[3] = (byte)(255 * texelWeights.y);
+         p2[0] = p2[1] = p2[2] = p2[3] = (byte)(255 * texelWeights.z);
+         p3[0] = p3[1] = p3[2] = p3[3] = (byte)(255 * texelWeights.w);
       }
    }
 
