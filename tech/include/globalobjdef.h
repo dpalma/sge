@@ -22,10 +22,8 @@ TECH_API tResult RegisterGlobalObject(REFGUID iid, IUnknown * pUnk);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// INTERFACE: IGlobalObject
+// CLASS: cBeforeAfterConstraint
 //
-
-///////////////////////////////////////
 
 enum eBeforeAfter
 {
@@ -33,20 +31,20 @@ enum eBeforeAfter
    kAfter
 };
 
-class TECH_API cGlobalObjectInitConstraint
+class TECH_API cBeforeAfterConstraint
 {
 public:
-   cGlobalObjectInitConstraint(const GUID * pGuid, eBeforeAfter beforeAfter);
-   cGlobalObjectInitConstraint(const tChar * pszName, eBeforeAfter beforeAfter);
-   cGlobalObjectInitConstraint(const cGlobalObjectInitConstraint & other);
-   ~cGlobalObjectInitConstraint();
+   cBeforeAfterConstraint(const GUID * pGuid, eBeforeAfter beforeAfter);
+   cBeforeAfterConstraint(const tChar * pszName, eBeforeAfter beforeAfter);
+   cBeforeAfterConstraint(const cBeforeAfterConstraint & other);
+   ~cBeforeAfterConstraint();
 
-   const cGlobalObjectInitConstraint & operator =(const cGlobalObjectInitConstraint & other);
+   const cBeforeAfterConstraint & operator =(const cBeforeAfterConstraint & other);
 
    const GUID * GetGuid() const { return m_pGuid; }
    const tChar * GetName() const { return m_pszName; }
-   bool InitBefore() const { return m_beforeAfter == kBefore; }
-   bool InitAfter() const { return m_beforeAfter == kAfter; }
+   bool Before() const { return m_beforeAfter == kBefore; }
+   bool After() const { return m_beforeAfter == kAfter; }
 
 private:
    const GUID * m_pGuid;
@@ -54,9 +52,13 @@ private:
    eBeforeAfter m_beforeAfter;
 };
 
-typedef std::vector<cGlobalObjectInitConstraint> tGlobalObjectInitConstraints;
+typedef std::vector<cBeforeAfterConstraint> tBeforeAfterConstraints;
 
-///////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IGlobalObject
+//
 
 interface IGlobalObject : IUnknown
 {
@@ -64,7 +66,7 @@ interface IGlobalObject : IUnknown
    virtual tResult Term() = 0;
 
    virtual const tChar * GetName() const = 0;
-   virtual size_t GetConstraints(tGlobalObjectInitConstraints * pConstraints) const = 0;
+   virtual size_t GetConstraints(tBeforeAfterConstraints * pConstraints) const = 0;
 };
 
 ///////////////////////////////////////
@@ -86,7 +88,7 @@ interface IGlobalObject : IUnknown
 ///////////////////////////////////////
 
 #define DECLARE_NO_CONSTRAINTS() \
-   virtual size_t GetConstraints(tGlobalObjectInitConstraints *) const \
+   virtual size_t GetConstraints(tBeforeAfterConstraints *) const \
    { \
       return 0; \
    }
@@ -94,28 +96,28 @@ interface IGlobalObject : IUnknown
 ///////////////////////////////////////
 
 #define DECLARE_CONSTRAINTS() \
-   virtual size_t GetConstraints(tGlobalObjectInitConstraints * pConstraints) const;
+   virtual size_t GetConstraints(tBeforeAfterConstraints * pConstraints) const;
 
 ///////////////////////////////////////
 
 #define BEGIN_CONSTRAINTS(GlobalObjectClass) \
-   size_t GlobalObjectClass::GetConstraints(tGlobalObjectInitConstraints * pConstraints) const \
+   size_t GlobalObjectClass::GetConstraints(tBeforeAfterConstraints * pConstraints) const \
    { \
-      static cGlobalObjectInitConstraint constraints[] = { \
+      static cBeforeAfterConstraint constraints[] = { \
 
 ///////////////////////////////////////
 
 #define AFTER_GUID(guid) \
-   cGlobalObjectInitConstraint(&guid, kAfter),
+   cBeforeAfterConstraint(&guid, kAfter),
 
 #define BEFORE_GUID(guid) \
-   cGlobalObjectInitConstraint(&guid, kBefore),
+   cBeforeAfterConstraint(&guid, kBefore),
 
 #define AFTER_NAME(name) \
-   cGlobalObjectInitConstraint(#name, kAfter),
+   cBeforeAfterConstraint(#name, kAfter),
 
 #define BEFORE_NAME(name) \
-   cGlobalObjectInitConstraint(#name, kBefore),
+   cBeforeAfterConstraint(#name, kBefore),
 
 ///////////////////////////////////////
 

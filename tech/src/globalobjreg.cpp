@@ -29,12 +29,12 @@ F_DECLARE_INTERFACE(IGlobalObjectRegistry);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGlobalObjectInitConstraint
+// CLASS: cBeforeAfterConstraint
 //
 
 ////////////////////////////////////////
 
-cGlobalObjectInitConstraint::cGlobalObjectInitConstraint(const GUID * pGuid, eBeforeAfter beforeAfter)
+cBeforeAfterConstraint::cBeforeAfterConstraint(const GUID * pGuid, eBeforeAfter beforeAfter)
  : m_pGuid(pGuid),
    m_pszName(NULL),
    m_beforeAfter(beforeAfter)
@@ -43,7 +43,7 @@ cGlobalObjectInitConstraint::cGlobalObjectInitConstraint(const GUID * pGuid, eBe
 
 ////////////////////////////////////////
 
-cGlobalObjectInitConstraint::cGlobalObjectInitConstraint(const tChar * pszName, eBeforeAfter beforeAfter)
+cBeforeAfterConstraint::cBeforeAfterConstraint(const tChar * pszName, eBeforeAfter beforeAfter)
  : m_pGuid(NULL),
    m_pszName(pszName),
    m_beforeAfter(beforeAfter)
@@ -52,7 +52,7 @@ cGlobalObjectInitConstraint::cGlobalObjectInitConstraint(const tChar * pszName, 
 
 ////////////////////////////////////////
 
-cGlobalObjectInitConstraint::cGlobalObjectInitConstraint(const cGlobalObjectInitConstraint & other)
+cBeforeAfterConstraint::cBeforeAfterConstraint(const cBeforeAfterConstraint & other)
  : m_pGuid(other.m_pGuid),
    m_pszName(other.m_pszName),
    m_beforeAfter(other.m_beforeAfter)
@@ -61,13 +61,13 @@ cGlobalObjectInitConstraint::cGlobalObjectInitConstraint(const cGlobalObjectInit
 
 ////////////////////////////////////////
 
-cGlobalObjectInitConstraint::~cGlobalObjectInitConstraint()
+cBeforeAfterConstraint::~cBeforeAfterConstraint()
 {
 }
 
 ////////////////////////////////////////
 
-const cGlobalObjectInitConstraint & cGlobalObjectInitConstraint::operator =(const cGlobalObjectInitConstraint & other)
+const cBeforeAfterConstraint & cBeforeAfterConstraint::operator =(const cBeforeAfterConstraint & other)
 {
    m_pGuid = other.m_pGuid;
    m_pszName = other.m_pszName;
@@ -332,10 +332,10 @@ void cGlobalObjectRegistry::BuildConstraintGraph(tConstraintGraph * pGraph)
       cAutoIPtr<IGlobalObject> pGlobalObj;
       Verify(SUCCEEDED(iter->second->QueryInterface(IID_IGlobalObject, (void**)&pGlobalObj)));
 
-      tGlobalObjectInitConstraints constraints;
+      tBeforeAfterConstraints constraints;
       if (pGlobalObj->GetConstraints(&constraints) > 0)
       {
-         tGlobalObjectInitConstraints::iterator citer;
+         tBeforeAfterConstraints::iterator citer;
          for (citer = constraints.begin(); citer != constraints.end(); citer++)
          {
             const GUID * pTargetGuid = NULL;
@@ -355,7 +355,7 @@ void cGlobalObjectRegistry::BuildConstraintGraph(tConstraintGraph * pGraph)
 
             if (pTargetGuid != NULL)
             {
-               if (citer->InitBefore())
+               if (citer->Before())
                {
                   pGraph->AddEdge(iter->first, pTargetGuid);
                }
