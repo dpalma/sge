@@ -5,6 +5,7 @@
 
 #include "configapi.h"
 #include "techstring.h"
+#include "dictionary.h"
 
 #include <cstdio>
 
@@ -17,11 +18,48 @@
 extern bool ParseDictionaryLine(const tChar * psz, cStr * pKey, cStr * pValue, cStr * pComment);
 
 ///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cSingletonDictionary
+//
 
-cAutoIPtr<IConfig> g_pAutoDeleteConfig(DictionaryCreate());
-IConfig * g_pConfig = static_cast<IConfig *>(g_pAutoDeleteConfig);
+class cSingletonDictionary : public cDictionary
+{
+   static cSingletonDictionary gm_instance;
+   cSingletonDictionary();
+public:
+   static IDictionary * Access();
+   virtual void DeleteThis();
+};
 
-static const tChar kTrueStr[] = _T("true");
+////////////////////////////////////////
+
+cSingletonDictionary cSingletonDictionary::gm_instance;
+
+////////////////////////////////////////
+
+cSingletonDictionary::cSingletonDictionary()
+ : cDictionary(kUseDefault)
+{
+}
+
+////////////////////////////////////////
+
+IDictionary * cSingletonDictionary::Access()
+{
+   return static_cast<IDictionary*>(&gm_instance);
+}
+
+////////////////////////////////////////
+
+void cSingletonDictionary::DeleteThis()
+{
+   // Do not delete
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+
+IConfig * g_pConfig = cSingletonDictionary::Access();
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -96,16 +134,16 @@ tResult ParseCommandLine(int argc, tChar *argv[], IConfig * pConfig)
 
 static bool StringIsTrue(const tChar * psz)
 {
-   Assert(psz != NULL);
-   if (_tcsicmp(psz, kTrueStr) == 0)
+   if (psz != NULL)
    {
-      return true;
+      static const tChar kTrueStr[] = _T("true");
+      if (_tcsicmp(psz, kTrueStr) == 0)
+      {
+         return true;
+      }
+      return _ttoi(psz) ? true : false;
    }
-   else if (_tcsicmp(psz, kTrueStr) == 0)
-   {
-      return true;
-   }
-   return _ttoi(psz) ? true : false;
+   return false;
 }
 
 bool ConfigIsTrue(const tChar * pszName)
