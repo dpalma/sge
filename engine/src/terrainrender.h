@@ -206,18 +206,20 @@ class cSplat
    void operator =(const cSplat &);
 
 public:
-   cSplat(const cStr & texture, uint alphaMap, const std::vector<uint> indices);
+   cSplat(const cStr & texture, uint alphaMap, const std::vector<uint> indices, uint primitiveType);
    ~cSplat();
 
    const cStr & GetTexture() const { return m_texture; }
    uint GetAlphaMap() const { return m_alphaMap; }
    const uint * GetIndexPtr() const { return &m_indices[0]; }
    uint GetIndexCount() const { return m_indices.size(); }
+   uint GetPrimitiveType() const { return m_primitiveType; }
 
 private:
    const cStr m_texture;
    const uint m_alphaMap;
    const std::vector<uint> m_indices;
+   uint m_primitiveType;
 };
 
 

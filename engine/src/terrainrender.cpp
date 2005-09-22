@@ -509,6 +509,8 @@ void BuildSplatAlphaMap(uint splatTile,
          std::map<uint, tVec4> texelWeightMap;
          texelWeightMap[splatTile] = tVec4(0,0,0,0);
 
+         tVec4 texelWeightTotals(0,0,0,0);
+
          for (int i = 0; i < _countof(neighbors); i++)
          {
             if (neighbors[i] == INVALID_HTERRAINQUAD)
@@ -527,18 +529,13 @@ void BuildSplatAlphaMap(uint splatTile,
                texelWeightMap[neighborTile] = tVec4(0,0,0,0);
             }
 
-            texelWeightMap[neighborTile] += tVec4(
+            tVec4 neighborWeights(
                g_splatTexelWeights[0][i],
                g_splatTexelWeights[1][i],
                g_splatTexelWeights[2][i],
                g_splatTexelWeights[3][i]);
-         }
-
-         tVec4 texelWeightTotals(0,0,0,0);
-         std::map<uint, tVec4>::iterator iter = texelWeightMap.begin();
-         for (; iter != texelWeightMap.end(); iter++)
-         {
-            texelWeightTotals += iter->second;
+            texelWeightMap[neighborTile] += neighborWeights;
+            texelWeightTotals += neighborWeights;
          }
 
          tVec4 & texelWeights = texelWeightMap[splatTile];
@@ -656,10 +653,11 @@ tResult cSplatBuilder::BuildIndexBuffer(const tQuadVertexMap & qvm, std::vector<
 
 ////////////////////////////////////////
 
-cSplat::cSplat(const cStr & texture, uint alphaMap, const std::vector<uint> indices)
+cSplat::cSplat(const cStr & texture, uint alphaMap, const std::vector<uint> indices, uint primitiveType)
  : m_texture(texture)
  , m_alphaMap(alphaMap)
  , m_indices(indices.begin(), indices.end())
+ , m_primitiveType(primitiveType)
 {
 }
 
@@ -807,6 +805,8 @@ void cTerrainChunk::BuildSplats(const cRange<uint> xRange, const cRange<uint> zR
    typedef std::map<uint, cSplatBuilder *> tSplatBuilderMap;
    tSplatBuilderMap splatBuilders;
 
+   std::map<uint, uint> tileCounts;
+
    cAutoIPtr<IEnumTerrainQuads> pEnumQuads;
    if (pTerrainModel->EnumTerrainQuads(
       xRange.GetStart(), xRange.GetEnd(),
@@ -825,6 +825,13 @@ void cTerrainChunk::BuildSplats(const cRange<uint> xRange, const cRange<uint> zR
          }
 
          cSplatBuilder * pSplatBuilder = NULL;
+
+         if (tileCounts.find(tile) == tileCounts.end())
+         {
+            tileCounts[tile] = 0;
+         }
+
+         tileCounts[tile] += 1;
 
          if (splatBuilders.find(tile) == splatBuilders.end())
          {
@@ -881,13 +888,47 @@ void cTerrainChunk::BuildSplats(const cRange<uint> xRange, const cRange<uint> zR
       m_splats.clear();
    }
 
-   // Store the new splats
+   // Create the base splat
+   uint baseSplatTile = kNoIndex;
    {
-      Assert(m_splats.empty());
+      uint maxTileCount = 0;
 
+      std::map<uint, uint>::iterator iter = tileCounts.begin();
+      for (; iter != tileCounts.end(); iter++)
+      {
+         if (iter->second > maxTileCount)
+         {
+            baseSplatTile = iter->first;
+            maxTileCount = iter->second;
+         }
+      }
+
+      cSplatBuilder * pBaseSplatBuilder = splatBuilders[baseSplatTile];
+
+      std::vector<uint> indices;
+      pBaseSplatBuilder->BuildIndexBuffer(m_quadVertexMap, &indices);
+
+      cStr tileTexture;
+      if (pTileSet->GetTileTexture(pBaseSplatBuilder->GetTile(), &tileTexture) == S_OK)
+      {
+         cSplat * pSplat = new cSplat(tileTexture, kNoIndex, indices, GL_TRIANGLES);
+         if (pSplat != NULL)
+         {
+            m_splats.push_back(pSplat);
+         }
+      }
+
+      delete pBaseSplatBuilder;
+      Verify(splatBuilders.erase(baseSplatTile) == 1);
+   }
+
+   // Create the splats
+   {
       tSplatBuilderMap::iterator iter = splatBuilders.begin();
       for (; iter != splatBuilders.end(); iter++)
       {
+         AssertMsg(iter->first != baseSplatTile, "Base splat builder should have been removed");
+
          cSplatBuilder * pSplatBuilder = iter->second;
 
          uint alphaMapId = kNoIndex;
@@ -902,7 +943,7 @@ void cTerrainChunk::BuildSplats(const cRange<uint> xRange, const cRange<uint> zR
          cStr tileTexture;
          if (pTileSet->GetTileTexture(pSplatBuilder->GetTile(), &tileTexture) == S_OK)
          {
-            cSplat * pSplat = new cSplat(tileTexture, alphaMapId, indices);
+            cSplat * pSplat = new cSplat(tileTexture, alphaMapId, indices, GL_TRIANGLES);
             if (pSplat != NULL)
             {
                m_splats.push_back(pSplat);
@@ -982,10 +1023,7 @@ void cTerrainChunk::Render()
       glEnable(GL_BLEND);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-      const uint * pIndices = NULL;
-      uint nIndices = 0;
-
-      glDrawElements(GL_TRIANGLES, (*iter)->GetIndexCount(), GL_UNSIGNED_INT, (*iter)->GetIndexPtr());
+      glDrawElements((*iter)->GetPrimitiveType(), (*iter)->GetIndexCount(), GL_UNSIGNED_INT, (*iter)->GetIndexPtr());
    }
 
    glPopClientAttrib();
