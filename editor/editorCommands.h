@@ -89,5 +89,28 @@ private:
 
 
 /////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cTerrainSetElevationCommand
+//
+
+class cTerrainSetElevationCommand : public cComObject<IMPLEMENTS(IEditorCommand)>
+{
+public:
+   cTerrainSetElevationCommand(HTERRAINVERTEX hVertex, float elevation, uint labelId);
+   ~cTerrainSetElevationCommand();
+
+   virtual tResult Do();
+   virtual tResult CanUndo();
+   virtual tResult Undo();
+   virtual tResult GetLabel(cStr * pLabel);
+
+private:
+   HTERRAINVERTEX m_hVertex;
+   float m_elevation, m_oldElevation;
+   uint m_labelId;
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
 
 #endif // !defined(INCLUDED_EDITORCOMMANDS_H)

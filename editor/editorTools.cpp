@@ -6,8 +6,9 @@
 #include "editorTools.h"
 #include "editorTypes.h"
 #include "editorCommands.h"
-#include "terrainapi.h"
+#include "resource.h"
 
+#include "terrainapi.h"
 #include "ray.h"
 
 #include "globalobj.h"
@@ -643,6 +644,8 @@ tResult cTerrainPlateauTool::OnMouseMove(const cEditorMouseEvent & mouseEvent, I
 
 tResult cTerrainPlateauTool::OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
 {
+   m_hitVertices.clear();
+
    HTERRAINVERTEX hHitVertex;
    if (GetHitVertex(mouseEvent.GetPoint(), pView, &hHitVertex))
    {
@@ -655,6 +658,13 @@ tResult cTerrainPlateauTool::OnDragStart(const cEditorMouseEvent & mouseEvent, I
       }
 
       m_elevation = vertexPos.y;
+
+      Assert(!m_pCommand);
+      if (EditorCompositeCommandCreate(TerrainTileCompositeCommandCB, &m_pCommand) != S_OK)
+      {
+         ErrorMsg("Error creating composite command\n");
+         return E_FAIL;
+      }
    }
 
    return S_EDITOR_TOOL_CONTINUE;
@@ -670,13 +680,15 @@ tResult cTerrainPlateauTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEd
    UseGlobal(TerrainRenderer);
    pTerrainRenderer->EnableBlending(true);
 
-   //Assert(!!m_pCommand);
-   //cAutoIPtr<IEditorModel> pEditorModel;
-   //if (pView->GetModel(&pEditorModel) == S_OK)
-   //{
-   //   pEditorModel->AddCommand(m_pCommand, false);
-   //}
-   //SafeRelease(m_pCommand);
+   Assert(!!m_pCommand);
+   cAutoIPtr<IEditorModel> pEditorModel;
+   if (pView->GetModel(&pEditorModel) == S_OK)
+   {
+      pEditorModel->AddCommand(m_pCommand, false);
+   }
+   SafeRelease(m_pCommand);
+
+   m_hitVertices.clear();
 
    return result;
 }
@@ -686,10 +698,25 @@ tResult cTerrainPlateauTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEd
 tResult cTerrainPlateauTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
 {
    HTERRAINVERTEX hHitVertex;
-   if (GetHitVertex(mouseEvent.GetPoint(), pView, &hHitVertex))
+   if (GetHitVertex(mouseEvent.GetPoint(), pView, &hHitVertex)
+      && m_hitVertices.find(hHitVertex) == m_hitVertices.end())
    {
-      UseGlobal(TerrainModel);
-      pTerrainModel->SetVertexElevation(hHitVertex, m_elevation);
+      m_hitVertices.insert(hHitVertex);
+
+      cAutoIPtr<IEditorCommand> pCommand(static_cast<IEditorCommand*>(
+         new cTerrainSetElevationCommand(hHitVertex, m_elevation, IDS_TERRAIN_PLATEAU_COMMAND_LABEL)));
+
+      if (!pCommand)
+      {
+         return E_OUTOFMEMORY;
+      }
+
+      if (pCommand->Do() != S_OK)
+      {
+         return E_FAIL;
+      }
+
+      m_pCommand->Add(pCommand);
    }
 
    return S_EDITOR_TOOL_HANDLED;

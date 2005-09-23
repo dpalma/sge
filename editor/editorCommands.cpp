@@ -349,4 +349,86 @@ tResult cTerrainChangeElevationCommand::GetLabel(cStr * pLabel)
    return S_OK;
 }
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cTerrainSetElevationCommand
+//
+
+////////////////////////////////////////
+
+cTerrainSetElevationCommand::cTerrainSetElevationCommand(HTERRAINVERTEX hVertex, float elevation, uint labelId)
+ : m_hVertex(hVertex)
+ , m_elevation(elevation)
+ , m_oldElevation(elevation)
+ , m_labelId(labelId)
+{
+}
+
+////////////////////////////////////////
+
+cTerrainSetElevationCommand::~cTerrainSetElevationCommand()
+{
+}
+
+////////////////////////////////////////
+
+tResult cTerrainSetElevationCommand::Do()
+{
+   if (m_hVertex != INVALID_HTERRAINVERTEX)
+   {
+      UseGlobal(TerrainModel);
+
+      tVec3 vertexPos;
+      if (pTerrainModel->GetVertexPosition(m_hVertex, &vertexPos) == S_OK)
+      {
+         m_oldElevation = vertexPos.y;
+      }
+
+      return pTerrainModel->SetVertexElevation(m_hVertex, m_elevation);
+   }
+
+   return E_FAIL;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainSetElevationCommand::CanUndo()
+{
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainSetElevationCommand::Undo()
+{
+   if (m_hVertex != INVALID_HTERRAINVERTEX)
+   {
+      UseGlobal(TerrainModel);
+      return pTerrainModel->SetVertexElevation(m_hVertex, m_oldElevation);
+   }
+   return E_FAIL;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainSetElevationCommand::GetLabel(cStr * pLabel)
+{
+   if (pLabel == NULL)
+   {
+      return E_POINTER;
+   }
+
+   CString label;
+   if (!label.LoadString(m_labelId))
+   {
+      return E_FAIL;
+   }
+
+   *pLabel = (LPCTSTR)label;
+
+   return S_OK;
+}
+
+
 /////////////////////////////////////////////////////////////////////////////

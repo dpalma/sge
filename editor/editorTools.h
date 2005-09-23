@@ -166,8 +166,9 @@ protected:
    virtual tResult OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
 
 private:
-   cAutoIPtr<IEditorCompositeCommand> m_pCommand;
    float m_elevation;
+   cAutoIPtr<IEditorCompositeCommand> m_pCommand;
+   std::set<HTERRAINVERTEX> m_hitVertices;
 };
 
 
