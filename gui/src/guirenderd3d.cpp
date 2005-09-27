@@ -110,7 +110,7 @@ void cGUIRenderDeviceD3D::PopScissorRect()
 void cGUIRenderDeviceD3D::RenderSolidRect(const tGUIRect & rect, const tGUIColor & color)
 {
 #define VERT(x,y) \
-   { static_cast<float>(x), static_cast<float>(y), 0, color.GetARGB() }
+   { static_cast<float>(x), static_cast<float>(y), 0, color.ToARGB8888() }
 
    sGUIVertexD3D verts[] =
    {
@@ -149,49 +149,49 @@ void cGUIRenderDeviceD3D::RenderBeveledRect(const tGUIRect & rect, int bevel, co
       int y3 = rect.bottom;
 
 #define VERT(x,y,c) \
-   { static_cast<float>(x), static_cast<float>(y), 0, c }
+   { static_cast<float>(x), static_cast<float>(y), 0, c.ToARGB8888() }
 
       sGUIVertexD3D verts[] =
       {
-         VERT(x0, y0, topLeft.GetARGB()),
-         VERT(x0, y3, topLeft.GetARGB()),
-         VERT(x1, y2, topLeft.GetARGB()),
+         VERT(x0, y0, topLeft),
+         VERT(x0, y3, topLeft),
+         VERT(x1, y2, topLeft),
 
-         VERT(x0, y0, topLeft.GetARGB()),
-         VERT(x1, y2, topLeft.GetARGB()),
-         VERT(x1, y1, topLeft.GetARGB()),
+         VERT(x0, y0, topLeft),
+         VERT(x1, y2, topLeft),
+         VERT(x1, y1, topLeft),
 
-         VERT(x0, y0, topLeft.GetARGB()),
-         VERT(x2, y1, topLeft.GetARGB()),
-         VERT(x3, y0, topLeft.GetARGB()),
+         VERT(x0, y0, topLeft),
+         VERT(x2, y1, topLeft),
+         VERT(x3, y0, topLeft),
 
-         VERT(x0, y0, topLeft.GetARGB()),
-         VERT(x1, y1, topLeft.GetARGB()),
-         VERT(x2, y1, topLeft.GetARGB()),
+         VERT(x0, y0, topLeft),
+         VERT(x1, y1, topLeft),
+         VERT(x2, y1, topLeft),
 
-         VERT(x0, y3, bottomRight.GetARGB()),
-         VERT(x3, y3, bottomRight.GetARGB()),
-         VERT(x1, y2, bottomRight.GetARGB()),
+         VERT(x0, y3, bottomRight),
+         VERT(x3, y3, bottomRight),
+         VERT(x1, y2, bottomRight),
 
-         VERT(x1, y2, bottomRight.GetARGB()),
-         VERT(x3, y3, bottomRight.GetARGB()),
-         VERT(x2, y2, bottomRight.GetARGB()),
+         VERT(x1, y2, bottomRight),
+         VERT(x3, y3, bottomRight),
+         VERT(x2, y2, bottomRight),
 
-         VERT(x3, y0, bottomRight.GetARGB()),
-         VERT(x2, y1, bottomRight.GetARGB()),
-         VERT(x3, y3, bottomRight.GetARGB()),
+         VERT(x3, y0, bottomRight),
+         VERT(x2, y1, bottomRight),
+         VERT(x3, y3, bottomRight),
 
-         VERT(x2, y1, bottomRight.GetARGB()),
-         VERT(x2, y2, bottomRight.GetARGB()),
-         VERT(x3, y3, bottomRight.GetARGB()),
+         VERT(x2, y1, bottomRight),
+         VERT(x2, y2, bottomRight),
+         VERT(x3, y3, bottomRight),
 
-         VERT(x1, y1, face.GetARGB()),
-         VERT(x2, y2, face.GetARGB()),
-         VERT(x2, y1, face.GetARGB()),
+         VERT(x1, y1, face),
+         VERT(x2, y2, face),
+         VERT(x2, y1, face),
 
-         VERT(x2, y2, face.GetARGB()),
-         VERT(x1, y1, face.GetARGB()),
-         VERT(x1, y2, face.GetARGB()),
+         VERT(x2, y2, face),
+         VERT(x1, y1, face),
+         VERT(x1, y2, face),
       };
 
 #undef VERT
