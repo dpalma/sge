@@ -574,47 +574,57 @@ GUI_API void GUIFactoryCreate();
 
 ///////////////////////////////////////
 
-tResult RegisterGUIElementFactory(const char * pszType, IGUIElementFactory * pFactory);
+GUI_API tResult RegisterGUIElementFactory(const char * pszType, IGUIElementFactory * pFactory);
+GUI_API tResult RegisterGUIElementRendererFactory(const char * pszRenderer, IGUIElementRendererFactory * pFactory);
 
-struct sAutoRegisterGUIElementFactory
+struct sAutoRegisterGUIFactory
 {
-   sAutoRegisterGUIElementFactory(const char * pszType, IGUIElementFactory * pFactory)
+   sAutoRegisterGUIFactory(const char * pszType, IUnknown * pUnkFactory)
    {
-      RegisterGUIElementFactory(pszType, pFactory);
-      SafeRelease(pFactory);
+      cAutoIPtr<IGUIElementFactory> pElementFactory;
+      cAutoIPtr<IGUIElementRendererFactory> pRendererFactory;
+      if (pUnkFactory->QueryInterface(IID_IGUIElementFactory, (void**)&pElementFactory) == S_OK)
+      {
+         RegisterGUIElementFactory(pszType, pElementFactory);
+      }
+      if (pUnkFactory->QueryInterface(IID_IGUIElementRendererFactory, (void**)&pRendererFactory) == S_OK)
+      {
+         RegisterGUIElementRendererFactory(pszType, pRendererFactory);
+      }
+      SafeRelease(pUnkFactory);
    }
 };
-
-#define REFERENCE_GUIELEMENTFACTORY(type) \
-   extern IGUIElementFactory * Make##type##ElementFactory(); \
-   void * MAKE_UNIQUE(g_pRefSym##type) = (void *)&Make##type##ElementFactory
-
-#define AUTOREGISTER_GUIELEMENTFACTORY(type, factoryClass) \
-   IGUIElementFactory * Make##type##ElementFactory() \
-   { return static_cast<IGUIElementFactory *>(new (factoryClass)); } \
-   static sAutoRegisterGUIElementFactory g_auto##type##Element(#type, Make##type##ElementFactory())
 
 ///////////////////////////////////////
 
-tResult RegisterGUIElementRendererFactory(const char * pszRenderer, IGUIElementRendererFactory * pFactory);
+#define REFERENCE_GUIFACTORY(type) \
+   extern void * Reference##type##ElementFactory(); \
+   void * MAKE_UNIQUE(g_pRefSym##type) = Reference##type##ElementFactory()
 
-struct sAutoRegisterGUIElementRendererFactory
-{
-   sAutoRegisterGUIElementRendererFactory(const char * pszRenderer, IGUIElementRendererFactory * pFactory)
-   {
-      RegisterGUIElementRendererFactory(pszRenderer, pFactory);
-      SafeRelease(pFactory);
-   }
-};
+#define AUTOREGISTER_GUIFACTORY(type, factoryClass) \
+   class cAutoRegFactorySingleton##type : public factoryClass { public: \
+   virtual ulong STDMETHODCALLTYPE AddRef() { return 2; } \
+   virtual ulong STDMETHODCALLTYPE Release() { return 1; } \
+   } g_autoRegFactorySingleton##type; \
+   void * Reference##type##ElementFactory() \
+   { return &g_autoRegFactorySingleton##type; } \
+   static sAutoRegisterGUIFactory g_auto##type##Element(#type, &g_autoRegFactorySingleton##type)
+
+///////////////////////////////////////
+
+#define REFERENCE_GUIELEMENTFACTORY(renderer) \
+   REFERENCE_GUIFACTORY(renderer)
+
+#define AUTOREGISTER_GUIELEMENTFACTORY(renderer, factoryClass) \
+   AUTOREGISTER_GUIFACTORY(renderer, factoryClass)
+
+///////////////////////////////////////
 
 #define REFERENCE_GUIELEMENTRENDERERFACTORY(renderer) \
-   extern IGUIElementRendererFactory * Make##renderer##RendererFactory(); \
-   void * MAKE_UNIQUE(g_pRefSym##renderer) = (void *)&Make##renderer##RendererFactory
+   REFERENCE_GUIFACTORY(renderer)
 
 #define AUTOREGISTER_GUIELEMENTRENDERERFACTORY(renderer, factoryClass) \
-   IGUIElementRendererFactory * Make##renderer##RendererFactory() \
-   { return static_cast<IGUIElementRendererFactory *>(new (factoryClass)); } \
-   static sAutoRegisterGUIElementRendererFactory g_auto##renderer##Renderer(#renderer, Make##renderer##RendererFactory())
+   AUTOREGISTER_GUIFACTORY(renderer, factoryClass)
 
 
 ////////////////////////////////////////////////////////////////////////////////
