@@ -208,21 +208,140 @@ bool cLogWndLocation::operator ==(const cLogWndLocation & other) const
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: cLogWndSelection
+//
+
+///////////////////////////////////////
+
+cLogWndSelection::cLogWndSelection()
+ : m_pSelAnchor(NULL)
+ , m_pSelDrag(NULL)
+ , m_bDragGTEAnchor(false)
+{
+}
+
+///////////////////////////////////////
+
+cLogWndSelection::~cLogWndSelection()
+{
+}
+
+///////////////////////////////////////
+
+void cLogWndSelection::Clear()
+{
+   m_startSel = cLogWndLocation();
+   m_endSel = cLogWndLocation();
+   m_pSelAnchor = NULL;
+   m_pSelDrag = NULL;
+}
+
+///////////////////////////////////////
+
+bool cLogWndSelection::IsEmpty() const
+{
+   return (m_startSel.iLine == -1) && (m_endSel.iLine == -1);
+}
+
+///////////////////////////////////////
+
+bool cLogWndSelection::IsWithinSelection(const cLogWndLocation & loc) const
+{
+   return (loc >= m_startSel) && (loc < m_endSel);
+}
+
+///////////////////////////////////////
+
+void cLogWndSelection::DragSelectBegin(const cLogWndLocation & loc)
+{
+   m_savedStartSel = m_startSel;
+   m_savedEndSel = m_endSel;
+   m_startSel = loc;
+   m_endSel = loc;
+   m_bDragGTEAnchor = true;
+   m_pSelAnchor = &m_startSel;
+   m_pSelDrag = &m_endSel;
+}
+
+///////////////////////////////////////
+
+void cLogWndSelection::DragSelectUpdate(const cLogWndLocation & loc)
+{
+   *m_pSelDrag = loc;
+
+   int iAnchorEntry = m_pSelAnchor->iLine;
+   int iDragEntry = m_pSelDrag->iLine;
+
+   // is the drag pos less than the anchor pos?
+   bool bDragLTAnchor = (iDragEntry < iAnchorEntry) || 
+      ((iDragEntry == iAnchorEntry) && (m_pSelDrag->iChar < m_pSelAnchor->iChar));
+
+   // is the drag pos equal to the anchor pos?
+   bool bDragEqAnchor = (iDragEntry == iAnchorEntry) && (m_pSelDrag->iChar == m_pSelAnchor->iChar);
+
+   // is the drag pos greater than the anchor pos?
+   bool bDragGTAnchor = (iDragEntry > iAnchorEntry) || 
+      ((iDragEntry == iAnchorEntry) && (m_pSelDrag->iChar > m_pSelAnchor->iChar));
+
+   if ((m_bDragGTEAnchor && bDragLTAnchor) ||
+         (!m_bDragGTEAnchor && (bDragGTAnchor || bDragEqAnchor)))
+   {
+      Swap(*m_pSelAnchor, *m_pSelDrag);
+      Swap(m_pSelAnchor, m_pSelDrag);
+      m_bDragGTEAnchor = !m_bDragGTEAnchor;
+   }
+}
+
+///////////////////////////////////////
+
+void cLogWndSelection::DragSelectEnd()
+{
+   if (m_startSel.iLine == -1)
+   {
+      m_startSel.iLine = 0;
+      m_startSel.iChar = 0;
+   }
+
+   if (m_endSel.iLine == -1)
+   {
+      Clear();
+   }
+
+   m_pSelAnchor = NULL;
+   m_pSelDrag = NULL;
+}
+
+///////////////////////////////////////
+
+void cLogWndSelection::DragSelectCancel()
+{
+   m_startSel = m_savedStartSel;
+   m_endSel = m_savedEndSel;
+   m_pSelAnchor = NULL;
+   m_pSelDrag = NULL;
+}
+
+///////////////////////////////////////
+
+bool cLogWndSelection::GetSelection(const tLogWndLines & lines, CString * pSel) const
+{
+   return false;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cLogWnd
 //
 
 ///////////////////////////////////////
 
 cLogWnd::cLogWnd()
- : m_textColor(GetSysColor(COLOR_WINDOWTEXT)),
-   m_bkColor(GetSysColor(COLOR_WINDOW)),
-   m_nMaxLines(kDefaultMaxLines),
-   m_lineHeight(0),
-   m_maxLineHorizontalExtent(0),
-   m_bAtEnd(true),
-   m_nAddsSinceLastPaint(0),
-   m_pSelAnchor(NULL),
-   m_pSelDrag(NULL)
+ : m_nMaxLines(kDefaultMaxLines)
+ , m_lineHeight(0)
+ , m_maxLineHorizontalExtent(0)
+ , m_bAtEnd(true)
+ , m_nAddsSinceLastPaint(0)
 {
 }
 
@@ -258,7 +377,7 @@ void cLogWnd::AddText(LPCTSTR pszText, int textLength, COLORREF textColor)
    }
 
    WTL::CDC dc(::GetDC(m_hWnd));
-   HFONT hOldFont = dc.SelectFont(m_font);
+   HFONT hOldFont = dc.SelectFont(GetFont());
 
    int breakLength = _tcscspn(pszText, szLineBreakChars);
    while ((breakLength <= textLength) && (breakLength > 0))
@@ -306,12 +425,11 @@ void cLogWnd::AddText(LPCTSTR pszText, int textLength, COLORREF textColor)
 
 void cLogWnd::Clear()
 {
-   ClearSel();
+   m_selection.Clear();
 
    m_maxLineHorizontalExtent = 0;
 
-   tLogWndLines::iterator iter;
-   for (iter = m_lines.begin(); iter != m_lines.end(); iter++)
+   for (tLogWndLines::iterator iter = m_lines.begin(); iter != m_lines.end(); iter++)
    {
       delete *iter;
    }
@@ -339,29 +457,6 @@ void cLogWnd::SetMaxLines(int nMaxLines)
 
 ///////////////////////////////////////
 
-void cLogWnd::SetFont(HFONT hFont, BOOL bRedraw)
-{
-   LOGFONT lf;
-   if (GetObject(hFont, sizeof(LOGFONT), &lf))
-   {
-      WTL::CFont newFont;
-      if (newFont.CreateFontIndirect(&lf))
-      {
-         m_font.Attach(newFont.Detach());
-
-         UpdateFontMetrics();
-         UpdateScrollInfo();
-
-         if (bRedraw)
-         {
-            Invalidate();
-         }
-      }
-   }
-}
-
-///////////////////////////////////////
-
 bool cLogWnd::CopySelection()
 {
    bool result = false; // assume failure
@@ -383,27 +478,27 @@ bool cLogWnd::CopySelection()
 
 bool cLogWnd::GetSelection(CString * pSel)
 {
-   if (m_startSel.iLine > -1 && m_endSel.iLine > -1)
+   if (!m_selection.IsEmpty())
    {
       Assert(pSel != NULL);
       pSel->Empty();
 
-      for (uint i = m_startSel.iLine; i < m_lines.size(); i++)
+      for (uint i = m_selection.GetStart().iLine; i < m_lines.size(); i++)
       {
          int iStart, iEnd;
 
-         if (i == m_startSel.iLine)
+         if (i == m_selection.GetStart().iLine)
          {
-            iStart = m_startSel.iChar;
+            iStart = m_selection.GetStart().iChar;
          }
          else
          {
             iStart = 0;
          }
 
-         if (i == m_endSel.iLine)
+         if (i == m_selection.GetEnd().iLine)
          {
-            iEnd = m_endSel.iChar;
+            iEnd = m_selection.GetEnd().iChar;
          }
          else
          {
@@ -419,7 +514,7 @@ bool cLogWnd::GetSelection(CString * pSel)
          *pSel += s;
 
          // if we just did the last entry in the selection, break out of the loop
-         if (i == m_endSel.iLine)
+         if (i == m_selection.GetEnd().iLine)
          {
             break;
          }
@@ -429,6 +524,42 @@ bool cLogWnd::GetSelection(CString * pSel)
    }
 
    return false;
+}
+
+///////////////////////////////////////
+
+void cLogWnd::UpdateScrollInfo()
+{
+   CRect rect;
+   GetClientRect(&rect);
+
+   if (!rect.IsRectEmpty() && !m_lines.empty())
+   {
+      SetScrollSize(m_maxLineHorizontalExtent, m_lines.size() * m_lineHeight);
+      SetScrollLine(0, m_lineHeight);
+      SetScrollPage(0, m_lineHeight * 4);
+   }
+}
+
+///////////////////////////////////////
+
+void cLogWnd::UpdateFontMetrics()
+{
+   WTL::CDC dc(::GetDC(m_hWnd));
+   HFONT hOldFont = dc.SelectFont(GetFont());
+
+   tLogWndLines::iterator iter = m_lines.begin();
+   for (; iter != m_lines.end(); iter++)
+   {
+      (*iter)->UpdateHorizontalExtent(dc);
+   }
+
+   TEXTMETRIC tm;
+   Verify(dc.GetTextMetrics(&tm));
+
+   m_lineHeight = tm.tmHeight + tm.tmExternalLeading;
+
+   dc.SelectFont(hOldFont);
 }
 
 ///////////////////////////////////////
@@ -457,7 +588,7 @@ void cLogWnd::EnforceMaxLines()
       m_maxLineHorizontalExtent = 0;
 
       WTL::CDC dc(::GetDC(m_hWnd));
-      HFONT hOldFont = dc.SelectFont(m_font);
+      HFONT hOldFont = dc.SelectFont(GetFont());
 
       tLogWndLines::iterator iter;
       for (iter = m_lines.begin(); iter != m_lines.end(); iter++)
@@ -470,42 +601,6 @@ void cLogWnd::EnforceMaxLines()
 
       dc.SelectFont(hOldFont);
    }
-}
-
-///////////////////////////////////////
-
-void cLogWnd::UpdateScrollInfo()
-{
-   CRect rect;
-   GetClientRect(&rect);
-
-   if (!rect.IsRectEmpty() && !m_lines.empty())
-   {
-      SetScrollSize(m_maxLineHorizontalExtent, m_lines.size() * m_lineHeight);
-      SetScrollLine(0, m_lineHeight);
-      SetScrollPage(0, m_lineHeight * 4);
-   }
-}
-
-///////////////////////////////////////
-
-void cLogWnd::UpdateFontMetrics()
-{
-   WTL::CDC dc(::GetDC(m_hWnd));
-   HFONT hOldFont = dc.SelectFont(m_font);
-
-   tLogWndLines::iterator iter = m_lines.begin();
-   for (; iter != m_lines.end(); iter++)
-   {
-      (*iter)->UpdateHorizontalExtent(dc);
-   }
-
-   TEXTMETRIC tm;
-   dc.GetTextMetrics(&tm);
-
-   m_lineHeight = tm.tmHeight + tm.tmExternalLeading;
-
-   dc.SelectFont(hOldFont);
 }
 
 ///////////////////////////////////////
@@ -525,7 +620,7 @@ bool cLogWnd::GetHitLocation(const CPoint & point, int * piLine, int * piChar) c
    if (GetHitLine(point, &iLine))
    {
       WTL::CDC dc(::GetDC(m_hWnd));
-      HFONT hOldFont = dc.SelectFont(m_font);
+      HFONT hOldFont = dc.SelectFont(GetFont());
 
       DWORD gcpFlags = GetFontLanguageInfo(dc);
       gcpFlags |= GCP_MAXEXTENT;
@@ -570,72 +665,6 @@ bool cLogWnd::GetHitLine(const CPoint & point, int * piLine) const
       return true;
    }
    return false;
-}
-
-///////////////////////////////////////
-// Clean up ALL selection data
-
-void cLogWnd::ClearSel()
-{
-   m_startSel = cLogWndLocation();
-   m_endSel = cLogWndLocation();
-
-   m_pSelAnchor = NULL;
-   m_pSelDrag = NULL;
-}
-
-///////////////////////////////////////
-
-void cLogWnd::UpdateSelDrag(const CPoint & point)
-{
-   CRect rect;
-   GetClientRect(&rect);
-
-   if (point.y < rect.top)
-   {
-      ScrollLineUp();
-   }
-   else if (point.y > rect.bottom)
-   {
-      ScrollLineDown();
-   }
-
-   if (point.x > rect.right)
-   {
-      ScrollLineRight();
-   }
-   else if (point.x < rect.left)
-   {
-      ScrollLineLeft();
-   }
-
-   if (GetHitLocation(point, m_pSelDrag))
-   {
-      int iAnchorEntry = m_pSelAnchor->iLine;
-      int iDragEntry = m_pSelDrag->iLine;
-
-      // is the drag pos less than the anchor pos?
-      bool bDragLTAnchor = (iDragEntry < iAnchorEntry) || 
-         ((iDragEntry == iAnchorEntry) && (m_pSelDrag->iChar < m_pSelAnchor->iChar));
-
-      // is the drag pos equal to the anchor pos?
-      bool bDragEqAnchor = (iDragEntry == iAnchorEntry) && (m_pSelDrag->iChar == m_pSelAnchor->iChar);
-
-      // is the drag pos greater than the anchor pos?
-      bool bDragGTAnchor = (iDragEntry > iAnchorEntry) || 
-         ((iDragEntry == iAnchorEntry) && (m_pSelDrag->iChar > m_pSelAnchor->iChar));
-
-      if ((m_bDragGTEAnchor && bDragLTAnchor) ||
-          (!m_bDragGTEAnchor && (bDragGTAnchor || bDragEqAnchor)))
-      {
-         Swap(*m_pSelAnchor, *m_pSelDrag);
-         Swap(m_pSelAnchor, m_pSelDrag);
-         m_bDragGTEAnchor = !m_bDragGTEAnchor;
-      }
-
-      Invalidate(FALSE);
-      UpdateWindow();
-   }
 }
 
 ///////////////////////////////////////
@@ -693,7 +722,7 @@ void cLogWnd::DoPaint(WTL::CDCHandle dc)
 
    int savedDC = dc.SaveDC();
 
-   HFONT hOldFont = dc.SelectFont(m_font);
+   HFONT hOldFont = dc.SelectFont(GetFont());
 
    int iStart, iEnd;
    GetVisibleRange(&iStart, &iEnd);
@@ -709,10 +738,10 @@ void cLogWnd::DoPaint(WTL::CDCHandle dc)
    tLogWndLines::iterator iter = m_lines.begin() + iStart;
    for (int index = 0; (iter != m_lines.end()) && (index <= iEnd); index++, iter++)
    {
-      if ((index == m_startSel.iLine) && (index == m_endSel.iLine))
+      if ((index == m_selection.GetStart().iLine) && (index == m_selection.GetEnd().iLine))
       {
          CSize startSelExtent;
-         dc.GetTextExtent(m_lines[m_startSel.iLine]->GetText(), m_startSel.iChar, &startSelExtent);
+         dc.GetTextExtent(m_lines[m_selection.GetStart().iLine]->GetText(), m_selection.GetStart().iChar, &startSelExtent);
 
          CRect clip(r);
          clip.right = startSelExtent.cx;
@@ -722,7 +751,7 @@ void cLogWnd::DoPaint(WTL::CDCHandle dc)
          dc.ExtTextOut(r.left, r.top, ETO_OPAQUE | ETO_CLIPPED, &clip, (*iter)->GetText(), (*iter)->GetTextLen(), NULL);
 
          CSize endSelExtent;
-         dc.GetTextExtent(m_lines[m_endSel.iLine]->GetText(), m_endSel.iChar, &endSelExtent);
+         dc.GetTextExtent(m_lines[m_selection.GetEnd().iLine]->GetText(), m_selection.GetEnd().iChar, &endSelExtent);
 
          clip.left = clip.right;
          clip.right = endSelExtent.cx;
@@ -738,12 +767,12 @@ void cLogWnd::DoPaint(WTL::CDCHandle dc)
          dc.SetTextColor((*iter)->GetTextColor());
          dc.ExtTextOut(r.left, r.top, ETO_OPAQUE | ETO_CLIPPED, &clip, (*iter)->GetText(), (*iter)->GetTextLen(), NULL);
       }
-      else if (index == m_startSel.iLine)
+      else if (index == m_selection.GetStart().iLine)
       {
          bInSel = true;
 
          CSize startSelExtent;
-         dc.GetTextExtent(m_lines[m_startSel.iLine]->GetText(), m_startSel.iChar, &startSelExtent);
+         dc.GetTextExtent(m_lines[m_selection.GetStart().iLine]->GetText(), m_selection.GetStart().iChar, &startSelExtent);
 
          CRect clip(r);
          clip.right = startSelExtent.cx;
@@ -768,12 +797,12 @@ void cLogWnd::DoPaint(WTL::CDCHandle dc)
 
          dc.ExtTextOut(r.left, r.top, ETO_OPAQUE | ETO_CLIPPED, &clip, NULL, 0, NULL);
       }
-      else if (index == m_endSel.iLine)
+      else if (index == m_selection.GetEnd().iLine)
       {
          bInSel = false;
 
          CSize endSelExtent;
-         dc.GetTextExtent(m_lines[m_endSel.iLine]->GetText(), m_endSel.iChar, &endSelExtent);
+         dc.GetTextExtent(m_lines[m_selection.GetEnd().iLine]->GetText(), m_selection.GetEnd().iChar, &endSelExtent);
 
          CRect clip(r);
          clip.right = endSelExtent.cx;
@@ -871,13 +900,6 @@ void cLogWnd::OnDestroy()
 
 ///////////////////////////////////////
 
-void cLogWnd::OnSetFont(HFONT hFont, BOOL bRedraw)
-{
-   SetFont(hFont, bRedraw);
-}
-
-///////////////////////////////////////
-
 LRESULT cLogWnd::OnEraseBkgnd(WTL::CDCHandle dc)
 {
    if (m_lines.empty())
@@ -898,7 +920,7 @@ void cLogWnd::OnContextMenu(HWND hWnd, CPoint point)
 
    AddContextMenuItems(&contextMenu);
 
-   if ((m_startSel.iLine > -1) && (m_endSel.iLine > -1))
+   if (!m_selection.IsEmpty())
    {
       contextMenu.EnableMenuItem(ID_EDIT_COPY, MF_BYCOMMAND | MF_ENABLED);
    }
@@ -921,7 +943,7 @@ LRESULT cLogWnd::OnSetCursor(HWND hWnd, UINT hitTest, UINT message)
 
       cLogWndLocation hitLoc;
       if (GetHitLocation(point, &hitLoc)
-         && hitLoc >= m_startSel && hitLoc < m_endSel)
+         && m_selection.IsWithinSelection(hitLoc))
       {
          SetCursor(LoadCursor(NULL, IDC_ARROW));
       }
@@ -942,7 +964,35 @@ void cLogWnd::OnMouseMove(UINT flags, CPoint point)
 {
    if (GetCapture() == m_hWnd)
    {
-      UpdateSelDrag(point);
+      CRect rect;
+      GetClientRect(&rect);
+
+      if (point.y < rect.top)
+      {
+         ScrollLineUp();
+      }
+      else if (point.y > rect.bottom)
+      {
+         ScrollLineDown();
+      }
+
+      if (point.x > rect.right)
+      {
+         ScrollLineRight();
+      }
+      else if (point.x < rect.left)
+      {
+         ScrollLineLeft();
+      }
+
+      cLogWndLocation loc;
+      if (GetHitLocation(point, &loc))
+      {
+         m_selection.DragSelectUpdate(loc);
+
+         Invalidate(FALSE);
+         UpdateWindow();
+      }
    }
 }
 
@@ -953,7 +1003,7 @@ void cLogWnd::OnLButtonDown(UINT flags, CPoint point)
    cLogWndLocation hitLoc;
    if (GetHitLocation(point, &hitLoc))
    {
-      if (hitLoc >= m_startSel && hitLoc < m_endSel)
+      if (m_selection.IsWithinSelection(hitLoc))
       {
          CString sel;
          if (GetSelection(&sel) && sel.GetLength() > 0)
@@ -965,18 +1015,12 @@ void cLogWnd::OnLButtonDown(UINT flags, CPoint point)
       }
       else
       {
-         ClearSel();
+         m_selection.DragSelectBegin(hitLoc);
+
          Invalidate(FALSE);
          UpdateWindow();
 
-         m_startSel = hitLoc;
-         m_endSel = hitLoc;
-
          SetCapture();
-
-         m_bDragGTEAnchor = true;
-         m_pSelAnchor = &m_startSel;
-         m_pSelDrag = &m_endSel;
       }
    }
 }
@@ -987,23 +1031,18 @@ void cLogWnd::OnLButtonUp(UINT flags, CPoint point)
 {
    if (GetCapture() == m_hWnd)
    {
-      if (m_startSel.iLine == -1)
-      {
-         if (!m_lines.empty())
-         {
-            m_startSel.iLine = 0;
-            m_startSel.iChar = 0;
-         }
-      }
+      m_selection.DragSelectEnd();
 
-      if (m_endSel.iLine == -1)
-      {
-         ClearSel();
-         Invalidate(FALSE);
-      }
-
+      Invalidate(FALSE);
       ReleaseCapture();
    }
+}
+
+///////////////////////////////////////
+
+void cLogWnd::OnCancelMode()
+{
+   m_selection.DragSelectCancel();
 }
 
 ///////////////////////////////////////
