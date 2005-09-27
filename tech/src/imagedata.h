@@ -41,6 +41,8 @@ enum ePixelFormat
    // 32-bit
    kPF_RGBA8888,
    kPF_BGRA8888,
+
+   kPF_NumPixelFormats, // must be the last member of the enumeration
 };
 
 class TECH_API cImageData

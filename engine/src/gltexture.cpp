@@ -35,6 +35,8 @@ static const GLint g_glTexComponents[] =
    4, // kPF_BGRA8888
 };
 
+AssertOnce(_countof(g_glTexComponents) == kPF_NumPixelFormats);
+
 ///////////////////////////////////////////////////////////////////////////////
 
 // Convert a pixel format to a GL format constant.
@@ -55,6 +57,8 @@ static const GLenum g_glTexFormats[] =
    GL_RGBA,       // kPF_RGBA8888
    GL_BGRA_EXT,   // kPF_BGRA8888
 };
+
+AssertOnce(_countof(g_glTexFormats) == kPF_NumPixelFormats);
 
 ///////////////////////////////////////////////////////////////////////////////
 

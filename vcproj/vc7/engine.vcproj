@@ -491,6 +491,9 @@
 			Name=".\include"
 			Filter="h;hpp;hxx;hm;inl">
 			<File
+				RelativePath="..\..\engine\include\color.h">
+			</File>
+			<File
 				RelativePath="..\..\engine\include\engineapi.h">
 			</File>
 			<File

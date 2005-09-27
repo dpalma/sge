@@ -4,6 +4,8 @@
 #ifndef INCLUDED_COLOR_H
 #define INCLUDED_COLOR_H
 
+#include "techmath.h"
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -18,49 +20,52 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cColor
+// TEMPLATE: cColorImpl
 //
 
-class cColor
+template <typename T>
+class cColorImpl
 {
 public:
-   cColor();
-   cColor(float r, float g, float b);
-   cColor(float r, float g, float b, float a);
-   cColor(const float rgba[4]);
-   cColor(const cColor & other);
-   const cColor & operator =(const cColor & other);
+   cColorImpl();
+   cColorImpl(float r, float g, float b);
+   cColorImpl(float r, float g, float b, float a);
+   cColorImpl(const T rgba[4]);
+   cColorImpl(const cColorImpl & other);
+   const cColorImpl & operator =(const cColorImpl & other);
 
-   bool operator !=(const cColor & other);
-   bool operator ==(const cColor & other);
+   bool operator !=(const cColorImpl & other);
+   bool operator ==(const cColorImpl & other);
 
-   float GetRed() const;
-   float GetGreen() const;
-   float GetBlue() const;
-   float GetAlpha() const;
+   const cColorImpl<T> & operator *=(const cColorImpl & other);
+   const cColorImpl<T> & operator /=(const cColorImpl & other);
+   const cColorImpl<T> & operator +=(const cColorImpl & other);
+   const cColorImpl<T> & operator -=(const cColorImpl & other);
 
-   uint GetARGB() const;
+   T GetRed() const;
+   T GetGreen() const;
+   T GetBlue() const;
+   T GetAlpha() const;
 
-   const float * GetPointer() const;
+   uint32 ToARGB8888() const;
+
+   const T * GetPointer() const;
 
 private:
-   float m_rgba[4];
-   mutable bool m_bHaveARGB;
-   mutable uint m_argb;
+   T m_rgba[4];
 };
 
-///////////////////////////////////////
+////////////////////////////////////////
 
-inline cColor::cColor()
- : m_bHaveARGB(false)
+template <typename T>
+inline cColorImpl<T>::cColorImpl()
 {
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
-inline cColor::cColor(float r, float g, float b)
- : m_bHaveARGB(false),
-   m_argb(0)
+template <typename T>
+inline cColorImpl<T>::cColorImpl(float r, float g, float b)
 {
    m_rgba[0] = r;
    m_rgba[1] = g;
@@ -68,11 +73,10 @@ inline cColor::cColor(float r, float g, float b)
    m_rgba[3] = 1;
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
-inline cColor::cColor(float r, float g, float b, float a)
- : m_bHaveARGB(false),
-   m_argb(0)
+template <typename T>
+inline cColorImpl<T>::cColorImpl(float r, float g, float b, float a)
 {
    m_rgba[0] = r;
    m_rgba[1] = g;
@@ -80,11 +84,10 @@ inline cColor::cColor(float r, float g, float b, float a)
    m_rgba[3] = a;
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
-inline cColor::cColor(const float rgba[4])
- : m_bHaveARGB(false),
-   m_argb(0)
+template <typename T>
+inline cColorImpl<T>::cColorImpl(const T rgba[4])
 {
    m_rgba[0] = rgba[0];
    m_rgba[1] = rgba[1];
@@ -92,11 +95,10 @@ inline cColor::cColor(const float rgba[4])
    m_rgba[3] = rgba[3];
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
-inline cColor::cColor(const cColor & other)
- : m_bHaveARGB(other.m_bHaveARGB),
-   m_argb(other.m_argb)
+template <typename T>
+inline cColorImpl<T>::cColorImpl(const cColorImpl & other)
 {
    m_rgba[0] = other.m_rgba[0];
    m_rgba[1] = other.m_rgba[1];
@@ -104,90 +106,156 @@ inline cColor::cColor(const cColor & other)
    m_rgba[3] = other.m_rgba[3];
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
-inline const cColor & cColor::operator =(const cColor & other)
+template <typename T>
+inline const cColorImpl<T> & cColorImpl<T>::operator =(const cColorImpl & other)
 {
    m_rgba[0] = other.m_rgba[0];
    m_rgba[1] = other.m_rgba[1];
    m_rgba[2] = other.m_rgba[2];
    m_rgba[3] = other.m_rgba[3];
-   m_bHaveARGB = other.m_bHaveARGB;
-   m_argb = other.m_argb;
    return *this;
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
-inline bool cColor::operator !=(const cColor & other)
+template <typename T>
+inline bool cColorImpl<T>::operator !=(const cColorImpl & other)
 {
    return
-      (m_rgba[0] != other.m_rgba[0]) &&
-      (m_rgba[1] != other.m_rgba[1]) &&
-      (m_rgba[2] != other.m_rgba[2]) &&
-      (m_rgba[3] != other.m_rgba[3]);
+      !AlmostEqual(m_rgba[0], other.m_rgba[0]) ||
+      !AlmostEqual(m_rgba[1], other.m_rgba[1]) ||
+      !AlmostEqual(m_rgba[2], other.m_rgba[2]) ||
+      !AlmostEqual(m_rgba[3], other.m_rgba[3]);
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
-inline bool cColor::operator ==(const cColor & other)
+template <typename T>
+inline bool cColorImpl<T>::operator ==(const cColorImpl & other)
 {
    return
-      (m_rgba[0] == other.m_rgba[0]) &&
-      (m_rgba[1] == other.m_rgba[1]) &&
-      (m_rgba[2] == other.m_rgba[2]) &&
-      (m_rgba[3] == other.m_rgba[3]);
+      AlmostEqual(m_rgba[0], other.m_rgba[0]) &&
+      AlmostEqual(m_rgba[1], other.m_rgba[1]) &&
+      AlmostEqual(m_rgba[2], other.m_rgba[2]) &&
+      AlmostEqual(m_rgba[3], other.m_rgba[3]);
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
-inline float cColor::GetRed() const
+template <typename T>
+const cColorImpl<T> & cColorImpl<T>::operator *=(const cColorImpl & other)
+{
+   m_rgba[0] *= other.m_rgba[0];
+   m_rgba[1] *= other.m_rgba[1];
+   m_rgba[2] *= other.m_rgba[2];
+   m_rgba[3] *= other.m_rgba[3];
+   return *this;
+}
+
+////////////////////////////////////////
+
+template <typename T>
+const cColorImpl<T> & cColorImpl<T>::operator /=(const cColorImpl & other)
+{
+   m_rgba[0] /= other.m_rgba[0];
+   m_rgba[1] /= other.m_rgba[1];
+   m_rgba[2] /= other.m_rgba[2];
+   m_rgba[3] /= other.m_rgba[3];
+   return *this;
+}
+
+////////////////////////////////////////
+
+template <typename T>
+const cColorImpl<T> & cColorImpl<T>::operator +=(const cColorImpl & other)
+{
+   m_rgba[0] += other.m_rgba[0];
+   m_rgba[1] += other.m_rgba[1];
+   m_rgba[2] += other.m_rgba[2];
+   m_rgba[3] += other.m_rgba[3];
+   return *this;
+}
+
+////////////////////////////////////////
+
+template <typename T>
+const cColorImpl<T> & cColorImpl<T>::operator -=(const cColorImpl & other)
+{
+   m_rgba[0] -= other.m_rgba[0];
+   m_rgba[1] -= other.m_rgba[1];
+   m_rgba[2] -= other.m_rgba[2];
+   m_rgba[3] -= other.m_rgba[3];
+   return *this;
+}
+
+////////////////////////////////////////
+
+template <typename T>
+inline T cColorImpl<T>::GetRed() const
 {
    return m_rgba[0];
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
-inline float cColor::GetGreen() const
+template <typename T>
+inline T cColorImpl<T>::GetGreen() const
 {
    return m_rgba[1];
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
-inline float cColor::GetBlue() const
+template <typename T>
+inline T cColorImpl<T>::GetBlue() const
 {
    return m_rgba[2];
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
-inline float cColor::GetAlpha() const
+template <typename T>
+inline T cColorImpl<T>::GetAlpha() const
 {
    return m_rgba[3];
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
-inline uint cColor::GetARGB() const
+template <typename T>
+inline uint32 cColorImpl<T>::ToARGB8888() const
 {
-   if (!m_bHaveARGB)
-   {
-      m_bHaveARGB = true;
-      m_argb = ARGB((byte)(GetAlpha() * 255),
-                    (byte)(GetRed() * 255),
-                    (byte)(GetGreen() * 255),
-                    (byte)(GetBlue() * 255));
-   }
-   return m_argb;
+   return ARGB(
+      static_cast<byte>(GetAlpha() * 255),
+      static_cast<byte>(GetRed() * 255),
+      static_cast<byte>(GetGreen() * 255),
+      static_cast<byte>(GetBlue() * 255));
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
-inline const float * cColor::GetPointer() const
+template <typename T>
+inline const T * cColorImpl<T>::GetPointer() const
 {
    return m_rgba;
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cColor
+//
+
+class cColor : public cColorImpl<float>
+{
+public:
+   cColor() : cColorImpl<float>() {}
+   cColor(float r, float g, float b) : cColorImpl<float>(r,g,b) {}
+   cColor(float r, float g, float b, float a) : cColorImpl<float>(r,g,b,a) {}
+   cColor(const float rgba[4]) : cColorImpl<float>(rgba) {}
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 
