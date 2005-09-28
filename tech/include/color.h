@@ -47,6 +47,8 @@ public:
    T GetBlue() const;
    T GetAlpha() const;
 
+   T GetGrayLevel() const;
+
    uint32 ToARGB8888() const;
 
    const T * GetPointer() const;
@@ -220,6 +222,14 @@ template <typename T>
 inline T cColorImpl<T>::GetAlpha() const
 {
    return m_rgba[3];
+}
+
+////////////////////////////////////////
+
+template <typename T>
+T cColorImpl<T>::GetGrayLevel() const
+{
+   return (0.3 * GetRed()) + (0.6 * GetGreen()) + (0.1 * GetBlue());
 }
 
 ////////////////////////////////////////

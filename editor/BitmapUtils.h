@@ -20,8 +20,6 @@ F_DECLARE_INTERFACE(ITerrainTileSet);
 
 /////////////////////////////////////////////////////////////////////////////
 
-byte GrayLevel(COLORREF color);
-
 // STDCALL to match the signature of ImageList_Draw exactly
 BOOL STDCALL ImageList_DrawDisabled(HIMAGELIST hImageList, int iImage, HDC hDC, int x, int y, uint drawStyle);
 

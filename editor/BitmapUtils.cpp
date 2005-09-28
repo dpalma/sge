@@ -20,30 +20,6 @@ static char THIS_FILE[] = __FILE__;
 #define ALIGN4BYTE(w) (((w) + 3) & ~3)
 
 ///////////////////////////////////////////////////////////////////////////////
-// Use NTSC constants for converting color to gray
-
-byte GrayLevel(COLORREF color)
-{
-   double r = GetRValue(color);
-   double g = GetGValue(color);
-   double b = GetBValue(color);
-
-   double intensity =
-      0.3 * (r / 255) +
-      0.6 * (g / 255) +
-      0.1 * (b / 255);
-
-   if (intensity < 0)
-   {
-      intensity = 0;
-   }
-   else if (intensity > 1)
-   {
-      intensity = 1;
-   }
-
-   return (byte)(intensity * 255);
-}
 
 // Helper function for painting a disabled toolbar or menu bitmap
 // This function can take either an HBITMAP (for SS) or a DC with 
