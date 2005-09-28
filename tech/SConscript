@@ -17,10 +17,10 @@ sources = Split("""
    src/globalobjreg.cpp
    src/graphtest.cpp
    src/hash.cpp
+   src/image.cpp
    src/imagedata.cpp
    src/log.cpp
    src/matrix4.cpp
-   src/prime.cpp
    src/quat.cpp
    src/readwritefile.cpp
    src/readwritemem.cpp

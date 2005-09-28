@@ -8,7 +8,7 @@
 #include "terrainapi.h"
 
 #include "resourceapi.h"
-#include "imagedata.h"
+#include "imageapi.h"
 #include "globalobj.h"
 
 #ifdef _DEBUG
@@ -180,11 +180,11 @@ BOOL STDCALL ImageList_DrawDisabled(HIMAGELIST hImageList, int iImage,
 
 /////////////////////////////////////////////////////////////////////////////
 
-bool LoadBitmap(const cImageData * pImageData, HBITMAP * phBitmap)
+bool LoadBitmap(IImage * pImage, HBITMAP * phBitmap)
 {
    bool bResult = false;
 
-   if (pImageData != NULL)
+   if (pImage != NULL)
    {
       static const int bitCounts[] =
       {
@@ -202,7 +202,7 @@ bool LoadBitmap(const cImageData * pImageData, HBITMAP * phBitmap)
          32, // kPF_BGRA8888
       };
 
-      int bitCount = bitCounts[pImageData->GetPixelFormat()];
+      int bitCount = bitCounts[pImage->GetPixelFormat()];
 
       if (bitCount > 0)
       {
@@ -210,21 +210,21 @@ bool LoadBitmap(const cImageData * pImageData, HBITMAP * phBitmap)
 
          uint bytesPerPixel = bitCount / 8;
 
-         uint alignedWidth = ALIGN4BYTE(pImageData->GetWidth());
+         uint alignedWidth = ALIGN4BYTE(pImage->GetWidth());
 
-         size_t imageBitsSize = ((pImageData->GetWidth() * bytesPerPixel) + (alignedWidth - pImageData->GetWidth())) * pImageData->GetHeight();
+         size_t imageBitsSize = ((pImage->GetWidth() * bytesPerPixel) + (alignedWidth - pImage->GetWidth())) * pImage->GetHeight();
 
          byte * pImageBits = new byte[imageBitsSize];
 
          if (pImageBits != NULL)
          {
-            size_t srcScanLineSize = pImageData->GetWidth() * bytesPerPixel;
-            size_t destScanLineSize = ((pImageData->GetWidth() * bytesPerPixel) + (alignedWidth - pImageData->GetWidth()));
+            size_t srcScanLineSize = pImage->GetWidth() * bytesPerPixel;
+            size_t destScanLineSize = ((pImage->GetWidth() * bytesPerPixel) + (alignedWidth - pImage->GetWidth()));
 
-            byte * pSrc = (byte *)pImageData->GetData();
+            byte * pSrc = (byte *)pImage->GetData();
             byte * pDest = pImageBits;
 
-            for (uint i = 0; i < pImageData->GetHeight(); i++)
+            for (uint i = 0; i < pImage->GetHeight(); i++)
             {
                memcpy(pDest, pSrc, srcScanLineSize);
                pDest += destScanLineSize;
@@ -232,12 +232,12 @@ bool LoadBitmap(const cImageData * pImageData, HBITMAP * phBitmap)
             }
 
             CBitmap bitmap;
-            if (bitmap.CreateCompatibleBitmap(&dc, pImageData->GetWidth(), pImageData->GetHeight()))
+            if (bitmap.CreateCompatibleBitmap(&dc, pImage->GetWidth(), pImage->GetHeight()))
             {
                BITMAPINFOHEADER bmInfo = {0};
                bmInfo.biSize = sizeof(BITMAPINFOHEADER);
-               bmInfo.biWidth = pImageData->GetWidth();
-               bmInfo.biHeight = pImageData->GetHeight();
+               bmInfo.biWidth = pImage->GetWidth();
+               bmInfo.biHeight = pImage->GetHeight();
                bmInfo.biPlanes = 1; 
                bmInfo.biBitCount = bitCount; 
                bmInfo.biCompression = BI_RGB;
@@ -245,7 +245,7 @@ bool LoadBitmap(const cImageData * pImageData, HBITMAP * phBitmap)
                int nScanLines = SetDIBits(dc,
                                           bitmap,
                                           0,
-                                          pImageData->GetHeight(),
+                                          pImage->GetHeight(),
                                           pImageBits,
                                           (BITMAPINFO *)&bmInfo,
                                           DIB_RGB_COLORS);
@@ -276,12 +276,11 @@ bool LoadBitmap(const tChar * pszBitmap, HBITMAP * phBitmap)
 
    bool bResult = false;
 
-   cImageData * pImageData = NULL;
+   IImage * pImage = NULL;
    UseGlobal(ResourceManager);
-   if (pResourceManager->Load(tResKey(pszBitmap, kRC_Image), (void**)&pImageData) == S_OK)
+   if (pResourceManager->Load(pszBitmap, kRT_Image, NULL, (void**)&pImage) == S_OK)
    {
-      bResult = LoadBitmap(pImageData, phBitmap);
-      pResourceManager->Unload(tResKey(pszBitmap, kRC_Image));
+      bResult = LoadBitmap(pImage, phBitmap);
    }
 
    if (!bResult)
@@ -371,12 +370,12 @@ HBITMAP StretchCopyBitmap(uint width, uint height, HBITMAP hSrcBitmap,
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void * HBitmapFromImageData(void * pData, int dataLength, void * param)
+void * HBitmapFromImage(void * pData, int dataLength, void * param)
 {
-   cImageData * pImageData = reinterpret_cast<cImageData*>(pData);
+   IImage * pImage = reinterpret_cast<IImage*>(pData);
 
    HBITMAP hbm = NULL;
-   if (LoadBitmap(pImageData, &hbm))
+   if (LoadBitmap(pImage, &hbm))
    {
       return hbm;
    }
@@ -400,7 +399,7 @@ tResult BitmapUtilsRegisterResourceFormats()
    UseGlobal(ResourceManager);
    if (!!pResourceManager)
    {
-      return pResourceManager->RegisterFormat(kRT_HBitmap, MAKERESOURCETYPE(kRC_Image), NULL, NULL, HBitmapFromImageData, HBitmapUnload);
+      return pResourceManager->RegisterFormat(kRT_HBitmap, kRT_Image, NULL, NULL, HBitmapFromImage, HBitmapUnload);
    }
    return E_FAIL;
 }

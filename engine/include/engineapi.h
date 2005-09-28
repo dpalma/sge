@@ -11,7 +11,7 @@
 #pragma once
 #endif
 
-class cImageData;
+F_DECLARE_INTERFACE(IImage);
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -22,7 +22,7 @@ class cImageData;
 
 ENGINE_API tResult EngineRegisterResourceFormats();
 
-ENGINE_API tResult GlTextureCreate(const cImageData * pImageData, uint * pTexId);
+ENGINE_API tResult GlTextureCreate(IImage * pImage, uint * pTexId);
 
 ///////////////////////////////////////////////////////////////////////////////
 

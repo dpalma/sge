@@ -26,6 +26,7 @@
 #include "techstring.h"
 #include "globalobj.h"
 #include "threadcallapi.h"
+#include "imageapi.h"
 
 #include <ctime>
 
@@ -316,6 +317,7 @@ static bool MainInit(int argc, tChar * argv[])
    TextFormatRegister("lua");
    TextFormatRegister("xml");
    EngineRegisterResourceFormats();
+   ImageRegisterResourceFormats();
 
    if (ConfigGet(_T("data"), &temp) == S_OK)
    {

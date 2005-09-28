@@ -433,9 +433,6 @@
 			Name="..\include"
 			Filter="">
 			<File
-				RelativePath="..\..\render\include\color.h">
-			</File>
-			<File
 				RelativePath="..\..\render\include\font.h">
 			</File>
 			<File

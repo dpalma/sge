@@ -5,7 +5,7 @@
 
 #include "engineapi.h"
 
-#include "imagedata.h"
+#include "imageapi.h"
 #include "techmath.h"
 #include "globalobj.h"
 #include "resourceapi.h"
@@ -62,14 +62,14 @@ AssertOnce(_countof(g_glTexFormats) == kPF_NumPixelFormats);
 
 ///////////////////////////////////////////////////////////////////////////////
 
-tResult GlTextureCreate(const cImageData * pImageData, uint * pTexId)
+tResult GlTextureCreate(IImage * pImage, uint * pTexId)
 {
-   if (pImageData == NULL || pTexId == NULL)
+   if (pImage == NULL || pTexId == NULL)
    {
       return E_POINTER;
    }
 
-   ePixelFormat pixelFormat = pImageData->GetPixelFormat();
+   ePixelFormat pixelFormat = pImage->GetPixelFormat();
    if (pixelFormat == kPF_ERROR)
    {
       WarnMsg("Invalid image format while creating texture\n");
@@ -97,11 +97,11 @@ tResult GlTextureCreate(const cImageData * pImageData, uint * pTexId)
    int result = gluBuild2DMipmaps(
       GL_TEXTURE_2D,
       nComponents,
-      pImageData->GetWidth(),
-      pImageData->GetHeight(),
+      pImage->GetWidth(),
+      pImage->GetHeight(),
       texelFormat,
       GL_UNSIGNED_BYTE,
-      pImageData->GetData());
+      pImage->GetData());
 
    if (result != GL_NO_ERROR)
    {
@@ -117,12 +117,12 @@ tResult GlTextureCreate(const cImageData * pImageData, uint * pTexId)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void * GlTextureFromImageData(void * pData, int dataLength, void * param)
+void * GlTextureFromImage(void * pData, int dataLength, void * param)
 {
-   cImageData * pImageData = reinterpret_cast<cImageData*>(pData);
+   IImage * pImage = reinterpret_cast<IImage*>(pData);
 
    uint texId;
-   if (GlTextureCreate(pImageData, &texId) == S_OK)
+   if (GlTextureCreate(pImage, &texId) == S_OK)
    {
       return reinterpret_cast<void*>(texId);
    }
@@ -146,8 +146,8 @@ tResult GlTextureResourceRegister()
    UseGlobal(ResourceManager);
    if (!!pResourceManager)
    {
-      if (pResourceManager->RegisterFormat(kRT_GlTexture, MAKERESOURCETYPE(kRC_Image),
-         NULL, NULL, GlTextureFromImageData, GlTextureUnload) == S_OK)
+      if (pResourceManager->RegisterFormat(kRT_GlTexture, kRT_Image,
+         NULL, NULL, GlTextureFromImage, GlTextureUnload) == S_OK)
       {
          return S_OK;
       }

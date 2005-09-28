@@ -6,7 +6,7 @@
 #include "heightmap.h"
 #include "resourceapi.h"
 #include "globalobj.h"
-#include "imagedata.h"
+#include "imageapi.h"
 
 #include "dbgalloc.h" // must be last header
 
@@ -38,9 +38,9 @@ cHeightMap::~cHeightMap()
 
 bool cHeightMap::Load(const tChar * pszFilename)
 {
-   cImageData * pHeightImage = NULL;
+   IImage * pHeightImage = NULL;
    UseGlobal(ResourceManager);
-   if (pResourceManager->Load(tResKey(pszFilename, kRC_Image), (void**)&pHeightImage) == S_OK)
+   if (pResourceManager->Load(pszFilename, kRT_Image, NULL, (void**)&pHeightImage) == S_OK)
    {
       // images used as height data must be square and grayscale format
       if (pHeightImage->GetWidth() == pHeightImage->GetHeight() &&
@@ -52,8 +52,6 @@ bool cHeightMap::Load(const tChar * pszFilename)
          m_pData = (uint8 *)m_pImage->GetData();
          return true;
       }
-
-      pResourceManager->Unload(tResKey(pszFilename, kRC_Image));
    }
 
    return false;

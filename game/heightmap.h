@@ -4,11 +4,13 @@
 #ifndef INCLUDED_HEIGHTMAP_H
 #define INCLUDED_HEIGHTMAP_H
 
+#include "comtools.h"
+
 #ifdef _MSC_VER
 #pragma once
 #endif
 
-class cImageData;
+F_DECLARE_INTERFACE(IImage);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -29,7 +31,7 @@ public:
 private:
    void Destroy();
 
-   cImageData * m_pImage;
+   IImage * m_pImage;
    float m_scale;
    uint m_size; // all height maps are square, for now
    uint8 * m_pData; // byte pointer to height data

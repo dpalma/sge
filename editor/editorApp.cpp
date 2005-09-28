@@ -27,6 +27,7 @@
 #include "filespec.h"
 #include "filepath.h"
 #include "threadcallapi.h"
+#include "imageapi.h"
 
 #include <algorithm>
 
@@ -236,6 +237,7 @@ BOOL cEditorApp::InitInstance()
    EngineRegisterResourceFormats();
    BitmapUtilsRegisterResourceFormats();
    RegisterTerrainResourceFormats();
+   ImageRegisterResourceFormats();
 
    UseGlobal(ThreadCaller);
    pThreadCaller->ThreadInit();

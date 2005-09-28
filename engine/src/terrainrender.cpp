@@ -6,7 +6,7 @@
 #include "terrainrender.h"
 #include "engineapi.h"
 
-#include "imagedata.h"
+#include "imageapi.h"
 #include "resourceapi.h"
 #include "globalobj.h"
 #include "filespec.h"
@@ -561,25 +561,19 @@ void BuildSplatAlphaMap(uint splatTile,
       }
    }
 
-   cImageData * pImage = new cImageData;
-   if (pImage != NULL)
+   cAutoIPtr<IImage> pImage;
+   if (ImageCreate(imageWidth, imageHeight, kPF_RGBA8888, pBitmapBits, &pImage) == S_OK)
    {
-      if (pImage->Create(imageWidth, imageHeight, kPF_RGBA8888, pBitmapBits))
+      if (ConfigIsTrue("debug_write_splat_alpha_maps"))
       {
-         if (ConfigIsTrue("debug_write_splat_alpha_maps"))
-         {
-            cStr file;
-            file.Format("SplatAlpha_%d_(%d,%d)-(%d,%d).bmp", splatTile,
-               xRange.GetStart(), zRange.GetStart(), xRange.GetEnd(),zRange.GetEnd());
-            cAutoIPtr<IWriter> pWriter(FileCreateWriter(cFileSpec(file.c_str())));
-            BmpWrite(pImage, pWriter);
-         }
-
-         GlTextureCreate(pImage, pAlphaMapId);
+         cStr file;
+         file.Format("SplatAlpha_%d_(%d,%d)-(%d,%d).bmp", splatTile,
+            xRange.GetStart(), zRange.GetStart(), xRange.GetEnd(),zRange.GetEnd());
+         cAutoIPtr<IWriter> pWriter(FileCreateWriter(cFileSpec(file.c_str())));
+//TODO         BmpWrite(pImage, pWriter);
       }
 
-      delete pImage;
-      pImage = NULL;
+      GlTextureCreate(pImage, pAlphaMapId);
    }
 
    delete [] pBitmapBits;
