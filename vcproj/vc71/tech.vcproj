@@ -480,6 +480,9 @@
 			Name=".\include"
 			Filter="h;hpp;hxx;hm;inl">
 			<File
+				RelativePath="..\..\tech\include\color.h">
+			</File>
+			<File
 				RelativePath="..\..\tech\include\combase.h">
 			</File>
 			<File
