@@ -5,11 +5,9 @@
 
 #include "imageapi.h"
 #include "readwriteapi.h"
-#include "resourceapi.h"
-#include "globalobj.h"
 
 #include <cstdlib>
-#include <memory.h>
+#include <cstring> // required w/ gcc for memcpy
 
 #ifdef HAVE_CPPUNIT
 #include <cppunit/extensions/HelperMacros.h>

@@ -113,7 +113,7 @@ private:
    typedef std::vector<sFormat> tFormats;
    tFormats m_formats;
 
-   typedef std::multimap<tResourceType, uint> tExtsForType;
+   typedef std::multimap<cStr, uint> tExtsForType;
    tExtsForType m_extsForType;
 
    struct sResource

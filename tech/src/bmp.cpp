@@ -3,16 +3,16 @@
 
 #include "stdhdr.h"
 
-#include "imagedata.h"
+#include "imageapi.h"
 #include "readwriteapi.h"
-#include "resourceapi.h"
-#include "globalobj.h"
 
 #include <cstring> // required w/ gcc for memcpy
 
 #include "dbgalloc.h" // must be last header
 
 ////////////////////////////////////////////////////////////////////////////////
+
+static const uint16 kBmpFileId = 0x4D42; // bfType member of file header must be this value
 
 struct sBmpPaletteEntry
 {
@@ -60,81 +60,59 @@ enum eBmpCompression
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static cImageData * LoadBmp24Bit(IReader * pReader,
-                                 const sBmpFileHeader & header,
-                                 const sBmpInfoHeader & info)
+static IImage * LoadBmp24Bit(IReader * pReader,
+                             const sBmpFileHeader & header,
+                             const sBmpInfoHeader & info)
 {
-   cImageData * pImageData = NULL;
+   Assert(info.biBitCount == 24);
 
-   ulong memSize = header.bfSize - header.bfOffBits;
-
-   byte * pAlignedImageBits = new byte[memSize];
-
-   if (pAlignedImageBits != NULL)
+   if (pReader->Seek(header.bfOffBits, kSO_Set) != S_OK)
    {
-      // The image scan-lines image in the file will be aligned on 4-byte
-      // boundaries. Do work here to remove the padding. Will mean more work
-      // later if this image data will be used to create Windows HBITMAPs,
-      // but will make it consistent with the Targa loader and the image client
-      // code that has been written thus far.
-      if (pReader->Seek(header.bfOffBits, kSO_Set) == S_OK
-         && pReader->Read(pAlignedImageBits, memSize) == S_OK)
+      return NULL;
+   }
+
+   size_t memSize = header.bfSize - header.bfOffBits;
+   byte * pImageData = new byte[memSize];
+   if (pImageData == NULL)
+   {
+      return NULL;
+   }
+
+   size_t unalignedMemSize = info.biWidth * info.biHeight * info.biBitCount / 8;
+   cAutoIPtr<IImage> pImage;
+
+   if (memSize == unalignedMemSize)
+   {
+      if (pReader->Read(pImageData, memSize) == S_OK)
       {
-         size_t unalignedMemSize = info.biWidth * info.biHeight * info.biBitCount / 8;
-
-         byte * pUnalignedImageBits = new byte[unalignedMemSize];
-
-         if (pUnalignedImageBits != NULL)
+         ImageCreate(info.biWidth, info.biHeight, kPF_BGR888, pImageData, &pImage);
+      }
+   }
+   else
+   {
+      size_t unalignedScanLine = unalignedMemSize / info.biHeight;
+      byte * p = pImageData;
+      for (int i = 0; i < info.biHeight; i++, p += unalignedScanLine)
+      {
+         if (pReader->Read(p, unalignedScanLine) != S_OK)
          {
-            uint bytesPerPixel = 3; // only support 24 bit (24/8 = 3)
-
-            size_t unalignedScanLine = info.biWidth * bytesPerPixel;
-            size_t alignedScanLine = memSize / info.biHeight;
-
-            if (unalignedScanLine == alignedScanLine)
-            {
-               pImageData = new cImageData;
-               if (!pImageData->Create(info.biWidth, info.biHeight, kPF_BGR888, pAlignedImageBits))
-               {
-                  delete pImageData;
-                  pImageData = NULL;
-               }
-            }
-            else
-            {
-               byte * pAligned = pAlignedImageBits;
-               byte * pUnaligned = pUnalignedImageBits;
-
-               for (int i = 0; i < info.biHeight; i++)
-               {
-                  memcpy(pUnaligned, pAligned, unalignedScanLine);
-                  pUnaligned += unalignedScanLine;
-                  pAligned += alignedScanLine;
-               }
-
-               pImageData = new cImageData;
-               if (!pImageData->Create(info.biWidth, info.biHeight, kPF_BGR888, pUnalignedImageBits))
-               {
-                  delete pImageData;
-                  pImageData = NULL;
-               }
-            }
-
-            delete [] pUnalignedImageBits;
+            return NULL;
          }
       }
 
-      delete [] pAlignedImageBits;
+      ImageCreate(info.biWidth, info.biHeight, kPF_BGR888, pImageData, &pImage);
    }
 
-   return pImageData;
+   delete [] pImageData;
+
+   return !pImage ? NULL : CTAddRef(pImage);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static cImageData * LoadBmp8BitAs24(IReader * pReader,
-                                    const sBmpFileHeader & header,
-                                    const sBmpInfoHeader & info)
+static IImage * LoadBmp8BitAs24(IReader * pReader,
+                                const sBmpFileHeader & header,
+                                const sBmpInfoHeader & info)
 {
    Assert(pReader != NULL);
    Assert(info.biBitCount == 8);
@@ -151,7 +129,7 @@ static cImageData * LoadBmp8BitAs24(IReader * pReader,
       return NULL;
    }
 
-   cImageData * pImageData = NULL;
+   cAutoIPtr<IImage> pImage;
 
    uint nRead;
    if (pReader->Read(pPaletteEntries, nColors * sizeof(sBmpPaletteEntry), &nRead) == S_OK)
@@ -178,12 +156,7 @@ static cImageData * LoadBmp8BitAs24(IReader * pReader,
                   pPixel24[2] = pPaletteEntries[palIndex].peRed;
                }
 
-               pImageData = new cImageData;
-               if (!pImageData->Create(info.biWidth, info.biHeight, kPF_BGR888, pImageBits24))
-               {
-                  delete pImageData;
-                  pImageData = NULL;
-               }
+               ImageCreate(info.biWidth, info.biHeight, kPF_BGR888, pImageBits24, &pImage);
 
                delete [] pImageBits24;
             }
@@ -195,12 +168,12 @@ static cImageData * LoadBmp8BitAs24(IReader * pReader,
 
    delete [] pPaletteEntries;
 
-   return pImageData;
+   return !pImage ? NULL : CTAddRef(pImage);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-cImageData * LoadBmp(IReader * pReader)
+void * BmpLoad(IReader * pReader)
 {
    Assert(pReader != NULL);
 
@@ -208,7 +181,7 @@ cImageData * LoadBmp(IReader * pReader)
    sBmpInfoHeader info;
 
    if (pReader->Read(&header, sizeof(header)) != S_OK ||
-       header.bfType != 0x4D42 ||
+       header.bfType != kBmpFileId ||
        pReader->Read(&info, sizeof(info)) != S_OK)
    {
       return NULL;
@@ -232,14 +205,14 @@ cImageData * LoadBmp(IReader * pReader)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-tResult BmpWrite(const cImageData * pImageData, IWriter * pWriter)
+tResult BmpWrite(IImage * pImage, IWriter * pWriter)
 {
-   if (pImageData == NULL || pWriter == NULL)
+   if (pImage == NULL || pWriter == NULL)
    {
       return E_POINTER;
    }
 
-   ePixelFormat pixelFormat = pImageData->GetPixelFormat();
+   ePixelFormat pixelFormat = pImage->GetPixelFormat();
 
    if (pixelFormat != kPF_RGB888 && pixelFormat != kPF_BGR888
       && pixelFormat != kPF_RGBA8888 && pixelFormat != kPF_BGRA8888)
@@ -247,26 +220,10 @@ tResult BmpWrite(const cImageData * pImageData, IWriter * pWriter)
       return E_INVALIDARG;
    }
 
-   static const uint bitCounts[] =
-   {
-      8,    // kPF_Grayscale
-      8,    // kPF_ColorMapped
-      16,   // kPF_RGB555
-      16,   // kPF_BGR555
-      16,   // kPF_RGB565
-      16,   // kPF_BGR565
-      16,   // kPF_RGBA1555
-      16,   // kPF_BGRA1555
-      24,   // kPF_RGB888
-      24,   // kPF_BGR888
-      32,   // kPF_RGBA8888
-      32,   // kPF_BGRA8888
-   };
-
-   int bitsSize = abs(pImageData->GetWidth() * pImageData->GetHeight() * bitCounts[pixelFormat] / 8);
+   int bitsSize = abs(pImage->GetWidth() * pImage->GetHeight() * BytesPerPixel(pixelFormat));
 
    sBmpFileHeader header;
-   header.bfType = 0x4D42;
+   header.bfType = kBmpFileId;
    header.bfReserved1 = 0;
    header.bfReserved2 = 0;
    header.bfOffBits = sizeof(sBmpFileHeader) + sizeof(sBmpInfoHeader);
@@ -274,15 +231,15 @@ tResult BmpWrite(const cImageData * pImageData, IWriter * pWriter)
 
    sBmpInfoHeader info;
    info.biSize = sizeof(sBmpInfoHeader);
-   info.biWidth = pImageData->GetWidth();
-   info.biHeight = -static_cast<int>(pImageData->GetHeight());
+   info.biWidth = pImage->GetWidth();
+   info.biHeight = -static_cast<int>(pImage->GetHeight());
    info.biPlanes = 1;
    info.biCompression = BI_RGB;
-   info.biBitCount = bitCounts[pixelFormat];
+   info.biBitCount = BytesPerPixel(pixelFormat) * 8;
 
    if (pWriter->Write(&header, sizeof(sBmpFileHeader)) == S_OK
       && pWriter->Write(&info, sizeof(sBmpInfoHeader)) == S_OK
-      && pWriter->Write(const_cast<void*>(pImageData->GetData()), bitsSize) == S_OK)
+      && pWriter->Write(const_cast<void*>(pImage->GetData()), bitsSize) == S_OK)
    {
       return S_OK;
    }
@@ -290,32 +247,5 @@ tResult BmpWrite(const cImageData * pImageData, IWriter * pWriter)
    return E_FAIL;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////
-
-void * BmpLoad(IReader * pReader)
-{
-   if (pReader != NULL)
-   {
-      return LoadBmp(pReader);
-   }
-
-   return NULL;
-}
-
-void BmpUnload(void * pData)
-{
-   delete reinterpret_cast<cImageData *>(pData);
-}
-
-TECH_API tResult BmpFormatRegister()
-{
-   UseGlobal(ResourceManager);
-   if (!!pResourceManager)
-   {
-      return pResourceManager->RegisterFormat(kRC_Image, _T("bmp"), BmpLoad, NULL, BmpUnload);
-   }
-   return E_FAIL;
-}
 
 ////////////////////////////////////////////////////////////////////////////////

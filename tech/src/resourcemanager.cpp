@@ -112,7 +112,6 @@ static const tChar * ResourceTypeName(tResourceType rt)
       builtInTypeNames[] =
       {
          { kRC_Unknown,    _T("Unknown") },
-         { kRC_Image,      _T("Image") },
          { kRC_Text,       _T("Text") },
       };
       if ((uint)rt >= _countof(builtInTypeNames))
@@ -354,7 +353,7 @@ tResult cResourceManager::Load(const tChar * pszName, tResourceType type,
       // may not have been loaded in AddDirectory or AddArchive. Do it now.
       if (pRes == NULL && pFormat->typeDepend)
       {
-         LocalMsg3("Request for \"%s\", %s will be converted from type %s\n",
+         LocalMsg3("Request for (\"%s\", %s) will be converted from type %s\n",
             pszName, ResourceTypeName(type), ResourceTypeName(pFormat->typeDepend));
 
          // TODO: load the dependent data before adding a new resource
@@ -499,7 +498,7 @@ tResult cResourceManager::RegisterFormat(tResourceType type,
 
       if (!typeDepend)
       {
-         m_extsForType.insert(std::make_pair(type, extensionId));
+         m_extsForType.insert(std::make_pair(ResourceTypeName(type), extensionId));
       }
 
       std::vector<sFormat>::const_iterator iter = m_formats.begin();
@@ -800,9 +799,11 @@ uint cResourceManager::DeduceFormats(const tChar * pszName, tResourceType type,
       return 0;
    }
 
-   LocalMsg2("Deduce Resource Formats for \"%s\", %s\n", pszName, ResourceTypeName(type));
+   LocalMsg2("Deducing resource formats for (\"%s\", %s)...\n", pszName, ResourceTypeName(type));
 
    uint extensionId = GetExtensionIdForName(pszName);
+
+   uint iFormat = 0;
 
    // if name has file extension, resource class plus extension determines format
    // plus, include all formats that can generate the resource class from a dependent type
@@ -811,7 +812,6 @@ uint cResourceManager::DeduceFormats(const tChar * pszName, tResourceType type,
       Assert(extensionId < m_extensions.size());
       tFormats::const_iterator fIter = m_formats.begin();
       tFormats::const_iterator fEnd = m_formats.end();
-      uint iFormat = 0;
       for (uint index = 0; (fIter != fEnd) && (iFormat < nMaxFormats); fIter++, index++)
       {
          if (SameType(fIter->type, type))
@@ -823,15 +823,12 @@ uint cResourceManager::DeduceFormats(const tChar * pszName, tResourceType type,
             }
          }
       }
-      LocalMsgIf(iFormat == 0, "   No compatible formats\n");
-      return iFormat;
    }
    // else resource class alone determines set of possible formats
    else
    {
       tFormats::const_iterator fIter = m_formats.begin();
       tFormats::const_iterator fEnd = m_formats.end();
-      uint iFormat = 0;
       for (uint index = 0; (fIter != fEnd) && (iFormat < nMaxFormats); fIter++, index++)
       {
          if (SameType(fIter->type, type))
@@ -840,11 +837,12 @@ uint cResourceManager::DeduceFormats(const tChar * pszName, tResourceType type,
             iFormat += 1;
          }
       }
-      LocalMsgIf(iFormat == 0, "   No compatible formats\n");
-      return iFormat;
    }
 
-   return 0;
+   LocalMsgIf(iFormat == 0, "   No compatible formats\n");
+   LocalMsgIf1(iFormat == 1, "   Single compatible format: %s\n", ResourceTypeName(m_formats[pFormatIds[0]].type));
+   LocalMsgIf(iFormat > 1, "   Multiple compatible formats\n");
+   return iFormat;
 }
 
 ////////////////////////////////////////

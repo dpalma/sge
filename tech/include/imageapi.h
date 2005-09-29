@@ -23,7 +23,6 @@ class cColor;
 
 ////////////////////////////////////////
 
-#ifndef INCLUDED_IMAGEDATA_H
 enum ePixelFormat
 {
    kPF_ERROR = -1,
@@ -50,7 +49,8 @@ enum ePixelFormat
 
    kPF_NumPixelFormats, // must be the last member of the enumeration
 };
-#endif
+
+TECH_API uint BytesPerPixel(ePixelFormat pixelFormat);
 
 ////////////////////////////////////////
 

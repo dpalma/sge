@@ -3,14 +3,11 @@
 
 #include "stdhdr.h"
 
-#include "imagedata.h" // TEMPORARY
 #include "image.h"
 
 #include "color.h"
-#include "filespec.h"
 #include "globalobj.h"
 #include "resourceapi.h"
-#include "readwriteapi.h"
 
 #include <cstring>
 
@@ -18,33 +15,32 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static uint BytesPerPixel(ePixelFormat pf)
+uint BytesPerPixel(ePixelFormat pixelFormat)
 {
-   switch (pf)
+   if (pixelFormat <= kPF_ERROR || pixelFormat >= kPF_NumPixelFormats)
    {
-      case kPF_Grayscale:
-      case kPF_ColorMapped:
-         return 1;
-
-      case kPF_RGB555:
-      case kPF_BGR555:
-      case kPF_RGB565:
-      case kPF_BGR565:
-      case kPF_RGBA1555:
-      case kPF_BGRA1555:
-         return 2;
-
-      case kPF_RGB888:
-      case kPF_BGR888:
-         return 3;
-
-      case kPF_RGBA8888:
-      case kPF_BGRA8888:
-         return 4;
-
-      default:
-         return 0;
+      return 0;
    }
+
+   static const uint bytesPerPixel[] =
+   {
+      1, // kPF_Grayscale
+      1, // kPF_ColorMapped
+      2, // kPF_RGB555
+      2, // kPF_BGR555
+      2, // kPF_RGB565
+      2, // kPF_BGR565
+      2, // kPF_RGBA1555
+      2, // kPF_BGRA1555
+      3, // kPF_RGB888
+      3, // kPF_BGR888
+      4, // kPF_RGBA8888
+      4, // kPF_BGRA8888
+   };
+
+   Assert(_countof(bytesPerPixel) == kPF_NumPixelFormats);
+
+   return bytesPerPixel[pixelFormat];
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -117,29 +113,13 @@ tResult cImage::SetPixel(uint x, uint y, const cColor & pixel)
 
 tResult cImage::Clone(IImage * * ppImage)
 {
-   return E_NOTIMPL;
+   return ImageCreate(GetWidth(), GetHeight(), GetPixelFormat(), GetData(), ppImage);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 extern void * TargaLoad(IReader * pReader);
-
-///////////////////////////////////////
-
-void * ImageLoad(void * pData, int dataLength, void * param)
-{
-   cImageData * pImageData = reinterpret_cast<cImageData*>(pData);
-   if (pImageData != NULL)
-   {
-      IImage * pImage = NULL;
-      if (ImageCreate(pImageData->GetWidth(), pImageData->GetWidth(), pImageData->GetPixelFormat(),
-         pImageData->GetData(), &pImage) == S_OK)
-      {
-         return pImage;
-      }
-   }
-   return NULL;
-}
+extern void * BmpLoad(IReader * pReader);
 
 ///////////////////////////////////////
 
@@ -155,8 +135,8 @@ tResult ImageRegisterResourceFormats()
    UseGlobal(ResourceManager);
    if (!!pResourceManager)
    {
-      if (pResourceManager->RegisterFormat(kRT_Image, NULL, _T("tga"), TargaLoad, NULL, ImageUnload) == S_OK
-         && pResourceManager->RegisterFormat(kRT_Image, MAKERESOURCETYPE(kRC_Image), NULL, NULL, ImageLoad, ImageUnload) == S_OK)
+      if (pResourceManager->RegisterFormat(kRT_Image, _T("tga"), TargaLoad, NULL, ImageUnload) == S_OK
+         && pResourceManager->RegisterFormat(kRT_Image, _T("bmp"), BmpLoad, NULL, ImageUnload) == S_OK)
       {
          return S_OK;
       }
@@ -200,6 +180,10 @@ tResult ImageCreate(uint width, uint height, ePixelFormat pixelFormat, const voi
    if (pData != NULL)
    {
       memcpy(pImageData, pData, memSize);
+   }
+   else
+   {
+      memset(pImageData, 0, memSize);
    }
 
    cAutoIPtr<cImage> pImage(new cImage(width, height, pixelFormat, pImageData));

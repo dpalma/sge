@@ -311,7 +311,6 @@ static bool MainInit(int argc, tChar * argv[])
       return false;
    }
 
-   BmpFormatRegister();
    TextFormatRegister("txt");
    TextFormatRegister("lua");
    TextFormatRegister("xml");

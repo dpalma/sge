@@ -18,7 +18,6 @@ sources = Split("""
    src/graphtest.cpp
    src/hash.cpp
    src/image.cpp
-   src/imagedata.cpp
    src/log.cpp
    src/matrix4.cpp
    src/quat.cpp

@@ -341,9 +341,6 @@
 					RelativePath="..\..\tech\src\image.cpp">
 				</File>
 				<File
-					RelativePath="..\..\tech\src\imagedata.cpp">
-				</File>
-				<File
 					RelativePath="..\..\tech\src\log.cpp">
 				</File>
 				<File
@@ -510,9 +507,6 @@
 			</File>
 			<File
 				RelativePath="..\..\tech\include\imageapi.h">
-			</File>
-			<File
-				RelativePath="..\..\tech\include\imagedata.h">
 			</File>
 			<File
 				RelativePath="..\..\tech\include\keys.h">

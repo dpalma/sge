@@ -23,7 +23,6 @@ F_DECLARE_INTERFACE(IResourceManager);
 
 ///////////////////////////////////////////////////////////////////////////////
 
-TECH_API tResult BmpFormatRegister();
 TECH_API tResult TextFormatRegister(const char * pszExtension);
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -31,7 +30,6 @@ TECH_API tResult TextFormatRegister(const char * pszExtension);
 enum eResourceClass
 {
    kRC_Unknown,
-   kRC_Image,
    kRC_Text,
    // Add new values above this line
    kNUMRESOURCECLASSES,
