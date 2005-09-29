@@ -61,6 +61,7 @@ public:
    virtual tResult AddDirectoryTreeFlattened(const tChar * pszDir);
    virtual tResult AddArchive(const tChar * pszArchive);
    virtual tResult Load(const tChar * pszName, tResourceType type, void * param, void * * ppData);
+   tResult LoadWithFormat(const tChar * pszName, tResourceType type, uint formatId, void * param, void * * ppData);
    virtual tResult Unload(const tChar * pszName, tResourceType type);
    virtual tResult Lock(const tChar * pszName, tResourceType type);
    virtual tResult Unlock(const tChar * pszName, tResourceType type);

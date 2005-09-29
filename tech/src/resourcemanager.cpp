@@ -342,16 +342,38 @@ tResult cResourceManager::Load(const tChar * pszName, tResourceType type,
       return E_INVALIDARG;
    }
 
-   uint formatId = kNoIndex;
-   if (DeduceFormats(pszName, type, &formatId, 1) == 1)
+   uint formatIds[10];
+   uint nFormats = DeduceFormats(pszName, type, formatIds, _countof(formatIds));
+   for (uint i = 0; i <  nFormats; i++)
    {
-      sResource * pRes = FindResourceWithFormat(pszName, type, formatId);
+      if (LoadWithFormat(pszName, type, formatIds[i], param, ppData) == S_OK)
+      {
+         return S_OK;
+      }
+   }
 
-      sFormat * pFormat = &m_formats[formatId];
+   return E_FAIL;
+}
 
-      // If no resource and format specifies a dependent type then it
-      // may not have been loaded in AddDirectory or AddArchive. Do it now.
-      if (pRes == NULL && pFormat->typeDepend)
+////////////////////////////////////////
+
+tResult cResourceManager::LoadWithFormat(const tChar * pszName, tResourceType type,
+                                         uint formatId, void * param, void * * ppData)
+{
+   Assert(pszName != NULL);
+   Assert(type != NULL);
+   Assert(formatId != kNoIndex);
+   Assert(ppData != NULL);
+
+   sFormat * pFormat = &m_formats[formatId];
+
+   sResource * pRes = FindResourceWithFormat(pszName, type, formatId);
+
+   // If no resource and format specifies a dependent type then it
+   // would not have been pre-loaded in AddDirectory or AddArchive.
+   if (pRes == NULL)
+   {
+      if (pFormat->typeDepend)
       {
          LocalMsg3("Request for (\"%s\", %s) will be converted from type %s\n",
             pszName, ResourceTypeName(type), ResourceTypeName(pFormat->typeDepend));
@@ -375,56 +397,42 @@ tResult cResourceManager::Load(const tChar * pszName, tResourceType type,
          }
       }
 
-      if (pRes != NULL)
+      // Loading via a dependent type failed above--don't bother continuing
+      // (Or, had no dependent type to load from in the first place.)
+      return E_FAIL;
+   }
+
+   if (!pFormat->typeDepend && pRes->pData == NULL)
+   {
+      tResult result = E_FAIL;
+      ulong dataSize = 0;
+      void * pData = NULL;
+
+      if (pRes->dirId != kNoIndex)
       {
-         if (pFormat->typeDepend)
-         {
-            if (pRes->pData == NULL)
-            {
-               Assert(!"Shouldn't get here anymore");
-               //if (Load(pszName, pFormat->typeDepend, param, &pData) == S_OK)
-               //{
-               //   pRes->pData = (*pFormat->pfnPostload)(pData, 0, param);
-               //   Assert(pRes->pFormat == pFormat); // should have been set above
-               //}
-            }
-         }
-         else
-         {
-            if (pRes->pData == NULL)
-            {
-               tResult result = E_FAIL;
-               ulong dataSize = 0;
-               void * pData = NULL;
-
-               if (pRes->dirId != kNoIndex)
-               {
-                  cFileSpec file(pszName);
-                  file.SetFileExt(m_extensions[pRes->extensionId].c_str());
-                  file.SetPath(m_dirs[pRes->dirId]);
-                  result = DoLoadFromFile(file, pFormat, param, &dataSize, &pData);
-               }
-               else if (pRes->archiveId != kNoIndex)
-               {
-                  result = DoLoadFromArchive(pRes->archiveId, pRes->offset, pRes->index, pFormat, param, &dataSize, &pData);
-               }
-
-               if (result == S_OK)
-               {
-                  // Cache the resource data
-                  pRes->formatId = formatId;
-                  pRes->pData = pData;
-                  pRes->dataSize = dataSize;
-               }
-            }
-         }
-
-         if (pRes->pData != NULL)
-         {
-            *ppData = pRes->pData;
-            return S_OK;
-         }
+         cFileSpec file(pszName);
+         file.SetFileExt(m_extensions[pRes->extensionId].c_str());
+         file.SetPath(m_dirs[pRes->dirId]);
+         result = DoLoadFromFile(file, pFormat, param, &dataSize, &pData);
       }
+      else if (pRes->archiveId != kNoIndex)
+      {
+         result = DoLoadFromArchive(pRes->archiveId, pRes->offset, pRes->index, pFormat, param, &dataSize, &pData);
+      }
+
+      if (result == S_OK)
+      {
+         // Cache the resource data
+         pRes->formatId = formatId;
+         pRes->pData = pData;
+         pRes->dataSize = dataSize;
+      }
+   }
+
+   if (pRes->pData != NULL)
+   {
+      *ppData = pRes->pData;
+      return S_OK;
    }
 
    return E_FAIL;
@@ -501,9 +509,8 @@ tResult cResourceManager::RegisterFormat(tResourceType type,
          m_extsForType.insert(std::make_pair(ResourceTypeName(type), extensionId));
       }
 
-      std::vector<sFormat>::const_iterator iter = m_formats.begin();
-      std::vector<sFormat>::const_iterator end = m_formats.end();
-      for (; iter != end; iter++)
+      tFormats::const_iterator iter = m_formats.begin();
+      for (; iter != m_formats.end(); iter++)
       {
          if (iter->extensionId == extensionId && SameType(iter->type, type))
          {
