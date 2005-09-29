@@ -311,7 +311,6 @@ static bool MainInit(int argc, tChar * argv[])
       return false;
    }
 
-   TargaFormatRegister();
    BmpFormatRegister();
    TextFormatRegister("txt");
    TextFormatRegister("lua");

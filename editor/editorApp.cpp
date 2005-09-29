@@ -229,7 +229,6 @@ BOOL cEditorApp::InitInstance()
       return FALSE;
    }
 
-   TargaFormatRegister();
    BmpFormatRegister();
    TextFormatRegister("txt");
    TextFormatRegister("lua");

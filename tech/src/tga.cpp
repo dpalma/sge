@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "imagedata.h"
+#include "imageapi.h"
 #include "readwriteapi.h"
 #include "resourceapi.h"
 #include "globalobj.h"
@@ -122,7 +122,7 @@ public:
    bool ReadColorMap();
    bool ReadImageData();
 
-   cImageData * CreateImage();
+   IImage * CreateImage();
 
 private:
    inline IReader * AccessReader() { return m_pReader; }
@@ -328,7 +328,7 @@ bool cTargaReader::ReadImageData()
 
 ///////////////////////////////////////
 
-cImageData * cTargaReader::CreateImage()
+IImage * cTargaReader::CreateImage()
 {
    if (GetImageData() != NULL)
    {
@@ -393,47 +393,17 @@ cImageData * cTargaReader::CreateImage()
 
       if (pixelFormat != kPF_ERROR)
       {
-         cImageData * pImage = new cImageData;
-         if (!pImage->Create(GetHeader().Width, GetHeader().Height, pixelFormat, GetImageData()))
+         cAutoIPtr<IImage> pImage;
+         if (ImageCreate(GetHeader().Width, GetHeader().Height, pixelFormat, GetImageData(), &pImage) == S_OK)
          {
-            delete pImage;
-            pImage = NULL;
-         }
-
-         return pImage;
-      }
-   }
-
-   return NULL;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-cImageData * LoadTarga(IReader * pReader)
-{
-   Assert(pReader != NULL);
-   if (pReader == NULL)
-      return NULL;
-
-   cTargaReader tgaReader(pReader);
-
-   if (tgaReader.ReadHeader())
-   {
-      if (tgaReader.ReadFooter())
-      {
-         if (tgaReader.ReadColorMap())
-         {
-            if (tgaReader.ReadImageData())
-            {
-               return tgaReader.CreateImage();
-            }
+            return CTAddRef(pImage);
          }
       }
    }
 
    return NULL;
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -452,21 +422,6 @@ void * TargaLoad(IReader * pReader)
    }
 
    return NULL;
-}
-
-void TargaUnload(void * pData)
-{
-   delete reinterpret_cast<cImageData *>(pData);
-}
-
-TECH_API tResult TargaFormatRegister()
-{
-   UseGlobal(ResourceManager);
-   if (!!pResourceManager)
-   {
-      return pResourceManager->RegisterFormat(kRC_Image, _T("tga"), TargaLoad, NULL, TargaUnload);
-   }
-   return E_FAIL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

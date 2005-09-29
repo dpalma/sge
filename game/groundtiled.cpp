@@ -13,7 +13,6 @@
 #include "color.h"
 
 #include "resourceapi.h"
-#include "imagedata.h"
 #include "vec2.h"
 #include "vec3.h"
 #include "techmath.h"

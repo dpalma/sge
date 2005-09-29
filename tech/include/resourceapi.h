@@ -23,7 +23,6 @@ F_DECLARE_INTERFACE(IResourceManager);
 
 ///////////////////////////////////////////////////////////////////////////////
 
-TECH_API tResult TargaFormatRegister();
 TECH_API tResult BmpFormatRegister();
 TECH_API tResult TextFormatRegister(const char * pszExtension);
 

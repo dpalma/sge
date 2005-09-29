@@ -369,6 +369,9 @@
 					RelativePath="..\..\tech\src\hashtbltest.cpp">
 				</File>
 				<File
+					RelativePath="..\..\tech\src\image.cpp">
+				</File>
+				<File
 					RelativePath="..\..\tech\src\imagedata.cpp">
 				</File>
 				<File
@@ -463,6 +466,9 @@
 					RelativePath="..\..\tech\src\hashtbltem.h">
 				</File>
 				<File
+					RelativePath="..\..\tech\src\image.h">
+				</File>
+				<File
 					RelativePath="..\..\tech\src\readwritefile.h">
 				</File>
 				<File
@@ -537,7 +543,7 @@
 				RelativePath="..\..\tech\include\hashtabletem.h">
 			</File>
 			<File
-				RelativePath="..\..\tech\include\imagedata.h">
+				RelativePath="..\..\tech\include\imageapi.h">
 			</File>
 			<File
 				RelativePath="..\..\tech\include\keys.h">

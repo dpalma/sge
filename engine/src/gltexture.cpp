@@ -17,7 +17,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // Convert a pixel format to a number of color components.
-// This array must match the enum ePixelFormat type in imagedata.h,
+// This array must match the enum ePixelFormat type in imageapi.h,
 // excluding kPF_ERROR which is -1 and not a valid array index.
 static const GLint g_glTexComponents[] =
 {
@@ -40,7 +40,7 @@ AssertOnce(_countof(g_glTexComponents) == kPF_NumPixelFormats);
 ///////////////////////////////////////////////////////////////////////////////
 
 // Convert a pixel format to a GL format constant.
-// This array must match the enum ePixelFormat type in imagedata.h,
+// This array must match the enum ePixelFormat type in imageapi.h,
 // excluding kPF_ERROR which is -1 and not a valid array index.
 static const GLenum g_glTexFormats[] =
 {

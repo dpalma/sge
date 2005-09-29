@@ -122,6 +122,8 @@ tResult cImage::Clone(IImage * * ppImage)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+extern void * TargaLoad(IReader * pReader);
+
 ///////////////////////////////////////
 
 void * ImageLoad(void * pData, int dataLength, void * param)
@@ -153,8 +155,8 @@ tResult ImageRegisterResourceFormats()
    UseGlobal(ResourceManager);
    if (!!pResourceManager)
    {
-      if (pResourceManager->RegisterFormat(kRT_Image, MAKERESOURCETYPE(kRC_Image),
-         NULL, NULL, ImageLoad, ImageUnload) == S_OK)
+      if (pResourceManager->RegisterFormat(kRT_Image, NULL, _T("tga"), TargaLoad, NULL, ImageUnload) == S_OK
+         && pResourceManager->RegisterFormat(kRT_Image, MAKERESOURCETYPE(kRC_Image), NULL, NULL, ImageLoad, ImageUnload) == S_OK)
       {
          return S_OK;
       }

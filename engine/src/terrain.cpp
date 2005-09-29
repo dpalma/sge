@@ -9,7 +9,7 @@
 #include "ray.h"
 
 #include "resourceapi.h"
-#include "imagedata.h"
+#include "imageapi.h"
 #include "readwriteapi.h"
 #include "globalobj.h"
 #include "connptimpl.h"
@@ -1328,7 +1328,7 @@ tResult HeightMapLoad(const tChar * pszHeightData, IHeightMap * * ppHeightMap)
    class cHeightMap : public cComObject<IMPLEMENTS(IHeightMap)>
    {
    public:
-      cHeightMap(cImageData * pHeightData)
+      cHeightMap(IImage * pHeightData)
        : m_pHeightData(pHeightData)
       {
          Assert(pHeightData != NULL);
@@ -1365,12 +1365,12 @@ tResult HeightMapLoad(const tChar * pszHeightData, IHeightMap * * ppHeightMap)
       }
 
    private:
-      cImageData * m_pHeightData;
+      IImage * m_pHeightData;
    };
 
-   cImageData * pHeightData = NULL;
+   IImage * pHeightData = NULL;
    UseGlobal(ResourceManager);
-   if (pResourceManager->Load(tResKey(pszHeightData, kRC_Image), (void**)&pHeightData) != S_OK)
+   if (pResourceManager->Load(pszHeightData, kRT_Image, NULL, (void**)&pHeightData) != S_OK)
    {
       return E_FAIL;
    }
