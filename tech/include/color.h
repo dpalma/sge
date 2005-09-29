@@ -28,8 +28,8 @@ class cColorImpl
 {
 public:
    cColorImpl();
-   cColorImpl(float r, float g, float b);
-   cColorImpl(float r, float g, float b, float a);
+   cColorImpl(T r, T g, T b);
+   cColorImpl(T r, T g, T b, T a);
    cColorImpl(const T rgba[4]);
    cColorImpl(const cColorImpl & other);
    const cColorImpl & operator =(const cColorImpl & other);
@@ -67,7 +67,7 @@ inline cColorImpl<T>::cColorImpl()
 ////////////////////////////////////////
 
 template <typename T>
-inline cColorImpl<T>::cColorImpl(float r, float g, float b)
+inline cColorImpl<T>::cColorImpl(T r, T g, T b)
 {
    m_rgba[0] = r;
    m_rgba[1] = g;
@@ -78,7 +78,7 @@ inline cColorImpl<T>::cColorImpl(float r, float g, float b)
 ////////////////////////////////////////
 
 template <typename T>
-inline cColorImpl<T>::cColorImpl(float r, float g, float b, float a)
+inline cColorImpl<T>::cColorImpl(T r, T g, T b, T a)
 {
    m_rgba[0] = r;
    m_rgba[1] = g;

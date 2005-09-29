@@ -13,6 +13,7 @@
 #include "configapi.h"
 #include "readwriteapi.h"
 #include "vec4.h"
+#include "color.h"
 
 #include <algorithm>
 #include <functional>
@@ -478,13 +479,11 @@ void BuildSplatAlphaMap(uint splatTile,
       return;
    }
 
-   int imageWidth = pTerrainRenderer->GetTilesPerChunk() * 2;
-   int imageHeight = imageWidth;
-   int imageBitCount = 32;
-   int imageBytes = imageWidth * imageHeight * imageBitCount / 8;
+   int imageSize = pTerrainRenderer->GetTilesPerChunk() * 2;
 
-   byte * pBitmapBits = new byte[imageBytes];
-   memset(pBitmapBits, 0, imageBytes);
+   cAutoIPtr<IImage> pImage;
+   if (ImageCreate(imageSize, imageSize, kPF_RGBA8888, NULL, &pImage) != S_OK)
+      return;
 
    for (uint z = zRange.GetStart(); z < zRange.GetEnd(); z++)
    {
@@ -547,36 +546,23 @@ void BuildSplatAlphaMap(uint splatTile,
          uint iz = (z - zRange.GetStart()) * 2;
          uint ix = (x - xRange.GetStart()) * 2;
 
-         uint m = imageBitCount / 8;
-
-         byte * p0 = pBitmapBits + (iz * imageWidth * m) + (ix * m);
-         byte * p1 = pBitmapBits + (iz * imageWidth * m) + ((ix+1) * m);
-         byte * p2 = pBitmapBits + ((iz+1) * imageWidth * m) + (ix * m);
-         byte * p3 = pBitmapBits + ((iz+1) * imageWidth * m) + ((ix+1) * m);
-
-         p0[0] = p0[1] = p0[2] = p0[3] = (byte)(255 * texelWeights.x);
-         p1[0] = p1[1] = p1[2] = p1[3] = (byte)(255 * texelWeights.y);
-         p2[0] = p2[1] = p2[2] = p2[3] = (byte)(255 * texelWeights.z);
-         p3[0] = p3[1] = p3[2] = p3[3] = (byte)(255 * texelWeights.w);
+         pImage->SetPixel(ix, iz, cColor(texelWeights.x,texelWeights.x,texelWeights.x,texelWeights.x));
+         pImage->SetPixel(ix+1, iz, cColor(texelWeights.y,texelWeights.y,texelWeights.y,texelWeights.y));
+         pImage->SetPixel(ix, iz+1, cColor(texelWeights.z,texelWeights.z,texelWeights.z,texelWeights.z));
+         pImage->SetPixel(ix+1, iz+1, cColor(texelWeights.w,texelWeights.w,texelWeights.w,texelWeights.w));
       }
    }
 
-   cAutoIPtr<IImage> pImage;
-   if (ImageCreate(imageWidth, imageHeight, kPF_RGBA8888, pBitmapBits, &pImage) == S_OK)
+   if (ConfigIsTrue("debug_write_splat_alpha_maps"))
    {
-      if (ConfigIsTrue("debug_write_splat_alpha_maps"))
-      {
-         cStr file;
-         file.Format("SplatAlpha_%d_(%d,%d)-(%d,%d).bmp", splatTile,
-            xRange.GetStart(), zRange.GetStart(), xRange.GetEnd(),zRange.GetEnd());
-         cAutoIPtr<IWriter> pWriter(FileCreateWriter(cFileSpec(file.c_str())));
-//TODO         BmpWrite(pImage, pWriter);
-      }
-
-      GlTextureCreate(pImage, pAlphaMapId);
+      cStr file;
+      file.Format("SplatAlpha_%d_(%d,%d)-(%d,%d).bmp", splatTile,
+         xRange.GetStart(), zRange.GetStart(), xRange.GetEnd(),zRange.GetEnd());
+      cAutoIPtr<IWriter> pWriter(FileCreateWriter(cFileSpec(file.c_str())));
+      BmpWrite(pImage, pWriter);
    }
 
-   delete [] pBitmapBits;
+   GlTextureCreate(pImage, pAlphaMapId);
 }
 
 

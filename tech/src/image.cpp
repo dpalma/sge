@@ -43,6 +43,7 @@ uint BytesPerPixel(ePixelFormat pixelFormat)
    return bytesPerPixel[pixelFormat];
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cImage
@@ -99,14 +100,118 @@ const void * cImage::GetData() const
 
 tResult cImage::GetPixel(uint x, uint y, cColor * pPixel) const
 {
-   return E_NOTIMPL;
+   if (x >= GetWidth() || y >= GetHeight())
+   {
+      return E_INVALIDARG;
+   }
+
+   if (pPixel == NULL)
+   {
+      return E_POINTER;
+   }
+
+   uint bytesPerPixel = BytesPerPixel(GetPixelFormat());
+   byte * pImagePixel = m_pData + (y * GetWidth() * bytesPerPixel) + (x * bytesPerPixel);
+
+   switch (GetPixelFormat())
+   {
+      case kPF_RGB888:
+      {
+         *pPixel = cColor(
+            static_cast<float>(pImagePixel[0]) / 255.0f,
+            static_cast<float>(pImagePixel[1]) / 255.0f,
+            static_cast<float>(pImagePixel[2]) / 255.0f);
+         return S_OK;
+      }
+
+      case kPF_BGR888:
+      {
+         *pPixel = cColor(
+            static_cast<float>(pImagePixel[2]) / 255.0f,
+            static_cast<float>(pImagePixel[1]) / 255.0f,
+            static_cast<float>(pImagePixel[0]) / 255.0f);
+         return S_OK;
+      }
+
+      case kPF_RGBA8888:
+      {
+         *pPixel = cColor(
+            static_cast<float>(pImagePixel[0]) / 255.0f,
+            static_cast<float>(pImagePixel[1]) / 255.0f,
+            static_cast<float>(pImagePixel[2]) / 255.0f,
+            static_cast<float>(pImagePixel[3]) / 255.0f);
+         return S_OK;
+      }
+
+      case kPF_BGRA8888:
+      {
+         *pPixel = cColor(
+            static_cast<float>(pImagePixel[2]) / 255.0f,
+            static_cast<float>(pImagePixel[1]) / 255.0f,
+            static_cast<float>(pImagePixel[0]) / 255.0f,
+            static_cast<float>(pImagePixel[3]) / 255.0f);
+         return S_OK;
+      }
+   }
+
+   return E_FAIL;
 }
 
 ///////////////////////////////////////
 
 tResult cImage::SetPixel(uint x, uint y, const cColor & pixel)
 {
-   return E_NOTIMPL;
+   if (x >= GetWidth() || y >= GetHeight())
+   {
+      return E_INVALIDARG;
+   }
+
+   uint bytesPerPixel = BytesPerPixel(GetPixelFormat());
+   byte * pImagePixel = m_pData + ((y * GetWidth()) + x) * bytesPerPixel;
+
+   byte r = static_cast<byte>(pixel.GetRed() * 255);
+   byte g = static_cast<byte>(pixel.GetGreen() * 255);
+   byte b = static_cast<byte>(pixel.GetBlue() * 255);
+   byte a = static_cast<byte>(pixel.GetAlpha() * 255);
+
+   switch (GetPixelFormat())
+   {
+      case kPF_RGB888:
+      {
+         pImagePixel[0] = r;
+         pImagePixel[1] = g;
+         pImagePixel[2] = b;
+         return S_OK;
+      }
+
+      case kPF_BGR888:
+      {
+         pImagePixel[0] = b;
+         pImagePixel[1] = g;
+         pImagePixel[2] = r;
+         return S_OK;
+      }
+
+      case kPF_RGBA8888:
+      {
+         pImagePixel[0] = r;
+         pImagePixel[1] = g;
+         pImagePixel[2] = b;
+         pImagePixel[3] = a;
+         return S_OK;
+      }
+
+      case kPF_BGRA8888:
+      {
+         pImagePixel[0] = b;
+         pImagePixel[1] = g;
+         pImagePixel[2] = r;
+         pImagePixel[3] = a;
+         return S_OK;
+      }
+   }
+
+   return E_FAIL;
 }
 
 ///////////////////////////////////////
