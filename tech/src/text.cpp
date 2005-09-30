@@ -11,46 +11,36 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static char * GetContents(IReader * pReader)
-{
-   Assert(pReader != NULL);
-
-   pReader->Seek(0, kSO_End);
-   ulong length;
-   if (FAILED(pReader->Tell(&length)))
-   {
-      return NULL;
-   }
-   pReader->Seek(0, kSO_Set);
-
-   char * pszContents = new char[length + 1];
-
-   if (pReader->Read(pszContents, length) != S_OK)
-   {
-      delete [] pszContents;
-      return NULL;
-   }
-
-   pszContents[length] = 0;
-
-   return pszContents;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
+template <typename T>
 void * TextLoad(IReader * pReader)
 {
    if (pReader != NULL)
    {
-      return GetContents(pReader);
+      ulong length;
+      if (pReader->Seek(0, kSO_End) == S_OK
+         && pReader->Tell(&length) == S_OK
+         && pReader->Seek(0, kSO_Set) == S_OK)
+      {
+         T * pszContents = new T[length + 1];
+         if (pszContents != NULL)
+         {
+            if (pReader->Read(pszContents, length * sizeof(T)) == S_OK)
+            {
+               pszContents[length] = 0;
+               return pszContents;
+            }
+            delete [] pszContents;
+            pszContents = NULL;
+         }
+      }
    }
-
    return NULL;
 }
 
+template <typename T>
 void TextUnload(void * pData)
 {
-   delete [] reinterpret_cast<char *>(pData);
+   delete [] reinterpret_cast<T*>(pData);
 }
 
 TECH_API tResult TextFormatRegister(const tChar * pszExtension)
@@ -58,7 +48,11 @@ TECH_API tResult TextFormatRegister(const tChar * pszExtension)
    UseGlobal(ResourceManager);
    if (!!pResourceManager)
    {
-      return pResourceManager->RegisterFormat(kRC_Text, pszExtension, TextLoad, NULL, TextUnload);
+      if (pResourceManager->RegisterFormat(kRT_AsciiText, pszExtension, TextLoad<char>, NULL, TextUnload<char>) == S_OK
+         && pResourceManager->RegisterFormat(kRT_UnicodeText, pszExtension, TextLoad<wchar_t>, NULL, TextUnload<wchar_t>) == S_OK)
+      {
+         return S_OK;
+      }
    }
    return E_FAIL;
 }

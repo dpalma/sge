@@ -188,10 +188,10 @@ tResult EngineRegisterResourceFormats()
 #ifdef HAVE_CG
          && TextFormatRegister("cg") == S_OK
          && TextFormatRegister("fx") == S_OK
-         && pResourceManager->RegisterFormat(kRT_CgProgram, MAKERESOURCETYPE(kRC_Text), NULL, NULL, CgProgramFromText, CgProgramUnload) == S_OK
-         && pResourceManager->RegisterFormat(kRT_CgEffect, MAKERESOURCETYPE(kRC_Text), NULL, NULL, CgEffectFromText, CgEffectUnload) == S_OK
+         && pResourceManager->RegisterFormat(kRT_CgProgram, kRT_AsciiText, NULL, NULL, CgProgramFromText, CgProgramUnload) == S_OK
+         && pResourceManager->RegisterFormat(kRT_CgEffect, kRT_AsciiText, NULL, NULL, CgEffectFromText, CgEffectUnload) == S_OK
 #endif
-         && pResourceManager->RegisterFormat(kRT_TiXml, MAKERESOURCETYPE(kRC_Text), NULL, NULL, TiXmlDocumentFromText, TiXmlDocumentUnload) == S_OK)
+         && pResourceManager->RegisterFormat(kRT_TiXml, kRT_AsciiText, _T("xml"), NULL, TiXmlDocumentFromText, TiXmlDocumentUnload) == S_OK)
       {
          return S_OK;
       }

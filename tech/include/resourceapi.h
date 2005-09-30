@@ -23,17 +23,15 @@ F_DECLARE_INTERFACE(IResourceManager);
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#define kRT_AsciiText      _T("AsciiText")
+#define kRT_UnicodeText    _T("UnicodeText")
+#ifdef _UNICODE
+#define kRT_Text           kRT_UnicodeText
+#else
+#define kRT_Text           kRT_AsciiText
+#endif
 TECH_API tResult TextFormatRegister(const char * pszExtension);
 
-///////////////////////////////////////////////////////////////////////////////
-
-enum eResourceClass
-{
-   kRC_Unknown,
-   kRC_Text,
-   // Add new values above this line
-   kNUMRESOURCECLASSES,
-};
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -43,7 +41,7 @@ enum eResourceClass
 class cResourceKey
 {
 public:
-   cResourceKey(const tChar * pszName, eResourceClass rc);
+   cResourceKey(const tChar * pszName, const tChar * pszType);
    cResourceKey(const cResourceKey & other);
 
    const cResourceKey & operator =(const cResourceKey & other);
@@ -51,11 +49,10 @@ public:
    bool operator ==(const cResourceKey & other);
 
    const tChar * GetName() const;
-   eResourceClass GetClass() const;
+   const tChar * GetType() const;
 
 private:
-   cStr m_name;
-   eResourceClass m_class;
+   cStr m_name, m_type;
 };
 
 ///////////////////////////////////////
@@ -64,9 +61,9 @@ typedef cResourceKey tResKey;
 
 ///////////////////////////////////////
 
-inline cResourceKey::cResourceKey(const tChar * pszName, eResourceClass rc)
+inline cResourceKey::cResourceKey(const tChar * pszName, const tChar * pszType)
  : m_name(pszName != NULL ? pszName : _T("")),
-   m_class(rc)
+   m_type(pszType != NULL ? pszType : _T(""))
 {
 }
 
@@ -74,7 +71,7 @@ inline cResourceKey::cResourceKey(const tChar * pszName, eResourceClass rc)
 
 inline cResourceKey::cResourceKey(const cResourceKey & other)
  : m_name(other.m_name),
-   m_class(other.m_class)
+   m_type(other.m_type)
 {
 }
 
@@ -83,7 +80,7 @@ inline cResourceKey::cResourceKey(const cResourceKey & other)
 inline const cResourceKey & cResourceKey::operator =(const cResourceKey & other)
 {
    m_name = other.m_name;
-   m_class = other.m_class;
+   m_type = other.m_type;
    return *this;
 }
 
@@ -91,7 +88,7 @@ inline const cResourceKey & cResourceKey::operator =(const cResourceKey & other)
 
 inline bool cResourceKey::operator ==(const cResourceKey & other)
 {
-   return (m_name == other.m_name) && (m_class == other.m_class);
+   return (m_name == other.m_name) && (m_type == other.m_type);
 }
 
 ///////////////////////////////////////
@@ -103,9 +100,9 @@ inline const tChar * cResourceKey::GetName() const
 
 ///////////////////////////////////////
 
-inline eResourceClass cResourceKey::GetClass() const
+inline const tChar * cResourceKey::GetType() const
 {
-   return m_class;
+   return m_type.c_str();
 }
 
 
@@ -115,8 +112,6 @@ inline eResourceClass cResourceKey::GetClass() const
 //
 
 typedef const tChar * tResourceType;
-
-#define MAKERESOURCETYPE(i) (tResourceType)((ulong *)((ulong)(i)))
 
 typedef void * (* tResourceLoad)(IReader * pReader);
 typedef void * (* tResourcePostload)(void * pData, int dataLength, void * param);
@@ -134,7 +129,7 @@ interface IResourceManager : IUnknown
 
    tResult Load(const tResKey & key, void * param, void * * ppData)
    {
-      return Load(key.GetName(), MAKERESOURCETYPE(key.GetClass()), param, ppData);
+      return Load(key.GetName(), key.GetType(), param, ppData);
    }
 
    tResult Load(const tResKey & key, void * * ppData)
@@ -144,13 +139,8 @@ interface IResourceManager : IUnknown
 
    tResult Unload(const tResKey & key)
    {
-      return Unload(key.GetName(), MAKERESOURCETYPE(key.GetClass()));
+      return Unload(key.GetName(), key.GetType());
    }
-
-   /// @remarks Not implemented
-   virtual tResult Lock(const tChar * pszName, tResourceType type) = 0;
-   /// @remarks Not implemented
-   virtual tResult Unlock(const tChar * pszName, tResourceType type) = 0;
 
    virtual tResult RegisterFormat(tResourceType type,
                                   tResourceType typeDepend,
@@ -163,23 +153,6 @@ interface IResourceManager : IUnknown
       tResourceLoad pfnLoad, tResourcePostload pfnPostload, tResourceUnload pfnUnload)
    {
       return RegisterFormat(type, NULL, pszExtension, pfnLoad, pfnPostload, pfnUnload);
-   }
-
-   tResult RegisterFormat(eResourceClass rc,
-                          eResourceClass rcDepend,
-                          const tChar * pszExtension,
-                          tResourceLoad pfnLoad,
-                          tResourcePostload pfnPostload,
-                          tResourceUnload pfnUnload)
-   {
-      return RegisterFormat(MAKERESOURCETYPE(rc), MAKERESOURCETYPE(rcDepend),
-         pszExtension, pfnLoad, pfnPostload, pfnUnload);
-   }
-
-   tResult RegisterFormat(eResourceClass rc, const tChar * pszExtension,
-      tResourceLoad pfnLoad, tResourcePostload pfnPostload, tResourceUnload pfnUnload)
-   {
-      return RegisterFormat(MAKERESOURCETYPE(rc), pszExtension, pfnLoad, pfnPostload, pfnUnload);
    }
 };
 

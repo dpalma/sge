@@ -78,16 +78,7 @@ static bool SameType(tResourceType lhs, tResourceType rhs)
 {
    if (lhs != NULL && rhs != NULL)
    {
-      uint16 lhsHiWord = (uint16)(((ulong)lhs >> 16) & 0xFFFF);
-      uint16 rhsHiWord = (uint16)(((ulong)rhs >> 16) & 0xFFFF);
-      if (lhsHiWord == 0 && rhsHiWord == 0)
-      {
-         return lhs == rhs;
-      }
-      else if (lhsHiWord != 0 && rhsHiWord != 0)
-      {
-         return _tcscmp(lhs, rhs) == 0;
-      }
+      return _tcscmp(lhs, rhs) == 0;
    }
    else if (lhs == NULL && rhs == NULL)
    {
@@ -99,31 +90,9 @@ static bool SameType(tResourceType lhs, tResourceType rhs)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static const tChar * ResourceTypeName(tResourceType rt)
+inline const tChar * ResourceTypeName(tResourceType resourceType)
 {
-   uint16 hiWord = (uint16)(((ulong)rt >> 16) & 0xFFFF);
-   if (hiWord == 0)
-   {
-      static const struct
-      {
-         eResourceClass rc;
-         const tChar * pszName;
-      }
-      builtInTypeNames[] =
-      {
-         { kRC_Unknown,    _T("Unknown") },
-         { kRC_Text,       _T("Text") },
-      };
-      if ((uint)rt >= _countof(builtInTypeNames))
-      {
-         rt = 0;
-      }
-      return builtInTypeNames[(uint)rt].pszName;
-   }
-   else
-   {
-      return rt;
-   }
+   return resourceType;
 }
 
 
@@ -443,22 +412,6 @@ tResult cResourceManager::LoadWithFormat(const tChar * pszName, tResourceType ty
 tResult cResourceManager::Unload(const tChar * pszName, tResourceType type)
 {
    // TODO: For now resources unloaded only on exit
-   return E_NOTIMPL;
-}
-
-////////////////////////////////////////
-
-tResult cResourceManager::Lock(const tChar * pszName, tResourceType type)
-{
-   // TODO
-   return E_NOTIMPL;
-}
-
-////////////////////////////////////////
-
-tResult cResourceManager::Unlock(const tChar * pszName, tResourceType type)
-{
-   // TODO
    return E_NOTIMPL;
 }
 
@@ -823,7 +776,7 @@ uint cResourceManager::DeduceFormats(const tChar * pszName, tResourceType type,
       {
          if (SameType(fIter->type, type))
          {
-            if ((fIter->extensionId == extensionId) || fIter->typeDepend)
+            if ((fIter->extensionId == extensionId) || (fIter->extensionId == kNoIndex) || fIter->typeDepend)
             {
                pFormatIds[iFormat] = index;
                iFormat += 1;

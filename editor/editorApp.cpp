@@ -138,39 +138,14 @@ static void ScriptCallFunction(const char * pszName, const char * pszArgDesc, ..
 
 ////////////////////////////////////////
 
-static char * GetEntireContents(IReader * pReader)
-{
-   Assert(pReader != NULL);
-
-   pReader->Seek(0, kSO_End);
-   ulong length;
-   pReader->Tell(&length);
-   pReader->Seek(0, kSO_Set);
-
-   char * pszContents = new char[length + 1];
-
-   if (pReader->Read(pszContents, length) != S_OK)
-   {
-      delete [] pszContents;
-      return NULL;
-   }
-
-   pszContents[length] = 0;
-
-   return pszContents;
-}
-
-////////////////////////////////////////
-
 static bool ScriptExecResource(const char * pszResource)
 {
    bool bResult = false;
    char * pszCode = NULL;
    UseGlobal(ResourceManager);
-   if (pResourceManager->Load(tResKey(pszResource, kRC_Text), (void**)&pszCode) == S_OK)
+   if (pResourceManager->Load(pszResource, kRT_Text, NULL, (void**)&pszCode) == S_OK)
    {
       bResult = ScriptExecString(pszCode);
-      pResourceManager->Unload(tResKey(pszResource, kRC_Text));
    }
    return bResult;
 }
@@ -229,12 +204,10 @@ BOOL cEditorApp::InitInstance()
       return FALSE;
    }
 
-   TextFormatRegister("txt");
-   TextFormatRegister("lua");
-   TextFormatRegister("xml");
+   TextFormatRegister(NULL);
    EngineRegisterResourceFormats();
    BitmapUtilsRegisterResourceFormats();
-   RegisterTerrainResourceFormats();
+   TerrainRegisterResourceFormats();
    ImageRegisterResourceFormats();
 
    UseGlobal(ThreadCaller);

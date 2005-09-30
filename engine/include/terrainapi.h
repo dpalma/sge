@@ -207,7 +207,7 @@ interface ITerrainModelListener : IUnknown
 //
 
 #define kRT_TerrainTileSet _T("TerrainTileSet") // resource type
-ENGINE_API void RegisterTerrainResourceFormats();
+ENGINE_API void TerrainRegisterResourceFormats();
 
 enum eTerrainTileFlags
 {

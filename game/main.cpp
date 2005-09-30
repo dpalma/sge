@@ -16,6 +16,7 @@
 #include "saveloadapi.h"
 #include "scriptvar.h"
 #include "sys.h"
+#include "terrainapi.h"
 
 #include "renderapi.h"
 
@@ -257,10 +258,9 @@ static bool ScriptExecResource(IScriptInterpreter * pInterpreter, const tChar * 
 
    char * pszCode = NULL;
    UseGlobal(ResourceManager);
-   if (pResourceManager->Load(tResKey(pszResource, kRC_Text), (void**)&pszCode) == S_OK)
+   if (pResourceManager->Load(pszResource, kRT_Text, NULL, (void**)&pszCode) == S_OK)
    {
       bResult = SUCCEEDED(pInterpreter->ExecString(pszCode));
-      pResourceManager->Unload(tResKey(pszResource, kRC_Text));
    }
 
    return bResult;
@@ -311,10 +311,9 @@ static bool MainInit(int argc, tChar * argv[])
       return false;
    }
 
-   TextFormatRegister("txt");
-   TextFormatRegister("lua");
-   TextFormatRegister("xml");
+   TextFormatRegister(NULL);
    EngineRegisterResourceFormats();
+   TerrainRegisterResourceFormats();
    ImageRegisterResourceFormats();
 
    if (ConfigGet(_T("data"), &temp) == S_OK)
@@ -332,6 +331,7 @@ static bool MainInit(int argc, tChar * argv[])
       {
          if (!ScriptExecResource(pScriptInterpreter, script.c_str()))
          {
+            ErrorMsg1("Start-up script \"%s\" failed to execute or was not found\n", script.c_str());
             return false;
          }
       }
@@ -376,7 +376,7 @@ static bool MainInit(int argc, tChar * argv[])
    UseGlobal(GUIContext);
    if (FAILED(pGUIContext->GetDefaultFont(&g_pFont)))
    {
-      WarnMsg("Failed to get a default font interface pointer for showing frame stats\n");
+      ErrorMsg("Failed to get a default font interface pointer for showing frame stats\n");
       return false;
    }
 

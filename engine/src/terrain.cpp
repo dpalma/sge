@@ -1265,7 +1265,7 @@ void TerrainTileSetUnload(void * pData)
    SafeRelease(pTerrainTileSet);
 }
 
-void RegisterTerrainResourceFormats()
+void TerrainRegisterResourceFormats()
 {
    static bool bRegistered = false;
    static uint8 nAttempts = 10;
