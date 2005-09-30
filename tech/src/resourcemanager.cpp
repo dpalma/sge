@@ -457,10 +457,7 @@ tResult cResourceManager::RegisterFormat(tResourceType type,
    {
       extensionId = GetExtensionId(pszExtension);
 
-      if (!typeDepend)
-      {
-         m_extsForType.insert(std::make_pair(ResourceTypeName(type), extensionId));
-      }
+      m_extsForType.insert(std::make_pair(ResourceTypeName(type), extensionId));
 
       tFormats::const_iterator iter = m_formats.begin();
       for (; iter != m_formats.end(); iter++)
@@ -484,6 +481,84 @@ tResult cResourceManager::RegisterFormat(tResourceType type,
    m_formats.push_back(format);
 
    return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cResourceManager::ListResources(tResourceType type, std::vector<cStr> * pNames) const
+{
+   if (type == NULL)
+   {
+      return E_INVALIDARG;
+   }
+
+   if (pNames == NULL)
+   {
+      return E_POINTER;
+   }
+
+   std::set<cStr> formats;
+   formats.insert(type);
+   {
+      tFormats::const_iterator iter = m_formats.begin();
+      for (; iter != m_formats.end(); iter++)
+      {
+         if ((formats.find(iter->type) != formats.end()) && iter->typeDepend)
+         {
+            formats.insert(iter->typeDepend);
+         }
+      }
+   }
+
+   std::set<uint> formatIds;
+   {
+      tFormats::const_iterator iter = m_formats.begin();
+      for (uint index = 0; iter != m_formats.end(); iter++, index++)
+      {
+         if (formats.find(iter->type) != formats.end())
+         {
+            formatIds.insert(index);
+         }
+      }
+   }
+
+   std::set<uint> extIds;
+   {
+      std::set<cStr>::const_iterator typeIter = formats.begin();
+      for (; typeIter != formats.end(); typeIter++)
+      {
+         tExtsForType::const_iterator extIter = m_extsForType.lower_bound(*typeIter);
+         tExtsForType::const_iterator extEnd = m_extsForType.upper_bound(*typeIter);
+         for (; extIter != extEnd; ++extIter)
+         {
+            extIds.insert(extIter->second);
+         }
+      }
+   }
+
+   std::set<cStr> results;
+   {
+      tResources::const_iterator iter = m_resources.begin();
+      for (; iter != m_resources.end(); iter++)
+      {
+         if (formatIds.find(iter->formatId) != formatIds.end()
+            || extIds.find(iter->extensionId) != extIds.end())
+         {
+            cFileSpec name(iter->name.c_str());
+            if (iter->extensionId != kNoIndex)
+            {
+               name.SetFileExt(m_extensions[iter->extensionId].c_str());
+            }
+            LocalMsg2("Resource '%s' is possibly of type '%s'\n", name.c_str(), type);
+            results.insert(name);
+         }
+      }
+   }
+
+   pNames->resize(results.size());
+   std::copy(results.begin(), results.end(), pNames->begin());
+
+   return !pNames->empty() ? S_OK : S_FALSE;
 }
 
 ////////////////////////////////////////
@@ -898,7 +973,6 @@ cResourceManager::sResource::sResource()
  , archiveId(kNoIndex)
  , offset(kNoIndexL)
  , index(kNoIndexL)
- , lockCount(0)
  , pData(NULL)
  , dataSize(0)
 {
@@ -914,7 +988,6 @@ cResourceManager::sResource::sResource(const sResource & other)
  , archiveId(other.archiveId)
  , offset(other.offset)
  , index(other.index)
- , lockCount(other.lockCount)
  , pData(other.pData)
  , dataSize(other.dataSize)
 {
@@ -938,7 +1011,6 @@ const cResourceManager::sResource & cResourceManager::sResource::operator =(cons
    archiveId = other.archiveId;
    offset = other.offset;
    index = other.index;
-   lockCount = 0;
    pData = NULL;
    dataSize = 0;
    return *this;

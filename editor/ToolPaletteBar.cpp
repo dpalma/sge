@@ -5,7 +5,9 @@
 
 #include "ToolPaletteBar.h"
 
+#include "editorapi.h"
 #include "editorCtrlBars.h"
+#include "editorTools.h"
 #include "BitmapUtils.h"
 
 #include "terrainapi.h"
@@ -14,6 +16,9 @@
 #include "resourceapi.h"
 
 #include "resource.h"       // main symbols
+
+#include <vector>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -144,90 +149,6 @@ BEGIN_MESSAGE_MAP(cToolPaletteBar, cEditorControlBar)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
-
-void cToolPaletteBar::OnSetDefaultTileSet(const tChar * pszTileSet)
-{
-   UseGlobal(EditorTileSets);
-
-   uint nTileSets = 0;
-   if ((pEditorTileSets->GetTileSetCount(&nTileSets) != S_OK) || (nTileSets == 0))
-   {
-      return;
-   }
-
-   if (m_toolPalette.IsWindow())
-   {
-      tToolGroups::iterator iter = m_terrainTileGroups.begin();
-      tToolGroups::iterator end = m_terrainTileGroups.end();
-      for (; iter != end; iter++)
-      {
-         m_toolPalette.RemoveGroup(*iter);
-      }
-      m_terrainTileGroups.clear();
-   }
-   else
-   {
-      return;
-   }
-
-   UseGlobal(ResourceManager);
-
-   for (uint i = 0; i < nTileSets; i++)
-   {
-      cStr tileSet;
-      if (pEditorTileSets->GetTileSet(i, &tileSet) != S_OK)
-      {
-         continue;
-      }
-
-      ITerrainTileSet * pTileSet = NULL;
-      if (pResourceManager->Load(tileSet.c_str(), kRT_TerrainTileSet, NULL, (void**)&pTileSet) != S_OK)
-      {
-         continue;
-      }
-
-      uint nTiles = 0;
-      if ((pTileSet->GetTileCount(&nTiles) != S_OK) || (nTiles == 0))
-      {
-         continue;
-      }
-
-      cStr tileSetName;
-      if (pTileSet->GetName(&tileSetName) != S_OK)
-      {
-         continue;
-      }
-
-      HIMAGELIST hTileSetImages = NULL;
-      if (TerrainTileSetCreateImageList(pTileSet, 16, &hTileSetImages) != S_OK)
-      {
-         continue;
-      }
-
-      HTOOLGROUP hGroup = m_toolPalette.AddGroup(tileSetName.c_str(), hTileSetImages);
-      if (hGroup != NULL)
-      {
-         m_terrainTileGroups.push_back(hGroup);
-
-         for (uint j = 0; j < nTiles; j++)
-         {
-            cStr tileName;
-            if (pTileSet->GetTileName(j, &tileName) == S_OK)
-            {
-               cTerrainTileTool * pTerrainTool = new cTerrainTileTool;
-               if (pTerrainTool != NULL)
-               {
-                  pTerrainTool->SetTile(j);
-                  m_toolPalette.AddTool(hGroup, tileName.c_str(), j, pTerrainTool);
-               }
-            }
-         }
-      }
-   }
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
 // cToolPaletteBar message handlers
 
 int cToolPaletteBar::OnCreate(LPCREATESTRUCT lpCreateStruct) 
@@ -249,13 +170,22 @@ int cToolPaletteBar::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
    CreateStandardToolGroup();
 
-   UseGlobal(EditorTileSets);
-   pEditorTileSets->Connect(this);
-
-   cStr tileSet;
-   if (pEditorTileSets->GetDefaultTileSet(&tileSet) == S_OK)
+   std::vector<cStr> terrainTileSets;
+   UseGlobal(ResourceManager);
+   if (pResourceManager->ListResources(kRT_TerrainTileSet, &terrainTileSets) == S_OK)
    {
-      OnSetDefaultTileSet(tileSet.c_str());
+      bool bSetDefaultTileSet = false;
+      std::vector<cStr>::const_iterator iter = terrainTileSets.begin();
+      for (; iter != terrainTileSets.end(); iter++)
+      {
+         HTOOLGROUP hToolGroup = CreateTerrainToolGroup(iter->c_str());
+         if (!bSetDefaultTileSet && (hToolGroup != NULL))
+         {
+            UseGlobal(EditorApp);
+            pEditorApp->SetDefaultTileSet(iter->c_str());
+            bSetDefaultTileSet = true;
+         }
+      }
    }
 
    return 0;
@@ -264,9 +194,6 @@ int cToolPaletteBar::OnCreate(LPCREATESTRUCT lpCreateStruct)
 void cToolPaletteBar::OnDestroy() 
 {
    cEditorControlBar::OnDestroy();
-
-   UseGlobal(EditorTileSets);
-   pEditorTileSets->Disconnect(this);
 
    m_toolPalette.Clear();
 }
@@ -315,7 +242,6 @@ void cToolPaletteBar::OnToolPaletteItemDestroy(NMHDR * pnmh, LRESULT * pResult)
    sToolPaletteItem tpi;
    if (m_toolPalette.GetTool(((sNMToolPaletteItemClick *)pnmh)->hTool, &tpi))
    {
-      DebugMsg1("Tool \"%s\" destroyed\n", tpi.szName);
       if (tpi.pUserData != NULL)
       {
          IUnknown * pUnk = reinterpret_cast<IUnknown *>(tpi.pUserData);
@@ -380,4 +306,51 @@ HTOOLGROUP cToolPaletteBar::CreateStandardToolGroup()
    }
 
    return hStdGroup;
+}
+
+HTOOLGROUP cToolPaletteBar::CreateTerrainToolGroup(const tChar * pszTerrainTileSet)
+{
+   UseGlobal(ResourceManager);
+
+   ITerrainTileSet * pTileSet = NULL;
+   if (pResourceManager->Load(pszTerrainTileSet, kRT_TerrainTileSet, NULL, (void**)&pTileSet) != S_OK)
+   {
+      return NULL;
+   }
+
+   uint nTiles = 0;
+   if ((pTileSet->GetTileCount(&nTiles) != S_OK) || (nTiles == 0))
+   {
+      return NULL;
+   }
+
+   cStr tileSetName;
+   HIMAGELIST hTileSetImages = NULL;
+   if (pTileSet->GetName(&tileSetName) == S_OK
+      && TerrainTileSetCreateImageList(pTileSet, 16, &hTileSetImages) == S_OK)
+   {
+      HTOOLGROUP hGroup = m_toolPalette.AddGroup(tileSetName.c_str(), hTileSetImages);
+      if (hGroup != NULL)
+      {
+         for (uint i = 0; i < nTiles; i++)
+         {
+            cStr tileName;
+            if (pTileSet->GetTileName(i, &tileName) != S_OK)
+            {
+               continue;
+            }
+
+            cTerrainTileTool * pTerrainTool = new cTerrainTileTool;
+            if (pTerrainTool != NULL)
+            {
+               pTerrainTool->SetTile(i);
+               m_toolPalette.AddTool(hGroup, tileName.c_str(), i, pTerrainTool);
+            }
+         }
+
+         return hGroup;
+      }
+   }
+
+   return NULL;
 }

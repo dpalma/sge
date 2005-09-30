@@ -4,12 +4,7 @@
 #ifndef INCLUDED_TOOLPALETTEBAR_H
 #define INCLUDED_TOOLPALETTEBAR_H
 
-#include "afxcomtools.h"
-#include "editorapi.h"
-#include "editorTools.h"
 #include "ToolPalette.h"
-
-#include <vector>
 
 #if _MSC_VER >= 1000
 #pragma once
@@ -20,9 +15,7 @@
 // CLASS: cToolPaletteBar
 //
 
-class cToolPaletteBar : public cEditorControlBar,
-                        public cComObject<IMPLEMENTS(IEditorTileSetsListener),
-                                          cAfxComServices<cToolPaletteBar> >
+class cToolPaletteBar : public cEditorControlBar
 {
    DECLARE_DYNCREATE(cToolPaletteBar)
 
@@ -47,8 +40,6 @@ public:
 public:
    virtual ~cToolPaletteBar();
 
-   virtual void OnSetDefaultTileSet(const tChar * pszTileSet);
-
    // Generated message map functions
 protected:
    //{{AFX_MSG(cToolPaletteBar)
@@ -61,12 +52,11 @@ protected:
    DECLARE_MESSAGE_MAP()
 
    HTOOLGROUP CreateStandardToolGroup();
+   HTOOLGROUP CreateTerrainToolGroup(const tChar * pszTerrainTileSet);
 
 private:
    CToolTipCtrl m_tooltip;
    cToolPalette m_toolPalette;
-   typedef std::vector<HTOOLGROUP> tToolGroups;
-   tToolGroups m_terrainTileGroups;
 };
 
 /////////////////////////////////////////////////////////////////////////////

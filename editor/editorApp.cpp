@@ -160,7 +160,6 @@ static void RegisterGlobalObjects()
    ScriptInterpreterCreate();
 //   GUIContextCreate();
 //   GUIFactoryCreate();
-   EditorTileSetsCreate();
    ThreadCallerCreate();
    TerrainModelCreate();
    TerrainRendererCreate(true);
@@ -648,6 +647,51 @@ tResult cEditorApp::ReleaseToolCapture()
       SafeRelease(m_pToolCapture);
       return S_OK;
    }
+}
+
+///////////////////////////////////////
+
+tResult cEditorApp::SetDefaultTileSet(const tChar * pszTileSet)
+{
+   if (pszTileSet != NULL)
+   {
+      if (m_defaultTileSet.compare(pszTileSet) == 0)
+      {
+         return S_FALSE;
+      }
+      else
+      {
+         m_defaultTileSet = pszTileSet;
+         tEditorAppListeners::iterator iter = m_editorAppListeners.begin();
+         for (; iter != m_editorAppListeners.end(); iter++)
+         {
+            (*iter)->OnDefaultTileSetChange(pszTileSet);
+         }
+      }
+   }
+   else
+   {
+      m_defaultTileSet.erase();
+      tEditorAppListeners::iterator iter = m_editorAppListeners.begin();
+      for (; iter != m_editorAppListeners.end(); iter++)
+      {
+         (*iter)->OnDefaultTileSetChange(NULL);
+      }
+   }
+
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cEditorApp::GetDefaultTileSet(cStr * pTileSet) const
+{
+   if (pTileSet == NULL)
+   {
+      return E_POINTER;
+   }
+   *pTileSet = m_defaultTileSet;
+   return m_defaultTileSet.empty() ? S_FALSE : S_OK;
 }
 
 ////////////////////////////////////////

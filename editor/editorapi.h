@@ -17,8 +17,6 @@ F_DECLARE_INTERFACE(IEditorSplashScreen);
 F_DECLARE_INTERFACE(IEditorApp);
 F_DECLARE_INTERFACE(IEditorLoopClient);
 F_DECLARE_INTERFACE(IEditorAppListener);
-F_DECLARE_INTERFACE(IEditorTileSets);
-F_DECLARE_INTERFACE(IEditorTileSetsListener);
 F_DECLARE_INTERFACE(IEditorView);
 F_DECLARE_INTERFACE(IEditorModel);
 F_DECLARE_INTERFACE(IEditorModelListener);
@@ -78,6 +76,9 @@ interface UUID("2A04E541-6BA1-41e9-92FA-E7B3D493F1A2") IEditorApp : IUnknown
    virtual tResult GetToolCapture(IEditorTool * * ppTool) = 0;
    virtual tResult SetToolCapture(IEditorTool * pTool) = 0;
    virtual tResult ReleaseToolCapture() = 0;
+
+   virtual tResult SetDefaultTileSet(const tChar * pszTileSet) = 0;
+   virtual tResult GetDefaultTileSet(cStr * pTileSet) const = 0;
 };
 
 ////////////////////////////////////////
@@ -104,42 +105,7 @@ interface UUID("ED1B3A1A-E2D8-4eec-AABD-648A548729E8") IEditorLoopClient : IUnkn
 interface UUID("14E9EE21-4E6F-4b04-8F5C-742DFFA955BE") IEditorAppListener : IUnknown
 {
    virtual tResult OnActiveToolChange(IEditorTool * pNewTool, IEditorTool * pFormerTool) = 0;
-};
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// INTERFACE: IEditorTileSets
-//
-// Holds the set of all available terrain tile sets for use by editor tools.
-// The actual tile sets (ITerrainTileSet) are loaded using the resource manager.
-
-interface UUID("C0CDE13A-010A-4dc6-A9C5-75DC3373288D") IEditorTileSets : IUnknown
-{
-   DECLARE_CONNECTION_POINT(IEditorTileSetsListener);
-
-   virtual tResult AddTileSet(const tChar * pszTileSet) = 0;
-
-   virtual tResult GetTileSetCount(uint * pTileSetCount) const = 0;
-   virtual tResult GetTileSet(uint index, cStr * pTileSet) const = 0;
-
-   virtual tResult SetDefaultTileSet(const tChar * pszTileSet) = 0;
-   virtual tResult GetDefaultTileSet(cStr * pTileSet) const = 0;
-};
-
-////////////////////////////////////////
-
-void EditorTileSetsCreate();
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// INTERFACE: IEditorTileSetsListener
-//
-
-interface UUID("CA332F5D-1E25-4825-ABD8-59C753B68544") IEditorTileSetsListener : IUnknown
-{
-   virtual void OnSetDefaultTileSet(const tChar * pszTileSet) = 0;
+   virtual tResult OnDefaultTileSetChange(const tChar * pszTileSet) = 0;
 };
 
 

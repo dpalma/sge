@@ -61,6 +61,7 @@ public:
 
    // IEditorAppListener
    virtual tResult OnActiveToolChange(IEditorTool * pNewTool, IEditorTool * pFormerTool);
+   virtual tResult OnDefaultTileSetChange(const tChar * pszTileSet);
 
    // IEditorLoopClient
    virtual void OnFrame(double time, double elapsed);

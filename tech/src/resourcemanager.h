@@ -69,6 +69,7 @@ public:
                                   tResourceLoad pfnLoad,
                                   tResourcePostload pfnPostload,
                                   tResourceUnload pfnUnload);
+   virtual tResult ListResources(tResourceType type, std::vector<cStr> * pNames) const;
 
    virtual void DumpFormats() const;
    virtual void DumpCache() const;
@@ -130,7 +131,6 @@ private:
       uint archiveId;
       ulong offset;
       ulong index;
-      ulong lockCount;
       void * pData;
       ulong dataSize;
    };

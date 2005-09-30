@@ -12,7 +12,6 @@ sources = Split("""
    editorCommands.cpp
    editorCtrlBars.cpp
    editorDoc.cpp
-   editorTileSets.cpp
    editorTools.cpp
    editorTypes.cpp
    editorView.cpp

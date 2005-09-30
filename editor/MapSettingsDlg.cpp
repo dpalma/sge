@@ -75,7 +75,6 @@ void cMapSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(cMapSettingsDlg)
 	DDX_Control(pDX, IDC_MAP_INITIAL_TILE, m_initialTileComboBox);
-	DDX_CBStringExact(pDX, IDC_MAP_TILESET, m_tileSet);
 	DDX_Radio(pDX, IDC_HEIGHT_NONE, m_heightData);
 	DDX_Text(pDX, IDC_HEIGHT_MAP_FILE, m_heightMapFile);
 	DDV_MaxChars(pDX, m_heightMapFile, MAX_PATH);
@@ -85,14 +84,28 @@ void cMapSettingsDlg::DoDataExchange(CDataExchange* pDX)
 
    if (pDX->m_bSaveAndValidate)
    {
-      int initialTileSel = m_initialTileComboBox.GetCurSel();
-      if (initialTileSel != CB_ERR)
       {
-         m_initialTile = m_initialTileComboBox.GetItemData(initialTileSel);
+         int tileSetSel = SendDlgItemMessage(IDC_MAP_TILESET, CB_GETCURSEL);
+         if (tileSetSel != CB_ERR)
+         {
+            int index = SendDlgItemMessage(IDC_MAP_TILESET, CB_GETITEMDATA, tileSetSel);
+            if (index != CB_ERR)
+            {
+               m_tileSet = m_tileSets[index].c_str();
+            }
+         }
       }
-      else
+
       {
-         m_initialTile = -1;
+         int initialTileSel = m_initialTileComboBox.GetCurSel();
+         if (initialTileSel != CB_ERR)
+         {
+            m_initialTile = m_initialTileComboBox.GetItemData(initialTileSel);
+         }
+         else
+         {
+            m_initialTile = -1;
+         }
       }
    }
 }
@@ -161,8 +174,8 @@ BOOL cMapSettingsDlg::OnInitDialog()
    if (m_tileSet.IsEmpty())
    {
       cStr temp;
-      UseGlobal(EditorTileSets);
-      pEditorTileSets->GetDefaultTileSet(&temp);
+      UseGlobal(EditorApp);
+      pEditorApp->GetDefaultTileSet(&temp);
       m_tileSet = temp.c_str();
    }
 
@@ -228,34 +241,36 @@ void cMapSettingsDlg::OnSelectTileSet()
 void cMapSettingsDlg::PopulateTileSetComboBox()
 {
    SendDlgItemMessage(IDC_MAP_TILESET, CB_RESETCONTENT);
+   m_tileSets.clear();
 
-   uint nTileSets = 0;
-   UseGlobal(EditorTileSets);
-   if (pEditorTileSets->GetTileSetCount(&nTileSets) == S_OK && nTileSets > 0)
+   int iSelection = CB_ERR;
+
+   std::vector<cStr> terrainTileSets;
+   UseGlobal(ResourceManager);
+   if (pResourceManager->ListResources(kRT_TerrainTileSet, &terrainTileSets) == S_OK)
    {
-      for (uint i = 0; i < nTileSets; i++)
+      std::vector<cStr>::const_iterator iter = terrainTileSets.begin();
+      for (; iter != terrainTileSets.end(); iter++)
       {
-         cStr tileSet;
-         if (pEditorTileSets->GetTileSet(i, &tileSet) == S_OK)
+         cStr tileSetName;
+         ITerrainTileSet * pTileSet = NULL;
+         if (pResourceManager->Load(iter->c_str(), kRT_TerrainTileSet, NULL, (void**)&pTileSet) != S_OK
+            || pTileSet->GetName(&tileSetName) != S_OK)
          {
-            int index = SendDlgItemMessage(IDC_MAP_TILESET, CB_ADDSTRING, 0, (LPARAM)tileSet.c_str());
-            SendDlgItemMessage(IDC_MAP_TILESET, CB_SETITEMDATA, index, (LPARAM)i);
+            continue;
          }
-         else
-         {
-            ErrorMsg1("Error getting tile set %d\n", i);
-         }
-      }
 
-      if (!m_tileSet.IsEmpty())
-      {
-         SendDlgItemMessage(IDC_MAP_TILESET, CB_SELECTSTRING, -1, (LPARAM)(LPCTSTR)m_tileSet);
-      }
-      else
-      {
-         SendDlgItemMessage(IDC_MAP_TILESET, CB_SETCURSEL, 0);
+         m_tileSets.push_back(*iter);
+         int index = SendDlgItemMessage(IDC_MAP_TILESET, CB_ADDSTRING, 0, (LPARAM)tileSetName.c_str());
+         SendDlgItemMessage(IDC_MAP_TILESET, CB_SETITEMDATA, index, (LPARAM)(m_tileSets.size() - 1));
+         if (m_tileSet.Compare(iter->c_str()) == 0)
+         {
+            iSelection = index;
+         }
       }
    }
+
+   SendDlgItemMessage(IDC_MAP_TILESET, CB_SETCURSEL, iSelection);
 }
 
 ////////////////////////////////////////

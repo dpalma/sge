@@ -8,7 +8,6 @@
 #include "scriptapi.h"
 #include "scriptvar.h"
 
-#include "resourceapi.h"
 #include "dictionaryapi.h"
 #include "globalobj.h"
 
@@ -21,25 +20,13 @@ static char THIS_FILE[] = __FILE__;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int AddTileSet(int argc, const cScriptVar * argv, 
-               int nMaxResults, cScriptVar * pResults)
-{
-   if (argc == 1 && argv[0].type == kString)
-   {
-      UseGlobal(EditorTileSets);
-      pEditorTileSets->AddTileSet(argv[0]);
-   }
-   return 0;
-}
-///////////////////////////////////////////////////////////////////////////////
-
 int SetDefaultTileSet(int argc, const cScriptVar * argv, 
                                 int nMaxResults, cScriptVar * pResults)
 {
    if (argc == 1 && argv[0].type == kString)
    {
-      UseGlobal(EditorTileSets);
-      pEditorTileSets->SetDefaultTileSet(argv[0]);
+      UseGlobal(EditorApp);
+      pEditorApp->SetDefaultTileSet(argv[0]);
    }
    return 0;
 }
@@ -69,7 +56,6 @@ int EmitDebugMessages(int argc, const cScriptVar * argv,
 
 sScriptReg g_editorCmds[] =
 {
-   { "AddTileSet", AddTileSet },
    { "SetDefaultTileSet", SetDefaultTileSet },
 #ifdef _DEBUG
    { "EmitDebugMessages", EmitDebugMessages },

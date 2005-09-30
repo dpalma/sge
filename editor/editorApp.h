@@ -106,6 +106,9 @@ public:
    virtual tResult SetToolCapture(IEditorTool * pTool);
    virtual tResult ReleaseToolCapture();
 
+   virtual tResult SetDefaultTileSet(const tChar * pszTileSet);
+   virtual tResult GetDefaultTileSet(cStr * pTileSet) const;
+
 private:
    IEditorTool * AccessActiveTool();
    IEditorTool * AccessToolCapture();
@@ -121,6 +124,8 @@ private:
 
    cAutoIPtr<IEditorTool> m_pActiveTool;
    cAutoIPtr<IEditorTool> m_pToolCapture;
+
+   cStr m_defaultTileSet;
 };
 
 ////////////////////////////////////////
