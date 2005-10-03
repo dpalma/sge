@@ -115,6 +115,9 @@ public:
    void SetHeightMap(const tChar * pszHeightMap);
    const tChar * GetHeightMap() const;
 
+   void SetHeightMapScale(float scale);
+   float GetHeightMapScale() const;
+
 private:
    uint m_tileSize;
    uint m_nTilesX, m_nTilesZ;
@@ -122,6 +125,7 @@ private:
    int m_initialTile;
    eTerrainHeightData m_heightData;
    cStr m_heightMap;
+   float m_heightMapScale;
 };
 
 

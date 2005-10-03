@@ -62,24 +62,26 @@ inline void DecomposeHandle(HTYPE handle, uint16 * ph, uint16 * pl)
 ////////////////////////////////////////
 
 cTerrainSettings::cTerrainSettings()
- : m_tileSize(TerrainSettingsDefaults::kTerrainTileSize),
-   m_nTilesX(TerrainSettingsDefaults::kTerrainTileCountX),
-   m_nTilesZ(TerrainSettingsDefaults::kTerrainTileCountZ),
-   m_initialTile(0),
-   m_heightData(TerrainSettingsDefaults::kTerrainHeightData)
+ : m_tileSize(TerrainSettingsDefaults::kTerrainTileSize)
+ , m_nTilesX(TerrainSettingsDefaults::kTerrainTileCountX)
+ , m_nTilesZ(TerrainSettingsDefaults::kTerrainTileCountZ)
+ , m_initialTile(0)
+ , m_heightData(TerrainSettingsDefaults::kTerrainHeightData)
+ , m_heightMapScale(1)
 {
 }
 
 ////////////////////////////////////////
 
 cTerrainSettings::cTerrainSettings(const cTerrainSettings & other)
- : m_tileSize(other.m_tileSize),
-   m_nTilesX(other.m_nTilesX),
-   m_nTilesZ(other.m_nTilesZ),
-   m_tileSet(other.m_tileSet),
-   m_initialTile(other.m_initialTile),
-   m_heightData(other.m_heightData),
-   m_heightMap(other.m_heightMap)
+ : m_tileSize(other.m_tileSize)
+ , m_nTilesX(other.m_nTilesX)
+ , m_nTilesZ(other.m_nTilesZ)
+ , m_tileSet(other.m_tileSet)
+ , m_initialTile(other.m_initialTile)
+ , m_heightData(other.m_heightData)
+ , m_heightMap(other.m_heightMap)
+ , m_heightMapScale(other.m_heightMapScale)
 {
 }
 
@@ -100,6 +102,7 @@ const cTerrainSettings & cTerrainSettings::operator =(const cTerrainSettings & o
    m_initialTile = other.m_initialTile;
    m_heightData = other.m_heightData;
    m_heightMap = other.m_heightMap;
+   m_heightMapScale = other.m_heightMapScale;
    return *this;
 }
 
@@ -215,6 +218,20 @@ const tChar * cTerrainSettings::GetHeightMap() const
    return m_heightMap.c_str();
 }
 
+////////////////////////////////////////
+
+void cTerrainSettings::SetHeightMapScale(float scale)
+{
+   m_heightMapScale = scale;
+}
+
+////////////////////////////////////////
+
+float cTerrainSettings::GetHeightMapScale() const
+{
+   return m_heightMapScale;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 template <>
@@ -242,7 +259,8 @@ tResult cReadWriteOps<cTerrainSettings>::Read(IReader * pReader, cTerrainSetting
       && pReader->Read(&pTerrainSettings->m_tileSet) == S_OK
       && pReader->Read(&pTerrainSettings->m_initialTile) == S_OK
       && pReader->Read(&heightData) == S_OK
-      && pReader->Read(&pTerrainSettings->m_heightMap) == S_OK)
+      && pReader->Read(&pTerrainSettings->m_heightMap) == S_OK
+      && pReader->Read(&pTerrainSettings->m_heightMapScale) == S_OK)
    {
       pTerrainSettings->m_heightData = (eTerrainHeightData)heightData;
       return S_OK;
@@ -266,7 +284,8 @@ tResult cReadWriteOps<cTerrainSettings>::Write(IWriter * pWriter, const cTerrain
       && pWriter->Write(terrainSettings.m_tileSet) == S_OK
       && pWriter->Write(terrainSettings.m_initialTile) == S_OK
       && pWriter->Write(static_cast<int>(terrainSettings.m_heightData)) == S_OK
-      && pWriter->Write(terrainSettings.m_heightMap) == S_OK)
+      && pWriter->Write(terrainSettings.m_heightMap) == S_OK
+      && pWriter->Write(terrainSettings.m_heightMapScale) == S_OK)
    {
       return S_OK;
    }
@@ -612,7 +631,7 @@ tResult cTerrainModel::Initialize(const cTerrainSettings & terrainSettings)
 
          float height = pHeightMap->GetNormalizedHeight(
             static_cast<float>(x) / extentX,
-            static_cast<float>(z) / extentZ);
+            static_cast<float>(z) / extentZ) * terrainSettings.GetHeightMapScale();
 
          m_vertices[index] = tVec3(x, height, z);
       }
@@ -1328,23 +1347,23 @@ tResult HeightMapLoad(const tChar * pszHeightData, IHeightMap * * ppHeightMap)
    class cHeightMap : public cComObject<IMPLEMENTS(IHeightMap)>
    {
    public:
-      cHeightMap(IImage * pHeightData)
-       : m_pHeightData(pHeightData)
+      cHeightMap(IImage * pHeightMap)
+       : m_pHeightMap(pHeightMap)
       {
-         Assert(pHeightData != NULL);
+         Assert(pHeightMap != NULL);
       }
 
       ~cHeightMap()
       {
-         m_pHeightData = NULL; // Don't delete this--it's a cached resource
+         m_pHeightMap = NULL; // Don't delete this--it's a cached resource
       }
 
       virtual float GetNormalizedHeight(float nx, float nz) const
       {
-         Assert(m_pHeightData != NULL);
+         Assert(m_pHeightMap != NULL);
 
          // support only grayscale images for now
-         if (m_pHeightData->GetPixelFormat() != kPF_Grayscale)
+         if (m_pHeightMap->GetPixelFormat() != kPF_Grayscale)
          {
             return 0;
          }
@@ -1354,18 +1373,18 @@ tResult HeightMapLoad(const tChar * pszHeightData, IHeightMap * * ppHeightMap)
             return 0;
          }
 
-         uint x = Round(nx * m_pHeightData->GetWidth());
-         uint z = Round(nz * m_pHeightData->GetHeight());
+         uint x = Round(nx * m_pHeightMap->GetWidth());
+         uint z = Round(nz * m_pHeightMap->GetHeight());
 
-         uint8 * pData = reinterpret_cast<uint8 *>(m_pHeightData);
+         const uint8 * pData = reinterpret_cast<const uint8 *>(m_pHeightMap->GetData());
 
-         uint8 sample = pData[(z * m_pHeightData->GetWidth()) + x];
+         uint8 sample = pData[(z * m_pHeightMap->GetWidth()) + x];
 
          return static_cast<float>(sample) / 255.0f;
       }
 
    private:
-      IImage * m_pHeightData;
+      IImage * m_pHeightMap;
    };
 
    IImage * pHeightData = NULL;

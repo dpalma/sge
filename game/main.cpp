@@ -201,6 +201,8 @@ void ResizeHack(int width, int height)
 
 SCRIPT_DEFINE_FUNCTION(SetTerrain)
 {
+   UseGlobal(TerrainModel);
+
    if (argc == 1 && argv[0].IsString())
    {
       g_pTerrainRoot = TerrainNodeCreate(AccessRenderDevice(), argv[0], kGroundScaleY, NULL);
@@ -217,6 +219,16 @@ SCRIPT_DEFINE_FUNCTION(SetTerrain)
       && argv[2].IsString())
    {
       g_pTerrainRoot = TerrainNodeCreate(AccessRenderDevice(), argv[0], argv[1], argv[2]);
+
+      cTerrainSettings terrainSettings;
+      terrainSettings.SetTileSet("defaulttiles.xml"); // HACK TODO
+      terrainSettings.SetTileSize(16);
+      terrainSettings.SetTileCountX(64);
+      terrainSettings.SetTileCountZ(64);
+      terrainSettings.SetHeightData(kTHD_HeightMap);
+      terrainSettings.SetHeightMap(argv[0]);
+      terrainSettings.SetHeightMapScale(static_cast<float>(argv[1]) * 255);
+      pTerrainModel->Initialize(terrainSettings);
    }
    else
    {
@@ -248,6 +260,8 @@ static void RegisterGlobalObjects()
    EntityManagerCreate();
    ThreadCallerCreate();
    SaveLoadManagerCreate();
+   TerrainModelCreate();
+   TerrainRendererCreate();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
