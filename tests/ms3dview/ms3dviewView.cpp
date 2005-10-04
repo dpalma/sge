@@ -7,9 +7,11 @@
 #include "ms3dviewDoc.h"
 #include "ms3dviewView.h"
 
-#include "renderapi.h"
+#include "model.h"
+
 #include "matrix4.h"
 
+#include <cfloat>
 #include <GL/gl.h>
 #include <GL/glu.h>
 
@@ -27,12 +29,12 @@ const int IDC_SLIDER = 1000;
 const int kSliderHeight = 30;
 
 /////////////////////////////////////////////////////////////////////////////
-// CMs3dviewView
+// c3dmodelView
 
-IMPLEMENT_DYNCREATE(CMs3dviewView, CView)
+IMPLEMENT_DYNCREATE(c3dmodelView, CView)
 
-BEGIN_MESSAGE_MAP(CMs3dviewView, CView)
-	//{{AFX_MSG_MAP(CMs3dviewView)
+BEGIN_MESSAGE_MAP(c3dmodelView, CView)
+	//{{AFX_MSG_MAP(c3dmodelView)
 	ON_WM_CREATE()
 	ON_WM_DESTROY()
 	ON_WM_SIZE()
@@ -42,17 +44,17 @@ BEGIN_MESSAGE_MAP(CMs3dviewView, CView)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
-// CMs3dviewView construction/destruction
+// c3dmodelView construction/destruction
 
-CMs3dviewView::CMs3dviewView() : m_center(0,0,0), m_eye(0,0,0)
+c3dmodelView::c3dmodelView() : m_center(0,0,0), m_eye(0,0,0)
 {
 }
 
-CMs3dviewView::~CMs3dviewView()
+c3dmodelView::~c3dmodelView()
 {
 }
 
-BOOL CMs3dviewView::PreCreateWindow(CREATESTRUCT& cs)
+BOOL c3dmodelView::PreCreateWindow(CREATESTRUCT& cs)
 {
    // Style bits required by OpenGL
    cs.style |= (WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
@@ -61,39 +63,49 @@ BOOL CMs3dviewView::PreCreateWindow(CREATESTRUCT& cs)
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// CMs3dviewView operations
+// c3dmodelView operations
 
 
 
 /////////////////////////////////////////////////////////////////////////////
-// CMs3dviewView drawing
+// c3dmodelView drawing
 
-void CMs3dviewView::OnDraw(CDC* pDC)
+void c3dmodelView::OnDraw(CDC* pDC)
 {
-	CMs3dviewDoc* pDoc = GetDocument();
+	c3dmodelDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
    glMatrixMode(GL_MODELVIEW);
-
    glPushMatrix();
-
    glLoadIdentity();
-
    gluLookAt(m_eye.x, m_eye.y, m_eye.z, m_center.x, m_center.y, m_center.z, 0, 1, 0);
 
    glTranslatef(m_center.x, m_center.y, m_center.z);
 
-   AccessRenderDevice()->BeginScene();
-
-   if (pDoc->GetModel() != NULL)
+   if (pDoc->AccessModel() != NULL)
    {
-      AccessRenderDevice()->SetBlendMatrices(pDoc->GetBlendMatrixCount(), pDoc->GetBlendMatrices());
-      pDoc->GetModel()->Render(AccessRenderDevice());
-   }
+      glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
+      glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT);
 
-   AccessRenderDevice()->EndScene();
+      GlSubmitBlendedVertices(pDoc->GetBlendedVertices());
+
+      tModelMeshes::const_iterator iter = pDoc->AccessModel()->BeginMeshses();
+      for (; iter != pDoc->AccessModel()->EndMeshses(); iter++)
+      {
+         int iMaterial = iter->GetMaterialIndex();
+         if (iMaterial >= 0)
+         {
+            pDoc->AccessModel()->GetMaterial(iMaterial).GlDiffuseAndTexture();
+         }
+
+         glDrawElements(iter->GetGlPrimitive(), iter->GetIndexCount(), GL_UNSIGNED_SHORT, iter->GetIndexData());
+      }
+
+      glPopClientAttrib();
+      glPopAttrib();
+   }
 
    glPopMatrix();
 
@@ -103,30 +115,30 @@ void CMs3dviewView::OnDraw(CDC* pDC)
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// CMs3dviewView diagnostics
+// c3dmodelView diagnostics
 
 #ifdef _DEBUG
-void CMs3dviewView::AssertValid() const
+void c3dmodelView::AssertValid() const
 {
 	CView::AssertValid();
 }
 
-void CMs3dviewView::Dump(CDumpContext& dc) const
+void c3dmodelView::Dump(CDumpContext& dc) const
 {
 	CView::Dump(dc);
 }
 
-CMs3dviewDoc* CMs3dviewView::GetDocument() // non-debug version is inline
+c3dmodelDoc* c3dmodelView::GetDocument() // non-debug version is inline
 {
-	ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CMs3dviewDoc)));
-	return (CMs3dviewDoc*)m_pDocument;
+	ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(c3dmodelDoc)));
+	return (c3dmodelDoc*)m_pDocument;
 }
 #endif //_DEBUG
 
 /////////////////////////////////////////////////////////////////////////////
-// CMs3dviewView message handlers
+// c3dmodelView message handlers
 
-int CMs3dviewView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
+int c3dmodelView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
 	if (CView::OnCreate(lpCreateStruct) == -1)
 		return -1;
@@ -174,13 +186,6 @@ int CMs3dviewView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
    wglMakeCurrent(m_hDC, m_hRC);
 
-   // Create the render device after setting up the GL context
-   if (RenderDeviceCreate(&m_pRenderDevice) != S_OK)
-   {
-      TRACE0("Failed to create rendering device\n");
-      return -1;
-   }
-
    COLORREF colorWindow = GetSysColor(COLOR_WINDOW);
 
    glClearColor(
@@ -195,11 +200,9 @@ int CMs3dviewView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	return 0;
 }
 
-void CMs3dviewView::OnDestroy() 
+void c3dmodelView::OnDestroy() 
 {
 	CView::OnDestroy();
-
-   SafeRelease(m_pRenderDevice);
 
    wglMakeCurrent(NULL, NULL);
 
@@ -216,13 +219,13 @@ void CMs3dviewView::OnDestroy()
    }
 }
 
-void CMs3dviewView::OnSize(UINT nType, int cx, int cy) 
+void c3dmodelView::OnSize(UINT nType, int cx, int cy) 
 {
 	CView::OnSize(nType, cx, cy);
 
    m_slider.MoveWindow(0, cy - kSliderHeight, cx, kSliderHeight);
 
-   GLfloat aspect = (GLfloat)cx / (GLfloat)cy;
+   GLfloat aspect = static_cast<GLfloat>(cx) / cy;
 
    tMatrix4 proj;
    MatrixPerspective(kFov, aspect, kZNear, kZFar, &proj);
@@ -233,12 +236,12 @@ void CMs3dviewView::OnSize(UINT nType, int cx, int cy)
    glViewport(0, kSliderHeight, cx, cy - kSliderHeight);
 }
 
-BOOL CMs3dviewView::OnEraseBkgnd(CDC* pDC) 
+BOOL c3dmodelView::OnEraseBkgnd(CDC* pDC) 
 {
    return TRUE;
 }
 
-void CMs3dviewView::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) 
+void c3dmodelView::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) 
 {
    ASSERT_VALID(pScrollBar);
    if (pScrollBar->GetDlgCtrlID() == m_slider.GetDlgCtrlID())
@@ -248,7 +251,7 @@ void CMs3dviewView::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 
       //TRACE1("Animate to %.2f\n", percent);
 
-	   CMs3dviewDoc * pDoc = GetDocument();
+	   c3dmodelDoc * pDoc = GetDocument();
 	   ASSERT_VALID(pDoc);
 
       if (pDoc)
@@ -261,21 +264,41 @@ void CMs3dviewView::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 	CView::OnHScroll(nSBCode, nPos, pScrollBar);
 }
 
-void CMs3dviewView::OnInitialUpdate() 
+static bool operator <(const tVec3 & a, const tVec3 & b)
+{
+   return (a.x < b.x) && (a.y < b.y) && (a.z < b.z);
+}
+
+static bool operator >(const tVec3 & a, const tVec3 & b)
+{
+   return (a.x > b.x) && (a.y > b.y) && (a.z > b.z);
+}
+
+void c3dmodelView::OnInitialUpdate() 
 {
 	CView::OnInitialUpdate();
 
-	CMs3dviewDoc * pDoc = GetDocument();
+	c3dmodelDoc * pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-   if (pDoc && pDoc->GetModel())
+   if (pDoc && pDoc->AccessModel())
    {
-      tVec3 max, min;
-      pDoc->GetModel()->GetAABB(&max, &min);
+      tVec3 maximum(FLT_MIN, FLT_MIN, FLT_MIN),
+            minimum(FLT_MAX, FLT_MAX, FLT_MAX);
 
-      float maxDim = Max(max.x - min.x, Max(max.y - min.y, max.z - min.z));
+      const tModelVertices & vertices = pDoc->AccessModel()->GetVertices();
+      tModelVertices::const_iterator iter = vertices.begin();
+      for (; iter != vertices.end(); iter++)
+      {
+         if (iter->pos < minimum)
+            minimum = iter->pos;
+         if (iter->pos > maximum)
+            maximum = iter->pos;
+      }
 
-      m_center = (max + min) * 0.5f;
+      float maxDim = Max(maximum.x - minimum.x, Max(maximum.y - minimum.y, maximum.z - minimum.z));
+
+      m_center = (maximum + minimum) * 0.5f;
       m_eye = tVec3(m_center.x + maxDim, m_center.y + maxDim, m_center.z + maxDim);
    }
    else

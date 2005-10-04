@@ -4,34 +4,43 @@
 #if !defined(INCLUDED_MS3DVIEWDOC_H)
 #define INCLUDED_MS3DVIEWDOC_H
 
-#include "meshapi.h"
-#include "animation.h"
-#include "skeleton.h"
 #include "comtools.h"
+#include "matrix4.h"
+
+#include "model.h"
+
+#include <vector>
 
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
 
-class CMs3dviewDoc : public CDocument
+/////////////////////////////////////////////////////////////////////////////
+
+typedef std::vector<tMatrix4> tMatrices;
+
+/////////////////////////////////////////////////////////////////////////////
+
+class c3dmodelDoc : public CDocument
 {
 protected: // create from serialization only
-	CMs3dviewDoc();
-	DECLARE_DYNCREATE(CMs3dviewDoc)
+	c3dmodelDoc();
+	DECLARE_DYNCREATE(c3dmodelDoc)
 
 // Attributes
 public:
-   inline IMesh * GetModel() { return m_pMesh; }
+   inline cModel * AccessModel() { return m_pModel; }
    void SetFrame(float pct);
-   const tMatrix4 * GetBlendMatrices() { return &m_boneMatrices[0]; }
-   uint GetBlendMatrixCount() const { return m_boneMatrices.size(); }
+   const tMatrix4 * GetBlendMatrices() { return &m_blendMatrices[0]; }
+   uint GetBlendMatrixCount() const { return m_blendMatrices.size(); }
+   const tBlendedVertices & GetBlendedVertices() const { return m_blendedVerts; }
 
 // Operations
 public:
 
 // Overrides
 	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CMs3dviewDoc)
+	//{{AFX_VIRTUAL(c3dmodelDoc)
 	public:
 	virtual BOOL OnNewDocument();
 	virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
@@ -40,28 +49,26 @@ public:
 
 // Implementation
 public:
-	virtual ~CMs3dviewDoc();
+	virtual ~c3dmodelDoc();
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;
 #endif
 
-protected:
-   tResult PostRead();
-
 // Generated message map functions
 protected:
-	//{{AFX_MSG(CMs3dviewDoc)
-	afx_msg void OnUpdateToolsOptimize(CCmdUI* pCmdUI);
-	afx_msg void OnToolsOptimize();
+	//{{AFX_MSG(c3dmodelDoc)
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
    afx_msg void OnUpdateRendering(CCmdUI * pCmdUI);
 
 private:
-   cAutoIPtr<IMesh> m_pMesh;
-   tMatrices m_boneMatrices;
+   cStr m_model;
+   cModel * m_pModel;
+   double m_animationLength;
+   tBlendedVertices m_blendedVerts;
+   std::vector<tMatrix4> m_blendMatrices;
 };
 
 /////////////////////////////////////////////////////////////////////////////

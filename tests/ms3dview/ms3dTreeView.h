@@ -10,10 +10,8 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-class CMs3dviewDoc;
-class cMs3dMesh;
-interface IMesh;
-interface ISkeleton;
+class c3dmodelDoc;
+class cModel;
 
 /////////////////////////////////////////////////////////////////////////////
 // cMs3dTreeView view
@@ -26,7 +24,7 @@ protected:
 
 // Attributes
 public:
-	CMs3dviewDoc* GetDocument();
+	c3dmodelDoc* GetDocument();
 
 // Operations
 public:
@@ -49,12 +47,12 @@ protected:
 	virtual void Dump(CDumpContext& dc) const;
 #endif
 
-   void AddVertices(IMesh * pMesh, HTREEITEM hParent = TVI_ROOT);
-   void AddMaterials(IMesh * pMesh, HTREEITEM hParent = TVI_ROOT);
-   void AddSubMeshes(IMesh * pMesh, HTREEITEM hParent = TVI_ROOT);
-   void AddSkeleton(IMesh * pMesh, HTREEITEM hParent = TVI_ROOT);
-   void AddBones(ISkeleton * pSkeleton, HTREEITEM hParent = TVI_ROOT);
-   void AddAnimation(ISkeleton * pSkeleton, HTREEITEM hParent = TVI_ROOT);
+   void AddVertices(cModel * pModel, HTREEITEM hParent = TVI_ROOT);
+   void AddMaterials(cModel * pModel, HTREEITEM hParent = TVI_ROOT);
+   void AddSubMeshes(cModel * pModel, HTREEITEM hParent = TVI_ROOT);
+   void AddSkeleton(cModel * pModel, HTREEITEM hParent = TVI_ROOT);
+   void AddBones(cModel * pModel, HTREEITEM hParent = TVI_ROOT);
+   void AddAnimation(cModel * pModel, HTREEITEM hParent = TVI_ROOT);
 
 	// Generated message map functions
 protected:
@@ -65,8 +63,8 @@ protected:
 };
 
 #ifndef _DEBUG  // debug version in ms3dviewView.cpp
-inline CMs3dviewDoc* cMs3dTreeView::GetDocument()
-   { return (CMs3dviewDoc*)m_pDocument; }
+inline c3dmodelDoc* cMs3dTreeView::GetDocument()
+   { return (c3dmodelDoc*)m_pDocument; }
 #endif
 
 /////////////////////////////////////////////////////////////////////////////

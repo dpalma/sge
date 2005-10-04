@@ -11,27 +11,26 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-F_DECLARE_INTERFACE(IRenderDevice);
+class c3dmodelDoc;
 
-class CMs3dviewDoc;
+/////////////////////////////////////////////////////////////////////////////
 
-class CMs3dviewView : public CView
+class c3dmodelView : public CView
 {
 protected: // create from serialization only
-	CMs3dviewView();
-	DECLARE_DYNCREATE(CMs3dviewView)
+	c3dmodelView();
+	DECLARE_DYNCREATE(c3dmodelView)
 
 // Attributes
 public:
-	CMs3dviewDoc* GetDocument();
+	c3dmodelDoc* GetDocument();
 
 // Operations
 public:
-   inline IRenderDevice * AccessRenderDevice() { return m_pRenderDevice; }
 
 // Overrides
 	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CMs3dviewView)
+	//{{AFX_VIRTUAL(c3dmodelView)
 	public:
 	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
@@ -40,7 +39,7 @@ public:
 
 // Implementation
 public:
-	virtual ~CMs3dviewView();
+	virtual ~c3dmodelView();
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;
@@ -50,7 +49,7 @@ protected:
 
 // Generated message map functions
 protected:
-	//{{AFX_MSG(CMs3dviewView)
+	//{{AFX_MSG(c3dmodelView)
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnDestroy();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
@@ -63,16 +62,14 @@ private:
    HDC m_hDC;
    HGLRC	m_hRC;
 
-   cAutoIPtr<IRenderDevice> m_pRenderDevice;
-
    CSliderCtrl m_slider;
 
    tVec3 m_center, m_eye;
 };
 
 #ifndef _DEBUG  // debug version in ms3dviewView.cpp
-inline CMs3dviewDoc* CMs3dviewView::GetDocument()
-   { return (CMs3dviewDoc*)m_pDocument; }
+inline c3dmodelDoc* c3dmodelView::GetDocument()
+   { return (c3dmodelDoc*)m_pDocument; }
 #endif
 
 /////////////////////////////////////////////////////////////////////////////

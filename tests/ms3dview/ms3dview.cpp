@@ -6,13 +6,13 @@
 
 #include "engineapi.h"
 
-#include "renderapi.h"
-
+#include "imageapi.h"
 #include "resourceapi.h"
 #include "globalobj.h"
 
 #include "MainFrm.h"
 #include "ms3dviewDoc.h"
+#include "ms3dviewView.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -76,14 +76,9 @@ BOOL CMs3dviewApp::InitInstance()
    ResourceManagerCreate();
    StartGlobalObjects();
 
-   TargaFormatRegister();
-   BmpFormatRegister();
-   TextFormatRegister("txt");
-   TextFormatRegister("lua");
-   TextFormatRegister("xml");
-   GlTextureResourceRegister();
+   TextFormatRegister(NULL);
    EngineRegisterResourceFormats();
-   Ms3dFormatRegister();
+   ImageRegisterResourceFormats();
 
 	// Register the application's document templates.  Document templates
 	//  serve as the connection between documents, frame windows and views.
@@ -91,9 +86,9 @@ BOOL CMs3dviewApp::InitInstance()
 	CSingleDocTemplate* pDocTemplate;
 	pDocTemplate = new CSingleDocTemplate(
 		IDR_MAINFRAME,
-		RUNTIME_CLASS(CMs3dviewDoc),
+		RUNTIME_CLASS(c3dmodelDoc),
 		RUNTIME_CLASS(CMainFrame),       // main SDI frame window
-		RUNTIME_CLASS(CView));
+		RUNTIME_CLASS(c3dmodelView));
 	AddDocTemplate(pDocTemplate);
 
 	// Parse command line for standard shell commands, DDE, file open

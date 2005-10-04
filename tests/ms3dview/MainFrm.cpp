@@ -5,10 +5,9 @@
 
 #include "MainFrm.h"
 
-#include "resource.h"       // main symbols
-
-#include "ms3dviewView.h"
 #include "ms3dTreeView.h"
+
+#include "resource.h"       // main symbols
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -119,5 +118,5 @@ BOOL CMainFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
    CSize treeSize(min(kDefaultTreeWidth, rect.Width() / 4),0);
    return m_wndSplitter.CreateStatic(this, 1, 2)
       && m_wndSplitter.CreateView(0, 0, RUNTIME_CLASS(cMs3dTreeView), treeSize, pContext)
-      && m_wndSplitter.CreateView(0, 1, RUNTIME_CLASS(CMs3dviewView), CSize(0,0), pContext);
+      && m_wndSplitter.CreateView(0, 1, pContext->m_pNewViewClass, CSize(0,0), pContext);
 }
