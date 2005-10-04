@@ -8,6 +8,7 @@
 #include "editorCommands.h"
 #include "resource.h"
 
+#include "cameraapi.h"
 #include "terrainapi.h"
 #include "ray.h"
 
@@ -253,28 +254,6 @@ void cMoveCameraTool::MoveCamera(IEditorView * pView, CPoint delta)
 
 
 /////////////////////////////////////////////////////////////////////////////
-
-static void ScreenToNormalizedDeviceCoords(int sx, int sy,
-                                           float * pndx, float * pndy)
-{
-   Assert(pndx != NULL);
-   Assert(pndy != NULL);
-
-   int viewport[4];
-   glGetIntegerv(GL_VIEWPORT, viewport);
-
-   sy = viewport[3] - sy;
-
-   // convert screen coords to normalized (origin at center, [-1..1])
-   float normx = (float)(sx - viewport[0]) * 2.f / viewport[2] - 1.f;
-   float normy = (float)(sy - viewport[1]) * 2.f / viewport[3] - 1.f;
-
-   *pndx = normx;
-   *pndy = normy;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cTerrainTool
 //
@@ -322,7 +301,8 @@ bool cTerrainTool::GetHitQuad(CPoint point, IEditorView * pView, HTERRAINQUAD * 
    if (pView != NULL)
    {
       cRay pickRay;
-      if (pView->GeneratePickRay(ndx, ndy, &pickRay) == S_OK)
+      UseGlobal(Camera);
+      if (pCamera->GeneratePickRay(ndx, ndy, &pickRay) == S_OK)
       {
          UseGlobal(TerrainModel);
          return (pTerrainModel->GetQuadFromHitTest(pickRay, phQuad) == S_OK);
@@ -342,7 +322,8 @@ bool cTerrainTool::GetHitVertex(CPoint point, IEditorView * pView, HTERRAINVERTE
    if (pView != NULL)
    {
       cRay pickRay;
-      if (pView->GeneratePickRay(ndx, ndy, &pickRay) == S_OK)
+      UseGlobal(Camera);
+      if (pCamera->GeneratePickRay(ndx, ndy, &pickRay) == S_OK)
       {
          UseGlobal(TerrainModel);
          return (pTerrainModel->GetVertexFromHitTest(pickRay, phVertex) == S_OK);

@@ -7,6 +7,7 @@
 #include "script.h"
 #include "cameracontroller.h"
 
+#include "cameraapi.h"
 #include "guiapi.h"
 #include "sceneapi.h"
 #include "sim.h"
@@ -63,8 +64,6 @@ static const cColor kDefStatsColor(1,1,1,1);
 ///////////////////////////////////////////////////////////////////////////////
 
 cAutoIPtr<cGameCameraController> g_pGameCameraController;
-
-cAutoIPtr<ISceneCamera> g_pGameCamera;
 
 cAutoIPtr<cTerrainNode> g_pTerrainRoot;
 
@@ -135,9 +134,10 @@ SCRIPT_DEFINE_FUNCTION(ViewSetPos)
 
 void ResizeHack(int width, int height)
 {
-   if (g_pGameCamera != NULL)
+   UseGlobal(Camera);
+   if (!!pCamera)
    {
-      g_pGameCamera->SetPerspective(g_fov, static_cast<float>(width) / height, kZNear, kZFar);
+      pCamera->SetPerspective(g_fov, static_cast<float>(width) / height, kZNear, kZFar);
    }
 }
 
@@ -249,6 +249,7 @@ SCRIPT_DEFINE_FUNCTION(SetTerrain)
 
 static void RegisterGlobalObjects()
 {
+   CameraCreate();
    InputCreate();
    SimCreate();
    ResourceManagerCreate();
@@ -385,7 +386,6 @@ static bool MainInit(int argc, tChar * argv[])
 
    UseGlobal(EntityManager);
    pEntityManager->SetTerrainLocatorHack(&g_terrainLocator);
-   pEntityManager->SetRenderDeviceHack(g_pRenderDevice);
 
    UseGlobal(GUIContext);
    if (FAILED(pGUIContext->GetDefaultFont(&g_pFont)))
@@ -396,27 +396,24 @@ static bool MainInit(int argc, tChar * argv[])
 
    SysAppActivate(true);
 
-   g_pGameCamera = SceneCameraCreate();
-   g_pGameCamera->SetPerspective(g_fov, (float)width / height, kZNear, kZFar);
-
-   g_pGameCameraController = new cGameCameraController(g_pGameCamera);
-   g_pGameCameraController->Connect();
-
-   UseGlobal(Scene);
-   pScene->SetCamera(kSL_Terrain, g_pGameCamera);
-
-   UseGlobal(ScriptInterpreter);
-   pScriptInterpreter->CallFunction("GameInit");
-
-   UseGlobal(Sim);
-   pSim->Go();
-
 #ifdef HAVE_CPPUNIT
    if (FAILED(SysRunUnitTests()))
    {
       return false;
    }
 #endif
+
+   UseGlobal(Camera);
+   pCamera->SetPerspective(g_fov, (float)width / height, kZNear, kZFar);
+
+   g_pGameCameraController = new cGameCameraController;
+   g_pGameCameraController->Connect();
+
+   UseGlobal(ScriptInterpreter);
+   pScriptInterpreter->CallFunction("GameInit");
+
+   UseGlobal(Sim);
+   pSim->Go();
 
    return true;
 }
@@ -457,8 +454,19 @@ static bool MainFrame()
 
    g_pRenderDevice->BeginScene();
 
+   UseGlobal(Camera);
+   pCamera->SetGLState();
+
+#if 1
    UseGlobal(Scene);
    pScene->Render(g_pRenderDevice);
+#else
+   UseGlobal(TerrainRenderer);
+   pTerrainRenderer->Render();
+#endif
+
+   UseGlobal(EntityManager);
+   pEntityManager->RenderAll();
 
    UseGlobal(GUIContext);
    cAutoIPtr<IGUIRenderDeviceContext> pRenderDeviceContext;

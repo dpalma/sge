@@ -53,7 +53,6 @@ public:
    virtual tResult PlaceCamera(float x, float z);
    virtual tResult GetCameraElevation(float * pElevation);
    virtual tResult SetCameraElevation(float elevation);
-   virtual tResult GeneratePickRay(float ndx, float ndy, cRay * pRay);
    virtual tResult GetModel(IEditorModel * * ppModel);
    virtual tResult HighlightTerrainQuad(HTERRAINQUAD hQuad);
    virtual tResult HighlightTerrainVertex(HTERRAINVERTEX hVertex);
@@ -103,8 +102,6 @@ protected:
    bool InitGL();
    bool InitD3D();
 
-   void UpdateCompositeMatrices();
-
 private:
    bool m_bInitialized;
    bool m_bUsingD3d;
@@ -123,10 +120,6 @@ private:
    tVec3 m_center;
    mutable tVec3 m_eye;
    mutable bool m_bRecalcEye; // recalculate camera eye position when placement/elevation changes
-
-   tMatrix4 m_proj, m_view;
-   tMatrix4 m_viewInverse, m_viewProj, m_viewProjInverse;
-   bool m_bUpdateCompositeMatrices;
 
    HTERRAINQUAD m_highlightQuad;
    HTERRAINVERTEX m_highlightVertex;

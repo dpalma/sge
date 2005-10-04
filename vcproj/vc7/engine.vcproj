@@ -299,6 +299,9 @@
 				Name="Source Files"
 				Filter="">
 				<File
+					RelativePath="..\..\engine\src\camera.cpp">
+				</File>
+				<File
 					RelativePath="..\..\engine\src\cmds.cpp">
 				</File>
 				<File
@@ -435,6 +438,9 @@
 				Name="Header Files"
 				Filter="">
 				<File
+					RelativePath="..\..\engine\src\camera.h">
+				</File>
+				<File
 					RelativePath="..\..\engine\src\engine.h">
 				</File>
 				<File
@@ -490,6 +496,9 @@
 		<Filter
 			Name=".\include"
 			Filter="h;hpp;hxx;hm;inl">
+			<File
+				RelativePath="..\..\engine\include\cameraapi.h">
+			</File>
 			<File
 				RelativePath="..\..\engine\include\engineapi.h">
 			</File>

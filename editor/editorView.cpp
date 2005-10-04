@@ -9,6 +9,7 @@
 #include "editorapi.h"
 #include "editorTools.h"
 
+#include "cameraapi.h"
 #include "ray.h"
 
 #include "configapi.h"
@@ -116,7 +117,6 @@ cEditorView::cEditorView()
  , m_center(0,0,0)
  , m_eye(0,0,0)
  , m_bRecalcEye(true)
- , m_bUpdateCompositeMatrices(true)
  , m_highlightQuad(INVALID_HTERRAINQUAD)
  , m_highlightVertex(INVALID_HTERRAINVERTEX)
  , m_bInPostNcDestroy(false)
@@ -174,7 +174,6 @@ tResult cEditorView::PlaceCamera(float x, float z)
    m_center.x = x;
    m_center.z = z;
    m_bRecalcEye = true;
-   m_bUpdateCompositeMatrices = true;
    return S_OK;
 }
 
@@ -197,49 +196,6 @@ tResult cEditorView::SetCameraElevation(float elevation)
 {
    m_cameraElevation = elevation;
    m_bRecalcEye = true;
-   m_bUpdateCompositeMatrices = true;
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cEditorView::GeneratePickRay(float ndx, float ndy, cRay * pRay)
-{
-   if (pRay == NULL)
-   {
-      return E_POINTER;
-   }
-
-   UpdateCompositeMatrices();
-
-   tVec4 n;
-   m_viewProjInverse.Transform(tVec4(ndx, ndy, -1, 1), &n);
-   if (n.w == 0.0f)
-   {
-      return E_FAIL;
-   }
-   n.x /= n.w;
-   n.y /= n.w;
-   n.z /= n.w;
-
-   tVec4 f;
-   m_viewProjInverse.Transform(tVec4(ndx, ndy, 1, 1), &f);
-   if (f.w == 0.0f)
-   {
-      return E_FAIL;
-   }
-   f.x /= f.w;
-   f.y /= f.w;
-   f.z /= f.w;
-
-   tVec4 eye;
-   m_viewInverse.Transform(tVec4(0,0,0,1), &eye);
-
-   tVec3 dir(f.x - n.x, f.y - n.y, f.z - n.z);
-   dir.Normalize();
-
-   *pRay = cRay(tVec3(eye.x,eye.y,eye.z), dir);
-
    return S_OK;
 }
 
@@ -310,7 +266,12 @@ tResult cEditorView::OnDefaultTileSetChange(const tChar * pszTileSet)
 
 void cEditorView::OnFrame(double time, double elapsed)
 {
-   MatrixLookAt(GetCameraEyePosition(), m_center, tVec3(0,1,0), &m_view);
+   tMatrix4 view;
+   MatrixLookAt(GetCameraEyePosition(), m_center, tVec3(0,1,0), &view);
+
+   UseGlobal(Camera);
+   pCamera->SetViewMatrix(view);
+
 #ifdef HAVE_DIRECTX
    if (m_bUsingD3d)
    {
@@ -331,8 +292,10 @@ void cEditorView::RenderGL()
 {
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+   UseGlobal(Camera);
+
    glMatrixMode(GL_MODELVIEW);
-   glLoadMatrixf(m_view.m);
+   glLoadMatrixf(pCamera->GetViewMatrix().m);
 
    UseGlobal(TerrainRenderer);
    pTerrainRenderer->Render();
@@ -578,9 +541,9 @@ void cEditorView::OnSize(UINT nType, int cx, int cy)
    if (cy > 0)
    {
       float aspect = static_cast<float>(cx) / cy;
-      MatrixPerspective(kFov, aspect, kZNear, kZFar, &m_proj);
 
-      m_bUpdateCompositeMatrices = true;
+      UseGlobal(Camera);
+      pCamera->SetPerspective(kFov, aspect, kZNear, kZFar);
 
       if (m_bUsingD3d)
       {
@@ -602,7 +565,7 @@ void cEditorView::OnSize(UINT nType, int cx, int cy)
          glViewport(0, 0, cx, cy);
 
          glMatrixMode(GL_PROJECTION);
-         glLoadMatrixf(m_proj.m);
+         glLoadMatrixf(pCamera->GetProjectionMatrix().m);
       }
    }
 }
@@ -772,19 +735,6 @@ bool cEditorView::InitD3D()
 #else
    return false;
 #endif
-}
-
-////////////////////////////////////////
-
-void cEditorView::UpdateCompositeMatrices()
-{
-   if (m_bUpdateCompositeMatrices)
-   {
-      MatrixInvert(m_view.m, m_viewInverse.m);
-      m_proj.Multiply(m_view, &m_viewProj);
-      MatrixInvert(m_viewProj.m, m_viewProjInverse.m);
-      m_bUpdateCompositeMatrices = false;
-   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

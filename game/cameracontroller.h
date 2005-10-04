@@ -14,8 +14,6 @@
 #pragma once
 #endif
 
-F_DECLARE_INTERFACE(ISceneCamera);
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGameCameraController
@@ -27,7 +25,7 @@ class cGameCameraController : public cComObject2<IMPLEMENTS(ISimClient), cDefaul
    const cGameCameraController & operator =(const cGameCameraController &);
 
 public:
-   cGameCameraController(ISceneCamera * pCamera);
+   cGameCameraController();
    ~cGameCameraController();
 
    void Connect();
@@ -44,8 +42,6 @@ private:
    tVec3 m_eye, m_focus, m_velocity;
 
    tMatrix4 m_rotation;
-
-   cAutoIPtr<ISceneCamera> m_pCamera;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

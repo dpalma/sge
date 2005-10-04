@@ -8,11 +8,13 @@
 
 #include "globalobjdef.h"
 
-#include <map>
+#include <list>
 
 #ifdef _MSC_VER
 #pragma once
 #endif
+
+F_DECLARE_INTERFACE(ISceneEntity);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -31,15 +33,17 @@ public:
    virtual tResult Init();
    virtual tResult Term();
 
-   virtual void SetRenderDeviceHack(IRenderDevice *);
    virtual void SetTerrainLocatorHack(cTerrainLocatorHack *);
 
    virtual tResult SpawnEntity(const tChar * pszMesh, float x, float z);
 
+   virtual void RenderAll();
+
 private:
    ulong m_nextId;
-   IRenderDevice * m_pRenderDevice;
    cTerrainLocatorHack * m_pTerrainLocatorHack;
+   typedef std::list<ISceneEntity*> tEntities;
+   tEntities m_entities;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

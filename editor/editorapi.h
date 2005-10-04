@@ -31,8 +31,6 @@ class cEditorKeyEvent;
 class cEditorMouseEvent;
 class cEditorMouseWheelEvent;
 
-class cRay;
-
 F_DECLARE_HANDLE(HTERRAINQUAD);
 F_DECLARE_HANDLE(HTERRAINVERTEX);
 
@@ -121,8 +119,6 @@ interface UUID("78C29790-865D-4f81-9AF1-26EC23BB5FAC") IEditorView : IUnknown
    virtual tResult PlaceCamera(float x, float z) = 0;
    virtual tResult GetCameraElevation(float * pElevation) = 0;
    virtual tResult SetCameraElevation(float elevation) = 0;
-
-   virtual tResult GeneratePickRay(float ndx, float ndy, cRay * pRay) = 0;
 
    virtual tResult GetModel(IEditorModel * * ppModel) = 0;
 

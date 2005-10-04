@@ -4,6 +4,7 @@
 Import('*')
 
 sources = Split("""
+   src/camera.cpp
    src/cmds.cpp
    src/engine.cpp
    src/entitymanager.cpp

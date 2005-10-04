@@ -13,9 +13,10 @@
 #include "terrainapi.h"
 #include "ScriptCmdDlg.h"
 
+#include "cameraapi.h"
+#include "engineapi.h"
 #include "inputapi.h"
 #include "scriptapi.h"
-#include "engineapi.h"
 #include "saveloadapi.h"
 #include "sys.h"
 
@@ -154,6 +155,7 @@ static bool ScriptExecResource(const char * pszResource)
 
 static void RegisterGlobalObjects()
 {
+   CameraCreate();
    InputCreate();
 //   SimCreate();
    ResourceManagerCreate();

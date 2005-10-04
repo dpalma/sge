@@ -12,6 +12,8 @@
 #include "vec3.h"
 #include "configapi.h"
 
+#include <GL/glew.h>
+
 #include "dbgalloc.h" // must be last header
 
 
@@ -23,11 +25,9 @@
 ///////////////////////////////////////
 
 cEntityManager::cEntityManager()
- : m_nextId(0),
-   m_pRenderDevice(NULL),
-   m_pTerrainLocatorHack(NULL)
+ : m_nextId(0)
+ , m_pTerrainLocatorHack(NULL)
 {
-   RegisterGlobalObject(IID_IEntityManager, static_cast<IGlobalObject*>(this));
 }
 
 ///////////////////////////////////////
@@ -47,14 +47,14 @@ tResult cEntityManager::Init()
 
 tResult cEntityManager::Term()
 {
+   tEntities::iterator iter = m_entities.begin();
+   for (; iter != m_entities.end(); iter++)
+   {
+      (*iter)->Release();
+   }
+   m_entities.clear();
+
    return S_OK;
-}
-
-///////////////////////////////////////
-
-void cEntityManager::SetRenderDeviceHack(IRenderDevice * pRenderDevice)
-{
-   m_pRenderDevice = pRenderDevice;
 }
 
 ///////////////////////////////////////
@@ -76,17 +76,32 @@ tResult cEntityManager::SpawnEntity(const tChar * pszMesh, float x, float z)
 
    cAutoIPtr<ISceneEntity> pModelTestEntity = SceneEntityCreate(pszMesh);
    pModelTestEntity->SetLocalTranslation(location);
-   UseGlobal(Scene);
-   pScene->AddEntity(kSL_Object, pModelTestEntity);
+
+   m_entities.push_back(CTAddRef(pModelTestEntity));
 
    return S_OK;
 }
 
 ///////////////////////////////////////
 
+void cEntityManager::RenderAll()
+{
+   tEntities::iterator iter = m_entities.begin();
+   for (; iter != m_entities.end(); iter++)
+   {
+      glPushMatrix();
+      glMultMatrixf((*iter)->GetWorldTransform().m);
+      (*iter)->Render(NULL);
+      glPopMatrix();
+   }
+}
+
+///////////////////////////////////////
+
 void EntityManagerCreate()
 {
-   cAutoIPtr<IEntityManager> p(new cEntityManager);
+   cAutoIPtr<IEntityManager> p(static_cast<IEntityManager*>(new cEntityManager));
+   RegisterGlobalObject(IID_IEntityManager, p);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
