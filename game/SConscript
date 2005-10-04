@@ -5,8 +5,6 @@ Import('*')
 
 sources = Split("""
    cameracontroller.cpp
-   groundtiled.cpp
-   heightmap.cpp
    main.cpp
 """)
 

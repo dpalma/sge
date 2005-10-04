@@ -1005,6 +1005,11 @@ void cTerrainChunk::Render()
       glDrawElements((*iter)->GetPrimitiveType(), (*iter)->GetIndexCount(), GL_UNSIGNED_INT, (*iter)->GetIndexPtr());
    }
 
+   glActiveTextureARB(GL_TEXTURE1);
+   glDisable(GL_TEXTURE_2D);
+
+   glActiveTextureARB(GL_TEXTURE0);
+
    glPopClientAttrib();
    glPopAttrib();
 }

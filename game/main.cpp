@@ -3,13 +3,11 @@
 
 #include "stdhdr.h"
 
-#include "groundtiled.h"
 #include "script.h"
 #include "cameracontroller.h"
 
 #include "cameraapi.h"
 #include "guiapi.h"
-#include "sceneapi.h"
 #include "sim.h"
 #include "inputapi.h"
 #include "engineapi.h"
@@ -65,8 +63,6 @@ static const cColor kDefStatsColor(1,1,1,1);
 
 cAutoIPtr<cGameCameraController> g_pGameCameraController;
 
-cAutoIPtr<cTerrainNode> g_pTerrainRoot;
-
 cAutoIPtr<IGUIFont> g_pFont;
 
 float g_fov;
@@ -80,13 +76,12 @@ class cTiledGroundLocator : public cTerrainLocatorHack
 public:
    virtual void Locate(float nx, float nz, float * px, float * py, float * pz)
    {
-      if (g_pTerrainRoot != NULL)
-      {
-         tVec2 groundDims = g_pTerrainRoot->GetDimensions();
-         *px = nx * groundDims.x;
-         *py = g_pTerrainRoot->GetElevation(nx, nz);
-         *pz = nz * groundDims.y;
-      }
+      cTerrainSettings terrainSettings;
+      UseGlobal(TerrainModel);
+      pTerrainModel->GetTerrainSettings(&terrainSettings);
+      *px = nx * terrainSettings.GetTileCountX() * terrainSettings.GetTileSize();
+      *py = 0; // TODO: get real elevation
+      *pz = nz * terrainSettings.GetTileCountZ() * terrainSettings.GetTileSize();
    }
 };
 
@@ -111,15 +106,12 @@ SCRIPT_DEFINE_FUNCTION(ViewSetPos)
 
       if (x >= 0 && x <= 1 && z >= 0 && z <= 1)
       {
-         if (g_pTerrainRoot != NULL)
-         {
-            tVec2 groundDims = g_pTerrainRoot->GetDimensions();
-
-            x *= groundDims.x;
-            z *= groundDims.y;
-
-            g_pGameCameraController->LookAtPoint(x, z);
-         }
+         cTerrainSettings terrainSettings;
+         UseGlobal(TerrainModel);
+         pTerrainModel->GetTerrainSettings(&terrainSettings);
+         x *= terrainSettings.GetTileCountX() * terrainSettings.GetTileSize();
+         z *= terrainSettings.GetTileCountZ() * terrainSettings.GetTileSize();
+         g_pGameCameraController->LookAtPoint(x, z);
       }
       else
       {
@@ -142,89 +134,29 @@ void ResizeHack(int width, int height)
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////
-////
-//// CLASS: cSpinner
-////
-//
-//class cSpinner : public cComObject<IMPLEMENTS(ISimClient)>
-//{
-//   cSpinner(const cSpinner &);
-//   const cSpinner & operator =(const cSpinner &);
-//
-//public:
-//   cSpinner(cSceneNode * pGroup, float degreesPerSec);
-//   ~cSpinner();
-//
-//   virtual void OnFrame(double elapsedTime);
-//
-//   virtual void DeleteThis() {}
-//
-//private:
-//   cSceneNode * m_pNode;
-//   float m_radiansPerSec;
-//};
-//
-/////////////////////////////////////////
-//
-//cSpinner::cSpinner(cSceneNode * pGroup, float degreesPerSec)
-// : m_pNode(pGroup),
-//   m_radiansPerSec(Deg2Rad(degreesPerSec))
-//{
-//   Assert(pGroup != NULL);
-//
-//   UseGlobal(Sim);
-//   pSim->Connect(this);
-//}
-//
-/////////////////////////////////////////
-//
-//cSpinner::~cSpinner()
-//{
-//   UseGlobal(Sim);
-//   pSim->Disconnect(this);
-//
-//   m_pNode = NULL;
-//}
-//
-/////////////////////////////////////////
-//
-//void cSpinner::OnFrame(double elapsedTime)
-//{
-//   Assert(m_pNode != NULL);
-//   tQuat q = QuatFromEulerAngles(tVec3(0, m_radiansPerSec * elapsedTime, 0));
-//   m_pNode->SetLocalRotation(m_pNode->GetLocalRotation() * q);
-//}
-
-
 ///////////////////////////////////////////////////////////////////////////////
 
 SCRIPT_DEFINE_FUNCTION(SetTerrain)
 {
    UseGlobal(TerrainModel);
 
+   cTerrainSettings terrainSettings;
+   terrainSettings.SetTileSize(16);
+   terrainSettings.SetTileCountX(64);
+   terrainSettings.SetTileCountZ(64);
+   terrainSettings.SetTileSet("defaulttiles.xml"); // HACK TODO
+
    if (argc == 1 && argv[0].IsString())
    {
-      g_pTerrainRoot = TerrainNodeCreate(AccessRenderDevice(), argv[0], kGroundScaleY, NULL);
+      terrainSettings.SetHeightData(kTHD_HeightMap);
+      terrainSettings.SetHeightMap(argv[0]);
+      terrainSettings.SetHeightMapScale(kGroundScaleY * 255);
+      pTerrainModel->Initialize(terrainSettings);
    }
-   else if (argc == 2 
+   else if (argc >= 2 
       && argv[0].IsString()
       && argv[1].IsNumber())
    {
-      g_pTerrainRoot = TerrainNodeCreate(AccessRenderDevice(), argv[0], argv[1], NULL);
-   }
-   else if (argc == 3 
-      && argv[0].IsString()
-      && argv[1].IsNumber()
-      && argv[2].IsString())
-   {
-      g_pTerrainRoot = TerrainNodeCreate(AccessRenderDevice(), argv[0], argv[1], argv[2]);
-
-      cTerrainSettings terrainSettings;
-      terrainSettings.SetTileSet("defaulttiles.xml"); // HACK TODO
-      terrainSettings.SetTileSize(16);
-      terrainSettings.SetTileCountX(64);
-      terrainSettings.SetTileCountZ(64);
       terrainSettings.SetHeightData(kTHD_HeightMap);
       terrainSettings.SetHeightMap(argv[0]);
       terrainSettings.SetHeightMapScale(static_cast<float>(argv[1]) * 255);
@@ -235,12 +167,6 @@ SCRIPT_DEFINE_FUNCTION(SetTerrain)
       DebugMsg("Warning: Invalid parameters to SetTerrain\n");
    }
    
-   if (g_pTerrainRoot)
-   {
-      UseGlobal(Scene);
-      pScene->AddEntity(kSL_Terrain, g_pTerrainRoot);
-   }
-
    return 0;
 }
 
@@ -253,7 +179,6 @@ static void RegisterGlobalObjects()
    InputCreate();
    SimCreate();
    ResourceManagerCreate();
-   SceneCreate();
    ScriptInterpreterCreate();
    GUIContextCreate();
    GUIFactoryCreate();
@@ -457,13 +382,8 @@ static bool MainFrame()
    UseGlobal(Camera);
    pCamera->SetGLState();
 
-#if 1
-   UseGlobal(Scene);
-   pScene->Render(g_pRenderDevice);
-#else
    UseGlobal(TerrainRenderer);
    pTerrainRenderer->Render();
-#endif
 
    UseGlobal(EntityManager);
    pEntityManager->RenderAll();
