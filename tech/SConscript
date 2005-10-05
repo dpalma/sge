@@ -23,7 +23,7 @@ sources = Split("""
    src/readwritefile.cpp
    src/readwritemem.cpp
    src/resourcemanager.cpp
-   src/techdebug.cpp
+   src/techassert.cpp
    src/techlog.cpp
    src/techmath.cpp
    src/techstring.cpp

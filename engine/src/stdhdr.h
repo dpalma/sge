@@ -7,7 +7,7 @@
 #pragma warning(disable:4355) // 'this' : used in base member initializer list
 
 #include "techtypes.h"
-#include "techdebug.h"
+#include "techassert.h"
 #include "techlog.h"
 
 #ifdef _MSC_VER

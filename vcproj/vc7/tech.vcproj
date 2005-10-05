@@ -389,7 +389,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="..\..\tech\src\techdebug.cpp">
+					RelativePath="..\..\tech\src\techassert.cpp">
 				</File>
 				<File
 					RelativePath="..\..\tech\src\techlog.cpp">
@@ -527,7 +527,7 @@
 				RelativePath="..\..\tech\include\resourceapi.h">
 			</File>
 			<File
-				RelativePath="..\..\tech\include\techdebug.h">
+				RelativePath="..\..\tech\include\techassert.h">
 			</File>
 			<File
 				RelativePath="..\..\tech\include\techdll.h">

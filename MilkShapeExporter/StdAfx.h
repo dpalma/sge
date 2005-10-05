@@ -15,7 +15,7 @@
 #define QI_TEMPLATE_METHOD_FOR_ATL
 
 #include "techtypes.h"
-#include "techdebug.h"
+#include "techassert.h"
 #include "combase.h"
 
 #define _WTL_USE_CSTRING

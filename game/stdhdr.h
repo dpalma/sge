@@ -5,7 +5,7 @@
 #define INCLUDED_STDHDR_H
 
 #include "techtypes.h"
-#include "techdebug.h"
+#include "techassert.h"
 #include "techlog.h"
 
 #ifdef _MSC_VER
