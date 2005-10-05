@@ -391,12 +391,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\game\groundtiled.cpp">
-			</File>
-			<File
-				RelativePath="..\..\game\heightmap.cpp">
-			</File>
-			<File
 				RelativePath="..\..\game\main.cpp">
 			</File>
 			<File
@@ -438,15 +432,6 @@
 			Filter="h;hpp;hxx;hm;inl">
 			<File
 				RelativePath="..\..\game\cameracontroller.h">
-			</File>
-			<File
-				RelativePath="..\..\game\gameguids.h">
-			</File>
-			<File
-				RelativePath="..\..\game\groundtiled.h">
-			</File>
-			<File
-				RelativePath="..\..\game\heightmap.h">
 			</File>
 			<File
 				RelativePath="..\..\game\script.h">

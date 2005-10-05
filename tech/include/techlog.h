@@ -10,6 +10,8 @@
 #pragma once
 #endif
 
+class cFileSpec;
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cLog
@@ -42,6 +44,9 @@ public:
 
    void Initialize();
    void Shutdown();
+
+   bool OpenLogFile(const cFileSpec & logFile);
+   void CloseLogFile();
 
    bool DefineChannel(const tChar * pszChannel, bool * pEnableFlag);
    bool EnableChannel(const tChar * pszChannel, bool bEnable);
@@ -77,6 +82,8 @@ private:
    };
 
    tChar m_szBuffer[kBufferSize];
+
+   void * m_pLogFile;
 };
 
 ////////////////////////////////////////
@@ -126,6 +133,39 @@ extern TECH_API cLog techlog;
 
 #define _TFILE _T(__FILE__)
 
+#ifndef NDEBUG
+#define DebugMsgIf(expr,fmt)                                do { if (expr) { techlog.Print(_TFILE,__LINE__,kDebug,_T(fmt)); } } while(0)
+#define DebugMsgIf1(expr,fmt,arg1)                          do { if (expr) { techlog.Print(_TFILE,__LINE__,kDebug,_T(fmt),(arg1)); } } while(0)
+#define DebugMsgIf2(expr,fmt,arg1,arg2)                     do { if (expr) { techlog.Print(_TFILE,__LINE__,kDebug,_T(fmt),(arg1),(arg2)); } } while(0)
+#define DebugMsgIf3(expr,fmt,arg1,arg2,arg3)                do { if (expr) { techlog.Print(_TFILE,__LINE__,kDebug,_T(fmt),(arg1),(arg2),(arg3)); } } while(0)
+#define DebugMsgIf4(expr,fmt,arg1,arg2,arg3,arg4)           do { if (expr) { techlog.Print(_TFILE,__LINE__,kDebug,_T(fmt),(arg1),(arg2),(arg3),(arg4)); } } while(0)
+#define DebugMsgIf5(expr,fmt,arg1,arg2,arg3,arg4,arg5)      do { if (expr) { techlog.Print(_TFILE,__LINE__,kDebug,_T(fmt),(arg1),(arg2),(arg3),(arg4),(arg5)); } } while(0)
+#else
+#define DebugMsgIf(expr,fmt)                                ((void)0)
+#define DebugMsgIf1(expr,fmt,arg1)                          ((void)0)
+#define DebugMsgIf2(expr,fmt,arg1,arg2)                     ((void)0)
+#define DebugMsgIf3(expr,fmt,arg1,arg2,arg3)                ((void)0)
+#define DebugMsgIf4(expr,fmt,arg1,arg2,arg3,arg4)           ((void)0)
+#define DebugMsgIf5(expr,fmt,arg1,arg2,arg3,arg4,arg5)      ((void)0)
+#endif
+
+#ifndef NDEBUG
+#define DebugMsg(fmt)                                       DebugMsgIf(1,fmt)
+#define DebugMsg1(fmt,arg1)                                 DebugMsgIf1(1,fmt,arg1)
+#define DebugMsg2(fmt,arg1,arg2)                            DebugMsgIf2(1,fmt,arg1,arg2)
+#define DebugMsg3(fmt,arg1,arg2,arg3)                       DebugMsgIf3(1,fmt,arg1,arg2,arg3)
+#define DebugMsg4(fmt,arg1,arg2,arg3,arg4)                  DebugMsgIf4(1,fmt,arg1,arg2,arg3,arg4)
+#define DebugMsg5(fmt,arg1,arg2,arg3,arg4,arg5)             DebugMsgIf5(1,fmt,arg1,arg2,arg3,arg4,arg5)
+#else
+#define DebugMsg(fmt)                                       ((void)0)
+#define DebugMsg1(fmt,arg1)                                 ((void)0)
+#define DebugMsg2(fmt,arg1,arg2)                            ((void)0)
+#define DebugMsg3(fmt,arg1,arg2,arg3)                       ((void)0)
+#define DebugMsg4(fmt,arg1,arg2,arg3,arg4)                  ((void)0)
+#define DebugMsg5(fmt,arg1,arg2,arg3,arg4,arg5)             ((void)0)
+#endif
+
+
 #define ErrorMsgIf(expr,fmt)                                do { if (expr) { techlog.Print(_TFILE,__LINE__,kError,_T(fmt)); } } while(0)
 #define ErrorMsgIf1(expr,fmt,arg1)                          do { if (expr) { techlog.Print(_TFILE,__LINE__,kError,_T(fmt),(arg1)); } } while(0)
 #define ErrorMsgIf2(expr,fmt,arg1,arg2)                     do { if (expr) { techlog.Print(_TFILE,__LINE__,kError,_T(fmt),(arg1),(arg2)); } } while(0)
@@ -167,6 +207,52 @@ extern TECH_API cLog techlog;
 #define InfoMsg3(fmt,arg1,arg2,arg3)                        InfoMsgIf3(1,fmt,arg1,arg2,arg3)
 #define InfoMsg4(fmt,arg1,arg2,arg3,arg4)                   InfoMsgIf4(1,fmt,arg1,arg2,arg3,arg4)
 #define InfoMsg5(fmt,arg1,arg2,arg3,arg4,arg5)              InfoMsgIf5(1,fmt,arg1,arg2,arg3,arg4,arg5)
+
+///////////////////////////////////////////////////////////////////////////////
+// Channeled debug output
+
+#ifndef NDEBUG
+
+#define LOG_DEFINE_ENABLE_CHANNEL(channel, enable) \
+   bool g_bLogChannel##channel = (enable); \
+   static cLogInitializer MAKE_UNIQUE(g_##channel##Initializer); \
+   bool MAKE_UNIQUE(g_##channel##DefineResult) = techlog.DefineChannel(_T(#channel), &(g_bLogChannel##channel))
+
+#define LOG_DEFINE_CHANNEL(channel) \
+   LOG_DEFINE_ENABLE_CHANNEL(channel, false)
+
+#define LOG_EXTERN_CHANNEL(channel) \
+   extern bool g_bLogChannel##channel
+
+#define LOG_ENABLE_CHANNEL(channel, enable) \
+   techlog.EnableChannel(_T(#channel), (enable))
+
+#define LOG_IS_CHANNEL_ENABLED(channel) \
+   g_bLogChannel##channel
+
+#else
+
+#define LOG_DEFINE_ENABLE_CHANNEL(channel, enable)
+#define LOG_DEFINE_CHANNEL(channel)
+#define LOG_EXTERN_CHANNEL(channel)
+#define LOG_ENABLE_CHANNEL(channel, enable)
+#define LOG_IS_CHANNEL_ENABLED(channel)
+
+#endif
+
+#define DebugMsgIfEx(channel,expr,fmt)                            DebugMsgIf(LOG_IS_CHANNEL_ENABLED(channel)&&(expr),fmt)
+#define DebugMsgIfEx1(channel,expr,fmt,arg1)                      DebugMsgIf1(LOG_IS_CHANNEL_ENABLED(channel)&&(expr),fmt,arg1)
+#define DebugMsgIfEx2(channel,expr,fmt,arg1,arg2)                 DebugMsgIf2(LOG_IS_CHANNEL_ENABLED(channel)&&(expr),fmt,arg1,arg2)
+#define DebugMsgIfEx3(channel,expr,fmt,arg1,arg2,arg3)            DebugMsgIf3(LOG_IS_CHANNEL_ENABLED(channel)&&(expr),fmt,arg1,arg2,arg3)
+#define DebugMsgIfEx4(channel,expr,fmt,arg1,arg2,arg3,arg4)       DebugMsgIf4(LOG_IS_CHANNEL_ENABLED(channel)&&(expr),fmt,arg1,arg2,arg3,arg4)
+#define DebugMsgIfEx5(channel,expr,fmt,arg1,arg2,arg3,arg4,arg5)  DebugMsgIf5(LOG_IS_CHANNEL_ENABLED(channel)&&(expr),fmt,arg1,arg2,arg3,arg4,arg5)
+
+#define DebugMsgEx(channel,fmt)                             DebugMsgIf(LOG_IS_CHANNEL_ENABLED(channel),fmt)
+#define DebugMsgEx1(channel,fmt,arg1)                       DebugMsgIf1(LOG_IS_CHANNEL_ENABLED(channel),fmt,arg1)
+#define DebugMsgEx2(channel,fmt,arg1,arg2)                  DebugMsgIf2(LOG_IS_CHANNEL_ENABLED(channel),fmt,arg1,arg2)
+#define DebugMsgEx3(channel,fmt,arg1,arg2,arg3)             DebugMsgIf3(LOG_IS_CHANNEL_ENABLED(channel),fmt,arg1,arg2,arg3)
+#define DebugMsgEx4(channel,fmt,arg1,arg2,arg3,arg4)        DebugMsgIf4(LOG_IS_CHANNEL_ENABLED(channel),fmt,arg1,arg2,arg3,arg4)
+#define DebugMsgEx5(channel,fmt,arg1,arg2,arg3,arg4,arg5)   DebugMsgIf5(LOG_IS_CHANNEL_ENABLED(channel),fmt,arg1,arg2,arg3,arg4,arg5)
 
 ///////////////////////////////////////////////////////////////////////////////
 

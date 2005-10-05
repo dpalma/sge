@@ -341,9 +341,6 @@
 					RelativePath="..\..\tech\src\image.cpp">
 				</File>
 				<File
-					RelativePath="..\..\tech\src\log.cpp">
-				</File>
-				<File
 					RelativePath="..\..\tech\src\matrix4.cpp">
 				</File>
 				<File
@@ -393,6 +390,9 @@
 				</File>
 				<File
 					RelativePath="..\..\tech\src\techdebug.cpp">
+				</File>
+				<File
+					RelativePath="..\..\tech\src\techlog.cpp">
 				</File>
 				<File
 					RelativePath="..\..\tech\src\techmath.cpp">

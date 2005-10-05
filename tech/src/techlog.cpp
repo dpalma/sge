@@ -4,6 +4,7 @@
 #include "stdhdr.h"
 
 #include "techlog.h"
+#include "filespec.h"
 
 #include <cstring>
 #include <cstdio>
@@ -29,9 +30,9 @@ TECH_API cLog techlog;
 ///////////////////////////////////////
 
 cLog::cLogChannel::cLogChannel(const tChar * pszName, bool * pbEnabled, cLogChannel * pNext)
- : m_pszName(pszName),
-   m_pbEnabled(pbEnabled),
-   m_pNext(pNext)
+ : m_pszName(pszName)
+ , m_pbEnabled(pbEnabled)
+ , m_pNext(pNext)
 {
 }
 
@@ -60,6 +61,7 @@ void cLog::Initialize()
 {
    m_pChannels = NULL;
    m_callback = NULL;
+   m_pLogFile = NULL;
 }
 
 ///////////////////////////////////////
@@ -72,6 +74,31 @@ void cLog::Shutdown()
       m_pChannels = m_pChannels->GetNext();
       delete p;
       p = m_pChannels;
+   }
+
+   CloseLogFile();
+}
+
+///////////////////////////////////////
+
+bool cLog::OpenLogFile(const cFileSpec & logFile)
+{
+   if (m_pLogFile == NULL)
+   {
+      m_pLogFile = _tfopen(logFile.c_str(), _T("w"));
+      return (m_pLogFile != NULL);
+   }
+   return false;
+}
+
+///////////////////////////////////////
+
+void cLog::CloseLogFile()
+{
+   if (m_pLogFile != NULL)
+   {
+      fclose(reinterpret_cast<FILE*>(m_pLogFile));
+      m_pLogFile = NULL;
    }
 }
 
@@ -136,6 +163,11 @@ void cLog::Print(eLogSeverity severity, const tChar * pszFormat, ...)
    va_start(args, pszFormat);
    _vsntprintf(m_szBuffer, _countof(m_szBuffer), pszFormat, args);
    va_end(args);
+
+   if (m_pLogFile != NULL)
+   {
+      _ftprintf(reinterpret_cast<FILE*>(m_pLogFile), m_szBuffer);
+   }
 
    if (m_callback != NULL)
    {

@@ -5,13 +5,6 @@
 
 #ifdef _DEBUG // (entire file)
 
-#include <climits>
-#include <cstdarg>
-#include <cstdio>
-#include <cstring>
-#include <ctime>
-#include <locale>
-
 #ifdef _MSC_VER
 #define WIN32_LEAN_AND_MEAN
 #define VC_EXTRALEAN
@@ -21,20 +14,6 @@
 #endif
 
 #include "dbgalloc.h" // must be last header
-
-///////////////////////////////////////////////////////////////////////////////
-
-tLogCallbackFn g_pfnNextLogCB = NULL;
-
-FILE * g_pDebugEchoFile = NULL;
-
-struct sDebugEchoFileAutoClose
-{
-   ~sDebugEchoFileAutoClose()
-   {
-      DebugEchoFileStop();
-   }
-} g_debugEchoFileAutoClose;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Shows the user an assertion failure dialog box. Returns true if
@@ -60,89 +39,17 @@ bool AssertFail(const char * pszFile, int line, const char * pszExpr)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static void TimeAsString(char * psz, int max)
-{
-   time_t t;
-   time(&t);
-
-   strncpy(psz, asctime(localtime(&t)), max);
-   psz[max - 1] = 0;
-
-   char * pEnd = psz + strlen(psz) - 1;
-   while (pEnd >= psz && isspace(*pEnd))
-      *pEnd-- = 0;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void DebugEchoFileLogCB(eLogSeverity severity, const tChar * pszMsg, size_t msgLen)
-{
-   if (g_pDebugEchoFile != NULL)
-   {
-      _tprintf(pszMsg);
-      _ftprintf(g_pDebugEchoFile, pszMsg);
-   }
-
-   if (g_pfnNextLogCB != NULL)
-   {
-      (*g_pfnNextLogCB)(severity, pszMsg, msgLen);
-   }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void DebugEchoFileStart(const tChar * pszFile)
-{
-   if (g_pfnNextLogCB == NULL)
-   {
-      g_pfnNextLogCB = techlog.SetCallback(DebugEchoFileLogCB);
-   }
-
-   if (g_pDebugEchoFile == NULL)
-   {
-      g_pDebugEchoFile = _tfopen(pszFile, _T("w"));
-      if (g_pDebugEchoFile != NULL)
-      {
-         char szTime[30];
-         TimeAsString(szTime, _countof(szTime));
-         fprintf(g_pDebugEchoFile, "Log file opened at %s\n", szTime);
-      }
-   }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void DebugEchoFileStop()
-{
-   if (g_pfnNextLogCB != NULL)
-   {
-      techlog.SetCallback(g_pfnNextLogCB);
-      g_pfnNextLogCB = NULL;
-   }
-
-   if (g_pDebugEchoFile != NULL)
-   {
-      char szTime[30];
-      TimeAsString(szTime, _countof(szTime));
-      fprintf(g_pDebugEchoFile, "Log file closed at %s\n", szTime);
-      fclose(g_pDebugEchoFile);
-      g_pDebugEchoFile = NULL;
-   }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
+#ifdef _MSC_VER
 struct sDebugState
 {
    sDebugState()
    {
-#ifdef _MSC_VER
       // Use the debug allocator and dump all memory leaks at exit
       int crtDbgFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
       _CrtSetDbgFlag(crtDbgFlag | _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-#endif
    }
 } g_debugState;
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 

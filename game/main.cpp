@@ -238,7 +238,7 @@ static bool MainInit(int argc, tChar * argv[])
    cStr temp;
    if (ConfigGet(_T("debug_log"), &temp) == S_OK)
    {
-      DebugEchoFileStart(temp.c_str());
+      techlog.OpenLogFile(cFileSpec(temp.c_str()));
    }
 
    srand(time(NULL));

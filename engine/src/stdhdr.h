@@ -8,6 +8,7 @@
 
 #include "techtypes.h"
 #include "techdebug.h"
+#include "techlog.h"
 
 #ifdef _MSC_VER
 #pragma once

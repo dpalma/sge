@@ -20,6 +20,7 @@
 
 #include "techtypes.h"
 #include "techdebug.h"
+#include "techlog.h"
 #include "combase.h"
 
 #define VC_EXTRALEAN		// Exclude rarely-used stuff from Windows headers
