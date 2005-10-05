@@ -321,6 +321,46 @@ inline tResult IWriter::Write(byte value)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cReadWriteOps<float>
+//
+
+template <>
+class cReadWriteOps<float>
+{
+public:
+   static tResult Read(IReader * pReader, float * pValue)
+   {
+      return pReader->Read(pValue, sizeof(float));
+   }
+
+   static tResult Write(IWriter * pWriter, float value)
+   {
+      return pWriter->Write(&value, sizeof(float));
+   }
+};
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cReadWriteOps<double>
+//
+
+template <>
+class cReadWriteOps<double>
+{
+public:
+   static tResult Read(IReader * pReader, double * pValue)
+   {
+      return pReader->Read(pValue, sizeof(double));
+   }
+
+   static tResult Write(IWriter * pWriter, double value)
+   {
+      return pWriter->Write(&value, sizeof(double));
+   }
+};
+
+///////////////////////////////////////////////////////////////////////////////
 
 TECH_API IReader * FileCreateReader(const cFileSpec & file);
 TECH_API IWriter * FileCreateWriter(const cFileSpec & file);
