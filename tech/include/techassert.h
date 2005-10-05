@@ -10,6 +10,10 @@
 #pragma once
 #endif
 
+#ifdef _DEBUG
+#define ASSERTIONS_ENABLED
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #if defined(_MSC_VER)
@@ -29,7 +33,7 @@ extern "C" DECLSPEC_DLLIMPORT int STDCALL IsDebuggerPresent();
 ///////////////////////////////////////////////////////////////////////////////
 // Assert & Verify macros
 
-#ifdef _DEBUG
+#ifdef ASSERTIONS_ENABLED
 #define AssertOnce(expr) \
    static class MAKE_UNIQUE(cAssertOnce) { \
    public: MAKE_UNIQUE(cAssertOnce)() { \

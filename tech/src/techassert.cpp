@@ -3,6 +3,7 @@
 
 #include "stdhdr.h"
 
+#include <cstdio>
 #ifdef _MSC_VER
 #define WIN32_LEAN_AND_MEAN
 #define VC_EXTRALEAN
@@ -26,10 +27,25 @@ bool AssertFail(const char * pszFile, int line, const char * pszExpr)
    // box won't display
    MSG msg;
    BOOL bQuit = PeekMessage(&msg, NULL, WM_QUIT, WM_QUIT, PM_REMOVE);
+#ifdef _DEBUG
    if (_CrtDbgReport(_CRT_ASSERT, pszFile, line, NULL, pszExpr))
    {
       bResult = true;
    }
+#else
+   tChar szProgram[MAX_PATH], szBuffer[1024];
+   if (!GetModuleFileName(NULL, szProgram, _countof(szProgram)))
+   {
+      lstrcpy(szProgram, _T("<program name unknown>"));
+   }
+   _sntprintf(szBuffer, _countof(szBuffer),
+      _T("Program: %s\nFile: %s\nLine: %d\nExpression: %s\n\nBreak into debugger?"),
+      szProgram, pszFile, line, pszExpr);
+   if (MessageBox(NULL, szBuffer, _T("Assertion Failure"), MB_ICONSTOP | MB_YESNO) == IDYES)
+   {
+      bResult = true;
+   }
+#endif
    if (bQuit)
    {
       PostQuitMessage(msg.wParam);
