@@ -251,8 +251,13 @@ tResult cReadWriteOps<cTerrainSettings>::Read(IReader * pReader, cTerrainSetting
       return E_POINTER;
    }
 
-   int heightData = 0;
+   int version;
+   if (pReader->Read(&version) != S_OK || version != 1)
+   {
+      return E_FAIL;
+   }
 
+   int heightData = 0;
    if (pReader->Read(&pTerrainSettings->m_tileSize) == S_OK
       && pReader->Read(&pTerrainSettings->m_nTilesX) == S_OK
       && pReader->Read(&pTerrainSettings->m_nTilesZ) == S_OK
@@ -278,7 +283,8 @@ tResult cReadWriteOps<cTerrainSettings>::Write(IWriter * pWriter, const cTerrain
       return E_POINTER;
    }
 
-   if (pWriter->Write(terrainSettings.m_tileSize) == S_OK
+   if (pWriter->Write(1) == S_OK // version
+      && pWriter->Write(terrainSettings.m_tileSize) == S_OK
       && pWriter->Write(terrainSettings.m_nTilesX) == S_OK
       && pWriter->Write(terrainSettings.m_nTilesZ) == S_OK
       && pWriter->Write(terrainSettings.m_tileSet) == S_OK
