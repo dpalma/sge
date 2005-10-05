@@ -8,6 +8,7 @@
 #include "terrainapi.h"
 #include "editorapi.h"
 #include "editorTools.h"
+#include "editorTypes.h"
 
 #include "cameraapi.h"
 #include "ray.h"
@@ -34,6 +35,9 @@ static char THIS_FILE[] = __FILE__;
 typedef IDirect3D9 * (WINAPI * tDirect3DCreate9Fn)(UINT);
 
 /////////////////////////////////////////////////////////////////////////////
+
+static const uint kToolTipIdMin = 0;
+static const uint kToolTipIdMax = 0xFFFF;
 
 const float kFov = 70;
 const float kZNear = 1;
@@ -120,6 +124,7 @@ cEditorView::cEditorView()
  , m_highlightQuad(INVALID_HTERRAINQUAD)
  , m_highlightVertex(INVALID_HTERRAINVERTEX)
  , m_bInPostNcDestroy(false)
+ , m_toolTipId(kToolTipIdMin)
 {
 }
 
@@ -589,8 +594,8 @@ void cEditorView::OnInitialUpdate()
    GetClientRect(rect);
    SetScaleToFitSize(rect.Size());
 
-	cEditorDoc * pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
+   cEditorDoc * pDoc = GetDocument();
+   ASSERT_VALID(pDoc);
 
    UseGlobal(TerrainModel);
    cTerrainSettings terrainSettings;
@@ -601,7 +606,7 @@ void cEditorView::OnInitialUpdate()
 
    PlaceCamera(centerX, centerZ);
 
-	CView::OnInitialUpdate();
+   CView::OnInitialUpdate();
 }
 
 ////////////////////////////////////////
@@ -615,8 +620,8 @@ void cEditorView::OnFinalRelease()
 
 void cEditorView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
 {
-	cEditorDoc * pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
+   cEditorDoc * pDoc = GetDocument();
+   ASSERT_VALID(pDoc);
 
 }
 
@@ -628,6 +633,41 @@ void cEditorView::PostNcDestroy()
    Assert(!m_bInPostNcDestroy);
    m_bInPostNcDestroy = true;
    Release();
+}
+
+////////////////////////////////////////
+
+void cEditorView::PreSubclassWindow()
+{
+   CScrollView::PreSubclassWindow();
+
+   EnableToolTips();
+}
+
+////////////////////////////////////////
+
+int cEditorView::OnToolHitTest(CPoint point, TOOLINFO * pToolInfo) const
+{
+   UseGlobal(EditorApp);
+   cAutoIPtr<IEditorTool> pActiveTool;
+   if (pEditorApp->GetActiveTool(&pActiveTool) == S_OK)
+   {
+      cStr toolTipText;
+      if (pActiveTool->GetToolTipText(cEditorMouseEvent(0, MAKELPARAM(point.x,point.y)), &toolTipText) == S_OK)
+      {
+         pToolInfo->hwnd = m_hWnd;
+         pToolInfo->uId = m_toolTipId;
+         pToolInfo->lpszText = _tcsdup(toolTipText.c_str()); // MFC frees this memory
+         GetClientRect(&pToolInfo->rect);
+         if (++m_toolTipId > kToolTipIdMax)
+         {
+            m_toolTipId = kToolTipIdMin;
+         }
+         return pToolInfo->uId;
+      }
+   }
+
+   return CScrollView::OnToolHitTest(point, pToolInfo);
 }
 
 ////////////////////////////////////////

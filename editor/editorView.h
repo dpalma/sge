@@ -80,6 +80,8 @@ public:
 	virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
    virtual void PostNcDestroy();
 	//}}AFX_VIRTUAL
+   virtual void PreSubclassWindow();
+   virtual int OnToolHitTest(CPoint point, TOOLINFO* pToolInfo) const;
 
 // Implementation
 public:
@@ -97,6 +99,7 @@ protected:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	//}}AFX_MSG
+
 	DECLARE_MESSAGE_MAP()
 
    bool InitGL();
@@ -125,6 +128,8 @@ private:
    HTERRAINVERTEX m_highlightVertex;
 
    bool m_bInPostNcDestroy;
+
+   mutable uint m_toolTipId;
 };
 
 #ifndef _DEBUG  // debug version in editorView.cpp

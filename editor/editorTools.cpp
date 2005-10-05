@@ -293,20 +293,17 @@ tResult cTerrainTool::Deactivate()
 
 ////////////////////////////////////////
 
-bool cTerrainTool::GetHitQuad(CPoint point, IEditorView * pView, HTERRAINQUAD * phQuad)
+bool cTerrainTool::GetHitQuad(CPoint point, IEditorView *, HTERRAINQUAD * phQuad)
 {
    float ndx, ndy;
    ScreenToNormalizedDeviceCoords(point.x, point.y, &ndx, &ndy);
 
-   if (pView != NULL)
+   cRay pickRay;
+   UseGlobal(Camera);
+   if (pCamera->GeneratePickRay(ndx, ndy, &pickRay) == S_OK)
    {
-      cRay pickRay;
-      UseGlobal(Camera);
-      if (pCamera->GeneratePickRay(ndx, ndy, &pickRay) == S_OK)
-      {
-         UseGlobal(TerrainModel);
-         return (pTerrainModel->GetQuadFromHitTest(pickRay, phQuad) == S_OK);
-      }
+      UseGlobal(TerrainModel);
+      return (pTerrainModel->GetQuadFromHitTest(pickRay, phQuad) == S_OK);
    }
 
    return false;
@@ -314,20 +311,17 @@ bool cTerrainTool::GetHitQuad(CPoint point, IEditorView * pView, HTERRAINQUAD * 
 
 ////////////////////////////////////////
 
-bool cTerrainTool::GetHitVertex(CPoint point, IEditorView * pView, HTERRAINVERTEX * phVertex)
+bool cTerrainTool::GetHitVertex(CPoint point, IEditorView *, HTERRAINVERTEX * phVertex)
 {
    float ndx, ndy;
    ScreenToNormalizedDeviceCoords(point.x, point.y, &ndx, &ndy);
 
-   if (pView != NULL)
+   cRay pickRay;
+   UseGlobal(Camera);
+   if (pCamera->GeneratePickRay(ndx, ndy, &pickRay) == S_OK)
    {
-      cRay pickRay;
-      UseGlobal(Camera);
-      if (pCamera->GeneratePickRay(ndx, ndy, &pickRay) == S_OK)
-      {
-         UseGlobal(TerrainModel);
-         return (pTerrainModel->GetVertexFromHitTest(pickRay, phVertex) == S_OK);
-      }
+      UseGlobal(TerrainModel);
+      return (pTerrainModel->GetVertexFromHitTest(pickRay, phVertex) == S_OK);
    }
 
    return false;
@@ -377,6 +371,25 @@ tResult cTerrainTileTool::OnMouseMove(const cEditorMouseEvent & mouseEvent, IEdi
    }
 
    return cTerrainTool::OnMouseMove(mouseEvent, pView);
+}
+
+////////////////////////////////////////
+
+tResult cTerrainTileTool::GetToolTipText(const cEditorMouseEvent & mouseEvent, cStr * pToolTipText) const
+{
+   if (pToolTipText == NULL)
+   {
+      return E_POINTER;
+   }
+
+   HTERRAINQUAD hQuad = INVALID_HTERRAINQUAD;
+   if (GetHitQuad(mouseEvent.GetPoint(), NULL, &hQuad))
+   {
+      pToolTipText->Format("Hit quad %x", hQuad);
+      return S_OK;
+   }
+
+   return S_FALSE;
 }
 
 ////////////////////////////////////////
