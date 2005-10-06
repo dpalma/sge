@@ -386,7 +386,25 @@ tResult cTerrainTileTool::GetToolTip(const cEditorMouseEvent & mouseEvent,
    HTERRAINQUAD hQuad = INVALID_HTERRAINQUAD;
    if (GetHitQuad(mouseEvent.GetPoint(), NULL, &hQuad))
    {
-      pToolTipText->Format("Hit quad %x", hQuad);
+      UseGlobal(TerrainModel);
+
+      uint tile = ~0;
+      pTerrainModel->GetQuadTile(hQuad, &tile);
+
+      int nNeighbors = 0;
+      HTERRAINQUAD neighbors[8];
+      if (pTerrainModel->GetQuadNeighbors(hQuad, neighbors) == S_OK)
+      {
+         for (int i = 0; i < _countof(neighbors); i++)
+         {
+            if (neighbors[i] != INVALID_HTERRAINQUAD)
+            {
+               nNeighbors += 1;
+            }
+         }
+      }
+
+      pToolTipText->Format("Tile %d; %d neighbors", tile, nNeighbors);
       *pToolTipId = reinterpret_cast<uint_ptr>(hQuad);
       return S_OK;
    }
@@ -522,6 +540,32 @@ tResult cTerrainElevationTool::OnMouseMove(const cEditorMouseEvent & mouseEvent,
    }
 
    return cTerrainTool::OnMouseMove(mouseEvent, pView);
+}
+
+////////////////////////////////////////
+
+tResult cTerrainElevationTool::GetToolTip(const cEditorMouseEvent & mouseEvent,
+                                          cStr * pToolTipText, uint_ptr * pToolTipId) const
+{
+   if (pToolTipText == NULL || pToolTipId == NULL)
+   {
+      return E_POINTER;
+   }
+
+   HTERRAINVERTEX hVert = INVALID_HTERRAINVERTEX;
+   if (GetHitVertex(mouseEvent.GetPoint(), NULL, &hVert))
+   {
+      tVec3 pos;
+      UseGlobal(TerrainModel);
+      if (pTerrainModel->GetVertexPosition(hVert, &pos) == S_OK)
+      {
+         pToolTipText->Format("Vertex: <%.2f, %.2f, %.2f>", pos.x, pos.y, pos.z);
+         *pToolTipId = reinterpret_cast<uint_ptr>(hVert);
+         return S_OK;
+      }
+   }
+
+   return S_FALSE;
 }
 
 ////////////////////////////////////////

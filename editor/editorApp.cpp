@@ -354,28 +354,6 @@ int cEditorApp::Run()
       // phase2: pump messages while available
       while (::PeekMessage(pMsg, NULL, 0, 0, PM_NOREMOVE))
       {
-#if 0
-         // Throw away extra mouse move messages. Seem to get a lot
-         // of extras in this loop.
-         if (pMsg->message == WM_MOUSEMOVE)
-         {
-            if (pMsg->lParam == lastMouseMove.lParam)
-            {
-               ::GetMessage(pMsg, NULL, WM_MOUSEFIRST, WM_MOUSELAST);
-               Assert(pMsg->message == WM_MOUSEMOVE);
-               continue;
-            }
-            else
-            {
-               CopyMemory(&lastMouseMove, pMsg, sizeof(MSG));
-            }
-         }
-         else
-         {
-            ZeroMemory(&lastMouseMove, sizeof(MSG));
-         }
-#endif
-
          // pump message, but quit on WM_QUIT
          if (!PumpMessage())
             return ExitInstance();

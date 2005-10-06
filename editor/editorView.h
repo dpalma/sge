@@ -99,6 +99,8 @@ protected:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	//}}AFX_MSG
+   afx_msg void OnToolTipShow(UINT id, NMHDR * pNMHDR, LRESULT * pResult);
+   afx_msg void OnToolTipPop(UINT id, NMHDR * pNMHDR, LRESULT * pResult);
 
 	DECLARE_MESSAGE_MAP()
 
@@ -128,6 +130,8 @@ private:
    HTERRAINVERTEX m_highlightVertex;
 
    bool m_bInPostNcDestroy;
+
+   CWnd m_toolTipGuard;
 };
 
 #ifndef _DEBUG  // debug version in editorView.cpp

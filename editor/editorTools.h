@@ -136,6 +136,8 @@ public:
 
 	virtual tResult OnMouseMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
 
+   virtual tResult GetToolTip(const cEditorMouseEvent & mouseEvent, cStr * pToolTipText, uint_ptr * pToolTipId) const;
+
 protected:
    virtual tResult OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
    virtual tResult OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView);

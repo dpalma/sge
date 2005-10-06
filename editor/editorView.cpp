@@ -99,6 +99,8 @@ BEGIN_MESSAGE_MAP(cEditorView, CScrollView)
 	ON_WM_SIZE()
 	ON_WM_ERASEBKGND()
 	//}}AFX_MSG_MAP
+   ON_NOTIFY_RANGE(TTN_SHOW, 0, 0xFFFFFFFF, OnToolTipShow)
+   ON_NOTIFY_RANGE(TTN_POP, 0, 0xFFFFFFFF, OnToolTipPop)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -367,8 +369,6 @@ void cEditorView::RenderGL()
    }
 
    SwapBuffers(m_hDC);
-
-   ShowOwnedPopups();
 }
 
 ////////////////////////////////////////
@@ -593,6 +593,39 @@ BOOL cEditorView::OnEraseBkgnd(CDC * pDC)
 
 ////////////////////////////////////////
 
+void cEditorView::OnToolTipShow(UINT id, NMHDR * pNMHDR, LRESULT * pResult)
+{
+   // Without this code, tooltips will appear briefly over the window, but
+   // get clobbered by the OpenGL rendering loop. Since the actual tooltip
+   // window that shows up on-screen is not a child nor sibling of this
+   // window, the WS_CLIPCHILDREN and WS_CLIPSIBLINGS do not prevent this.
+   // The solution here is to create a window the exact size of the tooltip
+   // that IS a child of this window and position it so that it defends the
+   // tooltip against being drawn over by OpenGL.
+   RECT rect;
+   ::GetWindowRect(pNMHDR->hwndFrom, &rect);
+   ::MapWindowPoints(NULL, m_hWnd, reinterpret_cast<LPPOINT>(&rect), 2);
+   if (IsWindow(m_toolTipGuard.m_hWnd))
+   {
+      m_toolTipGuard.MoveWindow(&rect);
+      m_toolTipGuard.ShowWindow(SW_SHOW);
+   }
+   else
+   {
+      Verify(m_toolTipGuard.Create(NULL, NULL, WS_VISIBLE, rect, this, 0));
+   }
+   ::SetWindowPos(pNMHDR->hwndFrom, m_toolTipGuard.m_hWnd, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+}
+
+////////////////////////////////////////
+
+void cEditorView::OnToolTipPop(UINT id, NMHDR * pNMHDR, LRESULT * pResult)
+{
+   m_toolTipGuard.ShowWindow(SW_HIDE);
+}
+
+////////////////////////////////////////
+
 void cEditorView::OnInitialUpdate() 
 {
    // Have to be initialized before placing the camera, for instance, and
@@ -669,7 +702,6 @@ int cEditorView::OnToolHitTest(CPoint point, TOOLINFO * pToolInfo) const
          pToolInfo->uFlags |= TTF_NOTBUTTON;
          pToolInfo->uId = toolTipId;
          pToolInfo->lpszText = _tcsdup(toolTipText.c_str()); // MFC frees this memory
-//         DebugMsg2("Tooltip id %d, text \"%s\"\n", pToolInfo->uId, pToolInfo->lpszText);
          SetRect(&pToolInfo->rect, point.x - 1, point.y - 1, point.x + 1, point.y + 1);
          return point.x * point.y;
       }
