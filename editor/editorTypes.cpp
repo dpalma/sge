@@ -28,6 +28,11 @@ cEditorKeyEvent::cEditorKeyEvent(WPARAM wParam, LPARAM lParam)
 // CLASS: cEditorMouseEvent
 //
 
+cEditorMouseEvent::cEditorMouseEvent(const CPoint & point)
+ : m_flags(0), m_point(point)
+{
+}
+
 cEditorMouseEvent::cEditorMouseEvent(WPARAM wParam, LPARAM lParam)
  : m_flags(wParam), m_point(lParam)
 {

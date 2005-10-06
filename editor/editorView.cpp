@@ -36,9 +36,6 @@ typedef IDirect3D9 * (WINAPI * tDirect3DCreate9Fn)(UINT);
 
 /////////////////////////////////////////////////////////////////////////////
 
-static const uint kToolTipIdMin = 0;
-static const uint kToolTipIdMax = 0xFFFF;
-
 const float kFov = 70;
 const float kZNear = 1;
 const float kZFar = 5000;
@@ -124,7 +121,6 @@ cEditorView::cEditorView()
  , m_highlightQuad(INVALID_HTERRAINQUAD)
  , m_highlightVertex(INVALID_HTERRAINVERTEX)
  , m_bInPostNcDestroy(false)
- , m_toolTipId(kToolTipIdMin)
 {
 }
 
@@ -138,6 +134,8 @@ cEditorView::~cEditorView()
 
 BOOL cEditorView::PreCreateWindow(CREATESTRUCT & cs)
 {
+   cs.lpszClass = AfxRegisterWndClass(CS_HREDRAW | CS_VREDRAW | CS_OWNDC, LoadCursor(NULL, MAKEINTRESOURCE(IDC_ARROW)));
+
    // Style bits required by OpenGL
    cs.style |= (WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
 
@@ -369,6 +367,8 @@ void cEditorView::RenderGL()
    }
 
    SwapBuffers(m_hDC);
+
+   ShowOwnedPopups();
 }
 
 ////////////////////////////////////////
@@ -406,7 +406,16 @@ void cEditorView::OnDraw(CDC * pDC)
       RenderGL();
    }
 #else
+   //glPushAttrib(GL_SCISSOR_BIT);
+   //CRect clipBox;
+   //int clipBoxType = pDC->GetClipBox(&clipBox);
+   //if (clipBoxType == SIMPLEREGION || clipBoxType == COMPLEXREGION)
+   //{
+   //   glEnable(GL_SCISSOR_TEST);
+   //   glScissor(clipBox.left, clipBox.bottom, clipBox.Width(), clipBox.Height());
+   //}
    RenderGL();
+   //glPopAttrib();
 #endif
 }
 
@@ -653,17 +662,16 @@ int cEditorView::OnToolHitTest(CPoint point, TOOLINFO * pToolInfo) const
    if (pEditorApp->GetActiveTool(&pActiveTool) == S_OK)
    {
       cStr toolTipText;
-      if (pActiveTool->GetToolTipText(cEditorMouseEvent(0, MAKELPARAM(point.x,point.y)), &toolTipText) == S_OK)
+      uint_ptr toolTipId = 0;
+      if (pActiveTool->GetToolTip(cEditorMouseEvent(point), &toolTipText, &toolTipId) == S_OK)
       {
          pToolInfo->hwnd = m_hWnd;
-         pToolInfo->uId = m_toolTipId;
+         pToolInfo->uFlags |= TTF_NOTBUTTON;
+         pToolInfo->uId = toolTipId;
          pToolInfo->lpszText = _tcsdup(toolTipText.c_str()); // MFC frees this memory
-         GetClientRect(&pToolInfo->rect);
-         if (++m_toolTipId > kToolTipIdMax)
-         {
-            m_toolTipId = kToolTipIdMin;
-         }
-         return pToolInfo->uId;
+//         DebugMsg2("Tooltip id %d, text \"%s\"\n", pToolInfo->uId, pToolInfo->lpszText);
+         SetRect(&pToolInfo->rect, point.x - 1, point.y - 1, point.x + 1, point.y + 1);
+         return point.x * point.y;
       }
    }
 

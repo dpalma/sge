@@ -128,8 +128,6 @@ private:
    HTERRAINVERTEX m_highlightVertex;
 
    bool m_bInPostNcDestroy;
-
-   mutable uint m_toolTipId;
 };
 
 #ifndef _DEBUG  // debug version in editorView.cpp

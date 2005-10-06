@@ -375,9 +375,10 @@ tResult cTerrainTileTool::OnMouseMove(const cEditorMouseEvent & mouseEvent, IEdi
 
 ////////////////////////////////////////
 
-tResult cTerrainTileTool::GetToolTipText(const cEditorMouseEvent & mouseEvent, cStr * pToolTipText) const
+tResult cTerrainTileTool::GetToolTip(const cEditorMouseEvent & mouseEvent,
+                                     cStr * pToolTipText, uint_ptr * pToolTipId) const
 {
-   if (pToolTipText == NULL)
+   if (pToolTipText == NULL || pToolTipId == NULL)
    {
       return E_POINTER;
    }
@@ -386,6 +387,7 @@ tResult cTerrainTileTool::GetToolTipText(const cEditorMouseEvent & mouseEvent, c
    if (GetHitQuad(mouseEvent.GetPoint(), NULL, &hQuad))
    {
       pToolTipText->Format("Hit quad %x", hQuad);
+      *pToolTipId = reinterpret_cast<uint_ptr>(hQuad);
       return S_OK;
    }
 

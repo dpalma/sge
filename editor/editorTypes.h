@@ -20,6 +20,9 @@ typedef CPoint tPoint;
 
 class cEditorKeyEvent
 {
+   cEditorKeyEvent(const cEditorKeyEvent &);
+   void operator =(const cEditorKeyEvent &);
+
 public:
    cEditorKeyEvent(WPARAM wParam, LPARAM lParam);
 
@@ -39,7 +42,11 @@ private:
 
 class cEditorMouseEvent
 {
+   cEditorMouseEvent(const cEditorMouseEvent &);
+   void operator =(const cEditorMouseEvent &);
+
 public:
+   cEditorMouseEvent(const CPoint & point);
    cEditorMouseEvent(WPARAM wParam, LPARAM lParam);
 
    uint GetFlags() const { return m_flags; }
@@ -58,6 +65,9 @@ private:
 
 class cEditorMouseWheelEvent : public cEditorMouseEvent
 {
+   cEditorMouseWheelEvent(const cEditorMouseWheelEvent &);
+   void operator =(const cEditorMouseWheelEvent &);
+
 public:
    cEditorMouseWheelEvent(WPARAM wParam, LPARAM lParam);
 

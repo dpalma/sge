@@ -231,7 +231,7 @@ interface UUID("AFAD398E-14D6-4eed-B503-AFE44C6989C0") IEditorTool : IUnknown
 	virtual tResult OnMouseMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView) = 0;
    virtual tResult OnMouseWheel(const cEditorMouseWheelEvent & mouseWheelEvent, IEditorView * pView) = 0;
 
-   virtual tResult GetToolTipText(const cEditorMouseEvent & mouseEvent, cStr * pToolTipText) const = 0;
+   virtual tResult GetToolTip(const cEditorMouseEvent & mouseEvent, cStr * pToolTipText, uint_ptr * pToolTipId) const = 0;
 };
 
 ////////////////////////////////////////
@@ -253,7 +253,7 @@ public:
 	virtual tResult OnMouseMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView) { return S_EDITOR_TOOL_CONTINUE; }
    virtual tResult OnMouseWheel(const cEditorMouseWheelEvent & mouseWheelEvent, IEditorView * pView) { return S_EDITOR_TOOL_CONTINUE; }
 
-   virtual tResult GetToolTipText(const cEditorMouseEvent & mouseEvent, cStr * pToolTipText) const { return S_FALSE; }
+   virtual tResult GetToolTip(const cEditorMouseEvent & mouseEvent, cStr * pToolTipText, uint_ptr * pToolTipId) const { return S_FALSE; }
 };
 
 /////////////////////////////////////////////////////////////////////////////

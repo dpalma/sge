@@ -325,23 +325,16 @@ int cEditorApp::Run()
    bool bIdle = true;
    long lIdleCount = 0;
 
+   static const double kFrameDelay = 0.2;
+
    double timeLastFrame = TimeGetSecs();
-   double time = timeLastFrame;
+   double time = timeLastFrame + (2 * kFrameDelay);
+
+   MSG lastMouseMove = {0};
 
    // acquire and dispatch messages until a WM_QUIT message is received.
    for (;;)
    {
-      // phase1: check to see if we can do idle work
-      double timeEnterIdle = TimeGetSecs();
-      while (bIdle &&
-         (TimeGetSecs() - timeEnterIdle) < 0.05)
-//         !::PeekMessage(&m_msgCur, NULL, NULL, NULL, PM_NOREMOVE))
-      {
-         // call OnIdle while in bIdle state
-         if (!OnIdle(lIdleCount++))
-            bIdle = false; // assume "no idle" state
-      }
-
 #if _MFC_VER >= 0x0700
 	   _AFX_THREAD_STATE * pState = AfxGetThreadState();
       MSG * pMsg = &(pState->m_msgCur);
@@ -349,9 +342,40 @@ int cEditorApp::Run()
       MSG * pMsg = &m_msgCur;
 #endif
 
-      // phase2: pump messages while available
-      while (::PeekMessage(pMsg, NULL, NULL, NULL, PM_NOREMOVE))
+      // phase1: check to see if we can do idle work
+      while (bIdle &&
+         !::PeekMessage(pMsg, NULL, 0, 0, PM_NOREMOVE))
       {
+         // call OnIdle while in bIdle state
+         if (!OnIdle(lIdleCount++))
+            bIdle = false; // assume "no idle" state
+      }
+
+      // phase2: pump messages while available
+      while (::PeekMessage(pMsg, NULL, 0, 0, PM_NOREMOVE))
+      {
+#if 0
+         // Throw away extra mouse move messages. Seem to get a lot
+         // of extras in this loop.
+         if (pMsg->message == WM_MOUSEMOVE)
+         {
+            if (pMsg->lParam == lastMouseMove.lParam)
+            {
+               ::GetMessage(pMsg, NULL, WM_MOUSEFIRST, WM_MOUSELAST);
+               Assert(pMsg->message == WM_MOUSEMOVE);
+               continue;
+            }
+            else
+            {
+               CopyMemory(&lastMouseMove, pMsg, sizeof(MSG));
+            }
+         }
+         else
+         {
+            ZeroMemory(&lastMouseMove, sizeof(MSG));
+         }
+#endif
+
          // pump message, but quit on WM_QUIT
          if (!PumpMessage())
             return ExitInstance();
@@ -366,13 +390,17 @@ int cEditorApp::Run()
 
       double elapsed = time - timeLastFrame;
 
-      tEditorLoopClients::iterator iter;
-      for (iter = m_loopClients.begin(); iter != m_loopClients.end(); iter++)
+      if (elapsed > kFrameDelay)
       {
-         (*iter)->OnFrame(time, elapsed);
+         tEditorLoopClients::iterator iter = m_loopClients.begin();
+         for (; iter != m_loopClients.end(); iter++)
+         {
+            (*iter)->OnFrame(time, elapsed);
+         }
+
+         timeLastFrame = time;
       }
 
-      timeLastFrame = time;
       time = TimeGetSecs();
    }
 
