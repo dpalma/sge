@@ -109,6 +109,19 @@ typedef long long       int64;
 typedef float           real32;
 typedef double          real64;
 
+// pointer-sized numeric types
+#ifdef _WIN64
+typedef __int64            int_ptr;
+typedef unsigned __int64   uint_ptr;
+typedef __int64            long_ptr;
+typedef unsigned __int64   ulong_ptr;
+#else
+typedef int                int_ptr;
+typedef unsigned int       uint_ptr;
+typedef long               long_ptr;
+typedef unsigned long      ulong_ptr;
+#endif
+
 ///////////////////////////////////////
 
 #ifndef EXTERN_C
