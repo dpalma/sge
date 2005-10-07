@@ -43,7 +43,7 @@ extern "C" DECLSPEC_DLLIMPORT int STDCALL IsDebuggerPresent();
 #define AssertMsg(expr,msg)   do { if (!(expr)) { if (AssertFail(__FILE__, __LINE__, #expr "\n" msg)) DbgBreak(); } } while(0)
 #define Verify(expr)          Assert(expr)
 #else
-#define AssertOnce(expr)      ((void)0)
+#define AssertOnce(expr)
 #define Assert(expr)          ((void)0)
 #define AssertMsg(expr,msg)   ((void)0)
 #define Verify(expr)          (expr)
