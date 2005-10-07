@@ -69,6 +69,8 @@ interface IImage : IUnknown
    virtual tResult GetPixel(uint x, uint y, cColor * pPixel) const = 0;
    virtual tResult SetPixel(uint x, uint y, const cColor & color) = 0;
 
+   virtual tResult GetSubImage(uint x, uint y, uint width, uint height, IImage * * ppSubImage) const = 0;
+
    virtual tResult Clone(IImage * * ppImage) = 0;
 };
 

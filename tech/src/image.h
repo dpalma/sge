@@ -32,6 +32,8 @@ public:
    virtual tResult GetPixel(uint x, uint y, cColor * pPixel) const;
    virtual tResult SetPixel(uint x, uint y, const cColor & pixel);
 
+   virtual tResult GetSubImage(uint x, uint y, uint width, uint height, IImage * * ppSubImage) const;
+
    virtual tResult Clone(IImage * * ppImage);
 
 private:

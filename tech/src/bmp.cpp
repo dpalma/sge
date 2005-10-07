@@ -220,7 +220,9 @@ tResult BmpWrite(IImage * pImage, IWriter * pWriter)
       return E_INVALIDARG;
    }
 
-   int bitsSize = abs(pImage->GetWidth() * pImage->GetHeight() * BytesPerPixel(pixelFormat));
+   // BMP file scan lines must be 4-byte aligned
+   int scanLineWidth = ((pImage->GetWidth() * BytesPerPixel(pixelFormat)) + 3) & ~3;
+   int bitsSize = abs(scanLineWidth * pImage->GetHeight());
 
    sBmpFileHeader header;
    header.bfType = kBmpFileId;
@@ -238,11 +240,31 @@ tResult BmpWrite(IImage * pImage, IWriter * pWriter)
    info.biBitCount = BytesPerPixel(pixelFormat) * 8;
 
    if (pWriter->Write(&header, sizeof(sBmpFileHeader)) == S_OK
-      && pWriter->Write(&info, sizeof(sBmpInfoHeader)) == S_OK
-      && pWriter->Write(const_cast<void*>(pImage->GetData()), bitsSize) == S_OK)
+      && pWriter->Write(&info, sizeof(sBmpInfoHeader)) == S_OK)
    {
-      return S_OK;
+      if (info.biBitCount == 24)
+      {
+         uint srcScanLineWidth = pImage->GetWidth() * BytesPerPixel(pixelFormat);
+         const byte * pSrcData = static_cast<const byte *>(pImage->GetData());
+         for (uint i = 0; i < pImage->GetHeight(); i++)
+         {
+            if (pWriter->Write(const_cast<byte*>(pSrcData), scanLineWidth) != S_OK)
+            {
+               return E_FAIL;
+            }
+            pSrcData += srcScanLineWidth;
+         }
+         return S_OK;
+      }
+      else
+      {
+         if (pWriter->Write(const_cast<void*>(pImage->GetData()), bitsSize) == S_OK)
+         {
+            return S_OK;
+         }
+      }
    }
+
 
    return E_FAIL;
 }

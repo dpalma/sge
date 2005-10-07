@@ -11,6 +11,12 @@
 
 #include <cstring>
 
+#ifdef HAVE_CPPUNIT
+#include "filespec.h"
+#include "readwriteapi.h"
+#include <cppunit/extensions/HelperMacros.h>
+#endif
+
 #include "dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -216,6 +222,56 @@ tResult cImage::SetPixel(uint x, uint y, const cColor & pixel)
 
 ///////////////////////////////////////
 
+tResult cImage::GetSubImage(uint x, uint y, uint width, uint height, IImage * * ppSubImage) const
+{
+   if (width == 0 || height == 0)
+   {
+      return E_INVALIDARG;
+   }
+
+   if (ppSubImage == NULL)
+   {
+      return E_POINTER;
+   }
+
+   uint memSize = BytesPerPixel(GetPixelFormat()) * width * height;
+   if (memSize == 0)
+   {
+      WarnMsg1("Invalid pixel format %d\n", GetPixelFormat());
+      return E_FAIL;
+   }
+
+   byte * pImageData = new byte[memSize];
+   if (pImageData == NULL)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   uint scanLine = BytesPerPixel(GetPixelFormat()) * width;
+   uint scanLine2 = BytesPerPixel(GetPixelFormat()) * GetWidth();
+
+   byte * p = pImageData;
+   const byte * p2 = static_cast<const byte *>(GetData()) + (scanLine2 * y) + x;
+
+   for (uint i = 0; i < height; i++)
+   {
+      memcpy(p, p2, scanLine);
+      p += scanLine;
+      p2 += scanLine2;
+   }
+
+   cAutoIPtr<cImage> pSubImage(new cImage(width, height, GetPixelFormat(), pImageData));
+   if (!pSubImage)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   *ppSubImage = CTAddRef(static_cast<IImage*>(pSubImage));
+   return S_OK;
+}
+
+///////////////////////////////////////
+
 tResult cImage::Clone(IImage * * ppImage)
 {
    return ImageCreate(GetWidth(), GetHeight(), GetPixelFormat(), GetData(), ppImage);
@@ -300,5 +356,42 @@ tResult ImageCreate(uint width, uint height, ePixelFormat pixelFormat, const voi
    *ppImage = CTAddRef(static_cast<IImage*>(pImage));
    return S_OK;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_CPPUNIT
+
+class cImageTests : public CppUnit::TestCase
+{
+   CPPUNIT_TEST_SUITE(cImageTests);
+      CPPUNIT_TEST(TestSubImage);
+   CPPUNIT_TEST_SUITE_END();
+
+   void TestSubImage();
+};
+
+void cImageTests::TestSubImage()
+{
+#if 0
+   IImage * pImage = NULL;
+   UseGlobal(ResourceManager);
+   if (pResourceManager->Load("quitbutton.bmp", kRT_Image, NULL, (void**)&pImage) == S_OK)
+   {
+      cAutoIPtr<IImage> pSubImage;
+      if (pImage->GetSubImage(0, 32, 64, 32, &pSubImage) == S_OK)
+      {
+         cAutoIPtr<IWriter> pWriter(FileCreateWriter(cFileSpec("subimagetest.bmp")));
+         if (!!pWriter)
+         {
+            BmpWrite(pSubImage, pWriter);
+         }
+      }
+   }
+#endif
+}
+
+CPPUNIT_TEST_SUITE_REGISTRATION(cImageTests);
+
+#endif // HAVE_CPPUNIT
 
 ///////////////////////////////////////////////////////////////////////////////
