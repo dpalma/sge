@@ -924,11 +924,13 @@ tResult cTerrainModel::GetQuadNeighbors(HTERRAINQUAD hQuad, HTERRAINQUAD neighbo
       return E_INVALIDARG;
    }
 
-   uint16 xPrev = x > 0 ? x - 1 : ~0;
-   uint16 xNext = x < (m_terrainSettings.GetTileCountX() - 1) ? x + 1 : ~0;
+   const uint16 kNoIndex = ~0;
 
-   uint16 zPrev = z > 0 ? z - 1 : ~0;
-   uint16 zNext = z < (m_terrainSettings.GetTileCountZ() - 1) ? z + 1 : ~0;
+   uint16 xPrev = x > 0 ? x - 1 : kNoIndex;
+   uint16 xNext = x < (m_terrainSettings.GetTileCountX() - 1) ? x + 1 : kNoIndex;
+
+   uint16 zPrev = z > 0 ? z - 1 : kNoIndex;
+   uint16 zNext = z < (m_terrainSettings.GetTileCountZ() - 1) ? z + 1 : kNoIndex;
 
    const uint16 neighborCoords[8][2] =
    {
@@ -947,7 +949,7 @@ tResult cTerrainModel::GetQuadNeighbors(HTERRAINQUAD hQuad, HTERRAINQUAD neighbo
       uint16 nx = neighborCoords[i][0];
       uint16 nz = neighborCoords[i][1];
 
-      if (nx != ~0 && nz != ~0)
+      if (nx != kNoIndex && nz != kNoIndex)
       {
          ComposeHandle(nx, nz, &neighbors[i]);
       }
