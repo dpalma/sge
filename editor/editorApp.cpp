@@ -164,7 +164,7 @@ static void RegisterGlobalObjects()
 //   GUIFactoryCreate();
    ThreadCallerCreate();
    TerrainModelCreate();
-   TerrainRendererCreate(true);
+   TerrainRendererCreateForEditor();
    SaveLoadManagerCreate();
 }
 

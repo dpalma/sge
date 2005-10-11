@@ -26,7 +26,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-static const int kToolPaletteId = 1234;
+static const int kToolPaletteId = IDS_TOOL_PALETTE_BAR_TITLE;
 
 
 /////////////////////////////////////////////////////////////////////////////

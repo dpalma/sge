@@ -30,14 +30,12 @@
 
 const uint kNoIndex = ~0;
 
+
 /////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cTerrainRenderer
-//
 
 ////////////////////////////////////////
 
-tResult TerrainRendererCreate(bool bForEditor /*=false*/)
+static tResult TerrainRendererCreate(bool bForEditor)
 {
    cAutoIPtr<ITerrainRenderer> p(new cTerrainRenderer(bForEditor));
    if (!p)
@@ -49,6 +47,26 @@ tResult TerrainRendererCreate(bool bForEditor /*=false*/)
 
 ////////////////////////////////////////
 
+tResult TerrainRendererCreate()
+{
+   return TerrainRendererCreate(false);
+}
+
+////////////////////////////////////////
+
+tResult TerrainRendererCreateForEditor()
+{
+   return TerrainRendererCreate(true);
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cTerrainRenderer
+//
+
+////////////////////////////////////////
+
 cTerrainRenderer::cTerrainRenderer(bool bForEditor)
  : m_terrainModelListener(this)
  , m_nTilesPerChunk(TerrainRendererDefaults::kTerrainTilesPerChunk)
@@ -56,6 +74,7 @@ cTerrainRenderer::cTerrainRenderer(bool bForEditor)
  , m_bInEditor(bForEditor)
  , m_bEnableBlending(true)
  , m_bTerrainChanged(false)
+ , m_baseTile(kNoIndex)
 {
 }
 
@@ -153,6 +172,20 @@ void cTerrainRenderer::RegenerateChunks()
       return;
    }
 
+   m_baseTile = kNoIndex;
+   {
+      uint maxTileCount = 0;
+      tTileCountMap::const_iterator iter = m_tileCountMap.begin();
+      for (; iter != m_tileCountMap.end(); iter++)
+      {
+         if (iter->second > maxTileCount)
+         {
+            m_baseTile = iter->first;
+            maxTileCount = iter->second;
+         }
+      }
+   }
+
    for (uint iz = 0; iz < nChunksZ; iz++)
    {
       cRange<uint> zr(iz * GetTilesPerChunk(), (iz+1) * GetTilesPerChunk());
@@ -162,7 +195,7 @@ void cTerrainRenderer::RegenerateChunks()
          cRange<uint> xr(ix * GetTilesPerChunk(), (ix+1) * GetTilesPerChunk());
 
          cTerrainChunk * pChunk = NULL;
-         if (cTerrainChunk::Create(xr, zr, pTerrainTileSet, false, &pChunk) == S_OK)
+         if (cTerrainChunk::Create(xr, zr, pTerrainTileSet, m_baseTile, false, &pChunk) == S_OK)
          {
             m_chunks.push_back(pChunk);
          }
@@ -281,6 +314,39 @@ void cTerrainRenderer::cTerrainModelListener::OnTerrainInitialize()
       cTerrainSettings terrainSettings;
       Verify(pTerrainModel->GetTerrainSettings(&terrainSettings) == S_OK);
 
+      cAutoIPtr<IEnumTerrainQuads> pEnumQuads;
+      if (pTerrainModel->EnumTerrainQuads(
+         0, terrainSettings.GetTileCountX(),
+         0, terrainSettings.GetTileCountZ(),
+         &pEnumQuads) == S_OK)
+      {
+         HTERRAINQUAD hQuads[16];
+         ulong nQuads = 0;
+
+         while (pEnumQuads->Next(_countof(hQuads), hQuads, &nQuads) == S_OK)
+         {
+            for (ulong i = 0; i < nQuads; i++)
+            {
+               uint tile;
+               if (pTerrainModel->GetQuadTile(hQuads[i], &tile) == S_OK)
+               {
+                  if (m_pOuter->m_tileCountMap.find(tile) == m_pOuter->m_tileCountMap.end())
+                  {
+                     m_pOuter->m_tileCountMap[tile] = 1;
+                  }
+                  else
+                  {
+                     m_pOuter->m_tileCountMap[tile] += 1;
+                  }
+               }
+               else
+               {
+                  WarnMsg("ITerrainModel::GetQuadTile failed\n");
+               }
+            }
+         }
+      }
+
       ITerrainTileSet * pTerrainTileSet = NULL;
       UseGlobal(ResourceManager);
       if (pResourceManager->Load(terrainSettings.GetTileSet(), kRT_TerrainTileSet, NULL, (void**)&pTerrainTileSet) != S_OK)
@@ -294,7 +360,7 @@ void cTerrainRenderer::cTerrainModelListener::OnTerrainInitialize()
       cTerrainChunk::Create(
          cRange<uint>(0, terrainSettings.GetTileCountX()),
          cRange<uint>(0, terrainSettings.GetTileCountZ()),
-         pTerrainTileSet, true,
+         pTerrainTileSet, m_pOuter->m_baseTile, true,
          &m_pOuter->m_pWholeTerrainChunk);
    }
 }
@@ -315,7 +381,27 @@ void cTerrainRenderer::cTerrainModelListener::OnTerrainClear()
 
 ////////////////////////////////////////
 
-void cTerrainRenderer::cTerrainModelListener::OnTerrainTileChange(HTERRAINQUAD hQuad)
+tResult cTerrainRenderer::cTerrainModelListener::OnTerrainTileChanging(HTERRAINQUAD hQuad,
+                                                                       uint oldTile, uint newTile)
+{
+   if (m_pOuter->m_tileCountMap.find(newTile) == m_pOuter->m_tileCountMap.end())
+   {
+      m_pOuter->m_tileCountMap[newTile] = 1;
+   }
+   else
+   {
+      m_pOuter->m_tileCountMap[newTile] += 1;
+   }
+
+   Assert(m_pOuter->m_tileCountMap.find(oldTile) != m_pOuter->m_tileCountMap.end());
+   m_pOuter->m_tileCountMap[oldTile] -= 1;
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+void cTerrainRenderer::cTerrainModelListener::OnTerrainTileChanged(HTERRAINQUAD hQuad)
 {
    if (m_pOuter != NULL)
    {
@@ -339,7 +425,7 @@ void cTerrainRenderer::cTerrainModelListener::OnTerrainTileChange(HTERRAINQUAD h
          m_pOuter->m_pWholeTerrainChunk->BuildSplats(
             cRange<uint>(0, terrainSettings.GetTileCountX()),
             cRange<uint>(0, terrainSettings.GetTileCountZ()),
-            pTerrainTileSet, true);
+            pTerrainTileSet, m_pOuter->m_baseTile, true);
       }
    }
 }
@@ -678,6 +764,7 @@ cTerrainChunk::~cTerrainChunk()
 tResult cTerrainChunk::Create(const cRange<uint> xRange,
                               const cRange<uint> zRange,
                               ITerrainTileSet * pTileSet,
+                              uint baseTile,
                               bool bNoBlending,
                               cTerrainChunk * * ppChunk)
 {
@@ -693,7 +780,7 @@ tResult cTerrainChunk::Create(const cRange<uint> xRange,
    }
 
    pChunk->BuildVertexBuffer(xRange, zRange, &pChunk->m_quadVertexMap);
-   pChunk->BuildSplats(xRange, zRange, pTileSet, bNoBlending);
+   pChunk->BuildSplats(xRange, zRange, pTileSet, baseTile, bNoBlending);
 
    *ppChunk = pChunk;
 
@@ -775,7 +862,7 @@ tResult cTerrainChunk::BuildVertexBuffer(const cRange<uint> xRange,
 ////////////////////////////////////////
 
 void cTerrainChunk::BuildSplats(const cRange<uint> xRange, const cRange<uint> zRange,
-                                ITerrainTileSet * pTileSet, bool bNoBlending)
+                                ITerrainTileSet * pTileSet, uint baseTile, bool bNoBlending)
 {
    UseGlobal(TerrainModel);
 
@@ -786,6 +873,8 @@ void cTerrainChunk::BuildSplats(const cRange<uint> xRange, const cRange<uint> zR
    tSplatBuilderMap splatBuilders;
 
    std::map<uint, uint> tileCounts;
+
+   cSplatBuilder * pBaseSplatBuilder = new cSplatBuilder(baseTile);
 
    cAutoIPtr<IEnumTerrainQuads> pEnumQuads;
    if (pTerrainModel->EnumTerrainQuads(
@@ -804,8 +893,6 @@ void cTerrainChunk::BuildSplats(const cRange<uint> xRange, const cRange<uint> zR
             continue;
          }
 
-         cSplatBuilder * pSplatBuilder = NULL;
-
          if (tileCounts.find(tile) == tileCounts.end())
          {
             tileCounts[tile] = 0;
@@ -813,18 +900,24 @@ void cTerrainChunk::BuildSplats(const cRange<uint> xRange, const cRange<uint> zR
 
          tileCounts[tile] += 1;
 
-         if (splatBuilders.find(tile) == splatBuilders.end())
+         cSplatBuilder * pSplatBuilder = NULL;
+         if (tile != baseTile)
          {
-            pSplatBuilder = new cSplatBuilder(tile);
-            if (pSplatBuilder != NULL)
+            if (splatBuilders.find(tile) == splatBuilders.end())
             {
-               splatBuilders[tile] = pSplatBuilder;
+               pSplatBuilder = new cSplatBuilder(tile);
+               if (pSplatBuilder != NULL)
+               {
+                  splatBuilders[tile] = pSplatBuilder;
+               }
+            }
+            else
+            {
+               pSplatBuilder = splatBuilders[tile];
             }
          }
-         else
-         {
-            pSplatBuilder = splatBuilders[tile];
-         }
+
+         pBaseSplatBuilder->AddQuad(hQuad);
 
          if (pSplatBuilder != NULL)
          {
@@ -869,22 +962,7 @@ void cTerrainChunk::BuildSplats(const cRange<uint> xRange, const cRange<uint> zR
    }
 
    // Create the base splat
-   uint baseSplatTile = kNoIndex;
    {
-      uint maxTileCount = 0;
-
-      std::map<uint, uint>::iterator iter = tileCounts.begin();
-      for (; iter != tileCounts.end(); iter++)
-      {
-         if (iter->second > maxTileCount)
-         {
-            baseSplatTile = iter->first;
-            maxTileCount = iter->second;
-         }
-      }
-
-      cSplatBuilder * pBaseSplatBuilder = splatBuilders[baseSplatTile];
-
       std::vector<uint> indices;
       pBaseSplatBuilder->BuildIndexBuffer(m_quadVertexMap, &indices);
 
@@ -899,7 +977,6 @@ void cTerrainChunk::BuildSplats(const cRange<uint> xRange, const cRange<uint> zR
       }
 
       delete pBaseSplatBuilder;
-      Verify(splatBuilders.erase(baseSplatTile) == 1);
    }
 
    // Create the splats
@@ -907,7 +984,7 @@ void cTerrainChunk::BuildSplats(const cRange<uint> xRange, const cRange<uint> zR
       tSplatBuilderMap::iterator iter = splatBuilders.begin();
       for (; iter != splatBuilders.end(); iter++)
       {
-         AssertMsg(iter->first != baseSplatTile, "Base splat builder should have been removed");
+         AssertMsg(iter->first != baseTile, "Base splat builder should have been removed");
 
          cSplatBuilder * pSplatBuilder = iter->second;
 
@@ -975,6 +1052,9 @@ void cTerrainChunk::Render()
          glClientActiveTextureARB(GL_TEXTURE0);
          glTexCoordPointer(2, GL_FLOAT, sizeof(sTerrainVertex), pVertexData + offsetof(sTerrainVertex, uv2));
          glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+         glEnable(GL_BLEND);
+         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       }
 
       GLuint texId;
@@ -998,9 +1078,6 @@ void cTerrainChunk::Render()
          glTexCoordPointer(2, GL_FLOAT, sizeof(sTerrainVertex), pVertexData + offsetof(sTerrainVertex, uv1));
          glEnableClientState(GL_TEXTURE_COORD_ARRAY);
       }
-
-      glEnable(GL_BLEND);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
       glDrawElements((*iter)->GetPrimitiveType(), (*iter)->GetIndexCount(), GL_UNSIGNED_INT, (*iter)->GetIndexPtr());
    }

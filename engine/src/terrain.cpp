@@ -429,45 +429,25 @@ cEnumTerrainQuads::~cEnumTerrainQuads()
 
 tResult cEnumTerrainQuads::Next(ulong count, HTERRAINQUAD * pQuads, ulong * pnQuads)
 {
-   if (count == 0)
-   {
-      return S_FALSE;
-   }
-
    if (pQuads == NULL || pnQuads == NULL)
    {
       return E_POINTER;
    }
 
-   if (m_x == m_xEnd && m_z == m_zEnd)
-   {
-      return E_FAIL;
-   }
-
-   ulong index = 0;
-
-   while (count-- > 0)
-   {
-      if (m_z < m_zEnd && m_x < m_xEnd)
-      {
-         ComposeHandle(m_x, m_z, &pQuads[index++]);
-         m_x++;
-         if (m_x == m_xEnd)
-         {
-            m_z++;
-            m_x = m_xStart;
-         }
-      }
-   }
-
-   *pnQuads = index;
-
-   return S_OK;
+   return DoNext(count, pQuads, pnQuads);
 }
 
 ////////////////////////////////////////
 
 tResult cEnumTerrainQuads::Skip(ulong count)
+{
+   return DoNext(count, NULL, NULL);
+}
+
+////////////////////////////////////////
+// Used to shared code between Next and Skip
+
+tResult cEnumTerrainQuads::DoNext(ulong count, HTERRAINQUAD * pQuads, ulong * pnQuads)
 {
    if (count == 0)
    {
@@ -479,20 +459,35 @@ tResult cEnumTerrainQuads::Skip(ulong count)
       return E_FAIL;
    }
 
-   while (count-- > 0)
+   ulong nEnumerated = 0;
+   for (ulong i = 0; i < count; i++)
    {
       if (m_z < m_zEnd && m_x < m_xEnd)
       {
-         m_x++;
-         if (m_x == m_xEnd)
+         if (pQuads != NULL)
          {
-            m_z++;
-            m_x = m_xStart;
+            ComposeHandle(m_x, m_z, &pQuads[i]);
          }
+         nEnumerated += 1;
+      }
+      m_x++;
+      if (m_x == m_xEnd)
+      {
+         m_z++;
+         if (m_z == m_zEnd)
+         {
+            break;
+         }
+         m_x = m_xStart;
       }
    }
 
-   return S_OK;
+   if (pnQuads != NULL)
+   {
+      *pnQuads = nEnumerated;
+   }
+
+   return (count == nEnumerated) ? S_OK : S_FALSE;
 }
 
 ////////////////////////////////////////
@@ -872,16 +867,39 @@ tResult cTerrainModel::SetQuadTile(HTERRAINQUAD hQuad, uint tile)
 {
    uint16 x, z;
    DecomposeHandle(hQuad, &x, &z);
-   tResult result = SetQuadTile(x, z, tile, NULL);
-   if (result == S_OK)
+
+   if (x < m_terrainSettings.GetTileCountX() && z < m_terrainSettings.GetTileCountZ())
    {
-      tListeners::iterator iter = m_listeners.begin();
-      for (; iter != m_listeners.end(); iter++)
+      uint index = (z * m_terrainSettings.GetTileCountZ()) + x;
+      if (index < m_quadTiles.size())
       {
-         (*iter)->OnTerrainTileChange(hQuad);
+         {
+            tListeners::iterator iter = m_listeners.begin();
+            for (; iter != m_listeners.end(); iter++)
+            {
+               if ((*iter)->OnTerrainTileChanging(hQuad, m_quadTiles[index], tile) == S_FALSE)
+               {
+                  InfoMsg4("Terrain tile change at (%d, %d) from %d to %d vetoed\n",
+                     x, z, m_quadTiles[index], tile);
+                  return S_FALSE;
+               }
+            }
+         }
+
+         m_quadTiles[index] = tile;
+
+         {
+            tListeners::iterator iter = m_listeners.begin();
+            for (; iter != m_listeners.end(); iter++)
+            {
+               (*iter)->OnTerrainTileChanged(hQuad);
+            }
+         }
+
+         return S_OK;
       }
    }
-   return result;
+   return E_FAIL;
 }
 
 ////////////////////////////////////////
@@ -890,7 +908,23 @@ tResult cTerrainModel::GetQuadTile(HTERRAINQUAD hQuad, uint * pTile) const
 {
    uint16 x, z;
    DecomposeHandle(hQuad, &x, &z);
-   return GetQuadTile(x, z, pTile);
+
+   if (pTile == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (x >= m_terrainSettings.GetTileCountX()
+      || z >= m_terrainSettings.GetTileCountZ())
+   {
+      return E_INVALIDARG;
+   }
+
+   uint index = (z * m_terrainSettings.GetTileCountZ()) + x;
+   Assert(index < m_quadTiles.size());
+
+   *pTile = m_quadTiles[index];
+   return S_OK;
 }
 
 ////////////////////////////////////////
@@ -959,49 +993,6 @@ tResult cTerrainModel::GetQuadNeighbors(HTERRAINQUAD hQuad, HTERRAINQUAD neighbo
       }
    }
 
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cTerrainModel::SetQuadTile(uint quadx, uint quadz, uint tile, uint * pFormer)
-{
-   if (quadx < m_terrainSettings.GetTileCountX() && quadz < m_terrainSettings.GetTileCountZ())
-   {
-      uint index = (quadz * m_terrainSettings.GetTileCountZ()) + quadx;
-      if (index < m_quadTiles.size())
-      {
-         if (pFormer != NULL)
-         {
-            *pFormer = m_quadTiles[index];
-         }
-         m_quadTiles[index] = tile;
-
-         return S_OK;
-      }
-   }
-   return E_FAIL;
-}
-
-////////////////////////////////////////
-
-tResult cTerrainModel::GetQuadTile(uint quadx, uint quadz, uint * pTile) const
-{
-   if (pTile == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (quadx >= m_terrainSettings.GetTileCountX()
-      || quadz >= m_terrainSettings.GetTileCountZ())
-   {
-      return E_INVALIDARG;
-   }
-
-   uint index = (quadz * m_terrainSettings.GetTileCountZ()) + quadx;
-   Assert(index < m_quadTiles.size());
-
-   *pTile = m_quadTiles[index];
    return S_OK;
 }
 

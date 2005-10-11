@@ -15,7 +15,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-const uint kLogWndId = 256;
+const uint kLogWndId = IDS_OUTPUT_BAR_TITLE;
 
 /////////////////////////////////////////////////////////////////////////////
 

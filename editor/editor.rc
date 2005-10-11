@@ -323,7 +323,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDR_MAINFRAME           "editor\n\nxxx\nSGE Editor Files (*.sgm)\n.sgm\nSGE.Editor.Document\nSGE Editor Document"
+    IDR_MAINFRAME           "editor\n\nxxx\nSGE Map Files (*.sgm)\n.sgm\nSGE.Map\nSGE Map"
 END
 
 STRINGTABLE 
@@ -428,7 +428,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    ID_TOOLS_UNITTESTRUNNER "Bring up the CPPUnit test runner dialog box\nUnit Tests"
+    ID_TOOLS_UNITTESTRUNNER "Run CPPUnit tests\nUnit Tests"
     ID_EDIT_DELETE          "Delete the selection\nDelete"
 END
 

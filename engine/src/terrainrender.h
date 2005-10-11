@@ -138,7 +138,8 @@ private:
       virtual void DeleteThis() { /* Do not delete; Non-pointer member of cTerrainRenderer */ }
       virtual void OnTerrainInitialize();
       virtual void OnTerrainClear();
-      virtual void OnTerrainTileChange(HTERRAINQUAD hQuad);
+      virtual tResult OnTerrainTileChanging(HTERRAINQUAD hQuad, uint oldTile, uint newTile);
+      virtual void OnTerrainTileChanged(HTERRAINQUAD hQuad);
       virtual void OnTerrainElevationChange(HTERRAINVERTEX hVertex);
    private:
       cTerrainRenderer * m_pOuter;
@@ -155,6 +156,11 @@ private:
    bool m_bInEditor; // Is this terrain renderer running in the editor
    bool m_bEnableBlending;
    bool m_bTerrainChanged; // terrain changed while blending disabled?
+
+   typedef std::map<uint, uint> tTileCountMap;
+   tTileCountMap m_tileCountMap;
+
+   uint m_baseTile;
 };
 
 ////////////////////////////////////////
@@ -244,10 +250,10 @@ public:
    cTerrainChunk();
    ~cTerrainChunk();
 
-   static tResult Create(const cRange<uint> xRange, const cRange<uint> zRange, ITerrainTileSet * pTileSet, bool bNoBlending, cTerrainChunk * * ppChunk);
+   static tResult Create(const cRange<uint> xRange, const cRange<uint> zRange, ITerrainTileSet * pTileSet, uint baseTile, bool bNoBlending, cTerrainChunk * * ppChunk);
 
    tResult BuildVertexBuffer(const cRange<uint> xRange, const cRange<uint> zRange, tQuadVertexMap * pQuadVertexMap);
-   void BuildSplats(const cRange<uint> xRange, const cRange<uint> zRange, ITerrainTileSet * pTileSet, bool bNoBlending);
+   void BuildSplats(const cRange<uint> xRange, const cRange<uint> zRange, ITerrainTileSet * pTileSet, uint baseTile, bool bNoBlending);
 
    void Render();
 

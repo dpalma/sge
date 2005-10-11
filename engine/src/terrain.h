@@ -41,6 +41,8 @@ public:
    virtual tResult Clone(IEnumTerrainQuads * * ppEnum);
 
 private:
+   tResult DoNext(ulong count, HTERRAINQUAD * pQuads, ulong * pnQuads);
+
    uint m_xStart, m_xEnd, m_zStart, m_zEnd;
    uint m_x, m_z;
 };
@@ -88,8 +90,6 @@ public:
    virtual tResult GetQuadCorners(HTERRAINQUAD hQuad, tVec3 corners[4]) const;
    virtual tResult GetQuadNeighbors(HTERRAINQUAD hQuad, HTERRAINQUAD neighbors[8]) const;
 
-   tResult SetQuadTile(uint quadx, uint quadz, uint tile, uint * pFormer);
-   tResult GetQuadTile(uint quadx, uint quadz, uint * pTile) const;
    tResult GetTileIndices(float x, float z, uint * pix, uint * piz) const;
    tResult GetQuadCorners(uint quadx, uint quadz, tVec3 corners[4]) const;
 

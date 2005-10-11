@@ -54,7 +54,8 @@ interface ITerrainRenderer : IUnknown
 
 ////////////////////////////////////////
 
-ENGINE_API tResult TerrainRendererCreate(bool bForEditor = false);
+ENGINE_API tResult TerrainRendererCreate();
+ENGINE_API tResult TerrainRendererCreateForEditor();
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -200,7 +201,8 @@ interface ITerrainModelListener : IUnknown
 {
    virtual void OnTerrainInitialize() = 0;
    virtual void OnTerrainClear() = 0;
-   virtual void OnTerrainTileChange(HTERRAINQUAD hQuad) = 0;
+   virtual tResult OnTerrainTileChanging(HTERRAINQUAD hQuad, uint oldTile, uint newTile) = 0;
+   virtual void OnTerrainTileChanged(HTERRAINQUAD hQuad) = 0;
    virtual void OnTerrainElevationChange(HTERRAINVERTEX hVertex) = 0;
 };
 
