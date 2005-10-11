@@ -228,19 +228,6 @@ void cToolGroup::Clear()
 ////////////////////////////////////////
 
 cToolPaletteRenderer::cToolPaletteRenderer()
- : m_bHaveMousePos(false),
-   m_totalHeight(0)
-{
-}
-
-////////////////////////////////////////
-
-cToolPaletteRenderer::cToolPaletteRenderer(const cToolPaletteRenderer & other)
- : m_dc(other.m_dc),
-   m_rect(other.m_rect),
-   m_mousePos(other.m_mousePos),
-   m_bHaveMousePos(other.m_bHaveMousePos),
-   m_totalHeight(other.m_totalHeight)
 {
 }
 
@@ -252,288 +239,20 @@ cToolPaletteRenderer::~cToolPaletteRenderer()
 
 ////////////////////////////////////////
 
-const cToolPaletteRenderer & cToolPaletteRenderer::operator =(const cToolPaletteRenderer & other)
+void cToolPaletteRenderer::Render(WTL::CDCHandle dc, const CRect & itemRect,
+                                  const cToolGroup * pToolGroup) const
 {
-   m_dc = other.m_dc;
-   m_rect = other.m_rect;
-   m_mousePos = other.m_mousePos;
-   m_bHaveMousePos = other.m_bHaveMousePos;
-   m_totalHeight = other.m_totalHeight;
-   return *this;
-}
-
-////////////////////////////////////////
-
-bool cToolPaletteRenderer::Begin(HDC hDC, LPCRECT pRect, const POINT * pMousePos)
-{
-   if (m_checkedItemBrush.IsNull())
-   {
-      static const WORD patternBits[] =
-      {
-         0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,
-      };
-
-      HBITMAP hPatternBm = CreateBitmap(8, 8, 1, 1, patternBits);
-      if (hPatternBm != NULL)
-      {
-         m_checkedItemBrush.CreatePatternBrush(hPatternBm);
-         DeleteObject(hPatternBm);
-      }
-   }
-
-   if (m_dc.IsNull() && (hDC != NULL) && (pRect != NULL))
-   {
-      m_dc = hDC;
-      m_rect = pRect;
-      if (pMousePos != NULL)
-      {
-         m_mousePos = *pMousePos;
-         m_bHaveMousePos = true;
-      }
-      else
-      {
-         m_bHaveMousePos = false;
-      }
-      m_totalHeight = 0;
-      return true;
-   }
-
-   return false;
-}
-
-////////////////////////////////////////
-
-bool cToolPaletteRenderer::End()
-{
-   if (!m_dc.IsNull())
-   {
-      m_dc = NULL;
-      m_bHaveMousePos = false;
-      return true;
-   }
-   return false;
-}
-
-////////////////////////////////////////
-
-HANDLE cToolPaletteRenderer::GetHitItem(const CPoint & point, RECT * pRect)
-{
-   tCachedRects::const_iterator iter = m_cachedRects.begin();
-   tCachedRects::const_iterator end = m_cachedRects.end();
-   for (; iter != end; iter++)
-   {
-      if (iter->second.PtInRect(point))
-      {
-         if (pRect != NULL)
-         {
-            *pRect = iter->second;
-         }
-         return iter->first;
-      }
-   }
-   return NULL;
-}
-
-////////////////////////////////////////
-
-bool cToolPaletteRenderer::GetItemRect(HANDLE hItem, RECT * pRect)
-{
-   tCachedRects::const_iterator iter = m_cachedRects.find(hItem);
-   if (iter != m_cachedRects.end())
-   {
-      if (pRect != NULL)
-      {
-         *pRect = iter->second;
-      }
-      return true;
-   }
-   return false;
-}
-
-////////////////////////////////////////
-
-void cToolPaletteRenderer::Render(tGroups::const_iterator from,
-                                  tGroups::const_iterator to)
-{
-   if (m_dc.IsNull())
-   {
-      return;
-   }
-
-   // Not using std::for_each() here because the functor is passed by
-   // value which instantiates a temporary object and the renderer class
-   // is a little too heavy to copy on every paint.
-   tGroups::const_iterator iter = from;
-   for (; iter != to; iter++)
-   {
-      Render(*iter);
-   }
-}
-
-////////////////////////////////////////
-
-void cToolPaletteRenderer::Render(const cToolGroup * pGroup)
-{
-   if (m_dc.IsNull() || (pGroup == NULL))
-   {
-      return;
-   }
-
-   CRect r(m_rect);
-   r.top += m_totalHeight;
-
-   int headingHeight = RenderGroupHeading(m_dc, &r, pGroup);
-
-   if (headingHeight > 0)
-   {
-      m_cachedRects[reinterpret_cast<HANDLE>(const_cast<cToolGroup *>(pGroup))] = r;
-   }
-
-   if (pGroup->IsCollapsed())
-   {
-      m_totalHeight += r.Height();
-      return;
-   }
-
-   HIMAGELIST hNormalImages = pGroup->GetImageList();
-
-   CRect toolRect(m_rect);
-   toolRect.top += m_totalHeight + headingHeight;
-
-   uint nTools = pGroup->GetToolCount();
-   for (uint i = 0; i < nTools; i++)
-   {
-      cToolItem * pTool = pGroup->GetTool(i);
-      if (pTool != NULL)
-      {
-         CSize extent;
-         m_dc.GetTextExtent(pTool->GetName(), -1, &extent);
-
-         extent.cy += (2 * kTextGap);
-
-         toolRect.bottom = toolRect.top + extent.cy;
-
-         int iImage = pTool->GetImageIndex();
-
-         CRect textRect(toolRect);
-         CPoint imageOffset(0,0);
-
-         if ((hNormalImages != NULL) && (iImage > -1))
-         {
-            IMAGEINFO imageInfo;
-            if (ImageList_GetImageInfo(hNormalImages, iImage, &imageInfo))
-            {
-               int imageHeight = (imageInfo.rcImage.bottom - imageInfo.rcImage.top);
-               int imageWidth = (imageInfo.rcImage.right - imageInfo.rcImage.left);
-               if ((imageHeight + (2 * kImageGap)) > toolRect.Height())
-               {
-                  toolRect.bottom = toolRect.top + imageHeight + (2 * kImageGap);
-               }
-               imageOffset.x = kImageGap;
-               imageOffset.y = ((toolRect.Height() - imageHeight) / 2);
-               textRect.left = toolRect.left + imageOffset.x + imageWidth;
-            }
-            else
-            {
-               // ImageList_GetImageInfo() failed so don't draw the image
-               iImage = -1;
-            }
-         }
-
-         m_cachedRects[reinterpret_cast<HANDLE>(pTool)] = toolRect;
-
-         textRect.left += kTextGap;
-
-         // All size/position calculation done, now draw
-
-         m_dc.FillSolidRect(toolRect, GetSysColor(COLOR_3DFACE));
-
-         if (!pTool->IsDisabled())
-         {
-            if (pTool->IsChecked())
-            {
-               m_dc.Draw3dRect(toolRect, GetSysColor(COLOR_3DSHADOW), GetSysColor(COLOR_3DHILIGHT));
-
-               textRect.left += kCheckedItemTextOffset;
-               textRect.top += kCheckedItemTextOffset;
-
-               imageOffset.x += kCheckedItemTextOffset;
-               imageOffset.y += kCheckedItemTextOffset;
-
-               CRect tr2(toolRect);
-               tr2.DeflateRect(2, 2);
-
-               if (!m_checkedItemBrush.IsNull())
-               {
-                  COLORREF oldTextColor = m_dc.SetTextColor(GetSysColor(COLOR_3DHILIGHT));
-                  COLORREF oldBkColor = m_dc.SetBkColor(GetSysColor(COLOR_3DFACE));
-                  m_dc.FillRect(tr2, m_checkedItemBrush);
-                  m_dc.SetTextColor(oldTextColor);
-                  m_dc.SetBkColor(oldBkColor);
-               }
-            }
-            else if (m_bHaveMousePos && toolRect.PtInRect(m_mousePos))
-            {
-               m_dc.Draw3dRect(toolRect, GetSysColor(COLOR_3DHILIGHT), GetSysColor(COLOR_3DSHADOW));
-            }
-         }
-
-         if ((hNormalImages != NULL) && (iImage > -1))
-         {
-            // TODO: clip the image in case it is offset by being a checked item
-            BOOL (STDCALL *pfnILDraw)(HIMAGELIST, int, HDC, int, int, uint) = pTool->IsDisabled()
-               ? ImageList_DrawDisabled
-               : ImageList_Draw;
-
-            (*pfnILDraw)(hNormalImages, iImage, m_dc,
-               toolRect.left + imageOffset.x,
-               toolRect.top + imageOffset.y,
-               ILD_NORMAL);
-         }
-
-         COLORREF oldTextColor = m_dc.SetTextColor(pTool->IsDisabled()
-            ? GetSysColor(COLOR_GRAYTEXT)
-            : GetSysColor(COLOR_WINDOWTEXT));
-         int oldBkMode = m_dc.SetBkMode(TRANSPARENT);
-         m_dc.DrawText(pTool->GetName(), -1, &textRect, DT_SINGLELINE | DT_LEFT | DT_VCENTER | DT_END_ELLIPSIS);
-         m_dc.SetTextColor(oldTextColor);
-         m_dc.SetBkMode(oldBkMode);
-
-         toolRect.OffsetRect(0, toolRect.Height());
-      }
-   }
-
-   m_totalHeight = toolRect.top;
-
-   if (m_totalHeight < m_rect.Height())
-   {
-      m_dc.FillSolidRect(m_rect.left, m_totalHeight, m_rect.right, m_rect.bottom, GetSysColor(COLOR_3DFACE));
-   }
-}
-
-////////////////////////////////////////
-
-int cToolPaletteRenderer::RenderGroupHeading(WTL::CDCHandle dc, LPRECT pRect,
-                                             const cToolGroup * pGroup)
-{
-   if ((pGroup == NULL) || (lstrlen(pGroup->GetName()) == 0))
-   {
-      return 0;
-   }
-
    Assert(!dc.IsNull());
-   Assert(pRect != NULL);
+   Assert(pToolGroup != NULL);
 
-   CSize extent;
-   dc.GetTextExtent(pGroup->GetName(), -1, &extent);
+   if (lstrlen(pToolGroup->GetName()) == 0)
+   {
+      return;
+   }
 
-   extent.cy += (2 * kTextGap);
+   dc.Draw3dRect(itemRect, GetSysColor(COLOR_3DHILIGHT), GetSysColor(COLOR_3DSHADOW));
 
-   pRect->bottom = pRect->top + extent.cy;
-
-   dc.Draw3dRect(pRect, GetSysColor(COLOR_3DHILIGHT), GetSysColor(COLOR_3DSHADOW));
-
-   CRect textRect(*pRect);
+   CRect textRect(itemRect);
    textRect.DeflateRect(1, 1);
 
    int halfWidth = textRect.Width() / 2;
@@ -571,9 +290,109 @@ int cToolPaletteRenderer::RenderGroupHeading(WTL::CDCHandle dc, LPRECT pRect,
 
    dc.SetTextColor(GetSysColor(COLOR_WINDOWTEXT));
    dc.SetBkMode(TRANSPARENT);
-   dc.DrawText(pGroup->GetName(), -1, &textRect, DT_SINGLELINE | DT_LEFT | DT_VCENTER | DT_END_ELLIPSIS);
+   dc.DrawText(pToolGroup->GetName(), -1, &textRect, DT_SINGLELINE | DT_LEFT | DT_VCENTER | DT_END_ELLIPSIS);
+}
 
-   return extent.cy;
+////////////////////////////////////////
+
+void cToolPaletteRenderer::Render(WTL::CDCHandle dc, const CRect & itemRect,
+                                  const cToolItem * pToolItem, bool bMouseOver) const
+{
+   if (m_checkedItemBrush.IsNull())
+   {
+      static const WORD patternBits[] =
+      {
+         0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,
+      };
+
+      HBITMAP hPatternBm = CreateBitmap(8, 8, 1, 1, patternBits);
+      if (hPatternBm != NULL)
+      {
+         m_checkedItemBrush.CreatePatternBrush(hPatternBm);
+         DeleteObject(hPatternBm);
+      }
+   }
+
+   CRect textRect(itemRect);
+   CPoint imageOffset(0,0);
+
+   HIMAGELIST hNormalImages = pToolItem->GetGroup()->GetImageList();
+   int iImage = pToolItem->GetImageIndex();
+
+   if ((hNormalImages != NULL) && (iImage > -1))
+   {
+      IMAGEINFO imageInfo;
+      if (ImageList_GetImageInfo(hNormalImages, iImage, &imageInfo))
+      {
+         int imageHeight = (imageInfo.rcImage.bottom - imageInfo.rcImage.top);
+         int imageWidth = (imageInfo.rcImage.right - imageInfo.rcImage.left);
+         imageOffset.x = kImageGap;
+         imageOffset.y = ((itemRect.Height() - imageHeight) / 2);
+         textRect.left += imageOffset.x + imageWidth;
+      }
+      else
+      {
+         // ImageList_GetImageInfo() failed so don't draw the image
+         iImage = -1;
+      }
+   }
+
+   textRect.left += kTextGap;
+
+   // All size/position calculation done, now draw
+
+   dc.FillSolidRect(itemRect, GetSysColor(COLOR_3DFACE));
+
+   if (!pToolItem->IsDisabled())
+   {
+      if (pToolItem->IsChecked())
+      {
+         dc.Draw3dRect(itemRect, GetSysColor(COLOR_3DSHADOW), GetSysColor(COLOR_3DHILIGHT));
+
+         textRect.left += kCheckedItemTextOffset;
+         textRect.top += kCheckedItemTextOffset;
+
+         imageOffset.x += kCheckedItemTextOffset;
+         imageOffset.y += kCheckedItemTextOffset;
+
+         if (!m_checkedItemBrush.IsNull())
+         {
+            CRect itemRect2(itemRect);
+            itemRect2.DeflateRect(2, 2);
+
+            COLORREF oldTextColor = dc.SetTextColor(GetSysColor(COLOR_3DHILIGHT));
+            COLORREF oldBkColor = dc.SetBkColor(GetSysColor(COLOR_3DFACE));
+            dc.FillRect(itemRect2, m_checkedItemBrush);
+            dc.SetTextColor(oldTextColor);
+            dc.SetBkColor(oldBkColor);
+         }
+      }
+      else if (bMouseOver)
+      {
+         dc.Draw3dRect(itemRect, GetSysColor(COLOR_3DHILIGHT), GetSysColor(COLOR_3DSHADOW));
+      }
+   }
+
+   if ((hNormalImages != NULL) && (iImage > -1))
+   {
+      // TODO: clip the image in case it is offset by being a checked item
+      BOOL (STDCALL *pfnILDraw)(HIMAGELIST, int, HDC, int, int, uint) = pToolItem->IsDisabled()
+         ? ImageList_DrawDisabled
+         : ImageList_Draw;
+
+      (*pfnILDraw)(hNormalImages, iImage, dc,
+         itemRect.left + imageOffset.x,
+         itemRect.top + imageOffset.y,
+         ILD_NORMAL);
+   }
+
+   COLORREF oldTextColor = dc.SetTextColor(pToolItem->IsDisabled()
+      ? GetSysColor(COLOR_GRAYTEXT)
+      : GetSysColor(COLOR_WINDOWTEXT));
+   int oldBkMode = dc.SetBkMode(TRANSPARENT);
+   dc.DrawText(pToolItem->GetName(), -1, &textRect, DT_SINGLELINE | DT_LEFT | DT_VCENTER | DT_END_ELLIPSIS);
+   dc.SetTextColor(oldTextColor);
+   dc.SetBkMode(oldBkMode);
 }
 
 
