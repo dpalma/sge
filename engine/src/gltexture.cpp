@@ -69,6 +69,54 @@ tResult GlTextureCreate(IImage * pImage, uint * pTexId)
       return E_POINTER;
    }
 
+   if (!IsPowerOfTwo(pImage->GetWidth()) || !IsPowerOfTwo(pImage->GetHeight()))
+   {
+      ErrorMsg("Image must have power-of-2 dimensions to be a texture\n");
+      return E_INVALIDARG;
+   }
+
+   ePixelFormat pixelFormat = pImage->GetPixelFormat();
+   if (pixelFormat == kPF_ERROR)
+   {
+      WarnMsg("Invalid image format while creating texture\n");
+      return E_FAIL;
+   }
+
+   GLenum texelFormat = g_glTexFormats[pixelFormat];
+   if (texelFormat == 0)
+   {
+      WarnMsg1("Unsupported texture pixel format %d\n", pixelFormat);
+      return E_FAIL;
+   }
+
+   GLint nComponents = g_glTexComponents[pixelFormat];
+   if (nComponents == 0)
+   {
+      WarnMsg1("Unsupported texture pixel format %d\n", pixelFormat);
+      return E_FAIL;
+   }
+
+   glGenTextures(1, pTexId);
+   glBindTexture(GL_TEXTURE_2D, *pTexId);
+
+   glTexImage2D(GL_TEXTURE_2D, 0, nComponents, pImage->GetWidth(), pImage->GetHeight(),
+      0, texelFormat, GL_UNSIGNED_BYTE, pImage->GetData());
+
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+   return S_OK;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+tResult GlTextureCreateMipMapped(IImage * pImage, uint * pTexId)
+{
+   if (pImage == NULL || pTexId == NULL)
+   {
+      return E_POINTER;
+   }
+
    ePixelFormat pixelFormat = pImage->GetPixelFormat();
    if (pixelFormat == kPF_ERROR)
    {
@@ -122,7 +170,7 @@ void * GlTextureFromImage(void * pData, int dataLength, void * param)
    IImage * pImage = reinterpret_cast<IImage*>(pData);
 
    uint texId;
-   if (GlTextureCreate(pImage, &texId) == S_OK)
+   if (GlTextureCreateMipMapped(pImage, &texId) == S_OK)
    {
       return reinterpret_cast<void*>(texId);
    }

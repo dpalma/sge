@@ -23,6 +23,7 @@ F_DECLARE_INTERFACE(IImage);
 ENGINE_API tResult EngineRegisterResourceFormats();
 
 ENGINE_API tResult GlTextureCreate(IImage * pImage, uint * pTexId);
+ENGINE_API tResult GlTextureCreateMipMapped(IImage * pImage, uint * pTexId);
 
 ///////////////////////////////////////////////////////////////////////////////
 

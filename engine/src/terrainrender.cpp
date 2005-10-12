@@ -271,14 +271,28 @@ private:
 
 ////////////////////////////////////////
 
+//extern "C" __declspec(dllimport) short __stdcall GetAsyncKeyState(int);
+
 void cTerrainRenderer::Render()
 {
    if (m_bEnableBlending)
    {
       if (!m_chunks.empty())
       {
+//#if 0
+//         tChunks::iterator iter = m_chunks.begin();
+//         for (int index = 0; iter != m_chunks.end(); iter++, index++)
+//         {
+//            if (GetAsyncKeyState('1' + index) < 0)
+//            {
+//               continue;
+//            }
+//            (*iter)->Render();
+//         }
+//#else
          std::for_each(m_chunks.begin(), m_chunks.end(),
             std::mem_fun<void, cTerrainChunk>(&cTerrainChunk::Render));
+//#endif
       }
    }
    else
@@ -306,9 +320,6 @@ void cTerrainRenderer::cTerrainModelListener::OnTerrainInitialize()
 
    if (m_pOuter != NULL)
    {
-      m_pOuter->m_bTerrainChanged = true;
-      m_pOuter->RegenerateChunks();
-
       UseGlobal(TerrainModel);
 
       cTerrainSettings terrainSettings;
@@ -346,6 +357,9 @@ void cTerrainRenderer::cTerrainModelListener::OnTerrainInitialize()
             }
          }
       }
+
+      m_pOuter->m_bTerrainChanged = true;
+      m_pOuter->RegenerateChunks();
 
       ITerrainTileSet * pTerrainTileSet = NULL;
       UseGlobal(ResourceManager);
@@ -648,7 +662,7 @@ void BuildSplatAlphaMap(uint splatTile,
       BmpWrite(pImage, pWriter);
    }
 
-   GlTextureCreate(pImage, pAlphaMapId);
+   GlTextureCreateMipMapped(pImage, pAlphaMapId);
 }
 
 
@@ -1048,6 +1062,8 @@ void cTerrainChunk::Render()
          glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_ARB, GL_SRC_ALPHA);
          glBindTexture(GL_TEXTURE_2D, alphaMap);
          glEnable(GL_TEXTURE_2D);
+         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE_SGIS);
+         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE_SGIS);
 
          glClientActiveTextureARB(GL_TEXTURE0);
          glTexCoordPointer(2, GL_FLOAT, sizeof(sTerrainVertex), pVertexData + offsetof(sTerrainVertex, uv2));
@@ -1061,16 +1077,23 @@ void cTerrainChunk::Render()
       if (pResourceManager->Load((*iter)->GetTexture().c_str(), kRT_GlTexture, NULL, (void**)&texId) == S_OK)
       {
          glActiveTextureARB(GL_TEXTURE1);
-         glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_ARB);
-         glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB, GL_MODULATE);
-         glTexEnvf(GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB, GL_PRIMARY_COLOR);
-         glTexEnvf(GL_TEXTURE_ENV, GL_OPERAND0_RGB_ARB, GL_SRC_COLOR);
-         glTexEnvf(GL_TEXTURE_ENV, GL_SOURCE1_RGB_ARB, GL_TEXTURE1);
-         glTexEnvf(GL_TEXTURE_ENV, GL_OPERAND1_RGB_ARB, GL_SRC_COLOR);
-         glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_ARB, GL_TEXTURE0);
-         glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_ARB, GL_SRC_ALPHA);
-         glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA_ARB, GL_TEXTURE0);
-         glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA_ARB, GL_SRC_ALPHA);
+         if (alphaMap != kNoIndex)
+         {
+            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_ARB);
+            glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB, GL_MODULATE);
+            glTexEnvf(GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB, GL_PRIMARY_COLOR);
+            glTexEnvf(GL_TEXTURE_ENV, GL_OPERAND0_RGB_ARB, GL_SRC_COLOR);
+            glTexEnvf(GL_TEXTURE_ENV, GL_SOURCE1_RGB_ARB, GL_TEXTURE1);
+            glTexEnvf(GL_TEXTURE_ENV, GL_OPERAND1_RGB_ARB, GL_SRC_COLOR);
+            glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_ARB, GL_TEXTURE0);
+            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_ARB, GL_SRC_ALPHA);
+            glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA_ARB, GL_TEXTURE0);
+            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA_ARB, GL_SRC_ALPHA);
+         }
+         else
+         {
+            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+         }
          glBindTexture(GL_TEXTURE_2D, texId);
          glEnable(GL_TEXTURE_2D);
 
