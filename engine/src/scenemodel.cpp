@@ -101,7 +101,7 @@ cSceneModel::cSimClient::cSimClient(cSceneModel * pOuter)
 
 ///////////////////////////////////////
 
-void cSceneModel::cSimClient::OnFrame(double elapsedTime)
+void cSceneModel::cSimClient::OnSimFrame(double elapsedTime)
 {
    Assert(m_pOuter != NULL);
    m_pOuter->Animate(elapsedTime);

@@ -3,11 +3,11 @@
 
 #include "stdhdr.h"
 
+#include "simapi.h"
+
 #include "techtime.h"
 #include "globalobjdef.h"
 #include "connptimpl.h"
-
-#include "sim.h"
 
 #include "dbgalloc.h" // must be last header
 
@@ -56,7 +56,6 @@ cSimGlobalObj::cSimGlobalObj()
    m_totalTime(0),
    m_timeScale(1)
 {
-   RegisterGlobalObject(IID_ISim, static_cast<IGlobalObject*>(this));
 }
 
 ///////////////////////////////////////
@@ -158,15 +157,20 @@ void cSimGlobalObj::NextFrame()
 
       m_totalTime += m_frameTime;
 
-      ForEachConnection(&ISimClient::OnFrame, m_frameTime);
+      ForEachConnection(&ISimClient::OnSimFrame, m_frameTime);
    }
 }
 
 ///////////////////////////////////////
 
-void SimCreate()
+tResult SimCreate()
 {
-   cAutoIPtr<ISim> p(new cSimGlobalObj);
+   cAutoIPtr<ISim> p(static_cast<ISim*>(new cSimGlobalObj));
+   if (!p)
+   {
+      return E_NOTIMPL;
+   }
+   return RegisterGlobalObject(IID_ISim, p);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

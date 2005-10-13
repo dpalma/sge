@@ -8,7 +8,7 @@
 
 #include "cameraapi.h"
 #include "guiapi.h"
-#include "sim.h"
+#include "simapi.h"
 #include "inputapi.h"
 #include "engineapi.h"
 #include "entityapi.h"

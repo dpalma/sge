@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // $Id$
 
-#ifndef INCLUDED_SIM_H
-#define INCLUDED_SIM_H
+#ifndef INCLUDED_SIMAPI_H
+#define INCLUDED_SIMAPI_H
 
 #include "enginedll.h"
 #include "comtools.h"
@@ -42,7 +42,7 @@ interface ISim : IUnknown
 
 #define kSimObjName "Sim"
 
-ENGINE_API void SimCreate();
+ENGINE_API tResult SimCreate();
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -51,9 +51,9 @@ ENGINE_API void SimCreate();
 
 interface ISimClient : IUnknown
 {
-   virtual void OnFrame(double elapsedTime) = 0;
+   virtual void OnSimFrame(double elapsedTime) = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // !INCLUDED_SIM_H
+#endif // !INCLUDED_SIMAPI_H

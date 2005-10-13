@@ -74,7 +74,7 @@ void cGameCameraController::Disconnect()
 // Very simple third-person camera model. Always looking down the -z axis
 // and slightly pitched over the x axis.
 
-void cGameCameraController::OnFrame(double elapsedTime)
+void cGameCameraController::OnSimFrame(double elapsedTime)
 {
    m_focus += m_velocity * (float)elapsedTime;
 

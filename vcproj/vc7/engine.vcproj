@@ -533,7 +533,7 @@
 				RelativePath="..\..\engine\include\scriptvar.h">
 			</File>
 			<File
-				RelativePath="..\..\engine\include\sim.h">
+				RelativePath="..\..\engine\include\simapi.h">
 			</File>
 			<File
 				RelativePath="..\..\engine\include\sys.h">

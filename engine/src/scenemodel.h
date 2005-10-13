@@ -5,7 +5,7 @@
 #define INCLUDED_SCENEMODEL_H
 
 #include "sceneapi.h"
-#include "sim.h"
+#include "simapi.h"
 #include "model.h"
 
 #include "techstring.h"
@@ -61,7 +61,7 @@ private:
       cSceneModel * m_pOuter;
    public:
       cSimClient(cSceneModel * pOuter);
-      virtual void OnFrame(double elapsedTime);
+      virtual void OnSimFrame(double elapsedTime);
    };
    friend class cSimClient;
    cSimClient m_simClient;
