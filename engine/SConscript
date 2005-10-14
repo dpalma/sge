@@ -21,7 +21,6 @@ sources = Split("""
    src/sceneentity.cpp
    src/sceneentityenum.cpp
    src/scenelayer.cpp
-   src/scenemodel.cpp
    src/scriptvar.cpp
    src/sim.cpp
    src/terrain.cpp

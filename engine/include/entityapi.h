@@ -13,6 +13,8 @@
 
 F_DECLARE_INTERFACE(IEntityManager);
 
+F_DECLARE_INTERFACE(IDictionary);
+
 class cTerrainLocatorHack
 {
 public:
@@ -28,14 +30,15 @@ interface IEntityManager : IUnknown
 {
    virtual void SetTerrainLocatorHack(cTerrainLocatorHack *) = 0;
 
-   virtual tResult SpawnEntity(const tChar * pszMesh, float x, float z) = 0;
+   virtual tResult SpawnEntity(const tChar * pszMesh, float nx, float nz) = 0;
 
    virtual void RenderAll() = 0;
 };
 
 ////////////////////////////////////////
 
-ENGINE_API void EntityManagerCreate();
+ENGINE_API tResult EntityManagerCreate();
+
 
 ///////////////////////////////////////////////////////////////////////////////
 

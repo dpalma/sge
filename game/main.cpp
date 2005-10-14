@@ -71,24 +71,6 @@ cAutoIPtr<IRenderDevice> g_pRenderDevice;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class cTiledGroundLocator : public cTerrainLocatorHack
-{
-public:
-   virtual void Locate(float nx, float nz, float * px, float * py, float * pz)
-   {
-      cTerrainSettings terrainSettings;
-      UseGlobal(TerrainModel);
-      pTerrainModel->GetTerrainSettings(&terrainSettings);
-      *px = nx * terrainSettings.GetTileCountX() * terrainSettings.GetTileSize();
-      *py = 0; // TODO: get real elevation
-      *pz = nz * terrainSettings.GetTileCountZ() * terrainSettings.GetTileSize();
-   }
-};
-
-cTiledGroundLocator g_terrainLocator;
-
-///////////////////////////////////////////////////////////////////////////////
-
 IRenderDevice * AccessRenderDevice()
 {
    return static_cast<IRenderDevice *>(g_pRenderDevice);
@@ -141,7 +123,7 @@ SCRIPT_DEFINE_FUNCTION(SetTerrain)
    UseGlobal(TerrainModel);
 
    cTerrainSettings terrainSettings;
-   terrainSettings.SetTileSize(16);
+   terrainSettings.SetTileSize(32);
    terrainSettings.SetTileCountX(64);
    terrainSettings.SetTileCountZ(64);
    terrainSettings.SetTileSet("defaulttiles.xml"); // HACK TODO
@@ -308,9 +290,6 @@ static bool MainInit(int argc, tChar * argv[])
    {
       return false;
    }
-
-   UseGlobal(EntityManager);
-   pEntityManager->SetTerrainLocatorHack(&g_terrainLocator);
 
    UseGlobal(GUIContext);
    if (FAILED(pGUIContext->GetDefaultFont(&g_pFont)))

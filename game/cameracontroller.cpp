@@ -8,7 +8,6 @@
 #include "cameraapi.h"
 #include "inputapi.h"
 #include "ray.h"
-#include "sceneapi.h"
 
 #include "configapi.h"
 #include "globalobj.h"
@@ -96,36 +95,6 @@ void cGameCameraController::OnSimFrame(double elapsedTime)
 
 bool cGameCameraController::OnInputEvent(const sInputEvent * pEvent)
 {
-   if ((pEvent->key == kMouseLeft) && pEvent->down)
-   {
-      float ndx, ndy;
-      ScreenToNormalizedDeviceCoords(Round(pEvent->point.x), Round(pEvent->point.y), &ndx, &ndy);
-
-      cRay ray;
-      UseGlobal(Camera);
-      if (pCamera->GeneratePickRay(ndx, ndy, &ray) == S_OK)
-      {
-         cAutoIPtr<ISceneEntityEnum> pHits;
-
-         UseGlobal(Scene);
-         if (pScene->Query(ray, &pHits) == S_OK)
-         {
-            return true;
-         }
-#ifdef _DEBUG
-         else
-         {
-            tVec3 intersect;
-            if (ray.IntersectsPlane(tVec3(0,1,0), 0, &intersect))
-            {
-               DebugMsg3("Hit the ground at approximately (%.1f,%.1f,%.1f)\n",
-                  intersect.x, intersect.y, intersect.z);
-            }
-         }
-#endif
-      }
-   }
-
    bool bUpdateCamera = false;
 
    switch (pEvent->key)

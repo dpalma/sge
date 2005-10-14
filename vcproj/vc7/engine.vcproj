@@ -350,9 +350,6 @@
 					RelativePath="..\..\engine\src\scenelayer.cpp">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\scenemodel.cpp">
-				</File>
-				<File
 					RelativePath="..\..\engine\src\scriptvar.cpp">
 				</File>
 				<File
@@ -478,9 +475,6 @@
 				</File>
 				<File
 					RelativePath="..\..\engine\src\scenelayer.h">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\scenemodel.h">
 				</File>
 				<File
 					RelativePath="..\..\engine\src\stdhdr.h">
