@@ -5,6 +5,8 @@
 
 #include "saveloadmanager.h"
 
+#include "toposort.h"
+
 #include <vector>
 
 #include "dbgalloc.h" // must be last header
@@ -286,7 +288,11 @@ tResult cSaveLoadManager::Term()
 
 ///////////////////////////////////////
 
-tResult cSaveLoadManager::RegisterSaveLoadParticipant(REFGUID id, int version, ISaveLoadParticipant * pSLP)
+tResult cSaveLoadManager::RegisterSaveLoadParticipant(REFGUID id,
+                                                      const cBeforeAfterConstraint * pConstraints,
+                                                      size_t nConstraints,
+                                                      int version,
+                                                      ISaveLoadParticipant * pSLP)
 {
    if (CTIsEqualUnknown(id))
    {
@@ -302,6 +308,39 @@ tResult cSaveLoadManager::RegisterSaveLoadParticipant(REFGUID id, int version, I
    if (pSLP == NULL)
    {
       return E_POINTER;
+   }
+
+   // All participants are put into the constraint graph. Only those with
+   // constraints will have edges, though.
+   Verify(m_saveOrderConstraintGraph.AddNode(&id));
+
+   if (pConstraints != NULL && nConstraints > 0)
+   {
+      for (size_t i = 0; i < nConstraints; i++)
+      {
+         const cBeforeAfterConstraint & c = pConstraints[i];
+
+         if (c.GetName() != NULL)
+         {
+            WarnMsg("Constraints by name not supported by save/load manager\n");
+            continue;
+         }
+
+         if (c.GetGuid() != NULL)
+         {
+            // Don't check the existence of the constraint target in the map
+            // because it could register after this one at start-up. The save
+            // order will be built later when all participants have been registered.
+            if (c.Before())
+            {
+               m_saveOrderConstraintGraph.AddEdge(&id, c.GetGuid());
+            }
+            else
+            {
+               m_saveOrderConstraintGraph.AddEdge(c.GetGuid(), &id);
+            }
+         }
+      }
    }
 
    cVersionedParticipant * pParticipant = NULL;
@@ -345,6 +384,11 @@ tResult cSaveLoadManager::Save(IWriter * pWriter)
       return E_POINTER;
    }
 
+   // Determine the save order
+   std::vector<const GUID *> saveOrder;
+   cTopoSorter<tConstraintGraph>().TopoSort(&m_saveOrderConstraintGraph, &saveOrder);
+   AssertMsg(saveOrder.size() == m_participantMap.size(), "Size mismatch after determining constrained save order");
+
    sFileEntry header;
    memcpy(&header.id, &SAVELOADID_SaveLoadFile, sizeof(header.id));
    header.version = g_saveLoadFileVer;
@@ -360,18 +404,28 @@ tResult cSaveLoadManager::Save(IWriter * pWriter)
 
    std::vector<sFileEntry> entries;
 
-   tParticipantMap::iterator iter = m_participantMap.begin();
-   tParticipantMap::iterator end = m_participantMap.end();
-   for (; iter != end; iter++)
+   std::vector<const GUID *>::iterator iter = saveOrder.begin();
+   for (; iter != saveOrder.end(); iter++)
    {
+      cVersionedParticipant * pVP = NULL;
+      {
+         tParticipantMap::iterator f = m_participantMap.find(*iter);
+         if (f == m_participantMap.end())
+         {
+            ErrorMsg("Save/load participant in the save order not found in the registered list\n");
+            continue;
+         }
+         pVP = f->second;
+      }
+
       int entryVersion = -1;
-      if (iter->second->GetMostRecentVersion(&entryVersion) != S_OK)
+      if (pVP->GetMostRecentVersion(&entryVersion) != S_OK)
       {
          continue;
       }
 
       cAutoIPtr<ISaveLoadParticipant> pSLP;
-      if (iter->second->GetParticipant(entryVersion, &pSLP) != S_OK)
+      if (pVP->GetParticipant(entryVersion, &pSLP) != S_OK)
       {
          continue;
       }
@@ -402,7 +456,7 @@ tResult cSaveLoadManager::Save(IWriter * pWriter)
          }
 
          sFileEntry entry;
-         memcpy(&entry.id, iter->first, sizeof(GUID));
+         memcpy(&entry.id, *iter, sizeof(GUID));
          entry.version = entryVersion;
          entry.offset = begin;
          entry.length = end - begin;
@@ -420,8 +474,7 @@ tResult cSaveLoadManager::Save(IWriter * pWriter)
    // Write the entry table at the end
    {
       std::vector<sFileEntry>::iterator iter = entries.begin();
-      std::vector<sFileEntry>::iterator end = entries.end();
-      for (; iter != end; iter++)
+      for (; iter != entries.end(); iter++)
       {
          if (pWriter->Write(*iter) != S_OK)
          {
@@ -499,8 +552,7 @@ tResult cSaveLoadManager::Load(IReader * pReader)
 
    // Read the individual entries
    std::vector<sFileEntry>::iterator iter = entries.begin();
-   std::vector<sFileEntry>::iterator end = entries.end();
-   for (; iter != end; iter++)
+   for (; iter != entries.end(); iter++)
    {
       const sFileEntry & entry = *iter;
 
@@ -524,11 +576,22 @@ tResult cSaveLoadManager::Load(IReader * pReader)
          return E_FAIL;
       }
 
-      // Both S_OK and S_FALSE are valid return values
-      if (FAILED(pSLP->Load(pReader, entry.version)))
+      // S_OK: loading succeeded
+      // S_FALSE: loading refused--seek past this entry
+      // Otherwise, failure
+      tResult loadResult = pSLP->Load(pReader, entry.version);
+      if (FAILED(loadResult))
       {
          ErrorMsg("Failed to read a file entry\n");
          return E_FAIL;
+      }
+      else if (loadResult == S_FALSE)
+      {
+         if (pReader->Seek(entry.length, kSO_Cur) != S_OK)
+         {
+            ErrorMsg("Unable to skip over a file entry refused by its registered loader\n");
+            return E_FAIL;
+         }
       }
    }
 

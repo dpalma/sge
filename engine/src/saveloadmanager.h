@@ -5,6 +5,8 @@
 #define INCLUDED_SAVELOADMANAGER_H
 
 #include "saveloadapi.h"
+
+#include "digraph.h"
 #include "globalobjdef.h"
 #include "readwriteapi.h"
 
@@ -57,7 +59,8 @@ public:
    virtual tResult Init();
    virtual tResult Term();
 
-   virtual tResult RegisterSaveLoadParticipant(REFGUID id, int version, ISaveLoadParticipant *);
+   virtual tResult RegisterSaveLoadParticipant(REFGUID id, const cBeforeAfterConstraint * pConstraints,
+      size_t nConstraints, int version, ISaveLoadParticipant *);
    virtual tResult RevokeSaveLoadParticipant(REFGUID id, int version);
 
    virtual tResult Save(IWriter *);
@@ -74,6 +77,9 @@ private:
 
    typedef std::map<const GUID *, cVersionedParticipant *, sLessGuid> tParticipantMap;
    tParticipantMap m_participantMap;
+
+   typedef cDigraph<const GUID *, sLessGuid> tConstraintGraph;
+   tConstraintGraph m_saveOrderConstraintGraph;
 
    struct sFileEntry
    {

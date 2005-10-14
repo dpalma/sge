@@ -5,6 +5,7 @@
 #define INCLUDED_TERRAINRENDER_H
 
 #include "terrainapi.h"
+#include "saveloadapi.h"
 
 #include "globalobjdef.h"
 #include "vec2.h"
@@ -104,7 +105,9 @@ private:
 // CLASS: cTerrainRenderer
 //
 
-class cTerrainRenderer : public cComObject2<IMPLEMENTS(ITerrainRenderer), IMPLEMENTS(IGlobalObject)>
+class cTerrainRenderer : public cComObject3<IMPLEMENTS(ITerrainRenderer),
+                                            IMPLEMENTS(IGlobalObject),
+                                            IMPLEMENTS(ISaveLoadParticipant)>
 {
 public:
    cTerrainRenderer(bool bForEditor);
@@ -122,6 +125,10 @@ public:
    virtual tResult EnableBlending(bool bEnable);
 
    virtual void Render();
+
+   // ISaveLoadParticipant methods
+   virtual tResult Save(IWriter *);
+   virtual tResult Load(IReader *, int version);
 
 private:
    bool RunningInEditor() const { return m_bInEditor; }

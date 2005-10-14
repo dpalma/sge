@@ -92,10 +92,28 @@ END_CONSTRAINTS()
 
 ////////////////////////////////////////
 
+// {D133F917-602C-4d99-A29A-2DE963AF21D8}
+static const GUID SAVELOADID_TerrainRenderer = 
+{ 0xd133f917, 0x602c, 0x4d99, { 0xa2, 0x9a, 0x2d, 0xe9, 0x63, 0xaf, 0x21, 0xd8 } };
+
+static const int g_terrainRendererVer = 1;
+
+static const cBeforeAfterConstraint g_saveConstraints[] =
+{
+   cBeforeAfterConstraint(&IID_ITerrainModel, kBefore)
+};
+
+////////////////////////////////////////
+
 tResult cTerrainRenderer::Init()
 {
    UseGlobal(TerrainModel);
    pTerrainModel->AddTerrainModelListener(&m_terrainModelListener);
+
+   UseGlobal(SaveLoadManager);
+   pSaveLoadManager->RegisterSaveLoadParticipant(SAVELOADID_TerrainRenderer,
+      g_saveConstraints, _countof(g_saveConstraints), g_terrainRendererVer,
+      static_cast<ISaveLoadParticipant*>(this));
 
    return S_OK;
 }
@@ -104,6 +122,9 @@ tResult cTerrainRenderer::Init()
 
 tResult cTerrainRenderer::Term()
 {
+   UseGlobal(SaveLoadManager);
+   pSaveLoadManager->RevokeSaveLoadParticipant(SAVELOADID_TerrainRenderer, g_terrainRendererVer);
+
    UseGlobal(TerrainModel);
    pTerrainModel->RemoveTerrainModelListener(&m_terrainModelListener);
 
@@ -302,6 +323,38 @@ void cTerrainRenderer::Render()
          m_pWholeTerrainChunk->Render();
       }
    }
+}
+
+////////////////////////////////////////
+
+tResult cTerrainRenderer::Save(IWriter * pWriter)
+{
+   if (pWriter == NULL)
+   {
+      return E_POINTER;
+   }
+
+   return S_FALSE;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainRenderer::Load(IReader * pReader, int version)
+{
+   if (pReader == NULL)
+   {
+      return E_POINTER;
+   }
+
+   // Will eventually handle upgrading here
+   if (g_terrainRendererVer != version)
+   {
+      return S_FALSE;
+   }
+
+   // TODO
+
+   return S_FALSE;
 }
 
 ////////////////////////////////////////
