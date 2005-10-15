@@ -118,35 +118,73 @@ void ResizeHack(int width, int height)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+void * HackScenarioLoad(IReader * pReader)
+{
+   UseGlobal(SaveLoadManager);
+   if (pSaveLoadManager->Load(pReader) == S_OK)
+   {
+      return reinterpret_cast<void*>(NULL + 1);
+   }
+   return NULL;
+}
+
+void HackScenarioUnload(void * pData)
+{
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 SCRIPT_DEFINE_FUNCTION(SetTerrain)
 {
-   UseGlobal(TerrainModel);
-
-   cTerrainSettings terrainSettings;
-   terrainSettings.SetTileSize(32);
-   terrainSettings.SetTileCountX(64);
-   terrainSettings.SetTileCountZ(64);
-   terrainSettings.SetTileSet("defaulttiles.xml"); // HACK TODO
-
-   if (argc == 1 && argv[0].IsString())
+   if (argc < 1 || !argv[0].IsString())
    {
-      terrainSettings.SetHeightData(kTHD_HeightMap);
-      terrainSettings.SetHeightMap(argv[0]);
-      terrainSettings.SetHeightMapScale(kGroundScaleY * 255);
-      pTerrainModel->Initialize(terrainSettings);
+      ErrorMsg("Invalid parameters to SetTerrain\n");
+      return 0;
    }
-   else if (argc >= 2 
-      && argv[0].IsString()
-      && argv[1].IsNumber())
+
+   static const tChar kRT_MapFile[] = _T("SGE.Map");
+
+   UseGlobal(ResourceManager);
+   pResourceManager->RegisterFormat(kRT_MapFile, "sgm", HackScenarioLoad, NULL, HackScenarioUnload);
+
+   cFileSpec terrainFile(static_cast<const tChar *>(argv[0]));
+   const tChar * pszFileExt = terrainFile.GetFileExt();
+   if (pszFileExt != NULL && _tcsicmp(pszFileExt, _T("sgm")) == 0)
    {
-      terrainSettings.SetHeightData(kTHD_HeightMap);
-      terrainSettings.SetHeightMap(argv[0]);
-      terrainSettings.SetHeightMapScale(static_cast<float>(argv[1]) * 255);
-      pTerrainModel->Initialize(terrainSettings);
+      void * pData = NULL;
+      pResourceManager->Load(argv[0], kRT_MapFile, NULL, &pData);
    }
    else
    {
-      DebugMsg("Warning: Invalid parameters to SetTerrain\n");
+      UseGlobal(TerrainModel);
+
+      cTerrainSettings terrainSettings;
+      terrainSettings.SetTileSize(32);
+      terrainSettings.SetTileCountX(64);
+      terrainSettings.SetTileCountZ(64);
+      terrainSettings.SetTileSet("defaulttiles.xml"); // HACK TODO
+
+      if (argc == 1 && argv[0].IsString())
+      {
+         terrainSettings.SetHeightData(kTHD_HeightMap);
+         terrainSettings.SetHeightMap(argv[0]);
+         terrainSettings.SetHeightMapScale(kGroundScaleY * 255);
+         pTerrainModel->Initialize(terrainSettings);
+      }
+      else if (argc >= 2 
+         && argv[0].IsString()
+         && argv[1].IsNumber())
+      {
+         terrainSettings.SetHeightData(kTHD_HeightMap);
+         terrainSettings.SetHeightMap(argv[0]);
+         terrainSettings.SetHeightMapScale(static_cast<float>(argv[1]) * 255);
+         pTerrainModel->Initialize(terrainSettings);
+      }
+      else
+      {
+         ErrorMsg("Invalid parameters to SetTerrain\n");
+      }
    }
    
    return 0;

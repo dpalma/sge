@@ -31,7 +31,7 @@ function LoadSampleLevel()
    GUIContext:Clear();
    GUIContext:Load("ingame.xml");
 
-   SetTerrain("ground.tga", 0.2, "grass.tga");
+   SetTerrain("Rolling Grassy Hills.sgm");
    
    -- spawn this many entities
    nEntities = 15;
