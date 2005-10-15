@@ -4,11 +4,10 @@
 #include "stdhdr.h"
 
 #include "MapSettingsDlg.h"
+
 #include "editorapi.h"
 #include "terrainapi.h"
 #include "BitmapUtils.h"
-
-#include "resource.h"       // main symbols
 
 #include "globalobj.h"
 #include "resourceapi.h"
@@ -39,8 +38,6 @@ static const uint kDefaultMapSizeIndex = 0;
 // CLASS: cMapSettingsDlg
 //
 
-const uint cMapSettingsDlg::IDD = IDD_MAPSETTINGS;
-
 ////////////////////////////////////////
 
 cMapSettingsDlg::cMapSettingsDlg(const cTerrainSettings & terrainSettings, CWnd* pParent /*=NULL*/)
@@ -53,6 +50,7 @@ cMapSettingsDlg::cMapSettingsDlg(const cTerrainSettings & terrainSettings, CWnd*
 	m_heightMapFile = terrainSettings.GetHeightMap();
 	m_mapHeightIndex = -1;
 	m_mapWidthIndex = -1;
+	m_heightScale = 1;
 	//}}AFX_DATA_INIT
 
    for (int i = 0; i < _countof(g_mapSizes); i++)
@@ -70,16 +68,23 @@ cMapSettingsDlg::cMapSettingsDlg(const cTerrainSettings & terrainSettings, CWnd*
 
 ////////////////////////////////////////
 
+static const int kHeightScaleMin = 1;
+static const int kHeightScaleMax = 256;
+
 void cMapSettingsDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(cMapSettingsDlg)
+	DDX_Control(pDX, IDC_HEIGHT_SCALE_SPIN, m_heightScaleSpin);
+	DDX_Control(pDX, IDC_HEIGHT_SCALE_LABEL, m_heightScaleLabel);
 	DDX_Control(pDX, IDC_MAP_INITIAL_TILE, m_initialTileComboBox);
 	DDX_Radio(pDX, IDC_HEIGHT_NONE, m_heightData);
 	DDX_Text(pDX, IDC_HEIGHT_MAP_FILE, m_heightMapFile);
 	DDV_MaxChars(pDX, m_heightMapFile, MAX_PATH);
 	DDX_CBIndex(pDX, IDC_MAP_HEIGHT, m_mapHeightIndex);
 	DDX_CBIndex(pDX, IDC_MAP_WIDTH, m_mapWidthIndex);
+	DDX_Text(pDX, IDC_HEIGHT_SCALE, m_heightScale);
+	DDV_MinMaxInt(pDX, m_heightScale, kHeightScaleMin, kHeightScaleMax);
 	//}}AFX_DATA_MAP
 
    if (pDX->m_bSaveAndValidate)
@@ -108,6 +113,12 @@ void cMapSettingsDlg::DoDataExchange(CDataExchange* pDX)
          }
       }
    }
+   else
+   {
+      m_heightScaleSpin.SetRange32(kHeightScaleMin, kHeightScaleMax);
+
+      UpdateDialogControls(this, FALSE);
+   }
 }
 
 ////////////////////////////////////////
@@ -120,6 +131,11 @@ BEGIN_MESSAGE_MAP(cMapSettingsDlg, CDialog)
    ON_BN_CLICKED(IDC_HEIGHT_NOISE, DoRadioButtonEnabling)
    ON_BN_CLICKED(IDC_IMPORT_HEIGHT_MAP, DoRadioButtonEnabling)
    ON_CBN_SELCHANGE(IDC_MAP_TILESET, OnSelectTileSet)
+   ON_UPDATE_COMMAND_UI(IDC_BROWSE_HEIGHT_MAP, OnUpdateHeightImportControl)
+   ON_UPDATE_COMMAND_UI(IDC_HEIGHT_MAP_FILE, OnUpdateHeightImportControl)
+   ON_UPDATE_COMMAND_UI(IDC_HEIGHT_SCALE, OnUpdateHeightImportControl)
+   ON_UPDATE_COMMAND_UI(IDC_HEIGHT_SCALE_SPIN, OnUpdateHeightImportControl)
+   ON_UPDATE_COMMAND_UI(IDC_HEIGHT_SCALE_LABEL, OnUpdateHeightImportControl)
 END_MESSAGE_MAP()
 
 ////////////////////////////////////////
@@ -138,6 +154,7 @@ tResult cMapSettingsDlg::GetTerrainSettings(cTerrainSettings * pTS) const
    pTS->SetInitialTile(m_initialTile);
    pTS->SetHeightData(static_cast<eTerrainHeightData>(m_heightData));
    pTS->SetHeightMap(m_heightMapFile);
+   pTS->SetHeightMapScale(static_cast<float>(m_heightScale));
 
    return S_OK;
 }
@@ -211,22 +228,16 @@ void cMapSettingsDlg::OnBrowseHeightMap()
 
 ////////////////////////////////////////
 
+void cMapSettingsDlg::OnUpdateHeightImportControl(CCmdUI *pCmdUI)
+{
+   pCmdUI->Enable(GetCheckedRadioButton(IDC_HEIGHT_NONE, IDC_IMPORT_HEIGHT_MAP) == IDC_IMPORT_HEIGHT_MAP);
+}
+
+////////////////////////////////////////
+
 void cMapSettingsDlg::DoRadioButtonEnabling()
 {
-   ASSERT_VALID(GetDlgItem(IDC_IMPORT_HEIGHT_MAP));
-   ASSERT_VALID(GetDlgItem(IDC_BROWSE_HEIGHT_MAP));
-   ASSERT_VALID(GetDlgItem(IDC_HEIGHT_MAP_FILE));
-
-   if (IsDlgButtonChecked(IDC_IMPORT_HEIGHT_MAP) == BST_CHECKED)
-   {
-      GetDlgItem(IDC_BROWSE_HEIGHT_MAP)->EnableWindow(TRUE);
-      GetDlgItem(IDC_HEIGHT_MAP_FILE)->EnableWindow(TRUE);
-   }
-   else
-   {
-      GetDlgItem(IDC_BROWSE_HEIGHT_MAP)->EnableWindow(FALSE);
-      GetDlgItem(IDC_HEIGHT_MAP_FILE)->EnableWindow(FALSE);
-   }
+   UpdateDialogControls(this, FALSE);
 }
 
 ////////////////////////////////////////

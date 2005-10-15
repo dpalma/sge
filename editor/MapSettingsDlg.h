@@ -4,6 +4,8 @@
 #if !defined(INCLUDED_MAPSETTINGSDLG_H)
 #define INCLUDED_MAPSETTINGSDLG_H
 
+#include "resource.h"       // main symbols
+
 #include "techstring.h"
 
 #include <vector>
@@ -28,15 +30,18 @@ public:
    tResult GetTerrainSettings(cTerrainSettings * pTS) const;
 
 private:
-   static const uint IDD;
 // Dialog Data
 	//{{AFX_DATA(cMapSettingsDlg)
+	enum { IDD = IDD_MAPSETTINGS };
+	CSpinButtonCtrl	m_heightScaleSpin;
+	CStatic	m_heightScaleLabel;
 	CComboBoxEx	m_initialTileComboBox;
 	CString	m_tileSet;
 	int		m_heightData;
 	CString	m_heightMapFile;
 	int		m_mapHeightIndex;
 	int		m_mapWidthIndex;
+	int		m_heightScale;
 	//}}AFX_DATA
    int m_initialTile;
 
@@ -59,6 +64,7 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
+   afx_msg void OnUpdateHeightImportControl(CCmdUI *pCmdUI);
    afx_msg void DoRadioButtonEnabling();
    afx_msg void OnSelectTileSet();
 

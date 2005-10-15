@@ -19,7 +19,10 @@
 #define IDC_MAP_HEIGHT                  1011
 #define IDC_CREDITS                     1012
 #define IDC_EDIT1                       1012
+#define IDC_HEIGHT_SCALE                1012
 #define IDC_SCRIPT_COMMAND              1013
+#define IDC_HEIGHT_SCALE_LABEL          1014
+#define IDC_HEIGHT_SCALE_SPIN           1015
 #define IDS_NO_UNIT_TESTS               5000
 #define IDS_OUTPUT_BAR_TITLE            5001
 #define IDS_TOOL_PALETTE_BAR_TITLE      5002
@@ -61,7 +64,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        134
 #define _APS_NEXT_COMMAND_VALUE         32774
-#define _APS_NEXT_CONTROL_VALUE         1014
+#define _APS_NEXT_CONTROL_VALUE         1015
 #define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif
