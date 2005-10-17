@@ -8,12 +8,13 @@
 
 #include "cameraapi.h"
 #include "guiapi.h"
-#include "simapi.h"
 #include "inputapi.h"
 #include "engineapi.h"
 #include "entityapi.h"
 #include "saveloadapi.h"
 #include "scriptvar.h"
+#include "simapi.h"
+#include "soundapi.h"
 #include "sys.h"
 #include "terrainapi.h"
 
@@ -208,6 +209,7 @@ static void RegisterGlobalObjects()
    SaveLoadManagerCreate();
    TerrainModelCreate();
    TerrainRendererCreate();
+   SoundManagerCreate();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

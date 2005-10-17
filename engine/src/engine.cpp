@@ -177,6 +177,7 @@ void CgEffectUnload(void * pData)
 ///////////////////////////////////////////////////////////////////////////////
 
 extern tResult GlTextureResourceRegister(); // gltexture.cpp
+extern tResult SoundResourceRegister(); // soundwin.cpp
 
 tResult EngineRegisterResourceFormats()
 {
@@ -185,6 +186,7 @@ tResult EngineRegisterResourceFormats()
    {
       if (cModel::RegisterResourceFormat() == S_OK
          && GlTextureResourceRegister() == S_OK
+         && SoundResourceRegister() == S_OK
 #ifdef HAVE_CG
          && TextFormatRegister("cg") == S_OK
          && TextFormatRegister("fx") == S_OK

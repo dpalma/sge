@@ -28,9 +28,9 @@ sources = Split("""
 """)
 
 if env['PLATFORM'] == 'win32':
-   sources = sources + ['src/syswin.cpp']
+   sources = sources + ['src/syswin.cpp', 'src/soundwin.cpp']
 elif env['PLATFORM'] == 'cygwin':
-   sources = sources + ['src/syslinux.cpp']
+   sources = sources + ['src/syslinux.cpp', 'src/soundnull.cpp']
 
 includePaths = Split("""
    #engine/include
