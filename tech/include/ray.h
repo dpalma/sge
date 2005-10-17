@@ -36,6 +36,11 @@ public:
                         tVec3::value_type d,
                         tVec3 * pIntersection = NULL) const;
 
+   bool IntersectsTriangle(const tVec3 & v1,
+                           const tVec3 & v2,
+                           const tVec3 & v3,
+                           tVec3 * pIntersection = NULL) const;
+
 private:
    tVec3 m_origin, m_direction;
 };

@@ -39,7 +39,6 @@ LOG_DEFINE_CHANNEL(EditorTools);
 ////////////////////////////////////////
 
 cDragTool::cDragTool()
- : m_nextStamp(0)
 {
 }
 
@@ -111,13 +110,6 @@ bool cDragTool::IsDragging()
 IEditorView * cDragTool::AccessView()
 {
    return m_pView;
-}
-
-////////////////////////////////////////
-
-ulong cDragTool::GetNextStamp()
-{
-   return ++m_nextStamp;
 }
 
 
@@ -192,6 +184,40 @@ tResult cMoveCameraTool::OnMouseWheel(const cEditorMouseWheelEvent & mouseWheelE
    }
 
    return cDragTool::OnMouseWheel(mouseWheelEvent, pView);
+}
+
+////////////////////////////////////////
+
+tResult cMoveCameraTool::GetToolTip(const cEditorMouseEvent & mouseEvent,
+                                    cStr * pToolTipText, uint_ptr * pToolTipId) const
+{
+   float ndx, ndy;
+   ScreenToNormalizedDeviceCoords(mouseEvent.GetPoint().x, mouseEvent.GetPoint().y, &ndx, &ndy);
+
+   cRay pickRay;
+   UseGlobal(Camera);
+   if (pCamera->GeneratePickRay(ndx, ndy, &pickRay) == S_OK)
+   {
+      HTERRAINQUAD hQuad;
+      UseGlobal(TerrainModel);
+      if (pTerrainModel->GetQuadFromHitTest(pickRay, &hQuad) == S_OK)
+      {
+         tVec3 corners[4];
+         if (pTerrainModel->GetQuadCorners(hQuad, corners) == S_OK)
+         {
+            tVec3 intersect;
+            if (pickRay.IntersectsTriangle(corners[0], corners[3], corners[2], &intersect)
+               || pickRay.IntersectsTriangle(corners[2], corners[1], corners[0], &intersect))
+            {
+               pToolTipText->Format("Hit <%.2f, %.2f, %.2f>", intersect.x, intersect.y, intersect.z);
+               *pToolTipId = reinterpret_cast<uint_ptr>(hQuad);
+               return S_OK;
+            }
+         }
+      }
+   }
+
+   return S_FALSE;
 }
 
 ////////////////////////////////////////

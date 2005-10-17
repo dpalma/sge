@@ -40,11 +40,8 @@ protected:
 
    IEditorView * AccessView();
 
-   ulong GetNextStamp();
-
 private:
    cAutoIPtr<IEditorView> m_pView;
-   ulong m_nextStamp;
 };
 
 
@@ -61,6 +58,7 @@ public:
 
    virtual tResult OnKeyDown(const cEditorKeyEvent & keyEvent, IEditorView * pView);
    virtual tResult OnMouseWheel(const cEditorMouseWheelEvent & mouseWheelEvent, IEditorView * pView);
+   virtual tResult GetToolTip(const cEditorMouseEvent & mouseEvent, cStr * pToolTipText, uint_ptr * pToolTipId) const;
 
 protected:
    virtual tResult OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
