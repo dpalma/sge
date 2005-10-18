@@ -307,10 +307,12 @@ tResult EditorSplashScreenCreate(IEditorSplashScreen * * ppEditorSplashScreen)
       {
          return E_FAIL;
       }
+
+      *ppEditorSplashScreen = CTAddRef(static_cast<IEditorSplashScreen*>(p));
+      return S_OK;
    }
 
-   *ppEditorSplashScreen = CTAddRef(static_cast<IEditorSplashScreen*>(p));
-   return S_OK;
+   return S_FALSE;
 }
 
 /////////////////////////////////////////////////////////////////////////////

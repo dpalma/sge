@@ -49,6 +49,8 @@ interface IDictionary : IUnknown
    virtual tResult IsSet(const tChar * pszKey) = 0;
 
    virtual tResult GetKeys(std::list<cStr> * pKeys) = 0;
+
+   virtual void Clear() = 0;
 };
 
 ///////////////////////////////////////

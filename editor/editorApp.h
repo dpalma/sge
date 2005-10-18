@@ -81,6 +81,7 @@ public:
 	virtual int Run();
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	//}}AFX_VIRTUAL
+   virtual void ParseCommandLine(CCommandLineInfo& rCmdInfo);
 
 // Implementation
 	//{{AFX_MSG(cEditorApp)

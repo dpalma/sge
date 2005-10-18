@@ -364,7 +364,7 @@ HTOOLGROUP cToolPaletteBar::CreateUnitToolGroup()
       cPlaceUnitTool * pUnitTool = new cPlaceUnitTool("zombie.ms3d"); // TODO: remove hard-coded string
       if (pUnitTool != NULL)
       {
-         m_toolPalette.AddTool(hUnitGroup, "Zombie", -1, CTAddRef(pUnitTool));
+         m_toolPalette.AddTool(hUnitGroup, "Zombie", -1, pUnitTool);
       }
    }
 

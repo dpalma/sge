@@ -227,7 +227,25 @@ BOOL cEditorApp::InitInstance()
       DebugMsg1("Error loading settings from %s\n", file.c_str());
    }
 
-   ::ParseCommandLine(__argc, __argv, g_pConfig);
+	// Register the application's document templates.  Document templates
+	//  serve as the connection between documents, frame windows and views.
+
+   cEditorSingleDocTemplate * pDocTemplate = new cEditorSingleDocTemplate(
+		IDR_MAINFRAME,
+		RUNTIME_CLASS(cEditorDoc),
+		RUNTIME_CLASS(CMainFrame),       // main SDI frame window
+		RUNTIME_CLASS(cEditorView));
+	AddDocTemplate(pDocTemplate);
+
+	// Parse command line for standard shell commands, DDE, file open
+	CCommandLineInfo cmdInfo;
+	ParseCommandLine(cmdInfo);
+
+   cAutoIPtr<IEditorSplashScreen> pEditorSplashScreen;
+   if (cmdInfo.m_bShowSplash)
+   {
+      EditorSplashScreenCreate(&pEditorSplashScreen);
+   }
 
    cStr temp;
    if (ConfigGet("data", &temp) == S_OK)
@@ -244,19 +262,6 @@ BOOL cEditorApp::InitInstance()
       }
    }
 
-   cAutoIPtr<IEditorSplashScreen> pEditorSplashScreen;
-   EditorSplashScreenCreate(&pEditorSplashScreen);
-
-	// Register the application's document templates.  Document templates
-	//  serve as the connection between documents, frame windows and views.
-
-   cEditorSingleDocTemplate * pDocTemplate = new cEditorSingleDocTemplate(
-		IDR_MAINFRAME,
-		RUNTIME_CLASS(cEditorDoc),
-		RUNTIME_CLASS(CMainFrame),       // main SDI frame window
-		RUNTIME_CLASS(cEditorView));
-	AddDocTemplate(pDocTemplate);
-
    cStr autoexecScript("editor.lua");
    ConfigGet("editor_autoexec_script", &autoexecScript);
 
@@ -270,13 +275,11 @@ BOOL cEditorApp::InitInstance()
 
    ScriptCallFunction("EditorInit", NULL);
 
-	// Parse command line for standard shell commands, DDE, file open
-	CCommandLineInfo cmdInfo;
-//	ParseCommandLine(cmdInfo);
-
 	// Dispatch commands specified on the command line
 	if (!ProcessShellCommand(cmdInfo))
+   {
 		return FALSE;
+   }
 
    CFrameWnd * pMainFrame = DYNAMIC_DOWNCAST(CFrameWnd, m_pMainWnd);
    if (pMainFrame == NULL)
@@ -303,6 +306,8 @@ int cEditorApp::ExitInstance()
 	StopGlobalObjects();
 
    _Module.Term();
+
+   g_pConfig->Clear();
 
 	return CWinApp::ExitInstance();
 }
@@ -507,6 +512,49 @@ BOOL cEditorApp::PreTranslateMessage(MSG * pMsg)
    }
 
    return CWinApp::PreTranslateMessage(pMsg);
+}
+
+////////////////////////////////////////
+
+void cEditorApp::ParseCommandLine(CCommandLineInfo& rCmdInfo)
+{
+   for (int i = 1; i < __argc; i++)
+   {
+      const tChar * pszParam = __targv[i];
+      if (pszParam[0] == '-')
+      {
+         g_pConfig->Delete(++pszParam);
+      }
+      else if (pszParam[0] == '+')
+      {
+         ++pszParam;
+         const tChar * pszEq = _tcschr(pszParam, _T('='));
+         if (pszEq != NULL)
+         {
+            CString key(pszParam, pszEq - pszParam);
+            key.Trim();
+            CString value(++pszEq);
+            value.Trim();
+            g_pConfig->Set(key, value);
+         }
+         else
+         {
+            g_pConfig->Set(pszParam, "1");
+         }
+      }
+      else
+      {
+         BOOL bFlag = FALSE;
+         BOOL bLast = ((i + 1) == __argc);
+         if (pszParam[0] == '/')
+         {
+            // remove flag specifier
+            bFlag = TRUE;
+            ++pszParam;
+         }
+         rCmdInfo.ParseParam(pszParam, bFlag, bLast);
+      }
+   }
 }
 
 ////////////////////////////////////////

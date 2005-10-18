@@ -39,6 +39,8 @@ public:
 
    virtual tResult GetKeys(std::list<cStr> * pKeys);
 
+   virtual void Clear();
+
 private:
    tResult GetPersistence(const tChar * pszKey, tPersistence * pPersist);
 

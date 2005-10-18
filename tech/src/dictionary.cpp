@@ -244,6 +244,14 @@ tResult cDictionary::GetKeys(std::list<cStr> * pKeys)
 
 ///////////////////////////////////////
 
+void cDictionary::Clear()
+{
+   m_vars.clear();
+   m_persistenceMap.clear();
+}
+
+///////////////////////////////////////
+
 tResult cDictionary::GetPersistence(const tChar * pszKey, tPersistence * pPersist)
 {
    if (pPersist == NULL)
