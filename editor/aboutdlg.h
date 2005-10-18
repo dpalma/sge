@@ -6,9 +6,13 @@
 
 #include "resource.h"       // main symbols
 
+#include <vector>
+
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
+
+namespace WTL { class CHyperLink; }
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -19,6 +23,7 @@ class CAboutDlg : public CDialog
 {
 public:
 	CAboutDlg();
+   ~CAboutDlg();
 
 // Dialog Data
 	//{{AFX_DATA(CAboutDlg)
@@ -36,7 +41,11 @@ protected:
 	//{{AFX_MSG(CAboutDlg)
 	virtual BOOL OnInitDialog();
 	//}}AFX_MSG
+   afx_msg void OnDestroy();
 	DECLARE_MESSAGE_MAP()
+
+private:
+   std::vector<WTL::CHyperLink*> m_hyperLinks;
 };
 
 /////////////////////////////////////////////////////////////////////////////

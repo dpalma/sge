@@ -5,7 +5,15 @@
 
 #include "aboutdlg.h"
 
-#include <string>
+#ifndef _AFX_NO_OLE_SUPPORT
+extern "C"
+{
+HIMAGELIST WINAPI ImageList_Read(LPSTREAM pstm);
+BOOL       WINAPI ImageList_Write(HIMAGELIST himl, LPSTREAM pstm);
+}
+#endif
+#include <atlctrls.h>
+#include <atlctrlx.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -13,89 +21,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-/////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cThirdPartyCredit
-//
-
-class cThirdPartyCredit
-{
-public:
-   cThirdPartyCredit(const tChar * pszTitle, const tChar * pszAuthor, const tChar * pszUrl);
-   cThirdPartyCredit(const cThirdPartyCredit & other);
-   ~cThirdPartyCredit();
-   const cThirdPartyCredit & operator =(const cThirdPartyCredit & other);
-   const tChar * GetTitle() const;
-   const tChar * GetAuthor() const;
-   const tChar * GetUrl() const;
-private:
-   std::string m_title, m_author, m_url;
-};
-
-////////////////////////////////////////
-
-cThirdPartyCredit::cThirdPartyCredit(const tChar * pszTitle, const tChar * pszAuthor, const tChar * pszUrl)
- : m_title((pszTitle != NULL) ? pszTitle : ""),
-   m_author((pszAuthor != NULL) ? pszAuthor : ""),
-   m_url((pszUrl != NULL) ? pszUrl : "")
-{
-}
-
-////////////////////////////////////////
-
-cThirdPartyCredit::cThirdPartyCredit(const cThirdPartyCredit & other)
-{
-   operator =(other);
-}
-
-////////////////////////////////////////
-
-cThirdPartyCredit::~cThirdPartyCredit()
-{
-}
-
-////////////////////////////////////////
-
-const cThirdPartyCredit & cThirdPartyCredit::operator =(const cThirdPartyCredit & other)
-{
-   m_title = other.m_title;
-   m_author = other.m_author;
-   m_url = other.m_url;
-   return *this;
-}
-
-////////////////////////////////////////
-
-const tChar * cThirdPartyCredit::GetTitle() const
-{
-   return m_title.c_str();
-}
-
-////////////////////////////////////////
-
-const tChar * cThirdPartyCredit::GetAuthor() const
-{
-   return m_author.c_str();
-}
-
-////////////////////////////////////////
-
-const tChar * cThirdPartyCredit::GetUrl() const
-{
-   return m_url.c_str();
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-static cThirdPartyCredit g_thirdPartyCredits[] =
-{
-   cThirdPartyCredit("CppUnit", "(various)", "http://cppunit.sourceforge.net/"),
-   cThirdPartyCredit("TinyXml", "Lee Thomason", "http://www.grinninglizard.com/tinyxml/"),
-   cThirdPartyCredit("Lua", "PUC-Rio", "http://www.lua.org/"),
-   cThirdPartyCredit("Sizing Control Bars", "Cristi Posea", "http://www.datamekanix.com"),
-   //cThirdPartyCredit("WTL Docking Windows", "Sergey Klimov", "http://www.codeproject.com/wtl/wtldockingwindows.asp"),
-   cThirdPartyCredit("zlib", "Jean-loup Gailly and Mark Adler", "http://www.gzip.org/zlib/"),
-};
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -108,6 +33,10 @@ CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
 	//}}AFX_DATA_INIT
 }
 
+CAboutDlg::~CAboutDlg()
+{
+}
+
 void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
@@ -118,30 +47,58 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
 	//{{AFX_MSG_MAP(CAboutDlg)
 	//}}AFX_MSG_MAP
+   ON_WM_DESTROY()
 END_MESSAGE_MAP()
+
+static BOOL CALLBACK CreateHyperLinks(HWND hwnd, LPARAM lParam)
+{
+   std::vector<WTL::CHyperLink*> * pHyperLinks = (std::vector<WTL::CHyperLink*>*)lParam;
+
+   TCHAR szClassName[30];
+   if (GetClassName(hwnd, szClassName, _countof(szClassName)) > 0)
+   {
+      if (_tcsicmp(szClassName, _T("static")) == 0)
+      {
+         CString text;
+         int length = GetWindowTextLength(hwnd);
+         TCHAR * pszText = text.GetBuffer(length + 1);
+         if (GetWindowText(hwnd, pszText, length) > 0)
+         {
+            if (_tcsstr(text, _T("http://")))
+            {
+               WTL::CHyperLink * pHyperLink = new WTL::CHyperLink;
+               if (pHyperLink != NULL)
+               {
+                  Verify(pHyperLink->SubclassWindow(hwnd));
+                  pHyperLinks->push_back(pHyperLink);
+               }
+            }
+         }
+      }
+   }
+
+   return TRUE;
+}
 
 BOOL CAboutDlg::OnInitDialog() 
 {
 	CDialog::OnInitDialog();
 
-   CString creditString;
-   for (int i = 0; i < _countof(g_thirdPartyCredits); i++)
-   {
-      const cThirdPartyCredit & c = g_thirdPartyCredits[i];
+   EnumChildWindows(m_hWnd, CreateHyperLinks, (LPARAM)&m_hyperLinks);
 
-      CString s;
-      s += c.GetTitle();
-      s += ", ";
-      s += c.GetAuthor();
-      s += "\r\n";
-      s += c.GetUrl();
-      s += "\r\n\r\n";
-
-      creditString += s;
-   }
-
-   SetDlgItemText(IDC_CREDITS, creditString);
-	
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+void CAboutDlg::OnDestroy()
+{
+   CDialog::OnDestroy();
+
+   std::vector<WTL::CHyperLink*>::iterator iter = m_hyperLinks.begin();
+   for (; iter != m_hyperLinks.end(); iter++)
+   {
+      (*iter)->UnsubclassWindow();
+      delete (*iter);
+   }
+   m_hyperLinks.clear();
 }

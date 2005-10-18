@@ -17,7 +17,6 @@
 #define IDC_MAP_INITIAL_TILE            1008
 #define IDC_MAP_WIDTH                   1009
 #define IDC_MAP_HEIGHT                  1011
-#define IDC_CREDITS                     1012
 #define IDC_EDIT1                       1012
 #define IDC_HEIGHT_SCALE                1012
 #define IDC_SCRIPT_COMMAND              1013
