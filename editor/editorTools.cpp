@@ -9,6 +9,7 @@
 #include "resource.h"
 
 #include "cameraapi.h"
+#include "entityapi.h"
 #include "terrainapi.h"
 #include "ray.h"
 
@@ -188,6 +189,27 @@ tResult cMoveCameraTool::OnMouseWheel(const cEditorMouseWheelEvent & mouseWheelE
 
 ////////////////////////////////////////
 
+static bool GetTerrainLocation(const cRay & ray, tVec3 * pLocation)
+{
+   HTERRAINQUAD hQuad;
+   UseGlobal(TerrainModel);
+   if (pTerrainModel->GetQuadFromHitTest(ray, &hQuad) == S_OK)
+   {
+      tVec3 corners[4];
+      if (pTerrainModel->GetQuadCorners(hQuad, corners) == S_OK)
+      {
+         if (ray.IntersectsTriangle(corners[0], corners[3], corners[2], pLocation)
+            || ray.IntersectsTriangle(corners[2], corners[1], corners[0], pLocation))
+         {
+            return true;
+         }
+      }
+   }
+   return false;
+}
+
+////////////////////////////////////////
+
 tResult cMoveCameraTool::GetToolTip(const cEditorMouseEvent & mouseEvent,
                                     cStr * pToolTipText, uint_ptr * pToolTipId) const
 {
@@ -198,22 +220,12 @@ tResult cMoveCameraTool::GetToolTip(const cEditorMouseEvent & mouseEvent,
    UseGlobal(Camera);
    if (pCamera->GeneratePickRay(ndx, ndy, &pickRay) == S_OK)
    {
-      HTERRAINQUAD hQuad;
-      UseGlobal(TerrainModel);
-      if (pTerrainModel->GetQuadFromHitTest(pickRay, &hQuad) == S_OK)
+      tVec3 intersect;
+      if (GetTerrainLocation(pickRay, &intersect))
       {
-         tVec3 corners[4];
-         if (pTerrainModel->GetQuadCorners(hQuad, corners) == S_OK)
-         {
-            tVec3 intersect;
-            if (pickRay.IntersectsTriangle(corners[0], corners[3], corners[2], &intersect)
-               || pickRay.IntersectsTriangle(corners[2], corners[1], corners[0], &intersect))
-            {
-               pToolTipText->Format("Hit <%.2f, %.2f, %.2f>", intersect.x, intersect.y, intersect.z);
-               *pToolTipId = reinterpret_cast<uint_ptr>(hQuad);
-               return S_OK;
-            }
-         }
+         pToolTipText->Format("Hit <%.2f, %.2f, %.2f>", intersect.x, intersect.y, intersect.z);
+         *pToolTipId = static_cast<uint_ptr>(Round(intersect.LengthSqr()));
+         return S_OK;
       }
    }
 
@@ -276,6 +288,66 @@ void cMoveCameraTool::MoveCamera(IEditorView * pView, CPoint delta)
          pView->PlaceCamera(camPlaceX, camPlaceZ);
       }
    }
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cPlaceUnitTool
+//
+
+////////////////////////////////////////
+
+cPlaceUnitTool::cPlaceUnitTool(const cStr & model)
+ : m_model(model)
+{
+}
+
+////////////////////////////////////////
+
+cPlaceUnitTool::~cPlaceUnitTool()
+{
+}
+
+////////////////////////////////////////
+
+tResult cPlaceUnitTool::OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+{
+   return S_EDITOR_TOOL_CONTINUE;
+}
+
+////////////////////////////////////////
+
+tResult cPlaceUnitTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+{
+   if (m_model.empty())
+   {
+      return S_EDITOR_TOOL_CONTINUE;
+   }
+
+   float ndx, ndy;
+   ScreenToNormalizedDeviceCoords(mouseEvent.GetPoint().x, mouseEvent.GetPoint().y, &ndx, &ndy);
+
+   cRay pickRay;
+   UseGlobal(Camera);
+   if (pCamera->GeneratePickRay(ndx, ndy, &pickRay) == S_OK)
+   {
+      tVec3 location;
+      if (GetTerrainLocation(pickRay, &location))
+      {
+         UseGlobal(EntityManager);
+         pEntityManager->SpawnEntity(m_model.c_str(), location);
+      }
+   }
+
+   return S_EDITOR_TOOL_HANDLED;
+}
+
+////////////////////////////////////////
+
+tResult cPlaceUnitTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+{
+   return S_EDITOR_TOOL_CONTINUE;
 }
 
 
@@ -361,8 +433,8 @@ bool cTerrainTool::GetHitVertex(CPoint point, IEditorView *, HTERRAINVERTEX * ph
 
 ////////////////////////////////////////
 
-cTerrainTileTool::cTerrainTileTool()
- : m_tile(0)
+cTerrainTileTool::cTerrainTileTool(uint tile)
+ : m_tile(tile)
 {
 }
 
@@ -370,13 +442,6 @@ cTerrainTileTool::cTerrainTileTool()
 
 cTerrainTileTool::~cTerrainTileTool()
 {
-}
-
-////////////////////////////////////////
-
-void cTerrainTileTool::SetTile(uint tile)
-{
-   m_tile = tile;
 }
 
 ////////////////////////////////////////

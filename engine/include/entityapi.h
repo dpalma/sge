@@ -6,6 +6,7 @@
 
 #include "enginedll.h"
 #include "comtools.h"
+#include "vec3.h"
 
 #ifdef _MSC_VER
 #pragma once
@@ -31,6 +32,7 @@ interface IEntityManager : IUnknown
    virtual void SetTerrainLocatorHack(cTerrainLocatorHack *) = 0;
 
    virtual tResult SpawnEntity(const tChar * pszMesh, float nx, float nz) = 0;
+   virtual tResult SpawnEntity(const tChar * pszMesh, const tVec3 & position) = 0;
 
    virtual void RenderAll() = 0;
 };

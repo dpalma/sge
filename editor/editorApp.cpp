@@ -15,9 +15,11 @@
 
 #include "cameraapi.h"
 #include "engineapi.h"
+#include "entityapi.h"
 #include "inputapi.h"
-#include "scriptapi.h"
 #include "saveloadapi.h"
+#include "scriptapi.h"
+#include "simapi.h"
 #include "sys.h"
 
 #include "resourceapi.h"
@@ -157,15 +159,14 @@ static void RegisterGlobalObjects()
 {
    CameraCreate();
    InputCreate();
-//   SimCreate();
+   SimCreate();
    ResourceManagerCreate();
    ScriptInterpreterCreate();
-//   GUIContextCreate();
-//   GUIFactoryCreate();
    ThreadCallerCreate();
    TerrainModelCreate();
    TerrainRendererCreateForEditor();
    SaveLoadManagerCreate();
+   EntityManagerCreate();
 }
 
 ////////////////////////////////////////
@@ -325,10 +326,13 @@ int cEditorApp::Run()
    bool bIdle = true;
    long lIdleCount = 0;
 
-   static const double kFrameDelay = 0.2;
+   static const double kFrameDelay = 0.1;
 
    double timeLastFrame = TimeGetSecs();
    double time = timeLastFrame + (2 * kFrameDelay);
+
+   UseGlobal(Sim);
+   pSim->Go();
 
    MSG lastMouseMove = {0};
 
@@ -370,6 +374,8 @@ int cEditorApp::Run()
 
       if (elapsed > kFrameDelay)
       {
+         pSim->NextFrame();
+
          tEditorLoopClients::iterator iter = m_loopClients.begin();
          for (; iter != m_loopClients.end(); iter++)
          {

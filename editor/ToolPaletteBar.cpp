@@ -188,6 +188,8 @@ int cToolPaletteBar::OnCreate(LPCREATESTRUCT lpCreateStruct)
       }
    }
 
+   CreateUnitToolGroup();
+
    return 0;
 }
 
@@ -340,10 +342,9 @@ HTOOLGROUP cToolPaletteBar::CreateTerrainToolGroup(const tChar * pszTerrainTileS
                continue;
             }
 
-            cTerrainTileTool * pTerrainTool = new cTerrainTileTool;
+            cTerrainTileTool * pTerrainTool = new cTerrainTileTool(i);
             if (pTerrainTool != NULL)
             {
-               pTerrainTool->SetTile(i);
                m_toolPalette.AddTool(hGroup, tileName.c_str(), i, pTerrainTool);
             }
          }
@@ -353,4 +354,19 @@ HTOOLGROUP cToolPaletteBar::CreateTerrainToolGroup(const tChar * pszTerrainTileS
    }
 
    return NULL;
+}
+
+HTOOLGROUP cToolPaletteBar::CreateUnitToolGroup()
+{
+   HTOOLGROUP hUnitGroup = m_toolPalette.AddGroup("Units", NULL);
+   if (hUnitGroup != NULL)
+   {
+      cPlaceUnitTool * pUnitTool = new cPlaceUnitTool("zombie.ms3d"); // TODO: remove hard-coded string
+      if (pUnitTool != NULL)
+      {
+         m_toolPalette.AddTool(hUnitGroup, "Zombie", -1, CTAddRef(pUnitTool));
+      }
+   }
+
+   return hUnitGroup;
 }

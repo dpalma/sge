@@ -74,6 +74,27 @@ private:
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: cPlaceUnitTool
+//
+
+class cPlaceUnitTool : public cComObject<cDragTool, &IID_IEditorTool>
+{
+public:
+   cPlaceUnitTool(const cStr & model);
+   ~cPlaceUnitTool();
+
+protected:
+   virtual tResult OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+   virtual tResult OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+   virtual tResult OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+
+private:
+   cStr m_model;
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cTerrainTool
 //
 
@@ -100,10 +121,8 @@ protected:
 class cTerrainTileTool : public cComObject<cTerrainTool, &IID_IEditorTool>
 {
 public:
-   cTerrainTileTool();
+   cTerrainTileTool(uint tile);
    ~cTerrainTileTool();
-
-   void SetTile(uint tile);
 
 	virtual tResult OnMouseMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
 

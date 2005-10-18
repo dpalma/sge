@@ -8,7 +8,6 @@
 #include "terrainapi.h"
 
 #include "resourceapi.h"
-#include "vec3.h"
 
 #include <GL/glew.h>
 
@@ -171,12 +170,24 @@ cEntityManager::~cEntityManager()
 {
 }
 
+////////////////////////////////////////
+
+// {DC738464-A124-4dc2-88A5-54619E5D026F}
+static const GUID SAVELOADID_EntityManager = 
+{ 0xdc738464, 0xa124, 0x4dc2, { 0x88, 0xa5, 0x54, 0x61, 0x9e, 0x5d, 0x2, 0x6f } };
+
+static const int g_entityManagerVer = 1;
+
 ///////////////////////////////////////
 
 tResult cEntityManager::Init()
 {
    UseGlobal(Sim);
    pSim->Connect(static_cast<ISimClient*>(this));
+
+   UseGlobal(SaveLoadManager);
+   pSaveLoadManager->RegisterSaveLoadParticipant(SAVELOADID_EntityManager,
+      g_entityManagerVer, static_cast<ISaveLoadParticipant*>(this));
 
    return S_OK;
 }
@@ -187,6 +198,9 @@ tResult cEntityManager::Term()
 {
    UseGlobal(Sim);
    pSim->Disconnect(static_cast<ISimClient*>(this));
+
+   UseGlobal(SaveLoadManager);
+   pSaveLoadManager->RevokeSaveLoadParticipant(SAVELOADID_EntityManager, g_entityManagerVer);
 
    tEntities::iterator iter = m_entities.begin();
    for (; iter != m_entities.end(); iter++)
@@ -264,6 +278,20 @@ void cEntityManager::OnSimFrame(double elapsedTime)
    {
       (*iter)->Update(elapsedTime);
    }
+}
+
+///////////////////////////////////////
+
+tResult cEntityManager::Save(IWriter * pWriter)
+{
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
+tResult cEntityManager::Load(IReader * pReader, int version)
+{
+   return S_FALSE;
 }
 
 ///////////////////////////////////////

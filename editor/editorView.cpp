@@ -11,6 +11,7 @@
 #include "editorTypes.h"
 
 #include "cameraapi.h"
+#include "entityapi.h"
 #include "ray.h"
 
 #include "configapi.h"
@@ -367,6 +368,9 @@ void cEditorView::RenderGL()
          glPopAttrib();
       }
    }
+
+   UseGlobal(EntityManager);
+   pEntityManager->RenderAll();
 
    SwapBuffers(m_hDC);
 }
