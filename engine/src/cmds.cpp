@@ -9,8 +9,10 @@
 #include "scriptvar.h"
 #include "sys.h"
 
+#include "dictionaryapi.h"
 #include "globalobj.h"
 #include "keys.h"
+#include "resourceapi.h"
 #include "vec3.h"
 
 #include "dbgalloc.h" // must be last header
@@ -230,6 +232,52 @@ int EntitySpawnTest(int argc, const cScriptVar * argv,
 }
 
 AUTOADD_SCRIPTFUNCTION(EntitySpawnTest, EntitySpawnTest);
+
+///////////////////////////////////////////////////////////////////////////////
+
+int ListResources(int argc, const cScriptVar * argv, 
+                  int nMaxResults, cScriptVar * pResults)
+{
+   if (argc < 1 || !argv[0].IsString())
+   {
+      ErrorMsg("Invalid parameters to ListResources\n");
+      return 0;
+   }
+
+   bool bDontLoad = false;
+   if (argc > 1 && argv[1].IsNumber())
+   {
+      bDontLoad = (argv[1].ToInt() != 0);
+   }
+
+   cAutoIPtr<IDictionary> pDict(DictionaryCreate());
+   if (!pDict)
+   {
+      return 0;
+   }
+
+   std::vector<cStr> resources;
+   UseGlobal(ResourceManager);
+   if (pResourceManager->ListResources(argv[0], &resources) == S_OK)
+   {
+      std::vector<cStr>::iterator iter = resources.begin();
+      for (int index = 0; iter != resources.end(); iter++, index++)
+      {
+         void * pTemp = NULL;
+         if (bDontLoad || (pResourceManager->Load(iter->c_str(), argv[0], NULL, &pTemp) == S_OK))
+         {
+            cStr key;
+            key.Format("%d", index + 1);
+            pDict->Set(key.c_str(), iter->c_str());
+         }
+      }
+   }
+
+   pResults[0] = pDict;
+   return 1;
+}
+
+AUTOADD_SCRIPTFUNCTION(ListResources, ListResources);
 
 ///////////////////////////////////////////////////////////////////////////////
 

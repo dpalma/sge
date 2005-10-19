@@ -363,6 +363,8 @@ static int LuaThunkFunction(lua_State * L)
       return 0; // we are not returning any values on the stack
    }
 
+   int nResultsPushed = 0;
+
    for (int i = 0; i < result; i++)
    {
       switch (results[i].type)
@@ -370,25 +372,70 @@ static int LuaThunkFunction(lua_State * L)
          case kNumber:
          {
             lua_pushnumber(L, results[i]);
+            nResultsPushed++;
             break;
          }
 
          case kString:
          {
             lua_pushstring(L, results[i]);
+            nResultsPushed++;
+            break;
+         }
+
+         case kInterface:
+         {
+            cAutoIPtr<IDictionary> pDict;
+            if (results[i].pUnk->QueryInterface(IID_IDictionary, (void**)&pDict) == S_OK)
+            {
+               std::list<cStr> keys;
+               if (pDict->GetKeys(&keys) == S_OK)
+               {
+                  lua_newtable(L);
+                  std::list<cStr>::const_iterator iter = keys.begin();
+                  if (keys.front().ToInt() == 1)
+                  {
+                     for (int index = 1; iter != keys.end(); iter++, index++)
+                     {
+                        WarnMsgIf2(iter->ToInt() != index, "Expected numeric key %d, got \"%s\"", index, iter->c_str());
+                        cStr value;
+                        if (pDict->Get(iter->c_str(), &value) == S_OK)
+                        {
+                           lua_pushnumber(L, index);
+                           lua_pushstring(L, value.c_str());
+                           lua_settable(L, -3);
+                        }
+                     }
+                  }
+                  else
+                  {
+                     for (; iter != keys.end(); iter++)
+                     {
+                        cStr value;
+                        if (pDict->Get(iter->c_str(), &value) == S_OK)
+                        {
+                           lua_pushstring(L, iter->c_str());
+                           lua_pushstring(L, value.c_str());
+                           lua_settable(L, -3);
+                        }
+                     }
+                  }
+                  nResultsPushed++;
+               }
+            }
             break;
          }
 
          case kNil:
          {
             lua_pushnil(L);
+            nResultsPushed++;
             break;
          }
       }
    }
 
-   // on success, result is the number of return values
-   return result;
+   return nResultsPushed;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
