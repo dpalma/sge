@@ -27,28 +27,7 @@ static char THIS_FILE[] = __FILE__;
 // CLASS: CAboutDlg
 //
 
-CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
-{
-	//{{AFX_DATA_INIT(CAboutDlg)
-	//}}AFX_DATA_INIT
-}
-
-CAboutDlg::~CAboutDlg()
-{
-}
-
-void CAboutDlg::DoDataExchange(CDataExchange* pDX)
-{
-	CDialog::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CAboutDlg)
-	//}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
-	//{{AFX_MSG_MAP(CAboutDlg)
-	//}}AFX_MSG_MAP
-   ON_WM_DESTROY()
-END_MESSAGE_MAP()
+////////////////////////////////////////
 
 static BOOL CALLBACK CreateHyperLinks(HWND hwnd, LPARAM lParam)
 {
@@ -80,9 +59,11 @@ static BOOL CALLBACK CreateHyperLinks(HWND hwnd, LPARAM lParam)
    return TRUE;
 }
 
-BOOL CAboutDlg::OnInitDialog() 
+////////////////////////////////////////
+
+LRESULT CAboutDlg::OnInitDialog(UINT, WPARAM, LPARAM, BOOL &)
 {
-	CDialog::OnInitDialog();
+   CenterWindow(GetParent());
 
    EnumChildWindows(m_hWnd, CreateHyperLinks, (LPARAM)&m_hyperLinks);
 
@@ -90,10 +71,10 @@ BOOL CAboutDlg::OnInitDialog()
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CAboutDlg::OnDestroy()
-{
-   CDialog::OnDestroy();
+////////////////////////////////////////
 
+LRESULT CAboutDlg::OnDestroy(UINT, WPARAM, LPARAM, BOOL &)
+{
    std::vector<WTL::CHyperLink*>::iterator iter = m_hyperLinks.begin();
    for (; iter != m_hyperLinks.end(); iter++)
    {
@@ -101,4 +82,16 @@ void CAboutDlg::OnDestroy()
       delete (*iter);
    }
    m_hyperLinks.clear();
+
+   return 0;
 }
+
+////////////////////////////////////////
+
+LRESULT CAboutDlg::OnCloseCommand(WORD, WORD id, HWND, BOOL &)
+{
+   EndDialog(id);
+   return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////

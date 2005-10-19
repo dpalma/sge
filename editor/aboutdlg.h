@@ -19,30 +19,21 @@ namespace WTL { class CHyperLink; }
 // CLASS: CAboutDlg
 //
 
-class CAboutDlg : public CDialog
+class CAboutDlg : public CDialogImpl<CAboutDlg>
 {
 public:
-	CAboutDlg();
-   ~CAboutDlg();
-
-// Dialog Data
-	//{{AFX_DATA(CAboutDlg)
 	enum { IDD = IDD_ABOUTBOX };
-	//}}AFX_DATA
 
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CAboutDlg)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	//}}AFX_VIRTUAL
+   BEGIN_MSG_MAP(CAboutDlg)
+      MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
+      MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
+      COMMAND_ID_HANDLER(IDOK, OnCloseCommand)
+      COMMAND_ID_HANDLER(IDCANCEL, OnCloseCommand)
+   END_MSG_MAP()
 
-// Implementation
-protected:
-	//{{AFX_MSG(CAboutDlg)
-	virtual BOOL OnInitDialog();
-	//}}AFX_MSG
-   afx_msg void OnDestroy();
-	DECLARE_MESSAGE_MAP()
+   LRESULT OnInitDialog(UINT, WPARAM, LPARAM, BOOL &);
+   LRESULT OnDestroy(UINT, WPARAM, LPARAM, BOOL &);
+   LRESULT OnCloseCommand(WORD, WORD, HWND, BOOL &);
 
 private:
    std::vector<WTL::CHyperLink*> m_hyperLinks;
