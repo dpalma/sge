@@ -193,6 +193,76 @@ SCRIPT_DEFINE_FUNCTION(SetTerrain)
 
 
 ///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cGUISoundPlayer
+//
+
+class cGUISoundPlayer : public cComObject<IMPLEMENTS(IGUIEventListener)>
+{
+public:
+   cGUISoundPlayer();
+   ~cGUISoundPlayer();
+
+   virtual tResult OnEvent(IGUIEvent * pEvent);
+
+private:
+   void PlaySound(const tChar * pszSound);
+};
+
+////////////////////////////////////////
+
+cGUISoundPlayer::cGUISoundPlayer()
+{
+}
+
+////////////////////////////////////////
+
+cGUISoundPlayer::~cGUISoundPlayer()
+{
+}
+
+////////////////////////////////////////
+
+tResult cGUISoundPlayer::OnEvent(IGUIEvent * pEvent)
+{
+   tGUIEventCode eventCode;
+   if (pEvent != NULL && pEvent->GetEventCode(&eventCode) == S_OK)
+   {
+      // TODO: fix hard-coded sound names
+      if (eventCode == kGUIEventClick)
+      {
+         PlaySound("click.wav");
+      }
+      else if (eventCode == kGUIEventMouseEnter)
+      {
+         cAutoIPtr<IGUIElement> pElement;
+         cAutoIPtr<IGUIButtonElement> pButton;
+         if (pEvent->GetSourceElement(&pElement) == S_OK
+            && pElement->QueryInterface(IID_IGUIButtonElement, (void**)&pButton) == S_OK)
+         {
+            PlaySound("bonk.wav");
+         }
+      }
+   }
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+void cGUISoundPlayer::PlaySound(const tChar * pszSound)
+{
+   tSoundId soundId;
+   UseGlobal(ResourceManager);
+   if (pResourceManager->Load(pszSound, kRT_WavSound, NULL, (void**)&soundId) == S_OK)
+   {
+      UseGlobal(SoundManager);
+      pSoundManager->Play(soundId);
+   }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 
 static void RegisterGlobalObjects()
 {
@@ -337,6 +407,15 @@ static bool MainInit(int argc, tChar * argv[])
       ErrorMsg("Failed to get a default font interface pointer for showing frame stats\n");
       return false;
    }
+
+   cAutoIPtr<IGUIEventListener> pGUISoundPlayer(static_cast<IGUIEventListener*>(new cGUISoundPlayer));
+   if (!pGUISoundPlayer)
+   {
+      ErrorMsg("Unable to create GUI sound player\n");
+      return false;
+   }
+
+   pGUIContext->AddEventListener(pGUISoundPlayer);
 
    SysAppActivate(true);
 

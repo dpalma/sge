@@ -414,32 +414,13 @@ tResult SoundResourceRegister()
 
 class cSoundTests : public CppUnit::TestCase
 {
-   void Test1();
-
    CPPUNIT_TEST_SUITE(cSoundTests);
-      CPPUNIT_TEST(Test1);
    CPPUNIT_TEST_SUITE_END();
 };
 
 ////////////////////////////////////////
 
 CPPUNIT_TEST_SUITE_REGISTRATION(cSoundTests);
-
-////////////////////////////////////////
-
-void cSoundTests::Test1()
-{
-   static const tChar szTestSound[] = _T("click.wav");
-   UseGlobal(ResourceManager);
-   void * pvSoundId;
-   if (pResourceManager->Load(szTestSound, kRT_WavSound, NULL, &pvSoundId) == S_OK)
-   {
-      tSoundId soundId = (tSoundId)pvSoundId;
-      UseGlobal(SoundManager);
-      pSoundManager->Play(soundId);
-      pResourceManager->Unload(szTestSound, kRT_WavSound);
-   }
-}
 
 #endif // HAVE_CPPUNIT
 
