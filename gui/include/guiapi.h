@@ -36,6 +36,7 @@ F_DECLARE_INTERFACE(IGUIDialogElement);
 F_DECLARE_INTERFACE(IGUIButtonElement);
 F_DECLARE_INTERFACE(IGUILabelElement);
 F_DECLARE_INTERFACE(IGUITextEditElement);
+F_DECLARE_INTERFACE(IGUIScrollBarElement);
 F_DECLARE_INTERFACE(IGUIEventRouter);
 F_DECLARE_INTERFACE(IGUIEventListener);
 F_DECLARE_INTERFACE(IGUIFactory);
@@ -360,11 +361,11 @@ interface IGUIEvent : IUnknown
 ///////////////////////////////////////
 
 GUI_API tResult GUIEventCreate(tGUIEventCode eventCode, 
-                                  tGUIPoint mousePos, 
-                                  long keyCode, 
-                                  IGUIElement * pSource, 
-                                  bool bCancellable, 
-                                  IGUIEvent * * ppEvent);
+                               tGUIPoint mousePos, 
+                               long keyCode, 
+                               IGUIElement * pSource, 
+                               bool bCancellable, 
+                               IGUIEvent * * ppEvent);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -523,6 +524,50 @@ interface IGUITextEditElement : IGUIElement
 
    virtual void UpdateBlinkingCursor() = 0;
    virtual bool ShowBlinkingCursor() const = 0;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IGUIScrollBarElement
+//
+
+enum eGUIScrollBarType
+{
+   kGUIScrollBarHorizontal,
+   kGUIScrollBarVertical,
+};
+
+enum eGUIScrollBarPart
+{
+   kGUIScrollBarPartNone,
+   kGUIScrollBarPartButton1,
+   kGUIScrollBarPartButton2,
+   kGUIScrollBarPartTrack1,
+   kGUIScrollBarPartTrack2,
+   kGUIScrollBarPartThumb,
+};
+
+interface IGUIScrollBarElement : IGUIElement
+{
+   virtual eGUIScrollBarType GetScrollBarType() = 0;
+
+   virtual eGUIScrollBarPart GetArmedPart() = 0;
+   virtual eGUIScrollBarPart GetMouseOverPart() = 0;
+
+   virtual tResult GetPartRect(eGUIScrollBarPart part, tGUIRect * pRect) = 0;
+
+   virtual tResult GetRange(uint * pRangeMin, uint * pRangeMax) = 0;
+   virtual tResult SetRange(uint rangeMin, uint rangeMax) = 0;
+
+   virtual tResult GetPosition(uint * pPosition) = 0;
+   virtual tResult SetPosition(uint position) = 0;
+
+   virtual tResult GetLineSize(uint * pLineSize) = 0;
+   virtual tResult SetLineSize(uint lineSize) = 0;
+
+   virtual tResult GetPageSize(uint * pPageSize) = 0;
+   virtual tResult SetPageSize(uint pageSize) = 0;
 };
 
 

@@ -28,7 +28,11 @@ const char kAttribHgap[]               = "hgap";
 const char kAttribId[]                 = "id";
 const char kAttribInsets[]             = "insets";
 const char kAttribLayout[]             = "layout";
+const char kAttribLineSize[]           = "linesize";
 const char kAttribOnClick[]            = "onclick";
+const char kAttribPageSize[]           = "pagesize";
+const char kAttribPosition[]           = "position";
+const char kAttribRange[]              = "range";
 const char kAttribRendererClass[]      = "renderer";
 const char kAttribRows[]               = "rows";
 const char kAttribStyle[]              = "style";
@@ -53,6 +57,9 @@ const char kValueVertAlignCenter[]     = "center";
 const char kValueFlow[]                = "flow";
 const char kValueGrid[]                = "grid";
 
+const char kValueHorizontal[]          = "horizontal";
+const char kValueVertical[]            = "vertical";
+
 const char kValueColorBlack[]          = "black";
 const char kValueColorRed[]            = "red";
 const char kValueColorGreen[]          = "green";
@@ -70,6 +77,7 @@ const char kElementDialog[]            = "dialog";
 const char kElementLabel[]             = "label";
 const char kElementPanel[]             = "panel";
 const char kElementTextEdit[]          = "textedit";
+const char kElementScrollBar[]         = "scrollbar";
 
 ///////////////////////////////////////////////////////////////////////////////
 

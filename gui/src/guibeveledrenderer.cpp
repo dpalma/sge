@@ -87,6 +87,14 @@ tResult cGUIBeveledRenderer::Render(IGUIElement * pElement, IGUIRenderDevice * p
       }
    }
 
+   {
+      cAutoIPtr<IGUIScrollBarElement> pScrollBarElement;
+      if (pElement->QueryInterface(IID_IGUIScrollBarElement, (void**)&pScrollBarElement) == S_OK)
+      {
+         return Render(pScrollBarElement, pRenderDevice);
+      }
+   }
+
    return E_FAIL;
 }
 
@@ -133,6 +141,14 @@ tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIElement * pElement)
          if (pElement->QueryInterface(IID_IGUITextEditElement, (void**)&pTextEditElement) == S_OK)
          {
             return GetPreferredSize(pTextEditElement);
+         }
+      }
+
+      {
+         cAutoIPtr<IGUIScrollBarElement> pScrollBarElement;
+         if (pElement->QueryInterface(IID_IGUIScrollBarElement, (void**)&pScrollBarElement) == S_OK)
+         {
+            return GetPreferredSize(pScrollBarElement);
          }
       }
    }
@@ -380,6 +396,47 @@ tResult cGUIBeveledRenderer::Render(IGUITextEditElement * pTextEditElement, IGUI
 
 ///////////////////////////////////////
 
+tResult cGUIBeveledRenderer::Render(IGUIScrollBarElement * pScrollBarElement,
+                                    IGUIRenderDevice * pRenderDevice)
+{
+   tGUIPoint pos = GUIElementAbsolutePosition(pScrollBarElement);
+   tGUISize size = pScrollBarElement->GetSize();
+   tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
+
+   uint rangeMin, rangeMax, position;
+   Verify(pScrollBarElement->GetRange(&rangeMin, &rangeMax) == S_OK);
+   Verify(pScrollBarElement->GetPosition(&position) == S_OK);
+   Assert(position >= rangeMin && position <= rangeMax);
+
+   eGUIScrollBarType scrollBarType = pScrollBarElement->GetScrollBarType();
+
+   eGUIScrollBarPart armedPart = pScrollBarElement->GetArmedPart();
+
+   if (scrollBarType == kGUIScrollBarHorizontal)
+   {
+      // left button
+      pRenderDevice->RenderBeveledRect(tGUIRect(rect.left, rect.top, rect.left + rect.GetHeight(), rect.bottom),
+         g_bevel, tGUIColor::LightGray, tGUIColor::DarkGray, tGUIColor::Gray);
+
+      pRenderDevice->RenderSolidRect(tGUIRect(rect.left + rect.GetHeight(), rect.top, rect.right - rect.GetHeight(), rect.bottom), tGUIColor::LightGray);
+
+      uint thumbPos = (position * (rect.GetWidth() - (2 * rect.GetHeight()))) / (rangeMax - rangeMin);
+      thumbPos += rect.left + rect.GetHeight();
+      pRenderDevice->RenderSolidRect(tGUIRect(thumbPos, rect.top, thumbPos + 1, rect.bottom), tGUIColor::Black);
+
+      // right button
+      pRenderDevice->RenderBeveledRect(tGUIRect(rect.right - rect.GetHeight(), rect.top, rect.right, rect.bottom),
+         g_bevel, tGUIColor::LightGray, tGUIColor::DarkGray, tGUIColor::Gray);
+   }
+   else if (scrollBarType == kGUIScrollBarVertical)
+   {
+   }
+
+   return S_OK;
+}
+
+///////////////////////////////////////
+
 tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIButtonElement * pButtonElement)
 {
    tGUIString text;
@@ -478,6 +535,24 @@ tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUITextEditElement * pTextEditEl
 
       return tGUISize(static_cast<tGUISizeType>(rect.GetWidth() + (kHorzInset * 2)),
                       static_cast<tGUISizeType>(rect.GetHeight() + (kVertInset * 2)));
+   }
+
+   return tGUISize(0,0);
+}
+
+///////////////////////////////////////
+
+tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIScrollBarElement * pScrollBarElement)
+{
+   eGUIScrollBarType scrollBarType = pScrollBarElement->GetScrollBarType();
+
+   if (scrollBarType == kGUIScrollBarHorizontal)
+   {
+      return tGUISize(0, 16);
+   }
+   else if (scrollBarType == kGUIScrollBarVertical)
+   {
+      return tGUISize(16, 0);
    }
 
    return tGUISize(0,0);

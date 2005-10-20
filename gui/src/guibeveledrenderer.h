@@ -31,12 +31,14 @@ private:
    tResult Render(IGUILabelElement * pLabelElement, IGUIRenderDevice * pRenderDevice);
    tResult Render(IGUIPanelElement * pPanelElement, IGUIRenderDevice * pRenderDevice);
    tResult Render(IGUITextEditElement * pTextEditElement, IGUIRenderDevice * pRenderDevice);
+   tResult Render(IGUIScrollBarElement * pScrollBarElement, IGUIRenderDevice * pRenderDevice);
 
    tGUISize GetPreferredSize(IGUIButtonElement * pButtonElement);
    tGUISize GetPreferredSize(IGUIDialogElement * pDialogElement);
    tGUISize GetPreferredSize(IGUILabelElement * pLabelElement);
    tGUISize GetPreferredSize(IGUIPanelElement * pPanelElement);
    tGUISize GetPreferredSize(IGUITextEditElement * pTextEditElement);
+   tGUISize GetPreferredSize(IGUIScrollBarElement * pScrollBarElement);
    tGUISize GetPreferredSize(IGUIContainerElement * pContainerElement);
 };
 

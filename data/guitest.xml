@@ -12,5 +12,8 @@
 
    <label text="text edit" />
    <textedit />
+   
+   <label text="scroll bar" />
+   <scrollbar range="0,100" position="50" type="horizontal" style="width:100%" />
 
 </dialog>
