@@ -52,6 +52,7 @@ tResult cWavSound::Prepare(HWAVEOUT hWaveOut)
    ZeroMemory(&m_hdr, sizeof(WAVEHDR));
    m_hdr.dwBufferLength = m_dataLength;
    m_hdr.lpData = reinterpret_cast<LPSTR>(m_pData);
+   m_hdr.dwUser = reinterpret_cast<uint_ptr>(this);
 
    if (waveOutPrepareHeader(hWaveOut, &m_hdr, sizeof(WAVEHDR)) == MMSYSERR_NOERROR)
    {
@@ -104,6 +105,7 @@ tResult cWavSound::Write()
 ///////////////////////////////////////
 
 cWinmmSoundManager::cWinmmSoundManager()
+ : m_hWaveOutCallbackWnd(NULL)
 {
 }
 
@@ -124,6 +126,26 @@ tResult cWinmmSoundManager::Init()
       return S_FALSE;
    }
 
+   static const tChar szWaveOutCallbackWndClass[] = _T("WaveOutCallbackWnd");
+   WNDCLASS wc = {0};
+   wc.lpfnWndProc = WaveOutCallbackWndProc;
+   wc.hInstance = GetModuleHandle(NULL);
+   wc.lpszClassName = szWaveOutCallbackWndClass;
+   wc.cbWndExtra = sizeof(void*);
+   if (!RegisterClass(&wc))
+   {
+      ErrorMsg("An error occurred registering the audio output callback window class\n");
+      return E_FAIL;
+   }
+
+   m_hWaveOutCallbackWnd = CreateWindow(wc.lpszClassName, NULL,
+      0, 0, 0, 0, 0, NULL, NULL, wc.hInstance, this);
+   if (m_hWaveOutCallbackWnd == NULL)
+   {
+      ErrorMsg("An error occurred creating the audio output callback window\n");
+      return E_FAIL;
+   }
+
    return S_OK;
 }
 
@@ -135,8 +157,7 @@ tResult cWinmmSoundManager::Term()
       std::vector<cWavSound *>::iterator iter = m_sounds.begin();
       for (; iter != m_sounds.end(); iter++)
       {
-         (*iter)->Unprepare();
-         delete (*iter);
+         m_closeQueue.insert(*iter);
       }
       m_sounds.clear();
    }
@@ -152,6 +173,22 @@ tResult cWinmmSoundManager::Term()
          }
       }
       m_channels.clear();
+   }
+
+   {
+      std::set<cWavSound *>::iterator iter = m_closeQueue.begin();
+      for (; iter != m_closeQueue.end(); iter++)
+      {
+         (*iter)->Unprepare();
+         delete (*iter);
+      }
+      m_closeQueue.clear();
+   }
+
+   if (IsWindow(m_hWaveOutCallbackWnd))
+   {
+      DestroyWindow(m_hWaveOutCallbackWnd);
+      m_hWaveOutCallbackWnd = NULL;
    }
 
    return S_OK;
@@ -265,8 +302,7 @@ tResult cWinmmSoundManager::Close(tSoundId soundId)
       if (pWavSound == *iter)
       {
          iter = m_sounds.erase(iter);
-         pWavSound->Unprepare();
-         delete pWavSound;
+         m_closeQueue.insert(*iter);
          return S_OK;
       }
    }
@@ -298,16 +334,9 @@ tResult cWinmmSoundManager::Play(tSoundId soundId)
          {
             const WAVEFORMATEX & format = pWavSound->GetFormat();
             if (waveOutOpen(&hWaveOut, WAVE_MAPPER, &format,
-               reinterpret_cast<uint_ptr>(WaveOutCallback),
-               0, CALLBACK_FUNCTION) == MMSYSERR_NOERROR)
+               reinterpret_cast<uint_ptr>(m_hWaveOutCallbackWnd),
+               0, CALLBACK_WINDOW) == MMSYSERR_NOERROR)
             {
-               WAVEOUTCAPS waveOutCaps = {0};
-               if (waveOutGetDevCaps(reinterpret_cast<uint_ptr>(hWaveOut),
-                  &waveOutCaps, sizeof(waveOutCaps)) == MMSYSERR_NOERROR)
-               {
-                  InfoMsg1("Opened \"%s\" audio output device\n", waveOutCaps.szPname);
-               }
-
                m_channels[format] = hWaveOut;
             }
          }
@@ -329,8 +358,77 @@ tResult cWinmmSoundManager::Play(tSoundId soundId)
 
 ///////////////////////////////////////
 
-void CALLBACK cWinmmSoundManager::WaveOutCallback(HWAVEOUT hWaveOut, uint msg, uint instance, uint param1, uint param2)
+void cWinmmSoundManager::OnDeviceOpen(HWAVEOUT hWaveOut)
 {
+   WAVEOUTCAPS waveOutCaps = {0};
+   if (waveOutGetDevCaps(reinterpret_cast<uint_ptr>(hWaveOut),
+      &waveOutCaps, sizeof(waveOutCaps)) == MMSYSERR_NOERROR)
+   {
+      InfoMsg1("Opened \"%s\" audio output device\n", waveOutCaps.szPname);
+   }
+}
+
+///////////////////////////////////////
+
+void cWinmmSoundManager::OnDeviceClose(HWAVEOUT hWaveOut)
+{
+}
+
+///////////////////////////////////////
+
+void cWinmmSoundManager::OnSoundDone(cWavSound * pWavSound)
+{
+   if ((pWavSound != NULL) && (m_closeQueue.find(pWavSound) != m_closeQueue.end()))
+   {
+      m_closeQueue.erase(pWavSound);
+      pWavSound->Unprepare();
+      delete pWavSound;
+   }
+}
+
+///////////////////////////////////////
+
+LRESULT CALLBACK cWinmmSoundManager::WaveOutCallbackWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+   cWinmmSoundManager * pThis = NULL;
+   if (message == WM_NCCREATE)
+   {
+      CREATESTRUCT * pcs = reinterpret_cast<CREATESTRUCT *>(lParam);
+      pThis = reinterpret_cast<cWinmmSoundManager*>(pcs->lpCreateParams);
+      SetWindowLongPtr(hWnd, 0, reinterpret_cast<long_ptr>(pThis));
+   }
+   else
+   {
+      pThis = reinterpret_cast<cWinmmSoundManager*>(GetWindowLongPtr(hWnd, 0));
+   }
+
+   switch (message)
+   {
+      case MM_WOM_OPEN:
+      {
+         HWAVEOUT hWaveOut = (HWAVEOUT)wParam;
+         pThis->OnDeviceOpen(hWaveOut);
+         break;
+      }
+
+      case MM_WOM_CLOSE:
+      {
+         HWAVEOUT hWaveOut = (HWAVEOUT)wParam;
+         pThis->OnDeviceClose(hWaveOut);
+         break;
+      }
+
+      case MM_WOM_DONE:
+      {
+         HWAVEOUT hWaveOut = (HWAVEOUT)wParam;
+         WAVEHDR * pWaveHdr = (WAVEHDR*)lParam;
+         cWavSound * pWavSound = reinterpret_cast<cWavSound*>(pWaveHdr->dwUser);
+         pThis->OnSoundDone(pWavSound);
+         break;
+      }
+   }
+
+   return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
 ///////////////////////////////////////
@@ -382,7 +480,7 @@ void WavSoundUnload(void * pData)
    {
       if (pSoundManager->Close(reinterpret_cast<tSoundId>(pData)) != S_OK)
       {
-         WarnMsg1("Error closing sound %d\n", pData);
+         WarnMsg1("Error closing sound %p\n", pData);
       }
    }
 }

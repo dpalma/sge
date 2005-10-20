@@ -14,6 +14,7 @@
 #include <mmsystem.h>
 
 #include <map>
+#include <set>
 #include <vector>
 
 #ifdef _MSC_VER
@@ -77,7 +78,11 @@ public:
    virtual tResult Play(tSoundId soundId);
 
 private:
-   static void CALLBACK WaveOutCallback(HWAVEOUT hWaveOut, uint msg, uint instance, uint param1, uint param2);
+   void OnDeviceOpen(HWAVEOUT hWaveOut);
+   void OnDeviceClose(HWAVEOUT hWaveOut);
+   void OnSoundDone(cWavSound * pWavSound);
+
+   static LRESULT CALLBACK WaveOutCallbackWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
    struct sLessWaveFormat
    {
@@ -88,6 +93,10 @@ private:
    tChannelMap m_channels;
 
    std::vector<cWavSound *> m_sounds;
+
+   std::set<cWavSound *> m_closeQueue;
+
+   HWND m_hWaveOutCallbackWnd;
 };
 
 
