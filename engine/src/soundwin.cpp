@@ -26,7 +26,6 @@ cWavSound::cWavSound(const WAVEFORMATEX & format, byte * pData, uint dataLength)
  : m_pData(pData)
  , m_dataLength(dataLength)
  , m_hWaveOut(NULL)
- , m_pHdr(NULL)
 {
    memcpy(&m_format, &format, sizeof(WAVEFORMATEX));
 }
@@ -37,7 +36,6 @@ cWavSound::~cWavSound()
 {
    Unprepare();
    delete [] m_pData;
-   delete m_pHdr;
 }
 
 ///////////////////////////////////////
@@ -51,20 +49,11 @@ bool cWavSound::IsPrepared() const
 
 tResult cWavSound::Prepare(HWAVEOUT hWaveOut)
 {
-   if (m_pHdr == NULL)
-   {
-      m_pHdr = new WAVEHDR;
-      if (m_pHdr == NULL)
-      {
-         return E_OUTOFMEMORY;
-      }
-   }
+   ZeroMemory(&m_hdr, sizeof(WAVEHDR));
+   m_hdr.dwBufferLength = m_dataLength;
+   m_hdr.lpData = reinterpret_cast<LPSTR>(m_pData);
 
-   ZeroMemory(m_pHdr, sizeof(WAVEHDR));
-   m_pHdr->dwBufferLength = m_dataLength;
-   m_pHdr->lpData = reinterpret_cast<LPSTR>(m_pData);
-
-   if (waveOutPrepareHeader(hWaveOut, m_pHdr, sizeof(WAVEHDR)) == MMSYSERR_NOERROR)
+   if (waveOutPrepareHeader(hWaveOut, &m_hdr, sizeof(WAVEHDR)) == MMSYSERR_NOERROR)
    {
       m_hWaveOut = hWaveOut;
       return S_OK;
@@ -77,9 +66,13 @@ tResult cWavSound::Prepare(HWAVEOUT hWaveOut)
 
 tResult cWavSound::Unprepare()
 {
-   if (m_hWaveOut != NULL && m_pHdr != NULL)
+   if (m_hWaveOut == NULL)
    {
-      if (waveOutUnprepareHeader(m_hWaveOut, m_pHdr, sizeof(WAVEHDR)) == MMSYSERR_NOERROR)
+      return S_FALSE; // already un-prepared or never prepared in the 1st place
+   }
+   if (m_hWaveOut != NULL)
+   {
+      if (waveOutUnprepareHeader(m_hWaveOut, &m_hdr, sizeof(WAVEHDR)) == MMSYSERR_NOERROR)
       {
          m_hWaveOut = NULL;
          return S_OK;
@@ -92,9 +85,9 @@ tResult cWavSound::Unprepare()
 
 tResult cWavSound::Write()
 {
-   if (m_hWaveOut != NULL && m_pHdr != NULL)
+   if (m_hWaveOut != NULL)
    {
-      if (waveOutWrite(m_hWaveOut, m_pHdr, sizeof(WAVEHDR)) == MMSYSERR_NOERROR)
+      if (waveOutWrite(m_hWaveOut, &m_hdr, sizeof(WAVEHDR)) == MMSYSERR_NOERROR)
       {
          return S_OK;
       }
@@ -152,7 +145,11 @@ tResult cWinmmSoundManager::Term()
       tChannelMap::iterator iter = m_channels.begin();
       for (; iter != m_channels.end(); iter++)
       {
-         waveOutClose(iter->second);
+         if (waveOutClose(iter->second) == WAVERR_STILLPLAYING)
+         {
+            waveOutReset(iter->second);
+            waveOutClose(iter->second);
+         }
       }
       m_channels.clear();
    }
@@ -267,7 +264,7 @@ tResult cWinmmSoundManager::Close(tSoundId soundId)
    {
       if (pWavSound == *iter)
       {
-         m_sounds.erase(iter);
+         iter = m_sounds.erase(iter);
          pWavSound->Unprepare();
          delete pWavSound;
          return S_OK;

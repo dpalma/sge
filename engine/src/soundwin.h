@@ -50,7 +50,7 @@ private:
    byte * m_pData;
    uint m_dataLength;
    HWAVEOUT m_hWaveOut;
-   WAVEHDR * m_pHdr;
+   WAVEHDR m_hdr;
 };
 
 
