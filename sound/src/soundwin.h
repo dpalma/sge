@@ -10,6 +10,8 @@
 
 #define WIN32_LEAN_AND_MEAN
 #define NOGDI
+#define NOKERNEL
+#define NOSERVICE
 #include <windows.h>
 #include <mmsystem.h>
 
@@ -19,6 +21,11 @@
 
 #ifdef _MSC_VER
 #pragma once
+#endif
+
+#if WINVER < 0x0500
+#define SetWindowLongPtr SetWindowLong
+#define GetWindowLongPtr GetWindowLong
 #endif
 
 
