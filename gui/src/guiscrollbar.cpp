@@ -65,6 +65,7 @@ tResult cGUIScrollBarElement::OnEvent(IGUIEvent * pEvent)
       Verify(pEvent->SetCancelBubble(true) == S_OK);
 
       m_armedPart = m_mouseOverPart;
+      m_preDragPosition = m_position;
    }
    else if (eventCode == kGUIEventDragEnd)
    {
@@ -82,6 +83,27 @@ tResult cGUIScrollBarElement::OnEvent(IGUIEvent * pEvent)
       // Prevent the drag-over event since drag is being used to implement 
       // the arming of the scroll buttons
       result = S_FALSE;
+
+      if (m_armedPart == kGUIScrollBarPartThumb)
+      {
+         tGUIPoint pos = GUIElementAbsolutePosition(this);
+         tGUISize size = GetSize();
+         if (m_scrollBarType == kGUIScrollBarHorizontal)
+         {
+            if (point.x < pos.x || point.x > (pos.x + size.width))
+            {
+               m_position = m_preDragPosition;
+            }
+            else
+            {
+               m_position = Round(((m_rangeMax - m_rangeMin) * (point.x - pos.x)) / size.width);
+               m_position += m_rangeMin;
+            }
+         }
+         else if (m_scrollBarType == kGUIScrollBarVertical)
+         {
+         }
+      }
    }
    else if (eventCode == kGUIEventMouseMove)
    {
@@ -131,10 +153,6 @@ tResult cGUIScrollBarElement::OnEvent(IGUIEvent * pEvent)
                {
                   m_position = m_rangeMax;
                }
-               break;
-            }
-            case kGUIScrollBarPartThumb:
-            {
                break;
             }
          }
@@ -191,6 +209,13 @@ tResult cGUIScrollBarElement::GetPartRect(eGUIScrollBarPart part, tGUIRect * pRe
          *pRect = tGUIRect(width - height, 0, width, height);
          return S_OK;
       }
+      else if (part == kGUIScrollBarPartThumb)
+      {
+         uint xpos = ((width - (3 * height)) * m_position) / (m_rangeMax - m_rangeMin);
+         xpos += height;
+         *pRect = tGUIRect(xpos, 0, xpos + height, height);
+         return S_OK;
+      }
    }
    else if (m_scrollBarType == kGUIScrollBarVertical)
    {
@@ -203,6 +228,9 @@ tResult cGUIScrollBarElement::GetPartRect(eGUIScrollBarPart part, tGUIRect * pRe
       {
          *pRect = tGUIRect(0, height - width, width, height);
          return S_OK;
+      }
+      else if (part == kGUIScrollBarPartThumb)
+      {
       }
    }
 

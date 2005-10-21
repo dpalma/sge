@@ -25,6 +25,7 @@ static const uint kDefaultEditSize = 20;
 static const uint kVertInset = 2; // TODO make this part of the style
 static const uint kHorzInset = 2; // TODO make this part of the style
 static const uint kCursorWidth = 1;
+static const tGUISizeType kScrollButtonSize = 16;
 
 ///////////////////////////////////////
 
@@ -411,25 +412,53 @@ tResult cGUIBeveledRenderer::Render(IGUIScrollBarElement * pScrollBarElement,
    eGUIScrollBarType scrollBarType = pScrollBarElement->GetScrollBarType();
 
    eGUIScrollBarPart armedPart = pScrollBarElement->GetArmedPart();
+   eGUIScrollBarPart mouseOverPart = pScrollBarElement->GetMouseOverPart();
 
+   tGUIRect btn1Rect, btn2Rect, thumbRect;
+   if (pScrollBarElement->GetPartRect(kGUIScrollBarPartButton1, &btn1Rect) != S_OK
+      || pScrollBarElement->GetPartRect(kGUIScrollBarPartButton2, &btn2Rect) != S_OK
+      || pScrollBarElement->GetPartRect(kGUIScrollBarPartThumb, &thumbRect) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   int offsetx = Round(pos.x), offsety = Round(pos.y);
+   btn1Rect.Offset(offsetx, offsety);
+   btn2Rect.Offset(offsetx, offsety);
+   thumbRect.Offset(offsetx, offsety);
+
+   tGUIRect track1Rect, track2Rect;
    if (scrollBarType == kGUIScrollBarHorizontal)
    {
-      // left button
-      pRenderDevice->RenderBeveledRect(tGUIRect(rect.left, rect.top, rect.left + rect.GetHeight(), rect.bottom),
-         g_bevel, tGUIColor::LightGray, tGUIColor::DarkGray, tGUIColor::Gray);
-
-      pRenderDevice->RenderSolidRect(tGUIRect(rect.left + rect.GetHeight(), rect.top, rect.right - rect.GetHeight(), rect.bottom), tGUIColor::LightGray);
-
-      uint thumbPos = (position * (rect.GetWidth() - (2 * rect.GetHeight()))) / (rangeMax - rangeMin);
-      thumbPos += rect.left + rect.GetHeight();
-      pRenderDevice->RenderSolidRect(tGUIRect(thumbPos, rect.top, thumbPos + 1, rect.bottom), tGUIColor::Black);
-
-      // right button
-      pRenderDevice->RenderBeveledRect(tGUIRect(rect.right - rect.GetHeight(), rect.top, rect.right, rect.bottom),
-         g_bevel, tGUIColor::LightGray, tGUIColor::DarkGray, tGUIColor::Gray);
+      track1Rect = tGUIRect(btn1Rect.right, btn1Rect.top, thumbRect.left, btn1Rect.bottom);
+      track2Rect = tGUIRect(thumbRect.right, btn2Rect.top, btn2Rect.left, btn2Rect.bottom);
    }
    else if (scrollBarType == kGUIScrollBarVertical)
    {
+      track1Rect = tGUIRect(btn1Rect.left, btn1Rect.bottom, btn1Rect.right, thumbRect.top);
+      track2Rect = tGUIRect(thumbRect.right, btn2Rect.top, btn2Rect.left, btn2Rect.bottom);
+   }
+
+   pRenderDevice->RenderSolidRect(track1Rect, tGUIColor::LightGray);
+   pRenderDevice->RenderSolidRect(track2Rect, tGUIColor::LightGray);
+   pRenderDevice->RenderBeveledRect(thumbRect, g_bevel, tGUIColor::LightGray, tGUIColor::DarkGray, tGUIColor::Gray);
+
+   if (armedPart == kGUIScrollBarPartButton1 && armedPart == mouseOverPart)
+   {
+      pRenderDevice->RenderBeveledRect(btn1Rect, g_bevel, tGUIColor::DarkGray, tGUIColor::LightGray, tGUIColor::Gray);
+   }
+   else
+   {
+      pRenderDevice->RenderBeveledRect(btn1Rect, g_bevel, tGUIColor::LightGray, tGUIColor::DarkGray, tGUIColor::Gray);
+   }
+
+   if (armedPart == kGUIScrollBarPartButton2 && armedPart == mouseOverPart)
+   {
+      pRenderDevice->RenderBeveledRect(btn2Rect, g_bevel, tGUIColor::DarkGray, tGUIColor::LightGray, tGUIColor::Gray);
+   }
+   else
+   {
+      pRenderDevice->RenderBeveledRect(btn2Rect, g_bevel, tGUIColor::LightGray, tGUIColor::DarkGray, tGUIColor::Gray);
    }
 
    return S_OK;
@@ -548,11 +577,11 @@ tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIScrollBarElement * pScrollBar
 
    if (scrollBarType == kGUIScrollBarHorizontal)
    {
-      return tGUISize(0, 16);
+      return tGUISize(0, kScrollButtonSize);
    }
    else if (scrollBarType == kGUIScrollBarVertical)
    {
-      return tGUISize(16, 0);
+      return tGUISize(kScrollButtonSize, 0);
    }
 
    return tGUISize(0,0);

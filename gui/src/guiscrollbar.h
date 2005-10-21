@@ -55,6 +55,8 @@ private:
    uint m_position;
    uint m_lineSize;
    uint m_pageSize;
+
+   uint m_preDragPosition;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
