@@ -37,6 +37,7 @@ F_DECLARE_INTERFACE(IGUIButtonElement);
 F_DECLARE_INTERFACE(IGUILabelElement);
 F_DECLARE_INTERFACE(IGUITextEditElement);
 F_DECLARE_INTERFACE(IGUIScrollBarElement);
+F_DECLARE_INTERFACE(IGUIListBoxElement);
 F_DECLARE_INTERFACE(IGUIEventRouter);
 F_DECLARE_INTERFACE(IGUIEventListener);
 F_DECLARE_INTERFACE(IGUIFactory);
@@ -568,6 +569,38 @@ interface IGUIScrollBarElement : IGUIElement
 
    virtual tResult GetPageSize(uint * pPageSize) = 0;
    virtual tResult SetPageSize(uint pageSize) = 0;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IGUIListBoxElement
+//
+
+interface IGUIListBoxElement : IGUIElement
+{
+   virtual tResult AddItem(const tChar * pszString, uint_ptr extra) = 0;
+   virtual tResult RemoveItem(uint index) = 0;
+
+   virtual tResult GetItemCount(uint * pItemCount) = 0;
+   virtual tResult GetItem(uint index, cStr * pString, uint_ptr * pExtra) = 0;
+
+   virtual tResult Sort() = 0;
+
+   virtual tResult Clear() = 0;
+
+   virtual tResult FindItem(const tChar * pszString, uint * pIndex) = 0;
+
+   virtual tResult Select(uint startIndex, uint endIndex) = 0;
+   virtual tResult SelectAll() = 0;
+
+   virtual tResult Deselect(uint startIndex, uint endIndex) = 0;
+   virtual tResult DeselectAll() = 0;
+
+   virtual tResult GetSelected(uint * pIndices, uint nMaxIndices) = 0;
+
+   virtual tResult GetRowCount(uint * pRowCount) = 0;
+   virtual tResult SetRowCount(uint rowCount) = 0;
 };
 
 

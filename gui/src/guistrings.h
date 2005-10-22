@@ -75,6 +75,7 @@ const char kValueColorWhite[]          = "white";
 const char kElementButton[]            = "button";
 const char kElementDialog[]            = "dialog";
 const char kElementLabel[]             = "label";
+const char kElementListBox[]           = "listbox";
 const char kElementPanel[]             = "panel";
 const char kElementTextEdit[]          = "textedit";
 const char kElementScrollBar[]         = "scrollbar";

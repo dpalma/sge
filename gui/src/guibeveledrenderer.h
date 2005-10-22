@@ -32,6 +32,7 @@ private:
    tResult Render(IGUIPanelElement * pPanelElement, IGUIRenderDevice * pRenderDevice);
    tResult Render(IGUITextEditElement * pTextEditElement, IGUIRenderDevice * pRenderDevice);
    tResult Render(IGUIScrollBarElement * pScrollBarElement, IGUIRenderDevice * pRenderDevice);
+   tResult Render(IGUIListBoxElement * pListBoxElement, IGUIRenderDevice * pRenderDevice);
 
    tGUISize GetPreferredSize(IGUIButtonElement * pButtonElement);
    tGUISize GetPreferredSize(IGUIDialogElement * pDialogElement);
@@ -39,6 +40,7 @@ private:
    tGUISize GetPreferredSize(IGUIPanelElement * pPanelElement);
    tGUISize GetPreferredSize(IGUITextEditElement * pTextEditElement);
    tGUISize GetPreferredSize(IGUIScrollBarElement * pScrollBarElement);
+   tGUISize GetPreferredSize(IGUIListBoxElement * pListBoxElement);
    tGUISize GetPreferredSize(IGUIContainerElement * pContainerElement);
 };
 
