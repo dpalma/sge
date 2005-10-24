@@ -182,7 +182,7 @@ tResult GUISizeElement(IGUIElement * pElement, const tGUISize & relativeTo)
 
    if (bHavePreferred || bHaveStyle)
    {
-      pElement->SetSize(size);
+      pElement->SetSize(tGUISize(Min(size.width, relativeTo.width), Min(size.height, relativeTo.height)));
       return  S_OK;
    }
    else
