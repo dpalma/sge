@@ -10,12 +10,18 @@
 
 #include "globalobj.h"
 
+#include <list>
 #include <tinyxml.h>
 
 #include "dbgalloc.h" // must be last header
 
 
 static const uint kInsaneRowCount = 1000;
+
+extern tResult GUIScrollBarElementCreate(eGUIScrollBarType scrollBarType, IGUIScrollBarElement * * ppScrollBar);
+
+typedef std::list<IGUIElement *> tGUIElementList;
+extern tResult GUIElementEnumCreate(const tGUIElementList & elements, IGUIElementEnum * * ppEnum);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -27,12 +33,68 @@ static const uint kInsaneRowCount = 1000;
 cGUIListBoxElement::cGUIListBoxElement()
  : m_rowCount(1)
 {
+   GUIScrollBarElementCreate(kGUIScrollBarHorizontal, &m_pHScrollBar);
+   if (!!m_pHScrollBar)
+   {
+      m_pHScrollBar->SetParent(this);
+   }
+   GUIScrollBarElementCreate(kGUIScrollBarVertical, &m_pVScrollBar);
+   if (!!m_pVScrollBar)
+   {
+      m_pVScrollBar->SetParent(this);
+   }
 }
 
 ////////////////////////////////////////
 
 cGUIListBoxElement::~cGUIListBoxElement()
 {
+}
+
+///////////////////////////////////////
+
+void cGUIListBoxElement::SetPosition(const tGUIPoint & point)
+{
+   cGUIElementBase<IGUIListBoxElement>::SetPosition(point);
+
+   const tGUISize size = GetSize();
+
+   if (!!m_pHScrollBar)
+   {
+      const tGUISize scrollBarSize = m_pHScrollBar->GetSize();
+      m_pHScrollBar->SetPosition(tGUIPoint(0, size.height - scrollBarSize.height));
+   }
+
+   if (!!m_pVScrollBar)
+   {
+      const tGUISize scrollBarSize = m_pVScrollBar->GetSize();
+      m_pVScrollBar->SetPosition(tGUIPoint(size.width - scrollBarSize.width, 0));
+   }
+}
+
+///////////////////////////////////////
+
+void cGUIListBoxElement::SetSize(const tGUISize & size)
+{
+   cGUIElementBase<IGUIListBoxElement>::SetSize(size);
+
+   cAutoIPtr<IGUIElementRenderer> pRenderer;
+   if (GetRenderer(&pRenderer) == S_OK)
+   {
+      if (!!m_pHScrollBar)
+      {
+         tGUISize scrollBarSize = pRenderer->GetPreferredSize(m_pHScrollBar);
+         scrollBarSize.width = size.width;
+         m_pHScrollBar->SetSize(scrollBarSize);
+      }
+
+      if (!!m_pVScrollBar)
+      {
+         tGUISize scrollBarSize = pRenderer->GetPreferredSize(m_pVScrollBar);
+         scrollBarSize.height = size.height;
+         m_pVScrollBar->SetSize(scrollBarSize);
+      }
+   }
 }
 
 ///////////////////////////////////////
@@ -50,6 +112,16 @@ tResult cGUIListBoxElement::OnEvent(IGUIEvent * pEvent)
    Verify(pEvent->GetMousePosition(&point) == S_OK);
 
    return result;
+}
+
+////////////////////////////////////////
+
+tResult cGUIListBoxElement::EnumChildren(IGUIElementEnum * * ppChildren)
+{
+   tGUIElementList children;
+   children.push_back(m_pHScrollBar);
+   children.push_back(m_pVScrollBar);
+   return GUIElementEnumCreate(children, ppChildren);
 }
 
 ////////////////////////////////////////
@@ -205,6 +277,30 @@ tResult cGUIListBoxElement::SetRowCount(uint rowCount)
    }
    m_rowCount = rowCount;
    return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cGUIListBoxElement::GetScrollBar(eGUIScrollBarType scrollBarType,
+                                         IGUIScrollBarElement * * ppScrollBar)
+{
+   if (ppScrollBar == NULL)
+   {
+      return E_POINTER;
+   }
+   if (scrollBarType == kGUIScrollBarHorizontal)
+   {
+      return m_pHScrollBar.GetPointer(ppScrollBar);
+   }
+   else if (scrollBarType == kGUIScrollBarVertical)
+   {
+      return m_pVScrollBar.GetPointer(ppScrollBar);
+   }
+   else
+   {
+      return E_INVALIDARG;
+   }
+   return E_FAIL;
 }
 
 

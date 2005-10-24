@@ -2,7 +2,7 @@
 
 <dialog 
    title="GUI Element Test" 
-   style="align:center;vertical-align:center;width:300;height:150;"
+   style="align:center;vertical-align:center;width:300;height:200;"
    renderer="beveled">
 
    <layout type="grid" columns="2" rows="5" />
@@ -14,7 +14,7 @@
    <textedit />
    
    <label text="scroll bar" />
-   <scrollbar range="0,100" position="50" type="horizontal" style="width:100%" />
+   <scrollbar range="0,100" scrollpos="50" type="horizontal" style="width:100%" />
    
    <label text="list box" />
    <listbox rows=6 style="width:100%">

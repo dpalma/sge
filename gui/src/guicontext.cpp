@@ -122,6 +122,8 @@ static bool GUIElementType(IUnknown * pUnkElement, cStr * pType)
       { &IID_IGUIPanelElement,      "Panel" },
       { &IID_IGUITextEditElement,   "TextEdit" },
       { &IID_IGUIContainerElement,  "Container" },
+      { &IID_IGUIScrollBarElement,  "ScrollBar" },
+      { &IID_IGUIListBoxElement,    "ListBox" },
    };
    for (int i = 0; i < _countof(guiElementTypes); i++)
    {
@@ -679,20 +681,21 @@ tResult cGUIContext::GetDefaultFont(IGUIFont * * ppFont)
 {
    if (!m_pDefaultFont)
    {
-      char szTypeFace[32];
-      if (!ConfigGetString("default_font_win32", szTypeFace, _countof(szTypeFace)))
+      tChar szTypeFace[32];
+      memset(szTypeFace, 0, sizeof(szTypeFace));
+      if (ConfigGetString("default_font_win32", szTypeFace, _countof(szTypeFace)) != S_OK)
       {
          ConfigGetString("default_font", szTypeFace, _countof(szTypeFace));
       }
 
       int pointSize = 10;
-      if (!ConfigGet("default_font_size_win32", &pointSize))
+      if (ConfigGet("default_font_size_win32", &pointSize) != S_OK)
       {
          ConfigGet("default_font_size", &pointSize);
       }
 
       int effects = kGFE_None;
-      if (!ConfigGet("default_font_effects_win32", &effects))
+      if (ConfigGet("default_font_effects_win32", &effects) != S_OK)
       {
          ConfigGet("default_font_effects", &effects);
       }
@@ -787,6 +790,40 @@ tResult cGUIContext::CheckChild(IGUIContainerElement * pContainer, const tChar *
 ///////////////////////////////////////
 
 #ifdef GUI_DEBUG
+tResult cGUIContext::GetDebugFont(IGUIFont * * ppFont)
+{
+   if (!m_pDebugFont)
+   {
+      tChar szTypeFace[32];
+      memset(szTypeFace, 0, sizeof(szTypeFace));
+      if (ConfigGetString("debug_font_win32", szTypeFace, _countof(szTypeFace)) != S_OK)
+      {
+         ConfigGetString("debug_font", szTypeFace, _countof(szTypeFace));
+      }
+
+      int pointSize = 10;
+      if (ConfigGet("debug_font_size_win32", &pointSize) != S_OK)
+      {
+         ConfigGet("debug_font_size", &pointSize);
+      }
+
+      int effects = kGFE_None;
+      if (ConfigGet("debug_font_effects_win32", &effects) != S_OK)
+      {
+         ConfigGet("debug_font_effects", &effects);
+      }
+
+      UseGlobal(GUIFontFactory);
+      pGUIFontFactory->CreateFont(cGUIFontDesc(szTypeFace, pointSize, effects), &m_pDebugFont);
+   }
+
+   return m_pDebugFont.GetPointer(ppFont);
+}
+#endif
+
+///////////////////////////////////////
+
+#ifdef GUI_DEBUG
 void cGUIContext::RenderDebugInfo()
 {
    if (!m_bShowDebugInfo)
@@ -795,7 +832,7 @@ void cGUIContext::RenderDebugInfo()
    }
 
    cAutoIPtr<IGUIFont> pFont;
-   if (GetDefaultFont(&pFont) == S_OK)
+   if (GetDebugFont(&pFont) == S_OK)
    {
       tGUIRect rect(0,0,0,0);
       pFont->RenderText("Xy", -1, &rect, kRT_CalcRect, m_debugInfoTextColor);
@@ -813,56 +850,49 @@ void cGUIContext::RenderDebugInfo()
       if (GetHitElements(m_lastMousePos, &hitElements) == S_OK)
       {
          std::list<IGUIElement*>::const_iterator iter = hitElements.begin();
-         std::list<IGUIElement*>::const_iterator end = hitElements.end();
-         for (int index = 0; iter != end; ++iter, ++index)
+         for (int index = 0; iter !=  hitElements.end(); ++iter, ++index)
          {
-            if (GUIElementType(*iter, &temp))
+            cStr type, temp;
+            if (GUIElementType(*iter, &type))
             {
-               cStr type, temp;
-               if (GUIElementType(*iter, &type))
-               {
-                  temp.Format("Element %d: %s", index, type.c_str());
-               }
-               else
-               {
-                  temp.Format("Element %d", index);
-               }
-               pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
-               rect.Offset(0, lineHeight);
+               temp.Format("Element %d: %s", index, type.c_str());
             }
-
-//            if (index == 0)
+            else
             {
-               rect.left += lineHeight;
-
-               tGUISize size((*iter)->GetSize());
-               temp.Format("Size: %d x %d", Round(size.width), Round(size.height));
-               pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
-               rect.Offset(0, lineHeight);
-
-               tGUIPoint pos((*iter)->GetPosition());
-               temp.Format("Position: (%d, %d)", Round(pos.x), Round(pos.y));
-               pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
-               rect.Offset(0, lineHeight);
-
-               uint nParents = 0;
-               tGUIPoint absPos(GUIElementAbsolutePosition(*iter, &nParents));
-               temp.Format("Absolute Position: (%d, %d)", Round(absPos.x), Round(absPos.y));
-               pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
-               rect.Offset(0, lineHeight);
-
-               temp.Format("# Parents: %d", nParents);
-               pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
-               rect.Offset(0, lineHeight);
-
-               tGUIPoint relPoint(m_lastMousePos - absPos);
-               Assert((*iter)->Contains(relPoint));
-               temp.Format("Mouse (relative): (%d, %d)", Round(relPoint.x), Round(relPoint.y));
-               pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
-               rect.Offset(0, lineHeight);
-
-               rect.left -= lineHeight;
+               temp.Format("Element %d: <unknown type>", index);
             }
+            pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
+            rect.Offset(0, lineHeight);
+
+            rect.left += lineHeight;
+
+            const tGUISize size((*iter)->GetSize());
+            temp.Format("Size: %d x %d", Round(size.width), Round(size.height));
+            pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
+            rect.Offset(0, lineHeight);
+
+            const tGUIPoint pos((*iter)->GetPosition());
+            temp.Format("Position: (%d, %d)", Round(pos.x), Round(pos.y));
+            pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
+            rect.Offset(0, lineHeight);
+
+            uint nParents = 0;
+            tGUIPoint absPos(GUIElementAbsolutePosition(*iter, &nParents));
+            temp.Format("Absolute Position: (%d, %d)", Round(absPos.x), Round(absPos.y));
+            pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
+            rect.Offset(0, lineHeight);
+
+            temp.Format("# Parents: %d", nParents);
+            pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
+            rect.Offset(0, lineHeight);
+
+            const tGUIPoint relPoint(m_lastMousePos - absPos);
+            Assert((*iter)->Contains(relPoint));
+            temp.Format("Mouse (relative): (%d, %d)", Round(relPoint.x), Round(relPoint.y));
+            pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
+            rect.Offset(0, lineHeight);
+
+            rect.left -= lineHeight;
          }
 
          std::for_each(hitElements.begin(), hitElements.end(), CTInterfaceMethod(&IGUIElement::Release));

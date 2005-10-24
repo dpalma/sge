@@ -58,6 +58,8 @@ public:
    virtual tResult GetStyle(IGUIStyle * * ppStyle);
    virtual tResult SetStyle(IGUIStyle * pStyle);
 
+   virtual tResult EnumChildren(IGUIElementEnum * * ppElements);
+
 protected:
    tGUIPoint GetAbsolutePosition() const;
 

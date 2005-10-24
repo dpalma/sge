@@ -78,6 +78,14 @@ void cGUIContainerBase<INTRFC>::SetSize(const tGUISize & size)
 ///////////////////////////////////////
 
 template <typename INTRFC>
+tResult cGUIContainerBase<INTRFC>::EnumChildren(IGUIElementEnum * * ppElements)
+{
+   return GUIElementEnumCreate(m_children, ppElements);
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
 tResult cGUIContainerBase<INTRFC>::AddElement(IGUIElement * pElement)
 {
    if (pElement == NULL)
@@ -120,14 +128,6 @@ tResult cGUIContainerBase<INTRFC>::RemoveElement(IGUIElement * pElement)
    }
 
    return S_FALSE;
-}
-
-///////////////////////////////////////
-
-template <typename INTRFC>
-tResult cGUIContainerBase<INTRFC>::GetElements(IGUIElementEnum * * ppElements)
-{
-   return GUIElementEnumCreate(m_children, ppElements);
 }
 
 ///////////////////////////////////////

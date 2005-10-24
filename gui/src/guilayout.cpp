@@ -173,20 +173,24 @@ cGUIGridLayout::~cGUIGridLayout()
 
 ///////////////////////////////////////
 
-tResult cGUIGridLayout::Layout(IGUIContainerElement * pContainer)
+tResult cGUIGridLayout::Layout(IGUIElement * pParent)
 {
-   if (pContainer == NULL)
+   if (pParent == NULL)
    {
       return E_POINTER;
    }
 
-   tGUISize size = pContainer->GetSize();
+   tGUISize size = pParent->GetSize();
 
    tGUIInsets insets = {0};
-   if (pContainer->GetInsets(&insets) == S_OK)
+   cAutoIPtr<IGUIContainerElement> pContainer;
+   if (pParent->QueryInterface(IID_IGUIContainerElement, (void**)&pContainer) == S_OK)
    {
-      size.width -= (insets.left + insets.right);
-      size.height -= (insets.top + insets.bottom);
+      if (pContainer->GetInsets(&insets) == S_OK)
+      {
+         size.width -= (insets.left + insets.right);
+         size.height -= (insets.top + insets.bottom);
+      }
    }
 
    tGUISizeType cellWidth = size.width > 0 ? (size.width - ((m_columns - 1) * m_hGap)) / m_columns : 0;
@@ -198,7 +202,7 @@ tResult cGUIGridLayout::Layout(IGUIContainerElement * pContainer)
    LocalMsg2("   grid cell size = %.0f x %.0f\n", cellWidth, cellHeight);
 
    cAutoIPtr<IGUIElementEnum> pEnum;
-   if (pContainer->GetElements(&pEnum) == S_OK)
+   if (pParent->EnumChildren(&pEnum) == S_OK)
    {
       cAutoIPtr<IGUIElement> pChild;
       ulong count = 0;
@@ -249,8 +253,7 @@ tResult cGUIGridLayout::Layout(IGUIContainerElement * pContainer)
 
 ///////////////////////////////////////
 
-tResult cGUIGridLayout::GetPreferredSize(IGUIContainerElement * pContainer, 
-                                                tGUISize * pSize)
+tResult cGUIGridLayout::GetPreferredSize(IGUIElement * pParent, tGUISize * pSize)
 {
    // A grid layout simply divides up whatever space is available.
    // It has no opinion what the size should be.
@@ -428,27 +431,31 @@ cGUIFlowLayout::~cGUIFlowLayout()
 
 ///////////////////////////////////////
 
-tResult cGUIFlowLayout::Layout(IGUIContainerElement * pContainer)
+tResult cGUIFlowLayout::Layout(IGUIElement * pParent)
 {
-   if (pContainer == NULL)
+   if (pParent == NULL)
    {
       return E_POINTER;
    }
 
-   tGUISize size = pContainer->GetSize();
+   tGUISize size = pParent->GetSize();
 
    tGUIInsets insets = {0};
-   if (pContainer->GetInsets(&insets) == S_OK)
+   cAutoIPtr<IGUIContainerElement> pContainer;
+   if (pParent->QueryInterface(IID_IGUIContainerElement, (void**)&pContainer) == S_OK)
    {
-      size.width -= (insets.left + insets.right);
-      size.height -= (insets.top + insets.bottom);
+      if (pContainer->GetInsets(&insets) == S_OK)
+      {
+         size.width -= (insets.left + insets.right);
+         size.height -= (insets.top + insets.bottom);
+      }
    }
 
    int leftSide = insets.left;
    int rightSide = Round(leftSide + size.width);
 
    cAutoIPtr<IGUIElementEnum> pEnum;
-   if (pContainer->GetElements(&pEnum) == S_OK)
+   if (pParent->EnumChildren(&pEnum) == S_OK)
    {
       int x = leftSide;
       int y = insets.top;
@@ -488,8 +495,7 @@ tResult cGUIFlowLayout::Layout(IGUIContainerElement * pContainer)
 
 ///////////////////////////////////////
 
-tResult cGUIFlowLayout::GetPreferredSize(IGUIContainerElement * pContainer, 
-                                                tGUISize * pSize)
+tResult cGUIFlowLayout::GetPreferredSize(IGUIElement * pParent, tGUISize * pSize)
 {
    return E_NOTIMPL;
 }

@@ -118,6 +118,8 @@ interface IGUIElement : IUnknown
 
    virtual tResult GetStyle(IGUIStyle * * ppStyle) = 0;
    virtual tResult SetStyle(IGUIStyle * pStyle) = 0;
+
+   virtual tResult EnumChildren(IGUIElementEnum * * ppChildren) = 0;
 };
 
 
@@ -378,7 +380,6 @@ interface IGUIContainerElement : IGUIElement
 {
    virtual tResult AddElement(IGUIElement * pElement) = 0;
    virtual tResult RemoveElement(IGUIElement * pElement) = 0;
-   virtual tResult GetElements(IGUIElementEnum * * ppElements) = 0;
    virtual tResult HasElement(IGUIElement * pElement) const = 0;
    virtual tResult GetElement(const tChar * pszId, IGUIElement * * ppElement) const = 0;
 
@@ -397,8 +398,8 @@ interface IGUIContainerElement : IGUIElement
 
 interface IGUILayoutManager : IUnknown
 {
-   virtual tResult Layout(IGUIContainerElement * pContainer) = 0;
-   virtual tResult GetPreferredSize(IGUIContainerElement * pContainer, tGUISize * pSize) = 0;
+   virtual tResult Layout(IGUIElement * pParent) = 0;
+   virtual tResult GetPreferredSize(IGUIElement * pParent, tGUISize * pSize) = 0;
 
    virtual tResult GetHGap(uint * pHGap) = 0;
    virtual tResult SetHGap(uint hGap) = 0;
@@ -558,17 +559,17 @@ interface IGUIScrollBarElement : IGUIElement
 
    virtual tResult GetPartRect(eGUIScrollBarPart part, tGUIRect * pRect) = 0;
 
-   virtual tResult GetRange(uint * pRangeMin, uint * pRangeMax) = 0;
-   virtual tResult SetRange(uint rangeMin, uint rangeMax) = 0;
+   virtual tResult GetRange(int * pRangeMin, int * pRangeMax) = 0;
+   virtual tResult SetRange(int rangeMin, int rangeMax) = 0;
 
-   virtual tResult GetPosition(uint * pPosition) = 0;
-   virtual tResult SetPosition(uint position) = 0;
+   virtual tResult GetScrollPos(int * pScrollPos) = 0;
+   virtual tResult SetScrollPos(int scrollPos) = 0;
 
-   virtual tResult GetLineSize(uint * pLineSize) = 0;
-   virtual tResult SetLineSize(uint lineSize) = 0;
+   virtual tResult GetLineSize(int * pLineSize) = 0;
+   virtual tResult SetLineSize(int lineSize) = 0;
 
-   virtual tResult GetPageSize(uint * pPageSize) = 0;
-   virtual tResult SetPageSize(uint pageSize) = 0;
+   virtual tResult GetPageSize(int * pPageSize) = 0;
+   virtual tResult SetPageSize(int pageSize) = 0;
 };
 
 
@@ -601,6 +602,8 @@ interface IGUIListBoxElement : IGUIElement
 
    virtual tResult GetRowCount(uint * pRowCount) = 0;
    virtual tResult SetRowCount(uint rowCount) = 0;
+
+   virtual tResult GetScrollBar(eGUIScrollBarType scrollBarType, IGUIScrollBarElement * * ppScrollBar) = 0;
 };
 
 

@@ -21,13 +21,25 @@
 
 ///////////////////////////////////////
 
+tResult GUIScrollBarElementCreate(eGUIScrollBarType scrollBarType, IGUIScrollBarElement * * ppScrollBar)
+{
+   cAutoIPtr<IGUIScrollBarElement> pScrollBar(static_cast<IGUIScrollBarElement*>(new cGUIScrollBarElement(scrollBarType)));
+   if (!pScrollBar)
+   {
+      return E_OUTOFMEMORY;
+   }
+   return pScrollBar.GetPointer(ppScrollBar);
+}
+
+///////////////////////////////////////
+
 cGUIScrollBarElement::cGUIScrollBarElement(eGUIScrollBarType scrollBarType)
  : m_scrollBarType(scrollBarType)
  , m_armedPart(kGUIScrollBarPartNone)
  , m_mouseOverPart(kGUIScrollBarPartNone)
  , m_rangeMin(0)
  , m_rangeMax(100)
- , m_position(0)
+ , m_scrollPos(0)
  , m_lineSize(1)
  , m_pageSize(5)
 {
@@ -65,7 +77,7 @@ tResult cGUIScrollBarElement::OnEvent(IGUIEvent * pEvent)
       Verify(pEvent->SetCancelBubble(true) == S_OK);
 
       m_armedPart = m_mouseOverPart;
-      m_preDragPosition = m_position;
+      m_preDragScrollPos = m_scrollPos;
    }
    else if (eventCode == kGUIEventDragEnd)
    {
@@ -92,12 +104,12 @@ tResult cGUIScrollBarElement::OnEvent(IGUIEvent * pEvent)
          {
             if (point.x < pos.x || point.x > (pos.x + size.width))
             {
-               m_position = m_preDragPosition;
+               m_scrollPos = m_preDragScrollPos;
             }
             else
             {
-               m_position = Round(((m_rangeMax - m_rangeMin) * (point.x - pos.x)) / size.width);
-               m_position += m_rangeMin;
+               m_scrollPos = Round(((m_rangeMax - m_rangeMin) * (point.x - pos.x)) / size.width);
+               m_scrollPos += m_rangeMin;
             }
          }
          else if (m_scrollBarType == kGUIScrollBarVertical)
@@ -121,37 +133,37 @@ tResult cGUIScrollBarElement::OnEvent(IGUIEvent * pEvent)
          {
             case kGUIScrollBarPartButton1:
             {
-               m_position -= m_lineSize;
-               if (m_position < m_rangeMin)
+               m_scrollPos -= m_lineSize;
+               if (m_scrollPos < m_rangeMin)
                {
-                  m_position = m_rangeMin;
+                  m_scrollPos = m_rangeMin;
                }
                break;
             }
             case kGUIScrollBarPartButton2:
             {
-               m_position += m_lineSize;
-               if (m_position > m_rangeMax)
+               m_scrollPos += m_lineSize;
+               if (m_scrollPos > m_rangeMax)
                {
-                  m_position = m_rangeMax;
+                  m_scrollPos = m_rangeMax;
                }
                break;
             }
             case kGUIScrollBarPartTrack1:
             {
-               m_position -= m_pageSize;
-               if (m_position < m_rangeMin)
+               m_scrollPos -= m_pageSize;
+               if (m_scrollPos < m_rangeMin)
                {
-                  m_position = m_rangeMin;
+                  m_scrollPos = m_rangeMin;
                }
                break;
             }
             case kGUIScrollBarPartTrack2:
             {
-               m_position += m_pageSize;
-               if (m_position > m_rangeMax)
+               m_scrollPos += m_pageSize;
+               if (m_scrollPos > m_rangeMax)
                {
-                  m_position = m_rangeMax;
+                  m_scrollPos = m_rangeMax;
                }
                break;
             }
@@ -211,7 +223,7 @@ tResult cGUIScrollBarElement::GetPartRect(eGUIScrollBarPart part, tGUIRect * pRe
       }
       else if (part == kGUIScrollBarPartThumb)
       {
-         uint xpos = ((width - (3 * height)) * m_position) / (m_rangeMax - m_rangeMin);
+         uint xpos = ((width - (3 * height)) * m_scrollPos) / (m_rangeMax - m_rangeMin);
          xpos += height;
          *pRect = tGUIRect(xpos, 0, xpos + height, height);
          return S_OK;
@@ -231,6 +243,10 @@ tResult cGUIScrollBarElement::GetPartRect(eGUIScrollBarPart part, tGUIRect * pRe
       }
       else if (part == kGUIScrollBarPartThumb)
       {
+         uint ypos = ((height - (3 * width)) * m_scrollPos) / (m_rangeMax - m_rangeMin);
+         ypos += width;
+         *pRect = tGUIRect(0, ypos, width, ypos + width);
+         return S_OK;
       }
    }
 
@@ -239,7 +255,7 @@ tResult cGUIScrollBarElement::GetPartRect(eGUIScrollBarPart part, tGUIRect * pRe
 
 ///////////////////////////////////////
 
-tResult cGUIScrollBarElement::GetRange(uint * pRangeMin, uint * pRangeMax)
+tResult cGUIScrollBarElement::GetRange(int * pRangeMin, int * pRangeMax)
 {
    if (pRangeMin == NULL || pRangeMax == NULL)
    {
@@ -252,7 +268,7 @@ tResult cGUIScrollBarElement::GetRange(uint * pRangeMin, uint * pRangeMax)
 
 ///////////////////////////////////////
 
-tResult cGUIScrollBarElement::SetRange(uint rangeMin, uint rangeMax)
+tResult cGUIScrollBarElement::SetRange(int rangeMin, int rangeMax)
 {
    if (rangeMin >= rangeMax)
    {
@@ -265,35 +281,35 @@ tResult cGUIScrollBarElement::SetRange(uint rangeMin, uint rangeMax)
 
 ///////////////////////////////////////
 
-tResult cGUIScrollBarElement::GetPosition(uint * pPosition)
+tResult cGUIScrollBarElement::GetScrollPos(int * pScrollPos)
 {
-   if (pPosition == NULL)
+   if (pScrollPos == NULL)
    {
       return E_POINTER;
    }
-   *pPosition = m_position;
+   *pScrollPos = m_scrollPos;
    return S_OK;
 }
 
 ///////////////////////////////////////
 
-tResult cGUIScrollBarElement::SetPosition(uint position)
+tResult cGUIScrollBarElement::SetScrollPos(int scrollPos)
 {
-   if (position < m_rangeMin)
+   if (scrollPos < m_rangeMin)
    {
-      position = m_rangeMin;
+      scrollPos = m_rangeMin;
    }
-   if (position > m_rangeMax)
+   if (scrollPos > m_rangeMax)
    {
-      position = m_rangeMax;
+      scrollPos = m_rangeMax;
    }
-   m_position = position;
+   m_scrollPos = scrollPos;
    return S_OK;
 }
 
 ///////////////////////////////////////
 
-tResult cGUIScrollBarElement::GetLineSize(uint * pLineSize)
+tResult cGUIScrollBarElement::GetLineSize(int * pLineSize)
 {
    if (pLineSize == NULL)
    {
@@ -305,7 +321,7 @@ tResult cGUIScrollBarElement::GetLineSize(uint * pLineSize)
 
 ///////////////////////////////////////
 
-tResult cGUIScrollBarElement::SetLineSize(uint lineSize)
+tResult cGUIScrollBarElement::SetLineSize(int lineSize)
 {
    if (lineSize > (m_rangeMin - m_rangeMax))
    {
@@ -317,7 +333,7 @@ tResult cGUIScrollBarElement::SetLineSize(uint lineSize)
 
 ///////////////////////////////////////
 
-tResult cGUIScrollBarElement::GetPageSize(uint * pPageSize)
+tResult cGUIScrollBarElement::GetPageSize(int * pPageSize)
 {
    if (pPageSize == NULL)
    {
@@ -329,7 +345,7 @@ tResult cGUIScrollBarElement::GetPageSize(uint * pPageSize)
 
 ///////////////////////////////////////
 
-tResult cGUIScrollBarElement::SetPageSize(uint pageSize)
+tResult cGUIScrollBarElement::SetPageSize(int pageSize)
 {
    if (pageSize > (m_rangeMin - m_rangeMax))
    {
@@ -419,7 +435,7 @@ tResult cGUIScrollBarElementFactory::CreateElement(const TiXmlElement * pXmlElem
    do { if ((pszAttrib = pXmlElement->Attribute(kAttrib##attrib)) != NULL) { \
    uint value; if (sscanf(pszAttrib, "%d", &value) == 1) pScrollBar->Set##attrib(value); } } while (0)
 
-         ScrollBarAttrib(Position);
+         ScrollBarAttrib(ScrollPos);
          ScrollBarAttrib(LineSize);
          ScrollBarAttrib(PageSize);
 

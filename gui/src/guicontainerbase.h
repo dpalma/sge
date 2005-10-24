@@ -33,13 +33,13 @@ public:
    // IGUIElement over-rides
 
    virtual void SetSize(const tGUISize & size);
+   virtual tResult EnumChildren(IGUIElementEnum * * ppElements);
 
    ////////////////////////////////////
    // IGUIContainerElement methods
 
    virtual tResult AddElement(IGUIElement * pElement);
    virtual tResult RemoveElement(IGUIElement * pElement);
-   virtual tResult GetElements(IGUIElementEnum * * ppElements);
    virtual tResult HasElement(IGUIElement * pElement) const;
    virtual tResult GetElement(const tChar * pszId, IGUIElement * * ppElement) const;
 

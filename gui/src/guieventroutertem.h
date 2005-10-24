@@ -267,22 +267,18 @@ tResult cGUIEventRouter<INTRFC>::GetHitElements(const tGUIPoint & point,
 
       if (pElement->Contains(relative))
       {
-         cAutoIPtr<IGUIContainerElement> pContainer;
-         if (pElement->QueryInterface(IID_IGUIContainerElement, (void**)&pContainer) == S_OK)
+         cAutoIPtr<IGUIElementEnum> pEnum;
+         if (pElement->EnumChildren(&pEnum) == S_OK)
          {
-            cAutoIPtr<IGUIElementEnum> pEnum;
-            if (pContainer->GetElements(&pEnum) == S_OK)
+            IGUIElement * pChildren[32];
+            ulong count = 0;
+            while (SUCCEEDED(pEnum->Next(_countof(pChildren), &pChildren[0], &count)) && (count > 0))
             {
-               IGUIElement * pChildren[32];
-               ulong count = 0;
-               while (SUCCEEDED(pEnum->Next(_countof(pChildren), &pChildren[0], &count)) && (count > 0))
+               for (ulong i = 0; i < count; i++)
                {
-                  for (ulong i = 0; i < count; i++)
-                  {
-                     q.push(pChildren[i]);
-                  }
-                  count = 0;
+                  q.push(pChildren[i]);
                }
+               count = 0;
             }
          }
 
@@ -431,7 +427,7 @@ tResult cGUIEventRouter<INTRFC>::GetActiveModalDialog(IGUIDialogElement * * ppMo
 
 ///////////////////////////////////////
 
-inline bool IsDescendant(IGUIContainerElement * pParent, IGUIElement * pElement)
+inline bool IsDescendant(IGUIElement * pParent, IGUIElement * pElement)
 {
    Assert(pParent != NULL);
    Assert(pElement != NULL);

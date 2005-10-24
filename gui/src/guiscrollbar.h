@@ -33,17 +33,17 @@ public:
 
    virtual tResult GetPartRect(eGUIScrollBarPart part, tGUIRect * pRect);
 
-   virtual tResult GetRange(uint * pRangeMin, uint * pRangeMax);
-   virtual tResult SetRange(uint rangeMin, uint rangeMax);
+   virtual tResult GetRange(int * pRangeMin, int * pRangeMax);
+   virtual tResult SetRange(int rangeMin, int rangeMax);
 
-   virtual tResult GetPosition(uint * pPosition);
-   virtual tResult SetPosition(uint position);
+   virtual tResult GetScrollPos(int * pScrollPos);
+   virtual tResult SetScrollPos(int scrollPos);
 
-   virtual tResult GetLineSize(uint * pLineSize);
-   virtual tResult SetLineSize(uint lineSize);
+   virtual tResult GetLineSize(int * pLineSize);
+   virtual tResult SetLineSize(int lineSize);
 
-   virtual tResult GetPageSize(uint * pPageSize);
-   virtual tResult SetPageSize(uint pageSize);
+   virtual tResult GetPageSize(int * pPageSize);
+   virtual tResult SetPageSize(int pageSize);
 
 protected:
    eGUIScrollBarPart GetHitPart(const tGUIPoint & point);
@@ -51,12 +51,12 @@ protected:
 private:
    eGUIScrollBarType m_scrollBarType;
    eGUIScrollBarPart m_armedPart, m_mouseOverPart;
-   uint m_rangeMin, m_rangeMax;
-   uint m_position;
-   uint m_lineSize;
-   uint m_pageSize;
+   int m_rangeMin, m_rangeMax;
+   int m_scrollPos;
+   int m_lineSize;
+   int m_pageSize;
 
-   uint m_preDragPosition;
+   int m_preDragScrollPos;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

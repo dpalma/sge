@@ -449,6 +449,10 @@ tResult cGUIStyle::GetFontDesc(cGUIFontDesc * pFontDesc)
    {
       return E_POINTER;
    }
+   if (m_fontName.empty() && m_fontPointSize == 0)
+   {
+      return S_FALSE;
+   }
    uint effects = kGFE_None;
    if (m_bFontBold)
    {

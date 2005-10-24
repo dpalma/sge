@@ -420,10 +420,10 @@ tResult cGUIBeveledRenderer::Render(IGUIScrollBarElement * pScrollBarElement,
    tGUISize size = pScrollBarElement->GetSize();
    tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
 
-   uint rangeMin, rangeMax, position;
+   int rangeMin, rangeMax, scrollPos;
    Verify(pScrollBarElement->GetRange(&rangeMin, &rangeMax) == S_OK);
-   Verify(pScrollBarElement->GetPosition(&position) == S_OK);
-   Assert(position >= rangeMin && position <= rangeMax);
+   Verify(pScrollBarElement->GetScrollPos(&scrollPos) == S_OK);
+   Assert(scrollPos >= rangeMin && scrollPos <= rangeMax);
 
    eGUIScrollBarType scrollBarType = pScrollBarElement->GetScrollBarType();
 
@@ -534,8 +534,7 @@ tResult cGUIBeveledRenderer::Render(IGUIListBoxElement * pListBoxElement,
 
    pRenderDevice->PopScissorRect();
 
-   return S_OK;
-
+   return GUIElementRenderChildren(pListBoxElement, pRenderDevice);
 }
 
 ///////////////////////////////////////
@@ -676,6 +675,7 @@ tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIListBoxElement * pListBoxElem
          return tGUISize(0, static_cast<tGUISizeType>(rowCount * rect.GetHeight()));
       }
    }
+
    return tGUISize(0,0);
 }
 

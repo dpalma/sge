@@ -80,15 +80,15 @@ tResult GUIElementCreateChildren(const TiXmlElement * pXmlElement,
 
 ///////////////////////////////////////////////////////////////////////////////
 
-tResult GUIElementRenderChildren(IGUIContainerElement * pContainer, IGUIRenderDevice * pRenderDevice)
+tResult GUIElementRenderChildren(IGUIElement * pParent, IGUIRenderDevice * pRenderDevice)
 {
-   if (pContainer == NULL || pRenderDevice == NULL)
+   if (pParent == NULL || pRenderDevice == NULL)
    {
       return E_POINTER;
    }
 
    cAutoIPtr<IGUIElementEnum> pEnum;
-   if (pContainer->GetElements(&pEnum) == S_OK)
+   if (pParent->EnumChildren(&pEnum) == S_OK)
    {
       IGUIElement * pChildren[32];
       ulong count = 0;

@@ -24,7 +24,10 @@ public:
    ~cGUIListBoxElement();
 
    // Over-rides
+   virtual void SetPosition(const tGUIPoint & point);
+   virtual void SetSize(const tGUISize & size);
    virtual tResult OnEvent(IGUIEvent * pEvent);
+   virtual tResult EnumChildren(IGUIElementEnum * * ppChildren);
 
    // IGUIListBoxElement methods
    virtual tResult AddItem(const tChar * pszString, uint_ptr extra);
@@ -41,12 +44,14 @@ public:
    virtual tResult GetSelected(uint * pIndices, uint nMaxIndices);
    virtual tResult GetRowCount(uint * pRowCount);
    virtual tResult SetRowCount(uint rowCount);
+   virtual tResult GetScrollBar(eGUIScrollBarType scrollBarType, IGUIScrollBarElement * * ppScrollBar);
 
 private:
    typedef std::pair<cStr, uint_ptr> tListBoxItem;
    typedef std::vector<tListBoxItem> tListBoxItems;
    tListBoxItems m_items;
    uint m_rowCount;
+   cAutoIPtr<IGUIScrollBarElement> m_pHScrollBar, m_pVScrollBar;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

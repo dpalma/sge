@@ -308,6 +308,14 @@ tResult cGUIElementBase<INTRFC>::SetStyle(IGUIStyle * pStyle)
 ///////////////////////////////////////
 
 template <typename INTRFC>
+tResult cGUIElementBase<INTRFC>::EnumChildren(IGUIElementEnum * * ppElements)
+{
+   return E_NOTIMPL;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
 tGUIPoint cGUIElementBase<INTRFC>::GetAbsolutePosition() const
 {
    tGUIPoint absolutePosition = GetPosition();
