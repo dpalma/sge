@@ -180,21 +180,27 @@ tResult cGUIGridLayout::Layout(IGUIElement * pParent)
       return E_POINTER;
    }
 
-   tGUISize size = pParent->GetSize();
+   tGUIRect clientArea;
+   if (pParent->GetClientArea(&clientArea) != S_OK)
+   {
+      return E_FAIL;
+   }
 
-   tGUIInsets insets = {0};
    cAutoIPtr<IGUIContainerElement> pContainer;
    if (pParent->QueryInterface(IID_IGUIContainerElement, (void**)&pContainer) == S_OK)
    {
+      tGUIInsets insets = {0};
       if (pContainer->GetInsets(&insets) == S_OK)
       {
-         size.width -= (insets.left + insets.right);
-         size.height -= (insets.top + insets.bottom);
+         clientArea.left += insets.left;
+         clientArea.top += insets.top;
+         clientArea.right -= insets.right;
+         clientArea.bottom -= insets.bottom;
       }
    }
 
-   tGUISizeType cellWidth = size.width > 0 ? (size.width - ((m_columns - 1) * m_hGap)) / m_columns : 0;
-   tGUISizeType cellHeight = size.height > 0 ? (size.height - ((m_rows - 1) * m_vGap)) / m_rows : 0;
+   tGUISizeType cellWidth = clientArea.GetWidth() > 0 ? static_cast<tGUISizeType>((clientArea.GetWidth() - ((m_columns - 1) * m_hGap)) / m_columns) : 0;
+   tGUISizeType cellHeight = clientArea.GetHeight() > 0 ? static_cast<tGUISizeType>((clientArea.GetHeight() - ((m_rows - 1) * m_vGap)) / m_rows) : 0;
 
    const tGUISize cellSize(cellWidth, cellHeight);
 
@@ -212,8 +218,8 @@ tResult cGUIGridLayout::Layout(IGUIElement * pParent)
       {
          if (pChild->IsVisible())
          {
-            int x = insets.left + iCol * (Round(cellWidth) + m_hGap);
-            int y = insets.top + iRow * (Round(cellHeight) + m_vGap);
+            int x = clientArea.left + iCol * (Round(cellWidth) + m_hGap);
+            int y = clientArea.top + iRow * (Round(cellHeight) + m_vGap);
 
             tGUIRect cellRect(x, y, x + Round(cellWidth), y + Round(cellHeight));
 
@@ -221,7 +227,7 @@ tResult cGUIGridLayout::Layout(IGUIElement * pParent)
             GUIPlaceElement(cellRect, pChild);
 
 #ifdef _DEBUG
-            tGUISize childSize(pChild->GetSize());
+            const tGUISize childSize(pChild->GetSize());
             LocalMsg5("   grid cell[%d][%d]: %p, %.0f x %.0f\n", iRow, iCol, pChild, childSize.width, childSize.height);
 #endif
          }
@@ -438,27 +444,34 @@ tResult cGUIFlowLayout::Layout(IGUIElement * pParent)
       return E_POINTER;
    }
 
-   tGUISize size = pParent->GetSize();
+   tGUIRect clientArea;
+   if (pParent->GetClientArea(&clientArea) != S_OK)
+   {
+      return E_FAIL;
+   }
 
-   tGUIInsets insets = {0};
    cAutoIPtr<IGUIContainerElement> pContainer;
    if (pParent->QueryInterface(IID_IGUIContainerElement, (void**)&pContainer) == S_OK)
    {
+      tGUIInsets insets = {0};
       if (pContainer->GetInsets(&insets) == S_OK)
       {
-         size.width -= (insets.left + insets.right);
-         size.height -= (insets.top + insets.bottom);
+         clientArea.left += insets.left;
+         clientArea.top += insets.top;
+         clientArea.right -= insets.right;
+         clientArea.bottom -= insets.bottom;
       }
    }
 
-   int leftSide = insets.left;
-   int rightSide = Round(leftSide + size.width);
+   const tGUISize clientSize(
+      static_cast<tGUISizeType>(clientArea.GetWidth()),
+      static_cast<tGUISizeType>(clientArea.GetHeight()));
 
    cAutoIPtr<IGUIElementEnum> pEnum;
    if (pParent->EnumChildren(&pEnum) == S_OK)
    {
-      int x = leftSide;
-      int y = insets.top;
+      int x = clientArea.left;
+      int y = clientArea.top;
 
       int nChildrenThisRow = 0;
 
@@ -469,17 +482,17 @@ tResult cGUIFlowLayout::Layout(IGUIElement * pParent)
       {
          if (pChild->IsVisible())
          {
-            if (GUISizeElement(pChild, size) == S_OK)
+            if (GUISizeElement(pChild, clientSize) == S_OK)
             {
                tGUISize childSize(pChild->GetSize());
                tGUIRect rect(x, y, Round(x + childSize.width), Round(y + childSize.height));
                GUIPlaceElement(rect, pChild);
                x += Round(childSize.width + m_hGap);
                nChildrenThisRow++;
-               if (x >= rightSide)
+               if (x >= clientArea.right)
                {
                   y += Round(childSize.height + m_vGap);
-                  x = leftSide;
+                  x = clientArea.left;
                   nChildrenThisRow = 0;
                }
             }

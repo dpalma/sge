@@ -37,8 +37,6 @@ public:
 
    virtual tResult OnEvent(IGUIEvent * pEvent);
 
-   virtual tResult GetInsets(tGUIInsets * pInsets);
-
    virtual tResult GetTitle(tGUIString * pTitle);
    virtual tResult SetTitle(const char * pszTitle);
 

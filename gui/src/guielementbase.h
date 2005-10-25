@@ -20,6 +20,7 @@ class cGUIElementBase : public INTRFC
 {
 public:
    cGUIElementBase();
+   virtual ~cGUIElementBase();
 
    virtual tResult GetId(tGUIString * pId) const;
    virtual void SetId(const char * pszId);
@@ -60,18 +61,29 @@ public:
 
    virtual tResult EnumChildren(IGUIElementEnum * * ppElements);
 
+   virtual tResult GetClientArea(tGUIRect * pClientArea);
+   virtual tResult SetClientArea(const tGUIRect & clientArea);
+
 protected:
    tGUIPoint GetAbsolutePosition() const;
 
 private:
+   enum eGUIElementInternalFlags
+   {
+      kFlags_None             = 0,
+      kFlags_Focus            = 1 << 0,
+      kFlags_MouseOver        = 1 << 1,
+      kFlags_Visible          = 1 << 2,
+      kFlags_Disabled         = 1 << 3,
+      kFlags_HasClientArea    = 1 << 4,
+   };
+
    tGUIString m_id;
-   bool m_bFocus;
-   bool m_bMouseOver;
-   bool m_bVisible;
-   bool m_bEnabled;
+   uint m_flags;
    IGUIElement * m_pParent;
    tGUIPoint m_position;
    tGUISize m_size;
+   tGUIRect m_clientArea;
    tGUIString m_rendererClass;
    cAutoIPtr<IGUIElementRenderer> m_pRenderer;
    cAutoIPtr<IGUIStyle> m_pStyle;

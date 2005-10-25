@@ -120,6 +120,9 @@ interface IGUIElement : IUnknown
    virtual tResult SetStyle(IGUIStyle * pStyle) = 0;
 
    virtual tResult EnumChildren(IGUIElementEnum * * ppChildren) = 0;
+
+   virtual tResult GetClientArea(tGUIRect * pClientArea) = 0;
+   virtual tResult SetClientArea(const tGUIRect & clientArea) = 0;
 };
 
 
@@ -287,7 +290,9 @@ interface IGUIElementRenderer : IUnknown
 {
    virtual tResult Render(IGUIElement * pElement, IGUIRenderDevice * pRenderDevice) = 0;
 
-   virtual tGUISize GetPreferredSize(IGUIElement * pElement) = 0;
+   virtual tResult GetPreferredSize(IGUIElement * pElement, tGUISize * pSize) = 0;
+
+   virtual tResult ComputeClientArea(IGUIElement * pElement, tGUIRect * pClientArea) = 0;
 
    virtual tResult GetFont(IGUIElement * pElement, IGUIFont * * ppFont) = 0;
 };

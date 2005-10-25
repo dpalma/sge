@@ -34,6 +34,7 @@ public:
 
    virtual void SetSize(const tGUISize & size);
    virtual tResult EnumChildren(IGUIElementEnum * * ppElements);
+   virtual tResult SetClientArea(const tGUIRect & clientArea);
 
    ////////////////////////////////////
    // IGUIContainerElement methods
@@ -50,6 +51,8 @@ public:
    virtual tResult SetInsets(const tGUIInsets & insets);
 
 protected:
+   void DoLayout();
+
    template <typename F>
    void ForEachElement(F f)
    {
@@ -61,6 +64,7 @@ private:
    tGUIElementList m_children;
 
    cAutoIPtr<IGUILayoutManager> m_pLayout;
+   bool m_bNeedLayout;
 
    tGUIInsets * m_pInsets;
 };

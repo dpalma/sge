@@ -83,16 +83,22 @@ void cGUIListBoxElement::SetSize(const tGUISize & size)
    {
       if (!!m_pHScrollBar)
       {
-         tGUISize scrollBarSize = pRenderer->GetPreferredSize(m_pHScrollBar);
-         scrollBarSize.width = size.width;
-         m_pHScrollBar->SetSize(scrollBarSize);
+         tGUISize scrollBarSize;
+         if (pRenderer->GetPreferredSize(m_pHScrollBar, &scrollBarSize) == S_OK)
+         {
+            scrollBarSize.width = size.width;
+            m_pHScrollBar->SetSize(scrollBarSize);
+         }
       }
 
       if (!!m_pVScrollBar)
       {
-         tGUISize scrollBarSize = pRenderer->GetPreferredSize(m_pVScrollBar);
-         scrollBarSize.height = size.height;
-         m_pVScrollBar->SetSize(scrollBarSize);
+         tGUISize scrollBarSize;
+         if (pRenderer->GetPreferredSize(m_pVScrollBar, &scrollBarSize) == S_OK)
+         {
+            scrollBarSize.height = size.height;
+            m_pVScrollBar->SetSize(scrollBarSize);
+         }
       }
    }
 }

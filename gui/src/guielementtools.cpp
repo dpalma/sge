@@ -142,8 +142,10 @@ tResult GUISizeElement(IGUIElement * pElement, const tGUISize & relativeTo)
    cAutoIPtr<IGUIElementRenderer> pRenderer;
    if (pElement->GetRenderer(&pRenderer) == S_OK)
    {
-      size = pRenderer->GetPreferredSize(pElement);
-      bHavePreferred = true;
+      if (pRenderer->GetPreferredSize(pElement, &size) == S_OK)
+      {
+         bHavePreferred = true;
+      }
    }
 
    cAutoIPtr<IGUIStyle> pStyle;
@@ -183,7 +185,12 @@ tResult GUISizeElement(IGUIElement * pElement, const tGUISize & relativeTo)
    if (bHavePreferred || bHaveStyle)
    {
       pElement->SetSize(tGUISize(Min(size.width, relativeTo.width), Min(size.height, relativeTo.height)));
-      return  S_OK;
+      tGUIRect clientArea;
+      if (pRenderer->ComputeClientArea(pElement, &clientArea) == S_OK)
+      {
+         pElement->SetClientArea(clientArea);
+      }
+      return S_OK;
    }
    else
    {

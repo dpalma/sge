@@ -23,8 +23,9 @@
 
 template <typename INTRFC>
 cGUIContainerBase<INTRFC>::cGUIContainerBase(IGUILayoutManager * pLayout)
- : m_pLayout(CTAddRef(pLayout)),
-   m_pInsets(NULL)
+ : m_pLayout(CTAddRef(pLayout))
+ , m_bNeedLayout(false)
+ , m_pInsets(NULL)
 {
 }
 
@@ -53,26 +54,8 @@ template <typename INTRFC>
 void cGUIContainerBase<INTRFC>::SetSize(const tGUISize & size)
 {
    cGUIElementBase<INTRFC>::SetSize(size);
-
-   cAutoIPtr<IGUILayoutManager> pLayout;
-   if (GetLayout(&pLayout) == S_OK)
-   {
-      pLayout->Layout(this);
-   }
-   else
-   {
-      tGUIRect rect(0, 0, Round(size.width), Round(size.height));
-
-      tGUIInsets insets;
-      if (GetInsets(&insets) == S_OK)
-      {
-         rect.left += insets.left;
-         rect.top += insets.top;
-         rect.right -= insets.right;
-         rect.bottom -= insets.bottom;
-      }
-      ForEachElement(cSizeAndPlaceElement(rect));
-   }
+   m_bNeedLayout = true;
+   DoLayout();
 }
 
 ///////////////////////////////////////
@@ -81,6 +64,17 @@ template <typename INTRFC>
 tResult cGUIContainerBase<INTRFC>::EnumChildren(IGUIElementEnum * * ppElements)
 {
    return GUIElementEnumCreate(m_children, ppElements);
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+tResult cGUIContainerBase<INTRFC>::SetClientArea(const tGUIRect & clientArea)
+{
+   tResult result = cGUIElementBase<INTRFC>::SetClientArea(clientArea);
+   m_bNeedLayout = (result == S_OK);
+   DoLayout();
+   return result;
 }
 
 ///////////////////////////////////////
@@ -106,6 +100,8 @@ tResult cGUIContainerBase<INTRFC>::AddElement(IGUIElement * pElement)
 
    pElement->SetParent(this);
 
+   m_bNeedLayout = true;
+
    return S_OK;
 }
 
@@ -124,6 +120,7 @@ tResult cGUIContainerBase<INTRFC>::RemoveElement(IGUIElement * pElement)
    {
       m_children.erase(f);
       pElement->Release();
+      m_bNeedLayout = true;
       return S_OK;
    }
 
@@ -188,6 +185,7 @@ tResult cGUIContainerBase<INTRFC>::SetLayout(IGUILayoutManager * pLayout)
 {
    SafeRelease(m_pLayout);
    m_pLayout = CTAddRef(pLayout);
+   m_bNeedLayout = true;
    return S_OK;
 }
 
@@ -226,8 +224,41 @@ tResult cGUIContainerBase<INTRFC>::SetInsets(const tGUIInsets & insets)
    }
 
    *m_pInsets = insets;
-
+   m_bNeedLayout = true;
    return S_OK;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+void cGUIContainerBase<INTRFC>::DoLayout()
+{
+   if (m_bNeedLayout)
+   {
+      cAutoIPtr<IGUILayoutManager> pLayout;
+      if (GetLayout(&pLayout) == S_OK)
+      {
+         pLayout->Layout(this);
+      }
+      else
+      {
+         tGUIRect rect;
+         if (GetClientArea(&rect) == S_OK)
+         {
+            tGUIInsets insets;
+            if (GetInsets(&insets) == S_OK)
+            {
+               rect.left += insets.left;
+               rect.top += insets.top;
+               rect.right -= insets.right;
+               rect.bottom -= insets.bottom;
+            }
+            ForEachElement(cSizeAndPlaceElement(rect));
+         }
+      }
+
+      m_bNeedLayout = false;
+   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

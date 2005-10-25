@@ -21,13 +21,17 @@
 
 template <typename INTRFC>
 cGUIElementBase<INTRFC>::cGUIElementBase()
- : m_bFocus(false),
-   m_bMouseOver(false),
-   m_bVisible(true),
-   m_bEnabled(true),
-   m_pParent(NULL),
-   m_position(0,0),
-   m_size(0,0)
+ : m_flags(kFlags_Visible)
+ , m_pParent(NULL)
+ , m_position(0,0)
+ , m_size(0,0)
+{
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+cGUIElementBase<INTRFC>::~cGUIElementBase()
 {
 }
 
@@ -68,7 +72,7 @@ void cGUIElementBase<INTRFC>::SetId(const char * pszId)
 template <typename INTRFC>
 bool cGUIElementBase<INTRFC>::HasFocus() const
 {
-   return m_bFocus;
+   return ((m_flags & kFlags_Focus) != 0);
 }
 
 ///////////////////////////////////////
@@ -76,7 +80,14 @@ bool cGUIElementBase<INTRFC>::HasFocus() const
 template <typename INTRFC>
 void cGUIElementBase<INTRFC>::SetFocus(bool bFocus)
 {
-   m_bFocus = bFocus;
+   if (bFocus)
+   {
+      m_flags |= kFlags_Focus;
+   }
+   else
+   {
+      m_flags &= ~kFlags_Focus;
+   }
 }
 
 ///////////////////////////////////////
@@ -84,7 +95,7 @@ void cGUIElementBase<INTRFC>::SetFocus(bool bFocus)
 template <typename INTRFC>
 bool cGUIElementBase<INTRFC>::IsMouseOver() const
 {
-   return m_bMouseOver;
+   return ((m_flags & kFlags_MouseOver) != 0);
 }
 
 ///////////////////////////////////////
@@ -92,7 +103,14 @@ bool cGUIElementBase<INTRFC>::IsMouseOver() const
 template <typename INTRFC>
 void cGUIElementBase<INTRFC>::SetMouseOver(bool bMouseOver)
 {
-   m_bMouseOver = bMouseOver;
+   if (bMouseOver)
+   {
+      m_flags |= kFlags_MouseOver;
+   }
+   else
+   {
+      m_flags &= ~kFlags_MouseOver;
+   }
 }
 
 ///////////////////////////////////////
@@ -100,7 +118,7 @@ void cGUIElementBase<INTRFC>::SetMouseOver(bool bMouseOver)
 template <typename INTRFC>
 bool cGUIElementBase<INTRFC>::IsVisible() const
 {
-   return m_bVisible;
+   return ((m_flags & kFlags_Visible) != 0);
 }
 
 ///////////////////////////////////////
@@ -108,7 +126,14 @@ bool cGUIElementBase<INTRFC>::IsVisible() const
 template <typename INTRFC>
 void cGUIElementBase<INTRFC>::SetVisible(bool bVisible)
 {
-   m_bVisible = bVisible;
+   if (bVisible)
+   {
+      m_flags |= kFlags_Visible;
+   }
+   else
+   {
+      m_flags &= ~kFlags_Visible;
+   }
 }
 
 ///////////////////////////////////////
@@ -116,7 +141,7 @@ void cGUIElementBase<INTRFC>::SetVisible(bool bVisible)
 template <typename INTRFC>
 bool cGUIElementBase<INTRFC>::IsEnabled() const
 {
-   return m_bEnabled;
+   return ((m_flags & kFlags_Disabled) == 0);
 }
 
 ///////////////////////////////////////
@@ -124,7 +149,14 @@ bool cGUIElementBase<INTRFC>::IsEnabled() const
 template <typename INTRFC>
 void cGUIElementBase<INTRFC>::SetEnabled(bool bEnabled)
 {
-   m_bEnabled = bEnabled;
+   if (bEnabled)
+   {
+      m_flags &= ~kFlags_Disabled;
+   }
+   else
+   {
+      m_flags |= kFlags_Disabled;
+   }
 }
 
 ///////////////////////////////////////
@@ -311,6 +343,36 @@ template <typename INTRFC>
 tResult cGUIElementBase<INTRFC>::EnumChildren(IGUIElementEnum * * ppElements)
 {
    return E_NOTIMPL;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+tResult cGUIElementBase<INTRFC>::GetClientArea(tGUIRect * pClientArea)
+{
+   if (pClientArea == NULL)
+   {
+      return E_POINTER;
+   }
+   if (m_flags & kFlags_HasClientArea)
+   {
+      *pClientArea = m_clientArea;
+   }
+   else
+   {
+      *pClientArea = tGUIRect(0,0,Round(m_size.width),Round(m_size.height));
+   }
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+tResult cGUIElementBase<INTRFC>::SetClientArea(const tGUIRect & clientArea)
+{
+   m_flags |= kFlags_HasClientArea;
+   m_clientArea = clientArea;
+   return S_OK;
 }
 
 ///////////////////////////////////////

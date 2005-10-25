@@ -135,6 +135,31 @@ tGUISize cGUIBasicRenderer::GetPreferredSize(IGUIElement * pElement)
 
 ///////////////////////////////////////
 
+tResult cGUIBasicRenderer::GetPreferredSize(IGUIElement * pElement, tGUISize * pSize)
+{
+   if (pElement == NULL || pSize == NULL)
+   {
+      return E_POINTER;
+   }
+
+   *pSize = GetPreferredSize(pElement);
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIBasicRenderer::ComputeClientArea(IGUIElement * pElement, tGUIRect * pClientArea)
+{
+   if (pElement == NULL || pClientArea == NULL)
+   {
+      return E_POINTER;
+   }
+
+   return E_NOTIMPL;
+}
+
+///////////////////////////////////////
+
 tResult cGUIBasicRenderer::GetFont(IGUIElement * pElement,
                                    IGUIFont * * ppFont)
 {

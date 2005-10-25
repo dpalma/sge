@@ -113,46 +113,6 @@ tResult cGUIDialogElement::OnEvent(IGUIEvent * pEvent)
 
 ///////////////////////////////////////
 
-tResult cGUIDialogElement::GetInsets(tGUIInsets * pInsets)
-{
-   if (pInsets == NULL)
-   {
-      return E_POINTER;
-   }
-
-   uint captionHeight = 0;
-   if (FAILED(GetCaptionHeight(&captionHeight)))
-   {
-      return E_FAIL;
-   }
-
-   tResult result = tGUIDialogBase::GetInsets(pInsets);
-
-   if (captionHeight == 0)
-   {
-      return result;
-   }
-
-   if (result == S_OK)
-   {
-      // Add in the caption height so that the layout manager can account for it
-      // when sizing and positioning child elements
-      pInsets->top += captionHeight;
-   }
-   else
-   {
-      pInsets->left = 0;
-      pInsets->top = captionHeight;
-      pInsets->right = 0;
-      pInsets->bottom = 0;
-      result = S_OK;
-   }
-
-   return result;
-}
-
-///////////////////////////////////////
-
 tResult cGUIDialogElement::GetTitle(tGUIString * pTitle)
 {
    if (pTitle == NULL)
