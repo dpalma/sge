@@ -429,23 +429,26 @@ tResult cGUIBeveledRenderer::Render(IGUITextEditElement * pTextEditElement, IGUI
    uint selStart, selEnd;
    Verify(pTextEditElement->GetSelection(&selStart, &selEnd) == S_OK);
 
-   tGUIString text;
    cAutoIPtr<IGUIFont> pFont;
-   if (GetFont(pTextEditElement, &pFont) == S_OK
-      && pTextEditElement->GetText(&text) == S_OK)
+   if (GetFont(pTextEditElement, &pFont) == S_OK)
    {
-      // Determine the width of the text up to the cursor
       tRect leftOfCursor(0,0,0,0);
-      pFont->RenderText(text.c_str(), selEnd, &leftOfCursor,
-         kRT_NoClip | kRT_CalcRect, tGUIColor::White);
+
+      tGUIString text;
+      if (pTextEditElement->GetText(&text) == S_OK)
+      {
+         pFont->RenderText(text.c_str(), text.length(), &rect, kRT_NoClip, textColor);
+
+         // Determine the width of the text up to the cursor
+         pFont->RenderText(text.c_str(), selEnd, &leftOfCursor,
+            kRT_NoClip | kRT_CalcRect, tGUIColor::White);
+      }
 
       // Offset the left edge so that the cursor is always in view.
       if (leftOfCursor.GetWidth() >= rect.GetWidth())
       {
          rect.left -= leftOfCursor.GetWidth() - rect.GetWidth() + kCursorWidth;
       }
-
-      pFont->RenderText(text.c_str(), text.length(), &rect, kRT_NoClip, textColor);
 
       // Render the cursor if this widget has focus and its blink cycle is on
       if (pTextEditElement->HasFocus() && pTextEditElement->ShowBlinkingCursor())
