@@ -24,10 +24,9 @@ public:
    ~cGUIListBoxElement();
 
    // Over-rides
-   virtual void SetPosition(const tGUIPoint & point);
-   virtual void SetSize(const tGUISize & size);
    virtual tResult OnEvent(IGUIEvent * pEvent);
    virtual tResult EnumChildren(IGUIElementEnum * * ppChildren);
+   virtual tResult SetClientArea(const tGUIRect & clientArea);
 
    // IGUIListBoxElement methods
    virtual tResult AddItem(const tChar * pszString, uint_ptr extra);

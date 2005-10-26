@@ -155,7 +155,38 @@ tResult cGUIBasicRenderer::ComputeClientArea(IGUIElement * pElement, tGUIRect * 
       return E_POINTER;
    }
 
-   return E_NOTIMPL;
+   tGUISize size = pElement->GetSize();
+   tGUIRect clientArea(g_bevel, g_bevel, Round(size.width - g_bevel), Round(size.height - g_bevel));
+
+   {
+      cAutoIPtr<IGUIDialogElement> pDialogElement;
+      if (pElement->QueryInterface(IID_IGUIDialogElement, (void**)&pDialogElement) == S_OK)
+      {
+         uint captionHeight = 0;
+         if (pDialogElement->GetCaptionHeight(&captionHeight) != S_OK)
+         {
+            cAutoIPtr<IGUIFont> pFont;
+            if (GetFont(pDialogElement, &pFont) == S_OK)
+            {
+               tGUIString title;
+               if (pDialogElement->GetTitle(&title) == S_OK)
+               {
+                  tRect rect(0,0,0,0);
+                  if (pFont->RenderText(title.c_str(), title.length(), &rect, kRT_CalcRect, tGUIColor::White) == S_OK)
+                  {
+                     captionHeight = rect.GetHeight();
+                     pDialogElement->SetCaptionHeight(captionHeight);
+                  }
+               }
+            }
+         }
+
+         clientArea.top += captionHeight;
+      }
+   }
+
+   *pClientArea = clientArea;
+   return S_OK;
 }
 
 ///////////////////////////////////////

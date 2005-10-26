@@ -195,10 +195,10 @@ tResult cGUIBeveledRenderer::ComputeClientArea(IGUIElement * pElement, tGUIRect 
       return E_POINTER;
    }
 
-   {
-      tGUISize size = pElement->GetSize();
-      tGUIRect clientArea(g_bevel, g_bevel, Round(size.width - g_bevel), Round(size.height - g_bevel));
+   tGUISize size = pElement->GetSize();
+   tGUIRect clientArea(g_bevel, g_bevel, Round(size.width - g_bevel), Round(size.height - g_bevel));
 
+   {
       cAutoIPtr<IGUIDialogElement> pDialogElement;
       if (pElement->QueryInterface(IID_IGUIDialogElement, (void**)&pDialogElement) == S_OK)
       {
@@ -222,12 +222,11 @@ tResult cGUIBeveledRenderer::ComputeClientArea(IGUIElement * pElement, tGUIRect 
          }
 
          clientArea.top += captionHeight;
-         *pClientArea = clientArea;
-         return S_OK;
       }
    }
 
-   return E_NOTIMPL;
+   *pClientArea = clientArea;
+   return S_OK;
 }
 
 ///////////////////////////////////////

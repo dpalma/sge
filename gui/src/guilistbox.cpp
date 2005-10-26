@@ -53,54 +53,51 @@ cGUIListBoxElement::~cGUIListBoxElement()
 
 ///////////////////////////////////////
 
-void cGUIListBoxElement::SetPosition(const tGUIPoint & point)
+tResult cGUIListBoxElement::SetClientArea(const tGUIRect & clientArea)
 {
-   cGUIElementBase<IGUIListBoxElement>::SetPosition(point);
-
-   const tGUISize size = GetSize();
-
-   if (!!m_pHScrollBar)
-   {
-      const tGUISize scrollBarSize = m_pHScrollBar->GetSize();
-      m_pHScrollBar->SetPosition(tGUIPoint(0, size.height - scrollBarSize.height));
-   }
-
-   if (!!m_pVScrollBar)
-   {
-      const tGUISize scrollBarSize = m_pVScrollBar->GetSize();
-      m_pVScrollBar->SetPosition(tGUIPoint(size.width - scrollBarSize.width, 0));
-   }
-}
-
-///////////////////////////////////////
-
-void cGUIListBoxElement::SetSize(const tGUISize & size)
-{
-   cGUIElementBase<IGUIListBoxElement>::SetSize(size);
+   tGUIRect modifiedClientArea(clientArea);
 
    cAutoIPtr<IGUIElementRenderer> pRenderer;
    if (GetRenderer(&pRenderer) == S_OK)
    {
+      tGUISize hScrollBarSize(0,0), vScrollBarSize(0,0);
+
       if (!!m_pHScrollBar)
       {
-         tGUISize scrollBarSize;
-         if (pRenderer->GetPreferredSize(m_pHScrollBar, &scrollBarSize) == S_OK)
-         {
-            scrollBarSize.width = size.width;
-            m_pHScrollBar->SetSize(scrollBarSize);
-         }
+         pRenderer->GetPreferredSize(m_pHScrollBar, &hScrollBarSize);
       }
 
       if (!!m_pVScrollBar)
       {
-         tGUISize scrollBarSize;
-         if (pRenderer->GetPreferredSize(m_pVScrollBar, &scrollBarSize) == S_OK)
+         pRenderer->GetPreferredSize(m_pVScrollBar, &vScrollBarSize);
+      }
+
+      if (!!m_pHScrollBar)
+      {
+         hScrollBarSize.width = static_cast<tGUISizeType>(clientArea.GetWidth());
+         if (!!m_pVScrollBar)
          {
-            scrollBarSize.height = size.height;
-            m_pVScrollBar->SetSize(scrollBarSize);
+            hScrollBarSize.width -= vScrollBarSize.width;
          }
+         m_pHScrollBar->SetPosition(tGUIPoint(static_cast<float>(clientArea.left), clientArea.bottom - hScrollBarSize.height));
+         m_pHScrollBar->SetSize(hScrollBarSize);
+         modifiedClientArea.right -= Round(hScrollBarSize.height);
+      }
+
+      if (!!m_pVScrollBar)
+      {
+         vScrollBarSize.height = static_cast<tGUISizeType>(clientArea.GetHeight());
+         if (!!m_pHScrollBar)
+         {
+            vScrollBarSize.height -= hScrollBarSize.height;
+         }
+         m_pVScrollBar->SetPosition(tGUIPoint(clientArea.right - vScrollBarSize.width, static_cast<float>(clientArea.top)));
+         m_pVScrollBar->SetSize(vScrollBarSize);
+         modifiedClientArea.bottom -= Round(vScrollBarSize.width);
       }
    }
+
+   return cGUIElementBase<IGUIListBoxElement>::SetClientArea(modifiedClientArea);
 }
 
 ///////////////////////////////////////
