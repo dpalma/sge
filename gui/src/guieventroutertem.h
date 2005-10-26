@@ -193,6 +193,7 @@ tResult cGUIEventRouter<INTRFC>::RemoveElement(IGUIElement * pElement)
       {
          (*f)->Release();
          m_elements.erase(f);
+         result = S_OK;
       }
    }
 
@@ -203,6 +204,25 @@ tResult cGUIEventRouter<INTRFC>::RemoveElement(IGUIElement * pElement)
       {
          (*f)->Release();
          m_dialogs.erase(f);
+         result = S_OK;
+      }
+   }
+
+   if (result == S_OK)
+   {
+      // If the focus, moused-over, or drag elements are descendants of 
+      // the element being removed, release the pointers.
+      if (!!m_pFocus && IsDescendant(pElement, m_pFocus))
+      {
+         SafeRelease(m_pFocus);
+      }
+      if (!!m_pMouseOver && IsDescendant(pElement, m_pMouseOver))
+      {
+         SafeRelease(m_pMouseOver);
+      }
+      if (!!m_pDrag && IsDescendant(pElement, m_pDrag))
+      {
+         SafeRelease(m_pDrag);
       }
    }
 
