@@ -383,6 +383,10 @@ tResult cGUIBeveledRenderer::Render(IGUILabelElement * pLabelElement, IGUIRender
          pFont->RenderText(text.c_str(), text.length(), &rect, kRT_NoClip, color);
          return S_OK;
       }
+      if (text.empty())
+      {
+         return S_FALSE;
+      }
    }
 
    return E_FAIL;

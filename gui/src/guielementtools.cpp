@@ -16,6 +16,47 @@
 
 #include "dbgalloc.h" // must be last header
 
+
+///////////////////////////////////////////////////////////////////////////////
+
+tResult GUIElementType(IUnknown * pUnkElement, cStr * pType)
+{
+   if (pUnkElement == NULL || pType == NULL)
+   {
+      return E_POINTER;
+   }
+
+   static const struct
+   {
+      const GUID * pIID;
+      const tChar * pszType;
+   }
+   guiElementTypes[] =
+   {
+      { &IID_IGUIButtonElement,     "Button" },
+      { &IID_IGUIDialogElement,     "Dialog" },
+      { &IID_IGUILabelElement,      "Label" },
+      { &IID_IGUIPanelElement,      "Panel" },
+      { &IID_IGUITextEditElement,   "TextEdit" },
+      { &IID_IGUIContainerElement,  "Container" },
+      { &IID_IGUIScrollBarElement,  "ScrollBar" },
+      { &IID_IGUIListBoxElement,    "ListBox" },
+   };
+
+   for (int i = 0; i < _countof(guiElementTypes); i++)
+   {
+      cAutoIPtr<IUnknown> pUnk;
+      if (pUnkElement->QueryInterface(*guiElementTypes[i].pIID, (void**)&pUnk) == S_OK)
+      {
+         *pType = guiElementTypes[i].pszType;
+         return S_OK;
+      }
+   }
+
+   return S_FALSE;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 bool GUIElementIdMatch(IGUIElement * pElement, const tChar * pszId)
@@ -104,7 +145,15 @@ tResult GUIElementRenderChildren(IGUIElement * pParent, IGUIRenderDevice * pRend
                {
                   if (FAILED(pChildRenderer->Render(pChildren[i], pRenderDevice)))
                   {
-                     ErrorMsg("An error occured rendering a child GUI element\n");
+                     cStr type;
+                     if (SUCCEEDED(GUIElementType(pChildren[i], &type)))
+                     {
+                        ErrorMsg1("Rendering failed for child GUI element of type \"%s\"\n", type.c_str());
+                     }
+                     else
+                     {
+                        ErrorMsg("Rendering failed for child GUI element of unknown type\n");
+                     }
                      for (ulong j = i; j < count; j++)
                      {
                         SafeRelease(pChildren[j]);
@@ -184,12 +233,14 @@ tResult GUISizeElement(IGUIElement * pElement, const tGUISize & relativeTo)
 
    if (bHavePreferred || bHaveStyle)
    {
-      pElement->SetSize(tGUISize(Min(size.width, relativeTo.width), Min(size.height, relativeTo.height)));
-      tGUIRect clientArea;
-      if (pRenderer->ComputeClientArea(pElement, &clientArea) == S_OK)
+      tGUISize elementSize(Min(size.width, relativeTo.width), Min(size.height, relativeTo.height));
+      pElement->SetSize(elementSize);
+      tGUIRect clientArea(0,0,0,0);
+      if (elementSize.width > 0 && elementSize.height > 0)
       {
-         pElement->SetClientArea(clientArea);
+         pRenderer->ComputeClientArea(pElement, &clientArea);
       }
+      pElement->SetClientArea(clientArea);
       return S_OK;
    }
    else

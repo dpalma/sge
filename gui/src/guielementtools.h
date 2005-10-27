@@ -33,6 +33,8 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
+tResult GUIElementType(IUnknown * pUnkElement, cStr * pType);
+
 bool GUIElementIdMatch(IGUIElement * pElement, const tChar * pszId);
 
 tResult GUIElementCreateChildren(const TiXmlElement * pXmlElement, 

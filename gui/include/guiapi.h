@@ -787,7 +787,7 @@ interface IGUIContext : IGUIEventRouter
 
    virtual tResult GetDefaultFont(IGUIFont * * ppFont) = 0;
 
-   virtual tResult ShowDebugInfo(const tGUIPoint & placement, const tGUIColor & textColor) = 0;
+   virtual tResult ShowDebugInfo(const tGUIPoint & placement, IGUIStyle * pStyle) = 0;
    virtual tResult HideDebugInfo() = 0;
 };
 

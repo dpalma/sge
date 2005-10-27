@@ -64,7 +64,7 @@ public:
 
    virtual tResult GetDefaultFont(IGUIFont * * ppFont);
 
-   virtual tResult ShowDebugInfo(const tGUIPoint & placement, const tGUIColor & textColor);
+   virtual tResult ShowDebugInfo(const tGUIPoint & placement, IGUIStyle * pStyle);
    virtual tResult HideDebugInfo();
 
 private:

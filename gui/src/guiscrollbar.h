@@ -56,7 +56,8 @@ private:
    int m_lineSize;
    int m_pageSize;
 
-   int m_preDragScrollPos;
+   int m_dragStartScrollPos;
+   tGUIPoint m_dragStartMousePos;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

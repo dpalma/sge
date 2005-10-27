@@ -10,7 +10,7 @@ end;
 bind("q", "quit();");
 bind("escape", [[QuitWithConfirm();]]);
 
-bind("F4", [[GUIContext:ToggleDebugInfo(5, 200, "yellow");]]);
+bind("F4", [[GUIContext:ToggleDebugInfo(5, 100, "font-name:Courier New;font-pointsize:8;foreground-color:yellow;");]]);
 
 bind("F7", [[GUIContext:ShowModalDialog("guitest.xml")]]);
 

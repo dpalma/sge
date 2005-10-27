@@ -106,40 +106,6 @@ static tResult LoadElements(const char * psz, std::vector<IGUIElement*> * pEleme
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef GUI_DEBUG
-static bool GUIElementType(IUnknown * pUnkElement, cStr * pType)
-{
-   static const struct
-   {
-      const GUID * pIID;
-      const tChar * pszType;
-   }
-   guiElementTypes[] =
-   {
-      { &IID_IGUIButtonElement,     "Button" },
-      { &IID_IGUIDialogElement,     "Dialog" },
-      { &IID_IGUILabelElement,      "Label" },
-      { &IID_IGUIPanelElement,      "Panel" },
-      { &IID_IGUITextEditElement,   "TextEdit" },
-      { &IID_IGUIContainerElement,  "Container" },
-      { &IID_IGUIScrollBarElement,  "ScrollBar" },
-      { &IID_IGUIListBoxElement,    "ListBox" },
-   };
-   for (int i = 0; i < _countof(guiElementTypes); i++)
-   {
-      cAutoIPtr<IUnknown> pUnk;
-      if (pUnkElement->QueryInterface(*guiElementTypes[i].pIID, (void**)&pUnk) == S_OK)
-      {
-         *pType = guiElementTypes[i].pszType;
-         return true;
-      }
-   }
-   return false;
-}
-#endif
-
-///////////////////////////////////////////////////////////////////////////////
-
 static bool g_bExitModalLoop = false;
 
 static bool GUIModalLoopFrameHandler()
@@ -422,7 +388,7 @@ tResult cGUIContext::InvokeToggleDebugInfo(int argc, const cScriptVar * argv,
                                            int nMaxResults, cScriptVar * pResults)
 {
    tGUIPoint placement(0,0);
-   tGUIColor color(tGUIColor::White);
+   cAutoIPtr<IGUIStyle> pStyle;
 
    if (argc == 2 
       && argv[0].IsNumber() 
@@ -436,20 +402,17 @@ tResult cGUIContext::InvokeToggleDebugInfo(int argc, const cScriptVar * argv,
       && argv[2].IsString())
    {
       placement = tGUIPoint(argv[0], argv[1]);
-      GUIStyleParseColor(argv[2], &color);
+      if (GUIStyleParse(argv[2], &pStyle) != S_OK)
+      {
+         SafeRelease(pStyle);
+      }
    }
-   else if (argc == 5 
-      && argv[0].IsNumber() 
-      && argv[1].IsNumber()
-      && argv[2].IsNumber() 
-      && argv[3].IsNumber()
-      && argv[4].IsNumber())
+   else
    {
-      placement = tGUIPoint(argv[0], argv[1]);
-      color = tGUIColor(argv[2], argv[3], argv[4]);
+      return E_FAIL;
    }
 
-   if (ShowDebugInfo(placement, color) == S_FALSE)
+   if (ShowDebugInfo(placement, pStyle) == S_FALSE)
    {
       HideDebugInfo();
    }
@@ -709,14 +672,27 @@ tResult cGUIContext::GetDefaultFont(IGUIFont * * ppFont)
 
 ///////////////////////////////////////
 
-tResult cGUIContext::ShowDebugInfo(const tGUIPoint & placement, const tGUIColor & textColor)
+tResult cGUIContext::ShowDebugInfo(const tGUIPoint & placement, IGUIStyle * pStyle)
 {
 #ifdef GUI_DEBUG
    if (!m_bShowDebugInfo)
    {
-      m_bShowDebugInfo = true;
       m_debugInfoPlacement = placement;
-      m_debugInfoTextColor = textColor;
+
+      if (pStyle != NULL)
+      {
+         pStyle->GetForegroundColor(&m_debugInfoTextColor);
+
+         cGUIFontDesc debugFontDesc;
+         if (pStyle->GetFontDesc(&debugFontDesc) == S_OK)
+         {
+            SafeRelease(m_pDebugFont);
+            UseGlobal(GUIFontFactory);
+            pGUIFontFactory->CreateFont(debugFontDesc, &m_pDebugFont);
+         }
+      }
+
+      m_bShowDebugInfo = true;
       return S_OK;
    }
 #endif
@@ -792,32 +768,14 @@ tResult cGUIContext::CheckChild(IGUIContainerElement * pContainer, const tChar *
 #ifdef GUI_DEBUG
 tResult cGUIContext::GetDebugFont(IGUIFont * * ppFont)
 {
-   if (!m_pDebugFont)
+   if (!!m_pDebugFont)
    {
-      tChar szTypeFace[32];
-      memset(szTypeFace, 0, sizeof(szTypeFace));
-      if (ConfigGetString("debug_font_win32", szTypeFace, _countof(szTypeFace)) != S_OK)
-      {
-         ConfigGetString("debug_font", szTypeFace, _countof(szTypeFace));
-      }
-
-      int pointSize = 10;
-      if (ConfigGet("debug_font_size_win32", &pointSize) != S_OK)
-      {
-         ConfigGet("debug_font_size", &pointSize);
-      }
-
-      int effects = kGFE_None;
-      if (ConfigGet("debug_font_effects_win32", &effects) != S_OK)
-      {
-         ConfigGet("debug_font_effects", &effects);
-      }
-
-      UseGlobal(GUIFontFactory);
-      pGUIFontFactory->CreateFont(cGUIFontDesc(szTypeFace, pointSize, effects), &m_pDebugFont);
+      return m_pDebugFont.GetPointer(ppFont);
    }
-
-   return m_pDebugFont.GetPointer(ppFont);
+   else
+   {
+      return GetDefaultFont(ppFont);
+   }
 }
 #endif
 
@@ -846,14 +804,14 @@ void cGUIContext::RenderDebugInfo()
       pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
       rect.Offset(0, lineHeight);
 
-      std::list<IGUIElement*> hitElements;
+      tGUIElementList hitElements;
       if (GetHitElements(m_lastMousePos, &hitElements) == S_OK)
       {
-         std::list<IGUIElement*>::const_iterator iter = hitElements.begin();
-         for (int index = 0; iter !=  hitElements.end(); ++iter, ++index)
+         tGUIElementList::reverse_iterator iter = hitElements.rbegin();
+         for (int index = 0; iter != hitElements.rend(); iter++, index++)
          {
             cStr type, temp;
-            if (GUIElementType(*iter, &type))
+            if (SUCCEEDED(GUIElementType(*iter, &type)))
             {
                temp.Format("Element %d: %s", index, type.c_str());
             }

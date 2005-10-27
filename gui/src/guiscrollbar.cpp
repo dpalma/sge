@@ -77,7 +77,8 @@ tResult cGUIScrollBarElement::OnEvent(IGUIEvent * pEvent)
       Verify(pEvent->SetCancelBubble(true) == S_OK);
 
       m_armedPart = m_mouseOverPart;
-      m_preDragScrollPos = m_scrollPos;
+      m_dragStartScrollPos = m_scrollPos;
+      m_dragStartMousePos = point;
    }
    else if (eventCode == kGUIEventDragEnd)
    {
@@ -98,18 +99,25 @@ tResult cGUIScrollBarElement::OnEvent(IGUIEvent * pEvent)
 
       if (m_armedPart == kGUIScrollBarPartThumb)
       {
+         const tGUISize size(GetSize());
+
          tGUIPoint pos = GUIElementAbsolutePosition(this);
-         tGUISize size = GetSize();
+
          if (m_scrollBarType == kGUIScrollBarHorizontal)
          {
-            if (point.x < pos.x || point.x > (pos.x + size.width))
+            if (point.x < pos.x || (point.x - pos.x) > size.width)
             {
-               m_scrollPos = m_preDragScrollPos;
+               m_scrollPos = m_dragStartScrollPos;
             }
             else
             {
+#if 0
+               m_scrollPos = (point.x - pos.x - size.height) * (m_rangeMax - m_rangeMin) / (size.width - (3 * size.height));
+#else
+               m_scrollPos = xpos * (m_rangeMax - m_rangeMin) / (width - (3 * height));
                m_scrollPos = Round(((m_rangeMax - m_rangeMin) * (point.x - pos.x)) / size.width);
                m_scrollPos += m_rangeMin;
+#endif
             }
          }
          else if (m_scrollBarType == kGUIScrollBarVertical)
@@ -205,7 +213,7 @@ tResult cGUIScrollBarElement::GetPartRect(eGUIScrollBarPart part, tGUIRect * pRe
       return E_POINTER;
    }
 
-   tGUISize size = GetSize();
+   tGUISize size(GetSize());
    int width = Round(size.width);
    int height = Round(size.height);
 
@@ -223,9 +231,8 @@ tResult cGUIScrollBarElement::GetPartRect(eGUIScrollBarPart part, tGUIRect * pRe
       }
       else if (part == kGUIScrollBarPartThumb)
       {
-         uint xpos = ((width - (3 * height)) * m_scrollPos) / (m_rangeMax - m_rangeMin);
-         xpos += height;
-         *pRect = tGUIRect(xpos, 0, xpos + height, height);
+         uint leftEdge = (((width - (3 * height)) * m_scrollPos) / (m_rangeMax - m_rangeMin)) + height;
+         *pRect = tGUIRect(leftEdge, 0, leftEdge + height, height);
          return S_OK;
       }
    }
@@ -243,9 +250,8 @@ tResult cGUIScrollBarElement::GetPartRect(eGUIScrollBarPart part, tGUIRect * pRe
       }
       else if (part == kGUIScrollBarPartThumb)
       {
-         uint ypos = ((height - (3 * width)) * m_scrollPos) / (m_rangeMax - m_rangeMin);
-         ypos += width;
-         *pRect = tGUIRect(0, ypos, width, ypos + width);
+         uint topEdge = (((height - (3 * width)) * m_scrollPos) / (m_rangeMax - m_rangeMin)) + width;
+         *pRect = tGUIRect(0, topEdge, width, topEdge + width);
          return S_OK;
       }
    }
