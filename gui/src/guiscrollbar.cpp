@@ -114,7 +114,6 @@ tResult cGUIScrollBarElement::OnEvent(IGUIEvent * pEvent)
 #if 0
                m_scrollPos = (point.x - pos.x - size.height) * (m_rangeMax - m_rangeMin) / (size.width - (3 * size.height));
 #else
-               m_scrollPos = xpos * (m_rangeMax - m_rangeMin) / (width - (3 * height));
                m_scrollPos = Round(((m_rangeMax - m_rangeMin) * (point.x - pos.x)) / size.width);
                m_scrollPos += m_rangeMin;
 #endif
