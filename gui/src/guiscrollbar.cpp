@@ -77,8 +77,8 @@ tResult cGUIScrollBarElement::OnEvent(IGUIEvent * pEvent)
       Verify(pEvent->SetCancelBubble(true) == S_OK);
 
       m_armedPart = m_mouseOverPart;
+      m_dragOffset = DetermineScrollPos(point) - m_scrollPos;
       m_dragStartScrollPos = m_scrollPos;
-      m_dragStartMousePos = point;
    }
    else if (eventCode == kGUIEventDragEnd)
    {
@@ -99,28 +99,14 @@ tResult cGUIScrollBarElement::OnEvent(IGUIEvent * pEvent)
 
       if (m_armedPart == kGUIScrollBarPartThumb)
       {
-         const tGUISize size(GetSize());
-
-         tGUIPoint pos = GUIElementAbsolutePosition(this);
-
-         if (m_scrollBarType == kGUIScrollBarHorizontal)
+         int newScrollPos = DetermineScrollPos(point);
+         if (newScrollPos < 0)
          {
-            if (point.x < pos.x || (point.x - pos.x) > size.width)
-            {
-               m_scrollPos = m_dragStartScrollPos;
-            }
-            else
-            {
-#if 0
-               m_scrollPos = (point.x - pos.x - size.height) * (m_rangeMax - m_rangeMin) / (size.width - (3 * size.height));
-#else
-               m_scrollPos = Round(((m_rangeMax - m_rangeMin) * (point.x - pos.x)) / size.width);
-               m_scrollPos += m_rangeMin;
-#endif
-            }
+            SetScrollPos(m_dragStartScrollPos);
          }
-         else if (m_scrollBarType == kGUIScrollBarVertical)
+         else
          {
+            SetScrollPos(newScrollPos - m_dragOffset);
          }
       }
    }
@@ -140,38 +126,22 @@ tResult cGUIScrollBarElement::OnEvent(IGUIEvent * pEvent)
          {
             case kGUIScrollBarPartButton1:
             {
-               m_scrollPos -= m_lineSize;
-               if (m_scrollPos < m_rangeMin)
-               {
-                  m_scrollPos = m_rangeMin;
-               }
+               SetScrollPos(m_scrollPos - m_lineSize);
                break;
             }
             case kGUIScrollBarPartButton2:
             {
-               m_scrollPos += m_lineSize;
-               if (m_scrollPos > m_rangeMax)
-               {
-                  m_scrollPos = m_rangeMax;
-               }
+               SetScrollPos(m_scrollPos + m_lineSize);
                break;
             }
             case kGUIScrollBarPartTrack1:
             {
-               m_scrollPos -= m_pageSize;
-               if (m_scrollPos < m_rangeMin)
-               {
-                  m_scrollPos = m_rangeMin;
-               }
+               SetScrollPos(m_scrollPos - m_pageSize);
                break;
             }
             case kGUIScrollBarPartTrack2:
             {
-               m_scrollPos += m_pageSize;
-               if (m_scrollPos > m_rangeMax)
-               {
-                  m_scrollPos = m_rangeMax;
-               }
+               SetScrollPos(m_scrollPos + m_pageSize);
                break;
             }
          }
@@ -358,6 +328,28 @@ tResult cGUIScrollBarElement::SetPageSize(int pageSize)
    }
    m_pageSize = pageSize;
    return S_OK;
+}
+
+///////////////////////////////////////
+
+int cGUIScrollBarElement::DetermineScrollPos(const tGUIPoint & mousePos) const
+{
+   tGUISize size(GetSize());
+   tGUIPoint pos(GUIElementAbsolutePosition(const_cast<cGUIScrollBarElement*>(this)));
+
+   if (m_scrollBarType == kGUIScrollBarHorizontal)
+   {
+      float threeHalfsHeight = size.height * 3 / 2;
+
+      float rangeMinScreen = pos.x + threeHalfsHeight; // assumes width of thumb rect is size.height
+      float rangeScreen = size.width - (size.height * 3); // assumes width of thumb rect is size.height
+
+      float fracPos = (mousePos.x - rangeMinScreen) / rangeScreen;
+
+      return m_rangeMin + Round(fracPos * (m_rangeMax - m_rangeMin));
+   }
+
+   return -1;
 }
 
 ///////////////////////////////////////
