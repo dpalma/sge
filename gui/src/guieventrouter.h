@@ -109,9 +109,6 @@ protected:
 private:
    tGUIElementList m_elements;
 
-   typedef std::list<IGUIDialogElement *> tGUIDialogList;
-   tGUIDialogList m_dialogs;
-
    cAutoIPtr<IGUIElement> m_pFocus, m_pMouseOver, m_pDrag;
 };
 

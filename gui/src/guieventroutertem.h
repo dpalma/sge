@@ -165,12 +165,6 @@ tResult cGUIEventRouter<INTRFC>::AddElement(IGUIElement * pElement)
 
    m_elements.push_back(CTAddRef(pElement));
 
-   cAutoIPtr<IGUIDialogElement> pDialog;
-   if (pElement->QueryInterface(IID_IGUIDialogElement, (void**)&pDialog) == S_OK)
-   {
-      m_dialogs.push_back(CTAddRef(pDialog));
-   }
-
    return S_OK;
 }
 
@@ -193,17 +187,6 @@ tResult cGUIEventRouter<INTRFC>::RemoveElement(IGUIElement * pElement)
       {
          (*f)->Release();
          m_elements.erase(f);
-         result = S_OK;
-      }
-   }
-
-   // Remove from dialog list too if necessary
-   {
-      tGUIDialogList::iterator f = std::find_if(m_dialogs.begin(), m_dialogs.end(), cSameAs(pElement));
-      if (f != m_dialogs.end())
-      {
-         (*f)->Release();
-         m_dialogs.erase(f);
          result = S_OK;
       }
    }
@@ -253,33 +236,44 @@ void cGUIEventRouter<INTRFC>::RemoveAllElements()
    SafeRelease(m_pDrag);
    std::for_each(m_elements.begin(), m_elements.end(), CTInterfaceMethod(&IGUIElement::Release));
    m_elements.clear();
-   std::for_each(m_dialogs.begin(), m_dialogs.end(), CTInterfaceMethod(&IGUIDialogElement::Release));
-   m_dialogs.clear();
 }
 
 ///////////////////////////////////////
 
+typedef std::pair<IGUIElement*, uint> tQueueEntry;
+
+bool operator >(const tQueueEntry & lhs, const tQueueEntry & rhs)
+{
+   return lhs.second > rhs.second;
+}
+
 template <typename INTRFC>
 tResult cGUIEventRouter<INTRFC>::GetHitElements(const tGUIPoint & point,
-                                                std::list<IGUIElement*> * pElements) const
+                                                tGUIElementList * pElements) const
 {
    if (pElements == NULL)
    {
       return E_POINTER;
    }
 
-   std::queue<IGUIElement*> q;
+   std::priority_queue<tQueueEntry, std::vector<tQueueEntry>, std::greater<tQueueEntry> > q;
 
    tGUIElementList::const_iterator iter = m_elements.begin();
-   tGUIElementList::const_iterator end = m_elements.end();
-   for (; iter != end; iter++)
+   for (; iter != m_elements.end(); iter++)
    {
-      q.push(CTAddRef(*iter));
+      uint zorder = 0;
+      cAutoIPtr<IGUIDialogElement> pTempDlg;
+      if ((*iter)->QueryInterface(IID_IGUIDialogElement, (void**)&pTempDlg) == S_OK)
+      {
+         zorder = 1000; // modal dialogs should have a higher z order
+      }
+      q.push(tQueueEntry(CTAddRef(*iter), zorder));
    }
 
    while (!q.empty())
    {
-      cAutoIPtr<IGUIElement> pElement(q.front());
+      cAutoIPtr<IGUIElement> pElement(q.top().first);
+      uint zorder = q.top().second;
       q.pop();
 
       tGUIPoint pos(GUIElementAbsolutePosition(pElement));
@@ -296,7 +290,7 @@ tResult cGUIEventRouter<INTRFC>::GetHitElements(const tGUIPoint & point,
             {
                for (ulong i = 0; i < count; i++)
                {
-                  q.push(pChildren[i]);
+                  q.push(tQueueEntry(pChildren[i], zorder+1));
                }
                count = 0;
             }
@@ -436,13 +430,12 @@ tResult cGUIEventRouter<INTRFC>::GetActiveModalDialog(IGUIDialogElement * * ppMo
       return E_POINTER;
    }
 
-   if (m_dialogs.empty())
+   if (m_elements.empty())
    {
       return S_FALSE;
    }
 
-   *ppModalDialog = CTAddRef(m_dialogs.back());
-   return S_OK;
+   return m_elements.back()->QueryInterface(IID_IGUIDialogElement, (void**)ppModalDialog);
 }
 
 ///////////////////////////////////////

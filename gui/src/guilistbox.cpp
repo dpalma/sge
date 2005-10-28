@@ -81,7 +81,7 @@ tResult cGUIListBoxElement::SetClientArea(const tGUIRect & clientArea)
          }
          m_pHScrollBar->SetPosition(tGUIPoint(static_cast<float>(clientArea.left), clientArea.bottom - hScrollBarSize.height));
          m_pHScrollBar->SetSize(hScrollBarSize);
-         modifiedClientArea.right -= Round(hScrollBarSize.height);
+         modifiedClientArea.bottom -= Round(hScrollBarSize.height);
       }
 
       if (!!m_pVScrollBar)
@@ -93,7 +93,7 @@ tResult cGUIListBoxElement::SetClientArea(const tGUIRect & clientArea)
          }
          m_pVScrollBar->SetPosition(tGUIPoint(clientArea.right - vScrollBarSize.width, static_cast<float>(clientArea.top)));
          m_pVScrollBar->SetSize(vScrollBarSize);
-         modifiedClientArea.bottom -= Round(vScrollBarSize.width);
+         modifiedClientArea.right -= Round(vScrollBarSize.width);
       }
    }
 
