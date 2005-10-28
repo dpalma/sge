@@ -43,10 +43,21 @@ function LoadSampleLevel()
    ViewSetPos(0.5, 0.4);
 end;
 
--- Called automatically at start-up by the game engine
-function GameInit()
+function ShowSinglePlayerPage()
+   LoadSampleLevel();
+end;
+
+function ShowOptionsPage()
+end;
+
+function ShowStartPage()
    GUIContext:Clear();
    GUIContext:Load("start.xml");
+end;
+
+-- Called automatically at start-up by the game engine
+function GameInit()
+   ShowStartPage()
 end;
 
 -------------------------------------------------------------------------------

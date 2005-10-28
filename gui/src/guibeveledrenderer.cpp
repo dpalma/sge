@@ -299,7 +299,8 @@ tResult cGUIBeveledRenderer::Render(IGUIButtonElement * pButtonElement, IGUIRend
          rect.top += g_bevel;
       }
 
-      pFont->RenderText(text.c_str(), text.length(), &rect, renderTextFlags, tGUIColor::White);
+      pFont->RenderText(text.c_str(), text.length(), &rect, renderTextFlags,
+         pButtonElement->IsEnabled() ? tGUIColor::White : tGUIColor::DarkGray);
 
       return S_OK;
    }

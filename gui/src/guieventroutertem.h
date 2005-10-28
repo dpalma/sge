@@ -542,29 +542,32 @@ bool cGUIEventRouter<INTRFC>::HandleInputEvent(const sInputEvent * pInputEvent)
 
    if (KeyIsMouse(pInputEvent->key) && !!pMouseOver)
    {
-      if (eventCode == kGUIEventMouseDown)
+      if (pMouseOver->IsEnabled())
       {
-         SetFocus(pMouseOver);
-
-         cAutoIPtr<IGUIEvent> pDragStartEvent;
-         if (GUIEventCreate(kGUIEventDragStart, pInputEvent->point, 
-            pInputEvent->key, pMouseOver, true, &pDragStartEvent) == S_OK)
+         if (eventCode == kGUIEventMouseDown)
          {
-            BubbleEvent(pDragStartEvent);
-            SetDrag(pMouseOver);
-            return true;
-         }
-      }
-      else if (eventCode == kGUIEventMouseMove)
-      {
-         DoMouseEnterExit(pInputEvent, pMouseOver, NULL);
-      }
+            SetFocus(pMouseOver);
 
-      cAutoIPtr<IGUIEvent> pEvent;
-      if (GUIEventCreate(eventCode, pInputEvent->point, 
-         pInputEvent->key, pMouseOver, true, &pEvent) == S_OK)
-      {
-         return BubbleEvent(pEvent);
+            cAutoIPtr<IGUIEvent> pDragStartEvent;
+            if (GUIEventCreate(kGUIEventDragStart, pInputEvent->point, 
+               pInputEvent->key, pMouseOver, true, &pDragStartEvent) == S_OK)
+            {
+               BubbleEvent(pDragStartEvent);
+               SetDrag(pMouseOver);
+               return true;
+            }
+         }
+         else if (eventCode == kGUIEventMouseMove)
+         {
+            DoMouseEnterExit(pInputEvent, pMouseOver, NULL);
+         }
+
+         cAutoIPtr<IGUIEvent> pEvent;
+         if (GUIEventCreate(eventCode, pInputEvent->point, 
+            pInputEvent->key, pMouseOver, true, &pEvent) == S_OK)
+         {
+            return BubbleEvent(pEvent);
+         }
       }
    }
    else
