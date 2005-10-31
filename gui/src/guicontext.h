@@ -46,14 +46,17 @@ public:
                                  int nMaxResults, cScriptVar * pResults);
    tResult InvokeClear(int argc, const cScriptVar * argv,
                        int nMaxResults, cScriptVar * pResults);
-   tResult InvokeLoad(int argc, const cScriptVar * argv,
-                      int nMaxResults, cScriptVar * pResults);
+   tResult InvokePushPage(int argc, const cScriptVar * argv,
+                          int nMaxResults, cScriptVar * pResults);
+   tResult InvokePopPage(int argc, const cScriptVar * argv,
+                         int nMaxResults, cScriptVar * pResults);
    tResult InvokeToggleDebugInfo(int argc, const cScriptVar * argv,
                                  int nMaxResults, cScriptVar * pResults);
 
    virtual tResult ShowModalDialog(const tChar * pszDialog);
 
-   virtual tResult LoadElements(const char * pszXmlStringOrFile, bool bVisible);
+   virtual tResult PushPage(const tChar * pszPage);
+   virtual tResult PopPage();
 
    virtual void ClearGUI();
 

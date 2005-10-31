@@ -772,11 +772,11 @@ interface IGUIContext : IGUIEventRouter
    /// @return TODO
    virtual tResult ShowModalDialog(const tChar * pszDialog) = 0;
 
-   /// @brief Loads GUI elements from either an XML fragment or file
-   /// @param pszXmlStringOrFile specifies either an XML fragment or file name
-   /// @param bVisible determines whether the loaded elements will be intially visible
+   /// @brief Create GUI elements from XML specifications
+   /// @param pszPage specifies either an XML fragment or file name
    /// @return S_OK, S_FALSE if no error and no elements loaded, or an E_xxx code
-   virtual tResult LoadElements(const char * pszXmlStringOrFile, bool bVisible) = 0;
+   virtual tResult PushPage(const tChar * pszPage) = 0;
+   virtual tResult PopPage() = 0;
 
    virtual void ClearGUI() = 0;
 

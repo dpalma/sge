@@ -40,7 +40,8 @@ LOG_DEFINE_CHANNEL(GUIContext);
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static tResult LoadElements(TiXmlDocument * pTiXmlDoc, std::vector<IGUIElement*> * pElements)
+template <typename CONTAINER>
+static tResult LoadElements(TiXmlDocument * pTiXmlDoc, CONTAINER * pElements)
 {
    if (pTiXmlDoc == NULL || pElements == NULL)
    {
@@ -70,7 +71,8 @@ static tResult LoadElements(TiXmlDocument * pTiXmlDoc, std::vector<IGUIElement*>
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static tResult LoadElements(const char * psz, std::vector<IGUIElement*> * pElements)
+template <typename CONTAINER>
+static tResult LoadElements(const char * psz, CONTAINER * pElements)
 {
    if (psz == NULL || pElements == NULL)
    {
@@ -300,7 +302,8 @@ tResult cGUIContext::Invoke(const char * pszMethodName,
    {
       { "ShowModalDialog",    &cGUIContext::InvokeShowModalDialog },
       { "Clear",              &cGUIContext::InvokeClear },
-      { "Load",               &cGUIContext::InvokeLoad },
+      { "PushPage",           &cGUIContext::InvokePushPage },
+      { "PopPage",            &cGUIContext::InvokePopPage },
       { "ToggleDebugInfo",    &cGUIContext::InvokeToggleDebugInfo },
    };
 
@@ -356,22 +359,15 @@ tResult cGUIContext::InvokeClear(int argc, const cScriptVar * argv,
 
 ///////////////////////////////////////
 
-tResult cGUIContext::InvokeLoad(int argc, const cScriptVar * argv,
-                                int nMaxResults, cScriptVar * pResults)
+tResult cGUIContext::InvokePushPage(int argc, const cScriptVar * argv,
+                                    int nMaxResults, cScriptVar * pResults)
 {
    if (argc == 1 && argv[0].IsString())
    {
-      if (LoadElements(argv[0], true) == S_OK)
+      if (PushPage(argv[0]) == S_OK)
       {
          LocalMsg1("Loading GUI definitions from %s\n", argv[0].psz);
-      }
-   }
-   else if (argc == 2 && argv[0].IsString() && argv[1].IsNumber())
-   {
-      bool bVisible = (argv[1].ToInt() != 0);
-      if (LoadElements(argv[0], bVisible) == S_OK)
-      {
-         LocalMsg1("Loading GUI definitions from %s\n", argv[0].psz);
+         return S_OK;
       }
    }
    else
@@ -379,7 +375,25 @@ tResult cGUIContext::InvokeLoad(int argc, const cScriptVar * argv,
       return E_INVALIDARG;
    }
 
-   return S_OK;
+   return E_FAIL;
+}
+
+///////////////////////////////////////
+
+tResult cGUIContext::InvokePopPage(int argc, const cScriptVar * argv,
+                                   int nMaxResults, cScriptVar * pResults)
+{
+   if (argc != 0)
+   {
+      return E_INVALIDARG;
+   }
+
+   if (PopPage() == S_OK)
+   {
+      return S_OK;
+   }
+
+   return E_FAIL;
 }
 
 ///////////////////////////////////////
@@ -479,31 +493,29 @@ tResult cGUIContext::ShowModalDialog(const tChar * pszDialog)
 
 ///////////////////////////////////////
 
-tResult cGUIContext::LoadElements(const char * pszXmlStringOrFile, bool bVisible)
+tResult cGUIContext::PushPage(const tChar * pszPage)
 {
-   if (pszXmlStringOrFile == NULL)
+   if (pszPage == NULL)
    {
       return E_POINTER;
    }
 
-   std::vector<IGUIElement*> elements;
-   if (::LoadElements(pszXmlStringOrFile, &elements) == S_OK)
+   tGUIElementList elements;
+   if (::LoadElements(pszPage, &elements) == S_OK)
    {
-      std::vector<IGUIElement*>::iterator iter = elements.begin();
-      std::vector<IGUIElement*>::iterator end = elements.end();
-      for (; iter != end; iter++)
-      {
-         (*iter)->SetVisible(bVisible);
-         AddElement(*iter);
-         (*iter)->Release();
-      }
-
-      elements.clear();
-
-      return S_OK;
+      tResult result = PushElements(&elements);
+      std::for_each(elements.begin(), elements.end(), CTInterfaceMethod(&IGUIElement::Release));
+      return result;
    }
 
    return S_FALSE;
+}
+
+///////////////////////////////////////
+
+tResult cGUIContext::PopPage()
+{
+   return PopElements();
 }
 
 ///////////////////////////////////////
@@ -518,11 +530,11 @@ void cGUIContext::ClearGUI()
 
 class cRenderElement
 {
-   cRenderElement(const cRenderElement &);
    void operator =(const cRenderElement &);
 
 public:
-   cRenderElement(void * pReserved);
+   cRenderElement(IGUIRenderDevice * pRenderDevice);
+   cRenderElement(const cRenderElement & other);
    ~cRenderElement();
 
    tResult operator()(IGUIElement * pGUIElement);
@@ -531,7 +543,13 @@ private:
    cAutoIPtr<IGUIRenderDevice> m_pRenderDevice;
 };
 
-cRenderElement::cRenderElement(void * pReserved)
+cRenderElement::cRenderElement(IGUIRenderDevice * pRenderDevice)
+ : m_pRenderDevice(CTAddRef(pRenderDevice))
+{
+}
+
+cRenderElement::cRenderElement(const cRenderElement & other)
+ : m_pRenderDevice(other.m_pRenderDevice)
 {
 }
 
@@ -554,12 +572,14 @@ tResult cRenderElement::operator()(IGUIElement * pElement)
    cAutoIPtr<IGUIElementRenderer> pRenderer;
    if (pElement->GetRenderer(&pRenderer) == S_OK)
    {
-      if (pRenderer->Render(pElement, m_pRenderDevice) == S_OK)
+      tResult result = pRenderer->Render(pElement, m_pRenderDevice);
+      if (SUCCEEDED(result))
       {
-         return S_OK;
+         return result;
       }
    }
 
+   ErrorMsg("A GUI element failed to render properly\n");
    return E_FAIL;
 }
 
@@ -587,23 +607,7 @@ tResult cGUIContext::RenderGUI()
    }
 
    IGUIRenderDevice * pRenderDevice = static_cast<IGUIRenderDevice*>(pRenderDeviceContext);
-
-   tGUIElementList::iterator iter = BeginElements();
-   tGUIElementList::iterator end = EndElements();
-   for (; iter != end; ++iter)
-   {
-      if ((*iter)->IsVisible())
-      {
-         cAutoIPtr<IGUIElementRenderer> pRenderer;
-         if ((*iter)->GetRenderer(&pRenderer) == S_OK)
-         {
-            if (pRenderer->Render(*iter, pRenderDevice) != S_OK)
-            {
-               ErrorMsg("A GUI element failed to render properly\n");
-            }
-         }
-      }
-   }
+   ForEachElement(cRenderElement(pRenderDevice));
 
 #ifdef GUI_DEBUG
    RenderDebugInfo();

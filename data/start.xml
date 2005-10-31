@@ -1,14 +1,14 @@
 <!-- $Id$ -->
-<panel style="width:100%;height:100%" renderer="beveled">
+<panel style="width:100%;height:100%" renderer="basic">
 	<layout type="flow" />
-	<panel style="width:100%;height:60%;background-color:(0,0.75,0)" renderer="basic">
+	<panel style="width:100%;height:60%;background-color:(0,0.75,0)">
 		<label text="Copyright (C) 2005, Daniel Palma" style="font-pointsize:8;align:right;vertical-align:top;" />
 		<label text=" {{TEST game}}" style="font-pointsize:36;align:left;vertical-align:bottom;" />
 	</panel>
-	<panel style="width:100%;height:40%;background-color:black;" renderer="basic">
+	<panel style="width:100%;height:40%;background-color:black;">
 		<layout type="grid" rows="3" columns="5" />
 		<label/><label/><label/>
-		<button text="Single Player" style="align:center;vertical-align:center;" onclick="ShowSinglePlayerPage();" renderer="beveled"/>
+		<button text="Custom Game" style="align:center;vertical-align:center;" onclick="ShowCustomGamePage();" renderer="beveled"/>
 		<label/>
 		<label/><label/><label/>
 		<button text="Options" enabled="false" style="align:center;vertical-align:center;" onclick="ShowOptionsPage();" renderer="beveled"/>

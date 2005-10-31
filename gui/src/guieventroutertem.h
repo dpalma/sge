@@ -127,6 +127,60 @@ tResult cGUIEventRouter<INTRFC>::SetDrag(IGUIElement * pElement)
 ///////////////////////////////////////
 
 template <typename INTRFC>
+tResult cGUIEventRouter<INTRFC>::PushElements(tGUIElementList * pElements)
+{
+   if (pElements == NULL)
+   {
+      return E_POINTER;
+   }
+
+   SafeRelease(m_pFocus);
+   SafeRelease(m_pMouseOver);
+   SafeRelease(m_pDrag);
+
+   bool bFirst = true;
+   tGUIElementList::iterator iter = pElements->begin();
+   for (; iter != pElements->end(); iter++)
+   {
+      (*iter)->SetVisible(true);
+      if (bFirst)
+      {
+         m_markers.push_back(m_elements.insert(m_elements.end(), CTAddRef(*iter)));
+         bFirst = false;
+      }
+      else
+      {
+         m_elements.push_back(CTAddRef(*iter));
+      }
+   }
+
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
+tResult cGUIEventRouter<INTRFC>::PopElements()
+{
+   if (m_markers.empty())
+   {
+      return E_FAIL;
+   }
+
+   SafeRelease(m_pFocus);
+   SafeRelease(m_pMouseOver);
+   SafeRelease(m_pDrag);
+
+   std::for_each(m_markers.back(), m_elements.end(), CTInterfaceMethod(&IGUIElement::Release));
+   m_elements.erase(m_markers.back(), m_elements.end());
+   m_markers.pop_back();
+
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
 tResult cGUIEventRouter<INTRFC>::GetElement(const tChar * pszId, IGUIElement * * ppElement)
 {
    if (pszId == NULL || ppElement == NULL)
@@ -136,7 +190,7 @@ tResult cGUIEventRouter<INTRFC>::GetElement(const tChar * pszId, IGUIElement * *
 
    // TODO: construct a map to do this
    tGUIElementList::iterator iter;
-   for (iter = m_elements.begin(); iter != m_elements.end(); iter++)
+   for (iter = m_markers.back(); iter != m_elements.end(); iter++)
    {
       if (GUIElementIdMatch(*iter, pszId))
       {
@@ -182,7 +236,7 @@ tResult cGUIEventRouter<INTRFC>::RemoveElement(IGUIElement * pElement)
 
    // Remove from element list
    {
-      tGUIElementList::iterator f = std::find_if(m_elements.begin(), m_elements.end(), cSameAs(pElement));
+      tGUIElementList::iterator f = std::find_if(m_markers.back(), m_elements.end(), cSameAs(pElement));
       if (f != m_elements.end())
       {
          (*f)->Release();
@@ -222,7 +276,8 @@ tResult cGUIEventRouter<INTRFC>::HasElement(IGUIElement * pElement) const
       return E_POINTER;
    }
 
-   tGUIElementList::const_iterator f = std::find_if(m_elements.begin(), m_elements.end(), cSameAs(pElement));
+   tGUIElementList::const_iterator begin(m_markers.back());
+   tGUIElementList::const_iterator f = std::find_if(begin, m_elements.end(), cSameAs(pElement));
    return (f != m_elements.end()) ? S_OK : S_FALSE;
 }
 
@@ -236,6 +291,7 @@ void cGUIEventRouter<INTRFC>::RemoveAllElements()
    SafeRelease(m_pDrag);
    std::for_each(m_elements.begin(), m_elements.end(), CTInterfaceMethod(&IGUIElement::Release));
    m_elements.clear();
+   m_markers.clear();
 }
 
 ///////////////////////////////////////
@@ -258,7 +314,7 @@ tResult cGUIEventRouter<INTRFC>::GetHitElements(const tGUIPoint & point,
 
    std::priority_queue<tQueueEntry, std::vector<tQueueEntry>, std::greater<tQueueEntry> > q;
 
-   tGUIElementList::const_iterator iter = m_elements.begin();
+   tGUIElementList::const_iterator iter = m_markers.back();
    for (; iter != m_elements.end(); iter++)
    {
       uint zorder = 0;

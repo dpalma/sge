@@ -64,6 +64,9 @@ protected:
 
    uint GetElementCount() const;
 
+   tResult PushElements(tGUIElementList * pElements);
+   tResult PopElements();
+
    tResult GetElement(const tChar * pszId, IGUIElement * * ppElement);
    tResult AddElement(IGUIElement * pElement);
    tResult RemoveElement(IGUIElement * pElement);
@@ -74,8 +77,8 @@ protected:
    tResult ForEachElement(F f)
    {
       tResult result = E_FAIL;
-      tGUIElementList::iterator iter;
-      for (iter = m_elements.begin(); iter != m_elements.end(); iter++)
+      tGUIElementList::iterator iter = m_markers.back();
+      for (; iter != m_elements.end(); iter++)
       {
          result = f(*iter);
          // S_OK means success (good)
@@ -89,10 +92,7 @@ protected:
       return result;
    }
 
-   tGUIElementList::iterator BeginElements();
-   tGUIElementList::iterator EndElements();
-
-   tResult GetHitElements(const tGUIPoint & point, std::list<IGUIElement*> * pElements) const;
+   tResult GetHitElements(const tGUIPoint & point, tGUIElementList * pElements) const;
    tResult GetHitElement(const tGUIPoint & point, IGUIElement * * ppElement) const;
 
    bool DoEvent(IGUIEvent * pEvent);
@@ -108,7 +108,7 @@ protected:
 
 private:
    tGUIElementList m_elements;
-
+   std::list<tGUIElementList::iterator> m_markers;
    cAutoIPtr<IGUIElement> m_pFocus, m_pMouseOver, m_pDrag;
 };
 
@@ -142,22 +142,6 @@ template <typename INTRFC>
 inline uint cGUIEventRouter<INTRFC>::GetElementCount() const
 {
    return m_elements.size();
-}
-
-///////////////////////////////////////
-
-template <typename INTRFC>
-inline tGUIElementList::iterator cGUIEventRouter<INTRFC>::BeginElements()
-{
-   return m_elements.begin();
-}
-
-///////////////////////////////////////
-
-template <typename INTRFC>
-inline tGUIElementList::iterator cGUIEventRouter<INTRFC>::EndElements()
-{
-   return m_elements.end();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

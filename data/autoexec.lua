@@ -21,8 +21,7 @@ bind("F7", [[GUIContext:ShowModalDialog("guitest.xml")]]);
 --LogChannel([[ResourceManager]]);
 
 function LoadSampleLevel()
-   GUIContext:Clear();
-   GUIContext:Load("ingame.xml");
+   GUIContext:PushPage("ingame.xml");
    
    SetTerrain("Rolling Grassy Hills.sgm");
    
@@ -43,21 +42,17 @@ function LoadSampleLevel()
    ViewSetPos(0.5, 0.4);
 end;
 
-function ShowSinglePlayerPage()
-   LoadSampleLevel();
+function ShowCustomGamePage()
+   GUIContext:PushPage("customgame.xml");
 end;
 
 function ShowOptionsPage()
 end;
 
-function ShowStartPage()
-   GUIContext:Clear();
-   GUIContext:Load("start.xml");
-end;
-
 -- Called automatically at start-up by the game engine
 function GameInit()
-   ShowStartPage()
+   GUIContext:Clear();
+   GUIContext:PushPage("start.xml");
 end;
 
 -------------------------------------------------------------------------------
