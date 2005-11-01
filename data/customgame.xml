@@ -1,18 +1,16 @@
 <!-- $Id$ -->
-<!--
 <script>
    maps = ListResources("SGE.Map");
-   if table.getn(maps) > 0 then
-      table.foreachi(maps, function(i, v) print([[Map ]] .. i .. [[ is ]] .. v .. [[\n]]) end);
+   if maps and (table.getn(maps) > 0) then
+      table.foreachi(maps, function(i, v) print("Map " .. i .. " is " .. v .. "\n") end);
    else
-      print([[Found no maps\n]]);
+      print("Found no maps\n");
    end;
 </script>
--->
 <panel style="width:100%;height:100%" renderer="basic">
-	<layout type="flow" />
-	<panel style="width:100%;height:60%;background-color:(0,0,0.75)">
-		<layout type="grid" rows=1 columns=1 />
+    <layout type="flow" />
+    <panel style="width:100%;height:60%;background-color:(0,0,0.75)">
+      <layout type="grid" rows=1 columns=1 />
       <listbox id="mapsList" rows=6 style="width:50%;align:center;vertical-align:center;" renderer="beveled">
          <item text="item 0" />
          <item text="item 1" />
@@ -21,17 +19,17 @@
          <item text="item 4" />
          <item text="item 5" />
       </listbox>
-	</panel>
-	<panel style="width:100%;height:40%;background-color:black;">
-		<layout type="grid" rows="3" columns="5" />
-		<label/><label/><label/>
-		<button text="Start" style="align:center;vertical-align:center;" onclick="" renderer="beveled"/>
-		<label/>
-		<label/><label/><label/>
-		<button text="Sample Level" style="align:center;vertical-align:center;" onclick="LoadSampleLevel();" renderer="beveled"/>
-		<label/>
-		<label/><label/><label/>
-		<button text="Cancel" style="align:center;vertical-align:center;" onclick="GUIContext:PopPage();" renderer="beveled" />
+    </panel>
+    <panel style="width:100%;height:40%;background-color:black;">
+        <layout type="grid" rows="3" columns="5" />
+        <label/><label/><label/>
+        <button text="Start" style="align:center;vertical-align:center;" renderer="beveled"/>
+        <label/>
+        <label/><label/><label/>
+        <button text="Sample Level" style="align:center;vertical-align:center;" onclick="LoadSampleLevel();" renderer="beveled"/>
+        <label/>
+        <label/><label/><label/>
+        <button text="Cancel" style="align:center;vertical-align:center;" onclick="GUIContext:PopPage();" renderer="beveled" />
       <label/>
-	</panel>
+    </panel>
 </panel>

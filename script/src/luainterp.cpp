@@ -325,6 +325,21 @@ int LuaPrintEx(lua_State * L)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// modified version of Lua _ALERT function
+
+int LuaAlertEx(lua_State * L)
+{
+   int nArgs = lua_gettop(L);
+   if (nArgs == 1 && lua_isstring(L, -1))
+   {
+      const char * psz = lua_tostring(L, -1);
+      techlog.Print(kError, "LUA: %s\n", psz);
+      lua_pop(L, 1);
+   }
+   return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 
 static int LuaThunkFunction(lua_State * L)
 {
@@ -559,6 +574,7 @@ tResult cLuaInterpreter::Init()
    luaopen_loadlib(m_L);
 
    lua_register(m_L, "print", LuaPrintEx);
+   lua_register(m_L, "_ALERT", LuaAlertEx);
 
    Assert(!gm_bInitialized);
    gm_bInitialized = true;
