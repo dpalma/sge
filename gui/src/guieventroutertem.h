@@ -127,7 +127,7 @@ tResult cGUIEventRouter<INTRFC>::SetDrag(IGUIElement * pElement)
 ///////////////////////////////////////
 
 template <typename INTRFC>
-tResult cGUIEventRouter<INTRFC>::PushElements(tGUIElementList * pElements)
+tResult cGUIEventRouter<INTRFC>::PushElements(const tGUIElementList * pElements)
 {
    if (pElements == NULL)
    {
@@ -139,7 +139,7 @@ tResult cGUIEventRouter<INTRFC>::PushElements(tGUIElementList * pElements)
    SafeRelease(m_pDrag);
 
    bool bFirst = true;
-   tGUIElementList::iterator iter = pElements->begin();
+   tGUIElementList::const_iterator iter = pElements->begin();
    for (; iter != pElements->end(); iter++)
    {
       (*iter)->SetVisible(true);

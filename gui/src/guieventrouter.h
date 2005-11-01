@@ -64,7 +64,7 @@ protected:
 
    uint GetElementCount() const;
 
-   tResult PushElements(tGUIElementList * pElements);
+   tResult PushElements(const tGUIElementList * pElements);
    tResult PopElements();
 
    tResult GetElement(const tChar * pszId, IGUIElement * * ppElement);

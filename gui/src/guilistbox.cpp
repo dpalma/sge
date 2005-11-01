@@ -340,7 +340,7 @@ tResult cGUIListBoxElementFactory::CreateElement(const TiXmlElement * pXmlElemen
             pListBox->SetRowCount(rows);
          }
 
-         for (TiXmlElement * pXmlChild = pXmlElement->FirstChildElement(); 
+         for (const TiXmlElement * pXmlChild = pXmlElement->FirstChildElement(); 
             pXmlChild != NULL; pXmlChild = pXmlChild->NextSiblingElement())
          {
             if (pXmlChild->Type() == TiXmlNode::ELEMENT

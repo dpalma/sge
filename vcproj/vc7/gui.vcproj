@@ -386,6 +386,9 @@
 					RelativePath="..\..\gui\src\guirenderd3d.cpp">
 				</File>
 				<File
+					RelativePath="..\..\gui\src\guiscript.cpp">
+				</File>
+				<File
 					RelativePath="..\..\gui\src\guiscrollbar.cpp">
 				</File>
 				<File
@@ -511,6 +514,9 @@
 				</File>
 				<File
 					RelativePath="..\..\gui\src\guiscrollbar.h">
+				</File>
+				<File
+					RelativePath="..\..\gui\src\guiscript.h">
 				</File>
 				<File
 					RelativePath="..\..\gui\src\guistrings.h">

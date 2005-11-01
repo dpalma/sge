@@ -20,6 +20,7 @@ sources = Split("""
    src/guipanel.cpp
    src/guirender.cpp
    src/guirenderd3d.cpp
+   src/guiscript.cpp
    src/guiscrollbar.cpp
    src/guistyle.cpp
    src/guitextedit.cpp

@@ -79,10 +79,13 @@ static tResult LoadElements(const char * psz, CONTAINER * pElements)
       return E_POINTER;
    }
 
+   TiXmlBase::SetCondenseWhiteSpace(false);
+
    TiXmlDocument doc;
    doc.Parse(psz);
 
-   if (doc.Error())
+   int errorId = doc.ErrorId();
+   if (errorId != TiXmlBase::TIXML_NO_ERROR && errorId != TiXmlBase::TIXML_ERROR_DOCUMENT_EMPTY)
    {
       ErrorMsg1("TiXml parse error: %s\n", doc.ErrorDesc());
       return E_FAIL;
@@ -237,15 +240,15 @@ END_CONSTRAINTS()
 ///////////////////////////////////////
 
 cGUIContext::cGUIContext()
- : m_inputListener(this),
-   m_nElementsLastLayout(0),
-   m_bNeedsLayout(false),
-   m_bShowingModalDialog(false)
+ : m_inputListener(this)
+ , m_nElementsLastLayout(0)
+ , m_bNeedsLayout(false)
+ , m_bShowingModalDialog(false)
 #ifdef GUI_DEBUG
-   , m_bShowDebugInfo(false)
-   , m_debugInfoPlacement(0,0)
-   , m_debugInfoTextColor(tGUIColor::White)
-   , m_lastMousePos(0,0)
+ , m_bShowDebugInfo(false)
+ , m_debugInfoPlacement(0,0)
+ , m_debugInfoTextColor(tGUIColor::White)
+ , m_lastMousePos(0,0)
 #endif
 {
    RegisterGlobalObject(IID_IGUIContext, static_cast<IGlobalObject*>(this));
@@ -493,6 +496,30 @@ tResult cGUIContext::ShowModalDialog(const tChar * pszDialog)
 
 ///////////////////////////////////////
 
+static tResult ExecScriptElement(IGUIElement * pElement)
+{
+   if (pElement == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cAutoIPtr<IGUIScriptElement> pScriptElement;
+   if (pElement->QueryInterface(IID_IGUIScriptElement, (void**)&pScriptElement) == S_OK)
+   {
+      tGUIString script;
+      if (pScriptElement->GetScript(&script) == S_OK)
+      {
+         UseGlobal(ScriptInterpreter);
+         if (pScriptInterpreter->ExecString(script.c_str()) != S_OK)
+         {
+            WarnMsg("An error occured running script element\n");
+         }
+      }
+   }
+
+   return S_OK;
+}
+
 tResult cGUIContext::PushPage(const tChar * pszPage)
 {
    if (pszPage == NULL)
@@ -504,6 +531,10 @@ tResult cGUIContext::PushPage(const tChar * pszPage)
    if (::LoadElements(pszPage, &elements) == S_OK)
    {
       tResult result = PushElements(&elements);
+      if (result == S_OK)
+      {
+         ForEachElement(ExecScriptElement);
+      }
       std::for_each(elements.begin(), elements.end(), CTInterfaceMethod(&IGUIElement::Release));
       return result;
    }
@@ -570,17 +601,15 @@ tResult cRenderElement::operator()(IGUIElement * pElement)
    }
 
    cAutoIPtr<IGUIElementRenderer> pRenderer;
-   if (pElement->GetRenderer(&pRenderer) == S_OK)
+   tResult result = pElement->GetRenderer(&pRenderer);
+   if (result == S_OK)
    {
-      tResult result = pRenderer->Render(pElement, m_pRenderDevice);
-      if (SUCCEEDED(result))
-      {
-         return result;
-      }
+      result = pRenderer->Render(pElement, m_pRenderDevice);
    }
 
-   ErrorMsg("A GUI element failed to render properly\n");
-   return E_FAIL;
+   ErrorMsgIf(FAILED(result), "A GUI element failed to render properly\n");
+
+   return result;
 }
 
 ///////////////////////////////////////

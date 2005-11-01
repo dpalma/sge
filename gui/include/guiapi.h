@@ -38,6 +38,7 @@ F_DECLARE_INTERFACE(IGUILabelElement);
 F_DECLARE_INTERFACE(IGUITextEditElement);
 F_DECLARE_INTERFACE(IGUIScrollBarElement);
 F_DECLARE_INTERFACE(IGUIListBoxElement);
+F_DECLARE_INTERFACE(IGUIScriptElement);
 F_DECLARE_INTERFACE(IGUIEventRouter);
 F_DECLARE_INTERFACE(IGUIEventListener);
 F_DECLARE_INTERFACE(IGUIFactory);
@@ -609,6 +610,18 @@ interface IGUIListBoxElement : IGUIElement
    virtual tResult SetRowCount(uint rowCount) = 0;
 
    virtual tResult GetScrollBar(eGUIScrollBarType scrollBarType, IGUIScrollBarElement * * ppScrollBar) = 0;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IGUIScriptElement
+//
+
+interface IGUIScriptElement : IGUIElement
+{
+   virtual tResult GetScript(tGUIString * pScript) = 0;
+   virtual tResult SetScript(const tChar * pszScript) = 0;
 };
 
 

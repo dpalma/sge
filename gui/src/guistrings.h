@@ -79,6 +79,7 @@ const char kElementLabel[]             = "label";
 const char kElementListBox[]           = "listbox";
 const char kElementPanel[]             = "panel";
 const char kElementTextEdit[]          = "textedit";
+const char kElementScript[]            = "script";
 const char kElementScrollBar[]         = "scrollbar";
 
 ///////////////////////////////////////////////////////////////////////////////

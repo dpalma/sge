@@ -26,6 +26,8 @@
 
 void * TiXmlDocumentFromText(void * pData, int dataLength, void * param)
 {
+   TiXmlBase::SetCondenseWhiteSpace(false);
+
    char * psz = reinterpret_cast<char*>(pData);
    if (psz != NULL && strlen(psz) > 0)
    {

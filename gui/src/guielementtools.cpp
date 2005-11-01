@@ -41,6 +41,7 @@ tResult GUIElementType(IUnknown * pUnkElement, cStr * pType)
       { &IID_IGUIContainerElement,  "Container" },
       { &IID_IGUIScrollBarElement,  "ScrollBar" },
       { &IID_IGUIListBoxElement,    "ListBox" },
+      { &IID_IGUIScriptElement,     "Script" },
    };
 
    for (int i = 0; i < _countof(guiElementTypes); i++)
@@ -86,7 +87,7 @@ tResult GUIElementCreateChildren(const TiXmlElement * pXmlElement,
 
    UseGlobal(GUIFactory);
 
-   for (TiXmlElement * pXmlChild = pXmlElement->FirstChildElement(); 
+   for (const TiXmlElement * pXmlChild = pXmlElement->FirstChildElement(); 
         pXmlChild != NULL; pXmlChild = pXmlChild->NextSiblingElement())
    {
       if (pXmlChild->Type() == TiXmlNode::ELEMENT)
