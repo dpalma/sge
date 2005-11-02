@@ -6,6 +6,8 @@
 
 #include "guielementbase.h"
 
+#include "scriptapi.h"
+
 #include <vector>
 
 #ifdef _MSC_VER
@@ -17,7 +19,8 @@
 // CLASS: cGUIListBoxElement
 //
 
-class cGUIListBoxElement : public cComObject<cGUIElementBase<IGUIListBoxElement>, &IID_IGUIListBoxElement>
+class cGUIListBoxElement : public cComObject2<cGUIElementBase<IGUIListBoxElement>, &IID_IGUIListBoxElement,
+                                              IMPLEMENTS(IScriptable)>
 {
 public:
    cGUIListBoxElement();
@@ -44,6 +47,11 @@ public:
    virtual tResult GetRowCount(uint * pRowCount);
    virtual tResult SetRowCount(uint rowCount);
    virtual tResult GetScrollBar(eGUIScrollBarType scrollBarType, IGUIScrollBarElement * * ppScrollBar);
+
+   // IScriptable methods
+   virtual tResult Invoke(const char * pszMethodName,
+                          int argc, const cScriptVar * argv,
+                          int nMaxResults, cScriptVar * pResults);
 
 private:
    typedef std::pair<cStr, uint_ptr> tListBoxItem;

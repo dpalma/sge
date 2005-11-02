@@ -105,6 +105,45 @@ tResult cGUIPage::HasElement(IGUIElement * pElement) const
 
 ///////////////////////////////////////
 
+static tResult GetElementHelper(IGUIElement * pParent, const tChar * pszId, IGUIElement * * ppElement)
+{
+   if (GUIElementIdMatch(pParent, pszId))
+   {
+      *ppElement = CTAddRef(pParent);
+      return S_OK;
+   }
+   else
+   {
+      cAutoIPtr<IGUIElementEnum> pEnum;
+      if (pParent->EnumChildren(&pEnum) == S_OK)
+      {
+         IGUIElement * pChildren[32];
+         ulong count = 0;
+
+         while (SUCCEEDED((pEnum->Next(_countof(pChildren), &pChildren[0], &count))) && (count > 0))
+         {
+            for (ulong i = 0; i < count; i++)
+            {
+               if (GetElementHelper(pChildren[i], pszId, ppElement) == S_OK)
+               {
+                  for (; i < count; i++)
+                  {
+                     SafeRelease(pChildren[i]);
+                  }
+                  return S_OK;
+               }
+
+               SafeRelease(pChildren[i]);
+            }
+
+            count = 0;
+         }
+      }
+   }
+
+   return S_FALSE;
+}
+
 tResult cGUIPage::GetElement(const tChar * pszId, IGUIElement * * ppElement)
 {
    if (pszId == NULL || ppElement == NULL)
@@ -112,14 +151,12 @@ tResult cGUIPage::GetElement(const tChar * pszId, IGUIElement * * ppElement)
       return E_POINTER;
    }
 
-   // TODO: construct a map to do this
-   // TODO: recursively search all children?
+   // TODO: construct a map to do this?
    tGUIElementList::iterator iter;
    for (iter = m_elements.begin(); iter != m_elements.end(); iter++)
    {
-      if (GUIElementIdMatch(*iter, pszId))
+      if (GetElementHelper(*iter, pszId, ppElement) == S_OK)
       {
-         *ppElement = CTAddRef(*iter);
          return S_OK;
       }
    }

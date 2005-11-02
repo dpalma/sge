@@ -58,6 +58,8 @@ public:
                          int nMaxResults, cScriptVar * pResults);
    tResult InvokeToggleDebugInfo(int argc, const cScriptVar * argv,
                                  int nMaxResults, cScriptVar * pResults);
+   tResult InvokeGetElement(int argc, const cScriptVar * argv,
+                            int nMaxResults, cScriptVar * pResults);
 
    // IGUIContext methods
    virtual tResult ShowModalDialog(const tChar * pszDialog);

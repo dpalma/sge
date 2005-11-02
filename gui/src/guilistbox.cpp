@@ -8,6 +8,8 @@
 #include "guielementtools.h"
 #include "guistrings.h"
 
+#include "scriptvar.h"
+
 #include "globalobj.h"
 
 #include <list>
@@ -303,6 +305,42 @@ tResult cGUIListBoxElement::GetScrollBar(eGUIScrollBarType scrollBarType,
    {
       return E_INVALIDARG;
    }
+   return E_FAIL;
+}
+
+////////////////////////////////////////
+
+tResult cGUIListBoxElement::Invoke(const char * pszMethodName,
+                                   int argc, const cScriptVar * argv,
+                                   int nMaxResults, cScriptVar * pResults)
+{
+   if (pszMethodName == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (strcmp(pszMethodName, "Add") == 0)
+   {
+      if (argc == 1 && argv[0].IsString())
+      {
+         if (AddItem(argv[0], 0) == S_OK)
+         {
+            return S_OK;
+         }
+      }
+      else if (argc == 2 && argv[0].IsString() && argv[1].IsNumber())
+      {
+         if (AddItem(argv[0], argv[1]) == S_OK)
+         {
+            return S_OK;
+         }
+      }
+      else
+      {
+         return E_INVALIDARG;
+      }
+   }
+
    return E_FAIL;
 }
 

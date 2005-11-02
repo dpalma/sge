@@ -6,18 +6,17 @@
    else
       print("Found no maps\n");
    end;
+   mapsList = GUIContext:GetElement("mapsList");
+   if mapsList then
+      mapsList:AddItem("map 00");
+      mapsList:AddItem("map 01");
+   end;
 </script>
 <panel style="width:100%;height:100%" renderer="basic">
     <layout type="flow" />
     <panel style="width:100%;height:60%;background-color:(0,0,0.75)">
       <layout type="grid" rows=1 columns=1 />
       <listbox id="mapsList" rows=6 style="width:50%;align:center;vertical-align:center;" renderer="beveled">
-         <item text="item 0" />
-         <item text="item 1" />
-         <item text="item 2" />
-         <item text="item 3" />
-         <item text="item 4" />
-         <item text="item 5" />
       </listbox>
     </panel>
     <panel style="width:100%;height:40%;background-color:black;">

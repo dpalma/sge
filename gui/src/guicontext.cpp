@@ -307,6 +307,7 @@ tResult cGUIContext::Invoke(const char * pszMethodName,
       { "PushPage",           &cGUIContext::InvokePushPage },
       { "PopPage",            &cGUIContext::InvokePopPage },
       { "ToggleDebugInfo",    &cGUIContext::InvokeToggleDebugInfo },
+      { "GetElement",         &cGUIContext::InvokeGetElement },
    };
 
    for (int i = 0; i < _countof(invokeMethods); i++)
@@ -421,6 +422,34 @@ tResult cGUIContext::InvokeToggleDebugInfo(int argc, const cScriptVar * argv,
    }
 
    return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIContext::InvokeGetElement(int argc, const cScriptVar * argv,
+                                      int nMaxResults, cScriptVar * pResults)
+{
+   if (argc != 1 || !argv[0].IsString())
+   {
+      return E_INVALIDARG;
+   }
+
+   cGUIPage * pPage = GetCurrentPage();
+   if (pPage != NULL)
+   {
+      cAutoIPtr<IGUIElement> pElement;
+      if (pPage->GetElement(argv[0], &pElement) == S_OK)
+      {
+         cAutoIPtr<IScriptable> pScriptable;
+         if (pElement->QueryInterface(IID_IScriptable, (void**)&pScriptable) == S_OK)
+         {
+            pResults[0] = pScriptable;
+            return 1;
+         }
+      }
+   }
+
+   return E_FAIL;
 }
 
 ///////////////////////////////////////
