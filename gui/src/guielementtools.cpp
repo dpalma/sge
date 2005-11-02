@@ -19,6 +19,40 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+bool IsDescendant(IGUIElement * pParent, IGUIElement * pElement)
+{
+   Assert(pParent != NULL);
+   Assert(pElement != NULL);
+
+   cAutoIPtr<IGUIElement> pTestParent;
+
+   if (pElement->GetParent(&pTestParent) == S_OK)
+   {
+      do
+      {
+         if (CTIsSameObject(pTestParent, pParent))
+         {
+            return true;
+         }
+
+         cAutoIPtr<IGUIElement> pNextParent;
+         if (pTestParent->GetParent(&pNextParent) != S_OK)
+         {
+            SafeRelease(pTestParent);
+         }
+         else
+         {
+            pTestParent = pNextParent;
+         }
+      }
+      while (!!pTestParent);
+   }
+
+   return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 tResult GUIElementType(IUnknown * pUnkElement, cStr * pType)
 {
    if (pUnkElement == NULL || pType == NULL)
@@ -430,21 +464,56 @@ tResult cSizeAndPlaceElement::operator()(IGUIElement * pElement)
    return S_OK;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cRenderElement
+//
 
-#ifdef HAVE_CPPUNIT
+////////////////////////////////////////
 
-class cGUIElementToolsTests : public CppUnit::TestCase
+cRenderElement::cRenderElement(IGUIRenderDevice * pRenderDevice)
+ : m_pRenderDevice(CTAddRef(pRenderDevice))
 {
-   CPPUNIT_TEST_SUITE(cGUIElementToolsTests);
-   CPPUNIT_TEST_SUITE_END();
-};
+}
 
-///////////////////////////////////////
+////////////////////////////////////////
 
-CPPUNIT_TEST_SUITE_REGISTRATION(cGUIElementToolsTests);
+cRenderElement::cRenderElement(const cRenderElement & other)
+ : m_pRenderDevice(other.m_pRenderDevice)
+{
+}
 
-#endif // HAVE_CPPUNIT
+////////////////////////////////////////
+
+cRenderElement::~cRenderElement()
+{
+}
+
+////////////////////////////////////////
+
+tResult cRenderElement::operator()(IGUIElement * pElement)
+{
+   if (pElement == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (!pElement->IsVisible())
+   {
+      return S_FALSE;
+   }
+
+   cAutoIPtr<IGUIElementRenderer> pRenderer;
+   tResult result = pElement->GetRenderer(&pRenderer);
+   if (result == S_OK)
+   {
+      result = pRenderer->Render(pElement, m_pRenderDevice);
+   }
+
+   ErrorMsgIf(FAILED(result), "A GUI element failed to render properly\n");
+
+   return result;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////

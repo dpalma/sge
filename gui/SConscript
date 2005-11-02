@@ -17,6 +17,7 @@ sources = Split("""
    src/guilabel.cpp
    src/guilayout.cpp
    src/guilistbox.cpp
+   src/guipage.cpp
    src/guipanel.cpp
    src/guirender.cpp
    src/guirenderd3d.cpp

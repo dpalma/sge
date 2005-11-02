@@ -12,6 +12,8 @@
 
 #include "globalobjdef.h"
 
+#include <list>
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -20,12 +22,14 @@
 #define GUI_DEBUG
 #endif
 
+class cGUIPage;
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUIContext
 //
 
-class cGUIContext : public cComObject3<cGUIEventRouter<IGUIContext>, &IID_IGUIContext,
+class cGUIContext : public cComObject3<cGUIEventRouter<cGUIContext, IGUIContext>, &IID_IGUIContext,
                                        IMPLEMENTS(IGlobalObject), IMPLEMENTS(IScriptable)>
 {
 public:
@@ -35,9 +39,11 @@ public:
    DECLARE_NAME(GUIContext)
    DECLARE_CONSTRAINTS()
 
+   // IGlobalObject methods
    virtual tResult Init();
    virtual tResult Term();
 
+   // IScriptable methods
    virtual tResult Invoke(const char * pszMethodName,
                           int argc, const cScriptVar * argv,
                           int nMaxResults, cScriptVar * pResults);
@@ -53,12 +59,11 @@ public:
    tResult InvokeToggleDebugInfo(int argc, const cScriptVar * argv,
                                  int nMaxResults, cScriptVar * pResults);
 
+   // IGUIContext methods
    virtual tResult ShowModalDialog(const tChar * pszDialog);
 
    virtual tResult PushPage(const tChar * pszPage);
    virtual tResult PopPage();
-
-   virtual void ClearGUI();
 
    virtual tResult RenderGUI();
 
@@ -69,6 +74,12 @@ public:
 
    virtual tResult ShowDebugInfo(const tGUIPoint & placement, IGUIStyle * pStyle);
    virtual tResult HideDebugInfo();
+
+   tResult GetHitElement(const tGUIPoint & point, IGUIElement * * ppElement) const;
+   tResult GetActiveModalDialog(IGUIDialogElement * * ppModalDialog);
+
+   cGUIPage * GetCurrentPage() { return m_pages.empty() ? NULL : m_pages.back(); }
+   const cGUIPage * GetCurrentPage() const { return m_pages.empty() ? NULL : m_pages.back(); }
 
 private:
    static tResult CheckModalDialog(IGUIElement * pElement);
@@ -95,9 +106,6 @@ private:
    friend class cInputListener;
    cInputListener m_inputListener;
 
-   uint m_nElementsLastLayout; // How many elements were there the last time they were laid out?
-   bool m_bNeedsLayout; // Set to true to force re-doing the layout
-
    bool m_bShowingModalDialog;
 
 #ifdef GUI_DEBUG
@@ -111,6 +119,8 @@ private:
    cAutoIPtr<IGUIRenderDeviceContext> m_pRenderDeviceContext;
 
    cAutoIPtr<IGUIFont> m_pDefaultFont;
+
+   std::list<cGUIPage *> m_pages;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

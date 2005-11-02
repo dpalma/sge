@@ -457,6 +457,8 @@ interface IGUIFlowLayout : IGUILayoutManager
 {
 };
 
+GUI_API IGUILayoutManager * GUIFlowLayoutCreate();
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -778,8 +780,6 @@ GUI_API tResult GUIRenderDeviceCreateD3D(IGUIRenderDeviceContext * * ppRenderDev
 
 interface IGUIContext : IGUIEventRouter
 {
-   virtual tResult GetElement(const tChar * pszId, IGUIElement * * ppElement) = 0;
-
    /// @brief Show a modal dialog box
    /// @param pszDialog specifies an XML fragment or file name
    /// @return TODO
@@ -790,8 +790,6 @@ interface IGUIContext : IGUIEventRouter
    /// @return S_OK, S_FALSE if no error and no elements loaded, or an E_xxx code
    virtual tResult PushPage(const tChar * pszPage) = 0;
    virtual tResult PopPage() = 0;
-
-   virtual void ClearGUI() = 0;
 
    virtual tResult RenderGUI() = 0;
 

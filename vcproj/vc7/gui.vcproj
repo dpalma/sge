@@ -377,6 +377,9 @@
 					RelativePath="..\..\gui\src\guilistbox.cpp">
 				</File>
 				<File
+					RelativePath="..\..\gui\src\guipage.cpp">
+				</File>
+				<File
 					RelativePath="..\..\gui\src\guipanel.cpp">
 				</File>
 				<File
@@ -504,6 +507,9 @@
 					RelativePath="..\..\gui\src\guilistbox.h">
 				</File>
 				<File
+					RelativePath="..\..\gui\src\guipage.h">
+				</File>
+				<File
 					RelativePath="..\..\gui\src\guipanel.h">
 				</File>
 				<File
@@ -513,10 +519,10 @@
 					RelativePath="..\..\gui\src\guirenderd3d.h">
 				</File>
 				<File
-					RelativePath="..\..\gui\src\guiscrollbar.h">
+					RelativePath="..\..\gui\src\guiscript.h">
 				</File>
 				<File
-					RelativePath="..\..\gui\src\guiscript.h">
+					RelativePath="..\..\gui\src\guiscrollbar.h">
 				</File>
 				<File
 					RelativePath="..\..\gui\src\guistrings.h">

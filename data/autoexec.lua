@@ -51,7 +51,6 @@ end;
 
 -- Called automatically at start-up by the game engine
 function GameInit()
-   GUIContext:Clear();
    GUIContext:PushPage("start.xml");
 end;
 

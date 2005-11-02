@@ -7,6 +7,8 @@
 #include "guievent.h"
 #include "guielementtools.h"
 #include "guieventroutertem.h"
+#include "guipage.h"
+
 #include "scriptvar.h"
 #include "sys.h"
 #include "engineapi.h"
@@ -127,30 +129,23 @@ static bool GUIModalLoopFrameHandler()
 // CLASS: cGUIModalLoopEventListener
 //
 
-enum eGUIModalDialogResult
-{
-   kGUIModalDlgError,
-   kGUIModalDlgOK,
-   kGUIModalDlgCancel
-};
-
 ////////////////////////////////////////
 
 class cGUIModalLoopEventListener : public cComObject<IMPLEMENTS(IGUIEventListener)>
 {
 public:
-   cGUIModalLoopEventListener(eGUIModalDialogResult * pResult);
+   cGUIModalLoopEventListener(tResult * pResult);
    ~cGUIModalLoopEventListener();
 
    virtual tResult OnEvent(IGUIEvent * pEvent);
 
 private:
-   eGUIModalDialogResult * m_pResult;
+   tResult * m_pResult;
 };
 
 ////////////////////////////////////////
 
-cGUIModalLoopEventListener::cGUIModalLoopEventListener(eGUIModalDialogResult * pResult)
+cGUIModalLoopEventListener::cGUIModalLoopEventListener(tResult * pResult)
  : m_pResult(pResult)
 {
 }
@@ -179,7 +174,7 @@ tResult cGUIModalLoopEventListener::OnEvent(IGUIEvent * pEvent)
       {
          if (keyCode == kEnter)
          {
-            *m_pResult = kGUIModalDlgOK;
+            *m_pResult = S_OK;
             g_bExitModalLoop = true;
             bEatEvent = true;
          }
@@ -189,7 +184,7 @@ tResult cGUIModalLoopEventListener::OnEvent(IGUIEvent * pEvent)
       {
          if (keyCode == kEscape)
          {
-            *m_pResult = kGUIModalDlgCancel;
+            *m_pResult = S_FALSE;
             g_bExitModalLoop = true;
             bEatEvent = true;
          }
@@ -205,13 +200,13 @@ tResult cGUIModalLoopEventListener::OnEvent(IGUIEvent * pEvent)
             {
                if (GUIElementIdMatch(pButtonElement, "ok"))
                {
-                  *m_pResult = kGUIModalDlgOK;
+                  *m_pResult = S_OK;
                   g_bExitModalLoop = true;
                   bEatEvent = true;
                }
                else if (GUIElementIdMatch(pButtonElement, "cancel"))
                {
-                  *m_pResult = kGUIModalDlgCancel;
+                  *m_pResult = S_FALSE;
                   g_bExitModalLoop = true;
                   bEatEvent = true;
                }
@@ -241,8 +236,6 @@ END_CONSTRAINTS()
 
 cGUIContext::cGUIContext()
  : m_inputListener(this)
- , m_nElementsLastLayout(0)
- , m_bNeedsLayout(false)
  , m_bShowingModalDialog(false)
 #ifdef GUI_DEBUG
  , m_bShowDebugInfo(false)
@@ -257,6 +250,7 @@ cGUIContext::cGUIContext()
 
 cGUIContext::~cGUIContext()
 {
+   Assert(m_pages.empty());
 }
 
 ///////////////////////////////////////
@@ -277,7 +271,14 @@ tResult cGUIContext::Term()
 {
    UseGlobal(Input);
    pInput->SetGUIInputListener(NULL);
-   RemoveAllElements();
+
+   std::list<cGUIPage*>::iterator iter = m_pages.begin();
+   for (; iter != m_pages.end(); iter++)
+   {
+      delete *iter;
+   }
+   m_pages.clear();
+
    return S_OK;
 }
 
@@ -303,7 +304,6 @@ tResult cGUIContext::Invoke(const char * pszMethodName,
    invokeMethods[] =
    {
       { "ShowModalDialog",    &cGUIContext::InvokeShowModalDialog },
-      { "Clear",              &cGUIContext::InvokeClear },
       { "PushPage",           &cGUIContext::InvokePushPage },
       { "PopPage",            &cGUIContext::InvokePopPage },
       { "ToggleDebugInfo",    &cGUIContext::InvokeToggleDebugInfo },
@@ -344,19 +344,6 @@ tResult cGUIContext::InvokeShowModalDialog(int argc, const cScriptVar * argv,
       result = 1; // # of return values
    }
    return result;
-}
-
-///////////////////////////////////////
-
-tResult cGUIContext::InvokeClear(int argc, const cScriptVar * argv,
-                                 int nMaxResults, cScriptVar * pResults)
-{
-   if (argc != 0)
-   {
-      return E_INVALIDARG;
-   }
-   ClearGUI();
-   return S_OK;
 }
 
 ///////////////////////////////////////
@@ -452,6 +439,12 @@ tResult cGUIContext::ShowModalDialog(const tChar * pszDialog)
       return E_FAIL;
    }
 
+   cGUIPage * pPage = GetCurrentPage();
+   if (pPage == NULL)
+   {
+      return E_FAIL;
+   }
+
    tResult result = E_FAIL;
 
    std::vector<IGUIElement*> elements;
@@ -460,10 +453,9 @@ tResult cGUIContext::ShowModalDialog(const tChar * pszDialog)
    {
       m_bShowingModalDialog = true;
 
-      AddElement(elements.front());
+      pPage->AddElement(elements.front());
 
-      eGUIModalDialogResult modalDialogResult = kGUIModalDlgError;
-      cGUIModalLoopEventListener listener(&modalDialogResult);
+      cGUIModalLoopEventListener listener(&result);
       AddEventListener(&listener);
 
       g_bExitModalLoop = false;
@@ -472,18 +464,10 @@ tResult cGUIContext::ShowModalDialog(const tChar * pszDialog)
       // some user action (Enter, Esc, OK button click, etc.)
       SysEventLoop(GUIModalLoopFrameHandler, NULL);
 
-      if (modalDialogResult == kGUIModalDlgOK)
-      {
-         result = S_OK;
-      }
-      else if (modalDialogResult == kGUIModalDlgCancel)
-      {
-         result = S_FALSE;
-      }
-
       RemoveEventListener(&listener);
 
-      RemoveElement(elements.front());
+      ElementRemoved(elements.front());
+      pPage->RemoveElement(elements.front());
 
       m_bShowingModalDialog = false;
    }
@@ -529,13 +513,23 @@ tResult cGUIContext::PushPage(const tChar * pszPage)
    tGUIElementList elements;
    if (::LoadElements(pszPage, &elements) == S_OK)
    {
-      tResult result = PushElements(&elements);
-      if (result == S_OK)
+      cGUIPage * pPage = new cGUIPage(&elements);
+      if (pPage == NULL)
       {
-         ForEachElement(ExecScriptElement);
+         return E_OUTOFMEMORY;
       }
+
+      m_pages.push_back(pPage);
+
       std::for_each(elements.begin(), elements.end(), CTInterfaceMethod(&IGUIElement::Release));
-      return result;
+
+      SetFocus(NULL);
+      SetMouseOver(NULL);
+      SetDrag(NULL);
+
+      std::for_each(pPage->BeginElements(), pPage->EndElements(), ExecScriptElement);
+
+      return S_OK;
    }
 
    return S_FALSE;
@@ -545,70 +539,20 @@ tResult cGUIContext::PushPage(const tChar * pszPage)
 
 tResult cGUIContext::PopPage()
 {
-   return PopElements();
-}
-
-///////////////////////////////////////
-
-void cGUIContext::ClearGUI()
-{
-   RemoveAllElements();
-   m_bNeedsLayout = true;
-}
-
-///////////////////////////////////////
-
-class cRenderElement
-{
-   void operator =(const cRenderElement &);
-
-public:
-   cRenderElement(IGUIRenderDevice * pRenderDevice);
-   cRenderElement(const cRenderElement & other);
-   ~cRenderElement();
-
-   tResult operator()(IGUIElement * pGUIElement);
-
-private:
-   cAutoIPtr<IGUIRenderDevice> m_pRenderDevice;
-};
-
-cRenderElement::cRenderElement(IGUIRenderDevice * pRenderDevice)
- : m_pRenderDevice(CTAddRef(pRenderDevice))
-{
-}
-
-cRenderElement::cRenderElement(const cRenderElement & other)
- : m_pRenderDevice(other.m_pRenderDevice)
-{
-}
-
-cRenderElement::~cRenderElement()
-{
-}
-
-tResult cRenderElement::operator()(IGUIElement * pElement)
-{
-   if (pElement == NULL)
+   if (m_pages.empty())
    {
-      return E_POINTER;
+      return E_FAIL;
    }
 
-   if (!pElement->IsVisible())
-   {
-      return S_FALSE;
-   }
+   cGUIPage * pLastPage = m_pages.back();
+   m_pages.pop_back();
+   delete pLastPage, pLastPage = NULL;
 
-   cAutoIPtr<IGUIElementRenderer> pRenderer;
-   tResult result = pElement->GetRenderer(&pRenderer);
-   if (result == S_OK)
-   {
-      result = pRenderer->Render(pElement, m_pRenderDevice);
-   }
+   SetFocus(NULL);
+   SetMouseOver(NULL);
+   SetDrag(NULL);
 
-   ErrorMsgIf(FAILED(result), "A GUI element failed to render properly\n");
-
-   return result;
+   return S_OK;
 }
 
 ///////////////////////////////////////
@@ -621,21 +565,17 @@ tResult cGUIContext::RenderGUI()
       return E_FAIL;
    }
 
-   uint nElements = GetElementCount();
-   if ((nElements != m_nElementsLastLayout) || m_bNeedsLayout)
+   cGUIPage * pPage = GetCurrentPage();
+   if (pPage != NULL)
    {
       uint w, h;
       if (pRenderDeviceContext->GetViewportSize(&w, &h) == S_OK)
       {
-         m_nElementsLastLayout = nElements;
-         m_bNeedsLayout = false;
-
-         ForEachElement(cSizeAndPlaceElement(tGUIRect(0,0,w,h)));
+         pPage->UpdateLayout(tGUIRect(0,0,w,h));
       }
-   }
 
-   IGUIRenderDevice * pRenderDevice = static_cast<IGUIRenderDevice*>(pRenderDeviceContext);
-   ForEachElement(cRenderElement(pRenderDevice));
+      pPage->Render(static_cast<IGUIRenderDevice*>(pRenderDeviceContext));
+   }
 
 #ifdef GUI_DEBUG
    RenderDebugInfo();
@@ -747,6 +687,49 @@ tResult cGUIContext::HideDebugInfo()
 
 ///////////////////////////////////////
 
+tResult cGUIContext::GetHitElement(const tGUIPoint & point, IGUIElement * * ppElement) const
+{
+   if (ppElement == NULL)
+   {
+      return E_POINTER;
+   }
+
+   const cGUIPage * pPage = GetCurrentPage();
+   if (pPage != NULL)
+   {
+      std::list<IGUIElement*> hitElements;
+      if (pPage->GetHitElements(point, &hitElements) == S_OK)
+      {
+         Assert(!hitElements.empty());
+         *ppElement = CTAddRef(hitElements.front());
+         std::for_each(hitElements.begin(), hitElements.end(), CTInterfaceMethod(&IGUIElement::Release));
+         return S_OK;
+      }
+   }
+
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
+tResult cGUIContext::GetActiveModalDialog(IGUIDialogElement * * ppModalDialog)
+{
+   if (ppModalDialog == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cGUIPage * pPage = GetCurrentPage();
+   if (pPage != NULL)
+   {
+      return pPage->GetActiveModalDialog(ppModalDialog);
+   }
+
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
 tResult cGUIContext::CheckModalDialog(IGUIElement * pElement)
 {
    if (pElement == NULL)
@@ -821,6 +804,12 @@ void cGUIContext::RenderDebugInfo()
       return;
    }
 
+   cGUIPage * pPage = GetCurrentPage();
+   if (pPage == NULL)
+   {
+      return;
+   }
+
    cAutoIPtr<IGUIFont> pFont;
    if (GetDebugFont(&pFont) == S_OK)
    {
@@ -837,7 +826,7 @@ void cGUIContext::RenderDebugInfo()
       rect.Offset(0, lineHeight);
 
       tGUIElementList hitElements;
-      if (GetHitElements(m_lastMousePos, &hitElements) == S_OK)
+      if (pPage->GetHitElements(m_lastMousePos, &hitElements) == S_OK)
       {
          tGUIElementList::reverse_iterator iter = hitElements.rbegin();
          for (int index = 0; iter != hitElements.rend(); iter++, index++)
@@ -903,7 +892,7 @@ bool cGUIContext::HandleInputEvent(const sInputEvent * pEvent)
       m_lastMousePos = pEvent->point;
    }
 
-   return cGUIEventRouter<IGUIContext>::HandleInputEvent(pEvent);
+   return cGUIEventRouter<cGUIContext, IGUIContext>::HandleInputEvent(pEvent);
 }
 #endif
 
@@ -933,110 +922,5 @@ tResult GUIContextCreate()
    }
    return RegisterGlobalObject(IID_IGUIContext, p);
 }
-
-///////////////////////////////////////////////////////////////////////////////
-
-#ifdef HAVE_CPPUNIT
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS cGUITestableEventRouter
-//
-
-class cGUITestableEventRouter : public cComObject<cGUIEventRouter<IGUIEventRouter>, &IID_IGUIEventRouter>
-{
-public:
-   cGUITestableEventRouter();
-
-   void FireInputEvent(long key, bool down, tVec2 point);
-
-private:
-   ulong m_time;
-};
-
-///////////////////////////////////////
-
-cGUITestableEventRouter::cGUITestableEventRouter()
- : m_time(0)
-{
-}
-
-///////////////////////////////////////
-
-void cGUITestableEventRouter::FireInputEvent(long key, bool down, tVec2 point)
-{
-   sInputEvent event;
-   event.key = key;
-   event.down = down;
-   event.point = point;
-   event.time = m_time++;
-   HandleInputEvent(&event);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS cGUITestEventListener
-//
-
-class cGUITestEventListener : public cComObject<IMPLEMENTS(IGUIEventListener)>
-{
-public:
-   virtual tResult OnEvent(IGUIEvent * pEvent);
-};
-
-///////////////////////////////////////
-
-tResult cGUITestEventListener::OnEvent(IGUIEvent * pEvent)
-{
-   return S_OK;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-class cGUIEventRouterTests : public CppUnit::TestCase
-{
-   CPPUNIT_TEST_SUITE(cGUIEventRouterTests);
-   CPPUNIT_TEST_SUITE_END();
-
-private:
-   virtual void setUp();
-   virtual void tearDown();
-
-   cAutoIPtr<cGUITestableEventRouter> m_pEventRouter;
-   cAutoIPtr<cGUITestEventListener> m_pEventListener;
-};
-
-///////////////////////////////////////
-
-CPPUNIT_TEST_SUITE_REGISTRATION(cGUIEventRouterTests);
-
-///////////////////////////////////////
-
-void cGUIEventRouterTests::setUp()
-{
-   CPPUNIT_ASSERT(!m_pEventRouter);
-   m_pEventRouter = new cGUITestableEventRouter;
-
-   CPPUNIT_ASSERT(!m_pEventListener);
-   m_pEventListener = new cGUITestEventListener;
-   m_pEventRouter->AddEventListener(m_pEventListener);
-}
-
-///////////////////////////////////////
-
-void cGUIEventRouterTests::tearDown()
-{
-   if (m_pEventRouter && m_pEventListener)
-   {
-      m_pEventRouter->RemoveEventListener(m_pEventListener);
-   }
-
-   SafeRelease(m_pEventRouter);
-   SafeRelease(m_pEventListener);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-#endif // HAVE_CPPUNIT
 
 ///////////////////////////////////////////////////////////////////////////////

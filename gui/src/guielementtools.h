@@ -33,6 +33,8 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
+bool IsDescendant(IGUIElement * pParent, IGUIElement * pElement);
+
 tResult GUIElementType(IUnknown * pUnkElement, cStr * pType);
 
 bool GUIElementIdMatch(IGUIElement * pElement, const tChar * pszId);
@@ -67,6 +69,28 @@ private:
    const tGUIRect m_rect;
    const tGUISize m_size;
 };
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cRenderElement
+//
+
+class cRenderElement
+{
+   void operator =(const cRenderElement &);
+
+public:
+   cRenderElement(IGUIRenderDevice * pRenderDevice);
+   cRenderElement(const cRenderElement & other);
+   ~cRenderElement();
+
+   tResult operator()(IGUIElement * pGUIElement);
+
+private:
+   cAutoIPtr<IGUIRenderDevice> m_pRenderDevice;
+};
+
 
 ///////////////////////////////////////////////////////////////////////////////
 

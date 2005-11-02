@@ -8,15 +8,12 @@
 
 #include "connptimpl.h"
 
-#include <list>
-
 #ifdef _MSC_VER
 #pragma once
 #endif
 
 struct sInputEvent;
 
-typedef std::list<IGUIElement *> tGUIElementList;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -33,7 +30,7 @@ typedef std::list<IGUIElement *> tGUIElementList;
 /// @class cGUIEventRouter
 /// @brief Template base class that implements the IGUIEventRouter methods.
 
-template <typename INTRFC>
+template <typename T, typename INTRFC>
 class cGUIEventRouter : public cConnectionPoint<INTRFC, IGUIEventListener>
 {
 public:
@@ -62,48 +59,11 @@ protected:
    IGUIElement * AccessMouseOver();
    IGUIElement * AccessDrag();
 
-   uint GetElementCount() const;
-
-   tResult PushElements(const tGUIElementList * pElements);
-   tResult PopElements();
-
-   tResult GetElement(const tChar * pszId, IGUIElement * * ppElement);
-   tResult AddElement(IGUIElement * pElement);
-   tResult RemoveElement(IGUIElement * pElement);
-   tResult HasElement(IGUIElement * pElement) const;
-   void RemoveAllElements();
-
-   template <typename F>
-   tResult ForEachElement(F f)
-   {
-      if (m_elements.empty())
-      {
-         return S_FALSE;
-      }
-      tResult result = E_FAIL;
-      tGUIElementList::iterator iter = m_markers.back();
-      for (; iter != m_elements.end(); iter++)
-      {
-         result = f(*iter);
-         // S_OK means success (good)
-         // S_FALSE means not visible (good)
-         // otherwise, error (bad)
-         if (FAILED(result))
-         {
-            break;
-         }
-      }
-      return result;
-   }
-
-   tResult GetHitElements(const tGUIPoint & point, tGUIElementList * pElements) const;
-   tResult GetHitElement(const tGUIPoint & point, IGUIElement * * ppElement) const;
+   void ElementRemoved(IGUIElement * pElement);
 
    bool DoEvent(IGUIEvent * pEvent);
    bool BubbleEvent(IGUIEvent * pEvent);
    bool BubbleEvent(IGUIElement * pStartElement, IGUIEvent * pEvent);
-
-   tResult GetActiveModalDialog(IGUIDialogElement * * ppModalDialog);
 
    void DoDragDrop(const sInputEvent * pInputEvent, tGUIEventCode eventCode, IGUIElement * pMouseOver, IGUIElement * pDrag);
    void DoMouseEnterExit(const sInputEvent * pInputEvent, IGUIElement * pMouseOver, IGUIElement * pRestrictTo);
@@ -111,41 +71,31 @@ protected:
    bool HandleInputEvent(const sInputEvent * pInputEvent);
 
 private:
-   tGUIElementList m_elements;
-   std::list<tGUIElementList::iterator> m_markers;
    cAutoIPtr<IGUIElement> m_pFocus, m_pMouseOver, m_pDrag;
 };
 
 ///////////////////////////////////////
 
-template <typename INTRFC>
-inline IGUIElement * cGUIEventRouter<INTRFC>::AccessFocus()
+template <typename T, typename INTRFC>
+inline IGUIElement * cGUIEventRouter<T, INTRFC>::AccessFocus()
 {
    return m_pFocus;
 }
 
 ///////////////////////////////////////
 
-template <typename INTRFC>
-inline IGUIElement * cGUIEventRouter<INTRFC>::AccessMouseOver()
+template <typename T, typename INTRFC>
+inline IGUIElement * cGUIEventRouter<T, INTRFC>::AccessMouseOver()
 {
    return m_pMouseOver;
 }
 
 ///////////////////////////////////////
 
-template <typename INTRFC>
-inline IGUIElement * cGUIEventRouter<INTRFC>::AccessDrag()
+template <typename T, typename INTRFC>
+inline IGUIElement * cGUIEventRouter<T, INTRFC>::AccessDrag()
 {
    return m_pDrag;
-}
-
-///////////////////////////////////////
-
-template <typename INTRFC>
-inline uint cGUIEventRouter<INTRFC>::GetElementCount() const
-{
-   return m_elements.size();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

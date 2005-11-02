@@ -385,6 +385,13 @@ tResult GUIGridLayoutCreate(uint columns, uint rows, uint hGap, uint vGap, IGUIG
 
 ///////////////////////////////////////
 
+GUI_API IGUILayoutManager * GUIFlowLayoutCreate()
+{
+   return static_cast<IGUILayoutManager*>(new cGUIFlowLayout);
+}
+
+///////////////////////////////////////
+
 tResult cGUIFlowLayout::Create(const TiXmlElement * pXmlElement, IGUILayoutManager * * ppLayout)
 {
    if (pXmlElement == NULL || ppLayout == NULL)
