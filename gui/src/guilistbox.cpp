@@ -319,7 +319,7 @@ tResult cGUIListBoxElement::Invoke(const char * pszMethodName,
       return E_POINTER;
    }
 
-   if (strcmp(pszMethodName, "Add") == 0)
+   if (strcmp(pszMethodName, "AddItem") == 0)
    {
       if (argc == 1 && argv[0].IsString())
       {

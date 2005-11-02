@@ -2,14 +2,10 @@
 <script>
    maps = ListResources("SGE.Map");
    if maps and (table.getn(maps) > 0) then
-      table.foreachi(maps, function(i, v) print("Map " .. i .. " is " .. v .. "\n") end);
-   else
-      print("Found no maps\n");
-   end;
-   mapsList = GUIContext:GetElement("mapsList");
-   if mapsList then
-      mapsList:AddItem("map 00");
-      mapsList:AddItem("map 01");
+      mapsList = GUIContext:GetElement("mapsList");
+      if mapsList then
+		table.foreachi(maps, function(i, v) mapsList:AddItem(v) end);
+      end;
    end;
 </script>
 <panel style="width:100%;height:100%" renderer="basic">

@@ -60,6 +60,8 @@ static const int kDefStatsX = 25;
 static const int kDefStatsY = 25;
 static const cColor kDefStatsColor(1,1,1,1);
 
+static const tChar kRT_MapFile[] = _T("SGE.Map");
+
 ///////////////////////////////////////////////////////////////////////////////
 
 cAutoIPtr<cGameCameraController> g_pGameCameraController;
@@ -133,6 +135,12 @@ void HackScenarioUnload(void * pData)
 {
 }
 
+static void HackScenarioRegisterResourceFormat()
+{
+   UseGlobal(ResourceManager);
+   pResourceManager->RegisterFormat(kRT_MapFile, "sgm", HackScenarioLoad, NULL, HackScenarioUnload);
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -144,10 +152,7 @@ SCRIPT_DEFINE_FUNCTION(SetTerrain)
       return 0;
    }
 
-   static const tChar kRT_MapFile[] = _T("SGE.Map");
-
    UseGlobal(ResourceManager);
-   pResourceManager->RegisterFormat(kRT_MapFile, "sgm", HackScenarioLoad, NULL, HackScenarioUnload);
 
    cFileSpec terrainFile(static_cast<const tChar *>(argv[0]));
    const tChar * pszFileExt = terrainFile.GetFileExt();
@@ -347,6 +352,7 @@ static bool MainInit(int argc, tChar * argv[])
    EngineRegisterResourceFormats();
    TerrainRegisterResourceFormats();
    ImageRegisterResourceFormats();
+   HackScenarioRegisterResourceFormat();
 
    if (ConfigGet(_T("data"), &temp) == S_OK)
    {
