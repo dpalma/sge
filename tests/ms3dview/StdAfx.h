@@ -24,7 +24,8 @@
 #undef FAILED
 
 #include "techtypes.h"
-#include "techdebug.h"
+#include "techassert.h"
+#include "techlog.h"
 
 /////////////////////////////////////////////////////////////////////////////
 

@@ -4,7 +4,7 @@
 #include "stdhdr.h"
 
 #include "guiapi.h"
-#include "sim.h"
+#include "simapi.h"
 #include "inputapi.h"
 #include "engineapi.h"
 #include "scriptapi.h"
@@ -15,6 +15,7 @@
 #include "configapi.h"
 #include "filespec.h"
 #include "filepath.h"
+#include "imageapi.h"
 #include "techstring.h"
 #include "globalobj.h"
 #include "threadcallapi.h"
@@ -116,8 +117,7 @@ static bool d3dguiinit(int argc, tChar * argv[])
       return false;
    }
 
-   TargaFormatRegister();
-   BmpFormatRegister();
+   ImageRegisterResourceFormats();
    TextFormatRegister("txt");
    TextFormatRegister("lua");
    TextFormatRegister("xml");
@@ -167,7 +167,7 @@ static bool d3dguiinit(int argc, tChar * argv[])
       return false;
    }
 
-   pGUIContext->LoadElements("start.xml", true);
+   pGUIContext->PushPage("start.xml");
 
    SysAppActivate(true);
 

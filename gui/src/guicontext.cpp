@@ -251,7 +251,6 @@ cGUIContext::cGUIContext()
  , m_lastMousePos(0,0)
 #endif
 {
-   RegisterGlobalObject(IID_IGUIContext, static_cast<IGlobalObject*>(this));
 }
 
 ///////////////////////////////////////
@@ -925,9 +924,14 @@ bool cGUIContext::cInputListener::OnInputEvent(const sInputEvent * pEvent)
 
 ///////////////////////////////////////
 
-void GUIContextCreate()
+tResult GUIContextCreate()
 {
-   cAutoIPtr<IGUIContext>(new cGUIContext);
+   cAutoIPtr<IGUIContext> p(static_cast<IGUIContext*>(new cGUIContext));
+   if (!p)
+   {
+      return E_OUTOFMEMORY;
+   }
+   return RegisterGlobalObject(IID_IGUIContext, p);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

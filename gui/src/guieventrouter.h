@@ -76,6 +76,10 @@ protected:
    template <typename F>
    tResult ForEachElement(F f)
    {
+      if (m_elements.empty())
+      {
+         return S_FALSE;
+      }
       tResult result = E_FAIL;
       tGUIElementList::iterator iter = m_markers.back();
       for (; iter != m_elements.end(); iter++)

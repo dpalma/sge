@@ -154,9 +154,6 @@
 				RelativePath="..\..\tests\ms3dview\MainFrm.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tests\ms3dview\meshoptimize.cpp">
-			</File>
-			<File
 				RelativePath="..\..\tests\ms3dview\ms3dTreeView.cpp">
 			</File>
 			<File
@@ -198,9 +195,6 @@
 						UsePrecompiledHeader="1"/>
 				</FileConfiguration>
 			</File>
-			<File
-				RelativePath="..\..\tests\ms3dview\TreeUtils.cpp">
-			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -225,9 +219,6 @@
 			</File>
 			<File
 				RelativePath="..\..\tests\ms3dview\StdAfx.h">
-			</File>
-			<File
-				RelativePath="..\..\tests\ms3dview\TreeUtils.h">
 			</File>
 		</Filter>
 		<Filter
