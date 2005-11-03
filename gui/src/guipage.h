@@ -28,6 +28,9 @@ public:
    cGUIPage(const tGUIElementList * pElements);
    ~cGUIPage();
 
+   void SetOverlay(bool bIsOverlay) { m_bIsOverlay = bIsOverlay; }
+   bool IsOverlay() const { return m_bIsOverlay; }
+
    void Clear();
 
    tResult AddElement(IGUIElement * pElement);
@@ -52,6 +55,7 @@ public:
 private:
    tGUIElementList m_elements;
    bool m_bUpdateLayout;
+   bool m_bIsOverlay;
 };
 
 

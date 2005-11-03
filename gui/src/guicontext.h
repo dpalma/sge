@@ -86,8 +86,7 @@ public:
    const cGUIPage * GetCurrentPage() const { return m_pages.empty() ? NULL : m_pages.back(); }
 
 private:
-   static tResult CheckModalDialog(IGUIElement * pElement);
-   static tResult CheckChild(IGUIContainerElement * pContainer, const tChar * pszId, REFGUID iid);
+   tResult CheckDialogPage();
 
 #ifdef GUI_DEBUG
    tResult GetDebugFont(IGUIFont * * ppFont);

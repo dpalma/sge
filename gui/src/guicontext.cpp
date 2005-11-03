@@ -452,6 +452,22 @@ tResult cGUIContext::InvokeGetElement(int argc, const cScriptVar * argv,
 
 ///////////////////////////////////////
 
+class cBoolSetter
+{
+public:
+   cBoolSetter(bool * pBool, bool initialValue = true) : m_pBool(pBool)
+   {
+      Assert(pBool != NULL);
+      *m_pBool = initialValue;
+   }
+   ~cBoolSetter()
+   {
+      *m_pBool = !*m_pBool;
+   }
+private:
+   bool * m_pBool;
+};
+
 tResult cGUIContext::ShowModalDialog(const tChar * pszDialog)
 {
    if (pszDialog == NULL)
@@ -462,7 +478,7 @@ tResult cGUIContext::ShowModalDialog(const tChar * pszDialog)
    // Only one at a time supported now
    if (m_bShowingModalDialog)
    {
-      WarnMsg("Attempt to show multiple confirm dialogs\n");
+      ErrorMsg("Attempt to show multiple modal dialogs\n");
       return E_FAIL;
    }
 
@@ -474,13 +490,12 @@ tResult cGUIContext::ShowModalDialog(const tChar * pszDialog)
 
    tResult result = E_FAIL;
 
-   tGUIElementList elements;
-   if (::LoadElements(pszDialog, &elements) == S_OK && elements.size() == 1
-      && SUCCEEDED(CheckModalDialog(elements.front())))
+   if (PushPage(pszDialog) == S_OK)
    {
-      m_bShowingModalDialog = true;
+      cBoolSetter boolSetter(&m_bShowingModalDialog, true);
 
-      pPage->AddElement(elements.front());
+      CheckDialogPage();
+      GetCurrentPage()->SetOverlay(true);
 
       cGUIModalLoopEventListener listener(&result);
       AddEventListener(&listener);
@@ -493,13 +508,8 @@ tResult cGUIContext::ShowModalDialog(const tChar * pszDialog)
 
       RemoveEventListener(&listener);
 
-      ElementRemoved(elements.front());
-      pPage->RemoveElement(elements.front());
-
-      m_bShowingModalDialog = false;
+      PopPage();
    }
-
-   std::for_each(elements.begin(), elements.end(), CTInterfaceMethod(&IGUIElement::Release));
 
    return result;
 }
@@ -586,16 +596,29 @@ tResult cGUIContext::RenderGUI()
       return E_FAIL;
    }
 
-   cGUIPage * pPage = GetCurrentPage();
-   if (pPage != NULL)
+   uint width, height;
+   if (pRenderDeviceContext->GetViewportSize(&width, &height) != S_OK)
    {
-      uint w, h;
-      if (pRenderDeviceContext->GetViewportSize(&w, &h) == S_OK)
-      {
-         pPage->UpdateLayout(tGUIRect(0,0,w,h));
-      }
+      return E_FAIL;
+   }
 
-      pPage->Render(static_cast<IGUIRenderDevice*>(pRenderDeviceContext));
+   std::list<cGUIPage*> renderPages;
+
+   std::list<cGUIPage *>::reverse_iterator iter = m_pages.rbegin();
+   for (; iter != m_pages.rend(); iter++)
+   {
+      renderPages.push_back(*iter);
+      if (!(*iter)->IsOverlay())
+      {
+         break;
+      }
+   }
+
+   iter = renderPages.rbegin();
+   for (; iter != renderPages.rend(); iter++)
+   {
+      (*iter)->UpdateLayout(tGUIRect(0,0,width,height));
+      (*iter)->Render(static_cast<IGUIRenderDevice*>(pRenderDeviceContext));
    }
 
 #ifdef GUI_DEBUG
@@ -751,49 +774,24 @@ tResult cGUIContext::GetActiveModalDialog(IGUIDialogElement * * ppModalDialog)
 
 ///////////////////////////////////////
 
-tResult cGUIContext::CheckModalDialog(IGUIElement * pElement)
+tResult cGUIContext::CheckDialogPage()
 {
-   if (pElement == NULL)
+   cGUIPage * pPage = GetCurrentPage();
+   if (pPage == NULL)
    {
-      return E_POINTER;
+      return E_FAIL;
    }
 
-   cAutoIPtr<IGUIDialogElement> pDialog;
-   if (pElement->QueryInterface(IID_IGUIDialogElement, (void**)&pDialog) != S_OK)
-   {
-      return E_INVALIDARG;
-   }
+   WarnMsgIf(pPage->CountElements() > 1, "More than one element in what is " \
+      "supposed to be a modal dialog page\n");
 
-   // TODO: this won't find buttons inside nested containers, like a panel inside a dialog
-   if (CheckChild(pDialog, "ok", IID_IGUIButtonElement) != S_OK
-      && CheckChild(pDialog, "cancel", IID_IGUIButtonElement) != S_OK)
+   cAutoIPtr<IGUIDialogElement> pDlg;
+   ErrorMsgIf(pPage->GetActiveModalDialog(&pDlg) != S_OK, "No dialog element found\n");
+
+   cAutoIPtr<IGUIElement> pOk, pCancel;
+   if (pPage->GetElement("ok", &pOk) != S_OK || pPage->GetElement("cancel", &pCancel) != S_OK)
    {
       WarnMsg("Dialog box has no \"ok\" nor \"cancel\" button\n");
-      return S_FALSE;
-   }
-
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cGUIContext::CheckChild(IGUIContainerElement * pContainer, const tChar * pszId, REFGUID iid)
-{
-   if (pContainer == NULL || pszId == NULL)
-   {
-      return E_POINTER;
-   }
-
-   cAutoIPtr<IGUIElement> pElement;
-   if (pContainer->GetElement(pszId, &pElement) != S_OK)
-   {
-      return E_FAIL;
-   }
-
-   cAutoIPtr<IUnknown> pUnknown;
-   if (pElement->QueryInterface(iid, (void**)&pUnknown) != S_OK)
-   {
-      return E_FAIL;
    }
 
    return S_OK;
