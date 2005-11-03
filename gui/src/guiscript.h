@@ -24,6 +24,9 @@ public:
    virtual tResult GetScript(tGUIString * pScript);
    virtual tResult SetScript(const tChar * pszScript);
 
+   virtual tResult GetRendererClass(tGUIString * pRendererClass);
+   virtual tResult GetRenderer(IGUIElementRenderer * * ppRenderer);
+
 private:
    tGUIString m_script;
 };

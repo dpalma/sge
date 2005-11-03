@@ -44,6 +44,8 @@ public:
 
    tResult GetHitElements(const tGUIPoint & point, tGUIElementList * pElements) const;
 
+   void RunScripts();
+
    tGUIElementList::const_iterator BeginElements() const { return m_elements.begin(); }
    tGUIElementList::const_iterator EndElements() const { return m_elements.end(); }
 

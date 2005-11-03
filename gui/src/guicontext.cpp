@@ -508,30 +508,6 @@ tResult cGUIContext::ShowModalDialog(const tChar * pszDialog)
 
 ///////////////////////////////////////
 
-static tResult ExecScriptElement(IGUIElement * pElement)
-{
-   if (pElement == NULL)
-   {
-      return E_POINTER;
-   }
-
-   cAutoIPtr<IGUIScriptElement> pScriptElement;
-   if (pElement->QueryInterface(IID_IGUIScriptElement, (void**)&pScriptElement) == S_OK)
-   {
-      tGUIString script;
-      if (pScriptElement->GetScript(&script) == S_OK)
-      {
-         UseGlobal(ScriptInterpreter);
-         if (pScriptInterpreter->ExecString(script.c_str()) != S_OK)
-         {
-            WarnMsg("An error occured running script element\n");
-         }
-      }
-   }
-
-   return S_OK;
-}
-
 tResult cGUIContext::PushPage(const tChar * pszPage)
 {
    if (pszPage == NULL)
@@ -556,7 +532,7 @@ tResult cGUIContext::PushPage(const tChar * pszPage)
       SetMouseOver(NULL);
       SetDrag(NULL);
 
-      std::for_each(pPage->BeginElements(), pPage->EndElements(), ExecScriptElement);
+      pPage->RunScripts();
 
       return S_OK;
    }

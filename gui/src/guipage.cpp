@@ -6,6 +6,10 @@
 #include "guipage.h"
 #include "guielementtools.h"
 
+#include "scriptapi.h"
+
+#include "globalobj.h"
+
 #include <queue>
 
 #include "dbgalloc.h" // must be last header
@@ -268,6 +272,57 @@ tResult cGUIPage::GetHitElements(const tGUIPoint & point, tGUIElementList * pEle
    }
 
    return pElements->empty() ? S_FALSE : S_OK;
+}
+
+///////////////////////////////////////
+
+static tResult RunScriptHelper(IGUIElement * pElement)
+{
+   if (pElement == NULL)
+   {
+      return E_POINTER;
+   }
+   cAutoIPtr<IGUIScriptElement> pScript;
+   if (pElement->QueryInterface(IID_IGUIScriptElement, (void**)&pScript) == S_OK)
+   {
+      tGUIString script;
+      if (pScript->GetScript(&script) == S_OK)
+      {
+         UseGlobal(ScriptInterpreter);
+         if (pScriptInterpreter->ExecString(script.c_str()) != S_OK)
+         {
+            WarnMsg("An error occured running script element\n");
+         }
+         else
+         {
+            return S_OK;
+         }
+      }
+   }
+   else
+   {
+      cAutoIPtr<IGUIElementEnum> pEnum;
+      if (pElement->EnumChildren(&pEnum) == S_OK)
+      {
+         IGUIElement * pChildren[32];
+         ulong count = 0;
+         while (SUCCEEDED((pEnum->Next(_countof(pChildren), &pChildren[0], &count))) && (count > 0))
+         {
+            for (ulong i = 0; i < count; i++)
+            {
+               RunScriptHelper(pChildren[i]);
+               SafeRelease(pChildren[i]);
+            }
+            count = 0;
+         }
+      }
+   }
+   return S_FALSE;
+}
+
+void cGUIPage::RunScripts()
+{
+   std::for_each(BeginElements(), EndElements(), RunScriptHelper);
 }
 
 

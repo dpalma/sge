@@ -58,6 +58,20 @@ tResult cGUIScriptElement::SetScript(const tChar * pszScript)
    return S_OK;
 }
 
+///////////////////////////////////////
+
+tResult cGUIScriptElement::GetRendererClass(tGUIString * pRendererClass)
+{
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
+tResult cGUIScriptElement::GetRenderer(IGUIElementRenderer * * ppRenderer)
+{
+   return S_FALSE;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
