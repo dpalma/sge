@@ -67,6 +67,8 @@ public:
    virtual tResult PushPage(const tChar * pszPage);
    virtual tResult PopPage();
 
+   virtual tResult GetElementById(const tChar * pszId, IGUIElement * * ppElement);
+
    virtual tResult RenderGUI();
 
    virtual tResult GetRenderDeviceContext(IGUIRenderDeviceContext * * ppRenderDeviceContext);

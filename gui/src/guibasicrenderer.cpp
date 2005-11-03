@@ -364,7 +364,7 @@ AUTOREGISTER_GUIELEMENTRENDERERFACTORY(basic, cGUIBasicRendererFactory);
 
 ////////////////////////////////////////
 
-tResult cGUIBasicRendererFactory::CreateRenderer(IGUIElement * /*pElement*/, IGUIElementRenderer * * ppRenderer)
+tResult cGUIBasicRendererFactory::CreateRenderer(void * pReserved, IGUIElementRenderer * * ppRenderer)
 {
    if (ppRenderer == NULL)
    {

@@ -20,8 +20,6 @@
 
 #include <tinyxml.h>
 
-#include <vector>
-
 #ifdef HAVE_CPPUNIT
 #include <cppunit/extensions/HelperMacros.h>
 #endif
@@ -42,6 +40,10 @@ LOG_DEFINE_CHANNEL(GUIContext);
 
 ///////////////////////////////////////////////////////////////////////////////
 
+extern tResult GUIGetElement(const tGUIElementList & elements, const tChar * pszId, IGUIElement * * ppElement);
+
+///////////////////////////////////////////////////////////////////////////////
+
 template <typename CONTAINER>
 static tResult LoadElements(TiXmlDocument * pTiXmlDoc, CONTAINER * pElements)
 {
@@ -50,7 +52,7 @@ static tResult LoadElements(TiXmlDocument * pTiXmlDoc, CONTAINER * pElements)
       return E_POINTER;
    }
 
-   UseGlobal(GUIFactory);
+   UseGlobal(GUIFactories);
 
    uint nCreated = 0;
    TiXmlElement * pXmlElement;
@@ -59,10 +61,10 @@ static tResult LoadElements(TiXmlDocument * pTiXmlDoc, CONTAINER * pElements)
    {
       if (pXmlElement->Type() == TiXmlNode::ELEMENT)
       {
-         cAutoIPtr<IGUIElement> pGuiElement;
-         if (pGUIFactory->CreateElement(pXmlElement, &pGuiElement) == S_OK)
+         cAutoIPtr<IGUIElement> pElement;
+         if (pGUIFactories->CreateElement(pXmlElement, &pElement) == S_OK)
          {
-            pElements->push_back(CTAddRef(pGuiElement));
+            pElements->push_back(CTAddRef(pElement));
             nCreated++;
          }
       }
@@ -434,18 +436,14 @@ tResult cGUIContext::InvokeGetElement(int argc, const cScriptVar * argv,
       return E_INVALIDARG;
    }
 
-   cGUIPage * pPage = GetCurrentPage();
-   if (pPage != NULL)
+   cAutoIPtr<IGUIElement> pElement;
+   if (GetElementById(argv[0], &pElement) == S_OK)
    {
-      cAutoIPtr<IGUIElement> pElement;
-      if (pPage->GetElement(argv[0], &pElement) == S_OK)
+      cAutoIPtr<IScriptable> pScriptable;
+      if (pElement->QueryInterface(IID_IScriptable, (void**)&pScriptable) == S_OK)
       {
-         cAutoIPtr<IScriptable> pScriptable;
-         if (pElement->QueryInterface(IID_IScriptable, (void**)&pScriptable) == S_OK)
-         {
-            pResults[0] = pScriptable;
-            return 1;
-         }
+         pResults[0] = pScriptable;
+         return 1;
       }
    }
 
@@ -476,7 +474,7 @@ tResult cGUIContext::ShowModalDialog(const tChar * pszDialog)
 
    tResult result = E_FAIL;
 
-   std::vector<IGUIElement*> elements;
+   tGUIElementList elements;
    if (::LoadElements(pszDialog, &elements) == S_OK && elements.size() == 1
       && SUCCEEDED(CheckModalDialog(elements.front())))
    {
@@ -558,6 +556,24 @@ tResult cGUIContext::PopPage()
    SetDrag(NULL);
 
    return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIContext::GetElementById(const tChar * pszId, IGUIElement * * ppElement)
+{
+   if (pszId == NULL || ppElement == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cGUIPage * pPage = GetCurrentPage();
+   if (pPage != NULL)
+   {
+      return pPage->GetElement(pszId, ppElement);
+   }
+
+   return E_FAIL;
 }
 
 ///////////////////////////////////////

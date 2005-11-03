@@ -148,24 +148,26 @@ static tResult GetElementHelper(IGUIElement * pParent, const tChar * pszId, IGUI
    return S_FALSE;
 }
 
-tResult cGUIPage::GetElement(const tChar * pszId, IGUIElement * * ppElement)
+tResult GUIGetElement(const tGUIElementList & elements, const tChar * pszId, IGUIElement * * ppElement)
 {
    if (pszId == NULL || ppElement == NULL)
    {
       return E_POINTER;
    }
-
-   // TODO: construct a map to do this?
-   tGUIElementList::iterator iter;
-   for (iter = m_elements.begin(); iter != m_elements.end(); iter++)
+   tGUIElementList::const_iterator iter = elements.begin();
+   for (; iter != elements.end(); iter++)
    {
       if (GetElementHelper(*iter, pszId, ppElement) == S_OK)
       {
          return S_OK;
       }
    }
-
    return S_FALSE;
+}
+
+tResult cGUIPage::GetElement(const tChar * pszId, IGUIElement * * ppElement)
+{
+   return GUIGetElement(m_elements, pszId, ppElement);
 }
 
 ///////////////////////////////////////

@@ -20,6 +20,7 @@
 
 F_DECLARE_INTERFACE(IGUIElement);
 F_DECLARE_INTERFACE(IGUIStyle);
+F_DECLARE_INTERFACE(IGUIStyleElement);
 F_DECLARE_INTERFACE(IGUIFont);
 F_DECLARE_INTERFACE(IGUIFontFactory);
 F_DECLARE_INTERFACE(IGUIElementFactory);
@@ -41,7 +42,7 @@ F_DECLARE_INTERFACE(IGUIListBoxElement);
 F_DECLARE_INTERFACE(IGUIScriptElement);
 F_DECLARE_INTERFACE(IGUIEventRouter);
 F_DECLARE_INTERFACE(IGUIEventListener);
-F_DECLARE_INTERFACE(IGUIFactory);
+F_DECLARE_INTERFACE(IGUIFactories);
 F_DECLARE_INTERFACE(IGUIRenderDevice);
 F_DECLARE_INTERFACE(IGUIRenderDeviceContext);
 F_DECLARE_INTERFACE(IGUIContext);
@@ -222,6 +223,16 @@ GUI_API tResult GUIStyleParse(const char * pszStyle, IGUIStyle * * ppStyle);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// INTERFACE: IGUIStyleElement
+//
+
+interface IGUIStyleElement : IGUIElement
+{
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // INTERFACE: IGUIFont
 //
 
@@ -305,7 +316,7 @@ interface IGUIElementRenderer : IUnknown
 
 interface IGUIElementRendererFactory : IUnknown
 {
-   virtual tResult CreateRenderer(IGUIElement * pElement, IGUIElementRenderer * * ppRenderer) = 0;
+   virtual tResult CreateRenderer(void * pReserved, IGUIElementRenderer * * ppRenderer) = 0;
 };
 
 
@@ -653,14 +664,14 @@ interface IGUIEventListener : IUnknown
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// INTERFACE: IGUIFactory
+// INTERFACE: IGUIFactories
 //
 
-interface IGUIFactory : IUnknown
+interface IGUIFactories : IUnknown
 {
    virtual tResult CreateElement(const TiXmlElement * pXmlElement, IGUIElement * * ppElement) = 0;
 
-   virtual tResult CreateRenderer(const tChar * pszRendererClass, IGUIElement * pElement, IGUIElementRenderer * * ppRenderer) = 0;
+   virtual tResult CreateRenderer(const tChar * pszRendererClass, IGUIElementRenderer * * ppRenderer) = 0;
 
    virtual tResult RegisterElementFactory(const char * pszType, IGUIElementFactory * pFactory) = 0;
    virtual tResult RevokeElementFactory(const char * pszType) = 0;
@@ -671,7 +682,7 @@ interface IGUIFactory : IUnknown
 
 ///////////////////////////////////////
 
-GUI_API void GUIFactoryCreate();
+GUI_API tResult GUIFactoriesCreate();
 
 ///////////////////////////////////////
 
@@ -790,6 +801,8 @@ interface IGUIContext : IGUIEventRouter
    /// @return S_OK, S_FALSE if no error and no elements loaded, or an E_xxx code
    virtual tResult PushPage(const tChar * pszPage) = 0;
    virtual tResult PopPage() = 0;
+
+   virtual tResult GetElementById(const tChar * pszId, IGUIElement * * ppElement) = 0;
 
    virtual tResult RenderGUI() = 0;
 

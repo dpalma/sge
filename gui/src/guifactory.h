@@ -16,14 +16,14 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGUIFactory
+// CLASS: cGUIFactories
 //
 
-class cGUIFactory : public cComObject2<IMPLEMENTS(IGUIFactory), IMPLEMENTS(IGlobalObject)>
+class cGUIFactories : public cComObject2<IMPLEMENTS(IGUIFactories), IMPLEMENTS(IGlobalObject)>
 {
 public:
-   cGUIFactory();
-   ~cGUIFactory();
+   cGUIFactories();
+   ~cGUIFactories();
 
    DECLARE_NAME(GUIFactory)
    DECLARE_NO_CONSTRAINTS()
@@ -32,7 +32,7 @@ public:
    virtual tResult Term();
 
    virtual tResult CreateElement(const TiXmlElement * pXmlElement, IGUIElement * * ppElement);
-   virtual tResult CreateRenderer(const tChar * pszRendererClass, IGUIElement * pElement, IGUIElementRenderer * * ppRenderer);
+   virtual tResult CreateRenderer(const tChar * pszRendererClass, IGUIElementRenderer * * ppRenderer);
 
    virtual tResult RegisterElementFactory(const char * pszType, IGUIElementFactory * pFactory);
    virtual tResult RevokeElementFactory(const char * pszType);

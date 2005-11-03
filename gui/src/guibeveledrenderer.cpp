@@ -769,7 +769,7 @@ AUTOREGISTER_GUIELEMENTRENDERERFACTORY(beveled, cGUIBeveledRendererFactory);
 
 ////////////////////////////////////////
 
-tResult cGUIBeveledRendererFactory::CreateRenderer(IGUIElement * /*pElement*/, IGUIElementRenderer * * ppRenderer)
+tResult cGUIBeveledRendererFactory::CreateRenderer(void * pReserved, IGUIElementRenderer * * ppRenderer)
 {
    if (ppRenderer == NULL)
    {

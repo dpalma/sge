@@ -4,11 +4,14 @@
 #include "stdhdr.h"
 
 #include "guistyle.h"
+#include "guielementbasetem.h"
 #include "guistrings.h"
 
 #include "color.h"
 
 #include "globalobj.h"
+
+#include <tinyxml.h>
 
 #include <cstring>
 #include <locale>
@@ -873,7 +876,6 @@ tResult GUIStyleParse(const char * pszStyle, IGUIStyle * * ppStyle)
    }
 
    cAutoIPtr<IGUIStyle> pStyle(new cGUIStyle);
-
    if (!pStyle)
    {
       return E_OUTOFMEMORY;
@@ -890,7 +892,6 @@ tResult GUIStyleParse(const char * pszStyle, IGUIStyle * * ppStyle)
          pszIterEnd = pszEnd;
 
       int attribLength = pszIterEnd - pszIter;
-
       if (attribLength > 0)
       {
          char * pszAttrib = static_cast<char *>(alloca(attribLength + 1));
@@ -899,7 +900,7 @@ tResult GUIStyleParse(const char * pszStyle, IGUIStyle * * ppStyle)
 
          if (FAILED(GUIStyleParseAndSetAttribute(pszAttrib, pStyle)))
          {
-            DebugMsg1("WARNING: Error in parsing attribute \"%s\"\n", pszAttrib);
+            return E_FAIL;
          }
       }
 
@@ -908,6 +909,92 @@ tResult GUIStyleParse(const char * pszStyle, IGUIStyle * * ppStyle)
 
    return pStyle.GetPointer(ppStyle);
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cGUIStyleElement
+//
+
+///////////////////////////////////////
+
+cGUIStyleElement::cGUIStyleElement()
+{
+}
+
+///////////////////////////////////////
+
+cGUIStyleElement::~cGUIStyleElement()
+{
+}
+
+///////////////////////////////////////
+
+tResult cGUIStyleElement::GetRendererClass(tGUIString * pRendererClass)
+{
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
+tResult cGUIStyleElement::GetRenderer(IGUIElementRenderer * * ppRenderer)
+{
+   return S_FALSE;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cGUIStyleElementFactory
+//
+
+AUTOREGISTER_GUIELEMENTFACTORY(style, cGUIStyleElementFactory);
+
+tResult cGUIStyleElementFactory::CreateElement(const TiXmlElement * pXmlElement, 
+                                               IGUIElement * * ppElement)
+{
+   if (ppElement == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (pXmlElement != NULL)
+   {
+      if (strcmp(pXmlElement->Value(), kElementStyle) == 0)
+      {
+         cAutoIPtr<IGUIStyleElement> pStyleElement = static_cast<IGUIStyleElement *>(new cGUIStyleElement);
+         if (!pStyleElement)
+         {
+            return E_OUTOFMEMORY;
+         }
+
+         const TiXmlNode * pFirstChild = pXmlElement->FirstChild();
+         if (pFirstChild != NULL)
+         {
+            const TiXmlText * pText = pFirstChild->ToText();
+            if (pText != NULL)
+            {
+               cAutoIPtr<IGUIStyle> pStyle;
+               if (GUIStyleParse(pText->Value(), &pStyle) == S_OK)
+               {
+                  pStyleElement->SetStyle(pStyle);
+               }
+            }
+         }
+
+         *ppElement = CTAddRef(pStyleElement);
+         return S_OK;
+      }
+   }
+   else
+   {
+      *ppElement = static_cast<IGUIStyleElement *>(new cGUIStyleElement);
+      return (*ppElement != NULL) ? S_OK : E_FAIL;
+   }
+
+   return E_FAIL;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -921,6 +1008,7 @@ class cGUIStyleTests : public CppUnit::TestCase
       CPPUNIT_TEST(TestCustomAttributes);
       CPPUNIT_TEST(TestParseColor);
       CPPUNIT_TEST(TestParseBool);
+      CPPUNIT_TEST(TestParseRejectIdentifiers);
    CPPUNIT_TEST_SUITE_END();
 
    void TestFactoryFunction();
@@ -928,6 +1016,7 @@ class cGUIStyleTests : public CppUnit::TestCase
    void TestCustomAttributes();
    void TestParseColor();
    void TestParseBool();
+   void TestParseRejectIdentifiers();
 };
 
 ///////////////////////////////////////
@@ -1100,6 +1189,17 @@ void cGUIStyleTests::TestParseBool()
    CPPUNIT_ASSERT(GUIStyleParseBool("fAlSe", &b) == S_OK);
    CPPUNIT_ASSERT(!b);
    CPPUNIT_ASSERT(GUIStyleParseBool("arbitrary string", &b) == E_INVALIDARG);
+}
+
+///////////////////////////////////////
+// An attribute can specify an inline style as the value of the attribute, or
+// refer to a <style> element by identifier. GUIStyleParse should reject
+// one-word arguments to help support this.
+
+void cGUIStyleTests::TestParseRejectIdentifiers()
+{
+   cAutoIPtr<IGUIStyle> pStyle;
+   CPPUNIT_ASSERT(GUIStyleParse("myStyle", &pStyle) != S_OK);
 }
 
 #endif // HAVE_CPPUNIT

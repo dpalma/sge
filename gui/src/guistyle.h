@@ -4,7 +4,7 @@
 #ifndef INCLUDED_GUISTYLE_H
 #define INCLUDED_GUISTYLE_H
 
-#include "guiapi.h"
+#include "guielementbase.h"
 
 #include <map>
 
@@ -83,6 +83,32 @@ private:
    bool m_bFontBold, m_bFontItalic, m_bFontShadow, m_bFontOutline;
    uint m_width, m_widthSpec;
    uint m_height, m_heightSpec;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cGUIStyleElement
+//
+
+class cGUIStyleElement : public cComObject<cGUIElementBase<IGUIStyleElement>, &IID_IGUIStyleElement>
+{
+public:
+   cGUIStyleElement();
+   ~cGUIStyleElement();
+
+   virtual tResult GetRendererClass(tGUIString * pRendererClass);
+   virtual tResult GetRenderer(IGUIElementRenderer * * ppRenderer);
+};
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cGUIStyleElementFactory
+//
+
+class cGUIStyleElementFactory : public cComObject<IMPLEMENTS(IGUIElementFactory)>
+{
+public:
+   virtual tResult CreateElement(const TiXmlElement * pXmlElement, IGUIElement * * ppElement);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

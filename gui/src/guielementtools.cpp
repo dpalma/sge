@@ -119,7 +119,7 @@ tResult GUIElementCreateChildren(const TiXmlElement * pXmlElement,
 
    tResult result = E_FAIL;
 
-   UseGlobal(GUIFactory);
+   UseGlobal(GUIFactories);
 
    for (const TiXmlElement * pXmlChild = pXmlElement->FirstChildElement(); 
         pXmlChild != NULL; pXmlChild = pXmlChild->NextSiblingElement())
@@ -127,7 +127,7 @@ tResult GUIElementCreateChildren(const TiXmlElement * pXmlElement,
       if (pXmlChild->Type() == TiXmlNode::ELEMENT)
       {
          cAutoIPtr<IGUIElement> pChildElement;
-         if (pGUIFactory->CreateElement(pXmlChild, &pChildElement) == S_OK)
+         if (pGUIFactories->CreateElement(pXmlChild, &pChildElement) == S_OK)
          {
             if ((result = pContainer->AddElement(pChildElement)) != S_OK)
             {
@@ -401,12 +401,29 @@ tResult GUIElementStandardAttributes(const TiXmlElement * pXmlElement,
       pGUIElement->SetEnabled(bBoolValue);
    }
 
-   if (pXmlElement->Attribute(kAttribStyle))
    {
-      cAutoIPtr<IGUIStyle> pStyle;
-      if (GUIStyleParse(pXmlElement->Attribute(kAttribStyle), &pStyle) == S_OK)
+      const char * pszStyleAttrib = pXmlElement->Attribute(kAttribStyle);
+      if (pszStyleAttrib != NULL)
       {
-         pGUIElement->SetStyle(pStyle);
+         cAutoIPtr<IGUIStyle> pStyle;
+         if (GUIStyleParse(pszStyleAttrib, &pStyle) == S_OK)
+         {
+            pGUIElement->SetStyle(pStyle);
+         }
+         else
+         {
+            UseGlobal(GUIContext);
+            cAutoIPtr<IGUIElement> pPossibleStyleElement;
+            if (pGUIContext->GetElementById(pszStyleAttrib, &pPossibleStyleElement) == S_OK)
+            {
+               cAutoIPtr<IGUIStyleElement> pStyleElement;
+               if (pPossibleStyleElement->QueryInterface(IID_IGUIStyleElement, (void**)&pStyleElement) == S_OK
+                  && pStyleElement->GetStyle(&pStyle) == S_OK)
+               {
+                  pGUIElement->SetStyle(pStyle);
+               }
+            }
+         }
       }
    }
 

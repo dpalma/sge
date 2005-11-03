@@ -54,7 +54,7 @@ private:
 class cGUIBeveledRendererFactory : public cComObject<IMPLEMENTS(IGUIElementRendererFactory)>
 {
 public:
-   virtual tResult CreateRenderer(IGUIElement * pElement, IGUIElementRenderer * * ppRenderer);
+   virtual tResult CreateRenderer(void * pReserved, IGUIElementRenderer * * ppRenderer);
 
 private:
    cAutoIPtr<IGUIElementRenderer> m_pStatelessBeveledRenderer;

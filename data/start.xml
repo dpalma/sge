@@ -7,14 +7,18 @@
 	</panel>
 	<panel style="width:100%;height:40%;background-color:black;">
 		<layout type="grid" rows="3" columns="5" />
+		<style id="buttonStyle">
+			align:center;
+			vertical-align:center;
+		</style>
 		<label/><label/><label/>
-		<button text="Custom Game" style="align:center;vertical-align:center;" onclick="ShowCustomGamePage();" renderer="beveled"/>
+		<button text="Custom Game" style="buttonStyle" onclick="ShowCustomGamePage();" renderer="beveled"/>
 		<label/>
 		<label/><label/><label/>
-		<button text="Options" enabled="false" style="align:center;vertical-align:center;" onclick="ShowOptionsPage();" renderer="beveled"/>
+		<button text="Options" enabled="false" style="buttonStyle" onclick="ShowOptionsPage();" renderer="beveled"/>
 		<label/>
 		<label/><label/><label/>
-		<button text="Exit" style="align:center;vertical-align:center;" onclick="QuitWithConfirm();" renderer="beveled" />
+		<button text="Exit" style="buttonStyle" onclick="QuitWithConfirm();" renderer="beveled" />
       <label/>
 	</panel>
 </panel>
