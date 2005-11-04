@@ -107,52 +107,6 @@ bool GUIElementIdMatch(IGUIElement * pElement, const tChar * pszId)
    return false;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-
-tResult GUIElementCreateChildren(const TiXmlElement * pXmlElement, 
-                                 IGUIContainerElement * pContainer)
-{
-   if (pXmlElement == NULL || pContainer == NULL)
-   {
-      return E_POINTER;
-   }
-
-   tResult result = E_FAIL;
-
-   UseGlobal(GUIFactories);
-
-   for (const TiXmlElement * pXmlChild = pXmlElement->FirstChildElement(); 
-        pXmlChild != NULL; pXmlChild = pXmlChild->NextSiblingElement())
-   {
-      if (pXmlChild->Type() == TiXmlNode::ELEMENT)
-      {
-         cAutoIPtr<IGUIElement> pChildElement;
-         if (pGUIFactories->CreateElement(pXmlChild, &pChildElement) == S_OK)
-         {
-            if ((result = pContainer->AddElement(pChildElement)) != S_OK)
-            {
-               WarnMsg("Error creating child element\n");
-               return result;
-            }
-         }
-         else if (stricmp(pXmlChild->Value(), "layout") == 0)
-         {
-            cAutoIPtr<IGUILayoutManager> pLayout;
-            if (GUILayoutManagerCreate(pXmlChild, &pLayout) == S_OK)
-            {
-               if ((result = pContainer->SetLayout(pLayout)) != S_OK)
-               {
-                  // Don't return the error result because the layout manager
-                  // creating failing shouldn't be a fatal error
-                  WarnMsg("Error creating layout manager\n");
-               }
-            }
-         }
-      }
-   }
-
-   return S_OK;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 

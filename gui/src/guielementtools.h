@@ -39,9 +39,6 @@ tResult GUIElementType(IUnknown * pUnkElement, cStr * pType);
 
 bool GUIElementIdMatch(IGUIElement * pElement, const tChar * pszId);
 
-tResult GUIElementCreateChildren(const TiXmlElement * pXmlElement, 
-                                 IGUIContainerElement * pContainer);
-
 tResult GUIElementRenderChildren(IGUIElement * pParent, IGUIRenderDevice * pRenderDevice);
 
 tResult GUISizeElement(IGUIElement * pElement, const tGUISize & relativeTo);

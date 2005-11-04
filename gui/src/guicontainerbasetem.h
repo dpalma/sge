@@ -119,6 +119,7 @@ tResult cGUIContainerBase<INTRFC>::RemoveElement(IGUIElement * pElement)
    if (f != m_children.end())
    {
       m_children.erase(f);
+      pElement->SetParent(NULL);
       pElement->Release();
       m_bNeedLayout = true;
       return S_OK;

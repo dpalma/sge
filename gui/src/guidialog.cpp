@@ -209,22 +209,21 @@ tResult cGUIDialogElementFactory::CreateElement(const TiXmlElement * pXmlElement
       if (strcmp(pXmlElement->Value(), kElementDialog) == 0)
       {
          cAutoIPtr<IGUIDialogElement> pDialog = static_cast<IGUIDialogElement *>(new cGUIDialogElement);
-         if (!!pDialog)
+         if (!pDialog)
          {
-            GUIElementStandardAttributes(pXmlElement, pDialog);
-
-            const char * pszValue;
-            if ((pszValue = pXmlElement->Attribute(kAttribTitle)) != NULL)
-            {
-               pDialog->SetTitle(pszValue);
-            }
-
-            if (GUIElementCreateChildren(pXmlElement, pDialog) == S_OK)
-            {
-               *ppElement = CTAddRef(pDialog);
-               return S_OK;
-            }
+            return E_OUTOFMEMORY;
          }
+
+         GUIElementStandardAttributes(pXmlElement, pDialog);
+
+         const char * pszValue = NULL;
+         if ((pszValue = pXmlElement->Attribute(kAttribTitle)) != NULL)
+         {
+            pDialog->SetTitle(pszValue);
+         }
+
+         *ppElement = CTAddRef(pDialog);
+         return S_OK;
       }
    }
    else

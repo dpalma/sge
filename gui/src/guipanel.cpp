@@ -60,16 +60,15 @@ tResult cGUIPanelElementFactory::CreateElement(const TiXmlElement * pXmlElement,
       if (strcmp(pXmlElement->Value(), kElementPanel) == 0)
       {
          cAutoIPtr<IGUIPanelElement> pPanel = static_cast<IGUIPanelElement *>(new cGUIPanelElement);
-         if (!!pPanel)
+         if (!pPanel)
          {
-            GUIElementStandardAttributes(pXmlElement, pPanel);
-
-            if (GUIElementCreateChildren(pXmlElement, pPanel) == S_OK)
-            {
-               *ppElement = CTAddRef(pPanel);
-               return S_OK;
-            }
+            return E_OUTOFMEMORY;
          }
+
+         GUIElementStandardAttributes(pXmlElement, pPanel);
+
+         *ppElement = CTAddRef(pPanel);
+         return S_OK;
       }
    }
    else

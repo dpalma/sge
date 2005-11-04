@@ -44,77 +44,6 @@ extern tResult GUIGetElement(const tGUIElementList & elements, const tChar * psz
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename CONTAINER>
-static tResult LoadElements(TiXmlDocument * pTiXmlDoc, CONTAINER * pElements)
-{
-   if (pTiXmlDoc == NULL || pElements == NULL)
-   {
-      return E_POINTER;
-   }
-
-   UseGlobal(GUIFactories);
-
-   uint nCreated = 0;
-   TiXmlElement * pXmlElement;
-   for (pXmlElement = pTiXmlDoc->FirstChildElement(); pXmlElement != NULL;
-        pXmlElement = pXmlElement->NextSiblingElement())
-   {
-      if (pXmlElement->Type() == TiXmlNode::ELEMENT)
-      {
-         cAutoIPtr<IGUIElement> pElement;
-         if (pGUIFactories->CreateElement(pXmlElement, &pElement) == S_OK)
-         {
-            pElements->push_back(CTAddRef(pElement));
-            nCreated++;
-         }
-      }
-   }
-
-   return nCreated;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-template <typename CONTAINER>
-static tResult LoadElements(const char * psz, CONTAINER * pElements)
-{
-   if (psz == NULL || pElements == NULL)
-   {
-      return E_POINTER;
-   }
-
-   TiXmlBase::SetCondenseWhiteSpace(false);
-
-   TiXmlDocument doc;
-   doc.Parse(psz);
-
-   int errorId = doc.ErrorId();
-   if (errorId != TiXmlBase::TIXML_NO_ERROR && errorId != TiXmlBase::TIXML_ERROR_DOCUMENT_EMPTY)
-   {
-      ErrorMsg1("TiXml parse error: %s\n", doc.ErrorDesc());
-      return E_FAIL;
-   }
-
-   uint nCreated = LoadElements(&doc, pElements);
-   if (nCreated > 0)
-   {
-      return S_OK;
-   }
-   else
-   {
-      TiXmlDocument * pTiXmlDoc = NULL;
-      UseGlobal(ResourceManager);
-      if (pResourceManager->Load(psz, kRT_TiXml, NULL, (void**)&pTiXmlDoc) == S_OK)
-      {
-         nCreated = LoadElements(pTiXmlDoc, pElements);
-      }
-   }
-
-   return (nCreated > 0) ? S_OK : S_FALSE;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 static bool g_bExitModalLoop = false;
 
 static bool GUIModalLoopFrameHandler()
@@ -516,6 +445,68 @@ tResult cGUIContext::ShowModalDialog(const tChar * pszDialog)
 
 ///////////////////////////////////////
 
+static void CreateElements(TiXmlNode * pTiXmlNode, IGUIElement * pParent,
+                           void (*pfnCallback)(IGUIElement *, IGUIElement *, void *),
+                           void * pCallbackData)
+{
+   if (pTiXmlNode == NULL)
+   {
+      return;
+   }
+
+   UseGlobal(GUIFactories);
+
+   cAutoIPtr<IGUIContainerElement> pContainer;
+   if (pParent != NULL)
+   {
+      pParent->QueryInterface(IID_IGUIContainerElement, (void**)&pContainer);
+   }
+
+   TiXmlElement * pXmlElement;
+   for (pXmlElement = pTiXmlNode->FirstChildElement(); pXmlElement != NULL;
+        pXmlElement = pXmlElement->NextSiblingElement())
+   {
+      if (pXmlElement->Type() == TiXmlNode::ELEMENT)
+      {
+         cAutoIPtr<IGUIElement> pElement;
+         if (pGUIFactories->CreateElement(pXmlElement, &pElement) == S_OK)
+         {
+            if (pfnCallback != NULL)
+            {
+               (*pfnCallback)(pElement, pParent, pCallbackData);
+            }
+            if (!!pContainer && (pContainer->AddElement(pElement) != S_OK))
+            {
+               WarnMsg("Error creating child element\n");
+            }
+            CreateElements(pXmlElement, pElement, pfnCallback, pCallbackData);
+         }
+         if (!!pContainer && (stricmp(pXmlElement->Value(), "layout") == 0))
+         {
+            cAutoIPtr<IGUILayoutManager> pLayout;
+            if (GUILayoutManagerCreate(pXmlElement, &pLayout) == S_OK)
+            {
+               if (pContainer->SetLayout(pLayout) != S_OK)
+               {
+                  WarnMsg("Error creating layout manager\n");
+               }
+            }
+         }
+      }
+   }
+}
+
+///////////////////////////////////////
+
+static void GUIContextCreateElementsCallback(IGUIElement * pElement, IGUIElement * pParent, void * pData)
+{
+   if (pElement != NULL && pParent == NULL && pData != NULL)
+   {
+      tGUIElementList * pElements = reinterpret_cast<tGUIElementList *>(pData);
+      pElements->push_back(CTAddRef(pElement));
+   }
+}
+
 tResult cGUIContext::PushPage(const tChar * pszPage)
 {
    if (pszPage == NULL)
@@ -523,8 +514,32 @@ tResult cGUIContext::PushPage(const tChar * pszPage)
       return E_POINTER;
    }
 
+   TiXmlBase::SetCondenseWhiteSpace(false);
+
+   TiXmlDocument doc;
+   TiXmlDocument * pTiXmlDoc = &doc;
+
+   doc.Parse(pszPage);
+   int errorId = doc.ErrorId();
+
+   if (errorId != TiXmlBase::TIXML_NO_ERROR && errorId != TiXmlBase::TIXML_ERROR_DOCUMENT_EMPTY)
+   {
+      ErrorMsg1("TiXml parse error: %s\n", doc.ErrorDesc());
+      return E_FAIL;
+   }
+   else if (errorId == TiXmlBase::TIXML_ERROR_DOCUMENT_EMPTY)
+   {
+      UseGlobal(ResourceManager);
+      if (pResourceManager->Load(pszPage, kRT_TiXml, NULL, (void**)&pTiXmlDoc) != S_OK)
+      {
+         ErrorMsg("Error loading TiXml document as a resource\n");
+         return E_FAIL;
+      }
+   }
+
    tGUIElementList elements;
-   if (::LoadElements(pszPage, &elements) == S_OK)
+   CreateElements(pTiXmlDoc, NULL, GUIContextCreateElementsCallback, &elements);
+   if (!elements.empty())
    {
       cGUIPage * pPage = new cGUIPage(&elements);
       if (pPage == NULL)
