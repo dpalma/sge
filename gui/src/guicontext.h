@@ -13,6 +13,7 @@
 #include "globalobjdef.h"
 
 #include <list>
+#include <map>
 
 #ifdef _MSC_VER
 #pragma once
@@ -86,6 +87,8 @@ public:
    const cGUIPage * GetCurrentPage() const { return m_pages.empty() ? NULL : m_pages.back(); }
 
 private:
+   void ClearTempElementMap();
+
    tResult CheckDialogPage();
 
 #ifdef GUI_DEBUG
@@ -124,6 +127,8 @@ private:
    cAutoIPtr<IGUIFont> m_pDefaultFont;
 
    std::list<cGUIPage *> m_pages;
+
+   std::map<tGUIString, IGUIElement*> m_tempElementMap;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -89,7 +89,7 @@ tResult cGUIFactories::Term()
 
 ///////////////////////////////////////
 
-tResult cGUIFactories::CreateElement(const TiXmlElement * pXmlElement, IGUIElement * * ppElement)
+tResult cGUIFactories::CreateElement(const TiXmlElement * pXmlElement, IGUIElement * pParent, IGUIElement * * ppElement)
 {
    if (ppElement == NULL)
    {
@@ -105,7 +105,7 @@ tResult cGUIFactories::CreateElement(const TiXmlElement * pXmlElement, IGUIEleme
    }
 
    cAutoIPtr<IGUIElement> pElement;
-   tResult result = iter->second->CreateElement(pXmlElement, &pElement);
+   tResult result = iter->second->CreateElement(pXmlElement, pParent, &pElement);
 
    if (result != S_OK)
    {

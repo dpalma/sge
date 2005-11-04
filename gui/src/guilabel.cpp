@@ -67,6 +67,7 @@ tResult cGUILabelElement::SetText(const char * pszText)
 AUTOREGISTER_GUIELEMENTFACTORY(label, cGUILabelElementFactory);
 
 tResult cGUILabelElementFactory::CreateElement(const TiXmlElement * pXmlElement, 
+                                               IGUIElement * pParent,
                                                IGUIElement * * ppElement)
 {
    if (ppElement == NULL)

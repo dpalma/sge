@@ -352,7 +352,8 @@ tResult cGUIListBoxElement::Invoke(const char * pszMethodName,
 
 AUTOREGISTER_GUIELEMENTFACTORY(listbox, cGUIListBoxElementFactory);
 
-tResult cGUIListBoxElementFactory::CreateElement(const TiXmlElement * pXmlElement, 
+tResult cGUIListBoxElementFactory::CreateElement(const TiXmlElement * pXmlElement,
+                                                 IGUIElement * pParent,
                                                  IGUIElement * * ppElement)
 {
    if (ppElement == NULL)

@@ -203,6 +203,8 @@ tResult cGUIContext::Term()
    UseGlobal(Input);
    pInput->SetGUIInputListener(NULL);
 
+   ClearTempElementMap();
+
    std::list<cGUIPage*>::iterator iter = m_pages.begin();
    for (; iter != m_pages.end(); iter++)
    {
@@ -471,7 +473,7 @@ static void CreateElements(TiXmlNode * pTiXmlNode, IGUIElement * pParent,
       }
 
       cAutoIPtr<IGUIElement> pElement;
-      if (pGUIFactories->CreateElement(pXmlElement, &pElement) == S_OK)
+      if (pGUIFactories->CreateElement(pXmlElement, pParent, &pElement) == S_OK)
       {
          if (pfnCallback != NULL)
          {
@@ -483,30 +485,35 @@ static void CreateElements(TiXmlNode * pTiXmlNode, IGUIElement * pParent,
          }
          CreateElements(pXmlElement, pElement, pfnCallback, pCallbackData);
       }
-
-      // TODO: remove this hack by creating an element factory for layouts
-      if (!!pContainer && (stricmp(pXmlElement->Value(), "layout") == 0))
-      {
-         cAutoIPtr<IGUILayoutManager> pLayout;
-         if (GUILayoutManagerCreate(pXmlElement, &pLayout) == S_OK)
-         {
-            if (pContainer->SetLayout(pLayout) != S_OK)
-            {
-               WarnMsg("Error creating layout manager\n");
-            }
-         }
-      }
    }
 }
 
 ///////////////////////////////////////
 
+typedef std::pair<tGUIElementList*, std::map<tGUIString, IGUIElement*>*> tGUIContextCreateElementsCallbackData;
+
 static void GUIContextCreateElementsCallback(IGUIElement * pElement, IGUIElement * pParent, void * pData)
 {
-   if (pElement != NULL && pParent == NULL && pData != NULL)
+   if (pData == NULL)
    {
-      tGUIElementList * pElements = reinterpret_cast<tGUIElementList *>(pData);
-      pElements->push_back(CTAddRef(pElement));
+      return;
+   }
+
+   tGUIContextCreateElementsCallbackData * p = (tGUIContextCreateElementsCallbackData *)pData;
+
+   if (pElement != NULL)
+   {
+      // Add only top-level elements to the list
+      if (pParent == NULL)
+      {
+         p->first->push_back(CTAddRef(pElement));
+      }
+
+      tGUIString id;
+      if (pElement->GetId(&id) == S_OK)
+      {
+         p->second->insert(std::make_pair(id, CTAddRef(pElement)));
+      }
    }
 }
 
@@ -540,8 +547,15 @@ tResult cGUIContext::PushPage(const tChar * pszPage)
       }
    }
 
+   ClearTempElementMap();
+
    tGUIElementList elements;
-   CreateElements(pTiXmlDoc, NULL, GUIContextCreateElementsCallback, &elements);
+
+   tGUIContextCreateElementsCallbackData callbackData;
+   callbackData.first = &elements;
+   callbackData.second = &m_tempElementMap;
+
+   CreateElements(pTiXmlDoc, NULL, GUIContextCreateElementsCallback, &callbackData);
    if (!elements.empty())
    {
       cGUIPage * pPage = new cGUIPage(&elements);
@@ -575,6 +589,8 @@ tResult cGUIContext::PopPage()
       return E_FAIL;
    }
 
+   ClearTempElementMap();
+
    cGUIPage * pLastPage = m_pages.back();
    m_pages.pop_back();
    delete pLastPage, pLastPage = NULL;
@@ -593,6 +609,16 @@ tResult cGUIContext::GetElementById(const tChar * pszId, IGUIElement * * ppEleme
    if (pszId == NULL || ppElement == NULL)
    {
       return E_POINTER;
+   }
+
+   if (!m_tempElementMap.empty())
+   {
+      std::map<tGUIString, IGUIElement*>::iterator f = m_tempElementMap.find(pszId);
+      if (f != m_tempElementMap.end())
+      {
+         *ppElement = CTAddRef(f->second);
+         return S_OK;
+      }
    }
 
    cGUIPage * pPage = GetCurrentPage();
@@ -788,6 +814,18 @@ tResult cGUIContext::GetActiveModalDialog(IGUIDialogElement * * ppModalDialog)
    }
 
    return S_FALSE;
+}
+
+///////////////////////////////////////
+
+void cGUIContext::ClearTempElementMap()
+{
+   std::map<tGUIString, IGUIElement*>::iterator iter = m_tempElementMap.begin();
+   for (; iter != m_tempElementMap.end(); iter++)
+   {
+      iter->second->Release();
+   }
+   m_tempElementMap.clear();
 }
 
 ///////////////////////////////////////

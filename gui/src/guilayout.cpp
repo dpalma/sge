@@ -556,4 +556,55 @@ tResult cGUIFlowLayout::SetVGap(uint vGap)
    return S_OK;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cGUILayoutElementFactory
+//
+
+class cGUILayoutElementFactory : public cComObject<IMPLEMENTS(IGUIElementFactory)>
+{
+public:
+   virtual tResult CreateElement(const TiXmlElement * pXmlElement, IGUIElement * pParent, IGUIElement * * ppElement);
+};
+
+///////////////////////////////////////
+
+AUTOREGISTER_GUIELEMENTFACTORY(layout, cGUILayoutElementFactory);
+
+///////////////////////////////////////
+
+tResult cGUILayoutElementFactory::CreateElement(const TiXmlElement * pXmlElement,
+                                                IGUIElement * pParent,
+                                                IGUIElement * * ppElement)
+{
+   if (ppElement == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (pXmlElement != NULL && pParent != NULL)
+   {
+      if (strcmp(pXmlElement->Value(), kElementLayout) == 0)
+      {
+         cAutoIPtr<IGUIContainerElement> pContainer;
+         if (pParent->QueryInterface(IID_IGUIContainerElement, (void**)&pContainer) == S_OK)
+         {
+            cAutoIPtr<IGUILayoutManager> pLayout;
+            if (GUILayoutManagerCreate(pXmlElement, &pLayout) == S_OK)
+            {
+               if (pContainer->SetLayout(pLayout) != S_OK)
+               {
+                  WarnMsg("Error creating layout manager\n");
+               }
+            }
+
+            return S_FALSE;
+         }
+      }
+   }
+
+   return E_FAIL;
+}
+
 ///////////////////////////////////////////////////////////////////////////////

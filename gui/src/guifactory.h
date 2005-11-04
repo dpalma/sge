@@ -31,7 +31,7 @@ public:
    virtual tResult Init();
    virtual tResult Term();
 
-   virtual tResult CreateElement(const TiXmlElement * pXmlElement, IGUIElement * * ppElement);
+   virtual tResult CreateElement(const TiXmlElement * pXmlElement, IGUIElement * pParent, IGUIElement * * ppElement);
    virtual tResult CreateRenderer(const tChar * pszRendererClass, IGUIElementRenderer * * ppRenderer);
 
    virtual tResult RegisterElementFactory(const char * pszType, IGUIElementFactory * pFactory);

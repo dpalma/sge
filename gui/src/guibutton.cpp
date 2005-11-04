@@ -165,7 +165,9 @@ tResult cGUIButtonElement::SetOnClick(const char * pszOnClick)
 
 AUTOREGISTER_GUIELEMENTFACTORY(button, cGUIButtonElementFactory);
 
-tResult cGUIButtonElementFactory::CreateElement(const TiXmlElement * pXmlElement, IGUIElement * * ppElement)
+tResult cGUIButtonElementFactory::CreateElement(const TiXmlElement * pXmlElement,
+                                                IGUIElement * pParent,
+                                                IGUIElement * * ppElement)
 {
    if (ppElement == NULL)
    {

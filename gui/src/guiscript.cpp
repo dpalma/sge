@@ -80,7 +80,8 @@ tResult cGUIScriptElement::GetRenderer(IGUIElementRenderer * * ppRenderer)
 
 AUTOREGISTER_GUIELEMENTFACTORY(script, cGUIScriptElementFactory);
 
-tResult cGUIScriptElementFactory::CreateElement(const TiXmlElement * pXmlElement, 
+tResult cGUIScriptElementFactory::CreateElement(const TiXmlElement * pXmlElement,
+                                                IGUIElement * pParent,
                                                 IGUIElement * * ppElement)
 {
    if (ppElement == NULL)

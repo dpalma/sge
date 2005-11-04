@@ -549,7 +549,8 @@ bool cGUITextEditElement::HitTest(const tGUIPoint & point, int * pIndex)
 
 AUTOREGISTER_GUIELEMENTFACTORY(textedit, cGUITextEditElementFactory);
 
-tResult cGUITextEditElementFactory::CreateElement(const TiXmlElement * pXmlElement, 
+tResult cGUITextEditElementFactory::CreateElement(const TiXmlElement * pXmlElement,
+                                                  IGUIElement * pParent,
                                                   IGUIElement * * ppElement)
 {
    if (ppElement == NULL)

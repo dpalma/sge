@@ -389,7 +389,8 @@ eGUIScrollBarPart cGUIScrollBarElement::GetHitPart(const tGUIPoint & point)
 
 AUTOREGISTER_GUIELEMENTFACTORY(scrollbar, cGUIScrollBarElementFactory);
 
-tResult cGUIScrollBarElementFactory::CreateElement(const TiXmlElement * pXmlElement, 
+tResult cGUIScrollBarElementFactory::CreateElement(const TiXmlElement * pXmlElement,
+                                                   IGUIElement * pParent,
                                                    IGUIElement * * ppElement)
 {
    if (ppElement == NULL)

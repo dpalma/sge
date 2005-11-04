@@ -116,7 +116,7 @@ private:
 class cGUITextEditElementFactory : public cComObject<IMPLEMENTS(IGUIElementFactory)>
 {
 public:
-   virtual tResult CreateElement(const TiXmlElement * pXmlElement, IGUIElement * * ppElement);
+   virtual tResult CreateElement(const TiXmlElement * pXmlElement, IGUIElement * pParent, IGUIElement * * ppElement);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -196,7 +196,8 @@ tGUIRect cGUIDialogElement::GetCaptionRectAbsolute()
 
 AUTOREGISTER_GUIELEMENTFACTORY(dialog, cGUIDialogElementFactory);
 
-tResult cGUIDialogElementFactory::CreateElement(const TiXmlElement * pXmlElement, 
+tResult cGUIDialogElementFactory::CreateElement(const TiXmlElement * pXmlElement,
+                                                IGUIElement * pParent,
                                                 IGUIElement * * ppElement)
 {
    if (ppElement == NULL)

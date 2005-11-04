@@ -83,6 +83,7 @@ const char kElementTextEdit[]          = "textedit";
 const char kElementScript[]            = "script";
 const char kElementScrollBar[]         = "scrollbar";
 const char kElementStyle[]             = "style";
+#define kElementLayout kAttribLayout
 
 ///////////////////////////////////////////////////////////////////////////////
 

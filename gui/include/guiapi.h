@@ -290,7 +290,7 @@ GUI_API void GUIFontFactoryCreate();
 
 interface IGUIElementFactory : IUnknown
 {
-   virtual tResult CreateElement(const TiXmlElement * pXmlElement, IGUIElement * * ppElement) = 0;
+   virtual tResult CreateElement(const TiXmlElement * pXmlElement, IGUIElement * pParent, IGUIElement * * ppElement) = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -669,7 +669,7 @@ interface IGUIEventListener : IUnknown
 
 interface IGUIFactories : IUnknown
 {
-   virtual tResult CreateElement(const TiXmlElement * pXmlElement, IGUIElement * * ppElement) = 0;
+   virtual tResult CreateElement(const TiXmlElement * pXmlElement, IGUIElement * pParent, IGUIElement * * ppElement) = 0;
 
    virtual tResult CreateRenderer(const tChar * pszRendererClass, IGUIElementRenderer * * ppRenderer) = 0;
 

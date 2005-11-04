@@ -47,7 +47,8 @@ tResult cGUIPanelElement::OnEvent(IGUIEvent * pEvent)
 
 AUTOREGISTER_GUIELEMENTFACTORY(panel, cGUIPanelElementFactory);
 
-tResult cGUIPanelElementFactory::CreateElement(const TiXmlElement * pXmlElement, 
+tResult cGUIPanelElementFactory::CreateElement(const TiXmlElement * pXmlElement,
+                                               IGUIElement * pParent,
                                                IGUIElement * * ppElement)
 {
    if (ppElement == NULL)

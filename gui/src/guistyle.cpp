@@ -5,6 +5,7 @@
 
 #include "guistyle.h"
 #include "guielementbasetem.h"
+#include "guielementtools.h"
 #include "guistrings.h"
 
 #include "color.h"
@@ -950,7 +951,8 @@ tResult cGUIStyleElement::GetRenderer(IGUIElementRenderer * * ppRenderer)
 
 AUTOREGISTER_GUIELEMENTFACTORY(style, cGUIStyleElementFactory);
 
-tResult cGUIStyleElementFactory::CreateElement(const TiXmlElement * pXmlElement, 
+tResult cGUIStyleElementFactory::CreateElement(const TiXmlElement * pXmlElement,
+                                               IGUIElement * pParent,
                                                IGUIElement * * ppElement)
 {
    if (ppElement == NULL)
@@ -967,6 +969,8 @@ tResult cGUIStyleElementFactory::CreateElement(const TiXmlElement * pXmlElement,
          {
             return E_OUTOFMEMORY;
          }
+
+         GUIElementStandardAttributes(pXmlElement, pStyleElement);
 
          const TiXmlNode * pFirstChild = pXmlElement->FirstChild();
          if (pFirstChild != NULL)
