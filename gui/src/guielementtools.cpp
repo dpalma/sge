@@ -120,44 +120,7 @@ tResult GUIElementRenderChildren(IGUIElement * pParent, IGUIRenderDevice * pRend
    cAutoIPtr<IGUIElementEnum> pEnum;
    if (pParent->EnumChildren(&pEnum) == S_OK)
    {
-      IGUIElement * pChildren[32];
-      ulong count = 0;
-
-      while (SUCCEEDED((pEnum->Next(_countof(pChildren), &pChildren[0], &count))) && (count > 0))
-      {
-         for (ulong i = 0; i < count; i++)
-         {
-            if (pChildren[i]->IsVisible())
-            {
-               cAutoIPtr<IGUIElementRenderer> pChildRenderer;
-               if (pChildren[i]->GetRenderer(&pChildRenderer) == S_OK)
-               {
-                  if (FAILED(pChildRenderer->Render(pChildren[i], pRenderDevice)))
-                  {
-                     cStr type;
-                     if (SUCCEEDED(GUIElementType(pChildren[i], &type)))
-                     {
-                        ErrorMsg1("Rendering failed for child GUI element of type \"%s\"\n", type.c_str());
-                     }
-                     else
-                     {
-                        ErrorMsg("Rendering failed for child GUI element of unknown type\n");
-                     }
-                     for (ulong j = i; j < count; j++)
-                     {
-                        SafeRelease(pChildren[j]);
-                     }
-                     return E_FAIL;
-                  }
-               }
-            }
-
-            SafeRelease(pChildren[i]);
-         }
-
-         count = 0;
-      }
-
+      ForEach(pEnum, cRenderElement(pRenderDevice));
       return S_OK;
    }
 
@@ -481,7 +444,16 @@ tResult cRenderElement::operator()(IGUIElement * pElement)
       result = pRenderer->Render(pElement, m_pRenderDevice);
    }
 
-   ErrorMsgIf(FAILED(result), "A GUI element failed to render properly\n");
+   if (FAILED(result))
+   {
+      cStr type;
+      if (GUIElementType(pElement, &type) != S_OK)
+      {
+         type = _T("Unknown");
+      }
+
+      ErrorMsg1("A GUI element of type \"%s\" failed to render\n", type.c_str());
+   }
 
    return result;
 }

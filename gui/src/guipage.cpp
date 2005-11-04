@@ -307,17 +307,7 @@ static tResult RunScriptHelper(IGUIElement * pElement)
       cAutoIPtr<IGUIElementEnum> pEnum;
       if (pElement->EnumChildren(&pEnum) == S_OK)
       {
-         IGUIElement * pChildren[32];
-         ulong count = 0;
-         while (SUCCEEDED((pEnum->Next(_countof(pChildren), &pChildren[0], &count))) && (count > 0))
-         {
-            for (ulong i = 0; i < count; i++)
-            {
-               RunScriptHelper(pChildren[i]);
-               SafeRelease(pChildren[i]);
-            }
-            count = 0;
-         }
+         ForEach(pEnum, RunScriptHelper);
       }
    }
    return S_FALSE;
