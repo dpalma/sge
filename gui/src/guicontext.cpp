@@ -462,34 +462,37 @@ static void CreateElements(TiXmlNode * pTiXmlNode, IGUIElement * pParent,
       pParent->QueryInterface(IID_IGUIContainerElement, (void**)&pContainer);
    }
 
-   TiXmlElement * pXmlElement;
-   for (pXmlElement = pTiXmlNode->FirstChildElement(); pXmlElement != NULL;
-        pXmlElement = pXmlElement->NextSiblingElement())
+   for (TiXmlElement * pXmlElement = pTiXmlNode->FirstChildElement();
+      pXmlElement != NULL; pXmlElement = pXmlElement->NextSiblingElement())
    {
-      if (pXmlElement->Type() == TiXmlNode::ELEMENT)
+      if (pXmlElement->Type() != TiXmlNode::ELEMENT)
       {
-         cAutoIPtr<IGUIElement> pElement;
-         if (pGUIFactories->CreateElement(pXmlElement, &pElement) == S_OK)
+         continue;
+      }
+
+      cAutoIPtr<IGUIElement> pElement;
+      if (pGUIFactories->CreateElement(pXmlElement, &pElement) == S_OK)
+      {
+         if (pfnCallback != NULL)
          {
-            if (pfnCallback != NULL)
-            {
-               (*pfnCallback)(pElement, pParent, pCallbackData);
-            }
-            if (!!pContainer && (pContainer->AddElement(pElement) != S_OK))
-            {
-               WarnMsg("Error creating child element\n");
-            }
-            CreateElements(pXmlElement, pElement, pfnCallback, pCallbackData);
+            (*pfnCallback)(pElement, pParent, pCallbackData);
          }
-         if (!!pContainer && (stricmp(pXmlElement->Value(), "layout") == 0))
+         if (!!pContainer && (pContainer->AddElement(pElement) != S_OK))
          {
-            cAutoIPtr<IGUILayoutManager> pLayout;
-            if (GUILayoutManagerCreate(pXmlElement, &pLayout) == S_OK)
+            WarnMsg("Error creating child element\n");
+         }
+         CreateElements(pXmlElement, pElement, pfnCallback, pCallbackData);
+      }
+
+      // TODO: remove this hack by creating an element factory for layouts
+      if (!!pContainer && (stricmp(pXmlElement->Value(), "layout") == 0))
+      {
+         cAutoIPtr<IGUILayoutManager> pLayout;
+         if (GUILayoutManagerCreate(pXmlElement, &pLayout) == S_OK)
+         {
+            if (pContainer->SetLayout(pLayout) != S_OK)
             {
-               if (pContainer->SetLayout(pLayout) != S_OK)
-               {
-                  WarnMsg("Error creating layout manager\n");
-               }
+               WarnMsg("Error creating layout manager\n");
             }
          }
       }
