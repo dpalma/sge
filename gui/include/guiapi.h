@@ -602,14 +602,14 @@ interface IGUIListBoxElement : IGUIElement
    virtual tResult AddItem(const tChar * pszString, uint_ptr extra) = 0;
    virtual tResult RemoveItem(uint index) = 0;
 
-   virtual tResult GetItemCount(uint * pItemCount) = 0;
-   virtual tResult GetItem(uint index, cStr * pString, uint_ptr * pExtra) = 0;
+   virtual tResult GetItemCount(uint * pItemCount) const = 0;
+   virtual tResult GetItem(uint index, cStr * pString, uint_ptr * pExtra, bool * pbIsSelected) const = 0;
 
    virtual tResult Sort() = 0;
 
    virtual tResult Clear() = 0;
 
-   virtual tResult FindItem(const tChar * pszString, uint * pIndex) = 0;
+   virtual tResult FindItem(const tChar * pszString, uint * pIndex) const = 0;
 
    virtual tResult Select(uint startIndex, uint endIndex) = 0;
    virtual tResult SelectAll() = 0;
@@ -617,12 +617,16 @@ interface IGUIListBoxElement : IGUIElement
    virtual tResult Deselect(uint startIndex, uint endIndex) = 0;
    virtual tResult DeselectAll() = 0;
 
+   virtual tResult GetSelectedCount(uint * pSelectedCount) const = 0;
    virtual tResult GetSelected(uint * pIndices, uint nMaxIndices) = 0;
 
-   virtual tResult GetRowCount(uint * pRowCount) = 0;
+   virtual tResult GetRowCount(uint * pRowCount) const = 0;
    virtual tResult SetRowCount(uint rowCount) = 0;
 
    virtual tResult GetScrollBar(eGUIScrollBarType scrollBarType, IGUIScrollBarElement * * ppScrollBar) = 0;
+
+   virtual tResult GetItemHeight(uint * pItemHeight) const = 0;
+   virtual tResult SetItemHeight(uint itemHeight) = 0;
 };
 
 

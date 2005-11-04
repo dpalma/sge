@@ -12,6 +12,7 @@
 
 #include "globalobj.h"
 
+#include <algorithm>
 #include <list>
 #include <tinyxml.h>
 
@@ -34,6 +35,7 @@ extern tResult GUIElementEnumCreate(const tGUIElementList & elements, IGUIElemen
 
 cGUIListBoxElement::cGUIListBoxElement()
  : m_rowCount(1)
+ , m_itemHeight(0)
 {
    GUIScrollBarElementCreate(kGUIScrollBarHorizontal, &m_pHScrollBar);
    if (!!m_pHScrollBar)
@@ -116,6 +118,18 @@ tResult cGUIListBoxElement::OnEvent(IGUIEvent * pEvent)
    tGUIPoint point;
    Verify(pEvent->GetMousePosition(&point) == S_OK);
 
+   tGUIPoint pos = GetAbsolutePosition();
+
+   if (eventCode == kGUIEventClick)
+   {
+      if (m_itemHeight > 0)
+      {
+         uint index = Round(point.y - pos.y) / m_itemHeight;
+         Select(index, index);
+         Verify(pEvent->SetCancelBubble(true) == S_OK);
+      }
+   }
+
    return result;
 }
 
@@ -155,7 +169,7 @@ tResult cGUIListBoxElement::RemoveItem(uint index)
 
 ////////////////////////////////////////
 
-tResult cGUIListBoxElement::GetItemCount(uint * pItemCount)
+tResult cGUIListBoxElement::GetItemCount(uint * pItemCount) const
 {
    if (pItemCount == NULL)
    {
@@ -167,7 +181,8 @@ tResult cGUIListBoxElement::GetItemCount(uint * pItemCount)
 
 ////////////////////////////////////////
 
-tResult cGUIListBoxElement::GetItem(uint index, cStr * pString, uint_ptr * pExtra)
+tResult cGUIListBoxElement::GetItem(uint index, cStr * pString,
+                                    uint_ptr * pExtra, bool * pbIsSelected) const
 {
    if (index >= m_items.size())
    {
@@ -179,10 +194,14 @@ tResult cGUIListBoxElement::GetItem(uint index, cStr * pString, uint_ptr * pExtr
       return E_POINTER;
    }
 
-   *pString = m_items[index].first;
+   *pString = m_items[index].GetText();
    if (pExtra != NULL)
    {
-      *pExtra = m_items[index].second;
+      *pExtra = m_items[index].GetData();
+   }
+   if (pbIsSelected != NULL)
+   {
+      *pbIsSelected = m_items[index].IsSelected();
    }
    return S_OK;
 }
@@ -204,17 +223,17 @@ tResult cGUIListBoxElement::Clear()
 
 ////////////////////////////////////////
 
-tResult cGUIListBoxElement::FindItem(const tChar * pszString, uint * pIndex)
+tResult cGUIListBoxElement::FindItem(const tChar * pszString, uint * pIndex) const
 {
    if (pszString == NULL || pIndex == NULL)
    {
       return E_POINTER;
    }
 
-   tListBoxItems::iterator iter = m_items.begin();
+   tListBoxItems::const_iterator iter = m_items.begin();
    for (uint index = 0; iter != m_items.end(); iter++, index++)
    {
-      if (iter->first.compare(pszString) == 0)
+      if (iter->GetText().compare(pszString) == 0)
       {
          *pIndex = index;
          return S_OK;
@@ -228,40 +247,145 @@ tResult cGUIListBoxElement::FindItem(const tChar * pszString, uint * pIndex)
 
 tResult cGUIListBoxElement::Select(uint startIndex, uint endIndex)
 {
-   return E_NOTIMPL;
+   if (startIndex >= m_items.size() || startIndex > endIndex)
+   {
+      return E_INVALIDARG;
+   }
+
+   if (!IsMultiSelect())
+   {
+      if (startIndex != endIndex)
+      {
+         WarnMsg2("Invalid selection indices for single-select listbox: %d, %d\n", startIndex, endIndex);
+         return E_INVALIDARG;
+      }
+
+      tListBoxItems::iterator iter = m_items.begin();
+      for (uint index = 0; iter != m_items.end(); iter++, index++)
+      {
+         if (index == startIndex)
+         {
+            iter->Select();
+         }
+         else
+         {
+            iter->Deselect();
+         }
+      }
+   }
+   else
+   {
+      if (endIndex >= m_items.size())
+      {
+         endIndex = m_items.size() - 1;
+      }
+
+      for (uint i = startIndex; i <= endIndex; i++)
+      {
+         m_items[i].Select();
+      }
+   }
+
+   return S_OK;
 }
 
 ////////////////////////////////////////
 
 tResult cGUIListBoxElement::SelectAll()
 {
-   return E_NOTIMPL;
+   if (!IsMultiSelect())
+   {
+      return E_FAIL;
+   }
+
+   std::for_each(m_items.begin(), m_items.end(), std::mem_fun_ref(&cListBoxItem::Select));
+   return S_OK;
 }
 
 ////////////////////////////////////////
 
 tResult cGUIListBoxElement::Deselect(uint startIndex, uint endIndex)
 {
-   return E_NOTIMPL;
+   if (startIndex >= m_items.size())
+   {
+      return E_INVALIDARG;
+   }
+
+   if (endIndex >= m_items.size())
+   {
+      endIndex = m_items.size() - 1;
+   }
+
+   for (uint i = startIndex; i <= endIndex; i++)
+   {
+      m_items[i].Deselect();
+   }
+
+   return S_OK;
 }
 
 ////////////////////////////////////////
 
 tResult cGUIListBoxElement::DeselectAll()
 {
-   return E_NOTIMPL;
+   std::for_each(m_items.begin(), m_items.end(), std::mem_fun_ref(&cListBoxItem::Deselect));
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cGUIListBoxElement::GetSelectedCount(uint * pSelectedCount) const
+{
+   if (pSelectedCount == NULL)
+   {
+      return E_POINTER;
+   }
+   *pSelectedCount = std::count_if(m_items.begin(), m_items.end(), std::mem_fun_ref(&cListBoxItem::IsSelected));
+   if (!IsMultiSelect())
+   {
+      Assert(*pSelectedCount == 1);
+   }
+   return S_OK;
 }
 
 ////////////////////////////////////////
 
 tResult cGUIListBoxElement::GetSelected(uint * pIndices, uint nMaxIndices)
 {
-   return E_NOTIMPL;
+   if (pIndices == NULL)
+   {
+      return E_POINTER;
+   }
+   if (nMaxIndices == 0)
+   {
+      return E_INVALIDARG;
+   }
+   uint nSelected = 0;
+   tListBoxItems::const_iterator iter = m_items.begin();
+   for (uint index = 0; iter != m_items.end(); iter++, index++)
+   {
+      if (iter->IsSelected())
+      {
+         if (nSelected < nMaxIndices)
+         {
+            pIndices[nSelected++] = index;
+         }
+         else
+         {
+            break;
+         }
+      }
+   }
+   if (!IsMultiSelect())
+   {
+      Assert(nSelected == 1);
+   }
+   return S_OK;
 }
 
 ////////////////////////////////////////
 
-tResult cGUIListBoxElement::GetRowCount(uint * pRowCount)
+tResult cGUIListBoxElement::GetRowCount(uint * pRowCount) const
 {
    if (pRowCount == NULL)
    {
@@ -306,6 +430,26 @@ tResult cGUIListBoxElement::GetScrollBar(eGUIScrollBarType scrollBarType,
       return E_INVALIDARG;
    }
    return E_FAIL;
+}
+
+////////////////////////////////////////
+
+tResult cGUIListBoxElement::GetItemHeight(uint * pItemHeight) const
+{
+   if (pItemHeight == NULL)
+   {
+      return E_POINTER;
+   }
+   *pItemHeight = m_itemHeight;
+   return (m_itemHeight != 0) ? S_OK : S_FALSE;
+}
+
+////////////////////////////////////////
+
+tResult cGUIListBoxElement::SetItemHeight(uint itemHeight)
+{
+   m_itemHeight = itemHeight;
+   return S_OK;
 }
 
 ////////////////////////////////////////

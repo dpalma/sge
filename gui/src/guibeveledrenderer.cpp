@@ -575,21 +575,35 @@ tResult cGUIBeveledRenderer::Render(IGUIListBoxElement * pListBoxElement,
       uint itemCount = 0;
       if (pListBoxElement->GetItemCount(&itemCount) == S_OK)
       {
-         int itemHeight = 0;
+         uint itemHeight = 0;
+         pListBoxElement->GetItemHeight(&itemHeight);
+
+         tGUIRect itemRect(rect);
+         itemRect.bottom = itemRect.top + itemHeight;
+
          for (uint i = 0; i < itemCount; i++)
          {
             cStr itemString;
-            tGUIRect itemRect;
-            if (FAILED(pListBoxElement->GetItem(i, &itemString, NULL)))
+            bool bIsSelected = false;
+            if (FAILED(pListBoxElement->GetItem(i, &itemString, NULL, &bIsSelected)))
             {
                continue;
             }
+
             if (itemHeight == 0)
             {
                itemRect = rect;
                pFont->RenderText(itemString.c_str(), itemString.length(), &itemRect, kRT_CalcRect, textColor);
                itemHeight = itemRect.GetHeight();
+               pListBoxElement->SetItemHeight(itemHeight);
             }
+
+            if (bIsSelected)
+            {
+               textColor = tGUIColor::White;
+               pRenderDevice->RenderSolidRect(itemRect, tGUIColor::Blue);
+            }
+
             pFont->RenderText(itemString.c_str(), itemString.length(), &itemRect, kRT_NoClip, textColor);
             itemRect.Offset(0, itemHeight);
          }
