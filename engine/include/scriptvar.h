@@ -46,8 +46,8 @@ public:
 
    cScriptVar();
    cScriptVar(double _d);
-   cScriptVar(char * _psz);
-   cScriptVar(wchar_t * _pwsz);
+   cScriptVar(const char * _psz);
+   cScriptVar(const wchar_t * _pwsz);
    cScriptVar(IUnknown * _pUnk);
    cScriptVar(const cScriptVar & other);
    ~cScriptVar();
@@ -66,8 +66,8 @@ public:
    const cScriptVar & operator =(uint value);
    const cScriptVar & operator =(float value);
    const cScriptVar & operator =(double value);
-   const cScriptVar & operator =(char * _psz);
-   const cScriptVar & operator =(wchar_t * _pwsz);
+   const cScriptVar & operator =(const char * _psz);
+   const cScriptVar & operator =(const wchar_t * _pwsz);
    const cScriptVar & operator =(IUnknown * _pUnk);
    const cScriptVar & operator =(const cScriptVar & other);
 

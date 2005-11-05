@@ -55,7 +55,7 @@ cScriptVar::cScriptVar(double _d)
 
 ///////////////////////////////////////
 
-cScriptVar::cScriptVar(char * _psz)
+cScriptVar::cScriptVar(const char * _psz)
  : m_pTempBuffer(NULL),
    m_pConversionBuffer(NULL)
 {
@@ -64,7 +64,7 @@ cScriptVar::cScriptVar(char * _psz)
 
 ///////////////////////////////////////
 
-cScriptVar::cScriptVar(wchar_t * _pwsz)
+cScriptVar::cScriptVar(const wchar_t * _pwsz)
  : m_pTempBuffer(NULL),
    m_pConversionBuffer(NULL)
 {
@@ -173,7 +173,7 @@ double cScriptVar::ToDouble() const
 
 ///////////////////////////////////////
 
-const cScriptVar & cScriptVar::operator =(char * _psz)
+const cScriptVar & cScriptVar::operator =(const char * _psz)
 {
    Clear();
    type = kString;
@@ -187,7 +187,7 @@ const cScriptVar & cScriptVar::operator =(char * _psz)
 
 ///////////////////////////////////////
 
-const cScriptVar & cScriptVar::operator =(wchar_t * _pwsz)
+const cScriptVar & cScriptVar::operator =(const wchar_t * _pwsz)
 {
    Clear();
    type = kString;
