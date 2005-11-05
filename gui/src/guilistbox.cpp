@@ -298,7 +298,15 @@ tResult cGUIListBoxElement::SelectAll()
       return E_FAIL;
    }
 
+#if _MSC_VER <= 1200
+   tListBoxItems::iterator iter = m_items.begin();
+   for (; iter != m_items.end(); iter++)
+   {
+      iter->Select();
+   }
+#else
    std::for_each(m_items.begin(), m_items.end(), std::mem_fun_ref(&cListBoxItem::Select));
+#endif
    return S_OK;
 }
 
@@ -328,7 +336,15 @@ tResult cGUIListBoxElement::Deselect(uint startIndex, uint endIndex)
 
 tResult cGUIListBoxElement::DeselectAll()
 {
+#if _MSC_VER <= 1200
+   tListBoxItems::iterator iter = m_items.begin();
+   for (; iter != m_items.end(); iter++)
+   {
+      iter->Deselect();
+   }
+#else
    std::for_each(m_items.begin(), m_items.end(), std::mem_fun_ref(&cListBoxItem::Deselect));
+#endif
    return S_OK;
 }
 
@@ -340,7 +356,19 @@ tResult cGUIListBoxElement::GetSelectedCount(uint * pSelectedCount) const
    {
       return E_POINTER;
    }
+#if _MSC_VER <= 1200
+   *pSelectedCount = 0;
+   tListBoxItems::const_iterator iter = m_items.begin();
+   for (; iter != m_items.end(); iter++)
+   {
+      if (iter->IsSelected())
+      {
+         *pSelectedCount += 1;
+      }
+   }
+#else
    *pSelectedCount = std::count_if(m_items.begin(), m_items.end(), std::mem_fun_ref(&cListBoxItem::IsSelected));
+#endif
    if (!IsMultiSelect())
    {
       Assert(*pSelectedCount == 1);
