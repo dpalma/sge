@@ -484,6 +484,52 @@ tResult cGUIListBoxElement::Invoke(const char * pszMethodName,
          return E_INVALIDARG;
       }
    }
+   else if (strcmp(pszMethodName, "GetSelected") == 0)
+   {
+      if (argc != 0)
+      {
+         return E_INVALIDARG;
+      }
+
+      uint nSelected = 0;
+      if (GetSelectedCount(&nSelected) == S_OK)
+      {
+         nSelected = Min(nSelected, static_cast<uint>(nMaxResults));
+         uint * pIndices = reinterpret_cast<uint *>(alloca(nSelected * sizeof(uint)));
+         if (GetSelected(pIndices, nSelected) == S_OK)
+         {
+            for (uint i = 0; i < nSelected; i++)
+            {
+               pResults[i] = pIndices[i];
+            }
+            return nSelected;
+         }
+      }
+   }
+   else if (strcmp(pszMethodName, "GetItem") == 0)
+   {
+      if (argc != 1 || !argv[0].IsNumber())
+      {
+         return E_INVALIDARG;
+      }
+
+      tGUIString itemText;
+      uint_ptr itemData = 0;
+      if (GetItem(argv[0], &itemText, &itemData, NULL) == S_OK)
+      {
+         if (nMaxResults >= 2)
+         {
+            pResults[0] = itemText.c_str();
+            pResults[1] = itemData;
+            return 2;
+         }
+         else if (nMaxResults >= 1)
+         {
+            pResults[0] = itemText.c_str();
+            return 1;
+         }
+      }
+   }
 
    return E_FAIL;
 }

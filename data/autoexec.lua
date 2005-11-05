@@ -20,10 +20,10 @@ bind("F7", [[GUIContext:ShowModalDialog("guitest.xml")]]);
 --LogChannel([[LuaInterp]]);
 --LogChannel([[ResourceManager]]);
 
-function LoadSampleLevel()
+function LoadSampleLevel(map)
    GUIContext:PushPage("ingame.xml");
    
-   SetTerrain("Rolling Grassy Hills.sgm");
+   SetTerrain(map);
    
    -- spawn this many entities
    nEntities = 15;
