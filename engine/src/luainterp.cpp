@@ -172,11 +172,32 @@ static int LuaThunkInvoke(lua_State * L)
    // the name of the method to call is at the top of the stack
    const char * pszMethodName = lua_tostring(L, lua_upvalueindex(1));
 
+   int nArgsOnStack = lua_gettop(L);
+
+   if (nArgsOnStack == 1 && lua_type(L, 1) != LUA_TUSERDATA)
+   {
+      tChar szMsg[200];
+      _sntprintf(szMsg, _countof(szMsg), "invalid method call: %s called with no instance pointer", pszMethodName);
+      lua_pushstring(L, szMsg);
+      lua_error(L); // this function never returns
+   }
+
+#if 0
+   {
+      DebugMsg1("LUA: call %s\n", pszMethodName);
+      for (int i = 0, index = -1; i < nArgsOnStack; i++, index--)
+      {
+         int type = lua_type(L, index);
+         DebugMsg2("LUA:   stack[%d] type %d\n", index, type);
+      }
+   }
+#endif
+
    // the "this" pointer is at the bottom of the stack
    IScriptable * pInstance = static_cast<IScriptable *>(lua_unboxpointer(L, 1));
-
    // Subtract one to exclude the "this" pointer
-   int nArgsOnStack = lua_gettop(L) - 1;
+   nArgsOnStack -= 1;
+
    int nArgs = Min(kMaxArgs, nArgsOnStack);
 
    cScriptVar results[kMaxResults];
@@ -232,8 +253,7 @@ static int LuaIndex(lua_State * L)
 
 static int LuaPublishObject(lua_State * L, IScriptable * pInstance)
 {
-   lua_boxpointer(L, pInstance);
-   pInstance->AddRef();
+   lua_boxpointer(L, CTAddRef(pInstance));
 
    lua_newtable(L);
 
@@ -451,9 +471,14 @@ static int LuaThunkFunction(lua_State * L)
 
 ///////////////////////////////////////
 
-void ScriptInterpreterCreate()
+tResult ScriptInterpreterCreate()
 {
-   cAutoIPtr<IScriptInterpreter> p(new cLuaInterpreter);
+   cAutoIPtr<IScriptInterpreter> p(static_cast<IScriptInterpreter*>(new cLuaInterpreter));
+   if (!p)
+   {
+      return E_OUTOFMEMORY;
+   }
+   return RegisterGlobalObject(IID_IScriptInterpreter, p);
 }
 
 ///////////////////////////////////////
@@ -528,7 +553,6 @@ struct cLuaInterpreter::sPreRegisteredFunction * cLuaInterpreter::gm_pPreRegiste
 cLuaInterpreter::cLuaInterpreter()
  : m_L(NULL)
 {
-   RegisterGlobalObject(IID_IScriptInterpreter, static_cast<IGlobalObject*>(this));
 }
 
 ///////////////////////////////////////

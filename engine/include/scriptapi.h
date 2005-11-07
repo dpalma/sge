@@ -116,7 +116,7 @@ interface IScriptInterpreter : IUnknown
 ///////////////////////////////////////
 /// Create the singleton script interpreter object
 
-ENGINE_API void ScriptInterpreterCreate();
+ENGINE_API tResult ScriptInterpreterCreate();
 
 ///////////////////////////////////////
 /// Register a global function with the script interpreter
