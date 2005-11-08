@@ -34,14 +34,14 @@ public:
    virtual tResult CreateElement(const TiXmlElement * pXmlElement, IGUIElement * pParent, IGUIElement * * ppElement);
    virtual tResult CreateRenderer(const tChar * pszRendererClass, IGUIElementRenderer * * ppRenderer);
 
-   virtual tResult RegisterElementFactory(const char * pszType, IGUIElementFactory * pFactory);
-   virtual tResult RevokeElementFactory(const char * pszType);
+   virtual tResult RegisterElementFactory(const tChar * pszType, tGUIElementFactoryFn pFactoryFn);
+   virtual tResult RevokeElementFactory(const tChar * pszType);
 
-   virtual tResult RegisterElementRendererFactory(const char * pszRenderer, IGUIElementRendererFactory * pFactory);
-   virtual tResult RevokeElementRendererFactory(const char * pszRenderer);
+   virtual tResult RegisterRendererFactory(const tChar * pszRenderer, tGUIRendererFactoryFn pFactoryFn);
+   virtual tResult RevokeRendererFactory(const tChar * pszRenderer);
 
-   friend tResult RegisterGUIElementFactory(const char * pszType, IGUIElementFactory * pFactory);
-   friend tResult RegisterGUIElementRendererFactory(const char * pszRenderer, IGUIElementRendererFactory * pFactory);
+   friend tResult GUIRegisterElementFactory(const tChar * pszType, tGUIElementFactoryFn pFactoryFn);
+   friend tResult GUIRegisterRendererFactory(const tChar * pszRenderer, tGUIRendererFactoryFn pFactoryFn);
 
 private:
    void CleanupElementFactories();
@@ -55,29 +55,33 @@ private:
    friend class cAutoCleanupStatics;
    static cAutoCleanupStatics g_autoCleanupStatics;
 
-   typedef std::map<cStr, IGUIElementFactory *> tGUIElementFactoryMap;
-   tGUIElementFactoryMap m_elementFactoryMap;
+   typedef std::map<cStr, tGUIElementFactoryFn> tGUIElementFactoryFnMap;
+   tGUIElementFactoryFnMap m_elementFactoryFnMap;
 
-   typedef std::map<cStr, IGUIElementRendererFactory *> tGUIRendererFactoryMap;
-   tGUIRendererFactoryMap m_rendererFactoryMap;
+   typedef std::map<cStr, tGUIRendererFactoryFn> tGUIRendererFactoryFnMap;
+   tGUIRendererFactoryFnMap m_rendererFactoryFnMap;
 
    static bool gm_bInitialized;
 
-   struct sElementFactoryMapEntry
+   struct sElementFactoryFnNode
    {
-      char szType[200];
-      IGUIElementFactory * pFactory;
-      struct sElementFactoryMapEntry * pNext;
+      cStr type;
+      tGUIElementFactoryFn pFactoryFn;
+      struct sElementFactoryFnNode * pNext;
    };
-   static struct sElementFactoryMapEntry * gm_pElementFactoryMapEntries;
 
-   struct sRendererFactoryMapEntry
+   typedef struct sElementFactoryFnNode tElementFactoryFnNode;
+   static tElementFactoryFnNode * gm_pElementFactoryFns;
+
+   struct sRendererFactoryFnNode
    {
-      char szRenderer[200];
-      IGUIElementRendererFactory * pFactory;
-      struct sRendererFactoryMapEntry * pNext;
+      cStr renderer;
+      tGUIRendererFactoryFn pFactoryFn;
+      struct sRendererFactoryFnNode * pNext;
    };
-   static struct sRendererFactoryMapEntry * gm_pRendererFactoryMapEntries;
+
+   typedef struct sRendererFactoryFnNode tRendererFactoryFnNode;
+   static tRendererFactoryFnNode * gm_pRendererFactoryFns;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -54,16 +54,5 @@ private:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUIDialogElementFactory
-//
-
-class cGUIDialogElementFactory : public cComObject<IMPLEMENTS(IGUIElementFactory)>
-{
-public:
-   virtual tResult CreateElement(const TiXmlElement * pXmlElement, IGUIElement * pParent, IGUIElement * * ppElement);
-};
-
-///////////////////////////////////////////////////////////////////////////////
 
 #endif // !INCLUDED_GUIDIALOG_H

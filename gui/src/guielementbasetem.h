@@ -55,7 +55,7 @@ tResult cGUIElementBase<INTRFC>::GetId(tGUIString * pId) const
 ///////////////////////////////////////
 
 template <typename INTRFC>
-void cGUIElementBase<INTRFC>::SetId(const char * pszId)
+void cGUIElementBase<INTRFC>::SetId(const tChar * pszId)
 {
    if (pszId != NULL)
    {

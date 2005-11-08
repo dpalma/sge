@@ -159,15 +159,9 @@ tResult cGUIButtonElement::SetOnClick(const char * pszOnClick)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUIButtonElementFactory
-//
 
-AUTOREGISTER_GUIELEMENTFACTORY(button, cGUIButtonElementFactory);
-
-tResult cGUIButtonElementFactory::CreateElement(const TiXmlElement * pXmlElement,
-                                                IGUIElement * pParent,
-                                                IGUIElement * * ppElement)
+tResult GUIButtonElementCreate(const TiXmlElement * pXmlElement,
+                               IGUIElement * pParent, IGUIElement * * ppElement)
 {
    if (ppElement == NULL)
    {
@@ -208,5 +202,7 @@ tResult cGUIButtonElementFactory::CreateElement(const TiXmlElement * pXmlElement
 
    return E_FAIL;
 }
+
+AUTOREGISTER_GUIELEMENTFACTORYFN(button, GUIButtonElementCreate);
 
 ///////////////////////////////////////////////////////////////////////////////

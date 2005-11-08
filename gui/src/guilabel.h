@@ -29,16 +29,5 @@ private:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUILabelElementFactory
-//
-
-class cGUILabelElementFactory : public cComObject<IMPLEMENTS(IGUIElementFactory)>
-{
-public:
-   virtual tResult CreateElement(const TiXmlElement * pXmlElement, IGUIElement * pParent, IGUIElement * * ppElement);
-};
-
-///////////////////////////////////////////////////////////////////////////////
 
 #endif // !INCLUDED_GUILABEL_H

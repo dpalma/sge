@@ -558,25 +558,9 @@ tResult cGUIFlowLayout::SetVGap(uint vGap)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUILayoutElementFactory
-//
 
-class cGUILayoutElementFactory : public cComObject<IMPLEMENTS(IGUIElementFactory)>
-{
-public:
-   virtual tResult CreateElement(const TiXmlElement * pXmlElement, IGUIElement * pParent, IGUIElement * * ppElement);
-};
-
-///////////////////////////////////////
-
-AUTOREGISTER_GUIELEMENTFACTORY(layout, cGUILayoutElementFactory);
-
-///////////////////////////////////////
-
-tResult cGUILayoutElementFactory::CreateElement(const TiXmlElement * pXmlElement,
-                                                IGUIElement * pParent,
-                                                IGUIElement * * ppElement)
+tResult GUILayoutElementCreate(const TiXmlElement * pXmlElement,
+                               IGUIElement * pParent, IGUIElement * * ppElement)
 {
    if (ppElement == NULL)
    {
@@ -606,5 +590,9 @@ tResult cGUILayoutElementFactory::CreateElement(const TiXmlElement * pXmlElement
 
    return E_FAIL;
 }
+
+///////////////////////////////////////
+
+AUTOREGISTER_GUIELEMENTFACTORYFN(layout, GUILayoutElementCreate);
 
 ///////////////////////////////////////////////////////////////////////////////

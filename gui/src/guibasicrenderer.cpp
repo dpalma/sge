@@ -356,33 +356,24 @@ tGUISize cGUIBasicRenderer::GetPreferredSize(IGUIContainerElement * pContainerEl
 
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUIBasicRendererFactory
-//
 
-AUTOREGISTER_GUIELEMENTRENDERERFACTORY(basic, cGUIBasicRendererFactory);
-
-////////////////////////////////////////
-
-tResult cGUIBasicRendererFactory::CreateRenderer(void * pReserved, IGUIElementRenderer * * ppRenderer)
+tResult GUIBasicRendererCreate(void * pReserved, IGUIElementRenderer * * ppRenderer)
 {
-   if (ppRenderer == NULL)
-   {
-      return E_POINTER;
-   }
+   static cAutoIPtr<IGUIElementRenderer> pSingleInstance;
 
-   // Since the renderer is stateless, a single instance can serve all GUI elements
-   if (!m_pStatelessBasicRenderer)
+   // Since the basic renderer is stateless, a single instance can serve all GUI elements
+   if (!pSingleInstance)
    {
-      m_pStatelessBasicRenderer = static_cast<IGUIElementRenderer *>(new cGUIBasicRenderer);
-      if (!m_pStatelessBasicRenderer)
+      pSingleInstance = static_cast<IGUIElementRenderer*>(new cGUIBasicRenderer);
+      if (!pSingleInstance)
       {
          return E_OUTOFMEMORY;
       }
    }
 
-   *ppRenderer = CTAddRef(m_pStatelessBasicRenderer);
-   return S_OK;
+   return pSingleInstance.GetPointer(ppRenderer);
 }
+
+AUTOREGISTER_GUIRENDERERFACTORYFN(basic, GUIBasicRendererCreate);
 
 ///////////////////////////////////////////////////////////////////////////////

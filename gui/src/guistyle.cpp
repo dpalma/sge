@@ -945,15 +945,8 @@ tResult cGUIStyleElement::GetRenderer(IGUIElementRenderer * * ppRenderer)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUIStyleElementFactory
-//
 
-AUTOREGISTER_GUIELEMENTFACTORY(style, cGUIStyleElementFactory);
-
-tResult cGUIStyleElementFactory::CreateElement(const TiXmlElement * pXmlElement,
-                                               IGUIElement * pParent,
-                                               IGUIElement * * ppElement)
+tResult GUIStyleElementCreate(const TiXmlElement * pXmlElement, IGUIElement * pParent, IGUIElement * * ppElement)
 {
    if (ppElement == NULL)
    {
@@ -998,6 +991,8 @@ tResult cGUIStyleElementFactory::CreateElement(const TiXmlElement * pXmlElement,
 
    return E_FAIL;
 }
+
+AUTOREGISTER_GUIELEMENTFACTORYFN(style, GUIStyleElementCreate);
 
 
 ///////////////////////////////////////////////////////////////////////////////

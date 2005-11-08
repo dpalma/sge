@@ -190,15 +190,9 @@ tGUIRect cGUIDialogElement::GetCaptionRectAbsolute()
 
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUIDialogElementFactory
-//
 
-AUTOREGISTER_GUIELEMENTFACTORY(dialog, cGUIDialogElementFactory);
-
-tResult cGUIDialogElementFactory::CreateElement(const TiXmlElement * pXmlElement,
-                                                IGUIElement * pParent,
-                                                IGUIElement * * ppElement)
+tResult GUIDialogElementCreate(const TiXmlElement * pXmlElement,
+                               IGUIElement * pParent, IGUIElement * * ppElement)
 {
    if (ppElement == NULL)
    {
@@ -235,6 +229,8 @@ tResult cGUIDialogElementFactory::CreateElement(const TiXmlElement * pXmlElement
 
    return E_FAIL;
 }
+
+AUTOREGISTER_GUIELEMENTFACTORYFN(dialog, GUIDialogElementCreate);
 
 
 ///////////////////////////////////////////////////////////////////////////////

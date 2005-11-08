@@ -85,16 +85,5 @@ private:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUIListBoxElementFactory
-//
-
-class cGUIListBoxElementFactory : public cComObject<IMPLEMENTS(IGUIElementFactory)>
-{
-public:
-   virtual tResult CreateElement(const TiXmlElement * pXmlElement, IGUIElement * pParent, IGUIElement * * ppElement);
-};
-
-///////////////////////////////////////////////////////////////////////////////
 
 #endif // !INCLUDED_GUILISTBOX_H

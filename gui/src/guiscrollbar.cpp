@@ -383,15 +383,9 @@ eGUIScrollBarPart cGUIScrollBarElement::GetHitPart(const tGUIPoint & point)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUIScrollBarElementFactory
-//
 
-AUTOREGISTER_GUIELEMENTFACTORY(scrollbar, cGUIScrollBarElementFactory);
-
-tResult cGUIScrollBarElementFactory::CreateElement(const TiXmlElement * pXmlElement,
-                                                   IGUIElement * pParent,
-                                                   IGUIElement * * ppElement)
+tResult GUIScrollBarElementCreateFromXml(const TiXmlElement * pXmlElement,
+                                         IGUIElement * pParent, IGUIElement * * ppElement)
 {
    if (ppElement == NULL)
    {
@@ -460,5 +454,7 @@ tResult cGUIScrollBarElementFactory::CreateElement(const TiXmlElement * pXmlElem
 
    return E_FAIL;
 }
+
+AUTOREGISTER_GUIELEMENTFACTORYFN(scrollbar, GUIScrollBarElementCreateFromXml);
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -23,7 +23,7 @@ public:
    virtual ~cGUIElementBase();
 
    virtual tResult GetId(tGUIString * pId) const;
-   virtual void SetId(const char * pszId);
+   virtual void SetId(const tChar * pszId);
 
    virtual bool HasFocus() const;
    virtual void SetFocus(bool bFocus);

@@ -23,9 +23,7 @@ F_DECLARE_INTERFACE(IGUIStyle);
 F_DECLARE_INTERFACE(IGUIStyleElement);
 F_DECLARE_INTERFACE(IGUIFont);
 F_DECLARE_INTERFACE(IGUIFontFactory);
-F_DECLARE_INTERFACE(IGUIElementFactory);
 F_DECLARE_INTERFACE(IGUIElementRenderer);
-F_DECLARE_INTERFACE(IGUIElementRendererFactory);
 F_DECLARE_INTERFACE(IGUIElementEnum);
 F_DECLARE_INTERFACE(IGUIEvent);
 F_DECLARE_INTERFACE(IGUIContainerElement);
@@ -58,11 +56,14 @@ class cGUIFontDesc;
 /// @brief The base GUI element interface provides access to properties and 
 /// methods common to all GUI widgets.
 
+typedef tResult (* tGUIElementFactoryFn)(const TiXmlElement * pXmlElement,
+                                         IGUIElement * pParent, IGUIElement * * ppElement);
+
 interface IGUIElement : IUnknown
 {
    /// @return The semi-unique identifier assigned to this element
    virtual tResult GetId(tGUIString * pId) const = 0;
-   virtual void SetId(const char * pszId) = 0;
+   virtual void SetId(const tChar * pszId) = 0;
 
    /// @return A boolean value representing whether the element presently has input focus
    virtual bool HasFocus() const = 0;
@@ -285,18 +286,10 @@ GUI_API void GUIFontFactoryCreate();
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// INTERFACE: IGUIElementFactory
-//
-
-interface IGUIElementFactory : IUnknown
-{
-   virtual tResult CreateElement(const TiXmlElement * pXmlElement, IGUIElement * pParent, IGUIElement * * ppElement) = 0;
-};
-
-///////////////////////////////////////////////////////////////////////////////
-//
 // INTERFACE: IGUIElementRenderer
 //
+
+typedef tResult (* tGUIRendererFactoryFn)(void * pReserved, IGUIElementRenderer * * ppRenderer);
 
 interface IGUIElementRenderer : IUnknown
 {
@@ -307,16 +300,6 @@ interface IGUIElementRenderer : IUnknown
    virtual tResult ComputeClientArea(IGUIElement * pElement, tGUIRect * pClientArea) = 0;
 
    virtual tResult GetFont(IGUIElement * pElement, IGUIFont * * ppFont) = 0;
-};
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// INTERFACE: IGUIElementRendererFactory
-//
-
-interface IGUIElementRendererFactory : IUnknown
-{
-   virtual tResult CreateRenderer(void * pReserved, IGUIElementRenderer * * ppRenderer) = 0;
 };
 
 
@@ -677,11 +660,11 @@ interface IGUIFactories : IUnknown
 
    virtual tResult CreateRenderer(const tChar * pszRendererClass, IGUIElementRenderer * * ppRenderer) = 0;
 
-   virtual tResult RegisterElementFactory(const char * pszType, IGUIElementFactory * pFactory) = 0;
-   virtual tResult RevokeElementFactory(const char * pszType) = 0;
+   virtual tResult RegisterElementFactory(const tChar * pszType, tGUIElementFactoryFn pFactoryFn) = 0;
+   virtual tResult RevokeElementFactory(const tChar * pszType) = 0;
 
-   virtual tResult RegisterElementRendererFactory(const char * pszRenderer, IGUIElementRendererFactory * pFactory) = 0;
-   virtual tResult RevokeElementRendererFactory(const char * pszRenderer) = 0;
+   virtual tResult RegisterRendererFactory(const tChar * pszRenderer, tGUIRendererFactoryFn pFactoryFn) = 0;
+   virtual tResult RevokeRendererFactory(const tChar * pszRenderer) = 0;
 };
 
 ///////////////////////////////////////
@@ -690,57 +673,24 @@ GUI_API tResult GUIFactoriesCreate();
 
 ///////////////////////////////////////
 
-GUI_API tResult RegisterGUIElementFactory(const char * pszType, IGUIElementFactory * pFactory);
-GUI_API tResult RegisterGUIElementRendererFactory(const char * pszRenderer, IGUIElementRendererFactory * pFactory);
-
-struct sAutoRegisterGUIFactory
-{
-   sAutoRegisterGUIFactory(const char * pszType, IUnknown * pUnkFactory)
-   {
-      cAutoIPtr<IGUIElementFactory> pElementFactory;
-      cAutoIPtr<IGUIElementRendererFactory> pRendererFactory;
-      if (pUnkFactory->QueryInterface(IID_IGUIElementFactory, (void**)&pElementFactory) == S_OK)
-      {
-         RegisterGUIElementFactory(pszType, pElementFactory);
-      }
-      if (pUnkFactory->QueryInterface(IID_IGUIElementRendererFactory, (void**)&pRendererFactory) == S_OK)
-      {
-         RegisterGUIElementRendererFactory(pszType, pRendererFactory);
-      }
-      SafeRelease(pUnkFactory);
-   }
-};
+GUI_API tResult GUIRegisterElementFactory(const tChar * pszType, tGUIElementFactoryFn pFactoryFn);
+GUI_API tResult GUIRegisterRendererFactory(const tChar * pszRenderer, tGUIRendererFactoryFn pFactoryFn);
 
 ///////////////////////////////////////
 
 #define REFERENCE_GUIFACTORY(type) \
-   extern void * Reference##type##ElementFactory(); \
-   void * MAKE_UNIQUE(g_pRefSym##type) = Reference##type##ElementFactory()
+   extern void * type##FactoryRefSym(); \
+   void * MAKE_UNIQUE(g_pRefSym##type) = type##FactoryRefSym()
 
-#define AUTOREGISTER_GUIFACTORY(type, factoryClass) \
-   class cAutoRegFactorySingleton##type : public factoryClass { public: \
-   virtual ulong STDMETHODCALLTYPE AddRef() { return 2; } \
-   virtual ulong STDMETHODCALLTYPE Release() { return 1; } \
-   } g_autoRegFactorySingleton##type; \
-   void * Reference##type##ElementFactory() \
-   { return &g_autoRegFactorySingleton##type; } \
-   static sAutoRegisterGUIFactory g_auto##type##Element(#type, &g_autoRegFactorySingleton##type)
+#define AUTOREGISTER_GUIFACTORYFN(type, factoryFn, registerFn) \
+   void * type##FactoryRefSym() { return factoryFn; } \
+   static tResult MAKE_UNIQUE(g_##type##AutoRegResult) = (*registerFn)(#type, factoryFn)
 
-///////////////////////////////////////
+#define AUTOREGISTER_GUIELEMENTFACTORYFN(type, factoryFn) \
+   AUTOREGISTER_GUIFACTORYFN(type, factoryFn, GUIRegisterElementFactory)
 
-#define REFERENCE_GUIELEMENTFACTORY(renderer) \
-   REFERENCE_GUIFACTORY(renderer)
-
-#define AUTOREGISTER_GUIELEMENTFACTORY(renderer, factoryClass) \
-   AUTOREGISTER_GUIFACTORY(renderer, factoryClass)
-
-///////////////////////////////////////
-
-#define REFERENCE_GUIELEMENTRENDERERFACTORY(renderer) \
-   REFERENCE_GUIFACTORY(renderer)
-
-#define AUTOREGISTER_GUIELEMENTRENDERERFACTORY(renderer, factoryClass) \
-   AUTOREGISTER_GUIFACTORY(renderer, factoryClass)
+#define AUTOREGISTER_GUIRENDERERFACTORYFN(type, factoryFn) \
+   AUTOREGISTER_GUIFACTORYFN(type, factoryFn, GUIRegisterRendererFactory)
 
 
 ////////////////////////////////////////////////////////////////////////////////

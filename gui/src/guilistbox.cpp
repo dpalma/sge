@@ -564,15 +564,9 @@ tResult cGUIListBoxElement::Invoke(const char * pszMethodName,
 
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUIListBoxElementFactory
-//
 
-AUTOREGISTER_GUIELEMENTFACTORY(listbox, cGUIListBoxElementFactory);
-
-tResult cGUIListBoxElementFactory::CreateElement(const TiXmlElement * pXmlElement,
-                                                 IGUIElement * pParent,
-                                                 IGUIElement * * ppElement)
+tResult GUIListBoxElementCreate(const TiXmlElement * pXmlElement,
+                                IGUIElement * pParent, IGUIElement * * ppElement)
 {
    if (ppElement == NULL)
    {
@@ -623,5 +617,7 @@ tResult cGUIListBoxElementFactory::CreateElement(const TiXmlElement * pXmlElemen
 
    return E_FAIL;
 }
+
+AUTOREGISTER_GUIELEMENTFACTORYFN(listbox, GUIListBoxElementCreate);
 
 ///////////////////////////////////////////////////////////////////////////////

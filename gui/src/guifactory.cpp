@@ -11,14 +11,19 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-REFERENCE_GUIELEMENTFACTORY(button);
-REFERENCE_GUIELEMENTFACTORY(dialog);
-REFERENCE_GUIELEMENTFACTORY(label);
-REFERENCE_GUIELEMENTFACTORY(panel);
-REFERENCE_GUIELEMENTFACTORY(textedit);
+REFERENCE_GUIFACTORY(button);
+REFERENCE_GUIFACTORY(dialog);
+REFERENCE_GUIFACTORY(label);
+REFERENCE_GUIFACTORY(layout);
+REFERENCE_GUIFACTORY(listbox);
+REFERENCE_GUIFACTORY(panel);
+REFERENCE_GUIFACTORY(script);
+REFERENCE_GUIFACTORY(scrollbar);
+REFERENCE_GUIFACTORY(style);
+REFERENCE_GUIFACTORY(textedit);
 
-REFERENCE_GUIELEMENTRENDERERFACTORY(beveled);
-REFERENCE_GUIELEMENTRENDERERFACTORY(basic);
+REFERENCE_GUIFACTORY(beveled);
+REFERENCE_GUIFACTORY(basic);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -28,14 +33,8 @@ REFERENCE_GUIELEMENTRENDERERFACTORY(basic);
 ///////////////////////////////////////
 
 bool cGUIFactories::gm_bInitialized = false;
-
-///////////////////////////////////////
-
-struct cGUIFactories::sElementFactoryMapEntry * cGUIFactories::gm_pElementFactoryMapEntries = NULL;
-
-///////////////////////////////////////
-
-struct cGUIFactories::sRendererFactoryMapEntry * cGUIFactories::gm_pRendererFactoryMapEntries = NULL;
+cGUIFactories::tElementFactoryFnNode * cGUIFactories::gm_pElementFactoryFns = NULL;
+cGUIFactories::tRendererFactoryFnNode * cGUIFactories::gm_pRendererFactoryFns = NULL;
 
 ///////////////////////////////////////
 
@@ -55,24 +54,20 @@ tResult cGUIFactories::Init()
 {
    gm_bInitialized = true;
 
-   while (gm_pElementFactoryMapEntries != NULL)
+   while (gm_pElementFactoryFns != NULL)
    {
-      RegisterElementFactory(gm_pElementFactoryMapEntries->szType, 
-         gm_pElementFactoryMapEntries->pFactory);
-      SafeRelease(gm_pElementFactoryMapEntries->pFactory);
-      sElementFactoryMapEntry * p = gm_pElementFactoryMapEntries;
-      gm_pElementFactoryMapEntries = gm_pElementFactoryMapEntries->pNext;
-      delete p;
+      tElementFactoryFnNode * pNode = gm_pElementFactoryFns;
+      RegisterElementFactory(pNode->type.c_str(), pNode->pFactoryFn);
+      gm_pElementFactoryFns = pNode->pNext;
+      delete pNode;
    }
 
-   while (gm_pRendererFactoryMapEntries != NULL)
+   while (gm_pRendererFactoryFns != NULL)
    {
-      RegisterElementRendererFactory(gm_pRendererFactoryMapEntries->szRenderer, 
-         gm_pRendererFactoryMapEntries->pFactory);
-      SafeRelease(gm_pRendererFactoryMapEntries->pFactory);
-      sRendererFactoryMapEntry * p = gm_pRendererFactoryMapEntries;
-      gm_pRendererFactoryMapEntries = gm_pRendererFactoryMapEntries->pNext;
-      delete p;
+      tRendererFactoryFnNode * pNode = gm_pRendererFactoryFns;
+      RegisterRendererFactory(pNode->renderer.c_str(), pNode->pFactoryFn);
+      gm_pRendererFactoryFns = pNode->pNext;
+      delete pNode;
    }
 
    return S_OK;
@@ -97,15 +92,14 @@ tResult cGUIFactories::CreateElement(const TiXmlElement * pXmlElement, IGUIEleme
    }
 
    *ppElement = NULL;
-
-   tGUIElementFactoryMap::iterator iter = m_elementFactoryMap.find(pXmlElement->Value());
-   if (iter == m_elementFactoryMap.end())
-   {
-      return E_FAIL;
-   }
-
    cAutoIPtr<IGUIElement> pElement;
-   tResult result = iter->second->CreateElement(pXmlElement, pParent, &pElement);
+   tResult result = E_FAIL;
+
+   tGUIElementFactoryFnMap::iterator f = m_elementFactoryFnMap.find(pXmlElement->Value());
+   if (f != m_elementFactoryFnMap.end())
+   {
+      result = (*f->second)(pXmlElement, pParent, &pElement);
+   }
 
    if (result != S_OK)
    {
@@ -115,24 +109,14 @@ tResult cGUIFactories::CreateElement(const TiXmlElement * pXmlElement, IGUIEleme
    tGUIString rendererClass;
    if (pElement->GetRendererClass(&rendererClass) == S_OK)
    {
-      tGUIRendererFactoryMap::iterator iter = m_rendererFactoryMap.find(rendererClass);
-      if (iter == m_rendererFactoryMap.end())
-      {
-         return E_FAIL;
-      }
-
       cAutoIPtr<IGUIElementRenderer> pRenderer;
-      if (iter->second->CreateRenderer(pElement, &pRenderer) != S_OK)
+      if (CreateRenderer(rendererClass.c_str(), &pRenderer) == S_OK)
       {
-         return E_FAIL;
+         Verify(pElement->SetRenderer(pRenderer) == S_OK);
       }
-
-      pElement->SetRenderer(pRenderer);
    }
 
-   *ppElement = CTAddRef(pElement);
-
-   return S_OK;
+   return pElement.GetPointer(ppElement);
 }
 
 ///////////////////////////////////////
@@ -144,37 +128,32 @@ tResult cGUIFactories::CreateRenderer(const tChar * pszRendererClass, IGUIElemen
       return E_POINTER;
    }
 
-   tGUIRendererFactoryMap::iterator iter = m_rendererFactoryMap.find(pszRendererClass);
-   if (iter == m_rendererFactoryMap.end())
+   tGUIRendererFactoryFnMap::iterator f = m_rendererFactoryFnMap.find(pszRendererClass);
+   if (f != m_rendererFactoryFnMap.end())
    {
-      return E_FAIL;
+      return (*f->second)(NULL, ppRenderer);
    }
 
-   return iter->second->CreateRenderer(NULL, ppRenderer);
+   return E_FAIL;
 }
 
 ///////////////////////////////////////
 
-tResult cGUIFactories::RegisterElementFactory(const char * pszType, 
-                                            IGUIElementFactory * pFactory)
+tResult cGUIFactories::RegisterElementFactory(const tChar * pszType, tGUIElementFactoryFn pFactoryFn)
 {
-   if (pszType == NULL || pFactory == NULL)
+   if (pszType == NULL || pFactoryFn == NULL)
    {
       return E_POINTER;
    }
 
-   std::pair<tGUIElementFactoryMap::iterator, bool> result = 
-      m_elementFactoryMap.insert(std::make_pair(pszType, pFactory));
-
+   std::pair<tGUIElementFactoryFnMap::iterator, bool> result = 
+      m_elementFactoryFnMap.insert(std::make_pair(pszType, pFactoryFn));
    if (result.second)
    {
-      pFactory->AddRef();
-
       return S_OK;
    }
 
-   DebugMsg1("WARNING: Failed to register \"%s\" element factory\n", pszType);
-
+   WarnMsg1("Failed to register \"%s\" element factory\n", pszType);
    return E_FAIL;
 }
 
@@ -182,81 +161,59 @@ tResult cGUIFactories::RegisterElementFactory(const char * pszType,
 
 tResult cGUIFactories::RevokeElementFactory(const char * pszType)
 {
-   tGUIElementFactoryMap::iterator iter = m_elementFactoryMap.find(pszType);
-   if (iter == m_elementFactoryMap.end())
+   if (pszType == NULL)
    {
-      return E_FAIL;
+      return E_POINTER;
    }
-
-   iter->second->Release();
-   m_elementFactoryMap.erase(iter);
-
-   return S_OK;
+   size_t nErased = m_elementFactoryFnMap.erase(pszType);
+   return (nErased == 0) ? S_FALSE : S_OK;
 }
 
 ///////////////////////////////////////
 
-tResult cGUIFactories::RegisterElementRendererFactory(const char * pszRenderer, 
-                                                    IGUIElementRendererFactory * pFactory)
+tResult cGUIFactories::RegisterRendererFactory(const tChar * pszRenderer,
+                                               tGUIRendererFactoryFn pFactoryFn)
 {
-   if (pszRenderer == NULL || pFactory == NULL)
+   if (pszRenderer == NULL || pFactoryFn == NULL)
    {
       return E_POINTER;
    }
 
-   std::pair<tGUIRendererFactoryMap::iterator, bool> result = 
-      m_rendererFactoryMap.insert(std::make_pair(pszRenderer, pFactory));
-
+   std::pair<tGUIRendererFactoryFnMap::iterator, bool> result = 
+      m_rendererFactoryFnMap.insert(std::make_pair(pszRenderer, pFactoryFn));
    if (result.second)
    {
-      pFactory->AddRef();
-
       return S_OK;
    }
 
-   DebugMsg1("WARNING: Failed to register \"%s\" renderer factory\n", pszRenderer);
-
+   WarnMsg1("Failed to register \"%s\" renderer factory\n", pszRenderer);
    return E_FAIL;
 }
 
 ///////////////////////////////////////
 
-tResult cGUIFactories::RevokeElementRendererFactory(const char * pszRenderer)
+tResult cGUIFactories::RevokeRendererFactory(const tChar * pszRenderer)
 {
-   tGUIRendererFactoryMap::iterator iter = m_rendererFactoryMap.find(pszRenderer);
-   if (iter == m_rendererFactoryMap.end())
+   if (pszRenderer == NULL)
    {
-      return E_FAIL;
+      return E_POINTER;
    }
-
-   iter->second->Release();
-   m_rendererFactoryMap.erase(iter);
-
-   return S_OK;
+   size_t nErased = m_rendererFactoryFnMap.erase(pszRenderer);
+   return (nErased == 0) ? S_FALSE : S_OK;
 }
 
 ///////////////////////////////////////
 
 void cGUIFactories::CleanupElementFactories()
 {
-   tGUIElementFactoryMap::iterator iter;
-   for (iter = m_elementFactoryMap.begin(); iter != m_elementFactoryMap.end(); iter++)
-   {
-      iter->second->Release();
-   }
-   m_elementFactoryMap.clear();
+   m_elementFactoryFnMap.clear();
 }
 
 ///////////////////////////////////////
 
 void cGUIFactories::CleanupRendererFactories()
 {
-   tGUIRendererFactoryMap::iterator iter;
-   for (iter = m_rendererFactoryMap.begin(); iter != m_rendererFactoryMap.end(); iter++)
-   {
-      iter->second->Release();
-   }
-   m_rendererFactoryMap.clear();
+   m_rendererFactoryFnMap.clear();
 }
 
 ///////////////////////////////////////
@@ -264,24 +221,20 @@ void cGUIFactories::CleanupRendererFactories()
 cGUIFactories::cAutoCleanupStatics::~cAutoCleanupStatics()
 {
    {
-      sElementFactoryMapEntry * p = gm_pElementFactoryMapEntries;
-      while (p != NULL)
+      while (gm_pElementFactoryFns != NULL)
       {
-         gm_pElementFactoryMapEntries = p->pNext;
-         SafeRelease(p->pFactory);
-         delete p;
-         p = gm_pElementFactoryMapEntries;
+         tElementFactoryFnNode * pNode = gm_pElementFactoryFns;
+         gm_pElementFactoryFns = pNode->pNext;
+         delete pNode;
       }
    }
 
    {
-      sRendererFactoryMapEntry * p = gm_pRendererFactoryMapEntries;
-      while (p != NULL)
+      while (gm_pRendererFactoryFns != NULL)
       {
-         gm_pRendererFactoryMapEntries = p->pNext;
-         SafeRelease(p->pFactory);
-         delete p;
-         p = gm_pRendererFactoryMapEntries;
+         tRendererFactoryFnNode * pNode = gm_pRendererFactoryFns;
+         gm_pRendererFactoryFns = pNode->pNext;
+         delete pNode;
       }
    }
 }
@@ -304,51 +257,61 @@ tResult GUIFactoriesCreate()
 
 ///////////////////////////////////////
 
-tResult RegisterGUIElementFactory(const char * pszType, IGUIElementFactory * pFactory)
+tResult GUIRegisterElementFactory(const tChar * pszType, tGUIElementFactoryFn pFactoryFn)
 {
+   if (pszType == NULL || pFactoryFn == NULL)
+   {
+      return E_POINTER;
+   }
+
    if (cGUIFactories::gm_bInitialized)
    {
       UseGlobal(GUIFactories);
-      return pGUIFactories->RegisterElementFactory(pszType, pFactory);
+      return pGUIFactories->RegisterElementFactory(pszType, pFactoryFn);
    }
    else
    {
       // simple queue to support adding at static init time
-      cGUIFactories::sElementFactoryMapEntry * p = new cGUIFactories::sElementFactoryMapEntry;
-      if (p != NULL)
+      cGUIFactories::tElementFactoryFnNode * pNode = new cGUIFactories::tElementFactoryFnNode;
+      if (pNode == NULL)
       {
-         strcpy(p->szType, pszType);
-         p->pFactory = CTAddRef(pFactory);
-         p->pNext = cGUIFactories::gm_pElementFactoryMapEntries;
-         cGUIFactories::gm_pElementFactoryMapEntries = p;
-         return S_OK;
+         return E_OUTOFMEMORY;
       }
-      return E_FAIL;
+      pNode->type.assign(pszType);
+      pNode->pFactoryFn = pFactoryFn;
+      pNode->pNext = cGUIFactories::gm_pElementFactoryFns;
+      cGUIFactories::gm_pElementFactoryFns = pNode;
+      return S_OK;
    }
 }
 
 ///////////////////////////////////////
 
-tResult RegisterGUIElementRendererFactory(const char * pszRenderer, IGUIElementRendererFactory * pFactory)
+tResult GUIRegisterRendererFactory(const tChar * pszRenderer, tGUIRendererFactoryFn pFactoryFn)
 {
+   if (pszRenderer == NULL || pFactoryFn == NULL)
+   {
+      return E_POINTER;
+   }
+
    if (cGUIFactories::gm_bInitialized)
    {
       UseGlobal(GUIFactories);
-      return pGUIFactories->RegisterElementRendererFactory(pszRenderer, pFactory);
+      return pGUIFactories->RegisterRendererFactory(pszRenderer, pFactoryFn);
    }
    else
    {
       // simple queue to support adding at static init time
-      cGUIFactories::sRendererFactoryMapEntry * p = new cGUIFactories::sRendererFactoryMapEntry;
-      if (p != NULL)
+      cGUIFactories::tRendererFactoryFnNode * pNode = new cGUIFactories::tRendererFactoryFnNode;
+      if (pNode == NULL)
       {
-         strcpy(p->szRenderer, pszRenderer);
-         p->pFactory = CTAddRef(pFactory);
-         p->pNext = cGUIFactories::gm_pRendererFactoryMapEntries;
-         cGUIFactories::gm_pRendererFactoryMapEntries = p;
-         return S_OK;
+         return E_OUTOFMEMORY;
       }
-      return E_FAIL;
+      pNode->renderer.assign(pszRenderer);
+      pNode->pFactoryFn = pFactoryFn;
+      pNode->pNext = cGUIFactories::gm_pRendererFactoryFns;
+      cGUIFactories::gm_pRendererFactoryFns = pNode;
+      return S_OK;
    }
 }
 

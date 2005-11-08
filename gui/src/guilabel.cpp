@@ -60,15 +60,9 @@ tResult cGUILabelElement::SetText(const char * pszText)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUILabelElementFactory
-//
 
-AUTOREGISTER_GUIELEMENTFACTORY(label, cGUILabelElementFactory);
-
-tResult cGUILabelElementFactory::CreateElement(const TiXmlElement * pXmlElement, 
-                                               IGUIElement * pParent,
-                                               IGUIElement * * ppElement)
+tResult GUILabelElementCreate(const TiXmlElement * pXmlElement,
+                              IGUIElement * pParent, IGUIElement * * ppElement)
 {
    if (ppElement == NULL)
    {
@@ -102,5 +96,7 @@ tResult cGUILabelElementFactory::CreateElement(const TiXmlElement * pXmlElement,
 
    return E_FAIL;
 }
+
+AUTOREGISTER_GUIELEMENTFACTORYFN(label, GUILabelElementCreate);
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -543,15 +543,9 @@ bool cGUITextEditElement::HitTest(const tGUIPoint & point, int * pIndex)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUITextEditElementFactory
-//
 
-AUTOREGISTER_GUIELEMENTFACTORY(textedit, cGUITextEditElementFactory);
-
-tResult cGUITextEditElementFactory::CreateElement(const TiXmlElement * pXmlElement,
-                                                  IGUIElement * pParent,
-                                                  IGUIElement * * ppElement)
+tResult GUITextEditElementCreate(const TiXmlElement * pXmlElement,
+                                 IGUIElement * pParent, IGUIElement * * ppElement)
 {
    if (ppElement == NULL)
    {
@@ -594,6 +588,8 @@ tResult cGUITextEditElementFactory::CreateElement(const TiXmlElement * pXmlEleme
 
    return E_FAIL;
 }
+
+AUTOREGISTER_GUIELEMENTFACTORYFN(textedit, GUITextEditElementCreate);
 
 
 ///////////////////////////////////////////////////////////////////////////////

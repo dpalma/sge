@@ -41,15 +41,9 @@ tResult cGUIPanelElement::OnEvent(IGUIEvent * pEvent)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUIPanelElementFactory
-//
 
-AUTOREGISTER_GUIELEMENTFACTORY(panel, cGUIPanelElementFactory);
-
-tResult cGUIPanelElementFactory::CreateElement(const TiXmlElement * pXmlElement,
-                                               IGUIElement * pParent,
-                                               IGUIElement * * ppElement)
+tResult GUIPanelElementCreate(const TiXmlElement * pXmlElement,
+                              IGUIElement * pParent, IGUIElement * * ppElement)
 {
    if (ppElement == NULL)
    {
@@ -81,5 +75,6 @@ tResult cGUIPanelElementFactory::CreateElement(const TiXmlElement * pXmlElement,
    return E_FAIL;
 }
 
+AUTOREGISTER_GUIELEMENTFACTORYFN(panel, GUIPanelElementCreate);
 
 ///////////////////////////////////////////////////////////////////////////////

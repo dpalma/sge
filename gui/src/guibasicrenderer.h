@@ -43,19 +43,5 @@ private:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUIBasicRendererFactory
-//
-
-class cGUIBasicRendererFactory : public cComObject<IMPLEMENTS(IGUIElementRendererFactory)>
-{
-public:
-   virtual tResult CreateRenderer(void * pReserved, IGUIElementRenderer * * ppRenderer);
-
-private:
-   cAutoIPtr<IGUIElementRenderer> m_pStatelessBasicRenderer;
-};
-
-///////////////////////////////////////////////////////////////////////////////
 
 #endif // !INCLUDED_GUIBASICRENDERER_H

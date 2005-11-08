@@ -775,33 +775,24 @@ tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIContainerElement * pContainer
 
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUIBeveledRendererFactory
-//
 
-AUTOREGISTER_GUIELEMENTRENDERERFACTORY(beveled, cGUIBeveledRendererFactory);
-
-////////////////////////////////////////
-
-tResult cGUIBeveledRendererFactory::CreateRenderer(void * pReserved, IGUIElementRenderer * * ppRenderer)
+tResult GUIBeveledRendererCreate(void * pReserved, IGUIElementRenderer * * ppRenderer)
 {
-   if (ppRenderer == NULL)
-   {
-      return E_POINTER;
-   }
+   static cAutoIPtr<IGUIElementRenderer> pSingleInstance;
 
-   // Since the renderer is stateless, a single instance can serve all GUI elements
-   if (!m_pStatelessBeveledRenderer)
+   // Since the beveled renderer is stateless, a single instance can serve all GUI elements
+   if (!pSingleInstance)
    {
-      m_pStatelessBeveledRenderer = static_cast<IGUIElementRenderer *>(new cGUIBeveledRenderer);
-      if (!m_pStatelessBeveledRenderer)
+      pSingleInstance = static_cast<IGUIElementRenderer*>(new cGUIBeveledRenderer);
+      if (!pSingleInstance)
       {
          return E_OUTOFMEMORY;
       }
    }
 
-   *ppRenderer = CTAddRef(m_pStatelessBeveledRenderer);
-   return S_OK;
+   return pSingleInstance.GetPointer(ppRenderer);
 }
+
+AUTOREGISTER_GUIRENDERERFACTORYFN(beveled, GUIBeveledRendererCreate);
 
 ///////////////////////////////////////////////////////////////////////////////

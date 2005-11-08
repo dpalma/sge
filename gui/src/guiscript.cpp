@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+
 // $Id$
 
 #include "stdhdr.h"
@@ -74,15 +74,8 @@ tResult cGUIScriptElement::GetRenderer(IGUIElementRenderer * * ppRenderer)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUIScriptElementFactory
-//
 
-AUTOREGISTER_GUIELEMENTFACTORY(script, cGUIScriptElementFactory);
-
-tResult cGUIScriptElementFactory::CreateElement(const TiXmlElement * pXmlElement,
-                                                IGUIElement * pParent,
-                                                IGUIElement * * ppElement)
+tResult GUIScriptElementCreate(const TiXmlElement * pXmlElement, IGUIElement * pParent, IGUIElement * * ppElement)
 {
    if (ppElement == NULL)
    {
@@ -123,5 +116,7 @@ tResult cGUIScriptElementFactory::CreateElement(const TiXmlElement * pXmlElement
 
    return E_FAIL;
 }
+
+AUTOREGISTER_GUIELEMENTFACTORYFN(script, GUIScriptElementCreate);
 
 ///////////////////////////////////////////////////////////////////////////////

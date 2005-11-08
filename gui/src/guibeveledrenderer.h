@@ -47,19 +47,5 @@ private:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUIBeveledRendererFactory
-//
-
-class cGUIBeveledRendererFactory : public cComObject<IMPLEMENTS(IGUIElementRendererFactory)>
-{
-public:
-   virtual tResult CreateRenderer(void * pReserved, IGUIElementRenderer * * ppRenderer);
-
-private:
-   cAutoIPtr<IGUIElementRenderer> m_pStatelessBeveledRenderer;
-};
-
-///////////////////////////////////////////////////////////////////////////////
 
 #endif // !INCLUDED_GUIBEVELEDRENDERER_H
