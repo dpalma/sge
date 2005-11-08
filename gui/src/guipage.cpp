@@ -10,6 +10,7 @@
 
 #include "globalobj.h"
 
+#include <stack>
 #include <queue>
 
 #include "dbgalloc.h" // must be last header
@@ -201,12 +202,86 @@ void cGUIPage::UpdateLayout(const tGUIRect & rect)
 
 ///////////////////////////////////////
 
+template <typename ITERATOR, typename FUNCTOR, typename DATA>
+void GUIElementRenderLoop(ITERATOR begin, ITERATOR end, FUNCTOR f, DATA d)
+{
+   std::stack< std::pair<IGUIElement*, IGUIElementRenderer*> > s;
+
+   tGUIElementList::reverse_iterator iter = begin;
+   for (; iter != end; iter++)
+   {
+      if ((*iter)->IsVisible())
+      {
+         cAutoIPtr<IGUIElementRenderer> pRenderer;
+         if ((*iter)->GetRenderer(&pRenderer) != S_OK)
+         {
+            WarnMsg("Top-level GUI element has no renderer\n");
+            continue;
+         }
+
+         s.push(std::make_pair(CTAddRef(*iter), (IGUIElementRenderer*)CTAddRef(pRenderer)));
+      }
+   }
+
+   while (!s.empty())
+   {
+      cAutoIPtr<IGUIElement> pElement(s.top().first);
+      cAutoIPtr<IGUIElementRenderer> pRenderer(s.top().second);
+      s.pop();
+
+      f(pElement, pRenderer, d);
+
+      cAutoIPtr<IGUIElementEnum> pEnum;
+      if (pElement->EnumChildren(&pEnum) == S_OK)
+      {
+         IGUIElement * pChildren[32];
+         ulong count = 0;
+         while (SUCCEEDED(pEnum->Next(_countof(pChildren), &pChildren[0], &count)) && (count > 0))
+         {
+            for (ulong i = 0; i < count; i++)
+            {
+               if (pChildren[i]->IsVisible())
+               {
+                  cAutoIPtr<IGUIElementRenderer> pChildRenderer;
+                  if (pChildren[i]->GetRenderer(&pChildRenderer) != S_OK)
+                  {
+                     pChildRenderer = pRenderer; // Copying smart pointers--no AddRef
+                  }
+                  s.push(std::make_pair(pChildren[i], (IGUIElementRenderer*)CTAddRef(pChildRenderer)));
+               }
+               else
+               {
+                  SafeRelease(pChildren[i]);
+               }
+            }
+            count = 0;
+         }
+      }
+   }
+}
+
+void DoRender(IGUIElement * pElement, IGUIElementRenderer * pRenderer, IGUIRenderDevice * pRenderDevice)
+{
+   if (FAILED(pRenderer->Render(pElement, pRenderDevice)))
+   {
+      cStr type;
+      if (GUIElementType(pElement, &type) != S_OK)
+      {
+         type = _T("Unknown");
+      }
+
+      ErrorMsg1("A GUI element of type \"%s\" failed to render\n", type.c_str());
+   }
+}
+
 void cGUIPage::Render(IGUIRenderDevice * pRenderDevice)
 {
-   if (pRenderDevice != NULL)
+   if (pRenderDevice == NULL)
    {
-      std::for_each(BeginElements(), EndElements(), cRenderElement(pRenderDevice));
+      return;
    }
+
+   GUIElementRenderLoop(m_elements.rbegin(), m_elements.rend(), DoRender, pRenderDevice);
 }
 
 ///////////////////////////////////////

@@ -39,8 +39,6 @@ tResult GUIElementType(IUnknown * pUnkElement, cStr * pType);
 
 bool GUIElementIdMatch(IGUIElement * pElement, const tChar * pszId);
 
-tResult GUIElementRenderChildren(IGUIElement * pParent, IGUIRenderDevice * pRenderDevice);
-
 tResult GUISizeElement(IGUIElement * pElement, const tGUISize & relativeTo);
 
 void GUIPlaceElement(const tGUIRect & field, IGUIElement * pGUIElement);
@@ -65,27 +63,6 @@ public:
 private:
    const tGUIRect m_rect;
    const tGUISize m_size;
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cRenderElement
-//
-
-class cRenderElement
-{
-   void operator =(const cRenderElement &);
-
-public:
-   cRenderElement(IGUIRenderDevice * pRenderDevice);
-   cRenderElement(const cRenderElement & other);
-   ~cRenderElement();
-
-   tResult operator()(IGUIElement * pGUIElement);
-
-private:
-   cAutoIPtr<IGUIRenderDevice> m_pRenderDevice;
 };
 
 

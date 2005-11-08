@@ -356,7 +356,7 @@ tResult cGUIBeveledRenderer::Render(IGUIDialogElement * pDialogElement, IGUIRend
       }
    }
 
-   return GUIElementRenderChildren(pDialogElement, pRenderDevice);
+   return S_OK;
 }
 
 ///////////////////////////////////////
@@ -403,7 +403,7 @@ tResult cGUIBeveledRenderer::Render(IGUIPanelElement * pPanelElement, IGUIRender
 
    pRenderDevice->RenderBeveledRect(rect, g_bevel, tGUIColor::LightGray, tGUIColor::DarkGray, tGUIColor::Gray);
 
-   return GUIElementRenderChildren(pPanelElement, pRenderDevice);
+   return S_OK;
 }
 
 ///////////////////////////////////////
@@ -612,7 +612,7 @@ tResult cGUIBeveledRenderer::Render(IGUIListBoxElement * pListBoxElement,
 
    pRenderDevice->PopScissorRect();
 
-   return GUIElementRenderChildren(pListBoxElement, pRenderDevice);
+   return S_OK;
 }
 
 ///////////////////////////////////////

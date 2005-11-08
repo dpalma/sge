@@ -280,7 +280,7 @@ tResult cGUIBasicRenderer::Render(IGUIPanelElement * pPanelElement, IGUIRenderDe
       }
    }
 
-   return GUIElementRenderChildren(pPanelElement, pRenderDevice);
+   return S_OK;
 }
 
 ///////////////////////////////////////

@@ -67,15 +67,16 @@ tResult GUIElementType(IUnknown * pUnkElement, cStr * pType)
    }
    guiElementTypes[] =
    {
-      { &IID_IGUIButtonElement,     "Button" },
-      { &IID_IGUIDialogElement,     "Dialog" },
-      { &IID_IGUILabelElement,      "Label" },
-      { &IID_IGUIPanelElement,      "Panel" },
-      { &IID_IGUITextEditElement,   "TextEdit" },
-      { &IID_IGUIContainerElement,  "Container" },
-      { &IID_IGUIScrollBarElement,  "ScrollBar" },
-      { &IID_IGUIListBoxElement,    "ListBox" },
-      { &IID_IGUIScriptElement,     "Script" },
+      { &IID_IGUIButtonElement,     _T("Button") },
+      { &IID_IGUIContainerElement,  _T("Container") },
+      { &IID_IGUIDialogElement,     _T("Dialog") },
+      { &IID_IGUILabelElement,      _T("Label") },
+      { &IID_IGUIListBoxElement,    _T("ListBox") },
+      { &IID_IGUIPanelElement,      _T("Panel") },
+      { &IID_IGUIScriptElement,     _T("Script") },
+      { &IID_IGUIScrollBarElement,  _T("ScrollBar") },
+      { &IID_IGUIStyleElement,      _T("Style") },
+      { &IID_IGUITextEditElement,   _T("TextEdit") },
    };
 
    for (int i = 0; i < _countof(guiElementTypes); i++)
@@ -105,26 +106,6 @@ bool GUIElementIdMatch(IGUIElement * pElement, const tChar * pszId)
       }
    }
    return false;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-tResult GUIElementRenderChildren(IGUIElement * pParent, IGUIRenderDevice * pRenderDevice)
-{
-   if (pParent == NULL || pRenderDevice == NULL)
-   {
-      return E_POINTER;
-   }
-
-   cAutoIPtr<IGUIElementEnum> pEnum;
-   if (pParent->EnumChildren(&pEnum) == S_OK)
-   {
-      ForEach(pEnum, cRenderElement(pRenderDevice));
-      return S_OK;
-   }
-
-   return E_FAIL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -396,66 +377,6 @@ tResult cSizeAndPlaceElement::operator()(IGUIElement * pElement)
    GUISizeElement(pElement, m_size);
    GUIPlaceElement(m_rect, pElement);
    return S_OK;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cRenderElement
-//
-
-////////////////////////////////////////
-
-cRenderElement::cRenderElement(IGUIRenderDevice * pRenderDevice)
- : m_pRenderDevice(CTAddRef(pRenderDevice))
-{
-}
-
-////////////////////////////////////////
-
-cRenderElement::cRenderElement(const cRenderElement & other)
- : m_pRenderDevice(other.m_pRenderDevice)
-{
-}
-
-////////////////////////////////////////
-
-cRenderElement::~cRenderElement()
-{
-}
-
-////////////////////////////////////////
-
-tResult cRenderElement::operator()(IGUIElement * pElement)
-{
-   if (pElement == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (!pElement->IsVisible())
-   {
-      return S_FALSE;
-   }
-
-   cAutoIPtr<IGUIElementRenderer> pRenderer;
-   tResult result = pElement->GetRenderer(&pRenderer);
-   if (result == S_OK)
-   {
-      result = pRenderer->Render(pElement, m_pRenderDevice);
-   }
-
-   if (FAILED(result))
-   {
-      cStr type;
-      if (GUIElementType(pElement, &type) != S_OK)
-      {
-         type = _T("Unknown");
-      }
-
-      ErrorMsg1("A GUI element of type \"%s\" failed to render\n", type.c_str());
-   }
-
-   return result;
 }
 
 
