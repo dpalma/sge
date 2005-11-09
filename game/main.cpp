@@ -350,6 +350,7 @@ static bool MainInit(int argc, tChar * argv[])
 
    TextFormatRegister(NULL);
    EngineRegisterResourceFormats();
+   EngineRegisterScriptFunctions();
    TerrainRegisterResourceFormats();
    ImageRegisterResourceFormats();
    HackScenarioRegisterResourceFormat();

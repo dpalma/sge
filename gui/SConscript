@@ -1,7 +1,7 @@
 #############################################################################
 # $Id$
 
-Import('*')
+Import('env')
 
 sources = Split("""
    src/guibasicrenderer.cpp
@@ -43,5 +43,4 @@ env = env.Copy()
 env.UseGL()
 env.UseLua()
 env.UseTinyxml()
-env.Append(CPPPATH = includePaths)
-env.Library('gui', sources)
+env.BuildLibrary('gui', sources, include_path=includePaths)

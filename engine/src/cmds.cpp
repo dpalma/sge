@@ -154,8 +154,6 @@ int BindKey(int argc, const cScriptVar * argv,
    return 0;
 }
 
-AUTOADD_SCRIPTFUNCTION(bind, BindKey);
-
 ///////////////////////////////////////////////////////////////////////////////
 
 int UnbindKey(int argc, const cScriptVar * argv, 
@@ -173,8 +171,6 @@ int UnbindKey(int argc, const cScriptVar * argv,
    return 0;
 }
 
-AUTOADD_SCRIPTFUNCTION(unbind, UnbindKey);
-
 ///////////////////////////////////////////////////////////////////////////////
 
 int Quit(int argc, const cScriptVar * argv, 
@@ -183,8 +179,6 @@ int Quit(int argc, const cScriptVar * argv,
    SysQuit();
    return 0;
 }
-
-AUTOADD_SCRIPTFUNCTION(quit, Quit);
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -201,8 +195,6 @@ int LogEnableChannel(int argc, const cScriptVar * argv,
    }
    return 0;
 }
-
-AUTOADD_SCRIPTFUNCTION(LogChannel, LogEnableChannel);
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -230,8 +222,6 @@ int EntitySpawnTest(int argc, const cScriptVar * argv,
 
    return 0;
 }
-
-AUTOADD_SCRIPTFUNCTION(EntitySpawnTest, EntitySpawnTest);
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -277,16 +267,21 @@ int ListResources(int argc, const cScriptVar * argv,
    return 1;
 }
 
-AUTOADD_SCRIPTFUNCTION(ListResources, ListResources);
-
 ///////////////////////////////////////////////////////////////////////////////
 
 sScriptReg cmds[] =
 {
    { "bind", BindKey },
    { "unbind", UnbindKey },
+   { "quit", Quit },
    { "LogChannel", LogEnableChannel },
    { "EntitySpawnTest", EntitySpawnTest },
+   { "ListResources", ListResources },
 };
+
+tResult EngineRegisterScriptFunctions()
+{
+   return ScriptAddFunctions(cmds, _countof(cmds));
+}
 
 ///////////////////////////////////////////////////////////////////////////////

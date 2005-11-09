@@ -1,18 +1,21 @@
-Import('*')
+#############################################################################
+# $Id$
+
+Import('env')
 
 sources = Split("""
    allguids.cpp
 """)
            
 includePaths = Split("""
-   ../tech/include
-   ../render/include
-   ../engine/include
-   ../gui/include
-   ../game
-   ../editor
+   #tech/include
+   #render/include
+   #engine/include
+   #gui/include
+   #game
+   #editor
 """)
 
 env = env.Copy()
-env.Append(CPPPATH = includePaths)
+env.Append(CPPPATH=includePaths)
 env.Library('allguids', sources)

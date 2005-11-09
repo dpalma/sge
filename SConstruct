@@ -22,7 +22,8 @@ class SGEEnvironment(Environment):
 
    def __init__(self,**kw):
       Environment.__init__(self,**kw)
-      self.buildType = 'Debug'
+      self.debug = 1
+      self.shared = 0
 
    def UseTinyxml(self):
       self.Append(CPPDEFINES = ['TIXML_USE_STL'])
@@ -55,28 +56,78 @@ class SGEEnvironment(Environment):
       self.Append(LIBS       = ['lua'])
       
    def SetCommon(self):
-      self.Append(CPPDEFINES=['NO_AUTO_EXPORTS', 'STRICT'])
       if platform == 'win32':
          self.Append(CCFLAGS=['/GX']);
+            
+   def IsShared(self):
+      return self.shared
+         
+   def SetStatic(self):
+      self.shared = 0
+      self.Append(CPPDEFINES=['NO_AUTO_EXPORTS'])
+      if platform == 'win32':
+         if self.IsDebug():
+            self.Append(CCFLAGS=['/MTd'])
+         else:
+            self.Append(CCFLAGS=['/MT'])
+      
+   def SetShared(self):
+      self.shared = 1
+      if platform == 'win32':
+#         CCFLAGS.remove('/MDd')
+#         CCFLAGS.remove('/MD')
+#         CCFLAGS.remove('/MTd')
+#         CCFLAGS.remove('/MT')
+         if self.IsDebug():
+            self.Append(CCFLAGS=['/MDd'])
+         else:
+            self.Append(CCFLAGS=['/MD'])
+            
+   def IsDebug(self):
+      return self.debug
       
    def SetDebug(self):
-      self.buildType = 'Debug'
+      self.debug = 1
       self.SetCommon()
       if platform == 'win32':
-         self.Append(CCFLAGS=['/MTd', '/Od', '/GZ'], CPPDEFINES=['DEBUG'])
+         self.Append(CCFLAGS=['/Od', '/GZ'], CPPDEFINES=['DEBUG'])
       elif platform == 'cygwin':
          self.Append(CCFLAGS=['-g'])
          
    def SetRelease(self):
-      self.buildType = 'Release'
+      self.debug = 0
       self.SetCommon()
       if platform == 'win32':
-         self.Append(CCFLAGS=['/MT', '/O2'], CPPDEFINES=['NDEBUG'], LINKFLAGS=['/OPT:REF'])
+         self.Append(CCFLAGS=['/O2'], CPPDEFINES=['NDEBUG'], LINKFLAGS=['/OPT:REF'])
       elif platform == 'cygwin':
          self.Append(CCFLAGS=['-o3'])
          
+   def __PreBuild(self, *args, **kw):
+      if 'include_path' in kw:
+         self.Append(CPPPATH=kw.pop('include_path'))
+      if 'lib_path' in kw:
+         self.Append(LIBPATH=kw.pop('lib_path'))
+      if 'libs' in kw:
+         self.Append(LIBS=kw.pop('libs'))
+         
+   def BuildLibrary(self, *args, **kw):
+      self.__PreBuild(*args, **kw)
+#      if 'deffile' in kw:
+#         sources.append(kw.pop('deffile'))
+      if self.shared:
+         self.SharedLibrary(*args, **kw)
+      else:
+         self.StaticLibrary(*args, **kw)
+         
+   def BuildExecutable(self, *args, **kw):
+      self.__PreBuild(*args, **kw)
+      self.Program(*args, **kw)
+      
    def GetBuildDir(self):
-      return "Build." + self.buildType
+      if IsDebug():
+         return "Build.Debug"
+      else:
+         return "Build.Release"
 
 
 #############################################################################
@@ -121,7 +172,8 @@ def Walk( root, recurse=0, pattern='*', return_folders=0 ):
 opts = Options(None, ARGUMENTS)
 opts.AddOptions(
    BoolOption('debug', 'Build with debugging enabled', 0),
-   BoolOption('unicode', 'Build with _UNICODE defined', 0))
+   BoolOption('unicode', 'Build with _UNICODE defined', 0),
+   BoolOption('shared', 'Build shared libraries', 0))
 
 env = SGEEnvironment(ENV = os.environ, options = opts)
 
@@ -138,6 +190,11 @@ if env.get('debug'):
    env.SetDebug()
 else:
    env.SetRelease()
+
+if env.get('shared'):
+   env.SetShared()
+else:   
+   env.SetStatic()
 
 ########################################
 

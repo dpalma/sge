@@ -1,7 +1,7 @@
 #############################################################################
 # $Id$
 
-Import('*')
+Import('env')
 
 sources = Split("""
    src/bmp.cpp
@@ -40,5 +40,5 @@ includePaths = Split("""
 
 env = env.Copy()
 env.UseZLib()
-env.Append(CPPPATH = includePaths)
-env.Library('tech', sources)
+env.Append(CPPDEFINES=['TECH_EXPORTS'])
+env.BuildLibrary('tech', sources, include_path=includePaths)
