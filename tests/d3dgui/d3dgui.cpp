@@ -73,7 +73,7 @@ static void RegisterGlobalObjects()
    ResourceManagerCreate();
    ScriptInterpreterCreate();
    GUIContextCreate();
-   GUIFactoryCreate();
+   GUIFactoriesCreate();
    GUIFontFactoryCreate();
    ThreadCallerCreate();
 }
@@ -118,16 +118,28 @@ static bool d3dguiinit(int argc, tChar * argv[])
    }
 
    ImageRegisterResourceFormats();
-   TextFormatRegister("txt");
-   TextFormatRegister("lua");
-   TextFormatRegister("xml");
+   TextFormatRegister(NULL);
    EngineRegisterResourceFormats();
+   EngineRegisterScriptFunctions();
 
    cStr temp;
    if (ConfigGet(_T("data"), &temp) == S_OK)
    {
       UseGlobal(ResourceManager);
       pResourceManager->AddDirectoryTreeFlattened(temp.c_str());
+   }
+
+   cStr script("autoexec.lua");
+   ConfigGet(_T("autoexec_script"), &script);
+   if (!script.empty())
+   {
+      char * pszCode = NULL;
+      UseGlobal(ResourceManager);
+      if (pResourceManager->Load(script.c_str(), kRT_Text, NULL, (void**)&pszCode) == S_OK)
+      {
+         UseGlobal(ScriptInterpreter);
+         pScriptInterpreter->ExecString(pszCode);
+      }
    }
 
    int width = kDefaultWidth;

@@ -612,7 +612,10 @@ tResult SysGetDirect3DDevice9(IDirect3DDevice9 * * ppDevice)
 
 void SysSwapBuffers()
 {
-   SwapBuffers(g_hDC);
+   if (g_hDC != NULL)
+   {
+      Verify(SwapBuffers(g_hDC));
+   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

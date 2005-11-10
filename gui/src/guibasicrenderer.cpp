@@ -5,7 +5,6 @@
 
 #include "guibasicrenderer.h"
 #include "guielementtools.h"
-#include "guistrings.h"
 #include "scriptapi.h"
 
 #include "globalobj.h"
@@ -80,7 +79,7 @@ tResult cGUIBasicRenderer::Render(IGUIElement * pElement, IGUIRenderDevice * pRe
       }
    }
 
-   return E_FAIL;
+   return S_FALSE;
 }
 
 ///////////////////////////////////////

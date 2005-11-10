@@ -104,7 +104,7 @@ tResult cGUIBeveledRenderer::Render(IGUIElement * pElement, IGUIRenderDevice * p
       }
    }
 
-   return E_FAIL;
+   return S_FALSE;
 }
 
 ///////////////////////////////////////
