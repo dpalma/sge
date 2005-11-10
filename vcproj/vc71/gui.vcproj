@@ -415,6 +415,9 @@
 					RelativePath="..\..\gui\src\guipanel.cpp">
 				</File>
 				<File
+					RelativePath="..\..\gui\src\guiparse.cpp">
+				</File>
+				<File
 					RelativePath="..\..\gui\src\guirender.cpp">
 				</File>
 				<File
@@ -428,6 +431,9 @@
 				</File>
 				<File
 					RelativePath="..\..\gui\src\guistyle.cpp">
+				</File>
+				<File
+					RelativePath="..\..\gui\src\guistylesheet.cpp">
 				</File>
 				<File
 					RelativePath="..\..\gui\src\guitextedit.cpp">
@@ -545,6 +551,9 @@
 					RelativePath="..\..\gui\src\guipanel.h">
 				</File>
 				<File
+					RelativePath="..\..\gui\src\guiparse.h">
+				</File>
+				<File
 					RelativePath="..\..\gui\src\guirender.h">
 				</File>
 				<File
@@ -561,6 +570,9 @@
 				</File>
 				<File
 					RelativePath="..\..\gui\src\guistyle.h">
+				</File>
+				<File
+					RelativePath="..\..\gui\src\guistylesheet.h">
 				</File>
 				<File
 					RelativePath="..\..\gui\src\guitextedit.h">

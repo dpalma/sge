@@ -1,6 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 // $Id$
 
+#ifndef INCLUDED_GUICONTAINERBASE_H
+#error ("guicontainerbasetem.h must be preceded by guicontainerbase.h")
+#endif
+
 #ifndef INCLUDED_GUICONTAINERBASETEM_H
 #define INCLUDED_GUICONTAINERBASETEM_H
 

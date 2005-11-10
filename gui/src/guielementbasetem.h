@@ -1,6 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 // $Id$
 
+#ifndef INCLUDED_GUIELEMENTBASE_H
+#error ("guielementbasetem.h must be preceded by guielementbase.h")
+#endif
+
 #ifndef INCLUDED_GUIELEMENTBASETEM_H
 #define INCLUDED_GUIELEMENTBASETEM_H
 

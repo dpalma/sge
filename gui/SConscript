@@ -19,11 +19,13 @@ sources = Split("""
    src/guilistbox.cpp
    src/guipage.cpp
    src/guipanel.cpp
+   src/guiparse.cpp
    src/guirender.cpp
    src/guirenderd3d.cpp
    src/guiscript.cpp
    src/guiscrollbar.cpp
    src/guistyle.cpp
+   src/guistylesheet.cpp
    src/guitextedit.cpp
    src/guitypes.cpp
 """)

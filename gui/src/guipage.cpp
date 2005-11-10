@@ -111,9 +111,10 @@ tResult cGUIPage::HasElement(IGUIElement * pElement) const
 
 ///////////////////////////////////////
 
-static tResult GetElementHelper(IGUIElement * pParent, const tChar * pszId, IGUIElement * * ppElement)
+template <typename F>
+static tResult GetElementHelper(IGUIElement * pParent, F f, IGUIElement * * ppElement)
 {
-   if (GUIElementIdMatch(pParent, pszId))
+   if (f(pParent))
    {
       *ppElement = CTAddRef(pParent);
       return S_OK;
@@ -130,7 +131,7 @@ static tResult GetElementHelper(IGUIElement * pParent, const tChar * pszId, IGUI
          {
             for (ulong i = 0; i < count; i++)
             {
-               if (GetElementHelper(pChildren[i], pszId, ppElement) == S_OK)
+               if (GetElementHelper(pChildren[i], f, ppElement) == S_OK)
                {
                   for (; i < count; i++)
                   {
@@ -150,6 +151,15 @@ static tResult GetElementHelper(IGUIElement * pParent, const tChar * pszId, IGUI
    return S_FALSE;
 }
 
+class cIdMatch
+{
+public:
+   cIdMatch(const tChar * pszId) : m_id(pszId ? pszId : "") {}
+   bool operator()(IGUIElement * pElement) { return GUIElementIdMatch(pElement, m_id.c_str()); }
+private:
+   cStr m_id;
+};
+
 tResult GUIGetElement(const tGUIElementList & elements, const tChar * pszId, IGUIElement * * ppElement)
 {
    if (pszId == NULL || ppElement == NULL)
@@ -159,7 +169,7 @@ tResult GUIGetElement(const tGUIElementList & elements, const tChar * pszId, IGU
    tGUIElementList::const_iterator iter = elements.begin();
    for (; iter != elements.end(); iter++)
    {
-      if (GetElementHelper(*iter, pszId, ppElement) == S_OK)
+      if (GetElementHelper(*iter, cIdMatch(pszId), ppElement) == S_OK)
       {
          return S_OK;
       }
@@ -170,6 +180,41 @@ tResult GUIGetElement(const tGUIElementList & elements, const tChar * pszId, IGU
 tResult cGUIPage::GetElement(const tChar * pszId, IGUIElement * * ppElement)
 {
    return GUIGetElement(m_elements, pszId, ppElement);
+}
+
+///////////////////////////////////////
+
+class cTypeMatch
+{
+public:
+   cTypeMatch(REFGUID iid, tGUIElementList * pElements) : m_iid(iid), m_pElements(pElements) {}
+   bool operator()(IGUIElement * pElement)
+   {
+      cAutoIPtr<IUnknown> pUnk;
+      if (pElement != NULL && pElement->QueryInterface(m_iid, (void**)&pUnk) == S_OK)
+      {
+         m_pElements->push_back(CTAddRef(pElement));
+      }
+      return false;
+   }
+private:
+   REFGUID m_iid;
+   tGUIElementList * m_pElements;
+};
+
+tResult cGUIPage::GetElementsOfType(REFGUID iid, tGUIElementList * pElements) const
+{
+   if (pElements == NULL)
+   {
+      return E_POINTER;
+   }
+   cAutoIPtr<IGUIElement> pUnused;
+   tGUIElementList::const_iterator iter = m_elements.begin();
+   for (; iter != m_elements.end(); iter++)
+   {
+      GetElementHelper(*iter, cTypeMatch(iid, pElements), &pUnused);
+   }
+   return pElements->empty() ? S_FALSE : S_OK;
 }
 
 ///////////////////////////////////////

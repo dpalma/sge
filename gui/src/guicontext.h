@@ -70,6 +70,8 @@ public:
 
    virtual tResult GetElementById(const tChar * pszId, IGUIElement * * ppElement);
 
+   virtual tResult GetElementsOfType(REFGUID iid, IGUIElementEnum * * ppEnum) const;
+
    virtual tResult RenderGUI();
 
    virtual tResult GetRenderDeviceContext(IGUIRenderDeviceContext * * ppRenderDeviceContext);
@@ -87,7 +89,7 @@ public:
    const cGUIPage * GetCurrentPage() const { return m_pages.empty() ? NULL : m_pages.back(); }
 
 private:
-   void ClearTempElementMap();
+   void ClearTempElements();
 
    tResult CheckDialogPage();
 
@@ -128,7 +130,8 @@ private:
 
    std::list<cGUIPage *> m_pages;
 
-   std::map<tGUIString, IGUIElement*> m_tempElementMap;
+   std::map<tGUIString, IGUIElement*> m_tempElementMap; // those with ids
+   std::list<IGUIElement*> m_tempElementList; // those without ids
 };
 
 ///////////////////////////////////////////////////////////////////////////////

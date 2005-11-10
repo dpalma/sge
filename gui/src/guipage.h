@@ -39,6 +39,7 @@ public:
    size_t CountElements() const;
    tResult HasElement(IGUIElement * pElement) const;
    tResult GetElement(const tChar * pszId, IGUIElement * * ppElement);
+   tResult GetElementsOfType(REFGUID iid, tGUIElementList * pElements) const;
 
    tResult GetActiveModalDialog(IGUIDialogElement * * ppDialog);
 

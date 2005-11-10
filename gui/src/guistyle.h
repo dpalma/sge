@@ -4,7 +4,7 @@
 #ifndef INCLUDED_GUISTYLE_H
 #define INCLUDED_GUISTYLE_H
 
-#include "guielementbase.h"
+#include "guiapi.h"
 
 #include <map>
 
@@ -66,11 +66,11 @@ public:
 
    virtual tResult GetFontDesc(cGUIFontDesc * pFontDesc);
 
-   virtual tResult GetWidth(uint * pWidth, uint * pSpec);
-   virtual tResult SetWidth(uint width, uint spec);
+   virtual tResult GetWidth(int * pWidth, uint * pSpec);
+   virtual tResult SetWidth(int width, uint spec);
 
-   virtual tResult GetHeight(uint * pHeight, uint * pSpec);
-   virtual tResult SetHeight(uint height, uint spec);
+   virtual tResult GetHeight(int * pHeight, uint * pSpec);
+   virtual tResult SetHeight(int height, uint spec);
 
 private:
    typedef std::map<cStr, cStr> tAttributeMap;
@@ -81,23 +81,8 @@ private:
    tGUIString m_fontName;
    uint m_fontPointSize;
    bool m_bFontBold, m_bFontItalic, m_bFontShadow, m_bFontOutline;
-   uint m_width, m_widthSpec;
-   uint m_height, m_heightSpec;
-};
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUIStyleElement
-//
-
-class cGUIStyleElement : public cComObject<cGUIElementBase<IGUIStyleElement>, &IID_IGUIStyleElement>
-{
-public:
-   cGUIStyleElement();
-   ~cGUIStyleElement();
-
-   virtual tResult GetRendererClass(tGUIString * pRendererClass);
-   virtual tResult GetRenderer(IGUIElementRenderer * * ppRenderer);
+   int m_width, m_height;
+   uint m_widthSpec, m_heightSpec;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

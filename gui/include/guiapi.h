@@ -20,6 +20,7 @@
 
 F_DECLARE_INTERFACE(IGUIElement);
 F_DECLARE_INTERFACE(IGUIStyle);
+F_DECLARE_INTERFACE(IGUIStyleSheet);
 F_DECLARE_INTERFACE(IGUIStyleElement);
 F_DECLARE_INTERFACE(IGUIFont);
 F_DECLARE_INTERFACE(IGUIFontFactory);
@@ -158,10 +159,10 @@ enum eGUIDimensionSpec
 
 interface IGUIStyle : IUnknown
 {
-   virtual tResult GetAttribute(const char * pszAttribute, tGUIString * pValue) = 0;
-   virtual tResult GetAttribute(const char * pszAttribute, uint * pValue) = 0;
-   virtual tResult GetAttribute(const char * pszAttribute, tGUIColor * pValue) = 0;
-   virtual tResult SetAttribute(const char * pszAttribute, const char * pszValue) = 0;
+   virtual tResult GetAttribute(const tChar * pszAttribute, tGUIString * pValue) = 0;
+   virtual tResult GetAttribute(const tChar * pszAttribute, uint * pValue) = 0;
+   virtual tResult GetAttribute(const tChar * pszAttribute, tGUIColor * pValue) = 0;
+   virtual tResult SetAttribute(const tChar * pszAttribute, const tChar * pszValue) = 0;
 
    virtual tResult GetAlignment(uint * pAlignment) = 0;
    virtual tResult SetAlignment(uint alignment) = 0;
@@ -182,7 +183,7 @@ interface IGUIStyle : IUnknown
    virtual tResult SetTextVerticalAlignment(uint alignment) = 0;
 
    virtual tResult GetFontName(tGUIString * pFontName) = 0;
-   virtual tResult SetFontName(const char * pszFontName) = 0;
+   virtual tResult SetFontName(const tChar * pszFontName) = 0;
 
    virtual tResult GetFontPointSize(uint * pFontPointSize) = 0;
    virtual tResult SetFontPointSize(uint fontPointSize) = 0;
@@ -201,11 +202,11 @@ interface IGUIStyle : IUnknown
 
    virtual tResult GetFontDesc(cGUIFontDesc * pFontDesc) = 0;
 
-   virtual tResult GetWidth(uint * pWidth, uint * pSpec) = 0;
-   virtual tResult SetWidth(uint width, uint spec) = 0;
+   virtual tResult GetWidth(int * pWidth, uint * pSpec) = 0;
+   virtual tResult SetWidth(int width, uint spec) = 0;
 
-   virtual tResult GetHeight(uint * pHeight, uint * pSpec) = 0;
-   virtual tResult SetHeight(uint height, uint spec) = 0;
+   virtual tResult GetHeight(int * pHeight, uint * pSpec) = 0;
+   virtual tResult SetHeight(int height, uint spec) = 0;
 };
 
 ///////////////////////////////////////
@@ -214,12 +215,29 @@ interface IGUIStyle : IUnknown
 /// can be in the range [0,255] or [0,1]. Certain standard colors are 
 /// supported, too. For example, "red", "green", "blue", etc.
 
-GUI_API tResult GUIStyleParseColor(const char * psz, tGUIColor * pColor);
+GUI_API tResult GUIParseColor(const tChar * pszColor, tGUIColor * pColor);
 
 ///////////////////////////////////////
 /// Parse a CSS-like string to produce a GUI style object.
 
-GUI_API tResult GUIStyleParse(const char * pszStyle, IGUIStyle * * ppStyle);
+GUI_API tResult GUIStyleParse(const tChar * pszStyle, long length, IGUIStyle * * ppStyle);
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IGUIStyleSheet
+//
+
+interface IGUIStyleSheet : IUnknown
+{
+   virtual tResult AddRule(const tChar * pszSelector, IGUIStyle * pStyle) = 0;
+
+   virtual tResult GetStyle(const tChar * pszType, const tChar * pszClass, IGUIStyle * * ppStyle) const = 0;
+};
+
+///////////////////////////////////////
+
+GUI_API tResult GUIStyleSheetParse(const tChar * pszStyleSheet, IGUIStyleSheet * * ppStyleSheet);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -229,6 +247,7 @@ GUI_API tResult GUIStyleParse(const char * pszStyle, IGUIStyle * * ppStyle);
 
 interface IGUIStyleElement : IGUIElement
 {
+   virtual tResult GetStyleSheet(IGUIStyleSheet * * ppStyleSheet) const = 0;
 };
 
 
@@ -757,6 +776,8 @@ interface IGUIContext : IGUIEventRouter
    virtual tResult PopPage() = 0;
 
    virtual tResult GetElementById(const tChar * pszId, IGUIElement * * ppElement) = 0;
+
+   virtual tResult GetElementsOfType(REFGUID iid, IGUIElementEnum * * ppEnum) const = 0;
 
    virtual tResult RenderGUI() = 0;
 

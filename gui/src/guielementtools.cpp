@@ -4,6 +4,7 @@
 #include "stdhdr.h"
 
 #include "guielementtools.h"
+#include "guiparse.h"
 #include "guistrings.h"
 
 #include "globalobj.h"
@@ -133,8 +134,9 @@ tResult GUISizeElement(IGUIElement * pElement, const tGUISize & relativeTo)
    cAutoIPtr<IGUIStyle> pStyle;
    if (pElement->GetStyle(&pStyle) == S_OK)
    {
-      uint styleWidth, styleWidthSpec;
-      if (pStyle->GetWidth(&styleWidth, &styleWidthSpec) == S_OK)
+      int styleWidth;
+      uint styleWidthSpec;
+      if (pStyle->GetWidth(&styleWidth, &styleWidthSpec) == S_OK && styleWidth >= 0)
       {
          if (styleWidthSpec == kGUIDimensionPixels)
          {
@@ -148,8 +150,9 @@ tResult GUISizeElement(IGUIElement * pElement, const tGUISize & relativeTo)
          }
       }
 
-      uint styleHeight, styleHeightSpec;
-      if (pStyle->GetHeight(&styleHeight, &styleHeightSpec) == S_OK)
+      int styleHeight;
+      uint styleHeightSpec;
+      if (pStyle->GetHeight(&styleHeight, &styleHeightSpec) == S_OK && styleHeight >= 0)
       {
          if (styleHeightSpec == kGUIDimensionPixels)
          {
@@ -273,7 +276,21 @@ tGUIPoint GUIElementAbsolutePosition(IGUIElement * pGUIElement, uint * pnParents
 
 ///////////////////////////////////////////////////////////////////////////////
 
-extern tResult GUIStyleParseBool(const char * psz, bool * pBool);
+template <typename INTRFC, const IID * PIID>
+static tResult HackGetFirstElement(IGUIElementEnum * pEnum, INTRFC * * ppElement)
+{
+   if (pEnum == NULL || ppElement == NULL)
+   {
+      return E_POINTER;
+   }
+   cAutoIPtr<IGUIElement> pElement;
+   ulong count = 0, total = 0;
+   if (SUCCEEDED((pEnum->Next(1, &pElement, &count))) && (count == 1))
+   {
+      return pElement->QueryInterface(*PIID, (void**)ppElement);
+   }
+   return E_FAIL;
+}
 
 tResult GUIElementStandardAttributes(const TiXmlElement * pXmlElement, 
                                      IGUIElement * pGUIElement)
@@ -289,40 +306,60 @@ tResult GUIElementStandardAttributes(const TiXmlElement * pXmlElement,
    }
 
    bool bBoolValue;
-   if (GUIStyleParseBool(pXmlElement->Attribute(kAttribVisible), &bBoolValue) == S_OK)
+   if (GUIParseBool(pXmlElement->Attribute(kAttribVisible), &bBoolValue) == S_OK)
    {
       pGUIElement->SetVisible(bBoolValue);
    }
 
-   if (GUIStyleParseBool(pXmlElement->Attribute(kAttribEnabled), &bBoolValue) == S_OK)
+   if (GUIParseBool(pXmlElement->Attribute(kAttribEnabled), &bBoolValue) == S_OK)
    {
       pGUIElement->SetEnabled(bBoolValue);
+   }
+
+   cAutoIPtr<IGUIStyle> pClassStyle, pInlineStyle;
+
+   {
+      UseGlobal(GUIContext);
+      cAutoIPtr<IGUIElementEnum> pEnum;
+      if (pGUIContext->GetElementsOfType(IID_IGUIStyleElement, &pEnum) == S_OK)
+      {
+         // TODO: how to handle multiple style sheets on the same page?
+         cAutoIPtr<IGUIStyleElement> pStyleElement;
+         if (HackGetFirstElement<IGUIStyleElement, &IID_IGUIStyleElement>(pEnum, &pStyleElement) == S_OK)
+         {
+            cAutoIPtr<IGUIStyleSheet> pStyleSheet;
+            if (pStyleElement->GetStyleSheet(&pStyleSheet) == S_OK)
+            {
+               pStyleSheet->GetStyle(pXmlElement->Value(),
+                  pXmlElement->Attribute(kAttribStyleClass), &pClassStyle);
+            }
+         }
+      }
    }
 
    {
       const char * pszStyleAttrib = pXmlElement->Attribute(kAttribStyle);
       if (pszStyleAttrib != NULL)
       {
-         cAutoIPtr<IGUIStyle> pStyle;
-         if (GUIStyleParse(pszStyleAttrib, &pStyle) == S_OK)
-         {
-            pGUIElement->SetStyle(pStyle);
-         }
-         else
-         {
-            UseGlobal(GUIContext);
-            cAutoIPtr<IGUIElement> pPossibleStyleElement;
-            if (pGUIContext->GetElementById(pszStyleAttrib, &pPossibleStyleElement) == S_OK)
-            {
-               cAutoIPtr<IGUIStyleElement> pStyleElement;
-               if (pPossibleStyleElement->QueryInterface(IID_IGUIStyleElement, (void**)&pStyleElement) == S_OK
-                  && pStyleElement->GetStyle(&pStyle) == S_OK)
-               {
-                  pGUIElement->SetStyle(pStyle);
-               }
-            }
-         }
+         GUIStyleParse(pszStyleAttrib, -1, &pInlineStyle);
       }
+   }
+
+   if (!!pClassStyle)
+   {
+      if (!pInlineStyle)
+      {
+         pGUIElement->SetStyle(pClassStyle);
+      }
+      else
+      {
+         // TODO: combine inline style
+         pGUIElement->SetStyle(pClassStyle);
+      }
+   }
+   else if (!!pInlineStyle)
+   {
+      pGUIElement->SetStyle(pInlineStyle);
    }
 
    if (pXmlElement->Attribute(kAttribRendererClass))

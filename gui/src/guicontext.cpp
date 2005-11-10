@@ -5,6 +5,7 @@
 
 #include "guicontext.h"
 #include "guievent.h"
+#include "guielementenum.h"
 #include "guielementtools.h"
 #include "guieventroutertem.h"
 #include "guipage.h"
@@ -203,7 +204,7 @@ tResult cGUIContext::Term()
    UseGlobal(Input);
    pInput->SetGUIInputListener(NULL);
 
-   ClearTempElementMap();
+   ClearTempElements();
 
    std::list<cGUIPage*>::iterator iter = m_pages.begin();
    for (; iter != m_pages.end(); iter++)
@@ -339,7 +340,7 @@ tResult cGUIContext::InvokeToggleDebugInfo(int argc, const cScriptVar * argv,
       && argv[2].IsString())
    {
       placement = tGUIPoint(argv[0], argv[1]);
-      if (GUIStyleParse(argv[2], &pStyle) != S_OK)
+      if (GUIStyleParse(argv[2], -1, &pStyle) != S_OK)
       {
          SafeRelease(pStyle);
       }
@@ -490,7 +491,14 @@ static void CreateElements(TiXmlNode * pTiXmlNode, IGUIElement * pParent,
 
 ///////////////////////////////////////
 
-typedef std::pair<tGUIElementList*, std::map<tGUIString, IGUIElement*>*> tGUIContextCreateElementsCallbackData;
+struct sCallbackData
+{
+   tGUIElementList * pElements;
+   std::map<tGUIString, IGUIElement*> * pTempElementsById;
+   tGUIElementList * pTempElements;
+};
+
+typedef struct sCallbackData tGUIContextCreateElementsCallbackData;
 
 static void GUIContextCreateElementsCallback(IGUIElement * pElement, IGUIElement * pParent, void * pData)
 {
@@ -506,13 +514,17 @@ static void GUIContextCreateElementsCallback(IGUIElement * pElement, IGUIElement
       // Add only top-level elements to the list
       if (pParent == NULL)
       {
-         p->first->push_back(CTAddRef(pElement));
+         p->pElements->push_back(CTAddRef(pElement));
       }
 
       tGUIString id;
       if (pElement->GetId(&id) == S_OK)
       {
-         p->second->insert(std::make_pair(id, CTAddRef(pElement)));
+         p->pTempElementsById->insert(std::make_pair(id, CTAddRef(pElement)));
+      }
+      else
+      {
+         p->pTempElements->push_back(CTAddRef(pElement));
       }
    }
 }
@@ -547,13 +559,14 @@ tResult cGUIContext::PushPage(const tChar * pszPage)
       }
    }
 
-   ClearTempElementMap();
+   ClearTempElements();
 
    tGUIElementList elements;
 
    tGUIContextCreateElementsCallbackData callbackData;
-   callbackData.first = &elements;
-   callbackData.second = &m_tempElementMap;
+   callbackData.pElements = &elements;
+   callbackData.pTempElementsById = &m_tempElementMap;
+   callbackData.pTempElements = &m_tempElementList;
 
    CreateElements(pTiXmlDoc, NULL, GUIContextCreateElementsCallback, &callbackData);
    if (!elements.empty())
@@ -589,7 +602,7 @@ tResult cGUIContext::PopPage()
       return E_FAIL;
    }
 
-   ClearTempElementMap();
+   ClearTempElements();
 
    cGUIPage * pLastPage = m_pages.back();
    m_pages.pop_back();
@@ -628,6 +641,59 @@ tResult cGUIContext::GetElementById(const tChar * pszId, IGUIElement * * ppEleme
    }
 
    return E_FAIL;
+}
+
+///////////////////////////////////////
+
+tResult cGUIContext::GetElementsOfType(REFGUID iid, IGUIElementEnum * * ppEnum) const
+{
+   if (ppEnum == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tGUIElementList elements;
+
+   if (!m_tempElementMap.empty())
+   {
+      std::map<tGUIString, IGUIElement*>::const_iterator iter = m_tempElementMap.begin();
+      for (; iter != m_tempElementMap.end(); iter++)
+      {
+         cAutoIPtr<IUnknown> pUnk;
+         if (iter->second->QueryInterface(iid, (void**)&pUnk) == S_OK)
+         {
+            elements.push_back(CTAddRef(iter->second));
+         }
+      }
+   }
+
+   if (!m_tempElementList.empty())
+   {
+      std::list<IGUIElement*>::const_iterator iter = m_tempElementList.begin();
+      for (; iter != m_tempElementList.end(); iter++)
+      {
+         cAutoIPtr<IUnknown> pUnk;
+         if ((*iter)->QueryInterface(iid, (void**)&pUnk) == S_OK)
+         {
+            elements.push_back(CTAddRef(*iter));
+         }
+      }
+   }
+
+   const cGUIPage * pPage = GetCurrentPage();
+   if (pPage != NULL)
+   {
+      pPage->GetElementsOfType(iid, &elements);
+   }
+
+   if (elements.empty())
+   {
+      return S_FALSE;
+   }
+
+   tResult result = GUIElementEnumCreate(elements, ppEnum);
+   std::for_each(elements.begin(), elements.end(), CTInterfaceMethod(&IGUIElement::Release));
+   return result;
 }
 
 ///////////////////////////////////////
@@ -821,14 +887,25 @@ tResult cGUIContext::GetActiveModalDialog(IGUIDialogElement * * ppModalDialog)
 
 ///////////////////////////////////////
 
-void cGUIContext::ClearTempElementMap()
+void cGUIContext::ClearTempElements()
 {
-   std::map<tGUIString, IGUIElement*>::iterator iter = m_tempElementMap.begin();
-   for (; iter != m_tempElementMap.end(); iter++)
    {
-      iter->second->Release();
+      std::map<tGUIString, IGUIElement*>::iterator iter = m_tempElementMap.begin();
+      for (; iter != m_tempElementMap.end(); iter++)
+      {
+         iter->second->Release();
+      }
+      m_tempElementMap.clear();
    }
-   m_tempElementMap.clear();
+
+   {
+      std::list<IGUIElement*>::iterator iter = m_tempElementList.begin();
+      for (; iter != m_tempElementList.end(); iter++)
+      {
+         (*iter)->Release();
+      }
+      m_tempElementList.clear();
+   }
 }
 
 ///////////////////////////////////////
