@@ -216,12 +216,16 @@ tResult cGUIRenderDeviceGL::GetViewportSize(uint * pWidth, uint * pHeight)
       return E_POINTER;
    }
 
-   int viewport[4];
+   int viewport[4] = {-1,-1,-1,-1};
    glGetIntegerv(GL_VIEWPORT, viewport);
+
+   if (viewport[2] == -1 || viewport[3] == -1)
+   {
+      return E_FAIL;
+   }
 
    *pWidth = viewport[2];
    *pHeight = viewport[3];
-
    return S_OK;
 }
 
