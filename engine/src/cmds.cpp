@@ -279,7 +279,7 @@ sScriptReg cmds[] =
    { "ListResources", ListResources },
 };
 
-tResult EngineRegisterScriptFunctions()
+ENGINE_API tResult EngineRegisterScriptFunctions()
 {
    return ScriptAddFunctions(cmds, _countof(cmds));
 }
