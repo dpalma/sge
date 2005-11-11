@@ -41,6 +41,8 @@ public:
 
    virtual void Clear();
 
+   virtual tResult Clone(IDictionary * * ppDictionary) const;
+
 private:
    tResult GetPersistence(const tChar * pszKey, tPersistence * pPersist);
 

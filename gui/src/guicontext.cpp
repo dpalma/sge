@@ -166,9 +166,10 @@ END_CONSTRAINTS()
 
 ///////////////////////////////////////
 
-cGUIContext::cGUIContext()
+cGUIContext::cGUIContext(const tChar * pszScriptName)
  : m_inputListener(this)
  , m_bShowingModalDialog(false)
+ , m_scriptName((pszScriptName != NULL) ? pszScriptName : _T(""))
 #ifdef GUI_DEBUG
  , m_bShowDebugInfo(false)
  , m_debugInfoPlacement(0,0)
@@ -191,9 +192,13 @@ tResult cGUIContext::Init()
 {
    UseGlobal(Input);
    pInput->SetGUIInputListener(&m_inputListener);
+
    GUILayoutRegisterBuiltInTypes();
+
    UseGlobal(ScriptInterpreter);
-   pScriptInterpreter->AddNamedItem(GetName(), static_cast<IScriptable*>(this));
+   pScriptInterpreter->AddNamedItem(m_scriptName.empty() ? GetName() : m_scriptName.c_str(),
+      static_cast<IScriptable*>(this));
+
    return S_OK;
 }
 
@@ -1068,9 +1073,9 @@ bool cGUIContext::cInputListener::OnInputEvent(const sInputEvent * pEvent)
 
 ///////////////////////////////////////
 
-tResult GUIContextCreate()
+tResult GUIContextCreate(const tChar * pszScriptName)
 {
-   cAutoIPtr<IGUIContext> p(static_cast<IGUIContext*>(new cGUIContext));
+   cAutoIPtr<IGUIContext> p(static_cast<IGUIContext*>(new cGUIContext(pszScriptName)));
    if (!p)
    {
       return E_OUTOFMEMORY;

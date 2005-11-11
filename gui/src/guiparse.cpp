@@ -114,6 +114,10 @@ tResult GUIParseStyleDimension(const tChar * psz, int * pDimension, tGUIDimensio
 
 tResult GUIParseColor(const tChar * pszColor, tGUIColor * pColor)
 {
+   if (pszColor == NULL || pColor == NULL)
+   {
+      return E_POINTER;
+   }
    static const struct sNamedColor
    {
       sNamedColor(const tChar * p, const tGUIColor & c) : pszName(p), color(c) {}
@@ -158,7 +162,7 @@ tResult GUIParseColor(const tChar * pszColor, tGUIColor * pColor)
          }
       }
    }
-   return E_FAIL;
+   return S_FALSE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

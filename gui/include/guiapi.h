@@ -160,7 +160,7 @@ enum eGUIDimensionSpec
 interface IGUIStyle : IUnknown
 {
    virtual tResult GetAttribute(const tChar * pszAttribute, tGUIString * pValue) = 0;
-   virtual tResult GetAttribute(const tChar * pszAttribute, uint * pValue) = 0;
+   virtual tResult GetAttribute(const tChar * pszAttribute, int * pValue) = 0;
    virtual tResult GetAttribute(const tChar * pszAttribute, tGUIColor * pValue) = 0;
    virtual tResult SetAttribute(const tChar * pszAttribute, const tChar * pszValue) = 0;
 
@@ -207,6 +207,8 @@ interface IGUIStyle : IUnknown
 
    virtual tResult GetHeight(int * pHeight, uint * pSpec) = 0;
    virtual tResult SetHeight(int height, uint spec) = 0;
+
+   virtual tResult Clone(IGUIStyle * * ppStyle) = 0;
 };
 
 ///////////////////////////////////////
@@ -792,7 +794,7 @@ interface IGUIContext : IGUIEventRouter
 
 ///////////////////////////////////////
 
-GUI_API tResult GUIContextCreate();
+GUI_API tResult GUIContextCreate(const tChar * pszScriptName = NULL);
 
 ///////////////////////////////////////////////////////////////////////////////
 

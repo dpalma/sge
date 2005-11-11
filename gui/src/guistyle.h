@@ -6,7 +6,7 @@
 
 #include "guiapi.h"
 
-#include <map>
+#include "dictionaryapi.h"
 
 #ifdef _MSC_VER
 #pragma once
@@ -19,14 +19,19 @@
 
 class cGUIStyle : public cComObject<IMPLEMENTS(IGUIStyle)>
 {
-public:
-   cGUIStyle();
+   void operator =(const cGUIStyle &);
+
+   cGUIStyle(IDictionary * pDict = NULL);
+   cGUIStyle(const cGUIStyle & other);
    ~cGUIStyle();
 
-   virtual tResult GetAttribute(const char * pszAttribute, tGUIString * pValue);
-   virtual tResult GetAttribute(const char * pszAttribute, uint * pValue);
-   virtual tResult GetAttribute(const char * pszAttribute, tGUIColor * pValue);
-   virtual tResult SetAttribute(const char * pszAttribute, const char * pszValue);
+public:
+   static tResult Create(IGUIStyle * * ppStyle);
+
+   virtual tResult GetAttribute(const tChar * pszAttribute, tGUIString * pValue);
+   virtual tResult GetAttribute(const tChar * pszAttribute, int * pValue);
+   virtual tResult GetAttribute(const tChar * pszAttribute, tGUIColor * pValue);
+   virtual tResult SetAttribute(const tChar * pszAttribute, const tChar * pszValue);
 
    virtual tResult GetAlignment(uint * pAlignment);
    virtual tResult SetAlignment(uint alignment);
@@ -72,9 +77,10 @@ public:
    virtual tResult GetHeight(int * pHeight, uint * pSpec);
    virtual tResult SetHeight(int height, uint spec);
 
+   virtual tResult Clone(IGUIStyle * * ppStyle);
+
 private:
-   typedef std::map<cStr, cStr> tAttributeMap;
-   tAttributeMap m_attributeMap;
+   cAutoIPtr<IDictionary> m_pDict;
    uint m_alignment, m_verticalAlignment;
    tGUIColor * m_pBackground, * m_pForeground;
    uint m_textAlignment, m_textVerticalAlignment;

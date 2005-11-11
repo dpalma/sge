@@ -34,7 +34,7 @@ class cGUIContext : public cComObject3<cGUIEventRouter<cGUIContext, IGUIContext>
                                        IMPLEMENTS(IGlobalObject), IMPLEMENTS(IScriptable)>
 {
 public:
-   cGUIContext();
+   cGUIContext(const tChar * pszScriptName);
    ~cGUIContext();
 
    DECLARE_NAME(GUIContext)
@@ -115,6 +115,8 @@ private:
    cInputListener m_inputListener;
 
    bool m_bShowingModalDialog;
+
+   cStr m_scriptName;
 
 #ifdef GUI_DEBUG
    bool m_bShowDebugInfo;

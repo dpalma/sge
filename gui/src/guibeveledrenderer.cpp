@@ -285,7 +285,7 @@ tResult cGUIBeveledRenderer::Render(IGUIButtonElement * pButtonElement, IGUIRend
       cAutoIPtr<IGUIStyle> pStyle;
       if (pButtonElement->GetStyle(&pStyle) == S_OK)
       {
-         uint dropShadow = 0;
+         int dropShadow = 0;
          if (pStyle->GetAttribute(kAttribDropShadow, &dropShadow) == S_OK
             && dropShadow != 0)
          {

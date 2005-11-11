@@ -260,7 +260,6 @@ void GUIElementRenderLoop(ITERATOR begin, ITERATOR end, FUNCTOR f, DATA d)
          cAutoIPtr<IGUIElementRenderer> pRenderer;
          if ((*iter)->GetRenderer(&pRenderer) != S_OK)
          {
-            WarnMsg("Top-level GUI element has no renderer\n");
             continue;
          }
 

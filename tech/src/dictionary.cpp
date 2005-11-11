@@ -14,6 +14,7 @@
 
 #include "dbgalloc.h" // must be last header
 
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cDictionary
@@ -109,9 +110,16 @@ tResult cDictionary::Get(const tChar * pszKey, int * pVal, tPersistence * pPersi
          return E_FAIL;
       }
 
+      int value = iter->second.ToInt();
+
+      if ((value == 0) && !iter->second.empty() && (iter->second.at(0) != '0'))
+      {
+         return S_FALSE;
+      }
+
       if (pVal != NULL)
       {
-         *pVal = iter->second.ToInt();
+         *pVal = value;
       }
 
       return S_OK;
@@ -157,6 +165,10 @@ tResult cDictionary::Set(const tChar * pszKey, const tChar * val, tPersistence p
    {
       return E_POINTER;
    }
+   if (*pszKey == 0)
+   {
+      return E_INVALIDARG;
+   }
    if (persist == kUseDefault)
    {
       persist = m_defaultPersist;
@@ -179,6 +191,10 @@ tResult cDictionary::Set(const tChar * pszKey, int val, tPersistence persist)
    {
       return E_POINTER;
    }
+   if (*pszKey == 0)
+   {
+      return E_INVALIDARG;
+   }
    cStr temp;
    temp.Format(_T("%d"), val);
    return Set(pszKey, temp.c_str(), persist);
@@ -191,6 +207,10 @@ tResult cDictionary::Set(const tChar * pszKey, float val, tPersistence persist)
    if (pszKey == NULL)
    {
       return E_POINTER;
+   }
+   if (*pszKey == 0)
+   {
+      return E_INVALIDARG;
    }
    cStr temp;
    temp.Format(_T("%f"), val);
@@ -248,6 +268,28 @@ void cDictionary::Clear()
 {
    m_vars.clear();
    m_persistenceMap.clear();
+}
+
+///////////////////////////////////////
+
+tResult cDictionary::Clone(IDictionary * * ppDictionary) const
+{
+   if (ppDictionary == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cDictionary * pDict = new cDictionary(m_defaultPersist);
+   if (pDict == NULL)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   pDict->m_vars.insert(m_vars.begin(), m_vars.end());
+   pDict->m_persistenceMap.insert(m_persistenceMap.begin(), m_persistenceMap.end());
+
+   *ppDictionary = static_cast<IDictionary*>(pDict);
+   return S_OK;
 }
 
 ///////////////////////////////////////

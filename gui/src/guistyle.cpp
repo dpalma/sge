@@ -12,8 +12,6 @@
 
 #include "globalobj.h"
 
-#include <tinyxml.h>
-
 #include <cstring>
 #include <locale>
 
@@ -32,8 +30,9 @@ static const uint kInvalidUint = ~0u;
 
 ///////////////////////////////////////
 
-cGUIStyle::cGUIStyle()
- : m_alignment(kGUIAlignLeft)
+cGUIStyle::cGUIStyle(IDictionary * pDict)
+ : m_pDict((pDict != NULL) ? CTAddRef(pDict) : DictionaryCreate(kTransitory))
+ , m_alignment(kGUIAlignLeft)
  , m_verticalAlignment(kGUIVertAlignTop)
  , m_pBackground(NULL)
  , m_pForeground(NULL)
@@ -54,6 +53,38 @@ cGUIStyle::cGUIStyle()
 
 ///////////////////////////////////////
 
+cGUIStyle::cGUIStyle(const cGUIStyle & other)
+ : m_pDict(NULL)
+ , m_alignment(other.m_alignment)
+ , m_verticalAlignment(other.m_verticalAlignment)
+ , m_pBackground(NULL)
+ , m_pForeground(NULL)
+ , m_textAlignment(other.m_textAlignment)
+ , m_textVerticalAlignment(other.m_textVerticalAlignment)
+ , m_fontName(other.m_fontName)
+ , m_fontPointSize(other.m_fontPointSize)
+ , m_bFontBold(other.m_bFontBold)
+ , m_bFontItalic(other.m_bFontItalic)
+ , m_bFontShadow(other.m_bFontShadow)
+ , m_bFontOutline(other.m_bFontOutline)
+ , m_width(other.m_width)
+ , m_height(other.m_height)
+ , m_widthSpec(other.m_widthSpec)
+ , m_heightSpec(other.m_heightSpec)
+{
+   other.m_pDict->Clone(&m_pDict);
+   if (other.m_pBackground != NULL)
+   {
+      m_pBackground = new tGUIColor(*other.m_pBackground);
+   }
+   if (other.m_pForeground != NULL)
+   {
+      m_pForeground = new tGUIColor(*other.m_pForeground);
+   }
+}
+
+///////////////////////////////////////
+
 cGUIStyle::~cGUIStyle()
 {
    delete m_pBackground, m_pBackground = NULL;
@@ -62,90 +93,54 @@ cGUIStyle::~cGUIStyle()
 
 ///////////////////////////////////////
 
-tResult cGUIStyle::GetAttribute(const tChar * pszAttribute, tGUIString * pValue)
+tResult cGUIStyle::Create(IGUIStyle * * ppStyle)
 {
-   if (pszAttribute == NULL || pValue == NULL)
+   if (ppStyle == NULL)
    {
       return E_POINTER;
    }
 
-   tAttributeMap::iterator f = m_attributeMap.find(pszAttribute);
-
-   if (f == m_attributeMap.end())
+   cGUIStyle * pStyle = new cGUIStyle;
+   if (!pStyle || !pStyle->m_pDict)
    {
-      return S_FALSE;
+      return E_OUTOFMEMORY;
    }
 
-   *pValue = f->second;
-
+   *ppStyle = static_cast<IGUIStyle*>(pStyle);
    return S_OK;
 }
 
 ///////////////////////////////////////
 
-tResult cGUIStyle::GetAttribute(const tChar * pszAttribute, uint * pValue)
+tResult cGUIStyle::GetAttribute(const tChar * pszAttribute, tGUIString * pValue)
 {
-   if (pszAttribute == NULL || pValue == NULL)
-   {
-      return E_POINTER;
-   }
+   return m_pDict->Get(pszAttribute, pValue);
+}
 
-   tAttributeMap::iterator f = m_attributeMap.find(pszAttribute);
+///////////////////////////////////////
 
-   if (f == m_attributeMap.end())
-   {
-      return S_FALSE;
-   }
-
-   if (sscanf(f->second.c_str(), "%d", pValue) == 1)
-   {
-      return S_OK;
-   }
-
-   return S_FALSE;
+tResult cGUIStyle::GetAttribute(const tChar * pszAttribute, int * pValue)
+{
+   return m_pDict->Get(pszAttribute, pValue);
 }
 
 ///////////////////////////////////////
 
 tResult cGUIStyle::GetAttribute(const tChar * pszAttribute, tGUIColor * pValue)
 {
-   if (pszAttribute == NULL || pValue == NULL)
+   cStr value;
+   if (m_pDict->Get(pszAttribute, &value) == S_OK)
    {
-      return E_POINTER;
+      return GUIParseColor(value.c_str(), pValue);
    }
-
-   tAttributeMap::iterator f = m_attributeMap.find(pszAttribute);
-
-   if (f == m_attributeMap.end())
-   {
-      return S_FALSE;
-   }
-
-   if (GUIParseColor(f->second.c_str(), pValue) == S_OK)
-   {
-      return S_OK;
-   }
-
-   return S_FALSE;
+   return E_FAIL;
 }
 
 ///////////////////////////////////////
 
 tResult cGUIStyle::SetAttribute(const tChar * pszAttribute, const tChar * pszValue)
 {
-   if (pszAttribute == NULL || pszValue == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (_tcslen(pszAttribute) == 0)
-   {
-      return E_INVALIDARG;
-   }
-
-   m_attributeMap[pszAttribute] = pszValue;
-
-   return S_OK;
+   return m_pDict->Set(pszAttribute, pszValue);
 }
 
 ///////////////////////////////////////
@@ -153,7 +148,9 @@ tResult cGUIStyle::SetAttribute(const tChar * pszAttribute, const tChar * pszVal
 tResult cGUIStyle::GetAlignment(uint * pAlignment)
 {
    if (pAlignment == NULL)
+   {
       return E_POINTER;
+   }
    *pAlignment = m_alignment;
    return S_OK;
 }
@@ -347,7 +344,9 @@ tResult cGUIStyle::SetFontName(const char * pszFontName)
 tResult cGUIStyle::GetFontPointSize(uint * pFontPointSize)
 {
    if (pFontPointSize == NULL)
+   {
       return E_POINTER;
+   }
    *pFontPointSize = m_fontPointSize;
    return S_OK;
 }
@@ -487,7 +486,7 @@ tResult cGUIStyle::GetWidth(int * pWidth, uint * pSpec)
       return E_POINTER;
    }
 
-   if ((m_width == kInvalidUint) || (m_widthSpec == kInvalidUint))
+   if ((m_width < 0) || (m_widthSpec == kInvalidUint))
    {
       return S_FALSE;
    }
@@ -522,7 +521,7 @@ tResult cGUIStyle::GetHeight(int * pHeight, uint * pSpec)
       return E_POINTER;
    }
 
-   if ((m_height == kInvalidUint) || (m_heightSpec == kInvalidUint))
+   if ((m_height < 0) || (m_heightSpec == kInvalidUint))
    {
       return S_FALSE;
    }
@@ -545,6 +544,25 @@ tResult cGUIStyle::SetHeight(int height, uint spec)
    m_height = height;
    m_heightSpec = spec;
 
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIStyle::Clone(IGUIStyle * * ppStyle)
+{
+   if (ppStyle == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cGUIStyle * pStyle = new cGUIStyle(*this);
+   if (pStyle == NULL || !pStyle->m_pDict)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   *ppStyle = static_cast<IGUIStyle *>(pStyle);
    return S_OK;
 }
 
@@ -738,10 +756,11 @@ tResult GUIStyleParse(const tChar * pszStyle, long length, IGUIStyle * * ppStyle
       length = _tcslen(pszStyle);
    }
 
-   cAutoIPtr<IGUIStyle> pStyle(new cGUIStyle);
-   if (!pStyle)
+   cAutoIPtr<IGUIStyle> pStyle;
+   tResult result = cGUIStyle::Create(&pStyle);
+   if (result != S_OK)
    {
-      return E_OUTOFMEMORY;
+      return result;
    }
 
    const tChar * pszIter = pszStyle;
@@ -854,7 +873,7 @@ void cGUIStyleTests::TestStyleParse()
 void cGUIStyleTests::TestCustomAttributes()
 {
    tGUIString string;
-   uint number;
+   int number;
    tGUIColor color;
 
    cAutoIPtr<IGUIStyle> pStyle;

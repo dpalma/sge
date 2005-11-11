@@ -51,6 +51,8 @@ interface IDictionary : IUnknown
    virtual tResult GetKeys(std::list<cStr> * pKeys) = 0;
 
    virtual void Clear() = 0;
+
+   virtual tResult Clone(IDictionary * * ppDictionary) const = 0;
 };
 
 ///////////////////////////////////////
