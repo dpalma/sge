@@ -43,18 +43,59 @@ bool GUIDToString(REFGUID guid, tChar * psz, int maxLen)
 
 class cComToolsTests : public CppUnit::TestCase
 {
+   void TestGuidToString();
+   void TestIsSameObject();
+   void TestAggregation();
+
+   static const GUID IID_IFoo;
+   static const GUID IID_IFooSideInterface;
+   static const GUID IID_IBar;
+
+   interface IFoo : IUnknown {};
+   interface IFooSideInterface : IUnknown {};
+   interface IBar : IUnknown {};
+
+   class cSameObjectTest1 : public cComObject2<IMPLEMENTS(IFoo), IMPLEMENTS(IFooSideInterface)> {};
+   class cSameObjectTest2 : public cComObject<IMPLEMENTS(IBar)> {};
+
+   // Implements IFoo and aggregates IBar using cAggTestInner
+   class cAggTest : public cComObject<IMPLEMENTS(IFoo)>
+   {
+      tResult InitBar();
+   public:
+      static tResult Create(IFoo * * ppFoo);
+      virtual tResult STDMETHODCALLTYPE QueryInterface(REFGUID iid, void * * ppvObject);
+   private:
+      cAutoIPtr<IUnknown> m_pUnkBar;
+      cAutoIPtr<IBar> m_pBar;
+   };
+
+   class cAggTestInner : public cComAggregableObject<IMPLEMENTS(IBar)>
+   {
+      cAggTestInner(IUnknown * pUnkOuter);
+   public:
+      static tResult Create(IUnknown * pUnkOuter, IUnknown * * ppInner);
+   };
+
    CPPUNIT_TEST_SUITE(cComToolsTests);
       CPPUNIT_TEST(TestGuidToString);
       CPPUNIT_TEST(TestIsSameObject);
+      CPPUNIT_TEST(TestAggregation);
    CPPUNIT_TEST_SUITE_END();
-
-   void TestGuidToString();
-   void TestIsSameObject();
 };
 
 ////////////////////////////////////////
 
 CPPUNIT_TEST_SUITE_REGISTRATION(cComToolsTests);
+
+////////////////////////////////////////
+
+const GUID cComToolsTests::IID_IFoo = 
+{ 0x4e4c5299, 0x18bd, 0x4477, { 0x9c, 0x4b, 0x2b, 0x40, 0xa6, 0x98, 0x82, 0x4b } };
+const GUID cComToolsTests::IID_IFooSideInterface = 
+{ 0xdad942b, 0xd626, 0x4cfe, { 0x92, 0xe6, 0xca, 0xad, 0x88, 0xd3, 0xab, 0x29 } };
+const GUID cComToolsTests::IID_IBar = 
+{ 0x3eb94c5f, 0x2e2c, 0x4fbc, { 0xbe, 0x49, 0x1c, 0xc0, 0xc8, 0xad, 0x6f, 0xde } };
 
 ////////////////////////////////////////
 
@@ -80,40 +121,133 @@ void cComToolsTests::TestGuidToString()
 
 ////////////////////////////////////////
 
-GUID IID_ISameObjectTest1a = 
-{ 0x4e4c5299, 0x18bd, 0x4477, { 0x9c, 0x4b, 0x2b, 0x40, 0xa6, 0x98, 0x82, 0x4b } };
-GUID IID_ISameObjectTest1b = 
-{ 0xdad942b, 0xd626, 0x4cfe, { 0x92, 0xe6, 0xca, 0xad, 0x88, 0xd3, 0xab, 0x29 } };
-GUID IID_ISameObjectTest2 = 
-{ 0x3eb94c5f, 0x2e2c, 0x4fbc, { 0xbe, 0x49, 0x1c, 0xc0, 0xc8, 0xad, 0x6f, 0xde } };
-
-interface ISameObjectTest1a : IUnknown {};
-interface ISameObjectTest1b : IUnknown {};
-class cSameObjectTest1 : public cComObject2<IMPLEMENTS(ISameObjectTest1a), IMPLEMENTS(ISameObjectTest1b)> {};
-interface ISameObjectTest2 : IUnknown {};
-class cSameObjectTest2 : public cComObject<IMPLEMENTS(ISameObjectTest2)> {};
-
 void cComToolsTests::TestIsSameObject()
 {
    cAutoIPtr<cSameObjectTest1> pObj1(new cSameObjectTest1);
-
-   cAutoIPtr<ISameObjectTest1a> pObj1a;
-   CPPUNIT_ASSERT(pObj1->QueryInterface(IID_ISameObjectTest1a, (void**)&pObj1a) == S_OK);
-
-   cAutoIPtr<ISameObjectTest1b> pObj1b;
-   CPPUNIT_ASSERT(pObj1->QueryInterface(IID_ISameObjectTest1b, (void**)&pObj1b) == S_OK);
-
-   CPPUNIT_ASSERT(CTIsSameObject(static_cast<ISameObjectTest1b*>(pObj1), pObj1a));
-   CPPUNIT_ASSERT(CTIsSameObject(static_cast<ISameObjectTest1a*>(pObj1), pObj1b));
-   CPPUNIT_ASSERT(CTIsSameObject(pObj1a, pObj1b));
-
    cAutoIPtr<cSameObjectTest2> pObj2(new cSameObjectTest2);
 
-   CPPUNIT_ASSERT(!CTIsSameObject(static_cast<ISameObjectTest1a*>(pObj1), pObj2));
-   CPPUNIT_ASSERT(!CTIsSameObject(pObj1a, pObj2));
-   CPPUNIT_ASSERT(!CTIsSameObject(pObj1b, pObj2));
+   cAutoIPtr<IFoo> pFoo;
+   CPPUNIT_ASSERT(pObj1->QueryInterface(IID_IFoo, (void**)&pFoo) == S_OK);
+
+   cAutoIPtr<IFooSideInterface> pFooSide;
+   CPPUNIT_ASSERT(pObj1->QueryInterface(IID_IFooSideInterface, (void**)&pFooSide) == S_OK);
+
+   CPPUNIT_ASSERT(CTIsSameObject(static_cast<IFooSideInterface*>(pObj1), pFoo));
+   CPPUNIT_ASSERT(CTIsSameObject(static_cast<IFoo*>(pObj1), pFooSide));
+   CPPUNIT_ASSERT(CTIsSameObject(pFoo, pFooSide));
+
+   CPPUNIT_ASSERT(!CTIsSameObject(static_cast<IFoo*>(pObj1), pObj2));
+   CPPUNIT_ASSERT(!CTIsSameObject(pFoo, pObj2));
+   CPPUNIT_ASSERT(!CTIsSameObject(pFooSide, pObj2));
 
 }
+
+////////////////////////////////////////
+
+tResult cComToolsTests::cAggTest::InitBar()
+{
+   if (!!m_pBar || !!m_pUnkBar)
+   {
+      return E_FAIL;
+   }
+
+   if (cAggTestInner::Create(this, &m_pUnkBar) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   if (m_pUnkBar->QueryInterface(IID_IBar, (void**)&m_pBar) != S_OK)
+   {
+      m_pUnkBar->Release();
+      return E_FAIL;
+   }
+
+   // Release reference from QI above
+   Release();
+   return S_OK;
+}
+
+tResult cComToolsTests::cAggTest::Create(IFoo * * ppFoo)
+{
+   if (ppFoo == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cAggTest * pAggTest = new cAggTest;
+   if (pAggTest == NULL)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   if (pAggTest->InitBar() != S_OK)
+   {
+      delete pAggTest;
+      return E_FAIL;
+   }
+
+   *ppFoo = static_cast<IFoo*>(pAggTest);
+   return S_OK;
+}
+
+tResult STDMETHODCALLTYPE cComToolsTests::cAggTest::QueryInterface(REFGUID iid, void * * ppvObject)
+{
+   const struct sQIPair pairs[] =
+   {
+      { static_cast<IFoo *>(this), &IID_IFoo },
+      { static_cast<IBar *>(m_pBar), &IID_IBar },
+   };
+   return DoQueryInterface(pairs, _countof(pairs), iid, ppvObject);
+}
+
+cComToolsTests::cAggTestInner::cAggTestInner(IUnknown * pUnkOuter)
+ : cComAggregableObject<IMPLEMENTS(IBar)>(pUnkOuter)
+{
+}
+
+tResult cComToolsTests::cAggTestInner::Create(IUnknown * pUnkOuter, IUnknown * * ppInner)
+{
+   if (ppInner == NULL)
+   {
+      return E_POINTER;
+   }
+   cAggTestInner * pInner = new cAggTestInner(pUnkOuter);
+   if (pInner == NULL)
+   {
+      return E_OUTOFMEMORY;
+   }
+   *ppInner = pInner->AccessInnerUnknown();
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+void cComToolsTests::TestAggregation()
+{
+   // "foo" that aggregates "bar"
+   {
+      cAutoIPtr<IFoo> pFoo;
+      CPPUNIT_ASSERT(cAggTest::Create(&pFoo) == S_OK);
+
+      cAutoIPtr<IBar> pBar;
+      CPPUNIT_ASSERT(pFoo->QueryInterface(IID_IBar, (void**)&pBar) == S_OK);
+
+      cAutoIPtr<IFoo> pFoo2;
+      CPPUNIT_ASSERT(pBar->QueryInterface(IID_IFoo, (void**)&pFoo2) == S_OK);
+
+      CPPUNIT_ASSERT(CTIsSameObject(pFoo, pBar));
+   }
+
+   // "bar" with no aggregation
+   {
+      cAutoIPtr<IUnknown> pUnkBar;
+      CPPUNIT_ASSERT(cAggTestInner::Create(NULL, &pUnkBar) == S_OK);
+
+      cAutoIPtr<IBar> pBar;
+      CPPUNIT_ASSERT(pUnkBar->QueryInterface(IID_IBar, (void**)&pBar) == S_OK);
+   }
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 

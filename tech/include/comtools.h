@@ -112,20 +112,21 @@ inline tResult CTQueryInterface(const sQIPair * pPairs, int nPairs,
    return E_NOINTERFACE;
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cNonDelegatingComServices
+// CLASS: cNonDelegatingUnknown
 //
 
-class cNonDelegatingComServices
+class cNonDelegatingUnknown
 {
 protected:
-   cNonDelegatingComServices()
-     : m_cRef(1)
+   cNonDelegatingUnknown()
+    : m_cRef(1)
    {
    }
 
-   virtual ~cNonDelegatingComServices()
+   virtual ~cNonDelegatingUnknown()
    {
    }
 
@@ -143,7 +144,9 @@ protected:
    ulong DoRelease()
    {
       if (--m_cRef)
+      {
          return m_cRef;
+      }
       OnFinalRelease();
       DeleteThis();
       return 0;
@@ -162,7 +165,42 @@ private:
    ulong m_cRef;
 };
 
-typedef cNonDelegatingComServices cDefaultComServices;
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cDelegatingUnknown
+//
+
+class cDelegatingUnknown
+{
+protected:
+   cDelegatingUnknown(IUnknown * pUnkOuter)
+    : m_pUnkOuter(pUnkOuter)
+   {
+   }
+
+   virtual ~cDelegatingUnknown()
+   {
+   }
+
+   tResult DoQueryInterface(REFGUID iid, void * * ppvObject)
+   {
+      return m_pUnkOuter->QueryInterface(iid, ppvObject);
+   }
+
+   ulong DoAddRef()
+   {
+      return m_pUnkOuter->AddRef();
+   }
+
+   ulong DoRelease()
+   {
+      return m_pUnkOuter->Release();
+   }
+
+private:
+   IUnknown * m_pUnkOuter;
+};
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -178,13 +216,13 @@ typedef cNonDelegatingComServices cDefaultComServices;
 #define IMPLEMENTS(Interface) Interface, &IID_##Interface
 
 template <class INTRFC, const IID * PIID, 
-          class SERVICES = cDefaultComServices>
-class cComObject : public INTRFC, public SERVICES
+          class UNKNOWN = cNonDelegatingUnknown>
+class cComObject : public INTRFC, public UNKNOWN
 {
 public:
    virtual ~cComObject() {}
-   virtual ulong STDMETHODCALLTYPE AddRef() { return DoAddRef(); }
-   virtual ulong STDMETHODCALLTYPE Release() { return DoRelease(); }
+   virtual ulong STDMETHODCALLTYPE AddRef() { return UNKNOWN::DoAddRef(); }
+   virtual ulong STDMETHODCALLTYPE Release() { return UNKNOWN::DoRelease(); }
    virtual tResult STDMETHODCALLTYPE QueryInterface(REFGUID iid,
                                                     void * * ppvObject)
    {
@@ -192,19 +230,19 @@ public:
       {
          { static_cast<INTRFC *>(this), PIID },
       };
-      return DoQueryInterface(pairs, _countof(pairs), iid, ppvObject);
+      return UNKNOWN::DoQueryInterface(pairs, _countof(pairs), iid, ppvObject);
    }
 };
 
 template <class INTRFC1, const IID * PIID1, 
           class INTRFC2, const IID * PIID2,
-          class SERVICES = cDefaultComServices>
-class cComObject2 : public INTRFC1, public INTRFC2, public SERVICES
+          class UNKNOWN = cNonDelegatingUnknown>
+class cComObject2 : public INTRFC1, public INTRFC2, public UNKNOWN
 {
 public:
    virtual ~cComObject2() {}
-   virtual ulong STDMETHODCALLTYPE AddRef() { return DoAddRef(); }
-   virtual ulong STDMETHODCALLTYPE Release() { return DoRelease(); }
+   virtual ulong STDMETHODCALLTYPE AddRef() { return UNKNOWN::DoAddRef(); }
+   virtual ulong STDMETHODCALLTYPE Release() { return UNKNOWN::DoRelease(); }
    virtual tResult STDMETHODCALLTYPE QueryInterface(REFGUID iid,
                                                     void * * ppvObject)
    {
@@ -213,20 +251,20 @@ public:
          { static_cast<INTRFC1 *>(this), PIID1 },
          { static_cast<INTRFC2 *>(this), PIID2 },
       };
-      return DoQueryInterface(pairs, _countof(pairs), iid, ppvObject);
+      return UNKNOWN::DoQueryInterface(pairs, _countof(pairs), iid, ppvObject);
    }
 };
 
 template <class INTRFC1, const IID * PIID1, 
           class INTRFC2, const IID * PIID2,
           class INTRFC3, const IID * PIID3,
-          class SERVICES = cDefaultComServices>
-class cComObject3 : public INTRFC1, public INTRFC2, public INTRFC3, public SERVICES
+          class UNKNOWN = cNonDelegatingUnknown>
+class cComObject3 : public INTRFC1, public INTRFC2, public INTRFC3, public UNKNOWN
 {
 public:
    virtual ~cComObject3() {}
-   virtual ulong STDMETHODCALLTYPE AddRef() { return DoAddRef(); }
-   virtual ulong STDMETHODCALLTYPE Release() { return DoRelease(); }
+   virtual ulong STDMETHODCALLTYPE AddRef() { return UNKNOWN::DoAddRef(); }
+   virtual ulong STDMETHODCALLTYPE Release() { return UNKNOWN::DoRelease(); }
    virtual tResult STDMETHODCALLTYPE QueryInterface(REFGUID iid,
                                                     void * * ppvObject)
    {
@@ -236,7 +274,7 @@ public:
          { static_cast<INTRFC2 *>(this), PIID2 },
          { static_cast<INTRFC3 *>(this), PIID3 },
       };
-      return DoQueryInterface(pairs, _countof(pairs), iid, ppvObject);
+      return UNKNOWN::DoQueryInterface(pairs, _countof(pairs), iid, ppvObject);
    }
 };
 
@@ -244,13 +282,13 @@ template <class INTRFC1, const IID * PIID1,
           class INTRFC2, const IID * PIID2,
           class INTRFC3, const IID * PIID3,
           class INTRFC4, const IID * PIID4,
-          class SERVICES = cDefaultComServices>
-class cComObject4 : public INTRFC1, public INTRFC2, public INTRFC3, public INTRFC4, public SERVICES
+          class UNKNOWN = cNonDelegatingUnknown>
+class cComObject4 : public INTRFC1, public INTRFC2, public INTRFC3, public INTRFC4, public UNKNOWN
 {
 public:
    virtual ~cComObject4() {}
-   virtual ulong STDMETHODCALLTYPE AddRef() { return DoAddRef(); }
-   virtual ulong STDMETHODCALLTYPE Release() { return DoRelease(); }
+   virtual ulong STDMETHODCALLTYPE AddRef() { return UNKNOWN::DoAddRef(); }
+   virtual ulong STDMETHODCALLTYPE Release() { return UNKNOWN::DoRelease(); }
    virtual tResult STDMETHODCALLTYPE QueryInterface(REFGUID iid,
                                                     void * * ppvObject)
    {
@@ -261,9 +299,69 @@ public:
          { static_cast<INTRFC3 *>(this), PIID3 },
          { static_cast<INTRFC4 *>(this), PIID4 },
       };
-      return DoQueryInterface(pairs, _countof(pairs), iid, ppvObject);
+      return UNKNOWN::DoQueryInterface(pairs, _countof(pairs), iid, ppvObject);
    }
 };
+
+template <class INTRFC, const IID * PIID, 
+          class UNKNOWN = cDelegatingUnknown>
+class cComAggregableObject : public INTRFC, public UNKNOWN
+{
+public:
+   cComAggregableObject(IUnknown * pUnkOuter);
+   virtual ~cComAggregableObject();
+   virtual ulong STDMETHODCALLTYPE AddRef() { return UNKNOWN::DoAddRef(); }
+   virtual ulong STDMETHODCALLTYPE Release() { return UNKNOWN::DoRelease(); }
+   virtual tResult STDMETHODCALLTYPE QueryInterface(REFGUID iid,
+                                                    void * * ppvObject)
+   {
+      return UNKNOWN::DoQueryInterface(iid, ppvObject);
+   }
+protected:
+   IUnknown * AccessInnerUnknown() { return &m_innerUnknown; }
+private:
+   class cInnerUnknown : public cComObject<IMPLEMENTS(IUnknown), cNonDelegatingUnknown>
+   {
+   public:
+      cInnerUnknown(cComAggregableObject<INTRFC, PIID, UNKNOWN> * pOuter) : m_pOuter(pOuter) {}
+      ~cInnerUnknown() {}
+      virtual tResult STDMETHODCALLTYPE QueryInterface(REFGUID iid, void * * ppvObject)
+      {
+         const struct sQIPair pairs[] =
+         {
+            { static_cast<IUnknown *>(this), &IID_IUnknown },
+            { static_cast<INTRFC *>(m_pOuter), PIID },
+         };
+         return cNonDelegatingUnknown::DoQueryInterface(pairs, _countof(pairs), iid, ppvObject);
+      }
+      virtual void DeleteThis() { delete m_pOuter; }
+   private:
+      cComAggregableObject<INTRFC, PIID, UNKNOWN> * m_pOuter;
+   };
+   friend class cInnerUnknown;
+   cInnerUnknown m_innerUnknown;
+};
+
+////////////////////////////////////////
+
+#pragma warning(push)
+#pragma warning(disable:4355) // 'this' : used in base member initializer list
+
+template <class INTRFC, const IID * PIID, class UNKNOWN>
+cComAggregableObject<INTRFC, PIID, UNKNOWN>::cComAggregableObject(IUnknown * pUnkOuter)
+ : UNKNOWN((pUnkOuter != NULL) ? pUnkOuter : &m_innerUnknown)
+ , m_innerUnknown(this)
+{
+}
+
+#pragma warning(pop)
+
+////////////////////////////////////////
+
+template <class INTRFC, const IID * PIID, class UNKNOWN>
+cComAggregableObject<INTRFC, PIID, UNKNOWN>::~cComAggregableObject()
+{
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
