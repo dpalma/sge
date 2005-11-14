@@ -19,8 +19,13 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+inline bool IsNumber(const tScriptVar & scriptVar)
+{
+   return scriptVar.IsNumber();
+}
+
 #define ScriptArgIsString(iArg) (argv[iArg].IsString())
-#define ScriptArgIsNumber(iArg) (argv[iArg].IsNumber())
+#define ScriptArgIsNumber(iArg) (IsNumber(argv[iArg]))
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -108,8 +113,8 @@ long Name2Key(const char * pszKeyName)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int BindKey(int argc, const cScriptVar * argv, 
-            int nMaxResults, cScriptVar * pResults)
+int BindKey(int argc, const tScriptVar * argv, 
+            int nMaxResults, tScriptVar * pResults)
 {
    const char * pszKeyName = NULL;
    const char * pszDownCmd = NULL;
@@ -156,8 +161,8 @@ int BindKey(int argc, const cScriptVar * argv,
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int UnbindKey(int argc, const cScriptVar * argv, 
-              int nMaxResults, cScriptVar * pResults)
+int UnbindKey(int argc, const tScriptVar * argv, 
+              int nMaxResults, tScriptVar * pResults)
 {
    if (argc == 1 && ScriptArgIsString(0))
    {
@@ -173,8 +178,8 @@ int UnbindKey(int argc, const cScriptVar * argv,
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int Quit(int argc, const cScriptVar * argv, 
-         int nMaxResults, cScriptVar * pResults)
+int Quit(int argc, const tScriptVar * argv, 
+         int nMaxResults, tScriptVar * pResults)
 {
    SysQuit();
    return 0;
@@ -182,8 +187,8 @@ int Quit(int argc, const cScriptVar * argv,
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int LogEnableChannel(int argc, const cScriptVar * argv, 
-                     int nMaxResults, cScriptVar * pResults)
+int LogEnableChannel(int argc, const tScriptVar * argv, 
+                     int nMaxResults, tScriptVar * pResults)
 {
    if (argc == 1 && ScriptArgIsString(0))
    {
@@ -198,8 +203,8 @@ int LogEnableChannel(int argc, const cScriptVar * argv,
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int EntitySpawnTest(int argc, const cScriptVar * argv, 
-                    int nMaxResults, cScriptVar * pResults)
+int EntitySpawnTest(int argc, const tScriptVar * argv, 
+                    int nMaxResults, tScriptVar * pResults)
 {
    if (argc == 3
       && ScriptArgIsString(0)
@@ -225,8 +230,8 @@ int EntitySpawnTest(int argc, const cScriptVar * argv,
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int ListResources(int argc, const cScriptVar * argv, 
-                  int nMaxResults, cScriptVar * pResults)
+int ListResources(int argc, const tScriptVar * argv, 
+                  int nMaxResults, tScriptVar * pResults)
 {
    if (argc < 1 || !argv[0].IsString())
    {
@@ -235,7 +240,7 @@ int ListResources(int argc, const cScriptVar * argv,
    }
 
    bool bDontLoad = false;
-   if (argc > 1 && argv[1].IsNumber())
+   if (argc > 1 && ScriptArgIsNumber(1))
    {
       bDontLoad = (argv[1].ToInt() != 0);
    }

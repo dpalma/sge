@@ -51,7 +51,7 @@ static const int kMaxResults = 8;
 
 static const int kLuaNoError = 0;
 
-static int LuaPushResults(lua_State * L, int nResults, cScriptVar * results);
+static int LuaPushResults(lua_State * L, int nResults, tScriptVar * results);
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -87,7 +87,7 @@ static int LuaGarbageCollectInterface(lua_State * L)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static void LuaGetArg(lua_State * L, int index, cScriptVar * pArg)
+static void LuaGetArg(lua_State * L, int index, tScriptVar * pArg)
 {
 #ifndef NDEBUG
    const char * pszTypeName = lua_typename(L, lua_type(L, index));
@@ -151,15 +151,14 @@ static void LuaGetArg(lua_State * L, int index, cScriptVar * pArg)
             // if failed to create dictionary object, indicate that
             // the script function should have received an interface
             // pointer
-            pArg->type = kInterface;
-            pArg->pUnk = NULL;
+            *pArg = tScriptVar(static_cast<IUnknown*>(NULL));
          }
          break;
       }
 
       default:
       {
-         pArg->type = kEmpty;
+         *pArg = tScriptVar();
          break;
       }
    }
@@ -200,12 +199,12 @@ static int LuaThunkInvoke(lua_State * L)
 
    int nArgs = Min(kMaxArgs, nArgsOnStack);
 
-   cScriptVar results[kMaxResults];
+   tScriptVar results[kMaxResults];
    int result = -1;
 
    if (nArgs > 0)
    {
-      cScriptVar args[kMaxArgs];
+      tScriptVar args[kMaxArgs];
 
       for (int i = 0; i < nArgs; i++)
       {
@@ -289,7 +288,7 @@ static int LuaConstructObject(lua_State * L)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static int LuaPushResults(lua_State * L, int nResults, cScriptVar * results)
+static int LuaPushResults(lua_State * L, int nResults, tScriptVar * results)
 {
    int nResultsPushed = 0;
 
@@ -359,7 +358,7 @@ static int LuaPushResults(lua_State * L, int nResults, cScriptVar * results)
             break;
          }
 
-         case kNil:
+         case kEmpty:
          {
             lua_pushnil(L);
             nResultsPushed++;
@@ -433,12 +432,12 @@ static int LuaThunkFunction(lua_State * L)
    int nArgsOnStack = lua_gettop(L);
    int nArgs = Min(kMaxArgs, nArgsOnStack);
 
-   cScriptVar results[kMaxResults];
+   tScriptVar results[kMaxResults];
    int result = -1;
 
    if (nArgs > 0)
    {
-      cScriptVar args[kMaxArgs];
+      tScriptVar args[kMaxArgs];
 
       for (int i = 0; i < nArgs; i++)
       {
@@ -882,7 +881,7 @@ tResult cLuaInterpreter::RemoveNamedItem(const char * pszName)
 
 ///////////////////////////////////////
 
-tResult cLuaInterpreter::GetNamedItem(const char * pszName, cScriptVar * pValue) const
+tResult cLuaInterpreter::GetNamedItem(const char * pszName, tScriptVar * pValue) const
 {
    if (pszName == NULL || pValue == NULL)
    {
@@ -896,8 +895,7 @@ tResult cLuaInterpreter::GetNamedItem(const char * pszName, cScriptVar * pValue)
       {
          case LUA_TNUMBER:
          {
-            pValue->type = kNumber;
-            pValue->d = lua_tonumber(m_L, -1);
+            pValue->Assign(lua_tonumber(m_L, -1));
             bFound = true;
             break;
          }
@@ -1002,8 +1000,8 @@ class cFooScriptable : public cComObject<IMPLEMENTS(IScriptable)>
 {
 public:
    virtual tResult Invoke(const char * pszMethodName,
-                          int nArgs, const cScriptVar * pArgs,
-                          int nMaxResults, cScriptVar * pResults)
+                          int nArgs, const tScriptVar * pArgs,
+                          int nMaxResults, tScriptVar * pResults)
    {
       if (strcmp(pszMethodName, "SetFoo") == 0
          && nArgs == 1
@@ -1040,25 +1038,25 @@ public:
    static const char LuaClassName[];
 
    virtual tResult Invoke(const char * pszMethodName,
-                          int nArgs, const cScriptVar * pArgs,
-                          int nMaxResults, cScriptVar * pResults);
+                          int nArgs, const tScriptVar * pArgs,
+                          int nMaxResults, tScriptVar * pResults);
 
 private:
-   uint m_a;
-   static const uint gm_b;
+   int m_a;
+   static const int gm_b;
 };
 
 ///////////////////////////////////////
 
 const char cRNG::LuaClassName[] = "RNG";
 
-const uint cRNG::gm_b = 523786821;
+const int cRNG::gm_b = 523786821;
 
 ///////////////////////////////////////
 
 tResult cRNG::Invoke(const char * pszMethodName,
-                     int nArgs, const cScriptVar * pArgs,
-                     int nMaxResults, cScriptVar * pResults)
+                     int nArgs, const tScriptVar * pArgs,
+                     int nMaxResults, tScriptVar * pResults)
 {
    if (strcmp(pszMethodName, "Seed") == 0
       && nArgs == 1)
@@ -1115,8 +1113,8 @@ class cLuaInterpreterTests : public CppUnit::TestCase
 
    static bool gm_bCalled;
 
-   static int CallThisFunction(int argc, const cScriptVar * argv, int, cScriptVar *);
-   static int RemoveThisFunction(int, const cScriptVar *, int, cScriptVar *);
+   static int CallThisFunction(int argc, const tScriptVar * argv, int, tScriptVar *);
+   static int RemoveThisFunction(int, const tScriptVar *, int, tScriptVar *);
 
    void TestCallFunction();
    void TestRemoveFunction();
@@ -1143,7 +1141,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(cLuaInterpreterTests);
 
 ////////////////////////////////////////
 
-int cLuaInterpreterTests::CallThisFunction(int argc, const cScriptVar * argv, int, cScriptVar *)
+int cLuaInterpreterTests::CallThisFunction(int argc, const tScriptVar * argv, int, tScriptVar *)
 {
    gm_bCalled = true;
    return 0;
@@ -1151,7 +1149,7 @@ int cLuaInterpreterTests::CallThisFunction(int argc, const cScriptVar * argv, in
 
 ////////////////////////////////////////
 
-int cLuaInterpreterTests::RemoveThisFunction(int, const cScriptVar *, int, cScriptVar *)
+int cLuaInterpreterTests::RemoveThisFunction(int, const tScriptVar *, int, tScriptVar *)
 {
    // does nothing
    return 0;

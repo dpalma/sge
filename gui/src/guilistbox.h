@@ -53,8 +53,8 @@ public:
 
    // IScriptable methods
    virtual tResult Invoke(const char * pszMethodName,
-                          int argc, const cScriptVar * argv,
-                          int nMaxResults, cScriptVar * pResults);
+                          int argc, const tScriptVar * argv,
+                          int nMaxResults, tScriptVar * pResults);
 
 private:
    bool IsMultiSelect() const { return false; }

@@ -47,7 +47,7 @@ public:
    virtual tResult AddNamedItem(const char * pszName, tScriptFn pfn);
    virtual tResult AddNamedItem(const char * pszName, IScriptable * pObject);
    virtual tResult RemoveNamedItem(const char * pszName);
-   virtual tResult GetNamedItem(const char * pszName, cScriptVar * pValue) const;
+   virtual tResult GetNamedItem(const char * pszName, tScriptVar * pValue) const;
    virtual tResult GetNamedItem(const char * pszName, double * pValue) const;
    virtual tResult GetNamedItem(const char * pszName, char * pValue, int cbMaxValue) const;
 

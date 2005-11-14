@@ -46,21 +46,21 @@ public:
 
    // IScriptable methods
    virtual tResult Invoke(const char * pszMethodName,
-                          int argc, const cScriptVar * argv,
-                          int nMaxResults, cScriptVar * pResults);
+                          int argc, const tScriptVar * argv,
+                          int nMaxResults, tScriptVar * pResults);
 
-   tResult InvokeShowModalDialog(int argc, const cScriptVar * argv,
-                                 int nMaxResults, cScriptVar * pResults);
-   tResult InvokeClear(int argc, const cScriptVar * argv,
-                       int nMaxResults, cScriptVar * pResults);
-   tResult InvokePushPage(int argc, const cScriptVar * argv,
-                          int nMaxResults, cScriptVar * pResults);
-   tResult InvokePopPage(int argc, const cScriptVar * argv,
-                         int nMaxResults, cScriptVar * pResults);
-   tResult InvokeToggleDebugInfo(int argc, const cScriptVar * argv,
-                                 int nMaxResults, cScriptVar * pResults);
-   tResult InvokeGetElement(int argc, const cScriptVar * argv,
-                            int nMaxResults, cScriptVar * pResults);
+   tResult InvokeShowModalDialog(int argc, const tScriptVar * argv,
+                                 int nMaxResults, tScriptVar * pResults);
+   tResult InvokeClear(int argc, const tScriptVar * argv,
+                       int nMaxResults, tScriptVar * pResults);
+   tResult InvokePushPage(int argc, const tScriptVar * argv,
+                          int nMaxResults, tScriptVar * pResults);
+   tResult InvokePopPage(int argc, const tScriptVar * argv,
+                         int nMaxResults, tScriptVar * pResults);
+   tResult InvokeToggleDebugInfo(int argc, const tScriptVar * argv,
+                                 int nMaxResults, tScriptVar * pResults);
+   tResult InvokeGetElement(int argc, const tScriptVar * argv,
+                            int nMaxResults, tScriptVar * pResults);
 
    // IGUIContext methods
    virtual tResult ShowModalDialog(const tChar * pszDialog);

@@ -15,6 +15,7 @@
 #endif
 
 class cScriptVar;
+typedef cScriptVar tScriptVar;
 
 F_DECLARE_INTERFACE(IScriptable);
 F_DECLARE_INTERFACE(IScriptableFactory);
@@ -24,7 +25,7 @@ F_DECLARE_INTERFACE(IScriptInterpreter);
 /// @typedef tScriptFn
 /// @brief Function signature for functions to be exposed to script code
 
-typedef int (* tScriptFn)(int, const cScriptVar *, int, cScriptVar *);
+typedef int (* tScriptFn)(int, const tScriptVar *, int, tScriptVar *);
 
 ///////////////////////////////////////////////////////////////////////////////
 /// @struct tScriptFn
@@ -63,8 +64,8 @@ interface IScriptableFactory : IUnknown
 interface IScriptable : IUnknown
 {
    virtual tResult Invoke(const char * pszMethodName,
-                          int nArgs, const cScriptVar * pArgs,
-                          int nMaxResults, cScriptVar * pResults) = 0;
+                          int nArgs, const tScriptVar * pArgs,
+                          int nMaxResults, tScriptVar * pResults) = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -108,7 +109,7 @@ interface IScriptInterpreter : IUnknown
    /// @param pszName is the name of the item to be removed
    virtual tResult RemoveNamedItem(const char * pszName) = 0;
 
-   virtual tResult GetNamedItem(const char * pszName, cScriptVar * pValue) const = 0;
+   virtual tResult GetNamedItem(const char * pszName, tScriptVar * pValue) const = 0;
    virtual tResult GetNamedItem(const char * pszName, double * pValue) const = 0;
    virtual tResult GetNamedItem(const char * pszName, char * pValue, int cbMaxValue) const = 0;
 };
@@ -139,7 +140,7 @@ public:
 };
 
 #define PROTOTYPE_SCRIPTFUNCTION(fnName) \
-   extern int (fnName)(int, const cScriptVar *, int, cScriptVar *);
+   extern int (fnName)(int, const tScriptVar *, int, tScriptVar *);
 
 #define AUTOADD_SCRIPTFUNCTION(name, pfn) \
    PROTOTYPE_SCRIPTFUNCTION(pfn) \

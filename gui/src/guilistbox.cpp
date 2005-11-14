@@ -483,8 +483,8 @@ tResult cGUIListBoxElement::SetItemHeight(uint itemHeight)
 ////////////////////////////////////////
 
 tResult cGUIListBoxElement::Invoke(const char * pszMethodName,
-                                   int argc, const cScriptVar * argv,
-                                   int nMaxResults, cScriptVar * pResults)
+                                   int argc, const tScriptVar * argv,
+                                   int nMaxResults, tScriptVar * pResults)
 {
    if (pszMethodName == NULL)
    {

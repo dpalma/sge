@@ -20,8 +20,8 @@ static char THIS_FILE[] = __FILE__;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int SetDefaultTileSet(int argc, const cScriptVar * argv, 
-                                int nMaxResults, cScriptVar * pResults)
+int SetDefaultTileSet(int argc, const tScriptVar * argv, 
+                      int nMaxResults, tScriptVar * pResults)
 {
    if (argc == 1 && argv[0].type == kString)
    {
@@ -35,8 +35,8 @@ int SetDefaultTileSet(int argc, const cScriptVar * argv,
 
 #ifdef _DEBUG
 // Used for testing the log window
-int EmitDebugMessages(int argc, const cScriptVar * argv, 
-                      int nMaxResults, cScriptVar * pResults)
+int EmitDebugMessages(int argc, const tScriptVar * argv, 
+                      int nMaxResults, tScriptVar * pResults)
 {
    static ulong base = 0;
    if (argc > 0 && argv[0].type == kNumber)

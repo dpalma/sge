@@ -224,16 +224,16 @@ tResult cGUIContext::Term()
 ///////////////////////////////////////
 
 tResult cGUIContext::Invoke(const char * pszMethodName,
-                            int argc, const cScriptVar * argv,
-                            int nMaxResults, cScriptVar * pResults)
+                            int argc, const tScriptVar * argv,
+                            int nMaxResults, tScriptVar * pResults)
 {
    if (pszMethodName == NULL)
    {
       return E_POINTER;
    }
 
-   typedef tResult (cGUIContext::*tInvokeMethod)(int argc, const cScriptVar * argv,
-                                                 int nMaxResults, cScriptVar * pResults);
+   typedef tResult (cGUIContext::*tInvokeMethod)(int argc, const tScriptVar * argv,
+                                                 int nMaxResults, tScriptVar * pResults);
 
    static const struct
    {
@@ -262,8 +262,8 @@ tResult cGUIContext::Invoke(const char * pszMethodName,
 
 ///////////////////////////////////////
 
-tResult cGUIContext::InvokeShowModalDialog(int argc, const cScriptVar * argv,
-                                           int nMaxResults, cScriptVar * pResults)
+tResult cGUIContext::InvokeShowModalDialog(int argc, const tScriptVar * argv,
+                                           int nMaxResults, tScriptVar * pResults)
 {
    Assert(nMaxResults >= 1);
 
@@ -275,12 +275,12 @@ tResult cGUIContext::InvokeShowModalDialog(int argc, const cScriptVar * argv,
    tResult result = ShowModalDialog(argv[0]);
    if (result == S_OK)
    {
-      *pResults = cScriptVar(true);
+      *pResults = tScriptVar(true);
       result = 1; // # of return values
    }
    else if (result == S_FALSE)
    {
-      *pResults = cScriptVar::Nil;
+      *pResults = tScriptVar();
       result = 1; // # of return values
    }
    return result;
@@ -288,8 +288,8 @@ tResult cGUIContext::InvokeShowModalDialog(int argc, const cScriptVar * argv,
 
 ///////////////////////////////////////
 
-tResult cGUIContext::InvokePushPage(int argc, const cScriptVar * argv,
-                                    int nMaxResults, cScriptVar * pResults)
+tResult cGUIContext::InvokePushPage(int argc, const tScriptVar * argv,
+                                    int nMaxResults, tScriptVar * pResults)
 {
    if (argc == 1 && argv[0].IsString())
    {
@@ -309,8 +309,8 @@ tResult cGUIContext::InvokePushPage(int argc, const cScriptVar * argv,
 
 ///////////////////////////////////////
 
-tResult cGUIContext::InvokePopPage(int argc, const cScriptVar * argv,
-                                   int nMaxResults, cScriptVar * pResults)
+tResult cGUIContext::InvokePopPage(int argc, const tScriptVar * argv,
+                                   int nMaxResults, tScriptVar * pResults)
 {
    if (argc != 0)
    {
@@ -327,8 +327,8 @@ tResult cGUIContext::InvokePopPage(int argc, const cScriptVar * argv,
 
 ///////////////////////////////////////
 
-tResult cGUIContext::InvokeToggleDebugInfo(int argc, const cScriptVar * argv,
-                                           int nMaxResults, cScriptVar * pResults)
+tResult cGUIContext::InvokeToggleDebugInfo(int argc, const tScriptVar * argv,
+                                           int nMaxResults, tScriptVar * pResults)
 {
    tGUIPoint placement(0,0);
    cAutoIPtr<IGUIStyle> pStyle;
@@ -365,8 +365,8 @@ tResult cGUIContext::InvokeToggleDebugInfo(int argc, const cScriptVar * argv,
 
 ///////////////////////////////////////
 
-tResult cGUIContext::InvokeGetElement(int argc, const cScriptVar * argv,
-                                      int nMaxResults, cScriptVar * pResults)
+tResult cGUIContext::InvokeGetElement(int argc, const tScriptVar * argv,
+                                      int nMaxResults, tScriptVar * pResults)
 {
    if (argc != 1 || !argv[0].IsString())
    {
