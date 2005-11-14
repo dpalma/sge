@@ -19,6 +19,7 @@ sources = Split("""
    src/hash.cpp
    src/image.cpp
    src/matrix4.cpp
+   src/multivar.cpp
    src/quat.cpp
    src/readwritefile.cpp
    src/readwritemem.cpp

@@ -344,6 +344,9 @@
 					RelativePath="..\..\tech\src\matrix4.cpp">
 				</File>
 				<File
+					RelativePath="..\..\tech\src\multivar.cpp">
+				</File>
+				<File
 					RelativePath="..\..\tech\src\quat.cpp">
 				</File>
 				<File
@@ -513,6 +516,9 @@
 			</File>
 			<File
 				RelativePath="..\..\tech\include\matrix4.h">
+			</File>
+			<File
+				RelativePath="..\..\tech\include\multivar.h">
 			</File>
 			<File
 				RelativePath="..\..\tech\include\quat.h">

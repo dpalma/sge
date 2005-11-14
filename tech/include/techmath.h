@@ -55,27 +55,30 @@ inline bool IsPowerOfTwo(long n)
     return (n & -n) == n;
 }
 
-inline int Round(float floatval)
+template <typename T>
+inline int Round(T real)
 {
-   int intval;
 #if defined(_MSC_VER)
+   int i;
    __asm
    {
-      fld   floatval
-      fistp intval
+      fld   real
+      fistp i
    }
+   return i;
 #elif defined(__GNUC__)
+   int i;
    asm
    (
       "flds    %1\n"
       "fistpl  %0\n"
-      :"=m"(intval)
-      :"m"(floatval)
+      :"=m"(i)
+      :"m"(real)
    );
+   return i;
 #else
 #error ("Need floating point to integer conversion for platform")
 #endif
-   return intval;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
