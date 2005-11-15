@@ -19,8 +19,7 @@
 // CLASS: cGUIBeveledRenderer
 //
 
-static const int g_bevel = 2;
-
+static const int kDefaultBevel = 2;
 static const uint kDefaultEditSize = 20;
 static const uint kVertInset = 2; // TODO make this part of the style
 static const uint kHorzInset = 2; // TODO make this part of the style
@@ -48,11 +47,40 @@ tResult cGUIBeveledRenderer::Render(IGUIElement * pElement, IGUIRenderDevice * p
       return E_POINTER;
    }
 
+   static const tChar *colorAttribNames[kBC_NumColors] =
+   {
+      _T("beveled-shadow"),   // kBC_Shadow,
+      _T("beveled-light"),    // kBC_Light,
+      _T("beveled-face"),     // kBC_Face,
+      _T("beveled-text"),     // kBC_Text,
+   };
+
+   tGUIColor colors[kBC_NumColors] =
+   {
+      tGUIColor::DarkGray,
+      tGUIColor::LightGray,
+      tGUIColor::Gray,
+      tGUIColor::Black,
+   };
+
+   int bevel = kDefaultBevel;
+
+   cAutoIPtr<IGUIStyle> pStyle;
+   if (pElement->GetStyle(&pStyle) == S_OK)
+   {
+      for (int i = 0; i < kBC_NumColors; i++)
+      {
+         pStyle->GetAttribute(colorAttribNames[i], &colors[i]);
+      }
+
+      pStyle->GetAttribute(_T("beveled-bevel"), &bevel);
+   }
+
    {
       cAutoIPtr<IGUIButtonElement> pButtonElement;
       if (pElement->QueryInterface(IID_IGUIButtonElement, (void**)&pButtonElement) == S_OK)
       {
-         return Render(pButtonElement, pRenderDevice);
+         return Render(pButtonElement, bevel, colors, pRenderDevice);
       }
    }
 
@@ -60,7 +88,7 @@ tResult cGUIBeveledRenderer::Render(IGUIElement * pElement, IGUIRenderDevice * p
       cAutoIPtr<IGUIDialogElement> pDialogElement;
       if (pElement->QueryInterface(IID_IGUIDialogElement, (void**)&pDialogElement) == S_OK)
       {
-         return Render(pDialogElement, pRenderDevice);
+         return Render(pDialogElement, bevel, colors, pRenderDevice);
       }
    }
 
@@ -68,7 +96,7 @@ tResult cGUIBeveledRenderer::Render(IGUIElement * pElement, IGUIRenderDevice * p
       cAutoIPtr<IGUILabelElement> pLabelElement;
       if (pElement->QueryInterface(IID_IGUILabelElement, (void**)&pLabelElement) == S_OK)
       {
-         return Render(pLabelElement, pRenderDevice);
+         return Render(pLabelElement, bevel, colors, pRenderDevice);
       }
    }
 
@@ -76,7 +104,7 @@ tResult cGUIBeveledRenderer::Render(IGUIElement * pElement, IGUIRenderDevice * p
       cAutoIPtr<IGUIPanelElement> pPanelElement;
       if (pElement->QueryInterface(IID_IGUIPanelElement, (void**)&pPanelElement) == S_OK)
       {
-         return Render(pPanelElement, pRenderDevice);
+         return Render(pPanelElement, bevel, colors, pRenderDevice);
       }
    }
 
@@ -84,7 +112,7 @@ tResult cGUIBeveledRenderer::Render(IGUIElement * pElement, IGUIRenderDevice * p
       cAutoIPtr<IGUITextEditElement> pTextEditElement;
       if (pElement->QueryInterface(IID_IGUITextEditElement, (void**)&pTextEditElement) == S_OK)
       {
-         return Render(pTextEditElement, pRenderDevice);
+         return Render(pTextEditElement, bevel, colors, pRenderDevice);
       }
    }
 
@@ -92,7 +120,7 @@ tResult cGUIBeveledRenderer::Render(IGUIElement * pElement, IGUIRenderDevice * p
       cAutoIPtr<IGUIScrollBarElement> pScrollBarElement;
       if (pElement->QueryInterface(IID_IGUIScrollBarElement, (void**)&pScrollBarElement) == S_OK)
       {
-         return Render(pScrollBarElement, pRenderDevice);
+         return Render(pScrollBarElement, bevel, colors, pRenderDevice);
       }
    }
 
@@ -100,7 +128,7 @@ tResult cGUIBeveledRenderer::Render(IGUIElement * pElement, IGUIRenderDevice * p
       cAutoIPtr<IGUIListBoxElement> pListBoxElement;
       if (pElement->QueryInterface(IID_IGUIListBoxElement, (void**)&pListBoxElement) == S_OK)
       {
-         return Render(pListBoxElement, pRenderDevice);
+         return Render(pListBoxElement, bevel, colors, pRenderDevice);
       }
    }
 
@@ -195,8 +223,15 @@ tResult cGUIBeveledRenderer::ComputeClientArea(IGUIElement * pElement, tGUIRect 
       return E_POINTER;
    }
 
+   int bevel = kDefaultBevel;
+   cAutoIPtr<IGUIStyle> pStyle;
+   if (pElement->GetStyle(&pStyle) == S_OK)
+   {
+      pStyle->GetAttribute(_T("beveled-bevel"), &bevel);
+   }
+
    tGUISize size = pElement->GetSize();
-   tGUIRect clientArea(g_bevel, g_bevel, Round(size.width - g_bevel), Round(size.height - g_bevel));
+   tGUIRect clientArea(bevel, bevel, Round(size.width - bevel), Round(size.height - bevel));
 
    {
       cAutoIPtr<IGUIDialogElement> pDialogElement;
@@ -256,7 +291,9 @@ tResult cGUIBeveledRenderer::GetFont(IGUIElement * pElement,
 
 ///////////////////////////////////////
 
-tResult cGUIBeveledRenderer::Render(IGUIButtonElement * pButtonElement, IGUIRenderDevice * pRenderDevice)
+tResult cGUIBeveledRenderer::Render(IGUIButtonElement * pButtonElement,
+                                    int bevel, const tGUIColor colors[kBC_NumColors],
+                                    IGUIRenderDevice * pRenderDevice)
 {
    tGUIPoint pos = GUIElementAbsolutePosition(pButtonElement);
    tGUISize size = pButtonElement->GetSize();
@@ -267,12 +304,12 @@ tResult cGUIBeveledRenderer::Render(IGUIButtonElement * pButtonElement, IGUIRend
 
    if (pButtonElement->IsArmed() && pButtonElement->IsMouseOver())
    {
-      pRenderDevice->RenderBeveledRect(rect, g_bevel, tGUIColor::DarkGray, tGUIColor::LightGray, tGUIColor::Gray);
+      pRenderDevice->RenderBeveledRect(rect, bevel, colors[kBC_Shadow], colors[kBC_Light], colors[kBC_Face]);
       bPressed = true;
    }
    else
    {
-      pRenderDevice->RenderBeveledRect(rect, g_bevel, tGUIColor::LightGray, tGUIColor::DarkGray, tGUIColor::Gray);
+      pRenderDevice->RenderBeveledRect(rect, bevel, colors[kBC_Light], colors[kBC_Shadow], colors[kBC_Face]);
    }
 
    tGUIString text;
@@ -295,12 +332,12 @@ tResult cGUIBeveledRenderer::Render(IGUIButtonElement * pButtonElement, IGUIRend
 
       if (bPressed)
       {
-         rect.left += g_bevel;
-         rect.top += g_bevel;
+         rect.left += bevel;
+         rect.top += bevel;
       }
 
       pFont->RenderText(text.c_str(), text.length(), &rect, renderTextFlags,
-         pButtonElement->IsEnabled() ? tGUIColor::White : tGUIColor::DarkGray);
+         pButtonElement->IsEnabled() ? tGUIColor::White : colors[kBC_Shadow]);
 
       return S_OK;
    }
@@ -310,27 +347,23 @@ tResult cGUIBeveledRenderer::Render(IGUIButtonElement * pButtonElement, IGUIRend
 
 ///////////////////////////////////////
 
-tResult cGUIBeveledRenderer::Render(IGUIDialogElement * pDialogElement, IGUIRenderDevice * pRenderDevice)
+tResult cGUIBeveledRenderer::Render(IGUIDialogElement * pDialogElement,
+                                    int bevel, const tGUIColor colors[kBC_NumColors],
+                                    IGUIRenderDevice * pRenderDevice)
 {
    tGUIPoint pos = GUIElementAbsolutePosition(pDialogElement);
    tGUISize size = pDialogElement->GetSize();
    tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
 
-   tGUIColor topLeft(tGUIColor::LightGray);
-   tGUIColor bottomRight(tGUIColor::DarkGray);
-   tGUIColor face(tGUIColor::Gray);
    tGUIColor caption(tGUIColor::Blue);
 
    cAutoIPtr<IGUIStyle> pStyle;
    if (pDialogElement->GetStyle(&pStyle) == S_OK)
    {
-      pStyle->GetAttribute("frame-top-left-color", &topLeft);
-      pStyle->GetAttribute("frame-bottom-right-color", &bottomRight);
-      pStyle->GetAttribute("frame-face-color", &face);
       pStyle->GetAttribute("caption-color", &caption);
    }
 
-   pRenderDevice->RenderBeveledRect(rect, g_bevel, topLeft, bottomRight, face);
+   pRenderDevice->RenderBeveledRect(rect, bevel, colors[kBC_Light], colors[kBC_Shadow], colors[kBC_Face]);
 
    uint captionHeight;
    if ((pDialogElement->GetCaptionHeight(&captionHeight) == S_OK)
@@ -338,9 +371,9 @@ tResult cGUIBeveledRenderer::Render(IGUIDialogElement * pDialogElement, IGUIRend
    {
       tGUIRect captionRect(rect);
 
-      captionRect.left += g_bevel;
-      captionRect.top += g_bevel;
-      captionRect.right -= g_bevel;
+      captionRect.left += bevel;
+      captionRect.top += bevel;
+      captionRect.right -= bevel;
       captionRect.bottom = captionRect.top + captionHeight;
 
       pRenderDevice->RenderSolidRect(captionRect, caption);
@@ -361,7 +394,9 @@ tResult cGUIBeveledRenderer::Render(IGUIDialogElement * pDialogElement, IGUIRend
 
 ///////////////////////////////////////
 
-tResult cGUIBeveledRenderer::Render(IGUILabelElement * pLabelElement, IGUIRenderDevice * pRenderDevice)
+tResult cGUIBeveledRenderer::Render(IGUILabelElement * pLabelElement,
+                                    int bevel, const tGUIColor colors[kBC_NumColors],
+                                    IGUIRenderDevice * pRenderDevice)
 {
    tGUIPoint pos = GUIElementAbsolutePosition(pLabelElement);
    tGUISize size = pLabelElement->GetSize();
@@ -395,30 +430,32 @@ tResult cGUIBeveledRenderer::Render(IGUILabelElement * pLabelElement, IGUIRender
 
 ///////////////////////////////////////
 
-tResult cGUIBeveledRenderer::Render(IGUIPanelElement * pPanelElement, IGUIRenderDevice * pRenderDevice)
+tResult cGUIBeveledRenderer::Render(IGUIPanelElement * pPanelElement,
+                                    int bevel, const tGUIColor colors[kBC_NumColors],
+                                    IGUIRenderDevice * pRenderDevice)
 {
    tGUIPoint pos = GUIElementAbsolutePosition(pPanelElement);
    tGUISize size = pPanelElement->GetSize();
    tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
-
-   pRenderDevice->RenderBeveledRect(rect, g_bevel, tGUIColor::LightGray, tGUIColor::DarkGray, tGUIColor::Gray);
-
+   pRenderDevice->RenderBeveledRect(rect, bevel, colors[kBC_Light], colors[kBC_Shadow], colors[kBC_Face]);
    return S_OK;
 }
 
 ///////////////////////////////////////
 
-tResult cGUIBeveledRenderer::Render(IGUITextEditElement * pTextEditElement, IGUIRenderDevice * pRenderDevice)
+tResult cGUIBeveledRenderer::Render(IGUITextEditElement * pTextEditElement,
+                                    int bevel, const tGUIColor colors[kBC_NumColors],
+                                    IGUIRenderDevice * pRenderDevice)
 {
    tGUIPoint pos = GUIElementAbsolutePosition(pTextEditElement);
    tGUISize size = pTextEditElement->GetSize();
    tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
 
-   pRenderDevice->RenderBeveledRect(rect, g_bevel, tGUIColor::DarkGray, tGUIColor::Gray, tGUIColor::White);
+   pRenderDevice->RenderBeveledRect(rect, bevel, colors[kBC_Shadow], colors[kBC_Face], tGUIColor::White);
 
-   rect.left += g_bevel + kHorzInset;
+   rect.left += bevel + kHorzInset;
    rect.top += kVertInset;
-   rect.right -= g_bevel + kHorzInset;
+   rect.right -= bevel + kHorzInset;
    rect.bottom -= kVertInset;
 
    pRenderDevice->PushScissorRect(rect);
@@ -478,6 +515,7 @@ tResult cGUIBeveledRenderer::Render(IGUITextEditElement * pTextEditElement, IGUI
 ///////////////////////////////////////
 
 tResult cGUIBeveledRenderer::Render(IGUIScrollBarElement * pScrollBarElement,
+                                    int bevel, const tGUIColor colors[kBC_NumColors],
                                     IGUIRenderDevice * pRenderDevice)
 {
    tGUIPoint pos = GUIElementAbsolutePosition(pScrollBarElement);
@@ -519,26 +557,26 @@ tResult cGUIBeveledRenderer::Render(IGUIScrollBarElement * pScrollBarElement,
       track2Rect = tGUIRect(thumbRect.right, btn2Rect.top, btn2Rect.left, btn2Rect.bottom);
    }
 
-   pRenderDevice->RenderSolidRect(track1Rect, tGUIColor::LightGray);
-   pRenderDevice->RenderSolidRect(track2Rect, tGUIColor::LightGray);
-   pRenderDevice->RenderBeveledRect(thumbRect, g_bevel, tGUIColor::LightGray, tGUIColor::DarkGray, tGUIColor::Gray);
+   pRenderDevice->RenderSolidRect(track1Rect, colors[kBC_Light]);
+   pRenderDevice->RenderSolidRect(track2Rect, colors[kBC_Light]);
+   pRenderDevice->RenderBeveledRect(thumbRect, bevel, colors[kBC_Light], tGUIColor::DarkGray, colors[kBC_Face]);
 
    if (armedPart == kGUIScrollBarPartButton1 && armedPart == mouseOverPart)
    {
-      pRenderDevice->RenderBeveledRect(btn1Rect, g_bevel, tGUIColor::DarkGray, tGUIColor::LightGray, tGUIColor::Gray);
+      pRenderDevice->RenderBeveledRect(btn1Rect, bevel, tGUIColor::DarkGray, colors[kBC_Light], colors[kBC_Face]);
    }
    else
    {
-      pRenderDevice->RenderBeveledRect(btn1Rect, g_bevel, tGUIColor::LightGray, tGUIColor::DarkGray, tGUIColor::Gray);
+      pRenderDevice->RenderBeveledRect(btn1Rect, bevel, colors[kBC_Light], tGUIColor::DarkGray, colors[kBC_Face]);
    }
 
    if (armedPart == kGUIScrollBarPartButton2 && armedPart == mouseOverPart)
    {
-      pRenderDevice->RenderBeveledRect(btn2Rect, g_bevel, tGUIColor::DarkGray, tGUIColor::LightGray, tGUIColor::Gray);
+      pRenderDevice->RenderBeveledRect(btn2Rect, bevel, colors[kBC_Shadow], colors[kBC_Light], colors[kBC_Face]);
    }
    else
    {
-      pRenderDevice->RenderBeveledRect(btn2Rect, g_bevel, tGUIColor::LightGray, tGUIColor::DarkGray, tGUIColor::Gray);
+      pRenderDevice->RenderBeveledRect(btn2Rect, bevel, colors[kBC_Light], colors[kBC_Shadow], colors[kBC_Face]);
    }
 
    return S_OK;
@@ -547,17 +585,18 @@ tResult cGUIBeveledRenderer::Render(IGUIScrollBarElement * pScrollBarElement,
 ///////////////////////////////////////
 
 tResult cGUIBeveledRenderer::Render(IGUIListBoxElement * pListBoxElement,
+                                    int bevel, const tGUIColor colors[kBC_NumColors],
                                     IGUIRenderDevice * pRenderDevice)
 {
    tGUIPoint pos = GUIElementAbsolutePosition(pListBoxElement);
    tGUISize size = pListBoxElement->GetSize();
    tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
 
-   pRenderDevice->RenderBeveledRect(rect, g_bevel, tGUIColor::DarkGray, tGUIColor::Gray, tGUIColor::White);
+   pRenderDevice->RenderBeveledRect(rect, bevel, tGUIColor::DarkGray, tGUIColor::Gray, tGUIColor::White);
 
-   rect.left += g_bevel + kHorzInset;
+   rect.left += bevel + kHorzInset;
    rect.top += kVertInset;
-   rect.right -= g_bevel + kHorzInset;
+   rect.right -= bevel + kHorzInset;
    rect.bottom -= kVertInset;
 
    pRenderDevice->PushScissorRect(rect);
