@@ -8,9 +8,8 @@
 #include "guielementtools.h"
 #include "guistrings.h"
 
-#include "scriptvar.h"
-
 #include "globalobj.h"
+#include "multivar.h"
 
 #include <algorithm>
 #include <list>
@@ -500,9 +499,9 @@ tResult cGUIListBoxElement::Invoke(const char * pszMethodName,
             return S_OK;
          }
       }
-      else if (argc == 2 && argv[0].IsString() && argv[1].IsNumber())
+      else if (argc == 2 && argv[0].IsString() && argv[1].IsInt())
       {
-         if (AddItem(argv[0], argv[1]) == S_OK)
+         if (AddItem(argv[0], argv[1].ToInt()) == S_OK)
          {
             return S_OK;
          }
@@ -528,7 +527,7 @@ tResult cGUIListBoxElement::Invoke(const char * pszMethodName,
          {
             for (uint i = 0; i < nSelected; i++)
             {
-               pResults[i] = pIndices[i];
+               pResults[i].Assign(static_cast<int>(pIndices[i]));
             }
             return nSelected;
          }
@@ -536,19 +535,19 @@ tResult cGUIListBoxElement::Invoke(const char * pszMethodName,
    }
    else if (strcmp(pszMethodName, "GetItem") == 0)
    {
-      if (argc != 1 || !argv[0].IsNumber())
+      if (argc != 1 || (!argv[0].IsInt() && !argv[0].IsFloat() && !argv[0].IsDouble()))
       {
          return E_INVALIDARG;
       }
 
       tGUIString itemText;
       uint_ptr itemData = 0;
-      if (GetItem(argv[0], &itemText, &itemData, NULL) == S_OK)
+      if (GetItem(argv[0].ToInt(), &itemText, &itemData, NULL) == S_OK)
       {
          if (nMaxResults >= 2)
          {
             pResults[0] = itemText.c_str();
-            pResults[1] = itemData;
+            pResults[1] = static_cast<double>(itemData);
             return 2;
          }
          else if (nMaxResults >= 1)

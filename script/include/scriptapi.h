@@ -14,8 +14,8 @@
 #pragma once
 #endif
 
-class cScriptVar;
-typedef cScriptVar tScriptVar;
+class cMultiVar;
+typedef cMultiVar tScriptVar;
 
 F_DECLARE_INTERFACE(IScriptable);
 F_DECLARE_INTERFACE(IScriptableFactory);

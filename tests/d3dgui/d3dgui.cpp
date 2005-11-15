@@ -8,7 +8,6 @@
 #include "inputapi.h"
 #include "engineapi.h"
 #include "scriptapi.h"
-#include "scriptvar.h"
 #include "sys.h"
 
 #include "resourceapi.h"

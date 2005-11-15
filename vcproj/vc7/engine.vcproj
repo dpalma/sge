@@ -350,9 +350,6 @@
 					RelativePath="..\..\engine\src\scenelayer.cpp">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\scriptvar.cpp">
-				</File>
-				<File
 					RelativePath="..\..\engine\src\sim.cpp">
 				</File>
 				<File
@@ -528,9 +525,6 @@
 			</File>
 			<File
 				RelativePath="..\..\engine\include\scriptapi.h">
-			</File>
-			<File
-				RelativePath="..\..\engine\include\scriptvar.h">
 			</File>
 			<File
 				RelativePath="..\..\engine\include\simapi.h">

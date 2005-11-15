@@ -6,12 +6,12 @@
 #include "entityapi.h"
 #include "inputapi.h"
 #include "scriptapi.h"
-#include "scriptvar.h"
 #include "sys.h"
 
 #include "dictionaryapi.h"
 #include "globalobj.h"
 #include "keys.h"
+#include "multivar.h"
 #include "resourceapi.h"
 #include "vec3.h"
 
@@ -21,7 +21,7 @@
 
 inline bool IsNumber(const tScriptVar & scriptVar)
 {
-   return scriptVar.IsNumber();
+   return scriptVar.IsInt() || scriptVar.IsFloat() || scriptVar.IsDouble();
 }
 
 #define ScriptArgIsString(iArg) (argv[iArg].IsString())

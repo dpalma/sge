@@ -4,9 +4,9 @@
 #include "stdhdr.h"
 
 #include "luainterp.h"
-#include "scriptvar.h"
 
 #include "dictionaryapi.h"
+#include "multivar.h"
 #include "techstring.h"
 
 extern "C"
@@ -294,26 +294,28 @@ static int LuaPushResults(lua_State * L, int nResults, tScriptVar * results)
 
    for (int i = 0; i < nResults; i++)
    {
-      switch (results[i].type)
+      switch (results[i].GetType())
       {
-         case kNumber:
+         case kMVT_Int:
+         case kMVT_Float:
+         case kMVT_Double:
          {
-            lua_pushnumber(L, results[i]);
+            lua_pushnumber(L, results[i].ToDouble());
             nResultsPushed++;
             break;
          }
 
-         case kString:
+         case kMVT_String:
          {
             lua_pushstring(L, results[i]);
             nResultsPushed++;
             break;
          }
 
-         case kInterface:
+         case kMVT_Interface:
          {
             cAutoIPtr<IDictionary> pDict;
-            if (results[i].pUnk->QueryInterface(IID_IDictionary, (void**)&pDict) == S_OK)
+            if (static_cast<IUnknown*>(results[i])->QueryInterface(IID_IDictionary, (void**)&pDict) == S_OK)
             {
                std::list<cStr> keys;
                if (pDict->GetKeys(&keys) == S_OK)
@@ -351,14 +353,14 @@ static int LuaPushResults(lua_State * L, int nResults, tScriptVar * results)
                }
             }
             cAutoIPtr<IScriptable> pScriptable;
-            if (results[i].pUnk->QueryInterface(IID_IScriptable, (void**)&pScriptable) == S_OK)
+            if (static_cast<IUnknown*>(results[i])->QueryInterface(IID_IScriptable, (void**)&pScriptable) == S_OK)
             {
                nResultsPushed += LuaPublishObject(L, pScriptable);
             }
             break;
          }
 
-         case kEmpty:
+         case kMVT_Empty:
          {
             lua_pushnil(L);
             nResultsPushed++;
@@ -902,15 +904,14 @@ tResult cLuaInterpreter::GetNamedItem(const char * pszName, tScriptVar * pValue)
 
          case LUA_TSTRING:
          {
-            pValue->type = kString;
-            pValue->psz = const_cast<char *>(lua_tostring(m_L, -1));
+            pValue->Assign(lua_tostring(m_L, -1));
             bFound = true;
             break;
          }
 
          default:
          {
-            pValue->type = kEmpty;
+            *pValue = tScriptVar();
             break;
          }
       }
@@ -1005,10 +1006,10 @@ public:
    {
       if (strcmp(pszMethodName, "SetFoo") == 0
          && nArgs == 1
-         && pArgs[0].type == kNumber
+         && (pArgs[0].IsInt() || pArgs[0].IsFloat() || pArgs[0].IsDouble())
          && nMaxResults > 0)
       {
-         g_foo = pArgs[0].d;
+         g_foo = pArgs[0].ToDouble();
          pResults[0] = g_foo;
          return 1;
       }

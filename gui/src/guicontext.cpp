@@ -10,11 +10,11 @@
 #include "guieventroutertem.h"
 #include "guipage.h"
 
-#include "scriptvar.h"
 #include "sys.h"
 #include "engineapi.h"
 
 #include "keys.h"
+#include "multivar.h"
 #include "resourceapi.h"
 #include "readwriteapi.h"
 #include "configapi.h"
@@ -42,6 +42,11 @@ LOG_DEFINE_CHANNEL(GUIContext);
 ///////////////////////////////////////////////////////////////////////////////
 
 extern tResult GUIGetElement(const tGUIElementList & elements, const tChar * pszId, IGUIElement * * ppElement);
+
+inline bool IsNumber(const tScriptVar & scriptVar)
+{
+   return scriptVar.IsInt() || scriptVar.IsFloat() || scriptVar.IsDouble();
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -295,7 +300,7 @@ tResult cGUIContext::InvokePushPage(int argc, const tScriptVar * argv,
    {
       if (PushPage(argv[0]) == S_OK)
       {
-         LocalMsg1("Loading GUI definitions from %s\n", argv[0].psz);
+         LocalMsg1("Loading GUI definitions from %s\n", argv[0].ToString());
          return S_OK;
       }
    }
@@ -334,14 +339,14 @@ tResult cGUIContext::InvokeToggleDebugInfo(int argc, const tScriptVar * argv,
    cAutoIPtr<IGUIStyle> pStyle;
 
    if (argc == 2 
-      && argv[0].IsNumber() 
-      && argv[1].IsNumber())
+      && IsNumber(argv[0]) 
+      && IsNumber(argv[1]))
    {
       placement = tGUIPoint(argv[0], argv[1]);
    }
    else if (argc == 3 
-      && argv[0].IsNumber() 
-      && argv[1].IsNumber()
+      && IsNumber(argv[0]) 
+      && IsNumber(argv[1])
       && argv[2].IsString())
    {
       placement = tGUIPoint(argv[0], argv[1]);

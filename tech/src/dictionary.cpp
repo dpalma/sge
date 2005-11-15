@@ -285,8 +285,25 @@ tResult cDictionary::Clone(IDictionary * * ppDictionary) const
       return E_OUTOFMEMORY;
    }
 
+#if _MSC_VER <= 1200
+   {
+      tMap::const_iterator iter = m_vars.begin();
+      for (; iter != m_vars.end(); iter++)
+      {
+         pDict->m_vars.insert(*iter);
+      }
+   }
+   {
+      tPersistenceMap::const_iterator iter = m_persistenceMap.begin();
+      for (; iter != m_persistenceMap.end(); iter++)
+      {
+         pDict->m_persistenceMap.insert(*iter);
+      }
+   }
+#else
    pDict->m_vars.insert(m_vars.begin(), m_vars.end());
    pDict->m_persistenceMap.insert(m_persistenceMap.begin(), m_persistenceMap.end());
+#endif
 
    *ppDictionary = static_cast<IDictionary*>(pDict);
    return S_OK;

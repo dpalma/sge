@@ -10,14 +10,12 @@
 #pragma once
 #endif
 
-class cScriptVar;
-
 ///////////////////////////////////////////////////////////////////////////////
 
 #define SCRIPT_FUNCTION_NAME(name) name
 
 #define SCRIPT_DEFINE_FUNCTION_NO_AUTOADD(name) \
-   int SCRIPT_FUNCTION_NAME(name)(int argc, const cScriptVar * argv, int nMaxResults, cScriptVar * pResults)
+   int SCRIPT_FUNCTION_NAME(name)(int argc, const tScriptVar * argv, int nMaxResults, tScriptVar * pResults)
 
 #define SCRIPT_DEFINE_FUNCTION(name) \
    SCRIPT_DEFINE_FUNCTION_NO_AUTOADD(name); \

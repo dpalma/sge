@@ -12,7 +12,6 @@
 #include "engineapi.h"
 #include "entityapi.h"
 #include "saveloadapi.h"
-#include "scriptvar.h"
 #include "simapi.h"
 #include "soundapi.h"
 #include "sys.h"
@@ -26,6 +25,7 @@
 #include "filepath.h"
 #include "techstring.h"
 #include "globalobj.h"
+#include "multivar.h"
 #include "threadcallapi.h"
 #include "imageapi.h"
 
@@ -82,9 +82,14 @@ IRenderDevice * AccessRenderDevice()
 
 ///////////////////////////////////////////////////////////////////////////////
 
+inline bool IsNumber(const tScriptVar & scriptVar)
+{
+   return scriptVar.IsInt() || scriptVar.IsFloat() || scriptVar.IsDouble();
+}
+
 SCRIPT_DEFINE_FUNCTION(ViewSetPos)
 {
-   if (argc == 2 && argv[0].IsNumber() && argv[1].IsNumber())
+   if (argc == 2 && IsNumber(argv[0]) && IsNumber(argv[1]))
    {
       float x = argv[0];
       float z = argv[1];
@@ -180,7 +185,7 @@ SCRIPT_DEFINE_FUNCTION(SetTerrain)
       }
       else if (argc >= 2 
          && argv[0].IsString()
-         && argv[1].IsNumber())
+         && IsNumber(argv[1]))
       {
          terrainSettings.SetHeightData(kTHD_HeightMap);
          terrainSettings.SetHeightMap(argv[0]);

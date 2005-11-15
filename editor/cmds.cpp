@@ -6,10 +6,10 @@
 #include "editorapi.h"
 
 #include "scriptapi.h"
-#include "scriptvar.h"
 
 #include "dictionaryapi.h"
 #include "globalobj.h"
+#include "multivar.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -23,7 +23,7 @@ static char THIS_FILE[] = __FILE__;
 int SetDefaultTileSet(int argc, const tScriptVar * argv, 
                       int nMaxResults, tScriptVar * pResults)
 {
-   if (argc == 1 && argv[0].type == kString)
+   if (argc == 1 && argv[0].IsString())
    {
       UseGlobal(EditorApp);
       pEditorApp->SetDefaultTileSet(argv[0]);
@@ -39,9 +39,9 @@ int EmitDebugMessages(int argc, const tScriptVar * argv,
                       int nMaxResults, tScriptVar * pResults)
 {
    static ulong base = 0;
-   if (argc > 0 && argv[0].type == kNumber)
+   if (argc > 0 && (argv[0].IsInt() || argv[0].IsFloat() || argv[0].IsDouble()))
    {
-      int n = (int)argv[0];
+      int n = argv[0].ToInt();
       for (int i = 0; i < n; i++)
       {
          DebugMsg1("Sample debug message %d\n", base + i);

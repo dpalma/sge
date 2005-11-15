@@ -43,13 +43,15 @@ bool GUIDToString(REFGUID guid, tChar * psz, int maxLen)
 
 class cComToolsTests : public CppUnit::TestCase
 {
-   void TestGuidToString();
-   void TestIsSameObject();
-   void TestAggregation();
-
+public:
    static const GUID IID_IFoo;
    static const GUID IID_IFooSideInterface;
    static const GUID IID_IBar;
+
+private:
+   void TestGuidToString();
+   void TestIsSameObject();
+   void TestAggregation();
 
    interface IFoo : IUnknown {};
    interface IFooSideInterface : IUnknown {};
@@ -69,6 +71,7 @@ class cComToolsTests : public CppUnit::TestCase
       cAutoIPtr<IUnknown> m_pUnkBar;
       cAutoIPtr<IBar> m_pBar;
    };
+   friend class cAggTest;
 
    class cAggTestInner : public cComAggregableObject<IMPLEMENTS(IBar)>
    {
