@@ -341,25 +341,17 @@ tResult GUIElementStandardAttributes(const TiXmlElement * pXmlElement,
       const char * pszStyleAttrib = pXmlElement->Attribute(kAttribStyle);
       if (pszStyleAttrib != NULL)
       {
-         GUIStyleParse(pszStyleAttrib, -1, &pInlineStyle);
+         GUIStyleParseInline(pszStyleAttrib, -1, pClassStyle, &pInlineStyle);
       }
    }
 
-   if (!!pClassStyle)
-   {
-      if (!pInlineStyle)
-      {
-         pGUIElement->SetStyle(pClassStyle);
-      }
-      else
-      {
-         // TODO: combine inline style
-         pGUIElement->SetStyle(pClassStyle);
-      }
-   }
-   else if (!!pInlineStyle)
+   if (!!pInlineStyle)
    {
       pGUIElement->SetStyle(pInlineStyle);
+   }
+   else
+   {
+      pGUIElement->SetStyle(pClassStyle);
    }
 
    if (pXmlElement->Attribute(kAttribRendererClass))

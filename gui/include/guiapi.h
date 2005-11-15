@@ -163,6 +163,7 @@ interface IGUIStyle : IUnknown
    virtual tResult GetAttribute(const tChar * pszAttribute, int * pValue) = 0;
    virtual tResult GetAttribute(const tChar * pszAttribute, tGUIColor * pValue) = 0;
    virtual tResult SetAttribute(const tChar * pszAttribute, const tChar * pszValue) = 0;
+   virtual tResult SetAttribute(const tChar * pszAttribute, int value) = 0;
 
    virtual tResult GetAlignment(uint * pAlignment) = 0;
    virtual tResult SetAlignment(uint alignment) = 0;
@@ -223,6 +224,8 @@ GUI_API tResult GUIParseColor(const tChar * pszColor, tGUIColor * pColor);
 /// Parse a CSS-like string to produce a GUI style object.
 
 GUI_API tResult GUIStyleParse(const tChar * pszStyle, long length, IGUIStyle * * ppStyle);
+
+GUI_API tResult GUIStyleParseInline(const tChar * pszStyle, long length, IGUIStyle * pClassStyle, IGUIStyle * * ppStyle);
 
 
 ///////////////////////////////////////////////////////////////////////////////

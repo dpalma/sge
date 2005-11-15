@@ -30,8 +30,9 @@ static const uint kInvalidUint = ~0u;
 
 ///////////////////////////////////////
 
-cGUIStyle::cGUIStyle(IDictionary * pDict)
- : m_pDict((pDict != NULL) ? CTAddRef(pDict) : DictionaryCreate(kTransitory))
+cGUIStyle::cGUIStyle(IGUIStyle * pClassStyle, IDictionary * pDict)
+ : m_pClassStyle(CTAddRef(pClassStyle))
+ , m_pDict((pDict != NULL) ? CTAddRef(pDict) : DictionaryCreate(kTransitory))
  , m_alignment(kGUIAlignLeft)
  , m_verticalAlignment(kGUIVertAlignTop)
  , m_pBackground(NULL)
@@ -54,7 +55,8 @@ cGUIStyle::cGUIStyle(IDictionary * pDict)
 ///////////////////////////////////////
 
 cGUIStyle::cGUIStyle(const cGUIStyle & other)
- : m_pDict(NULL)
+ : m_pClassStyle(other.m_pClassStyle)
+ , m_pDict(NULL)
  , m_alignment(other.m_alignment)
  , m_verticalAlignment(other.m_verticalAlignment)
  , m_pBackground(NULL)
@@ -93,14 +95,14 @@ cGUIStyle::~cGUIStyle()
 
 ///////////////////////////////////////
 
-tResult cGUIStyle::Create(IGUIStyle * * ppStyle)
+tResult cGUIStyle::Create(IGUIStyle * pClassStyle, IGUIStyle * * ppStyle)
 {
    if (ppStyle == NULL)
    {
       return E_POINTER;
    }
 
-   cGUIStyle * pStyle = new cGUIStyle;
+   cGUIStyle * pStyle = new cGUIStyle(pClassStyle);
    if (!pStyle || !pStyle->m_pDict)
    {
       return E_OUTOFMEMORY;
@@ -114,14 +116,22 @@ tResult cGUIStyle::Create(IGUIStyle * * ppStyle)
 
 tResult cGUIStyle::GetAttribute(const tChar * pszAttribute, tGUIString * pValue)
 {
-   return m_pDict->Get(pszAttribute, pValue);
+   if (m_pDict->Get(pszAttribute, pValue) == S_OK)
+   {
+      return S_OK;
+   }
+   return !!m_pClassStyle ? m_pClassStyle->GetAttribute(pszAttribute, pValue) : S_FALSE;
 }
 
 ///////////////////////////////////////
 
 tResult cGUIStyle::GetAttribute(const tChar * pszAttribute, int * pValue)
 {
-   return m_pDict->Get(pszAttribute, pValue);
+   if (m_pDict->Get(pszAttribute, pValue) == S_OK)
+   {
+      return S_OK;
+   }
+   return !!m_pClassStyle ? m_pClassStyle->GetAttribute(pszAttribute, pValue) : S_FALSE;
 }
 
 ///////////////////////////////////////
@@ -133,7 +143,7 @@ tResult cGUIStyle::GetAttribute(const tChar * pszAttribute, tGUIColor * pValue)
    {
       return GUIParseColor(value.c_str(), pValue);
    }
-   return E_FAIL;
+   return !!m_pClassStyle ? m_pClassStyle->GetAttribute(pszAttribute, pValue) : S_FALSE;
 }
 
 ///////////////////////////////////////
@@ -141,6 +151,13 @@ tResult cGUIStyle::GetAttribute(const tChar * pszAttribute, tGUIColor * pValue)
 tResult cGUIStyle::SetAttribute(const tChar * pszAttribute, const tChar * pszValue)
 {
    return m_pDict->Set(pszAttribute, pszValue);
+}
+
+///////////////////////////////////////
+
+tResult cGUIStyle::SetAttribute(const tChar * pszAttribute, int value)
+{
+   return m_pDict->Set(pszAttribute, value);
 }
 
 ///////////////////////////////////////
@@ -205,7 +222,7 @@ tResult cGUIStyle::GetBackgroundColor(tGUIColor * pBackground)
    }
    if (m_pBackground == NULL)
    {
-      return S_FALSE;
+      return !!m_pClassStyle ? m_pClassStyle->GetBackgroundColor(pBackground) : S_FALSE;
    }
    *pBackground = *m_pBackground;
    return S_OK;
@@ -239,7 +256,7 @@ tResult cGUIStyle::GetForegroundColor(tGUIColor * pForeground)
    }
    if (m_pForeground == NULL)
    {
-      return S_FALSE;
+      return !!m_pClassStyle ? m_pClassStyle->GetForegroundColor(pForeground) : S_FALSE;
    }
    *pForeground = *m_pForeground;
    return S_OK;
@@ -292,7 +309,9 @@ tResult cGUIStyle::SetTextAlignment(uint textAlignment)
 tResult cGUIStyle::GetTextVerticalAlignment(uint * pTextVertAlignment)
 {
    if (pTextVertAlignment == NULL)
+   {
       return E_POINTER;
+   }
    *pTextVertAlignment = m_textVerticalAlignment;
    return S_OK;
 }
@@ -319,9 +338,9 @@ tResult cGUIStyle::GetFontName(tGUIString * pFontName)
    {
       return E_POINTER;
    }
-   if (m_fontName.length() == 0)
+   if (m_fontName.empty())
    {
-      return S_FALSE;
+      return !!m_pClassStyle ? m_pClassStyle->GetFontName(pFontName) : S_FALSE;
    }
    *pFontName = m_fontName;
    return S_OK;
@@ -346,6 +365,10 @@ tResult cGUIStyle::GetFontPointSize(uint * pFontPointSize)
    if (pFontPointSize == NULL)
    {
       return E_POINTER;
+   }
+   if (m_fontPointSize == 0)
+   {
+      return !!m_pClassStyle ? m_pClassStyle->GetFontPointSize(pFontPointSize) : S_FALSE;
    }
    *pFontPointSize = m_fontPointSize;
    return S_OK;
@@ -488,7 +511,7 @@ tResult cGUIStyle::GetWidth(int * pWidth, uint * pSpec)
 
    if ((m_width < 0) || (m_widthSpec == kInvalidUint))
    {
-      return S_FALSE;
+      return !!m_pClassStyle ? m_pClassStyle->GetWidth(pWidth, pSpec) : S_FALSE;
    }
 
    *pWidth = m_width;
@@ -523,7 +546,7 @@ tResult cGUIStyle::GetHeight(int * pHeight, uint * pSpec)
 
    if ((m_height < 0) || (m_heightSpec == kInvalidUint))
    {
-      return S_FALSE;
+      return !!m_pClassStyle ? m_pClassStyle->GetHeight(pHeight, pSpec) : S_FALSE;
    }
 
    *pHeight = m_height;
@@ -746,6 +769,14 @@ static tResult GUIStyleParseAndSetAttribute(const char * pszAttrib, IGUIStyle * 
 
 tResult GUIStyleParse(const tChar * pszStyle, long length, IGUIStyle * * ppStyle)
 {
+   return GUIStyleParseInline(pszStyle, length, NULL, ppStyle);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+tResult GUIStyleParseInline(const tChar * pszStyle, long length, IGUIStyle * pClassStyle, IGUIStyle * * ppStyle)
+{
    if (pszStyle == NULL || ppStyle == NULL)
    {
       return E_POINTER;
@@ -757,7 +788,7 @@ tResult GUIStyleParse(const tChar * pszStyle, long length, IGUIStyle * * ppStyle
    }
 
    cAutoIPtr<IGUIStyle> pStyle;
-   tResult result = cGUIStyle::Create(&pStyle);
+   tResult result = cGUIStyle::Create(pClassStyle, &pStyle);
    if (result != S_OK)
    {
       return result;
@@ -802,14 +833,26 @@ tResult GUIStyleParse(const tChar * pszStyle, long length, IGUIStyle * * ppStyle
 class cGUIStyleTests : public CppUnit::TestCase
 {
    CPPUNIT_TEST_SUITE(cGUIStyleTests);
+      CPPUNIT_TEST(TestClone);
       CPPUNIT_TEST(TestStyleParse);
       CPPUNIT_TEST(TestCustomAttributes);
       CPPUNIT_TEST(TestParseRejectIdentifiers);
    CPPUNIT_TEST_SUITE_END();
 
+   void TestClone();
    void TestStyleParse();
    void TestCustomAttributes();
    void TestParseRejectIdentifiers();
+
+   bool StyleMatchesTest(IGUIStyle * pStyle);
+
+   cStr m_testStyle;
+
+   static const tChar gm_fontName[];
+   static const uint gm_fontPointSize;
+
+public:
+   virtual void setUp();
 };
 
 ///////////////////////////////////////
@@ -818,53 +861,32 @@ CPPUNIT_TEST_SUITE_REGISTRATION(cGUIStyleTests);
 
 ///////////////////////////////////////
 
+void cGUIStyleTests::TestClone()
+{
+   cAutoIPtr<IGUIStyle> pStyle;
+   CPPUNIT_ASSERT(GUIStyleParse(m_testStyle.c_str(), m_testStyle.length(), &pStyle) == S_OK);
+   CPPUNIT_ASSERT(StyleMatchesTest(pStyle));
+   CPPUNIT_ASSERT(pStyle->SetAttribute("ninety-nine", 99) == S_OK);
+//   CPPUNIT_ASSERT(pStyle->SetAttribute("pi", kPi) == S_OK);
+
+   cAutoIPtr<IGUIStyle> pClone;
+   CPPUNIT_ASSERT(pStyle->Clone(&pClone) == S_OK);
+   CPPUNIT_ASSERT(StyleMatchesTest(pClone));
+
+   int i;
+   CPPUNIT_ASSERT(pClone->GetAttribute("ninety-nine", &i) == S_OK && i == 99);
+
+//   float f;
+//   CPPUNIT_ASSERT(pStyle->GetAttribute("pi", &f) == S_OK && f == kPi);
+}
+
+///////////////////////////////////////
+
 void cGUIStyleTests::TestStyleParse()
 {
-   uint temp;
-   tGUIColor color;
-   tGUIString fontName;
    cAutoIPtr<IGUIStyle> pStyle;
-
-   static const tChar szFont[] = _T("MS Sans Serif");
-   static const uint kPointSize = 14;
-
-   cStr text;
-   text.Format(
-      "%s : %s;" \
-      "%s : %s;  " \
-      "%s : %s;" \
-      "%s : (0,0,0) ;" \
-      "%s: %s;" \
-      "%s: %s;" \
-      "%s: %s;" \
-      "%s: %d;",
-      kAttribAlign, kValueAlignCenter,
-      kAttribVerticalAlign, kValueVertAlignCenter,
-      kAttribBackgroundColor, kValueColorWhite,
-      kAttribForegroundColor,
-      kAttribTextAlign, kValueAlignRight,
-      kAttribTextVerticalAlign, kValueVertAlignBottom,
-      kAttribFontName, szFont,
-      kAttribFontPointSize, kPointSize
-   );
-
-   CPPUNIT_ASSERT(GUIStyleParse(text.c_str(), text.length(), &pStyle) == S_OK);
-   CPPUNIT_ASSERT(pStyle->GetAlignment(&temp) == S_OK);
-   CPPUNIT_ASSERT(temp == kGUIAlignCenter);
-   CPPUNIT_ASSERT(pStyle->GetVerticalAlignment(&temp) == S_OK);
-   CPPUNIT_ASSERT(temp == kGUIVertAlignCenter);
-   CPPUNIT_ASSERT(pStyle->GetBackgroundColor(&color) == S_OK);
-   CPPUNIT_ASSERT(color == tGUIColor::White);
-   CPPUNIT_ASSERT(pStyle->GetForegroundColor(&color) == S_OK);
-   CPPUNIT_ASSERT(color == tGUIColor(0,0,0));
-   CPPUNIT_ASSERT(pStyle->GetTextAlignment(&temp) == S_OK);
-   CPPUNIT_ASSERT(temp == kGUIAlignRight);
-   CPPUNIT_ASSERT(pStyle->GetTextVerticalAlignment(&temp) == S_OK);
-   CPPUNIT_ASSERT(temp == kGUIVertAlignBottom);
-   CPPUNIT_ASSERT(pStyle->GetFontName(&fontName) == S_OK);
-   CPPUNIT_ASSERT(strcmp(fontName.c_str(), szFont) == 0);
-   CPPUNIT_ASSERT(pStyle->GetFontPointSize(&temp) == S_OK);
-   CPPUNIT_ASSERT(temp == kPointSize);
+   CPPUNIT_ASSERT(GUIStyleParse(m_testStyle.c_str(), m_testStyle.length(), &pStyle) == S_OK);
+   CPPUNIT_ASSERT(StyleMatchesTest(pStyle));
    SafeRelease(pStyle);
 }
 
@@ -883,7 +905,7 @@ void cGUIStyleTests::TestCustomAttributes()
    // general tests
    CPPUNIT_ASSERT(pStyle->GetAttribute("DOES_NOT_EXIST", &string) == S_FALSE);
    CPPUNIT_ASSERT(pStyle->SetAttribute(NULL, "value") == E_POINTER);
-   CPPUNIT_ASSERT(pStyle->SetAttribute("attrib", NULL) == E_POINTER);
+   CPPUNIT_ASSERT(pStyle->SetAttribute("attrib", static_cast<const tChar *>(NULL)) == E_POINTER);
    CPPUNIT_ASSERT(pStyle->SetAttribute("", "value") == E_INVALIDARG);
 
    // test setting a string value
@@ -925,6 +947,58 @@ void cGUIStyleTests::TestParseRejectIdentifiers()
 {
    cAutoIPtr<IGUIStyle> pStyle;
    CPPUNIT_ASSERT(GUIStyleParse("myStyle", -1, &pStyle) != S_OK);
+}
+
+///////////////////////////////////////
+
+bool cGUIStyleTests::StyleMatchesTest(IGUIStyle * pStyle)
+{
+   if (pStyle != NULL)
+   {
+      uint temp;
+      tGUIColor color;
+      tGUIString str;
+
+      if ((pStyle->GetAlignment(&temp) == S_OK) && (temp == kGUIAlignCenter)
+         && (pStyle->GetVerticalAlignment(&temp) == S_OK) && (temp == kGUIVertAlignCenter)
+         && (pStyle->GetBackgroundColor(&color) == S_OK) && (color == tGUIColor::White)
+         && (pStyle->GetForegroundColor(&color) == S_OK) && (color == tGUIColor(0,0,0))
+         && (pStyle->GetTextAlignment(&temp) == S_OK) && (temp == kGUIAlignRight)
+         && (pStyle->GetTextVerticalAlignment(&temp) == S_OK) && (temp == kGUIVertAlignBottom)
+         && (pStyle->GetFontName(&str) == S_OK) && (strcmp(str.c_str(), gm_fontName) == 0)
+         && (pStyle->GetFontPointSize(&temp) == S_OK) && (temp == gm_fontPointSize))
+      {
+         return true;
+      }
+   }
+   return false;
+}
+
+///////////////////////////////////////
+
+const tChar cGUIStyleTests::gm_fontName[] = _T("MS Sans Serif");
+const uint cGUIStyleTests::gm_fontPointSize = 14;
+
+void cGUIStyleTests::setUp()
+{
+   m_testStyle.Format(
+      "%s : %s;" \
+      "%s : %s;  " \
+      "%s : %s;" \
+      "%s : (0,0,0) ;" \
+      "%s: %s;" \
+      "%s: %s;" \
+      "%s: %s;" \
+      "%s: %d;",
+      kAttribAlign, kValueAlignCenter,
+      kAttribVerticalAlign, kValueVertAlignCenter,
+      kAttribBackgroundColor, kValueColorWhite,
+      kAttribForegroundColor,
+      kAttribTextAlign, kValueAlignRight,
+      kAttribTextVerticalAlign, kValueVertAlignBottom,
+      kAttribFontName, gm_fontName,
+      kAttribFontPointSize, gm_fontPointSize
+   );
 }
 
 #endif // HAVE_CPPUNIT

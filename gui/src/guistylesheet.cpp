@@ -24,6 +24,24 @@
 #include "dbgalloc.h" // must be last header
 
 
+static void ParseSelector(const tChar * pszSelector, cStr * pType, cStr * pClass)
+{
+   if (pszSelector != NULL)
+   {
+      const tChar * pszDot = _tcschr(pszSelector, _T('.'));
+      if (pszDot != NULL)
+      {
+         *pType = cStr(pszSelector, pszDot-pszSelector);
+         *pClass = cStr(pszDot+1);
+      }
+      else
+      {
+         *pType = pszSelector;
+         pClass->erase();
+      }
+   }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUIStyleSelector
@@ -33,20 +51,7 @@
 
 cGUIStyleSelector::cGUIStyleSelector(const tChar * pszSelector)
 {
-   if (pszSelector != NULL)
-   {
-      const tChar * pszDot = _tcschr(pszSelector, _T('.'));
-      if (pszDot != NULL)
-      {
-         m_type = cStr(pszSelector, pszDot-pszSelector);
-         m_class = cStr(pszDot+1);
-      }
-      else
-      {
-         m_type = pszSelector;
-         m_class.erase();
-      }
-   }
+   ParseSelector(pszSelector, &m_type, &m_class);
 }
 
 ////////////////////////////////////////
@@ -76,23 +81,25 @@ const cGUIStyleSelector & cGUIStyleSelector::operator =(const cGUIStyleSelector 
 
 ////////////////////////////////////////
 
-bool cGUIStyleSelector::operator ==(const cGUIStyleSelector & other) const
-{
-   return m_type.compare(other.m_type) == 0 && m_class.compare(other.m_class) == 0;
-}
-
-////////////////////////////////////////
-
 bool cGUIStyleSelector::operator <(const cGUIStyleSelector & other) const
 {
-   return m_type.compare(other.m_type) < 0 || m_class.compare(other.m_class) < 0;
-}
-
-////////////////////////////////////////
-
-bool cGUIStyleSelector::operator >(const cGUIStyleSelector & other) const
-{
-   return m_type.compare(other.m_type) > 0 || m_class.compare(other.m_class) > 0;
+   if (m_type.empty() && other.m_type.empty())
+   {
+      return m_class.compare(other.m_class) < 0;
+   }
+   else if (m_type.empty() || other.m_type.empty())
+   {
+      return m_type.length() < other.m_type.length();
+   }
+   else
+   {
+      int typeCompare = m_type.compare(other.m_type);
+      if (typeCompare == 0)
+      {
+         return m_class.compare(other.m_class) < 0;
+      }
+      return (typeCompare < 0);
+   }
 }
 
 
@@ -128,7 +135,24 @@ tResult cGUIStyleSheet::AddRule(const tChar * pszSelector, IGUIStyle * pStyle)
       return E_POINTER;
    }
 
-   m_styleMap[cGUIStyleSelector(pszSelector)] = CTAddRef(pStyle);
+   cStr type, cls;
+   ParseSelector(pszSelector, &type, &cls);
+
+   if (!type.empty() && cls.empty())
+   {
+      m_styleMap[cGUIStyleSelector(type.c_str(), NULL)] = CTAddRef(pStyle);
+   }
+
+   if (type.empty() && !cls.empty())
+   {
+      m_styleMap[cGUIStyleSelector(NULL, cls.c_str())] = CTAddRef(pStyle);
+   }
+
+   if (!type.empty() && !cls.empty())
+   {
+      m_styleMap[cGUIStyleSelector(type.c_str(), cls.c_str())] = CTAddRef(pStyle);
+   }
+
    return S_OK;
 }
 
@@ -143,27 +167,30 @@ tResult cGUIStyleSheet::GetStyle(const tChar * pszType, const tChar * pszClass,
    }
 
    // One or the other may be NULL but not both
-   if ((pszType == NULL && pszClass != NULL) || (pszType != NULL && pszClass == NULL))
+   if (pszType == NULL && pszClass == NULL)
    {
       return E_INVALIDARG;
    }
 
-   // TODO: use the type
+   tStyleMap::const_iterator f = m_styleMap.find(cGUIStyleSelector(pszType, pszClass));
 
-//   cGUIStyleSelector selector(pszType, pszClass);
-   cGUIStyleSelector selector(NULL, pszClass);
-
-   tStyleMap::const_iterator f = m_styleMap.find(selector);
-
-   if (f != m_styleMap.end())
+   if (f == m_styleMap.end() && pszClass != NULL)
    {
-      *ppStyle = CTAddRef(f->second);
-      return S_OK;
+      f = m_styleMap.find(cGUIStyleSelector(NULL, pszClass));
    }
 
-   // TODO: handle partial matches and over-rides
+   if (f == m_styleMap.end() && pszType != NULL)
+   {
+      f = m_styleMap.find(cGUIStyleSelector(pszType, NULL));
+   }
 
-   return S_FALSE;
+   if (f == m_styleMap.end())
+   {
+      return S_FALSE;
+   }
+
+   *ppStyle = CTAddRef(f->second);
+   return S_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -360,9 +387,11 @@ class cGUIStyleSheetTests : public CppUnit::TestCase
 {
    CPPUNIT_TEST_SUITE(cGUIStyleSheetTests);
       CPPUNIT_TEST(TestStyleSheetParse);
+      CPPUNIT_TEST(TestStyleSelectors);
    CPPUNIT_TEST_SUITE_END();
 
    void TestStyleSheetParse();
+   void TestStyleSelectors();
 };
 
 ///////////////////////////////////////
@@ -392,6 +421,53 @@ void cGUIStyleSheetTests::TestStyleSheetParse()
    };
    cAutoIPtr<IGUIStyleSheet> pStyleSheet;
    CPPUNIT_ASSERT(GUIStyleSheetParse(test, &pStyleSheet) == S_OK);
+}
+
+///////////////////////////////////////
+
+void cGUIStyleSheetTests::TestStyleSelectors()
+{
+   static const tChar test[] =
+   {
+      "\n"
+      "a.topText"
+      "{\n"
+	   "  font-size: 7pt;\n"
+      "}\n"
+      "a.doc\n"
+      "{\n"
+	   "  text-decoration: underline;\n"
+      "}\n"
+      ".heading\n"
+      "{\n"
+	   "  font-size: 18px;\n"
+	   "  font-weight: bold;\n"
+	   "  color: #B82619;\n"
+      "}\n"
+      "p\n"
+      "{\n"
+      "  color: #000000;\n"
+      "  font-family: Verdana, Arial, Helvetica, sans-serif;\n"
+      "  font-weight: normal;\n"
+      "}\n"
+   };
+   cAutoIPtr<IGUIStyleSheet> pStyleSheet;
+   CPPUNIT_ASSERT(GUIStyleSheetParse(test, &pStyleSheet) == S_OK);
+
+   {
+      cAutoIPtr<IGUIStyle> pStyle;
+      CPPUNIT_ASSERT(pStyleSheet->GetStyle(_T("a"), _T("topText"), &pStyle) == S_OK);
+   }
+
+   {
+      cAutoIPtr<IGUIStyle> pStyle;
+      CPPUNIT_ASSERT(pStyleSheet->GetStyle(NULL, _T("heading"), &pStyle) == S_OK);
+   }
+
+   {
+      cAutoIPtr<IGUIStyle> pStyle;
+      CPPUNIT_ASSERT(pStyleSheet->GetStyle(_T("p"), NULL, &pStyle) == S_OK);
+   }
 }
 
 #endif // HAVE_CPPUNIT

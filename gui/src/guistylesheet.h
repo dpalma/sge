@@ -19,14 +19,15 @@
 
 class cGUIStyleSelector
 {
+   bool operator ==(const cGUIStyleSelector & other) const;
+   bool operator >(const cGUIStyleSelector & other) const;
+
 public:
    explicit cGUIStyleSelector(const tChar * pszSelector);
    cGUIStyleSelector(const tChar * pszType, const tChar * pszClass);
    cGUIStyleSelector(const cGUIStyleSelector & other);
    const cGUIStyleSelector & operator =(const cGUIStyleSelector & other);
-   bool operator ==(const cGUIStyleSelector & other) const;
    bool operator <(const cGUIStyleSelector & other) const;
-   bool operator >(const cGUIStyleSelector & other) const;
 private:
    cStr m_type, m_class;
 };

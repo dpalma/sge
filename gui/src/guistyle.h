@@ -21,17 +21,18 @@ class cGUIStyle : public cComObject<IMPLEMENTS(IGUIStyle)>
 {
    void operator =(const cGUIStyle &);
 
-   cGUIStyle(IDictionary * pDict = NULL);
+   cGUIStyle(IGUIStyle * pClassStyle, IDictionary * pDict = NULL);
    cGUIStyle(const cGUIStyle & other);
    ~cGUIStyle();
 
 public:
-   static tResult Create(IGUIStyle * * ppStyle);
+   static tResult Create(IGUIStyle * pClassStyle, IGUIStyle * * ppStyle);
 
    virtual tResult GetAttribute(const tChar * pszAttribute, tGUIString * pValue);
    virtual tResult GetAttribute(const tChar * pszAttribute, int * pValue);
    virtual tResult GetAttribute(const tChar * pszAttribute, tGUIColor * pValue);
    virtual tResult SetAttribute(const tChar * pszAttribute, const tChar * pszValue);
+   virtual tResult SetAttribute(const tChar * pszAttribute, int value);
 
    virtual tResult GetAlignment(uint * pAlignment);
    virtual tResult SetAlignment(uint alignment);
@@ -80,6 +81,7 @@ public:
    virtual tResult Clone(IGUIStyle * * ppStyle);
 
 private:
+   cAutoIPtr<IGUIStyle> m_pClassStyle;
    cAutoIPtr<IDictionary> m_pDict;
    uint m_alignment, m_verticalAlignment;
    tGUIColor * m_pBackground, * m_pForeground;
