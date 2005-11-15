@@ -15,6 +15,7 @@
 
 class cStr;
 class cFileSpec;
+class cMultiVar;
 
 F_DECLARE_INTERFACE(IDictionary);
 F_DECLARE_INTERFACE(IDictionaryStore);
@@ -39,10 +40,13 @@ interface IDictionary : IUnknown
    virtual tResult Get(const tChar * pszKey, cStr * val, tPersistence * pPersist = NULL) = 0;
    virtual tResult Get(const tChar * pszKey, int * val, tPersistence * pPersist = NULL) = 0;
    virtual tResult Get(const tChar * pszKey, float * val, tPersistence * pPersist = NULL) = 0;
+   virtual tResult Get(const tChar * pszKey, double * pVal, tPersistence * pPersist = NULL) = 0;
+   virtual tResult Get(const tChar * pszKey, cMultiVar * pVal, tPersistence * pPersist = NULL) = 0;
 
    virtual tResult Set(const tChar * pszKey, const tChar * val, tPersistence persist = kUseDefault) = 0;
    virtual tResult Set(const tChar * pszKey, int val, tPersistence persist = kUseDefault) = 0;
    virtual tResult Set(const tChar * pszKey, float val, tPersistence persist = kUseDefault) = 0;
+   virtual tResult Set(const tChar * pszKey, double val, tPersistence persist = kUseDefault) = 0;
 
    virtual tResult Delete(const tChar * pszKey) = 0;
 
@@ -58,6 +62,7 @@ interface IDictionary : IUnknown
 ///////////////////////////////////////
 
 TECH_API IDictionary * DictionaryCreate(tPersistence defaultPersist = kPermanent);
+TECH_API IUnknown * DictionaryCreate(tPersistence defaultPersist, IUnknown * pUnkOuter);
 
 ///////////////////////////////////////////////////////////////////////////////
 //

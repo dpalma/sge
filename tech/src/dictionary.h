@@ -5,6 +5,7 @@
 #define INCLUDED_DICTIONARY_H
 
 #include "dictionaryapi.h"
+#include "multivar.h"
 #include "techstring.h"
 
 #include <map>
@@ -18,20 +19,30 @@
 // CLASS: cDictionary
 //
 
-class cDictionary : public cComObject<IMPLEMENTS(IDictionary)>
+class cDictionary : public cComAggregableObject<IMPLEMENTS(IDictionary)>
 {
-public:
-   cDictionary(tPersistence defaultPersist);
+   cDictionary(const cDictionary &);
+   void operator =(const cDictionary &);
+
+   friend IDictionary * DictionaryCreate(tPersistence defaultPersist);
+   friend IUnknown * DictionaryCreate(tPersistence defaultPersist, IUnknown * pUnkOuter);
+
+protected:
+   cDictionary(tPersistence defaultPersist, IUnknown * pUnkOuter = NULL);
    virtual ~cDictionary();
 
+public:
    virtual tResult Get(const tChar * pszKey, tChar * pVal, int maxLength, tPersistence * pPersist = NULL);
    virtual tResult Get(const tChar * pszKey, cStr * pVal, tPersistence * pPersist = NULL);
    virtual tResult Get(const tChar * pszKey, int * pVal, tPersistence * pPersist = NULL);
    virtual tResult Get(const tChar * pszKey, float * pVal, tPersistence * pPersist = NULL);
+   virtual tResult Get(const tChar * pszKey, double * pVal, tPersistence * pPersist = NULL);
+   virtual tResult Get(const tChar * pszKey, cMultiVar * pVal, tPersistence * pPersist = NULL);
 
-   virtual tResult Set(const tChar * pszKey, const tChar * val, tPersistence persist = kPermanent);
-   virtual tResult Set(const tChar * pszKey, int val, tPersistence persist = kPermanent);
-   virtual tResult Set(const tChar * pszKey, float val, tPersistence persist = kPermanent);
+   virtual tResult Set(const tChar * pszKey, const tChar * val, tPersistence persist = kUseDefault);
+   virtual tResult Set(const tChar * pszKey, int val, tPersistence persist = kUseDefault);
+   virtual tResult Set(const tChar * pszKey, float val, tPersistence persist = kUseDefault);
+   virtual tResult Set(const tChar * pszKey, double val, tPersistence persist = kUseDefault);
 
    virtual tResult Delete(const tChar * pszKey);
 
@@ -46,7 +57,7 @@ public:
 private:
    tResult GetPersistence(const tChar * pszKey, tPersistence * pPersist);
 
-   typedef std::map<cStr, cStr, cStrLessNoCase> tMap;
+   typedef std::map<cStr, cMultiVar, cStrLessNoCase> tMap;
    tMap m_vars;
 
    typedef std::map<cStr, tPersistence, cStrLessNoCase> tPersistenceMap;

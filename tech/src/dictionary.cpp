@@ -14,7 +14,6 @@
 
 #include "dbgalloc.h" // must be last header
 
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cDictionary
@@ -22,8 +21,9 @@
 
 ///////////////////////////////////////
 
-cDictionary::cDictionary(tPersistence defaultPersist)
- : m_defaultPersist(defaultPersist)
+cDictionary::cDictionary(tPersistence defaultPersist, IUnknown * pUnkOuter)
+ : cComAggregableObject<IMPLEMENTS(IDictionary)>(pUnkOuter)
+ , m_defaultPersist(defaultPersist)
 {
 }
 
@@ -42,7 +42,7 @@ tResult cDictionary::Get(const tChar * pszKey, tChar * pVal, int maxLength, tPer
       return E_POINTER;
    }
 
-   tMap::iterator iter = m_vars.find(pszKey);
+   tMap::const_iterator iter = m_vars.find(pszKey);
    if (iter != m_vars.end())
    {
       if (FAILED(GetPersistence(pszKey, pPersist)))
@@ -53,7 +53,7 @@ tResult cDictionary::Get(const tChar * pszKey, tChar * pVal, int maxLength, tPer
 
       if (pVal != NULL && maxLength > 0)
       {
-         _tcsncpy(pVal, iter->second.c_str(), maxLength);
+         _tcsncpy(pVal, iter->second.ToString(), maxLength);
          pVal[maxLength - 1] = 0;
       }
 
@@ -72,7 +72,7 @@ tResult cDictionary::Get(const tChar * pszKey, cStr * pVal, tPersistence * pPers
       return E_POINTER;
    }
 
-   tMap::iterator iter = m_vars.find(pszKey);
+   tMap::const_iterator iter = m_vars.find(pszKey);
    if (iter != m_vars.end())
    {
       if (FAILED(GetPersistence(pszKey, pPersist)))
@@ -101,7 +101,7 @@ tResult cDictionary::Get(const tChar * pszKey, int * pVal, tPersistence * pPersi
       return E_POINTER;
    }
 
-   tMap::iterator iter = m_vars.find(pszKey);
+   tMap::const_iterator iter = m_vars.find(pszKey);
    if (iter != m_vars.end())
    {
       if (FAILED(GetPersistence(pszKey, pPersist)))
@@ -112,7 +112,7 @@ tResult cDictionary::Get(const tChar * pszKey, int * pVal, tPersistence * pPersi
 
       int value = iter->second.ToInt();
 
-      if ((value == 0) && !iter->second.empty() && (iter->second.at(0) != '0'))
+      if ((value == 0) && !iter->second.IsEmpty())
       {
          return S_FALSE;
       }
@@ -137,7 +137,7 @@ tResult cDictionary::Get(const tChar * pszKey, float * pVal, tPersistence * pPer
       return E_POINTER;
    }
 
-   tMap::iterator iter = m_vars.find(pszKey);
+   tMap::const_iterator iter = m_vars.find(pszKey);
    if (iter != m_vars.end())
    {
       if (FAILED(GetPersistence(pszKey, pPersist)))
@@ -159,6 +159,64 @@ tResult cDictionary::Get(const tChar * pszKey, float * pVal, tPersistence * pPer
 
 ///////////////////////////////////////
 
+tResult cDictionary::Get(const tChar * pszKey, double * pVal, tPersistence * pPersist)
+{
+   if (pszKey == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tMap::const_iterator iter = m_vars.find(pszKey);
+   if (iter != m_vars.end())
+   {
+      if (FAILED(GetPersistence(pszKey, pPersist)))
+      {
+         DebugMsg1("ERROR: Could not find persistence value for %s\n", pszKey);
+         return E_FAIL;
+      }
+
+      if (pVal != NULL)
+      {
+         *pVal = iter->second.ToDouble();
+      }
+
+      return S_OK;
+   }
+
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
+tResult cDictionary::Get(const tChar * pszKey, cMultiVar * pVal, tPersistence * pPersist)
+{
+   if (pszKey == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tMap::const_iterator iter = m_vars.find(pszKey);
+   if (iter != m_vars.end())
+   {
+      if (FAILED(GetPersistence(pszKey, pPersist)))
+      {
+         DebugMsg1("ERROR: Could not find persistence value for %s\n", pszKey);
+         return E_FAIL;
+      }
+
+      if (pVal != NULL)
+      {
+         *pVal = iter->second;
+      }
+
+      return S_OK;
+   }
+
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
 tResult cDictionary::Set(const tChar * pszKey, const tChar * val, tPersistence persist)
 {
    if (pszKey == NULL || val == NULL)
@@ -169,17 +227,8 @@ tResult cDictionary::Set(const tChar * pszKey, const tChar * val, tPersistence p
    {
       return E_INVALIDARG;
    }
-   if (persist == kUseDefault)
-   {
-      persist = m_defaultPersist;
-   }
-   else if (persist != kPermanent && persist != kTransitory)
-   {
-      DebugMsg1("ERROR: Invalid persistence argument %d\n", persist);
-      return E_INVALIDARG;
-   }
    m_vars[pszKey] = val;
-   m_persistenceMap[pszKey] = persist;
+   m_persistenceMap[pszKey] = (persist != kUseDefault) ? persist : m_defaultPersist;
    return S_OK;
 }
 
@@ -195,9 +244,9 @@ tResult cDictionary::Set(const tChar * pszKey, int val, tPersistence persist)
    {
       return E_INVALIDARG;
    }
-   cStr temp;
-   temp.Format(_T("%d"), val);
-   return Set(pszKey, temp.c_str(), persist);
+   m_vars[pszKey] = val;
+   m_persistenceMap[pszKey] = (persist != kUseDefault) ? persist : m_defaultPersist;
+   return S_OK;
 }
 
 ///////////////////////////////////////
@@ -212,9 +261,26 @@ tResult cDictionary::Set(const tChar * pszKey, float val, tPersistence persist)
    {
       return E_INVALIDARG;
    }
-   cStr temp;
-   temp.Format(_T("%f"), val);
-   return Set(pszKey, temp.c_str(), persist);
+   m_vars[pszKey] = val;
+   m_persistenceMap[pszKey] = (persist != kUseDefault) ? persist : m_defaultPersist;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cDictionary::Set(const tChar * pszKey, double val, tPersistence persist)
+{
+   if (pszKey == NULL)
+   {
+      return E_POINTER;
+   }
+   if (*pszKey == 0)
+   {
+      return E_INVALIDARG;
+   }
+   m_vars[pszKey] = val;
+   m_persistenceMap[pszKey] = (persist != kUseDefault) ? persist : m_defaultPersist;
+   return S_OK;
 }
 
 ///////////////////////////////////////
@@ -253,7 +319,7 @@ tResult cDictionary::GetKeys(std::list<cStr> * pKeys)
       return S_FALSE;
    }
 
-   tMap::iterator iter;
+   tMap::const_iterator iter;
    for (iter = m_vars.begin(); iter != m_vars.end(); iter++)
    {
       pKeys->push_back(iter->first);
@@ -319,7 +385,7 @@ tResult cDictionary::GetPersistence(const tChar * pszKey, tPersistence * pPersis
    }
    else
    {
-      tPersistenceMap::iterator piter = m_persistenceMap.find(pszKey);
+      tPersistenceMap::const_iterator piter = m_persistenceMap.find(pszKey);
       if (piter != m_persistenceMap.end())
       {
          *pPersist = piter->second;
@@ -338,6 +404,18 @@ tResult cDictionary::GetPersistence(const tChar * pszKey, tPersistence * pPersis
 IDictionary * DictionaryCreate(tPersistence defaultPersist)
 {
    return static_cast<IDictionary *>(new cDictionary(defaultPersist));
+}
+
+///////////////////////////////////////
+
+IUnknown * DictionaryCreate(tPersistence defaultPersist, IUnknown * pUnkOuter)
+{
+   cDictionary * pDict = new cDictionary(defaultPersist, pUnkOuter);
+   if (pDict != NULL)
+   {
+      return pDict->AccessInnerUnknown();
+   }
+   return NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -95,6 +95,14 @@ private:
    } m_value;
 };
 
+////////////////////////////////////////
+
+inline const cMultiVar & cMultiVar::operator =(const cMultiVar & other)
+{
+   Assign(other);
+   return *this;
+}
+
 ///////////////////////////////////////
 
 inline const cMultiVar & cMultiVar::operator =(int value)

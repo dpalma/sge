@@ -33,8 +33,11 @@ cMultiVar::cMultiVar()
 ////////////////////////////////////////
 
 cMultiVar::cMultiVar(const cMultiVar & other)
+ : m_pTempBuffer(NULL)
+ , m_pConversionBuffer(NULL)
+ , m_type(kMVT_Empty)
 {
-   operator =(other);
+   Assign(other);
 }
 
 ////////////////////////////////////////
@@ -104,10 +107,44 @@ cMultiVar::~cMultiVar()
 
 ////////////////////////////////////////
 
+void cMultiVar::Assign(const cMultiVar & multiVar)
+{
+   if (GetType() != multiVar.GetType())
+   {
+      Clear();
+   }
+   if (multiVar.IsInt())
+   {
+      Assign(multiVar.ToInt());
+   }
+   else if (multiVar.IsFloat())
+   {
+      Assign(multiVar.ToFloat());
+   }
+   else if (multiVar.IsDouble())
+   {
+      Assign(multiVar.ToDouble());
+   }
+   else if (multiVar.IsString())
+   {
+      Assign(multiVar.m_value.psz);
+   }
+   else if (multiVar.IsInterface())
+   {
+      m_type = kMVT_Interface;
+      m_value.pUnk = CTAddRef(multiVar.m_value.pUnk);
+   }
+}
+
+////////////////////////////////////////
+
 void cMultiVar::Assign(int value)
 {
-   Clear();
-   m_type = kMVT_Int;
+   if (GetType() != kMVT_Int)
+   {
+      Clear();
+      m_type = kMVT_Int;
+   }
    m_value.i = value;
 }
 
@@ -115,8 +152,11 @@ void cMultiVar::Assign(int value)
 
 void cMultiVar::Assign(float value)
 {
-   Clear();
-   m_type = kMVT_Float;
+   if (GetType() != kMVT_Float)
+   {
+      Clear();
+      m_type = kMVT_Float;
+   }
    m_value.f = value;
 }
 
@@ -124,8 +164,11 @@ void cMultiVar::Assign(float value)
 
 void cMultiVar::Assign(double value)
 {
-   Clear();
-   m_type = kMVT_Double;
+   if (GetType() != kMVT_Double)
+   {
+      Clear();
+      m_type = kMVT_Double;
+   }
    m_value.d = value;
 }
 
@@ -133,13 +176,16 @@ void cMultiVar::Assign(double value)
 
 void cMultiVar::Assign(const char * pszValue)
 {
-   Clear();
-   m_type = kMVT_String;
+   if (GetType() != kMVT_String)
+   {
+      Clear();
+      m_type = kMVT_String;
+   }
    if (pszValue != NULL)
    {
       uint length = strlen(pszValue);
       uint bufferSize = (length + 1) * sizeof(char);
-      m_pTempBuffer = malloc(bufferSize);
+      m_pTempBuffer = realloc(m_pTempBuffer, bufferSize);
       m_value.psz = reinterpret_cast<char*>(m_pTempBuffer);
       strcpy(m_value.psz, pszValue);
    }
@@ -149,13 +195,16 @@ void cMultiVar::Assign(const char * pszValue)
 
 void cMultiVar::Assign(const wchar_t * pwszValue)
 {
-   Clear();
-   m_type = kMVT_String;
+   if (GetType() != kMVT_String)
+   {
+      Clear();
+      m_type = kMVT_String;
+   }
    if (pwszValue != NULL)
    {
       uint length = wcslen(pwszValue);
       uint bufferSize = (length + 1) * sizeof(wchar_t);
-      m_pTempBuffer = malloc(bufferSize);
+      m_pTempBuffer = realloc(m_pTempBuffer, bufferSize);
       m_value.psz = reinterpret_cast<char*>(m_pTempBuffer);
       wcstombs(m_value.psz, pwszValue, bufferSize);
    }
@@ -165,8 +214,11 @@ void cMultiVar::Assign(const wchar_t * pwszValue)
 
 void cMultiVar::Assign(IUnknown * pUnk)
 {
-   Clear();
-   m_type = kMVT_Interface;
+   if (GetType() != kMVT_String)
+   {
+      Clear();
+      m_type = kMVT_Interface;
+   }
    m_value.pUnk = CTAddRef(pUnk);
 }
 
@@ -263,7 +315,7 @@ const char * cMultiVar::ToString() const
          temp.Format("%d", m_value.i);
          uint length = temp.length();
          uint bufferSize = (length + 1) * sizeof(char);
-         m_pConversionBuffer = malloc(bufferSize);
+         m_pConversionBuffer = realloc(m_pConversionBuffer, bufferSize);
          strcpy(reinterpret_cast<char*>(m_pConversionBuffer), temp.c_str());
       }
       return reinterpret_cast<const char*>(m_pConversionBuffer);
@@ -276,7 +328,7 @@ const char * cMultiVar::ToString() const
          temp.Format("%f", (m_type == kMVT_Float) ? m_value.f : m_value.d);
          uint length = temp.length();
          uint bufferSize = (length + 1) * sizeof(char);
-         m_pConversionBuffer = malloc(bufferSize);
+         m_pConversionBuffer = realloc(m_pConversionBuffer, bufferSize);
          strcpy(reinterpret_cast<char*>(m_pConversionBuffer), temp.c_str());
       }
       return reinterpret_cast<const char*>(m_pConversionBuffer);
@@ -304,7 +356,7 @@ const wchar_t * cMultiVar::ToWideString() const
          temp.Format("%d", m_value.i);
          uint length = temp.length();
          uint bufferSize = (length + 1) * sizeof(char);
-         m_pConversionBuffer = malloc(bufferSize);
+         m_pConversionBuffer = realloc(m_pConversionBuffer, bufferSize);
 #ifdef _UNICODE
          wcscpy(reinterpret_cast<wchar_t*>(m_pConversionBuffer), temp.c_str());
 #else
@@ -321,7 +373,7 @@ const wchar_t * cMultiVar::ToWideString() const
          temp.Format("%f", (m_type == kMVT_Float) ? m_value.f : m_value.d);
          uint length = temp.length();
          uint bufferSize = (length + 1) * sizeof(wchar_t);
-         m_pConversionBuffer = malloc(bufferSize);
+         m_pConversionBuffer = realloc(m_pConversionBuffer, bufferSize);
 #ifdef _UNICODE
          wcscpy(reinterpret_cast<wchar_t*>(m_pConversionBuffer), temp.c_str());
 #else
@@ -336,7 +388,7 @@ const wchar_t * cMultiVar::ToWideString() const
       {
          uint length = strlen(m_value.psz);
          uint bufferSize = (length + 1) * sizeof(wchar_t);
-         m_pConversionBuffer = malloc(bufferSize);
+         m_pConversionBuffer = realloc(m_pConversionBuffer, bufferSize);
          mbstowcs(reinterpret_cast<wchar_t*>(m_pConversionBuffer), m_value.psz, bufferSize);
       }
       return reinterpret_cast<const wchar_t*>(m_pConversionBuffer);
@@ -346,36 +398,6 @@ const wchar_t * cMultiVar::ToWideString() const
       ErrorMsg("Attempt to access incompatible cMultiVar as a wide-character string\n");
       return NULL;
    }
-}
-
-////////////////////////////////////////
-
-const cMultiVar & cMultiVar::operator =(const cMultiVar & other)
-{
-   Clear();
-   if (other.IsInt())
-   {
-      Assign(other.ToInt());
-   }
-   else if (other.IsFloat())
-   {
-      Assign(other.ToFloat());
-   }
-   else if (other.IsDouble())
-   {
-      Assign(other.ToDouble());
-   }
-   else if (other.IsString())
-   {
-      Assign(other.m_value.psz);
-   }
-   else if (other.IsInterface())
-   {
-      m_type = kMVT_Interface;
-      m_value.pUnk = CTAddRef(other.m_value.pUnk);
-   }
-   // Do NOT copy the conversion buffer. Let it get filled on demand in this object.
-   return *this;
 }
 
 ////////////////////////////////////////
