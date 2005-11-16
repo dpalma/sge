@@ -22,10 +22,10 @@ EXPORTS
 	?StopGlobalObjects@@YAJXZ										@18		NONAME
 	?filepathcmp@@YAHABVcStr@@0@Z									@19		NONAME
 	?filepathicmp@@YAHABVcStr@@0@Z									@20		NONAME
-	?g_pConfig@@3PAUIDictionary@@A									@21		NONAME
+;	?g_pConfig@@3PAUIDictionary@@A									@21		NONAME
 	?ParseCommandLine@@YAJHQAPADPAUIDictionary@@@Z					@22		NONAME
 	?ConfigIsTrue@@YA_NPBD@Z										@23		NONAME
-	?techlog@@3VcLog@@A												@24		NONAME
+;	?techlog@@3VcLog@@A												@24		NONAME
 	??D@YA?AV?$cQuat@M@@ABV0@0@Z									@25		NONAME
 	?QuatFromEulerAngles@@YA?AV?$cQuat@M@@ABV?$cVec3@M@@@Z			@26		NONAME
 	?QuatSlerp@@YA?AV?$cQuat@M@@ABV1@0M@Z							@27		NONAME
