@@ -25,7 +25,7 @@ extern "C" uint STDCALL OutputDebugStringW(const wchar_t *);
 
 ///////////////////////////////////////
 
-TECH_API cLog techlog;
+cLog techlog;
 
 ///////////////////////////////////////
 

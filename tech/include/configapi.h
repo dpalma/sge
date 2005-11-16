@@ -15,11 +15,11 @@ typedef IDictionary IConfig;
 
 //////////////////////////////////////////////////////////////////////////////
 
-TECH_API tResult ParseCommandLine(int argc, tChar *argv[], IConfig * pConfig);
+tResult ParseCommandLine(int argc, tChar *argv[], IConfig * pConfig);
 
 //////////////////////////////////////////////////////////////////////////////
 
-extern TECH_API IConfig * g_pConfig;
+extern IConfig * g_pConfig;
 
 ///////////////////////////////////////
 
@@ -46,7 +46,7 @@ inline tResult ConfigGetString(const tChar * pszName, tChar * pValue, int maxVal
    return g_pConfig->Get(pszName, pValue, maxValueLen);
 }
 
-TECH_API bool ConfigIsTrue(const tChar * pszName);
+bool ConfigIsTrue(const tChar * pszName);
 
 ///////////////////////////////////////////////////////////////////////////////
 

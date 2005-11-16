@@ -46,6 +46,7 @@
 				OutputFile=".\..\..\Build.vc7\Opt/tech.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
+				ModuleDefinitionFile="..\..\tech\src\tech.def"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\..\..\Build.vc7\Opt/tech.pdb"
 				GenerateMapFile="TRUE"
@@ -153,6 +154,7 @@
 				OutputFile=".\..\..\Build.vc7\Release/tech.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
+				ModuleDefinitionFile="..\..\tech\src\tech.def"
 				ProgramDatabaseFile=".\..\..\Build.vc7\Release/tech.pdb"
 				GenerateMapFile="TRUE"
 				MapFileName="..\..\Build.vc7\Release/tech.map"
@@ -260,6 +262,7 @@
 				OutputFile=".\..\..\Build.vc7\Debug/tech.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
+				ModuleDefinitionFile="..\..\tech\src\tech.def"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\..\..\Build.vc7\Debug/tech.pdb"
 				GenerateMapFile="TRUE"
@@ -390,6 +393,9 @@
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="1"/>
 					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\..\tech\src\tech.def">
 				</File>
 				<File
 					RelativePath="..\..\tech\src\techassert.cpp">

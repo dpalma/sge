@@ -51,7 +51,7 @@ extern "C" DECLSPEC_DLLIMPORT int STDCALL IsDebuggerPresent();
 
 ///////////////////////////////////////////////////////////////////////////////
 
-TECH_API bool AssertFail(const char * pszFile, int line, const char * pszExpr);
+bool AssertFail(const char * pszFile, int line, const char * pszExpr);
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -186,23 +186,22 @@ inline void cMatrix4<T>::Transform4(const float * pV, float * pDest) const
 ///////////////////////////////////////////////////////////////////////////////
 // matrix operations
 
-TECH_API bool MatrixInvert(const float * m, float * pResult);
-TECH_API void MatrixMultiply(const float * ml, const float * mr, float * pResult);
-TECH_API void MatrixTransform3(const float * m, const float * v, float * pResult);
-TECH_API void MatrixTransform4(const float * m, const float * v, float * pResult);
+bool MatrixInvert(const float * m, float * pResult);
+void MatrixMultiply(const float * ml, const float * mr, float * pResult);
+void MatrixTransform3(const float * m, const float * v, float * pResult);
+void MatrixTransform4(const float * m, const float * v, float * pResult);
 
 ///////////////////////////////////////////////////////////////////////////////
 // 3D transformations
 
-TECH_API void MatrixTranslate(float x, float y, float z, tMatrix4 * pResult);
-TECH_API void MatrixRotateX(float theta, tMatrix4 * pResult);
-TECH_API void MatrixRotateY(float theta, tMatrix4 * pResult);
-TECH_API void MatrixRotateZ(float theta, tMatrix4 * pResult);
-TECH_API void MatrixLookAt(const tVec3 & eye, const tVec3 & center, const tVec3 & up,
-                           tMatrix4 * pMatrix);
-TECH_API void MatrixPerspective(float fov, float aspect, float znear, float zfar, tMatrix4 * pResult);
-TECH_API void MatrixPerspective(double fov, double aspect, double znear, double zfar, cMatrix4<double> * pResult);
-TECH_API void MatrixOrtho(float left, float right, float bottom, float top, float znear, float zfar, tMatrix4 * pResult);
+void MatrixTranslate(float x, float y, float z, tMatrix4 * pResult);
+void MatrixRotateX(float theta, tMatrix4 * pResult);
+void MatrixRotateY(float theta, tMatrix4 * pResult);
+void MatrixRotateZ(float theta, tMatrix4 * pResult);
+void MatrixLookAt(const tVec3 & eye, const tVec3 & center, const tVec3 & up, tMatrix4 * pMatrix);
+void MatrixPerspective(float fov, float aspect, float znear, float zfar, tMatrix4 * pResult);
+void MatrixPerspective(double fov, double aspect, double znear, double zfar, cMatrix4<double> * pResult);
+void MatrixOrtho(float left, float right, float bottom, float top, float znear, float zfar, tMatrix4 * pResult);
 
 ///////////////////////////////////////////////////////////////////////////////
 

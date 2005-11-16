@@ -207,13 +207,13 @@ inline tQuat operator /(const tQuat & q, tQuat::value_type scalar)
 
 ///////////////////////////////////////
 
-TECH_API tQuat operator *(const tQuat & q0, const tQuat & q1);
+tQuat operator *(const tQuat & q0, const tQuat & q1);
 
 ///////////////////////////////////////
 
-TECH_API tQuat QuatFromEulerAngles(const tVec3 & eulerAngles);
+tQuat QuatFromEulerAngles(const tVec3 & eulerAngles);
 
-TECH_API tQuat QuatSlerp(const tQuat & q0, const tQuat & q1, tQuat::value_type u);
+tQuat QuatSlerp(const tQuat & q0, const tQuat & q1, tQuat::value_type u);
 
 /////////////////////////////////////////////////////////////////////////////
 

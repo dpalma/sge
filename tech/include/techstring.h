@@ -200,8 +200,8 @@ inline bool cStrLessNoCase::operator()(const cStr & lhs, const cStr & rhs) const
 
 ///////////////////////////////////////////////////////////////////////////////
 
-TECH_API int filepathcmp(const cStr & f1, const cStr & f2);
-TECH_API int filepathicmp(const cStr & f1, const cStr & f2);
+int filepathcmp(const cStr & f1, const cStr & f2);
+int filepathicmp(const cStr & f1, const cStr & f2);
 
 ///////////////////////////////////////////////////////////////////////////////
 

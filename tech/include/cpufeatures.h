@@ -30,7 +30,7 @@ struct sCpuFeatures
    char szBrand[kMaxBrandString];
 };
 
-TECH_API bool GetCpuFeatures(sCpuFeatures * pCpuFeatures);
+bool GetCpuFeatures(sCpuFeatures * pCpuFeatures);
 
 ///////////////////////////////////////////////////////////////////////////////
 

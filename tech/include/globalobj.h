@@ -13,10 +13,10 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-TECH_API tResult StartGlobalObjects();
-TECH_API tResult StopGlobalObjects();
+tResult StartGlobalObjects();
+tResult StopGlobalObjects();
 
-TECH_API IUnknown * FindGlobalObject(REFGUID iid);
+IUnknown * FindGlobalObject(REFGUID iid);
 
 #define UseGlobal_(ObjBaseName, VarName) \
    cAutoIPtr<I##ObjBaseName> VarName(static_cast<I##ObjBaseName*>(FindGlobalObject(IID_I##ObjBaseName)))

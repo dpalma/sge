@@ -1,0 +1,33 @@
+;-------------------------------------------------------------------------------
+; $Id$
+
+EXPORTS
+	?hash@@YAKPAEKK@Z												@1		NONAME
+	?AssertFail@@YA_NPBDH0@Z										@2		NONAME
+	?MatrixInvert@@YA_NPBMPAM@Z										@3		NONAME
+	?MatrixMultiply@@YAXPBM0PAM@Z									@4		NONAME
+	?MatrixTransform3@@YAXPBM0PAM@Z									@5		NONAME
+	?MatrixTransform4@@YAXPBM0PAM@Z									@6		NONAME
+	?MatrixTranslate@@YAXMMMPAV?$cMatrix4@M@@@Z						@7		NONAME
+	?MatrixRotateX@@YAXMPAV?$cMatrix4@M@@@Z							@8		NONAME
+	?MatrixRotateY@@YAXMPAV?$cMatrix4@M@@@Z							@9		NONAME
+	?MatrixRotateZ@@YAXMPAV?$cMatrix4@M@@@Z							@10		NONAME
+	?MatrixLookAt@@YAXABV?$cVec3@M@@00PAV?$cMatrix4@M@@@Z			@11		NONAME
+	?MatrixPerspective@@YAXMMMMPAV?$cMatrix4@M@@@Z					@12		NONAME
+	?MatrixPerspective@@YAXNNNNPAV?$cMatrix4@N@@@Z					@13		NONAME
+	?MatrixOrtho@@YAXMMMMMMPAV?$cMatrix4@M@@@Z						@14		NONAME
+	?FindGlobalObject@@YAPAUIUnknown@@ABU_GUID@@@Z					@15		NONAME
+	?RegisterGlobalObject@@YAJABU_GUID@@PAUIUnknown@@@Z				@16		NONAME
+	?StartGlobalObjects@@YAJXZ										@17		NONAME
+	?StopGlobalObjects@@YAJXZ										@18		NONAME
+	?filepathcmp@@YAHABVcStr@@0@Z									@19		NONAME
+	?filepathicmp@@YAHABVcStr@@0@Z									@20		NONAME
+	?g_pConfig@@3PAUIDictionary@@A									@21		NONAME
+	?ParseCommandLine@@YAJHQAPADPAUIDictionary@@@Z					@22		NONAME
+	?ConfigIsTrue@@YA_NPBD@Z										@23		NONAME
+	?techlog@@3VcLog@@A												@24		NONAME
+	??D@YA?AV?$cQuat@M@@ABV0@0@Z									@25		NONAME
+	?QuatFromEulerAngles@@YA?AV?$cQuat@M@@ABV?$cVec3@M@@@Z			@26		NONAME
+	?QuatSlerp@@YA?AV?$cQuat@M@@ABV1@0M@Z							@27		NONAME
+	?GetCpuFeatures@@YA_NPAUsCpuFeatures@@@Z						@28		NONAME
+ 

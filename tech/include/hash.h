@@ -15,7 +15,7 @@
 typedef  unsigned long  int  ub4;   /* unsigned 4-byte quantities */
 typedef  unsigned       char ub1;   /* unsigned 1-byte quantities */
 
-TECH_API ub4 hash(register ub1 * k, register ub4 length, register ub4 initval);
+ub4 hash(register ub1 * k, register ub4 length, register ub4 initval);
 
 inline uint Hash(const void * key, int size) { return hash((ub1*)key, size, 0xDEADBEEF); }
 inline uint Hash(const void * ptr) { return hash((ub1*)ptr, sizeof(ptr), 0xDEADBEEF); }
