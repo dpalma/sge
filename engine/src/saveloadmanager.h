@@ -81,6 +81,19 @@ private:
    typedef cDigraph<const GUID *, sLessGuid> tConstraintGraph;
    tConstraintGraph m_saveOrderConstraintGraph;
 
+   struct sFileHeader
+   {
+      GUID id;
+      int version;
+   };
+
+   struct sFileFooter
+   {
+      ulong offset;
+      ulong length;
+      byte digest[16];
+   };
+
    struct sFileEntry
    {
       GUID id;
@@ -89,6 +102,8 @@ private:
       ulong length;
    };
 
+   friend class cReadWriteOps<sFileHeader>;
+   friend class cReadWriteOps<sFileFooter>;
    friend class cReadWriteOps<sFileEntry>;
 };
 

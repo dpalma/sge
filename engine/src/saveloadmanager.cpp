@@ -20,8 +20,6 @@ static const GUID SAVELOADID_SaveLoadFile = {
 //DEFINE_GUID(<<name>>, 
 //0x8542cd88, 0x7986, 0x450e, 0xb3, 0xc3, 0x5e, 0xd5, 0xbc, 0xc2, 0x3f, 0x4);
 
-static const int g_saveLoadFileVer     = 1;
-
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -189,6 +187,100 @@ tResult cReadWriteOps<GUID>::Write(IWriter * pWriter, const GUID & guid)
 
    return E_FAIL;
 }
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+template <>
+class cReadWriteOps<cSaveLoadManager::sFileHeader>
+{
+public:
+   static tResult Read(IReader * pReader, cSaveLoadManager::sFileHeader *);
+   static tResult Write(IWriter * pWriter, const cSaveLoadManager::sFileHeader &);
+};
+
+tResult cReadWriteOps<cSaveLoadManager::sFileHeader>::Read(IReader * pReader,
+                                                           cSaveLoadManager::sFileHeader * pFileHeader)
+{
+   if (pReader == NULL || pFileHeader == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (pReader->Read(&pFileHeader->id) == S_OK
+      && pReader->Read(&pFileHeader->version) == S_OK)
+   {
+      return S_OK;
+   }
+
+   return E_FAIL;
+}
+
+tResult cReadWriteOps<cSaveLoadManager::sFileHeader>::Write(IWriter * pWriter,
+                                                            const cSaveLoadManager::sFileHeader & fileHeader)
+{
+   if (pWriter == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (pWriter->Write(fileHeader.id) == S_OK
+      && pWriter->Write(fileHeader.version) == S_OK)
+   {
+      return S_OK;
+   }
+
+   return E_FAIL;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+template <>
+class cReadWriteOps<cSaveLoadManager::sFileFooter>
+{
+public:
+   static tResult Read(IReader * pReader, cSaveLoadManager::sFileFooter *);
+   static tResult Write(IWriter * pWriter, const cSaveLoadManager::sFileFooter &);
+};
+
+tResult cReadWriteOps<cSaveLoadManager::sFileFooter>::Read(IReader * pReader,
+                                                           cSaveLoadManager::sFileFooter * pFileFooter)
+{
+   if (pReader == NULL || pFileFooter == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (pReader->Read(&pFileFooter->offset) == S_OK
+      && pReader->Read(&pFileFooter->length) == S_OK
+      && pReader->Read(pFileFooter->digest, sizeof(pFileFooter->digest)) == S_OK)
+   {
+      return S_OK;
+   }
+
+   return E_FAIL;
+}
+
+tResult cReadWriteOps<cSaveLoadManager::sFileFooter>::Write(IWriter * pWriter,
+                                                            const cSaveLoadManager::sFileFooter & fileFooter)
+{
+   if (pWriter == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (pWriter->Write(fileFooter.offset) == S_OK
+      && pWriter->Write(fileFooter.length) == S_OK
+      && pWriter->Write(const_cast<byte *>(fileFooter.digest),
+      sizeof(fileFooter.digest)) == S_OK)
+   {
+      return S_OK;
+   }
+
+   return E_FAIL;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -389,11 +481,9 @@ tResult cSaveLoadManager::Save(IWriter * pWriter)
    cTopoSorter<tConstraintGraph>().TopoSort(&m_saveOrderConstraintGraph, &saveOrder);
    AssertMsg(saveOrder.size() == m_participantMap.size(), "Size mismatch after determining constrained save order");
 
-   sFileEntry header;
+   sFileHeader header;
    memcpy(&header.id, &SAVELOADID_SaveLoadFile, sizeof(header.id));
-   header.version = g_saveLoadFileVer;
-   header.offset = 0;
-   header.length = 0;
+   header.version = 2;
 
    // Write the file header
    if (pWriter->Write(header) != S_OK)
@@ -464,8 +554,10 @@ tResult cSaveLoadManager::Save(IWriter * pWriter)
       }
    }
 
+   ulong tableOffset = 0, tableLength = entries.size() * sizeof(sFileEntry);
+
    // Determine the offset of the entry table
-   if (pWriter->Tell(&header.offset) != S_OK)
+   if (pWriter->Tell(&tableOffset) != S_OK)
    {
       ErrorMsg("Failed to get the offset of the entry table\n");
       return E_FAIL;
@@ -484,13 +576,14 @@ tResult cSaveLoadManager::Save(IWriter * pWriter)
       }
    }
 
-   // Re-write the file header now that the table size and position are known
-   Assert(header.offset > 0);
-   header.length = entries.size() * sizeof(sFileEntry);
-   if (pWriter->Seek(0, kSO_Set) != S_OK
-      || pWriter->Write(header) != S_OK)
+   sFileFooter footer = {0};
+   footer.offset = tableOffset;
+   footer.length = tableLength;
+   footer.digest; // TODO
+
+   if (pWriter->Write(footer) != S_OK)
    {
-      ErrorMsg("Failed to re-write the file header\n");
+      ErrorMsg("Failed to write the file footer\n");
       return E_FAIL;
    }
 
@@ -510,7 +603,8 @@ tResult cSaveLoadManager::Load(IReader * pReader)
    // entry, but the offset field is the position of the table and the length
    // field is the size of the table. That is, the # entries in the table is 
    // header.length / sizeof(sFileEntry).
-   sFileEntry header;
+
+   sFileHeader header;
    if (pReader->Read(&header) != S_OK)
    {
       ErrorMsg("Failed to read the file header\n");
@@ -522,20 +616,66 @@ tResult cSaveLoadManager::Load(IReader * pReader)
       return E_FAIL;
    }
 
-   if (header.version != g_saveLoadFileVer)
+   ulong tableOffset = 0, tableLength = 0;
+
+   if (header.version == 1)
+   {
+      // Version 1 had four fields in the header:
+      //    GUID file id
+      //    int file version
+      //    ulong table offset
+      //    ulong table size
+
+      if (pReader->Read(&tableOffset) != S_OK)
+      {
+         ErrorMsg("Failed to read the table offset\n");
+         return E_FAIL;
+      }
+
+      if (pReader->Read(&tableLength) != S_OK)
+      {
+         ErrorMsg("Failed to read the table length\n");
+         return E_FAIL;
+      }
+   }
+   else if (header.version == 2)
+   {
+      // Version 2 has two fields in the header:
+      //    GUID file id
+      //    int file version
+      // and a footer:
+      //    ulong table offset
+      //    ulong table size
+      //    16-byte MD5 digest
+
+      ulong fileSize = 0;
+      sFileFooter footer = {0};
+
+      if (pReader->Seek(0, kSO_End) != S_OK
+         || pReader->Tell(&fileSize) != S_OK
+         || pReader->Seek(fileSize - sizeof(footer), kSO_Set) != S_OK
+         || pReader->Read(&footer) != S_OK)
+      {
+         return E_FAIL;
+      }
+
+      tableOffset = footer.offset;
+      tableLength = footer.length;
+   }
+   else
    {
       return E_FAIL;
    }
 
-   if (header.offset == 0 || header.length == 0)
+   if (tableOffset == 0 || tableLength == 0)
    {
       ErrorMsg("Invalid save/load file\n");
       return E_FAIL;
    }
 
    // Read the entry table itself
-   std::vector<sFileEntry> entries(header.length / sizeof(sFileEntry));
-   if (pReader->Seek(header.offset, kSO_Set) != S_OK)
+   std::vector<sFileEntry> entries(tableLength / sizeof(sFileEntry));
+   if (pReader->Seek(tableOffset, kSO_Set) != S_OK)
    {
       ErrorMsg("Failed to seek to the head of the file entry table\n");
       return E_FAIL;
