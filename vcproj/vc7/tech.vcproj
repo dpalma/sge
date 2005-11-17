@@ -347,6 +347,39 @@
 					RelativePath="..\..\tech\src\matrix4.cpp">
 				</File>
 				<File
+					RelativePath="..\..\tech\src\md5.c">
+					<FileConfiguration
+						Name="Opt|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="StaticDebug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="StaticRelease|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"/>
+					</FileConfiguration>
+				</File>
+				<File
 					RelativePath="..\..\tech\src\multivar.cpp">
 				</File>
 				<File
@@ -408,6 +441,9 @@
 				</File>
 				<File
 					RelativePath="..\..\tech\src\techstring.cpp">
+				</File>
+				<File
+					RelativePath="..\..\tech\src\techtest.cpp">
 				</File>
 				<File
 					RelativePath="..\..\tech\src\techtime.cpp">
@@ -522,6 +558,9 @@
 			</File>
 			<File
 				RelativePath="..\..\tech\include\matrix4.h">
+			</File>
+			<File
+				RelativePath="..\..\tech\include\md5.h">
 			</File>
 			<File
 				RelativePath="..\..\tech\include\multivar.h">

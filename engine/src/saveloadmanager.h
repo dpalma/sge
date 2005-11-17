@@ -8,6 +8,10 @@
 
 #include "digraph.h"
 #include "globalobjdef.h"
+extern "C"
+{
+#include "md5.h"
+}
 #include "readwriteapi.h"
 
 #include <map>
@@ -39,6 +43,37 @@ public:
 private:
    typedef std::map<int, ISaveLoadParticipant *> tVersionMap;
    tVersionMap m_versionMap;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cMD5Writer
+//
+
+class cMD5Writer : public cComObject<IMPLEMENTS(IWriter)>
+{
+public:
+   cMD5Writer(IWriter * pWriter);
+   ~cMD5Writer();
+
+   void FinalizeMD5(byte digest[16]);
+
+   virtual tResult Tell(ulong * pPos);
+   virtual tResult Seek(long pos, eSeekOrigin origin);
+   virtual tResult Write(const char * value);
+   virtual tResult Write(void * pValue, size_t cbValue, size_t * pcbWritten);
+
+   template <typename T>
+   tResult Write(T value)
+   {
+      return cReadWriteOps<T>::Write(this, value);
+   }
+
+private:
+   cAutoIPtr<IWriter> m_pWriter;
+   bool m_bUpdateMD5;
+   MD5_CTX m_context;
 };
 
 

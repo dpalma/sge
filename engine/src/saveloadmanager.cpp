@@ -28,8 +28,6 @@ static const GUID SAVELOADID_SaveLoadFile = {
 
 ///////////////////////////////////////
 
-///////////////////////////////////////
-
 cVersionedParticipant::cVersionedParticipant()
 {
 }
@@ -139,6 +137,76 @@ tResult cVersionedParticipant::GetParticipant(int version, ISaveLoadParticipant 
 
    *ppSLP = CTAddRef(f->second);
    return S_OK;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cMD5Writer
+//
+
+////////////////////////////////////////
+
+cMD5Writer::cMD5Writer(IWriter * pWriter)
+ : m_pWriter(CTAddRef(pWriter))
+ , m_bUpdateMD5(true)
+{
+   Assert(pWriter != NULL);
+   MD5Init(&m_context);
+}
+
+////////////////////////////////////////
+
+cMD5Writer::~cMD5Writer()
+{
+}
+
+////////////////////////////////////////
+
+void cMD5Writer::FinalizeMD5(byte digest[16])
+{
+   if (m_bUpdateMD5)
+   {
+      m_bUpdateMD5 = false;
+      MD5Final(digest, &m_context);
+   }
+}
+
+////////////////////////////////////////
+
+tResult cMD5Writer::Tell(ulong * pPos)
+{
+   return m_pWriter->Tell(pPos);
+}
+
+////////////////////////////////////////
+
+tResult cMD5Writer::Seek(long pos, eSeekOrigin origin)
+{
+   WarnMsg("Attempting to seek with a MD5 IWriter\n");
+   return E_FAIL;
+}
+
+////////////////////////////////////////
+
+tResult cMD5Writer::Write(const char * value)
+{
+   if (m_bUpdateMD5)
+   {
+      MD5Update(&m_context, const_cast<byte*>(reinterpret_cast<const byte*>(value)), strlen(value));
+   }
+   return m_pWriter->Write(value);
+}
+
+////////////////////////////////////////
+
+tResult cMD5Writer::Write(void * pValue, size_t cbValue, size_t * pcbWritten)
+{
+   if (m_bUpdateMD5)
+   {
+      MD5Update(&m_context, static_cast<byte*>(pValue), cbValue);
+   }
+   return m_pWriter->Write(pValue, cbValue, pcbWritten);
 }
 
 
@@ -476,6 +544,15 @@ tResult cSaveLoadManager::Save(IWriter * pWriter)
       return E_POINTER;
    }
 
+   cAutoIPtr<cMD5Writer> pMD5Writer(new cMD5Writer(pWriter));
+   if (!pMD5Writer)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   // Don't use this pointer anymore--use pMD5Writer!
+   pWriter = NULL;
+
    // Determine the save order
    std::vector<const GUID *> saveOrder;
    cTopoSorter<tConstraintGraph>().TopoSort(&m_saveOrderConstraintGraph, &saveOrder);
@@ -486,7 +563,7 @@ tResult cSaveLoadManager::Save(IWriter * pWriter)
    header.version = 2;
 
    // Write the file header
-   if (pWriter->Write(header) != S_OK)
+   if (pMD5Writer->Write(header) != S_OK)
    {
       ErrorMsg("Failed to write the file header\n");
       return E_FAIL;
@@ -521,7 +598,7 @@ tResult cSaveLoadManager::Save(IWriter * pWriter)
       }
 
       ulong begin;
-      if (pWriter->Tell(&begin) != S_OK)
+      if (pMD5Writer->Tell(&begin) != S_OK)
       {
          ErrorMsg("Failed to get the beginning offset of a save entry\n");
          return E_FAIL;
@@ -530,7 +607,7 @@ tResult cSaveLoadManager::Save(IWriter * pWriter)
       // S_OK: writing data succeeded
       // S_FALSE: skip this entry, but not error
       // Otherwise, failure
-      tResult entrySaveResult = pSLP->Save(pWriter);
+      tResult entrySaveResult = pSLP->Save(pMD5Writer);
       if (FAILED(entrySaveResult))
       {
          ErrorMsg("Failed to write a save/load entry\n");
@@ -539,7 +616,7 @@ tResult cSaveLoadManager::Save(IWriter * pWriter)
       else if (entrySaveResult == S_OK)
       {
          ulong end;
-         if (pWriter->Tell(&end) != S_OK)
+         if (pMD5Writer->Tell(&end) != S_OK)
          {
             ErrorMsg("Failed to get the end offset of a save entry\n");
             return E_FAIL;
@@ -557,7 +634,7 @@ tResult cSaveLoadManager::Save(IWriter * pWriter)
    ulong tableOffset = 0, tableLength = entries.size() * sizeof(sFileEntry);
 
    // Determine the offset of the entry table
-   if (pWriter->Tell(&tableOffset) != S_OK)
+   if (pMD5Writer->Tell(&tableOffset) != S_OK)
    {
       ErrorMsg("Failed to get the offset of the entry table\n");
       return E_FAIL;
@@ -568,7 +645,7 @@ tResult cSaveLoadManager::Save(IWriter * pWriter)
       std::vector<sFileEntry>::iterator iter = entries.begin();
       for (; iter != entries.end(); iter++)
       {
-         if (pWriter->Write(*iter) != S_OK)
+         if (pMD5Writer->Write(*iter) != S_OK)
          {
             ErrorMsg("Failed to write the entry table\n");
             return E_FAIL;
@@ -579,9 +656,10 @@ tResult cSaveLoadManager::Save(IWriter * pWriter)
    sFileFooter footer = {0};
    footer.offset = tableOffset;
    footer.length = tableLength;
-   footer.digest; // TODO
 
-   if (pWriter->Write(footer) != S_OK)
+   pMD5Writer->FinalizeMD5(footer.digest);
+
+   if (pMD5Writer->Write(footer) != S_OK)
    {
       ErrorMsg("Failed to write the file footer\n");
       return E_FAIL;
@@ -659,6 +737,36 @@ tResult cSaveLoadManager::Load(IReader * pReader)
          return E_FAIL;
       }
 
+      // Compute the MD5 digest for the file being loaded (exclude the footer)
+      byte digest[16];
+      memset(digest, 0, sizeof(digest));
+      if (pReader->Seek(0, kSO_Set) == S_OK)
+      {
+         MD5_CTX context;
+         MD5Init(&context);
+         ulong nReadTotal = 0;
+         byte buffer[512];
+         size_t nRead = sizeof(buffer);
+         while (SUCCEEDED(pReader->Read(buffer, nRead, &nRead)))
+         {
+            ulong b4ftr = Min(nRead, fileSize - sizeof(sFileFooter) - nReadTotal);
+            MD5Update(&context, buffer, b4ftr);
+            nReadTotal += nRead;
+            if (nReadTotal >= fileSize)
+            {
+               break;
+            }
+            nRead = sizeof(buffer);
+         }
+         MD5Final(digest, &context);
+      }
+
+      if (memcmp(digest, footer.digest, sizeof(digest)) != 0)
+      {
+         ErrorMsg("Invalid file\n");
+         return E_FAIL;
+      }
+
       tableOffset = footer.offset;
       tableLength = footer.length;
    }
@@ -669,7 +777,7 @@ tResult cSaveLoadManager::Load(IReader * pReader)
 
    if (tableOffset == 0 || tableLength == 0)
    {
-      ErrorMsg("Invalid save/load file\n");
+      ErrorMsg("Invalid file\n");
       return E_FAIL;
    }
 
