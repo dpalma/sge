@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // $Id$
 
 #include "stdhdr.h"
@@ -24,6 +24,8 @@
 #include "dbgalloc.h" // must be last header
 
 
+////////////////////////////////////////////////////////////////////////////////
+
 static void ParseSelector(const tChar * pszSelector, cStr * pType, cStr * pClass)
 {
    if (pszSelector != NULL)
@@ -42,7 +44,7 @@ static void ParseSelector(const tChar * pszSelector, cStr * pType, cStr * pClass
    }
 }
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUIStyleSelector
 //
@@ -103,7 +105,7 @@ bool cGUIStyleSelector::operator <(const cGUIStyleSelector & other) const
 }
 
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUIStyleSheet
 //
@@ -135,25 +137,36 @@ tResult cGUIStyleSheet::AddRule(const tChar * pszSelector, IGUIStyle * pStyle)
       return E_POINTER;
    }
 
-   cStr type, cls;
-   ParseSelector(pszSelector, &type, &cls);
+   std::vector<cStr> s;
+   int nAdded = 0, n = cStr(pszSelector).ParseTuple(&s);
 
-   if (!type.empty() && cls.empty())
+   std::vector<cStr>::const_iterator iter = s.begin();
+   for (; iter != s.end(); iter++)
    {
-      m_styleMap[cGUIStyleSelector(type.c_str(), NULL)] = CTAddRef(pStyle);
+      cStr type, cls;
+      ParseSelector(iter->c_str(), &type, &cls);
+
+      if (!type.empty() && cls.empty())
+      {
+         m_styleMap[cGUIStyleSelector(type.c_str(), NULL)] = CTAddRef(pStyle);
+         nAdded += 1;
+      }
+
+      if (type.empty() && !cls.empty())
+      {
+         m_styleMap[cGUIStyleSelector(NULL, cls.c_str())] = CTAddRef(pStyle);
+         nAdded += 1;
+      }
+
+      if (!type.empty() && !cls.empty())
+      {
+         m_styleMap[cGUIStyleSelector(type.c_str(), cls.c_str())] = CTAddRef(pStyle);
+         nAdded += 1;
+      }
    }
 
-   if (type.empty() && !cls.empty())
-   {
-      m_styleMap[cGUIStyleSelector(NULL, cls.c_str())] = CTAddRef(pStyle);
-   }
 
-   if (!type.empty() && !cls.empty())
-   {
-      m_styleMap[cGUIStyleSelector(type.c_str(), cls.c_str())] = CTAddRef(pStyle);
-   }
-
-   return S_OK;
+   return (nAdded > 0) ? S_OK : S_FALSE;
 }
 
 ////////////////////////////////////////
@@ -193,7 +206,7 @@ tResult cGUIStyleSheet::GetStyle(const tChar * pszType, const tChar * pszClass,
    return S_OK;
 }
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 static void ExpungeCharacter(tChar c, cStr * pStr)
 {
@@ -207,7 +220,7 @@ static void ExpungeCharacter(tChar c, cStr * pStr)
    }
 }
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 tResult GUIStyleSheetParse(const tChar * pszStyleSheet, IGUIStyleSheet * * ppStyleSheet)
 {
@@ -271,7 +284,7 @@ tResult GUIStyleSheetParse(const tChar * pszStyleSheet, IGUIStyleSheet * * ppSty
    return pStyleSheet.GetPointer(ppStyleSheet);
 }
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUIStyleElement
 //
@@ -293,34 +306,34 @@ private:
    cAutoIPtr<IGUIStyleSheet> m_pStyleSheet;
 };
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 cGUIStyleElement::cGUIStyleElement(IGUIStyleSheet * pStyleSheet)
  : m_pStyleSheet(CTAddRef(pStyleSheet))
 {
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 cGUIStyleElement::~cGUIStyleElement()
 {
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 tResult cGUIStyleElement::GetRendererClass(tGUIString * pRendererClass)
 {
    return S_FALSE;
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 tResult cGUIStyleElement::GetRenderer(IGUIElementRenderer * * ppRenderer)
 {
    return S_FALSE;
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 tResult cGUIStyleElement::GetStyleSheet(IGUIStyleSheet * * ppStyleSheet) const
 {
@@ -328,7 +341,7 @@ tResult cGUIStyleElement::GetStyleSheet(IGUIStyleSheet * * ppStyleSheet) const
 }
 
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 tResult GUIStyleElementCreate(const TiXmlElement * pXmlElement, IGUIElement * pParent, IGUIElement * * ppElement)
 {
@@ -379,7 +392,7 @@ tResult GUIStyleElementCreate(const TiXmlElement * pXmlElement, IGUIElement * pP
 AUTOREGISTER_GUIELEMENTFACTORYFN(style, GUIStyleElementCreate);
 
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 #ifdef HAVE_CPPUNIT
 
@@ -394,11 +407,11 @@ class cGUIStyleSheetTests : public CppUnit::TestCase
    void TestStyleSelectors();
 };
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 CPPUNIT_TEST_SUITE_REGISTRATION(cGUIStyleSheetTests);
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 void cGUIStyleSheetTests::TestStyleSheetParse()
 {
@@ -423,7 +436,39 @@ void cGUIStyleSheetTests::TestStyleSheetParse()
    CPPUNIT_ASSERT(GUIStyleSheetParse(test, &pStyleSheet) == S_OK);
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
+
+static bool StylesAreEqual(IGUIStyle * pStyle1, IGUIStyle * pStyle2)
+{
+   Assert(pStyle1 && pStyle2);
+
+   bool b1,b2;
+   int i1,i2;
+   uint u1,u2;
+   tGUIColor c1,c2;
+   tGUIString s1,s2;
+
+   if (pStyle1->GetAlignment(&u1) == pStyle2->GetAlignment(&u2) && u1 == u2
+      && pStyle1->GetVerticalAlignment(&u1) == pStyle2->GetVerticalAlignment(&u2) && u1 == u2
+      && pStyle1->GetBackgroundColor(&c1) == pStyle2->GetBackgroundColor(&c2) && c1 == c2
+      && pStyle1->GetForegroundColor(&c1) == pStyle2->GetForegroundColor(&c2) && c1 == c2
+      && pStyle1->GetTextAlignment(&u1) == pStyle2->GetTextAlignment(&u2) && u1 == u2
+      && pStyle1->GetTextVerticalAlignment(&u1) == pStyle2->GetTextVerticalAlignment(&u2) && u1 == u2
+      && pStyle1->GetFontName(&s1) == pStyle2->GetFontName(&s2) && s1 == s2
+      && pStyle1->GetFontPointSize(&u1) == pStyle2->GetFontPointSize(&u2) && u1 == u2
+      && pStyle1->GetFontBold(&b1) == pStyle2->GetFontBold(&b2) && b1 == b2
+      && pStyle1->GetFontItalic(&b1) == pStyle2->GetFontItalic(&b2) && b1 == b2
+      && pStyle1->GetFontShadow(&b1) == pStyle2->GetFontShadow(&b2) && b1 == b2
+      && pStyle1->GetFontOutline(&b1) == pStyle2->GetFontOutline(&b2) && b1 == b2
+      && pStyle1->GetWidth(&i1,&u1) == pStyle2->GetWidth(&i2,&u2) && i1 == i2 && u1 == u2
+      && pStyle1->GetHeight(&i1,&u1) == pStyle2->GetHeight(&i2,&u2) && i1 == i2 && u1 == u2)
+   {
+      // TODO: test all the IDictionary-based custom attributes too
+      return true;
+   }
+
+   return false;
+}
 
 void cGUIStyleSheetTests::TestStyleSelectors()
 {
@@ -450,6 +495,11 @@ void cGUIStyleSheetTests::TestStyleSelectors()
       "  font-family: Verdana, Arial, Helvetica, sans-serif;\n"
       "  font-weight: normal;\n"
       "}\n"
+      "h1,h2, h3, h4\n"
+      "{\n"
+      "  foreground-color: white;\n"
+      "  background-color: blue;\n"
+      "}\n"
    };
    cAutoIPtr<IGUIStyleSheet> pStyleSheet;
    CPPUNIT_ASSERT(GUIStyleSheetParse(test, &pStyleSheet) == S_OK);
@@ -468,8 +518,17 @@ void cGUIStyleSheetTests::TestStyleSelectors()
       cAutoIPtr<IGUIStyle> pStyle;
       CPPUNIT_ASSERT(pStyleSheet->GetStyle(_T("p"), NULL, &pStyle) == S_OK);
    }
+
+   {
+      cAutoIPtr<IGUIStyle> pStyle1, pStyle2, pStyle3;
+      CPPUNIT_ASSERT(pStyleSheet->GetStyle(_T("h1"), NULL, &pStyle1) == S_OK);
+      CPPUNIT_ASSERT(pStyleSheet->GetStyle(_T("h2"), NULL, &pStyle2) == S_OK);
+      CPPUNIT_ASSERT(pStyleSheet->GetStyle(_T("h3"), NULL, &pStyle3) == S_OK);
+      CPPUNIT_ASSERT(StylesAreEqual(pStyle1, pStyle2));
+      CPPUNIT_ASSERT(StylesAreEqual(pStyle2, pStyle3));
+   }
 }
 
 #endif // HAVE_CPPUNIT
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
