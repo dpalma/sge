@@ -30,4 +30,6 @@ EXPORTS
 	?QuatFromEulerAngles@@YA?AV?$cQuat@M@@ABV?$cVec3@M@@@Z			@26		NONAME
 	?QuatSlerp@@YA?AV?$cQuat@M@@ABV1@0M@Z							@27		NONAME
 	?GetCpuFeatures@@YA_NPAUsCpuFeatures@@@Z						@28		NONAME
- 
+	MD5Init															@29		NONAME
+	MD5Update														@30		NONAME
+	MD5Final														@31		NONAME

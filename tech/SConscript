@@ -15,10 +15,10 @@ sources = Split("""
    src/filespec.cpp
    src/functor.cpp
    src/globalobjreg.cpp
-   src/graphtest.cpp
    src/hash.cpp
    src/image.cpp
    src/matrix4.cpp
+   src/md5.c
    src/multivar.cpp
    src/quat.cpp
    src/readwritefile.cpp
@@ -28,6 +28,7 @@ sources = Split("""
    src/techlog.cpp
    src/techmath.cpp
    src/techstring.cpp
+   src/techtest.cpp
    src/techtime.cpp
    src/text.cpp
    src/tga.cpp
