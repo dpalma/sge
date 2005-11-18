@@ -5,6 +5,7 @@
 
 #include "entitymanager.h"
 
+#include "renderapi.h"
 #include "terrainapi.h"
 
 #include "resourceapi.h"
@@ -13,6 +14,22 @@
 
 #include "dbgalloc.h" // must be last header
 
+///////////////////////////////////////////////////////////////////////////////
+
+const sVertexElement g_modelVert[] =
+{
+   { kVEU_TexCoord,  kVET_Float2,   0, 0 },
+   { kVEU_Normal,    kVET_Float3,   0, 2 * sizeof(float) },
+   { kVEU_Position,  kVET_Float3,   0, 5 * sizeof(float) },
+   { kVEU_Index,     kVET_Float1,   0, 8 * sizeof(float) },
+};
+
+const sVertexElement g_blendedVert[] =
+{
+   { kVEU_TexCoord,  kVET_Float2,   0, 0 },
+   { kVEU_Normal,    kVET_Float3,   0, 2 * sizeof(float) },
+   { kVEU_Position,  kVET_Float3,   0, 5 * sizeof(float) },
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -113,16 +130,21 @@ void cModelEntity::Render()
    }
 #endif
 
+   UseGlobal(Renderer);
+
    glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
    glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT);
 
    if (!m_blendedVerts.empty())
    {
-      GlSubmitBlendedVertices(m_blendedVerts);
+      pRenderer->SetVertexFormat(g_blendedVert, _countof(g_blendedVert));
+      pRenderer->SubmitVertices(&m_blendedVerts[0], m_blendedVerts.size());
    }
    else
    {
-      GlSubmitModelVertices(m_pModel->GetVertices());
+      pRenderer->SetVertexFormat(g_modelVert, _countof(g_modelVert));
+      const tModelVertices & verts = m_pModel->GetVertices();
+      pRenderer->SubmitVertices(const_cast<sModelVertex *>(&verts[0]), verts.size());
    }
 
    tModelMeshes::const_iterator iter = m_pModel->BeginMeshses();

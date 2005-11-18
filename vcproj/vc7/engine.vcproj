@@ -332,6 +332,9 @@
 					RelativePath="..\..\engine\src\ray.cpp">
 				</File>
 				<File
+					RelativePath="..\..\engine\src\renderer.cpp">
+				</File>
+				<File
 					RelativePath="..\..\engine\src\saveloadmanager.cpp">
 				</File>
 				<File
@@ -459,6 +462,9 @@
 					RelativePath="..\..\engine\src\ms3dread.h">
 				</File>
 				<File
+					RelativePath="..\..\engine\src\renderer.h">
+				</File>
+				<File
 					RelativePath="..\..\engine\src\saveloadmanager.h">
 				</File>
 				<File
@@ -516,6 +522,9 @@
 			</File>
 			<File
 				RelativePath="..\..\engine\include\ray.h">
+			</File>
+			<File
+				RelativePath="..\..\engine\include\renderapi.h">
 			</File>
 			<File
 				RelativePath="..\..\engine\include\saveloadapi.h">

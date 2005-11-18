@@ -11,13 +11,12 @@
 #include "inputapi.h"
 #include "engineapi.h"
 #include "entityapi.h"
+#include "renderapi.h"
 #include "saveloadapi.h"
 #include "simapi.h"
 #include "soundapi.h"
 #include "sys.h"
 #include "terrainapi.h"
-
-#include "renderapi.h"
 
 #include "resourceapi.h"
 #include "configapi.h"
@@ -69,15 +68,6 @@ cAutoIPtr<cGameCameraController> g_pGameCameraController;
 cAutoIPtr<IGUIFont> g_pFont;
 
 float g_fov;
-
-cAutoIPtr<IRenderDevice> g_pRenderDevice;
-
-///////////////////////////////////////////////////////////////////////////////
-
-IRenderDevice * AccessRenderDevice()
-{
-   return static_cast<IRenderDevice *>(g_pRenderDevice);
-}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -290,6 +280,7 @@ static void RegisterGlobalObjects()
    TerrainModelCreate();
    TerrainRendererCreate();
    SoundManagerCreate();
+   RendererCreate();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -402,11 +393,6 @@ static bool MainInit(int argc, tChar * argv[])
       return false;
    }
 
-   if (RenderDeviceCreate(&g_pRenderDevice) != S_OK)
-   {
-      return false;
-   }
-
    UseGlobal(ThreadCaller);
    if (FAILED(pThreadCaller->ThreadInit()))
    {
@@ -465,8 +451,6 @@ static void MainTerm()
 
    SafeRelease(g_pFont);
 
-   SafeRelease(g_pRenderDevice);
-
    if (g_pGameCameraController)
    {
       g_pGameCameraController->Disconnect();
@@ -482,12 +466,14 @@ static void MainTerm()
 
 static bool MainFrame()
 {
-   Assert(g_pRenderDevice != NULL);
-
    UseGlobal(Sim);
    pSim->NextFrame();
 
-   g_pRenderDevice->BeginScene();
+   UseGlobal(Renderer);
+   if (pRenderer->BeginScene() != S_OK)
+   {
+      return false;
+   }
 
    UseGlobal(Camera);
    pCamera->SetGLState();
@@ -518,7 +504,7 @@ static bool MainFrame()
       pRenderDeviceContext->End2D();
    }
 
-   g_pRenderDevice->EndScene();
+   pRenderer->EndScene();
    SysSwapBuffers();
 
    return true;

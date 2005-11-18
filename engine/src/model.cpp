@@ -25,53 +25,6 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////
-
-void GlSubmitModelVertices(const tModelVertices & verts)
-{
-   glDisableClientState(GL_EDGE_FLAG_ARRAY);
-   glDisableClientState(GL_INDEX_ARRAY);
-   glDisableClientState(GL_COLOR_ARRAY);
-
-   static const uint posOffset = offsetof(sModelVertex, pos);
-   static const uint normalOffset = offsetof(sModelVertex, normal);
-   static const uint texCoordOffset = offsetof(sModelVertex, u);
-
-   const byte * pVertexData = reinterpret_cast<const byte *>(&verts[0]);
-
-   glEnableClientState(GL_VERTEX_ARRAY);
-   glVertexPointer(3, GL_FLOAT, sizeof(sModelVertex), pVertexData + posOffset);
-
-   glEnableClientState(GL_NORMAL_ARRAY);
-   glNormalPointer(GL_FLOAT, sizeof(sModelVertex), pVertexData + normalOffset);
-
-   glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-   glTexCoordPointer(2, GL_FLOAT, sizeof(sModelVertex), pVertexData + texCoordOffset);
-}
-
-void GlSubmitBlendedVertices(const tBlendedVertices & verts)
-{
-   glDisableClientState(GL_EDGE_FLAG_ARRAY);
-   glDisableClientState(GL_INDEX_ARRAY);
-   glDisableClientState(GL_COLOR_ARRAY);
-
-   static const uint posOffset = offsetof(sBlendedVertex, pos);
-   static const uint normalOffset = offsetof(sBlendedVertex, normal);
-   static const uint texCoordOffset = offsetof(sBlendedVertex, u);
-
-   const byte * pVertexData = reinterpret_cast<const byte *>(&verts[0]);
-
-   glEnableClientState(GL_VERTEX_ARRAY);
-   glVertexPointer(3, GL_FLOAT, sizeof(sBlendedVertex), pVertexData + posOffset);
-
-   glEnableClientState(GL_NORMAL_ARRAY);
-   glNormalPointer(GL_FLOAT, sizeof(sBlendedVertex), pVertexData + normalOffset);
-
-   glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-   glTexCoordPointer(2, GL_FLOAT, sizeof(sBlendedVertex), pVertexData + texCoordOffset);
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cModelMaterial
 //

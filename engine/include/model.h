@@ -70,9 +70,6 @@ template class ENGINE_API std::vector<sBlendedVertex>;
 typedef std::vector<sModelVertex> tModelVertices;
 typedef std::vector<sBlendedVertex> tBlendedVertices;
 
-ENGINE_API void GlSubmitModelVertices(const tModelVertices & verts);
-ENGINE_API void GlSubmitBlendedVertices(const tBlendedVertices & verts);
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //

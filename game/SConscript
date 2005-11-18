@@ -14,14 +14,12 @@ if env['PLATFORM'] == 'win32':
 includePaths = Split("""
    #engine/include
    #gui/include
-   #render/include
    #tech/include
 """)
 
 libPaths = Split("""
    #allguids
    #tech
-   #render
    #engine
    #gui
 """)
@@ -29,7 +27,6 @@ libPaths = Split("""
 linkLibs = Split("""
    allguids
    tech
-   rendergl
    engine
    gui
    user32

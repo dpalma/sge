@@ -332,9 +332,6 @@
 					RelativePath="..\..\tech\src\globalobjreg.cpp">
 				</File>
 				<File
-					RelativePath="..\..\tech\src\graphtest.cpp">
-				</File>
-				<File
 					RelativePath="..\..\tech\src\hash.cpp">
 				</File>
 				<File
