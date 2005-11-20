@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "engineapi.h"
+#include "renderapi.h"
 
 #include "imageapi.h"
 #include "techmath.h"

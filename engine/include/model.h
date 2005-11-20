@@ -6,6 +6,7 @@
 
 #include "enginedll.h"
 #include "comtools.h"
+#include "renderapi.h"
 
 #include "quat.h"
 #include "vec3.h"
@@ -26,7 +27,7 @@
 
 F_DECLARE_INTERFACE(IReader);
 
-typedef uint GLenum;
+enum ePrimitiveType;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -97,9 +98,6 @@ public:
    // Apply diffuse color (for glEnable(GL_COLOR_MATERIAL)) and bind the texture
    void GlDiffuseAndTexture() const;
 
-   // Apply all components with glMaterial and bind the texture
-   void GlMaterialAndTexture() const;
-
 private:
    float m_diffuse[4], m_ambient[4], m_specular[4], m_emissive[4], m_shininess;
    cStr m_texture;
@@ -125,26 +123,26 @@ public:
    cModelMesh();
    cModelMesh(const cModelMesh & other);
 
-   cModelMesh(GLenum glPrimitive, const std::vector<uint16> & indices, int8 materialIndex);
+   cModelMesh(ePrimitiveType primitive, const std::vector<uint16> & indices, int8 materialIndex);
 
    ~cModelMesh();
 
    const cModelMesh & operator =(const cModelMesh & other);
 
-   GLenum GetGlPrimitive() const;
+   ePrimitiveType GetPrimitiveType() const;
    const uint16 * GetIndexData() const;
    uint GetIndexCount() const;
    int8 GetMaterialIndex() const;
 
 private:
-   GLenum m_glPrimitive;
+   ePrimitiveType m_primitive;
    std::vector<uint16> m_indices;
    int8 m_materialIndex;
 };
 
-inline GLenum cModelMesh::GetGlPrimitive() const
+inline ePrimitiveType cModelMesh::GetPrimitiveType() const
 {
-   return m_glPrimitive;
+   return m_primitive;
 }
 
 inline const uint16 * cModelMesh::GetIndexData() const
@@ -201,7 +199,6 @@ typedef std::vector<sModelKeyFrame> tModelKeyFrames;
 // CLASS: cModelJoint
 //
 
-
 class ENGINE_API cModelJoint
 {
 public:
@@ -221,7 +218,6 @@ public:
    tResult GetKeyFrame(uint index, sModelKeyFrame * pFrame) const;
 
    tResult Interpolate(double time, tVec3 * pTrans, tQuat * pRot) const;
-
 
 private:
    int m_parentIndex;

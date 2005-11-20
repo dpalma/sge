@@ -15,6 +15,12 @@
 
 typedef unsigned int GLenum;
 
+typedef enum CGprofile;
+typedef struct _CGcontext *CGcontext;
+typedef struct _CGprogram *CGprogram;
+typedef struct _CGparameter *CGparameter;
+typedef void (*CGerrorCallbackFunc)(void);
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cRenderer
@@ -35,23 +41,32 @@ public:
    DECLARE_NAME(Renderer)
    DECLARE_NO_CONSTRAINTS()
 
-   virtual tResult Init() { return S_OK; }
-   virtual tResult Term() { return S_OK; }
+   virtual tResult Init();
+   virtual tResult Term();
 
    virtual tResult BeginScene();
    virtual tResult EndScene();
    virtual tResult SetVertexFormat(const sVertexElement * pVertexElements, uint nVertexElements);
    virtual tResult SetIndexFormat(eIndexFormat indexFormat);
    virtual tResult SubmitVertices(void * pVertices, uint nVertices);
+   virtual tResult SetDiffuseColor(const float diffuse[4]);
+   virtual tResult SetTexture(uint textureUnit, const tChar * pszTexture);
    virtual tResult SetBlendMatrices(const tMatrix4 * pMatrices, uint nMatrices);
    virtual tResult GetBlendMatrices(tMatrix4 * pMatrices, uint nMatrices) const;
    virtual tResult Render(ePrimitiveType primitive, void * pIndices, uint nIndices);
 
 private:
    tResult Initialize();
+   static void CgErrorCallback();
 
    bool m_bInitialized;
    bool m_bInScene;
+
+#ifdef HAVE_CG
+   CGcontext m_cgContext;
+   CGerrorCallbackFunc m_oldCgErrorCallback;
+   CGprofile m_cgProfile;
+#endif
 
    sVertexElement m_vertexElements[kMaxVertexElements];
    uint m_nVertexElements; // How many of the vertex elements above are valid?

@@ -4,7 +4,7 @@
 #include "stdhdr.h"
 
 #include "terrainrender.h"
-#include "engineapi.h"
+#include "renderapi.h"
 
 #include "imageapi.h"
 #include "resourceapi.h"
@@ -30,6 +30,7 @@
 
 const uint kNoIndex = ~0;
 
+extern tResult GlTextureCreateMipMapped(IImage * pImage, uint * pTexId);
 
 /////////////////////////////////////////////////////////////////////////////
 

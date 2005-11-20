@@ -132,9 +132,6 @@ void cModelEntity::Render()
 
    UseGlobal(Renderer);
 
-   glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
-   glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT);
-
    if (!m_blendedVerts.empty())
    {
       pRenderer->SetVertexFormat(g_blendedVert, _countof(g_blendedVert));
@@ -147,6 +144,8 @@ void cModelEntity::Render()
       pRenderer->SubmitVertices(const_cast<sModelVertex *>(&verts[0]), verts.size());
    }
 
+   pRenderer->SetIndexFormat(kIF_16Bit);
+
    tModelMeshes::const_iterator iter = m_pModel->BeginMeshses();
    tModelMeshes::const_iterator end = m_pModel->EndMeshses();
    for (; iter != end; iter++)
@@ -156,20 +155,8 @@ void cModelEntity::Render()
       {
          m_pModel->GetMaterial(iMaterial).GlDiffuseAndTexture();
       }
-
-#ifdef _DEBUG
-      if (GlValidateIndices(iter->GetIndexData(), iter->GetIndexCount(),
-         !m_blendedVerts.empty() ? m_blendedVerts.size() : m_pModel->GetVertices().size()))
-      {
-         glDrawElements(iter->GetGlPrimitive(), iter->GetIndexCount(), GL_UNSIGNED_SHORT, iter->GetIndexData());
-      }
-#else
-      glDrawElements(iter->GetGlPrimitive(), iter->GetIndexCount(), GL_UNSIGNED_SHORT, iter->GetIndexData());
-#endif
+      pRenderer->Render(iter->GetPrimitiveType(), const_cast<uint16*>(iter->GetIndexData()), iter->GetIndexCount());
    }
-
-   glPopClientAttrib();
-   glPopAttrib();
 }
 
 

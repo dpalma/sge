@@ -6,7 +6,7 @@
 #include "model.h"
 #include "ms3dread.h"
 #include "ms3d.h"
-#include "engineapi.h"
+#include "renderapi.h"
 
 #include "vec4.h"
 #include "matrix4.h"
@@ -19,7 +19,6 @@
 #include <map>
 #include <stack>
 #include <cfloat>
-#include <GL/glew.h>
 
 #include "dbgalloc.h" // must be last header
 
@@ -90,44 +89,9 @@ const cModelMaterial & cModelMaterial::operator =(const cModelMaterial & other)
 
 void cModelMaterial::GlDiffuseAndTexture() const
 {
-   glEnable(GL_COLOR_MATERIAL);
-   glColorMaterial(GL_FRONT, GL_DIFFUSE);
-   glColor4fv(m_diffuse);
-   uint textureId = 0;
-   UseGlobal(ResourceManager);
-   if (pResourceManager->Load(m_texture.c_str(), kRT_GlTexture, NULL, (void**)&textureId) == S_OK)
-   {
-      glEnable(GL_TEXTURE_2D);
-      glBindTexture(GL_TEXTURE_2D, textureId);
-   }
-   else
-   {
-      glDisable(GL_TEXTURE_2D);
-   }
-}
-
-///////////////////////////////////////
-// Apply all components with glMaterial
-
-void cModelMaterial::GlMaterialAndTexture() const
-{
-   glDisable(GL_COLOR_MATERIAL);
-   glMaterialfv(GL_FRONT, GL_DIFFUSE, m_diffuse);
-   glMaterialfv(GL_FRONT, GL_AMBIENT, m_ambient);
-   glMaterialfv(GL_FRONT, GL_SPECULAR, m_specular);
-   glMaterialfv(GL_FRONT, GL_EMISSION, m_emissive);
-   glMaterialfv(GL_FRONT, GL_SHININESS, &m_shininess);
-   uint textureId = 0;
-   UseGlobal(ResourceManager);
-   if (pResourceManager->Load(m_texture.c_str(), kRT_GlTexture, NULL, (void**)&textureId) == S_OK)
-   {
-      glEnable(GL_TEXTURE_2D);
-      glBindTexture(GL_TEXTURE_2D, textureId);
-   }
-   else
-   {
-      glDisable(GL_TEXTURE_2D);
-   }
+   UseGlobal(Renderer);
+   pRenderer->SetDiffuseColor(m_diffuse);
+   pRenderer->SetTexture(0, m_texture.c_str());
 }
 
 
@@ -145,19 +109,19 @@ cModelMesh::cModelMesh()
 ///////////////////////////////////////
 
 cModelMesh::cModelMesh(const cModelMesh & other)
- : m_glPrimitive(other.m_glPrimitive),
-   m_indices(other.m_indices.size()),
-   m_materialIndex(other.m_materialIndex)
+ : m_primitive(other.m_primitive)
+ , m_indices(other.m_indices.size())
+ , m_materialIndex(other.m_materialIndex)
 {
    std::copy(other.m_indices.begin(), other.m_indices.end(), m_indices.begin());
 }
 
 ///////////////////////////////////////
 
-cModelMesh::cModelMesh(GLenum glPrimitive, const std::vector<uint16> & indices, int8 materialIndex)
- : m_glPrimitive(glPrimitive),
-   m_indices(indices.size()),
-   m_materialIndex(materialIndex)
+cModelMesh::cModelMesh(ePrimitiveType primitive, const std::vector<uint16> & indices, int8 materialIndex)
+ : m_primitive(primitive)
+ , m_indices(indices.size())
+ , m_materialIndex(materialIndex)
 {
    std::copy(indices.begin(), indices.end(), m_indices.begin());
 }
@@ -172,7 +136,7 @@ cModelMesh::~cModelMesh()
 
 const cModelMesh & cModelMesh::operator =(const cModelMesh & other)
 {
-   m_glPrimitive = other.m_glPrimitive;
+   m_primitive = other.m_primitive;
    m_materialIndex = other.m_materialIndex;
    m_indices.resize(other.m_indices.size());
    std::copy(other.m_indices.begin(), other.m_indices.end(), m_indices.begin());
@@ -822,7 +786,7 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
          }
       }
 
-      meshes[i] = cModelMesh(GL_TRIANGLES, mappedIndices, group.GetMaterialIndex());
+      meshes[i] = cModelMesh(kPT_Triangles, mappedIndices, group.GetMaterialIndex());
    }
 
    //////////////////////////////

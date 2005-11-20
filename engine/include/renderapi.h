@@ -18,6 +18,12 @@ F_DECLARE_INTERFACE(IRenderer);
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#define kRT_CgProgram   _T("CgProgram")
+#define kRT_CgEffect    _T("CgEffect")
+#define kRT_GlTexture   _T("GlTexture")
+
+///////////////////////////////////////////////////////////////////////////////
+
 enum eIndexFormat
 {
    kIF_16Bit,
@@ -78,6 +84,9 @@ interface IRenderer : IUnknown
    virtual tResult SetIndexFormat(eIndexFormat indexFormat) = 0;
 
    virtual tResult SubmitVertices(void * pVertices, uint nVertices) = 0;
+
+   virtual tResult SetDiffuseColor(const float diffuse[4]) = 0;
+   virtual tResult SetTexture(uint textureUnit, const tChar * pszTexture) = 0;
 
    virtual tResult SetBlendMatrices(const tMatrix4 * pMatrices, uint nMatrices) = 0;
    virtual tResult GetBlendMatrices(tMatrix4 * pMatrices, uint nMatrices) const = 0;

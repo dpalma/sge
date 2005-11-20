@@ -6,9 +6,17 @@
 #include "renderer.h"
 #include "color.h"
 
+#include "resourceapi.h"
 #include "vec3.h"
 
 #include <GL/glew.h>
+
+#ifdef HAVE_CG
+#include <Cg/cg.h>
+#include <Cg/cgGL.h>
+#include <CgFX/ICgFX.h>
+#include <CgFX/ICgFXEffect.h>
+#endif
 
 #include <cstring>
 
@@ -195,6 +203,11 @@ static bool ValidateIndices(const uint16 * pIndices, uint nIndices, uint nVertic
 cRenderer::cRenderer()
  : m_bInitialized(false)
  , m_bInScene(false)
+#ifdef HAVE_CG
+ , m_cgContext(NULL)
+ , m_oldCgErrorCallback(NULL)
+ , m_cgProfile(CG_PROFILE_UNKNOWN)
+#endif
  , m_nVertexElements(0)
  , m_vertexSize(0)
  , m_indexFormat(kIF_16Bit)
@@ -208,6 +221,36 @@ cRenderer::cRenderer()
 
 cRenderer::~cRenderer()
 {
+}
+
+////////////////////////////////////////
+
+tResult cRenderer::Init()
+{
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cRenderer::Term()
+{
+#ifdef HAVE_CG
+   if (m_cgContext != NULL)
+   {
+      if (m_oldCgErrorCallback != NULL)
+      {
+         cgSetErrorCallback(m_oldCgErrorCallback);
+         m_oldCgErrorCallback = NULL;
+      }
+
+      cgDestroyContext(m_cgContext);
+      m_cgContext = NULL;
+
+      m_cgProfile = CG_PROFILE_UNKNOWN;
+   }
+#endif
+
+   return S_OK;
 }
 
 ////////////////////////////////////////
@@ -312,6 +355,45 @@ tResult cRenderer::SubmitVertices(void * pVertices, uint nVertices)
 
 ////////////////////////////////////////
 
+tResult cRenderer::SetDiffuseColor(const float diffuse[4])
+{
+   if (diffuse == NULL)
+   {
+      return E_POINTER;
+   }
+   glEnable(GL_COLOR_MATERIAL);
+   glColorMaterial(GL_FRONT, GL_DIFFUSE);
+   glColor4fv(diffuse);
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cRenderer::SetTexture(uint textureUnit, const tChar * pszTexture)
+{
+   if (textureUnit >= 8)
+   {
+      return E_INVALIDARG;
+   }
+   if (pszTexture == NULL)
+   {
+      return E_POINTER;
+   }
+   uint textureId;
+   UseGlobal(ResourceManager);
+   if (pResourceManager->Load(pszTexture, kRT_GlTexture, NULL, (void**)&textureId) == S_OK)
+   {
+      glActiveTextureARB(GL_TEXTURE0 + textureUnit);
+      glClientActiveTextureARB(GL_TEXTURE0 + textureUnit);
+      glEnable(GL_TEXTURE_2D);
+      glBindTexture(GL_TEXTURE_2D, textureId);
+      return S_OK;
+   }
+   return E_FAIL;
+}
+
+////////////////////////////////////////
+
 tResult cRenderer::SetBlendMatrices(const tMatrix4 * pMatrices, uint nMatrices)
 {
    if (nMatrices >= kMaxBlendMatrices)
@@ -391,6 +473,18 @@ tResult cRenderer::Initialize()
       return E_FAIL;
    }
 
+#ifdef HAVE_CG
+   if (m_cgContext == NULL)
+   {
+      m_cgContext = cgCreateContext();
+      Assert(m_oldCgErrorCallback == NULL);
+      m_oldCgErrorCallback = cgGetErrorCallback();
+      cgSetErrorCallback(CgErrorCallback);
+      Assert(m_cgProfile == CG_PROFILE_UNKNOWN);
+      m_cgProfile = cgGLGetLatestProfile(CG_GL_VERTEX);
+   }
+#endif
+
    glDisable(GL_DITHER);
    glEnable(GL_DEPTH_TEST);
    glEnable(GL_CULL_FACE);
@@ -398,6 +492,24 @@ tResult cRenderer::Initialize()
 
    m_bInitialized = true;
    return S_OK;
+}
+
+////////////////////////////////////////
+
+void cRenderer::CgErrorCallback()
+{
+#ifdef HAVE_CG
+   CGerror lastError = cgGetError();
+   if (lastError)
+   {
+      ErrorMsg(cgGetErrorString(lastError));
+      const char * pszListing = cgGetLastListing(g_CgContext);
+      if (pszListing != NULL)
+      {
+         ErrorMsg1("   %s\n", pszListing);
+      }
+   }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -410,6 +522,77 @@ tResult RendererCreate()
       return E_OUTOFMEMORY;
    }
    return RegisterGlobalObject(IID_IRenderer, p);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_CG
+
+CGprofile g_CgProfile = CG_PROFILE_UNKNOWN;
+
+void * CgProgramFromText(void * pData, int dataLength, void * param)
+{
+   // Must get the Cg context first
+   CGcontext cgContext = CgGetContext();
+   if (cgContext == NULL)
+   {
+      return NULL;
+   }
+
+   if (g_CgProfile == CG_PROFILE_UNKNOWN)
+   {
+      g_CgProfile = cgGLGetLatestProfile(CG_GL_VERTEX);
+      if (g_CgProfile == CG_PROFILE_UNKNOWN)
+      {
+         return NULL;
+      }
+   }
+
+   char * psz = reinterpret_cast<char*>(pData);
+   if (psz != NULL && strlen(psz) > 0)
+   {
+      CGprogram program = cgCreateProgram(cgContext, CG_SOURCE, psz, g_CgProfile, NULL, NULL);
+      if (program != NULL)
+      {
+         cgGLLoadProgram(program);
+         return program;
+      }
+   }
+
+   return NULL;
+}
+
+void CgProgramUnload(void * pData)
+{
+   CGprogram program = reinterpret_cast<CGprogram>(pData);
+   if (program != NULL)
+   {
+      cgDestroyProgram(program);
+   }
+}
+
+#endif // HAVE_CG
+
+///////////////////////////////////////////////////////////////////////////////
+
+extern tResult GlTextureResourceRegister(); // gltexture.cpp
+
+tResult RendererResourceRegister()
+{
+   UseGlobal(ResourceManager);
+   if (!!pResourceManager)
+   {
+      if (GlTextureResourceRegister() == S_OK
+#ifdef HAVE_CG
+         && pResourceManager->RegisterFormat(kRT_CgProgram, kRT_AsciiText, _T("cg"), NULL, CgProgramFromText, CgProgramUnload) == S_OK
+         && pResourceManager->RegisterFormat(kRT_CgEffect, kRT_AsciiText, _T("fx"), NULL, CgEffectFromText, CgEffectUnload) == S_OK
+#endif
+         )
+      {
+         return S_OK;
+      }
+   }
+   return E_FAIL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
