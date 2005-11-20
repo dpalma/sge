@@ -21,7 +21,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\gui\include,..\..\render\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,WIN32,_WINDOWS,TIXML_USE_STL"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -87,7 +87,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\gui\include,..\..\render\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include"
 				PreprocessorDefinitions="TIXML_USE_STL,_WINDOWS,NDEBUG,WIN32"
 				StringPooling="TRUE"
 				RuntimeLibrary="3"
@@ -155,7 +155,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\gui\include,..\..\render\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include"
 				PreprocessorDefinitions="_DEBUG,HAVE_CPPUNIT,WIN32,_WINDOWS,TIXML_USE_STL"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -223,7 +223,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\gui\include,..\..\render\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include"
 				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,HAVE_CPPUNIT,WIN32,_WINDOWS,TIXML_USE_STL"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -291,7 +291,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\gui\include,..\..\render\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include"
 				PreprocessorDefinitions="NDEBUG,WIN32,_WINDOWS,TIXML_USE_STL"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
