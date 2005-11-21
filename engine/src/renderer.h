@@ -48,12 +48,12 @@ public:
    virtual tResult EndScene();
    virtual tResult SetVertexFormat(const sVertexElement * pVertexElements, uint nVertexElements);
    virtual tResult SetIndexFormat(eIndexFormat indexFormat);
-   virtual tResult SubmitVertices(void * pVertices, uint nVertices);
+   virtual tResult SubmitVertices(const void * pVertices, uint nVertices);
    virtual tResult SetDiffuseColor(const float diffuse[4]);
    virtual tResult SetTexture(uint textureUnit, const tChar * pszTexture);
    virtual tResult SetBlendMatrices(const tMatrix4 * pMatrices, uint nMatrices);
-   virtual tResult GetBlendMatrices(tMatrix4 * pMatrices, uint nMatrices) const;
-   virtual tResult Render(ePrimitiveType primitive, void * pIndices, uint nIndices);
+   tResult GetBlendMatrices(tMatrix4 * pMatrices, uint nMatrices) const;
+   virtual tResult Render(ePrimitiveType primitive, const void * pIndices, uint nIndices);
 
 private:
    tResult Initialize();

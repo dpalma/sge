@@ -17,6 +17,7 @@
 #include "engineapi.h"
 #include "entityapi.h"
 #include "inputapi.h"
+#include "renderapi.h"
 #include "saveloadapi.h"
 #include "scriptapi.h"
 #include "simapi.h"
@@ -167,6 +168,7 @@ static void RegisterGlobalObjects()
    TerrainRendererCreateForEditor();
    SaveLoadManagerCreate();
    EntityManagerCreate();
+   RendererCreate();
 }
 
 ////////////////////////////////////////

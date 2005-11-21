@@ -331,7 +331,7 @@ tResult cRenderer::SetIndexFormat(eIndexFormat indexFormat)
 
 ////////////////////////////////////////
 
-tResult cRenderer::SubmitVertices(void * pVertices, uint nVertices)
+tResult cRenderer::SubmitVertices(const void * pVertices, uint nVertices)
 {
    if (pVertices == NULL)
    {
@@ -438,7 +438,7 @@ tResult cRenderer::GetBlendMatrices(tMatrix4 * pMatrices, uint nMatrices) const
 
 ////////////////////////////////////////
 
-tResult cRenderer::Render(ePrimitiveType primitive, void * pIndices, uint nIndices)
+tResult cRenderer::Render(ePrimitiveType primitive, const void * pIndices, uint nIndices)
 {
    if (pIndices == NULL)
    {

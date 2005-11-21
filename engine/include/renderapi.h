@@ -83,15 +83,14 @@ interface IRenderer : IUnknown
    virtual tResult SetVertexFormat(const sVertexElement * pVertexElements, uint nVertexElements) = 0;
    virtual tResult SetIndexFormat(eIndexFormat indexFormat) = 0;
 
-   virtual tResult SubmitVertices(void * pVertices, uint nVertices) = 0;
+   virtual tResult SubmitVertices(const void * pVertices, uint nVertices) = 0;
 
    virtual tResult SetDiffuseColor(const float diffuse[4]) = 0;
    virtual tResult SetTexture(uint textureUnit, const tChar * pszTexture) = 0;
 
    virtual tResult SetBlendMatrices(const tMatrix4 * pMatrices, uint nMatrices) = 0;
-   virtual tResult GetBlendMatrices(tMatrix4 * pMatrices, uint nMatrices) const = 0;
 
-   virtual tResult Render(ePrimitiveType primitive, void * pIndices, uint nIndices) = 0;
+   virtual tResult Render(ePrimitiveType primitive, const void * pIndices, uint nIndices) = 0;
 };
 
 ///////////////////////////////////////

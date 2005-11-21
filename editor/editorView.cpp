@@ -13,6 +13,7 @@
 #include "cameraapi.h"
 #include "entityapi.h"
 #include "ray.h"
+#include "renderapi.h"
 
 #include "configapi.h"
 #include "globalobj.h"
@@ -296,7 +297,10 @@ void cEditorView::OnFrame(double time, double elapsed)
 
 void cEditorView::RenderGL()
 {
-   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+   UseGlobal(Renderer);
+   Verify(pRenderer->BeginScene() == S_OK);
+
+   glDisable(GL_DEPTH_TEST); // HACK
 
    UseGlobal(Camera);
 
@@ -372,6 +376,7 @@ void cEditorView::RenderGL()
    UseGlobal(EntityManager);
    pEntityManager->RenderAll();
 
+   pRenderer->EndScene();
    SwapBuffers(m_hDC);
 }
 
@@ -410,16 +415,7 @@ void cEditorView::OnDraw(CDC * pDC)
       RenderGL();
    }
 #else
-   //glPushAttrib(GL_SCISSOR_BIT);
-   //CRect clipBox;
-   //int clipBoxType = pDC->GetClipBox(&clipBox);
-   //if (clipBoxType == SIMPLEREGION || clipBoxType == COMPLEXREGION)
-   //{
-   //   glEnable(GL_SCISSOR_TEST);
-   //   glScissor(clipBox.left, clipBox.bottom, clipBox.Width(), clipBox.Height());
-   //}
    RenderGL();
-   //glPopAttrib();
 #endif
 }
 
