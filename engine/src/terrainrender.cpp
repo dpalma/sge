@@ -34,6 +34,13 @@ extern tResult GlTextureCreateMipMapped(IImage * pImage, uint * pTexId);
 
 /////////////////////////////////////////////////////////////////////////////
 
+const sVertexElement g_terrainVert[] =
+{
+   { kVEU_TexCoord,  kVET_Float2,   1, 0 },
+   { kVEU_TexCoord,  kVET_Float2,   0, 2 * sizeof(float) },
+   { kVEU_Position,  kVET_Float3,   0, 4 * sizeof(float) },
+};
+
 ////////////////////////////////////////
 
 static tResult TerrainRendererCreate(bool bForEditor)
@@ -787,11 +794,11 @@ tResult cSplatBuilder::BuildIndexBuffer(const tQuadVertexMap & qvm, std::vector<
 
 ////////////////////////////////////////
 
-cSplat::cSplat(const cStr & texture, uint alphaMap, const std::vector<uint> indices, uint primitiveType)
+cSplat::cSplat(const cStr & texture, uint alphaMap, const std::vector<uint> indices, ePrimitiveType primitive)
  : m_texture(texture)
  , m_alphaMap(alphaMap)
  , m_indices(indices.begin(), indices.end())
- , m_primitiveType(primitiveType)
+ , m_primitive(primitive)
 {
 }
 
@@ -1037,7 +1044,7 @@ void cTerrainChunk::BuildSplats(const cRange<uint> xRange, const cRange<uint> zR
       cStr tileTexture;
       if (pTileSet->GetTileTexture(pBaseSplatBuilder->GetTile(), &tileTexture) == S_OK)
       {
-         cSplat * pSplat = new cSplat(tileTexture, kNoIndex, indices, GL_TRIANGLES);
+         cSplat * pSplat = new cSplat(tileTexture, kNoIndex, indices, kPT_Triangles);
          if (pSplat != NULL)
          {
             m_splats.push_back(pSplat);
@@ -1068,7 +1075,7 @@ void cTerrainChunk::BuildSplats(const cRange<uint> xRange, const cRange<uint> zR
          cStr tileTexture;
          if (pTileSet->GetTileTexture(pSplatBuilder->GetTile(), &tileTexture) == S_OK)
          {
-            cSplat * pSplat = new cSplat(tileTexture, alphaMapId, indices, GL_TRIANGLES);
+            cSplat * pSplat = new cSplat(tileTexture, alphaMapId, indices, kPT_Triangles);
             if (pSplat != NULL)
             {
                m_splats.push_back(pSplat);
@@ -1089,18 +1096,11 @@ void cTerrainChunk::Render()
    glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
    glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT);
 
-   glDisableClientState(GL_EDGE_FLAG_ARRAY);
-   glDisableClientState(GL_INDEX_ARRAY);
-   glDisableClientState(GL_NORMAL_ARRAY);
-   glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-   glDisableClientState(GL_COLOR_ARRAY);
+   UseGlobal(Renderer);
 
-   const byte * pVertexData = (const byte *)(sTerrainVertex *)&m_vertices[0];
-
-   glEnableClientState(GL_VERTEX_ARRAY);
-   glVertexPointer(3, GL_FLOAT, sizeof(sTerrainVertex), pVertexData + offsetof(sTerrainVertex, pos));
-
-   glColor4f(1,1,1,1);
+   pRenderer->SetVertexFormat(g_terrainVert, _countof(g_terrainVert));
+   pRenderer->SubmitVertices(&m_vertices[0], m_vertices.size());
+   pRenderer->SetIndexFormat(kIF_32Bit);
 
    UseGlobal(ResourceManager);
 
@@ -1118,10 +1118,6 @@ void cTerrainChunk::Render()
          glEnable(GL_TEXTURE_2D);
          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE_SGIS);
          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE_SGIS);
-
-         glClientActiveTextureARB(GL_TEXTURE0);
-         glTexCoordPointer(2, GL_FLOAT, sizeof(sTerrainVertex), pVertexData + offsetof(sTerrainVertex, uv2));
-         glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
          glEnable(GL_BLEND);
          glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -1150,18 +1146,14 @@ void cTerrainChunk::Render()
          }
          glBindTexture(GL_TEXTURE_2D, texId);
          glEnable(GL_TEXTURE_2D);
-
-         glClientActiveTextureARB(GL_TEXTURE1);
-         glTexCoordPointer(2, GL_FLOAT, sizeof(sTerrainVertex), pVertexData + offsetof(sTerrainVertex, uv1));
-         glEnableClientState(GL_TEXTURE_COORD_ARRAY);
       }
 
-      glDrawElements((*iter)->GetPrimitiveType(), (*iter)->GetIndexCount(), GL_UNSIGNED_INT, (*iter)->GetIndexPtr());
+      pRenderer->Render((*iter)->GetPrimitive(), const_cast<uint*>((*iter)->GetIndexPtr()), (*iter)->GetIndexCount());
    }
 
+   // TODO HACK: Without these calls, GUI font rendering gets messed up; Probably could be handled better
    glActiveTextureARB(GL_TEXTURE1);
    glDisable(GL_TEXTURE_2D);
-
    glActiveTextureARB(GL_TEXTURE0);
 
    glPopClientAttrib();
