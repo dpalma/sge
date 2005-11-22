@@ -7,6 +7,7 @@
 #include "color.h"
 
 #include "resourceapi.h"
+#include "techmath.h"
 #include "vec3.h"
 
 #include <GL/glew.h>
@@ -284,6 +285,31 @@ tResult cRenderer::EndScene()
 
 ////////////////////////////////////////
 
+extern tResult GlTextureCreate(IImage * pImage, uint * pTexId);
+extern tResult GlTextureCreateMipMapped(IImage * pImage, uint * pTexId);
+
+tResult cRenderer::CreateTexture(IImage * pImage, bool bAutoGenMipMaps, void * * ppTexture)
+{
+   if (pImage == NULL || ppTexture == NULL)
+   {
+      return E_POINTER;
+   }
+
+   uint textureId = 0;
+   tResult result = bAutoGenMipMaps
+      ? GlTextureCreateMipMapped(pImage, &textureId)
+      : GlTextureCreate(pImage, &textureId);
+
+   if (result == S_OK)
+   {
+      *ppTexture = reinterpret_cast<void*>(textureId);
+   }
+
+   return result;
+}
+
+////////////////////////////////////////
+
 tResult cRenderer::SetVertexFormat(const sVertexElement * pVertexElements, uint nVertexElements)
 {
    if (nVertexElements >= kMaxVertexElements)
@@ -384,12 +410,30 @@ tResult cRenderer::SetTexture(uint textureUnit, const tChar * pszTexture)
    if (pResourceManager->Load(pszTexture, kRT_GlTexture, NULL, (void**)&textureId) == S_OK)
    {
       glActiveTextureARB(GL_TEXTURE0 + textureUnit);
-      glClientActiveTextureARB(GL_TEXTURE0 + textureUnit);
       glEnable(GL_TEXTURE_2D);
       glBindTexture(GL_TEXTURE_2D, textureId);
       return S_OK;
    }
    return E_FAIL;
+}
+
+////////////////////////////////////////
+
+tResult cRenderer::SetTexture(uint textureUnit, void * pTexture)
+{
+   if (textureUnit >= 8)
+   {
+      return E_INVALIDARG;
+   }
+   GLuint textureId = reinterpret_cast<GLuint>(pTexture);
+   if (!glIsTexture(textureId))
+   {
+      return E_INVALIDARG;
+   }
+   glActiveTextureARB(GL_TEXTURE0 + textureUnit);
+   glEnable(GL_TEXTURE_2D);
+   glBindTexture(GL_TEXTURE_2D, textureId);
+   return S_OK;
 }
 
 ////////////////////////////////////////

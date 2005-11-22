@@ -182,7 +182,7 @@ bool cTerrainRenderer::IsBlendingEnabled() const
 
 /////////////////////////////////////////////////////////////////////////////
 
-void BuildSplatAlphaMap(uint splatTile, const cRange<uint> xRange, const cRange<uint> zRange, uint * pAlphaMapId);
+tResult BuildSplatAlphaMap(uint splatTile, const cRange<uint> xRange, const cRange<uint> zRange, uint * pAlphaMapId);
 
 /////////////////////////////////////////////////////////////////////////////
 //

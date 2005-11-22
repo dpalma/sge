@@ -618,16 +618,24 @@ static const float g_splatTexelWeights[4][9] =
 
 ////////////////////////////////////////
 
-void BuildSplatAlphaMap(uint splatTile,
-                        const cRange<uint> xRange,
-                        const cRange<uint> zRange,
-                        uint * pAlphaMapId)
+tResult BuildSplatAlphaMap(uint splatTile,
+                           const cRange<uint> xRange,
+                           const cRange<uint> zRange,
+                           IImage * * ppAlphaMapImage)
 {
+   if (ppAlphaMapImage == NULL)
+   {
+      return E_POINTER;
+   }
+
    UseGlobal(TerrainModel);
    UseGlobal(TerrainRenderer);
 
    cTerrainSettings terrainSettings;
-   Verify(pTerrainModel->GetTerrainSettings(&terrainSettings) == S_OK);
+   if (pTerrainModel->GetTerrainSettings(&terrainSettings) != S_OK)
+   {
+      return E_FAIL;
+   }
 
    Assert(xRange.GetLength() == zRange.GetLength());
 
@@ -637,14 +645,16 @@ void BuildSplatAlphaMap(uint splatTile,
       zRange.GetStart(), zRange.GetEnd(),
       &pEnumQuads) != S_OK)
    {
-      return;
+      return E_FAIL;
    }
 
    int imageSize = pTerrainRenderer->GetTilesPerChunk() * 2;
 
    cAutoIPtr<IImage> pImage;
    if (ImageCreate(imageSize, imageSize, kPF_RGBA8888, NULL, &pImage) != S_OK)
-      return;
+   {
+      return E_FAIL;
+   }
 
    for (uint z = zRange.GetStart(); z < zRange.GetEnd(); z++)
    {
@@ -714,16 +724,32 @@ void BuildSplatAlphaMap(uint splatTile,
       }
    }
 
-   if (ConfigIsTrue("debug_write_splat_alpha_maps"))
+   *ppAlphaMapImage = CTAddRef(pImage);
+   return S_OK;
+}
+
+tResult BuildSplatAlphaMap(uint splatTile,
+                           const cRange<uint> xRange,
+                           const cRange<uint> zRange,
+                           uint * pAlphaMapId)
+{
+   cAutoIPtr<IImage> pImage;
+   if (BuildSplatAlphaMap(splatTile, xRange, zRange, &pImage) == S_OK)
    {
-      cStr file;
-      file.Format("SplatAlpha_%d_(%d,%d)-(%d,%d).bmp", splatTile,
-         xRange.GetStart(), zRange.GetStart(), xRange.GetEnd(),zRange.GetEnd());
-      cAutoIPtr<IWriter> pWriter(FileCreateWriter(cFileSpec(file.c_str())));
-      BmpWrite(pImage, pWriter);
+      if (ConfigIsTrue("debug_write_splat_alpha_maps"))
+      {
+         cStr file;
+         file.Format("SplatAlpha_%d_(%d,%d)-(%d,%d).bmp", splatTile,
+            xRange.GetStart(), zRange.GetStart(), xRange.GetEnd(),zRange.GetEnd());
+         cAutoIPtr<IWriter> pWriter(FileCreateWriter(cFileSpec(file.c_str())));
+         BmpWrite(pImage, pWriter);
+      }
+
+      GlTextureCreateMipMapped(pImage, pAlphaMapId);
+      return S_OK;
    }
 
-   GlTextureCreateMipMapped(pImage, pAlphaMapId);
+   return E_FAIL;
 }
 
 
@@ -1123,8 +1149,7 @@ void cTerrainChunk::Render()
          glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       }
 
-      GLuint texId;
-      if (pResourceManager->Load((*iter)->GetTexture().c_str(), kRT_GlTexture, NULL, (void**)&texId) == S_OK)
+      if (pRenderer->SetTexture(1, (*iter)->GetTexture().c_str()) == S_OK)
       {
          glActiveTextureARB(GL_TEXTURE1);
          if (alphaMap != kNoIndex)
@@ -1144,8 +1169,6 @@ void cTerrainChunk::Render()
          {
             glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
          }
-         glBindTexture(GL_TEXTURE_2D, texId);
-         glEnable(GL_TEXTURE_2D);
       }
 
       pRenderer->Render((*iter)->GetPrimitive(), const_cast<uint*>((*iter)->GetIndexPtr()), (*iter)->GetIndexCount());

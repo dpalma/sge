@@ -14,6 +14,8 @@
 template <typename T> class cMatrix4;
 typedef class cMatrix4<float> tMatrix4;
 
+F_DECLARE_INTERFACE(IImage);
+
 F_DECLARE_INTERFACE(IRenderer);
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -80,6 +82,8 @@ interface IRenderer : IUnknown
    virtual tResult BeginScene() = 0;
    virtual tResult EndScene() = 0;
 
+   virtual tResult CreateTexture(IImage * pImage, bool bAutoGenMipMaps, void * * ppTexture) = 0;
+
    virtual tResult SetVertexFormat(const sVertexElement * pVertexElements, uint nVertexElements) = 0;
    virtual tResult SetIndexFormat(eIndexFormat indexFormat) = 0;
 
@@ -87,6 +91,7 @@ interface IRenderer : IUnknown
 
    virtual tResult SetDiffuseColor(const float diffuse[4]) = 0;
    virtual tResult SetTexture(uint textureUnit, const tChar * pszTexture) = 0;
+   virtual tResult SetTexture(uint textureUnit, void * pTexture) = 0;
 
    virtual tResult SetBlendMatrices(const tMatrix4 * pMatrices, uint nMatrices) = 0;
 

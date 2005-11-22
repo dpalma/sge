@@ -345,6 +345,9 @@
 					RelativePath="..\..\engine\src\frustum.cpp">
 				</File>
 				<File
+					RelativePath="..\..\engine\src\glinterleave.cpp">
+				</File>
+				<File
 					RelativePath="..\..\engine\src\gltexture.cpp">
 				</File>
 				<File

@@ -46,11 +46,13 @@ public:
 
    virtual tResult BeginScene();
    virtual tResult EndScene();
+   virtual tResult CreateTexture(IImage * pImage, bool bAutoGenMipMaps, void * * ppTexture);
    virtual tResult SetVertexFormat(const sVertexElement * pVertexElements, uint nVertexElements);
    virtual tResult SetIndexFormat(eIndexFormat indexFormat);
    virtual tResult SubmitVertices(const void * pVertices, uint nVertices);
    virtual tResult SetDiffuseColor(const float diffuse[4]);
    virtual tResult SetTexture(uint textureUnit, const tChar * pszTexture);
+   virtual tResult SetTexture(uint textureUnit, void * pTexture);
    virtual tResult SetBlendMatrices(const tMatrix4 * pMatrices, uint nMatrices);
    tResult GetBlendMatrices(tMatrix4 * pMatrices, uint nMatrices) const;
    virtual tResult Render(ePrimitiveType primitive, const void * pIndices, uint nIndices);

@@ -9,6 +9,7 @@ sources = Split("""
    src/engine.cpp
    src/entitymanager.cpp
    src/frustum.cpp
+   src/glinterleave.cpp
    src/gltexture.cpp
    src/input.cpp
    src/luainterp.cpp
