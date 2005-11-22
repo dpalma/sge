@@ -1093,7 +1093,7 @@ void cTerrainChunk::BuildSplats(const cRange<uint> xRange, const cRange<uint> zR
 
 void cTerrainChunk::Render()
 {
-   glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
+   glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT | GL_TEXTURE_BIT);
    glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT);
 
    UseGlobal(Renderer);
@@ -1150,11 +1150,6 @@ void cTerrainChunk::Render()
 
       pRenderer->Render((*iter)->GetPrimitive(), const_cast<uint*>((*iter)->GetIndexPtr()), (*iter)->GetIndexCount());
    }
-
-   // TODO HACK: Without these calls, GUI font rendering gets messed up; Probably could be handled better
-   glActiveTextureARB(GL_TEXTURE1);
-   glDisable(GL_TEXTURE_2D);
-   glActiveTextureARB(GL_TEXTURE0);
 
    glPopClientAttrib();
    glPopAttrib();
