@@ -40,6 +40,8 @@
 #define IDC_ADDANIMATION                2021
 #define IDC_REMOVEANIMATION             2022
 #define IDC_MODEL_INFO_TREE             2023
+#define IDC_EDIT1                       2024
+#define IDC_TOTAL_FRAMES                2024
 
 // Next default values for new objects
 // 
@@ -47,7 +49,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        2013
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         2024
+#define _APS_NEXT_CONTROL_VALUE         2025
 #define _APS_NEXT_SYMED_VALUE           2000
 #endif
 #endif
