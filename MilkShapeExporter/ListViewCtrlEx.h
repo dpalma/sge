@@ -19,7 +19,8 @@
 typedef CControlWinTraits cListViewSubItemEditTraits;
 
 template <class T, class TBase = CEdit, class TWinTraits = cListViewSubItemEditTraits>
-class ATL_NO_VTABLE cListViewSubItemEditImpl : public ATL::CWindowImpl<T, TBase, TWinTraits>
+class ATL_NO_VTABLE cListViewSubItemEditImpl : public ATL::CWindowImpl<T, TBase, TWinTraits>,
+                                               public CEditCommands<T>
 {
    typedef cListViewSubItemEditImpl<T, TBase, TWinTraits> ThisClass;
 
@@ -35,6 +36,7 @@ public:
    }
 
    BEGIN_MSG_MAP_EX(ThisClass)
+      CHAIN_MSG_MAP_ALT(CEditCommands<T>, 1)
       DEFAULT_REFLECTION_HANDLER()
    END_MSG_MAP()
 };
@@ -81,6 +83,7 @@ typedef cListViewCtrlExImplTraits<WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_SHOWS
 template <class T, class TBase = CListViewCtrl, class TWinTraits = cListViewCtrlExTraits>
 class ATL_NO_VTABLE cListViewCtrlExImpl : public ATL::CWindowImpl<T, TBase, TWinTraits>
 {
+   typedef ATL::CWindowImpl<T, TBase, TWinTraits> BaseClass;
    typedef cListViewCtrlExImpl<T, TBase, TWinTraits> ThisClass;
 
 public:
@@ -120,13 +123,13 @@ public:
    LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/)
    {
       // First let the ListView control initialize everything
-      LRESULT lRet = DefWindowProc(uMsg, wParam, lParam);
-      if (lRet == 0)
+      LRESULT lResult = DefWindowProc(uMsg, wParam, lParam);
+      if (lResult == 0)
       {
          T* pT = static_cast<T*>(this);
          SetExtendedListViewStyle(pT->GetExtendedLVStyle());
       }
-      return lRet;
+      return lResult;
    }
 
    LRESULT OnBeginLabelEdit(LPNMHDR pnmh)
@@ -172,9 +175,9 @@ public:
       GetItemText(pLVDispInfo->item.iItem, iSubItem, text);
 
       HWND hWndEdit = (HWND)SendMessage(LVM_GETEDITCONTROL);
-      ::SetWindowText(hWndEdit, text);
-//      m_subItemEdit.SubclassWindow(hWndEdit);
-//      m_subItemEdit.SetWindowText(text);
+//      ::SetWindowText(hWndEdit, text);
+      m_subItemEdit.SubclassWindow(hWndEdit);
+      m_subItemEdit.SetWindowText(text);
 
       return 0;
    }

@@ -13,7 +13,7 @@ WTL::CAppModule _Module;
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL WINAPI DllMain(HINSTANCE, DWORD dwReason, LPVOID)
+extern "C" BOOL WINAPI DllMain(HINSTANCE, DWORD dwReason, LPVOID)
 {
    return TRUE;
 }

@@ -32,12 +32,12 @@ public:
 
 private:
    BEGIN_MSG_MAP_EX(cMsPlugInExportDlg)
+      REFLECT_NOTIFICATIONS()
       MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
       COMMAND_ID_HANDLER(IDOK, OnOK)
       COMMAND_ID_HANDLER(IDCANCEL, OnCancel)
       COMMAND_ID_HANDLER(IDC_BROWSE, OnBrowse)
       COMMAND_ID_HANDLER(IDC_EXPORTANIMATIONS, OnExportAnimations)
-      REFLECT_NOTIFICATIONS()
       CHAIN_MSG_MAP(CDialogResize<cMsPlugInExportDlg>)
    END_MSG_MAP()
 
@@ -58,6 +58,18 @@ private:
    LRESULT OnCancel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL & bHandled);
    LRESULT OnBrowse(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL & bHandled);
    LRESULT OnExportAnimations(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL & bHandled);
+
+   // Reflect only WM_NOTIFY messages
+   LRESULT ReflectNotifications(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+   {
+      if (uMsg == WM_NOTIFY)
+      {
+         HWND hWndChild = ((LPNMHDR)lParam)->hwndFrom;
+         return ::SendMessage(hWndChild, OCM__BASE + uMsg, wParam, lParam);
+      }
+      bHandled = FALSE;
+      return 1;
+   }
 
 private:
    CString m_exportFileName;
