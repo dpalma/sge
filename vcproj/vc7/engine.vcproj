@@ -341,21 +341,6 @@
 					RelativePath="..\..\engine\src\saveloadmanager.cpp">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\scene.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\scenecamera.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\sceneentity.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\sceneentityenum.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\scenelayer.cpp">
-				</File>
-				<File
 					RelativePath="..\..\engine\src\sim.cpp">
 				</File>
 				<File
@@ -471,21 +456,6 @@
 					RelativePath="..\..\engine\src\saveloadmanager.h">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\scene.h">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\scenecamera.h">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\sceneentity.h">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\sceneentityenum.h">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\scenelayer.h">
-				</File>
-				<File
 					RelativePath="..\..\engine\src\soundwin.h">
 				</File>
 				<File
@@ -531,9 +501,6 @@
 			</File>
 			<File
 				RelativePath="..\..\engine\include\saveloadapi.h">
-			</File>
-			<File
-				RelativePath="..\..\engine\include\sceneapi.h">
 			</File>
 			<File
 				RelativePath="..\..\engine\include\scriptapi.h">
