@@ -6,6 +6,7 @@
 
 #include "enginedll.h"
 #include "comtools.h"
+#include "modelapi.h"
 #include "renderapi.h"
 
 #include "quat.h"
@@ -250,6 +251,46 @@ template class ENGINE_API std::vector<cModelJoint>;
 typedef std::vector<cModelJoint> tModelJoints;
 
 
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cModelAnimation
+//
+
+class ENGINE_API cModelAnimation
+{
+public:
+   cModelAnimation();
+   cModelAnimation(const cModelAnimation & other);
+
+   cModelAnimation(const tModelKeyFrames & keyFrames);
+
+   ~cModelAnimation();
+
+   const cModelAnimation & operator =(const cModelAnimation & other);
+
+   size_t GetKeyFrameCount() const;
+   tResult GetKeyFrame(uint index, sModelKeyFrame * pFrame) const;
+
+   tResult Interpolate(double time, tVec3 * pTrans, tQuat * pRot) const;
+
+private:
+   std::vector<sModelKeyFrame> m_keyFrames;
+};
+
+inline size_t cModelAnimation::GetKeyFrameCount() const
+{
+   return m_keyFrames.size();
+}
+
+
+#if _MSC_VER > 1300
+template class ENGINE_API std::allocator<cModelAnimation>;
+template class ENGINE_API std::vector<cModelAnimation>;
+#endif
+
+typedef std::vector<cModelAnimation> tModelAnimations;
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -304,7 +345,6 @@ public:
    static tResult RegisterResourceFormat();
 
 private:
-
    // Transform every vertex by the inverse of its affecting
    // joint's absolute transform
    void PreApplyJoints();

@@ -175,9 +175,9 @@ cModelJoint::cModelJoint()
 ///////////////////////////////////////
 
 cModelJoint::cModelJoint(const cModelJoint & other)
- : m_parentIndex(other.m_parentIndex),
-   m_localTransform(other.m_localTransform),
-   m_keyFrames(other.m_keyFrames.size())
+ : m_parentIndex(other.m_parentIndex)
+ , m_localTransform(other.m_localTransform)
+ , m_keyFrames(other.m_keyFrames.size())
 {
    std::copy(other.m_keyFrames.begin(), other.m_keyFrames.end(), m_keyFrames.begin());
 }
@@ -185,9 +185,9 @@ cModelJoint::cModelJoint(const cModelJoint & other)
 ///////////////////////////////////////
 
 cModelJoint::cModelJoint(int parentIndex, const tMatrix4 & localTransform, const tModelKeyFrames & keyFrames)
- : m_parentIndex(parentIndex),
-   m_localTransform(localTransform),
-   m_keyFrames(keyFrames.size())
+ : m_parentIndex(parentIndex)
+ , m_localTransform(localTransform)
+ , m_keyFrames(keyFrames.size())
 {
    std::copy(keyFrames.begin(), keyFrames.end(), m_keyFrames.begin());
 }
@@ -266,6 +266,101 @@ tResult cModelJoint::Interpolate(double time, tVec3 * pTrans, tQuat * pRot) cons
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: cModelAnimation
+//
+
+///////////////////////////////////////
+
+cModelAnimation::cModelAnimation()
+{
+}
+
+///////////////////////////////////////
+
+cModelAnimation::cModelAnimation(const cModelAnimation & other)
+ : m_keyFrames(other.m_keyFrames.size())
+{
+   std::copy(other.m_keyFrames.begin(), other.m_keyFrames.end(), m_keyFrames.begin());
+}
+
+///////////////////////////////////////
+
+cModelAnimation::cModelAnimation(const tModelKeyFrames & keyFrames)
+ : m_keyFrames(keyFrames.size())
+{
+   std::copy(keyFrames.begin(), keyFrames.end(), m_keyFrames.begin());
+}
+
+///////////////////////////////////////
+
+cModelAnimation::~cModelAnimation()
+{
+}
+
+///////////////////////////////////////
+
+const cModelAnimation & cModelAnimation::operator =(const cModelAnimation & other)
+{
+   m_keyFrames.resize(other.m_keyFrames.size());
+   std::copy(other.m_keyFrames.begin(), other.m_keyFrames.end(), m_keyFrames.begin());
+   return *this;
+}
+
+///////////////////////////////////////
+
+tResult cModelAnimation::GetKeyFrame(uint index, sModelKeyFrame * pFrame) const
+{
+   if (pFrame == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (index >= m_keyFrames.size())
+   {
+      return E_INVALIDARG;
+   }
+
+   *pFrame = m_keyFrames[index];
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cModelAnimation::Interpolate(double time, tVec3 * pTrans, tQuat * pRot) const
+{
+   if (pTrans == NULL || pRot == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tModelKeyFrames::const_iterator iter = m_keyFrames.begin();
+   tModelKeyFrames::const_iterator prev = iter;
+   for (; iter != m_keyFrames.end(); prev = iter, iter++)
+   {
+      if (iter->time >= time)
+      {
+         if (iter == prev)
+         {
+            *pRot = iter->rotation;
+            *pTrans = iter->translation;
+         }
+         else
+         {
+            double u = (time - prev->time) / (iter->time - prev->time);
+            *pRot = QuatSlerp(prev->rotation, iter->rotation, static_cast<float>(u));
+            *pTrans = Vec3Lerp(prev->translation, iter->translation, (tVec3::value_type)u);
+         }
+
+         return S_OK;
+      }
+   }
+
+   return E_FAIL;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cModel
 //
 
@@ -274,6 +369,8 @@ tResult cModelJoint::Interpolate(double time, tVec3 * pTrans, tQuat * pRot) cons
 cModel::cModel()
 {
 }
+
+///////////////////////////////////////
 
 cModel::cModel(const tModelVertices & verts,
                const tModelMaterials & materials,
@@ -347,8 +444,7 @@ tResult cModel::Create(const tModelVertices & verts,
 
    int iRootJoint = -1;
    tModelJoints::const_iterator iter = joints.begin();
-   tModelJoints::const_iterator end = joints.end();
-   for (int i = 0; iter != end; iter++, i++)
+   for (int i = 0; iter != joints.end(); iter++, i++)
    {
       if (iter->GetParentIndex() < 0)
       {
@@ -385,8 +481,7 @@ double cModel::GetTotalAnimationLength() const
    double maxTime = DBL_MIN;
 
    tModelJoints::const_iterator iter = m_joints.begin();
-   tModelJoints::const_iterator end = m_joints.end();
-   for (; iter != end; iter++)
+   for (; iter != m_joints.end(); iter++)
    {
       uint nKeyFrames = iter->GetKeyFrameCount();
       if (nKeyFrames > 0)
@@ -571,6 +666,61 @@ void cModel::PreApplyJoints()
 
 
 ///////////////////////////////////////
+
+template <typename CONTAINER>
+void ParseAnimDescs(const tChar * pszAnimString, CONTAINER * pContainer)
+{
+   std::vector<cStr> animStrings;
+   if (cStr(pszAnimString).ParseTuple(&animStrings, _T("\n")) > 0)
+   {
+      std::vector<cStr>::iterator iter = animStrings.begin();
+      for (; iter != animStrings.end(); iter++)
+      {
+         iter->TrimLeadingSpace();
+         iter->TrimTrailingSpace();
+
+         const cStr & animString = *iter;
+
+         std::vector<cStr> temp;
+         if (iter->ParseTuple(&temp) == 3)
+         {
+            static const struct
+            {
+               eModelAnimationType type;
+               const char * pszType;
+            }
+            animTypes[] =
+            {
+               { kMAT_Walk, "walk" },
+               { kMAT_Run, "run" },
+               { kMAT_Death, "death" },
+               { kMAT_Attack, "attack" },
+               { kMAT_Damage, "damage" },
+               { kMAT_Idle, "idle" },
+            };
+
+            const cStr & animType = temp[2];
+
+            for (int j = 0; j < _countof(animTypes); j++)
+            {
+               if (animType.compare(animTypes[j].pszType) == 0)
+               {
+                  sModelAnimationDesc animDesc;
+                  animDesc.type = animTypes[j].type;
+                  animDesc.start = temp[0].ToInt();
+                  animDesc.end = temp[1].ToInt();
+                  animDesc.fps = 0;
+                  if (animDesc.start > 0 || animDesc.end > 0)
+                  {
+                     pContainer->push_back(animDesc);
+                  }
+                  break;
+               }
+            }
+         }
+      }
+   }
+}
 
 static bool ModelVertsEqual(const sModelVertex & vert1, const sModelVertex & vert2)
 {
@@ -902,6 +1052,110 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
          }
 
          joints[i] = cModelJoint(parentIndex, local, keyFrames);
+      }
+   }
+
+   //////////////////////////////
+   // Read the comments, if present (MilkShape versions 1.7+)
+
+   std::vector<sModelAnimationDesc> animDescs;
+
+   int subVersion = 0;
+   if (pReader->Read(&subVersion, sizeof(subVersion)) == S_OK
+      && subVersion == 1)
+   {
+      {
+         int nGroupComments = 0;
+         if (pReader->Read(&nGroupComments, sizeof(nGroupComments)) == S_OK
+            && nGroupComments > 0)
+         {
+            for (int i = 0; i < nGroupComments; i++)
+            {
+               int index, length;
+               if (pReader->Read(&index, sizeof(index)) != S_OK
+                  || pReader->Read(&length, sizeof(length)) != S_OK)
+               {
+                  return NULL;
+               }
+               
+               char * pszTemp = (char *)alloca((length + 1) * sizeof(char));
+               if (pReader->Read(pszTemp, length * sizeof(char)) != S_OK)
+               {
+                  return NULL;
+               }
+               pszTemp[length] = 0;
+            }
+         }
+      }
+
+      {
+         int nMaterialComments = 0;
+         if (pReader->Read(&nMaterialComments, sizeof(nMaterialComments)) == S_OK
+            && nMaterialComments > 0)
+         {
+            for (int i = 0; i < nMaterialComments; i++)
+            {
+               int index, length;
+               if (pReader->Read(&index, sizeof(index)) != S_OK
+                  || pReader->Read(&length, sizeof(length)) != S_OK)
+               {
+                  return NULL;
+               }
+               
+               char * pszTemp = (char *)alloca((length + 1) * sizeof(char));
+               if (pReader->Read(pszTemp, length * sizeof(char)) != S_OK)
+               {
+                  return NULL;
+               }
+               pszTemp[length] = 0;
+            }
+         }
+      }
+
+      {
+         int nJointComments = 0;
+         if (pReader->Read(&nJointComments, sizeof(nJointComments)) == S_OK
+            && nJointComments > 0)
+         {
+            for (int i = 0; i < nJointComments; i++)
+            {
+               int index, length;
+               if (pReader->Read(&index, sizeof(index)) != S_OK
+                  || pReader->Read(&length, sizeof(length)) != S_OK)
+               {
+                  return NULL;
+               }
+               
+               char * pszTemp = (char *)alloca((length + 1) * sizeof(char));
+               if (pReader->Read(pszTemp, length * sizeof(char)) != S_OK)
+               {
+                  return NULL;
+               }
+               pszTemp[length] = 0;
+            }
+         }
+      }
+
+      {
+         int hasModelComment = 0;
+         if (pReader->Read(&hasModelComment, sizeof(hasModelComment)) == S_OK
+            && hasModelComment == 1)
+         {
+            int length;
+            if (pReader->Read(&length, sizeof(length)) != S_OK)
+            {
+               return NULL;
+            }
+            
+            char * pszTemp = (char *)alloca((length + 1) * sizeof(char));
+            if (pReader->Read(pszTemp, length * sizeof(char)) != S_OK)
+            {
+               return NULL;
+            }
+            pszTemp[length] = 0;
+
+            ParseAnimDescs(pszTemp, &animDescs);
+         }
       }
    }
 
