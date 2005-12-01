@@ -14,6 +14,7 @@ sources = Split("""
    src/input.cpp
    src/luainterp.cpp
    src/model.cpp
+   src/modelanim.cpp
    src/ms3dread.cpp
    src/ray.cpp
    src/saveloadmanager.cpp

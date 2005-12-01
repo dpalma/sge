@@ -40,9 +40,8 @@ public:
 private:
    cStr m_model;
    cModel * m_pModel;
-   double m_animationTime, m_animationLength;
    tBlendedVertices m_blendedVerts;
-   std::vector<tMatrix4> m_blendMatrices;
+   cAutoIPtr<IModelAnimationController> m_pAnimController;
 
    tVec3 m_position;
 

@@ -9,12 +9,7 @@
 #include "modelapi.h"
 #include "renderapi.h"
 
-#include "quat.h"
-#include "vec3.h"
-#include "matrix4.h"
 #include "techstring.h"
-
-#include <vector>
 
 #ifdef _MSC_VER
 #pragma once
@@ -30,17 +25,14 @@ F_DECLARE_INTERFACE(IReader);
 
 enum ePrimitiveType;
 
+class cModel;
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #if _MSC_VER > 1300
-template class ENGINE_API cMatrix4<float>;
-template class ENGINE_API std::allocator< cMatrix4<float> >;
-template class ENGINE_API std::vector< cMatrix4<float> >;
 template class ENGINE_API std::allocator<uint16>;
 template class ENGINE_API std::vector<uint16>;
 #endif
-
-typedef std::vector< cMatrix4<float> > tMatrices;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -177,26 +169,6 @@ ENGINE_API bool GlValidateIndices(const uint16 * pIndices, uint nIndices, uint n
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// STRUCT: sModelKeyFrame
-//
-
-struct sModelKeyFrame
-{
-   double time;
-   tVec3 translation;
-   tQuat rotation;
-};
-
-#if _MSC_VER > 1300
-template class ENGINE_API std::allocator<sModelKeyFrame>;
-template class ENGINE_API std::vector<sModelKeyFrame>;
-#endif
-
-typedef std::vector<sModelKeyFrame> tModelKeyFrames;
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
 // CLASS: cModelJoint
 //
 
@@ -223,8 +195,7 @@ public:
 private:
    int m_parentIndex;
    tMatrix4 m_localTransform;
-
-   std::vector<sModelKeyFrame> m_keyFrames;
+   cAutoIPtr<IModelKeyFrameInterpolator> m_pInterp;
 };
 
 inline int cModelJoint::GetParentIndex() const
@@ -237,11 +208,6 @@ inline const tMatrix4 & cModelJoint::GetLocalTransform() const
    return m_localTransform;
 }
 
-inline uint cModelJoint::GetKeyFrameCount() const
-{
-   return m_keyFrames.size();
-}
-
 
 #if _MSC_VER > 1300
 template class ENGINE_API std::allocator<cModelJoint>;
@@ -249,46 +215,6 @@ template class ENGINE_API std::vector<cModelJoint>;
 #endif
 
 typedef std::vector<cModelJoint> tModelJoints;
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cModelAnimation
-//
-
-class ENGINE_API cModelAnimation
-{
-public:
-   cModelAnimation();
-   cModelAnimation(const cModelAnimation & other);
-
-   cModelAnimation(const tModelKeyFrames & keyFrames);
-
-   ~cModelAnimation();
-
-   const cModelAnimation & operator =(const cModelAnimation & other);
-
-   size_t GetKeyFrameCount() const;
-   tResult GetKeyFrame(uint index, sModelKeyFrame * pFrame) const;
-
-   tResult Interpolate(double time, tVec3 * pTrans, tQuat * pRot) const;
-
-private:
-   std::vector<sModelKeyFrame> m_keyFrames;
-};
-
-inline size_t cModelAnimation::GetKeyFrameCount() const
-{
-   return m_keyFrames.size();
-}
-
-
-#if _MSC_VER > 1300
-template class ENGINE_API std::allocator<cModelAnimation>;
-template class ENGINE_API std::vector<cModelAnimation>;
-#endif
-
-typedef std::vector<cModelAnimation> tModelAnimations;
 
 
 

@@ -41,8 +41,6 @@ const sVertexElement g_blendedVert[] =
 cModelEntity::cModelEntity(const tChar * pszModel, const tVec3 & position)
  : m_model(pszModel)
  , m_pModel(NULL)
- , m_animationTime(0)
- , m_animationLength(0)
  , m_position(position)
  , m_bUpdateWorldTransform(true)
 {
@@ -90,20 +88,14 @@ void cModelEntity::Update(double elapsedTime)
       if (pModel != m_pModel)
       {
          m_pModel = pModel;
-         m_animationLength = pModel->GetTotalAnimationLength();
+         ModelAnimationControllerCreate(m_pModel, &m_pAnimController);
       }
    }
 
    if (m_pModel->IsAnimated())
    {
-      m_animationTime += elapsedTime;
-      while (m_animationTime > m_animationLength)
-      {
-         m_animationTime -= m_animationLength;
-      }
-
-      m_pModel->InterpolateJointMatrices(m_animationTime, &m_blendMatrices);
-      m_pModel->ApplyJointMatrices(m_blendMatrices, &m_blendedVerts);
+      m_pAnimController->Advance(elapsedTime);
+      m_pModel->ApplyJointMatrices(m_pAnimController->GetBlendMatrices(), &m_blendedVerts);
    }
 }
 

@@ -177,9 +177,8 @@ cModelJoint::cModelJoint()
 cModelJoint::cModelJoint(const cModelJoint & other)
  : m_parentIndex(other.m_parentIndex)
  , m_localTransform(other.m_localTransform)
- , m_keyFrames(other.m_keyFrames.size())
+ , m_pInterp(other.m_pInterp)
 {
-   std::copy(other.m_keyFrames.begin(), other.m_keyFrames.end(), m_keyFrames.begin());
 }
 
 ///////////////////////////////////////
@@ -187,9 +186,8 @@ cModelJoint::cModelJoint(const cModelJoint & other)
 cModelJoint::cModelJoint(int parentIndex, const tMatrix4 & localTransform, const tModelKeyFrames & keyFrames)
  : m_parentIndex(parentIndex)
  , m_localTransform(localTransform)
- , m_keyFrames(keyFrames.size())
 {
-   std::copy(keyFrames.begin(), keyFrames.end(), m_keyFrames.begin());
+   ModelKeyFrameInterpolatorCreate(&keyFrames[0], keyFrames.size(), &m_pInterp);
 }
 
 ///////////////////////////////////////
@@ -204,159 +202,39 @@ const cModelJoint & cModelJoint::operator =(const cModelJoint & other)
 {
    m_parentIndex = other.m_parentIndex;
    m_localTransform = other.m_localTransform;
-   m_keyFrames.resize(other.m_keyFrames.size());
-   std::copy(other.m_keyFrames.begin(), other.m_keyFrames.end(), m_keyFrames.begin());
+   m_pInterp = other.m_pInterp;
    return *this;
+}
+
+///////////////////////////////////////
+
+uint cModelJoint::GetKeyFrameCount() const
+{
+   uint nKeyFrames = 0;
+   if (m_pInterp->GetKeyFrameCount(&nKeyFrames) == S_OK)
+   {
+      return nKeyFrames;
+   }
+   else
+   {
+      return 0;
+   }
 }
 
 ///////////////////////////////////////
 
 tResult cModelJoint::GetKeyFrame(uint index, sModelKeyFrame * pFrame) const
 {
-   if (pFrame == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (index >= m_keyFrames.size())
-   {
-      return E_INVALIDARG;
-   }
-
-   *pFrame = m_keyFrames[index];
-   return S_OK;
+   return m_pInterp->GetKeyFrame(index, pFrame);
 }
 
 ///////////////////////////////////////
 
 tResult cModelJoint::Interpolate(double time, tVec3 * pTrans, tQuat * pRot) const
 {
-   if (pTrans == NULL || pRot == NULL)
-   {
-      return E_POINTER;
-   }
-
-   tModelKeyFrames::const_iterator iter = m_keyFrames.begin();
-   tModelKeyFrames::const_iterator prev = iter;
-   tModelKeyFrames::const_iterator end = m_keyFrames.end();
-   for (; iter != end; prev = iter, iter++)
-   {
-      if (iter->time >= time)
-      {
-         if (iter == prev)
-         {
-            *pRot = iter->rotation;
-            *pTrans = iter->translation;
-         }
-         else
-         {
-            double u = (time - prev->time) / (iter->time - prev->time);
-            *pRot = QuatSlerp(prev->rotation, iter->rotation, static_cast<float>(u));
-            *pTrans = Vec3Lerp(prev->translation, iter->translation, (tVec3::value_type)u);
-         }
-
-         return S_OK;
-      }
-   }
-
-   return E_FAIL;
+   return m_pInterp->Interpolate(time, pTrans, pRot);
 }
 
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cModelAnimation
-//
-
-///////////////////////////////////////
-
-cModelAnimation::cModelAnimation()
-{
-}
-
-///////////////////////////////////////
-
-cModelAnimation::cModelAnimation(const cModelAnimation & other)
- : m_keyFrames(other.m_keyFrames.size())
-{
-   std::copy(other.m_keyFrames.begin(), other.m_keyFrames.end(), m_keyFrames.begin());
-}
-
-///////////////////////////////////////
-
-cModelAnimation::cModelAnimation(const tModelKeyFrames & keyFrames)
- : m_keyFrames(keyFrames.size())
-{
-   std::copy(keyFrames.begin(), keyFrames.end(), m_keyFrames.begin());
-}
-
-///////////////////////////////////////
-
-cModelAnimation::~cModelAnimation()
-{
-}
-
-///////////////////////////////////////
-
-const cModelAnimation & cModelAnimation::operator =(const cModelAnimation & other)
-{
-   m_keyFrames.resize(other.m_keyFrames.size());
-   std::copy(other.m_keyFrames.begin(), other.m_keyFrames.end(), m_keyFrames.begin());
-   return *this;
-}
-
-///////////////////////////////////////
-
-tResult cModelAnimation::GetKeyFrame(uint index, sModelKeyFrame * pFrame) const
-{
-   if (pFrame == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (index >= m_keyFrames.size())
-   {
-      return E_INVALIDARG;
-   }
-
-   *pFrame = m_keyFrames[index];
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cModelAnimation::Interpolate(double time, tVec3 * pTrans, tQuat * pRot) const
-{
-   if (pTrans == NULL || pRot == NULL)
-   {
-      return E_POINTER;
-   }
-
-   tModelKeyFrames::const_iterator iter = m_keyFrames.begin();
-   tModelKeyFrames::const_iterator prev = iter;
-   for (; iter != m_keyFrames.end(); prev = iter, iter++)
-   {
-      if (iter->time >= time)
-      {
-         if (iter == prev)
-         {
-            *pRot = iter->rotation;
-            *pTrans = iter->translation;
-         }
-         else
-         {
-            double u = (time - prev->time) / (iter->time - prev->time);
-            *pRot = QuatSlerp(prev->rotation, iter->rotation, static_cast<float>(u));
-            *pTrans = Vec3Lerp(prev->translation, iter->translation, (tVec3::value_type)u);
-         }
-
-         return S_OK;
-      }
-   }
-
-   return E_FAIL;
-}
 
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -329,6 +329,9 @@
 					RelativePath="..\..\engine\src\model.cpp">
 				</File>
 				<File
+					RelativePath="..\..\engine\src\modelanim.cpp">
+				</File>
+				<File
 					RelativePath="..\..\engine\src\ms3dread.cpp">
 				</File>
 				<File
@@ -442,6 +445,9 @@
 				</File>
 				<File
 					RelativePath="..\..\engine\src\luainterp.h">
+				</File>
+				<File
+					RelativePath="..\..\engine\src\modelanim.h">
 				</File>
 				<File
 					RelativePath="..\..\engine\src\ms3d.h">
