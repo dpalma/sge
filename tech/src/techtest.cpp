@@ -85,7 +85,8 @@ void cMD5Tests::MDTimeTrial()
    DebugMsg3("MD%d time trial. Digesting %d %d-byte blocks ...", MD, TEST_BLOCK_LEN, TEST_BLOCK_COUNT);
 
    /* Initialize block */
-   for (int i = 0; i < TEST_BLOCK_LEN; i++)
+   int i;
+   for (i = 0; i < TEST_BLOCK_LEN; i++)
    {
       block[i] = (byte)(i & 0xff);
    }

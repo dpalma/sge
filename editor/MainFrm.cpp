@@ -199,7 +199,8 @@ void CMainFrame::OnUpdateViewControlBarMenu(CCmdUI* pCmdUI)
       return;
    }
 
-   for (uint i = 0; i < m_ctrlBars.size(); i++)
+   uint i;
+   for (i = 0; i < m_ctrlBars.size(); i++)
    {
       pCmdUI->m_pMenu->DeleteMenu(pCmdUI->m_nID + i, MF_BYCOMMAND);
    }

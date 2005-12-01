@@ -52,7 +52,7 @@ static void random_string(char * str, int maxlen)
          str[i] = 'A' + (Rand() % 26);
    }
 
-   str[i] = 0;
+   str[len - 1] = 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -323,7 +323,8 @@ void cHashTableSpeedTests::RunLookupSpeedTest(int nLookups, double * pHashTableR
    double oneOverNumLookups = 1.0 / nLookups;
 
    *pHashTableResult = 0;
-   for (int i = 0; i < nLookups; i++)
+   int i;
+   for (i = 0; i < nLookups; i++)
    {
       int index = -1;
       int64 start = ReadTSC();
