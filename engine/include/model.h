@@ -294,6 +294,41 @@ typedef std::vector<cModelAnimation> tModelAnimations;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: cModelSkeleton
+//
+
+class ENGINE_API cModelSkeleton
+{
+public:
+   cModelSkeleton();
+   cModelSkeleton(const cModelSkeleton & other);
+
+   cModelSkeleton(const tModelJoints & joints);
+
+   ~cModelSkeleton();
+
+   const cModelSkeleton & operator =(const cModelSkeleton & other);
+
+   bool IsAnimated() const { return !m_joints.empty(); }
+
+   void PreApplyInverses(tModelVertices::iterator first,
+                         tModelVertices::iterator last,
+                         tModelVertices::iterator dest) const;
+
+   double GetAnimationLength() const;
+
+   void InterpolateMatrices(double time, tMatrices * pMatrices) const;
+
+private:
+   void CalculateInverses();
+
+   tModelJoints m_joints;
+   tMatrices m_inverses;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cModel
 //
 
@@ -313,7 +348,7 @@ class ENGINE_API cModel
    cModel(const tModelVertices & verts,
           const tModelMaterials & materials,
           const tModelMeshes & meshes,
-          const tModelJoints & joints);
+          const cModelSkeleton & skeleton);
 
 public:
    virtual ~cModel();
@@ -326,7 +361,7 @@ public:
    static tResult Create(const tModelVertices & verts,
                          const tModelMaterials & materials,
                          const tModelMeshes & meshes,
-                         const tModelJoints & joints,
+                         const cModelSkeleton & skeleton,
                          cModel * * ppModel);
 
    bool IsAnimated() const;
@@ -357,12 +392,12 @@ private:
    std::vector<sModelVertex> m_vertices;
    std::vector<cModelMaterial> m_materials;
    std::vector<cModelMesh> m_meshes;
-   std::vector<cModelJoint> m_joints;
+   cModelSkeleton m_skeleton;
 };
 
 inline bool cModel::IsAnimated() const
 {
-   return !m_joints.empty();
+   return m_skeleton.IsAnimated();
 }
 
 inline const tModelVertices & cModel::GetVertices() const

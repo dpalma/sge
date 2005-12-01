@@ -46,11 +46,16 @@ float cStr::ToFloat() const
 
 ///////////////////////////////////////
 
-int cStr::ParseTuple(std::vector<cStr> * pStrings) const
+int cStr::ParseTuple(std::vector<cStr> * pStrings, const tChar * pszDelims /*=NULL*/) const
 {
    if (pStrings == NULL)
    {
       return E_POINTER;
+   }
+
+   if (pszDelims == NULL)
+   {
+      pszDelims = _T(",;");
    }
 
    pStrings->clear();
@@ -87,7 +92,7 @@ int cStr::ParseTuple(std::vector<cStr> * pStrings) const
          psz = _tcsinc(psz);
       }
 
-      const tChar * psz2 = _tcspbrk(psz, _T(",;"));
+      const tChar * psz2 = _tcspbrk(psz, pszDelims);
       if (psz2 == NULL)
       {
          psz2 = pszStop;

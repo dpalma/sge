@@ -361,117 +361,86 @@ tResult cModelAnimation::Interpolate(double time, tVec3 * pTrans, tQuat * pRot) 
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cModel
+// CLASS: cModelSkeleton
 //
 
 ///////////////////////////////////////
 
-cModel::cModel()
+cModelSkeleton::cModelSkeleton()
 {
 }
 
 ///////////////////////////////////////
 
-cModel::cModel(const tModelVertices & verts,
-               const tModelMaterials & materials,
-               const tModelMeshes & meshes)
- : m_vertices(verts.size()),
-   m_materials(materials.size()),
-   m_meshes(meshes.size())
+cModelSkeleton::cModelSkeleton(const cModelSkeleton & other)
+ : m_joints(other.m_joints.size())
+ , m_inverses(other.m_inverses.size())
 {
-   std::copy(verts.begin(), verts.end(), m_vertices.begin());
-   std::copy(materials.begin(), materials.end(), m_materials.begin());
-   std::copy(meshes.begin(), meshes.end(), m_meshes.begin());
+   std::copy(other.m_joints.begin(), other.m_joints.end(), m_joints.begin());
+   std::copy(other.m_inverses.begin(), other.m_inverses.end(), m_inverses.begin());
 }
 
 ///////////////////////////////////////
 
-cModel::cModel(const tModelVertices & verts,
-               const tModelMaterials & materials,
-               const tModelMeshes & meshes,
-               const tModelJoints & joints)
- : m_vertices(verts.size()),
-   m_materials(materials.size()),
-   m_meshes(meshes.size()),
-   m_joints(joints.size())
+cModelSkeleton::cModelSkeleton(const tModelJoints & joints)
+ : m_joints(joints.size())
 {
-   std::copy(verts.begin(), verts.end(), m_vertices.begin());
-   std::copy(materials.begin(), materials.end(), m_materials.begin());
-   std::copy(meshes.begin(), meshes.end(), m_meshes.begin());
-   std::copy(joints.begin(), joints.end(), m_joints.begin());
-}
-
-///////////////////////////////////////
-
-cModel::~cModel()
-{
-}
-
-///////////////////////////////////////
-
-tResult cModel::Create(const tModelVertices & verts,
-                       const tModelMaterials & materials,
-                       const tModelMeshes & meshes,
-                       cModel * * ppModel)
-{
-   if (ppModel == NULL)
+   if (!joints.empty())
    {
-      return E_POINTER;
+      std::copy(joints.begin(), joints.end(), m_joints.begin());
+      CalculateInverses();
+   }
+}
+
+///////////////////////////////////////
+
+cModelSkeleton::~cModelSkeleton()
+{
+}
+
+///////////////////////////////////////
+
+const cModelSkeleton & cModelSkeleton::operator =(const cModelSkeleton & other)
+{
+   m_joints.resize(other.m_joints.size());
+   std::copy(other.m_joints.begin(), other.m_joints.end(), m_joints.begin());
+   m_inverses.resize(other.m_inverses.size());
+   std::copy(other.m_inverses.begin(), other.m_inverses.end(), m_inverses.begin());
+   return *this;
+}
+
+///////////////////////////////////////
+
+void cModelSkeleton::PreApplyInverses(tModelVertices::iterator first,
+                                      tModelVertices::iterator last,
+                                      tModelVertices::iterator dest) const
+{
+   if (m_inverses.empty())
+   {
+      return;
    }
 
-   cModel * pModel = new cModel(verts, materials, meshes);
-   if (pModel == NULL)
+   for (tModelVertices::iterator iter = first, out = dest; iter != last; iter++, out++)
    {
-      return E_OUTOFMEMORY;
-   }
-
-   *ppModel = pModel;
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cModel::Create(const tModelVertices & verts,
-                       const tModelMaterials & materials,
-                       const tModelMeshes & meshes,
-                       const tModelJoints & joints,
-                       cModel * * ppModel)
-{
-   if (ppModel == NULL)
-   {
-      return E_POINTER;
-   }
-
-   int iRootJoint = -1;
-   tModelJoints::const_iterator iter = joints.begin();
-   for (int i = 0; iter != joints.end(); iter++, i++)
-   {
-      if (iter->GetParentIndex() < 0)
+      int index = Round(iter->bone);
+      if (index < 0)
       {
-         if (iRootJoint >= 0)
-         {
-            ErrorMsg("No unique root joint");
-            return E_FAIL;
-         }
-         iRootJoint = i;
+         continue;
       }
+
+      tVec3 xformNormal;
+      m_inverses[index].Transform(iter->normal, &xformNormal);
+      out->normal = xformNormal;
+
+      tVec3 xformPos;
+      m_inverses[index].Transform(iter->pos, &xformPos);
+      out->pos = xformPos;
    }
-
-   cModel * pModel = new cModel(verts, materials, meshes, joints);
-   if (pModel == NULL)
-   {
-      return E_OUTOFMEMORY;
-   }
-
-   pModel->PreApplyJoints();
-
-   *ppModel = pModel;
-   return S_OK;
 }
 
 ///////////////////////////////////////
 
-double cModel::GetTotalAnimationLength() const
+double cModelSkeleton::GetAnimationLength() const
 {
    if (m_joints.empty())
    {
@@ -502,7 +471,7 @@ double cModel::GetTotalAnimationLength() const
 
 ///////////////////////////////////////
 
-void cModel::InterpolateJointMatrices(double time, tMatrices * pMatrices) const
+void cModelSkeleton::InterpolateMatrices(double time, tMatrices * pMatrices) const
 {
    pMatrices->resize(m_joints.size());
 
@@ -538,6 +507,183 @@ void cModel::InterpolateJointMatrices(double time, tMatrices * pMatrices) const
          (*pMatrices)[i] = temp;
       }
    }
+}
+
+///////////////////////////////////////
+
+void cModelSkeleton::CalculateInverses()
+{
+   if (m_joints.empty())
+   {
+      return;
+   }
+
+   uint i;
+   int iRootJoint = -1;
+   std::multimap<int, int> jointChildMap;
+   tModelJoints::const_iterator iter = m_joints.begin();
+   for (i = 0; iter != m_joints.end(); iter++, i++)
+   {
+      int iParent = iter->GetParentIndex();
+      if (iParent >= 0)
+      {
+         jointChildMap.insert(std::make_pair(iParent, i));
+      }
+      else
+      {
+         Assert(iRootJoint == -1);
+         iRootJoint = i;
+      }
+   }
+
+   if (iRootJoint < 0)
+   {
+      ErrorMsg("Bad set of joints: no root\n");
+      return;
+   }
+
+   tMatrices absolutes(m_joints.size(), tMatrix4::GetIdentity());
+
+   std::stack<int> s;
+   s.push(iRootJoint);
+   while (!s.empty())
+   {
+      int iJoint = s.top();
+      s.pop();
+
+      int iParent = m_joints[iJoint].GetParentIndex();
+      if (iParent == -1)
+      {
+         absolutes[iJoint] = m_joints[iJoint].GetLocalTransform();
+      }
+      else
+      {
+         absolutes[iParent].Multiply(m_joints[iJoint].GetLocalTransform(), &absolutes[iJoint]);
+      }
+
+      std::multimap<int, int>::iterator iter = jointChildMap.lower_bound(iJoint);
+      std::multimap<int, int>::iterator end = jointChildMap.upper_bound(iJoint);
+      for (; iter != end; iter++)
+      {
+         s.push(iter->second);
+      }
+   }
+
+   m_inverses.resize(m_joints.size(), tMatrix4::GetIdentity());
+   for (i = 0; i < m_inverses.size(); i++)
+   {
+      MatrixInvert(absolutes[i].m, m_inverses[i].m);
+   }
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cModel
+//
+
+///////////////////////////////////////
+
+cModel::cModel()
+{
+}
+
+///////////////////////////////////////
+
+cModel::cModel(const tModelVertices & verts,
+               const tModelMaterials & materials,
+               const tModelMeshes & meshes)
+ : m_vertices(verts.size()),
+   m_materials(materials.size()),
+   m_meshes(meshes.size())
+{
+   std::copy(verts.begin(), verts.end(), m_vertices.begin());
+   std::copy(materials.begin(), materials.end(), m_materials.begin());
+   std::copy(meshes.begin(), meshes.end(), m_meshes.begin());
+}
+
+///////////////////////////////////////
+
+cModel::cModel(const tModelVertices & verts,
+               const tModelMaterials & materials,
+               const tModelMeshes & meshes,
+               const cModelSkeleton & skeleton)
+ : m_vertices(verts.size())
+ , m_materials(materials.size())
+ , m_meshes(meshes.size())
+ , m_skeleton(skeleton)
+{
+   std::copy(verts.begin(), verts.end(), m_vertices.begin());
+   std::copy(materials.begin(), materials.end(), m_materials.begin());
+   std::copy(meshes.begin(), meshes.end(), m_meshes.begin());
+}
+
+///////////////////////////////////////
+
+cModel::~cModel()
+{
+}
+
+///////////////////////////////////////
+
+tResult cModel::Create(const tModelVertices & verts,
+                       const tModelMaterials & materials,
+                       const tModelMeshes & meshes,
+                       cModel * * ppModel)
+{
+   if (ppModel == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cModel * pModel = new cModel(verts, materials, meshes);
+   if (pModel == NULL)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   *ppModel = pModel;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cModel::Create(const tModelVertices & verts,
+                       const tModelMaterials & materials,
+                       const tModelMeshes & meshes,
+                       const cModelSkeleton & skeleton,
+                       cModel * * ppModel)
+{
+   if (ppModel == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cModel * pModel = new cModel(verts, materials, meshes, skeleton);
+   if (pModel == NULL)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   pModel->PreApplyJoints();
+
+   *ppModel = pModel;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+double cModel::GetTotalAnimationLength() const
+{
+   return m_skeleton.GetAnimationLength();
+}
+
+///////////////////////////////////////
+
+void cModel::InterpolateJointMatrices(double time, tMatrices * pMatrices) const
+{
+   m_skeleton.InterpolateMatrices(time, pMatrices);
 }
 
 ///////////////////////////////////////
@@ -582,86 +728,7 @@ tResult cModel::RegisterResourceFormat()
 
 void cModel::PreApplyJoints()
 {
-   if (m_joints.empty())
-   {
-      return;
-   }
-
-   int iRootJoint = -1;
-   std::multimap<int, int> jointChildMap;
-   tModelJoints::iterator iter = m_joints.begin();
-   tModelJoints::iterator end = m_joints.end();
-   for (int i = 0; iter != end; iter++, i++)
-   {
-      int iParent = iter->GetParentIndex();
-      if (iParent >= 0)
-      {
-         jointChildMap.insert(std::make_pair(iParent, i));
-      }
-      else
-      {
-         Assert(iRootJoint == -1);
-         iRootJoint = i;
-      }
-   }
-
-   if (iRootJoint == -1)
-   {
-      ErrorMsg("Bad set of joints: no root\n");
-      return;
-   }
-
-   {
-      tMatrices absolutes(m_joints.size(), tMatrix4::GetIdentity());
-      tMatrices inverses(m_joints.size(), tMatrix4::GetIdentity());
-
-      std::stack<int> s;
-      s.push(iRootJoint);
-      while (!s.empty())
-      {
-         int iJoint = s.top();
-         s.pop();
-
-         int iParent = m_joints[iJoint].GetParentIndex();
-         if (iParent == -1)
-         {
-            absolutes[iJoint] = m_joints[iJoint].GetLocalTransform();
-         }
-         else
-         {
-            absolutes[iParent].Multiply(m_joints[iJoint].GetLocalTransform(), &absolutes[iJoint]);
-         }
-
-         std::multimap<int, int>::iterator iter = jointChildMap.lower_bound(iJoint);
-         std::multimap<int, int>::iterator end = jointChildMap.upper_bound(iJoint);
-         for (; iter != end; iter++)
-         {
-            s.push(iter->second);
-         }
-      }
-
-      for (uint i = 0; i < inverses.size(); i++)
-      {
-         MatrixInvert(absolutes[i].m, inverses[i].m);
-      }
-
-      tModelVertices::iterator iter = m_vertices.begin();
-      tModelVertices::iterator end = m_vertices.end();
-      for (; iter != end; iter++)
-      {
-         int index = Round(iter->bone);
-         if (index >= 0)
-         {
-            tVec3 xformNormal;
-            inverses[index].Transform(iter->normal, &xformNormal);
-            iter->normal = xformNormal;
-
-            tVec3 xformPos;
-            inverses[index].Transform(iter->pos, &xformPos);
-            iter->pos = xformPos;
-         }
-      }
-   }
+   m_skeleton.PreApplyInverses(m_vertices.begin(), m_vertices.end(), m_vertices.begin());
 }
 
 
@@ -1005,7 +1072,6 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
          }
 
          jointNameMap.insert(std::make_pair(ms3dJoints[i].GetName(), i));
-
       }
 
       std::vector<cMs3dJoint>::iterator iter = ms3dJoints.begin();
@@ -1054,6 +1120,25 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
          joints[i] = cModelJoint(parentIndex, local, keyFrames);
       }
    }
+
+   {
+      int iRootJoint = -1;
+      tModelJoints::const_iterator iter = joints.begin();
+      for (int i = 0; iter != joints.end(); iter++, i++)
+      {
+         if (iter->GetParentIndex() < 0)
+         {
+            if (iRootJoint >= 0)
+            {
+               ErrorMsg("No unique root joint");
+               return NULL;
+            }
+            iRootJoint = i;
+         }
+      }
+   }
+
+   cModelSkeleton skeleton(joints);
 
    //////////////////////////////
    // Read the comments, if present (MilkShape versions 1.7+)
@@ -1165,7 +1250,7 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
    cModel * pModel = NULL;
    if (nJoints > 0)
    {
-      if (cModel::Create(vertices, materials, meshes, joints, &pModel) == S_OK)
+      if (cModel::Create(vertices, materials, meshes, skeleton, &pModel) == S_OK)
       {
          return pModel;
       }

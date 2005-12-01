@@ -50,7 +50,7 @@ public:
    int ToInt() const;
    float ToFloat() const;
 
-   int ParseTuple(std::vector<cStr> * pStrings) const;
+   int ParseTuple(std::vector<cStr> * pStrings, const tChar * pszDelims = NULL) const;
    int ParseTuple(double * pDoubles, int nMaxDoubles) const;
    int ParseTuple(float * pFloats, int nMaxFloats) const;
 
