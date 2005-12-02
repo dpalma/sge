@@ -133,12 +133,12 @@ function buildvc71(bldroot)
    io.write(cmdbase .. " /build StaticDebug" .. endl);
    io.write(cmdbase .. " /build StaticRelease" .. endl);
    cmdbase = "devenv sge.sln /useenv";
-   io.write(cmdbase .. " /build Opt" .. endl);
-   io.write(cmdbase .. " /build Debug" .. endl);
-   io.write(cmdbase .. " /build Release" .. endl);
+   io.write(cmdbase .. [[ /build Opt /out "]] .. pathcat(bldroot, "sge\\Build.vc71\\Opt\\sgeOptBuild.log") .. [["]] .. endl);
+   io.write(cmdbase .. [[ /build Debug /out "]] .. pathcat(bldroot, "sge\\Build.vc71\\Debug\\sgeDebugBuild.log") .. [["]] .. endl);
+   io.write(cmdbase .. [[ /build Release /out "]] .. pathcat(bldroot, "sge\\Build.vc71\\Release\\sgeReleaseBuild.log") .. [["]] .. endl);
    cmdbase = "devenv sgestatic.sln /useenv";
-   io.write(cmdbase .. " /build StaticDebug" .. endl);
-   io.write(cmdbase .. " /build StaticRelease" .. endl);
+   io.write(cmdbase .. [[ /build StaticDebug /out "]] .. pathcat(bldroot, "sge\\Build.vc71\\StaticDebug\\sgeStaticDebugBuild.log") .. [["]] .. endl);
+   io.write(cmdbase .. [[ /build StaticRelease /out "]] .. pathcat(bldroot, "sge\\Build.vc71\\StaticRelease\\sgeStaticReleaseBuild.log") .. [["]] .. endl);
    io.write("popd" .. endl);
 
    io.flush();
