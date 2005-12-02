@@ -18,11 +18,6 @@ sources = Split("""
    src/ms3dread.cpp
    src/ray.cpp
    src/saveloadmanager.cpp
-   src/scene.cpp
-   src/scenecamera.cpp
-   src/sceneentity.cpp
-   src/sceneentityenum.cpp
-   src/scenelayer.cpp
    src/scriptvar.cpp
    src/sim.cpp
    src/terrain.cpp
