@@ -3,6 +3,7 @@
 
 import os
 import re
+from Walk import Walk
 
 #############################################################################
 
@@ -57,7 +58,11 @@ class SGEEnvironment(Environment):
       
    def SetCommon(self):
       if platform == 'win32':
-         self.Append(CCFLAGS=['/GX']);
+         self.Append(CCFLAGS=['/EHsc']);
+         # HACK: turn off deprecation warnings and for-scope standards compliance for VC2005
+         if self.get('MSVS_VERSION') == '8.0':
+            self.Append(CXXFLAGS=['/Zc:forScope-'])
+            self.Append(CPPDEFINES=['_CRT_SECURE_NO_DEPRECATE'])
             
    def IsShared(self):
       return self.shared
@@ -110,14 +115,21 @@ class SGEEnvironment(Environment):
       if 'libs' in kw:
          self.Append(LIBS=kw.pop('libs'))
          
-   def BuildLibrary(self, *args, **kw):
+   def BuildStaticLibrary(self, *args, **kw):
       self.__PreBuild(*args, **kw)
+      self.StaticLibrary(*args, **kw)
+
+   def BuildSharedLibrary(self, *args, **kw):
+      self.__PreBuild(*args, **kw)
+      self.SharedLibrary(*args, **kw)
+         
+   def BuildLibrary(self, *args, **kw):
 #      if 'deffile' in kw:
 #         sources.append(kw.pop('deffile'))
       if self.shared:
-         self.SharedLibrary(*args, **kw)
+         self.BuildSharedLibrary(*args, **kw)
       else:
-         self.StaticLibrary(*args, **kw)
+         self.BuildStaticLibrary(*args, **kw)
          
    def BuildExecutable(self, *args, **kw):
       self.__PreBuild(*args, **kw)
@@ -129,43 +141,6 @@ class SGEEnvironment(Environment):
       else:
          return "Build.Release"
 
-
-#############################################################################
-# From http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/52664
-
-def Walk( root, recurse=0, pattern='*', return_folders=0 ):
-	import fnmatch, os, string
-	
-	# initialize
-	result = []
-
-	# must have at least root folder
-	try:
-		names = os.listdir(root)
-	except os.error:
-		return result
-
-	# expand pattern
-	pattern = pattern or '*'
-	pat_list = string.splitfields( pattern , ';' )
-	
-	# check each file
-	for name in names:
-		fullname = os.path.normpath(os.path.join(root, name))
-
-		# grab if it matches our pattern and entry type
-		for pat in pat_list:
-			if fnmatch.fnmatch(name, pat):
-				if os.path.isfile(fullname) or (return_folders and os.path.isdir(fullname)):
-					result.append(fullname)
-				continue
-				
-		# recursively scan other folders, appending results
-		if recurse:
-			if os.path.isdir(fullname) and not os.path.islink(fullname):
-				result = result + Walk( fullname, recurse, pattern, return_folders )
-			
-	return result
 
 #############################################################################
 

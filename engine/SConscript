@@ -17,8 +17,8 @@ sources = Split("""
    src/modelanim.cpp
    src/ms3dread.cpp
    src/ray.cpp
+   src/renderer.cpp
    src/saveloadmanager.cpp
-   src/scriptvar.cpp
    src/sim.cpp
    src/terrain.cpp
    src/terrainrender.cpp
