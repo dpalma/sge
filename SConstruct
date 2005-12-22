@@ -29,13 +29,13 @@ class SGEEnvironment(Environment):
    def UseTinyxml(self):
       self.Append(CPPDEFINES = ['TIXML_USE_STL'])
       self.Append(CPPPATH    = ['#3rdparty/tinyxml'])
-      self.Append(LIBPATH    = ['#3rdparty/tinyxml'])
+      self.Append(LIBPATH    = [self.AdjustLibDir('#3rdparty/tinyxml')])
       self.Append(LIBS       = ['tinyxml'])
       
    def UseGL(self):
       self.Append(CPPDEFINES = ['GLEW_STATIC'])
       self.Append(CPPPATH    = ['#3rdparty/glew/include'])
-      self.Append(LIBPATH    = ['#3rdparty/glew'])
+      self.Append(LIBPATH    = [self.AdjustLibDir('#3rdparty/glew')])
       self.Append(LIBS       = ['glew'])
       if platform == 'win32':
          self.Append(CPPPATH = ['#3rdparty/Cg/include'])
@@ -48,12 +48,12 @@ class SGEEnvironment(Environment):
          
    def UseZLib(self):
       self.Append(CPPPATH    = ['#3rdparty/zlib', '#3rdparty/zlib/contrib/minizip'])
-      self.Append(LIBPATH    = ['#3rdparty/zlib'])
+      self.Append(LIBPATH    = [self.AdjustLibDir('#3rdparty/zlib')])
       self.Append(LIBS       = ['zlibwapi'])
       
    def UseLua(self):
       self.Append(CPPPATH    = ['#3rdparty/lua/include'])
-      self.Append(LIBPATH    = ['#3rdparty/lua'])
+      self.Append(LIBPATH    = [self.AdjustLibDir('#3rdparty/lua')])
       self.Append(LIBS       = ['lua'])
       
    def SetCommon(self):
@@ -95,7 +95,11 @@ class SGEEnvironment(Environment):
       self.debug = 1
       self.SetCommon()
       if platform == 'win32':
-         self.Append(CCFLAGS=['/Od', '/GZ'], CPPDEFINES=['DEBUG'])
+         self.Append(CCFLAGS=['/Od'], CPPDEFINES=['DEBUG'])
+         if self.get('MSVS_VERSION') == '8.0':
+            self.Append(CCFLAGS=['/RTC1'])
+         else:
+            self.Append(CCFLAGS=['/GZ'])
       elif platform == 'cygwin':
          self.Append(CCFLAGS=['-g'])
          
@@ -111,7 +115,8 @@ class SGEEnvironment(Environment):
       if 'include_path' in kw:
          self.Append(CPPPATH=kw.pop('include_path'))
       if 'lib_path' in kw:
-         self.Append(LIBPATH=kw.pop('lib_path'))
+         libPaths = map(lambda x: self.AdjustLibDir(x), kw.pop('lib_path'))
+         self.Append(LIBPATH=libPaths)
       if 'libs' in kw:
          self.Append(LIBS=kw.pop('libs'))
          
@@ -122,7 +127,7 @@ class SGEEnvironment(Environment):
    def BuildSharedLibrary(self, *args, **kw):
       self.__PreBuild(*args, **kw)
       self.SharedLibrary(*args, **kw)
-         
+
    def BuildLibrary(self, *args, **kw):
 #      if 'deffile' in kw:
 #         sources.append(kw.pop('deffile'))
@@ -135,8 +140,14 @@ class SGEEnvironment(Environment):
       self.__PreBuild(*args, **kw)
       self.Program(*args, **kw)
       
+   def AdjustLibDir(self, libDir):
+      if libDir[0] == '#':
+         libDir = libDir.lstrip("#")
+      target = GetTargetNameFromDir(libDir)
+      return "#" + os.path.join(self.GetBuildDir(), target)
+
    def GetBuildDir(self):
-      if IsDebug():
+      if self.IsDebug():
          return "Build.Debug"
       else:
          return "Build.Release"
@@ -173,15 +184,28 @@ else:
 
 ########################################
 
-sconscripts = Walk(os.getcwd(), 1, 'SConscript', 0)
+def CollectTargets():
+   sconscripts = Walk(os.getcwd(), 1, 'SConscript', 0)
+   # Remove Windows-specific projects if not building for Windows
+   if platform != 'win32' or env.get('MSVS_VERSION') == '8.0':
+      for script in sconscripts:
+         if re.search('.*MilkShapeExporter|editor.*', script):
+            print 'Removing Windows-specific project ', script
+            sconscripts.remove(script)
+   return sconscripts
 
-# Remove Windows-specific projects if not building for Windows
-if platform != 'win32':
-   for script in sconscripts:
-      if re.search('.*MilkShapeExporter|editor.*', script):
-         print 'Removing Windows-specific project ', script
-         sconscripts.remove(script)
-         
+########################################
+
+def GetTargetNameFromDir(dir):
+   dir, target = os.path.split(dir)
+   while target in ['src', 'include', 'bin']:
+      dir, target = os.path.split(dir)
+   return target
+
+########################################
+
+sconscripts = CollectTargets()
+
 for script in sconscripts:
 
    # Backslashes must be escaped twice, once for re and once for Python itself
@@ -191,8 +215,11 @@ for script in sconscripts:
    # The os.path.normpath call converts double-backslashes back to single
    script = re.sub(r'^\\{1,2}', '', os.path.normpath(script))
    
-   dir = os.path.split(script)[0]
+   dir, scriptOnly = os.path.split(script)
    
-#   BuildDir(os.path.join(env.GetBuildDir(), dir), dir, duplicate=0)
-#   SConscript(os.path.join(env.GetBuildDir(), script), exports='env')
-   SConscript(script, exports='env')
+   target = GetTargetNameFromDir(dir)
+   targetDir = os.path.join(env.GetBuildDir(), target)
+   
+   BuildDir(targetDir, dir, duplicate=0)
+   SConscript(os.path.join(targetDir, scriptOnly), exports='env')
+   env.Alias(target, targetDir)
