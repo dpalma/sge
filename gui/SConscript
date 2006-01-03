@@ -30,19 +30,35 @@ sources = Split("""
    src/guitypes.cpp
 """)
 
+if env['PLATFORM'] == 'win32':
+   sources = sources + ['src/guifontw32.cpp']
+elif env['PLATFORM'] == 'cygwin':
+   sources = sources + ['src/guifontx11.cpp']
+
 includePaths = Split("""
    #engine/include
    #gui/include
    #tech/include
 """)
 
-if env['PLATFORM'] == 'win32':
-   sources = sources + ['src/guifontw32.cpp']
-elif env['PLATFORM'] == 'cygwin':
-   sources = sources + ['src/guifontx11.cpp']
+libPaths = Split("""
+   #allguids
+   #tech
+   #engine
+""")
+
+linkLibs = Split("""
+   allguids
+   tech
+   engine
+   user32
+   kernel32
+   gdi32
+   winmm
+""")
 
 env = env.Copy()
 env.UseGL()
 env.UseLua()
 env.UseTinyxml()
-env.BuildLibrary('gui', sources, include_path=includePaths)
+env.BuildLibrary('gui', sources, include_path=includePaths, lib_path=libPaths, libs=linkLibs)

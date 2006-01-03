@@ -121,17 +121,23 @@ class SGEEnvironment(Environment):
          self.Append(LIBS=kw.pop('libs'))
          
    def BuildStaticLibrary(self, *args, **kw):
+      if 'lib_path' in kw:
+         kw.pop('lib_path')
+      if 'libs' in kw:
+         kw.pop('libs')
       self.__PreBuild(*args, **kw)
       self.StaticLibrary(*args, **kw)
 
    def BuildSharedLibrary(self, *args, **kw):
       self.__PreBuild(*args, **kw)
+      # add def file to sources
+      if 'deffile' in kw:
+         args[1].append(kw.pop('deffile'))
+      self.Append(CPPDEFINES=[args[0].upper() + '_EXPORTS'])
       self.SharedLibrary(*args, **kw)
 
    def BuildLibrary(self, *args, **kw):
-#      if 'deffile' in kw:
-#         sources.append(kw.pop('deffile'))
-      if self.shared:
+      if self.IsShared():
          self.BuildSharedLibrary(*args, **kw)
       else:
          self.BuildStaticLibrary(*args, **kw)
@@ -147,10 +153,16 @@ class SGEEnvironment(Environment):
       return "#" + os.path.join(self.GetBuildDir(), target)
 
    def GetBuildDir(self):
-      if self.IsDebug():
+      if self.IsDebug() and self.IsShared():
          return "Build.Debug"
-      else:
+      elif not self.IsDebug() and self.IsShared():
          return "Build.Release"
+      elif self.IsDebug() and not self.IsShared():
+         return "Build.StaticDebug"
+      elif not self.IsDebug() and not self.IsShared():
+         return "Build.StaticRelease"
+      else:
+         os.error("Invalid configuration")
 
 
 #############################################################################

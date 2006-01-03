@@ -40,7 +40,18 @@ includePaths = Split("""
    #tech/include
 """)
 
+libPaths = Split("""
+   #allguids
+""")
+
+linkLibs = Split("""
+   allguids
+   user32
+   kernel32
+   gdi32
+   winmm
+""")
+
 env = env.Copy()
 env.UseZLib()
-env.Append(CPPDEFINES=['TECH_EXPORTS'])
-env.BuildLibrary('tech', sources, include_path=includePaths)
+env.BuildLibrary('tech', sources, deffile='#tech/src/tech.def', include_path=includePaths, lib_path=libPaths, libs=linkLibs)

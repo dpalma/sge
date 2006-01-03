@@ -1,7 +1,7 @@
 #############################################################################
 # $Id$
 
-Import('*')
+Import('env')
 
 sources = Split("""
    src/camera.cpp
@@ -35,9 +35,22 @@ includePaths = Split("""
    #tech/include
 """)
 
+libPaths = Split("""
+   #allguids
+   #tech
+""")
+
+linkLibs = Split("""
+   allguids
+   tech
+   user32
+   kernel32
+   gdi32
+   winmm
+""")
+
 env = env.Copy()
-env.Append(CPPPATH = includePaths)
 env.UseGL()
 env.UseLua()
 env.UseTinyxml()
-env.BuildLibrary('engine', sources)
+env.BuildLibrary('engine', sources, include_path=includePaths, lib_path=libPaths, libs=linkLibs)
