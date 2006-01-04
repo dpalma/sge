@@ -71,16 +71,19 @@ class cHashTableTests : public CppUnit::TestCase
 {
    CPPUNIT_TEST_SUITE(cHashTableTests);
       CPPUNIT_TEST(TestLookup);
-      CPPUNIT_TEST(TestIteration);
+      CPPUNIT_TEST(TestIterationPostIncrement);
+      CPPUNIT_TEST(TestIterationPreIncrement);
       CPPUNIT_TEST(TestCustomKey);
    CPPUNIT_TEST_SUITE_END();
 
    char testStrings[kNumTests][kTestStringLength];
 
-   cHashTable<const char *, int> m_hashTable;
+   typedef cHashTable<const char *, int> tTestHashTable;
+   tTestHashTable m_hashTable;
 
    void TestLookup();
-   void TestIteration();
+   void TestIterationPostIncrement();
+   void TestIterationPreIncrement();
    void TestCustomKey();
 
 public:
@@ -113,19 +116,31 @@ void cHashTableTests::TestLookup()
 
 ////////////////////////////////////////
 
-void cHashTableTests::TestIteration()
+void cHashTableTests::TestIterationPostIncrement()
 {
-   const char * key;
-   int val;
-   int nIterated = 0;
-   HANDLE h;
-   m_hashTable.IterBegin(&h);
-   while (m_hashTable.IterNext(&h, &key, &val))
+   tTestHashTable::const_iterator iter = m_hashTable.begin();
+   for (int nIterated = 0; iter != m_hashTable.end(); iter++, nIterated++)
    {
+      const char * key = iter->first;
+      int val = iter->second;
       CPPUNIT_ASSERT(strcmp(testStrings[val], key) == 0);
-      nIterated++;
    }
-   m_hashTable.IterEnd(&h);
+
+   LocalMsgIf2(nIterated != kNumTests, "Iterated %d items in hash table; expected %d\n", nIterated, kNumTests);
+   CPPUNIT_ASSERT(nIterated == kNumTests);
+}
+
+////////////////////////////////////////
+
+void cHashTableTests::TestIterationPreIncrement()
+{
+   tTestHashTable::const_iterator iter = m_hashTable.begin();
+   for (int nIterated = 0; iter != m_hashTable.end(); ++iter, ++nIterated)
+   {
+      const char * key = iter->first;
+      int val = iter->second;
+      CPPUNIT_ASSERT(strcmp(testStrings[val], key) == 0);
+   }
 
    LocalMsgIf2(nIterated != kNumTests, "Iterated %d items in hash table; expected %d\n", nIterated, kNumTests);
    CPPUNIT_ASSERT(nIterated == kNumTests);
@@ -174,19 +189,15 @@ void cHashTableTests::TestCustomKey()
       uint b = rand();
       uint c = rand();
       ulong d = a*b*c;
-      CPPUNIT_ASSERT(ckHashTable.Insert(cCustomKey(a,b,c), d));
+      std::pair<cHashTable<cCustomKey, ulong>::const_iterator, bool> result = ckHashTable.insert(cCustomKey(a,b,c), d);
+      CPPUNIT_ASSERT(result.second);
    }
 
-   cCustomKey key;
-   ulong value;
-
-   HANDLE h;
-   ckHashTable.IterBegin(&h);
-   while (ckHashTable.IterNext(&h, &key, &value))
+   cHashTable<cCustomKey, ulong>::const_iterator iter = ckHashTable.begin();
+   for (; iter != ckHashTable.end(); ++iter)
    {
-      CPPUNIT_ASSERT(key.GetProduct() == value);
+      CPPUNIT_ASSERT(iter->first.GetProduct() == iter->second);
    }
-   ckHashTable.IterEnd(&h);
 }
 
 ////////////////////////////////////////
@@ -196,16 +207,18 @@ void cHashTableTests::setUp()
    for (int i = 0; i < kNumTests; i++)
    {
       random_string(testStrings[i], sizeof(testStrings[i]));
-
-      CPPUNIT_ASSERT(m_hashTable.Insert(testStrings[i], i));
+      std::pair<tTestHashTable::const_iterator, bool> result = m_hashTable.insert(testStrings[i], i);
+      CPPUNIT_ASSERT(result.second);
    }
+
+   CPPUNIT_ASSERT(m_hashTable.size() == kNumTests);
 }
 
 ////////////////////////////////////////
 
 void cHashTableTests::tearDown()
 {
-   m_hashTable.Clear();
+   m_hashTable.clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -253,7 +266,7 @@ void cHashTableSpeedTests::RunInsertSpeedTest(sTiming * pHashTableResult, sTimin
    int64 startTicks;
    double startSecs;
 
-   m_hashTable.Clear();
+   m_hashTable.clear();
    m_map.clear();
 
    {
@@ -262,7 +275,8 @@ void cHashTableSpeedTests::RunInsertSpeedTest(sTiming * pHashTableResult, sTimin
 
       for (int i = 0; i < kNumTests; i++)
       {
-         CPPUNIT_ASSERT(m_hashTable.Insert(m_testStrings[i], i));
+         std::pair<cHashTable<const char *, int>::const_iterator, bool> result = m_hashTable.insert(m_testStrings[i], i);
+         CPPUNIT_ASSERT(result.second);
       }
 
       pHashTableResult->clockTicks = ReadTSC() - startTicks;
@@ -370,7 +384,7 @@ void cHashTableSpeedTests::setUp()
 
 void cHashTableSpeedTests::tearDown()
 {
-   m_hashTable.Clear();
+   m_hashTable.clear();
 }
 
 

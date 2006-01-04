@@ -5,10 +5,15 @@
 #define INCLUDED_HASHTABLE_H
 
 #include <memory>
+#include <xutility>
 
 #ifdef _MSC_VER
 #pragma once
 #endif
+
+// REFERENCES
+// http://uk.builder.com/programming/c/0,39029981,20266440,00.htm#
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -32,30 +37,67 @@ public:
    }
 };
 
+
 ///////////////////////////////////////////////////////////////////////////////
 //
-// TEMPLATE: cHashTable
+// TEMPLATE: sHashElement
 //
 
 template <typename KEY, typename VALUE>
 struct sHashElement
 {
-   sHashElement();
-
+	typedef KEY key_type;
+	typedef VALUE value_type;
+   sHashElement() : inUse(false) {}
    KEY key;
    VALUE value;
    bool inUse;
 };
 
-////////////////////////////////////////
 
-template <typename KEY, typename VALUE>
-sHashElement<KEY, VALUE>::sHashElement()
- : inUse(false)
+///////////////////////////////////////////////////////////////////////////////
+//
+// TEMPLATE: cHashConstIterator
+//
+
+template <class HASHELEMENT>
+class cHashConstIterator
 {
-}
+   typedef std::pair<HASHELEMENT::key_type, HASHELEMENT::value_type> tPair;
 
-////////////////////////////////////////
+public:
+   typedef std::forward_iterator_tag iterator_category;
+   typedef tPair value_type;
+   typedef const tPair & const_reference;
+   typedef const tPair * const_pointer;
+   typedef int difference_type;
+
+   cHashConstIterator();
+   cHashConstIterator(const cHashConstIterator & other);
+   cHashConstIterator(HASHELEMENT * pElement, const HASHELEMENT * pEnd);
+
+   const cHashConstIterator operator =(const cHashConstIterator & other);
+
+   const_pointer operator ->() const;
+   const_reference operator *() const;
+
+   const cHashConstIterator & operator ++(); // preincrement
+   const cHashConstIterator operator ++(int); // postincrement
+
+   bool operator ==(const cHashConstIterator & other) const;
+   bool operator !=(const cHashConstIterator & other) const;
+
+private:
+   HASHELEMENT * m_pElement;
+   const HASHELEMENT * m_pEnd;
+   tPair m_pair;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// TEMPLATE: cHashTable
+//
 
 template <typename KEY, typename VALUE,
           typename HASHFN = cHashFunction<KEY>,
@@ -63,6 +105,12 @@ template <typename KEY, typename VALUE,
 class cHashTable
 {
 public:
+   typedef size_t size_type;
+   typedef struct sHashElement<KEY, VALUE> value_type;
+   typedef struct sHashElement<KEY, VALUE> & reference;
+   typedef const struct sHashElement<KEY, VALUE> & const_reference;
+   typedef cHashConstIterator< sHashElement<KEY, VALUE> > const_iterator;
+
    enum
    {
       kInitialSizeSmall = 16,
@@ -73,16 +121,19 @@ public:
    cHashTable(uint initialSize = kInitialSizeSmall);
    ~cHashTable();
 
-   void Clear();
+   std::pair<const_iterator, bool> insert(const KEY & k, const VALUE & v);
 
-   bool Set(const KEY & k, const VALUE & v);
-   bool Insert(const KEY & k, const VALUE & v);
    bool Lookup(const KEY & k, VALUE * v) const;
-   bool Delete(const KEY & k);
 
-   void IterBegin(HANDLE * phIter) const;
-   bool IterNext(HANDLE * phIter, KEY * pk, VALUE * pv) const;
-   void IterEnd(HANDLE * phIter) const;
+   size_type erase(const KEY & k);
+   void clear();
+
+   bool empty() const;
+   size_type size() const;
+   size_type max_size() const;
+
+   const_iterator begin() const;
+   const_iterator end() const;
 
 private:
    uint Probe(const KEY & k) const;
@@ -91,16 +142,11 @@ private:
 
    void Reset(uint newInitialSize = kInitialSizeSmall);
 
-   typedef struct sHashElement<KEY, VALUE> tHashElement;
-
    ALLOCATOR m_allocator;
 
-   tHashElement * m_elts;
+   value_type * m_elts;
+   uint m_maxSize;
    uint m_size;
-   uint m_count;
-#ifndef NDEBUG
-   mutable ulong m_nItersActive;
-#endif
 };
 
 ///////////////////////////////////////////////////////////////////////////////
