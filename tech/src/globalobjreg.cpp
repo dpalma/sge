@@ -5,10 +5,11 @@
 
 #include "globalobjdef.h"
 #include "digraph.h"
+#include "hashtable.h"
+#include "hashtabletem.h"
 #include "toposort.h"
 
 #include <vector>
-#include <map>
 #include <algorithm>
 
 #ifdef HAVE_CPPUNIT
@@ -26,6 +27,7 @@ LOG_DEFINE_CHANNEL(GlobalObjReg);
 #define LocalMsg4(s,a,b,c,d)     DebugMsgEx4(GlobalObjReg,s,(a),(b),(c),(d))
 
 F_DECLARE_INTERFACE(IGlobalObjectRegistry);
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -90,6 +92,24 @@ interface IGlobalObjectRegistry : IUnknown
    virtual tResult TermAll() = 0;
 };
 
+
+///////////////////////////////////////////////////////////////////////////////
+
+typedef const GUID * tGuidPtr;
+
+template <>
+uint cHashFunction<tGuidPtr>::Hash(const tGuidPtr & a, uint initVal)
+{
+   return hash((byte*)a, sizeof(GUID), initVal);
+}
+
+template <>
+bool cHashFunction<tGuidPtr>::Equal(const tGuidPtr & a, const tGuidPtr & b)
+{
+   return CTIsEqualGUID(*a, *b);
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGlobalObjectRegistry
@@ -121,7 +141,7 @@ private:
    typedef cDigraph<const GUID *, sLessGuid> tConstraintGraph;
    void BuildConstraintGraph(tConstraintGraph * pGraph);
 
-   typedef std::map<const GUID *, IUnknown *, sLessGuid> tObjMap;
+   typedef cHashTable<const GUID *, IUnknown *> tObjMap;
    tObjMap m_objMap;
 
    typedef std::vector<const GUID *> tInitOrder;

@@ -77,7 +77,7 @@ class cHashTableTests : public CppUnit::TestCase
       CPPUNIT_TEST(TestCustomKey);
    CPPUNIT_TEST_SUITE_END();
 
-   char testStrings[kNumTests][kTestStringLength];
+   char m_testStrings[kNumTests][kTestStringLength];
 
    typedef cHashTable<const char *, int> tTestHashTable;
    tTestHashTable m_hashTable;
@@ -101,7 +101,7 @@ void cHashTableTests::TestFindSuccess()
 
    for (int i = 0; i < kNumTests; i++)
    {
-      tTestHashTable::const_iterator f = m_hashTable.find(testStrings[i]);
+      tTestHashTable::const_iterator f = m_hashTable.find(m_testStrings[i]);
       if (f == m_hashTable.end())
       {
          nFailures++;
@@ -135,7 +135,7 @@ void cHashTableTests::TestIterationPostIncrement()
    {
       const char * key = iter->first;
       int val = iter->second;
-      CPPUNIT_ASSERT(strcmp(testStrings[val], key) == 0);
+      CPPUNIT_ASSERT(strcmp(m_testStrings[val], key) == 0);
    }
 
    LocalMsgIf2(nIterated != kNumTests, "Iterated %d items in hash table; expected %d\n", nIterated, kNumTests);
@@ -151,7 +151,7 @@ void cHashTableTests::TestIterationPreIncrement()
    {
       const char * key = iter->first;
       int val = iter->second;
-      CPPUNIT_ASSERT(strcmp(testStrings[val], key) == 0);
+      CPPUNIT_ASSERT(strcmp(m_testStrings[val], key) == 0);
    }
 
    LocalMsgIf2(nIterated != kNumTests, "Iterated %d items in hash table; expected %d\n", nIterated, kNumTests);
@@ -201,8 +201,7 @@ void cHashTableTests::TestCustomKey()
       uint b = rand();
       uint c = rand();
       ulong d = a*b*c;
-      std::pair<cHashTable<cCustomKey, ulong>::const_iterator, bool> result = ckHashTable.insert(cCustomKey(a,b,c), d);
-      CPPUNIT_ASSERT(result.second);
+      CPPUNIT_ASSERT(ckHashTable.insert(cCustomKey(a,b,c), d).second);
    }
 
    cHashTable<cCustomKey, ulong>::const_iterator iter = ckHashTable.begin();
@@ -216,11 +215,19 @@ void cHashTableTests::TestCustomKey()
 
 void cHashTableTests::setUp()
 {
-   for (int i = 0; i < kNumTests; i++)
+   std::set<std::string> strings;
+   while (strings.size() < kNumTests)
    {
-      random_string(testStrings[i], kTestStringLength);
-      std::pair<tTestHashTable::const_iterator, bool> result = m_hashTable.insert(testStrings[i], i);
-      CPPUNIT_ASSERT(result.second);
+      char szTemp[kTestStringLength];
+      random_string(szTemp, _countof(szTemp));
+      strings.insert(szTemp);
+   }
+
+   std::set<std::string>::const_iterator iter = strings.begin();
+   for (int index = 0; iter != strings.end(); iter++, index++)
+   {
+      strcpy(m_testStrings[index], iter->c_str());
+      CPPUNIT_ASSERT(m_hashTable.insert(m_testStrings[index], index).second);
    }
 
    CPPUNIT_ASSERT(m_hashTable.size() == kNumTests);
@@ -287,8 +294,7 @@ void cHashTableSpeedTests::RunInsertSpeedTest(sTiming * pHashTableResult, sTimin
 
       for (int i = 0; i < kNumTests; i++)
       {
-         std::pair<cHashTable<const char *, int>::const_iterator, bool> result = m_hashTable.insert(m_testStrings[i], i);
-         CPPUNIT_ASSERT(result.second);
+         CPPUNIT_ASSERT(m_hashTable.insert(m_testStrings[i], i).second);
       }
 
       pHashTableResult->clockTicks = ReadTSC() - startTicks;
@@ -384,9 +390,17 @@ void cHashTableSpeedTests::TestLookupSpeed()
 
 void cHashTableSpeedTests::setUp()
 {
-   for (int i = 0; i < kNumTests; i++)
+   std::set<std::string> strings;
+   while (strings.size() < kNumTests)
    {
-      random_string(m_testStrings[i], _countof(m_testStrings[i]));
+      char szTemp[kTestStringLength];
+      random_string(szTemp, _countof(szTemp));
+      strings.insert(szTemp);
+   }
+   std::set<std::string>::const_iterator iter = strings.begin();
+   for (int index = 0; iter != strings.end(); iter++, index++)
+   {
+      strcpy(m_testStrings[index], iter->c_str());
    }
 }
 

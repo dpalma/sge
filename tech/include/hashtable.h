@@ -5,14 +5,14 @@
 #define INCLUDED_HASHTABLE_H
 
 #include <memory>
-#include <xutility>
+#include <utility>
 
 #ifdef _MSC_VER
 #pragma once
 #endif
 
 // REFERENCES
-// http://uk.builder.com/programming/c/0,39029981,20266440,00.htm#
+// http://uk.builder.com/programming/c/0,39029981,20266440,00.htm
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -44,53 +44,70 @@ public:
 //
 
 template <typename KEY, typename VALUE>
-struct sHashElement
+struct sHashElement : public std::pair<KEY, VALUE>
 {
-	typedef KEY key_type;
-	typedef VALUE value_type;
    sHashElement() : inUse(false) {}
-   KEY key;
-   VALUE value;
    bool inUse;
 };
 
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// TEMPLATE: cHashConstIterator
+// TEMPLATE: cHashIterator
 //
 
 template <typename HASHELEMENT>
-class cHashConstIterator
+class cHashIterator
 {
-   typedef std::pair<typename HASHELEMENT::key_type, typename HASHELEMENT::value_type> tPair;
-
 public:
-   typedef std::forward_iterator_tag iterator_category;
-   typedef tPair value_type;
-   typedef const tPair & const_reference;
-   typedef const tPair * const_pointer;
-   typedef int difference_type;
+   typedef std::bidirectional_iterator_tag iterator_category;
+   typedef HASHELEMENT value_type;
+   typedef HASHELEMENT & reference;
+   typedef HASHELEMENT * pointer;
+   typedef ptrdiff_t difference_type;
 
-   cHashConstIterator();
-   cHashConstIterator(const cHashConstIterator & other);
-   cHashConstIterator(HASHELEMENT * pElement, const HASHELEMENT * pEnd);
+   cHashIterator();
+   cHashIterator(const cHashIterator & other);
+   cHashIterator(HASHELEMENT * pElement, HASHELEMENT * pBegin, HASHELEMENT * pEnd);
 
-   const cHashConstIterator operator =(const cHashConstIterator & other);
+   const cHashIterator & operator =(const cHashIterator & other);
 
-   const_pointer operator ->() const;
-   const_reference operator *() const;
+   template <typename HASHELEMENTOTHER> friend class cHashIterator;
+   template <typename HASHELEMENTOTHER>
+   cHashIterator(const cHashIterator<HASHELEMENTOTHER> & other)
+    : m_pElement(const_cast<HASHELEMENT*>(other.m_pElement))
+    , m_pBegin(const_cast<HASHELEMENT*>(other.m_pBegin))
+    , m_pEnd(const_cast<HASHELEMENT*>(other.m_pEnd))
+   {
+   }
 
-   const cHashConstIterator & operator ++(); // preincrement
-   const cHashConstIterator operator ++(int); // postincrement
+   pointer operator ->() const;
+   reference operator *() const;
 
-   bool operator ==(const cHashConstIterator & other) const;
-   bool operator !=(const cHashConstIterator & other) const;
+   const cHashIterator & operator ++(); // preincrement
+   const cHashIterator operator ++(int); // postincrement
+
+   const cHashIterator & operator --(); // predecrement
+   const cHashIterator operator --(int); // postdecrement
+
+   bool operator ==(const cHashIterator & other) const;
+   bool operator !=(const cHashIterator & other) const;
+
+   template <typename HASHELEMENTOTHER>
+   bool operator ==(const cHashIterator<HASHELEMENTOTHER> & other) const
+   {
+      return (m_pElement == other.m_pElement);
+   }
+   template <typename HASHELEMENTOTHER>
+   bool operator !=(const cHashIterator<HASHELEMENTOTHER> & other) const
+   {
+      return !(*this == other);
+   }
 
 private:
    HASHELEMENT * m_pElement;
-   const HASHELEMENT * m_pEnd;
-   tPair m_pair;
+   HASHELEMENT * m_pBegin;
+   HASHELEMENT * m_pEnd;
 };
 
 
@@ -109,13 +126,15 @@ public:
    typedef struct sHashElement<KEY, VALUE> value_type;
    typedef struct sHashElement<KEY, VALUE> & reference;
    typedef const struct sHashElement<KEY, VALUE> & const_reference;
-   typedef cHashConstIterator< sHashElement<KEY, VALUE> > const_iterator;
+   typedef cHashIterator< sHashElement<KEY, VALUE> > iterator;
+   typedef cHashIterator< const sHashElement<KEY, VALUE> > const_iterator;
 
    enum
    {
       kInitialSizeSmall = 16,
       kInitialSizeMed   = 256,
       kInitialSizeLarge = 1024,
+      kFullnessThreshold = 70, // hash table only ever allowed to get 70% full
    };
 
    cHashTable(uint initialSize = kInitialSizeSmall);
@@ -128,6 +147,9 @@ public:
       return insert(p.first, p.second);
    }
 
+   VALUE & operator [](const KEY & k);
+
+   iterator find(const KEY & k);
    const_iterator find(const KEY & k) const;
 
    size_type erase(const KEY & k);
@@ -136,6 +158,9 @@ public:
    bool empty() const;
    size_type size() const;
    size_type max_size() const;
+
+   iterator begin();
+   iterator end();
 
    const_iterator begin() const;
    const_iterator end() const;

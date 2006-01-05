@@ -52,14 +52,15 @@ inline bool cHashFunction<tPCSTR>::Equal(const tPCSTR & a, const tPCSTR & b)
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// TEMPLATE: cHashConstIterator
+// TEMPLATE: cHashIterator
 //
 
 ////////////////////////////////////////
 
 template <typename HASHELEMENT>
-cHashConstIterator<HASHELEMENT>::cHashConstIterator()
+cHashIterator<HASHELEMENT>::cHashIterator()
  : m_pElement(NULL)
+ , m_pBegin(NULL)
  , m_pEnd(NULL)
 {
 }
@@ -67,66 +68,63 @@ cHashConstIterator<HASHELEMENT>::cHashConstIterator()
 ////////////////////////////////////////
 
 template <typename HASHELEMENT>
-cHashConstIterator<HASHELEMENT>::cHashConstIterator(const cHashConstIterator & other)
+cHashIterator<HASHELEMENT>::cHashIterator(const cHashIterator & other)
  : m_pElement(other.m_pElement)
+ , m_pBegin(other.m_pBegin)
  , m_pEnd(other.m_pEnd)
- , m_pair(other.m_pair)
 {
 }
 
 ////////////////////////////////////////
 
 template <typename HASHELEMENT>
-cHashConstIterator<HASHELEMENT>::cHashConstIterator(HASHELEMENT * pElement, const HASHELEMENT * pEnd)
+cHashIterator<HASHELEMENT>::cHashIterator(HASHELEMENT * pElement, HASHELEMENT * pBegin, HASHELEMENT * pEnd)
  : m_pElement(pElement)
+ , m_pBegin(pBegin)
  , m_pEnd(pEnd)
 {
    while ((m_pElement < m_pEnd) && !m_pElement->inUse)
    {
       ++m_pElement;
    }
-   m_pair.first = m_pElement->key;
-   m_pair.second = m_pElement->value;
 }
 
 ////////////////////////////////////////
 
 template <typename HASHELEMENT>
-const cHashConstIterator<HASHELEMENT> cHashConstIterator<HASHELEMENT>::operator =(const cHashConstIterator & other)
+const cHashIterator<HASHELEMENT> & cHashIterator<HASHELEMENT>::operator =(const cHashIterator & other)
 {
    m_pElement = other.m_pElement;
+   m_pBegin = other.m_pBegin;
    m_pEnd = other.m_pEnd;
-   m_pair = other.m_pair;
    return *this;
 }
 
 ////////////////////////////////////////
 
 template <typename HASHELEMENT>
-typename cHashConstIterator<HASHELEMENT>::const_pointer cHashConstIterator<HASHELEMENT>::operator ->() const
+typename cHashIterator<HASHELEMENT>::pointer cHashIterator<HASHELEMENT>::operator ->() const
 {
-   return &m_pair;
+   return m_pElement;
 }
 
 ////////////////////////////////////////
 
 template <typename HASHELEMENT>
-typename cHashConstIterator<HASHELEMENT>::const_reference cHashConstIterator<HASHELEMENT>::operator *() const
+typename cHashIterator<HASHELEMENT>::reference cHashIterator<HASHELEMENT>::operator *() const
 {
-   return m_pair;
+   return *m_pElement;
 }
 
 ////////////////////////////////////////
 // preincrement
 
 template <typename HASHELEMENT>
-const cHashConstIterator<HASHELEMENT> & cHashConstIterator<HASHELEMENT>::operator ++()
+const cHashIterator<HASHELEMENT> & cHashIterator<HASHELEMENT>::operator ++()
 {
    do {
       ++m_pElement;
    } while ((m_pElement < m_pEnd) && !m_pElement->inUse);
-   m_pair.first = m_pElement->key;
-   m_pair.second = m_pElement->value;
    return *this;
 }
 
@@ -134,17 +132,40 @@ const cHashConstIterator<HASHELEMENT> & cHashConstIterator<HASHELEMENT>::operato
 // postincrement
 
 template <typename HASHELEMENT>
-const cHashConstIterator<HASHELEMENT> cHashConstIterator<HASHELEMENT>::operator ++(int)
+const cHashIterator<HASHELEMENT> cHashIterator<HASHELEMENT>::operator ++(int)
 {
-   const cHashConstIterator temp(*this);
+   const cHashIterator temp(*this);
    operator ++();
+   return temp;
+}
+
+////////////////////////////////////////
+// predecrement
+
+template <typename HASHELEMENT>
+const cHashIterator<HASHELEMENT> & cHashIterator<HASHELEMENT>::operator --()
+{
+   do {
+      --m_pElement;
+   } while ((m_pElement >= m_pBegin) && !m_pElement->inUse);
+   return *this;
+}
+
+////////////////////////////////////////
+// postdecrement
+
+template <typename HASHELEMENT>
+const cHashIterator<HASHELEMENT> cHashIterator<HASHELEMENT>::operator --(int)
+{
+   const cHashIterator temp(*this);
+   operator --();
    return temp;
 }
 
 ////////////////////////////////////////
 
 template <typename HASHELEMENT>
-bool cHashConstIterator<HASHELEMENT>::operator ==(const cHashConstIterator & other) const
+bool cHashIterator<HASHELEMENT>::operator ==(const cHashIterator & other) const
 {
    return (m_pElement == other.m_pElement);
 }
@@ -152,9 +173,9 @@ bool cHashConstIterator<HASHELEMENT>::operator ==(const cHashConstIterator & oth
 ////////////////////////////////////////
 
 template <typename HASHELEMENT>
-bool cHashConstIterator<HASHELEMENT>::operator !=(const cHashConstIterator & other) const
+bool cHashIterator<HASHELEMENT>::operator !=(const cHashIterator & other) const
 {
-   return (!(m_pElement == other.m_pElement));
+   return (!(*this == other));
 }
 
 
@@ -174,10 +195,6 @@ bool cHashConstIterator<HASHELEMENT>::operator !=(const cHashConstIterator & oth
 #define HASHTABLE_TEMPLATE_MEMBER_TYPE(Type) \
    typename HASHTABLE_TEMPLATE_CLASS::Type
 #endif
-
-////////////////////////////////////////
-
-const int kFullnessThreshold = 70;
 
 ////////////////////////////////////////
 
@@ -207,7 +224,7 @@ HASHTABLE_TEMPLATE_CLASS::insert(const KEY & k, const VALUE & v)
    uint h = Probe(k);
    if (m_elts[h].inUse)
    {
-      return std::make_pair(const_iterator(&m_elts[h], &m_elts[m_maxSize]), false);
+      return std::make_pair(const_iterator(&m_elts[h], &m_elts[0], &m_elts[m_maxSize]), false);
    }
 
    if ((m_size * 100) > (m_maxSize * kFullnessThreshold))
@@ -219,11 +236,45 @@ HASHTABLE_TEMPLATE_CLASS::insert(const KEY & k, const VALUE & v)
       h = Probe(k);
    }
 
-   m_elts[h].key = k;
-   m_elts[h].value = v;
+   m_elts[h].first = k;
+   m_elts[h].second = v;
    m_elts[h].inUse = true;
    m_size++;
-   return std::make_pair(const_iterator(&m_elts[h], &m_elts[m_maxSize]), true);
+   return std::make_pair(const_iterator(&m_elts[h], &m_elts[0], &m_elts[m_maxSize]), true);
+}
+
+////////////////////////////////////////
+
+HASHTABLE_TEMPLATE_DECL
+VALUE & HASHTABLE_TEMPLATE_CLASS::operator [](const KEY & k)
+{
+   if ((m_size * 100) > (m_maxSize * kFullnessThreshold))
+   {
+      // grow in proportion to fullness
+      Grow(m_maxSize + (m_size * 100 / kFullnessThreshold));
+   }
+
+   uint h = Probe(k);
+   m_elts[h].first = k;
+   m_elts[h].inUse = true;
+   m_size++;
+   return m_elts[h].second;
+}
+
+////////////////////////////////////////
+
+HASHTABLE_TEMPLATE_DECL
+HASHTABLE_TEMPLATE_MEMBER_TYPE(iterator) HASHTABLE_TEMPLATE_CLASS::find(const KEY & k)
+{
+   uint h = Probe(k);
+   if (m_elts[h].inUse)
+   {
+      return iterator(&m_elts[h], &m_elts[0], &m_elts[m_maxSize]);
+   }
+   else
+   {
+      return end();
+   }
 }
 
 ////////////////////////////////////////
@@ -234,7 +285,7 @@ HASHTABLE_TEMPLATE_MEMBER_TYPE(const_iterator) HASHTABLE_TEMPLATE_CLASS::find(co
    uint h = Probe(k);
    if (m_elts[h].inUse)
    {
-      return const_iterator(&m_elts[h], &m_elts[m_maxSize]);
+      return const_iterator(&m_elts[h], &m_elts[0], &m_elts[m_maxSize]);
    }
    else
    {
@@ -295,9 +346,25 @@ HASHTABLE_TEMPLATE_MEMBER_TYPE(size_type) HASHTABLE_TEMPLATE_CLASS::max_size() c
 ////////////////////////////////////////
 
 HASHTABLE_TEMPLATE_DECL
+HASHTABLE_TEMPLATE_MEMBER_TYPE(iterator) HASHTABLE_TEMPLATE_CLASS::begin()
+{
+   return (m_elts != NULL) ? iterator(&m_elts[0], &m_elts[0], &m_elts[m_maxSize]) : iterator();
+}
+
+////////////////////////////////////////
+
+HASHTABLE_TEMPLATE_DECL
+HASHTABLE_TEMPLATE_MEMBER_TYPE(iterator) HASHTABLE_TEMPLATE_CLASS::end()
+{
+   return (m_elts != NULL) ? iterator(&m_elts[m_maxSize], &m_elts[0], &m_elts[m_maxSize]) : iterator();
+}
+
+////////////////////////////////////////
+
+HASHTABLE_TEMPLATE_DECL
 HASHTABLE_TEMPLATE_MEMBER_TYPE(const_iterator) HASHTABLE_TEMPLATE_CLASS::begin() const
 {
-   return (m_elts != NULL) ? const_iterator(&m_elts[0], &m_elts[m_maxSize]) : const_iterator();
+   return (m_elts != NULL) ? const_iterator(&m_elts[0], &m_elts[0], &m_elts[m_maxSize]) : const_iterator();
 }
 
 ////////////////////////////////////////
@@ -305,7 +372,7 @@ HASHTABLE_TEMPLATE_MEMBER_TYPE(const_iterator) HASHTABLE_TEMPLATE_CLASS::begin()
 HASHTABLE_TEMPLATE_DECL
 HASHTABLE_TEMPLATE_MEMBER_TYPE(const_iterator) HASHTABLE_TEMPLATE_CLASS::end() const
 {
-   return (m_elts != NULL) ? const_iterator(&m_elts[m_maxSize], &m_elts[m_maxSize]) : const_iterator();
+   return (m_elts != NULL) ? const_iterator(&m_elts[m_maxSize], &m_elts[0], &m_elts[m_maxSize]) : const_iterator();
 }
 
 ////////////////////////////////////////
@@ -323,7 +390,7 @@ uint HASHTABLE_TEMPLATE_CLASS::Probe(const KEY & k) const
 #endif
 
    // resolve collisions with linear probing
-   while (m_elts[h].inUse && !Equal(k, m_elts[h].key))
+   while (m_elts[h].inUse && !Equal(k, m_elts[h].first))
    {
       h++;
       if (h == m_maxSize)
@@ -384,7 +451,7 @@ void HASHTABLE_TEMPLATE_CLASS::Grow(uint newSize)
    {
       if (oldElts[i].inUse)
       {
-         insert(oldElts[i].key, oldElts[i].value);
+         insert(oldElts[i].first, oldElts[i].second);
       }
    }
 
