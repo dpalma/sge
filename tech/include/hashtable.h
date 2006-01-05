@@ -60,10 +60,10 @@ struct sHashElement
 // TEMPLATE: cHashConstIterator
 //
 
-template <class HASHELEMENT>
+template <typename HASHELEMENT>
 class cHashConstIterator
 {
-   typedef std::pair<HASHELEMENT::key_type, HASHELEMENT::value_type> tPair;
+   typedef std::pair<typename HASHELEMENT::key_type, typename HASHELEMENT::value_type> tPair;
 
 public:
    typedef std::forward_iterator_tag iterator_category;
@@ -123,7 +123,12 @@ public:
 
    std::pair<const_iterator, bool> insert(const KEY & k, const VALUE & v);
 
-   bool Lookup(const KEY & k, VALUE * v) const;
+   inline std::pair<const_iterator, bool> insert(const std::pair<KEY, VALUE> & p)
+   {
+      return insert(p.first, p.second);
+   }
+
+   const_iterator find(const KEY & k) const;
 
    size_type erase(const KEY & k);
    void clear();

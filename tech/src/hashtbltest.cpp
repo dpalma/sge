@@ -70,7 +70,8 @@ enum
 class cHashTableTests : public CppUnit::TestCase
 {
    CPPUNIT_TEST_SUITE(cHashTableTests);
-      CPPUNIT_TEST(TestLookup);
+      CPPUNIT_TEST(TestFindSuccess);
+      CPPUNIT_TEST(TestFindFailure);
       CPPUNIT_TEST(TestIterationPostIncrement);
       CPPUNIT_TEST(TestIterationPreIncrement);
       CPPUNIT_TEST(TestCustomKey);
@@ -81,7 +82,8 @@ class cHashTableTests : public CppUnit::TestCase
    typedef cHashTable<const char *, int> tTestHashTable;
    tTestHashTable m_hashTable;
 
-   void TestLookup();
+   void TestFindSuccess();
+   void TestFindFailure();
    void TestIterationPostIncrement();
    void TestIterationPreIncrement();
    void TestCustomKey();
@@ -93,25 +95,35 @@ public:
 
 ////////////////////////////////////////
 
-void cHashTableTests::TestLookup()
+void cHashTableTests::TestFindSuccess()
 {
    int nFailures = 0;
 
    for (int i = 0; i < kNumTests; i++)
    {
-      int index = -1;
-      if (!m_hashTable.Lookup(testStrings[i], &index))
+      tTestHashTable::const_iterator f = m_hashTable.find(testStrings[i]);
+      if (f == m_hashTable.end())
       {
          nFailures++;
       }
       else
       {
-         CPPUNIT_ASSERT(index == i);
+         CPPUNIT_ASSERT(f->second == i);
       }
    }
 
    LocalMsgIf1(nFailures > 0, "%d lookups failed\n", nFailures);
    CPPUNIT_ASSERT(nFailures == 0);
+}
+
+////////////////////////////////////////
+
+void cHashTableTests::TestFindFailure()
+{
+   char szNotFound[kTestStringLength + 10];
+   random_string(szNotFound, _countof(szNotFound));
+   tTestHashTable::const_iterator f = m_hashTable.find(szNotFound);
+   CPPUNIT_ASSERT(f == m_hashTable.end());
 }
 
 ////////////////////////////////////////
@@ -206,7 +218,7 @@ void cHashTableTests::setUp()
 {
    for (int i = 0; i < kNumTests; i++)
    {
-      random_string(testStrings[i], sizeof(testStrings[i]));
+      random_string(testStrings[i], kTestStringLength);
       std::pair<tTestHashTable::const_iterator, bool> result = m_hashTable.insert(testStrings[i], i);
       CPPUNIT_ASSERT(result.second);
    }
@@ -340,9 +352,8 @@ void cHashTableSpeedTests::RunLookupSpeedTest(int nLookups, double * pHashTableR
    int i;
    for (i = 0; i < nLookups; i++)
    {
-      int index = -1;
       int64 start = ReadTSC();
-      m_hashTable.Lookup(m_testStrings[i], &index);
+      m_hashTable.find(m_testStrings[i]);
       int64 elapsed = ReadTSC() - start;
       *pHashTableResult += (double)(long)elapsed * oneOverNumLookups;
    }
@@ -350,7 +361,6 @@ void cHashTableSpeedTests::RunLookupSpeedTest(int nLookups, double * pHashTableR
    *pMapResult = 0;
    for (i = 0; i < nLookups; i++)
    {
-      int index = -1;
       int64 start = ReadTSC();
       m_map.find(m_testStrings[i]);
       int64 elapsed = ReadTSC() - start;
