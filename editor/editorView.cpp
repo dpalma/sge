@@ -9,6 +9,7 @@
 #include "editorapi.h"
 #include "editorTools.h"
 #include "editorTypes.h"
+#include "CameraDlg.h"
 
 #include "cameraapi.h"
 #include "entityapi.h"
@@ -101,6 +102,7 @@ BEGIN_MESSAGE_MAP(cEditorView, CScrollView)
 	ON_WM_SIZE()
 	ON_WM_ERASEBKGND()
 	//}}AFX_MSG_MAP
+	ON_COMMAND(ID_TOOLS_CAMERASETTINGS, OnToolsCameraSettings)
    ON_NOTIFY_RANGE(TTN_SHOW, 0, 0xFFFFFFFF, OnToolTipShow)
    ON_NOTIFY_RANGE(TTN_POP, 0, 0xFFFFFFFF, OnToolTipPop)
 END_MESSAGE_MAP()
@@ -118,7 +120,11 @@ cEditorView::cEditorView()
 #ifdef HAVE_DIRECTX
  , m_d3d9Lib("d3d9")
 #endif
+ , m_cameraFov(kFov)
+ , m_cameraZNear(kZNear)
+ , m_cameraZFar(kZFar)
  , m_cameraElevation(kDefaultCameraElevation)
+ , m_cameraPitch(kDefaultCameraPitch)
  , m_center(0,0,0)
  , m_eye(0,0,0)
  , m_bRecalcEye(true)
@@ -155,7 +161,7 @@ tVec3 cEditorView::GetCameraEyePosition() const
 {
    if (m_bRecalcEye)
    {
-      m_eye = CalcEyePoint(m_center, m_cameraElevation);
+      m_eye = CalcEyePoint(m_center, m_cameraElevation, m_cameraPitch);
       m_bRecalcEye = false;
    }
    return m_eye;
@@ -557,7 +563,7 @@ void cEditorView::OnSize(UINT nType, int cx, int cy)
       float aspect = static_cast<float>(cx) / cy;
 
       UseGlobal(Camera);
-      pCamera->SetPerspective(kFov, aspect, kZNear, kZFar);
+      pCamera->SetPerspective(m_cameraFov, aspect, m_cameraZNear, m_cameraZFar);
 
       if (m_bUsingD3d)
       {
@@ -567,7 +573,7 @@ void cEditorView::OnSize(UINT nType, int cx, int cy)
          m_pD3dDevice->Reset(&m_presentParams);
 
          D3DXMATRIX projTest;
-         D3DXMatrixPerspectiveFovRH(&projTest, kFov, aspect, kZNear, kZFar);
+         D3DXMatrixPerspectiveFovRH(&projTest, m_cameraFov, aspect, m_cameraZNear, m_cameraZFar);
 
          D3DMATRIX proj;
          MatrixTranspose(m_proj, &proj);
@@ -589,6 +595,41 @@ void cEditorView::OnSize(UINT nType, int cx, int cy)
 BOOL cEditorView::OnEraseBkgnd(CDC * pDC) 
 {
    return TRUE;
+}
+
+////////////////////////////////////////
+
+void cEditorView::OnToolsCameraSettings()
+{
+   cCameraDlg cameraDlg(this);
+
+   cameraDlg.m_fov = Round(m_cameraFov);
+   cameraDlg.m_znear = Round(m_cameraZNear);
+   cameraDlg.m_zfar = Round(m_cameraZFar);
+   cameraDlg.m_elevation = Round(m_cameraElevation);
+   cameraDlg.m_pitch = Round(m_cameraPitch);
+
+   if (cameraDlg.DoModal() == IDOK)
+   {
+      m_cameraFov = static_cast<float>(cameraDlg.m_fov);
+      m_cameraZNear = static_cast<float>(cameraDlg.m_znear);
+      m_cameraZFar = static_cast<float>(cameraDlg.m_zfar);
+      m_cameraElevation = static_cast<float>(cameraDlg.m_elevation);
+      m_cameraPitch = static_cast<float>(cameraDlg.m_pitch);
+
+      m_bRecalcEye = true;
+
+      CRect clientRect;
+      GetClientRect(clientRect);
+
+      float aspect = static_cast<float>(clientRect.Width()) / clientRect.Height();
+
+      UseGlobal(Camera);
+      pCamera->SetPerspective(m_cameraFov, aspect, m_cameraZNear, m_cameraZFar);
+
+      glMatrixMode(GL_PROJECTION);
+      glLoadMatrixf(pCamera->GetProjectionMatrix().m);
+   }
 }
 
 ////////////////////////////////////////

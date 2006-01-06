@@ -333,6 +333,9 @@
 				RelativePath="..\..\editor\BitmapUtils.cpp">
 			</File>
 			<File
+				RelativePath="..\..\editor\CameraDlg.cpp">
+			</File>
+			<File
 				RelativePath="..\..\editor\DynamicLink.cpp">
 			</File>
 			<File
@@ -467,6 +470,9 @@
 			Filter="h;hpp;hxx;hm;inl">
 			<File
 				RelativePath="..\..\editor\BitmapUtils.h">
+			</File>
+			<File
+				RelativePath="..\..\editor\CameraDlg.h">
 			</File>
 			<File
 				RelativePath="..\..\editor\DynamicLink.h">

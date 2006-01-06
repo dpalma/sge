@@ -8,6 +8,8 @@
 #define IDD_MAPSETTINGS                 130
 #define IDB_STD_TOOLS                   131
 #define IDD_SCRIPTCOMMAND               133
+#define IDD_CAMERA                      134
+#define ID_TOOLS_CAMERASETTINGS         135
 #define IDC_MAP_TILESET                 1001
 #define IDC_HEIGHT_NONE                 1002
 #define IDC_IMPORT_HEIGHT_MAP           1003
@@ -19,9 +21,21 @@
 #define IDC_MAP_HEIGHT                  1011
 #define IDC_EDIT1                       1012
 #define IDC_HEIGHT_SCALE                1012
+#define IDC_FOV                         1012
 #define IDC_SCRIPT_COMMAND              1013
+#define IDC_ZNEAR                       1013
 #define IDC_HEIGHT_SCALE_LABEL          1014
+#define IDC_ZFAR                        1014
 #define IDC_HEIGHT_SCALE_SPIN           1015
+#define IDC_SPIN_FOV                    1015
+#define IDC_SPIN_ZNEAR                  1016
+#define IDC_SPIN_ZFAR                   1017
+#define IDC_ELEVATION                   1018
+#define IDC_SPIN_ELEVATION              1019
+#define IDC_PITCH                       1020
+#define IDC_SPIN_PITCH                  1021
+#define IDC_BUTTON1                     1022
+#define IDC_RESET                       1022
 #define IDS_NO_UNIT_TESTS               5000
 #define IDS_OUTPUT_BAR_TITLE            5001
 #define IDS_TOOL_PALETTE_BAR_TITLE      5002
@@ -61,9 +75,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        134
+#define _APS_NEXT_RESOURCE_VALUE        136
 #define _APS_NEXT_COMMAND_VALUE         32774
-#define _APS_NEXT_CONTROL_VALUE         1015
+#define _APS_NEXT_CONTROL_VALUE         1023
 #define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif

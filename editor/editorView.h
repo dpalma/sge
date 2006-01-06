@@ -99,6 +99,7 @@ protected:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	//}}AFX_MSG
+	afx_msg void OnToolsCameraSettings();
    afx_msg void OnToolTipShow(UINT id, NMHDR * pNMHDR, LRESULT * pResult);
    afx_msg void OnToolTipPop(UINT id, NMHDR * pNMHDR, LRESULT * pResult);
 
@@ -121,7 +122,8 @@ private:
    D3DPRESENT_PARAMETERS m_presentParams;
 #endif
 
-   float m_cameraElevation;
+   float m_cameraFov, m_cameraZNear, m_cameraZFar, m_cameraElevation, m_cameraPitch;
+
    tVec3 m_center;
    mutable tVec3 m_eye;
    mutable bool m_bRecalcEye; // recalculate camera eye position when placement/elevation changes

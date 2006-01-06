@@ -141,6 +141,7 @@ BEGIN
         MENUITEM "&Unit Test Runner...",        ID_TOOLS_UNITTESTRUNNER
         MENUITEM "&Execute Script Command...",  ID_TOOLS_EXECUTESCRIPTCOMMAND
 
+        MENUITEM "&Camera Settings...",         ID_TOOLS_CAMERASETTINGS
     END
     POPUP "&Help"
     BEGIN
@@ -250,6 +251,42 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,129,29,50,14
 END
 
+IDD_CAMERA DIALOGEX 0, 0, 180, 150
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Camera"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,123,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,123,24,50,14
+    LTEXT           "FOV:",IDC_STATIC,17,26,17,8
+    EDITTEXT        IDC_FOV,50,23,40,14,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_SPIN_FOV,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,95,23,10,
+                    14
+    LTEXT           "Z Near:",IDC_STATIC,16,47,25,8
+    EDITTEXT        IDC_ZNEAR,50,44,40,14,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_SPIN_ZNEAR,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,97,44,11,
+                    14
+    LTEXT           "Z Far:",IDC_STATIC,16,68,20,8
+    EDITTEXT        IDC_ZFAR,50,65,40,14,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_SPIN_ZFAR,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,99,65,11,
+                    14
+    LTEXT           "Elevation:",IDC_STATIC,16,89,33,8
+    EDITTEXT        IDC_ELEVATION,50,86,40,14,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_SPIN_ELEVATION,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,99,86,11,
+                    14
+    LTEXT           "Pitch:",IDC_STATIC,16,110,19,8
+    EDITTEXT        IDC_PITCH,50,107,40,14,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_SPIN_PITCH,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,97,107,11,
+                    14
+    PUSHBUTTON      "Reset",IDC_RESET,123,49,50,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -321,6 +358,16 @@ BEGIN
         RIGHTMARGIN, 179
         TOPMARGIN, 7
         BOTTOMMARGIN, 43
+    END
+
+    IDD_CAMERA, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 173
+        VERTGUIDE, 16
+        VERTGUIDE, 50
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 143
     END
 END
 #endif    // APSTUDIO_INVOKED

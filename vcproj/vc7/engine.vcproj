@@ -500,6 +500,9 @@
 				RelativePath="..\..\engine\include\model.h">
 			</File>
 			<File
+				RelativePath="..\..\engine\include\modelapi.h">
+			</File>
+			<File
 				RelativePath="..\..\engine\include\ray.h">
 			</File>
 			<File
