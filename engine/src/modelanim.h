@@ -19,6 +19,7 @@
 #endif
 
 class cModel;
+class cModelSkeleton;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -54,6 +55,30 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: cModelAnimation
+//
+
+class cModelAnimation : public cComObject<IMPLEMENTS(IModelAnimation)>
+{
+   cModelAnimation(const cModelAnimation & other);
+   void operator =(const cModelAnimation & other);
+
+public:
+   cModelAnimation(IModelKeyFrameInterpolator * * pInterpolators, uint nInterpolators);
+   ~cModelAnimation();
+
+   virtual tResult GetStartEnd(double * pStart, double * pEnd) const;
+
+   virtual tResult Interpolate(uint index, double time, tVec3 * pTrans, tQuat * pRot) const;
+
+private:
+   std::vector<IModelKeyFrameInterpolator*> m_interpolators;
+   double m_start, m_end;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cModelAnimationController
 //
 
@@ -63,19 +88,16 @@ class cModelAnimationController : public cComObject<IMPLEMENTS(IModelAnimationCo
    void operator =(const cModelAnimationController & other);
 
 public:
-   cModelAnimationController(cModel * pModel);
+   cModelAnimationController(cModelSkeleton * pSkeleton);
    ~cModelAnimationController();
-
-   tResult GetModel(cModel * * ppModel) const;
-   tResult SetModel(cModel * pModel);
 
    tResult Advance(double elapsedTime);
 
    const tMatrices & GetBlendMatrices() const { return m_blendMatrices; }
 
 private:
-   cModel * m_pModel;
-   double m_animTime, m_animLength;
+   cModelSkeleton * m_pSkeleton;
+   double m_animStart, m_animEnd, m_animTime;
    tMatrices m_blendMatrices;
 };
 

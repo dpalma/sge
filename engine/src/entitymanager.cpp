@@ -88,11 +88,14 @@ void cModelEntity::Update(double elapsedTime)
       if (pModel != m_pModel)
       {
          m_pModel = pModel;
-         ModelAnimationControllerCreate(m_pModel, &m_pAnimController);
+         if (m_pModel->GetSkeleton() != NULL || m_pModel->GetSkeleton()->IsAnimated())
+         {
+            ModelAnimationControllerCreate(m_pModel->GetSkeleton(), &m_pAnimController);
+         }
       }
    }
 
-   if (m_pModel->IsAnimated())
+   if (!!m_pAnimController)
    {
       m_pAnimController->Advance(elapsedTime);
       m_pModel->ApplyJointMatrices(m_pAnimController->GetBlendMatrices(), &m_blendedVerts);

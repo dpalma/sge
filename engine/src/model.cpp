@@ -16,11 +16,22 @@
 #include "filespec.h"
 #include "techmath.h"
 
+#include <algorithm>
+#include <cfloat>
 #include <map>
 #include <stack>
-#include <cfloat>
 
 #include "dbgalloc.h" // must be last header
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+LOG_DEFINE_CHANNEL(Model);
+
+#define LocalMsg(ind,msg)           DebugMsgEx2(Model, "%*s" msg, (ind),"")
+#define LocalMsg1(ind,msg,a)        DebugMsgEx3(Model, "%*s" msg, (ind),"",(a))
+#define LocalMsg2(ind,msg,a,b)      DebugMsgEx4(Model, "%*s" msg, (ind),"",(a),(b))
+#define LocalMsg3(ind,msg,a,b,c)    DebugMsgEx5(Model, "%*s" msg, (ind),"",(a),(b),(c))
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -177,17 +188,15 @@ cModelJoint::cModelJoint()
 cModelJoint::cModelJoint(const cModelJoint & other)
  : m_parentIndex(other.m_parentIndex)
  , m_localTransform(other.m_localTransform)
- , m_pInterp(other.m_pInterp)
 {
 }
 
 ///////////////////////////////////////
 
-cModelJoint::cModelJoint(int parentIndex, const tMatrix4 & localTransform, const tModelKeyFrames & keyFrames)
+cModelJoint::cModelJoint(int parentIndex, const tMatrix4 & localTransform)
  : m_parentIndex(parentIndex)
  , m_localTransform(localTransform)
 {
-   ModelKeyFrameInterpolatorCreate(&keyFrames[0], keyFrames.size(), &m_pInterp);
 }
 
 ///////////////////////////////////////
@@ -202,39 +211,8 @@ const cModelJoint & cModelJoint::operator =(const cModelJoint & other)
 {
    m_parentIndex = other.m_parentIndex;
    m_localTransform = other.m_localTransform;
-   m_pInterp = other.m_pInterp;
    return *this;
 }
-
-///////////////////////////////////////
-
-uint cModelJoint::GetKeyFrameCount() const
-{
-   uint nKeyFrames = 0;
-   if (m_pInterp->GetKeyFrameCount(&nKeyFrames) == S_OK)
-   {
-      return nKeyFrames;
-   }
-   else
-   {
-      return 0;
-   }
-}
-
-///////////////////////////////////////
-
-tResult cModelJoint::GetKeyFrame(uint index, sModelKeyFrame * pFrame) const
-{
-   return m_pInterp->GetKeyFrame(index, pFrame);
-}
-
-///////////////////////////////////////
-
-tResult cModelJoint::Interpolate(double time, tVec3 * pTrans, tQuat * pRot) const
-{
-   return m_pInterp->Interpolate(time, pTrans, pRot);
-}
-
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -253,6 +231,7 @@ cModelSkeleton::cModelSkeleton()
 cModelSkeleton::cModelSkeleton(const cModelSkeleton & other)
  : m_joints(other.m_joints.size())
  , m_inverses(other.m_inverses.size())
+ , m_pAnim(other.m_pAnim)
 {
    std::copy(other.m_joints.begin(), other.m_joints.end(), m_joints.begin());
    std::copy(other.m_inverses.begin(), other.m_inverses.end(), m_inverses.begin());
@@ -284,6 +263,7 @@ const cModelSkeleton & cModelSkeleton::operator =(const cModelSkeleton & other)
    std::copy(other.m_joints.begin(), other.m_joints.end(), m_joints.begin());
    m_inverses.resize(other.m_inverses.size());
    std::copy(other.m_inverses.begin(), other.m_inverses.end(), m_inverses.begin());
+   m_pAnim = other.m_pAnim;
    return *this;
 }
 
@@ -318,38 +298,14 @@ void cModelSkeleton::PreApplyInverses(tModelVertices::iterator first,
 
 ///////////////////////////////////////
 
-double cModelSkeleton::GetAnimationLength() const
+void cModelSkeleton::InterpolateMatrices(double time, tMatrices * pMatrices) const
 {
-   if (m_joints.empty())
-   {
-      return 0;
-   }
-
-   double maxTime = DBL_MIN;
-
-   tModelJoints::const_iterator iter = m_joints.begin();
-   for (; iter != m_joints.end(); iter++)
-   {
-      uint nKeyFrames = iter->GetKeyFrameCount();
-      if (nKeyFrames > 0)
-      {
-         sModelKeyFrame keyFrame;
-         if (iter->GetKeyFrame(nKeyFrames - 1, &keyFrame) == S_OK)
-         {
-            if (keyFrame.time > maxTime)
-            {
-               maxTime = keyFrame.time;
-            }
-         }
-      }
-   }
-
-   return maxTime;
+   InterpolateMatrices(const_cast<IModelAnimation*>((const IModelAnimation*)m_pAnim), time, pMatrices);
 }
 
 ///////////////////////////////////////
 
-void cModelSkeleton::InterpolateMatrices(double time, tMatrices * pMatrices) const
+void cModelSkeleton::InterpolateMatrices(IModelAnimation * pAnim, double time, tMatrices * pMatrices) const
 {
    pMatrices->resize(m_joints.size());
 
@@ -359,7 +315,7 @@ void cModelSkeleton::InterpolateMatrices(double time, tMatrices * pMatrices) con
    {
       tVec3 position;
       tQuat rotation;
-      if (iter->Interpolate(time, &position, &rotation) == S_OK)
+      if (pAnim->Interpolate(i, time, &position, &rotation) == S_OK)
       {
          tMatrix4 mt, mr;
 
@@ -385,6 +341,14 @@ void cModelSkeleton::InterpolateMatrices(double time, tMatrices * pMatrices) con
          (*pMatrices)[i] = temp;
       }
    }
+}
+
+///////////////////////////////////////
+
+void cModelSkeleton::TempAddAnimation(IModelAnimation * pAnim)
+{
+   SafeRelease(m_pAnim);
+   m_pAnim = CTAddRef(pAnim);
 }
 
 ///////////////////////////////////////
@@ -552,20 +516,6 @@ tResult cModel::Create(const tModelVertices & verts,
 
 ///////////////////////////////////////
 
-double cModel::GetTotalAnimationLength() const
-{
-   return m_skeleton.GetAnimationLength();
-}
-
-///////////////////////////////////////
-
-void cModel::InterpolateJointMatrices(double time, tMatrices * pMatrices) const
-{
-   m_skeleton.InterpolateMatrices(time, pMatrices);
-}
-
-///////////////////////////////////////
-
 void cModel::ApplyJointMatrices(const tMatrices & matrices, tBlendedVertices * pVertices) const
 {
    pVertices->resize(m_vertices.size());
@@ -706,6 +656,13 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
       return NULL;
    }
 
+   static const kIndent = 3;
+   uint indent = 0;
+
+   LocalMsg(indent, "Loading MS3D file...\n");
+
+   indent += kIndent;
+
    //////////////////////////////
    // Read the header
 
@@ -714,6 +671,7 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
       memcmp(g_ms3dId, header.id, _countof(header.id)) != 0 ||
       header.version < g_ms3dVer)
    {
+      ErrorMsg("Bad MS3D file header\n");
       return NULL;
    }
 
@@ -726,6 +684,8 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
    {
       return NULL;
    }
+
+   LocalMsg1(indent, "%d Vertices\n", nVertices);
 
    std::vector<ms3d_vertex_t> ms3dVerts(nVertices);
    if (pReader->Read(&ms3dVerts[0], nVertices * sizeof(ms3d_vertex_t)) != S_OK)
@@ -742,6 +702,8 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
    {
       return NULL;
    }
+
+   LocalMsg1(indent, "%d Triangles\n", nTriangles);
 
    std::vector<ms3d_triangle_t> tris(nTriangles);
    if (pReader->Read(&tris[0], nTriangles * sizeof(ms3d_triangle_t)) != S_OK)
@@ -850,6 +812,8 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
       return NULL;
    }
 
+   LocalMsg1(indent, "%d Groups\n", nGroups);
+
    uint i;
    cMs3dGroup groups[MAX_GROUPS];
    for (i = 0; i < nGroups; i++)
@@ -893,6 +857,8 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
       return NULL;
    }
 
+   LocalMsg1(indent, "%d Materials\n", nMaterials);
+
    std::vector<cModelMaterial> materials(nMaterials);
 
    if (nMaterials > 0)
@@ -925,6 +891,9 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
       return NULL;
    }
 
+   LocalMsg1(indent, "%d Animation Frames\n", nTotalFrames);
+   LocalMsg1(indent, "Animation FPS = %f\n", animationFPS);
+
    //////////////////////////////
    // Read the joints
 
@@ -934,10 +903,15 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
       return NULL;
    }
 
+   LocalMsg1(indent, "%d Joints\n", nJoints);
+
    std::vector<cModelJoint> joints(nJoints);
+   std::vector< std::vector<sModelKeyFrame> > jointKeyFrames(nJoints);
 
    if (nJoints > 0)
    {
+      indent += kIndent;
+
       std::vector<cMs3dJoint> ms3dJoints(nJoints);
 
       std::map<cStr, int> jointNameMap;
@@ -956,6 +930,8 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
       std::vector<cMs3dJoint>::iterator end = ms3dJoints.end();
       for (i = 0; iter != end; iter++, i++)
       {
+         LocalMsg1(indent, "Joint %d\n", i);
+
          int parentIndex = -1;
 
          if (strlen(iter->GetParentName()) > 0)
@@ -977,6 +953,8 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
 
          tModelKeyFrames keyFrames(iter->GetKeyFramesRot().size());
 
+         indent += kIndent;
+
          const std::vector<ms3d_keyframe_rot_t> & keyFramesRot = iter->GetKeyFramesRot();
          const std::vector<ms3d_keyframe_pos_t> & keyFramesTrans = iter->GetKeyFramesTrans();
          for (uint j = 0; j < keyFrames.size(); j++)
@@ -991,12 +969,19 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
             keyFrames[j].translation = tVec3(keyFramesTrans[j].position);
             keyFrames[j].rotation = QuatFromEulerAngles(tVec3(keyFramesRot[j].rotation));
 
-//            int frame = Round(static_cast<float>(keyFrames[j].time) * animationFPS);
-//            DebugMsg2("Key frame at %.3f is #%d\n", keyFrames[j].time, frame);
+            int frame = Round(static_cast<float>(keyFrames[j].time) * animationFPS);
+            LocalMsg3(indent, "Key frame %d at %.3f is #%d\n", j, keyFrames[j].time, frame);
          }
 
-         joints[i] = cModelJoint(parentIndex, local, keyFrames);
+         indent -= kIndent;
+
+         jointKeyFrames[i].resize(keyFrames.size());
+         std::copy(keyFrames.begin(), keyFrames.end(), jointKeyFrames[i].begin());
+
+         joints[i] = cModelJoint(parentIndex, local);
       }
+
+      indent -= kIndent;
    }
 
    {
@@ -1008,7 +993,7 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
          {
             if (iRootJoint >= 0)
             {
-               ErrorMsg("No unique root joint");
+               ErrorMsg("More than one root joint");
                return NULL;
             }
             iRootJoint = i;
@@ -1121,6 +1106,82 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
          }
       }
    }
+
+   float totalAnimTime = static_cast<float>(nTotalFrames) / animationFPS;
+
+   cAutoIPtr<IModelAnimation> pAnim;
+
+#if 1
+   if (!animDescs.empty())
+   {
+      LocalMsg1(indent, "%d Animation Sequences\n", animDescs.size());
+      indent += kIndent;
+
+      std::vector<sModelAnimationDesc>::const_iterator iter, end;
+      for (iter = animDescs.begin(), end = animDescs.end(); iter != end; iter++)
+      {
+         const sModelAnimationDesc & animDesc = *iter;
+
+         LocalMsg3(indent, "%d: %d, %d\n", animDesc.type, animDesc.start, animDesc.end);
+
+         bool bError = false;
+         std::vector<IModelKeyFrameInterpolator*> interpolators(jointKeyFrames.size());
+         for (uint i = 0; i < jointKeyFrames.size(); i++)
+         {
+            const std::vector<sModelKeyFrame> & keyFrames = jointKeyFrames[i];
+
+            int iStart = -1, iEnd = -1;
+            std::vector<sModelKeyFrame>::const_iterator kfIter = keyFrames.begin();
+            for (; kfIter != keyFrames.end(); kfIter++)
+            {
+               int frame = Round(static_cast<float>(kfIter->time) * animationFPS);
+               if (frame == animDesc.start)
+               {
+                  iStart = kfIter - keyFrames.begin();
+               }
+               if (frame == animDesc.end)
+               {
+                  iEnd = kfIter - keyFrames.begin();
+               }
+            }
+
+            if (iStart == -1 || iEnd == -1
+               || ModelKeyFrameInterpolatorCreate(&keyFrames[iStart], iEnd-iStart+1, &interpolators[i]) != S_OK)
+            {
+               bError = true;
+               break;
+            }
+         }
+
+         if (ModelAnimationCreate(&interpolators[0], interpolators.size(), &pAnim) == S_OK)
+         {
+            skeleton.TempAddAnimation(pAnim);
+         }
+
+         std::for_each(interpolators.begin(), interpolators.end(), CTInterfaceMethod(&IUnknown::Release));
+
+         // HACK: take only the first one for now
+         break;
+      }
+
+      indent -= kIndent;
+   }
+#else
+   std::vector<IModelKeyFrameInterpolator*> interpolators(jointKeyFrames.size());
+   for (uint i = 0; i < jointKeyFrames.size(); i++)
+   {
+      const std::vector<sModelKeyFrame> & keyFrames = jointKeyFrames[i];
+      if (ModelKeyFrameInterpolatorCreate(&keyFrames[0], keyFrames.size(), &interpolators[i]) != S_OK)
+      {
+         return NULL;
+      }
+   }
+   if (ModelAnimationCreate(&interpolators[0], interpolators.size(), &pAnim) == S_OK)
+   {
+      skeleton.TempAddAnimation(pAnim);
+   }
+   std::for_each(interpolators.begin(), interpolators.end(), CTInterfaceMethod(&IUnknown::Release));
+#endif
 
    //////////////////////////////
    // Create the model

@@ -178,7 +178,7 @@ public:
    cModelJoint();
    cModelJoint(const cModelJoint & other);
 
-   cModelJoint(int parentIndex, const tMatrix4 & localTransform, const tModelKeyFrames & keyFrames);
+   cModelJoint(int parentIndex, const tMatrix4 & localTransform);
 
    ~cModelJoint();
 
@@ -187,15 +187,9 @@ public:
    int GetParentIndex() const;
    const tMatrix4 & GetLocalTransform() const;
 
-   uint GetKeyFrameCount() const;
-   tResult GetKeyFrame(uint index, sModelKeyFrame * pFrame) const;
-
-   tResult Interpolate(double time, tVec3 * pTrans, tQuat * pRot) const;
-
 private:
    int m_parentIndex;
    tMatrix4 m_localTransform;
-   cAutoIPtr<IModelKeyFrameInterpolator> m_pInterp;
 };
 
 inline int cModelJoint::GetParentIndex() const
@@ -241,15 +235,19 @@ public:
                          tModelVertices::iterator last,
                          tModelVertices::iterator dest) const;
 
-   double GetAnimationLength() const;
-
    void InterpolateMatrices(double time, tMatrices * pMatrices) const;
+   void InterpolateMatrices(IModelAnimation * pAnim, double time, tMatrices * pMatrices) const;
+
+   void TempAddAnimation(IModelAnimation * pAnim);
+   IModelAnimation * TempAccessAnimation() { return m_pAnim; }
 
 private:
    void CalculateInverses();
 
    tModelJoints m_joints;
    tMatrices m_inverses;
+
+   cAutoIPtr<IModelAnimation> m_pAnim;
 };
 
 
@@ -290,10 +288,6 @@ public:
                          const cModelSkeleton & skeleton,
                          cModel * * ppModel);
 
-   bool IsAnimated() const;
-   double GetTotalAnimationLength() const;
-
-   void InterpolateJointMatrices(double time, tMatrices * pMatrices) const;
    void ApplyJointMatrices(const tMatrices & matrices, tBlendedVertices * pVertices) const;
 
    const tModelVertices & GetVertices() const;
@@ -302,6 +296,8 @@ public:
 
    tModelMeshes::const_iterator BeginMeshses() const;
    tModelMeshes::const_iterator EndMeshses() const;
+
+   cModelSkeleton * GetSkeleton() { return &m_skeleton; }
 
    static tResult RegisterResourceFormat();
 
@@ -320,11 +316,6 @@ private:
    std::vector<cModelMesh> m_meshes;
    cModelSkeleton m_skeleton;
 };
-
-inline bool cModel::IsAnimated() const
-{
-   return m_skeleton.IsAnimated();
-}
 
 inline const tModelVertices & cModel::GetVertices() const
 {

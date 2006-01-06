@@ -18,11 +18,13 @@
 #endif
 
 F_DECLARE_INTERFACE(IModelKeyFrameInterpolator);
+F_DECLARE_INTERFACE(IModelAnimation);
 F_DECLARE_INTERFACE(IModelAnimationController);
 
 enum ePrimitiveType;
 
 class cModel;
+class cModelSkeleton;
 struct sModelKeyFrame;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -116,14 +118,30 @@ ENGINE_API tResult ModelKeyFrameInterpolatorCreate(const sModelKeyFrame * pKeyFr
 
 ////////////////////////////////////////////////////////////////////////////////
 // 
+// INTERFACE: IModelAnimation
+//
+
+interface IModelAnimation : IUnknown
+{
+   virtual tResult GetStartEnd(double * pStart, double * pEnd) const = 0;
+
+   virtual tResult Interpolate(uint index, double time, tVec3 * pTrans, tQuat * pRot) const = 0;
+};
+
+////////////////////////////////////////
+
+ENGINE_API tResult ModelAnimationCreate(IModelKeyFrameInterpolator * * pInterpolators,
+                                        uint nInterpolators, IModelAnimation * * ppAnim);
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// 
 // INTERFACE: IModelAnimationController
 //
 
 interface IModelAnimationController : IUnknown
 {
-   virtual tResult GetModel(cModel * * ppModel) const = 0;
-   virtual tResult SetModel(cModel * pModel) = 0;
-
    virtual tResult Advance(double elapsedTime) = 0;
 
    virtual const tMatrices & GetBlendMatrices() const = 0;
@@ -131,7 +149,7 @@ interface IModelAnimationController : IUnknown
 
 ////////////////////////////////////////
 
-ENGINE_API tResult ModelAnimationControllerCreate(cModel * pModel, IModelAnimationController * * ppAnimController);
+ENGINE_API tResult ModelAnimationControllerCreate(cModelSkeleton * pSkeleton, IModelAnimationController * * ppAnimController);
 
 
 ////////////////////////////////////////////////////////////////////////////////
