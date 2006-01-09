@@ -256,8 +256,11 @@ VALUE & HASHTABLE_TEMPLATE_CLASS::operator [](const KEY & k)
 
    uint h = Probe(k);
    m_elts[h].first = k;
-   m_elts[h].inUse = true;
-   m_size++;
+   if (!m_elts[h].inUse)
+   {
+      m_elts[h].inUse = true;
+      m_size++;
+   }
    return m_elts[h].second;
 }
 

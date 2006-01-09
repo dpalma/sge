@@ -74,6 +74,7 @@ class cHashTableTests : public CppUnit::TestCase
       CPPUNIT_TEST(TestFindFailure);
       CPPUNIT_TEST(TestIterationPostIncrement);
       CPPUNIT_TEST(TestIterationPreIncrement);
+      CPPUNIT_TEST(TestArrayIndexOperator);
       CPPUNIT_TEST(TestCustomKey);
    CPPUNIT_TEST_SUITE_END();
 
@@ -86,6 +87,7 @@ class cHashTableTests : public CppUnit::TestCase
    void TestFindFailure();
    void TestIterationPostIncrement();
    void TestIterationPreIncrement();
+   void TestArrayIndexOperator();
    void TestCustomKey();
 
 public:
@@ -156,6 +158,27 @@ void cHashTableTests::TestIterationPreIncrement()
 
    LocalMsgIf2(nIterated != kNumTests, "Iterated %d items in hash table; expected %d\n", nIterated, kNumTests);
    CPPUNIT_ASSERT(nIterated == kNumTests);
+}
+
+////////////////////////////////////////
+
+void cHashTableTests::TestArrayIndexOperator()
+{
+   // test insertion via array index operator
+   tTestHashTable hashTable;
+   for (int i = 0; i < kNumTests; i++)
+   {
+      hashTable[m_testStrings[i]] = i;
+   }
+   CPPUNIT_ASSERT(hashTable.size() == kNumTests);
+
+   // test value access via array index operator
+   for (int i = 0; i < kNumTests; i++)
+   {
+      int index = hashTable[m_testStrings[i]];
+      CPPUNIT_ASSERT(index == i);
+   }
+   CPPUNIT_ASSERT(hashTable.size() == kNumTests); // make sure size didn't change because of access
 }
 
 ////////////////////////////////////////
