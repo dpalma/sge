@@ -12,6 +12,7 @@
 
 #include "terrainapi.h"
 
+#include "filespec.h"
 #include "globalobj.h"
 #include "resourceapi.h"
 
@@ -356,15 +357,32 @@ HTOOLGROUP cToolPaletteBar::CreateTerrainToolGroup(const tChar * pszTerrainTileS
    return NULL;
 }
 
+#ifndef kRT_Model
+#define kRT_Model "Model"
+#endif
+
 HTOOLGROUP cToolPaletteBar::CreateUnitToolGroup()
 {
    HTOOLGROUP hUnitGroup = m_toolPalette.AddGroup("Units", NULL);
    if (hUnitGroup != NULL)
    {
-      cPlaceUnitTool * pUnitTool = new cPlaceUnitTool("zombie.ms3d"); // TODO: remove hard-coded string
-      if (pUnitTool != NULL)
+      std::vector<cStr> modelResourceNames;
+      UseGlobal(ResourceManager);
+      pResourceManager->ListResources(kRT_Model, &modelResourceNames);
+      std::vector<cStr>::const_iterator iter = modelResourceNames.begin();
+      for (; iter != modelResourceNames.end(); iter++)
       {
-         m_toolPalette.AddTool(hUnitGroup, "Zombie", -1, pUnitTool);
+         cPlaceUnitTool * pUnitTool = new cPlaceUnitTool(*iter);
+         if (pUnitTool != NULL)
+         {
+            cStr name;
+            cFileSpec(iter->c_str()).GetFileNameNoExt(&name);
+            if (!name.empty())
+            {
+               name[0] = _toupper(name[0]);
+            }
+            m_toolPalette.AddTool(hUnitGroup, name.c_str(), -1, pUnitTool);
+         }
       }
    }
 

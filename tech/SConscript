@@ -4,6 +4,7 @@
 Import('env')
 
 sources = Split("""
+   src/axisalignedbox.cpp
    src/bmp.cpp
    src/comtools.cpp
    src/config.cpp

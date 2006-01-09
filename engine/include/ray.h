@@ -12,6 +12,8 @@
 #pragma once
 #endif
 
+class cAxisAlignedBox;
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cRay
@@ -40,6 +42,10 @@ public:
                            const tVec3 & v2,
                            const tVec3 & v3,
                            tVec3 * pIntersection = NULL) const;
+
+   bool IntersectsAxisAlignedBox(const cAxisAlignedBox & box,
+                                 float * pTNear = NULL,
+                                 float * pTFar = NULL) const;
 
 private:
    tVec3 m_origin, m_direction;

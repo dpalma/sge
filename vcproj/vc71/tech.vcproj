@@ -330,6 +330,9 @@
 				Name="Source Files"
 				Filter="">
 				<File
+					RelativePath="..\..\tech\src\axisalignedbox.cpp">
+				</File>
+				<File
 					RelativePath="..\..\tech\src\bmp.cpp">
 				</File>
 				<File
@@ -524,6 +527,9 @@
 		<Filter
 			Name=".\include"
 			Filter="h;hpp;hxx;hm;inl">
+			<File
+				RelativePath="..\..\tech\include\axisalignedbox.h">
+			</File>
 			<File
 				RelativePath="..\..\tech\include\color.h">
 			</File>

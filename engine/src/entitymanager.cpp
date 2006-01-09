@@ -5,10 +5,13 @@
 
 #include "entitymanager.h"
 
+#include "ray.h"
 #include "renderapi.h"
 #include "terrainapi.h"
 
 #include "resourceapi.h"
+
+#include <cfloat>
 
 #include <GL/glew.h>
 
@@ -66,6 +69,47 @@ const tMatrix4 & cModelEntity::GetWorldTransform() const
 
 ///////////////////////////////////////
 
+const cAxisAlignedBox & cModelEntity::GetBoundingBox() const
+{
+   return m_bbox;
+}
+
+///////////////////////////////////////
+
+static void CalculateBBox(const tModelVertices & vertices, cAxisAlignedBox * pBBox)
+{
+   tVec3 mins(FLT_MAX, FLT_MAX, FLT_MAX), maxs(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+   tModelVertices::const_iterator iter = vertices.begin();
+   for (; iter != vertices.end(); iter++)
+   {
+      if (iter->pos.x < mins.x)
+      {
+         mins.x = iter->pos.x;
+      }
+      if (iter->pos.y < mins.y)
+      {
+         mins.y = iter->pos.y;
+      }
+      if (iter->pos.z < mins.z)
+      {
+         mins.z = iter->pos.z;
+      }
+      if (iter->pos.x > maxs.x)
+      {
+         maxs.x = iter->pos.x;
+      }
+      if (iter->pos.y > maxs.y)
+      {
+         maxs.y = iter->pos.y;
+      }
+      if (iter->pos.z > maxs.z)
+      {
+         maxs.z = iter->pos.z;
+      }
+   }
+   *pBBox = cAxisAlignedBox(mins, maxs);
+}
+
 void cModelEntity::Update(double elapsedTime)
 {
    // TODO: When the resource manager is fast enough, this if test should be removed
@@ -92,6 +136,7 @@ void cModelEntity::Update(double elapsedTime)
          {
             ModelAnimationControllerCreate(m_pModel->GetSkeleton(), &m_pAnimController);
          }
+         CalculateBBox(m_pModel->GetVertices(), &m_bbox);
       }
    }
 
@@ -249,7 +294,7 @@ tResult cEntityManager::SpawnEntity(const tChar * pszMesh, float nx, float nz)
 
 tResult cEntityManager::SpawnEntity(const tChar * pszMesh, const tVec3 & position)
 {
-   cAutoIPtr<cModelEntity> pEntity(new cModelEntity(pszMesh, position));
+   cAutoIPtr<IEntity> pEntity(static_cast<IEntity*>(new cModelEntity(pszMesh, position)));
    if (!pEntity)
    {
       return E_NOTIMPL;
@@ -271,6 +316,29 @@ void cEntityManager::RenderAll()
       (*iter)->Render();
       glPopMatrix();
    }
+}
+
+///////////////////////////////////////
+
+tResult cEntityManager::GetEntityFromRayCast(const cRay & ray, IEntity * * ppEntity) const
+{
+   tEntities::const_iterator iter = m_entities.begin();
+   for (; iter != m_entities.end(); iter++)
+   {
+      cAutoIPtr<IEntity> pEntity(CTAddRef(*iter));
+      const tMatrix4 & worldTransform = pEntity->GetWorldTransform();
+      tVec3 position(worldTransform.m[12], worldTransform.m[13], worldTransform.m[14]);
+      tVec3 mins = pEntity->GetBoundingBox().GetMins() + position;
+      tVec3 maxs = pEntity->GetBoundingBox().GetMaxs() + position;
+      cAxisAlignedBox bbox(mins, maxs);
+      if (ray.IntersectsAxisAlignedBox(bbox))
+      {
+         *ppEntity = CTAddRef(pEntity);
+         return S_OK;
+      }
+   }
+
+   return S_FALSE;
 }
 
 ///////////////////////////////////////

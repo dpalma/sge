@@ -227,11 +227,24 @@ static int FormatLengthEstimate(const tChar * pszFormat, va_list args)
             break;
          }
 
+         case 'p':
+         {
+            if (bInFormatField)
+            {
+               bInFormatField = false;
+               formatLenEst += (sizeof(void*) * 2);
+            }
+            else
+            {
+               formatLenEst += 1;
+            }
+            break;
+         }
+
          case 'c':
          {
-            if (last == '%')
+            if (bInFormatField)
             {
-               Assert(bInFormatField);
                bInFormatField = false;
             }
             // Add one regardless of whether this is the character 'c'
@@ -520,6 +533,7 @@ void cStrTests::TestFormatLength()
    CPPUNIT_ASSERT(::DoFormatLengthTest("%x %d %s (multiple)", UINT_MAX, INT_MIN, szSample));
    CPPUNIT_ASSERT(::DoFormatLengthTest("%% escaped percents %%%%%%"));
    CPPUNIT_ASSERT(::DoFormatLengthTest("hex with specific width %08X", UINT_MAX / 22));
+   CPPUNIT_ASSERT(::DoFormatLengthTest("pointer %p", NULL));
 }
 
 #endif // _MSC_VER >= 1300

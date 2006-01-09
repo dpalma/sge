@@ -210,6 +210,18 @@ static bool GetTerrainLocation(const cRay & ray, tVec3 * pLocation)
 
 ////////////////////////////////////////
 
+static bool GetEntity(const cRay & ray, IEntity * * ppEntity)
+{
+   UseGlobal(EntityManager);
+   if (pEntityManager->GetEntityFromRayCast(ray, ppEntity) == S_OK)
+   {
+      return true;
+   }
+   return false;
+}
+
+////////////////////////////////////////
+
 tResult cMoveCameraTool::GetToolTip(const cEditorMouseEvent & mouseEvent,
                                     cStr * pToolTipText, uint_ptr * pToolTipId) const
 {
@@ -220,12 +232,22 @@ tResult cMoveCameraTool::GetToolTip(const cEditorMouseEvent & mouseEvent,
    UseGlobal(Camera);
    if (pCamera->GeneratePickRay(ndx, ndy, &pickRay) == S_OK)
    {
-      tVec3 intersect;
-      if (GetTerrainLocation(pickRay, &intersect))
+      cAutoIPtr<IEntity> pEntity;
+      if (GetEntity(pickRay, &pEntity))
       {
-         pToolTipText->Format("Hit <%.2f, %.2f, %.2f>", intersect.x, intersect.y, intersect.z);
-         *pToolTipId = static_cast<uint_ptr>(Round(intersect.LengthSqr()));
+         pToolTipText->Format("Hit entity %p", static_cast<void*>(pEntity));
+         *pToolTipId = reinterpret_cast<uint_ptr>(static_cast<void*>(pEntity.AccessPointer()));
          return S_OK;
+      }
+      else
+      {
+         tVec3 intersect;
+         if (GetTerrainLocation(pickRay, &intersect))
+         {
+            pToolTipText->Format("Hit <%.2f, %.2f, %.2f>", intersect.x, intersect.y, intersect.z);
+            *pToolTipId = static_cast<uint_ptr>(Round(intersect.LengthSqr()));
+            return S_OK;
+         }
       }
    }
 

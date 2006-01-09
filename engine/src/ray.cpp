@@ -1,10 +1,11 @@
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // $Id$
 
 #include "stdhdr.h"
 
 #include "ray.h"
 
+#include "axisalignedbox.h"
 #include "techmath.h"
 
 #include <cfloat>
@@ -15,18 +16,18 @@
 
 #include "dbgalloc.h" // must be last header
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cRay
 //
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 cRay::cRay()
 {
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 cRay::cRay(const tVec3 & origin, const tVec3 & direction)
  : m_origin(origin)
@@ -34,7 +35,7 @@ cRay::cRay(const tVec3 & origin, const tVec3 & direction)
 {
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 cRay::cRay(const cRay & ray)
  : m_origin(ray.m_origin)
@@ -42,7 +43,7 @@ cRay::cRay(const cRay & ray)
 {
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 const cRay & cRay::operator =(const cRay & ray)
 {
@@ -51,7 +52,7 @@ const cRay & cRay::operator =(const cRay & ray)
    return *this;
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 bool cRay::IntersectsSphere(const tVec3 & center, 
                             tVec3::value_type radius, 
@@ -105,7 +106,7 @@ bool cRay::IntersectsSphere(const tVec3 & center,
    return false;
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 bool cRay::IntersectsPlane(const tVec3 & normal, 
                            tVec3::value_type d,
@@ -133,7 +134,7 @@ bool cRay::IntersectsPlane(const tVec3 & normal,
    return true;
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 // "An Introduction To Ray Tracing", Ed. by Andrew Glassner, 1989.
 
 #define Max3(a,b,c) Max(Max(a,b),c)
@@ -232,7 +233,87 @@ bool cRay::IntersectsTriangle(const tVec3 & v1,
    return false;
 }
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////
+// http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter3.htm
+//
+// The Ray is defined as before in terms of Ro, Rd Then the algorithm is as follows:
+//
+// set Tnear = - infinity, Tfar = infinity
+//
+// For each pair of planes P associated with X, Y, and Z do:
+// (example using X planes)
+// if direction Xd = 0 then the ray is parallel to the X planes, so
+// if origin Xo is not between the slabs ( Xo < Xl or Xo > Xh) then return false
+// else, if the ray is not parallel to the plane then
+// begin
+// compute the intersection distance of the planes
+// T1 = (Xl - Xo) / Xd
+// T2 = (Xh - Xo) / Xd
+// If T1 > T2 swap (T1, T2) /* since T1 intersection with near plane */
+// If T1 > Tnear set Tnear =T1 /* want largest Tnear */
+// If T2 < Tfar set Tfar="T2" /* want smallest Tfar */
+// If Tnear > Tfar box is missed so return false
+// If Tfar < 0 box is behind ray return false end
+//
+// end of for loop If Box survived all above tests, return true with intersection point Tnear and exit point Tfar.
+
+bool cRay::IntersectsAxisAlignedBox(const cAxisAlignedBox & box,
+                                    float * pTNear /*=NULL*/,
+                                    float * pTFar /*=NULL*/) const
+{
+   float tNear = -FLT_MAX, tFar = FLT_MAX;
+
+   // For x, y, z
+   for (int i = 0; i < 3; i++)
+   {
+      float d = m_direction.v[i]; // direction component
+      float o = m_origin.v[i]; // origin component
+      float mn = box.GetMins().v[i]; // box minimum component
+      float mx = box.GetMaxs().v[i]; // box maximum component
+
+      if (AlmostEqual(d, 0))
+      {
+         if ((d < mn) || (d > mx))
+         {
+            return false;
+         }
+      }
+
+      float t1 = (mn - o) / d;
+      float t2 = (mx - o) / d;
+      if (t1 > t2)
+      {
+         float temp = t1;
+         t1 = t2;
+         t2 = temp;
+      }
+      if (t1 > tNear)
+      {
+         tNear = t1;
+      }
+      if (t2 < tFar)
+      {
+         tFar = t2;
+      }
+      if ((tNear > tFar) || (tFar < 0))
+      {
+         return false;
+      }
+   }
+
+   if (pTNear != NULL)
+   {
+      *pTNear = tNear;
+   }
+   if (pTFar != NULL)
+   {
+      *pTFar = tFar;
+   }
+   return true;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 
 #ifdef HAVE_CPPUNIT
 
@@ -240,14 +321,20 @@ class cRayTests : public CppUnit::TestCase
 {
    void TestIntersectsSphere();
    void TestIntersectsPlane();
+   void TestIntersectsAxisAlignedBox();
 
    CPPUNIT_TEST_SUITE(cRayTests);
       CPPUNIT_TEST(TestIntersectsSphere);
       CPPUNIT_TEST(TestIntersectsPlane);
+      CPPUNIT_TEST(TestIntersectsAxisAlignedBox);
    CPPUNIT_TEST_SUITE_END();
 };
 
+////////////////////////////////////////
+
 CPPUNIT_TEST_SUITE_REGISTRATION(cRayTests);
+
+////////////////////////////////////////
 
 void cRayTests::TestIntersectsSphere()
 {
@@ -256,11 +343,48 @@ void cRayTests::TestIntersectsSphere()
    CPPUNIT_ASSERT(!cRay(tVec3(0,0,0),tVec3(0,0,1)).IntersectsSphere(tVec3(0,0,-3),1));
 }
 
+////////////////////////////////////////
+
 void cRayTests::TestIntersectsPlane()
 {
    CPPUNIT_ASSERT(cRay(tVec3(0,0,0),tVec3(0,0,-1)).IntersectsPlane(tVec3(0,0,-3),-1));
 }
 
+////////////////////////////////////////
+
+void cRayTests::TestIntersectsAxisAlignedBox()
+{
+   float maxDim = -FLT_MAX;
+   tVec3 min(static_cast<float>(rand()), static_cast<float>(rand()), static_cast<float>(rand()));
+   tVec3 max(static_cast<float>(rand()), static_cast<float>(rand()), static_cast<float>(rand()));
+   for (int i = 0; i < 3; i++)
+   {
+      if (min.v[i] > max.v[i])
+      {
+         float temp = min.v[i];
+         min.v[i] = max.v[i];
+         max.v[i] = temp;
+      }
+      if ((max.v[i] - min.v[i]) > maxDim)
+      {
+         maxDim = max.v[i] - min.v[i];
+      }
+   }
+   cAxisAlignedBox box(min, max);
+   tVec3 centroid;
+   box.GetCentroid(&centroid);
+   // determine a point way out there in space for the ray origin
+   tVec3 dir(static_cast<float>(rand()), static_cast<float>(rand()), static_cast<float>(rand()));
+   dir.Normalize();
+   tVec3 origin = centroid + (dir * (maxDim * 2));
+   // point the ray back toward the center of the box
+   dir.x = -dir.x;
+   dir.y = -dir.y;
+   dir.z = -dir.z;
+   cRay ray(origin, dir);
+   CPPUNIT_ASSERT(ray.IntersectsAxisAlignedBox(box));
+}
+
 #endif
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////

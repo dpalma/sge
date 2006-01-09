@@ -10,8 +10,8 @@
 #include "saveloadapi.h"
 #include "simapi.h"
 
+#include "axisalignedbox.h"
 #include "globalobjdef.h"
-#include "matrix4.h"
 #include "techstring.h"
 
 #include <list>
@@ -26,16 +26,18 @@
 // CLASS: cModelEntity
 //
 
-class cModelEntity : public cComObject<IMPLEMENTS(IUnknown)>
+class cModelEntity : public cComObject<IMPLEMENTS(IEntity)>
 {
 public:
    cModelEntity(const tChar * pszModel, const tVec3 & position);
    ~cModelEntity();
 
-   const tMatrix4 & GetWorldTransform() const;
+   virtual const tMatrix4 & GetWorldTransform() const;
 
-   void Update(double elapsedTime);
-   void Render();
+   virtual const cAxisAlignedBox & GetBoundingBox() const;
+
+   virtual void Update(double elapsedTime);
+   virtual void Render();
 
 private:
    cStr m_model;
@@ -44,6 +46,8 @@ private:
    cAutoIPtr<IModelAnimationController> m_pAnimController;
 
    tVec3 m_position;
+
+   cAxisAlignedBox m_bbox;
 
    mutable bool m_bUpdateWorldTransform;
    mutable tMatrix4 m_worldTransform;
@@ -70,6 +74,8 @@ public:
    virtual tResult Init();
    virtual tResult Term();
 
+   ///////////////////////////////////
+
    virtual void SetTerrainLocatorHack(cTerrainLocatorHack *);
 
    virtual tResult SpawnEntity(const tChar * pszMesh, float nx, float nz);
@@ -77,7 +83,13 @@ public:
 
    virtual void RenderAll();
 
+   virtual tResult GetEntityFromRayCast(const cRay & ray, IEntity * * ppEntity) const;
+
+   ///////////////////////////////////
+
    virtual void OnSimFrame(double elapsedTime);
+
+   ///////////////////////////////////
 
    virtual tResult Save(IWriter * pWriter);
    virtual tResult Load(IReader * pReader, int version);
@@ -85,7 +97,7 @@ public:
 private:
    ulong m_nextId;
    cTerrainLocatorHack * m_pTerrainLocatorHack;
-   typedef std::list<cModelEntity*> tEntities;
+   typedef std::list<IEntity *> tEntities;
    tEntities m_entities;
 };
 
