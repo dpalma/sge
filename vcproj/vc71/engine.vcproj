@@ -504,9 +504,6 @@
 				RelativePath="..\..\engine\include\cameraapi.h">
 			</File>
 			<File
-				RelativePath="..\..\engine\include\color.h">
-			</File>
-			<File
 				RelativePath="..\..\engine\include\engineapi.h">
 			</File>
 			<File
