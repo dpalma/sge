@@ -6,13 +6,12 @@
 
 #include "techdll.h"
 
+#include "axisalignedbox.h"
 #include "vec3.h"
 
 #ifdef _MSC_VER
 #pragma once
 #endif
-
-class cAxisAlignedBox;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -43,7 +42,7 @@ public:
                            const tVec3 & v3,
                            tVec3 * pIntersection = NULL) const;
 
-   bool IntersectsAxisAlignedBox(const cAxisAlignedBox & box,
+   bool IntersectsAxisAlignedBox(const tAxisAlignedBox & box,
                                  float * pTNear = NULL,
                                  float * pTFar = NULL) const;
 

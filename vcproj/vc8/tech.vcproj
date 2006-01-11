@@ -470,10 +470,6 @@
 				Name="Source Files"
 				>
 				<File
-					RelativePath="..\..\tech\src\axisalignedbox.cpp"
-					>
-				</File>
-				<File
 					RelativePath="..\..\tech\src\bmp.cpp"
 					>
 				</File>

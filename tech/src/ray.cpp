@@ -5,7 +5,6 @@
 
 #include "ray.h"
 
-#include "axisalignedbox.h"
 #include "techmath.h"
 
 #include <cfloat>
@@ -257,7 +256,7 @@ bool cRay::IntersectsTriangle(const tVec3 & v1,
 //
 // end of for loop If Box survived all above tests, return true with intersection point Tnear and exit point Tfar.
 
-bool cRay::IntersectsAxisAlignedBox(const cAxisAlignedBox & box,
+bool cRay::IntersectsAxisAlignedBox(const tAxisAlignedBox & box,
                                     float * pTNear /*=NULL*/,
                                     float * pTFar /*=NULL*/) const
 {
@@ -370,7 +369,7 @@ void cRayTests::TestIntersectsAxisAlignedBox()
          maxDim = max.v[i] - min.v[i];
       }
    }
-   cAxisAlignedBox box(min, max);
+   tAxisAlignedBox box(min, max);
    tVec3 centroid;
    box.GetCentroid(&centroid);
    // determine a point way out there in space for the ray origin

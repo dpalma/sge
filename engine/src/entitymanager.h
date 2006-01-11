@@ -20,6 +20,8 @@
 #pragma once
 #endif
 
+typedef std::list<IEntity *> tEntities;
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -32,9 +34,12 @@ public:
    cModelEntity(const tChar * pszModel, const tVec3 & position);
    ~cModelEntity();
 
+   virtual uint GetFlags() const;
+   virtual uint SetFlags(uint flags, uint mask);
+
    virtual const tMatrix4 & GetWorldTransform() const;
 
-   virtual const cAxisAlignedBox & GetBoundingBox() const;
+   virtual const tAxisAlignedBox & GetBoundingBox() const;
 
    virtual void Update(double elapsedTime);
    virtual void Render();
@@ -45,9 +50,11 @@ private:
    tBlendedVertices m_blendedVerts;
    cAutoIPtr<IModelAnimationController> m_pAnimController;
 
+   uint m_flags;
+
    tVec3 m_position;
 
-   cAxisAlignedBox m_bbox;
+   tAxisAlignedBox m_bbox;
 
    mutable bool m_bUpdateWorldTransform;
    mutable tMatrix4 m_worldTransform;
@@ -83,7 +90,8 @@ public:
 
    virtual void RenderAll();
 
-   virtual tResult GetEntityFromRayCast(const cRay & ray, IEntity * * ppEntity) const;
+   virtual tResult RayCast(const cRay & ray, IEntity * * ppEntity) const;
+   virtual tResult BoxCast(const tAxisAlignedBox & box, IEntityEnum * * ppEnum) const;
 
    ///////////////////////////////////
 
@@ -97,7 +105,6 @@ public:
 private:
    ulong m_nextId;
    cTerrainLocatorHack * m_pTerrainLocatorHack;
-   typedef std::list<IEntity *> tEntities;
    tEntities m_entities;
 };
 

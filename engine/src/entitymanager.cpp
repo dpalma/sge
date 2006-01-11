@@ -5,10 +5,11 @@
 
 #include "entitymanager.h"
 
-#include "ray.h"
 #include "renderapi.h"
 #include "terrainapi.h"
 
+#include "color.h"
+#include "ray.h"
 #include "resourceapi.h"
 
 #include <cfloat>
@@ -44,6 +45,7 @@ const sVertexElement g_blendedVert[] =
 cModelEntity::cModelEntity(const tChar * pszModel, const tVec3 & position)
  : m_model(pszModel)
  , m_pModel(NULL)
+ , m_flags(kEF_None)
  , m_position(position)
  , m_bUpdateWorldTransform(true)
 {
@@ -53,6 +55,21 @@ cModelEntity::cModelEntity(const tChar * pszModel, const tVec3 & position)
 
 cModelEntity::~cModelEntity()
 {
+}
+
+///////////////////////////////////////
+
+uint cModelEntity::GetFlags() const
+{
+   return m_flags;
+}
+
+///////////////////////////////////////
+
+uint cModelEntity::SetFlags(uint flags, uint mask)
+{
+   m_flags = (m_flags & ~mask) | (flags & mask);
+   return m_flags;
 }
 
 ///////////////////////////////////////
@@ -69,14 +86,14 @@ const tMatrix4 & cModelEntity::GetWorldTransform() const
 
 ///////////////////////////////////////
 
-const cAxisAlignedBox & cModelEntity::GetBoundingBox() const
+const tAxisAlignedBox & cModelEntity::GetBoundingBox() const
 {
    return m_bbox;
 }
 
 ///////////////////////////////////////
 
-static void CalculateBBox(const tModelVertices & vertices, cAxisAlignedBox * pBBox)
+static void CalculateBBox(const tModelVertices & vertices, tAxisAlignedBox * pBBox)
 {
    tVec3 mins(FLT_MAX, FLT_MAX, FLT_MAX), maxs(-FLT_MAX, -FLT_MAX, -FLT_MAX);
    tModelVertices::const_iterator iter = vertices.begin();
@@ -107,7 +124,7 @@ static void CalculateBBox(const tModelVertices & vertices, cAxisAlignedBox * pBB
          maxs.z = iter->pos.z;
       }
    }
-   *pBBox = cAxisAlignedBox(mins, maxs);
+   *pBBox = tAxisAlignedBox(mins, maxs);
 }
 
 void cModelEntity::Update(double elapsedTime)
@@ -197,6 +214,8 @@ void cModelEntity::Render()
       }
       pRenderer->Render(iter->GetPrimitiveType(), const_cast<uint16*>(iter->GetIndexData()), iter->GetIndexCount());
    }
+
+   RenderWireFrame(m_bbox, cColor(1,1,0));
 }
 
 
@@ -320,7 +339,7 @@ void cEntityManager::RenderAll()
 
 ///////////////////////////////////////
 
-tResult cEntityManager::GetEntityFromRayCast(const cRay & ray, IEntity * * ppEntity) const
+tResult cEntityManager::RayCast(const cRay & ray, IEntity * * ppEntity) const
 {
    tEntities::const_iterator iter = m_entities.begin();
    for (; iter != m_entities.end(); iter++)
@@ -328,9 +347,8 @@ tResult cEntityManager::GetEntityFromRayCast(const cRay & ray, IEntity * * ppEnt
       cAutoIPtr<IEntity> pEntity(CTAddRef(*iter));
       const tMatrix4 & worldTransform = pEntity->GetWorldTransform();
       tVec3 position(worldTransform.m[12], worldTransform.m[13], worldTransform.m[14]);
-      tVec3 mins = pEntity->GetBoundingBox().GetMins() + position;
-      tVec3 maxs = pEntity->GetBoundingBox().GetMaxs() + position;
-      cAxisAlignedBox bbox(mins, maxs);
+      tAxisAlignedBox bbox(pEntity->GetBoundingBox());
+      bbox.Offset(position);
       if (ray.IntersectsAxisAlignedBox(bbox))
       {
          *ppEntity = CTAddRef(pEntity);
@@ -339,6 +357,13 @@ tResult cEntityManager::GetEntityFromRayCast(const cRay & ray, IEntity * * ppEnt
    }
 
    return S_FALSE;
+}
+
+///////////////////////////////////////
+
+tResult cEntityManager::BoxCast(const tAxisAlignedBox & box, IEntityEnum * * ppEnum) const
+{
+   return E_NOTIMPL;
 }
 
 ///////////////////////////////////////

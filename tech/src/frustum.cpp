@@ -108,7 +108,7 @@ bool cFrustum::SphereInFrustum(const tVec3 & center, float radius) const
 
 ///////////////////////////////////////
 
-bool cFrustum::BoxInFrustum(const cAxisAlignedBox & box) const
+bool cFrustum::BoxInFrustum(const tAxisAlignedBox & box) const
 {
    const tVec3 & maxs = box.GetMaxs();
    const tVec3 & mins = box.GetMins();

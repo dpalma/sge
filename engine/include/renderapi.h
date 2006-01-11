@@ -11,6 +11,11 @@
 #pragma once
 #endif
 
+template <typename T> class cAxisAlignedBox;
+typedef class cAxisAlignedBox<float> tAxisAlignedBox;
+
+class cColor;
+
 template <typename T> class cMatrix4;
 typedef class cMatrix4<float> tMatrix4;
 
@@ -101,6 +106,10 @@ interface IRenderer : IUnknown
 ///////////////////////////////////////
 
 ENGINE_API tResult RendererCreate();
+
+///////////////////////////////////////
+
+ENGINE_API void RenderWireFrame(const tAxisAlignedBox & box, const cColor & color);
 
 ///////////////////////////////////////////////////////////////////////////////
 

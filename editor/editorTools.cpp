@@ -213,7 +213,7 @@ static bool GetTerrainLocation(const cRay & ray, tVec3 * pLocation)
 static bool GetEntity(const cRay & ray, IEntity * * ppEntity)
 {
    UseGlobal(EntityManager);
-   if (pEntityManager->GetEntityFromRayCast(ray, ppEntity) == S_OK)
+   if (pEntityManager->RayCast(ray, ppEntity) == S_OK)
    {
       return true;
    }

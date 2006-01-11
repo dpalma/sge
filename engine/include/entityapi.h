@@ -14,13 +14,15 @@
 #endif
 
 F_DECLARE_INTERFACE(IEntity);
+F_DECLARE_INTERFACE(IEntityEnum);
 F_DECLARE_INTERFACE(IEntityManager);
 
 class cRay;
 
 F_DECLARE_INTERFACE(IDictionary);
 
-class cAxisAlignedBox;
+template <typename T> class cAxisAlignedBox;
+typedef class cAxisAlignedBox<float> tAxisAlignedBox;
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -37,14 +39,42 @@ public:
 // INTERFACE: IEntity
 //
 
+////////////////////////////////////////
+
+enum eEntityFlags
+{
+   kEF_None                   = 0,
+   kEF_Selected               = (1 << 0),
+   kEF_All                    = 0xFFFFFFFF,
+};
+
+////////////////////////////////////////
+
 interface IEntity : IUnknown
 {
+   virtual uint GetFlags() const = 0;
+   virtual uint SetFlags(uint flags, uint mask) = 0;
+
    virtual const tMatrix4 & GetWorldTransform() const = 0;
 
-   virtual const cAxisAlignedBox & GetBoundingBox() const = 0;
+   virtual const tAxisAlignedBox & GetBoundingBox() const = 0;
 
    virtual void Update(double elapsedTime) = 0;
    virtual void Render() = 0;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IEntityEnum
+//
+
+interface IEntityEnum : IUnknown
+{
+   virtual tResult Next(ulong count, IEntity * * ppEntities, ulong * pnEntities) = 0;
+   virtual tResult Skip(ulong count) = 0;
+   virtual tResult Reset() = 0;
+   virtual tResult Clone(IEntityEnum * * ppEnum) = 0;
 };
 
 
@@ -62,7 +92,8 @@ interface IEntityManager : IUnknown
 
    virtual void RenderAll() = 0;
 
-   virtual tResult GetEntityFromRayCast(const cRay & ray, IEntity * * ppEntity) const = 0;
+   virtual tResult RayCast(const cRay & ray, IEntity * * ppEntity) const = 0;
+   virtual tResult BoxCast(const tAxisAlignedBox & box, IEntityEnum * * ppEnum) const = 0;
 };
 
 ////////////////////////////////////////
