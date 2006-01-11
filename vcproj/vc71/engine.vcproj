@@ -342,9 +342,6 @@
 					RelativePath="..\..\engine\src\entitymanager.cpp">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\frustum.cpp">
-				</File>
-				<File
 					RelativePath="..\..\engine\src\glinterleave.cpp">
 				</File>
 				<File
@@ -364,9 +361,6 @@
 				</File>
 				<File
 					RelativePath="..\..\engine\src\ms3dread.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\ray.cpp">
 				</File>
 				<File
 					RelativePath="..\..\engine\src\renderer.cpp">
@@ -469,9 +463,6 @@
 					RelativePath="..\..\engine\src\entitymanager.h">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\frustum.h">
-				</File>
-				<File
 					RelativePath="..\..\engine\src\input.h">
 				</File>
 				<File
@@ -532,9 +523,6 @@
 			</File>
 			<File
 				RelativePath="..\..\engine\include\model.h">
-			</File>
-			<File
-				RelativePath="..\..\engine\include\ray.h">
 			</File>
 			<File
 				RelativePath="..\..\engine\include\renderapi.h">

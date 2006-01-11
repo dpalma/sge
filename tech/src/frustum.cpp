@@ -5,6 +5,7 @@
 
 #include "frustum.h"
 
+#include "axisalignedbox.h"
 #include "vec3.h"
 #include "matrix4.h"
 
@@ -107,8 +108,10 @@ bool cFrustum::SphereInFrustum(const tVec3 & center, float radius) const
 
 ///////////////////////////////////////
 
-bool cFrustum::BoxInFrustum(const tVec3 & maxs, const tVec3 & mins) const
+bool cFrustum::BoxInFrustum(const cAxisAlignedBox & box) const
 {
+   const tVec3 & maxs = box.GetMaxs();
+   const tVec3 & mins = box.GetMins();
    for (int p = 0; p < 6; p++)
    {
       if (m_planes[p].a * mins.x + m_planes[p].b * mins.y + m_planes[p].c * mins.z + m_planes[p].d > 0)

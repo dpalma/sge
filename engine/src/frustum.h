@@ -4,6 +4,8 @@
 #ifndef INCLUDED_FRUSTUM_H
 #define INCLUDED_FRUSTUM_H
 
+#include "techdll.h"
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -14,12 +16,14 @@ typedef class cVec3<float> tVec3;
 template <typename T> class cMatrix4;
 typedef class cMatrix4<float> tMatrix4;
 
+class cAxisAlignedBox;
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cPlane
 //
 
-class cPlane
+class TECH_API cPlane
 {
 public:
    void Normalize();
@@ -33,14 +37,14 @@ public:
 // CLASS: cFrustum
 //
 
-class cFrustum
+class TECH_API cFrustum
 {
 public:
    void ExtractPlanes(const tMatrix4 & viewProjection);
 
    bool PointInFrustum(const tVec3 & point) const;
    bool SphereInFrustum(const tVec3 & center, float radius) const;
-   bool BoxInFrustum(const tVec3 & maxs, const tVec3 & mins) const;
+   bool BoxInFrustum(const cAxisAlignedBox & box) const;
 
 private:
    cPlane m_planes[6];

@@ -132,8 +132,9 @@ void cHashTableTests::TestFindFailure()
 
 void cHashTableTests::TestIterationPostIncrement()
 {
+   int nIterated = 0;
    tTestHashTable::const_iterator iter = m_hashTable.begin();
-   for (int nIterated = 0; iter != m_hashTable.end(); iter++, nIterated++)
+   for (; iter != m_hashTable.end(); iter++, nIterated++)
    {
       const char * key = iter->first;
       int val = iter->second;
@@ -148,8 +149,9 @@ void cHashTableTests::TestIterationPostIncrement()
 
 void cHashTableTests::TestIterationPreIncrement()
 {
+   int nIterated = 0;
    tTestHashTable::const_iterator iter = m_hashTable.begin();
-   for (int nIterated = 0; iter != m_hashTable.end(); ++iter, ++nIterated)
+   for (; iter != m_hashTable.end(); ++iter, ++nIterated)
    {
       const char * key = iter->first;
       int val = iter->second;

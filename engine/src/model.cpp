@@ -656,7 +656,7 @@ void * cModel::ModelLoadMs3d(IReader * pReader)
       return NULL;
    }
 
-   static const kIndent = 3;
+   static const int kIndent = 3;
    uint indent = 0;
 
    LocalMsg(indent, "Loading MS3D file...\n");

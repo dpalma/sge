@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8.00"
 	Name="tech"
-	ProjectGUID="{7AD65279-9AD3-44EB-BC08-0C7C832A36BA}"
+	ProjectGUID="{5B1DB8CD-0522-43C7-91B1-D558CA7520EB}"
 	>
 	<Platforms>
 		<Platform
@@ -470,6 +470,10 @@
 				Name="Source Files"
 				>
 				<File
+					RelativePath="..\..\tech\src\axisalignedbox.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\tech\src\bmp.cpp"
 					>
 				</File>
@@ -503,6 +507,10 @@
 				</File>
 				<File
 					RelativePath="..\..\tech\src\filespec.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\tech\src\frustum.cpp"
 					>
 				</File>
 				<File
@@ -579,6 +587,10 @@
 				</File>
 				<File
 					RelativePath="..\..\tech\src\quat.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\tech\src\ray.cpp"
 					>
 				</File>
 				<File
@@ -728,6 +740,10 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
+				RelativePath="..\..\tech\include\axisalignedbox.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\tech\include\color.h"
 				>
 			</File>
@@ -780,6 +796,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\tech\include\frustum.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\tech\include\functor.h"
 				>
 			</File>
@@ -825,6 +845,10 @@
 			</File>
 			<File
 				RelativePath="..\..\tech\include\quat.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\include\ray.h"
 				>
 			</File>
 			<File

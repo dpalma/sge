@@ -8,7 +8,6 @@ sources = Split("""
    src/cmds.cpp
    src/engine.cpp
    src/entitymanager.cpp
-   src/frustum.cpp
    src/glinterleave.cpp
    src/gltexture.cpp
    src/input.cpp
@@ -16,7 +15,6 @@ sources = Split("""
    src/model.cpp
    src/modelanim.cpp
    src/ms3dread.cpp
-   src/ray.cpp
    src/renderer.cpp
    src/saveloadmanager.cpp
    src/sim.cpp

@@ -14,6 +14,7 @@ sources = Split("""
    src/fileenum.cpp
    src/filepath.cpp
    src/filespec.cpp
+   src/frustum.cpp
    src/functor.cpp
    src/globalobjreg.cpp
    src/hash.cpp
@@ -22,6 +23,7 @@ sources = Split("""
    src/md5.c
    src/multivar.cpp
    src/quat.cpp
+   src/ray.cpp
    src/readwritefile.cpp
    src/readwritemem.cpp
    src/resourcemanager.cpp

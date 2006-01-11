@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8.00"
 	Name="engine"
-	ProjectGUID="{F1334822-5BBB-495B-AD67-0F8D7D2A02C9}"
+	ProjectGUID="{BD5E5BCF-8648-48EA-8B35-04CFE1541E3A}"
 	>
 	<Platforms>
 		<Platform
@@ -486,10 +486,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\engine\src\frustum.cpp"
-					>
-				</File>
-				<File
 					RelativePath="..\..\engine\src\glinterleave.cpp"
 					>
 				</File>
@@ -515,10 +511,6 @@
 				</File>
 				<File
 					RelativePath="..\..\engine\src\ms3dread.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\engine\src\ray.cpp"
 					>
 				</File>
 				<File
@@ -654,10 +646,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\engine\src\frustum.h"
-					>
-				</File>
-				<File
 					RelativePath="..\..\engine\src\input.h"
 					>
 				</File>
@@ -737,10 +725,6 @@
 			</File>
 			<File
 				RelativePath="..\..\engine\include\model.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\engine\include\ray.h"
 				>
 			</File>
 			<File

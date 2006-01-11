@@ -4,7 +4,7 @@
 #ifndef INCLUDED_RAY_H
 #define INCLUDED_RAY_H
 
-#include "enginedll.h"
+#include "techdll.h"
 
 #include "vec3.h"
 
@@ -19,7 +19,7 @@ class cAxisAlignedBox;
 // CLASS: cRay
 //
 
-class ENGINE_API cRay
+class TECH_API cRay
 {
 public:
    cRay();

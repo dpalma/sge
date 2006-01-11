@@ -22,7 +22,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC"
 				StringPooling="TRUE"
 				RuntimeLibrary="3"
@@ -85,7 +85,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
 				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,HAVE_CPPUNIT,_USRDLL,ENGINE_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL,GLEW_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -131,7 +131,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
 				PreprocessorDefinitions="_DEBUG;HAVE_CPPUNIT;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -193,7 +193,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,_USRDLL,ENGINE_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL,GLEW_STATIC"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -239,7 +239,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -311,9 +311,6 @@
 					RelativePath="..\..\engine\src\entitymanager.cpp">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\frustum.cpp">
-				</File>
-				<File
 					RelativePath="..\..\engine\src\glinterleave.cpp">
 				</File>
 				<File
@@ -333,9 +330,6 @@
 				</File>
 				<File
 					RelativePath="..\..\engine\src\ms3dread.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\ray.cpp">
 				</File>
 				<File
 					RelativePath="..\..\engine\src\renderer.cpp">
@@ -438,9 +432,6 @@
 					RelativePath="..\..\engine\src\entitymanager.h">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\frustum.h">
-				</File>
-				<File
 					RelativePath="..\..\engine\src\input.h">
 				</File>
 				<File
@@ -501,9 +492,6 @@
 			</File>
 			<File
 				RelativePath="..\..\engine\include\modelapi.h">
-			</File>
-			<File
-				RelativePath="..\..\engine\include\ray.h">
 			</File>
 			<File
 				RelativePath="..\..\engine\include\renderapi.h">

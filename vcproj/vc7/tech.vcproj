@@ -329,6 +329,9 @@
 					RelativePath="..\..\tech\src\filespec.cpp">
 				</File>
 				<File
+					RelativePath="..\..\tech\src\frustum.cpp">
+				</File>
+				<File
 					RelativePath="..\..\tech\src\functor.cpp">
 				</File>
 				<File
@@ -384,6 +387,9 @@
 				</File>
 				<File
 					RelativePath="..\..\tech\src\quat.cpp">
+				</File>
+				<File
+					RelativePath="..\..\tech\src\ray.cpp">
 				</File>
 				<File
 					RelativePath="..\..\tech\src\readwritefile.cpp">
@@ -536,6 +542,9 @@
 				RelativePath="..\..\tech\include\filespec.h">
 			</File>
 			<File
+				RelativePath="..\..\tech\include\frustum.h">
+			</File>
+			<File
 				RelativePath="..\..\tech\include\functor.h">
 			</File>
 			<File
@@ -570,6 +579,9 @@
 			</File>
 			<File
 				RelativePath="..\..\tech\include\quat.h">
+			</File>
+			<File
+				RelativePath="..\..\tech\include\ray.h">
 			</File>
 			<File
 				RelativePath="..\..\tech\include\readwriteapi.h">
