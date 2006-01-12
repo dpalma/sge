@@ -44,7 +44,6 @@ public:
 enum eEntityFlags
 {
    kEF_None                   = 0,
-   kEF_Selected               = (1 << 0),
    kEF_All                    = 0xFFFFFFFF,
 };
 
@@ -52,6 +51,8 @@ enum eEntityFlags
 
 interface IEntity : IUnknown
 {
+   virtual uint GetId() const = 0;
+
    virtual uint GetFlags() const = 0;
    virtual uint SetFlags(uint flags, uint mask) = 0;
 
@@ -94,6 +95,11 @@ interface IEntityManager : IUnknown
 
    virtual tResult RayCast(const cRay & ray, IEntity * * ppEntity) const = 0;
    virtual tResult BoxCast(const tAxisAlignedBox & box, IEntityEnum * * ppEnum) const = 0;
+
+   virtual tResult SelectBoxed(const tAxisAlignedBox & box) = 0;
+   virtual tResult DeselectAll() = 0;
+   virtual uint GetSelectedCount() const = 0;
+   virtual tResult GetSelected(IEntityEnum * * ppEnum) const = 0;
 };
 
 ////////////////////////////////////////

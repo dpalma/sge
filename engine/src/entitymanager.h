@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // $Id$
 
 #ifndef INCLUDED_ENTITYMANAGER_H
@@ -11,19 +11,52 @@
 #include "simapi.h"
 
 #include "axisalignedbox.h"
+#include "comenum.h"
 #include "globalobjdef.h"
 #include "techstring.h"
 
 #include <list>
+#include <set>
 
 #ifdef _MSC_VER
 #pragma once
 #endif
 
-typedef std::list<IEntity *> tEntities;
+////////////////////////////////////////////////////////////////////////////////
+
+typedef std::list<IEntity *> tEntityList;
+typedef cComObject<cComEnum<IEntityEnum, &IID_IEntityEnum, IEntity*, CopyInterface<IEntity>, tEntityList>, &IID_IEntityEnum> tEntityListEnum;
+
+////////////////////////////////////////////////////////////////////////////////
+
+struct sLessInterface
+{
+   bool operator()(IUnknown * pLhs, IUnknown * pRhs) const
+   {
+      return !CTIsSameObject(pLhs, pRhs);
+   }
+};
+
+typedef std::set<IEntity *, sLessInterface> tEntitySet;
+
+typedef cComObject<cComEnum<IEntityEnum, &IID_IEntityEnum, IEntity*, CopyInterface<IEntity>, tEntitySet>, &IID_IEntityEnum> tEntitySetEnum;
+
+template <>
+void cComEnum<IEntityEnum, &IID_IEntityEnum, IEntity*, CopyInterface<IEntity>, tEntitySet>::Initialize(tEntitySet::const_iterator first,
+                                                                                                       tEntitySet::const_iterator last)
+{
+   tEntitySet::const_iterator iter = first;
+   for (; iter != last; iter++)
+   {
+      IEntity * t;
+      CopyInterface<IEntity>::Copy(&t, &(*iter));
+      m_elements.insert(t);
+   }
+   m_iterator = m_elements.begin();
+}
 
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cModelEntity
 //
@@ -31,8 +64,10 @@ typedef std::list<IEntity *> tEntities;
 class cModelEntity : public cComObject<IMPLEMENTS(IEntity)>
 {
 public:
-   cModelEntity(const tChar * pszModel, const tVec3 & position);
+   cModelEntity(uint id, const tChar * pszModel, const tVec3 & position);
    ~cModelEntity();
+
+   virtual uint GetId() const;
 
    virtual uint GetFlags() const;
    virtual uint SetFlags(uint flags, uint mask);
@@ -50,6 +85,7 @@ private:
    tBlendedVertices m_blendedVerts;
    cAutoIPtr<IModelAnimationController> m_pAnimController;
 
+   uint m_id;
    uint m_flags;
 
    tVec3 m_position;
@@ -61,7 +97,7 @@ private:
 };
 
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cEntityManager
 //
@@ -93,6 +129,11 @@ public:
    virtual tResult RayCast(const cRay & ray, IEntity * * ppEntity) const;
    virtual tResult BoxCast(const tAxisAlignedBox & box, IEntityEnum * * ppEnum) const;
 
+   virtual tResult SelectBoxed(const tAxisAlignedBox & box);
+   virtual tResult DeselectAll();
+   virtual uint GetSelectedCount() const;
+   virtual tResult GetSelected(IEntityEnum * * ppEnum) const;
+
    ///////////////////////////////////
 
    virtual void OnSimFrame(double elapsedTime);
@@ -105,9 +146,10 @@ public:
 private:
    ulong m_nextId;
    cTerrainLocatorHack * m_pTerrainLocatorHack;
-   tEntities m_entities;
+   tEntityList m_entities;
+   tEntitySet m_selected;
 };
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 #endif // !INCLUDED_ENTITYMANAGER_H

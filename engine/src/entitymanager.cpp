@@ -12,6 +12,7 @@
 #include "ray.h"
 #include "resourceapi.h"
 
+#include <algorithm>
 #include <cfloat>
 
 #include <GL/glew.h>
@@ -42,9 +43,10 @@ const sVertexElement g_blendedVert[] =
 
 ///////////////////////////////////////
 
-cModelEntity::cModelEntity(const tChar * pszModel, const tVec3 & position)
+cModelEntity::cModelEntity(uint id, const tChar * pszModel, const tVec3 & position)
  : m_model(pszModel)
  , m_pModel(NULL)
+ , m_id(id)
  , m_flags(kEF_None)
  , m_position(position)
  , m_bUpdateWorldTransform(true)
@@ -55,6 +57,13 @@ cModelEntity::cModelEntity(const tChar * pszModel, const tVec3 & position)
 
 cModelEntity::~cModelEntity()
 {
+}
+
+///////////////////////////////////////
+
+uint cModelEntity::GetId() const
+{
+   return m_id;
 }
 
 ///////////////////////////////////////
@@ -270,7 +279,9 @@ tResult cEntityManager::Term()
    UseGlobal(SaveLoadManager);
    pSaveLoadManager->RevokeSaveLoadParticipant(SAVELOADID_EntityManager, g_entityManagerVer);
 
-   tEntities::iterator iter = m_entities.begin();
+   DeselectAll();
+
+   tEntityList::iterator iter = m_entities.begin();
    for (; iter != m_entities.end(); iter++)
    {
       (*iter)->Release();
@@ -313,10 +324,12 @@ tResult cEntityManager::SpawnEntity(const tChar * pszMesh, float nx, float nz)
 
 tResult cEntityManager::SpawnEntity(const tChar * pszMesh, const tVec3 & position)
 {
-   cAutoIPtr<IEntity> pEntity(static_cast<IEntity*>(new cModelEntity(pszMesh, position)));
+   uint oldNextId = m_nextId;
+   cAutoIPtr<IEntity> pEntity(static_cast<IEntity*>(new cModelEntity(m_nextId++, pszMesh, position)));
    if (!pEntity)
    {
-      return E_NOTIMPL;
+      m_nextId = oldNextId;
+      return E_OUTOFMEMORY;
    }
 
    m_entities.push_back(CTAddRef(pEntity));
@@ -327,7 +340,7 @@ tResult cEntityManager::SpawnEntity(const tChar * pszMesh, const tVec3 & positio
 
 void cEntityManager::RenderAll()
 {
-   tEntities::iterator iter = m_entities.begin();
+   tEntityList::iterator iter = m_entities.begin();
    for (; iter != m_entities.end(); iter++)
    {
       glPushMatrix();
@@ -341,7 +354,7 @@ void cEntityManager::RenderAll()
 
 tResult cEntityManager::RayCast(const cRay & ray, IEntity * * ppEntity) const
 {
-   tEntities::const_iterator iter = m_entities.begin();
+   tEntityList::const_iterator iter = m_entities.begin();
    for (; iter != m_entities.end(); iter++)
    {
       cAutoIPtr<IEntity> pEntity(CTAddRef(*iter));
@@ -368,9 +381,51 @@ tResult cEntityManager::BoxCast(const tAxisAlignedBox & box, IEntityEnum * * ppE
 
 ///////////////////////////////////////
 
+tResult cEntityManager::SelectBoxed(const tAxisAlignedBox & box)
+{
+   return E_NOTIMPL;
+}
+
+///////////////////////////////////////
+
+tResult cEntityManager::DeselectAll()
+{
+   if (m_selected.empty())
+   {
+      return S_FALSE;
+   }
+   std::for_each(m_selected.begin(), m_selected.end(), CTInterfaceMethod(&IEntity::Release));
+   m_selected.clear();
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+uint cEntityManager::GetSelectedCount() const
+{
+   return m_selected.size();
+}
+
+///////////////////////////////////////
+
+tResult cEntityManager::GetSelected(IEntityEnum * * ppEnum) const
+{
+   if (ppEnum == NULL)
+   {
+      return E_POINTER;
+   }
+   if (m_selected.empty())
+   {
+      return S_FALSE;
+   }
+   return tEntitySetEnum::Create(m_selected, ppEnum);
+}
+
+///////////////////////////////////////
+
 void cEntityManager::OnSimFrame(double elapsedTime)
 {
-   tEntities::iterator iter = m_entities.begin();
+   tEntityList::iterator iter = m_entities.begin();
    for (; iter != m_entities.end(); iter++)
    {
       (*iter)->Update(elapsedTime);

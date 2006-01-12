@@ -18,12 +18,27 @@
 ////////////////////////////////////////
 
 template <class T>
-class CopyStruct
+class CopyAssign
 {
 public:
    static void Copy(T * p1, T * p2)
    {
       *p1 = *p2;
+   }
+   static void Destroy(T *)
+   {
+   }
+};
+
+////////////////////////////////////////
+
+template <class T>
+class CopyMemcpy
+{
+public:
+   static void Copy(T * p1, T * p2)
+   {
+      memcpy(p1, p2, sizeof(typename T));
    }
    static void Destroy(T *)
    {
@@ -61,7 +76,7 @@ public:
       Destroy();
    }
 
-   virtual tResult Next(ulong count, T * ppElements, ulong * pnElements)
+   virtual tResult Next(ulong count, typename T * ppElements, ulong * pnElements)
    {
       if (ppElements == NULL || pnElements == NULL)
       {
@@ -109,12 +124,12 @@ public:
       return S_OK;
    }
 
-   virtual tResult Clone(TENUM * * ppEnum)
+   virtual tResult Clone(typename TENUM * * ppEnum)
    {
       return Create(m_elements, ppEnum);
    }
 
-   static Create(const typename TCONTAINER & container, TENUM * * ppEnum)
+   static tResult Create(const typename TCONTAINER & container, typename TENUM * * ppEnum)
    {
       if (ppEnum == NULL)
       {
@@ -127,7 +142,7 @@ public:
          return E_OUTOFMEMORY;
       }
       pClass->Initialize(container.begin(), container.end());
-      *ppEnum = static_cast<TENUM *>(pClass);
+      *ppEnum = static_cast<typename TENUM *>(pClass);
       return S_OK;
    }
 
