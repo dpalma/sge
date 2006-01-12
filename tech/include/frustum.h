@@ -16,7 +16,8 @@ typedef class cVec3<float> tVec3;
 template <typename T> class cMatrix4;
 typedef class cMatrix4<float> tMatrix4;
 
-class cAxisAlignedBox;
+template <typename T> class cAxisAlignedBox;
+typedef class cAxisAlignedBox<float> tAxisAlignedBox;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -44,7 +45,7 @@ public:
 
    bool PointInFrustum(const tVec3 & point) const;
    bool SphereInFrustum(const tVec3 & center, float radius) const;
-   bool BoxInFrustum(const cAxisAlignedBox & box) const;
+   bool BoxInFrustum(const tAxisAlignedBox & box) const;
 
 private:
    cPlane m_planes[6];
