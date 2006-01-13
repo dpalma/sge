@@ -376,9 +376,6 @@ cTerrainRenderer::cTerrainModelListener::cTerrainModelListener(cTerrainRenderer 
 
 void cTerrainRenderer::cTerrainModelListener::OnTerrainInitialize()
 {
-   // HACK: should do this in a more sensible place
-   glewInit();
-
    if (m_pOuter != NULL)
    {
       UseGlobal(TerrainModel);
@@ -1122,6 +1119,8 @@ void cTerrainChunk::Render()
    glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT | GL_TEXTURE_BIT);
    glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT);
 
+   glEnable(GL_POLYGON_OFFSET_FILL);
+
    UseGlobal(Renderer);
 
    pRenderer->SetVertexFormat(g_terrainVert, _countof(g_terrainVert));
@@ -1131,7 +1130,7 @@ void cTerrainChunk::Render()
    UseGlobal(ResourceManager);
 
    tSplats::iterator iter = m_splats.begin();
-   for (; iter != m_splats.end(); iter++)
+   for (int iSplat = 0; iter != m_splats.end(); iter++, iSplat++)
    {
       GLuint alphaMap = (*iter)->GetAlphaMap();
       if (alphaMap != kNoIndex)
@@ -1170,6 +1169,8 @@ void cTerrainChunk::Render()
             glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
          }
       }
+
+      glPolygonOffset(static_cast<GLfloat>(-iSplat), static_cast<GLfloat>(-iSplat));
 
       pRenderer->Render((*iter)->GetPrimitive(), const_cast<uint*>((*iter)->GetIndexPtr()), (*iter)->GetIndexCount());
    }

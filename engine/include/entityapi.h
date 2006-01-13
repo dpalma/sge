@@ -25,25 +25,20 @@ template <typename T> class cAxisAlignedBox;
 typedef class cAxisAlignedBox<float> tAxisAlignedBox;
 
 
-/////////////////////////////////////////////////////////////////////////////
-
-class cTerrainLocatorHack
-{
-public:
-   virtual void Locate(float nx, float nz, float * px, float * py, float * pz) = 0;
-};
-
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // INTERFACE: IEntity
 //
+
+typedef ulong tEntityId;
 
 ////////////////////////////////////////
 
 enum eEntityFlags
 {
    kEF_None                   = 0,
+   kEF_Hidden                 = (1 << 0),    // Don't render
+   kEF_Disabled               = (1 << 1),    // Don't update
    kEF_All                    = 0xFFFFFFFF,
 };
 
@@ -51,7 +46,7 @@ enum eEntityFlags
 
 interface IEntity : IUnknown
 {
-   virtual uint GetId() const = 0;
+   virtual tEntityId GetId() const = 0;
 
    virtual uint GetFlags() const = 0;
    virtual uint SetFlags(uint flags, uint mask) = 0;
@@ -86,10 +81,10 @@ interface IEntityEnum : IUnknown
 
 interface IEntityManager : IUnknown
 {
-   virtual void SetTerrainLocatorHack(cTerrainLocatorHack *) = 0;
-
    virtual tResult SpawnEntity(const tChar * pszMesh, float nx, float nz) = 0;
    virtual tResult SpawnEntity(const tChar * pszMesh, const tVec3 & position) = 0;
+
+   virtual tResult RemoveEntity(IEntity * pEntity) = 0;
 
    virtual void RenderAll() = 0;
 

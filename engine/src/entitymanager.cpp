@@ -19,6 +19,8 @@
 
 #include "dbgalloc.h" // must be last header
 
+#define IsFlagSet(f, b) (((f)&(b))==(b))
+
 ///////////////////////////////////////////////////////////////////////////////
 
 const sVertexElement g_modelVert[] =
@@ -43,7 +45,7 @@ const sVertexElement g_blendedVert[] =
 
 ///////////////////////////////////////
 
-cModelEntity::cModelEntity(uint id, const tChar * pszModel, const tVec3 & position)
+cModelEntity::cModelEntity(tEntityId id, const tChar * pszModel, const tVec3 & position)
  : m_model(pszModel)
  , m_pModel(NULL)
  , m_id(id)
@@ -61,7 +63,7 @@ cModelEntity::~cModelEntity()
 
 ///////////////////////////////////////
 
-uint cModelEntity::GetId() const
+tEntityId cModelEntity::GetId() const
 {
    return m_id;
 }
@@ -223,8 +225,6 @@ void cModelEntity::Render()
       }
       pRenderer->Render(iter->GetPrimitiveType(), const_cast<uint16*>(iter->GetIndexData()), iter->GetIndexCount());
    }
-
-   RenderWireFrame(m_bbox, cColor(1,1,0));
 }
 
 
@@ -237,7 +237,6 @@ void cModelEntity::Render()
 
 cEntityManager::cEntityManager()
  : m_nextId(0)
- , m_pTerrainLocatorHack(NULL)
 {
 }
 
@@ -293,31 +292,15 @@ tResult cEntityManager::Term()
 
 ///////////////////////////////////////
 
-void cEntityManager::SetTerrainLocatorHack(cTerrainLocatorHack * pTerrainLocatorHack)
-{
-   m_pTerrainLocatorHack = pTerrainLocatorHack;
-}
-
-///////////////////////////////////////
-
 tResult cEntityManager::SpawnEntity(const tChar * pszMesh, float nx, float nz)
 {
-   tVec3 location(0,0,0);
-   if (m_pTerrainLocatorHack != NULL)
+   tVec3 location;
+   UseGlobal(TerrainModel);
+   if (pTerrainModel->GetPointOnTerrain(nx, nz, &location) == S_OK)
    {
-      m_pTerrainLocatorHack->Locate(nx, nz, &location.x, &location.y, &location.z);
+      return SpawnEntity(pszMesh, location);
    }
-   else
-   {
-      cTerrainSettings terrainSettings;
-      UseGlobal(TerrainModel);
-      pTerrainModel->GetTerrainSettings(&terrainSettings);
-      location.x = nx * terrainSettings.GetTileCountX() * terrainSettings.GetTileSize();
-      location.y = 0; // TODO: get real elevation
-      location.z = nz * terrainSettings.GetTileCountZ() * terrainSettings.GetTileSize();
-   }
-
-   return SpawnEntity(pszMesh, location);
+   return E_FAIL;
 }
 
 ///////////////////////////////////////
@@ -338,14 +321,52 @@ tResult cEntityManager::SpawnEntity(const tChar * pszMesh, const tVec3 & positio
 
 ///////////////////////////////////////
 
+tResult cEntityManager::RemoveEntity(IEntity * pEntity)
+{
+   if (pEntity == NULL)
+   {
+      return E_POINTER;
+   }
+
+   bool bFound = false;
+   tEntityList::iterator iter = m_entities.begin();
+   for (; iter != m_entities.end(); iter++)
+   {
+      if (CTIsSameObject(pEntity, *iter))
+      {
+         bFound = true;
+         (*iter)->Release();
+         m_entities.erase(iter);
+         // TODO: return entity's id to a pool?
+         break;
+      }
+   }
+
+   size_t nErasedFromSelected = m_selected.erase(pEntity);
+   while (nErasedFromSelected-- > 0)
+   {
+      pEntity->Release();
+   }
+
+   return bFound ? S_OK : S_FALSE;
+}
+
+///////////////////////////////////////
+
 void cEntityManager::RenderAll()
 {
    tEntityList::iterator iter = m_entities.begin();
    for (; iter != m_entities.end(); iter++)
    {
+      uint flags = (*iter)->GetFlags();
+      if (IsFlagSet(flags, kEF_Hidden))
+      {
+         continue;
+      }
       glPushMatrix();
       glMultMatrixf((*iter)->GetWorldTransform().m);
       (*iter)->Render();
+      RenderWireFrame((*iter)->GetBoundingBox(), cColor(1,1,0));
       glPopMatrix();
    }
 }
@@ -383,7 +404,22 @@ tResult cEntityManager::BoxCast(const tAxisAlignedBox & box, IEntityEnum * * ppE
 
 tResult cEntityManager::SelectBoxed(const tAxisAlignedBox & box)
 {
-   return E_NOTIMPL;
+   int nSelected = 0;
+   tEntityList::const_iterator iter = m_entities.begin();
+   for (; iter != m_entities.end(); iter++)
+   {
+      cAutoIPtr<IEntity> pEntity(CTAddRef(*iter));
+      const tMatrix4 & worldTransform = pEntity->GetWorldTransform();
+      tVec3 position(worldTransform.m[12], worldTransform.m[13], worldTransform.m[14]);
+      tAxisAlignedBox bbox(pEntity->GetBoundingBox());
+      bbox.Offset(position);
+      if (bbox.Intersects(box))
+      {
+         m_selected.insert(CTAddRef(pEntity));
+         nSelected++;
+      }
+   }
+   return (nSelected > 0) ? S_OK : S_FALSE;
 }
 
 ///////////////////////////////////////
@@ -428,6 +464,11 @@ void cEntityManager::OnSimFrame(double elapsedTime)
    tEntityList::iterator iter = m_entities.begin();
    for (; iter != m_entities.end(); iter++)
    {
+      uint flags = (*iter)->GetFlags();
+      if (IsFlagSet(flags, kEF_Disabled))
+      {
+         continue;
+      }
       (*iter)->Update(elapsedTime);
    }
 }

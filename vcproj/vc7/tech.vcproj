@@ -506,6 +506,9 @@
 				RelativePath="..\..\tech\include\combase.h">
 			</File>
 			<File
+				RelativePath="..\..\tech\include\comenum.h">
+			</File>
+			<File
 				RelativePath="..\..\tech\include\comtools.h">
 			</File>
 			<File

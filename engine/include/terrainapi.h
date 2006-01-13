@@ -185,6 +185,8 @@ interface ITerrainModel : IUnknown
    virtual tResult GetQuadCorners(HTERRAINQUAD hQuad, tVec3 corners[4]) const = 0;
 
    virtual tResult GetQuadNeighbors(HTERRAINQUAD hQuad, HTERRAINQUAD neighbors[8]) const = 0;
+
+   virtual tResult GetPointOnTerrain(float nx, float nz, tVec3 * pLocation) const = 0;
 };
 
 ////////////////////////////////////////

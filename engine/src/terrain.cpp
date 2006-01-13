@@ -999,6 +999,38 @@ tResult cTerrainModel::GetQuadNeighbors(HTERRAINQUAD hQuad, HTERRAINQUAD neighbo
 
 ////////////////////////////////////////
 
+tResult cTerrainModel::GetPointOnTerrain(float nx, float nz, tVec3 * pLocation) const
+{
+   if (pLocation == NULL)
+   {
+      return E_POINTER;
+   }
+
+   float x = nx * m_terrainSettings.GetTileCountX() * m_terrainSettings.GetTileSize();
+   float z = nz * m_terrainSettings.GetTileCountZ() * m_terrainSettings.GetTileSize();
+
+   uint ix, iz;
+   if (GetTileIndices(x, z, &ix, &iz) == S_OK)
+   {
+      tVec3 corners[4];
+      if (GetQuadCorners(ix, iz, corners) == S_OK)
+      {
+         tVec3 hit;
+         cRay ray(tVec3(x, 99999, z), tVec3(0, -1, 0));
+         if (ray.IntersectsTriangle(corners[2], corners[1], corners[0], &hit)
+            || ray.IntersectsTriangle(corners[0], corners[2], corners[3], &hit))
+         {
+            *pLocation = tVec3(x, hit.y, z);
+            return S_OK;
+         }
+      }
+   }
+
+   return E_FAIL;
+}
+
+////////////////////////////////////////
+
 tResult cTerrainModel::GetTileIndices(float x, float z, uint * pix, uint * piz) const
 {
    if (pix == NULL || piz == NULL)

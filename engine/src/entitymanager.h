@@ -64,10 +64,10 @@ void cComEnum<IEntityEnum, &IID_IEntityEnum, IEntity*, CopyInterface<IEntity>, t
 class cModelEntity : public cComObject<IMPLEMENTS(IEntity)>
 {
 public:
-   cModelEntity(uint id, const tChar * pszModel, const tVec3 & position);
+   cModelEntity(tEntityId id, const tChar * pszModel, const tVec3 & position);
    ~cModelEntity();
 
-   virtual uint GetId() const;
+   virtual tEntityId GetId() const;
 
    virtual uint GetFlags() const;
    virtual uint SetFlags(uint flags, uint mask);
@@ -85,7 +85,7 @@ private:
    tBlendedVertices m_blendedVerts;
    cAutoIPtr<IModelAnimationController> m_pAnimController;
 
-   uint m_id;
+   tEntityId m_id;
    uint m_flags;
 
    tVec3 m_position;
@@ -119,10 +119,10 @@ public:
 
    ///////////////////////////////////
 
-   virtual void SetTerrainLocatorHack(cTerrainLocatorHack *);
-
    virtual tResult SpawnEntity(const tChar * pszMesh, float nx, float nz);
    virtual tResult SpawnEntity(const tChar * pszMesh, const tVec3 & position);
+
+   virtual tResult RemoveEntity(IEntity * pEntity);
 
    virtual void RenderAll();
 
@@ -144,8 +144,7 @@ public:
    virtual tResult Load(IReader * pReader, int version);
 
 private:
-   ulong m_nextId;
-   cTerrainLocatorHack * m_pTerrainLocatorHack;
+   tEntityId m_nextId;
    tEntityList m_entities;
    tEntitySet m_selected;
 };

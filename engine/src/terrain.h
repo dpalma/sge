@@ -90,6 +90,8 @@ public:
    virtual tResult GetQuadCorners(HTERRAINQUAD hQuad, tVec3 corners[4]) const;
    virtual tResult GetQuadNeighbors(HTERRAINQUAD hQuad, HTERRAINQUAD neighbors[8]) const;
 
+   virtual tResult GetPointOnTerrain(float nx, float nz, tVec3 * pLocation) const;
+
    tResult GetTileIndices(float x, float z, uint * pix, uint * piz) const;
    tResult GetQuadCorners(uint quadx, uint quadz, tVec3 corners[4]) const;
 

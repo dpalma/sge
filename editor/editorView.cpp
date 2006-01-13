@@ -48,7 +48,6 @@ const float kDefaultCameraPitch = 70;
 
 static const GLfloat kHighlightTileColor[] = { 0, 1, 0, 0.25f }; // semi-transparent green
 static const GLfloat kHighlightVertexColor[] = { 0, 0, 1, 0.25f }; // semi-transparent blue
-static const GLfloat kHighlightOffsetY = 0.5f;
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -306,8 +305,6 @@ void cEditorView::RenderGL()
    UseGlobal(Renderer);
    Verify(pRenderer->BeginScene() == S_OK);
 
-   glDisable(GL_DEPTH_TEST); // HACK
-
    UseGlobal(Camera);
 
    glMatrixMode(GL_MODELVIEW);
@@ -322,12 +319,11 @@ void cEditorView::RenderGL()
       tVec3 corners[4];
       if (pTerrainModel->GetQuadCorners(m_highlightQuad, corners) == S_OK)
       {
-         corners[0].y += kHighlightOffsetY;
-         corners[1].y += kHighlightOffsetY;
-         corners[2].y += kHighlightOffsetY;
-         corners[3].y += kHighlightOffsetY;
-
          glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
+         glEnable(GL_POLYGON_OFFSET_FILL);
+         // HACK: the polygon offset value here has to be big enough to clear the
+         // offsets used by the terrain splats
+         glPolygonOffset(-6, -6);
          glEnable(GL_BLEND);
          glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
          glBegin(GL_QUADS);
@@ -350,10 +346,10 @@ void cEditorView::RenderGL()
       {
          static const tVec3 offsets[4] =
          {
-            tVec3( -5, kHighlightOffsetY,  5 ),
-            tVec3(  5, kHighlightOffsetY,  5 ),
-            tVec3(  5, kHighlightOffsetY, -5 ),
-            tVec3( -5, kHighlightOffsetY, -5 ),
+            tVec3( -5, 0,  5 ),
+            tVec3(  5, 0,  5 ),
+            tVec3(  5, 0, -5 ),
+            tVec3( -5, 0, -5 ),
          };
 
          tVec3 corners[4] =
@@ -365,6 +361,10 @@ void cEditorView::RenderGL()
          };
 
          glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
+         glEnable(GL_POLYGON_OFFSET_FILL);
+         // HACK: the polygon offset value here has to be big enough to clear the
+         // offsets used by the terrain splats
+         glPolygonOffset(-6, -6);
          glEnable(GL_BLEND);
          glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
          glBegin(GL_QUADS);
