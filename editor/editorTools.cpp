@@ -116,6 +116,97 @@ IEditorView * cDragTool::AccessView()
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: cSelectTool
+//
+
+////////////////////////////////////////
+
+cSelectTool::cSelectTool()
+{
+}
+
+////////////////////////////////////////
+
+cSelectTool::~cSelectTool()
+{
+}
+
+////////////////////////////////////////
+
+tResult cSelectTool::OnKeyDown(const cEditorKeyEvent & keyEvent, IEditorView * pView)
+{
+   return cDragTool::OnKeyDown(keyEvent, pView);
+}
+
+////////////////////////////////////////
+
+tResult cSelectTool::OnMouseWheel(const cEditorMouseWheelEvent & mouseWheelEvent, IEditorView * pView)
+{
+   return cDragTool::OnMouseWheel(mouseWheelEvent, pView);
+}
+
+////////////////////////////////////////
+
+tResult cSelectTool::GetToolTip(const cEditorMouseEvent & mouseEvent,
+                                    cStr * pToolTipText, uint_ptr * pToolTipId) const
+{
+   float ndx, ndy;
+   ScreenToNormalizedDeviceCoords(mouseEvent.GetPoint().x, mouseEvent.GetPoint().y, &ndx, &ndy);
+
+   cRay pickRay;
+   UseGlobal(Camera);
+   if (pCamera->GeneratePickRay(ndx, ndy, &pickRay) == S_OK)
+   {
+      cAutoIPtr<IEntity> pEntity;
+      UseGlobal(EntityManager);
+      if (pEntityManager->RayCast(pickRay, &pEntity) == S_OK)
+      {
+         pToolTipText->Format("Entity 0x%p", static_cast<void*>(pEntity));
+         *pToolTipId = reinterpret_cast<uint_ptr>(static_cast<void*>(pEntity.AccessPointer()));
+         return S_OK;
+      }
+   }
+
+   return S_FALSE;
+}
+
+////////////////////////////////////////
+
+tResult cSelectTool::OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+{
+   m_lastMousePoint = mouseEvent.GetPoint();
+   return S_EDITOR_TOOL_HANDLED;
+}
+
+////////////////////////////////////////
+
+tResult cSelectTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+{
+   if ((pView != NULL) && CTIsSameObject(pView, AccessView()))
+   {
+      return S_EDITOR_TOOL_HANDLED;
+   }
+
+   return S_EDITOR_TOOL_CONTINUE;
+}
+
+////////////////////////////////////////
+
+tResult cSelectTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+{
+   if ((pView != NULL) && CTIsSameObject(pView, AccessView()))
+   {
+      CPoint delta = mouseEvent.GetPoint() - m_lastMousePoint;
+      m_lastMousePoint = mouseEvent.GetPoint();
+      return S_EDITOR_TOOL_HANDLED;
+   }
+
+   return S_EDITOR_TOOL_CONTINUE;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cMoveCameraTool
 //
 
@@ -210,18 +301,6 @@ static bool GetTerrainLocation(const cRay & ray, tVec3 * pLocation)
 
 ////////////////////////////////////////
 
-static bool GetEntity(const cRay & ray, IEntity * * ppEntity)
-{
-   UseGlobal(EntityManager);
-   if (pEntityManager->RayCast(ray, ppEntity) == S_OK)
-   {
-      return true;
-   }
-   return false;
-}
-
-////////////////////////////////////////
-
 tResult cMoveCameraTool::GetToolTip(const cEditorMouseEvent & mouseEvent,
                                     cStr * pToolTipText, uint_ptr * pToolTipId) const
 {
@@ -232,22 +311,12 @@ tResult cMoveCameraTool::GetToolTip(const cEditorMouseEvent & mouseEvent,
    UseGlobal(Camera);
    if (pCamera->GeneratePickRay(ndx, ndy, &pickRay) == S_OK)
    {
-      cAutoIPtr<IEntity> pEntity;
-      if (GetEntity(pickRay, &pEntity))
+      tVec3 intersect;
+      if (GetTerrainLocation(pickRay, &intersect))
       {
-         pToolTipText->Format("Hit entity %p", static_cast<void*>(pEntity));
-         *pToolTipId = reinterpret_cast<uint_ptr>(static_cast<void*>(pEntity.AccessPointer()));
+         pToolTipText->Format("Hit <%.2f, %.2f, %.2f>", intersect.x, intersect.y, intersect.z);
+         *pToolTipId = static_cast<uint_ptr>(Round(intersect.LengthSqr()));
          return S_OK;
-      }
-      else
-      {
-         tVec3 intersect;
-         if (GetTerrainLocation(pickRay, &intersect))
-         {
-            pToolTipText->Format("Hit <%.2f, %.2f, %.2f>", intersect.x, intersect.y, intersect.z);
-            *pToolTipId = static_cast<uint_ptr>(Round(intersect.LengthSqr()));
-            return S_OK;
-         }
       }
    }
 

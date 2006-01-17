@@ -527,6 +527,7 @@ BEGIN
     IDS_PLATEAU_TOOL        "Plateau"
     IDS_TERRAIN_CHANGE_ELEV_COMMAND_LABEL "Change Terrain Elevation"
     IDS_TERRAIN_PLATEAU_COMMAND_LABEL "Plateau Terrain"
+    IDS_MOVE_CAMERA_TOOL    "Move Camera"
 END
 
 #endif    // English (U.S.) resources

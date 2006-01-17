@@ -276,12 +276,14 @@ HTOOLGROUP cToolPaletteBar::CreateStandardToolGroup()
       return NULL;
    }
 
-   static const cStandardToolDef<cMoveCameraTool> moveCameraTool(IDS_SELECT_TOOL, 0);
+   static const cStandardToolDef<cSelectTool> selectTool(IDS_SELECT_TOOL, 0);
+   static const cStandardToolDef<cMoveCameraTool> moveCameraTool(IDS_MOVE_CAMERA_TOOL, 3);
    static const cStandardToolDef<cTerrainElevationTool> terrainElevationTool(IDS_ELEVATION_TOOL, 1);
    static const cStandardToolDef<cTerrainPlateauTool> terrainPlateauTool(IDS_PLATEAU_TOOL, 2);
 
    static const cToolFactory * stdTools[] =
    {
+      &selectTool,
       &moveCameraTool,
       &terrainElevationTool,
       &terrainPlateauTool,

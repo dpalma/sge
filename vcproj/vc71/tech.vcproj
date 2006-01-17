@@ -357,10 +357,10 @@
 					RelativePath="..\..\tech\src\filespec.cpp">
 				</File>
 				<File
-					RelativePath="..\..\tech\src\functor.cpp">
+					RelativePath="..\..\tech\src\frustum.cpp">
 				</File>
 				<File
-					RelativePath="..\..\tech\src\frustum.cpp">
+					RelativePath="..\..\tech\src\functor.cpp">
 				</File>
 				<File
 					RelativePath="..\..\tech\src\globalobjreg.cpp">
@@ -538,6 +538,9 @@
 			</File>
 			<File
 				RelativePath="..\..\tech\include\combase.h">
+			</File>
+			<File
+				RelativePath="..\..\tech\include\comenum.h">
 			</File>
 			<File
 				RelativePath="..\..\tech\include\comtools.h">

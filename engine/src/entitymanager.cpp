@@ -489,6 +489,13 @@ tResult cEntityManager::Load(IReader * pReader, int version)
 
 ///////////////////////////////////////
 
+bool cEntityManager::IsSelected(IEntity * pEntity) const
+{
+   return (m_selected.find(pEntity) != m_selected.end());
+}
+
+///////////////////////////////////////
+
 tResult EntityManagerCreate()
 {
    cAutoIPtr<IEntityManager> p(static_cast<IEntityManager*>(new cEntityManager));

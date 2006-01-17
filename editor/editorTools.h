@@ -47,6 +47,31 @@ private:
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: cSelectTool
+//
+
+class cSelectTool : public cComObject<cDragTool, &IID_IEditorTool>
+{
+public:
+   cSelectTool();
+   ~cSelectTool();
+
+   virtual tResult OnKeyDown(const cEditorKeyEvent & keyEvent, IEditorView * pView);
+   virtual tResult OnMouseWheel(const cEditorMouseWheelEvent & mouseWheelEvent, IEditorView * pView);
+   virtual tResult GetToolTip(const cEditorMouseEvent & mouseEvent, cStr * pToolTipText, uint_ptr * pToolTipId) const;
+
+protected:
+   virtual tResult OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+   virtual tResult OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+   virtual tResult OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+
+private:
+   CPoint m_lastMousePoint;
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cMoveCameraTool
 //
 

@@ -144,6 +144,8 @@ public:
    virtual tResult Load(IReader * pReader, int version);
 
 private:
+   bool IsSelected(IEntity * pEntity) const;
+
    tEntityId m_nextId;
    tEntityList m_entities;
    tEntitySet m_selected;
