@@ -14,6 +14,8 @@
 
 F_DECLARE_HANDLE(HTERRAINQUAD);
 
+F_DECLARE_INTERFACE(IEntity);
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -57,7 +59,6 @@ public:
    ~cSelectTool();
 
    virtual tResult OnKeyDown(const cEditorKeyEvent & keyEvent, IEditorView * pView);
-   virtual tResult OnMouseWheel(const cEditorMouseWheelEvent & mouseWheelEvent, IEditorView * pView);
    virtual tResult GetToolTip(const cEditorMouseEvent & mouseEvent, cStr * pToolTipText, uint_ptr * pToolTipId) const;
 
 protected:
@@ -66,7 +67,11 @@ protected:
    virtual tResult OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
 
 private:
-   CPoint m_lastMousePoint;
+   tResult GetRayHitEntity(const cEditorMouseEvent & mouseEvent, IEntity * * ppEntity) const;
+
+   enum eSelectType { kST_Box, kST_Ray };
+   eSelectType m_selectType;
+   CPoint m_dragStartPoint, m_lastMousePoint;
 };
 
 

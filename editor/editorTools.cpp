@@ -11,9 +11,9 @@
 #include "cameraapi.h"
 #include "entityapi.h"
 #include "terrainapi.h"
-#include "ray.h"
 
 #include "globalobj.h"
+#include "ray.h"
 
 #include <GL/glew.h>
 
@@ -122,6 +122,7 @@ IEditorView * cDragTool::AccessView()
 ////////////////////////////////////////
 
 cSelectTool::cSelectTool()
+ : m_selectType(kST_Ray)
 {
 }
 
@@ -140,31 +141,15 @@ tResult cSelectTool::OnKeyDown(const cEditorKeyEvent & keyEvent, IEditorView * p
 
 ////////////////////////////////////////
 
-tResult cSelectTool::OnMouseWheel(const cEditorMouseWheelEvent & mouseWheelEvent, IEditorView * pView)
-{
-   return cDragTool::OnMouseWheel(mouseWheelEvent, pView);
-}
-
-////////////////////////////////////////
-
 tResult cSelectTool::GetToolTip(const cEditorMouseEvent & mouseEvent,
-                                    cStr * pToolTipText, uint_ptr * pToolTipId) const
+                                cStr * pToolTipText, uint_ptr * pToolTipId) const
 {
-   float ndx, ndy;
-   ScreenToNormalizedDeviceCoords(mouseEvent.GetPoint().x, mouseEvent.GetPoint().y, &ndx, &ndy);
-
-   cRay pickRay;
-   UseGlobal(Camera);
-   if (pCamera->GeneratePickRay(ndx, ndy, &pickRay) == S_OK)
+   cAutoIPtr<IEntity> pEntity;
+   if (GetRayHitEntity(mouseEvent, &pEntity) == S_OK)
    {
-      cAutoIPtr<IEntity> pEntity;
-      UseGlobal(EntityManager);
-      if (pEntityManager->RayCast(pickRay, &pEntity) == S_OK)
-      {
-         pToolTipText->Format("Entity 0x%p", static_cast<void*>(pEntity));
-         *pToolTipId = reinterpret_cast<uint_ptr>(static_cast<void*>(pEntity.AccessPointer()));
-         return S_OK;
-      }
+      pToolTipText->Format("Entity 0x%p", static_cast<void*>(pEntity));
+      *pToolTipId = reinterpret_cast<uint_ptr>(static_cast<void*>(pEntity.AccessPointer()));
+      return S_OK;
    }
 
    return S_FALSE;
@@ -174,6 +159,8 @@ tResult cSelectTool::GetToolTip(const cEditorMouseEvent & mouseEvent,
 
 tResult cSelectTool::OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
 {
+   m_selectType = kST_Ray;
+   m_dragStartPoint = mouseEvent.GetPoint();
    m_lastMousePoint = mouseEvent.GetPoint();
    return S_EDITOR_TOOL_HANDLED;
 }
@@ -184,6 +171,16 @@ tResult cSelectTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView
 {
    if ((pView != NULL) && CTIsSameObject(pView, AccessView()))
    {
+      if (m_selectType == kST_Ray)
+      {
+         UseGlobal(EntityManager);
+         pEntityManager->DeselectAll();
+         cAutoIPtr<IEntity> pEntity;
+         if (GetRayHitEntity(mouseEvent, &pEntity) == S_OK)
+         {
+            pEntityManager->Select(pEntity);
+         }
+      }
       return S_EDITOR_TOOL_HANDLED;
    }
 
@@ -196,12 +193,40 @@ tResult cSelectTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorVie
 {
    if ((pView != NULL) && CTIsSameObject(pView, AccessView()))
    {
-      CPoint delta = mouseEvent.GetPoint() - m_lastMousePoint;
+      CPoint delta = mouseEvent.GetPoint() - m_dragStartPoint;
       m_lastMousePoint = mouseEvent.GetPoint();
       return S_EDITOR_TOOL_HANDLED;
    }
 
    return S_EDITOR_TOOL_CONTINUE;
+}
+
+////////////////////////////////////////
+
+tResult cSelectTool::GetRayHitEntity(const cEditorMouseEvent & mouseEvent, IEntity * * ppEntity) const
+{
+   if (ppEntity == NULL)
+   {
+      return E_POINTER;
+   }
+
+   float ndx, ndy;
+   ScreenToNormalizedDeviceCoords(mouseEvent.GetPoint().x, mouseEvent.GetPoint().y, &ndx, &ndy);
+
+   cRay pickRay;
+   UseGlobal(Camera);
+   if (pCamera->GeneratePickRay(ndx, ndy, &pickRay) == S_OK)
+   {
+      cAutoIPtr<IEntity> pEntity;
+      UseGlobal(EntityManager);
+      if (pEntityManager->RayCast(pickRay, &pEntity) == S_OK)
+      {
+         *ppEntity = CTAddRef(pEntity);
+         return S_OK;
+      }
+   }
+
+   return S_FALSE;
 }
 
 

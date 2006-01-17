@@ -91,6 +91,7 @@ interface IEntityManager : IUnknown
    virtual tResult RayCast(const cRay & ray, IEntity * * ppEntity) const = 0;
    virtual tResult BoxCast(const tAxisAlignedBox & box, IEntityEnum * * ppEnum) const = 0;
 
+   virtual tResult Select(IEntity * pEntity) = 0;
    virtual tResult SelectBoxed(const tAxisAlignedBox & box) = 0;
    virtual tResult DeselectAll() = 0;
    virtual uint GetSelectedCount() const = 0;

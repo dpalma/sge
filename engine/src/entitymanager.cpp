@@ -363,10 +363,17 @@ void cEntityManager::RenderAll()
       {
          continue;
       }
+
       glPushMatrix();
       glMultMatrixf((*iter)->GetWorldTransform().m);
+
       (*iter)->Render();
-      RenderWireFrame((*iter)->GetBoundingBox(), cColor(1,1,0));
+
+      if (IsSelected(*iter))
+      {
+         RenderWireFrame((*iter)->GetBoundingBox(), cColor(1,1,0));
+      }
+
       glPopMatrix();
    }
 }
@@ -398,6 +405,27 @@ tResult cEntityManager::RayCast(const cRay & ray, IEntity * * ppEntity) const
 tResult cEntityManager::BoxCast(const tAxisAlignedBox & box, IEntityEnum * * ppEnum) const
 {
    return E_NOTIMPL;
+}
+
+///////////////////////////////////////
+
+tResult cEntityManager::Select(IEntity * pEntity)
+{
+   if (pEntity == NULL)
+   {
+      return E_POINTER;
+   }
+
+   std::pair<tEntitySet::iterator, bool> result = m_selected.insert(pEntity);
+   if (result.second)
+   {
+      pEntity->AddRef();
+      return S_OK;
+   }
+   else
+   {
+      return S_FALSE;
+   }
 }
 
 ///////////////////////////////////////

@@ -129,6 +129,7 @@ public:
    virtual tResult RayCast(const cRay & ray, IEntity * * ppEntity) const;
    virtual tResult BoxCast(const tAxisAlignedBox & box, IEntityEnum * * ppEnum) const;
 
+   virtual tResult Select(IEntity * pEntity);
    virtual tResult SelectBoxed(const tAxisAlignedBox & box);
    virtual tResult DeselectAll();
    virtual uint GetSelectedCount() const;
