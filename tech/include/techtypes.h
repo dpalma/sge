@@ -55,6 +55,14 @@ typedef wchar_t   tChar;
 typedef char      tChar;
 #endif
 
+#ifndef _T
+#ifdef _UNICODE
+#define _T(s) L##s
+#else
+#define _T(s) s
+#endif
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #define Stringize2(x) #x

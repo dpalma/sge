@@ -82,6 +82,14 @@ inline int Round(T real)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+template <typename T>
+inline T Abs(T t)
+{
+   return (t < 0) ? -t : t;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // See http://www.cygnus-software.com/papers/comparingfloats/comparingfloats.htm
 
 const int kFloatMaxUnitsLastPlace = 5;
@@ -93,7 +101,7 @@ inline bool AlmostEqual(float a, float b, int maxUnitsLastPlace = kFloatMaxUnits
    {
       return true; 
    }
-   int intDiff = abs(*(int*)&a - *(int*)&b);
+   int intDiff = Abs(*(int*)&a - *(int*)&b);
    return (intDiff <= maxUnitsLastPlace);
 }
 
@@ -105,7 +113,7 @@ inline bool AlmostEqual(double a, double b, int maxUnitsLastPlace = kDoubleMaxUn
    {
       return true; 
    }
-   int intDiff = abs(*(int*)&a - *(int*)&b);
+   int intDiff = Abs(*(int*)&a - *(int*)&b);
    return (intDiff <= maxUnitsLastPlace);
 }
 
