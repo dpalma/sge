@@ -225,7 +225,7 @@ for script in sconscripts:
 
    # Get rid of leading backslash if present since script is a relative path now
    # The os.path.normpath call converts double-backslashes back to single
-   script = re.sub(r'^\\{1,2}', '', os.path.normpath(script))
+   script = re.sub(r'^[\\/]{1,2}', '', os.path.normpath(script))
    
    dir, scriptOnly = os.path.split(script)
    
