@@ -137,10 +137,6 @@ bool cRay::IntersectsPlane(const tVec3 & normal,
 // "An Introduction To Ray Tracing", Ed. by Andrew Glassner, 1989.
 
 #define Max3(a,b,c) Max(Max(a,b),c)
-template <typename T> inline T Abs(T t)
-{
-   return t < 0 ? -t : t;
-}
 
 bool cRay::IntersectsTriangle(const tVec3 & v1,
                               const tVec3 & v2,
