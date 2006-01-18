@@ -4,6 +4,7 @@
 #include "stdhdr.h"
 
 #include "techlog.h"
+#include "techtypes.h"
 #include "filespec.h"
 
 #include <cstring>

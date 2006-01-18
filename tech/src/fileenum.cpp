@@ -62,9 +62,9 @@ private:
 ////////////////////////////////////////
 
 cEnumFilesWin32::cEnumFilesWin32(const cFileSpec & spec)
- : m_spec(spec),
-   m_path(spec.GetPath()),
-   m_hFinder(NULL)
+ : m_spec(spec)
+ , m_path(spec.GetPath())
+ , m_hFinder(NULL)
 {
 }
 
@@ -233,7 +233,9 @@ public:
 private:
    // Internal function with more lenient arg checking for use by both Skip and Next
    tResult GetNext(ulong count, cFileSpec * pFileSpecs, uint * pAttribs, ulong * pnElements);
+   const cFileSpec & GetSpec() const { return m_spec; }
    const cFilePath & GetPath() const { return m_path; }
+   const cFileSpec m_spec;
    const cFilePath m_path;
    const cStr m_fileName;
    DIR * m_pDir;
@@ -242,9 +244,10 @@ private:
 ////////////////////////////////////////
 
 cEnumFilesPosix::cEnumFilesPosix(const cFileSpec & spec)
- : m_path(spec.GetPath()),
-   m_fileName(spec.GetFileName()),
-   m_pDir(NULL)
+ : m_spec(spec)
+ , m_path(spec.GetPath())
+ , m_fileName(spec.GetFileName())
+ , m_pDir(NULL)
 {
 }
 
@@ -338,7 +341,7 @@ tResult cEnumFilesPosix::GetNext(ulong count, cFileSpec * pFileSpecs, uint * pAt
    while ((pEnt != NULL) && (nFound < count))
    {
       if (strcmp(pEnt->d_name, ".") != 0 && strcmp(pEnt->d_name, "..") != 0
-         && WildcardMatch(m_fileName, pEnt->d_name))
+         && WildcardMatch(m_fileName.c_str(), pEnt->d_name))
       {
          cFileSpec entry(pEnt->d_name);
          entry.SetPath(GetPath());

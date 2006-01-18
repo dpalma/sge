@@ -2,6 +2,10 @@
 #define PROTOTYPES 1
 #endif
 
+#ifdef __GNUC__
+#define PROTOTYPES 1
+#endif
+
 /* GLOBAL.H - RSAREF types and constants
  */
 

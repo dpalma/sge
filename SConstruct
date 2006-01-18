@@ -169,6 +169,7 @@ class SGEEnvironment(Environment):
 
 opts = Options(None, ARGUMENTS)
 opts.AddOptions(
+   BoolOption('show_only', 'Show targets without actually building', 0),
    BoolOption('debug', 'Build with debugging enabled', 0),
    BoolOption('unicode', 'Build with _UNICODE defined', 0),
    BoolOption('shared', 'Build shared libraries', 0))
@@ -212,6 +213,9 @@ def GetTargetNameFromDir(dir):
    dir, target = os.path.split(dir)
    while target in ['src', 'include', 'bin']:
       dir, target = os.path.split(dir)
+   # remove trailing backslash if present
+   while target.endswith('\\'):
+      target = target.split('\\', 1)[0]
    return target
 
 ########################################
@@ -232,6 +236,11 @@ for script in sconscripts:
    target = GetTargetNameFromDir(dir)
    targetDir = os.path.join(env.GetBuildDir(), target)
    
-   BuildDir(targetDir, dir, duplicate=0)
-   SConscript(os.path.join(targetDir, scriptOnly), exports='env')
-   env.Alias(target, targetDir)
+   scriptPath = os.path.join(targetDir, scriptOnly)
+
+   if env.get('show_only'):
+      print 'Target: ' + target + ' (script is ' + scriptPath + ')'
+   else:
+      BuildDir(targetDir, dir, duplicate=0)
+      SConscript(scriptPath, exports='env')
+      env.Alias(target, targetDir)

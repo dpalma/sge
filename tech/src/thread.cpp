@@ -11,6 +11,7 @@
 #else
 #include <sys/types.h>
 #include <sched.h>
+#include <unistd.h>
 #endif
 
 #ifdef HAVE_CPPUNIT

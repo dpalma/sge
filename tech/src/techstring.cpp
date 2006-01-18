@@ -4,7 +4,8 @@
 #include "stdhdr.h"
 
 #include "techstring.h"
-#include "combase.h"
+#include "techmath.h"
+#include "comtools.h"
 
 #include <cfloat>
 #include <climits>
@@ -30,7 +31,11 @@ const cStr cStr::gm_whitespace(_T(" \t\r\n"));
 
 int cStr::ToInt() const
 {
+#ifdef __GNUC__
+   return Round(strtod(Get(), NULL));
+#else
    return _ttoi(Get());
+#endif
 }
 
 ///////////////////////////////////////
@@ -357,6 +362,22 @@ int CDECL cStr::Format(const tChar * pszFormat, ...)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+const cStr & GUIDToString(REFGUID guid, cStr * pStr)
+{
+   if (pStr != NULL)
+   {
+      Verify(pStr->Format(_T("{%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X}"),
+         guid.Data1, guid.Data2, guid.Data3,
+         guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3],
+         guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]) > 0);
+      return *pStr;
+   }
+   static const cStr empty;
+   return empty;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 static cStr FilteredCopy(const cStr & str, const cStr & excluded)
 {
    cStr result;
@@ -404,6 +425,7 @@ class cStrTests : public CppUnit::TestCase
 #if _MSC_VER >= 1300
       CPPUNIT_TEST(TestFormatLength);
 #endif
+      CPPUNIT_TEST(TestGUIDToString);
    CPPUNIT_TEST_SUITE_END();
 
    void TestParseBadArgs();
@@ -413,6 +435,7 @@ class cStrTests : public CppUnit::TestCase
 #if _MSC_VER >= 1300
    void TestFormatLength();
 #endif
+   void TestGUIDToString();
 };
 
 ////////////////////////////////////////
@@ -537,6 +560,25 @@ void cStrTests::TestFormatLength()
 }
 
 #endif // _MSC_VER >= 1300
+
+////////////////////////////////////////
+
+void cStrTests::TestGUIDToString()
+{
+   // {B40B6831-FCB2-4082-AE07-61A7FC4D3AEB}
+   static const GUID kTestGuidA = {0xb40b6831, 0xfcb2, 0x4082, {0xae, 0x7, 0x61, 0xa7, 0xfc, 0x4d, 0x3a, 0xeb}};
+   static const GUID kTestGuidADupe = {0xb40b6831, 0xfcb2, 0x4082, {0xae, 0x7, 0x61, 0xa7, 0xfc, 0x4d, 0x3a, 0xeb}};
+
+   // {DED26BAE-E83F-4c59-8B95-A309311B15A9}
+   static const GUID kTestGuidB = {0xded26bae, 0xe83f, 0x4c59, {0x8b, 0x95, 0xa3, 0x9, 0x31, 0x1b, 0x15, 0xa9}};
+
+   cStr guid;
+   GUIDToString(kTestGuidA, &guid);
+   CPPUNIT_ASSERT(guid.compare("{B40B6831-FCB2-4082-AE07-61A7FC4D3AEB}") == 0);
+
+   CPPUNIT_ASSERT(CTIsEqualGUID(kTestGuidA, kTestGuidADupe));
+   CPPUNIT_ASSERT(!CTIsEqualGUID(kTestGuidA, kTestGuidB));
+}
 
 #endif // HAVE_CPPUNIT
 

@@ -248,7 +248,7 @@ void cGUIContainerBase<INTRFC>::DoLayout()
       else
       {
          tGUIRect rect;
-         if (GetClientArea(&rect) == S_OK)
+         if (tBaseClass::GetClientArea(&rect) == S_OK)
          {
             tGUIInsets insets;
             if (GetInsets(&insets) == S_OK)

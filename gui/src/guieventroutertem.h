@@ -47,7 +47,7 @@ cGUIEventRouter<T, INTRFC>::~cGUIEventRouter()
 template <typename T, typename INTRFC>
 tResult cGUIEventRouter<T, INTRFC>::AddEventListener(IGUIEventListener * pListener)
 {
-   return Connect(pListener);
+   return tBaseClass::Connect(pListener);
 }
 
 ///////////////////////////////////////
@@ -55,7 +55,7 @@ tResult cGUIEventRouter<T, INTRFC>::AddEventListener(IGUIEventListener * pListen
 template <typename T, typename INTRFC>
 tResult cGUIEventRouter<T, INTRFC>::RemoveEventListener(IGUIEventListener * pListener)
 {
-   return Disconnect(pListener);
+   return tBaseClass::Disconnect(pListener);
 }
 
 ///////////////////////////////////////
@@ -153,8 +153,8 @@ bool cGUIEventRouter<T, INTRFC>::DoEvent(IGUIEvent * pEvent)
 {
    Assert(pEvent != NULL);
 
-   typename cConnectionPoint<INTRFC, IGUIEventListener>::tSinksIterator iter = BeginSinks();
-   typename cConnectionPoint<INTRFC, IGUIEventListener>::tSinksIterator end = EndSinks();
+   typename cConnectionPoint<INTRFC, IGUIEventListener>::tSinksIterator iter = tBaseClass::BeginSinks();
+   typename cConnectionPoint<INTRFC, IGUIEventListener>::tSinksIterator end = tBaseClass::EndSinks();
    for (; iter != end; iter++)
    {
       if ((*iter)->OnEvent(pEvent) != S_OK)
@@ -202,8 +202,8 @@ bool cGUIEventRouter<T, INTRFC>::BubbleEvent(IGUIElement * pStartElement, IGUIEv
    Assert(pStartElement != NULL);
    Assert(pEvent != NULL);
 
-   typename cConnectionPoint<INTRFC, IGUIEventListener>::tSinksIterator iter = BeginSinks();
-   typename cConnectionPoint<INTRFC, IGUIEventListener>::tSinksIterator end = EndSinks();
+   typename cConnectionPoint<INTRFC, IGUIEventListener>::tSinksIterator iter = tBaseClass::BeginSinks();
+   typename cConnectionPoint<INTRFC, IGUIEventListener>::tSinksIterator end = tBaseClass::EndSinks();
    for (; iter != end; iter++)
    {
       if ((*iter)->OnEvent(pEvent) != S_OK)

@@ -7,7 +7,6 @@
 #include "guievent.h"
 #include "guielementenum.h"
 #include "guielementtools.h"
-#include "guieventroutertem.h"
 #include "guipage.h"
 
 #include "sys.h"
@@ -18,6 +17,8 @@
 #include "resourceapi.h"
 #include "readwriteapi.h"
 #include "configapi.h"
+
+#include "guieventroutertem.h"
 
 #include <tinyxml.h>
 

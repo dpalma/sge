@@ -4,7 +4,6 @@
 #include "stdhdr.h"
 
 #include "terrainrender.h"
-#include "renderapi.h"
 
 #include "imageapi.h"
 #include "resourceapi.h"
@@ -248,7 +247,7 @@ void cTerrainRenderer::ClearChunks()
 ////////////////////////////////////////
 
 // VC6 requires explicit instantiation of mem_fun_t for void return type
-#if _MSC_VER <= 1200
+#if defined(_MSC_VER) && (_MSC_VER <= 1200)
 template <>
 class std::mem_fun_t<void, cTerrainChunk>
 {

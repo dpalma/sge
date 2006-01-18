@@ -25,6 +25,8 @@
 template <typename INTRFC>
 class cGUIContainerBase : public cGUIElementBase<INTRFC>
 {
+   typedef cGUIElementBase<INTRFC> tBaseClass;
+
 public:
    cGUIContainerBase(IGUILayoutManager * pLayout = NULL);
    ~cGUIContainerBase();

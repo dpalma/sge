@@ -34,7 +34,7 @@ static const int kUnzMaxPath = 260;
 static const tChar kExtSep = _T('.');
 
 // {93BA1F78-3FF1-415b-BA5B-56FED039E838}
-static const GUID IID_IResourceManagerDiagnostics = 
+const GUID IID_IResourceManagerDiagnostics = 
 { 0x93ba1f78, 0x3ff1, 0x415b, { 0xba, 0x5b, 0x56, 0xfe, 0xd0, 0x39, 0xe8, 0x38 } };
 
 

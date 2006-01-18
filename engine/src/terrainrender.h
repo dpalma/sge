@@ -5,6 +5,7 @@
 #define INCLUDED_TERRAINRENDER_H
 
 #include "terrainapi.h"
+#include "renderapi.h"
 #include "saveloadapi.h"
 
 #include "globalobjdef.h"
@@ -21,8 +22,6 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-
-enum ePrimitiveType;
 
 class cTerrainChunk;
 

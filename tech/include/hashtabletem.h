@@ -188,7 +188,7 @@ bool cHashIterator<HASHELEMENT>::operator !=(const cHashIterator & other) const
    template <typename KEY, typename VALUE, typename HASHFN, class ALLOCATOR>
 #define HASHTABLE_TEMPLATE_CLASS \
    cHashTable<KEY, VALUE, HASHFN, ALLOCATOR>
-#if _MSC_VER <= 1200
+#if defined(_MSC_VER) && (_MSC_VER <= 1200)
 #define HASHTABLE_TEMPLATE_MEMBER_TYPE(Type) \
    HASHTABLE_TEMPLATE_CLASS::Type
 #else

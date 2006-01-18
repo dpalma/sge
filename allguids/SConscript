@@ -6,7 +6,7 @@ Import('env')
 sources = Split("""
    allguids.cpp
 """)
-           
+
 includePaths = Split("""
    #tech/include
    #render/include

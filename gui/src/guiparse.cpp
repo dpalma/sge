@@ -71,7 +71,7 @@ const tChar * SkipSingleComment(const tChar * psz)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-tResult GUIParseStyleDimension(const tChar * psz, int * pDimension, tGUIDimensionSpec * pSpec)
+tResult GUIParseStyleDimension(const tChar * psz, int * pDimension, eGUIDimensionSpec * pSpec)
 {
    if (psz == NULL || pDimension == NULL || pSpec == NULL)
    {
@@ -228,7 +228,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(cGUIParseTests);
 void cGUIParseTests::TestParseDimension()
 {
    int dim;
-   tGUIDimensionSpec spec;
+   eGUIDimensionSpec spec;
 
    CPPUNIT_ASSERT(GUIParseStyleDimension("150", &dim, &spec) == S_OK);
    CPPUNIT_ASSERT((dim == 150) && (spec == kGUIDimensionPixels));

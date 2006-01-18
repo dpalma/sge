@@ -3,12 +3,12 @@
 
 #include "stdhdr.h"
 
-#include "font.h"
-#include "color.h"
+#include "guifontx11.h"
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
+#include "color.h"
 #include "comtools.h"
 #include "techmath.h"
 
@@ -31,7 +31,7 @@ int g_defaultPointSize = 10;
 // CLASS: cGLXRasterFont
 //
 
-class cGLXRasterFont : public cComObject<IMPLEMENTS(IRenderFont)>
+class cGLXRasterFont : public cComObject<IMPLEMENTS(IGUIFont)>
 {
 public:
    cGLXRasterFont();
@@ -39,10 +39,10 @@ public:
 
    virtual void OnFinalRelease();
 
-   virtual tResult DrawText(const char * pszText, int textLength, 
-                            uint flags, tRect * pRect, const cColor & color) const;
+   virtual tResult RenderText(const char * pszText, int textLength, tRect * pRect, uint flags, const cColor & color) const;
+   virtual tResult RenderText(const wchar_t * pszText, int textLength, tRect * pRect, uint flags, const cColor & color) const;
 
-   bool Create(const char * pszFont, int pointSize);
+   bool Create(const cGUIFontDesc & fontDesc);
 
 private:
    cGLXRasterFont(const cGLXRasterFont &);
@@ -57,7 +57,6 @@ private:
    int m_listCount;
    int m_listBase;
 
-   int m_charWidths[kDefaultGlyphLast - kDefaultGlyphFirst + 1];
    float m_height;
 };
 
@@ -97,17 +96,20 @@ void cGLXRasterFont::OnFinalRelease()
 
 ///////////////////////////////////////
 
-tResult cGLXRasterFont::DrawText(const char * pszText, int textLength, 
-                                 uint flags, tRect * pRect, const cColor & color) const
+tResult cGLXRasterFont::RenderText(const char * pszText, int textLength,
+                                   tRect * pRect, uint flags, const cColor & color) const
 {
-   Assert(pszText != NULL);
+   if (pszText == NULL)
+   {
+      return E_POINTER;
+   }
 
    if (textLength < 0)
    {
       textLength = strlen(pszText);
    }
 
-   if ((flags & kDT_CalcRect) == kDT_CalcRect)
+   if ((flags & kRT_CalcRect) == kRT_CalcRect)
    {
       // An alternative way...
       //int dir, ascent, descent;
@@ -117,7 +119,7 @@ tResult cGLXRasterFont::DrawText(const char * pszText, int textLength,
       //*pHeight = ascent + descent;
 
       pRect->right = pRect->left + XTextWidth(m_pFontInfo, pszText, textLength);
-      pRect->bottom = pRect->top + GetHeight();
+      pRect->bottom = pRect->top + static_cast<float>(GetHeight());
    }
    else
    {
@@ -133,7 +135,15 @@ tResult cGLXRasterFont::DrawText(const char * pszText, int textLength,
 
 ///////////////////////////////////////
 
-bool cGLXRasterFont::Create(const char * pszFont, int pointSize)
+tResult cGLXRasterFont::RenderText(const wchar_t * pszText, int textLength,
+                                   tRect * pRect, uint flags, const cColor & color) const
+{
+   return E_NOTIMPL;
+}
+
+///////////////////////////////////////
+
+bool cGLXRasterFont::Create(const cGUIFontDesc & fontDesc)
 {
    Assert(m_listBase == 0);
 
@@ -143,7 +153,7 @@ bool cGLXRasterFont::Create(const char * pszFont, int pointSize)
    {
       Assert(m_pDisplay != NULL);
 
-      m_pFontInfo = XLoadQueryFont(m_pDisplay, pszFont);
+      m_pFontInfo = XLoadQueryFont(m_pDisplay, fontDesc.GetFace());
       if (m_pFontInfo != NULL)
       {
          Font id = m_pFontInfo->fid;
@@ -160,7 +170,6 @@ bool cGLXRasterFont::Create(const char * pszFont, int pointSize)
          int maxWidth  = m_pFontInfo->max_bounds.rbearing - m_pFontInfo->min_bounds.lbearing;
          int maxHeight = m_pFontInfo->max_bounds.ascent   + m_pFontInfo->max_bounds.descent;
 
-         memset(m_charWidths, maxWidth, sizeof(m_charWidths)); // @HACK
          m_height = maxHeight;
 
          m_listBase = glGenLists(m_listCount);
@@ -180,7 +189,8 @@ bool cGLXRasterFont::Create(const char * pszFont, int pointSize)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-tResult FontCreate(const cFontDesc & fontDesc, IRenderFont * * ppFont)
+tResult GUIFontCreateGL(const cGUIFontDesc & fontDesc,
+                        IGUIFont * * ppFont)
 {
    if (ppFont == NULL)
    {
@@ -189,34 +199,19 @@ tResult FontCreate(const cFontDesc & fontDesc, IRenderFont * * ppFont)
 
    cGLXRasterFont * pFont = new cGLXRasterFont;
 
-   if (!pFont->Create(fontDesc.GetFace(), fontDesc.GetPointSize()))
+   if (pFont == NULL)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   if (!pFont->Create(fontDesc))
    {
       SafeRelease(pFont);
       return E_FAIL;
    }
 
-   *ppFont = static_cast<IRenderFont *>(pFont);
+   *ppFont = static_cast<IGUIFont *>(pFont);
    return S_OK;
-}
-
-tResult FontGetDefaultDesc(cFontDesc * pFontDesc)
-{
-   if (pFontDesc == NULL)
-   {
-      return E_POINTER;
-   }
-   *pFontDesc = cFontDesc(g_szDefaultFont, g_defaultPointSize, kFE_None, kDefaultGlyphFirst, kDefaultGlyphLast);
-   return S_OK;
-}
-
-tResult FontCreateDefault(IRenderFont * * ppFont)
-{
-   cFontDesc fontDesc;
-   if (FontGetDefaultDesc(&fontDesc) == S_OK)
-   {
-      return FontCreate(fontDesc, ppFont);
-   }
-   return E_FAIL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -38,7 +38,7 @@ class CopyMemcpy
 public:
    static void Copy(T * p1, T * p2)
    {
-      memcpy(p1, p2, sizeof(typename T));
+      memcpy(p1, p2, sizeof(T));
    }
    static void Destroy(T *)
    {
@@ -63,6 +63,10 @@ public:
    {
       SafeRelease(*p);
    }
+   static void Destroy(T * const * p)
+   {
+      SafeRelease(*p);
+   }
 };
 
 ////////////////////////////////////////
@@ -76,7 +80,7 @@ public:
       Destroy();
    }
 
-   virtual tResult Next(ulong count, typename T * ppElements, ulong * pnElements)
+   virtual tResult Next(ulong count, T * ppElements, ulong * pnElements)
    {
       if (ppElements == NULL || pnElements == NULL)
       {
@@ -124,12 +128,12 @@ public:
       return S_OK;
    }
 
-   virtual tResult Clone(typename TENUM * * ppEnum)
+   virtual tResult Clone(TENUM * * ppEnum)
    {
       return Create(m_elements, ppEnum);
    }
 
-   static tResult Create(const typename TCONTAINER & container, typename TENUM * * ppEnum)
+   static tResult Create(const TCONTAINER & container, TENUM * * ppEnum)
    {
       if (ppEnum == NULL)
       {
@@ -142,7 +146,7 @@ public:
          return E_OUTOFMEMORY;
       }
       pClass->Initialize(container.begin(), container.end());
-      *ppEnum = static_cast<typename TENUM *>(pClass);
+      *ppEnum = static_cast<TENUM *>(pClass);
       return S_OK;
    }
 
@@ -172,7 +176,7 @@ protected:
    }
 
 private:
-   typename TCONTAINER m_elements;
+   TCONTAINER m_elements;
    typename TCONTAINER::iterator m_iterator;
 };
 

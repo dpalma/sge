@@ -15,11 +15,13 @@
 
 typedef unsigned int GLenum;
 
+#ifdef HAVE_CG
 typedef enum CGprofile;
 typedef struct _CGcontext *CGcontext;
 typedef struct _CGprogram *CGprogram;
 typedef struct _CGparameter *CGparameter;
 typedef void (*CGerrorCallbackFunc)(void);
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 //

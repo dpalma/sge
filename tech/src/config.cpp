@@ -132,18 +132,14 @@ tResult ParseCommandLine(int argc, tChar *argv[], IConfig * pConfig)
    return S_OK;
 }
 
-static bool StringIsTrue(const tChar * psz)
+static bool StringIsTrue(const cStr & str)
 {
-   if (psz != NULL)
+   static const tChar kTrueStr[] = _T("true");
+   if (_tcsicmp(str.c_str(), kTrueStr) == 0)
    {
-      static const tChar kTrueStr[] = _T("true");
-      if (_tcsicmp(psz, kTrueStr) == 0)
-      {
-         return true;
-      }
-      return _ttoi(psz) ? true : false;
+      return true;
    }
-   return false;
+   return (str.ToInt() != 0) ? true : false;
 }
 
 bool ConfigIsTrue(const tChar * pszName)
@@ -153,7 +149,7 @@ bool ConfigIsTrue(const tChar * pszName)
       cStr value;
       if (g_pConfig->Get(pszName, &value) == S_OK)
       {
-         return StringIsTrue(value.c_str());
+         return StringIsTrue(value);
       }
    }
    return false;

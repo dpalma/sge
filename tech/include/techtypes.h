@@ -173,9 +173,56 @@ typedef void * HANDLE;
 #error ("Need compiler-specific function prototype for alloca()")
 #endif
 
-#ifndef _MSC_VER
-#define stricmp strcasecmp
-#define strnicmp strncasecmp
+#ifdef __GNUC__
+#ifdef _UNICODE
+#define _fgettc      fgetwc
+#define _fgetts      fgetws
+#define _ftprintf    fwprintf
+#define _istspace    iswspace
+#define _sntprintf   snwprintf
+#define _stscanf     swscanf
+#define _tcscat      wcscat
+#define _tcschr      wcschr
+#define _tcscmp      wcscmp
+#define _tcscpy      wcscpy
+#define _tcscspn     wcscspn
+#define _tcsdec(s,p) (((p)>(s))?((p)-1):(s))
+#define _tcsicmp     wcscasecmp
+#define _tcsinc(p)   ((p)+1)
+#define _tcslen      wcslen
+#define _tcsncmp     wcsncmp
+#define _tcsncpy     wcsncpy
+#define _tcsnicmp    wcsncasecmp
+#define _tcspbrk     wcspbrk
+#define _tcsrchr     wcsrchr
+#define _tcsstr      wcsstr
+#define _tfopen      wfopen
+#define _vsntprintf  vsnwprintf
+#else
+#define _fgettc      fgetc
+#define _fgetts      fgets
+#define _ftprintf    fprintf
+#define _istspace    isspace
+#define _sntprintf   snprintf
+#define _stscanf     sscanf
+#define _tcscat      strcat
+#define _tcschr      strchr
+#define _tcscmp      strcmp
+#define _tcscpy      strcpy
+#define _tcscspn     strcspn
+#define _tcsdec(s,p) (((p)>(s))?((p)-1):(s))
+#define _tcsicmp     strcasecmp
+#define _tcsinc(p)   ((p)+1)
+#define _tcslen      strlen
+#define _tcsncmp     strncmp
+#define _tcsncpy     strncpy
+#define _tcsnicmp    strncasecmp
+#define _tcspbrk     strpbrk
+#define _tcsrchr     strrchr
+#define _tcsstr      strstr
+#define _tfopen      fopen
+#define _vsntprintf  vsnprintf
+#endif
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////

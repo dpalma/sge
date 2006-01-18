@@ -4,7 +4,6 @@
 #include "stdhdr.h"
 
 #include "comtools.h"
-#include "techstring.h"
 
 #include <cstdio>
 #include <cstring>
@@ -14,28 +13,6 @@
 #endif
 
 #include "dbgalloc.h" // must be last header
-
-///////////////////////////////////////////////////////////////////////////////
-
-bool GUIDToString(REFGUID guid, tChar * psz, int maxLen)
-{
-   cStr temp;
-   int result = temp.Format(_T("{%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X}"),
-      guid.Data1, guid.Data2, guid.Data3,
-      guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3],
-      guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]);
-   if (result > 0)
-   {
-      if (result < maxLen)
-      {
-         _tcscpy(psz, temp.c_str());
-         psz[result] = 0;
-         return true;
-      }
-   }
-   return false;
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -49,7 +26,6 @@ public:
    static const GUID IID_IBar;
 
 private:
-   void TestGuidToString();
    void TestIsSameObject();
    void TestAggregation();
 
@@ -81,7 +57,6 @@ private:
    };
 
    CPPUNIT_TEST_SUITE(cComToolsTests);
-      CPPUNIT_TEST(TestGuidToString);
       CPPUNIT_TEST(TestIsSameObject);
       CPPUNIT_TEST(TestAggregation);
    CPPUNIT_TEST_SUITE_END();
@@ -99,28 +74,6 @@ const GUID cComToolsTests::IID_IFooSideInterface =
 { 0xdad942b, 0xd626, 0x4cfe, { 0x92, 0xe6, 0xca, 0xad, 0x88, 0xd3, 0xab, 0x29 } };
 const GUID cComToolsTests::IID_IBar = 
 { 0x3eb94c5f, 0x2e2c, 0x4fbc, { 0xbe, 0x49, 0x1c, 0xc0, 0xc8, 0xad, 0x6f, 0xde } };
-
-////////////////////////////////////////
-
-void cComToolsTests::TestGuidToString()
-{
-   // {B40B6831-FCB2-4082-AE07-61A7FC4D3AEB}
-   static const GUID kTestGuidA = {0xb40b6831, 0xfcb2, 0x4082, {0xae, 0x7, 0x61, 0xa7, 0xfc, 0x4d, 0x3a, 0xeb}};
-   static const GUID kTestGuidADupe = {0xb40b6831, 0xfcb2, 0x4082, {0xae, 0x7, 0x61, 0xa7, 0xfc, 0x4d, 0x3a, 0xeb}};
-
-   // {DED26BAE-E83F-4c59-8B95-A309311B15A9}
-   static const GUID kTestGuidB = {0xded26bae, 0xe83f, 0x4c59, {0x8b, 0x95, 0xa3, 0x9, 0x31, 0x1b, 0x15, 0xa9}};
-
-   char sz[kGuidStringLength];
-   CPPUNIT_ASSERT(GUIDToString(kTestGuidA, sz, _countof(sz)));
-   CPPUNIT_ASSERT(strcmp(sz, "{B40B6831-FCB2-4082-AE07-61A7FC4D3AEB}") == 0);
-
-   char szTooSmall[kGuidStringLength / 4];
-   CPPUNIT_ASSERT(!GUIDToString(kTestGuidA, szTooSmall, _countof(szTooSmall)));
-
-   CPPUNIT_ASSERT(CTIsEqualGUID(kTestGuidA, kTestGuidADupe));
-   CPPUNIT_ASSERT(!CTIsEqualGUID(kTestGuidA, kTestGuidB));
-}
 
 ////////////////////////////////////////
 
@@ -142,7 +95,6 @@ void cComToolsTests::TestIsSameObject()
    CPPUNIT_ASSERT(!CTIsSameObject(static_cast<IFoo*>(pObj1), pObj2));
    CPPUNIT_ASSERT(!CTIsSameObject(pFoo, pObj2));
    CPPUNIT_ASSERT(!CTIsSameObject(pFooSide, pObj2));
-
 }
 
 ////////////////////////////////////////

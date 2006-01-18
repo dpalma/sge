@@ -151,14 +151,14 @@ static void LuaGetArg(lua_State * L, int index, tScriptVar * pArg)
             // if failed to create dictionary object, indicate that
             // the script function should have received an interface
             // pointer
-            *pArg = tScriptVar(static_cast<IUnknown*>(NULL));
+            pArg->Assign(static_cast<IUnknown*>(NULL));
          }
          break;
       }
 
       default:
       {
-         *pArg = tScriptVar();
+         pArg->Clear();
          break;
       }
    }
@@ -175,9 +175,9 @@ static int LuaThunkInvoke(lua_State * L)
 
    if (nArgsOnStack == 1 && lua_type(L, 1) != LUA_TUSERDATA)
    {
-      tChar szMsg[200];
-      _sntprintf(szMsg, _countof(szMsg), "invalid method call: %s called with no instance pointer", pszMethodName);
-      lua_pushstring(L, szMsg);
+      cStr msg;
+      msg.Format("invalid method call: %s called with no instance pointer", pszMethodName);
+      lua_pushstring(L, msg.c_str());
       lua_error(L); // this function never returns
    }
 
@@ -911,7 +911,7 @@ tResult cLuaInterpreter::GetNamedItem(const char * pszName, tScriptVar * pValue)
 
          default:
          {
-            *pValue = tScriptVar();
+            pValue->Clear();
             break;
          }
       }

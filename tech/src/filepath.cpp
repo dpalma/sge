@@ -33,6 +33,8 @@ extern "C"
 #else
 #define GetCurrentDirectory  GetCurrentDirectoryA
 #endif // !UNICODE
+#elif defined(__GNUC__)
+#define kMaxPath 260
 #else
 #error ("Need maximum path length constant for platform/compiler")
 #endif // _WIN32

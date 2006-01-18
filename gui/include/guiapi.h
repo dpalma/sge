@@ -707,7 +707,7 @@ GUI_API tResult GUIRegisterRendererFactory(const tChar * pszRenderer, tGUIRender
    void * MAKE_UNIQUE(g_pRefSym##type) = type##FactoryRefSym()
 
 #define AUTOREGISTER_GUIFACTORYFN(type, factoryFn, registerFn) \
-   void * type##FactoryRefSym() { return factoryFn; } \
+   void * type##FactoryRefSym() { return (void*)(&(factoryFn)); } \
    static tResult MAKE_UNIQUE(g_##type##AutoRegResult) = (*registerFn)(#type, factoryFn)
 
 #define AUTOREGISTER_GUIELEMENTFACTORYFN(type, factoryFn) \

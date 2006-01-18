@@ -7,6 +7,8 @@
 #include "enginedll.h"
 #include "comtools.h"
 
+#include "renderapi.h"
+
 #include "matrix4.h"
 #include "quat.h"
 #include "vec3.h"
@@ -20,8 +22,6 @@
 F_DECLARE_INTERFACE(IModelKeyFrameInterpolator);
 F_DECLARE_INTERFACE(IModelAnimation);
 F_DECLARE_INTERFACE(IModelAnimationController);
-
-enum ePrimitiveType;
 
 class cModel;
 class cModelSkeleton;

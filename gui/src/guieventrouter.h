@@ -33,6 +33,8 @@ struct sInputEvent;
 template <typename T, typename INTRFC>
 class cGUIEventRouter : public cConnectionPoint<INTRFC, IGUIEventListener>
 {
+   typedef cConnectionPoint<INTRFC, IGUIEventListener> tBaseClass;
+
 public:
    cGUIEventRouter();
    ~cGUIEventRouter();

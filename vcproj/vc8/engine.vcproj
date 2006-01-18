@@ -728,6 +728,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\engine\include\modelapi.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\engine\include\renderapi.h"
 				>
 			</File>

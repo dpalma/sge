@@ -79,8 +79,6 @@ inline bool FAILED(tResult result) { return result < 0; }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-const int kGuidStringLength = 40;
-
 #ifndef GUID_DEFINED
 #define GUID_DEFINED
 typedef struct _GUID
@@ -139,7 +137,14 @@ typedef GUID IID;
 //
 
 #ifndef interface
+#if _MSC_VER >= 1400
+// Define in the same convoluted way that Visual C++ 2005
+// does to avoid the macro redefinition warning
+#define __STRUCT__ struct
+#define interface __STRUCT__
+#else
 #define interface struct
+#endif
 #endif
 
 #define F_DECLARE_INTERFACE(iface) \

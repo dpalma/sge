@@ -82,6 +82,8 @@ enum ePrimitiveType
    kPT_TriangleFan
 };
 
+typedef enum ePrimitiveType tPrimitiveType;
+
 interface IRenderer : IUnknown
 {
    virtual tResult BeginScene() = 0;

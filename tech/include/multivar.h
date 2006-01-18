@@ -30,7 +30,7 @@ class TECH_API cMultiVar
 {
 public:
    cMultiVar();
-   explicit cMultiVar(const cMultiVar & other);
+   cMultiVar(const cMultiVar & other);
    explicit cMultiVar(int i);
    explicit cMultiVar(float f);
    explicit cMultiVar(double d);
@@ -77,9 +77,9 @@ public:
 
    eMultiVarType GetType() const;
 
-private:
    void Clear();
 
+private:
    void * m_pTempBuffer; // for temp storage of native type
    mutable void * m_pConversionBuffer; // for temp storage of cross-type conversion
 
