@@ -51,10 +51,6 @@ linkLibs = Split("""
    allguids
    tech
    engine
-   user32
-   kernel32
-   gdi32
-   winmm
 """)
 
 env = env.Copy()

@@ -79,10 +79,6 @@ class SGEEnvironment(Environment):
    def SetShared(self):
       self.shared = 1
       if platform == 'win32':
-#         CCFLAGS.remove('/MDd')
-#         CCFLAGS.remove('/MD')
-#         CCFLAGS.remove('/MTd')
-#         CCFLAGS.remove('/MT')
          if self.IsDebug():
             self.Append(CCFLAGS=['/MDd'])
          else:
@@ -133,6 +129,8 @@ class SGEEnvironment(Environment):
       # add def file to sources
       if 'deffile' in kw:
          args[1].append(kw.pop('deffile'))
+      if str(Platform()) == 'win32':
+         self.Append(LIBS=['user32', 'kernel32', 'gdi32', 'winmm'])
       self.Append(CPPDEFINES=[args[0].upper() + '_EXPORTS'])
       self.SharedLibrary(*args, **kw)
 
@@ -144,6 +142,8 @@ class SGEEnvironment(Environment):
          
    def BuildExecutable(self, *args, **kw):
       self.__PreBuild(*args, **kw)
+      if str(Platform()) == 'win32':
+         self.Append(LIBS=['user32', 'kernel32', 'gdi32', 'winmm'])
       self.Program(*args, **kw)
       
    def AdjustLibDir(self, libDir):
@@ -153,16 +153,7 @@ class SGEEnvironment(Environment):
       return "#" + os.path.join(self.GetBuildDir(), target)
 
    def GetBuildDir(self):
-      if self.IsDebug() and self.IsShared():
-         return "Build.Debug"
-      elif not self.IsDebug() and self.IsShared():
-         return "Build.Release"
-      elif self.IsDebug() and not self.IsShared():
-         return "Build.StaticDebug"
-      elif not self.IsDebug() and not self.IsShared():
-         return "Build.StaticRelease"
-      else:
-         os.error("Invalid configuration")
+      return buildRootDir
 
 
 #############################################################################
@@ -194,6 +185,18 @@ if env.get('shared'):
    env.SetShared()
 else:   
    env.SetStatic()
+   
+if env.get('debug') and env.get('shared'):
+   mode = "Debug"
+elif not env.get('debug') and env.get('shared'):
+   mode = "Release"
+elif env.get('debug') and not env.get('shared'):
+   mode = "StaticDebug"
+elif not env.get('debug') and not env.get('shared'):
+   mode = "StaticRelease"
+   
+buildRootDir = 'build' + os.sep + str(Platform()) + os.sep + mode
+Export('buildRootDir')
 
 ########################################
 
@@ -224,23 +227,18 @@ sconscripts = CollectTargets()
 
 for script in sconscripts:
 
-   # Backslashes must be escaped twice, once for re and once for Python itself
-   script = re.sub(re.escape(re.escape(os.getcwd())), '', re.escape(script))
-
-   # Get rid of leading backslash if present since script is a relative path now
-   # The os.path.normpath call converts double-backslashes back to single
-   script = re.sub(r'^[\\/]{1,2}', '', os.path.normpath(script))
+   # The target name is the name of the directory in which
+   # the SConscript file resides
+   temp = script.split(os.sep)
+   target = temp[-2]
    
-   dir, scriptOnly = os.path.split(script)
-   
-   target = GetTargetNameFromDir(dir)
-   targetDir = os.path.join(env.GetBuildDir(), target)
-   
-   scriptPath = os.path.join(targetDir, scriptOnly)
+   sourceDir = os.path.split(script)[0]
+   buildDir = os.path.join(env.GetBuildDir(), target)
+   buildScript = os.path.join(buildDir, temp[-1])
 
    if env.get('show_only'):
-      print 'Target: ' + target + ' (script is ' + scriptPath + ')'
+      print 'Target: ' + target + ' (script is ' + buildScript + ')'
    else:
-      BuildDir(targetDir, dir, duplicate=0)
-      SConscript(scriptPath, exports='env')
-      env.Alias(target, targetDir)
+      BuildDir(buildDir, sourceDir, duplicate=0)
+      SConscript(buildScript, exports='env')
+      env.Alias(target, buildDir)

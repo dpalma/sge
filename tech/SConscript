@@ -48,10 +48,6 @@ libPaths = Split("""
 
 linkLibs = Split("""
    allguids
-   user32
-   kernel32
-   gdi32
-   winmm
 """)
 
 env = env.Copy()
