@@ -256,7 +256,7 @@ private:
 // CLASS: cModel
 //
 
-#define kRT_Model "Model" // resource type
+#define kRT_Model _T("Model") // resource type
 
 class ENGINE_API cModel
 {

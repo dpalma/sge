@@ -36,6 +36,4 @@ env.UseGL()
 env.UseLua()
 env.UseTinyxml()
 env.UseZLib()
-if env.get('debug'):
-   env['PDB'] = 'game.pdb'
 env.BuildExecutable('game', sources, include_path=includePaths, lib_path=libPaths, libs=linkLibs)

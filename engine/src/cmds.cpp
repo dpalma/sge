@@ -262,7 +262,7 @@ int ListResources(int argc, const tScriptVar * argv,
          if (bDontLoad || (pResourceManager->Load(iter->c_str(), argv[0], NULL, &pTemp) == S_OK))
          {
             cStr key;
-            key.Format("%d", index + 1);
+            key.Format(_T("%d"), index + 1);
             pDict->Set(key.c_str(), iter->c_str());
          }
       }

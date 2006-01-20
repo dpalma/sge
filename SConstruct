@@ -48,7 +48,7 @@ class SGEEnvironment(Environment):
       elif platform == 'cygwin':
          self.Append(CPPPATH = ['/usr/include', '/usr/X11R6/include'])
          self.Append(LIBPATH = ['/usr/lib', '/usr/X11R6/lib'])
-         self.Append(LIBS    = ['GL', 'GLU', 'Xi', 'Xmu', 'Xext', 'X11', 'm'])
+         self.Append(LIBS    = ['GL', 'GLU', 'Xext', 'Xt', 'SM', 'ICE', 'X11', 'm'])
       self.Append(LIBS = ['glew'])
       self.Append(LIBPATH = [MakeLibPath('glew')])
       self.Append(CPPDEFINES = ['GLEW_STATIC'])
@@ -158,6 +158,8 @@ class SGEEnvironment(Environment):
       self.__PreBuild(*args, **kw)
       if str(Platform()) == 'win32':
          self.Append(LIBS=['user32', 'kernel32', 'gdi32', 'winmm'])
+         if self.get('debug'):
+            self['PDB'] = args[0] + '.pdb'
       self.Program(*args, **kw)
 
 
@@ -192,6 +194,8 @@ elif not env.get('debug') and not env.get('shared'):
    
 buildRootDir = 'build' + os.sep + str(Platform()) + os.sep + mode
 Export('buildRootDir')
+if not os.path.isdir(buildRootDir):
+   os.makedirs(buildRootDir)
 
 def MakeLibPath(path):
    return '#' + os.path.join(buildRootDir, path.lstrip('#'))
