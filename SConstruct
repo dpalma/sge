@@ -12,8 +12,8 @@ platform = str(Platform())
 if not platform in ['win32', 'cygwin']:
    print 'Unsupported platform', platform
    Exit(1)
-
-
+   
+   
 #############################################################################
 #
 # CLASS: SGEEnvironment
@@ -25,44 +25,54 @@ class SGEEnvironment(Environment):
       Environment.__init__(self,**kw)
       self.debug = 1
       self.shared = 0
+      self.m_buildRoot = os.getcwd()
+      self.m_libs = []
+      self.m_libPaths = []
+      self.m_incPaths = []
+      self.m_defines = []
 
    def UseTinyxml(self):
-      self.Append(CPPDEFINES = ['TIXML_USE_STL'])
-      self.Append(CPPPATH    = ['#3rdparty/tinyxml'])
-      self.Append(LIBPATH    = [self.AdjustLibDir('#3rdparty/tinyxml')])
-      self.Append(LIBS       = ['tinyxml'])
+      self.m_libs += ['tinyxml']
+      self.m_libPaths += [MakeLibPath('tinyxml')]
+      self.m_defines += ['TIXML_USE_STL']
+      self.m_incPaths += ['#3rdparty/tinyxml']
+      
+   def UseCg(self):
+      self.m_libs += ['Cg', 'CgGL']
+      self.m_libPaths += ['#3rdparty/Cg/lib']
+      self.m_incPaths += ['#3rdparty/Cg/include']
       
    def UseGL(self):
-      self.Append(CPPDEFINES = ['GLEW_STATIC'])
-      self.Append(CPPPATH    = ['#3rdparty/glew/include'])
-      self.Append(LIBPATH    = [self.AdjustLibDir('#3rdparty/glew')])
-      self.Append(LIBS       = ['glew'])
       if platform == 'win32':
-         self.Append(CPPPATH = ['#3rdparty/Cg/include'])
-         self.Append(LIBPATH = ['#3rdparty/Cg/lib'])
-         self.Append(LIBS    = ['opengl32.lib', 'glu32.lib', 'Cg.lib', 'CgGL.lib'])
+         self.Append(LIBS    = ['opengl32', 'glu32'])
       elif platform == 'cygwin':
          self.Append(CPPPATH = ['/usr/include', '/usr/X11R6/include'])
          self.Append(LIBPATH = ['/usr/lib', '/usr/X11R6/lib'])
-         self.Append(LIBS    = ['GL', 'GLU', 'X11'])
+         self.Append(LIBS    = ['GL', 'GLU', 'Xi', 'Xmu', 'Xext', 'X11', 'm'])
+      self.Append(LIBS = ['glew'])
+      self.Append(LIBPATH = [MakeLibPath('glew')])
+      self.Append(CPPDEFINES = ['GLEW_STATIC'])
+      self.Append(CPPPATH = ['#3rdparty/glew/include'])
          
    def UseZLib(self):
-      self.Append(CPPPATH    = ['#3rdparty/zlib', '#3rdparty/zlib/contrib/minizip'])
-      self.Append(LIBPATH    = [self.AdjustLibDir('#3rdparty/zlib')])
-      self.Append(LIBS       = ['zlibwapi'])
+      self.m_libs += ['zlibwapi']
+      self.m_libPaths += [MakeLibPath('zlib')]
+      self.m_incPaths += ['#3rdparty/zlib', '#3rdparty/zlib/contrib/minizip']
       
    def UseLua(self):
-      self.Append(CPPPATH    = ['#3rdparty/lua/include'])
-      self.Append(LIBPATH    = [self.AdjustLibDir('#3rdparty/lua')])
-      self.Append(LIBS       = ['lua'])
+      self.m_libs += ['lua']
+      self.m_libPaths += [MakeLibPath('lua')]
+      self.m_incPaths += ['#3rdparty/lua/include']
       
    def SetCommon(self):
       if platform == 'win32':
-         self.Append(CCFLAGS=['/EHsc']);
+         self.Append(CCFLAGS=['/EHsc'])
          # HACK: turn off deprecation warnings and for-scope standards compliance for VC2005
          if self.get('MSVS_VERSION') == '8.0':
             self.Append(CXXFLAGS=['/Zc:forScope-'])
             self.Append(CPPDEFINES=['_CRT_SECURE_NO_DEPRECATE'])
+      elif platform == 'cygwin':
+         self.Append(CCFLAGS=['-mwindows'])
             
    def IsShared(self):
       return self.shared
@@ -111,11 +121,15 @@ class SGEEnvironment(Environment):
       if 'include_path' in kw:
          self.Append(CPPPATH=kw.pop('include_path'))
       if 'lib_path' in kw:
-         libPaths = map(lambda x: self.AdjustLibDir(x), kw.pop('lib_path'))
+         libPaths = map(MakeLibPath, kw.pop('lib_path'))
          self.Append(LIBPATH=libPaths)
       if 'libs' in kw:
          self.Append(LIBS=kw.pop('libs'))
-         
+      self.Append(LIBS = self.m_libs)
+      self.Append(LIBPATH = self.m_libPaths)
+      self.Append(CPPPATH = self.m_incPaths)
+      self.Append(CPPDEFINES = self.m_defines)
+
    def BuildStaticLibrary(self, *args, **kw):
       if 'lib_path' in kw:
          kw.pop('lib_path')
@@ -145,37 +159,18 @@ class SGEEnvironment(Environment):
       if str(Platform()) == 'win32':
          self.Append(LIBS=['user32', 'kernel32', 'gdi32', 'winmm'])
       self.Program(*args, **kw)
-      
-   def AdjustLibDir(self, libDir):
-      if libDir[0] == '#':
-         libDir = libDir.lstrip("#")
-      target = GetTargetNameFromDir(libDir)
-      return "#" + os.path.join(self.GetBuildDir(), target)
-
-   def GetBuildDir(self):
-      return buildRootDir
 
 
 #############################################################################
 
 opts = Options(None, ARGUMENTS)
 opts.AddOptions(
-   BoolOption('show_only', 'Show targets without actually building', 0),
    BoolOption('debug', 'Build with debugging enabled', 0),
    BoolOption('unicode', 'Build with _UNICODE defined', 0),
    BoolOption('shared', 'Build shared libraries', 0))
 
 env = SGEEnvironment(ENV = os.environ, options = opts)
 
-Help("Usage: scons [debug] [unicode]" + opts.GenerateHelpText(env))
-
-########################################
-
-if env.get('unicode'):
-   env.Append(CPPDEFINES=['_UNICODE', 'UNICODE'])
-else:
-   env.Append(CPPDEFINES=['_MBCS'])
-   
 if env.get('debug'):
    env.SetDebug()
 else:
@@ -198,7 +193,25 @@ elif not env.get('debug') and not env.get('shared'):
 buildRootDir = 'build' + os.sep + str(Platform()) + os.sep + mode
 Export('buildRootDir')
 
+def MakeLibPath(path):
+   return '#' + os.path.join(buildRootDir, path.lstrip('#'))
+
+conf = Configure(env)
+#conf.CheckLib('opengl32', 'glBegin')
+#conf.CheckLib('GL', 'glBegin')
+#conf.CheckLib('GLU', 'gluLookAt')
+env = conf.Finish()
+
+Help("Usage: scons [debug] [unicode]" + opts.GenerateHelpText(env))
+
+if env.get('unicode'):
+   env.Append(CPPDEFINES=['_UNICODE', 'UNICODE'])
+else:
+   env.Append(CPPDEFINES=['_MBCS'])
+
 ########################################
+
+SConsignFile(os.path.join(buildRootDir, '.sconsign'))
 
 def CollectTargets():
    sconscripts = Walk(os.getcwd(), 1, 'SConscript', 0)
@@ -212,17 +225,6 @@ def CollectTargets():
 
 ########################################
 
-def GetTargetNameFromDir(dir):
-   dir, target = os.path.split(dir)
-   while target in ['src', 'include', 'bin']:
-      dir, target = os.path.split(dir)
-   # remove trailing backslash if present
-   while target.endswith('\\'):
-      target = target.split('\\', 1)[0]
-   return target
-
-########################################
-
 sconscripts = CollectTargets()
 
 for script in sconscripts:
@@ -233,12 +235,9 @@ for script in sconscripts:
    target = temp[-2]
    
    sourceDir = os.path.split(script)[0]
-   buildDir = os.path.join(env.GetBuildDir(), target)
+   buildDir = os.path.join(buildRootDir, target)
    buildScript = os.path.join(buildDir, temp[-1])
 
-   if env.get('show_only'):
-      print 'Target: ' + target + ' (script is ' + buildScript + ')'
-   else:
-      BuildDir(buildDir, sourceDir, duplicate=0)
-      SConscript(buildScript, exports='env')
-      env.Alias(target, buildDir)
+   BuildDir(buildDir, sourceDir, duplicate=0)
+   SConscript(buildScript, exports='env')
+   env.Alias(target, buildDir)

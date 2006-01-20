@@ -5,15 +5,13 @@
 
 #include "guifontx11.h"
 
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-
-#include "color.h"
 #include "comtools.h"
 #include "techmath.h"
 
 #include <GL/glew.h>
 #include <GL/glxew.h>
+
+#include <X11/Xutil.h>
 
 #include <cstring>
 
@@ -31,43 +29,14 @@ int g_defaultPointSize = 10;
 // CLASS: cGLXRasterFont
 //
 
-class cGLXRasterFont : public cComObject<IMPLEMENTS(IGUIFont)>
-{
-public:
-   cGLXRasterFont();
-   virtual ~cGLXRasterFont();
-
-   virtual void OnFinalRelease();
-
-   virtual tResult RenderText(const char * pszText, int textLength, tRect * pRect, uint flags, const cColor & color) const;
-   virtual tResult RenderText(const wchar_t * pszText, int textLength, tRect * pRect, uint flags, const cColor & color) const;
-
-   bool Create(const cGUIFontDesc & fontDesc);
-
-private:
-   cGLXRasterFont(const cGLXRasterFont &);
-   const cGLXRasterFont & operator=(const cGLXRasterFont &);
-
-   float GetHeight() const { return m_height; }
-
-   XFontStruct * m_pFontInfo;
-   Display * m_pDisplay;
-
-   int m_glyphStart;
-   int m_listCount;
-   int m_listBase;
-
-   float m_height;
-};
-
 ///////////////////////////////////////
 
 cGLXRasterFont::cGLXRasterFont()
- : m_pFontInfo(NULL),
-   m_pDisplay(NULL),
-   m_glyphStart(0),
-   m_listCount(0),
-   m_listBase(0)
+ : m_pFontInfo(NULL)
+ , m_pDisplay(NULL)
+ , m_glyphStart(0)
+ , m_listCount(0)
+ , m_listBase(0)
 {
 }
 
@@ -119,7 +88,7 @@ tResult cGLXRasterFont::RenderText(const char * pszText, int textLength,
       //*pHeight = ascent + descent;
 
       pRect->right = pRect->left + XTextWidth(m_pFontInfo, pszText, textLength);
-      pRect->bottom = pRect->top + static_cast<float>(GetHeight());
+      pRect->bottom = Round(pRect->top + GetHeight());
    }
    else
    {

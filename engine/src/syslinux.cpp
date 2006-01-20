@@ -22,6 +22,18 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+tResult SoundManagerCreate()
+{
+   return E_NOTIMPL;
+}
+
+tResult SoundResourceRegister()
+{
+   return E_NOTIMPL;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 LOG_DEFINE_CHANNEL(XEvents);
 
 bool              g_bExiting = false;
@@ -76,8 +88,14 @@ static int SysHandleXError(Display * display, XErrorEvent * event)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height)
+HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI api /*=kOpenGL*/)
 {
+   if (api != kOpenGL)
+   {
+      WarnMsg("OpenGL is the only 3D API supported for Linux\n");
+      return NULL;
+   }
+
    if (g_window == 0)
    {
       if (g_display == NULL)
@@ -168,6 +186,13 @@ HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height)
 void SysSwapBuffers()
 {
    glXSwapBuffers(g_display, g_window);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void SysReportFrameStats(tChar * psz, ulong max)
+{
+   // TODO
 }
 
 ///////////////////////////////////////////////////////////////////////////////
