@@ -197,7 +197,7 @@ cGUIContext::~cGUIContext()
 tResult cGUIContext::Init()
 {
    UseGlobal(Input);
-   pInput->SetGUIInputListener(&m_inputListener);
+   pInput->AddInputListener(&m_inputListener, kILP_GUI);
 
    GUILayoutRegisterBuiltInTypes();
 
@@ -213,7 +213,7 @@ tResult cGUIContext::Init()
 tResult cGUIContext::Term()
 {
    UseGlobal(Input);
-   pInput->SetGUIInputListener(NULL);
+   pInput->RemoveInputListener(&m_inputListener);
 
    ClearTempElements();
 

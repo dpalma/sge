@@ -6,7 +6,6 @@
 
 #include "enginedll.h"
 #include "comtools.h"
-#include "connpt.h"
 #include "vec2.h"
 
 #ifdef _MSC_VER
@@ -24,13 +23,25 @@ F_DECLARE_INTERFACE(IInputListener);
 // INTERFACE: IInput
 //
 
+////////////////////////////////////////
+
+enum eInputListenerPriority
+{
+   kILP_Default = 1,
+   kILP_GUI = 10, // GUI elements get first crack at messages because they overlay the game
+};
+
+////////////////////////////////////////
+
 interface IInput : IUnknown
 {
-   DECLARE_CONNECTION_POINT(IInputListener);
+   virtual tResult AddInputListener(IInputListener * pListener, int priority) = 0;
+   virtual tResult RemoveInputListener(IInputListener * pListener) = 0;
 
-   /// @remarks The GUI input listener gets first crack at input messages
-   /// because the in-game user interface overlays the game
-   virtual void SetGUIInputListener(IInputListener * pListener) = 0;
+   inline tResult AddInputListener(IInputListener * pListener)
+   {
+      return AddInputListener(pListener, kILP_Default);
+   }
 
    virtual bool KeyIsDown(long key) = 0;
 
@@ -41,7 +52,10 @@ interface IInput : IUnknown
    virtual void ReportMouseEvent(int x, int y, uint mouseState, double time) = 0;
 };
 
-ENGINE_API void InputCreate();
+////////////////////////////////////////
+
+ENGINE_API tResult InputCreate();
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //

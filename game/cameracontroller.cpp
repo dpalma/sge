@@ -56,7 +56,7 @@ void cGameCameraController::Connect()
    UseGlobal(Sim);
    pSim->Connect(this);
    UseGlobal(Input);
-   pInput->Connect(this);
+   pInput->AddInputListener(this);
 }
 
 ///////////////////////////////////////
@@ -64,7 +64,7 @@ void cGameCameraController::Connect()
 void cGameCameraController::Disconnect()
 {
    UseGlobal(Input);
-   pInput->Disconnect(this);
+   pInput->RemoveInputListener(this);
    UseGlobal(Sim);
    pSim->Disconnect(this);
 }

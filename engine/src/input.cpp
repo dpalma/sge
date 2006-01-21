@@ -65,7 +65,6 @@ extern long Name2Key(const char * pszKeyName); // from cmds.cpp
 cInput::cInput()
  : m_oldMouseState(0)
 {
-   RegisterGlobalObject(IID_IInput, static_cast<IGlobalObject*>(this));
    memset(m_keyRepeats, 0, sizeof(m_keyRepeats));
    memset(m_keyDownBindings, 0, sizeof(m_keyDownBindings));
    memset(m_keyUpBindings, 0, sizeof(m_keyUpBindings));
@@ -110,10 +109,31 @@ tResult cInput::Term()
 
 ///////////////////////////////////////
 
-void cInput::SetGUIInputListener(IInputListener * pListener)
+tResult cInput::AddInputListener(IInputListener * pListener, int priority)
 {
-   SafeRelease(m_pGUIListener);
-   m_pGUIListener = CTAddRef(pListener);
+   return cConnectionPointEx<cInput, IInputListener>::AddSink(pListener, priority);
+}
+
+///////////////////////////////////////
+
+tResult cInput::RemoveInputListener(IInputListener * pListener)
+{
+   return cConnectionPointEx<cInput, IInputListener>::RemoveSink(pListener);
+}
+
+///////////////////////////////////////
+
+bool SortByPriority(const std::pair<IInputListener*, int> & p1,
+                    const std::pair<IInputListener*, int> & p2)
+{
+   // Put higher priority listeners toward the head of the list
+   // since iteration is done head to tail
+   return p1.second < p2.second;
+}
+
+void cInput::SortSinks(tSinksIterator first, tSinksIterator last)
+{
+   std::stable_sort(first, last, SortByPriority);
 }
 
 ///////////////////////////////////////
@@ -198,20 +218,11 @@ bool cInput::DispatchInputEvent(int x, int y, long key, bool down, double time)
    event.point = tVec2(static_cast<float>(x), static_cast<float>(y));
    event.time = time;
 
-   if (!!m_pGUIListener)
-   {
-      if (m_pGUIListener->OnInputEvent(&event))
-      {
-         return true;
-      }
-   }
-
-   // iterate in reverse order so the most recently added listener gets first crack
-   tSinksReverseIterator iter = RBeginSinks();
-   tSinksReverseIterator end = REndSinks();
+   tSinksIterator iter = BeginSinks();
+   tSinksIterator end = EndSinks();
    for (; iter != end; iter++)
    {
-      if ((*iter)->OnInputEvent(&event))
+      if (iter->first->OnInputEvent(&event))
       {
          return true; // do no further processing for this key event
       }
@@ -278,9 +289,14 @@ void cInput::ReportMouseEvent(int x, int y, uint mouseState, double time)
 
 ///////////////////////////////////////
 
-void InputCreate()
+tResult InputCreate()
 {
-   cAutoIPtr<IInput> p(new cInput);
+   cAutoIPtr<IInput> pInput(static_cast<IInput*>(new cInput));
+   if (!pInput)
+   {
+      return E_OUTOFMEMORY;
+   }
+   return RegisterGlobalObject(IID_IInput, pInput);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

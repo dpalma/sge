@@ -153,6 +153,101 @@ private:
 #define IMPLEMENTSCP(Interface, SinkInterface) \
    cConnectionPoint<Interface, SinkInterface>, &IID_##Interface
 
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// TEMPLATE: cConnectionPointEx
+//
+
+template <class T, class SINKINTRFC, typename SINKDATA = int, class CONTAINER = std::vector< std::pair<SINKINTRFC *, SINKDATA> > >
+class cConnectionPointEx
+{
+protected:
+   ~cConnectionPointEx()
+   {
+      typename CONTAINER::iterator iter;
+      for (iter = m_sinks.begin(); iter != m_sinks.end(); iter++)
+      {
+         iter->first->Release();
+      }
+      m_sinks.clear();
+   }
+
+   tResult AddSink(SINKINTRFC * pSink, SINKDATA sinkData)
+   {
+      if (pSink == NULL)
+      {
+         return E_POINTER;
+      }
+      if (HasSink(pSink) == S_OK)
+      {
+         return S_FALSE;
+      }
+      m_sinks.push_back(std::make_pair(CTAddRef(pSink), sinkData));
+      T * pT = static_cast<T*>(this);
+      pT->SortSinks(m_sinks.begin(), m_sinks.end());
+      return S_OK;
+   }
+
+   tResult RemoveSink(SINKINTRFC * pSink)
+   {
+      if (pSink == NULL)
+      {
+         return E_POINTER;
+      }
+      typename CONTAINER::iterator iter;
+      for (iter = m_sinks.begin(); iter != m_sinks.end(); iter++)
+      {
+         if (CTIsSameObject(pSink, iter->first))
+         {
+            iter->first->Release();
+            m_sinks.erase(iter);
+            return S_OK;
+         }
+      }
+      return S_FALSE;
+   }
+
+   tResult GetSinkData(SINKINTRFC * pSink, SINKDATA * pSinkData) const
+   {
+      if (pSink == NULL || pSinkData == NULL)
+      {
+         return E_POINTER;
+      }
+      typename CONTAINER::const_iterator iter;
+      for (iter = m_sinks.begin(); iter != m_sinks.end(); iter++)
+      {
+         if (CTIsSameObject(pSink, iter->first))
+         {
+            *pSinkData = iter->second;
+            return S_OK;
+         }
+      }
+      return S_FALSE;
+   }
+
+   tResult HasSink(SINKINTRFC * pSink)
+   {
+      SINKDATA sinkData;
+      return GetSinkData(pSink, &sinkData);
+   }
+
+   typedef CONTAINER tSinks;
+   typedef typename CONTAINER::iterator tSinksIterator;
+
+   inline tSinksIterator BeginSinks() { return m_sinks.begin(); }
+   inline tSinksIterator EndSinks() { return m_sinks.end(); }
+
+   void SortSinks(tSinksIterator first, tSinksIterator last)
+   {
+      // Do nothing by default
+   }
+
+private:
+   CONTAINER m_sinks;
+};
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #endif // !INCLUDED_CONNPTIMPL_H

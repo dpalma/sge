@@ -17,7 +17,8 @@
 // CLASS: cInput
 //
 
-class cInput : public cComObject2<IMPLEMENTSCP(IInput, IInputListener), IMPLEMENTS(IGlobalObject)>
+class cInput : public cComObject2<IMPLEMENTS(IInput), IMPLEMENTS(IGlobalObject)>
+             , public cConnectionPointEx<cInput, IInputListener>
 {
 public:
    cInput();
@@ -29,7 +30,10 @@ public:
    virtual tResult Init();
    virtual tResult Term();
 
-   virtual void SetGUIInputListener(IInputListener * pListener);
+   virtual tResult AddInputListener(IInputListener * pListener, int priority);
+   virtual tResult RemoveInputListener(IInputListener * pListener);
+
+   void SortSinks(tSinksIterator first, tSinksIterator last);
 
    virtual bool KeyIsDown(long key);
 
@@ -51,8 +55,6 @@ private:
    char * m_keyUpBindings[kMaxKeys];
 
    uint m_oldMouseState;
-
-   cAutoIPtr<IInputListener> m_pGUIListener;
 };
 
 ///////////////////////////////////////
