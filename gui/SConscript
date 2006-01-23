@@ -12,6 +12,7 @@ sources = Split("""
    src/guielementenum.cpp
    src/guielementtools.cpp
    src/guievent.cpp
+   src/guieventsounds.cpp
    src/guifontfactory.cpp
    src/guifactory.cpp
    src/guilabel.cpp

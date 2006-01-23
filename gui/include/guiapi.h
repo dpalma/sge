@@ -27,6 +27,7 @@ F_DECLARE_INTERFACE(IGUIFontFactory);
 F_DECLARE_INTERFACE(IGUIElementRenderer);
 F_DECLARE_INTERFACE(IGUIElementEnum);
 F_DECLARE_INTERFACE(IGUIEvent);
+F_DECLARE_INTERFACE(IGUIEventSounds);
 F_DECLARE_INTERFACE(IGUIContainerElement);
 F_DECLARE_INTERFACE(IGUILayoutManager);
 F_DECLARE_INTERFACE(IGUIGridLayout);
@@ -393,6 +394,24 @@ GUI_API tResult GUIEventCreate(tGUIEventCode eventCode,
                                IGUIElement * pSource, 
                                bool bCancellable, 
                                IGUIEvent * * ppEvent);
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IGUIEventSounds
+//
+
+interface IGUIEventSounds : IUnknown
+{
+   virtual tResult SetEventSound(tGUIEventCode eventCode, const tChar * pszSound) = 0;
+   virtual tResult GetEventSound(tGUIEventCode eventCode, cStr * pSound) const = 0;
+   virtual tResult ClearEventSound(tGUIEventCode eventCode) = 0;
+   virtual void ClearAll() = 0;
+};
+
+///////////////////////////////////////
+
+GUI_API tResult GUIEventSoundsCreate(const tChar * pszScriptName = NULL);
 
 
 ///////////////////////////////////////////////////////////////////////////////

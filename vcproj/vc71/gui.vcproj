@@ -355,6 +355,9 @@
 					RelativePath="..\..\gui\src\guievent.cpp">
 				</File>
 				<File
+					RelativePath="..\..\gui\src\guieventsounds.cpp">
+				</File>
+				<File
 					RelativePath="..\..\gui\src\guifactory.cpp">
 				</File>
 				<File
@@ -519,6 +522,9 @@
 				</File>
 				<File
 					RelativePath="..\..\gui\src\guieventroutertem.h">
+				</File>
+				<File
+					RelativePath="..\..\gui\src\guieventsounds.h">
 				</File>
 				<File
 					RelativePath="..\..\gui\src\guifactory.h">

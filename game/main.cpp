@@ -274,6 +274,7 @@ static void RegisterGlobalObjects()
    GUIContextCreate();
    GUIFactoriesCreate();
    GUIFontFactoryCreate();
+   GUIEventSoundsCreate();
    EntityManagerCreate();
    ThreadCallerCreate();
    SaveLoadManagerCreate();
@@ -405,15 +406,6 @@ static bool MainInit(int argc, tChar * argv[])
       ErrorMsg("Failed to get a default font interface pointer for showing frame stats\n");
       return false;
    }
-
-   cAutoIPtr<IGUIEventListener> pGUISoundPlayer(static_cast<IGUIEventListener*>(new cGUISoundPlayer));
-   if (!pGUISoundPlayer)
-   {
-      ErrorMsg("Unable to create GUI sound player\n");
-      return false;
-   }
-
-   pGUIContext->AddEventListener(pGUISoundPlayer);
 
    SysAppActivate(true);
 

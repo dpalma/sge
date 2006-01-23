@@ -51,6 +51,7 @@ end;
 
 -- Called automatically at start-up by the game engine
 function GameInit()
+   GUIEventSounds:SetEventSound("click", "click.wav");
    GUIContext:PushPage("start.xml");
 end;
 
