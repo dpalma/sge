@@ -5,8 +5,6 @@
 
 #include "sys.h"
 
-#include "inputapi.h"
-
 #include "globalobj.h"
 #include "keys.h"
 #include "matrix4.h"
@@ -15,10 +13,29 @@
 #include <locale>
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
-#include <GL/gl.h>
-#include <GL/glx.h>
+#include <GL/glew.h>
+#include <GL/glxew.h>
 
 #include "dbgalloc.h" // must be last header
+
+///////////////////////////////////////////////////////////////////////////////
+
+LOG_DEFINE_CHANNEL(XEvents);
+
+bool              g_bExiting = false;
+
+Display *         g_display = NULL;
+Window            g_window = 0;
+GLXContext        g_context = NULL;
+XErrorHandler     g_nextErrorHandler = NULL;
+
+tSysKeyEventFn       g_pfnKeyCallback = NULL;
+tSysMouseEventFn     g_pfnMouseCallback = NULL;
+tSysFrameFn          g_pfnFrameCallback = NULL;
+tSysResizeFn         g_pfnResizeCallback = NULL;
+
+uint_ptr             g_keyCallbackUserData = 0;
+uint_ptr             g_mouseCallbackUserData = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -34,20 +51,42 @@ tResult SoundResourceRegister()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-LOG_DEFINE_CHANNEL(XEvents);
-
-bool              g_bExiting = false;
-
-Display *         g_display = NULL;
-Window            g_window = 0;
-GLXContext        g_context = NULL;
-XErrorHandler     g_nextErrorHandler = NULL;
-
-///////////////////////////////////////////////////////////////////////////////
-
 bool IsExiting()
 {
    return g_bExiting;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void SysSetKeyEventCallback(tSysKeyEventFn pfn, uint_ptr userData)
+{
+   g_pfnKeyCallback = pfn;
+   g_keyCallbackUserData = userData;
+}
+
+void SysSetMouseEventCallback(tSysMouseEventFn pfn, uint_ptr userData)
+{
+   g_pfnMouseCallback = pfn;
+   g_mouseCallbackUserData = userData;
+}
+
+tSysFrameFn SysSetFrameCallback(tSysFrameFn pfn)
+{
+   tSysFrameFn pfnFormer = g_pfnFrameCallback;
+   g_pfnFrameCallback = pfn;
+   return pfnFormer;
+}
+
+tSysFrameFn SysGetFrameCallback()
+{
+   return g_pfnFrameCallback;
+}
+
+tSysResizeFn SysSetResizeCallback(tSysResizeFn pfn)
+{
+   tSysResizeFn pfnFormer = g_pfnResizeCallback;
+   g_pfnResizeCallback = pfn;
+   return pfnFormer;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -327,10 +366,8 @@ static bool SysMapXKeysym(KeySym keysym, long * pKeyCode)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int SysEventLoop(bool (* pfnFrameHandler)(), void (* pfnResizeHack)(int, int))
+int SysEventLoop(tSysFrameFn pfnFrameHandler)
 {
-   Assert(pfnFrameHandler != NULL);
-
    if (!g_display || !g_window)
    {
       // Window should have been created during MainInit().
@@ -338,8 +375,6 @@ int SysEventLoop(bool (* pfnFrameHandler)(), void (* pfnResizeHack)(int, int))
    }
 
    int result = EXIT_FAILURE;
-
-   UseGlobal(Input);
 
    while (!g_bExiting)
    {
@@ -364,9 +399,9 @@ int SysEventLoop(bool (* pfnFrameHandler)(), void (* pfnResizeHack)(int, int))
             case ConfigureNotify:
             {
                DebugMsg1("Window configured at %.3f\n", eventTime);
-               if (pfnResizeHack != NULL)
+               if (g_pfnResizeCallback != NULL)
                {
-                  (*pfnResizeHack)(event.xconfigure.width, event.xconfigure.height);
+                  (*g_pfnResizeCallback)(event.xconfigure.width, event.xconfigure.height, eventTime);
                }
                break;
             }
@@ -378,7 +413,10 @@ int SysEventLoop(bool (* pfnFrameHandler)(), void (* pfnResizeHack)(int, int))
                long keycode;
                if (SysMapXKeysym(keysym, &keycode))
                {
-                  pInput->ReportKeyEvent(keycode, event.type == KeyPress, eventTime);
+                  if (g_pfnKeyCallback != NULL)
+                  {
+                     (*g_pfnKeyCallback)(keycode, event.type == KeyPress, eventTime, g_keyCallbackUserData);
+                  }
                }
                break;
             }
@@ -388,14 +426,20 @@ int SysEventLoop(bool (* pfnFrameHandler)(), void (* pfnResizeHack)(int, int))
             {
                if (event.xbutton.button == 4)
                {
-                  pInput->ReportKeyEvent(kMouseWheelUp, true, eventTime);
-                  pInput->ReportKeyEvent(kMouseWheelUp, false, eventTime);
+                  if (g_pfnKeyCallback != NULL)
+                  {
+                     (*g_pfnKeyCallback)(kMouseWheelUp, true, eventTime, g_keyCallbackUserData);
+                     (*g_pfnKeyCallback)(kMouseWheelUp, false, eventTime, g_keyCallbackUserData);
+                  }
                   break;
                }
                else if (event.xbutton.button == 5)
                {
-                  pInput->ReportKeyEvent(kMouseWheelDown, true, eventTime);
-                  pInput->ReportKeyEvent(kMouseWheelDown, false, eventTime);
+                  if (g_pfnKeyCallback != NULL)
+                  {
+                     (*g_pfnKeyCallback)(kMouseWheelDown, true, eventTime, g_keyCallbackUserData);
+                     (*g_pfnKeyCallback)(kMouseWheelDown, false, eventTime, g_keyCallbackUserData);
+                  }
                   break;
                }
                // fall through
@@ -410,17 +454,29 @@ int SysEventLoop(bool (* pfnFrameHandler)(), void (* pfnResizeHack)(int, int))
                   mouseState |= kRMouseDown;
                if (state & Button2Mask)
                   mouseState |= kMMouseDown;
-               pInput->ReportMouseEvent(event.xmotion.x, event.xmotion.y, mouseState, eventTime);
+               if (g_pfnMouseCallback != NULL)
+               {
+                  (*g_pfnMouseCallback)(event.xmotion.x, event.xmotion.y, mouseState, eventTime, g_mouseCallbackUserData);
+               }
                break;
             }
          }
       }
       else
       {
-         if (!(*pfnFrameHandler)())
+         if (pfnFrameHandler != NULL)
          {
-            result = EXIT_SUCCESS;
-            goto LExit;
+            if ((*pfnFrameHandler)() != S_OK)
+            {
+               goto LExit;
+            }
+         }
+         else if (g_pfnFrameCallback != NULL)
+         {
+            if ((*g_pfnFrameCallback)() != S_OK)
+            {
+               goto LExit;
+            }
          }
       }
    }

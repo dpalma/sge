@@ -40,10 +40,13 @@ public:
    virtual void KeyBind(long key, const char * pszDownCmd, const char * pszUpCmd);
    virtual void KeyUnbind(long key);
 
-   virtual void ReportKeyEvent(long key, bool down, double time);
-   virtual void ReportMouseEvent(int x, int y, uint mouseState, double time);
-
 private:
+   void ReportKeyEvent(long key, bool down, double time);
+   void ReportMouseEvent(int x, int y, uint mouseState, double time);
+
+   static void OnSysKeyEvent(long key, bool down, double time, uint_ptr userData);
+   static void OnSysMouseEvent(int x, int y, uint mouseState, double time, uint_ptr userData);
+
    bool DispatchInputEvent(int x, int y, long key, bool down, double time);
 
    const char * KeyGetDownBinding(long key) const;

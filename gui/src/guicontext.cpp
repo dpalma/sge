@@ -52,14 +52,16 @@ inline bool IsNumber(const tScriptVar & scriptVar)
 ///////////////////////////////////////////////////////////////////////////////
 
 static bool g_bExitModalLoop = false;
+tSysFrameFn g_pfnOuterFrameHandler = NULL;
 
-static bool GUIModalLoopFrameHandler()
+static tResult GUIModalLoopFrameHandler()
 {
    if (g_bExitModalLoop)
    {
-      return false;
+      g_pfnOuterFrameHandler = NULL;
+      return S_FALSE;
    }
-   return true;
+   return (g_pfnOuterFrameHandler != NULL) ? (*g_pfnOuterFrameHandler)() : S_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -444,10 +446,11 @@ tResult cGUIContext::ShowModalDialog(const tChar * pszDialog)
       AddEventListener(&listener);
 
       g_bExitModalLoop = false;
+      g_pfnOuterFrameHandler = SysGetFrameCallback();
 
       // This function won't return until the modal loop is ended by
       // some user action (Enter, Esc, OK button click, etc.)
-      SysEventLoop(GUIModalLoopFrameHandler, NULL);
+      SysEventLoop(GUIModalLoopFrameHandler);
 
       RemoveEventListener(&listener);
 

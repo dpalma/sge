@@ -178,7 +178,7 @@ tResult cGUIEventSounds::Invoke(const char * pszMethodName,
       return E_POINTER;
    }
 
-   if (_stricmp(pszMethodName, "SetEventSound") == 0)
+   if (_tcsicmp(pszMethodName, "SetEventSound") == 0)
    {
       if (argc != 2 || !argv[0].IsString() || !argv[1].IsString())
       {
@@ -188,7 +188,7 @@ tResult cGUIEventSounds::Invoke(const char * pszMethodName,
       tGUIEventCode code = kGUIEventNone;
       for (int i = 0; i < _countof(g_guiEventNames); i++)
       {
-         if (_stricmp(g_guiEventNames[i].pszName, argv[0].ToString()) == 0)
+         if (_tcsicmp(g_guiEventNames[i].pszName, argv[0].ToString()) == 0)
          {
             code = g_guiEventNames[i].code;
             break;

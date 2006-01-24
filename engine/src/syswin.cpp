@@ -5,8 +5,6 @@
 
 #include "sys.h"
 
-#include "inputapi.h"
-
 #include "keys.h"
 #include "globalobj.h"
 #include "techtime.h"
@@ -43,6 +41,47 @@ HMODULE                       g_hD3D9 = NULL;
 cAutoIPtr<IDirect3D9>         g_pDirect3D9;
 cAutoIPtr<IDirect3DDevice9>   g_pDirect3DDevice9;
 #endif
+
+tSysKeyEventFn       g_pfnKeyCallback = NULL;
+tSysMouseEventFn     g_pfnMouseCallback = NULL;
+tSysFrameFn          g_pfnFrameCallback = NULL;
+tSysResizeFn         g_pfnResizeCallback = NULL;
+
+uint_ptr             g_keyCallbackUserData = 0;
+uint_ptr             g_mouseCallbackUserData = 0;
+
+///////////////////////////////////////////////////////////////////////////////
+
+void SysSetKeyEventCallback(tSysKeyEventFn pfn, uint_ptr userData)
+{
+   g_pfnKeyCallback = pfn;
+   g_keyCallbackUserData = userData;
+}
+
+void SysSetMouseEventCallback(tSysMouseEventFn pfn, uint_ptr userData)
+{
+   g_pfnMouseCallback = pfn;
+   g_mouseCallbackUserData = userData;
+}
+
+tSysFrameFn SysSetFrameCallback(tSysFrameFn pfn)
+{
+   tSysFrameFn pfnFormer = g_pfnFrameCallback;
+   g_pfnFrameCallback = pfn;
+   return pfnFormer;
+}
+
+tSysFrameFn SysGetFrameCallback()
+{
+   return g_pfnFrameCallback;
+}
+
+tSysResizeFn SysSetResizeCallback(tSysResizeFn pfn)
+{
+   tSysResizeFn pfnFormer = g_pfnResizeCallback;
+   g_pfnResizeCallback = pfn;
+   return pfnFormer;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -303,14 +342,25 @@ LRESULT CALLBACK SysWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
          break;
       }
 
+      case WM_SIZE:
+      {
+         if (g_pfnResizeCallback != NULL)
+         {
+            (*g_pfnResizeCallback)(LOWORD(lParam), HIWORD(lParam), msgTime);
+         }
+         break;
+      }
+
       case WM_SYSKEYDOWN:
       case WM_KEYDOWN:
       {
          long mapped = MapKey(lParam);
          if (mapped != 0)
          {
-            UseGlobal(Input);
-            pInput->ReportKeyEvent(mapped, true, msgTime);
+            if (g_pfnKeyCallback != NULL)
+            {
+               (*g_pfnKeyCallback)(mapped, true, msgTime, g_keyCallbackUserData);
+            }
          }
          break;
       }
@@ -321,8 +371,10 @@ LRESULT CALLBACK SysWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
          long mapped = MapKey(lParam);
          if (mapped == 0)
          {
-            UseGlobal(Input);
-            pInput->ReportKeyEvent(static_cast<long>(wParam), true, msgTime);
+            if (g_pfnKeyCallback != NULL)
+            {
+               (*g_pfnKeyCallback)(static_cast<long>(wParam), true, msgTime, g_keyCallbackUserData);
+            }
          }
          break;
       }
@@ -335,8 +387,10 @@ LRESULT CALLBACK SysWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
          {
             mapped = wParam;
          }
-         UseGlobal(Input);
-         pInput->ReportKeyEvent(mapped, false, msgTime);
+         if (g_pfnKeyCallback != NULL)
+         {
+            (*g_pfnKeyCallback)(mapped, false, msgTime, g_keyCallbackUserData);
+         }
          break;
       }
 
@@ -344,9 +398,11 @@ LRESULT CALLBACK SysWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
       {
          short zDelta = (short)HIWORD(wParam);
          long key = (zDelta < 0) ? kMouseWheelDown : kMouseWheelUp;
-         UseGlobal(Input);
-         pInput->ReportKeyEvent(key, true, msgTime);
-         pInput->ReportKeyEvent(key, false, msgTime);
+         if (g_pfnKeyCallback != NULL)
+         {
+            (*g_pfnKeyCallback)(key, true, msgTime, g_keyCallbackUserData);
+            (*g_pfnKeyCallback)(key, false, msgTime, g_keyCallbackUserData);
+         }
          break;
       }
 
@@ -365,10 +421,12 @@ LRESULT CALLBACK SysWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
             mouseState |= kRMouseDown;
          if (wParam & MK_MBUTTON)
             mouseState |= kMMouseDown;
-         UseGlobal(Input);
-         pInput->ReportMouseEvent(static_cast<int>(LOWORD(lParam)),
+         if (g_pfnMouseCallback != NULL)
+         {
+            (*g_pfnMouseCallback)(static_cast<int>(LOWORD(lParam)),
                                   static_cast<int>(HIWORD(lParam)),
-                                  mouseState, msgTime);
+                                  mouseState, msgTime, g_mouseCallbackUserData);
+         }
          break;
       }
    }
@@ -774,29 +832,17 @@ void SysReportFrameStats(tChar * psz, ulong max)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// Allow two nested event loops: the main loop, and an additional one to show
-// a modal dialog box.
-static const int kMaxEventLoops = 2;
-typedef bool (* tFrameHandlerFn)();
-tFrameHandlerFn g_frameHandlerStack[kMaxEventLoops];
-static int g_iCurrentFrameHandler = -1;
+// Calls to SysEventLoop may be nested to implement modal dialog loops
+// and such.  Quit messages must re-posted from nested calls for the app
+// to exit properly.
+static int g_eventLoopCalls = 0;
 
-int SysEventLoop(bool (* pfnFrameHandler)(), void (* pfnResizeHack)(int, int))
+int SysEventLoop(tSysFrameFn pfnFrameHandler)
 {
-   Assert(pfnFrameHandler != NULL);
-
-   if ((g_iCurrentFrameHandler + 1) < kMaxEventLoops)
-   {
-      g_frameHandlerStack[++g_iCurrentFrameHandler] = pfnFrameHandler;
-   }
-   else
-   {
-      ErrorMsg("Too many calls to SysEventLoop\n");
-      return -1;
-   }
-
    MSG msg;
    int result = -1;
+
+   g_eventLoopCalls++;
 
    for (;;)
    {
@@ -804,21 +850,13 @@ int SysEventLoop(bool (* pfnFrameHandler)(), void (* pfnResizeHack)(int, int))
       {
          if (msg.message == WM_QUIT)
          {
-            if (g_iCurrentFrameHandler > 0)
+            if (g_eventLoopCalls > 0)
             {
                // Re-post the WM_QUIT for the main message loop to get it
                PostQuitMessage(msg.wParam);
             }
             result = msg.wParam;
             goto LExit;
-         }
-
-         if (msg.message == WM_SIZE)
-         {
-            if (pfnResizeHack != NULL)
-            {
-               (*pfnResizeHack)(LOWORD(msg.lParam), HIWORD(msg.lParam));
-            }
          }
 
          TranslateMessage(&msg);
@@ -830,9 +868,17 @@ int SysEventLoop(bool (* pfnFrameHandler)(), void (* pfnResizeHack)(int, int))
 
          if (g_bAppActive)
          {
-            for (int i = g_iCurrentFrameHandler; i >= 0; --i)
+            if (pfnFrameHandler != NULL)
             {
-               if (!(*g_frameHandlerStack[i])())
+               if ((*pfnFrameHandler)() != S_OK)
+               {
+                  result = 0;
+                  goto LExit;
+               }
+            }
+            else if (g_pfnFrameCallback != NULL)
+            {
+               if ((*g_pfnFrameCallback)() != S_OK)
                {
                   result = 0;
                   goto LExit;
@@ -847,8 +893,7 @@ int SysEventLoop(bool (* pfnFrameHandler)(), void (* pfnResizeHack)(int, int))
    }
 
 LExit:
-   Assert(g_frameHandlerStack[g_iCurrentFrameHandler] == pfnFrameHandler);
-   g_frameHandlerStack[g_iCurrentFrameHandler--] = NULL;
+   g_eventLoopCalls--;
    return result;
 }
 

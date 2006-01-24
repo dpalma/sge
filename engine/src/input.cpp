@@ -6,6 +6,7 @@
 #include "input.h"
 #include "keys.h"
 #include "scriptapi.h"
+#include "sys.h"
 
 #include <cstring>
 #include <cstdlib>
@@ -89,6 +90,8 @@ tResult cInput::Init()
       Assert(_CrtIsValidHeapPointer(m_keyUpBindings[i]) || m_keyUpBindings[i] == NULL);
    }
 #endif
+   SysSetKeyEventCallback(OnSysKeyEvent, reinterpret_cast<uint_ptr>(this));
+   SysSetMouseEventCallback(OnSysMouseEvent, reinterpret_cast<uint_ptr>(this));
    return S_OK;
 }
 
@@ -96,6 +99,8 @@ tResult cInput::Init()
 
 tResult cInput::Term()
 {
+   SysSetKeyEventCallback(NULL, 0);
+   SysSetMouseEventCallback(NULL, 0);
    Assert(_countof(m_keyDownBindings) == _countof(m_keyUpBindings));
    for (int i = 0; i < _countof(m_keyDownBindings); i++)
    {
@@ -233,6 +238,22 @@ bool cInput::DispatchInputEvent(int x, int y, long key, bool down, double time)
 
 ///////////////////////////////////////
 
+void cInput::OnSysKeyEvent(long key, bool down, double time, uint_ptr userData)
+{
+   cInput * pThis = reinterpret_cast<cInput*>(userData);
+   pThis->ReportKeyEvent(key, down, time);
+}
+
+///////////////////////////////////////
+
+void cInput::OnSysMouseEvent(int x, int y, uint mouseState, double time, uint_ptr userData)
+{
+   cInput * pThis = reinterpret_cast<cInput*>(userData);
+   pThis->ReportMouseEvent(x, y, mouseState, time);
+}
+
+///////////////////////////////////////
+
 void cInput::ReportKeyEvent(long key, bool down, double time)
 {
    // TODO: Provide mouse position even for key events
@@ -270,19 +291,31 @@ void cInput::ReportMouseEvent(int x, int y, uint mouseState, double time)
    DispatchInputEvent(x, y, kMouseMove, false, time);
 
    if ((mouseState & kLMouseDown) && !(m_oldMouseState & kLMouseDown))
+   {
       DispatchInputEvent(x, y, kMouseLeft, true, time);
+   }
    else if (!(mouseState & kLMouseDown) && (m_oldMouseState & kLMouseDown))
+   {
       DispatchInputEvent(x, y, kMouseLeft, false, time);
+   }
 
    if ((mouseState & kRMouseDown) && !(m_oldMouseState & kRMouseDown))
+   {
       DispatchInputEvent(x, y, kMouseRight, true, time);
+   }
    else if (!(mouseState & kRMouseDown) && (m_oldMouseState & kRMouseDown))
+   {
       DispatchInputEvent(x, y, kMouseRight, false, time);
+   }
 
    if ((mouseState & kMMouseDown) && !(m_oldMouseState & kMMouseDown))
+   {
       DispatchInputEvent(x, y, kMouseMiddle, true, time);
+   }
    else if (!(mouseState & kMMouseDown) && (m_oldMouseState & kMMouseDown))
+   {
       DispatchInputEvent(x, y, kMouseMiddle, false, time);
+   }
 
    m_oldMouseState = mouseState;
 }

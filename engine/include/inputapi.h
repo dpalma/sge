@@ -47,9 +47,6 @@ interface IInput : IUnknown
 
    virtual void KeyBind(long key, const char * pszDownCmd, const char * pszUpCmd) = 0;
    virtual void KeyUnbind(long key) = 0;
-
-   virtual void ReportKeyEvent(long key, bool down, double time) = 0;
-   virtual void ReportMouseEvent(int x, int y, uint mouseState, double time) = 0;
 };
 
 ////////////////////////////////////////
