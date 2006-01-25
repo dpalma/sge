@@ -482,6 +482,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\engine\src\entity.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\engine\src\entitymanager.cpp"
 					>
 				</File>
@@ -639,6 +643,10 @@
 				</File>
 				<File
 					RelativePath="..\..\engine\src\engine.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\engine\src\entity.h"
 					>
 				</File>
 				<File
