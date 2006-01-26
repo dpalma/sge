@@ -677,6 +677,70 @@ tResult cSaveLoadManager::Load(IReader * pReader)
       return E_POINTER;
    }
 
+   // Read the entry table
+   std::vector<sFileEntry> entries;
+   if (LoadEntryTable(pReader, &entries) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   // Read the individual entries
+   std::vector<sFileEntry>::iterator iter = entries.begin();
+   for (; iter != entries.end(); iter++)
+   {
+      const sFileEntry & entry = *iter;
+
+      tParticipantMap::iterator f = m_participantMap.find(&entry.id);
+      if (f == m_participantMap.end())
+      {
+         WarnMsg("Unable to find reader for file entry\n");
+         continue;
+      }
+
+      cAutoIPtr<ISaveLoadParticipant> pSLP;
+      if (f->second->GetParticipant(entry.version, &pSLP) != S_OK)
+      {
+         ErrorMsg1("Unable to get reader for file entry version %d\n", entry.version);
+         return E_FAIL;
+      }
+
+      if (pReader->Seek(entry.offset, kSO_Set) != S_OK)
+      {
+         ErrorMsg("Unable to seek to file entry while reading\n");
+         return E_FAIL;
+      }
+
+      // S_OK: loading succeeded
+      // S_FALSE: loading refused--seek past this entry
+      // Otherwise, failure
+      tResult loadResult = pSLP->Load(pReader, entry.version);
+      if (FAILED(loadResult))
+      {
+         ErrorMsg("Failed to read a file entry\n");
+         return E_FAIL;
+      }
+      else if (loadResult == S_FALSE)
+      {
+         if (pReader->Seek(entry.length, kSO_Cur) != S_OK)
+         {
+            ErrorMsg("Unable to skip over a file entry refused by its registered loader\n");
+            return E_FAIL;
+         }
+      }
+   }
+
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cSaveLoadManager::LoadEntryTable(IReader * pReader, std::vector<sFileEntry> * pEntries)
+{
+   if (pReader == NULL || pEntries == NULL)
+   {
+      return E_POINTER;
+   }
+
    // Read the file header. The file header uses the same struct as for a table
    // entry, but the offset field is the position of the table and the length
    // field is the size of the table. That is, the # entries in the table is 
@@ -781,66 +845,26 @@ tResult cSaveLoadManager::Load(IReader * pReader)
       return E_FAIL;
    }
 
-   // Read the entry table itself
-   std::vector<sFileEntry> entries(tableLength / sizeof(sFileEntry));
+   // Seek to the entry table
    if (pReader->Seek(tableOffset, kSO_Set) != S_OK)
    {
       ErrorMsg("Failed to seek to the head of the file entry table\n");
       return E_FAIL;
    }
 
-   for (uint i = 0; i < entries.size(); i++)
+   // Read the entries
+   size_t nEntries = tableLength / sizeof(sFileEntry);
+   pEntries->clear();
+   pEntries->reserve(nEntries);
+   for (uint i = 0; i < nEntries; i++)
    {
-      if (pReader->Read(&entries[i]) != S_OK)
+      sFileEntry entry;
+      if (pReader->Read(&entry) != S_OK)
       {
          ErrorMsg1("Failed to read the file table entry %d\n", i);
          return E_FAIL;
       }
-   }
-
-   // Read the individual entries
-   std::vector<sFileEntry>::iterator iter = entries.begin();
-   for (; iter != entries.end(); iter++)
-   {
-      const sFileEntry & entry = *iter;
-
-      tParticipantMap::iterator f = m_participantMap.find(&entry.id);
-      if (f == m_participantMap.end())
-      {
-         WarnMsg("Unable to find reader for file entry\n");
-         continue;
-      }
-
-      cAutoIPtr<ISaveLoadParticipant> pSLP;
-      if (f->second->GetParticipant(entry.version, &pSLP) != S_OK)
-      {
-         ErrorMsg1("Unable to get reader for file entry version %d\n", entry.version);
-         return E_FAIL;
-      }
-
-      if (pReader->Seek(entry.offset, kSO_Set) != S_OK)
-      {
-         ErrorMsg("Unable to seek to file entry while reading\n");
-         return E_FAIL;
-      }
-
-      // S_OK: loading succeeded
-      // S_FALSE: loading refused--seek past this entry
-      // Otherwise, failure
-      tResult loadResult = pSLP->Load(pReader, entry.version);
-      if (FAILED(loadResult))
-      {
-         ErrorMsg("Failed to read a file entry\n");
-         return E_FAIL;
-      }
-      else if (loadResult == S_FALSE)
-      {
-         if (pReader->Seek(entry.length, kSO_Cur) != S_OK)
-         {
-            ErrorMsg("Unable to skip over a file entry refused by its registered loader\n");
-            return E_FAIL;
-         }
-      }
+      pEntries->push_back(entry);
    }
 
    return S_OK;

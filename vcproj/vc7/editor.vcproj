@@ -345,6 +345,9 @@
 				RelativePath="..\..\editor\MainFrm.cpp">
 			</File>
 			<File
+				RelativePath="..\..\editor\MapPropertiesDlg.cpp">
+			</File>
+			<File
 				RelativePath="..\..\editor\MapSettingsDlg.cpp">
 			</File>
 			<File
@@ -482,6 +485,9 @@
 			</File>
 			<File
 				RelativePath="..\..\editor\MainFrm.h">
+			</File>
+			<File
+				RelativePath="..\..\editor\MapPropertiesDlg.h">
 			</File>
 			<File
 				RelativePath="..\..\editor\MapSettingsDlg.h">

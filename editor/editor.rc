@@ -115,6 +115,8 @@ BEGIN
         MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
         MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
         MENUITEM SEPARATOR
+        MENUITEM "Map &Properties...",          ID_FILE_MAP_PROPERTIES
+        MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_APP_EXIT
@@ -287,6 +289,27 @@ BEGIN
     PUSHBUTTON      "Reset",IDC_RESET,123,49,50,14
 END
 
+IDD_MAPPROPERTIES DIALOGEX 0, 0, 206, 143
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Map Properties"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,95,122,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,149,122,50,14
+    LTEXT           "Title:",IDC_STATIC,7,10,45,8
+    EDITTEXT        IDC_TITLE,52,7,147,14,ES_AUTOHSCROLL
+    LTEXT           "Author:",IDC_STATIC,7,32,45,8
+    EDITTEXT        IDC_AUTHOR,52,29,147,14,ES_AUTOHSCROLL
+    LTEXT           "# Players:",IDC_STATIC,7,54,45,8
+    EDITTEXT        IDC_NUMPLAYERS,52,51,50,14,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_SPIN_NUMPLAYERS,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_AUTOBUDDY | UDS_ARROWKEYS,111,51,11,14
+    LTEXT           "Description:",IDC_STATIC,7,74,45,8
+    EDITTEXT        IDC_DESCRIPTION,52,73,147,38,ES_MULTILINE | 
+                    ES_AUTOHSCROLL
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -368,6 +391,15 @@ BEGIN
         VERTGUIDE, 50
         TOPMARGIN, 7
         BOTTOMMARGIN, 143
+    END
+
+    IDD_MAPPROPERTIES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 199
+        VERTGUIDE, 52
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 136
     END
 END
 #endif    // APSTUDIO_INVOKED

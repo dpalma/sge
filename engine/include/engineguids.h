@@ -106,6 +106,10 @@ DEFINE_GUID(IID_IModelKeyFrameInterpolator,
 DEFINE_GUID(IID_IModelAnimation, 
 0x74189271, 0xa55b, 0x46e9, 0xbd, 0x57, 0x10, 0x0, 0x53, 0x2, 0xdf, 0xb);
 
+// {C82434F3-7467-4184-8418-AECC898D37AF}
+DEFINE_GUID(SAVELOADID_MapProperties, 
+0xc82434f3, 0x7467, 0x4184, 0x84, 0x18, 0xae, 0xcc, 0x89, 0x8d, 0x37, 0xaf);
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #endif // !INCLUDED_ENGINEGUIDS_H

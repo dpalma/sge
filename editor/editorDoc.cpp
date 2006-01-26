@@ -4,14 +4,15 @@
 #include "stdhdr.h"
 
 #include "editorDoc.h"
-#include "editorapi.h"
-#include "terrainapi.h"
+
 #include "editorTypes.h"
+#include "MapPropertiesDlg.h"
 #include "MapSettingsDlg.h"
 
 #include "resource.h"
 
-#include "saveloadapi.h"
+#include "engineapi.h"
+#include "terrainapi.h"
 
 #include "readwriteapi.h"
 #include "filespec.h"
@@ -53,6 +54,7 @@ BEGIN_MESSAGE_MAP(cEditorDoc, CDocument)
 	ON_COMMAND(ID_EDIT_REDO, OnEditRedo)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_REDO, OnUpdateEditRedo)
 	//}}AFX_MSG_MAP
+	ON_COMMAND(ID_FILE_MAP_PROPERTIES, OnFileMapProperties)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -60,7 +62,11 @@ END_MESSAGE_MAP()
 
 cEditorDoc::cEditorDoc()
  : m_bPromptForMapSettings(false)
+ , m_bHaveMapProperties(false)
 {
+   UseGlobal(SaveLoadManager);
+   pSaveLoadManager->RegisterSaveLoadParticipant(SAVELOADID_MapProperties, 1,
+      static_cast<ISaveLoadParticipant*>(this));
 }
 
 cEditorDoc::~cEditorDoc()
@@ -178,6 +184,48 @@ tResult cEditorDoc::RemoveEditorModelListener(IEditorModelListener * pListener)
    return Disconnect(pListener);
 }
 
+tResult cEditorDoc::Save(IWriter * pWriter)
+{
+   if (pWriter == NULL)
+   {
+      return E_POINTER;
+   }
+
+   // cEditorDoc's implementation of ISaveLoadParticipant is for the
+   // map properties only. All other content is saved/loaded by other
+   // participants. cEditorDoc drives this by calling ISaveLoadManager's
+   // Save and Load methods when appropriate (File->Open menu, e.g.)
+
+   if (m_bHaveMapProperties)
+   {
+      cMapProperties mapProperties(m_title, m_author, m_description, m_numPlayers);
+      return pWriter->Write(mapProperties);
+   }
+
+   return S_FALSE;
+}
+
+tResult cEditorDoc::Load(IReader * pReader, int version)
+{
+   if (pReader == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cMapProperties mapProperties;
+   if (pReader->Read(&mapProperties) == S_OK)
+   {
+      m_bHaveMapProperties = true;
+      m_title = mapProperties.GetTitle();
+      m_author = mapProperties.GetAuthor();
+      m_description = mapProperties.GetDescription();
+      m_numPlayers = mapProperties.GetNumPlayers();
+      return S_OK;
+   }
+
+   return S_FALSE;
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // cEditorDoc commands
 
@@ -236,6 +284,14 @@ void cEditorDoc::DeleteContents()
    ClearCommandStack(&m_redoStack);
 
    CDocument::DeleteContents();
+}
+
+void cEditorDoc::OnCloseDocument()
+{
+   UseGlobal(SaveLoadManager);
+   pSaveLoadManager->RevokeSaveLoadParticipant(SAVELOADID_MapProperties, 1);
+
+   CDocument::OnCloseDocument();
 }
 
 static tResult UndoRedoHelper(tResult (IEditorCommand::*pfnDoMethod)(),
@@ -327,5 +383,25 @@ void cEditorDoc::OnUpdateEditRedo(CCmdUI* pCmdUI)
       CString menuText;
       menuText.Format(IDS_REDO_TEXT, label.c_str());
       pCmdUI->SetText(menuText);
+   }
+}
+
+void cEditorDoc::OnFileMapProperties()
+{
+   cMapPropertiesDlg dlg;
+   if (m_bHaveMapProperties)
+   {
+      dlg.SetTitle(m_title);
+      dlg.SetAuthor(m_author);
+      dlg.SetNumPlayers(m_numPlayers);
+      dlg.SetDescription(m_description);
+   }
+   if (dlg.DoModal() == IDOK)
+   {
+      m_bHaveMapProperties = true;
+      dlg.GetTitle(&m_title);
+      dlg.GetAuthor(&m_author);
+      m_numPlayers = dlg.GetNumPlayers();
+      dlg.GetDescription(&m_description);
    }
 }

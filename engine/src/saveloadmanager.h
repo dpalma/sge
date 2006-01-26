@@ -102,6 +102,9 @@ public:
    virtual tResult Load(IReader *);
 
 private:
+   struct sFileEntry;
+   tResult LoadEntryTable(IReader * pReader, std::vector<sFileEntry> * pEntries);
+
    struct sLessGuid
    {
       bool operator()(const GUID * pLhs, const GUID * pRhs) const

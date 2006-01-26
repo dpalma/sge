@@ -17,6 +17,7 @@ sources = Split("""
    editorView.cpp
    LogWnd.cpp
    MainFrm.cpp
+   MapPropertiesDlg.cpp
    MapSettingsDlg.cpp
    OutputBar.cpp
    scbarcf.cpp
@@ -61,18 +62,12 @@ linkLibs = Split("""
    tinyxml.lib
    glew.lib
    zlibwapi.lib
-   user32.lib
-   kernel32.lib
-   gdi32.lib
-   winmm.lib
    opengl32.lib
    glu32.lib
    cg.lib
    cgGL.lib
 """)
 
-env = env.Copy()
-env.Append(LINKFLAGS = ['/force:multiple'])
-if env.get('debug'):
-   env['PDB'] = 'editor.pdb'
-env.BuildExecutable('editor', sources + env.RES('editor.rc'), include_path=includePaths, lib_path=libPaths, libs=linkLibs)
+local = env.Copy()
+local.Append(LINKFLAGS = ['/force:multiple'])
+local.BuildExecutable('editor', sources + local.RES('editor.rc'), include_path=includePaths, lib_path=libPaths, libs=linkLibs)
