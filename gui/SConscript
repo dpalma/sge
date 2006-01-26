@@ -32,7 +32,7 @@ sources = Split("""
 """)
 
 if env['PLATFORM'] == 'win32':
-   sources = sources + ['src/guifontw32.cpp']
+   sources = sources + ['src/guifontw32.cpp', 'src/guifontd3d.cpp']
 elif env['PLATFORM'] == 'cygwin':
    sources = sources + ['src/guifontx11.cpp']
 
