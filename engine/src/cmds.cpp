@@ -285,19 +285,21 @@ int GetMapProperties(int argc, const tScriptVar * argv,
       return 0;
    }
 
-   cMapProperties * pMapProperties = NULL;
+   void * pUnused = NULL;
+   cMapProperties mapProperties;
    UseGlobal(ResourceManager);
-   if (pResourceManager->Load(argv[0], kRT_MapProperties, NULL,
-      reinterpret_cast<void**>(&pMapProperties)) == S_OK)
+   pResourceManager->Load(argv[0], kRT_Map, &mapProperties, &pUnused);
+   // Ignore the return value because when loading just the properties instead
+   // of the full map itself, the loader returns NULL to prevent the resource
+   // manager from caching the wrong thing.
+
+   if (nMaxResults >= 4 && _tcslen(mapProperties.GetTitle()) > 0)
    {
-      if (nMaxResults >= 4)
-      {
-         pResults[0] = pMapProperties->GetTitle();
-         pResults[1] = pMapProperties->GetAuthor();
-         pResults[2] = pMapProperties->GetDescription();
-         pResults[3] = pMapProperties->GetNumPlayers();
-         return 4;
-      }
+      pResults[0] = mapProperties.GetTitle();
+      pResults[1] = mapProperties.GetAuthor();
+      pResults[2] = mapProperties.GetDescription();
+      pResults[3] = mapProperties.GetNumPlayers();
+      return 4;
    }
 
    return 0;

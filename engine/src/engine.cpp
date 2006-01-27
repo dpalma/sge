@@ -60,9 +60,24 @@ void * MapPostload(void * pData, int dataLength, void * param)
    IReader * pReader = reinterpret_cast<IReader *>(pData);
 
    UseGlobal(SaveLoadManager);
-   if (pSaveLoadManager->Load(pReader) == S_OK)
+
+   if (param != NULL)
    {
-      return reinterpret_cast<void*>(NULL + 1);
+      cAutoIPtr<IReader> pEntryReader;
+      if (pSaveLoadManager->OpenSingleEntry(pReader, SAVELOADID_MapProperties, &pEntryReader) == S_OK)
+      {
+         pEntryReader->Read((cMapProperties*)param);
+         // Return NULL to prevent the resource manager from caching
+         // the properties struct in place of the actual map
+         return NULL;
+      }
+   }
+   else
+   {
+      if (pSaveLoadManager->Load(pReader) == S_OK)
+      {
+         return reinterpret_cast<void*>(NULL + 1); // TODO: WTF? This return value is a hack
+      }
    }
 
    return NULL;
@@ -70,35 +85,6 @@ void * MapPostload(void * pData, int dataLength, void * param)
 
 void MapUnload(void * pData)
 {
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-void * MapPropertiesLoad(IReader * pReader)
-{
-   cAutoIPtr<IReader> pEntryReader;
-   UseGlobal(SaveLoadManager);
-   if (pSaveLoadManager->OpenSingleEntry(pReader, SAVELOADID_MapProperties, &pEntryReader) == S_OK)
-   {
-      cMapProperties * pMapProperties = new cMapProperties;
-      if (pMapProperties != NULL)
-      {
-         if (pEntryReader->Read(pMapProperties) != S_OK)
-         {
-            delete pMapProperties;
-            return NULL;
-         }
-         return pMapProperties;
-      }
-   }
-   return NULL;
-}
-
-void MapPropertiesUnload(void * pData)
-{
-   cMapProperties * pMapProperties = reinterpret_cast<cMapProperties*>(pData);
-   delete pMapProperties;
 }
 
 
@@ -116,8 +102,7 @@ tResult EngineRegisterResourceFormats()
          && SoundResourceRegister() == S_OK
          && RendererResourceRegister() == S_OK
          && pResourceManager->RegisterFormat(kRT_TiXml, kRT_AsciiText, _T("xml"), NULL, TiXmlDocumentFromText, TiXmlDocumentUnload) == S_OK
-         && pResourceManager->RegisterFormat(kRT_Map, kMapExt, MapLoad, MapPostload, MapUnload) == S_OK
-         /*&& pResourceManager->RegisterFormat(kRT_MapProperties, NULL, MapPropertiesLoad, NULL, MapPropertiesUnload) == S_OK*/)
+         && pResourceManager->RegisterFormat(kRT_Map, kMapExt, MapLoad, MapPostload, MapUnload) == S_OK)
       {
          return S_OK;
       }

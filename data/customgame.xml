@@ -7,7 +7,7 @@
       renderer="beveled" onselchange="OnMapsListSelChange();"
       />
       <script>
-         maps = ListResources("SGE.Map");
+         maps = ListResources("SGE.Map", 1); -- the one tells the resource manager not to load each
          if maps and (table.getn(maps) > 0) then
             local mapsList = GUIContext:GetElement("mapsList");
             if mapsList then
@@ -36,7 +36,7 @@
 			function OnMapsListSelChange()
 				local map = getSelectedMap();
 				if map then
---					local title, author, descrip, numPlayers = GetMapProperties(map);
+					local title, author, descrip, numPlayers = GetMapProperties(map);
 				end;
 			end;
        </script>

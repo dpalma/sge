@@ -32,8 +32,6 @@ ENGINE_API tResult EngineRegisterScriptFunctions();
 
 F_DECLARE_GUID(SAVELOADID_MapProperties);
 
-#define kRT_MapProperties _T("MapProperties")
-
 ////////////////////////////////////////
 
 class ENGINE_API cMapProperties
