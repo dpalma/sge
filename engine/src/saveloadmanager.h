@@ -101,7 +101,7 @@ public:
    virtual tResult Save(IWriter *);
    virtual tResult Load(IReader *);
 
-   virtual tResult LoadSingleEntry(IReader * pReader, REFGUID id, tResult (* pfnLoad)(IReader *, int));
+   virtual tResult OpenSingleEntry(IReader * pReader, REFGUID id, IReader * * ppEntryReader);
 
 private:
    struct sFileEntry;

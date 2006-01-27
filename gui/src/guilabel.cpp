@@ -9,6 +9,7 @@
 #include "guistrings.h"
 
 #include "globalobj.h"
+#include "multivar.h"
 
 #include <tinyxml.h>
 
@@ -59,6 +60,44 @@ tResult cGUILabelElement::SetText(const char * pszText)
    return S_OK;
 }
 
+////////////////////////////////////////
+
+tResult cGUILabelElement::Invoke(const char * pszMethodName,
+                                 int argc, const tScriptVar * argv,
+                                 int nMaxResults, tScriptVar * pResults)
+{
+   if (pszMethodName == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (strcmp(pszMethodName, "SetText") == 0)
+   {
+      if (argc == 1 && argv[0].IsString())
+      {
+         if (SetText(argv[0]) == S_OK)
+         {
+            return S_OK;
+         }
+      }
+      else
+      {
+         return E_INVALIDARG;
+      }
+   }
+   else if (strcmp(pszMethodName, "GetText") == 0)
+   {
+      tGUIString text;
+      if (nMaxResults >= 1 && GetText(&text) == S_OK)
+      {
+         pResults[0] = text.c_str();
+         return 1;
+      }
+   }
+
+   return E_FAIL;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 tResult GUILabelElementCreate(const TiXmlElement * pXmlElement,
@@ -73,7 +112,8 @@ tResult GUILabelElementCreate(const TiXmlElement * pXmlElement,
    {
       if (strcmp(pXmlElement->Value(), kElementLabel) == 0)
       {
-         cAutoIPtr<IGUILabelElement> pLabel = static_cast<IGUILabelElement *>(new cGUILabelElement);
+         cAutoIPtr<IGUILabelElement> pLabel = static_cast<IGUILabelElement *>(
+             new cGUILabelElement);
          if (!!pLabel)
          {
             GUIElementStandardAttributes(pXmlElement, pLabel);

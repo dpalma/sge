@@ -21,11 +21,18 @@ ENGINE_API tResult EngineRegisterResourceFormats();
 ENGINE_API tResult EngineRegisterScriptFunctions();
 
 ///////////////////////////////////////////////////////////////////////////////
+
+#define kRT_Map _T("SGE.Map")
+#define kMapExt _T("sgm")
+
+///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cMapProperties
 //
 
 F_DECLARE_GUID(SAVELOADID_MapProperties);
+
+#define kRT_MapProperties _T("MapProperties")
 
 ////////////////////////////////////////
 

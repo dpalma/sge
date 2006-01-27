@@ -30,6 +30,7 @@ const char kAttribInsets[]             = "insets";
 const char kAttribLayout[]             = "layout";
 const char kAttribLineSize[]           = "linesize";
 const char kAttribOnClick[]            = "onclick";
+const char kAttribOnSelChange[]        = "onselchange";
 const char kAttribPageSize[]           = "pagesize";
 const char kAttribPosition[]           = "position";
 const char kAttribRange[]              = "range";

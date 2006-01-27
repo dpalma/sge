@@ -3,6 +3,7 @@
 
 #include "stdhdr.h"
 
+#include "engineapi.h"
 #include "entityapi.h"
 #include "inputapi.h"
 #include "scriptapi.h"
@@ -272,6 +273,36 @@ int ListResources(int argc, const tScriptVar * argv,
    return 1;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+
+int GetMapProperties(int argc, const tScriptVar * argv, 
+                     int nMaxResults, tScriptVar * pResults)
+{
+   if (argc < 1 || !argv[0].IsString())
+   {
+      ErrorMsg("Invalid parameters to GetMapProperties\n");
+      return 0;
+   }
+
+   cMapProperties * pMapProperties = NULL;
+   UseGlobal(ResourceManager);
+   if (pResourceManager->Load(argv[0], kRT_MapProperties, NULL,
+      reinterpret_cast<void**>(&pMapProperties)) == S_OK)
+   {
+      if (nMaxResults >= 4)
+      {
+         pResults[0] = pMapProperties->GetTitle();
+         pResults[1] = pMapProperties->GetAuthor();
+         pResults[2] = pMapProperties->GetDescription();
+         pResults[3] = pMapProperties->GetNumPlayers();
+         return 4;
+      }
+   }
+
+   return 0;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 sScriptReg cmds[] =
@@ -282,6 +313,7 @@ sScriptReg cmds[] =
    { "LogChannel", LogEnableChannel },
    { "EntitySpawnTest", EntitySpawnTest },
    { "ListResources", ListResources },
+   { "GetMapProperties", GetMapProperties },
 };
 
 ENGINE_API tResult EngineRegisterScriptFunctions()

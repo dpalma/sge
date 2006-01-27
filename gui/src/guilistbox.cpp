@@ -20,10 +20,12 @@
 
 static const uint kInsaneRowCount = 1000;
 
-extern tResult GUIScrollBarElementCreate(eGUIScrollBarType scrollBarType, IGUIScrollBarElement * * ppScrollBar);
+extern tResult GUIScrollBarElementCreate(eGUIScrollBarType scrollBarType,
+                                         IGUIScrollBarElement * * ppScrollBar);
 
 typedef std::list<IGUIElement *> tGUIElementList;
-extern tResult GUIElementEnumCreate(const tGUIElementList & elements, IGUIElementEnum * * ppEnum);
+extern tResult GUIElementEnumCreate(const tGUIElementList & elements,
+                                    IGUIElementEnum * * ppEnum);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -285,6 +287,13 @@ tResult cGUIListBoxElement::Select(uint startIndex, uint endIndex)
       }
    }
 
+   tGUIString onSelChange;
+   if (GetOnSelChange(&onSelChange) == S_OK)
+   {
+      UseGlobal(ScriptInterpreter);
+      pScriptInterpreter->ExecString(onSelChange.c_str());
+   }
+
    return S_OK;
 }
 
@@ -306,6 +315,14 @@ tResult cGUIListBoxElement::SelectAll()
 #else
    std::for_each(m_items.begin(), m_items.end(), std::mem_fun_ref(&cListBoxItem::Select));
 #endif
+
+   tGUIString onSelChange;
+   if (GetOnSelChange(&onSelChange) == S_OK)
+   {
+      UseGlobal(ScriptInterpreter);
+      pScriptInterpreter->ExecString(onSelChange.c_str());
+   }
+
    return S_OK;
 }
 
@@ -328,6 +345,13 @@ tResult cGUIListBoxElement::Deselect(uint startIndex, uint endIndex)
       m_items[i].Deselect();
    }
 
+   tGUIString onSelChange;
+   if (GetOnSelChange(&onSelChange) == S_OK)
+   {
+      UseGlobal(ScriptInterpreter);
+      pScriptInterpreter->ExecString(onSelChange.c_str());
+   }
+
    return S_OK;
 }
 
@@ -344,6 +368,14 @@ tResult cGUIListBoxElement::DeselectAll()
 #else
    std::for_each(m_items.begin(), m_items.end(), std::mem_fun_ref(&cListBoxItem::Deselect));
 #endif
+
+   tGUIString onSelChange;
+   if (GetOnSelChange(&onSelChange) == S_OK)
+   {
+      UseGlobal(ScriptInterpreter);
+      pScriptInterpreter->ExecString(onSelChange.c_str());
+   }
+
    return S_OK;
 }
 
@@ -366,7 +398,8 @@ tResult cGUIListBoxElement::GetSelectedCount(uint * pSelectedCount) const
       }
    }
 #else
-   *pSelectedCount = std::count_if(m_items.begin(), m_items.end(), std::mem_fun_ref(&cListBoxItem::IsSelected));
+   *pSelectedCount = std::count_if(m_items.begin(), m_items.end(),
+                                   std::mem_fun_ref(&cListBoxItem::IsSelected));
 #endif
    if (!IsMultiSelect())
    {
@@ -481,6 +514,34 @@ tResult cGUIListBoxElement::SetItemHeight(uint itemHeight)
 
 ////////////////////////////////////////
 
+tResult cGUIListBoxElement::GetOnSelChange(tGUIString * pOnSelChange) const
+{
+   if (pOnSelChange == NULL)
+   {
+      return E_POINTER;
+   }
+   if (m_onSelChange.empty())
+   {
+      return S_FALSE;
+   }
+   *pOnSelChange = m_onSelChange;
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cGUIListBoxElement::SetOnSelChange(const tGUIChar * pszOnSelChange)
+{
+   if (pszOnSelChange == NULL)
+   {
+      return E_POINTER;
+   }
+   m_onSelChange = pszOnSelChange;
+   return S_OK;
+}
+
+////////////////////////////////////////
+
 tResult cGUIListBoxElement::Invoke(const char * pszMethodName,
                                    int argc, const tScriptVar * argv,
                                    int nMaxResults, tScriptVar * pResults)
@@ -576,7 +637,8 @@ tResult GUIListBoxElementCreate(const TiXmlElement * pXmlElement,
    {
       if (strcmp(pXmlElement->Value(), kElementListBox) == 0)
       {
-         cAutoIPtr<IGUIListBoxElement> pListBox = static_cast<IGUIListBoxElement *>(new cGUIListBoxElement);
+         cAutoIPtr<IGUIListBoxElement> pListBox = static_cast<IGUIListBoxElement *>(
+             new cGUIListBoxElement);
          if (!pListBox)
          {
             return E_OUTOFMEMORY;
@@ -588,6 +650,12 @@ tResult GUIListBoxElementCreate(const TiXmlElement * pXmlElement,
          if (pXmlElement->QueryIntAttribute(kAttribRows, &rows) == TIXML_SUCCESS)
          {
             pListBox->SetRowCount(rows);
+         }
+
+         const tGUIChar * pszOnSelChange = pXmlElement->Attribute(kAttribOnSelChange);
+         if (pszOnSelChange != NULL)
+         {
+            pListBox->SetOnSelChange(pszOnSelChange);
          }
 
          for (const TiXmlElement * pXmlChild = pXmlElement->FirstChildElement(); 

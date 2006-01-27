@@ -5,6 +5,7 @@
 
 #include "engine.h"
 #include "model.h"
+#include "saveloadapi.h"
 
 #include "resourceapi.h"
 #include "globalobj.h"
@@ -48,6 +49,61 @@ void TiXmlDocumentUnload(void * pData)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+void * MapLoad(IReader * pReader)
+{
+   // Pass the reader along to the post-load function
+   return pReader;
+}
+
+void * MapPostload(void * pData, int dataLength, void * param)
+{
+   IReader * pReader = reinterpret_cast<IReader *>(pData);
+
+   UseGlobal(SaveLoadManager);
+   if (pSaveLoadManager->Load(pReader) == S_OK)
+   {
+      return reinterpret_cast<void*>(NULL + 1);
+   }
+
+   return NULL;
+}
+
+void MapUnload(void * pData)
+{
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+void * MapPropertiesLoad(IReader * pReader)
+{
+   cAutoIPtr<IReader> pEntryReader;
+   UseGlobal(SaveLoadManager);
+   if (pSaveLoadManager->OpenSingleEntry(pReader, SAVELOADID_MapProperties, &pEntryReader) == S_OK)
+   {
+      cMapProperties * pMapProperties = new cMapProperties;
+      if (pMapProperties != NULL)
+      {
+         if (pEntryReader->Read(pMapProperties) != S_OK)
+         {
+            delete pMapProperties;
+            return NULL;
+         }
+         return pMapProperties;
+      }
+   }
+   return NULL;
+}
+
+void MapPropertiesUnload(void * pData)
+{
+   cMapProperties * pMapProperties = reinterpret_cast<cMapProperties*>(pData);
+   delete pMapProperties;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 extern tResult SoundResourceRegister(); // soundwin.cpp
 extern tResult RendererResourceRegister(); // renderer.cpp
 
@@ -59,7 +115,9 @@ tResult EngineRegisterResourceFormats()
       if (cModel::RegisterResourceFormat() == S_OK
          && SoundResourceRegister() == S_OK
          && RendererResourceRegister() == S_OK
-         && pResourceManager->RegisterFormat(kRT_TiXml, kRT_AsciiText, _T("xml"), NULL, TiXmlDocumentFromText, TiXmlDocumentUnload) == S_OK)
+         && pResourceManager->RegisterFormat(kRT_TiXml, kRT_AsciiText, _T("xml"), NULL, TiXmlDocumentFromText, TiXmlDocumentUnload) == S_OK
+         && pResourceManager->RegisterFormat(kRT_Map, kMapExt, MapLoad, MapPostload, MapUnload) == S_OK
+         /*&& pResourceManager->RegisterFormat(kRT_MapProperties, NULL, MapPropertiesLoad, NULL, MapPropertiesUnload) == S_OK*/)
       {
          return S_OK;
       }

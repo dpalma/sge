@@ -65,7 +65,7 @@ interface IGUIElement : IUnknown
 {
    /// @return The semi-unique identifier assigned to this element
    virtual tResult GetId(tGUIString * pId) const = 0;
-   virtual void SetId(const tChar * pszId) = 0;
+   virtual void SetId(const tGUIChar * pszId) = 0;
 
    /// @return A boolean value representing whether the element presently has input focus
    virtual bool HasFocus() const = 0;
@@ -116,7 +116,7 @@ interface IGUIElement : IUnknown
    /// one and using SetRenderer to replace the default.
    /// @see IGUIElementRenderer
    virtual tResult GetRendererClass(tGUIString * pRendererClass) = 0;
-   virtual tResult SetRendererClass(const tChar * pszRendererClass) = 0;
+   virtual tResult SetRendererClass(const tGUIChar * pszRendererClass) = 0;
 
    virtual tResult GetRenderer(IGUIElementRenderer * * ppRenderer) = 0;
    virtual tResult SetRenderer(IGUIElementRenderer * pRenderer) = 0;
@@ -160,11 +160,11 @@ enum eGUIDimensionSpec
 
 interface IGUIStyle : IUnknown
 {
-   virtual tResult GetAttribute(const tChar * pszAttribute, tGUIString * pValue) = 0;
-   virtual tResult GetAttribute(const tChar * pszAttribute, int * pValue) = 0;
-   virtual tResult GetAttribute(const tChar * pszAttribute, tGUIColor * pValue) = 0;
-   virtual tResult SetAttribute(const tChar * pszAttribute, const tChar * pszValue) = 0;
-   virtual tResult SetAttribute(const tChar * pszAttribute, int value) = 0;
+   virtual tResult GetAttribute(const tGUIChar * pszAttribute, tGUIString * pValue) = 0;
+   virtual tResult GetAttribute(const tGUIChar * pszAttribute, int * pValue) = 0;
+   virtual tResult GetAttribute(const tGUIChar * pszAttribute, tGUIColor * pValue) = 0;
+   virtual tResult SetAttribute(const tGUIChar * pszAttribute, const tGUIChar * pszValue) = 0;
+   virtual tResult SetAttribute(const tGUIChar * pszAttribute, int value) = 0;
 
    virtual tResult GetAlignment(uint * pAlignment) = 0;
    virtual tResult SetAlignment(uint alignment) = 0;
@@ -185,7 +185,7 @@ interface IGUIStyle : IUnknown
    virtual tResult SetTextVerticalAlignment(uint alignment) = 0;
 
    virtual tResult GetFontName(tGUIString * pFontName) = 0;
-   virtual tResult SetFontName(const tChar * pszFontName) = 0;
+   virtual tResult SetFontName(const tGUIChar * pszFontName) = 0;
 
    virtual tResult GetFontPointSize(uint * pFontPointSize) = 0;
    virtual tResult SetFontPointSize(uint fontPointSize) = 0;
@@ -219,14 +219,15 @@ interface IGUIStyle : IUnknown
 /// can be in the range [0,255] or [0,1]. Certain standard colors are 
 /// supported, too. For example, "red", "green", "blue", etc.
 
-GUI_API tResult GUIParseColor(const tChar * pszColor, tGUIColor * pColor);
+GUI_API tResult GUIParseColor(const tGUIChar * pszColor, tGUIColor * pColor);
 
 ///////////////////////////////////////
 /// Parse a CSS-like string to produce a GUI style object.
 
-GUI_API tResult GUIStyleParse(const tChar * pszStyle, long length, IGUIStyle * * ppStyle);
+GUI_API tResult GUIStyleParse(const tGUIChar * pszStyle, long length, IGUIStyle * * ppStyle);
 
-GUI_API tResult GUIStyleParseInline(const tChar * pszStyle, long length, IGUIStyle * pClassStyle, IGUIStyle * * ppStyle);
+GUI_API tResult GUIStyleParseInline(const tGUIChar * pszStyle, long length,
+                                    IGUIStyle * pClassStyle, IGUIStyle * * ppStyle);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -236,14 +237,16 @@ GUI_API tResult GUIStyleParseInline(const tChar * pszStyle, long length, IGUISty
 
 interface IGUIStyleSheet : IUnknown
 {
-   virtual tResult AddRule(const tChar * pszSelector, IGUIStyle * pStyle) = 0;
+   virtual tResult AddRule(const tGUIChar * pszSelector, IGUIStyle * pStyle) = 0;
 
-   virtual tResult GetStyle(const tChar * pszType, const tChar * pszClass, IGUIStyle * * ppStyle) const = 0;
+   virtual tResult GetStyle(const tGUIChar * pszType, const tGUIChar * pszClass,
+                            IGUIStyle * * ppStyle) const = 0;
 };
 
 ///////////////////////////////////////
 
-GUI_API tResult GUIStyleSheetParse(const tChar * pszStyleSheet, IGUIStyleSheet * * ppStyleSheet);
+GUI_API tResult GUIStyleSheetParse(const tGUIChar * pszStyleSheet,
+                                   IGUIStyleSheet * * ppStyleSheet);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -314,7 +317,8 @@ GUI_API void GUIFontFactoryCreate();
 // INTERFACE: IGUIElementRenderer
 //
 
-typedef tResult (* tGUIRendererFactoryFn)(void * pReserved, IGUIElementRenderer * * ppRenderer);
+typedef tResult (* tGUIRendererFactoryFn)(void * pReserved,
+                                          IGUIElementRenderer * * ppRenderer);
 
 interface IGUIElementRenderer : IUnknown
 {
@@ -403,15 +407,15 @@ GUI_API tResult GUIEventCreate(tGUIEventCode eventCode,
 
 interface IGUIEventSounds : IUnknown
 {
-   virtual tResult SetEventSound(tGUIEventCode eventCode, const tChar * pszSound) = 0;
-   virtual tResult GetEventSound(tGUIEventCode eventCode, cStr * pSound) const = 0;
+   virtual tResult SetEventSound(tGUIEventCode eventCode, const tGUIChar * pszSound) = 0;
+   virtual tResult GetEventSound(tGUIEventCode eventCode, tGUIString * pSound) const = 0;
    virtual tResult ClearEventSound(tGUIEventCode eventCode) = 0;
    virtual void ClearAll() = 0;
 };
 
 ///////////////////////////////////////
 
-GUI_API tResult GUIEventSoundsCreate(const tChar * pszScriptName = NULL);
+GUI_API tResult GUIEventSoundsCreate(const tGUIChar * pszScriptName = NULL);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -424,7 +428,7 @@ interface IGUIContainerElement : IGUIElement
    virtual tResult AddElement(IGUIElement * pElement) = 0;
    virtual tResult RemoveElement(IGUIElement * pElement) = 0;
    virtual tResult HasElement(IGUIElement * pElement) const = 0;
-   virtual tResult GetElement(const tChar * pszId, IGUIElement * * ppElement) const = 0;
+   virtual tResult GetElement(const tGUIChar * pszId, IGUIElement * * ppElement) const = 0;
 
    virtual tResult GetLayout(IGUILayoutManager * * ppLayout) = 0;
    virtual tResult SetLayout(IGUILayoutManager * pLayout) = 0;
@@ -454,12 +458,14 @@ interface IGUILayoutManager : IUnknown
 ///////////////////////////////////////
 // Create a layout manager from an XML fragment
 
-GUI_API tResult GUILayoutManagerCreate(const TiXmlElement * pXmlElement, IGUILayoutManager * * ppLayout);
+GUI_API tResult GUILayoutManagerCreate(const TiXmlElement * pXmlElement,
+                                       IGUILayoutManager * * ppLayout);
 
 ///////////////////////////////////////
 
-typedef tResult (* tGUILayoutFactoryFn)(const TiXmlElement * pXmlElement, IGUILayoutManager * * ppLayout);
-GUI_API tResult GUILayoutRegister(const tChar * pszName, tGUILayoutFactoryFn pfn);
+typedef tResult (* tGUILayoutFactoryFn)(const TiXmlElement * pXmlElement,
+                                        IGUILayoutManager * * ppLayout);
+GUI_API tResult GUILayoutRegister(const tGUIChar * pszName, tGUILayoutFactoryFn pfn);
 
 GUI_API void GUILayoutRegisterBuiltInTypes();
 
@@ -482,7 +488,8 @@ interface IGUIGridLayout : IGUILayoutManager
 
 GUI_API tResult GUIGridLayoutCreate(IGUIGridLayout * * ppLayout);
 GUI_API tResult GUIGridLayoutCreate(uint columns, uint rows, IGUIGridLayout * * ppLayout);
-GUI_API tResult GUIGridLayoutCreate(uint columns, uint rows, uint hGap, uint vGap, IGUIGridLayout * * ppLayout);
+GUI_API tResult GUIGridLayoutCreate(uint columns, uint rows, uint hGap, uint vGap,
+                                    IGUIGridLayout * * ppLayout);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -515,7 +522,7 @@ interface IGUIPanelElement : IGUIContainerElement
 interface IGUIDialogElement : IGUIContainerElement
 {
    virtual tResult GetTitle(tGUIString * pTitle) = 0;
-   virtual tResult SetTitle(const char * pszTitle) = 0;
+   virtual tResult SetTitle(const tGUIChar * pszTitle) = 0;
 
    virtual tResult GetCaptionHeight(uint * pHeight) = 0;
    virtual tResult SetCaptionHeight(uint height) = 0;
@@ -533,10 +540,10 @@ interface IGUIButtonElement : IGUIElement
    virtual void SetArmed(bool bArmed) = 0;
 
    virtual tResult GetText(tGUIString * pText) const = 0;
-   virtual tResult SetText(const char * pszText) = 0;
+   virtual tResult SetText(const tGUIChar * pszText) = 0;
 
    virtual tResult GetOnClick(tGUIString * pOnClick) const = 0;
-   virtual tResult SetOnClick(const char * pszOnClick) = 0;
+   virtual tResult SetOnClick(const tGUIChar * pszOnClick) = 0;
 };
 
 
@@ -548,7 +555,7 @@ interface IGUIButtonElement : IGUIElement
 interface IGUILabelElement : IGUIElement
 {
    virtual tResult GetText(tGUIString * pText) = 0;
-   virtual tResult SetText(const char * pszText) = 0;
+   virtual tResult SetText(const tGUIChar * pszText) = 0;
 };
 
 
@@ -567,7 +574,7 @@ interface IGUITextEditElement : IGUIElement
    virtual tResult SetSelection(uint start, uint end) = 0;
 
    virtual tResult GetText(tGUIString * pText) = 0;
-   virtual tResult SetText(const char * pszText) = 0;
+   virtual tResult SetText(const tGUIChar * pszText) = 0;
 
    virtual void UpdateBlinkingCursor() = 0;
    virtual bool ShowBlinkingCursor() const = 0;
@@ -625,17 +632,18 @@ interface IGUIScrollBarElement : IGUIElement
 
 interface IGUIListBoxElement : IGUIElement
 {
-   virtual tResult AddItem(const tChar * pszString, uint_ptr extra) = 0;
+   virtual tResult AddItem(const tGUIChar * pszString, uint_ptr extra) = 0;
    virtual tResult RemoveItem(uint index) = 0;
 
    virtual tResult GetItemCount(uint * pItemCount) const = 0;
-   virtual tResult GetItem(uint index, cStr * pString, uint_ptr * pExtra, bool * pbIsSelected) const = 0;
+   virtual tResult GetItem(uint index, tGUIString * pString,
+                           uint_ptr * pExtra, bool * pbIsSelected) const = 0;
 
    virtual tResult Sort() = 0;
 
    virtual tResult Clear() = 0;
 
-   virtual tResult FindItem(const tChar * pszString, uint * pIndex) const = 0;
+   virtual tResult FindItem(const tGUIChar * pszString, uint * pIndex) const = 0;
 
    virtual tResult Select(uint startIndex, uint endIndex) = 0;
    virtual tResult SelectAll() = 0;
@@ -649,10 +657,14 @@ interface IGUIListBoxElement : IGUIElement
    virtual tResult GetRowCount(uint * pRowCount) const = 0;
    virtual tResult SetRowCount(uint rowCount) = 0;
 
-   virtual tResult GetScrollBar(eGUIScrollBarType scrollBarType, IGUIScrollBarElement * * ppScrollBar) = 0;
+   virtual tResult GetScrollBar(eGUIScrollBarType scrollBarType,
+                                IGUIScrollBarElement * * ppScrollBar) = 0;
 
    virtual tResult GetItemHeight(uint * pItemHeight) const = 0;
    virtual tResult SetItemHeight(uint itemHeight) = 0;
+
+   virtual tResult GetOnSelChange(tGUIString * pOnSelChange) const = 0;
+   virtual tResult SetOnSelChange(const tGUIChar * pszOnSelChange) = 0;
 };
 
 
@@ -664,7 +676,7 @@ interface IGUIListBoxElement : IGUIElement
 interface IGUIScriptElement : IGUIElement
 {
    virtual tResult GetScript(tGUIString * pScript) = 0;
-   virtual tResult SetScript(const tChar * pszScript) = 0;
+   virtual tResult SetScript(const tGUIChar * pszScript) = 0;
 };
 
 
@@ -699,15 +711,19 @@ interface IGUIEventListener : IUnknown
 
 interface IGUIFactories : IUnknown
 {
-   virtual tResult CreateElement(const TiXmlElement * pXmlElement, IGUIElement * pParent, IGUIElement * * ppElement) = 0;
+   virtual tResult CreateElement(const TiXmlElement * pXmlElement, IGUIElement * pParent,
+                                 IGUIElement * * ppElement) = 0;
 
-   virtual tResult CreateRenderer(const tChar * pszRendererClass, IGUIElementRenderer * * ppRenderer) = 0;
+   virtual tResult CreateRenderer(const tGUIChar * pszRendererClass,
+                                  IGUIElementRenderer * * ppRenderer) = 0;
 
-   virtual tResult RegisterElementFactory(const tChar * pszType, tGUIElementFactoryFn pFactoryFn) = 0;
-   virtual tResult RevokeElementFactory(const tChar * pszType) = 0;
+   virtual tResult RegisterElementFactory(const tGUIChar * pszType,
+                                          tGUIElementFactoryFn pFactoryFn) = 0;
+   virtual tResult RevokeElementFactory(const tGUIChar * pszType) = 0;
 
-   virtual tResult RegisterRendererFactory(const tChar * pszRenderer, tGUIRendererFactoryFn pFactoryFn) = 0;
-   virtual tResult RevokeRendererFactory(const tChar * pszRenderer) = 0;
+   virtual tResult RegisterRendererFactory(const tGUIChar * pszRenderer,
+                                           tGUIRendererFactoryFn pFactoryFn) = 0;
+   virtual tResult RevokeRendererFactory(const tGUIChar * pszRenderer) = 0;
 };
 
 ///////////////////////////////////////
@@ -716,8 +732,10 @@ GUI_API tResult GUIFactoriesCreate();
 
 ///////////////////////////////////////
 
-GUI_API tResult GUIRegisterElementFactory(const tChar * pszType, tGUIElementFactoryFn pFactoryFn);
-GUI_API tResult GUIRegisterRendererFactory(const tChar * pszRenderer, tGUIRendererFactoryFn pFactoryFn);
+GUI_API tResult GUIRegisterElementFactory(const tGUIChar * pszType,
+                                          tGUIElementFactoryFn pFactoryFn);
+GUI_API tResult GUIRegisterRendererFactory(const tGUIChar * pszRenderer,
+                                           tGUIRendererFactoryFn pFactoryFn);
 
 ///////////////////////////////////////
 
@@ -751,8 +769,10 @@ interface IGUIRenderDevice : IUnknown
    virtual void PopScissorRect() = 0;
 
    virtual void RenderSolidRect(const tGUIRect & rect, const tGUIColor & color) = 0;
-   virtual void RenderBeveledRect(const tGUIRect & rect, int bevel, const tGUIColor & topLeft,
-                                  const tGUIColor & bottomRight, const tGUIColor & face) = 0;
+   virtual void RenderBeveledRect(const tGUIRect & rect, int bevel,
+                                  const tGUIColor & topLeft,
+                                  const tGUIColor & bottomRight,
+                                  const tGUIColor & face) = 0;
 
    virtual void FlushQueue() = 0;
 };
@@ -791,15 +811,15 @@ interface IGUIContext : IGUIEventRouter
    /// @brief Show a modal dialog box
    /// @param pszDialog specifies an XML fragment or file name
    /// @return TODO
-   virtual tResult ShowModalDialog(const tChar * pszDialog) = 0;
+   virtual tResult ShowModalDialog(const tGUIChar * pszDialog) = 0;
 
    /// @brief Create GUI elements from XML specifications
    /// @param pszPage specifies either an XML fragment or file name
    /// @return S_OK, S_FALSE if no error and no elements loaded, or an E_xxx code
-   virtual tResult PushPage(const tChar * pszPage) = 0;
+   virtual tResult PushPage(const tGUIChar * pszPage) = 0;
    virtual tResult PopPage() = 0;
 
-   virtual tResult GetElementById(const tChar * pszId, IGUIElement * * ppElement) = 0;
+   virtual tResult GetElementById(const tGUIChar * pszId, IGUIElement * * ppElement) = 0;
 
    virtual tResult GetElementsOfType(REFGUID iid, IGUIElementEnum * * ppEnum) const = 0;
 
@@ -816,7 +836,7 @@ interface IGUIContext : IGUIEventRouter
 
 ///////////////////////////////////////
 
-GUI_API tResult GUIContextCreate(const tChar * pszScriptName = NULL);
+GUI_API tResult GUIContextCreate(const tGUIChar * pszScriptName = NULL);
 
 ///////////////////////////////////////////////////////////////////////////////
 

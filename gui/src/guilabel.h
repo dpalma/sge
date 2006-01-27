@@ -6,6 +6,8 @@
 
 #include "guielementbase.h"
 
+#include "scriptapi.h"
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -15,14 +17,22 @@
 // CLASS: cGUILabelElement
 //
 
-class cGUILabelElement : public cComObject<cGUIElementBase<IGUILabelElement>, &IID_IGUILabelElement>
+class cGUILabelElement : public cComObject2<cGUIElementBase<IGUILabelElement>,
+                                            &IID_IGUILabelElement,
+                                            IMPLEMENTS(IScriptable)>
 {
 public:
    cGUILabelElement();
    ~cGUILabelElement();
 
+   // IGUILabelElement methods
    virtual tResult GetText(tGUIString * pText);
-   virtual tResult SetText(const char * pszText);
+   virtual tResult SetText(const tGUIChar * pszText);
+
+   // IScriptable methods
+   virtual tResult Invoke(const char * pszMethodName,
+                          int argc, const tScriptVar * argv,
+                          int nMaxResults, tScriptVar * pResults);
 
 private:
    tGUIString m_text;

@@ -59,8 +59,6 @@ static const int kDefStatsX = 25;
 static const int kDefStatsY = 25;
 static const cColor kDefStatsColor(1,1,1,1);
 
-static const tChar kRT_MapFile[] = _T("SGE.Map");
-
 ///////////////////////////////////////////////////////////////////////////////
 
 cAutoIPtr<cGameCameraController> g_pGameCameraController;
@@ -117,29 +115,6 @@ void ResizeHack(int width, int height, double time)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void * HackScenarioLoad(IReader * pReader)
-{
-   UseGlobal(SaveLoadManager);
-   if (pSaveLoadManager->Load(pReader) == S_OK)
-   {
-      return reinterpret_cast<void*>(NULL + 1);
-   }
-   return NULL;
-}
-
-void HackScenarioUnload(void * pData)
-{
-}
-
-static void HackScenarioRegisterResourceFormat()
-{
-   UseGlobal(ResourceManager);
-   pResourceManager->RegisterFormat(kRT_MapFile, "sgm", HackScenarioLoad, NULL, HackScenarioUnload);
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-
 SCRIPT_DEFINE_FUNCTION(SetTerrain)
 {
    if (argc < 1 || !argv[0].IsString())
@@ -155,7 +130,7 @@ SCRIPT_DEFINE_FUNCTION(SetTerrain)
    if (pszFileExt != NULL && _tcsicmp(pszFileExt, _T("sgm")) == 0)
    {
       void * pData = NULL;
-      pResourceManager->Load(argv[0], kRT_MapFile, NULL, &pData);
+      pResourceManager->Load(argv[0], kRT_Map, NULL, &pData);
    }
    else
    {
@@ -281,7 +256,6 @@ static bool MainInit(int argc, tChar * argv[])
    EngineRegisterScriptFunctions();
    TerrainRegisterResourceFormats();
    ImageRegisterResourceFormats();
-   HackScenarioRegisterResourceFormat();
 
    if (ConfigGet(_T("data"), &temp) == S_OK)
    {
@@ -424,7 +398,8 @@ static tResult MainFrame()
          SysReportFrameStats(szStats, _countof(szStats));
 
          tRect rect(kDefStatsX, kDefStatsY, 0, 0);
-         g_pFont->RenderText(szStats, _tcslen(szStats), &rect, kRT_NoClip | kRT_DropShadow, kDefStatsColor);
+         g_pFont->RenderText(szStats, _tcslen(szStats), &rect,
+                             kRT_NoClip | kRT_DropShadow, kDefStatsColor);
       }
 
       pRenderDeviceContext->End2D();

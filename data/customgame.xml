@@ -3,7 +3,9 @@
    <layout type="flow" />
    <panel style="width:100%;height:60%;background-color:(0,0,0.75)">
       <layout type="grid" rows=1 columns=1 />
-      <listbox id="mapsList" rows=6 style="width:50%;align:center;vertical-align:center;" renderer="beveled" />
+      <listbox id="mapsList" rows=6 style="width:50%;align:center;vertical-align:center;"
+      renderer="beveled" onselchange="OnMapsListSelChange();"
+      />
       <script>
          maps = ListResources("SGE.Map");
          if maps and (table.getn(maps) > 0) then
@@ -11,20 +13,32 @@
             if mapsList then
                table.foreachi(maps, function(i, v) mapsList:AddItem(v) end);
             end;
-          end;
-          
-          function OnStart()
+         end;
+
+         function getSelectedMap()
             local mapsList = GUIContext:GetElement("mapsList");
             if mapsList then
-               sel = mapsList:GetSelected();
+               local sel = mapsList:GetSelected();
                if sel then
-                  text = mapsList:GetItem(sel);
-                  if text then
-                     LoadSampleLevel(text);
-                  end;
+                  return mapsList:GetItem(sel);
                end;
             end;
-          end;
+            return nil;
+         end;
+         
+			function OnStart()
+				local map = getSelectedMap();
+				if map then
+					LoadSampleLevel(map);
+				end;
+			end;
+
+			function OnMapsListSelChange()
+				local map = getSelectedMap();
+				if map then
+--					local title, author, descrip, numPlayers = GetMapProperties(map);
+				end;
+			end;
        </script>
    </panel>
    <panel style="width:100%;height:40%;background-color:black;">

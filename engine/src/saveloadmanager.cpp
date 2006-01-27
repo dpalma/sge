@@ -409,6 +409,10 @@ tResult cReadWriteOps<cSaveLoadManager::sFileEntry>::Write(IWriter * pWriter,
 tResult SaveLoadManagerCreate()
 {
    cAutoIPtr<ISaveLoadManager> p(new cSaveLoadManager);
+   if (!p)
+   {
+      return E_OUTOFMEMORY;
+   }
    return RegisterGlobalObject(IID_ISaveLoadManager, static_cast<ISaveLoadManager*>(p));
 }
 
@@ -798,9 +802,11 @@ private:
    size_t m_bufferSize;
 };
 
-tResult cSaveLoadManager::LoadSingleEntry(IReader * pReader, REFGUID id, tResult (* pfnLoad)(IReader *, int))
+///////////////////////////////////////
+
+tResult cSaveLoadManager::OpenSingleEntry(IReader * pReader, REFGUID id, IReader * * ppEntryReader)
 {
-   if (pReader == NULL || pfnLoad == NULL)
+   if (pReader == NULL || ppEntryReader == NULL)
    {
       return E_POINTER;
    }
@@ -818,8 +824,7 @@ tResult cSaveLoadManager::LoadSingleEntry(IReader * pReader, REFGUID id, tResult
       return E_FAIL;
    }
 
-   // Read the individual entries
-   std::vector<sFileEntry>::iterator iter = entries.begin();
+   std::vector<sFileEntry>::const_iterator iter = entries.begin();
    for (; iter != entries.end(); iter++)
    {
       const sFileEntry & entry = *iter;
@@ -828,35 +833,32 @@ tResult cSaveLoadManager::LoadSingleEntry(IReader * pReader, REFGUID id, tResult
       {
          if (pReader->Seek(entry.offset, kSO_Set) != S_OK)
          {
-            ErrorMsg("Unable to seek to file entry while reading\n");
+            ErrorMsg("Unable to seek to file entry\n");
             return E_FAIL;
          }
 
-         byte * pBuffer = NULL;
-         cAutoBuffer autoBuffer;
-         if (autoBuffer.Malloc(entry.length, &pBuffer) != S_OK)
+         byte * pBuffer = new byte[entry.length];
+         if (pBuffer == NULL)
          {
             return E_OUTOFMEMORY;
          }
 
          if (pReader->Read(pBuffer, entry.length) != S_OK)
          {
+            delete [] pBuffer;
             return E_FAIL;
          }
 
          if (pReader->Seek(originalPosition, kSO_Set) != S_OK)
          {
+            delete [] pBuffer;
             ErrorMsg("Unable to reset file position while reading single entry\n");
             return E_FAIL;
          }
 
-         cAutoIPtr<IReader> pEntryReader;
-         if (ReaderCreateMem(pBuffer, entry.length, false, &pEntryReader) != S_OK)
-         {
-            return E_FAIL;
-         }
-
-         return (*pfnLoad)(pEntryReader, entry.version);
+         // The 'true' means that the IReader will now own the memory
+         // pointed to by pBuffer
+         return ReaderCreateMem(pBuffer, entry.length, true, ppEntryReader);
       }
    }
 

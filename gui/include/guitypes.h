@@ -18,6 +18,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 typedef cStr tGUIString;
+typedef tChar tGUIChar;
 
 typedef tVec2 tGUIPoint;
 
@@ -164,7 +165,7 @@ public:
    };
 
    cGUIFontDesc();
-   cGUIFontDesc(const tChar * pszFace, int pointSize, uint effects,
+   cGUIFontDesc(const tGUIChar * pszFace, int pointSize, uint effects,
       uint glyphFirst = kANSIGlyphFirst, uint glyphLast = kANSIGlyphLast);
    cGUIFontDesc(const cGUIFontDesc & other);
 
@@ -173,7 +174,7 @@ public:
    bool operator ==(const cGUIFontDesc & other) const;
    bool operator <(const cGUIFontDesc & other) const;
 
-   const tChar * GetFace() const;
+   const tGUIChar * GetFace() const;
    int GetPointSize() const;
    bool GetBold() const;
    bool GetItalic() const;
@@ -183,7 +184,7 @@ public:
    uint GetGlyphLast() const;
 
 private:
-   cStr m_typeFace;
+   tGUIString m_typeFace;
    int m_pointSize;
    uint m_effects;
    uint m_glyphFirst;
@@ -192,7 +193,7 @@ private:
 
 ////////////////////////////////////////
 
-inline const tChar * cGUIFontDesc::GetFace() const
+inline const tGUIChar * cGUIFontDesc::GetFace() const
 {
    return m_typeFace.c_str();
 }
