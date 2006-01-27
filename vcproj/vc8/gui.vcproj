@@ -502,6 +502,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\gui\src\guieventsounds.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\gui\src\guifactory.cpp"
 					>
 				</File>
@@ -722,6 +726,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\gui\src\guieventsounds.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\gui\src\guifactory.h"
 					>
 				</File>
@@ -816,7 +824,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\gui\include\guielementapi.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\gui\include\guiguids.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\gui\include\guistyleapi.h"
 				>
 			</File>
 			<File

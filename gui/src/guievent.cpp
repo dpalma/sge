@@ -4,6 +4,7 @@
 #include "stdhdr.h"
 
 #include "guievent.h"
+#include "guielementapi.h"
 
 #include "keys.h"
 

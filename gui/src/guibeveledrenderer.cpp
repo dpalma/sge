@@ -6,9 +6,9 @@
 #include "guibeveledrenderer.h"
 #include "guielementtools.h"
 #include "guistrings.h"
-#include "scriptapi.h"
+#include "guistyleapi.h"
 
-#include "color.h"
+#include "scriptapi.h"
 
 #include "globalobj.h"
 

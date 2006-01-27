@@ -4,8 +4,10 @@
 #include "stdhdr.h"
 
 #include "guielementtools.h"
+#include "guiapi.h"
 #include "guiparse.h"
 #include "guistrings.h"
+#include "guistyleapi.h"
 
 #include "globalobj.h"
 

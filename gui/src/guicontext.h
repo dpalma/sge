@@ -5,6 +5,7 @@
 #define INCLUDED_GUICONTEXT_H
 
 #include "guiapi.h"
+#include "guielementapi.h"
 #include "guieventrouter.h"
 
 #include "inputapi.h"
@@ -63,12 +64,12 @@ public:
                             int nMaxResults, tScriptVar * pResults);
 
    // IGUIContext methods
-   virtual tResult ShowModalDialog(const tChar * pszDialog);
+   virtual tResult ShowModalDialog(const tGUIChar * pszDialog);
 
-   virtual tResult PushPage(const tChar * pszPage);
+   virtual tResult PushPage(const tGUIChar * pszPage);
    virtual tResult PopPage();
 
-   virtual tResult GetElementById(const tChar * pszId, IGUIElement * * ppElement);
+   virtual tResult GetElementById(const tGUIChar * pszId, IGUIElement * * ppElement);
 
    virtual tResult GetElementsOfType(REFGUID iid, IGUIElementEnum * * ppEnum) const;
 
@@ -116,7 +117,7 @@ private:
 
    bool m_bShowingModalDialog;
 
-   cStr m_scriptName;
+   tGUIString m_scriptName;
 
 #ifdef GUI_DEBUG
    bool m_bShowDebugInfo;

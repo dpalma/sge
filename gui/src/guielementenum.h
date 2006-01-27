@@ -4,7 +4,7 @@
 #ifndef INCLUDED_GUIELEMENTENUM_H
 #define INCLUDED_GUIELEMENTENUM_H
 
-#include "guiapi.h"
+#include "guielementapi.h"
 
 #include "comenum.h"
 

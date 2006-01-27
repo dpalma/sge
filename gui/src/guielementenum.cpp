@@ -5,6 +5,8 @@
 
 #include "guielementenum.h"
 
+#include "guiapi.h"
+
 #include "dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////

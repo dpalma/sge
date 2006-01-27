@@ -5,7 +5,7 @@
 #define INCLUDED_GUIPARSE_H
 
 #include "combase.h"
-#include "guiapi.h"
+#include "guitypes.h"
 
 #ifdef _MSC_VER
 #pragma once

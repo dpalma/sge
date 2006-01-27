@@ -5,6 +5,8 @@
 
 #include "guibasicrenderer.h"
 #include "guielementtools.h"
+#include "guistyleapi.h"
+
 #include "scriptapi.h"
 
 #include "globalobj.h"

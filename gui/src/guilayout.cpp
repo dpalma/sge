@@ -4,6 +4,8 @@
 #include "stdhdr.h"
 
 #include "guilayout.h"
+
+#include "guiapi.h"
 #include "guielementtools.h"
 #include "guistrings.h"
 

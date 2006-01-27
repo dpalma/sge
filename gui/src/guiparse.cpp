@@ -4,7 +4,7 @@
 #include "stdhdr.h"
 
 #include "guiparse.h"
-#include "guiapi.h"
+#include "guistyleapi.h"
 #include "guistrings.h"
 
 #ifdef HAVE_CPPUNIT

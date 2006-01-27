@@ -4,6 +4,7 @@
 #include "stdhdr.h"
 
 #include "guifactory.h"
+#include "guielementapi.h"
 
 #include <tinyxml.h>
 

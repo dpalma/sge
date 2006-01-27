@@ -5,6 +5,7 @@
 #define INCLUDED_GUIBASICRENDERER_H
 
 #include "guiapi.h"
+#include "guielementapi.h"
 
 #ifdef _MSC_VER
 #pragma once

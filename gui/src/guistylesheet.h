@@ -4,7 +4,7 @@
 #ifndef INCLUDED_GUISTYLESHEET_H
 #define INCLUDED_GUISTYLESHEET_H
 
-#include "guiapi.h"
+#include "guistyleapi.h"
 
 #include <map>
 

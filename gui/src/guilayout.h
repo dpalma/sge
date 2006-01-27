@@ -4,7 +4,7 @@
 #ifndef INCLUDED_GUILAYOUT_H
 #define INCLUDED_GUILAYOUT_H
 
-#include "guiapi.h"
+#include "guielementapi.h"
 
 #ifdef _MSC_VER
 #pragma once

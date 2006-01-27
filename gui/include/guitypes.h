@@ -30,6 +30,29 @@ typedef tRect tGUIRect;
 
 
 ///////////////////////////////////////////////////////////////////////////////
+
+enum eGUIAlignment
+{
+   kGUIAlignLeft,
+   kGUIAlignRight,
+   kGUIAlignCenter,
+};
+
+enum eGUIVerticalAlignment
+{
+   kGUIVertAlignTop,
+   kGUIVertAlignBottom,
+   kGUIVertAlignCenter,
+};
+
+enum eGUIDimensionSpec
+{
+   kGUIDimensionPixels,
+   kGUIDimensionPercent,
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
 //
 // STRUCT: sGUIInsets
 //

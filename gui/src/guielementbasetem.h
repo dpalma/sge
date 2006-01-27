@@ -8,6 +8,8 @@
 #ifndef INCLUDED_GUIELEMENTBASETEM_H
 #define INCLUDED_GUIELEMENTBASETEM_H
 
+#include "guistyleapi.h"
+
 #include "globalobj.h"
 
 #include "dbgalloc.h" // must be last header

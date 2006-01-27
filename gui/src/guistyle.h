@@ -4,7 +4,7 @@
 #ifndef INCLUDED_GUISTYLE_H
 #define INCLUDED_GUISTYLE_H
 
-#include "guiapi.h"
+#include "guistyleapi.h"
 
 #include "dictionaryapi.h"
 

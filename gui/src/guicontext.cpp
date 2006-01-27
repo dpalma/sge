@@ -6,8 +6,8 @@
 #include "guicontext.h"
 #include "guievent.h"
 #include "guielementenum.h"
-#include "guielementtools.h"
 #include "guipage.h"
+#include "guistyleapi.h"
 
 #include "sys.h"
 #include "engineapi.h"
@@ -15,7 +15,6 @@
 #include "keys.h"
 #include "multivar.h"
 #include "resourceapi.h"
-#include "readwriteapi.h"
 #include "configapi.h"
 
 #include "guieventroutertem.h"
