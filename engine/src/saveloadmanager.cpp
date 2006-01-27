@@ -532,7 +532,26 @@ tResult cSaveLoadManager::RegisterSaveLoadParticipant(REFGUID id,
 
 tResult cSaveLoadManager::RevokeSaveLoadParticipant(REFGUID id, int version)
 {
-   return E_NOTIMPL;
+   tParticipantMap::iterator f = m_participantMap.find(&id);
+   if (f == m_participantMap.end())
+   {
+      return S_FALSE;
+   }
+
+   tResult result = f->second->RemoveVersion(version);
+   if (result != S_OK)
+   {
+      return result;
+   }
+
+   int newVersion;
+   if (f->second->GetMostRecentVersion(&newVersion) != S_OK)
+   {
+      delete f->second;
+      m_participantMap.erase(f);
+   }
+
+   return S_OK;
 }
 
 ///////////////////////////////////////
@@ -730,6 +749,118 @@ tResult cSaveLoadManager::Load(IReader * pReader)
    }
 
    return S_OK;
+}
+
+///////////////////////////////////////
+
+class cAutoBuffer
+{
+public:
+   cAutoBuffer() : m_pBuffer(NULL), m_bufferSize(0) {}
+   ~cAutoBuffer()
+   {
+      Free();
+   }
+   tResult Malloc(size_t bufferSize, byte * * ppBuffer)
+   {
+      Free();
+      if (bufferSize == 0)
+      {
+         return E_INVALIDARG;
+      }
+      if (ppBuffer == NULL)
+      {
+         return E_POINTER;
+      }
+      Assert(m_pBuffer == NULL);
+      m_pBuffer = reinterpret_cast<byte*>(malloc(bufferSize));
+      if (m_pBuffer == NULL)
+      {
+         return E_OUTOFMEMORY;
+      }
+      *ppBuffer = m_pBuffer;
+      m_bufferSize = bufferSize;
+      return S_OK;
+   }
+   tResult Free()
+   {
+      if (m_pBuffer != NULL)
+      {
+         free(m_pBuffer);
+         m_pBuffer = NULL;
+         m_bufferSize = 0;
+         return S_OK;
+      }
+      return S_FALSE;
+   }
+private:
+   byte * m_pBuffer;
+   size_t m_bufferSize;
+};
+
+tResult cSaveLoadManager::LoadSingleEntry(IReader * pReader, REFGUID id, tResult (* pfnLoad)(IReader *, int))
+{
+   if (pReader == NULL || pfnLoad == NULL)
+   {
+      return E_POINTER;
+   }
+
+   // Read the entry table
+   std::vector<sFileEntry> entries;
+   if (LoadEntryTable(pReader, &entries) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   ulong originalPosition = 0;
+   if (pReader->Tell(&originalPosition) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   // Read the individual entries
+   std::vector<sFileEntry>::iterator iter = entries.begin();
+   for (; iter != entries.end(); iter++)
+   {
+      const sFileEntry & entry = *iter;
+
+      if (CTIsEqualGUID(entry.id, id))
+      {
+         if (pReader->Seek(entry.offset, kSO_Set) != S_OK)
+         {
+            ErrorMsg("Unable to seek to file entry while reading\n");
+            return E_FAIL;
+         }
+
+         byte * pBuffer = NULL;
+         cAutoBuffer autoBuffer;
+         if (autoBuffer.Malloc(entry.length, &pBuffer) != S_OK)
+         {
+            return E_OUTOFMEMORY;
+         }
+
+         if (pReader->Read(pBuffer, entry.length) != S_OK)
+         {
+            return E_FAIL;
+         }
+
+         if (pReader->Seek(originalPosition, kSO_Set) != S_OK)
+         {
+            ErrorMsg("Unable to reset file position while reading single entry\n");
+            return E_FAIL;
+         }
+
+         cAutoIPtr<IReader> pEntryReader;
+         if (ReaderCreateMem(pBuffer, entry.length, false, &pEntryReader) != S_OK)
+         {
+            return E_FAIL;
+         }
+
+         return (*pfnLoad)(pEntryReader, entry.version);
+      }
+   }
+
+   return S_FALSE; // entry not found
 }
 
 ///////////////////////////////////////

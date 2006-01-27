@@ -101,6 +101,8 @@ public:
    virtual tResult Save(IWriter *);
    virtual tResult Load(IReader *);
 
+   virtual tResult LoadSingleEntry(IReader * pReader, REFGUID id, tResult (* pfnLoad)(IReader *, int));
+
 private:
    struct sFileEntry;
    tResult LoadEntryTable(IReader * pReader, std::vector<sFileEntry> * pEntries);

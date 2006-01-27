@@ -42,6 +42,8 @@ interface ISaveLoadManager : IUnknown
 
    virtual tResult Save(IWriter * pWriter) = 0;
    virtual tResult Load(IReader * pReader) = 0;
+
+   virtual tResult LoadSingleEntry(IReader * pReader, REFGUID id, tResult (* pfnLoad)(IReader *, int)) = 0;
 };
 
 ///////////////////////////////////////
