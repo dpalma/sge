@@ -215,7 +215,7 @@ static void d3dguiterm()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static bool d3dguiframe()
+static tResult d3dguiframe()
 {
    UseGlobal(Sim);
    pSim->NextFrame();
@@ -224,7 +224,7 @@ static bool d3dguiframe()
    if (SysGetDirect3DDevice9(&pD3dDevice) != S_OK)
    {
       // D3D device not initialized yet?
-      return true;
+      return E_FAIL;
    }
 
    pD3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1, 0);
@@ -257,7 +257,7 @@ static bool d3dguiframe()
 
    SysSwapBuffers();
 
-   return true;
+   return S_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -272,7 +272,7 @@ int STDCALL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
       return -1;
    }
 
-   int result = SysEventLoop(d3dguiframe, NULL);
+   int result = SysEventLoop(d3dguiframe);
 
    d3dguiterm();
 
@@ -291,7 +291,7 @@ int main(int argc, char * argv[])
       return EXIT_FAILURE;
    }
 
-   int result = SysEventLoop(d3dguiframe, NULL);
+   int result = SysEventLoop(d3dguiframe);
 
    d3dguiterm();
 
