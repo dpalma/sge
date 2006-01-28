@@ -4,6 +4,7 @@
 #include "stdhdr.h"
 
 #include "guipage.h"
+#include "guielementenum.h"
 #include "guielementtools.h"
 
 #include "scriptapi.h"
