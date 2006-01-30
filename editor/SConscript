@@ -6,6 +6,7 @@ Import('env')
 sources = Split("""
    aboutdlg.cpp
    BitmapUtils.cpp
+   CameraDlg.cpp
    cmds.cpp
    DynamicLink.cpp
    editorApp.cpp
@@ -37,16 +38,10 @@ includePaths = Split("""
    #3rdparty/tinyxml
    #3rdparty/wtl/include
    #engine/include
-   #render/include
    #tech/include
 """)
 
 libPaths = Split("""
-   #3rdparty/Cg/lib
-   #3rdparty/glew
-   #3rdparty/tinyxml
-   #3rdparty/lua
-   #3rdparty/zlib
    #allguids
    #tech
    #render
@@ -56,18 +51,16 @@ libPaths = Split("""
 linkLibs = Split("""
    allguids.lib
    tech.lib
-   rendergl.lib
    engine.lib
-   lua.lib
-   tinyxml.lib
-   glew.lib
-   zlibwapi.lib
    opengl32.lib
    glu32.lib
-   cg.lib
-   cgGL.lib
 """)
 
 local = env.Copy()
-local.Append(LINKFLAGS = ['/force:multiple'])
+#local.Append(LINKFLAGS = ['/force:multiple'])
+local.UseGL()
+local.UseCg()
+local.UseLua()
+local.UseTinyxml()
+local.UseZLib()
 local.BuildExecutable('editor', sources + local.RES('editor.rc'), include_path=includePaths, lib_path=libPaths, libs=linkLibs)

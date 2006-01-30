@@ -201,6 +201,10 @@ def MakeLibPath(path):
    return '#' + os.path.join(buildRootDir, path.lstrip('#'))
 
 conf = Configure(env)
+if conf.CheckHeader('afxwin.h', '<>', 'c++'):
+   haveMFC = 1
+if conf.CheckHeader('atlcore.h', '<>', 'c++'):
+   haveATL = 1
 #conf.CheckLib('opengl32', 'glBegin')
 #conf.CheckLib('GL', 'glBegin')
 #conf.CheckLib('GLU', 'gluLookAt')
@@ -219,12 +223,13 @@ SConsignFile(os.path.join(buildRootDir, '.sconsign'))
 
 def CollectTargets():
    sconscripts = Walk(os.getcwd(), 1, 'SConscript', 0)
-   # Remove Windows-specific projects if not building for Windows
-   if platform != 'win32' or env.get('MSVS_VERSION') == '8.0':
-      for script in sconscripts:
-         if re.search('.*MilkShapeExporter|editor.*', script):
-            print 'Removing Windows-specific project ', script
-            sconscripts.remove(script)
+   for script in sconscripts:
+      if re.search('.*MilkShapeExporter.*', script) and not haveATL:
+         print 'Removing ATL-dependent project', script
+         sconscripts.remove(script)
+      elif re.search('.*editor.*', script) and not haveMFC:
+         print 'Removing MFC-dependent project', script
+         sconscripts.remove(script)
    return sconscripts
 
 ########################################
