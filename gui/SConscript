@@ -3,7 +3,7 @@
 
 Import('env')
 
-sources = Split("""
+sourceFiles = Split("""
    src/guibasicrenderer.cpp
    src/guibeveledrenderer.cpp
    src/guibutton.cpp
@@ -32,9 +32,9 @@ sources = Split("""
 """)
 
 if env['PLATFORM'] == 'win32':
-   sources = sources + ['src/guifontw32.cpp', 'src/guifontd3d.cpp']
+   sourceFiles += ['src/guifontw32.cpp', 'src/guifontd3d.cpp']
 elif env['PLATFORM'] == 'cygwin':
-   sources = sources + ['src/guifontx11.cpp']
+   sourceFiles += ['src/guifontx11.cpp']
 
 includePaths = Split("""
    #engine/include
@@ -54,8 +54,12 @@ linkLibs = Split("""
    engine
 """)
 
-env = env.Copy()
-env.UseGL()
-env.UseLua()
-env.UseTinyxml()
-env.BuildLibrary('gui', sources, include_path=includePaths, lib_path=libPaths, libs=linkLibs)
+local = env.Copy()
+local.UseGL()
+local.UseLua()
+local.UseTinyxml()
+local.BuildLibrary(target='gui',
+                   source=sourceFiles,
+                   include_path=includePaths,
+                   lib_path=libPaths,
+                   libs=linkLibs)

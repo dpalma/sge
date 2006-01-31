@@ -3,7 +3,7 @@
 
 Import('env')
 
-sources = Split("""
+sourceFiles = Split("""
    src/camera.cpp
    src/cmds.cpp
    src/engine.cpp
@@ -24,13 +24,12 @@ sources = Split("""
 """)
 
 if env['PLATFORM'] == 'win32':
-   sources = sources + ['src/syswin.cpp', 'src/soundwin.cpp']
+   sourceFiles += ['src/syswin.cpp', 'src/soundwin.cpp']
 elif env['PLATFORM'] == 'cygwin':
-   sources = sources + ['src/syslinux.cpp']
+   sourceFiles += ['src/syslinux.cpp']
 
 includePaths = Split("""
    #engine/include
-   #render/include
    #tech/include
 """)
 
@@ -44,8 +43,12 @@ linkLibs = Split("""
    tech
 """)
 
-env = env.Copy()
-env.UseGL()
-env.UseLua()
-env.UseTinyxml()
-env.BuildLibrary('engine', sources, include_path=includePaths, lib_path=libPaths, libs=linkLibs)
+local = env.Copy()
+local.UseGL()
+local.UseLua()
+local.UseTinyxml()
+local.BuildLibrary(target='engine',
+                   source=sourceFiles,
+                   include_path=includePaths,
+                   lib_path=libPaths,
+                   libs=linkLibs)

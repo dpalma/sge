@@ -3,7 +3,7 @@
 
 Import('env')
 
-sources = Split("""
+sourceFiles = Split("""
    src/bmp.cpp
    src/comtools.cpp
    src/config.cpp
@@ -50,6 +50,11 @@ linkLibs = Split("""
    allguids
 """)
 
-env = env.Copy()
-env.UseZLib()
-env.BuildLibrary('tech', sources, deffile='#tech/src/tech.def', include_path=includePaths, lib_path=libPaths, libs=linkLibs)
+local = env.Copy()
+local.UseZLib()
+local.BuildLibrary(target='tech',
+                   source=sourceFiles,
+                   deffile='#tech/src/tech.def',
+                   include_path=includePaths,
+                   lib_path=libPaths,
+                   libs=linkLibs)

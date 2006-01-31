@@ -67,9 +67,8 @@ class SGEEnvironment(Environment):
    def SetCommon(self):
       if platform == 'win32':
          self.Append(CCFLAGS=['/EHsc'])
-         # HACK: turn off deprecation warnings and for-scope standards compliance for VC2005
+         # HACK: turn off deprecation warnings from MSVC 2005 compiler
          if self.get('MSVS_VERSION') == '8.0':
-            self.Append(CXXFLAGS=['/Zc:forScope-'])
             self.Append(CPPDEFINES=['_CRT_SECURE_NO_DEPRECATE'])
       elif platform == 'cygwin':
          self.Append(CCFLAGS=['-mwindows'])
@@ -101,7 +100,7 @@ class SGEEnvironment(Environment):
       self.debug = 1
       self.SetCommon()
       if platform == 'win32':
-         self.Append(CCFLAGS=['/Od'], CPPDEFINES=['DEBUG'])
+         self.Append(CCFLAGS=['/Od'])
          if self.get('MSVS_VERSION') == '8.0':
             self.Append(CCFLAGS=['/RTC1'])
          else:
@@ -113,7 +112,9 @@ class SGEEnvironment(Environment):
       self.debug = 0
       self.SetCommon()
       if platform == 'win32':
-         self.Append(CCFLAGS=['/O2'], CPPDEFINES=['NDEBUG'], LINKFLAGS=['/OPT:REF'])
+         self.Append(CCFLAGS=['/O2'],
+                     CPPDEFINES=['NDEBUG'],
+                     LINKFLAGS=['/OPT:REF'])
       elif platform == 'cygwin':
          self.Append(CCFLAGS=['-o3'])
          
@@ -142,10 +143,17 @@ class SGEEnvironment(Environment):
       self.__PreBuild(*args, **kw)
       # add def file to sources
       if 'deffile' in kw:
-         args[1].append(kw.pop('deffile'))
-      if str(Platform()) == 'win32':
+         if 'source' in kw:
+            kw['source'].append(kw.pop('deffile'))
+         else:
+            args[1].append(kw.pop('deffile'))
+      if self['PLATFORM'] == 'win32':
          self.Append(LIBS=['user32', 'kernel32', 'gdi32', 'winmm'])
-      self.Append(CPPDEFINES=[args[0].upper() + '_EXPORTS'])
+      if 'target' in kw:
+         target = kw['target']
+      else:
+         target = args[0]
+      self.Append(CPPDEFINES=[target.upper() + '_EXPORTS'])
       self.SharedLibrary(*args, **kw)
 
    def BuildLibrary(self, *args, **kw):
@@ -156,10 +164,14 @@ class SGEEnvironment(Environment):
          
    def BuildExecutable(self, *args, **kw):
       self.__PreBuild(*args, **kw)
-      if str(Platform()) == 'win32':
+      if 'target' in kw:
+         target = kw['target']
+      else:
+         target = args[0]
+      if self['PLATFORM'] == 'win32':
          self.Append(LIBS=['user32', 'kernel32', 'gdi32', 'winmm'])
          if self.get('debug'):
-            self['PDB'] = args[0] + '.pdb'
+            self['PDB'] = target + '.pdb'
       self.Program(*args, **kw)
 
 
@@ -225,10 +237,10 @@ def CollectTargets():
    sconscripts = Walk(os.getcwd(), 1, 'SConscript', 0)
    for script in sconscripts:
       if re.search('.*MilkShapeExporter.*', script) and not haveATL:
-         print 'Removing ATL-dependent project', script
+         print 'Removing ATL-dependent project %s' % script
          sconscripts.remove(script)
       elif re.search('.*editor.*', script) and not haveMFC:
-         print 'Removing MFC-dependent project', script
+         print 'Removing MFC-dependent project %s ' % script
          sconscripts.remove(script)
    return sconscripts
 

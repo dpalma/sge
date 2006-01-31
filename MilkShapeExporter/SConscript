@@ -3,12 +3,11 @@
 
 Import('env')
 
-sources = Split("""
+sourceFiles = Split("""
    msPlugInApp.cpp
    msPlugInExportDlg.cpp
    msPlugInImpl.cpp
    StdAfx.cpp
-   msPlugIn.def
 """)
 
 includePaths = Split("""
@@ -16,7 +15,6 @@ includePaths = Split("""
    #3rdparty/NvTriStrip/include
    #3rdparty/wtl/include
    #engine/include
-   #render/include
    #tech/include
 """)
 
@@ -28,24 +26,21 @@ libPaths = Split("""
    #engine
 """)
 
-libs = Split("""
+linkLibs = Split("""
    msModelLib.lib
    NvTriStrip.lib
    allguids.lib
    tech.lib
    engine.lib
-   user32.lib
-   kernel32.lib
-   gdi32.lib
    comdlg32.lib
 """)
 
-env = env.Copy()
-env.Append(CPPPATH = includePaths)
-env.Append(LIBPATH = libPaths)
-env.Append(LIBS = libs)
-env.UseTinyxml()
-env.UseZLib()
-if env.get('debug'):
-   env['PDB'] = 'msSGEExporter.pdb'
-env.SharedLibrary('msSGEExporter', sources + env.RES('msPlugIn.rc'))
+local = env.Copy()
+local.UseTinyxml()
+local.UseZLib()
+local.BuildSharedLibrary(target='msSGEExporter',
+                         source=sourceFiles + local.RES('msPlugIn.rc'),
+                         deffile='#MilkShapeExporter/msPlugin.def',
+                         include_path=includePaths,
+                         lib_path=libPaths,
+                         libs=linkLibs)

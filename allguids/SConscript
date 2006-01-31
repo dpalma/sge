@@ -3,7 +3,7 @@
 
 Import('env')
 
-sources = Split("""
+sourceFiles = Split("""
    allguids.cpp
 """)
 
@@ -16,6 +16,7 @@ includePaths = Split("""
    #editor
 """)
 
-env = env.Copy()
-env.Append(CPPPATH=includePaths)
-env.Library('allguids', sources)
+local = env.Copy()
+local.BuildStaticLibrary(target='allguids',
+                         source=sourceFiles,
+                         include_path=includePaths)

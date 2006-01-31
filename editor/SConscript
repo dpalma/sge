@@ -3,7 +3,7 @@
 
 Import('env')
 
-sources = Split("""
+sourceFiles = Split("""
    aboutdlg.cpp
    BitmapUtils.cpp
    CameraDlg.cpp
@@ -32,10 +32,6 @@ sources = Split("""
 """)
 
 includePaths = Split("""
-   #3rdparty/glew/include
-   #3rdparty/Cg/include
-   #3rdparty/lua/include
-   #3rdparty/tinyxml
    #3rdparty/wtl/include
    #engine/include
    #tech/include
@@ -44,7 +40,6 @@ includePaths = Split("""
 libPaths = Split("""
    #allguids
    #tech
-   #render
    #engine
 """)
 
@@ -52,15 +47,16 @@ linkLibs = Split("""
    allguids.lib
    tech.lib
    engine.lib
-   opengl32.lib
-   glu32.lib
 """)
 
 local = env.Copy()
-#local.Append(LINKFLAGS = ['/force:multiple'])
 local.UseGL()
 local.UseCg()
 local.UseLua()
 local.UseTinyxml()
 local.UseZLib()
-local.BuildExecutable('editor', sources + local.RES('editor.rc'), include_path=includePaths, lib_path=libPaths, libs=linkLibs)
+local.BuildExecutable(target='editor',
+                      source=sourceFiles + local.RES('editor.rc'),
+                      include_path=includePaths,
+                      lib_path=libPaths,
+                      libs=linkLibs)

@@ -3,13 +3,13 @@
 
 Import('env')
 
-sources = Split("""
+sourceFiles = Split("""
    cameracontroller.cpp
    main.cpp
 """)
 
 if env['PLATFORM'] == 'win32':
-   sources = sources + env.RES('game.rc')
+   sourceFiles += env.RES('game.rc')
 
 includePaths = Split("""
    #engine/include
@@ -31,9 +31,13 @@ linkLibs = Split("""
    gui
 """)
 
-env = env.Copy()
-env.UseGL()
-env.UseLua()
-env.UseTinyxml()
-env.UseZLib()
-env.BuildExecutable('game', sources, include_path=includePaths, lib_path=libPaths, libs=linkLibs)
+local = env.Copy()
+local.UseGL()
+local.UseLua()
+local.UseTinyxml()
+local.UseZLib()
+local.BuildExecutable(target='game',
+                      source=sourceFiles,
+                      include_path=includePaths,
+                      lib_path=libPaths,
+                      libs=linkLibs)
