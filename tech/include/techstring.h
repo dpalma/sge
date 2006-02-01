@@ -49,6 +49,7 @@ public:
 
    int ToInt() const;
    float ToFloat() const;
+   double ToDouble() const;
 
    int ParseTuple(std::vector<cStr> * pStrings, const tChar * pszDelims = NULL) const;
    int ParseTuple(double * pDoubles, int nMaxDoubles) const;

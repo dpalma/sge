@@ -173,7 +173,7 @@ tResult cGUIBasicRenderer::ComputeClientArea(IGUIElement * pElement, tGUIRect * 
                if (pDialogElement->GetTitle(&title) == S_OK)
                {
                   tRect rect(0,0,0,0);
-                  if (pFont->RenderText(title.c_str(), title.length(), &rect, kRT_CalcRect, tGUIColor::White) == S_OK)
+                  if (pFont->RenderText(title.c_str(), title.length(), &rect, kRT_CalcRect, GUIStandardColors::White) == S_OK)
                   {
                      captionHeight = rect.GetHeight();
                      pDialogElement->SetCaptionHeight(captionHeight);
@@ -237,7 +237,7 @@ tResult cGUIBasicRenderer::Render(IGUILabelElement * pLabelElement, IGUIRenderDe
    tGUISize size = pLabelElement->GetSize();
    tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
 
-   tGUIColor color(tGUIColor::Black);
+   tGUIColor color(GUIStandardColors::Black);
 
    cAutoIPtr<IGUIStyle> pStyle;
    if (pLabelElement->GetStyle(&pStyle) == S_OK)
@@ -316,7 +316,7 @@ tGUISize cGUIBasicRenderer::GetPreferredSize(IGUILabelElement * pLabelElement)
       if (pLabelElement->GetText(&text) == S_OK)
       {
          tRect rect(0,0,0,0);
-         pFont->RenderText(text.c_str(), text.length(), &rect, kRT_CalcRect, tGUIColor::White);
+         pFont->RenderText(text.c_str(), text.length(), &rect, kRT_CalcRect, GUIStandardColors::White);
 
          return tGUISize(static_cast<tGUISizeType>(rect.GetWidth()), static_cast<tGUISizeType>(rect.GetHeight()));
       }

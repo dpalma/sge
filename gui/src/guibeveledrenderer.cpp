@@ -57,10 +57,10 @@ tResult cGUIBeveledRenderer::Render(IGUIElement * pElement, IGUIRenderDevice * p
 
    tGUIColor colors[kBC_NumColors] =
    {
-      tGUIColor::DarkGray,
-      tGUIColor::LightGray,
-      tGUIColor::Gray,
-      tGUIColor::Black,
+      GUIStandardColors::DarkGray,
+      GUIStandardColors::LightGray,
+      GUIStandardColors::Gray,
+      GUIStandardColors::Black,
    };
 
    int bevel = kDefaultBevel;
@@ -247,7 +247,7 @@ tResult cGUIBeveledRenderer::ComputeClientArea(IGUIElement * pElement, tGUIRect 
                if (pDialogElement->GetTitle(&title) == S_OK)
                {
                   tRect rect(0,0,0,0);
-                  if (pFont->RenderText(title.c_str(), title.length(), &rect, kRT_CalcRect, tGUIColor::White) == S_OK)
+                  if (pFont->RenderText(title.c_str(), title.length(), &rect, kRT_CalcRect, GUIStandardColors::White) == S_OK)
                   {
                      captionHeight = rect.GetHeight();
                      pDialogElement->SetCaptionHeight(captionHeight);
@@ -337,7 +337,7 @@ tResult cGUIBeveledRenderer::Render(IGUIButtonElement * pButtonElement,
       }
 
       pFont->RenderText(text.c_str(), text.length(), &rect, renderTextFlags,
-         pButtonElement->IsEnabled() ? tGUIColor::White : colors[kBC_Shadow]);
+         pButtonElement->IsEnabled() ? GUIStandardColors::White : colors[kBC_Shadow]);
 
       return S_OK;
    }
@@ -355,7 +355,7 @@ tResult cGUIBeveledRenderer::Render(IGUIDialogElement * pDialogElement,
    tGUISize size = pDialogElement->GetSize();
    tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
 
-   tGUIColor caption(tGUIColor::Blue);
+   tGUIColor caption(GUIStandardColors::Blue);
 
    cAutoIPtr<IGUIStyle> pStyle;
    if (pDialogElement->GetStyle(&pStyle) == S_OK)
@@ -384,7 +384,7 @@ tResult cGUIBeveledRenderer::Render(IGUIDialogElement * pDialogElement,
          tGUIString title;
          if (pDialogElement->GetTitle(&title) == S_OK)
          {
-            pFont->RenderText(title.c_str(), -1, &captionRect, 0, tGUIColor::White);
+            pFont->RenderText(title.c_str(), -1, &captionRect, 0, GUIStandardColors::White);
          }
       }
    }
@@ -402,7 +402,7 @@ tResult cGUIBeveledRenderer::Render(IGUILabelElement * pLabelElement,
    tGUISize size = pLabelElement->GetSize();
    tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
 
-   tGUIColor color(tGUIColor::Black);
+   tGUIColor color(GUIStandardColors::Black);
 
    cAutoIPtr<IGUIStyle> pStyle;
    if (pLabelElement->GetStyle(&pStyle) == S_OK)
@@ -451,7 +451,7 @@ tResult cGUIBeveledRenderer::Render(IGUITextEditElement * pTextEditElement,
    tGUISize size = pTextEditElement->GetSize();
    tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
 
-   pRenderDevice->RenderBeveledRect(rect, bevel, colors[kBC_Shadow], colors[kBC_Face], tGUIColor::White);
+   pRenderDevice->RenderBeveledRect(rect, bevel, colors[kBC_Shadow], colors[kBC_Face], GUIStandardColors::White);
 
    rect.left += bevel + kHorzInset;
    rect.top += kVertInset;
@@ -460,7 +460,7 @@ tResult cGUIBeveledRenderer::Render(IGUITextEditElement * pTextEditElement,
 
    pRenderDevice->PushScissorRect(rect);
 
-   tGUIColor textColor(tGUIColor::Black);
+   tGUIColor textColor(GUIStandardColors::Black);
 
    cAutoIPtr<IGUIStyle> pStyle;
    if (pTextEditElement->GetStyle(&pStyle) == S_OK)
@@ -483,7 +483,7 @@ tResult cGUIBeveledRenderer::Render(IGUITextEditElement * pTextEditElement,
 
          // Determine the width of the text up to the cursor
          pFont->RenderText(text.c_str(), selEnd, &leftOfCursor,
-            kRT_NoClip | kRT_CalcRect, tGUIColor::White);
+            kRT_NoClip | kRT_CalcRect, GUIStandardColors::White);
       }
 
       // Offset the left edge so that the cursor is always in view.
@@ -501,7 +501,7 @@ tResult cGUIBeveledRenderer::Render(IGUITextEditElement * pTextEditElement,
             rect.left + leftOfCursor.GetWidth() + kCursorWidth,
             rect.bottom - 1);
 
-         pRenderDevice->RenderSolidRect(cursorRect, tGUIColor::Black);
+         pRenderDevice->RenderSolidRect(cursorRect, GUIStandardColors::Black);
       }
    }
 
@@ -559,15 +559,15 @@ tResult cGUIBeveledRenderer::Render(IGUIScrollBarElement * pScrollBarElement,
 
    pRenderDevice->RenderSolidRect(track1Rect, colors[kBC_Light]);
    pRenderDevice->RenderSolidRect(track2Rect, colors[kBC_Light]);
-   pRenderDevice->RenderBeveledRect(thumbRect, bevel, colors[kBC_Light], tGUIColor::DarkGray, colors[kBC_Face]);
+   pRenderDevice->RenderBeveledRect(thumbRect, bevel, colors[kBC_Light], GUIStandardColors::DarkGray, colors[kBC_Face]);
 
    if (armedPart == kGUIScrollBarPartButton1 && armedPart == mouseOverPart)
    {
-      pRenderDevice->RenderBeveledRect(btn1Rect, bevel, tGUIColor::DarkGray, colors[kBC_Light], colors[kBC_Face]);
+      pRenderDevice->RenderBeveledRect(btn1Rect, bevel, GUIStandardColors::DarkGray, colors[kBC_Light], colors[kBC_Face]);
    }
    else
    {
-      pRenderDevice->RenderBeveledRect(btn1Rect, bevel, colors[kBC_Light], tGUIColor::DarkGray, colors[kBC_Face]);
+      pRenderDevice->RenderBeveledRect(btn1Rect, bevel, colors[kBC_Light], GUIStandardColors::DarkGray, colors[kBC_Face]);
    }
 
    if (armedPart == kGUIScrollBarPartButton2 && armedPart == mouseOverPart)
@@ -592,7 +592,7 @@ tResult cGUIBeveledRenderer::Render(IGUIListBoxElement * pListBoxElement,
    tGUISize size = pListBoxElement->GetSize();
    tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
 
-   pRenderDevice->RenderBeveledRect(rect, bevel, tGUIColor::DarkGray, tGUIColor::Gray, tGUIColor::White);
+   pRenderDevice->RenderBeveledRect(rect, bevel, GUIStandardColors::DarkGray, GUIStandardColors::Gray, GUIStandardColors::White);
 
    rect.left += bevel + kHorzInset;
    rect.top += kVertInset;
@@ -601,7 +601,7 @@ tResult cGUIBeveledRenderer::Render(IGUIListBoxElement * pListBoxElement,
 
    pRenderDevice->PushScissorRect(rect);
 
-   tGUIColor textColor(tGUIColor::Black);
+   tGUIColor textColor(GUIStandardColors::Black);
    cAutoIPtr<IGUIStyle> pStyle;
    if (pListBoxElement->GetStyle(&pStyle) == S_OK)
    {
@@ -639,8 +639,8 @@ tResult cGUIBeveledRenderer::Render(IGUIListBoxElement * pListBoxElement,
 
             if (bIsSelected)
             {
-               textColor = tGUIColor::White;
-               pRenderDevice->RenderSolidRect(itemRect, tGUIColor::Blue);
+               textColor = GUIStandardColors::White;
+               pRenderDevice->RenderSolidRect(itemRect, GUIStandardColors::Blue);
             }
 
             pFont->RenderText(itemString.c_str(), itemString.length(), &itemRect, kRT_NoClip, textColor);
@@ -664,7 +664,7 @@ tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIButtonElement * pButtonElemen
       && GetFont(pButtonElement, &pFont) == S_OK)
    {
       tRect rect(0,0,0,0);
-      pFont->RenderText(text.c_str(), text.length(), &rect, kRT_CalcRect, tGUIColor::White);
+      pFont->RenderText(text.c_str(), text.length(), &rect, kRT_CalcRect, GUIStandardColors::White);
 
       return tGUISize(static_cast<tGUISizeType>(rect.GetWidth() + rect.GetHeight()),
                       rect.GetHeight() * 1.5f);
@@ -693,7 +693,7 @@ tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIDialogElement * pDialogElemen
          if (GetFont(pDialogElement, &pFont) == S_OK)
          {
             tRect rect(0,0,0,0);
-            pFont->RenderText(title.c_str(), title.length(), &rect, kRT_CalcRect, tGUIColor::White);
+            pFont->RenderText(title.c_str(), title.length(), &rect, kRT_CalcRect, GUIStandardColors::White);
 
             captionHeight = rect.GetHeight();
 
@@ -717,7 +717,7 @@ tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUILabelElement * pLabelElement)
       if (pLabelElement->GetText(&text) == S_OK)
       {
          tRect rect(0,0,0,0);
-         pFont->RenderText(text.c_str(), text.length(), &rect, kRT_CalcRect, tGUIColor::White);
+         pFont->RenderText(text.c_str(), text.length(), &rect, kRT_CalcRect, GUIStandardColors::White);
 
          return tGUISize(static_cast<tGUISizeType>(rect.GetWidth()), static_cast<tGUISizeType>(rect.GetHeight()));
       }
@@ -750,7 +750,7 @@ tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUITextEditElement * pTextEditEl
       memset(psz, 'M', editSize * sizeof(char));
 
       tRect rect(0,0,0,0);
-      pFont->RenderText(psz, editSize, &rect, kRT_CalcRect | kRT_SingleLine, tGUIColor::White);
+      pFont->RenderText(psz, editSize, &rect, kRT_CalcRect | kRT_SingleLine, GUIStandardColors::White);
 
       return tGUISize(static_cast<tGUISizeType>(rect.GetWidth() + (kHorzInset * 2)),
                       static_cast<tGUISizeType>(rect.GetHeight() + (kVertInset * 2)));
@@ -788,7 +788,7 @@ tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIListBoxElement * pListBoxElem
       if (pListBoxElement->GetRowCount(&rowCount) == S_OK)
       {
          tRect rect(0,0,0,0);
-         pFont->RenderText("XYZxyz\0", -1, &rect, kRT_CalcRect, tGUIColor::White);
+         pFont->RenderText("XYZxyz\0", -1, &rect, kRT_CalcRect, GUIStandardColors::White);
          return tGUISize(0, static_cast<tGUISizeType>(rowCount * rect.GetHeight()));
       }
    }

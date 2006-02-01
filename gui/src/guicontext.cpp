@@ -180,7 +180,7 @@ cGUIContext::cGUIContext(const tChar * pszScriptName)
 #ifdef GUI_DEBUG
  , m_bShowDebugInfo(false)
  , m_debugInfoPlacement(0,0)
- , m_debugInfoTextColor(tGUIColor::White)
+ , m_debugInfoTextColor(GUIStandardColors::White)
  , m_lastMousePos(0,0)
 #endif
 {
@@ -587,6 +587,7 @@ tResult cGUIContext::PushPage(const tChar * pszPage)
       cGUIPage * pPage = new cGUIPage(&elements);
       if (pPage == NULL)
       {
+         std::for_each(elements.begin(), elements.end(), CTInterfaceMethod(&IGUIElement::Release));
          return E_OUTOFMEMORY;
       }
 

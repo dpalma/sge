@@ -8,6 +8,7 @@
 #ifndef INCLUDED_GUIELEMENTBASETEM_H
 #define INCLUDED_GUIELEMENTBASETEM_H
 
+#include "guiapi.h"
 #include "guistyleapi.h"
 
 #include "globalobj.h"

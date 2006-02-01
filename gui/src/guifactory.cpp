@@ -85,7 +85,9 @@ tResult cGUIFactories::Term()
 
 ///////////////////////////////////////
 
-tResult cGUIFactories::CreateElement(const TiXmlElement * pXmlElement, IGUIElement * pParent, IGUIElement * * ppElement)
+tResult cGUIFactories::CreateElement(const TiXmlElement * pXmlElement,
+                                     IGUIElement * pParent,
+                                     IGUIElement * * ppElement)
 {
    if (ppElement == NULL)
    {

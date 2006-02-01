@@ -1265,8 +1265,13 @@ void cLuaInterpreterTests::TestPublishObject()
       "print([[%s() returned ]] .. r .. [[\r\n]]);"
    };
 
+   // TODO: Re-visit this when considering _WIN64
    cStr script;
+#if defined(_INTEGRAL_MAX_BITS) && (_INTEGRAL_MAX_BITS >= 64)
+   script.Format(kScriptSpec, kRNG, _time32(NULL), kRNG, kRNG);
+#else
    script.Format(kScriptSpec, kRNG, time(NULL), kRNG, kRNG);
+#endif
 
    CPPUNIT_ASSERT(m_pInterp->ExecString(script.c_str()) == S_OK);
    CPPUNIT_ASSERT(m_pInterp->RemoveNamedItem(kRNG) == S_OK);

@@ -4,7 +4,6 @@
 #ifndef INCLUDED_GUIELEMENTBASE_H
 #define INCLUDED_GUIELEMENTBASE_H
 
-#include "guiapi.h"
 #include "guielementapi.h"
 
 #ifdef _MSC_VER

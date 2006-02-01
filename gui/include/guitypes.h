@@ -7,9 +7,9 @@
 #include "guidll.h"
 
 #include "color.h"
+#include "rect.h"
 #include "techstring.h"
 #include "vec2.h"
-#include "rect.h"
 
 #ifdef _MSC_VER
 #pragma once
@@ -27,6 +27,8 @@ typedef float tGUISizeType;
 typedef class cGUISize<tGUISizeType> tGUISize;
 
 typedef tRect tGUIRect;
+
+typedef cColor tGUIColor;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -66,35 +68,21 @@ typedef struct sGUIInsets tGUIInsets;
 
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUIColor
-//
 
-#pragma warning(disable:4275) // non dll-interface class 'X' used as base for dll-interface class 'Y'
-
-class GUI_API cGUIColor : public cColor
+namespace GUIStandardColors
 {
-public:
-   cGUIColor() : cColor() {}
-   cGUIColor(float r, float g, float b) : cColor(r, g, b) {}
-   cGUIColor(float r, float g, float b, float a) : cColor(r, g, b, a) {}
-   cGUIColor(const float rgba[4]) : cColor(rgba) {}
-   cGUIColor(const cGUIColor & other) : cColor(other) {}
-
-   static const cGUIColor Black;
-   static const cGUIColor Red;
-   static const cGUIColor Green;
-   static const cGUIColor Yellow;
-   static const cGUIColor Blue;
-   static const cGUIColor Magenta;
-   static const cGUIColor Cyan;
-   static const cGUIColor DarkGray;
-   static const cGUIColor Gray;
-   static const cGUIColor LightGray;
-   static const cGUIColor White;
-};
-
-typedef cGUIColor tGUIColor;
+   GUI_API extern const tGUIColor Black;
+   GUI_API extern const tGUIColor Red;
+   GUI_API extern const tGUIColor Green;
+   GUI_API extern const tGUIColor Yellow;
+   GUI_API extern const tGUIColor Blue;
+   GUI_API extern const tGUIColor Magenta;
+   GUI_API extern const tGUIColor Cyan;
+   GUI_API extern const tGUIColor DarkGray;
+   GUI_API extern const tGUIColor Gray;
+   GUI_API extern const tGUIColor LightGray;
+   GUI_API extern const tGUIColor White;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -163,6 +151,7 @@ inline bool cGUISize<T>::operator ==(const cGUISize & other) const
 {
    return (width == other.width) && (height == other.height);
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //

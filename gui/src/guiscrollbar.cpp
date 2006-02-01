@@ -384,6 +384,31 @@ eGUIScrollBarPart cGUIScrollBarElement::GetHitPart(const tGUIPoint & point)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+static tResult GetScrollBarTypeFromString(const char * psz, eGUIScrollBarType * pSBType)
+{
+   if (psz == NULL || pSBType == NULL)
+   {
+      return E_POINTER;
+   }
+
+   eGUIScrollBarType scrollBarType = kGUIScrollBarVertical;
+   if (stricmp(psz, kValueVertical) == 0)
+   {
+      scrollBarType = kGUIScrollBarVertical;
+   }
+   else if (stricmp(psz, kValueHorizontal) == 0)
+   {
+      scrollBarType = kGUIScrollBarHorizontal;
+   }
+   else
+   {
+      return E_INVALIDARG;
+   }
+
+   *pSBType = scrollBarType;
+   return S_OK;
+}
+
 tResult GUIScrollBarElementCreateFromXml(const TiXmlElement * pXmlElement,
                                          IGUIElement * pParent, IGUIElement * * ppElement)
 {
@@ -396,23 +421,10 @@ tResult GUIScrollBarElementCreateFromXml(const TiXmlElement * pXmlElement,
    {
       if (strcmp(pXmlElement->Value(), kElementScrollBar) == 0)
       {
-         const char * pszAttrib;
-
-         eGUIScrollBarType scrollBarType = kGUIScrollBarVertical;
-         if ((pszAttrib = pXmlElement->Attribute(kAttribType)) != NULL)
+         eGUIScrollBarType scrollBarType;
+         if (FAILED(GetScrollBarTypeFromString(pXmlElement->Attribute(kAttribType), &scrollBarType)))
          {
-            if (stricmp(pszAttrib, kValueVertical) == 0)
-            {
-               scrollBarType = kGUIScrollBarVertical;
-            }
-            else if (stricmp(pszAttrib, kValueHorizontal) == 0)
-            {
-               scrollBarType = kGUIScrollBarHorizontal;
-            }
-            else
-            {
-               return E_INVALIDARG;
-            }
+            return E_FAIL;
          }
 
          cAutoIPtr<IGUIScrollBarElement> pScrollBar = static_cast<IGUIScrollBarElement *>(
@@ -422,6 +434,8 @@ tResult GUIScrollBarElementCreateFromXml(const TiXmlElement * pXmlElement,
             return E_OUTOFMEMORY;
          }
          GUIElementStandardAttributes(pXmlElement, pScrollBar);
+
+         const char * pszAttrib;
 
 #define ScrollBarAttrib(attrib) \
    do { if ((pszAttrib = pXmlElement->Attribute(kAttrib##attrib)) != NULL) { \

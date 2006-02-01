@@ -961,7 +961,7 @@ bool cGUIStyleTests::StyleMatchesTest(IGUIStyle * pStyle)
 
       if ((pStyle->GetAlignment(&temp) == S_OK) && (temp == kGUIAlignCenter)
          && (pStyle->GetVerticalAlignment(&temp) == S_OK) && (temp == kGUIVertAlignCenter)
-         && (pStyle->GetBackgroundColor(&color) == S_OK) && (color == tGUIColor::White)
+         && (pStyle->GetBackgroundColor(&color) == S_OK) && (color == GUIStandardColors::White)
          && (pStyle->GetForegroundColor(&color) == S_OK) && (color == tGUIColor(0,0,0))
          && (pStyle->GetTextAlignment(&temp) == S_OK) && (temp == kGUIAlignRight)
          && (pStyle->GetTextVerticalAlignment(&temp) == S_OK) && (temp == kGUIVertAlignBottom)

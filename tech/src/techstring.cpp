@@ -51,6 +51,17 @@ float cStr::ToFloat() const
 
 ///////////////////////////////////////
 
+double cStr::ToDouble() const
+{
+#ifdef _UNICODE
+   return _wtof(Get());
+#else
+   return atof(Get());
+#endif
+}
+
+///////////////////////////////////////
+
 int cStr::ParseTuple(std::vector<cStr> * pStrings, const tChar * pszDelims /*=NULL*/) const
 {
    if (pStrings == NULL)
@@ -141,7 +152,7 @@ int cStr::ParseTuple(double * pDoubles, int nMaxDoubles) const
       std::vector<cStr>::iterator end = strings.end();
       for (; (iter != end) && (count < nMaxDoubles); iter++, count++)
       {
-         *pDoubles++ = iter->ToFloat();
+         *pDoubles++ = iter->ToDouble();
       }
       return count;
    }

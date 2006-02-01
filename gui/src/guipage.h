@@ -14,8 +14,9 @@
 #pragma once
 #endif
 
-typedef std::list<IGUIElement *> tGUIElementList;
+F_DECLARE_INTERFACE(IGUIRenderDevice);
 
+typedef std::list<IGUIElement *> tGUIElementList;
 
 ///////////////////////////////////////////////////////////////////////////////
 //

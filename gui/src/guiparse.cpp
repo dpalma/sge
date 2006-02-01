@@ -126,17 +126,17 @@ tResult GUIParseColor(const tChar * pszColor, tGUIColor * pColor)
    }
    g_namedColorTable[] =
    {
-      sNamedColor(kValueColorBlack,       tGUIColor::Black),
-      sNamedColor(kValueColorRed,         tGUIColor::Red),
-      sNamedColor(kValueColorGreen,       tGUIColor::Green),
-      sNamedColor(kValueColorYellow,      tGUIColor::Yellow),
-      sNamedColor(kValueColorBlue,        tGUIColor::Blue),
-      sNamedColor(kValueColorMagenta,     tGUIColor::Magenta),
-      sNamedColor(kValueColorCyan,        tGUIColor::Cyan),
-      sNamedColor(kValueColorDarkGray,    tGUIColor::DarkGray),
-      sNamedColor(kValueColorGray,        tGUIColor::Gray),
-      sNamedColor(kValueColorLightGray,   tGUIColor::LightGray),
-      sNamedColor(kValueColorWhite,       tGUIColor::White),
+      sNamedColor(kValueColorBlack,       GUIStandardColors::Black),
+      sNamedColor(kValueColorRed,         GUIStandardColors::Red),
+      sNamedColor(kValueColorGreen,       GUIStandardColors::Green),
+      sNamedColor(kValueColorYellow,      GUIStandardColors::Yellow),
+      sNamedColor(kValueColorBlue,        GUIStandardColors::Blue),
+      sNamedColor(kValueColorMagenta,     GUIStandardColors::Magenta),
+      sNamedColor(kValueColorCyan,        GUIStandardColors::Cyan),
+      sNamedColor(kValueColorDarkGray,    GUIStandardColors::DarkGray),
+      sNamedColor(kValueColorGray,        GUIStandardColors::Gray),
+      sNamedColor(kValueColorLightGray,   GUIStandardColors::LightGray),
+      sNamedColor(kValueColorWhite,       GUIStandardColors::White),
    };
 
    float rgba[4];
@@ -261,27 +261,27 @@ void cGUIParseTests::TestParseColor()
 {
    tGUIColor color;
    CPPUNIT_ASSERT(GUIParseColor("black", &color) == S_OK);
-   CPPUNIT_ASSERT(color == tGUIColor::Black);
+   CPPUNIT_ASSERT(color == GUIStandardColors::Black);
    CPPUNIT_ASSERT(GUIParseColor("red", &color) == S_OK);
-   CPPUNIT_ASSERT(color == tGUIColor::Red);
+   CPPUNIT_ASSERT(color == GUIStandardColors::Red);
    CPPUNIT_ASSERT(GUIParseColor("green", &color) == S_OK);
-   CPPUNIT_ASSERT(color == tGUIColor::Green);
+   CPPUNIT_ASSERT(color == GUIStandardColors::Green);
    CPPUNIT_ASSERT(GUIParseColor("yellow", &color) == S_OK);
-   CPPUNIT_ASSERT(color == tGUIColor::Yellow);
+   CPPUNIT_ASSERT(color == GUIStandardColors::Yellow);
    CPPUNIT_ASSERT(GUIParseColor("blue", &color) == S_OK);
-   CPPUNIT_ASSERT(color == tGUIColor::Blue);
+   CPPUNIT_ASSERT(color == GUIStandardColors::Blue);
    CPPUNIT_ASSERT(GUIParseColor("magenta", &color) == S_OK);
-   CPPUNIT_ASSERT(color == tGUIColor::Magenta);
+   CPPUNIT_ASSERT(color == GUIStandardColors::Magenta);
    CPPUNIT_ASSERT(GUIParseColor("cyan", &color) == S_OK);
-   CPPUNIT_ASSERT(color == tGUIColor::Cyan);
+   CPPUNIT_ASSERT(color == GUIStandardColors::Cyan);
    CPPUNIT_ASSERT(GUIParseColor("darkgray", &color) == S_OK);
-   CPPUNIT_ASSERT(color == tGUIColor::DarkGray);
+   CPPUNIT_ASSERT(color == GUIStandardColors::DarkGray);
    CPPUNIT_ASSERT(GUIParseColor("gray", &color) == S_OK);
-   CPPUNIT_ASSERT(color == tGUIColor::Gray);
+   CPPUNIT_ASSERT(color == GUIStandardColors::Gray);
    CPPUNIT_ASSERT(GUIParseColor("lightgray", &color) == S_OK);
-   CPPUNIT_ASSERT(color == tGUIColor::LightGray);
+   CPPUNIT_ASSERT(color == GUIStandardColors::LightGray);
    CPPUNIT_ASSERT(GUIParseColor("white", &color) == S_OK);
-   CPPUNIT_ASSERT(color == tGUIColor::White);
+   CPPUNIT_ASSERT(color == GUIStandardColors::White);
 }
 
 ///////////////////////////////////////

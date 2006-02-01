@@ -60,10 +60,10 @@ enum eGUIFontRenderTextFlags
 
 interface IGUIFont : IUnknown
 {
-   virtual tResult RenderText(const char * pszText, int textLength, tRect * pRect,
-                              uint flags, const cColor & color) const = 0;
-   virtual tResult RenderText(const wchar_t * pszText, int textLength, tRect * pRect,
-                              uint flags, const cColor & color) const = 0;
+   virtual tResult RenderText(const char * pszText, int textLength, tGUIRect * pRect,
+                              uint flags, const tGUIColor & color) const = 0;
+   virtual tResult RenderText(const wchar_t * pszText, int textLength, tGUIRect * pRect,
+                              uint flags, const tGUIColor & color) const = 0;
 };
 
 
