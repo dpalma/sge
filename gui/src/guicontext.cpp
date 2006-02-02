@@ -200,6 +200,9 @@ tResult cGUIContext::Init()
    UseGlobal(Input);
    pInput->AddInputListener(&m_inputListener, kILP_GUI);
 
+   UseGlobal(GUIFactory);
+   pGUIFactory->AddFactoryListener(this);
+
    GUILayoutRegisterBuiltInTypes();
 
    UseGlobal(ScriptInterpreter);
@@ -215,6 +218,9 @@ tResult cGUIContext::Term()
 {
    UseGlobal(Input);
    pInput->RemoveInputListener(&m_inputListener);
+
+   UseGlobal(GUIFactory);
+   pGUIFactory->RemoveFactoryListener(this);
 
    ClearTempElements();
 
@@ -470,7 +476,7 @@ static void CreateElements(TiXmlNode * pTiXmlNode, IGUIElement * pParent,
       return;
    }
 
-   UseGlobal(GUIFactories);
+   UseGlobal(GUIFactory);
 
    cAutoIPtr<IGUIContainerElement> pContainer;
    if (pParent != NULL)
@@ -487,7 +493,7 @@ static void CreateElements(TiXmlNode * pTiXmlNode, IGUIElement * pParent,
       }
 
       cAutoIPtr<IGUIElement> pElement;
-      if (pGUIFactories->CreateElement(pXmlElement, pParent, &pElement) == S_OK)
+      if (pGUIFactory->CreateElement(pXmlElement, pParent, &pElement) == S_OK)
       {
          if (pfnCallback != NULL)
          {
@@ -504,15 +510,6 @@ static void CreateElements(TiXmlNode * pTiXmlNode, IGUIElement * pParent,
 
 ///////////////////////////////////////
 
-struct sCallbackData
-{
-   tGUIElementList * pElements;
-   std::map<tGUIString, IGUIElement*> * pTempElementsById;
-   tGUIElementList * pTempElements;
-};
-
-typedef struct sCallbackData tGUIContextCreateElementsCallbackData;
-
 static void GUIContextCreateElementsCallback(IGUIElement * pElement, IGUIElement * pParent, void * pData)
 {
    if (pData == NULL)
@@ -520,24 +517,13 @@ static void GUIContextCreateElementsCallback(IGUIElement * pElement, IGUIElement
       return;
    }
 
-   tGUIContextCreateElementsCallbackData * p = (tGUIContextCreateElementsCallbackData *)pData;
-
    if (pElement != NULL)
    {
       // Add only top-level elements to the list
       if (pParent == NULL)
       {
-         p->pElements->push_back(CTAddRef(pElement));
-      }
-
-      tGUIString id;
-      if (pElement->GetId(&id) == S_OK)
-      {
-         p->pTempElementsById->insert(std::make_pair(id, CTAddRef(pElement)));
-      }
-      else
-      {
-         p->pTempElements->push_back(CTAddRef(pElement));
+         tGUIElementList * pElements = (tGUIElementList*)pData;
+         pElements->push_back(CTAddRef(pElement));
       }
    }
 }
@@ -575,13 +561,7 @@ tResult cGUIContext::PushPage(const tChar * pszPage)
    ClearTempElements();
 
    tGUIElementList elements;
-
-   tGUIContextCreateElementsCallbackData callbackData;
-   callbackData.pElements = &elements;
-   callbackData.pTempElementsById = &m_tempElementMap;
-   callbackData.pTempElements = &m_tempElementList;
-
-   CreateElements(pTiXmlDoc, NULL, GUIContextCreateElementsCallback, &callbackData);
+   CreateElements(pTiXmlDoc, NULL, GUIContextCreateElementsCallback, &elements);
    if (!elements.empty())
    {
       cGUIPage * pPage = new cGUIPage(&elements);
@@ -854,6 +834,33 @@ tResult cGUIContext::HideDebugInfo()
    }
 #endif
    return S_FALSE;
+}
+
+///////////////////////////////////////
+
+tResult cGUIContext::PreCreateElement(const TiXmlElement * pXmlElement, IGUIElement * pParent)
+{
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+void cGUIContext::OnCreateElement(const TiXmlElement * pXmlElement, IGUIElement * pParent, IGUIElement * pElement)
+{
+   if (pElement == NULL)
+   {
+      return;
+   }
+
+   tGUIString id;
+   if (pElement->GetId(&id) == S_OK)
+   {
+      m_tempElementMap.insert(std::make_pair(id, CTAddRef(pElement)));
+   }
+   else
+   {
+      m_tempElementList.push_back(CTAddRef(pElement));
+   }
 }
 
 ///////////////////////////////////////

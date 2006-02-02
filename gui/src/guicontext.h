@@ -31,8 +31,10 @@ class cGUIPage;
 // CLASS: cGUIContext
 //
 
-class cGUIContext : public cComObject3<cGUIEventRouter<cGUIContext, IGUIContext>, &IID_IGUIContext,
-                                       IMPLEMENTS(IGlobalObject), IMPLEMENTS(IScriptable)>
+class cGUIContext : public cComObject4<cGUIEventRouter<cGUIContext, IGUIContext>, &IID_IGUIContext,
+                                       IMPLEMENTS(IGlobalObject),
+                                       IMPLEMENTS(IScriptable),
+                                       IMPLEMENTS(IGUIFactoryListener)>
 {
 public:
    cGUIContext(const tChar * pszScriptName);
@@ -82,6 +84,10 @@ public:
 
    virtual tResult ShowDebugInfo(const tGUIPoint & placement, IGUIStyle * pStyle);
    virtual tResult HideDebugInfo();
+
+   // IGUIFactoryListener methods
+   virtual tResult PreCreateElement(const TiXmlElement * pXmlElement, IGUIElement * pParent);
+   virtual void OnCreateElement(const TiXmlElement * pXmlElement, IGUIElement * pParent, IGUIElement * pElement);
 
    tResult GetHitElement(const tGUIPoint & point, IGUIElement * * ppElement) const;
    tResult GetActiveModalDialog(IGUIDialogElement * * ppModalDialog);

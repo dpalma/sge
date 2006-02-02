@@ -6,6 +6,7 @@
 
 #include "guiapi.h"
 
+#include "connptimpl.h"
 #include "globalobjdef.h"
 
 #include <map>
@@ -16,20 +17,26 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGUIFactories
+// CLASS: cGUIFactory
 //
 
-class cGUIFactories : public cComObject2<IMPLEMENTS(IGUIFactories), IMPLEMENTS(IGlobalObject)>
+class cGUIFactory : public cComObject2<IMPLEMENTSCP(IGUIFactory, IGUIFactoryListener),
+                                       IMPLEMENTS(IGlobalObject)>
 {
+   typedef cConnectionPoint<IGUIFactory, IGUIFactoryListener> tCP;
+
 public:
-   cGUIFactories();
-   ~cGUIFactories();
+   cGUIFactory();
+   ~cGUIFactory();
 
    DECLARE_NAME(GUIFactory)
    DECLARE_NO_CONSTRAINTS()
 
    virtual tResult Init();
    virtual tResult Term();
+
+   virtual tResult AddFactoryListener(IGUIFactoryListener * pListener);
+   virtual tResult RemoveFactoryListener(IGUIFactoryListener * pListener);
 
    virtual tResult CreateElement(const TiXmlElement * pXmlElement, IGUIElement * pParent, IGUIElement * * ppElement);
    virtual tResult CreateRenderer(const tChar * pszRendererClass, IGUIElementRenderer * * ppRenderer);

@@ -309,8 +309,8 @@ tResult cGUIElementBase<INTRFC>::GetRenderer(IGUIElementRenderer * * ppRenderer)
       tGUIString rendererClass;
       if (GetRendererClass(&rendererClass) == S_OK)
       {
-         UseGlobal(GUIFactories);
-         pGUIFactories->CreateRenderer(rendererClass.c_str(), &m_pRenderer);
+         UseGlobal(GUIFactory);
+         pGUIFactory->CreateRenderer(rendererClass.c_str(), &m_pRenderer);
       }
    }
    return m_pRenderer.GetPointer(ppRenderer);

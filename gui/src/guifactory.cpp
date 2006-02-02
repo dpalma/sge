@@ -28,30 +28,30 @@ REFERENCE_GUIFACTORY(basic);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGUIFactories
+// CLASS: cGUIFactory
 //
 
 ///////////////////////////////////////
 
-bool cGUIFactories::gm_bInitialized = false;
-cGUIFactories::tElementFactoryFnNode * cGUIFactories::gm_pElementFactoryFns = NULL;
-cGUIFactories::tRendererFactoryFnNode * cGUIFactories::gm_pRendererFactoryFns = NULL;
+bool cGUIFactory::gm_bInitialized = false;
+cGUIFactory::tElementFactoryFnNode * cGUIFactory::gm_pElementFactoryFns = NULL;
+cGUIFactory::tRendererFactoryFnNode * cGUIFactory::gm_pRendererFactoryFns = NULL;
 
 ///////////////////////////////////////
 
-cGUIFactories::cGUIFactories()
+cGUIFactory::cGUIFactory()
 {
 }
 
 ///////////////////////////////////////
 
-cGUIFactories::~cGUIFactories()
+cGUIFactory::~cGUIFactory()
 {
 }
 
 ///////////////////////////////////////
 
-tResult cGUIFactories::Init()
+tResult cGUIFactory::Init()
 {
    gm_bInitialized = true;
 
@@ -76,7 +76,7 @@ tResult cGUIFactories::Init()
 
 ///////////////////////////////////////
 
-tResult cGUIFactories::Term()
+tResult cGUIFactory::Term()
 {
    CleanupElementFactories();
    CleanupRendererFactories();
@@ -85,13 +85,40 @@ tResult cGUIFactories::Term()
 
 ///////////////////////////////////////
 
-tResult cGUIFactories::CreateElement(const TiXmlElement * pXmlElement,
-                                     IGUIElement * pParent,
-                                     IGUIElement * * ppElement)
+tResult cGUIFactory::AddFactoryListener(IGUIFactoryListener * pListener)
+{
+   return tCP::Connect(pListener);
+}
+
+///////////////////////////////////////
+
+tResult cGUIFactory::RemoveFactoryListener(IGUIFactoryListener * pListener)
+{
+   return tCP::Disconnect(pListener);
+}
+
+///////////////////////////////////////
+
+tResult cGUIFactory::CreateElement(const TiXmlElement * pXmlElement,
+                                   IGUIElement * pParent,
+                                   IGUIElement * * ppElement)
 {
    if (ppElement == NULL)
    {
       return E_POINTER;
+   }
+
+   {
+      tCP::tSinksIterator iter = tCP::BeginSinks();
+      tCP::tSinksIterator end = tCP::EndSinks();
+      for (; iter != end; iter++)
+      {
+         if ((*iter)->PreCreateElement(pXmlElement, pParent) != S_OK)
+         {
+            InfoMsg("GUI element creation vetoed by a listener\n");
+            return S_FALSE;
+         }
+      }
    }
 
    *ppElement = NULL;
@@ -119,12 +146,21 @@ tResult cGUIFactories::CreateElement(const TiXmlElement * pXmlElement,
       }
    }
 
+   {
+      tCP::tSinksIterator iter = tCP::BeginSinks();
+      tCP::tSinksIterator end = tCP::EndSinks();
+      for (; iter != end; iter++)
+      {
+         (*iter)->OnCreateElement(pXmlElement, pParent, pElement);
+      }
+   }
+
    return pElement.GetPointer(ppElement);
 }
 
 ///////////////////////////////////////
 
-tResult cGUIFactories::CreateRenderer(const tChar * pszRendererClass, IGUIElementRenderer * * ppRenderer)
+tResult cGUIFactory::CreateRenderer(const tChar * pszRendererClass, IGUIElementRenderer * * ppRenderer)
 {
    if (pszRendererClass == NULL || ppRenderer == NULL)
    {
@@ -142,7 +178,7 @@ tResult cGUIFactories::CreateRenderer(const tChar * pszRendererClass, IGUIElemen
 
 ///////////////////////////////////////
 
-tResult cGUIFactories::RegisterElementFactory(const tChar * pszType, tGUIElementFactoryFn pFactoryFn)
+tResult cGUIFactory::RegisterElementFactory(const tChar * pszType, tGUIElementFactoryFn pFactoryFn)
 {
    if (pszType == NULL || pFactoryFn == NULL)
    {
@@ -162,7 +198,7 @@ tResult cGUIFactories::RegisterElementFactory(const tChar * pszType, tGUIElement
 
 ///////////////////////////////////////
 
-tResult cGUIFactories::RevokeElementFactory(const char * pszType)
+tResult cGUIFactory::RevokeElementFactory(const char * pszType)
 {
    if (pszType == NULL)
    {
@@ -174,8 +210,8 @@ tResult cGUIFactories::RevokeElementFactory(const char * pszType)
 
 ///////////////////////////////////////
 
-tResult cGUIFactories::RegisterRendererFactory(const tChar * pszRenderer,
-                                               tGUIRendererFactoryFn pFactoryFn)
+tResult cGUIFactory::RegisterRendererFactory(const tChar * pszRenderer,
+                                             tGUIRendererFactoryFn pFactoryFn)
 {
    if (pszRenderer == NULL || pFactoryFn == NULL)
    {
@@ -195,7 +231,7 @@ tResult cGUIFactories::RegisterRendererFactory(const tChar * pszRenderer,
 
 ///////////////////////////////////////
 
-tResult cGUIFactories::RevokeRendererFactory(const tChar * pszRenderer)
+tResult cGUIFactory::RevokeRendererFactory(const tChar * pszRenderer)
 {
    if (pszRenderer == NULL)
    {
@@ -207,21 +243,21 @@ tResult cGUIFactories::RevokeRendererFactory(const tChar * pszRenderer)
 
 ///////////////////////////////////////
 
-void cGUIFactories::CleanupElementFactories()
+void cGUIFactory::CleanupElementFactories()
 {
    m_elementFactoryFnMap.clear();
 }
 
 ///////////////////////////////////////
 
-void cGUIFactories::CleanupRendererFactories()
+void cGUIFactory::CleanupRendererFactories()
 {
    m_rendererFactoryFnMap.clear();
 }
 
 ///////////////////////////////////////
 
-cGUIFactories::cAutoCleanupStatics::~cAutoCleanupStatics()
+cGUIFactory::cAutoCleanupStatics::~cAutoCleanupStatics()
 {
    {
       while (gm_pElementFactoryFns != NULL)
@@ -244,18 +280,18 @@ cGUIFactories::cAutoCleanupStatics::~cAutoCleanupStatics()
 
 ///////////////////////////////////////
 
-cGUIFactories::cAutoCleanupStatics cGUIFactories::g_autoCleanupStatics;
+cGUIFactory::cAutoCleanupStatics cGUIFactory::g_autoCleanupStatics;
 
 ///////////////////////////////////////
 
-tResult GUIFactoriesCreate()
+tResult GUIFactoryCreate()
 {
-   cAutoIPtr<IGUIFactories> p(static_cast<IGUIFactories*>(new cGUIFactories));
+   cAutoIPtr<IGUIFactory> p(static_cast<IGUIFactory*>(new cGUIFactory));
    if (!p)
    {
       return E_OUTOFMEMORY;
    }
-   return RegisterGlobalObject(IID_IGUIFactories, p);
+   return RegisterGlobalObject(IID_IGUIFactory, p);
 }
 
 ///////////////////////////////////////
@@ -267,23 +303,23 @@ tResult GUIRegisterElementFactory(const tChar * pszType, tGUIElementFactoryFn pF
       return E_POINTER;
    }
 
-   if (cGUIFactories::gm_bInitialized)
+   if (cGUIFactory::gm_bInitialized)
    {
-      UseGlobal(GUIFactories);
-      return pGUIFactories->RegisterElementFactory(pszType, pFactoryFn);
+      UseGlobal(GUIFactory);
+      return pGUIFactory->RegisterElementFactory(pszType, pFactoryFn);
    }
    else
    {
       // simple queue to support adding at static init time
-      cGUIFactories::tElementFactoryFnNode * pNode = new cGUIFactories::tElementFactoryFnNode;
+      cGUIFactory::tElementFactoryFnNode * pNode = new cGUIFactory::tElementFactoryFnNode;
       if (pNode == NULL)
       {
          return E_OUTOFMEMORY;
       }
       pNode->type.assign(pszType);
       pNode->pFactoryFn = pFactoryFn;
-      pNode->pNext = cGUIFactories::gm_pElementFactoryFns;
-      cGUIFactories::gm_pElementFactoryFns = pNode;
+      pNode->pNext = cGUIFactory::gm_pElementFactoryFns;
+      cGUIFactory::gm_pElementFactoryFns = pNode;
       return S_OK;
    }
 }
@@ -297,23 +333,23 @@ tResult GUIRegisterRendererFactory(const tChar * pszRenderer, tGUIRendererFactor
       return E_POINTER;
    }
 
-   if (cGUIFactories::gm_bInitialized)
+   if (cGUIFactory::gm_bInitialized)
    {
-      UseGlobal(GUIFactories);
-      return pGUIFactories->RegisterRendererFactory(pszRenderer, pFactoryFn);
+      UseGlobal(GUIFactory);
+      return pGUIFactory->RegisterRendererFactory(pszRenderer, pFactoryFn);
    }
    else
    {
       // simple queue to support adding at static init time
-      cGUIFactories::tRendererFactoryFnNode * pNode = new cGUIFactories::tRendererFactoryFnNode;
+      cGUIFactory::tRendererFactoryFnNode * pNode = new cGUIFactory::tRendererFactoryFnNode;
       if (pNode == NULL)
       {
          return E_OUTOFMEMORY;
       }
       pNode->renderer.assign(pszRenderer);
       pNode->pFactoryFn = pFactoryFn;
-      pNode->pNext = cGUIFactories::gm_pRendererFactoryFns;
-      cGUIFactories::gm_pRendererFactoryFns = pNode;
+      pNode->pNext = cGUIFactory::gm_pRendererFactoryFns;
+      cGUIFactory::gm_pRendererFactoryFns = pNode;
       return S_OK;
    }
 }

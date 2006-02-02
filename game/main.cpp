@@ -178,7 +178,7 @@ static void RegisterGlobalObjects()
    ResourceManagerCreate();
    ScriptInterpreterCreate();
    GUIContextCreate();
-   GUIFactoriesCreate();
+   GUIFactoryCreate();
    GUIFontFactoryCreate();
    GUIEventSoundsCreate();
    EntityManagerCreate();

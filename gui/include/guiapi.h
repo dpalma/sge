@@ -27,7 +27,8 @@ F_DECLARE_INTERFACE(IGUIEvent);
 F_DECLARE_INTERFACE(IGUIEventSounds);
 F_DECLARE_INTERFACE(IGUIEventRouter);
 F_DECLARE_INTERFACE(IGUIEventListener);
-F_DECLARE_INTERFACE(IGUIFactories);
+F_DECLARE_INTERFACE(IGUIFactory);
+F_DECLARE_INTERFACE(IGUIFactoryListener);
 F_DECLARE_INTERFACE(IGUIRenderDevice);
 F_DECLARE_INTERFACE(IGUIRenderDeviceContext);
 F_DECLARE_INTERFACE(IGUIContext);
@@ -227,7 +228,7 @@ interface IGUIEventListener : IUnknown
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// INTERFACE: IGUIFactories
+// INTERFACE: IGUIFactory
 //
 
 typedef tResult (* tGUIElementFactoryFn)(const TiXmlElement * pXmlElement,
@@ -235,8 +236,11 @@ typedef tResult (* tGUIElementFactoryFn)(const TiXmlElement * pXmlElement,
 
 ///////////////////////////////////////
 
-interface IGUIFactories : IUnknown
+interface IGUIFactory : IUnknown
 {
+   virtual tResult AddFactoryListener(IGUIFactoryListener * pListener) = 0;
+   virtual tResult RemoveFactoryListener(IGUIFactoryListener * pListener) = 0;
+
    virtual tResult CreateElement(const TiXmlElement * pXmlElement, IGUIElement * pParent,
                                  IGUIElement * * ppElement) = 0;
 
@@ -254,7 +258,7 @@ interface IGUIFactories : IUnknown
 
 ///////////////////////////////////////
 
-GUI_API tResult GUIFactoriesCreate();
+GUI_API tResult GUIFactoryCreate();
 
 ///////////////////////////////////////
 
@@ -278,6 +282,18 @@ GUI_API tResult GUIRegisterRendererFactory(const tGUIChar * pszRenderer,
 
 #define AUTOREGISTER_GUIRENDERERFACTORYFN(type, factoryFn) \
    AUTOREGISTER_GUIFACTORYFN(type, factoryFn, GUIRegisterRendererFactory)
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IGUIFactoryListener
+//
+
+interface IGUIFactoryListener : IUnknown
+{
+   virtual tResult PreCreateElement(const TiXmlElement * pXmlElement, IGUIElement * pParent) = 0;
+   virtual void OnCreateElement(const TiXmlElement * pXmlElement, IGUIElement * pParent, IGUIElement * pElement) = 0;
+};
 
 
 ////////////////////////////////////////////////////////////////////////////////
