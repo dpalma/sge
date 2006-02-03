@@ -412,3 +412,27 @@ tResult cSizeAndPlaceElement::operator()(IGUIElement * pElement)
 
 
 ///////////////////////////////////////////////////////////////////////////////
+
+tResult GUIElementFont(IGUIElement * pElement, IGUIFont * * ppFont)
+{
+   if (pElement == NULL || ppFont == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cAutoIPtr<IGUIStyle> pStyle;
+   if (pElement->GetStyle(&pStyle) == S_OK)
+   {
+      cGUIFontDesc fontDesc;
+      if (pStyle->GetFontDesc(&fontDesc) == S_OK)
+      {
+         UseGlobal(GUIFontFactory);
+         return pGUIFontFactory->CreateFont(fontDesc, ppFont);
+      }
+   }
+
+   UseGlobal(GUIContext);
+   return pGUIContext->GetDefaultFont(ppFont);
+}
+
+///////////////////////////////////////////////////////////////////////////////

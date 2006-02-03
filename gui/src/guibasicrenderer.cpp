@@ -7,8 +7,6 @@
 #include "guielementtools.h"
 #include "guistyleapi.h"
 
-#include "scriptapi.h"
-
 #include "globalobj.h"
 
 #include "dbgalloc.h" // must be last header
@@ -34,6 +32,14 @@ cGUIBasicRenderer::~cGUIBasicRenderer()
 
 ///////////////////////////////////////
 
+const cGUIBasicRenderer::sMethodTableEntry cGUIBasicRenderer::gm_methodTable[] =
+{
+   { &IID_IGUILabelElement, &LabelRender, &LabelPreferredSize },
+   { &IID_IGUIPanelElement, &PanelRender, &PanelPreferredSize },
+};
+
+///////////////////////////////////////
+
 tResult cGUIBasicRenderer::Render(IGUIElement * pElement, IGUIRenderDevice * pRenderDevice)
 {
    if (pElement == NULL || pRenderDevice == NULL)
@@ -41,97 +47,23 @@ tResult cGUIBasicRenderer::Render(IGUIElement * pElement, IGUIRenderDevice * pRe
       return E_POINTER;
    }
 
+   for (int i = 0; i < _countof(gm_methodTable); i++)
    {
-      cAutoIPtr<IGUIButtonElement> pButtonElement;
-      if (pElement->QueryInterface(IID_IGUIButtonElement, (void**)&pButtonElement) == S_OK)
+      cAutoIPtr<IGUIElement> pElement2;
+      if (pElement->QueryInterface(*(gm_methodTable[i].pIID), (void**)&pElement2) == S_OK)
       {
-         return Render(pButtonElement, pRenderDevice);
-      }
-   }
-
-   {
-      cAutoIPtr<IGUIDialogElement> pDialogElement;
-      if (pElement->QueryInterface(IID_IGUIDialogElement, (void**)&pDialogElement) == S_OK)
-      {
-         return Render(pDialogElement, pRenderDevice);
-      }
-   }
-
-   {
-      cAutoIPtr<IGUILabelElement> pLabelElement;
-      if (pElement->QueryInterface(IID_IGUILabelElement, (void**)&pLabelElement) == S_OK)
-      {
-         return Render(pLabelElement, pRenderDevice);
-      }
-   }
-
-   {
-      cAutoIPtr<IGUIPanelElement> pPanelElement;
-      if (pElement->QueryInterface(IID_IGUIPanelElement, (void**)&pPanelElement) == S_OK)
-      {
-         return Render(pPanelElement, pRenderDevice);
-      }
-   }
-
-   {
-      cAutoIPtr<IGUITextEditElement> pTextEditElement;
-      if (pElement->QueryInterface(IID_IGUITextEditElement, (void**)&pTextEditElement) == S_OK)
-      {
-         return Render(pTextEditElement, pRenderDevice);
+         if (gm_methodTable[i].pfnRender != NULL)
+         {
+            return (this->*(gm_methodTable[i].pfnRender))(pElement2, pRenderDevice);
+         }
+         else
+         {
+            break;
+         }
       }
    }
 
    return S_FALSE;
-}
-
-///////////////////////////////////////
-
-tGUISize cGUIBasicRenderer::GetPreferredSize(IGUIElement * pElement)
-{
-   if (pElement != NULL)
-   {
-      {
-         cAutoIPtr<IGUIButtonElement> pButtonElement;
-         if (pElement->QueryInterface(IID_IGUIButtonElement, (void**)&pButtonElement) == S_OK)
-         {
-            return GetPreferredSize(pButtonElement);
-         }
-      }
-
-      {
-         cAutoIPtr<IGUIDialogElement> pDialogElement;
-         if (pElement->QueryInterface(IID_IGUIDialogElement, (void**)&pDialogElement) == S_OK)
-         {
-            return GetPreferredSize(pDialogElement);
-         }
-      }
-
-      {
-         cAutoIPtr<IGUILabelElement> pLabelElement;
-         if (pElement->QueryInterface(IID_IGUILabelElement, (void**)&pLabelElement) == S_OK)
-         {
-            return GetPreferredSize(pLabelElement);
-         }
-      }
-
-      {
-         cAutoIPtr<IGUIPanelElement> pPanelElement;
-         if (pElement->QueryInterface(IID_IGUIPanelElement, (void**)&pPanelElement) == S_OK)
-         {
-            return GetPreferredSize(pPanelElement);
-         }
-      }
-
-      {
-         cAutoIPtr<IGUITextEditElement> pTextEditElement;
-         if (pElement->QueryInterface(IID_IGUITextEditElement, (void**)&pTextEditElement) == S_OK)
-         {
-            return GetPreferredSize(pTextEditElement);
-         }
-      }
-   }
-
-   return tGUISize(0,0);
 }
 
 ///////////////////////////////////////
@@ -143,8 +75,24 @@ tResult cGUIBasicRenderer::GetPreferredSize(IGUIElement * pElement, tGUISize * p
       return E_POINTER;
    }
 
-   *pSize = GetPreferredSize(pElement);
-   return S_OK;
+   for (int i = 0; i < _countof(gm_methodTable); i++)
+   {
+      cAutoIPtr<IGUIElement> pElement2;
+      if (pElement->QueryInterface(*(gm_methodTable[i].pIID), (void**)&pElement2) == S_OK)
+      {
+         if (gm_methodTable[i].pfnPreferredSize != NULL)
+         {
+            *pSize = (this->*(gm_methodTable[i].pfnPreferredSize))(pElement2);
+            return S_OK;
+         }
+         else
+         {
+            break;
+         }
+      }
+   }
+
+   return E_FAIL;
 }
 
 ///////////////////////////////////////
@@ -193,61 +141,32 @@ tResult cGUIBasicRenderer::ComputeClientArea(IGUIElement * pElement, tGUIRect * 
 ///////////////////////////////////////
 
 tResult cGUIBasicRenderer::GetFont(IGUIElement * pElement,
-                                   IGUIFont * * ppFont)
+                                   IGUIFont * * ppFont) const
 {
-   if (pElement == NULL || ppFont == NULL)
-   {
-      return E_POINTER;
-   }
-
-   cAutoIPtr<IGUIStyle> pStyle;
-   if (pElement->GetStyle(&pStyle) == S_OK)
-   {
-      cGUIFontDesc fontDesc;
-      if (pStyle->GetFontDesc(&fontDesc) == S_OK)
-      {
-         UseGlobal(GUIFontFactory);
-         return pGUIFontFactory->CreateFont(fontDesc, ppFont);
-      }
-   }
-
-   UseGlobal(GUIContext);
-   return pGUIContext->GetDefaultFont(ppFont);
+   return GUIElementFont(pElement, ppFont);
 }
 
 ///////////////////////////////////////
 
-tResult cGUIBasicRenderer::Render(IGUIButtonElement * pButtonElement, IGUIRenderDevice * pRenderDevice)
+tResult cGUIBasicRenderer::LabelRender(IGUIElement * pElement, IGUIRenderDevice * pRenderDevice)
 {
-   return E_NOTIMPL;
-}
-
-///////////////////////////////////////
-
-tResult cGUIBasicRenderer::Render(IGUIDialogElement * pDialogElement, IGUIRenderDevice * pRenderDevice)
-{
-   return E_NOTIMPL;
-}
-
-///////////////////////////////////////
-
-tResult cGUIBasicRenderer::Render(IGUILabelElement * pLabelElement, IGUIRenderDevice * pRenderDevice)
-{
-   tGUIPoint pos = GUIElementAbsolutePosition(pLabelElement);
-   tGUISize size = pLabelElement->GetSize();
+   tGUIPoint pos = GUIElementAbsolutePosition(pElement);
+   tGUISize size = pElement->GetSize();
    tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
 
    tGUIColor color(GUIStandardColors::Black);
 
    cAutoIPtr<IGUIStyle> pStyle;
-   if (pLabelElement->GetStyle(&pStyle) == S_OK)
+   if (pElement->GetStyle(&pStyle) == S_OK)
    {
       pStyle->GetForegroundColor(&color);
    }
 
    cAutoIPtr<IGUIFont> pFont;
-   if (GetFont(pLabelElement, &pFont) == S_OK)
+   if (GetFont(pElement, &pFont) == S_OK)
    {
+      IGUILabelElement * pLabelElement = (IGUILabelElement *)pElement;
+
       tGUIString text;
       if (pLabelElement->GetText(&text) == S_OK)
       {
@@ -265,55 +184,13 @@ tResult cGUIBasicRenderer::Render(IGUILabelElement * pLabelElement, IGUIRenderDe
 
 ///////////////////////////////////////
 
-tResult cGUIBasicRenderer::Render(IGUIPanelElement * pPanelElement, IGUIRenderDevice * pRenderDevice)
-{
-   tGUIPoint pos = GUIElementAbsolutePosition(pPanelElement);
-   tGUISize size = pPanelElement->GetSize();
-   tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
-
-   cAutoIPtr<IGUIStyle> pStyle;
-   if (pPanelElement->GetStyle(&pStyle) == S_OK)
-   {
-      tGUIColor bkColor;
-      if (pStyle->GetBackgroundColor(&bkColor) == S_OK)
-      {
-         pRenderDevice->RenderSolidRect(rect, bkColor);
-      }
-   }
-
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cGUIBasicRenderer::Render(IGUITextEditElement * pTextEditElement, IGUIRenderDevice * pRenderDevice)
-{
-   return E_NOTIMPL;
-}
-
-///////////////////////////////////////
-
-tGUISize cGUIBasicRenderer::GetPreferredSize(IGUIButtonElement * pButtonElement)
-{
-   return tGUISize(0,0);
-}
-
-///////////////////////////////////////
-
-tGUISize cGUIBasicRenderer::GetPreferredSize(IGUIDialogElement * pDialogElement)
-{
-   return tGUISize(0,0);
-}
-
-///////////////////////////////////////
-
-tGUISize cGUIBasicRenderer::GetPreferredSize(IGUILabelElement * pLabelElement)
+tGUISize cGUIBasicRenderer::LabelPreferredSize(IGUIElement * pElement) const
 {
    cAutoIPtr<IGUIFont> pFont;
-   if (GetFont(pLabelElement, &pFont) == S_OK)
+   if (GUIElementFont(pElement, &pFont) == S_OK)
    {
       tGUIString text;
-      if (pLabelElement->GetText(&text) == S_OK)
+      if (((IGUILabelElement*)pElement)->GetText(&text) == S_OK)
       {
          tRect rect(0,0,0,0);
          pFont->RenderText(text.c_str(), text.length(), &rect, kRT_CalcRect, GUIStandardColors::White);
@@ -327,27 +204,34 @@ tGUISize cGUIBasicRenderer::GetPreferredSize(IGUILabelElement * pLabelElement)
 
 ///////////////////////////////////////
 
-tGUISize cGUIBasicRenderer::GetPreferredSize(IGUIPanelElement * pPanelElement)
+tResult cGUIBasicRenderer::PanelRender(IGUIElement * pElement, IGUIRenderDevice * pRenderDevice)
 {
-   return GetPreferredSize(static_cast<IGUIContainerElement*>(pPanelElement));
+   tGUIPoint pos = GUIElementAbsolutePosition(pElement);
+   tGUISize size = pElement->GetSize();
+   tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
+
+   cAutoIPtr<IGUIStyle> pStyle;
+   if (pElement->GetStyle(&pStyle) == S_OK)
+   {
+      tGUIColor bkColor;
+      if (pStyle->GetBackgroundColor(&bkColor) == S_OK)
+      {
+         pRenderDevice->RenderSolidRect(rect, bkColor);
+      }
+   }
+
+   return S_OK;
 }
 
 ///////////////////////////////////////
 
-tGUISize cGUIBasicRenderer::GetPreferredSize(IGUITextEditElement * pTextEditElement)
-{
-   return tGUISize(0,0);
-}
-
-///////////////////////////////////////
-
-tGUISize cGUIBasicRenderer::GetPreferredSize(IGUIContainerElement * pContainerElement)
+tGUISize cGUIBasicRenderer::PanelPreferredSize(IGUIElement * pElement) const
 {
    cAutoIPtr<IGUILayoutManager> pLayout;
-   if (pContainerElement->GetLayout(&pLayout) == S_OK)
+   if (((IGUIPanelElement*)pElement)->GetLayout(&pLayout) == S_OK)
    {
       tGUISize size;
-      if (pLayout->GetPreferredSize(pContainerElement, &size) == S_OK)
+      if (pLayout->GetPreferredSize(pElement, &size) == S_OK)
       {
          return size;
       }

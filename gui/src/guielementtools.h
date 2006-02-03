@@ -10,6 +10,9 @@
 #pragma once
 #endif
 
+F_DECLARE_INTERFACE(IGUIFont);
+
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cSameAs
@@ -47,6 +50,8 @@ tGUIPoint GUIElementAbsolutePosition(IGUIElement * pGUIElement, uint * pnParents
 
 tResult GUIElementStandardAttributes(const TiXmlElement * pXmlElement, 
                                      IGUIElement * pGUIElement);
+
+tResult GUIElementFont(IGUIElement * pElement, IGUIFont * * ppFont);
 
 ///////////////////////////////////////////////////////////////////////////////
 //

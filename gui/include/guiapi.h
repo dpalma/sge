@@ -110,7 +110,7 @@ interface IGUIElementRenderer : IUnknown
 
    virtual tResult ComputeClientArea(IGUIElement * pElement, tGUIRect * pClientArea) = 0;
 
-   virtual tResult GetFont(IGUIElement * pElement, IGUIFont * * ppFont) = 0;
+   virtual tResult GetFont(IGUIElement * pElement, IGUIFont * * ppFont) const = 0;
 };
 
 

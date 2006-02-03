@@ -23,24 +23,28 @@ public:
    ~cGUIBasicRenderer();
 
    virtual tResult Render(IGUIElement * pElement, IGUIRenderDevice * pRenderDevice);
-   tGUISize GetPreferredSize(IGUIElement * pElement);
    virtual tResult GetPreferredSize(IGUIElement * pElement, tGUISize * pSize);
    virtual tResult ComputeClientArea(IGUIElement * pElement, tGUIRect * pClientArea);
-   virtual tResult GetFont(IGUIElement * pElement, IGUIFont * * ppFont);
+   virtual tResult GetFont(IGUIElement * pElement, IGUIFont * * ppFont) const;
 
 private:
-   tResult Render(IGUIButtonElement * pButtonElement, IGUIRenderDevice * pRenderDevice);
-   tResult Render(IGUIDialogElement * pDialogElement, IGUIRenderDevice * pRenderDevice);
-   tResult Render(IGUILabelElement * pLabelElement, IGUIRenderDevice * pRenderDevice);
-   tResult Render(IGUIPanelElement * pPanelElement, IGUIRenderDevice * pRenderDevice);
-   tResult Render(IGUITextEditElement * pTextEditElement, IGUIRenderDevice * pRenderDevice);
+   tResult LabelRender(IGUIElement * pElement, IGUIRenderDevice * pRenderDevice);
+   tGUISize LabelPreferredSize(IGUIElement * pElement) const;
 
-   tGUISize GetPreferredSize(IGUIButtonElement * pButtonElement);
-   tGUISize GetPreferredSize(IGUIDialogElement * pDialogElement);
-   tGUISize GetPreferredSize(IGUILabelElement * pLabelElement);
-   tGUISize GetPreferredSize(IGUIPanelElement * pPanelElement);
-   tGUISize GetPreferredSize(IGUITextEditElement * pTextEditElement);
-   tGUISize GetPreferredSize(IGUIContainerElement * pContainerElement);
+   tResult PanelRender(IGUIElement * pElement, IGUIRenderDevice * pRenderDevice);
+   tGUISize PanelPreferredSize(IGUIElement * pElement) const;
+
+   typedef tResult (cGUIBasicRenderer::*tRenderMethod)(IGUIElement *, IGUIRenderDevice *);
+   typedef tGUISize (cGUIBasicRenderer::*tPreferredSizeMethod)(IGUIElement *) const;
+
+   struct sMethodTableEntry
+   {
+      const IID * pIID;
+      tRenderMethod pfnRender;
+      tPreferredSizeMethod pfnPreferredSize;
+   };
+
+   static const sMethodTableEntry gm_methodTable[];
 };
 
 ///////////////////////////////////////////////////////////////////////////////

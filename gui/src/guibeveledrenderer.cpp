@@ -8,7 +8,7 @@
 #include "guistrings.h"
 #include "guistyleapi.h"
 
-#include "scriptapi.h"
+//#include "scriptapi.h"
 
 #include "globalobj.h"
 
@@ -37,6 +37,14 @@ cGUIBeveledRenderer::cGUIBeveledRenderer()
 cGUIBeveledRenderer::~cGUIBeveledRenderer()
 {
 }
+
+///////////////////////////////////////
+
+const cGUIBeveledRenderer::sMethodTableEntry cGUIBeveledRenderer::gm_methodTable[] =
+{
+   { &IID_IGUIButtonElement, &ButtonRender, &ButtonPreferredSize },
+   { &IID_IGUIContainerElement, NULL, &ContainerPreferredSize }, // Must be at the bottom
+};
 
 ///////////////////////////////////////
 
@@ -76,11 +84,19 @@ tResult cGUIBeveledRenderer::Render(IGUIElement * pElement, IGUIRenderDevice * p
       pStyle->GetAttribute(_T("beveled-bevel"), &bevel);
    }
 
+   for (int i = 0; i < _countof(gm_methodTable); i++)
    {
-      cAutoIPtr<IGUIButtonElement> pButtonElement;
-      if (pElement->QueryInterface(IID_IGUIButtonElement, (void**)&pButtonElement) == S_OK)
+      cAutoIPtr<IGUIElement> pElement2;
+      if (pElement->QueryInterface(*(gm_methodTable[i].pIID), (void**)&pElement2) == S_OK)
       {
-         return Render(pButtonElement, bevel, colors, pRenderDevice);
+         if (gm_methodTable[i].pfnRender != NULL)
+         {
+            return (this->*(gm_methodTable[i].pfnRender))(pElement2, bevel, colors, pRenderDevice);
+         }
+         else
+         {
+            break;
+         }
       }
    }
 
@@ -210,6 +226,16 @@ tResult cGUIBeveledRenderer::GetPreferredSize(IGUIElement * pElement, tGUISize *
       return E_POINTER;
    }
 
+   for (int i = 0; i < _countof(gm_methodTable); i++)
+   {
+      cAutoIPtr<IGUIElement> pElement2;
+      if (pElement->QueryInterface(*(gm_methodTable[i].pIID), (void**)&pElement2) == S_OK)
+      {
+         *pSize = (this->*(gm_methodTable[i].pfnPreferredSize))(pElement2);
+         return S_OK;
+      }
+   }
+
    *pSize = GetPreferredSize(pElement);
    return S_OK;
 }
@@ -267,40 +293,25 @@ tResult cGUIBeveledRenderer::ComputeClientArea(IGUIElement * pElement, tGUIRect 
 ///////////////////////////////////////
 
 tResult cGUIBeveledRenderer::GetFont(IGUIElement * pElement,
-                                     IGUIFont * * ppFont)
+                                     IGUIFont * * ppFont) const
 {
-   if (pElement == NULL || ppFont == NULL)
-   {
-      return E_POINTER;
-   }
-
-   cAutoIPtr<IGUIStyle> pStyle;
-   if (pElement->GetStyle(&pStyle) == S_OK)
-   {
-      cGUIFontDesc fontDesc;
-      if (pStyle->GetFontDesc(&fontDesc) == S_OK)
-      {
-         UseGlobal(GUIFontFactory);
-         return pGUIFontFactory->CreateFont(fontDesc, ppFont);
-      }
-   }
-
-   UseGlobal(GUIContext);
-   return pGUIContext->GetDefaultFont(ppFont);
+   return GUIElementFont(pElement, ppFont);
 }
 
 ///////////////////////////////////////
 
-tResult cGUIBeveledRenderer::Render(IGUIButtonElement * pButtonElement,
-                                    int bevel, const tGUIColor colors[kBC_NumColors],
-                                    IGUIRenderDevice * pRenderDevice)
+tResult cGUIBeveledRenderer::ButtonRender(IGUIElement * pElement, int bevel,
+                                          const tGUIColor colors[kBC_NumColors],
+                                          IGUIRenderDevice * pRenderDevice)
 {
-   tGUIPoint pos = GUIElementAbsolutePosition(pButtonElement);
-   tGUISize size = pButtonElement->GetSize();
+   tGUIPoint pos = GUIElementAbsolutePosition(pElement);
+   tGUISize size = pElement->GetSize();
 
    bool bPressed = false;
 
    tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
+
+   IGUIButtonElement * pButtonElement = (IGUIButtonElement *)pElement;
 
    if (pButtonElement->IsArmed() && pButtonElement->IsMouseOver())
    {
@@ -315,12 +326,12 @@ tResult cGUIBeveledRenderer::Render(IGUIButtonElement * pButtonElement,
    tGUIString text;
    cAutoIPtr<IGUIFont> pFont;
    if (pButtonElement->GetText(&text) == S_OK
-      && GetFont(pButtonElement, &pFont) == S_OK)
+      && GetFont(pElement, &pFont) == S_OK)
    {
       uint renderTextFlags = kRT_Center | kRT_VCenter | kRT_SingleLine;
 
       cAutoIPtr<IGUIStyle> pStyle;
-      if (pButtonElement->GetStyle(&pStyle) == S_OK)
+      if (pElement->GetStyle(&pStyle) == S_OK)
       {
          int dropShadow = 0;
          if (pStyle->GetAttribute(kAttribDropShadow, &dropShadow) == S_OK
@@ -337,12 +348,47 @@ tResult cGUIBeveledRenderer::Render(IGUIButtonElement * pButtonElement,
       }
 
       pFont->RenderText(text.c_str(), text.length(), &rect, renderTextFlags,
-         pButtonElement->IsEnabled() ? GUIStandardColors::White : colors[kBC_Shadow]);
+         pElement->IsEnabled() ? GUIStandardColors::White : colors[kBC_Shadow]);
 
       return S_OK;
    }
 
    return E_FAIL;
+}
+
+///////////////////////////////////////
+
+tGUISize cGUIBeveledRenderer::ButtonPreferredSize(IGUIElement * pElement) const
+{
+   tGUIString text;
+   cAutoIPtr<IGUIFont> pFont;
+   if (((IGUIButtonElement*)pElement)->GetText(&text) == S_OK
+      && GetFont(pElement, &pFont) == S_OK)
+   {
+      tRect rect(0,0,0,0);
+      pFont->RenderText(text.c_str(), text.length(), &rect, kRT_CalcRect, GUIStandardColors::White);
+
+      return tGUISize(static_cast<tGUISizeType>(rect.GetWidth() + rect.GetHeight()),
+                      rect.GetHeight() * 1.5f);
+   }
+
+   return tGUISize(0,0);
+}
+
+///////////////////////////////////////
+
+tGUISize cGUIBeveledRenderer::ContainerPreferredSize(IGUIElement * pElement) const
+{
+   cAutoIPtr<IGUILayoutManager> pLayout;
+   if (((IGUIContainerElement*)pElement)->GetLayout(&pLayout) == S_OK)
+   {
+      tGUISize size;
+      if (pLayout->GetPreferredSize(pElement, &size) == S_OK)
+      {
+         return size;
+      }
+   }
+   return tGUISize(0,0);
 }
 
 ///////////////////////////////////////
@@ -656,25 +702,6 @@ tResult cGUIBeveledRenderer::Render(IGUIListBoxElement * pListBoxElement,
 
 ///////////////////////////////////////
 
-tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIButtonElement * pButtonElement)
-{
-   tGUIString text;
-   cAutoIPtr<IGUIFont> pFont;
-   if (pButtonElement->GetText(&text) == S_OK
-      && GetFont(pButtonElement, &pFont) == S_OK)
-   {
-      tRect rect(0,0,0,0);
-      pFont->RenderText(text.c_str(), text.length(), &rect, kRT_CalcRect, GUIStandardColors::White);
-
-      return tGUISize(static_cast<tGUISizeType>(rect.GetWidth() + rect.GetHeight()),
-                      rect.GetHeight() * 1.5f);
-   }
-
-   return tGUISize(0,0);
-}
-
-///////////////////////////////////////
-
 tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIDialogElement * pDialogElement)
 {
    tGUISize size(GetPreferredSize(static_cast<IGUIContainerElement*>(pDialogElement)));
@@ -793,22 +820,6 @@ tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIListBoxElement * pListBoxElem
       }
    }
 
-   return tGUISize(0,0);
-}
-
-///////////////////////////////////////
-
-tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIContainerElement * pContainerElement)
-{
-   cAutoIPtr<IGUILayoutManager> pLayout;
-   if (pContainerElement->GetLayout(&pLayout) == S_OK)
-   {
-      tGUISize size;
-      if (pLayout->GetPreferredSize(pContainerElement, &size) == S_OK)
-      {
-         return size;
-      }
-   }
    return tGUISize(0,0);
 }
 
