@@ -15,7 +15,7 @@ class c3dmodelDoc;
 
 /////////////////////////////////////////////////////////////////////////////
 
-class c3dmodelView : public CView
+class c3dmodelView : public CView, public ms3dview::cFrameLoopClient
 {
 protected: // create from serialization only
 	c3dmodelView();
@@ -27,6 +27,7 @@ public:
 
 // Operations
 public:
+   virtual void OnFrame(double time, double elapsed);
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -45,8 +46,6 @@ public:
 	virtual void Dump(CDumpContext& dc) const;
 #endif
 
-protected:
-
 // Generated message map functions
 protected:
 	//{{AFX_MSG(c3dmodelView)
@@ -54,15 +53,12 @@ protected:
 	afx_msg void OnDestroy();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
-	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
 private:
    HDC m_hDC;
    HGLRC	m_hRC;
-
-   CSliderCtrl m_slider;
 
    tVec3 m_center, m_eye;
 };

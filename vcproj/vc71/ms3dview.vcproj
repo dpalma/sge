@@ -242,5 +242,8 @@
 		</Filter>
 	</Files>
 	<Globals>
+		<Global
+			Name="RESOURCE_FILE"
+			Value="\prj\sge\tests\ms3dview\ms3dview.rc"/>
 	</Globals>
 </VisualStudioProject>

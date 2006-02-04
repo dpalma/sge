@@ -91,13 +91,7 @@ tResult cEntityManager::Term()
    pSaveLoadManager->RevokeSaveLoadParticipant(SAVELOADID_EntityManager, g_entityManagerVer);
 
    DeselectAll();
-
-   tEntityList::iterator iter = m_entities.begin();
-   for (; iter != m_entities.end(); iter++)
-   {
-      (*iter)->Release();
-   }
-   m_entities.clear();
+   RemoveAll();
 
    return S_OK;
 }
@@ -161,6 +155,18 @@ tResult cEntityManager::RemoveEntity(IEntity * pEntity)
    }
 
    return bFound ? S_OK : S_FALSE;
+}
+
+///////////////////////////////////////
+
+void cEntityManager::RemoveAll()
+{
+   tEntityList::iterator iter = m_entities.begin();
+   for (; iter != m_entities.end(); iter++)
+   {
+      (*iter)->Release();
+   }
+   m_entities.clear();
 }
 
 ///////////////////////////////////////

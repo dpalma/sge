@@ -5,6 +5,8 @@
 
 #include "ms3dviewDoc.h"
 
+#include "entityapi.h"
+
 #include "resourceapi.h"
 #include "filespec.h"
 #include "filepath.h"
@@ -82,11 +84,12 @@ BOOL c3dmodelDoc::OnOpenDocument(LPCTSTR lpszPathName)
    Assert(!m_pModel);
    if (pResourceManager->Load(file.GetFileName(), kRT_Model, NULL, (void**)&m_pModel) != S_OK)
    {
-   	DeleteContents();
+      DeleteContents();
       return E_FAIL;
    }
 
-   SetFrame(0);
+   UseGlobal(EntityManager);
+   pEntityManager->SpawnEntity(file.GetFileName(), tVec3(0,0,0));
 
    SetModifiedFlag(FALSE);
 
@@ -97,9 +100,9 @@ void c3dmodelDoc::DeleteContents()
 {
 	m_model.erase();
    m_pModel = NULL;
-   m_animationLength = 0;
-   m_blendedVerts.clear();
-   m_blendMatrices.clear();
+
+   UseGlobal(EntityManager);
+   pEntityManager->RemoveAll();
 
 	CDocument::DeleteContents();
 }
@@ -110,13 +113,4 @@ void c3dmodelDoc::OnUpdateRendering(CCmdUI * pCmdUI)
    CString string;
    Verify(string.LoadString(IDS_RENDERING_SOFTWARE));
    pCmdUI->SetText(string);
-}
-
-void c3dmodelDoc::SetFrame(float pct)
-{
-   if (AccessModel() != NULL)
-   {
-      AccessModel()->InterpolateJointMatrices(pct * m_animationLength, &m_blendMatrices);
-      AccessModel()->ApplyJointMatrices(m_blendMatrices, &m_blendedVerts);
-   }
 }

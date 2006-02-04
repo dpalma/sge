@@ -85,6 +85,7 @@ interface IEntityManager : IUnknown
    virtual tResult SpawnEntity(const tChar * pszMesh, const tVec3 & position) = 0;
 
    virtual tResult RemoveEntity(IEntity * pEntity) = 0;
+   virtual void RemoveAll() = 0;
 
    virtual void RenderAll() = 0;
 

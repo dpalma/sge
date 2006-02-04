@@ -14,7 +14,6 @@
 
 #include <afxwin.h>         // MFC core and standard components
 #include <afxext.h>         // MFC extensions
-#include <afxdtctl.h>		// MFC support for Internet Explorer 4 Common Controls
 #ifndef _AFX_NO_AFXCMN_SUPPORT
 #include <afxcmn.h>			// MFC support for Windows Common Controls
 #endif // _AFX_NO_AFXCMN_SUPPORT
@@ -26,6 +25,16 @@
 #include "techtypes.h"
 #include "techassert.h"
 #include "techlog.h"
+
+namespace ms3dview
+{
+   class cFrameLoopClient
+   {
+   public:
+      virtual ~cFrameLoopClient() = 0;
+      virtual void OnFrame(double time, double elapsed) = 0;
+   };
+}
 
 /////////////////////////////////////////////////////////////////////////////
 

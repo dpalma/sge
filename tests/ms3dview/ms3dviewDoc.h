@@ -30,10 +30,6 @@ protected: // create from serialization only
 // Attributes
 public:
    inline cModel * AccessModel() { return m_pModel; }
-   void SetFrame(float pct);
-   const tMatrix4 * GetBlendMatrices() { return &m_blendMatrices[0]; }
-   uint GetBlendMatrixCount() const { return m_blendMatrices.size(); }
-   const tBlendedVertices & GetBlendedVertices() const { return m_blendedVerts; }
 
 // Operations
 public:
@@ -66,9 +62,6 @@ protected:
 private:
    cStr m_model;
    cModel * m_pModel;
-   double m_animationLength;
-   tBlendedVertices m_blendedVerts;
-   std::vector<tMatrix4> m_blendMatrices;
 };
 
 /////////////////////////////////////////////////////////////////////////////

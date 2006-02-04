@@ -7,8 +7,11 @@
 #include "ms3dviewDoc.h"
 #include "ms3dviewView.h"
 
+#include "entityapi.h"
 #include "model.h"
+#include "renderapi.h"
 
+#include "globalobj.h"
 #include "matrix4.h"
 
 #include <cfloat>
@@ -25,9 +28,6 @@ const GLfloat kFov = 90;
 const GLfloat kZNear = 1;
 const GLfloat kZFar = 2000;
 
-const int IDC_SLIDER = 1000;
-const int kSliderHeight = 30;
-
 /////////////////////////////////////////////////////////////////////////////
 // c3dmodelView
 
@@ -39,7 +39,6 @@ BEGIN_MESSAGE_MAP(c3dmodelView, CView)
 	ON_WM_DESTROY()
 	ON_WM_SIZE()
 	ON_WM_ERASEBKGND()
-	ON_WM_HSCROLL()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -65,6 +64,26 @@ BOOL c3dmodelView::PreCreateWindow(CREATESTRUCT& cs)
 /////////////////////////////////////////////////////////////////////////////
 // c3dmodelView operations
 
+void c3dmodelView::OnFrame(double time, double elapsed)
+{
+   UseGlobal(Renderer);
+   Verify(pRenderer->BeginScene() == S_OK);
+
+   glMatrixMode(GL_MODELVIEW);
+   glPushMatrix();
+   glLoadIdentity();
+   gluLookAt(m_eye.x, m_eye.y, m_eye.z, m_center.x, m_center.y, m_center.z, 0, 1, 0);
+   glTranslatef(m_center.x, m_center.y, m_center.z);
+
+   glPopMatrix();
+
+   UseGlobal(EntityManager);
+   pEntityManager->RenderAll();
+
+   pRenderer->EndScene();
+   glFinish();
+   SwapBuffers(m_hDC);
+}
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -75,43 +94,6 @@ void c3dmodelView::OnDraw(CDC* pDC)
 	c3dmodelDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-   glMatrixMode(GL_MODELVIEW);
-   glPushMatrix();
-   glLoadIdentity();
-   gluLookAt(m_eye.x, m_eye.y, m_eye.z, m_center.x, m_center.y, m_center.z, 0, 1, 0);
-
-   glTranslatef(m_center.x, m_center.y, m_center.z);
-
-   if (pDoc->AccessModel() != NULL)
-   {
-      glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
-      glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT);
-
-      GlSubmitBlendedVertices(pDoc->GetBlendedVertices());
-
-      tModelMeshes::const_iterator iter = pDoc->AccessModel()->BeginMeshses();
-      for (; iter != pDoc->AccessModel()->EndMeshses(); iter++)
-      {
-         int iMaterial = iter->GetMaterialIndex();
-         if (iMaterial >= 0)
-         {
-            pDoc->AccessModel()->GetMaterial(iMaterial).GlDiffuseAndTexture();
-         }
-
-         glDrawElements(iter->GetGlPrimitive(), iter->GetIndexCount(), GL_UNSIGNED_SHORT, iter->GetIndexData());
-      }
-
-      glPopClientAttrib();
-      glPopAttrib();
-   }
-
-   glPopMatrix();
-
-   glFinish();
-
-   ::SwapBuffers(m_hDC);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -143,11 +125,8 @@ int c3dmodelView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CView::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
-   if (!m_slider.Create(WS_CHILD | WS_VISIBLE, CRect(0,0,0,0), this, IDC_SLIDER))
-   {
-      TRACE0("Failed to create slider control\n");
-      return -1;
-   }
+   cMs3dviewApp * pApp = DYNAMIC_DOWNCAST(cMs3dviewApp, AfxGetApp());
+   pApp->AddLoopClient(static_cast<ms3dview::cFrameLoopClient*>(this));
 	
    m_hDC = ::GetDC(m_hWnd);
    if (m_hDC == NULL)
@@ -204,6 +183,9 @@ void c3dmodelView::OnDestroy()
 {
 	CView::OnDestroy();
 
+   cMs3dviewApp * pApp = DYNAMIC_DOWNCAST(cMs3dviewApp, AfxGetApp());
+   pApp->RemoveLoopClient(static_cast<ms3dview::cFrameLoopClient*>(this));
+
    wglMakeCurrent(NULL, NULL);
 
    if (m_hRC != NULL)
@@ -223,8 +205,6 @@ void c3dmodelView::OnSize(UINT nType, int cx, int cy)
 {
 	CView::OnSize(nType, cx, cy);
 
-   m_slider.MoveWindow(0, cy - kSliderHeight, cx, kSliderHeight);
-
    GLfloat aspect = static_cast<GLfloat>(cx) / cy;
 
    tMatrix4 proj;
@@ -233,35 +213,12 @@ void c3dmodelView::OnSize(UINT nType, int cx, int cy)
    glMatrixMode(GL_PROJECTION);
    glLoadMatrixf(proj.m);
 
-   glViewport(0, kSliderHeight, cx, cy - kSliderHeight);
+   glViewport(0, 0, cx, cy);
 }
 
 BOOL c3dmodelView::OnEraseBkgnd(CDC* pDC) 
 {
    return TRUE;
-}
-
-void c3dmodelView::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) 
-{
-   ASSERT_VALID(pScrollBar);
-   if (pScrollBar->GetDlgCtrlID() == m_slider.GetDlgCtrlID())
-   {
-      float percent = (float)(m_slider.GetPos() - m_slider.GetRangeMin()) /
-         (m_slider.GetRangeMax() - m_slider.GetRangeMin());
-
-      //TRACE1("Animate to %.2f\n", percent);
-
-	   c3dmodelDoc * pDoc = GetDocument();
-	   ASSERT_VALID(pDoc);
-
-      if (pDoc)
-      {
-         pDoc->SetFrame(percent);
-         Invalidate(FALSE);
-      }
-   }
-	
-	CView::OnHScroll(nSBCode, nPos, pScrollBar);
 }
 
 static bool operator <(const tVec3 & a, const tVec3 & b)
@@ -299,7 +256,8 @@ void c3dmodelView::OnInitialUpdate()
       float maxDim = Max(maximum.x - minimum.x, Max(maximum.y - minimum.y, maximum.z - minimum.z));
 
       m_center = (maximum + minimum) * 0.5f;
-      m_eye = tVec3(m_center.x + maxDim, m_center.y + maxDim, m_center.z + maxDim);
+      tVec3 eyeOffset(maxDim, maxDim * 2, maxDim * 5);
+      m_eye = m_center + eyeOffset;
    }
    else
    {

@@ -4,15 +4,21 @@
 #include "stdafx.h"
 #include "ms3dview.h"
 
-#include "engineapi.h"
-
-#include "imageapi.h"
-#include "resourceapi.h"
-#include "globalobj.h"
-
 #include "MainFrm.h"
 #include "ms3dviewDoc.h"
 #include "ms3dviewView.h"
+
+#include "cameraapi.h"
+#include "engineapi.h"
+#include "entityapi.h"
+#include "inputapi.h"
+#include "saveloadapi.h"
+#include "simapi.h"
+
+#include "globalobj.h"
+#include "imageapi.h"
+#include "resourceapi.h"
+#include "techtime.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -20,11 +26,18 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-/////////////////////////////////////////////////////////////////////////////
-// CMs3dviewApp
+namespace ms3dview
+{
+   cFrameLoopClient::~cFrameLoopClient()
+   {
+   }
+}
 
-BEGIN_MESSAGE_MAP(CMs3dviewApp, CWinApp)
-	//{{AFX_MSG_MAP(CMs3dviewApp)
+/////////////////////////////////////////////////////////////////////////////
+// cMs3dviewApp
+
+BEGIN_MESSAGE_MAP(cMs3dviewApp, CWinApp)
+	//{{AFX_MSG_MAP(cMs3dviewApp)
 	ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
 		//    DO NOT EDIT what you see in these blocks of generated code!
@@ -35,23 +48,62 @@ BEGIN_MESSAGE_MAP(CMs3dviewApp, CWinApp)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
-// CMs3dviewApp construction
+// cMs3dviewApp construction
 
-CMs3dviewApp::CMs3dviewApp()
+cMs3dviewApp::cMs3dviewApp()
 {
 	// TODO: add construction code here,
 	// Place all significant initialization in InitInstance
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// The one and only CMs3dviewApp object
 
-CMs3dviewApp theApp;
+BOOL cMs3dviewApp::AddLoopClient(ms3dview::cFrameLoopClient * pLoopClient)
+{
+   if (pLoopClient != NULL)
+   {
+      m_loopClients.Add(pLoopClient);
+      return TRUE;
+   }
+   return FALSE;
+}
+
+BOOL cMs3dviewApp::RemoveLoopClient(ms3dview::cFrameLoopClient * pLoopClient)
+{
+   if (pLoopClient != NULL)
+   {
+      for (int i = 0; i < m_loopClients.GetSize(); i++)
+      {
+         if (m_loopClients[i] == pLoopClient)
+         {
+            m_loopClients.RemoveAt(i);
+            return TRUE;
+         }
+      }
+   }
+   return FALSE;
+}
 
 /////////////////////////////////////////////////////////////////////////////
-// CMs3dviewApp initialization
+// The one and only cMs3dviewApp object
 
-BOOL CMs3dviewApp::InitInstance()
+cMs3dviewApp theApp;
+
+/////////////////////////////////////////////////////////////////////////////
+// cMs3dviewApp initialization
+
+static void RegisterGlobalObjects()
+{
+   CameraCreate();
+   InputCreate();
+   SaveLoadManagerCreate();
+   SimCreate();
+   ResourceManagerCreate();
+   EntityManagerCreate();
+   RendererCreate();
+}
+
+BOOL cMs3dviewApp::InitInstance()
 {
 	// Standard initialization
 	// If you are not using these features and wish to reduce the size
@@ -73,8 +125,12 @@ BOOL CMs3dviewApp::InitInstance()
 
 	LoadStdProfileSettings();  // Load standard INI file options (including MRU)
 
-   ResourceManagerCreate();
-   StartGlobalObjects();
+   RegisterGlobalObjects();
+   if (FAILED(StartGlobalObjects()))
+   {
+      ErrorMsg("One or more application-level services failed to start!\n");
+      return FALSE;
+   }
 
    TextFormatRegister(NULL);
    EngineRegisterResourceFormats();
@@ -106,7 +162,7 @@ BOOL CMs3dviewApp::InitInstance()
 	return TRUE;
 }
 
-int CMs3dviewApp::ExitInstance() 
+int cMs3dviewApp::ExitInstance() 
 {
 	StopGlobalObjects();
 	
@@ -161,12 +217,84 @@ BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
 END_MESSAGE_MAP()
 
 // App command to run the dialog
-void CMs3dviewApp::OnAppAbout()
+void cMs3dviewApp::OnAppAbout()
 {
 	CAboutDlg aboutDlg;
 	aboutDlg.DoModal();
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// CMs3dviewApp message handlers
+// cMs3dviewApp message handlers
 
+
+int cMs3dviewApp::Run()
+{
+   ASSERT_VALID(this);
+
+   // for tracking the idle time state
+   bool bIdle = true;
+   long lIdleCount = 0;
+
+   static const double kFrameDelay = 0.1;
+
+   double timeLastFrame = TimeGetSecs();
+   double time = timeLastFrame + (2 * kFrameDelay);
+
+   UseGlobal(Sim);
+   pSim->Go();
+
+   MSG lastMouseMove = {0};
+
+   // acquire and dispatch messages until a WM_QUIT message is received.
+   for (;;)
+   {
+#if _MFC_VER >= 0x0700
+	   _AFX_THREAD_STATE * pState = AfxGetThreadState();
+      MSG * pMsg = &(pState->m_msgCur);
+#else
+      MSG * pMsg = &m_msgCur;
+#endif
+
+      // phase1: check to see if we can do idle work
+      while (bIdle &&
+         !::PeekMessage(pMsg, NULL, 0, 0, PM_NOREMOVE))
+      {
+         // call OnIdle while in bIdle state
+         if (!OnIdle(lIdleCount++))
+            bIdle = false; // assume "no idle" state
+      }
+
+      // phase2: pump messages while available
+      while (::PeekMessage(pMsg, NULL, 0, 0, PM_NOREMOVE))
+      {
+         // pump message, but quit on WM_QUIT
+         if (!PumpMessage())
+            return ExitInstance();
+
+         // reset "no idle" state after pumping "normal" message
+         if (IsIdleMessage(pMsg))
+         {
+            bIdle = true;
+            lIdleCount = 0;
+         }
+      }
+
+      double elapsed = time - timeLastFrame;
+
+      if (elapsed > kFrameDelay)
+      {
+         pSim->NextFrame();
+
+         for (int i = 0; i < m_loopClients.GetSize(); i++)
+         {
+            m_loopClients[i]->OnFrame(time, elapsed);
+         }
+
+         timeLastFrame = time;
+      }
+
+      time = TimeGetSecs();
+   }
+
+   Assert(!"Should never reach this point!"); // not reachable
+}

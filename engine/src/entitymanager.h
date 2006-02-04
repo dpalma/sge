@@ -80,6 +80,7 @@ public:
    virtual tResult SpawnEntity(const tChar * pszMesh, const tVec3 & position);
 
    virtual tResult RemoveEntity(IEntity * pEntity);
+   virtual void RemoveAll();
 
    virtual void RenderAll();
 
