@@ -23,7 +23,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\Cg\include"
+				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\3rdparty\Cg\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -89,7 +89,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\render\include,..\..\3rdparty\Cg\include"
+				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\3rdparty\Cg\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
