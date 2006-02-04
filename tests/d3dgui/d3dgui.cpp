@@ -45,6 +45,8 @@
 F_DECLARE_HANDLE(HINSTANCE);
 typedef char * LPSTR;
 
+static tResult d3dguiframe();
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #define kDefaultWidth   800
@@ -72,7 +74,7 @@ static void RegisterGlobalObjects()
    ResourceManagerCreate();
    ScriptInterpreterCreate();
    GUIContextCreate();
-   GUIFactoriesCreate();
+   GUIFactoryCreate();
    GUIFontFactoryCreate();
    ThreadCallerCreate();
 }
@@ -180,6 +182,7 @@ static bool d3dguiinit(int argc, tChar * argv[])
 
    pGUIContext->PushPage("start.xml");
 
+   SysSetFrameCallback(d3dguiframe);
    SysAppActivate(true);
 
    UseGlobal(Sim);
@@ -291,7 +294,7 @@ int main(int argc, char * argv[])
       return EXIT_FAILURE;
    }
 
-   int result = SysEventLoop(d3dguiframe);
+   int result = SysEventLoop(NULL);
 
    d3dguiterm();
 
