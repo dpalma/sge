@@ -11,6 +11,7 @@
 #include "guistrings.h"
 
 #include "globalobj.h"
+#include "resourceapi.h"
 
 #include <tinyxml.h>
 
@@ -355,17 +356,46 @@ tResult GUIStyleElementCreate(const TiXmlElement * pXmlElement, IGUIElement * pP
       if (strcmp(pXmlElement->Value(), kElementStyle) == 0)
       {
          cAutoIPtr<IGUIStyleSheet> pStyleSheet;
-         const TiXmlNode * pFirstChild = pXmlElement->FirstChild();
-         if (pFirstChild != NULL)
+
+         if (pXmlElement->Attribute(kAttribSrc) != NULL)
          {
-            const TiXmlText * pText = pFirstChild->ToText();
-            if (pText != NULL)
+            if (pXmlElement->FirstChild() != NULL)
             {
-               if (GUIStyleSheetParse(pText->Value(), &pStyleSheet) != S_OK)
+               ErrorMsg1("Style element should either specify an external css "
+                  "file in the %s attribute, or define styles in the body of "
+                  "the element, but not both\n", kAttribSrc);
+               return E_FAIL;
+            }
+
+            UseGlobal(ResourceManager);
+            const char * pszText = NULL;
+            if (pResourceManager->Load(pXmlElement->Attribute(kAttribSrc), kRT_Text, NULL, (void**)&pszText) == S_OK)
+            {
+               if (GUIStyleSheetParse(pszText, &pStyleSheet) != S_OK)
                {
-                  Assert(!pStyleSheet);
+                  return E_FAIL;
                }
             }
+         }
+         else
+         {
+            const TiXmlNode * pFirstChild = pXmlElement->FirstChild();
+            if (pFirstChild != NULL)
+            {
+               const TiXmlText * pText = pFirstChild->ToText();
+               if (pText != NULL)
+               {
+                  if (GUIStyleSheetParse(pText->Value(), &pStyleSheet) != S_OK)
+                  {
+                     return E_FAIL;
+                  }
+               }
+            }
+         }
+
+         if (!pStyleSheet)
+         {
+            return E_FAIL;
          }
 
          cAutoIPtr<IGUIStyleElement> pStyleElement = static_cast<IGUIStyleElement *>(new cGUIStyleElement(pStyleSheet));
@@ -381,7 +411,7 @@ tResult GUIStyleElementCreate(const TiXmlElement * pXmlElement, IGUIElement * pP
    else
    {
       *ppElement = static_cast<IGUIStyleElement *>(new cGUIStyleElement(NULL));
-      return (*ppElement != NULL) ? S_OK : E_FAIL;
+      return (*ppElement != NULL) ? S_OK : E_OUTOFMEMORY;
    }
 
    return E_FAIL;

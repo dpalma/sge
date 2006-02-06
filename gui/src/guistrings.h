@@ -37,6 +37,7 @@ const char kAttribRange[]              = "range";
 const char kAttribRendererClass[]      = "renderer";
 const char kAttribRows[]               = "rows";
 const char kAttribScrollPos[]          = "scrollpos";
+const char kAttribSrc[]                = "src";
 const char kAttribStyleClass[]         = "class";
 const char kAttribStyle[]              = "style";
 const char kAttribText[]               = "text";

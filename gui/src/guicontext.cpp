@@ -41,8 +41,6 @@ LOG_DEFINE_CHANNEL(GUIContext);
 
 ///////////////////////////////////////////////////////////////////////////////
 
-extern tResult GUIGetElement(const tGUIElementList & elements, const tChar * pszId, IGUIElement * * ppElement);
-
 inline bool IsNumber(const tScriptVar & scriptVar)
 {
    return scriptVar.IsInt() || scriptVar.IsFloat() || scriptVar.IsDouble();
@@ -200,9 +198,6 @@ tResult cGUIContext::Init()
    UseGlobal(Input);
    pInput->AddInputListener(&m_inputListener, kILP_GUI);
 
-   UseGlobal(GUIFactory);
-   pGUIFactory->AddFactoryListener(this);
-
    GUILayoutRegisterBuiltInTypes();
 
    UseGlobal(ScriptInterpreter);
@@ -218,11 +213,6 @@ tResult cGUIContext::Term()
 {
    UseGlobal(Input);
    pInput->RemoveInputListener(&m_inputListener);
-
-   UseGlobal(GUIFactory);
-   pGUIFactory->RemoveFactoryListener(this);
-
-   ClearTempElements();
 
    std::list<cGUIPage*>::iterator iter = m_pages.begin();
    for (; iter != m_pages.end(); iter++)
@@ -497,8 +487,6 @@ tResult cGUIContext::PushPage(const tChar * pszPage)
       }
    }
 
-   ClearTempElements();
-
    cGUIPage * pPage = NULL;
    if (cGUIPage::Create(pTiXmlDoc, &pPage) == S_OK)
    {
@@ -522,8 +510,6 @@ tResult cGUIContext::PopPage()
       return E_FAIL;
    }
 
-   ClearTempElements();
-
    cGUIPage * pLastPage = m_pages.back();
    m_pages.pop_back();
    delete pLastPage, pLastPage = NULL;
@@ -542,16 +528,6 @@ tResult cGUIContext::GetElementById(const tChar * pszId, IGUIElement * * ppEleme
    if (pszId == NULL || ppElement == NULL)
    {
       return E_POINTER;
-   }
-
-   if (!m_tempElementMap.empty())
-   {
-      std::map<tGUIString, IGUIElement*>::iterator f = m_tempElementMap.find(pszId);
-      if (f != m_tempElementMap.end())
-      {
-         *ppElement = CTAddRef(f->second);
-         return S_OK;
-      }
    }
 
    cGUIPage * pPage = GetCurrentPage();
@@ -711,33 +687,6 @@ tResult cGUIContext::HideDebugInfo()
 
 ///////////////////////////////////////
 
-tResult cGUIContext::PreCreateElement(const TiXmlElement * pXmlElement, IGUIElement * pParent)
-{
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-void cGUIContext::OnCreateElement(const TiXmlElement * pXmlElement, IGUIElement * pParent, IGUIElement * pElement)
-{
-   if (pElement == NULL)
-   {
-      return;
-   }
-
-   tGUIString id;
-   if (pElement->GetId(&id) == S_OK)
-   {
-      m_tempElementMap.insert(std::make_pair(id, CTAddRef(pElement)));
-   }
-   else
-   {
-      m_tempElementList.push_back(CTAddRef(pElement));
-   }
-}
-
-///////////////////////////////////////
-
 tResult cGUIContext::GetHitElement(const tGUIPoint & point, IGUIElement * * ppElement) const
 {
    if (ppElement == NULL)
@@ -777,29 +726,6 @@ tResult cGUIContext::GetActiveModalDialog(IGUIDialogElement * * ppModalDialog)
    }
 
    return S_FALSE;
-}
-
-///////////////////////////////////////
-
-void cGUIContext::ClearTempElements()
-{
-   {
-      std::map<tGUIString, IGUIElement*>::iterator iter = m_tempElementMap.begin();
-      for (; iter != m_tempElementMap.end(); iter++)
-      {
-         iter->second->Release();
-      }
-      m_tempElementMap.clear();
-   }
-
-   {
-      std::list<IGUIElement*>::iterator iter = m_tempElementList.begin();
-      for (; iter != m_tempElementList.end(); iter++)
-      {
-         (*iter)->Release();
-      }
-      m_tempElementList.clear();
-   }
 }
 
 ///////////////////////////////////////

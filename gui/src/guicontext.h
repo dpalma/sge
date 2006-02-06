@@ -31,10 +31,9 @@ class cGUIPage;
 // CLASS: cGUIContext
 //
 
-class cGUIContext : public cComObject4<cGUIEventRouter<cGUIContext, IGUIContext>, &IID_IGUIContext,
+class cGUIContext : public cComObject3<cGUIEventRouter<cGUIContext, IGUIContext>, &IID_IGUIContext,
                                        IMPLEMENTS(IGlobalObject),
-                                       IMPLEMENTS(IScriptable),
-                                       IMPLEMENTS(IGUIFactoryListener)>
+                                       IMPLEMENTS(IScriptable)>
 {
 public:
    cGUIContext(const tChar * pszScriptName);
@@ -83,10 +82,6 @@ public:
    virtual tResult ShowDebugInfo(const tGUIPoint & placement, IGUIStyle * pStyle);
    virtual tResult HideDebugInfo();
 
-   // IGUIFactoryListener methods
-   virtual tResult PreCreateElement(const TiXmlElement * pXmlElement, IGUIElement * pParent);
-   virtual void OnCreateElement(const TiXmlElement * pXmlElement, IGUIElement * pParent, IGUIElement * pElement);
-
    tResult GetHitElement(const tGUIPoint & point, IGUIElement * * ppElement) const;
    tResult GetActiveModalDialog(IGUIDialogElement * * ppModalDialog);
 
@@ -94,8 +89,6 @@ public:
    const cGUIPage * GetCurrentPage() const { return m_pages.empty() ? NULL : m_pages.back(); }
 
 private:
-   void ClearTempElements();
-
    tResult CheckDialogPage();
 
 #ifdef GUI_DEBUG
@@ -136,9 +129,6 @@ private:
    cAutoIPtr<IGUIFont> m_pDefaultFont;
 
    std::list<cGUIPage *> m_pages;
-
-   std::map<tGUIString, IGUIElement*> m_tempElementMap; // those with ids
-   std::list<IGUIElement*> m_tempElementList; // those without ids
 };
 
 ///////////////////////////////////////////////////////////////////////////////
