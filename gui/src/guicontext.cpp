@@ -422,19 +422,18 @@ tResult cGUIContext::ShowModalDialog(const tChar * pszDialog)
       return E_FAIL;
    }
 
-   cGUIPage * pPage = GetCurrentPage();
-   if (pPage == NULL)
-   {
-      return E_FAIL;
-   }
-
    tResult result = E_FAIL;
 
    if (PushPage(pszDialog) == S_OK)
    {
+      if (!GetCurrentPage()->IsModalDialogPage())
+      {
+         PopPage();
+         return E_FAIL;
+      }
+
       cBoolSetter boolSetter(&m_bShowingModalDialog, true);
 
-      CheckDialogPage();
       GetCurrentPage()->SetOverlay(true);
 
       cGUIModalLoopEventListener listener(&result);
@@ -494,7 +493,7 @@ tResult cGUIContext::PushPage(const tChar * pszPage)
       SetFocus(NULL);
       SetMouseOver(NULL);
       SetDrag(NULL);
-      pPage->RunScripts();
+      pPage->Activate();
       return S_OK;
    }
 
@@ -512,6 +511,7 @@ tResult cGUIContext::PopPage()
 
    cGUIPage * pLastPage = m_pages.back();
    m_pages.pop_back();
+   pLastPage->Deactivate();
    delete pLastPage, pLastPage = NULL;
 
    SetFocus(NULL);
@@ -726,31 +726,6 @@ tResult cGUIContext::GetActiveModalDialog(IGUIDialogElement * * ppModalDialog)
    }
 
    return S_FALSE;
-}
-
-///////////////////////////////////////
-
-tResult cGUIContext::CheckDialogPage()
-{
-   cGUIPage * pPage = GetCurrentPage();
-   if (pPage == NULL)
-   {
-      return E_FAIL;
-   }
-
-   WarnMsgIf(pPage->CountElements() > 1, "More than one element in what is " \
-      "supposed to be a modal dialog page\n");
-
-   cAutoIPtr<IGUIDialogElement> pDlg;
-   ErrorMsgIf(pPage->GetActiveModalDialog(&pDlg) != S_OK, "No dialog element found\n");
-
-   cAutoIPtr<IGUIElement> pOk, pCancel;
-   if (pPage->GetElement("ok", &pOk) != S_OK || pPage->GetElement("cancel", &pCancel) != S_OK)
-   {
-      WarnMsg("Dialog box has no \"ok\" nor \"cancel\" button\n");
-   }
-
-   return S_OK;
 }
 
 ///////////////////////////////////////

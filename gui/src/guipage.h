@@ -27,14 +27,19 @@ class TiXmlDocument;
 
 class cGUIPage
 {
-public:
    cGUIPage(const tGUIElementList * pElements);
+public:
    ~cGUIPage();
 
    static tResult Create(const TiXmlDocument * pXmlDoc, cGUIPage * * ppPage);
 
+   void Activate();
+   void Deactivate();
+
    void SetOverlay(bool bIsOverlay) { m_bIsOverlay = bIsOverlay; }
    bool IsOverlay() const { return m_bIsOverlay; }
+
+   bool IsModalDialogPage() const;
 
    void Clear();
 
@@ -48,12 +53,12 @@ public:
 
    tResult GetHitElements(const tGUIPoint & point, tGUIElementList * pElements) const;
 
+private:
    void RunScripts();
 
    tGUIElementList::const_iterator BeginElements() const { return m_elements.begin(); }
    tGUIElementList::const_iterator EndElements() const { return m_elements.end(); }
 
-private:
    tGUIElementList m_elements;
    bool m_bUpdateLayout;
    bool m_bIsOverlay;

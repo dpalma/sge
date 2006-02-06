@@ -204,6 +204,58 @@ void cGUIPageCreateFactoryListener::OnCreateElement(const TiXmlElement * pXmlEle
 
 
 ///////////////////////////////////////////////////////////////////////////////
+
+template <typename F>
+static tResult GetElementHelper(IGUIElement * pParent, F f, IGUIElement * * ppElement)
+{
+   if (f(pParent))
+   {
+      *ppElement = CTAddRef(pParent);
+      return S_OK;
+   }
+   else
+   {
+      cAutoIPtr<IGUIElementEnum> pEnum;
+      if (pParent->EnumChildren(&pEnum) == S_OK)
+      {
+         IGUIElement * pChildren[32];
+         ulong count = 0;
+
+         while (SUCCEEDED((pEnum->Next(_countof(pChildren), &pChildren[0], &count))) && (count > 0))
+         {
+            for (ulong i = 0; i < count; i++)
+            {
+               if (GetElementHelper(pChildren[i], f, ppElement) == S_OK)
+               {
+                  for (; i < count; i++)
+                  {
+                     SafeRelease(pChildren[i]);
+                  }
+                  return S_OK;
+               }
+
+               SafeRelease(pChildren[i]);
+            }
+
+            count = 0;
+         }
+      }
+   }
+
+   return S_FALSE;
+}
+
+class cIdMatch
+{
+public:
+   cIdMatch(const tChar * pszId) : m_id(pszId ? pszId : "") {}
+   bool operator()(IGUIElement * pElement) { return GUIElementIdMatch(pElement, m_id.c_str()); }
+private:
+   cStr m_id;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUIPage
 //
@@ -291,6 +343,40 @@ tResult cGUIPage::Create(const TiXmlDocument * pXmlDoc, cGUIPage * * ppPage)
 
 ///////////////////////////////////////
 
+void cGUIPage::Activate()
+{
+   RunScripts();
+}
+
+///////////////////////////////////////
+
+void cGUIPage::Deactivate()
+{
+}
+
+///////////////////////////////////////
+
+bool cGUIPage::IsModalDialogPage() const
+{
+   if (CountElements() == 1)
+   {
+      cAutoIPtr<IGUIDialogElement> pDlg;
+      if (m_elements.back()->QueryInterface(IID_IGUIDialogElement, (void**)&pDlg) == S_OK)
+      {
+         cAutoIPtr<IGUIElement> pOk, pCancel;
+         if (GetElementHelper(pDlg, cIdMatch("ok"), &pOk) != S_OK
+            || GetElementHelper(pDlg, cIdMatch("cancel"), &pCancel) != S_OK)
+         {
+            WarnMsg("Dialog box has no \"ok\" nor \"cancel\" button\n");
+         }
+         return true;
+      }
+   }
+   return false;
+}
+
+///////////////////////////////////////
+
 void cGUIPage::Clear()
 {
    std::for_each(m_elements.begin(), m_elements.end(), CTInterfaceMethod(&IGUIElement::Release));
@@ -305,55 +391,6 @@ size_t cGUIPage::CountElements() const
 }
 
 ///////////////////////////////////////
-
-template <typename F>
-static tResult GetElementHelper(IGUIElement * pParent, F f, IGUIElement * * ppElement)
-{
-   if (f(pParent))
-   {
-      *ppElement = CTAddRef(pParent);
-      return S_OK;
-   }
-   else
-   {
-      cAutoIPtr<IGUIElementEnum> pEnum;
-      if (pParent->EnumChildren(&pEnum) == S_OK)
-      {
-         IGUIElement * pChildren[32];
-         ulong count = 0;
-
-         while (SUCCEEDED((pEnum->Next(_countof(pChildren), &pChildren[0], &count))) && (count > 0))
-         {
-            for (ulong i = 0; i < count; i++)
-            {
-               if (GetElementHelper(pChildren[i], f, ppElement) == S_OK)
-               {
-                  for (; i < count; i++)
-                  {
-                     SafeRelease(pChildren[i]);
-                  }
-                  return S_OK;
-               }
-
-               SafeRelease(pChildren[i]);
-            }
-
-            count = 0;
-         }
-      }
-   }
-
-   return S_FALSE;
-}
-
-class cIdMatch
-{
-public:
-   cIdMatch(const tChar * pszId) : m_id(pszId ? pszId : "") {}
-   bool operator()(IGUIElement * pElement) { return GUIElementIdMatch(pElement, m_id.c_str()); }
-private:
-   cStr m_id;
-};
 
 tResult GUIGetElement(const tGUIElementList & elements, const tChar * pszId, IGUIElement * * ppElement)
 {
@@ -515,11 +552,6 @@ tResult cGUIPage::GetHitElements(const tGUIPoint & point, tGUIElementList * pEle
    for (; iter != EndElements(); iter++)
    {
       uint zorder = 0;
-      cAutoIPtr<IGUIDialogElement> pTempDlg;
-      if ((*iter)->QueryInterface(IID_IGUIDialogElement, (void**)&pTempDlg) == S_OK)
-      {
-         zorder = 1000; // modal dialogs should have a higher z order
-      }
       q.push(tQueueEntry(CTAddRef(*iter), zorder));
    }
 
