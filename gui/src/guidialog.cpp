@@ -209,8 +209,6 @@ tResult GUIDialogElementCreate(const TiXmlElement * pXmlElement,
             return E_OUTOFMEMORY;
          }
 
-         GUIElementStandardAttributes(pXmlElement, pDialog);
-
          const char * pszValue = NULL;
          if ((pszValue = pXmlElement->Attribute(kAttribTitle)) != NULL)
          {

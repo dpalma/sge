@@ -433,7 +433,6 @@ tResult GUIScrollBarElementCreateFromXml(const TiXmlElement * pXmlElement,
          {
             return E_OUTOFMEMORY;
          }
-         GUIElementStandardAttributes(pXmlElement, pScrollBar);
 
          const char * pszAttrib;
 

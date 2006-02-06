@@ -598,7 +598,13 @@
 				RelativePath="..\..\gui\include\guidll.h">
 			</File>
 			<File
+				RelativePath="..\..\gui\include\guielementapi.h">
+			</File>
+			<File
 				RelativePath="..\..\gui\include\guiguids.h">
+			</File>
+			<File
+				RelativePath="..\..\gui\include\guistyleapi.h">
 			</File>
 			<File
 				RelativePath="..\..\gui\include\guitypes.h">

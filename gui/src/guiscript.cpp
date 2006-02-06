@@ -92,8 +92,6 @@ tResult GUIScriptElementCreate(const TiXmlElement * pXmlElement, IGUIElement * p
             return E_OUTOFMEMORY;
          }
 
-         GUIElementStandardAttributes(pXmlElement, pScript);
-
          const TiXmlNode * pFirstChild = pXmlElement->FirstChild();
          if (pFirstChild != NULL)
          {

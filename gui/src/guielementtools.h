@@ -48,9 +48,6 @@ void GUIPlaceElement(const tGUIRect & field, IGUIElement * pGUIElement);
 
 tGUIPoint GUIElementAbsolutePosition(IGUIElement * pGUIElement, uint * pnParents = NULL);
 
-tResult GUIElementStandardAttributes(const TiXmlElement * pXmlElement, 
-                                     IGUIElement * pGUIElement);
-
 tResult GUIElementFont(IGUIElement * pElement, IGUIFont * * ppFont);
 
 ///////////////////////////////////////////////////////////////////////////////

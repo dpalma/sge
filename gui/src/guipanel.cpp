@@ -60,8 +60,6 @@ tResult GUIPanelElementCreate(const TiXmlElement * pXmlElement,
             return E_OUTOFMEMORY;
          }
 
-         GUIElementStandardAttributes(pXmlElement, pPanel);
-
          *ppElement = CTAddRef(pPanel);
          return S_OK;
       }

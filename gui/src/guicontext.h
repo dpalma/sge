@@ -73,8 +73,6 @@ public:
 
    virtual tResult GetElementById(const tGUIChar * pszId, IGUIElement * * ppElement);
 
-   virtual tResult GetElementsOfType(REFGUID iid, IGUIElementEnum * * ppEnum) const;
-
    virtual tResult RenderGUI();
 
    virtual tResult GetRenderDeviceContext(IGUIRenderDeviceContext * * ppRenderDeviceContext);

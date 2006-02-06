@@ -644,8 +644,6 @@ tResult GUIListBoxElementCreate(const TiXmlElement * pXmlElement,
             return E_OUTOFMEMORY;
          }
 
-         GUIElementStandardAttributes(pXmlElement, pListBox);
-
          int rows;
          if (pXmlElement->QueryIntAttribute(kAttribRows, &rows) == TIXML_SUCCESS)
          {

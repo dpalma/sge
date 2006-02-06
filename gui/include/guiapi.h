@@ -363,8 +363,6 @@ interface IGUIContext : IGUIEventRouter
 
    virtual tResult GetElementById(const tGUIChar * pszId, IGUIElement * * ppElement) = 0;
 
-   virtual tResult GetElementsOfType(REFGUID iid, IGUIElementEnum * * ppEnum) const = 0;
-
    virtual tResult RenderGUI() = 0;
 
    virtual tResult GetRenderDeviceContext(IGUIRenderDeviceContext * * ppRenderDeviceContext) = 0;

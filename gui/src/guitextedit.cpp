@@ -559,8 +559,6 @@ tResult GUITextEditElementCreate(const TiXmlElement * pXmlElement,
          cAutoIPtr<IGUITextEditElement> pTextEdit = static_cast<IGUITextEditElement *>(new cGUITextEditElement);
          if (!!pTextEdit)
          {
-            GUIElementStandardAttributes(pXmlElement, pTextEdit);
-
             if (pXmlElement->Attribute(kAttribText))
             {
                pTextEdit->SetText(pXmlElement->Attribute(kAttribText));

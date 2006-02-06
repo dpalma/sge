@@ -374,8 +374,6 @@ tResult GUIStyleElementCreate(const TiXmlElement * pXmlElement, IGUIElement * pP
             return E_OUTOFMEMORY;
          }
 
-         GUIElementStandardAttributes(pXmlElement, pStyleElement);
-
          *ppElement = CTAddRef(pStyleElement);
          return S_OK;
       }

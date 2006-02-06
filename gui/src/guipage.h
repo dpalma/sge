@@ -18,6 +18,8 @@ F_DECLARE_INTERFACE(IGUIRenderDevice);
 
 typedef std::list<IGUIElement *> tGUIElementList;
 
+class TiXmlDocument;
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUIPage
@@ -29,18 +31,15 @@ public:
    cGUIPage(const tGUIElementList * pElements);
    ~cGUIPage();
 
+   static tResult Create(const TiXmlDocument * pXmlDoc, cGUIPage * * ppPage);
+
    void SetOverlay(bool bIsOverlay) { m_bIsOverlay = bIsOverlay; }
    bool IsOverlay() const { return m_bIsOverlay; }
 
    void Clear();
 
-   tResult AddElement(IGUIElement * pElement);
-   tResult RemoveElement(IGUIElement * pElement);
-
    size_t CountElements() const;
-   tResult HasElement(IGUIElement * pElement) const;
    tResult GetElement(const tChar * pszId, IGUIElement * * ppElement);
-   tResult GetElementsOfType(REFGUID iid, tGUIElementList * pElements) const;
 
    tResult GetActiveModalDialog(IGUIDialogElement * * ppDialog);
 

@@ -116,8 +116,6 @@ tResult GUILabelElementCreate(const TiXmlElement * pXmlElement,
              new cGUILabelElement);
          if (!!pLabel)
          {
-            GUIElementStandardAttributes(pXmlElement, pLabel);
-
             if (pXmlElement->Attribute(kAttribText))
             {
                pLabel->SetText(pXmlElement->Attribute(kAttribText));

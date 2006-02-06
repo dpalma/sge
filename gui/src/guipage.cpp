@@ -6,15 +6,202 @@
 #include "guipage.h"
 #include "guielementenum.h"
 #include "guielementtools.h"
+#include "guiparse.h"
+#include "guistrings.h"
+#include "guistyleapi.h"
 
 #include "scriptapi.h"
 
 #include "globalobj.h"
 
+#include <tinyxml.h>
+
 #include <stack>
 #include <queue>
 
 #include "dbgalloc.h" // must be last header
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+static void CreateElements(const TiXmlNode * pTiXmlNode, IGUIElement * pParent,
+                           void (*pfnCallback)(IGUIElement *, IGUIElement *, void *),
+                           void * pCallbackData)
+{
+   if (pTiXmlNode == NULL)
+   {
+      return;
+   }
+
+   UseGlobal(GUIFactory);
+
+   cAutoIPtr<IGUIContainerElement> pContainer;
+   if (pParent != NULL)
+   {
+      pParent->QueryInterface(IID_IGUIContainerElement, (void**)&pContainer);
+   }
+
+   for (const TiXmlElement * pXmlElement = pTiXmlNode->FirstChildElement();
+      pXmlElement != NULL; pXmlElement = pXmlElement->NextSiblingElement())
+   {
+      if (pXmlElement->Type() != TiXmlNode::ELEMENT)
+      {
+         continue;
+      }
+
+      cAutoIPtr<IGUIElement> pElement;
+      if (pGUIFactory->CreateElement(pXmlElement, pParent, &pElement) == S_OK)
+      {
+         if (pfnCallback != NULL)
+         {
+            (*pfnCallback)(pElement, pParent, pCallbackData);
+         }
+         if (!!pContainer && (pContainer->AddElement(pElement) != S_OK))
+         {
+            WarnMsg("Error creating child element\n");
+         }
+         CreateElements(pXmlElement, pElement, pfnCallback, pCallbackData);
+      }
+   }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cGUIPageCreateFactoryListener
+//
+
+class cGUIPageCreateFactoryListener : public cComObject<IMPLEMENTS(IGUIFactoryListener)>
+{
+public:
+   cGUIPageCreateFactoryListener();
+   ~cGUIPageCreateFactoryListener();
+
+   virtual tResult PreCreateElement(const TiXmlElement * pXmlElement, IGUIElement * pParent);
+   virtual void OnCreateElement(const TiXmlElement * pXmlElement, IGUIElement * pParent, IGUIElement * pElement);
+
+private:
+   std::list<IGUIStyleElement*> m_styleElements;
+};
+
+///////////////////////////////////////
+
+cGUIPageCreateFactoryListener::cGUIPageCreateFactoryListener()
+{
+}
+
+///////////////////////////////////////
+
+cGUIPageCreateFactoryListener::~cGUIPageCreateFactoryListener()
+{
+   std::for_each(m_styleElements.begin(), m_styleElements.end(), CTInterfaceMethod(&IGUIStyleElement::Release));
+   m_styleElements.clear();
+}
+
+///////////////////////////////////////
+
+tResult cGUIPageCreateFactoryListener::PreCreateElement(const TiXmlElement * pXmlElement,
+                                                        IGUIElement * pParent)
+{
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+void cGUIPageCreateFactoryListener::OnCreateElement(const TiXmlElement * pXmlElement,
+                                                    IGUIElement * pParent,
+                                                    IGUIElement * pElement)
+{
+   if (pElement == NULL)
+   {
+      return;
+   }
+
+   if (pXmlElement->Attribute(kAttribId))
+   {
+      pElement->SetId(pXmlElement->Attribute(kAttribId));
+   }
+
+   {
+      bool bVisible = true;
+      if (GUIParseBool(pXmlElement->Attribute(kAttribVisible), &bVisible) == S_OK)
+      {
+         pElement->SetVisible(bVisible);
+      }
+   }
+
+   {
+      bool bEnabled = true;
+      if (GUIParseBool(pXmlElement->Attribute(kAttribEnabled), &bEnabled) == S_OK)
+      {
+         pElement->SetEnabled(bEnabled);
+      }
+   }
+
+   if (pXmlElement->Attribute(kAttribRendererClass))
+   {
+      pElement->SetRendererClass(pXmlElement->Attribute(kAttribRendererClass));
+   }
+
+   cAutoIPtr<IGUIContainerElement> pContainer;
+   if (pElement->QueryInterface(IID_IGUIContainerElement, (void**)&pContainer) == S_OK)
+   {
+      if (pXmlElement->Attribute(kAttribInsets))
+      {
+         const cStr insets(pXmlElement->Attribute(kAttribInsets));
+
+         float insetVals[4];
+         if (insets.ParseTuple(insetVals, _countof(insetVals)) == 4)
+         {
+            tGUIInsets insets;
+            insets.left = Round(insetVals[0]);
+            insets.top = Round(insetVals[1]);
+            insets.right = Round(insetVals[2]);
+            insets.bottom = Round(insetVals[3]);
+            pContainer->SetInsets(insets);
+         }
+      }
+   }
+
+   cAutoIPtr<IGUIStyleElement> pStyle;
+   if (pElement->QueryInterface(IID_IGUIStyleElement, (void**)&pStyle) == S_OK)
+   {
+      m_styleElements.push_back(CTAddRef(pStyle));
+   }
+   else
+   {
+      cAutoIPtr<IGUIStyle> pClassStyle, pInlineStyle;
+
+      if (!m_styleElements.empty())
+      {
+         // TODO: how to handle multiple style sheets on the same page?
+         cAutoIPtr<IGUIStyleSheet> pStyleSheet;
+         if (m_styleElements.front()->GetStyleSheet(&pStyleSheet) == S_OK)
+         {
+            pStyleSheet->GetStyle(pXmlElement->Value(),
+               pXmlElement->Attribute(kAttribStyleClass), &pClassStyle);
+         }
+      }
+
+      {
+         const char * pszStyleAttrib = pXmlElement->Attribute(kAttribStyle);
+         if (pszStyleAttrib != NULL)
+         {
+            GUIStyleParseInline(pszStyleAttrib, -1, pClassStyle, &pInlineStyle);
+         }
+      }
+
+      if (!!pInlineStyle)
+      {
+         pElement->SetStyle(pInlineStyle);
+      }
+      else
+      {
+         pElement->SetStyle(pClassStyle);
+      }
+   }
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -44,6 +231,66 @@ cGUIPage::~cGUIPage()
 
 ///////////////////////////////////////
 
+static void GUIPageCreateElementsCallback(IGUIElement * pElement, IGUIElement * pParent, void * pData)
+{
+   if (pData == NULL)
+   {
+      return;
+   }
+
+   if (pElement != NULL)
+   {
+      // Add only top-level elements to the list
+      if (pParent == NULL)
+      {
+         tGUIElementList * pElements = (tGUIElementList*)pData;
+         pElements->push_back(CTAddRef(pElement));
+      }
+   }
+}
+
+///////////////////////////////////////
+
+tResult cGUIPage::Create(const TiXmlDocument * pXmlDoc, cGUIPage * * ppPage)
+{
+   if (pXmlDoc == NULL || ppPage == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cAutoIPtr<IGUIFactoryListener> pFL(static_cast<IGUIFactoryListener*>(new cGUIPageCreateFactoryListener));
+   if (!pFL)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   cGUIPage * pPage = new cGUIPage(NULL);
+   if (pPage == NULL)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   UseGlobal(GUIFactory);
+   pGUIFactory->AddFactoryListener(pFL);
+
+   CreateElements(pXmlDoc, NULL, GUIPageCreateElementsCallback, &pPage->m_elements);
+
+   pGUIFactory->RemoveFactoryListener(pFL);
+
+   if (pPage->m_elements.empty())
+   {
+      delete pPage;
+      return E_FAIL;
+   }
+
+   pPage->m_bUpdateLayout = true;
+
+   *ppPage = pPage;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
 void cGUIPage::Clear()
 {
    std::for_each(m_elements.begin(), m_elements.end(), CTInterfaceMethod(&IGUIElement::Release));
@@ -52,62 +299,9 @@ void cGUIPage::Clear()
 
 ///////////////////////////////////////
 
-tResult cGUIPage::AddElement(IGUIElement * pElement)
-{
-   if (pElement == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (HasElement(pElement) == S_OK)
-   {
-      return S_FALSE;
-   }
-
-   m_elements.push_back(CTAddRef(pElement));
-   m_bUpdateLayout = true;
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cGUIPage::RemoveElement(IGUIElement * pElement)
-{
-   if (pElement == NULL)
-   {
-      return E_POINTER;
-   }
-
-   tGUIElementList::iterator f = std::find_if(m_elements.begin(), m_elements.end(), cSameAs(pElement));
-   if (f != m_elements.end())
-   {
-      (*f)->Release();
-      m_elements.erase(f);
-      m_bUpdateLayout = true;
-      return S_OK;
-   }
-
-   return S_FALSE;
-}
-
-///////////////////////////////////////
-
 size_t cGUIPage::CountElements() const
 {
    return m_elements.size();
-}
-
-///////////////////////////////////////
-
-tResult cGUIPage::HasElement(IGUIElement * pElement) const
-{
-   if (pElement == NULL)
-   {
-      return E_POINTER;
-   }
-
-   tGUIElementList::const_iterator f = std::find_if(m_elements.begin(), m_elements.end(), cSameAs(pElement));
-   return (f != m_elements.end()) ? S_OK : S_FALSE;
 }
 
 ///////////////////////////////////////
@@ -181,41 +375,6 @@ tResult GUIGetElement(const tGUIElementList & elements, const tChar * pszId, IGU
 tResult cGUIPage::GetElement(const tChar * pszId, IGUIElement * * ppElement)
 {
    return GUIGetElement(m_elements, pszId, ppElement);
-}
-
-///////////////////////////////////////
-
-class cTypeMatch
-{
-public:
-   cTypeMatch(REFGUID iid, tGUIElementList * pElements) : m_iid(iid), m_pElements(pElements) {}
-   bool operator()(IGUIElement * pElement)
-   {
-      cAutoIPtr<IUnknown> pUnk;
-      if (pElement != NULL && pElement->QueryInterface(m_iid, (void**)&pUnk) == S_OK)
-      {
-         m_pElements->push_back(CTAddRef(pElement));
-      }
-      return false;
-   }
-private:
-   REFGUID m_iid;
-   tGUIElementList * m_pElements;
-};
-
-tResult cGUIPage::GetElementsOfType(REFGUID iid, tGUIElementList * pElements) const
-{
-   if (pElements == NULL)
-   {
-      return E_POINTER;
-   }
-   cAutoIPtr<IGUIElement> pUnused;
-   tGUIElementList::const_iterator iter = m_elements.begin();
-   for (; iter != m_elements.end(); iter++)
-   {
-      GetElementHelper(*iter, cTypeMatch(iid, pElements), &pUnused);
-   }
-   return pElements->empty() ? S_FALSE : S_OK;
 }
 
 ///////////////////////////////////////

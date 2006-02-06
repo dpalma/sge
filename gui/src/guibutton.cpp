@@ -175,8 +175,6 @@ tResult GUIButtonElementCreate(const TiXmlElement * pXmlElement,
          cAutoIPtr<IGUIButtonElement> pButton = static_cast<IGUIButtonElement *>(new cGUIButtonElement);
          if (!!pButton)
          {
-            GUIElementStandardAttributes(pXmlElement, pButton);
-
             const char * pszAttribute;
 
             if ((pszAttribute = pXmlElement->Attribute(kAttribText)) != NULL)

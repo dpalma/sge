@@ -467,67 +467,6 @@ tResult cGUIContext::ShowModalDialog(const tChar * pszDialog)
 
 ///////////////////////////////////////
 
-static void CreateElements(TiXmlNode * pTiXmlNode, IGUIElement * pParent,
-                           void (*pfnCallback)(IGUIElement *, IGUIElement *, void *),
-                           void * pCallbackData)
-{
-   if (pTiXmlNode == NULL)
-   {
-      return;
-   }
-
-   UseGlobal(GUIFactory);
-
-   cAutoIPtr<IGUIContainerElement> pContainer;
-   if (pParent != NULL)
-   {
-      pParent->QueryInterface(IID_IGUIContainerElement, (void**)&pContainer);
-   }
-
-   for (TiXmlElement * pXmlElement = pTiXmlNode->FirstChildElement();
-      pXmlElement != NULL; pXmlElement = pXmlElement->NextSiblingElement())
-   {
-      if (pXmlElement->Type() != TiXmlNode::ELEMENT)
-      {
-         continue;
-      }
-
-      cAutoIPtr<IGUIElement> pElement;
-      if (pGUIFactory->CreateElement(pXmlElement, pParent, &pElement) == S_OK)
-      {
-         if (pfnCallback != NULL)
-         {
-            (*pfnCallback)(pElement, pParent, pCallbackData);
-         }
-         if (!!pContainer && (pContainer->AddElement(pElement) != S_OK))
-         {
-            WarnMsg("Error creating child element\n");
-         }
-         CreateElements(pXmlElement, pElement, pfnCallback, pCallbackData);
-      }
-   }
-}
-
-///////////////////////////////////////
-
-static void GUIContextCreateElementsCallback(IGUIElement * pElement, IGUIElement * pParent, void * pData)
-{
-   if (pData == NULL)
-   {
-      return;
-   }
-
-   if (pElement != NULL)
-   {
-      // Add only top-level elements to the list
-      if (pParent == NULL)
-      {
-         tGUIElementList * pElements = (tGUIElementList*)pData;
-         pElements->push_back(CTAddRef(pElement));
-      }
-   }
-}
-
 tResult cGUIContext::PushPage(const tChar * pszPage)
 {
    if (pszPage == NULL)
@@ -560,27 +499,14 @@ tResult cGUIContext::PushPage(const tChar * pszPage)
 
    ClearTempElements();
 
-   tGUIElementList elements;
-   CreateElements(pTiXmlDoc, NULL, GUIContextCreateElementsCallback, &elements);
-   if (!elements.empty())
+   cGUIPage * pPage = NULL;
+   if (cGUIPage::Create(pTiXmlDoc, &pPage) == S_OK)
    {
-      cGUIPage * pPage = new cGUIPage(&elements);
-      if (pPage == NULL)
-      {
-         std::for_each(elements.begin(), elements.end(), CTInterfaceMethod(&IGUIElement::Release));
-         return E_OUTOFMEMORY;
-      }
-
       m_pages.push_back(pPage);
-
-      std::for_each(elements.begin(), elements.end(), CTInterfaceMethod(&IGUIElement::Release));
-
       SetFocus(NULL);
       SetMouseOver(NULL);
       SetDrag(NULL);
-
       pPage->RunScripts();
-
       return S_OK;
    }
 
@@ -635,59 +561,6 @@ tResult cGUIContext::GetElementById(const tChar * pszId, IGUIElement * * ppEleme
    }
 
    return E_FAIL;
-}
-
-///////////////////////////////////////
-
-tResult cGUIContext::GetElementsOfType(REFGUID iid, IGUIElementEnum * * ppEnum) const
-{
-   if (ppEnum == NULL)
-   {
-      return E_POINTER;
-   }
-
-   tGUIElementList elements;
-
-   if (!m_tempElementMap.empty())
-   {
-      std::map<tGUIString, IGUIElement*>::const_iterator iter = m_tempElementMap.begin();
-      for (; iter != m_tempElementMap.end(); iter++)
-      {
-         cAutoIPtr<IUnknown> pUnk;
-         if (iter->second->QueryInterface(iid, (void**)&pUnk) == S_OK)
-         {
-            elements.push_back(CTAddRef(iter->second));
-         }
-      }
-   }
-
-   if (!m_tempElementList.empty())
-   {
-      std::list<IGUIElement*>::const_iterator iter = m_tempElementList.begin();
-      for (; iter != m_tempElementList.end(); iter++)
-      {
-         cAutoIPtr<IUnknown> pUnk;
-         if ((*iter)->QueryInterface(iid, (void**)&pUnk) == S_OK)
-         {
-            elements.push_back(CTAddRef(*iter));
-         }
-      }
-   }
-
-   const cGUIPage * pPage = GetCurrentPage();
-   if (pPage != NULL)
-   {
-      pPage->GetElementsOfType(iid, &elements);
-   }
-
-   if (elements.empty())
-   {
-      return S_FALSE;
-   }
-
-   tResult result = GUIElementEnumCreate(elements, ppEnum);
-   std::for_each(elements.begin(), elements.end(), CTInterfaceMethod(&IGUIElement::Release));
-   return result;
 }
 
 ///////////////////////////////////////
