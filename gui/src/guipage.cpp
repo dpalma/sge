@@ -205,6 +205,80 @@ void cGUIPageCreateFactoryListener::OnCreateElement(const TiXmlElement * pXmlEle
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template <typename ITERATOR, typename FUNCTOR, typename DATA>
+void GUIElementRenderLoop(ITERATOR begin, ITERATOR end, FUNCTOR f, DATA d)
+{
+   std::stack< std::pair<IGUIElement*, IGUIElementRenderer*> > s;
+
+   tGUIElementList::reverse_iterator iter = begin;
+   for (; iter != end; iter++)
+   {
+      if ((*iter)->IsVisible())
+      {
+         cAutoIPtr<IGUIElementRenderer> pRenderer;
+         if ((*iter)->GetRenderer(&pRenderer) != S_OK)
+         {
+            continue;
+         }
+
+         s.push(std::make_pair(CTAddRef(*iter), (IGUIElementRenderer*)CTAddRef(pRenderer)));
+      }
+   }
+
+   while (!s.empty())
+   {
+      cAutoIPtr<IGUIElement> pElement(s.top().first);
+      cAutoIPtr<IGUIElementRenderer> pRenderer(s.top().second);
+      s.pop();
+
+      tResult result = f(pElement, pRenderer, d);
+      if (result == S_FALSE)
+      {
+         continue;
+      }
+      else if (FAILED(result))
+      {
+         while (!s.empty())
+         {
+            SafeRelease(s.top().first);
+            SafeRelease(s.top().second);
+            s.pop();
+         }
+         break;
+      }
+
+      cAutoIPtr<IGUIElementEnum> pEnum;
+      if (pElement->EnumChildren(&pEnum) == S_OK)
+      {
+         IGUIElement * pChildren[32];
+         ulong count = 0;
+         while (SUCCEEDED(pEnum->Next(_countof(pChildren), &pChildren[0], &count)) && (count > 0))
+         {
+            for (ulong i = 0; i < count; i++)
+            {
+               if (pChildren[i]->IsVisible())
+               {
+                  cAutoIPtr<IGUIElementRenderer> pChildRenderer;
+                  if (pChildren[i]->GetRenderer(&pChildRenderer) != S_OK)
+                  {
+                     pChildRenderer = pRenderer; // Copying smart pointers--no AddRef
+                  }
+                  s.push(std::make_pair(pChildren[i], (IGUIElementRenderer*)CTAddRef(pChildRenderer)));
+               }
+               else
+               {
+                  SafeRelease(pChildren[i]);
+               }
+            }
+            count = 0;
+         }
+      }
+   }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 template <typename F>
 static tResult GetElementHelper(IGUIElement * pParent, F f, IGUIElement * * ppElement)
 {
@@ -433,75 +507,55 @@ tResult cGUIPage::GetActiveModalDialog(IGUIDialogElement * * ppDialog)
 
 ///////////////////////////////////////
 
+class cGUIPageLayout
+{
+public:
+   cGUIPageLayout(const tGUIRect & rect);
+
+   tResult operator ()(IGUIElement * pElement, IGUIElementRenderer * pRenderer, void *);
+
+private:
+   const tGUIRect m_topLevelRect;
+   const tGUISize m_topLevelSize;
+};
+
+cGUIPageLayout::cGUIPageLayout(const tGUIRect & rect)
+ : m_topLevelRect(rect)
+ , m_topLevelSize(static_cast<tGUISizeType>(rect.GetWidth()), static_cast<tGUISizeType>(rect.GetHeight()))
+{
+}
+
+tResult cGUIPageLayout::operator ()(IGUIElement * pElement, IGUIElementRenderer * pRenderer, void *)
+{
+   Assert(pElement != NULL);
+   Assert(pRenderer != NULL);
+   cAutoIPtr<IGUIElement> pParent;
+   if (pElement->GetParent(&pParent) == S_OK)
+   {
+      //DebugMsg1("Size and layout child element %p\n", pElement);
+      tGUISize parentSize = pParent->GetSize();
+   }
+   else
+   {
+      GUISizeElement(pElement, m_topLevelSize);
+      GUIPlaceElement(m_topLevelRect, pElement);
+   }
+   return S_OK;
+}
+
 void cGUIPage::UpdateLayout(const tGUIRect & rect)
 {
    if (m_bUpdateLayout)
    {
-      std::for_each(BeginElements(), EndElements(), cSizeAndPlaceElement(rect));
+      cGUIPageLayout pageLayout(rect);
+      GUIElementRenderLoop(m_elements.rbegin(), m_elements.rend(), pageLayout, static_cast<void*>(NULL));
       m_bUpdateLayout = false;
    }
 }
 
 ///////////////////////////////////////
 
-template <typename ITERATOR, typename FUNCTOR, typename DATA>
-void GUIElementRenderLoop(ITERATOR begin, ITERATOR end, FUNCTOR f, DATA d)
-{
-   std::stack< std::pair<IGUIElement*, IGUIElementRenderer*> > s;
-
-   tGUIElementList::reverse_iterator iter = begin;
-   for (; iter != end; iter++)
-   {
-      if ((*iter)->IsVisible())
-      {
-         cAutoIPtr<IGUIElementRenderer> pRenderer;
-         if ((*iter)->GetRenderer(&pRenderer) != S_OK)
-         {
-            continue;
-         }
-
-         s.push(std::make_pair(CTAddRef(*iter), (IGUIElementRenderer*)CTAddRef(pRenderer)));
-      }
-   }
-
-   while (!s.empty())
-   {
-      cAutoIPtr<IGUIElement> pElement(s.top().first);
-      cAutoIPtr<IGUIElementRenderer> pRenderer(s.top().second);
-      s.pop();
-
-      f(pElement, pRenderer, d);
-
-      cAutoIPtr<IGUIElementEnum> pEnum;
-      if (pElement->EnumChildren(&pEnum) == S_OK)
-      {
-         IGUIElement * pChildren[32];
-         ulong count = 0;
-         while (SUCCEEDED(pEnum->Next(_countof(pChildren), &pChildren[0], &count)) && (count > 0))
-         {
-            for (ulong i = 0; i < count; i++)
-            {
-               if (pChildren[i]->IsVisible())
-               {
-                  cAutoIPtr<IGUIElementRenderer> pChildRenderer;
-                  if (pChildren[i]->GetRenderer(&pChildRenderer) != S_OK)
-                  {
-                     pChildRenderer = pRenderer; // Copying smart pointers--no AddRef
-                  }
-                  s.push(std::make_pair(pChildren[i], (IGUIElementRenderer*)CTAddRef(pChildRenderer)));
-               }
-               else
-               {
-                  SafeRelease(pChildren[i]);
-               }
-            }
-            count = 0;
-         }
-      }
-   }
-}
-
-void DoRender(IGUIElement * pElement, IGUIElementRenderer * pRenderer, IGUIRenderDevice * pRenderDevice)
+static tResult DoRender(IGUIElement * pElement, IGUIElementRenderer * pRenderer, IGUIRenderDevice * pRenderDevice)
 {
    if (FAILED(pRenderer->Render(pElement, pRenderDevice)))
    {
@@ -513,6 +567,7 @@ void DoRender(IGUIElement * pElement, IGUIElementRenderer * pRenderer, IGUIRende
 
       ErrorMsg1("A GUI element of type \"%s\" failed to render\n", type.c_str());
    }
+   return S_OK;
 }
 
 void cGUIPage::Render(IGUIRenderDevice * pRenderDevice)
