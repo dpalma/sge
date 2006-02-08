@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // $Id$
 
-#ifndef INCLUDED_GUIRENDER_H
-#define INCLUDED_GUIRENDER_H
+#ifndef INCLUDED_GUIRENDERGL_H
+#define INCLUDED_GUIRENDERGL_H
 
 #include "guiapi.h"
 
@@ -45,4 +45,4 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // INCLUDED_GUIRENDER_H
+#endif // INCLUDED_GUIRENDERGL_H

@@ -590,11 +590,11 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\gui\src\guirender.cpp"
+					RelativePath="..\..\gui\src\guirenderd3d.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\gui\src\guirenderd3d.cpp"
+					RelativePath="..\..\gui\src\guirendergl.cpp"
 					>
 				</File>
 				<File
@@ -774,11 +774,11 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\gui\src\guirender.h"
+					RelativePath="..\..\gui\src\guirenderd3d.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\gui\src\guirenderd3d.h"
+					RelativePath="..\..\gui\src\guirendergl.h"
 					>
 				</File>
 				<File
