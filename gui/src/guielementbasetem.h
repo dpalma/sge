@@ -62,7 +62,7 @@ tResult cGUIElementBase<INTRFC>::GetId(tGUIString * pId) const
 ///////////////////////////////////////
 
 template <typename INTRFC>
-void cGUIElementBase<INTRFC>::SetId(const tChar * pszId)
+void cGUIElementBase<INTRFC>::SetId(const tGUIChar * pszId)
 {
    if (pszId != NULL)
    {
@@ -269,20 +269,13 @@ tResult cGUIElementBase<INTRFC>::GetRendererClass(tGUIString * pRendererClass)
       return S_OK;
    }
 
-   cAutoIPtr<IGUIElement> pParent;
-   if (GetParent(&pParent) == S_OK
-      && pParent->GetRendererClass(pRendererClass) == S_OK)
-   {
-      return S_OK;
-   }
-
    return S_FALSE;
 }
 
 ///////////////////////////////////////
 
 template <typename INTRFC>
-tResult cGUIElementBase<INTRFC>::SetRendererClass(const tChar * pszRendererClass)
+tResult cGUIElementBase<INTRFC>::SetRendererClass(const tGUIChar * pszRendererClass)
 {
    if (pszRendererClass == NULL && !m_rendererClass.empty())
    {

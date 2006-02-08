@@ -210,6 +210,22 @@ HASHTABLE_TEMPLATE_CLASS::cHashTable(uint initialSize)
 ////////////////////////////////////////
 
 HASHTABLE_TEMPLATE_DECL
+HASHTABLE_TEMPLATE_CLASS::cHashTable(const cHashTable & other)
+ : m_elts(NULL)
+ , m_maxSize(0)
+ , m_size(0)
+{
+   Grow(other.m_maxSize);
+   cHashTable::const_iterator iter = other.begin();
+   for (; iter != other.end(); iter++)
+   {
+      insert(iter->first, iter->second);
+   }
+}
+
+////////////////////////////////////////
+
+HASHTABLE_TEMPLATE_DECL
 HASHTABLE_TEMPLATE_CLASS::~cHashTable()
 {
    Reset(0);

@@ -9,7 +9,6 @@
 #define INCLUDED_GUICONTAINERBASETEM_H
 
 #include "guielementbasetem.h"
-#include "guielementtools.h"
 #include "guielementenum.h"
 
 #include "dbgalloc.h" // must be last header
@@ -28,8 +27,6 @@
 template <typename INTRFC>
 cGUIContainerBase<INTRFC>::cGUIContainerBase(IGUILayoutManager * pLayout)
  : m_pLayout(CTAddRef(pLayout))
- , m_bNeedLayout(false)
- , m_pInsets(NULL)
 {
 }
 
@@ -47,19 +44,6 @@ cGUIContainerBase<INTRFC>::~cGUIContainerBase()
       (*iter)->Release();
    }
    m_children.clear();
-
-   delete m_pInsets;
-   m_pInsets = NULL;
-}
-
-///////////////////////////////////////
-
-template <typename INTRFC>
-void cGUIContainerBase<INTRFC>::SetSize(const tGUISize & size)
-{
-   cGUIElementBase<INTRFC>::SetSize(size);
-   m_bNeedLayout = true;
-   DoLayout();
 }
 
 ///////////////////////////////////////
@@ -68,17 +52,6 @@ template <typename INTRFC>
 tResult cGUIContainerBase<INTRFC>::EnumChildren(IGUIElementEnum * * ppElements)
 {
    return GUIElementEnumCreate(m_children, ppElements);
-}
-
-///////////////////////////////////////
-
-template <typename INTRFC>
-tResult cGUIContainerBase<INTRFC>::SetClientArea(const tGUIRect & clientArea)
-{
-   tResult result = cGUIElementBase<INTRFC>::SetClientArea(clientArea);
-   m_bNeedLayout = (result == S_OK);
-   DoLayout();
-   return result;
 }
 
 ///////////////////////////////////////
@@ -104,8 +77,6 @@ tResult cGUIContainerBase<INTRFC>::AddElement(IGUIElement * pElement)
 
    pElement->SetParent(this);
 
-   m_bNeedLayout = true;
-
    return S_OK;
 }
 
@@ -125,7 +96,6 @@ tResult cGUIContainerBase<INTRFC>::RemoveElement(IGUIElement * pElement)
       m_children.erase(f);
       pElement->SetParent(NULL);
       pElement->Release();
-      m_bNeedLayout = true;
       return S_OK;
    }
 
@@ -190,80 +160,7 @@ tResult cGUIContainerBase<INTRFC>::SetLayout(IGUILayoutManager * pLayout)
 {
    SafeRelease(m_pLayout);
    m_pLayout = CTAddRef(pLayout);
-   m_bNeedLayout = true;
    return S_OK;
-}
-
-///////////////////////////////////////
-
-template <typename INTRFC>
-tResult cGUIContainerBase<INTRFC>::GetInsets(tGUIInsets * pInsets)
-{
-   if (pInsets == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (m_pInsets == NULL)
-   {
-      return S_FALSE;
-   }
-
-   *pInsets = *m_pInsets;
-
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-template <typename INTRFC>
-tResult cGUIContainerBase<INTRFC>::SetInsets(const tGUIInsets & insets)
-{
-   if (m_pInsets == NULL)
-   {
-      m_pInsets = new tGUIInsets;
-      if (m_pInsets == NULL)
-      {
-         return E_OUTOFMEMORY;
-      }
-   }
-
-   *m_pInsets = insets;
-   m_bNeedLayout = true;
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-template <typename INTRFC>
-void cGUIContainerBase<INTRFC>::DoLayout()
-{
-   if (m_bNeedLayout)
-   {
-      cAutoIPtr<IGUILayoutManager> pLayout;
-      if (GetLayout(&pLayout) == S_OK)
-      {
-         pLayout->Layout(this);
-      }
-      else
-      {
-         tGUIRect rect;
-         if (tBaseClass::GetClientArea(&rect) == S_OK)
-         {
-            tGUIInsets insets;
-            if (GetInsets(&insets) == S_OK)
-            {
-               rect.left += insets.left;
-               rect.top += insets.top;
-               rect.right -= insets.right;
-               rect.bottom -= insets.bottom;
-            }
-            ForEachElement(cSizeAndPlaceElement(rect));
-         }
-      }
-
-      m_bNeedLayout = false;
-   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

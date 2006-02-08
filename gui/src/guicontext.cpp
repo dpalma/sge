@@ -781,15 +781,8 @@ void cGUIContext::RenderDebugInfo()
          tGUIElementList::reverse_iterator iter = hitElements.rbegin();
          for (int index = 0; iter != hitElements.rend(); iter++, index++)
          {
-            cStr type, temp;
-            if (SUCCEEDED(GUIElementType(*iter, &type)))
-            {
-               temp.Format("Element %d: %s", index, type.c_str());
-            }
-            else
-            {
-               temp.Format("Element %d: <unknown type>", index);
-            }
+            tGUIString type(GUIElementType(*iter)), temp;
+            temp.Format("Element %d: %s", index, type.c_str());
             pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
             rect.Offset(0, lineHeight);
 

@@ -3,6 +3,7 @@
 <panel style="width:100%;height:100%" renderer="basic">
 	<layout type="flow" />
 	<panel style="width:100%;height:60%;background-color:blue;">
+		<layout type="grid" rows="2" columns="1" />
 		<label text="Copyright (C) 2005, Daniel Palma" style="font-pointsize:8;align:right;vertical-align:top;" />
 		<label text=" {{TEST game}}" style="font-pointsize:36;align:left;vertical-align:bottom;" />
 	</panel>
@@ -16,6 +17,6 @@
 		<label/>
 		<label/><label/><label/>
 		<button text="Exit" onclick="QuitWithConfirm();" renderer="beveled" />
-      <label/>
+		<label/>
 	</panel>
 </panel>

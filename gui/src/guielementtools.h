@@ -11,6 +11,7 @@
 #endif
 
 F_DECLARE_INTERFACE(IGUIFont);
+F_DECLARE_INTERFACE(IGUIStyle);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -38,34 +39,18 @@ private:
 
 bool IsDescendant(IGUIElement * pParent, IGUIElement * pElement);
 
-tResult GUIElementType(IUnknown * pUnkElement, cStr * pType);
+tGUIString GUIElementType(IUnknown * pUnkElement);
 
 bool GUIElementIdMatch(IGUIElement * pElement, const tChar * pszId);
 
-tResult GUISizeElement(IGUIElement * pElement, const tGUISize & relativeTo);
+tResult GUIStyleWidth(IGUIStyle * pStyle, tGUISizeType baseWidth, tGUISizeType * pWidth);
+tResult GUIStyleHeight(IGUIStyle * pStyle, tGUISizeType baseHeight, tGUISizeType * pHeight);
 
 void GUIPlaceElement(const tGUIRect & field, IGUIElement * pGUIElement);
 
 tGUIPoint GUIElementAbsolutePosition(IGUIElement * pGUIElement, uint * pnParents = NULL);
 
 tResult GUIElementFont(IGUIElement * pElement, IGUIFont * * ppFont);
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cSizeAndPlaceElement
-//
-
-class cSizeAndPlaceElement
-{
-public:
-   cSizeAndPlaceElement(const tGUIRect & rect);
-
-   tResult operator()(IGUIElement * pElement);
-
-private:
-   const tGUIRect m_rect;
-   const tGUISize m_size;
-};
 
 
 ///////////////////////////////////////////////////////////////////////////////

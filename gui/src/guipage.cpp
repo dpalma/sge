@@ -13,6 +13,8 @@
 #include "scriptapi.h"
 
 #include "globalobj.h"
+#include "hashtable.h"
+#include "hashtabletem.h"
 
 #include <tinyxml.h>
 
@@ -143,26 +145,6 @@ void cGUIPageCreateFactoryListener::OnCreateElement(const TiXmlElement * pXmlEle
       pElement->SetRendererClass(pXmlElement->Attribute(kAttribRendererClass));
    }
 
-   cAutoIPtr<IGUIContainerElement> pContainer;
-   if (pElement->QueryInterface(IID_IGUIContainerElement, (void**)&pContainer) == S_OK)
-   {
-      if (pXmlElement->Attribute(kAttribInsets))
-      {
-         const cStr insets(pXmlElement->Attribute(kAttribInsets));
-
-         float insetVals[4];
-         if (insets.ParseTuple(insetVals, _countof(insetVals)) == 4)
-         {
-            tGUIInsets insets;
-            insets.left = Round(insetVals[0]);
-            insets.top = Round(insetVals[1]);
-            insets.right = Round(insetVals[2]);
-            insets.bottom = Round(insetVals[3]);
-            pContainer->SetInsets(insets);
-         }
-      }
-   }
-
    cAutoIPtr<IGUIStyleElement> pStyle;
    if (pElement->QueryInterface(IID_IGUIStyleElement, (void**)&pStyle) == S_OK)
    {
@@ -205,12 +187,199 @@ void cGUIPageCreateFactoryListener::OnCreateElement(const TiXmlElement * pXmlEle
 
 ///////////////////////////////////////////////////////////////////////////////
 
+static tResult GUIElementSize(IGUIElement * pElement, IGUIElementRenderer * pRenderer,
+                              const tGUISize & baseSize, tGUISize * pSize)
+{
+   tGUISize preferredSize;
+   bool bHavePreferredSize = (pRenderer->GetPreferredSize(pElement, &preferredSize) == S_OK);
+
+   cAutoIPtr<IGUIStyle> pStyle;
+   if (pElement->GetStyle(&pStyle) == S_OK)
+   {
+      tGUISize styleSize(0,0);
+
+      if (GUIStyleWidth(pStyle, baseSize.width, &styleSize.width) != S_OK)
+      {
+         if (bHavePreferredSize)
+         {
+            styleSize.width = preferredSize.width;
+         }
+         else
+         {
+            return S_FALSE;
+         }
+      }
+
+      if (GUIStyleHeight(pStyle, baseSize.height, &styleSize.height) != S_OK)
+      {
+         if (bHavePreferredSize)
+         {
+            styleSize.height = preferredSize.height;
+         }
+         else
+         {
+            return S_FALSE;
+         }
+      }
+
+      *pSize = styleSize;
+      return S_OK;
+   }
+   else if (bHavePreferredSize)
+   {
+      *pSize = preferredSize;
+      return S_OK;
+   }
+
+   return S_FALSE;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+typedef IGUIElement * tGUIElementPtr;
+
+template <>
+uint cHashFunction<tGUIElementPtr>::Hash(const tGUIElementPtr & a, uint initVal)
+{
+   return hash(reinterpret_cast<byte*>(const_cast<tGUIElementPtr>(a)), sizeof(tGUIElementPtr), initVal);
+}
+
+template <>
+bool cHashFunction<tGUIElementPtr>::Equal(const tGUIElementPtr & a, const tGUIElementPtr & b)
+{
+   return CTIsSameObject(a, b);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cGUIPageLayout
+//
+// A functor class for use with GUIElementRenderLoop to lay out 
+// elements on a page
+
+class cGUIPageLayout
+{
+public:
+   explicit cGUIPageLayout(const tGUIRect & rect);
+   cGUIPageLayout(const cGUIPageLayout &);
+   ~cGUIPageLayout();
+
+   tResult operator ()(IGUIElement * pElement, IGUIElementRenderer * pRenderer, void *);
+
+private:
+   const tGUIRect m_topLevelRect;
+   const tGUISize m_topLevelSize;
+   tGUIPoint m_topLevelCurPos;
+
+   typedef cHashTable<tGUIElementPtr, tGUIPoint> tElementCurPosTable;
+   tElementCurPosTable m_elementCurPosTable;
+
+   std::queue<IGUIContainerElement*> m_layoutQueue;
+};
+
+///////////////////////////////////////
+
+cGUIPageLayout::cGUIPageLayout(const tGUIRect & rect)
+ : m_topLevelRect(rect)
+ , m_topLevelSize(static_cast<tGUISizeType>(rect.GetWidth()), static_cast<tGUISizeType>(rect.GetHeight()))
+ , m_topLevelCurPos(0,0)
+{
+}
+
+///////////////////////////////////////
+
+cGUIPageLayout::cGUIPageLayout(const cGUIPageLayout & other)
+ : m_topLevelRect(other.m_topLevelRect)
+ , m_topLevelSize(other.m_topLevelSize)
+ , m_topLevelCurPos(other.m_topLevelCurPos)
+{
+   AssertMsg(other.m_elementCurPosTable.empty(), "Copying non-empty hash table");
+}
+
+///////////////////////////////////////
+
+cGUIPageLayout::~cGUIPageLayout()
+{
+   while (!m_layoutQueue.empty())
+   {
+      cAutoIPtr<IGUIContainerElement> pContainer(m_layoutQueue.front());
+      m_layoutQueue.pop();
+
+      cAutoIPtr<IGUILayoutManager> pLayout;
+      if (pContainer->GetLayout(&pLayout) == S_OK)
+      {
+         pLayout->Layout(pContainer);
+      }
+   }
+
+   tElementCurPosTable::iterator iter = m_elementCurPosTable.begin();
+   for (; iter != m_elementCurPosTable.end(); iter++)
+   {
+      SafeRelease(iter->first);
+   }
+}
+
+///////////////////////////////////////
+
+tResult cGUIPageLayout::operator ()(IGUIElement * pElement, IGUIElementRenderer * pRenderer, void *)
+{
+   Assert(pElement != NULL);
+   Assert(pRenderer != NULL);
+
+   tGUISize parentSize(0,0);
+   cAutoIPtr<IGUIElement> pParent;
+   if (pElement->GetParent(&pParent) == S_OK)
+   {
+      parentSize = pParent->GetSize();
+   }
+   else
+   {
+      parentSize = m_topLevelSize;
+   }
+
+   tGUISize elementSize;
+   if (GUIElementSize(pElement, pRenderer, parentSize, &elementSize) != S_OK)
+   {
+      return S_FALSE;
+   }
+
+   if (AlmostEqual(elementSize.width, 0) || AlmostEqual(elementSize.height, 0))
+   {
+      return S_FALSE;
+   }
+
+   pElement->SetSize(elementSize);
+
+   tGUIRect clientArea(0,0,0,0);
+   pRenderer->ComputeClientArea(pElement, &clientArea);
+
+   pElement->SetClientArea(clientArea);
+
+   if (!pParent)
+   {
+      GUIPlaceElement(m_topLevelRect, pElement);
+   }
+
+   cAutoIPtr<IGUIContainerElement> pContainer;
+   if (pElement->QueryInterface(IID_IGUIContainerElement, (void**)&pContainer) == S_OK)
+   {
+      m_layoutQueue.push(CTAddRef(pContainer));
+   }
+
+   return S_OK;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 template <typename ITERATOR, typename FUNCTOR, typename DATA>
 void GUIElementRenderLoop(ITERATOR begin, ITERATOR end, FUNCTOR f, DATA d)
 {
    std::stack< std::pair<IGUIElement*, IGUIElementRenderer*> > s;
 
-   tGUIElementList::reverse_iterator iter = begin;
+   typename ITERATOR iter = begin;
    for (; iter != end; iter++)
    {
       if ((*iter)->IsVisible())
@@ -466,7 +635,7 @@ size_t cGUIPage::CountElements() const
 
 ///////////////////////////////////////
 
-tResult GUIGetElement(const tGUIElementList & elements, const tChar * pszId, IGUIElement * * ppElement)
+static tResult GUIGetElement(const tGUIElementList & elements, const tChar * pszId, IGUIElement * * ppElement)
 {
    if (pszId == NULL || ppElement == NULL)
    {
@@ -507,42 +676,6 @@ tResult cGUIPage::GetActiveModalDialog(IGUIDialogElement * * ppDialog)
 
 ///////////////////////////////////////
 
-class cGUIPageLayout
-{
-public:
-   cGUIPageLayout(const tGUIRect & rect);
-
-   tResult operator ()(IGUIElement * pElement, IGUIElementRenderer * pRenderer, void *);
-
-private:
-   const tGUIRect m_topLevelRect;
-   const tGUISize m_topLevelSize;
-};
-
-cGUIPageLayout::cGUIPageLayout(const tGUIRect & rect)
- : m_topLevelRect(rect)
- , m_topLevelSize(static_cast<tGUISizeType>(rect.GetWidth()), static_cast<tGUISizeType>(rect.GetHeight()))
-{
-}
-
-tResult cGUIPageLayout::operator ()(IGUIElement * pElement, IGUIElementRenderer * pRenderer, void *)
-{
-   Assert(pElement != NULL);
-   Assert(pRenderer != NULL);
-   cAutoIPtr<IGUIElement> pParent;
-   if (pElement->GetParent(&pParent) == S_OK)
-   {
-      //DebugMsg1("Size and layout child element %p\n", pElement);
-      tGUISize parentSize = pParent->GetSize();
-   }
-   else
-   {
-      GUISizeElement(pElement, m_topLevelSize);
-      GUIPlaceElement(m_topLevelRect, pElement);
-   }
-   return S_OK;
-}
-
 void cGUIPage::UpdateLayout(const tGUIRect & rect)
 {
    if (m_bUpdateLayout)
@@ -559,13 +692,7 @@ static tResult DoRender(IGUIElement * pElement, IGUIElementRenderer * pRenderer,
 {
    if (FAILED(pRenderer->Render(pElement, pRenderDevice)))
    {
-      cStr type;
-      if (GUIElementType(pElement, &type) != S_OK)
-      {
-         type = _T("Unknown");
-      }
-
-      ErrorMsg1("A GUI element of type \"%s\" failed to render\n", type.c_str());
+      ErrorMsg1("A GUI element of type \"%s\" failed to render\n", GUIElementType(pElement).c_str());
    }
    return S_OK;
 }

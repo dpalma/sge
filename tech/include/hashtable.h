@@ -138,6 +138,7 @@ public:
    };
 
    cHashTable(uint initialSize = kInitialSizeSmall);
+   explicit cHashTable(const cHashTable & other);
    ~cHashTable();
 
    std::pair<const_iterator, bool> insert(const KEY & k, const VALUE & v);

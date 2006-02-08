@@ -26,7 +26,6 @@ const char kAttribForegroundColor[]    = "foreground-color";
 const char kAttribHeight[]             = "height";
 const char kAttribHgap[]               = "hgap";
 const char kAttribId[]                 = "id";
-const char kAttribInsets[]             = "insets";
 const char kAttribLayout[]             = "layout";
 const char kAttribLineSize[]           = "linesize";
 const char kAttribOnClick[]            = "onclick";

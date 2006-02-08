@@ -56,22 +56,21 @@ bool IsDescendant(IGUIElement * pParent, IGUIElement * pElement)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-tResult GUIElementType(IUnknown * pUnkElement, cStr * pType)
+tGUIString GUIElementType(IUnknown * pUnkElement)
 {
-   if (pUnkElement == NULL || pType == NULL)
+   if (pUnkElement == NULL)
    {
-      return E_POINTER;
+      return tGUIString(_T("(null)"));
    }
 
    static const struct
    {
       const GUID * pIID;
-      const tChar * pszType;
+      const tGUIChar * pszType;
    }
    guiElementTypes[] =
    {
       { &IID_IGUIButtonElement,     _T("Button") },
-      { &IID_IGUIContainerElement,  _T("Container") },
       { &IID_IGUIDialogElement,     _T("Dialog") },
       { &IID_IGUILabelElement,      _T("Label") },
       { &IID_IGUIListBoxElement,    _T("ListBox") },
@@ -80,6 +79,7 @@ tResult GUIElementType(IUnknown * pUnkElement, cStr * pType)
       { &IID_IGUIScrollBarElement,  _T("ScrollBar") },
       { &IID_IGUIStyleElement,      _T("Style") },
       { &IID_IGUITextEditElement,   _T("TextEdit") },
+      { &IID_IGUIContainerElement,  _T("Container") }, // Should be at the bottom
    };
 
    for (int i = 0; i < _countof(guiElementTypes); i++)
@@ -87,12 +87,11 @@ tResult GUIElementType(IUnknown * pUnkElement, cStr * pType)
       cAutoIPtr<IUnknown> pUnk;
       if (pUnkElement->QueryInterface(*guiElementTypes[i].pIID, (void**)&pUnk) == S_OK)
       {
-         *pType = guiElementTypes[i].pszType;
-         return S_OK;
+         return tGUIString(guiElementTypes[i].pszType);
       }
    }
 
-   return S_FALSE;
+   return tGUIString(_T("(unknown)"));;
 }
 
 
@@ -113,78 +112,58 @@ bool GUIElementIdMatch(IGUIElement * pElement, const tChar * pszId)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-tResult GUISizeElement(IGUIElement * pElement, const tGUISize & relativeTo)
+tResult GUIStyleWidth(IGUIStyle * pStyle, tGUISizeType baseWidth, tGUISizeType * pWidth)
 {
-   if (pElement == NULL)
+   if (pStyle == NULL || pWidth == NULL)
    {
       return E_POINTER;
    }
 
-   bool bHavePreferred = false, bHaveStyle = false;
-
-   tGUISize size(0,0);
-
-   cAutoIPtr<IGUIElementRenderer> pRenderer;
-   if (pElement->GetRenderer(&pRenderer) == S_OK)
+   int styleWidth;
+   uint styleWidthSpec;
+   if (pStyle->GetWidth(&styleWidth, &styleWidthSpec) == S_OK && styleWidth >= 0)
    {
-      if (pRenderer->GetPreferredSize(pElement, &size) == S_OK)
+      if (styleWidthSpec == kGUIDimensionPixels)
       {
-         bHavePreferred = true;
+         *pWidth = static_cast<tGUISizeType>(styleWidth);
+         return S_OK;
+      }
+      else if (styleWidthSpec == kGUIDimensionPercent)
+      {
+         *pWidth = static_cast<tGUISizeType>((styleWidth * baseWidth) / 100);
+         return S_OK;
       }
    }
 
-   cAutoIPtr<IGUIStyle> pStyle;
-   if (pElement->GetStyle(&pStyle) == S_OK)
-   {
-      int styleWidth;
-      uint styleWidthSpec;
-      if (pStyle->GetWidth(&styleWidth, &styleWidthSpec) == S_OK && styleWidth >= 0)
-      {
-         if (styleWidthSpec == kGUIDimensionPixels)
-         {
-            size.width = static_cast<tGUISizeType>(styleWidth);
-            bHaveStyle = true;
-         }
-         else if (styleWidthSpec == kGUIDimensionPercent)
-         {
-            size.width = static_cast<tGUISizeType>((styleWidth * relativeTo.width) / 100);
-            bHaveStyle = true;
-         }
-      }
+   return S_FALSE;
+}
 
-      int styleHeight;
-      uint styleHeightSpec;
-      if (pStyle->GetHeight(&styleHeight, &styleHeightSpec) == S_OK && styleHeight >= 0)
+///////////////////////////////////////////////////////////////////////////////
+
+tResult GUIStyleHeight(IGUIStyle * pStyle, tGUISizeType baseHeight, tGUISizeType * pHeight)
+{
+   if (pStyle == NULL || pHeight == NULL)
+   {
+      return E_POINTER;
+   }
+
+   int styleHeight;
+   uint styleHeightSpec;
+   if (pStyle->GetHeight(&styleHeight, &styleHeightSpec) == S_OK && styleHeight >= 0)
+   {
+      if (styleHeightSpec == kGUIDimensionPixels)
       {
-         if (styleHeightSpec == kGUIDimensionPixels)
-         {
-            size.height = static_cast<tGUISizeType>(styleHeight);
-            bHaveStyle = true;
-         }
-         else if (styleHeightSpec == kGUIDimensionPercent)
-         {
-            size.height = static_cast<tGUISizeType>((styleHeight * relativeTo.height) / 100);
-            bHaveStyle = true;
-         }
+         *pHeight = static_cast<tGUISizeType>(styleHeight);
+         return S_OK;
+      }
+      else if (styleHeightSpec == kGUIDimensionPercent)
+      {
+         *pHeight = static_cast<tGUISizeType>((styleHeight * baseHeight) / 100);
+         return S_OK;
       }
    }
 
-   if (bHavePreferred || bHaveStyle)
-   {
-      tGUISize elementSize(Min(size.width, relativeTo.width), Min(size.height, relativeTo.height));
-      pElement->SetSize(elementSize);
-      tGUIRect clientArea(0,0,0,0);
-      if (elementSize.width > 0 && elementSize.height > 0)
-      {
-         pRenderer->ComputeClientArea(pElement, &clientArea);
-      }
-      pElement->SetClientArea(clientArea);
-      return S_OK;
-   }
-   else
-   {
-      return S_FALSE;
-   }
+   return S_FALSE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -274,33 +253,6 @@ tGUIPoint GUIElementAbsolutePosition(IGUIElement * pGUIElement, uint * pnParents
    }
 
    return absolutePosition;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cSizeAndPlaceElement
-//
-
-////////////////////////////////////////
-
-cSizeAndPlaceElement::cSizeAndPlaceElement(const tGUIRect & rect)
- : m_rect(rect),
-   m_size(static_cast<tGUISizeType>(m_rect.GetWidth()), static_cast<tGUISizeType>(m_rect.GetHeight()))
-{
-}
-
-////////////////////////////////////////
-
-tResult cSizeAndPlaceElement::operator()(IGUIElement * pElement)
-{
-   if (pElement == NULL)
-   {
-      return E_POINTER;
-   }
-   GUISizeElement(pElement, m_size);
-   GUIPlaceElement(m_rect, pElement);
-   return S_OK;
 }
 
 

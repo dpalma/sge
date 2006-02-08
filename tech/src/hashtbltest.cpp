@@ -70,8 +70,10 @@ enum
 class cHashTableTests : public CppUnit::TestCase
 {
    CPPUNIT_TEST_SUITE(cHashTableTests);
+      CPPUNIT_TEST(TestCopy);
       CPPUNIT_TEST(TestFindSuccess);
       CPPUNIT_TEST(TestFindFailure);
+      CPPUNIT_TEST(TestIterationOfEmptyTable);
       CPPUNIT_TEST(TestIterationPostIncrement);
       CPPUNIT_TEST(TestIterationPreIncrement);
       CPPUNIT_TEST(TestArrayIndexOperator);
@@ -83,8 +85,10 @@ class cHashTableTests : public CppUnit::TestCase
    typedef cHashTable<const char *, int> tTestHashTable;
    tTestHashTable m_hashTable;
 
+   void TestCopy();
    void TestFindSuccess();
    void TestFindFailure();
+   void TestIterationOfEmptyTable();
    void TestIterationPostIncrement();
    void TestIterationPreIncrement();
    void TestArrayIndexOperator();
@@ -94,6 +98,26 @@ public:
    virtual void setUp();
    virtual void tearDown();
 };
+
+////////////////////////////////////////
+
+void cHashTableTests::TestCopy()
+{
+   tTestHashTable hashTableCopy(m_hashTable);
+
+   CPPUNIT_ASSERT(hashTableCopy.size() == m_hashTable.size());
+
+   tTestHashTable::const_iterator
+      iter1 = m_hashTable.begin(),
+      iter2 = hashTableCopy.begin();
+   for (; iter1 != m_hashTable.end(); iter1++, iter2++)
+   {
+      const tChar * psz1 = iter1->first;
+      const tChar * psz2 = iter2->first;
+      CPPUNIT_ASSERT(_tcscmp(psz1, psz2) == 0);
+      CPPUNIT_ASSERT(iter1->second == iter2->second);
+   }
+}
 
 ////////////////////////////////////////
 
@@ -126,6 +150,22 @@ void cHashTableTests::TestFindFailure()
    random_string(szNotFound, _countof(szNotFound));
    tTestHashTable::const_iterator f = m_hashTable.find(szNotFound);
    CPPUNIT_ASSERT(f == m_hashTable.end());
+}
+
+////////////////////////////////////////
+
+void cHashTableTests::TestIterationOfEmptyTable()
+{
+   cHashTable<int_ptr, void *> hashTable;
+   CPPUNIT_ASSERT(hashTable.empty());
+   CPPUNIT_ASSERT(hashTable.begin() == hashTable.end());
+   cHashTable<int_ptr, void *>::iterator iter = hashTable.begin();
+   int nIterated = 0;
+   for (; iter != hashTable.end(); iter++, nIterated++)
+   {
+      CPPUNIT_ASSERT(false); // should never get in here
+   }
+   CPPUNIT_ASSERT(nIterated == 0);
 }
 
 ////////////////////////////////////////

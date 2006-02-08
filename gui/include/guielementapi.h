@@ -143,9 +143,6 @@ interface IGUIContainerElement : IGUIElement
 
    virtual tResult GetLayout(IGUILayoutManager * * ppLayout) = 0;
    virtual tResult SetLayout(IGUILayoutManager * pLayout) = 0;
-
-   virtual tResult GetInsets(tGUIInsets * pInsets) = 0;
-   virtual tResult SetInsets(const tGUIInsets & insets) = 0;
 };
 
 
