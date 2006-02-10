@@ -216,11 +216,11 @@ HASHTABLE_TEMPLATE_CLASS::cHashTable(const cHashTable & other)
  , m_size(0)
 {
    Grow(other.m_maxSize);
-   cHashTable::const_iterator iter = other.begin();
-   for (; iter != other.end(); iter++)
+   for (uint i = 0; i < m_maxSize; i++)
    {
-      insert(iter->first, iter->second);
+      m_allocator.construct(&m_elts[i], other.m_elts[i]);
    }
+   m_size = other.m_size;
 }
 
 ////////////////////////////////////////
@@ -324,8 +324,51 @@ HASHTABLE_TEMPLATE_MEMBER_TYPE(size_type) HASHTABLE_TEMPLATE_CLASS::erase(const 
       return 0;
    }
 
+   m_allocator.destroy(&m_elts[h]);
    m_elts[h].inUse = false;
    m_size--;
+
+   Assert(IsPowerOfTwo(m_maxSize));
+   uint rawHash = HASHFN::Hash(k) & (m_maxSize - 1); // hash w/o linear probing for collisions
+
+   h += 1;
+   bool bWrapped = false;
+   for (uint start = h, prev = (h - 1); true; prev = h, h++)
+   {
+      if (h == m_maxSize)
+      {
+         h = 0;
+         bWrapped = true;
+      }
+
+      if (bWrapped && (h >= start))
+      {
+         DebugMsg("ERROR: cHashTable is 100% full!!!\n");
+         Assert(!"ERROR: cHashTable is 100% full!!!");
+         break;
+      }
+
+      if (!m_elts[h].inUse)
+      {
+         break;
+      }
+      else
+      {
+         uint rawHash2 = HASHFN::Hash(m_elts[h].first) & (m_maxSize - 1); // hash w/o linear probing for collisions
+         if (rawHash2 != rawHash)
+         {
+            break;
+         }
+         else
+         {
+            m_allocator.construct(&m_elts[prev], m_elts[h]);
+            m_elts[prev].inUse = true;
+            m_allocator.destroy(&m_elts[h]);
+            m_elts[h].inUse = false;
+         }
+      }
+   }
+
 
    return 1;
 }

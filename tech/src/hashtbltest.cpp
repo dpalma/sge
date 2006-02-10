@@ -59,6 +59,97 @@ static void random_string(char * str, int maxlen)
 
 #ifdef HAVE_CPPUNIT
 
+///////////////////////////////////////////////////////////////////////////////
+//
+// TEMPLATE: cMathExpr
+//
+// A simple class used in hash table tests
+
+enum eMathExprOp { kMEO_Mult, kMEO_Div, kMEO_Add, kMEO_Sub };
+
+eMathExprOp g_mathExprOps[] = { kMEO_Mult, kMEO_Div, kMEO_Add, kMEO_Sub };
+
+template <typename T>
+class cMathExpr
+{
+public:
+   cMathExpr()
+   {
+   }
+
+   cMathExpr(uint operand1, uint operand2, eMathExprOp op)
+    : m_operand1(operand1)
+    , m_operand2(operand2)
+    , m_op(op)
+   {
+   }
+
+   cMathExpr(const cMathExpr & other)
+    : m_operand1(other.m_operand1)
+    , m_operand2(other.m_operand2)
+    , m_op(other.m_op)
+   {
+   }
+
+   const cMathExpr & operator =(const cMathExpr & other)
+   {
+      m_operand1 = other.m_operand1;
+      m_operand2 = other.m_operand2;
+      m_op = other.m_op;
+      return *this;
+   }
+
+   bool IsEqual(const cMathExpr & other) const
+   {
+      return (m_operand1 == other.m_operand1)
+         && (m_operand2 == other.m_operand2)
+         && (m_op == other.m_op);
+   }
+
+   bool operator ==(const cMathExpr & other) const
+   {
+      return IsEqual(other);
+   }
+
+   bool operator !=(const cMathExpr & other) const
+   {
+      return !IsEqual(other);
+   }
+
+   T GetResult() const
+   {
+      switch (m_op)
+      {
+      case kMEO_Mult: return m_operand1 * m_operand2;
+      case kMEO_Div: return m_operand1 / m_operand2;
+      case kMEO_Add: return m_operand1 + m_operand2;
+      case kMEO_Sub: return m_operand1 - m_operand2;
+      default: return 0;
+      }
+   }
+
+   static uint Hash(const cMathExpr & k, uint initHash = 0xDEADBEEF)
+   {
+      uint h = initHash;
+      h = hash((byte *)&k.m_operand1, sizeof(k.m_operand1), h);
+      h = hash((byte *)&k.m_operand2, sizeof(k.m_operand2), h);
+      h = hash((byte *)&k.m_op, sizeof(k.m_op), h);
+      return h;
+   }
+
+   static bool Equal(const cMathExpr & a, const cMathExpr & b)
+   {
+      return a.IsEqual(b);
+   }
+
+private:
+   T m_operand1, m_operand2;
+   eMathExprOp m_op;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 enum
 {
    kNumTests = 50,
@@ -69,23 +160,13 @@ enum
 
 class cHashTableTests : public CppUnit::TestCase
 {
-   CPPUNIT_TEST_SUITE(cHashTableTests);
-      CPPUNIT_TEST(TestCopy);
-      CPPUNIT_TEST(TestFindSuccess);
-      CPPUNIT_TEST(TestFindFailure);
-      CPPUNIT_TEST(TestIterationOfEmptyTable);
-      CPPUNIT_TEST(TestIterationPostIncrement);
-      CPPUNIT_TEST(TestIterationPreIncrement);
-      CPPUNIT_TEST(TestArrayIndexOperator);
-      CPPUNIT_TEST(TestCustomKey);
-   CPPUNIT_TEST_SUITE_END();
-
    char m_testStrings[kNumTests][kTestStringLength];
 
    typedef cHashTable<const char *, int> tTestHashTable;
    tTestHashTable m_hashTable;
 
    void TestCopy();
+   void TestErase();
    void TestFindSuccess();
    void TestFindFailure();
    void TestIterationOfEmptyTable();
@@ -93,6 +174,20 @@ class cHashTableTests : public CppUnit::TestCase
    void TestIterationPreIncrement();
    void TestArrayIndexOperator();
    void TestCustomKey();
+   void TestCustomValue();
+
+   CPPUNIT_TEST_SUITE(cHashTableTests);
+      CPPUNIT_TEST(TestCopy);
+      CPPUNIT_TEST(TestErase);
+      CPPUNIT_TEST(TestFindSuccess);
+      CPPUNIT_TEST(TestFindFailure);
+      CPPUNIT_TEST(TestIterationOfEmptyTable);
+      CPPUNIT_TEST(TestIterationPostIncrement);
+      CPPUNIT_TEST(TestIterationPreIncrement);
+      CPPUNIT_TEST(TestArrayIndexOperator);
+      CPPUNIT_TEST(TestCustomKey);
+      CPPUNIT_TEST(TestCustomValue);
+   CPPUNIT_TEST_SUITE_END();
 
 public:
    virtual void setUp();
@@ -117,6 +212,27 @@ void cHashTableTests::TestCopy()
       CPPUNIT_ASSERT(_tcscmp(psz1, psz2) == 0);
       CPPUNIT_ASSERT(iter1->second == iter2->second);
    }
+}
+
+////////////////////////////////////////
+
+void cHashTableTests::TestErase()
+{
+   uint nErasures = (m_hashTable.size() / 2); // erase half the strings in the table
+   std::set<int> erasedIndices;
+   while (erasedIndices.size() < nErasures)
+   {
+      erasedIndices.insert(rand() % kNumTests);
+   }
+
+   std::set<int>::const_iterator iter = erasedIndices.begin();
+   for (; iter != erasedIndices.end(); iter++)
+   {
+      const char * psz = m_testStrings[*iter];
+      CPPUNIT_ASSERT(m_hashTable.erase(psz) == 1);
+   }
+
+   CPPUNIT_ASSERT(m_hashTable.size() == (kNumTests - nErasures));
 }
 
 ////////////////////////////////////////
@@ -225,54 +341,66 @@ void cHashTableTests::TestArrayIndexOperator()
 
 ////////////////////////////////////////
 
-class cCustomKey
-{
-public:
-   cCustomKey() : m_a(0), m_b(0), m_c(0) {}
-   cCustomKey(uint a, uint b, uint c) : m_a(a), m_b(b), m_c(c) {}
-   cCustomKey(const cCustomKey & other) : m_a(other.m_a), m_b(other.m_b), m_c(other.m_c) {}
-   const uint * GetAPtr() const { return &m_a; }
-   const uint * GetBPtr() const { return &m_b; }
-   const uint * GetCPtr() const { return &m_c; }
-   bool IsEqual(const cCustomKey & other) const { return (m_a == other.m_a) && (m_b == other.m_b) && (m_c == other.m_c); }
-   ulong GetProduct() const { return m_a*m_b*m_c; }
-private:
-   uint m_a, m_b, m_c;
-};
-
-template <>
-inline uint cHashFunction<cCustomKey>::Hash(const cCustomKey & k, uint initVal)
-{
-   uint h = initVal;
-   h = hash((byte *)k.GetAPtr(), sizeof(uint), h);
-   h = hash((byte *)k.GetBPtr(), sizeof(uint), h);
-   h = hash((byte *)k.GetCPtr(), sizeof(uint), h);
-   return h;
-}
-
-template <>
-inline bool cHashFunction<cCustomKey>::Equal(const cCustomKey & a, const cCustomKey & b)
-{
-   return a.IsEqual(b);
-}
-
 void cHashTableTests::TestCustomKey()
 {
-   cHashTable<cCustomKey, ulong> ckHashTable;
+   cHashTable<cMathExpr<int>, int, cMathExpr<int> > hashTable;
 
    for (int i = 0; i < 500; i++)
    {
-      uint a = rand();
-      uint b = rand();
-      uint c = rand();
-      ulong d = a*b*c;
-      CPPUNIT_ASSERT(ckHashTable.insert(cCustomKey(a,b,c), d).second);
+      int a = rand();
+      int b = rand();
+      eMathExprOp op = g_mathExprOps[rand() % _countof(g_mathExprOps)];
+      while ((op == kMEO_Div) && (b == 0))
+      {
+         b = rand();
+      }
+      cMathExpr<int> expr(a,b,op);
+      CPPUNIT_ASSERT(hashTable.insert(expr, expr.GetResult()).second);
    }
 
-   cHashTable<cCustomKey, ulong>::const_iterator iter = ckHashTable.begin();
-   for (; iter != ckHashTable.end(); ++iter)
+   cHashTable<cMathExpr<int>, int, cMathExpr<int> >::const_iterator iter = hashTable.begin();
+   for (; iter != hashTable.end(); ++iter)
    {
-      CPPUNIT_ASSERT(iter->first.GetProduct() == iter->second);
+      CPPUNIT_ASSERT(iter->first.GetResult() == iter->second);
+   }
+}
+
+////////////////////////////////////////
+
+void cHashTableTests::TestCustomValue()
+{
+   cHashTable<int, cMathExpr<int> > hashTable;
+
+   static const int nTests = 500;
+
+   std::map<int, cMathExpr<int> > exprs;
+   while (exprs.size() < nTests)
+   {
+      int a = rand();
+      int b = rand();
+      eMathExprOp op = g_mathExprOps[rand() % _countof(g_mathExprOps)];
+      while ((op == kMEO_Div) && (b == 0))
+      {
+         b = rand();
+      }
+      cMathExpr<int> expr(a,b,op);
+      exprs.insert(std::make_pair(expr.GetResult(), expr));
+   }
+
+   {
+      std::map<int, cMathExpr<int> >::const_iterator iter = exprs.begin();
+      for (; iter != exprs.end(); iter++)
+      {
+         CPPUNIT_ASSERT(hashTable.insert(iter->first, iter->second).second);
+      }
+   }
+
+   {
+      cHashTable<int, cMathExpr<int> >::const_iterator iter = hashTable.begin();
+      for (; iter != hashTable.end(); ++iter)
+      {
+         CPPUNIT_ASSERT(iter->first == iter->second.GetResult());
+      }
    }
 }
 

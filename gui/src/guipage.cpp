@@ -13,8 +13,6 @@
 #include "scriptapi.h"
 
 #include "globalobj.h"
-#include "hashtable.h"
-#include "hashtabletem.h"
 
 #include <tinyxml.h>
 
@@ -236,23 +234,6 @@ static tResult GUIElementSize(IGUIElement * pElement, IGUIElementRenderer * pRen
 
 
 ///////////////////////////////////////////////////////////////////////////////
-
-typedef IGUIElement * tGUIElementPtr;
-
-template <>
-uint cHashFunction<tGUIElementPtr>::Hash(const tGUIElementPtr & a, uint initVal)
-{
-   return hash(reinterpret_cast<byte*>(const_cast<tGUIElementPtr>(a)), sizeof(tGUIElementPtr), initVal);
-}
-
-template <>
-bool cHashFunction<tGUIElementPtr>::Equal(const tGUIElementPtr & a, const tGUIElementPtr & b)
-{
-   return CTIsSameObject(a, b);
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUIPageLayout
 //
@@ -273,9 +254,6 @@ private:
    const tGUISize m_topLevelSize;
    tGUIPoint m_topLevelCurPos;
 
-   typedef cHashTable<tGUIElementPtr, tGUIPoint> tElementCurPosTable;
-   tElementCurPosTable m_elementCurPosTable;
-
    std::queue<IGUIContainerElement*> m_layoutQueue;
 };
 
@@ -295,7 +273,6 @@ cGUIPageLayout::cGUIPageLayout(const cGUIPageLayout & other)
  , m_topLevelSize(other.m_topLevelSize)
  , m_topLevelCurPos(other.m_topLevelCurPos)
 {
-   AssertMsg(other.m_elementCurPosTable.empty(), "Copying non-empty hash table");
 }
 
 ///////////////////////////////////////
@@ -312,12 +289,6 @@ cGUIPageLayout::~cGUIPageLayout()
       {
          pLayout->Layout(pContainer);
       }
-   }
-
-   tElementCurPosTable::iterator iter = m_elementCurPosTable.begin();
-   for (; iter != m_elementCurPosTable.end(); iter++)
-   {
-      SafeRelease(iter->first);
    }
 }
 
