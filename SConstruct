@@ -215,8 +215,12 @@ def MakeLibPath(path):
 conf = Configure(env)
 if conf.CheckHeader('afxwin.h', '<>', 'c++'):
    haveMFC = 1
+else:
+   haveMFC = 0
 if conf.CheckHeader('atlcore.h', '<>', 'c++'):
    haveATL = 1
+else:
+   haveATL = 0
 #conf.CheckLib('opengl32', 'glBegin')
 #conf.CheckLib('GL', 'glBegin')
 #conf.CheckLib('GLU', 'gluLookAt')
