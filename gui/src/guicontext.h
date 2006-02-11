@@ -14,7 +14,6 @@
 #include "globalobjdef.h"
 
 #include <list>
-#include <map>
 
 #ifdef _MSC_VER
 #pragma once

@@ -19,6 +19,7 @@ sourceFiles = Split("""
    src/guilayout.cpp
    src/guilistbox.cpp
    src/guipage.cpp
+   src/guipagelayout.cpp
    src/guipanel.cpp
    src/guiparse.cpp
    src/guirenderd3d.cpp

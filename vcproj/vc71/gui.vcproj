@@ -415,6 +415,9 @@
 					RelativePath="..\..\gui\src\guipage.cpp">
 				</File>
 				<File
+					RelativePath="..\..\gui\src\guipagelayout.cpp">
+				</File>
+				<File
 					RelativePath="..\..\gui\src\guipanel.cpp">
 				</File>
 				<File
@@ -552,6 +555,9 @@
 				</File>
 				<File
 					RelativePath="..\..\gui\src\guipage.h">
+				</File>
+				<File
+					RelativePath="..\..\gui\src\guipagelayout.h">
 				</File>
 				<File
 					RelativePath="..\..\gui\src\guipanel.h">

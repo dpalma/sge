@@ -1,6 +1,5 @@
 <!-- $Id$ -->
 <panel style="width:100%;height:100%" renderer="basic">
-   <layout type="flow" />
    <panel style="width:60%;height:60%;background-color:(0,0,0.75)">
       <layout type="grid" rows=1 columns=1 />
       <listbox id="mapsList" rows=6 style="width:50%;align:center;vertical-align:center;"
