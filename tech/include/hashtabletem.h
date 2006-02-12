@@ -83,7 +83,7 @@ cHashIterator<HASHELEMENT>::cHashIterator(HASHELEMENT * pElement, HASHELEMENT * 
  , m_pBegin(pBegin)
  , m_pEnd(pEnd)
 {
-   while ((m_pElement < m_pEnd) && !m_pElement->inUse)
+   while ((m_pElement < m_pEnd) && (m_pElement->state != kHES_InUse))
    {
       ++m_pElement;
    }
@@ -124,7 +124,7 @@ const cHashIterator<HASHELEMENT> & cHashIterator<HASHELEMENT>::operator ++()
 {
    do {
       ++m_pElement;
-   } while ((m_pElement < m_pEnd) && !m_pElement->inUse);
+   } while ((m_pElement < m_pEnd) && (m_pElement->state != kHES_InUse));
    return *this;
 }
 
@@ -147,7 +147,7 @@ const cHashIterator<HASHELEMENT> & cHashIterator<HASHELEMENT>::operator --()
 {
    do {
       --m_pElement;
-   } while ((m_pElement >= m_pBegin) && !m_pElement->inUse);
+   } while ((m_pElement >= m_pBegin) && (m_pElement->state != kHES_InUse));
    return *this;
 }
 
@@ -237,8 +237,8 @@ HASHTABLE_TEMPLATE_DECL
 std::pair<HASHTABLE_TEMPLATE_MEMBER_TYPE(const_iterator), bool>
 HASHTABLE_TEMPLATE_CLASS::insert(const KEY & k, const VALUE & v)
 {
-   uint h = Probe(k);
-   if (m_elts[h].inUse)
+   uint h = Probe(k, false);
+   if (m_elts[h].state == kHES_InUse)
    {
       return std::make_pair(const_iterator(&m_elts[h], &m_elts[0], &m_elts[m_maxSize]), false);
    }
@@ -249,12 +249,12 @@ HASHTABLE_TEMPLATE_CLASS::insert(const KEY & k, const VALUE & v)
       Grow(m_maxSize + (m_size * 100 / kFullnessThreshold));
 
       // re-do the probe
-      h = Probe(k);
+      h = Probe(k, false);
    }
 
    m_elts[h].first = k;
    m_elts[h].second = v;
-   m_elts[h].inUse = true;
+   m_elts[h].state = kHES_InUse;
    m_size++;
    return std::make_pair(const_iterator(&m_elts[h], &m_elts[0], &m_elts[m_maxSize]), true);
 }
@@ -270,11 +270,11 @@ VALUE & HASHTABLE_TEMPLATE_CLASS::operator [](const KEY & k)
       Grow(m_maxSize + (m_size * 100 / kFullnessThreshold));
    }
 
-   uint h = Probe(k);
+   uint h = Probe(k, false);
    m_elts[h].first = k;
-   if (!m_elts[h].inUse)
+   if (m_elts[h].state != kHES_InUse)
    {
-      m_elts[h].inUse = true;
+      m_elts[h].state = kHES_InUse;
       m_size++;
    }
    return m_elts[h].second;
@@ -285,8 +285,8 @@ VALUE & HASHTABLE_TEMPLATE_CLASS::operator [](const KEY & k)
 HASHTABLE_TEMPLATE_DECL
 HASHTABLE_TEMPLATE_MEMBER_TYPE(iterator) HASHTABLE_TEMPLATE_CLASS::find(const KEY & k)
 {
-   uint h = Probe(k);
-   if (m_elts[h].inUse)
+   uint h = Probe(k, true);
+   if (m_elts[h].state == kHES_InUse)
    {
       return iterator(&m_elts[h], &m_elts[0], &m_elts[m_maxSize]);
    }
@@ -302,7 +302,7 @@ HASHTABLE_TEMPLATE_DECL
 HASHTABLE_TEMPLATE_MEMBER_TYPE(const_iterator) HASHTABLE_TEMPLATE_CLASS::find(const KEY & k) const
 {
    uint h = Probe(k);
-   if (m_elts[h].inUse)
+   if (m_elts[h].state == kHES_InUse)
    {
       return const_iterator(&m_elts[h], &m_elts[0], &m_elts[m_maxSize]);
    }
@@ -317,58 +317,16 @@ HASHTABLE_TEMPLATE_MEMBER_TYPE(const_iterator) HASHTABLE_TEMPLATE_CLASS::find(co
 HASHTABLE_TEMPLATE_DECL
 HASHTABLE_TEMPLATE_MEMBER_TYPE(size_type) HASHTABLE_TEMPLATE_CLASS::erase(const KEY & k)
 {
-   uint h = Probe(k);
+   uint h = Probe(k, true);
 
-   if (!m_elts[h].inUse)
+   if (m_elts[h].state != kHES_InUse)
    {
       return 0;
    }
 
    m_allocator.destroy(&m_elts[h]);
-   m_elts[h].inUse = false;
+   m_elts[h].state = kHES_Erased;
    m_size--;
-
-   Assert(IsPowerOfTwo(m_maxSize));
-   uint rawHash = HASHFN::Hash(k) & (m_maxSize - 1); // hash w/o linear probing for collisions
-
-   h += 1;
-   bool bWrapped = false;
-   for (uint start = h, prev = (h - 1); true; prev = h, h++)
-   {
-      if (h == m_maxSize)
-      {
-         h = 0;
-         bWrapped = true;
-      }
-
-      if (bWrapped && (h >= start))
-      {
-         DebugMsg("ERROR: cHashTable is 100% full!!!\n");
-         Assert(!"ERROR: cHashTable is 100% full!!!");
-         break;
-      }
-
-      if (!m_elts[h].inUse)
-      {
-         break;
-      }
-      else
-      {
-         uint rawHash2 = HASHFN::Hash(m_elts[h].first) & (m_maxSize - 1); // hash w/o linear probing for collisions
-         if (rawHash2 != rawHash)
-         {
-            break;
-         }
-         else
-         {
-            m_allocator.construct(&m_elts[prev], m_elts[h]);
-            m_elts[prev].inUse = true;
-            m_allocator.destroy(&m_elts[h]);
-            m_elts[h].inUse = false;
-         }
-      }
-   }
-
 
    return 1;
 }
@@ -441,7 +399,7 @@ HASHTABLE_TEMPLATE_MEMBER_TYPE(const_iterator) HASHTABLE_TEMPLATE_CLASS::end() c
 // Probe computes the hash for a key and resolves collisions
 
 HASHTABLE_TEMPLATE_DECL
-uint HASHTABLE_TEMPLATE_CLASS::Probe(const KEY & k) const
+uint HASHTABLE_TEMPLATE_CLASS::Probe(const KEY & k, bool bSkipErased) const
 {
    Assert(IsPowerOfTwo(m_maxSize));
    uint h = HASHFN::Hash(k) & (m_maxSize - 1);
@@ -452,7 +410,8 @@ uint HASHTABLE_TEMPLATE_CLASS::Probe(const KEY & k) const
 #endif
 
    // resolve collisions with linear probing
-   while (m_elts[h].inUse && !Equal(k, m_elts[h].first))
+   while (((m_elts[h].state == kHES_InUse) && !Equal(k, m_elts[h].first))
+      || (bSkipErased && (m_elts[h].state == kHES_Erased)))
    {
       h++;
       if (h == m_maxSize)
@@ -511,7 +470,7 @@ void HASHTABLE_TEMPLATE_CLASS::Grow(uint newSize)
 
    for (int i = 0; i < oldSize; i++)
    {
-      if (oldElts[i].inUse)
+      if (oldElts[i].state == kHES_InUse)
       {
          insert(oldElts[i].first, oldElts[i].second);
       }

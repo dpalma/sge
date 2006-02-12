@@ -43,11 +43,18 @@ public:
 // TEMPLATE: sHashElement
 //
 
+enum eHashElementState
+{
+   kHES_Empty,
+   kHES_InUse,
+   kHES_Erased,
+};
+
 template <typename KEY, typename VALUE>
 struct sHashElement : public std::pair<KEY, VALUE>
 {
-   sHashElement() : inUse(false) {}
-   bool inUse;
+   sHashElement() : state(kHES_Empty) {}
+   byte state;
 };
 
 
@@ -167,7 +174,7 @@ public:
    const_iterator end() const;
 
 private:
-   uint Probe(const KEY & k) const;
+   uint Probe(const KEY & k, bool bSkipErased) const;
    void Grow(uint newSize);
    bool Equal(const KEY & k1, const KEY & k2) const;
 

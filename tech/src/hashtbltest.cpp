@@ -233,6 +233,19 @@ void cHashTableTests::TestErase()
    }
 
    CPPUNIT_ASSERT(m_hashTable.size() == (kNumTests - nErasures));
+
+   for (int i = 0; i < kNumTests; i++)
+   {
+      tTestHashTable::const_iterator f = m_hashTable.find(m_testStrings[i]);
+      if (erasedIndices.find(i) != erasedIndices.end())
+      {
+         CPPUNIT_ASSERT(f == m_hashTable.end()); // string 'i' should have been erased
+      }
+      else
+      {
+         CPPUNIT_ASSERT(f != m_hashTable.end());
+      }
+   }
 }
 
 ////////////////////////////////////////
