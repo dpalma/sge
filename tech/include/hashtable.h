@@ -13,6 +13,7 @@
 
 // REFERENCES
 // http://uk.builder.com/programming/c/0,39029981,20266440,00.htm
+// http://www.cuj.com/documents/s=8000/cujcexp1812austern/
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -120,6 +121,24 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// STRUCT: sHashTableStats
+//
+
+struct sHashTableStats
+{
+   size_t load;
+   size_t nEmpty;
+   size_t nInUse;
+   size_t nErased;
+   size_t nChains;
+   size_t minChain;
+   size_t maxChain;
+   float avgChain;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // TEMPLATE: cHashTable
 //
 
@@ -142,16 +161,22 @@ public:
       kInitialSizeSmall = 16,
       kInitialSizeMed   = 256,
       kInitialSizeLarge = 1024,
-      kFullnessThreshold = 70, // hash table only ever allowed to get 70% full
+      kDefaultLoadFactor = 178, // allowed to get about 70% full by default
    };
 
-   cHashTable(size_type initialSize = kInitialSizeSmall);
-   explicit cHashTable(const cHashTable & other);
+   cHashTable();
+   explicit cHashTable(size_type initialSize);
+   cHashTable(size_type initialSize, const allocator_type & alloc);
+   cHashTable(const cHashTable & other);
    ~cHashTable();
+
+   void set_load_factor(byte loadFactor);
 
    allocator_type get_allocator() const;
 
    void reserve(size_type capacity);
+
+   void collect_stats(sHashTableStats * pStats) const;
 
    std::pair<const_iterator, bool> insert(const KEY & k, const VALUE & v);
 
@@ -189,6 +214,7 @@ private:
    element_type * m_elts;
    size_type m_maxSize;
    size_type m_size;
+   byte m_loadFactor;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#ifndef NDEBUG // entire file
+#ifdef HAVE_CPPUNIT // entire file
 
 #include "hashtable.h"
 #include "hashtabletem.h"
@@ -12,9 +12,14 @@
 
 #include <map>
 
-#ifdef HAVE_CPPUNIT
-#include <cppunit/extensions/HelperMacros.h>
+#if defined(_MSC_VER) && (_MSC_VER >= 1300)
+#define HAVE_HASH_MAP 1
+#include <hash_map>
+#else
+#define HAVE_HASH_MAP 0
 #endif
+
+#include <cppunit/extensions/HelperMacros.h>
 
 #include "dbgalloc.h" // must be last header
 
@@ -56,10 +61,6 @@ static void random_string(char * str, int maxlen)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
-#ifdef HAVE_CPPUNIT
-
-///////////////////////////////////////////////////////////////////////////////
 //
 // TEMPLATE: cMathExpr
 //
@@ -67,7 +68,7 @@ static void random_string(char * str, int maxlen)
 
 enum eMathExprOp { kMEO_Mult, kMEO_Div, kMEO_Add, kMEO_Sub };
 
-eMathExprOp g_mathExprOps[] = { kMEO_Mult, kMEO_Div, kMEO_Add, kMEO_Sub };
+static const eMathExprOp g_mathExprOps[] = { kMEO_Mult, kMEO_Div, kMEO_Add, kMEO_Sub };
 
 template <typename T>
 class cMathExpr
@@ -88,6 +89,10 @@ public:
     : m_operand1(other.m_operand1)
     , m_operand2(other.m_operand2)
     , m_op(other.m_op)
+   {
+   }
+
+   ~cMathExpr()
    {
    }
 
@@ -193,6 +198,10 @@ public:
    virtual void setUp();
    virtual void tearDown();
 };
+
+////////////////////////////////////////
+
+CPPUNIT_TEST_SUITE_REGISTRATION(cHashTableTests);
 
 ////////////////////////////////////////
 
@@ -376,6 +385,9 @@ void cHashTableTests::TestCustomKey()
    {
       CPPUNIT_ASSERT(iter->first.GetResult() == iter->second);
    }
+
+   sHashTableStats stats;
+   hashTable.collect_stats(&stats);
 }
 
 ////////////////////////////////////////
@@ -459,6 +471,9 @@ class cHashTableSpeedTests : public CppUnit::TestCase
 
    cHashTable<const char *, int> m_hashTable;
    std::map<const char *, int> m_map;
+#if HAVE_HASH_MAP
+   std::hash_map<const char *, int> m_hashMap;
+#endif
 
    struct sTiming
    {
@@ -466,9 +481,9 @@ class cHashTableSpeedTests : public CppUnit::TestCase
       double seconds;
    };
 
-   void RunInsertSpeedTest(sTiming * pHashTableResult, sTiming * pMapResult);
+   void RunInsertSpeedTest(sTiming * pHashTableResult, sTiming * pMapResult, sTiming * pHashMapResult);
    void TestInsertSpeed();
-   void RunLookupSpeedTest(int nLookups, double * pHashTableResult, double * pMapResult);
+   void RunLookupSpeedTest(int nLookups, double * pHashTableResult, double * pMapResult, double * pHashMapResult);
    void TestLookupSpeed();
 
 public:
@@ -478,12 +493,13 @@ public:
 
 ////////////////////////////////////////
 
-CPPUNIT_TEST_SUITE_REGISTRATION(cHashTableTests);
 CPPUNIT_TEST_SUITE_REGISTRATION(cHashTableSpeedTests);
 
 ////////////////////////////////////////
 
-void cHashTableSpeedTests::RunInsertSpeedTest(sTiming * pHashTableResult, sTiming * pMapResult)
+void cHashTableSpeedTests::RunInsertSpeedTest(sTiming * pHashTableResult,
+                                              sTiming * pMapResult,
+                                              sTiming * pHashMapResult)
 {
    CPPUNIT_ASSERT(pHashTableResult != NULL);
    CPPUNIT_ASSERT(pMapResult != NULL);
@@ -493,6 +509,9 @@ void cHashTableSpeedTests::RunInsertSpeedTest(sTiming * pHashTableResult, sTimin
 
    m_hashTable.clear();
    m_map.clear();
+#if HAVE_HASH_MAP
+   m_hashMap.clear();
+#endif
 
    {
       startTicks = ReadTSC();
@@ -519,44 +538,74 @@ void cHashTableSpeedTests::RunInsertSpeedTest(sTiming * pHashTableResult, sTimin
       pMapResult->clockTicks = ReadTSC() - startTicks;
       pMapResult->seconds = TimeGetSecs() - startSecs;
    }
+
+#if HAVE_HASH_MAP
+   {
+      startTicks = ReadTSC();
+      startSecs = TimeGetSecs();
+
+      for (int i = 0; i < kNumTests; i++)
+      {
+         CPPUNIT_ASSERT(m_hashMap.insert(std::make_pair((const char *)m_testStrings[i], i)).second);
+      }
+
+      pHashMapResult->clockTicks = ReadTSC() - startTicks;
+      pHashMapResult->seconds = TimeGetSecs() - startSecs;
+   }
+#endif
 }
 
 ////////////////////////////////////////
 
 void cHashTableSpeedTests::TestInsertSpeed()
 {
-   const int kNumRuns = 5;
+   const int kNumRuns = 10;
    const double kOneOverNumRuns = 1.0 / kNumRuns;
 
-   sTiming hashTableResult[kNumRuns], mapResult[kNumRuns];
-   double hashTableAverageTicks = 0, mapAverageTicks = 0;
+   sTiming hashTableResult[kNumRuns], mapResult[kNumRuns], hashMapResult[kNumRuns];
+   double hashTableAverageTicks = 0, mapAverageTicks = 0, hashMapAverageTicks = 0;
 
-   LocalMsg2("cHashTable/std::map Speed Test; inserting %d items; %d runs\n", kNumTests, kNumRuns);
+   LocalMsg2("Insert Speed Test; inserting %d items; %d runs\n", kNumTests, kNumRuns);
    for (int i = 0; i < kNumRuns; i++)
    {
-      RunInsertSpeedTest(&hashTableResult[i], &mapResult[i]);
+      RunInsertSpeedTest(&hashTableResult[i], &mapResult[i], &hashMapResult[i]);
 
-      LocalMsg3("   [%d] cHashTable: %.5f seconds, %d clock ticks\n",
+      LocalMsg3("   [%d] cHashTable:      %.5f seconds, %d clock ticks\n",
          i, hashTableResult[i].seconds, hashTableResult[i].clockTicks);
 
-      LocalMsg3("   [%d] std::map:   %.5f seconds, %d  clock ticks\n",
+      LocalMsg3("   [%d] std::map:        %.5f seconds, %d  clock ticks\n",
          i, mapResult[i].seconds, mapResult[i].clockTicks);
+
+#if HAVE_HASH_MAP
+      LocalMsg3("   [%d] std::hash_map:   %.5f seconds, %d  clock ticks\n",
+         i, hashMapResult[i].seconds, hashMapResult[i].clockTicks);
+#endif
 
       hashTableAverageTicks += (double)(long)hashTableResult[i].clockTicks * kOneOverNumRuns;
       mapAverageTicks += (double)(long)mapResult[i].clockTicks * kOneOverNumRuns;
+#if HAVE_HASH_MAP
+      hashMapAverageTicks += (double)(long)hashMapResult[i].clockTicks * kOneOverNumRuns;
+#endif
    }
 
    LocalMsg2("Inserting %d items (average over %d runs):\n", kNumTests, kNumRuns);
-   LocalMsg1("   Hash Table: %.2f clock ticks\n", hashTableAverageTicks);
-   LocalMsg1("   STL map:    %.2f clock ticks\n", mapAverageTicks);
+   LocalMsg1("   cHashTable:     %.2f clock ticks\n", hashTableAverageTicks);
+   LocalMsg1("   std::map:       %.2f clock ticks\n", mapAverageTicks);
+#if HAVE_HASH_MAP
+   LocalMsg1("   std::hash_map:  %.2f clock ticks\n", hashMapAverageTicks);
+#endif
 }
 
 ////////////////////////////////////////
 
-void cHashTableSpeedTests::RunLookupSpeedTest(int nLookups, double * pHashTableResult, double * pMapResult)
+void cHashTableSpeedTests::RunLookupSpeedTest(int nLookups,
+                                              double * pHashTableResult,
+                                              double * pMapResult,
+                                              double * pHashMapResult)
 {
    CPPUNIT_ASSERT(pHashTableResult != NULL);
    CPPUNIT_ASSERT(pMapResult != NULL);
+   CPPUNIT_ASSERT(pHashMapResult != NULL);
 
    double oneOverNumLookups = 1.0 / nLookups;
 
@@ -578,18 +627,32 @@ void cHashTableSpeedTests::RunLookupSpeedTest(int nLookups, double * pHashTableR
       int64 elapsed = ReadTSC() - start;
       *pMapResult += (double)(long)elapsed * oneOverNumLookups;
    }
+
+   *pHashMapResult = 0;
+#if HAVE_HASH_MAP
+   for (i = 0; i < nLookups; i++)
+   {
+      int64 start = ReadTSC();
+      m_hashMap.find(m_testStrings[i]);
+      int64 elapsed = ReadTSC() - start;
+      *pHashMapResult += (double)(long)elapsed * oneOverNumLookups;
+   }
+#endif
 }
 
 ////////////////////////////////////////
 
 void cHashTableSpeedTests::TestLookupSpeed()
 {
-   double hashTableResult, mapResult;
-   RunLookupSpeedTest(kNumTests, &hashTableResult, &mapResult);
+   double hashTableResult, mapResult, hashMapResult;
+   RunLookupSpeedTest(kNumTests, &hashTableResult, &mapResult, &hashMapResult);
 
    LocalMsg1("Lookup (average over %d lookups):\n", kNumTests);
-   LocalMsg1("   Hash Table: %.2f clock ticks\n", hashTableResult);
-   LocalMsg1("   STL map:    %.2f clock ticks\n", mapResult);
+   LocalMsg1("   cHashTable:     %.2f clock ticks\n", hashTableResult);
+   LocalMsg1("   std::map:       %.2f clock ticks\n", mapResult);
+#if HAVE_HASH_MAP
+   LocalMsg1("   std::hash_map:  %.2f clock ticks\n", hashMapResult);
+#endif
 }
 
 ////////////////////////////////////////
@@ -618,8 +681,6 @@ void cHashTableSpeedTests::tearDown()
 }
 
 
-#endif // HAVE_CPPUNIT
-
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // !NDEBUG (entire file)
+#endif // HAVE_CPPUNIT (entire file)

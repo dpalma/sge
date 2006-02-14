@@ -15,8 +15,6 @@
 #pragma once
 #endif
 
-// REFERENCES
-// http://www.cuj.com/documents/s=8000/cujcexp1812austern
 
 ////////////////////////////////////////////////////////////////////////////////
 // Explicit template instantiations for basic types
@@ -202,10 +200,36 @@ bool cHashIterator<HASHELEMENT>::operator !=(const cHashIterator & other) const
 ////////////////////////////////////////
 
 HASHTABLE_TEMPLATE_DECL
+HASHTABLE_TEMPLATE_CLASS::cHashTable()
+ : m_elts(NULL)
+ , m_maxSize(0)
+ , m_size(0)
+ , m_loadFactor(kDefaultLoadFactor)
+{
+   reserve(kInitialSizeSmall);
+}
+
+////////////////////////////////////////
+
+HASHTABLE_TEMPLATE_DECL
 HASHTABLE_TEMPLATE_CLASS::cHashTable(size_type initialSize)
  : m_elts(NULL)
  , m_maxSize(0)
  , m_size(0)
+ , m_loadFactor(kDefaultLoadFactor)
+{
+   reserve(initialSize);
+}
+
+////////////////////////////////////////
+
+HASHTABLE_TEMPLATE_DECL
+HASHTABLE_TEMPLATE_CLASS::cHashTable(size_type initialSize, const allocator_type & alloc)
+ : m_allocator(alloc)
+ , m_elts(NULL)
+ , m_maxSize(0)
+ , m_size(0)
+ , m_loadFactor(kDefaultLoadFactor)
 {
    reserve(initialSize);
 }
@@ -217,6 +241,7 @@ HASHTABLE_TEMPLATE_CLASS::cHashTable(const cHashTable & other)
  : m_elts(NULL)
  , m_maxSize(0)
  , m_size(0)
+ , m_loadFactor(other.m_loadFactor)
 {
    reserve(other.m_maxSize);
    for (size_type i = 0; i < m_maxSize; i++)
@@ -232,6 +257,14 @@ HASHTABLE_TEMPLATE_DECL
 HASHTABLE_TEMPLATE_CLASS::~cHashTable()
 {
    Reset(0);
+}
+
+////////////////////////////////////////
+
+HASHTABLE_TEMPLATE_DECL
+void HASHTABLE_TEMPLATE_CLASS::set_load_factor(byte loadFactor)
+{
+   m_loadFactor = loadFactor;
 }
 
 ////////////////////////////////////////
@@ -295,13 +328,103 @@ void HASHTABLE_TEMPLATE_CLASS::reserve(size_type capacity)
 ////////////////////////////////////////
 
 HASHTABLE_TEMPLATE_DECL
+void HASHTABLE_TEMPLATE_CLASS::collect_stats(sHashTableStats * pStats) const
+{
+   if (pStats == NULL)
+   {
+      return;
+   }
+
+   uint prevRawHash = m_maxSize, chainStart = m_maxSize;
+   uint chainLengthSum = 0, minChainLength = m_maxSize, maxChainLength = 0;
+   size_type nEmpty = 0, nInUse = 0, nErased = 0, nChains = 0;
+   for (size_type i = 0; i < m_maxSize; i++)
+   {
+      uint newChainStart = m_maxSize;
+      bool bEndChain = false;
+      switch (m_elts[i].state)
+      {
+         case kHES_Empty:
+         {
+            nEmpty++;
+            // Chain ends on empty cell
+            if (chainStart != m_maxSize)
+            {
+               bEndChain = true;
+            }
+            prevRawHash = m_maxSize;
+            break;
+         }
+         case kHES_InUse:
+         {
+            nInUse++;
+            uint rawHash = HASHFN::Hash(m_elts[i].first) & (m_maxSize - 1);
+            if (prevRawHash != m_maxSize)
+            {
+               // Chain ends on differing raw hash
+               if (rawHash != prevRawHash)
+               {
+                  bEndChain = true;
+                  // This cell is in use so is also a potential chain starter
+                  newChainStart = i;
+               }
+            }
+            else
+            {
+               // Potential chain starter because last cell was empty or erased
+               chainStart = i;
+            }
+            prevRawHash = rawHash;
+            break;
+         }
+         case kHES_Erased:
+         {
+            nErased++;
+            // Erased entries don't break a chain (are ignored in search)
+            break;
+         }
+      }
+
+      if (bEndChain)
+      {
+         uint chainLength = i - chainStart;
+         if (chainLength > 1)
+         {
+            if (chainLength > maxChainLength)
+            {
+               maxChainLength = chainLength;
+            }
+            if (chainLength < minChainLength)
+            {
+               minChainLength = chainLength;
+            }
+            chainLengthSum += chainLength;
+            nChains++;
+         }
+         chainStart = newChainStart;
+      }
+   }
+
+   pStats->load = (size() * 255) / max_size();
+   pStats->nEmpty = nEmpty;
+   pStats->nInUse = nInUse;
+   pStats->nErased = nErased;
+   pStats->nChains = nChains;
+   pStats->minChain = minChainLength;
+   pStats->maxChain = maxChainLength;
+   pStats->avgChain = static_cast<float>(chainLengthSum) / nChains;
+}
+
+////////////////////////////////////////
+
+HASHTABLE_TEMPLATE_DECL
 std::pair<HASHTABLE_TEMPLATE_MEMBER_TYPE(const_iterator), bool>
 HASHTABLE_TEMPLATE_CLASS::insert(const KEY & k, const VALUE & v)
 {
-   if ((m_size * 100) > (m_maxSize * kFullnessThreshold))
+   if ((m_size * 255) > (m_maxSize * m_loadFactor))
    {
       // grow in proportion to fullness
-      reserve(m_maxSize + (m_size * 100 / kFullnessThreshold));
+      reserve(m_maxSize + (m_size * 255 / m_loadFactor));
    }
 
    uint h = Probe(k, false);
@@ -322,10 +445,10 @@ HASHTABLE_TEMPLATE_CLASS::insert(const KEY & k, const VALUE & v)
 HASHTABLE_TEMPLATE_DECL
 VALUE & HASHTABLE_TEMPLATE_CLASS::operator [](const KEY & k)
 {
-   if ((m_size * 100) > (m_maxSize * kFullnessThreshold))
+   if ((m_size * 255) > (m_maxSize * m_loadFactor))
    {
       // grow in proportion to fullness
-      reserve(m_maxSize + (m_size * 100 / kFullnessThreshold));
+      reserve(m_maxSize + (m_size * 255 / m_loadFactor));
    }
 
    uint h = Probe(k, false);
