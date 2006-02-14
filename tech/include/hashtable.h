@@ -68,7 +68,7 @@ class cHashIterator
 {
 public:
    typedef std::bidirectional_iterator_tag iterator_category;
-   typedef HASHELEMENT value_type;
+   typedef HASHELEMENT element_type;
    typedef HASHELEMENT & reference;
    typedef HASHELEMENT * pointer;
    typedef ptrdiff_t difference_type;
@@ -129,12 +129,13 @@ template <typename KEY, typename VALUE,
 class cHashTable
 {
 public:
-   typedef size_t size_type;
-   typedef struct sHashElement<KEY, VALUE> value_type;
-   typedef struct sHashElement<KEY, VALUE> & reference;
-   typedef const struct sHashElement<KEY, VALUE> & const_reference;
-   typedef cHashIterator< sHashElement<KEY, VALUE> > iterator;
-   typedef cHashIterator< const sHashElement<KEY, VALUE> > const_iterator;
+   typedef struct sHashElement<KEY, VALUE> element_type;
+   typedef element_type & reference;
+   typedef const element_type & const_reference;
+   typedef cHashIterator<element_type> iterator;
+   typedef cHashIterator<const element_type> const_iterator;
+   typedef typename ALLOCATOR::template rebind<element_type>::other allocator_type;
+   typedef typename allocator_type::size_type size_type;
 
    enum
    {
@@ -144,9 +145,13 @@ public:
       kFullnessThreshold = 70, // hash table only ever allowed to get 70% full
    };
 
-   cHashTable(uint initialSize = kInitialSizeSmall);
+   cHashTable(size_type initialSize = kInitialSizeSmall);
    explicit cHashTable(const cHashTable & other);
    ~cHashTable();
+
+   allocator_type get_allocator() const;
+
+   void reserve(size_type capacity);
 
    std::pair<const_iterator, bool> insert(const KEY & k, const VALUE & v);
 
@@ -175,16 +180,15 @@ public:
 
 private:
    uint Probe(const KEY & k, bool bSkipErased) const;
-   void Grow(uint newSize);
    bool Equal(const KEY & k1, const KEY & k2) const;
 
-   void Reset(uint newInitialSize = kInitialSizeSmall);
+   void Reset(size_type newInitialSize = kInitialSizeSmall);
 
-   ALLOCATOR m_allocator;
+   allocator_type m_allocator;
 
-   value_type * m_elts;
-   uint m_maxSize;
-   uint m_size;
+   element_type * m_elts;
+   size_type m_maxSize;
+   size_type m_size;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

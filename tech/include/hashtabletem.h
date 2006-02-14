@@ -15,6 +15,9 @@
 #pragma once
 #endif
 
+// REFERENCES
+// http://www.cuj.com/documents/s=8000/cujcexp1812austern
+
 ////////////////////////////////////////////////////////////////////////////////
 // Explicit template instantiations for basic types
 
@@ -199,12 +202,12 @@ bool cHashIterator<HASHELEMENT>::operator !=(const cHashIterator & other) const
 ////////////////////////////////////////
 
 HASHTABLE_TEMPLATE_DECL
-HASHTABLE_TEMPLATE_CLASS::cHashTable(uint initialSize)
+HASHTABLE_TEMPLATE_CLASS::cHashTable(size_type initialSize)
  : m_elts(NULL)
  , m_maxSize(0)
  , m_size(0)
 {
-   Grow(initialSize);
+   reserve(initialSize);
 }
 
 ////////////////////////////////////////
@@ -215,8 +218,8 @@ HASHTABLE_TEMPLATE_CLASS::cHashTable(const cHashTable & other)
  , m_maxSize(0)
  , m_size(0)
 {
-   Grow(other.m_maxSize);
-   for (uint i = 0; i < m_maxSize; i++)
+   reserve(other.m_maxSize);
+   for (size_type i = 0; i < m_maxSize; i++)
    {
       m_allocator.construct(&m_elts[i], other.m_elts[i]);
    }
@@ -234,22 +237,77 @@ HASHTABLE_TEMPLATE_CLASS::~cHashTable()
 ////////////////////////////////////////
 
 HASHTABLE_TEMPLATE_DECL
+HASHTABLE_TEMPLATE_MEMBER_TYPE(allocator_type) HASHTABLE_TEMPLATE_CLASS::get_allocator() const
+{
+   return m_allocator;
+}
+
+////////////////////////////////////////
+
+HASHTABLE_TEMPLATE_DECL
+void HASHTABLE_TEMPLATE_CLASS::reserve(size_type capacity)
+{
+   size_type actual = NearestPowerOfTwo(capacity);
+   Assert(actual <= capacity); // NearestPowerOfTwo returns lower than argument
+
+   if (actual < capacity)
+   {
+      actual *= 2;
+   }
+
+   if (actual <= m_maxSize)
+   {
+      return;
+   }
+
+   element_type * newElts = m_allocator.allocate(actual, m_elts);
+
+   size_type i;
+   for (i = 0; i < actual; i++)
+   {
+      m_allocator.construct(&newElts[i], element_type());
+   }
+
+#ifdef _DEBUG
+   size_type oldSize = m_size;
+#endif
+   size_type oldMaxSize = m_maxSize;
+   element_type * oldElts = m_elts;
+
+   m_size = 0;
+   m_maxSize = actual;
+   m_elts = newElts;
+
+   for (i = 0; i < oldMaxSize; i++)
+   {
+      if (oldElts[i].state == kHES_InUse)
+      {
+         insert(oldElts[i].first, oldElts[i].second);
+      }
+      m_allocator.destroy(&oldElts[i]);
+   }
+
+   Assert(m_size == oldSize);
+
+   m_allocator.deallocate(oldElts, oldMaxSize);
+}
+
+////////////////////////////////////////
+
+HASHTABLE_TEMPLATE_DECL
 std::pair<HASHTABLE_TEMPLATE_MEMBER_TYPE(const_iterator), bool>
 HASHTABLE_TEMPLATE_CLASS::insert(const KEY & k, const VALUE & v)
 {
+   if ((m_size * 100) > (m_maxSize * kFullnessThreshold))
+   {
+      // grow in proportion to fullness
+      reserve(m_maxSize + (m_size * 100 / kFullnessThreshold));
+   }
+
    uint h = Probe(k, false);
    if (m_elts[h].state == kHES_InUse)
    {
       return std::make_pair(const_iterator(&m_elts[h], &m_elts[0], &m_elts[m_maxSize]), false);
-   }
-
-   if ((m_size * 100) > (m_maxSize * kFullnessThreshold))
-   {
-      // grow in proportion to fullness
-      Grow(m_maxSize + (m_size * 100 / kFullnessThreshold));
-
-      // re-do the probe
-      h = Probe(k, false);
    }
 
    m_elts[h].first = k;
@@ -267,7 +325,7 @@ VALUE & HASHTABLE_TEMPLATE_CLASS::operator [](const KEY & k)
    if ((m_size * 100) > (m_maxSize * kFullnessThreshold))
    {
       // grow in proportion to fullness
-      Grow(m_maxSize + (m_size * 100 / kFullnessThreshold));
+      reserve(m_maxSize + (m_size * 100 / kFullnessThreshold));
    }
 
    uint h = Probe(k, false);
@@ -437,53 +495,6 @@ uint HASHTABLE_TEMPLATE_CLASS::Probe(const KEY & k, bool bSkipErased) const
 ////////////////////////////////////////
 
 HASHTABLE_TEMPLATE_DECL
-void HASHTABLE_TEMPLATE_CLASS::Grow(uint newSize)
-{
-   uint actualNewSize = NearestPowerOfTwo(newSize);
-   Assert(actualNewSize <= newSize); // NearestPowerOfTwo returns lower than argument
-
-   if (actualNewSize < newSize)
-   {
-      actualNewSize *= 2;
-   }
-
-   value_type * newElts = m_allocator.allocate(actualNewSize, m_elts);
-
-   // Use placement new to call the constructor for each element
-#ifdef DBGALLOC_MAPPED
-#undef new
-#endif
-   newElts = new(newElts)value_type[actualNewSize];
-#ifdef DBGALLOC_MAPPED
-#define new DebugNew
-#endif
-
-#ifdef _DEBUG
-   int oldCount = m_size;
-#endif
-   int oldSize = m_maxSize;
-   value_type * oldElts = m_elts;
-
-   m_size = 0;
-   m_maxSize = actualNewSize;
-   m_elts = newElts;
-
-   for (int i = 0; i < oldSize; i++)
-   {
-      if (oldElts[i].state == kHES_InUse)
-      {
-         insert(oldElts[i].first, oldElts[i].second);
-      }
-   }
-
-   Assert(m_size == oldCount);
-
-   m_allocator.deallocate(oldElts, oldSize);
-}
-
-////////////////////////////////////////
-
-HASHTABLE_TEMPLATE_DECL
 bool HASHTABLE_TEMPLATE_CLASS::Equal(const KEY & k1, const KEY & k2) const
 {
    return HASHFN::Equal(k1, k2);
@@ -492,8 +503,13 @@ bool HASHTABLE_TEMPLATE_CLASS::Equal(const KEY & k1, const KEY & k2) const
 ////////////////////////////////////////
 
 HASHTABLE_TEMPLATE_DECL
-void HASHTABLE_TEMPLATE_CLASS::Reset(uint newInitialSize)
+void HASHTABLE_TEMPLATE_CLASS::Reset(size_type newInitialSize)
 {
+   for (size_type i = 0; i < m_maxSize; i++)
+   {
+      m_allocator.destroy(&m_elts[i]);
+   }
+
    m_allocator.deallocate(m_elts, m_maxSize);
    m_elts = NULL;
    m_maxSize = 0;
@@ -501,7 +517,7 @@ void HASHTABLE_TEMPLATE_CLASS::Reset(uint newInitialSize)
 
    if (newInitialSize > 0)
    {
-      Grow(newInitialSize);
+      reserve(newInitialSize);
    }
 }
 
