@@ -10,8 +10,6 @@
 
 #include "techtime.h"
 
-#include <map>
-
 #if defined(_MSC_VER) && (_MSC_VER >= 1300)
 #if _MSC_VER >= 1400
 #define HASH_MAP_NS stdext
@@ -23,6 +21,8 @@
 #else
 #define HAVE_HASH_MAP 0
 #endif
+
+#include <map>
 
 #include <cppunit/extensions/HelperMacros.h>
 
@@ -159,14 +159,97 @@ private:
 
 
 ///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cAllocatorForTesting
+//
+
+template <class T>
+class cAllocatorForTesting
+{
+public:
+   typedef size_t    size_type;
+   typedef ptrdiff_t difference_type;
+   typedef T *       pointer;
+   typedef const T * const_pointer;
+   typedef T &       reference;
+   typedef const T & const_reference;
+   typedef T         value_type;
+   template <class U> struct rebind { typedef cAllocatorForTesting<U> other; };
+
+   cAllocatorForTesting() throw() {}
+   cAllocatorForTesting(const cAllocatorForTesting &) throw() {}
+   template <class U> cAllocatorForTesting(const cAllocatorForTesting<U> &) throw() {}
+   ~cAllocatorForTesting() throw() {}
+
+   pointer address(reference x) const { return &x; }
+   const_pointer address(const_reference x) const { return &x; }
+
+   pointer allocate(size_type n, const_pointer hint = NULL)
+   {
+      void * pMem = malloc(sizeof(T) * n);
+      if (pMem == NULL)
+         throw std::bad_alloc();
+      return static_cast<pointer>(pMem);
+   }
+
+   void deallocate(pointer p, size_type)
+   {
+      if (p != NULL)
+         free(p);
+   }
+
+   size_type max_size() const throw() { return ~0 / sizeof(T); }
+
+   void construct(pointer p, const T & val)
+   {
+#ifdef DBGALLOC_MAPPED
+#undef new
+      new(p) T(val);
+#define new DebugNew
+#else
+      new(p) T(val);
+#endif
+   }
+
+   void destroy(pointer p)
+   {
+      p->~T();
+   }
+};
+
+template <class T1, class T2>
+bool operator ==(const cAllocatorForTesting<T1> &, const cAllocatorForTesting<T2> &) throw()
+{
+   return true;
+}
+
+template <class T1, class T2>
+bool operator !=(const cAllocatorForTesting<T1> &, const cAllocatorForTesting<T2> &) throw()
+{
+   return false;
+}
+
+template <>
+class cAllocatorForTesting<void>
+{
+public:
+   typedef void * pointer;
+   typedef const void * const_pointer;
+   typedef void value_type;
+   template <class U> struct rebind { typedef cAllocatorForTesting<U> other; };
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cHashTableTests
+//
 
 enum
 {
    kNumTests = 50,
    kTestStringLength = 20,
 };
-
-///////////////////////////////////////////////////////////////////////////////
 
 class cHashTableTests : public CppUnit::TestCase
 {
@@ -185,6 +268,7 @@ class cHashTableTests : public CppUnit::TestCase
    void TestArrayIndexOperator();
    void TestCustomKey();
    void TestCustomValue();
+   void TestCustomAllocator();
 
    CPPUNIT_TEST_SUITE(cHashTableTests);
       CPPUNIT_TEST(TestCopy);
@@ -197,6 +281,7 @@ class cHashTableTests : public CppUnit::TestCase
       CPPUNIT_TEST(TestArrayIndexOperator);
       CPPUNIT_TEST(TestCustomKey);
       CPPUNIT_TEST(TestCustomValue);
+      CPPUNIT_TEST(TestCustomAllocator);
    CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -431,6 +516,34 @@ void cHashTableTests::TestCustomValue()
       {
          CPPUNIT_ASSERT(iter->first == iter->second.GetResult());
       }
+   }
+}
+
+////////////////////////////////////////
+
+void cHashTableTests::TestCustomAllocator()
+{
+   typedef cAllocatorForTesting< sHashElement<cMathExpr<int>, int> > tAlloc;
+   tAlloc alloc;
+   cHashTable<cMathExpr<int>, int, cMathExpr<int>, tAlloc> hashTable(16, alloc);
+
+   for (int i = 0; i < 500; i++)
+   {
+      int a = rand();
+      int b = rand();
+      eMathExprOp op = g_mathExprOps[rand() % _countof(g_mathExprOps)];
+      while ((op == kMEO_Div) && (b == 0))
+      {
+         b = rand();
+      }
+      cMathExpr<int> expr(a,b,op);
+      CPPUNIT_ASSERT(hashTable.insert(expr, expr.GetResult()).second);
+   }
+
+   cHashTable<cMathExpr<int>, int, cMathExpr<int> >::const_iterator iter = hashTable.begin();
+   for (; iter != hashTable.end(); ++iter)
+   {
+      CPPUNIT_ASSERT(iter->first.GetResult() == iter->second);
    }
 }
 
