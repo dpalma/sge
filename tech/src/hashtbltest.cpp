@@ -13,6 +13,11 @@
 #include <map>
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1300)
+#if _MSC_VER >= 1400
+#define HASH_MAP_NS stdext
+#else
+#define HASH_MAP_NS std
+#endif
 #define HAVE_HASH_MAP 1
 #include <hash_map>
 #else
@@ -472,7 +477,7 @@ class cHashTableSpeedTests : public CppUnit::TestCase
    cHashTable<const char *, int> m_hashTable;
    std::map<const char *, int> m_map;
 #if HAVE_HASH_MAP
-   std::hash_map<const char *, int> m_hashMap;
+   HASH_MAP_NS::hash_map<const char *, int> m_hashMap;
 #endif
 
    struct sTiming
