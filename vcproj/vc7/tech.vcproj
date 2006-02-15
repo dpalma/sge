@@ -398,6 +398,9 @@
 					RelativePath="..\..\tech\src\resourcemanager.cpp">
 				</File>
 				<File
+					RelativePath="..\..\tech\src\statemachinetest.cpp">
+				</File>
+				<File
 					RelativePath="..\..\tech\src\stdhdr.cpp">
 					<FileConfiguration
 						Name="Opt|Win32">
@@ -591,6 +594,12 @@
 			</File>
 			<File
 				RelativePath="..\..\tech\include\resourceapi.h">
+			</File>
+			<File
+				RelativePath="..\..\tech\include\statemachine.h">
+			</File>
+			<File
+				RelativePath="..\..\tech\include\statemachinetem.h">
 			</File>
 			<File
 				RelativePath="..\..\tech\include\techassert.h">

@@ -17,6 +17,7 @@ sourceFiles = Split("""
    src/functor.cpp
    src/globalobjreg.cpp
    src/hash.cpp
+   src/hashtbltest.cpp
    src/image.cpp
    src/matrix4.cpp
    src/md5.c
@@ -26,6 +27,7 @@ sourceFiles = Split("""
    src/readwritefile.cpp
    src/readwritemem.cpp
    src/resourcemanager.cpp
+   src/statemachinetest.cpp
    src/techassert.cpp
    src/techlog.cpp
    src/techmath.cpp
