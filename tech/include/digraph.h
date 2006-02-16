@@ -12,21 +12,20 @@
 #pragma once
 #endif
 
+// REFERENCES
+// "Algorithms: Second Edition", Robert Sedgewick, Addison-Wesley. 1988.
+// "Introduction to Algorithms", Cormen, Leiserson, & Rivest, MIT Press. 1990.
+
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // TEMPLATE: cDigraph
-//
-// Uses adjacency list representation
-//
-// REFERENCES:
-// [1] "Algorithms: Second Edition", Robert Sedgewick, Addison-Wesley. 1988.
-// [2] "Introduction to Algorithms", Cormen, Leiserson, & Rivest, MIT Press. 1990.
 //
 
 DECLARE_HANDLE(HNODEITER);
 DECLARE_HANDLE(HEDGEITER);
 
-template <typename KEY, typename KEYCOMPARE = std::less<KEY>, typename DATA = void *>
+template <typename KEY, typename KEYCOMPARE = std::less<KEY> >
 class cDigraph
 {
    enum eConstants
@@ -36,47 +35,33 @@ class cDigraph
 
 public:
    typedef KEY tKey;
-   typedef DATA tData;
    typedef int tWeight;
 
    cDigraph();
    ~cDigraph();
 
-   bool AddNode(const KEY & key, const DATA & data = DefaultData());
+   bool AddNode(const KEY & key);
    bool HasNode(const KEY & key) const;
    size_t GetNodeCount() const;
 
    bool AddEdge(const KEY & from, const KEY & to, tWeight weight = kDefaultEdgeWeight);
    bool HasEdge(const KEY & from, const KEY & to) const;
-   size_t GetOutgoingEdgeCount(const KEY & key) const;
-   size_t GetIncomingEdgeCount(const KEY & key) const;
 
    HNODEITER IterNodesBegin() const;
-   bool IterNextNode(HNODEITER hIter, KEY * pKey, DATA * pData = NULL) const;
+   bool IterNextNode(HNODEITER hIter, KEY * pKey) const;
    void IterNodesEnd(HNODEITER hIter) const;
 
    HEDGEITER IterEdgesBegin(const KEY & key) const;
    bool IterNextEdge(HEDGEITER hIter, KEY * pTo, tWeight * pWeight = NULL) const;
    void IterEdgesEnd(HEDGEITER hIter) const;
 
-   bool SetNodeData(const KEY & key, const DATA & data);
-   bool GetNodeData(const KEY & key, DATA * pData) const;
-   DATA * GetNodeDataPtr(const KEY & key);
-   const DATA * GetNodeDataPtr(const KEY & key) const;
-
 private:
-   static const DATA & DefaultData();
-
-   ////////////////////////////////////
-
    typedef std::map<KEY, tWeight, KEYCOMPARE> tEdges; // maps dest node to weight/cost to get to that node
 
    typedef std::pair<typename tEdges::iterator, bool> tEdgeInsertResult;
 
    struct sNode
    {
-      DATA data;
-      size_t nIncomingEdges;
       tEdges edges; // outgoing edges
    };
 
@@ -90,22 +75,20 @@ private:
       typename tEdges::const_iterator end;
    };
 
-   ////////////////////////////////////
-
    tNodes m_nodes;
 };
 
 ///////////////////////////////////////
 
-template <typename KEY, typename KEYCOMPARE, typename DATA>
-cDigraph<KEY, KEYCOMPARE, DATA>::cDigraph()
+template <typename KEY, typename KEYCOMPARE>
+cDigraph<KEY, KEYCOMPARE>::cDigraph()
 {
 }
 
 ///////////////////////////////////////
 
-template <typename KEY, typename KEYCOMPARE, typename DATA>
-cDigraph<KEY, KEYCOMPARE, DATA>::~cDigraph()
+template <typename KEY, typename KEYCOMPARE>
+cDigraph<KEY, KEYCOMPARE>::~cDigraph()
 {
    typename tNodes::iterator iter;
    for (iter = m_nodes.begin(); iter != m_nodes.end(); iter++)
@@ -117,14 +100,12 @@ cDigraph<KEY, KEYCOMPARE, DATA>::~cDigraph()
 
 ///////////////////////////////////////
 
-template <typename KEY, typename KEYCOMPARE, typename DATA>
-bool cDigraph<KEY, KEYCOMPARE, DATA>::AddNode(const KEY & key, const DATA & data)
+template <typename KEY, typename KEYCOMPARE>
+bool cDigraph<KEY, KEYCOMPARE>::AddNode(const KEY & key)
 {
    if (!HasNode(key))
    {
       sNode * pNode = new sNode;
-      pNode->nIncomingEdges = 0;
-      pNode->data = data;
       tNodeInsertResult result = m_nodes.insert(std::make_pair(key, pNode));
       return result.second;
    }
@@ -133,8 +114,8 @@ bool cDigraph<KEY, KEYCOMPARE, DATA>::AddNode(const KEY & key, const DATA & data
 
 ///////////////////////////////////////
 
-template <typename KEY, typename KEYCOMPARE, typename DATA>
-bool cDigraph<KEY, KEYCOMPARE, DATA>::HasNode(const KEY & key) const
+template <typename KEY, typename KEYCOMPARE>
+bool cDigraph<KEY, KEYCOMPARE>::HasNode(const KEY & key) const
 {
    typename tNodes::const_iterator iter = m_nodes.find(key);
    return (iter != m_nodes.end());
@@ -142,8 +123,8 @@ bool cDigraph<KEY, KEYCOMPARE, DATA>::HasNode(const KEY & key) const
 
 ///////////////////////////////////////
 
-template <typename KEY, typename KEYCOMPARE, typename DATA>
-size_t cDigraph<KEY, KEYCOMPARE, DATA>::GetNodeCount() const
+template <typename KEY, typename KEYCOMPARE>
+size_t cDigraph<KEY, KEYCOMPARE>::GetNodeCount() const
 {
    return m_nodes.size();
 }
@@ -153,8 +134,8 @@ size_t cDigraph<KEY, KEYCOMPARE, DATA>::GetNodeCount() const
 // edge is redundant. The former is a more serious error. Maybe these return values
 // should be E_FAIL and S_FALSE.
 
-template <typename KEY, typename KEYCOMPARE, typename DATA>
-bool cDigraph<KEY, KEYCOMPARE, DATA>::AddEdge(const KEY & from, const KEY & to, int weight)
+template <typename KEY, typename KEYCOMPARE>
+bool cDigraph<KEY, KEYCOMPARE>::AddEdge(const KEY & from, const KEY & to, int weight)
 {
    typename tNodes::iterator fromIter = m_nodes.find(from);
    if (fromIter != m_nodes.end())
@@ -163,10 +144,6 @@ bool cDigraph<KEY, KEYCOMPARE, DATA>::AddEdge(const KEY & from, const KEY & to, 
       if (toIter != m_nodes.end())
       {
          tEdgeInsertResult result = fromIter->second->edges.insert(std::make_pair(to, weight));
-         if (result.second)
-         {
-            toIter->second->nIncomingEdges++;
-         }
          return result.second;
       }
    }
@@ -175,8 +152,8 @@ bool cDigraph<KEY, KEYCOMPARE, DATA>::AddEdge(const KEY & from, const KEY & to, 
 
 ///////////////////////////////////////
 
-template <typename KEY, typename KEYCOMPARE, typename DATA>
-bool cDigraph<KEY, KEYCOMPARE, DATA>::HasEdge(const KEY & from, const KEY & to) const
+template <typename KEY, typename KEYCOMPARE>
+bool cDigraph<KEY, KEYCOMPARE>::HasEdge(const KEY & from, const KEY & to) const
 {
    typename tNodes::const_iterator fromIter = m_nodes.find(from);
    if ((fromIter != m_nodes.end()) && HasNode(to))
@@ -191,34 +168,8 @@ bool cDigraph<KEY, KEYCOMPARE, DATA>::HasEdge(const KEY & from, const KEY & to) 
 
 ///////////////////////////////////////
 
-template <typename KEY, typename KEYCOMPARE, typename DATA>
-size_t cDigraph<KEY, KEYCOMPARE, DATA>::GetOutgoingEdgeCount(const KEY & key) const
-{
-   typename tNodes::const_iterator k = m_nodes.find(key);
-   if (k != m_nodes.end())
-   {
-      return  k->second->edges.size();
-   }
-   return 0;
-}
-
-///////////////////////////////////////
-
-template <typename KEY, typename KEYCOMPARE, typename DATA>
-size_t cDigraph<KEY, KEYCOMPARE, DATA>::GetIncomingEdgeCount(const KEY & key) const
-{
-   typename tNodes::const_iterator k = m_nodes.find(key);
-   if (k != m_nodes.end())
-   {
-      return  k->second->nIncomingEdges;
-   }
-   return 0;
-}
-
-///////////////////////////////////////
-
-template <typename KEY, typename KEYCOMPARE, typename DATA>
-HNODEITER cDigraph<KEY, KEYCOMPARE, DATA>::IterNodesBegin() const
+template <typename KEY, typename KEYCOMPARE>
+HNODEITER cDigraph<KEY, KEYCOMPARE>::IterNodesBegin() const
 {
    typename tNodes::const_iterator * pIter = new typename tNodes::const_iterator(m_nodes.begin());
    return (HNODEITER)pIter;
@@ -226,8 +177,8 @@ HNODEITER cDigraph<KEY, KEYCOMPARE, DATA>::IterNodesBegin() const
 
 ///////////////////////////////////////
 
-template <typename KEY, typename KEYCOMPARE, typename DATA>
-bool cDigraph<KEY, KEYCOMPARE, DATA>::IterNextNode(HNODEITER hIter, KEY * pKey, DATA * pData) const
+template <typename KEY, typename KEYCOMPARE>
+bool cDigraph<KEY, KEYCOMPARE>::IterNextNode(HNODEITER hIter, KEY * pKey) const
 {
    Assert(hIter != NULL);
    typename tNodes::const_iterator * pIter = (typename tNodes::const_iterator *)hIter;
@@ -235,8 +186,6 @@ bool cDigraph<KEY, KEYCOMPARE, DATA>::IterNextNode(HNODEITER hIter, KEY * pKey, 
    {
       Assert(pKey != NULL);
       *pKey = (*pIter)->first;
-      if (pData != NULL)
-         *pData = (*pIter)->second->data;
       (*pIter)++;
       return true;
    }
@@ -245,8 +194,8 @@ bool cDigraph<KEY, KEYCOMPARE, DATA>::IterNextNode(HNODEITER hIter, KEY * pKey, 
 
 ///////////////////////////////////////
 
-template <typename KEY, typename KEYCOMPARE, typename DATA>
-void cDigraph<KEY, KEYCOMPARE, DATA>::IterNodesEnd(HNODEITER hIter) const
+template <typename KEY, typename KEYCOMPARE>
+void cDigraph<KEY, KEYCOMPARE>::IterNodesEnd(HNODEITER hIter) const
 {
    typename tNodes::const_iterator * pIter = (typename tNodes::const_iterator *)hIter;
    delete pIter;
@@ -254,8 +203,8 @@ void cDigraph<KEY, KEYCOMPARE, DATA>::IterNodesEnd(HNODEITER hIter) const
 
 ///////////////////////////////////////
 
-template <typename KEY, typename KEYCOMPARE, typename DATA>
-HEDGEITER cDigraph<KEY, KEYCOMPARE, DATA>::IterEdgesBegin(const KEY & key) const
+template <typename KEY, typename KEYCOMPARE>
+HEDGEITER cDigraph<KEY, KEYCOMPARE>::IterEdgesBegin(const KEY & key) const
 {
    typename tNodes::const_iterator iter = m_nodes.find(key);
    if (iter != m_nodes.end())
@@ -270,8 +219,8 @@ HEDGEITER cDigraph<KEY, KEYCOMPARE, DATA>::IterEdgesBegin(const KEY & key) const
 
 ///////////////////////////////////////
 
-template <typename KEY, typename KEYCOMPARE, typename DATA>
-bool cDigraph<KEY, KEYCOMPARE, DATA>::IterNextEdge(HEDGEITER hIter, KEY * pTo, int * pWeight) const
+template <typename KEY, typename KEYCOMPARE>
+bool cDigraph<KEY, KEYCOMPARE>::IterNextEdge(HEDGEITER hIter, KEY * pTo, int * pWeight) const
 {
    Assert(hIter != NULL);
    sEdgeIter * pIter = (sEdgeIter *)hIter;
@@ -289,79 +238,11 @@ bool cDigraph<KEY, KEYCOMPARE, DATA>::IterNextEdge(HEDGEITER hIter, KEY * pTo, i
 
 ///////////////////////////////////////
 
-template <typename KEY, typename KEYCOMPARE, typename DATA>
-void cDigraph<KEY, KEYCOMPARE, DATA>::IterEdgesEnd(HEDGEITER hIter) const
+template <typename KEY, typename KEYCOMPARE>
+void cDigraph<KEY, KEYCOMPARE>::IterEdgesEnd(HEDGEITER hIter) const
 {
    sEdgeIter * pIter = (sEdgeIter *)hIter;
    delete pIter;
-}
-
-///////////////////////////////////////
-
-template <typename KEY, typename KEYCOMPARE, typename DATA>
-bool cDigraph<KEY, KEYCOMPARE, DATA>::SetNodeData(const KEY & key, const DATA & data)
-{
-   typename tNodes::iterator iter = m_nodes.find(key);
-   if (iter != m_nodes.end())
-   {
-      iter->second->data = data;
-      return true;
-   }
-   return false;
-}
-
-///////////////////////////////////////
-
-template <typename KEY, typename KEYCOMPARE, typename DATA>
-bool cDigraph<KEY, KEYCOMPARE, DATA>::GetNodeData(const KEY & key, DATA * pData) const
-{
-   typename tNodes::const_iterator iter = m_nodes.find(key);
-   if (iter != m_nodes.end())
-   {
-      if (pData != NULL)
-      {
-         *pData = iter->second->data;
-      }
-      return true;
-   }
-   return false;
-}
-
-///////////////////////////////////////
-
-template <typename KEY, typename KEYCOMPARE, typename DATA>
-DATA * cDigraph<KEY, KEYCOMPARE, DATA>::GetNodeDataPtr(const KEY & key)
-{
-   typename tNodes::iterator iter = m_nodes.find(key);
-   if (iter != m_nodes.end())
-   {
-      return &iter->second->data;
-   }
-   return NULL;
-}
-
-///////////////////////////////////////
-
-template <typename KEY, typename KEYCOMPARE, typename DATA>
-const DATA * cDigraph<KEY, KEYCOMPARE, DATA>::GetNodeDataPtr(const KEY & key) const
-{
-   typename tNodes::const_iterator iter = m_nodes.find(key);
-   if (iter != m_nodes.end())
-   {
-      return &iter->second->data;
-   }
-   return NULL;
-}
-
-///////////////////////////////////////
-
-template <typename KEY, typename KEYCOMPARE, typename DATA>
-const DATA & cDigraph<KEY, KEYCOMPARE, DATA>::DefaultData()
-{
-   // static data is initialized to zero so the default for pointers
-   // will be NULL, which is good
-   static DATA data;
-   return data;
 }
 
 
