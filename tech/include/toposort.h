@@ -5,7 +5,6 @@
 #define INCLUDED_TOPOSORT_H
 
 #include <vector>
-#include "digraph.h"
 
 #include "dbgalloc.h"
 
@@ -18,53 +17,24 @@
 // CLASS: cTopoSorter
 //
 
-template <class DIGRAPH>
-class cTopoSorter : public cDFS<DIGRAPH>
+template <class NODE, class CONTAINER = std::vector<NODE> >
+class cTopoSorter
 {
 public:
-   typedef std::vector<typename DIGRAPH::tKey> tSortedArray;
-
-   cTopoSorter();
-   ~cTopoSorter();
-
-   void TopoSort(const DIGRAPH * pGraph, tSortedArray * pArray);
-
-   void OnFinished(const typename DIGRAPH::tKey key)
+   cTopoSorter(CONTAINER * pContainer)
+    : m_pContainer(pContainer)
    {
-      if (m_pArray != NULL)
-         m_pArray->insert(m_pArray->begin(), key);
+   }
+
+   bool operator()(const NODE & node)
+   {
+      m_pContainer->push_back(node);
+      return true;
    }
 
 private:
-   tSortedArray * m_pArray;
+   CONTAINER * m_pContainer;
 };
-
-///////////////////////////////////////
-
-template <class DIGRAPH>
-cTopoSorter<DIGRAPH>::cTopoSorter() : m_pArray(NULL)
-{
-}
-
-///////////////////////////////////////
-
-template <class DIGRAPH>
-cTopoSorter<DIGRAPH>::~cTopoSorter()
-{
-}
-
-///////////////////////////////////////
-
-template <class DIGRAPH>
-void cTopoSorter<DIGRAPH>::TopoSort(const DIGRAPH * pGraph, tSortedArray * pArray)
-{
-   m_pArray = pArray;
-   m_pArray->clear();
-
-   DFS(pGraph);
-
-   m_pArray = NULL;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 

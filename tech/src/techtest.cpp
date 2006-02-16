@@ -11,13 +11,29 @@ extern "C"
 }
 
 #include "digraph.h"
-#include "toposort.h"
-
 #include "techtime.h"
+#include "toposort.h"
 
 #include <cppunit/extensions/HelperMacros.h>
 
 #include "dbgalloc.h" // must be last header
+
+///////////////////////////////////////////////////////////////////////////////
+
+LOG_DEFINE_CHANNEL(TechTest);
+
+#define LocalMsg(msg)                     DebugMsgEx(TechTest,(msg))
+#define LocalMsg1(msg,a)                  DebugMsgEx1(TechTest,(msg),(a))
+#define LocalMsg2(msg,a,b)                DebugMsgEx2(TechTest,(msg),(a),(b))
+#define LocalMsg3(msg,a,b,c)              DebugMsgEx3(TechTest,(msg),(a),(b),(c))
+#define LocalMsg4(msg,a,b,c,d)            DebugMsgEx4(TechTest,(msg),(a),(b),(c),(d))
+
+#define LocalMsgIf(cond,msg)              DebugMsgIfEx(TechTest,(cond),(msg))
+#define LocalMsgIf1(cond,msg,a)           DebugMsgIfEx1(TechTest,(cond),(msg),(a))
+#define LocalMsgIf2(cond,msg,a,b)         DebugMsgIfEx2(TechTest,(cond),(msg),(a),(b))
+#define LocalMsgIf3(cond,msg,a,b,c)       DebugMsgIfEx3(TechTest,(cond),(msg),(a),(b),(c))
+#define LocalMsgIf4(cond,msg,a,b,c,d)     DebugMsgIfEx4(TechTest,(cond),(msg),(a),(b),(c),(d))
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -34,6 +50,10 @@ class cMD5Tests : public CppUnit::TestCase
       CPPUNIT_TEST(MDTestSuite);
    CPPUNIT_TEST_SUITE_END();
 };
+
+////////////////////////////////////////
+
+CPPUNIT_TEST_SUITE_REGISTRATION(cMD5Tests);
 
 ////////////////////////////////////////
 
@@ -67,9 +87,12 @@ static bool MDString(char * string, byte expected[16])
    MDUpdate(&context, reinterpret_cast<byte*>(string), len);
    MDFinal(digest, &context);
 
-   DebugMsg2("MD%d (\"%s\") = ", MD, string);
-   MDPrint(digest);
-   techlog.Print(kDebug, "\n");
+   LocalMsg2("MD%d (\"%s\") = ", MD, string);
+   if (LOG_IS_CHANNEL_ENABLED(TechTest))
+   {
+      MDPrint(digest);
+      techlog.Print(kDebug, "\n");
+   }
 
    return (memcmp(digest, expected, 16 * sizeof(byte)) == 0);
 }
@@ -82,7 +105,7 @@ void cMD5Tests::MDTimeTrial()
    double endTime, startTime, elapsed;
    byte block[TEST_BLOCK_LEN], digest[16];
 
-   DebugMsg3("MD%d time trial. Digesting %d %d-byte blocks ...", MD, TEST_BLOCK_LEN, TEST_BLOCK_COUNT);
+   LocalMsg3("MD%d time trial. Digesting %d %d-byte blocks ...", MD, TEST_BLOCK_LEN, TEST_BLOCK_COUNT);
 
    /* Initialize block */
    int i;
@@ -107,11 +130,11 @@ void cMD5Tests::MDTimeTrial()
    elapsed = endTime - startTime;
 
    techlog.Print(kDebug, " done\n");
-   DebugMsg("Digest = ");
+   LocalMsg("Digest = ");
    MDPrint(digest);
    techlog.Print(kDebug, "\n");
-   DebugMsg1("Time = %f seconds\n", elapsed);
-   DebugMsg1("Speed = %ld bytes/second\n", (long)TEST_BLOCK_LEN * (long)TEST_BLOCK_COUNT/elapsed);
+   LocalMsg1("Time = %f seconds\n", elapsed);
+   LocalMsg1("Speed = %ld bytes/second\n", (long)TEST_BLOCK_LEN * (long)TEST_BLOCK_COUNT/elapsed);
 }
 
 ////////////////////////////////////////
@@ -139,9 +162,6 @@ void cMD5Tests::MDTestSuite()
    }
 }
 
-////////////////////////////////////////
-
-CPPUNIT_TEST_SUITE_REGISTRATION(cMD5Tests);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -161,61 +181,71 @@ class cDigraphTests : public CppUnit::TestCase
 
 ////////////////////////////////////////
 
+CPPUNIT_TEST_SUITE_REGISTRATION(cDigraphTests);
+
+////////////////////////////////////////
+
 void cDigraphTests::TestTopoSort()
 {
-   typedef cDigraph<char> tGraph;
+   typedef cDigraph<char, int> tGraph;
    tGraph graph;
 
    for (int c = 'a'; c <= 'd'; c++)
    {
-      graph.AddNode(c);
+      graph.insert(c);
    }
 
-   CPPUNIT_ASSERT(graph.AddEdge('a', 'b'));
-   CPPUNIT_ASSERT(graph.AddEdge('b', 'c'));
-   CPPUNIT_ASSERT(graph.AddEdge('a', 'd'));
+   // a -> b -> c
+   //   -> d
+   CPPUNIT_ASSERT(graph.insert_edge('a', 'b', 1).second);
+   CPPUNIT_ASSERT(graph.insert_edge('b', 'c', 1).second);
+   CPPUNIT_ASSERT(graph.insert_edge('a', 'd', 1).second);
 
-   std::vector<tGraph::tKey> sorted;
+   CPPUNIT_ASSERT(graph.acyclic());
 
-   cTopoSorter<tGraph> sorter;
-   sorter.TopoSort(&graph, &sorted);
+   std::vector<tGraph::node_type> sorted;
+   cTopoSorter<tGraph::node_type> sorter(&sorted);
+   graph.topological_sort(sorter);
 
-   const char answer[] = "adbc\0";
+   CPPUNIT_ASSERT(sorted.size() == 4);
 
-   CPPUNIT_ASSERT(sorted.size() == strlen(answer));
+   int positions[4];
 
-   std::vector<tGraph::tKey>::iterator iter;
+   std::vector<tGraph::node_type>::iterator iter;
    for (iter = sorted.begin(); iter != sorted.end(); iter++)
    {
-      CPPUNIT_ASSERT((*iter) == answer[iter - sorted.begin()]);
+      char c = *iter;
+      int i = iter - sorted.begin();
+      positions[c - 'a'] = i;
    }
+
+   CPPUNIT_ASSERT(positions['a' - 'a'] < positions['b' - 'a']); // a comes before b
+   CPPUNIT_ASSERT(positions['b' - 'a'] < positions['c' - 'a']); // b comes before c
+   CPPUNIT_ASSERT(positions['a' - 'a'] < positions['c' - 'a']); // a comes before c (by way of b)
+   CPPUNIT_ASSERT(positions['a' - 'a'] < positions['d' - 'a']); // a comes before d
 }
 
 ////////////////////////////////////////
 
 void cDigraphTests::TestCycleDetect()
 {
-   typedef cDigraph<char> tGraph;
+   typedef cDigraph<char, int> tGraph;
    tGraph graph;
 
    for (int c = 'a'; c <= 'f'; c++)
    {
-      graph.AddNode(c);
+      graph.insert(c);
    }
 
-   CPPUNIT_ASSERT(graph.AddEdge('a', 'b'));
-   CPPUNIT_ASSERT(graph.AddEdge('b', 'c'));
-   CPPUNIT_ASSERT(graph.AddEdge('a', 'd'));
-   CPPUNIT_ASSERT(graph.AddEdge('d', 'f'));
-   CPPUNIT_ASSERT(graph.AddEdge('f', 'a'));
+   // The following adds the cycle: a -> d -> f -> a
+   CPPUNIT_ASSERT(graph.insert_edge('a', 'b', 0).second);
+   CPPUNIT_ASSERT(graph.insert_edge('b', 'c', 0).second);
+   CPPUNIT_ASSERT(graph.insert_edge('a', 'd', 0).second);
+   CPPUNIT_ASSERT(graph.insert_edge('d', 'f', 0).second);
+   CPPUNIT_ASSERT(graph.insert_edge('f', 'a', 0).second);
 
-   cDFS<tGraph> dfs;
-   CPPUNIT_ASSERT(dfs.DFS(&graph) == kDFS_Cycle);
+   CPPUNIT_ASSERT(!graph.acyclic());
 }
-
-////////////////////////////////////////
-
-CPPUNIT_TEST_SUITE_REGISTRATION(cDigraphTests);
 
 ///////////////////////////////////////////////////////////////////////////////
 

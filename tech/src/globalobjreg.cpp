@@ -138,7 +138,7 @@ private:
       }
    };
 
-   typedef cDigraph<const GUID *, sLessGuid> tConstraintGraph;
+   typedef cDigraph<const GUID *, int, sLessGuid> tConstraintGraph;
    void BuildConstraintGraph(tConstraintGraph * pGraph);
 
    typedef cHashTable<const GUID *, IUnknown *> tObjMap;
@@ -213,7 +213,8 @@ tResult cGlobalObjectRegistry::InitAll()
    tConstraintGraph constraintGraph;
    BuildConstraintGraph(&constraintGraph);
 
-   cTopoSorter<tConstraintGraph>().TopoSort(&constraintGraph, &m_initOrder);
+   cTopoSorter<tConstraintGraph::node_type> sorter(&m_initOrder);
+   constraintGraph.topological_sort(sorter);
 
    tInitOrder::iterator iter;
    for (iter = m_initOrder.begin(); iter != m_initOrder.end(); iter++)
@@ -331,17 +332,17 @@ void cGlobalObjectRegistry::BuildConstraintGraph(tConstraintGraph * pGraph)
    tObjMap::iterator iter;
    for (iter = m_objMap.begin(); iter != m_objMap.end(); iter++)
    {
-      pGraph->AddNode(iter->first);
+      pGraph->insert(iter->first);
    }
 
-   Assert(pGraph->GetNodeCount() == m_objMap.size());
+   Assert(pGraph->size() == m_objMap.size());
 
 #ifdef _DEBUG
    {
       tObjMap::iterator iter;
       for (iter = m_objMap.begin(); iter != m_objMap.end(); iter++)
       {
-         Assert(pGraph->HasNode(iter->first));
+         Assert(pGraph->find(iter->first) != pGraph->end());
       }
    }
 #endif
@@ -377,11 +378,11 @@ void cGlobalObjectRegistry::BuildConstraintGraph(tConstraintGraph * pGraph)
             {
                if (citer->Before())
                {
-                  pGraph->AddEdge(iter->first, pTargetGuid);
+                  pGraph->insert_edge(iter->first, pTargetGuid, 0);
                }
                else
                {
-                  pGraph->AddEdge(pTargetGuid, iter->first);
+                  pGraph->insert_edge(pTargetGuid, iter->first, 0);
                }
             }
          }

@@ -118,7 +118,7 @@ private:
    typedef std::map<const GUID *, cVersionedParticipant *, sLessGuid> tParticipantMap;
    tParticipantMap m_participantMap;
 
-   typedef cDigraph<const GUID *, sLessGuid> tConstraintGraph;
+   typedef cDigraph<const GUID *, int, sLessGuid> tConstraintGraph;
    tConstraintGraph m_saveOrderConstraintGraph;
 
    struct sFileHeader

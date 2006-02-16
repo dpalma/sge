@@ -476,7 +476,7 @@ tResult cSaveLoadManager::RegisterSaveLoadParticipant(REFGUID id,
 
    // All participants are put into the constraint graph. Only those with
    // constraints will have edges, though.
-   Verify(m_saveOrderConstraintGraph.AddNode(&id));
+   Verify(m_saveOrderConstraintGraph.insert(&id).second);
 
    if (pConstraints != NULL && nConstraints > 0)
    {
@@ -497,11 +497,11 @@ tResult cSaveLoadManager::RegisterSaveLoadParticipant(REFGUID id,
             // order will be built later when all participants have been registered.
             if (c.Before())
             {
-               m_saveOrderConstraintGraph.AddEdge(&id, c.GetGuid());
+               m_saveOrderConstraintGraph.insert_edge(&id, c.GetGuid(), 0);
             }
             else
             {
-               m_saveOrderConstraintGraph.AddEdge(c.GetGuid(), &id);
+               m_saveOrderConstraintGraph.insert_edge(c.GetGuid(), &id, 0);
             }
          }
       }
@@ -578,7 +578,8 @@ tResult cSaveLoadManager::Save(IWriter * pWriter)
 
    // Determine the save order
    std::vector<const GUID *> saveOrder;
-   cTopoSorter<tConstraintGraph>().TopoSort(&m_saveOrderConstraintGraph, &saveOrder);
+   cTopoSorter<tConstraintGraph::node_type> sorter(&saveOrder);
+   m_saveOrderConstraintGraph.topological_sort(sorter);
    AssertMsg(saveOrder.size() == m_participantMap.size(), "Size mismatch after determining constrained save order");
 
    sFileHeader header;

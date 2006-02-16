@@ -5,6 +5,9 @@
 #define INCLUDED_DIGRAPH_H
 
 #include <map>
+#include <queue>
+#include <set>
+#include <stack>
 
 #include "dbgalloc.h"
 
@@ -15,6 +18,7 @@
 // REFERENCES
 // "Algorithms: Second Edition", Robert Sedgewick, Addison-Wesley. 1988.
 // "Introduction to Algorithms", Cormen, Leiserson, & Rivest, MIT Press. 1990.
+// http://www.brpreiss.com/books/opus5/html/page556.html#SECTION0017331000000000000000
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -22,327 +26,346 @@
 // TEMPLATE: cDigraph
 //
 
-DECLARE_HANDLE(HNODEITER);
-DECLARE_HANDLE(HEDGEITER);
-
-template <typename KEY, typename KEYCOMPARE = std::less<KEY> >
+template <typename NODE, typename EDGE,
+          typename NODECOMP = std::less<NODE>,
+          typename ALLOC = std::allocator<NODE> >
 class cDigraph
 {
-   enum eConstants
-   {
-      kDefaultEdgeWeight = 0
-   };
-
 public:
-   typedef KEY tKey;
-   typedef int tWeight;
+   typedef size_t size_type;
+   typedef NODE node_type;
+   typedef typename ALLOC::template rebind<node_type>::other node_allocator;
+   typedef NODECOMP node_comp;
+   typedef std::set<node_type, node_comp, node_allocator> tNodeSet;
+   typedef tNodeSet::iterator node_iterator;
+   typedef tNodeSet::const_iterator const_node_iterator;
+   struct sEdge
+   {
+      const_node_iterator from;
+      const_node_iterator to;
+      EDGE data;
+   };
+   typedef struct sEdge edge_type;
+   typedef typename ALLOC::template rebind<edge_type>::other edge_allocator;
+   struct sEdgeComp
+   {
+      bool operator()(const edge_type & edge1, const edge_type & edge2) const
+      {
+         // Sort by from-node, then by to-node, then by edge data
+         node_comp nodeComp;
+         return nodeComp(*edge1.from, *edge2.from)
+            || nodeComp(*edge1.to, *edge2.to);
+      }
+   };
+   typedef struct sEdgeComp edge_comp;
+   typedef std::multiset<edge_type, edge_comp, edge_allocator> tEdgeSet;
+   typedef tEdgeSet::iterator edge_iterator;
+   typedef tEdgeSet::const_iterator const_edge_iterator;
 
    cDigraph();
    ~cDigraph();
 
-   bool AddNode(const KEY & key);
-   bool HasNode(const KEY & key) const;
-   size_t GetNodeCount() const;
+   std::pair<node_iterator, bool> insert(const NODE & node);
 
-   bool AddEdge(const KEY & from, const KEY & to, tWeight weight = kDefaultEdgeWeight);
-   bool HasEdge(const KEY & from, const KEY & to) const;
+   node_iterator find(const NODE & node);
+   const_node_iterator find(const NODE & node) const;
 
-   HNODEITER IterNodesBegin() const;
-   bool IterNextNode(HNODEITER hIter, KEY * pKey) const;
-   void IterNodesEnd(HNODEITER hIter) const;
+   node_iterator begin();
+   node_iterator end();
+   const_node_iterator begin() const;
+   const_node_iterator end() const;
+   
+   size_type size() const;
 
-   HEDGEITER IterEdgesBegin(const KEY & key) const;
-   bool IterNextEdge(HEDGEITER hIter, KEY * pTo, tWeight * pWeight = NULL) const;
-   void IterEdgesEnd(HEDGEITER hIter) const;
+   std::pair<edge_iterator, bool> insert_edge(const node_type & from, const node_type & to, const EDGE & data);
 
-private:
-   typedef std::map<KEY, tWeight, KEYCOMPARE> tEdges; // maps dest node to weight/cost to get to that node
-
-   typedef std::pair<typename tEdges::iterator, bool> tEdgeInsertResult;
-
-   struct sNode
+   /*
+   template <typename VISITOR>
+   void depth_first_traverse(VISITOR visitor) const
    {
-      tEdges edges; // outgoing edges
-   };
-
-   typedef std::map<KEY, sNode *, KEYCOMPARE> tNodes;
-
-   typedef std::pair<typename tNodes::iterator, bool> tNodeInsertResult;
-
-   struct sEdgeIter
-   {
-      typename tEdges::const_iterator iter;
-      typename tEdges::const_iterator end;
-   };
-
-   tNodes m_nodes;
-};
-
-///////////////////////////////////////
-
-template <typename KEY, typename KEYCOMPARE>
-cDigraph<KEY, KEYCOMPARE>::cDigraph()
-{
-}
-
-///////////////////////////////////////
-
-template <typename KEY, typename KEYCOMPARE>
-cDigraph<KEY, KEYCOMPARE>::~cDigraph()
-{
-   typename tNodes::iterator iter;
-   for (iter = m_nodes.begin(); iter != m_nodes.end(); iter++)
-   {
-      delete iter->second;
-   }
-   m_nodes.clear();
-}
-
-///////////////////////////////////////
-
-template <typename KEY, typename KEYCOMPARE>
-bool cDigraph<KEY, KEYCOMPARE>::AddNode(const KEY & key)
-{
-   if (!HasNode(key))
-   {
-      sNode * pNode = new sNode;
-      tNodeInsertResult result = m_nodes.insert(std::make_pair(key, pNode));
-      return result.second;
-   }
-   return false;
-}
-
-///////////////////////////////////////
-
-template <typename KEY, typename KEYCOMPARE>
-bool cDigraph<KEY, KEYCOMPARE>::HasNode(const KEY & key) const
-{
-   typename tNodes::const_iterator iter = m_nodes.find(key);
-   return (iter != m_nodes.end());
-}
-
-///////////////////////////////////////
-
-template <typename KEY, typename KEYCOMPARE>
-size_t cDigraph<KEY, KEYCOMPARE>::GetNodeCount() const
-{
-   return m_nodes.size();
-}
-
-///////////////////////////////////////
-// TODO: This method returns false when the from node wasn't found and when the
-// edge is redundant. The former is a more serious error. Maybe these return values
-// should be E_FAIL and S_FALSE.
-
-template <typename KEY, typename KEYCOMPARE>
-bool cDigraph<KEY, KEYCOMPARE>::AddEdge(const KEY & from, const KEY & to, int weight)
-{
-   typename tNodes::iterator fromIter = m_nodes.find(from);
-   if (fromIter != m_nodes.end())
-   {
-      typename tNodes::iterator toIter = m_nodes.find(to);
-      if (toIter != m_nodes.end())
+      if (m_edgeSet.empty())
       {
-         tEdgeInsertResult result = fromIter->second->edges.insert(std::make_pair(to, weight));
-         return result.second;
+         return;
       }
-   }
-   return false;
-}
 
-///////////////////////////////////////
-
-template <typename KEY, typename KEYCOMPARE>
-bool cDigraph<KEY, KEYCOMPARE>::HasEdge(const KEY & from, const KEY & to) const
-{
-   typename tNodes::const_iterator fromIter = m_nodes.find(from);
-   if ((fromIter != m_nodes.end()) && HasNode(to))
-   {
-      if (fromIter->second->edges.find(to) != fromIter->second->edges.end())
+      std::set<const_node_iterator> visited;
+      std::stack<const_edge_iterator> s;
+      s.push(m_edgeSet.begin());
+      while (!s.empty())
       {
-         return true;
-      }
-   }
-   return false;
-}
+         const_edge_iterator edge = s.top();
+         s.pop();
 
-///////////////////////////////////////
-
-template <typename KEY, typename KEYCOMPARE>
-HNODEITER cDigraph<KEY, KEYCOMPARE>::IterNodesBegin() const
-{
-   typename tNodes::const_iterator * pIter = new typename tNodes::const_iterator(m_nodes.begin());
-   return (HNODEITER)pIter;
-}
-
-///////////////////////////////////////
-
-template <typename KEY, typename KEYCOMPARE>
-bool cDigraph<KEY, KEYCOMPARE>::IterNextNode(HNODEITER hIter, KEY * pKey) const
-{
-   Assert(hIter != NULL);
-   typename tNodes::const_iterator * pIter = (typename tNodes::const_iterator *)hIter;
-   if (*pIter != m_nodes.end())
-   {
-      Assert(pKey != NULL);
-      *pKey = (*pIter)->first;
-      (*pIter)++;
-      return true;
-   }
-   return false;
-}
-
-///////////////////////////////////////
-
-template <typename KEY, typename KEYCOMPARE>
-void cDigraph<KEY, KEYCOMPARE>::IterNodesEnd(HNODEITER hIter) const
-{
-   typename tNodes::const_iterator * pIter = (typename tNodes::const_iterator *)hIter;
-   delete pIter;
-}
-
-///////////////////////////////////////
-
-template <typename KEY, typename KEYCOMPARE>
-HEDGEITER cDigraph<KEY, KEYCOMPARE>::IterEdgesBegin(const KEY & key) const
-{
-   typename tNodes::const_iterator iter = m_nodes.find(key);
-   if (iter != m_nodes.end())
-   {
-      sEdgeIter * pIter = new sEdgeIter;
-      pIter->iter = iter->second->edges.begin();
-      pIter->end = iter->second->edges.end();
-      return (HEDGEITER)pIter;
-   }
-   return NULL;
-}
-
-///////////////////////////////////////
-
-template <typename KEY, typename KEYCOMPARE>
-bool cDigraph<KEY, KEYCOMPARE>::IterNextEdge(HEDGEITER hIter, KEY * pTo, int * pWeight) const
-{
-   Assert(hIter != NULL);
-   sEdgeIter * pIter = (sEdgeIter *)hIter;
-   if (pIter->iter != pIter->end)
-   {
-      Assert(pTo != NULL);
-      *pTo = pIter->iter->first;
-      if (pWeight != NULL)
-         *pWeight = pIter->iter->second;
-      pIter->iter++;
-      return true;
-   }
-   return false;
-}
-
-///////////////////////////////////////
-
-template <typename KEY, typename KEYCOMPARE>
-void cDigraph<KEY, KEYCOMPARE>::IterEdgesEnd(HEDGEITER hIter) const
-{
-   sEdgeIter * pIter = (sEdgeIter *)hIter;
-   delete pIter;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// TEMPLATE: cDFS
-//
-// Class for performing a depth-first search on a di-graph
-
-enum eDFSResult
-{
-   kDFS_OK = 0,
-   kDFS_Cycle = -1,
-};
-
-template <typename DIGRAPH>
-class cDFS
-{
-public:
-   eDFSResult DFS(const DIGRAPH * pGraph)
-   {
-      eDFSResult result = kDFS_OK;
-
-      tSearchParams searchParams;
-
-      HNODEITER hNodeIter = pGraph->IterNodesBegin();
-      Assert(hNodeIter != NULL);
-
-      typename DIGRAPH::tKey key;
-      while (pGraph->IterNextNode(hNodeIter, &key))
-      {
-         result = DFSVisit(pGraph, key, &searchParams);
-         if (result != kDFS_OK)
-            break;
-      }
-      pGraph->IterNodesEnd(hNodeIter);
-
-      return result;
-   }
-
-protected:
-   virtual void OnFinished(const typename DIGRAPH::tKey key)
-   {
-   }
-
-private:
-   enum eSearchStatus
-   {
-      kStarted,
-      kFinished,
-   };
-
-   typedef std::map<typename DIGRAPH::tKey, eSearchStatus> tSearchParams;
-
-   eDFSResult DFSVisit(const DIGRAPH * pGraph,
-                       const typename DIGRAPH::tKey & key,
-                       tSearchParams * pSearchParams)
-   {
-      typename tSearchParams::iterator iter = pSearchParams->find(key);
-
-      if (iter != pSearchParams->end())
-      {
-         if (iter->second == kStarted)
+         if (!visitor(*edge))
          {
-            return kDFS_Cycle;
+            return;
          }
-         else if (iter->second == kFinished)
+
+         const_edge_iterator iter = m_edgeSet.lower_bound(*edge);
+         const_edge_iterator end = m_edgeSet.upper_bound(*edge);
+         for (; iter != end; iter++)
          {
-            return kDFS_OK;
+            if (visited.find(*iter.from) == visited.end())
+            {
+               visited.insert(iter.from);
+               s.push(iter);
+            }
+         }
+      }
+   }
+   */
+
+   template <typename VISITOR>
+   void topological_sort(VISITOR visitor) const
+   {
+      std::map<node_type, int, node_comp, node_allocator> inDegrees;
+
+      {
+         const_node_iterator iter = begin();
+         for (; iter != end(); iter++)
+         {
+            inDegrees[*iter] = 0;
+         }
+      }
+
+      {
+         const_edge_iterator iter = m_edgeSet.begin();
+         for (; iter != m_edgeSet.end(); iter++)
+         {
+            inDegrees[*iter->to] += 1;
+         }
+      }
+
+      std::queue<node_type> q;
+
+      {
+         const_node_iterator iter = begin();
+         for (; iter != end(); iter++)
+         {
+            if (inDegrees[*iter] == 0)
+            {
+               q.push(*iter);
+            }
+         }
+      }
+
+      node_comp nodeComp;
+
+      while (!q.empty())
+      {
+         node_type node = q.front();
+         q.pop();
+         if (!visitor(node))
+         {
+            return;
+         }
+         const_edge_iterator iter = m_edgeSet.begin();
+         for (; iter != m_edgeSet.end(); iter++)
+         {
+            // Equality test implemented as !(a < b) && !(b < a) in order
+            // to use the node_comp template parameter
+            if (!nodeComp(*iter->from, node) && !nodeComp(node, *iter->from))
+            {
+               if (--inDegrees[*iter->to] == 0)
+               {
+                  q.push(*iter->to);
+               }
+            }
+         }
+      }
+   }
+
+   bool acyclic() const;
+
+private:
+   enum { White, Gray, Black };
+   bool acyclic_visit(const node_type & node, std::map<node_type, byte, node_comp, node_allocator> * pColors) const;
+
+   tNodeSet m_nodeSet;
+   tEdgeSet m_edgeSet;
+};
+
+///////////////////////////////////////
+
+#define DIGRAPH_TEMPLATE_DECL \
+   template <typename NODE, typename EDGE, typename NODECOMP, typename ALLOC>
+#define DIGRAPH_TEMPLATE_CLASS \
+   cDigraph<NODE, EDGE, NODECOMP, ALLOC>
+
+///////////////////////////////////////
+
+DIGRAPH_TEMPLATE_DECL
+DIGRAPH_TEMPLATE_CLASS::cDigraph()
+{
+}
+
+///////////////////////////////////////
+
+DIGRAPH_TEMPLATE_DECL
+DIGRAPH_TEMPLATE_CLASS::~cDigraph()
+{
+}
+
+///////////////////////////////////////
+
+DIGRAPH_TEMPLATE_DECL
+std::pair<cDigraph::node_iterator, bool> DIGRAPH_TEMPLATE_CLASS::insert(const NODE & node)
+{
+   return m_nodeSet.insert(node);
+}
+
+///////////////////////////////////////
+
+DIGRAPH_TEMPLATE_DECL
+DIGRAPH_TEMPLATE_CLASS::node_iterator DIGRAPH_TEMPLATE_CLASS::find(const NODE & node)
+{
+   return m_nodeSet.find(node);
+}
+
+///////////////////////////////////////
+
+DIGRAPH_TEMPLATE_DECL
+DIGRAPH_TEMPLATE_CLASS::const_node_iterator DIGRAPH_TEMPLATE_CLASS::find(const NODE & node) const
+{
+   return m_nodeSet.find(node);
+}
+
+///////////////////////////////////////
+
+DIGRAPH_TEMPLATE_DECL
+DIGRAPH_TEMPLATE_CLASS::node_iterator DIGRAPH_TEMPLATE_CLASS::begin()
+{
+   return m_nodeSet.begin();
+}
+
+///////////////////////////////////////
+
+DIGRAPH_TEMPLATE_DECL
+DIGRAPH_TEMPLATE_CLASS::node_iterator DIGRAPH_TEMPLATE_CLASS::end()
+{
+   return m_nodeSet.end();
+}
+
+///////////////////////////////////////
+
+DIGRAPH_TEMPLATE_DECL
+DIGRAPH_TEMPLATE_CLASS::const_node_iterator DIGRAPH_TEMPLATE_CLASS::begin() const
+{
+   return m_nodeSet.begin();
+}
+
+///////////////////////////////////////
+
+DIGRAPH_TEMPLATE_DECL
+DIGRAPH_TEMPLATE_CLASS::const_node_iterator DIGRAPH_TEMPLATE_CLASS::end() const
+{
+   return m_nodeSet.end();
+}
+
+///////////////////////////////////////
+
+DIGRAPH_TEMPLATE_DECL
+DIGRAPH_TEMPLATE_CLASS::size_type DIGRAPH_TEMPLATE_CLASS::size() const
+{
+   return m_nodeSet.size();
+}
+
+///////////////////////////////////////
+
+DIGRAPH_TEMPLATE_DECL
+std::pair<DIGRAPH_TEMPLATE_CLASS::edge_iterator, bool> DIGRAPH_TEMPLATE_CLASS::insert_edge(const node_type & from,
+                                                                                           const node_type & to,
+                                                                                           const EDGE & data)
+{
+   const_node_iterator fromIter = find(from);
+   if (fromIter != end())
+   {
+      const_node_iterator toIter = find(to);
+      if (toIter != end())
+      {
+         edge_type edge;
+         edge.from = fromIter;
+         edge.to = toIter;
+         edge.data = data;
+         edge_iterator edgeIter = m_edgeSet.find(edge);
+         if (edgeIter == m_edgeSet.end())
+         {
+            return std::make_pair(m_edgeSet.insert(edge), true);
          }
          else
          {
-            Assert(!"Unknown or invalid node search status");
+            return std::make_pair(edgeIter, false);
          }
       }
-
-      (*pSearchParams)[key] = kStarted;
-
-      eDFSResult result = kDFS_OK;
-
-      HEDGEITER hIter = pGraph->IterEdgesBegin(key);
-      if (hIter != NULL)
-      {
-         typename DIGRAPH::tKey to;
-         while (pGraph->IterNextEdge(hIter, &to))
-         {
-            result = DFSVisit(pGraph, to, pSearchParams);
-            if (result != kDFS_OK)
-               break;
-         }
-         pGraph->IterEdgesEnd(hIter);
-      }
-
-      (*pSearchParams)[key] = kFinished;
-
-      OnFinished(key);
-
-      return result;
    }
-};
+   return std::make_pair(m_edgeSet.end(), false);
+}
+
+///////////////////////////////////////
+
+DIGRAPH_TEMPLATE_DECL
+bool DIGRAPH_TEMPLATE_CLASS::acyclic() const
+{
+   std::map<node_type, byte, node_comp, node_allocator> color;
+
+   {
+      const_node_iterator iter = m_nodeSet.begin();
+      for (; iter != m_nodeSet.end(); iter++)
+      {
+         color.insert(std::make_pair(*iter, (byte)White));
+      }
+   }
+
+   {
+      const_node_iterator iter = m_nodeSet.begin();
+      for (; iter != m_nodeSet.end(); iter++)
+      {
+         if (color[*iter] == White)
+         {
+            if (!acyclic_visit(*iter, &color))
+            {
+               return false; // found cycle so return false (not acyclic)
+            }
+         }
+      }
+   }
+
+   return true;
+}
+
+///////////////////////////////////////
+
+DIGRAPH_TEMPLATE_DECL
+bool DIGRAPH_TEMPLATE_CLASS::acyclic_visit(const node_type & node,
+                                           std::map<node_type, byte, node_comp, node_allocator> * pColors) const
+{
+   node_comp nodeComp;
+   (*pColors)[node] = Gray;
+   const_edge_iterator edgeIter = m_edgeSet.begin();
+   const_edge_iterator edgeEnd = m_edgeSet.end();
+   for (; edgeIter != edgeEnd; edgeIter++)
+   {
+      if (nodeComp(node, *edgeIter->from) || nodeComp(*edgeIter->from, node))
+      {
+         continue;
+      }
+      byte b = (*pColors)[*edgeIter->to];
+      if (b == Gray)
+      {
+         return false; // cycle found (i.e., not acyclic)
+      }
+      else if (b == White)
+      {
+         if (!acyclic_visit(*edgeIter->to, pColors))
+         {
+            return false;
+         }
+      }
+   }
+   (*pColors)[node] = Black;
+   return true;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 

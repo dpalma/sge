@@ -99,6 +99,8 @@ END_CONSTRAINTS()
 
 ////////////////////////////////////////
 
+F_DECLARE_GUID(SAVELOADID_TerrainModel);
+
 // {D133F917-602C-4d99-A29A-2DE963AF21D8}
 static const GUID SAVELOADID_TerrainRenderer = 
 { 0xd133f917, 0x602c, 0x4d99, { 0xa2, 0x9a, 0x2d, 0xe9, 0x63, 0xaf, 0x21, 0xd8 } };
@@ -107,7 +109,7 @@ static const int g_terrainRendererVer = 1;
 
 static const cBeforeAfterConstraint g_saveConstraints[] =
 {
-   cBeforeAfterConstraint(&IID_ITerrainModel, kBefore)
+   cBeforeAfterConstraint(&SAVELOADID_TerrainModel, kBefore)
 };
 
 ////////////////////////////////////////
