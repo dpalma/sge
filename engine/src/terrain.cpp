@@ -546,11 +546,7 @@ END_CONSTRAINTS()
 
 ////////////////////////////////////////
 
-// {79C13C86-71E5-455e-B763-927F31B74B82}
-static const GUID SAVELOADID_TerrainModel = {
-   0x79c13c86, 0x71e5, 0x455e, { 0xb7, 0x63, 0x92, 0x7f, 0x31, 0xb7, 0x4b, 0x82 } };
-//DEFINE_GUID(SAVELOADID_TerrainModel, 
-//0x79c13c86, 0x71e5, 0x455e, 0xb7, 0x63, 0x92, 0x7f, 0x31, 0xb7, 0x4b, 0x82);
+F_DECLARE_GUID(SAVELOADID_TerrainModel);
 
 static const int g_terrainModelVer = 1;
 

@@ -110,6 +110,10 @@ DEFINE_GUID(IID_IModelAnimation,
 DEFINE_GUID(SAVELOADID_MapProperties, 
 0xc82434f3, 0x7467, 0x4184, 0x84, 0x18, 0xae, 0xcc, 0x89, 0x8d, 0x37, 0xaf);
 
+// {79C13C86-71E5-455e-B763-927F31B74B82}
+DEFINE_GUID(SAVELOADID_TerrainModel, 
+0x79c13c86, 0x71e5, 0x455e, 0xb7, 0x63, 0x92, 0x7f, 0x31, 0xb7, 0x4b, 0x82);
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #endif // !INCLUDED_ENGINEGUIDS_H
