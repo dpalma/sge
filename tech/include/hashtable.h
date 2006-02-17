@@ -185,7 +185,66 @@ public:
       return insert(p.first, p.second);
    }
 
-   VALUE & operator [](const KEY & k);
+   typedef const VALUE & const_value_reference;
+
+   class cMutableHashElementProxy
+   {
+      void operator =(const cMutableHashElementProxy &);
+   public:
+      cMutableHashElementProxy(cHashTable * pHashTable, const KEY & key)
+        : m_pHashTable(pHashTable)
+        , m_key(key)
+      {
+      }
+      cMutableHashElementProxy(const cMutableHashElementProxy & other)
+        : m_pHashTable(other.m_pHashTable)
+        , m_key(other.m_key)
+      {
+      }
+      operator const_value_reference() const
+      {
+         const_iterator iter = m_pHashTable->find(m_key);
+         Assert(iter != m_pHashTable->end());
+         return iter->second;
+      }
+      const cMutableHashElementProxy & operator =(const_value_reference value)
+      {
+         m_pHashTable->Insert(m_key, value, true);
+         return *this;
+      }
+   private:
+      cHashTable * m_pHashTable;
+      const KEY m_key;
+   };
+
+   class cImmutableHashElementProxy
+   {
+      void operator =(const cImmutableHashElementProxy &);
+      void operator =(const_value_reference value);
+   public:
+      cImmutableHashElementProxy(const cHashTable * pHashTable, const KEY & key)
+        : m_pHashTable(pHashTable)
+        , m_key(key)
+      {
+      }
+      cImmutableHashElementProxy(const cImmutableHashElementProxy & other)
+        : m_pHashTable(other.m_pHashTable)
+        , m_key(other.m_key)
+      {
+      }
+      operator const_value_reference() const
+      {
+         const_iterator iter = m_pHashTable->find(m_key);
+         Assert(iter != m_pHashTable->end());
+         return iter->second;
+      }
+   private:
+      const cHashTable * m_pHashTable;
+      const KEY m_key;
+   };
+
+   cMutableHashElementProxy operator [](const KEY & k);
+   const cImmutableHashElementProxy operator [](const KEY & k) const;
 
    iterator find(const KEY & k);
    const_iterator find(const KEY & k) const;
@@ -204,6 +263,7 @@ public:
    const_iterator end() const;
 
 private:
+   std::pair<const_iterator, bool> Insert(const KEY & k, const VALUE & v, bool bOverwriteExisting);
    uint Probe(const KEY & k, bool bSkipErased) const;
    bool Equal(const KEY & k1, const KEY & k2) const;
 

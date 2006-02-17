@@ -421,44 +421,23 @@ HASHTABLE_TEMPLATE_DECL
 std::pair<HASHTABLE_TEMPLATE_MEMBER_TYPE(const_iterator), bool>
 HASHTABLE_TEMPLATE_CLASS::insert(const KEY & k, const VALUE & v)
 {
-   if ((m_size * 255) > (m_maxSize * m_loadFactor))
-   {
-      // grow in proportion to fullness
-      reserve(m_maxSize + (m_size * 255 / m_loadFactor));
-   }
-
-   uint h = Probe(k, false);
-   if (m_elts[h].state == kHES_InUse)
-   {
-      return std::make_pair(const_iterator(&m_elts[h], &m_elts[0], &m_elts[m_maxSize]), false);
-   }
-
-   m_elts[h].first = k;
-   m_elts[h].second = v;
-   m_elts[h].state = kHES_InUse;
-   m_size++;
-   return std::make_pair(const_iterator(&m_elts[h], &m_elts[0], &m_elts[m_maxSize]), true);
+   return Insert(k, v, false);
 }
 
 ////////////////////////////////////////
 
 HASHTABLE_TEMPLATE_DECL
-VALUE & HASHTABLE_TEMPLATE_CLASS::operator [](const KEY & k)
+HASHTABLE_TEMPLATE_CLASS::cMutableHashElementProxy HASHTABLE_TEMPLATE_CLASS::operator [](const KEY & k)
 {
-   if ((m_size * 255) > (m_maxSize * m_loadFactor))
-   {
-      // grow in proportion to fullness
-      reserve(m_maxSize + (m_size * 255 / m_loadFactor));
-   }
+   return cMutableHashElementProxy(this, k);
+}
 
-   uint h = Probe(k, false);
-   m_elts[h].first = k;
-   if (m_elts[h].state != kHES_InUse)
-   {
-      m_elts[h].state = kHES_InUse;
-      m_size++;
-   }
-   return m_elts[h].second;
+////////////////////////////////////////
+
+HASHTABLE_TEMPLATE_DECL
+const HASHTABLE_TEMPLATE_CLASS::cImmutableHashElementProxy HASHTABLE_TEMPLATE_CLASS::operator [](const KEY & k) const
+{
+   return cImmutableHashElementProxy(this, k);
 }
 
 ////////////////////////////////////////
@@ -574,6 +553,34 @@ HASHTABLE_TEMPLATE_DECL
 HASHTABLE_TEMPLATE_MEMBER_TYPE(const_iterator) HASHTABLE_TEMPLATE_CLASS::end() const
 {
    return (m_elts != NULL) ? const_iterator(&m_elts[m_maxSize], &m_elts[0], &m_elts[m_maxSize]) : const_iterator();
+}
+
+////////////////////////////////////////
+
+HASHTABLE_TEMPLATE_DECL
+std::pair<HASHTABLE_TEMPLATE_MEMBER_TYPE(const_iterator), bool>
+HASHTABLE_TEMPLATE_CLASS::Insert(const KEY & k, const VALUE & v, bool bOverwriteExisting)
+{
+   if ((m_size * 255) > (m_maxSize * m_loadFactor))
+   {
+      // grow in proportion to fullness
+      reserve(m_maxSize + (m_size * 255 / m_loadFactor));
+   }
+
+   uint h = Probe(k, false);
+   if ((m_elts[h].state == kHES_InUse) && !bOverwriteExisting)
+   {
+      return std::make_pair(const_iterator(&m_elts[h], &m_elts[0], &m_elts[m_maxSize]), false);
+   }
+
+   m_elts[h].first = k;
+   m_elts[h].second = v;
+   if (m_elts[h].state != kHES_InUse)
+   {
+      m_elts[h].state = kHES_InUse;
+      m_size++;
+   }
+   return std::make_pair(const_iterator(&m_elts[h], &m_elts[0], &m_elts[m_maxSize]), true);
 }
 
 ////////////////////////////////////////
