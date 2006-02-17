@@ -51,7 +51,7 @@ public:
    {
       bool operator()(const edge_type & edge1, const edge_type & edge2) const
       {
-         // Sort by from-node, then by to-node, then by edge data
+         // Sort by from-node, then by to-node (edge data doesn't factor into sort order)
          node_comp nodeComp;
          return nodeComp(*edge1.from, *edge2.from)
             || nodeComp(*edge1.to, *edge2.to);
