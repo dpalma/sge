@@ -128,7 +128,7 @@ void cMs3dTreeView::AddSubMeshes(cModel * pModel, HTREEITEM hParent)
       const cModelMesh & modelMesh = *iter;
 
       cStr subMeshItem;
-      subMeshItem.Format("Sub mesh %d", index);
+      Sprintf(&subMeshItem, "Sub mesh %d", index);
 
       HTREEITEM hSubMeshItem = GetTreeCtrl().InsertItem(subMeshItem.c_str(), hSubMeshParent);
       if (hSubMeshItem == NULL)
