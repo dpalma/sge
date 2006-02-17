@@ -20,46 +20,6 @@
 
 #include "dbgalloc.h" // must be last header
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cStr
-//
-
-const cStr cStr::gm_whitespace(_T(" \t\r\n"));
-
-///////////////////////////////////////
-
-int cStr::ToInt() const
-{
-#ifdef __GNUC__
-   return Round(strtod(Get(), NULL));
-#else
-   return _ttoi(Get());
-#endif
-}
-
-///////////////////////////////////////
-
-float cStr::ToFloat() const
-{
-#ifdef _UNICODE
-   return static_cast<float>(_wtof(Get()));
-#else
-   return static_cast<float>(atof(Get()));
-#endif
-}
-
-///////////////////////////////////////
-
-double cStr::ToDouble() const
-{
-#ifdef _UNICODE
-   return _wtof(Get());
-#else
-   return atof(Get());
-#endif
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -138,7 +98,12 @@ static int SprintfOptionsLengthEstimate(const cStr & formatOptions, tChar type)
       return 0;
    }
 
-   int i = formatOptions.ToInt();
+#ifdef __GNUC__
+   int i = Round(strtod(formatOptions.c_str()));
+#else
+   int i = _ttoi(formatOptions.c_str());
+#endif
+
    if (i > 0)
    {
       return i;

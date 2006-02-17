@@ -573,10 +573,10 @@ void ParseAnimDescs(const tChar * pszAnimString, CONTAINER * pContainer)
       std::vector<cStr>::iterator iter = animStrings.begin();
       for (; iter != animStrings.end(); iter++)
       {
-         iter->TrimLeadingSpace();
-         iter->TrimTrailingSpace();
+         cStr & animString = *iter;
 
-         const cStr & animString = *iter;
+         TrimLeadingSpace(&animString);
+         TrimTrailingSpace(&animString);
 
          cTokenizer<cStr> strTok2;
          if (strTok2.Tokenize(iter->c_str()) == 3)
@@ -606,8 +606,13 @@ void ParseAnimDescs(const tChar * pszAnimString, CONTAINER * pContainer)
                {
                   sModelAnimationDesc animDesc;
                   animDesc.type = animTypes[j].type;
-                  animDesc.start = temp[0].ToInt();
-                  animDesc.end = temp[1].ToInt();
+#ifdef __GNUC__
+                  animDesc.start = Round(strtod(temp[0].c_str()));
+                  animDesc.end = Round(strtod(temp[1].c_str()));
+#else
+                  animDesc.start = _ttoi(temp[0].c_str());
+                  animDesc.end = _ttoi(temp[1].c_str());
+#endif
                   animDesc.fps = 0;
                   if (animDesc.start > 0 || animDesc.end > 0)
                   {

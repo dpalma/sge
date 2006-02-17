@@ -249,8 +249,8 @@ tResult GUIStyleSheetParse(const tChar * pszStyleSheet, IGUIStyleSheet * * ppSty
       if (pszStyleStart != NULL)
       {
          cStr styleSelector(pszIter, pszStyleStart-pszIter);
-         styleSelector.TrimLeadingSpace();
-         styleSelector.TrimTrailingSpace();
+         TrimLeadingSpace(&styleSelector);
+         TrimTrailingSpace(&styleSelector);
 
          pszIter = pszStyleStart;
 

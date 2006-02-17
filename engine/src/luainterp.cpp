@@ -322,11 +322,20 @@ static int LuaPushResults(lua_State * L, int nResults, tScriptVar * results)
                {
                   lua_newtable(L);
                   std::list<cStr>::const_iterator iter = keys.begin();
-                  if (keys.front().ToInt() == 1)
+#ifdef __GNUC__
+                  if (Round(strtod(keys.front().c_str())) == 1)
+#else
+                  if (_ttoi(keys.front().c_str()) == 1)
+#endif
                   {
                      for (int index = 1; iter != keys.end(); iter++, index++)
                      {
-                        WarnMsgIf2(iter->ToInt() != index, "Expected numeric key %d, got \"%s\"", index, iter->c_str());
+#ifdef __GNUC__
+                        int iterAsInt = Round(strtod(iter->c_str()));
+#else
+                        int iterAsInt = _ttoi(iter->c_str());
+#endif
+                        WarnMsgIf2(iterAsInt != index, "Expected numeric key %d, got \"%s\"", index, iter->c_str());
                         cStr value;
                         if (pDict->Get(iter->c_str(), &value) == S_OK)
                         {

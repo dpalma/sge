@@ -45,8 +45,8 @@ static bool SplitString(const tChar * psz, tChar split, cStr * pLeft, cStr * pRi
 
 inline void TrimSpace(cStr * pStr)
 {
-   pStr->TrimLeadingSpace();
-   pStr->TrimTrailingSpace();
+   TrimLeadingSpace(pStr);
+   TrimTrailingSpace(pStr);
 }
 
 bool ParseDictionaryLine(const tChar * psz, cStr * pKey, cStr * pValue, cStr * pComment)
@@ -197,7 +197,7 @@ bool ParseIniSectionLine(tChar * pszBuffer, cStr * pSection, cStr * pComment)
          *pComment = p;
       }
    }
-   pComment->TrimTrailingSpace();
+   TrimTrailingSpace(pComment);
 
    if (pszBuffer[0] != _T('[')) // do not allow whitespace before "[section name]"
    {
@@ -215,7 +215,7 @@ bool ParseIniSectionLine(tChar * pszBuffer, cStr * pSection, cStr * pComment)
    *p = 0;
 
    *pSection = pszBuffer;
-   pSection->TrimTrailingSpace();
+   TrimTrailingSpace(pSection);
 
    return true;
 }

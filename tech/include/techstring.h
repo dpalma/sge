@@ -169,14 +169,6 @@ public:
    bool IsEmpty() const;
 
    void Append(const tChar * psz);
-   void TrimLeadingSpace();
-   void TrimTrailingSpace();
-
-   int ToInt() const;
-   float ToFloat() const;
-   double ToDouble() const;
-
-   static const cStr gm_whitespace;
 };
 
 ///////////////////////////////////////
@@ -280,32 +272,35 @@ inline void cStr::Append(const tChar * psz)
 
 ///////////////////////////////////////
 
-inline void cStr::TrimLeadingSpace()
-{
-   cStrBase::size_type index = find_first_not_of(gm_whitespace);
-   if (index != cStrBase::npos)
-   {
-      erase(0, index);
-   }
-}
-
-///////////////////////////////////////
-
-inline void cStr::TrimTrailingSpace()
-{
-   cStrBase::size_type index = find_last_not_of(gm_whitespace);
-   if (index != cStrBase::npos)
-   {
-      erase(index + 1);
-   }
-}
-
-///////////////////////////////////////
-
 template <>
 cStr cToken<cStr, tChar>::Token(const tChar * pszToken)
 {
    return cStr(pszToken);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename STRING>
+inline const STRING & TrimLeadingSpace(STRING * pString)
+{
+   STRING::size_type index = pString->find_first_not_of(_T(" \r\n\t"));
+   if (index != STRING::npos)
+   {
+      pString->erase(0, index);
+   }
+   return *pString;
+}
+
+template <typename STRING>
+inline const STRING & TrimTrailingSpace(STRING * pString)
+{
+   STRING::size_type index = pString->find_last_not_of(_T(" \r\n\t"));
+   if (index != STRING::npos)
+   {
+      pString->erase(index + 1);
+   }
+   return *pString;
 }
 
 

@@ -139,7 +139,12 @@ static bool StringIsTrue(const cStr & str)
    {
       return true;
    }
-   return (str.ToInt() != 0) ? true : false;
+#ifdef __GNUC__
+   int intVal = Round(strtod(str.c_str()));
+#else
+   int intVal = _ttoi(str.c_str());
+#endif
+   return (intVal != 0) ? true : false;
 }
 
 bool ConfigIsTrue(const tChar * pszName)
