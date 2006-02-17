@@ -981,7 +981,7 @@ const uint cGUIStyleTests::gm_fontPointSize = 14;
 
 void cGUIStyleTests::setUp()
 {
-   m_testStyle.Format(
+   Sprintf(&m_testStyle, _T(
       "%s : %s;" \
       "%s : %s;  " \
       "%s : %s;" \
@@ -989,7 +989,7 @@ void cGUIStyleTests::setUp()
       "%s: %s;" \
       "%s: %s;" \
       "%s: %s;" \
-      "%s: %d;",
+      "%s: %d;"),
       kAttribAlign, kValueAlignCenter,
       kAttribVerticalAlign, kValueVertAlignCenter,
       kAttribBackgroundColor, kValueColorWhite,

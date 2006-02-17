@@ -737,7 +737,7 @@ tResult BuildSplatAlphaMap(uint splatTile,
       if (ConfigIsTrue("debug_write_splat_alpha_maps"))
       {
          cStr file;
-         file.Format("SplatAlpha_%d_(%d,%d)-(%d,%d).bmp", splatTile,
+         Sprintf(&file, "SplatAlpha_%d_(%d,%d)-(%d,%d).bmp", splatTile,
             xRange.GetStart(), zRange.GetStart(), xRange.GetEnd(),zRange.GetEnd());
          cAutoIPtr<IWriter> pWriter(FileCreateWriter(cFileSpec(file.c_str())));
          BmpWrite(pImage, pWriter);

@@ -147,7 +147,7 @@ tResult cSelectTool::GetToolTip(const cEditorMouseEvent & mouseEvent,
    cAutoIPtr<IEntity> pEntity;
    if (GetRayHitEntity(mouseEvent, &pEntity) == S_OK)
    {
-      pToolTipText->Format("Entity 0x%p", static_cast<void*>(pEntity));
+      Sprintf(pToolTipText, "Entity 0x%p", static_cast<void*>(pEntity));
       *pToolTipId = reinterpret_cast<uint_ptr>(static_cast<void*>(pEntity.AccessPointer()));
       return S_OK;
    }
@@ -339,7 +339,7 @@ tResult cMoveCameraTool::GetToolTip(const cEditorMouseEvent & mouseEvent,
       tVec3 intersect;
       if (GetTerrainLocation(pickRay, &intersect))
       {
-         pToolTipText->Format("Hit <%.2f, %.2f, %.2f>", intersect.x, intersect.y, intersect.z);
+         Sprintf(pToolTipText, _T("Hit <%.2f, %.2f, %.2f>"), intersect.x, intersect.y, intersect.z);
          *pToolTipId = static_cast<uint_ptr>(Round(intersect.LengthSqr()));
          return S_OK;
       }
@@ -611,7 +611,7 @@ tResult cTerrainTileTool::GetToolTip(const cEditorMouseEvent & mouseEvent,
          }
       }
 
-      pToolTipText->Format("Tile %d; %d neighbors", tile, nNeighbors);
+      Sprintf(pToolTipText, "Tile %d; %d neighbors", tile, nNeighbors);
       *pToolTipId = reinterpret_cast<uint_ptr>(hQuad);
       return S_OK;
    }
@@ -766,7 +766,7 @@ tResult cTerrainElevationTool::GetToolTip(const cEditorMouseEvent & mouseEvent,
       UseGlobal(TerrainModel);
       if (pTerrainModel->GetVertexPosition(hVert, &pos) == S_OK)
       {
-         pToolTipText->Format("Vertex: <%.2f, %.2f, %.2f>", pos.x, pos.y, pos.z);
+         Sprintf(pToolTipText, "Vertex: <%.2f, %.2f, %.2f>", pos.x, pos.y, pos.z);
          *pToolTipId = reinterpret_cast<uint_ptr>(hVert);
          return S_OK;
       }

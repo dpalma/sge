@@ -6,12 +6,37 @@
 
 #include "techdll.h"
 
+#include <cstdarg>
 #include <string>
 #include <vector>
 
 #ifdef _MSC_VER
 #pragma once
 #endif
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+TECH_API int SprintfLengthEstimate(const tChar * pszFormat, va_list args);
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename STRING>
+const STRING & CDECL Sprintf(STRING * pString, const tChar * pszFormat, ...)
+{
+   Assert(pString != NULL);
+   va_list args;
+   va_start(args, pszFormat);
+   int length = SprintfLengthEstimate(pszFormat, args) + 1; // plus one for null terminator
+   size_t nBytes = length * sizeof(typename STRING::value_type);
+   typename STRING::value_type * pszTemp = reinterpret_cast<typename STRING::value_type *>(alloca(nBytes));
+   int result = _vsntprintf(pszTemp, length, pszFormat, args);
+   va_end(args);
+   pString->assign(pszTemp);
+   return *pString;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -54,8 +79,6 @@ public:
    int ParseTuple(std::vector<cStr> * pStrings, const tChar * pszDelims = NULL) const;
    int ParseTuple(double * pDoubles, int nMaxDoubles) const;
    int ParseTuple(float * pFloats, int nMaxFloats) const;
-
-   int CDECL Format(const tChar * pszFormat, ...);
 
    static const cStr gm_whitespace;
 };

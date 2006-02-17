@@ -97,7 +97,7 @@ cStandardToolDef<TOOL>::cStandardToolDef(uint nameStringId, int imageIndex)
    else
    {
       ErrorMsg1("Error loading string resource, id = %d\n", nameStringId);
-      m_name.Format("STRING%d", nameStringId);
+      Sprintf(&m_name, "STRING%d", nameStringId);
    }
 }
 

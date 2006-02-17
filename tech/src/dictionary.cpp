@@ -500,12 +500,12 @@ void cDictionaryTests::TestPersistence()
 
    for (i = 0; i < kNumTestVars; i++)
    {
-      key.Format(szPermKeyFormat, i);
-      value.Format(szPermValFormat, i);
+      Sprintf(&key, szPermKeyFormat, i);
+      Sprintf(&value, szPermValFormat, i);
       CPPUNIT_ASSERT(pSaveDict->Set(key.c_str(), value.c_str(), kPermanent) == S_OK);
 
-      key.Format(szTempKeyFormat, i);
-      value.Format(szTempValFormat, i);
+      Sprintf(&key, szTempKeyFormat, i);
+      Sprintf(&value, szTempValFormat, i);
       CPPUNIT_ASSERT(pSaveDict->Set(key.c_str(), value.c_str(), kTransitory) == S_OK);
    }
 
@@ -514,14 +514,14 @@ void cDictionaryTests::TestPersistence()
       cStr value2;
       tPersistence persist;
 
-      key.Format(szPermKeyFormat, i);
-      value.Format(szPermValFormat, i);
+      Sprintf(&key, szPermKeyFormat, i);
+      Sprintf(&value, szPermValFormat, i);
       CPPUNIT_ASSERT(pSaveDict->Get(key.c_str(), &value2, &persist) == S_OK);
       CPPUNIT_ASSERT(strcmp(value2.c_str(), value.c_str()) == 0);
       CPPUNIT_ASSERT(persist == kPermanent);
 
-      key.Format(szTempKeyFormat, i);
-      value.Format(szTempValFormat, i);
+      Sprintf(&key, szTempKeyFormat, i);
+      Sprintf(&value, szTempValFormat, i);
       CPPUNIT_ASSERT(pSaveDict->Get(key.c_str(), &value2, &persist) == S_OK);
       CPPUNIT_ASSERT(strcmp(value2.c_str(), value.c_str()) == 0);
       CPPUNIT_ASSERT(persist == kTransitory);
@@ -546,14 +546,14 @@ void cDictionaryTests::TestPersistence()
          cStr value2;
          tPersistence persist;
 
-         key.Format(szPermKeyFormat, i);
-         value.Format(szPermValFormat, i);
+         Sprintf(&key, szPermKeyFormat, i);
+         Sprintf(&value, szPermValFormat, i);
          CPPUNIT_ASSERT(pLoadDict->Get(key.c_str(), &value2, &persist) == S_OK);
          CPPUNIT_ASSERT(strcmp(value2.c_str(), value.c_str()) == 0);
          CPPUNIT_ASSERT(persist == kPermanent);
 
-         key.Format(szTempKeyFormat, i);
-         value.Format(szTempValFormat, i);
+         Sprintf(&key, szTempKeyFormat, i);
+         Sprintf(&value, szTempValFormat, i);
          CPPUNIT_ASSERT(pLoadDict->Get(key.c_str(), &value2, &persist) == S_FALSE);
       }
 

@@ -176,7 +176,7 @@ static int LuaThunkInvoke(lua_State * L)
    if (nArgsOnStack == 1 && lua_type(L, 1) != LUA_TUSERDATA)
    {
       cStr msg;
-      msg.Format("invalid method call: %s called with no instance pointer", pszMethodName);
+      Sprintf(&msg, "invalid method call: %s called with no instance pointer", pszMethodName);
       lua_pushstring(L, msg.c_str());
       lua_error(L); // this function never returns
    }
@@ -1268,7 +1268,7 @@ void cLuaInterpreterTests::TestPublishObject()
    int randSeed = time(NULL);
 
    cStr script;
-   script.Format(kScriptSpec, kRNG, randSeed, kRNG, kRNG);
+   Sprintf(&script, kScriptSpec, kRNG, randSeed, kRNG, kRNG);
 
    CPPUNIT_ASSERT(m_pInterp->ExecString(script.c_str()) == S_OK);
    CPPUNIT_ASSERT(m_pInterp->RemoveNamedItem(kRNG) == S_OK);

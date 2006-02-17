@@ -193,7 +193,7 @@ int cStr::ParseTuple(float * pFloats, int nMaxFloats) const
 
 ///////////////////////////////////////
 
-static int FormatOptionsLengthEstimate(const cStr & formatOptions, tChar type)
+static int SprintfOptionsLengthEstimate(const cStr & formatOptions, tChar type)
 {
    if (formatOptions.empty())
    {
@@ -212,7 +212,7 @@ static int FormatOptionsLengthEstimate(const cStr & formatOptions, tChar type)
 
 AssertOnce(sizeof(int) == sizeof(uint));
 
-static int FormatLengthEstimate(const tChar * pszFormat, va_list args)
+int SprintfLengthEstimate(const tChar * pszFormat, va_list args)
 {
    const uint l = _tcslen(pszFormat);
 
@@ -282,7 +282,7 @@ static int FormatLengthEstimate(const tChar * pszFormat, va_list args)
                bInFormatField = false;
                // The #bits is a safe over-estimate of the max #digits
                formatLenEst += sizeof(int) * CHAR_BIT;
-               formatLenEst += FormatOptionsLengthEstimate(formatOptions.c_str(), pszFormat[i]);
+               formatLenEst += SprintfOptionsLengthEstimate(formatOptions.c_str(), pszFormat[i]);
             }
             else
             {
@@ -302,7 +302,7 @@ static int FormatLengthEstimate(const tChar * pszFormat, va_list args)
                double doubleValue = va_arg(args, double);
                bInFormatField = false;
                formatLenEst += (DBL_MANT_DIG * CHAR_BIT) + 1 + DBL_DIG;
-               formatLenEst += FormatOptionsLengthEstimate(formatOptions.c_str(), pszFormat[i]);
+               formatLenEst += SprintfOptionsLengthEstimate(formatOptions.c_str(), pszFormat[i]);
             }
             else
             {
@@ -318,7 +318,7 @@ static int FormatLengthEstimate(const tChar * pszFormat, va_list args)
                const tChar * pszValue = va_arg(args, const tChar *);
                bInFormatField = false;
                formatLenEst += _tcslen(pszValue);
-               formatLenEst += FormatOptionsLengthEstimate(formatOptions.c_str(), pszFormat[i]);
+               formatLenEst += SprintfOptionsLengthEstimate(formatOptions.c_str(), pszFormat[i]);
             }
             else
             {
@@ -357,31 +357,16 @@ static int FormatLengthEstimate(const tChar * pszFormat, va_list args)
    return formatLenEst;
 }
 
-///////////////////////////////////////
-
-int CDECL cStr::Format(const tChar * pszFormat, ...)
-{
-   va_list args;
-   va_start(args, pszFormat);
-   int length = FormatLengthEstimate(pszFormat, args) + 1; // plus one for null terminator
-   tChar * pszTemp = reinterpret_cast<tChar*>(alloca(length * sizeof(tChar)));
-   int result = _vsntprintf(pszTemp, length, pszFormat, args);
-   va_end(args);
-   assign(pszTemp);
-   return result;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 const cStr & GUIDToString(REFGUID guid, cStr * pStr)
 {
    if (pStr != NULL)
    {
-      Verify(pStr->Format(_T("{%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X}"),
+      return Sprintf(pStr, _T("{%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X}"),
          guid.Data1, guid.Data2, guid.Data3,
          guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3],
-         guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]) > 0);
-      return *pStr;
+         guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]);
    }
    static const cStr empty;
    return empty;
@@ -432,9 +417,9 @@ class cStrTests : public CppUnit::TestCase
       CPPUNIT_TEST(TestParseBadArgs);
       CPPUNIT_TEST(TestParseSuccessCases);
       CPPUNIT_TEST(TestFilePathCompare);
-      CPPUNIT_TEST(TestFormat);
+      CPPUNIT_TEST(TestSprintf);
 #if _MSC_VER >= 1300
-      CPPUNIT_TEST(TestFormatLength);
+      CPPUNIT_TEST(TestSprintfLengthEst);
 #endif
       CPPUNIT_TEST(TestGUIDToString);
    CPPUNIT_TEST_SUITE_END();
@@ -442,9 +427,9 @@ class cStrTests : public CppUnit::TestCase
    void TestParseBadArgs();
    void TestParseSuccessCases();
    void TestFilePathCompare();
-   void TestFormat();
+   void TestSprintf();
 #if _MSC_VER >= 1300
-   void TestFormatLength();
+   void TestSprintfLengthEst();
 #endif
    void TestGUIDToString();
 };
@@ -505,32 +490,20 @@ void cStrTests::TestFilePathCompare()
 
 ////////////////////////////////////////
 
-void cStrTests::TestFormat()
+void cStrTests::TestSprintf()
 {
    cStr temp;
-   CPPUNIT_ASSERT(temp.Format("%c", 'X') > 0);
-   CPPUNIT_ASSERT(temp.compare("X") == 0);
-   CPPUNIT_ASSERT(temp.Format("%d", 1000) > 0);
-   CPPUNIT_ASSERT(temp.compare("1000") == 0);
-   CPPUNIT_ASSERT(temp.Format("%i", 1000) > 0);
-   CPPUNIT_ASSERT(temp.compare("1000") == 0);
-   CPPUNIT_ASSERT(temp.Format("%o", 1000) > 0);
-   CPPUNIT_ASSERT(temp.compare("1750") == 0);
-   CPPUNIT_ASSERT(temp.Format("%u", 1000) > 0);
-   CPPUNIT_ASSERT(temp.compare("1000") == 0);
-   CPPUNIT_ASSERT(temp.Format("%u", -1000) > 0);
-   CPPUNIT_ASSERT(temp.compare("4294966296") == 0);
-   CPPUNIT_ASSERT(temp.Format("%x", -1000) > 0);
-   CPPUNIT_ASSERT(temp.compare("fffffc18") == 0);
-   CPPUNIT_ASSERT(temp.Format("%X", -1000) > 0);
-   CPPUNIT_ASSERT(temp.compare("FFFFFC18") == 0);
-   CPPUNIT_ASSERT(temp.Format("%e", 9999.0 * 3.14159) > 0);
-   CPPUNIT_ASSERT(temp.compare("3.141276e+004") == 0);
-   CPPUNIT_ASSERT(temp.Format("%E", 9999.0 * 3.14159) > 0);
-   CPPUNIT_ASSERT(temp.compare("3.141276E+004") == 0);
-
-   CPPUNIT_ASSERT(temp.Format("abcd%shijkl", "efg") > 0);
-   CPPUNIT_ASSERT(temp.compare("abcdefghijkl") == 0);
+   CPPUNIT_ASSERT(Sprintf(&temp, "%c", 'X').compare("X") == 0);
+   CPPUNIT_ASSERT(Sprintf(&temp, "%d", 1000).compare("1000") == 0);
+   CPPUNIT_ASSERT(Sprintf(&temp, "%i", 1000).compare("1000") == 0);
+   CPPUNIT_ASSERT(Sprintf(&temp, "%o", 1000).compare("1750") == 0);
+   CPPUNIT_ASSERT(Sprintf(&temp, "%u", 1000).compare("1000") == 0);
+   CPPUNIT_ASSERT(Sprintf(&temp, "%u", -1000).compare("4294966296") == 0);
+   CPPUNIT_ASSERT(Sprintf(&temp, "%x", -1000).compare("fffffc18") == 0);
+   CPPUNIT_ASSERT(Sprintf(&temp, "%X", -1000).compare("FFFFFC18") == 0);
+   CPPUNIT_ASSERT(Sprintf(&temp, "%e", 9999.0 * 3.14159).compare("3.141276e+004") == 0);
+   CPPUNIT_ASSERT(Sprintf(&temp, "%E", 9999.0 * 3.14159).compare("3.141276E+004") == 0);
+   CPPUNIT_ASSERT(Sprintf(&temp, "abcd%shijkl", "efg").compare("abcdefghijkl") == 0);
 }
 
 ////////////////////////////////////////
@@ -548,7 +521,7 @@ static bool CDECL DoFormatLengthTest(const tChar * pszFormat, ...)
    }
    {
       va_start(args, pszFormat);
-      estimate = FormatLengthEstimate(pszFormat, args);
+      estimate = SprintfLengthEstimate(pszFormat, args);
       va_end(args);
    }
    // Over-estimating is OK, therefore the ">="
@@ -557,7 +530,7 @@ static bool CDECL DoFormatLengthTest(const tChar * pszFormat, ...)
 
 ////////////////////////////////////////
 
-void cStrTests::TestFormatLength()
+void cStrTests::TestSprintfLengthEst()
 {
    static const tChar szSample[] = "sample string";
    CPPUNIT_ASSERT(::DoFormatLengthTest("simple"));
