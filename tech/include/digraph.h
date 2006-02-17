@@ -37,8 +37,8 @@ public:
    typedef typename ALLOC::template rebind<node_type>::other node_allocator;
    typedef NODECOMP node_comp;
    typedef std::set<node_type, node_comp, node_allocator> tNodeSet;
-   typedef tNodeSet::iterator node_iterator;
-   typedef tNodeSet::const_iterator const_node_iterator;
+   typedef typename tNodeSet::iterator node_iterator;
+   typedef typename tNodeSet::const_iterator const_node_iterator;
    struct sEdge
    {
       const_node_iterator from;
@@ -59,8 +59,8 @@ public:
    };
    typedef struct sEdgeComp edge_comp;
    typedef std::multiset<edge_type, edge_comp, edge_allocator> tEdgeSet;
-   typedef tEdgeSet::iterator edge_iterator;
-   typedef tEdgeSet::const_iterator const_edge_iterator;
+   typedef typename tEdgeSet::iterator edge_iterator;
+   typedef typename tEdgeSet::const_iterator const_edge_iterator;
 
    cDigraph();
    ~cDigraph();
@@ -209,7 +209,7 @@ DIGRAPH_TEMPLATE_CLASS::~cDigraph()
 ///////////////////////////////////////
 
 DIGRAPH_TEMPLATE_DECL
-std::pair<cDigraph::node_iterator, bool> DIGRAPH_TEMPLATE_CLASS::insert(const NODE & node)
+std::pair<typename DIGRAPH_TEMPLATE_CLASS::node_iterator, bool> DIGRAPH_TEMPLATE_CLASS::insert(const node_type & node)
 {
    return m_nodeSet.insert(node);
 }
@@ -217,7 +217,7 @@ std::pair<cDigraph::node_iterator, bool> DIGRAPH_TEMPLATE_CLASS::insert(const NO
 ///////////////////////////////////////
 
 DIGRAPH_TEMPLATE_DECL
-DIGRAPH_TEMPLATE_CLASS::node_iterator DIGRAPH_TEMPLATE_CLASS::find(const NODE & node)
+typename DIGRAPH_TEMPLATE_CLASS::node_iterator DIGRAPH_TEMPLATE_CLASS::find(const node_type & node)
 {
    return m_nodeSet.find(node);
 }
@@ -225,7 +225,7 @@ DIGRAPH_TEMPLATE_CLASS::node_iterator DIGRAPH_TEMPLATE_CLASS::find(const NODE & 
 ///////////////////////////////////////
 
 DIGRAPH_TEMPLATE_DECL
-DIGRAPH_TEMPLATE_CLASS::const_node_iterator DIGRAPH_TEMPLATE_CLASS::find(const NODE & node) const
+typename DIGRAPH_TEMPLATE_CLASS::const_node_iterator DIGRAPH_TEMPLATE_CLASS::find(const node_type & node) const
 {
    return m_nodeSet.find(node);
 }
@@ -233,7 +233,7 @@ DIGRAPH_TEMPLATE_CLASS::const_node_iterator DIGRAPH_TEMPLATE_CLASS::find(const N
 ///////////////////////////////////////
 
 DIGRAPH_TEMPLATE_DECL
-DIGRAPH_TEMPLATE_CLASS::node_iterator DIGRAPH_TEMPLATE_CLASS::begin()
+typename DIGRAPH_TEMPLATE_CLASS::node_iterator DIGRAPH_TEMPLATE_CLASS::begin()
 {
    return m_nodeSet.begin();
 }
@@ -241,7 +241,7 @@ DIGRAPH_TEMPLATE_CLASS::node_iterator DIGRAPH_TEMPLATE_CLASS::begin()
 ///////////////////////////////////////
 
 DIGRAPH_TEMPLATE_DECL
-DIGRAPH_TEMPLATE_CLASS::node_iterator DIGRAPH_TEMPLATE_CLASS::end()
+typename DIGRAPH_TEMPLATE_CLASS::node_iterator DIGRAPH_TEMPLATE_CLASS::end()
 {
    return m_nodeSet.end();
 }
@@ -249,7 +249,7 @@ DIGRAPH_TEMPLATE_CLASS::node_iterator DIGRAPH_TEMPLATE_CLASS::end()
 ///////////////////////////////////////
 
 DIGRAPH_TEMPLATE_DECL
-DIGRAPH_TEMPLATE_CLASS::const_node_iterator DIGRAPH_TEMPLATE_CLASS::begin() const
+typename DIGRAPH_TEMPLATE_CLASS::const_node_iterator DIGRAPH_TEMPLATE_CLASS::begin() const
 {
    return m_nodeSet.begin();
 }
@@ -257,7 +257,7 @@ DIGRAPH_TEMPLATE_CLASS::const_node_iterator DIGRAPH_TEMPLATE_CLASS::begin() cons
 ///////////////////////////////////////
 
 DIGRAPH_TEMPLATE_DECL
-DIGRAPH_TEMPLATE_CLASS::const_node_iterator DIGRAPH_TEMPLATE_CLASS::end() const
+typename DIGRAPH_TEMPLATE_CLASS::const_node_iterator DIGRAPH_TEMPLATE_CLASS::end() const
 {
    return m_nodeSet.end();
 }
@@ -265,7 +265,7 @@ DIGRAPH_TEMPLATE_CLASS::const_node_iterator DIGRAPH_TEMPLATE_CLASS::end() const
 ///////////////////////////////////////
 
 DIGRAPH_TEMPLATE_DECL
-DIGRAPH_TEMPLATE_CLASS::size_type DIGRAPH_TEMPLATE_CLASS::size() const
+typename DIGRAPH_TEMPLATE_CLASS::size_type DIGRAPH_TEMPLATE_CLASS::size() const
 {
    return m_nodeSet.size();
 }
@@ -273,9 +273,10 @@ DIGRAPH_TEMPLATE_CLASS::size_type DIGRAPH_TEMPLATE_CLASS::size() const
 ///////////////////////////////////////
 
 DIGRAPH_TEMPLATE_DECL
-std::pair<DIGRAPH_TEMPLATE_CLASS::edge_iterator, bool> DIGRAPH_TEMPLATE_CLASS::insert_edge(const node_type & from,
-                                                                                           const node_type & to,
-                                                                                           const EDGE & data)
+std::pair<typename DIGRAPH_TEMPLATE_CLASS::edge_iterator, bool>
+DIGRAPH_TEMPLATE_CLASS::insert_edge(const node_type & from,
+                                    const node_type & to,
+                                    const EDGE & data)
 {
    const_node_iterator fromIter = find(from);
    if (fromIter != end())
