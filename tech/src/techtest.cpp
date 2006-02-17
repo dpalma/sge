@@ -129,10 +129,13 @@ void cMD5Tests::MDTimeTrial()
    endTime = TimeGetSecs();
    elapsed = endTime - startTime;
 
-   techlog.Print(kDebug, " done\n");
-   LocalMsg("Digest = ");
-   MDPrint(digest);
-   techlog.Print(kDebug, "\n");
+   if (LOG_IS_CHANNEL_ENABLED(TechTest))
+   {
+      techlog.Print(kDebug, " done\n");
+      LocalMsg("Digest = ");
+      MDPrint(digest);
+      techlog.Print(kDebug, "\n");
+   }
    LocalMsg1("Time = %f seconds\n", elapsed);
    LocalMsg1("Speed = %ld bytes/second\n", (long)TEST_BLOCK_LEN * (long)TEST_BLOCK_COUNT/elapsed);
 }

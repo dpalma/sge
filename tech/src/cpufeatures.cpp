@@ -5,6 +5,8 @@
 
 #include "cpufeatures.h"
 
+#include "techstring.h"
+
 #ifdef _WIN32
 #include <excpt.h>
 #endif
@@ -16,6 +18,16 @@
 #endif
 
 #include "dbgalloc.h" // must be last header
+
+///////////////////////////////////////////////////////////////////////////////
+
+LOG_DEFINE_CHANNEL(CpuFeatures);
+
+#define LocalMsg(msg)            DebugMsgEx(CpuFeatures,(msg))
+#define LocalMsg1(msg,a)         DebugMsgEx1(CpuFeatures,(msg),(a))
+#define LocalMsg2(msg,a,b)       DebugMsgEx2(CpuFeatures,(msg),(a),(b))
+#define LocalMsg3(msg,a,b,c)     DebugMsgEx3(CpuFeatures,(msg),(a),(b),(c))
+#define LocalMsg4(msg,a,b,c,d)   DebugMsgEx4(CpuFeatures,(msg),(a),(b),(c),(d))
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -151,10 +163,53 @@ bool GetCpuFeatures(sCpuFeatures * pCpuFeatures)
 class cCpuFeaturesTests : public CppUnit::TestCase
 {
    CPPUNIT_TEST_SUITE(cCpuFeaturesTests);
+      CPPUNIT_TEST(Test);
    CPPUNIT_TEST_SUITE_END();
+
+   void Test();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(cCpuFeaturesTests);
+
+void cCpuFeaturesTests::Test()
+{
+   static const struct
+   {
+      int featureFlag;
+      const tChar * pszFeature;
+   }
+   featureFlagNames[] =
+   {
+      { kCpuHasRdtsc, _T("RDTSC") },
+      { kCpuHasMmx, _T("MMX") },
+      { kCpuHasSse, _T("SSE") },
+      { kCpuHasSse2, _T("SSE2") },
+      { kCpuHasHyperThreading, _T("HyperThreading") },
+   };
+
+   sCpuFeatures cpuFeatures;
+   CPPUNIT_ASSERT(GetCpuFeatures(&cpuFeatures));
+   LocalMsg1("CPU Vendor:  %s\n", cpuFeatures.szVendor);
+   LocalMsg1("CPU Model:   %s\n", cpuFeatures.szModel);
+   std::string flags;
+   for (int i = 0; i < _countof(featureFlagNames); i++)
+   {
+      int f = featureFlagNames[i].featureFlag;
+      if ((cpuFeatures.features & f) == f)
+      {
+         if (i > 0)
+         {
+            flags += _T(", ");
+         }
+         flags += featureFlagNames[i].pszFeature;
+      }
+   }
+   LocalMsg1("CPU Flags:   %s\n", flags.c_str());
+   std::string brand(cpuFeatures.szBrand);
+   TrimLeadingSpace(&brand);
+   TrimTrailingSpace(&brand);
+   LocalMsg1("CPU Brand:   %s\n", brand.c_str());
+}
 
 #endif // HAVE_CPPUNIT
 
