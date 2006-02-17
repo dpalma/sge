@@ -565,9 +565,11 @@ void cModel::PreApplyJoints()
 template <typename CONTAINER>
 void ParseAnimDescs(const tChar * pszAnimString, CONTAINER * pContainer)
 {
-   std::vector<cStr> animStrings;
-   if (cStr(pszAnimString).ParseTuple(&animStrings, _T("\n")) > 0)
+   cTokenizer<cStr> strTok;
+   if (strTok.Tokenize(pszAnimString, _T("\n")) > 0)
    {
+      std::vector<cStr> & animStrings = strTok.m_tokens;
+
       std::vector<cStr>::iterator iter = animStrings.begin();
       for (; iter != animStrings.end(); iter++)
       {
@@ -576,9 +578,11 @@ void ParseAnimDescs(const tChar * pszAnimString, CONTAINER * pContainer)
 
          const cStr & animString = *iter;
 
-         std::vector<cStr> temp;
-         if (iter->ParseTuple(&temp) == 3)
+         cTokenizer<cStr> strTok2;
+         if (strTok2.Tokenize(iter->c_str()) == 3)
          {
+            std::vector<cStr> & temp = strTok2.m_tokens;
+
             static const struct
             {
                eModelAnimationType type;

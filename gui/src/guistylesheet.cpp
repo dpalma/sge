@@ -138,11 +138,11 @@ tResult cGUIStyleSheet::AddRule(const tChar * pszSelector, IGUIStyle * pStyle)
       return E_POINTER;
    }
 
-   std::vector<cStr> s;
-   int nAdded = 0, n = cStr(pszSelector).ParseTuple(&s);
+   cTokenizer<cStr> strTok;
+   int nAdded = 0, n = strTok.Tokenize(pszSelector);
 
-   std::vector<cStr>::const_iterator iter = s.begin();
-   for (; iter != s.end(); iter++)
+   std::vector<cStr>::const_iterator iter = strTok.m_tokens.begin();
+   for (; iter != strTok.m_tokens.end(); iter++)
    {
       cStr type, cls;
       ParseSelector(iter->c_str(), &type, &cls);

@@ -39,6 +39,106 @@ const STRING & CDECL Sprintf(STRING * pString, const tChar * pszFormat, ...)
 
 
 ///////////////////////////////////////////////////////////////////////////////
+
+typedef void (* tParseTupleCallbackFn)(const tChar * pszToken, uint_ptr userData);
+
+TECH_API int ParseTuple(const tChar * pszIn, const tChar * pszDelims,
+                        tParseTupleCallbackFn pfnCallback, uint_ptr userData);
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// TEMPLATE: cToken
+//
+// An accessory class to cTokenizer used to create typed tokens from
+// a string representation
+
+template <typename TOKEN, typename CHAR = tChar>
+class cToken
+{
+public:
+   static TOKEN Token(const CHAR * pszToken)
+   {
+      Assert(!"Cannot use default token convert function!");
+      return TOKEN();
+   }
+};
+
+///////////////////////////////////////
+
+template <>
+std::string cToken<std::string, tChar>::Token(const tChar * pszToken)
+{
+   return std::string(pszToken);
+}
+
+///////////////////////////////////////
+
+template <>
+double cToken<double, tChar>::Token(const tChar * pszToken)
+{
+#ifdef _UNICODE
+   return _wtof(pszToken);
+#else
+   return atof(pszToken);
+#endif
+}
+
+///////////////////////////////////////
+
+template <>
+float cToken<float, tChar>::Token(const tChar * pszToken)
+{
+#ifdef _UNICODE
+   return static_cast<float>(_wtof(pszToken));
+#else
+   return static_cast<float>(atof(pszToken));
+#endif
+}
+
+///////////////////////////////////////
+
+template <>
+int cToken<int, tChar>::Token(const tChar * pszToken)
+{
+#ifdef __GNUC__
+   return Round(strtod(pszToken, NULL));
+#else
+   return _ttoi(pszToken);
+#endif
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// TEMPLATE: cTokenizer
+//
+// Really just a helper class that wraps the ParseTuple function
+
+template <typename TOKEN, typename CONTAINER = std::vector<TOKEN>, typename CHAR = tChar>
+class cTokenizer
+{
+public:
+   int Tokenize(const CHAR * pszIn, const CHAR * pszDelims = NULL)
+   {
+      tParseTupleCallbackFn pfn = &cTokenizer<TOKEN, CONTAINER, CHAR>::FillContainer;
+      return ::ParseTuple(pszIn, pszDelims, pfn, (uint_ptr)&m_tokens);
+   }
+
+   static void FillContainer(const CHAR * pszToken, uint_ptr userData)
+   {
+      CONTAINER * pContainer = (CONTAINER *)userData;
+      if (pszToken && pContainer)
+      {
+         pContainer->push_back(cToken<TOKEN>::Token(pszToken));
+      }
+   }
+
+   CONTAINER m_tokens;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cStr
 //
@@ -75,10 +175,6 @@ public:
    int ToInt() const;
    float ToFloat() const;
    double ToDouble() const;
-
-   int ParseTuple(std::vector<cStr> * pStrings, const tChar * pszDelims = NULL) const;
-   int ParseTuple(double * pDoubles, int nMaxDoubles) const;
-   int ParseTuple(float * pFloats, int nMaxFloats) const;
 
    static const cStr gm_whitespace;
 };
@@ -202,6 +298,14 @@ inline void cStr::TrimTrailingSpace()
    {
       erase(index + 1);
    }
+}
+
+///////////////////////////////////////
+
+template <>
+cStr cToken<cStr, tChar>::Token(const tChar * pszToken)
+{
+   return cStr(pszToken);
 }
 
 

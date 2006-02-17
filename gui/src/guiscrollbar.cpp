@@ -448,10 +448,10 @@ tResult GUIScrollBarElementCreateFromXml(const TiXmlElement * pXmlElement,
 
          if ((pszAttrib = pXmlElement->Attribute(kAttribRange)) != NULL)
          {
-            float rangeValues[2];
-            if (cStr(pszAttrib).ParseTuple(rangeValues, _countof(rangeValues)) == 2)
+            cTokenizer<float> tok;
+            if (tok.Tokenize(pszAttrib) == 2)
             {
-               pScrollBar->SetRange(Round(rangeValues[0]), Round(rangeValues[1]));
+               pScrollBar->SetRange(Round(tok.m_tokens[0]), Round(tok.m_tokens[1]));
             }
          }
 

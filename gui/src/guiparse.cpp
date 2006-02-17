@@ -139,16 +139,16 @@ tResult GUIParseColor(const tChar * pszColor, tGUIColor * pColor)
       sNamedColor(kValueColorWhite,       GUIStandardColors::White),
    };
 
-   float rgba[4];
-   int parseResult = cStr(pszColor).ParseTuple(rgba, _countof(rgba));
-   if (parseResult == 3)
+   cTokenizer<float> tok;
+   int tokResult = tok.Tokenize(pszColor);
+   if (tokResult == 3)
    {
-      *pColor = tGUIColor(rgba[0],rgba[1],rgba[2]);
+      *pColor = tGUIColor(tok.m_tokens[0], tok.m_tokens[1], tok.m_tokens[2]);
       return S_OK;
    }
-   else if (parseResult == 4)
+   else if (tokResult == 4)
    {
-      *pColor = tGUIColor(rgba[0],rgba[1],rgba[2],rgba[3]);
+      *pColor = tGUIColor(tok.m_tokens[0], tok.m_tokens[1], tok.m_tokens[2], tok.m_tokens[3]);
       return S_OK;
    }
    else
