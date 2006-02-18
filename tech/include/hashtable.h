@@ -137,6 +137,53 @@ struct sHashTableStats
 };
 
 
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// TEMPLATE: cMutableHashElementProxy
+//
+
+template <typename HASHTABLE>
+class cMutableHashElementProxy
+{
+   void operator =(const cMutableHashElementProxy &); // private, un-implemented
+
+public:
+   typedef const typename HASHTABLE::value_type & const_value_reference;
+   typedef const typename HASHTABLE::key_type & const_key_reference;
+
+   cMutableHashElementProxy(HASHTABLE * pHashTable, const_key_reference key)
+    : m_pHashTable(pHashTable)
+    , m_key(key)
+   {
+   }
+
+   cMutableHashElementProxy(const cMutableHashElementProxy & other)
+    : m_pHashTable(other.m_pHashTable)
+    , m_key(other.m_key)
+   {
+   }
+
+   operator const_value_reference() const
+   {
+      typename HASHTABLE::const_iterator iter = m_pHashTable->find(m_key);
+      Assert(iter != m_pHashTable->end());
+      return iter->second;
+   }
+
+   const cMutableHashElementProxy & operator =(const_value_reference value)
+   {
+      m_pHashTable->Insert(m_key, value, true);
+      return *this;
+   }
+
+private:
+   HASHTABLE * m_pHashTable;
+   const typename HASHTABLE::key_type m_key;
+};
+
+
+   
 ///////////////////////////////////////////////////////////////////////////////
 //
 // TEMPLATE: cHashTable
@@ -147,7 +194,13 @@ template <typename KEY, typename VALUE,
           class ALLOCATOR = std::allocator< sHashElement<KEY, VALUE> > >
 class cHashTable
 {
+   typedef cHashTable<KEY, VALUE, HASHFN, ALLOCATOR> tSelf;
+   friend class cMutableHashElementProxy;
+   typedef cMutableHashElementProxy<tSelf> tMutableHashElementProxy;
+
 public:
+   typedef KEY key_type;
+   typedef VALUE value_type;
    typedef struct sHashElement<KEY, VALUE> element_type;
    typedef element_type & reference;
    typedef const element_type & const_reference;
@@ -185,66 +238,8 @@ public:
       return insert(p.first, p.second);
    }
 
-   typedef const VALUE & const_value_reference;
-
-   class cMutableHashElementProxy
-   {
-      void operator =(const cMutableHashElementProxy &);
-   public:
-      cMutableHashElementProxy(cHashTable * pHashTable, const KEY & key)
-        : m_pHashTable(pHashTable)
-        , m_key(key)
-      {
-      }
-      cMutableHashElementProxy(const cMutableHashElementProxy & other)
-        : m_pHashTable(other.m_pHashTable)
-        , m_key(other.m_key)
-      {
-      }
-      operator const_value_reference() const
-      {
-         const_iterator iter = m_pHashTable->find(m_key);
-         Assert(iter != m_pHashTable->end());
-         return iter->second;
-      }
-      const cMutableHashElementProxy & operator =(const_value_reference value)
-      {
-         m_pHashTable->Insert(m_key, value, true);
-         return *this;
-      }
-   private:
-      cHashTable * m_pHashTable;
-      const KEY m_key;
-   };
-
-   class cImmutableHashElementProxy
-   {
-      void operator =(const cImmutableHashElementProxy &);
-      void operator =(const_value_reference value);
-   public:
-      cImmutableHashElementProxy(const cHashTable * pHashTable, const KEY & key)
-        : m_pHashTable(pHashTable)
-        , m_key(key)
-      {
-      }
-      cImmutableHashElementProxy(const cImmutableHashElementProxy & other)
-        : m_pHashTable(other.m_pHashTable)
-        , m_key(other.m_key)
-      {
-      }
-      operator const_value_reference() const
-      {
-         const_iterator iter = m_pHashTable->find(m_key);
-         Assert(iter != m_pHashTable->end());
-         return iter->second;
-      }
-   private:
-      const cHashTable * m_pHashTable;
-      const KEY m_key;
-   };
-
-   cMutableHashElementProxy operator [](const KEY & k);
-   const cImmutableHashElementProxy operator [](const KEY & k) const;
+   tMutableHashElementProxy operator [](const KEY & k);
+   const VALUE & operator [](const KEY & k) const;
 
    iterator find(const KEY & k);
    const_iterator find(const KEY & k) const;

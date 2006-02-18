@@ -427,17 +427,19 @@ HASHTABLE_TEMPLATE_CLASS::insert(const KEY & k, const VALUE & v)
 ////////////////////////////////////////
 
 HASHTABLE_TEMPLATE_DECL
-HASHTABLE_TEMPLATE_CLASS::cMutableHashElementProxy HASHTABLE_TEMPLATE_CLASS::operator [](const KEY & k)
+HASHTABLE_TEMPLATE_MEMBER_TYPE(tMutableHashElementProxy) HASHTABLE_TEMPLATE_CLASS::operator [](const KEY & k)
 {
-   return cMutableHashElementProxy(this, k);
+   return tMutableHashElementProxy(this, k);
 }
 
 ////////////////////////////////////////
 
 HASHTABLE_TEMPLATE_DECL
-const HASHTABLE_TEMPLATE_CLASS::cImmutableHashElementProxy HASHTABLE_TEMPLATE_CLASS::operator [](const KEY & k) const
+const VALUE & HASHTABLE_TEMPLATE_CLASS::operator [](const KEY & k) const
 {
-   return cImmutableHashElementProxy(this, k);
+   const_iterator iter = find(m_key);
+   Assert(iter != m_pHashTable->end());
+   return iter->second;
 }
 
 ////////////////////////////////////////
