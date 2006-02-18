@@ -1,83 +1,30 @@
 <!-- $Id$ -->
-<panel style="width:100%;height:100%" renderer="basic">
-   <panel style="width:60%;height:60%;background-color:(0,0,0.75)">
-      <layout type="grid" rows=1 columns=1 />
-      <listbox id="mapsList" rows=6 style="width:50%;align:center;vertical-align:center;"
+
+<script src="customgame.lua" />
+
+<panel id=mapsPanel style="width:60%;height:60%;background-color:(0,0,0.75)" renderer="beveled">
+<!--
+   <layout type="grid" rows=1 columns=1 />
+   -->
+   <listbox id="mapsList" rows=6 style="width:50%;align:center;vertical-align:center;"
       renderer="beveled" onselchange="OnMapsListSelChange();"
-      />
-      <script>
-         maps = ListResources("SGE.Map", 1); -- the one tells the resource manager not to load each
-         if maps and (table.getn(maps) > 0) then
-            local mapsList = GUIContext:GetElement("mapsList");
-            if mapsList then
-               table.foreachi(maps, function(i, v) mapsList:AddItem(v) end);
-            end;
-         end;
+   />
+</panel>
 
-         function getSelectedMap()
-            local mapsList = GUIContext:GetElement("mapsList");
-            if mapsList then
-               local sel = mapsList:GetSelected();
-               if sel then
-                  return mapsList:GetItem(sel);
-               end;
-            end;
-            return nil;
-         end;
-         
-			function OnStart()
-				local map = getSelectedMap();
-				if map then
-					LoadSampleLevel(map);
-				end;
-			end;
+<panel style="width:40%;height:60%;background-color:(0,0,0.75)" renderer="beveled">
+   <layout type="grid" rows=4 columns=2 />
+   <label text="Title: "/><label id=title />
+   <label text="Author: "/><label id=author />
+   <label text="Description: "/><label id=descr />
+   <label text="Number of Players: "/><label id=numPlayers />
+</panel>
 
-			function OnMapsListSelChange()
-				local map = getSelectedMap();
-				if map then
-					local title, author, descrip, numPlayers = GetMapProperties(map);
-					if title then
-						local lbl = GUIContext:GetElement("title");
-						if lbl then
-						   lbl:SetText(title);
-						end;
-					end;
-					if author then
-						local lbl = GUIContext:GetElement("author");
-						if lbl then
-						   lbl:SetText(author);
-						end;
-					end;
-					if descrip then
-						local lbl = GUIContext:GetElement("descr");
-						if lbl then
-						   lbl:SetText(descrip);
-						end;
-					end;
-					if numPlayers then
-						local lbl = GUIContext:GetElement("numPlayers");
-						if lbl then
-						   lbl:SetText(tostring(numPlayers));
-						end;
-					end;
-				end;
-			end;
-       </script>
-   </panel>
-   <panel style="width:40%;height:60%;background-color:(0,0,0.75)">
-      <layout type="grid" rows=4 columns=2 />
-      <label text="Title: "/><label id=title />
-      <label text="Author: "/><label id=author />
-      <label text="Description: "/><label id=descr />
-      <label text="Number of Players: "/><label id=numPlayers />
-   </panel>
-   <panel style="width:100%;height:40%;background-color:black;">
-      <layout type="grid" rows="2" columns="5" />
-      <label/><label/><label/>
-      <button text="Start" style="align:center;vertical-align:center;" onclick="OnStart();" renderer="beveled"/>
-      <label/>
-      <label/><label/><label/>
-      <button text="Cancel" style="align:center;vertical-align:center;" onclick="GUIContext:PopPage();" renderer="beveled" />
-      <label/>
-   </panel>
+<panel style="width:100%;height:40%;background-color:black;" renderer="beveled">
+   <layout type="grid" rows="2" columns="5" />
+   <label/><label/><label/>
+   <button text="Start" style="align:center;vertical-align:center;" onclick="OnStart();" renderer="beveled" />
+   <label/>
+   <label/><label/><label/>
+   <button text="Cancel" style="align:center;vertical-align:center;" onclick="GUIContext:PopPage();" renderer="beveled" />
+   <label/>
 </panel>

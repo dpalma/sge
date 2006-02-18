@@ -9,6 +9,7 @@
 #include "guistrings.h"
 
 #include "globalobj.h"
+#include "resourceapi.h"
 
 #include <tinyxml.h>
 
@@ -92,13 +93,33 @@ tResult GUIScriptElementCreate(const TiXmlElement * pXmlElement, IGUIElement * p
             return E_OUTOFMEMORY;
          }
 
-         const TiXmlNode * pFirstChild = pXmlElement->FirstChild();
-         if (pFirstChild != NULL)
+         if (pXmlElement->Attribute(kAttribSrc) != NULL)
          {
-            const TiXmlText * pText = pFirstChild->ToText();
-            if (pText != NULL)
+            if (pXmlElement->FirstChild() != NULL)
             {
-               pScript->SetScript(pText->Value());
+               ErrorMsg1("Script element should either specify an external script "
+                  "file in the %s attribute, or include script code in the body of "
+                  "the element, but not both\n", kAttribSrc);
+               return E_FAIL;
+            }
+
+            UseGlobal(ResourceManager);
+            const char * pszText = NULL;
+            if (pResourceManager->Load(pXmlElement->Attribute(kAttribSrc), kRT_Text, NULL, (void**)&pszText) == S_OK)
+            {
+               pScript->SetScript(pszText);
+            }
+         }
+         else
+         {
+            const TiXmlNode * pFirstChild = pXmlElement->FirstChild();
+            if (pFirstChild != NULL)
+            {
+               const TiXmlText * pText = pFirstChild->ToText();
+               if (pText != NULL)
+               {
+                  pScript->SetScript(pText->Value());
+               }
             }
          }
 
