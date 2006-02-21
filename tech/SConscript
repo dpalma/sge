@@ -26,6 +26,7 @@ sourceFiles = Split("""
    src/ray.cpp
    src/readwritefile.cpp
    src/readwritemem.cpp
+   src/resourcestore.cpp
    src/resourcemanager.cpp
    src/statemachinetest.cpp
    src/techassert.cpp

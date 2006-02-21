@@ -5,13 +5,10 @@
 #define INCLUDED_RESOURCEMANAGER_H
 
 #include "resourceapi.h"
-#include "filepath.h"
 #include "globalobjdef.h"
+#include "resourcestore.h"
 
 #include <map>
-
-#define ZLIB_WINAPI
-#include <unzip.h>
 
 #ifdef _MSC_VER
 #pragma once
@@ -38,83 +35,6 @@ interface IResourceManagerDiagnostics : IUnknown
 {
    virtual void DumpFormats() const = 0;
    virtual void DumpCache() const = 0;
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cResourceStore
-//
-
-class cResourceStore
-{
-public:
-   virtual ~cResourceStore() = 0;
-
-   virtual tResult FillCache(cResourceCache * pCache) = 0;
-   virtual tResult OpenEntry(const cResourceCacheEntryHeader & entry, IReader * * ppReader) = 0;
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cDirectoryResourceStore
-//
-
-class cDirectoryResourceStore : public cResourceStore
-{
-public:
-   cDirectoryResourceStore(const tChar * pszDir);
-   virtual ~cDirectoryResourceStore();
-
-   virtual tResult FillCache(cResourceCache * pCache);
-   virtual tResult OpenEntry(const cResourceCacheEntryHeader & entry, IReader * * ppReader);
-
-private:
-   cStr m_dir;
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cResourceCache
-//
-
-class cResourceCache
-{
-public:
-   virtual ~cResourceCache() = 0;
-
-   virtual tResult AddCacheEntry(const cResourceCacheEntryHeader & entry) = 0;
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cResourceCacheEntryHeader
-//
-
-class cResourceCacheEntryHeader
-{
-public:
-   cResourceCacheEntryHeader(const tChar * pszName, ulong offset, ulong index, cResourceStore * pStore);
-   cResourceCacheEntryHeader(const cResourceCacheEntryHeader &);
-   virtual ~cResourceCacheEntryHeader();
-
-   const cResourceCacheEntryHeader & operator =(const cResourceCacheEntryHeader &);
-
-   //bool operator ==(const cResourceCacheEntryHeader &) const;
-
-   inline const tChar * GetName() const { return m_name.c_str(); }
-   inline ulong GetOffset() const { return m_offset; }
-   inline ulong GetIndex() const { return m_index; }
-   inline cResourceStore * GetStore() const { return m_pStore; }
-
-private:
-   cStr m_name;
-   ulong m_offset;
-   ulong m_index;
-   cResourceStore * m_pStore;
 };
 
 
@@ -165,29 +85,16 @@ private:
    struct sResource;
 
    sResource * FindResourceWithFormat(const tChar * pszName, tResourceType type, uint formatId);
-   tResult DoLoadFromFile(const cFileSpec & file, const sFormat * pFormat, void * param, ulong * pDataSize, void * * ppData);
-   tResult DoLoadFromArchive(uint archiveId, ulong offset, ulong index, const sFormat * pFormat, void * param, ulong * pDataSize, void * * ppData);
    tResult DoLoadFromReader(IReader * pReader, const sFormat * pFormat, ulong dataSize, void * param, void * * ppData);
 
    uint DeduceFormats(const tChar * pszName, tResourceType type, uint * pFormatIds, uint nMaxFormats);
 
    uint GetExtensionId(const tChar * pszExtension);
    uint GetExtensionIdForName(const tChar * pszName);
-   uint GetDirectoryId(const tChar * pszDir);
-   uint GetArchiveId(const tChar * pszArchive);
 
    std::vector<cStr> m_extensions;
-   std::vector<cFilePath> m_dirs;
 
    std::vector<cResourceStore *> m_stores;
-
-   struct sArchiveInfo
-   {
-      cStr archive;
-      unzFile handle;
-   };
-   typedef std::vector<sArchiveInfo> tArchives;
-   tArchives m_archives;
 
    struct sFormat
    {
@@ -215,8 +122,6 @@ private:
       cStr name;
       uint extensionId;
       uint formatId;
-      uint dirId;
-      uint archiveId;
       cResourceStore * pStore;
       ulong offset;
       ulong index;

@@ -429,6 +429,9 @@
 					RelativePath="..\..\tech\src\resourcemanager.cpp">
 				</File>
 				<File
+					RelativePath="..\..\tech\src\resourcestore.cpp">
+				</File>
+				<File
 					RelativePath="..\..\tech\src\statemachinetest.cpp">
 				</File>
 				<File
@@ -524,6 +527,9 @@
 				</File>
 				<File
 					RelativePath="..\..\tech\src\resourcemanager.h">
+				</File>
+				<File
+					RelativePath="..\..\tech\src\resourcestore.h">
 				</File>
 				<File
 					RelativePath="..\..\tech\src\stdhdr.h">

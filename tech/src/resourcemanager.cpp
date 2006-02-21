@@ -5,6 +5,7 @@
 
 #include "resourcemanager.h"
 #include "fileenum.h"
+#include "filepath.h"
 #include "filespec.h"
 #include "readwriteapi.h"
 
@@ -39,8 +40,6 @@ LOG_DEFINE_CHANNEL(ResourceManager);
 
 // REFERENCES
 // "Game Developer Magazine", February 2005, "Inner Product" column
-
-static const int kUnzMaxPath = 260;
 
 static const tChar kExtSep = _T('.');
 
@@ -104,153 +103,6 @@ inline const tChar * ResourceTypeName(tResourceType resourceType)
 }
 
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cResourceStore
-//
-
-////////////////////////////////////////
-
-cResourceStore::~cResourceStore()
-{
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cDirectoryResourceStore
-//
-
-////////////////////////////////////////
-
-cDirectoryResourceStore::cDirectoryResourceStore(const tChar * pszDir)
- : m_dir((pszDir != NULL) ? pszDir : _T(""))
-{
-}
-
-////////////////////////////////////////
-
-cDirectoryResourceStore::~cDirectoryResourceStore()
-{
-}
-
-////////////////////////////////////////
-
-tResult cDirectoryResourceStore::FillCache(cResourceCache * pCache)
-{
-   if (pCache == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (m_dir.empty())
-   {
-      return E_FAIL;
-   }
-
-   cFileSpec wildcard(_T("*.*"));
-   wildcard.SetPath(cFilePath(m_dir.c_str()));
-   cAutoIPtr<IEnumFiles> pEnumFiles;
-   if (EnumFiles(wildcard, &pEnumFiles) == S_OK)
-   {
-      cFileSpec file;
-      uint attribs;
-      ulong nFiles;
-      while (pEnumFiles->Next(1, &file, &attribs, &nFiles) == S_OK)
-      {
-         if ((attribs & kFA_Directory) == kFA_Directory)
-         {
-            LocalMsg1("Dir: %s\n", file.c_str());
-         }
-         else
-         {
-            LocalMsg1("File: %s\n", file.c_str());
-            pCache->AddCacheEntry(cResourceCacheEntryHeader(file.c_str(),
-               kNoIndexL, kNoIndexL, static_cast<cResourceStore *>(this)));
-         }
-      }
-   }
-
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cDirectoryResourceStore::OpenEntry(const cResourceCacheEntryHeader & entry, IReader * * ppReader)
-{
-   if (ppReader == NULL)
-   {
-      return E_POINTER;
-   }
-
-   cFileSpec file(entry.GetName());
-   file.SetPath(cFilePath(m_dir.c_str()));
-
-   cAutoIPtr<IReader> pReader(FileCreateReader(file));
-   if (!pReader)
-   {
-      return E_OUTOFMEMORY;
-   }
-
-   *ppReader = CTAddRef(pReader);
-   return S_OK;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cResourceCache
-//
-
-////////////////////////////////////////
-
-cResourceCache::~cResourceCache()
-{
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cResourceCacheEntryHeader
-//
-////////////////////////////////////////
-
-cResourceCacheEntryHeader::cResourceCacheEntryHeader(const tChar * pszName, ulong offset, ulong index, cResourceStore * pStore)
- : m_name(pszName)
- , m_offset(offset)
- , m_index(index)
- , m_pStore(pStore)
-{
-}
-
-////////////////////////////////////////
-
-cResourceCacheEntryHeader::cResourceCacheEntryHeader(const cResourceCacheEntryHeader & other)
- : m_name(other.m_name)
- , m_offset(other.m_offset)
- , m_index(other.m_index)
- , m_pStore(other.m_pStore)
-{
-}
-
-////////////////////////////////////////
-
-cResourceCacheEntryHeader::~cResourceCacheEntryHeader()
-{
-}
-
-////////////////////////////////////////
-
-const cResourceCacheEntryHeader & cResourceCacheEntryHeader::operator =(const cResourceCacheEntryHeader & other)
-{
-   m_name = other.m_name;
-   m_offset = other.m_offset;
-   m_index = other.m_index;
-   m_pStore = other.m_pStore;
-   return *this;
-}
-
-
 ////////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cResourceManager
@@ -299,18 +151,6 @@ tResult cResourceManager::Term()
       }
    }
    m_resources.clear();
-
-   tArchives::iterator arIter = m_archives.begin();
-   tArchives::iterator arEnd = m_archives.end();
-   for (; arIter != arEnd; arIter++)
-   {
-      if (arIter->handle != NULL)
-      {
-         unzClose(arIter->handle);
-         arIter->handle = NULL;
-      }
-   }
-   m_archives.clear();
 
    {
       std::vector<cResourceStore *>::iterator iter = m_stores.begin();
@@ -385,60 +225,23 @@ tResult cResourceManager::AddDirectoryTreeFlattened(const tChar * pszDir)
 
 tResult cResourceManager::AddArchive(const tChar * pszArchive)
 {
-   uint archiveId = GetArchiveId(pszArchive);
-
-   unzFile uf = NULL;
-   if (m_archives[archiveId].handle != NULL)
+   if (pszArchive == NULL)
    {
-      uf = m_archives[archiveId].handle;
-   }
-   else
-   {
-#ifdef _UNICODE
-      size_t size = wcstombs(NULL, pszArchive, 0);
-      char * pszTemp = reinterpret_cast<char*>(alloca(size));
-      wcstombs(pszTemp, pszArchive, size);
-      uf = m_archives[archiveId].handle = unzOpen(pszTemp);
-#else
-      uf = m_archives[archiveId].handle = unzOpen(pszArchive);
-#endif
-      if (uf == NULL)
-      {
-         return E_FAIL;
-      }
+      return E_POINTER;
    }
 
-   do
+   cResourceStore * pStore = static_cast<cResourceStore *>(new cZipResourceStore(pszArchive));
+   if (pStore == NULL)
    {
-      unz_file_pos filePos;
-      unz_file_info fileInfo;
-      char szFile[kUnzMaxPath];
-      if (unzGetFilePos(uf, &filePos) == UNZ_OK &&
-         unzGetCurrentFileInfo(uf, &fileInfo, szFile, _countof(szFile), NULL, 0, NULL, 0) == UNZ_OK)
-      {
-         LocalMsg3("%s(%d): %s\n", pszArchive, filePos.num_of_file, szFile);
-#ifdef _UNICODE
-         size_t size = mbstowcs(NULL, szFile, 0);
-         wchar_t * pszTemp = reinterpret_cast<wchar_t*>(alloca(size));
-         mbstowcs(pszTemp, szFile, size);
-         cFileSpec file(pszTemp);
-#else
-         cFileSpec file(szFile);
-#endif
-         sResource res;
-         Verify(file.GetFileNameNoExt(&res.name));
-         const tChar * pszExt = file.GetFileExt();
-         if (pszExt != NULL && _tcslen(pszExt) > 0)
-         {
-            res.extensionId = GetExtensionId(pszExt);
-         }
-         res.archiveId = archiveId;
-         res.offset = filePos.pos_in_zip_directory;
-         res.index = filePos.num_of_file;
-         m_resources.push_back(res);
-      }
+      return E_OUTOFMEMORY;
    }
-   while (unzGoToNextFile(uf) == UNZ_OK);
+   
+   if (FAILED(pStore->FillCache(static_cast<cResourceCache*>(this))))
+   {
+      return E_FAIL;
+   }
+
+   m_stores.push_back(pStore);
 
    return S_OK;
 }
@@ -524,18 +327,7 @@ tResult cResourceManager::LoadWithFormat(const tChar * pszName, tResourceType ty
       ulong dataSize = 0;
       void * pData = NULL;
 
-      if (pRes->dirId != kNoIndex)
-      {
-         cFileSpec file(pszName);
-         file.SetFileExt(m_extensions[pRes->extensionId].c_str());
-         file.SetPath(m_dirs[pRes->dirId]);
-         result = DoLoadFromFile(file, pFormat, param, &dataSize, &pData);
-      }
-      else if (pRes->archiveId != kNoIndex)
-      {
-         result = DoLoadFromArchive(pRes->archiveId, pRes->offset, pRes->index, pFormat, param, &dataSize, &pData);
-      }
-      else if (pRes->pStore != NULL)
+      if (pRes->pStore != NULL)
       {
          cFileSpec file(pszName);
          file.SetFileExt(m_extensions[pRes->extensionId].c_str());
@@ -737,7 +529,6 @@ tResult cResourceManager::AddCacheEntry(const cResourceCacheEntryHeader & entry)
    {
       res.extensionId = GetExtensionId(pszExt);
    }
-   //res.dirId = GetDirectoryId(pszDir);
    res.pStore = entry.GetStore();
    m_resources.push_back(res);
    return S_OK;
@@ -856,7 +647,7 @@ cResourceManager::sResource * cResourceManager::FindResourceWithFormat(
          else if (extensionId == resIter->extensionId)
          {
             if (resIter->formatId == kNoIndex && !m_formats[formatId].typeDepend
-               && (resIter->archiveId != kNoIndex || resIter->dirId != kNoIndex || resIter->pStore != NULL))
+               && resIter->pStore != NULL)
             {
                pPotentialMatch = &m_resources[index];
             }
@@ -873,104 +664,6 @@ cResourceManager::sResource * cResourceManager::FindResourceWithFormat(
       nPotentialMatches, pszName, ResourceTypeName(type));
 
    return pPotentialMatch;
-}
-
-////////////////////////////////////////
-
-tResult cResourceManager::DoLoadFromFile(const cFileSpec & file, const sFormat * pFormat,
-                                         void * param, ulong * pDataSize, void * * ppData)
-{
-   if (pDataSize == NULL || ppData == NULL)
-   {
-      return E_POINTER;
-   }
-
-   cAutoIPtr<IReader> pReader(FileCreateReader(file));
-   if (!pReader)
-   {
-      return E_OUTOFMEMORY;
-   }
-
-   pReader->Seek(0, kSO_End);
-   ulong dataSize;
-   if (pReader->Tell(&dataSize) != S_OK)
-   {
-      return E_FAIL;
-   }
-   pReader->Seek(0, kSO_Set);
-
-   if (DoLoadFromReader(pReader, pFormat, dataSize, param, ppData) == S_OK)
-   {
-      *pDataSize = dataSize;
-      return S_OK;
-   }
-
-   return E_FAIL;
-}
-
-////////////////////////////////////////
-
-tResult cResourceManager::DoLoadFromArchive(uint archiveId, ulong offset, ulong index,
-                                            const sFormat * pFormat, void * param,
-                                            ulong * pDataSize, void * * ppData)
-{
-   if (archiveId == kNoIndex || offset == kNoIndexL || index == kNoIndexL)
-   {
-      return E_INVALIDARG;
-   }
-
-   if (pDataSize == NULL || ppData == NULL)
-   {
-      return E_POINTER;
-   }
-
-   unzFile uf = m_archives[archiveId].handle;
-   if (uf == NULL)
-   {
-      // Could actually reload the zip file on the fly using unzOpen(m_archives[...].archive)
-      return E_FAIL;
-   }
-
-   unz_file_pos filePos;
-   filePos.pos_in_zip_directory = offset;
-   filePos.num_of_file = index;
-   if (unzGoToFilePos(uf, &filePos) != UNZ_OK)
-   {
-      return E_FAIL;
-   }
-
-   tResult result = E_FAIL;
-
-   unz_file_info fileInfo;
-   char szFile[kUnzMaxPath];
-   if (unzGetCurrentFileInfo(uf, &fileInfo, szFile, _countof(szFile), NULL, 0, NULL, 0) == UNZ_OK)
-   {
-      byte * pBuffer = new byte[fileInfo.uncompressed_size];
-      if (pBuffer == NULL)
-      {
-         return E_OUTOFMEMORY;
-      }
-
-      if (unzOpenCurrentFile(uf) == UNZ_OK)
-      {
-         cAutoIPtr<IReader> pReader;
-         if (unzReadCurrentFile(uf, pBuffer, fileInfo.uncompressed_size) >= 0
-            && ReaderCreateMem(pBuffer, fileInfo.uncompressed_size, false, &pReader) == S_OK)
-         {
-            result = DoLoadFromReader(pReader, pFormat, fileInfo.uncompressed_size, param, ppData);
-            if (result == S_OK)
-            {
-               *pDataSize = fileInfo.uncompressed_size;
-            }
-         }
-
-         unzCloseCurrentFile(uf);
-      }
-
-      delete [] pBuffer;
-   }
-
-   return result;
 }
 
 ////////////////////////////////////////
@@ -1098,47 +791,6 @@ uint cResourceManager::GetExtensionIdForName(const tChar * pszName)
 
 ////////////////////////////////////////
 
-uint cResourceManager::GetDirectoryId(const tChar * pszDir)
-{
-   Assert(pszDir != NULL);
-
-   cFilePath dir(pszDir);
-
-   std::vector<cFilePath>::iterator f = std::find(m_dirs.begin(), m_dirs.end(), dir);
-   if (f == m_dirs.end())
-   {
-      m_dirs.push_back(dir);
-      return m_dirs.size() - 1;
-   }
-
-   return f - m_dirs.begin();
-}
-
-////////////////////////////////////////
-
-uint cResourceManager::GetArchiveId(const tChar * pszArchive)
-{
-   Assert(pszArchive != NULL);
-
-   tArchives::iterator iter = m_archives.begin();
-   tArchives::iterator end = m_archives.end();
-   for (uint index = 0; iter != end; iter++)
-   {
-      if (_tcsicmp(pszArchive, iter->archive.c_str()) == 0)
-      {
-         return index;
-      }
-   }
-
-   sArchiveInfo archiveInfo;
-   archiveInfo.archive = pszArchive;
-   archiveInfo.handle = NULL;
-   m_archives.push_back(archiveInfo);
-   return m_archives.size() - 1;
-}
-
-////////////////////////////////////////
-
 tResult ResourceManagerCreate()
 {
    cAutoIPtr<IResourceManager> p(new cResourceManager);
@@ -1155,8 +807,6 @@ cResourceManager::sResource::sResource()
  : name() 
  , extensionId(kNoIndex)
  , formatId(kNoIndex)
- , dirId(kNoIndex)
- , archiveId(kNoIndex)
  , pStore(NULL)
  , offset(kNoIndexL)
  , index(kNoIndexL)
@@ -1171,8 +821,6 @@ cResourceManager::sResource::sResource(const sResource & other)
  : name(other.name)
  , extensionId(other.extensionId)
  , formatId(other.formatId)
- , dirId(other.dirId)
- , archiveId(other.archiveId)
  , pStore(other.pStore)
  , offset(other.offset)
  , index(other.index)
@@ -1195,8 +843,6 @@ const cResourceManager::sResource & cResourceManager::sResource::operator =(cons
    name = other.name;
    extensionId = other.extensionId;
    formatId = other.formatId;
-   dirId = other.dirId;
-   archiveId = other.archiveId;
    pStore = other.pStore;
    offset = other.offset;
    index = other.index;
