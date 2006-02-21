@@ -12,6 +12,42 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+LOG_DEFINE_CHANNEL(GUIPageLayout);
+//LOG_DEFINE_ENABLE_CHANNEL(GUIPageLayout, true);
+
+#define LocalMsg(msg)                  DebugMsgEx(GUIPageLayout,msg)
+#define LocalMsg1(msg,a)               DebugMsgEx1(GUIPageLayout,msg,(a))
+#define LocalMsg2(msg,a,b)             DebugMsgEx2(GUIPageLayout,msg,(a),(b))
+#define LocalMsg3(msg,a,b,c)           DebugMsgEx3(GUIPageLayout,msg,(a),(b),(c))
+#define LocalMsg4(msg,a,b,c,d)         DebugMsgEx4(GUIPageLayout,msg,(a),(b),(c),(d))
+
+#define LocalMsgIf(cond,msg)           DebugMsgIfEx(GUIPageLayout,(cond),msg)
+#define LocalMsgIf1(cond,msg,a)        DebugMsgIfEx1(GUIPageLayout,(cond),msg,(a))
+#define LocalMsgIf2(cond,msg,a,b)      DebugMsgIfEx2(GUIPageLayout,(cond),msg,(a),(b))
+#define LocalMsgIf3(cond,msg,a,b,c)    DebugMsgIfEx3(GUIPageLayout,(cond),msg,(a),(b),(c))
+#define LocalMsgIf4(cond,msg,a,b,c,d)  DebugMsgIfEx4(GUIPageLayout,(cond),msg,(a),(b),(c),(d))
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+static tGUIString GUIElementIdentify(IGUIElement * pElement)
+{
+   tGUIString type = GUIElementType(pElement);
+   if (pElement != NULL)
+   {
+      tGUIString id;
+      if (pElement->GetId(&id) == S_OK)
+      {
+         tGUIString temp;
+         return tGUIString(Sprintf(&temp, _T("{%s: id=%s}"), type.c_str(), id.c_str()));
+      }
+   }
+   return type;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 static tResult GUIElementSize(IGUIElement * pElement, IGUIElementRenderer * pRenderer,
                               const tGUISize & baseSize, tGUISize * pSize)
 {
@@ -206,7 +242,12 @@ tResult cGUIPageLayout::operator ()(IGUIElement * pElement, IGUIElementRenderer 
 
    if (!pParent)
    {
+      LocalMsg1("Top level element: %s\n", GUIElementIdentify(pElement).c_str());
       m_topLevelFlow.PlaceElement(pElement);
+   }
+   else
+   {
+      LocalMsg1("Child element: %s\n", GUIElementIdentify(pElement).c_str());
    }
 
    cAutoIPtr<IGUIContainerElement> pContainer;

@@ -166,7 +166,7 @@ interface IResourceManager : IUnknown
 ////////////////////////////////////////
 
 #define kResourceManagerName _T("ResourceManager")
-TECH_API void ResourceManagerCreate();
+TECH_API tResult ResourceManagerCreate();
 
 
 ///////////////////////////////////////////////////////////////////////////////

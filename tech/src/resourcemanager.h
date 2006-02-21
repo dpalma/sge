@@ -24,6 +24,10 @@ const ulong kNoIndexL = ~0;
 
 F_DECLARE_INTERFACE(IResourceManagerDiagnostics);
 
+class cResourceStore;
+class cResourceCache;
+class cResourceCacheEntryHeader;
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -39,13 +43,93 @@ interface IResourceManagerDiagnostics : IUnknown
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: cResourceStore
+//
+
+class cResourceStore
+{
+public:
+   virtual ~cResourceStore() = 0;
+
+   virtual tResult FillCache(cResourceCache * pCache) = 0;
+   virtual tResult OpenEntry(const cResourceCacheEntryHeader & entry, IReader * * ppReader) = 0;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cDirectoryResourceStore
+//
+
+class cDirectoryResourceStore : public cResourceStore
+{
+public:
+   cDirectoryResourceStore(const tChar * pszDir);
+   virtual ~cDirectoryResourceStore();
+
+   virtual tResult FillCache(cResourceCache * pCache);
+   virtual tResult OpenEntry(const cResourceCacheEntryHeader & entry, IReader * * ppReader);
+
+private:
+   cStr m_dir;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cResourceCache
+//
+
+class cResourceCache
+{
+public:
+   virtual ~cResourceCache() = 0;
+
+   virtual tResult AddCacheEntry(const cResourceCacheEntryHeader & entry) = 0;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cResourceCacheEntryHeader
+//
+
+class cResourceCacheEntryHeader
+{
+public:
+   cResourceCacheEntryHeader(const tChar * pszName, ulong offset, ulong index, cResourceStore * pStore);
+   cResourceCacheEntryHeader(const cResourceCacheEntryHeader &);
+   virtual ~cResourceCacheEntryHeader();
+
+   const cResourceCacheEntryHeader & operator =(const cResourceCacheEntryHeader &);
+
+   //bool operator ==(const cResourceCacheEntryHeader &) const;
+
+   inline const tChar * GetName() const { return m_name.c_str(); }
+   inline ulong GetOffset() const { return m_offset; }
+   inline ulong GetIndex() const { return m_index; }
+   inline cResourceStore * GetStore() const { return m_pStore; }
+
+private:
+   cStr m_name;
+   ulong m_offset;
+   ulong m_index;
+   cResourceStore * m_pStore;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cResourceManager
 //
 
 class cResourceManager : public cComObject3<IMPLEMENTS(IResourceManager),
                                             IMPLEMENTS(IGlobalObject),
-                                            IMPLEMENTS(IResourceManagerDiagnostics)>
+                                            IMPLEMENTS(IResourceManagerDiagnostics)>,
+                         public cResourceCache
 {
+   friend class cResourceManagerTests;
+
 public:
    cResourceManager();
    virtual ~cResourceManager();
@@ -71,6 +155,8 @@ public:
                                   tResourceUnload pfnUnload);
    virtual tResult ListResources(tResourceType type, std::vector<cStr> * pNames) const;
 
+   virtual tResult AddCacheEntry(const cResourceCacheEntryHeader & entry);
+
    virtual void DumpFormats() const;
    virtual void DumpCache() const;
 
@@ -92,6 +178,8 @@ private:
 
    std::vector<cStr> m_extensions;
    std::vector<cFilePath> m_dirs;
+
+   std::vector<cResourceStore *> m_stores;
 
    struct sArchiveInfo
    {
@@ -129,6 +217,7 @@ private:
       uint formatId;
       uint dirId;
       uint archiveId;
+      cResourceStore * pStore;
       ulong offset;
       ulong index;
       void * pData;

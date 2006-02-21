@@ -13,7 +13,13 @@
 #include <algorithm>
 #include <set>
 
+#ifdef HAVE_CPPUNIT
+#include <cppunit/extensions/HelperMacros.h>
+#endif
+
 #include "dbgalloc.h" // must be last header
+
+////////////////////////////////////////////////////////////////////////////////
 
 LOG_DEFINE_CHANNEL(ResourceManager);
 
@@ -29,6 +35,11 @@ LOG_DEFINE_CHANNEL(ResourceManager);
 #define LocalMsgIf3(cond,msg,a,b,c)    DebugMsgIfEx3(ResourceManager,(cond),msg,(a),(b),(c))
 #define LocalMsgIf4(cond,msg,a,b,c,d)  DebugMsgIfEx4(ResourceManager,(cond),msg,(a),(b),(c),(d))
 
+////////////////////////////////////////////////////////////////////////////////
+
+// REFERENCES
+// "Game Developer Magazine", February 2005, "Inner Product" column
+
 static const int kUnzMaxPath = 260;
 
 static const tChar kExtSep = _T('.');
@@ -37,9 +48,6 @@ static const tChar kExtSep = _T('.');
 const GUID IID_IResourceManagerDiagnostics = 
 { 0x93ba1f78, 0x3ff1, 0x415b, { 0xba, 0x5b, 0x56, 0xfe, 0xd0, 0x39, 0xe8, 0x38 } };
 
-
-// REFERENCES
-// "Game Developer Magazine", February 2005, "Inner Product" column
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -93,6 +101,153 @@ static bool SameType(tResourceType lhs, tResourceType rhs)
 inline const tChar * ResourceTypeName(tResourceType resourceType)
 {
    return resourceType;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cResourceStore
+//
+
+////////////////////////////////////////
+
+cResourceStore::~cResourceStore()
+{
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cDirectoryResourceStore
+//
+
+////////////////////////////////////////
+
+cDirectoryResourceStore::cDirectoryResourceStore(const tChar * pszDir)
+ : m_dir((pszDir != NULL) ? pszDir : _T(""))
+{
+}
+
+////////////////////////////////////////
+
+cDirectoryResourceStore::~cDirectoryResourceStore()
+{
+}
+
+////////////////////////////////////////
+
+tResult cDirectoryResourceStore::FillCache(cResourceCache * pCache)
+{
+   if (pCache == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (m_dir.empty())
+   {
+      return E_FAIL;
+   }
+
+   cFileSpec wildcard(_T("*.*"));
+   wildcard.SetPath(cFilePath(m_dir.c_str()));
+   cAutoIPtr<IEnumFiles> pEnumFiles;
+   if (EnumFiles(wildcard, &pEnumFiles) == S_OK)
+   {
+      cFileSpec file;
+      uint attribs;
+      ulong nFiles;
+      while (pEnumFiles->Next(1, &file, &attribs, &nFiles) == S_OK)
+      {
+         if ((attribs & kFA_Directory) == kFA_Directory)
+         {
+            LocalMsg1("Dir: %s\n", file.c_str());
+         }
+         else
+         {
+            LocalMsg1("File: %s\n", file.c_str());
+            pCache->AddCacheEntry(cResourceCacheEntryHeader(file.c_str(),
+               kNoIndexL, kNoIndexL, static_cast<cResourceStore *>(this)));
+         }
+      }
+   }
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cDirectoryResourceStore::OpenEntry(const cResourceCacheEntryHeader & entry, IReader * * ppReader)
+{
+   if (ppReader == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cFileSpec file(entry.GetName());
+   file.SetPath(cFilePath(m_dir.c_str()));
+
+   cAutoIPtr<IReader> pReader(FileCreateReader(file));
+   if (!pReader)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   *ppReader = CTAddRef(pReader);
+   return S_OK;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cResourceCache
+//
+
+////////////////////////////////////////
+
+cResourceCache::~cResourceCache()
+{
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cResourceCacheEntryHeader
+//
+////////////////////////////////////////
+
+cResourceCacheEntryHeader::cResourceCacheEntryHeader(const tChar * pszName, ulong offset, ulong index, cResourceStore * pStore)
+ : m_name(pszName)
+ , m_offset(offset)
+ , m_index(index)
+ , m_pStore(pStore)
+{
+}
+
+////////////////////////////////////////
+
+cResourceCacheEntryHeader::cResourceCacheEntryHeader(const cResourceCacheEntryHeader & other)
+ : m_name(other.m_name)
+ , m_offset(other.m_offset)
+ , m_index(other.m_index)
+ , m_pStore(other.m_pStore)
+{
+}
+
+////////////////////////////////////////
+
+cResourceCacheEntryHeader::~cResourceCacheEntryHeader()
+{
+}
+
+////////////////////////////////////////
+
+const cResourceCacheEntryHeader & cResourceCacheEntryHeader::operator =(const cResourceCacheEntryHeader & other)
+{
+   m_name = other.m_name;
+   m_offset = other.m_offset;
+   m_index = other.m_index;
+   m_pStore = other.m_pStore;
+   return *this;
 }
 
 
@@ -157,6 +312,15 @@ tResult cResourceManager::Term()
    }
    m_archives.clear();
 
+   {
+      std::vector<cResourceStore *>::iterator iter = m_stores.begin();
+      for (; iter != m_stores.end(); iter++)
+      {
+         delete *iter;
+      }
+      m_stores.clear();
+   }
+
    return S_OK;
 }
 
@@ -169,35 +333,18 @@ tResult cResourceManager::AddDirectory(const tChar * pszDir)
       return E_POINTER;
    }
 
-   cFileSpec wildcard(_T("*.*"));
-   wildcard.SetPath(cFilePath(pszDir));
-   cAutoIPtr<IEnumFiles> pEnumFiles;
-   if (EnumFiles(wildcard, &pEnumFiles) == S_OK)
+   cResourceStore * pStore = static_cast<cResourceStore *>(new cDirectoryResourceStore(pszDir));
+   if (pStore == NULL)
    {
-      cFileSpec file;
-      uint attribs;
-      ulong nFiles;
-      while (pEnumFiles->Next(1, &file, &attribs, &nFiles) == S_OK)
-      {
-         if ((attribs & kFA_Directory) == kFA_Directory)
-         {
-            LocalMsg1("Dir: %s\n", file.c_str());
-         }
-         else
-         {
-            LocalMsg1("File: %s\n", file.c_str());
-            sResource res;
-            Verify(file.GetFileNameNoExt(&res.name));
-            const tChar * pszExt = file.GetFileExt();
-            if (pszExt != NULL && _tcslen(pszExt) > 0)
-            {
-               res.extensionId = GetExtensionId(pszExt);
-            }
-            res.dirId = GetDirectoryId(pszDir);
-            m_resources.push_back(res);
-         }
-      }
+      return E_OUTOFMEMORY;
    }
+   
+   if (FAILED(pStore->FillCache(static_cast<cResourceCache*>(this))))
+   {
+      return E_FAIL;
+   }
+
+   m_stores.push_back(pStore);
 
    return S_OK;
 }
@@ -388,6 +535,23 @@ tResult cResourceManager::LoadWithFormat(const tChar * pszName, tResourceType ty
       {
          result = DoLoadFromArchive(pRes->archiveId, pRes->offset, pRes->index, pFormat, param, &dataSize, &pData);
       }
+      else if (pRes->pStore != NULL)
+      {
+         cFileSpec file(pszName);
+         file.SetFileExt(m_extensions[pRes->extensionId].c_str());
+
+         cAutoIPtr<IReader> pReader;
+         if (pRes->pStore->OpenEntry(cResourceCacheEntryHeader(file.Get(), kNoIndexL, kNoIndexL, NULL), &pReader) == S_OK)
+         {
+            if (pReader->Seek(0, kSO_End) == S_OK
+               && pReader->Tell(&dataSize) == S_OK
+               && pReader->Seek(0, kSO_Set) == S_OK
+               && DoLoadFromReader(pReader, pFormat, dataSize, param, &pData) == S_OK)
+            {
+               result = S_OK;
+            }
+         }
+      }
 
       if (result == S_OK)
       {
@@ -563,6 +727,24 @@ tResult cResourceManager::ListResources(tResourceType type, std::vector<cStr> * 
 
 ////////////////////////////////////////
 
+tResult cResourceManager::AddCacheEntry(const cResourceCacheEntryHeader & entry)
+{
+   cFileSpec file(entry.GetName());
+   sResource res;
+   Verify(file.GetFileNameNoExt(&res.name));
+   const tChar * pszExt = file.GetFileExt();
+   if (pszExt != NULL && _tcslen(pszExt) > 0)
+   {
+      res.extensionId = GetExtensionId(pszExt);
+   }
+   //res.dirId = GetDirectoryId(pszDir);
+   res.pStore = entry.GetStore();
+   m_resources.push_back(res);
+   return S_OK;
+}
+
+////////////////////////////////////////
+
 void cResourceManager::DumpFormats() const
 {
    techlog.Print(kInfo, "%d resource formats\n", m_formats.size());
@@ -674,7 +856,7 @@ cResourceManager::sResource * cResourceManager::FindResourceWithFormat(
          else if (extensionId == resIter->extensionId)
          {
             if (resIter->formatId == kNoIndex && !m_formats[formatId].typeDepend
-               && (resIter->archiveId != kNoIndex || resIter->dirId != kNoIndex))
+               && (resIter->archiveId != kNoIndex || resIter->dirId != kNoIndex || resIter->pStore != NULL))
             {
                pPotentialMatch = &m_resources[index];
             }
@@ -957,10 +1139,14 @@ uint cResourceManager::GetArchiveId(const tChar * pszArchive)
 
 ////////////////////////////////////////
 
-void ResourceManagerCreate()
+tResult ResourceManagerCreate()
 {
    cAutoIPtr<IResourceManager> p(new cResourceManager);
-   RegisterGlobalObject(IID_IResourceManager, static_cast<IResourceManager*>(p));
+   if (!p)
+   {
+      return E_OUTOFMEMORY;
+   }
+   return RegisterGlobalObject(IID_IResourceManager, static_cast<IResourceManager*>(p));
 }
 
 ////////////////////////////////////////
@@ -971,6 +1157,7 @@ cResourceManager::sResource::sResource()
  , formatId(kNoIndex)
  , dirId(kNoIndex)
  , archiveId(kNoIndex)
+ , pStore(NULL)
  , offset(kNoIndexL)
  , index(kNoIndexL)
  , pData(NULL)
@@ -986,6 +1173,7 @@ cResourceManager::sResource::sResource(const sResource & other)
  , formatId(other.formatId)
  , dirId(other.dirId)
  , archiveId(other.archiveId)
+ , pStore(other.pStore)
  , offset(other.offset)
  , index(other.index)
  , pData(other.pData)
@@ -1009,6 +1197,7 @@ const cResourceManager::sResource & cResourceManager::sResource::operator =(cons
    formatId = other.formatId;
    dirId = other.dirId;
    archiveId = other.archiveId;
+   pStore = other.pStore;
    offset = other.offset;
    index = other.index;
    pData = NULL;
@@ -1016,5 +1205,62 @@ const cResourceManager::sResource & cResourceManager::sResource::operator =(cons
    return *this;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_CPPUNIT
+
+class cResourceManagerTests : public CppUnit::TestCase
+{
+   void Test();
+
+   CPPUNIT_TEST_SUITE(cResourceManagerTests);
+      CPPUNIT_TEST(Test);
+   CPPUNIT_TEST_SUITE_END();
+
+public:
+   virtual void setUp();
+   virtual void tearDown();
+};
+
+////////////////////////////////////////
+
+CPPUNIT_TEST_SUITE_REGISTRATION(cResourceManagerTests);
+
+////////////////////////////////////////
+
+#define kRT_TestData _T("TestData")
+
+void * TestDataLoad(IReader * pReader)
+{
+   return NULL;
+}
+
+void * TestDataPostload(void * pData, int dataLength, void * param)
+{
+   return pData;
+}
+
+void TestDataUnload(void * pData)
+{
+}
+
+void cResourceManagerTests::Test()
+{
+   cAutoIPtr<cResourceManager> pResourceManager(new cResourceManager);
+   CPPUNIT_ASSERT(!!pResourceManager);
+
+   CPPUNIT_ASSERT(pResourceManager->RegisterFormat(kRT_TestData, NULL, "tst", TestDataLoad, TestDataPostload, TestDataUnload) == S_OK);
+}
+
+void cResourceManagerTests::setUp()
+{
+}
+
+void cResourceManagerTests::tearDown()
+{
+}
+
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
