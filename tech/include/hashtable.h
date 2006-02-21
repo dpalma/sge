@@ -195,7 +195,7 @@ template <typename KEY, typename VALUE,
 class cHashTable
 {
    typedef cHashTable<KEY, VALUE, HASHFN, ALLOCATOR> tSelf;
-   friend class cMutableHashElementProxy;
+   template <typename HASHTABLE> friend class cMutableHashElementProxy;
    typedef cMutableHashElementProxy<tSelf> tMutableHashElementProxy;
 
 public:
