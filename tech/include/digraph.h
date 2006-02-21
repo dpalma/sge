@@ -53,8 +53,17 @@ public:
       {
          // Sort by from-node, then by to-node (edge data doesn't factor into sort order)
          node_comp nodeComp;
-         return nodeComp(*edge1.from, *edge2.from)
-            || nodeComp(*edge1.to, *edge2.to);
+         // If edge1.from < edge2.from (for example)
+         if (nodeComp(*edge1.from, *edge2.from))
+         {
+            return true;
+         }
+         // If not edge2.from < edge1.from then the from parts are equal so compare to parts
+         if (!nodeComp(*edge2.from, *edge1.from) && nodeComp(*edge1.to, *edge2.to))
+         {
+            return true;
+         }
+         return false;
       }
    };
    typedef struct sEdgeComp edge_comp;
