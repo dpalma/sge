@@ -640,29 +640,32 @@ cResourceManager::sResource * cResourceManager::FindResourceWithFormat(
    sResource * pPotentialMatch = NULL;
    int nPotentialMatches = 0;
 
-   tResources::iterator resIter = m_resources.begin();
-   tResources::iterator resEnd = m_resources.end();
-   for (uint index = 0; resIter != resEnd; resIter++, index++)
    {
-      if (resIter->name == name)
+      tResources::iterator iter = m_resources.begin();
+      tResources::iterator end = m_resources.end();
+      for (uint index = 0; iter != end; iter++, index++)
       {
-         if (extensionId == kNoIndex
-            && (extsPossible.find(resIter->extensionId) != extsPossible.end()))
+         if (stricmp(iter->name.c_str(), name.c_str()) == 0)
          {
-            pPotentialMatch = &m_resources[index];
-            nPotentialMatches++;
-         }
-         else if (extensionId == resIter->extensionId)
-         {
-            if (resIter->formatId == kNoIndex && !m_formats[formatId].typeDepend
-               && resIter->pStore != NULL)
+            if (extensionId == kNoIndex
+               && (extsPossible.find(iter->extensionId) != extsPossible.end()))
             {
                pPotentialMatch = &m_resources[index];
+               nPotentialMatches++;
             }
-            else if (resIter->formatId == formatId)
+            else if (extensionId == iter->extensionId)
             {
-               pPotentialMatch = &m_resources[index];
-               break;
+               if (iter->formatId == kNoIndex
+                  && !m_formats[formatId].typeDepend
+                  && iter->pStore != NULL)
+               {
+                  pPotentialMatch = &m_resources[index];
+               }
+               else if (iter->formatId == formatId)
+               {
+                  pPotentialMatch = &m_resources[index];
+                  break;
+               }
             }
          }
       }
@@ -866,10 +869,12 @@ const cResourceManager::sResource & cResourceManager::sResource::operator =(cons
 
 class cResourceManagerTests : public CppUnit::TestCase
 {
-   void TestSameNameDifferentType();
+   void TestLoadSameNameDifferentType();
+   void TestLoadCaseSensitivity();
 
    CPPUNIT_TEST_SUITE(cResourceManagerTests);
-      CPPUNIT_TEST(TestSameNameDifferentType);
+      CPPUNIT_TEST(TestLoadSameNameDifferentType);
+      CPPUNIT_TEST(TestLoadCaseSensitivity);
    CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -877,6 +882,7 @@ public:
    virtual void tearDown();
 
 private:
+   static const std::pair<cStr, cStr> gm_pseudoResources[];
    cAutoIPtr<cResourceManager> m_pResourceManager;
 };
 
@@ -885,6 +891,13 @@ private:
 CPPUNIT_TEST_SUITE_REGISTRATION(cResourceManagerTests);
 
 ////////////////////////////////////////
+
+const std::pair<cStr, cStr> cResourceManagerTests::gm_pseudoResources[] =
+{
+   std::make_pair(cStr("foo.dat"), cStr("foo_dat_foo_dat_foo_dat_foo_dat")),
+   std::make_pair(cStr("foo.bmp"), cStr("foo_bmp_foo_bmp_foo_bmp_foo_bmp")),
+   std::make_pair(cStr("bar.dat"), cStr("bar_dat_bar_dat_bar_dat_bar_dat")),
+};
 
 class cTestResourceStore : public cResourceStore
 {
@@ -917,34 +930,25 @@ tResult cTestResourceStore::FillCache(cResourceCache * pCache)
 {
    CPPUNIT_ASSERT(pCache != NULL);
    std::vector<std::pair<cStr, cStr> >::const_iterator iter = m_testData.begin();
-   for (; iter != m_testData.end(); iter++)
+   for (ulong index = 0; iter != m_testData.end(); iter++, index++)
    {
-      cResourceCacheEntryHeader header(iter->first.c_str(), kNoIndexL, kNoIndexL, static_cast<cResourceStore*>(this));
+      cResourceCacheEntryHeader header(iter->first.c_str(), kNoIndexL, index, static_cast<cResourceStore*>(this));
       pCache->AddCacheEntry(header);
    }
-   pCache->AddCacheEntry(cResourceCacheEntryHeader("foo.dat", kNoIndexL, kNoIndexL, static_cast<cResourceStore*>(this)));
-   pCache->AddCacheEntry(cResourceCacheEntryHeader("foo.bmp", kNoIndexL, kNoIndexL, static_cast<cResourceStore*>(this)));
-   pCache->AddCacheEntry(cResourceCacheEntryHeader("bar.dat", kNoIndexL, kNoIndexL, static_cast<cResourceStore*>(this)));
    return S_OK;
 }
 
 tResult cTestResourceStore::OpenEntry(const cResourceCacheEntryHeader & entry, IReader * * ppReader)
 {
    CPPUNIT_ASSERT(ppReader != NULL);
-   if (strcmp(entry.GetName(), "foo.dat") == 0)
+   std::vector<std::pair<cStr, cStr> >::const_iterator iter = m_testData.begin();
+   for (ulong index = 0; iter != m_testData.end(); iter++, index++)
    {
-      static const byte fooDat[] = { 0xf, 0x0, 0x0, 0xd, 0xa, 0x7 };
-      return ReaderCreateMem(fooDat, _countof(fooDat), false, ppReader);
-   }
-   else if (strcmp(entry.GetName(), "foo.bmp") == 0)
-   {
-      static const byte fooBmp[] = { 0xf, 0x0, 0x0, 0x7, 0xd, 0x7, 0x2 };
-      return ReaderCreateMem(fooBmp, _countof(fooBmp), false, ppReader);
-   }
-   else if (strcmp(entry.GetName(), "bar.dat") == 0)
-   {
-      static const byte barDat[] = { 0xb, 0xa, 0x5, 0xd, 0xa, 0x7 };
-      return ReaderCreateMem(barDat, _countof(barDat), false, ppReader);
+      if (stricmp(entry.GetName(), m_testData[index].first.c_str()) == 0)
+      {
+         cStr * pDataStr = &m_testData[index].second;
+         return ReaderCreateMem(reinterpret_cast<const byte *>(pDataStr->c_str()), pDataStr->length(), false, ppReader);
+      }
    }
    return E_FAIL;
 }
@@ -984,32 +988,47 @@ void TestDataUnload(void * pData)
    delete [] (byte *)pData;
 }
 
-void cResourceManagerTests::TestSameNameDifferentType()
-{
-   static const struct
-   {
-      const char * pszFile;
-      const char * pszData;
-   }
-   testResources[] =
-   {
-      { "foo.dat", "foo_dat_foo_dat_foo_dat_foo_dat" },
-      { "foo.bmp", "foo_bmp_foo_bmp_foo_bmp_foo_bmp" },
-      { "bar.dat", "bar_dat_bar_dat_bar_dat_bar_dat" },
-   };
+////////////////////////////////////////
 
+void cResourceManagerTests::TestLoadSameNameDifferentType()
+{
    CPPUNIT_ASSERT(m_pResourceManager->RegisterFormat("foodat", NULL, "dat", TestDataLoad, TestDataPostload, TestDataUnload) == S_OK);
    CPPUNIT_ASSERT(m_pResourceManager->RegisterFormat("foobmp", NULL, "bmp", TestDataLoad, TestDataPostload, TestDataUnload) == S_OK);
    CPPUNIT_ASSERT(m_pResourceManager->RegisterFormat("bardat", NULL, "dat", TestDataLoad, TestDataPostload, TestDataUnload) == S_OK);
 
-   CPPUNIT_ASSERT(m_pResourceManager->AddResourceStore(static_cast<cResourceStore*>(new cTestResourceStore)) == S_OK);
+   {
+      byte * pFooDat = NULL;
+      CPPUNIT_ASSERT(m_pResourceManager->Load("foo", "foodat", (void*)NULL, (void**)&pFooDat) == S_OK);
+      CPPUNIT_ASSERT(memcmp(pFooDat, gm_pseudoResources[0].second.c_str(), gm_pseudoResources[0].second.length()) == 0);
+   }
 
-   byte * pFooDat = NULL;
-   CPPUNIT_ASSERT(m_pResourceManager->Load("foo", "foodat", (void*)NULL, (void**)&pFooDat) == S_OK);
-
-   byte * pFooBmp = NULL;
-   CPPUNIT_ASSERT(m_pResourceManager->Load("foo", "foobmp", (void*)NULL, (void**)&pFooBmp) == S_OK);
+   {
+      byte * pFooBmp = NULL;
+      CPPUNIT_ASSERT(m_pResourceManager->Load("foo", "foobmp", (void*)NULL, (void**)&pFooBmp) == S_OK);
+      CPPUNIT_ASSERT(memcmp(pFooBmp, gm_pseudoResources[1].second.c_str(), gm_pseudoResources[1].second.length()) == 0);
+   }
 }
+
+////////////////////////////////////////
+
+void cResourceManagerTests::TestLoadCaseSensitivity()
+{
+   CPPUNIT_ASSERT(m_pResourceManager->RegisterFormat("foodat", NULL, "dat", TestDataLoad, TestDataPostload, TestDataUnload) == S_OK);
+
+   {
+      byte * pFooDat1 = NULL;
+      CPPUNIT_ASSERT(m_pResourceManager->Load("foo", "foodat", (void*)NULL, (void**)&pFooDat1) == S_OK);
+      CPPUNIT_ASSERT(memcmp(pFooDat1, gm_pseudoResources[0].second.c_str(), gm_pseudoResources[0].second.length()) == 0);
+   }
+
+   {
+      byte * pFooDat2 = NULL;
+      CPPUNIT_ASSERT(m_pResourceManager->Load("FOO", "foodat", (void*)NULL, (void**)&pFooDat2) == S_OK);
+      CPPUNIT_ASSERT(memcmp(pFooDat2, gm_pseudoResources[0].second.c_str(), gm_pseudoResources[0].second.length()) == 0);
+   }
+}
+
+////////////////////////////////////////
 
 void cResourceManagerTests::setUp()
 {
@@ -1017,7 +1036,16 @@ void cResourceManagerTests::setUp()
    m_pResourceManager = new cResourceManager;
    CPPUNIT_ASSERT(!!m_pResourceManager);
    m_pResourceManager->Init();
+
+   std::vector<std::pair<cStr, cStr> > testData;
+   for (int i = 0; i < _countof(gm_pseudoResources); i++)
+   {
+      testData.push_back(gm_pseudoResources[i]);
+   }
+   CPPUNIT_ASSERT(m_pResourceManager->AddResourceStore(static_cast<cResourceStore*>(new cTestResourceStore(&testData))) == S_OK);
 }
+
+////////////////////////////////////////
 
 void cResourceManagerTests::tearDown()
 {
