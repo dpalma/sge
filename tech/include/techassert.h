@@ -16,7 +16,10 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#if defined(_MSC_VER)
+#if defined(_MANAGED)
+extern "C" DECLSPEC_DLLIMPORT void STDCALL DebugBreak();
+#define DbgBreak     DebugBreak
+#elif defined(_MSC_VER)
 #define DbgBreak()   do { __asm int 3h } while (0)
 #elif defined(__GNUC__)
 #define DbgBreak()   asm("int $3")
