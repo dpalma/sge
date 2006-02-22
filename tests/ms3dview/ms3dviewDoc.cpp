@@ -79,7 +79,7 @@ BOOL c3dmodelDoc::OnOpenDocument(LPCTSTR lpszPathName)
    cFileSpec file(lpszPathName);
 
    UseGlobal(ResourceManager);
-   pResourceManager->AddDirectory(file.GetPath().c_str());
+   pResourceManager->AddDirectory(file.GetPath().CStr());
 
    Assert(!m_pModel);
    if (pResourceManager->Load(file.GetFileName(), kRT_Model, NULL, (void**)&m_pModel) != S_OK)
