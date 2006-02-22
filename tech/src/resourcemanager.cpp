@@ -196,7 +196,7 @@ tResult cResourceManager::AddDirectoryTreeFlattened(const tChar * pszDir)
 
    cFilePath root(pszDir);
    root.MakeFullPath();
-   if (AddDirectory(root.c_str()) != S_OK)
+   if (AddDirectory(root.CStr()) != S_OK)
    {
       return E_FAIL;
    }

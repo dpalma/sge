@@ -147,7 +147,7 @@ void cFileSpec::SetPath(const cFilePath & path)
 {
    cFilePath temp(path);
    temp.AddRelative(GetFileName());
-   *this = cFileSpec(temp.c_str());
+   *this = cFileSpec(temp.CStr());
 }
 
 ///////////////////////////////////////
@@ -249,7 +249,7 @@ void cFileSpecTests::TestGetPath()
 {
    cFileSpec test("c:\\p1\\p2\\p3\\p4\\file.ext");
    cFilePath testPath(test.GetPath());
-   CPPUNIT_ASSERT(filepathcmp(testPath.c_str(), "c:\\p1\\p2\\p3\\p4") == 0);
+   CPPUNIT_ASSERT(filepathcmp(testPath.CStr(), "c:\\p1\\p2\\p3\\p4") == 0);
 }
 
 ///////////////////////////////////////

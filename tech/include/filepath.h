@@ -5,7 +5,6 @@
 #define INCLUDED_FILEPATH_H
 
 #include "techdll.h"
-#include "techstring.h"
 
 #ifdef _MSC_VER
 #pragma once
@@ -16,9 +15,11 @@
 // CLASS: cFilePath
 //
 
-class TECH_API cFilePath : public cStr
+class TECH_API cFilePath
 {
 public:
+   enum { kMaxPath = 260 };
+
    cFilePath();
    cFilePath(const cFilePath & other);
    explicit cFilePath(const tChar * pszPath);
@@ -29,7 +30,12 @@ public:
    bool operator ==(const cFilePath & other);
    bool operator !=(const cFilePath & other);
 
-   void AddRelative(const tChar * pszDir);
+   const tChar * CStr() const;
+
+   size_t GetLength() const;
+   bool IsEmpty() const;
+
+   bool AddRelative(const tChar * pszDir);
 
    bool IsFullPath() const;
    void MakeFullPath();
@@ -37,21 +43,10 @@ public:
    cFilePath CollapseDots();
 
    static cFilePath GetCwd();
+
+private:
+   tChar m_szPath[kMaxPath];
 };
-
-///////////////////////////////////////
-
-inline bool cFilePath::operator ==(const cFilePath & other)
-{
-   return filepathcmp(*this, other) == 0;
-}
-
-///////////////////////////////////////
-
-inline bool cFilePath::operator !=(const cFilePath & other)
-{
-   return filepathcmp(*this, other) != 0;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 

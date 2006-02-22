@@ -4,6 +4,7 @@
 #include "stdhdr.h"
 
 #include "filepath.h"
+#include "techstring.h"
 
 #include <cstring>
 #include <cstdlib>
@@ -22,7 +23,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifdef _WIN32
-#define kMaxPath _MAX_PATH
 extern "C"
 {
    __declspec(dllimport) uint STDCALL GetCurrentDirectoryA(uint, char *);
@@ -33,10 +33,6 @@ extern "C"
 #else
 #define GetCurrentDirectory  GetCurrentDirectoryA
 #endif // !UNICODE
-#elif defined(__GNUC__)
-#define kMaxPath 260
-#else
-#error ("Need maximum path length constant for platform/compiler")
 #endif // _WIN32
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -68,88 +64,131 @@ inline bool IsTwoDots(const tChar * psz)
 // CLASS: cFilePath
 //
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 cFilePath::cFilePath()
 {
+   memset(m_szPath, 0, sizeof(m_szPath));
 }
    
-///////////////////////////////////////
+////////////////////////////////////////
 
 cFilePath::cFilePath(const cFilePath & other)
- : cStr(other.c_str())
 {
+   _tcscpy(m_szPath, other.m_szPath);
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 cFilePath::cFilePath(const tChar * pszPath)
- : cStr(pszPath)
 {
+   _tcsncpy(m_szPath, pszPath, _countof(m_szPath));
+   m_szPath[_countof(m_szPath) - 1] = 0;
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 cFilePath::cFilePath(const tChar * pszPath, size_t pathLen)
- : cStr(pszPath, pathLen)
 {
+   if (pathLen > _countof(m_szPath))
+   {
+      pathLen = _countof(m_szPath);
+   }
+   _tcsncpy(m_szPath, pszPath, pathLen);
+   m_szPath[pathLen - 1] = 0;
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 const cFilePath & cFilePath::operator =(const cFilePath & other)
 {
-   assign(other.c_str());
+   _tcscpy(m_szPath, other.m_szPath);
    return *this;
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
-static void PathCat(tChar * pszDest, const tChar * pszSrc)
+bool cFilePath::operator ==(const cFilePath & other)
 {
-   int destLen = _tcslen(pszDest);
-
-   if (destLen > 0
-      && (*pszSrc != _T('/'))
-      && (*pszSrc != _T('\\'))
-      && (pszDest[destLen - 1] != _T('/'))
-      && (pszDest[destLen - 1] != _T('\\')))
-   {
-      _tcscat(pszDest, szPathSep);
-   }
-
-   _tcscat(pszDest, pszSrc);
+   return filepathcmp(CStr(), other.CStr()) == 0;
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
-void cFilePath::AddRelative(const tChar * pszDir)
+bool cFilePath::operator !=(const cFilePath & other)
 {
-   if (!IsEmpty()
-      && (*pszDir != _T('/'))
-      && (*pszDir != _T('\\'))
-      && (at(length() - 1) != _T('/'))
-      && (at(length() - 1) != _T('\\')))
-   {
-      append(szPathSep);
-   }
-   append(pszDir);
+   return filepathcmp(CStr(), other.CStr()) != 0;
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
+
+const tChar * cFilePath::CStr() const
+{
+   return m_szPath;
+}
+
+////////////////////////////////////////
+
+size_t cFilePath::GetLength() const
+{
+   return _tcslen(m_szPath);
+}
+
+////////////////////////////////////////
+
+bool cFilePath::IsEmpty() const
+{
+   return (m_szPath[0] == 0);
+}
+
+////////////////////////////////////////
+
+bool cFilePath::AddRelative(const tChar * pszDir)
+{
+   if (pszDir == NULL)
+   {
+      return false;
+   }
+   size_t dirLength = _tcslen(pszDir);
+   size_t thisLength = GetLength();
+   bool bDirStartsWithSep = (*pszDir == _T('/')) || (*pszDir == _T('\\'));
+   bool bThisEndsWithSep = (m_szPath[thisLength - 1] == _T('/')) || (m_szPath[thisLength - 1] == _T('\\'));
+   if (!IsEmpty() && !bDirStartsWithSep && !bThisEndsWithSep)
+   {
+      if (thisLength < (_countof(m_szPath) - 1))
+      {
+         m_szPath[thisLength] = kPathSep;
+         m_szPath[thisLength+1] = 0;
+      }
+      else
+      {
+         return false;
+      }
+   }
+   else if (bDirStartsWithSep && bThisEndsWithSep)
+   {
+      pszDir++;
+      dirLength--;
+   }
+   _tcsncat(m_szPath, pszDir, Min(_countof(m_szPath) - thisLength - 1, dirLength));
+   m_szPath[_countof(m_szPath) - 1] = 0;
+   return true;
+}
+
+////////////////////////////////////////
 
 bool cFilePath::IsFullPath() const
 {
-   if (length() >= 3 &&
-       isalpha(at(0)) &&
-       at(1) == _T(':') &&
-       IsPathSep(at(2)) &&
-       _tcsstr(c_str(), _T("..")) == NULL)
+   if (GetLength() >= 3 &&
+       _istalpha(m_szPath[0]) &&
+       m_szPath[1] == _T(':') &&
+       IsPathSep(m_szPath[2]) &&
+       _tcsstr(CStr(), _T("..")) == NULL)
    {
       return true;
    }
 
-   if (IsPathSep(at(0)) && _tcsstr(c_str(), _T("..")) == NULL)
+   if (IsPathSep(m_szPath[0]) && _tcsstr(CStr(), _T("..")) == NULL)
    {
       return true;
    }
@@ -157,34 +196,34 @@ bool cFilePath::IsFullPath() const
    return false;
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 void cFilePath::MakeFullPath()
 {
    if (!IsFullPath())
    {
       cFilePath temp(GetCwd());
-      temp.AddRelative(c_str());
+      temp.AddRelative(CStr());
       temp.CollapseDots();
       *this = temp;
    }
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 cFilePath cFilePath::CollapseDots()
 {
    int nDirs = 0;
-   const tChar * * dirs = static_cast<const tChar**>(alloca(length() * sizeof(const tChar *)));
+   const tChar * * dirs = static_cast<const tChar**>(alloca(GetLength() * sizeof(const tChar *)));
    memset(dirs, 0, sizeof(dirs));
 
    bool bHadLeadingSeparator = false;
-   if (IsPathSep(at(0)))
+   if (IsPathSep(m_szPath[0]))
    {
       bHadLeadingSeparator = true;
    }
 
-   const tChar * p = c_str();
+   const tChar * p = CStr();
    dirs[nDirs++] = p;
    p = _tcsinc(p);
    for (; *p != 0; p = _tcsinc(p))
@@ -279,15 +318,17 @@ cFilePath cFilePath::GetCwd()
 
 class cFilePathTests : public CppUnit::TestCase
 {
-   CPPUNIT_TEST_SUITE(cFilePathTests);
-      CPPUNIT_TEST(TestCollapseDots);
-      CPPUNIT_TEST(TestIsFullPath);
-   CPPUNIT_TEST_SUITE_END();
+   void TestCollapseDots();
+   void TestIsFullPath();
+   void TestAddRelative();
 
    static const char * gm_testStrings[];
 
-   void TestCollapseDots();
-   void TestIsFullPath();
+   CPPUNIT_TEST_SUITE(cFilePathTests);
+      CPPUNIT_TEST(TestCollapseDots);
+      CPPUNIT_TEST(TestIsFullPath);
+      CPPUNIT_TEST(TestAddRelative);
+   CPPUNIT_TEST_SUITE_END();
 };
 
 ////////////////////////////////////////
@@ -322,7 +363,7 @@ void cFilePathTests::TestCollapseDots()
    for (int i = 0; i < _countof(gm_testStrings); i += 2)
    {
       cFilePath temp(cFilePath(gm_testStrings[i]).CollapseDots());
-      CPPUNIT_ASSERT(filepathcmp(gm_testStrings[i + 1], temp.c_str()) == 0);
+      CPPUNIT_ASSERT(filepathcmp(gm_testStrings[i + 1], temp.CStr()) == 0);
    }
 }
 
@@ -336,6 +377,23 @@ void cFilePathTests::TestIsFullPath()
    CPPUNIT_ASSERT(cFilePath("/p1/p2/p3").IsFullPath());
    CPPUNIT_ASSERT(!cFilePath("p1/p2/p3").IsFullPath());
    CPPUNIT_ASSERT(!cFilePath("/p1/p2/../p3").IsFullPath());
+}
+
+////////////////////////////////////////
+
+void cFilePathTests::TestAddRelative()
+{
+   {
+      cFilePath path("c:\\p1\\p2\\");
+      CPPUNIT_ASSERT(path.AddRelative("\\p3"));
+      CPPUNIT_ASSERT(_tcscmp(path.CStr(), _T("c:\\p1\\p2\\p3")) == 0);
+   }
+
+   {
+      cFilePath path("c:\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory");
+      CPPUNIT_ASSERT(path.AddRelative("\\theend"));
+      CPPUNIT_ASSERT(_tcscmp(path.CStr(), _T("c:\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\direct")) == 0);
+   }
 }
 
 #endif // HAVE_CPPUNIT
