@@ -43,6 +43,9 @@ LOG_DEFINE_CHANNEL(ResourceManager);
 
 static const tChar kExtSep = _T('.');
 
+static const uint kNoIndex = ~0;
+static const ulong kNoIndexL = ~0;
+
 // {93BA1F78-3FF1-415b-BA5B-56FED039E838}
 const GUID IID_IResourceManagerDiagnostics = 
 { 0x93ba1f78, 0x3ff1, 0x415b, { 0xba, 0x5b, 0x56, 0xfe, 0xd0, 0x39, 0xe8, 0x38 } };
@@ -179,14 +182,7 @@ tResult cResourceManager::AddDirectory(const tChar * pszDir)
       return E_OUTOFMEMORY;
    }
    
-   if (FAILED(pStore->FillCache(static_cast<cResourceCache*>(this))))
-   {
-      return E_FAIL;
-   }
-
-   m_stores.push_back(pStore);
-
-   return S_OK;
+   return AddResourceStore(pStore);
 }
 
 ////////////////////////////////////////
@@ -234,6 +230,18 @@ tResult cResourceManager::AddArchive(const tChar * pszArchive)
    if (pStore == NULL)
    {
       return E_OUTOFMEMORY;
+   }
+
+   return AddResourceStore(pStore);
+}
+
+////////////////////////////////////////
+
+tResult cResourceManager::AddResourceStore(cResourceStore * pStore)
+{
+   if (pStore == NULL)
+   {
+      return E_POINTER;
    }
    
    if (FAILED(pStore->FillCache(static_cast<cResourceCache*>(this))))
@@ -858,15 +866,18 @@ const cResourceManager::sResource & cResourceManager::sResource::operator =(cons
 
 class cResourceManagerTests : public CppUnit::TestCase
 {
-   void Test();
+   void TestSameNameDifferentType();
 
    CPPUNIT_TEST_SUITE(cResourceManagerTests);
-      CPPUNIT_TEST(Test);
+      CPPUNIT_TEST(TestSameNameDifferentType);
    CPPUNIT_TEST_SUITE_END();
 
 public:
    virtual void setUp();
    virtual void tearDown();
+
+private:
+   cAutoIPtr<cResourceManager> m_pResourceManager;
 };
 
 ////////////////////////////////////////
@@ -875,10 +886,91 @@ CPPUNIT_TEST_SUITE_REGISTRATION(cResourceManagerTests);
 
 ////////////////////////////////////////
 
-#define kRT_TestData _T("TestData")
+class cTestResourceStore : public cResourceStore
+{
+public:
+   cTestResourceStore(const std::vector<std::pair<cStr, cStr> > * pTestData = NULL);
+   virtual ~cTestResourceStore();
+
+   virtual tResult FillCache(cResourceCache * pCache);
+   virtual tResult OpenEntry(const cResourceCacheEntryHeader & entry, IReader * * ppReader);
+
+private:
+   // Pairs of <file name, pseudo data>
+   std::vector<std::pair<cStr, cStr> > m_testData;
+};
+
+cTestResourceStore::cTestResourceStore(const std::vector<std::pair<cStr, cStr> > * pTestData)
+ : m_testData((pTestData != NULL) ? pTestData->size() : 0)
+{
+   if (pTestData != NULL)
+   {
+      std::copy(pTestData->begin(), pTestData->end(), m_testData.begin());
+   }
+}
+
+cTestResourceStore::~cTestResourceStore()
+{
+}
+
+tResult cTestResourceStore::FillCache(cResourceCache * pCache)
+{
+   CPPUNIT_ASSERT(pCache != NULL);
+   std::vector<std::pair<cStr, cStr> >::const_iterator iter = m_testData.begin();
+   for (; iter != m_testData.end(); iter++)
+   {
+      cResourceCacheEntryHeader header(iter->first.c_str(), kNoIndexL, kNoIndexL, static_cast<cResourceStore*>(this));
+      pCache->AddCacheEntry(header);
+   }
+   pCache->AddCacheEntry(cResourceCacheEntryHeader("foo.dat", kNoIndexL, kNoIndexL, static_cast<cResourceStore*>(this)));
+   pCache->AddCacheEntry(cResourceCacheEntryHeader("foo.bmp", kNoIndexL, kNoIndexL, static_cast<cResourceStore*>(this)));
+   pCache->AddCacheEntry(cResourceCacheEntryHeader("bar.dat", kNoIndexL, kNoIndexL, static_cast<cResourceStore*>(this)));
+   return S_OK;
+}
+
+tResult cTestResourceStore::OpenEntry(const cResourceCacheEntryHeader & entry, IReader * * ppReader)
+{
+   CPPUNIT_ASSERT(ppReader != NULL);
+   if (strcmp(entry.GetName(), "foo.dat") == 0)
+   {
+      static const byte fooDat[] = { 0xf, 0x0, 0x0, 0xd, 0xa, 0x7 };
+      return ReaderCreateMem(fooDat, _countof(fooDat), false, ppReader);
+   }
+   else if (strcmp(entry.GetName(), "foo.bmp") == 0)
+   {
+      static const byte fooBmp[] = { 0xf, 0x0, 0x0, 0x7, 0xd, 0x7, 0x2 };
+      return ReaderCreateMem(fooBmp, _countof(fooBmp), false, ppReader);
+   }
+   else if (strcmp(entry.GetName(), "bar.dat") == 0)
+   {
+      static const byte barDat[] = { 0xb, 0xa, 0x5, 0xd, 0xa, 0x7 };
+      return ReaderCreateMem(barDat, _countof(barDat), false, ppReader);
+   }
+   return E_FAIL;
+}
 
 void * TestDataLoad(IReader * pReader)
 {
+   ulong dataSize = 0;
+   if (pReader != NULL
+      && pReader->Seek(0, kSO_End) == S_OK
+      && pReader->Tell(&dataSize) == S_OK
+      && pReader->Seek(0, kSO_Set) == S_OK)
+   {
+      byte * pData = new byte[dataSize];
+      if (pData != NULL)
+      {
+         if (pReader->Read(pData, dataSize) != S_OK)
+         {
+            delete [] pData;
+            return NULL;
+         }
+         else
+         {
+            return pData;
+         }
+      }
+   }
    return NULL;
 }
 
@@ -889,22 +981,51 @@ void * TestDataPostload(void * pData, int dataLength, void * param)
 
 void TestDataUnload(void * pData)
 {
+   delete [] (byte *)pData;
 }
 
-void cResourceManagerTests::Test()
+void cResourceManagerTests::TestSameNameDifferentType()
 {
-   cAutoIPtr<cResourceManager> pResourceManager(new cResourceManager);
-   CPPUNIT_ASSERT(!!pResourceManager);
+   static const struct
+   {
+      const char * pszFile;
+      const char * pszData;
+   }
+   testResources[] =
+   {
+      { "foo.dat", "foo_dat_foo_dat_foo_dat_foo_dat" },
+      { "foo.bmp", "foo_bmp_foo_bmp_foo_bmp_foo_bmp" },
+      { "bar.dat", "bar_dat_bar_dat_bar_dat_bar_dat" },
+   };
 
-   CPPUNIT_ASSERT(pResourceManager->RegisterFormat(kRT_TestData, NULL, "tst", TestDataLoad, TestDataPostload, TestDataUnload) == S_OK);
+   CPPUNIT_ASSERT(m_pResourceManager->RegisterFormat("foodat", NULL, "dat", TestDataLoad, TestDataPostload, TestDataUnload) == S_OK);
+   CPPUNIT_ASSERT(m_pResourceManager->RegisterFormat("foobmp", NULL, "bmp", TestDataLoad, TestDataPostload, TestDataUnload) == S_OK);
+   CPPUNIT_ASSERT(m_pResourceManager->RegisterFormat("bardat", NULL, "dat", TestDataLoad, TestDataPostload, TestDataUnload) == S_OK);
+
+   CPPUNIT_ASSERT(m_pResourceManager->AddResourceStore(static_cast<cResourceStore*>(new cTestResourceStore)) == S_OK);
+
+   byte * pFooDat = NULL;
+   CPPUNIT_ASSERT(m_pResourceManager->Load("foo", "foodat", (void*)NULL, (void**)&pFooDat) == S_OK);
+
+   byte * pFooBmp = NULL;
+   CPPUNIT_ASSERT(m_pResourceManager->Load("foo", "foobmp", (void*)NULL, (void**)&pFooBmp) == S_OK);
 }
 
 void cResourceManagerTests::setUp()
 {
+   SafeRelease(m_pResourceManager);
+   m_pResourceManager = new cResourceManager;
+   CPPUNIT_ASSERT(!!m_pResourceManager);
+   m_pResourceManager->Init();
 }
 
 void cResourceManagerTests::tearDown()
 {
+   if (!!m_pResourceManager)
+   {
+      m_pResourceManager->Term();
+      SafeRelease(m_pResourceManager);
+   }
 }
 
 #endif

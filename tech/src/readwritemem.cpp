@@ -15,11 +15,11 @@
 
 ////////////////////////////////////////
 
-cMemReader::cMemReader(byte * pMem, size_t memSize, bool bOwn)
- : m_pMem(pMem),
-   m_memSize(memSize),
-   m_bOwn(bOwn),
-   m_readPos(0)
+cMemReader::cMemReader(const byte * pMem, size_t memSize, bool bOwn)
+ : m_pMem(pMem)
+ , m_memSize(memSize)
+ , m_bOwn(bOwn)
+ , m_readPos(0)
 {
 }
 
@@ -167,7 +167,7 @@ tResult cMemReader::Read(void * pv, size_t nBytes, size_t * pnBytesRead)
 
 ////////////////////////////////////////
 
-tResult ReaderCreateMem(byte * pMem, size_t memSize, bool bOwn, IReader * * ppReader)
+tResult ReaderCreateMem(const byte * pMem, size_t memSize, bool bOwn, IReader * * ppReader)
 {
    if (pMem == NULL || ppReader == NULL)
    {

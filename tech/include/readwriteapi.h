@@ -365,7 +365,7 @@ public:
 TECH_API IReader * FileCreateReader(const cFileSpec & file);
 TECH_API IWriter * FileCreateWriter(const cFileSpec & file);
 
-TECH_API tResult ReaderCreateMem(byte * pMem, size_t memSize, bool bOwn, IReader * * ppReader);
+TECH_API tResult ReaderCreateMem(const byte * pMem, size_t memSize, bool bOwn, IReader * * ppReader);
 
 ///////////////////////////////////////////////////////////////////////////////
 

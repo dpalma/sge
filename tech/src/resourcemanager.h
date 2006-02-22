@@ -16,14 +16,7 @@
 
 class cFileSpec;
 
-const uint kNoIndex = ~0;
-const ulong kNoIndexL = ~0;
-
 F_DECLARE_INTERFACE(IResourceManagerDiagnostics);
-
-class cResourceStore;
-class cResourceCache;
-class cResourceCacheEntryHeader;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -64,6 +57,7 @@ public:
    virtual tResult AddDirectory(const tChar * pszDir);
    virtual tResult AddDirectoryTreeFlattened(const tChar * pszDir);
    virtual tResult AddArchive(const tChar * pszArchive);
+   tResult AddResourceStore(cResourceStore * pStore);
    virtual tResult Load(const tChar * pszName, tResourceType type, void * param, void * * ppData);
    tResult LoadWithFormat(const tChar * pszName, tResourceType type, uint formatId, void * param, void * * ppData);
    virtual tResult Unload(const tChar * pszName, tResourceType type);
