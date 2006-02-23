@@ -178,46 +178,37 @@ IDictionaryStore * DictionaryStoreCreate(const cFileSpec & file)
 
 ///////////////////////////////////////
 
-bool ParseIniSectionLine(tChar * pszBuffer, cStr * pSection, cStr * pComment)
+static bool ParseIniSectionLine(const tChar * pszBuffer, cStr * pSection, cStr * pComment)
 {
-   *pSection = NULL;
-   if (pComment != NULL)
+   if (pszBuffer == NULL || pSection == NULL)
    {
-      *pComment = NULL;
+      return false;
    }
 
-   tChar * p = _tcsrchr(pszBuffer, kCommentChar);
-
-   if (p != NULL)
+   const tChar * pszCommentStart = _tcsrchr(pszBuffer, kCommentChar);
+   if (pszCommentStart != NULL)
    {
-      *p = 0;
-      p = _tcsinc(p);
       if (pComment != NULL)
       {
-         *pComment = p;
+         *pComment = _tcsinc(pszCommentStart);
+         TrimLeadingSpace(pComment);
+         TrimTrailingSpace(pComment);
       }
    }
-   TrimTrailingSpace(pComment);
 
-   if (pszBuffer[0] != _T('[')) // do not allow whitespace before "[section name]"
+   const tChar * pszSectionStart = _tcschr(pszBuffer, _T('['));
+   const tChar * pszSectionEnd = _tcschr(pszBuffer, _T(']'));
+
+   if ((pszSectionStart != NULL) && (pszSectionEnd != NULL) && (pszSectionEnd > pszSectionStart))
    {
-      return false;
+      pszSectionStart = _tcsinc(pszSectionStart);
+      *pSection = cStr(pszSectionStart, pszSectionEnd - pszSectionStart);
+      TrimLeadingSpace(pSection);
+      TrimTrailingSpace(pSection);
+      return true;
    }
 
-   pszBuffer = _tcsinc(pszBuffer); // skip past the '['
-
-   p = _tcschr(pszBuffer, _T(']'));
-   if (p == NULL)
-   {
-      return false;
-   }
-
-   *p = 0;
-
-   *pSection = pszBuffer;
-   TrimTrailingSpace(pSection);
-
-   return true;
+   return false;
 }
 
 ///////////////////////////////////////
@@ -306,13 +297,19 @@ class cDictionaryStoreTests : public CppUnit::TestCase
    CPPUNIT_TEST_SUITE(cDictionaryStoreTests);
       CPPUNIT_TEST(TestSplitString);
       CPPUNIT_TEST(TestParseDictionaryLine);
+      CPPUNIT_TEST(TestParseIniSectionLine);
    CPPUNIT_TEST_SUITE_END();
 
    void TestSplitString();
    void TestParseDictionaryLine();
+   void TestParseIniSectionLine();
 };
 
+///////////////////////////////////////
+
 CPPUNIT_TEST_SUITE_REGISTRATION(cDictionaryStoreTests);
+
+///////////////////////////////////////
 
 void cDictionaryStoreTests::TestSplitString()
 {
@@ -321,6 +318,8 @@ void cDictionaryStoreTests::TestSplitString()
    CPPUNIT_ASSERT(l == "key");
    CPPUNIT_ASSERT(r == "value");
 }
+
+///////////////////////////////////////
 
 void cDictionaryStoreTests::TestParseDictionaryLine()
 {
@@ -349,6 +348,35 @@ void cDictionaryStoreTests::TestParseDictionaryLine()
    CPPUNIT_ASSERT(key == "definition");
    CPPUNIT_ASSERT(value.empty());
    CPPUNIT_ASSERT(comment.empty());
+}
+
+///////////////////////////////////////
+
+void cDictionaryStoreTests::TestParseIniSectionLine()
+{
+   // without comment
+   {
+      cStr section, comment;
+      CPPUNIT_ASSERT(ParseIniSectionLine(_T("[IniSection]"), &section, &comment));
+      CPPUNIT_ASSERT(section.compare(_T("IniSection")) == 0);
+      CPPUNIT_ASSERT(comment.empty());
+   }
+
+   // with comment
+   {
+      cStr section, comment;
+      CPPUNIT_ASSERT(ParseIniSectionLine(_T("[IniSection]   # the comment"), &section, &comment));
+      CPPUNIT_ASSERT(section.compare(_T("IniSection")) == 0);
+      CPPUNIT_ASSERT(comment.compare(_T("the comment")) == 0);
+   }
+
+   // with lots of extra whitespace
+   {
+      cStr section, comment;
+      CPPUNIT_ASSERT(ParseIniSectionLine(_T("  [   IniSection  ]   #   the comment   "), &section, &comment));
+      CPPUNIT_ASSERT(section.compare(_T("IniSection")) == 0);
+      CPPUNIT_ASSERT(comment.compare(_T("the comment")) == 0);
+   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

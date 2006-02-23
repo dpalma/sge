@@ -83,7 +83,7 @@ tResult cDictionary::Get(const tChar * pszKey, cStr * pVal, tPersistence * pPers
 
       if (pVal != NULL)
       {
-         *pVal = iter->second;
+         pVal->assign(iter->second);
       }
 
       return S_OK;
@@ -227,7 +227,7 @@ tResult cDictionary::Set(const tChar * pszKey, const tChar * val, tPersistence p
    {
       return E_INVALIDARG;
    }
-   m_vars[pszKey] = val;
+   m_vars[cStr(pszKey)] = val;
    m_persistenceMap[pszKey] = (persist != kUseDefault) ? persist : m_defaultPersist;
    return S_OK;
 }

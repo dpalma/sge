@@ -144,97 +144,10 @@ public:
 //
 
 #ifdef _UNICODE
-typedef std::wstring cStrBase;
+typedef std::wstring cStr;
 #else
-typedef std::string cStrBase;
+typedef std::string cStr;
 #endif
-
-class TECH_API cStr : public cStrBase
-{
-public:
-   cStr();
-   cStr(const tChar * psz);
-   cStr(const tChar * psz, uint length);
-
-   const cStr & operator =(const cStr & other);
-   bool operator ==(const cStr & other) const;
-   bool operator !=(const cStr & other) const;
-   const cStr & operator =(const tChar * psz);
-   bool operator ==(const tChar * psz) const;
-   bool operator !=(const tChar * psz) const;
-};
-
-///////////////////////////////////////
-
-inline cStr::cStr()
-{
-}
-
-///////////////////////////////////////
-
-inline cStr::cStr(const tChar * psz)
- : cStrBase(psz)
-{
-}
-
-///////////////////////////////////////
-
-inline cStr::cStr(const tChar * psz, uint length)
- : cStrBase(psz, length)
-{
-}
-
-///////////////////////////////////////
-
-inline const cStr & cStr::operator =(const cStr & other)
-{
-   assign(other);
-   return *this;
-}
-
-///////////////////////////////////////
-
-inline bool cStr::operator ==(const cStr & other) const
-{
-   return compare(other) == 0;
-}
-
-///////////////////////////////////////
-
-inline bool cStr::operator !=(const cStr & other) const
-{
-   return compare(other) != 0;
-}
-
-///////////////////////////////////////
-
-inline const cStr & cStr::operator =(const tChar * psz)
-{
-   assign(psz);
-   return *this;
-}
-
-///////////////////////////////////////
-
-inline bool cStr::operator ==(const tChar * psz) const
-{
-   return compare(psz) == 0;
-}
-
-///////////////////////////////////////
-
-inline bool cStr::operator !=(const tChar * psz) const
-{
-   return compare(psz) != 0;
-}
-
-///////////////////////////////////////
-
-template <>
-cStr cToken<cStr, tChar>::Token(const tChar * pszToken)
-{
-   return cStr(pszToken);
-}
 
 
 ///////////////////////////////////////////////////////////////////////////////

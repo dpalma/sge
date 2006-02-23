@@ -6,6 +6,7 @@
 
 #include "techdll.h"
 #include "comtools.h"
+#include "techstring.h"
 
 #include <list>
 
@@ -13,7 +14,6 @@
 #pragma once
 #endif
 
-class cStr;
 class cFileSpec;
 class cMultiVar;
 

@@ -12,7 +12,6 @@
 #pragma once
 #endif
 
-class cStr;
 class cFileSpec;
 F_DECLARE_INTERFACE(IReader);
 F_DECLARE_INTERFACE(IWriter);
