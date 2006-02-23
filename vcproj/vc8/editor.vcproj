@@ -513,6 +513,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\editor\CameraDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\editor\cmds.cpp"
 				>
 			</File>
@@ -598,6 +602,10 @@
 			</File>
 			<File
 				RelativePath="..\..\editor\MainFrm.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\editor\MapPropertiesDlg.cpp"
 				>
 			</File>
 			<File
@@ -698,6 +706,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\editor\CameraDlg.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\editor\DynamicLink.h"
 				>
 			</File>
@@ -743,6 +755,10 @@
 			</File>
 			<File
 				RelativePath="..\..\editor\MainFrm.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\editor\MapPropertiesDlg.h"
 				>
 			</File>
 			<File

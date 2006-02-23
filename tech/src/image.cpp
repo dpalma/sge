@@ -17,6 +17,25 @@
 #include <cppunit/extensions/HelperMacros.h>
 #endif
 
+#ifdef _WIN32
+#define NOVIRTUALKEYCODES
+#define NOSYSCOMMANDS
+#define NOATOM
+#define NOKERNEL
+#define NONLS
+#define NOMEMMGR
+#define NOMINMAX
+#define NOOPENFILE
+#define NOSERVICE
+#define NOSOUND
+#define NOCOMM
+#define NOKANJI
+#define NOHELP
+#define NOPROFILER
+#define NOMCX
+#include <windows.h>
+#endif
+
 #include "dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -277,6 +296,114 @@ tResult cImage::Clone(IImage * * ppImage)
    return ImageCreate(GetWidth(), GetHeight(), GetPixelFormat(), GetData(), ppImage);
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// Windows DDB resource type
+
+#ifdef _WIN32
+
+///////////////////////////////////////
+
+void * WindowsDDBFromImage(void * pData, int dataLength, void * param)
+{
+   if (pData == NULL)
+   {
+      return NULL;
+   }
+
+   IImage * pImage = reinterpret_cast<IImage*>(pData);
+
+   static const int bitCounts[] =
+   {
+      0, // kPF_Grayscale
+      0, // kPF_ColorMapped
+      16, // kPF_RGB555
+      16, // kPF_BGR555
+      16, // kPF_RGB565
+      16, // kPF_BGR565
+      16, // kPF_RGBA1555
+      16, // kPF_BGRA1555
+      24, // kPF_RGB888
+      24, // kPF_BGR888
+      32, // kPF_RGBA8888
+      32, // kPF_BGRA8888
+   };
+
+   int bitCount = bitCounts[pImage->GetPixelFormat()];
+   if (bitCount <= 0)
+   {
+      return NULL;
+   }
+
+   HBITMAP hBitmap = NULL;
+
+   uint bytesPerPixel = bitCount / 8;
+   uint alignedWidth = (pImage->GetWidth() + 3) & ~3;
+   size_t imageMemSize = ((pImage->GetWidth() * bytesPerPixel) + (alignedWidth - pImage->GetWidth())) * pImage->GetHeight();
+
+   byte * pImageBits = new byte[imageMemSize];
+   if (pImageBits != NULL)
+   {
+      size_t srcScanLineSize = pImage->GetWidth() * bytesPerPixel;
+      size_t destScanLineSize = ((pImage->GetWidth() * bytesPerPixel) + (alignedWidth - pImage->GetWidth()));
+
+      byte * pSrc = (byte *)pImage->GetData();
+      byte * pDest = pImageBits;
+
+      for (uint i = 0; i < pImage->GetHeight(); i++)
+      {
+         memcpy(pDest, pSrc, srcScanLineSize);
+         pDest += destScanLineSize;
+         pSrc += srcScanLineSize;
+      }
+
+      HDC hWindowDC = GetWindowDC(NULL);
+      if (hWindowDC != NULL)
+      {
+         // Creating compatible with window DC makes this a device-dependent bitmap
+         hBitmap = CreateCompatibleBitmap(hWindowDC, pImage->GetWidth(), pImage->GetHeight());
+         if (hBitmap != NULL)
+         {
+            BITMAPINFOHEADER bmInfo = {0};
+            bmInfo.biSize = sizeof(BITMAPINFOHEADER);
+            bmInfo.biWidth = pImage->GetWidth();
+            bmInfo.biHeight = pImage->GetHeight();
+            bmInfo.biPlanes = 1; 
+            bmInfo.biBitCount = bitCount; 
+            bmInfo.biCompression = BI_RGB;
+
+            int nScanLines = SetDIBits(hWindowDC, hBitmap, 0, pImage->GetHeight(),
+                                       pImageBits, (BITMAPINFO *)&bmInfo, DIB_RGB_COLORS);
+            if (nScanLines <= 0)
+            {
+               DeleteObject(hBitmap);
+               hBitmap = NULL;
+            }
+         }
+
+         ReleaseDC(NULL, hWindowDC), hWindowDC = NULL;
+      }
+
+      delete [] pImageBits;
+   }
+
+   return hBitmap;
+}
+
+///////////////////////////////////////
+
+void WindowsDDBUnload(void * pData)
+{
+   HBITMAP hBitmap = reinterpret_cast<HBITMAP>(pData);
+   if ((hBitmap != NULL) && (GetObjectType(hBitmap) == OBJ_BITMAP))
+   {
+      DeleteObject(hBitmap);
+   }
+}
+
+#endif
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 extern void * TargaLoad(IReader * pReader);
@@ -299,6 +426,12 @@ tResult ImageRegisterResourceFormats()
       if (pResourceManager->RegisterFormat(kRT_Image, _T("tga"), TargaLoad, NULL, ImageUnload) == S_OK
          && pResourceManager->RegisterFormat(kRT_Image, _T("bmp"), BmpLoad, NULL, ImageUnload) == S_OK)
       {
+#ifdef _WIN32
+         if (pResourceManager->RegisterFormat(kRT_WindowsDDB, kRT_Image, NULL, NULL, WindowsDDBFromImage, WindowsDDBUnload) != S_OK)
+         {
+            return E_FAIL;
+         }
+#endif
          return S_OK;
       }
    }

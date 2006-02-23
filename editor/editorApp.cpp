@@ -210,7 +210,6 @@ BOOL cEditorApp::InitInstance()
 
    TextFormatRegister(NULL);
    EngineRegisterResourceFormats();
-   BitmapUtilsRegisterResourceFormats();
    TerrainRegisterResourceFormats();
    ImageRegisterResourceFormats();
 

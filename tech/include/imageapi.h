@@ -76,7 +76,8 @@ interface IImage : IUnknown
 
 ////////////////////////////////////////
 
-#define kRT_Image _T("Image")
+#define kRT_Image          _T("Image")
+#define kRT_WindowsDDB     _T("WindowsDDB")
 
 TECH_API tResult ImageRegisterResourceFormats();
 

@@ -1271,7 +1271,7 @@ void * TerrainTileSetFromXml(void * pData, int dataLength, void * param)
       {
          if (pTiXmlElement->Type() == TiXmlNode::ELEMENT
             && strcmp(pTiXmlElement->Value(), ELEMENT_TILESET) == 0
-            ** pTiXmlElement->Attribute(ATTRIB_NAME))
+            && pTiXmlElement->Attribute(ATTRIB_NAME) != NULL)
          {
             cAutoIPtr<cTerrainTileSet> pTerrainTileSet(new cTerrainTileSet(pTiXmlElement->Attribute(ATTRIB_NAME)));
             if (!pTerrainTileSet)

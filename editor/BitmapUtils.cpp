@@ -17,7 +17,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define ALIGN4BYTE(w) (((w) + 3) & ~3)
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -180,93 +179,6 @@ BOOL STDCALL ImageList_DrawDisabled(HIMAGELIST hImageList, int iImage,
 
 /////////////////////////////////////////////////////////////////////////////
 
-bool LoadBitmap(IImage * pImage, HBITMAP * phBitmap)
-{
-   bool bResult = false;
-
-   if (pImage != NULL)
-   {
-      static const int bitCounts[] =
-      {
-         0, // kPF_Grayscale
-         0, // kPF_ColorMapped
-         16, // kPF_RGB555
-         16, // kPF_BGR555
-         16, // kPF_RGB565
-         16, // kPF_BGR565
-         16, // kPF_RGBA1555
-         16, // kPF_BGRA1555
-         24, // kPF_RGB888
-         24, // kPF_BGR888
-         32, // kPF_RGBA8888
-         32, // kPF_BGRA8888
-      };
-
-      int bitCount = bitCounts[pImage->GetPixelFormat()];
-
-      if (bitCount > 0)
-      {
-         CWindowDC dc(NULL);
-
-         uint bytesPerPixel = bitCount / 8;
-
-         uint alignedWidth = ALIGN4BYTE(pImage->GetWidth());
-
-         size_t imageBitsSize = ((pImage->GetWidth() * bytesPerPixel) + (alignedWidth - pImage->GetWidth())) * pImage->GetHeight();
-
-         byte * pImageBits = new byte[imageBitsSize];
-
-         if (pImageBits != NULL)
-         {
-            size_t srcScanLineSize = pImage->GetWidth() * bytesPerPixel;
-            size_t destScanLineSize = ((pImage->GetWidth() * bytesPerPixel) + (alignedWidth - pImage->GetWidth()));
-
-            byte * pSrc = (byte *)pImage->GetData();
-            byte * pDest = pImageBits;
-
-            for (uint i = 0; i < pImage->GetHeight(); i++)
-            {
-               memcpy(pDest, pSrc, srcScanLineSize);
-               pDest += destScanLineSize;
-               pSrc += srcScanLineSize;
-            }
-
-            CBitmap bitmap;
-            if (bitmap.CreateCompatibleBitmap(&dc, pImage->GetWidth(), pImage->GetHeight()))
-            {
-               BITMAPINFOHEADER bmInfo = {0};
-               bmInfo.biSize = sizeof(BITMAPINFOHEADER);
-               bmInfo.biWidth = pImage->GetWidth();
-               bmInfo.biHeight = pImage->GetHeight();
-               bmInfo.biPlanes = 1; 
-               bmInfo.biBitCount = bitCount; 
-               bmInfo.biCompression = BI_RGB;
-
-               int nScanLines = SetDIBits(dc,
-                                          bitmap,
-                                          0,
-                                          pImage->GetHeight(),
-                                          pImageBits,
-                                          (BITMAPINFO *)&bmInfo,
-                                          DIB_RGB_COLORS);
-
-               if (nScanLines > 0)
-               {
-                  *phBitmap = (HBITMAP)bitmap.Detach();
-                  bResult = true;
-               }
-            }
-
-            delete [] pImageBits;
-         }
-      }
-   }
-
-   return bResult;   
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
 bool LoadBitmap(const tChar * pszBitmap, HBITMAP * phBitmap)
 {
    if (pszBitmap == NULL || phBitmap == NULL)
@@ -274,40 +186,34 @@ bool LoadBitmap(const tChar * pszBitmap, HBITMAP * phBitmap)
       return false;
    }
 
-   bool bResult = false;
-
-   IImage * pImage = NULL;
    UseGlobal(ResourceManager);
-   if (pResourceManager->Load(pszBitmap, kRT_Image, NULL, (void**)&pImage) == S_OK)
+   if (pResourceManager->Load(pszBitmap, kRT_WindowsDDB, NULL, (void**)phBitmap) == S_OK)
    {
-      bResult = LoadBitmap(pImage, phBitmap);
+      return true;
    }
 
-   if (!bResult)
+   HBITMAP hBitmap = (HBITMAP)LoadImage(NULL,
+                                        pszBitmap,
+                                        IMAGE_BITMAP,
+                                        0, 0,
+                                        LR_CREATEDIBSECTION | LR_DEFAULTSIZE | LR_LOADFROMFILE);
+
+   if (hBitmap == NULL)
    {
-      HBITMAP hBitmap = (HBITMAP)LoadImage(NULL,
-                                           pszBitmap,
-                                           IMAGE_BITMAP,
-                                           0, 0,
-                                           LR_CREATEDIBSECTION | LR_DEFAULTSIZE | LR_LOADFROMFILE);
-
-      if (hBitmap == NULL)
-      {
-         hBitmap = (HBITMAP)LoadImage(_Module.GetResourceInstance(),
-                                      pszBitmap,
-                                      IMAGE_BITMAP,
-                                      0, 0,
-                                      LR_CREATEDIBSECTION | LR_DEFAULTSIZE);
-      }
-
-      if (hBitmap != NULL)       
-      {
-         *phBitmap = hBitmap;
-         bResult = true;
-      }
+      hBitmap = (HBITMAP)LoadImage(_Module.GetResourceInstance(),
+                                   pszBitmap,
+                                   IMAGE_BITMAP,
+                                   0, 0,
+                                   LR_CREATEDIBSECTION | LR_DEFAULTSIZE);
    }
 
-   return bResult;
+   if (hBitmap != NULL)       
+   {
+      *phBitmap = hBitmap;
+      return true;
+   }
+
+   return false;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -370,42 +276,6 @@ HBITMAP StretchCopyBitmap(uint width, uint height, HBITMAP hSrcBitmap,
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void * HBitmapFromImage(void * pData, int dataLength, void * param)
-{
-   IImage * pImage = reinterpret_cast<IImage*>(pData);
-
-   HBITMAP hbm = NULL;
-   if (LoadBitmap(pImage, &hbm))
-   {
-      return hbm;
-   }
-
-   return NULL;
-}
-
-void HBitmapUnload(void * pData)
-{
-   HBITMAP hBitmap = reinterpret_cast<HBITMAP>(pData);
-   if (GetObjectType(hBitmap) == OBJ_BITMAP)
-   {
-      DeleteObject(hBitmap);
-   }
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-tResult BitmapUtilsRegisterResourceFormats()
-{
-   UseGlobal(ResourceManager);
-   if (!!pResourceManager)
-   {
-      return pResourceManager->RegisterFormat(kRT_HBitmap, kRT_Image, NULL, NULL, HBitmapFromImage, HBitmapUnload);
-   }
-   return E_FAIL;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 tResult TerrainTileSetCreateImageList(ITerrainTileSet * pTileSet, uint dimension, HIMAGELIST * phImageList)
 {
    if (pTileSet == NULL || phImageList == NULL)
@@ -439,7 +309,7 @@ tResult TerrainTileSetCreateImageList(ITerrainTileSet * pTileSet, uint dimension
       {
          HBITMAP hbm = NULL;
          BITMAP bm = {0};
-         if (pResourceManager->Load(tileTexture.c_str(), kRT_HBitmap, NULL, (void**)&hbm) == S_OK
+         if (pResourceManager->Load(tileTexture.c_str(), kRT_WindowsDDB, NULL, (void**)&hbm) == S_OK
             && GetObject(hbm, sizeof(bm), &bm))
          {
             HBITMAP hSizedBm = StretchCopyBitmap(dimension, dimension, hbm, 0, 0,

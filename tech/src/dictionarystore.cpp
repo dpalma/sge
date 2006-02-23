@@ -5,7 +5,6 @@
 
 #include "dictionarystore.h"
 #include "readwriteapi.h"
-#include "techstring.h"
 
 #include <locale>
 #include <list>
@@ -15,6 +14,8 @@
 #endif
 
 #include "dbgalloc.h" // must be last header
+
+///////////////////////////////////////////////////////////////////////////////
 
 LOG_DEFINE_CHANNEL(DictionaryStore);
 
