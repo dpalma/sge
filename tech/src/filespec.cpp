@@ -156,7 +156,7 @@ bool cFileSpec::SetFileExt(const tChar * pszExt)
 {
    if ((pszExt != NULL) && !IsEmpty())
    {
-      tChar * p = _tcsrchr(CStr(), kExtensionSep);
+      tChar * p = _tcsrchr(m_szFile, kExtensionSep);
       if (p == NULL)
       {
          p = m_szFile + GetLength();

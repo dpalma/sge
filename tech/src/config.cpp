@@ -78,17 +78,17 @@ tResult ParseCommandLine(int argc, tChar *argv[], IConfig * pConfig)
       if (argv[i][0] == '+')
       {
          // set currently accumulating key/value
-         if (curKey.GetLength() > 0)
+         if (curKey.length() > 0)
          {
             pConfig->Set(curKey.c_str(), curVal.c_str(), kTransitory);
-            curKey.Empty();
-            curVal.Empty();
+            curKey.clear();
+            curVal.clear();
          }
 
          cStr key, value;
-         if (ParseDictionaryLine(argv[i] + 1, &key, &value, NULL) && !key.IsEmpty())
+         if (ParseDictionaryLine(argv[i] + 1, &key, &value, NULL) && !key.empty())
          {
-            if (value.IsEmpty())
+            if (value.empty())
             {
                curKey = key;
                curVal = _T("1");
@@ -97,8 +97,8 @@ tResult ParseCommandLine(int argc, tChar *argv[], IConfig * pConfig)
             else
             {
                pConfig->Set(key.c_str(), value.c_str(), kTransitory);
-               curKey.Empty();
-               curVal.Empty();
+               curKey.clear();
+               curVal.clear();
                bLastWasKey = false;
             }
          }
@@ -112,8 +112,8 @@ tResult ParseCommandLine(int argc, tChar *argv[], IConfig * pConfig)
       {
          if (!bLastWasKey)
          {
-            curVal.Append(_T(" "));
-            curVal.Append(argv[i]);
+            curVal.append(_T(" "));
+            curVal.append(argv[i]);
          }
          else
          {
@@ -124,7 +124,7 @@ tResult ParseCommandLine(int argc, tChar *argv[], IConfig * pConfig)
    }
 
    // set final key
-   if (bLastWasKey && curKey.GetLength() > 0)
+   if (bLastWasKey && curKey.length() > 0)
    {
       pConfig->Set(curKey.c_str(), curVal.c_str(), kTransitory);
    }
@@ -166,13 +166,13 @@ bool ConfigIsTrue(const tChar * pszName)
 
 class cConfigTests : public CppUnit::TestCase
 {
+   void TestParseCmdLine();
+   void TestStringIsTrue();
+
    CPPUNIT_TEST_SUITE(cConfigTests);
       CPPUNIT_TEST(TestParseCmdLine);
       CPPUNIT_TEST(TestStringIsTrue);
    CPPUNIT_TEST_SUITE_END();
-
-   void TestParseCmdLine();
-   void TestStringIsTrue();
 };
 
 ///////////////////////////////////////

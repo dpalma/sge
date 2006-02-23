@@ -162,13 +162,6 @@ public:
    const cStr & operator =(const tChar * psz);
    bool operator ==(const tChar * psz) const;
    bool operator !=(const tChar * psz) const;
-
-   const tChar * Get() const;
-   uint GetLength() const;
-   void Empty();
-   bool IsEmpty() const;
-
-   void Append(const tChar * psz);
 };
 
 ///////////////////////////////////////
@@ -233,41 +226,6 @@ inline bool cStr::operator ==(const tChar * psz) const
 inline bool cStr::operator !=(const tChar * psz) const
 {
    return compare(psz) != 0;
-}
-
-///////////////////////////////////////
-
-inline const tChar * cStr::Get() const
-{
-   return c_str();
-}
-
-///////////////////////////////////////
-
-inline uint cStr::GetLength() const
-{
-   return length();
-}
-
-///////////////////////////////////////
-
-inline void cStr::Empty()
-{
-   erase();
-}
-
-///////////////////////////////////////
-
-inline bool cStr::IsEmpty() const
-{
-   return empty();
-}
-
-///////////////////////////////////////
-
-inline void cStr::Append(const tChar * psz)
-{
-   *this += psz;
 }
 
 ///////////////////////////////////////
