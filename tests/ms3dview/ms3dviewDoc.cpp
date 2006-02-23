@@ -77,9 +77,11 @@ BOOL c3dmodelDoc::OnOpenDocument(LPCTSTR lpszPathName)
    SetModifiedFlag();  // dirty during de-serialize
 
    cFileSpec file(lpszPathName);
+   cFilePath path;
+   file.GetPath(&path);
 
    UseGlobal(ResourceManager);
-   pResourceManager->AddDirectory(file.GetPath().CStr());
+   pResourceManager->AddDirectory(path.CStr());
 
    Assert(!m_pModel);
    if (pResourceManager->Load(file.GetFileName(), kRT_Model, NULL, (void**)&m_pModel) != S_OK)
