@@ -279,49 +279,12 @@ const cStr & GUIDToString(REFGUID guid, cStr * pStr)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static cStr FilteredCopy(const cStr & str, const cStr & excluded)
-{
-   cStr result;
-   for (uint i = 0; i < str.GetLength(); ++i)
-   {
-      if (excluded.find(str[i]) == cStr::npos)
-      {
-         result.append(1, str[i]);
-      }
-   }
-   return result;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-static const cStr g_fileSeps(_T("\\/"));
-
-int filepathcmp(const cStr & f1, const cStr & f2)
-{
-   cStr cf1(FilteredCopy(f1, g_fileSeps));
-   cStr cf2(FilteredCopy(f2, g_fileSeps));
-   return _tcscmp(cf1.c_str(), cf2.c_str());
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-int filepathicmp(const cStr & f1, const cStr & f2)
-{
-   cStr cf1(FilteredCopy(f1, g_fileSeps));
-   cStr cf2(FilteredCopy(f2, g_fileSeps));
-   return _tcsicmp(cf1.c_str(), cf2.c_str());
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-
 #ifdef HAVE_CPPUNIT
 
 class cStrTests : public CppUnit::TestCase
 {
    void TestParseBadArgs();
    void TestParseSuccessCases();
-   void TestFilePathCompare();
    void TestSprintf();
 #if _MSC_VER >= 1300
    void TestSprintfLengthEst();
@@ -331,7 +294,6 @@ class cStrTests : public CppUnit::TestCase
    CPPUNIT_TEST_SUITE(cStrTests);
       CPPUNIT_TEST(TestParseBadArgs);
       CPPUNIT_TEST(TestParseSuccessCases);
-      CPPUNIT_TEST(TestFilePathCompare);
       CPPUNIT_TEST(TestSprintf);
 #if _MSC_VER >= 1300
       CPPUNIT_TEST(TestSprintfLengthEst);
@@ -397,16 +359,6 @@ void cStrTests::TestParseSuccessCases()
       CPPUNIT_ASSERT(dblTok.m_tokens[2] == 3000);
       CPPUNIT_ASSERT(dblTok.m_tokens[3] == 4000);
    }
-}
-
-////////////////////////////////////////
-
-void cStrTests::TestFilePathCompare()
-{
-   CPPUNIT_ASSERT(filepathcmp("c:\\p1\\p2\\p3", "c:/p1/p2/p3") == 0);
-   CPPUNIT_ASSERT(filepathcmp("C:\\P1\\P2\\P3", "c:/p1/p2/p3") != 0);
-   CPPUNIT_ASSERT(filepathicmp("C:\\P1\\P2\\P3", "c:/p1/p2/p3") == 0);
-   CPPUNIT_ASSERT(filepathcmp("c:\\p1\\p2\\p3", "c:\\p4\\p5\\p6") < 0);
 }
 
 ////////////////////////////////////////

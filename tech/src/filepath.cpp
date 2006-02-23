@@ -4,7 +4,6 @@
 #include "stdhdr.h"
 
 #include "filepath.h"
-#include "techstring.h"
 
 #include <cstring>
 #include <cstdlib>
@@ -42,7 +41,6 @@ static const tChar kPathSep = _T('\\');
 #else
 static const tChar kPathSep = _T('/');
 #endif
-static const tChar szPathSep[] = { kPathSep, 0 };
 static const tChar szPathSeps[] = _T("\\/");
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -110,14 +108,14 @@ const cFilePath & cFilePath::operator =(const cFilePath & other)
 
 bool cFilePath::operator ==(const cFilePath & other)
 {
-   return filepathcmp(CStr(), other.CStr()) == 0;
+   return FilePathCompare(*this, other) == 0;
 }
 
 ////////////////////////////////////////
 
 bool cFilePath::operator !=(const cFilePath & other)
 {
-   return filepathcmp(CStr(), other.CStr()) != 0;
+   return FilePathCompare(*this, other) != 0;
 }
 
 ////////////////////////////////////////
@@ -280,14 +278,14 @@ cFilePath cFilePath::CollapseDots()
       }
    }
 
-   cStr result;
+   std::string result;
 
    for (i = 0; i < nDirs; i++)
    {
       if (dirs[i] != NULL)
       {
          size_t len = _tcscspn(dirs[i] + 1, szPathSeps) + 1;
-         result.Append(cStr(dirs[i], len).c_str());
+         result.append(std::string(dirs[i], len).c_str());
       }
    }
 
@@ -363,7 +361,7 @@ void cFilePathTests::TestCollapseDots()
    for (int i = 0; i < _countof(gm_testStrings); i += 2)
    {
       cFilePath temp(cFilePath(gm_testStrings[i]).CollapseDots());
-      CPPUNIT_ASSERT(filepathcmp(gm_testStrings[i + 1], temp.CStr()) == 0);
+      CPPUNIT_ASSERT(FilePathCompare(cFilePath(gm_testStrings[i + 1]), temp) == 0);
    }
 }
 

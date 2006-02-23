@@ -86,7 +86,7 @@ bool cLog::OpenLogFile(const cFileSpec & logFile)
 {
    if (m_pLogFile == NULL)
    {
-      m_pLogFile = _tfopen(logFile.c_str(), _T("w"));
+      m_pLogFile = _tfopen(logFile.CStr(), _T("w"));
       return (m_pLogFile != NULL);
    }
    return false;

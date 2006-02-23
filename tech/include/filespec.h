@@ -5,7 +5,8 @@
 #define INCLUDED_FILESPEC_H
 
 #include "techdll.h"
-#include "techstring.h"
+
+#include <string>
 
 #ifdef _MSC_VER
 #pragma once
@@ -18,9 +19,11 @@ class cFilePath;
 // CLASS: cFileSpec
 //
 
-class TECH_API cFileSpec : public cStr
+class TECH_API cFileSpec
 {
 public:
+   enum { kMaxPath = 260 };
+
    cFileSpec();
    explicit cFileSpec(const tChar * pszFile);
    cFileSpec(const cFileSpec & other);
@@ -30,28 +33,30 @@ public:
    bool operator ==(const cFileSpec & other);
    bool operator !=(const cFileSpec & other);
 
+   const tChar * CStr() const;
+
+   size_t GetLength() const;
+   bool IsEmpty() const;
+
    const tChar * GetFileName() const;
-   bool GetFileNameNoExt(cStr * pFileName) const;
+   bool GetFileNameNoExt(std::string * pFileName) const;
    const tChar * GetFileExt() const;
    bool SetFileExt(const tChar * pszExt);
 
    void SetPath(const cFilePath & path);
-   cFilePath GetPath() const;
+   bool GetPath(cFilePath * pPath) const;
+
+private:
+   tChar m_szFile[kMaxPath];
 };
 
-///////////////////////////////////////
+////////////////////////////////////////
 
-inline bool cFileSpec::operator ==(const cFileSpec & other)
-{
-   return filepathcmp(*this, other) == 0;
-}
+TECH_API int FileSpecCompare(const cFileSpec & f1, const cFileSpec & f2);
 
-///////////////////////////////////////
+////////////////////////////////////////
 
-inline bool cFileSpec::operator !=(const cFileSpec & other)
-{
-   return filepathcmp(*this, other) != 0;
-}
+TECH_API int FileSpecCompareNoCase(const cFileSpec & f1, const cFileSpec & f2);
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -74,7 +74,7 @@ static size_t ListDirs(const cFilePath & path, tStrings * pDirs)
       {
          if ((attribs & kFA_Directory) == kFA_Directory)
          {
-            pDirs->push_back(file);
+            pDirs->push_back(file.CStr());
          }
       }
    }
@@ -341,7 +341,7 @@ tResult cResourceManager::LoadWithFormat(const tChar * pszName, tResourceType ty
          file.SetFileExt(m_extensions[pRes->extensionId].c_str());
 
          cAutoIPtr<IReader> pReader;
-         if (pRes->pStore->OpenEntry(cResourceCacheEntryHeader(file.Get(), kNoIndexL, kNoIndexL, NULL), &pReader) == S_OK)
+         if (pRes->pStore->OpenEntry(cResourceCacheEntryHeader(file.CStr(), kNoIndexL, kNoIndexL, NULL), &pReader) == S_OK)
          {
             if (pReader->Seek(0, kSO_End) == S_OK
                && pReader->Tell(&dataSize) == S_OK
@@ -513,8 +513,8 @@ tResult cResourceManager::ListResources(tResourceType type, std::vector<cStr> * 
             {
                name.SetFileExt(m_extensions[iter->extensionId].c_str());
             }
-            LocalMsg2("Resource '%s' is possibly of type '%s'\n", name.c_str(), type);
-            results.insert(name);
+            LocalMsg2("Resource '%s' is possibly of type '%s'\n", name.CStr(), type);
+            results.insert(name.CStr());
          }
       }
    }

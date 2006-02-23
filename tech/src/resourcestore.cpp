@@ -96,12 +96,12 @@ tResult cDirectoryResourceStore::FillCache(cResourceCache * pCache)
       {
          if ((attribs & kFA_Directory) == kFA_Directory)
          {
-            LocalMsg1("Dir: %s\n", file.c_str());
+            LocalMsg1("Dir: %s\n", file.CStr());
          }
          else
          {
-            LocalMsg1("File: %s\n", file.c_str());
-            pCache->AddCacheEntry(cResourceCacheEntryHeader(file.c_str(),
+            LocalMsg1("File: %s\n", file.CStr());
+            pCache->AddCacheEntry(cResourceCacheEntryHeader(file.CStr(),
                kNoIndexL, kNoIndexL, static_cast<cResourceStore *>(this)));
          }
       }
@@ -205,7 +205,7 @@ tResult cZipResourceStore::FillCache(cResourceCache * pCache)
 #else
          cFileSpec file(szFile);
 #endif
-         pCache->AddCacheEntry(cResourceCacheEntryHeader(file.Get(),
+         pCache->AddCacheEntry(cResourceCacheEntryHeader(file.CStr(),
             filePos.pos_in_zip_directory, filePos.num_of_file,
             static_cast<cResourceStore *>(this)));
       }

@@ -48,6 +48,14 @@ private:
    tChar m_szPath[kMaxPath];
 };
 
+////////////////////////////////////////
+
+TECH_API int FilePathCompare(const cFilePath & f1, const cFilePath & f2);
+
+////////////////////////////////////////
+
+TECH_API int FilePathCompareNoCase(const cFilePath & f1, const cFilePath & f2);
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #endif // !INCLUDED_FILEPATH_H

@@ -15,7 +15,7 @@
 //
 
 cFileReader::cFileReader(const cFileSpec & file)
- : m_fp(_tfopen(file.c_str(), _T("rb")))
+ : m_fp(_tfopen(file.CStr(), _T("rb")))
 {
 }
 
@@ -170,7 +170,7 @@ TECH_API IReader * FileCreateReader(const cFileSpec& file)
 //
 
 cFileWriter::cFileWriter(const cFileSpec & file)
- : m_fp(_tfopen(file.c_str(), _T("wb")))
+ : m_fp(_tfopen(file.CStr(), _T("wb")))
 {
 }
 

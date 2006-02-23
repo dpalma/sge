@@ -226,7 +226,7 @@ BOOL cEditorApp::InitInstance()
    cAutoIPtr<IDictionaryStore> pStore = DictionaryStoreCreate(file);
    if (pStore->Load(g_pConfig) != S_OK)
    {
-      DebugMsg1("Error loading settings from %s\n", file.c_str());
+      DebugMsg1("Error loading settings from %s\n", file.CStr());
    }
 
 	// Register the application's document templates.  Document templates

@@ -331,9 +331,4 @@ inline bool cStrLessNoCase::operator()(const cStr & lhs, const cStr & rhs) const
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int filepathcmp(const cStr & f1, const cStr & f2);
-int filepathicmp(const cStr & f1, const cStr & f2);
-
-///////////////////////////////////////////////////////////////////////////////
-
 #endif // !INCLUDED_TECHSTRING_H

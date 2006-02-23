@@ -55,7 +55,7 @@ private:
    const cFileSpec & GetSpec() const { return m_spec; }
    const cFilePath & GetPath() const { return m_path; }
    const cFileSpec m_spec;
-   const cFilePath m_path;
+   cFilePath m_path;
    HANDLE m_hFinder;
 };
 
@@ -63,9 +63,9 @@ private:
 
 cEnumFilesWin32::cEnumFilesWin32(const cFileSpec & spec)
  : m_spec(spec)
- , m_path(spec.GetPath())
  , m_hFinder(NULL)
 {
+   spec.GetPath(&m_path);
 }
 
 ////////////////////////////////////////
@@ -142,7 +142,7 @@ tResult cEnumFilesWin32::GetNext(ulong count, cFileSpec * pFileSpecs, uint * pAt
    {
       if (m_hFinder == NULL)
       {
-         m_hFinder = FindFirstFile(GetSpec().c_str(), &findData);
+         m_hFinder = FindFirstFile(GetSpec().CStr(), &findData);
          if ((m_hFinder == NULL) || (m_hFinder == INVALID_HANDLE_VALUE))
          {
             return E_FAIL;

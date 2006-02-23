@@ -124,7 +124,7 @@ tResult cDictionaryTextStore::Load(IDictionary * pDictionary)
 
 tResult cDictionaryTextStore::Save(IDictionary * pDictionary)
 {
-   FILE * fp = _tfopen(m_file.c_str(), _T("w"));
+   FILE * fp = _tfopen(m_file.CStr(), _T("w"));
    if (fp == NULL)
    {
       return E_FAIL;
@@ -234,9 +234,11 @@ cDictionaryIniStore::cDictionaryIniStore(const cFileSpec & file,
 
 tResult cDictionaryIniStore::Load(IDictionary * pDictionary)
 {
-   FILE * fp = _tfopen(m_file.c_str(), _T("r"));
+   FILE * fp = _tfopen(m_file.CStr(), _T("r"));
    if (fp == NULL)
+   {
       return E_FAIL;
+   }
 
    tChar buffer[1024];
 
