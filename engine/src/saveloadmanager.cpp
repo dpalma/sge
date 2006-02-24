@@ -717,7 +717,9 @@ tResult cSaveLoadManager::Load(IReader * pReader)
       tParticipantMap::iterator f = m_participantMap.find(&entry.id);
       if (f == m_participantMap.end())
       {
-         WarnMsg("Unable to find reader for file entry\n");
+         cStr entryGuid;
+         GUIDToString(entry.id, &entryGuid);
+         WarnMsg1("Unable to find reader for file entry %s\n", entryGuid.c_str());
          continue;
       }
 
