@@ -301,8 +301,8 @@ tResult cWinmmSoundManager::Close(tSoundId soundId)
    {
       if (pWavSound == *iter)
       {
-         iter = m_sounds.erase(iter);
          m_closeQueue.insert(*iter);
+         m_sounds.erase(iter);
          return S_OK;
       }
    }
