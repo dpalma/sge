@@ -7,13 +7,14 @@
 #include "guielementtools.h"
 #include "guistyleapi.h"
 
+#include "hashtabletem.h"
+
 #include "dbgalloc.h" // must be last header
 
 
 ///////////////////////////////////////////////////////////////////////////////
 
 LOG_DEFINE_CHANNEL(GUIPageLayout);
-//LOG_DEFINE_ENABLE_CHANNEL(GUIPageLayout, true);
 
 #define LocalMsg(msg)                  DebugMsgEx(GUIPageLayout,msg)
 #define LocalMsg1(msg,a)               DebugMsgEx1(GUIPageLayout,msg,(a))
@@ -147,18 +148,85 @@ void cGUIPageLayoutFlow::PlaceElement(IGUIElement * pElement)
 {
    if (pElement != NULL)
    {
-      pElement->SetPosition(m_pos);
       tGUISize elementSize(pElement->GetSize());
-      m_pos.x += elementSize.width;
-      if (elementSize.height > m_rowHeight)
+
+      tGUIPoint elementPos(m_pos);
+      bool bUpdateFlowPos = true;
+
+      cAutoIPtr<IGUIStyle> pStyle;
+      if (pElement->GetStyle(&pStyle) == S_OK)
       {
-         m_rowHeight = elementSize.height;
+         uint placement;
+         if (pStyle->GetPlacement(&placement) == S_OK)
+         {
+            if (placement == kGUIPlaceRelative)
+            {
+               // TODO
+            }
+            else if (placement == kGUIPlaceAbsolute)
+            {
+               uint align;
+               if (pStyle->GetAlignment(&align) == S_OK)
+               {
+                  if (align == kGUIAlignLeft)
+                  {
+                     elementPos.x = static_cast<float>(m_rect.left);
+                  }
+                  else if (align == kGUIAlignRight)
+                  {
+                     elementPos.x = static_cast<float>(m_rect.right - elementSize.width);
+                  }
+                  else if (align == kGUIAlignCenter)
+                  {
+                     elementPos.x = static_cast<float>(m_rect.left + ((m_rect.GetWidth() - elementSize.width) / 2));
+                  }
+                  // If position changed, don't update the flow layout's current position
+                  if (elementPos.x != m_pos.x)
+                  {
+                     bUpdateFlowPos = false;
+                  }
+               }
+
+               uint vertAlign;
+               if (pStyle->GetVerticalAlignment(&vertAlign) == S_OK)
+               {
+                  if (vertAlign == kGUIVertAlignTop)
+                  {
+                     elementPos.y = static_cast<float>(m_rect.top);
+                  }
+                  else if (vertAlign == kGUIVertAlignBottom)
+                  {
+                     elementPos.y = m_rect.bottom - elementSize.height;
+                  }
+                  else if (vertAlign == kGUIVertAlignCenter)
+                  {
+                     elementPos.y = m_rect.top + ((m_rect.GetHeight() - elementSize.height) / 2);
+                  }
+                  // If position changed, don't update the flow layout's current position
+                  if (elementPos.y != m_pos.y)
+                  {
+                     bUpdateFlowPos = false;
+                  }
+               }
+            }
+         }
       }
-      if (m_pos.x >= m_rect.right)
+
+      pElement->SetPosition(elementPos);
+
+      if (bUpdateFlowPos)
       {
-         m_pos.x = static_cast<float>(m_rect.left);
-         m_pos.y += m_rowHeight;
-         m_rowHeight = 0;
+         m_pos.x += elementSize.width;
+         if (elementSize.height > m_rowHeight)
+         {
+            m_rowHeight = elementSize.height;
+         }
+         if (m_pos.x >= m_rect.right)
+         {
+            m_pos.x = static_cast<float>(m_rect.left);
+            m_pos.y += m_rowHeight;
+            m_rowHeight = 0;
+         }
       }
    }
 }
@@ -201,6 +269,12 @@ cGUIPageLayout::~cGUIPageLayout()
       {
          pLayout->Layout(pContainer);
       }
+   }
+
+   tFlowTable::iterator iter = m_flowTable.begin();
+   for (; iter != m_flowTable.end(); iter++)
+   {
+      delete iter->second;
    }
 }
 
@@ -248,12 +322,29 @@ tResult cGUIPageLayout::operator ()(IGUIElement * pElement, IGUIElementRenderer 
    else
    {
       LocalMsg1("Child element: %s\n", GUIElementIdentify(pElement).c_str());
+      tFlowTable::iterator iter = m_flowTable.find(tGUIElementKey(CTAddRef(pParent)));
+      if (iter != m_flowTable.end())
+      {
+         iter->second->PlaceElement(pElement);
+      }
    }
 
    cAutoIPtr<IGUIContainerElement> pContainer;
    if (pElement->QueryInterface(IID_IGUIContainerElement, (void**)&pContainer) == S_OK)
    {
-      m_layoutQueue.push(CTAddRef(pContainer));
+      cAutoIPtr<IGUILayoutManager> pLayout;
+      if (pContainer->GetLayout(&pLayout) == S_OK)
+      {
+         m_layoutQueue.push(CTAddRef(pContainer));
+      }
+      else
+      {
+         cGUIPageLayoutFlow * pFlow = new cGUIPageLayoutFlow(clientArea);
+         if (pFlow != NULL)
+         {
+            m_flowTable.insert(tGUIElementKey(CTAddRef(pElement)), pFlow);
+         }
+      }
    }
 
    return S_OK;

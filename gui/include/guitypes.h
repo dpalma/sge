@@ -33,6 +33,12 @@ typedef cColor tGUIColor;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+enum eGUIPlacement
+{
+   kGUIPlaceRelative,
+   kGUIPlaceAbsolute,
+};
+
 enum eGUIAlignment
 {
    kGUIAlignLeft,

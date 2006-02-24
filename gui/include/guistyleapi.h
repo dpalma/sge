@@ -76,6 +76,9 @@ interface IGUIStyle : IUnknown
 
    virtual tResult GetFontDesc(cGUIFontDesc * pFontDesc) = 0;
 
+   virtual tResult GetPlacement(uint * pPlacement) const = 0;
+   virtual tResult SetPlacement(uint placement) = 0;
+
    virtual tResult GetWidth(int * pWidth, uint * pSpec) = 0;
    virtual tResult SetWidth(int width, uint spec) = 0;
 

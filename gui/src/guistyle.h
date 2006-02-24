@@ -72,6 +72,9 @@ public:
 
    virtual tResult GetFontDesc(cGUIFontDesc * pFontDesc);
 
+   virtual tResult GetPlacement(uint * pPlacement) const;
+   virtual tResult SetPlacement(uint placement);
+
    virtual tResult GetWidth(int * pWidth, uint * pSpec);
    virtual tResult SetWidth(int width, uint spec);
 
@@ -89,6 +92,7 @@ private:
    tGUIString m_fontName;
    uint m_fontPointSize;
    bool m_bFontBold, m_bFontItalic, m_bFontShadow, m_bFontOutline;
+   uint m_placement;
    int m_width, m_height;
    uint m_widthSpec, m_heightSpec;
 };

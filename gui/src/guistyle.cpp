@@ -23,6 +23,8 @@
 
 static const uint kInvalidUint = ~0u;
 
+static const tChar kStyleAttribNameValueSep = _T(':');
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUIStyle
@@ -33,8 +35,8 @@ static const uint kInvalidUint = ~0u;
 cGUIStyle::cGUIStyle(IGUIStyle * pClassStyle, IDictionary * pDict)
  : m_pClassStyle(CTAddRef(pClassStyle))
  , m_pDict((pDict != NULL) ? CTAddRef(pDict) : DictionaryCreate(kTransitory))
- , m_alignment(kGUIAlignLeft)
- , m_verticalAlignment(kGUIVertAlignTop)
+ , m_alignment(kInvalidUint)
+ , m_verticalAlignment(kInvalidUint)
  , m_pBackground(NULL)
  , m_pForeground(NULL)
  , m_textAlignment(kGUIAlignLeft)
@@ -45,6 +47,7 @@ cGUIStyle::cGUIStyle(IGUIStyle * pClassStyle, IDictionary * pDict)
  , m_bFontItalic(false)
  , m_bFontShadow(false)
  , m_bFontOutline(false)
+ , m_placement(kGUIPlaceRelative)
  , m_width(-1)
  , m_height(-1)
  , m_widthSpec(kInvalidUint)
@@ -69,6 +72,7 @@ cGUIStyle::cGUIStyle(const cGUIStyle & other)
  , m_bFontItalic(other.m_bFontItalic)
  , m_bFontShadow(other.m_bFontShadow)
  , m_bFontOutline(other.m_bFontOutline)
+ , m_placement(other.m_placement)
  , m_width(other.m_width)
  , m_height(other.m_height)
  , m_widthSpec(other.m_widthSpec)
@@ -168,6 +172,10 @@ tResult cGUIStyle::GetAlignment(uint * pAlignment)
    {
       return E_POINTER;
    }
+   if (m_alignment == kInvalidUint)
+   {
+      return S_FALSE;
+   }
    *pAlignment = m_alignment;
    return S_OK;
 }
@@ -193,6 +201,10 @@ tResult cGUIStyle::GetVerticalAlignment(uint * pVerticalAlignment)
    if (pVerticalAlignment == NULL)
    {
       return E_POINTER;
+   }
+   if (m_verticalAlignment == kInvalidUint)
+   {
+      return S_FALSE;
    }
    *pVerticalAlignment = m_verticalAlignment;
    return S_OK;
@@ -502,6 +514,34 @@ tResult cGUIStyle::GetFontDesc(cGUIFontDesc * pFontDesc)
 
 ///////////////////////////////////////
 
+tResult cGUIStyle::GetPlacement(uint * pPlacement) const
+{
+   if (pPlacement == NULL)
+   {
+      return E_POINTER;
+   }
+   if (m_placement == kInvalidUint)
+   {
+      return S_FALSE;
+   }
+   *pPlacement = m_placement;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIStyle::SetPlacement(uint placement)
+{
+   if (placement != kGUIPlaceRelative && placement != kGUIPlaceAbsolute)
+   {
+      return E_INVALIDARG;
+   }
+   m_placement = placement;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
 tResult cGUIStyle::GetWidth(int * pWidth, uint * pSpec)
 {
    if (pWidth == NULL || pSpec == NULL)
@@ -637,13 +677,203 @@ static eGUIVerticalAlignment GUIStyleParseVertAlignment(const char * psz)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+///////////////////////////////////////
+
+static tResult GUIStyleParseAndSetAlignment(const char * pszValue, IGUIStyle * pStyle)
+{
+   return pStyle->SetAlignment(GUIStyleParseAlignment(pszValue));
+}
+
+///////////////////////////////////////
+
+static tResult GUIStyleParseAndSetVertAlignment(const char * pszValue, IGUIStyle * pStyle)
+{
+   return pStyle->SetVerticalAlignment(GUIStyleParseVertAlignment(pszValue));
+}
+
+///////////////////////////////////////
+
+static tResult GUIStyleParseAndSetBackgroundColor(const char * pszValue, IGUIStyle * pStyle)
+{
+   tGUIColor color;
+   if (GUIParseColor(pszValue, &color) == S_OK)
+   {
+      return pStyle->SetBackgroundColor(color);
+   }
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
+static tResult GUIStyleParseAndSetForegroundColor(const char * pszValue, IGUIStyle * pStyle)
+{
+   tGUIColor color;
+   if (GUIParseColor(pszValue, &color) == S_OK)
+   {
+      return pStyle->SetForegroundColor(color);
+   }
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
+static tResult GUIStyleParseAndSetTextAlign(const char * pszValue, IGUIStyle * pStyle)
+{
+   return pStyle->SetTextAlignment(GUIStyleParseAlignment(pszValue));
+}
+
+///////////////////////////////////////
+
+static tResult GUIStyleParseAndSetTextVerticalAlign(const char * pszValue, IGUIStyle * pStyle)
+{
+   return pStyle->SetTextVerticalAlignment(GUIStyleParseVertAlignment(pszValue));
+}
+
+///////////////////////////////////////
+
+static tResult GUIStyleParseAndSetFontName(const char * pszValue, IGUIStyle * pStyle)
+{
+   return pStyle->SetFontName(pszValue);
+}
+
+///////////////////////////////////////
+
+static tResult GUIStyleParseAndSetFontPointSize(const char * pszValue, IGUIStyle * pStyle)
+{
+   int pointSize;
+   if (_stscanf(pszValue, _T("%d"), &pointSize) == 1)
+   {
+      return pStyle->SetFontPointSize(pointSize);
+   }
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
+static tResult GUIStyleParseAndSetFontBold(const char * pszValue, IGUIStyle * pStyle)
+{
+   bool b;
+   if (GUIParseBool(pszValue, &b) == S_OK)
+   {
+      return pStyle->SetFontBold(b);
+   }
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
+static tResult GUIStyleParseAndSetFontItalic(const char * pszValue, IGUIStyle * pStyle)
+{
+   bool b;
+   if (GUIParseBool(pszValue, &b) == S_OK)
+   {
+      return pStyle->SetFontItalic(b);
+   }
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
+static tResult GUIStyleParseAndSetFontShadow(const char * pszValue, IGUIStyle * pStyle)
+{
+   bool b;
+   if (GUIParseBool(pszValue, &b) == S_OK)
+   {
+      return pStyle->SetFontShadow(b);
+   }
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
+static tResult GUIStyleParseAndSetFontOutline(const char * pszValue, IGUIStyle * pStyle)
+{
+   bool b;
+   if (GUIParseBool(pszValue, &b) == S_OK)
+   {
+      return pStyle->SetFontOutline(b);
+   }
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
+static tResult GUIStyleParseAndSetPlacement(const char * pszValue, IGUIStyle * pStyle)
+{
+   if (stricmp(pszValue, kValueRelative) == 0)
+   {
+      return pStyle->SetPlacement(kGUIPlaceRelative);
+   }
+   else if (stricmp(pszValue, kValueAbsolute) == 0)
+   {
+      return pStyle->SetPlacement(kGUIPlaceAbsolute);
+   }
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
+static tResult GUIStyleParseAndSetWidth(const char * pszValue, IGUIStyle * pStyle)
+{
+   int width;
+   eGUIDimensionSpec spec;
+   if (GUIParseStyleDimension(pszValue, &width, &spec) == S_OK)
+   {
+      return pStyle->SetWidth(width, spec);
+   }
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
+static tResult GUIStyleParseAndSetHeight(const char * pszValue, IGUIStyle * pStyle)
+{
+   int height;
+   eGUIDimensionSpec spec;
+   if (GUIParseStyleDimension(pszValue, &height, &spec) == S_OK)
+   {
+      return pStyle->SetHeight(height, spec);
+   }
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
+typedef tResult (* tGUIStyleParseAndSetAttribFn)(const char * pszValue, IGUIStyle * pStyle);
+
+static const struct
+{
+   const tChar * pszAttrib;
+   tGUIStyleParseAndSetAttribFn pfnParseAndSet;
+}
+g_GUIStyleParseAndSetAttribTable[] =
+{
+   { kAttribAlign,               GUIStyleParseAndSetAlignment },
+   { kAttribVerticalAlign,       GUIStyleParseAndSetVertAlignment },
+   { kAttribBackgroundColor,     GUIStyleParseAndSetBackgroundColor },
+   { kAttribForegroundColor,     GUIStyleParseAndSetForegroundColor },
+   { kAttribTextAlign,           GUIStyleParseAndSetTextAlign },
+   { kAttribTextVerticalAlign,   GUIStyleParseAndSetTextVerticalAlign },
+   { kAttribFontName,            GUIStyleParseAndSetFontName },
+   { kAttribFontPointSize,       GUIStyleParseAndSetFontPointSize },
+   { kAttribFontBold,            GUIStyleParseAndSetFontBold },
+   { kAttribFontItalic,          GUIStyleParseAndSetFontItalic },
+   { kAttribFontShadow,          GUIStyleParseAndSetFontShadow },
+   { kAttribFontOutline,         GUIStyleParseAndSetFontOutline },
+   { kAttribPlacement,           GUIStyleParseAndSetPlacement },
+   { kAttribWidth,               GUIStyleParseAndSetWidth },
+   { kAttribHeight,              GUIStyleParseAndSetHeight },
+};
+
+///////////////////////////////////////
+
 static tResult GUIStyleParseAndSetAttribute(const char * pszAttrib, IGUIStyle * pStyle)
 {
    Assert(pszAttrib != NULL);
    Assert(!isspace(*pszAttrib));
    Assert(pStyle != NULL);
 
-   const tChar * pszSep = _tcschr(pszAttrib, _T(':'));
+   const tChar * pszSep = _tcschr(pszAttrib, kStyleAttribNameValueSep);
    if (pszSep == NULL)
    {
       return E_FAIL;
@@ -662,106 +892,17 @@ static tResult GUIStyleParseAndSetAttribute(const char * pszAttrib, IGUIStyle * 
    _tcsncpy(pszValue, pszValueStart, valueLength);
    pszValue[valueLength] = 0;
 
-   if (strcmp(pszAttribName, kAttribAlign) == 0)
+   for (int i = 0; i < _countof(g_GUIStyleParseAndSetAttribTable); i++)
    {
-      return pStyle->SetAlignment(GUIStyleParseAlignment(pszValue));
-   }
-   else if (strcmp(pszAttribName, kAttribVerticalAlign) == 0)
-   {
-      return pStyle->SetVerticalAlignment(GUIStyleParseVertAlignment(pszValue));
-   }
-   else if (strcmp(pszAttribName, kAttribBackgroundColor) == 0)
-   {
-      tGUIColor color;
-      if (GUIParseColor(pszValue, &color) == S_OK)
+      if (strcmp(pszAttribName, g_GUIStyleParseAndSetAttribTable[i].pszAttrib) == 0)
       {
-         return pStyle->SetBackgroundColor(color);
+         tResult result = (*g_GUIStyleParseAndSetAttribTable[i].pfnParseAndSet)(pszValue, pStyle);
+         WarnMsgIf2(result != S_OK, "Invalid value \"%s\" for attribute \"%s\"\n", pszValue, pszAttribName);
+         return result;
       }
-   }
-   else if (strcmp(pszAttribName, kAttribForegroundColor) == 0)
-   {
-      tGUIColor color;
-      if (GUIParseColor(pszValue, &color) == S_OK)
-      {
-         return pStyle->SetForegroundColor(color);
-      }
-   }
-   else if (strcmp(pszAttribName, kAttribTextAlign) == 0)
-   {
-      return pStyle->SetTextAlignment(GUIStyleParseAlignment(pszValue));
-   }
-   else if (strcmp(pszAttribName, kAttribTextVerticalAlign) == 0)
-   {
-      return pStyle->SetTextVerticalAlignment(GUIStyleParseVertAlignment(pszValue));
-   }
-   else if (strcmp(pszAttribName, kAttribFontName) == 0)
-   {
-      return pStyle->SetFontName(pszValue);
-   }
-   else if (strcmp(pszAttribName, kAttribFontPointSize) == 0)
-   {
-      int pointSize;
-      if (_stscanf(pszValue, _T("%d"), &pointSize) == 1)
-      {
-         return pStyle->SetFontPointSize(pointSize);
-      }
-   }
-   else if (strcmp(pszAttribName, kAttribFontBold) == 0)
-   {
-      bool b;
-      if (GUIParseBool(pszValue, &b) == S_OK)
-      {
-         return pStyle->SetFontBold(b);
-      }
-   }
-   else if (strcmp(pszAttribName, kAttribFontItalic) == 0)
-   {
-      bool b;
-      if (GUIParseBool(pszValue, &b) == S_OK)
-      {
-         return pStyle->SetFontItalic(b);
-      }
-   }
-   else if (strcmp(pszAttribName, kAttribFontShadow) == 0)
-   {
-      bool b;
-      if (GUIParseBool(pszValue, &b) == S_OK)
-      {
-         return pStyle->SetFontShadow(b);
-      }
-   }
-   else if (strcmp(pszAttribName, kAttribFontOutline) == 0)
-   {
-      bool b;
-      if (GUIParseBool(pszValue, &b) == S_OK)
-      {
-         return pStyle->SetFontOutline(b);
-      }
-   }
-   else if (strcmp(pszAttribName, kAttribWidth) == 0)
-   {
-      int width;
-      eGUIDimensionSpec spec;
-      if (GUIParseStyleDimension(pszValue, &width, &spec) == S_OK)
-      {
-         return pStyle->SetWidth(width, spec);
-      }
-   }
-   else if (strcmp(pszAttribName, kAttribHeight) == 0)
-   {
-      int height;
-      eGUIDimensionSpec spec;
-      if (GUIParseStyleDimension(pszValue, &height, &spec) == S_OK)
-      {
-         return pStyle->SetHeight(height, spec);
-      }
-   }
-   else
-   {
-      return pStyle->SetAttribute(pszAttribName, pszValue);
    }
 
-   return S_FALSE;
+   return pStyle->SetAttribute(pszAttribName, pszValue);
 }
 
 

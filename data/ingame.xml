@@ -1,7 +1,7 @@
 <!-- $Id$ -->
 
 <panel id="toppanel"
-    style="vertical-align:top;width:100%;height:28"
+    style="width:100%;height:28"
     insets="(5,5,5,5)"
     renderer="beveled">
     
@@ -14,10 +14,10 @@
 </panel>
 
 <panel id="bottompanel"
-    style="vertical-align:bottom;width:100%;height:20%"
+    style="placement:absolute;vertical-align:bottom;width:100%;height:20%"
     insets="(5,5,5,5)"
     renderer="beveled">
 
-   <button text="Exit" style="align:right;" onclick="QuitWithConfirm();" renderer="beveled" />
+   <button text="Exit" style="placement:absolute;align:right;" onclick="QuitWithConfirm();" />
 
 </panel>

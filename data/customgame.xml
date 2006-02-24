@@ -3,10 +3,7 @@
 <script src="customgame.lua" />
 
 <panel id=mapsPanel style="width:60%;height:60%;background-color:(0,0,0.75)" renderer="beveled">
-<!--
-   <layout type="grid" rows=1 columns=1 />
-   -->
-   <listbox id="mapsList" rows=6 style="width:50%;align:center;vertical-align:center;"
+   <listbox id="mapsList" rows=6 style="placement:absolute;width:50%;align:center;vertical-align:center;"
       renderer="beveled" onselchange="OnMapsListSelChange();"
    />
 </panel>

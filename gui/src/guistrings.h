@@ -31,6 +31,7 @@ const char kAttribLineSize[]           = "linesize";
 const char kAttribOnClick[]            = "onclick";
 const char kAttribOnSelChange[]        = "onselchange";
 const char kAttribPageSize[]           = "pagesize";
+const char kAttribPlacement[]          = "placement";
 const char kAttribPosition[]           = "position";
 const char kAttribRange[]              = "range";
 const char kAttribRendererClass[]      = "renderer";
@@ -62,6 +63,9 @@ const char kValueGrid[]                = "grid";
 
 const char kValueHorizontal[]          = "horizontal";
 const char kValueVertical[]            = "vertical";
+
+const char kValueRelative[]            = "relative";
+const char kValueAbsolute[]            = "absolute";
 
 const char kValueColorBlack[]          = "black";
 const char kValueColorRed[]            = "red";
