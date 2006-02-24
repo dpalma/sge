@@ -31,7 +31,11 @@ const STRING & CDECL Sprintf(STRING * pString, const tChar * pszFormat, ...)
    int length = SprintfLengthEstimate(pszFormat, args) + 1; // plus one for null terminator
    size_t nBytes = length * sizeof(typename STRING::value_type);
    typename STRING::value_type * pszTemp = reinterpret_cast<typename STRING::value_type *>(alloca(nBytes));
+#if _MSC_VER >= 1400
+   int result = _vsntprintf_s(pszTemp, nBytes, length, pszFormat, args);
+#else
    int result = _vsntprintf(pszTemp, length, pszFormat, args);
+#endif
    va_end(args);
    pString->assign(pszTemp);
    return *pString;
