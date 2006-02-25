@@ -103,6 +103,34 @@ uint cModelEntity::SetFlags(uint flags, uint mask)
 
 ///////////////////////////////////////
 
+tResult cModelEntity::GetModel(cStr * pModel) const
+{
+   if (pModel == NULL)
+   {
+      return E_POINTER;
+   }
+   if (m_model.empty())
+   {
+      return S_FALSE;
+   }
+   *pModel = m_model;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cModelEntity::GetPosition(tVec3 * pPosition) const
+{
+   if (pPosition == NULL)
+   {
+      return E_POINTER;
+   }
+   *pPosition = m_position;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
 const tMatrix4 & cModelEntity::GetWorldTransform() const
 {
    if (m_bUpdateWorldTransform)

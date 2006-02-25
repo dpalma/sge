@@ -18,6 +18,8 @@
 
 #include "dbgalloc.h" // must be last header
 
+///////////////////////////////////////////////////////////////////////////////
+
 #define IsFlagSet(f, b) (((f)&(b))==(b))
 
 extern tResult ModelEntityCreate(tEntityId id, const tChar * pszModel, const tVec3 & position, IEntity * * ppEntity);
@@ -38,6 +40,51 @@ const sVertexElement g_blendedVert[] =
    { kVEU_Normal,    kVET_Float3,   0, 2 * sizeof(float) },
    { kVEU_Position,  kVET_Float3,   0, 5 * sizeof(float) },
 };
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+template <>
+class cReadWriteOps<tVec3>
+{
+public:
+   static tResult Read(IReader * pReader, tVec3 * pV);
+   static tResult Write(IWriter * pWriter, const tVec3 & v);
+};
+
+tResult cReadWriteOps<tVec3>::Read(IReader * pReader, tVec3 * pV)
+{
+   if (pReader == NULL || pV == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (pReader->Read(&pV->x) == S_OK
+      && pReader->Read(&pV->y) == S_OK
+      && pReader->Read(&pV->z) == S_OK)
+   {
+      return S_OK;
+   }
+
+   return E_FAIL;
+}
+
+tResult cReadWriteOps<tVec3>::Write(IWriter * pWriter, const tVec3 & v)
+{
+   if (pWriter == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (pWriter->Write(v.x) == S_OK
+      && pWriter->Write(v.y) == S_OK
+      && pWriter->Write(v.z) == S_OK)
+   {
+      return S_OK;
+   }
+
+   return E_FAIL;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -323,14 +370,69 @@ void cEntityManager::OnSimFrame(double elapsedTime)
 
 tResult cEntityManager::Save(IWriter * pWriter)
 {
-   return S_FALSE;
+   if (pWriter == NULL)
+   {
+      return E_POINTER;
+   }
+   if (m_entities.empty())
+   {
+      return S_FALSE;
+   }
+   if (pWriter->Write(m_entities.size()) != S_OK)
+   {
+      return E_FAIL;
+   }
+   tEntityList::iterator iter = m_entities.begin();
+   for (; iter != m_entities.end(); iter++)
+   {
+      cStr model;
+      tVec3 position;
+      if ((*iter)->GetModel(&model) == S_OK
+         && (*iter)->GetPosition(&position) == S_OK)
+      {
+         if (pWriter->Write(model) != S_OK
+            || pWriter->Write(position) != S_OK)
+         {
+            return E_FAIL;
+         }
+      }
+   }
+   return S_OK;
 }
 
 ///////////////////////////////////////
 
 tResult cEntityManager::Load(IReader * pReader, int version)
 {
-   return S_FALSE;
+   if (pReader == NULL)
+   {
+      return E_POINTER;
+   }
+
+   // version 1:
+   // size_t nEntries
+   // nEntries of (cStr model, tVec3 position)
+   if (version == 1)
+   {
+      size_t nEntries = 0;
+      if (pReader->Read(&nEntries) != S_OK)
+      {
+         return E_FAIL;
+      }
+      for (uint i = 0; i < nEntries; i++)
+      {
+         cStr model;
+         tVec3 position;
+         if (pReader->Read(&model) != S_OK
+            || pReader->Read(&position) != S_OK)
+         {
+            return E_FAIL;
+         }
+         SpawnEntity(model.c_str(), position);
+      }
+   }
+
+   return S_OK;
 }
 
 ///////////////////////////////////////

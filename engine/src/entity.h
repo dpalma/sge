@@ -32,6 +32,10 @@ public:
    virtual uint GetFlags() const;
    virtual uint SetFlags(uint flags, uint mask);
 
+   virtual tResult GetModel(cStr * pModel) const;
+
+   virtual tResult GetPosition(tVec3 * pPosition) const;
+
    virtual const tMatrix4 & GetWorldTransform() const;
 
    virtual const tAxisAlignedBox & GetBoundingBox() const;

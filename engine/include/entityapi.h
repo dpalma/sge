@@ -7,6 +7,7 @@
 #include "enginedll.h"
 #include "comtools.h"
 #include "matrix4.h"
+#include "techstring.h"
 #include "vec3.h"
 
 #ifdef _MSC_VER
@@ -50,6 +51,10 @@ interface IEntity : IUnknown
 
    virtual uint GetFlags() const = 0;
    virtual uint SetFlags(uint flags, uint mask) = 0;
+
+   virtual tResult GetModel(cStr * pModel) const = 0;
+
+   virtual tResult GetPosition(tVec3 * pPosition) const = 0;
 
    virtual const tMatrix4 & GetWorldTransform() const = 0;
 
