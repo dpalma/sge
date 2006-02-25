@@ -488,6 +488,7 @@ static bool StylesAreEqual(IGUIStyle * pStyle1, IGUIStyle * pStyle2)
       && pStyle1->GetFontItalic(&b1) == pStyle2->GetFontItalic(&b2) && b1 == b2
       && pStyle1->GetFontShadow(&b1) == pStyle2->GetFontShadow(&b2) && b1 == b2
       && pStyle1->GetFontOutline(&b1) == pStyle2->GetFontOutline(&b2) && b1 == b2
+      && pStyle1->GetPlacement(&u1) == pStyle2->GetPlacement(&u2) && u1 == u2
       && pStyle1->GetWidth(&i1,&u1) == pStyle2->GetWidth(&i2,&u2) && i1 == i2 && u1 == u2
       && pStyle1->GetHeight(&i1,&u1) == pStyle2->GetHeight(&i2,&u2) && i1 == i2 && u1 == u2)
    {
@@ -505,7 +506,7 @@ void cGUIStyleSheetTests::TestStyleSelectors()
       "\n"
       "a.topText"
       "{\n"
-	   "  font-size: 7pt;\n"
+	   "  font-pointsize: 7pt;\n"
       "}\n"
       "a.doc\n"
       "{\n"
@@ -513,7 +514,7 @@ void cGUIStyleSheetTests::TestStyleSelectors()
       "}\n"
       ".heading\n"
       "{\n"
-	   "  font-size: 18px;\n"
+	   "  font-pointsize: 18px;\n"
 	   "  font-weight: bold;\n"
 	   "  color: #B82619;\n"
       "}\n"
@@ -535,6 +536,10 @@ void cGUIStyleSheetTests::TestStyleSelectors()
    {
       cAutoIPtr<IGUIStyle> pStyle;
       CPPUNIT_ASSERT(pStyleSheet->GetStyle(_T("a"), _T("topText"), &pStyle) == S_OK);
+      uint temp;
+      CPPUNIT_ASSERT(pStyle->GetFontPointSize(&temp) == S_OK);
+      CPPUNIT_ASSERT(temp == 7);
+      CPPUNIT_ASSERT(pStyle->GetAlignment(&temp) == S_FALSE);
    }
 
    {
