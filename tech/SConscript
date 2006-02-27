@@ -25,6 +25,7 @@ sourceFiles = Split("""
    src/quat.cpp
    src/ray.cpp
    src/readwritefile.cpp
+   src/readwritemd5.cpp
    src/readwritemem.cpp
    src/resourcestore.cpp
    src/resourcemanager.cpp

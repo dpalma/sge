@@ -169,6 +169,11 @@ tResult cMemReader::Read(void * pv, size_t nBytes, size_t * pnBytesRead)
 
 tResult ReaderCreateMem(const byte * pMem, size_t memSize, bool bOwn, IReader * * ppReader)
 {
+   return MemReaderCreate(pMem, memSize, bOwn, ppReader);
+}
+
+tResult MemReaderCreate(const byte * pMem, size_t memSize, bool bOwn, IReader * * ppReader)
+{
    if (pMem == NULL || ppReader == NULL)
    {
       return E_POINTER;

@@ -15,6 +15,7 @@
 class cFileSpec;
 F_DECLARE_INTERFACE(IReader);
 F_DECLARE_INTERFACE(IWriter);
+F_DECLARE_INTERFACE(IMD5Writer);
 
 enum eSeekOrigin
 {
@@ -363,8 +364,35 @@ public:
 
 TECH_API IReader * FileCreateReader(const cFileSpec & file);
 TECH_API IWriter * FileCreateWriter(const cFileSpec & file);
+#pragma deprecated(FileCreateReader, FileCreateWriter)
+
+TECH_API tResult FileReaderCreate(const cFileSpec & file, IReader * * ppReader);
+TECH_API tResult FileWriterCreate(const cFileSpec & file, IWriter * * ppWriter);
 
 TECH_API tResult ReaderCreateMem(const byte * pMem, size_t memSize, bool bOwn, IReader * * ppReader);
+#pragma deprecated(ReaderCreateMem)
+
+TECH_API tResult MemReaderCreate(const byte * pMem, size_t memSize, bool bOwn, IReader * * ppReader);
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IMD5Writer
+//
+
+interface IMD5Writer : IWriter
+{
+   virtual void InitializeMD5() = 0;
+   virtual tResult FinalizeMD5(byte digest[16]) = 0;
+
+   template <typename T>
+   tResult Write(T value)
+   {
+      return cReadWriteOps<T>::Write(this, value);
+   }
+};
+
+TECH_API tResult MD5WriterCreate(IWriter * pWriter, IMD5Writer * * ppWriter);
 
 ///////////////////////////////////////////////////////////////////////////////
 

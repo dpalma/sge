@@ -140,76 +140,6 @@ tResult cVersionedParticipant::GetParticipant(int version, ISaveLoadParticipant 
 }
 
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cMD5Writer
-//
-
-////////////////////////////////////////
-
-cMD5Writer::cMD5Writer(IWriter * pWriter)
- : m_pWriter(CTAddRef(pWriter))
- , m_bUpdateMD5(true)
-{
-   Assert(pWriter != NULL);
-   MD5Init(&m_context);
-}
-
-////////////////////////////////////////
-
-cMD5Writer::~cMD5Writer()
-{
-}
-
-////////////////////////////////////////
-
-void cMD5Writer::FinalizeMD5(byte digest[16])
-{
-   if (m_bUpdateMD5)
-   {
-      m_bUpdateMD5 = false;
-      MD5Final(digest, &m_context);
-   }
-}
-
-////////////////////////////////////////
-
-tResult cMD5Writer::Tell(ulong * pPos)
-{
-   return m_pWriter->Tell(pPos);
-}
-
-////////////////////////////////////////
-
-tResult cMD5Writer::Seek(long pos, eSeekOrigin origin)
-{
-   WarnMsg("Attempting to seek with a MD5 IWriter\n");
-   return E_FAIL;
-}
-
-////////////////////////////////////////
-
-tResult cMD5Writer::Write(const char * value)
-{
-   if (m_bUpdateMD5)
-   {
-      MD5Update(&m_context, const_cast<byte*>(reinterpret_cast<const byte*>(value)), strlen(value));
-   }
-   return m_pWriter->Write(value);
-}
-
-////////////////////////////////////////
-
-tResult cMD5Writer::Write(void * pValue, size_t cbValue, size_t * pcbWritten)
-{
-   if (m_bUpdateMD5)
-   {
-      MD5Update(&m_context, static_cast<byte*>(pValue), cbValue);
-   }
-   return m_pWriter->Write(pValue, cbValue, pcbWritten);
-}
-
-
 ////////////////////////////////////////////////////////////////////////////////
 
 template <>
@@ -567,11 +497,13 @@ tResult cSaveLoadManager::Save(IWriter * pWriter)
       return E_POINTER;
    }
 
-   cAutoIPtr<cMD5Writer> pMD5Writer(new cMD5Writer(pWriter));
-   if (!pMD5Writer)
+   cAutoIPtr<IMD5Writer> pMD5Writer;
+   if (MD5WriterCreate(pWriter, &pMD5Writer) != S_OK)
    {
-      return E_OUTOFMEMORY;
+      return E_FAIL;
    }
+
+   pMD5Writer->InitializeMD5();
 
    // Don't use this pointer anymore--use pMD5Writer!
    pWriter = NULL;

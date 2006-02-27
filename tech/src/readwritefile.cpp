@@ -159,6 +159,20 @@ tResult cFileReader::Read(void * pv, size_t nBytes, size_t * pnBytesRead)
 
 ///////////////////////////////////////
 
+tResult FileReaderCreate(const cFileSpec & file, IReader * * ppReader)
+{
+   if (ppReader == NULL)
+   {
+      return E_POINTER;
+   }
+   cAutoIPtr<IReader> pReader(static_cast<IReader*>(new cFileReader(file)));
+   if (!pReader)
+   {
+      return E_OUTOFMEMORY;
+   }
+   return pReader.GetPointer(ppReader);
+}
+
 TECH_API IReader * FileCreateReader(const cFileSpec& file)
 {
    return new cFileReader(file);
@@ -255,6 +269,20 @@ tResult cFileWriter::Write(void * pv, size_t nBytes, size_t * pnBytesWritten)
 }
 
 ///////////////////////////////////////
+
+tResult FileWriterCreate(const cFileSpec & file, IWriter * * ppWriter)
+{
+   if (ppWriter == NULL)
+   {
+      return E_POINTER;
+   }
+   cAutoIPtr<IWriter> pWriter(static_cast<IWriter*>(new cFileWriter(file)));
+   if (!pWriter)
+   {
+      return E_OUTOFMEMORY;
+   }
+   return pWriter.GetPointer(ppWriter);
+}
 
 TECH_API IWriter * FileCreateWriter(const cFileSpec& file)
 {
