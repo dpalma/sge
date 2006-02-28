@@ -6,12 +6,12 @@
 #include "dictionarystore.h"
 #include "readwriteapi.h"
 
+#ifdef HAVE_CPPUNITLITE2
+#include "CppUnitLite2.h"
+#endif
+
 #include <locale>
 #include <list>
-
-#ifdef HAVE_CPPUNIT
-#include <cppunit/extensions/HelperMacros.h>
-#endif
 
 #include "dbgalloc.h" // must be last header
 
@@ -83,6 +83,7 @@ bool ParseDictionaryLine(const tChar * psz, cStr * pKey, cStr * pValue, cStr * p
    return false;
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cDictionaryTextStore
@@ -101,8 +102,8 @@ tResult cDictionaryTextStore::Load(IDictionary * pDictionary)
 {
    Assert(pDictionary != NULL);
 
-   cAutoIPtr<IReader> pReader = FileCreateReader(m_file);
-   if (!!pReader)
+   cAutoIPtr<IReader> pReader;
+   if (FileReaderCreate(m_file, &pReader) == S_OK)
    {
       cStr line;
       while (pReader->Read(&line, '\n') == S_OK)
@@ -291,92 +292,75 @@ IDictionaryStore * DictionaryIniStoreCreate(const cFileSpec & file,
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNIT
-
-class cDictionaryStoreTests : public CppUnit::TestCase
-{
-   CPPUNIT_TEST_SUITE(cDictionaryStoreTests);
-      CPPUNIT_TEST(TestSplitString);
-      CPPUNIT_TEST(TestParseDictionaryLine);
-      CPPUNIT_TEST(TestParseIniSectionLine);
-   CPPUNIT_TEST_SUITE_END();
-
-   void TestSplitString();
-   void TestParseDictionaryLine();
-   void TestParseIniSectionLine();
-};
+#ifdef HAVE_CPPUNITLITE2
 
 ///////////////////////////////////////
 
-CPPUNIT_TEST_SUITE_REGISTRATION(cDictionaryStoreTests);
-
-///////////////////////////////////////
-
-void cDictionaryStoreTests::TestSplitString()
+TEST(TestSplitString)
 {
    cStr l, r;
-   CPPUNIT_ASSERT(SplitString("key=value", '=', &l, &r));
-   CPPUNIT_ASSERT(l == "key");
-   CPPUNIT_ASSERT(r == "value");
+   CHECK(SplitString("key=value", '=', &l, &r));
+   CHECK(l == "key");
+   CHECK(r == "value");
 }
 
 ///////////////////////////////////////
 
-void cDictionaryStoreTests::TestParseDictionaryLine()
+TEST(TestParseDictionaryLine)
 {
    cStr key, value, comment;
 
    key.clear();
    value.clear();
    comment.clear();
-   CPPUNIT_ASSERT(ParseDictionaryLine("key=value", &key, &value, &comment));
-   CPPUNIT_ASSERT(key == "key");
-   CPPUNIT_ASSERT(value == "value");
-   CPPUNIT_ASSERT(comment.empty());
+   CHECK(ParseDictionaryLine("key=value", &key, &value, &comment));
+   CHECK(key == "key");
+   CHECK(value == "value");
+   CHECK(comment.empty());
 
    key.clear();
    value.clear();
    comment.clear();
-   CPPUNIT_ASSERT(ParseDictionaryLine("  key  =  value  # this is a comment   ", &key, &value, &comment));
-   CPPUNIT_ASSERT(key == "key");
-   CPPUNIT_ASSERT(value == "value");
-   CPPUNIT_ASSERT(comment == "this is a comment");
+   CHECK(ParseDictionaryLine("  key  =  value  # this is a comment   ", &key, &value, &comment));
+   CHECK(key == "key");
+   CHECK(value == "value");
+   CHECK(comment == "this is a comment");
 
    key.clear();
    value.clear();
    comment.clear();
-   CPPUNIT_ASSERT(ParseDictionaryLine("definition", &key, &value, &comment));
-   CPPUNIT_ASSERT(key == "definition");
-   CPPUNIT_ASSERT(value.empty());
-   CPPUNIT_ASSERT(comment.empty());
+   CHECK(ParseDictionaryLine("definition", &key, &value, &comment));
+   CHECK(key == "definition");
+   CHECK(value.empty());
+   CHECK(comment.empty());
 }
 
 ///////////////////////////////////////
 
-void cDictionaryStoreTests::TestParseIniSectionLine()
+TEST(TestParseIniSectionLine)
 {
    // without comment
    {
       cStr section, comment;
-      CPPUNIT_ASSERT(ParseIniSectionLine(_T("[IniSection]"), &section, &comment));
-      CPPUNIT_ASSERT(section.compare(_T("IniSection")) == 0);
-      CPPUNIT_ASSERT(comment.empty());
+      CHECK(ParseIniSectionLine(_T("[IniSection]"), &section, &comment));
+      CHECK(section.compare(_T("IniSection")) == 0);
+      CHECK(comment.empty());
    }
 
    // with comment
    {
       cStr section, comment;
-      CPPUNIT_ASSERT(ParseIniSectionLine(_T("[IniSection]   # the comment"), &section, &comment));
-      CPPUNIT_ASSERT(section.compare(_T("IniSection")) == 0);
-      CPPUNIT_ASSERT(comment.compare(_T("the comment")) == 0);
+      CHECK(ParseIniSectionLine(_T("[IniSection]   # the comment"), &section, &comment));
+      CHECK(section.compare(_T("IniSection")) == 0);
+      CHECK(comment.compare(_T("the comment")) == 0);
    }
 
    // with lots of extra whitespace
    {
       cStr section, comment;
-      CPPUNIT_ASSERT(ParseIniSectionLine(_T("  [   IniSection  ]   #   the comment   "), &section, &comment));
-      CPPUNIT_ASSERT(section.compare(_T("IniSection")) == 0);
-      CPPUNIT_ASSERT(comment.compare(_T("the comment")) == 0);
+      CHECK(ParseIniSectionLine(_T("  [   IniSection  ]   #   the comment   "), &section, &comment));
+      CHECK(section.compare(_T("IniSection")) == 0);
+      CHECK(comment.compare(_T("the comment")) == 0);
    }
 }
 

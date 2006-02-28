@@ -21,6 +21,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "3rdpartyNvTriStrip", "3rdpa
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "3rdpartyGlew", "3rdpartyGlew.vcproj", "{AD2D072A-A1DC-4ABC-BE40-0CCDF4376AC5}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "3rdpartyCppUnitLite2", "3rdpartyCppUnitLite2.vcproj", "{E6F07DED-6CDD-4448-A5D4-C9BCE20BA57B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -120,6 +122,16 @@ Global
 		{AD2D072A-A1DC-4ABC-BE40-0CCDF4376AC5}.StaticDebug|Win32.Build.0 = StaticDebug|Win32
 		{AD2D072A-A1DC-4ABC-BE40-0CCDF4376AC5}.StaticRelease|Win32.ActiveCfg = StaticRelease|Win32
 		{AD2D072A-A1DC-4ABC-BE40-0CCDF4376AC5}.StaticRelease|Win32.Build.0 = StaticRelease|Win32
+		{E6F07DED-6CDD-4448-A5D4-C9BCE20BA57B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E6F07DED-6CDD-4448-A5D4-C9BCE20BA57B}.Debug|Win32.Build.0 = Debug|Win32
+		{E6F07DED-6CDD-4448-A5D4-C9BCE20BA57B}.Opt|Win32.ActiveCfg = Opt|Win32
+		{E6F07DED-6CDD-4448-A5D4-C9BCE20BA57B}.Opt|Win32.Build.0 = Opt|Win32
+		{E6F07DED-6CDD-4448-A5D4-C9BCE20BA57B}.Release|Win32.ActiveCfg = Release|Win32
+		{E6F07DED-6CDD-4448-A5D4-C9BCE20BA57B}.Release|Win32.Build.0 = Release|Win32
+		{E6F07DED-6CDD-4448-A5D4-C9BCE20BA57B}.StaticDebug|Win32.ActiveCfg = StaticDebug|Win32
+		{E6F07DED-6CDD-4448-A5D4-C9BCE20BA57B}.StaticDebug|Win32.Build.0 = StaticDebug|Win32
+		{E6F07DED-6CDD-4448-A5D4-C9BCE20BA57B}.StaticRelease|Win32.ActiveCfg = StaticRelease|Win32
+		{E6F07DED-6CDD-4448-A5D4-C9BCE20BA57B}.StaticRelease|Win32.Build.0 = StaticRelease|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

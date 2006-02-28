@@ -4,13 +4,13 @@
 #include "stdhdr.h"
 
 #include "dictionary.h"
+#include "filespec.h"
+
+#ifdef HAVE_CPPUNITLITE2
+#include "CppUnitLite2.h"
+#endif
 
 #include <cstdio>
-
-#ifdef HAVE_CPPUNIT
-#include "filespec.h"
-#include <cppunit/extensions/HelperMacros.h>
-#endif
 
 #include "dbgalloc.h" // must be last header
 
@@ -351,7 +351,10 @@ tResult cDictionary::Clone(IDictionary * * ppDictionary) const
       return E_OUTOFMEMORY;
    }
 
-#if _MSC_VER <= 1200
+#if _MSC_VER > 1200
+   pDict->m_vars.insert(m_vars.begin(), m_vars.end());
+   pDict->m_persistenceMap.insert(m_persistenceMap.begin(), m_persistenceMap.end());
+#else
    {
       tMap::const_iterator iter = m_vars.begin();
       for (; iter != m_vars.end(); iter++)
@@ -366,9 +369,6 @@ tResult cDictionary::Clone(IDictionary * * ppDictionary) const
          pDict->m_persistenceMap.insert(*iter);
       }
    }
-#else
-   pDict->m_vars.insert(m_vars.begin(), m_vars.end());
-   pDict->m_persistenceMap.insert(m_persistenceMap.begin(), m_persistenceMap.end());
 #endif
 
    *ppDictionary = static_cast<IDictionary*>(pDict);
@@ -420,45 +420,28 @@ IUnknown * DictionaryCreate(tPersistence defaultPersist, IUnknown * pUnkOuter)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNIT
-
-class cDictionaryTests : public CppUnit::TestCase
-{
-   CPPUNIT_TEST_SUITE(cDictionaryTests);
-      CPPUNIT_TEST(TestBadArgs);
-      CPPUNIT_TEST(TestSet);
-      CPPUNIT_TEST(TestPersistence);
-   CPPUNIT_TEST_SUITE_END();
-
-   void TestBadArgs();
-   void TestSet();
-   void TestPersistence();
-};
+#ifdef HAVE_CPPUNITLITE2
 
 ///////////////////////////////////////
 
-CPPUNIT_TEST_SUITE_REGISTRATION(cDictionaryTests);
-
-///////////////////////////////////////
-
-void cDictionaryTests::TestBadArgs()
+TEST(TestDictionaryBadArgs)
 {
    cAutoIPtr<IDictionary> pDict(DictionaryCreate());
-   CPPUNIT_ASSERT(FAILED(pDict->Get(NULL, (tChar *)NULL, 0)));
-   CPPUNIT_ASSERT(FAILED(pDict->Get(NULL, (cStr *)NULL)));
-   CPPUNIT_ASSERT(FAILED(pDict->Get(NULL, (int *)NULL)));
-   CPPUNIT_ASSERT(FAILED(pDict->Get(NULL, (float *)NULL)));
-   CPPUNIT_ASSERT(FAILED(pDict->Set(NULL, NULL)));
-   CPPUNIT_ASSERT(FAILED(pDict->Set(NULL, 999)));
-   CPPUNIT_ASSERT(FAILED(pDict->Set(NULL, 999.999f)));
-   CPPUNIT_ASSERT(FAILED(pDict->Delete(NULL)));
-   CPPUNIT_ASSERT(FAILED(pDict->IsSet(NULL)));
-   CPPUNIT_ASSERT(FAILED(pDict->GetKeys(NULL)));
+   CHECK(FAILED(pDict->Get(NULL, (tChar *)NULL, 0)));
+   CHECK(FAILED(pDict->Get(NULL, (cStr *)NULL)));
+   CHECK(FAILED(pDict->Get(NULL, (int *)NULL)));
+   CHECK(FAILED(pDict->Get(NULL, (float *)NULL)));
+   CHECK(FAILED(pDict->Set(NULL, NULL)));
+   CHECK(FAILED(pDict->Set(NULL, 999)));
+   CHECK(FAILED(pDict->Set(NULL, 999.999f)));
+   CHECK(FAILED(pDict->Delete(NULL)));
+   CHECK(FAILED(pDict->IsSet(NULL)));
+   CHECK(FAILED(pDict->GetKeys(NULL)));
 }
 
 ///////////////////////////////////////
 
-void cDictionaryTests::TestSet()
+TEST(TestDictionarySet)
 {
    static const char szKey[] = "test";
    static const char szValue1[] = "value one";
@@ -469,23 +452,23 @@ void cDictionaryTests::TestSet()
    cAutoIPtr<IDictionary> pDict(DictionaryCreate());
 
    // set value one
-   CPPUNIT_ASSERT(pDict->Set(szKey, szValue1) == S_OK);
+   CHECK(pDict->Set(szKey, szValue1) == S_OK);
 
    // verify
-   CPPUNIT_ASSERT(pDict->Get(szKey, &value) == S_OK);
-   CPPUNIT_ASSERT(strcmp(value.c_str(), szValue1) == 0);
+   CHECK(pDict->Get(szKey, &value) == S_OK);
+   CHECK(strcmp(value.c_str(), szValue1) == 0);
 
    // overwrite with value two
-   CPPUNIT_ASSERT(pDict->Set(szKey, szValue2) == S_OK);
+   CHECK(pDict->Set(szKey, szValue2) == S_OK);
 
    // verify
-   CPPUNIT_ASSERT(pDict->Get(szKey, &value) == S_OK);
-   CPPUNIT_ASSERT(strcmp(value.c_str(), szValue2) == 0);
+   CHECK(pDict->Get(szKey, &value) == S_OK);
+   CHECK(strcmp(value.c_str(), szValue2) == 0);
 }
 
 ///////////////////////////////////////
 
-void cDictionaryTests::TestPersistence()
+TEST(TestDictionaryPersistence)
 {
    static const int kNumTestVars = 4;
    static const char szPermKeyFormat[] = "perm%d";
@@ -502,11 +485,11 @@ void cDictionaryTests::TestPersistence()
    {
       Sprintf(&key, szPermKeyFormat, i);
       Sprintf(&value, szPermValFormat, i);
-      CPPUNIT_ASSERT(pSaveDict->Set(key.c_str(), value.c_str(), kPermanent) == S_OK);
+      CHECK(pSaveDict->Set(key.c_str(), value.c_str(), kPermanent) == S_OK);
 
       Sprintf(&key, szTempKeyFormat, i);
       Sprintf(&value, szTempValFormat, i);
-      CPPUNIT_ASSERT(pSaveDict->Set(key.c_str(), value.c_str(), kTransitory) == S_OK);
+      CHECK(pSaveDict->Set(key.c_str(), value.c_str(), kTransitory) == S_OK);
    }
 
    for (i = 0; i < kNumTestVars; i++)
@@ -516,30 +499,30 @@ void cDictionaryTests::TestPersistence()
 
       Sprintf(&key, szPermKeyFormat, i);
       Sprintf(&value, szPermValFormat, i);
-      CPPUNIT_ASSERT(pSaveDict->Get(key.c_str(), &value2, &persist) == S_OK);
-      CPPUNIT_ASSERT(strcmp(value2.c_str(), value.c_str()) == 0);
-      CPPUNIT_ASSERT(persist == kPermanent);
+      CHECK(pSaveDict->Get(key.c_str(), &value2, &persist) == S_OK);
+      CHECK(strcmp(value2.c_str(), value.c_str()) == 0);
+      CHECK(persist == kPermanent);
 
       Sprintf(&key, szTempKeyFormat, i);
       Sprintf(&value, szTempValFormat, i);
-      CPPUNIT_ASSERT(pSaveDict->Get(key.c_str(), &value2, &persist) == S_OK);
-      CPPUNIT_ASSERT(strcmp(value2.c_str(), value.c_str()) == 0);
-      CPPUNIT_ASSERT(persist == kTransitory);
+      CHECK(pSaveDict->Get(key.c_str(), &value2, &persist) == S_OK);
+      CHECK(strcmp(value2.c_str(), value.c_str()) == 0);
+      CHECK(persist == kTransitory);
    }
 
    char szStore[TMP_MAX];
-   CPPUNIT_ASSERT(tmpnam(szStore) != NULL);
+   CHECK(tmpnam(szStore) != NULL);
 
    try
    {
       cAutoIPtr<IDictionaryStore> pSaveStore(DictionaryStoreCreate(cFileSpec(szStore)));
-      CPPUNIT_ASSERT(pSaveStore->Save(pSaveDict) == S_OK);
+      CHECK(pSaveStore->Save(pSaveDict) == S_OK);
       SafeRelease(pSaveStore);
       SafeRelease(pSaveDict);
 
       cAutoIPtr<IDictionary> pLoadDict(DictionaryCreate());
       cAutoIPtr<IDictionaryStore> pLoadStore(DictionaryStoreCreate(cFileSpec(szStore)));
-      CPPUNIT_ASSERT(pLoadStore->Load(pLoadDict) == S_OK);
+      CHECK(pLoadStore->Load(pLoadDict) == S_OK);
 
       for (i = 0; i < kNumTestVars; i++)
       {
@@ -548,16 +531,16 @@ void cDictionaryTests::TestPersistence()
 
          Sprintf(&key, szPermKeyFormat, i);
          Sprintf(&value, szPermValFormat, i);
-         CPPUNIT_ASSERT(pLoadDict->Get(key.c_str(), &value2, &persist) == S_OK);
-         CPPUNIT_ASSERT(strcmp(value2.c_str(), value.c_str()) == 0);
-         CPPUNIT_ASSERT(persist == kPermanent);
+         CHECK(pLoadDict->Get(key.c_str(), &value2, &persist) == S_OK);
+         CHECK(strcmp(value2.c_str(), value.c_str()) == 0);
+         CHECK(persist == kPermanent);
 
          Sprintf(&key, szTempKeyFormat, i);
          Sprintf(&value, szTempValFormat, i);
-         CPPUNIT_ASSERT(pLoadDict->Get(key.c_str(), &value2, &persist) == S_FALSE);
+         CHECK(pLoadDict->Get(key.c_str(), &value2, &persist) == S_FALSE);
       }
 
-      CPPUNIT_ASSERT(unlink(szStore) == 0);
+      CHECK(unlink(szStore) == 0);
    }
    catch (...)
    {
@@ -567,6 +550,6 @@ void cDictionaryTests::TestPersistence()
    }
 }
 
-#endif // HAVE_CPPUNIT
+#endif // HAVE_CPPUNITLITE2
 
 ///////////////////////////////////////////////////////////////////////////////

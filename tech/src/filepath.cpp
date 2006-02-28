@@ -5,16 +5,16 @@
 
 #include "filepath.h"
 
+#ifdef HAVE_CPPUNITLITE2
+#include "CppUnitLite2.h"
+#endif
+
 #include <cstring>
 #include <cstdlib>
 #include <locale>
 
 #ifndef _WIN32
 #include <unistd.h>
-#endif
-
-#ifdef HAVE_CPPUNIT
-#include <cppunit/extensions/HelperMacros.h>
 #endif
 
 #include "dbgalloc.h" // must be last header
@@ -312,88 +312,62 @@ cFilePath cFilePath::GetCwd()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNIT
-
-class cFilePathTests : public CppUnit::TestCase
-{
-   void TestCollapseDots();
-   void TestIsFullPath();
-   void TestAddRelative();
-
-   static const char * gm_testStrings[];
-
-   CPPUNIT_TEST_SUITE(cFilePathTests);
-      CPPUNIT_TEST(TestCollapseDots);
-      CPPUNIT_TEST(TestIsFullPath);
-      CPPUNIT_TEST(TestAddRelative);
-   CPPUNIT_TEST_SUITE_END();
-};
+#ifdef HAVE_CPPUNITLITE2
 
 ////////////////////////////////////////
 
-CPPUNIT_TEST_SUITE_REGISTRATION(cFilePathTests);
-
-////////////////////////////////////////
-
-const char * cFilePathTests::gm_testStrings[] =
+TEST(TestFilePathCollapseDots)
 {
-   "/p1/p2/p3",            "/p1/p2/p3",         // nothing to do
-   "/p1/p2/p3/..",         "/p1/p2",            // parent directory at end
-   "../p1/p2/p3",          "../p1/p2/p3",       // parent directory at begining, can't collapse
-   "/p1/p2/../p3",         "/p1/p3",            // parent directory mid-string
-   "/p1/p2/p3/../..",      "/p1",               // multiple parent directories at end
-   "../../p1/p2/p3",       "../../p1/p2/p3",    // multiple parent directories at begining, can't collapse
-   "/p1/p2/../../p3",      "/p3",               // multiple parent directories mid-string
-   "/p1/p2/p3/../../..",   "",                  // total collapse
-   "p1/../p2/p3",          "p2/p3",             // ensure relative path does not become absolute
-   "../../p1/../p2/p3",    "../../p2/p3",       // collapse middle but not beginning
-#if 0
-   "/p1/p2/../../../p3",   "/p1/p2/../../../p3", // too many levels
-   "./p1/p2",              "p1/p2",
-   "./p1/p2/../../p3",     "p3",
-#endif
-};
-
-////////////////////////////////////////
-
-void cFilePathTests::TestCollapseDots()
-{
-   for (int i = 0; i < _countof(gm_testStrings); i += 2)
+   static const tChar * collapseDotsTestStrings[] =
    {
-      cFilePath temp(cFilePath(gm_testStrings[i]).CollapseDots());
-      CPPUNIT_ASSERT(FilePathCompare(cFilePath(gm_testStrings[i + 1]), temp) == 0);
+      _T("/p1/p2/p3"),           _T("/p1/p2/p3"),        // nothing to do
+      _T("/p1/p2/p3/.."),        _T("/p1/p2"),           // parent directory at end
+      _T("../p1/p2/p3"),         _T("../p1/p2/p3"),      // parent directory at begining, can't collapse
+      _T("/p1/p2/../p3"),        _T("/p1/p3"),           // parent directory mid-string
+      _T("/p1/p2/p3/../.."),     _T("/p1"),              // multiple parent directories at end
+      _T("../../p1/p2/p3"),      _T("../../p1/p2/p3"),   // multiple parent directories at begining, can't collapse
+      _T("/p1/p2/../../p3"),     _T("/p3"),              // multiple parent directories mid-string
+      _T("/p1/p2/p3/../../.."),  _T(""),                 // total collapse
+      _T("p1/../p2/p3"),         _T("p2/p3"),            // ensure relative path does not become absolute
+      _T("../../p1/../p2/p3"),   _T("../../p2/p3"),      // collapse middle but not beginning
+   };
+
+   for (int i = 0; i < _countof(collapseDotsTestStrings); i += 2)
+   {
+      cFilePath temp(cFilePath(collapseDotsTestStrings[i]).CollapseDots());
+      CHECK_EQUAL(FilePathCompare(cFilePath(collapseDotsTestStrings[i + 1]), temp), 0);
    }
 }
 
 ////////////////////////////////////////
 
-void cFilePathTests::TestIsFullPath()
+TEST(TestFilePathIsFullPath)
 {
-   CPPUNIT_ASSERT(cFilePath("C:\\p1\\p2").IsFullPath());
-   CPPUNIT_ASSERT(!cFilePath("C:p1\\p2").IsFullPath());
-   CPPUNIT_ASSERT(!cFilePath("C:\\p1\\p2\\..\\p3").IsFullPath());
-   CPPUNIT_ASSERT(cFilePath("/p1/p2/p3").IsFullPath());
-   CPPUNIT_ASSERT(!cFilePath("p1/p2/p3").IsFullPath());
-   CPPUNIT_ASSERT(!cFilePath("/p1/p2/../p3").IsFullPath());
+   CHECK(cFilePath("C:\\p1\\p2").IsFullPath());
+   CHECK(!cFilePath("C:p1\\p2").IsFullPath());
+   CHECK(!cFilePath("C:\\p1\\p2\\..\\p3").IsFullPath());
+   CHECK(cFilePath("/p1/p2/p3").IsFullPath());
+   CHECK(!cFilePath("p1/p2/p3").IsFullPath());
+   CHECK(!cFilePath("/p1/p2/../p3").IsFullPath());
 }
 
 ////////////////////////////////////////
 
-void cFilePathTests::TestAddRelative()
+TEST(TestFilePathAddRelative)
 {
    {
       cFilePath path("c:\\p1\\p2\\");
-      CPPUNIT_ASSERT(path.AddRelative("\\p3"));
-      CPPUNIT_ASSERT(_tcscmp(path.CStr(), _T("c:\\p1\\p2\\p3")) == 0);
+      CHECK(path.AddRelative("\\p3"));
+      CHECK_EQUAL(_tcscmp(path.CStr(), _T("c:\\p1\\p2\\p3")), 0);
    }
 
    {
       cFilePath path("c:\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory");
-      CPPUNIT_ASSERT(path.AddRelative("\\theend"));
-      CPPUNIT_ASSERT(_tcscmp(path.CStr(), _T("c:\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\direct")) == 0);
+      CHECK(path.AddRelative("\\theend"));
+      CHECK_EQUAL(_tcscmp(path.CStr(), _T("c:\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\directory\\direct")), 0);
    }
 }
 
-#endif // HAVE_CPPUNIT
+#endif // HAVE_CPPUNITLITE2
 
 ///////////////////////////////////////////////////////////////////////////////

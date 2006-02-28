@@ -7,11 +7,11 @@
 #include "techstring.h"
 #include "dictionary.h"
 
-#include <cstdio>
-
-#ifdef HAVE_CPPUNIT
-#include <cppunit/extensions/HelperMacros.h>
+#ifdef HAVE_CPPUNITLITE2
+#include "CppUnitLite2.h"
 #endif
+
+#include <cstdio>
 
 #include "dbgalloc.h" // must be last header
 
@@ -162,26 +162,11 @@ bool ConfigIsTrue(const tChar * pszName)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNIT
-
-class cConfigTests : public CppUnit::TestCase
-{
-   void TestParseCmdLine();
-   void TestStringIsTrue();
-
-   CPPUNIT_TEST_SUITE(cConfigTests);
-      CPPUNIT_TEST(TestParseCmdLine);
-      CPPUNIT_TEST(TestStringIsTrue);
-   CPPUNIT_TEST_SUITE_END();
-};
+#ifdef HAVE_CPPUNITLITE2
 
 ///////////////////////////////////////
 
-CPPUNIT_TEST_SUITE_REGISTRATION(cConfigTests);
-
-///////////////////////////////////////
-
-void cConfigTests::TestParseCmdLine()
+TEST(TestParseCmdLine)
 {
    cAutoIPtr<IDictionary> pDict(DictionaryCreate());
    pDict->Set("test1", "val1", kTransitory);
@@ -192,32 +177,32 @@ void cConfigTests::TestParseCmdLine()
       "-test1",
       "+test3 = val3",
    };
-   CPPUNIT_ASSERT(ParseCommandLine(_countof(argv), argv, pDict) == S_OK);
-   CPPUNIT_ASSERT(pDict->IsSet("test1") == S_FALSE);
+   CHECK(ParseCommandLine(_countof(argv), argv, pDict) == S_OK);
+   CHECK(pDict->IsSet("test1") == S_FALSE);
    cStr temp;
    tPersistence persist;
-   CPPUNIT_ASSERT(pDict->Get("test2", &temp, &persist) == S_OK);
-   CPPUNIT_ASSERT(strcmp(temp.c_str(), "val2") == 0);
-   CPPUNIT_ASSERT(persist == kTransitory);
+   CHECK(pDict->Get("test2", &temp, &persist) == S_OK);
+   CHECK(strcmp(temp.c_str(), "val2") == 0);
+   CHECK(persist == kTransitory);
    persist = kUseDefault;
    temp.erase();
-   CPPUNIT_ASSERT(pDict->Get("test3", &temp, &persist) == S_OK);
-   CPPUNIT_ASSERT(strcmp(temp.c_str(), "val3") == 0);
-   CPPUNIT_ASSERT(persist == kTransitory);
+   CHECK(pDict->Get("test3", &temp, &persist) == S_OK);
+   CHECK(strcmp(temp.c_str(), "val3") == 0);
+   CHECK(persist == kTransitory);
 }
 
 ///////////////////////////////////////
 
-void cConfigTests::TestStringIsTrue()
+TEST(TestStringIsTrue)
 {
-   CPPUNIT_ASSERT(StringIsTrue("true"));
-   CPPUNIT_ASSERT(!StringIsTrue("false"));
-   CPPUNIT_ASSERT(StringIsTrue("TRUE"));
-   CPPUNIT_ASSERT(!StringIsTrue("FALSE"));
-   CPPUNIT_ASSERT(StringIsTrue("1"));
-   CPPUNIT_ASSERT(!StringIsTrue("0"));
+   CHECK(StringIsTrue("true"));
+   CHECK(!StringIsTrue("false"));
+   CHECK(StringIsTrue("TRUE"));
+   CHECK(!StringIsTrue("FALSE"));
+   CHECK(StringIsTrue("1"));
+   CHECK(!StringIsTrue("0"));
 }
 
-#endif // HAVE_CPPUNIT
+#endif // HAVE_CPPUNITLITE2
 
 ///////////////////////////////////////////////////////////////////////////////

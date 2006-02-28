@@ -1128,8 +1128,6 @@ void cTerrainChunk::Render()
    pRenderer->SubmitVertices(&m_vertices[0], m_vertices.size());
    pRenderer->SetIndexFormat(kIF_32Bit);
 
-   UseGlobal(ResourceManager);
-
    tSplats::iterator iter = m_splats.begin();
    for (int iSplat = 0; iter != m_splats.end(); iter++, iSplat++)
    {

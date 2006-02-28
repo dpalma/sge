@@ -5,8 +5,8 @@
 
 #include "functor.h"
 
-#ifdef HAVE_CPPUNIT
-#include <cppunit/extensions/HelperMacros.h>
+#ifdef HAVE_CPPUNITLITE2
+#include "CppUnitLite2.h"
 #endif
 
 #include "dbgalloc.h" // must be last header
@@ -24,18 +24,23 @@ cFunctor::~cFunctor()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNIT
-
-class cFunctorTests : public CppUnit::TestCase
-{
-   CPPUNIT_TEST_SUITE(cFunctorTests);
-   CPPUNIT_TEST_SUITE_END();
-};
+#ifdef HAVE_CPPUNITLITE2
 
 ////////////////////////////////////////
 
-CPPUNIT_TEST_SUITE_REGISTRATION(cFunctorTests);
+static ulong g_functor1Arg = 0;
+static void Functor1TestFunction(ulong arg)
+{
+   g_functor1Arg = arg;
+}
 
-#endif // HAVE_CPPUNIT
+TEST(TestFunctor1)
+{
+   cFunctor1<void, ulong> f(Functor1TestFunction, 99);
+   f();
+   CHECK_EQUAL(g_functor1Arg, 99);
+}
+
+#endif // HAVE_CPPUNITLITE2
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -29,13 +29,13 @@ Window            g_window = 0;
 GLXContext        g_context = NULL;
 XErrorHandler     g_nextErrorHandler = NULL;
 
-tSysKeyEventFn       g_pfnKeyCallback = NULL;
-tSysMouseEventFn     g_pfnMouseCallback = NULL;
-tSysFrameFn          g_pfnFrameCallback = NULL;
-tSysResizeFn         g_pfnResizeCallback = NULL;
-
-uint_ptr             g_keyCallbackUserData = 0;
-uint_ptr             g_mouseCallbackUserData = 0;
+// from syscommon.cpp
+extern tSysKeyEventFn   g_pfnKeyCallback;
+extern tSysMouseEventFn g_pfnMouseCallback;
+extern tSysFrameFn      g_pfnFrameCallback;
+extern tSysResizeFn     g_pfnResizeCallback;
+extern uint_ptr         g_keyCallbackUserData;
+extern uint_ptr         g_mouseCallbackUserData;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -54,39 +54,6 @@ tResult SoundResourceRegister()
 bool IsExiting()
 {
    return g_bExiting;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void SysSetKeyEventCallback(tSysKeyEventFn pfn, uint_ptr userData)
-{
-   g_pfnKeyCallback = pfn;
-   g_keyCallbackUserData = userData;
-}
-
-void SysSetMouseEventCallback(tSysMouseEventFn pfn, uint_ptr userData)
-{
-   g_pfnMouseCallback = pfn;
-   g_mouseCallbackUserData = userData;
-}
-
-tSysFrameFn SysSetFrameCallback(tSysFrameFn pfn)
-{
-   tSysFrameFn pfnFormer = g_pfnFrameCallback;
-   g_pfnFrameCallback = pfn;
-   return pfnFormer;
-}
-
-tSysFrameFn SysGetFrameCallback()
-{
-   return g_pfnFrameCallback;
-}
-
-tSysResizeFn SysSetResizeCallback(tSysResizeFn pfn)
-{
-   tSysResizeFn pfnFormer = g_pfnResizeCallback;
-   g_pfnResizeCallback = pfn;
-   return pfnFormer;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -225,13 +192,6 @@ HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI 
 void SysSwapBuffers()
 {
    glXSwapBuffers(g_display, g_window);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void SysReportFrameStats(tChar * psz, ulong max)
-{
-   // TODO
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -46,8 +46,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\tech\include,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip"
-				PreprocessorDefinitions="_USRDLL;TECH_EXPORTS;STRICT;_WINDOWS;NDEBUG;WIN32"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\cppunit\include,..\..\tech\include,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip"
+				PreprocessorDefinitions="_USRDLL;TECH_EXPORTS;STRICT;_WINDOWS;NDEBUG;WIN32;HAVE_CPPUNITLITE2"
 				StringPooling="true"
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="true"
@@ -76,7 +76,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\zlibwapi.lib winmm.lib"
+				AdditionalDependencies="$(OutDir)\CppUnitLite2.lib $(OutDir)\zlibwapi.lib winmm.lib"
 				OutputFile=".\..\..\Build.vc8\Opt/tech.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -140,8 +140,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\tech\include,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip"
-				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,_USRDLL,TECH_EXPORTS,WIN32,_WINDOWS,STRICT,HAVE_CPPUNIT"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\cppunit\include,..\..\tech\include,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip"
+				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,_USRDLL,TECH_EXPORTS,WIN32,_WINDOWS,STRICT,HAVE_CPPUNIT,HAVE_CPPUNITLITE2"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="2"
@@ -220,7 +220,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\tech\include,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\cppunit\include,..\..\tech\include,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;TECH_EXPORTS;WIN32;_WINDOWS;STRICT"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -313,7 +313,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\tech\include,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\cppunit\include,..\..\tech\include,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,_USRDLL,TECH_EXPORTS,WIN32,_WINDOWS,STRICT"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -393,8 +393,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\tech\include,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip"
-				PreprocessorDefinitions="_DEBUG;_USRDLL;TECH_EXPORTS;WIN32;_WINDOWS;STRICT;HAVE_CPPUNIT"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\cppunit\include,..\..\tech\include,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip"
+				PreprocessorDefinitions="_DEBUG;_USRDLL;TECH_EXPORTS;WIN32;_WINDOWS;STRICT;HAVE_CPPUNIT;HAVE_CPPUNITLITE2"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"
@@ -422,7 +422,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\cppunit.lib $(OutDir)\zlibwapi.lib winmm.lib"
+				AdditionalDependencies="$(OutDir)\CppUnitLite2.lib $(OutDir)\cppunit.lib $(OutDir)\zlibwapi.lib winmm.lib"
 				OutputFile=".\..\..\Build.vc8\Debug/tech.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -594,6 +594,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\tech\src\readwritemd5.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\tech\src\readwritemem.cpp"
 					>
 				</File>
@@ -723,6 +727,10 @@
 				</File>
 				<File
 					RelativePath="..\..\tech\src\readwritefile.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\tech\src\readwritemd5.h"
 					>
 				</File>
 				<File

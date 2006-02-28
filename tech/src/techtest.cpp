@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#ifdef HAVE_CPPUNIT // entire file
+#ifdef HAVE_CPPUNITLITE2
 
 extern "C"
 {
@@ -14,7 +14,7 @@ extern "C"
 #include "techtime.h"
 #include "toposort.h"
 
-#include <cppunit/extensions/HelperMacros.h>
+#include "CppUnitLite2.h"
 
 #include "dbgalloc.h" // must be last header
 
@@ -36,24 +36,6 @@ LOG_DEFINE_CHANNEL(TechTest);
 
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cMD5Tests
-//
-
-class cMD5Tests : public CppUnit::TestCase
-{
-   void MDTimeTrial();
-   void MDTestSuite();
-
-   CPPUNIT_TEST_SUITE(cMD5Tests);
-      CPPUNIT_TEST(MDTimeTrial);
-      CPPUNIT_TEST(MDTestSuite);
-   CPPUNIT_TEST_SUITE_END();
-};
-
-////////////////////////////////////////
-
-CPPUNIT_TEST_SUITE_REGISTRATION(cMD5Tests);
 
 ////////////////////////////////////////
 
@@ -99,7 +81,7 @@ static bool MDString(char * string, byte expected[16])
 
 ////////////////////////////////////////
 
-void cMD5Tests::MDTimeTrial()
+TEST(MDTimeTrial)
 {
    MD_CTX context;
    double endTime, startTime, elapsed;
@@ -142,7 +124,7 @@ void cMD5Tests::MDTimeTrial()
 
 ////////////////////////////////////////
 
-void cMD5Tests::MDTestSuite()
+TEST(MDTestSuite)
 {
    static struct
    {
@@ -161,34 +143,16 @@ void cMD5Tests::MDTestSuite()
    };
    for (int i = 0; i < _countof(tests); i++)
    {
-      CPPUNIT_ASSERT(MDString(tests[i].string, tests[i].digest));
+      CHECK(MDString(tests[i].string, tests[i].digest));
    }
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cDigraphTests
-//
-
-class cDigraphTests : public CppUnit::TestCase
-{
-   void TestTopoSort();
-   void TestCycleDetect();
-
-   CPPUNIT_TEST_SUITE(cDigraphTests);
-      CPPUNIT_TEST(TestTopoSort);
-      CPPUNIT_TEST(TestCycleDetect);
-   CPPUNIT_TEST_SUITE_END();
-};
 
 ////////////////////////////////////////
 
-CPPUNIT_TEST_SUITE_REGISTRATION(cDigraphTests);
-
-////////////////////////////////////////
-
-void cDigraphTests::TestTopoSort()
+TEST(TestDigraphTopoSort)
 {
    typedef cDigraph<char, int> tGraph;
    tGraph graph;
@@ -200,17 +164,17 @@ void cDigraphTests::TestTopoSort()
 
    // a -> b -> c
    //   -> d
-   CPPUNIT_ASSERT(graph.insert_edge('a', 'b', 1).second);
-   CPPUNIT_ASSERT(graph.insert_edge('b', 'c', 1).second);
-   CPPUNIT_ASSERT(graph.insert_edge('a', 'd', 1).second);
+   CHECK(graph.insert_edge('a', 'b', 1).second);
+   CHECK(graph.insert_edge('b', 'c', 1).second);
+   CHECK(graph.insert_edge('a', 'd', 1).second);
 
-   CPPUNIT_ASSERT(graph.acyclic());
+   CHECK(graph.acyclic());
 
    std::vector<tGraph::node_type> sorted;
    cTopoSorter<tGraph::node_type> sorter(&sorted);
    graph.topological_sort(sorter);
 
-   CPPUNIT_ASSERT(sorted.size() == 4);
+   CHECK(sorted.size() == 4);
 
    int positions[4];
 
@@ -222,15 +186,15 @@ void cDigraphTests::TestTopoSort()
       positions[c - 'a'] = i;
    }
 
-   CPPUNIT_ASSERT(positions['a' - 'a'] < positions['b' - 'a']); // a comes before b
-   CPPUNIT_ASSERT(positions['b' - 'a'] < positions['c' - 'a']); // b comes before c
-   CPPUNIT_ASSERT(positions['a' - 'a'] < positions['c' - 'a']); // a comes before c (by way of b)
-   CPPUNIT_ASSERT(positions['a' - 'a'] < positions['d' - 'a']); // a comes before d
+   CHECK(positions['a' - 'a'] < positions['b' - 'a']); // a comes before b
+   CHECK(positions['b' - 'a'] < positions['c' - 'a']); // b comes before c
+   CHECK(positions['a' - 'a'] < positions['c' - 'a']); // a comes before c (by way of b)
+   CHECK(positions['a' - 'a'] < positions['d' - 'a']); // a comes before d
 }
 
 ////////////////////////////////////////
 
-void cDigraphTests::TestCycleDetect()
+TEST(TestDigraphCycleDetect)
 {
    typedef cDigraph<char, int> tGraph;
    tGraph graph;
@@ -241,15 +205,15 @@ void cDigraphTests::TestCycleDetect()
    }
 
    // The following adds the cycle: a -> d -> f -> a
-   CPPUNIT_ASSERT(graph.insert_edge('a', 'b', 0).second);
-   CPPUNIT_ASSERT(graph.insert_edge('b', 'c', 0).second);
-   CPPUNIT_ASSERT(graph.insert_edge('a', 'd', 0).second);
-   CPPUNIT_ASSERT(graph.insert_edge('d', 'f', 0).second);
-   CPPUNIT_ASSERT(graph.insert_edge('f', 'a', 0).second);
+   CHECK(graph.insert_edge('a', 'b', 0).second);
+   CHECK(graph.insert_edge('b', 'c', 0).second);
+   CHECK(graph.insert_edge('a', 'd', 0).second);
+   CHECK(graph.insert_edge('d', 'f', 0).second);
+   CHECK(graph.insert_edge('f', 'a', 0).second);
 
-   CPPUNIT_ASSERT(!graph.acyclic());
+   CHECK(!graph.acyclic());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // HAVE_CPPUNIT (entire file)
+#endif // HAVE_CPPUNITLITE2 (entire file)

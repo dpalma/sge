@@ -6,11 +6,11 @@
 #include "filespec.h"
 #include "filepath.h"
 
-#include <cstring>
-
-#ifdef HAVE_CPPUNIT
-#include <cppunit/extensions/HelperMacros.h>
+#ifdef HAVE_CPPUNITLITE2
+#include "CppUnitLite2.h"
 #endif
+
+#include <cstring>
 
 #include "dbgalloc.h" // must be last header
 
@@ -263,131 +263,97 @@ int FilePathCompareNoCase(const cFilePath & f1, const cFilePath & f2)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNIT
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cFileSpecTests
-//
-
-class cFileSpecTests : public CppUnit::TestCase
-{
-   void TestGetFileName();
-   void TestGetSetFileExt();
-   void TestSetPath();
-   void TestGetPath();
-   void TestOperatorEquals();
-   void TestOperatorNotEquals();
-   void TestCompare();
-   void TestCompareNoCase();
-   void TestSetFileExtBufferOverrunAttack();
-
-   CPPUNIT_TEST_SUITE(cFileSpecTests);
-      CPPUNIT_TEST(TestGetFileName);
-      CPPUNIT_TEST(TestGetSetFileExt);
-      CPPUNIT_TEST(TestSetPath);
-      CPPUNIT_TEST(TestGetPath);
-      CPPUNIT_TEST(TestOperatorEquals);
-      CPPUNIT_TEST(TestOperatorNotEquals);
-      CPPUNIT_TEST(TestCompare);
-      CPPUNIT_TEST(TestCompareNoCase);
-      CPPUNIT_TEST(TestSetFileExtBufferOverrunAttack);
-   CPPUNIT_TEST_SUITE_END();
-};
+#ifdef HAVE_CPPUNITLITE2
 
 ///////////////////////////////////////
 
-CPPUNIT_TEST_SUITE_REGISTRATION(cFileSpecTests);
-
-///////////////////////////////////////
-
-void cFileSpecTests::TestGetFileName()
+TEST(TestFileSpecGetFileName)
 {
-   CPPUNIT_ASSERT(strcmp(cFileSpec("c:\\p1\\p2\\p3.ext").GetFileName(), "p3.ext") == 0);
-   CPPUNIT_ASSERT(strcmp(cFileSpec("C:\\P1\\P2\\P3.EXT").GetFileName(), "P3.EXT") == 0);
-   CPPUNIT_ASSERT(strcmp(cFileSpec("c:\\p1\\p2.p3").GetFileName(), "p2.p3") == 0);
-   CPPUNIT_ASSERT(strcmp(cFileSpec("c:\\foo\\bar").GetFileName(), "bar") == 0);
+   CHECK(strcmp(cFileSpec("c:\\p1\\p2\\p3.ext").GetFileName(), "p3.ext") == 0);
+   CHECK(strcmp(cFileSpec("C:\\P1\\P2\\P3.EXT").GetFileName(), "P3.EXT") == 0);
+   CHECK(strcmp(cFileSpec("c:\\p1\\p2.p3").GetFileName(), "p2.p3") == 0);
+   CHECK(strcmp(cFileSpec("c:\\foo\\bar").GetFileName(), "bar") == 0);
 }
 
 ///////////////////////////////////////
 
-void cFileSpecTests::TestGetSetFileExt()
+TEST(TestFileSpecGetSetFileExt)
 {
    {
       cFileSpec fs("c:\\path1\\path2\\file");
-      CPPUNIT_ASSERT(strlen(fs.GetFileExt()) == 0);
-      CPPUNIT_ASSERT(fs.SetFileExt("ext"));
-      CPPUNIT_ASSERT(strcmp(fs.GetFileExt(), "ext") == 0);
-      CPPUNIT_ASSERT(strcmp(fs.CStr(), "c:\\path1\\path2\\file.ext") == 0);
+      CHECK(strlen(fs.GetFileExt()) == 0);
+      CHECK(fs.SetFileExt("ext"));
+      CHECK(strcmp(fs.GetFileExt(), "ext") == 0);
+      CHECK(strcmp(fs.CStr(), "c:\\path1\\path2\\file.ext") == 0);
    }
 
    {
       cFileSpec fs("c:\\path1\\path2\\file.TST");
-      CPPUNIT_ASSERT(strcmp(fs.GetFileExt(), "TST") == 0);
-      CPPUNIT_ASSERT(fs.SetFileExt("ext"));
-      CPPUNIT_ASSERT(strcmp(fs.GetFileExt(), "ext") == 0);
-      CPPUNIT_ASSERT(strcmp(fs.CStr(), "c:\\path1\\path2\\file.ext") == 0);
+      CHECK(strcmp(fs.GetFileExt(), "TST") == 0);
+      CHECK(fs.SetFileExt("ext"));
+      CHECK(strcmp(fs.GetFileExt(), "ext") == 0);
+      CHECK(strcmp(fs.CStr(), "c:\\path1\\path2\\file.ext") == 0);
    }
 }
 
 ///////////////////////////////////////
 
-void cFileSpecTests::TestSetPath()
+TEST(TestFileSpecSetPath)
 {
    {
       cFileSpec fs1("c:\\p1\\p2\\p3\\p4\\file.ext");
       fs1.SetPath(cFilePath());
-      CPPUNIT_ASSERT(strcmp(fs1.CStr(), "file.ext") == 0);
+      CHECK(strcmp(fs1.CStr(), "file.ext") == 0);
    }
 
    {
       cFileSpec fs1("c:\\p1\\p2\\p3\\p4\\file.ext");
       fs1.SetPath(cFilePath("D:\\path"));
-      CPPUNIT_ASSERT(strcmp(fs1.CStr(), "D:\\path\\file.ext") == 0);
+      CHECK(strcmp(fs1.CStr(), "D:\\path\\file.ext") == 0);
    }
 }
 
 ///////////////////////////////////////
 
-void cFileSpecTests::TestGetPath()
+TEST(TestFileSpecGetPath)
 {
    cFileSpec test("c:\\p1\\p2\\p3\\p4\\file.ext");
    cFilePath testPath;
-   CPPUNIT_ASSERT(test.GetPath(&testPath));
-   CPPUNIT_ASSERT(FilePathCompare(testPath, cFilePath("c:\\p1\\p2\\p3\\p4")) == 0);
+   CHECK(test.GetPath(&testPath));
+   CHECK(FilePathCompare(testPath, cFilePath("c:\\p1\\p2\\p3\\p4")) == 0);
 }
 
 ///////////////////////////////////////
 
-void cFileSpecTests::TestOperatorEquals()
+TEST(TestFileSpecOperatorEquals)
 {
-   CPPUNIT_ASSERT(cFileSpec("c:\\p1\\p2\\p3.ext") == cFileSpec("c:/p1/p2/p3.ext"));
+   CHECK(cFileSpec("c:\\p1\\p2\\p3.ext") == cFileSpec("c:/p1/p2/p3.ext"));
 }
 
 ///////////////////////////////////////
 
-void cFileSpecTests::TestOperatorNotEquals()
+TEST(TestFileSpecOperatorNotEquals)
 {
-   CPPUNIT_ASSERT(cFileSpec("C:\\P1\\P2\\P3.EXT") != cFileSpec("c:/p1/p2/p3.ext"));
+   CHECK(cFileSpec("C:\\P1\\P2\\P3.EXT") != cFileSpec("c:/p1/p2/p3.ext"));
 }
 
 ///////////////////////////////////////
 
-void cFileSpecTests::TestCompare()
+TEST(TestFileSpecCompare)
 {
-   CPPUNIT_ASSERT(FileSpecCompare(cFileSpec("c:\\p1\\p2\\p3"), cFileSpec("c:/p1/p2/p3")) == 0);
-   CPPUNIT_ASSERT(FileSpecCompare(cFileSpec("C:\\P1\\P2\\P3"), cFileSpec("c:/p1/p2/p3")) != 0);
-   CPPUNIT_ASSERT(FileSpecCompare(cFileSpec("c:\\p1\\p2\\p3"), cFileSpec("c:\\p4\\p5\\p6")) < 0);
-   CPPUNIT_ASSERT(FileSpecCompare(cFileSpec("c:\\P1\\P2\\P3.EXT"), cFileSpec("c:/p1/p2/p3.ext")) < 0);
-   CPPUNIT_ASSERT(FileSpecCompare(cFileSpec("c:\\p1\\p2.p3"), cFileSpec("c:\\p4\\p5.p6")) < 0);
+   CHECK(FileSpecCompare(cFileSpec("c:\\p1\\p2\\p3"), cFileSpec("c:/p1/p2/p3")) == 0);
+   CHECK(FileSpecCompare(cFileSpec("C:\\P1\\P2\\P3"), cFileSpec("c:/p1/p2/p3")) != 0);
+   CHECK(FileSpecCompare(cFileSpec("c:\\p1\\p2\\p3"), cFileSpec("c:\\p4\\p5\\p6")) < 0);
+   CHECK(FileSpecCompare(cFileSpec("c:\\P1\\P2\\P3.EXT"), cFileSpec("c:/p1/p2/p3.ext")) < 0);
+   CHECK(FileSpecCompare(cFileSpec("c:\\p1\\p2.p3"), cFileSpec("c:\\p4\\p5.p6")) < 0);
 }
 
 ///////////////////////////////////////
 
-void cFileSpecTests::TestCompareNoCase()
+TEST(TestFileSpecCompareNoCase)
 {
-   CPPUNIT_ASSERT(FileSpecCompareNoCase(cFileSpec("C:\\P1\\P2\\P3.EXT"), cFileSpec("c:/p1/p2/p3.ext")) == 0);
-   CPPUNIT_ASSERT(FileSpecCompareNoCase(cFileSpec("c:\\p1\\p2.p3"), cFileSpec("c:\\p4\\p5.p6")) < 0);
+   CHECK(FileSpecCompareNoCase(cFileSpec("C:\\P1\\P2\\P3.EXT"), cFileSpec("c:/p1/p2/p3.ext")) == 0);
+   CHECK(FileSpecCompareNoCase(cFileSpec("c:\\p1\\p2.p3"), cFileSpec("c:\\p4\\p5.p6")) < 0);
 }
 
 ///////////////////////////////////////
@@ -406,7 +372,7 @@ static bool Vulnerable(const char * pszTestFileName, char * psz)
    return f.SetFileExt(psz);
 }
 
-void cFileSpecTests::TestSetFileExtBufferOverrunAttack()
+TEST(AttempFileSpecSetFileExtBufferOverrunAttack)
 {
    static const char szTestFileName1[] = "foo.txt";
    static const char szTestFileName2[] = "foo";
@@ -430,11 +396,11 @@ void cFileSpecTests::TestSetFileExtBufferOverrunAttack()
    {
       Vulnerable(szTestFileName1, (char*)&attack);
       Vulnerable(szTestFileName2, (char*)&attack);
-      CPPUNIT_ASSERT(!g_bSetFileExtBufferOverrunSucceeded);
+      CHECK(!g_bSetFileExtBufferOverrunSucceeded);
    }
    catch (...)
    {
-      CPPUNIT_ASSERT(!g_bSetFileExtBufferOverrunSucceeded);
+      CHECK(!g_bSetFileExtBufferOverrunSucceeded);
       throw;
    }
 }

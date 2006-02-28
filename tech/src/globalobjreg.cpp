@@ -9,12 +9,12 @@
 #include "hashtabletem.h"
 #include "toposort.h"
 
+#ifdef HAVE_CPPUNITLITE2
+#include "CppUnitLite2.h"
+#endif
+
 #include <vector>
 #include <algorithm>
-
-#ifdef HAVE_CPPUNIT
-#include <cppunit/extensions/HelperMacros.h>
-#endif
 
 #include "dbgalloc.h" // must be last header
 
@@ -478,7 +478,7 @@ tResult StopGlobalObjects()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNIT
+#ifdef HAVE_CPPUNITLITE2
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -646,49 +646,34 @@ void cBarGlobalObj::Bar()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class cGlobalObjectRegistryTests : public CppUnit::TestCase
-{
-   CPPUNIT_TEST_SUITE(cGlobalObjectRegistryTests);
-      CPPUNIT_TEST(TestGlobalObjReg);
-   CPPUNIT_TEST_SUITE_END();
-
-   void TestGlobalObjReg();
-};
-
-////////////////////////////////////////
-
-CPPUNIT_TEST_SUITE_REGISTRATION(cGlobalObjectRegistryTests);
-
-////////////////////////////////////////
-
-void cGlobalObjectRegistryTests::TestGlobalObjReg()
+TEST(TestGlobalObjectRegistry)
 {
    cAutoIPtr<IGlobalObjectRegistry> pRegistry(
       static_cast<IGlobalObjectRegistry *>(new cGlobalObjectRegistry));
 
    // Register the "Bar" object before "Foo" for testing because the 
-   // initialization constraints should actually make it's init happen after.
+   // initialization constraints should actually make its init happen after.
    cAutoIPtr<IBarGlobalObj> pBar(static_cast<IBarGlobalObj *>(new cBarGlobalObj(pRegistry)));
    cAutoIPtr<IFooGlobalObj> pFoo(static_cast<IFooGlobalObj *>(new cFooGlobalObj(pRegistry)));
 
-   CPPUNIT_ASSERT(pRegistry->InitAll() == S_OK);
+   CHECK(pRegistry->InitAll() == S_OK);
 
    cAutoIPtr<IFooGlobalObj> pFoo2(static_cast<IFooGlobalObj *>(pRegistry->Lookup(IID_IFooGlobalObj)));
-   CPPUNIT_ASSERT(CTIsSameObject(pFoo, pFoo2));
+   CHECK(CTIsSameObject(pFoo, pFoo2));
 
    cAutoIPtr<IBarGlobalObj> pBar2(static_cast<IBarGlobalObj *>(pRegistry->Lookup(IID_IBarGlobalObj)));
-   CPPUNIT_ASSERT(CTIsSameObject(pBar, pBar2));
+   CHECK(CTIsSameObject(pBar, pBar2));
 
    // "Bar" should be inititalized after "Foo"
-   CPPUNIT_ASSERT(cBarGlobalObj::gm_initCount > cFooGlobalObj::gm_initCount);
+   CHECK(cBarGlobalObj::gm_initCount > cFooGlobalObj::gm_initCount);
 
-   CPPUNIT_ASSERT(pRegistry->TermAll() == S_OK);
+   CHECK(pRegistry->TermAll() == S_OK);
 
    // After "TermAll", nothing should work
-   CPPUNIT_ASSERT(pRegistry->Lookup(IID_IFooGlobalObj) == NULL);
-   CPPUNIT_ASSERT(pRegistry->Lookup(IID_IBarGlobalObj) == NULL);
+   CHECK(pRegistry->Lookup(IID_IFooGlobalObj) == NULL);
+   CHECK(pRegistry->Lookup(IID_IBarGlobalObj) == NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // HAVE_CPPUNIT
+#endif // HAVE_CPPUNITLITE2

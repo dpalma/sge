@@ -7,15 +7,15 @@
 
 #include "techstring.h"
 
+#ifdef HAVE_CPPUNITLITE2
+#include "CppUnitLite2.h"
+#endif
+
 #ifdef _WIN32
 #include <excpt.h>
 #endif
 
 #include <cstring>
-
-#ifdef HAVE_CPPUNIT
-#include <cppunit/extensions/HelperMacros.h>
-#endif
 
 #include "dbgalloc.h" // must be last header
 
@@ -158,20 +158,9 @@ bool GetCpuFeatures(sCpuFeatures * pCpuFeatures)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNIT
+#ifdef HAVE_CPPUNITLITE2
 
-class cCpuFeaturesTests : public CppUnit::TestCase
-{
-   CPPUNIT_TEST_SUITE(cCpuFeaturesTests);
-      CPPUNIT_TEST(Test);
-   CPPUNIT_TEST_SUITE_END();
-
-   void Test();
-};
-
-CPPUNIT_TEST_SUITE_REGISTRATION(cCpuFeaturesTests);
-
-void cCpuFeaturesTests::Test()
+TEST(TestCpuFeatures)
 {
    static const struct
    {
@@ -188,7 +177,7 @@ void cCpuFeaturesTests::Test()
    };
 
    sCpuFeatures cpuFeatures;
-   CPPUNIT_ASSERT(GetCpuFeatures(&cpuFeatures));
+   CHECK(GetCpuFeatures(&cpuFeatures));
    LocalMsg1("CPU Vendor:  %s\n", cpuFeatures.szVendor);
    LocalMsg1("CPU Model:   %s\n", cpuFeatures.szModel);
    std::string flags;
@@ -211,6 +200,6 @@ void cCpuFeaturesTests::Test()
    LocalMsg1("CPU Brand:   %s\n", brand.c_str());
 }
 
-#endif // HAVE_CPPUNIT
+#endif // HAVE_CPPUNITLITE2
 
 ///////////////////////////////////////////////////////////////////////////////
