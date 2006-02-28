@@ -112,5 +112,27 @@ private:
 
 
 /////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cPlaceEntityCommand
+//
+
+class cPlaceEntityCommand : public cComObject<IMPLEMENTS(IEditorCommand)>
+{
+public:
+   cPlaceEntityCommand(const tChar * pszEntity, const tVec3 & position);
+   ~cPlaceEntityCommand();
+
+   virtual tResult Do();
+   virtual tResult CanUndo();
+   virtual tResult Undo();
+   virtual tResult GetLabel(cStr * pLabel);
+
+private:
+   cStr m_entity;
+   tVec3 m_position;
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
 
 #endif // !defined(INCLUDED_EDITORCOMMANDS_H)

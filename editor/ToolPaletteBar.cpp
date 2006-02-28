@@ -189,7 +189,7 @@ int cToolPaletteBar::OnCreate(LPCREATESTRUCT lpCreateStruct)
       }
    }
 
-   CreateUnitToolGroup();
+   CreateEntityToolGroup();
 
    return 0;
 }
@@ -363,9 +363,9 @@ HTOOLGROUP cToolPaletteBar::CreateTerrainToolGroup(const tChar * pszTerrainTileS
 #define kRT_Model "Model"
 #endif
 
-HTOOLGROUP cToolPaletteBar::CreateUnitToolGroup()
+HTOOLGROUP cToolPaletteBar::CreateEntityToolGroup()
 {
-   HTOOLGROUP hUnitGroup = m_toolPalette.AddGroup("Units", NULL);
+   HTOOLGROUP hUnitGroup = m_toolPalette.AddGroup("Entities", NULL);
    if (hUnitGroup != NULL)
    {
       std::vector<cStr> modelResourceNames;
@@ -374,8 +374,8 @@ HTOOLGROUP cToolPaletteBar::CreateUnitToolGroup()
       std::vector<cStr>::const_iterator iter = modelResourceNames.begin();
       for (; iter != modelResourceNames.end(); iter++)
       {
-         cPlaceUnitTool * pUnitTool = new cPlaceUnitTool(*iter);
-         if (pUnitTool != NULL)
+         cPlaceEntityTool * pPlaceEntityTool = new cPlaceEntityTool(*iter);
+         if (pPlaceEntityTool != NULL)
          {
             cStr name;
             cFileSpec(iter->c_str()).GetFileNameNoExt(&name);
@@ -383,7 +383,7 @@ HTOOLGROUP cToolPaletteBar::CreateUnitToolGroup()
             {
                name[0] = _toupper(name[0]);
             }
-            m_toolPalette.AddTool(hUnitGroup, name.c_str(), -1, pUnitTool);
+            m_toolPalette.AddTool(hUnitGroup, name.c_str(), -1, pPlaceEntityTool);
          }
       }
    }

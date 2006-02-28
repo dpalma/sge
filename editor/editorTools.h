@@ -104,14 +104,14 @@ private:
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cPlaceUnitTool
+// CLASS: cPlaceEntityTool
 //
 
-class cPlaceUnitTool : public cComObject<cDragTool, &IID_IEditorTool>
+class cPlaceEntityTool : public cComObject<cDragTool, &IID_IEditorTool>
 {
 public:
-   cPlaceUnitTool(const cStr & model);
-   ~cPlaceUnitTool();
+   cPlaceEntityTool(const cStr & model);
+   ~cPlaceEntityTool();
 
 protected:
    virtual tResult OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView);

@@ -409,32 +409,32 @@ void cMoveCameraTool::MoveCamera(IEditorView * pView, CPoint delta)
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cPlaceUnitTool
+// CLASS: cPlaceEntityTool
 //
 
 ////////////////////////////////////////
 
-cPlaceUnitTool::cPlaceUnitTool(const cStr & model)
+cPlaceEntityTool::cPlaceEntityTool(const cStr & model)
  : m_model(model)
 {
 }
 
 ////////////////////////////////////////
 
-cPlaceUnitTool::~cPlaceUnitTool()
+cPlaceEntityTool::~cPlaceEntityTool()
 {
 }
 
 ////////////////////////////////////////
 
-tResult cPlaceUnitTool::OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+tResult cPlaceEntityTool::OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
 {
    return S_EDITOR_TOOL_CONTINUE;
 }
 
 ////////////////////////////////////////
 
-tResult cPlaceUnitTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+tResult cPlaceEntityTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
 {
    if (m_model.empty())
    {
@@ -451,8 +451,18 @@ tResult cPlaceUnitTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorV
       tVec3 location;
       if (GetTerrainLocation(pickRay, &location))
       {
-         UseGlobal(EntityManager);
-         pEntityManager->SpawnEntity(m_model.c_str(), location);
+         cAutoIPtr<IEditorCommand> pCommand(static_cast<IEditorCommand*>(
+            new cPlaceEntityCommand(m_model.c_str(), location)));
+         if (!pCommand)
+         {
+            return E_OUTOFMEMORY;
+         }
+
+         cAutoIPtr<IEditorModel> pEditorModel;
+         if (pView->GetModel(&pEditorModel) == S_OK)
+         {
+            pEditorModel->AddCommand(pCommand, true);
+         }
       }
    }
 
@@ -461,7 +471,7 @@ tResult cPlaceUnitTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorV
 
 ////////////////////////////////////////
 
-tResult cPlaceUnitTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+tResult cPlaceEntityTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
 {
    return S_EDITOR_TOOL_CONTINUE;
 }

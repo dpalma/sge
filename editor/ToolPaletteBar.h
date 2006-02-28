@@ -53,7 +53,7 @@ protected:
 
    HTOOLGROUP CreateStandardToolGroup();
    HTOOLGROUP CreateTerrainToolGroup(const tChar * pszTerrainTileSet);
-   HTOOLGROUP CreateUnitToolGroup();
+   HTOOLGROUP CreateEntityToolGroup();
 
 private:
    CToolTipCtrl m_tooltip;

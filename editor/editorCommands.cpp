@@ -4,7 +4,10 @@
 #include "stdhdr.h"
 
 #include "editorCommands.h"
+
+#include "entityapi.h"
 #include "terrainapi.h"
+
 #include "globalobj.h"
 
 #include "resource.h"
@@ -428,6 +431,59 @@ tResult cTerrainSetElevationCommand::GetLabel(cStr * pLabel)
    *pLabel = (LPCTSTR)label;
 
    return S_OK;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cPlaceEntityCommand
+//
+
+////////////////////////////////////////
+
+cPlaceEntityCommand::cPlaceEntityCommand(const tChar * pszEntity, const tVec3 & position)
+ : m_entity(pszEntity)
+ , m_position(position)
+{
+}
+
+////////////////////////////////////////
+
+cPlaceEntityCommand::~cPlaceEntityCommand()
+{
+}
+
+////////////////////////////////////////
+
+tResult cPlaceEntityCommand::Do()
+{
+   if (!m_entity.empty())
+   {
+      UseGlobal(EntityManager);
+      pEntityManager->SpawnEntity(m_entity.c_str(), m_position);
+   }
+   return E_FAIL;
+}
+
+////////////////////////////////////////
+
+tResult cPlaceEntityCommand::CanUndo()
+{
+   return S_FALSE;
+}
+
+////////////////////////////////////////
+
+tResult cPlaceEntityCommand::Undo()
+{
+   return E_NOTIMPL;
+}
+
+////////////////////////////////////////
+
+tResult cPlaceEntityCommand::GetLabel(cStr * pLabel)
+{
+   return E_NOTIMPL;
 }
 
 
