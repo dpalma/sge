@@ -9,13 +9,13 @@
 #include "vec3.h"
 #include "vec4.h"
 
+#ifdef HAVE_CPPUNITLITE2
+#include "CppUnitLite2.h"
+#endif
+
 #include <cmath>
 #include <cfloat>
 #include <memory.h>
-
-#ifdef HAVE_CPPUNIT
-#include <cppunit/extensions/HelperMacros.h>
-#endif
 
 #include "dbgalloc.h" // must be last header
 
@@ -534,7 +534,7 @@ void MatrixOrtho(float left, float right, float bottom, float top, float znear, 
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNIT
+#ifdef HAVE_CPPUNITLITE2
 
 static bool MatrixIsIdentity(const tMatrix4 & m)
 {
@@ -563,18 +563,7 @@ static bool MatrixIsIdentity(const tMatrix4 & m)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class cMatrix4Tests : public CppUnit::TestCase
-{
-   void TestMatrixInvert();
-
-   CPPUNIT_TEST_SUITE(cMatrix4Tests);
-      CPPUNIT_TEST(TestMatrixInvert);
-   CPPUNIT_TEST_SUITE_END();
-};
-
-CPPUNIT_TEST_SUITE_REGISTRATION(cMatrix4Tests);
-
-void cMatrix4Tests::TestMatrixInvert()
+TEST(TestMatrixInvert)
 {
    tMatrix4 M;
    M.m00 = -.519f; M.m01 = 0;      M.m02 = .854f;  M.m03 = 0;
@@ -583,16 +572,12 @@ void cMatrix4Tests::TestMatrixInvert()
    M.m30 = 0;      M.m31 = 0;      M.m32 = 0;      M.m33 = 1;
 
    tMatrix4 I;
-   if (!MatrixInvert(M.m, I.m))
-   {
-      DebugMsg("Matrix is NOT invertible\n");
-      return;
-   }
+   CHECK(MatrixInvert(M.m, I.m));
 
    tMatrix4 result;
    M.Multiply(I, &result);
 
-   CPPUNIT_ASSERT(MatrixIsIdentity(result));
+   CHECK(MatrixIsIdentity(result));
 }
 
 #endif // HAVE_CPPUNIT

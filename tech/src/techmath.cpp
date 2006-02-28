@@ -4,12 +4,12 @@
 #include "stdhdr.h"
 #include "techmath.h"
 
-#include <cmath>
-
-#ifdef HAVE_CPPUNIT
-#include <ctime>
-#include <cppunit/extensions/HelperMacros.h>
+#ifdef HAVE_CPPUNITLITE2
+#include "CppUnitLite2.h"
 #endif
+
+#include <cmath>
+#include <ctime>
 
 #include "dbgalloc.h" // must be last header
 
@@ -59,22 +59,7 @@ uint Rand()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNIT
-
-class cMathTests : public CppUnit::TestCase
-{
-   CPPUNIT_TEST_SUITE(cMathTests);
-      CPPUNIT_TEST(TestRandBitFrequency);
-      CPPUNIT_TEST(TestAlmostEqual);
-   CPPUNIT_TEST_SUITE_END();
-
-   void TestRandBitFrequency();
-   void TestAlmostEqual();
-};
-
-///////////////////////////////////////
-
-CPPUNIT_TEST_SUITE_REGISTRATION(cMathTests);
+#ifdef HAVE_CPPUNITLITE2
 
 ///////////////////////////////////////
 
@@ -94,7 +79,7 @@ static uint CountOneBits(uint n)
 // Do a simple "frequency" test on the random number generator.
 // See if the bit stream composed of a bunch of random numbers is
 // within a tolerance of 50% ones.
-void cMathTests::TestRandBitFrequency()
+TEST(TestRandBitFrequency)
 {
    SeedRand(time(NULL));
 
@@ -109,12 +94,12 @@ void cMathTests::TestRandBitFrequency()
 
    double onesFraction = (double)nOneBits / nTotalBits;
 
-   CPPUNIT_ASSERT(fabs(onesFraction - 0.5) < 0.01);
+   CHECK(fabs(onesFraction - 0.5) < 0.01);
 }
 
 ///////////////////////////////////////
 
-void cMathTests::TestAlmostEqual()
+TEST(TestAlmostEqual)
 {
    // Floats
    {
@@ -134,7 +119,7 @@ void cMathTests::TestAlmostEqual()
 
       for (int i = 0; i < _countof(floatTests); i++)
       {
-         CPPUNIT_ASSERT(AlmostEqual(floatTests[i].a, floatTests[i].b, floatTests[i].maxULP) == floatTests[i].equal);
+         CHECK(AlmostEqual(floatTests[i].a, floatTests[i].b, floatTests[i].maxULP) == floatTests[i].equal);
       }
    }
 
@@ -154,7 +139,7 @@ void cMathTests::TestAlmostEqual()
 
       for (int i = 0; i < _countof(doubleTests); i++)
       {
-         CPPUNIT_ASSERT(AlmostEqual(doubleTests[i].a, doubleTests[i].b, doubleTests[i].maxULP) == doubleTests[i].equal);
+         CHECK(AlmostEqual(doubleTests[i].a, doubleTests[i].b, doubleTests[i].maxULP) == doubleTests[i].equal);
       }
    }
 }

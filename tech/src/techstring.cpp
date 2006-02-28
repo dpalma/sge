@@ -7,16 +7,16 @@
 #include "techmath.h"
 #include "comtools.h"
 
+#ifdef HAVE_CPPUNITLITE2
+#include "CppUnitLite2.h"
+#endif
+
 #include <cfloat>
 #include <climits>
 #include <cstdlib>
 #include <cstring>
 #include <cstdarg>
 #include <locale>
-
-#ifdef HAVE_CPPUNIT
-#include <cppunit/extensions/HelperMacros.h>
-#endif
 
 #include "dbgalloc.h" // must be last header
 
@@ -279,104 +279,79 @@ const cStr & GUIDToString(REFGUID guid, cStr * pStr)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNIT
-
-class cStrTests : public CppUnit::TestCase
-{
-   void TestParseBadArgs();
-   void TestParseSuccessCases();
-   void TestSprintf();
-#if _MSC_VER >= 1300
-   void TestSprintfLengthEst();
-#endif
-   void TestGUIDToString();
-
-   CPPUNIT_TEST_SUITE(cStrTests);
-      CPPUNIT_TEST(TestParseBadArgs);
-      CPPUNIT_TEST(TestParseSuccessCases);
-      CPPUNIT_TEST(TestSprintf);
-#if _MSC_VER >= 1300
-      CPPUNIT_TEST(TestSprintfLengthEst);
-#endif
-      CPPUNIT_TEST(TestGUIDToString);
-   CPPUNIT_TEST_SUITE_END();
-};
+#ifdef HAVE_CPPUNITLITE2
 
 ////////////////////////////////////////
 
-CPPUNIT_TEST_SUITE_REGISTRATION(cStrTests);
-
-////////////////////////////////////////
-
-void cStrTests::TestParseBadArgs()
+TEST(TestTokenizerBadArgs)
 {
    cTokenizer<std::string, std::vector<std::string>, std::string::value_type> strTok;
-   CPPUNIT_ASSERT(strTok.Tokenize(NULL) == E_POINTER);
-   CPPUNIT_ASSERT(strTok.Tokenize("[1,2,3") == E_INVALIDARG); // missing end bracket
+   CHECK(strTok.Tokenize(NULL) == E_POINTER);
+   CHECK(strTok.Tokenize("[1,2,3") == E_INVALIDARG); // missing end bracket
 }
 
 ////////////////////////////////////////
 
-void cStrTests::TestParseSuccessCases()
+TEST(TestTokenizerSuccessCases)
 {
    {
       cTokenizer<std::string, std::vector<std::string>, std::string::value_type> strTok;
-      CPPUNIT_ASSERT(strTok.Tokenize("[]") == 0);
-      CPPUNIT_ASSERT(strTok.Tokenize("{  }") == 0);
+      CHECK(strTok.Tokenize("[]") == 0);
+      CHECK(strTok.Tokenize("{  }") == 0);
    }
 
    {
       cTokenizer<double> dblTok;
-      CPPUNIT_ASSERT(dblTok.Tokenize("[1,2,3,4]") == 4);
-      CPPUNIT_ASSERT(dblTok.m_tokens[0] == 1);
-      CPPUNIT_ASSERT(dblTok.m_tokens[1] == 2);
-      CPPUNIT_ASSERT(dblTok.m_tokens[2] == 3);
-      CPPUNIT_ASSERT(dblTok.m_tokens[3] == 4);
+      CHECK(dblTok.Tokenize("[1,2,3,4]") == 4);
+      CHECK(dblTok.m_tokens[0] == 1);
+      CHECK(dblTok.m_tokens[1] == 2);
+      CHECK(dblTok.m_tokens[2] == 3);
+      CHECK(dblTok.m_tokens[3] == 4);
    }
 
    {
       cTokenizer<double> dblTok;
-      CPPUNIT_ASSERT(dblTok.Tokenize("< 10 ; 32.2 ; 48.8 >") == 3);
-      CPPUNIT_ASSERT(dblTok.m_tokens[0] == 10);
-      CPPUNIT_ASSERT(dblTok.m_tokens[1] == 32.2);
-      CPPUNIT_ASSERT(dblTok.m_tokens[2] == 48.8);
+      CHECK(dblTok.Tokenize("< 10 ; 32.2 ; 48.8 >") == 3);
+      CHECK_EQUAL(dblTok.m_tokens[0], 10);
+      CHECK_EQUAL(dblTok.m_tokens[1], 32.2);
+      CHECK_EQUAL(dblTok.m_tokens[2], 48.8);
    }
 
    {
       cTokenizer<double> dblTok;
-      CPPUNIT_ASSERT(dblTok.Tokenize("(1,2,3,4)") == 4);
-      CPPUNIT_ASSERT(dblTok.m_tokens[0] == 1);
-      CPPUNIT_ASSERT(dblTok.m_tokens[1] == 2);
-      CPPUNIT_ASSERT(dblTok.m_tokens[2] == 3);
-      CPPUNIT_ASSERT(dblTok.m_tokens[3] == 4);
+      CHECK(dblTok.Tokenize("(1,2,3,4)") == 4);
+      CHECK_EQUAL(dblTok.m_tokens[0], 1);
+      CHECK_EQUAL(dblTok.m_tokens[1], 2);
+      CHECK_EQUAL(dblTok.m_tokens[2], 3);
+      CHECK_EQUAL(dblTok.m_tokens[3], 4);
    }
 
    {
       cTokenizer<double> dblTok;
-      CPPUNIT_ASSERT(dblTok.Tokenize("1000,2000,3000,4000") == 4);
-      CPPUNIT_ASSERT(dblTok.m_tokens[0] == 1000);
-      CPPUNIT_ASSERT(dblTok.m_tokens[1] == 2000);
-      CPPUNIT_ASSERT(dblTok.m_tokens[2] == 3000);
-      CPPUNIT_ASSERT(dblTok.m_tokens[3] == 4000);
+      CHECK(dblTok.Tokenize("1000,2000,3000,4000") == 4);
+      CHECK_EQUAL(dblTok.m_tokens[0], 1000);
+      CHECK_EQUAL(dblTok.m_tokens[1], 2000);
+      CHECK_EQUAL(dblTok.m_tokens[2], 3000);
+      CHECK_EQUAL(dblTok.m_tokens[3], 4000);
    }
 }
 
 ////////////////////////////////////////
 
-void cStrTests::TestSprintf()
+TEST(TestSprintf)
 {
    cStr temp;
-   CPPUNIT_ASSERT(Sprintf(&temp, "%c", 'X').compare("X") == 0);
-   CPPUNIT_ASSERT(Sprintf(&temp, "%d", 1000).compare("1000") == 0);
-   CPPUNIT_ASSERT(Sprintf(&temp, "%i", 1000).compare("1000") == 0);
-   CPPUNIT_ASSERT(Sprintf(&temp, "%o", 1000).compare("1750") == 0);
-   CPPUNIT_ASSERT(Sprintf(&temp, "%u", 1000).compare("1000") == 0);
-   CPPUNIT_ASSERT(Sprintf(&temp, "%u", -1000).compare("4294966296") == 0);
-   CPPUNIT_ASSERT(Sprintf(&temp, "%x", -1000).compare("fffffc18") == 0);
-   CPPUNIT_ASSERT(Sprintf(&temp, "%X", -1000).compare("FFFFFC18") == 0);
-   CPPUNIT_ASSERT(Sprintf(&temp, "%e", 9999.0 * 3.14159).compare("3.141276e+004") == 0);
-   CPPUNIT_ASSERT(Sprintf(&temp, "%E", 9999.0 * 3.14159).compare("3.141276E+004") == 0);
-   CPPUNIT_ASSERT(Sprintf(&temp, "abcd%shijkl", "efg").compare("abcdefghijkl") == 0);
+   CHECK(Sprintf(&temp, "%c", 'X').compare("X") == 0);
+   CHECK(Sprintf(&temp, "%d", 1000).compare("1000") == 0);
+   CHECK(Sprintf(&temp, "%i", 1000).compare("1000") == 0);
+   CHECK(Sprintf(&temp, "%o", 1000).compare("1750") == 0);
+   CHECK(Sprintf(&temp, "%u", 1000).compare("1000") == 0);
+   CHECK(Sprintf(&temp, "%u", -1000).compare("4294966296") == 0);
+   CHECK(Sprintf(&temp, "%x", -1000).compare("fffffc18") == 0);
+   CHECK(Sprintf(&temp, "%X", -1000).compare("FFFFFC18") == 0);
+   CHECK(Sprintf(&temp, "%e", 9999.0 * 3.14159).compare("3.141276e+004") == 0);
+   CHECK(Sprintf(&temp, "%E", 9999.0 * 3.14159).compare("3.141276E+004") == 0);
+   CHECK(Sprintf(&temp, "abcd%shijkl", "efg").compare("abcdefghijkl") == 0);
 }
 
 ////////////////////////////////////////
@@ -403,24 +378,24 @@ static bool CDECL DoSprintfLengthTest(const tChar * pszFormat, ...)
 
 ////////////////////////////////////////
 
-void cStrTests::TestSprintfLengthEst()
+TEST(TestDoSprintfLengthEst)
 {
    static const tChar szSample[] = "sample string";
-   CPPUNIT_ASSERT(::DoSprintfLengthTest("simple"));
-   CPPUNIT_ASSERT(::DoSprintfLengthTest("with integer: %d", INT_MAX));
-   CPPUNIT_ASSERT(::DoSprintfLengthTest("with float: %f", DBL_MAX));
-   CPPUNIT_ASSERT(::DoSprintfLengthTest("with string: %s", szSample));
-   CPPUNIT_ASSERT(::DoSprintfLengthTest("%x %d %s (multiple)", UINT_MAX, INT_MIN, szSample));
-   CPPUNIT_ASSERT(::DoSprintfLengthTest("%% escaped percents %%%%%%"));
-   CPPUNIT_ASSERT(::DoSprintfLengthTest("hex with specific width %08X", UINT_MAX / 22));
-   CPPUNIT_ASSERT(::DoSprintfLengthTest("pointer %p", NULL));
+   CHECK(::DoSprintfLengthTest("simple"));
+   CHECK(::DoSprintfLengthTest("with integer: %d", INT_MAX));
+   CHECK(::DoSprintfLengthTest("with float: %f", DBL_MAX));
+   CHECK(::DoSprintfLengthTest("with string: %s", szSample));
+   CHECK(::DoSprintfLengthTest("%x %d %s (multiple)", UINT_MAX, INT_MIN, szSample));
+   CHECK(::DoSprintfLengthTest("%% escaped percents %%%%%%"));
+   CHECK(::DoSprintfLengthTest("hex with specific width %08X", UINT_MAX / 22));
+   CHECK(::DoSprintfLengthTest("pointer %p", NULL));
 }
 
 #endif // _MSC_VER >= 1300
 
 ////////////////////////////////////////
 
-void cStrTests::TestGUIDToString()
+TEST(TestGUIDToString)
 {
    // {B40B6831-FCB2-4082-AE07-61A7FC4D3AEB}
    static const GUID kTestGuidA = {0xb40b6831, 0xfcb2, 0x4082, {0xae, 0x7, 0x61, 0xa7, 0xfc, 0x4d, 0x3a, 0xeb}};
@@ -431,12 +406,12 @@ void cStrTests::TestGUIDToString()
 
    cStr guid;
    GUIDToString(kTestGuidA, &guid);
-   CPPUNIT_ASSERT(guid.compare("{B40B6831-FCB2-4082-AE07-61A7FC4D3AEB}") == 0);
+   CHECK(guid.compare("{B40B6831-FCB2-4082-AE07-61A7FC4D3AEB}") == 0);
 
-   CPPUNIT_ASSERT(CTIsEqualGUID(kTestGuidA, kTestGuidADupe));
-   CPPUNIT_ASSERT(!CTIsEqualGUID(kTestGuidA, kTestGuidB));
+   CHECK(CTIsEqualGUID(kTestGuidA, kTestGuidADupe));
+   CHECK(!CTIsEqualGUID(kTestGuidA, kTestGuidB));
 }
 
-#endif // HAVE_CPPUNIT
+#endif // HAVE_CPPUNITLITE2
 
 ///////////////////////////////////////////////////////////////////////////////
