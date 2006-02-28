@@ -3,14 +3,14 @@
 
 #include "stdhdr.h"
 
-#ifdef HAVE_CPPUNIT // entire file
+#ifdef HAVE_CPPUNITLITE2 // entire file
 
 #include "statemachine.h"
 #include "statemachinetem.h"
 
 #include "techstring.h"
 
-#include <cppunit/extensions/HelperMacros.h>
+#include "CppUnitLite2.h"
 
 #include <locale>
 
@@ -143,26 +143,8 @@ void cCppIdentifierRecognizer::OnExitCharOk()
 
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cStateMachineTests
-//
 
-class cStateMachineTests : public CppUnit::TestCase
-{
-   void Test();
-
-   CPPUNIT_TEST_SUITE(cStateMachineTests);
-      CPPUNIT_TEST(Test);
-   CPPUNIT_TEST_SUITE_END();
-};
-
-////////////////////////////////////////
-
-CPPUNIT_TEST_SUITE_REGISTRATION(cStateMachineTests);
-
-////////////////////////////////////////
-
-void cStateMachineTests::Test()
+TEST(TestStateMachine)
 {
    static const struct
    {
@@ -192,12 +174,12 @@ void cStateMachineTests::Test()
       bool result = r.GetIdentifier(&ident);
       if (result)
       {
-         CPPUNIT_ASSERT(ident.compare(tests[i].pszIdent) == 0);
+         CHECK(ident.compare(tests[i].pszIdent) == 0);
       }
-      CPPUNIT_ASSERT(result == tests[i].result);
+      CHECK_EQUAL(result, tests[i].result);
    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // HAVE_CPPUNIT (entire file)
+#endif // HAVE_CPPUNITLITE2 (entire file)

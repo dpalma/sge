@@ -11,28 +11,8 @@
 
 #include <cstring>
 
-#ifdef HAVE_CPPUNIT
-#include "filespec.h"
-#include "readwriteapi.h"
-#include <cppunit/extensions/HelperMacros.h>
-#endif
-
 #ifdef _WIN32
-#define NOVIRTUALKEYCODES
-#define NOSYSCOMMANDS
-#define NOATOM
-#define NOKERNEL
-#define NONLS
-#define NOMEMMGR
-#define NOMINMAX
-#define NOOPENFILE
-#define NOSERVICE
-#define NOSOUND
-#define NOCOMM
-#define NOKANJI
-#define NOHELP
-#define NOPROFILER
-#define NOMCX
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
 
@@ -490,41 +470,5 @@ tResult ImageCreate(uint width, uint height, ePixelFormat pixelFormat, const voi
    return S_OK;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-
-#ifdef HAVE_CPPUNIT
-
-class cImageTests : public CppUnit::TestCase
-{
-   CPPUNIT_TEST_SUITE(cImageTests);
-      CPPUNIT_TEST(TestSubImage);
-   CPPUNIT_TEST_SUITE_END();
-
-   void TestSubImage();
-};
-
-void cImageTests::TestSubImage()
-{
-#if 0
-   IImage * pImage = NULL;
-   UseGlobal(ResourceManager);
-   if (pResourceManager->Load("quitbutton.bmp", kRT_Image, NULL, (void**)&pImage) == S_OK)
-   {
-      cAutoIPtr<IImage> pSubImage;
-      if (pImage->GetSubImage(0, 32, 64, 32, &pSubImage) == S_OK)
-      {
-         cAutoIPtr<IWriter> pWriter(FileCreateWriter(cFileSpec("subimagetest.bmp")));
-         if (!!pWriter)
-         {
-            BmpWrite(pSubImage, pWriter);
-         }
-      }
-   }
-#endif
-}
-
-CPPUNIT_TEST_SUITE_REGISTRATION(cImageTests);
-
-#endif // HAVE_CPPUNIT
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -7,11 +7,11 @@
 
 #include "techmath.h"
 
-#include <cfloat>
-
-#ifdef HAVE_CPPUNIT
-#include <cppunit/extensions/HelperMacros.h>
+#ifdef HAVE_CPPUNITLITE2
+#include "CppUnitLite2.h"
 #endif
+
+#include <cfloat>
 
 #include "dbgalloc.h" // must be last header
 
@@ -310,44 +310,27 @@ bool cRay::IntersectsAxisAlignedBox(const tAxisAlignedBox & box,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNIT
-
-class cRayTests : public CppUnit::TestCase
-{
-   void TestIntersectsSphere();
-   void TestIntersectsPlane();
-   void TestIntersectsAxisAlignedBox();
-
-   CPPUNIT_TEST_SUITE(cRayTests);
-      CPPUNIT_TEST(TestIntersectsSphere);
-      CPPUNIT_TEST(TestIntersectsPlane);
-      CPPUNIT_TEST(TestIntersectsAxisAlignedBox);
-   CPPUNIT_TEST_SUITE_END();
-};
+#ifdef HAVE_CPPUNITLITE2
 
 ////////////////////////////////////////
 
-CPPUNIT_TEST_SUITE_REGISTRATION(cRayTests);
-
-////////////////////////////////////////
-
-void cRayTests::TestIntersectsSphere()
+TEST(TestRayIntersectsSphere)
 {
-   CPPUNIT_ASSERT(cRay(tVec3(0,0,0),tVec3(0,0,-1)).IntersectsSphere(tVec3(0,0,-3),1));
-   CPPUNIT_ASSERT(!cRay(tVec3(0,0,-5),tVec3(0,0,-1)).IntersectsSphere(tVec3(0,0,-3),1));
-   CPPUNIT_ASSERT(!cRay(tVec3(0,0,0),tVec3(0,0,1)).IntersectsSphere(tVec3(0,0,-3),1));
+   CHECK(cRay(tVec3(0,0,0),tVec3(0,0,-1)).IntersectsSphere(tVec3(0,0,-3),1));
+   CHECK(!cRay(tVec3(0,0,-5),tVec3(0,0,-1)).IntersectsSphere(tVec3(0,0,-3),1));
+   CHECK(!cRay(tVec3(0,0,0),tVec3(0,0,1)).IntersectsSphere(tVec3(0,0,-3),1));
 }
 
 ////////////////////////////////////////
 
-void cRayTests::TestIntersectsPlane()
+TEST(TestRayIntersectsPlane)
 {
-   CPPUNIT_ASSERT(cRay(tVec3(0,0,0),tVec3(0,0,-1)).IntersectsPlane(tVec3(0,0,-3),-1));
+   CHECK(cRay(tVec3(0,0,0),tVec3(0,0,-1)).IntersectsPlane(tVec3(0,0,-3),-1));
 }
 
 ////////////////////////////////////////
 
-void cRayTests::TestIntersectsAxisAlignedBox()
+TEST(TestRayIntersectsAxisAlignedBox)
 {
    float maxDim = -FLT_MAX;
    tVec3 min(static_cast<float>(rand()), static_cast<float>(rand()), static_cast<float>(rand()));
@@ -377,9 +360,9 @@ void cRayTests::TestIntersectsAxisAlignedBox()
    dir.y = -dir.y;
    dir.z = -dir.z;
    cRay ray(origin, dir);
-   CPPUNIT_ASSERT(ray.IntersectsAxisAlignedBox(box));
+   CHECK(ray.IntersectsAxisAlignedBox(box));
 }
 
-#endif
+#endif // HAVE_CPPUNITLITE2
 
 ////////////////////////////////////////////////////////////////////////////////

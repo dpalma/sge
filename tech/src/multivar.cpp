@@ -7,12 +7,12 @@
 #include "techmath.h"
 #include "techstring.h"
 
+#ifdef HAVE_CPPUNITLITE2
+#include "CppUnitLite2.h"
+#endif
+
 #include <cstdio>
 #include <cstdlib>
-
-#ifdef HAVE_CPPUNIT
-#include <cppunit/extensions/HelperMacros.h>
-#endif
 
 #include "dbgalloc.h" // must be last header
 
@@ -435,129 +435,106 @@ void cMultiVar::Clear()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNIT
-
-class cMultiVarTests : public CppUnit::TestCase
-{
-   CPPUNIT_TEST_SUITE(cMultiVarTests);
-      CPPUNIT_TEST(TestConstructors);
-      CPPUNIT_TEST(TestAssignment);
-      CPPUNIT_TEST(TestCastDouble);
-      CPPUNIT_TEST(TestCastString);
-      CPPUNIT_TEST(TestCastWideCharString);
-      CPPUNIT_TEST(TestChangeType);
-   CPPUNIT_TEST_SUITE_END();
-
-   void TestConstructors();
-   void TestAssignment();
-   void TestCastDouble();
-   void TestCastString();
-   void TestCastWideCharString();
-   void TestChangeType();
-};
+#ifdef HAVE_CPPUNITLITE2
 
 ////////////////////////////////////////
 
-CPPUNIT_TEST_SUITE_REGISTRATION(cMultiVarTests);
-
-////////////////////////////////////////
-
-void cMultiVarTests::TestConstructors()
+TEST(TestMultiVarConstructors)
 {
    {
       cMultiVar multiVarInt(9999);
-      CPPUNIT_ASSERT(multiVarInt.GetType() == kMVT_Int);
-      CPPUNIT_ASSERT(multiVarInt.IsInt());
-      CPPUNIT_ASSERT(multiVarInt.ToInt() == 9999);
+      CHECK(multiVarInt.GetType() == kMVT_Int);
+      CHECK(multiVarInt.IsInt());
+      CHECK(multiVarInt.ToInt() == 9999);
    }
 
    {
       cMultiVar multiVarFloat(kPi);
-      CPPUNIT_ASSERT(multiVarFloat.GetType() == kMVT_Float);
-      CPPUNIT_ASSERT(multiVarFloat.IsFloat());
-      CPPUNIT_ASSERT(multiVarFloat.ToInt() == 3);
-      CPPUNIT_ASSERT(multiVarFloat.ToFloat() == kPi);
+      CHECK(multiVarFloat.GetType() == kMVT_Float);
+      CHECK(multiVarFloat.IsFloat());
+      CHECK(multiVarFloat.ToInt() == 3);
+      CHECK(multiVarFloat.ToFloat() == kPi);
    }
 
    {
       double d = 2 * 3.14159;
       cMultiVar multiVarDouble(d);
-      CPPUNIT_ASSERT(multiVarDouble.GetType() == kMVT_Double);
-      CPPUNIT_ASSERT(multiVarDouble.IsDouble());
-      CPPUNIT_ASSERT(multiVarDouble.ToInt() == 6);
-      CPPUNIT_ASSERT(multiVarDouble.ToDouble() == d);
+      CHECK(multiVarDouble.GetType() == kMVT_Double);
+      CHECK(multiVarDouble.IsDouble());
+      CHECK(multiVarDouble.ToInt() == 6);
+      CHECK(multiVarDouble.ToDouble() == d);
    }
 
    {
       cMultiVar multiVarString("Single-byte string");
-      CPPUNIT_ASSERT(multiVarString.GetType() == kMVT_String);
-      CPPUNIT_ASSERT(multiVarString.IsString());
-      CPPUNIT_ASSERT(strcmp(multiVarString.ToString(), "Single-byte string") == 0);
+      CHECK(multiVarString.GetType() == kMVT_String);
+      CHECK(multiVarString.IsString());
+      CHECK(strcmp(multiVarString.ToString(), "Single-byte string") == 0);
    }
 
    {
       cMultiVar multiVarWideString(L"Wide-character string");
-      CPPUNIT_ASSERT(multiVarWideString.GetType() == kMVT_String);
-      CPPUNIT_ASSERT(multiVarWideString.IsString());
-      CPPUNIT_ASSERT(wcscmp(multiVarWideString.ToWideString(), L"Wide-character string") == 0);
+      CHECK(multiVarWideString.GetType() == kMVT_String);
+      CHECK(multiVarWideString.IsString());
+      CHECK(wcscmp(multiVarWideString.ToWideString(), L"Wide-character string") == 0);
    }
 
    {
       cMultiVar multiVarInterface(static_cast<IUnknown*>(NULL));
-      CPPUNIT_ASSERT(multiVarInterface.GetType() == kMVT_Interface);
-      CPPUNIT_ASSERT(multiVarInterface.IsInterface());
+      CHECK(multiVarInterface.GetType() == kMVT_Interface);
+      CHECK(multiVarInterface.IsInterface());
    }
 
    {
       cMultiVar multiVarEmpty;
-      CPPUNIT_ASSERT(multiVarEmpty.GetType() == kMVT_Empty);
-      CPPUNIT_ASSERT(multiVarEmpty.IsEmpty());
+      CHECK(multiVarEmpty.GetType() == kMVT_Empty);
+      CHECK(multiVarEmpty.IsEmpty());
    }
 }
 
 ////////////////////////////////////////
 
-void cMultiVarTests::TestAssignment()
+TEST(TestMultiVarAssignment)
 {
    cMultiVar test;
-   CPPUNIT_ASSERT((double)(test = 3.1415) == 3.1415);
-   CPPUNIT_ASSERT(strcmp((test = "3.1415"), "3.1415") == 0);
+   CHECK_EQUAL((double)(test = 3.1415), 3.1415);
+   CHECK(strcmp((test = "3.1415"), "3.1415") == 0);
 }
 
 ////////////////////////////////////////
 
-void cMultiVarTests::TestCastDouble()
+TEST(TestMultiVarCastDouble)
 {
-   CPPUNIT_ASSERT((double)cMultiVar(3.1415) == 3.1415);
-   CPPUNIT_ASSERT((double)cMultiVar("3.1415") == 3.1415);
+   CHECK_EQUAL((double)cMultiVar(3.1415), 3.1415);
+   CHECK_EQUAL((double)cMultiVar("3.1415"), 3.1415);
 }
 
 ////////////////////////////////////////
 
-void cMultiVarTests::TestCastString()
+TEST(TestMultiVarCastString)
 {
-   CPPUNIT_ASSERT(strcmp((const char *)cMultiVar(3.1415), "3.141500") == 0);
-   CPPUNIT_ASSERT(strcmp((const char *)cMultiVar("3.1415"), "3.1415") == 0);
+   CHECK(strcmp((const char *)cMultiVar(3.1415), "3.141500") == 0);
+   CHECK(strcmp((const char *)cMultiVar("3.1415"), "3.1415") == 0);
 }
 
 ////////////////////////////////////////
 
-void cMultiVarTests::TestCastWideCharString()
+TEST(TestMultiVarCastWideCharString)
 {
-   CPPUNIT_ASSERT(wcscmp((const wchar_t *)cMultiVar(3.1415), L"3.141500") == 0);
-   CPPUNIT_ASSERT(wcscmp((const wchar_t *)cMultiVar("3.1415"), L"3.1415") == 0);
+   CHECK(wcscmp((const wchar_t *)cMultiVar(3.1415), L"3.141500") == 0);
+   CHECK(wcscmp((const wchar_t *)cMultiVar("3.1415"), L"3.1415") == 0);
 }
 
 ////////////////////////////////////////
 
-void cMultiVarTests::TestChangeType()
+TEST(TestMultiVarChangeType)
 {
    cMultiVar v(kPi);
-   CPPUNIT_ASSERT(v.ToFloat() == kPi);
+   CHECK(v.ToFloat() == kPi);
    v = L"3.141500";
-   CPPUNIT_ASSERT(wcscmp((const wchar_t *)cMultiVar(3.1415), L"3.141500") == 0);
+   CHECK(wcscmp((const wchar_t *)cMultiVar(3.1415), L"3.141500") == 0);
 }
 
-#endif // HAVE_CPPUNIT
+#endif // HAVE_CPPUNITLITE2
 
 ///////////////////////////////////////////////////////////////////////////////

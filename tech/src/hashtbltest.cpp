@@ -3,12 +3,14 @@
 
 #include "stdhdr.h"
 
-#ifdef HAVE_CPPUNIT // entire file
+#ifdef HAVE_CPPUNITLITE2 // entire file
 
 #include "hashtable.h"
 #include "hashtabletem.h"
 
 #include "techtime.h"
+
+#include "CppUnitLite2.h"
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1300)
 #if _MSC_VER >= 1400
@@ -23,10 +25,11 @@
 #endif
 
 #include <map>
-
-#include <cppunit/extensions/HelperMacros.h>
+#include <set>
 
 #include "dbgalloc.h" // must be last header
+
+///////////////////////////////////////////////////////////////////////////////
 
 LOG_DEFINE_CHANNEL(HashTableTest);
 
@@ -251,55 +254,54 @@ enum
    kTestStringLength = 20,
 };
 
-class cHashTableTests : public CppUnit::TestCase
+class cHashTableTests
 {
+public:
+   cHashTableTests();
+   ~cHashTableTests();
+
    char m_testStrings[kNumTests][kTestStringLength];
 
    typedef cHashTable<const char *, int> tTestHashTable;
    tTestHashTable m_hashTable;
-
-   void TestCopy();
-   void TestErase();
-   void TestFindSuccess();
-   void TestFindFailure();
-   void TestIterationOfEmptyTable();
-   void TestIterationPostIncrement();
-   void TestIterationPreIncrement();
-   void TestArrayIndexOperator();
-   void TestCustomKey();
-   void TestCustomValue();
-   void TestCustomAllocator();
-
-   CPPUNIT_TEST_SUITE(cHashTableTests);
-      CPPUNIT_TEST(TestCopy);
-      CPPUNIT_TEST(TestErase);
-      CPPUNIT_TEST(TestFindSuccess);
-      CPPUNIT_TEST(TestFindFailure);
-      CPPUNIT_TEST(TestIterationOfEmptyTable);
-      CPPUNIT_TEST(TestIterationPostIncrement);
-      CPPUNIT_TEST(TestIterationPreIncrement);
-      CPPUNIT_TEST(TestArrayIndexOperator);
-      CPPUNIT_TEST(TestCustomKey);
-      CPPUNIT_TEST(TestCustomValue);
-      CPPUNIT_TEST(TestCustomAllocator);
-   CPPUNIT_TEST_SUITE_END();
-
-public:
-   virtual void setUp();
-   virtual void tearDown();
 };
 
 ////////////////////////////////////////
 
-CPPUNIT_TEST_SUITE_REGISTRATION(cHashTableTests);
+cHashTableTests::cHashTableTests()
+{
+   std::set<std::string> strings;
+   while (strings.size() < kNumTests)
+   {
+      char szTemp[kTestStringLength];
+      random_string(szTemp, _countof(szTemp));
+      strings.insert(szTemp);
+   }
+
+   std::set<std::string>::const_iterator iter = strings.begin();
+   for (int index = 0; iter != strings.end(); iter++, index++)
+   {
+      strcpy(m_testStrings[index], iter->c_str());
+      Assert(m_hashTable.insert(m_testStrings[index], index).second);
+   }
+
+   Assert(m_hashTable.size() == kNumTests);
+}
 
 ////////////////////////////////////////
 
-void cHashTableTests::TestCopy()
+cHashTableTests::~cHashTableTests()
+{
+   m_hashTable.clear();
+}
+
+////////////////////////////////////////
+
+TEST_F(cHashTableTests, TestCopy)
 {
    tTestHashTable hashTableCopy(m_hashTable);
 
-   CPPUNIT_ASSERT(hashTableCopy.size() == m_hashTable.size());
+   CHECK(hashTableCopy.size() == m_hashTable.size());
 
    tTestHashTable::const_iterator
       iter1 = m_hashTable.begin(),
@@ -308,14 +310,14 @@ void cHashTableTests::TestCopy()
    {
       const tChar * psz1 = iter1->first;
       const tChar * psz2 = iter2->first;
-      CPPUNIT_ASSERT(_tcscmp(psz1, psz2) == 0);
-      CPPUNIT_ASSERT(iter1->second == iter2->second);
+      CHECK(_tcscmp(psz1, psz2) == 0);
+      CHECK(iter1->second == iter2->second);
    }
 }
 
 ////////////////////////////////////////
 
-void cHashTableTests::TestErase()
+TEST_F(cHashTableTests, TestErase)
 {
    uint nErasures = (m_hashTable.size() / 2); // erase half the strings in the table
    std::set<int> erasedIndices;
@@ -328,28 +330,28 @@ void cHashTableTests::TestErase()
    for (; iter != erasedIndices.end(); iter++)
    {
       const char * psz = m_testStrings[*iter];
-      CPPUNIT_ASSERT(m_hashTable.erase(psz) == 1);
+      CHECK(m_hashTable.erase(psz) == 1);
    }
 
-   CPPUNIT_ASSERT(m_hashTable.size() == (kNumTests - nErasures));
+   CHECK(m_hashTable.size() == (kNumTests - nErasures));
 
    for (int i = 0; i < kNumTests; i++)
    {
       tTestHashTable::const_iterator f = m_hashTable.find(m_testStrings[i]);
       if (erasedIndices.find(i) != erasedIndices.end())
       {
-         CPPUNIT_ASSERT(f == m_hashTable.end()); // string 'i' should have been erased
+         CHECK(f == m_hashTable.end()); // string 'i' should have been erased
       }
       else
       {
-         CPPUNIT_ASSERT(f != m_hashTable.end());
+         CHECK(f != m_hashTable.end());
       }
    }
 }
 
 ////////////////////////////////////////
 
-void cHashTableTests::TestFindSuccess()
+TEST_F(cHashTableTests, TestFindSuccess)
 {
    int nFailures = 0;
 
@@ -362,43 +364,43 @@ void cHashTableTests::TestFindSuccess()
       }
       else
       {
-         CPPUNIT_ASSERT(f->second == i);
+         CHECK(f->second == i);
       }
    }
 
    LocalMsgIf1(nFailures > 0, "%d lookups failed\n", nFailures);
-   CPPUNIT_ASSERT(nFailures == 0);
+   CHECK(nFailures == 0);
 }
 
 ////////////////////////////////////////
 
-void cHashTableTests::TestFindFailure()
+TEST_F(cHashTableTests, TestFindFailure)
 {
    char szNotFound[kTestStringLength + 10];
    random_string(szNotFound, _countof(szNotFound));
    tTestHashTable::const_iterator f = m_hashTable.find(szNotFound);
-   CPPUNIT_ASSERT(f == m_hashTable.end());
+   CHECK(f == m_hashTable.end());
 }
 
 ////////////////////////////////////////
 
-void cHashTableTests::TestIterationOfEmptyTable()
+TEST_F(cHashTableTests, TestIterationOfEmptyTable)
 {
    cHashTable<int_ptr, void *> hashTable;
-   CPPUNIT_ASSERT(hashTable.empty());
-   CPPUNIT_ASSERT(hashTable.begin() == hashTable.end());
+   CHECK(hashTable.empty());
+   CHECK(hashTable.begin() == hashTable.end());
    cHashTable<int_ptr, void *>::iterator iter = hashTable.begin();
    int nIterated = 0;
    for (; iter != hashTable.end(); iter++, nIterated++)
    {
-      CPPUNIT_ASSERT(false); // should never get in here
+      CHECK(false); // should never get in here
    }
-   CPPUNIT_ASSERT(nIterated == 0);
+   CHECK(nIterated == 0);
 }
 
 ////////////////////////////////////////
 
-void cHashTableTests::TestIterationPostIncrement()
+TEST_F(cHashTableTests, TestIterationPostIncrement)
 {
    int nIterated = 0;
    tTestHashTable::const_iterator iter = m_hashTable.begin();
@@ -406,16 +408,16 @@ void cHashTableTests::TestIterationPostIncrement()
    {
       const char * key = iter->first;
       int val = iter->second;
-      CPPUNIT_ASSERT(strcmp(m_testStrings[val], key) == 0);
+      CHECK(strcmp(m_testStrings[val], key) == 0);
    }
 
    LocalMsgIf2(nIterated != kNumTests, "Iterated %d items in hash table; expected %d\n", nIterated, kNumTests);
-   CPPUNIT_ASSERT(nIterated == kNumTests);
+   CHECK(nIterated == kNumTests);
 }
 
 ////////////////////////////////////////
 
-void cHashTableTests::TestIterationPreIncrement()
+TEST_F(cHashTableTests, TestIterationPreIncrement)
 {
    int nIterated = 0;
    tTestHashTable::const_iterator iter = m_hashTable.begin();
@@ -423,16 +425,16 @@ void cHashTableTests::TestIterationPreIncrement()
    {
       const char * key = iter->first;
       int val = iter->second;
-      CPPUNIT_ASSERT(strcmp(m_testStrings[val], key) == 0);
+      CHECK(strcmp(m_testStrings[val], key) == 0);
    }
 
    LocalMsgIf2(nIterated != kNumTests, "Iterated %d items in hash table; expected %d\n", nIterated, kNumTests);
-   CPPUNIT_ASSERT(nIterated == kNumTests);
+   CHECK(nIterated == kNumTests);
 }
 
 ////////////////////////////////////////
 
-void cHashTableTests::TestArrayIndexOperator()
+TEST_F(cHashTableTests, TestArrayIndexOperator)
 {
    // test insertion via array index operator
    tTestHashTable hashTable;
@@ -440,20 +442,20 @@ void cHashTableTests::TestArrayIndexOperator()
    {
       hashTable[m_testStrings[i]] = i;
    }
-   CPPUNIT_ASSERT(hashTable.size() == kNumTests);
+   CHECK(hashTable.size() == kNumTests);
 
    // test value access via array index operator
    for (int i = 0; i < kNumTests; i++)
    {
       int index = hashTable[m_testStrings[i]];
-      CPPUNIT_ASSERT(index == i);
+      CHECK(index == i);
    }
-   CPPUNIT_ASSERT(hashTable.size() == kNumTests); // make sure size didn't change because of access
+   CHECK(hashTable.size() == kNumTests); // make sure size didn't change because of access
 }
 
 ////////////////////////////////////////
 
-void cHashTableTests::TestCustomKey()
+TEST(TestHashTableCustomKey)
 {
    cHashTable<cMathExpr<int>, int, cMathExpr<int> > hashTable;
 
@@ -467,13 +469,13 @@ void cHashTableTests::TestCustomKey()
          b = rand();
       }
       cMathExpr<int> expr(a,b,op);
-      CPPUNIT_ASSERT(hashTable.insert(expr, expr.GetResult()).second);
+      CHECK(hashTable.insert(expr, expr.GetResult()).second);
    }
 
    cHashTable<cMathExpr<int>, int, cMathExpr<int> >::const_iterator iter = hashTable.begin();
    for (; iter != hashTable.end(); ++iter)
    {
-      CPPUNIT_ASSERT(iter->first.GetResult() == iter->second);
+      CHECK(iter->first.GetResult() == iter->second);
    }
 
    sHashTableStats stats;
@@ -482,7 +484,7 @@ void cHashTableTests::TestCustomKey()
 
 ////////////////////////////////////////
 
-void cHashTableTests::TestCustomValue()
+TEST(TestHashTableCustomValue)
 {
    cHashTable<int, cMathExpr<int> > hashTable;
 
@@ -506,7 +508,7 @@ void cHashTableTests::TestCustomValue()
       std::map<int, cMathExpr<int> >::const_iterator iter = exprs.begin();
       for (; iter != exprs.end(); iter++)
       {
-         CPPUNIT_ASSERT(hashTable.insert(iter->first, iter->second).second);
+         CHECK(hashTable.insert(iter->first, iter->second).second);
       }
    }
 
@@ -514,14 +516,14 @@ void cHashTableTests::TestCustomValue()
       cHashTable<int, cMathExpr<int> >::const_iterator iter = hashTable.begin();
       for (; iter != hashTable.end(); ++iter)
       {
-         CPPUNIT_ASSERT(iter->first == iter->second.GetResult());
+         CHECK(iter->first == iter->second.GetResult());
       }
    }
 }
 
 ////////////////////////////////////////
 
-void cHashTableTests::TestCustomAllocator()
+TEST(TestHashTableCustomAllocator)
 {
    typedef cAllocatorForTesting< sHashElement<cMathExpr<int>, int> > tAlloc;
    tAlloc alloc;
@@ -537,53 +539,29 @@ void cHashTableTests::TestCustomAllocator()
          b = rand();
       }
       cMathExpr<int> expr(a,b,op);
-      CPPUNIT_ASSERT(hashTable.insert(expr, expr.GetResult()).second);
+      CHECK(hashTable.insert(expr, expr.GetResult()).second);
    }
 
    cHashTable<cMathExpr<int>, int, cMathExpr<int> >::const_iterator iter = hashTable.begin();
    for (; iter != hashTable.end(); ++iter)
    {
-      CPPUNIT_ASSERT(iter->first.GetResult() == iter->second);
+      CHECK(iter->first.GetResult() == iter->second);
    }
-}
-
-////////////////////////////////////////
-
-void cHashTableTests::setUp()
-{
-   std::set<std::string> strings;
-   while (strings.size() < kNumTests)
-   {
-      char szTemp[kTestStringLength];
-      random_string(szTemp, _countof(szTemp));
-      strings.insert(szTemp);
-   }
-
-   std::set<std::string>::const_iterator iter = strings.begin();
-   for (int index = 0; iter != strings.end(); iter++, index++)
-   {
-      strcpy(m_testStrings[index], iter->c_str());
-      CPPUNIT_ASSERT(m_hashTable.insert(m_testStrings[index], index).second);
-   }
-
-   CPPUNIT_ASSERT(m_hashTable.size() == kNumTests);
-}
-
-////////////////////////////////////////
-
-void cHashTableTests::tearDown()
-{
-   m_hashTable.clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class cHashTableSpeedTests : public CppUnit::TestCase
+struct sTiming
 {
-   CPPUNIT_TEST_SUITE(cHashTableSpeedTests);
-      CPPUNIT_TEST(TestInsertSpeed);
-      CPPUNIT_TEST(TestLookupSpeed);
-   CPPUNIT_TEST_SUITE_END();
+   int64 clockTicks;
+   double seconds;
+};
+
+class cHashTableSpeedTests
+{
+public:
+   cHashTableSpeedTests();
+   ~cHashTableSpeedTests();
 
    char m_testStrings[kNumTests][kTestStringLength];
 
@@ -593,34 +571,47 @@ class cHashTableSpeedTests : public CppUnit::TestCase
    HASH_MAP_NS::hash_map<const char *, int> m_hashMap;
 #endif
 
-   struct sTiming
-   {
-      int64 clockTicks;
-      double seconds;
-   };
-
-   void RunInsertSpeedTest(sTiming * pHashTableResult, sTiming * pMapResult, sTiming * pHashMapResult);
+   void RunInsertSpeedTest(sTiming * pHashTableResult, sTiming * pMapResult, sTiming * pHashMapResult, TestResult & result_, const char * m_name);
    void TestInsertSpeed();
-   void RunLookupSpeedTest(int nLookups, double * pHashTableResult, double * pMapResult, double * pHashMapResult);
+   void RunLookupSpeedTest(int nLookups, double * pHashTableResult, double * pMapResult, double * pHashMapResult, TestResult & result_, const char * m_name);
    void TestLookupSpeed();
-
-public:
-   virtual void setUp();
-   virtual void tearDown();
 };
 
 ////////////////////////////////////////
 
-CPPUNIT_TEST_SUITE_REGISTRATION(cHashTableSpeedTests);
+cHashTableSpeedTests::cHashTableSpeedTests()
+{
+   std::set<std::string> strings;
+   while (strings.size() < kNumTests)
+   {
+      char szTemp[kTestStringLength];
+      random_string(szTemp, _countof(szTemp));
+      strings.insert(szTemp);
+   }
+   std::set<std::string>::const_iterator iter = strings.begin();
+   for (int index = 0; iter != strings.end(); iter++, index++)
+   {
+      strcpy(m_testStrings[index], iter->c_str());
+   }
+}
+
+////////////////////////////////////////
+
+cHashTableSpeedTests::~cHashTableSpeedTests()
+{
+   m_hashTable.clear();
+}
 
 ////////////////////////////////////////
 
 void cHashTableSpeedTests::RunInsertSpeedTest(sTiming * pHashTableResult,
                                               sTiming * pMapResult,
-                                              sTiming * pHashMapResult)
+                                              sTiming * pHashMapResult,
+                                              TestResult & result_,
+                                              const char * m_name)
 {
-   CPPUNIT_ASSERT(pHashTableResult != NULL);
-   CPPUNIT_ASSERT(pMapResult != NULL);
+   CHECK(pHashTableResult != NULL);
+   CHECK(pMapResult != NULL);
 
    int64 startTicks;
    double startSecs;
@@ -637,7 +628,7 @@ void cHashTableSpeedTests::RunInsertSpeedTest(sTiming * pHashTableResult,
 
       for (int i = 0; i < kNumTests; i++)
       {
-         CPPUNIT_ASSERT(m_hashTable.insert(m_testStrings[i], i).second);
+         CHECK(m_hashTable.insert(m_testStrings[i], i).second);
       }
 
       pHashTableResult->clockTicks = ReadTSC() - startTicks;
@@ -650,7 +641,7 @@ void cHashTableSpeedTests::RunInsertSpeedTest(sTiming * pHashTableResult,
 
       for (int i = 0; i < kNumTests; i++)
       {
-         CPPUNIT_ASSERT(m_map.insert(std::make_pair((const char *)m_testStrings[i], i)).second);
+         CHECK(m_map.insert(std::make_pair((const char *)m_testStrings[i], i)).second);
       }
 
       pMapResult->clockTicks = ReadTSC() - startTicks;
@@ -664,7 +655,7 @@ void cHashTableSpeedTests::RunInsertSpeedTest(sTiming * pHashTableResult,
 
       for (int i = 0; i < kNumTests; i++)
       {
-         CPPUNIT_ASSERT(m_hashMap.insert(std::make_pair((const char *)m_testStrings[i], i)).second);
+         CHECK(m_hashMap.insert(std::make_pair((const char *)m_testStrings[i], i)).second);
       }
 
       pHashMapResult->clockTicks = ReadTSC() - startTicks;
@@ -675,7 +666,7 @@ void cHashTableSpeedTests::RunInsertSpeedTest(sTiming * pHashTableResult,
 
 ////////////////////////////////////////
 
-void cHashTableSpeedTests::TestInsertSpeed()
+TEST_F(cHashTableSpeedTests, TestInsertSpeed)
 {
    const int kNumRuns = 10;
    const double kOneOverNumRuns = 1.0 / kNumRuns;
@@ -686,7 +677,7 @@ void cHashTableSpeedTests::TestInsertSpeed()
    LocalMsg2("Insert Speed Test; inserting %d items; %d runs\n", kNumTests, kNumRuns);
    for (int i = 0; i < kNumRuns; i++)
    {
-      RunInsertSpeedTest(&hashTableResult[i], &mapResult[i], &hashMapResult[i]);
+      RunInsertSpeedTest(&hashTableResult[i], &mapResult[i], &hashMapResult[i], result_, m_name);
 
       LocalMsg3("   [%d] cHashTable:      %.5f seconds, %d clock ticks\n",
          i, hashTableResult[i].seconds, hashTableResult[i].clockTicks);
@@ -719,11 +710,13 @@ void cHashTableSpeedTests::TestInsertSpeed()
 void cHashTableSpeedTests::RunLookupSpeedTest(int nLookups,
                                               double * pHashTableResult,
                                               double * pMapResult,
-                                              double * pHashMapResult)
+                                              double * pHashMapResult,
+                                              TestResult & result_,
+                                              const char * m_name)
 {
-   CPPUNIT_ASSERT(pHashTableResult != NULL);
-   CPPUNIT_ASSERT(pMapResult != NULL);
-   CPPUNIT_ASSERT(pHashMapResult != NULL);
+   CHECK(pHashTableResult != NULL);
+   CHECK(pMapResult != NULL);
+   CHECK(pHashMapResult != NULL);
 
    double oneOverNumLookups = 1.0 / nLookups;
 
@@ -760,10 +753,10 @@ void cHashTableSpeedTests::RunLookupSpeedTest(int nLookups,
 
 ////////////////////////////////////////
 
-void cHashTableSpeedTests::TestLookupSpeed()
+TEST_F(cHashTableSpeedTests, TestLookupSpeed)
 {
    double hashTableResult, mapResult, hashMapResult;
-   RunLookupSpeedTest(kNumTests, &hashTableResult, &mapResult, &hashMapResult);
+   RunLookupSpeedTest(kNumTests, &hashTableResult, &mapResult, &hashMapResult, result_, m_name);
 
    LocalMsg1("Lookup (average over %d lookups):\n", kNumTests);
    LocalMsg1("   cHashTable:     %.2f clock ticks\n", hashTableResult);
@@ -773,32 +766,7 @@ void cHashTableSpeedTests::TestLookupSpeed()
 #endif
 }
 
-////////////////////////////////////////
-
-void cHashTableSpeedTests::setUp()
-{
-   std::set<std::string> strings;
-   while (strings.size() < kNumTests)
-   {
-      char szTemp[kTestStringLength];
-      random_string(szTemp, _countof(szTemp));
-      strings.insert(szTemp);
-   }
-   std::set<std::string>::const_iterator iter = strings.begin();
-   for (int index = 0; iter != strings.end(); iter++, index++)
-   {
-      strcpy(m_testStrings[index], iter->c_str());
-   }
-}
-
-////////////////////////////////////////
-
-void cHashTableSpeedTests::tearDown()
-{
-   m_hashTable.clear();
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // HAVE_CPPUNIT (entire file)
+#endif // HAVE_CPPUNITLITE2 (entire file)
