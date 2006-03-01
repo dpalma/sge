@@ -214,7 +214,7 @@ static long MapKey(long keydata)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-LRESULT CALLBACK SysWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+bool SysHandleWindowsMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
    static uint msWheelMsg = RegisterWindowMessage(MSH_MOUSEWHEEL);
 
@@ -226,12 +226,12 @@ LRESULT CALLBACK SysWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
       message = WM_MOUSEWHEEL;
    }
 
+   bool bHandled = false;
+
    switch (message)
    {
       case WM_DESTROY:
       {
-         Assert(hWnd == g_hWnd);
-
          if (g_hDC != NULL)
          {
             wglMakeCurrent(g_hDC, NULL);
@@ -256,21 +256,30 @@ LRESULT CALLBACK SysWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
          }
 #endif
 
-         g_hWnd = NULL;
+         if (hWnd == g_hWnd)
+         {
+            g_hWnd = NULL;
+         }
 
          PostQuitMessage(0);
-         return 0;
+         bHandled = true;
+         break;
       }
 
       case WM_PAINT:
       {
-         ValidateRect(hWnd, NULL);
+         if (hWnd == g_hWnd)
+         {
+            ValidateRect(hWnd, NULL);
+            bHandled = true;
+         }
          break;
       }
 
       case WM_ACTIVATEAPP:
       {
          SysAppActivate(wParam ? true : false);
+         bHandled = true;
          break;
       }
 
@@ -280,6 +289,7 @@ LRESULT CALLBACK SysWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
          {
             (*g_pfnResizeCallback)(LOWORD(lParam), HIWORD(lParam), msgTime);
          }
+         bHandled = true;
          break;
       }
 
@@ -294,6 +304,7 @@ LRESULT CALLBACK SysWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
                (*g_pfnKeyCallback)(mapped, true, msgTime, g_keyCallbackUserData);
             }
          }
+         bHandled = true;
          break;
       }
 
@@ -308,6 +319,7 @@ LRESULT CALLBACK SysWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
                (*g_pfnKeyCallback)(static_cast<long>(wParam), true, msgTime, g_keyCallbackUserData);
             }
          }
+         bHandled = true;
          break;
       }
 
@@ -323,6 +335,7 @@ LRESULT CALLBACK SysWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
          {
             (*g_pfnKeyCallback)(mapped, false, msgTime, g_keyCallbackUserData);
          }
+         bHandled = true;
          break;
       }
 
@@ -335,6 +348,7 @@ LRESULT CALLBACK SysWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
             (*g_pfnKeyCallback)(key, true, msgTime, g_keyCallbackUserData);
             (*g_pfnKeyCallback)(key, false, msgTime, g_keyCallbackUserData);
          }
+         bHandled = true;
          break;
       }
 
@@ -359,10 +373,19 @@ LRESULT CALLBACK SysWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
                                   static_cast<int>(HIWORD(lParam)),
                                   mouseState, msgTime, g_mouseCallbackUserData);
          }
+         bHandled = true;
          break;
       }
    }
 
+   return bHandled;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+LRESULT CALLBACK SysWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+   SysHandleWindowsMessage(hWnd, message, wParam, lParam);
    return DefWindowProc(hWnd, message, wParam, lParam);
 }
 

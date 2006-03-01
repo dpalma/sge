@@ -21,8 +21,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
-				PreprocessorDefinitions="NDEBUG;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC;HAVE_DIRECTX"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
+				PreprocessorDefinitions="NDEBUG;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC;HAVE_DIRECTX;HAVE_CPPUNITLITE2"
 				StringPooling="TRUE"
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="TRUE"
@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="winmm.lib opengl32.lib glu32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib $(OutDir)\glew.lib cg.lib cgGL.lib"
+				AdditionalDependencies="$(OutDir)\CppUnitLite2.lib winmm.lib opengl32.lib glu32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib $(OutDir)\glew.lib cg.lib cgGL.lib"
 				OutputFile=".\..\..\Build.vc71\Opt/engine.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -90,8 +90,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
-				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,HAVE_CPPUNIT,_USRDLL,ENGINE_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL,GLEW_STATIC,HAVE_DIRECTX"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
+				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,HAVE_CPPUNIT,HAVE_CPPUNITLITE2,_USRDLL,ENGINE_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL,GLEW_STATIC,HAVE_DIRECTX"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="3"
@@ -142,8 +142,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
-				PreprocessorDefinitions="_DEBUG;HAVE_CPPUNIT;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC;HAVE_DIRECTX"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
+				PreprocessorDefinitions="_DEBUG;HAVE_CPPUNIT;HAVE_CPPUNITLITE2;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC;HAVE_DIRECTX"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="3"
@@ -161,7 +161,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\cppunit.lib winmm.lib opengl32.lib glu32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib $(OutDir)\glew.lib cg.lib cgGL.lib"
+				AdditionalDependencies="$(OutDir)\CppUnitLite2.lib $(OutDir)\cppunit.lib winmm.lib opengl32.lib glu32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib $(OutDir)\glew.lib cg.lib cgGL.lib"
 				OutputFile=".\..\..\Build.vc71\Debug/engine.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -210,7 +210,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,_USRDLL,ENGINE_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL,GLEW_STATIC,HAVE_DIRECTX"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -262,7 +262,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC;HAVE_DIRECTX"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -409,6 +409,9 @@
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="1"/>
 					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\..\engine\src\syscommon.cpp">
 				</File>
 				<File
 					RelativePath="..\..\engine\src\syslinux.cpp">
