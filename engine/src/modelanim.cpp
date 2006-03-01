@@ -267,13 +267,15 @@ tResult ModelAnimationCreate(IModelKeyFrameInterpolator * * pInterpolators,
 
 ///////////////////////////////////////
 
-cModelAnimationController::cModelAnimationController(cModelSkeleton * pSkeleton)
+cModelAnimationController::cModelAnimationController(cModelSkeleton * pSkeleton,
+                                                     IModelAnimation * pAnim)
  : m_pSkeleton(pSkeleton) // TODO: use CTAddRef when IModelSkeleton becomes a COM interface
+ , m_pAnim(CTAddRef(pAnim))
  , m_animStart(0)
  , m_animEnd(0)
  , m_animTime(0)
 {
-   m_pSkeleton->TempAccessAnimation()->GetStartEnd(&m_animStart, &m_animEnd);
+   m_pAnim->GetStartEnd(&m_animStart, &m_animEnd);
    m_animTime = m_animStart;
 }
 
@@ -301,7 +303,7 @@ tResult cModelAnimationController::Advance(double elapsedTime)
       m_animTime = m_animStart + pastEnd;
    }
 
-   m_pSkeleton->InterpolateMatrices(m_pSkeleton->TempAccessAnimation(), m_animTime, &m_blendMatrices);
+   m_pSkeleton->InterpolateMatrices(m_pAnim, m_animTime, &m_blendMatrices);
    return S_OK;
 }
 
@@ -314,18 +316,22 @@ tResult ModelAnimationControllerCreate(cModelSkeleton * pSkeleton,
    {
       return E_POINTER;
    }
-   if (!pSkeleton->IsAnimated())
+   if (pSkeleton->GetJointCount() == 0)
    {
       return S_FALSE;
    }
+   cAutoIPtr<IModelAnimation> pAnim;
+   if (pSkeleton->GetAnimation(kMAT_Walk, &pAnim) != S_OK)
+   {
+      return E_FAIL;
+   }
    cAutoIPtr<IModelAnimationController> pAnimController;
-   pAnimController = static_cast<IModelAnimationController*>(new cModelAnimationController(pSkeleton));
+   pAnimController = static_cast<IModelAnimationController*>(new cModelAnimationController(pSkeleton, pAnim));
    if (!pAnimController)
    {
       return E_OUTOFMEMORY;
    }
-   *ppAnimController = CTAddRef(pAnimController);
-   return S_OK;
+   return pAnimController.GetPointer(ppAnimController);
 }
 
 

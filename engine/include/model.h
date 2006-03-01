@@ -11,6 +11,8 @@
 
 #include "techstring.h"
 
+#include <map>
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -219,8 +221,6 @@ typedef std::vector<cModelJoint> tModelJoints;
 
 class ENGINE_API cModelSkeleton
 {
-   friend class cModel;
-
 public:
    cModelSkeleton();
    cModelSkeleton(const cModelSkeleton & other);
@@ -231,19 +231,20 @@ public:
 
    const cModelSkeleton & operator =(const cModelSkeleton & other);
 
-   bool IsAnimated() const { return !m_joints.empty(); }
+   size_t GetJointCount() const;
+
+   tResult GetBindMatrices(size_t nMaxMatrices, tMatrix4 * pMatrices) const;
 
    void InterpolateMatrices(IModelAnimation * pAnim, double time, tMatrices * pMatrices) const;
 
-   void TempAddAnimation(IModelAnimation * pAnim);
-   IModelAnimation * TempAccessAnimation() { return m_pAnim; }
+   tResult AddAnimation(eModelAnimationType type, IModelAnimation * pAnim);
+   tResult GetAnimation(eModelAnimationType type, IModelAnimation * * ppAnim) const;
 
 private:
-   void CalculateInverses(tMatrices * pInverses) const;
-
    tModelJoints m_joints;
 
-   cAutoIPtr<IModelAnimation> m_pAnim;
+   typedef std::multimap<eModelAnimationType, IModelAnimation *> tAnimMap;
+   tAnimMap m_anims;
 };
 
 
@@ -270,6 +271,9 @@ class ENGINE_API cModel
           const tModelMeshes & meshes,
           const cModelSkeleton & skeleton);
 
+   friend void * ModelMs3dLoad(IReader * pReader);
+   friend void ModelMs3dUnload(void * pData);
+
 public:
    virtual ~cModel();
 
@@ -295,16 +299,10 @@ public:
 
    cModelSkeleton * GetSkeleton() { return &m_skeleton; }
 
-   static tResult RegisterResourceFormat();
-
 private:
    // Transform every vertex by the inverse of its affecting
    // joint's absolute transform
    void PreApplyJoints();
-
-   static void * ModelLoadMs3d(IReader * pReader);
-
-   static void ModelUnload(void * pData);
 
 
    std::vector<sModelVertex> m_vertices;

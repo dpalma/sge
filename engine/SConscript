@@ -15,6 +15,7 @@ sourceFiles = Split("""
    src/luainterp.cpp
    src/model.cpp
    src/modelanim.cpp
+   src/modelms3d.cpp
    src/ms3dread.cpp
    src/renderer.cpp
    src/saveloadmanager.cpp

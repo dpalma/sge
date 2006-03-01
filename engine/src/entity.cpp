@@ -128,7 +128,7 @@ void cEntityModel::Update(double elapsedTime)
       if (pModel != m_pModel)
       {
          m_pModel = pModel;
-         if (m_pModel->GetSkeleton() != NULL || m_pModel->GetSkeleton()->IsAnimated())
+         if ((m_pModel->GetSkeleton() != NULL) && (m_pModel->GetSkeleton()->GetJointCount() > 0))
          {
             ModelAnimationControllerCreate(m_pModel->GetSkeleton(), &m_pAnimController);
          }

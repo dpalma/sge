@@ -514,6 +514,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\engine\src\modelms3d.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\engine\src\ms3dread.cpp"
 					>
 				</File>
