@@ -76,8 +76,7 @@ public:
 
    ///////////////////////////////////
 
-   virtual tResult SpawnEntity(const tChar * pszMesh, float nx, float nz);
-   virtual tResult SpawnEntity(const tChar * pszMesh, const tVec3 & position);
+   virtual tResult SpawnEntity(const tChar * pszEntity, const tVec3 & position);
 
    virtual tResult RemoveEntity(IEntity * pEntity);
    virtual void RemoveAll();

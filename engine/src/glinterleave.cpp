@@ -5,13 +5,13 @@
 
 #include "renderapi.h"
 
+#ifdef HAVE_CPPUNITLITE2
+#include "CppUnitLite2.h"
+#endif
+
 #include <GL/glew.h>
 
 #include <cstdlib>
-
-#ifdef HAVE_CPPUNIT
-#include <cppunit/extensions/HelperMacros.h>
-#endif
 
 #include "dbgalloc.h" // must be last header
 
@@ -167,22 +167,7 @@ tResult GetGlInterleaveFormat(const sVertexElement * pElements, uint nElements, 
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNIT
-
-class cGlInterleaveTests : public CppUnit::TestCase
-{
-   void TestInterleaveFormatsRecognized();
-   void TestInterleaveFormatsUnrecognized();
-
-   CPPUNIT_TEST_SUITE(cGlInterleaveTests);
-      CPPUNIT_TEST(TestInterleaveFormatsRecognized);
-      CPPUNIT_TEST(TestInterleaveFormatsUnrecognized);
-   CPPUNIT_TEST_SUITE_END();
-};
-
-///////////////////////////////////////
-
-CPPUNIT_TEST_SUITE_REGISTRATION(cGlInterleaveTests);
+#ifdef HAVE_CPPUNITLITE2
 
 ///////////////////////////////////////
 
@@ -193,12 +178,11 @@ CPPUNIT_TEST_SUITE_REGISTRATION(cGlInterleaveTests);
 #define INTERLEAVE_TEST_END(fmtExpected) \
    }; \
    GLenum fmtCalculated; \
-   CPPUNIT_ASSERT_MESSAGE("Expected to get GL interleave format " #fmtExpected, \
-   GetGlInterleaveFormat(decl, _countof(decl), &fmtCalculated) == S_OK); \
-   CPPUNIT_ASSERT(fmtCalculated == (fmtExpected)); \
+   CHECK(GetGlInterleaveFormat(decl, _countof(decl), &fmtCalculated) == S_OK); \
+   CHECK_EQUAL(fmtCalculated, (fmtExpected)); \
    } while (0)
 
-void cGlInterleaveTests::TestInterleaveFormatsRecognized()
+TEST(TestGlInterleaveFormatsRecognized)
 {
    INTERLEAVE_TEST_BEGIN()
       { kVEU_Position, kVET_Float2 },
@@ -279,7 +263,7 @@ void cGlInterleaveTests::TestInterleaveFormatsRecognized()
 
 ///////////////////////////////////////
 
-void cGlInterleaveTests::TestInterleaveFormatsUnrecognized()
+TEST(TestGlInterleaveFormatsUnrecognized)
 {
    GLenum format;
 
@@ -292,7 +276,7 @@ void cGlInterleaveTests::TestInterleaveFormatsUnrecognized()
          { kVEU_TexCoord, kVET_Float4 },
          { kVEU_Normal, kVET_Float3 },
       };
-      CPPUNIT_ASSERT(GetGlInterleaveFormat(decl, _countof(decl), &format) != S_OK);
+      CHECK(GetGlInterleaveFormat(decl, _countof(decl), &format) != S_OK);
    }
 
    // No compatible format
@@ -304,7 +288,7 @@ void cGlInterleaveTests::TestInterleaveFormatsUnrecognized()
          { kVEU_Normal, kVET_Float1 },
          { kVEU_Position, kVET_Float1 },
       };
-      CPPUNIT_ASSERT(GetGlInterleaveFormat(decl, _countof(decl), &format) != S_OK);
+      CHECK(GetGlInterleaveFormat(decl, _countof(decl), &format) != S_OK);
    }
 
    // No compatible format #2
@@ -316,10 +300,10 @@ void cGlInterleaveTests::TestInterleaveFormatsUnrecognized()
          { kVEU_Position, kVET_Float3 },
          { kVEU_Index, kVET_UnsignedByte4 },
       };
-      CPPUNIT_ASSERT(GetGlInterleaveFormat(decl, _countof(decl), &format) != S_OK);
+      CHECK(GetGlInterleaveFormat(decl, _countof(decl), &format) != S_OK);
    }
 }
 
-#endif // HAVE_CPPUNIT
+#endif // HAVE_CPPUNITLITE2
 
 ////////////////////////////////////////////////////////////////////////////////

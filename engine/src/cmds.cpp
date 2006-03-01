@@ -4,7 +4,6 @@
 #include "stdhdr.h"
 
 #include "engineapi.h"
-#include "entityapi.h"
 #include "inputapi.h"
 #include "scriptapi.h"
 #include "sys.h"
@@ -204,33 +203,6 @@ int LogEnableChannel(int argc, const tScriptVar * argv,
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int EntitySpawnTest(int argc, const tScriptVar * argv, 
-                    int nMaxResults, tScriptVar * pResults)
-{
-   if (argc == 3
-      && ScriptArgIsString(0)
-      && ScriptArgIsNumber(1)
-      && ScriptArgIsNumber(2))
-   {
-      float x = argv[1];
-      float z = argv[2];
-
-      if (x < 0 || x > 1 || z < 0 || z > 1)
-      {
-         ErrorMsg2("EntitySpawnTest arguments %f, %f, out of range\n", x, z);
-      }
-      else
-      {
-         UseGlobal(EntityManager);
-         pEntityManager->SpawnEntity(argv[0], argv[1], argv[2]);
-      }
-   }
-
-   return 0;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 int ListResources(int argc, const tScriptVar * argv, 
                   int nMaxResults, tScriptVar * pResults)
 {
@@ -313,7 +285,6 @@ sScriptReg cmds[] =
    { "unbind", UnbindKey },
    { "quit", Quit },
    { "LogChannel", LogEnableChannel },
-   { "EntitySpawnTest", EntitySpawnTest },
    { "ListResources", ListResources },
    { "GetMapProperties", GetMapProperties },
 };

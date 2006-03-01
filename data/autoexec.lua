@@ -22,23 +22,7 @@ bind("F7", [[GUIContext:ShowModalDialog("guitest.xml")]]);
 
 function LoadSampleLevel(map)
    GUIContext:PushPage("ingame.xml");
-   
    SetTerrain(map);
-   
-   -- spawn this many entities
-   nEntities = 15;
-
-   models = ListResources("Model");
-   table.foreachi(models, function(i, v) print("Model " .. i .. " is " .. v .. "\n") end);
-
-   nModels = table.getn(models);
-   for i = 1, nEntities do
-      m = models[math.random(nModels)];
-      EntitySpawnTest(m, math.random(), math.random());
-   end
-   
-   -- Spawn an animated zombie and point the view at it
-   EntitySpawnTest("zombie.ms3d", 0.5, 0.4);
    ViewSetPos(0.5, 0.4);
 end;
 

@@ -24,23 +24,6 @@
 
 extern tResult ModelEntityCreate(tEntityId id, const tChar * pszModel, const tVec3 & position, IEntity * * ppEntity);
 
-///////////////////////////////////////////////////////////////////////////////
-
-const sVertexElement g_modelVert[] =
-{
-   { kVEU_TexCoord,  kVET_Float2,   0, 0 },
-   { kVEU_Normal,    kVET_Float3,   0, 2 * sizeof(float) },
-   { kVEU_Position,  kVET_Float3,   0, 5 * sizeof(float) },
-   { kVEU_Index,     kVET_Float1,   0, 8 * sizeof(float) },
-};
-
-const sVertexElement g_blendedVert[] =
-{
-   { kVEU_TexCoord,  kVET_Float2,   0, 0 },
-   { kVEU_Normal,    kVET_Float3,   0, 2 * sizeof(float) },
-   { kVEU_Position,  kVET_Float3,   0, 5 * sizeof(float) },
-};
-
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -145,24 +128,15 @@ tResult cEntityManager::Term()
 
 ///////////////////////////////////////
 
-tResult cEntityManager::SpawnEntity(const tChar * pszMesh, float nx, float nz)
+tResult cEntityManager::SpawnEntity(const tChar * pszEntity, const tVec3 & position)
 {
-   tVec3 location;
-   UseGlobal(TerrainModel);
-   if (pTerrainModel->GetPointOnTerrain(nx, nz, &location) == S_OK)
+   if (pszEntity == NULL)
    {
-      return SpawnEntity(pszMesh, location);
+      return E_POINTER;
    }
-   return E_FAIL;
-}
-
-///////////////////////////////////////
-
-tResult cEntityManager::SpawnEntity(const tChar * pszMesh, const tVec3 & position)
-{
    uint oldNextId = m_nextId;
    cAutoIPtr<IEntity> pEntity;
-   if (ModelEntityCreate(m_nextId++, pszMesh, position, &pEntity) != S_OK)
+   if (ModelEntityCreate(m_nextId++, pszEntity, position, &pEntity) != S_OK)
    {
       m_nextId = oldNextId;
       return E_OUTOFMEMORY;

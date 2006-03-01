@@ -8,10 +8,6 @@
 #include "resourceapi.h"
 #include "readwriteapi.h"
 
-#ifdef HAVE_CPPUNIT
-#include <cppunit/extensions/HelperMacros.h>
-#endif
-
 #include "dbgalloc.h" // must be last header
 
 
@@ -500,23 +496,5 @@ tResult SoundResourceRegister()
    }
    return E_FAIL;
 }
-
-///////////////////////////////////////////////////////////////////////////////
-
-#ifdef HAVE_CPPUNIT
-
-///////////////////////////////////////////////////////////////////////////////
-
-class cSoundTests : public CppUnit::TestCase
-{
-   CPPUNIT_TEST_SUITE(cSoundTests);
-   CPPUNIT_TEST_SUITE_END();
-};
-
-////////////////////////////////////////
-
-CPPUNIT_TEST_SUITE_REGISTRATION(cSoundTests);
-
-#endif // HAVE_CPPUNIT
 
 ///////////////////////////////////////////////////////////////////////////////

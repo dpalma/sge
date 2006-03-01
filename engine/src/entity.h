@@ -18,14 +18,38 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cModelEntity
+// CLASS: cEntityModel
 //
+// Helper class for cEntity that handles details of rendering an animated model
 
-class cModelEntity : public cComObject<IMPLEMENTS(IEntity)>
+class cEntityModel
 {
 public:
-   cModelEntity(tEntityId id, const tChar * pszModel, const tVec3 & position);
-   ~cModelEntity();
+   cEntityModel(const tChar * pszModel);
+   ~cEntityModel();
+   const cStr & GetModel() const { return m_model; }
+   const tAxisAlignedBox & GetBoundingBox() const;
+   void Update(double elapsedTime);
+   void Render();
+private:
+   cStr m_model;
+   cModel * m_pModel;
+   tBlendedVertices m_blendedVerts;
+   cAutoIPtr<IModelAnimationController> m_pAnimController;
+   tAxisAlignedBox m_bbox;
+};
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cEntity
+//
+
+class cEntity : public cComObject<IMPLEMENTS(IEntity)>
+{
+public:
+   cEntity(tEntityId id, const tChar * pszModel, const tVec3 & position);
+   ~cEntity();
 
    virtual tEntityId GetId() const;
 
@@ -44,20 +68,15 @@ public:
    virtual void Render();
 
 private:
-   cStr m_model;
-   cModel * m_pModel;
-   tBlendedVertices m_blendedVerts;
-   cAutoIPtr<IModelAnimationController> m_pAnimController;
-
    tEntityId m_id;
    uint m_flags;
 
    tVec3 m_position;
 
-   tAxisAlignedBox m_bbox;
-
    mutable bool m_bUpdateWorldTransform;
    mutable tMatrix4 m_worldTransform;
+
+   cEntityModel m_modelHelper;
 };
 
 

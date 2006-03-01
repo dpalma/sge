@@ -37,118 +37,8 @@ const sVertexElement g_blendedVert[] =
    { kVEU_Position,  kVET_Float3,   0, 5 * sizeof(float) },
 };
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cModelEntity
-//
 
-///////////////////////////////////////
-
-tResult ModelEntityCreate(tEntityId id, const tChar * pszModel, const tVec3 & position, IEntity * * ppEntity)
-{
-   if (pszModel == NULL || ppEntity == NULL)
-   {
-      return E_POINTER;
-   }
-
-   cModelEntity * pModelEntity = new cModelEntity(id, pszModel, position);
-   if (pModelEntity == NULL)
-   {
-      return E_OUTOFMEMORY;
-   }
-
-   *ppEntity = static_cast<IEntity*>(pModelEntity);
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-cModelEntity::cModelEntity(tEntityId id, const tChar * pszModel, const tVec3 & position)
- : m_model(pszModel)
- , m_pModel(NULL)
- , m_id(id)
- , m_flags(kEF_None)
- , m_position(position)
- , m_bUpdateWorldTransform(true)
-{
-}
-
-///////////////////////////////////////
-
-cModelEntity::~cModelEntity()
-{
-}
-
-///////////////////////////////////////
-
-tEntityId cModelEntity::GetId() const
-{
-   return m_id;
-}
-
-///////////////////////////////////////
-
-uint cModelEntity::GetFlags() const
-{
-   return m_flags;
-}
-
-///////////////////////////////////////
-
-uint cModelEntity::SetFlags(uint flags, uint mask)
-{
-   m_flags = (m_flags & ~mask) | (flags & mask);
-   return m_flags;
-}
-
-///////////////////////////////////////
-
-tResult cModelEntity::GetModel(cStr * pModel) const
-{
-   if (pModel == NULL)
-   {
-      return E_POINTER;
-   }
-   if (m_model.empty())
-   {
-      return S_FALSE;
-   }
-   *pModel = m_model;
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cModelEntity::GetPosition(tVec3 * pPosition) const
-{
-   if (pPosition == NULL)
-   {
-      return E_POINTER;
-   }
-   *pPosition = m_position;
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-const tMatrix4 & cModelEntity::GetWorldTransform() const
-{
-   if (m_bUpdateWorldTransform)
-   {
-      m_bUpdateWorldTransform = false;
-      MatrixTranslate(m_position.x, m_position.y, m_position.z, &m_worldTransform);
-   }
-   return m_worldTransform;
-}
-
-///////////////////////////////////////
-
-const tAxisAlignedBox & cModelEntity::GetBoundingBox() const
-{
-   return m_bbox;
-}
-
-///////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 static void CalculateBBox(const tModelVertices & vertices, tAxisAlignedBox * pBBox)
 {
@@ -184,7 +74,39 @@ static void CalculateBBox(const tModelVertices & vertices, tAxisAlignedBox * pBB
    *pBBox = tAxisAlignedBox(mins, maxs);
 }
 
-void cModelEntity::Update(double elapsedTime)
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cEntityModel
+//
+
+///////////////////////////////////////
+
+cEntityModel::cEntityModel(const tChar * pszModel)
+ : m_model(pszModel)
+ , m_pModel(NULL)
+{
+}
+
+///////////////////////////////////////
+
+cEntityModel::~cEntityModel()
+{
+}
+
+///////////////////////////////////////
+
+const tAxisAlignedBox & cEntityModel::GetBoundingBox() const
+{
+   return m_bbox;
+}
+
+///////////////////////////////////////
+// TODO: Should animation be done right in the rendering loop? Update is probably
+// best for physics and AI simulation. Rendering may happen more frequently than
+// updating so animating the model may as well happen there to be smoother.
+
+void cEntityModel::Update(double elapsedTime)
 {
    // TODO: When the resource manager is fast enough, this if test should be removed
    // to get a new cModel pointer whenever the resource changes, e.g., by re-saving
@@ -223,7 +145,7 @@ void cModelEntity::Update(double elapsedTime)
 
 ///////////////////////////////////////
 
-void cModelEntity::Render()
+void cEntityModel::Render()
 {
    // TODO: When the resource manager is fast enough, this code should be used to
    // get a new cModel pointer in case the resource was changed, e.g., by re-saving
@@ -271,6 +193,131 @@ void cModelEntity::Render()
       }
       pRenderer->Render(iter->GetPrimitiveType(), const_cast<uint16*>(iter->GetIndexData()), iter->GetIndexCount());
    }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cEntity
+//
+
+///////////////////////////////////////
+
+tResult ModelEntityCreate(tEntityId id, const tChar * pszModel, const tVec3 & position, IEntity * * ppEntity)
+{
+   if (pszModel == NULL || ppEntity == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cEntity * pModelEntity = new cEntity(id, pszModel, position);
+   if (pModelEntity == NULL)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   *ppEntity = static_cast<IEntity*>(pModelEntity);
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+cEntity::cEntity(tEntityId id, const tChar * pszModel, const tVec3 & position)
+ : m_id(id)
+ , m_flags(kEF_None)
+ , m_position(position)
+ , m_bUpdateWorldTransform(true)
+ , m_modelHelper(pszModel)
+{
+}
+
+///////////////////////////////////////
+
+cEntity::~cEntity()
+{
+}
+
+///////////////////////////////////////
+
+tEntityId cEntity::GetId() const
+{
+   return m_id;
+}
+
+///////////////////////////////////////
+
+uint cEntity::GetFlags() const
+{
+   return m_flags;
+}
+
+///////////////////////////////////////
+
+uint cEntity::SetFlags(uint flags, uint mask)
+{
+   m_flags = (m_flags & ~mask) | (flags & mask);
+   return m_flags;
+}
+
+///////////////////////////////////////
+
+tResult cEntity::GetModel(cStr * pModel) const
+{
+   if (pModel == NULL)
+   {
+      return E_POINTER;
+   }
+   if (m_modelHelper.GetModel().empty())
+   {
+      return S_FALSE;
+   }
+   *pModel = m_modelHelper.GetModel();
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cEntity::GetPosition(tVec3 * pPosition) const
+{
+   if (pPosition == NULL)
+   {
+      return E_POINTER;
+   }
+   *pPosition = m_position;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+const tMatrix4 & cEntity::GetWorldTransform() const
+{
+   if (m_bUpdateWorldTransform)
+   {
+      m_bUpdateWorldTransform = false;
+      MatrixTranslate(m_position.x, m_position.y, m_position.z, &m_worldTransform);
+   }
+   return m_worldTransform;
+}
+
+///////////////////////////////////////
+
+const tAxisAlignedBox & cEntity::GetBoundingBox() const
+{
+   return m_modelHelper.GetBoundingBox();
+}
+
+///////////////////////////////////////
+
+void cEntity::Update(double elapsedTime)
+{
+   m_modelHelper.Update(elapsedTime);
+}
+
+///////////////////////////////////////
+
+void cEntity::Render()
+{
+   m_modelHelper.Render();
 }
 
 

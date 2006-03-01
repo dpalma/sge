@@ -13,14 +13,14 @@
 #include "globalobj.h"
 #include "resourceapi.h"
 
+#ifdef HAVE_CPPUNITLITE2
+#include "CppUnitLite2.h"
+#endif
+
 #include <tinyxml.h>
 
 #include <cstring>
 #include <locale>
-
-#ifdef HAVE_CPPUNIT
-#include <cppunit/extensions/HelperMacros.h>
-#endif
 
 #include "dbgalloc.h" // must be last header
 
@@ -422,26 +422,11 @@ AUTOREGISTER_GUIELEMENTFACTORYFN(style, GUIStyleElementCreate);
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNIT
-
-class cGUIStyleSheetTests : public CppUnit::TestCase
-{
-   CPPUNIT_TEST_SUITE(cGUIStyleSheetTests);
-      CPPUNIT_TEST(TestStyleSheetParse);
-      CPPUNIT_TEST(TestStyleSelectors);
-   CPPUNIT_TEST_SUITE_END();
-
-   void TestStyleSheetParse();
-   void TestStyleSelectors();
-};
+#ifdef HAVE_CPPUNITLITE2
 
 ////////////////////////////////////////
 
-CPPUNIT_TEST_SUITE_REGISTRATION(cGUIStyleSheetTests);
-
-////////////////////////////////////////
-
-void cGUIStyleSheetTests::TestStyleSheetParse()
+TEST(TestGUIStyleSheetParse)
 {
    static const tChar test[] =
    {
@@ -461,7 +446,7 @@ void cGUIStyleSheetTests::TestStyleSheetParse()
       "}\n"
    };
    cAutoIPtr<IGUIStyleSheet> pStyleSheet;
-   CPPUNIT_ASSERT(GUIStyleSheetParse(test, &pStyleSheet) == S_OK);
+   CHECK(GUIStyleSheetParse(test, &pStyleSheet) == S_OK);
 }
 
 ////////////////////////////////////////
@@ -499,7 +484,7 @@ static bool StylesAreEqual(IGUIStyle * pStyle1, IGUIStyle * pStyle2)
    return false;
 }
 
-void cGUIStyleSheetTests::TestStyleSelectors()
+TEST(TestGUIStyleSelectors)
 {
    static const tChar test[] =
    {
@@ -531,37 +516,37 @@ void cGUIStyleSheetTests::TestStyleSelectors()
       "}\n"
    };
    cAutoIPtr<IGUIStyleSheet> pStyleSheet;
-   CPPUNIT_ASSERT(GUIStyleSheetParse(test, &pStyleSheet) == S_OK);
+   CHECK(GUIStyleSheetParse(test, &pStyleSheet) == S_OK);
 
    {
       cAutoIPtr<IGUIStyle> pStyle;
-      CPPUNIT_ASSERT(pStyleSheet->GetStyle(_T("a"), _T("topText"), &pStyle) == S_OK);
+      CHECK(pStyleSheet->GetStyle(_T("a"), _T("topText"), &pStyle) == S_OK);
       uint temp;
-      CPPUNIT_ASSERT(pStyle->GetFontPointSize(&temp) == S_OK);
-      CPPUNIT_ASSERT(temp == 7);
-      CPPUNIT_ASSERT(pStyle->GetAlignment(&temp) == S_FALSE);
+      CHECK(pStyle->GetFontPointSize(&temp) == S_OK);
+      CHECK_EQUAL(temp, 7);
+      CHECK(pStyle->GetAlignment(&temp) == S_FALSE);
    }
 
    {
       cAutoIPtr<IGUIStyle> pStyle;
-      CPPUNIT_ASSERT(pStyleSheet->GetStyle(NULL, _T("heading"), &pStyle) == S_OK);
+      CHECK(pStyleSheet->GetStyle(NULL, _T("heading"), &pStyle) == S_OK);
    }
 
    {
       cAutoIPtr<IGUIStyle> pStyle;
-      CPPUNIT_ASSERT(pStyleSheet->GetStyle(_T("p"), NULL, &pStyle) == S_OK);
+      CHECK(pStyleSheet->GetStyle(_T("p"), NULL, &pStyle) == S_OK);
    }
 
    {
       cAutoIPtr<IGUIStyle> pStyle1, pStyle2, pStyle3;
-      CPPUNIT_ASSERT(pStyleSheet->GetStyle(_T("h1"), NULL, &pStyle1) == S_OK);
-      CPPUNIT_ASSERT(pStyleSheet->GetStyle(_T("h2"), NULL, &pStyle2) == S_OK);
-      CPPUNIT_ASSERT(pStyleSheet->GetStyle(_T("h3"), NULL, &pStyle3) == S_OK);
-      CPPUNIT_ASSERT(StylesAreEqual(pStyle1, pStyle2));
-      CPPUNIT_ASSERT(StylesAreEqual(pStyle2, pStyle3));
+      CHECK(pStyleSheet->GetStyle(_T("h1"), NULL, &pStyle1) == S_OK);
+      CHECK(pStyleSheet->GetStyle(_T("h2"), NULL, &pStyle2) == S_OK);
+      CHECK(pStyleSheet->GetStyle(_T("h3"), NULL, &pStyle3) == S_OK);
+      CHECK(StylesAreEqual(pStyle1, pStyle2));
+      CHECK(StylesAreEqual(pStyle2, pStyle3));
    }
 }
 
-#endif // HAVE_CPPUNIT
+#endif // HAVE_CPPUNITLITE2
 
 ////////////////////////////////////////////////////////////////////////////////
