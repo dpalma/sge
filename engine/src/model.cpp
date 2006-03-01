@@ -230,11 +230,9 @@ cModelSkeleton::cModelSkeleton()
 
 cModelSkeleton::cModelSkeleton(const cModelSkeleton & other)
  : m_joints(other.m_joints.size())
- , m_inverses(other.m_inverses.size())
  , m_pAnim(other.m_pAnim)
 {
    std::copy(other.m_joints.begin(), other.m_joints.end(), m_joints.begin());
-   std::copy(other.m_inverses.begin(), other.m_inverses.end(), m_inverses.begin());
 }
 
 ///////////////////////////////////////
@@ -245,7 +243,6 @@ cModelSkeleton::cModelSkeleton(const tModelJoints & joints)
    if (!joints.empty())
    {
       std::copy(joints.begin(), joints.end(), m_joints.begin());
-      CalculateInverses();
    }
 }
 
@@ -261,46 +258,8 @@ const cModelSkeleton & cModelSkeleton::operator =(const cModelSkeleton & other)
 {
    m_joints.resize(other.m_joints.size());
    std::copy(other.m_joints.begin(), other.m_joints.end(), m_joints.begin());
-   m_inverses.resize(other.m_inverses.size());
-   std::copy(other.m_inverses.begin(), other.m_inverses.end(), m_inverses.begin());
    m_pAnim = other.m_pAnim;
    return *this;
-}
-
-///////////////////////////////////////
-
-void cModelSkeleton::PreApplyInverses(tModelVertices::iterator first,
-                                      tModelVertices::iterator last,
-                                      tModelVertices::iterator dest) const
-{
-   if (m_inverses.empty())
-   {
-      return;
-   }
-
-   for (tModelVertices::iterator iter = first, out = dest; iter != last; iter++, out++)
-   {
-      int index = Round(iter->bone);
-      if (index < 0)
-      {
-         continue;
-      }
-
-      tVec3 xformNormal;
-      m_inverses[index].Transform(iter->normal, &xformNormal);
-      out->normal = xformNormal;
-
-      tVec3 xformPos;
-      m_inverses[index].Transform(iter->pos, &xformPos);
-      out->pos = xformPos;
-   }
-}
-
-///////////////////////////////////////
-
-void cModelSkeleton::InterpolateMatrices(double time, tMatrices * pMatrices) const
-{
-   InterpolateMatrices(const_cast<IModelAnimation*>((const IModelAnimation*)m_pAnim), time, pMatrices);
 }
 
 ///////////////////////////////////////
@@ -353,7 +312,7 @@ void cModelSkeleton::TempAddAnimation(IModelAnimation * pAnim)
 
 ///////////////////////////////////////
 
-void cModelSkeleton::CalculateInverses()
+void cModelSkeleton::CalculateInverses(tMatrices * pInverses) const
 {
    if (m_joints.empty())
    {
@@ -411,10 +370,10 @@ void cModelSkeleton::CalculateInverses()
       }
    }
 
-   m_inverses.resize(m_joints.size(), tMatrix4::GetIdentity());
-   for (i = 0; i < m_inverses.size(); i++)
+   pInverses->resize(m_joints.size(), tMatrix4::GetIdentity());
+   for (i = 0; i < pInverses->size(); i++)
    {
-      MatrixInvert(absolutes[i].m, m_inverses[i].m);
+      MatrixInvert(absolutes[i].m, (*pInverses)[i].m);
    }
 }
 
@@ -556,7 +515,25 @@ tResult cModel::RegisterResourceFormat()
 
 void cModel::PreApplyJoints()
 {
-   m_skeleton.PreApplyInverses(m_vertices.begin(), m_vertices.end(), m_vertices.begin());
+   tMatrices inverses;
+   m_skeleton.CalculateInverses(&inverses);
+
+   for (tModelVertices::iterator iter = m_vertices.begin(); iter != m_vertices.end(); iter++)
+   {
+      int index = Round(iter->bone);
+      if (index < 0)
+      {
+         continue;
+      }
+
+      tVec3 transformedNormal;
+      inverses[index].Transform(iter->normal, &transformedNormal);
+      iter->normal = transformedNormal;
+
+      tVec3 transformedPosition;
+      inverses[index].Transform(iter->pos, &transformedPosition);
+      iter->pos = transformedPosition;
+   }
 }
 
 

@@ -301,7 +301,7 @@ tResult cModelAnimationController::Advance(double elapsedTime)
       m_animTime = m_animStart + pastEnd;
    }
 
-   m_pSkeleton->InterpolateMatrices(m_animTime, &m_blendMatrices);
+   m_pSkeleton->InterpolateMatrices(m_pSkeleton->TempAccessAnimation(), m_animTime, &m_blendMatrices);
    return S_OK;
 }
 

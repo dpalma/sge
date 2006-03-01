@@ -15,7 +15,7 @@
 #pragma once
 #endif
 
-#if _MSC_VER <= 1300
+#if !(_MSC_VER > 1300)
 #pragma warning(push)
 #pragma warning(disable:4251)
 #endif
@@ -219,6 +219,8 @@ typedef std::vector<cModelJoint> tModelJoints;
 
 class ENGINE_API cModelSkeleton
 {
+   friend class cModel;
+
 public:
    cModelSkeleton();
    cModelSkeleton(const cModelSkeleton & other);
@@ -231,21 +233,15 @@ public:
 
    bool IsAnimated() const { return !m_joints.empty(); }
 
-   void PreApplyInverses(tModelVertices::iterator first,
-                         tModelVertices::iterator last,
-                         tModelVertices::iterator dest) const;
-
-   void InterpolateMatrices(double time, tMatrices * pMatrices) const;
    void InterpolateMatrices(IModelAnimation * pAnim, double time, tMatrices * pMatrices) const;
 
    void TempAddAnimation(IModelAnimation * pAnim);
    IModelAnimation * TempAccessAnimation() { return m_pAnim; }
 
 private:
-   void CalculateInverses();
+   void CalculateInverses(tMatrices * pInverses) const;
 
    tModelJoints m_joints;
-   tMatrices m_inverses;
 
    cAutoIPtr<IModelAnimation> m_pAnim;
 };
@@ -338,7 +334,7 @@ inline tModelMeshes::const_iterator cModel::EndMeshses() const
 }
 
 
-#if _MSC_VER <= 1300
+#if !(_MSC_VER > 1300)
 #pragma warning(pop)
 #endif
 
