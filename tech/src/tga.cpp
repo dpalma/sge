@@ -9,10 +9,6 @@
 #include <cstdlib>
 #include <cstring> // required w/ gcc for memcpy
 
-#ifdef HAVE_CPPUNIT
-#include <cppunit/extensions/HelperMacros.h>
-#endif
-
 #include "dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////

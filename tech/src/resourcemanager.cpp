@@ -9,14 +9,14 @@
 #include "filespec.h"
 #include "readwriteapi.h"
 
+#ifdef HAVE_CPPUNITLITE2
+#include "CppUnitLite2.h"
+#endif
+
 #include <cstdio>
 #include <vector>
 #include <algorithm>
 #include <set>
-
-#ifdef HAVE_CPPUNIT
-#include <cppunit/extensions/HelperMacros.h>
-#endif
 
 #include "dbgalloc.h" // must be last header
 
@@ -865,39 +865,7 @@ const cResourceManager::sResource & cResourceManager::sResource::operator =(cons
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNIT
-
-class cResourceManagerTests : public CppUnit::TestCase
-{
-   void TestLoadSameNameDifferentType();
-   void TestLoadCaseSensitivity();
-
-   CPPUNIT_TEST_SUITE(cResourceManagerTests);
-      CPPUNIT_TEST(TestLoadSameNameDifferentType);
-      CPPUNIT_TEST(TestLoadCaseSensitivity);
-   CPPUNIT_TEST_SUITE_END();
-
-public:
-   virtual void setUp();
-   virtual void tearDown();
-
-private:
-   static const std::pair<cStr, cStr> gm_pseudoResources[];
-   cAutoIPtr<cResourceManager> m_pResourceManager;
-};
-
-////////////////////////////////////////
-
-CPPUNIT_TEST_SUITE_REGISTRATION(cResourceManagerTests);
-
-////////////////////////////////////////
-
-const std::pair<cStr, cStr> cResourceManagerTests::gm_pseudoResources[] =
-{
-   std::make_pair(cStr("foo.dat"), cStr("foo_dat_foo_dat_foo_dat_foo_dat")),
-   std::make_pair(cStr("foo.bmp"), cStr("foo_bmp_foo_bmp_foo_bmp_foo_bmp")),
-   std::make_pair(cStr("bar.dat"), cStr("bar_dat_bar_dat_bar_dat_bar_dat")),
-};
+#ifdef HAVE_CPPUNITLITE2
 
 class cTestResourceStore : public cResourceStore
 {
@@ -928,7 +896,6 @@ cTestResourceStore::~cTestResourceStore()
 
 tResult cTestResourceStore::FillCache(cResourceCache * pCache)
 {
-   CPPUNIT_ASSERT(pCache != NULL);
    std::vector<std::pair<cStr, cStr> >::const_iterator iter = m_testData.begin();
    for (ulong index = 0; iter != m_testData.end(); iter++, index++)
    {
@@ -940,18 +907,67 @@ tResult cTestResourceStore::FillCache(cResourceCache * pCache)
 
 tResult cTestResourceStore::OpenEntry(const cResourceCacheEntryHeader & entry, IReader * * ppReader)
 {
-   CPPUNIT_ASSERT(ppReader != NULL);
    std::vector<std::pair<cStr, cStr> >::const_iterator iter = m_testData.begin();
    for (ulong index = 0; iter != m_testData.end(); iter++, index++)
    {
       if (stricmp(entry.GetName(), m_testData[index].first.c_str()) == 0)
       {
          cStr * pDataStr = &m_testData[index].second;
-         return ReaderCreateMem(reinterpret_cast<const byte *>(pDataStr->c_str()), pDataStr->length(), false, ppReader);
+         return MemReaderCreate(reinterpret_cast<const byte *>(pDataStr->c_str()), pDataStr->length(), false, ppReader);
       }
    }
    return E_FAIL;
 }
+
+////////////////////////////////////////
+
+class cResourceManagerTests
+{
+public:
+   cResourceManagerTests();
+   ~cResourceManagerTests();
+
+   static const std::pair<cStr, cStr> gm_pseudoResources[];
+   cAutoIPtr<cResourceManager> m_pResourceManager;
+};
+
+////////////////////////////////////////
+
+const std::pair<cStr, cStr> cResourceManagerTests::gm_pseudoResources[] =
+{
+   std::make_pair(cStr("foo.dat"), cStr("foo_dat_foo_dat_foo_dat_foo_dat")),
+   std::make_pair(cStr("foo.bmp"), cStr("foo_bmp_foo_bmp_foo_bmp_foo_bmp")),
+   std::make_pair(cStr("bar.dat"), cStr("bar_dat_bar_dat_bar_dat_bar_dat")),
+};
+
+////////////////////////////////////////
+
+cResourceManagerTests::cResourceManagerTests()
+{
+   SafeRelease(m_pResourceManager);
+   m_pResourceManager = new cResourceManager;
+   m_pResourceManager->Init();
+
+   std::vector<std::pair<cStr, cStr> > testData;
+   for (int i = 0; i < _countof(gm_pseudoResources); i++)
+   {
+      testData.push_back(gm_pseudoResources[i]);
+   }
+   m_pResourceManager->AddResourceStore(static_cast<cResourceStore*>(new cTestResourceStore(&testData)));
+}
+
+////////////////////////////////////////
+
+cResourceManagerTests::~cResourceManagerTests()
+{
+   if (!!m_pResourceManager)
+   {
+      m_pResourceManager->Term();
+      SafeRelease(m_pResourceManager);
+   }
+}
+
+////////////////////////////////////////
 
 void * TestDataLoad(IReader * pReader)
 {
@@ -990,72 +1006,44 @@ void TestDataUnload(void * pData)
 
 ////////////////////////////////////////
 
-void cResourceManagerTests::TestLoadSameNameDifferentType()
+TEST_F(cResourceManagerTests, TestResourceManagerLoadSameNameDifferentType)
 {
-   CPPUNIT_ASSERT(m_pResourceManager->RegisterFormat("foodat", NULL, "dat", TestDataLoad, TestDataPostload, TestDataUnload) == S_OK);
-   CPPUNIT_ASSERT(m_pResourceManager->RegisterFormat("foobmp", NULL, "bmp", TestDataLoad, TestDataPostload, TestDataUnload) == S_OK);
-   CPPUNIT_ASSERT(m_pResourceManager->RegisterFormat("bardat", NULL, "dat", TestDataLoad, TestDataPostload, TestDataUnload) == S_OK);
+   CHECK(m_pResourceManager->RegisterFormat("foodat", NULL, "dat", TestDataLoad, TestDataPostload, TestDataUnload) == S_OK);
+   CHECK(m_pResourceManager->RegisterFormat("foobmp", NULL, "bmp", TestDataLoad, TestDataPostload, TestDataUnload) == S_OK);
+   CHECK(m_pResourceManager->RegisterFormat("bardat", NULL, "dat", TestDataLoad, TestDataPostload, TestDataUnload) == S_OK);
 
    {
       byte * pFooDat = NULL;
-      CPPUNIT_ASSERT(m_pResourceManager->Load("foo", "foodat", (void*)NULL, (void**)&pFooDat) == S_OK);
-      CPPUNIT_ASSERT(memcmp(pFooDat, gm_pseudoResources[0].second.c_str(), gm_pseudoResources[0].second.length()) == 0);
+      CHECK(m_pResourceManager->Load("foo", "foodat", (void*)NULL, (void**)&pFooDat) == S_OK);
+      CHECK(memcmp(pFooDat, gm_pseudoResources[0].second.c_str(), gm_pseudoResources[0].second.length()) == 0);
    }
 
    {
       byte * pFooBmp = NULL;
-      CPPUNIT_ASSERT(m_pResourceManager->Load("foo", "foobmp", (void*)NULL, (void**)&pFooBmp) == S_OK);
-      CPPUNIT_ASSERT(memcmp(pFooBmp, gm_pseudoResources[1].second.c_str(), gm_pseudoResources[1].second.length()) == 0);
+      CHECK(m_pResourceManager->Load("foo", "foobmp", (void*)NULL, (void**)&pFooBmp) == S_OK);
+      CHECK(memcmp(pFooBmp, gm_pseudoResources[1].second.c_str(), gm_pseudoResources[1].second.length()) == 0);
    }
 }
 
 ////////////////////////////////////////
 
-void cResourceManagerTests::TestLoadCaseSensitivity()
+TEST_F(cResourceManagerTests, TestResourceManagerLoadCaseSensitivity)
 {
-   CPPUNIT_ASSERT(m_pResourceManager->RegisterFormat("foodat", NULL, "dat", TestDataLoad, TestDataPostload, TestDataUnload) == S_OK);
+   CHECK(m_pResourceManager->RegisterFormat("foodat", NULL, "dat", TestDataLoad, TestDataPostload, TestDataUnload) == S_OK);
 
    {
       byte * pFooDat1 = NULL;
-      CPPUNIT_ASSERT(m_pResourceManager->Load("foo", "foodat", (void*)NULL, (void**)&pFooDat1) == S_OK);
-      CPPUNIT_ASSERT(memcmp(pFooDat1, gm_pseudoResources[0].second.c_str(), gm_pseudoResources[0].second.length()) == 0);
+      CHECK(m_pResourceManager->Load("foo", "foodat", (void*)NULL, (void**)&pFooDat1) == S_OK);
+      CHECK(memcmp(pFooDat1, gm_pseudoResources[0].second.c_str(), gm_pseudoResources[0].second.length()) == 0);
    }
 
    {
       byte * pFooDat2 = NULL;
-      CPPUNIT_ASSERT(m_pResourceManager->Load("FOO", "foodat", (void*)NULL, (void**)&pFooDat2) == S_OK);
-      CPPUNIT_ASSERT(memcmp(pFooDat2, gm_pseudoResources[0].second.c_str(), gm_pseudoResources[0].second.length()) == 0);
+      CHECK(m_pResourceManager->Load("FOO", "foodat", (void*)NULL, (void**)&pFooDat2) == S_OK);
+      CHECK(memcmp(pFooDat2, gm_pseudoResources[0].second.c_str(), gm_pseudoResources[0].second.length()) == 0);
    }
 }
 
-////////////////////////////////////////
-
-void cResourceManagerTests::setUp()
-{
-   SafeRelease(m_pResourceManager);
-   m_pResourceManager = new cResourceManager;
-   CPPUNIT_ASSERT(!!m_pResourceManager);
-   m_pResourceManager->Init();
-
-   std::vector<std::pair<cStr, cStr> > testData;
-   for (int i = 0; i < _countof(gm_pseudoResources); i++)
-   {
-      testData.push_back(gm_pseudoResources[i]);
-   }
-   CPPUNIT_ASSERT(m_pResourceManager->AddResourceStore(static_cast<cResourceStore*>(new cTestResourceStore(&testData))) == S_OK);
-}
-
-////////////////////////////////////////
-
-void cResourceManagerTests::tearDown()
-{
-   if (!!m_pResourceManager)
-   {
-      m_pResourceManager->Term();
-      SafeRelease(m_pResourceManager);
-   }
-}
-
-#endif
+#endif // HAVE_CPPUNITLITE2
 
 ////////////////////////////////////////////////////////////////////////////////

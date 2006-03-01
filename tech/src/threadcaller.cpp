@@ -5,8 +5,8 @@
 
 #include "threadcaller.h"
 
-#ifdef HAVE_CPPUNIT
-#include <cppunit/extensions/HelperMacros.h>
+#ifdef HAVE_CPPUNITLITE2
+#include "CppUnitLite2.h"
 #endif
 
 #include "dbgalloc.h" // must be last header
@@ -30,7 +30,6 @@ LOG_DEFINE_CHANNEL(ThreadCaller);
 
 cThreadCaller::cThreadCaller()
 {
-   RegisterGlobalObject(IID_IThreadCaller, static_cast<IGlobalObject*>(this));
 }
 
 ////////////////////////////////////////
@@ -222,72 +221,90 @@ tResult cThreadCaller::PostCall(tThreadId threadId, cFunctor * pFunctor)
 
 ////////////////////////////////////////
 
-void ThreadCallerCreate()
+tResult ThreadCallerCreate()
 {
-   cAutoIPtr<IThreadCaller>(new cThreadCaller);
+   cAutoIPtr<IThreadCaller> p(new cThreadCaller);
+   if (!p)
+   {
+      return E_OUTOFMEMORY;
+   }
+   return RegisterGlobalObject(IID_IThreadCaller, static_cast<IThreadCaller*>(p));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNIT
+#ifdef HAVE_CPPUNITLITE2
 
-class cThreadCallerTests : public CppUnit::TestCase
+class cFooStatic
 {
-   CPPUNIT_TEST_SUITE(cThreadCallerTests);
-      CPPUNIT_TEST(TestPostCall);
-   CPPUNIT_TEST_SUITE_END();
-
-   static ulong g_nFooCalls;
-
-   static void Foo();
-
-   void TestPostCall();
-
 public:
-   virtual void setUp();
-   virtual void tearDown();
+   static void SetFoo(ulong foo);
+   static ulong gm_foo;
+   static ulong gm_nSetFooCalls;
+   static tThreadId gm_threadIdSetFooLastCalledFrom;
+};
+void cFooStatic::SetFoo(ulong foo)
+{
+   gm_foo = foo;
+   gm_nSetFooCalls++;
+   gm_threadIdSetFooLastCalledFrom = ThreadGetCurrentId();
+}
+ulong cFooStatic::gm_foo = 0;
+ulong cFooStatic::gm_nSetFooCalls = 0;
+tThreadId cFooStatic::gm_threadIdSetFooLastCalledFrom = 0;
+
+class cReceiveThreadCallsThread : public cThread
+{
+public:
+   virtual int Run();
 };
 
-////////////////////////////////////////
-
-CPPUNIT_TEST_SUITE_REGISTRATION(cThreadCallerTests);
-
-////////////////////////////////////////
-
-ulong cThreadCallerTests::g_nFooCalls = 0;
-
-////////////////////////////////////////
-
-void cThreadCallerTests::Foo()
+int cReceiveThreadCallsThread::Run()
 {
-   g_nFooCalls++;
+   UseGlobal(ThreadCaller);
+   if (pThreadCaller->ThreadInit() != S_OK)
+   {
+      return -1;
+   }
+   for (;;)
+   {
+      if (pThreadCaller->ReceiveCalls(NULL) == S_OK)
+      {
+         break;
+      }
+   }
+   if (pThreadCaller->ThreadTerm() != S_OK)
+   {
+      return -1;
+   }
+   return 0;
+}
+
+class cThreadFixture
+{
+public:
+   cThreadFixture();
+   ~cThreadFixture();
+};
+
+cThreadFixture::cThreadFixture()
+{
+   UseGlobal(ThreadCaller);
+   pThreadCaller->ThreadInit();
+}
+
+cThreadFixture::~cThreadFixture()
+{
+   UseGlobal(ThreadCaller);
+   pThreadCaller->ThreadTerm();
 }
 
 ////////////////////////////////////////
 
-void cThreadCallerTests::TestPostCall()
+TEST_F(cThreadFixture, TestThreadCallerPostCall)
 {
-   class cSetFooThread : public cThread
-   {
-   public:
-      virtual int Run()
-      {
-         UseGlobal(ThreadCaller);
-         CPPUNIT_ASSERT(SUCCEEDED(pThreadCaller->ThreadInit()));
-         for (;;)
-         {
-            if (pThreadCaller->ReceiveCalls(NULL) == S_OK)
-            {
-               break;
-            }
-         }
-         CPPUNIT_ASSERT(SUCCEEDED(pThreadCaller->ThreadTerm()));
-         return 0;
-      }
-   };
-
-   cThread * pThread = new cSetFooThread;
-   CPPUNIT_ASSERT(pThread->Create());
+   cThread * pThread = new cReceiveThreadCallsThread;
+   CHECK(pThread->Create());
 
    UseGlobal(ThreadCaller);
 
@@ -297,35 +314,26 @@ void cThreadCallerTests::TestPostCall()
    {
       ThreadSleep(100);
       nSleeps++;
-      CPPUNIT_ASSERT(nSleeps < kMaxSleeps);
+      CHECK(nSleeps < kMaxSleeps);
    }
 
-   CPPUNIT_ASSERT(g_nFooCalls == 0);
+   tThreadId threadId = pThread->GetThreadId();
 
-   pThreadCaller->PostCall(pThread->GetThreadId(), &cThreadCallerTests::Foo);
+   static const ulong kFoo = 4000;
+   CHECK(cFooStatic::gm_foo != kFoo);
+   CHECK_EQUAL(cFooStatic::gm_nSetFooCalls, 0);
+   CHECK(cFooStatic::gm_threadIdSetFooLastCalledFrom != threadId);
+
+   CHECK(pThreadCaller->PostCall(threadId, &cFooStatic::SetFoo, kFoo) == S_OK);
    pThread->Join();
 
    delete pThread, pThread = NULL;
 
-   CPPUNIT_ASSERT(g_nFooCalls == 1);
+   CHECK_EQUAL(cFooStatic::gm_foo, kFoo);
+   CHECK_EQUAL(cFooStatic::gm_nSetFooCalls, 1);
+   CHECK_EQUAL(cFooStatic::gm_threadIdSetFooLastCalledFrom, threadId);
 }
 
-////////////////////////////////////////
-
-void cThreadCallerTests::setUp()
-{
-   UseGlobal(ThreadCaller);
-   CPPUNIT_ASSERT(SUCCEEDED(pThreadCaller->ThreadInit()));
-}
-
-////////////////////////////////////////
-
-void cThreadCallerTests::tearDown()
-{
-   UseGlobal(ThreadCaller);
-   CPPUNIT_ASSERT(SUCCEEDED(pThreadCaller->ThreadTerm()));
-}
-
-#endif // HAVE_CPPUNIT
+#endif // HAVE_CPPUNITLITE2
 
 ////////////////////////////////////////////////////////////////////////////////

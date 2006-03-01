@@ -4,6 +4,14 @@
 #include "stdhdr.h"
 
 #include "thread.h"
+#include "techtime.h"
+
+#ifdef HAVE_CPPUNITLITE2
+#include "CppUnitLite2.h"
+#endif
+
+#include <cmath>
+#include <cfloat>
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -12,13 +20,6 @@
 #include <sys/types.h>
 #include <sched.h>
 #include <unistd.h>
-#endif
-
-#ifdef HAVE_CPPUNIT
-#include "techtime.h"
-#include <cmath>
-#include <cfloat>
-#include <cppunit/extensions/HelperMacros.h>
 #endif
 
 #include "dbgalloc.h" // must be last header
@@ -445,28 +446,13 @@ void cMutexLock::Release()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNIT
+#ifdef HAVE_CPPUNITLITE2
 
-class cThreadTests : public CppUnit::TestCase
-{
-   CPPUNIT_TEST_SUITE(cThreadTests);
-      CPPUNIT_TEST(TestSleep);
-   CPPUNIT_TEST_SUITE_END();
-
-   void TestSleep();
-};
-
-////////////////////////////////////////
-
-CPPUNIT_TEST_SUITE_REGISTRATION(cThreadTests);
-
-////////////////////////////////////////
-
-void cThreadTests::TestSleep()
+TEST(TestSleep)
 {
    cThreadEvent event;
 
-   CPPUNIT_ASSERT(event.Create());
+   CHECK(event.Create());
 
    static const double kWaitSecs = 2;
    static const ulong kWaitMillis = (ulong)(kWaitSecs * 1000);
@@ -475,9 +461,8 @@ void cThreadTests::TestSleep()
    {
    public:
       cSleepThread(cThreadEvent * pEvent, ulong sleepMs)
-        : m_pEvent(pEvent), m_sleepMs(sleepMs), m_elapsed(0)
+        : m_pEvent(pEvent), m_sleepMs(sleepMs), m_elapsed(0), m_bSetEventReturnValue(false)
       {
-         CPPUNIT_ASSERT(pEvent != NULL);
       }
 
       virtual int Run()
@@ -485,7 +470,7 @@ void cThreadTests::TestSleep()
          m_elapsed = -TimeGetSecs();
          ThreadSleep(m_sleepMs);
          m_elapsed += TimeGetSecs();
-         CPPUNIT_ASSERT(m_pEvent->Set());
+         m_bSetEventReturnValue = m_pEvent->Set();
          return 0;
       }
 
@@ -494,25 +479,32 @@ void cThreadTests::TestSleep()
          return m_elapsed;
       }
 
+      bool GetSetEventReturnValue() const
+      {
+         return m_bSetEventReturnValue;
+      }
+
    private:
       cThreadEvent * m_pEvent;
       ulong m_sleepMs;
       double m_elapsed;
+      bool m_bSetEventReturnValue;
    };
 
    cSleepThread * pThread = new cSleepThread(&event, kWaitMillis);
-   CPPUNIT_ASSERT(pThread->Create());
+   CHECK(pThread->Create());
 
-   CPPUNIT_ASSERT(event.Wait());
+   CHECK(event.Wait());
+   CHECK(pThread->GetSetEventReturnValue());
 
    double elapsed = pThread->GetElapsedTime();
 
    delete pThread, pThread = NULL;
 
    // TODO: hard to make this assert work on fast dual-processor machine
-   //CPPUNIT_ASSERT(elapsed > (kWaitSecs - 1.0e-2));
+   //CHECK(elapsed > (kWaitSecs - 1.0e-2));
 }
 
-#endif // HAVE_CPPUNIT
+#endif // HAVE_CPPUNITLITE2
 
 ///////////////////////////////////////////////////////////////////////////////
