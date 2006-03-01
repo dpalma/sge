@@ -142,13 +142,14 @@ tResult SysSetClipboardString(const tChar * psz)
    {
       if (EmptyClipboard())
       {
-         HANDLE hData = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, _tcslen(psz) + 1);
+         size_t memSize = (_tcslen(psz) + 1) * sizeof(tChar); // plus one for the null terminator
+         HANDLE hData = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, memSize);
          if (hData != NULL)
          {
             tChar * pszData = reinterpret_cast<tChar *>(GlobalLock(hData));
             if (pszData != NULL)
             {
-               _tcscpy(pszData, psz);
+               CopyMemory(pszData, psz, memSize);
                GlobalUnlock(hData);
 
                if (SetClipboardData(clipFormat, hData))
@@ -786,24 +787,29 @@ TEST(TestClipboard)
    static const ulong kTruncSize = 5;
 
 #ifdef _UNICODE
-   std::wstring in(kInSize, 'X');
+   std::wstring in(kInSize, _T('X'));
 #else
    std::string in(kInSize, 'X');
 #endif
+
+   std::string original;
+   CHECK(SysGetClipboardString(&original, 0) == S_OK);
 
    CHECK(SysSetClipboardString(in.c_str()) == S_OK);
 
    cStr out("garbage should be cleared/over-written");
    CHECK(SysGetClipboardString(&out) == S_OK);
-   CHECK(out.length() == in.length());
+   CHECK_EQUAL(out.length(), in.length());
    CHECK(out.compare(in) == 0);
 
    CHECK(SysGetClipboardString(&out, kTruncSize) == S_OK);
 #ifdef _UNICODE
-   CHECK(out.compare(std::wstring(kTruncSize, 'X')) == 0);
+   CHECK(out.compare(std::wstring(kTruncSize, _T('X'))) == 0);
 #else
    CHECK(out.compare(std::string(kTruncSize, 'X')) == 0);
 #endif
+
+   CHECK(SysSetClipboardString(original.c_str()) == S_OK);
 }
 
 #endif // HAVE_CPPUNITLITE2
