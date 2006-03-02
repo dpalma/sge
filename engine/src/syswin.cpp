@@ -69,6 +69,225 @@ void SysQuit()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cWindowsClipboard
+//
+// Helper class for the clipboard functions below. The retries and sleep
+// interval are an attempt to fix a problem where the clipboard functions
+// fail when Windows Remote Desktop Connection is running. It must be
+// periodically clobbering the local clipboard contents with the remote
+// contents (a guess).
+
+class cWindowsClipboard
+{
+public:
+   cWindowsClipboard();
+   ~cWindowsClipboard();
+   tResult Open(HWND hWnd, ulong retries = 1, ulong sleep = 0);
+   tResult Close();
+   tResult PutString(const tChar * pszString);
+   tResult GetString(cStr * pStr, ulong max, ulong retries = 1, ulong sleep = 0);
+   DWORD m_lastError;
+private:
+   bool m_bOpenedClipboard;
+};
+
+////////////////////////////////////////
+
+cWindowsClipboard::cWindowsClipboard()
+ : m_lastError(NOERROR)
+ , m_bOpenedClipboard(false)
+{
+}
+
+////////////////////////////////////////
+
+cWindowsClipboard::~cWindowsClipboard()
+{
+   Close();
+}
+
+////////////////////////////////////////
+
+tResult cWindowsClipboard::Open(HWND hWnd, ulong retries, ulong sleep)
+{
+   if (!IsWindow(hWnd))
+   {
+      return E_INVALIDARG;
+   }
+
+   // Impose sanity limits on the number of retries
+   if (retries == 0 || retries > 50)
+   {
+      return E_INVALIDARG;
+   }
+
+   // ... and sleep interval
+   if (sleep > 500)
+   {
+      return E_INVALIDARG;
+   }
+
+   if (m_bOpenedClipboard)
+   {
+      return S_FALSE;
+   }
+
+   uint iTry = 0;
+   while (!m_bOpenedClipboard && (iTry < retries))
+   {
+      if (OpenClipboard(hWnd))
+      {
+         m_bOpenedClipboard = true;
+         break;
+      }
+      else
+      {
+         m_lastError = GetLastError();
+      }
+      Sleep(sleep);
+      --iTry;
+   }
+
+   if (!m_bOpenedClipboard)
+   {
+      return E_FAIL;
+   }
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cWindowsClipboard::Close()
+{
+   if (!m_bOpenedClipboard)
+   {
+      return S_FALSE;
+   }
+   if (!CloseClipboard())
+   {
+      m_lastError = GetLastError();
+      return E_FAIL;
+   }
+   m_bOpenedClipboard = false;
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cWindowsClipboard::PutString(const tChar * pszString)
+{
+   if (pszString == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (!m_bOpenedClipboard)
+   {
+      WarnMsg("Clipboard not open\n");
+      return E_FAIL;
+   }
+
+   size_t memSize = (_tcslen(pszString) + 1) * sizeof(tChar); // plus one for the null terminator
+
+   HANDLE hData = GlobalAlloc(GMEM_MOVEABLE, memSize);
+   if (hData == NULL)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   tChar * pszData = reinterpret_cast<tChar *>(GlobalLock(hData));
+   if (pszData == NULL)
+   {
+      GlobalFree(hData);
+      return E_FAIL;
+   }
+
+   CopyMemory(pszData, pszString, memSize);
+   GlobalUnlock(hData);
+
+#ifdef _UNICODE
+   const uint clipFormat = CF_UNICODETEXT;
+#else
+   const uint clipFormat = CF_TEXT;
+#endif
+
+   if (!EmptyClipboard())
+   {
+      m_lastError = GetLastError();
+      GlobalFree(hData);
+      return E_FAIL;
+   }
+
+   if (!SetClipboardData(clipFormat, hData))
+   {
+      m_lastError = GetLastError();
+      GlobalFree(hData);
+      return E_FAIL;
+   }
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cWindowsClipboard::GetString(cStr * pStr, ulong max, ulong retries, ulong sleep)
+{
+   // Impose sanity limits on the number of retries
+   if (retries == 0 || retries > 50)
+   {
+      return E_INVALIDARG;
+   }
+
+   // ... and sleep interval
+   if (sleep > 500)
+   {
+      return E_INVALIDARG;
+   }
+
+#ifdef _UNICODE
+   const uint clipFormat = CF_UNICODETEXT;
+#else
+   const uint clipFormat = CF_TEXT;
+#endif
+
+   uint iTry = 0;
+   HANDLE hData = GetClipboardData(clipFormat);
+   while ((hData == NULL) && (iTry < retries))
+   {
+      Sleep(sleep);
+      hData = GetClipboardData(clipFormat);
+      --iTry;
+   }
+
+   if (hData == NULL)
+   {
+      return E_FAIL;
+   }
+
+   const tChar * pszData = reinterpret_cast<const tChar *>(GlobalLock(hData));
+   if (pszData == NULL)
+   {
+      return E_FAIL;
+   }
+
+   ulong size = GlobalSize(hData);
+   if ((max > 0) && (size > max))
+   {
+      pStr->assign(pszData, max);
+   }
+   else
+   {
+      pStr->assign(pszData);
+   }
+
+   GlobalUnlock(hData);
+
+   return S_OK;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 
 tResult SysGetClipboardString(cStr * pStr, ulong max)
 {
@@ -88,37 +307,24 @@ tResult SysGetClipboardString(cStr * pStr, ulong max)
       return S_FALSE;
    }
 
-   bool bSuccess = false;
-
-   if (OpenClipboard(g_hWnd))
+   cWindowsClipboard clipboard;
+   if (clipboard.Open(g_hWnd) != S_OK)
    {
-      HANDLE hData = GetClipboardData(clipFormat);
-      if (hData != NULL)
-      {
-         const tChar * pszData = reinterpret_cast<const tChar *>(GlobalLock(hData));
-         if (pszData != NULL)
-         {
-            ulong size = GlobalSize(hData);
-            if ((max > 0) && (size > max))
-            {
-               pStr->assign(pszData, max);
-            }
-            else
-            {
-               pStr->assign(pszData);
-            }
-            GlobalUnlock(hData);
-            bSuccess = true;
-         }
-      }
-
-      if (!CloseClipboard())
-      {
-         WarnMsg1("Error %d closing clipboard\n", GetLastError());
-      }
+      ErrorMsg1("Error %d opening clipboard\n", clipboard.m_lastError);
+      return E_FAIL;
    }
 
-   return bSuccess ? S_OK : E_FAIL;
+   if (clipboard.GetString(pStr, max) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   if (clipboard.Close() != S_OK)
+   {
+      WarnMsg1("Error %d closing clipboard\n", clipboard.m_lastError);
+   }
+
+   return S_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -130,48 +336,33 @@ tResult SysSetClipboardString(const tChar * psz)
       return E_POINTER;
    }
 
-#ifdef _UNICODE
-   const uint clipFormat = CF_UNICODETEXT;
-#else
-   const uint clipFormat = CF_TEXT;
-#endif
-
-   bool bSuccess = false;
-
-   if (OpenClipboard(g_hWnd))
+   cWindowsClipboard clipboard;
+   if (clipboard.Open(g_hWnd) != S_OK)
    {
-      if (EmptyClipboard())
-      {
-         size_t memSize = (_tcslen(psz) + 1) * sizeof(tChar); // plus one for the null terminator
-         HANDLE hData = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, memSize);
-         if (hData != NULL)
-         {
-            tChar * pszData = reinterpret_cast<tChar *>(GlobalLock(hData));
-            if (pszData != NULL)
-            {
-               CopyMemory(pszData, psz, memSize);
-               GlobalUnlock(hData);
-
-               if (SetClipboardData(clipFormat, hData))
-               {
-                  bSuccess = true;
-               }
-            }
-
-            if (!bSuccess)
-            {
-               GlobalFree(hData);
-            }
-         }
-      }
-
-      if (!CloseClipboard())
-      {
-         WarnMsg1("Error %d closing clipboard\n", GetLastError());
-      }
+      ErrorMsg1("Error %d opening clipboard\n", clipboard.m_lastError);
+      return E_FAIL;
    }
 
-   return bSuccess ? S_OK : E_FAIL;
+   if (clipboard.PutString(psz) != S_OK)
+   {
+      ErrorMsg1("Error %d putting string data on clipboard\n", clipboard.m_lastError);
+      return E_FAIL;
+   }
+
+   if (clipboard.Close() != S_OK)
+   {
+      WarnMsg1("Error %d closing clipboard\n", clipboard.m_lastError);
+   }
+
+   return S_OK;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+static tResult SysIsRemoteDesktopRunning()
+{
+   HWND hWndTS = FindWindow(_T("TSSHELLWND"), NULL);
+   return IsWindow(hWndTS) ? S_OK : S_FALSE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -783,33 +974,40 @@ LExit:
 
 TEST(TestClipboard)
 {
-   static const ulong kInSize = 20;
-   static const ulong kTruncSize = 5;
+   if (SysIsRemoteDesktopRunning() == S_OK)
+   {
+      WarnMsg("Skipping clipboard tests because \"Remote Desktop Connection\" is running\n");
+   }
+   else
+   {
+      static const ulong kInSize = 20;
+      static const ulong kTruncSize = 5;
 
 #ifdef _UNICODE
-   std::wstring in(kInSize, _T('X'));
+      std::wstring in(kInSize, _T('X'));
 #else
-   std::string in(kInSize, 'X');
+      std::string in(kInSize, 'X');
 #endif
 
-   std::string original;
-   CHECK(SysGetClipboardString(&original, 0) == S_OK);
+      std::string original;
+      CHECK(SUCCEEDED(SysGetClipboardString(&original, 0))); // S_OK or S_FALSE results are both OK
 
-   CHECK(SysSetClipboardString(in.c_str()) == S_OK);
+      CHECK(SysSetClipboardString(in.c_str()) == S_OK);
 
-   cStr out("garbage should be cleared/over-written");
-   CHECK(SysGetClipboardString(&out) == S_OK);
-   CHECK_EQUAL(out.length(), in.length());
-   CHECK(out.compare(in) == 0);
+      cStr out("garbage should be cleared/over-written");
+      CHECK(SysGetClipboardString(&out) == S_OK);
+      CHECK_EQUAL(out.length(), in.length());
+      CHECK(out.compare(in) == 0);
 
-   CHECK(SysGetClipboardString(&out, kTruncSize) == S_OK);
+      CHECK(SysGetClipboardString(&out, kTruncSize) == S_OK);
 #ifdef _UNICODE
-   CHECK(out.compare(std::wstring(kTruncSize, _T('X'))) == 0);
+      CHECK(out.compare(std::wstring(kTruncSize, _T('X'))) == 0);
 #else
-   CHECK(out.compare(std::string(kTruncSize, 'X')) == 0);
+      CHECK(out.compare(std::string(kTruncSize, 'X')) == 0);
 #endif
 
-   CHECK(SysSetClipboardString(original.c_str()) == S_OK);
+      CHECK(SysSetClipboardString(original.c_str()) == S_OK);
+   }
 }
 
 #endif // HAVE_CPPUNITLITE2
