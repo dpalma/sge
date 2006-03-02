@@ -146,7 +146,7 @@ tResult cWindowsClipboard::Open(HWND hWnd, ulong retries, ulong sleep)
          m_lastError = GetLastError();
       }
       Sleep(sleep);
-      --iTry;
+      ++iTry;
    }
 
    if (!m_bOpenedClipboard)
@@ -258,7 +258,7 @@ tResult cWindowsClipboard::GetString(cStr * pStr, ulong max, ulong retries, ulon
    {
       Sleep(sleep);
       hData = GetClipboardData(clipFormat);
-      --iTry;
+      ++iTry;
    }
 
    if (hData == NULL)
