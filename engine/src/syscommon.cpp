@@ -23,6 +23,7 @@
 
 #include "dbgalloc.h" // must be last header
 
+LOG_DEFINE_CHANNEL(VerboseUnitTests);
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -78,6 +79,8 @@ tSysResizeFn SysSetResizeCallback(tSysResizeFn pfn)
 class cSysTestResult : public TestResult
 {
 public:
+   virtual void TestBegin(const char * pszTestName);
+   virtual void TestEnd(const char * pszTestName);
    virtual void AddFailure(const Failure & failure);
    virtual void EndTests();
    std::list<Failure>::const_iterator BeginFailures() const { return m_failures.begin(); }
@@ -85,6 +88,26 @@ public:
 private:
    std::list<Failure> m_failures;
 };
+
+////////////////////////////////////////
+
+void cSysTestResult::TestBegin(const char * pszTestName)
+{
+   if (LOG_IS_CHANNEL_ENABLED(VerboseUnitTests))
+   {
+      techlog.Print(kInfo, "Test \"%s\" begin\n", pszTestName);
+   }
+}
+
+////////////////////////////////////////
+
+void cSysTestResult::TestEnd(const char * pszTestName)
+{
+   if (LOG_IS_CHANNEL_ENABLED(VerboseUnitTests))
+   {
+      techlog.Print(kInfo, "Test \"%s\" end\n", pszTestName);
+   }
+}
 
 ////////////////////////////////////////
 
