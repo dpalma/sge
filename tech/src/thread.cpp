@@ -448,10 +448,9 @@ void cMutexLock::Release()
 
 #ifdef HAVE_CPPUNITLITE2
 
-TEST(TestSleep)
+TEST(ThreadSleep)
 {
    cThreadEvent event;
-
    CHECK(event.Create());
 
    static const double kWaitSecs = 2;
@@ -461,48 +460,34 @@ TEST(TestSleep)
    {
    public:
       cSleepThread(cThreadEvent * pEvent, ulong sleepMs)
-        : m_pEvent(pEvent), m_sleepMs(sleepMs), m_elapsed(0), m_bSetEventReturnValue(false)
+        : m_pEvent(pEvent), m_sleepMs(sleepMs)
       {
       }
 
       virtual int Run()
       {
-         m_elapsed = -TimeGetSecs();
          ThreadSleep(m_sleepMs);
-         m_elapsed += TimeGetSecs();
-         m_bSetEventReturnValue = m_pEvent->Set();
+         m_pEvent->Set();
          return 0;
-      }
-
-      double GetElapsedTime() const
-      {
-         return m_elapsed;
-      }
-
-      bool GetSetEventReturnValue() const
-      {
-         return m_bSetEventReturnValue;
       }
 
    private:
       cThreadEvent * m_pEvent;
       ulong m_sleepMs;
-      double m_elapsed;
-      bool m_bSetEventReturnValue;
    };
 
    cSleepThread * pThread = new cSleepThread(&event, kWaitMillis);
+
+   double elapsed = -TimeGetSecs();
+
    CHECK(pThread->Create());
-
    CHECK(event.Wait());
-   CHECK(pThread->GetSetEventReturnValue());
 
-   double elapsed = pThread->GetElapsedTime();
+   elapsed += TimeGetSecs();
 
    delete pThread, pThread = NULL;
 
-   // TODO: hard to make this assert work on fast dual-processor machine
-   //CHECK(elapsed > (kWaitSecs - 1.0e-2));
+   CHECK(elapsed > (kWaitSecs - 1.0e-2));
 }
 
 #endif // HAVE_CPPUNITLITE2
