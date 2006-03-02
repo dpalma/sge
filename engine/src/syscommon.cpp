@@ -191,11 +191,6 @@ tResult SysRunCppUnit()
       return S_OK;
    }
 }
-#else
-tResult SysRunUnitTests()
-{
-   return S_OK;
-}
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -283,7 +278,7 @@ void SysReportFrameStats(tChar * psz, ulong max)
 #else
       // TODO: figure out a way to speed this up so the #ifdef and _snprintf call aren't needed
       cStr temp;
-      temp.Format(
+      Sprintf(&temp,
          "%.2f fps\n"
          "%.2f worst\n"
          "%.2f best\n"

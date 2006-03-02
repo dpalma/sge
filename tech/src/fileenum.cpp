@@ -6,6 +6,7 @@
 #include "fileenum.h"
 #include "filespec.h"
 #include "filepath.h"
+#include "techstring.h"
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -236,7 +237,7 @@ private:
    const cFileSpec & GetSpec() const { return m_spec; }
    const cFilePath & GetPath() const { return m_path; }
    const cFileSpec m_spec;
-   const cFilePath m_path;
+   cFilePath m_path;
    const cStr m_fileName;
    DIR * m_pDir;
 };
@@ -245,10 +246,10 @@ private:
 
 cEnumFilesPosix::cEnumFilesPosix(const cFileSpec & spec)
  : m_spec(spec)
- , m_path(spec.GetPath())
  , m_fileName(spec.GetFileName())
  , m_pDir(NULL)
 {
+   spec.GetPath(&m_path);
 }
 
 ////////////////////////////////////////
@@ -327,7 +328,7 @@ tResult cEnumFilesPosix::GetNext(ulong count, cFileSpec * pFileSpecs, uint * pAt
 
    if (m_pDir == NULL)
    {
-      m_pDir = opendir(GetPath().c_str());
+      m_pDir = opendir(GetPath().CStr());
       if (m_pDir == NULL)
       {
          return E_FAIL;
@@ -349,7 +350,7 @@ tResult cEnumFilesPosix::GetNext(ulong count, cFileSpec * pFileSpecs, uint * pAt
          ulong attribs = 0;
 
          struct stat fstat;
-         if (stat(entry.c_str(), &fstat) == 0)
+         if (stat(entry.CStr(), &fstat) == 0)
          {
             if (S_ISDIR(fstat.st_mode))
             {

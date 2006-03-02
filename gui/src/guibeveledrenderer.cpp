@@ -40,11 +40,14 @@ cGUIBeveledRenderer::~cGUIBeveledRenderer()
 
 ///////////////////////////////////////
 
+#define METHOD_TABLE_ENTRY(ElementType) \
+   { &IID_IGUI##ElementType##Element, &cGUIBeveledRenderer::ElementType##Render, &cGUIBeveledRenderer::ElementType##PreferredSize }
+
 const cGUIBeveledRenderer::sMethodTableEntry cGUIBeveledRenderer::gm_methodTable[] =
 {
-   { &IID_IGUIButtonElement, &ButtonRender, &ButtonPreferredSize },
-   { &IID_IGUIListBoxElement, &ListBoxRender, &ListBoxPreferredSize },
-   { &IID_IGUIContainerElement, NULL, &ContainerPreferredSize }, // Must be at the bottom
+   METHOD_TABLE_ENTRY(Button),
+   METHOD_TABLE_ENTRY(ListBox),
+   { &IID_IGUIContainerElement, NULL, &cGUIBeveledRenderer::ContainerPreferredSize }, // Must be at the bottom
 };
 
 ///////////////////////////////////////

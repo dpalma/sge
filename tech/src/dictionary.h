@@ -14,6 +14,26 @@
 #pragma once
 #endif
 
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cStrLessNoCase
+//
+
+class cStrLessNoCase
+{
+public:
+   bool operator()(const cStr & lhs, const cStr & rhs) const;
+};
+
+///////////////////////////////////////
+
+inline bool cStrLessNoCase::operator()(const cStr & lhs, const cStr & rhs) const
+{
+   return (_tcsicmp(lhs.c_str(), rhs.c_str()) < 0) ? true : false;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cDictionary

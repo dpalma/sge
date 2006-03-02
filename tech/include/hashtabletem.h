@@ -437,7 +437,7 @@ HASHTABLE_TEMPLATE_MEMBER_TYPE(tMutableHashElementProxy) HASHTABLE_TEMPLATE_CLAS
 HASHTABLE_TEMPLATE_DECL
 const VALUE & HASHTABLE_TEMPLATE_CLASS::operator [](const KEY & k) const
 {
-   const_iterator iter = find(m_key);
+   const_iterator iter = find(k);
    Assert(iter != m_pHashTable->end());
    return iter->second;
 }

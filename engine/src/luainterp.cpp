@@ -323,7 +323,7 @@ static int LuaPushResults(lua_State * L, int nResults, tScriptVar * results)
                   lua_newtable(L);
                   std::list<cStr>::const_iterator iter = keys.begin();
 #ifdef __GNUC__
-                  if (Round(strtod(keys.front().c_str())) == 1)
+                  if (strtol(keys.front().c_str(), NULL, 10) == 1)
 #else
                   if (_ttoi(keys.front().c_str()) == 1)
 #endif
@@ -331,7 +331,7 @@ static int LuaPushResults(lua_State * L, int nResults, tScriptVar * results)
                      for (int index = 1; iter != keys.end(); iter++, index++)
                      {
 #ifdef __GNUC__
-                        int iterAsInt = Round(strtod(iter->c_str()));
+                        int iterAsInt = strtol(iter->c_str(), NULL, 10);
 #else
                         int iterAsInt = _ttoi(iter->c_str());
 #endif
@@ -1159,7 +1159,7 @@ int cLuaInterpreterTests::RemoveThisFunction(int, const tScriptVar *, int, tScri
 
 ////////////////////////////////////////
 
-TEST_F(cLuaInterpreterTests, TestCallFunction)
+TEST_F(cLuaInterpreterTests, CallFunction)
 {
    CHECK(m_pInterp->AddNamedItem("CallThisFunction", CallThisFunction) == S_OK);
    gm_bCalled = false;
@@ -1170,7 +1170,7 @@ TEST_F(cLuaInterpreterTests, TestCallFunction)
 
 ////////////////////////////////////////
 
-TEST_F(cLuaInterpreterTests, TestRemoveFunction)
+TEST_F(cLuaInterpreterTests, RemoveFunction)
 {
    CHECK(m_pInterp->AddNamedItem("RemoveThisFunction", RemoveThisFunction) == S_OK);
    CHECK(m_pInterp->ExecString("RemoveThisFunction();") == S_OK);
@@ -1182,7 +1182,7 @@ TEST_F(cLuaInterpreterTests, TestRemoveFunction)
 
 ////////////////////////////////////////
 
-TEST_F(cLuaInterpreterTests, TestGetNumber)
+TEST_F(cLuaInterpreterTests, GetNumber)
 {
    double value;
    m_pInterp->AddNamedItem("foo", 123.456);
@@ -1192,7 +1192,7 @@ TEST_F(cLuaInterpreterTests, TestGetNumber)
 
 ////////////////////////////////////////
 
-TEST_F(cLuaInterpreterTests, TestGetString)
+TEST_F(cLuaInterpreterTests, GetString)
 {
    char szValue[16];
 
@@ -1207,7 +1207,7 @@ TEST_F(cLuaInterpreterTests, TestGetString)
 
 ////////////////////////////////////////
 
-TEST_F(cLuaInterpreterTests, TestCustomClass)
+TEST_F(cLuaInterpreterTests, CustomClass)
 {
    cAutoIPtr<IScriptableFactory> pFooFactory = new cFooScriptableFactory;
 
@@ -1226,7 +1226,7 @@ TEST_F(cLuaInterpreterTests, TestCustomClass)
 
 ////////////////////////////////////////
 
-TEST_F(cLuaInterpreterTests, TestCustomClass2)
+TEST_F(cLuaInterpreterTests, CustomClass2)
 {
    cAutoIPtr<IScriptableFactory> pRNGFactory = new cRNGFactory;
 
@@ -1250,7 +1250,7 @@ TEST_F(cLuaInterpreterTests, TestCustomClass2)
 
 ////////////////////////////////////////
 
-TEST_F(cLuaInterpreterTests, TestPublishObject)
+TEST_F(cLuaInterpreterTests, PublishObject)
 {
    cAutoIPtr<IScriptable> pRNG = new cRNG;
    CHECK(!!pRNG);

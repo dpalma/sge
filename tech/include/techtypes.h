@@ -178,6 +178,7 @@ typedef void * HANDLE;
 #define _fgettc      fgetwc
 #define _fgetts      fgetws
 #define _ftprintf    fwprintf
+#define _istalpha    iswalpha
 #define _istspace    iswspace
 #define _sntprintf   snwprintf
 #define _stscanf     swscanf
@@ -190,6 +191,7 @@ typedef void * HANDLE;
 #define _tcsicmp     wcscasecmp
 #define _tcsinc(p)   ((p)+1)
 #define _tcslen      wcslen
+#define _tcsncat     wcsncat
 #define _tcsncmp     wcsncmp
 #define _tcsncpy     wcsncpy
 #define _tcsnicmp    wcsncasecmp
@@ -202,6 +204,7 @@ typedef void * HANDLE;
 #define _fgettc      fgetc
 #define _fgetts      fgets
 #define _ftprintf    fprintf
+#define _istalpha    isalpha
 #define _istspace    isspace
 #define _sntprintf   snprintf
 #define _stscanf     sscanf
@@ -214,6 +217,7 @@ typedef void * HANDLE;
 #define _tcsicmp     strcasecmp
 #define _tcsinc(p)   ((p)+1)
 #define _tcslen      strlen
+#define _tcsncat     strncat
 #define _tcsncmp     strncmp
 #define _tcsncpy     strncpy
 #define _tcsnicmp    strncasecmp

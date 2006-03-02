@@ -140,7 +140,7 @@ static bool StringIsTrue(const cStr & str)
       return true;
    }
 #ifdef __GNUC__
-   int intVal = Round(strtod(str.c_str()));
+   int intVal = strtol(str.c_str(), NULL, 10);
 #else
    int intVal = _ttoi(str.c_str());
 #endif

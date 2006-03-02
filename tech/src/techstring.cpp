@@ -99,7 +99,7 @@ static int SprintfOptionsLengthEstimate(const cStr & formatOptions, tChar type)
    }
 
 #ifdef __GNUC__
-   int i = Round(strtod(formatOptions.c_str()));
+   int i = strtol(formatOptions.c_str(), NULL, 10);
 #else
    int i = _ttoi(formatOptions.c_str());
 #endif

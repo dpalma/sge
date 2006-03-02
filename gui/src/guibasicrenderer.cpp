@@ -32,10 +32,13 @@ cGUIBasicRenderer::~cGUIBasicRenderer()
 
 ///////////////////////////////////////
 
+#define METHOD_TABLE_ENTRY(ElementType) \
+   { &IID_IGUI##ElementType##Element, &cGUIBasicRenderer::ElementType##Render, &cGUIBasicRenderer::ElementType##PreferredSize }
+
 const cGUIBasicRenderer::sMethodTableEntry cGUIBasicRenderer::gm_methodTable[] =
 {
-   { &IID_IGUILabelElement, &LabelRender, &LabelPreferredSize },
-   { &IID_IGUIPanelElement, &PanelRender, &PanelPreferredSize },
+   METHOD_TABLE_ENTRY(Label),
+   METHOD_TABLE_ENTRY(Panel),
 };
 
 ///////////////////////////////////////

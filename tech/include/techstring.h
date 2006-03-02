@@ -106,7 +106,7 @@ template <>
 int cToken<int, tChar>::Token(const tChar * pszToken)
 {
 #ifdef __GNUC__
-   return Round(strtod(pszToken, NULL));
+   return strtol(pszToken, NULL, 10);
 #else
    return _ttoi(pszToken);
 #endif
@@ -159,7 +159,7 @@ typedef std::string cStr;
 template <typename STRING>
 inline const STRING & TrimLeadingSpace(STRING * pString)
 {
-   STRING::size_type index = pString->find_first_not_of(_T(" \r\n\t"));
+   typename STRING::size_type index = pString->find_first_not_of(_T(" \r\n\t"));
    if (index != STRING::npos)
    {
       pString->erase(0, index);
@@ -170,7 +170,7 @@ inline const STRING & TrimLeadingSpace(STRING * pString)
 template <typename STRING>
 inline const STRING & TrimTrailingSpace(STRING * pString)
 {
-   STRING::size_type index = pString->find_last_not_of(_T(" \r\n\t"));
+   typename STRING::size_type index = pString->find_last_not_of(_T(" \r\n\t"));
    if (index != STRING::npos)
    {
       pString->erase(index + 1);
@@ -185,24 +185,6 @@ typedef struct _GUID GUID;
 typedef const GUID & REFGUID;
 TECH_API const cStr & GUIDToString(REFGUID guid, cStr * pStr);
 
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cStrLessNoCase
-//
-
-class cStrLessNoCase
-{
-public:
-   bool operator()(const cStr & lhs, const cStr & rhs) const;
-};
-
-///////////////////////////////////////
-
-inline bool cStrLessNoCase::operator()(const cStr & lhs, const cStr & rhs) const
-{
-   return (_tcsicmp(lhs.c_str(), rhs.c_str()) < 0) ? true : false;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 
