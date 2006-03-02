@@ -540,6 +540,9 @@
 				<File
 					RelativePath="..\..\tech\src\stdhdr.h">
 				</File>
+				<File
+					RelativePath="..\..\tech\src\threadcaller.h">
+				</File>
 			</Filter>
 		</Filter>
 		<Filter
@@ -676,9 +679,6 @@
 			</File>
 			<File
 				RelativePath="..\..\tech\include\threadcallapi.h">
-			</File>
-			<File
-				RelativePath="..\..\tech\src\threadcaller.h">
 			</File>
 			<File
 				RelativePath="..\..\tech\include\toposort.h">
