@@ -43,6 +43,7 @@ cGUIBeveledRenderer::~cGUIBeveledRenderer()
 const cGUIBeveledRenderer::sMethodTableEntry cGUIBeveledRenderer::gm_methodTable[] =
 {
    { &IID_IGUIButtonElement, &ButtonRender, &ButtonPreferredSize },
+   { &IID_IGUIListBoxElement, &ListBoxRender, &ListBoxPreferredSize },
    { &IID_IGUIContainerElement, NULL, &ContainerPreferredSize }, // Must be at the bottom
 };
 
@@ -137,14 +138,6 @@ tResult cGUIBeveledRenderer::Render(IGUIElement * pElement, IGUIRenderDevice * p
       if (pElement->QueryInterface(IID_IGUIScrollBarElement, (void**)&pScrollBarElement) == S_OK)
       {
          return Render(pScrollBarElement, bevel, colors, pRenderDevice);
-      }
-   }
-
-   {
-      cAutoIPtr<IGUIListBoxElement> pListBoxElement;
-      if (pElement->QueryInterface(IID_IGUIListBoxElement, (void**)&pListBoxElement) == S_OK)
-      {
-         return Render(pListBoxElement, bevel, colors, pRenderDevice);
       }
    }
 
@@ -370,6 +363,102 @@ tGUISize cGUIBeveledRenderer::ButtonPreferredSize(IGUIElement * pElement) const
 
       return tGUISize(static_cast<tGUISizeType>(rect.GetWidth() + rect.GetHeight()),
                       rect.GetHeight() * 1.5f);
+   }
+
+   return tGUISize(0,0);
+}
+
+///////////////////////////////////////
+
+tResult cGUIBeveledRenderer::ListBoxRender(IGUIElement * pElement, int bevel, const tGUIColor colors[kBC_NumColors], IGUIRenderDevice * pRenderDevice)
+{
+   IGUIListBoxElement * pListBoxElement = (IGUIListBoxElement *)pElement;
+
+   tGUIPoint pos = GUIElementAbsolutePosition(pListBoxElement);
+   tGUISize size = pListBoxElement->GetSize();
+   tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
+
+   pRenderDevice->RenderBeveledRect(rect, bevel, GUIStandardColors::DarkGray, GUIStandardColors::Gray, GUIStandardColors::White);
+
+   rect.left += bevel + kHorzInset;
+   rect.top += kVertInset;
+   rect.right -= bevel + kHorzInset;
+   rect.bottom -= kVertInset;
+
+   pRenderDevice->PushScissorRect(rect);
+
+   tGUIColor textColor(GUIStandardColors::Black);
+   cAutoIPtr<IGUIStyle> pStyle;
+   if (pListBoxElement->GetStyle(&pStyle) == S_OK)
+   {
+      pStyle->GetForegroundColor(&textColor);
+   }
+
+   cAutoIPtr<IGUIFont> pFont;
+   if (GetFont(pListBoxElement, &pFont) == S_OK)
+   {
+      uint itemCount = 0;
+      if (pListBoxElement->GetItemCount(&itemCount) == S_OK)
+      {
+         uint itemHeight = 0;
+         pListBoxElement->GetItemHeight(&itemHeight);
+
+         tGUIRect itemRect(rect);
+         itemRect.bottom = itemRect.top + itemHeight;
+
+         for (uint i = 0; i < itemCount; i++)
+         {
+            cStr itemString;
+            bool bIsSelected = false;
+            if (FAILED(pListBoxElement->GetItem(i, &itemString, NULL, &bIsSelected)))
+            {
+               continue;
+            }
+
+            if (itemHeight == 0)
+            {
+               itemRect = rect;
+               pFont->RenderText(itemString.c_str(), itemString.length(), &itemRect, kRT_CalcRect, textColor);
+               itemHeight = itemRect.GetHeight();
+               pListBoxElement->SetItemHeight(itemHeight);
+            }
+
+            if (bIsSelected)
+            {
+               pRenderDevice->RenderSolidRect(itemRect, GUIStandardColors::Blue);
+               pFont->RenderText(itemString.c_str(), itemString.length(), &itemRect, kRT_NoClip, GUIStandardColors::White);
+            }
+            else
+            {
+               pFont->RenderText(itemString.c_str(), itemString.length(), &itemRect, kRT_NoClip, textColor);
+            }
+
+            itemRect.Offset(0, itemHeight);
+         }
+      }
+   }
+
+   pRenderDevice->PopScissorRect();
+
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tGUISize cGUIBeveledRenderer::ListBoxPreferredSize(IGUIElement * pElement) const
+{
+   IGUIListBoxElement * pListBoxElement = (IGUIListBoxElement *)pElement;
+
+   cAutoIPtr<IGUIFont> pFont;
+   if (GetFont(pListBoxElement, &pFont) == S_OK)
+   {
+      uint rowCount;
+      if (pListBoxElement->GetRowCount(&rowCount) == S_OK)
+      {
+         tRect rect(0,0,0,0);
+         pFont->RenderText("XYZxyz\0", -1, &rect, kRT_CalcRect, GUIStandardColors::White);
+         return tGUISize(0, static_cast<tGUISizeType>(rowCount * rect.GetHeight()));
+      }
    }
 
    return tGUISize(0,0);
@@ -630,78 +719,6 @@ tResult cGUIBeveledRenderer::Render(IGUIScrollBarElement * pScrollBarElement,
 
 ///////////////////////////////////////
 
-tResult cGUIBeveledRenderer::Render(IGUIListBoxElement * pListBoxElement,
-                                    int bevel, const tGUIColor colors[kBC_NumColors],
-                                    IGUIRenderDevice * pRenderDevice)
-{
-   tGUIPoint pos = GUIElementAbsolutePosition(pListBoxElement);
-   tGUISize size = pListBoxElement->GetSize();
-   tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
-
-   pRenderDevice->RenderBeveledRect(rect, bevel, GUIStandardColors::DarkGray, GUIStandardColors::Gray, GUIStandardColors::White);
-
-   rect.left += bevel + kHorzInset;
-   rect.top += kVertInset;
-   rect.right -= bevel + kHorzInset;
-   rect.bottom -= kVertInset;
-
-   pRenderDevice->PushScissorRect(rect);
-
-   tGUIColor textColor(GUIStandardColors::Black);
-   cAutoIPtr<IGUIStyle> pStyle;
-   if (pListBoxElement->GetStyle(&pStyle) == S_OK)
-   {
-      pStyle->GetForegroundColor(&textColor);
-   }
-
-   cAutoIPtr<IGUIFont> pFont;
-   if (GetFont(pListBoxElement, &pFont) == S_OK)
-   {
-      uint itemCount = 0;
-      if (pListBoxElement->GetItemCount(&itemCount) == S_OK)
-      {
-         uint itemHeight = 0;
-         pListBoxElement->GetItemHeight(&itemHeight);
-
-         tGUIRect itemRect(rect);
-         itemRect.bottom = itemRect.top + itemHeight;
-
-         for (uint i = 0; i < itemCount; i++)
-         {
-            cStr itemString;
-            bool bIsSelected = false;
-            if (FAILED(pListBoxElement->GetItem(i, &itemString, NULL, &bIsSelected)))
-            {
-               continue;
-            }
-
-            if (itemHeight == 0)
-            {
-               itemRect = rect;
-               pFont->RenderText(itemString.c_str(), itemString.length(), &itemRect, kRT_CalcRect, textColor);
-               itemHeight = itemRect.GetHeight();
-               pListBoxElement->SetItemHeight(itemHeight);
-            }
-
-            if (bIsSelected)
-            {
-               textColor = GUIStandardColors::White;
-               pRenderDevice->RenderSolidRect(itemRect, GUIStandardColors::Blue);
-            }
-
-            pFont->RenderText(itemString.c_str(), itemString.length(), &itemRect, kRT_NoClip, textColor);
-            itemRect.Offset(0, itemHeight);
-         }
-      }
-   }
-
-   pRenderDevice->PopScissorRect();
-
-   return S_OK;
-}
-
-///////////////////////////////////////
-
 tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIDialogElement * pDialogElement)
 {
    tGUISize size(GetPreferredSize(static_cast<IGUIContainerElement*>(pDialogElement)));
@@ -799,25 +816,6 @@ tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIScrollBarElement * pScrollBar
    else if (scrollBarType == kGUIScrollBarVertical)
    {
       return tGUISize(kScrollButtonSize, 0);
-   }
-
-   return tGUISize(0,0);
-}
-
-///////////////////////////////////////
-
-tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIListBoxElement * pListBoxElement)
-{
-   cAutoIPtr<IGUIFont> pFont;
-   if (GetFont(pListBoxElement, &pFont) == S_OK)
-   {
-      uint rowCount;
-      if (pListBoxElement->GetRowCount(&rowCount) == S_OK)
-      {
-         tRect rect(0,0,0,0);
-         pFont->RenderText("XYZxyz\0", -1, &rect, kRT_CalcRect, GUIStandardColors::White);
-         return tGUISize(0, static_cast<tGUISizeType>(rowCount * rect.GetHeight()));
-      }
    }
 
    return tGUISize(0,0);

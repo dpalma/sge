@@ -42,6 +42,9 @@ private:
    tResult ButtonRender(IGUIElement * pElement, int bevel, const tGUIColor colors[kBC_NumColors], IGUIRenderDevice * pRenderDevice);
    tGUISize ButtonPreferredSize(IGUIElement * pElement) const;
 
+   tResult ListBoxRender(IGUIElement * pElement, int bevel, const tGUIColor colors[kBC_NumColors], IGUIRenderDevice * pRenderDevice);
+   tGUISize ListBoxPreferredSize(IGUIElement * pElement) const;
+
    tGUISize ContainerPreferredSize(IGUIElement * pElement) const;
 
    tResult Render(IGUIDialogElement * pDialogElement, int bevel, const tGUIColor colors[kBC_NumColors], IGUIRenderDevice * pRenderDevice);
@@ -49,14 +52,12 @@ private:
    tResult Render(IGUIPanelElement * pPanelElement, int bevel, const tGUIColor colors[kBC_NumColors], IGUIRenderDevice * pRenderDevice);
    tResult Render(IGUITextEditElement * pTextEditElement, int bevel, const tGUIColor colors[kBC_NumColors], IGUIRenderDevice * pRenderDevice);
    tResult Render(IGUIScrollBarElement * pScrollBarElement, int bevel, const tGUIColor colors[kBC_NumColors], IGUIRenderDevice * pRenderDevice);
-   tResult Render(IGUIListBoxElement * pListBoxElement, int bevel, const tGUIColor colors[kBC_NumColors], IGUIRenderDevice * pRenderDevice);
 
    tGUISize GetPreferredSize(IGUIDialogElement * pDialogElement);
    tGUISize GetPreferredSize(IGUILabelElement * pLabelElement);
    tGUISize GetPreferredSize(IGUIPanelElement * pPanelElement);
    tGUISize GetPreferredSize(IGUITextEditElement * pTextEditElement);
    tGUISize GetPreferredSize(IGUIScrollBarElement * pScrollBarElement);
-   tGUISize GetPreferredSize(IGUIListBoxElement * pListBoxElement);
 
    typedef tResult (cGUIBeveledRenderer::*tRenderMethod)(IGUIElement *, int, const tGUIColor colors[kBC_NumColors], IGUIRenderDevice *);
    typedef tGUISize (cGUIBeveledRenderer::*tPreferredSizeMethod)(IGUIElement *) const;
