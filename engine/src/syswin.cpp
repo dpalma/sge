@@ -921,7 +921,7 @@ int SysEventLoop(tSysFrameFn pfnFrameHandler)
       {
          if (msg.message == WM_QUIT)
          {
-            if (g_eventLoopCalls > 0)
+            if (g_eventLoopCalls > 1)
             {
                // Re-post the WM_QUIT for the main message loop to get it
                PostQuitMessage(msg.wParam);
