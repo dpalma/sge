@@ -605,38 +605,46 @@ void * ModelMs3dLoad(IReader * pReader)
          LocalMsg3(indent, "%d: %d, %d\n", animDesc.type, animDesc.start, animDesc.end);
 
          bool bError = false;
-         std::vector<IModelKeyFrameInterpolator*> interpolators(jointKeyFrames.size());
+         std::vector<IModelKeyFrameInterpolator*> interpolators;
          for (uint i = 0; i < jointKeyFrames.size(); i++)
          {
             const std::vector<sModelKeyFrame> & keyFrames = jointKeyFrames[i];
 
             int iStart = -1, iEnd = -1;
             std::vector<sModelKeyFrame>::const_iterator kfIter = keyFrames.begin();
-            for (; kfIter != keyFrames.end(); kfIter++)
+            for (int iKeyFrame = 0; kfIter != keyFrames.end(); iKeyFrame++, kfIter++)
             {
-               int frame = Round(static_cast<float>(kfIter->time) * animationFPS);
+               uint frame = Round(static_cast<float>(kfIter->time) * animationFPS);
                if (frame == animDesc.start)
                {
-                  iStart = kfIter - keyFrames.begin();
+                  iStart = iKeyFrame;
                }
-               if (frame == animDesc.end)
+               if (frame >= animDesc.end)
                {
-                  iEnd = kfIter - keyFrames.begin();
+                  iEnd = iKeyFrame;
+                  break;
                }
             }
 
+            cAutoIPtr<IModelKeyFrameInterpolator> pInterp;
+
             if (iStart == -1 || iEnd == -1
-               || ModelKeyFrameInterpolatorCreate(&keyFrames[iStart], iEnd-iStart+1, &interpolators[i]) != S_OK)
+               || ModelKeyFrameInterpolatorCreate(&keyFrames[iStart], iEnd - iStart + 1, &pInterp) != S_OK)
             {
                bError = true;
                break;
             }
+
+            interpolators.push_back(CTAddRef(pInterp));
          }
 
-         cAutoIPtr<IModelAnimation> pAnim;
-         if (ModelAnimationCreate(&interpolators[0], interpolators.size(), &pAnim) == S_OK)
+         if (!bError)
          {
-            skeleton.AddAnimation(animDesc.type, pAnim);
+            cAutoIPtr<IModelAnimation> pAnim;
+            if (ModelAnimationCreate(&interpolators[0], interpolators.size(), &pAnim) == S_OK)
+            {
+               skeleton.AddAnimation(animDesc.type, pAnim);
+            }
          }
 
          std::for_each(interpolators.begin(), interpolators.end(), CTInterfaceMethod(&IUnknown::Release));
