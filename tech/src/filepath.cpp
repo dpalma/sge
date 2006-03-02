@@ -316,7 +316,7 @@ cFilePath cFilePath::GetCwd()
 
 ////////////////////////////////////////
 
-TEST(TestFilePathCollapseDots)
+TEST(FilePathCollapseDots)
 {
    static const tChar * collapseDotsTestStrings[] =
    {
@@ -341,7 +341,7 @@ TEST(TestFilePathCollapseDots)
 
 ////////////////////////////////////////
 
-TEST(TestFilePathIsFullPath)
+TEST(FilePathIsFullPath)
 {
    CHECK(cFilePath("C:\\p1\\p2").IsFullPath());
    CHECK(!cFilePath("C:p1\\p2").IsFullPath());
@@ -353,7 +353,7 @@ TEST(TestFilePathIsFullPath)
 
 ////////////////////////////////////////
 
-TEST(TestFilePathAddRelative)
+TEST(FilePathAddRelative)
 {
    {
       cFilePath path("c:\\p1\\p2\\");

@@ -283,7 +283,7 @@ const cStr & GUIDToString(REFGUID guid, cStr * pStr)
 
 ////////////////////////////////////////
 
-TEST(TestTokenizerBadArgs)
+TEST(TokenizerBadArgs)
 {
    cTokenizer<std::string, std::vector<std::string>, std::string::value_type> strTok;
    CHECK(strTok.Tokenize(NULL) == E_POINTER);
@@ -292,7 +292,7 @@ TEST(TestTokenizerBadArgs)
 
 ////////////////////////////////////////
 
-TEST(TestTokenizerSuccessCases)
+TEST(TokenizerSuccessCases)
 {
    {
       cTokenizer<std::string, std::vector<std::string>, std::string::value_type> strTok;
@@ -338,7 +338,7 @@ TEST(TestTokenizerSuccessCases)
 
 ////////////////////////////////////////
 
-TEST(TestSprintf)
+TEST(Sprintf)
 {
    cStr temp;
    CHECK(Sprintf(&temp, "%c", 'X').compare("X") == 0);
@@ -378,7 +378,7 @@ static bool CDECL DoSprintfLengthTest(const tChar * pszFormat, ...)
 
 ////////////////////////////////////////
 
-TEST(TestDoSprintfLengthEst)
+TEST(DoSprintfLengthEst)
 {
    static const tChar szSample[] = "sample string";
    CHECK(::DoSprintfLengthTest("simple"));
@@ -395,7 +395,7 @@ TEST(TestDoSprintfLengthEst)
 
 ////////////////////////////////////////
 
-TEST(TestGUIDToString)
+TEST(GUIDToString)
 {
    // {B40B6831-FCB2-4082-AE07-61A7FC4D3AEB}
    static const GUID kTestGuidA = {0xb40b6831, 0xfcb2, 0x4082, {0xae, 0x7, 0x61, 0xa7, 0xfc, 0x4d, 0x3a, 0xeb}};

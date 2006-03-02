@@ -646,7 +646,7 @@ void cBarGlobalObj::Bar()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-TEST(TestGlobalObjectRegistry)
+TEST(GlobalObjectRegistry)
 {
    cAutoIPtr<IGlobalObjectRegistry> pRegistry(
       static_cast<IGlobalObjectRegistry *>(new cGlobalObjectRegistry));

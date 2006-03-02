@@ -296,7 +296,7 @@ IDictionaryStore * DictionaryIniStoreCreate(const cFileSpec & file,
 
 ///////////////////////////////////////
 
-TEST(TestSplitString)
+TEST(SplitString)
 {
    cStr l, r;
    CHECK(SplitString("key=value", '=', &l, &r));
@@ -306,7 +306,7 @@ TEST(TestSplitString)
 
 ///////////////////////////////////////
 
-TEST(TestParseDictionaryLine)
+TEST(ParseDictionaryLine)
 {
    cStr key, value, comment;
 
@@ -337,7 +337,7 @@ TEST(TestParseDictionaryLine)
 
 ///////////////////////////////////////
 
-TEST(TestParseIniSectionLine)
+TEST(ParseIniSectionLine)
 {
    // without comment
    {

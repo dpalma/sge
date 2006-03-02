@@ -144,7 +144,7 @@ void cCppIdentifierRecognizer::OnExitCharOk()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-TEST(TestStateMachine)
+TEST(StateMachine)
 {
    static const struct
    {

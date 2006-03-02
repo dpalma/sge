@@ -455,7 +455,7 @@ TEST_F(cHashTableTests, TestArrayIndexOperator)
 
 ////////////////////////////////////////
 
-TEST(TestHashTableCustomKey)
+TEST(HashTableCustomKey)
 {
    cHashTable<cMathExpr<int>, int, cMathExpr<int> > hashTable;
 
@@ -484,7 +484,7 @@ TEST(TestHashTableCustomKey)
 
 ////////////////////////////////////////
 
-TEST(TestHashTableCustomValue)
+TEST(HashTableCustomValue)
 {
    cHashTable<int, cMathExpr<int> > hashTable;
 
@@ -523,7 +523,7 @@ TEST(TestHashTableCustomValue)
 
 ////////////////////////////////////////
 
-TEST(TestHashTableCustomAllocator)
+TEST(HashTableCustomAllocator)
 {
    typedef cAllocatorForTesting< sHashElement<cMathExpr<int>, int> > tAlloc;
    tAlloc alloc;

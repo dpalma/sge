@@ -314,7 +314,7 @@ bool cRay::IntersectsAxisAlignedBox(const tAxisAlignedBox & box,
 
 ////////////////////////////////////////
 
-TEST(TestRayIntersectsSphere)
+TEST(RayIntersectsSphere)
 {
    CHECK(cRay(tVec3(0,0,0),tVec3(0,0,-1)).IntersectsSphere(tVec3(0,0,-3),1));
    CHECK(!cRay(tVec3(0,0,-5),tVec3(0,0,-1)).IntersectsSphere(tVec3(0,0,-3),1));
@@ -323,14 +323,14 @@ TEST(TestRayIntersectsSphere)
 
 ////////////////////////////////////////
 
-TEST(TestRayIntersectsPlane)
+TEST(RayIntersectsPlane)
 {
    CHECK(cRay(tVec3(0,0,0),tVec3(0,0,-1)).IntersectsPlane(tVec3(0,0,-3),-1));
 }
 
 ////////////////////////////////////////
 
-TEST(TestRayIntersectsAxisAlignedBox)
+TEST(RayIntersectsAxisAlignedBox)
 {
    float maxDim = -FLT_MAX;
    tVec3 min(static_cast<float>(rand()), static_cast<float>(rand()), static_cast<float>(rand()));

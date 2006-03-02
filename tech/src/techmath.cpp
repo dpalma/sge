@@ -79,7 +79,7 @@ static uint CountOneBits(uint n)
 // Do a simple "frequency" test on the random number generator.
 // See if the bit stream composed of a bunch of random numbers is
 // within a tolerance of 50% ones.
-TEST(TestRandBitFrequency)
+TEST(RandBitFrequency)
 {
    SeedRand(time(NULL));
 
@@ -99,7 +99,7 @@ TEST(TestRandBitFrequency)
 
 ///////////////////////////////////////
 
-TEST(TestAlmostEqual)
+TEST(AlmostEqual)
 {
    // Floats
    {

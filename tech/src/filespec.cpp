@@ -267,7 +267,7 @@ int FilePathCompareNoCase(const cFilePath & f1, const cFilePath & f2)
 
 ///////////////////////////////////////
 
-TEST(TestFileSpecGetFileName)
+TEST(FileSpecGetFileName)
 {
    CHECK(strcmp(cFileSpec("c:\\p1\\p2\\p3.ext").GetFileName(), "p3.ext") == 0);
    CHECK(strcmp(cFileSpec("C:\\P1\\P2\\P3.EXT").GetFileName(), "P3.EXT") == 0);
@@ -277,7 +277,7 @@ TEST(TestFileSpecGetFileName)
 
 ///////////////////////////////////////
 
-TEST(TestFileSpecGetSetFileExt)
+TEST(FileSpecGetSetFileExt)
 {
    {
       cFileSpec fs("c:\\path1\\path2\\file");
@@ -298,7 +298,7 @@ TEST(TestFileSpecGetSetFileExt)
 
 ///////////////////////////////////////
 
-TEST(TestFileSpecSetPath)
+TEST(FileSpecSetPath)
 {
    {
       cFileSpec fs1("c:\\p1\\p2\\p3\\p4\\file.ext");
@@ -315,7 +315,7 @@ TEST(TestFileSpecSetPath)
 
 ///////////////////////////////////////
 
-TEST(TestFileSpecGetPath)
+TEST(FileSpecGetPath)
 {
    cFileSpec test("c:\\p1\\p2\\p3\\p4\\file.ext");
    cFilePath testPath;
@@ -325,21 +325,21 @@ TEST(TestFileSpecGetPath)
 
 ///////////////////////////////////////
 
-TEST(TestFileSpecOperatorEquals)
+TEST(FileSpecOperatorEquals)
 {
    CHECK(cFileSpec("c:\\p1\\p2\\p3.ext") == cFileSpec("c:/p1/p2/p3.ext"));
 }
 
 ///////////////////////////////////////
 
-TEST(TestFileSpecOperatorNotEquals)
+TEST(FileSpecOperatorNotEquals)
 {
    CHECK(cFileSpec("C:\\P1\\P2\\P3.EXT") != cFileSpec("c:/p1/p2/p3.ext"));
 }
 
 ///////////////////////////////////////
 
-TEST(TestFileSpecCompare)
+TEST(FileSpecCompare)
 {
    CHECK(FileSpecCompare(cFileSpec("c:\\p1\\p2\\p3"), cFileSpec("c:/p1/p2/p3")) == 0);
    CHECK(FileSpecCompare(cFileSpec("C:\\P1\\P2\\P3"), cFileSpec("c:/p1/p2/p3")) != 0);
@@ -350,7 +350,7 @@ TEST(TestFileSpecCompare)
 
 ///////////////////////////////////////
 
-TEST(TestFileSpecCompareNoCase)
+TEST(FileSpecCompareNoCase)
 {
    CHECK(FileSpecCompareNoCase(cFileSpec("C:\\P1\\P2\\P3.EXT"), cFileSpec("c:/p1/p2/p3.ext")) == 0);
    CHECK(FileSpecCompareNoCase(cFileSpec("c:\\p1\\p2.p3"), cFileSpec("c:\\p4\\p5.p6")) < 0);

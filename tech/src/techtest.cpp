@@ -152,7 +152,7 @@ TEST(MDTestSuite)
 
 ////////////////////////////////////////
 
-TEST(TestDigraphTopoSort)
+TEST(DigraphTopoSort)
 {
    typedef cDigraph<char, int> tGraph;
    tGraph graph;
@@ -194,7 +194,7 @@ TEST(TestDigraphTopoSort)
 
 ////////////////////////////////////////
 
-TEST(TestDigraphCycleDetect)
+TEST(DigraphCycleDetect)
 {
    typedef cDigraph<char, int> tGraph;
    tGraph graph;

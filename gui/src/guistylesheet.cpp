@@ -426,7 +426,7 @@ AUTOREGISTER_GUIELEMENTFACTORYFN(style, GUIStyleElementCreate);
 
 ////////////////////////////////////////
 
-TEST(TestGUIStyleSheetParse)
+TEST(GUIStyleSheetParse)
 {
    static const tChar test[] =
    {
@@ -484,7 +484,7 @@ static bool StylesAreEqual(IGUIStyle * pStyle1, IGUIStyle * pStyle2)
    return false;
 }
 
-TEST(TestGUIStyleSelectors)
+TEST(GUIStyleSelectors)
 {
    static const tChar test[] =
    {

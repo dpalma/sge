@@ -37,7 +37,7 @@ class cSameObjectTest2 : public cComObject<IMPLEMENTS(IBar)> {};
 
 ////////////////////////////////////////
 
-TEST(TestCTIsSameObject)
+TEST(CTIsSameObject)
 {
    cAutoIPtr<cSameObjectTest1> pObj1(new cSameObjectTest1);
    cAutoIPtr<cSameObjectTest2> pObj2(new cSameObjectTest2);
@@ -156,7 +156,7 @@ tResult cAggTestInner::Create(IUnknown * pUnkOuter, IUnknown * * ppInner)
 
 ////////////////////////////////////////
 
-TEST(TestComToolsAggregation)
+TEST(ComToolsAggregation)
 {
    // "foo" that aggregates "bar"
    {
@@ -204,7 +204,7 @@ void MakeDummy(cDummy * * ppDummy)
    *ppDummy = new cDummy;
 }
 
-TEST(TestAutoIPtrAssignExisting)
+TEST(AutoIPtrAssignExisting)
 {
    CHECK(cDummy::GetObjectCount() == 0);
    cDummy * pDummy = new cDummy;
@@ -216,7 +216,7 @@ TEST(TestAutoIPtrAssignExisting)
    CHECK(cDummy::GetObjectCount() == 0);
 }
 
-TEST(TestAutoIPtrInitialized)
+TEST(AutoIPtrInitialized)
 {
    CHECK(cDummy::GetObjectCount() == 0);
    {
@@ -226,14 +226,14 @@ TEST(TestAutoIPtrInitialized)
    CHECK(cDummy::GetObjectCount() == 0);
 }
 
-TEST(TestAutoIPtrNull)
+TEST(AutoIPtrNull)
 {
    cAutoIPtr<IUnknown> pDummy;
    CHECK(!pDummy);
    CHECK(!(pDummy != NULL));
 }
 
-TEST(TestAutoIPtrCopy)
+TEST(AutoIPtrCopy)
 {
    CHECK(cDummy::GetObjectCount() == 0);
    cDummy * pDummy = new cDummy;
@@ -247,7 +247,7 @@ TEST(TestAutoIPtrCopy)
    CHECK(cDummy::GetObjectCount() == 0);
 }
 
-TEST(TestAutoIPtrSafeRelease)
+TEST(AutoIPtrSafeRelease)
 {
    CHECK(cDummy::GetObjectCount() == 0);
    cAutoIPtr<IUnknown> pDummy = new cDummy;
@@ -256,7 +256,7 @@ TEST(TestAutoIPtrSafeRelease)
    CHECK(cDummy::GetObjectCount() == 0);
 }
 
-TEST(TestAutoIPtrCall)
+TEST(AutoIPtrCall)
 {
    CHECK(cDummy::GetObjectCount() == 0);
    {
@@ -268,7 +268,7 @@ TEST(TestAutoIPtrCall)
    CHECK(cDummy::GetObjectCount() == 0);
 }
 
-TEST(TestAutoIPtrAddressOf)
+TEST(AutoIPtrAddressOf)
 {
    CHECK(cDummy::GetObjectCount() == 0);
    {

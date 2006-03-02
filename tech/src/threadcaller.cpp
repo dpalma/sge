@@ -125,7 +125,9 @@ tResult cThreadCaller::ThreadTerm()
    {
       tThreadId threadId = ThreadGetCurrentId();
 
-      m_calls.erase(threadId);
+      tThreadCalls::size_type nCallsErased = m_calls.erase(threadId);
+
+      LocalMsg2("Cancelled %d pending calls for thread %d\n", nCallsErased, threadId);
 
       tReceiptEventMap::iterator iterReceiptEvent = m_receiptEvents.find(threadId);
       if (iterReceiptEvent != m_receiptEvents.end())
@@ -301,7 +303,7 @@ cThreadFixture::~cThreadFixture()
 
 ////////////////////////////////////////
 
-TEST_F(cThreadFixture, TestThreadCallerPostCall)
+TEST_F(cThreadFixture, ThreadCallerPostCall)
 {
    cThread * pThread = new cReceiveThreadCallsThread;
    CHECK(pThread->Create());

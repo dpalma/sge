@@ -166,7 +166,7 @@ bool ConfigIsTrue(const tChar * pszName)
 
 ///////////////////////////////////////
 
-TEST(TestParseCmdLine)
+TEST(ParseCmdLine)
 {
    cAutoIPtr<IDictionary> pDict(DictionaryCreate());
    pDict->Set("test1", "val1", kTransitory);
@@ -193,7 +193,7 @@ TEST(TestParseCmdLine)
 
 ///////////////////////////////////////
 
-TEST(TestStringIsTrue)
+TEST(StringIsTrue)
 {
    CHECK(StringIsTrue("true"));
    CHECK(!StringIsTrue("false"));

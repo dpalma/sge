@@ -563,7 +563,7 @@ static bool MatrixIsIdentity(const tMatrix4 & m)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-TEST(TestMatrixInvert)
+TEST(MatrixInvert)
 {
    tMatrix4 M;
    M.m00 = -.519f; M.m01 = 0;      M.m02 = .854f;  M.m03 = 0;

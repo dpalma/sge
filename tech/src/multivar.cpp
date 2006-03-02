@@ -439,7 +439,7 @@ void cMultiVar::Clear()
 
 ////////////////////////////////////////
 
-TEST(TestMultiVarConstructors)
+TEST(MultiVarConstructors)
 {
    {
       cMultiVar multiVarInt(9999);
@@ -494,7 +494,7 @@ TEST(TestMultiVarConstructors)
 
 ////////////////////////////////////////
 
-TEST(TestMultiVarAssignment)
+TEST(MultiVarAssignment)
 {
    cMultiVar test;
    CHECK_EQUAL((double)(test = 3.1415), 3.1415);
@@ -503,7 +503,7 @@ TEST(TestMultiVarAssignment)
 
 ////////////////////////////////////////
 
-TEST(TestMultiVarCastDouble)
+TEST(MultiVarCastDouble)
 {
    CHECK_EQUAL((double)cMultiVar(3.1415), 3.1415);
    CHECK_EQUAL((double)cMultiVar("3.1415"), 3.1415);
@@ -511,7 +511,7 @@ TEST(TestMultiVarCastDouble)
 
 ////////////////////////////////////////
 
-TEST(TestMultiVarCastString)
+TEST(MultiVarCastString)
 {
    CHECK(strcmp((const char *)cMultiVar(3.1415), "3.141500") == 0);
    CHECK(strcmp((const char *)cMultiVar("3.1415"), "3.1415") == 0);
@@ -519,7 +519,7 @@ TEST(TestMultiVarCastString)
 
 ////////////////////////////////////////
 
-TEST(TestMultiVarCastWideCharString)
+TEST(MultiVarCastWideCharString)
 {
    CHECK(wcscmp((const wchar_t *)cMultiVar(3.1415), L"3.141500") == 0);
    CHECK(wcscmp((const wchar_t *)cMultiVar("3.1415"), L"3.1415") == 0);
@@ -527,7 +527,7 @@ TEST(TestMultiVarCastWideCharString)
 
 ////////////////////////////////////////
 
-TEST(TestMultiVarChangeType)
+TEST(MultiVarChangeType)
 {
    cMultiVar v(kPi);
    CHECK(v.ToFloat() == kPi);

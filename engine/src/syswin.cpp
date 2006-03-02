@@ -972,7 +972,7 @@ LExit:
 
 #ifdef HAVE_CPPUNITLITE2
 
-TEST(TestClipboard)
+TEST(Clipboard)
 {
    if (SysIsRemoteDesktopRunning() == S_OK)
    {

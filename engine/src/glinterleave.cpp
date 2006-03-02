@@ -182,7 +182,7 @@ tResult GetGlInterleaveFormat(const sVertexElement * pElements, uint nElements, 
    CHECK_EQUAL(fmtCalculated, (fmtExpected)); \
    } while (0)
 
-TEST(TestGlInterleaveFormatsRecognized)
+TEST(GlInterleaveFormatsRecognized)
 {
    INTERLEAVE_TEST_BEGIN()
       { kVEU_Position, kVET_Float2 },
@@ -263,7 +263,7 @@ TEST(TestGlInterleaveFormatsRecognized)
 
 ///////////////////////////////////////
 
-TEST(TestGlInterleaveFormatsUnrecognized)
+TEST(GlInterleaveFormatsUnrecognized)
 {
    GLenum format;
 

@@ -34,7 +34,7 @@ static void Functor1TestFunction(ulong arg)
    g_functor1Arg = arg;
 }
 
-TEST(TestFunctor1)
+TEST(Functor1)
 {
    cFunctor1<void, ulong> f(Functor1TestFunction, 99);
    f();

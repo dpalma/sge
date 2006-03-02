@@ -160,7 +160,7 @@ bool GetCpuFeatures(sCpuFeatures * pCpuFeatures)
 
 #ifdef HAVE_CPPUNITLITE2
 
-TEST(TestCpuFeatures)
+TEST(CpuFeatures)
 {
    static const struct
    {

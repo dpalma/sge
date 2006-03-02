@@ -424,7 +424,7 @@ IUnknown * DictionaryCreate(tPersistence defaultPersist, IUnknown * pUnkOuter)
 
 ///////////////////////////////////////
 
-TEST(TestDictionaryBadArgs)
+TEST(DictionaryBadArgs)
 {
    cAutoIPtr<IDictionary> pDict(DictionaryCreate());
    CHECK(FAILED(pDict->Get(NULL, (tChar *)NULL, 0)));
@@ -441,7 +441,7 @@ TEST(TestDictionaryBadArgs)
 
 ///////////////////////////////////////
 
-TEST(TestDictionarySet)
+TEST(DictionarySet)
 {
    static const char szKey[] = "test";
    static const char szValue1[] = "value one";
@@ -468,7 +468,7 @@ TEST(TestDictionarySet)
 
 ///////////////////////////////////////
 
-TEST(TestDictionaryPersistence)
+TEST(DictionaryPersistence)
 {
    static const int kNumTestVars = 4;
    static const char szPermKeyFormat[] = "perm%d";
