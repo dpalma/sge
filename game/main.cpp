@@ -4,7 +4,6 @@
 #include "stdhdr.h"
 
 #include "script.h"
-#include "cameracontroller.h"
 
 #include "cameraapi.h"
 #include "guiapi.h"
@@ -61,8 +60,6 @@ static const cColor kDefStatsColor(1,1,1,1);
 
 ///////////////////////////////////////////////////////////////////////////////
 
-cAutoIPtr<cGameCameraController> g_pGameCameraController;
-
 cAutoIPtr<IGUIFont> g_pFont;
 
 float g_fov;
@@ -90,7 +87,8 @@ SCRIPT_DEFINE_FUNCTION(ViewSetPos)
          pTerrainModel->GetTerrainSettings(&terrainSettings);
          x *= terrainSettings.GetTileCountX() * terrainSettings.GetTileSize();
          z *= terrainSettings.GetTileCountZ() * terrainSettings.GetTileSize();
-         g_pGameCameraController->LookAtPoint(x, z);
+         UseGlobal(CameraControl);
+         pCameraControl->LookAtPoint(x, z);
       }
       else
       {
@@ -173,21 +171,22 @@ SCRIPT_DEFINE_FUNCTION(SetTerrain)
 static void RegisterGlobalObjects()
 {
    CameraCreate();
+   CameraControlCreate();
+   EntityManagerCreate();
    InputCreate();
-   SimCreate();
-   ResourceManagerCreate();
-   ScriptInterpreterCreate();
    GUIContextCreate();
    GUIFactoryCreate();
    GUIFontFactoryCreate();
    GUIEventSoundsCreate();
-   EntityManagerCreate();
-   ThreadCallerCreate();
+   RendererCreate();
+   ResourceManagerCreate();
    SaveLoadManagerCreate();
+   ScriptInterpreterCreate();
+   SimCreate();
+   SoundManagerCreate();
    TerrainModelCreate();
    TerrainRendererCreate();
-   SoundManagerCreate();
-   RendererCreate();
+   ThreadCallerCreate();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -327,9 +326,6 @@ static bool MainInit(int argc, tChar * argv[])
    UseGlobal(Camera);
    pCamera->SetPerspective(g_fov, (float)width / height, kZNear, kZFar);
 
-   g_pGameCameraController = new cGameCameraController;
-   g_pGameCameraController->Connect();
-
    UseGlobal(ScriptInterpreter);
    pScriptInterpreter->CallFunction("GameInit");
 
@@ -350,11 +346,6 @@ static void MainTerm()
    pThreadCaller->ThreadTerm();
 
    SafeRelease(g_pFont);
-
-   if (g_pGameCameraController)
-   {
-      g_pGameCameraController->Disconnect();
-   }
 
    // This will make sure the GL context is destroyed
    SysQuit();

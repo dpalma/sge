@@ -4,8 +4,10 @@
 #include "stdhdr.h"
 
 #include "camera.h"
-#include "ray.h"
 
+#include "configapi.h"
+#include "keys.h"
+#include "ray.h"
 #include "vec4.h"
 
 #include <algorithm>
@@ -138,7 +140,9 @@ tResult CameraCreate()
 {
    cAutoIPtr<ICamera> p(static_cast<ICamera*>(new cCamera));
    if (!p)
+   {
       return E_OUTOFMEMORY;
+   }
    return RegisterGlobalObject(IID_ICamera, p);
 }
 
@@ -164,6 +168,193 @@ tResult ScreenToNormalizedDeviceCoords(int sx, int sy, float * pndx, float * pnd
    *pndy = normy;
 
    return S_OK;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cCameraControl
+//
+
+static const float kDefaultElevation = 100;
+static const float kDefaultPitch = 70;
+static const float kDefaultSpeed = 50;
+
+///////////////////////////////////////
+
+cCameraControl::cCameraControl()
+ : m_pitch(kDefaultPitch)
+ , m_oneOverTangentPitch(0)
+ , m_elevation(kDefaultElevation)
+ , m_focus(0,0,0)
+ , m_velocity(0,0,0)
+{
+   ConfigGet(_T("view_elevation"), &m_elevation);
+   ConfigGet(_T("view_pitch"), &m_pitch);
+   MatrixRotateX(m_pitch, &m_rotation);
+   m_oneOverTangentPitch = 1.0f / tanf(m_pitch);
+}
+
+///////////////////////////////////////
+
+cCameraControl::~cCameraControl()
+{
+}
+
+///////////////////////////////////////
+
+tResult cCameraControl::Init()
+{
+   UseGlobal(Input);
+   pInput->AddInputListener(static_cast<IInputListener*>(this));
+   UseGlobal(Sim);
+   pSim->Connect(static_cast<ISimClient*>(this));
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cCameraControl::Term()
+{
+   UseGlobal(Input);
+   pInput->RemoveInputListener(static_cast<IInputListener*>(this));
+   UseGlobal(Sim);
+   pSim->Disconnect(static_cast<ISimClient*>(this));
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+bool cCameraControl::OnInputEvent(const sInputEvent * pEvent)
+{
+   switch (pEvent->key)
+   {
+      case kLeft:
+      {
+         m_velocity.x = pEvent->down ? -kDefaultSpeed : 0;
+         break;
+      }
+
+      case kRight:
+      {
+         m_velocity.x = pEvent->down ? kDefaultSpeed : 0;
+         break;
+      }
+
+      case kUp:
+      {
+         m_velocity.z = pEvent->down ? -kDefaultSpeed : 0;
+         break;
+      }
+
+      case kDown:
+      {
+         m_velocity.z = pEvent->down ? kDefaultSpeed : 0;
+         break;
+      }
+
+      case kMouseWheelUp:
+      {
+         m_elevation++;
+         break;
+      }
+
+      case kMouseWheelDown:
+      {
+         m_elevation--;
+         break;
+      }
+   }
+
+   return false;
+}
+
+///////////////////////////////////////
+
+void cCameraControl::OnSimFrame(double elapsedTime)
+{
+   m_focus += m_velocity * (float)elapsedTime;
+
+   float zOffset = m_elevation * m_oneOverTangentPitch;
+
+   m_eye = tVec3(m_focus.x, m_focus.y + m_elevation, m_focus.z + zOffset);
+
+   tMatrix4 mt;
+   MatrixTranslate(-m_eye.x, -m_eye.y, -m_eye.z, &mt);
+
+   tMatrix4 newModelView;
+   m_rotation.Multiply(mt, &newModelView);
+
+   UseGlobal(Camera);
+   pCamera->SetViewMatrix(newModelView);
+}
+
+///////////////////////////////////////
+
+tResult cCameraControl::LookAtPoint(float x, float z)
+{
+   m_focus = tVec3(x, 0, z);
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cCameraControl::MoveLeft()
+{
+   m_velocity.x = -kDefaultSpeed;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cCameraControl::MoveRight()
+{
+   m_velocity.x = kDefaultSpeed;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cCameraControl::MoveForward()
+{
+   m_velocity.z = -kDefaultSpeed;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cCameraControl::MoveBack()
+{
+   m_velocity.z = kDefaultSpeed;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cCameraControl::Raise()
+{
+   m_velocity.y = kDefaultSpeed;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cCameraControl::Lower()
+{
+   m_velocity.y = -kDefaultSpeed;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult CameraControlCreate()
+{
+   cAutoIPtr<ICameraControl> pCameraControl(static_cast<ICameraControl*>(new cCameraControl));
+   if (!pCameraControl)
+   {
+      return E_OUTOFMEMORY;
+   }
+   return RegisterGlobalObject(IID_ICameraControl, pCameraControl);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

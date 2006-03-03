@@ -5,6 +5,8 @@
 #define INCLUDED_CAMERA_H
 
 #include "cameraapi.h"
+#include "inputapi.h"
+#include "simapi.h"
 #include "frustum.h"
 #include "globalobjdef.h"
 #include "matrix4.h"
@@ -101,6 +103,46 @@ inline const tMatrix4 & cCamera::GetViewProjectionInverseMatrix() const
    UpdateCompositeMatrices();
    return m_viewProjInv;
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cCameraControl
+//
+
+class cCameraControl : public cComObject4<IMPLEMENTS(ICameraControl),
+                                          IMPLEMENTS(ISimClient),
+                                          IMPLEMENTS(IInputListener),
+                                          IMPLEMENTS(IGlobalObject)>
+{
+public:
+   cCameraControl();
+   ~cCameraControl();
+
+   DECLARE_NAME(CameraControl)
+   DECLARE_NO_CONSTRAINTS()
+
+   virtual tResult Init();
+   virtual tResult Term();
+
+   virtual bool OnInputEvent(const sInputEvent * pEvent);
+
+   virtual void OnSimFrame(double elapsedTime);
+
+   virtual tResult LookAtPoint(float x, float z);
+   virtual tResult MoveLeft();
+   virtual tResult MoveRight();
+   virtual tResult MoveForward();
+   virtual tResult MoveBack();
+   virtual tResult Raise();
+   virtual tResult Lower();
+
+private:
+   float m_pitch, m_oneOverTangentPitch, m_elevation;
+   tVec3 m_eye, m_focus, m_velocity;
+   tMatrix4 m_rotation;
+};
+
 
 ///////////////////////////////////////////////////////////////////////////////
 

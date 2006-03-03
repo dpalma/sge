@@ -4,7 +4,6 @@
 Import('env')
 
 sourceFiles = Split("""
-   cameracontroller.cpp
    main.cpp
 """)
 

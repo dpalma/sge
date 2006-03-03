@@ -16,6 +16,7 @@ template <typename T> class cMatrix4;
 typedef cMatrix4<float> tMatrix4;
 
 F_DECLARE_INTERFACE(ICamera);
+F_DECLARE_INTERFACE(ICameraControl);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -48,6 +49,30 @@ ENGINE_API tResult CameraCreate();
 ///////////////////////////////////////////////////////////////////////////////
 
 ENGINE_API tResult ScreenToNormalizedDeviceCoords(int sx, int sy, float * pndx, float * pndy);
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: ICameraControl
+//
+
+interface ICameraControl : IUnknown
+{
+   // TODO: this function is only to support legacy code in game
+   virtual tResult LookAtPoint(float x, float z) = 0;
+
+   virtual tResult MoveLeft() = 0;
+   virtual tResult MoveRight() = 0;
+   virtual tResult MoveForward() = 0;
+   virtual tResult MoveBack() = 0;
+   virtual tResult Raise() = 0;
+   virtual tResult Lower() = 0;
+};
+
+////////////////////////////////////////
+
+ENGINE_API tResult CameraControlCreate();
+
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -355,40 +355,7 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 			<File
-				RelativePath="..\..\game\cameracontroller.cpp">
-			</File>
-			<File
 				RelativePath="..\..\game\game.rc">
-				<FileConfiguration
-					Name="StaticRelease|Win32">
-					<Tool
-						Name="VCResourceCompilerTool"
-						AdditionalIncludeDirectories="\prj\sge\game;$(NoInherit)"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Opt|Win32">
-					<Tool
-						Name="VCResourceCompilerTool"
-						AdditionalIncludeDirectories="\prj\sge\game;$(NoInherit)"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCResourceCompilerTool"
-						AdditionalIncludeDirectories="\prj\sge\game;$(NoInherit)"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="StaticDebug|Win32">
-					<Tool
-						Name="VCResourceCompilerTool"
-						AdditionalIncludeDirectories="\prj\sge\game;$(NoInherit)"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCResourceCompilerTool"
-						AdditionalIncludeDirectories="\prj\sge\game;$(NoInherit)"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\game\main.cpp">
@@ -430,9 +397,6 @@
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl">
-			<File
-				RelativePath="..\..\game\cameracontroller.h">
-			</File>
 			<File
 				RelativePath="..\..\game\script.h">
 			</File>
