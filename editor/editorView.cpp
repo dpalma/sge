@@ -43,21 +43,6 @@ const float kFov = 70;
 const float kZNear = 1;
 const float kZFar = 5000;
 
-const float kDefaultCameraElevation = 100;
-const float kDefaultCameraPitch = 70;
-
-static const GLfloat kHighlightTileColor[] = { 0, 1, 0, 0.25f }; // semi-transparent green
-static const GLfloat kHighlightVertexColor[] = { 0, 0, 1, 0.25f }; // semi-transparent blue
-
-/////////////////////////////////////////////////////////////////////////////
-
-static tVec3 CalcEyePoint(const tVec3 & center,
-                          tVec3::value_type elevation = kDefaultCameraElevation,
-                          tVec3::value_type pitch = kDefaultCameraPitch)
-{
-   return center + tVec3(0, elevation, elevation / tanf(pitch));
-}
-
 /////////////////////////////////////////////////////////////////////////////
 
 #ifdef HAVE_DIRECTX
@@ -122,8 +107,6 @@ cEditorView::cEditorView()
  , m_cameraFov(kFov)
  , m_cameraZNear(kZNear)
  , m_cameraZFar(kZFar)
- , m_highlightQuad(INVALID_HTERRAINQUAD)
- , m_highlightVertex(INVALID_HTERRAINVERTEX)
  , m_bInPostNcDestroy(false)
 {
 }
@@ -151,57 +134,10 @@ BOOL cEditorView::PreCreateWindow(CREATESTRUCT & cs)
 
 ////////////////////////////////////////
 
-tResult cEditorView::GetModel(IEditorModel * * ppModel)
-{
-   if (ppModel == NULL)
-   {
-      return E_POINTER;
-   }
-
-   cEditorDoc * pDoc = GetDocument();
-
-   if (pDoc == NULL)
-   {
-      *ppModel = NULL;
-      return S_FALSE;
-   }
-
-   *ppModel = CTAddRef(static_cast<IEditorModel *>(pDoc));
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cEditorView::HighlightTerrainQuad(HTERRAINQUAD hQuad)
-{
-   m_highlightQuad = hQuad;
-   m_highlightVertex = INVALID_HTERRAINVERTEX;
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cEditorView::HighlightTerrainVertex(HTERRAINVERTEX hVertex)
-{
-   m_highlightQuad = INVALID_HTERRAINQUAD;
-   m_highlightVertex = hVertex;
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cEditorView::ClearHighlight()
-{
-   m_highlightQuad = INVALID_HTERRAINQUAD;
-   m_highlightVertex = INVALID_HTERRAINVERTEX;
-   return S_OK;
-}
-
-////////////////////////////////////////
-
 tResult cEditorView::OnActiveToolChange(IEditorTool * pNewTool, IEditorTool * pFormerTool)
 {
-   ClearHighlight();
+   UseGlobal(TerrainRenderer);
+   pTerrainRenderer->ClearHighlight();
    return S_OK;
 }
 
@@ -244,72 +180,6 @@ void cEditorView::RenderGL()
 
    UseGlobal(TerrainRenderer);
    pTerrainRenderer->Render();
-
-   if (m_highlightQuad != INVALID_HTERRAINQUAD)
-   {
-      UseGlobal(TerrainModel);
-      tVec3 corners[4];
-      if (pTerrainModel->GetQuadCorners(m_highlightQuad, corners) == S_OK)
-      {
-         glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
-         glEnable(GL_POLYGON_OFFSET_FILL);
-         // HACK: the polygon offset value here has to be big enough to clear the
-         // offsets used by the terrain splats
-         glPolygonOffset(-6, -6);
-         glEnable(GL_BLEND);
-         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-         glBegin(GL_QUADS);
-            glColor4fv(kHighlightTileColor);
-            glNormal3f(0, 1, 0);
-            glVertex3fv(corners[0].v);
-            glVertex3fv(corners[3].v);
-            glVertex3fv(corners[2].v);
-            glVertex3fv(corners[1].v);
-         glEnd();
-         glPopAttrib();
-      }
-   }
-
-   if (m_highlightVertex != INVALID_HTERRAINVERTEX)
-   {
-      UseGlobal(TerrainModel);
-      tVec3 vertex;
-      if (pTerrainModel->GetVertexPosition(m_highlightVertex, &vertex) == S_OK)
-      {
-         static const tVec3 offsets[4] =
-         {
-            tVec3( -5, 0,  5 ),
-            tVec3(  5, 0,  5 ),
-            tVec3(  5, 0, -5 ),
-            tVec3( -5, 0, -5 ),
-         };
-
-         tVec3 corners[4] =
-         {
-            vertex + offsets[0],
-            vertex + offsets[1],
-            vertex + offsets[2],
-            vertex + offsets[3],
-         };
-
-         glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
-         glEnable(GL_POLYGON_OFFSET_FILL);
-         // HACK: the polygon offset value here has to be big enough to clear the
-         // offsets used by the terrain splats
-         glPolygonOffset(-6, -6);
-         glEnable(GL_BLEND);
-         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-         glBegin(GL_QUADS);
-            glColor4fv(kHighlightVertexColor);
-            glNormal3f(0, 1, 0);
-            glVertex3fv(corners[0].v);
-            glVertex3fv(corners[3].v);
-            glVertex3fv(corners[2].v);
-            glVertex3fv(corners[1].v);
-         glEnd();
-         glPopAttrib();
-      }
-   }
 
    UseGlobal(EntityManager);
    pEntityManager->RenderAll();

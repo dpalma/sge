@@ -257,22 +257,22 @@ tResult cMoveCameraTool::OnKeyDown(const cEditorKeyEvent & keyEvent, IEditorView
    {
       case VK_LEFT:
       {
-         MoveCamera(pView, CPoint(-kMove,0));
+         MoveCamera(CPoint(-kMove,0));
          break;
       }
       case VK_RIGHT:
       {
-         MoveCamera(pView, CPoint(kMove,0));
+         MoveCamera(CPoint(kMove,0));
          break;
       }
       case VK_UP:
       {
-         MoveCamera(pView, CPoint(0,-kMove));
+         MoveCamera(CPoint(0,-kMove));
          break;
       }
       case VK_DOWN:
       {
-         MoveCamera(pView, CPoint(0,kMove));
+         MoveCamera(CPoint(0,kMove));
          break;
       }
    }
@@ -391,7 +391,7 @@ tResult cMoveCameraTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEdito
    if ((pView != NULL) && CTIsSameObject(pView, AccessView()))
    {
       CPoint delta = mouseEvent.GetPoint() - m_lastMousePoint;
-      MoveCamera(pView, delta);
+      MoveCamera(delta);
       m_lastMousePoint = mouseEvent.GetPoint();
       return S_EDITOR_TOOL_HANDLED;
    }
@@ -401,27 +401,24 @@ tResult cMoveCameraTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEdito
 
 ////////////////////////////////////////
 
-void cMoveCameraTool::MoveCamera(IEditorView * pView, CPoint delta)
+void cMoveCameraTool::MoveCamera(CPoint delta)
 {
-   if (pView != NULL)
+   UseGlobal(CameraControl);
+   if (delta.x < 0)
    {
-      UseGlobal(CameraControl);
-      if (delta.x < 0)
-      {
-         pCameraControl->MoveLeft();
-      }
-      else
-      {
-         pCameraControl->MoveRight();
-      }
-      if (delta.y < 0)
-      {
-         pCameraControl->MoveBack();
-      }
-      else
-      {
-         pCameraControl->MoveForward();
-      }
+      pCameraControl->MoveLeft();
+   }
+   else
+   {
+      pCameraControl->MoveRight();
+   }
+   if (delta.y < 0)
+   {
+      pCameraControl->MoveBack();
+   }
+   else
+   {
+      pCameraControl->MoveForward();
    }
 }
 
@@ -477,8 +474,9 @@ tResult cPlaceEntityTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEdito
             return E_OUTOFMEMORY;
          }
 
+         UseGlobal(EditorApp);
          cAutoIPtr<IEditorModel> pEditorModel;
-         if (pView->GetModel(&pEditorModel) == S_OK)
+         if (pEditorApp->GetActiveModel(&pEditorModel) == S_OK)
          {
             pEditorModel->AddCommand(pCommand, true);
          }
@@ -524,19 +522,14 @@ tResult cTerrainTool::Activate()
 
 tResult cTerrainTool::Deactivate()
 {
-   UseGlobal(EditorApp);
-   cAutoIPtr<IEditorView> pView;
-   if (pEditorApp->GetActiveView(&pView) == S_OK)
-   {
-      pView->ClearHighlight();
-   }
-
+   UseGlobal(TerrainRenderer);
+   pTerrainRenderer->ClearHighlight();
    return S_OK;
 }
 
 ////////////////////////////////////////
 
-bool cTerrainTool::GetHitQuad(CPoint point, IEditorView *, HTERRAINQUAD * phQuad)
+bool cTerrainTool::GetHitQuad(CPoint point, HTERRAINQUAD * phQuad)
 {
    float ndx, ndy;
    ScreenToNormalizedDeviceCoords(point.x, point.y, &ndx, &ndy);
@@ -554,7 +547,7 @@ bool cTerrainTool::GetHitQuad(CPoint point, IEditorView *, HTERRAINQUAD * phQuad
 
 ////////////////////////////////////////
 
-bool cTerrainTool::GetHitVertex(CPoint point, IEditorView *, HTERRAINVERTEX * phVertex)
+bool cTerrainTool::GetHitVertex(CPoint point, HTERRAINVERTEX * phVertex)
 {
    float ndx, ndy;
    ScreenToNormalizedDeviceCoords(point.x, point.y, &ndx, &ndy);
@@ -596,13 +589,15 @@ tResult cTerrainTileTool::OnMouseMove(const cEditorMouseEvent & mouseEvent, IEdi
    if (pView != NULL)
    {
       HTERRAINQUAD hQuad = NULL;
-      if (GetHitQuad(mouseEvent.GetPoint(), pView, &hQuad))
+      if (GetHitQuad(mouseEvent.GetPoint(), &hQuad))
       {
-         pView->HighlightTerrainQuad(hQuad);
+         UseGlobal(TerrainRenderer);
+         pTerrainRenderer->HighlightTerrainQuad(hQuad);
       }
       else
       {
-         pView->ClearHighlight();
+         UseGlobal(TerrainRenderer);
+         pTerrainRenderer->ClearHighlight();
       }
    }
 
@@ -620,7 +615,7 @@ tResult cTerrainTileTool::GetToolTip(const cEditorMouseEvent & mouseEvent,
    }
 
    HTERRAINQUAD hQuad = INVALID_HTERRAINQUAD;
-   if (GetHitQuad(mouseEvent.GetPoint(), NULL, &hQuad))
+   if (GetHitQuad(mouseEvent.GetPoint(), &hQuad))
    {
       UseGlobal(TerrainModel);
 
@@ -693,8 +688,9 @@ tResult cTerrainTileTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEdito
    pTerrainRenderer->EnableBlending(true);
 
    Assert(!!m_pCommand);
+   UseGlobal(EditorApp);
    cAutoIPtr<IEditorModel> pEditorModel;
-   if (pView->GetModel(&pEditorModel) == S_OK)
+   if (pEditorApp->GetActiveModel(&pEditorModel) == S_OK)
    {
       pEditorModel->AddCommand(m_pCommand, false);
    }
@@ -712,7 +708,7 @@ tResult cTerrainTileTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEdit
    Assert(!!m_pCommand);
 
    HTERRAINQUAD hQuad = NULL;
-   if (GetHitQuad(mouseEvent.GetPoint(), pView, &hQuad)
+   if (GetHitQuad(mouseEvent.GetPoint(), &hQuad)
       && m_hitQuads.find(hQuad) == m_hitQuads.end())
    {
       m_hitQuads.insert(hQuad);
@@ -764,13 +760,15 @@ tResult cTerrainElevationTool::OnMouseMove(const cEditorMouseEvent & mouseEvent,
    {
       if (!IsDragging())
       {
-         if (GetHitVertex(mouseEvent.GetPoint(), pView, &m_hHitVertex))
+         if (GetHitVertex(mouseEvent.GetPoint(), &m_hHitVertex))
          {
-            pView->HighlightTerrainVertex(m_hHitVertex);
+            UseGlobal(TerrainRenderer);
+            pTerrainRenderer->HighlightTerrainVertex(m_hHitVertex);
          }
          else
          {
-            pView->ClearHighlight();
+            UseGlobal(TerrainRenderer);
+            pTerrainRenderer->ClearHighlight();
          }
       }
    }
@@ -789,7 +787,7 @@ tResult cTerrainElevationTool::GetToolTip(const cEditorMouseEvent & mouseEvent,
    }
 
    HTERRAINVERTEX hVert = INVALID_HTERRAINVERTEX;
-   if (GetHitVertex(mouseEvent.GetPoint(), NULL, &hVert))
+   if (GetHitVertex(mouseEvent.GetPoint(), &hVert))
    {
       tVec3 pos;
       UseGlobal(TerrainModel);
@@ -832,8 +830,9 @@ tResult cTerrainElevationTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, I
 
    if (!!m_pCommand)
    {
+      UseGlobal(EditorApp);
       cAutoIPtr<IEditorModel> pEditorModel;
-      if (pView->GetModel(&pEditorModel) == S_OK)
+      if (pEditorApp->GetActiveModel(&pEditorModel) == S_OK)
       {
          pEditorModel->AddCommand(m_pCommand, false);
       }
@@ -903,13 +902,15 @@ tResult cTerrainPlateauTool::OnMouseMove(const cEditorMouseEvent & mouseEvent, I
    if (pView != NULL)
    {
       HTERRAINVERTEX hHitVertex;
-      if (GetHitVertex(mouseEvent.GetPoint(), pView, &hHitVertex))
+      if (GetHitVertex(mouseEvent.GetPoint(), &hHitVertex))
       {
-         pView->HighlightTerrainVertex(hHitVertex);
+         UseGlobal(TerrainRenderer);
+         pTerrainRenderer->HighlightTerrainVertex(hHitVertex);
       }
       else
       {
-         pView->ClearHighlight();
+         UseGlobal(TerrainRenderer);
+         pTerrainRenderer->ClearHighlight();
       }
    }
 
@@ -923,7 +924,7 @@ tResult cTerrainPlateauTool::OnDragStart(const cEditorMouseEvent & mouseEvent, I
    m_hitVertices.clear();
 
    HTERRAINVERTEX hHitVertex;
-   if (GetHitVertex(mouseEvent.GetPoint(), pView, &hHitVertex))
+   if (GetHitVertex(mouseEvent.GetPoint(), &hHitVertex))
    {
       tVec3 vertexPos;
 
@@ -957,8 +958,9 @@ tResult cTerrainPlateauTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEd
    pTerrainRenderer->EnableBlending(true);
 
    Assert(!!m_pCommand);
+   UseGlobal(EditorApp);
    cAutoIPtr<IEditorModel> pEditorModel;
-   if (pView->GetModel(&pEditorModel) == S_OK)
+   if (pEditorApp->GetActiveModel(&pEditorModel) == S_OK)
    {
       pEditorModel->AddCommand(m_pCommand, false);
    }
@@ -974,7 +976,7 @@ tResult cTerrainPlateauTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEd
 tResult cTerrainPlateauTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
 {
    HTERRAINVERTEX hHitVertex;
-   if (GetHitVertex(mouseEvent.GetPoint(), pView, &hHitVertex)
+   if (GetHitVertex(mouseEvent.GetPoint(), &hHitVertex)
       && m_hitVertices.find(hHitVertex) == m_hitVertices.end())
    {
       m_hitVertices.insert(hHitVertex);

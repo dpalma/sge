@@ -589,29 +589,6 @@ tResult cEditorApp::RemoveEditorAppListener(IEditorAppListener * pListener)
 
 ////////////////////////////////////////
 
-tResult cEditorApp::GetActiveView(IEditorView * * ppView)
-{
-   if (ppView == NULL)
-   {
-      return E_POINTER;
-   }
-
-   CFrameWnd * pMainFrm = DYNAMIC_DOWNCAST(CFrameWnd, GetMainWnd());
-   if (pMainFrm != NULL)
-   {
-      cEditorView * pEditorView = DYNAMIC_DOWNCAST(cEditorView, pMainFrm->GetActiveView());
-      if (pEditorView != NULL)
-      {
-         *ppView = CTAddRef(static_cast<IEditorView *>(pEditorView));
-         return S_OK;
-      }
-   }
-
-   return E_FAIL;
-}
-
-////////////////////////////////////////
-
 tResult cEditorApp::GetActiveModel(IEditorModel * * ppModel)
 {
    if (ppModel == NULL)

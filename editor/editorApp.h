@@ -97,7 +97,6 @@ public:
    virtual tResult AddEditorAppListener(IEditorAppListener * pListener);
    virtual tResult RemoveEditorAppListener(IEditorAppListener * pListener);
 
-   virtual tResult GetActiveView(IEditorView * * ppView);
    virtual tResult GetActiveModel(IEditorModel * * ppModel);
 
    virtual tResult GetActiveTool(IEditorTool * * ppTool);

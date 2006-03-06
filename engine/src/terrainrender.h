@@ -127,6 +127,10 @@ public:
 
    virtual void Render();
 
+   virtual tResult HighlightTerrainQuad(HTERRAINQUAD hQuad);
+   virtual tResult HighlightTerrainVertex(HTERRAINVERTEX hVertex);
+   virtual tResult ClearHighlight();
+
    // ISaveLoadParticipant methods
    virtual tResult Save(IWriter *);
    virtual tResult Load(IReader *, int version);
@@ -169,6 +173,9 @@ private:
    tTileCountMap m_tileCountMap;
 
    uint m_baseTile;
+
+   HTERRAINQUAD m_highlightQuad;
+   HTERRAINVERTEX m_highlightVertex;
 };
 
 ////////////////////////////////////////

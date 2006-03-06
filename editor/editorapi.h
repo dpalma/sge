@@ -65,7 +65,6 @@ interface UUID("2A04E541-6BA1-41e9-92FA-E7B3D493F1A2") IEditorApp : IUnknown
    virtual tResult AddEditorAppListener(IEditorAppListener * pListener) = 0;
    virtual tResult RemoveEditorAppListener(IEditorAppListener * pListener) = 0;
 
-   virtual tResult GetActiveView(IEditorView * * ppView) = 0;
    virtual tResult GetActiveModel(IEditorModel * * ppModel) = 0;
 
    virtual tResult GetActiveTool(IEditorTool * * ppTool) = 0;
@@ -114,11 +113,6 @@ interface UUID("14E9EE21-4E6F-4b04-8F5C-742DFFA955BE") IEditorAppListener : IUnk
 
 interface UUID("78C29790-865D-4f81-9AF1-26EC23BB5FAC") IEditorView : IUnknown
 {
-   virtual tResult GetModel(IEditorModel * * ppModel) = 0;
-
-   virtual tResult HighlightTerrainQuad(HTERRAINQUAD hQuad) = 0;
-   virtual tResult HighlightTerrainVertex(HTERRAINVERTEX hVertex) = 0;
-   virtual tResult ClearHighlight() = 0;
 };
 
 

@@ -25,6 +25,9 @@ F_DECLARE_INTERFACE(ITerrainModelListener);
 F_DECLARE_INTERFACE(ITerrainTileSet);
 F_DECLARE_INTERFACE(IHeightMap);
 
+F_DECLARE_HANDLE(HTERRAINQUAD);
+F_DECLARE_HANDLE(HTERRAINVERTEX);
+
 class cRay;
 
 
@@ -50,6 +53,11 @@ interface ITerrainRenderer : IUnknown
    virtual tResult EnableBlending(bool bEnable) = 0;
 
    virtual void Render() = 0;
+
+   // For use by the editor
+   virtual tResult HighlightTerrainQuad(HTERRAINQUAD hQuad) = 0;
+   virtual tResult HighlightTerrainVertex(HTERRAINVERTEX hVertex) = 0;
+   virtual tResult ClearHighlight() = 0;
 };
 
 ////////////////////////////////////////

@@ -48,10 +48,6 @@ public:
    bool Initialize();
 
    // IEditorView
-   virtual tResult GetModel(IEditorModel * * ppModel);
-   virtual tResult HighlightTerrainQuad(HTERRAINQUAD hQuad);
-   virtual tResult HighlightTerrainVertex(HTERRAINVERTEX hVertex);
-   virtual tResult ClearHighlight();
 
    // IEditorAppListener
    virtual tResult OnActiveToolChange(IEditorTool * pNewTool, IEditorTool * pFormerTool);
@@ -118,9 +114,6 @@ private:
 #endif
 
    float m_cameraFov, m_cameraZNear, m_cameraZFar;
-
-   HTERRAINQUAD m_highlightQuad;
-   HTERRAINVERTEX m_highlightVertex;
 
    bool m_bInPostNcDestroy;
 

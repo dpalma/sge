@@ -95,7 +95,7 @@ protected:
    virtual tResult OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
    virtual tResult OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
 
-   void MoveCamera(IEditorView * pView, CPoint delta);
+   void MoveCamera(CPoint delta);
 
 private:
    CPoint m_lastMousePoint;
@@ -138,8 +138,8 @@ public:
    virtual tResult Deactivate();
 
 protected:
-   static bool GetHitQuad(CPoint point, IEditorView * pView, HTERRAINQUAD * phQuad);
-   static bool GetHitVertex(CPoint point, IEditorView * pView, HTERRAINVERTEX * phVertex);
+   static bool GetHitQuad(CPoint point, HTERRAINQUAD * phQuad);
+   static bool GetHitVertex(CPoint point, HTERRAINVERTEX * phVertex);
 };
 
 

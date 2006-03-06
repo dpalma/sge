@@ -82,6 +82,8 @@ cTerrainRenderer::cTerrainRenderer(bool bForEditor)
  , m_bEnableBlending(true)
  , m_bTerrainChanged(false)
  , m_baseTile(kNoIndex)
+ , m_highlightQuad(INVALID_HTERRAINQUAD)
+ , m_highlightVertex(INVALID_HTERRAINVERTEX)
 {
 }
 
@@ -332,6 +334,105 @@ void cTerrainRenderer::Render()
          m_pWholeTerrainChunk->Render();
       }
    }
+
+   if (RunningInEditor())
+   {
+      static const GLfloat kHighlightTileColor[] = { 0, 1, 0, 0.25f }; // semi-transparent green
+      static const GLfloat kHighlightVertexColor[] = { 0, 0, 1, 0.25f }; // semi-transparent blue
+
+      if (m_highlightQuad != INVALID_HTERRAINQUAD)
+      {
+         UseGlobal(TerrainModel);
+         tVec3 corners[4];
+         if (pTerrainModel->GetQuadCorners(m_highlightQuad, corners) == S_OK)
+         {
+            glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
+            glEnable(GL_POLYGON_OFFSET_FILL);
+            // HACK: the polygon offset value here has to be big enough to clear the
+            // offsets used by the terrain splats
+            glPolygonOffset(-6, -6);
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glBegin(GL_QUADS);
+               glColor4fv(kHighlightTileColor);
+               glNormal3f(0, 1, 0);
+               glVertex3fv(corners[0].v);
+               glVertex3fv(corners[3].v);
+               glVertex3fv(corners[2].v);
+               glVertex3fv(corners[1].v);
+            glEnd();
+            glPopAttrib();
+         }
+      }
+
+      if (m_highlightVertex != INVALID_HTERRAINVERTEX)
+      {
+         UseGlobal(TerrainModel);
+         tVec3 vertex;
+         if (pTerrainModel->GetVertexPosition(m_highlightVertex, &vertex) == S_OK)
+         {
+            static const tVec3 offsets[4] =
+            {
+               tVec3( -5, 0,  5 ),
+               tVec3(  5, 0,  5 ),
+               tVec3(  5, 0, -5 ),
+               tVec3( -5, 0, -5 ),
+            };
+
+            tVec3 corners[4] =
+            {
+               vertex + offsets[0],
+               vertex + offsets[1],
+               vertex + offsets[2],
+               vertex + offsets[3],
+            };
+
+            glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
+            glEnable(GL_POLYGON_OFFSET_FILL);
+            // HACK: the polygon offset value here has to be big enough to clear the
+            // offsets used by the terrain splats
+            glPolygonOffset(-6, -6);
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glBegin(GL_QUADS);
+               glColor4fv(kHighlightVertexColor);
+               glNormal3f(0, 1, 0);
+               glVertex3fv(corners[0].v);
+               glVertex3fv(corners[3].v);
+               glVertex3fv(corners[2].v);
+               glVertex3fv(corners[1].v);
+            glEnd();
+            glPopAttrib();
+         }
+      }
+   }
+}
+
+////////////////////////////////////////
+
+tResult cTerrainRenderer::HighlightTerrainQuad(HTERRAINQUAD hQuad)
+{
+   m_highlightQuad = hQuad;
+   m_highlightVertex = INVALID_HTERRAINVERTEX;
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainRenderer::HighlightTerrainVertex(HTERRAINVERTEX hVertex)
+{
+   m_highlightQuad = INVALID_HTERRAINQUAD;
+   m_highlightVertex = hVertex;
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cTerrainRenderer::ClearHighlight()
+{
+   m_highlightQuad = INVALID_HTERRAINQUAD;
+   m_highlightVertex = INVALID_HTERRAINVERTEX;
+   return S_OK;
 }
 
 ////////////////////////////////////////
@@ -739,8 +840,11 @@ tResult BuildSplatAlphaMap(uint splatTile,
          cStr file;
          Sprintf(&file, "SplatAlpha_%d_(%d,%d)-(%d,%d).bmp", splatTile,
             xRange.GetStart(), zRange.GetStart(), xRange.GetEnd(),zRange.GetEnd());
-         cAutoIPtr<IWriter> pWriter(FileCreateWriter(cFileSpec(file.c_str())));
-         BmpWrite(pImage, pWriter);
+         cAutoIPtr<IWriter> pWriter;
+         if (FileWriterCreate(cFileSpec(file.c_str()), &pWriter) == S_OK)
+         {
+            BmpWrite(pImage, pWriter);
+         }
       }
 
       GlTextureCreateMipMapped(pImage, pAlphaMapId);
