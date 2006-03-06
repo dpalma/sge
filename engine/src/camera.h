@@ -129,6 +129,11 @@ public:
 
    virtual void OnSimFrame(double elapsedTime);
 
+   virtual tResult GetElevation(float * pElevation) const;
+   virtual tResult SetElevation(float elevation);
+   virtual tResult GetPitch(float * pPitch) const;
+   virtual tResult SetPitch(float Pitch);
+
    virtual tResult LookAtPoint(float x, float z);
    virtual tResult MoveLeft();
    virtual tResult MoveRight();

@@ -122,11 +122,6 @@ cEditorView::cEditorView()
  , m_cameraFov(kFov)
  , m_cameraZNear(kZNear)
  , m_cameraZFar(kZFar)
- , m_cameraElevation(kDefaultCameraElevation)
- , m_cameraPitch(kDefaultCameraPitch)
- , m_center(0,0,0)
- , m_eye(0,0,0)
- , m_bRecalcEye(true)
  , m_highlightQuad(INVALID_HTERRAINQUAD)
  , m_highlightVertex(INVALID_HTERRAINVERTEX)
  , m_bInPostNcDestroy(false)
@@ -153,63 +148,6 @@ BOOL cEditorView::PreCreateWindow(CREATESTRUCT & cs)
 
 /////////////////////////////////////////////////////////////////////////////
 // cEditorView operations
-
-////////////////////////////////////////
-
-tVec3 cEditorView::GetCameraEyePosition() const
-{
-   if (m_bRecalcEye)
-   {
-      m_eye = CalcEyePoint(m_center, m_cameraElevation, m_cameraPitch);
-      m_bRecalcEye = false;
-   }
-   return m_eye;
-}
-
-////////////////////////////////////////
-
-tResult cEditorView::GetCameraPlacement(float * px, float * pz)
-{
-   if (px == NULL || pz == NULL)
-   {
-      return E_POINTER;
-   }
-   *px = m_center.x;
-   *pz = m_center.z;
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cEditorView::PlaceCamera(float x, float z)
-{
-   m_center.x = x;
-   m_center.z = z;
-   m_bRecalcEye = true;
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cEditorView::GetCameraElevation(float * pElevation)
-{
-   if (pElevation == NULL)
-   {
-      return E_POINTER;
-   }
-
-   *pElevation = m_cameraElevation;
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cEditorView::SetCameraElevation(float elevation)
-{
-   m_cameraElevation = elevation;
-   m_bRecalcEye = true;
-   return S_OK;
-}
 
 ////////////////////////////////////////
 
@@ -278,12 +216,6 @@ tResult cEditorView::OnDefaultTileSetChange(const tChar * pszTileSet)
 
 void cEditorView::OnFrame(double time, double elapsed)
 {
-   tMatrix4 view;
-   MatrixLookAt(GetCameraEyePosition(), m_center, tVec3(0,1,0), &view);
-
-   UseGlobal(Camera);
-   pCamera->SetViewMatrix(view);
-
 #ifdef HAVE_DIRECTX
    if (m_bUsingD3d)
    {
@@ -603,21 +535,24 @@ void cEditorView::OnToolsCameraSettings()
 {
    cCameraDlg cameraDlg(this);
 
+   UseGlobal(CameraControl);
+
    cameraDlg.m_fov = Round(m_cameraFov);
    cameraDlg.m_znear = Round(m_cameraZNear);
    cameraDlg.m_zfar = Round(m_cameraZFar);
-   cameraDlg.m_elevation = Round(m_cameraElevation);
-   cameraDlg.m_pitch = Round(m_cameraPitch);
+   float temp;
+   pCameraControl->GetElevation(&temp);
+   cameraDlg.m_elevation = Round(temp);
+   pCameraControl->GetPitch(&temp);
+   cameraDlg.m_pitch = Round(temp);
 
    if (cameraDlg.DoModal() == IDOK)
    {
       m_cameraFov = static_cast<float>(cameraDlg.m_fov);
       m_cameraZNear = static_cast<float>(cameraDlg.m_znear);
       m_cameraZFar = static_cast<float>(cameraDlg.m_zfar);
-      m_cameraElevation = static_cast<float>(cameraDlg.m_elevation);
-      m_cameraPitch = static_cast<float>(cameraDlg.m_pitch);
-
-      m_bRecalcEye = true;
+      pCameraControl->SetElevation(static_cast<float>(cameraDlg.m_elevation));
+      pCameraControl->SetPitch(static_cast<float>(cameraDlg.m_pitch));
 
       CRect clientRect;
       GetClientRect(clientRect);
@@ -687,7 +622,8 @@ void cEditorView::OnInitialUpdate()
    float centerX = static_cast<float>(terrainSettings.GetTileCountX() * terrainSettings.GetTileSize()) / 2;
    float centerZ = static_cast<float>(terrainSettings.GetTileCountZ() * terrainSettings.GetTileSize()) / 2;
 
-   PlaceCamera(centerX, centerZ);
+   UseGlobal(CameraControl);
+   pCameraControl->LookAtPoint(centerX, centerZ);
 
    CView::OnInitialUpdate();
 }

@@ -289,15 +289,25 @@ tResult cMoveCameraTool::OnMouseWheel(const cEditorMouseWheelEvent & mouseWheelE
 
    if (pView != NULL)
    {
-      float elevation;
-      if (pView->GetCameraElevation(&elevation) == S_OK)
+      UseGlobal(CameraControl);
+      if (mouseWheelEvent.GetZDelta() < 0)
       {
-         elevation += (mouseWheelEvent.GetZDelta() / WHEEL_DELTA);
-         if (elevation >= kMinElevation && elevation <= kMaxElevation)
-         {
-            pView->SetCameraElevation(elevation);
-         }
+         pCameraControl->Lower();
       }
+      else
+      {
+         pCameraControl->Raise();
+      }
+
+      //float elevation;
+      //if (pView->GetCameraElevation(&elevation) == S_OK)
+      //{
+      //   elevation += (mouseWheelEvent.GetZDelta() / WHEEL_DELTA);
+      //   if (elevation >= kMinElevation && elevation <= kMaxElevation)
+      //   {
+      //      pView->SetCameraElevation(elevation);
+      //   }
+      //}
    }
 
    return cDragTool::OnMouseWheel(mouseWheelEvent, pView);
@@ -362,11 +372,11 @@ tResult cMoveCameraTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditor
 {
    if ((pView != NULL) && CTIsSameObject(pView, AccessView()))
    {
-      float camPlaceX, camPlaceZ;
-      if ((pView != NULL) && pView->GetCameraPlacement(&camPlaceX, &camPlaceZ) == S_OK)
-      {
-         InfoMsg2("Looking at point (%.2f, 0, %.2f)\n", camPlaceX, camPlaceZ);
-      }
+      //float camPlaceX, camPlaceZ;
+      //if ((pView != NULL) && pView->GetCameraPlacement(&camPlaceX, &camPlaceZ) == S_OK)
+      //{
+      //   InfoMsg2("Looking at point (%.2f, 0, %.2f)\n", camPlaceX, camPlaceZ);
+      //}
 
       return S_EDITOR_TOOL_HANDLED;
    }
@@ -395,13 +405,22 @@ void cMoveCameraTool::MoveCamera(IEditorView * pView, CPoint delta)
 {
    if (pView != NULL)
    {
-      float camPlaceX, camPlaceZ;
-      if (pView->GetCameraPlacement(&camPlaceX, &camPlaceZ) == S_OK)
+      UseGlobal(CameraControl);
+      if (delta.x < 0)
       {
-         camPlaceX += delta.x;
-         camPlaceZ += delta.y;
-
-         pView->PlaceCamera(camPlaceX, camPlaceZ);
+         pCameraControl->MoveLeft();
+      }
+      else
+      {
+         pCameraControl->MoveRight();
+      }
+      if (delta.y < 0)
+      {
+         pCameraControl->MoveBack();
+      }
+      else
+      {
+         pCameraControl->MoveForward();
       }
    }
 }

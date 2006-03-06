@@ -58,6 +58,12 @@ ENGINE_API tResult ScreenToNormalizedDeviceCoords(int sx, int sy, float * pndx, 
 
 interface ICameraControl : IUnknown
 {
+   virtual tResult GetElevation(float * pElevation) const = 0;
+   virtual tResult SetElevation(float elevation) = 0;
+
+   virtual tResult GetPitch(float * pPitch) const = 0;
+   virtual tResult SetPitch(float Pitch) = 0;
+
    // TODO: this function is only to support legacy code in game
    virtual tResult LookAtPoint(float x, float z) = 0;
 

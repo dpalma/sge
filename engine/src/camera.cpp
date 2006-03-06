@@ -291,6 +291,46 @@ void cCameraControl::OnSimFrame(double elapsedTime)
 
 ///////////////////////////////////////
 
+tResult cCameraControl::GetElevation(float * pElevation) const
+{
+   if (pElevation == NULL)
+   {
+      return E_POINTER;
+   }
+   *pElevation = m_elevation;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cCameraControl::SetElevation(float elevation)
+{
+   m_elevation = elevation;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cCameraControl::GetPitch(float * pPitch) const
+{
+   if (pPitch == NULL)
+   {
+      return E_POINTER;
+   }
+   *pPitch = m_pitch;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cCameraControl::SetPitch(float pitch)
+{
+   m_pitch = pitch;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
 tResult cCameraControl::LookAtPoint(float x, float z)
 {
    m_focus = tVec3(x, 0, z);

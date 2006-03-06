@@ -48,11 +48,6 @@ public:
    bool Initialize();
 
    // IEditorView
-   virtual tVec3 GetCameraEyePosition() const;
-   virtual tResult GetCameraPlacement(float * px, float * pz);
-   virtual tResult PlaceCamera(float x, float z);
-   virtual tResult GetCameraElevation(float * pElevation);
-   virtual tResult SetCameraElevation(float elevation);
    virtual tResult GetModel(IEditorModel * * ppModel);
    virtual tResult HighlightTerrainQuad(HTERRAINQUAD hQuad);
    virtual tResult HighlightTerrainVertex(HTERRAINVERTEX hVertex);
@@ -122,11 +117,7 @@ private:
    D3DPRESENT_PARAMETERS m_presentParams;
 #endif
 
-   float m_cameraFov, m_cameraZNear, m_cameraZFar, m_cameraElevation, m_cameraPitch;
-
-   tVec3 m_center;
-   mutable tVec3 m_eye;
-   mutable bool m_bRecalcEye; // recalculate camera eye position when placement/elevation changes
+   float m_cameraFov, m_cameraZNear, m_cameraZFar;
 
    HTERRAINQUAD m_highlightQuad;
    HTERRAINVERTEX m_highlightVertex;

@@ -159,16 +159,17 @@ static bool ScriptExecResource(const char * pszResource)
 static void RegisterGlobalObjects()
 {
    CameraCreate();
+   CameraControlCreate();
+   EntityManagerCreate();
    InputCreate();
-   SimCreate();
    ResourceManagerCreate();
+   SaveLoadManagerCreate();
    ScriptInterpreterCreate();
-   ThreadCallerCreate();
+   SimCreate();
+   RendererCreate();
    TerrainModelCreate();
    TerrainRendererCreateForEditor();
-   SaveLoadManagerCreate();
-   EntityManagerCreate();
-   RendererCreate();
+   ThreadCallerCreate();
 }
 
 ////////////////////////////////////////

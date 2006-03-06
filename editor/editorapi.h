@@ -114,12 +114,6 @@ interface UUID("14E9EE21-4E6F-4b04-8F5C-742DFFA955BE") IEditorAppListener : IUnk
 
 interface UUID("78C29790-865D-4f81-9AF1-26EC23BB5FAC") IEditorView : IUnknown
 {
-   virtual tVec3 GetCameraEyePosition() const = 0;
-   virtual tResult GetCameraPlacement(float * px, float * pz) = 0;
-   virtual tResult PlaceCamera(float x, float z) = 0;
-   virtual tResult GetCameraElevation(float * pElevation) = 0;
-   virtual tResult SetCameraElevation(float elevation) = 0;
-
    virtual tResult GetModel(IEditorModel * * ppModel) = 0;
 
    virtual tResult HighlightTerrainQuad(HTERRAINQUAD hQuad) = 0;
