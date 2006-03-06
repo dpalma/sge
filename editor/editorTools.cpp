@@ -251,28 +251,27 @@ cMoveCameraTool::~cMoveCameraTool()
 
 tResult cMoveCameraTool::OnKeyDown(const cEditorKeyEvent & keyEvent, IEditorView * pView)
 {
-   static const int kMove = 5;
-
+   UseGlobal(CameraControl);
    switch (keyEvent.GetChar())
    {
       case VK_LEFT:
       {
-         MoveCamera(CPoint(-kMove,0));
+         pCameraControl->MoveLeft();
          break;
       }
       case VK_RIGHT:
       {
-         MoveCamera(CPoint(kMove,0));
+         pCameraControl->MoveRight();
          break;
       }
       case VK_UP:
       {
-         MoveCamera(CPoint(0,-kMove));
+         pCameraControl->MoveForward();
          break;
       }
       case VK_DOWN:
       {
-         MoveCamera(CPoint(0,kMove));
+         pCameraControl->MoveBack();
          break;
       }
    }
@@ -284,30 +283,14 @@ tResult cMoveCameraTool::OnKeyDown(const cEditorKeyEvent & keyEvent, IEditorView
 
 tResult cMoveCameraTool::OnMouseWheel(const cEditorMouseWheelEvent & mouseWheelEvent, IEditorView * pView)
 {
-   static const float kMinElevation = 10;
-   static const float kMaxElevation = 500;
-
-   if (pView != NULL)
+   UseGlobal(CameraControl);
+   if (mouseWheelEvent.GetZDelta() < 0)
    {
-      UseGlobal(CameraControl);
-      if (mouseWheelEvent.GetZDelta() < 0)
-      {
-         pCameraControl->Lower();
-      }
-      else
-      {
-         pCameraControl->Raise();
-      }
-
-      //float elevation;
-      //if (pView->GetCameraElevation(&elevation) == S_OK)
-      //{
-      //   elevation += (mouseWheelEvent.GetZDelta() / WHEEL_DELTA);
-      //   if (elevation >= kMinElevation && elevation <= kMaxElevation)
-      //   {
-      //      pView->SetCameraElevation(elevation);
-      //   }
-      //}
+      pCameraControl->Lower();
+   }
+   else
+   {
+      pCameraControl->Raise();
    }
 
    return cDragTool::OnMouseWheel(mouseWheelEvent, pView);
@@ -391,35 +374,11 @@ tResult cMoveCameraTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEdito
    if ((pView != NULL) && CTIsSameObject(pView, AccessView()))
    {
       CPoint delta = mouseEvent.GetPoint() - m_lastMousePoint;
-      MoveCamera(delta);
       m_lastMousePoint = mouseEvent.GetPoint();
       return S_EDITOR_TOOL_HANDLED;
    }
 
    return S_EDITOR_TOOL_CONTINUE;
-}
-
-////////////////////////////////////////
-
-void cMoveCameraTool::MoveCamera(CPoint delta)
-{
-   UseGlobal(CameraControl);
-   if (delta.x < 0)
-   {
-      pCameraControl->MoveLeft();
-   }
-   else
-   {
-      pCameraControl->MoveRight();
-   }
-   if (delta.y < 0)
-   {
-      pCameraControl->MoveBack();
-   }
-   else
-   {
-      pCameraControl->MoveForward();
-   }
 }
 
 

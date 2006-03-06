@@ -176,7 +176,11 @@ tResult ScreenToNormalizedDeviceCoords(int sx, int sy, float * pndx, float * pnd
 // CLASS: cCameraControl
 //
 
-static const float kDefaultElevation = 100;
+static const float kElevationDefault = 100;
+static const float kElevationMin = 25;
+static const float kElevationMax = 200;
+static const float kElevationStep = 10;
+static const float kElevationSpeed = 15;
 static const float kDefaultPitch = 70;
 static const float kDefaultSpeed = 50;
 
@@ -185,9 +189,9 @@ static const float kDefaultSpeed = 50;
 cCameraControl::cCameraControl()
  : m_pitch(kDefaultPitch)
  , m_oneOverTangentPitch(0)
- , m_elevation(kDefaultElevation)
+ , m_elevation(kElevationDefault)
  , m_focus(0,0,0)
- , m_velocity(0,0,0)
+ , m_elevationLerp(kElevationDefault, kElevationDefault, 1)
 {
    ConfigGet(_T("view_elevation"), &m_elevation);
    ConfigGet(_T("view_pitch"), &m_pitch);
@@ -231,37 +235,55 @@ bool cCameraControl::OnInputEvent(const sInputEvent * pEvent)
    {
       case kLeft:
       {
-         m_velocity.x = pEvent->down ? -kDefaultSpeed : 0;
+         if (pEvent->down)
+         {
+            MoveLeft();
+         }
          break;
       }
 
       case kRight:
       {
-         m_velocity.x = pEvent->down ? kDefaultSpeed : 0;
+         if (pEvent->down)
+         {
+            MoveRight();
+         }
          break;
       }
 
       case kUp:
       {
-         m_velocity.z = pEvent->down ? -kDefaultSpeed : 0;
+         if (pEvent->down)
+         {
+            MoveForward();
+         }
          break;
       }
 
       case kDown:
       {
-         m_velocity.z = pEvent->down ? kDefaultSpeed : 0;
+         if (pEvent->down)
+         {
+            MoveBack();
+         }
          break;
       }
 
       case kMouseWheelUp:
       {
-         m_elevation++;
+         if (pEvent->down)
+         {
+            Raise();
+         }
          break;
       }
 
       case kMouseWheelDown:
       {
-         m_elevation--;
+         if (pEvent->down)
+         {
+            Lower();
+         }
          break;
       }
    }
@@ -273,7 +295,9 @@ bool cCameraControl::OnInputEvent(const sInputEvent * pEvent)
 
 void cCameraControl::OnSimFrame(double elapsedTime)
 {
-   m_focus += m_velocity * (float)elapsedTime;
+   m_focus.x = m_leftRightLerp.Update(elapsedTime);
+   m_focus.z = m_forwardBackLerp.Update(elapsedTime);
+   m_elevation = m_elevationLerp.Update(elapsedTime);
 
    float zOffset = m_elevation * m_oneOverTangentPitch;
 
@@ -306,6 +330,7 @@ tResult cCameraControl::GetElevation(float * pElevation) const
 tResult cCameraControl::SetElevation(float elevation)
 {
    m_elevation = elevation;
+   m_elevationLerp.Restart(m_elevation, m_elevation, 1);
    return S_OK;
 }
 
@@ -334,6 +359,8 @@ tResult cCameraControl::SetPitch(float pitch)
 tResult cCameraControl::LookAtPoint(float x, float z)
 {
    m_focus = tVec3(x, 0, z);
+   m_leftRightLerp.Restart(x, x, 1);
+   m_forwardBackLerp.Restart(z, z, 1);
    return S_OK;
 }
 
@@ -341,7 +368,7 @@ tResult cCameraControl::LookAtPoint(float x, float z)
 
 tResult cCameraControl::MoveLeft()
 {
-   m_velocity.x = -kDefaultSpeed;
+   m_leftRightLerp.Restart(m_focus.x, m_focus.x - kDefaultSpeed, kDefaultSpeed);
    return S_OK;
 }
 
@@ -349,7 +376,7 @@ tResult cCameraControl::MoveLeft()
 
 tResult cCameraControl::MoveRight()
 {
-   m_velocity.x = kDefaultSpeed;
+   m_leftRightLerp.Restart(m_focus.x, m_focus.x + kDefaultSpeed, kDefaultSpeed);
    return S_OK;
 }
 
@@ -357,7 +384,7 @@ tResult cCameraControl::MoveRight()
 
 tResult cCameraControl::MoveForward()
 {
-   m_velocity.z = -kDefaultSpeed;
+   m_forwardBackLerp.Restart(m_focus.z, m_focus.z - kDefaultSpeed, kDefaultSpeed);
    return S_OK;
 }
 
@@ -365,7 +392,7 @@ tResult cCameraControl::MoveForward()
 
 tResult cCameraControl::MoveBack()
 {
-   m_velocity.z = kDefaultSpeed;
+   m_forwardBackLerp.Restart(m_focus.z, m_focus.z + kDefaultSpeed, kDefaultSpeed);
    return S_OK;
 }
 
@@ -373,7 +400,7 @@ tResult cCameraControl::MoveBack()
 
 tResult cCameraControl::Raise()
 {
-   m_velocity.y = kDefaultSpeed;
+   m_elevationLerp.Restart(m_elevation, m_elevation + kElevationStep, kElevationSpeed);
    return S_OK;
 }
 
@@ -381,7 +408,7 @@ tResult cCameraControl::Raise()
 
 tResult cCameraControl::Lower()
 {
-   m_velocity.y = -kDefaultSpeed;
+   m_elevationLerp.Restart(m_elevation, m_elevation - kElevationStep, kElevationSpeed);
    return S_OK;
 }
 

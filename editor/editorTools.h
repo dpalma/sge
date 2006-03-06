@@ -95,8 +95,6 @@ protected:
    virtual tResult OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
    virtual tResult OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
 
-   void MoveCamera(CPoint delta);
-
 private:
    CPoint m_lastMousePoint;
 };

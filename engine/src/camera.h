@@ -106,6 +106,90 @@ inline const tMatrix4 & cCamera::GetViewProjectionInverseMatrix() const
 
 
 ///////////////////////////////////////////////////////////////////////////////
+
+template <typename T>
+T Lerp(const T & a, const T & b, float t)
+{
+   return a + (t * (b - a));
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// TEMPLATE: cTimedLerp
+//
+
+template <typename T>
+class cTimedLerp
+{
+public:
+   cTimedLerp()
+    : m_start(0)
+    , m_end(0)
+    , m_t(0)
+    , m_oneOverTimeSpan(0)
+   {
+   }
+
+   cTimedLerp(const T & start, const T & end, const T & rate)
+    : m_start(start)
+    , m_end(end)
+    , m_t(0)
+    , m_oneOverTimeSpan(fabs(static_cast<double>(rate) / (end - start)))
+   {
+   }
+
+   cTimedLerp(const cTimedLerp & other)
+    : m_start(other.m_start)
+    , m_end(other.m_end)
+    , m_t(other.m_t)
+    , m_oneOverTimeSpan(other.m_oneOverTimeSpan)
+   {
+   }
+
+   ~cTimedLerp()
+   {
+   }
+
+   const cTimedLerp & operator =(const cTimedLerp & other)
+   {
+      m_start = other.m_start;
+      m_end = other.m_end;
+      m_t = other.m_t;
+      m_oneOverTimeSpan = other.m_oneOverTimeSpan;
+      return *this;
+   }
+
+   void Restart(const T & start, const T & end, const T & rate)
+   {
+      m_start = start;
+      m_end = end;
+      m_t = 0;
+      m_oneOverTimeSpan = fabs(static_cast<double>(rate) / (end - start));
+   }
+
+   T Update(double time)
+   {
+      if (m_start == m_end)
+      {
+         return m_end;
+      }
+      m_t += (time * m_oneOverTimeSpan);
+      if (m_t >= 1)
+      {
+         m_t = 1;
+         return m_end;
+      }
+      return Lerp<T>(m_start, m_end, static_cast<float>(m_t));
+   }
+
+private:
+   T m_start, m_end;
+   double m_t, m_oneOverTimeSpan;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cCameraControl
 //
@@ -144,8 +228,11 @@ public:
 
 private:
    float m_pitch, m_oneOverTangentPitch, m_elevation;
-   tVec3 m_eye, m_focus, m_velocity;
+   tVec3 m_eye, m_focus;
    tMatrix4 m_rotation;
+   cTimedLerp<float> m_elevationLerp;
+   cTimedLerp<float> m_leftRightLerp;
+   cTimedLerp<float> m_forwardBackLerp;
 };
 
 
