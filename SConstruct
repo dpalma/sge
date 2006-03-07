@@ -64,6 +64,12 @@ class SGEEnvironment(Environment):
       self.m_libPaths += [MakeLibPath('lua')]
       self.m_incPaths += ['#3rdparty/lua/include']
       
+   def UseCppUnitLite2(self):
+      self.Append(CPPDEFINES=['HAVE_CPPUNITLITE2'])
+      self.m_libs += ['CppUnitLite2']
+      self.m_libPaths += [MakeLibPath('CppUnitLite2')]
+      self.m_incPaths += ['#3rdparty/CppUnitLite2/include']
+      
    def SetCommon(self):
       if platform == 'win32':
          self.Append(CCFLAGS=['/EHsc'])
