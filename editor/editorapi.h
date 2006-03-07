@@ -208,16 +208,16 @@ interface UUID("AFAD398E-14D6-4eed-B503-AFE44C6989C0") IEditorTool : IUnknown
    virtual tResult Activate() = 0;
    virtual tResult Deactivate() = 0;
 
-   virtual tResult OnKeyDown(const cEditorKeyEvent & keyEvent, IEditorView * pView) = 0;
-   virtual tResult OnKeyUp(const cEditorKeyEvent & keyEvent, IEditorView * pView) = 0;
-   virtual tResult OnLButtonDblClk(const cEditorMouseEvent & mouseEvent, IEditorView * pView) = 0;
-   virtual tResult OnLButtonDown(const cEditorMouseEvent & mouseEvent, IEditorView * pView) = 0;
-	virtual tResult OnLButtonUp(const cEditorMouseEvent & mouseEvent, IEditorView * pView) = 0;
-   virtual tResult OnRButtonDblClk(const cEditorMouseEvent & mouseEvent, IEditorView * pView) = 0;
-	virtual tResult OnRButtonDown(const cEditorMouseEvent & mouseEvent, IEditorView * pView) = 0;
-	virtual tResult OnRButtonUp(const cEditorMouseEvent & mouseEvent, IEditorView * pView) = 0;
-	virtual tResult OnMouseMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView) = 0;
-   virtual tResult OnMouseWheel(const cEditorMouseWheelEvent & mouseWheelEvent, IEditorView * pView) = 0;
+   virtual tResult OnKeyDown(const cEditorKeyEvent & keyEvent) = 0;
+   virtual tResult OnKeyUp(const cEditorKeyEvent & keyEvent) = 0;
+   virtual tResult OnLButtonDblClk(const cEditorMouseEvent & mouseEvent) = 0;
+   virtual tResult OnLButtonDown(const cEditorMouseEvent & mouseEvent) = 0;
+	virtual tResult OnLButtonUp(const cEditorMouseEvent & mouseEvent) = 0;
+   virtual tResult OnRButtonDblClk(const cEditorMouseEvent & mouseEvent) = 0;
+	virtual tResult OnRButtonDown(const cEditorMouseEvent & mouseEvent) = 0;
+	virtual tResult OnRButtonUp(const cEditorMouseEvent & mouseEvent) = 0;
+	virtual tResult OnMouseMove(const cEditorMouseEvent & mouseEvent) = 0;
+   virtual tResult OnMouseWheel(const cEditorMouseWheelEvent & mouseWheelEvent) = 0;
 
    virtual tResult GetToolTip(const cEditorMouseEvent & mouseEvent, cStr * pToolTipText, uint_ptr * pToolTipId) const = 0;
 };
@@ -230,16 +230,16 @@ public:
    virtual tResult Activate() { return S_OK; }
    virtual tResult Deactivate() { return S_OK; }
 
-   virtual tResult OnKeyDown(const cEditorKeyEvent & keyEvent, IEditorView * pView) { return S_EDITOR_TOOL_CONTINUE; }
-   virtual tResult OnKeyUp(const cEditorKeyEvent & keyEvent, IEditorView * pView) { return S_EDITOR_TOOL_CONTINUE; }
-   virtual tResult OnLButtonDblClk(const cEditorMouseEvent & mouseEvent, IEditorView * pView) { return S_EDITOR_TOOL_CONTINUE; }
-   virtual tResult OnLButtonDown(const cEditorMouseEvent & mouseEvent, IEditorView * pView) { return S_EDITOR_TOOL_CONTINUE; }
-	virtual tResult OnLButtonUp(const cEditorMouseEvent & mouseEvent, IEditorView * pView) { return S_EDITOR_TOOL_CONTINUE; }
-   virtual tResult OnRButtonDblClk(const cEditorMouseEvent & mouseEvent, IEditorView * pView) { return S_EDITOR_TOOL_CONTINUE; }
-	virtual tResult OnRButtonDown(const cEditorMouseEvent & mouseEvent, IEditorView * pView) { return S_EDITOR_TOOL_CONTINUE; }
-	virtual tResult OnRButtonUp(const cEditorMouseEvent & mouseEvent, IEditorView * pView) { return S_EDITOR_TOOL_CONTINUE; }
-	virtual tResult OnMouseMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView) { return S_EDITOR_TOOL_CONTINUE; }
-   virtual tResult OnMouseWheel(const cEditorMouseWheelEvent & mouseWheelEvent, IEditorView * pView) { return S_EDITOR_TOOL_CONTINUE; }
+   virtual tResult OnKeyDown(const cEditorKeyEvent & keyEvent) { return S_EDITOR_TOOL_CONTINUE; }
+   virtual tResult OnKeyUp(const cEditorKeyEvent & keyEvent) { return S_EDITOR_TOOL_CONTINUE; }
+   virtual tResult OnLButtonDblClk(const cEditorMouseEvent & mouseEvent) { return S_EDITOR_TOOL_CONTINUE; }
+   virtual tResult OnLButtonDown(const cEditorMouseEvent & mouseEvent) { return S_EDITOR_TOOL_CONTINUE; }
+	virtual tResult OnLButtonUp(const cEditorMouseEvent & mouseEvent) { return S_EDITOR_TOOL_CONTINUE; }
+   virtual tResult OnRButtonDblClk(const cEditorMouseEvent & mouseEvent) { return S_EDITOR_TOOL_CONTINUE; }
+	virtual tResult OnRButtonDown(const cEditorMouseEvent & mouseEvent) { return S_EDITOR_TOOL_CONTINUE; }
+	virtual tResult OnRButtonUp(const cEditorMouseEvent & mouseEvent) { return S_EDITOR_TOOL_CONTINUE; }
+	virtual tResult OnMouseMove(const cEditorMouseEvent & mouseEvent) { return S_EDITOR_TOOL_CONTINUE; }
+   virtual tResult OnMouseWheel(const cEditorMouseWheelEvent & mouseWheelEvent) { return S_EDITOR_TOOL_CONTINUE; }
 
    virtual tResult GetToolTip(const cEditorMouseEvent & mouseEvent, cStr * pToolTipText, uint_ptr * pToolTipId) const { return S_FALSE; }
 };

@@ -40,6 +40,7 @@ LOG_DEFINE_CHANNEL(EditorTools);
 ////////////////////////////////////////
 
 cDragTool::cDragTool()
+ : m_bDragging(false)
 {
 }
 
@@ -51,34 +52,29 @@ cDragTool::~cDragTool()
 
 ////////////////////////////////////////
 
-tResult cDragTool::OnKeyDown(const cEditorKeyEvent & keyEvent, IEditorView * pView)
+tResult cDragTool::OnKeyDown(const cEditorKeyEvent & keyEvent)
 {
    return S_EDITOR_TOOL_CONTINUE;
 }
 
 ////////////////////////////////////////
 
-tResult cDragTool::OnLButtonDown(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+tResult cDragTool::OnLButtonDown(const cEditorMouseEvent & mouseEvent)
 {
-   if (pView != NULL)
-   {
-      m_pView = CTAddRef(pView);
-      UseGlobal(EditorApp);
-      pEditorApp->SetToolCapture(this);
-      return OnDragStart(mouseEvent, pView);
-   }
-
-   return S_EDITOR_TOOL_CONTINUE;
+   UseGlobal(EditorApp);
+   pEditorApp->SetToolCapture(this);
+   m_bDragging = true;
+   return OnDragStart(mouseEvent);
 }
 
 ////////////////////////////////////////
 
-tResult cDragTool::OnLButtonUp(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+tResult cDragTool::OnLButtonUp(const cEditorMouseEvent & mouseEvent)
 {
    if (IsDragging())
    {
-      tResult result = OnDragEnd(mouseEvent, pView);
-      SafeRelease(m_pView);
+      tResult result = OnDragEnd(mouseEvent);
+      m_bDragging = false;
       UseGlobal(EditorApp);
       pEditorApp->ReleaseToolCapture();
       return result;
@@ -89,11 +85,11 @@ tResult cDragTool::OnLButtonUp(const cEditorMouseEvent & mouseEvent, IEditorView
 
 ////////////////////////////////////////
 
-tResult cDragTool::OnMouseMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+tResult cDragTool::OnMouseMove(const cEditorMouseEvent & mouseEvent)
 {
    if (IsDragging())
    {
-      return OnDragMove(mouseEvent, pView);
+      return OnDragMove(mouseEvent);
    }
 
    return S_EDITOR_TOOL_CONTINUE;
@@ -103,14 +99,7 @@ tResult cDragTool::OnMouseMove(const cEditorMouseEvent & mouseEvent, IEditorView
 
 bool cDragTool::IsDragging()
 {
-   return (!!m_pView);
-}
-
-////////////////////////////////////////
-
-IEditorView * cDragTool::AccessView()
-{
-   return m_pView;
+   return m_bDragging;
 }
 
 
@@ -134,9 +123,9 @@ cSelectTool::~cSelectTool()
 
 ////////////////////////////////////////
 
-tResult cSelectTool::OnKeyDown(const cEditorKeyEvent & keyEvent, IEditorView * pView)
+tResult cSelectTool::OnKeyDown(const cEditorKeyEvent & keyEvent)
 {
-   return cDragTool::OnKeyDown(keyEvent, pView);
+   return cDragTool::OnKeyDown(keyEvent);
 }
 
 ////////////////////////////////////////
@@ -157,7 +146,7 @@ tResult cSelectTool::GetToolTip(const cEditorMouseEvent & mouseEvent,
 
 ////////////////////////////////////////
 
-tResult cSelectTool::OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+tResult cSelectTool::OnDragStart(const cEditorMouseEvent & mouseEvent)
 {
    m_selectType = kST_Ray;
    m_dragStartPoint = mouseEvent.GetPoint();
@@ -167,38 +156,28 @@ tResult cSelectTool::OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorVi
 
 ////////////////////////////////////////
 
-tResult cSelectTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+tResult cSelectTool::OnDragEnd(const cEditorMouseEvent & mouseEvent)
 {
-   if ((pView != NULL) && CTIsSameObject(pView, AccessView()))
+   if (m_selectType == kST_Ray)
    {
-      if (m_selectType == kST_Ray)
+      UseGlobal(EntityManager);
+      pEntityManager->DeselectAll();
+      cAutoIPtr<IEntity> pEntity;
+      if (GetRayHitEntity(mouseEvent, &pEntity) == S_OK)
       {
-         UseGlobal(EntityManager);
-         pEntityManager->DeselectAll();
-         cAutoIPtr<IEntity> pEntity;
-         if (GetRayHitEntity(mouseEvent, &pEntity) == S_OK)
-         {
-            pEntityManager->Select(pEntity);
-         }
+         pEntityManager->Select(pEntity);
       }
-      return S_EDITOR_TOOL_HANDLED;
    }
-
-   return S_EDITOR_TOOL_CONTINUE;
+   return S_EDITOR_TOOL_HANDLED;
 }
 
 ////////////////////////////////////////
 
-tResult cSelectTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+tResult cSelectTool::OnDragMove(const cEditorMouseEvent & mouseEvent)
 {
-   if ((pView != NULL) && CTIsSameObject(pView, AccessView()))
-   {
-      CPoint delta = mouseEvent.GetPoint() - m_dragStartPoint;
-      m_lastMousePoint = mouseEvent.GetPoint();
-      return S_EDITOR_TOOL_HANDLED;
-   }
-
-   return S_EDITOR_TOOL_CONTINUE;
+   CPoint delta = mouseEvent.GetPoint() - m_dragStartPoint;
+   m_lastMousePoint = mouseEvent.GetPoint();
+   return S_EDITOR_TOOL_HANDLED;
 }
 
 ////////////////////////////////////////
@@ -249,7 +228,7 @@ cMoveCameraTool::~cMoveCameraTool()
 
 ////////////////////////////////////////
 
-tResult cMoveCameraTool::OnKeyDown(const cEditorKeyEvent & keyEvent, IEditorView * pView)
+tResult cMoveCameraTool::OnKeyDown(const cEditorKeyEvent & keyEvent)
 {
    UseGlobal(CameraControl);
    switch (keyEvent.GetChar())
@@ -276,12 +255,12 @@ tResult cMoveCameraTool::OnKeyDown(const cEditorKeyEvent & keyEvent, IEditorView
       }
    }
 
-   return cDragTool::OnKeyDown(keyEvent, pView);
+   return cDragTool::OnKeyDown(keyEvent);
 }
 
 ////////////////////////////////////////
 
-tResult cMoveCameraTool::OnMouseWheel(const cEditorMouseWheelEvent & mouseWheelEvent, IEditorView * pView)
+tResult cMoveCameraTool::OnMouseWheel(const cEditorMouseWheelEvent & mouseWheelEvent)
 {
    UseGlobal(CameraControl);
    if (mouseWheelEvent.GetZDelta() < 0)
@@ -293,7 +272,7 @@ tResult cMoveCameraTool::OnMouseWheel(const cEditorMouseWheelEvent & mouseWheelE
       pCameraControl->Raise();
    }
 
-   return cDragTool::OnMouseWheel(mouseWheelEvent, pView);
+   return cDragTool::OnMouseWheel(mouseWheelEvent);
 }
 
 ////////////////////////////////////////
@@ -343,7 +322,7 @@ tResult cMoveCameraTool::GetToolTip(const cEditorMouseEvent & mouseEvent,
 
 ////////////////////////////////////////
 
-tResult cMoveCameraTool::OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+tResult cMoveCameraTool::OnDragStart(const cEditorMouseEvent & mouseEvent)
 {
    m_lastMousePoint = mouseEvent.GetPoint();
    return S_EDITOR_TOOL_HANDLED;
@@ -351,34 +330,18 @@ tResult cMoveCameraTool::OnDragStart(const cEditorMouseEvent & mouseEvent, IEdit
 
 ////////////////////////////////////////
 
-tResult cMoveCameraTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+tResult cMoveCameraTool::OnDragEnd(const cEditorMouseEvent & mouseEvent)
 {
-   if ((pView != NULL) && CTIsSameObject(pView, AccessView()))
-   {
-      //float camPlaceX, camPlaceZ;
-      //if ((pView != NULL) && pView->GetCameraPlacement(&camPlaceX, &camPlaceZ) == S_OK)
-      //{
-      //   InfoMsg2("Looking at point (%.2f, 0, %.2f)\n", camPlaceX, camPlaceZ);
-      //}
-
-      return S_EDITOR_TOOL_HANDLED;
-   }
-
    return S_EDITOR_TOOL_CONTINUE;
 }
 
 ////////////////////////////////////////
 
-tResult cMoveCameraTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+tResult cMoveCameraTool::OnDragMove(const cEditorMouseEvent & mouseEvent)
 {
-   if ((pView != NULL) && CTIsSameObject(pView, AccessView()))
-   {
-      CPoint delta = mouseEvent.GetPoint() - m_lastMousePoint;
-      m_lastMousePoint = mouseEvent.GetPoint();
-      return S_EDITOR_TOOL_HANDLED;
-   }
-
-   return S_EDITOR_TOOL_CONTINUE;
+   CPoint delta = mouseEvent.GetPoint() - m_lastMousePoint;
+   m_lastMousePoint = mouseEvent.GetPoint();
+   return S_EDITOR_TOOL_HANDLED;
 }
 
 
@@ -402,14 +365,14 @@ cPlaceEntityTool::~cPlaceEntityTool()
 
 ////////////////////////////////////////
 
-tResult cPlaceEntityTool::OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+tResult cPlaceEntityTool::OnDragStart(const cEditorMouseEvent & mouseEvent)
 {
    return S_EDITOR_TOOL_CONTINUE;
 }
 
 ////////////////////////////////////////
 
-tResult cPlaceEntityTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+tResult cPlaceEntityTool::OnDragEnd(const cEditorMouseEvent & mouseEvent)
 {
    if (m_model.empty())
    {
@@ -447,7 +410,7 @@ tResult cPlaceEntityTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEdito
 
 ////////////////////////////////////////
 
-tResult cPlaceEntityTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+tResult cPlaceEntityTool::OnDragMove(const cEditorMouseEvent & mouseEvent)
 {
    return S_EDITOR_TOOL_CONTINUE;
 }
@@ -543,24 +506,21 @@ cTerrainTileTool::~cTerrainTileTool()
 
 ////////////////////////////////////////
 
-tResult cTerrainTileTool::OnMouseMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+tResult cTerrainTileTool::OnMouseMove(const cEditorMouseEvent & mouseEvent)
 {
-   if (pView != NULL)
+   HTERRAINQUAD hQuad = NULL;
+   if (GetHitQuad(mouseEvent.GetPoint(), &hQuad))
    {
-      HTERRAINQUAD hQuad = NULL;
-      if (GetHitQuad(mouseEvent.GetPoint(), &hQuad))
-      {
-         UseGlobal(TerrainRenderer);
-         pTerrainRenderer->HighlightTerrainQuad(hQuad);
-      }
-      else
-      {
-         UseGlobal(TerrainRenderer);
-         pTerrainRenderer->ClearHighlight();
-      }
+      UseGlobal(TerrainRenderer);
+      pTerrainRenderer->HighlightTerrainQuad(hQuad);
+   }
+   else
+   {
+      UseGlobal(TerrainRenderer);
+      pTerrainRenderer->ClearHighlight();
    }
 
-   return cTerrainTool::OnMouseMove(mouseEvent, pView);
+   return cTerrainTool::OnMouseMove(mouseEvent);
 }
 
 ////////////////////////////////////////
@@ -619,7 +579,7 @@ static void TerrainTileCompositeCommandCB(eEditorCompositeCommandCallback type)
 
 ////////////////////////////////////////
 
-tResult cTerrainTileTool::OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+tResult cTerrainTileTool::OnDragStart(const cEditorMouseEvent & mouseEvent)
 {
    UseGlobal(TerrainRenderer);
    pTerrainRenderer->EnableBlending(false);
@@ -638,10 +598,10 @@ tResult cTerrainTileTool::OnDragStart(const cEditorMouseEvent & mouseEvent, IEdi
 
 ////////////////////////////////////////
 
-tResult cTerrainTileTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+tResult cTerrainTileTool::OnDragEnd(const cEditorMouseEvent & mouseEvent)
 {
    // Do what is done on a move
-   tResult result = OnDragMove(mouseEvent, pView);
+   tResult result = OnDragMove(mouseEvent);
 
    UseGlobal(TerrainRenderer);
    pTerrainRenderer->EnableBlending(true);
@@ -662,7 +622,7 @@ tResult cTerrainTileTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEdito
 
 ////////////////////////////////////////
 
-tResult cTerrainTileTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+tResult cTerrainTileTool::OnDragMove(const cEditorMouseEvent & mouseEvent)
 {
    Assert(!!m_pCommand);
 
@@ -713,26 +673,23 @@ cTerrainElevationTool::~cTerrainElevationTool()
 
 ////////////////////////////////////////
 
-tResult cTerrainElevationTool::OnMouseMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+tResult cTerrainElevationTool::OnMouseMove(const cEditorMouseEvent & mouseEvent)
 {
-   if (pView != NULL)
+   if (!IsDragging())
    {
-      if (!IsDragging())
+      if (GetHitVertex(mouseEvent.GetPoint(), &m_hHitVertex))
       {
-         if (GetHitVertex(mouseEvent.GetPoint(), &m_hHitVertex))
-         {
-            UseGlobal(TerrainRenderer);
-            pTerrainRenderer->HighlightTerrainVertex(m_hHitVertex);
-         }
-         else
-         {
-            UseGlobal(TerrainRenderer);
-            pTerrainRenderer->ClearHighlight();
-         }
+         UseGlobal(TerrainRenderer);
+         pTerrainRenderer->HighlightTerrainVertex(m_hHitVertex);
+      }
+      else
+      {
+         UseGlobal(TerrainRenderer);
+         pTerrainRenderer->ClearHighlight();
       }
    }
 
-   return cTerrainTool::OnMouseMove(mouseEvent, pView);
+   return cTerrainTool::OnMouseMove(mouseEvent);
 }
 
 ////////////////////////////////////////
@@ -763,7 +720,7 @@ tResult cTerrainElevationTool::GetToolTip(const cEditorMouseEvent & mouseEvent,
 
 ////////////////////////////////////////
 
-tResult cTerrainElevationTool::OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+tResult cTerrainElevationTool::OnDragStart(const cEditorMouseEvent & mouseEvent)
 {
    // Should have hit-tested for a vertex in OnMouseMove
    if (m_hHitVertex != INVALID_HTERRAINVERTEX)
@@ -779,10 +736,10 @@ tResult cTerrainElevationTool::OnDragStart(const cEditorMouseEvent & mouseEvent,
 
 ////////////////////////////////////////
 
-tResult cTerrainElevationTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+tResult cTerrainElevationTool::OnDragEnd(const cEditorMouseEvent & mouseEvent)
 {
    // Do what is done on a move
-   tResult result = OnDragMove(mouseEvent, pView);
+   tResult result = OnDragMove(mouseEvent);
 
    UseGlobal(TerrainRenderer);
    pTerrainRenderer->EnableBlending(true);
@@ -803,7 +760,7 @@ tResult cTerrainElevationTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, I
 
 ////////////////////////////////////////
 
-tResult cTerrainElevationTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+tResult cTerrainElevationTool::OnDragMove(const cEditorMouseEvent & mouseEvent)
 {
    if (m_hHitVertex != INVALID_HTERRAINVERTEX)
    {
@@ -856,29 +813,26 @@ cTerrainPlateauTool::~cTerrainPlateauTool()
 
 ////////////////////////////////////////
 
-tResult cTerrainPlateauTool::OnMouseMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+tResult cTerrainPlateauTool::OnMouseMove(const cEditorMouseEvent & mouseEvent)
 {
-   if (pView != NULL)
+   HTERRAINVERTEX hHitVertex;
+   if (GetHitVertex(mouseEvent.GetPoint(), &hHitVertex))
    {
-      HTERRAINVERTEX hHitVertex;
-      if (GetHitVertex(mouseEvent.GetPoint(), &hHitVertex))
-      {
-         UseGlobal(TerrainRenderer);
-         pTerrainRenderer->HighlightTerrainVertex(hHitVertex);
-      }
-      else
-      {
-         UseGlobal(TerrainRenderer);
-         pTerrainRenderer->ClearHighlight();
-      }
+      UseGlobal(TerrainRenderer);
+      pTerrainRenderer->HighlightTerrainVertex(hHitVertex);
+   }
+   else
+   {
+      UseGlobal(TerrainRenderer);
+      pTerrainRenderer->ClearHighlight();
    }
 
-   return cTerrainTool::OnMouseMove(mouseEvent, pView);
+   return cTerrainTool::OnMouseMove(mouseEvent);
 }
 
 ////////////////////////////////////////
 
-tResult cTerrainPlateauTool::OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+tResult cTerrainPlateauTool::OnDragStart(const cEditorMouseEvent & mouseEvent)
 {
    m_hitVertices.clear();
 
@@ -908,10 +862,10 @@ tResult cTerrainPlateauTool::OnDragStart(const cEditorMouseEvent & mouseEvent, I
 
 ////////////////////////////////////////
 
-tResult cTerrainPlateauTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+tResult cTerrainPlateauTool::OnDragEnd(const cEditorMouseEvent & mouseEvent)
 {
    // Do what is done on a move
-   tResult result = OnDragMove(mouseEvent, pView);
+   tResult result = OnDragMove(mouseEvent);
 
    UseGlobal(TerrainRenderer);
    pTerrainRenderer->EnableBlending(true);
@@ -932,7 +886,7 @@ tResult cTerrainPlateauTool::OnDragEnd(const cEditorMouseEvent & mouseEvent, IEd
 
 ////////////////////////////////////////
 
-tResult cTerrainPlateauTool::OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView)
+tResult cTerrainPlateauTool::OnDragMove(const cEditorMouseEvent & mouseEvent)
 {
    HTERRAINVERTEX hHitVertex;
    if (GetHitVertex(mouseEvent.GetPoint(), &hHitVertex)

@@ -440,7 +440,7 @@ BOOL cEditorApp::PreTranslateMessage(MSG * pMsg)
 
          case WM_KEYDOWN:
          {
-            toolResult = pTool->OnKeyDown(cEditorKeyEvent(pMsg->wParam, pMsg->lParam), m_pCurrentToolView);
+            toolResult = pTool->OnKeyDown(cEditorKeyEvent(pMsg->wParam, pMsg->lParam));
 
             if ((toolResult == S_EDITOR_TOOL_CONTINUE) && (pMsg->wParam == VK_ESCAPE))
             {
@@ -451,55 +451,55 @@ BOOL cEditorApp::PreTranslateMessage(MSG * pMsg)
 
          case WM_KEYUP:
          {
-            toolResult = pTool->OnKeyUp(cEditorKeyEvent(pMsg->wParam, pMsg->lParam), m_pCurrentToolView);
+            toolResult = pTool->OnKeyUp(cEditorKeyEvent(pMsg->wParam, pMsg->lParam));
             break;
          }
 
          case WM_LBUTTONDBLCLK:
          {
-            toolResult = pTool->OnLButtonDblClk(cEditorMouseEvent(pMsg->wParam, pMsg->lParam), m_pCurrentToolView);
+            toolResult = pTool->OnLButtonDblClk(cEditorMouseEvent(pMsg->wParam, pMsg->lParam));
             break;
          }
 
          case WM_LBUTTONDOWN:
          {
-            toolResult = pTool->OnLButtonDown(cEditorMouseEvent(pMsg->wParam, pMsg->lParam), m_pCurrentToolView);
+            toolResult = pTool->OnLButtonDown(cEditorMouseEvent(pMsg->wParam, pMsg->lParam));
             break;
          }
 
          case WM_LBUTTONUP:
          {
-            toolResult = pTool->OnLButtonUp(cEditorMouseEvent(pMsg->wParam, pMsg->lParam), m_pCurrentToolView);
+            toolResult = pTool->OnLButtonUp(cEditorMouseEvent(pMsg->wParam, pMsg->lParam));
             break;
          }
 
          case WM_RBUTTONDBLCLK:
          {
-            toolResult = pTool->OnRButtonDblClk(cEditorMouseEvent(pMsg->wParam, pMsg->lParam), m_pCurrentToolView);
+            toolResult = pTool->OnRButtonDblClk(cEditorMouseEvent(pMsg->wParam, pMsg->lParam));
             break;
          }
 
          case WM_RBUTTONDOWN:
          {
-            toolResult = pTool->OnRButtonDown(cEditorMouseEvent(pMsg->wParam, pMsg->lParam), m_pCurrentToolView);
+            toolResult = pTool->OnRButtonDown(cEditorMouseEvent(pMsg->wParam, pMsg->lParam));
             break;
          }
 
          case WM_RBUTTONUP:
          {
-            toolResult = pTool->OnRButtonUp(cEditorMouseEvent(pMsg->wParam, pMsg->lParam), m_pCurrentToolView);
+            toolResult = pTool->OnRButtonUp(cEditorMouseEvent(pMsg->wParam, pMsg->lParam));
             break;
          }
 
          case WM_MOUSEMOVE:
          {
-            toolResult = pTool->OnMouseMove(cEditorMouseEvent(pMsg->wParam, pMsg->lParam), m_pCurrentToolView);
+            toolResult = pTool->OnMouseMove(cEditorMouseEvent(pMsg->wParam, pMsg->lParam));
             break;
          }
 
          case WM_MOUSEWHEEL:
          {
-            toolResult = pTool->OnMouseWheel(cEditorMouseWheelEvent(pMsg->wParam, pMsg->lParam), m_pCurrentToolView);
+            toolResult = pTool->OnMouseWheel(cEditorMouseWheelEvent(pMsg->wParam, pMsg->lParam));
             break;
          }
       }

@@ -28,22 +28,20 @@ public:
    cDragTool();
    virtual ~cDragTool() = 0;
 
-   virtual tResult OnKeyDown(const cEditorKeyEvent & keyEvent, IEditorView * pView);
-   virtual tResult OnLButtonDown(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
-	virtual tResult OnLButtonUp(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
-	virtual tResult OnMouseMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+   virtual tResult OnKeyDown(const cEditorKeyEvent & keyEvent);
+   virtual tResult OnLButtonDown(const cEditorMouseEvent & mouseEvent);
+	virtual tResult OnLButtonUp(const cEditorMouseEvent & mouseEvent);
+	virtual tResult OnMouseMove(const cEditorMouseEvent & mouseEvent);
 
 protected:
-   virtual tResult OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView) = 0;
-   virtual tResult OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView) = 0;
-   virtual tResult OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView) = 0;
+   virtual tResult OnDragStart(const cEditorMouseEvent & mouseEvent) = 0;
+   virtual tResult OnDragEnd(const cEditorMouseEvent & mouseEvent) = 0;
+   virtual tResult OnDragMove(const cEditorMouseEvent & mouseEvent) = 0;
 
    bool IsDragging();
 
-   IEditorView * AccessView();
-
 private:
-   cAutoIPtr<IEditorView> m_pView;
+   bool m_bDragging;
 };
 
 
@@ -58,13 +56,13 @@ public:
    cSelectTool();
    ~cSelectTool();
 
-   virtual tResult OnKeyDown(const cEditorKeyEvent & keyEvent, IEditorView * pView);
+   virtual tResult OnKeyDown(const cEditorKeyEvent & keyEvent);
    virtual tResult GetToolTip(const cEditorMouseEvent & mouseEvent, cStr * pToolTipText, uint_ptr * pToolTipId) const;
 
 protected:
-   virtual tResult OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
-   virtual tResult OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
-   virtual tResult OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+   virtual tResult OnDragStart(const cEditorMouseEvent & mouseEvent);
+   virtual tResult OnDragEnd(const cEditorMouseEvent & mouseEvent);
+   virtual tResult OnDragMove(const cEditorMouseEvent & mouseEvent);
 
 private:
    tResult GetRayHitEntity(const cEditorMouseEvent & mouseEvent, IEntity * * ppEntity) const;
@@ -86,14 +84,14 @@ public:
    cMoveCameraTool();
    ~cMoveCameraTool();
 
-   virtual tResult OnKeyDown(const cEditorKeyEvent & keyEvent, IEditorView * pView);
-   virtual tResult OnMouseWheel(const cEditorMouseWheelEvent & mouseWheelEvent, IEditorView * pView);
+   virtual tResult OnKeyDown(const cEditorKeyEvent & keyEvent);
+   virtual tResult OnMouseWheel(const cEditorMouseWheelEvent & mouseWheelEvent);
    virtual tResult GetToolTip(const cEditorMouseEvent & mouseEvent, cStr * pToolTipText, uint_ptr * pToolTipId) const;
 
 protected:
-   virtual tResult OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
-   virtual tResult OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
-   virtual tResult OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+   virtual tResult OnDragStart(const cEditorMouseEvent & mouseEvent);
+   virtual tResult OnDragEnd(const cEditorMouseEvent & mouseEvent);
+   virtual tResult OnDragMove(const cEditorMouseEvent & mouseEvent);
 
 private:
    CPoint m_lastMousePoint;
@@ -112,9 +110,9 @@ public:
    ~cPlaceEntityTool();
 
 protected:
-   virtual tResult OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
-   virtual tResult OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
-   virtual tResult OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+   virtual tResult OnDragStart(const cEditorMouseEvent & mouseEvent);
+   virtual tResult OnDragEnd(const cEditorMouseEvent & mouseEvent);
+   virtual tResult OnDragMove(const cEditorMouseEvent & mouseEvent);
 
 private:
    cStr m_model;
@@ -152,14 +150,14 @@ public:
    cTerrainTileTool(uint tile);
    ~cTerrainTileTool();
 
-	virtual tResult OnMouseMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+	virtual tResult OnMouseMove(const cEditorMouseEvent & mouseEvent);
 
    virtual tResult GetToolTip(const cEditorMouseEvent & mouseEvent, cStr * pToolTipText, uint_ptr * pToolTipId) const;
 
 protected:
-   virtual tResult OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
-   virtual tResult OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
-   virtual tResult OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+   virtual tResult OnDragStart(const cEditorMouseEvent & mouseEvent);
+   virtual tResult OnDragEnd(const cEditorMouseEvent & mouseEvent);
+   virtual tResult OnDragMove(const cEditorMouseEvent & mouseEvent);
 
 private:
    uint m_tile;
@@ -179,14 +177,14 @@ public:
    cTerrainElevationTool();
    ~cTerrainElevationTool();
 
-	virtual tResult OnMouseMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+	virtual tResult OnMouseMove(const cEditorMouseEvent & mouseEvent);
 
    virtual tResult GetToolTip(const cEditorMouseEvent & mouseEvent, cStr * pToolTipText, uint_ptr * pToolTipId) const;
 
 protected:
-   virtual tResult OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
-   virtual tResult OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
-   virtual tResult OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+   virtual tResult OnDragStart(const cEditorMouseEvent & mouseEvent);
+   virtual tResult OnDragEnd(const cEditorMouseEvent & mouseEvent);
+   virtual tResult OnDragMove(const cEditorMouseEvent & mouseEvent);
 
 private:
    cAutoIPtr<IEditorCommand> m_pCommand;
@@ -207,12 +205,12 @@ public:
    cTerrainPlateauTool();
    ~cTerrainPlateauTool();
 
-	virtual tResult OnMouseMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+	virtual tResult OnMouseMove(const cEditorMouseEvent & mouseEvent);
 
 protected:
-   virtual tResult OnDragStart(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
-   virtual tResult OnDragEnd(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
-   virtual tResult OnDragMove(const cEditorMouseEvent & mouseEvent, IEditorView * pView);
+   virtual tResult OnDragStart(const cEditorMouseEvent & mouseEvent);
+   virtual tResult OnDragEnd(const cEditorMouseEvent & mouseEvent);
+   virtual tResult OnDragMove(const cEditorMouseEvent & mouseEvent);
 
 private:
    float m_elevation;
