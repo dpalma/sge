@@ -61,8 +61,8 @@ tResult cDragTool::OnKeyDown(const cEditorKeyEvent & keyEvent)
 
 tResult cDragTool::OnLButtonDown(const cEditorMouseEvent & mouseEvent)
 {
-   UseGlobal(EditorApp);
-   pEditorApp->SetToolCapture(this);
+   UseGlobal(EditorToolState);
+   pEditorToolState->SetToolCapture(this);
    m_bDragging = true;
    return OnDragStart(mouseEvent);
 }
@@ -75,8 +75,8 @@ tResult cDragTool::OnLButtonUp(const cEditorMouseEvent & mouseEvent)
    {
       tResult result = OnDragEnd(mouseEvent);
       m_bDragging = false;
-      UseGlobal(EditorApp);
-      pEditorApp->ReleaseToolCapture();
+      UseGlobal(EditorToolState);
+      pEditorToolState->ReleaseToolCapture();
       return result;
    }
 

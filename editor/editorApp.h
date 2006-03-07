@@ -99,48 +99,18 @@ public:
 
    virtual tResult GetActiveModel(IEditorModel * * ppModel);
 
-   virtual tResult GetActiveTool(IEditorTool * * ppTool);
-   virtual tResult SetActiveTool(IEditorTool * pTool);
-
-   virtual tResult GetToolCapture(IEditorTool * * ppTool);
-   virtual tResult SetToolCapture(IEditorTool * pTool);
-   virtual tResult ReleaseToolCapture();
-
    virtual tResult SetDefaultTileSet(const tChar * pszTileSet);
    virtual tResult GetDefaultTileSet(cStr * pTileSet) const;
 
 private:
-   IEditorTool * AccessActiveTool();
-   IEditorTool * AccessToolCapture();
-
    typedef std::vector<IEditorLoopClient *> tEditorLoopClients;
    tEditorLoopClients m_loopClients;
 
    typedef std::vector<IEditorAppListener *> tEditorAppListeners;
    tEditorAppListeners m_editorAppListeners;
 
-   cAutoIPtr<IEditorView> m_pCurrentToolView; // the view passed to the tool being processed
-   HWND m_hCurrentToolWnd; // the HWND of the view above
-
-   cAutoIPtr<IEditorTool> m_pActiveTool;
-   cAutoIPtr<IEditorTool> m_pToolCapture;
-
    cStr m_defaultTileSet;
 };
-
-////////////////////////////////////////
-
-IEditorTool * cEditorApp::AccessActiveTool()
-{
-   return static_cast<IEditorTool *>(m_pActiveTool);
-}
-
-////////////////////////////////////////
-
-IEditorTool * cEditorApp::AccessToolCapture()
-{
-   return static_cast<IEditorTool *>(m_pToolCapture);
-}
 
 /////////////////////////////////////////////////////////////////////////////
 

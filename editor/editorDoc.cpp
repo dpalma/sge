@@ -234,8 +234,8 @@ BOOL cEditorDoc::OnOpenDocument(LPCTSTR lpszPathName)
    DeleteContents();
    SetModifiedFlag(); // set modified flag during load
 
-   cAutoIPtr<IReader> pReader(FileCreateReader(cFileSpec(lpszPathName)));
-   if (!pReader)
+   cAutoIPtr<IReader> pReader;
+   if (FileReaderCreate(cFileSpec(lpszPathName), &pReader) != S_OK)
    {
       return FALSE;
    }
@@ -254,8 +254,8 @@ BOOL cEditorDoc::OnOpenDocument(LPCTSTR lpszPathName)
 
 BOOL cEditorDoc::OnSaveDocument(LPCTSTR lpszPathName) 
 {
-   cAutoIPtr<IWriter> pWriter(FileCreateWriter(cFileSpec(lpszPathName)));
-   if (!pWriter)
+   cAutoIPtr<IWriter> pWriter;
+   if (FileWriterCreate(cFileSpec(lpszPathName), &pWriter) != S_OK)
    {
       return FALSE;
    }

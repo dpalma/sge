@@ -134,15 +134,6 @@ BOOL cEditorView::PreCreateWindow(CREATESTRUCT & cs)
 
 ////////////////////////////////////////
 
-tResult cEditorView::OnActiveToolChange(IEditorTool * pNewTool, IEditorTool * pFormerTool)
-{
-   UseGlobal(TerrainRenderer);
-   pTerrainRenderer->ClearHighlight();
-   return S_OK;
-}
-
-////////////////////////////////////////
-
 tResult cEditorView::OnDefaultTileSetChange(const tChar * pszTileSet)
 {
    return S_OK;
@@ -164,6 +155,15 @@ void cEditorView::OnFrame(double time, double elapsed)
 #else
    RenderGL();
 #endif
+}
+
+////////////////////////////////////////
+
+tResult cEditorView::OnActiveToolChange(IEditorTool * pNewTool, IEditorTool * pFormerTool)
+{
+   UseGlobal(TerrainRenderer);
+   pTerrainRenderer->ClearHighlight();
+   return S_OK;
 }
 
 ////////////////////////////////////////
@@ -303,6 +303,9 @@ int cEditorView::OnCreate(LPCREATESTRUCT lpCreateStruct)
    UseGlobal(EditorApp);
    Verify(pEditorApp->AddLoopClient(this) == S_OK);
 
+   UseGlobal(EditorToolState);
+   Verify(pEditorToolState->AddToolStateListener(static_cast<IEditorToolStateListener*>(this)) == S_OK);
+
    // GL can (and should) be initialized during WM_CREATE handling, so do
    // so and set the flag so that later Initialize() calls don't do anything.
    if (!ConfigIsTrue("use_d3d"))
@@ -325,6 +328,9 @@ void cEditorView::OnDestroy()
 
    UseGlobal(EditorApp);
    pEditorApp->RemoveLoopClient(this);
+
+   UseGlobal(EditorToolState);
+   Verify(pEditorToolState->RemoveToolStateListener(static_cast<IEditorToolStateListener*>(this)) == S_OK);
 
 #ifdef HAVE_DIRECTX
    SafeRelease(m_pD3dDevice);
@@ -537,9 +543,9 @@ void cEditorView::PreSubclassWindow()
 
 int cEditorView::OnToolHitTest(CPoint point, TOOLINFO * pToolInfo) const
 {
-   UseGlobal(EditorApp);
+   UseGlobal(EditorToolState);
    cAutoIPtr<IEditorTool> pActiveTool;
-   if (pEditorApp->GetActiveTool(&pActiveTool) == S_OK)
+   if (pEditorToolState->GetActiveTool(&pActiveTool) == S_OK)
    {
       cStr toolTipText;
       uint_ptr toolTipId = 0;

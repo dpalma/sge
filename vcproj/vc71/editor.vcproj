@@ -414,6 +414,9 @@
 				RelativePath="..\..\editor\editorTools.cpp">
 			</File>
 			<File
+				RelativePath="..\..\editor\editorToolState.cpp">
+			</File>
+			<File
 				RelativePath="..\..\editor\editorTypes.cpp">
 			</File>
 			<File
@@ -527,6 +530,9 @@
 			</File>
 			<File
 				RelativePath="..\..\editor\editorTools.h">
+			</File>
+			<File
+				RelativePath="..\..\editor\editorToolState.h">
 			</File>
 			<File
 				RelativePath="..\..\editor\editorTypes.h">

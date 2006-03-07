@@ -17,6 +17,8 @@ F_DECLARE_INTERFACE(IEditorSplashScreen);
 F_DECLARE_INTERFACE(IEditorApp);
 F_DECLARE_INTERFACE(IEditorLoopClient);
 F_DECLARE_INTERFACE(IEditorAppListener);
+F_DECLARE_INTERFACE(IEditorToolState);
+F_DECLARE_INTERFACE(IEditorToolStateListener);
 F_DECLARE_INTERFACE(IEditorView);
 F_DECLARE_INTERFACE(IEditorModel);
 F_DECLARE_INTERFACE(IEditorModelListener);
@@ -67,13 +69,6 @@ interface UUID("2A04E541-6BA1-41e9-92FA-E7B3D493F1A2") IEditorApp : IUnknown
 
    virtual tResult GetActiveModel(IEditorModel * * ppModel) = 0;
 
-   virtual tResult GetActiveTool(IEditorTool * * ppTool) = 0;
-   virtual tResult SetActiveTool(IEditorTool * pTool) = 0;
-
-   virtual tResult GetToolCapture(IEditorTool * * ppTool) = 0;
-   virtual tResult SetToolCapture(IEditorTool * pTool) = 0;
-   virtual tResult ReleaseToolCapture() = 0;
-
    virtual tResult SetDefaultTileSet(const tChar * pszTileSet) = 0;
    virtual tResult GetDefaultTileSet(cStr * pTileSet) const = 0;
 };
@@ -101,8 +96,39 @@ interface UUID("ED1B3A1A-E2D8-4eec-AABD-648A548729E8") IEditorLoopClient : IUnkn
 
 interface UUID("14E9EE21-4E6F-4b04-8F5C-742DFFA955BE") IEditorAppListener : IUnknown
 {
-   virtual tResult OnActiveToolChange(IEditorTool * pNewTool, IEditorTool * pFormerTool) = 0;
    virtual tResult OnDefaultTileSetChange(const tChar * pszTileSet) = 0;
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IEditorToolState
+//
+
+interface UUID("8BF1683A-F953-47eb-A740-FCD4CBF07CC2") IEditorToolState : IUnknown
+{
+   virtual tResult AddToolStateListener(IEditorToolStateListener * pListener) = 0;
+   virtual tResult RemoveToolStateListener(IEditorToolStateListener * pListener) = 0;
+
+   virtual tResult HandleMessage(MSG * pMsg) = 0;
+
+   virtual tResult GetActiveTool(IEditorTool * * ppTool) = 0;
+   virtual tResult SetActiveTool(IEditorTool * pTool) = 0;
+
+   virtual tResult GetToolCapture(IEditorTool * * ppTool) = 0;
+   virtual tResult SetToolCapture(IEditorTool * pTool) = 0;
+   virtual tResult ReleaseToolCapture() = 0;
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IEditorToolStateListener
+//
+
+interface UUID("98774B96-677A-48d4-8BCC-3927D4CCC8D4") IEditorToolStateListener : IUnknown
+{
+   virtual tResult OnActiveToolChange(IEditorTool * pNewTool, IEditorTool * pFormerTool) = 0;
 };
 
 

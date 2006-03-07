@@ -225,15 +225,15 @@ void cToolPaletteBar::OnToolPaletteItemCheck(NMHDR * pnmh, LRESULT * pResult)
          IUnknown * pUnk = reinterpret_cast<IUnknown *>(tpi.pUserData);
          if (pUnk->QueryInterface(&pEditorTool) == S_OK)
          {
-            UseGlobal(EditorApp);
-            pEditorApp->SetActiveTool(pEditorTool);
+            UseGlobal(EditorToolState);
+            pEditorToolState->SetActiveTool(pEditorTool);
          }
       }
 
       if (!pEditorTool)
       {
-         UseGlobal(EditorApp);
-         pEditorApp->SetActiveTool(NULL);
+         UseGlobal(EditorToolState);
+         pEditorToolState->SetActiveTool(NULL);
       }
    }
 }

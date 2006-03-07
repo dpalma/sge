@@ -30,9 +30,10 @@ F_DECLARE_INTERFACE(IDirect3DDevice9);
 //
 
 class cEditorView : public CScrollView,
-                    public cComObject3<IMPLEMENTS(IEditorView),
+                    public cComObject4<IMPLEMENTS(IEditorView),
                                        IMPLEMENTS(IEditorAppListener),
                                        IMPLEMENTS(IEditorLoopClient),
+                                       IMPLEMENTS(IEditorToolStateListener),
                                        cAfxComServices<cEditorView> >
 {
 protected: // create from serialization only
@@ -50,11 +51,13 @@ public:
    // IEditorView
 
    // IEditorAppListener
-   virtual tResult OnActiveToolChange(IEditorTool * pNewTool, IEditorTool * pFormerTool);
    virtual tResult OnDefaultTileSetChange(const tChar * pszTileSet);
 
    // IEditorLoopClient
    virtual void OnFrame(double time, double elapsed);
+
+   // IEditorToolStateListener
+   virtual tResult OnActiveToolChange(IEditorTool * pNewTool, IEditorTool * pFormerTool);
 
    void RenderGL();
    void RenderD3D();

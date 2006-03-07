@@ -35,13 +35,6 @@
 
 #include <algorithm>
 
-#ifdef HAVE_CPPUNIT
-#ifdef USE_MFC_TESTRUNNER
-#include <cppunit/ui/mfc/TestRunner.h>
-#endif
-#include <cppunit/extensions/HelperMacros.h>
-#endif
-
 #include "resource.h"       // main symbols
 
 #ifdef _DEBUG
@@ -50,8 +43,12 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+/////////////////////////////////////////////////////////////////////////////
+
 extern sScriptReg g_editorCmds[];
 extern uint g_nEditorCmds;
+
+extern tResult EditorToolStateCreate();
 
 static const tChar g_szRegistryKey[] = _T("SGE");
 
@@ -79,11 +76,9 @@ END_MESSAGE_MAP()
 // cEditorApp construction
 
 cEditorApp::cEditorApp()
- : m_hCurrentToolWnd(NULL)
 {
 	// TODO: add construction code here,
 	// Place all significant initialization in InitInstance
-   RegisterGlobalObject(IID_IEditorApp, static_cast<IGlobalObject*>(this));
 }
 
 ///////////////////////////////////////
@@ -160,6 +155,7 @@ static void RegisterGlobalObjects()
 {
    CameraCreate();
    CameraControlCreate();
+   EditorToolStateCreate();
    EntityManagerCreate();
    InputCreate();
    ResourceManagerCreate();
@@ -202,6 +198,7 @@ BOOL cEditorApp::InitInstance()
 
 	LoadStdProfileSettings();  // Load standard INI file options (including MRU)
 
+   RegisterGlobalObject(IID_IEditorApp, static_cast<IGlobalObject*>(this));
    RegisterGlobalObjects();
    if (FAILED(StartGlobalObjects()))
    {
@@ -402,112 +399,21 @@ int cEditorApp::Run()
 
 BOOL cEditorApp::PreTranslateMessage(MSG * pMsg) 
 {
-   cAutoIPtr<IEditorTool> pTool;
-   if (AccessToolCapture() != NULL)
+   cAutoIPtr<IEditorView> pEditorView;
+   CWnd * pWnd = CWnd::FromHandlePermanent(pMsg->hwnd);
+   if (pWnd != NULL)
    {
-      pTool = CTAddRef(AccessToolCapture());
-   }
-   else if (AccessActiveTool() != NULL)
-   {
-      pTool = CTAddRef(AccessActiveTool());
-   }
-
-   if (!!pTool)
-   {
-      m_hCurrentToolWnd = pMsg->hwnd;
-
-      Assert(!m_pCurrentToolView);
-      CWnd * pWnd = CWnd::FromHandlePermanent(pMsg->hwnd);
-      if (pWnd != NULL)
+      cEditorView * pEditorViewWnd = DYNAMIC_DOWNCAST(cEditorView, pWnd);
+      if (pEditorViewWnd != NULL)
       {
-         cEditorView * pEditorView = DYNAMIC_DOWNCAST(cEditorView, pWnd);
-         if (pEditorView != NULL)
-         {
-            m_pCurrentToolView = CTAddRef(static_cast<IEditorView *>(pEditorView));
-         }
+         pEditorView = CTAddRef(static_cast<IEditorView*>(pEditorViewWnd));
       }
+   }
 
-      tResult toolResult = S_EDITOR_TOOL_CONTINUE;
-
-      switch (pMsg->message)
-      {
-         case WM_CANCELMODE:
-         case WM_CAPTURECHANGED:
-         {
-            ReleaseToolCapture();
-            break;
-         }
-
-         case WM_KEYDOWN:
-         {
-            toolResult = pTool->OnKeyDown(cEditorKeyEvent(pMsg->wParam, pMsg->lParam));
-
-            if ((toolResult == S_EDITOR_TOOL_CONTINUE) && (pMsg->wParam == VK_ESCAPE))
-            {
-               SetActiveTool(NULL);
-            }
-            break;
-         }
-
-         case WM_KEYUP:
-         {
-            toolResult = pTool->OnKeyUp(cEditorKeyEvent(pMsg->wParam, pMsg->lParam));
-            break;
-         }
-
-         case WM_LBUTTONDBLCLK:
-         {
-            toolResult = pTool->OnLButtonDblClk(cEditorMouseEvent(pMsg->wParam, pMsg->lParam));
-            break;
-         }
-
-         case WM_LBUTTONDOWN:
-         {
-            toolResult = pTool->OnLButtonDown(cEditorMouseEvent(pMsg->wParam, pMsg->lParam));
-            break;
-         }
-
-         case WM_LBUTTONUP:
-         {
-            toolResult = pTool->OnLButtonUp(cEditorMouseEvent(pMsg->wParam, pMsg->lParam));
-            break;
-         }
-
-         case WM_RBUTTONDBLCLK:
-         {
-            toolResult = pTool->OnRButtonDblClk(cEditorMouseEvent(pMsg->wParam, pMsg->lParam));
-            break;
-         }
-
-         case WM_RBUTTONDOWN:
-         {
-            toolResult = pTool->OnRButtonDown(cEditorMouseEvent(pMsg->wParam, pMsg->lParam));
-            break;
-         }
-
-         case WM_RBUTTONUP:
-         {
-            toolResult = pTool->OnRButtonUp(cEditorMouseEvent(pMsg->wParam, pMsg->lParam));
-            break;
-         }
-
-         case WM_MOUSEMOVE:
-         {
-            toolResult = pTool->OnMouseMove(cEditorMouseEvent(pMsg->wParam, pMsg->lParam));
-            break;
-         }
-
-         case WM_MOUSEWHEEL:
-         {
-            toolResult = pTool->OnMouseWheel(cEditorMouseWheelEvent(pMsg->wParam, pMsg->lParam));
-            break;
-         }
-      }
-
-      m_hCurrentToolWnd = NULL;
-      SafeRelease(m_pCurrentToolView);
-
-      if (toolResult == S_EDITOR_TOOL_HANDLED)
+   if (!!pEditorView)
+   {
+      UseGlobal(EditorToolState);
+      if (pEditorToolState->HandleMessage(pMsg) == S_OK)
       {
          return TRUE;
       }
@@ -610,86 +516,6 @@ tResult cEditorApp::GetActiveModel(IEditorModel * * ppModel)
    return E_FAIL;
 }
 
-////////////////////////////////////////
-
-tResult cEditorApp::GetActiveTool(IEditorTool * * ppTool)
-{
-   return m_pActiveTool.GetPointer(ppTool);
-}
-
-////////////////////////////////////////
-
-tResult cEditorApp::SetActiveTool(IEditorTool * pTool)
-{
-   tEditorAppListeners::iterator iter;
-   for (iter = m_editorAppListeners.begin(); iter != m_editorAppListeners.end(); iter++)
-   {
-      (*iter)->OnActiveToolChange(pTool, m_pActiveTool);
-   }
-
-   if (!!m_pActiveTool)
-   {
-      m_pActiveTool->Deactivate();
-   }
-
-   SafeRelease(m_pActiveTool);
-
-   if (pTool != NULL)
-   {
-      pTool->Activate();
-      m_pActiveTool = CTAddRef(pTool);
-   }
-
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cEditorApp::GetToolCapture(IEditorTool * * ppTool)
-{
-   return m_pToolCapture.GetPointer(ppTool);
-}
-
-////////////////////////////////////////
-
-tResult cEditorApp::SetToolCapture(IEditorTool * pTool)
-{
-   if (pTool == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (!IsWindow(m_hCurrentToolWnd))
-   {
-      DebugMsg("No valid window handle in SetToolCapture\n");
-      return E_FAIL;
-   }
-
-   ::SetCapture(m_hCurrentToolWnd);
-
-   SafeRelease(m_pToolCapture);
-
-   m_pToolCapture = CTAddRef(pTool);
-
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cEditorApp::ReleaseToolCapture()
-{
-   if (!m_pToolCapture)
-   {
-      return S_FALSE;
-   }
-   else
-   {
-      ReleaseCapture();
-      SafeRelease(m_pToolCapture);
-      return S_OK;
-   }
-}
-
 ///////////////////////////////////////
 
 tResult cEditorApp::SetDefaultTileSet(const tChar * pszTileSet)
@@ -739,14 +565,8 @@ tResult cEditorApp::GetDefaultTileSet(cStr * pTileSet) const
 
 void cEditorApp::OnToolsUnitTestRunner() 
 {
-#ifdef HAVE_CPPUNIT
-#ifdef USE_MFC_TESTRUNNER
-   CppUnit::MfcUi::TestRunner runner;
-   runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-   runner.run();
-#else
+#if defined(HAVE_CPPUNIT) || defined(HAVE_CPPUNITLITE2)
    SysRunUnitTests();
-#endif
 #else
    AfxMessageBox(IDS_NO_UNIT_TESTS);
 #endif
@@ -766,19 +586,5 @@ void cEditorApp::OnToolsExecuteScriptCommand()
       }
    }
 }
-
-///////////////////////////////////////////////////////////////////////////////
-
-#ifdef HAVE_CPPUNIT
-
-class cEditorAppTests : public CppUnit::TestCase
-{
-   CPPUNIT_TEST_SUITE(cEditorAppTests);
-   CPPUNIT_TEST_SUITE_END();
-};
-
-CPPUNIT_TEST_SUITE_REGISTRATION(cEditorAppTests);
-
-#endif // HAVE_CPPUNIT
 
 ///////////////////////////////////////////////////////////////////////////////
