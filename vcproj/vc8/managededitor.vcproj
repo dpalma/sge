@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="ManagedEditor"
 	ProjectGUID="{235BC7A5-6D7F-4048-8723-BD817A061C92}"
+	RootNamespace="ManagedEditor"
 	>
 	<Platforms>
 		<Platform
@@ -76,7 +77,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib"
+				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib $(OutDir)\glew.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib"
 				OutputFile=".\..\..\Build.vc8\StaticRelease/managededitor.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -174,7 +175,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib"
+				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib $(OutDir)\glew.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib"
 				OutputFile=".\..\..\Build.vc8\Opt/managededitor.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -273,7 +274,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\cppunit.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib"
+				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib $(OutDir)\glew.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib"
 				OutputFile=".\..\..\Build.vc8\Debug/managededitor.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -373,7 +374,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\cppunit.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib"
+				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib $(OutDir)\glew.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib"
 				OutputFile=".\..\..\Build.vc8\StaticDebug/managededitor.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -473,7 +474,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib"
+				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib $(OutDir)\glew.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib"
 				OutputFile=".\..\..\Build.vc8\Release/managededitor.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -524,6 +525,10 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
+			<File
+				RelativePath="..\..\tests\managededitor\GlControl.cpp"
+				>
+			</File>
 			<File
 				RelativePath="..\..\tests\managededitor\managededitor.cpp"
 				>
@@ -582,6 +587,10 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
+				RelativePath="..\..\tests\managededitor\GlControl.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\tests\managededitor\stdhdr.h"
 				>
 			</File>
@@ -593,5 +602,9 @@
 		</Filter>
 	</Files>
 	<Globals>
+		<Global
+			Name="RESOURCE_FILE"
+			Value="\prj\sge\tests\managededitor\managededitor.rc"
+		/>
 	</Globals>
 </VisualStudioProject>

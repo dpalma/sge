@@ -5,11 +5,10 @@
     insets="(5,5,5,5)"
     renderer="beveled">
     
-   <layout type="grid" columns="5" rows="1" />
-   <label text="[[" />
-   <label text="]]" />
-   <label text="<Resources>" />
-   <label text="<Population>" />
+   <label id="resources" />
+   <label id="population" />
+
+   <button text="Exit" style="placement:absolute;align:right;" onclick="QuitWithConfirm();" />
 
 </panel>
 
@@ -18,6 +17,6 @@
     insets="(5,5,5,5)"
     renderer="beveled">
 
-   <button text="Exit" style="placement:absolute;align:right;" onclick="QuitWithConfirm();" />
+   <button id="spawn" text="Create Worker" onclick="" />
 
 </panel>

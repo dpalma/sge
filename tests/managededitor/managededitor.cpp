@@ -3,6 +3,8 @@
 
 #include "stdhdr.h"
 
+#include "GlControl.h"
+
 #include "guiapi.h"
 
 #include "cameraapi.h"
@@ -27,10 +29,6 @@
 
 #include <ctime>
 
-#ifdef HAVE_CPPUNIT
-#include <cppunit/extensions/TestFactoryRegistry.h>
-#endif
-
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
@@ -52,47 +50,67 @@ static const cColor kDefStatsColor(1,1,1,1);
 
 cAutoIPtr<IGUIFont> g_pFont;
 
-HWND g_hWnd = NULL;
-
 
 ///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cManagedEditorForm
+//
 
-static tResult ManagedEditorFrame()
+ref class cManagedEditorForm : public System::Windows::Forms::Form
+{
+public:
+   cManagedEditorForm();
+
+   void SwapBuffers() { m_pGlControl->SwapBuffers(); }
+
+   void OnIdle(System::Object ^ sender, System::EventArgs ^ e);
+
+private:
+   cGlControl ^ m_pGlControl;
+};
+
+cManagedEditorForm::cManagedEditorForm()
+{
+   m_pGlControl = gcnew cGlControl;
+
+   Controls->Add(m_pGlControl);
+
+   System::Windows::Forms::Application::Idle += gcnew System::EventHandler(this, &cManagedEditorForm::OnIdle);
+}
+
+void cManagedEditorForm::OnIdle(System::Object ^ sender, System::EventArgs ^ e)
 {
    UseGlobal(Sim);
    pSim->NextFrame();
 
    UseGlobal(Renderer);
-   if (pRenderer->BeginScene() != S_OK)
+   if (pRenderer->BeginScene() == S_OK)
    {
-      return E_FAIL;
-   }
-
-   UseGlobal(GUIContext);
-   cAutoIPtr<IGUIRenderDeviceContext> pRenderDeviceContext;
-   if (pGUIContext->GetRenderDeviceContext(&pRenderDeviceContext) == S_OK)
-   {
-      pRenderDeviceContext->Begin2D();
-
-      pGUIContext->RenderGUI();
-
-      if (!!g_pFont)
+      UseGlobal(GUIContext);
+      cAutoIPtr<IGUIRenderDeviceContext> pRenderDeviceContext;
+      if (pGUIContext->GetRenderDeviceContext(&pRenderDeviceContext) == S_OK)
       {
-         tChar szStats[100];
-         SysReportFrameStats(szStats, _countof(szStats));
+         pRenderDeviceContext->Begin2D();
 
-         tRect rect(kDefStatsX, kDefStatsY, 0, 0);
-         g_pFont->RenderText(szStats, _tcslen(szStats), &rect,
-                             kRT_NoClip | kRT_DropShadow, kDefStatsColor);
+         pGUIContext->RenderGUI();
+
+         if (!!g_pFont)
+         {
+            tChar szStats[100];
+            SysReportFrameStats(szStats, _countof(szStats));
+
+            tRect rect(kDefStatsX, kDefStatsY, 0, 0);
+            g_pFont->RenderText(szStats, _tcslen(szStats), &rect,
+                                kRT_NoClip | kRT_DropShadow, kDefStatsColor);
+         }
+
+         pRenderDeviceContext->End2D();
       }
 
-      pRenderDeviceContext->End2D();
+      pRenderer->EndScene();
+
+      m_pGlControl->SwapBuffers();
    }
-
-   pRenderer->EndScene();
-   SysSwapBuffers();
-
-   return S_OK;
 }
 
 
@@ -187,12 +205,6 @@ static bool ManagedEditorInit(int argc, tChar * argv[])
    ConfigGet(_T("screen_height"), &height);
    ConfigGet(_T("screen_bpp"), &bpp);
 
-   g_hWnd = reinterpret_cast<HWND>(SysCreateWindow(_T("Managed Editor"), width, height));
-   if (g_hWnd == NULL)
-   {
-      return false;
-   }
-
    UseGlobal(ThreadCaller);
    if (FAILED(pThreadCaller->ThreadInit()))
    {
@@ -208,17 +220,16 @@ static bool ManagedEditorInit(int argc, tChar * argv[])
 
    pGUIContext->PushPage("start.xml");
 
-   SysSetFrameCallback(ManagedEditorFrame);
-   SysAppActivate(true);
-
    UseGlobal(Sim);
    pSim->Go();
 
-#ifdef HAVE_CPPUNIT
+#if 0
    if (FAILED(SysRunUnitTests()))
    {
       return false;
    }
+#else
+   SysRunUnitTests();
 #endif
 
    return true;
@@ -244,29 +255,6 @@ static void ManagedEditorTerm()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static void OnApplicationIdle(System::Object ^ sender, System::EventArgs ^ e)
-{
-   MSG msg;
-   while (!PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
-   {
-      ManagedEditorFrame();
-   }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-ref class cManagedEditorForm : public System::Windows::Forms::Form
-{
-public:
-   cManagedEditorForm();
-};
-
-cManagedEditorForm::cManagedEditorForm()
-{
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 int STDCALL _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
                       LPTSTR lpCmdLine, int nShowCmd)
 {
@@ -280,15 +268,9 @@ int STDCALL _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
       return -1;
    }
 
-   System::Windows::Forms::Application::Idle += gcnew System::EventHandler(OnApplicationIdle);
-
    System::Windows::Forms::Application::Run(gcnew cManagedEditorForm());
 
-   //int result = SysEventLoop(ManagedEditorFrame);
-
    ManagedEditorTerm();
-
-   //return result;
 
    return 0;
 }
