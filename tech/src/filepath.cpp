@@ -4,6 +4,7 @@
 #include "stdhdr.h"
 
 #include "filepath.h"
+#include "techstring.h"
 
 #ifdef HAVE_CPPUNITLITE2
 #include "CppUnitLite2.h"
@@ -278,14 +279,14 @@ cFilePath cFilePath::CollapseDots()
       }
    }
 
-   std::string result;
+   cStr result;
 
    for (i = 0; i < nDirs; i++)
    {
       if (dirs[i] != NULL)
       {
          size_t len = _tcscspn(dirs[i] + 1, szPathSeps) + 1;
-         result.append(std::string(dirs[i], len).c_str());
+         result.append(cStr(dirs[i], len).c_str());
       }
    }
 

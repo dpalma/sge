@@ -305,13 +305,13 @@ double cMultiVar::ToDouble() const
 
 ////////////////////////////////////////
 
-const char * cMultiVar::ToString() const
+const char * cMultiVar::ToAsciiString() const
 {
    if (m_type == kMVT_Int)
    {
       if (m_pConversionBuffer == NULL)
       {
-         cStr temp;
+         std::string temp;
          Sprintf(&temp, "%d", m_value.i);
          uint length = temp.length();
          uint bufferSize = (length + 1) * sizeof(char);
@@ -324,7 +324,7 @@ const char * cMultiVar::ToString() const
    {
       if (m_pConversionBuffer == NULL)
       {
-         cStr temp;
+         std::string temp;
          Sprintf(&temp, "%f", (m_type == kMVT_Float) ? m_value.f : m_value.d);
          uint length = temp.length();
          uint bufferSize = (length + 1) * sizeof(char);
@@ -353,7 +353,7 @@ const wchar_t * cMultiVar::ToWideString() const
       if (m_pConversionBuffer == NULL)
       {
          cStr temp;
-         Sprintf(&temp, "%d", m_value.i);
+         Sprintf(&temp, _T("%d"), m_value.i);
          uint length = temp.length();
          uint bufferSize = (length + 1) * sizeof(char);
          m_pConversionBuffer = realloc(m_pConversionBuffer, bufferSize);
@@ -370,7 +370,7 @@ const wchar_t * cMultiVar::ToWideString() const
       if (m_pConversionBuffer == NULL)
       {
          cStr temp;
-         Sprintf(&temp, "%f", (m_type == kMVT_Float) ? m_value.f : m_value.d);
+         Sprintf(&temp, _T("%f"), (m_type == kMVT_Float) ? m_value.f : m_value.d);
          uint length = temp.length();
          uint bufferSize = (length + 1) * sizeof(wchar_t);
          m_pConversionBuffer = realloc(m_pConversionBuffer, bufferSize);

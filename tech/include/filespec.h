@@ -5,8 +5,7 @@
 #define INCLUDED_FILESPEC_H
 
 #include "techdll.h"
-
-#include <string>
+#include "techstring.h"
 
 #ifdef _MSC_VER
 #pragma once
@@ -39,7 +38,7 @@ public:
    bool IsEmpty() const;
 
    const tChar * GetFileName() const;
-   bool GetFileNameNoExt(std::string * pFileName) const;
+   bool GetFileNameNoExt(cStr * pFileName) const;
    const tChar * GetFileExt() const;
    bool SetFileExt(const tChar * pszExt);
 

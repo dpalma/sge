@@ -112,7 +112,7 @@ const tChar * cFileSpec::GetFileName() const
 
 ///////////////////////////////////////
 
-bool cFileSpec::GetFileNameNoExt(std::string * pFileName) const
+bool cFileSpec::GetFileNameNoExt(cStr * pFileName) const
 {
    if (pFileName != NULL)
    {

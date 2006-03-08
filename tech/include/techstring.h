@@ -23,7 +23,9 @@ TECH_API int SprintfLengthEstimate(const tChar * pszFormat, va_list args);
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename STRING>
-const STRING & CDECL Sprintf(STRING * pString, const tChar * pszFormat, ...)
+const STRING & CDECL Sprintf(STRING * pString,
+                             const typename STRING::value_type * pszFormat,
+                             ...)
 {
    Assert(pString != NULL);
    va_list args;
@@ -73,7 +75,18 @@ public:
 template <>
 std::string cToken<std::string, tChar>::Token(const tChar * pszToken)
 {
+#ifdef _UNICODE
+   size_t s = wcstombs(NULL, pszToken, 0);
+   if (s == 0)
+   {
+      return std::string();
+   }
+   char * pszTemp = reinterpret_cast<char*>(alloca(s * sizeof(char)));
+   wcstombs(pszTemp, pszToken, s);
+   return std::string(pszTemp);
+#else
    return std::string(pszToken);
+#endif
 }
 
 ///////////////////////////////////////

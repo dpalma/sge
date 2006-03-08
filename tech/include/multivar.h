@@ -50,8 +50,13 @@ public:
    int ToInt() const;
    float ToFloat() const;
    double ToDouble() const;
-   const char * ToString() const;
+   const char * ToAsciiString() const;
    const wchar_t * ToWideString() const;
+#ifdef _UNICODE
+   inline const tChar * ToString() const { return ToWideString(); }
+#else
+   inline const tChar * ToString() const { return ToAsciiString(); }
+#endif
 
    const cMultiVar & operator =(const cMultiVar & other);
    const cMultiVar & operator =(int value);
@@ -176,7 +181,7 @@ inline cMultiVar::operator double() const
 
 inline cMultiVar::operator const char *() const
 {
-   return ToString();
+   return ToAsciiString();
 }
 
 ////////////////////////////////////////

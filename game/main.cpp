@@ -138,7 +138,7 @@ SCRIPT_DEFINE_FUNCTION(SetTerrain)
       terrainSettings.SetTileSize(32);
       terrainSettings.SetTileCountX(64);
       terrainSettings.SetTileCountZ(64);
-      terrainSettings.SetTileSet("defaulttiles.xml"); // HACK TODO
+      terrainSettings.SetTileSet(_T("defaulttiles.xml")); // HACK TODO
 
       if (argc == 1 && argv[0].IsString())
       {
