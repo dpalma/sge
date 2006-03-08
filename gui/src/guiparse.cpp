@@ -7,8 +7,8 @@
 #include "guistyleapi.h"
 #include "guistrings.h"
 
-#ifdef HAVE_CPPUNIT
-#include <cppunit/extensions/HelperMacros.h>
+#ifdef HAVE_CPPUNITLITE2
+#include "CppUnitLite2.h"
 #endif
 
 #include "dbgalloc.h" // must be last header
@@ -204,110 +204,93 @@ tResult GUIParseBool(const tChar * pszBool, bool * pBool)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNIT
-
-class cGUIParseTests : public CppUnit::TestCase
-{
-   CPPUNIT_TEST_SUITE(cGUIParseTests);
-      CPPUNIT_TEST(TestParseDimension);
-      CPPUNIT_TEST(TestParseColor);
-      CPPUNIT_TEST(TestParseBool);
-   CPPUNIT_TEST_SUITE_END();
-
-   void TestParseDimension();
-   void TestParseColor();
-   void TestParseBool();
-};
+#ifdef HAVE_CPPUNITLITE2
 
 ///////////////////////////////////////
 
-CPPUNIT_TEST_SUITE_REGISTRATION(cGUIParseTests);
-
-///////////////////////////////////////
-
-void cGUIParseTests::TestParseDimension()
+TEST(GUIParseDimension)
 {
    int dim;
    eGUIDimensionSpec spec;
 
-   CPPUNIT_ASSERT(GUIParseStyleDimension("150", &dim, &spec) == S_OK);
-   CPPUNIT_ASSERT((dim == 150) && (spec == kGUIDimensionPixels));
-   CPPUNIT_ASSERT(GUIParseStyleDimension("250px", &dim, &spec) == S_OK);
-   CPPUNIT_ASSERT((dim == 250) && (spec == kGUIDimensionPixels));
-   CPPUNIT_ASSERT(GUIParseStyleDimension("350 px", &dim, &spec) == S_OK);
-   CPPUNIT_ASSERT((dim == 350) && (spec == kGUIDimensionPixels));
-   CPPUNIT_ASSERT(GUIParseStyleDimension("25%", &dim, &spec) == S_OK);
-   CPPUNIT_ASSERT((dim == 25) && (spec == kGUIDimensionPercent));
-   CPPUNIT_ASSERT(GUIParseStyleDimension("55  %", &dim, &spec) == S_OK);
-   CPPUNIT_ASSERT((dim == 55) && (spec == kGUIDimensionPercent));
+   CHECK(GUIParseStyleDimension("150", &dim, &spec) == S_OK);
+   CHECK((dim == 150) && (spec == kGUIDimensionPixels));
+   CHECK(GUIParseStyleDimension("250px", &dim, &spec) == S_OK);
+   CHECK((dim == 250) && (spec == kGUIDimensionPixels));
+   CHECK(GUIParseStyleDimension("350 px", &dim, &spec) == S_OK);
+   CHECK((dim == 350) && (spec == kGUIDimensionPixels));
+   CHECK(GUIParseStyleDimension("25%", &dim, &spec) == S_OK);
+   CHECK((dim == 25) && (spec == kGUIDimensionPercent));
+   CHECK(GUIParseStyleDimension("55  %", &dim, &spec) == S_OK);
+   CHECK((dim == 55) && (spec == kGUIDimensionPercent));
 
    // try a value too big to fit in a 32-bit int--should get truncated
-   CPPUNIT_ASSERT(GUIParseStyleDimension("3232323232323232323232323232323232", &dim, &spec) == S_OK);
-   CPPUNIT_ASSERT((dim == 347068064) && (spec == kGUIDimensionPixels));
+   CHECK(GUIParseStyleDimension("3232323232323232323232323232323232", &dim, &spec) == S_OK);
+   CHECK((dim == 347068064) && (spec == kGUIDimensionPixels));
 
    // try a completely bogus value
-   CPPUNIT_ASSERT(FAILED(GUIParseStyleDimension("there is no way to parse this as a style dimension", &dim, &spec)));
+   CHECK(FAILED(GUIParseStyleDimension("there is no way to parse this as a style dimension", &dim, &spec)));
 
    // try a value with a small enough string but still bogus
-   CPPUNIT_ASSERT(FAILED(GUIParseStyleDimension("still no way", &dim, &spec)));
+   CHECK(FAILED(GUIParseStyleDimension("still no way", &dim, &spec)));
 
    // only partially bogus--valid integer but invalid string after it
-   CPPUNIT_ASSERT(FAILED(GUIParseStyleDimension("99 units", &dim, &spec)));
+   CHECK(FAILED(GUIParseStyleDimension("99 units", &dim, &spec)));
 }
 
 ///////////////////////////////////////
 
-void cGUIParseTests::TestParseColor()
+TEST(GUIParseColor)
 {
    tGUIColor color;
-   CPPUNIT_ASSERT(GUIParseColor("black", &color) == S_OK);
-   CPPUNIT_ASSERT(color == GUIStandardColors::Black);
-   CPPUNIT_ASSERT(GUIParseColor("red", &color) == S_OK);
-   CPPUNIT_ASSERT(color == GUIStandardColors::Red);
-   CPPUNIT_ASSERT(GUIParseColor("green", &color) == S_OK);
-   CPPUNIT_ASSERT(color == GUIStandardColors::Green);
-   CPPUNIT_ASSERT(GUIParseColor("yellow", &color) == S_OK);
-   CPPUNIT_ASSERT(color == GUIStandardColors::Yellow);
-   CPPUNIT_ASSERT(GUIParseColor("blue", &color) == S_OK);
-   CPPUNIT_ASSERT(color == GUIStandardColors::Blue);
-   CPPUNIT_ASSERT(GUIParseColor("magenta", &color) == S_OK);
-   CPPUNIT_ASSERT(color == GUIStandardColors::Magenta);
-   CPPUNIT_ASSERT(GUIParseColor("cyan", &color) == S_OK);
-   CPPUNIT_ASSERT(color == GUIStandardColors::Cyan);
-   CPPUNIT_ASSERT(GUIParseColor("darkgray", &color) == S_OK);
-   CPPUNIT_ASSERT(color == GUIStandardColors::DarkGray);
-   CPPUNIT_ASSERT(GUIParseColor("gray", &color) == S_OK);
-   CPPUNIT_ASSERT(color == GUIStandardColors::Gray);
-   CPPUNIT_ASSERT(GUIParseColor("lightgray", &color) == S_OK);
-   CPPUNIT_ASSERT(color == GUIStandardColors::LightGray);
-   CPPUNIT_ASSERT(GUIParseColor("white", &color) == S_OK);
-   CPPUNIT_ASSERT(color == GUIStandardColors::White);
+   CHECK(GUIParseColor("black", &color) == S_OK);
+   CHECK(color == GUIStandardColors::Black);
+   CHECK(GUIParseColor("red", &color) == S_OK);
+   CHECK(color == GUIStandardColors::Red);
+   CHECK(GUIParseColor("green", &color) == S_OK);
+   CHECK(color == GUIStandardColors::Green);
+   CHECK(GUIParseColor("yellow", &color) == S_OK);
+   CHECK(color == GUIStandardColors::Yellow);
+   CHECK(GUIParseColor("blue", &color) == S_OK);
+   CHECK(color == GUIStandardColors::Blue);
+   CHECK(GUIParseColor("magenta", &color) == S_OK);
+   CHECK(color == GUIStandardColors::Magenta);
+   CHECK(GUIParseColor("cyan", &color) == S_OK);
+   CHECK(color == GUIStandardColors::Cyan);
+   CHECK(GUIParseColor("darkgray", &color) == S_OK);
+   CHECK(color == GUIStandardColors::DarkGray);
+   CHECK(GUIParseColor("gray", &color) == S_OK);
+   CHECK(color == GUIStandardColors::Gray);
+   CHECK(GUIParseColor("lightgray", &color) == S_OK);
+   CHECK(color == GUIStandardColors::LightGray);
+   CHECK(GUIParseColor("white", &color) == S_OK);
+   CHECK(color == GUIStandardColors::White);
 }
 
 ///////////////////////////////////////
 
-void cGUIParseTests::TestParseBool()
+TEST(GUIParseParseBool)
 {
    bool b;
-   CPPUNIT_ASSERT(GUIParseBool("1", NULL) == E_POINTER);
-   CPPUNIT_ASSERT(GUIParseBool(NULL, &b) == E_POINTER);
-   CPPUNIT_ASSERT(GUIParseBool("", &b) == S_OK);
-   CPPUNIT_ASSERT(!b);
-   CPPUNIT_ASSERT(GUIParseBool("1", &b) == S_OK);
-   CPPUNIT_ASSERT(b);
-   CPPUNIT_ASSERT(GUIParseBool("0", &b) == S_OK);
-   CPPUNIT_ASSERT(!b);
-   CPPUNIT_ASSERT(GUIParseBool("true", &b) == S_OK);
-   CPPUNIT_ASSERT(b);
-   CPPUNIT_ASSERT(GUIParseBool("tRuE", &b) == S_OK);
-   CPPUNIT_ASSERT(b);
-   CPPUNIT_ASSERT(GUIParseBool("false", &b) == S_OK);
-   CPPUNIT_ASSERT(!b);
-   CPPUNIT_ASSERT(GUIParseBool("fAlSe", &b) == S_OK);
-   CPPUNIT_ASSERT(!b);
-   CPPUNIT_ASSERT(GUIParseBool("arbitrary string", &b) == E_INVALIDARG);
+   CHECK(GUIParseBool("1", NULL) == E_POINTER);
+   CHECK(GUIParseBool(NULL, &b) == E_POINTER);
+   CHECK(GUIParseBool("", &b) == S_OK);
+   CHECK(!b);
+   CHECK(GUIParseBool("1", &b) == S_OK);
+   CHECK(b);
+   CHECK(GUIParseBool("0", &b) == S_OK);
+   CHECK(!b);
+   CHECK(GUIParseBool("true", &b) == S_OK);
+   CHECK(b);
+   CHECK(GUIParseBool("tRuE", &b) == S_OK);
+   CHECK(b);
+   CHECK(GUIParseBool("false", &b) == S_OK);
+   CHECK(!b);
+   CHECK(GUIParseBool("fAlSe", &b) == S_OK);
+   CHECK(!b);
+   CHECK(GUIParseBool("arbitrary string", &b) == E_INVALIDARG);
 }
 
-#endif // HAVE_CPPUNIT
+#endif // HAVE_CPPUNITLITE2
 
 ///////////////////////////////////////////////////////////////////////////////

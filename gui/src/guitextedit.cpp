@@ -14,14 +14,16 @@
 #include "techtime.h"
 #include "keys.h"
 
+#ifdef HAVE_CPPUNITLITE2
+#include "CppUnitLite2.h"
+#endif
+
 #include <tinyxml.h>
 #include <locale>
 
-#ifdef HAVE_CPPUNIT
-#include <cppunit/extensions/HelperMacros.h>
-#endif
-
 #include "dbgalloc.h" // must be last header
+
+///////////////////////////////////////////////////////////////////////////////
 
 LOG_DEFINE_CHANNEL(GUITextEditEvents);
 
@@ -30,10 +32,13 @@ LOG_DEFINE_CHANNEL(GUITextEditEvents);
 #define LocalMsg2(msg,arg1,arg2)          DebugMsgEx2(GUITextEditEvents,(msg),(arg1),(arg2))
 #define LocalMsg3(msg,arg1,arg2,arg3)     DebugMsgEx3(GUITextEditEvents,(msg),(arg1),(arg2),(arg3))
 
+///////////////////////////////////////////////////////////////////////////////
+
 static const char kWhiteSpaceChars[] = " \n\r\t";
 
 static const int kCursorBlinkFreq = 2; // blink this many times per second
 static const float kCursorBlinkPeriod = 1.f / kCursorBlinkFreq;
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -592,38 +597,11 @@ AUTOREGISTER_GUIELEMENTFACTORYFN(textedit, GUITextEditElementCreate);
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNIT
-
-class cGUITextBufferTests : public CppUnit::TestCase
-{
-   CPPUNIT_TEST_SUITE(cGUITextBufferTests);
-      CPPUNIT_TEST(TestBackspace);
-      CPPUNIT_TEST(TestBackspace2);
-      CPPUNIT_TEST(TestBackspace3);
-      CPPUNIT_TEST(TestDelete);
-      CPPUNIT_TEST(TestDelete2);
-      CPPUNIT_TEST(TestWordRight);
-      CPPUNIT_TEST(TestWordLeft);
-      CPPUNIT_TEST(TestReplace);
-   CPPUNIT_TEST_SUITE_END();
-
-   void TestBackspace();
-   void TestBackspace2();
-   void TestBackspace3();
-   void TestDelete();
-   void TestDelete2();
-   void TestWordRight();
-   void TestWordLeft();
-   void TestReplace();
-};
+#ifdef HAVE_CPPUNITLITE2
 
 ///////////////////////////////////////
 
-CPPUNIT_TEST_SUITE_REGISTRATION(cGUITextBufferTests);
-
-///////////////////////////////////////
-
-void cGUITextBufferTests::TestBackspace()
+TEST(GUITextBufferBackspace)
 {
    char szTestString[] = "This is the test string";
    tGUIString text;
@@ -638,8 +616,8 @@ void cGUITextBufferTests::TestBackspace()
    {
       buffer.Backspace();
    }
-   CPPUNIT_ASSERT(buffer.GetText(&text) == S_OK);
-   CPPUNIT_ASSERT(strcmp(text.c_str(), szTestString) == 0);
+   CHECK(buffer.GetText(&text) == S_OK);
+   CHECK(strcmp(text.c_str(), szTestString) == 0);
 
    buffer.End();
    for (i = 0; i < nBackspaces; i++)
@@ -647,13 +625,13 @@ void cGUITextBufferTests::TestBackspace()
       buffer.Backspace();
    }
    szTestString[strlen(szTestString) - nBackspaces] = 0;
-   CPPUNIT_ASSERT(buffer.GetText(&text) == S_OK);
-   CPPUNIT_ASSERT(strcmp(text.c_str(), szTestString) == 0);
+   CHECK(buffer.GetText(&text) == S_OK);
+   CHECK(strcmp(text.c_str(), szTestString) == 0);
 }
 
 ///////////////////////////////////////
 
-void cGUITextBufferTests::TestBackspace2()
+TEST(GUITextBufferBackspace2)
 {
    char szTestString[] = "This is the test string";
    tGUIString text;
@@ -665,18 +643,18 @@ void cGUITextBufferTests::TestBackspace2()
    // Backspace at start should do nothing
    buffer.Start();
    buffer.Backspace(nBackspaces);
-   CPPUNIT_ASSERT(buffer.GetText(&text) == S_OK);
-   CPPUNIT_ASSERT(strcmp(text.c_str(), szTestString) == 0);
+   CHECK(buffer.GetText(&text) == S_OK);
+   CHECK(strcmp(text.c_str(), szTestString) == 0);
 
    buffer.End();
    buffer.Backspace(nBackspaces);
-   CPPUNIT_ASSERT(buffer.GetText(&text) == S_OK);
-   CPPUNIT_ASSERT(strncmp(text.c_str(), szTestString, strlen(szTestString) - nBackspaces) == 0);
+   CHECK(buffer.GetText(&text) == S_OK);
+   CHECK(strncmp(text.c_str(), szTestString, strlen(szTestString) - nBackspaces) == 0);
 }
 
 ///////////////////////////////////////
 
-void cGUITextBufferTests::TestBackspace3()
+TEST(GUITextBufferBackspace3)
 {
    char szTestString[] = "xxxHELLO";
    tGUIString text;
@@ -688,13 +666,13 @@ void cGUITextBufferTests::TestBackspace3()
    buffer.Start();
    buffer.CharRight(nRight);
    buffer.Backspace(nRight * 2);
-   CPPUNIT_ASSERT(buffer.GetText(&text) == S_OK);
-   CPPUNIT_ASSERT(strcmp(text.c_str(), szTestString + nRight) == 0);
+   CHECK(buffer.GetText(&text) == S_OK);
+   CHECK(strcmp(text.c_str(), szTestString + nRight) == 0);
 }
 
 ///////////////////////////////////////
 
-void cGUITextBufferTests::TestDelete()
+TEST(GUITextBufferDelete)
 {
    char szTestString[] = "This is the test string";
    tGUIString text;
@@ -710,8 +688,8 @@ void cGUITextBufferTests::TestDelete()
    {
       buffer.Delete();
    }
-   CPPUNIT_ASSERT(buffer.GetText(&text) == S_OK);
-   CPPUNIT_ASSERT(strcmp(text.c_str(), szTestString) == 0);
+   CHECK(buffer.GetText(&text) == S_OK);
+   CHECK(strcmp(text.c_str(), szTestString) == 0);
 
    // Delete one-by-one from start
    buffer.Start();
@@ -719,13 +697,13 @@ void cGUITextBufferTests::TestDelete()
    {
       buffer.Delete();
    }
-   CPPUNIT_ASSERT(buffer.GetText(&text) == S_OK);
-   CPPUNIT_ASSERT(strcmp(text.c_str(), szTestString + nDeletes) == 0);
+   CHECK(buffer.GetText(&text) == S_OK);
+   CHECK(strcmp(text.c_str(), szTestString + nDeletes) == 0);
 }
 
 ///////////////////////////////////////
 
-void cGUITextBufferTests::TestDelete2()
+TEST(GUITextBufferDelete2)
 {
    char szTestString[] = "This is the test string";
    tGUIString text;
@@ -737,19 +715,19 @@ void cGUITextBufferTests::TestDelete2()
    // Delete from end should do nothing
    buffer.End();
    buffer.Delete(nDeletes);
-   CPPUNIT_ASSERT(buffer.GetText(&text) == S_OK);
-   CPPUNIT_ASSERT(strcmp(text.c_str(), szTestString) == 0);
+   CHECK(buffer.GetText(&text) == S_OK);
+   CHECK(strcmp(text.c_str(), szTestString) == 0);
 
    // Delete a # of characters from start
    buffer.Start();
    buffer.Delete(nDeletes);
-   CPPUNIT_ASSERT(buffer.GetText(&text) == S_OK);
-   CPPUNIT_ASSERT(strcmp(text.c_str(), szTestString + nDeletes) == 0);
+   CHECK(buffer.GetText(&text) == S_OK);
+   CHECK(strcmp(text.c_str(), szTestString + nDeletes) == 0);
 }
 
 ///////////////////////////////////////
 
-void cGUITextBufferTests::TestWordRight()
+TEST(GUITextBufferWordRight)
 {
    char szTestString[] = "This is the test string";
    tGUIString text;
@@ -761,19 +739,19 @@ void cGUITextBufferTests::TestWordRight()
    buffer.WordRight();
    buffer.WordRight();
    buffer.Delete(5);
-   CPPUNIT_ASSERT(buffer.GetText(&text) == S_OK);
-   CPPUNIT_ASSERT(strcmp(text.c_str(), "This is the string") == 0);
+   CHECK(buffer.GetText(&text) == S_OK);
+   CHECK(strcmp(text.c_str(), "This is the string") == 0);
 
    buffer.Start();
    buffer.WordRight();
    buffer.Delete(3);
-   CPPUNIT_ASSERT(buffer.GetText(&text) == S_OK);
-   CPPUNIT_ASSERT(strcmp(text.c_str(), "This the string") == 0);
+   CHECK(buffer.GetText(&text) == S_OK);
+   CHECK(strcmp(text.c_str(), "This the string") == 0);
 }
 
 ///////////////////////////////////////
 
-void cGUITextBufferTests::TestWordLeft()
+TEST(GUITextBufferWordLeft)
 {
    char szTestString[] = "This is the test string";
    tGUIString text;
@@ -783,26 +761,26 @@ void cGUITextBufferTests::TestWordLeft()
    buffer.End();
    buffer.WordLeft();
    buffer.Delete(6);
-   CPPUNIT_ASSERT(buffer.GetText(&text) == S_OK);
-   CPPUNIT_ASSERT(strcmp(text.c_str(), "This is the test ") == 0);
+   CHECK(buffer.GetText(&text) == S_OK);
+   CHECK(strcmp(text.c_str(), "This is the test ") == 0);
 
    buffer.WordLeft();
    buffer.Delete(5);
-   CPPUNIT_ASSERT(buffer.GetText(&text) == S_OK);
-   CPPUNIT_ASSERT(strcmp(text.c_str(), "This is the ") == 0);
+   CHECK(buffer.GetText(&text) == S_OK);
+   CHECK(strcmp(text.c_str(), "This is the ") == 0);
 
    buffer.WordLeft();
    buffer.WordLeft();
    buffer.WordLeft();
    buffer.WordLeft();
    buffer.Delete(5);
-   CPPUNIT_ASSERT(buffer.GetText(&text) == S_OK);
-   CPPUNIT_ASSERT(strcmp(text.c_str(), "is the ") == 0);
+   CHECK(buffer.GetText(&text) == S_OK);
+   CHECK(strcmp(text.c_str(), "is the ") == 0);
 }
 
 ///////////////////////////////////////
 
-void cGUITextBufferTests::TestReplace()
+TEST(GUITextBufferReplace)
 {
    char szTestString[] = "This is the test string";
    tGUIString text;
@@ -813,17 +791,17 @@ void cGUITextBufferTests::TestReplace()
    buffer.WordRight();
    buffer.Delete(2);
    buffer.ReplaceSel("was");
-   CPPUNIT_ASSERT(buffer.GetText(&text) == S_OK);
-   CPPUNIT_ASSERT(strcmp(text.c_str(), "This was the test string") == 0);
+   CHECK(buffer.GetText(&text) == S_OK);
+   CHECK(strcmp(text.c_str(), "This was the test string") == 0);
 
    buffer.WordRight();
    buffer.WordRight();
    buffer.CharRight(4);
    buffer.ReplaceSel("ing");
-   CPPUNIT_ASSERT(buffer.GetText(&text) == S_OK);
-   CPPUNIT_ASSERT(strcmp(text.c_str(), "This was the testing string") == 0);
+   CHECK(buffer.GetText(&text) == S_OK);
+   CHECK(strcmp(text.c_str(), "This was the testing string") == 0);
 }
 
-#endif
+#endif // HAVE_CPPUNITLITE2
 
 ///////////////////////////////////////////////////////////////////////////////

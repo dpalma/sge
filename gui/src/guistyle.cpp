@@ -12,12 +12,12 @@
 
 #include "globalobj.h"
 
+#ifdef HAVE_CPPUNITLITE2
+#include "CppUnitLite2.h"
+#endif
+
 #include <cstring>
 #include <locale>
-
-#ifdef HAVE_CPPUNIT
-#include <cppunit/extensions/HelperMacros.h>
-#endif
 
 #include "dbgalloc.h" // must be last header
 
@@ -969,21 +969,13 @@ tResult GUIStyleParseInline(const tChar * pszStyle, long length, IGUIStyle * pCl
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNIT
+#ifdef HAVE_CPPUNITLITE2
 
-class cGUIStyleTests : public CppUnit::TestCase
+class cGUIStyleTests
 {
-   CPPUNIT_TEST_SUITE(cGUIStyleTests);
-      CPPUNIT_TEST(TestClone);
-      CPPUNIT_TEST(TestStyleParse);
-      CPPUNIT_TEST(TestCustomAttributes);
-      CPPUNIT_TEST(TestParseRejectIdentifiers);
-   CPPUNIT_TEST_SUITE_END();
-
-   void TestClone();
-   void TestStyleParse();
-   void TestCustomAttributes();
-   void TestParseRejectIdentifiers();
+public:
+   cGUIStyleTests();
+   ~cGUIStyleTests();
 
    bool StyleMatchesTest(IGUIStyle * pStyle);
 
@@ -991,49 +983,77 @@ class cGUIStyleTests : public CppUnit::TestCase
 
    static const tChar gm_fontName[];
    static const uint gm_fontPointSize;
-
-public:
-   virtual void setUp();
 };
 
 ///////////////////////////////////////
 
-CPPUNIT_TEST_SUITE_REGISTRATION(cGUIStyleTests);
+const tChar cGUIStyleTests::gm_fontName[] = _T("MS Sans Serif");
+const uint cGUIStyleTests::gm_fontPointSize = 14;
 
 ///////////////////////////////////////
 
-void cGUIStyleTests::TestClone()
+cGUIStyleTests::cGUIStyleTests()
 {
-   cAutoIPtr<IGUIStyle> pStyle;
-   CPPUNIT_ASSERT(GUIStyleParse(m_testStyle.c_str(), m_testStyle.length(), &pStyle) == S_OK);
-   CPPUNIT_ASSERT(StyleMatchesTest(pStyle));
-   CPPUNIT_ASSERT(pStyle->SetAttribute("ninety-nine", 99) == S_OK);
-//   CPPUNIT_ASSERT(pStyle->SetAttribute("pi", kPi) == S_OK);
-
-   cAutoIPtr<IGUIStyle> pClone;
-   CPPUNIT_ASSERT(pStyle->Clone(&pClone) == S_OK);
-   CPPUNIT_ASSERT(StyleMatchesTest(pClone));
-
-   int i;
-   CPPUNIT_ASSERT(pClone->GetAttribute("ninety-nine", &i) == S_OK && i == 99);
-
-//   float f;
-//   CPPUNIT_ASSERT(pStyle->GetAttribute("pi", &f) == S_OK && f == kPi);
+   Sprintf(&m_testStyle, _T(
+      "%s : %s;" \
+      "%s : %s;  " \
+      "%s : %s;" \
+      "%s : (0,0,0) ;" \
+      "%s: %s;" \
+      "%s: %s;" \
+      "%s: %s;" \
+      "%s: %d;"),
+      kAttribAlign, kValueAlignCenter,
+      kAttribVerticalAlign, kValueVertAlignCenter,
+      kAttribBackgroundColor, kValueColorWhite,
+      kAttribForegroundColor,
+      kAttribTextAlign, kValueAlignRight,
+      kAttribTextVerticalAlign, kValueVertAlignBottom,
+      kAttribFontName, gm_fontName,
+      kAttribFontPointSize, gm_fontPointSize
+   );
 }
 
 ///////////////////////////////////////
 
-void cGUIStyleTests::TestStyleParse()
+cGUIStyleTests::~cGUIStyleTests()
+{
+}
+
+///////////////////////////////////////
+
+TEST_F(cGUIStyleTests, TestClone)
 {
    cAutoIPtr<IGUIStyle> pStyle;
-   CPPUNIT_ASSERT(GUIStyleParse(m_testStyle.c_str(), m_testStyle.length(), &pStyle) == S_OK);
-   CPPUNIT_ASSERT(StyleMatchesTest(pStyle));
+   CHECK(GUIStyleParse(m_testStyle.c_str(), m_testStyle.length(), &pStyle) == S_OK);
+   CHECK(StyleMatchesTest(pStyle));
+   CHECK(pStyle->SetAttribute("ninety-nine", 99) == S_OK);
+//   CHECK(pStyle->SetAttribute("pi", kPi) == S_OK);
+
+   cAutoIPtr<IGUIStyle> pClone;
+   CHECK(pStyle->Clone(&pClone) == S_OK);
+   CHECK(StyleMatchesTest(pClone));
+
+   int i;
+   CHECK(pClone->GetAttribute("ninety-nine", &i) == S_OK && i == 99);
+
+//   float f;
+//   CHECK(pStyle->GetAttribute("pi", &f) == S_OK && f == kPi);
+}
+
+///////////////////////////////////////
+
+TEST_F(cGUIStyleTests, TestStyleParse)
+{
+   cAutoIPtr<IGUIStyle> pStyle;
+   CHECK(GUIStyleParse(m_testStyle.c_str(), m_testStyle.length(), &pStyle) == S_OK);
+   CHECK(StyleMatchesTest(pStyle));
    SafeRelease(pStyle);
 }
 
 ///////////////////////////////////////
 
-void cGUIStyleTests::TestCustomAttributes()
+TEST_F(cGUIStyleTests, TestCustomAttributes)
 {
    tGUIString string;
    int number;
@@ -1041,42 +1061,42 @@ void cGUIStyleTests::TestCustomAttributes()
 
    cAutoIPtr<IGUIStyle> pStyle;
 
-   CPPUNIT_ASSERT(GUIStyleParse("", -1, &pStyle) == S_OK);
+   CHECK(GUIStyleParse("", -1, &pStyle) == S_OK);
 
    // general tests
-   CPPUNIT_ASSERT(pStyle->GetAttribute("DOES_NOT_EXIST", &string) == S_FALSE);
-   CPPUNIT_ASSERT(pStyle->SetAttribute(NULL, "value") == E_POINTER);
-   CPPUNIT_ASSERT(pStyle->SetAttribute("attrib", static_cast<const tChar *>(NULL)) == E_POINTER);
-   CPPUNIT_ASSERT(pStyle->SetAttribute("", "value") == E_INVALIDARG);
+   CHECK(pStyle->GetAttribute("DOES_NOT_EXIST", &string) == S_FALSE);
+   CHECK(pStyle->SetAttribute(NULL, "value") == E_POINTER);
+   CHECK(pStyle->SetAttribute("attrib", static_cast<const tChar *>(NULL)) == E_POINTER);
+   CHECK(pStyle->SetAttribute("", "value") == E_INVALIDARG);
 
    // test setting a string value
-   CPPUNIT_ASSERT(pStyle->SetAttribute("string1", "blah blah blah") == S_OK);
-   CPPUNIT_ASSERT(pStyle->GetAttribute("string1", &string) == S_OK);
-   CPPUNIT_ASSERT(strcmp(string.c_str(), "blah blah blah") == 0);
+   CHECK(pStyle->SetAttribute("string1", "blah blah blah") == S_OK);
+   CHECK(pStyle->GetAttribute("string1", &string) == S_OK);
+   CHECK(strcmp(string.c_str(), "blah blah blah") == 0);
 
-   CPPUNIT_ASSERT(pStyle->GetAttribute("string1", &number) == S_FALSE);
-   CPPUNIT_ASSERT(pStyle->GetAttribute("string1", &color) == S_FALSE);
+   CHECK(pStyle->GetAttribute("string1", &number) == S_FALSE);
+   CHECK(pStyle->GetAttribute("string1", &color) == S_FALSE);
 
    // test changing an existing attribute
-   CPPUNIT_ASSERT(pStyle->SetAttribute("string1", "xxx") == S_OK);
-   CPPUNIT_ASSERT(pStyle->GetAttribute("string1", &string) == S_OK);
-   CPPUNIT_ASSERT(strcmp(string.c_str(), "xxx") == 0);
+   CHECK(pStyle->SetAttribute("string1", "xxx") == S_OK);
+   CHECK(pStyle->GetAttribute("string1", &string) == S_OK);
+   CHECK(strcmp(string.c_str(), "xxx") == 0);
 
    // test setting a numeric value
-   CPPUNIT_ASSERT(pStyle->SetAttribute("number1", "99") == S_OK);
-   CPPUNIT_ASSERT(pStyle->GetAttribute("number1", &string) == S_OK);
-   CPPUNIT_ASSERT(strcmp(string.c_str(), "99") == 0);
-   CPPUNIT_ASSERT(pStyle->GetAttribute("number1", &number) == S_OK);
-   CPPUNIT_ASSERT(number == 99);
-   CPPUNIT_ASSERT(pStyle->GetAttribute("number1", &color) == S_FALSE);
+   CHECK(pStyle->SetAttribute("number1", "99") == S_OK);
+   CHECK(pStyle->GetAttribute("number1", &string) == S_OK);
+   CHECK(strcmp(string.c_str(), "99") == 0);
+   CHECK(pStyle->GetAttribute("number1", &number) == S_OK);
+   CHECK_EQUAL(number, 99);
+   CHECK(pStyle->GetAttribute("number1", &color) == S_FALSE);
 
    // test setting a color value
-   CPPUNIT_ASSERT(pStyle->SetAttribute("color1", "(0.75,0.75,0.75,1)") == S_OK);
-   CPPUNIT_ASSERT(pStyle->GetAttribute("color1", &string) == S_OK);
-   CPPUNIT_ASSERT(strcmp(string.c_str(), "(0.75,0.75,0.75,1)") == 0);
-   CPPUNIT_ASSERT(pStyle->GetAttribute("color1", &number) == S_FALSE);
-   CPPUNIT_ASSERT(pStyle->GetAttribute("color1", &color) == S_OK);
-   CPPUNIT_ASSERT(color == tGUIColor(0.75,0.75,0.75,1));
+   CHECK(pStyle->SetAttribute("color1", "(0.75,0.75,0.75,1)") == S_OK);
+   CHECK(pStyle->GetAttribute("color1", &string) == S_OK);
+   CHECK(strcmp(string.c_str(), "(0.75,0.75,0.75,1)") == 0);
+   CHECK(pStyle->GetAttribute("color1", &number) == S_FALSE);
+   CHECK(pStyle->GetAttribute("color1", &color) == S_OK);
+   CHECK(color == tGUIColor(0.75,0.75,0.75,1));
 }
 
 ///////////////////////////////////////
@@ -1084,10 +1104,10 @@ void cGUIStyleTests::TestCustomAttributes()
 // refer to a <style> element by identifier. GUIStyleParse should reject
 // one-word arguments to help support this.
 
-void cGUIStyleTests::TestParseRejectIdentifiers()
+TEST(GUIStyleParseRejectIdentifiers)
 {
    cAutoIPtr<IGUIStyle> pStyle;
-   CPPUNIT_ASSERT(GUIStyleParse("myStyle", -1, &pStyle) != S_OK);
+   CHECK(GUIStyleParse("myStyle", -1, &pStyle) != S_OK);
 }
 
 ///////////////////////////////////////
@@ -1115,33 +1135,6 @@ bool cGUIStyleTests::StyleMatchesTest(IGUIStyle * pStyle)
    return false;
 }
 
-///////////////////////////////////////
-
-const tChar cGUIStyleTests::gm_fontName[] = _T("MS Sans Serif");
-const uint cGUIStyleTests::gm_fontPointSize = 14;
-
-void cGUIStyleTests::setUp()
-{
-   Sprintf(&m_testStyle, _T(
-      "%s : %s;" \
-      "%s : %s;  " \
-      "%s : %s;" \
-      "%s : (0,0,0) ;" \
-      "%s: %s;" \
-      "%s: %s;" \
-      "%s: %s;" \
-      "%s: %d;"),
-      kAttribAlign, kValueAlignCenter,
-      kAttribVerticalAlign, kValueVertAlignCenter,
-      kAttribBackgroundColor, kValueColorWhite,
-      kAttribForegroundColor,
-      kAttribTextAlign, kValueAlignRight,
-      kAttribTextVerticalAlign, kValueVertAlignBottom,
-      kAttribFontName, gm_fontName,
-      kAttribFontPointSize, gm_fontPointSize
-   );
-}
-
-#endif // HAVE_CPPUNIT
+#endif // HAVE_CPPUNITLITE2
 
 ///////////////////////////////////////////////////////////////////////////////

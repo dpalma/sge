@@ -13,10 +13,6 @@
 
 #include <tinyxml.h>
 
-#ifdef HAVE_CPPUNIT
-#include <cppunit/extensions/HelperMacros.h>
-#endif
-
 #include "dbgalloc.h" // must be last header
 
 
