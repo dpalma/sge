@@ -8,6 +8,11 @@
 #include <GL/glew.h>
 #include <windows.h>
 
+
+namespace Editor
+{
+
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGlControl
@@ -19,14 +24,39 @@ cGlControl::cGlControl()
 {
 }
 
+cGlControl::~cGlControl()
+{
+}
+
 void cGlControl::SwapBuffers()
 {
-   ::SwapBuffers(m_hDc);
+   if (m_hDc != NULL)
+   {
+      ::SwapBuffers(m_hDc);
+   }
 }
 
 void cGlControl::OnHandleCreated(System::EventArgs ^ e)
 {
    System::Windows::Forms::UserControl::OnHandleCreated(e);
+   DestroyContext();
+   CreateContext();
+}
+
+void cGlControl::OnHandleDestroyed(System::EventArgs ^ e)
+{
+   System::Windows::Forms::UserControl::OnHandleDestroyed(e);
+   DestroyContext();
+}
+
+void cGlControl::OnResize(System::EventArgs ^ e)
+{
+   System::Windows::Forms::UserControl::OnResize(e);
+}
+
+void cGlControl::CreateContext()
+{
+   Assert(m_hDc == NULL && m_hGlrc == NULL);
 
    HWND hWnd = reinterpret_cast<HWND>(Handle.ToPointer());
 
@@ -59,17 +89,22 @@ void cGlControl::OnHandleCreated(System::EventArgs ^ e)
    glewInit();
 }
 
-void cGlControl::OnHandleDestroyed(System::EventArgs ^ e)
+void cGlControl::DestroyContext()
 {
-   System::Windows::Forms::UserControl::OnHandleDestroyed(e);
-
-   HWND hWnd = reinterpret_cast<HWND>(Handle.ToPointer());
-
-   if (m_hDc != NULL)
+   if (IsHandleCreated)
    {
-      wglMakeCurrent(m_hDc, NULL);
-      ReleaseDC(hWnd, m_hDc);
-      m_hDc = NULL;
+      HWND hWnd = reinterpret_cast<HWND>(Handle.ToPointer());
+
+      if (m_hDc != NULL)
+      {
+         wglMakeCurrent(m_hDc, NULL);
+         ReleaseDC(hWnd, m_hDc);
+         m_hDc = NULL;
+      }
+   }
+   else
+   {
+      AssertMsg(m_hDc == NULL, "No window handle but HDC is not NULL");
    }
 
    if (m_hGlrc != NULL)
@@ -78,5 +113,8 @@ void cGlControl::OnHandleDestroyed(System::EventArgs ^ e)
       m_hGlrc = NULL;
    }
 }
+
+
+} // namespace Editor
 
 ///////////////////////////////////////////////////////////////////////////////

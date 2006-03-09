@@ -48,7 +48,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,WIN32,_WINDOWS,TIXML_USE_STL,GLEW_STATIC"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -145,7 +145,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include"
 				PreprocessorDefinitions="NDEBUG,WIN32,_WINDOWS,TIXML_USE_STL,GLEW_STATIC,D3D_DEBUG_INFO"
 				StringPooling="true"
 				RuntimeLibrary="3"
@@ -245,8 +245,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include"
-				PreprocessorDefinitions="_DEBUG,WIN32,HAVE_CPPUNIT,_WINDOWS,TIXML_USE_STL,GLEW_STATIC,D3D_DEBUG_INFO"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include"
+				PreprocessorDefinitions="_DEBUG,WIN32,HAVE_CPPUNITLITE2,_WINDOWS,TIXML_USE_STL,GLEW_STATIC,D3D_DEBUG_INFO"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"
@@ -345,8 +345,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include"
-				PreprocessorDefinitions="_DEBUG,WIN32,_WINDOWS,NO_AUTO_EXPORTS,HAVE_CPPUNIT,TIXML_USE_STL,GLEW_STATIC,D3D_DEBUG_INFO"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include"
+				PreprocessorDefinitions="_DEBUG,WIN32,_WINDOWS,NO_AUTO_EXPORTS,HAVE_CPPUNITLITE2,TIXML_USE_STL,GLEW_STATIC,D3D_DEBUG_INFO"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="2"
@@ -445,7 +445,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include"
 				PreprocessorDefinitions="NDEBUG,WIN32,_WINDOWS,TIXML_USE_STL,GLEW_STATIC"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -519,12 +519,32 @@
 			RelativePath="System.dll"
 			AssemblyName="System, Version=2.0.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL"
 		/>
+		<AssemblyReference
+			RelativePath="System.Drawing.dll"
+			AssemblyName="System.Drawing, Version=2.0.0.0, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL"
+		/>
+		<AssemblyReference
+			RelativePath="System.Design.dll"
+			AssemblyName="System.Design, Version=2.0.0.0, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL"
+		/>
 	</References>
 	<Files>
 		<Filter
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
+			<File
+				RelativePath="..\..\tests\managededitor\AssemblyInfo.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tests\managededitor\EditorDocument.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tests\managededitor\EditorForm.cpp"
+				>
+			</File>
 			<File
 				RelativePath="..\..\tests\managededitor\GlControl.cpp"
 				>
@@ -587,11 +607,25 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
-				RelativePath="..\..\tests\managededitor\GlControl.h"
+				RelativePath="..\..\tests\managededitor\EditorDocument.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tests\managededitor\stdhdr.h"
+				RelativePath=".\..\..\tests\managededitor\EditorForm.h"
+				FileType="3"
+				>
+				<File
+					RelativePath=".\..\..\tests\managededitor\EditorForm.resX"
+					SubType="Designer"
+					>
+				</File>
+			</File>
+			<File
+				RelativePath=".\..\..\tests\managededitor\GlControl.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\..\tests\managededitor\stdhdr.h"
 				>
 			</File>
 		</Filter>
@@ -604,7 +638,7 @@
 	<Globals>
 		<Global
 			Name="RESOURCE_FILE"
-			Value="\prj\sge\tests\managededitor\managededitor.rc"
+			Value=".\..\..\tests\managededitor\managededitor.rc"
 		/>
 	</Globals>
 </VisualStudioProject>

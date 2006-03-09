@@ -11,6 +11,10 @@
 F_DECLARE_HANDLE(HDC);
 F_DECLARE_HANDLE(HGLRC);
 
+namespace Editor
+{
+
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGlControl
@@ -20,6 +24,7 @@ ref class cGlControl : public System::Windows::Forms::UserControl
 {
 public:
    cGlControl();
+   ~cGlControl();
 
    void SwapBuffers();
 
@@ -30,17 +35,26 @@ protected:
       {
          System::Windows::Forms::CreateParams ^ cp = System::Windows::Forms::UserControl::CreateParams;
          // Add style bits required by OpenGL
-         cp->Style |= 0x02000000L | 0x04000000L; // WS_CLIPCHILDREN | WS_CLIPSIBLINGS
-         return cp;     
+         cp->Style |= 0x06000000L; // WS_CLIPCHILDREN | WS_CLIPSIBLINGS
+         return cp;
       }
-  } 
+   }
    virtual void OnHandleCreated(System::EventArgs ^ e) override;
    virtual void OnHandleDestroyed(System::EventArgs ^ e) override;
+
+   virtual void OnResize(System::EventArgs ^ e) override;
+
+private:
+   void CreateContext();
+   void DestroyContext();
 
 private:
    HDC m_hDc;
    HGLRC m_hGlrc;
 };
+
+
+} // namespace Editor
 
 ///////////////////////////////////////////////////////////////////////////////
 

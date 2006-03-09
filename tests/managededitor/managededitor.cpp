@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "GlControl.h"
+#include "EditorForm.h"
 
 #include "guiapi.h"
 
@@ -37,85 +37,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define kDefaultWidth   800
-#define kDefaultHeight  600
-#define kDefaultBpp     16
-#define kDefaultFov     70
-
-static const int kDefStatsX = 25;
-static const int kDefStatsY = 25;
-static const cColor kDefStatsColor(1,1,1,1);
-
-///////////////////////////////////////////////////////////////////////////////
-
-cAutoIPtr<IGUIFont> g_pFont;
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cManagedEditorForm
-//
-
-ref class cManagedEditorForm : public System::Windows::Forms::Form
-{
-public:
-   cManagedEditorForm();
-
-   void SwapBuffers() { m_pGlControl->SwapBuffers(); }
-
-   void OnIdle(System::Object ^ sender, System::EventArgs ^ e);
-
-private:
-   cGlControl ^ m_pGlControl;
-};
-
-cManagedEditorForm::cManagedEditorForm()
-{
-   m_pGlControl = gcnew cGlControl;
-
-   Controls->Add(m_pGlControl);
-
-   System::Windows::Forms::Application::Idle += gcnew System::EventHandler(this, &cManagedEditorForm::OnIdle);
-}
-
-void cManagedEditorForm::OnIdle(System::Object ^ sender, System::EventArgs ^ e)
-{
-   UseGlobal(Sim);
-   pSim->NextFrame();
-
-   UseGlobal(Renderer);
-   if (pRenderer->BeginScene() == S_OK)
-   {
-      UseGlobal(GUIContext);
-      cAutoIPtr<IGUIRenderDeviceContext> pRenderDeviceContext;
-      if (pGUIContext->GetRenderDeviceContext(&pRenderDeviceContext) == S_OK)
-      {
-         pRenderDeviceContext->Begin2D();
-
-         pGUIContext->RenderGUI();
-
-         if (!!g_pFont)
-         {
-            tChar szStats[100];
-            SysReportFrameStats(szStats, _countof(szStats));
-
-            tRect rect(kDefStatsX, kDefStatsY, 0, 0);
-            g_pFont->RenderText(szStats, _tcslen(szStats), &rect,
-                                kRT_NoClip | kRT_DropShadow, kDefStatsColor);
-         }
-
-         pRenderDeviceContext->End2D();
-      }
-
-      pRenderer->EndScene();
-
-      m_pGlControl->SwapBuffers();
-   }
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-
 static void RegisterGlobalObjects()
 {
    CameraCreate();
@@ -129,9 +50,9 @@ static void RegisterGlobalObjects()
    SaveLoadManagerCreate();
    SimCreate();
    ScriptInterpreterCreate();
-   ThreadCallerCreate();
    TerrainModelCreate();
    TerrainRendererCreateForEditor();
+   ThreadCallerCreate();
 }
 
 
@@ -163,8 +84,8 @@ static bool ManagedEditorInit(int argc, tChar * argv[])
       return false;
    }
 
-   srand(time(NULL));
-   SeedRand(time(NULL));
+   srand(GetTickCount());
+   SeedRand(GetTickCount());
 
    RegisterGlobalObjects();
    if (FAILED(StartGlobalObjects()))
@@ -185,39 +106,7 @@ static bool ManagedEditorInit(int argc, tChar * argv[])
       pResourceManager->AddDirectoryTreeFlattened(temp.c_str());
    }
 
-   cStr script("autoexec.lua");
-   ConfigGet(_T("autoexec_script"), &script);
-   if (!script.empty())
-   {
-      char * pszCode = NULL;
-      UseGlobal(ResourceManager);
-      if (pResourceManager->Load(script.c_str(), kRT_Text, NULL, (void**)&pszCode) == S_OK)
-      {
-         UseGlobal(ScriptInterpreter);
-         pScriptInterpreter->ExecString(pszCode);
-      }
-   }
-
-   int width = kDefaultWidth;
-   int height = kDefaultHeight;
-   int bpp = kDefaultBpp;
-   ConfigGet(_T("screen_width"), &width);
-   ConfigGet(_T("screen_height"), &height);
-   ConfigGet(_T("screen_bpp"), &bpp);
-
-   UseGlobal(ThreadCaller);
-   if (FAILED(pThreadCaller->ThreadInit()))
-   {
-      return false;
-   }
-
    UseGlobal(GUIContext);
-   if (FAILED(pGUIContext->GetDefaultFont(&g_pFont)))
-   {
-      WarnMsg("Failed to get a default font interface pointer for showing frame stats\n");
-      return false;
-   }
-
    pGUIContext->PushPage("start.xml");
 
    UseGlobal(Sim);
@@ -242,14 +131,6 @@ static void ManagedEditorTerm()
    UseGlobal(Sim);
    pSim->Stop();
 
-   UseGlobal(ThreadCaller);
-   pThreadCaller->ThreadTerm();
-
-   SafeRelease(g_pFont);
-
-   // This will make sure the GL context is destroyed
-   SysQuit();
-
    StopGlobalObjects();
 }
 
@@ -268,7 +149,7 @@ int STDCALL _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
       return -1;
    }
 
-   System::Windows::Forms::Application::Run(gcnew cManagedEditorForm());
+   System::Windows::Forms::Application::Run(gcnew Editor::cEditorForm());
 
    ManagedEditorTerm();
 
