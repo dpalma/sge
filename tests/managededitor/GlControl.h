@@ -11,20 +11,20 @@
 F_DECLARE_HANDLE(HDC);
 F_DECLARE_HANDLE(HGLRC);
 
-namespace Editor
+namespace ManagedEditor
 {
 
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGlControl
+// CLASS: GlControl
 //
 
-ref class cGlControl : public System::Windows::Forms::UserControl
+ref class GlControl : public System::Windows::Forms::UserControl
 {
 public:
-   cGlControl();
-   ~cGlControl();
+   GlControl();
+   ~GlControl();
 
    void SwapBuffers();
 
@@ -54,7 +54,7 @@ private:
 };
 
 
-} // namespace Editor
+} // namespace ManagedEditor
 
 ///////////////////////////////////////////////////////////////////////////////
 

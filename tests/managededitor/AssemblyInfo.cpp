@@ -11,11 +11,11 @@ using namespace System::Security::Permissions;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 //
-[assembly:AssemblyTitleAttribute("managededitor")];
+[assembly:AssemblyTitleAttribute("ManagedEditor")];
 [assembly:AssemblyDescriptionAttribute("")];
 [assembly:AssemblyConfigurationAttribute("")];
 [assembly:AssemblyCompanyAttribute("Daniel Palma")];
-[assembly:AssemblyProductAttribute("managededitor")];
+[assembly:AssemblyProductAttribute("ManagedEditor")];
 [assembly:AssemblyCopyrightAttribute("Copyright (c) Daniel Palma 2006")];
 [assembly:AssemblyTrademarkAttribute("")];
 [assembly:AssemblyCultureAttribute("")];

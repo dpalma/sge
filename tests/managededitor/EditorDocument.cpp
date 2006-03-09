@@ -6,24 +6,24 @@
 #include "EditorDocument.h"
 
 
-namespace Editor
+namespace ManagedEditor
 {
 
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cEditorDocument
+// CLASS: EditorDocument
 //
 
-cEditorDocument::cEditorDocument()
+EditorDocument::EditorDocument()
 {
 }
 
-cEditorDocument::~cEditorDocument()
+EditorDocument::~EditorDocument()
 {
 }
 
 
-} // namespace Editor
+} // namespace ManagedEditor
 
 ///////////////////////////////////////////////////////////////////////////////

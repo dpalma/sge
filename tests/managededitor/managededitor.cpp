@@ -27,8 +27,6 @@
 #include "techstring.h"
 #include "threadcallapi.h"
 
-#include <ctime>
-
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
@@ -58,10 +56,9 @@ static void RegisterGlobalObjects()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static tResult InitGlobalConfig(int argc, tChar * argv[])
+static tResult InitGlobalConfig(array<System::String ^> ^ args)
 {
-   Assert(argc > 0);
-
+#if 0 // TODO
    cFileSpec cfgFile(argv[0]);
    cfgFile.SetFileExt(_T("cfg"));
 
@@ -71,15 +68,32 @@ static tResult InitGlobalConfig(int argc, tChar * argv[])
       return E_OUTOFMEMORY;
    }
    pStore->Load(g_pConfig);
+#endif
 
-   ParseCommandLine(argc, argv, g_pConfig);
+   using namespace System::Runtime::InteropServices;
+
+   for (int i = 0; i < args->Length; i++)
+   {
+      System::String ^ arg = args[i];
+#ifndef _UNICODE
+      System::IntPtr pArg = Marshal::StringToHGlobalAnsi(arg);
+      char * argv[] = { static_cast<char *>(pArg.ToPointer()) };
+#else
+      pin_ptr<const wchar_t> psz = PtrToStringChars(arg);
+      wchar_t * argv[] = { psz };
+#endif
+      ParseCommandLine(1, argv, g_pConfig);
+#ifndef _UNICODE
+      Marshal::FreeHGlobal(pArg);
+#endif
+   }
 
    return S_OK;
 }
 
-static bool ManagedEditorInit(int argc, tChar * argv[])
+static bool ManagedEditorInit(array<System::String ^> ^ args)
 {
-   if (InitGlobalConfig(argc, argv) != S_OK)
+   if (InitGlobalConfig(args) != S_OK)
    {
       return false;
    }
@@ -136,20 +150,15 @@ static void ManagedEditorTerm()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int STDCALL _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
-                      LPTSTR lpCmdLine, int nShowCmd)
+int main(array<System::String ^> ^ args)
 {
-	// Enabling Windows XP visual effects before any controls are created
-	//Application::EnableVisualStyles();
-	//Application::SetCompatibleTextRenderingDefault(false); 
-
-   if (!ManagedEditorInit(__argc, __targv))
+   if (!ManagedEditorInit(args))
    {
       ManagedEditorTerm();
       return -1;
    }
 
-   System::Windows::Forms::Application::Run(gcnew Editor::cEditorForm());
+   System::Windows::Forms::Application::Run(gcnew ManagedEditor::EditorForm());
 
    ManagedEditorTerm();
 

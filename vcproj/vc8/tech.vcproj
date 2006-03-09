@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="tech"
 	ProjectGUID="{7AD65279-9AD3-44EB-BC08-0C7C832A36BA}"
+	RootNamespace="tech"
 	>
 	<Platforms>
 		<Platform

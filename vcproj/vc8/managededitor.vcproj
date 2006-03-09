@@ -69,7 +69,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
-				Culture="1033"
+				Culture="0"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -85,6 +85,8 @@
 				GenerateMapFile="true"
 				MapFileName="..\..\Build.vc8\StaticRelease/managededitor.map"
 				SubSystem="2"
+				EntryPointSymbol="main"
+				CLRThreadAttribute="2"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -167,7 +169,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
-				Culture="1033"
+				Culture="0"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -185,6 +187,8 @@
 				GenerateMapFile="true"
 				MapFileName="..\..\Build.vc8\Opt/managededitor.map"
 				SubSystem="2"
+				EntryPointSymbol="main"
+				CLRThreadAttribute="2"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -266,7 +270,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"
+				Culture="0"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -285,6 +289,8 @@
 				GenerateMapFile="true"
 				MapFileName="..\..\Build.vc8\Debug/managededitor.map"
 				SubSystem="2"
+				EntryPointSymbol="main"
+				CLRThreadAttribute="2"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -366,7 +372,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"
+				Culture="0"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -385,6 +391,8 @@
 				GenerateMapFile="true"
 				MapFileName="..\..\Build.vc8\StaticDebug/managededitor.map"
 				SubSystem="2"
+				EntryPointSymbol="main"
+				CLRThreadAttribute="2"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -466,7 +474,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
-				Culture="1033"
+				Culture="0"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -483,6 +491,8 @@
 				GenerateMapFile="true"
 				MapFileName="..\..\Build.vc8\Release/managededitor.map"
 				SubSystem="2"
+				EntryPointSymbol="main"
+				CLRThreadAttribute="2"
 			/>
 			<Tool
 				Name="VCALinkTool"

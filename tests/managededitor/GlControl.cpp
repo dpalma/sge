@@ -9,26 +9,26 @@
 #include <windows.h>
 
 
-namespace Editor
+namespace ManagedEditor
 {
 
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGlControl
+// CLASS: GlControl
 //
 
-cGlControl::cGlControl()
+GlControl::GlControl()
  : m_hDc(NULL)
  , m_hGlrc(NULL)
 {
 }
 
-cGlControl::~cGlControl()
+GlControl::~GlControl()
 {
 }
 
-void cGlControl::SwapBuffers()
+void GlControl::SwapBuffers()
 {
    if (m_hDc != NULL)
    {
@@ -36,25 +36,25 @@ void cGlControl::SwapBuffers()
    }
 }
 
-void cGlControl::OnHandleCreated(System::EventArgs ^ e)
+void GlControl::OnHandleCreated(System::EventArgs ^ e)
 {
    System::Windows::Forms::UserControl::OnHandleCreated(e);
    DestroyContext();
    CreateContext();
 }
 
-void cGlControl::OnHandleDestroyed(System::EventArgs ^ e)
+void GlControl::OnHandleDestroyed(System::EventArgs ^ e)
 {
    System::Windows::Forms::UserControl::OnHandleDestroyed(e);
    DestroyContext();
 }
 
-void cGlControl::OnResize(System::EventArgs ^ e)
+void GlControl::OnResize(System::EventArgs ^ e)
 {
    System::Windows::Forms::UserControl::OnResize(e);
 }
 
-void cGlControl::CreateContext()
+void GlControl::CreateContext()
 {
    Assert(m_hDc == NULL && m_hGlrc == NULL);
 
@@ -89,7 +89,7 @@ void cGlControl::CreateContext()
    glewInit();
 }
 
-void cGlControl::DestroyContext()
+void GlControl::DestroyContext()
 {
    if (IsHandleCreated)
    {
@@ -115,6 +115,6 @@ void cGlControl::DestroyContext()
 }
 
 
-} // namespace Editor
+} // namespace ManagedEditor
 
 ///////////////////////////////////////////////////////////////////////////////

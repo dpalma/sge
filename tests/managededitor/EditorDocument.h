@@ -8,20 +8,20 @@
 #pragma once
 #endif
 
-namespace Editor
+namespace ManagedEditor
 {
 
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cEditorDocument
+// CLASS: EditorDocument
 //
 
-ref class cEditorDocument sealed
+ref class EditorDocument sealed
 {
 public:
-   cEditorDocument();
-   ~cEditorDocument();
+   EditorDocument();
+   ~EditorDocument();
 
 protected:
 
@@ -29,7 +29,7 @@ private:
 };
 
 
-} // namespace Editor
+} // namespace ManagedEditor
 
 ///////////////////////////////////////////////////////////////////////////////
 

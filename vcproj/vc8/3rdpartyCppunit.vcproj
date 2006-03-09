@@ -555,11 +555,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\3rdparty\cppunit\include\cppunit\ui\text\TextTestRunner.h"
+				RelativePath="..\..\3rdparty\cppunit\include\cppunit\TextTestRunner.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\3rdparty\cppunit\include\cppunit\TextTestRunner.h"
+				RelativePath="..\..\3rdparty\cppunit\include\cppunit\ui\text\TextTestRunner.h"
 				>
 			</File>
 		</Filter>
@@ -1032,11 +1032,11 @@
 			>
 		</File>
 		<File
-			RelativePath="..\..\3rdparty\cppunit\include\cppunit\Makefile.am"
+			RelativePath="..\..\3rdparty\cppunit\src\cppunit\Makefile.am"
 			>
 		</File>
 		<File
-			RelativePath="..\..\3rdparty\cppunit\src\cppunit\Makefile.am"
+			RelativePath="..\..\3rdparty\cppunit\include\cppunit\Makefile.am"
 			>
 		</File>
 	</Files>

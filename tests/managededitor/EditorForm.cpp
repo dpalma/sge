@@ -23,31 +23,34 @@
 #include <GL/glew.h>
 
 
+///////////////////////////////////////////////////////////////////////////////
+
+namespace ManagedEditor
+{
+
 static const int kDefStatsX = 25;
 static const int kDefStatsY = 25;
 static const cColor kDefStatsColor(1,1,1,1);
 
-
-namespace Editor
-{
+using namespace System::Windows::Forms;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cEditorForm
+// CLASS: EditorForm
 //
 
-cEditorForm::cEditorForm()
+EditorForm::EditorForm()
  : m_pFont(NULL)
 {
    InitializeComponent();
 
-   m_glControl = gcnew cGlControl();
+   m_glControl = gcnew GlControl();
    Controls->Add(m_glControl);
 
-   System::Windows::Forms::Application::Idle += gcnew System::EventHandler(this, &cEditorForm::OnIdle);
+   System::Windows::Forms::Application::Idle += gcnew System::EventHandler(this, &EditorForm::OnIdle);
 }
 
-cEditorForm::~cEditorForm()
+EditorForm::~EditorForm()
 {
    if (components)
    {
@@ -60,7 +63,7 @@ cEditorForm::~cEditorForm()
    }
 }
 
-void cEditorForm::OnIdle(System::Object ^ sender, System::EventArgs ^ e)
+void EditorForm::OnIdle(System::Object ^ sender, System::EventArgs ^ e)
 {
    UseGlobal(Sim);
    pSim->NextFrame();
@@ -117,6 +120,39 @@ void cEditorForm::OnIdle(System::Object ^ sender, System::EventArgs ^ e)
    }
 }
 
-} // namespace Editor
+System::Void EditorForm::OnFileOpen(System::Object ^ sender, System::EventArgs ^ e)
+{
+   OpenFileDialog ^ openFileDlg = gcnew OpenFileDialog();
+   openFileDlg->Filter = "DLL|*.dll|Executable|*.exe";
+   if (openFileDlg->ShowDialog() == System::Windows::Forms::DialogResult::OK)
+   {
+   }
+   else
+   {
+   }
+}
+
+System::Void EditorForm::OnFileNew(System::Object ^ sender, System::EventArgs ^ e)
+{
+}
+
+System::Void EditorForm::OnFileExit(System::Object ^ sender, System::EventArgs ^ e)
+{
+   Application::Exit();
+}
+
+System::Void EditorForm::OnFileSave(System::Object ^ sender, System::EventArgs ^ e)
+{
+}
+
+System::Void EditorForm::OnFileSaveAs(System::Object ^ sender, System::EventArgs ^ e)
+{
+}
+
+System::Void EditorForm::OnHelpAbout(System::Object ^ sender, System::EventArgs ^ e)
+{
+}
+
+} // namespace ManagedEditor
 
 ///////////////////////////////////////////////////////////////////////////////
