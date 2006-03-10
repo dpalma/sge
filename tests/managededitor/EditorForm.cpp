@@ -5,6 +5,7 @@
 
 // Local Includes
 #include "EditorForm.h"
+#include "EditorAbout.h"
 
 // GUI Includes
 #include "guiapi.h"
@@ -151,6 +152,8 @@ System::Void EditorForm::OnFileSaveAs(System::Object ^ sender, System::EventArgs
 
 System::Void EditorForm::OnHelpAbout(System::Object ^ sender, System::EventArgs ^ e)
 {
+   EditorAbout ^ aboutBox = gcnew EditorAbout();
+   aboutBox->ShowDialog();
 }
 
 } // namespace ManagedEditor

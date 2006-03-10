@@ -537,6 +537,14 @@
 			RelativePath="System.Design.dll"
 			AssemblyName="System.Design, Version=2.0.0.0, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL"
 		/>
+		<AssemblyReference
+			RelativePath="System.Data.dll"
+			AssemblyName="System.Data, Version=2.0.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=x86"
+		/>
+		<AssemblyReference
+			RelativePath="System.XML.dll"
+			AssemblyName="System.Xml, Version=2.0.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL"
+		/>
 	</References>
 	<Files>
 		<Filter
@@ -545,6 +553,10 @@
 			>
 			<File
 				RelativePath="..\..\tests\managededitor\AssemblyInfo.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tests\managededitor\EditorAbout.cpp"
 				>
 			</File>
 			<File
@@ -617,7 +629,16 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
-				RelativePath="..\..\tests\managededitor\EditorDocument.h"
+				RelativePath=".\..\..\tests\managededitor\EditorAbout.h"
+				FileType="3"
+				>
+				<File
+					RelativePath=".\..\..\tests\managededitor\EditorAbout.resX"
+					>
+				</File>
+			</File>
+			<File
+				RelativePath=".\..\..\tests\managededitor\EditorDocument.h"
 				>
 			</File>
 			<File
