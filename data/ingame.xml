@@ -17,6 +17,6 @@
     insets="(5,5,5,5)"
     renderer="beveled">
 
-   <button id="spawn" text="Create Worker" onclick="" />
+   <button id="spawn" text="Create Worker" onclick="IssueEntityCommand([[spawn]]);" />
 
 </panel>

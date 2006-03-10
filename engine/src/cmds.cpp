@@ -4,6 +4,7 @@
 #include "stdhdr.h"
 
 #include "engineapi.h"
+#include "entityapi.h"
 #include "inputapi.h"
 #include "scriptapi.h"
 #include "sys.h"
@@ -277,6 +278,45 @@ int GetMapProperties(int argc, const tScriptVar * argv,
    return 0;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+
+int IssueEntityCommand(int argc, const tScriptVar * argv, 
+                       int nMaxResults, tScriptVar * pResults)
+{
+   if (argc < 1 || !argv[0].IsString())
+   {
+      ErrorMsg("Invalid parameters to GetMapProperties\n");
+      return 0;
+   }
+
+   if (_tcscmp(argv[0].ToString(), _T("spawn")) == 0)
+   {
+      UseGlobal(EntityManager);
+      if (pEntityManager->GetSelectedCount() == 1)
+      {
+         cAutoIPtr<IEntityEnum> pEnum;
+         if (pEntityManager->GetSelected(&pEnum) == S_OK)
+         {
+            cAutoIPtr<IEntity> pEntity;
+            if (pEnum->Next(1, &pEntity, NULL) == S_OK)
+            {
+               cStr model;
+               tVec3 position;
+               if (pEntity->GetPosition(&position) == S_OK
+                  && pEntity->GetModel(&model) == S_OK)
+               {
+                  pEntityManager->SpawnEntity(model.c_str(), position + tVec3(10, 0, 10));
+               }
+            }
+         }
+      }
+   }
+
+   return 0;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 sScriptReg cmds[] =
@@ -287,6 +327,7 @@ sScriptReg cmds[] =
    { "LogChannel", LogEnableChannel },
    { "ListResources", ListResources },
    { "GetMapProperties", GetMapProperties },
+   { "IssueEntityCommand", IssueEntityCommand },
 };
 
 ENGINE_API tResult EngineRegisterScriptFunctions()

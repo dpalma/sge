@@ -6,6 +6,7 @@
 
 #include "entityapi.h"
 
+#include "inputapi.h"
 #include "saveloadapi.h"
 #include "simapi.h"
 
@@ -103,6 +104,15 @@ public:
 
 private:
    bool IsSelected(IEntity * pEntity) const;
+
+   class cInputListener : public cComObject<IMPLEMENTS(IInputListener)>
+   {
+   public:
+      virtual void DeleteThis() {}
+      virtual bool OnInputEvent(const sInputEvent * pEvent);
+   };
+   friend cInputListener;
+   cInputListener m_inputListener;
 
    tEntityId m_nextId;
    tEntityList m_entities;

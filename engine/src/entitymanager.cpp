@@ -5,10 +5,12 @@
 
 #include "entitymanager.h"
 
+#include "cameraapi.h"
 #include "renderapi.h"
 #include "terrainapi.h"
 
 #include "color.h"
+#include "keys.h"
 #include "ray.h"
 #include "resourceapi.h"
 
@@ -107,6 +109,9 @@ tResult cEntityManager::Init()
    pSaveLoadManager->RegisterSaveLoadParticipant(SAVELOADID_EntityManager,
       g_entityManagerVer, static_cast<ISaveLoadParticipant*>(this));
 
+   UseGlobal(Input);
+   pInput->AddInputListener(&m_inputListener);
+
    return S_OK;
 }
 
@@ -114,6 +119,9 @@ tResult cEntityManager::Init()
 
 tResult cEntityManager::Term()
 {
+   UseGlobal(Input);
+   pInput->RemoveInputListener(&m_inputListener);
+
    UseGlobal(Sim);
    pSim->Disconnect(static_cast<ISimClient*>(this));
 
@@ -414,6 +422,35 @@ tResult cEntityManager::Load(IReader * pReader, int version)
 bool cEntityManager::IsSelected(IEntity * pEntity) const
 {
    return (m_selected.find(pEntity) != m_selected.end());
+}
+
+///////////////////////////////////////
+
+bool cEntityManager::cInputListener::OnInputEvent(const sInputEvent * pEvent)
+{
+   if (pEvent->down && pEvent->key == kMouseLeft)
+   {
+      float ndx, ndy;
+      ScreenToNormalizedDeviceCoords(pEvent->point.x, pEvent->point.y, &ndx, &ndy);
+
+      cRay pickRay;
+      UseGlobal(Camera);
+      if (pCamera->GeneratePickRay(ndx, ndy, &pickRay) == S_OK)
+      {
+         cAutoIPtr<IEntity> pEntity;
+         UseGlobal(EntityManager);
+         if (pEntityManager->RayCast(pickRay, &pEntity) == S_OK)
+         {
+            pEntityManager->Select(pEntity);
+         }
+         else
+         {
+            pEntityManager->DeselectAll();
+         }
+      }
+   }
+
+   return false;
 }
 
 ///////////////////////////////////////
