@@ -366,6 +366,18 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 			<File
+				RelativePath="..\..\tests\managededitor\AssemblyInfo.cpp">
+			</File>
+			<File
+				RelativePath="..\..\tests\managededitor\EditorDocument.cpp">
+			</File>
+			<File
+				RelativePath="..\..\tests\managededitor\EditorForm.cpp">
+			</File>
+			<File
+				RelativePath="..\..\tests\managededitor\GlControl.cpp">
+			</File>
+			<File
 				RelativePath="..\..\tests\managededitor\managededitor.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -414,6 +426,15 @@
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl">
+			<File
+				RelativePath="..\..\tests\managededitor\EditorDocument.h">
+			</File>
+			<File
+				RelativePath="..\..\tests\managededitor\EditorForm.h">
+			</File>
+			<File
+				RelativePath="..\..\tests\managededitor\GlControl.h">
+			</File>
 			<File
 				RelativePath="..\..\tests\managededitor\stdhdr.h">
 			</File>
