@@ -67,7 +67,8 @@ protected:
    bool BubbleEvent(IGUIEvent * pEvent);
    bool BubbleEvent(IGUIElement * pStartElement, IGUIEvent * pEvent);
 
-   void DoDragDrop(const sInputEvent * pInputEvent, tGUIEventCode eventCode, IGUIElement * pMouseOver, IGUIElement * pDrag);
+   void DoDragDrop(const sInputEvent * pInputEvent, tGUIEventCode eventCode,
+      IGUIElement * pMouseOver, IGUIElement * pDrag, bool * pbEatInputEvent);
    void DoMouseEnterExit(const sInputEvent * pInputEvent, IGUIElement * pMouseOver, IGUIElement * pRestrictTo);
 
    bool HandleInputEvent(const sInputEvent * pInputEvent);

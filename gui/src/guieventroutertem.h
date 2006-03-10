@@ -23,6 +23,8 @@
 #pragma once
 #endif
 
+LOG_EXTERN_CHANNEL(GUIEventRouter); // defined in guieventrouter.cpp
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // TEMPLATE: cGUIEventRouter
@@ -244,6 +246,12 @@ bool cGUIEventRouter<T, INTRFC>::BubbleEvent(IGUIElement * pStartElement, IGUIEv
 template <typename T, typename INTRFC>
 bool cGUIEventRouter<T, INTRFC>::HandleInputEvent(const sInputEvent * pInputEvent)
 {
+   DebugMsgIfEx5(GUIEventRouter, pInputEvent->key != kMouseMove,
+      "InputEvent: key %d, down %d, point(%.3f, %.3f), time %f\n",
+      pInputEvent->key, static_cast<int>(pInputEvent->down),
+      pInputEvent->point.x, pInputEvent->point.y,
+      pInputEvent->time);
+
    tGUIEventCode eventCode = GUIEventCode(pInputEvent->key, pInputEvent->down);
    if (eventCode == kGUIEventNone)
    {
@@ -264,7 +272,7 @@ bool cGUIEventRouter<T, INTRFC>::HandleInputEvent(const sInputEvent * pInputEven
    cAutoIPtr<IGUIElement> pDrag;
    if (GetDrag(&pDrag) == S_OK)
    {
-      DoDragDrop(pInputEvent, eventCode, pMouseOver, pDrag);
+      DoDragDrop(pInputEvent, eventCode, pMouseOver, pDrag, &bEatInputEvent);
    }
 
    cAutoIPtr<IGUIElement> pFocus;
@@ -350,12 +358,14 @@ bool cGUIEventRouter<T, INTRFC>::HandleInputEvent(const sInputEvent * pInputEven
 
 template <typename T, typename INTRFC>
 void cGUIEventRouter<T, INTRFC>::DoDragDrop(const sInputEvent * pInputEvent, 
-                                         tGUIEventCode eventCode, 
-                                         IGUIElement * pMouseOver, 
-                                         IGUIElement * pDrag)
+                                            tGUIEventCode eventCode, 
+                                            IGUIElement * pMouseOver, 
+                                            IGUIElement * pDrag,
+                                            bool * pbEatInputEvent)
 {
    Assert(pInputEvent != NULL);
    Assert(pDrag != NULL);
+   Assert(pbEatInputEvent != NULL);
 
    if (eventCode == kGUIEventMouseMove)
    {
@@ -404,6 +414,9 @@ void cGUIEventRouter<T, INTRFC>::DoDragDrop(const sInputEvent * pInputEvent,
                pInputEvent->key, pMouseOver, true, &pClickEvent) == S_OK)
             {
                BubbleEvent(pClickEvent);
+               // Clicking a GUI element should stop all processing 
+               // of this input event
+               *pbEatInputEvent = true;
             }
          }
          else
@@ -439,8 +452,8 @@ void cGUIEventRouter<T, INTRFC>::DoDragDrop(const sInputEvent * pInputEvent,
 
 template <typename T, typename INTRFC>
 void cGUIEventRouter<T, INTRFC>::DoMouseEnterExit(const sInputEvent * pInputEvent, 
-                                               IGUIElement * pMouseOver, 
-                                               IGUIElement * pRestrictTo)
+                                                  IGUIElement * pMouseOver, 
+                                                  IGUIElement * pRestrictTo)
 {
    if (pMouseOver != NULL)
    {

@@ -29,10 +29,6 @@
 
 #include <ctime>
 
-#ifdef HAVE_CPPUNIT
-#include <cppunit/extensions/TestFactoryRegistry.h>
-#endif
-
 #include "dbgalloc.h" // must be last header
 
 #pragma warning(disable:4355) // 'this' used in base member initializer list
@@ -316,12 +312,10 @@ static bool MainInit(int argc, tChar * argv[])
 
    SysAppActivate(true);
 
-#ifdef HAVE_CPPUNIT
    if (FAILED(SysRunUnitTests()))
    {
       return false;
    }
-#endif
 
    UseGlobal(Camera);
    pCamera->SetPerspective(g_fov, (float)width / height, kZNear, kZFar);

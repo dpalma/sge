@@ -502,6 +502,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\gui\src\guieventrouter.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\gui\src\guieventsounds.cpp"
 					>
 				</File>
