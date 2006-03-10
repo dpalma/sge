@@ -21,10 +21,6 @@
 
 #include <ctime>
 
-#ifdef HAVE_CPPUNIT
-#include <cppunit/extensions/TestFactoryRegistry.h>
-#endif
-
 #define VC_EXTRALEAN
 #include <windows.h>
 #include <d3d9.h>
@@ -188,12 +184,10 @@ static bool d3dguiinit(int argc, tChar * argv[])
    UseGlobal(Sim);
    pSim->Go();
 
-#ifdef HAVE_CPPUNIT
    if (FAILED(SysRunUnitTests()))
    {
       return false;
    }
-#endif
 
    return true;
 }

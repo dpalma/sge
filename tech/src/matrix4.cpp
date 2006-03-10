@@ -580,6 +580,6 @@ TEST(MatrixInvert)
    CHECK(MatrixIsIdentity(result));
 }
 
-#endif // HAVE_CPPUNIT
+#endif // HAVE_CPPUNITLITE2
 
 ///////////////////////////////////////////////////////////////////////////////

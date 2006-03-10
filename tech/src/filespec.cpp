@@ -407,4 +407,4 @@ TEST(AttempFileSpecSetFileExtBufferOverrunAttack)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // HAVE_CPPUNIT
+#endif // HAVE_CPPUNITLITE2
