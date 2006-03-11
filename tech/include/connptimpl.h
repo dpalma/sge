@@ -158,8 +158,9 @@ private:
 //
 // TEMPLATE: cConnectionPointEx
 //
+// The sink data goes first in the pair to make it easier to sort by it
 
-template <class T, class SINKINTRFC, typename SINKDATA = int, class CONTAINER = std::vector< std::pair<SINKINTRFC *, SINKDATA> > >
+template <class T, class SINKINTRFC, typename SINKDATA = int, class CONTAINER = std::vector< std::pair<SINKDATA, SINKINTRFC *> > >
 class cConnectionPointEx
 {
 protected:
@@ -168,7 +169,7 @@ protected:
       typename CONTAINER::iterator iter;
       for (iter = m_sinks.begin(); iter != m_sinks.end(); iter++)
       {
-         iter->first->Release();
+         iter->second->Release();
       }
       m_sinks.clear();
    }
@@ -183,7 +184,7 @@ protected:
       {
          return S_FALSE;
       }
-      m_sinks.push_back(std::make_pair(CTAddRef(pSink), sinkData));
+      m_sinks.push_back(std::make_pair(sinkData, CTAddRef(pSink)));
       T * pT = static_cast<T*>(this);
       pT->SortSinks(m_sinks.begin(), m_sinks.end());
       return S_OK;
@@ -198,9 +199,9 @@ protected:
       typename CONTAINER::iterator iter;
       for (iter = m_sinks.begin(); iter != m_sinks.end(); iter++)
       {
-         if (CTIsSameObject(pSink, iter->first))
+         if (CTIsSameObject(pSink, iter->second))
          {
-            iter->first->Release();
+            iter->second->Release();
             m_sinks.erase(iter);
             return S_OK;
          }
@@ -217,9 +218,9 @@ protected:
       typename CONTAINER::const_iterator iter;
       for (iter = m_sinks.begin(); iter != m_sinks.end(); iter++)
       {
-         if (CTIsSameObject(pSink, iter->first))
+         if (CTIsSameObject(pSink, iter->second))
          {
-            *pSinkData = iter->second;
+            *pSinkData = iter->first;
             return S_OK;
          }
       }

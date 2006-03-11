@@ -298,8 +298,9 @@ int IssueEntityCommand(int argc, const tScriptVar * argv,
          cAutoIPtr<IEntityEnum> pEnum;
          if (pEntityManager->GetSelected(&pEnum) == S_OK)
          {
+            ulong nEntities = 0;
             cAutoIPtr<IEntity> pEntity;
-            if (pEnum->Next(1, &pEntity, NULL) == S_OK)
+            if (pEnum->Next(1, &pEntity, &nEntities) == S_OK)
             {
                cStr model;
                tVec3 position;

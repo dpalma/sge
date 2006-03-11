@@ -10,6 +10,7 @@
 
 #include <cstring>
 #include <cstdlib>
+#include <functional>
 #include <locale>
 
 #include "dbgalloc.h" // must be last header
@@ -128,17 +129,18 @@ tResult cInput::RemoveInputListener(IInputListener * pListener)
 
 ///////////////////////////////////////
 
-bool SortByPriority(const std::pair<IInputListener*, int> & p1,
-                    const std::pair<IInputListener*, int> & p2)
+bool SortByPriority(const std::pair<int, IInputListener*> & p1,
+                    const std::pair<int, IInputListener*> & p2)
 {
    // Put higher priority listeners toward the head of the list
    // since iteration is done head to tail
-   return p1.second < p2.second;
+   return p1.first < p2.first;
 }
 
 void cInput::SortSinks(tSinksIterator first, tSinksIterator last)
 {
-   std::stable_sort(first, last, SortByPriority);
+//   std::stable_sort(first, last, SortByPriority);
+   std::stable_sort(first, last, std::greater< std::pair<int, IInputListener*> >());
 }
 
 ///////////////////////////////////////
@@ -227,7 +229,7 @@ bool cInput::DispatchInputEvent(int x, int y, long key, bool down, double time)
    tSinksIterator end = EndSinks();
    for (; iter != end; iter++)
    {
-      if (iter->first->OnInputEvent(&event))
+      if (iter->second->OnInputEvent(&event))
       {
          return true; // do no further processing for this key event
       }
