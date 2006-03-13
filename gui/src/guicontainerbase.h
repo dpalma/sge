@@ -41,8 +41,8 @@ public:
 
    virtual tResult AddElement(IGUIElement * pElement);
    virtual tResult RemoveElement(IGUIElement * pElement);
+   virtual tResult RemoveAll();
    virtual tResult HasElement(IGUIElement * pElement) const;
-   virtual tResult GetElement(const tChar * pszId, IGUIElement * * ppElement) const;
 
    virtual tResult GetLayout(IGUILayoutManager * * ppLayout);
    virtual tResult SetLayout(IGUILayoutManager * pLayout);

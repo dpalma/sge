@@ -63,6 +63,8 @@ interface IGUIElement : IUnknown
    virtual void SetFocus(bool bFocus) = 0;
 
    /// @return A boolean value representing whether the mouse is presently over the element
+   /// @remarks This method is intended for use by rendering code to display a highlight
+   /// effect when the mouse is over the element.
    virtual bool IsMouseOver() const = 0;
    /// @brief Called by the GUI system to tell the element that the mouse is 
    /// presently over it
@@ -138,8 +140,8 @@ interface IGUIContainerElement : IGUIElement
 {
    virtual tResult AddElement(IGUIElement * pElement) = 0;
    virtual tResult RemoveElement(IGUIElement * pElement) = 0;
+   virtual tResult RemoveAll() = 0;
    virtual tResult HasElement(IGUIElement * pElement) const = 0;
-   virtual tResult GetElement(const tGUIChar * pszId, IGUIElement * * ppElement) const = 0;
 
    virtual tResult GetLayout(IGUILayoutManager * * ppLayout) = 0;
    virtual tResult SetLayout(IGUILayoutManager * pLayout) = 0;

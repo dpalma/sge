@@ -75,7 +75,6 @@ private:
       kFlags_MouseOver        = 1 << 1,
       kFlags_Visible          = 1 << 2,
       kFlags_Disabled         = 1 << 3,
-      kFlags_HasClientArea    = 1 << 4,
    };
 
    tGUIString m_id;
@@ -83,7 +82,7 @@ private:
    IGUIElement * m_pParent;
    tGUIPoint m_position;
    tGUISize m_size;
-   tGUIRect m_clientArea;
+   tGUIRect * m_pClientArea;
    tGUIString m_rendererClass;
    cAutoIPtr<IGUIElementRenderer> m_pRenderer;
    cAutoIPtr<IGUIStyle> m_pStyle;

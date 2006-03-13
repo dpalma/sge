@@ -16,8 +16,6 @@
 // CLASS: cGUIBasicRenderer
 //
 
-static const int g_bevel = 2;
-
 ///////////////////////////////////////
 
 cGUIBasicRenderer::cGUIBasicRenderer()
@@ -107,9 +105,6 @@ tResult cGUIBasicRenderer::ComputeClientArea(IGUIElement * pElement, tGUIRect * 
       return E_POINTER;
    }
 
-   tGUISize size = pElement->GetSize();
-   tGUIRect clientArea(g_bevel, g_bevel, Round(size.width - g_bevel), Round(size.height - g_bevel));
-
    {
       cAutoIPtr<IGUIDialogElement> pDialogElement;
       if (pElement->QueryInterface(IID_IGUIDialogElement, (void**)&pDialogElement) == S_OK)
@@ -133,12 +128,13 @@ tResult cGUIBasicRenderer::ComputeClientArea(IGUIElement * pElement, tGUIRect * 
             }
          }
 
-         clientArea.top += captionHeight;
+         tGUISize size = pElement->GetSize();
+         *pClientArea = tGUIRect(0, captionHeight, Round(size.width), Round(size.height));
+         return S_OK;
       }
    }
 
-   *pClientArea = clientArea;
-   return S_OK;
+   return S_FALSE;
 }
 
 ///////////////////////////////////////

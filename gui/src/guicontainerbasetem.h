@@ -105,6 +105,24 @@ tResult cGUIContainerBase<INTRFC>::RemoveElement(IGUIElement * pElement)
 ///////////////////////////////////////
 
 template <typename INTRFC>
+tResult cGUIContainerBase<INTRFC>::RemoveAll()
+{
+   if (m_children.empty())
+   {
+      return S_FALSE;
+   }
+   tGUIElementList::iterator iter;
+   for (iter = m_children.begin(); iter != m_children.end(); iter++)
+   {
+      (*iter)->Release();
+   }
+   m_children.clear();
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+template <typename INTRFC>
 tResult cGUIContainerBase<INTRFC>::HasElement(IGUIElement * pElement) const
 {
    if (pElement == NULL)
@@ -116,30 +134,6 @@ tResult cGUIContainerBase<INTRFC>::HasElement(IGUIElement * pElement) const
    if (f != m_children.end())
    {
       return S_OK;
-   }
-
-   return S_FALSE;
-}
-
-///////////////////////////////////////
-
-template <typename INTRFC>
-tResult cGUIContainerBase<INTRFC>::GetElement(const tChar * pszId, IGUIElement * * ppElement) const
-{
-   if (pszId == NULL || ppElement == NULL)
-   {
-      return E_POINTER;
-   }
-
-   // TODO: construct a map to do this
-   tGUIElementList::const_iterator iter;
-   for (iter = m_children.begin(); iter != m_children.end(); iter++)
-   {
-      if (GUIElementIdMatch(*iter, pszId))
-      {
-         *ppElement = CTAddRef(*iter);
-         return S_OK;
-      }
    }
 
    return S_FALSE;

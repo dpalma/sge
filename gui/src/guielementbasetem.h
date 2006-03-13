@@ -32,6 +32,7 @@ cGUIElementBase<INTRFC>::cGUIElementBase()
  , m_pParent(NULL)
  , m_position(0,0)
  , m_size(0,0)
+ , m_pClientArea(NULL)
 {
 }
 
@@ -40,6 +41,7 @@ cGUIElementBase<INTRFC>::cGUIElementBase()
 template <typename INTRFC>
 cGUIElementBase<INTRFC>::~cGUIElementBase()
 {
+   delete m_pClientArea, m_pClientArea = NULL;
 }
 
 ///////////////////////////////////////
@@ -354,15 +356,16 @@ tResult cGUIElementBase<INTRFC>::GetClientArea(tGUIRect * pClientArea)
    {
       return E_POINTER;
    }
-   if (m_flags & kFlags_HasClientArea)
+   if (m_pClientArea != NULL)
    {
-      *pClientArea = m_clientArea;
+      *pClientArea = *m_pClientArea;
+      return S_OK;
    }
    else
    {
       *pClientArea = tGUIRect(0,0,Round(m_size.width),Round(m_size.height));
+      return S_FALSE;
    }
-   return S_OK;
 }
 
 ///////////////////////////////////////
@@ -370,8 +373,15 @@ tResult cGUIElementBase<INTRFC>::GetClientArea(tGUIRect * pClientArea)
 template <typename INTRFC>
 tResult cGUIElementBase<INTRFC>::SetClientArea(const tGUIRect & clientArea)
 {
-   m_flags |= kFlags_HasClientArea;
-   m_clientArea = clientArea;
+   if (m_pClientArea == NULL)
+   {
+      m_pClientArea = new tGUIRect(clientArea);
+      if (m_pClientArea == NULL)
+      {
+         return E_OUTOFMEMORY;
+      }
+   }
+   *m_pClientArea = clientArea;
    return S_OK;
 }
 

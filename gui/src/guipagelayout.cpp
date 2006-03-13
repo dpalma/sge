@@ -309,10 +309,11 @@ tResult cGUIPageLayout::operator ()(IGUIElement * pElement, IGUIElementRenderer 
 
    pElement->SetSize(elementSize);
 
-   tGUIRect clientArea(0,0,0,0);
-   pRenderer->ComputeClientArea(pElement, &clientArea);
-
-   pElement->SetClientArea(clientArea);
+   tGUIRect clientArea;
+   if (pRenderer->ComputeClientArea(pElement, &clientArea) == S_OK)
+   {
+      pElement->SetClientArea(clientArea);
+   }
 
    if (!pParent)
    {

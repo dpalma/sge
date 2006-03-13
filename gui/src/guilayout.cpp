@@ -183,7 +183,7 @@ tResult cGUIGridLayout::Layout(IGUIElement * pParent)
    }
 
    tGUIRect clientArea;
-   if (pParent->GetClientArea(&clientArea) != S_OK)
+   if (FAILED(pParent->GetClientArea(&clientArea)))
    {
       return E_FAIL;
    }
@@ -440,7 +440,7 @@ tResult cGUIFlowLayout::Layout(IGUIElement * pParent)
    }
 
    tGUIRect clientArea;
-   if (pParent->GetClientArea(&clientArea) != S_OK)
+   if (FAILED(pParent->GetClientArea(&clientArea)))
    {
       return E_FAIL;
    }
