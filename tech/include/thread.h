@@ -22,7 +22,7 @@ typedef ulong tThreadId;
 typedef pthread_t tThreadId;
 #endif
 
-const uint kInfiniteTimeout = ~0;
+const uint kInfiniteTimeout = ~0u;
 
 TECH_API void ThreadSleep(uint milliseconds);
 

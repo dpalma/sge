@@ -133,13 +133,27 @@ extern TECH_API cLog techlog;
 
 #define _TFILE _T(__FILE__)
 
+#define LogMsg(sev,fmt)                                     techlog.Print(_TFILE,__LINE__,(sev),_T(fmt))
+#define LogMsg1(sev,fmt,arg1)                               techlog.Print(_TFILE,__LINE__,(sev),_T(fmt),(arg1))
+#define LogMsg2(sev,fmt,arg1,arg2)                          techlog.Print(_TFILE,__LINE__,(sev),_T(fmt),(arg1),(arg2))
+#define LogMsg3(sev,fmt,arg1,arg2,arg3)                     techlog.Print(_TFILE,__LINE__,(sev),_T(fmt),(arg1),(arg2),(arg3))
+#define LogMsg4(sev,fmt,arg1,arg2,arg3,arg4)                techlog.Print(_TFILE,__LINE__,(sev),_T(fmt),(arg1),(arg2),(arg3),(arg4))
+#define LogMsg5(sev,fmt,arg1,arg2,arg3,arg4,arg5)           techlog.Print(_TFILE,__LINE__,(sev),_T(fmt),(arg1),(arg2),(arg3),(arg4),(arg5))
+
+#define LogMsgIf(expr,sev,fmt)                              do { if (expr) { LogMsg((sev),fmt); } } while(0)
+#define LogMsgIf1(expr,sev,fmt,arg1)                        do { if (expr) { LogMsg1((sev),fmt,(arg1)); } } while(0)
+#define LogMsgIf2(expr,sev,fmt,arg1,arg2)                   do { if (expr) { LogMsg2((sev),fmt,(arg1),(arg2)); } } while(0)
+#define LogMsgIf3(expr,sev,fmt,arg1,arg2,arg3)              do { if (expr) { LogMsg3((sev),fmt,(arg1),(arg2),(arg3)); } } while(0)
+#define LogMsgIf4(expr,sev,fmt,arg1,arg2,arg3,arg4)         do { if (expr) { LogMsg4((sev),fmt,(arg1),(arg2),(arg3),(arg4)); } } while(0)
+#define LogMsgIf5(expr,sev,fmt,arg1,arg2,arg3,arg4,arg5)    do { if (expr) { LogMsg5((sev),fmt,(arg1),(arg2),(arg3),(arg4),(arg5)); } } while(0)
+
 #ifndef NDEBUG
-#define DebugMsgIf(expr,fmt)                                do { if (expr) { techlog.Print(_TFILE,__LINE__,kDebug,_T(fmt)); } } while(0)
-#define DebugMsgIf1(expr,fmt,arg1)                          do { if (expr) { techlog.Print(_TFILE,__LINE__,kDebug,_T(fmt),(arg1)); } } while(0)
-#define DebugMsgIf2(expr,fmt,arg1,arg2)                     do { if (expr) { techlog.Print(_TFILE,__LINE__,kDebug,_T(fmt),(arg1),(arg2)); } } while(0)
-#define DebugMsgIf3(expr,fmt,arg1,arg2,arg3)                do { if (expr) { techlog.Print(_TFILE,__LINE__,kDebug,_T(fmt),(arg1),(arg2),(arg3)); } } while(0)
-#define DebugMsgIf4(expr,fmt,arg1,arg2,arg3,arg4)           do { if (expr) { techlog.Print(_TFILE,__LINE__,kDebug,_T(fmt),(arg1),(arg2),(arg3),(arg4)); } } while(0)
-#define DebugMsgIf5(expr,fmt,arg1,arg2,arg3,arg4,arg5)      do { if (expr) { techlog.Print(_TFILE,__LINE__,kDebug,_T(fmt),(arg1),(arg2),(arg3),(arg4),(arg5)); } } while(0)
+#define DebugMsgIf(expr,fmt)                                LogMsgIf(expr,kDebug,fmt)
+#define DebugMsgIf1(expr,fmt,arg1)                          LogMsgIf1(expr,kDebug,fmt,arg1)
+#define DebugMsgIf2(expr,fmt,arg1,arg2)                     LogMsgIf2(expr,kDebug,fmt,arg1,arg2)
+#define DebugMsgIf3(expr,fmt,arg1,arg2,arg3)                LogMsgIf3(expr,kDebug,fmt,arg1,arg2,arg3)
+#define DebugMsgIf4(expr,fmt,arg1,arg2,arg3,arg4)           LogMsgIf4(expr,kDebug,fmt,arg1,arg2,arg3,arg4)
+#define DebugMsgIf5(expr,fmt,arg1,arg2,arg3,arg4,arg5)      LogMsgIf5(expr,kDebug,fmt,arg1,arg2,arg3,arg4,arg5)
 #else
 #define DebugMsgIf(expr,fmt)                                ((void)0)
 #define DebugMsgIf1(expr,fmt,arg1)                          ((void)0)
@@ -166,12 +180,12 @@ extern TECH_API cLog techlog;
 #endif
 
 
-#define ErrorMsgIf(expr,fmt)                                do { if (expr) { techlog.Print(_TFILE,__LINE__,kError,_T(fmt)); } } while(0)
-#define ErrorMsgIf1(expr,fmt,arg1)                          do { if (expr) { techlog.Print(_TFILE,__LINE__,kError,_T(fmt),(arg1)); } } while(0)
-#define ErrorMsgIf2(expr,fmt,arg1,arg2)                     do { if (expr) { techlog.Print(_TFILE,__LINE__,kError,_T(fmt),(arg1),(arg2)); } } while(0)
-#define ErrorMsgIf3(expr,fmt,arg1,arg2,arg3)                do { if (expr) { techlog.Print(_TFILE,__LINE__,kError,_T(fmt),(arg1),(arg2),(arg3)); } } while(0)
-#define ErrorMsgIf4(expr,fmt,arg1,arg2,arg3,arg4)           do { if (expr) { techlog.Print(_TFILE,__LINE__,kError,_T(fmt),(arg1),(arg2),(arg3),(arg4)); } } while(0)
-#define ErrorMsgIf5(expr,fmt,arg1,arg2,arg3,arg4,arg5)      do { if (expr) { techlog.Print(_TFILE,__LINE__,kError,_T(fmt),(arg1),(arg2),(arg3),(arg4),(arg5)); } } while(0)
+#define ErrorMsgIf(expr,fmt)                                LogMsgIf(expr,kError,fmt)
+#define ErrorMsgIf1(expr,fmt,arg1)                          LogMsgIf1(expr,kError,fmt,arg1)
+#define ErrorMsgIf2(expr,fmt,arg1,arg2)                     LogMsgIf2(expr,kError,fmt,arg1,arg2)
+#define ErrorMsgIf3(expr,fmt,arg1,arg2,arg3)                LogMsgIf3(expr,kError,fmt,arg1,arg2,arg3)
+#define ErrorMsgIf4(expr,fmt,arg1,arg2,arg3,arg4)           LogMsgIf4(expr,kError,fmt,arg1,arg2,arg3,arg4)
+#define ErrorMsgIf5(expr,fmt,arg1,arg2,arg3,arg4,arg5)      LogMsgIf5(expr,kError,fmt,arg1,arg2,arg3,arg4,arg5)
 
 #define ErrorMsg(fmt)                                       ErrorMsgIf(1,fmt)
 #define ErrorMsg1(fmt,arg1)                                 ErrorMsgIf1(1,fmt,arg1)
@@ -180,12 +194,12 @@ extern TECH_API cLog techlog;
 #define ErrorMsg4(fmt,arg1,arg2,arg3,arg4)                  ErrorMsgIf4(1,fmt,arg1,arg2,arg3,arg4)
 #define ErrorMsg5(fmt,arg1,arg2,arg3,arg4,arg5)             ErrorMsgIf5(1,fmt,arg1,arg2,arg3,arg4,arg5)
 
-#define WarnMsgIf(expr,fmt)                                 do { if (expr) { techlog.Print(_TFILE,__LINE__,kWarning,_T(fmt)); } } while(0)
-#define WarnMsgIf1(expr,fmt,arg1)                           do { if (expr) { techlog.Print(_TFILE,__LINE__,kWarning,_T(fmt),(arg1)); } } while(0)
-#define WarnMsgIf2(expr,fmt,arg1,arg2)                      do { if (expr) { techlog.Print(_TFILE,__LINE__,kWarning,_T(fmt),(arg1),(arg2)); } } while(0)
-#define WarnMsgIf3(expr,fmt,arg1,arg2,arg3)                 do { if (expr) { techlog.Print(_TFILE,__LINE__,kWarning,_T(fmt),(arg1),(arg2),(arg3)); } } while(0)
-#define WarnMsgIf4(expr,fmt,arg1,arg2,arg3,arg4)            do { if (expr) { techlog.Print(_TFILE,__LINE__,kWarning,_T(fmt),(arg1),(arg2),(arg3),(arg4)); } } while(0)
-#define WarnMsgIf5(expr,fmt,arg1,arg2,arg3,arg4,arg5)       do { if (expr) { techlog.Print(_TFILE,__LINE__,kWarning,_T(fmt),(arg1),(arg2),(arg3),(arg4),(arg5)); } } while(0)
+#define WarnMsgIf(expr,fmt)                                 LogMsgIf(expr,kWarning,fmt)
+#define WarnMsgIf1(expr,fmt,arg1)                           LogMsgIf1(expr,kWarning,fmt,arg1)
+#define WarnMsgIf2(expr,fmt,arg1,arg2)                      LogMsgIf2(expr,kWarning,fmt,arg1,arg2)
+#define WarnMsgIf3(expr,fmt,arg1,arg2,arg3)                 LogMsgIf3(expr,kWarning,fmt,arg1,arg2,arg3)
+#define WarnMsgIf4(expr,fmt,arg1,arg2,arg3,arg4)            LogMsgIf4(expr,kWarning,fmt,arg1,arg2,arg3,arg4)
+#define WarnMsgIf5(expr,fmt,arg1,arg2,arg3,arg4,arg5)       LogMsgIf5(expr,kWarning,fmt,arg1,arg2,arg3,arg4,arg5)
 
 #define WarnMsg(fmt)                                        WarnMsgIf(1,fmt)
 #define WarnMsg1(fmt,arg1)                                  WarnMsgIf1(1,fmt,arg1)
@@ -194,12 +208,12 @@ extern TECH_API cLog techlog;
 #define WarnMsg4(fmt,arg1,arg2,arg3,arg4)                   WarnMsgIf4(1,fmt,arg1,arg2,arg3,arg4)
 #define WarnMsg5(fmt,arg1,arg2,arg3,arg4,arg5)              WarnMsgIf5(1,fmt,arg1,arg2,arg3,arg4,arg5)
 
-#define InfoMsgIf(expr,fmt)                                 do { if (expr) { techlog.Print(_TFILE,__LINE__,kInfo,_T(fmt)); } } while(0)
-#define InfoMsgIf1(expr,fmt,arg1)                           do { if (expr) { techlog.Print(_TFILE,__LINE__,kInfo,_T(fmt),(arg1)); } } while(0)
-#define InfoMsgIf2(expr,fmt,arg1,arg2)                      do { if (expr) { techlog.Print(_TFILE,__LINE__,kInfo,_T(fmt),(arg1),(arg2)); } } while(0)
-#define InfoMsgIf3(expr,fmt,arg1,arg2,arg3)                 do { if (expr) { techlog.Print(_TFILE,__LINE__,kInfo,_T(fmt),(arg1),(arg2),(arg3)); } } while(0)
-#define InfoMsgIf4(expr,fmt,arg1,arg2,arg3,arg4)            do { if (expr) { techlog.Print(_TFILE,__LINE__,kInfo,_T(fmt),(arg1),(arg2),(arg3),(arg4)); } } while(0)
-#define InfoMsgIf5(expr,fmt,arg1,arg2,arg3,arg4,arg5)       do { if (expr) { techlog.Print(_TFILE,__LINE__,kInfo,_T(fmt),(arg1),(arg2),(arg3),(arg4),(arg5)); } } while(0)
+#define InfoMsgIf(expr,fmt)                                 LogMsgIf(expr,kInfo,fmt)
+#define InfoMsgIf1(expr,fmt,arg1)                           LogMsgIf1(expr,kInfo,fmt,arg1)
+#define InfoMsgIf2(expr,fmt,arg1,arg2)                      LogMsgIf2(expr,kInfo,fmt,arg1,arg2)
+#define InfoMsgIf3(expr,fmt,arg1,arg2,arg3)                 LogMsgIf3(expr,kInfo,fmt,arg1,arg2,arg3)
+#define InfoMsgIf4(expr,fmt,arg1,arg2,arg3,arg4)            LogMsgIf4(expr,kInfo,fmt,arg1,arg2,arg3,arg4)
+#define InfoMsgIf5(expr,fmt,arg1,arg2,arg3,arg4,arg5)       LogMsgIf5(expr,kInfo,fmt,arg1,arg2,arg3,arg4,arg5)
 
 #define InfoMsg(fmt)                                        InfoMsgIf(1,fmt)
 #define InfoMsg1(fmt,arg1)                                  InfoMsgIf1(1,fmt,arg1)

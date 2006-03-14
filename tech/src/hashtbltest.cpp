@@ -12,12 +12,12 @@
 
 #include "CppUnitLite2.h"
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1300)
-#if _MSC_VER >= 1400
+#if (_MSC_VER >= 1310)
 #define HASH_MAP_NS stdext
-#else
+#define HAVE_HASH_MAP 1
+#include <hash_map>
+#elif (_MSC_VER >= 1200)
 #define HASH_MAP_NS std
-#endif
 #define HAVE_HASH_MAP 1
 #include <hash_map>
 #else
