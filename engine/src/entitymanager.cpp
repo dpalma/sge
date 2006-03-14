@@ -6,6 +6,7 @@
 #include "entitymanager.h"
 
 #include "cameraapi.h"
+#include "readwriteutils.h"
 #include "renderapi.h"
 #include "terrainapi.h"
 
@@ -25,51 +26,6 @@
 #define IsFlagSet(f, b) (((f)&(b))==(b))
 
 extern tResult ModelEntityCreate(tEntityId id, const tChar * pszModel, const tVec3 & position, IEntity * * ppEntity);
-
-
-////////////////////////////////////////////////////////////////////////////////
-
-template <>
-class cReadWriteOps<tVec3>
-{
-public:
-   static tResult Read(IReader * pReader, tVec3 * pV);
-   static tResult Write(IWriter * pWriter, const tVec3 & v);
-};
-
-tResult cReadWriteOps<tVec3>::Read(IReader * pReader, tVec3 * pV)
-{
-   if (pReader == NULL || pV == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (pReader->Read(&pV->x) == S_OK
-      && pReader->Read(&pV->y) == S_OK
-      && pReader->Read(&pV->z) == S_OK)
-   {
-      return S_OK;
-   }
-
-   return E_FAIL;
-}
-
-tResult cReadWriteOps<tVec3>::Write(IWriter * pWriter, const tVec3 & v)
-{
-   if (pWriter == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (pWriter->Write(v.x) == S_OK
-      && pWriter->Write(v.y) == S_OK
-      && pWriter->Write(v.z) == S_OK)
-   {
-      return S_OK;
-   }
-
-   return E_FAIL;
-}
 
 
 ///////////////////////////////////////////////////////////////////////////////

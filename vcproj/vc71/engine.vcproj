@@ -369,6 +369,9 @@
 					RelativePath="..\..\engine\src\ms3dread.cpp">
 				</File>
 				<File
+					RelativePath="..\..\engine\src\readwriteutils.cpp">
+				</File>
+				<File
 					RelativePath="..\..\engine\src\renderer.cpp">
 				</File>
 				<File
@@ -488,6 +491,9 @@
 				</File>
 				<File
 					RelativePath="..\..\engine\src\ms3dread.h">
+				</File>
+				<File
+					RelativePath="..\..\engine\src\readwriteutils.h">
 				</File>
 				<File
 					RelativePath="..\..\engine\src\renderer.h">
