@@ -358,6 +358,9 @@
 				RelativePath="..\..\game\game.rc">
 			</File>
 			<File
+				RelativePath="..\..\game\entityui.cpp">
+			</File>
+			<File
 				RelativePath="..\..\game\main.cpp">
 			</File>
 			<File
@@ -397,6 +400,9 @@
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl">
+			<File
+				RelativePath="..\..\game\entityui.h">
+			</File>
 			<File
 				RelativePath="..\..\game\script.h">
 			</File>

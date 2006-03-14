@@ -17,6 +17,7 @@
 F_DECLARE_INTERFACE(IEntity);
 F_DECLARE_INTERFACE(IEntityEnum);
 F_DECLARE_INTERFACE(IEntityManager);
+F_DECLARE_INTERFACE(IEntityManagerListener);
 
 class cRay;
 
@@ -86,6 +87,9 @@ interface IEntityEnum : IUnknown
 
 interface IEntityManager : IUnknown
 {
+   virtual tResult AddEntityManagerListener(IEntityManagerListener * pListener) = 0;
+   virtual tResult RemoveEntityManagerListener(IEntityManagerListener * pListener) = 0;
+
    virtual tResult SpawnEntity(const tChar * pszEntity, const tVec3 & position) = 0;
 
    virtual tResult RemoveEntity(IEntity * pEntity) = 0;
@@ -106,6 +110,17 @@ interface IEntityManager : IUnknown
 ////////////////////////////////////////
 
 ENGINE_API tResult EntityManagerCreate();
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IEntityManagerListener
+//
+
+interface IEntityManagerListener : IUnknown
+{
+   virtual void OnEntitySelectionChange() = 0;
+};
 
 
 ///////////////////////////////////////////////////////////////////////////////

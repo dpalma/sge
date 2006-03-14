@@ -190,6 +190,10 @@ interface IGUIButtonElement : IGUIElement
    virtual tResult SetOnClick(const tGUIChar * pszOnClick) = 0;
 };
 
+////////////////////////////////////////
+
+GUI_API tResult GUIButtonCreate(IGUIButtonElement * * ppButtonElement);
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //

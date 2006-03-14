@@ -61,19 +61,6 @@ enum eGUIDimensionSpec
 
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// STRUCT: sGUIInsets
-//
-
-struct sGUIInsets
-{
-   int left, top, right, bottom;
-};
-
-typedef struct sGUIInsets tGUIInsets;
-
-
-///////////////////////////////////////////////////////////////////////////////
 
 namespace GUIStandardColors
 {
@@ -208,62 +195,6 @@ private:
    uint m_glyphFirst;
    uint m_glyphLast;
 };
-
-////////////////////////////////////////
-
-inline const tGUIChar * cGUIFontDesc::GetFace() const
-{
-   return m_typeFace.c_str();
-}
-
-////////////////////////////////////////
-
-inline int cGUIFontDesc::GetPointSize() const
-{
-   return m_pointSize;
-}
-
-////////////////////////////////////////
-
-inline bool cGUIFontDesc::GetBold() const
-{
-   return (m_effects & kGFE_Bold) == kGFE_Bold;
-}
-
-////////////////////////////////////////
-
-inline bool cGUIFontDesc::GetItalic() const
-{
-   return (m_effects & kGFE_Italic) == kGFE_Italic;
-}
-
-////////////////////////////////////////
-
-inline bool cGUIFontDesc::GetShadow() const
-{
-   return (m_effects & kGFE_Shadow) == kGFE_Shadow;
-}
-
-////////////////////////////////////////
-
-inline bool cGUIFontDesc::GetOutline() const
-{
-   return (m_effects & kGFE_Outline) == kGFE_Outline;
-}
-
-////////////////////////////////////////
-
-inline uint cGUIFontDesc::GetGlyphFirst() const
-{
-   return m_glyphFirst;
-}
-
-////////////////////////////////////////
-
-inline uint cGUIFontDesc::GetGlyphLast() const
-{
-   return m_glyphLast;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 

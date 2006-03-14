@@ -1,8 +1,11 @@
 <!-- $Id$ -->
 
+<script>
+   SetEntityPanel("entityCommands");
+</script>
+
 <panel id="toppanel"
     style="width:100%;height:28"
-    insets="(5,5,5,5)"
     renderer="beveled">
     
    <label id="resources" />
@@ -14,9 +17,16 @@
 
 <panel id="bottompanel"
     style="placement:absolute;vertical-align:bottom;width:100%;height:20%"
-    insets="(5,5,5,5)"
     renderer="beveled">
 
-   <button id="spawn" text="Create Worker" onclick="IssueEntityCommand([[spawn]]);" />
+   <panel id="miniMap">
+   </panel>
+
+   <panel id="entityPortrait">
+   </panel>
+
+   <panel id="entityCommands" style="placement:absolute;align:right;width:40%;height:100%">
+      <button id="spawn" text="Create Worker" onclick="IssueEntityCommand([[spawn]]);" />
+   </panel>
 
 </panel>

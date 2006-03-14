@@ -92,6 +92,20 @@ tResult cEntityManager::Term()
 
 ///////////////////////////////////////
 
+tResult cEntityManager::AddEntityManagerListener(IEntityManagerListener * pListener)
+{
+   return Connect(pListener);
+}
+
+///////////////////////////////////////
+
+tResult cEntityManager::RemoveEntityManagerListener(IEntityManagerListener * pListener)
+{
+   return Disconnect(pListener);
+}
+
+///////////////////////////////////////
+
 tResult cEntityManager::SpawnEntity(const tChar * pszEntity, const tVec3 & position)
 {
    if (pszEntity == NULL)
@@ -223,6 +237,7 @@ tResult cEntityManager::Select(IEntity * pEntity)
    if (result.second)
    {
       pEntity->AddRef();
+      ForEachConnection(&IEntityManagerListener::OnEntitySelectionChange);
       return S_OK;
    }
    else
@@ -250,7 +265,12 @@ tResult cEntityManager::SelectBoxed(const tAxisAlignedBox & box)
          nSelected++;
       }
    }
-   return (nSelected > 0) ? S_OK : S_FALSE;
+   if (nSelected == 0)
+   {
+      return S_FALSE;
+   }
+   ForEachConnection(&IEntityManagerListener::OnEntitySelectionChange);
+   return S_OK;
 }
 
 ///////////////////////////////////////
@@ -263,6 +283,7 @@ tResult cEntityManager::DeselectAll()
    }
    std::for_each(m_selected.begin(), m_selected.end(), CTInterfaceMethod(&IEntity::Release));
    m_selected.clear();
+   ForEachConnection(&IEntityManagerListener::OnEntitySelectionChange);
    return S_OK;
 }
 

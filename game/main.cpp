@@ -60,7 +60,11 @@ cAutoIPtr<IGUIFont> g_pFont;
 
 float g_fov;
 
+extern void InitEntityUI();
+
+
 static tResult MainFrame();
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -325,6 +329,8 @@ static bool MainInit(int argc, tChar * argv[])
 
    UseGlobal(Sim);
    pSim->Go();
+
+   InitEntityUI();
 
    return true;
 }

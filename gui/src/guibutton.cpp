@@ -33,8 +33,8 @@ LOG_DEFINE_CHANNEL(GUIButtonEvents);
 ///////////////////////////////////////
 
 cGUIButtonElement::cGUIButtonElement()
- : m_bArmed(false),
-   m_text("")
+ : m_bArmed(false)
+ , m_text("")
 {
 }
 
@@ -140,9 +140,13 @@ tResult cGUIButtonElement::SetText(const char * pszText)
 tResult cGUIButtonElement::GetOnClick(tGUIString * pOnClick) const
 {
    if (pOnClick == NULL)
+   {
       return E_POINTER;
+   }
    if (m_onClick.empty())
+   {
       return S_FALSE;
+   }
    *pOnClick = m_onClick;
    return S_OK;
 }
@@ -152,9 +156,23 @@ tResult cGUIButtonElement::GetOnClick(tGUIString * pOnClick) const
 tResult cGUIButtonElement::SetOnClick(const char * pszOnClick)
 {
    if (pszOnClick == NULL)
+   {
       return E_POINTER;
+   }
    m_onClick = pszOnClick;
    return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult GUIButtonCreate(IGUIButtonElement * * ppButtonElement)
+{
+   cAutoIPtr<IGUIButtonElement> pButton(static_cast<IGUIButtonElement*>(new cGUIButtonElement));
+   if (!pButton)
+   {
+      return E_NOTIMPL;
+   }
+   return pButton.GetPointer(ppButtonElement);
 }
 
 

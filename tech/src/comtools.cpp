@@ -16,6 +16,70 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+bool CTIsSameObject(IUnknown * pUnk1, IUnknown * pUnk2)
+{
+   if (pUnk1 == pUnk2)
+      return true;
+
+   // If both are NULL, then equality test above would have already
+   // returned true. This test covers one NULL and the other non-NULL.
+   if (pUnk1 == NULL || pUnk2 == NULL)
+   {
+      return false;
+   }
+
+   IUnknown * pQueryUnk1 = NULL;
+   IUnknown * pQueryUnk2 = NULL;
+
+   pUnk1->QueryInterface(IID_IUnknown, (void**)&pQueryUnk1);
+   pUnk2->QueryInterface(IID_IUnknown, (void**)&pQueryUnk2);
+
+   bool bIsSame = false;
+
+   if (pQueryUnk1 == pQueryUnk2)
+   {
+      bIsSame = true;
+   }
+
+   SafeRelease(pQueryUnk1);
+   SafeRelease(pQueryUnk2);
+
+   return bIsSame;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+bool cCTLessInterface::operator()(IUnknown * pUnk1, IUnknown * pUnk2) const
+{
+   if (pUnk1 == pUnk2)
+   {
+      return false;
+   }
+
+   // If both are NULL, then the test above would have already returned.
+   // This test covers one NULL and the other non-NULL.
+   if (pUnk1 == NULL || pUnk2 == NULL)
+   {
+      return (pUnk1 < pUnk2);
+   }
+
+   IUnknown * pIdentityUnk1 = NULL;
+   IUnknown * pIdentityUnk2 = NULL;
+
+   pUnk1->QueryInterface(IID_IUnknown, (void**)&pIdentityUnk1);
+   pUnk2->QueryInterface(IID_IUnknown, (void**)&pIdentityUnk2);
+
+   bool bLessThan = (pIdentityUnk1 < pIdentityUnk2);
+
+   SafeRelease(pIdentityUnk1);
+   SafeRelease(pIdentityUnk2);
+
+   return bLessThan;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 #ifdef HAVE_CPPUNITLITE2
 
 ////////////////////////////////////////

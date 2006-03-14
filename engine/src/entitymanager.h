@@ -12,6 +12,7 @@
 
 #include "axisalignedbox.h"
 #include "comenum.h"
+#include "connptimpl.h"
 #include "globalobjdef.h"
 
 #include <list>
@@ -28,15 +29,7 @@ typedef cComObject<cComEnum<IEntityEnum, &IID_IEntityEnum, IEntity*, CopyInterfa
 
 ////////////////////////////////////////////////////////////////////////////////
 
-struct sLessInterface
-{
-   bool operator()(IUnknown * pLhs, IUnknown * pRhs) const
-   {
-      return !CTIsSameObject(pLhs, pRhs);
-   }
-};
-
-typedef std::set<IEntity *, sLessInterface> tEntitySet;
+typedef std::set<IEntity *, cCTLessInterface> tEntitySet;
 
 typedef cComObject<cComEnum<IEntityEnum, &IID_IEntityEnum, IEntity*, CopyInterface<IEntity>, tEntitySet>, &IID_IEntityEnum> tEntitySetEnum;
 
@@ -60,7 +53,7 @@ void cComEnum<IEntityEnum, &IID_IEntityEnum, IEntity*, CopyInterface<IEntity>, t
 // CLASS: cEntityManager
 //
 
-class cEntityManager : public cComObject4<IMPLEMENTS(IEntityManager),
+class cEntityManager : public cComObject4<IMPLEMENTSCP(IEntityManager, IEntityManagerListener),
                                           IMPLEMENTS(IGlobalObject),
                                           IMPLEMENTS(ISimClient),
                                           IMPLEMENTS(ISaveLoadParticipant)>
@@ -76,6 +69,9 @@ public:
    virtual tResult Term();
 
    ///////////////////////////////////
+
+   virtual tResult AddEntityManagerListener(IEntityManagerListener * pListener);
+   virtual tResult RemoveEntityManagerListener(IEntityManagerListener * pListener);
 
    virtual tResult SpawnEntity(const tChar * pszEntity, const tVec3 & position);
 

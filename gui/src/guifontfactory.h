@@ -38,7 +38,7 @@ public:
    virtual tResult CreateFontW(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont);
 
 private:
-   typedef std::map<cGUIFontDesc, IGUIFont*> tFontMap;
+   typedef std::map<cGUIFontDesc, IGUIFont*, std::less<cGUIFontDesc> > tFontMap;
    tFontMap m_fontMap;
 };
 

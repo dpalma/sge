@@ -47,38 +47,17 @@ ulong SafeRelease(T & p)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-inline bool CTIsSameObject(IUnknown * pUnk1, IUnknown * pUnk2)
+TECH_API bool CTIsSameObject(IUnknown * pUnk1, IUnknown * pUnk2);
+
+///////////////////////////////////////////////////////////////////////////////
+
+class TECH_API cCTLessInterface
 {
-   if (pUnk1 == pUnk2)
-      return true;
+public:
+   bool operator()(IUnknown * pUnk1, IUnknown * pUnk2) const;
+};
 
-   // If both are NULL, then equality test above would have already
-   // returned true. This test covers one NULL and the other non-NULL.
-   if (pUnk1 == NULL || pUnk2 == NULL)
-   {
-      return false;
-   }
-
-   IUnknown * pQueryUnk1 = NULL;
-   IUnknown * pQueryUnk2 = NULL;
-
-   pUnk1->QueryInterface(IID_IUnknown, (void**)&pQueryUnk1);
-   pUnk2->QueryInterface(IID_IUnknown, (void**)&pQueryUnk2);
-
-   bool bIsSame = false;
-
-   if (pQueryUnk1 == pQueryUnk2)
-   {
-      bIsSame = true;
-   }
-
-   SafeRelease(pQueryUnk1);
-   SafeRelease(pQueryUnk2);
-
-   return bIsSame;
-}
-
-///////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
 struct sQIPair
 {
