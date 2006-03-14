@@ -48,6 +48,8 @@ public:
 
    tResult GetActiveModalDialog(IGUIDialogElement * * ppDialog);
 
+   void RequestLayout(IGUIElement * pRequester);
+
    void UpdateLayout(const tGUIRect & rect);
    void Render(IGUIRenderDevice * pRenderDevice);
 

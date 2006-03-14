@@ -488,6 +488,13 @@ tResult cGUIPage::GetActiveModalDialog(IGUIDialogElement * * ppDialog)
 
 ///////////////////////////////////////
 
+void cGUIPage::RequestLayout(IGUIElement * pRequester)
+{
+   m_bUpdateLayout = true;
+}
+
+///////////////////////////////////////
+
 void cGUIPage::UpdateLayout(const tGUIRect & rect)
 {
    if (m_bUpdateLayout)
@@ -521,12 +528,7 @@ void cGUIPage::Render(IGUIRenderDevice * pRenderDevice)
 
 ///////////////////////////////////////
 
-typedef std::pair<IGUIElement*, uint> tQueueEntry;
-
-bool operator >(const tQueueEntry & lhs, const tQueueEntry & rhs)
-{
-   return lhs.second > rhs.second;
-}
+typedef std::pair<uint, IGUIElement*> tQueueEntry;
 
 tResult cGUIPage::GetHitElements(const tGUIPoint & point, tGUIElementList * pElements) const
 {
@@ -546,13 +548,13 @@ tResult cGUIPage::GetHitElements(const tGUIPoint & point, tGUIElementList * pEle
    for (; iter != EndElements(); iter++)
    {
       uint zorder = 0;
-      q.push(tQueueEntry(CTAddRef(*iter), zorder));
+      q.push(std::make_pair(zorder, CTAddRef(*iter)));
    }
 
    while (!q.empty())
    {
-      cAutoIPtr<IGUIElement> pElement(q.top().first);
-      uint zorder = q.top().second;
+      cAutoIPtr<IGUIElement> pElement(q.top().second);
+      uint zorder = q.top().first;
       q.pop();
 
       tGUIPoint pos(GUIElementAbsolutePosition(pElement));
@@ -569,7 +571,7 @@ tResult cGUIPage::GetHitElements(const tGUIPoint & point, tGUIElementList * pEle
             {
                for (ulong i = 0; i < count; i++)
                {
-                  q.push(tQueueEntry(pChildren[i], zorder+1));
+                  q.push(std::make_pair(zorder+1, pChildren[i]));
                }
                count = 0;
             }

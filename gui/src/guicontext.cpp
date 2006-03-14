@@ -537,6 +537,19 @@ tResult cGUIContext::GetElementById(const tChar * pszId, IGUIElement * * ppEleme
 
 ///////////////////////////////////////
 
+tResult cGUIContext::RequestLayout(IGUIElement * pRequester)
+{
+   cGUIPage * pPage = GetCurrentPage();
+   if (pPage != NULL)
+   {
+      pPage->RequestLayout(pRequester);
+      return S_OK;
+   }
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
 tResult cGUIContext::RenderGUI()
 {
    cAutoIPtr<IGUIRenderDeviceContext> pRenderDeviceContext;
