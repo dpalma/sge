@@ -140,12 +140,12 @@ extern TECH_API cLog techlog;
 #define LogMsg4(sev,fmt,arg1,arg2,arg3,arg4)                techlog.Print(_TFILE,__LINE__,(sev),_T(fmt),(arg1),(arg2),(arg3),(arg4))
 #define LogMsg5(sev,fmt,arg1,arg2,arg3,arg4,arg5)           techlog.Print(_TFILE,__LINE__,(sev),_T(fmt),(arg1),(arg2),(arg3),(arg4),(arg5))
 
-#define LogMsgIf(expr,sev,fmt)                              do { if (expr) { LogMsg((sev),fmt); } } while(0)
-#define LogMsgIf1(expr,sev,fmt,arg1)                        do { if (expr) { LogMsg1((sev),fmt,(arg1)); } } while(0)
-#define LogMsgIf2(expr,sev,fmt,arg1,arg2)                   do { if (expr) { LogMsg2((sev),fmt,(arg1),(arg2)); } } while(0)
-#define LogMsgIf3(expr,sev,fmt,arg1,arg2,arg3)              do { if (expr) { LogMsg3((sev),fmt,(arg1),(arg2),(arg3)); } } while(0)
-#define LogMsgIf4(expr,sev,fmt,arg1,arg2,arg3,arg4)         do { if (expr) { LogMsg4((sev),fmt,(arg1),(arg2),(arg3),(arg4)); } } while(0)
-#define LogMsgIf5(expr,sev,fmt,arg1,arg2,arg3,arg4,arg5)    do { if (expr) { LogMsg5((sev),fmt,(arg1),(arg2),(arg3),(arg4),(arg5)); } } while(0)
+#define LogMsgIf(expr,sev,fmt)                              (void)((expr) && (LogMsg((sev),fmt), 1))
+#define LogMsgIf1(expr,sev,fmt,arg1)                        (void)((expr) && (LogMsg1((sev),fmt,(arg1)), 1))
+#define LogMsgIf2(expr,sev,fmt,arg1,arg2)                   (void)((expr) && (LogMsg2((sev),fmt,(arg1),(arg2)), 1))
+#define LogMsgIf3(expr,sev,fmt,arg1,arg2,arg3)              (void)((expr) && (LogMsg3((sev),fmt,(arg1),(arg2),(arg3)), 1))
+#define LogMsgIf4(expr,sev,fmt,arg1,arg2,arg3,arg4)         (void)((expr) && (LogMsg4((sev),fmt,(arg1),(arg2),(arg3),(arg4)), 1))
+#define LogMsgIf5(expr,sev,fmt,arg1,arg2,arg3,arg4,arg5)    (void)((expr) && (LogMsg5((sev),fmt,(arg1),(arg2),(arg3),(arg4),(arg5)), 1))
 
 #ifndef NDEBUG
 #define DebugMsgIf(expr,fmt)                                LogMsgIf(expr,kDebug,fmt)
@@ -164,12 +164,12 @@ extern TECH_API cLog techlog;
 #endif
 
 #ifndef NDEBUG
-#define DebugMsg(fmt)                                       DebugMsgIf(1,fmt)
-#define DebugMsg1(fmt,arg1)                                 DebugMsgIf1(1,fmt,arg1)
-#define DebugMsg2(fmt,arg1,arg2)                            DebugMsgIf2(1,fmt,arg1,arg2)
-#define DebugMsg3(fmt,arg1,arg2,arg3)                       DebugMsgIf3(1,fmt,arg1,arg2,arg3)
-#define DebugMsg4(fmt,arg1,arg2,arg3,arg4)                  DebugMsgIf4(1,fmt,arg1,arg2,arg3,arg4)
-#define DebugMsg5(fmt,arg1,arg2,arg3,arg4,arg5)             DebugMsgIf5(1,fmt,arg1,arg2,arg3,arg4,arg5)
+#define DebugMsg(fmt)                                       LogMsg(kDebug,fmt)
+#define DebugMsg1(fmt,arg1)                                 LogMsg1(kDebug,fmt,arg1)
+#define DebugMsg2(fmt,arg1,arg2)                            LogMsg2(kDebug,fmt,arg1,arg2)
+#define DebugMsg3(fmt,arg1,arg2,arg3)                       LogMsg3(kDebug,fmt,arg1,arg2,arg3)
+#define DebugMsg4(fmt,arg1,arg2,arg3,arg4)                  LogMsg4(kDebug,fmt,arg1,arg2,arg3,arg4)
+#define DebugMsg5(fmt,arg1,arg2,arg3,arg4,arg5)             LogMsg5(kDebug,fmt,arg1,arg2,arg3,arg4,arg5)
 #else
 #define DebugMsg(fmt)                                       ((void)0)
 #define DebugMsg1(fmt,arg1)                                 ((void)0)
@@ -187,12 +187,12 @@ extern TECH_API cLog techlog;
 #define ErrorMsgIf4(expr,fmt,arg1,arg2,arg3,arg4)           LogMsgIf4(expr,kError,fmt,arg1,arg2,arg3,arg4)
 #define ErrorMsgIf5(expr,fmt,arg1,arg2,arg3,arg4,arg5)      LogMsgIf5(expr,kError,fmt,arg1,arg2,arg3,arg4,arg5)
 
-#define ErrorMsg(fmt)                                       ErrorMsgIf(1,fmt)
-#define ErrorMsg1(fmt,arg1)                                 ErrorMsgIf1(1,fmt,arg1)
-#define ErrorMsg2(fmt,arg1,arg2)                            ErrorMsgIf2(1,fmt,arg1,arg2)
-#define ErrorMsg3(fmt,arg1,arg2,arg3)                       ErrorMsgIf3(1,fmt,arg1,arg2,arg3)
-#define ErrorMsg4(fmt,arg1,arg2,arg3,arg4)                  ErrorMsgIf4(1,fmt,arg1,arg2,arg3,arg4)
-#define ErrorMsg5(fmt,arg1,arg2,arg3,arg4,arg5)             ErrorMsgIf5(1,fmt,arg1,arg2,arg3,arg4,arg5)
+#define ErrorMsg(fmt)                                       LogMsg(kError,fmt)
+#define ErrorMsg1(fmt,arg1)                                 LogMsg1(kError,fmt,arg1)
+#define ErrorMsg2(fmt,arg1,arg2)                            LogMsg2(kError,fmt,arg1,arg2)
+#define ErrorMsg3(fmt,arg1,arg2,arg3)                       LogMsg3(kError,fmt,arg1,arg2,arg3)
+#define ErrorMsg4(fmt,arg1,arg2,arg3,arg4)                  LogMsg4(kError,fmt,arg1,arg2,arg3,arg4)
+#define ErrorMsg5(fmt,arg1,arg2,arg3,arg4,arg5)             LogMsg5(kError,fmt,arg1,arg2,arg3,arg4,arg5)
 
 #define WarnMsgIf(expr,fmt)                                 LogMsgIf(expr,kWarning,fmt)
 #define WarnMsgIf1(expr,fmt,arg1)                           LogMsgIf1(expr,kWarning,fmt,arg1)
@@ -201,12 +201,12 @@ extern TECH_API cLog techlog;
 #define WarnMsgIf4(expr,fmt,arg1,arg2,arg3,arg4)            LogMsgIf4(expr,kWarning,fmt,arg1,arg2,arg3,arg4)
 #define WarnMsgIf5(expr,fmt,arg1,arg2,arg3,arg4,arg5)       LogMsgIf5(expr,kWarning,fmt,arg1,arg2,arg3,arg4,arg5)
 
-#define WarnMsg(fmt)                                        WarnMsgIf(1,fmt)
-#define WarnMsg1(fmt,arg1)                                  WarnMsgIf1(1,fmt,arg1)
-#define WarnMsg2(fmt,arg1,arg2)                             WarnMsgIf2(1,fmt,arg1,arg2)
-#define WarnMsg3(fmt,arg1,arg2,arg3)                        WarnMsgIf3(1,fmt,arg1,arg2,arg3)
-#define WarnMsg4(fmt,arg1,arg2,arg3,arg4)                   WarnMsgIf4(1,fmt,arg1,arg2,arg3,arg4)
-#define WarnMsg5(fmt,arg1,arg2,arg3,arg4,arg5)              WarnMsgIf5(1,fmt,arg1,arg2,arg3,arg4,arg5)
+#define WarnMsg(fmt)                                        LogMsg(kWarning,fmt)
+#define WarnMsg1(fmt,arg1)                                  LogMsg1(kWarning,fmt,arg1)
+#define WarnMsg2(fmt,arg1,arg2)                             LogMsg2(kWarning,fmt,arg1,arg2)
+#define WarnMsg3(fmt,arg1,arg2,arg3)                        LogMsg3(kWarning,fmt,arg1,arg2,arg3)
+#define WarnMsg4(fmt,arg1,arg2,arg3,arg4)                   LogMsg4(kWarning,fmt,arg1,arg2,arg3,arg4)
+#define WarnMsg5(fmt,arg1,arg2,arg3,arg4,arg5)              LogMsg5(kWarning,fmt,arg1,arg2,arg3,arg4,arg5)
 
 #define InfoMsgIf(expr,fmt)                                 LogMsgIf(expr,kInfo,fmt)
 #define InfoMsgIf1(expr,fmt,arg1)                           LogMsgIf1(expr,kInfo,fmt,arg1)
@@ -215,12 +215,12 @@ extern TECH_API cLog techlog;
 #define InfoMsgIf4(expr,fmt,arg1,arg2,arg3,arg4)            LogMsgIf4(expr,kInfo,fmt,arg1,arg2,arg3,arg4)
 #define InfoMsgIf5(expr,fmt,arg1,arg2,arg3,arg4,arg5)       LogMsgIf5(expr,kInfo,fmt,arg1,arg2,arg3,arg4,arg5)
 
-#define InfoMsg(fmt)                                        InfoMsgIf(1,fmt)
-#define InfoMsg1(fmt,arg1)                                  InfoMsgIf1(1,fmt,arg1)
-#define InfoMsg2(fmt,arg1,arg2)                             InfoMsgIf2(1,fmt,arg1,arg2)
-#define InfoMsg3(fmt,arg1,arg2,arg3)                        InfoMsgIf3(1,fmt,arg1,arg2,arg3)
-#define InfoMsg4(fmt,arg1,arg2,arg3,arg4)                   InfoMsgIf4(1,fmt,arg1,arg2,arg3,arg4)
-#define InfoMsg5(fmt,arg1,arg2,arg3,arg4,arg5)              InfoMsgIf5(1,fmt,arg1,arg2,arg3,arg4,arg5)
+#define InfoMsg(fmt)                                        LogMsg(kInfo,fmt)
+#define InfoMsg1(fmt,arg1)                                  LogMsg1(kInfo,fmt,arg1)
+#define InfoMsg2(fmt,arg1,arg2)                             LogMsg2(kInfo,fmt,arg1,arg2)
+#define InfoMsg3(fmt,arg1,arg2,arg3)                        LogMsg3(kInfo,fmt,arg1,arg2,arg3)
+#define InfoMsg4(fmt,arg1,arg2,arg3,arg4)                   LogMsg4(kInfo,fmt,arg1,arg2,arg3,arg4)
+#define InfoMsg5(fmt,arg1,arg2,arg3,arg4,arg5)              LogMsg5(kInfo,fmt,arg1,arg2,arg3,arg4,arg5)
 
 ///////////////////////////////////////////////////////////////////////////////
 // Channeled debug output

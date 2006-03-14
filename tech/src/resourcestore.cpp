@@ -122,10 +122,11 @@ tResult cDirectoryResourceStore::OpenEntry(const cResourceCacheEntryHeader & ent
    cFileSpec file(entry.GetName());
    file.SetPath(cFilePath(m_dir.c_str()));
 
-   cAutoIPtr<IReader> pReader(FileCreateReader(file));
-   if (!pReader)
+   tResult result = E_FAIL;
+   cAutoIPtr<IReader> pReader;
+   if ((result = FileReaderCreate(file, &pReader)) != S_OK)
    {
-      return E_OUTOFMEMORY;
+      return result;
    }
 
    *ppReader = CTAddRef(pReader);
@@ -254,7 +255,7 @@ tResult cZipResourceStore::OpenEntry(const cResourceCacheEntryHeader & entry, IR
       {
          cAutoIPtr<IReader> pReader;
          if (unzReadCurrentFile(m_handle, pBuffer, fileInfo.uncompressed_size) >= 0
-            && ReaderCreateMem(pBuffer, fileInfo.uncompressed_size, true, &pReader) == S_OK)
+            && MemReaderCreate(pBuffer, fileInfo.uncompressed_size, true, &pReader) == S_OK)
          {
             *ppReader = CTAddRef(pReader);
             result = S_OK;

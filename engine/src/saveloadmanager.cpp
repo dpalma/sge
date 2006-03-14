@@ -793,7 +793,7 @@ tResult cSaveLoadManager::OpenSingleEntry(IReader * pReader, REFGUID id, IReader
 
          // The 'true' means that the IReader will now own the memory
          // pointed to by pBuffer
-         return ReaderCreateMem(pBuffer, entry.length, true, ppEntryReader);
+         return MemReaderCreate(pBuffer, entry.length, true, ppEntryReader);
       }
    }
 

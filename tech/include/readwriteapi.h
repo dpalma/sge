@@ -369,9 +369,6 @@ TECH_API IWriter * FileCreateWriter(const cFileSpec & file);
 TECH_API tResult FileReaderCreate(const cFileSpec & file, IReader * * ppReader);
 TECH_API tResult FileWriterCreate(const cFileSpec & file, IWriter * * ppWriter);
 
-TECH_API tResult ReaderCreateMem(const byte * pMem, size_t memSize, bool bOwn, IReader * * ppReader);
-#pragma deprecated(ReaderCreateMem)
-
 TECH_API tResult MemReaderCreate(const byte * pMem, size_t memSize, bool bOwn, IReader * * ppReader);
 
 
