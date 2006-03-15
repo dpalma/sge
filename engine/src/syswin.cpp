@@ -586,6 +586,8 @@ LRESULT CALLBACK SysWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 
 static int CreateDefaultContext(HWND hWnd, int * pBpp, HDC * phDC, HGLRC * phGLRC)
 {
+   Assert(IsWindow(hWnd));
+
    *phDC = GetDC(hWnd);
    if (!*phDC)
    {
@@ -615,10 +617,28 @@ static int CreateDefaultContext(HWND hWnd, int * pBpp, HDC * phDC, HGLRC * phGLR
       pixelFormat = ChoosePixelFormat(*phDC, &pfd);
    }
 
-   if ((pixelFormat == 0) ||
-       !SetPixelFormat(*phDC, pixelFormat, &pfd) ||
-       !(*phGLRC = wglCreateContext(*phDC)))
+   if (pixelFormat == 0)
    {
+      ErrorMsg("Unable to find a suitable pixel format\n");
+      ReleaseDC(hWnd, *phDC);
+      *phDC = NULL;
+      *phGLRC = NULL;
+      return 0;
+   }
+
+   if (!SetPixelFormat(*phDC, pixelFormat, &pfd))
+   {
+      ErrorMsg1("SetPixelFormat failed with error %d\n", GetLastError());
+      ReleaseDC(hWnd, *phDC);
+      *phDC = NULL;
+      *phGLRC = NULL;
+      return 0;
+   }
+
+   *phGLRC = wglCreateContext(*phDC);
+   if ((*phGLRC) == NULL)
+   {
+      ErrorMsg1("wglCreateContext failed with error 0x%04x\n", glGetError());
       ReleaseDC(hWnd, *phDC);
       *phDC = NULL;
       *phGLRC = NULL;
@@ -764,7 +784,14 @@ HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI 
                return NULL;
             }
 
-            wglMakeCurrent(g_hDC, g_hGLRC);
+            if (!wglMakeCurrent(g_hDC, g_hGLRC))
+            {
+               GLenum glError = glGetError();
+               ErrorMsg1("wglMakeCurrent failed with error 0x%04x\n", glError);
+               DestroyWindow(g_hWnd);
+               g_hWnd = NULL;
+               return NULL;
+            }
 
             if (glewInit() != GLEW_OK)
             {
