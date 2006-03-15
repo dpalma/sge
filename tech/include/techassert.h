@@ -20,7 +20,7 @@
 extern "C" DECLSPEC_DLLIMPORT void STDCALL DebugBreak();
 #define DbgBreak     DebugBreak
 #elif defined(_MSC_VER)
-#define DbgBreak()   do { __asm int 3h } while (0)
+#define DbgBreak()   __asm { int 3h }
 #elif defined(__GNUC__)
 #define DbgBreak()   asm("int $3")
 #else
@@ -42,8 +42,8 @@ extern "C" DECLSPEC_DLLIMPORT int STDCALL IsDebuggerPresent();
    public: MAKE_UNIQUE(cAssertOnce)() { \
       Assert(expr); \
    }  } MAKE_UNIQUE(g_assertOnce);
-#define Assert(expr)          do { if (!(expr)) { if (AssertFail(__FILE__, __LINE__, #expr)) DbgBreak(); } } while(0)
-#define AssertMsg(expr,msg)   do { if (!(expr)) { if (AssertFail(__FILE__, __LINE__, #expr "\n" msg)) DbgBreak(); } } while(0)
+#define Assert(expr)          AssertMsg(expr, NULL)
+#define AssertMsg(expr,msg)   do { if (!(expr)) { if (AssertFail(_T(__FILE__), __LINE__, _T(#expr), msg)) DbgBreak(); } } while(0)
 #define Verify(expr)          Assert(expr)
 #else
 #define AssertOnce(expr)
@@ -54,7 +54,7 @@ extern "C" DECLSPEC_DLLIMPORT int STDCALL IsDebuggerPresent();
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool AssertFail(const char * pszFile, int line, const char * pszExpr);
+bool AssertFail(const tChar * pszFile, int line, const tChar * pszExpr, const tChar * pszMsg);
 
 ///////////////////////////////////////////////////////////////////////////////
 

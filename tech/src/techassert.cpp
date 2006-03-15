@@ -18,19 +18,32 @@
 // Shows the user an assertion failure dialog box. Returns true if
 // the user wants to break into the debugger.
 
-bool AssertFail(const char * pszFile, int line, const char * pszExpr)
+bool AssertFail(const tChar * pszFile, int line, const tChar * pszExpr, const tChar * pszMsg)
 {
-   bool bResult = false;
-   techlog.Print(pszFile, line, kError, "ASSERTION FAILURE: %s\n", pszExpr);
+   bool bWantDbgBreak = false;
+
+   tChar szMsg[1024];
+   if (pszMsg != NULL)
+   {
+      _sntprintf(szMsg, _countof(szMsg), _T("%s: %s"), pszExpr, pszMsg);
+   }
+   else
+   {
+      _sntprintf(szMsg, _countof(szMsg), _T("%s"), pszExpr);
+   }
+
+   techlog.Print(pszFile, line, kError, "ASSERTION FAILURE: %s\n", szMsg);
+
 #ifdef _MSC_VER
    // Remove WM_QUIT because if it's in the queue then the message
    // box won't display
    MSG msg;
    BOOL bQuit = PeekMessage(&msg, NULL, WM_QUIT, WM_QUIT, PM_REMOVE);
+
 #ifdef _DEBUG
-   if (_CrtDbgReport(_CRT_ASSERT, pszFile, line, NULL, pszExpr))
+   if (_CrtDbgReport(_CRT_ASSERT, pszFile, line, NULL, szMsg))
    {
-      bResult = true;
+      bWantDbgBreak = true;
    }
 #else
    tChar szProgram[MAX_PATH], szBuffer[1024];
@@ -40,18 +53,20 @@ bool AssertFail(const char * pszFile, int line, const char * pszExpr)
    }
    _sntprintf(szBuffer, _countof(szBuffer),
       _T("Program: %s\nFile: %s\nLine: %d\nExpression: %s\n\nBreak into debugger?"),
-      szProgram, pszFile, line, pszExpr);
+      szProgram, pszFile, line, szMsg);
    if (MessageBox(NULL, szBuffer, _T("Assertion Failure"), MB_ICONSTOP | MB_YESNO) == IDYES)
    {
-      bResult = true;
+      bWantDbgBreak = true;
    }
 #endif
+
    if (bQuit)
    {
       PostQuitMessage(msg.wParam);
    }
-#endif
-   return bResult;
+#endif // _MSC_VER
+
+   return bWantDbgBreak;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

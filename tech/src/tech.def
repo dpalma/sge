@@ -3,7 +3,7 @@
 
 EXPORTS
 	?hash@@YAKPAEKK@Z												@1		NONAME
-	?AssertFail@@YA_NPBDH0@Z										@2		NONAME
+	?AssertFail@@YA_NPBDH00@Z										@2		NONAME
 	?MatrixInvert@@YA_NPBMPAM@Z										@3		NONAME
 	?MatrixMultiply@@YAXPBM0PAM@Z									@4		NONAME
 	?MatrixTransform3@@YAXPBM0PAM@Z									@5		NONAME
