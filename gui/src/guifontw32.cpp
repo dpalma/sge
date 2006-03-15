@@ -325,6 +325,8 @@ tResult cGUITextureFontW32::RenderText(const char * pszText, int textLength, tRe
    int x = pRect->left;
    int y = pRect->top;
 
+   uint glyphFirst = m_fontDesc.GetGlyphFirst();
+
    if (IsBitFlagSet(flags, kRT_Center))
    {
       // Calculate the string width
@@ -340,12 +342,12 @@ tResult cGUITextureFontW32::RenderText(const char * pszText, int textLength, tRe
             }
             continue;
          }
-         else if (c < m_fontDesc.GetGlyphFirst())
+         else if (c < glyphFirst)
          {
             continue;
          }
 
-         uint index = c - m_fontDesc.GetGlyphFirst();
+         uint index = c - glyphFirst;
          float tx1 = m_pGlyphs[index].texCoords[0];
          float tx2 = m_pGlyphs[index].texCoords[2];
 
@@ -393,12 +395,12 @@ tResult cGUITextureFontW32::RenderText(const char * pszText, int textLength, tRe
          }
          continue;
       }
-      else if (c < m_fontDesc.GetGlyphFirst())
+      else if (c < glyphFirst)
       {
          continue;
       }
 
-      uint index = c - m_fontDesc.GetGlyphFirst();
+      uint index = c - glyphFirst;
       float tx1 = m_pGlyphs[index].texCoords[0];
       float ty1 = m_pGlyphs[index].texCoords[1];
       float tx2 = m_pGlyphs[index].texCoords[2];
@@ -413,56 +415,64 @@ tResult cGUITextureFontW32::RenderText(const char * pszText, int textLength, tRe
          {
             // TODO build a triangle strip instead of just a list of triangles
 
+            sTextVertex * pVertex = &vertices[nVertices];
+
             // First Triangle
 
             // bottom left
-            vertices[nVertices].u = tx1;
-            vertices[nVertices].v = ty2;
-            vertices[nVertices].x = static_cast<float>(x);
-            vertices[nVertices].y = static_cast<float>(y + h);
-            vertices[nVertices].z = 0;
+            pVertex->u = tx1;
+            pVertex->v = ty2;
+            pVertex->x = static_cast<float>(x);
+            pVertex->y = static_cast<float>(y + h);
+            pVertex->z = 0;
+            pVertex++;
             nVertices++;
 
             // bottom right
-            vertices[nVertices].u = tx2;
-            vertices[nVertices].v = ty2;
-            vertices[nVertices].x = static_cast<float>(x + w);
-            vertices[nVertices].y = static_cast<float>(y + h);
-            vertices[nVertices].z = 0;
+            pVertex->u = tx2;
+            pVertex->v = ty2;
+            pVertex->x = static_cast<float>(x + w);
+            pVertex->y = static_cast<float>(y + h);
+            pVertex->z = 0;
+            pVertex++;
             nVertices++;
 
             // top right
-            vertices[nVertices].u = tx2;
-            vertices[nVertices].v = ty1;
-            vertices[nVertices].x = static_cast<float>(x + w);
-            vertices[nVertices].y = static_cast<float>(y);
-            vertices[nVertices].z = 0;
+            pVertex->u = tx2;
+            pVertex->v = ty1;
+            pVertex->x = static_cast<float>(x + w);
+            pVertex->y = static_cast<float>(y);
+            pVertex->z = 0;
+            pVertex++;
             nVertices++;
 
             // Second Triangle
 
             // top right
-            vertices[nVertices].u = tx2;
-            vertices[nVertices].v = ty1;
-            vertices[nVertices].x = static_cast<float>(x + w);
-            vertices[nVertices].y = static_cast<float>(y);
-            vertices[nVertices].z = 0;
+            pVertex->u = tx2;
+            pVertex->v = ty1;
+            pVertex->x = static_cast<float>(x + w);
+            pVertex->y = static_cast<float>(y);
+            pVertex->z = 0;
+            pVertex++;
             nVertices++;
 
             // top left
-            vertices[nVertices].u = tx1;
-            vertices[nVertices].v = ty1;
-            vertices[nVertices].x = static_cast<float>(x);
-            vertices[nVertices].y = static_cast<float>(y);
-            vertices[nVertices].z = 0;
+            pVertex->u = tx1;
+            pVertex->v = ty1;
+            pVertex->x = static_cast<float>(x);
+            pVertex->y = static_cast<float>(y);
+            pVertex->z = 0;
+            pVertex++;
             nVertices++;
 
             // bottom left
-            vertices[nVertices].u = tx1;
-            vertices[nVertices].v = ty2;
-            vertices[nVertices].x = static_cast<float>(x);
-            vertices[nVertices].y = static_cast<float>(y + h);
-            vertices[nVertices].z = 0;
+            pVertex->u = tx1;
+            pVertex->v = ty2;
+            pVertex->x = static_cast<float>(x);
+            pVertex->y = static_cast<float>(y + h);
+            pVertex->z = 0;
+            pVertex++;
             nVertices++;
          }
       }
