@@ -131,14 +131,12 @@ extern TECH_API cLog techlog;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define _TFILE _T(__FILE__)
-
-#define LogMsg(sev,fmt)                                     techlog.Print(_TFILE,__LINE__,(sev),_T(fmt))
-#define LogMsg1(sev,fmt,arg1)                               techlog.Print(_TFILE,__LINE__,(sev),_T(fmt),(arg1))
-#define LogMsg2(sev,fmt,arg1,arg2)                          techlog.Print(_TFILE,__LINE__,(sev),_T(fmt),(arg1),(arg2))
-#define LogMsg3(sev,fmt,arg1,arg2,arg3)                     techlog.Print(_TFILE,__LINE__,(sev),_T(fmt),(arg1),(arg2),(arg3))
-#define LogMsg4(sev,fmt,arg1,arg2,arg3,arg4)                techlog.Print(_TFILE,__LINE__,(sev),_T(fmt),(arg1),(arg2),(arg3),(arg4))
-#define LogMsg5(sev,fmt,arg1,arg2,arg3,arg4,arg5)           techlog.Print(_TFILE,__LINE__,(sev),_T(fmt),(arg1),(arg2),(arg3),(arg4),(arg5))
+#define LogMsg(sev,fmt)                                     techlog.Print(_T(__FILE__),__LINE__,(sev),_T(fmt))
+#define LogMsg1(sev,fmt,arg1)                               techlog.Print(_T(__FILE__),__LINE__,(sev),_T(fmt),(arg1))
+#define LogMsg2(sev,fmt,arg1,arg2)                          techlog.Print(_T(__FILE__),__LINE__,(sev),_T(fmt),(arg1),(arg2))
+#define LogMsg3(sev,fmt,arg1,arg2,arg3)                     techlog.Print(_T(__FILE__),__LINE__,(sev),_T(fmt),(arg1),(arg2),(arg3))
+#define LogMsg4(sev,fmt,arg1,arg2,arg3,arg4)                techlog.Print(_T(__FILE__),__LINE__,(sev),_T(fmt),(arg1),(arg2),(arg3),(arg4))
+#define LogMsg5(sev,fmt,arg1,arg2,arg3,arg4,arg5)           techlog.Print(_T(__FILE__),__LINE__,(sev),_T(fmt),(arg1),(arg2),(arg3),(arg4),(arg5))
 
 #define LogMsgIf(expr,sev,fmt)                              (void)((expr) && (LogMsg((sev),fmt), 1))
 #define LogMsgIf1(expr,sev,fmt,arg1)                        (void)((expr) && (LogMsg1((sev),fmt,(arg1)), 1))
@@ -250,7 +248,7 @@ extern TECH_API cLog techlog;
 #define LOG_DEFINE_CHANNEL(channel)
 #define LOG_EXTERN_CHANNEL(channel)
 #define LOG_ENABLE_CHANNEL(channel, enable)
-#define LOG_IS_CHANNEL_ENABLED(channel)
+#define LOG_IS_CHANNEL_ENABLED(channel) (false)
 
 #endif
 
