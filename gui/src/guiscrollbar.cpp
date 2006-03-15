@@ -69,7 +69,7 @@ tResult cGUIScrollBarElement::OnEvent(IGUIEvent * pEvent)
    tGUIEventCode eventCode;
    Verify(pEvent->GetEventCode(&eventCode) == S_OK);
 
-   tGUIPoint point;
+   tScreenPoint point;
    Verify(pEvent->GetMousePosition(&point) == S_OK);
 
    if (eventCode == kGUIEventDragStart)
@@ -332,10 +332,10 @@ tResult cGUIScrollBarElement::SetPageSize(int pageSize)
 
 ///////////////////////////////////////
 
-int cGUIScrollBarElement::DetermineScrollPos(const tGUIPoint & mousePos) const
+int cGUIScrollBarElement::DetermineScrollPos(const tScreenPoint & mousePos) const
 {
    tGUISize size(GetSize());
-   tGUIPoint pos(GUIElementAbsolutePosition(const_cast<cGUIScrollBarElement*>(this)));
+   tGUIPoint pos(GetAbsolutePosition());
 
    if (m_scrollBarType == kGUIScrollBarHorizontal)
    {
@@ -354,7 +354,7 @@ int cGUIScrollBarElement::DetermineScrollPos(const tGUIPoint & mousePos) const
 
 ///////////////////////////////////////
 
-eGUIScrollBarPart cGUIScrollBarElement::GetHitPart(const tGUIPoint & point)
+eGUIScrollBarPart cGUIScrollBarElement::GetHitPart(const tScreenPoint & point)
 {
    static const eGUIScrollBarPart parts[] =
    {

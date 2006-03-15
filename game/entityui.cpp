@@ -123,9 +123,16 @@ tResult cEntityUI::OnEvent(IGUIEvent * pEvent)
 {
    if (pEvent)
    {
-      cAutoIPtr<IGUIElement> pSourceElement;
-      if (pEvent->GetSourceElement(&pSourceElement) == S_OK)
+      tGUIEventCode eventCode;
+      if (pEvent->GetEventCode(&eventCode) == S_OK)
       {
+         if (eventCode == kGUIEventClick)
+         {
+            cAutoIPtr<IGUIElement> pSourceElement;
+            if (pEvent->GetSourceElement(&pSourceElement) == S_OK)
+            {
+            }
+         }
       }
    }
    return S_OK;

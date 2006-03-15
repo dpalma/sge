@@ -307,11 +307,15 @@ tResult cGUITextEditElement::OnEvent(IGUIEvent * pEvent)
    }
    else if (eventCode == kGUIEventMouseDown)
    {
-      tGUIPoint mouse;
+      tScreenPoint mouse;
       Verify(pEvent->GetMousePosition(&mouse) == S_OK);
 
+      tGUIPoint absPos = GetAbsolutePosition();
+
+      tGUIPoint testPoint(mouse.x - absPos.x, mouse.y - absPos.y); // TODO: ADDED_tScreenPoint
+
       int index = -1;
-      if (HitTest(mouse - GetAbsolutePosition(), &index) && (index != -1))
+      if (HitTest(testPoint, &index) && (index != -1))
       {
          LocalMsg1("Hit index %d\n", index);
          m_buffer.SetCursorIndex(index);

@@ -47,7 +47,7 @@ private:
    tGUIRect GetCaptionRectAbsolute();
 
    bool m_bDragging;
-   tGUIPoint m_dragOffset;
+   tScreenPoint m_dragOffset;
 
    tGUIString m_title;
    uint m_captionHeight;

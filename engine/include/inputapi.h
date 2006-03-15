@@ -63,7 +63,7 @@ struct sInputEvent
 {
    long key;
    bool down;
-   tVec2 point;
+   cVec2<int> point;
    double time;
 };
 

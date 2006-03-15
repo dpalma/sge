@@ -46,8 +46,8 @@ public:
    virtual tResult SetPageSize(int pageSize);
 
 protected:
-   int DetermineScrollPos(const tGUIPoint & mousePos) const;
-   eGUIScrollBarPart GetHitPart(const tGUIPoint & point);
+   int DetermineScrollPos(const tScreenPoint & mousePos) const;
+   eGUIScrollBarPart GetHitPart(const tScreenPoint & point);
 
 private:
    eGUIScrollBarType m_scrollBarType;

@@ -22,6 +22,8 @@ typedef tChar tGUIChar;
 
 typedef tVec2 tGUIPoint;
 
+typedef cVec2<int> tScreenPoint;
+
 template <typename T> class cGUISize;
 typedef float tGUISizeType;
 typedef class cGUISize<tGUISizeType> tGUISize;

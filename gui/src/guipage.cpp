@@ -530,7 +530,7 @@ void cGUIPage::Render(IGUIRenderDevice * pRenderDevice)
 
 typedef std::pair<uint, IGUIElement*> tQueueEntry;
 
-tResult cGUIPage::GetHitElements(const tGUIPoint & point, tGUIElementList * pElements) const
+tResult cGUIPage::GetHitElements(const tScreenPoint & point, tGUIElementList * pElements) const
 {
    if (pElements == NULL)
    {
@@ -558,7 +558,7 @@ tResult cGUIPage::GetHitElements(const tGUIPoint & point, tGUIElementList * pEle
       q.pop();
 
       tGUIPoint pos(GUIElementAbsolutePosition(pElement));
-      tGUIPoint relative(point - pos);
+      tGUIPoint relative(point.x - pos.x, point.y - pos.y); // TODO: ADDED_tScreenPoint
 
       if (pElement->Contains(relative))
       {

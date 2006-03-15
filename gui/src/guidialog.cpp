@@ -37,9 +37,9 @@ static const uint kNoCaptionHeight = ~0u;
 ///////////////////////////////////////
 
 cGUIDialogElement::cGUIDialogElement()
- : m_bDragging(false),
-   m_dragOffset(0,0),
-   m_captionHeight(kNoCaptionHeight)
+ : m_bDragging(false)
+ , m_dragOffset(0,0)
+ , m_captionHeight(kNoCaptionHeight)
 {
 }
 
@@ -63,7 +63,7 @@ tResult cGUIDialogElement::OnEvent(IGUIEvent * pEvent)
    long keyCode;
    Verify(pEvent->GetKeyCode(&keyCode) == S_OK);
 
-   tGUIPoint mousePos;
+   tScreenPoint mousePos;
    Verify(pEvent->GetMousePosition(&mousePos) == S_OK);
 
    LocalMsgIf(eventCode == kGUIEventClick, "Dialog clicked\n");
@@ -79,7 +79,10 @@ tResult cGUIDialogElement::OnEvent(IGUIEvent * pEvent)
          if (captionRect.PtInside(Round(mousePos.x), Round(mousePos.y)))
          {
             m_bDragging = true;
-            m_dragOffset = mousePos - GUIElementAbsolutePosition(this);
+            tGUIPoint absPos = GUIElementAbsolutePosition(this);
+            // TODO: ADDED_tScreenPoint
+            m_dragOffset.x = mousePos.x - Round(absPos.x);
+            m_dragOffset.y = mousePos.y - Round(absPos.y);
             pEvent->SetCancelBubble(true);
          }
          break;
@@ -90,7 +93,9 @@ tResult cGUIDialogElement::OnEvent(IGUIEvent * pEvent)
          LocalMsg("Dialog drag move\n");
          if (m_bDragging)
          {
-            SetPosition(mousePos - m_dragOffset);
+            // TODO: ADDED_tScreenPoint
+            SetPosition(tGUIPoint(static_cast<float>(mousePos.x - m_dragOffset.x),
+                                  static_cast<float>(mousePos.y - m_dragOffset.y)));
          }
          pEvent->SetCancelBubble(true);
          // prevent the drag-over event since drag is being used to implement 

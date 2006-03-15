@@ -116,7 +116,7 @@ tResult cGUIListBoxElement::OnEvent(IGUIEvent * pEvent)
    tGUIEventCode eventCode;
    Verify(pEvent->GetEventCode(&eventCode) == S_OK);
 
-   tGUIPoint point;
+   tScreenPoint point;
    Verify(pEvent->GetMousePosition(&point) == S_OK);
 
    tGUIPoint pos = GetAbsolutePosition();

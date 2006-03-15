@@ -696,7 +696,7 @@ tResult cGUIContext::HideDebugInfo()
 
 ///////////////////////////////////////
 
-tResult cGUIContext::GetHitElement(const tGUIPoint & point, IGUIElement * * ppElement) const
+tResult cGUIContext::GetHitElement(const tScreenPoint & point, IGUIElement * * ppElement) const
 {
    if (ppElement == NULL)
    {
@@ -817,7 +817,7 @@ void cGUIContext::RenderDebugInfo()
             pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
             rect.Offset(0, lineHeight);
 
-            const tGUIPoint relPoint(m_lastMousePos - absPos);
+            const tGUIPoint relPoint(m_lastMousePos.x - absPos.x, m_lastMousePos.y - absPos.y); // TODO: ADDED_tScreenPoint
             Assert((*iter)->Contains(relPoint));
             Sprintf(&temp, "Mouse (relative): (%d, %d)", Round(relPoint.x), Round(relPoint.y));
             pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);

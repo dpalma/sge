@@ -222,7 +222,7 @@ bool cInput::DispatchInputEvent(int x, int y, long key, bool down, double time)
    sInputEvent event;
    event.key = key;
    event.down = down;
-   event.point = tVec2(static_cast<float>(x), static_cast<float>(y));
+   event.point = cVec2<int>(x, y);
    event.time = time;
 
    tSinksIterator iter = BeginSinks();

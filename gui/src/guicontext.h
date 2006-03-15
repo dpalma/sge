@@ -83,7 +83,7 @@ public:
    virtual tResult ShowDebugInfo(const tGUIPoint & placement, IGUIStyle * pStyle);
    virtual tResult HideDebugInfo();
 
-   tResult GetHitElement(const tGUIPoint & point, IGUIElement * * ppElement) const;
+   tResult GetHitElement(const tScreenPoint & point, IGUIElement * * ppElement) const;
    tResult GetActiveModalDialog(IGUIDialogElement * * ppModalDialog);
 
    cGUIPage * GetCurrentPage() { return m_pages.empty() ? NULL : m_pages.back(); }
@@ -119,7 +119,7 @@ private:
    bool m_bShowDebugInfo;
    tGUIPoint m_debugInfoPlacement;
    tGUIColor m_debugInfoTextColor;
-   tGUIPoint m_lastMousePos;
+   tScreenPoint m_lastMousePos;
    cAutoIPtr<IGUIFont> m_pDebugFont;
 #endif
 

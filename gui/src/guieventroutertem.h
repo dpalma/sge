@@ -497,7 +497,11 @@ void cGUIEventRouter<T, INTRFC>::DoMouseEnterExit(const sInputEvent * pInputEven
       cAutoIPtr<IGUIElement> pOldMouseOver;
       if (GetMouseOver(&pOldMouseOver) == S_OK)
       {
-         Assert(!pOldMouseOver->Contains(pInputEvent->point - GUIElementAbsolutePosition(pOldMouseOver)));
+         tGUIPoint absPos = GUIElementAbsolutePosition(pOldMouseOver);
+
+         tGUIPoint relPoint(pInputEvent->point.x - absPos.x, pInputEvent->point.y - absPos.y); // TODO: ADDED_tScreenPoint
+
+         Assert(!pOldMouseOver->Contains(relPoint));
 
          SetMouseOver(NULL);
          pOldMouseOver->SetMouseOver(false);

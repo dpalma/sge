@@ -162,7 +162,7 @@ typedef enum eGUIEventCode tGUIEventCode;
 interface IGUIEvent : IUnknown
 {
    virtual tResult GetEventCode(tGUIEventCode * pEventCode) = 0;
-   virtual tResult GetMousePosition(tGUIPoint * pMousePos) = 0;
+   virtual tResult GetMousePosition(tScreenPoint * pMousePos) = 0;
    virtual tResult GetKeyCode(long * pKeyCode) = 0;
    virtual tResult GetSourceElement(IGUIElement * * ppElement) = 0;
 
@@ -175,7 +175,7 @@ interface IGUIEvent : IUnknown
 ///////////////////////////////////////
 
 GUI_API tResult GUIEventCreate(tGUIEventCode eventCode, 
-                               tGUIPoint mousePos, 
+                               tScreenPoint mousePos, 
                                long keyCode, 
                                IGUIElement * pSource, 
                                bool bCancellable, 

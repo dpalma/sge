@@ -135,46 +135,48 @@ tGUIEventCode GUIEventCode(long key, bool down)
 ///////////////////////////////////////
 
 cGUIEvent::cGUIEvent()
- : m_eventCode(kGUIEventNone),
-   m_mousePos(),
-   m_keyCode(-1),
-   m_pSource(),
-   m_bCancellable(false),
-   m_bCancelBubble(false)
+ : m_eventCode(kGUIEventNone)
+ , m_keyCode(-1)
+ , m_bCancellable(false)
+ , m_bCancelBubble(false)
 {
 }
 
 ///////////////////////////////////////
 
 cGUIEvent::cGUIEvent(tGUIEventCode eventCode, 
-                     const tGUIPoint & mousePos, 
+                     const tScreenPoint & mousePos, 
                      long keyCode, 
                      IGUIElement * pSource,
                      bool bCancellable)
- : m_eventCode(eventCode),
-   m_mousePos(mousePos),
-   m_keyCode(keyCode),
-   m_pSource(CTAddRef(pSource)),
-   m_bCancellable(bCancellable),
-   m_bCancelBubble(false)
+ : m_eventCode(eventCode)
+ , m_mousePos(mousePos)
+ , m_keyCode(keyCode)
+ , m_pSource(CTAddRef(pSource))
+ , m_bCancellable(bCancellable)
+ , m_bCancelBubble(false)
 {
 }
 
 ///////////////////////////////////////
 
 tResult GUIEventCreate(tGUIEventCode eventCode, 
-                       tGUIPoint mousePos, 
+                       tScreenPoint mousePos, 
                        long keyCode, 
                        IGUIElement * pSource, 
                        bool bCancellable, 
                        IGUIEvent * * ppEvent)
 {
    if (ppEvent == NULL)
+   {
       return E_POINTER;
+   }
    cGUIEvent * pGUIEvent = new cGUIEvent(eventCode, mousePos, keyCode, pSource, bCancellable);
    if (pGUIEvent == NULL)
+   {
       return E_OUTOFMEMORY;
-   *ppEvent = pGUIEvent;
+   }
+   *ppEvent = static_cast<IGUIEvent*>(pGUIEvent);
    return S_OK;
 }
 
@@ -190,10 +192,12 @@ tResult cGUIEvent::GetEventCode(tGUIEventCode * pEventCode)
 
 ///////////////////////////////////////
 
-tResult cGUIEvent::GetMousePosition(tGUIPoint * pMousePos)
+tResult cGUIEvent::GetMousePosition(tScreenPoint * pMousePos)
 {
    if (pMousePos == NULL)
+   {
       return E_POINTER;
+   }
    *pMousePos = m_mousePos;
    return S_OK;
 }
@@ -203,7 +207,9 @@ tResult cGUIEvent::GetMousePosition(tGUIPoint * pMousePos)
 tResult cGUIEvent::GetKeyCode(long * pKeyCode)
 {
    if (pKeyCode == NULL)
+   {
       return E_POINTER;
+   }
    *pKeyCode = m_keyCode;
    return S_OK;
 }

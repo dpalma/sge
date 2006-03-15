@@ -53,7 +53,7 @@ public:
    void UpdateLayout(const tGUIRect & rect);
    void Render(IGUIRenderDevice * pRenderDevice);
 
-   tResult GetHitElements(const tGUIPoint & point, tGUIElementList * pElements) const;
+   tResult GetHitElements(const tScreenPoint & point, tGUIElementList * pElements) const;
 
 private:
    void RunScripts();
