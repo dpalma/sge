@@ -455,39 +455,61 @@ static bool StylesAreEqual(IGUIStyle * pStyle1, IGUIStyle * pStyle2)
 {
    Assert(pStyle1 && pStyle2);
 
-   bool b1,b2;
-   int i1,i2;
-   uint u1,u2;
-   tGUIColor c1,c2;
-   tGUIString s1,s2;
+#define STYLE_ATTRIB_EQUAL(Attrib, Type, Init) \
+   do { \
+      Type a = Init, b = Init; \
+      tResult result1 = pStyle1->Get##Attrib(&a); \
+      tResult result2 = pStyle2->Get##Attrib(&b); \
+      ErrorMsgIf(result1 != result2, "Mismatching results getting " #Attrib "\n"); \
+      if (a != b) \
+         return false; \
+   } while (0)
 
-   if (pStyle1->GetAlignment(&u1) == pStyle2->GetAlignment(&u2) && u1 == u2
-      && pStyle1->GetVerticalAlignment(&u1) == pStyle2->GetVerticalAlignment(&u2) && u1 == u2
-      && pStyle1->GetBackgroundColor(&c1) == pStyle2->GetBackgroundColor(&c2) && c1 == c2
-      && pStyle1->GetForegroundColor(&c1) == pStyle2->GetForegroundColor(&c2) && c1 == c2
-      && pStyle1->GetTextAlignment(&u1) == pStyle2->GetTextAlignment(&u2) && u1 == u2
-      && pStyle1->GetTextVerticalAlignment(&u1) == pStyle2->GetTextVerticalAlignment(&u2) && u1 == u2
-      && pStyle1->GetFontName(&s1) == pStyle2->GetFontName(&s2) && s1 == s2
-      && pStyle1->GetFontPointSize(&u1) == pStyle2->GetFontPointSize(&u2) && u1 == u2
-      && pStyle1->GetFontBold(&b1) == pStyle2->GetFontBold(&b2) && b1 == b2
-      && pStyle1->GetFontItalic(&b1) == pStyle2->GetFontItalic(&b2) && b1 == b2
-      && pStyle1->GetFontShadow(&b1) == pStyle2->GetFontShadow(&b2) && b1 == b2
-      && pStyle1->GetFontOutline(&b1) == pStyle2->GetFontOutline(&b2) && b1 == b2
-      && pStyle1->GetPlacement(&u1) == pStyle2->GetPlacement(&u2) && u1 == u2
-      && pStyle1->GetWidth(&i1,&u1) == pStyle2->GetWidth(&i2,&u2) && i1 == i2 && u1 == u2
-      && pStyle1->GetHeight(&i1,&u1) == pStyle2->GetHeight(&i2,&u2) && i1 == i2 && u1 == u2)
+   STYLE_ATTRIB_EQUAL(Alignment, uint, 0);
+   STYLE_ATTRIB_EQUAL(VerticalAlignment, uint, 0);
+   STYLE_ATTRIB_EQUAL(BackgroundColor, tGUIColor, tGUIColor(0,0,0,0));
+   STYLE_ATTRIB_EQUAL(ForegroundColor, tGUIColor, tGUIColor(0,0,0,0));
+   STYLE_ATTRIB_EQUAL(TextAlignment, uint, 0);
+   STYLE_ATTRIB_EQUAL(TextVerticalAlignment, uint, 0);
+   STYLE_ATTRIB_EQUAL(FontName, tGUIString, _T(""));
+   STYLE_ATTRIB_EQUAL(FontPointSize, uint, 0);
+   STYLE_ATTRIB_EQUAL(FontBold, bool, false);
+   STYLE_ATTRIB_EQUAL(FontItalic, bool, false);
+   STYLE_ATTRIB_EQUAL(FontShadow, bool, false);
+   STYLE_ATTRIB_EQUAL(FontOutline, bool, false);
+   STYLE_ATTRIB_EQUAL(Placement, uint, 0);
+
    {
-      // TODO: test all the IDictionary-based custom attributes too
-      return true;
+      int width1 = 0, width2 = 0;
+      uint spec1 = 0, spec2 = 0;
+      if (pStyle1->GetWidth(&width1, &spec1) != pStyle2->GetWidth(&width2, &spec2)
+         || width1 != width2 || spec1 != spec2)
+      {
+         return false;
+      }
    }
 
-   return false;
+   {
+      int height1 = 0, height2 = 0;
+      uint spec1 = 0, spec2 = 0;
+      if (pStyle1->GetHeight(&height1, &spec1) != pStyle2->GetHeight(&height2, &spec2)
+         || height1 != height2 || spec1 != spec2)
+      {
+         return false;
+      }
+   }
+
+   // TODO: test all the IDictionary-based custom attributes too
+
+   // If made it this far, success
+   return true;
 }
 
 TEST(GUIStyleSelectors)
 {
    static const tChar test[] =
    {
+      _T(
       "\n"
       "a.topText"
       "{\n"
@@ -514,6 +536,7 @@ TEST(GUIStyleSelectors)
       "  foreground-color: white;\n"
       "  background-color: blue;\n"
       "}\n"
+      )
    };
    cAutoIPtr<IGUIStyleSheet> pStyleSheet;
    CHECK(GUIStyleSheetParse(test, &pStyleSheet) == S_OK);
