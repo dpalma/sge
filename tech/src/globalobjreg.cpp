@@ -37,27 +37,27 @@ F_DECLARE_INTERFACE(IGlobalObjectRegistry);
 ////////////////////////////////////////
 
 cBeforeAfterConstraint::cBeforeAfterConstraint(const GUID * pGuid, eBeforeAfter beforeAfter)
- : m_pGuid(pGuid),
-   m_pszName(NULL),
-   m_beforeAfter(beforeAfter)
+ : m_pGuid(pGuid)
+ , m_pszName(NULL)
+ , m_beforeAfter(beforeAfter)
 {
 }
 
 ////////////////////////////////////////
 
 cBeforeAfterConstraint::cBeforeAfterConstraint(const tChar * pszName, eBeforeAfter beforeAfter)
- : m_pGuid(NULL),
-   m_pszName(pszName),
-   m_beforeAfter(beforeAfter)
+ : m_pGuid(NULL)
+ , m_pszName(pszName)
+ , m_beforeAfter(beforeAfter)
 {
 }
 
 ////////////////////////////////////////
 
 cBeforeAfterConstraint::cBeforeAfterConstraint(const cBeforeAfterConstraint & other)
- : m_pGuid(other.m_pGuid),
-   m_pszName(other.m_pszName),
-   m_beforeAfter(other.m_beforeAfter)
+ : m_pGuid(other.m_pGuid)
+ , m_pszName(other.m_pszName)
+ , m_beforeAfter(other.m_beforeAfter)
 {
 }
 
@@ -76,21 +76,6 @@ const cBeforeAfterConstraint & cBeforeAfterConstraint::operator =(const cBeforeA
    m_beforeAfter = other.m_beforeAfter;
    return *this;
 }
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// INTERFACE: IGlobalObjectRegistry
-//
-
-interface IGlobalObjectRegistry : IUnknown
-{
-   virtual tResult Register(REFGUID iid, IUnknown * pUnk) = 0;
-   virtual IUnknown * Lookup(REFGUID iid) = 0;
-
-   virtual tResult InitAll() = 0;
-   virtual tResult TermAll() = 0;
-};
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -122,7 +107,7 @@ public:
    ~cGlobalObjectRegistry();
 
    virtual tResult Register(REFGUID iid, IUnknown * pUnk);
-   virtual IUnknown * Lookup(REFGUID iid);
+   virtual IUnknown * FASTCALL Lookup(REFGUID iid);
 
    virtual tResult InitAll();
    virtual tResult TermAll();
@@ -282,17 +267,11 @@ tResult cGlobalObjectRegistry::TermAll()
 
 ///////////////////////////////////////
 
-IUnknown * cGlobalObjectRegistry::Lookup(REFGUID iid)
+IUnknown * FASTCALL cGlobalObjectRegistry::Lookup(REFGUID iid)
 {
    tObjMap::iterator iter = m_objMap.find(&iid);
    if (iter != m_objMap.end())
    {
-      Assert(iter->second != NULL);
-#ifdef _DEBUG
-      // is the interface pointer callable?
-      iter->second->AddRef();
-      iter->second->Release();
-#endif
       return CTAddRef(iter->second);
    }
    return NULL;
@@ -409,6 +388,7 @@ private:
 ////////////////////////////////////////
 
 cSingletonGlobalObjectRegistry cSingletonGlobalObjectRegistry::gm_instance;
+IGlobalObjectRegistry * g_pGlobalObjectRegistry = cSingletonGlobalObjectRegistry::Access();
 
 ////////////////////////////////////////
 
@@ -446,13 +426,6 @@ tResult cSingletonGlobalObjectRegistry::InitAll()
 IGlobalObjectRegistry * AccessGlobalObjectRegistry()
 {
    return cSingletonGlobalObjectRegistry::Access();
-}
-
-////////////////////////////////////////
-
-IUnknown * FindGlobalObject(REFGUID iid)
-{
-   return AccessGlobalObjectRegistry()->Lookup(iid);
 }
 
 ////////////////////////////////////////

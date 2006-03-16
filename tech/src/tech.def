@@ -16,7 +16,7 @@ EXPORTS
 	?MatrixPerspective@@YAXMMMMPAV?$cMatrix4@M@@@Z					@12		NONAME
 	?MatrixPerspective@@YAXNNNNPAV?$cMatrix4@N@@@Z					@13		NONAME
 	?MatrixOrtho@@YAXMMMMMMPAV?$cMatrix4@M@@@Z						@14		NONAME
-	?FindGlobalObject@@YAPAUIUnknown@@ABU_GUID@@@Z					@15		NONAME
+;	REMOVED
 	?RegisterGlobalObject@@YAJABU_GUID@@PAUIUnknown@@@Z				@16		NONAME
 	?StartGlobalObjects@@YAJXZ										@17		NONAME
 	?StopGlobalObjects@@YAJXZ										@18		NONAME

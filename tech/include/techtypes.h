@@ -47,6 +47,14 @@
 #endif
 #endif
 
+#ifndef FASTCALL
+#ifdef _MSC_VER
+#define FASTCALL __fastcall
+#else
+#define FASTCALL
+#endif
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifdef _UNICODE

@@ -45,6 +45,7 @@ public:
 
 private:
    int m_texDim; // texture is always square
+   int m_rowHeight; // height of a row of characters in the texture (all rows are same height)
    cGUIFontDesc m_fontDesc;
    sGUITextureFontGlyph * m_pGlyphs;
    uint m_texId;

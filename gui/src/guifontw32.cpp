@@ -278,6 +278,11 @@ bool cGUITextureFontW32::Create(const cGUIFontDesc & fontDesc)
       DeleteDC(hMemDC);
    }
 
+   if (bSucceeded)
+   {
+      m_rowHeight = FloatToInt((m_pGlyphs[0].texCoords[3] - m_pGlyphs[0].texCoords[1]) * m_texDim);
+   }
+
    return bSucceeded;
 }
 
@@ -319,7 +324,6 @@ tResult cGUITextureFontW32::RenderText(const char * pszText, int textLength, tRe
 
    int rowWidth = 0;
    int maxRowWidth = 0;
-   int rowHeight = FloatToInt((m_pGlyphs[0].texCoords[3] - m_pGlyphs[0].texCoords[1]) * m_texDim);
    int rowCount = 1;
 
    int x = pRect->left;
@@ -364,11 +368,11 @@ tResult cGUITextureFontW32::RenderText(const char * pszText, int textLength, tRe
 
    if ((flags & (kRT_VCenter | kRT_SingleLine)) == (kRT_VCenter | kRT_SingleLine))
    {
-      y = (pRect->top + pRect->bottom - rowHeight) / 2;
+      y = (pRect->top + pRect->bottom - m_rowHeight) / 2;
    }
    else if ((flags & (kRT_Bottom | kRT_SingleLine)) == (kRT_Bottom | kRT_SingleLine))
    {
-      y = pRect->bottom - rowHeight;
+      y = pRect->bottom - m_rowHeight;
    }
 
    struct sTextVertex
@@ -391,7 +395,7 @@ tResult cGUITextureFontW32::RenderText(const char * pszText, int textLength, tRe
             rowCount++;
             rowWidth = 0;
             x = pRect->left;
-            y += rowHeight;
+            y += m_rowHeight;
          }
          continue;
       }
@@ -416,6 +420,8 @@ tResult cGUITextureFontW32::RenderText(const char * pszText, int textLength, tRe
             // TODO build a triangle strip instead of just a list of triangles
 
             sTextVertex * pVertex = &vertices[nVertices];
+            float xPlusW = static_cast<float>(x + w);
+            float yPlusH = static_cast<float>(y + h);
 
             // First Triangle
 
@@ -423,7 +429,7 @@ tResult cGUITextureFontW32::RenderText(const char * pszText, int textLength, tRe
             pVertex->u = tx1;
             pVertex->v = ty2;
             pVertex->x = static_cast<float>(x);
-            pVertex->y = static_cast<float>(y + h);
+            pVertex->y = yPlusH;
             pVertex->z = 0;
             pVertex++;
             nVertices++;
@@ -431,8 +437,8 @@ tResult cGUITextureFontW32::RenderText(const char * pszText, int textLength, tRe
             // bottom right
             pVertex->u = tx2;
             pVertex->v = ty2;
-            pVertex->x = static_cast<float>(x + w);
-            pVertex->y = static_cast<float>(y + h);
+            pVertex->x = xPlusW;
+            pVertex->y = yPlusH;
             pVertex->z = 0;
             pVertex++;
             nVertices++;
@@ -440,7 +446,7 @@ tResult cGUITextureFontW32::RenderText(const char * pszText, int textLength, tRe
             // top right
             pVertex->u = tx2;
             pVertex->v = ty1;
-            pVertex->x = static_cast<float>(x + w);
+            pVertex->x = xPlusW;
             pVertex->y = static_cast<float>(y);
             pVertex->z = 0;
             pVertex++;
@@ -451,7 +457,7 @@ tResult cGUITextureFontW32::RenderText(const char * pszText, int textLength, tRe
             // top right
             pVertex->u = tx2;
             pVertex->v = ty1;
-            pVertex->x = static_cast<float>(x + w);
+            pVertex->x = xPlusW;
             pVertex->y = static_cast<float>(y);
             pVertex->z = 0;
             pVertex++;
@@ -470,7 +476,7 @@ tResult cGUITextureFontW32::RenderText(const char * pszText, int textLength, tRe
             pVertex->u = tx1;
             pVertex->v = ty2;
             pVertex->x = static_cast<float>(x);
-            pVertex->y = static_cast<float>(y + h);
+            pVertex->y = yPlusH;
             pVertex->z = 0;
             pVertex++;
             nVertices++;
@@ -536,7 +542,7 @@ tResult cGUITextureFontW32::RenderText(const char * pszText, int textLength, tRe
    if (IsBitFlagSet(flags, kRT_CalcRect))
    {
       pRect->right = pRect->left + maxRowWidth;
-      pRect->bottom = pRect->top + (rowCount * rowHeight);
+      pRect->bottom = pRect->top + (rowCount * m_rowHeight);
    }
 
    return S_OK;
