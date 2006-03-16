@@ -27,7 +27,7 @@
 // http://oss.sgi.com/projects/ogl-sample/registry/ARB/texture_env_combine.txt
 // http://www.gamedev.net/community/forums/topic.asp?topic_id=330331
 
-const uint kNoIndex = ~0;
+const uint kNoIndex = ~0u;
 
 extern tResult GlTextureCreateMipMapped(IImage * pImage, uint * pTexId);
 

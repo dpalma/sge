@@ -143,8 +143,8 @@ private:
 DECLARE_HANDLE(HTERRAINQUAD);
 DECLARE_HANDLE(HTERRAINVERTEX);
 
-const HTERRAINQUAD INVALID_HTERRAINQUAD = reinterpret_cast<HTERRAINQUAD>(~0);
-const HTERRAINVERTEX INVALID_HTERRAINVERTEX = reinterpret_cast<HTERRAINVERTEX>(~0);
+const HTERRAINQUAD INVALID_HTERRAINQUAD = reinterpret_cast<HTERRAINQUAD>(~0u);
+const HTERRAINVERTEX INVALID_HTERRAINVERTEX = reinterpret_cast<HTERRAINVERTEX>(~0u);
 
 
 /////////////////////////////////////////////////////////////////////////////

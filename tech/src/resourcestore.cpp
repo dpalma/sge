@@ -32,8 +32,8 @@ LOG_DEFINE_CHANNEL(ResourceStore);
 // REFERENCES
 // "Game Developer Magazine", February 2005, "Inner Product" column
 
-static const uint kNoIndex = ~0;
-static const ulong kNoIndexL = ~0;
+static const uint kNoIndex = ~0u;
+static const ulong kNoIndexL = ~0u;
 
 static const int kUnzMaxPath = 260;
 

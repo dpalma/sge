@@ -201,7 +201,7 @@ public:
          free(p);
    }
 
-   size_type max_size() const throw() { return ~0 / sizeof(T); }
+   size_type max_size() const throw() { return ~0u / sizeof(T); }
 
    void construct(pointer p, const T & val)
    {

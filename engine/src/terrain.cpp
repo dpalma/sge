@@ -954,7 +954,7 @@ tResult cTerrainModel::GetQuadNeighbors(HTERRAINQUAD hQuad, HTERRAINQUAD neighbo
       return E_INVALIDARG;
    }
 
-   static const uint16 kNoIndex = ~0;
+   static const uint16 kNoIndex = ~0u;
 
    // The (uint16) cast is required to eliminate a compiler warning in VC++ versions earlier than 7.1
    uint16 xPrev = x > 0 ? x - 1 : (uint16)kNoIndex;

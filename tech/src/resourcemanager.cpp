@@ -43,8 +43,8 @@ LOG_DEFINE_CHANNEL(ResourceManager);
 
 static const tChar kExtSep = _T('.');
 
-static const uint kNoIndex = ~0;
-static const ulong kNoIndexL = ~0;
+static const uint kNoIndex = ~0u;
+static const ulong kNoIndexL = ~0u;
 
 // {93BA1F78-3FF1-415b-BA5B-56FED039E838}
 const GUID IID_IResourceManagerDiagnostics = 

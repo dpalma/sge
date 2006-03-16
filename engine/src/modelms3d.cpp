@@ -235,7 +235,7 @@ void * ModelMs3dLoad(IReader * pReader)
             vert.u = iter->s[k];
             vert.v = 1 - iter->t[k];
             vert.normal = iter->vertexNormals[k];
-            uint iVertMatch = ~0;
+            uint iVertMatch = ~0u;
             tVertexMap::iterator viter = vertexMap.lower_bound(index);
             tVertexMap::iterator vend = vertexMap.upper_bound(index);
             for (; viter != vend; viter++)
@@ -256,7 +256,7 @@ void * ModelMs3dLoad(IReader * pReader)
                   }
                }
             }
-            if (iVertMatch == ~0)
+            if (iVertMatch == ~0u)
             {
                // Not already mapped, but there may be a suitable vertex
                // elsewhere in the array. Have to look through whole map.
@@ -272,7 +272,7 @@ void * ModelMs3dLoad(IReader * pReader)
                      break;
                   }
                }
-               if (iVertMatch == ~0)
+               if (iVertMatch == ~0u)
                {
                   // Not mapped and no usable vertex already in the array
                   // so create a new one.

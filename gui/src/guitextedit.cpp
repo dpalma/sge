@@ -277,10 +277,10 @@ void cGUITextBuffer::Paste()
 ///////////////////////////////////////
 
 cGUITextEditElement::cGUITextEditElement()
- : m_editSize(~0),
-   m_timeLastBlink(0),
-   m_bCursorBlinkOn(true),
-   m_bCursorForceOn(false)
+ : m_editSize(~0u)
+ , m_timeLastBlink(0)
+ , m_bCursorBlinkOn(true)
+ , m_bCursorForceOn(false)
 {
 }
 

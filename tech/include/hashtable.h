@@ -28,7 +28,7 @@ public:
    static uint Hash(const T & a, uint initHash = 0xDEADBEEF)
    {
       Assert(!"Cannot use default cHashFunction<>::Hash()!");
-      return ~0;
+      return ~0u;
    }
 
    static bool Equal(const T & a, const T & b)
