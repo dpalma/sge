@@ -5,6 +5,7 @@
 
 #include "sys.h"
 
+#include "configapi.h"
 #include "keys.h"
 #include "globalobj.h"
 #include "techtime.h"
@@ -18,6 +19,7 @@
 #include <zmouse.h>
 
 #include <GL/glew.h>
+#include <GL/wglew.h>
 
 #if HAVE_DIRECTX
 #include <d3d9.h>
@@ -799,6 +801,20 @@ HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI 
                DestroyWindow(g_hWnd);
                g_hWnd = NULL;
                return NULL;
+            }
+
+            if (ConfigIsTrue(_T("disable_vsync")))
+            {
+               if (wglewIsSupported("WGL_EXT_swap_control"))
+               {
+                  int swapInterval = wglGetSwapIntervalEXT();
+                  wglSwapIntervalEXT(0);
+                  InfoMsg1("Changed swap interval from %d to 0\n", swapInterval);
+               }
+               else
+               {
+                  WarnMsg("WGL_EXT_swap_control extension not supported\n");
+               }
             }
          }
 #if HAVE_DIRECTX
