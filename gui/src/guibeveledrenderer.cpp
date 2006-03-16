@@ -253,7 +253,7 @@ tResult cGUIBeveledRenderer::ComputeClientArea(IGUIElement * pElement, tGUIRect 
    }
 
    tGUISize size = pElement->GetSize();
-   tGUIRect clientArea(bevel, bevel, Round(size.width - bevel), Round(size.height - bevel));
+   tGUIRect clientArea(bevel, bevel, FloatToInt(size.width - bevel), FloatToInt(size.height - bevel));
 
    {
       cAutoIPtr<IGUIDialogElement> pDialogElement;
@@ -305,7 +305,7 @@ tResult cGUIBeveledRenderer::ButtonRender(IGUIElement * pElement, int bevel,
 
    bool bPressed = false;
 
-   tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
+   tGUIRect rect(FloatToInt(pos.x), FloatToInt(pos.y), FloatToInt(pos.x + size.width), FloatToInt(pos.y + size.height));
 
    IGUIButtonElement * pButtonElement = (IGUIButtonElement *)pElement;
 
@@ -379,7 +379,7 @@ tResult cGUIBeveledRenderer::ListBoxRender(IGUIElement * pElement, int bevel, co
 
    tGUIPoint pos = GUIElementAbsolutePosition(pListBoxElement);
    tGUISize size = pListBoxElement->GetSize();
-   tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
+   tGUIRect rect(FloatToInt(pos.x), FloatToInt(pos.y), FloatToInt(pos.x + size.width), FloatToInt(pos.y + size.height));
 
    pRenderDevice->RenderBeveledRect(rect, bevel, GUIStandardColors::DarkGray, GUIStandardColors::Gray, GUIStandardColors::White);
 
@@ -491,7 +491,7 @@ tResult cGUIBeveledRenderer::Render(IGUIDialogElement * pDialogElement,
 {
    tGUIPoint pos = GUIElementAbsolutePosition(pDialogElement);
    tGUISize size = pDialogElement->GetSize();
-   tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
+   tGUIRect rect(FloatToInt(pos.x), FloatToInt(pos.y), FloatToInt(pos.x + size.width), FloatToInt(pos.y + size.height));
 
    tGUIColor caption(GUIStandardColors::Blue);
 
@@ -538,7 +538,7 @@ tResult cGUIBeveledRenderer::Render(IGUILabelElement * pLabelElement,
 {
    tGUIPoint pos = GUIElementAbsolutePosition(pLabelElement);
    tGUISize size = pLabelElement->GetSize();
-   tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
+   tGUIRect rect(FloatToInt(pos.x), FloatToInt(pos.y), FloatToInt(pos.x + size.width), FloatToInt(pos.y + size.height));
 
    tGUIColor color(GUIStandardColors::Black);
 
@@ -574,7 +574,7 @@ tResult cGUIBeveledRenderer::Render(IGUIPanelElement * pPanelElement,
 {
    tGUIPoint pos = GUIElementAbsolutePosition(pPanelElement);
    tGUISize size = pPanelElement->GetSize();
-   tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
+   tGUIRect rect(FloatToInt(pos.x), FloatToInt(pos.y), FloatToInt(pos.x + size.width), FloatToInt(pos.y + size.height));
    pRenderDevice->RenderBeveledRect(rect, bevel, colors[kBC_Light], colors[kBC_Shadow], colors[kBC_Face]);
    return S_OK;
 }
@@ -587,7 +587,7 @@ tResult cGUIBeveledRenderer::Render(IGUITextEditElement * pTextEditElement,
 {
    tGUIPoint pos = GUIElementAbsolutePosition(pTextEditElement);
    tGUISize size = pTextEditElement->GetSize();
-   tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
+   tGUIRect rect(FloatToInt(pos.x), FloatToInt(pos.y), FloatToInt(pos.x + size.width), FloatToInt(pos.y + size.height));
 
    pRenderDevice->RenderBeveledRect(rect, bevel, colors[kBC_Shadow], colors[kBC_Face], GUIStandardColors::White);
 
@@ -658,7 +658,7 @@ tResult cGUIBeveledRenderer::Render(IGUIScrollBarElement * pScrollBarElement,
 {
    tGUIPoint pos = GUIElementAbsolutePosition(pScrollBarElement);
    tGUISize size = pScrollBarElement->GetSize();
-   tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
+   tGUIRect rect(FloatToInt(pos.x), FloatToInt(pos.y), FloatToInt(pos.x + size.width), FloatToInt(pos.y + size.height));
 
    int rangeMin, rangeMax, scrollPos;
    Verify(pScrollBarElement->GetRange(&rangeMin, &rangeMax) == S_OK);
@@ -678,7 +678,7 @@ tResult cGUIBeveledRenderer::Render(IGUIScrollBarElement * pScrollBarElement,
       return E_FAIL;
    }
 
-   int offsetx = Round(pos.x), offsety = Round(pos.y);
+   int offsetx = FloatToInt(pos.x), offsety = FloatToInt(pos.y);
    btn1Rect.Offset(offsetx, offsety);
    btn2Rect.Offset(offsetx, offsety);
    thumbRect.Offset(offsetx, offsety);

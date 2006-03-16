@@ -722,8 +722,8 @@ tResult cTerrainModel::GetVertexFromHitTest(const cRay & ray, HTERRAINVERTEX * p
       LocalMsg3("Hit the terrain at approximately (%.1f, %.1f, %.1f)\n",
          pointOnPlane.x, pointOnPlane.y, pointOnPlane.z);
 
-      uint ix = Round(pointOnPlane.x / m_terrainSettings.GetTileSize());
-      uint iz = Round(pointOnPlane.z / m_terrainSettings.GetTileSize());
+      uint ix = FloatToInt(pointOnPlane.x / m_terrainSettings.GetTileSize());
+      uint iz = FloatToInt(pointOnPlane.z / m_terrainSettings.GetTileSize());
 
       LocalMsg2("Hit vertex (%d, %d)\n", ix, iz);
       ComposeHandle(ix, iz, phVertex);
@@ -1035,8 +1035,8 @@ tResult cTerrainModel::GetTileIndices(float x, float z, uint * pix, uint * piz) 
    }
 
    uint halfTile = m_terrainSettings.GetTileSize() >> 1;
-   *pix = Round((x - halfTile) / m_terrainSettings.GetTileSize());
-   *piz = Round((z - halfTile) / m_terrainSettings.GetTileSize());
+   *pix = FloatToInt((x - halfTile) / m_terrainSettings.GetTileSize());
+   *piz = FloatToInt((z - halfTile) / m_terrainSettings.GetTileSize());
    return S_OK;
 }
 
@@ -1401,8 +1401,8 @@ tResult HeightMapLoad(const tChar * pszHeightData, IHeightMap * * ppHeightMap)
             return 0;
          }
 
-         uint x = Round(nx * m_pHeightMap->GetWidth());
-         uint z = Round(nz * m_pHeightMap->GetHeight());
+         uint x = FloatToInt(nx * m_pHeightMap->GetWidth());
+         uint z = FloatToInt(nz * m_pHeightMap->GetHeight());
 
          const uint8 * pData = reinterpret_cast<const uint8 *>(m_pHeightMap->GetData());
 

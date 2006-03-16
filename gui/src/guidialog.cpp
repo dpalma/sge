@@ -76,13 +76,13 @@ tResult cGUIDialogElement::OnEvent(IGUIEvent * pEvent)
       {
          LocalMsg("Dialog drag start\n");
          tGUIRect captionRect = GetCaptionRectAbsolute();
-         if (captionRect.PtInside(Round(mousePos.x), Round(mousePos.y)))
+         if (captionRect.PtInside(mousePos.x, mousePos.y))
          {
             m_bDragging = true;
             tGUIPoint absPos = GUIElementAbsolutePosition(this);
             // TODO: ADDED_tScreenPoint
-            m_dragOffset.x = mousePos.x - Round(absPos.x);
-            m_dragOffset.y = mousePos.y - Round(absPos.y);
+            m_dragOffset.x = mousePos.x - FloatToInt(absPos.x);
+            m_dragOffset.y = mousePos.y - FloatToInt(absPos.y);
             pEvent->SetCancelBubble(true);
          }
          break;
@@ -181,7 +181,7 @@ tGUIRect cGUIDialogElement::GetCaptionRectAbsolute()
       tGUIPoint pos = GUIElementAbsolutePosition(this);
       tGUISize size = GetSize();
 
-      tGUIRect captionRect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
+      tGUIRect captionRect(FloatToInt(pos.x), FloatToInt(pos.y), FloatToInt(pos.x + size.width), FloatToInt(pos.y + size.height));
       captionRect.left += kHackBevelValue;
       captionRect.top += kHackBevelValue;
       captionRect.right -= kHackBevelValue;

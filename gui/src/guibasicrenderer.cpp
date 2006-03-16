@@ -129,7 +129,7 @@ tResult cGUIBasicRenderer::ComputeClientArea(IGUIElement * pElement, tGUIRect * 
          }
 
          tGUISize size = pElement->GetSize();
-         *pClientArea = tGUIRect(0, captionHeight, Round(size.width), Round(size.height));
+         *pClientArea = tGUIRect(0, captionHeight, FloatToInt(size.width), FloatToInt(size.height));
          return S_OK;
       }
    }
@@ -151,7 +151,7 @@ tResult cGUIBasicRenderer::LabelRender(IGUIElement * pElement, IGUIRenderDevice 
 {
    tGUIPoint pos = GUIElementAbsolutePosition(pElement);
    tGUISize size = pElement->GetSize();
-   tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
+   tGUIRect rect(FloatToInt(pos.x), FloatToInt(pos.y), FloatToInt(pos.x + size.width), FloatToInt(pos.y + size.height));
 
    tGUIColor color(GUIStandardColors::Black);
 
@@ -207,7 +207,7 @@ tResult cGUIBasicRenderer::PanelRender(IGUIElement * pElement, IGUIRenderDevice 
 {
    tGUIPoint pos = GUIElementAbsolutePosition(pElement);
    tGUISize size = pElement->GetSize();
-   tGUIRect rect(Round(pos.x), Round(pos.y), Round(pos.x + size.width), Round(pos.y + size.height));
+   tGUIRect rect(FloatToInt(pos.x), FloatToInt(pos.y), FloatToInt(pos.x + size.width), FloatToInt(pos.y + size.height));
 
    cAutoIPtr<IGUIStyle> pStyle;
    if (pElement->GetStyle(&pStyle) == S_OK)

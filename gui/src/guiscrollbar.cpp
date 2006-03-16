@@ -183,8 +183,8 @@ tResult cGUIScrollBarElement::GetPartRect(eGUIScrollBarPart part, tGUIRect * pRe
    }
 
    tGUISize size(GetSize());
-   int width = Round(size.width);
-   int height = Round(size.height);
+   int width = FloatToInt(size.width);
+   int height = FloatToInt(size.height);
 
    if (m_scrollBarType == kGUIScrollBarHorizontal)
    {
@@ -346,7 +346,7 @@ int cGUIScrollBarElement::DetermineScrollPos(const tScreenPoint & mousePos) cons
 
       float fracPos = (mousePos.x - rangeMinScreen) / rangeScreen;
 
-      return m_rangeMin + Round(fracPos * (m_rangeMax - m_rangeMin));
+      return m_rangeMin + FloatToInt(fracPos * (m_rangeMax - m_rangeMin));
    }
 
    return -1;
@@ -366,8 +366,8 @@ eGUIScrollBarPart cGUIScrollBarElement::GetHitPart(const tScreenPoint & point)
    };
 
    tGUIPoint pos = GUIElementAbsolutePosition(this);
-   int ptx = Round(point.x - pos.x);
-   int pty = Round(point.y - pos.y);
+   int ptx = FloatToInt(point.x - pos.x);
+   int pty = FloatToInt(point.y - pos.y);
 
    for (int i = 0; i < _countof(parts); i++)
    {
@@ -451,7 +451,7 @@ tResult GUIScrollBarElementCreateFromXml(const TiXmlElement * pXmlElement,
             cTokenizer<float> tok;
             if (tok.Tokenize(pszAttrib) == 2)
             {
-               pScrollBar->SetRange(Round(tok.m_tokens[0]), Round(tok.m_tokens[1]));
+               pScrollBar->SetRange(FloatToInt(tok.m_tokens[0]), FloatToInt(tok.m_tokens[1]));
             }
          }
 

@@ -216,7 +216,7 @@ bool cGUITextureFontW32::Create(const cGUIFontDesc & fontDesc)
                }
 
                SetTextColor(hMemDC, kWhite);
-               ExtTextOut(hMemDC, Round(texX), Round(texY), 0, NULL, szChar, 1, NULL);
+               ExtTextOut(hMemDC, FloatToInt(texX), FloatToInt(texY), 0, NULL, szChar, 1, NULL);
 
                uint index = c - fontDesc.GetGlyphFirst();
                m_pGlyphs[index].texCoords[0] = texX * oneOverTexDim;
@@ -252,8 +252,8 @@ bool cGUITextureFontW32::Create(const cGUIFontDesc & fontDesc)
 
             float lum = red / alpha;     // Extract lum from above
 
-            uint a = Round(alpha * 255);
-            uint l = Round(lum * 255);
+            uint a = FloatToInt(alpha * 255);
+            uint l = FloatToInt(lum * 255);
 
 #define RGBA16(r,g,b,a) (uint16)(((r & 0xF) << 12) | ((g & 0xF) << 8) | ((b & 0xF) << 4) | (a & 0xF))
 
@@ -319,7 +319,7 @@ tResult cGUITextureFontW32::RenderText(const char * pszText, int textLength, tRe
 
    int rowWidth = 0;
    int maxRowWidth = 0;
-   int rowHeight = Round((m_pGlyphs[0].texCoords[3] - m_pGlyphs[0].texCoords[1]) * m_texDim);
+   int rowHeight = FloatToInt((m_pGlyphs[0].texCoords[3] - m_pGlyphs[0].texCoords[1]) * m_texDim);
    int rowCount = 1;
 
    int x = pRect->left;
@@ -351,7 +351,7 @@ tResult cGUITextureFontW32::RenderText(const char * pszText, int textLength, tRe
          float tx1 = m_pGlyphs[index].texCoords[0];
          float tx2 = m_pGlyphs[index].texCoords[2];
 
-         rowWidth += Round((tx2 - tx1) * m_widthMult);
+         rowWidth += FloatToInt((tx2 - tx1) * m_widthMult);
 
          if (rowWidth > maxRowWidth)
          {
@@ -406,8 +406,8 @@ tResult cGUITextureFontW32::RenderText(const char * pszText, int textLength, tRe
       float tx2 = m_pGlyphs[index].texCoords[2];
       float ty2 = m_pGlyphs[index].texCoords[3];
 
-      int w = Round((tx2 - tx1) * m_widthMult);
-      int h = Round((ty2 - ty1) * m_heightMult);
+      int w = FloatToInt((tx2 - tx1) * m_widthMult);
+      int h = FloatToInt((ty2 - ty1) * m_heightMult);
 
       if (!IsBitFlagSet(flags, kRT_CalcRect))
       {

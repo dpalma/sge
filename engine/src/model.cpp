@@ -555,7 +555,7 @@ void cModel::ApplyJointMatrices(const tMatrices & matrices, tBlendedVertices * p
       v.u = iter->u;
       v.v = iter->v;
       // TODO: call them bones or joints???
-      int iJoint = Round(iter->bone);
+      int iJoint = FloatToInt(iter->bone);
       if (iJoint < 0)
       {
          v.normal = iter->normal;
@@ -580,7 +580,7 @@ void cModel::PreApplyJoints()
 
    for (tModelVertices::iterator iter = m_vertices.begin(); iter != m_vertices.end(); iter++)
    {
-      int index = Round(iter->bone);
+      int index = FloatToInt(iter->bone);
       if (index < 0)
       {
          continue;

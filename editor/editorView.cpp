@@ -413,14 +413,14 @@ void cEditorView::OnToolsCameraSettings()
 
    UseGlobal(CameraControl);
 
-   cameraDlg.m_fov = Round(m_cameraFov);
-   cameraDlg.m_znear = Round(m_cameraZNear);
-   cameraDlg.m_zfar = Round(m_cameraZFar);
+   cameraDlg.m_fov = FloatToInt(m_cameraFov);
+   cameraDlg.m_znear = FloatToInt(m_cameraZNear);
+   cameraDlg.m_zfar = FloatToInt(m_cameraZFar);
    float temp;
    pCameraControl->GetElevation(&temp);
-   cameraDlg.m_elevation = Round(temp);
+   cameraDlg.m_elevation = FloatToInt(temp);
    pCameraControl->GetPitch(&temp);
-   cameraDlg.m_pitch = Round(temp);
+   cameraDlg.m_pitch = FloatToInt(temp);
 
    if (cameraDlg.DoModal() == IDOK)
    {

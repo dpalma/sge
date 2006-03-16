@@ -777,10 +777,10 @@ void cGUIContext::RenderDebugInfo()
 
       const int lineHeight = rect.GetHeight();
 
-      rect = tGUIRect(Round(m_debugInfoPlacement.x), Round(m_debugInfoPlacement.y), 0, 0);
+      rect = tGUIRect(FloatToInt(m_debugInfoPlacement.x), FloatToInt(m_debugInfoPlacement.y), 0, 0);
 
       cStr temp;
-      Sprintf(&temp, "Mouse: (%d, %d)", Round(m_lastMousePos.x), Round(m_lastMousePos.y));
+      Sprintf(&temp, "Mouse: (%d, %d)", m_lastMousePos.x, m_lastMousePos.y);
       pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
       rect.Offset(0, lineHeight);
 
@@ -798,18 +798,18 @@ void cGUIContext::RenderDebugInfo()
             rect.left += lineHeight;
 
             const tGUISize size((*iter)->GetSize());
-            Sprintf(&temp, "Size: %d x %d", Round(size.width), Round(size.height));
+            Sprintf(&temp, "Size: %d x %d", FloatToInt(size.width), FloatToInt(size.height));
             pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
             rect.Offset(0, lineHeight);
 
             const tGUIPoint pos((*iter)->GetPosition());
-            Sprintf(&temp, "Position: (%d, %d)", Round(pos.x), Round(pos.y));
+            Sprintf(&temp, "Position: (%d, %d)", FloatToInt(pos.x), FloatToInt(pos.y));
             pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
             rect.Offset(0, lineHeight);
 
             uint nParents = 0;
             tGUIPoint absPos(GUIElementAbsolutePosition(*iter, &nParents));
-            Sprintf(&temp, "Absolute Position: (%d, %d)", Round(absPos.x), Round(absPos.y));
+            Sprintf(&temp, "Absolute Position: (%d, %d)", FloatToInt(absPos.x), FloatToInt(absPos.y));
             pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
             rect.Offset(0, lineHeight);
 
@@ -819,7 +819,7 @@ void cGUIContext::RenderDebugInfo()
 
             const tGUIPoint relPoint(m_lastMousePos.x - absPos.x, m_lastMousePos.y - absPos.y); // TODO: ADDED_tScreenPoint
             Assert((*iter)->Contains(relPoint));
-            Sprintf(&temp, "Mouse (relative): (%d, %d)", Round(relPoint.x), Round(relPoint.y));
+            Sprintf(&temp, "Mouse (relative): (%d, %d)", FloatToInt(relPoint.x), FloatToInt(relPoint.y));
             pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
             rect.Offset(0, lineHeight);
 

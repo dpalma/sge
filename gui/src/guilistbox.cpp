@@ -86,7 +86,7 @@ tResult cGUIListBoxElement::SetClientArea(const tGUIRect & clientArea)
          }
          m_pHScrollBar->SetPosition(tGUIPoint(static_cast<float>(clientArea.left), clientArea.bottom - hScrollBarSize.height));
          m_pHScrollBar->SetSize(hScrollBarSize);
-         modifiedClientArea.bottom -= Round(hScrollBarSize.height);
+         modifiedClientArea.bottom -= FloatToInt(hScrollBarSize.height);
       }
 
       if (!!m_pVScrollBar)
@@ -98,7 +98,7 @@ tResult cGUIListBoxElement::SetClientArea(const tGUIRect & clientArea)
          }
          m_pVScrollBar->SetPosition(tGUIPoint(clientArea.right - vScrollBarSize.width, static_cast<float>(clientArea.top)));
          m_pVScrollBar->SetSize(vScrollBarSize);
-         modifiedClientArea.right -= Round(vScrollBarSize.width);
+         modifiedClientArea.right -= FloatToInt(vScrollBarSize.width);
       }
    }
 
@@ -125,7 +125,7 @@ tResult cGUIListBoxElement::OnEvent(IGUIEvent * pEvent)
    {
       if (m_itemHeight > 0)
       {
-         uint index = Round(point.y - pos.y) / m_itemHeight;
+         uint index = FloatToInt(point.y - pos.y) / m_itemHeight;
          Select(index, index);
          Verify(pEvent->SetCancelBubble(true) == S_OK);
       }

@@ -207,10 +207,10 @@ tResult cGUIGridLayout::Layout(IGUIElement * pParent)
       {
          if (pChild->IsVisible())
          {
-            int x = clientArea.left + iCol * (Round(cellWidth) + m_hGap);
-            int y = clientArea.top + iRow * (Round(cellHeight) + m_vGap);
+            int x = clientArea.left + iCol * (FloatToInt(cellWidth) + m_hGap);
+            int y = clientArea.top + iRow * (FloatToInt(cellHeight) + m_vGap);
 
-            tGUIRect cellRect(x, y, x + Round(cellWidth), y + Round(cellHeight));
+            tGUIRect cellRect(x, y, x + FloatToInt(cellWidth), y + FloatToInt(cellHeight));
 
             GUIPlaceElement(cellRect, pChild);
 
@@ -465,13 +465,13 @@ tResult cGUIFlowLayout::Layout(IGUIElement * pParent)
          if (pChild->IsVisible())
          {
             tGUISize childSize(pChild->GetSize());
-            tGUIRect rect(x, y, Round(x + childSize.width), Round(y + childSize.height));
+            tGUIRect rect(x, y, FloatToInt(x + childSize.width), FloatToInt(y + childSize.height));
             GUIPlaceElement(rect, pChild);
-            x += Round(childSize.width + m_hGap);
+            x += FloatToInt(childSize.width + m_hGap);
             nChildrenThisRow++;
             if (x >= clientArea.right)
             {
-               y += Round(childSize.height + m_vGap);
+               y += FloatToInt(childSize.height + m_vGap);
                x = clientArea.left;
                nChildrenThisRow = 0;
             }

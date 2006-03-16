@@ -312,7 +312,7 @@ tResult cMoveCameraTool::GetToolTip(const cEditorMouseEvent & mouseEvent,
       if (GetTerrainLocation(pickRay, &intersect))
       {
          Sprintf(pToolTipText, _T("Hit <%.2f, %.2f, %.2f>"), intersect.x, intersect.y, intersect.z);
-         *pToolTipId = static_cast<uint_ptr>(Round(intersect.LengthSqr()));
+         *pToolTipId = static_cast<uint_ptr>(FloatToInt(intersect.LengthSqr()));
          return S_OK;
       }
    }

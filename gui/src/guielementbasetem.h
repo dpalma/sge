@@ -363,7 +363,7 @@ tResult cGUIElementBase<INTRFC>::GetClientArea(tGUIRect * pClientArea)
    }
    else
    {
-      *pClientArea = tGUIRect(0,0,Round(m_size.width),Round(m_size.height));
+      *pClientArea = tGUIRect(0,0,FloatToInt(m_size.width),FloatToInt(m_size.height));
       return S_FALSE;
    }
 }

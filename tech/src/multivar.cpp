@@ -232,15 +232,15 @@ int cMultiVar::ToInt() const
    }
    else if (m_type == kMVT_Float)
    {
-      return Round(m_value.f);
+      return FloatToInt(m_value.f);
    }
    else if (m_type == kMVT_Double)
    {
-      return Round(m_value.d);
+      return DoubleToInt(m_value.d);
    }
    else if (m_type == kMVT_String)
    {
-      return Round(strtod(m_value.psz, NULL));
+      return DoubleToInt(strtod(m_value.psz, NULL));
    }
    else
    {

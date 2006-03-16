@@ -452,7 +452,7 @@ void * ModelMs3dLoad(IReader * pReader)
             keyFrames[j].translation = tVec3(keyFramesTrans[j].position);
             keyFrames[j].rotation = QuatFromEulerAngles(tVec3(keyFramesRot[j].rotation));
 
-            int frame = Round(static_cast<float>(keyFrames[j].time) * animationFPS);
+            int frame = FloatToInt(static_cast<float>(keyFrames[j].time) * animationFPS);
             LocalMsg3(indent, "Key frame %d at %.3f is #%d\n", j, keyFrames[j].time, frame);
          }
 
@@ -614,7 +614,7 @@ void * ModelMs3dLoad(IReader * pReader)
             std::vector<sModelKeyFrame>::const_iterator kfIter = keyFrames.begin();
             for (int iKeyFrame = 0; kfIter != keyFrames.end(); iKeyFrame++, kfIter++)
             {
-               uint frame = Round(static_cast<float>(kfIter->time) * animationFPS);
+               uint frame = FloatToInt(static_cast<float>(kfIter->time) * animationFPS);
                if (frame == animDesc.start)
                {
                   iStart = iKeyFrame;
