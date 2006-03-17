@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8" ?> 
+<entity
+   model="crate.ms3d"
+   name="Crate"
+   hitpoints="1000">
+   <spawns queuesize="4">
+      <spawn type="zombie" />
+   </spawns>
+</entity>

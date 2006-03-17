@@ -6,6 +6,7 @@
 #include "entitymanager.h"
 
 #include "cameraapi.h"
+#include "engineapi.h"
 #include "readwriteutils.h"
 #include "renderapi.h"
 #include "terrainapi.h"
@@ -15,9 +16,11 @@
 #include "ray.h"
 #include "resourceapi.h"
 
-#include <algorithm>
+#include <tinyxml.h>
 
 #include <GL/glew.h>
+
+#include <algorithm>
 
 #include "dbgalloc.h" // must be last header
 
@@ -112,6 +115,21 @@ tResult cEntityManager::SpawnEntity(const tChar * pszEntity, const tVec3 & posit
    {
       return E_POINTER;
    }
+
+   const TiXmlDocument * pTiXmlDoc = NULL;
+   UseGlobal(ResourceManager);
+   if (pResourceManager->Load(pszEntity, kRT_TiXml, NULL, (void**)&pTiXmlDoc) == S_OK)
+   {
+      const TiXmlElement * pTiXmlElement = pTiXmlDoc->FirstChildElement();
+      if ((pTiXmlElement != NULL) && (_stricmp(pTiXmlElement->Value(), "entity") == 0))
+      {
+         const char * pszModel = pTiXmlElement->Attribute("model");
+
+         WarnMsgIf1(pTiXmlElement->NextSiblingElement() != NULL,
+            "There should be only one entity definition per file (%s)\n", pszEntity);
+      }
+   }
+
    uint oldNextId = m_nextId;
    cAutoIPtr<IEntity> pEntity;
    if (ModelEntityCreate(m_nextId++, pszEntity, position, &pEntity) != S_OK)

@@ -124,5 +124,16 @@ interface IEntityManagerListener : IUnknown
 
 
 ///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IEntityDefinition
+//
+
+interface IEntityDefinition : IUnknown
+{
+   virtual tResult CreateInstance(IEntity * * ppEntity) = 0;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
 
 #endif // !INCLUDED_ENTITYAPI_H

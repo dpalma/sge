@@ -23,6 +23,7 @@ bind("F7", [[GUIContext:ShowModalDialog("guitest.xml")]]);
 function LoadSampleLevel(map)
    GUIContext:PushPage("ingame.xml");
    SetTerrain(map);
+   EntitySpawnTest("crate.xml", 0.5, 0.4);
    ViewSetPos(0.5, 0.4);
 end;
 

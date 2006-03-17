@@ -8,6 +8,7 @@
 #include "inputapi.h"
 #include "scriptapi.h"
 #include "sys.h"
+#include "terrainapi.h"
 
 #include "dictionaryapi.h"
 #include "globalobj.h"
@@ -202,6 +203,40 @@ int LogEnableChannel(int argc, const tScriptVar * argv,
    return 0;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+
+int EntitySpawnTest(int argc, const tScriptVar * argv, 
+                    int nMaxResults, tScriptVar * pResults)
+{
+   if (argc == 3
+      && ScriptArgIsString(0)
+      && ScriptArgIsNumber(1)
+      && ScriptArgIsNumber(2))
+   {
+      float nx = argv[1];
+      float nz = argv[2];
+
+      if (nx < 0 || nx > 1 || nz < 0 || nz > 1)
+      {
+         ErrorMsg2("EntitySpawnTest arguments %f, %f, out of range\n", nx, nz);
+      }
+      else
+      {
+         tVec3 location;
+         UseGlobal(TerrainModel);
+         if (pTerrainModel->GetPointOnTerrain(nx, nz, &location) == S_OK)
+         {
+            UseGlobal(EntityManager);
+            pEntityManager->SpawnEntity(argv[0], location);
+         }
+      }
+   }
+
+   return 0;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 int ListResources(int argc, const tScriptVar * argv, 
@@ -326,6 +361,7 @@ sScriptReg cmds[] =
    { "unbind", UnbindKey },
    { "quit", Quit },
    { "LogChannel", LogEnableChannel },
+   { "EntitySpawnTest", EntitySpawnTest },
    { "ListResources", ListResources },
    { "GetMapProperties", GetMapProperties },
    { "IssueEntityCommand", IssueEntityCommand },
