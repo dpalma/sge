@@ -271,7 +271,7 @@ tResult cResourceManager::Load(const tChar * pszName, tResourceType type,
 
    uint formatIds[10];
    uint nFormats = DeduceFormats(pszName, type, formatIds, _countof(formatIds));
-   for (uint i = 0; i <  nFormats; i++)
+   for (uint i = 0; i < nFormats; i++)
    {
       if (LoadWithFormat(pszName, type, formatIds[i], param, ppData) == S_OK)
       {
@@ -726,8 +726,9 @@ uint cResourceManager::DeduceFormats(const tChar * pszName, tResourceType type,
 
    uint iFormat = 0;
 
-   // if name has file extension, resource class plus extension determines format
-   // plus, include all formats that can generate the resource class from a dependent type
+   // If the name has a file extension, the resource type plus extension determines
+   // the format. Plus, include all formats that can generate the resource class from
+   // a dependent type.
    if (extensionId != kNoIndex)
    {
       Assert(extensionId < m_extensions.size());
@@ -745,8 +746,16 @@ uint cResourceManager::DeduceFormats(const tChar * pszName, tResourceType type,
          }
       }
    }
-   // else resource class alone determines set of possible formats
-   else
+
+   // If no suitable formats found with the file extension, clear it so the block
+   // below will try to with the given type alone.
+   if (iFormat == 0)
+   {
+      extensionId = kNoIndex;
+   }
+
+   // If no file extension, the resource type alone determines set of possible formats.
+   if (extensionId == kNoIndex)
    {
       tFormats::const_iterator fIter = m_formats.begin();
       tFormats::const_iterator fEnd = m_formats.end();
@@ -867,10 +876,12 @@ const cResourceManager::sResource & cResourceManager::sResource::operator =(cons
 
 #ifdef HAVE_CPPUNITLITE2
 
+typedef std::pair<cStr, cStr> tStrPair;
+
 class cTestResourceStore : public cResourceStore
 {
 public:
-   cTestResourceStore(const std::vector<std::pair<cStr, cStr> > * pTestData = NULL);
+   cTestResourceStore(const tStrPair * pTestData, size_t nTestData);
    virtual ~cTestResourceStore();
 
    virtual tResult FillCache(cResourceCache * pCache);
@@ -878,15 +889,15 @@ public:
 
 private:
    // Pairs of <file name, pseudo data>
-   std::vector<std::pair<cStr, cStr> > m_testData;
+   std::vector<tStrPair> m_testData;
 };
 
-cTestResourceStore::cTestResourceStore(const std::vector<std::pair<cStr, cStr> > * pTestData)
- : m_testData((pTestData != NULL) ? pTestData->size() : 0)
+cTestResourceStore::cTestResourceStore(const tStrPair * pTestData, size_t nTestData)
+ : m_testData(nTestData)
 {
-   if (pTestData != NULL)
+   for (size_t i = 0; i < nTestData; i++, pTestData++)
    {
-      std::copy(pTestData->begin(), pTestData->end(), m_testData.begin());
+      m_testData[i] = *pTestData;
    }
 }
 
@@ -924,36 +935,22 @@ tResult cTestResourceStore::OpenEntry(const cResourceCacheEntryHeader & entry, I
 class cResourceManagerTests
 {
 public:
-   cResourceManagerTests();
+   cResourceManagerTests(const tStrPair * pTestData, size_t nTestData);
    ~cResourceManagerTests();
 
-   static const std::pair<cStr, cStr> gm_pseudoResources[];
    cAutoIPtr<cResourceManager> m_pResourceManager;
 };
 
 ////////////////////////////////////////
 
-const std::pair<cStr, cStr> cResourceManagerTests::gm_pseudoResources[] =
-{
-   std::make_pair(cStr("foo.dat"), cStr("foo_dat_foo_dat_foo_dat_foo_dat")),
-   std::make_pair(cStr("foo.bmp"), cStr("foo_bmp_foo_bmp_foo_bmp_foo_bmp")),
-   std::make_pair(cStr("bar.dat"), cStr("bar_dat_bar_dat_bar_dat_bar_dat")),
-};
-
-////////////////////////////////////////
-
-cResourceManagerTests::cResourceManagerTests()
+cResourceManagerTests::cResourceManagerTests(const tStrPair * pTestData, size_t nTestData)
 {
    SafeRelease(m_pResourceManager);
    m_pResourceManager = new cResourceManager;
    m_pResourceManager->Init();
 
-   std::vector<std::pair<cStr, cStr> > testData;
-   for (int i = 0; i < _countof(gm_pseudoResources); i++)
-   {
-      testData.push_back(gm_pseudoResources[i]);
-   }
-   m_pResourceManager->AddResourceStore(static_cast<cResourceStore*>(new cTestResourceStore(&testData)));
+   cTestResourceStore * pStore = new cTestResourceStore(pTestData, nTestData);
+   m_pResourceManager->AddResourceStore(static_cast<cResourceStore*>(pStore));
 }
 
 ////////////////////////////////////////
@@ -1006,7 +1003,18 @@ void TestDataUnload(void * pData)
 
 ////////////////////////////////////////
 
-TEST_F(cResourceManagerTests, TestResourceManagerLoadSameNameDifferentType)
+const tStrPair g_basicTestResources[] =
+{
+   std::make_pair(cStr("foo.dat"), cStr("foo_dat_foo_dat_foo_dat_foo_dat")),
+   std::make_pair(cStr("foo.bmp"), cStr("foo_bmp_foo_bmp_foo_bmp_foo_bmp")),
+   std::make_pair(cStr("bar.dat"), cStr("bar_dat_bar_dat_bar_dat_bar_dat")),
+};
+
+////////////////////////////////////////
+
+TEST_FP(cResourceManagerTests,
+        cResourceManagerTests(&g_basicTestResources[0], _countof(g_basicTestResources)),
+        ResourceManagerLoadSameNameDifferentType)
 {
    CHECK(m_pResourceManager->RegisterFormat("foodat", NULL, "dat", TestDataLoad, TestDataPostload, TestDataUnload) == S_OK);
    CHECK(m_pResourceManager->RegisterFormat("foobmp", NULL, "bmp", TestDataLoad, TestDataPostload, TestDataUnload) == S_OK);
@@ -1015,34 +1023,65 @@ TEST_F(cResourceManagerTests, TestResourceManagerLoadSameNameDifferentType)
    {
       byte * pFooDat = NULL;
       CHECK(m_pResourceManager->Load("foo", "foodat", (void*)NULL, (void**)&pFooDat) == S_OK);
-      CHECK(memcmp(pFooDat, gm_pseudoResources[0].second.c_str(), gm_pseudoResources[0].second.length()) == 0);
+      CHECK(memcmp(pFooDat, g_basicTestResources[0].second.c_str(), g_basicTestResources[0].second.length()) == 0);
    }
 
    {
       byte * pFooBmp = NULL;
       CHECK(m_pResourceManager->Load("foo", "foobmp", (void*)NULL, (void**)&pFooBmp) == S_OK);
-      CHECK(memcmp(pFooBmp, gm_pseudoResources[1].second.c_str(), gm_pseudoResources[1].second.length()) == 0);
+      CHECK(memcmp(pFooBmp, g_basicTestResources[1].second.c_str(), g_basicTestResources[1].second.length()) == 0);
    }
 }
 
 ////////////////////////////////////////
 
-TEST_F(cResourceManagerTests, TestResourceManagerLoadCaseSensitivity)
+TEST_FP(cResourceManagerTests,
+        cResourceManagerTests(&g_basicTestResources[0], _countof(g_basicTestResources)),
+        ResourceManagerLoadCaseSensitivity)
 {
    CHECK(m_pResourceManager->RegisterFormat("foodat", NULL, "dat", TestDataLoad, TestDataPostload, TestDataUnload) == S_OK);
 
    {
       byte * pFooDat1 = NULL;
       CHECK(m_pResourceManager->Load("foo", "foodat", (void*)NULL, (void**)&pFooDat1) == S_OK);
-      CHECK(memcmp(pFooDat1, gm_pseudoResources[0].second.c_str(), gm_pseudoResources[0].second.length()) == 0);
+      CHECK(memcmp(pFooDat1, g_basicTestResources[0].second.c_str(), g_basicTestResources[0].second.length()) == 0);
    }
 
    {
       byte * pFooDat2 = NULL;
       CHECK(m_pResourceManager->Load("FOO", "foodat", (void*)NULL, (void**)&pFooDat2) == S_OK);
-      CHECK(memcmp(pFooDat2, gm_pseudoResources[0].second.c_str(), gm_pseudoResources[0].second.length()) == 0);
+      CHECK(memcmp(pFooDat2, g_basicTestResources[0].second.c_str(), g_basicTestResources[0].second.length()) == 0);
    }
 }
+
+////////////////////////////////////////
+
+// This unit test is for a case that the resource manager doesn't actually handle yet
+#if 0
+const tStrPair g_multExtTestResources[] =
+{
+   std::make_pair(cStr("foo.ms3d"), cStr("foo_ms3d_foo_ms3d_foo_ms3d_foo_ms3d\0")),
+   std::make_pair(cStr("foo.ms3d.xml"), cStr("foo_ms3d_xml_foo_ms3d_xml_foo_ms3d_xml\0")),
+};
+
+TEST_FP(cResourceManagerTests,
+        cResourceManagerTests(&g_multExtTestResources[0], _countof(g_multExtTestResources)),
+        ResourceManagerMultipleExtensionConfusion)
+{
+   CHECK(m_pResourceManager->RegisterFormat("fooms3d", NULL, "ms3d", TestDataLoad, TestDataPostload, TestDataUnload) == S_OK);
+   CHECK(m_pResourceManager->RegisterFormat("fooxml", NULL, "xml", TestDataLoad, TestDataPostload, TestDataUnload) == S_OK);
+
+   {
+      byte * pFooXml = NULL;
+      CHECK(m_pResourceManager->Load("foo.ms3d", "fooxml", (void*)NULL, (void**)&pFooXml) == S_OK);
+      if (pFooXml != NULL)
+      {
+         const cStr & expected = g_multExtTestResources[1].second;
+         CHECK(memcmp(pFooXml, expected.c_str(), expected.length()) == 0);
+      }
+   }
+}
+#endif
 
 #endif // HAVE_CPPUNITLITE2
 
