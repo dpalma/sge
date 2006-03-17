@@ -204,7 +204,7 @@ tResult cResourceManager::AddDirectoryTreeFlattened(const tChar * pszDir)
    tStrings dirs;
    if (ListDirs(root, &dirs) > 0)
    {
-      tStrings::iterator iter;
+      tStrings::const_iterator iter;
       for (iter = dirs.begin(); iter != dirs.end(); iter++)
       {
          if (AddDirectoryTreeFlattened(iter->c_str()) != S_OK)
@@ -341,7 +341,7 @@ tResult cResourceManager::LoadWithFormat(const tChar * pszName, tResourceType ty
          file.SetFileExt(m_extensions[pRes->extensionId].c_str());
 
          cAutoIPtr<IReader> pReader;
-         if (pRes->pStore->OpenEntry(cResourceCacheEntryHeader(file.CStr(), kNoIndexL, kNoIndexL, NULL), &pReader) == S_OK)
+         if (pRes->pStore->OpenEntry(file.CStr(), &pReader) == S_OK)
          {
             if (pReader->Seek(0, kSO_End) == S_OK
                && pReader->Tell(&dataSize) == S_OK
@@ -593,6 +593,13 @@ void cResourceManager::DumpCache() const
 
 ////////////////////////////////////////
 
+size_t cResourceManager::GetCacheSize() const
+{
+   return m_resources.size();
+}
+
+////////////////////////////////////////
+
 void DumpLoadedResources()
 {
    cAutoIPtr<IResourceManagerDiagnostics> pResMgrDiag;
@@ -652,6 +659,9 @@ cResourceManager::sResource * cResourceManager::FindResourceWithFormat(
       {
          if (stricmp(iter->name.c_str(), name.c_str()) == 0)
          {
+            LocalMsg4("Resource %d: base name \"%s\", extension %d is a potential match for \"%s\"\n",
+               index, iter->name.c_str(), iter->extensionId, pszName);
+
             if (extensionId == kNoIndex
                && (extsPossible.find(iter->extensionId) != extsPossible.end()))
             {
@@ -833,8 +843,6 @@ cResourceManager::sResource::sResource()
  , extensionId(kNoIndex)
  , formatId(kNoIndex)
  , pStore(NULL)
- , offset(kNoIndexL)
- , index(kNoIndexL)
  , pData(NULL)
  , dataSize(0)
 {
@@ -847,8 +855,6 @@ cResourceManager::sResource::sResource(const sResource & other)
  , extensionId(other.extensionId)
  , formatId(other.formatId)
  , pStore(other.pStore)
- , offset(other.offset)
- , index(other.index)
  , pData(other.pData)
  , dataSize(other.dataSize)
 {
@@ -869,8 +875,6 @@ const cResourceManager::sResource & cResourceManager::sResource::operator =(cons
    extensionId = other.extensionId;
    formatId = other.formatId;
    pStore = other.pStore;
-   offset = other.offset;
-   index = other.index;
    pData = NULL;
    dataSize = 0;
    return *this;
@@ -890,7 +894,7 @@ public:
    virtual ~cTestResourceStore();
 
    virtual tResult FillCache(cResourceCache * pCache);
-   virtual tResult OpenEntry(const cResourceCacheEntryHeader & entry, IReader * * ppReader);
+   virtual tResult OpenEntry(const tChar * pszName, IReader * * ppReader);
 
 private:
    // Pairs of <file name, pseudo data>
@@ -913,20 +917,20 @@ cTestResourceStore::~cTestResourceStore()
 tResult cTestResourceStore::FillCache(cResourceCache * pCache)
 {
    std::vector<std::pair<cStr, cStr> >::const_iterator iter = m_testData.begin();
-   for (ulong index = 0; iter != m_testData.end(); iter++, index++)
+   for (; iter != m_testData.end(); iter++)
    {
-      cResourceCacheEntryHeader header(iter->first.c_str(), kNoIndexL, index, static_cast<cResourceStore*>(this));
+      cResourceCacheEntryHeader header(iter->first.c_str(), static_cast<cResourceStore*>(this));
       pCache->AddCacheEntry(header);
    }
    return S_OK;
 }
 
-tResult cTestResourceStore::OpenEntry(const cResourceCacheEntryHeader & entry, IReader * * ppReader)
+tResult cTestResourceStore::OpenEntry(const tChar * pszName, IReader * * ppReader)
 {
    std::vector<std::pair<cStr, cStr> >::const_iterator iter = m_testData.begin();
    for (ulong index = 0; iter != m_testData.end(); iter++, index++)
    {
-      if (stricmp(entry.GetName(), m_testData[index].first.c_str()) == 0)
+      if (stricmp(pszName, m_testData[index].first.c_str()) == 0)
       {
          cStr * pDataStr = &m_testData[index].second;
          return MemReaderCreate(reinterpret_cast<const byte *>(pDataStr->c_str()), pDataStr->length(), false, ppReader);
@@ -944,6 +948,7 @@ public:
    ~cResourceManagerTests();
 
    cAutoIPtr<cResourceManager> m_pResourceManager;
+   cAutoIPtr<IResourceManagerDiagnostics> m_pDiagnostics;
 };
 
 ////////////////////////////////////////
@@ -954,8 +959,14 @@ cResourceManagerTests::cResourceManagerTests(const tStrPair * pTestData, size_t 
    m_pResourceManager = new cResourceManager;
    m_pResourceManager->Init();
 
-   cTestResourceStore * pStore = new cTestResourceStore(pTestData, nTestData);
-   m_pResourceManager->AddResourceStore(static_cast<cResourceStore*>(pStore));
+   cAutoIPtr<IResourceManagerDiagnostics> pResMgrDiag;
+   Verify(m_pResourceManager->QueryInterface(IID_IResourceManagerDiagnostics, (void**)&m_pDiagnostics) == S_OK);
+
+   if ((pTestData != NULL) && (nTestData > 0))
+   {
+      cTestResourceStore * pStore = new cTestResourceStore(pTestData, nTestData);
+      m_pResourceManager->AddResourceStore(static_cast<cResourceStore*>(pStore));
+   }
 }
 
 ////////////////////////////////////////
@@ -996,23 +1007,38 @@ void * TestDataLoad(IReader * pReader)
    return NULL;
 }
 
-void * TestDataPostload(void * pData, int dataLength, void * param)
-{
-   return pData;
-}
-
 void TestDataUnload(void * pData)
 {
    delete [] (byte *)pData;
 }
 
+void * ReverseTestDataPostload(void * pData, int dataLength, void * param)
+{
+   if (dataLength == 0)
+   {
+      dataLength = strlen(static_cast<char*>(pData));
+   }
+   byte * pBytes = static_cast<byte*>(pData);
+   for (int i = 0; i < (dataLength / 2); i++)
+   {
+      byte temp = pBytes[i];
+      pBytes[i] = pBytes[dataLength - i - 1];
+      pBytes[dataLength - i - 1] = temp;
+   }
+   return pBytes;
+}
+
 ////////////////////////////////////////
+
+#define kRT_Data _T("data")
+#define kRT_ReverseData _T("RevData")
+#define kRT_Bitmap _T("bitmap")
 
 const tStrPair g_basicTestResources[] =
 {
-   std::make_pair(cStr("foo.dat"), cStr("foo_dat_foo_dat_foo_dat_foo_dat")),
-   std::make_pair(cStr("foo.bmp"), cStr("foo_bmp_foo_bmp_foo_bmp_foo_bmp")),
-   std::make_pair(cStr("bar.dat"), cStr("bar_dat_bar_dat_bar_dat_bar_dat")),
+   std::make_pair(cStr("foo.dat"), cStr("foo_dat_foo_dat_foo_dat_foo_dat\0")),
+   std::make_pair(cStr("foo.bmp"), cStr("foo_bmp_foo_bmp_foo_bmp_foo_bmp\0")),
+   std::make_pair(cStr("bar.dat"), cStr("bar_dat_bar_dat_bar_dat_bar_dat\0")),
 };
 
 ////////////////////////////////////////
@@ -1021,22 +1047,49 @@ TEST_FP(cResourceManagerTests,
         cResourceManagerTests(&g_basicTestResources[0], _countof(g_basicTestResources)),
         ResourceManagerLoadSameNameDifferentType)
 {
-   CHECK(m_pResourceManager->RegisterFormat("foodat", NULL, "dat", TestDataLoad, TestDataPostload, TestDataUnload) == S_OK);
-   CHECK(m_pResourceManager->RegisterFormat("foobmp", NULL, "bmp", TestDataLoad, TestDataPostload, TestDataUnload) == S_OK);
-   CHECK(m_pResourceManager->RegisterFormat("bardat", NULL, "dat", TestDataLoad, TestDataPostload, TestDataUnload) == S_OK);
+   CHECK(m_pResourceManager->RegisterFormat(kRT_Data, NULL, "dat", TestDataLoad, NULL, TestDataUnload) == S_OK);
+   CHECK(m_pResourceManager->RegisterFormat(kRT_Bitmap, NULL, "bmp", TestDataLoad, NULL, TestDataUnload) == S_OK);
+
+   size_t cacheSizeBefore = m_pDiagnostics->GetCacheSize();
 
    {
       byte * pFooDat = NULL;
-      CHECK(m_pResourceManager->Load("foo", "foodat", (void*)NULL, (void**)&pFooDat) == S_OK);
+      CHECK(m_pResourceManager->Load("foo", kRT_Data, (void*)NULL, (void**)&pFooDat) == S_OK);
       CHECK(memcmp(pFooDat, g_basicTestResources[0].second.c_str(), g_basicTestResources[0].second.length()) == 0);
    }
 
    {
       byte * pFooBmp = NULL;
-      CHECK(m_pResourceManager->Load("foo", "foobmp", (void*)NULL, (void**)&pFooBmp) == S_OK);
+      CHECK(m_pResourceManager->Load("foo", kRT_Bitmap, (void*)NULL, (void**)&pFooBmp) == S_OK);
       CHECK(memcmp(pFooBmp, g_basicTestResources[1].second.c_str(), g_basicTestResources[1].second.length()) == 0);
    }
+
+   {
+      byte * pFooDat2 = NULL;
+      CHECK(m_pResourceManager->Load("foo", kRT_Data, (void*)NULL, (void**)&pFooDat2) == S_OK);
+      CHECK(memcmp(pFooDat2, g_basicTestResources[0].second.c_str(), g_basicTestResources[0].second.length()) == 0);
+   }
+
+   CHECK_EQUAL(cacheSizeBefore, m_pDiagnostics->GetCacheSize());
 }
+
+////////////////////////////////////////
+
+#if 0
+TEST_FP(cResourceManagerTests,
+        cResourceManagerTests(&g_basicTestResources[0], _countof(g_basicTestResources)),
+        ResourceManagerDerivedType)
+{
+   CHECK(m_pResourceManager->RegisterFormat(kRT_Data, NULL, "dat", TestDataLoad, NULL, TestDataUnload) == S_OK);
+   CHECK(m_pResourceManager->RegisterFormat(kRT_ReverseData, kRT_Data, NULL, NULL, ReverseTestDataPostload, TestDataUnload) == S_OK);
+
+   size_t cacheSizeBefore = m_pDiagnostics->GetCacheSize();
+
+   // TODO: test loading derived types
+
+   CHECK_EQUAL(cacheSizeBefore, m_pDiagnostics->GetCacheSize());
+}
+#endif
 
 ////////////////////////////////////////
 
@@ -1044,17 +1097,17 @@ TEST_FP(cResourceManagerTests,
         cResourceManagerTests(&g_basicTestResources[0], _countof(g_basicTestResources)),
         ResourceManagerLoadCaseSensitivity)
 {
-   CHECK(m_pResourceManager->RegisterFormat("foodat", NULL, "dat", TestDataLoad, TestDataPostload, TestDataUnload) == S_OK);
+   CHECK(m_pResourceManager->RegisterFormat(kRT_Data, NULL, "dat", TestDataLoad, NULL, TestDataUnload) == S_OK);
 
    {
       byte * pFooDat1 = NULL;
-      CHECK(m_pResourceManager->Load("foo", "foodat", (void*)NULL, (void**)&pFooDat1) == S_OK);
+      CHECK(m_pResourceManager->Load("foo", kRT_Data, (void*)NULL, (void**)&pFooDat1) == S_OK);
       CHECK(memcmp(pFooDat1, g_basicTestResources[0].second.c_str(), g_basicTestResources[0].second.length()) == 0);
    }
 
    {
       byte * pFooDat2 = NULL;
-      CHECK(m_pResourceManager->Load("FOO", "foodat", (void*)NULL, (void**)&pFooDat2) == S_OK);
+      CHECK(m_pResourceManager->Load("FOO", kRT_Data, (void*)NULL, (void**)&pFooDat2) == S_OK);
       CHECK(memcmp(pFooDat2, g_basicTestResources[0].second.c_str(), g_basicTestResources[0].second.length()) == 0);
    }
 }
@@ -1065,27 +1118,40 @@ TEST_FP(cResourceManagerTests,
         cResourceManagerTests(&g_basicTestResources[0], _countof(g_basicTestResources)),
         ResourceManagerListResources)
 {
-   CHECK(m_pResourceManager->RegisterFormat("data", NULL, "dat", TestDataLoad, TestDataPostload, TestDataUnload) == S_OK);
-   CHECK(m_pResourceManager->RegisterFormat("bitmap", NULL, "bmp", TestDataLoad, TestDataPostload, TestDataUnload) == S_OK);
+   CHECK(m_pResourceManager->RegisterFormat(kRT_Data, NULL, "dat", TestDataLoad, NULL, TestDataUnload) == S_OK);
+   CHECK(m_pResourceManager->RegisterFormat(kRT_Bitmap, NULL, "bmp", TestDataLoad, NULL, TestDataUnload) == S_OK);
 
    {
       std::vector<cStr> dataResNames;
-      CHECK(m_pResourceManager->ListResources("data", &dataResNames) == S_OK);
+      CHECK(m_pResourceManager->ListResources(kRT_Data, &dataResNames) == S_OK);
       CHECK_EQUAL(dataResNames.size(), 2);
    }
 
    {
       std::vector<cStr> bitmapResNames;
-      CHECK(m_pResourceManager->ListResources("bitmap", &bitmapResNames) == S_OK);
+      CHECK(m_pResourceManager->ListResources(kRT_Bitmap, &bitmapResNames) == S_OK);
       CHECK_EQUAL(bitmapResNames.size(), 1);
    }
 
    {
       std::vector<cStr> allResNames;
-      CHECK(m_pResourceManager->ListResources("data", &allResNames) == S_OK);
-      CHECK(m_pResourceManager->ListResources("bitmap", &allResNames) == S_OK);
+      CHECK(m_pResourceManager->ListResources(kRT_Data, &allResNames) == S_OK);
+      CHECK(m_pResourceManager->ListResources(kRT_Bitmap, &allResNames) == S_OK);
       CHECK_EQUAL(allResNames.size(), 3);
    }
+}
+
+////////////////////////////////////////
+
+TEST_FP(cResourceManagerTests,
+        cResourceManagerTests(NULL, 0),
+        ResourceManagerRegisterFormat)
+{
+   CHECK(m_pResourceManager->RegisterFormat(NULL, NULL, "dat", TestDataLoad, NULL, TestDataUnload) == E_INVALIDARG);
+   CHECK(m_pResourceManager->RegisterFormat(kRT_Data, NULL, "dat", NULL, NULL, TestDataUnload) == E_POINTER);
+   CHECK(m_pResourceManager->RegisterFormat(kRT_Data, NULL, "dat", TestDataLoad, NULL, TestDataUnload) == S_OK);
+   CHECK(m_pResourceManager->RegisterFormat(kRT_Data, NULL, "dat", TestDataLoad, NULL, TestDataUnload) == E_FAIL);
+   CHECK(m_pResourceManager->RegisterFormat(kRT_Bitmap, NULL, "bmp", TestDataLoad, NULL, TestDataUnload) == S_OK);
 }
 
 ////////////////////////////////////////

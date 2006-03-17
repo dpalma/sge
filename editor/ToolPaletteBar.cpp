@@ -10,6 +10,7 @@
 #include "editorTools.h"
 #include "BitmapUtils.h"
 
+#include "engineapi.h"
 #include "terrainapi.h"
 
 #include "filespec.h"
@@ -18,8 +19,9 @@
 
 #include "resource.h"       // main symbols
 
-#include <vector>
+#include <tinyxml.h>
 
+#include <vector>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -368,22 +370,48 @@ HTOOLGROUP cToolPaletteBar::CreateEntityToolGroup()
    HTOOLGROUP hUnitGroup = m_toolPalette.AddGroup("Entities", NULL);
    if (hUnitGroup != NULL)
    {
-      std::vector<cStr> modelResourceNames;
       UseGlobal(ResourceManager);
-      pResourceManager->ListResources(kRT_Model, &modelResourceNames);
-      std::vector<cStr>::const_iterator iter = modelResourceNames.begin();
-      for (; iter != modelResourceNames.end(); iter++)
+
       {
-         cPlaceEntityTool * pPlaceEntityTool = new cPlaceEntityTool(*iter);
-         if (pPlaceEntityTool != NULL)
+         std::vector<cStr> xmlResourceNames;
+         pResourceManager->ListResources(kRT_TiXml, &xmlResourceNames);
+         std::vector<cStr>::const_iterator iter = xmlResourceNames.begin();
+         for (; iter != xmlResourceNames.end(); iter++)
          {
-            cStr name;
-            cFileSpec(iter->c_str()).GetFileNameNoExt(&name);
-            if (!name.empty())
+            const TiXmlDocument * pTiXmlDoc = NULL;
+            if (pResourceManager->Load(iter->c_str(), kRT_TiXml, NULL, (void**)&pTiXmlDoc) != S_OK)
             {
-               name[0] = _toupper(name[0]);
+               continue;
             }
-            m_toolPalette.AddTool(hUnitGroup, name.c_str(), -1, pPlaceEntityTool);
+
+            const TiXmlElement * pTiXmlElement = pTiXmlDoc->FirstChildElement();
+            if ((pTiXmlElement != NULL) && (_stricmp(pTiXmlElement->Value(), "entity") == 0))
+            {
+               cPlaceEntityTool * pPlaceEntityTool = new cPlaceEntityTool(*iter);
+               if (pPlaceEntityTool != NULL)
+               {
+                  const char * pszName = pTiXmlElement->Attribute("name");
+                  if (pszName == NULL)
+                  {
+                     pszName = iter->c_str();
+                  }
+                  m_toolPalette.AddTool(hUnitGroup, pszName, -1, pPlaceEntityTool);
+               }
+            }
+         }
+      }
+
+      {
+         std::vector<cStr> modelResourceNames;
+         pResourceManager->ListResources(kRT_Model, &modelResourceNames);
+         std::vector<cStr>::const_iterator iter = modelResourceNames.begin();
+         for (; iter != modelResourceNames.end(); iter++)
+         {
+            cPlaceEntityTool * pPlaceEntityTool = new cPlaceEntityTool(*iter);
+            if (pPlaceEntityTool != NULL)
+            {
+               m_toolPalette.AddTool(hUnitGroup, iter->c_str(), -1, pPlaceEntityTool);
+            }
          }
       }
    }

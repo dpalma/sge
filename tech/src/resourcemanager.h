@@ -28,6 +28,7 @@ interface IResourceManagerDiagnostics : IUnknown
 {
    virtual void DumpFormats() const = 0;
    virtual void DumpCache() const = 0;
+   virtual size_t GetCacheSize() const = 0;
 };
 
 
@@ -71,8 +72,10 @@ public:
 
    virtual tResult AddCacheEntry(const cResourceCacheEntryHeader & entry);
 
+   // IResourceManagerDiagnostics
    virtual void DumpFormats() const;
    virtual void DumpCache() const;
+   virtual size_t GetCacheSize() const;
 
 private:
    struct sFormat;
@@ -117,8 +120,6 @@ private:
       uint extensionId;
       uint formatId;
       cResourceStore * pStore;
-      ulong offset;
-      ulong index;
       void * pData;
       ulong dataSize;
    };

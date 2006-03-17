@@ -32,12 +32,7 @@ LOG_DEFINE_CHANNEL(ResourceStore);
 // REFERENCES
 // "Game Developer Magazine", February 2005, "Inner Product" column
 
-static const uint kNoIndex = ~0u;
-static const ulong kNoIndexL = ~0u;
-
 static const int kUnzMaxPath = 260;
-
-static const tChar kExtSep = _T('.');
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -89,20 +84,27 @@ tResult cDirectoryResourceStore::FillCache(cResourceCache * pCache)
    cAutoIPtr<IEnumFiles> pEnumFiles;
    if (EnumFiles(wildcard, &pEnumFiles) == S_OK)
    {
-      cFileSpec file;
-      uint attribs;
-      ulong nFiles;
-      while (pEnumFiles->Next(1, &file, &attribs, &nFiles) == S_OK)
+      cFileSpec files[10];
+      uint attribs[10];
+      ulong nFiles = 0;
+      while (pEnumFiles->Next(_countof(files), files, attribs, &nFiles) == S_OK)
       {
-         if ((attribs & kFA_Directory) == kFA_Directory)
+         for (ulong i = 0; i < nFiles; i++)
          {
-            LocalMsg1("Dir: %s\n", file.CStr());
-         }
-         else
-         {
-            LocalMsg1("File: %s\n", file.CStr());
-            pCache->AddCacheEntry(cResourceCacheEntryHeader(file.CStr(),
-               kNoIndexL, kNoIndexL, static_cast<cResourceStore *>(this)));
+            if ((attribs[i] & kFA_Directory) == kFA_Directory)
+            {
+               LocalMsg1("Directory: %s\n", files[i].CStr());
+            }
+            else if ((attribs[i] & kFA_Hidden) == kFA_Hidden)
+            {
+               InfoMsg1("Skipping hidden file \"%s\"\n", files[i].CStr());
+            }
+            else
+            {
+               LocalMsg1("File: %s\n", files[i].CStr());
+               pCache->AddCacheEntry(cResourceCacheEntryHeader(files[i].CStr(),
+                  static_cast<cResourceStore *>(this)));
+            }
          }
       }
    }
@@ -112,14 +114,14 @@ tResult cDirectoryResourceStore::FillCache(cResourceCache * pCache)
 
 ////////////////////////////////////////
 
-tResult cDirectoryResourceStore::OpenEntry(const cResourceCacheEntryHeader & entry, IReader * * ppReader)
+tResult cDirectoryResourceStore::OpenEntry(const tChar * pszName, IReader * * ppReader)
 {
-   if (ppReader == NULL)
+   if (pszName == NULL || ppReader == NULL)
    {
       return E_POINTER;
    }
 
-   cFileSpec file(entry.GetName());
+   cFileSpec file(pszName);
    file.SetPath(cFilePath(m_dir.c_str()));
 
    tResult result = E_FAIL;
@@ -206,8 +208,8 @@ tResult cZipResourceStore::FillCache(cResourceCache * pCache)
 #else
          cFileSpec file(szFile);
 #endif
+         m_dirCache[cStr(file.CStr())] = filePos;
          pCache->AddCacheEntry(cResourceCacheEntryHeader(file.CStr(),
-            filePos.pos_in_zip_directory, filePos.num_of_file,
             static_cast<cResourceStore *>(this)));
       }
    }
@@ -218,9 +220,9 @@ tResult cZipResourceStore::FillCache(cResourceCache * pCache)
 
 ////////////////////////////////////////
 
-tResult cZipResourceStore::OpenEntry(const cResourceCacheEntryHeader & entry, IReader * * ppReader)
+tResult cZipResourceStore::OpenEntry(const tChar * pszName, IReader * * ppReader)
 {
-   if (ppReader == NULL)
+   if (pszName == NULL || ppReader == NULL)
    {
       return E_POINTER;
    }
@@ -231,10 +233,14 @@ tResult cZipResourceStore::OpenEntry(const cResourceCacheEntryHeader & entry, IR
       return E_FAIL;
    }
 
-   unz_file_pos filePos;
-   filePos.pos_in_zip_directory = entry.GetOffset();
-   filePos.num_of_file = entry.GetIndex();
-   if (unzGoToFilePos(m_handle, &filePos) != UNZ_OK)
+   tZipDirCache::iterator f = m_dirCache.find(pszName);
+   if (f == m_dirCache.end())
+   {
+      // TODO: do a slow look-up
+      return E_NOTIMPL;
+   }
+
+   if (unzGoToFilePos(m_handle, &(f->second)) != UNZ_OK)
    {
       return E_FAIL;
    }
@@ -287,10 +293,8 @@ cResourceCache::~cResourceCache()
 //
 ////////////////////////////////////////
 
-cResourceCacheEntryHeader::cResourceCacheEntryHeader(const tChar * pszName, ulong offset, ulong index, cResourceStore * pStore)
+cResourceCacheEntryHeader::cResourceCacheEntryHeader(const tChar * pszName, cResourceStore * pStore)
  : m_name(pszName)
- , m_offset(offset)
- , m_index(index)
  , m_pStore(pStore)
 {
 }
@@ -299,8 +303,6 @@ cResourceCacheEntryHeader::cResourceCacheEntryHeader(const tChar * pszName, ulon
 
 cResourceCacheEntryHeader::cResourceCacheEntryHeader(const cResourceCacheEntryHeader & other)
  : m_name(other.m_name)
- , m_offset(other.m_offset)
- , m_index(other.m_index)
  , m_pStore(other.m_pStore)
 {
 }
@@ -316,8 +318,6 @@ cResourceCacheEntryHeader::~cResourceCacheEntryHeader()
 const cResourceCacheEntryHeader & cResourceCacheEntryHeader::operator =(const cResourceCacheEntryHeader & other)
 {
    m_name = other.m_name;
-   m_offset = other.m_offset;
-   m_index = other.m_index;
    m_pStore = other.m_pStore;
    return *this;
 }

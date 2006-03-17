@@ -9,6 +9,8 @@
 #define ZLIB_WINAPI
 #include <unzip.h>
 
+#include <map>
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -31,7 +33,7 @@ public:
    virtual ~cResourceStore() = 0;
 
    virtual tResult FillCache(cResourceCache * pCache) = 0;
-   virtual tResult OpenEntry(const cResourceCacheEntryHeader & entry, IReader * * ppReader) = 0;
+   virtual tResult OpenEntry(const tChar * pszName, IReader * * ppReader) = 0;
 };
 
 
@@ -47,7 +49,7 @@ public:
    virtual ~cDirectoryResourceStore();
 
    virtual tResult FillCache(cResourceCache * pCache);
-   virtual tResult OpenEntry(const cResourceCacheEntryHeader & entry, IReader * * ppReader);
+   virtual tResult OpenEntry(const tChar * pszName, IReader * * ppReader);
 
 private:
    cStr m_dir;
@@ -66,11 +68,13 @@ public:
    virtual ~cZipResourceStore();
 
    virtual tResult FillCache(cResourceCache * pCache);
-   virtual tResult OpenEntry(const cResourceCacheEntryHeader & entry, IReader * * ppReader);
+   virtual tResult OpenEntry(const tChar * pszName, IReader * * ppReader);
 
 private:
    cStr m_archive;
    unzFile m_handle;
+   typedef std::map<cStr, unz_file_pos_s> tZipDirCache;
+   tZipDirCache m_dirCache;
 };
 
 
@@ -96,23 +100,17 @@ public:
 class cResourceCacheEntryHeader
 {
 public:
-   cResourceCacheEntryHeader(const tChar * pszName, ulong offset, ulong index, cResourceStore * pStore);
+   cResourceCacheEntryHeader(const tChar * pszName, cResourceStore * pStore);
    cResourceCacheEntryHeader(const cResourceCacheEntryHeader &);
    virtual ~cResourceCacheEntryHeader();
 
    const cResourceCacheEntryHeader & operator =(const cResourceCacheEntryHeader &);
 
-   //bool operator ==(const cResourceCacheEntryHeader &) const;
-
    inline const tChar * GetName() const { return m_name.c_str(); }
-   inline ulong GetOffset() const { return m_offset; }
-   inline ulong GetIndex() const { return m_index; }
    inline cResourceStore * GetStore() const { return m_pStore; }
 
 private:
    cStr m_name;
-   ulong m_offset;
-   ulong m_index;
    cResourceStore * m_pStore;
 };
 
