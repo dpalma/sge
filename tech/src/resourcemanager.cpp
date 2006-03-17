@@ -519,10 +519,15 @@ tResult cResourceManager::ListResources(tResourceType type, std::vector<cStr> * 
       }
    }
 
-   pNames->resize(results.size());
-   std::copy(results.begin(), results.end(), pNames->begin());
+   {
+      std::set<cStr>::const_iterator iter = results.begin();
+      for (; iter != results.end(); iter++)
+      {
+         pNames->push_back(*iter);
+      }
+   }
 
-   return !pNames->empty() ? S_OK : S_FALSE;
+   return results.empty() ? S_FALSE : S_OK;
 }
 
 ////////////////////////////////////////
@@ -1051,6 +1056,35 @@ TEST_FP(cResourceManagerTests,
       byte * pFooDat2 = NULL;
       CHECK(m_pResourceManager->Load("FOO", "foodat", (void*)NULL, (void**)&pFooDat2) == S_OK);
       CHECK(memcmp(pFooDat2, g_basicTestResources[0].second.c_str(), g_basicTestResources[0].second.length()) == 0);
+   }
+}
+
+////////////////////////////////////////
+
+TEST_FP(cResourceManagerTests,
+        cResourceManagerTests(&g_basicTestResources[0], _countof(g_basicTestResources)),
+        ResourceManagerListResources)
+{
+   CHECK(m_pResourceManager->RegisterFormat("data", NULL, "dat", TestDataLoad, TestDataPostload, TestDataUnload) == S_OK);
+   CHECK(m_pResourceManager->RegisterFormat("bitmap", NULL, "bmp", TestDataLoad, TestDataPostload, TestDataUnload) == S_OK);
+
+   {
+      std::vector<cStr> dataResNames;
+      CHECK(m_pResourceManager->ListResources("data", &dataResNames) == S_OK);
+      CHECK_EQUAL(dataResNames.size(), 2);
+   }
+
+   {
+      std::vector<cStr> bitmapResNames;
+      CHECK(m_pResourceManager->ListResources("bitmap", &bitmapResNames) == S_OK);
+      CHECK_EQUAL(bitmapResNames.size(), 1);
+   }
+
+   {
+      std::vector<cStr> allResNames;
+      CHECK(m_pResourceManager->ListResources("data", &allResNames) == S_OK);
+      CHECK(m_pResourceManager->ListResources("bitmap", &allResNames) == S_OK);
+      CHECK_EQUAL(allResNames.size(), 3);
    }
 }
 
