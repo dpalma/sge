@@ -107,7 +107,7 @@ public:
    ~cGlobalObjectRegistry();
 
    virtual tResult Register(REFGUID iid, IUnknown * pUnk);
-   virtual IUnknown * FASTCALL Lookup(REFGUID iid);
+   virtual IUnknown * Lookup(REFGUID iid);
 
    virtual tResult InitAll();
    virtual tResult TermAll();
@@ -267,7 +267,7 @@ tResult cGlobalObjectRegistry::TermAll()
 
 ///////////////////////////////////////
 
-IUnknown * FASTCALL cGlobalObjectRegistry::Lookup(REFGUID iid)
+IUnknown * cGlobalObjectRegistry::Lookup(REFGUID iid)
 {
    tObjMap::iterator iter = m_objMap.find(&iid);
    if (iter != m_objMap.end())

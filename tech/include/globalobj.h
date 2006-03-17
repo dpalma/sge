@@ -19,7 +19,7 @@
 interface IGlobalObjectRegistry : IUnknown
 {
    virtual tResult Register(REFGUID iid, IUnknown * pUnk) = 0;
-   virtual IUnknown * FASTCALL Lookup(REFGUID iid) = 0;
+   virtual IUnknown * Lookup(REFGUID iid) = 0;
 
    virtual tResult InitAll() = 0;
    virtual tResult TermAll() = 0;
