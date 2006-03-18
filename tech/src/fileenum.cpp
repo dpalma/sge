@@ -134,7 +134,7 @@ tResult cEnumFilesWin32::GetNext(ulong count, cFileSpec * pFileSpecs, uint * pAt
       return E_INVALIDARG;
    }
 
-   bool bFound = false;
+   bool bFirst = true, bFound = false;
    ulong nFound = 0;
 
    WIN32_FIND_DATA findData;
@@ -155,11 +155,16 @@ tResult cEnumFilesWin32::GetNext(ulong count, cFileSpec * pFileSpecs, uint * pAt
       }
       else
       {
-         if (FindNextFile(m_hFinder, &findData))
-         {
-            bFound = true;
-         }
+         bFound = !!FindNextFile(m_hFinder, &findData);
       }
+
+      // If first call failed, there is no data
+      if (!bFound && bFirst)
+      {
+         return E_FAIL;
+      }
+
+      bFirst = false;
 
       if (bFound)
       {

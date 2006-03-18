@@ -54,7 +54,7 @@ const GUID IID_IResourceManagerDiagnostics =
 ////////////////////////////////////////////////////////////////////////////////
 
 typedef std::vector<cStr> tStrings;
-static size_t ListDirs(const cFilePath & path, tStrings * pDirs)
+static size_t ListDirs(const cFilePath & path, bool bSkipHidden, tStrings * pDirs)
 {
    Assert(pDirs != NULL);
    if (pDirs == NULL)
@@ -67,14 +67,22 @@ static size_t ListDirs(const cFilePath & path, tStrings * pDirs)
    cAutoIPtr<IEnumFiles> pEnumFiles;
    if (EnumFiles(wildcard, &pEnumFiles) == S_OK)
    {
-      cFileSpec file;
-      uint attribs;
-      ulong nFiles;
-      while (pEnumFiles->Next(1, &file, &attribs, &nFiles) == S_OK)
+      cFileSpec files[10];
+      uint attribs[10];
+      ulong nFiles = 0;
+      while (SUCCEEDED(pEnumFiles->Next(_countof(files), files, attribs, &nFiles)))
       {
-         if ((attribs & kFA_Directory) == kFA_Directory)
+         for (ulong i = 0; i < nFiles; i++)
          {
-            pDirs->push_back(file.CStr());
+            if ((attribs[i] & kFA_Directory) == kFA_Directory)
+            {
+               if (bSkipHidden && ((attribs[i] & kFA_Hidden) == kFA_Hidden))
+               {
+                  LocalMsg1("Skipping hidden directory \"%s\"\n", files[i].CStr());
+                  continue;
+               }
+               pDirs->push_back(files[i].CStr());
+            }
          }
       }
    }
@@ -181,6 +189,8 @@ tResult cResourceManager::AddDirectory(const tChar * pszDir)
    {
       return E_OUTOFMEMORY;
    }
+
+   DebugMsg1("Adding directory store for \"%s\"\n", pszDir);
    
    return AddResourceStore(pStore);
 }
@@ -202,7 +212,7 @@ tResult cResourceManager::AddDirectoryTreeFlattened(const tChar * pszDir)
    }
 
    tStrings dirs;
-   if (ListDirs(root, &dirs) > 0)
+   if (ListDirs(root, true, &dirs) > 0)
    {
       tStrings::const_iterator iter;
       for (iter = dirs.begin(); iter != dirs.end(); iter++)
@@ -295,6 +305,14 @@ tResult cResourceManager::LoadWithFormat(const tChar * pszName, tResourceType ty
    sFormat * pFormat = &m_formats[formatId];
 
    sResource * pRes = FindResourceWithFormat(pszName, type, formatId);
+
+#ifdef _DEBUG
+   static bDumpCache = false;
+   if (bDumpCache)
+   {
+      DumpCache();
+   }
+#endif
 
    // If no resource and format specifies a dependent type then it
    // would not have been pre-loaded in AddDirectory or AddArchive.
