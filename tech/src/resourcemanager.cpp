@@ -190,7 +190,7 @@ tResult cResourceManager::AddDirectory(const tChar * pszDir)
       return E_OUTOFMEMORY;
    }
 
-   DebugMsg1("Adding directory store for \"%s\"\n", pszDir);
+   LocalMsg1("Adding directory store for \"%s\"\n", pszDir);
    
    return AddResourceStore(pStore);
 }
@@ -1000,7 +1000,7 @@ cResourceManagerTests::~cResourceManagerTests()
 
 ////////////////////////////////////////
 
-void * TestDataLoad(IReader * pReader)
+void * RawBytesLoad(IReader * pReader)
 {
    ulong dataSize = 0;
    if (pReader != NULL
@@ -1025,12 +1025,53 @@ void * TestDataLoad(IReader * pReader)
    return NULL;
 }
 
-void TestDataUnload(void * pData)
+void RawBytesUnload(void * pData)
 {
    delete [] (byte *)pData;
 }
 
-void * ReverseTestDataPostload(void * pData, int dataLength, void * param)
+// Pass through only if the data starts with an XML declaration
+void * PseudoXmlPostload(void * pData, int dataLength, void * param)
+{
+   const char szXmlDecl[] = "<?xml\0";
+   if (memcmp(static_cast<char*>(pData), szXmlDecl, min(static_cast<size_t>(dataLength), strlen(szXmlDecl))) == 0)
+   {
+      return pData;
+   }
+   return NULL;
+}
+
+void PseudoXmlUnload(void * pData)
+{
+   // Do nothing
+}
+
+void * PseudoMs3dLoad(IReader * pReader)
+{
+   byte header[10];
+   size_t nBytesRead = 0;
+   if (pReader->Read(header, sizeof(header), &nBytesRead) == S_OK)
+   {
+      const byte ms3dHeader[] = "MS3D0000";
+      if (memcmp(header, ms3dHeader, min(nBytesRead, _countof(ms3dHeader))) == 0)
+      {
+         return RawBytesLoad(pReader);
+      }
+   }
+   return NULL;
+}
+
+void * PassthruPostload(void * pData, int dataLength, void * param)
+{
+   return pData;
+}
+
+void PassthruUnload(void * pData)
+{
+   // Do nothing
+}
+
+void * ReversePostload(void * pData, int dataLength, void * param)
 {
    if (dataLength == 0)
    {
@@ -1065,8 +1106,8 @@ TEST_FP(cResourceManagerTests,
         cResourceManagerTests(&g_basicTestResources[0], _countof(g_basicTestResources)),
         ResourceManagerLoadSameNameDifferentType)
 {
-   CHECK(m_pResourceManager->RegisterFormat(kRT_Data, NULL, "dat", TestDataLoad, NULL, TestDataUnload) == S_OK);
-   CHECK(m_pResourceManager->RegisterFormat(kRT_Bitmap, NULL, "bmp", TestDataLoad, NULL, TestDataUnload) == S_OK);
+   CHECK(m_pResourceManager->RegisterFormat(kRT_Data, NULL, "dat", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
+   CHECK(m_pResourceManager->RegisterFormat(kRT_Bitmap, NULL, "bmp", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
 
    size_t cacheSizeBefore = m_pDiagnostics->GetCacheSize();
 
@@ -1093,29 +1134,11 @@ TEST_FP(cResourceManagerTests,
 
 ////////////////////////////////////////
 
-#if 0
-TEST_FP(cResourceManagerTests,
-        cResourceManagerTests(&g_basicTestResources[0], _countof(g_basicTestResources)),
-        ResourceManagerDerivedType)
-{
-   CHECK(m_pResourceManager->RegisterFormat(kRT_Data, NULL, "dat", TestDataLoad, NULL, TestDataUnload) == S_OK);
-   CHECK(m_pResourceManager->RegisterFormat(kRT_ReverseData, kRT_Data, NULL, NULL, ReverseTestDataPostload, TestDataUnload) == S_OK);
-
-   size_t cacheSizeBefore = m_pDiagnostics->GetCacheSize();
-
-   // TODO: test loading derived types
-
-   CHECK_EQUAL(cacheSizeBefore, m_pDiagnostics->GetCacheSize());
-}
-#endif
-
-////////////////////////////////////////
-
 TEST_FP(cResourceManagerTests,
         cResourceManagerTests(&g_basicTestResources[0], _countof(g_basicTestResources)),
         ResourceManagerLoadCaseSensitivity)
 {
-   CHECK(m_pResourceManager->RegisterFormat(kRT_Data, NULL, "dat", TestDataLoad, NULL, TestDataUnload) == S_OK);
+   CHECK(m_pResourceManager->RegisterFormat(kRT_Data, NULL, "dat", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
 
    {
       byte * pFooDat1 = NULL;
@@ -1136,8 +1159,8 @@ TEST_FP(cResourceManagerTests,
         cResourceManagerTests(&g_basicTestResources[0], _countof(g_basicTestResources)),
         ResourceManagerListResources)
 {
-   CHECK(m_pResourceManager->RegisterFormat(kRT_Data, NULL, "dat", TestDataLoad, NULL, TestDataUnload) == S_OK);
-   CHECK(m_pResourceManager->RegisterFormat(kRT_Bitmap, NULL, "bmp", TestDataLoad, NULL, TestDataUnload) == S_OK);
+   CHECK(m_pResourceManager->RegisterFormat(kRT_Data, NULL, "dat", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
+   CHECK(m_pResourceManager->RegisterFormat(kRT_Bitmap, NULL, "bmp", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
 
    {
       std::vector<cStr> dataResNames;
@@ -1165,11 +1188,45 @@ TEST_FP(cResourceManagerTests,
         cResourceManagerTests(NULL, 0),
         ResourceManagerRegisterFormat)
 {
-   CHECK(m_pResourceManager->RegisterFormat(NULL, NULL, "dat", TestDataLoad, NULL, TestDataUnload) == E_INVALIDARG);
-   CHECK(m_pResourceManager->RegisterFormat(kRT_Data, NULL, "dat", NULL, NULL, TestDataUnload) == E_POINTER);
-   CHECK(m_pResourceManager->RegisterFormat(kRT_Data, NULL, "dat", TestDataLoad, NULL, TestDataUnload) == S_OK);
-   CHECK(m_pResourceManager->RegisterFormat(kRT_Data, NULL, "dat", TestDataLoad, NULL, TestDataUnload) == E_FAIL);
-   CHECK(m_pResourceManager->RegisterFormat(kRT_Bitmap, NULL, "bmp", TestDataLoad, NULL, TestDataUnload) == S_OK);
+   CHECK(m_pResourceManager->RegisterFormat(NULL, NULL, "dat", RawBytesLoad, NULL, RawBytesUnload) == E_INVALIDARG);
+   CHECK(m_pResourceManager->RegisterFormat(kRT_Data, NULL, "dat", NULL, NULL, RawBytesUnload) == E_POINTER);
+   CHECK(m_pResourceManager->RegisterFormat(kRT_Data, NULL, "dat", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
+   CHECK(m_pResourceManager->RegisterFormat(kRT_Data, NULL, "dat", RawBytesLoad, NULL, RawBytesUnload) == E_FAIL);
+   CHECK(m_pResourceManager->RegisterFormat(kRT_Bitmap, NULL, "bmp", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
+}
+
+////////////////////////////////////////
+
+const tStrPair g_multNameTestResources[] =
+{
+   std::make_pair(cStr("foo.xml"), cStr("<?xml version=\"1.0\" ?>...\0")),
+   std::make_pair(cStr("foo.ms3d"), cStr("MS3D0000...........\0")),
+};
+
+TEST_FP(cResourceManagerTests,
+        cResourceManagerTests(&g_multNameTestResources[0], _countof(g_multNameTestResources)),
+        ResourceManagerSameNameLoadWrongType)
+{
+   CHECK(m_pResourceManager->RegisterFormat("footxt", NULL, NULL, RawBytesLoad, NULL, RawBytesUnload) == S_OK);
+   CHECK(m_pResourceManager->RegisterFormat("fooms3d", NULL, "ms3d", PseudoMs3dLoad, NULL, RawBytesUnload) == S_OK);
+   CHECK(m_pResourceManager->RegisterFormat("fooxml", "footxt", "xml", NULL, PseudoXmlPostload, PseudoXmlUnload) == S_OK);
+
+   {
+      byte * pFooXml = NULL;
+      CHECK(m_pResourceManager->Load("foo.xml", "fooxml", (void*)NULL, (void**)&pFooXml) == S_OK);
+      if (pFooXml != NULL)
+      {
+         const cStr & expected = g_multNameTestResources[0].second;
+         CHECK(memcmp(pFooXml, expected.c_str(), expected.length()) == 0);
+      }
+   }
+
+   // This is a bad call. The resource manager should simply fail it without any ill effects
+   {
+      byte * pFooMs3d = NULL;
+      CHECK(m_pResourceManager->Load("foo.ms3d", "fooxml", (void*)NULL, (void**)&pFooMs3d) != S_OK);
+      CHECK(pFooMs3d == NULL);
+   }
 }
 
 ////////////////////////////////////////
@@ -1186,8 +1243,8 @@ TEST_FP(cResourceManagerTests,
         cResourceManagerTests(&g_multExtTestResources[0], _countof(g_multExtTestResources)),
         ResourceManagerMultipleExtensionConfusion)
 {
-   CHECK(m_pResourceManager->RegisterFormat("fooms3d", NULL, "ms3d", TestDataLoad, TestDataPostload, TestDataUnload) == S_OK);
-   CHECK(m_pResourceManager->RegisterFormat("fooxml", NULL, "xml", TestDataLoad, TestDataPostload, TestDataUnload) == S_OK);
+   CHECK(m_pResourceManager->RegisterFormat("fooms3d", NULL, "ms3d", RawBytesLoad, TestDataPostload, RawBytesUnload) == S_OK);
+   CHECK(m_pResourceManager->RegisterFormat("fooxml", NULL, "xml", RawBytesLoad, TestDataPostload, RawBytesUnload) == S_OK);
 
    {
       byte * pFooXml = NULL;
