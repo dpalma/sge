@@ -307,7 +307,7 @@ tResult cResourceManager::LoadWithFormat(const tChar * pszName, tResourceType ty
    sResource * pRes = FindResourceWithFormat(pszName, type, formatId);
 
 #ifdef _DEBUG
-   static bDumpCache = false;
+   static bool bDumpCache = false;
    if (bDumpCache)
    {
       DumpCache();
