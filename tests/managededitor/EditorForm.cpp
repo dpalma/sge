@@ -46,7 +46,7 @@ EditorForm::EditorForm()
    InitializeComponent();
 
    m_glControl = gcnew GlControl();
-   Controls->Add(m_glControl);
+   toolStripContainer1->ContentPanel->Controls->Add(m_glControl);
 
    System::Windows::Forms::Application::Idle += gcnew System::EventHandler(this, &EditorForm::OnIdle);
 }
