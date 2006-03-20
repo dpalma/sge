@@ -42,6 +42,7 @@ using namespace System::Windows::Forms;
 
 EditorForm::EditorForm()
  : m_pFont(NULL)
+ , m_bPromptForMapSettings(false)
 {
    InitializeComponent();
 

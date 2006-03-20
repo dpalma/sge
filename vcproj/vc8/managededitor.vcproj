@@ -568,6 +568,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\tests\managededitor\EditorMapSettings.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\tests\managededitor\GlControl.cpp"
 				>
 			</File>
@@ -647,6 +651,16 @@
 				>
 				<File
 					RelativePath=".\..\..\tests\managededitor\EditorForm.resX"
+					SubType="Designer"
+					>
+				</File>
+			</File>
+			<File
+				RelativePath="..\..\tests\managededitor\EditorMapSettings.h"
+				FileType="3"
+				>
+				<File
+					RelativePath="..\..\tests\managededitor\EditorMapSettings.resx"
 					SubType="Designer"
 					>
 				</File>

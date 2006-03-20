@@ -478,6 +478,8 @@ private: System::Void OnFileExit(System::Object^  sender, System::EventArgs^  e)
 private: System::Void OnFileSave(System::Object^  sender, System::EventArgs^  e);
 private: System::Void OnFileSaveAs(System::Object^  sender, System::EventArgs^  e);
 private: System::Void OnHelpAbout(System::Object^  sender, System::EventArgs^  e);
+private:
+   bool m_bPromptForMapSettings;
 };
 
 } // namespace ManagedEditor

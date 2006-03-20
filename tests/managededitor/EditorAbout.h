@@ -42,7 +42,8 @@ namespace ManagedEditor {
 			}
 		}
    private: System::Windows::Forms::Button^  button1;
-   private: System::Windows::Forms::Button^  OK;
+   private: System::Windows::Forms::Button^  okButton;
+
    private: System::Windows::Forms::Label^  label1;
    private: System::Windows::Forms::Label^  label2;
    protected: 
@@ -61,7 +62,7 @@ namespace ManagedEditor {
 		void InitializeComponent(void)
 		{
          this->button1 = (gcnew System::Windows::Forms::Button());
-         this->OK = (gcnew System::Windows::Forms::Button());
+         this->okButton = (gcnew System::Windows::Forms::Button());
          this->label1 = (gcnew System::Windows::Forms::Label());
          this->label2 = (gcnew System::Windows::Forms::Label());
          this->SuspendLayout();
@@ -73,15 +74,15 @@ namespace ManagedEditor {
          this->button1->Size = System::Drawing::Size(75, 23);
          this->button1->TabIndex = 0;
          // 
-         // OK
+         // okButton
          // 
-         this->OK->DialogResult = System::Windows::Forms::DialogResult::OK;
-         this->OK->Location = System::Drawing::Point(153, 173);
-         this->OK->Name = L"OK";
-         this->OK->Size = System::Drawing::Size(75, 23);
-         this->OK->TabIndex = 0;
-         this->OK->Text = L"OK";
-         this->OK->UseVisualStyleBackColor = true;
+         this->okButton->DialogResult = System::Windows::Forms::DialogResult::OK;
+         this->okButton->Location = System::Drawing::Point(153, 173);
+         this->okButton->Name = L"okButton";
+         this->okButton->Size = System::Drawing::Size(75, 23);
+         this->okButton->TabIndex = 0;
+         this->okButton->Text = L"OK";
+         this->okButton->UseVisualStyleBackColor = true;
          // 
          // label1
          // 
@@ -103,15 +104,17 @@ namespace ManagedEditor {
          // 
          // EditorAbout
          // 
+         this->AcceptButton = this->okButton;
          this->ClientSize = System::Drawing::Size(240, 208);
          this->Controls->Add(this->label2);
          this->Controls->Add(this->label1);
-         this->Controls->Add(this->OK);
+         this->Controls->Add(this->okButton);
          this->FormBorderStyle = System::Windows::Forms::FormBorderStyle::FixedDialog;
          this->MaximizeBox = false;
          this->MinimizeBox = false;
          this->Name = L"EditorAbout";
          this->StartPosition = System::Windows::Forms::FormStartPosition::CenterParent;
+         this->Text = L"About Editor";
          this->ResumeLayout(false);
          this->PerformLayout();
 
