@@ -110,9 +110,10 @@ cGUIPageLayoutFlow::cGUIPageLayoutFlow()
 
 ///////////////////////////////////////
 
-cGUIPageLayoutFlow::cGUIPageLayoutFlow(const tGUIRect & rect)
+cGUIPageLayoutFlow::cGUIPageLayoutFlow(const tGUIRect & rect, bool bLTR /*=true*/)
  : m_rect(rect)
- , m_pos(static_cast<float>(rect.left), static_cast<float>(rect.top))
+ , m_bLTR(bLTR)
+ , m_pos(bLTR ? rect.GetTopLeft<float>() : rect.GetTopRight<float>())
  , m_rowHeight(0)
 {
 }
@@ -121,6 +122,7 @@ cGUIPageLayoutFlow::cGUIPageLayoutFlow(const tGUIRect & rect)
 
 cGUIPageLayoutFlow::cGUIPageLayoutFlow(const cGUIPageLayoutFlow & other)
  : m_rect(other.m_rect)
+ , m_bLTR(other.m_bLTR)
  , m_pos(other.m_pos)
  , m_rowHeight(other.m_rowHeight)
 {
@@ -137,6 +139,7 @@ cGUIPageLayoutFlow::~cGUIPageLayoutFlow()
 const cGUIPageLayoutFlow & cGUIPageLayoutFlow::operator =(const cGUIPageLayoutFlow & other)
 {
    m_rect = other.m_rect;
+   m_bLTR = other.m_bLTR;
    m_pos = other.m_pos;
    m_rowHeight = other.m_rowHeight;
    return *this;
@@ -150,7 +153,13 @@ void cGUIPageLayoutFlow::PlaceElement(IGUIElement * pElement)
    {
       tGUISize elementSize(pElement->GetSize());
 
+      // TODO: Handle elements that are too big for the page. Truncate them or something.
+
       tGUIPoint elementPos(m_pos);
+      if (!m_bLTR)
+      {
+         elementPos.x -= elementSize.width;
+      }
       bool bUpdateFlowPos = true;
 
       cAutoIPtr<IGUIStyle> pStyle;
@@ -216,14 +225,31 @@ void cGUIPageLayoutFlow::PlaceElement(IGUIElement * pElement)
 
       if (bUpdateFlowPos)
       {
-         m_pos.x += elementSize.width;
+         bool bNextRow = false;
+         if (m_bLTR)
+         {
+            m_pos.x += elementSize.width;
+            if (m_pos.x >= m_rect.right)
+            {
+               m_pos.x = static_cast<float>(m_rect.left);
+               bNextRow = true;
+            }
+         }
+         else
+         {
+            m_pos.x -= elementSize.width;
+            if (m_pos.x <= m_rect.left)
+            {
+               m_pos.x = static_cast<float>(m_rect.right);
+               bNextRow = true;
+            }
+         }
          if (elementSize.height > m_rowHeight)
          {
             m_rowHeight = elementSize.height;
          }
-         if (m_pos.x >= m_rect.right)
+         if (bNextRow)
          {
-            m_pos.x = static_cast<float>(m_rect.left);
             m_pos.y += m_rowHeight;
             m_rowHeight = 0;
          }

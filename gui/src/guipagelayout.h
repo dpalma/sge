@@ -71,7 +71,7 @@ class cGUIPageLayoutFlow
 {
 public:
    cGUIPageLayoutFlow();
-   cGUIPageLayoutFlow(const tGUIRect & rect);
+   cGUIPageLayoutFlow(const tGUIRect & rect, bool bLTR = true);
    cGUIPageLayoutFlow(const cGUIPageLayoutFlow & other);
    ~cGUIPageLayoutFlow();
 
@@ -81,6 +81,7 @@ public:
 
 private:
    tGUIRect m_rect;
+   bool m_bLTR;
    tGUIPoint m_pos;
    tGUISizeType m_rowHeight;
 };
