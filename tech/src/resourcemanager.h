@@ -6,9 +6,8 @@
 
 #include "resourceapi.h"
 #include "globalobjdef.h"
+#include "resourceformat.h"
 #include "resourcestore.h"
-
-#include <map>
 
 #ifdef _MSC_VER
 #pragma once
@@ -29,27 +28,6 @@ interface IResourceManagerDiagnostics : IUnknown
    virtual void DumpFormats() const = 0;
    virtual void DumpCache() const = 0;
    virtual size_t GetCacheSize() const = 0;
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cResourceFormat
-//
-
-class cResourceFormat
-{
-public:
-   void * Load(IReader * pReader) const;
-   void * Postload(void * pData, int dataLength, void * param) const;
-   void Unload(void * pData) const;
-
-   tResourceType type;
-   tResourceType typeDepend; // if not NULL, this format loads 'type' by converting from 'typeDepend'
-   uint extensionId;
-   tResourceLoad pfnLoad;
-   tResourcePostload pfnPostload;
-   tResourceUnload pfnUnload;
 };
 
 
@@ -104,20 +82,9 @@ private:
    sResource * FindResourceWithFormat(const tChar * pszName, tResourceType type, uint formatId);
    tResult DoLoadFromReader(IReader * pReader, const cResourceFormat * pFormat, ulong dataSize, void * param, void * * ppData);
 
-   uint DeduceFormats(const tChar * pszName, tResourceType type, uint * pFormatIds, uint nMaxFormats);
-
-   uint GetExtensionId(const tChar * pszExtension);
-   uint GetExtensionIdForName(const tChar * pszName);
-
-   std::vector<cStr> m_extensions;
-
    std::vector<cResourceStore *> m_stores;
 
-   typedef std::vector<cResourceFormat> tFormats;
-   tFormats m_formats;
-
-   typedef std::multimap<cStr, uint> tExtsForType;
-   tExtsForType m_extsForType;
+   cResourceFormatTable m_formats;
 
    struct sResource
    {

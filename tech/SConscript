@@ -27,8 +27,9 @@ sourceFiles = Split("""
    src/readwritefile.cpp
    src/readwritemd5.cpp
    src/readwritemem.cpp
-   src/resourcestore.cpp
+   src/resourceformat.cpp
    src/resourcemanager.cpp
+   src/resourcestore.cpp
    src/statemachinetest.cpp
    src/techassert.cpp
    src/techlog.cpp
