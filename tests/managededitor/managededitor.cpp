@@ -108,7 +108,7 @@ static bool ManagedEditorInit(array<System::String ^> ^ args)
       return false;
    }
 
-   TextFormatRegister(NULL);
+   TextFormatRegister(_T("css,lua,xml"));
    EngineRegisterResourceFormats();
    TerrainRegisterResourceFormats();
    ImageRegisterResourceFormats();

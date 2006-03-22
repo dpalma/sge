@@ -134,6 +134,13 @@ tResult cResourceFormatTable::RegisterFormat(tResourceType type,
       }
    }
 
+   // File extensions are optional only for resource formats that translate from another format
+   if (!typeDepend  && (pszExtension == NULL))
+   {
+      ErrorMsg("File extension required\n");
+      return E_INVALIDARG;
+   }
+
    if (pfnLoad == NULL && !typeDepend)
    {
       // Must have at least a load function
@@ -375,6 +382,8 @@ TEST(ResourceFormatTableRegister)
 {
    cResourceFormatTable rft;
    CHECK(rft.RegisterFormat(NULL, NULL, "dat", NopLoad, NULL, NopUnload) == E_INVALIDARG);
+   CHECK(rft.RegisterFormat("data", NULL, NULL, NopLoad, NULL, NopUnload) == E_INVALIDARG);
+   CHECK(rft.RegisterFormat("data", "data2", NULL, NopLoad, NULL, NopUnload) == S_OK);
    CHECK(rft.RegisterFormat("data", NULL, "dat", NULL, NULL, NopUnload) == E_POINTER);
    CHECK(rft.RegisterFormat("data", NULL, "dat", NopLoad, NULL, NopUnload) == S_OK);
    CHECK(rft.RegisterFormat("data", NULL, "dat", NopLoad, NULL, NopUnload) == E_FAIL);

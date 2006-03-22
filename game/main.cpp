@@ -250,7 +250,7 @@ static bool MainInit(int argc, tChar * argv[])
       return false;
    }
 
-   TextFormatRegister(NULL);
+   TextFormatRegister(_T("css,lua,xml"));
    EngineRegisterResourceFormats();
    EngineRegisterScriptFunctions();
    TerrainRegisterResourceFormats();

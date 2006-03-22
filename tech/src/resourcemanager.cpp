@@ -979,7 +979,6 @@ TEST_FP(cResourceManagerTests,
 
 ////////////////////////////////////////
 
-#if 0
 const tStrPair g_multNameTestResources[] =
 {
    std::make_pair(cStr("foo.xml"), cStr("<?xml version=\"1.0\" ?>...\0")),
@@ -990,7 +989,8 @@ TEST_FP(cResourceManagerTests,
         cResourceManagerTests(&g_multNameTestResources[0], _countof(g_multNameTestResources)),
         ResourceManagerSameNameLoadWrongType)
 {
-   CHECK(m_pResourceManager->RegisterFormat("footxt", NULL, NULL, RawBytesLoad, NULL, RawBytesUnload) == S_OK);
+   CHECK(m_pResourceManager->RegisterFormat("footxt", NULL, "xml", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
+   CHECK(m_pResourceManager->RegisterFormat("footxt", NULL, "txt", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
    CHECK(m_pResourceManager->RegisterFormat("fooms3d", NULL, "ms3d", PseudoMs3dLoad, NULL, RawBytesUnload) == S_OK);
    CHECK(m_pResourceManager->RegisterFormat("fooxml", "footxt", "xml", NULL, PseudoXmlPostload, PseudoXmlUnload) == S_OK);
 
@@ -1011,7 +1011,6 @@ TEST_FP(cResourceManagerTests,
       CHECK(pFooMs3d == NULL);
    }
 }
-#endif
 
 ////////////////////////////////////////
 

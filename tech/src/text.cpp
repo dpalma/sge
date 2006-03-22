@@ -114,26 +114,40 @@ void UnicodeTextUnload(void * pData)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-TECH_API tResult TextFormatRegister(const tChar * pszExtension)
+TECH_API tResult TextFormatRegister(const tChar * pszExtensions)
 {
-   UseGlobal(ResourceManager);
-   if (!!pResourceManager)
+   if (pszExtensions == NULL)
    {
+      return E_POINTER;
+   }
+
+   UseGlobal(ResourceManager);
+   if (!pResourceManager)
+   {
+      return E_FAIL;
+   }
+
+   int nRegistered = 0;
+
+   cTokenizer<cStr> extensions;
+   int nExtensions = extensions.Tokenize(pszExtensions, _T(","));
+   for (int i = 0; i < nExtensions; i++)
+   {
+      const tChar * pszExtension = extensions.m_tokens[i].c_str();
+
 #if _MSC_VER > 1200
       if (pResourceManager->RegisterFormat(kRT_AsciiText, pszExtension, TextLoad<char>, NULL, TextUnload<char>) == S_OK
          && pResourceManager->RegisterFormat(kRT_UnicodeText, pszExtension, TextLoad<wchar_t>, NULL, TextUnload<wchar_t>) == S_OK)
-      {
-         return S_OK;
-      }
 #else
       if (pResourceManager->RegisterFormat(kRT_AsciiText, pszExtension, AsciiTextLoad, NULL, AsciiTextUnload) == S_OK
          && pResourceManager->RegisterFormat(kRT_UnicodeText, pszExtension, UnicodeTextLoad, NULL, UnicodeTextUnload) == S_OK)
-      {
-         return S_OK;
-      }
 #endif
+      {
+         nRegistered++;
+      }
    }
-   return E_FAIL;
+
+   return (nRegistered == nExtensions) ? S_OK : S_FALSE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -206,7 +206,7 @@ BOOL cEditorApp::InitInstance()
       return FALSE;
    }
 
-   TextFormatRegister(NULL);
+   TextFormatRegister(_T("css,lua,xml"));
    EngineRegisterResourceFormats();
    TerrainRegisterResourceFormats();
    ImageRegisterResourceFormats();
