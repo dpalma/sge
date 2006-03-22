@@ -34,6 +34,27 @@ interface IResourceManagerDiagnostics : IUnknown
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: cResourceFormat
+//
+
+class cResourceFormat
+{
+public:
+   void * Load(IReader * pReader) const;
+   void * Postload(void * pData, int dataLength, void * param) const;
+   void Unload(void * pData) const;
+
+   tResourceType type;
+   tResourceType typeDepend; // if not NULL, this format loads 'type' by converting from 'typeDepend'
+   uint extensionId;
+   tResourceLoad pfnLoad;
+   tResourcePostload pfnPostload;
+   tResourceUnload pfnUnload;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cResourceManager
 //
 
@@ -78,11 +99,10 @@ public:
    virtual size_t GetCacheSize() const;
 
 private:
-   struct sFormat;
    struct sResource;
 
    sResource * FindResourceWithFormat(const tChar * pszName, tResourceType type, uint formatId);
-   tResult DoLoadFromReader(IReader * pReader, const sFormat * pFormat, ulong dataSize, void * param, void * * ppData);
+   tResult DoLoadFromReader(IReader * pReader, const cResourceFormat * pFormat, ulong dataSize, void * param, void * * ppData);
 
    uint DeduceFormats(const tChar * pszName, tResourceType type, uint * pFormatIds, uint nMaxFormats);
 
@@ -93,16 +113,7 @@ private:
 
    std::vector<cResourceStore *> m_stores;
 
-   struct sFormat
-   {
-      tResourceType type;
-      tResourceType typeDepend; // if not NULL, this format loads 'type' by converting from 'typeDepend'
-      uint extensionId;
-      tResourceLoad pfnLoad;
-      tResourcePostload pfnPostload;
-      tResourceUnload pfnUnload;
-   };
-   typedef std::vector<sFormat> tFormats;
+   typedef std::vector<cResourceFormat> tFormats;
    tFormats m_formats;
 
    typedef std::multimap<cStr, uint> tExtsForType;

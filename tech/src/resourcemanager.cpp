@@ -114,6 +114,33 @@ inline const tChar * ResourceTypeName(tResourceType resourceType)
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cResourceFormat
+//
+
+////////////////////////////////////////
+
+void * cResourceFormat::Load(IReader * pReader) const
+{
+   return (pfnLoad != NULL) ? (*pfnLoad)(pReader) : NULL;
+}
+
+////////////////////////////////////////
+
+void * cResourceFormat::Postload(void * pData, int dataLength, void * param) const
+{
+   return (pfnPostload != NULL) ? (*pfnPostload)(pData, dataLength, param) : pData;
+}
+
+////////////////////////////////////////
+
+void cResourceFormat::Unload(void * pData) const
+{
+   (*pfnUnload)(pData);
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cResourceManager
@@ -150,14 +177,11 @@ tResult cResourceManager::Term()
       {
          if (resIter->formatId != kNoIndex)
          {
-            const sFormat & format = m_formats[resIter->formatId];
-            if (format.pfnUnload != NULL)
-            {
-               LocalMsg2("Unloading \"%s\" (%s)\n", resIter->name.c_str(), ResourceTypeName(format.type));
-               (*format.pfnUnload)(resIter->pData);
-               resIter->pData = NULL;
-               resIter->dataSize = 0;
-            }
+            cResourceFormat * pFormat = &m_formats[resIter->formatId];
+            LocalMsg2("Unloading \"%s\" (%s)\n", resIter->name.c_str(), ResourceTypeName(pFormat->type));
+            pFormat->Unload(resIter->pData);
+            resIter->pData = NULL;
+            resIter->dataSize = 0;
          }
       }
    }
@@ -302,7 +326,7 @@ tResult cResourceManager::LoadWithFormat(const tChar * pszName, tResourceType ty
    Assert(formatId != kNoIndex);
    Assert(ppData != NULL);
 
-   sFormat * pFormat = &m_formats[formatId];
+   cResourceFormat * pFormat = &m_formats[formatId];
 
    sResource * pRes = FindResourceWithFormat(pszName, type, formatId);
 
@@ -453,7 +477,7 @@ tResult cResourceManager::RegisterFormat(tResourceType type,
       }
    }
 
-   sFormat format;
+   cResourceFormat format;
    format.type = type;
    format.typeDepend = typeDepend;
    format.extensionId = extensionId;
@@ -601,7 +625,7 @@ void cResourceManager::DumpCache() const
    tResources::const_iterator end = m_resources.end();
    for (uint index = 0; iter != end; iter++, index++)
    {
-      const sFormat * pFormat = (iter->formatId != kNoIndex) ? &m_formats[iter->formatId] : NULL;
+      const cResourceFormat * pFormat = (iter->formatId != kNoIndex) ? &m_formats[iter->formatId] : NULL;
       techlog.Print(kInfo, kRowFormat,
          kNameWidth, !iter->name.empty() ? iter->name.c_str() : "Empty",
          kExtWidth, iter->extensionId != kNoIndex ? m_extensions[iter->extensionId].c_str() : "None",
@@ -712,7 +736,7 @@ cResourceManager::sResource * cResourceManager::FindResourceWithFormat(
 
 ////////////////////////////////////////
 
-tResult cResourceManager::DoLoadFromReader(IReader * pReader, const sFormat * pFormat, ulong dataSize,
+tResult cResourceManager::DoLoadFromReader(IReader * pReader, const cResourceFormat * pFormat, ulong dataSize,
                                            void * param, void * * ppData)
 {
    if (pReader == NULL || ppData == NULL)
@@ -720,23 +744,16 @@ tResult cResourceManager::DoLoadFromReader(IReader * pReader, const sFormat * pF
       return E_POINTER;
    }
 
-   if (pFormat->pfnLoad != NULL)
+   void * pData = pFormat->Load(pReader);
+   if (pData != NULL)
    {
-      void * pData = (*pFormat->pfnLoad)(pReader);
+      // Assume the postload function cleans up pData or passes
+      // it through (or returns NULL)
+      pData = pFormat->Postload(pData, dataSize, param);
       if (pData != NULL)
       {
-         if (pFormat->pfnPostload != NULL)
-         {
-            // Assume the postload function cleans up pData or passes
-            // it through (or returns NULL)
-            pData = (*pFormat->pfnPostload)(pData, dataSize, param);
-         }
-
-         if (pData != NULL)
-         {
-            *ppData = pData;
-            return S_OK;
-         }
+         *ppData = pData;
+         return S_OK;
       }
    }
 
@@ -760,7 +777,7 @@ uint cResourceManager::DeduceFormats(const tChar * pszName, tResourceType type,
    uint iFormat = 0;
 
    // If the name has a file extension, the resource type plus extension determines
-   // the format. Plus, include all formats that can generate the resource class from
+   // the format. Plus, include all formats that can generate the resource type from
    // a dependent type.
    if (extensionId != kNoIndex)
    {
@@ -769,13 +786,15 @@ uint cResourceManager::DeduceFormats(const tChar * pszName, tResourceType type,
       tFormats::const_iterator fEnd = m_formats.end();
       for (uint index = 0; (fIter != fEnd) && (iFormat < nMaxFormats); fIter++, index++)
       {
-         if (SameType(fIter->type, type))
+         if (!SameType(fIter->type, type))
          {
-            if ((fIter->extensionId == extensionId) || (fIter->extensionId == kNoIndex) || fIter->typeDepend)
-            {
-               pFormatIds[iFormat] = index;
-               iFormat += 1;
-            }
+            continue;
+         }
+
+         if ((fIter->extensionId == extensionId) || (fIter->extensionId == kNoIndex) || fIter->typeDepend)
+         {
+            pFormatIds[iFormat] = index;
+            iFormat += 1;
          }
       }
    }
@@ -784,7 +803,7 @@ uint cResourceManager::DeduceFormats(const tChar * pszName, tResourceType type,
    // below will try to with the given type alone.
    if (iFormat == 0)
    {
-      extensionId = kNoIndex;
+//      extensionId = kNoIndex;
    }
 
    // If no file extension, the resource type alone determines set of possible formats.
