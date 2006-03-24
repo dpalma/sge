@@ -148,7 +148,12 @@ System::Void EditorForm::OnFileNew(System::Object ^ sender, System::EventArgs ^ 
    cTerrainSettings terrainSettings;
    terrainSettings.SetTileSet(_T("defaulttiles.xml")); // TODO: fix hard coded
 
-   EditorMapSettings ^ mapSettingsDlg = gcnew EditorMapSettings();
+   EditorMapSettings ^ mapSettings = gcnew EditorMapSettings();
+   mapSettings->Width = 128;
+   mapSettings->Height = 128;
+   mapSettings->TileSet = _T("defaulttiles.xml");
+
+   EditorMapSettingsDlg ^ mapSettingsDlg = gcnew EditorMapSettingsDlg(mapSettings);
    if (mapSettingsDlg->ShowDialog() == System::Windows::Forms::DialogResult::OK)
    {
       m_document = gcnew EditorDocument();

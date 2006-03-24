@@ -1,3 +1,6 @@
+///////////////////////////////////////////////////////////////////////////////
+// $Id$
+
 #pragma once
 
 using namespace System;
@@ -8,9 +11,11 @@ using namespace System::Data;
 using namespace System::Drawing;
 
 
-namespace ManagedEditor {
+namespace ManagedEditor
+{
+   ref class EditorMapSettings;
 
-	/// <summary>
+   /// <summary>
 	/// Summary for EditorMapSettings
 	///
 	/// WARNING: If you change the name of this class, you will need to change the
@@ -19,22 +24,23 @@ namespace ManagedEditor {
 	///          the designers will not be able to interact properly with localized
 	///          resources associated with this form.
 	/// </summary>
-	public ref class EditorMapSettings : public System::Windows::Forms::Form
+	public ref class EditorMapSettingsDlg : public System::Windows::Forms::Form
 	{
 	public:
-		EditorMapSettings(void)
+		EditorMapSettingsDlg(EditorMapSettings ^ mapSettings)
 		{
 			InitializeComponent();
 			//
 			//TODO: Add the constructor code here
 			//
+         m_mapSettings = mapSettings;
 		}
 
 	protected:
 		/// <summary>
 		/// Clean up any resources being used.
 		/// </summary>
-		~EditorMapSettings()
+		~EditorMapSettingsDlg()
 		{
 			if (components)
 			{
@@ -54,7 +60,7 @@ namespace ManagedEditor {
    private: System::Windows::Forms::ComboBox^  tileSetComboBox;
 
    private: System::Windows::Forms::ComboBox^  initialTileComboBox;
-   private: System::Windows::Forms::Label^  label5;
+
    private: System::Windows::Forms::RadioButton^  uniformHeightRadioButton;
    private: System::Windows::Forms::RadioButton^  genNoiseRadioButton;
    private: System::Windows::Forms::RadioButton^  heightMapRadioButton;
@@ -86,13 +92,13 @@ namespace ManagedEditor {
          System::Windows::Forms::Label^  label3;
          System::Windows::Forms::Label^  label4;
          System::Windows::Forms::Label^  label6;
+         System::Windows::Forms::Label^  label5;
          this->okButton = (gcnew System::Windows::Forms::Button());
          this->cancelButton = (gcnew System::Windows::Forms::Button());
          this->widthComboBox = (gcnew System::Windows::Forms::ComboBox());
          this->heightComboBox = (gcnew System::Windows::Forms::ComboBox());
          this->tileSetComboBox = (gcnew System::Windows::Forms::ComboBox());
          this->initialTileComboBox = (gcnew System::Windows::Forms::ComboBox());
-         this->label5 = (gcnew System::Windows::Forms::Label());
          this->uniformHeightRadioButton = (gcnew System::Windows::Forms::RadioButton());
          this->genNoiseRadioButton = (gcnew System::Windows::Forms::RadioButton());
          this->heightMapRadioButton = (gcnew System::Windows::Forms::RadioButton());
@@ -104,6 +110,7 @@ namespace ManagedEditor {
          label3 = (gcnew System::Windows::Forms::Label());
          label4 = (gcnew System::Windows::Forms::Label());
          label6 = (gcnew System::Windows::Forms::Label());
+         label5 = (gcnew System::Windows::Forms::Label());
          (cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->heightScaleUpDown))->BeginInit();
          this->SuspendLayout();
          // 
@@ -152,6 +159,15 @@ namespace ManagedEditor {
          label6->TabIndex = 16;
          label6->Text = L"Height Scale";
          // 
+         // label5
+         // 
+         label5->AutoSize = true;
+         label5->Location = System::Drawing::Point(12, 130);
+         label5->Name = L"label5";
+         label5->Size = System::Drawing::Size(38, 13);
+         label5->TabIndex = 10;
+         label5->Text = L"Height";
+         // 
          // okButton
          // 
          this->okButton->Location = System::Drawing::Point(124, 277);
@@ -175,19 +191,23 @@ namespace ManagedEditor {
          // 
          this->widthComboBox->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
          this->widthComboBox->FormattingEnabled = true;
+         this->widthComboBox->Items->AddRange(gcnew cli::array< System::Object^  >(4) {L"64", L"128", L"256", L"512"});
          this->widthComboBox->Location = System::Drawing::Point(69, 9);
          this->widthComboBox->Name = L"widthComboBox";
          this->widthComboBox->Size = System::Drawing::Size(121, 21);
          this->widthComboBox->TabIndex = 3;
+         this->widthComboBox->Validated += gcnew System::EventHandler(this, &EditorMapSettingsDlg::OnValidated);
          // 
          // heightComboBox
          // 
          this->heightComboBox->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
          this->heightComboBox->FormattingEnabled = true;
+         this->heightComboBox->Items->AddRange(gcnew cli::array< System::Object^  >(4) {L"64", L"128", L"256", L"512"});
          this->heightComboBox->Location = System::Drawing::Point(69, 39);
          this->heightComboBox->Name = L"heightComboBox";
          this->heightComboBox->Size = System::Drawing::Size(121, 21);
          this->heightComboBox->TabIndex = 5;
+         this->heightComboBox->Validated += gcnew System::EventHandler(this, &EditorMapSettingsDlg::OnValidated);
          // 
          // tileSetComboBox
          // 
@@ -206,15 +226,6 @@ namespace ManagedEditor {
          this->initialTileComboBox->Name = L"initialTileComboBox";
          this->initialTileComboBox->Size = System::Drawing::Size(121, 21);
          this->initialTileComboBox->TabIndex = 9;
-         // 
-         // label5
-         // 
-         this->label5->AutoSize = true;
-         this->label5->Location = System::Drawing::Point(12, 130);
-         this->label5->Name = L"label5";
-         this->label5->Size = System::Drawing::Size(38, 13);
-         this->label5->TabIndex = 10;
-         this->label5->Text = L"Height";
          // 
          // uniformHeightRadioButton
          // 
@@ -284,7 +295,7 @@ namespace ManagedEditor {
          this->Controls->Add(this->heightMapRadioButton);
          this->Controls->Add(this->genNoiseRadioButton);
          this->Controls->Add(this->uniformHeightRadioButton);
-         this->Controls->Add(this->label5);
+         this->Controls->Add(label5);
          this->Controls->Add(this->initialTileComboBox);
          this->Controls->Add(label4);
          this->Controls->Add(this->tileSetComboBox);
@@ -302,11 +313,26 @@ namespace ManagedEditor {
          this->SizeGripStyle = System::Windows::Forms::SizeGripStyle::Hide;
          this->StartPosition = System::Windows::Forms::FormStartPosition::CenterParent;
          this->Text = L"Map Settings";
+         this->Load += gcnew System::EventHandler(this, &EditorMapSettingsDlg::OnLoad);
          (cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->heightScaleUpDown))->EndInit();
          this->ResumeLayout(false);
          this->PerformLayout();
 
       }
 #pragma endregion
-	};
+private:
+   System::Void OnValidated(System::Object ^ sender, System::EventArgs ^ e);
+   System::Void OnLoad(System::Object ^ sender, System::EventArgs ^ e);
+   EditorMapSettings ^ m_mapSettings;
+};
+
+   public ref class EditorMapSettings sealed
+   {
+   public:
+      property int Width;
+      property int Height;
+      property String ^ TileSet;
+      property int HeightScale;
+   };
+
 }
