@@ -603,6 +603,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\tech\src\resourceformat.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\tech\src\resourcemanager.cpp"
 					>
 				</File>
@@ -736,6 +740,10 @@
 				</File>
 				<File
 					RelativePath="..\..\tech\src\readwritemem.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\tech\src\resourceformat.h"
 					>
 				</File>
 				<File

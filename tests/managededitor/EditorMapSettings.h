@@ -107,6 +107,51 @@ namespace ManagedEditor {
          (cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->heightScaleUpDown))->BeginInit();
          this->SuspendLayout();
          // 
+         // label1
+         // 
+         label1->AutoSize = true;
+         label1->Location = System::Drawing::Point(12, 12);
+         label1->Name = L"label1";
+         label1->Size = System::Drawing::Size(35, 13);
+         label1->TabIndex = 2;
+         label1->Text = L"Width";
+         // 
+         // label2
+         // 
+         label2->AutoSize = true;
+         label2->Location = System::Drawing::Point(12, 42);
+         label2->Name = L"label2";
+         label2->Size = System::Drawing::Size(38, 13);
+         label2->TabIndex = 4;
+         label2->Text = L"Height";
+         // 
+         // label3
+         // 
+         label3->AutoSize = true;
+         label3->Location = System::Drawing::Point(12, 72);
+         label3->Name = L"label3";
+         label3->Size = System::Drawing::Size(43, 13);
+         label3->TabIndex = 6;
+         label3->Text = L"Tile Set";
+         // 
+         // label4
+         // 
+         label4->AutoSize = true;
+         label4->Location = System::Drawing::Point(12, 102);
+         label4->Name = L"label4";
+         label4->Size = System::Drawing::Size(51, 13);
+         label4->TabIndex = 8;
+         label4->Text = L"Initial Tile";
+         // 
+         // label6
+         // 
+         label6->AutoSize = true;
+         label6->Location = System::Drawing::Point(7, 234);
+         label6->Name = L"label6";
+         label6->Size = System::Drawing::Size(68, 13);
+         label6->TabIndex = 16;
+         label6->Text = L"Height Scale";
+         // 
          // okButton
          // 
          this->okButton->Location = System::Drawing::Point(124, 277);
@@ -126,15 +171,6 @@ namespace ManagedEditor {
          this->cancelButton->Text = L"Cancel";
          this->cancelButton->UseVisualStyleBackColor = true;
          // 
-         // label1
-         // 
-         label1->AutoSize = true;
-         label1->Location = System::Drawing::Point(12, 12);
-         label1->Name = L"label1";
-         label1->Size = System::Drawing::Size(35, 13);
-         label1->TabIndex = 2;
-         label1->Text = L"Width";
-         // 
          // widthComboBox
          // 
          this->widthComboBox->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
@@ -143,15 +179,6 @@ namespace ManagedEditor {
          this->widthComboBox->Name = L"widthComboBox";
          this->widthComboBox->Size = System::Drawing::Size(121, 21);
          this->widthComboBox->TabIndex = 3;
-         // 
-         // label2
-         // 
-         label2->AutoSize = true;
-         label2->Location = System::Drawing::Point(12, 42);
-         label2->Name = L"label2";
-         label2->Size = System::Drawing::Size(38, 13);
-         label2->TabIndex = 4;
-         label2->Text = L"Height";
          // 
          // heightComboBox
          // 
@@ -162,15 +189,6 @@ namespace ManagedEditor {
          this->heightComboBox->Size = System::Drawing::Size(121, 21);
          this->heightComboBox->TabIndex = 5;
          // 
-         // label3
-         // 
-         label3->AutoSize = true;
-         label3->Location = System::Drawing::Point(12, 72);
-         label3->Name = L"label3";
-         label3->Size = System::Drawing::Size(43, 13);
-         label3->TabIndex = 6;
-         label3->Text = L"Tile Set";
-         // 
          // tileSetComboBox
          // 
          this->tileSetComboBox->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
@@ -179,15 +197,6 @@ namespace ManagedEditor {
          this->tileSetComboBox->Name = L"tileSetComboBox";
          this->tileSetComboBox->Size = System::Drawing::Size(121, 21);
          this->tileSetComboBox->TabIndex = 7;
-         // 
-         // label4
-         // 
-         label4->AutoSize = true;
-         label4->Location = System::Drawing::Point(12, 102);
-         label4->Name = L"label4";
-         label4->Size = System::Drawing::Size(51, 13);
-         label4->TabIndex = 8;
-         label4->Text = L"Initial Tile";
          // 
          // initialTileComboBox
          // 
@@ -256,15 +265,6 @@ namespace ManagedEditor {
          this->heightMapBrowseButton->Text = L"Browse...";
          this->heightMapBrowseButton->UseVisualStyleBackColor = true;
          // 
-         // label6
-         // 
-         label6->AutoSize = true;
-         label6->Location = System::Drawing::Point(7, 234);
-         label6->Name = L"label6";
-         label6->Size = System::Drawing::Size(68, 13);
-         label6->TabIndex = 16;
-         label6->Text = L"Height Scale";
-         // 
          // heightScaleUpDown
          // 
          this->heightScaleUpDown->Location = System::Drawing::Point(81, 232);
@@ -295,9 +295,11 @@ namespace ManagedEditor {
          this->Controls->Add(label1);
          this->Controls->Add(this->cancelButton);
          this->Controls->Add(this->okButton);
+         this->FormBorderStyle = System::Windows::Forms::FormBorderStyle::FixedDialog;
          this->MaximizeBox = false;
          this->MinimizeBox = false;
          this->Name = L"EditorMapSettings";
+         this->SizeGripStyle = System::Windows::Forms::SizeGripStyle::Hide;
          this->StartPosition = System::Windows::Forms::FormStartPosition::CenterParent;
          this->Text = L"Map Settings";
          (cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->heightScaleUpDown))->EndInit();

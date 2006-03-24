@@ -56,6 +56,19 @@ static void RegisterGlobalObjects()
 
 ///////////////////////////////////////////////////////////////////////////////
 
+void StringConvert(System::String ^ string, cStr * pStr)
+{
+#ifndef _UNICODE
+   using namespace System::Runtime::InteropServices;
+   System::IntPtr pString = Marshal::StringToHGlobalAnsi(string);
+   pStr->assign(static_cast<char *>(pString.ToPointer()));
+   Marshal::FreeHGlobal(pString);
+#else
+   pin_ptr<const wchar_t> psz = PtrToStringChars(string);
+   pStr->assign(psz);
+#endif
+}
+
 static tResult InitGlobalConfig(array<System::String ^> ^ args)
 {
 #if 0 // TODO
@@ -70,22 +83,12 @@ static tResult InitGlobalConfig(array<System::String ^> ^ args)
    pStore->Load(g_pConfig);
 #endif
 
-   using namespace System::Runtime::InteropServices;
-
    for (int i = 0; i < args->Length; i++)
    {
-      System::String ^ arg = args[i];
-#ifndef _UNICODE
-      System::IntPtr pArg = Marshal::StringToHGlobalAnsi(arg);
-      char * argv[] = { static_cast<char *>(pArg.ToPointer()) };
-#else
-      pin_ptr<const wchar_t> psz = PtrToStringChars(arg);
-      wchar_t * argv[] = { psz };
-#endif
+      cStr arg;
+      StringConvert(args[i], &arg);
+      tChar * argv[] = { const_cast<tChar*>(arg.c_str()) };
       ParseCommandLine(1, argv, g_pConfig);
-#ifndef _UNICODE
-      Marshal::FreeHGlobal(pArg);
-#endif
    }
 
    return S_OK;
@@ -119,9 +122,6 @@ static bool ManagedEditorInit(array<System::String ^> ^ args)
       UseGlobal(ResourceManager);
       pResourceManager->AddDirectoryTreeFlattened(temp.c_str());
    }
-
-   UseGlobal(GUIContext);
-   pGUIContext->PushPage("start.xml");
 
    UseGlobal(Sim);
    pSim->Go();

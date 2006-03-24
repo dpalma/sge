@@ -8,6 +8,8 @@
 #pragma once
 #endif
 
+class cTerrainSettings;
+
 namespace ManagedEditor
 {
 
@@ -23,7 +25,13 @@ public:
    EditorDocument();
    ~EditorDocument();
 
-protected:
+   void Reset();
+   bool New(const cTerrainSettings & ts);
+   bool Open(System::String ^ fileName);
+   bool Save(System::String ^ fileName);
+
+   property bool Modified;
+   property System::String ^ FileName;
 
 private:
 };

@@ -6,6 +6,7 @@
 // Local Includes
 #include "EditorForm.h"
 #include "EditorAbout.h"
+#include "EditorMapSettings.h"
 
 // GUI Includes
 #include "guiapi.h"
@@ -42,12 +43,14 @@ using namespace System::Windows::Forms;
 
 EditorForm::EditorForm()
  : m_pFont(NULL)
- , m_bPromptForMapSettings(false)
 {
    InitializeComponent();
 
    m_glControl = gcnew GlControl();
+	m_glControl->Dock = System::Windows::Forms::DockStyle::Fill;
    toolStripContainer1->ContentPanel->Controls->Add(m_glControl);
+
+   m_document = gcnew EditorDocument();
 
    System::Windows::Forms::Application::Idle += gcnew System::EventHandler(this, &EditorForm::OnIdle);
 }
@@ -124,18 +127,32 @@ void EditorForm::OnIdle(System::Object ^ sender, System::EventArgs ^ e)
 
 System::Void EditorForm::OnFileOpen(System::Object ^ sender, System::EventArgs ^ e)
 {
-   OpenFileDialog ^ openFileDlg = gcnew OpenFileDialog();
-   openFileDlg->Filter = "DLL|*.dll|Executable|*.exe";
-   if (openFileDlg->ShowDialog() == System::Windows::Forms::DialogResult::OK)
+   OpenFileDialog ^ openDlg = gcnew OpenFileDialog();
+   openDlg->Filter = "SGE Map Files (*.sgm)|*.sgm|All Files (*.*)|*.*";
+   openDlg->FileName = "";
+   openDlg->DefaultExt = ".sgm";
+   openDlg->CheckFileExists = true;
+   openDlg->CheckPathExists = true;
+   if (openDlg->ShowDialog() == System::Windows::Forms::DialogResult::OK)
    {
-   }
-   else
-   {
+      EditorDocument ^ newDoc = gcnew EditorDocument();
+      if (newDoc->Open(openDlg->FileName))
+      {
+         m_document = newDoc;
+      }
    }
 }
 
 System::Void EditorForm::OnFileNew(System::Object ^ sender, System::EventArgs ^ e)
 {
+   cTerrainSettings terrainSettings;
+   terrainSettings.SetTileSet(_T("defaulttiles.xml")); // TODO: fix hard coded
+
+   EditorMapSettings ^ mapSettingsDlg = gcnew EditorMapSettings();
+   if (mapSettingsDlg->ShowDialog() == System::Windows::Forms::DialogResult::OK)
+   {
+      m_document = gcnew EditorDocument();
+   }
 }
 
 System::Void EditorForm::OnFileExit(System::Object ^ sender, System::EventArgs ^ e)
@@ -145,10 +162,46 @@ System::Void EditorForm::OnFileExit(System::Object ^ sender, System::EventArgs ^
 
 System::Void EditorForm::OnFileSave(System::Object ^ sender, System::EventArgs ^ e)
 {
+   if (m_document)
+   {
+      if (m_document->FileName)
+      {
+         try
+         {
+            m_document->Save(m_document->FileName);
+         }
+         catch (Exception ^ ex)
+         {
+            MessageBox::Show(ex->ToString());
+         }
+      }
+      else
+      {
+         OnFileSaveAs(sender, e);
+      }
+   }
 }
 
 System::Void EditorForm::OnFileSaveAs(System::Object ^ sender, System::EventArgs ^ e)
 {
+   try
+   {
+      if (m_document)
+      {
+         SaveFileDialog ^ saveDlg = gcnew SaveFileDialog;
+         saveDlg->Filter = "SGE Map Files (*.sgm)|*.sgm|All Files (*.*)|*.*";
+         saveDlg->FileName = "Untitled1.sgm";
+         saveDlg->DefaultExt = ".sgm";
+         if (saveDlg->ShowDialog() == System::Windows::Forms::DialogResult::OK)
+         {
+            m_document->Save(saveDlg->FileName);
+         }
+      }
+   }
+   catch (Exception ^ ex)
+   {
+      MessageBox::Show(ex->ToString());
+   }
 }
 
 System::Void EditorForm::OnHelpAbout(System::Object ^ sender, System::EventArgs ^ e)
