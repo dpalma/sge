@@ -342,20 +342,23 @@ uint cResourceFormatTable::GetExtensionIdForName(const tChar * pszName)
 
 void cResourceFormatTable::DumpFormats() const
 {
-   techlog.Print(kInfo, "%d resource formats\n", m_formats.size());
+   techlog.Print(kInfo, _T("%d resource formats\n"), m_formats.size());
    static const int kTypeWidth = -20;
    static const int kExtWidth = -5;
-   static const tChar kRowFormat[] = "%*s | %*s | %*s\n";
-   techlog.Print(kInfo, kRowFormat, kTypeWidth, "Type", kTypeWidth, "Dep. Type", kExtWidth, "Ext");
-   techlog.Print(kInfo, "----------------------------------------------------------------------\n");
+   static const tChar kRowFormat[] = _T("%*s | %*s | %*s\n");
+   techlog.Print(kInfo, kRowFormat,
+                 kTypeWidth, _T("Type"),
+                 kTypeWidth, _T("Dep. Type"),
+                 kExtWidth, _T("Ext"));
+   techlog.Print(kInfo, _T("----------------------------------------------------------------------\n"));
    tResourceFormats::const_iterator iter = m_formats.begin();
    tResourceFormats::const_iterator end = m_formats.end();
    for (uint index = 0; iter != end; iter++, index++)
    {
       techlog.Print(kInfo, kRowFormat,
          kTypeWidth, ResourceTypeName(iter->type),
-         kTypeWidth, iter->typeDepend ? ResourceTypeName(iter->typeDepend) : "None",
-         kExtWidth, iter->extensionId != kNoIndex ? m_extensions[iter->extensionId].c_str() : "None");
+         kTypeWidth, iter->typeDepend ? ResourceTypeName(iter->typeDepend) : _T("None"),
+         kExtWidth, (iter->extensionId != kNoIndex) ? m_extensions[iter->extensionId].c_str() : _T("None"));
    }
 }
 

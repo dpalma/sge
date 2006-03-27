@@ -30,7 +30,7 @@ F_DECLARE_INTERFACE(IResourceManager);
 #else
 #define kRT_Text           kRT_AsciiText
 #endif
-TECH_API tResult TextFormatRegister(const char * pszExtension);
+TECH_API tResult TextFormatRegister(const tChar * pszExtension);
 
 
 ///////////////////////////////////////////////////////////////////////////////

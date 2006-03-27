@@ -36,13 +36,13 @@ void * pReferenceCmds = (void *)cmds;
 
 LOG_DEFINE_CHANNEL(LuaInterp);
 
-#define LocalMsg(msg)                  DebugMsgEx(LuaInterp,(msg))
-#define LocalMsg1(msg,a1)              DebugMsgEx1(LuaInterp,(msg),(a1))
-#define LocalMsg2(msg,a1,a2)           DebugMsgEx2(LuaInterp,(msg),(a1),(a2))
+#define LocalMsg(msg)                  DebugMsgEx(LuaInterp,msg)
+#define LocalMsg1(msg,a1)              DebugMsgEx1(LuaInterp,msg,(a1))
+#define LocalMsg2(msg,a1,a2)           DebugMsgEx2(LuaInterp,msg,(a1),(a2))
 
-#define LocalMsgIf(cond,msg)           DebugMsgIfEx(LuaInterp,(cond),(msg))
-#define LocalMsgIf1(cond,msg,a1)       DebugMsgIfEx1(LuaInterp,(cond),(msg),(a1))
-#define LocalMsgIf2(cond,msg,a1,a2)    DebugMsgIfEx2(LuaInterp,(cond),(msg),(a1),(a2))
+#define LocalMsgIf(cond,msg)           DebugMsgIfEx(LuaInterp,(cond),msg)
+#define LocalMsgIf1(cond,msg,a1)       DebugMsgIfEx1(LuaInterp,(cond),msg,(a1))
+#define LocalMsgIf2(cond,msg,a1,a2)    DebugMsgIfEx2(LuaInterp,(cond),msg,(a1),(a2))
 
 ///////////////////////////////////////////////////////////////////////////////
 

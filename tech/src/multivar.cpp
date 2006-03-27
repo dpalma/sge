@@ -311,12 +311,17 @@ const char * cMultiVar::ToAsciiString() const
    {
       if (m_pConversionBuffer == NULL)
       {
-         std::string temp;
-         Sprintf(&temp, "%d", m_value.i);
-         uint length = temp.length();
+         char szTemp[150];
+#if _MSC_VER >= 1400
+         _snprintf_s(szTemp, sizeof(szTemp), _countof(szTemp), "%d",
+                     m_value.i);
+#else
+         _snprintf(szTemp, _countof(szTemp), "%d", m_value.i);
+#endif
+         uint length = strlen(szTemp);
          uint bufferSize = (length + 1) * sizeof(char);
          m_pConversionBuffer = realloc(m_pConversionBuffer, bufferSize);
-         strcpy(reinterpret_cast<char*>(m_pConversionBuffer), temp.c_str());
+         strcpy(reinterpret_cast<char*>(m_pConversionBuffer), szTemp);
       }
       return reinterpret_cast<const char*>(m_pConversionBuffer);
    }
@@ -324,12 +329,18 @@ const char * cMultiVar::ToAsciiString() const
    {
       if (m_pConversionBuffer == NULL)
       {
-         std::string temp;
-         Sprintf(&temp, "%f", (m_type == kMVT_Float) ? m_value.f : m_value.d);
-         uint length = temp.length();
+         char szTemp[100];
+#if _MSC_VER >= 1400
+         _snprintf_s(szTemp, sizeof(szTemp), _countof(szTemp), "%f",
+                     (m_type == kMVT_Float) ? m_value.f : m_value.d);
+#else
+         _snprintf(szTemp, _countof(szTemp), "%f",
+                   (m_type == kMVT_Float) ? m_value.f : m_value.d);
+#endif
+         uint length = strlen(szTemp);
          uint bufferSize = (length + 1) * sizeof(char);
          m_pConversionBuffer = realloc(m_pConversionBuffer, bufferSize);
-         strcpy(reinterpret_cast<char*>(m_pConversionBuffer), temp.c_str());
+         strcpy(reinterpret_cast<char*>(m_pConversionBuffer), szTemp);
       }
       return reinterpret_cast<const char*>(m_pConversionBuffer);
    }
@@ -352,16 +363,17 @@ const wchar_t * cMultiVar::ToWideString() const
    {
       if (m_pConversionBuffer == NULL)
       {
-         cStr temp;
-         Sprintf(&temp, _T("%d"), m_value.i);
-         uint length = temp.length();
-         uint bufferSize = (length + 1) * sizeof(char);
-         m_pConversionBuffer = realloc(m_pConversionBuffer, bufferSize);
-#ifdef _UNICODE
-         wcscpy(reinterpret_cast<wchar_t*>(m_pConversionBuffer), temp.c_str());
+         wchar_t wszTemp[150];
+#if _MSC_VER >= 1400
+         _snwprintf_s(wszTemp, sizeof(wszTemp), _countof(wszTemp), L"%d",
+                      m_value.i);
 #else
-         mbstowcs(reinterpret_cast<wchar_t*>(m_pConversionBuffer), temp.c_str(), bufferSize);
+         _snwprintf(wszTemp, _countof(wszTemp), L"%d", m_value.i);
 #endif
+         uint length = wcslen(wszTemp);
+         uint bufferSize = (length + 1) * sizeof(wchar_t);
+         m_pConversionBuffer = realloc(m_pConversionBuffer, bufferSize);
+         wcscpy(reinterpret_cast<wchar_t*>(m_pConversionBuffer), wszTemp);
       }
       return reinterpret_cast<const wchar_t*>(m_pConversionBuffer);
    }
@@ -369,16 +381,18 @@ const wchar_t * cMultiVar::ToWideString() const
    {
       if (m_pConversionBuffer == NULL)
       {
-         cStr temp;
-         Sprintf(&temp, _T("%f"), (m_type == kMVT_Float) ? m_value.f : m_value.d);
-         uint length = temp.length();
+         wchar_t wszTemp[100];
+#if _MSC_VER >= 1400
+         _snwprintf_s(wszTemp, sizeof(wszTemp), _countof(wszTemp), L"%f",
+                      (m_type == kMVT_Float) ? m_value.f : m_value.d);
+#else
+         _snwprintf(wszTemp, _countof(wszTemp), L"%f",
+                    (m_type == kMVT_Float) ? m_value.f : m_value.d);
+#endif
+         uint length = wcslen(wszTemp);
          uint bufferSize = (length + 1) * sizeof(wchar_t);
          m_pConversionBuffer = realloc(m_pConversionBuffer, bufferSize);
-#ifdef _UNICODE
-         wcscpy(reinterpret_cast<wchar_t*>(m_pConversionBuffer), temp.c_str());
-#else
-         mbstowcs(reinterpret_cast<wchar_t*>(m_pConversionBuffer), temp.c_str(), bufferSize);
-#endif
+         wcscpy(reinterpret_cast<wchar_t*>(m_pConversionBuffer), wszTemp);
       }
       return reinterpret_cast<const wchar_t*>(m_pConversionBuffer);
    }
@@ -389,7 +403,8 @@ const wchar_t * cMultiVar::ToWideString() const
          uint length = strlen(m_value.psz);
          uint bufferSize = (length + 1) * sizeof(wchar_t);
          m_pConversionBuffer = realloc(m_pConversionBuffer, bufferSize);
-         mbstowcs(reinterpret_cast<wchar_t*>(m_pConversionBuffer), m_value.psz, bufferSize);
+         mbstowcs(reinterpret_cast<wchar_t*>(m_pConversionBuffer),
+                  m_value.psz, bufferSize);
       }
       return reinterpret_cast<const wchar_t*>(m_pConversionBuffer);
    }

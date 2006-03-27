@@ -18,7 +18,9 @@
 // Shows the user an assertion failure dialog box. Returns true if
 // the user wants to break into the debugger.
 
-bool AssertFail(const tChar * pszFile, int line, const tChar * pszExpr, const tChar * pszMsg)
+bool AssertFail(const tChar * pszFile, int line,
+                const tChar * pszExpr,
+                const tChar * pszMsg)
 {
    bool bWantDbgBreak = false;
 
@@ -32,7 +34,7 @@ bool AssertFail(const tChar * pszFile, int line, const tChar * pszExpr, const tC
       _sntprintf(szMsg, _countof(szMsg), _T("%s"), pszExpr);
    }
 
-   techlog.Print(pszFile, line, kError, "ASSERTION FAILURE: %s\n", szMsg);
+   techlog.Print(pszFile, line, kError, _T("ASSERTION FAILURE: %s\n"), szMsg);
 
 #ifdef _MSC_VER
    // Remove WM_QUIT because if it's in the queue then the message
@@ -41,7 +43,18 @@ bool AssertFail(const tChar * pszFile, int line, const tChar * pszExpr, const tC
    BOOL bQuit = PeekMessage(&msg, NULL, WM_QUIT, WM_QUIT, PM_REMOVE);
 
 #ifdef _DEBUG
-   if (_CrtDbgReport(_CRT_ASSERT, pszFile, line, NULL, szMsg))
+#ifdef _UNICODE
+   size_t l = WideCharToMultiByte(CP_ACP, 0, pszFile, _tcslen(pszFile), NULL, 0, NULL, NULL);
+   char * pszFileA = reinterpret_cast<char*>(alloca(sizeof(char) * (l + 1)));
+   WideCharToMultiByte(CP_ACP, 0, pszFile, _tcslen(pszFile), pszFileA, l, NULL, NULL);
+   l = WideCharToMultiByte(CP_ACP, 0, szMsg, _tcslen(szMsg), NULL, 0, NULL, NULL);
+   char * pszMsgA = reinterpret_cast<char*>(alloca(sizeof(char) * (l + 1)));
+   WideCharToMultiByte(CP_ACP, 0, szMsg, _tcslen(szMsg), pszMsgA, l, NULL, NULL);
+#else
+   const char * pszFileA = pszFile;
+   const char * pszMsgA = szMsg;
+#endif
+   if (_CrtDbgReport(_CRT_ASSERT, pszFileA, line, NULL, pszMsgA))
    {
       bWantDbgBreak = true;
    }

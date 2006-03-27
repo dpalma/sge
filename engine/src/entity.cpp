@@ -123,7 +123,7 @@ void cEntityModel::Update(double elapsedTime)
          return;
       }
 
-      AssertMsg(pModel != NULL, "Should have returned by now if ResourceManager->Load failed\n");
+      AssertMsg(pModel != NULL, _T("Should have returned by now if ResourceManager->Load failed\n"));
 
       if (pModel != m_pModel)
       {

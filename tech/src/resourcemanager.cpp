@@ -496,22 +496,25 @@ void cResourceManager::DumpFormats() const
 
 void cResourceManager::DumpCache() const
 {
-   techlog.Print(kInfo, "%d resource cache entries\n", m_resources.size());
+   techlog.Print(kInfo, _T("%d resource cache entries\n"), m_resources.size());
    static const int kNameWidth = -30;
    static const int kExtWidth = -5;
    static const int kTypeWidth = -20;
-   static const tChar kRowFormat[] = "%*s | %*s | %*s\n";
-   techlog.Print(kInfo, kRowFormat, kNameWidth, "Name", kExtWidth, "Ext", kTypeWidth, "Type");
-   techlog.Print(kInfo, "----------------------------------------------------------------------\n");
+   static const tChar kRowFormat[] = _T("%*s | %*s | %*s\n");
+   techlog.Print(kInfo, kRowFormat,
+                 kNameWidth, _T("Name"),
+                 kExtWidth, _T("Ext"),
+                 kTypeWidth, _T("Type"));
+   techlog.Print(kInfo, _T("----------------------------------------------------------------------\n"));
    tResources::const_iterator iter = m_resources.begin();
    tResources::const_iterator end = m_resources.end();
    for (uint index = 0; iter != end; iter++, index++)
    {
       const cResourceFormat * pFormat = (iter->formatId != kNoIndex) ? m_formats.GetFormat(iter->formatId) : NULL;
       techlog.Print(kInfo, kRowFormat,
-         kNameWidth, !iter->name.empty() ? iter->name.c_str() : "Empty",
-         kExtWidth, iter->extensionId != kNoIndex ? m_formats.GetExtension(iter->extensionId) : "None",
-         kTypeWidth, pFormat ? ResourceTypeName(pFormat->type) : "Undetermined");
+         kNameWidth, !iter->name.empty() ? iter->name.c_str() : _T("Empty"),
+         kExtWidth, (iter->extensionId != kNoIndex) ? m_formats.GetExtension(iter->extensionId) : _T("None"),
+         kTypeWidth, pFormat ? ResourceTypeName(pFormat->type) : _T("Undetermined"));
    }
 }
 
@@ -576,7 +579,7 @@ cResourceManager::sResource * cResourceManager::FindResourceWithFormat(
       tResources::iterator end = m_resources.end();
       for (uint index = 0; iter != end; iter++, index++)
       {
-         if (stricmp(iter->name.c_str(), name.c_str()) == 0)
+         if (_tcsicmp(iter->name.c_str(), name.c_str()) == 0)
          {
             LocalMsg4("Resource %d: base name \"%s\", extension %d is a potential match for \"%s\"\n",
                index, iter->name.c_str(), iter->extensionId, pszName);

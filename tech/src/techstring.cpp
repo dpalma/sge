@@ -257,7 +257,7 @@ int SprintfLengthEstimate(const tChar * pszFormat, va_list args)
       }
    }
 
-   AssertMsg(formatLenEst < (4 * 1024), "Format string length estimate is very large");
+   AssertMsg(formatLenEst < (4 * 1024), _T("Format string length estimate is very large"));
 
    return formatLenEst;
 }

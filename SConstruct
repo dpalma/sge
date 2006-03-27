@@ -211,6 +211,10 @@ elif not env.get('debug') and not env.get('shared'):
    mode = "StaticRelease"
    
 buildRootDir = 'build' + os.sep + str(Platform()) + os.sep + mode
+if env.get('unicode'):
+   buildRootDir += 'Unicode'
+else:
+   buildRootDir += 'Ansi'
 Export('buildRootDir')
 if not os.path.isdir(buildRootDir):
    os.makedirs(buildRootDir)

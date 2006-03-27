@@ -15,11 +15,11 @@
 
 LOG_DEFINE_CHANNEL(ThreadCaller);
 
-#define LocalMsg(msg)            DebugMsgEx(ThreadCaller,(msg))
-#define LocalMsg1(msg,a)         DebugMsgEx1(ThreadCaller,(msg),(a))
-#define LocalMsg2(msg,a,b)       DebugMsgEx2(ThreadCaller,(msg),(a),(b))
-#define LocalMsg3(msg,a,b,c)     DebugMsgEx3(ThreadCaller,(msg),(a),(b),(c))
-#define LocalMsg4(msg,a,b,c,d)   DebugMsgEx4(ThreadCaller,(msg),(a),(b),(c),(d))
+#define LocalMsg(msg)            DebugMsgEx(ThreadCaller,msg)
+#define LocalMsg1(msg,a)         DebugMsgEx1(ThreadCaller,msg,(a))
+#define LocalMsg2(msg,a,b)       DebugMsgEx2(ThreadCaller,msg,(a),(b))
+#define LocalMsg3(msg,a,b,c)     DebugMsgEx3(ThreadCaller,msg,(a),(b),(c))
+#define LocalMsg4(msg,a,b,c,d)   DebugMsgEx4(ThreadCaller,msg,(a),(b),(c),(d))
 
 ////////////////////////////////////////////////////////////////////////////////
 //
