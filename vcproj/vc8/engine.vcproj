@@ -506,6 +506,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\engine\src\luastate.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\engine\src\luautil.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\engine\src\model.cpp"
 					>
 				</File>
@@ -671,6 +679,14 @@
 				</File>
 				<File
 					RelativePath="..\..\engine\src\luainterp.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\engine\src\luastate.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\engine\src\luautil.h"
 					>
 				</File>
 				<File

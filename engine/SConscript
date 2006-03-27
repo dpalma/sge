@@ -13,6 +13,8 @@ sourceFiles = Split("""
    src/gltexture.cpp
    src/input.cpp
    src/luainterp.cpp
+   src/luastate.cpp
+   src/luautil.cpp
    src/model.cpp
    src/modelanim.cpp
    src/modelms3d.cpp

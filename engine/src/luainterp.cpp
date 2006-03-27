@@ -4,8 +4,8 @@
 #include "stdhdr.h"
 
 #include "luainterp.h"
+#include "luautil.h"
 
-#include "dictionaryapi.h"
 #include "multivar.h"
 #include "techstring.h"
 
@@ -20,7 +20,6 @@ extern "C"
 }
 
 #include <cstdio>
-#include <cstring>
 #include <ctime>
 
 #include "dbgalloc.h" // must be last header
@@ -46,15 +45,6 @@ LOG_DEFINE_CHANNEL(LuaInterp);
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static const int kMaxArgs = 16;
-static const int kMaxResults = 8;
-
-static const int kLuaNoError = 0;
-
-static int LuaPushResults(lua_State * L, int nResults, tScriptVar * results);
-
-///////////////////////////////////////////////////////////////////////////////
-
 #if 0
 static DWORD CallThiscall(const void * args, size_t sz, void * object, DWORD func)
 {
@@ -75,199 +65,6 @@ static DWORD CallThiscall(const void * args, size_t sz, void * object, DWORD fun
 }
 #endif
 
-///////////////////////////////////////////////////////////////////////////////
-
-static int LuaGarbageCollectInterface(lua_State * L)
-{
-   IUnknown * pUnk = static_cast<IUnknown *>(lua_unboxpointer(L, 1));
-   Assert(pUnk != NULL);
-   SafeRelease(pUnk);
-   return 0;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-static void LuaGetArg(lua_State * L, int index, tScriptVar * pArg)
-{
-#ifndef NDEBUG
-   const char * pszTypeName = lua_typename(L, lua_type(L, index));
-   LocalMsg2("LuaGetArg: arg at index %d is type \"%s\"\n", index, pszTypeName);
-#endif
-
-   switch (lua_type(L, index))
-   {
-      case LUA_TNUMBER:
-      {
-         *pArg = lua_tonumber(L, index);
-         break;
-      }
-
-      case LUA_TSTRING:
-      {
-         *pArg = const_cast<char *>(lua_tostring(L, index));
-         break;
-      }
-
-      case LUA_TTABLE:
-      {
-         cAutoIPtr<IDictionary> pDict(DictionaryCreate());
-         if (!!pDict)
-         {
-            int nDictEntries = 0;
-            lua_pushnil(L);
-            while (lua_next(L, index))
-            {
-               const char * pszVal = lua_tostring(L, -1);
-               // It's best not to call lua_tostring for the key because
-               // it changes the stack, potentially confusing lua_next.
-               // For now, only string keys are supported because that's
-               // more naturaly for IDictionary. Numeric keys mean that
-               // an array was passed in.
-               int keyType = lua_type(L, -2);
-               switch (keyType)
-               {
-                  case LUA_TSTRING:
-                  {
-                     const char * pszKey = lua_tostring(L, -2);
-                     pDict->Set(pszKey, pszVal);
-                     nDictEntries++;
-                     break;
-                  }
-                  case LUA_TNUMBER:
-                  {
-                     double key = lua_tonumber(L, -2);
-                     break;
-                  }
-               }
-               lua_pop(L, 1);
-            }
-            if (nDictEntries > 0)
-            {
-               *pArg = CTAddRef(pDict);
-            }
-         }
-         else
-         {
-            // if failed to create dictionary object, indicate that
-            // the script function should have received an interface
-            // pointer
-            pArg->Assign(static_cast<IUnknown*>(NULL));
-         }
-         break;
-      }
-
-      default:
-      {
-         pArg->Clear();
-         break;
-      }
-   }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-static int LuaThunkInvoke(lua_State * L)
-{
-   // the name of the method to call is at the top of the stack
-   const char * pszMethodName = lua_tostring(L, lua_upvalueindex(1));
-
-   int nArgsOnStack = lua_gettop(L);
-
-   if (nArgsOnStack == 1 && lua_type(L, 1) != LUA_TUSERDATA)
-   {
-      cStr msg;
-      Sprintf(&msg, "invalid method call: %s called with no instance pointer", pszMethodName);
-      lua_pushstring(L, msg.c_str());
-      lua_error(L); // this function never returns
-   }
-
-#if 0
-   {
-      DebugMsg1("LUA: call %s\n", pszMethodName);
-      for (int i = 0, index = -1; i < nArgsOnStack; i++, index--)
-      {
-         int type = lua_type(L, index);
-         DebugMsg2("LUA:   stack[%d] type %d\n", index, type);
-      }
-   }
-#endif
-
-   // the "this" pointer is at the bottom of the stack
-   IScriptable * pInstance = static_cast<IScriptable *>(lua_unboxpointer(L, 1));
-   // Subtract one to exclude the "this" pointer
-   nArgsOnStack -= 1;
-
-   int nArgs = Min(kMaxArgs, nArgsOnStack);
-
-   tScriptVar results[kMaxResults];
-   int result = -1;
-
-   if (nArgs > 0)
-   {
-      tScriptVar args[kMaxArgs];
-
-      for (int i = 0; i < nArgs; i++)
-      {
-         LuaGetArg(L, i + 2, &args[i]);
-      }
-
-      lua_pop(L, nArgsOnStack);
-
-      result = pInstance->Invoke(pszMethodName, nArgs, args, kMaxResults, results);
-   }
-   else
-   {
-      result = pInstance->Invoke(pszMethodName, 0, NULL, kMaxResults, results);
-   }
-
-   if (FAILED(result))
-   {
-      WarnMsg2("IScriptable[%p]->Invoke(%s, ...) failed\n", pInstance, pszMethodName);
-      return 0;
-   }
-
-   Assert(result <= kMaxResults);
-   if (result > kMaxResults)
-   {
-      result = kMaxResults;
-   }
-
-   int nResultsPushed = LuaPushResults(L, result, results);
-   lua_checkstack(L, nResultsPushed);
-   return nResultsPushed;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-static int LuaIndex(lua_State * L)
-{
-   // pop the user data associated with the tag method (IScriptable* pointer)
-   // leave the method name on the stack to be an upvalue for the thunk function
-   lua_pushcclosure(L, LuaThunkInvoke, 1);
-   return 1;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// returns the number of items on the stack when the function exits
-
-static int LuaPublishObject(lua_State * L, IScriptable * pInstance)
-{
-   lua_boxpointer(L, CTAddRef(pInstance));
-
-   lua_newtable(L);
-
-   lua_pushliteral(L, "__gc");
-   lua_pushcclosure(L, LuaGarbageCollectInterface, 0);
-   lua_rawset(L, -3);
-
-   lua_pushliteral(L, "__index");
-   lua_pushcclosure(L, LuaIndex, 0);
-   lua_rawset(L, -3);
-
-   lua_setmetatable(L, -2);
-
-   return 1;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -286,100 +83,6 @@ static int LuaConstructObject(lua_State * L)
    return LuaPublishObject(L, pInstance);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-
-static int LuaPushResults(lua_State * L, int nResults, tScriptVar * results)
-{
-   int nResultsPushed = 0;
-
-   for (int i = 0; i < nResults; i++)
-   {
-      switch (results[i].GetType())
-      {
-         case kMVT_Int:
-         case kMVT_Float:
-         case kMVT_Double:
-         {
-            lua_pushnumber(L, results[i].ToDouble());
-            nResultsPushed++;
-            break;
-         }
-
-         case kMVT_String:
-         {
-            lua_pushstring(L, results[i]);
-            nResultsPushed++;
-            break;
-         }
-
-         case kMVT_Interface:
-         {
-            cAutoIPtr<IDictionary> pDict;
-            if (static_cast<IUnknown*>(results[i])->QueryInterface(IID_IDictionary, (void**)&pDict) == S_OK)
-            {
-               std::list<cStr> keys;
-               if (pDict->GetKeys(&keys) == S_OK)
-               {
-                  lua_newtable(L);
-                  std::list<cStr>::const_iterator iter = keys.begin();
-#ifdef __GNUC__
-                  if (strtol(keys.front().c_str(), NULL, 10) == 1)
-#else
-                  if (_ttoi(keys.front().c_str()) == 1)
-#endif
-                  {
-                     for (int index = 1; iter != keys.end(); iter++, index++)
-                     {
-#ifdef __GNUC__
-                        int iterAsInt = strtol(iter->c_str(), NULL, 10);
-#else
-                        int iterAsInt = _ttoi(iter->c_str());
-#endif
-                        WarnMsgIf2(iterAsInt != index, "Expected numeric key %d, got \"%s\"", index, iter->c_str());
-                        cStr value;
-                        if (pDict->Get(iter->c_str(), &value) == S_OK)
-                        {
-                           lua_pushnumber(L, index);
-                           lua_pushstring(L, value.c_str());
-                           lua_settable(L, -3);
-                        }
-                     }
-                  }
-                  else
-                  {
-                     for (; iter != keys.end(); iter++)
-                     {
-                        cStr value;
-                        if (pDict->Get(iter->c_str(), &value) == S_OK)
-                        {
-                           lua_pushstring(L, iter->c_str());
-                           lua_pushstring(L, value.c_str());
-                           lua_settable(L, -3);
-                        }
-                     }
-                  }
-                  nResultsPushed++;
-               }
-            }
-            cAutoIPtr<IScriptable> pScriptable;
-            if (static_cast<IUnknown*>(results[i])->QueryInterface(IID_IScriptable, (void**)&pScriptable) == S_OK)
-            {
-               nResultsPushed += LuaPublishObject(L, pScriptable);
-            }
-            break;
-         }
-
-         case kMVT_Empty:
-         {
-            lua_pushnil(L);
-            nResultsPushed++;
-            break;
-         }
-      }
-   }
-
-   return nResultsPushed;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // modified version of Lua print function
@@ -430,49 +133,6 @@ int LuaAlertEx(lua_State * L)
    return 0;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-
-static int LuaThunkFunction(lua_State * L)
-{
-   tScriptFn pfn = (tScriptFn)lua_touserdata(L, lua_upvalueindex(1));
-   if (pfn == NULL)
-   {
-      return 0; // no C function to call
-   }
-
-   int nArgsOnStack = lua_gettop(L);
-   int nArgs = Min(kMaxArgs, nArgsOnStack);
-
-   tScriptVar results[kMaxResults];
-   int result = -1;
-
-   if (nArgs > 0)
-   {
-      tScriptVar args[kMaxArgs];
-
-      for (int i = 0; i < nArgs; i++)
-      {
-         LuaGetArg(L, i + 1, &args[i]);
-      }
-
-      lua_pop(L, nArgsOnStack);
-
-      result = (*pfn)(nArgs, args, kMaxResults, results);
-   }
-   else
-   {
-      result = (*pfn)(0, NULL, kMaxResults, results);
-   }
-
-   if (result <= 0)
-   {
-      return 0; // we are not returning any values on the stack
-   }
-
-   int nResultsPushed = LuaPushResults(L, result, results);
-   lua_checkstack(L, nResultsPushed);
-   return nResultsPushed;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -483,12 +143,15 @@ static int LuaThunkFunction(lua_State * L)
 
 tResult ScriptInterpreterCreate()
 {
-   cAutoIPtr<IScriptInterpreter> p(static_cast<IScriptInterpreter*>(new cLuaInterpreter));
-   if (!p)
+   cAutoIPtr<cLuaInterpreter> pLuaInterpreter(new cLuaInterpreter);
+   if (!pLuaInterpreter)
    {
       return E_OUTOFMEMORY;
    }
-   return RegisterGlobalObject(IID_IScriptInterpreter, p);
+
+   pLuaInterpreter->m_bRegisterPreRegisteredFunctions = true;
+
+   return RegisterGlobalObject(IID_IScriptInterpreter, static_cast<IScriptInterpreter*>(pLuaInterpreter));
 }
 
 ///////////////////////////////////////
@@ -561,7 +224,7 @@ struct cLuaInterpreter::sPreRegisteredFunction * cLuaInterpreter::gm_pPreRegiste
 ///////////////////////////////////////
 
 cLuaInterpreter::cLuaInterpreter()
- : m_L(NULL)
+ : m_bRegisterPreRegisteredFunctions(false)
 {
 }
 
@@ -569,47 +232,26 @@ cLuaInterpreter::cLuaInterpreter()
 
 cLuaInterpreter::~cLuaInterpreter()
 {
-   WarnMsgIf(m_L != NULL, "Script machine destructor called before Term!\n");
 }
 
 ///////////////////////////////////////
 
 tResult cLuaInterpreter::Init()
 {
-   Assert(m_L == NULL);
-   if (m_L != NULL)
+   if (!m_luaState.Open())
    {
       return E_FAIL;
    }
 
-   m_L = lua_open();
-   if (m_L == NULL)
+   lua_register(m_luaState.AccessLuaState(), "print", LuaPrintEx);
+   lua_register(m_luaState.AccessLuaState(), "_ALERT", LuaAlertEx);
+
+   if (m_bRegisterPreRegisteredFunctions)
    {
-      return E_FAIL;
-   }
+      Assert(!cLuaInterpreter::gm_bInitialized);
+      gm_bInitialized = true;
 
-   luaopen_base(m_L);
-   luaopen_table(m_L);
-   luaopen_io(m_L);
-   luaopen_string(m_L);
-   luaopen_math(m_L);
-#ifndef NDEBUG
-   luaopen_debug(m_L);
-#endif
-   luaopen_loadlib(m_L);
-
-   lua_register(m_L, "print", LuaPrintEx);
-   lua_register(m_L, "_ALERT", LuaAlertEx);
-
-   Assert(!gm_bInitialized);
-   gm_bInitialized = true;
-
-   while (gm_pPreRegisteredFunctions != NULL)
-   {
-      AddNamedItem(gm_pPreRegisteredFunctions->szName, gm_pPreRegisteredFunctions->pfn);
-      sPreRegisteredFunction * p = gm_pPreRegisteredFunctions;
-      gm_pPreRegisteredFunctions = gm_pPreRegisteredFunctions->pNext;
-      delete p;
+      RegisterPreRegisteredFunctions();
    }
 
    return S_OK;
@@ -619,11 +261,7 @@ tResult cLuaInterpreter::Init()
 
 tResult cLuaInterpreter::Term()
 {
-   if (m_L != NULL)
-   {
-      lua_close(m_L);
-      m_L = NULL;
-   }
+   m_luaState.Close();
    return S_OK;
 }
 
@@ -631,34 +269,14 @@ tResult cLuaInterpreter::Term()
 
 tResult cLuaInterpreter::ExecFile(const tChar * pszFile)
 {
-   if (m_L == NULL)
-   {
-      return E_FAIL;
-   }
-#ifdef _UNICODE
-   uint tempSize = (wcslen(pszFile) + 1) * sizeof(char);
-   char * pszTemp = reinterpret_cast<char*>(alloca(tempSize));
-   wcstombs(pszTemp, pszFile, tempSize);
-   if (lua_dofile(m_L, pszTemp) == 0)
-#else
-   if (lua_dofile(m_L, pszFile) == 0)
-#endif
-   {
-      return S_OK;
-   }
-   return E_FAIL;
+   return m_luaState.DoFile(pszFile);
 }
 
 ///////////////////////////////////////
 
 tResult cLuaInterpreter::ExecString(const char * pszCode)
 {
-   if (m_L != NULL
-      && lua_dobuffer(m_L, pszCode, strlen(pszCode), pszCode) == 0)
-   {
-      return S_OK;
-   }
-   return E_FAIL;
+   return m_luaState.DoString(pszCode);
 }
 
 ///////////////////////////////////////
@@ -671,85 +289,8 @@ tResult CDECL cLuaInterpreter::CallFunction(const char * pszName, const char * p
    }
    va_list args;
    va_start(args, pszArgDesc);
-   tResult result = CallFunction(pszName, pszArgDesc, args);
+   tResult result = m_luaState.CallFunction(pszName, pszArgDesc, args);
    va_end(args);
-   return result;
-}
-
-///////////////////////////////////////
-
-tResult cLuaInterpreter::CallFunction(const char * pszName, const char * pszArgDesc, va_list args)
-{
-   if (pszName == NULL)
-   {
-      return E_POINTER;
-   }
-
-   tResult result = E_FAIL;
-
-   if (m_L != NULL)
-   {
-      int luaResult = kLuaNoError;
-
-      if (pszArgDesc && *pszArgDesc)
-      {
-         for (const char * p = pszArgDesc; *p != 0; p++)
-         {
-            switch (*p)
-            {
-               case 'i':
-               {
-                  int i = va_arg(args, int);
-                  lua_pushnumber(m_L, i);
-                  break;
-               }
-
-               case 'f':
-               {
-                  double f = va_arg(args, double);
-                  lua_pushnumber(m_L, f);
-                  break;
-               }
-
-               case 's':
-               {
-                  const char * psz = va_arg(args, const char *);
-                  lua_pushstring(m_L, psz);
-                  break;
-               }
-
-               default:
-               {
-                  WarnMsg1("Unknown arg type spec %c\n", *p);
-                  break;
-               }
-            }
-           lua_checkstack(m_L, 1);
-         }
-         lua_getglobal(m_L, pszName);
-         luaResult = lua_pcall(m_L, strlen(pszArgDesc), 0, 0);
-      }
-      else
-      {
-         lua_getglobal(m_L, pszName);
-         luaResult = lua_pcall(m_L, 0, 0, 0);
-      }
-
-      static const tResult resultMap[] =
-      {
-         S_OK, // kLuaNoError (zero)
-         E_FAIL, // LUA_ERRRUN
-         E_FAIL, // LUA_ERRFILE
-         E_FAIL, // LUA_ERRSYNTAX
-         E_OUTOFMEMORY, // LUA_ERRMEM
-         E_UNEXPECTED, // LUA_ERRERR
-      };
-
-      Assert(luaResult >= 0 && luaResult < _countof(resultMap));
-
-      result = resultMap[luaResult];
-   }
-
    return result;
 }
 
@@ -759,15 +300,19 @@ tResult cLuaInterpreter::RegisterCustomClass(const tChar * pszClassName,
                                              IScriptableFactory * pFactory)
 {
    if (pszClassName == NULL && pFactory == NULL)
+   {
       return E_POINTER;
+   }
 
-   if (m_L == NULL)
+   if (m_luaState.AccessLuaState() == NULL)
+   {
       return E_FAIL;
+   }
 
    pFactory->AddRef();
-   lua_pushlightuserdata(m_L, pFactory);
-   lua_pushcclosure(m_L, LuaConstructObject, 1);
-   lua_setglobal(m_L, pszClassName);
+   lua_pushlightuserdata(m_luaState.AccessLuaState(), pFactory);
+   lua_pushcclosure(m_luaState.AccessLuaState(), LuaConstructObject, 1);
+   lua_setglobal(m_luaState.AccessLuaState(), pszClassName);
 
    return S_OK;
 }
@@ -777,18 +322,24 @@ tResult cLuaInterpreter::RegisterCustomClass(const tChar * pszClassName,
 tResult cLuaInterpreter::RevokeCustomClass(const tChar * pszClassName)
 {
    if (pszClassName == NULL)
+   {
       return E_POINTER;
+   }
 
-   if (m_L == NULL)
+   lua_State * L = m_luaState.AccessLuaState();
+
+   if (L == NULL)
+   {
       return E_FAIL;
+   }
 
-   lua_getglobal(m_L, pszClassName);
-   lua_getupvalue(m_L, -1, 1);
-   IUnknown * pUnkFactory = static_cast<IUnknown *>(lua_touserdata(m_L, -1));
-   lua_pop(m_L, 2); // pop the function and the up-value (getglobal and getupvalue results)
+   lua_getglobal(L, pszClassName);
+   lua_getupvalue(L, -1, 1);
+   IUnknown * pUnkFactory = static_cast<IUnknown *>(lua_touserdata(L, -1));
+   lua_pop(L, 2); // pop the function and the up-value (getglobal and getupvalue results)
 
-   lua_pushnil(m_L);
-   lua_setglobal(m_L, pszClassName);
+   lua_pushnil(L);
+   lua_setglobal(L, pszClassName);
 
    Assert(pUnkFactory != NULL);
    SafeRelease(pUnkFactory);
@@ -800,56 +351,21 @@ tResult cLuaInterpreter::RevokeCustomClass(const tChar * pszClassName)
 
 tResult cLuaInterpreter::AddNamedItem(const char * pszName, double value)
 {
-   if (pszName == NULL)
-   {
-      return E_POINTER;
-   }
-   if (m_L == NULL)
-   {
-      return E_FAIL;
-   }
-   lua_pushnumber(m_L, value);
-   lua_setglobal(m_L, pszName);
-   return S_OK;
+   return m_luaState.SetGlobal(pszName, value);
 }
 
 ///////////////////////////////////////
 
 tResult cLuaInterpreter::AddNamedItem(const char * pszName, const char * pszValue)
 {
-   if (pszName == NULL || pszValue == NULL)
-   {
-      return E_POINTER;
-   }
-   if (m_L == NULL)
-   {
-      return E_FAIL;
-   }
-   lua_pushstring(m_L, pszValue);
-   lua_setglobal(m_L, pszName);
-   return S_OK;
+   return m_luaState.SetGlobal(pszName, pszValue);
 }
 
 ///////////////////////////////////////
 
 tResult cLuaInterpreter::AddNamedItem(const char * pszName, tScriptFn pfn)
 {
-   if (pszName == NULL || pfn == NULL)
-   {
-      return E_POINTER;
-   }
-   if (m_L == NULL)
-   {
-      return E_FAIL;
-   }
-   // The old-fashioned C-style cast is required for gcc, which distinguishes
-   // between pointers-to-functions and pointers-to-objects. The real solution
-   // would be to have a struct that contains the function pointer as a field.
-   // This would require a Lua "__gc" handler to free the struct.
-   lua_pushlightuserdata(m_L, (void*)pfn);
-   lua_pushcclosure(m_L, LuaThunkFunction, 1);
-   lua_setglobal(m_L, pszName);
-   return S_OK;
+   return m_luaState.SetGlobal(pszName, pfn);
 }
 
 ///////////////////////////////////////
@@ -860,16 +376,16 @@ tResult cLuaInterpreter::AddNamedItem(const char * pszName, IScriptable * pObjec
    {
       return E_POINTER;
    }
-   if (m_L == NULL)
+   if (m_luaState.AccessLuaState() == NULL)
    {
       return E_FAIL;
    }
    // LuaPublishObject AddRefs the instance pointer so don't do so here
-   if (LuaPublishObject(m_L, pObject) != 1)
+   if (LuaPublishObject(m_luaState.AccessLuaState(), pObject) != 1)
    {
       return E_FAIL;
    }
-   lua_setglobal(m_L, pszName);
+   lua_setglobal(m_luaState.AccessLuaState(), pszName);
    return S_OK;
 }
 
@@ -877,102 +393,41 @@ tResult cLuaInterpreter::AddNamedItem(const char * pszName, IScriptable * pObjec
 
 tResult cLuaInterpreter::RemoveNamedItem(const char * pszName)
 {
-   if (pszName == NULL)
-   {
-      return E_POINTER;
-   }
-   if (m_L == NULL)
-   {
-      return E_FAIL;
-   }
-   lua_pushnil(m_L);
-   lua_setglobal(m_L, pszName);
-   return S_OK;
+   return m_luaState.RemoveGlobal(pszName);
 }
 
 ///////////////////////////////////////
 
 tResult cLuaInterpreter::GetNamedItem(const char * pszName, tScriptVar * pValue) const
 {
-   if (pszName == NULL || pValue == NULL)
-   {
-      return E_POINTER;
-   }
-   bool bFound = false;
-   if (m_L != NULL)
-   {
-      lua_getglobal(m_L, pszName);
-      switch (lua_type(m_L, -1))
-      {
-         case LUA_TNUMBER:
-         {
-            pValue->Assign(lua_tonumber(m_L, -1));
-            bFound = true;
-            break;
-         }
-
-         case LUA_TSTRING:
-         {
-            pValue->Assign(lua_tostring(m_L, -1));
-            bFound = true;
-            break;
-         }
-
-         default:
-         {
-            pValue->Clear();
-            break;
-         }
-      }
-      lua_pop(m_L, 1);
-   }
-   return bFound ? S_OK : S_FALSE;
+   return m_luaState.GetGlobal(pszName, pValue);
 }
 
 ///////////////////////////////////////
 
 tResult cLuaInterpreter::GetNamedItem(const char * pszName, double * pValue) const
 {
-   if (pszName == NULL || pValue == NULL)
-   {
-      return E_POINTER;
-   }
-   if (m_L != NULL)
-   {
-      lua_getglobal(m_L, pszName);
-      if (lua_type(m_L, -1) == LUA_TNUMBER)
-      {
-         *pValue = lua_tonumber(m_L, -1);
-         lua_pop(m_L, 1);
-         return S_OK;
-      }
-      lua_pop(m_L, 1);
-   }
-   return S_FALSE;
+   return m_luaState.GetGlobal(pszName, pValue);
 }
 
 ///////////////////////////////////////
 
 tResult cLuaInterpreter::GetNamedItem(const char * pszName, char * pValue, int cbMaxValue) const
 {
-   if (pszName == NULL || pValue == NULL)
+   return m_luaState.GetGlobal(pszName, pValue, cbMaxValue);
+}
+
+///////////////////////////////////////
+
+void cLuaInterpreter::RegisterPreRegisteredFunctions()
+{
+   while (gm_pPreRegisteredFunctions != NULL)
    {
-      return E_POINTER;
+      AddNamedItem(gm_pPreRegisteredFunctions->szName, gm_pPreRegisteredFunctions->pfn);
+      sPreRegisteredFunction * p = gm_pPreRegisteredFunctions;
+      gm_pPreRegisteredFunctions = gm_pPreRegisteredFunctions->pNext;
+      delete p;
    }
-   if (m_L != NULL)
-   {
-      lua_getglobal(m_L, pszName);
-      int type = lua_type(m_L, -1);
-      if (type == LUA_TNUMBER || type == LUA_TSTRING)
-      {
-         strncpy(pValue, lua_tostring(m_L, -1), cbMaxValue);
-         pValue[cbMaxValue - 1] = 0;
-         lua_pop(m_L, 1);
-         return S_OK;
-      }
-      lua_pop(m_L, 1);
-   }
-   return S_FALSE;
 }
 
 ///////////////////////////////////////
@@ -1115,11 +570,6 @@ protected:
    cLuaInterpreterTests();
    ~cLuaInterpreterTests();
 
-   static bool gm_bCalled;
-
-   static int CallThisFunction(int argc, const tScriptVar * argv, int, tScriptVar *);
-   static int RemoveThisFunction(int, const tScriptVar *, int, tScriptVar *);
-
    cAutoIPtr<IScriptInterpreter> m_pInterp;
 };
 
@@ -1127,82 +577,24 @@ protected:
 
 cLuaInterpreterTests::cLuaInterpreterTests()
 {
-   m_pInterp = (IScriptInterpreter *)FindGlobalObject(IID_IScriptInterpreter);
+   m_pInterp = static_cast<IScriptInterpreter *>(new cLuaInterpreter);
+   cAutoIPtr<IGlobalObject> pGO;
+   if (m_pInterp->QueryInterface(IID_IGlobalObject, (void**)&pGO) == S_OK)
+   {
+      pGO->Init();
+   }
 }
 
 ////////////////////////////////////////
 
 cLuaInterpreterTests::~cLuaInterpreterTests()
 {
+   cAutoIPtr<IGlobalObject> pGO;
+   if (m_pInterp->QueryInterface(IID_IGlobalObject, (void**)&pGO) == S_OK)
+   {
+      pGO->Term();
+   }
    SafeRelease(m_pInterp);
-}
-
-////////////////////////////////////////
-
-bool cLuaInterpreterTests::gm_bCalled = false;
-
-////////////////////////////////////////
-
-int cLuaInterpreterTests::CallThisFunction(int argc, const tScriptVar * argv, int, tScriptVar *)
-{
-   gm_bCalled = true;
-   return 0;
-}
-
-////////////////////////////////////////
-
-int cLuaInterpreterTests::RemoveThisFunction(int, const tScriptVar *, int, tScriptVar *)
-{
-   // does nothing
-   return 0;
-}
-
-////////////////////////////////////////
-
-TEST_F(cLuaInterpreterTests, CallFunction)
-{
-   CHECK(m_pInterp->AddNamedItem("CallThisFunction", CallThisFunction) == S_OK);
-   gm_bCalled = false;
-   CHECK(m_pInterp->ExecString("CallThisFunction();") == S_OK);
-   CHECK(gm_bCalled);
-   CHECK(m_pInterp->RemoveNamedItem("CallThisFunction") == S_OK);
-}
-
-////////////////////////////////////////
-
-TEST_F(cLuaInterpreterTests, RemoveFunction)
-{
-   CHECK(m_pInterp->AddNamedItem("RemoveThisFunction", RemoveThisFunction) == S_OK);
-   CHECK(m_pInterp->ExecString("RemoveThisFunction();") == S_OK);
-   CHECK(m_pInterp->RemoveNamedItem("RemoveThisFunction") == S_OK);
-   CHECK(m_pInterp->ExecString("RemoveThisFunction();") != S_OK);
-
-   CHECK(m_pInterp->ExecString("ThisNameWillNotBeFoundSoThisCallShouldFail();") != S_OK);
-}
-
-////////////////////////////////////////
-
-TEST_F(cLuaInterpreterTests, GetNumber)
-{
-   double value;
-   m_pInterp->AddNamedItem("foo", 123.456);
-   CHECK(m_pInterp->GetNamedItem("foo", &value) == S_OK);
-   CHECK_EQUAL(value, 123.456);
-}
-
-////////////////////////////////////////
-
-TEST_F(cLuaInterpreterTests, GetString)
-{
-   char szValue[16];
-
-   m_pInterp->AddNamedItem("bar", "blah blah");
-   CHECK(m_pInterp->GetNamedItem("bar", szValue, _countof(szValue)) == S_OK);
-   CHECK(strcmp(szValue, "blah blah") == 0);
-
-   m_pInterp->AddNamedItem("bar", "blah blah blah blah blah blah blah blah");
-   CHECK(m_pInterp->GetNamedItem("bar", szValue, _countof(szValue)) == S_OK);
-   CHECK(strcmp(szValue, "blah blah blah ") == 0);
 }
 
 ////////////////////////////////////////

@@ -4,6 +4,7 @@
 #ifndef INCLUDED_LUAINTERP_H
 #define INCLUDED_LUAINTERP_H
 
+#include "luastate.h"
 #include "scriptapi.h"
 #include "globalobjdef.h"
 
@@ -13,7 +14,6 @@
 #pragma once
 #endif
 
-typedef struct lua_State lua_State;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -22,6 +22,7 @@ typedef struct lua_State lua_State;
 
 class cLuaInterpreter : public cComObject2<IMPLEMENTS(IScriptInterpreter), IMPLEMENTS(IGlobalObject)>
 {
+   friend tResult ScriptInterpreterCreate();
    friend tResult ScriptAddFunction(const char * pszName, tScriptFn pfn);
 
 public:
@@ -37,7 +38,6 @@ public:
    virtual tResult ExecFile(const tChar * pszFile);
    virtual tResult ExecString(const char * pszCode);
    virtual tResult CDECL CallFunction(const char * pszName, const char * pszArgDesc, ...);
-   tResult CallFunction(const char * pszName, const char * pszArgDesc, va_list args);
 
    virtual tResult RegisterCustomClass(const tChar * pszClassName, IScriptableFactory * pFactory);
    virtual tResult RevokeCustomClass(const tChar * pszClassName);
@@ -52,6 +52,7 @@ public:
    virtual tResult GetNamedItem(const char * pszName, char * pValue, int cbMaxValue) const;
 
 private:
+   void RegisterPreRegisteredFunctions();
    static void CleanupPreRegisteredFunctions();
 
    class cAutoCleanupPreRegisteredFunctions
@@ -73,7 +74,9 @@ private:
 
    static struct sPreRegisteredFunction * gm_pPreRegisteredFunctions;
 
-   lua_State * m_L;
+   cLuaState m_luaState;
+
+   bool m_bRegisterPreRegisteredFunctions;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
