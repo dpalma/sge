@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8.00"
 	Name="3rdpartyZlibwapi"
-	ProjectGUID="{9B1E246C-1BEC-44C6-A118-E3A65E8DDB60}"
+	ProjectGUID="{9F0EFC71-B400-4DCD-9963-B93549DBC70E}"
 	>
 	<Platforms>
 		<Platform

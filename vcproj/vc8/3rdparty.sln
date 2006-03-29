@@ -1,7 +1,5 @@
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "3rdpartyCppunit", "3rdpartyCppunit.vcproj", "{EA843440-7F23-466D-B366-4B80649D3F6D}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "3rdpartyLua", "3rdpartyLua.vcproj", "{06653EC9-A3CB-453D-BAD8-7D0FD326676A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "3rdpartyLuaCompiler", "3rdpartyLuaCompiler.vcproj", "{9AE171BB-5FD5-461C-A208-92F94B9D2C80}"
@@ -32,16 +30,6 @@ Global
 		StaticRelease|Win32 = StaticRelease|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{EA843440-7F23-466D-B366-4B80649D3F6D}.Debug|Win32.ActiveCfg = Debug|Win32
-		{EA843440-7F23-466D-B366-4B80649D3F6D}.Debug|Win32.Build.0 = Debug|Win32
-		{EA843440-7F23-466D-B366-4B80649D3F6D}.Opt|Win32.ActiveCfg = Opt|Win32
-		{EA843440-7F23-466D-B366-4B80649D3F6D}.Opt|Win32.Build.0 = Opt|Win32
-		{EA843440-7F23-466D-B366-4B80649D3F6D}.Release|Win32.ActiveCfg = Release|Win32
-		{EA843440-7F23-466D-B366-4B80649D3F6D}.Release|Win32.Build.0 = Release|Win32
-		{EA843440-7F23-466D-B366-4B80649D3F6D}.StaticDebug|Win32.ActiveCfg = StaticDebug|Win32
-		{EA843440-7F23-466D-B366-4B80649D3F6D}.StaticDebug|Win32.Build.0 = StaticDebug|Win32
-		{EA843440-7F23-466D-B366-4B80649D3F6D}.StaticRelease|Win32.ActiveCfg = StaticRelease|Win32
-		{EA843440-7F23-466D-B366-4B80649D3F6D}.StaticRelease|Win32.Build.0 = StaticRelease|Win32
 		{06653EC9-A3CB-453D-BAD8-7D0FD326676A}.Debug|Win32.ActiveCfg = Debug|Win32
 		{06653EC9-A3CB-453D-BAD8-7D0FD326676A}.Debug|Win32.Build.0 = Debug|Win32
 		{06653EC9-A3CB-453D-BAD8-7D0FD326676A}.Opt|Win32.ActiveCfg = Opt|Win32
