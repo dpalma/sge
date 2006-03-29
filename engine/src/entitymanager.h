@@ -16,6 +16,7 @@
 #include "globalobjdef.h"
 
 #include <list>
+#include <map>
 #include <set>
 
 #ifdef _MSC_VER
@@ -89,6 +90,12 @@ public:
    virtual uint GetSelectedCount() const;
    virtual tResult GetSelected(IEntityEnum * * ppEnum) const;
 
+   virtual tResult RegisterComponentFactory(const tChar * pszComponent,
+                                            tEntityComponentFactoryFn pfnFactory);
+   virtual tResult RevokeComponentFactory(const tChar * pszComponent);
+   virtual tResult CreateComponent(const TiXmlElement * pTiXmlElement, IEntity * pEntity,
+                                   IEntityComponent * * ppComponent);
+
    ///////////////////////////////////
 
    virtual void OnSimFrame(double elapsedTime);
@@ -113,6 +120,9 @@ private:
    tEntityId m_nextId;
    tEntityList m_entities;
    tEntitySet m_selected;
+
+   typedef std::map<cStr, tEntityComponentFactoryFn> tComponentFactoryMap;
+   tComponentFactoryMap m_componentFactoryMap;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

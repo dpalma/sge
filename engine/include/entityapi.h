@@ -15,11 +15,14 @@
 #endif
 
 F_DECLARE_INTERFACE(IEntity);
+F_DECLARE_INTERFACE(IEntityComponent);
+F_DECLARE_INTERFACE(IEntitySpawnComponent);
 F_DECLARE_INTERFACE(IEntityEnum);
 F_DECLARE_INTERFACE(IEntityManager);
 F_DECLARE_INTERFACE(IEntityManagerListener);
 
 class cRay;
+class TiXmlElement;
 
 F_DECLARE_INTERFACE(IDictionary);
 
@@ -63,6 +66,35 @@ interface IEntity : IUnknown
 
    virtual void Update(double elapsedTime) = 0;
    virtual void Render() = 0;
+
+   virtual tResult AddComponent(REFGUID guid, IEntityComponent * pComponent) = 0;
+   virtual tResult FindComponent(REFGUID guid, IEntityComponent * * ppComponent) = 0;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IEntityComponent
+//
+
+interface IEntityComponent : IUnknown
+{
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IEntitySpawnComponent
+//
+
+interface IEntitySpawnComponent : IEntityComponent
+{
+   virtual uint GetQueueSize() const = 0;
+
+   virtual tResult SetRallyPoint(const tVec3 & rallyPoint) = 0;
+   virtual tResult GetRallyPoint(tVec3 * pRallyPoint) const = 0;
+
+   virtual tResult Spawn(const tChar * pszEntity) = 0;
 };
 
 
@@ -85,6 +117,9 @@ interface IEntityEnum : IUnknown
 // INTERFACE: IEntityManager
 //
 
+typedef tResult (* tEntityComponentFactoryFn)(const TiXmlElement * pTiXmlElement,
+                                              IEntity * pEntity, IEntityComponent * * ppComponent);
+
 interface IEntityManager : IUnknown
 {
    virtual tResult AddEntityManagerListener(IEntityManagerListener * pListener) = 0;
@@ -105,6 +140,12 @@ interface IEntityManager : IUnknown
    virtual tResult DeselectAll() = 0;
    virtual uint GetSelectedCount() const = 0;
    virtual tResult GetSelected(IEntityEnum * * ppEnum) const = 0;
+
+   virtual tResult RegisterComponentFactory(const tChar * pszComponent,
+                                            tEntityComponentFactoryFn pfnFactory) = 0;
+   virtual tResult RevokeComponentFactory(const tChar * pszComponent) = 0;
+   virtual tResult CreateComponent(const TiXmlElement * pTiXmlElement, IEntity * pEntity,
+                                   IEntityComponent * * ppComponent) = 0;
 };
 
 ////////////////////////////////////////

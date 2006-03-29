@@ -320,5 +320,19 @@ void cEntity::Render()
    m_modelHelper.Render();
 }
 
+///////////////////////////////////////
+
+tResult cEntity::AddComponent(REFGUID guid, IEntityComponent * pComponent)
+{
+   return E_NOTIMPL;
+}
+
+///////////////////////////////////////
+
+tResult cEntity::FindComponent(REFGUID guid, IEntityComponent * * ppComponent)
+{
+   return E_NOTIMPL;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////

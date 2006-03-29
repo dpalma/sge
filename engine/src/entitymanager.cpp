@@ -33,6 +33,99 @@ extern tResult ModelEntityCreate(tEntityId id, const tChar * pszModel, const tVe
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: cEntitySpawnComponent
+//
+
+class cEntitySpawnComponent : public cComObject<IMPLEMENTS(IEntitySpawnComponent)>
+{
+public:
+   cEntitySpawnComponent();
+   ~cEntitySpawnComponent();
+
+   virtual uint GetQueueSize() const;
+
+   virtual tResult SetRallyPoint(const tVec3 & rallyPoint);
+   virtual tResult GetRallyPoint(tVec3 * pRallyPoint) const;
+
+   virtual tResult Spawn(const tChar * pszEntity);
+
+private:
+   uint m_queueLimit;
+   tVec3 m_rallyPoint;
+};
+
+///////////////////////////////////////
+
+cEntitySpawnComponent::cEntitySpawnComponent()
+ : m_queueLimit(0)
+{
+}
+
+///////////////////////////////////////
+
+cEntitySpawnComponent::~cEntitySpawnComponent()
+{
+}
+
+///////////////////////////////////////
+
+uint cEntitySpawnComponent::GetQueueSize() const
+{
+   return m_queueLimit;
+}
+
+///////////////////////////////////////
+
+tResult cEntitySpawnComponent::SetRallyPoint(const tVec3 & rallyPoint)
+{
+   m_rallyPoint = rallyPoint;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cEntitySpawnComponent::GetRallyPoint(tVec3 * pRallyPoint) const
+{
+   if (pRallyPoint == NULL)
+   {
+      return E_POINTER;
+   }
+   *pRallyPoint = m_rallyPoint;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cEntitySpawnComponent::Spawn(const tChar * pszEntity)
+{
+   return E_NOTIMPL;
+}
+
+///////////////////////////////////////
+
+tResult EntitySpawnComponentFactory(const TiXmlElement * pTiXmlElement,
+                                    IEntity * pEntity, IEntityComponent * * ppComponent)
+{
+   if (pTiXmlElement == NULL || pEntity == NULL || ppComponent == NULL)
+   {
+      return E_POINTER;
+   }
+
+   return E_NOTIMPL;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+static void RegisterBuiltInComponents()
+{
+   UseGlobal(EntityManager);
+   Verify(pEntityManager->RegisterComponentFactory("spawn", EntitySpawnComponentFactory) == S_OK);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cEntityManager
 //
 
@@ -70,6 +163,8 @@ tResult cEntityManager::Init()
 
    UseGlobal(Input);
    pInput->AddInputListener(&m_inputListener);
+
+   RegisterBuiltInComponents();
 
    return S_OK;
 }
@@ -125,8 +220,32 @@ tResult cEntityManager::SpawnEntity(const tChar * pszEntity, const tVec3 & posit
       {
          const char * pszModel = pTiXmlElement->Attribute("model");
 
+         uint oldNextId = m_nextId;
+
+         tResult result = E_FAIL;
+         cAutoIPtr<IEntity> pEntity;
+         if ((result = ModelEntityCreate(m_nextId++, pszModel, position, &pEntity)) != S_OK)
+         {
+            m_nextId = oldNextId;
+            return result;
+         }
+
          WarnMsgIf1(pTiXmlElement->NextSiblingElement() != NULL,
             "There should be only one entity definition per file (%s)\n", pszEntity);
+
+         for (const TiXmlElement * pTiXmlChild = pTiXmlElement->FirstChildElement();
+            pTiXmlChild != NULL; pTiXmlChild = pTiXmlChild->NextSiblingElement())
+         {
+            Assert(pTiXmlChild->Type() == TiXmlNode::ELEMENT);
+
+            cAutoIPtr<IEntityComponent> pComponent;
+            if (CreateComponent(pTiXmlChild, pEntity, &pComponent) == S_OK)
+            {
+            }
+         }
+
+         m_entities.push_back(CTAddRef(pEntity));
+         return S_OK;
       }
    }
 
@@ -325,6 +444,58 @@ tResult cEntityManager::GetSelected(IEntityEnum * * ppEnum) const
       return S_FALSE;
    }
    return tEntitySetEnum::Create(m_selected, ppEnum);
+}
+
+///////////////////////////////////////
+
+tResult cEntityManager::RegisterComponentFactory(const tChar * pszComponent,
+                                                 tEntityComponentFactoryFn pfnFactory)
+{
+   if (pszComponent == NULL || pfnFactory == NULL)
+   {
+      return E_POINTER;
+   }
+
+   std::pair<tComponentFactoryMap::iterator, bool> result = 
+      m_componentFactoryMap.insert(std::make_pair(pszComponent, pfnFactory));
+   if (result.second)
+   {
+      return S_OK;
+   }
+
+   WarnMsg1("Failed to register entity component factory \"%s\"\n", pszComponent);
+   return E_FAIL;
+}
+
+///////////////////////////////////////
+
+tResult cEntityManager::RevokeComponentFactory(const tChar * pszComponent)
+{
+   if (pszComponent == NULL)
+   {
+      return E_POINTER;
+   }
+   size_t nErased = m_componentFactoryMap.erase(pszComponent);
+   return (nErased == 0) ? S_FALSE : S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cEntityManager::CreateComponent(const TiXmlElement * pTiXmlElement,
+                                        IEntity * pEntity, IEntityComponent * * ppComponent)
+{
+   if (pTiXmlElement == NULL || pEntity == NULL || ppComponent == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tComponentFactoryMap::iterator f = m_componentFactoryMap.find(pTiXmlElement->Value());
+   if (f != m_componentFactoryMap.end())
+   {
+      return (*f->second)(pTiXmlElement, pEntity, ppComponent);
+   }
+
+   return E_FAIL;
 }
 
 ///////////////////////////////////////

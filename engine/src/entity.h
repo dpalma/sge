@@ -67,6 +67,9 @@ public:
    virtual void Update(double elapsedTime);
    virtual void Render();
 
+   virtual tResult AddComponent(REFGUID guid, IEntityComponent * pComponent);
+   virtual tResult FindComponent(REFGUID guid, IEntityComponent * * ppComponent);
+
 private:
    tEntityId m_id;
    uint m_flags;
