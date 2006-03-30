@@ -28,7 +28,7 @@
 
 #define IsFlagSet(f, b) (((f)&(b))==(b))
 
-extern tResult ModelEntityCreate(tEntityId id, const tChar * pszModel, const tVec3 & position, IEntity * * ppEntity);
+extern tResult ModelEntityCreate(tEntityId id, const tVec3 & position, IEntity * * ppEntity);
 extern void RegisterBuiltInComponents();
 
 
@@ -126,20 +126,19 @@ tResult cEntityManager::SpawnEntity(const tChar * pszEntity, const tVec3 & posit
       const TiXmlElement * pTiXmlElement = pTiXmlDoc->FirstChildElement();
       if ((pTiXmlElement != NULL) && (_stricmp(pTiXmlElement->Value(), "entity") == 0))
       {
-         const char * pszModel = pTiXmlElement->Attribute("model");
+         WarnMsgIf1(pTiXmlElement->NextSiblingElement() != NULL,
+            "There should be only one entity definition per file (%s)\n", pszEntity);
 
          uint oldNextId = m_nextId;
+         uint entityId = m_nextId++;
 
          tResult result = E_FAIL;
          cAutoIPtr<IEntity> pEntity;
-         if ((result = ModelEntityCreate(m_nextId++, pszModel, position, &pEntity)) != S_OK)
+         if ((result = ModelEntityCreate(entityId, position, &pEntity)) != S_OK)
          {
             m_nextId = oldNextId;
             return result;
          }
-
-         WarnMsgIf1(pTiXmlElement->NextSiblingElement() != NULL,
-            "There should be only one entity definition per file (%s)\n", pszEntity);
 
          for (const TiXmlElement * pTiXmlChild = pTiXmlElement->FirstChildElement();
             pTiXmlChild != NULL; pTiXmlChild = pTiXmlChild->NextSiblingElement())
@@ -149,7 +148,11 @@ tResult cEntityManager::SpawnEntity(const tChar * pszEntity, const tVec3 & posit
             cAutoIPtr<IEntityComponent> pComponent;
             if (CreateComponent(pTiXmlChild, pEntity, &pComponent) == S_OK)
             {
-               //pEntity->AddComponent();
+               cAutoIPtr<IEntityRenderComponent> pRender;
+               if (pComponent->QueryInterface(IID_IEntityRenderComponent, (void**)&pRender) == S_OK)
+               {
+                  // TODO: save in a render list
+               }
             }
          }
 
@@ -158,16 +161,7 @@ tResult cEntityManager::SpawnEntity(const tChar * pszEntity, const tVec3 & posit
       }
    }
 
-   uint oldNextId = m_nextId;
-   cAutoIPtr<IEntity> pEntity;
-   if (ModelEntityCreate(m_nextId++, pszEntity, position, &pEntity) != S_OK)
-   {
-      m_nextId = oldNextId;
-      return E_OUTOFMEMORY;
-   }
-
-   m_entities.push_back(CTAddRef(pEntity));
-   return S_OK;
+   return E_FAIL;
 }
 
 ///////////////////////////////////////
@@ -221,20 +215,18 @@ void cEntityManager::RenderAll()
    tEntityList::iterator iter = m_entities.begin();
    for (; iter != m_entities.end(); iter++)
    {
-      uint flags = (*iter)->GetFlags();
-      if (IsFlagSet(flags, kEF_Hidden))
-      {
-         continue;
-      }
-
       glPushMatrix();
       glMultMatrixf((*iter)->GetWorldTransform().m);
 
-      (*iter)->Render();
-
-      if (IsSelected(*iter))
+      cAutoIPtr<IEntityRenderComponent> pRender;
+      if ((*iter)->FindComponent(IID_IEntityRenderComponent, &pRender) == S_OK)
       {
-         RenderWireFrame((*iter)->GetBoundingBox(), cColor(1,1,0));
+         pRender->Render();
+
+         if (IsSelected(*iter))
+         {
+            RenderWireFrame(pRender->GetBoundingBox(), cColor(1,1,0));
+         }
       }
 
       glPopMatrix();
@@ -251,12 +243,18 @@ tResult cEntityManager::RayCast(const cRay & ray, IEntity * * ppEntity) const
       cAutoIPtr<IEntity> pEntity(CTAddRef(*iter));
       const tMatrix4 & worldTransform = pEntity->GetWorldTransform();
       tVec3 position(worldTransform.m[12], worldTransform.m[13], worldTransform.m[14]);
-      tAxisAlignedBox bbox(pEntity->GetBoundingBox());
-      bbox.Offset(position);
-      if (ray.IntersectsAxisAlignedBox(bbox))
+
+      cAutoIPtr<IEntityRenderComponent> pRender;
+      if ((*iter)->FindComponent(IID_IEntityRenderComponent, &pRender) == S_OK)
       {
-         *ppEntity = CTAddRef(pEntity);
-         return S_OK;
+         tAxisAlignedBox bbox(pRender->GetBoundingBox());
+         bbox.Offset(position);
+
+         if (ray.IntersectsAxisAlignedBox(bbox))
+         {
+            *ppEntity = CTAddRef(pEntity);
+            return S_OK;
+         }
       }
    }
 
@@ -303,18 +301,25 @@ tResult cEntityManager::SelectBoxed(const tAxisAlignedBox & box)
       cAutoIPtr<IEntity> pEntity(CTAddRef(*iter));
       const tMatrix4 & worldTransform = pEntity->GetWorldTransform();
       tVec3 position(worldTransform.m[12], worldTransform.m[13], worldTransform.m[14]);
-      tAxisAlignedBox bbox(pEntity->GetBoundingBox());
-      bbox.Offset(position);
-      if (bbox.Intersects(box))
+
+      cAutoIPtr<IEntityRenderComponent> pRender;
+      if ((*iter)->FindComponent(IID_IEntityRenderComponent, &pRender) == S_OK)
       {
-         m_selected.insert(CTAddRef(pEntity));
-         nSelected++;
+         tAxisAlignedBox bbox(pRender->GetBoundingBox());
+         bbox.Offset(position);
+         if (bbox.Intersects(box))
+         {
+            m_selected.insert(CTAddRef(pEntity));
+            nSelected++;
+         }
       }
    }
+
    if (nSelected == 0)
    {
       return S_FALSE;
    }
+
    ForEachConnection(&IEntityManagerListener::OnEntitySelectionChange);
    return S_OK;
 }
@@ -414,12 +419,11 @@ void cEntityManager::OnSimFrame(double elapsedTime)
    tEntityList::iterator iter = m_entities.begin();
    for (; iter != m_entities.end(); iter++)
    {
-      uint flags = (*iter)->GetFlags();
-      if (IsFlagSet(flags, kEF_Disabled))
+      cAutoIPtr<IEntityRenderComponent> pRender;
+      if ((*iter)->FindComponent(IID_IEntityRenderComponent, &pRender) == S_OK)
       {
-         continue;
+         pRender->Update(elapsedTime);
       }
-      (*iter)->Update(elapsedTime);
    }
 }
 
@@ -444,8 +448,14 @@ tResult cEntityManager::Save(IWriter * pWriter)
    {
       cStr model;
       tVec3 position;
-      if ((*iter)->GetModel(&model) == S_OK
-         && (*iter)->GetPosition(&position) == S_OK)
+
+      cAutoIPtr<IEntityRenderComponent> pRender;
+      if ((*iter)->FindComponent(IID_IEntityRenderComponent, &pRender) == S_OK)
+      {
+         pRender->GetModel(&model);
+      }
+
+      if (!model.empty() && (*iter)->GetPosition(&position) == S_OK)
       {
          if (pWriter->Write(model) != S_OK
             || pWriter->Write(position) != S_OK)

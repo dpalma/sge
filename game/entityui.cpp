@@ -100,17 +100,18 @@ void cEntityUI::OnEntitySelectionChange()
          ulong nEntities = 0;
          if (pEnum->Next(1, &pEntity, &nEntities) == S_OK && nEntities == 1)
          {
-            cStr model;
-            if (pEntity->GetModel(&model) == S_OK)
+            cAutoIPtr<IEntitySpawnComponent> pSpawn;
+            if (pEntity->FindComponent(IID_IEntitySpawnComponent, &pSpawn) == S_OK)
             {
-               cAutoIPtr<IGUIButtonElement> pButton;
-               if (GUIButtonCreate(&pButton) == S_OK)
-               {
-                  pButton->SetText(model.c_str());
-                  pContainer->AddElement(pButton);
-                  m_guiElements.insert(CTAddRef(pButton));
-                  pGUIContext->RequestLayout(pContainer);
-               }
+               // TODO:
+               //cAutoIPtr<IGUIButtonElement> pButton;
+               //if (GUIButtonCreate(&pButton) == S_OK)
+               //{
+               //   pButton->SetText(model.c_str());
+               //   pContainer->AddElement(pButton);
+               //   m_guiElements.insert(CTAddRef(pButton));
+               //   pGUIContext->RequestLayout(pContainer);
+               //}
             }
          }
       }

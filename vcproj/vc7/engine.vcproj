@@ -311,6 +311,9 @@
 					RelativePath="..\..\engine\src\entity.cpp">
 				</File>
 				<File
+					RelativePath="..\..\engine\src\entitycomponents.cpp">
+				</File>
+				<File
 					RelativePath="..\..\engine\src\entitymanager.cpp">
 				</File>
 				<File
@@ -448,6 +451,9 @@
 				</File>
 				<File
 					RelativePath="..\..\engine\src\entity.h">
+				</File>
+				<File
+					RelativePath="..\..\engine\src\entitycomponents.h">
 				</File>
 				<File
 					RelativePath="..\..\engine\src\entitymanager.h">

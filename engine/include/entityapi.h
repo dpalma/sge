@@ -16,6 +16,7 @@
 
 F_DECLARE_INTERFACE(IEntity);
 F_DECLARE_INTERFACE(IEntityComponent);
+F_DECLARE_INTERFACE(IEntityRenderComponent);
 F_DECLARE_INTERFACE(IEntitySpawnComponent);
 F_DECLARE_INTERFACE(IEntityEnum);
 F_DECLARE_INTERFACE(IEntityManager);
@@ -31,44 +32,35 @@ typedef class cAxisAlignedBox<float> tAxisAlignedBox;
 
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// INTERFACE: IEntity
-//
 
 typedef ulong tEntityId;
 
-////////////////////////////////////////
-
-enum eEntityFlags
-{
-   kEF_None                   = 0,
-   kEF_Hidden                 = (1 << 0),    // Don't render
-   kEF_Disabled               = (1 << 1),    // Don't update
-   kEF_All                    = 0xFFFFFFFF,
-};
-
-////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IEntity
+//
 
 interface IEntity : IUnknown
 {
    virtual tEntityId GetId() const = 0;
 
-   virtual uint GetFlags() const = 0;
-   virtual uint SetFlags(uint flags, uint mask) = 0;
-
-   virtual tResult GetModel(cStr * pModel) const = 0;
-
    virtual tResult GetPosition(tVec3 * pPosition) const = 0;
-
    virtual const tMatrix4 & GetWorldTransform() const = 0;
-
-   virtual const tAxisAlignedBox & GetBoundingBox() const = 0;
-
-   virtual void Update(double elapsedTime) = 0;
-   virtual void Render() = 0;
 
    virtual tResult AddComponent(REFGUID guid, IEntityComponent * pComponent) = 0;
    virtual tResult FindComponent(REFGUID guid, IEntityComponent * * ppComponent) = 0;
+
+   template <class INTRFC>
+   tResult FindComponent(REFGUID guid, INTRFC * * ppComponent)
+   {
+      cAutoIPtr<IEntityComponent> pComponent;
+      tResult result = FindComponent(guid, &pComponent);
+      if (result == S_OK)
+      {
+         return pComponent->QueryInterface(guid, reinterpret_cast<void**>(ppComponent));
+      }
+      return result;
+   }
 };
 
 
@@ -79,6 +71,22 @@ interface IEntity : IUnknown
 
 interface IEntityComponent : IUnknown
 {
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IEntityRenderComponent
+//
+
+interface IEntityRenderComponent : IEntityComponent
+{
+   virtual tResult GetModel(cStr * pModel) const = 0;
+
+   virtual const tAxisAlignedBox & GetBoundingBox() const = 0;
+
+   virtual void Update(double elapsedTime) = 0;
+   virtual void Render() = 0;
 };
 
 
@@ -161,17 +169,6 @@ ENGINE_API tResult EntityManagerCreate();
 interface IEntityManagerListener : IUnknown
 {
    virtual void OnEntitySelectionChange() = 0;
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// INTERFACE: IEntityDefinition
-//
-
-interface IEntityDefinition : IUnknown
-{
-   virtual tResult CreateInstance(IEntity * * ppEntity) = 0;
 };
 
 

@@ -6,14 +6,40 @@
 
 #include "entityapi.h"
 
-#include "inputapi.h"
-#include "simapi.h"
+#include "model.h"
 
 #include "axisalignedbox.h"
 
 #ifdef _MSC_VER
 #pragma once
 #endif
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cEntityRenderComponent
+//
+
+class cEntityRenderComponent : public cComObject<IMPLEMENTS(IEntityRenderComponent)>
+{
+public:
+   cEntityRenderComponent(const tChar * pszModel);
+   ~cEntityRenderComponent();
+
+   virtual tResult GetModel(cStr * pModel) const;
+
+   virtual const tAxisAlignedBox & GetBoundingBox() const;
+
+   virtual void Update(double elapsedTime);
+   virtual void Render();
+
+private:
+   cStr m_model;
+   cModel * m_pModel;
+   tBlendedVertices m_blendedVerts;
+   cAutoIPtr<IModelAnimationController> m_pAnimController;
+   tAxisAlignedBox m_bbox;
+};
 
 
 ///////////////////////////////////////////////////////////////////////////////

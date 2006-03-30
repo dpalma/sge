@@ -26,7 +26,6 @@
    </panel>
 
    <panel id="entityCommands" style="placement:absolute;align:right;width:40%;height:100%">
-      <button id="spawn" text="Create Worker" onclick="IssueEntityCommand([[spawn]]);" />
    </panel>
 
 </panel>

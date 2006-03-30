@@ -1,9 +1,12 @@
-﻿<?xml version="1.0" encoding="utf-8" ?> 
-<entity
-   model="crate.ms3d"
-   name="Crate"
-   hitpoints="1000">
+﻿<!-- $Id$ -->
+<?xml version="1.0" encoding="utf-8" ?> 
+<entity name="Crate">
+   
+   <render model="crate.ms3d">
+   </render>
+   
    <spawns queuesize="4">
       <spawn type="zombie" />
    </spawns>
+   
 </entity>

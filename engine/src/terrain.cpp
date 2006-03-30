@@ -954,13 +954,13 @@ tResult cTerrainModel::GetQuadNeighbors(HTERRAINQUAD hQuad, HTERRAINQUAD neighbo
       return E_INVALIDARG;
    }
 
-   static const uint16 kNoIndex = ~0u;
+   static const uint16 kNoIndex = (uint16)(~0u);
 
    // The (uint16) cast is required to eliminate a compiler warning in VC++ versions earlier than 7.1
-   uint16 xPrev = x > 0 ? x - 1 : (uint16)kNoIndex;
+   uint16 xPrev = x > 0 ? x - 1 : kNoIndex;
    uint16 xNext = x < (m_terrainSettings.GetTileCountX() - 1) ? x + 1 : (uint16)kNoIndex;
 
-   uint16 zPrev = z > 0 ? z - 1 : (uint16)kNoIndex;
+   uint16 zPrev = z > 0 ? z - 1 : kNoIndex;
    uint16 zNext = z < (m_terrainSettings.GetTileCountZ() - 1) ? z + 1 : (uint16)kNoIndex;
 
    const uint16 neighborCoords[8][2] =
