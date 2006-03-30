@@ -24,4 +24,14 @@ public:
 
 ////////////////////////////////////////////////////////////////////////////////
 
+template <>
+class cReadWriteOps<GUID>
+{
+public:
+   static tResult Read(IReader * pReader, GUID * pGUID);
+   static tResult Write(IWriter * pWriter, const GUID & guid);
+};
+
+////////////////////////////////////////////////////////////////////////////////
+
 #endif // !INCLUDED_READWRITEUTILS_H
