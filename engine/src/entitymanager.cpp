@@ -29,99 +29,7 @@
 #define IsFlagSet(f, b) (((f)&(b))==(b))
 
 extern tResult ModelEntityCreate(tEntityId id, const tChar * pszModel, const tVec3 & position, IEntity * * ppEntity);
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cEntitySpawnComponent
-//
-
-class cEntitySpawnComponent : public cComObject<IMPLEMENTS(IEntitySpawnComponent)>
-{
-public:
-   cEntitySpawnComponent();
-   ~cEntitySpawnComponent();
-
-   virtual uint GetQueueSize() const;
-
-   virtual tResult SetRallyPoint(const tVec3 & rallyPoint);
-   virtual tResult GetRallyPoint(tVec3 * pRallyPoint) const;
-
-   virtual tResult Spawn(const tChar * pszEntity);
-
-private:
-   uint m_queueLimit;
-   tVec3 m_rallyPoint;
-};
-
-///////////////////////////////////////
-
-cEntitySpawnComponent::cEntitySpawnComponent()
- : m_queueLimit(0)
-{
-}
-
-///////////////////////////////////////
-
-cEntitySpawnComponent::~cEntitySpawnComponent()
-{
-}
-
-///////////////////////////////////////
-
-uint cEntitySpawnComponent::GetQueueSize() const
-{
-   return m_queueLimit;
-}
-
-///////////////////////////////////////
-
-tResult cEntitySpawnComponent::SetRallyPoint(const tVec3 & rallyPoint)
-{
-   m_rallyPoint = rallyPoint;
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cEntitySpawnComponent::GetRallyPoint(tVec3 * pRallyPoint) const
-{
-   if (pRallyPoint == NULL)
-   {
-      return E_POINTER;
-   }
-   *pRallyPoint = m_rallyPoint;
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cEntitySpawnComponent::Spawn(const tChar * pszEntity)
-{
-   return E_NOTIMPL;
-}
-
-///////////////////////////////////////
-
-tResult EntitySpawnComponentFactory(const TiXmlElement * pTiXmlElement,
-                                    IEntity * pEntity, IEntityComponent * * ppComponent)
-{
-   if (pTiXmlElement == NULL || pEntity == NULL || ppComponent == NULL)
-   {
-      return E_POINTER;
-   }
-
-   return E_NOTIMPL;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-static void RegisterBuiltInComponents()
-{
-   UseGlobal(EntityManager);
-   Verify(pEntityManager->RegisterComponentFactory("spawn", EntitySpawnComponentFactory) == S_OK);
-}
+extern void RegisterBuiltInComponents();
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -241,6 +149,7 @@ tResult cEntityManager::SpawnEntity(const tChar * pszEntity, const tVec3 & posit
             cAutoIPtr<IEntityComponent> pComponent;
             if (CreateComponent(pTiXmlChild, pEntity, &pComponent) == S_OK)
             {
+               //pEntity->AddComponent();
             }
          }
 

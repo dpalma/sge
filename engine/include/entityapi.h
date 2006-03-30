@@ -89,7 +89,7 @@ interface IEntityComponent : IUnknown
 
 interface IEntitySpawnComponent : IEntityComponent
 {
-   virtual uint GetQueueSize() const = 0;
+   virtual uint GetMaxQueueSize() const = 0;
 
    virtual tResult SetRallyPoint(const tVec3 & rallyPoint) = 0;
    virtual tResult GetRallyPoint(tVec3 * pRallyPoint) const = 0;
