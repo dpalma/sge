@@ -598,7 +598,9 @@ tResult cGUIContext::GetRenderDeviceContext(IGUIRenderDeviceContext * * ppRender
    // ensure there is a GL context or a D3D device or whatever.
    if (!m_pRenderDeviceContext)
    {
+#if HAVE_DIRECTX
       if (GUIRenderDeviceCreateD3D(&m_pRenderDeviceContext) != S_OK)
+#endif
       {
          if (FAILED(GUIRenderDeviceCreateGL(&m_pRenderDeviceContext)))
          {

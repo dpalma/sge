@@ -37,9 +37,17 @@ public:
    virtual tResult CreateFontA(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont);
    virtual tResult CreateFontW(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont);
 
+#if HAVE_DIRECTX
+   virtual tResult SetDirect3DDevice(IDirect3DDevice9 * pD3dDevice);
+#endif
+
 private:
    typedef std::map<cGUIFontDesc, IGUIFont*, std::less<cGUIFontDesc> > tFontMap;
    tFontMap m_fontMap;
+
+#if HAVE_DIRECTX
+   cAutoIPtr<IDirect3DDevice9> m_pD3dDevice;
+#endif
 };
 
 ///////////////////////////////////////////////////////////////////////////////

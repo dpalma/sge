@@ -161,6 +161,8 @@ static bool d3dguiinit(int argc, tChar * argv[])
       {
          pGUIContext->SetRenderDeviceContext(pGuiRenderDevice);
       }
+      UseGlobal(GUIFontFactory);
+      pGUIFontFactory->SetDirect3DDevice(pD3dDevice);
    }
 
    UseGlobal(ThreadCaller);

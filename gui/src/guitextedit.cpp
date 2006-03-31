@@ -8,7 +8,6 @@
 #include "guielementtools.h"
 #include "guistrings.h"
 #include "inputapi.h"
-#include "sys.h"
 
 #include "globalobj.h"
 #include "techtime.h"

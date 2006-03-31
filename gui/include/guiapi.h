@@ -33,6 +33,10 @@ F_DECLARE_INTERFACE(IGUIRenderDevice);
 F_DECLARE_INTERFACE(IGUIRenderDeviceContext);
 F_DECLARE_INTERFACE(IGUIContext);
 
+#if HAVE_DIRECTX
+F_DECLARE_INTERFACE(IDirect3DDevice9);
+#endif
+
 class TiXmlElement;
 class cGUIFontDesc;
 
@@ -77,6 +81,10 @@ interface IGUIFontFactory : IUnknown
 {
    virtual tResult CreateFontA(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont) = 0;
    virtual tResult CreateFontW(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont) = 0;
+
+#if HAVE_DIRECTX
+   virtual tResult SetDirect3DDevice(IDirect3DDevice9 * pD3dDevice) = 0;
+#endif
 };
 
 ///////////////////////////////////////
@@ -340,7 +348,9 @@ interface IGUIRenderDeviceContext : IGUIRenderDevice
 ///////////////////////////////////////
 
 GUI_API tResult GUIRenderDeviceCreateGL(IGUIRenderDeviceContext * * ppRenderDevice);
-GUI_API tResult GUIRenderDeviceCreateD3D(IGUIRenderDeviceContext * * ppRenderDevice);
+#if HAVE_DIRECTX
+GUI_API tResult GUIRenderDeviceCreateD3D(IDirect3DDevice9 * pD3dDevice, IGUIRenderDeviceContext * * ppRenderDevice);
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////

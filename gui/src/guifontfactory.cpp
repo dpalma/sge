@@ -5,6 +5,10 @@
 
 #include "guifontfactory.h"
 
+#if HAVE_DIRECTX
+#include <d3dx9.h>
+#endif
+
 #include "dbgalloc.h" // must be last header
 
 
@@ -12,7 +16,7 @@
 extern tResult GUIFontCreateGL(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont);
 
 #if HAVE_DIRECTX
-extern tResult GUIFontCreateD3D(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont);
+extern tResult GUIFontCreateD3D(IDirect3DDevice9 * pD3dDevice, const cGUIFontDesc & fontDesc, IGUIFont * * ppFont);
 #endif
 
 
@@ -80,7 +84,7 @@ tResult cGUIFontFactory::CreateFontA(const cGUIFontDesc & fontDesc, IGUIFont * *
    }
 
 #if HAVE_DIRECTX
-   if (GUIFontCreateD3D(fontDesc, &pFont) == S_OK)
+   if ((m_pD3dDevice != NULL) && (GUIFontCreateD3D(m_pD3dDevice, fontDesc, &pFont) == S_OK))
    {
       m_fontMap[fontDesc] = CTAddRef(pFont);
       *ppFont = CTAddRef(pFont);
@@ -97,6 +101,25 @@ tResult cGUIFontFactory::CreateFontW(const cGUIFontDesc & fontDesc, IGUIFont * *
 {
    return CreateFontA(fontDesc, ppFont);
 }
+
+////////////////////////////////////////
+
+#if HAVE_DIRECTX
+tResult cGUIFontFactory::SetDirect3DDevice(IDirect3DDevice9 * pD3dDevice)
+{
+#if HAVE_DIRECTX
+   if (pD3dDevice == NULL)
+   {
+      return E_POINTER;
+   }
+   SafeRelease(m_pD3dDevice);
+   m_pD3dDevice = CTAddRef(pD3dDevice);
+   return S_OK;
+#else
+   return E_NOTIMPL;
+#endif
+}
+#endif
 
 ///////////////////////////////////////
 

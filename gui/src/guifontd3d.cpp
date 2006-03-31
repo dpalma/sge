@@ -4,7 +4,6 @@
 #include "stdhdr.h"
 
 #include "guifontd3d.h"
-#include "sys.h"
 
 #ifndef _WIN32
 #error ("This file is for Windows compilation only")
@@ -98,10 +97,10 @@ tResult cGUIFontD3D::RenderText(const wchar_t * pszText, int textLength, tRect *
 
 ///////////////////////////////////////////////////////////////////////////////
 
-tResult GUIFontCreateD3D(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont)
-{
 #if HAVE_DIRECTX
-   if (ppFont == NULL)
+tResult GUIFontCreateD3D(IDirect3DDevice9 * pD3dDevice, const cGUIFontDesc & fontDesc, IGUIFont * * ppFont)
+{
+   if (pD3dDevice == NULL || ppFont == NULL)
    {
       return E_POINTER;
    }
@@ -116,27 +115,23 @@ tResult GUIFontCreateD3D(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont)
 
    ReleaseDC(NULL, hScreenDC), hScreenDC = NULL;
 
-   cAutoIPtr<IDirect3DDevice9> pD3DDevice9;
-   if (SysGetDirect3DDevice9(&pD3DDevice9) == S_OK)
+   cAutoIPtr<ID3DXFont> pD3DXFont;
+   if (D3DXCreateFont(pD3dDevice, height, 0, fontDesc.GetBold() ? FW_EXTRABOLD : FW_NORMAL,
+      4, fontDesc.GetItalic(), DEFAULT_CHARSET, OUT_TT_PRECIS, PROOF_QUALITY,
+      DEFAULT_PITCH | FF_DONTCARE, fontDesc.GetFace(), &pD3DXFont) == S_OK)
    {
-      cAutoIPtr<ID3DXFont> pD3DXFont;
-      if (D3DXCreateFont(pD3DDevice9, height, 0, fontDesc.GetBold() ? FW_EXTRABOLD : FW_NORMAL,
-         4, fontDesc.GetItalic(), DEFAULT_CHARSET, OUT_TT_PRECIS, PROOF_QUALITY,
-         DEFAULT_PITCH | FF_DONTCARE, fontDesc.GetFace(), &pD3DXFont) == S_OK)
+      cAutoIPtr<cGUIFontD3D> pFont(new cGUIFontD3D(pD3DXFont));
+      if (!pFont)
       {
-         cAutoIPtr<cGUIFontD3D> pFont(new cGUIFontD3D(pD3DXFont));
-         if (!pFont)
-         {
-            return E_OUTOFMEMORY;
-         }
-
-         *ppFont = CTAddRef(pFont);
-         return S_OK;
+         return E_OUTOFMEMORY;
       }
+
+      *ppFont = CTAddRef(pFont);
+      return S_OK;
    }
-#endif // HAVE_DIRECTX
 
    return E_FAIL;
 }
+#endif // HAVE_DIRECTX
 
 ///////////////////////////////////////////////////////////////////////////////
