@@ -119,9 +119,14 @@ tResult cEntityRenderComponent::GetModel(cStr * pModel) const
 
 ///////////////////////////////////////
 
-const tAxisAlignedBox & cEntityRenderComponent::GetBoundingBox() const
+tResult cEntityRenderComponent::GetBoundingBox(tAxisAlignedBox * pBBox) const
 {
-   return m_bbox;
+   if (pBBox == NULL)
+   {
+      return E_POINTER;
+   }
+   *pBBox = m_bbox;
+   return S_OK;
 }
 
 ///////////////////////////////////////

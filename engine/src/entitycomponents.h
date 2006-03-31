@@ -28,7 +28,7 @@ public:
 
    virtual tResult GetModel(cStr * pModel) const;
 
-   virtual const tAxisAlignedBox & GetBoundingBox() const;
+   virtual tResult GetBoundingBox(tAxisAlignedBox * pBBox) const;
 
    virtual void Update(double elapsedTime);
    virtual void Render();

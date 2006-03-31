@@ -225,7 +225,11 @@ void cEntityManager::RenderAll()
 
          if (IsSelected(*iter))
          {
-            RenderWireFrame(pRender->GetBoundingBox(), cColor(1,1,0));
+            tAxisAlignedBox bbox;
+            if (pRender->GetBoundingBox(&bbox) == S_OK)
+            {
+               RenderWireFrame(bbox, cColor(1,1,0));
+            }
          }
       }
 
@@ -247,13 +251,16 @@ tResult cEntityManager::RayCast(const cRay & ray, IEntity * * ppEntity) const
       cAutoIPtr<IEntityRenderComponent> pRender;
       if ((*iter)->FindComponent(IID_IEntityRenderComponent, &pRender) == S_OK)
       {
-         tAxisAlignedBox bbox(pRender->GetBoundingBox());
-         bbox.Offset(position);
-
-         if (ray.IntersectsAxisAlignedBox(bbox))
+         tAxisAlignedBox bbox;
+         if (pRender->GetBoundingBox(&bbox) == S_OK)
          {
-            *ppEntity = CTAddRef(pEntity);
-            return S_OK;
+            bbox.Offset(position);
+
+            if (ray.IntersectsAxisAlignedBox(bbox))
+            {
+               *ppEntity = CTAddRef(pEntity);
+               return S_OK;
+            }
          }
       }
    }
@@ -305,12 +312,15 @@ tResult cEntityManager::SelectBoxed(const tAxisAlignedBox & box)
       cAutoIPtr<IEntityRenderComponent> pRender;
       if ((*iter)->FindComponent(IID_IEntityRenderComponent, &pRender) == S_OK)
       {
-         tAxisAlignedBox bbox(pRender->GetBoundingBox());
-         bbox.Offset(position);
-         if (bbox.Intersects(box))
+         tAxisAlignedBox bbox;
+         if (pRender->GetBoundingBox(&bbox) == S_OK)
          {
-            m_selected.insert(CTAddRef(pEntity));
-            nSelected++;
+            bbox.Offset(position);
+            if (bbox.Intersects(box))
+            {
+               m_selected.insert(CTAddRef(pEntity));
+               nSelected++;
+            }
          }
       }
    }
