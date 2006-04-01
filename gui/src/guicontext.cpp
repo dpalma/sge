@@ -594,21 +594,6 @@ tResult cGUIContext::RenderGUI()
 
 tResult cGUIContext::GetRenderDeviceContext(IGUIRenderDeviceContext * * ppRenderDeviceContext)
 {
-   // Wait as long as possible to create the GUI rendering device to
-   // ensure there is a GL context or a D3D device or whatever.
-   if (!m_pRenderDeviceContext)
-   {
-#if HAVE_DIRECTX
-      if (GUIRenderDeviceCreateD3D(&m_pRenderDeviceContext) != S_OK)
-#endif
-      {
-         if (FAILED(GUIRenderDeviceCreateGL(&m_pRenderDeviceContext)))
-         {
-            return E_FAIL;
-         }
-      }
-   }
-
    return m_pRenderDeviceContext.GetPointer(ppRenderDeviceContext);
 }
 

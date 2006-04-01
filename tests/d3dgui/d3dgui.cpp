@@ -157,7 +157,7 @@ static bool d3dguiinit(int argc, tChar * argv[])
    {
       UseGlobal(GUIContext);
       cAutoIPtr<IGUIRenderDeviceContext> pGuiRenderDevice;
-      if (GUIRenderDeviceCreateD3D(&pGuiRenderDevice) == S_OK)
+      if (GUIRenderDeviceCreateD3D(pD3dDevice, &pGuiRenderDevice) == S_OK)
       {
          pGUIContext->SetRenderDeviceContext(pGuiRenderDevice);
       }

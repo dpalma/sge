@@ -314,6 +314,12 @@ static bool MainInit(int argc, tChar * argv[])
       return false;
    }
 
+   cAutoIPtr<IGUIRenderDeviceContext> pGuiRenderDevice;
+   if (GUIRenderDeviceCreateGL(&pGuiRenderDevice) == S_OK)
+   {
+      pGUIContext->SetRenderDeviceContext(pGuiRenderDevice);
+   }
+
    SysAppActivate(true);
 
    if (FAILED(SysRunUnitTests()))
