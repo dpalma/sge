@@ -159,11 +159,11 @@ int LuaPushResults(lua_State * L, int nResults, tScriptVar * results)
                         int iterAsInt = _ttoi(iter->c_str());
 #endif
                         WarnMsgIf2(iterAsInt != index, "Expected numeric key %d, got \"%s\"", index, iter->c_str());
-                        cStr value;
+                        cMultiVar value;
                         if (pDict->Get(iter->c_str(), &value) == S_OK)
                         {
                            lua_pushnumber(L, index);
-                           lua_pushstring(L, value.c_str());
+                           lua_pushstring(L, value.ToAsciiString());
                            lua_settable(L, -3);
                         }
                      }
@@ -172,11 +172,12 @@ int LuaPushResults(lua_State * L, int nResults, tScriptVar * results)
                   {
                      for (; iter != keys.end(); iter++)
                      {
-                        cStr value;
+                        cMultiVar value;
                         if (pDict->Get(iter->c_str(), &value) == S_OK)
                         {
-                           lua_pushstring(L, iter->c_str());
-                           lua_pushstring(L, value.c_str());
+                           cMultiVar key(iter->c_str());
+                           lua_pushstring(L, key.ToAsciiString());
+                           lua_pushstring(L, value.ToAsciiString());
                            lua_settable(L, -3);
                         }
                      }

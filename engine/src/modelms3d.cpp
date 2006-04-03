@@ -28,11 +28,17 @@
 
 LOG_DEFINE_CHANNEL(ModelMs3d);
 
+#if 0
 #define LocalMsg(ind,msg)           DebugMsgEx2(ModelMs3d, "%*s" msg, (ind),"")
 #define LocalMsg1(ind,msg,a)        DebugMsgEx3(ModelMs3d, "%*s" msg, (ind),"",(a))
 #define LocalMsg2(ind,msg,a,b)      DebugMsgEx4(ModelMs3d, "%*s" msg, (ind),"",(a),(b))
 #define LocalMsg3(ind,msg,a,b,c)    DebugMsgEx5(ModelMs3d, "%*s" msg, (ind),"",(a),(b),(c))
-
+#else
+#define LocalMsg(ind,msg)           DebugMsgEx(ModelMs3d,msg)
+#define LocalMsg1(ind,msg,a)        DebugMsgEx1(ModelMs3d,msg,(a))
+#define LocalMsg2(ind,msg,a,b)      DebugMsgEx2(ModelMs3d,msg,(a),(b))
+#define LocalMsg3(ind,msg,a,b,c)    DebugMsgEx3(ModelMs3d,msg,(a),(b),(c))
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -354,10 +360,13 @@ void * ModelMs3dLoad(IReader * pReader)
             return NULL;
          }
 
-         cStr texture;
-         cFileSpec(ms3dMat.texture).GetFileNameNoExt(&texture);
+         char * pszExt = strrchr(ms3dMat.texture, '.');
+         if (pszExt != NULL)
+         {
+            *pszExt = '\0';
+         }
 
-         materials[i] = cModelMaterial(ms3dMat.diffuse, texture.c_str());
+         materials[i] = cModelMaterial(ms3dMat.diffuse, ms3dMat.texture);
       }
    }
 
@@ -432,7 +441,7 @@ void * ModelMs3dLoad(IReader * pReader)
          mt.Multiply(mr, &local);
 
          AssertMsg(iter->GetKeyFramesRot().size() == iter->GetKeyFramesTrans().size(),
-            "Should have been rejected by cMs3dJoint reader");
+            _T("Should have been rejected by cMs3dJoint reader"));
 
          tModelKeyFrames keyFrames(iter->GetKeyFramesRot().size());
 
@@ -689,7 +698,7 @@ void ModelMs3dUnload(void * pData)
 tResult ModelMs3dResourceRegister()
 {
    UseGlobal(ResourceManager);
-   return pResourceManager->RegisterFormat(kRT_Model, "ms3d", ModelMs3dLoad, NULL, ModelMs3dUnload);
+   return pResourceManager->RegisterFormat(kRT_Model, _T("ms3d"), ModelMs3dLoad, NULL, ModelMs3dUnload);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

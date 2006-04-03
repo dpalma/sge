@@ -217,7 +217,24 @@ tResult cDictionary::Get(const tChar * pszKey, cMultiVar * pVal, tPersistence * 
 
 ///////////////////////////////////////
 
-tResult cDictionary::Set(const tChar * pszKey, const tChar * val, tPersistence persist)
+tResult cDictionary::Set(const tChar * pszKey, const char * val, tPersistence persist)
+{
+   if (pszKey == NULL || val == NULL)
+   {
+      return E_POINTER;
+   }
+   if (*pszKey == 0)
+   {
+      return E_INVALIDARG;
+   }
+   m_vars[cStr(pszKey)] = val;
+   m_persistenceMap[pszKey] = (persist != kUseDefault) ? persist : m_defaultPersist;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cDictionary::Set(const tChar * pszKey, const wchar_t * val, tPersistence persist)
 {
    if (pszKey == NULL || val == NULL)
    {

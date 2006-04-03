@@ -43,7 +43,8 @@ interface IDictionary : IUnknown
    virtual tResult Get(const tChar * pszKey, double * pVal, tPersistence * pPersist = NULL) = 0;
    virtual tResult Get(const tChar * pszKey, cMultiVar * pVal, tPersistence * pPersist = NULL) = 0;
 
-   virtual tResult Set(const tChar * pszKey, const tChar * val, tPersistence persist = kUseDefault) = 0;
+   virtual tResult Set(const tChar * pszKey, const char * val, tPersistence persist = kUseDefault) = 0;
+   virtual tResult Set(const tChar * pszKey, const wchar_t * val, tPersistence persist = kUseDefault) = 0;
    virtual tResult Set(const tChar * pszKey, int val, tPersistence persist = kUseDefault) = 0;
    virtual tResult Set(const tChar * pszKey, float val, tPersistence persist = kUseDefault) = 0;
    virtual tResult Set(const tChar * pszKey, double val, tPersistence persist = kUseDefault) = 0;

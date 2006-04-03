@@ -54,7 +54,7 @@ cModelMaterial::cModelMaterial(const cModelMaterial & other)
 // Common case: diffuse and texture only
 
 cModelMaterial::cModelMaterial(const float diffuse[4], const tChar * pszTexture)
- : m_texture(pszTexture != NULL ? pszTexture : "")
+ : m_texture(pszTexture != NULL ? pszTexture : _T(""))
 {
    memcpy(m_diffuse, diffuse, sizeof(m_diffuse));
 }
@@ -66,7 +66,7 @@ cModelMaterial::cModelMaterial(const float diffuse[4], const float ambient[4],
                                const float specular[4], const float emissive[4],
                                float shininess, const tChar * pszTexture)
  : m_shininess(shininess),
-   m_texture(pszTexture != NULL ? pszTexture : "")
+   m_texture(pszTexture != NULL ? pszTexture : _T(""))
 {
    memcpy(m_diffuse, diffuse, sizeof(m_diffuse));
    memcpy(m_ambient, ambient, sizeof(m_ambient));
