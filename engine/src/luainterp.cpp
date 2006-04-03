@@ -89,32 +89,37 @@ static int LuaConstructObject(lua_State * L)
 
 int LuaPrintEx(lua_State * L)
 {
-   int n = lua_gettop(L);  /* number of arguments */
-   int i;
+   std::string msg;
+   int n = lua_gettop(L); // number of arguments
    lua_getglobal(L, "tostring");
-   for (i=1; i<=n; i++)
+   for (int i = 1; i <= n; i++)
    {
-      const char *s;
-      lua_pushvalue(L, -1);  /* function to be called */
-      lua_pushvalue(L, i);   /* value to print */
+      lua_pushvalue(L, -1); // function to be called
+      lua_pushvalue(L, i);  // value to print
       lua_call(L, 1, 1);
-      s = lua_tostring(L, -1);  /* get result */
+
+      const char *s = lua_tostring(L, -1);
       if (s == NULL)
+      {
          luaL_error(L, "`tostring' must return a string to `print'");
+      }
 
-      if (i>1)
-         fputs("\t", stdout);
-      fputs(s, stdout);
+      if (i > 1)
+      {
+         msg.append("\t");
+      }
+      msg.append(s);
 
-#ifndef NDEBUG
-      if (i>1)
-         techlog.Print(kInfo, "\t");
-      techlog.Print(kInfo, s);
-#endif
-
-      lua_pop(L, 1);  /* pop result */
+      lua_pop(L, 1); // pop the result
    }
-   fputs("\n", stdout);
+   fprintf(stdout, "%s\n", msg.c_str());
+#ifndef NDEBUG
+#ifdef _UNICODE
+   techlog.Print(kInfo, _T("%S\n"), msg.c_str());
+#else
+   techlog.Print(kInfo, _T("%s\n"), msg.c_str());
+#endif
+#endif
    return 0;
 }
 
@@ -127,7 +132,11 @@ int LuaAlertEx(lua_State * L)
    if (nArgs == 1 && lua_isstring(L, -1))
    {
       const char * psz = lua_tostring(L, -1);
-      techlog.Print(kError, "LUA: %s\n", psz);
+#ifdef _UNICODE
+      techlog.Print(kError, _T("LUA: %S\n"), psz);
+#else
+      techlog.Print(kError, _T("LUA: %s\n"), psz);
+#endif
       lua_pop(L, 1);
    }
    return 0;
@@ -304,15 +313,21 @@ tResult cLuaInterpreter::RegisterCustomClass(const tChar * pszClassName,
       return E_POINTER;
    }
 
-   if (m_luaState.AccessLuaState() == NULL)
+   lua_State * L = m_luaState.AccessLuaState();
+
+   if (L == NULL)
    {
       return E_FAIL;
    }
 
-   pFactory->AddRef();
-   lua_pushlightuserdata(m_luaState.AccessLuaState(), pFactory);
-   lua_pushcclosure(m_luaState.AccessLuaState(), LuaConstructObject, 1);
-   lua_setglobal(m_luaState.AccessLuaState(), pszClassName);
+   lua_pushlightuserdata(L, CTAddRef(pFactory));
+   lua_pushcclosure(L, LuaConstructObject, 1);
+#ifdef _UNICODE
+   cMultiVar temp(pszClassName);
+   lua_setglobal(L, temp.ToAsciiString());
+#else
+   lua_setglobal(L, pszClassName);
+#endif
 
    return S_OK;
 }
@@ -333,13 +348,23 @@ tResult cLuaInterpreter::RevokeCustomClass(const tChar * pszClassName)
       return E_FAIL;
    }
 
+#ifdef _UNICODE
+   cMultiVar className(pszClassName);
+   lua_getglobal(L, className.ToAsciiString());
+#else
    lua_getglobal(L, pszClassName);
+#endif
+
    lua_getupvalue(L, -1, 1);
    IUnknown * pUnkFactory = static_cast<IUnknown *>(lua_touserdata(L, -1));
    lua_pop(L, 2); // pop the function and the up-value (getglobal and getupvalue results)
 
    lua_pushnil(L);
+#ifdef _UNICODE
+   lua_setglobal(L, className.ToAsciiString());
+#else
    lua_setglobal(L, pszClassName);
+#endif
 
    Assert(pUnkFactory != NULL);
    SafeRelease(pUnkFactory);

@@ -18,6 +18,8 @@ extern "C"
 #include <lauxlib.h>
 }
 
+#include <cstring>
+
 #include "dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -167,10 +169,8 @@ tResult cLuaState::DoFile(const tChar * pszFile)
       return E_FAIL;
    }
 #ifdef _UNICODE
-   uint tempSize = (wcslen(pszFile) + 1) * sizeof(char);
-   char * pszTemp = reinterpret_cast<char*>(alloca(tempSize));
-   wcstombs(pszTemp, pszFile, tempSize);
-   if (lua_dofile(m_L, pszTemp) == 0)
+   cMultiVar temp(pszFile);
+   if (lua_dofile(m_L, temp.ToAsciiString()) == 0)
 #else
    if (lua_dofile(m_L, pszFile) == 0)
 #endif

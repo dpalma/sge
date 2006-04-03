@@ -74,7 +74,7 @@ void LuaGetArg(lua_State * L, int index, tScriptVar * pArg)
                   case LUA_TSTRING:
                   {
                      const char * pszKey = lua_tostring(L, -2);
-                     pDict->Set(pszKey, pszVal);
+                     pDict->Set(cMultiVar(pszKey).ToString(), pszVal);
                      nDictEntries++;
                      break;
                   }
@@ -215,9 +215,14 @@ static int LuaThunkInvoke(lua_State * L)
 
    if (nArgsOnStack == 1 && lua_type(L, 1) != LUA_TUSERDATA)
    {
-      cStr msg;
-      Sprintf(&msg, "invalid method call: %s called with no instance pointer", pszMethodName);
-      lua_pushstring(L, msg.c_str());
+      char szMsg[200];
+#if _MSC_VER >= 1400
+      _snprintf_s(szMsg, sizeof(szMsg), _countof(szMsg),
+#else
+      _snprintf(szMsg, _countof(szMsg),
+#endif
+         "invalid method call: %s called with no instance pointer", pszMethodName);
+      lua_pushstring(L, szMsg);
       lua_error(L); // this function never returns
    }
 
