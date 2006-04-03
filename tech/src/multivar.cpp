@@ -365,8 +365,8 @@ const wchar_t * cMultiVar::ToWideString() const
       {
          wchar_t wszTemp[150];
 #if _MSC_VER >= 1400
-         _snwprintf_s(wszTemp, sizeof(wszTemp), _countof(wszTemp), L"%d",
-                      m_value.i);
+         _snwprintf_s(wszTemp, sizeof(wszTemp) / sizeof(uint16),
+            _countof(wszTemp), L"%d", m_value.i);
 #else
          _snwprintf(wszTemp, _countof(wszTemp), L"%d", m_value.i);
 #endif
@@ -383,8 +383,8 @@ const wchar_t * cMultiVar::ToWideString() const
       {
          wchar_t wszTemp[100];
 #if _MSC_VER >= 1400
-         _snwprintf_s(wszTemp, sizeof(wszTemp), _countof(wszTemp), L"%f",
-                      (m_type == kMVT_Float) ? m_value.f : m_value.d);
+         _snwprintf_s(wszTemp, sizeof(wszTemp) / sizeof(uint16), _countof(wszTemp),
+            L"%f", (m_type == kMVT_Float) ? m_value.f : m_value.d);
 #else
          _snwprintf(wszTemp, _countof(wszTemp), L"%f",
                     (m_type == kMVT_Float) ? m_value.f : m_value.d);

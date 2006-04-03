@@ -13,6 +13,7 @@
 
 #include "color.h"
 #include "keys.h"
+#include "multivar.h"
 #include "ray.h"
 #include "resourceapi.h"
 
@@ -413,7 +414,14 @@ tResult cEntityManager::CreateComponent(const TiXmlElement * pTiXmlElement,
       return E_POINTER;
    }
 
-   tComponentFactoryMap::iterator f = m_componentFactoryMap.find(pTiXmlElement->Value());
+#ifdef _UNICODE
+   cMultiVar temp(pTiXmlElement->Value());
+   const wchar_t * pszComponent = temp.ToWideString();
+#else
+   const char * pszComponent = pTiXmlElement->Value();
+#endif
+
+   tComponentFactoryMap::iterator f = m_componentFactoryMap.find(pszComponent);
    if (f != m_componentFactoryMap.end())
    {
       return (*f->second)(pTiXmlElement, pEntity, ppComponent);

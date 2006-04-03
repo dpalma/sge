@@ -129,8 +129,7 @@ tResult cResourceFormatTable::RegisterFormat(tResourceType type,
    {
       if (pfnLoad != NULL)
       {
-         WarnMsg("Dependent resource type loader specifies a load \
-            function which will never be called\n");
+         WarnMsg("Dependent resource type loader specifies a load function which will never be called\n");
       }
    }
 

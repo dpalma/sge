@@ -9,6 +9,7 @@
 
 #include "color.h"
 #include "globalobj.h"
+#include "multivar.h"
 #include "resourceapi.h"
 
 #include <tinyxml.h>
@@ -235,11 +236,17 @@ tResult EntityRenderComponentFactory(const TiXmlElement * pTiXmlElement,
       return E_INVALIDARG;
    }
 
-   const char * pszModel = pTiXmlElement->Attribute("model");
-   if (pszModel == NULL)
+   if (pTiXmlElement->Attribute("model") == NULL)
    {
       return E_FAIL;
    }
+
+#ifdef _UNICODE
+   cMultiVar temp(pTiXmlElement->Attribute("model"));
+   const wchar_t * pszModel = temp.ToWideString();
+#else
+   const char * pszModel = pTiXmlElement->Attribute("model");
+#endif
 
    cAutoIPtr<cEntityRenderComponent> pRender = new cEntityRenderComponent(pszModel);
    if (!pRender)
@@ -332,8 +339,8 @@ tResult EntitySpawnComponentFactory(const TiXmlElement * pTiXmlElement,
 void RegisterBuiltInComponents()
 {
    UseGlobal(EntityManager);
-   Verify(pEntityManager->RegisterComponentFactory("render", EntityRenderComponentFactory) == S_OK);
-   Verify(pEntityManager->RegisterComponentFactory("spawn", EntitySpawnComponentFactory) == S_OK);
+   Verify(pEntityManager->RegisterComponentFactory(_T("render"), EntityRenderComponentFactory) == S_OK);
+   Verify(pEntityManager->RegisterComponentFactory(_T("spawn"), EntitySpawnComponentFactory) == S_OK);
 }
 
 
