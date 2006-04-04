@@ -7,7 +7,6 @@
 #include "guielementbasetem.h"
 #include "guielementtools.h"
 #include "guistrings.h"
-#include "inputapi.h"
 
 #include "globalobj.h"
 #include "techtime.h"
@@ -334,7 +333,7 @@ tResult cGUITextEditElement::OnEvent(IGUIEvent * pEvent)
          (keyCode != kLShift) && 
          (keyCode != kRShift);
 
-      return HandleKeyDown(keyCode);
+      return HandleKeyDown(keyCode, pEvent->IsCtrlKeyDown());
    }
    else if (eventCode == kGUIEventKeyUp)
    {
@@ -447,7 +446,7 @@ bool cGUITextEditElement::ShowBlinkingCursor() const
 
 ///////////////////////////////////////
 
-tResult cGUITextEditElement::HandleKeyDown(long keyCode)
+tResult cGUITextEditElement::HandleKeyDown(long keyCode, bool bCtrlKeyDown)
 {
    switch (keyCode)
    {
@@ -463,8 +462,7 @@ tResult cGUITextEditElement::HandleKeyDown(long keyCode)
       }
       case kLeft:
       {
-         UseGlobal(Input);
-         if (pInput->KeyIsDown(kCtrl))
+         if (bCtrlKeyDown)
          {
             m_buffer.WordLeft();
          }
@@ -476,8 +474,7 @@ tResult cGUITextEditElement::HandleKeyDown(long keyCode)
       }
       case kRight:
       {
-         UseGlobal(Input);
-         if (pInput->KeyIsDown(kCtrl))
+         if (bCtrlKeyDown)
          {
             m_buffer.WordRight();               
          }
@@ -565,31 +562,30 @@ tResult GUITextEditElementCreate(const TiXmlElement * pXmlElement,
       if (strcmp(pXmlElement->Value(), kElementTextEdit) == 0)
       {
          cAutoIPtr<IGUITextEditElement> pTextEdit = static_cast<IGUITextEditElement *>(new cGUITextEditElement);
-         if (!!pTextEdit)
+         if (!pTextEdit)
          {
-            if (pXmlElement->Attribute(kAttribText))
-            {
-               pTextEdit->SetText(pXmlElement->Attribute(kAttribText));
-            }
-
-            if (pXmlElement->Attribute(kAttribEditSize))
-            {
-               uint editSize;
-               if (sscanf(pXmlElement->Attribute(kAttribEditSize), "%d", &editSize) == 1)
-               {
-                  pTextEdit->SetEditSize(editSize);
-               }
-            }
-
-            *ppElement = CTAddRef(pTextEdit);
-            return S_OK;
+            return E_OUTOFMEMORY;
          }
+
+         if (pXmlElement->Attribute(kAttribText))
+         {
+            pTextEdit->SetText(pXmlElement->Attribute(kAttribText));
+         }
+
+         int editSize = -1;
+         if (pXmlElement->QueryIntAttribute(kAttribEditSize, &editSize) == TIXML_SUCCESS)
+         {
+            pTextEdit->SetEditSize(static_cast<uint>(editSize));
+         }
+
+         *ppElement = CTAddRef(pTextEdit);
+         return S_OK;
       }
    }
    else
    {
       *ppElement = static_cast<IGUITextEditElement *>(new cGUITextEditElement);
-      return (*ppElement != NULL) ? S_OK : E_FAIL;
+      return (*ppElement != NULL) ? S_OK : E_OUTOFMEMORY;
    }
 
    return E_FAIL;

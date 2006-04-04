@@ -96,7 +96,7 @@ public:
    virtual bool ShowBlinkingCursor() const;
 
 private:
-   tResult HandleKeyDown(long keyCode);
+   tResult HandleKeyDown(long keyCode, bool bCtrlKeyDown);
 
    bool HitTest(const tGUIPoint & point, int * pIndex);
 

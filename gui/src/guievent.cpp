@@ -139,6 +139,9 @@ cGUIEvent::cGUIEvent()
  , m_keyCode(-1)
  , m_bCancellable(false)
  , m_bCancelBubble(false)
+ , m_bCtrlKeyDown(false)
+ , m_bAltKeyDown(false)
+ , m_bShiftKeyDown(false)
 {
 }
 
@@ -148,30 +151,40 @@ cGUIEvent::cGUIEvent(tGUIEventCode eventCode,
                      const tScreenPoint & mousePos, 
                      long keyCode, 
                      IGUIElement * pSource,
-                     bool bCancellable)
+                     bool bCancellable,
+                     bool bCtrlKeyDown,
+                     bool bAltKeyDown,
+                     bool bShiftKeyDown)
  : m_eventCode(eventCode)
  , m_mousePos(mousePos)
  , m_keyCode(keyCode)
  , m_pSource(CTAddRef(pSource))
  , m_bCancellable(bCancellable)
  , m_bCancelBubble(false)
+ , m_bCtrlKeyDown(bCtrlKeyDown)
+ , m_bAltKeyDown(bAltKeyDown)
+ , m_bShiftKeyDown(bShiftKeyDown)
 {
 }
 
 ///////////////////////////////////////
 
-tResult GUIEventCreate(tGUIEventCode eventCode, 
-                       tScreenPoint mousePos, 
-                       long keyCode, 
-                       IGUIElement * pSource, 
-                       bool bCancellable, 
+tResult GUIEventCreate(tGUIEventCode eventCode,
+                       tScreenPoint mousePos,
+                       long keyCode,
+                       IGUIElement * pSource,
+                       bool bCancellable,
+                       bool bCtrlKeyDown,
+                       bool bAltKeyDown,
+                       bool bShiftKeyDown,
                        IGUIEvent * * ppEvent)
 {
    if (ppEvent == NULL)
    {
       return E_POINTER;
    }
-   cGUIEvent * pGUIEvent = new cGUIEvent(eventCode, mousePos, keyCode, pSource, bCancellable);
+   cGUIEvent * pGUIEvent = new cGUIEvent(eventCode, mousePos, keyCode,
+      pSource, bCancellable, bCtrlKeyDown, bAltKeyDown, bShiftKeyDown);
    if (pGUIEvent == NULL)
    {
       return E_OUTOFMEMORY;
@@ -245,6 +258,27 @@ tResult cGUIEvent::SetCancelBubble(bool bCancel)
    }
    m_bCancelBubble = bCancel;
    return S_OK;
+}
+
+///////////////////////////////////////
+
+bool cGUIEvent::IsCtrlKeyDown() const
+{
+   return m_bCtrlKeyDown;
+}
+
+///////////////////////////////////////
+
+bool cGUIEvent::IsAltKeyDown() const
+{
+   return m_bAltKeyDown;
+}
+
+///////////////////////////////////////
+
+bool cGUIEvent::IsShiftKeyDown() const
+{
+   return m_bShiftKeyDown;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

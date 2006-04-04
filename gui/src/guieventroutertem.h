@@ -252,6 +252,11 @@ bool cGUIEventRouter<T, INTRFC>::HandleInputEvent(const sInputEvent * pInputEven
       pInputEvent->point.x, pInputEvent->point.y,
       pInputEvent->time);
 
+   UseGlobal(Input);
+   bool bCtrlKeyDown = pInput->KeyIsDown(kCtrl);
+   bool bAltKeyDown = pInput->KeyIsDown(kAlt);
+   bool bShiftKeyDown = pInput->KeyIsDown(kLShift) || pInput->KeyIsDown(kRShift);
+
    tGUIEventCode eventCode = GUIEventCode(pInputEvent->key, pInputEvent->down);
    if (eventCode == kGUIEventNone)
    {
@@ -272,7 +277,7 @@ bool cGUIEventRouter<T, INTRFC>::HandleInputEvent(const sInputEvent * pInputEven
    cAutoIPtr<IGUIElement> pDrag;
    if (GetDrag(&pDrag) == S_OK)
    {
-      DoDragDrop(pInputEvent, eventCode, pMouseOver, pDrag, &bEatInputEvent);
+      DoDragDrop(pInputEvent, eventCode, pMouseOver, pDrag, bCtrlKeyDown, bAltKeyDown, bShiftKeyDown, &bEatInputEvent);
    }
 
    cAutoIPtr<IGUIElement> pFocus;
@@ -313,7 +318,9 @@ bool cGUIEventRouter<T, INTRFC>::HandleInputEvent(const sInputEvent * pInputEven
 
             cAutoIPtr<IGUIEvent> pDragStartEvent;
             if (GUIEventCreate(kGUIEventDragStart, pInputEvent->point, 
-               pInputEvent->key, pMouseOver, true, &pDragStartEvent) == S_OK)
+               pInputEvent->key, pMouseOver, true,
+               bCtrlKeyDown, bAltKeyDown, bShiftKeyDown,
+               &pDragStartEvent) == S_OK)
             {
                BubbleEvent(pDragStartEvent);
                SetDrag(pMouseOver);
@@ -322,12 +329,14 @@ bool cGUIEventRouter<T, INTRFC>::HandleInputEvent(const sInputEvent * pInputEven
          }
          else if (eventCode == kGUIEventMouseMove)
          {
-            DoMouseEnterExit(pInputEvent, pMouseOver, NULL);
+            DoMouseEnterExit(pInputEvent, pMouseOver, NULL, bCtrlKeyDown, bAltKeyDown, bShiftKeyDown);
          }
 
          cAutoIPtr<IGUIEvent> pEvent;
          if (GUIEventCreate(eventCode, pInputEvent->point, 
-            pInputEvent->key, pMouseOver, true, &pEvent) == S_OK)
+            pInputEvent->key, pMouseOver, true,
+            bCtrlKeyDown, bAltKeyDown, bShiftKeyDown,
+            &pEvent) == S_OK)
          {
             return BubbleEvent(pEvent);
          }
@@ -339,7 +348,9 @@ bool cGUIEventRouter<T, INTRFC>::HandleInputEvent(const sInputEvent * pInputEven
       {
          cAutoIPtr<IGUIEvent> pEvent;
          if (GUIEventCreate(eventCode, pInputEvent->point, 
-            pInputEvent->key, pFocus, true, &pEvent) == S_OK)
+            pInputEvent->key, pFocus, true,
+            bCtrlKeyDown, bAltKeyDown, bShiftKeyDown,
+            &pEvent) == S_OK)
          {
             BubbleEvent(pEvent);
          }
@@ -361,6 +372,9 @@ void cGUIEventRouter<T, INTRFC>::DoDragDrop(const sInputEvent * pInputEvent,
                                             tGUIEventCode eventCode, 
                                             IGUIElement * pMouseOver, 
                                             IGUIElement * pDrag,
+                                            bool bCtrlKeyDown,
+                                            bool bAltKeyDown,
+                                            bool bShiftKeyDown,
                                             bool * pbEatInputEvent)
 {
    Assert(pInputEvent != NULL);
@@ -369,12 +383,14 @@ void cGUIEventRouter<T, INTRFC>::DoDragDrop(const sInputEvent * pInputEvent,
 
    if (eventCode == kGUIEventMouseMove)
    {
-      DoMouseEnterExit(pInputEvent, pMouseOver, pDrag);
+      DoMouseEnterExit(pInputEvent, pMouseOver, pDrag, bCtrlKeyDown, bAltKeyDown, bShiftKeyDown);
 
       // Send drag move to dragging element
       cAutoIPtr<IGUIEvent> pDragMoveEvent;
       if (GUIEventCreate(kGUIEventDragMove, pInputEvent->point, 
-         pInputEvent->key, pDrag, true, &pDragMoveEvent) == S_OK)
+         pInputEvent->key, pDrag, true,
+         bCtrlKeyDown, bAltKeyDown, bShiftKeyDown,
+         &pDragMoveEvent) == S_OK)
       {
          if (!BubbleEvent(pDragMoveEvent))
          {
@@ -383,7 +399,9 @@ void cGUIEventRouter<T, INTRFC>::DoDragDrop(const sInputEvent * pInputEvent,
             {
                cAutoIPtr<IGUIEvent> pDragOverEvent;
                if (GUIEventCreate(kGUIEventDragOver, pInputEvent->point, 
-                  pInputEvent->key, pMouseOver, true, &pDragOverEvent) == S_OK)
+                  pInputEvent->key, pMouseOver, true,
+                  bCtrlKeyDown, bAltKeyDown, bShiftKeyDown,
+                  &pDragOverEvent) == S_OK)
                {
                   BubbleEvent(pDragOverEvent);
                }
@@ -397,7 +415,9 @@ void cGUIEventRouter<T, INTRFC>::DoDragDrop(const sInputEvent * pInputEvent,
 
       cAutoIPtr<IGUIEvent> pDragEndEvent;
       if (GUIEventCreate(kGUIEventDragEnd, pInputEvent->point, 
-         pInputEvent->key, pDrag, true, &pDragEndEvent) == S_OK)
+         pInputEvent->key, pDrag, true,
+         bCtrlKeyDown, bAltKeyDown, bShiftKeyDown,
+         &pDragEndEvent) == S_OK)
       {
          BubbleEvent(pDragEndEvent);
       }
@@ -411,7 +431,9 @@ void cGUIEventRouter<T, INTRFC>::DoDragDrop(const sInputEvent * pInputEvent,
             // TODO: Doing this here, the click event will occur before the mouse up event
             cAutoIPtr<IGUIEvent> pClickEvent;
             if (GUIEventCreate(kGUIEventClick, pInputEvent->point, 
-               pInputEvent->key, pMouseOver, true, &pClickEvent) == S_OK)
+               pInputEvent->key, pMouseOver, true,
+               bCtrlKeyDown, bAltKeyDown, bShiftKeyDown,
+               &pClickEvent) == S_OK)
             {
                BubbleEvent(pClickEvent);
                // Clicking a GUI element should stop all processing 
@@ -424,7 +446,9 @@ void cGUIEventRouter<T, INTRFC>::DoDragDrop(const sInputEvent * pInputEvent,
             // Send drop to moused-over element
             cAutoIPtr<IGUIEvent> pDropEvent;
             if (GUIEventCreate(kGUIEventDrop, pInputEvent->point, 
-               pInputEvent->key, pMouseOver, true, &pDropEvent) == S_OK)
+               pInputEvent->key, pMouseOver, true,
+               bCtrlKeyDown, bAltKeyDown, bShiftKeyDown,
+               &pDropEvent) == S_OK)
             {
                BubbleEvent(pDropEvent);
             }
@@ -440,7 +464,9 @@ void cGUIEventRouter<T, INTRFC>::DoDragDrop(const sInputEvent * pInputEvent,
          cAutoIPtr<IGUIEvent> pDragEndEvent;
 
          if (GUIEventCreate(kGUIEventDragEnd, pInputEvent->point, 
-            pInputEvent->key, pDrag, true, &pDragEndEvent) == S_OK)
+            pInputEvent->key, pDrag, true,
+            bCtrlKeyDown, bAltKeyDown, bShiftKeyDown,
+            &pDragEndEvent) == S_OK)
          {
             BubbleEvent(pDragEndEvent);
          }
@@ -453,7 +479,10 @@ void cGUIEventRouter<T, INTRFC>::DoDragDrop(const sInputEvent * pInputEvent,
 template <typename T, typename INTRFC>
 void cGUIEventRouter<T, INTRFC>::DoMouseEnterExit(const sInputEvent * pInputEvent, 
                                                   IGUIElement * pMouseOver, 
-                                                  IGUIElement * pRestrictTo)
+                                                  IGUIElement * pRestrictTo,
+                                                  bool bCtrlKeyDown,
+                                                  bool bAltKeyDown,
+                                                  bool bShiftKeyDown)
 {
    if (pMouseOver != NULL)
    {
@@ -471,7 +500,7 @@ void cGUIEventRouter<T, INTRFC>::DoMouseEnterExit(const sInputEvent * pInputEven
 
             cAutoIPtr<IGUIEvent> pMouseLeaveEvent;
             if (GUIEventCreate(kGUIEventMouseLeave, pInputEvent->point, pInputEvent->key, 
-               pOldMouseOver, true, &pMouseLeaveEvent) == S_OK)
+               pOldMouseOver, true, bCtrlKeyDown, bAltKeyDown, bShiftKeyDown, &pMouseLeaveEvent) == S_OK)
             {
                DoEvent(pMouseLeaveEvent);
             }
@@ -486,7 +515,7 @@ void cGUIEventRouter<T, INTRFC>::DoMouseEnterExit(const sInputEvent * pInputEven
 
          cAutoIPtr<IGUIEvent> pMouseEnterEvent;
          if (GUIEventCreate(kGUIEventMouseEnter, pInputEvent->point, pInputEvent->key, 
-            pMouseOver, true, &pMouseEnterEvent) == S_OK)
+            pMouseOver, true, bCtrlKeyDown, bAltKeyDown, bShiftKeyDown, &pMouseEnterEvent) == S_OK)
          {
             DoEvent(pMouseEnterEvent);
          }
@@ -508,7 +537,7 @@ void cGUIEventRouter<T, INTRFC>::DoMouseEnterExit(const sInputEvent * pInputEven
 
          cAutoIPtr<IGUIEvent> pMouseLeaveEvent;
          if (GUIEventCreate(kGUIEventMouseLeave, pInputEvent->point, pInputEvent->key, 
-            pOldMouseOver, true, &pMouseLeaveEvent) == S_OK)
+            pOldMouseOver, true, bCtrlKeyDown, bAltKeyDown, bShiftKeyDown, &pMouseLeaveEvent) == S_OK)
          {
             DoEvent(pMouseLeaveEvent);
          }

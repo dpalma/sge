@@ -28,8 +28,8 @@ class cGUIEvent : public cComObject<IMPLEMENTS(IGUIEvent)>
    const cGUIEvent & operator =(const cGUIEvent & other);
 
    cGUIEvent();
-   cGUIEvent(tGUIEventCode eventCode, const tScreenPoint & mousePos, long keyCode, 
-      IGUIElement * pSource, bool bCancellable);
+   cGUIEvent(tGUIEventCode eventCode, const tScreenPoint & mousePos, long keyCode, IGUIElement * pSource,
+      bool bCancellable, bool bCtrlKeyDown, bool bAltKeyDown, bool bShiftKeyDown);
 
 public:
    friend tResult GUIEventCreate(tGUIEventCode eventCode, 
@@ -37,6 +37,9 @@ public:
                                  long keyCode, 
                                  IGUIElement * pSource, 
                                  bool bCancellable, 
+                                 bool bCtrlKeyDown,
+                                 bool bAltKeyDown,
+                                 bool bShiftKeyDown,
                                  IGUIEvent * * ppEvent);
 
    virtual tResult GetEventCode(tGUIEventCode * pEventCode);
@@ -49,6 +52,10 @@ public:
    virtual tResult GetCancelBubble();
    virtual tResult SetCancelBubble(bool bCancel);
 
+   virtual bool IsCtrlKeyDown() const;
+   virtual bool IsAltKeyDown() const;
+   virtual bool IsShiftKeyDown() const;
+
 private:
    tGUIEventCode m_eventCode;
    tScreenPoint m_mousePos;
@@ -56,6 +63,9 @@ private:
    cAutoIPtr<IGUIElement> m_pSource;
    bool m_bCancellable;
    bool m_bCancelBubble;
+   bool m_bCtrlKeyDown;
+   bool m_bAltKeyDown;
+   bool m_bShiftKeyDown;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

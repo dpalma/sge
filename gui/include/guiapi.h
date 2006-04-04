@@ -178,15 +178,22 @@ interface IGUIEvent : IUnknown
 
    virtual tResult GetCancelBubble() = 0;
    virtual tResult SetCancelBubble(bool bCancel) = 0;
+
+   virtual bool IsCtrlKeyDown() const = 0;
+   virtual bool IsAltKeyDown() const = 0;
+   virtual bool IsShiftKeyDown() const = 0;
 };
 
 ///////////////////////////////////////
 
-GUI_API tResult GUIEventCreate(tGUIEventCode eventCode, 
-                               tScreenPoint mousePos, 
-                               long keyCode, 
-                               IGUIElement * pSource, 
-                               bool bCancellable, 
+GUI_API tResult GUIEventCreate(tGUIEventCode eventCode,
+                               tScreenPoint mousePos,
+                               long keyCode,
+                               IGUIElement * pSource,
+                               bool bCancellable,
+                               bool bCtrlKeyDown,
+                               bool bAltKeyDown,
+                               bool bShiftKeyDown,
                                IGUIEvent * * ppEvent);
 
 
