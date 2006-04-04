@@ -434,11 +434,9 @@ tResult GUIScrollBarElementCreateFromXml(const TiXmlElement * pXmlElement,
             return E_OUTOFMEMORY;
          }
 
-         const char * pszAttrib;
-
 #define ScrollBarAttrib(attrib) \
-   do { if ((pszAttrib = pXmlElement->Attribute(kAttrib##attrib)) != NULL) { \
-   uint value; if (sscanf(pszAttrib, "%d", &value) == 1) pScrollBar->Set##attrib(value); } } while (0)
+   do { int value; if (pXmlElement->QueryIntAttribute(kAttrib##attrib, &value) == TIXML_SUCCESS) { \
+   pScrollBar->Set##attrib(static_cast<uint>(value)); } } while (0)
 
          ScrollBarAttrib(ScrollPos);
          ScrollBarAttrib(LineSize);
@@ -446,6 +444,7 @@ tResult GUIScrollBarElementCreateFromXml(const TiXmlElement * pXmlElement,
 
 #undef ScrollBarAttrib
 
+         const char * pszAttrib = NULL;
          if ((pszAttrib = pXmlElement->Attribute(kAttribRange)) != NULL)
          {
             cTokenizer<float> tok;
