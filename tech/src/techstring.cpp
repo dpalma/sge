@@ -20,6 +20,70 @@
 
 #include "dbgalloc.h" // must be last header
 
+///////////////////////////////////////////////////////////////////////////////
+
+size_t UTF8Encode(const wchar_t * pszSrc, char * pszDest, size_t maxDest)
+{
+   if (pszSrc == NULL)
+   {
+      return -1;
+   }
+
+   char * p = pszDest;
+   size_t destLen = 0;
+
+   size_t srcLen = wcslen(pszSrc);
+   for (uint i = 0; i < srcLen; i++)
+   {
+      const wchar_t & c = pszSrc[i];
+      if (c < 0x80)
+      {
+         if (p != NULL && (destLen + 1) < maxDest)
+         {
+            *p++ = (c & 0xFF);
+         }
+         destLen++;
+      }
+      else if (c < 0x800)
+      {
+         if (p != NULL && (destLen + 2) < maxDest)
+         {
+            *p++ = (0xC0 | c>>6);
+            *p++ = (0x80 | c & 0x3F);
+         }
+         destLen += 2;
+      }
+      else if (c < 0x10000)
+      {
+         if (p != NULL && (destLen + 3) < maxDest)
+         {
+            *p++ = (0xE0 | c>>12);
+            *p++ = (0x80 | c>>6 & 0x3F);
+            *p++ = (0x80 | c & 0x3F);
+         }
+         destLen += 3;
+      }
+      else if (c < 0x200000)
+      {
+         if (p != NULL && (destLen + 4) < maxDest)
+         {
+            *p++ = (0xF0 | c>>18);
+            *p++ = (0x80 | c>>12 & 0x3F);
+            *p++ = (0x80 | c>>6 & 0x3F);
+            *p++ = (0x80 | c & 0x3F);
+         }
+         destLen += 4;
+      }
+   }
+
+   if (pszDest != NULL && maxDest > 0)
+   {
+      pszDest[Min(maxDest - 1, destLen)] = 0;
+   }
+
+   return destLen;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -410,6 +474,34 @@ TEST(GUIDToString)
 
    CHECK(CTIsEqualGUID(kTestGuidA, kTestGuidADupe));
    CHECK(!CTIsEqualGUID(kTestGuidA, kTestGuidB));
+}
+
+////////////////////////////////////////
+
+TEST(UTF8Encode)
+{
+   // Test strings from the UTF-8 RFC, http://www.ietf.org/rfc/rfc3629.txt
+
+   {
+      char szActual[100];
+      CHECK(UTF8Encode(L"A\u2262\u0391.", szActual, _countof(szActual)));
+      byte expected[] = { 0x41, 0xE2, 0x89, 0xA2, 0xCE, 0x91, 0x2E };
+      CHECK(memcmp(szActual, expected, sizeof(expected)) == 0);
+   }
+
+   {
+      char szActual[100];
+      CHECK(UTF8Encode(L"\uD55C\uAD6D\uC5B4", szActual, _countof(szActual)));
+      byte expected[] = { 0xED, 0x95, 0x9C, 0xEA, 0xB5, 0xAD, 0xEC, 0x96, 0xB4 };
+      CHECK(memcmp(szActual, expected, sizeof(expected)) == 0);
+   }
+
+   {
+      char szActual[100];
+      CHECK(UTF8Encode(L"\u65E5\u672C\u8A9E", szActual, _countof(szActual)));
+      byte expected[] = { 0xE6, 0x97, 0xA5, 0xE6, 0x9C, 0xAC, 0xE8, 0xAA, 0x9E };
+      CHECK(memcmp(szActual, expected, sizeof(expected)) == 0);
+   }
 }
 
 #endif // HAVE_CPPUNITLITE2
