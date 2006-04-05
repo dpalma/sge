@@ -49,7 +49,7 @@ void TextUnload(void * pData)
 
 #else // _MSC_VER <= 1200
 
-void * AsciiTextLoad(IReader * pReader)
+void * AnsiTextLoad(IReader * pReader)
 {
    if (pReader != NULL)
    {
@@ -99,7 +99,7 @@ void * UnicodeTextLoad(IReader * pReader)
    return NULL;
 }
 
-void AsciiTextUnload(void * pData)
+void AnsiTextUnload(void * pData)
 {
    delete [] reinterpret_cast<char*>(pData);
 }
@@ -136,10 +136,10 @@ TECH_API tResult TextFormatRegister(const tChar * pszExtensions)
       const tChar * pszExtension = extensions.m_tokens[i].c_str();
 
 #if _MSC_VER > 1200
-      if (pResourceManager->RegisterFormat(kRT_AsciiText, pszExtension, TextLoad<char>, NULL, TextUnload<char>) == S_OK
+      if (pResourceManager->RegisterFormat(kRT_AnsiText, pszExtension, TextLoad<char>, NULL, TextUnload<char>) == S_OK
          && pResourceManager->RegisterFormat(kRT_UnicodeText, pszExtension, TextLoad<wchar_t>, NULL, TextUnload<wchar_t>) == S_OK)
 #else
-      if (pResourceManager->RegisterFormat(kRT_AsciiText, pszExtension, AsciiTextLoad, NULL, AsciiTextUnload) == S_OK
+      if (pResourceManager->RegisterFormat(kRT_AnsiText, pszExtension, AnsiTextLoad, NULL, AnsiTextUnload) == S_OK
          && pResourceManager->RegisterFormat(kRT_UnicodeText, pszExtension, UnicodeTextLoad, NULL, UnicodeTextUnload) == S_OK)
 #endif
       {

@@ -82,3 +82,61 @@ tResult cReadWriteOps<GUID>::Write(IWriter * pWriter, const GUID & guid)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cAutoBuffer
+//
+
+////////////////////////////////////////
+
+cAutoBuffer::cAutoBuffer()
+ : m_pBuffer(NULL)
+ , m_bufferSize(0)
+{
+}
+
+////////////////////////////////////////
+
+cAutoBuffer::~cAutoBuffer()
+{
+   Free();
+}
+
+////////////////////////////////////////
+
+tResult cAutoBuffer::Malloc(size_t bufferSize, void * * ppBuffer)
+{
+   if (bufferSize == 0)
+   {
+      return E_INVALIDARG;
+   }
+   if (ppBuffer == NULL)
+   {
+      return E_POINTER;
+   }
+   Free();
+   Assert(m_pBuffer == NULL);
+   m_pBuffer = reinterpret_cast<byte*>(malloc(bufferSize));
+   if (m_pBuffer == NULL)
+   {
+      return E_OUTOFMEMORY;
+   }
+   *ppBuffer = m_pBuffer;
+   m_bufferSize = bufferSize;
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cAutoBuffer::Free()
+{
+   if (m_pBuffer != NULL)
+   {
+      free(m_pBuffer);
+      m_pBuffer = NULL;
+      m_bufferSize = 0;
+      return S_OK;
+   }
+   return S_FALSE;
+}
+
+////////////////////////////////////////////////////////////////////////////////

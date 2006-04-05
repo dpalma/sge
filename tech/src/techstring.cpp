@@ -22,11 +22,54 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+static size_t UTF8Encode(uint32 wideChar, char * pDest, size_t maxDest)
+{
+   if (wideChar < 0x80)
+   {
+      if (pDest != NULL && maxDest >= 1)
+      {
+         *pDest = (wideChar & 0xFF);
+      }
+      return 1;
+   }
+   else if (wideChar < 0x800)
+   {
+      if (pDest != NULL && maxDest >= 2)
+      {
+         *pDest++ = (0xC0 | wideChar >> 6);
+         *pDest++ = (0x80 | wideChar & 0x3F);
+      }
+      return 2;
+   }
+   else if (wideChar < 0x10000)
+   {
+      if (pDest != NULL && maxDest >= 3)
+      {
+         *pDest++ = (0xE0 | wideChar >> 12);
+         *pDest++ = (0x80 | wideChar >> 6 & 0x3F);
+         *pDest++ = (0x80 | wideChar & 0x3F);
+      }
+      return 3;
+   }
+   else if (wideChar < 0x200000)
+   {
+      if (pDest != NULL && maxDest >= 4)
+      {
+         *pDest++ = (0xF0 | wideChar >> 18);
+         *pDest++ = (0x80 | wideChar >> 12 & 0x3F);
+         *pDest++ = (0x80 | wideChar >> 6 & 0x3F);
+         *pDest++ = (0x80 | wideChar & 0x3F);
+      }
+      return 4;
+   }
+   return 0;
+}
+
 size_t UTF8Encode(const wchar_t * pszSrc, char * pszDest, size_t maxDest)
 {
    if (pszSrc == NULL)
    {
-      return -1;
+      return 0;
    }
 
    char * p = pszDest;
@@ -35,45 +78,10 @@ size_t UTF8Encode(const wchar_t * pszSrc, char * pszDest, size_t maxDest)
    size_t srcLen = wcslen(pszSrc);
    for (uint i = 0; i < srcLen; i++)
    {
-      const wchar_t & c = pszSrc[i];
-      if (c < 0x80)
-      {
-         if (p != NULL && (destLen + 1) < maxDest)
-         {
-            *p++ = (c & 0xFF);
-         }
-         destLen++;
-      }
-      else if (c < 0x800)
-      {
-         if (p != NULL && (destLen + 2) < maxDest)
-         {
-            *p++ = (0xC0 | c>>6);
-            *p++ = (0x80 | c & 0x3F);
-         }
-         destLen += 2;
-      }
-      else if (c < 0x10000)
-      {
-         if (p != NULL && (destLen + 3) < maxDest)
-         {
-            *p++ = (0xE0 | c>>12);
-            *p++ = (0x80 | c>>6 & 0x3F);
-            *p++ = (0x80 | c & 0x3F);
-         }
-         destLen += 3;
-      }
-      else if (c < 0x200000)
-      {
-         if (p != NULL && (destLen + 4) < maxDest)
-         {
-            *p++ = (0xF0 | c>>18);
-            *p++ = (0x80 | c>>12 & 0x3F);
-            *p++ = (0x80 | c>>6 & 0x3F);
-            *p++ = (0x80 | c & 0x3F);
-         }
-         destLen += 4;
-      }
+      size_t available = (maxDest > destLen) ? maxDest - destLen : 0;
+      size_t required = UTF8Encode(pszSrc[i], p, available);
+      p += required;
+      destLen += required;
    }
 
    if (pszDest != NULL && maxDest > 0)
@@ -502,6 +510,13 @@ TEST(UTF8Encode)
       byte expected[] = { 0xE6, 0x97, 0xA5, 0xE6, 0x9C, 0xAC, 0xE8, 0xAA, 0x9E };
       CHECK(memcmp(szActual, expected, sizeof(expected)) == 0);
    }
+
+   //{
+   //   char szActual[100];
+   //   CHECK(UTF8Encode(L"\u233B4", szActual, _countof(szActual)));
+   //   byte expected[] = { 0xA3, 0x8E, 0xB4 };
+   //   CHECK(memcmp(szActual, expected, sizeof(expected)) == 0);
+   //}
 }
 
 #endif // HAVE_CPPUNITLITE2

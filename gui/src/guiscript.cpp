@@ -104,7 +104,7 @@ tResult GUIScriptElementCreate(const TiXmlElement * pXmlElement, IGUIElement * p
             }
 
             UseGlobal(ResourceManager);
-            const char * pszText = NULL;
+            const tChar * pszText = NULL;
             if (pResourceManager->Load(pXmlElement->Attribute(kAttribSrc), kRT_Text, NULL, (void**)&pszText) == S_OK)
             {
                pScript->SetScript(pszText);

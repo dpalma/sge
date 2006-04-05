@@ -33,5 +33,27 @@ public:
 };
 
 ////////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cAutoBuffer
+//
+
+class cAutoBuffer
+{
+   cAutoBuffer(const cAutoBuffer &);
+   void operator =(const cAutoBuffer &);
+
+public:
+   cAutoBuffer();
+   ~cAutoBuffer();
+
+   tResult Malloc(size_t bufferSize, void * * ppBuffer);
+   tResult Free();
+
+private:
+   byte * m_pBuffer;
+   size_t m_bufferSize;
+};
+
+////////////////////////////////////////////////////////////////////////////////
 
 #endif // !INCLUDED_READWRITEUTILS_H

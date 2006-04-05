@@ -23,12 +23,12 @@ F_DECLARE_INTERFACE(IResourceManager);
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define kRT_AsciiText      _T("AsciiText")
+#define kRT_AnsiText       _T("AnsiText")
 #define kRT_UnicodeText    _T("UnicodeText")
 #ifdef _UNICODE
 #define kRT_Text           kRT_UnicodeText
 #else
-#define kRT_Text           kRT_AsciiText
+#define kRT_Text           kRT_AnsiText
 #endif
 TECH_API tResult TextFormatRegister(const tChar * pszExtension);
 

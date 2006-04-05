@@ -4,6 +4,7 @@
 #include "stdhdr.h"
 
 #include "renderer.h"
+#include "readwriteutils.h"
 
 #include "axisalignedbox.h"
 #include "color.h"
@@ -575,8 +576,13 @@ tResult RendererCreate()
 
 CGprofile g_CgProfile = CG_PROFILE_UNKNOWN;
 
-void * CgProgramFromText(void * pData, int dataLength, void * param)
+void * CgProgramLoad(IReader * pReader)
 {
+   if (pReader == NULL)
+   {
+      return NULL;
+   }
+
    // Must get the Cg context first
    CGcontext cgContext = CgGetContext();
    if (cgContext == NULL)
@@ -593,14 +599,43 @@ void * CgProgramFromText(void * pData, int dataLength, void * param)
       }
    }
 
-   char * psz = reinterpret_cast<char*>(pData);
-   if (psz != NULL && strlen(psz) > 0)
+   ulong length = 0;
+   if (pReader->Seek(0, kSO_End) == S_OK
+      && pReader->Tell(&length) == S_OK
+      && pReader->Seek(0, kSO_Set) == S_OK)
    {
-      CGprogram program = cgCreateProgram(cgContext, CG_SOURCE, psz, g_CgProfile, NULL, NULL);
-      if (program != NULL)
+      cAutoBuffer autoBuffer;
+      char stackBuffer[256];
+      char * pBuffer = NULL;
+
+      if (length >= 32768)
       {
-         cgGLLoadProgram(program);
-         return program;
+         WarnMsg1("Sanity check failure loading Cg program %d bytes long\n", length);
+         return NULL;
+      }
+
+      if (length < sizeof(stackBuffer))
+      {
+         pBuffer = stackBuffer;
+      }
+      else
+      {
+         if (autoBuffer.Malloc(sizeof(char) * (length + 1), (void**)&pBuffer) != S_OK)
+         {
+            return NULL;
+         }
+      }
+
+      if (pReader->Read(pBuffer, length) == S_OK)
+      {
+         pBuffer[length] = 0;
+
+         CGprogram program = cgCreateProgram(cgContext, CG_SOURCE, pBuffer, g_CgProfile, NULL, NULL);
+         if (program != NULL)
+         {
+            cgGLLoadProgram(program);
+            return program;
+         }
       }
    }
 
@@ -629,8 +664,8 @@ tResult RendererResourceRegister()
    {
       if (GlTextureResourceRegister() == S_OK
 #ifdef HAVE_CG
-         && pResourceManager->RegisterFormat(kRT_CgProgram, kRT_AsciiText, _T("cg"), NULL, CgProgramFromText, CgProgramUnload) == S_OK
-         && pResourceManager->RegisterFormat(kRT_CgEffect, kRT_AsciiText, _T("fx"), NULL, CgEffectFromText, CgEffectUnload) == S_OK
+         && pResourceManager->RegisterFormat(kRT_CgProgram, _T("cg"), CgProgramLoad, NULL, CgProgramUnload) == S_OK
+//         && pResourceManager->RegisterFormat(kRT_CgEffect, _T("fx"), CgEffectLoad, NULL, CgEffectUnload) == S_OK
 #endif
          )
       {

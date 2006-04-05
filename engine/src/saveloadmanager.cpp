@@ -646,53 +646,6 @@ tResult cSaveLoadManager::Load(IReader * pReader)
 
 ///////////////////////////////////////
 
-class cAutoBuffer
-{
-public:
-   cAutoBuffer() : m_pBuffer(NULL), m_bufferSize(0) {}
-   ~cAutoBuffer()
-   {
-      Free();
-   }
-   tResult Malloc(size_t bufferSize, byte * * ppBuffer)
-   {
-      Free();
-      if (bufferSize == 0)
-      {
-         return E_INVALIDARG;
-      }
-      if (ppBuffer == NULL)
-      {
-         return E_POINTER;
-      }
-      Assert(m_pBuffer == NULL);
-      m_pBuffer = reinterpret_cast<byte*>(malloc(bufferSize));
-      if (m_pBuffer == NULL)
-      {
-         return E_OUTOFMEMORY;
-      }
-      *ppBuffer = m_pBuffer;
-      m_bufferSize = bufferSize;
-      return S_OK;
-   }
-   tResult Free()
-   {
-      if (m_pBuffer != NULL)
-      {
-         free(m_pBuffer);
-         m_pBuffer = NULL;
-         m_bufferSize = 0;
-         return S_OK;
-      }
-      return S_FALSE;
-   }
-private:
-   byte * m_pBuffer;
-   size_t m_bufferSize;
-};
-
-///////////////////////////////////////
-
 tResult cSaveLoadManager::OpenSingleEntry(IReader * pReader, REFGUID id, IReader * * ppEntryReader)
 {
    if (pReader == NULL || ppEntryReader == NULL)

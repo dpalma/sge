@@ -79,12 +79,12 @@ public:
    cModelMaterial(const cModelMaterial & other);
 
    // Common case: diffuse and texture only
-   cModelMaterial(const float diffuse[4], const tChar * pszTexture);
+   cModelMaterial(const float diffuse[4], const char * pszTexture);
 
    // All color components
    cModelMaterial(const float diffuse[4], const float ambient[4],
       const float specular[4], const float emissive[4], float shininess,
-      const tChar * pszTexture);
+      const char * pszTexture);
 
    ~cModelMaterial();
 
@@ -95,7 +95,7 @@ public:
 
 private:
    float m_diffuse[4], m_ambient[4], m_specular[4], m_emissive[4], m_shininess;
-   cStr m_texture;
+   std::string m_texture;
 };
 
 

@@ -40,9 +40,9 @@ cMs3dVertexMapper::cMs3dVertexMapper(const ms3d_vertex_t * pVertices, size_t nVe
 ///////////////////////////////////////
 
 cMs3dVertexMapper::cMs3dVertexMapper(const std::vector<ms3d_vertex_t> & vertices)
- : m_nOriginalVertices(vertices.size()),
-   m_vertices(vertices.size()),
-   m_haveVertex(vertices.size(), false)
+ : m_nOriginalVertices(vertices.size())
+ , m_vertices(vertices.size())
+ , m_haveVertex(vertices.size(), false)
 {
    std::vector<ms3d_vertex_t>::const_iterator iter = vertices.begin();
    std::vector<ms3d_vertex_t>::const_iterator end = vertices.end();
@@ -139,9 +139,9 @@ cMs3dGroup::cMs3dGroup()
 ///////////////////////////////////////
 
 cMs3dGroup::cMs3dGroup(const cMs3dGroup & other)
- : flags(other.flags),
-   triangleIndices(other.triangleIndices.size()),
-   materialIndex(other.materialIndex)
+ : flags(other.flags)
+ , triangleIndices(other.triangleIndices.size())
+ , materialIndex(other.materialIndex)
 {
    memcpy(name, other.name, sizeof(name));
    std::copy(other.triangleIndices.begin(), other.triangleIndices.end(), triangleIndices.begin());
@@ -217,9 +217,9 @@ cMs3dJoint::cMs3dJoint()
 ///////////////////////////////////////
 
 cMs3dJoint::cMs3dJoint(const cMs3dJoint & other)
- : flags(other.flags),
-   keyFramesRot(other.keyFramesRot.size()),
-   keyFramesTrans(other.keyFramesTrans.size())
+ : flags(other.flags)
+ , keyFramesRot(other.keyFramesRot.size())
+ , keyFramesTrans(other.keyFramesTrans.size())
 {
    memcpy(name, other.name, sizeof(name));
    memcpy(parentName, other.parentName, sizeof(parentName));
