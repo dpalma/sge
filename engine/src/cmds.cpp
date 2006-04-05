@@ -101,7 +101,7 @@ long Name2Key(const char * pszKeyName)
 {
    for (int i = 0; i < g_nNamedKeys; i++)
    {
-      if (stricmp(g_keyNames[i].pszKeyName, pszKeyName) == 0)
+      if (_stricmp(g_keyNames[i].pszKeyName, pszKeyName) == 0)
       {
          return g_keyNames[i].keyCode;
       }

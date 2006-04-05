@@ -31,38 +31,6 @@ template <typename T> class cAxisAlignedBox;
 typedef class cAxisAlignedBox<float> tAxisAlignedBox;
 
 
-///////////////////////////////////////////////////////////////////////////////
-
-typedef ulong tEntityId;
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// INTERFACE: IEntity
-//
-
-interface IEntity : IUnknown
-{
-   virtual tEntityId GetId() const = 0;
-
-   virtual tResult GetPosition(tVec3 * pPosition) const = 0;
-   virtual const tMatrix4 & GetWorldTransform() const = 0;
-
-   virtual tResult AddComponent(REFGUID guid, IEntityComponent * pComponent) = 0;
-   virtual tResult FindComponent(REFGUID guid, IEntityComponent * * ppComponent) = 0;
-
-   template <class INTRFC>
-   tResult FindComponent(REFGUID guid, INTRFC * * ppComponent)
-   {
-      cAutoIPtr<IEntityComponent> pComponent;
-      tResult result = FindComponent(guid, &pComponent);
-      if (result == S_OK)
-      {
-         return pComponent->QueryInterface(guid, reinterpret_cast<void**>(ppComponent));
-      }
-      return result;
-   }
-};
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -103,6 +71,38 @@ interface IEntitySpawnComponent : IEntityComponent
    virtual tResult GetRallyPoint(tVec3 * pRallyPoint) const = 0;
 
    virtual tResult Spawn(const tChar * pszEntity) = 0;
+};
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IEntity
+//
+
+typedef ulong tEntityId;
+
+interface IEntity : IUnknown
+{
+   virtual tEntityId GetId() const = 0;
+
+   virtual tResult GetPosition(tVec3 * pPosition) const = 0;
+   virtual const tMatrix4 & GetWorldTransform() const = 0;
+
+   virtual tResult AddComponent(REFGUID guid, IEntityComponent * pComponent) = 0;
+   virtual tResult FindComponent(REFGUID guid, IEntityComponent * * ppComponent) = 0;
+
+   template <class INTRFC>
+   tResult FindComponent(REFGUID guid, INTRFC * * ppComponent)
+   {
+      cAutoIPtr<IEntityComponent> pComponent;
+      tResult result = FindComponent(guid, &pComponent);
+      if (result == S_OK)
+      {
+         return pComponent->QueryInterface(guid, reinterpret_cast<void**>(ppComponent));
+      }
+      return result;
+   }
 };
 
 

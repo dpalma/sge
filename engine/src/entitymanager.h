@@ -114,7 +114,7 @@ private:
       virtual void DeleteThis() {}
       virtual bool OnInputEvent(const sInputEvent * pEvent);
    };
-   friend cInputListener;
+   friend class cInputListener;
    cInputListener m_inputListener;
 
    tEntityId m_nextId;

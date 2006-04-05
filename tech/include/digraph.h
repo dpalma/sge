@@ -127,7 +127,11 @@ public:
    template <typename VISITOR>
    void topological_sort(VISITOR visitor) const
    {
+#ifdef __GNUC__
+      std::map<node_type, int> inDegrees;
+#else
       std::map<node_type, int, node_comp, node_allocator> inDegrees;
+#endif
 
       {
          const_node_iterator iter = begin();

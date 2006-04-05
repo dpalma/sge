@@ -47,7 +47,7 @@ inline uint cHashFunction<tPCSTR>::Hash(const tPCSTR & a, uint initVal)
 template <>
 inline bool cHashFunction<tPCSTR>::Equal(const tPCSTR & a, const tPCSTR & b)
 {
-   return (stricmp(a, b) == 0);
+   return (_stricmp(a, b) == 0);
 }
 
 

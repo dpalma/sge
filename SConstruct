@@ -9,7 +9,7 @@ from Walk import Walk
 
 platform = str(Platform())
 
-if not platform in ['win32', 'cygwin']:
+if not platform in ['win32', 'cygwin', 'posix']:
    print 'Unsupported platform', platform
    Exit(1)
    
@@ -45,7 +45,7 @@ class SGEEnvironment(Environment):
    def UseGL(self):
       if platform == 'win32':
          self.Append(LIBS    = ['opengl32', 'glu32'])
-      elif platform == 'cygwin':
+      elif platform in ['cygwin', 'posix']:
          self.Append(CPPPATH = ['/usr/include', '/usr/X11R6/include'])
          self.Append(LIBPATH = ['/usr/lib', '/usr/X11R6/lib'])
          self.Append(LIBS    = ['GL', 'GLU', 'Xext', 'Xt', 'SM', 'ICE', 'X11', 'm'])
