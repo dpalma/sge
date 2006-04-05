@@ -48,7 +48,7 @@ public:
    bool Open(uint libs = kLSL_ALL);
    void Close();
 
-   tResult DoFile(const tChar * pszFile);
+   tResult DoFile(const char * pszFile);
    tResult DoString(const char * pszCode);
 
    tResult CallFunction(const char * pszName, const char * pszArgDesc, va_list args);

@@ -278,7 +278,12 @@ tResult cLuaInterpreter::Term()
 
 tResult cLuaInterpreter::ExecFile(const tChar * pszFile)
 {
+#ifdef _UNICODE
+   cMultiVar temp(pszFile);
+   return m_luaState.DoFile(temp.ToAsciiString());
+#else
    return m_luaState.DoFile(pszFile);
+#endif
 }
 
 ///////////////////////////////////////

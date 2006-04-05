@@ -162,18 +162,13 @@ void cLuaState::Close()
 
 ///////////////////////////////////////
 
-tResult cLuaState::DoFile(const tChar * pszFile)
+tResult cLuaState::DoFile(const char * pszFile)
 {
    if (m_L == NULL)
    {
       return E_FAIL;
    }
-#ifdef _UNICODE
-   cMultiVar temp(pszFile);
-   if (lua_dofile(m_L, temp.ToAsciiString()) == 0)
-#else
    if (lua_dofile(m_L, pszFile) == 0)
-#endif
    {
       return S_OK;
    }
