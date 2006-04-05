@@ -13,3 +13,4 @@
 #include "engineguids.h"
 #include "editorguids.h"
 #include "guiguids.h"
+#include "netguids.h"

@@ -486,6 +486,8 @@ TEST(GUIDToString)
 
 ////////////////////////////////////////
 
+// This unit test requires support for Unicode string literals
+#if _MSC_VER >= 1400
 TEST(UTF8Encode)
 {
    // Test strings from the UTF-8 RFC, http://www.ietf.org/rfc/rfc3629.txt
@@ -518,6 +520,7 @@ TEST(UTF8Encode)
    //   CHECK(memcmp(szActual, expected, sizeof(expected)) == 0);
    //}
 }
+#endif
 
 #endif // HAVE_CPPUNITLITE2
 

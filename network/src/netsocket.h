@@ -1,9 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 // $Id$
 
-#ifndef INCLUDED_SOCKET_H
-#define INCLUDED_SOCKET_H
+#ifndef INCLUDED_NETSOCKET_H
+#define INCLUDED_NETSOCKET_H
 
+#include "netapi.h"
 #include "techstring.h"
 
 #ifdef _MSC_VER
@@ -26,46 +27,14 @@ typedef uint SOCKET;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cNetAddress
+// CLASS: cNetSocket
 //
 
-class cNetAddress
+class cNetSocket
 {
 public:
-   cNetAddress();
-   cNetAddress(const char * pszAddress, int port);
-   ~cNetAddress();
-
-   const struct sockaddr * GetSockAddr() const;
-   size_t GetSockAddrSize() const;
-
-private:
-   struct sSockAddrIn
-   {
-      short family;
-      ushort port;
-      long addr;
-      char zero[8];
-   };
-
-   cStr m_address;
-   int m_port;
-   mutable sSockAddrIn m_sockAddrIn;
-};
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cSocket
-//
-
-class cSocket
-{
-public:
-   cSocket();
-   virtual ~cSocket();
-
-   static bool Init();
-   static void Term();
+   cNetSocket();
+   virtual ~cNetSocket();
 
    bool Create(uint port, uint type, const char * pszAddress);
 
@@ -73,7 +42,6 @@ public:
    int ReceiveFrom(void * pBuffer, int nBufferBytes, struct sockaddr * pAddr, int * pAddrLength);
 
 	int SendTo(const void * pBuffer, int nBufferBytes, const sockaddr * pAddr, int addrLen, int flags = 0);
-	int SendTo(const void * pBuffer, int nBufferBytes, const cNetAddress & address, int flags = 0);
 
 private:
    uint m_socket;
@@ -81,4 +49,4 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // !INCLUDED_SOCKET_H
+#endif // !INCLUDED_NETSOCKET_H

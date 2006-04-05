@@ -10,6 +10,7 @@
 #include "inputapi.h"
 #include "engineapi.h"
 #include "entityapi.h"
+#include "netapi.h"
 #include "renderapi.h"
 #include "saveloadapi.h"
 #include "simapi.h"
@@ -178,6 +179,7 @@ static void RegisterGlobalObjects()
    GUIFactoryCreate();
    GUIFontFactoryCreate();
    GUIEventSoundsCreate();
+   NetworkCreate();
    RendererCreate();
    ResourceManagerCreate();
    SaveLoadManagerCreate();

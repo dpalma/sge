@@ -1,0 +1,60 @@
+///////////////////////////////////////////////////////////////////////////////
+// $Id$
+
+#ifndef INCLUDED_NETAPI_H
+#define INCLUDED_NETAPI_H
+
+#include "netdll.h"
+#include "comtools.h"
+
+#ifdef _MSC_VER
+#pragma once
+#endif
+
+F_DECLARE_INTERFACE(INetwork);
+F_DECLARE_INTERFACE(INetSocket);
+F_DECLARE_INTERFACE(INetAddress);
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: INetwork
+//
+
+interface INetwork : IUnknown
+{
+};
+
+///////////////////////////////////////
+
+NET_API tResult NetworkCreate();
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: INetSocket
+//
+
+interface INetSocket : IUnknown
+{
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: INetAddress
+//
+
+interface INetAddress : IUnknown
+{
+   virtual const void * GetAddress() const = 0;
+};
+
+////////////////////////////////////////
+
+NET_API tResult NetAddressCreateIPv4(const char * pszAddress, uint16 port, INetAddress * * ppAddress);
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+#endif // !INCLUDED_NETAPI_H

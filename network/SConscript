@@ -1,0 +1,32 @@
+#############################################################################
+# $Id$
+
+Import('env')
+
+sourceFiles = Split("""
+   src/netaddress.cpp
+   src/netsocket.cpp
+   src/network.cpp
+""")
+
+includePaths = Split("""
+   #network/include
+   #tech/include
+""")
+
+libPaths = Split("""
+   #allguids
+   #tech
+""")
+
+linkLibs = Split("""
+   allguids
+   tech
+""")
+
+local = env.Copy()
+local.BuildLibrary(target='network',
+                   source=sourceFiles,
+                   include_path=includePaths,
+                   lib_path=libPaths,
+                   libs=linkLibs)
