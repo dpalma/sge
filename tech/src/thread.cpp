@@ -40,12 +40,45 @@ void ThreadSleep(uint milliseconds)
 #endif
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 tThreadId ThreadGetCurrentId()
 {
 #ifdef _WIN32
    return GetCurrentThreadId();
 #else
    return pthread_self();
+#endif
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef _WIN32
+struct sThreadName
+{
+   DWORD dwType; // must be 0x1000
+   LPCSTR szName; // pointer to name (in user addr space)
+   DWORD dwThreadId; // thread ID (-1 means the calling thread)
+   DWORD dwFlags; // must be zero
+};
+#endif
+
+void ThreadSetName(tThreadId threadId, const char * pszName)
+{
+#ifdef _WIN32
+   sThreadName threadName;
+   threadName.dwType = 0x1000;
+   threadName.szName = pszName;
+   threadName.dwThreadId = threadId;
+   threadName.dwFlags = 0;
+
+   __try
+   {
+      RaiseException(0x406D1388, 0, sizeof(threadName) / sizeof(DWORD), reinterpret_cast<DWORD *>(&threadName));
+   }
+   __except (EXCEPTION_CONTINUE_EXECUTION)
+   {
+   }
 #endif
 }
 
@@ -101,7 +134,7 @@ static int MapThreadPriority(int priority)
 cThread::cThread()
  : m_threadId(0)
 #ifdef _WIN32
-   ,m_hThread(NULL)
+ , m_hThread(NULL)
 #endif
 {
 }

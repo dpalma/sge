@@ -28,6 +28,8 @@ TECH_API void ThreadSleep(uint milliseconds);
 
 TECH_API tThreadId ThreadGetCurrentId();
 
+TECH_API void ThreadSetName(tThreadId threadId, const char * pszName);
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cThread

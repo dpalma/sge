@@ -320,6 +320,7 @@ TEST_F(cThreadFixture, ThreadCallerPostCall)
    }
 
    tThreadId threadId = pThread->GetThreadId();
+   ThreadSetName(threadId, "ReceiveThreadCallsThread");
 
    static const ulong kFoo = 4000;
    CHECK(cFooStatic::gm_foo != kFoo);
