@@ -15,6 +15,91 @@
 
 #include "dbgalloc.h" // must be last header
 
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cNetAddress
+//
+
+///////////////////////////////////////
+
+cNetAddress::cNetAddress()
+ : m_pAddr(NULL)
+ , m_addrLength(0)
+{
+}
+
+///////////////////////////////////////
+
+cNetAddress::cNetAddress(const void * pAddr, int addrLength)
+ : m_pAddr(NULL)
+ , m_addrLength(0)
+{
+   if (pAddr != NULL && addrLength > 0)
+   {
+      m_pAddr = malloc(addrLength);
+      if (m_pAddr != NULL)
+      {
+         memcpy(m_pAddr, pAddr, sizeof(addrLength));
+      }
+   }
+}
+
+///////////////////////////////////////
+
+cNetAddress::~cNetAddress()
+{
+   if (m_pAddr != NULL)
+   {
+      free(m_pAddr);
+      m_pAddr = NULL;
+      m_addrLength = 0;
+   }
+}
+
+///////////////////////////////////////
+
+const void * cNetAddress::GetAddress() const
+{
+   return m_pAddr;
+}
+
+///////////////////////////////////////
+
+int cNetAddress::GetAddressLength() const
+{
+   return m_addrLength;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+tResult NetAddressCreate(const void * pAddr, int addrLength, INetAddress * * ppAddress)
+{
+   if (pAddr == NULL || ppAddress == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (addrLength <= 0)
+   {
+      return E_INVALIDARG;
+   }
+
+   cAutoIPtr<INetAddress> pAddress(static_cast<INetAddress*>(new cNetAddress(pAddr, addrLength)));
+   if (!pAddress)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   if (pAddress->GetAddress() == NULL || pAddress->GetAddressLength() != addrLength)
+   {
+      return E_FAIL;
+   }
+
+   return pAddress.GetPointer(ppAddress);
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cNetAddressIPv4
@@ -48,6 +133,13 @@ const void * cNetAddressIPv4::GetAddress() const
 }
 
 ///////////////////////////////////////
+
+int cNetAddressIPv4::GetAddressLength() const
+{
+   return sizeof(m_addr);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 
 tResult NetAddressCreateIPv4(const char * pszAddress, uint16 port, INetAddress * * ppAddress)
 {

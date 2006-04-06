@@ -28,72 +28,280 @@
 // CLASS: cNetSocket
 //
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 cNetSocket::cNetSocket()
  : m_socket(INVALID_SOCKET)
 {
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 cNetSocket::~cNetSocket()
 {
+   if (m_socket != INVALID_SOCKET)
+   {
+      WarnMsg("Closing socket in destructor\n");
+      Close();
+   }
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
-bool cNetSocket::Create(uint port, uint type, const char * pszAddress)
+tResult cNetSocket::Create(int type)
 {
+   if (type != SOCK_STREAM && type != SOCK_DGRAM)
+   {
+      return E_INVALIDARG;
+   }
+
+   if (m_socket != INVALID_SOCKET)
+   {
+      WarnMsg("Close socket before attempting to re-create\n");
+      return E_FAIL;
+   }
+
+   m_socket = socket(AF_INET, type, 0);
+
+   return (m_socket == INVALID_SOCKET) ? E_FAIL : S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cNetSocket::Bind(INetAddress * pAddress)
+{
+   if (pAddress == NULL)
+   {
+      return E_POINTER;
+   }
+   
    if (m_socket == INVALID_SOCKET)
    {
-      m_socket = socket(AF_INET, type, 0);
-      if (m_socket != INVALID_SOCKET)
-      {
-         struct sockaddr_in addr;
-         addr.sin_family = AF_INET;
-         addr.sin_addr.s_addr = htonl(INADDR_ANY);
-         addr.sin_port = htons(port);
-         if (bind(m_socket, (struct sockaddr *)&addr, sizeof(addr)) != SOCKET_ERROR)
-         {
-            return true;
-         }
-      }
+      return E_FAIL;
    }
+
+   if (bind(m_socket, static_cast<const struct sockaddr *>(pAddress->GetAddress()),
+      pAddress->GetAddressLength()) == SOCKET_ERROR)
+   {
+      return E_FAIL;
+   }
+
    return false;
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
-int cNetSocket::Receive(void * pBuffer, int nBufferBytes)
+tResult cNetSocket::Connect(INetAddress * pAddress)
 {
-   if (m_socket != INVALID_SOCKET)
-   {
-      return recv(m_socket, (char *)pBuffer, nBufferBytes, 0);
-   }
-   return SOCKET_ERROR;
+   return E_NOTIMPL;
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
-int cNetSocket::ReceiveFrom(void * pBuffer, int nBufferBytes, struct sockaddr * pAddr, int * pAddrLength)
+tResult cNetSocket::Listen(int maxConnections)
 {
-   if (m_socket != INVALID_SOCKET)
-   {
-      return recvfrom(m_socket, (char *)pBuffer, nBufferBytes, 0, pAddr, pAddrLength);
-   }
-   return SOCKET_ERROR;
+   return E_NOTIMPL;
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
-int cNetSocket::SendTo(const void * pBuffer, int nBufferBytes, const sockaddr * pAddr, int addrLen, int flags)
+tResult cNetSocket::Send(const void * pBuffer, int nBufferBytes, int * pnBytesSent)
 {
-   if (m_socket != INVALID_SOCKET)
+   if (pBuffer == NULL)
    {
-      return sendto(m_socket, (const char *)pBuffer, nBufferBytes, flags, pAddr, addrLen);
+      return E_POINTER;
    }
-   return SOCKET_ERROR;
+
+   if (nBufferBytes <= 0)
+   {
+      return E_INVALIDARG;
+   }
+   
+   if (m_socket == INVALID_SOCKET)
+   {
+      return E_FAIL;
+   }
+
+   int result = send(m_socket, static_cast<const char *>(pBuffer), nBufferBytes, 0);
+
+   if (result == SOCKET_ERROR)
+   {
+      return E_FAIL;
+   }
+
+   if (pnBytesSent != NULL)
+   {
+      *pnBytesSent = result;
+   }
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cNetSocket::SendTo(const void * pBuffer, int nBufferBytes, INetAddress * pAddress, int * pnBytesSent)
+{
+   if (pBuffer == NULL || pAddress == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (nBufferBytes <= 0)
+   {
+      return E_INVALIDARG;
+   }
+   
+   if (m_socket == INVALID_SOCKET)
+   {
+      return E_FAIL;
+   }
+
+   int result = sendto(m_socket, static_cast<const char *>(pBuffer), nBufferBytes, 0,
+      static_cast<const struct sockaddr *>(pAddress->GetAddress()),
+      pAddress->GetAddressLength());
+
+   if (result == SOCKET_ERROR)
+   {
+      return E_FAIL;
+   }
+
+   if (pnBytesSent != NULL)
+   {
+      *pnBytesSent = result;
+   }
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cNetSocket::Receive(void * pBuffer, int nBufferBytes, int * pnBytesReceived)
+{
+   if (pBuffer == NULL)
+   {
+      return E_POINTER;
+   }
+   
+   if (nBufferBytes <= 0)
+   {
+      return E_INVALIDARG;
+   }
+
+   if (m_socket == INVALID_SOCKET)
+   {
+      return E_FAIL;
+   }
+
+   int result = recv(m_socket, static_cast<char *>(pBuffer), nBufferBytes, 0);
+
+   if (result == SOCKET_ERROR)
+   {
+      return E_FAIL;
+   }
+
+   if (pnBytesReceived != NULL)
+   {
+      *pnBytesReceived = result;
+   }
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cNetSocket::ReceiveFrom(void * pBuffer, int nBufferBytes, int * pnBytesReceived, INetAddress * * ppAddress)
+{
+   if (pBuffer == NULL)
+   {
+      return E_POINTER;
+   }
+   
+   if (nBufferBytes <= 0)
+   {
+      return E_INVALIDARG;
+   }
+
+   if (m_socket == INVALID_SOCKET)
+   {
+      return E_FAIL;
+   }
+
+   struct sockaddr addr = {0};
+   int addrLength = sizeof(addr);
+
+   int result = recvfrom(m_socket, static_cast<char *>(pBuffer), nBufferBytes, 0, &addr, &addrLength);
+
+   if (result == SOCKET_ERROR)
+   {
+      return E_FAIL;
+   }
+
+   if (pnBytesReceived != NULL)
+   {
+      *pnBytesReceived = result;
+   }
+
+   if (ppAddress != NULL)
+   {
+      NetAddressCreate(&addr, addrLength, ppAddress);
+   }
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cNetSocket::Close()
+{
+   if (m_socket == INVALID_SOCKET)
+   {
+      return E_FAIL;
+   }
+
+   if (closesocket(m_socket) == SOCKET_ERROR)
+   {
+      return E_FAIL;
+   }
+
+   m_socket = INVALID_SOCKET;
+   return S_OK;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+tResult NetSocketCreateDatagram(INetSocket * * ppSocket)
+{
+   if (ppSocket == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cAutoIPtr<cNetSocket> pSocket(new cNetSocket);
+   if (!pSocket)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   if (pSocket->Create(SOCK_DGRAM) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   *ppSocket = CTAddRef(static_cast<INetSocket*>(pSocket));
+   return S_OK;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+tResult NetSocketCreateStream(INetSocket * * ppSocket)
+{
+   if (ppSocket == NULL)
+   {
+      return E_POINTER;
+   }
+
+   return E_NOTIMPL;
 }
 
 
@@ -104,50 +312,54 @@ int cNetSocket::SendTo(const void * pBuffer, int nBufferBytes, const sockaddr * 
 ////////////////////////////////////////
 // Simplest possible datagram send/receive test
 
-/*
+#if 0
 TEST(SimpleDatagramSendRecieve)
 {
-   static const int kBufferSize = 100;
-   static const int kPort = 1010;
-
-   srand(time(NULL));
-
    // Create send socket
 
-   cNetSocket sendSocket;
-   CHECK(sendSocket.Create(0, SOCK_DGRAM, NULL));
+   cAutoIPtr<INetSocket> pSendSocket;
+   CHECK(NetSocketCreateDatagram(&pSendSocket) == S_OK);
 
    // Create receive socket
 
-   cNetSocket receiveSocket;
-   CHECK(receiveSocket.Create(kPort, SOCK_DGRAM, NULL));
+   cAutoIPtr<INetSocket> pReceiveSocket;
+   CHECK(NetSocketCreateDatagram(&pReceiveSocket) == S_OK);
+
+   static const int kPort = 1010;
+   cAutoIPtr<INetAddress> pReceiveAddress;
+   CHECK(NetAddressCreateIPv4(NULL, kPort, &pReceiveAddress) == S_OK);
+   CHECK(pReceiveSocket->Bind(pReceiveAddress) == S_OK);
 
    // Send
 
+   static const int kBufferSize = 100;
    char sendBuffer[kBufferSize];
+   srand(time(NULL));
    for (int i = 0; i < kBufferSize; i++)
    {
       sendBuffer[i] = rand() & 0xFF;
    }
 
-   cNetAddress sendAddress("127.0.0.1", kPort);
-   CHECK(sendAddress.GetSockAddr() != NULL);
+   cAutoIPtr<INetAddress> pSendAddress;
+   CHECK(NetAddressCreateIPv4("127.0.0.1", kPort, &pSendAddress) == S_OK);
 
-   CHECK(sendSocket.SendTo(sendBuffer, sizeof(sendBuffer),
-      sendAddress.GetSockAddr(), sendAddress.GetSockAddrSize()) == sizeof(sendBuffer));
+   int nBytesSent = 0;
+   CHECK(pSendSocket->SendTo(sendBuffer, sizeof(sendBuffer), pSendAddress, &nBytesSent) == S_OK);
 
    // Receive
 
    char recvBuffer[kBufferSize];
    memset(recvBuffer, 0, sizeof(recvBuffer));
 
-   CHECK(receiveSocket.Receive(recvBuffer, sizeof(recvBuffer)) == sizeof(recvBuffer));
+   int nBytesReceived = 0;
+   CHECK(pReceiveSocket->Receive(recvBuffer, sizeof(recvBuffer), &nBytesReceived) == S_OK);
+   CHECK_EQUAL(nBytesReceived, sizeof(recvBuffer));
 
    // Verify
 
    CHECK(memcmp(sendBuffer, recvBuffer, kBufferSize) == 0);
 }
-*/
+#endif
 
 #endif // HAVE_CPPUNITLITE2
 

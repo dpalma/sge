@@ -5,7 +5,6 @@
 #define INCLUDED_NETADDRESS_H
 
 #include "netapi.h"
-#include "techstring.h"
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -16,6 +15,27 @@
 #ifdef _MSC_VER
 #pragma once
 #endif
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cNetAddress
+//
+
+class cNetAddress : public cComObject<IMPLEMENTS(INetAddress)>
+{
+public:
+   cNetAddress();
+   cNetAddress(const void * pAddr, int addrLength);
+
+   ~cNetAddress();
+
+   virtual const void * GetAddress() const;
+   virtual int GetAddressLength() const;
+
+private:
+   void * m_pAddr;
+   int m_addrLength;
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -31,6 +51,7 @@ public:
    ~cNetAddressIPv4();
 
    virtual const void * GetAddress() const;
+   virtual int GetAddressLength() const;
 
 private:
    sockaddr_in m_addr;

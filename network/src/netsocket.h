@@ -5,13 +5,10 @@
 #define INCLUDED_NETSOCKET_H
 
 #include "netapi.h"
-#include "techstring.h"
 
 #ifdef _MSC_VER
 #pragma once
 #endif
-
-struct sockaddr;
 
 #ifndef _WIN32
 typedef uint SOCKET;
@@ -30,18 +27,27 @@ typedef uint SOCKET;
 // CLASS: cNetSocket
 //
 
-class cNetSocket
+class cNetSocket : public cComObject<IMPLEMENTS(INetSocket)>
 {
 public:
    cNetSocket();
    virtual ~cNetSocket();
 
-   bool Create(uint port, uint type, const char * pszAddress);
+   tResult Create(int type);
 
-   int Receive(void * pBuffer, int nBufferBytes);
-   int ReceiveFrom(void * pBuffer, int nBufferBytes, struct sockaddr * pAddr, int * pAddrLength);
+   virtual tResult Bind(INetAddress * pAddress);
 
-	int SendTo(const void * pBuffer, int nBufferBytes, const sockaddr * pAddr, int addrLen, int flags = 0);
+   virtual tResult Connect(INetAddress * pAddress);
+
+   virtual tResult Listen(int maxConnections);
+
+   virtual tResult Send(const void * pBuffer, int nBufferBytes, int * pnBytesSent);
+   virtual tResult SendTo(const void * pBuffer, int nBufferBytes, INetAddress * pAddress, int * pnBytesSent);
+
+   virtual tResult Receive(void * pBuffer, int nBufferBytes, int * pnBytesReceived);
+   virtual tResult ReceiveFrom(void * pBuffer, int nBufferBytes, int * pnBytesReceived, INetAddress * * pAddress);
+
+   virtual tResult Close();
 
 private:
    uint m_socket;
