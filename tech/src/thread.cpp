@@ -16,6 +16,7 @@
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <process.h>
 #else
 #include <sys/types.h>
 #include <sched.h>
@@ -153,9 +154,11 @@ bool cThread::Create(int priority, uint stackSize)
    if (m_hThread == NULL)
    {
       Assert(m_threadId == 0);
-      m_hThread = CreateThread(NULL, 0, ThreadEntry, this, CREATE_SUSPENDED, &m_threadId);
+      uint threadId = 0;
+      m_hThread = reinterpret_cast<HANDLE>(_beginthreadex(NULL, stackSize, ThreadEntry, this, CREATE_SUSPENDED, &threadId));
       if (m_hThread != NULL)
       {
+         m_threadId = threadId;
          SetThreadPriority(m_hThread, MapThreadPriority(priority));
          ResumeThread(m_hThread);
          return true;
@@ -212,7 +215,7 @@ bool cThread::Terminate()
 ////////////////////////////////////////
 
 #ifdef _WIN32
-ulong STDCALL cThread::ThreadEntry(void * param)
+uint STDCALL cThread::ThreadEntry(void * param)
 {
    cThread * pThread = (cThread *)param;
    Assert(pThread != NULL);

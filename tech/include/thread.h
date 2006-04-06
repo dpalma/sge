@@ -66,7 +66,7 @@ protected:
 private:
    tThreadId m_threadId;
 #ifdef _WIN32
-   static ulong STDCALL ThreadEntry(void * param);
+   static uint STDCALL ThreadEntry(void * param);
    HANDLE m_hThread;
 #else
    static void * ThreadEntry(void * param);
