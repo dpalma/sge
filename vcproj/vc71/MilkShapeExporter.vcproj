@@ -403,9 +403,6 @@
 				RelativePath="..\..\MilkShapeExporter\msPlugInApp.cpp">
 			</File>
 			<File
-				RelativePath="..\..\MilkShapeExporter\msPlugInExportDlg.cpp">
-			</File>
-			<File
 				RelativePath="..\..\MilkShapeExporter\msPlugInImpl.cpp">
 			</File>
 			<File
@@ -447,9 +444,6 @@
 			Filter="h;hpp;hxx;hm;inl">
 			<File
 				RelativePath="..\..\MilkShapeExporter\msPlugInApp.h">
-			</File>
-			<File
-				RelativePath="..\..\MilkShapeExporter\msPlugInExportDlg.h">
 			</File>
 			<File
 				RelativePath="..\..\MilkShapeExporter\msPlugInImpl.h">

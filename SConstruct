@@ -64,6 +64,11 @@ class SGEEnvironment(Environment):
       self.m_libPaths += [MakeLibPath('lua')]
       self.m_incPaths += ['#3rdparty/lua/include']
       
+   def UseNvTriStrip(self):
+      self.m_libs += ['NvTriStrip']
+      self.m_libPaths += [MakeLibPath('NvTriStrip')]
+      self.m_incPaths += ['#3rdparty/NvTriStrip/include']
+      
    def UseCppUnitLite2(self):
       self.Append(CPPDEFINES=['HAVE_CPPUNITLITE2'])
       self.m_libs += ['CppUnitLite2']
@@ -215,6 +220,7 @@ if env.get('unicode'):
    buildRootDir += 'Unicode'
 else:
    buildRootDir += 'Ansi'
+   
 Export('buildRootDir')
 if not os.path.isdir(buildRootDir):
    os.makedirs(buildRootDir)
@@ -227,13 +233,11 @@ if conf.CheckHeader('afxwin.h', '<>', 'c++'):
    haveMFC = 1
 else:
    haveMFC = 0
-if conf.CheckHeader('atlcore.h', '<>', 'c++'):
-   haveATL = 1
-else:
-   haveATL = 0
+
 #conf.CheckLib('opengl32', 'glBegin')
 #conf.CheckLib('GL', 'glBegin')
 #conf.CheckLib('GLU', 'gluLookAt')
+
 env = conf.Finish()
 
 Help("Usage: scons [debug] [unicode]" + opts.GenerateHelpText(env))
@@ -250,10 +254,10 @@ SConsignFile(os.path.join(buildRootDir, '.sconsign'))
 def CollectTargets():
    sconscripts = Walk(os.getcwd(), 1, 'SConscript', 0)
    for script in sconscripts:
-      if re.search('.*MilkShapeExporter.*', script) and not haveATL:
-         print 'Removing ATL-dependent project %s' % script
+      if re.search('.*MilkShapeExporter.*', script) and env['PLATFORM'] != 'win32':
+         print 'Windows-specific project %s' % script
          sconscripts.remove(script)
-      elif re.search('.*editor.*', script) and not haveMFC:
+      if re.search('.*editor.*', script) and not haveMFC:
          print 'Removing MFC-dependent project %s ' % script
          sconscripts.remove(script)
    return sconscripts

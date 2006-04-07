@@ -5,22 +5,17 @@ Import('env')
 
 sourceFiles = Split("""
    msPlugInApp.cpp
-   msPlugInExportDlg.cpp
    msPlugInImpl.cpp
    StdAfx.cpp
 """)
 
 includePaths = Split("""
    #3rdparty/ms3dsdk/msLib
-   #3rdparty/NvTriStrip/include
-   #3rdparty/wtl/include
    #engine/include
    #tech/include
 """)
 
 libPaths = Split("""
-   #3rdparty/ms3dsdk/msLib/lib
-   #3rdparty/NvTriStrip
    #allguids
    #tech
    #engine
@@ -28,7 +23,6 @@ libPaths = Split("""
 
 linkLibs = Split("""
    msModelLib.lib
-   NvTriStrip.lib
    allguids.lib
    tech.lib
    engine.lib
@@ -36,6 +30,8 @@ linkLibs = Split("""
 """)
 
 local = env.Copy()
+local.Append(LIBPATH=['#3rdparty/ms3dsdk/msLib/lib'])
+local.UseNvTriStrip()
 local.UseTinyxml()
 local.UseZLib()
 local.BuildSharedLibrary(target='msSGEExporter',

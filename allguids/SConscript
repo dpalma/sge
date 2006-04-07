@@ -8,12 +8,13 @@ sourceFiles = Split("""
 """)
 
 includePaths = Split("""
-   #tech/include
-   #render/include
+   #editor
+   #game
    #engine/include
    #gui/include
-   #game
-   #editor
+   #network/include
+   #render/include
+   #tech/include
 """)
 
 local = env.Copy()

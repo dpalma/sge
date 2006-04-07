@@ -6,6 +6,8 @@
 
 #include "msPlugIn.h"
 
+#include <string>
+
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
@@ -26,7 +28,7 @@ public:
    virtual int Execute(msModel * pModel);
 
 private:
-   CString m_title;
+   std::string m_title;
 };
 
 /////////////////////////////////////////////////////////////////////////////

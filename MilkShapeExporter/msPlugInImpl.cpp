@@ -4,11 +4,95 @@
 #include "stdafx.h"
 
 #include "msPlugInImpl.h"
-#include "msPlugInExportDlg.h"
+#include "resource.h"
+
+#include "comtools.h"
 
 #include "msLib.h"
 
+#include "NvTriStrip.h"
+
+#include <windows.h>
+
 #include "dbgalloc.h" // must be last header
+
+/////////////////////////////////////////////////////////////////////////////
+
+static tResult LoadString(HINSTANCE hInstance, uint stringId, std::string * pString)
+{
+   if (pString == NULL)
+   {
+      return E_POINTER;
+   }
+
+   HRSRC hRsrc = FindResource(hInstance, MAKEINTRESOURCE(((stringId >> 4) + 1)), RT_STRING);
+   if (hRsrc == NULL)
+   {
+      return E_FAIL;
+   }
+
+   DWORD size = SizeofResource(hInstance, hRsrc);
+   if (size == 0)
+   {
+      pString->clear();
+      return S_OK;
+   }
+
+   if (size > 4096)
+   {
+      ErrorMsg1("Sanity check failed loading resource string (size = %d)\n", size);
+      return E_FAIL;
+   }
+
+   size += 1; // allow for null-terminator
+
+   char * pszTemp = static_cast<char*>(_alloca(size));
+   if (LoadStringA(hInstance, stringId, pszTemp, size) > 0)
+   {
+      pString->assign(pszTemp);
+      return S_OK;
+   }
+
+   return E_FAIL;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+static tResult ChooseExportFileName(std::string * pFileName)
+{
+   std::string defaultExt;
+   Verify(LoadString(g_hInstance, IDS_EXPORT_DEFAULT_EXTENSION, &defaultExt) == S_OK);
+
+   std::string filter;
+   Verify(LoadString(g_hInstance, IDS_EXPORT_FILTER, &filter) == S_OK);
+
+   size_t pos = 0;
+   while ((pos = filter.find('|', pos)) != std::string::npos)
+   {
+      filter[pos] = '\0';
+      pos += 1;
+   }
+
+   tChar szFile[_MAX_PATH];
+   ZeroMemory(szFile, sizeof(szFile));
+
+   OPENFILENAME ofn;
+   ZeroMemory(&ofn, sizeof(ofn));
+   ofn.lStructSize = sizeof(OPENFILENAME);
+   ofn.lpstrFilter = filter.c_str();
+   ofn.lpstrFile = szFile;
+   ofn.nMaxFile = _countof(szFile);
+   ofn.lpstrTitle; // TODO
+   ofn.Flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
+
+   if (!GetSaveFileName(&ofn))
+   {
+      return S_FALSE;
+   }
+
+   pFileName->assign(ofn.lpstrFile);
+   return S_OK;
+}
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -38,11 +122,11 @@ int cPlugIn::GetType()
 
 const char * cPlugIn::GetTitle()
 {
-   if (m_title.IsEmpty())
+   if (m_title.empty())
    {
-      Verify(m_title.LoadString(IDS_TITLE));
+      Verify(LoadString(g_hInstance, IDS_TITLE, &m_title) == S_OK);
    }
-   return m_title;
+   return m_title.c_str();
 }
 
 ///////////////////////////////////////
@@ -54,16 +138,77 @@ int cPlugIn::Execute(msModel * pModel)
       return -1;
    }
 
-   cMsPlugInExportDlg dlg(pModel);
+   int result = -1;
 
-   int result = dlg.DoModal();
+   std::string fileName;
+   if (ChooseExportFileName(&fileName) == S_OK)
+   {
+      result = 0;
+   }
 
    msModel_Destroy (pModel);
 
-   return (result == IDOK) ? 0 : -1;
+   return result;
 }
 
-///////////////////////////////////////
+/*
+   tModelMaterials materials(nMaterials);
+
+   for (int i = 0; i < nMaterials; i++)
+   {
+      msMaterial * pMsMaterial = msModel_GetMaterialAt(pModel, i);
+      if (pMsMaterial != NULL)
+      {
+         char szName[MS_MAX_NAME];
+         msMaterial_GetName(pMsMaterial, szName, MS_MAX_NAME);
+
+         msVec4 ambient;
+         msMaterial_GetAmbient(pMsMaterial, ambient);
+
+         msVec4 diffuse;
+         msMaterial_GetDiffuse(pMsMaterial, diffuse);
+
+         msVec4 specular;
+         msMaterial_GetSpecular(pMsMaterial, specular);
+
+         msVec4 emissive;
+         msMaterial_GetEmissive(pMsMaterial, emissive);
+
+         float shininess = msMaterial_GetShininess(pMsMaterial);
+
+         char szTexture[MS_MAX_PATH];
+         msMaterial_GetDiffuseTexture(pMsMaterial, szTexture, MS_MAX_PATH);
+
+         materials[i] = cModelMaterial(diffuse, ambient, specular, emissive, shininess, szTexture);
+      }
+   }
+
+   for (i = 0; i < nMeshes; i++)
+   {
+      msMesh * pMesh = msModel_GetMeshAt(pModel, i);
+      if (pMesh != NULL)
+      {
+         int nVertices = msMesh_GetVertexCount(pMesh);
+         int nNormals = msMesh_GetVertexNormalCount(pMesh);
+
+         if (nVertices != nNormals)
+         {
+            AtlMessageBox(GetFocus(), "# vertices != # normals");
+            return -1;
+         }
+
+         for (int j = 0; j < nVertices; j++)
+         {
+            msVec3 normal;
+            msMesh_GetVertexNormalAt(pMesh, j, normal);
+
+            msVertex * pVertex = msMesh_GetVertexAt(pMesh, j);
+         }
+      }
+   }
+*/
+
+/////////////////////////////////////////////////////////////////////////////
 
 cMsPlugIn * CreatePlugIn()
 {

@@ -5,16 +5,24 @@
 
 #include "msPlugInApp.h"
 
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
 #include "dbgalloc.h" // must be last header
 
 /////////////////////////////////////////////////////////////////////////////
 
-WTL::CAppModule _Module;
+HINSTANCE g_hInstance = NULL;
 
 /////////////////////////////////////////////////////////////////////////////
 
-extern "C" BOOL WINAPI DllMain(HINSTANCE, DWORD dwReason, LPVOID)
+extern "C" BOOL STDCALL DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID)
 {
+   if (dwReason == DLL_PROCESS_ATTACH)
+   {
+      DisableThreadLibraryCalls(hInstance);
+      g_hInstance = hInstance;
+   }
    return TRUE;
 }
 
