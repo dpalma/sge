@@ -11,8 +11,6 @@
 
 #include "techstring.h"
 
-#include <map>
-
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -171,85 +169,6 @@ ENGINE_API bool GlValidateIndices(const uint16 * pIndices, uint nIndices, uint n
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cModelJoint
-//
-
-class ENGINE_API cModelJoint
-{
-public:
-   cModelJoint();
-   cModelJoint(const cModelJoint & other);
-
-   cModelJoint(int parentIndex, const tMatrix4 & localTransform);
-
-   ~cModelJoint();
-
-   const cModelJoint & operator =(const cModelJoint & other);
-
-   int GetParentIndex() const;
-   const tMatrix4 & GetLocalTransform() const;
-
-private:
-   int m_parentIndex;
-   tMatrix4 m_localTransform;
-};
-
-inline int cModelJoint::GetParentIndex() const
-{
-   return m_parentIndex;
-}
-
-inline const tMatrix4 & cModelJoint::GetLocalTransform() const
-{
-   return m_localTransform;
-}
-
-
-#if _MSC_VER > 1300
-template class ENGINE_API std::allocator<cModelJoint>;
-template class ENGINE_API std::vector<cModelJoint>;
-#endif
-
-typedef std::vector<cModelJoint> tModelJoints;
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cModelSkeleton
-//
-
-class ENGINE_API cModelSkeleton
-{
-public:
-   cModelSkeleton();
-   cModelSkeleton(const cModelSkeleton & other);
-
-   cModelSkeleton(const tModelJoints & joints);
-
-   ~cModelSkeleton();
-
-   const cModelSkeleton & operator =(const cModelSkeleton & other);
-
-   size_t GetJointCount() const;
-
-   tResult GetBindMatrices(size_t nMaxMatrices, tMatrix4 * pMatrices) const;
-
-   void InterpolateMatrices(IModelAnimation * pAnim, double time, tMatrices * pMatrices) const;
-
-   tResult AddAnimation(eModelAnimationType type, IModelAnimation * pAnim);
-   tResult GetAnimation(eModelAnimationType type, IModelAnimation * * ppAnim) const;
-
-private:
-   tModelJoints m_joints;
-
-   typedef std::multimap<eModelAnimationType, IModelAnimation *> tAnimMap;
-   tAnimMap m_anims;
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
 // CLASS: cModel
 //
 
@@ -269,7 +188,7 @@ class ENGINE_API cModel
    cModel(const tModelVertices & verts,
           const tModelMaterials & materials,
           const tModelMeshes & meshes,
-          const cModelSkeleton & skeleton);
+          IModelSkeleton * pSkeleton);
 
    friend void * ModelMs3dLoad(IReader * pReader);
    friend void ModelMs3dUnload(void * pData);
@@ -285,7 +204,7 @@ public:
    static tResult Create(const tModelVertices & verts,
                          const tModelMaterials & materials,
                          const tModelMeshes & meshes,
-                         const cModelSkeleton & skeleton,
+                         IModelSkeleton * pSkeleton,
                          cModel * * ppModel);
 
    void ApplyJointMatrices(const tMatrices & matrices, tBlendedVertices * pVertices) const;
@@ -297,7 +216,8 @@ public:
    tModelMeshes::const_iterator BeginMeshses() const;
    tModelMeshes::const_iterator EndMeshses() const;
 
-   cModelSkeleton * GetSkeleton() { return &m_skeleton; }
+   tResult GetSkeleton(IModelSkeleton * * ppSkeleton) { return m_pSkeleton.GetPointer(ppSkeleton); }
+   IModelSkeleton * AccessSkeleton() { return m_pSkeleton; }
 
 private:
    // Transform every vertex by the inverse of its affecting
@@ -308,7 +228,7 @@ private:
    std::vector<sModelVertex> m_vertices;
    std::vector<cModelMaterial> m_materials;
    std::vector<cModelMesh> m_meshes;
-   cModelSkeleton m_skeleton;
+   cAutoIPtr<IModelSkeleton> m_pSkeleton;
 };
 
 inline const tModelVertices & cModel::GetVertices() const

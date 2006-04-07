@@ -7,11 +7,6 @@
 #include "enginedll.h"
 #include "modelapi.h"
 
-#include "quat.h"
-#include "vec3.h"
-#include "matrix4.h"
-#include "techstring.h"
-
 #include <vector>
 
 #ifdef _MSC_VER
@@ -19,7 +14,6 @@
 #endif
 
 class cModel;
-class cModelSkeleton;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -88,7 +82,7 @@ class cModelAnimationController : public cComObject<IMPLEMENTS(IModelAnimationCo
    void operator =(const cModelAnimationController & other);
 
 public:
-   cModelAnimationController(cModelSkeleton * pSkeleton, IModelAnimation * pAnim);
+   cModelAnimationController(IModelSkeleton * pSkeleton, IModelAnimation * pAnim);
    ~cModelAnimationController();
 
    tResult Advance(double elapsedTime);
@@ -96,7 +90,7 @@ public:
    const tMatrices & GetBlendMatrices() const { return m_blendMatrices; }
 
 private:
-   cModelSkeleton * m_pSkeleton;
+   cAutoIPtr<IModelSkeleton> m_pSkeleton;
    cAutoIPtr<IModelAnimation> m_pAnim;
    double m_animStart, m_animEnd, m_animTime;
    tMatrices m_blendMatrices;

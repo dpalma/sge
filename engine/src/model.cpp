@@ -6,8 +6,6 @@
 #include "model.h"
 #include "renderapi.h"
 
-#include "vec4.h"
-#include "matrix4.h"
 #include "resourceapi.h"
 #include "readwriteapi.h"
 #include "globalobj.h"
@@ -16,8 +14,6 @@
 
 #include <algorithm>
 #include <cfloat>
-#include <map>
-#include <stack>
 
 #include "dbgalloc.h" // must be last header
 
@@ -172,283 +168,6 @@ bool GlValidateIndices(const uint16 * pIndices, uint nIndices, uint nVertices)
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cModelJoint
-//
-
-///////////////////////////////////////
-
-cModelJoint::cModelJoint()
-{
-}
-
-///////////////////////////////////////
-
-cModelJoint::cModelJoint(const cModelJoint & other)
- : m_parentIndex(other.m_parentIndex)
- , m_localTransform(other.m_localTransform)
-{
-}
-
-///////////////////////////////////////
-
-cModelJoint::cModelJoint(int parentIndex, const tMatrix4 & localTransform)
- : m_parentIndex(parentIndex)
- , m_localTransform(localTransform)
-{
-}
-
-///////////////////////////////////////
-
-cModelJoint::~cModelJoint()
-{
-}
-
-///////////////////////////////////////
-
-const cModelJoint & cModelJoint::operator =(const cModelJoint & other)
-{
-   m_parentIndex = other.m_parentIndex;
-   m_localTransform = other.m_localTransform;
-   return *this;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cModelSkeleton
-//
-
-///////////////////////////////////////
-
-cModelSkeleton::cModelSkeleton()
-{
-}
-
-///////////////////////////////////////
-
-cModelSkeleton::cModelSkeleton(const cModelSkeleton & other)
-{
-   operator =(other);
-}
-
-///////////////////////////////////////
-
-cModelSkeleton::cModelSkeleton(const tModelJoints & joints)
- : m_joints(joints.size())
-{
-   if (!joints.empty())
-   {
-      std::copy(joints.begin(), joints.end(), m_joints.begin());
-   }
-}
-
-///////////////////////////////////////
-
-cModelSkeleton::~cModelSkeleton()
-{
-   std::multimap<eModelAnimationType, IModelAnimation *>::iterator iter = m_anims.begin();
-   for (; iter != m_anims.end(); iter++)
-   {
-      iter->second->Release();
-   }
-}
-
-///////////////////////////////////////
-
-const cModelSkeleton & cModelSkeleton::operator =(const cModelSkeleton & other)
-{
-   m_joints.resize(other.m_joints.size());
-   std::copy(other.m_joints.begin(), other.m_joints.end(), m_joints.begin());
-   tAnimMap::const_iterator iter = other.m_anims.begin();
-   for (; iter != other.m_anims.end(); iter++)
-   {
-      m_anims.insert(std::make_pair(iter->first, CTAddRef(iter->second)));
-   }
-   return *this;
-}
-
-///////////////////////////////////////
-
-size_t cModelSkeleton::GetJointCount() const
-{
-   return m_joints.size();
-}
-
-///////////////////////////////////////
-
-tResult cModelSkeleton::GetBindMatrices(size_t nMaxMatrices, tMatrix4 * pMatrices) const
-{
-   if (nMaxMatrices < m_joints.size())
-   {
-      return E_INVALIDARG;
-   }
-
-   if (pMatrices == NULL)
-   {
-      return E_POINTER;
-   }
-
-   uint i;
-   int iRootJoint = -1;
-   std::multimap<int, int> jointChildMap;
-   tModelJoints::const_iterator iter = m_joints.begin();
-   for (i = 0; iter != m_joints.end(); iter++, i++)
-   {
-      int iParent = iter->GetParentIndex();
-      if (iParent >= 0)
-      {
-         jointChildMap.insert(std::make_pair(iParent, i));
-      }
-      else
-      {
-         Assert(iRootJoint == -1);
-         iRootJoint = i;
-      }
-   }
-
-   if (iRootJoint < 0)
-   {
-      ErrorMsg("Bad set of joints: no root\n");
-      return E_FAIL;
-   }
-
-   tMatrices absolutes(m_joints.size(), tMatrix4::GetIdentity());
-
-   std::stack<int> s;
-   s.push(iRootJoint);
-   while (!s.empty())
-   {
-      int iJoint = s.top();
-      s.pop();
-
-      int iParent = m_joints[iJoint].GetParentIndex();
-      if (iParent == -1)
-      {
-         absolutes[iJoint] = m_joints[iJoint].GetLocalTransform();
-      }
-      else
-      {
-         absolutes[iParent].Multiply(m_joints[iJoint].GetLocalTransform(), &absolutes[iJoint]);
-      }
-
-      std::multimap<int, int>::iterator iter = jointChildMap.lower_bound(iJoint);
-      std::multimap<int, int>::iterator end = jointChildMap.upper_bound(iJoint);
-      for (; iter != end; iter++)
-      {
-         s.push(iter->second);
-      }
-   }
-
-   for (i = 0; i < m_joints.size(); i++)
-   {
-      MatrixInvert(absolutes[i].m, pMatrices[i].m);
-   }
-
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-void cModelSkeleton::InterpolateMatrices(IModelAnimation * pAnim, double time, tMatrices * pMatrices) const
-{
-   pMatrices->resize(m_joints.size());
-
-   tModelJoints::const_iterator iter = m_joints.begin();
-   tModelJoints::const_iterator end = m_joints.end();
-   for (uint i = 0; iter != end; iter++, i++)
-   {
-      tVec3 position;
-      tQuat rotation;
-      if (pAnim->Interpolate(i, time, &position, &rotation) == S_OK)
-      {
-         tMatrix4 mt, mr;
-
-         rotation.ToMatrix(&mr);
-         MatrixTranslate(position.x, position.y, position.z, &mt);
-
-         tMatrix4 temp;
-         mt.Multiply(mr, &temp);
-
-         tMatrix4 mf;
-         iter->GetLocalTransform().Multiply(temp, &mf);
-
-         int iParent = iter->GetParentIndex();
-         if (iParent < 0)
-         {
-            temp = mf;
-         }
-         else
-         {
-            (*pMatrices)[iParent].Multiply(mf, &temp);
-         }
-
-         (*pMatrices)[i] = temp;
-      }
-   }
-}
-
-///////////////////////////////////////
-
-tResult cModelSkeleton::AddAnimation(eModelAnimationType type,
-                                     IModelAnimation * pAnim)
-{
-   if (pAnim == NULL)
-   {
-      return E_POINTER;
-   }
-   m_anims.insert(std::make_pair(type, CTAddRef(pAnim)));
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cModelSkeleton::GetAnimation(eModelAnimationType type,
-                                     IModelAnimation * * ppAnim) const
-{
-   if (ppAnim == NULL)
-   {
-      return E_POINTER;
-   }
-   
-   tAnimMap::const_iterator first = m_anims.lower_bound(type);
-   if (first == m_anims.end())
-   {
-      return S_FALSE;
-   }
-
-   tAnimMap::const_iterator last = m_anims.upper_bound(type);
-
-   if (first == last)
-   {
-      *ppAnim = CTAddRef(first->second);
-      return S_OK;
-   }
-   else
-   {
-      tAnimMap::difference_type nAnims = 0;
-      tAnimMap::const_iterator iter = first;
-      for (; iter != last; iter++)
-      {
-         nAnims++;
-      }
-      uint i, iAnim = Rand() % nAnims;
-      for (i = 0, iter = first; iter != last; i++, iter++)
-      {
-         if (i == iAnim)
-         {
-            break;
-         }
-      }
-      *ppAnim = CTAddRef(iter->second);
-      return S_OK;
-   }
-
-   return E_FAIL;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
 // CLASS: cModel
 //
 
@@ -477,11 +196,11 @@ cModel::cModel(const tModelVertices & verts,
 cModel::cModel(const tModelVertices & verts,
                const tModelMaterials & materials,
                const tModelMeshes & meshes,
-               const cModelSkeleton & skeleton)
+               IModelSkeleton * pSkeleton)
  : m_vertices(verts.size())
  , m_materials(materials.size())
  , m_meshes(meshes.size())
- , m_skeleton(skeleton)
+ , m_pSkeleton(CTAddRef(pSkeleton))
 {
    std::copy(verts.begin(), verts.end(), m_vertices.begin());
    std::copy(materials.begin(), materials.end(), m_materials.begin());
@@ -521,7 +240,7 @@ tResult cModel::Create(const tModelVertices & verts,
 tResult cModel::Create(const tModelVertices & verts,
                        const tModelMaterials & materials,
                        const tModelMeshes & meshes,
-                       const cModelSkeleton & skeleton,
+                       IModelSkeleton * pSkeleton,
                        cModel * * ppModel)
 {
    if (ppModel == NULL)
@@ -529,7 +248,7 @@ tResult cModel::Create(const tModelVertices & verts,
       return E_POINTER;
    }
 
-   cModel * pModel = new cModel(verts, materials, meshes, skeleton);
+   cModel * pModel = new cModel(verts, materials, meshes, pSkeleton);
    if (pModel == NULL)
    {
       return E_OUTOFMEMORY;
@@ -575,8 +294,19 @@ void cModel::ApplyJointMatrices(const tMatrices & matrices, tBlendedVertices * p
 
 void cModel::PreApplyJoints()
 {
-   tMatrices inverses(m_skeleton.GetJointCount());
-   m_skeleton.GetBindMatrices(inverses.size(), &inverses[0]);
+   if (!m_pSkeleton)
+   {
+      return;
+   }
+
+   size_t nJoints = 0;
+   if (m_pSkeleton->GetJointCount(&nJoints) != S_OK || nJoints == 0)
+   {
+      return;
+   }
+
+   tMatrices inverses(nJoints);
+   m_pSkeleton->GetBindMatrices(inverses.size(), &inverses[0]);
 
    for (tModelVertices::iterator iter = m_vertices.begin(); iter != m_vertices.end(); iter++)
    {

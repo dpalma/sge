@@ -154,10 +154,17 @@ void cEntityRenderComponent::Update(double elapsedTime)
       if (pModel != m_pModel)
       {
          m_pModel = pModel;
-         if ((m_pModel->GetSkeleton() != NULL) && (m_pModel->GetSkeleton()->GetJointCount() > 0))
+
+         cAutoIPtr<IModelSkeleton> pSkeleton;
+         if (m_pModel->GetSkeleton(&pSkeleton) == S_OK)
          {
-            ModelAnimationControllerCreate(m_pModel->GetSkeleton(), &m_pAnimController);
+            size_t nJoints = 0;
+            if (pSkeleton->GetJointCount(&nJoints) == S_OK && nJoints > 0)
+            {
+               ModelAnimationControllerCreate(pSkeleton, &m_pAnimController);
+            }
          }
+
          CalculateBBox(m_pModel->GetVertices(), &m_bbox);
       }
    }

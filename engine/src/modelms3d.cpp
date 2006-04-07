@@ -397,7 +397,7 @@ void * ModelMs3dLoad(IReader * pReader)
 
    LocalMsg1(indent, "%d Joints\n", nJoints);
 
-   std::vector<cModelJoint> joints(nJoints);
+   std::vector<sModelJoint> joints(nJoints);
    std::vector< std::vector<sModelKeyFrame> > jointKeyFrames(nJoints);
 
    if (nJoints > 0)
@@ -470,7 +470,8 @@ void * ModelMs3dLoad(IReader * pReader)
          jointKeyFrames[i].resize(keyFrames.size());
          std::copy(keyFrames.begin(), keyFrames.end(), jointKeyFrames[i].begin());
 
-         joints[i] = cModelJoint(parentIndex, local);
+         joints[i].localTransform = local;
+         joints[i].parentIndex = parentIndex;
       }
 
       indent -= kIndent;
@@ -481,7 +482,7 @@ void * ModelMs3dLoad(IReader * pReader)
       tModelJoints::const_iterator iter = joints.begin();
       for (int i = 0; iter != joints.end(); iter++, i++)
       {
-         if (iter->GetParentIndex() < 0)
+         if (iter->parentIndex < 0)
          {
             if (iRootJoint >= 0)
             {
@@ -493,7 +494,12 @@ void * ModelMs3dLoad(IReader * pReader)
       }
    }
 
-   cModelSkeleton skeleton(joints);
+   cAutoIPtr<IModelSkeleton> pSkeleton;
+   if (ModelSkeletonCreate(joints, &pSkeleton) != S_OK)
+   {
+      ErrorMsg("Failed to create skeleton for model\n");
+      return NULL;
+   }
 
    //////////////////////////////
    // Read the comments, if present (MilkShape versions 1.7+)
@@ -652,7 +658,7 @@ void * ModelMs3dLoad(IReader * pReader)
             cAutoIPtr<IModelAnimation> pAnim;
             if (ModelAnimationCreate(&interpolators[0], interpolators.size(), &pAnim) == S_OK)
             {
-               skeleton.AddAnimation(animDesc.type, pAnim);
+               pSkeleton->AddAnimation(animDesc.type, pAnim);
             }
          }
 
@@ -668,7 +674,7 @@ void * ModelMs3dLoad(IReader * pReader)
    cModel * pModel = NULL;
    if (nJoints > 0)
    {
-      if (cModel::Create(vertices, materials, meshes, skeleton, &pModel) == S_OK)
+      if (cModel::Create(vertices, materials, meshes, pSkeleton, &pModel) == S_OK)
       {
          return pModel;
       }

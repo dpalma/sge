@@ -267,9 +267,9 @@ tResult ModelAnimationCreate(IModelKeyFrameInterpolator * * pInterpolators,
 
 ///////////////////////////////////////
 
-cModelAnimationController::cModelAnimationController(cModelSkeleton * pSkeleton,
+cModelAnimationController::cModelAnimationController(IModelSkeleton * pSkeleton,
                                                      IModelAnimation * pAnim)
- : m_pSkeleton(pSkeleton) // TODO: use CTAddRef when IModelSkeleton becomes a COM interface
+ : m_pSkeleton(CTAddRef(pSkeleton))
  , m_pAnim(CTAddRef(pAnim))
  , m_animStart(0)
  , m_animEnd(0)
@@ -309,14 +309,15 @@ tResult cModelAnimationController::Advance(double elapsedTime)
 
 ///////////////////////////////////////
 
-tResult ModelAnimationControllerCreate(cModelSkeleton * pSkeleton,
+tResult ModelAnimationControllerCreate(IModelSkeleton * pSkeleton,
                                        IModelAnimationController * * ppAnimController)
 {
    if (pSkeleton == NULL || ppAnimController == NULL)
    {
       return E_POINTER;
    }
-   if (pSkeleton->GetJointCount() == 0)
+   size_t nJoints = 0;
+   if (pSkeleton->GetJointCount(&nJoints) != S_OK || nJoints == 0)
    {
       return S_FALSE;
    }

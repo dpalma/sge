@@ -375,6 +375,9 @@
 					RelativePath="..\..\engine\src\modelms3d.cpp">
 				</File>
 				<File
+					RelativePath="..\..\engine\src\modelskeleton.cpp">
+				</File>
+				<File
 					RelativePath="..\..\engine\src\ms3dread.cpp">
 				</File>
 				<File
@@ -503,6 +506,9 @@
 				</File>
 				<File
 					RelativePath="..\..\engine\src\modelanim.h">
+				</File>
+				<File
+					RelativePath="..\..\engine\src\modelskeleton.h">
 				</File>
 				<File
 					RelativePath="..\..\engine\src\ms3d.h">

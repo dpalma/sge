@@ -22,9 +22,9 @@
 F_DECLARE_INTERFACE(IModelKeyFrameInterpolator);
 F_DECLARE_INTERFACE(IModelAnimation);
 F_DECLARE_INTERFACE(IModelAnimationController);
+F_DECLARE_INTERFACE(IModelSkeleton);
 
 class cModel;
-class cModelSkeleton;
 struct sModelKeyFrame;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -149,7 +149,36 @@ interface IModelAnimationController : IUnknown
 
 ////////////////////////////////////////
 
-ENGINE_API tResult ModelAnimationControllerCreate(cModelSkeleton * pSkeleton, IModelAnimationController * * ppAnimController);
+ENGINE_API tResult ModelAnimationControllerCreate(IModelSkeleton * pSkeleton, IModelAnimationController * * ppAnimController);
+
+
+////////////////////////////////////////////////////////////////////////////////
+// 
+// INTERFACE: IModelSkeleton
+//
+
+struct sModelJoint
+{
+   int parentIndex;
+   tMatrix4 localTransform;
+};
+
+typedef std::vector<sModelJoint> tModelJoints;
+
+interface IModelSkeleton : IUnknown
+{
+   virtual tResult GetJointCount(size_t * pJointCount) const = 0;
+   virtual tResult GetJoint(size_t iJoint, sModelJoint * pJoint) const = 0;
+
+   virtual tResult GetBindMatrices(size_t nMaxMatrices, tMatrix4 * pMatrices) const = 0;
+
+   virtual void InterpolateMatrices(IModelAnimation * pAnim, double time, tMatrices * pMatrices) const = 0;
+
+   virtual tResult AddAnimation(eModelAnimationType type, IModelAnimation * pAnim) = 0;
+   virtual tResult GetAnimation(eModelAnimationType type, IModelAnimation * * ppAnim) const = 0;
+};
+
+ENGINE_API tResult ModelSkeletonCreate(const tModelJoints & joints, IModelSkeleton * * ppSkeleton);
 
 
 ////////////////////////////////////////////////////////////////////////////////
