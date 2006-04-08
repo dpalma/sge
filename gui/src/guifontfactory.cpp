@@ -76,21 +76,25 @@ tResult cGUIFontFactory::CreateFontA(const cGUIFontDesc & fontDesc, IGUIFont * *
    }
 
    cAutoIPtr<IGUIFont> pFont;
+
+#if HAVE_DIRECTX
+   if (m_pD3dDevice != NULL)
+   {
+      if (GUIFontCreateD3D(m_pD3dDevice, fontDesc, &pFont) == S_OK)
+      {
+         m_fontMap[fontDesc] = CTAddRef(pFont);
+         *ppFont = CTAddRef(pFont);
+         return S_OK;
+      }
+   }
+#endif
+
    if (GUIFontCreateGL(fontDesc, &pFont) == S_OK)
    {
       m_fontMap[fontDesc] = CTAddRef(pFont);
       *ppFont = CTAddRef(pFont);
       return S_OK;
    }
-
-#if HAVE_DIRECTX
-   if ((m_pD3dDevice != NULL) && (GUIFontCreateD3D(m_pD3dDevice, fontDesc, &pFont) == S_OK))
-   {
-      m_fontMap[fontDesc] = CTAddRef(pFont);
-      *ppFont = CTAddRef(pFont);
-      return S_OK;
-   }
-#endif
 
    return E_FAIL;
 }

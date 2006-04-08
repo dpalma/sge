@@ -83,8 +83,6 @@ static uint ShiftFromMask(uint mask)
 
 bool cGUITextureFontW32::Create(const cGUIFontDesc & fontDesc)
 {
-   bool bSucceeded = false;
-
    if (fontDesc.GetPointSize() > 40)
    {
       m_texDim = 1024;
@@ -100,8 +98,14 @@ bool cGUITextureFontW32::Create(const cGUIFontDesc & fontDesc)
 
    m_fontDesc = fontDesc;
 
-   int maxTexSize;
+   int maxTexSize = -1;
    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTexSize);
+   if (maxTexSize == -1)
+   {
+      return false;
+   }
+
+   bool bSucceeded = false;
 
 //#ifdef _DEBUG
 //   maxTexSize = 128;

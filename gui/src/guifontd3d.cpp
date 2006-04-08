@@ -70,7 +70,10 @@ tResult cGUIFontD3D::RenderText(const char * pszText, int textLength, tRect * pR
       if (flags & kRT_SingleLine) format |= DT_SINGLELINE;
       if (flags & kRT_Bottom) format |= DT_BOTTOM;
 
-      m_pD3dxFont->DrawText(NULL, pszText, textLength, &rect, format, color.ToARGB8888());
+      if (!m_pD3dxFont->DrawText(NULL, pszText, textLength, &rect, format, color.ToARGB8888()))
+      {
+         return E_FAIL;
+      }
 
       if (flags & kRT_CalcRect)
       {
