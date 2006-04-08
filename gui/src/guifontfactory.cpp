@@ -108,10 +108,6 @@ tResult cGUIFontFactory::CreateFontW(const cGUIFontDesc & fontDesc, IGUIFont * *
 tResult cGUIFontFactory::SetDirect3DDevice(IDirect3DDevice9 * pD3dDevice)
 {
 #if HAVE_DIRECTX
-   if (pD3dDevice == NULL)
-   {
-      return E_POINTER;
-   }
    SafeRelease(m_pD3dDevice);
    m_pD3dDevice = CTAddRef(pD3dDevice);
    return S_OK;

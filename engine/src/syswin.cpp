@@ -31,18 +31,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool           g_bAppActive = false;
-
-HWND           g_hWnd = NULL;
-HDC            g_hDC = NULL;
-HGLRC          g_hGLRC = NULL;
-
-#if HAVE_DIRECTX
-HMODULE                       g_hD3D9 = NULL;
-cAutoIPtr<IDirect3D9>         g_pDirect3D9;
-cAutoIPtr<IDirect3DDevice9>   g_pDirect3DDevice9;
-#endif
-
 // from syscommon.cpp
 extern tSysKeyEventFn   g_pfnKeyCallback;
 extern tSysMouseEventFn g_pfnMouseCallback;
@@ -51,6 +39,64 @@ extern tSysResizeFn     g_pfnResizeCallback;
 extern uint_ptr         g_keyCallbackUserData;
 extern uint_ptr         g_mouseCallbackUserData;
 extern void SysUpdateFrameStats();
+
+bool           g_bAppActive = false;
+
+HWND           g_hWnd = NULL;
+HDC            g_hDC = NULL;
+HGLRC          g_hGLRC = NULL;
+
+class cDLL
+{
+public:
+   cDLL() : m_hModule(NULL)
+   {
+   }
+
+   ~cDLL()
+   {
+      Free();
+   }
+
+   bool Load(const tChar * pszDLL)
+   {
+      if (m_hModule == NULL)
+      {
+         m_hModule = LoadLibrary(pszDLL);
+         return (m_hModule != NULL);
+      }
+      WarnMsg("Attempting to load cDLL object with non-NULL module handle\n");
+      return false;
+   }
+   
+   bool Free()
+   {
+      if (FreeLibrary(m_hModule))
+      {
+         m_hModule = NULL;
+         return true;
+      }
+      return false;
+   }
+
+   FARPROC GetProcAddress(LPCSTR lpProcName)
+   {
+      if (m_hModule != NULL)
+      {
+         return ::GetProcAddress(m_hModule, lpProcName);
+      }
+      return NULL;
+   }
+
+private:
+   HMODULE m_hModule;
+};
+
+#if HAVE_DIRECTX
+cDLL                          g_d3d9;
+cAutoIPtr<IDirect3D9>         g_pDirect3D9;
+cAutoIPtr<IDirect3DDevice9>   g_pDirect3DDevice9;
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -442,12 +488,6 @@ bool SysHandleWindowsMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 #if HAVE_DIRECTX
          SafeRelease(g_pDirect3DDevice9);
          SafeRelease(g_pDirect3D9);
-
-         if (g_hD3D9 != NULL)
-         {
-            FreeLibrary(g_hD3D9);
-            g_hD3D9 = NULL;
-         }
 #endif
 
          if (hWnd == g_hWnd)
@@ -665,17 +705,14 @@ static tResult InitDirect3D9(HWND hWnd, IDirect3D9 * * ppD3d, IDirect3DDevice9 *
       return E_POINTER;
    }
 
-   if (g_hD3D9 == NULL)
+   if (!g_d3d9.Load(_T("d3d9.dll")))
    {
-      g_hD3D9 = LoadLibrary("d3d9.dll");
-      if (g_hD3D9 == NULL)
-      {
-         return E_FAIL;
-      }
+      return E_FAIL;
    }
 
    typedef IDirect3D9 * (WINAPI * tDirect3DCreate9Fn)(UINT);
-   tDirect3DCreate9Fn pfnDirect3DCreate9 = reinterpret_cast<tDirect3DCreate9Fn>(GetProcAddress(g_hD3D9, "Direct3DCreate9"));
+   tDirect3DCreate9Fn pfnDirect3DCreate9 = reinterpret_cast<tDirect3DCreate9Fn>(
+      g_d3d9.GetProcAddress("Direct3DCreate9"));
    if (pfnDirect3DCreate9 == NULL)
    {
       return E_FAIL;
