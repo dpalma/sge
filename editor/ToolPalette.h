@@ -370,7 +370,8 @@ private:
 
    TRenderer m_renderer;
 
-   std::map<const void *, CRect> m_cachedRects;
+   typedef std::map<const void *, CRect> tCachedRects;
+   tCachedRects m_cachedRects;
 
    WTL::CFont m_font;
 
@@ -947,10 +948,10 @@ void cToolPaletteImpl<T, TRenderer, TBase, TWinTraits>::DoGroupClick(HTOOLGROUP 
 {
    cToolGroup * pGroup = reinterpret_cast<cToolGroup *>(hGroup);
    pGroup->ToggleExpandCollapse();
-   std::map<const void *, CRect>::iterator f = m_cachedRects.find(hGroup);
+
+   tCachedRects::iterator f = m_cachedRects.find(hGroup);
    if (f != m_cachedRects.end())
    {
-      m_cachedRects.clear();
       RECT invalidRect;
       GetClientRect(&invalidRect);
       invalidRect.top = f->second.top;
@@ -958,9 +959,10 @@ void cToolPaletteImpl<T, TRenderer, TBase, TWinTraits>::DoGroupClick(HTOOLGROUP 
    }
    else
    {
-      m_cachedRects.clear();
       Invalidate();
    }
+
+   m_cachedRects.clear();
 }
 
 ////////////////////////////////////////
