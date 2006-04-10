@@ -216,17 +216,18 @@ void cEntityManager::RenderAll()
    tEntityList::iterator iter = m_entities.begin();
    for (; iter != m_entities.end(); iter++)
    {
+      cAutoIPtr<IEntity> pEntity(CTAddRef(*iter));
+
       glPushMatrix();
-//      glMultMatrixf((*iter)->GetWorldTransform().m);
 
       cAutoIPtr<IEntityPositionComponent> pPosition;
-      if ((*iter)->FindComponent(IID_IEntityPositionComponent, &pPosition) == S_OK)
+      if (pEntity->FindComponent(IID_IEntityPositionComponent, &pPosition) == S_OK)
       {
          glMultMatrixf(pPosition->GetWorldTransform().m);
       }
 
       cAutoIPtr<IEntityRenderComponent> pRender;
-      if ((*iter)->FindComponent(IID_IEntityRenderComponent, &pRender) == S_OK)
+      if (pEntity->FindComponent(IID_IEntityRenderComponent, &pRender) == S_OK)
       {
          pRender->Render();
 

@@ -360,13 +360,12 @@ void * ModelMs3dLoad(IReader * pReader)
             return NULL;
          }
 
-         char * pszExt = strrchr(ms3dMat.texture, '.');
-         if (pszExt != NULL)
-         {
-            *pszExt = '\0';
-         }
+         // MilkShape stores texture file names as "./texture.bmp" so run
+         // the texture name through cFileSpec to fix it up.
+         cStr texture;
+         cFileSpec(ms3dMat.texture).GetFileNameNoExt(&texture);
 
-         materials[i] = cModelMaterial(ms3dMat.diffuse, ms3dMat.texture);
+         materials[i] = cModelMaterial(ms3dMat.diffuse, texture.c_str());
       }
    }
 
