@@ -17,6 +17,29 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: cEntityPositionComponent
+//
+
+class cEntityPositionComponent : public cComObject<IMPLEMENTS(IEntityPositionComponent)>
+{
+public:
+   cEntityPositionComponent();
+   ~cEntityPositionComponent();
+
+   virtual tResult SetPosition(const tVec3 & position);
+   virtual tResult GetPosition(tVec3 * pPosition) const;
+   virtual const tMatrix4 & GetWorldTransform() const;
+
+private:
+   tVec3 m_position;
+
+   mutable bool m_bUpdateWorldTransform;
+   mutable tMatrix4 m_worldTransform;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cEntityRenderComponent
 //
 

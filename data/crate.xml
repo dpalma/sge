@@ -5,6 +5,8 @@
    <render model="crate.ms3d">
    </render>
    
+   <position></position>
+   
    <spawns queuesize="4">
       <spawn type="zombie" />
    </spawns>

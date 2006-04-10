@@ -29,6 +29,89 @@ extern tResult ModelEntityCreate(tEntityId id, const tChar * pszModel, const tVe
 
 
 ///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cEntityPositionComponent
+//
+
+///////////////////////////////////////
+
+cEntityPositionComponent::cEntityPositionComponent()
+ : m_position(0,0,0)
+ , m_bUpdateWorldTransform(true)
+{
+}
+
+///////////////////////////////////////
+
+cEntityPositionComponent::~cEntityPositionComponent()
+{
+}
+
+///////////////////////////////////////
+
+tResult cEntityPositionComponent::SetPosition(const tVec3 & position)
+{
+   m_position = position;
+   m_bUpdateWorldTransform = true;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cEntityPositionComponent::GetPosition(tVec3 * pPosition) const
+{
+   if (pPosition == NULL)
+   {
+      return E_POINTER;
+   }
+   *pPosition = m_position;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+const tMatrix4 & cEntityPositionComponent::GetWorldTransform() const
+{
+   if (m_bUpdateWorldTransform)
+   {
+      m_bUpdateWorldTransform = false;
+      MatrixTranslate(m_position.x, m_position.y, m_position.z, &m_worldTransform);
+   }
+   return m_worldTransform;
+}
+
+///////////////////////////////////////
+
+tResult EntityPositionComponentFactory(const TiXmlElement * pTiXmlElement,
+                                       IEntity * pEntity, IEntityComponent * * ppComponent)
+{
+   if (pTiXmlElement == NULL || pEntity == NULL || ppComponent == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (_stricmp(pTiXmlElement->Value(), "position") != 0)
+   {
+      return E_INVALIDARG;
+   }
+
+   cAutoIPtr<cEntityPositionComponent> pPosition = new cEntityPositionComponent();
+   if (!pPosition)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   if (pEntity->AddComponent(IID_IEntityPositionComponent, static_cast<IEntityComponent*>(pPosition)) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   *ppComponent = CTAddRef(static_cast<IEntityComponent*>(pPosition));
+   return S_OK;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 
 const sVertexElement g_modelVert[] =
 {
@@ -346,6 +429,7 @@ tResult EntitySpawnComponentFactory(const TiXmlElement * pTiXmlElement,
 void RegisterBuiltInComponents()
 {
    UseGlobal(EntityManager);
+   Verify(pEntityManager->RegisterComponentFactory(_T("position"), EntityPositionComponentFactory) == S_OK);
    Verify(pEntityManager->RegisterComponentFactory(_T("render"), EntityRenderComponentFactory) == S_OK);
    Verify(pEntityManager->RegisterComponentFactory(_T("spawn"), EntitySpawnComponentFactory) == S_OK);
 }

@@ -16,6 +16,7 @@
 
 F_DECLARE_INTERFACE(IEntity);
 F_DECLARE_INTERFACE(IEntityComponent);
+F_DECLARE_INTERFACE(IEntityPositionComponent);
 F_DECLARE_INTERFACE(IEntityRenderComponent);
 F_DECLARE_INTERFACE(IEntitySpawnComponent);
 F_DECLARE_INTERFACE(IEntityEnum);
@@ -39,6 +40,20 @@ typedef class cAxisAlignedBox<float> tAxisAlignedBox;
 
 interface IEntityComponent : IUnknown
 {
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IEntityPositionComponent
+//
+
+interface IEntityPositionComponent : IEntityComponent
+{
+   virtual tResult SetPosition(const tVec3 & position) = 0;
+   virtual tResult GetPosition(tVec3 * pPosition) const = 0;
+
+   virtual const tMatrix4 & GetWorldTransform() const = 0;
 };
 
 
@@ -86,8 +101,8 @@ interface IEntity : IUnknown
 {
    virtual tEntityId GetId() const = 0;
 
-   virtual tResult GetPosition(tVec3 * pPosition) const = 0;
-   virtual const tMatrix4 & GetWorldTransform() const = 0;
+   //virtual tResult GetPosition(tVec3 * pPosition) const = 0;
+   //virtual const tMatrix4 & GetWorldTransform() const = 0;
 
    virtual tResult AddComponent(REFGUID guid, IEntityComponent * pComponent) = 0;
    virtual tResult FindComponent(REFGUID guid, IEntityComponent * * ppComponent) = 0;

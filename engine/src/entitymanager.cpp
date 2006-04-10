@@ -149,10 +149,10 @@ tResult cEntityManager::SpawnEntity(const tChar * pszEntity, const tVec3 & posit
             cAutoIPtr<IEntityComponent> pComponent;
             if (CreateComponent(pTiXmlChild, pEntity, &pComponent) == S_OK)
             {
-               cAutoIPtr<IEntityRenderComponent> pRender;
-               if (pComponent->QueryInterface(IID_IEntityRenderComponent, (void**)&pRender) == S_OK)
+               cAutoIPtr<IEntityPositionComponent> pPosition;
+               if (pComponent->QueryInterface(IID_IEntityPositionComponent, (void**)&pPosition) == S_OK)
                {
-                  // TODO: save in a render list
+                  pPosition->SetPosition(position);
                }
             }
          }
@@ -217,7 +217,13 @@ void cEntityManager::RenderAll()
    for (; iter != m_entities.end(); iter++)
    {
       glPushMatrix();
-      glMultMatrixf((*iter)->GetWorldTransform().m);
+//      glMultMatrixf((*iter)->GetWorldTransform().m);
+
+      cAutoIPtr<IEntityPositionComponent> pPosition;
+      if ((*iter)->FindComponent(IID_IEntityPositionComponent, &pPosition) == S_OK)
+      {
+         glMultMatrixf(pPosition->GetWorldTransform().m);
+      }
 
       cAutoIPtr<IEntityRenderComponent> pRender;
       if ((*iter)->FindComponent(IID_IEntityRenderComponent, &pRender) == S_OK)
@@ -246,21 +252,27 @@ tResult cEntityManager::RayCast(const cRay & ray, IEntity * * ppEntity) const
    for (; iter != m_entities.end(); iter++)
    {
       cAutoIPtr<IEntity> pEntity(CTAddRef(*iter));
-      const tMatrix4 & worldTransform = pEntity->GetWorldTransform();
-      tVec3 position(worldTransform.m[12], worldTransform.m[13], worldTransform.m[14]);
 
-      cAutoIPtr<IEntityRenderComponent> pRender;
-      if ((*iter)->FindComponent(IID_IEntityRenderComponent, &pRender) == S_OK)
+      cAutoIPtr<IEntityPositionComponent> pPosition;
+      if (pEntity->FindComponent(IID_IEntityPositionComponent, &pPosition) == S_OK)
       {
-         tAxisAlignedBox bbox;
-         if (pRender->GetBoundingBox(&bbox) == S_OK)
+         tVec3 position;
+         if (pPosition->GetPosition(&position) == S_OK)
          {
-            bbox.Offset(position);
-
-            if (ray.IntersectsAxisAlignedBox(bbox))
+            cAutoIPtr<IEntityRenderComponent> pRender;
+            if (pEntity->FindComponent(IID_IEntityRenderComponent, &pRender) == S_OK)
             {
-               *ppEntity = CTAddRef(pEntity);
-               return S_OK;
+               tAxisAlignedBox bbox;
+               if (pRender->GetBoundingBox(&bbox) == S_OK)
+               {
+                  bbox.Offset(position);
+
+                  if (ray.IntersectsAxisAlignedBox(bbox))
+                  {
+                     *ppEntity = CTAddRef(pEntity);
+                     return S_OK;
+                  }
+               }
             }
          }
       }
@@ -307,20 +319,26 @@ tResult cEntityManager::SelectBoxed(const tAxisAlignedBox & box)
    for (; iter != m_entities.end(); iter++)
    {
       cAutoIPtr<IEntity> pEntity(CTAddRef(*iter));
-      const tMatrix4 & worldTransform = pEntity->GetWorldTransform();
-      tVec3 position(worldTransform.m[12], worldTransform.m[13], worldTransform.m[14]);
 
-      cAutoIPtr<IEntityRenderComponent> pRender;
-      if ((*iter)->FindComponent(IID_IEntityRenderComponent, &pRender) == S_OK)
+      cAutoIPtr<IEntityPositionComponent> pPosition;
+      if (pEntity->FindComponent(IID_IEntityPositionComponent, &pPosition) == S_OK)
       {
-         tAxisAlignedBox bbox;
-         if (pRender->GetBoundingBox(&bbox) == S_OK)
+         tVec3 position;
+         if (pPosition->GetPosition(&position) == S_OK)
          {
-            bbox.Offset(position);
-            if (bbox.Intersects(box))
+            cAutoIPtr<IEntityRenderComponent> pRender;
+            if (pEntity->FindComponent(IID_IEntityRenderComponent, &pRender) == S_OK)
             {
-               m_selected.insert(CTAddRef(pEntity));
-               nSelected++;
+               tAxisAlignedBox bbox;
+               if (pRender->GetBoundingBox(&bbox) == S_OK)
+               {
+                  bbox.Offset(position);
+                  if (bbox.Intersects(box))
+                  {
+                     m_selected.insert(CTAddRef(pEntity));
+                     nSelected++;
+                  }
+               }
             }
          }
       }
@@ -464,16 +482,21 @@ tResult cEntityManager::Save(IWriter * pWriter)
    tEntityList::iterator iter = m_entities.begin();
    for (; iter != m_entities.end(); iter++)
    {
-      cStr model;
-      tVec3 position;
-
       cAutoIPtr<IEntityRenderComponent> pRender;
-      if ((*iter)->FindComponent(IID_IEntityRenderComponent, &pRender) == S_OK)
+      if ((*iter)->FindComponent(IID_IEntityRenderComponent, &pRender) != S_OK)
       {
-         pRender->GetModel(&model);
+         continue;
       }
 
-      if (!model.empty() && (*iter)->GetPosition(&position) == S_OK)
+      cAutoIPtr<IEntityPositionComponent> pPosition;
+      if ((*iter)->FindComponent(IID_IEntityPositionComponent, &pPosition) != S_OK)
+      {
+         continue;
+      }
+
+      cStr model;
+      tVec3 position;
+      if (pRender->GetModel(&model) == S_OK && !model.empty() && pPosition->GetPosition(&position) == S_OK)
       {
          if (pWriter->Write(model) != S_OK
             || pWriter->Write(position) != S_OK)
