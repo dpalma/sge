@@ -373,7 +373,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\cppunit.lib msModelLib.lib $(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib opengl32.lib glu32.lib winmm.lib"
+				AdditionalDependencies="$(OutDir)\CppUnitLite2.lib msModelLib.lib $(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib opengl32.lib glu32.lib winmm.lib"
 				OutputFile="..\..\Build.vc8\StaticDebug/msSGEExporter.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
