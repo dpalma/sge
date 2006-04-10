@@ -2,7 +2,7 @@
 <?xml version="1.0" encoding="utf-8" ?> 
 <entity name="Tree">
    
-   <render model="tree.ms3d">
+   <render model="tree2.ms3d">
    </render>
    
    <position></position>
