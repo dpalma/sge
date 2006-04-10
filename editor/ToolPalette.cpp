@@ -228,6 +228,7 @@ void cToolGroup::Clear()
 ////////////////////////////////////////
 
 cToolPaletteRenderer::cToolPaletteRenderer()
+ : m_hCheckedItemBrush(NULL)
 {
 }
 
@@ -235,6 +236,11 @@ cToolPaletteRenderer::cToolPaletteRenderer()
 
 cToolPaletteRenderer::~cToolPaletteRenderer()
 {
+   if (m_hCheckedItemBrush != NULL)
+   {
+      DeleteObject(m_hCheckedItemBrush);
+      m_hCheckedItemBrush = NULL;
+   }
 }
 
 ////////////////////////////////////////
@@ -298,7 +304,7 @@ void cToolPaletteRenderer::Render(WTL::CDCHandle dc, const CRect & itemRect,
 void cToolPaletteRenderer::Render(WTL::CDCHandle dc, const CRect & itemRect,
                                   const cToolItem * pToolItem, bool bMouseOver) const
 {
-   if (m_checkedItemBrush.IsNull())
+   if (m_hCheckedItemBrush == NULL)
    {
       static const WORD patternBits[] =
       {
@@ -308,7 +314,7 @@ void cToolPaletteRenderer::Render(WTL::CDCHandle dc, const CRect & itemRect,
       HBITMAP hPatternBm = CreateBitmap(8, 8, 1, 1, patternBits);
       if (hPatternBm != NULL)
       {
-         m_checkedItemBrush.CreatePatternBrush(hPatternBm);
+         m_hCheckedItemBrush = CreatePatternBrush(hPatternBm);
          DeleteObject(hPatternBm);
       }
    }
@@ -355,14 +361,14 @@ void cToolPaletteRenderer::Render(WTL::CDCHandle dc, const CRect & itemRect,
          imageOffset.x += kCheckedItemTextOffset;
          imageOffset.y += kCheckedItemTextOffset;
 
-         if (!m_checkedItemBrush.IsNull())
+         if (m_hCheckedItemBrush != NULL)
          {
             CRect itemRect2(itemRect);
             itemRect2.DeflateRect(2, 2);
 
             COLORREF oldTextColor = dc.SetTextColor(GetSysColor(COLOR_3DHILIGHT));
             COLORREF oldBkColor = dc.SetBkColor(GetSysColor(COLOR_3DFACE));
-            dc.FillRect(itemRect2, m_checkedItemBrush);
+            dc.FillRect(itemRect2, m_hCheckedItemBrush);
             dc.SetTextColor(oldTextColor);
             dc.SetBkColor(oldBkColor);
          }
