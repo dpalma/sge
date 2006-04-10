@@ -59,6 +59,35 @@ BOOL WINAPI DynamicGradientFill(HDC hdc,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+static void FillSolidRect(HDC hDC, LPCRECT lpRect, COLORREF clr)
+{
+	COLORREF oldBkColor = ::SetBkColor(hDC, clr);
+	::ExtTextOut(hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
+   ::SetBkColor(hDC, oldBkColor);
+}
+
+static void FillSolidRect(HDC hDC, int x, int y, int cx, int cy, COLORREF clr)
+{
+	RECT rect = { x, y, x + cx, y + cy };
+   FillSolidRect(hDC, &rect, clr);
+}
+
+static void Draw3dRect(HDC hDC, int x, int y, int cx, int cy, COLORREF clrTopLeft, COLORREF clrBottomRight)
+{
+	FillSolidRect(hDC, x, y, cx - 1, 1, clrTopLeft);
+	FillSolidRect(hDC, x, y, 1, cy - 1, clrTopLeft);
+	FillSolidRect(hDC, x + cx, y, -1, cy, clrBottomRight);
+	FillSolidRect(hDC, x, y + cy, cx, -1, clrBottomRight);
+}
+
+static void Draw3dRect(HDC hDC, LPCRECT lpRect, COLORREF clrTopLeft, COLORREF clrBottomRight)
+{
+	Draw3dRect(hDC, lpRect->left, lpRect->top, lpRect->right - lpRect->left,
+		lpRect->bottom - lpRect->top, clrTopLeft, clrBottomRight);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cToolItem
 //
@@ -66,11 +95,11 @@ BOOL WINAPI DynamicGradientFill(HDC hdc,
 ////////////////////////////////////////
 
 cToolItem::cToolItem(cToolGroup * pGroup, const tChar * pszName, int iImage, void * pUserData)
- : m_pGroup(pGroup),
-   m_name(pszName != NULL ? pszName : ""),
-   m_state(kTPTS_None),
-   m_iImage(iImage),
-   m_pUserData(pUserData)
+ : m_pGroup(pGroup)
+ , m_name(pszName != NULL ? pszName : "")
+ , m_state(kTPTS_None)
+ , m_iImage(iImage)
+ , m_pUserData(pUserData)
 {
 }
 
@@ -103,9 +132,9 @@ void cToolItem::ToggleChecked()
 ////////////////////////////////////////
 
 cToolGroup::cToolGroup(const tChar * pszName, HIMAGELIST hImageList)
- : m_name(pszName != NULL ? pszName : ""),
-   m_hImageList(hImageList),
-   m_bCollapsed(false)
+ : m_name(pszName != NULL ? pszName : "")
+ , m_hImageList(hImageList)
+ , m_bCollapsed(false)
 {
 }
 

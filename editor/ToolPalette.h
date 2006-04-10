@@ -8,7 +8,6 @@
 
 #include <atlgdi.h>
 #include <atlcrack.h>
-#include <atlscrl.h>
 
 #include <string>
 #include <vector>
@@ -275,13 +274,13 @@ private:
 //
 
 template <class T, class TRenderer>
-class ATL_NO_VTABLE cToolPaletteImpl : public WTL::CScrollWindowImpl<T>,
+class ATL_NO_VTABLE cToolPaletteImpl : public ATL::CWindowImpl<T>,
                                        public cTrackMouseEvent<T>
 {
-   typedef WTL::CScrollWindowImpl<T> tBase;
+   typedef ATL::CWindowImpl<T> tBase;
 
 public:
-	DECLARE_WND_SUPERCLASS(NULL, TBase::GetWndClassName())
+	DECLARE_WND_SUPERCLASS(NULL, tBase::GetWndClassName())
 
    cToolPaletteImpl();
    ~cToolPaletteImpl();
@@ -300,33 +299,26 @@ public:
    bool RemoveTool(HTOOLITEM hTool);
    bool EnableTool(HTOOLITEM hTool, bool bEnable);
 
-   // CScrollWindowImpl handles WM_PAINT and delegates to this method
-   void DoPaint(WTL::CDCHandle dc);
-
 protected:
    BEGIN_MSG_MAP_EX(cToolPaletteImpl)
-      CHAIN_MSG_MAP(tBase)
       CHAIN_MSG_MAP(cTrackMouseEvent<T>)
       MSG_WM_DESTROY(OnDestroy)
       MSG_WM_SIZE(OnSize)
+      MSG_WM_PAINT(OnPaint)
       MSG_WM_SETFONT(OnSetFont)
       MSG_WM_ERASEBKGND(OnEraseBkgnd)
       MSG_WM_CANCELMODE(OnCancelMode)
       MSG_WM_MOUSELEAVE(OnMouseLeave)
-      // Adjust mouse position for scrolling for all mouse messages
-      if (uMsg >= WM_MOUSEFIRST && uMsg <= WM_MOUSELAST)
-      {
-         CPoint ptAdjusted(lParam);
-         ptAdjusted += m_ptOffset;
-         lParam = MAKELPARAM(ptAdjusted.x, ptAdjusted.y);
-         MSG_WM_MOUSEMOVE(OnMouseMove)
-         MSG_WM_LBUTTONDOWN(OnLButtonDown)
-         MSG_WM_LBUTTONUP(OnLButtonUp)
-      }
+      MSG_WM_MOUSEMOVE(OnMouseMove)
+      MSG_WM_LBUTTONDOWN(OnLButtonDown)
+      MSG_WM_LBUTTONUP(OnLButtonUp)
    END_MSG_MAP()
+
+   void DoPaint(WTL::CDCHandle dc);
 
    void OnDestroy();
    void OnSize(UINT nType, CSize size);
+   void OnPaint(HDC hDC);
    void OnSetFont(HFONT hFont, BOOL bRedraw);
    LRESULT OnEraseBkgnd(WTL::CDCHandle dc);
    void OnCancelMode();
@@ -365,7 +357,7 @@ private:
    typedef std::map<const void *, CRect> tCachedRects;
    tCachedRects m_cachedRects;
 
-   WTL::CFont m_font;
+   HFONT m_hFont;
 
    HANDLE m_hMouseOverItem;
    HANDLE m_hClickCandidateItem;
@@ -376,6 +368,7 @@ private:
 template <class T, class TRenderer>
 cToolPaletteImpl<T, TRenderer>::cToolPaletteImpl()
  : m_bExclusiveCheck(true)
+ , m_hFont(NULL)
  , m_hMouseOverItem(NULL)
  , m_hClickCandidateItem(NULL)
 {
@@ -386,6 +379,7 @@ cToolPaletteImpl<T, TRenderer>::cToolPaletteImpl()
 template <class T, class TRenderer>
 cToolPaletteImpl<T, TRenderer>::~cToolPaletteImpl()
 {
+   Assert(m_hFont == NULL);
 }
 
 ////////////////////////////////////////
@@ -633,7 +627,7 @@ bool cToolPaletteImpl<T, TRenderer>::EnableTool(HTOOLITEM hTool, bool bEnable)
 template <class T, class TRenderer>
 void cToolPaletteImpl<T, TRenderer>::DoPaint(WTL::CDCHandle dc)
 {
-   HFONT hOldFont = dc.SelectFont(!m_font.IsNull() ? m_font : WTL::AtlGetDefaultGuiFont());
+   HFONT hOldFont = dc.SelectFont((m_hFont != NULL) ? m_hFont : WTL::AtlGetDefaultGuiFont());
 
    const POINT * pMousePos = NULL;
    POINT mousePos;
@@ -706,11 +700,30 @@ void cToolPaletteImpl<T, TRenderer>::OnSize(UINT nType, CSize size)
 ////////////////////////////////////////
 
 template <class T, class TRenderer>
+void cToolPaletteImpl<T, TRenderer>::OnPaint(HDC hDC)
+{
+   if (hDC != NULL)
+   {
+      DoPaint(hDC);
+   }
+   else
+   {
+      PAINTSTRUCT ps = {0};
+      hDC = ::BeginPaint(m_hWnd, &ps);
+      DoPaint(hDC);
+      ::EndPaint(m_hWnd, &ps);
+   }
+}
+
+////////////////////////////////////////
+
+template <class T, class TRenderer>
 void cToolPaletteImpl<T, TRenderer>::OnSetFont(HFONT hFont, BOOL bRedraw)
 {
-   if (!m_font.IsNull())
+   if (m_hFont != NULL)
    {
-      Verify(m_font.DeleteObject());
+      Verify(DeleteObject(m_hFont));
+      m_hFont = NULL;
    }
 
    if (hFont != NULL)
@@ -719,7 +732,7 @@ void cToolPaletteImpl<T, TRenderer>::OnSetFont(HFONT hFont, BOOL bRedraw)
       if (GetObject(hFont, sizeof(LOGFONT), &logFont))
       {
          m_cachedRects.clear();
-         m_font.CreateFontIndirect(&logFont);
+         m_hFont = CreateFontIndirect(&logFont);
       }
    }
 
@@ -821,14 +834,29 @@ void cToolPaletteImpl<T, TRenderer>::GetCheckedItems(std::vector<HTOOLITEM> * pC
 template <class T, class TRenderer>
 HANDLE cToolPaletteImpl<T, TRenderer>::GetHitItem(const CPoint & point) const
 {
-   WTL::CDC dc(::GetDC(m_hWnd));
+   int itemHeight = 0;
 
-   HFONT hOldFont = dc.SelectFont(!m_font.IsNull() ? m_font : WTL::AtlGetDefaultGuiFont());
+   {
+      HDC hDC = ::GetDC(m_hWnd);
+      if (hDC != NULL)
+      {
+         HGDIOBJ hOldFont = SelectObject(hDC, (m_hFont != NULL) ? m_hFont : WTL::AtlGetDefaultGuiFont());
 
-   TEXTMETRIC tm = {0};
-   Verify(dc.GetTextMetrics(&tm));
+         TEXTMETRIC tm = {0};
+         Verify(GetTextMetrics(hDC, &tm));
 
-   int itemHeight = tm.tmHeight + tm.tmExternalLeading + (2 * kTextGap);
+         SelectObject(hDC, hOldFont);
+
+         ::ReleaseDC(m_hWnd, hDC);
+
+         itemHeight = tm.tmHeight + tm.tmExternalLeading + (2 * kTextGap);
+      }
+   }
+
+   if (itemHeight == 0)
+   {
+      return NULL;
+   }
 
    CRect itemRect;
    Verify(GetClientRect(&itemRect));
@@ -871,8 +899,6 @@ HANDLE cToolPaletteImpl<T, TRenderer>::GetHitItem(const CPoint & point) const
          }
       }
    }
-
-   dc.SelectFont(hOldFont);
 
    return hHitItem;
 }
