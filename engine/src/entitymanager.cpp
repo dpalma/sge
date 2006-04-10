@@ -29,7 +29,7 @@
 
 #define IsFlagSet(f, b) (((f)&(b))==(b))
 
-extern tResult ModelEntityCreate(tEntityId id, const tVec3 & position, IEntity * * ppEntity);
+extern tResult EntityCreate(const tChar * pszTypeName, tEntityId id, IEntity * * ppEntity);
 extern void RegisterBuiltInComponents();
 
 
@@ -57,7 +57,7 @@ cEntityManager::~cEntityManager()
 static const GUID SAVELOADID_EntityManager = 
 { 0xdc738464, 0xa124, 0x4dc2, { 0x88, 0xa5, 0x54, 0x61, 0x9e, 0x5d, 0x2, 0x6f } };
 
-static const int g_entityManagerVer = 1;
+static const int g_entityManagerVer = 2;
 
 ///////////////////////////////////////
 
@@ -135,7 +135,7 @@ tResult cEntityManager::SpawnEntity(const tChar * pszEntity, const tVec3 & posit
 
          tResult result = E_FAIL;
          cAutoIPtr<IEntity> pEntity;
-         if ((result = ModelEntityCreate(entityId, position, &pEntity)) != S_OK)
+         if ((result = EntityCreate(pszEntity, entityId, &pEntity)) != S_OK)
          {
             m_nextId = oldNextId;
             return result;
@@ -483,23 +483,17 @@ tResult cEntityManager::Save(IWriter * pWriter)
    tEntityList::iterator iter = m_entities.begin();
    for (; iter != m_entities.end(); iter++)
    {
-      cAutoIPtr<IEntityRenderComponent> pRender;
-      if ((*iter)->FindComponent(IID_IEntityRenderComponent, &pRender) != S_OK)
-      {
-         continue;
-      }
-
       cAutoIPtr<IEntityPositionComponent> pPosition;
       if ((*iter)->FindComponent(IID_IEntityPositionComponent, &pPosition) != S_OK)
       {
          continue;
       }
 
-      cStr model;
+      cStr typeName;
       tVec3 position;
-      if (pRender->GetModel(&model) == S_OK && !model.empty() && pPosition->GetPosition(&position) == S_OK)
+      if ((*iter)->GetTypeName(&typeName) == S_OK && !typeName.empty() && pPosition->GetPosition(&position) == S_OK)
       {
-         if (pWriter->Write(model) != S_OK
+         if (pWriter->Write(typeName) != S_OK
             || pWriter->Write(position) != S_OK)
          {
             return E_FAIL;
@@ -518,10 +512,15 @@ tResult cEntityManager::Load(IReader * pReader, int version)
       return E_POINTER;
    }
 
-   // version 1:
-   // size_t nEntries
-   // nEntries of (cStr model, tVec3 position)
+   // version 1 stored model names (the entity system was even more primitive)
    if (version == 1)
+   {
+      return E_FAIL;
+   }
+   // version 2:
+   // size_t nEntries
+   // nEntries of (cStr typeName, tVec3 position)
+   else if (version == 2)
    {
       size_t nEntries = 0;
       if (pReader->Read(&nEntries) != S_OK)
@@ -530,14 +529,14 @@ tResult cEntityManager::Load(IReader * pReader, int version)
       }
       for (uint i = 0; i < nEntries; i++)
       {
-         cStr model;
+         cStr typeName;
          tVec3 position;
-         if (pReader->Read(&model) != S_OK
+         if (pReader->Read(&typeName) != S_OK
             || pReader->Read(&position) != S_OK)
          {
             return E_FAIL;
          }
-         SpawnEntity(model.c_str(), position);
+         SpawnEntity(typeName.c_str(), position);
       }
    }
 

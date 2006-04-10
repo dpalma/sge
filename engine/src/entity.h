@@ -23,25 +23,19 @@
 class cEntity : public cComObject<IMPLEMENTS(IEntity)>
 {
 public:
-   cEntity(tEntityId id, const tVec3 & position);
+   cEntity(const tChar * pszTypeName, tEntityId id);
    ~cEntity();
 
+   virtual tResult GetTypeName(cStr * pTypeName) const;
+
    virtual tEntityId GetId() const;
-
-   virtual tResult GetPosition(tVec3 * pPosition) const;
-
-   virtual const tMatrix4 & GetWorldTransform() const;
 
    virtual tResult AddComponent(REFGUID guid, IEntityComponent * pComponent);
    virtual tResult FindComponent(REFGUID guid, IEntityComponent * * ppComponent);
 
 private:
+   cStr m_typeName;
    tEntityId m_id;
-
-   tVec3 m_position;
-
-   mutable bool m_bUpdateWorldTransform;
-   mutable tMatrix4 m_worldTransform;
 
    struct sLessGuid
    {

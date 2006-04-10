@@ -613,7 +613,7 @@ tResult cSaveLoadManager::Load(IReader * pReader)
       if (f->second->GetParticipant(entry.version, &pSLP) != S_OK)
       {
          ErrorMsg1("Unable to get reader for file entry version %d\n", entry.version);
-         return E_FAIL;
+         continue;
       }
 
       if (pReader->Seek(entry.offset, kSO_Set) != S_OK)

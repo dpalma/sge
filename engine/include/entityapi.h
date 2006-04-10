@@ -99,10 +99,9 @@ typedef ulong tEntityId;
 
 interface IEntity : IUnknown
 {
-   virtual tEntityId GetId() const = 0;
+   virtual tResult GetTypeName(cStr * pTypeName) const = 0;
 
-   //virtual tResult GetPosition(tVec3 * pPosition) const = 0;
-   //virtual const tMatrix4 & GetWorldTransform() const = 0;
+   virtual tEntityId GetId() const = 0;
 
    virtual tResult AddComponent(REFGUID guid, IEntityComponent * pComponent) = 0;
    virtual tResult FindComponent(REFGUID guid, IEntityComponent * * ppComponent) = 0;

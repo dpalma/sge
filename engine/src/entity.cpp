@@ -22,14 +22,14 @@
 
 ///////////////////////////////////////
 
-tResult ModelEntityCreate(tEntityId id, const tVec3 & position, IEntity * * ppEntity)
+tResult EntityCreate(const tChar * pszTypeName, tEntityId id, IEntity * * ppEntity)
 {
-   if (ppEntity == NULL)
+   if (pszTypeName == NULL || ppEntity == NULL)
    {
       return E_POINTER;
    }
 
-   cEntity * pEntity = new cEntity(id, position);
+   cEntity * pEntity = new cEntity(pszTypeName, id);
    if (pEntity == NULL)
    {
       return E_OUTOFMEMORY;
@@ -41,10 +41,9 @@ tResult ModelEntityCreate(tEntityId id, const tVec3 & position, IEntity * * ppEn
 
 ///////////////////////////////////////
 
-cEntity::cEntity(tEntityId id, const tVec3 & position)
- : m_id(id)
- , m_position(position)
- , m_bUpdateWorldTransform(true)
+cEntity::cEntity(const tChar * pszTypeName, tEntityId id)
+ : m_typeName((pszTypeName != NULL) ? pszTypeName : _T(""))
+ , m_id(id)
 {
 }
 
@@ -62,33 +61,21 @@ cEntity::~cEntity()
 
 ///////////////////////////////////////
 
-tEntityId cEntity::GetId() const
+tResult cEntity::GetTypeName(cStr * pTypeName) const
 {
-   return m_id;
-}
-
-///////////////////////////////////////
-
-tResult cEntity::GetPosition(tVec3 * pPosition) const
-{
-   if (pPosition == NULL)
+   if (pTypeName == NULL)
    {
       return E_POINTER;
    }
-   *pPosition = m_position;
-   return S_OK;
+   *pTypeName = m_typeName;
+   return m_typeName.empty() ? S_FALSE : S_OK;
 }
 
 ///////////////////////////////////////
 
-const tMatrix4 & cEntity::GetWorldTransform() const
+tEntityId cEntity::GetId() const
 {
-   if (m_bUpdateWorldTransform)
-   {
-      m_bUpdateWorldTransform = false;
-      MatrixTranslate(m_position.x, m_position.y, m_position.z, &m_worldTransform);
-   }
-   return m_worldTransform;
+   return m_id;
 }
 
 ///////////////////////////////////////
