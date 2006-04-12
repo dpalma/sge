@@ -627,6 +627,10 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath="..\..\tests\managededitor\ToolPalette.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -671,6 +675,10 @@
 			</File>
 			<File
 				RelativePath=".\..\..\tests\managededitor\stdhdr.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tests\managededitor\ToolPalette.h"
 				>
 			</File>
 		</Filter>

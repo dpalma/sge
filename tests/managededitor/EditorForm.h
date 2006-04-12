@@ -6,6 +6,7 @@
 
 #include "GlControl.h"
 #include "EditorDocument.h"
+#include "ToolPalette.h"
 
 #include "comtools.h"
 
@@ -31,10 +32,14 @@ public:
 
    void OnIdle(System::Object ^ sender, System::EventArgs ^ e);
 
+   void OnToolSelect(System::Object ^ sender, ToolSelectEventArgs ^ e);
+
 private:
    IGUIFont * m_pFont;
 
    GlControl ^ m_glControl;
+
+   ToolPalette ^ m_toolPalette;
 
    EditorDocument ^ m_document;
 
@@ -84,6 +89,7 @@ private: System::Windows::Forms::ToolStripButton^  pasteToolStripButton;
 private: System::Windows::Forms::ToolStripSeparator^  toolStripSeparator2;
 private: System::Windows::Forms::ToolStripButton^  helpToolStripButton;
 private: System::Windows::Forms::ToolStripContainer^  toolStripContainer1;
+private: System::Windows::Forms::SplitContainer^  splitContainer1;
 
    /// <summary>
    /// Required designer variable.
@@ -136,10 +142,13 @@ private: System::Windows::Forms::ToolStripContainer^  toolStripContainer1;
       this->toolStripSeparator2 = (gcnew System::Windows::Forms::ToolStripSeparator());
       this->helpToolStripButton = (gcnew System::Windows::Forms::ToolStripButton());
       this->toolStripContainer1 = (gcnew System::Windows::Forms::ToolStripContainer());
+      this->splitContainer1 = (gcnew System::Windows::Forms::SplitContainer());
       this->editorFormMenuStrip->SuspendLayout();
       this->editorFormToolStrip->SuspendLayout();
+      this->toolStripContainer1->ContentPanel->SuspendLayout();
       this->toolStripContainer1->TopToolStripPanel->SuspendLayout();
       this->toolStripContainer1->SuspendLayout();
+      this->splitContainer1->SuspendLayout();
       this->SuspendLayout();
       // 
       // editorFormMenuStrip
@@ -433,6 +442,7 @@ private: System::Windows::Forms::ToolStripContainer^  toolStripContainer1;
       // 
       // toolStripContainer1.ContentPanel
       // 
+      this->toolStripContainer1->ContentPanel->Controls->Add(this->splitContainer1);
       this->toolStripContainer1->ContentPanel->Size = System::Drawing::Size(292, 224);
       this->toolStripContainer1->Dock = System::Windows::Forms::DockStyle::Fill;
       this->toolStripContainer1->Location = System::Drawing::Point(0, 24);
@@ -444,6 +454,15 @@ private: System::Windows::Forms::ToolStripContainer^  toolStripContainer1;
       // toolStripContainer1.TopToolStripPanel
       // 
       this->toolStripContainer1->TopToolStripPanel->Controls->Add(this->editorFormToolStrip);
+      // 
+      // splitContainer1
+      // 
+      this->splitContainer1->Dock = System::Windows::Forms::DockStyle::Fill;
+      this->splitContainer1->Location = System::Drawing::Point(0, 0);
+      this->splitContainer1->Name = L"splitContainer1";
+      this->splitContainer1->Size = System::Drawing::Size(292, 224);
+      this->splitContainer1->SplitterDistance = 97;
+      this->splitContainer1->TabIndex = 0;
       // 
       // EditorForm
       // 
@@ -461,10 +480,12 @@ private: System::Windows::Forms::ToolStripContainer^  toolStripContainer1;
       this->editorFormMenuStrip->PerformLayout();
       this->editorFormToolStrip->ResumeLayout(false);
       this->editorFormToolStrip->PerformLayout();
+      this->toolStripContainer1->ContentPanel->ResumeLayout(false);
       this->toolStripContainer1->TopToolStripPanel->ResumeLayout(false);
       this->toolStripContainer1->TopToolStripPanel->PerformLayout();
       this->toolStripContainer1->ResumeLayout(false);
       this->toolStripContainer1->PerformLayout();
+      this->splitContainer1->ResumeLayout(false);
       this->ResumeLayout(false);
       this->PerformLayout();
 

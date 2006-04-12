@@ -46,9 +46,15 @@ EditorForm::EditorForm()
 {
    InitializeComponent();
 
+   m_toolPalette = gcnew ToolPalette();
+   m_toolPalette->Dock = System::Windows::Forms::DockStyle::Fill;
+   splitContainer1->Panel1->Controls->Add(m_toolPalette);
+
+   m_toolPalette->ToolSelect += gcnew ToolPalette::ToolSelectHandler(this, &EditorForm::OnToolSelect);
+
    m_glControl = gcnew GlControl();
 	m_glControl->Dock = System::Windows::Forms::DockStyle::Fill;
-   toolStripContainer1->ContentPanel->Controls->Add(m_glControl);
+   splitContainer1->Panel2->Controls->Add(m_glControl);
 
    m_document = gcnew EditorDocument();
 
@@ -60,6 +66,7 @@ EditorForm::~EditorForm()
    if (components)
    {
       delete components;
+      components = nullptr;
    }
 
    if (m_pFont != NULL)
@@ -123,6 +130,10 @@ void EditorForm::OnIdle(System::Object ^ sender, System::EventArgs ^ e)
 
       m_glControl->SwapBuffers();
    }
+}
+
+void EditorForm::OnToolSelect(System::Object ^ sender, ToolSelectEventArgs ^ e)
+{
 }
 
 System::Void EditorForm::OnFileOpen(System::Object ^ sender, System::EventArgs ^ e)
