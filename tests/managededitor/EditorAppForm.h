@@ -41,11 +41,15 @@ namespace ManagedEditor
 
       void OnToolSelect(System::Object ^ sender, ToolSelectEventArgs ^ e);
 
+      virtual void OnResize(System::EventArgs ^ e) override;
+
    protected:
       virtual void NewDocument() override;
       virtual void OpenDocument() override;
       virtual void SaveDocument() override;
       virtual void SaveDocumentAs() override;
+
+      void CreateEditorTools();
 
    private:
       IGUIFont * m_pFont;

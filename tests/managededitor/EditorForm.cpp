@@ -35,6 +35,16 @@ namespace ManagedEditor
       }
    }
 
+   System::Windows::Forms::SplitterPanel ^ EditorForm::ToolPanel::get()
+   {
+      return splitContainer2->Panel1;
+   }
+
+   System::Windows::Forms::SplitterPanel ^ EditorForm::MainPanel::get()
+   {
+      return splitContainer1->Panel2;
+   }
+
    System::Void EditorForm::OnFileOpen(System::Object ^ sender, System::EventArgs ^ e)
    {
       OpenDocument();

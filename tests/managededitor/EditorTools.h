@@ -18,6 +18,26 @@ namespace ManagedEditor
 
    ///////////////////////////////////////////////////////////////////////////////
    //
+   // CLASS: EditorToolGroup
+   //
+
+   [System::AttributeUsage(System::AttributeTargets::Class, AllowMultiple=false)]
+   ref class EditorToolGroup : public System::Attribute
+   {
+   public:
+      EditorToolGroup(System::String ^ groupName);
+
+      property System::String ^ Group
+      {
+         System::String ^ get();
+      }
+
+   private:
+      System::String ^ m_groupName;
+   };
+
+   ///////////////////////////////////////////////////////////////////////////////
+   //
    // CLASS: EditorTool
    //
 
@@ -31,6 +51,7 @@ namespace ManagedEditor
    // CLASS: EditorSelectTool
    //
 
+   [EditorToolGroup("Standard")]
    ref class EditorSelectTool : public EditorTool
    {
    public:

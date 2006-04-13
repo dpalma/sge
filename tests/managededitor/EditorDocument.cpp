@@ -46,7 +46,15 @@ bool EditorDocument::New(const cTerrainSettings & ts)
    Reset();
    Modified = true;
 
-   return true;
+   bool bResult = false;
+
+   UseGlobal(TerrainModel);
+   if (pTerrainModel->Initialize(ts) == S_OK)
+   {
+      bResult = true;
+   }
+
+   return bResult;
 }
 
 bool EditorDocument::Open(System::String ^ fileName)

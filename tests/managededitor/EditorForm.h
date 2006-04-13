@@ -30,9 +30,14 @@ public:
    ~EditorForm();
 
 protected:
-   property System::Windows::Forms::SplitContainer ^ Splitter
+   property System::Windows::Forms::SplitterPanel ^ ToolPanel
    {
-      System::Windows::Forms::SplitContainer ^ get() { return splitContainer1; }
+      System::Windows::Forms::SplitterPanel ^ get();
+   }
+
+   property System::Windows::Forms::SplitterPanel ^ MainPanel
+   {
+      System::Windows::Forms::SplitterPanel ^ get();
    }
 
    virtual void NewDocument() {}
@@ -87,6 +92,7 @@ private: System::Windows::Forms::ToolStripSeparator^  toolStripSeparator2;
 private: System::Windows::Forms::ToolStripButton^  helpToolStripButton;
 private: System::Windows::Forms::ToolStripContainer^  toolStripContainer1;
 private: System::Windows::Forms::SplitContainer^  splitContainer1;
+private: System::Windows::Forms::SplitContainer^  splitContainer2;
 
    /// <summary>
    /// Required designer variable.
@@ -140,12 +146,15 @@ private: System::Windows::Forms::SplitContainer^  splitContainer1;
       this->helpToolStripButton = (gcnew System::Windows::Forms::ToolStripButton());
       this->toolStripContainer1 = (gcnew System::Windows::Forms::ToolStripContainer());
       this->splitContainer1 = (gcnew System::Windows::Forms::SplitContainer());
+      this->splitContainer2 = (gcnew System::Windows::Forms::SplitContainer());
       this->editorFormMenuStrip->SuspendLayout();
       this->editorFormToolStrip->SuspendLayout();
       this->toolStripContainer1->ContentPanel->SuspendLayout();
       this->toolStripContainer1->TopToolStripPanel->SuspendLayout();
       this->toolStripContainer1->SuspendLayout();
+      this->splitContainer1->Panel1->SuspendLayout();
       this->splitContainer1->SuspendLayout();
+      this->splitContainer2->SuspendLayout();
       this->SuspendLayout();
       // 
       // editorFormMenuStrip
@@ -457,9 +466,23 @@ private: System::Windows::Forms::SplitContainer^  splitContainer1;
       this->splitContainer1->Dock = System::Windows::Forms::DockStyle::Fill;
       this->splitContainer1->Location = System::Drawing::Point(0, 0);
       this->splitContainer1->Name = L"splitContainer1";
+      // 
+      // splitContainer1.Panel1
+      // 
+      this->splitContainer1->Panel1->Controls->Add(this->splitContainer2);
       this->splitContainer1->Size = System::Drawing::Size(292, 224);
       this->splitContainer1->SplitterDistance = 97;
       this->splitContainer1->TabIndex = 0;
+      // 
+      // splitContainer2
+      // 
+      this->splitContainer2->Dock = System::Windows::Forms::DockStyle::Fill;
+      this->splitContainer2->Location = System::Drawing::Point(0, 0);
+      this->splitContainer2->Name = L"splitContainer2";
+      this->splitContainer2->Orientation = System::Windows::Forms::Orientation::Horizontal;
+      this->splitContainer2->Size = System::Drawing::Size(97, 224);
+      this->splitContainer2->SplitterDistance = 107;
+      this->splitContainer2->TabIndex = 0;
       // 
       // EditorForm
       // 
@@ -482,7 +505,9 @@ private: System::Windows::Forms::SplitContainer^  splitContainer1;
       this->toolStripContainer1->TopToolStripPanel->PerformLayout();
       this->toolStripContainer1->ResumeLayout(false);
       this->toolStripContainer1->PerformLayout();
+      this->splitContainer1->Panel1->ResumeLayout(false);
       this->splitContainer1->ResumeLayout(false);
+      this->splitContainer2->ResumeLayout(false);
       this->ResumeLayout(false);
       this->PerformLayout();
 

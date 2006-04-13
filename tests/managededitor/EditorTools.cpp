@@ -13,4 +13,19 @@
 namespace ManagedEditor
 {
 
+   ///////////////////////////////////////////////////////////////////////////////
+   //
+   // CLASS: EditorToolGroup
+   //
+
+   EditorToolGroup::EditorToolGroup(System::String ^ groupName)
+    : m_groupName(groupName)
+   {
+   }
+
+   System::String ^ EditorToolGroup::Group::get()
+   {
+      return m_groupName;
+   }
+
 } // namespace ManagedEditor

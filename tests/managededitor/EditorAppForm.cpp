@@ -23,6 +23,8 @@
 
 #include <GL/glew.h>
 
+extern void StringConvert(System::String ^ string, cStr * pStr);
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // NAMESPACE: ManagedEditor
@@ -46,27 +48,28 @@ namespace ManagedEditor
    {
       m_toolPalette = gcnew ToolPalette();
       m_toolPalette->Dock = System::Windows::Forms::DockStyle::Fill;
-      Splitter->Panel1->Controls->Add(m_toolPalette);
+      ToolPanel->Controls->Add(m_toolPalette);
 
       m_toolPalette->ToolSelect += gcnew ToolPalette::ToolSelectHandler(this, &EditorAppForm::OnToolSelect);
 
       m_glControl = gcnew GlControl();
 	   m_glControl->Dock = System::Windows::Forms::DockStyle::Fill;
-      Splitter->Panel2->Controls->Add(m_glControl);
+      MainPanel->Controls->Add(m_glControl);
 
       m_document = gcnew EditorDocument();
+      cTerrainSettings terrainSettings;
+      terrainSettings.SetTileSet(_T("defaulttiles.xml")); // TODO: fix hard coded
+      m_document->New(terrainSettings);
+
+      float centerX = static_cast<float>(terrainSettings.GetTileCountX() * terrainSettings.GetTileSize()) / 2;
+      float centerZ = static_cast<float>(terrainSettings.GetTileCountZ() * terrainSettings.GetTileSize()) / 2;
+
+      UseGlobal(CameraControl);
+      pCameraControl->LookAtPoint(centerX, centerZ);
 
       System::Windows::Forms::Application::Idle += gcnew System::EventHandler(this, &EditorAppForm::OnIdle);
 
-      System::Reflection::Assembly ^ a = System::Reflection::Assembly::GetExecutingAssembly();
-      cli::array<System::Type ^> ^ types = a->GetTypes();
-      for each(System::Type ^ type in types)
-      {
-         if (type->IsSubclassOf(EditorTool::typeid))
-         {
-            DebugMsg("tool found\n");
-         }
-      }
+      CreateEditorTools();
    }
 
    EditorAppForm::~EditorAppForm()
@@ -138,6 +141,25 @@ namespace ManagedEditor
    {
    }
 
+   void EditorAppForm::OnResize(System::EventArgs ^ e)
+   {
+      EditorForm::OnResize(e);
+
+      float aspect = static_cast<float>(m_glControl->Width) / m_glControl->Height;
+
+      const float kFov = 70;
+      const float kZNear = 1;
+      const float kZFar = 5000;
+
+      UseGlobal(Camera);
+      pCamera->SetPerspective(kFov, aspect, kZNear, kZFar);
+
+      glViewport(0, 0, m_glControl->Width, m_glControl->Height);
+
+      glMatrixMode(GL_PROJECTION);
+      glLoadMatrixf(pCamera->GetProjectionMatrix().m);
+   }
+
    void EditorAppForm::NewDocument()
    {
       cTerrainSettings terrainSettings;
@@ -151,7 +173,15 @@ namespace ManagedEditor
       EditorMapSettingsDlg ^ mapSettingsDlg = gcnew EditorMapSettingsDlg(mapSettings);
       if (mapSettingsDlg->ShowDialog() == System::Windows::Forms::DialogResult::OK)
       {
+         terrainSettings.SetTileCountX(mapSettings->Width);
+         terrainSettings.SetTileCountZ(mapSettings->Height);
+
+         cStr tileSet;
+         StringConvert(mapSettings->TileSet, &tileSet);
+         terrainSettings.SetTileSet(tileSet.c_str());
+
          m_document = gcnew EditorDocument();
+         m_document->New(terrainSettings);
       }
    }
 
@@ -206,6 +236,29 @@ namespace ManagedEditor
          if (saveDlg->ShowDialog() == System::Windows::Forms::DialogResult::OK)
          {
             m_document->Save(saveDlg->FileName);
+         }
+      }
+   }
+
+   void EditorAppForm::CreateEditorTools()
+   {
+      System::Reflection::Assembly ^ a = System::Reflection::Assembly::GetExecutingAssembly();
+      cli::array<System::Type ^> ^ types = a->GetTypes();
+      for each(System::Type ^ type in types)
+      {
+         if (type->IsSubclassOf(EditorTool::typeid))
+         {
+            System::String ^ groupName = nullptr;
+            cli::array<System::Object ^> ^ attribs = type->GetCustomAttributes(false);
+            for each(System::Object ^ attrib in attribs)
+            {
+               if (attrib->GetType() == EditorToolGroup::typeid)
+               {
+                  EditorToolGroup ^ toolGroup = dynamic_cast<EditorToolGroup ^>(attrib);
+                  groupName = toolGroup->Group;
+               }
+            }
+            m_toolPalette->AddTool(m_toolPalette->AddGroup(groupName, nullptr), type->FullName, -1);
          }
       }
    }
