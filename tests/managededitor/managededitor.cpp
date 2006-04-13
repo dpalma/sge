@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "EditorForm.h"
+#include "EditorAppForm.h"
 
 #include "guiapi.h"
 
@@ -158,7 +158,7 @@ int main(array<System::String ^> ^ args)
       return -1;
    }
 
-   System::Windows::Forms::Application::Run(gcnew ManagedEditor::EditorForm());
+   System::Windows::Forms::Application::Run(gcnew ManagedEditor::EditorAppForm());
 
    ManagedEditorTerm();
 

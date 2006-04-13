@@ -560,6 +560,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\tests\managededitor\EditorAppForm.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\tests\managededitor\EditorDocument.cpp"
 				>
 			</File>
@@ -569,6 +573,10 @@
 			</File>
 			<File
 				RelativePath="..\..\tests\managededitor\EditorMapSettings.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tests\managededitor\EditorTools.cpp"
 				>
 			</File>
 			<File
@@ -646,6 +654,10 @@
 				</File>
 			</File>
 			<File
+				RelativePath="..\..\tests\managededitor\EditorAppForm.h"
+				>
+			</File>
+			<File
 				RelativePath=".\..\..\tests\managededitor\EditorDocument.h"
 				>
 			</File>
@@ -668,6 +680,10 @@
 					SubType="Designer"
 					>
 				</File>
+			</File>
+			<File
+				RelativePath="..\..\tests\managededitor\EditorTools.h"
+				>
 			</File>
 			<File
 				RelativePath=".\..\..\tests\managededitor\GlControl.h"

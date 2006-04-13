@@ -3,228 +3,75 @@
 
 #include "stdhdr.h"
 
-// Local Includes
 #include "EditorForm.h"
 #include "EditorAbout.h"
-#include "EditorMapSettings.h"
-
-// GUI Includes
-#include "guiapi.h"
-
-// Engine Includes
-#include "cameraapi.h"
-#include "entityapi.h"
-#include "renderapi.h"
-#include "simapi.h"
-#include "sys.h"
-#include "terrainapi.h"
-
-// Tech Includes
-#include "globalobj.h"
-
-#include <GL/glew.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
+//
+// NAMESPACE: ManagedEditor
+//
 
 namespace ManagedEditor
 {
+   using namespace System::Windows::Forms;
 
-static const int kDefStatsX = 25;
-static const int kDefStatsY = 25;
-static const cColor kDefStatsColor(1,1,1,1);
+   ///////////////////////////////////////////////////////////////////////////////
+   //
+   // CLASS: EditorForm
+   //
 
-using namespace System::Windows::Forms;
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: EditorForm
-//
-
-EditorForm::EditorForm()
- : m_pFont(NULL)
-{
-   InitializeComponent();
-
-   m_toolPalette = gcnew ToolPalette();
-   m_toolPalette->Dock = System::Windows::Forms::DockStyle::Fill;
-   splitContainer1->Panel1->Controls->Add(m_toolPalette);
-
-   m_toolPalette->ToolSelect += gcnew ToolPalette::ToolSelectHandler(this, &EditorForm::OnToolSelect);
-
-   m_glControl = gcnew GlControl();
-	m_glControl->Dock = System::Windows::Forms::DockStyle::Fill;
-   splitContainer1->Panel2->Controls->Add(m_glControl);
-
-   m_document = gcnew EditorDocument();
-
-   System::Windows::Forms::Application::Idle += gcnew System::EventHandler(this, &EditorForm::OnIdle);
-}
-
-EditorForm::~EditorForm()
-{
-   if (components)
+   EditorForm::EditorForm()
    {
-      delete components;
-      components = nullptr;
+      InitializeComponent();
    }
 
-   if (m_pFont != NULL)
+   EditorForm::~EditorForm()
    {
-      m_pFont->Release();
-   }
-}
-
-void EditorForm::OnIdle(System::Object ^ sender, System::EventArgs ^ e)
-{
-   UseGlobal(Sim);
-   pSim->NextFrame();
-
-   UseGlobal(Renderer);
-   if (pRenderer->BeginScene() == S_OK)
-   {
-      UseGlobal(Camera);
-      glMatrixMode(GL_MODELVIEW);
-      glLoadMatrixf(pCamera->GetViewMatrix().m);
-
-      UseGlobal(TerrainRenderer);
-      pTerrainRenderer->Render();
-
-      UseGlobal(EntityManager);
-      pEntityManager->RenderAll();
-
-      UseGlobal(GUIContext);
-      if (!!pGUIContext)
+      if (components)
       {
-         if (m_pFont == NULL)
-         {
-            IGUIFont * pFont = NULL;
-            if (pGUIContext->GetDefaultFont(&pFont) == S_OK)
-            {
-               m_pFont = pFont;
-            }
-         }
-
-         cAutoIPtr<IGUIRenderDeviceContext> pRenderDeviceContext;
-         if (pGUIContext->GetRenderDeviceContext(&pRenderDeviceContext) == S_OK)
-         {
-            pRenderDeviceContext->Begin2D();
-
-            pGUIContext->RenderGUI();
-
-            if (m_pFont != NULL)
-            {
-               tChar szStats[100];
-               SysReportFrameStats(szStats, _countof(szStats));
-
-               tRect rect(kDefStatsX, kDefStatsY, 0, 0);
-               m_pFont->RenderText(szStats, _tcslen(szStats), &rect,
-                                   kRT_NoClip | kRT_DropShadow, kDefStatsColor);
-            }
-
-            pRenderDeviceContext->End2D();
-         }
-      }
-
-      pRenderer->EndScene();
-
-      m_glControl->SwapBuffers();
-   }
-}
-
-void EditorForm::OnToolSelect(System::Object ^ sender, ToolSelectEventArgs ^ e)
-{
-}
-
-System::Void EditorForm::OnFileOpen(System::Object ^ sender, System::EventArgs ^ e)
-{
-   OpenFileDialog ^ openDlg = gcnew OpenFileDialog();
-   openDlg->Filter = "SGE Map Files (*.sgm)|*.sgm|All Files (*.*)|*.*";
-   openDlg->FileName = "";
-   openDlg->DefaultExt = ".sgm";
-   openDlg->CheckFileExists = true;
-   openDlg->CheckPathExists = true;
-   if (openDlg->ShowDialog() == System::Windows::Forms::DialogResult::OK)
-   {
-      EditorDocument ^ newDoc = gcnew EditorDocument();
-      if (newDoc->Open(openDlg->FileName))
-      {
-         m_document = newDoc;
+         delete components;
+         components = nullptr;
       }
    }
-}
 
-System::Void EditorForm::OnFileNew(System::Object ^ sender, System::EventArgs ^ e)
-{
-   cTerrainSettings terrainSettings;
-   terrainSettings.SetTileSet(_T("defaulttiles.xml")); // TODO: fix hard coded
-
-   EditorMapSettings ^ mapSettings = gcnew EditorMapSettings();
-   mapSettings->Width = 128;
-   mapSettings->Height = 128;
-   mapSettings->TileSet = _T("defaulttiles.xml");
-
-   EditorMapSettingsDlg ^ mapSettingsDlg = gcnew EditorMapSettingsDlg(mapSettings);
-   if (mapSettingsDlg->ShowDialog() == System::Windows::Forms::DialogResult::OK)
+   System::Void EditorForm::OnFileOpen(System::Object ^ sender, System::EventArgs ^ e)
    {
-      m_document = gcnew EditorDocument();
+      OpenDocument();
    }
-}
 
-System::Void EditorForm::OnFileExit(System::Object ^ sender, System::EventArgs ^ e)
-{
-   Application::Exit();
-}
-
-System::Void EditorForm::OnFileSave(System::Object ^ sender, System::EventArgs ^ e)
-{
-   if (m_document)
+   System::Void EditorForm::OnFileNew(System::Object ^ sender, System::EventArgs ^ e)
    {
-      if (m_document->FileName)
+      NewDocument();
+   }
+
+   System::Void EditorForm::OnFileExit(System::Object ^ sender, System::EventArgs ^ e)
+   {
+      Application::Exit();
+   }
+
+   System::Void EditorForm::OnFileSave(System::Object ^ sender, System::EventArgs ^ e)
+   {
+      SaveDocument();
+   }
+
+   System::Void EditorForm::OnFileSaveAs(System::Object ^ sender, System::EventArgs ^ e)
+   {
+      try
       {
-         try
-         {
-            m_document->Save(m_document->FileName);
-         }
-         catch (Exception ^ ex)
-         {
-            MessageBox::Show(ex->ToString());
-         }
+         SaveDocumentAs();
       }
-      else
+      catch (Exception ^ ex)
       {
-         OnFileSaveAs(sender, e);
+         MessageBox::Show(ex->ToString());
       }
    }
-}
 
-System::Void EditorForm::OnFileSaveAs(System::Object ^ sender, System::EventArgs ^ e)
-{
-   try
+   System::Void EditorForm::OnHelpAbout(System::Object ^ sender, System::EventArgs ^ e)
    {
-      if (m_document)
-      {
-         SaveFileDialog ^ saveDlg = gcnew SaveFileDialog;
-         saveDlg->Filter = "SGE Map Files (*.sgm)|*.sgm|All Files (*.*)|*.*";
-         saveDlg->FileName = "Untitled1.sgm";
-         saveDlg->DefaultExt = ".sgm";
-         if (saveDlg->ShowDialog() == System::Windows::Forms::DialogResult::OK)
-         {
-            m_document->Save(saveDlg->FileName);
-         }
-      }
+      EditorAbout ^ aboutBox = gcnew EditorAbout();
+      aboutBox->ShowDialog();
    }
-   catch (Exception ^ ex)
-   {
-      MessageBox::Show(ex->ToString());
-   }
-}
-
-System::Void EditorForm::OnHelpAbout(System::Object ^ sender, System::EventArgs ^ e)
-{
-   EditorAbout ^ aboutBox = gcnew EditorAbout();
-   aboutBox->ShowDialog();
-}
 
 } // namespace ManagedEditor
 
