@@ -103,15 +103,26 @@ void cEntityUI::OnEntitySelectionChange()
             cAutoIPtr<IEntitySpawnComponent> pSpawn;
             if (pEntity->FindComponent(IID_IEntitySpawnComponent, &pSpawn) == S_OK)
             {
-               // TODO:
-               //cAutoIPtr<IGUIButtonElement> pButton;
-               //if (GUIButtonCreate(&pButton) == S_OK)
-               //{
-               //   pButton->SetText(model.c_str());
-               //   pContainer->AddElement(pButton);
-               //   m_guiElements.insert(CTAddRef(pButton));
-               //   pGUIContext->RequestLayout(pContainer);
-               //}
+               size_t nSpawnTypes = pSpawn->GetSpawnTypeCount();
+               for (uint i = 0; i < nSpawnTypes; i++)
+               {
+                  cStr spawnType;
+                  if (pSpawn->GetSpawnType(i, &spawnType) != S_OK)
+                  {
+                     continue;
+                  }
+
+                  // TODO:
+                  cAutoIPtr<IGUIButtonElement> pButton;
+                  if (GUIButtonCreate(&pButton) == S_OK)
+                  {
+                     pButton->SetText(spawnType.c_str());
+                     pContainer->AddElement(pButton);
+//                     m_guiElements.insert(CTAddRef(pButton));
+                  }
+               }
+
+               pGUIContext->RequestLayout(pContainer);
             }
          }
       }
@@ -122,7 +133,7 @@ void cEntityUI::OnEntitySelectionChange()
 
 tResult cEntityUI::OnEvent(IGUIEvent * pEvent)
 {
-   if (pEvent)
+   if (pEvent != NULL)
    {
       tGUIEventCode eventCode;
       if (pEvent->GetEventCode(&eventCode) == S_OK)

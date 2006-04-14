@@ -361,9 +361,12 @@ tResult EntityRenderComponentFactory(const TiXmlElement * pTiXmlElement,
 
 ///////////////////////////////////////
 
-cEntitySpawnComponent::cEntitySpawnComponent()
- : m_maxQueueSize(0)
+cEntitySpawnComponent::cEntitySpawnComponent(uint maxQueueSize, const std::vector<cStr> & spawnTypes)
+ : m_maxQueueSize(maxQueueSize)
+ , m_rallyPoint(0,0,0)
+ , m_spawnTypes(spawnTypes.size())
 {
+   std::copy(spawnTypes.begin(), spawnTypes.end(), m_spawnTypes.begin());
 }
 
 ///////////////////////////////////////
@@ -401,6 +404,29 @@ tResult cEntitySpawnComponent::GetRallyPoint(tVec3 * pRallyPoint) const
 
 ///////////////////////////////////////
 
+size_t cEntitySpawnComponent::GetSpawnTypeCount() const
+{
+   return m_spawnTypes.size();
+}
+
+///////////////////////////////////////
+
+tResult cEntitySpawnComponent::GetSpawnType(uint index, cStr * pType) const
+{
+   if (index >= m_spawnTypes.size())
+   {
+      return E_INVALIDARG;
+   }
+   if (pType == NULL)
+   {
+      return E_POINTER;
+   }
+   pType->assign(m_spawnTypes[index]);
+   return S_OK;
+}
+
+///////////////////////////////////////
+
 tResult cEntitySpawnComponent::Spawn(const tChar * pszEntity)
 {
    return E_NOTIMPL;
@@ -416,11 +442,51 @@ tResult EntitySpawnComponentFactory(const TiXmlElement * pTiXmlElement,
       return E_POINTER;
    }
 
-//   if (pEntity->AddComponent(componentId, pComponent) != S_OK)
+   if (_stricmp(pTiXmlElement->Value(), "spawns") != 0)
    {
+      return E_INVALIDARG;
    }
 
-   return E_NOTIMPL;
+   int maxQueueSize = 0;
+   if (pTiXmlElement->QueryIntAttribute("queuesize", &maxQueueSize) != TIXML_SUCCESS)
+   {
+      WarnMsg("No queue size specified for spawn component\n");
+   }
+
+   std::vector<cStr> spawnTypes;
+
+   for (const TiXmlElement * pTiXmlChild = pTiXmlElement->FirstChildElement();
+      pTiXmlChild != NULL; pTiXmlChild = pTiXmlChild->NextSiblingElement())
+   {
+      Assert(pTiXmlChild->Type() == TiXmlNode::ELEMENT);
+
+      if (_stricmp(pTiXmlChild->Value(), "spawn") != 0)
+      {
+         WarnMsgIf1(pTiXmlChild->Value() != NULL, "Invalid spawn type element \"%s\"\n", pTiXmlChild->Value());
+         continue;
+      }
+
+      cStr spawnType;
+      if (pTiXmlChild->Attribute("type") != NULL)
+      {
+         spawnType.assign(pTiXmlChild->Attribute("type"));
+         spawnTypes.push_back(spawnType);
+      }
+   }
+
+   cAutoIPtr<cEntitySpawnComponent> pSpawnComponent = new cEntitySpawnComponent(static_cast<uint>(maxQueueSize), spawnTypes);
+   if (!pSpawnComponent)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   if (pEntity->AddComponent(IID_IEntitySpawnComponent, static_cast<IEntityComponent*>(pSpawnComponent)) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   *ppComponent = CTAddRef(static_cast<IEntityComponent*>(pSpawnComponent));
+   return S_OK;
 }
 
 
@@ -431,7 +497,7 @@ void RegisterBuiltInComponents()
    UseGlobal(EntityManager);
    Verify(pEntityManager->RegisterComponentFactory(_T("position"), EntityPositionComponentFactory) == S_OK);
    Verify(pEntityManager->RegisterComponentFactory(_T("render"), EntityRenderComponentFactory) == S_OK);
-   Verify(pEntityManager->RegisterComponentFactory(_T("spawn"), EntitySpawnComponentFactory) == S_OK);
+   Verify(pEntityManager->RegisterComponentFactory(_T("spawns"), EntitySpawnComponentFactory) == S_OK);
 }
 
 

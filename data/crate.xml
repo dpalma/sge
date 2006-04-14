@@ -9,6 +9,7 @@
    
    <spawns queuesize="4">
       <spawn type="zombie" />
+      <spawn type="tree" />
    </spawns>
    
 </entity>

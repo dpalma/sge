@@ -85,6 +85,9 @@ interface IEntitySpawnComponent : IEntityComponent
    virtual tResult SetRallyPoint(const tVec3 & rallyPoint) = 0;
    virtual tResult GetRallyPoint(tVec3 * pRallyPoint) const = 0;
 
+   virtual size_t GetSpawnTypeCount() const = 0;
+   virtual tResult GetSpawnType(uint index, cStr * pType) const = 0;
+
    virtual tResult Spawn(const tChar * pszEntity) = 0;
 };
 

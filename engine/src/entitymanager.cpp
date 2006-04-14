@@ -155,6 +155,10 @@ tResult cEntityManager::SpawnEntity(const tChar * pszEntity, const tVec3 & posit
                   pPosition->SetPosition(position);
                }
             }
+            else
+            {
+               WarnMsgIf1(pTiXmlChild->Value() != NULL, "Failed to create entity component \"%s\"\n", pTiXmlChild->Value());
+            }
          }
 
          m_entities.push_back(CTAddRef(pEntity));
