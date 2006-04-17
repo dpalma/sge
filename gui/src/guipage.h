@@ -46,8 +46,6 @@ public:
    size_t CountElements() const;
    tResult GetElement(const tChar * pszId, IGUIElement * * ppElement);
 
-   tResult GetActiveModalDialog(IGUIDialogElement * * ppDialog);
-
    void RequestLayout(IGUIElement * pRequester);
 
    void UpdateLayout(const tGUIRect & rect);

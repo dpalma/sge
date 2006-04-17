@@ -283,31 +283,6 @@ bool cGUIEventRouter<T, INTRFC>::HandleInputEvent(const sInputEvent * pInputEven
    cAutoIPtr<IGUIElement> pFocus;
    GetFocus(&pFocus);
 
-   // If a modal dialog is active, restrict input to the dialog and its descendants
-   cAutoIPtr<IGUIDialogElement> pModalDialog;
-   if (pT->GetActiveModalDialog(&pModalDialog) == S_OK)
-   {
-      if (KeyIsMouse(pInputEvent->key))
-      {
-         if (!!pMouseOver && !CTIsSameObject(pModalDialog, pMouseOver) && !IsDescendant(pModalDialog, pMouseOver))
-         {
-            SafeRelease(pMouseOver);
-         }
-      }
-      else
-      {
-         if (!!pFocus && !CTIsSameObject(pModalDialog, pFocus) && !IsDescendant(pModalDialog, pFocus))
-         {
-            SafeRelease(pFocus);
-         }
-
-         if (!pFocus)
-         {
-            pFocus = CTAddRef(pModalDialog);
-         }
-      }
-   }
-
    if (KeyIsMouse(pInputEvent->key) && !!pMouseOver)
    {
       if (pMouseOver->IsEnabled())
@@ -354,11 +329,6 @@ bool cGUIEventRouter<T, INTRFC>::HandleInputEvent(const sInputEvent * pInputEven
          {
             BubbleEvent(pEvent);
          }
-      }
-
-      if (!!pModalDialog)
-      {
-         bEatInputEvent = true;
       }
    }
 

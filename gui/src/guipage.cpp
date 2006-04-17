@@ -484,23 +484,6 @@ tResult cGUIPage::GetElement(const tChar * pszId, IGUIElement * * ppElement)
 
 ///////////////////////////////////////
 
-tResult cGUIPage::GetActiveModalDialog(IGUIDialogElement * * ppDialog)
-{
-   if (ppDialog == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (m_elements.empty())
-   {
-      return S_FALSE;
-   }
-
-   return m_elements.back()->QueryInterface(IID_IGUIDialogElement, (void**)ppDialog);
-}
-
-///////////////////////////////////////
-
 void cGUIPage::RequestLayout(IGUIElement * pRequester)
 {
    m_bUpdateLayout = true;

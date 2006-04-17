@@ -84,7 +84,6 @@ public:
    virtual tResult HideDebugInfo();
 
    tResult GetHitElement(const tScreenPoint & point, IGUIElement * * ppElement) const;
-   tResult GetActiveModalDialog(IGUIDialogElement * * ppModalDialog);
 
    cGUIPage * GetCurrentPage() { return m_pages.empty() ? NULL : m_pages.back(); }
    const cGUIPage * GetCurrentPage() const { return m_pages.empty() ? NULL : m_pages.back(); }

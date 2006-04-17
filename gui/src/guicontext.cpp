@@ -708,24 +708,6 @@ tResult cGUIContext::GetHitElement(const tScreenPoint & point, IGUIElement * * p
 
 ///////////////////////////////////////
 
-tResult cGUIContext::GetActiveModalDialog(IGUIDialogElement * * ppModalDialog)
-{
-   if (ppModalDialog == NULL)
-   {
-      return E_POINTER;
-   }
-
-   cGUIPage * pPage = GetCurrentPage();
-   if (pPage != NULL)
-   {
-      return pPage->GetActiveModalDialog(ppModalDialog);
-   }
-
-   return S_FALSE;
-}
-
-///////////////////////////////////////
-
 #ifdef GUI_DEBUG
 tResult cGUIContext::GetDebugFont(IGUIFont * * ppFont)
 {
