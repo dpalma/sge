@@ -1,13 +1,15 @@
 <!-- $Id$ -->
 
-<dialog 
-   title="Quit?" 
-   style="width:220;height:150;"
-   renderer="beveled">
-   
-   <label text="Are you sure you want to quit?" style="placement:absolute;align:center;vertical-align:center;" />
-   
-   <button id="ok" text="Quit" style="placement:absolute;align:left;vertical-align:bottom;" />
-   <button id="cancel" text="Cancel" style="placement:absolute;align:right;vertical-align:bottom;" />
-   
-</dialog>
+<page>
+   <dialog 
+      title="Quit?" 
+      style="width:220;height:150;"
+      renderer="beveled">
+      
+      <label text="Are you sure you want to quit?" style="placement:absolute;align:center;vertical-align:center;" />
+      
+      <button id="ok" text="Quit" style="placement:absolute;align:left;vertical-align:bottom;" />
+      <button id="cancel" text="Cancel" style="placement:absolute;align:right;vertical-align:bottom;" />
+      
+   </dialog>
+</page>

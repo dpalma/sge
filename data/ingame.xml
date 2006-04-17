@@ -1,31 +1,32 @@
 <!-- $Id$ -->
+<page>
+   <script>
+      SetEntityPanel("entityCommands");
+   </script>
 
-<script>
-   SetEntityPanel("entityCommands");
-</script>
+   <panel id="toppanel"
+       style="width:100%;height:28"
+       renderer="beveled">
+       
+      <label id="resources" />
+      <label id="population" />
 
-<panel id="toppanel"
-    style="width:100%;height:28"
-    renderer="beveled">
-    
-   <label id="resources" />
-   <label id="population" />
+      <button text="Exit" style="placement:absolute;align:right;" onclick="QuitWithConfirm();" />
 
-   <button text="Exit" style="placement:absolute;align:right;" onclick="QuitWithConfirm();" />
-
-</panel>
-
-<panel id="bottompanel"
-    style="placement:absolute;vertical-align:bottom;width:100%;height:20%"
-    renderer="beveled">
-
-   <panel id="miniMap">
    </panel>
 
-   <panel id="entityPortrait">
-   </panel>
+   <panel id="bottompanel"
+       style="placement:absolute;vertical-align:bottom;width:100%;height:20%"
+       renderer="beveled">
 
-   <panel id="entityCommands" style="placement:absolute;align:right;width:40%;height:100%">
-   </panel>
+      <panel id="miniMap">
+      </panel>
 
-</panel>
+      <panel id="entityPortrait">
+      </panel>
+
+      <panel id="entityCommands" style="placement:absolute;align:right;width:40%;height:100%">
+      </panel>
+
+   </panel>
+</page>

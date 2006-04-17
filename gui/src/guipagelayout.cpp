@@ -11,6 +11,9 @@
 
 #include "dbgalloc.h" // must be last header
 
+// REFERENCES
+// http://www.w3.org/TR/WD-positioning-19970819
+
 
 ///////////////////////////////////////////////////////////////////////////////
 

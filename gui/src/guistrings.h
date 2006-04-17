@@ -84,6 +84,7 @@ const char kElementDialog[]            = "dialog";
 const char kElementLabel[]             = "label";
 const char kElementLayout[]            = "layout";
 const char kElementListBox[]           = "listbox";
+const char kElementPage[]              = "page";
 const char kElementPanel[]             = "panel";
 const char kElementTextEdit[]          = "textedit";
 const char kElementScript[]            = "script";

@@ -365,6 +365,19 @@ tResult cGUIPage::Create(const TiXmlDocument * pXmlDoc, cGUIPage * * ppPage)
       return E_POINTER;
    }
 
+   const TiXmlNode * pTopLevel = pXmlDoc->FirstChildElement();
+
+   if (pTopLevel == NULL)
+   {
+      return E_FAIL;
+   }
+
+   if (strcmp(pTopLevel->Value(), kElementPage) != 0)
+   {
+      ErrorMsg("Top-level element should be a <page>\n");
+      return E_FAIL;
+   }
+
    cAutoIPtr<IGUIFactoryListener> pFL(static_cast<IGUIFactoryListener*>(new cGUIPageCreateFactoryListener));
    if (!pFL)
    {
@@ -380,7 +393,7 @@ tResult cGUIPage::Create(const TiXmlDocument * pXmlDoc, cGUIPage * * ppPage)
    UseGlobal(GUIFactory);
    pGUIFactory->AddFactoryListener(pFL);
 
-   CreateElements(pXmlDoc, NULL, GUIPageCreateElementsCallback, &pPage->m_elements);
+   CreateElements(pTopLevel, NULL, GUIPageCreateElementsCallback, &pPage->m_elements);
 
    pGUIFactory->RemoveFactoryListener(pFL);
 

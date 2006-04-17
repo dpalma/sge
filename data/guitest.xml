@@ -1,29 +1,31 @@
 <!-- $Id$ -->
 
-<dialog 
-   title="GUI Element Test" 
-   style="align:center;vertical-align:center;width:300;height:200;"
-   renderer="beveled">
+<page>
+   <dialog 
+      title="GUI Element Test" 
+      style="align:center;vertical-align:center;width:300;height:200;"
+      renderer="beveled">
 
-   <layout type="grid" columns="2" rows="5" />
+      <layout type="grid" columns="2" rows="5" />
 
-   <label text="button" />
-   <button text="Push Button" />
+      <label text="button" />
+      <button text="Push Button" />
 
-   <label text="text edit" />
-   <textedit />
-   
-   <label text="scroll bar" />
-   <scrollbar range="0,100" scrollpos="50" type="horizontal" style="width:100%" />
-   
-   <label text="list box" />
-   <listbox rows=6 style="width:100%">
-      <item text="item 0" />
-      <item text="item 1" />
-      <item text="item 2" />
-      <item text="item 3" />
-      <item text="item 4" />
-      <item text="item 5" />
-   </listbox>
+      <label text="text edit" />
+      <textedit />
+      
+      <label text="scroll bar" />
+      <scrollbar range="0,100" scrollpos="50" type="horizontal" style="width:100%" />
+      
+      <label text="list box" />
+      <listbox rows=6 style="width:100%">
+         <item text="item 0" />
+         <item text="item 1" />
+         <item text="item 2" />
+         <item text="item 3" />
+         <item text="item 4" />
+         <item text="item 5" />
+      </listbox>
 
-</dialog>
+   </dialog>
+</page>
