@@ -8,10 +8,6 @@
 
 #include "digraph.h"
 #include "globalobjdef.h"
-extern "C"
-{
-#include "md5.h"
-}
 #include "readwriteapi.h"
 
 #include <map>

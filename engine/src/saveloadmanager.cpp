@@ -6,6 +6,11 @@
 #include "saveloadmanager.h"
 #include "readwriteutils.h"
 
+extern "C"
+{
+#include "md5.h"
+}
+
 #include "toposort.h"
 
 #include <vector>
