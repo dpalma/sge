@@ -8,8 +8,6 @@
 
 #include "techstring.h"
 
-#include <map>
-
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -30,23 +28,13 @@ public:
 
    virtual tEntityId GetId() const;
 
-   virtual tResult AddComponent(REFGUID guid, IEntityComponent * pComponent);
-   virtual tResult FindComponent(REFGUID guid, IEntityComponent * * ppComponent);
+   virtual tResult SetComponent(eEntityComponentType ect, IEntityComponent * pComponent);
+   virtual tResult GetComponent(eEntityComponentType ect, IEntityComponent * * ppComponent);
 
 private:
    cStr m_typeName;
    tEntityId m_id;
-
-   struct sLessGuid
-   {
-      bool operator()(const GUID * pLhs, const GUID * pRhs) const
-      {
-         return (memcmp(pLhs, pRhs, sizeof(GUID)) < 0);
-      }
-   };
-
-   typedef std::map<const GUID *, IEntityComponent *, sLessGuid> tComponentMap;
-   tComponentMap m_componentMap;
+   cAutoIPtr<IEntityComponent> m_components[kMaxEntityComponentTypes];
 };
 
 

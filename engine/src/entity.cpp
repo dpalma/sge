@@ -51,12 +51,6 @@ cEntity::cEntity(const tChar * pszTypeName, tEntityId id)
 
 cEntity::~cEntity()
 {
-   tComponentMap::iterator iter = m_componentMap.begin();
-   for (; iter != m_componentMap.end(); iter++)
-   {
-      iter->second->Release();
-   }
-   m_componentMap.clear();
 }
 
 ///////////////////////////////////////
@@ -80,36 +74,28 @@ tEntityId cEntity::GetId() const
 
 ///////////////////////////////////////
 
-tResult cEntity::AddComponent(REFGUID guid, IEntityComponent * pComponent)
+tResult cEntity::SetComponent(eEntityComponentType ect, IEntityComponent * pComponent)
 {
+   Assert(static_cast<int>(ect) < kMaxEntityComponentTypes);
    if (pComponent == NULL)
    {
       return E_POINTER;
    }
-
-   std::pair<tComponentMap::iterator, bool> result = m_componentMap.insert(
-      std::make_pair(&guid, CTAddRef(pComponent)));
-
-   return result.second ? S_OK : S_FALSE;
+   SafeRelease(m_components[ect]);
+   m_components[ect] = CTAddRef(pComponent);
+   return S_OK;
 }
 
 ///////////////////////////////////////
 
-tResult cEntity::FindComponent(REFGUID guid, IEntityComponent * * ppComponent)
+tResult cEntity::GetComponent(eEntityComponentType ect, IEntityComponent * * ppComponent)
 {
+   Assert(static_cast<int>(ect) < kMaxEntityComponentTypes);
    if (ppComponent == NULL)
    {
       return E_POINTER;
    }
-
-   tComponentMap::iterator f = m_componentMap.find(&guid);
-   if (f == m_componentMap.end())
-   {
-      return S_FALSE;
-   }
-
-   *ppComponent = CTAddRef(f->second);
-   return S_OK;
+   return m_components[ect].GetPointer(ppComponent);
 }
 
 

@@ -225,13 +225,13 @@ void cEntityManager::RenderAll()
       glPushMatrix();
 
       cAutoIPtr<IEntityPositionComponent> pPosition;
-      if (pEntity->FindComponent(IID_IEntityPositionComponent, &pPosition) == S_OK)
+      if (pEntity->GetComponent(kECT_Position, IID_IEntityPositionComponent, &pPosition) == S_OK)
       {
          glMultMatrixf(pPosition->GetWorldTransform().m);
       }
 
       cAutoIPtr<IEntityRenderComponent> pRender;
-      if (pEntity->FindComponent(IID_IEntityRenderComponent, &pRender) == S_OK)
+      if (pEntity->GetComponent(kECT_Render, IID_IEntityRenderComponent, &pRender) == S_OK)
       {
          pRender->Render();
 
@@ -259,13 +259,13 @@ tResult cEntityManager::RayCast(const cRay & ray, IEntity * * ppEntity) const
       cAutoIPtr<IEntity> pEntity(CTAddRef(*iter));
 
       cAutoIPtr<IEntityPositionComponent> pPosition;
-      if (pEntity->FindComponent(IID_IEntityPositionComponent, &pPosition) == S_OK)
+      if (pEntity->GetComponent(kECT_Position, IID_IEntityPositionComponent, &pPosition) == S_OK)
       {
          tVec3 position;
          if (pPosition->GetPosition(&position) == S_OK)
          {
             cAutoIPtr<IEntityRenderComponent> pRender;
-            if (pEntity->FindComponent(IID_IEntityRenderComponent, &pRender) == S_OK)
+            if (pEntity->GetComponent(kECT_Render, IID_IEntityRenderComponent, &pRender) == S_OK)
             {
                tAxisAlignedBox bbox;
                if (pRender->GetBoundingBox(&bbox) == S_OK)
@@ -326,13 +326,13 @@ tResult cEntityManager::SelectBoxed(const tAxisAlignedBox & box)
       cAutoIPtr<IEntity> pEntity(CTAddRef(*iter));
 
       cAutoIPtr<IEntityPositionComponent> pPosition;
-      if (pEntity->FindComponent(IID_IEntityPositionComponent, &pPosition) == S_OK)
+      if (pEntity->GetComponent(kECT_Position, IID_IEntityPositionComponent, &pPosition) == S_OK)
       {
          tVec3 position;
          if (pPosition->GetPosition(&position) == S_OK)
          {
             cAutoIPtr<IEntityRenderComponent> pRender;
-            if (pEntity->FindComponent(IID_IEntityRenderComponent, &pRender) == S_OK)
+            if (pEntity->GetComponent(kECT_Render, IID_IEntityRenderComponent, &pRender) == S_OK)
             {
                tAxisAlignedBox bbox;
                if (pRender->GetBoundingBox(&bbox) == S_OK)
@@ -461,7 +461,7 @@ void cEntityManager::OnSimFrame(double elapsedTime)
    for (; iter != m_entities.end(); iter++)
    {
       cAutoIPtr<IEntityRenderComponent> pRender;
-      if ((*iter)->FindComponent(IID_IEntityRenderComponent, &pRender) == S_OK)
+      if ((*iter)->GetComponent(kECT_Render, IID_IEntityRenderComponent, &pRender) == S_OK)
       {
          pRender->Update(elapsedTime);
       }
@@ -488,7 +488,7 @@ tResult cEntityManager::Save(IWriter * pWriter)
    for (; iter != m_entities.end(); iter++)
    {
       cAutoIPtr<IEntityPositionComponent> pPosition;
-      if ((*iter)->FindComponent(IID_IEntityPositionComponent, &pPosition) != S_OK)
+      if ((*iter)->GetComponent(kECT_Position, IID_IEntityPositionComponent, &pPosition) != S_OK)
       {
          continue;
       }

@@ -101,7 +101,7 @@ tResult EntityPositionComponentFactory(const TiXmlElement * pTiXmlElement,
       return E_OUTOFMEMORY;
    }
 
-   if (pEntity->AddComponent(IID_IEntityPositionComponent, static_cast<IEntityComponent*>(pPosition)) != S_OK)
+   if (pEntity->SetComponent(kECT_Position, static_cast<IEntityComponent*>(pPosition)) != S_OK)
    {
       return E_FAIL;
    }
@@ -344,7 +344,7 @@ tResult EntityRenderComponentFactory(const TiXmlElement * pTiXmlElement,
       return E_OUTOFMEMORY;
    }
 
-   if (pEntity->AddComponent(IID_IEntityRenderComponent, static_cast<IEntityComponent*>(pRender)) != S_OK)
+   if (pEntity->SetComponent(kECT_Render, static_cast<IEntityComponent*>(pRender)) != S_OK)
    {
       return E_FAIL;
    }
@@ -480,7 +480,7 @@ tResult EntitySpawnComponentFactory(const TiXmlElement * pTiXmlElement,
       return E_OUTOFMEMORY;
    }
 
-   if (pEntity->AddComponent(IID_IEntitySpawnComponent, static_cast<IEntityComponent*>(pSpawnComponent)) != S_OK)
+   if (pEntity->SetComponent(kECT_Spawn, static_cast<IEntityComponent*>(pSpawnComponent)) != S_OK)
    {
       return E_FAIL;
    }

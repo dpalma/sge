@@ -101,7 +101,7 @@ void cEntityUI::OnEntitySelectionChange()
          if (pEnum->Next(1, &pEntity, &nEntities) == S_OK && nEntities == 1)
          {
             cAutoIPtr<IEntitySpawnComponent> pSpawn;
-            if (pEntity->FindComponent(IID_IEntitySpawnComponent, &pSpawn) == S_OK)
+            if (pEntity->GetComponent(kECT_Spawn, IID_IEntitySpawnComponent, &pSpawn) == S_OK)
             {
                size_t nSpawnTypes = pSpawn->GetSpawnTypeCount();
                for (uint i = 0; i < nSpawnTypes; i++)

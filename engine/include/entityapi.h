@@ -35,6 +35,22 @@ typedef class cAxisAlignedBox<float> tAxisAlignedBox;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// ENUM: eEntityComponentType
+//
+
+enum eEntityComponentType
+{
+   kECT_Position,
+   kECT_Render,
+   kECT_Spawn,             // for entities that spawn others
+   kECT_Custom1,           // for use by application
+   kECT_Custom2,           // for use by application
+   kMaxEntityComponentTypes
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // INTERFACE: IEntityComponent
 //
 
@@ -106,17 +122,17 @@ interface IEntity : IUnknown
 
    virtual tEntityId GetId() const = 0;
 
-   virtual tResult AddComponent(REFGUID guid, IEntityComponent * pComponent) = 0;
-   virtual tResult FindComponent(REFGUID guid, IEntityComponent * * ppComponent) = 0;
+   virtual tResult SetComponent(eEntityComponentType ect, IEntityComponent * pComponent) = 0;
+   virtual tResult GetComponent(eEntityComponentType ect, IEntityComponent * * ppComponent) = 0;
 
    template <class INTRFC>
-   tResult FindComponent(REFGUID guid, INTRFC * * ppComponent)
+   tResult GetComponent(eEntityComponentType ect, REFGUID iid, INTRFC * * ppComponent)
    {
       cAutoIPtr<IEntityComponent> pComponent;
-      tResult result = FindComponent(guid, &pComponent);
+      tResult result = GetComponent(ect, &pComponent);
       if (result == S_OK)
       {
-         return pComponent->QueryInterface(guid, reinterpret_cast<void**>(ppComponent));
+         return pComponent->QueryInterface(iid, reinterpret_cast<void**>(ppComponent));
       }
       return result;
    }
