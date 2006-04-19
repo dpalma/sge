@@ -8,7 +8,7 @@
 
 #include "inputapi.h"
 #include "saveloadapi.h"
-#include "simapi.h"
+#include "schedulerapi.h"
 
 #include "axisalignedbox.h"
 #include "comenum.h"
@@ -54,9 +54,8 @@ void cComEnum<IEntityEnum, &IID_IEntityEnum, IEntity*, CopyInterface<IEntity>, t
 // CLASS: cEntityManager
 //
 
-class cEntityManager : public cComObject4<IMPLEMENTSCP(IEntityManager, IEntityManagerListener),
+class cEntityManager : public cComObject3<IMPLEMENTSCP(IEntityManager, IEntityManagerListener),
                                           IMPLEMENTS(IGlobalObject),
-                                          IMPLEMENTS(ISimClient),
                                           IMPLEMENTS(ISaveLoadParticipant)>
 {
 public:
@@ -64,7 +63,7 @@ public:
    ~cEntityManager();
 
    DECLARE_NAME(EntityManager)
-   DECLARE_NO_CONSTRAINTS()
+   DECLARE_CONSTRAINTS()
 
    virtual tResult Init();
    virtual tResult Term();
@@ -98,7 +97,7 @@ public:
 
    ///////////////////////////////////
 
-   virtual void OnSimFrame(double elapsedTime);
+   void SimFrame(double elapsedTime);
 
    ///////////////////////////////////
 
@@ -107,6 +106,19 @@ public:
 
 private:
    bool IsSelected(IEntity * pEntity) const;
+
+   class cAnimateTask : public cComObject<IMPLEMENTS(ITask)>
+   {
+   public:
+      cAnimateTask(cEntityManager * pOuter);
+      virtual void DeleteThis() {}
+      virtual void Execute(double time);
+   private:
+      cEntityManager * m_pOuter;
+      double m_lastTime;
+   };
+   friend class cAnimateTask;
+   cAnimateTask m_animateTask;
 
    class cInputListener : public cComObject<IMPLEMENTS(IInputListener)>
    {

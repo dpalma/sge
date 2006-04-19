@@ -168,7 +168,7 @@ tResult SimCreate()
    cAutoIPtr<ISim> p(static_cast<ISim*>(new cSimGlobalObj));
    if (!p)
    {
-      return E_NOTIMPL;
+      return E_OUTOFMEMORY;
    }
    return RegisterGlobalObject(IID_ISim, p);
 }

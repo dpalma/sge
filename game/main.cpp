@@ -13,6 +13,7 @@
 #include "netapi.h"
 #include "renderapi.h"
 #include "saveloadapi.h"
+#include "schedulerapi.h"
 #include "simapi.h"
 #include "soundapi.h"
 #include "sys.h"
@@ -183,6 +184,7 @@ static void RegisterGlobalObjects()
    RendererCreate();
    ResourceManagerCreate();
    SaveLoadManagerCreate();
+   SchedulerCreate();
    ScriptInterpreterCreate();
    SimCreate();
    SoundManagerCreate();
@@ -338,6 +340,9 @@ static bool MainInit(int argc, tChar * argv[])
    UseGlobal(Sim);
    pSim->Go();
 
+   UseGlobal(Scheduler);
+   pScheduler->Start();
+
    InitEntityUI();
 
    return true;
@@ -365,6 +370,9 @@ static void MainTerm()
 
 static tResult MainFrame()
 {
+   UseGlobal(Scheduler);
+   pScheduler->NextFrame();
+
    UseGlobal(Sim);
    pSim->NextFrame();
 

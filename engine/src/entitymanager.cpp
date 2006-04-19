@@ -42,6 +42,7 @@ extern void RegisterBuiltInComponents();
 
 cEntityManager::cEntityManager()
  : m_nextId(0)
+ , m_animateTask(this)
 {
 }
 
@@ -59,16 +60,22 @@ static const GUID SAVELOADID_EntityManager =
 
 static const int g_entityManagerVer = 2;
 
+////////////////////////////////////////
+
+BEGIN_CONSTRAINTS(cEntityManager)
+   AFTER_GUID(IID_IScheduler)
+END_CONSTRAINTS()
+
 ///////////////////////////////////////
 
 tResult cEntityManager::Init()
 {
-   UseGlobal(Sim);
-   pSim->Connect(static_cast<ISimClient*>(this));
-
    UseGlobal(SaveLoadManager);
    pSaveLoadManager->RegisterSaveLoadParticipant(SAVELOADID_EntityManager,
       g_entityManagerVer, static_cast<ISaveLoadParticipant*>(this));
+
+   UseGlobal(Scheduler);
+   pScheduler->AddFrameTask(&m_animateTask, 0, 1, 0);
 
    UseGlobal(Input);
    pInput->AddInputListener(&m_inputListener);
@@ -82,11 +89,11 @@ tResult cEntityManager::Init()
 
 tResult cEntityManager::Term()
 {
+   UseGlobal(Scheduler);
+   pScheduler->RemoveFrameTask(&m_animateTask);
+
    UseGlobal(Input);
    pInput->RemoveInputListener(&m_inputListener);
-
-   UseGlobal(Sim);
-   pSim->Disconnect(static_cast<ISimClient*>(this));
 
    UseGlobal(SaveLoadManager);
    pSaveLoadManager->RevokeSaveLoadParticipant(SAVELOADID_EntityManager, g_entityManagerVer);
@@ -455,7 +462,7 @@ tResult cEntityManager::CreateComponent(const TiXmlElement * pTiXmlElement,
 
 ///////////////////////////////////////
 
-void cEntityManager::OnSimFrame(double elapsedTime)
+void cEntityManager::SimFrame(double elapsedTime)
 {
    tEntityList::iterator iter = m_entities.begin();
    for (; iter != m_entities.end(); iter++)
@@ -552,6 +559,23 @@ tResult cEntityManager::Load(IReader * pReader, int version)
 bool cEntityManager::IsSelected(IEntity * pEntity) const
 {
    return (m_selected.find(pEntity) != m_selected.end());
+}
+
+///////////////////////////////////////
+
+cEntityManager::cAnimateTask::cAnimateTask(cEntityManager * pOuter)
+ : m_pOuter(pOuter)
+ , m_lastTime(0)
+{
+}
+
+///////////////////////////////////////
+
+void cEntityManager::cAnimateTask::Execute(double time)
+{
+   double elapsed = fabs(time - m_lastTime);
+   m_pOuter->SimFrame(elapsed);
+   m_lastTime = time;
 }
 
 ///////////////////////////////////////

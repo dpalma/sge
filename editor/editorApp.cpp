@@ -19,6 +19,7 @@
 #include "inputapi.h"
 #include "renderapi.h"
 #include "saveloadapi.h"
+#include "schedulerapi.h"
 #include "scriptapi.h"
 #include "simapi.h"
 #include "sys.h"
@@ -160,6 +161,7 @@ static void RegisterGlobalObjects()
    InputCreate();
    ResourceManagerCreate();
    SaveLoadManagerCreate();
+   SchedulerCreate();
    ScriptInterpreterCreate();
    SimCreate();
    RendererCreate();

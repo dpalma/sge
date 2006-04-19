@@ -550,6 +550,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\engine\src\scheduler.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\engine\src\schedulerclock.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\engine\src\sim.cpp"
 					>
 				</File>
@@ -730,6 +738,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\engine\src\scheduler.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\engine\src\schedulerclock.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\engine\src\soundwin.h"
 					>
 				</File>
@@ -793,6 +809,10 @@
 			</File>
 			<File
 				RelativePath="..\..\engine\include\saveloadapi.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\engine\include\schedulerapi.h"
 				>
 			</File>
 			<File
