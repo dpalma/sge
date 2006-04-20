@@ -7,7 +7,7 @@
 /// @file scriptapi.h
 /// Interface definitions for script language integration
 
-#include "enginedll.h"
+#include "scriptdll.h"
 #include "comtools.h"
 
 #ifdef _MSC_VER
@@ -117,23 +117,23 @@ interface IScriptInterpreter : IUnknown
 ///////////////////////////////////////
 /// Create the singleton script interpreter object
 
-ENGINE_API tResult ScriptInterpreterCreate();
+SCRIPT_API tResult ScriptInterpreterCreate();
 
 ///////////////////////////////////////
 /// Register a global function with the script interpreter
 /// @see @ref tScriptFn
 
-ENGINE_API tResult ScriptAddFunction(const char * pszName, tScriptFn pfn);
+SCRIPT_API tResult ScriptAddFunction(const char * pszName, tScriptFn pfn);
 
 ///////////////////////////////////////
 /// Register many global functions with the script interpreter at once
 /// @see @ref tScriptFn
 
-ENGINE_API tResult ScriptAddFunctions(const sScriptReg * pFns, uint nFns);
+SCRIPT_API tResult ScriptAddFunctions(const sScriptReg * pFns, uint nFns);
 
 ///////////////////////////////////////
 
-class ENGINE_API cScriptAutoAddFunction
+class SCRIPT_API cScriptAutoAddFunction
 {
 public:
    cScriptAutoAddFunction(const char * pszName, tScriptFn pfn);

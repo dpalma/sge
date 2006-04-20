@@ -21,7 +21,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\script\include"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,WIN32,_WINDOWS,TIXML_USE_STL,GLEW_STATIC"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib $(OutDir)\glew.lib cg.lib cgGL.lib"
+				AdditionalDependencies="ws2_32.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib $(OutDir)\glew.lib cg.lib cgGL.lib"
 				OutputFile=".\..\..\Build.vc7\StaticRelease/game.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -81,7 +81,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\script\include"
 				PreprocessorDefinitions="NDEBUG,WIN32,_WINDOWS,TIXML_USE_STL,GLEW_STATIC"
 				StringPooling="TRUE"
 				RuntimeLibrary="3"
@@ -143,7 +143,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\script\include"
 				PreprocessorDefinitions="_DEBUG,WIN32,HAVE_CPPUNITLITE2,_WINDOWS,TIXML_USE_STL,GLEW_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -205,7 +205,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\script\include"
 				PreprocessorDefinitions="_DEBUG,WIN32,_WINDOWS,NO_AUTO_EXPORTS,HAVE_CPPUNITLITE2,TIXML_USE_STL,GLEW_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -224,7 +224,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\CppUnitLite2.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib $(OutDir)\glew.lib cg.lib cgGL.lib"
+				AdditionalDependencies="$(OutDir)\CppUnitLite2.lib ws2_32.lib opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib $(OutDir)\glew.lib cg.lib cgGL.lib"
 				OutputFile=".\..\..\Build.vc7\StaticDebug/game.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -267,7 +267,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\script\include"
 				PreprocessorDefinitions="NDEBUG,WIN32,_WINDOWS,TIXML_USE_STL,GLEW_STATIC"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"

@@ -35,19 +35,22 @@ sourceFiles = Split("""
 includePaths = Split("""
    #3rdparty/wtl/include
    #engine/include
+   #script/include
    #tech/include
 """)
 
 libPaths = Split("""
    #allguids
-   #tech
    #engine
+   #script
+   #tech
 """)
 
 linkLibs = Split("""
    allguids.lib
-   tech.lib
    engine.lib
+   script.lib
+   tech.lib
 """)
 
 local = env.Copy()

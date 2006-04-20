@@ -14,3 +14,4 @@
 #include "editorguids.h"
 #include "guiguids.h"
 #include "netguids.h"
+#include "scriptguids.h"

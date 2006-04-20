@@ -46,7 +46,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include,..\..\script\include"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;GUI_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC;HAVE_DIRECTX=0;HAVE_CPPUNITLITE2"
 				StringPooling="true"
 				RuntimeLibrary="3"
@@ -140,7 +140,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include,..\..\script\include"
 				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,HAVE_CPPUNITLITE2,_USRDLL,GUI_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL,GLEW_STATIC,HAVE_DIRECTX=0"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -220,7 +220,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include,..\..\script\include"
 				PreprocessorDefinitions="_DEBUG;HAVE_CPPUNITLITE2;_USRDLL;GUI_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC;HAVE_DIRECTX=0"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -313,7 +313,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include,..\..\script\include"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,_USRDLL,GUI_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL,GLEW_STATIC,HAVE_DIRECTX=0"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -393,7 +393,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include,..\..\script\include"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;GUI_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC;HAVE_DIRECTX=0"
 				StringPooling="true"
 				RuntimeLibrary="2"

@@ -41,24 +41,26 @@ elif env['PLATFORM'] == 'cygwin':
 includePaths = Split("""
    #engine/include
    #gui/include
+   #script/include
    #tech/include
 """)
 
 libPaths = Split("""
    #allguids
-   #tech
    #engine
+   #script
+   #tech
 """)
 
 linkLibs = Split("""
    allguids
-   tech
    engine
+   script
+   tech
 """)
 
 local = env.Copy()
 local.UseGL()
-local.UseLua()
 local.UseTinyxml()
 local.BuildLibrary(target='gui',
                    source=sourceFiles,

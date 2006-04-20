@@ -14,22 +14,31 @@ if env['PLATFORM'] == 'win32':
 includePaths = Split("""
    #engine/include
    #gui/include
+   #network/include
+   #script/include
    #tech/include
 """)
 
 libPaths = Split("""
    #allguids
-   #tech
    #engine
    #gui
+   #network
+   #script
+   #tech
 """)
 
 linkLibs = Split("""
    allguids
-   tech
    engine
    gui
+   network
+   script
+   tech
 """)
+
+if env['PLATFORM'] == 'win32':
+   linkLibs += ['ws2_32.lib']
 
 local = env.Copy()
 local.UseGL()

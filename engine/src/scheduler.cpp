@@ -98,14 +98,16 @@ tResult cScheduler::Term()
 
    while (!m_frameTaskQueue.empty())
    {
-      delete m_frameTaskQueue.top();
+      sTaskInfo * pTaskInfo = m_frameTaskQueue.top();
       m_frameTaskQueue.pop();
+      delete pTaskInfo;
    }
 
    while (!m_timeTaskQueue.empty())
    {
-      delete m_timeTaskQueue.top();
+      sTaskInfo * pTaskInfo = m_timeTaskQueue.top();
       m_timeTaskQueue.pop();
+      delete pTaskInfo;
    }
 
    return S_OK;
