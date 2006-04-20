@@ -14,7 +14,6 @@
 #include "renderapi.h"
 #include "saveloadapi.h"
 #include "schedulerapi.h"
-#include "simapi.h"
 #include "soundapi.h"
 #include "sys.h"
 #include "terrainapi.h"
@@ -186,7 +185,6 @@ static void RegisterGlobalObjects()
    SaveLoadManagerCreate();
    SchedulerCreate();
    ScriptInterpreterCreate();
-   SimCreate();
    SoundManagerCreate();
    TerrainModelCreate();
    TerrainRendererCreate();
@@ -337,9 +335,6 @@ static bool MainInit(int argc, tChar * argv[])
    UseGlobal(ScriptInterpreter);
    pScriptInterpreter->CallFunction("GameInit");
 
-   UseGlobal(Sim);
-   pSim->Go();
-
    UseGlobal(Scheduler);
    pScheduler->Start();
 
@@ -352,9 +347,6 @@ static bool MainInit(int argc, tChar * argv[])
 
 static void MainTerm()
 {
-   UseGlobal(Sim);
-   pSim->Stop();
-
    UseGlobal(ThreadCaller);
    pThreadCaller->ThreadTerm();
 
@@ -372,9 +364,6 @@ static tResult MainFrame()
 {
    UseGlobal(Scheduler);
    pScheduler->NextFrame();
-
-   UseGlobal(Sim);
-   pSim->NextFrame();
 
    UseGlobal(Renderer);
    if (pRenderer->BeginScene() != S_OK)

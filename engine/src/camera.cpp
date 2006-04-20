@@ -187,7 +187,9 @@ static const float kDefaultSpeed = 50;
 ///////////////////////////////////////
 
 cCameraControl::cCameraControl()
- : m_pitch(kDefaultPitch)
+ : m_moveCameraTask(this)
+ , m_cameraMove(kCameraMoveNone)
+ , m_pitch(kDefaultPitch)
  , m_oneOverTangentPitch(0)
  , m_elevation(kElevationDefault)
  , m_focus(0,0,0)
@@ -209,10 +211,12 @@ cCameraControl::~cCameraControl()
 
 tResult cCameraControl::Init()
 {
+   UseGlobal(Scheduler);
+   pScheduler->AddFrameTask(&m_moveCameraTask, 0, 1, 0);
+
    UseGlobal(Input);
    pInput->AddInputListener(static_cast<IInputListener*>(this));
-   UseGlobal(Sim);
-   pSim->Connect(static_cast<ISimClient*>(this));
+
    return S_OK;
 }
 
@@ -222,8 +226,10 @@ tResult cCameraControl::Term()
 {
    UseGlobal(Input);
    pInput->RemoveInputListener(static_cast<IInputListener*>(this));
-   UseGlobal(Sim);
-   pSim->Disconnect(static_cast<ISimClient*>(this));
+
+   UseGlobal(Scheduler);
+   pScheduler->RemoveFrameTask(&m_moveCameraTask);
+
    return S_OK;
 }
 
@@ -237,7 +243,11 @@ bool cCameraControl::OnInputEvent(const sInputEvent * pEvent)
       {
          if (pEvent->down)
          {
-            MoveLeft();
+            m_cameraMove |= kCameraMoveLeft;
+         }
+         else
+         {
+            m_cameraMove &= ~kCameraMoveLeft;
          }
          break;
       }
@@ -246,7 +256,11 @@ bool cCameraControl::OnInputEvent(const sInputEvent * pEvent)
       {
          if (pEvent->down)
          {
-            MoveRight();
+            m_cameraMove |= kCameraMoveRight;
+         }
+         else
+         {
+            m_cameraMove &= ~kCameraMoveRight;
          }
          break;
       }
@@ -255,7 +269,11 @@ bool cCameraControl::OnInputEvent(const sInputEvent * pEvent)
       {
          if (pEvent->down)
          {
-            MoveForward();
+            m_cameraMove |= kCameraMoveForward;
+         }
+         else
+         {
+            m_cameraMove &= ~kCameraMoveForward;
          }
          break;
       }
@@ -264,7 +282,11 @@ bool cCameraControl::OnInputEvent(const sInputEvent * pEvent)
       {
          if (pEvent->down)
          {
-            MoveBack();
+            m_cameraMove |= kCameraMoveBack;
+         }
+         else
+         {
+            m_cameraMove &= ~kCameraMoveBack;
          }
          break;
       }
@@ -293,10 +315,37 @@ bool cCameraControl::OnInputEvent(const sInputEvent * pEvent)
 
 ///////////////////////////////////////
 
-void cCameraControl::OnSimFrame(double elapsedTime)
+static const uint kCameraMoveLeftRight = (kCameraMoveLeft | kCameraMoveRight);
+static const uint kCameraMoveForwardBack = (kCameraMoveForward | kCameraMoveBack);
+
+void cCameraControl::SimFrame(double elapsedTime)
 {
-   m_focus.x = m_leftRightLerp.Update(elapsedTime);
-   m_focus.z = m_forwardBackLerp.Update(elapsedTime);
+   if (m_cameraMove != kCameraMoveNone)
+   {
+      float focusVelX = 0, focusVelZ = 0;
+
+      if ((m_cameraMove & kCameraMoveLeftRight) == kCameraMoveLeft)
+      {
+         focusVelX = -kDefaultSpeed;
+      }
+      else if ((m_cameraMove & kCameraMoveLeftRight) == kCameraMoveRight)
+      {
+         focusVelX = kDefaultSpeed;
+      }
+
+      if ((m_cameraMove & kCameraMoveForwardBack) == kCameraMoveForward)
+      {
+         focusVelZ = -kDefaultSpeed;
+      }
+      else if ((m_cameraMove & kCameraMoveForwardBack) == kCameraMoveBack)
+      {
+         focusVelZ = kDefaultSpeed;
+      }
+
+      m_focus.x += static_cast<float>(focusVelX * elapsedTime);
+      m_focus.z += static_cast<float>(focusVelZ * elapsedTime);
+   }
+
    m_elevation = m_elevationLerp.Update(elapsedTime);
 
    float zOffset = m_elevation * m_oneOverTangentPitch;
@@ -359,41 +408,14 @@ tResult cCameraControl::SetPitch(float pitch)
 tResult cCameraControl::LookAtPoint(float x, float z)
 {
    m_focus = tVec3(x, 0, z);
-   m_leftRightLerp.Restart(x, x, 1);
-   m_forwardBackLerp.Restart(z, z, 1);
    return S_OK;
 }
 
 ///////////////////////////////////////
 
-tResult cCameraControl::MoveLeft()
+void cCameraControl::SetMovement(uint mask, uint flag)
 {
-   m_leftRightLerp.Restart(m_focus.x, m_focus.x - kDefaultSpeed, kDefaultSpeed);
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cCameraControl::MoveRight()
-{
-   m_leftRightLerp.Restart(m_focus.x, m_focus.x + kDefaultSpeed, kDefaultSpeed);
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cCameraControl::MoveForward()
-{
-   m_forwardBackLerp.Restart(m_focus.z, m_focus.z - kDefaultSpeed, kDefaultSpeed);
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cCameraControl::MoveBack()
-{
-   m_forwardBackLerp.Restart(m_focus.z, m_focus.z + kDefaultSpeed, kDefaultSpeed);
-   return S_OK;
+   m_cameraMove = (m_cameraMove & ~mask) | (flag & mask);
 }
 
 ///////////////////////////////////////
@@ -410,6 +432,22 @@ tResult cCameraControl::Lower()
 {
    m_elevationLerp.Restart(m_elevation, m_elevation - kElevationStep, kElevationSpeed);
    return S_OK;
+}
+
+///////////////////////////////////////
+
+cCameraControl::cMoveCameraTask::cMoveCameraTask(cCameraControl * pOuter)
+ : m_pOuter(pOuter)
+{
+}
+
+///////////////////////////////////////
+
+void cCameraControl::cMoveCameraTask::Execute(double time)
+{
+   double elapsed = fabs(time - m_lastTime);
+   m_pOuter->SimFrame(elapsed);
+   m_lastTime = time;
 }
 
 ///////////////////////////////////////

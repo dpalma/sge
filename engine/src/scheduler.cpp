@@ -149,7 +149,21 @@ tResult cScheduler::AddRenderTask(ITask * pTask)
 
 tResult cScheduler::RemoveRenderTask(ITask * pTask)
 {
-   return E_NOTIMPL;
+   if (pTask == NULL)
+   {
+      return E_POINTER;
+   }
+   std::deque<ITask *>::iterator iter = m_renderTaskQueue.begin();
+   for (; iter != m_renderTaskQueue.end(); iter++)
+   {
+      if (CTIsSameObject(pTask, *iter))
+      {
+         (*iter)->Release();
+         m_renderTaskQueue.erase(iter);
+         return S_OK;
+      }
+   }
+   return S_FALSE;
 }
 
 ////////////////////////////////////////

@@ -6,7 +6,8 @@
 
 #include "cameraapi.h"
 #include "inputapi.h"
-#include "simapi.h"
+#include "schedulerapi.h"
+
 #include "frustum.h"
 #include "globalobjdef.h"
 #include "matrix4.h"
@@ -194,8 +195,7 @@ private:
 // CLASS: cCameraControl
 //
 
-class cCameraControl : public cComObject4<IMPLEMENTS(ICameraControl),
-                                          IMPLEMENTS(ISimClient),
+class cCameraControl : public cComObject3<IMPLEMENTS(ICameraControl),
                                           IMPLEMENTS(IInputListener),
                                           IMPLEMENTS(IGlobalObject)>
 {
@@ -211,7 +211,7 @@ public:
 
    virtual bool OnInputEvent(const sInputEvent * pEvent);
 
-   virtual void OnSimFrame(double elapsedTime);
+   void SimFrame(double elapsedTime);
 
    virtual tResult GetElevation(float * pElevation) const;
    virtual tResult SetElevation(float elevation);
@@ -219,20 +219,29 @@ public:
    virtual tResult SetPitch(float Pitch);
 
    virtual tResult LookAtPoint(float x, float z);
-   virtual tResult MoveLeft();
-   virtual tResult MoveRight();
-   virtual tResult MoveForward();
-   virtual tResult MoveBack();
+   virtual void SetMovement(uint mask, uint flag);
    virtual tResult Raise();
    virtual tResult Lower();
 
 private:
+   class cMoveCameraTask : public cComObject<IMPLEMENTS(ITask)>
+   {
+   public:
+      cMoveCameraTask(cCameraControl * pOuter);
+      virtual void DeleteThis() {}
+      virtual void Execute(double time);
+   private:
+      cCameraControl * m_pOuter;
+      double m_lastTime;
+   };
+   friend class cMoveCameraTask;
+   cMoveCameraTask m_moveCameraTask;
+
+   uint m_cameraMove;
    float m_pitch, m_oneOverTangentPitch, m_elevation;
    tVec3 m_eye, m_focus;
    tMatrix4 m_rotation;
    cTimedLerp<float> m_elevationLerp;
-   cTimedLerp<float> m_leftRightLerp;
-   cTimedLerp<float> m_forwardBackLerp;
 };
 
 

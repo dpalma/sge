@@ -91,9 +91,6 @@ public:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
-   virtual tResult AddLoopClient(IEditorLoopClient * pLoopClient);
-   virtual tResult RemoveLoopClient(IEditorLoopClient * pLoopClient);
-
    virtual tResult AddEditorAppListener(IEditorAppListener * pListener);
    virtual tResult RemoveEditorAppListener(IEditorAppListener * pListener);
 
@@ -103,9 +100,6 @@ public:
    virtual tResult GetDefaultTileSet(cStr * pTileSet) const;
 
 private:
-   typedef std::vector<IEditorLoopClient *> tEditorLoopClients;
-   tEditorLoopClients m_loopClients;
-
    typedef std::vector<IEditorAppListener *> tEditorAppListeners;
    tEditorAppListeners m_editorAppListeners;
 

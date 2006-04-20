@@ -235,27 +235,59 @@ tResult cMoveCameraTool::OnKeyDown(const cEditorKeyEvent & keyEvent)
    {
       case VK_LEFT:
       {
-         pCameraControl->MoveLeft();
+         pCameraControl->SetMovement(kCameraMoveLeft, kCameraMoveLeft);
          break;
       }
       case VK_RIGHT:
       {
-         pCameraControl->MoveRight();
+         pCameraControl->SetMovement(kCameraMoveRight, kCameraMoveRight);
          break;
       }
       case VK_UP:
       {
-         pCameraControl->MoveForward();
+         pCameraControl->SetMovement(kCameraMoveForward, kCameraMoveForward);
          break;
       }
       case VK_DOWN:
       {
-         pCameraControl->MoveBack();
+         pCameraControl->SetMovement(kCameraMoveBack, kCameraMoveBack);
          break;
       }
    }
 
    return cDragTool::OnKeyDown(keyEvent);
+}
+
+////////////////////////////////////////
+
+tResult cMoveCameraTool::OnKeyUp(const cEditorKeyEvent & keyEvent)
+{
+   UseGlobal(CameraControl);
+   switch (keyEvent.GetChar())
+   {
+      case VK_LEFT:
+      {
+         pCameraControl->SetMovement(kCameraMoveLeft, kCameraMoveNone);
+         break;
+      }
+      case VK_RIGHT:
+      {
+         pCameraControl->SetMovement(kCameraMoveRight, kCameraMoveNone);
+         break;
+      }
+      case VK_UP:
+      {
+         pCameraControl->SetMovement(kCameraMoveForward, kCameraMoveNone);
+         break;
+      }
+      case VK_DOWN:
+      {
+         pCameraControl->SetMovement(kCameraMoveBack, kCameraMoveNone);
+         break;
+      }
+   }
+
+   return cDragTool::OnKeyUp(keyEvent);
 }
 
 ////////////////////////////////////////

@@ -15,7 +15,6 @@
 
 F_DECLARE_INTERFACE(IEditorSplashScreen);
 F_DECLARE_INTERFACE(IEditorApp);
-F_DECLARE_INTERFACE(IEditorLoopClient);
 F_DECLARE_INTERFACE(IEditorAppListener);
 F_DECLARE_INTERFACE(IEditorToolState);
 F_DECLARE_INTERFACE(IEditorToolStateListener);
@@ -61,9 +60,6 @@ tResult EditorSplashScreenCreate(IEditorSplashScreen * * ppEditorSplashScreen);
 
 interface UUID("2A04E541-6BA1-41e9-92FA-E7B3D493F1A2") IEditorApp : IUnknown
 {
-   virtual tResult AddLoopClient(IEditorLoopClient * pLoopClient) = 0;
-   virtual tResult RemoveLoopClient(IEditorLoopClient * pLoopClient) = 0;
-
    virtual tResult AddEditorAppListener(IEditorAppListener * pListener) = 0;
    virtual tResult RemoveEditorAppListener(IEditorAppListener * pListener) = 0;
 
@@ -76,17 +72,6 @@ interface UUID("2A04E541-6BA1-41e9-92FA-E7B3D493F1A2") IEditorApp : IUnknown
 ////////////////////////////////////////
 
 void EditorAppCreate();
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// INTERFACE: IEditorLoopClient
-//
-
-interface UUID("ED1B3A1A-E2D8-4eec-AABD-648A548729E8") IEditorLoopClient : IUnknown
-{
-   virtual void OnFrame(double time, double elapsed) = 0;
-};
 
 
 /////////////////////////////////////////////////////////////////////////////

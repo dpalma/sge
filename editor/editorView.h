@@ -8,6 +8,8 @@
 #include "afxcomtools.h"
 #include "DynamicLink.h"
 
+#include "schedulerapi.h"
+
 #include "matrix4.h"
 
 #ifdef HAVE_DIRECTX
@@ -32,8 +34,8 @@ F_DECLARE_INTERFACE(IDirect3DDevice9);
 class cEditorView : public CScrollView,
                     public cComObject4<IMPLEMENTS(IEditorView),
                                        IMPLEMENTS(IEditorAppListener),
-                                       IMPLEMENTS(IEditorLoopClient),
                                        IMPLEMENTS(IEditorToolStateListener),
+                                       IMPLEMENTS(ITask),
                                        cAfxComServices<cEditorView> >
 {
 protected: // create from serialization only
@@ -53,11 +55,11 @@ public:
    // IEditorAppListener
    virtual tResult OnDefaultTileSetChange(const tChar * pszTileSet);
 
-   // IEditorLoopClient
-   virtual void OnFrame(double time, double elapsed);
-
    // IEditorToolStateListener
    virtual tResult OnActiveToolChange(IEditorTool * pNewTool, IEditorTool * pFormerTool);
+
+   // ITask
+   virtual void Execute(double time);
 
    void RenderGL();
    void RenderD3D();

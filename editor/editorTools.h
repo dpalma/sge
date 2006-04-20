@@ -85,6 +85,7 @@ public:
    ~cMoveCameraTool();
 
    virtual tResult OnKeyDown(const cEditorKeyEvent & keyEvent);
+   virtual tResult OnKeyUp(const cEditorKeyEvent & keyEvent);
    virtual tResult OnMouseWheel(const cEditorMouseWheelEvent & mouseWheelEvent);
    virtual tResult GetToolTip(const cEditorMouseEvent & mouseEvent, cStr * pToolTipText, uint_ptr * pToolTipId) const;
 

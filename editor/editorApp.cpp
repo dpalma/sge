@@ -21,7 +21,6 @@
 #include "saveloadapi.h"
 #include "schedulerapi.h"
 #include "scriptapi.h"
-#include "simapi.h"
 #include "sys.h"
 
 #include "resourceapi.h"
@@ -163,7 +162,6 @@ static void RegisterGlobalObjects()
    SaveLoadManagerCreate();
    SchedulerCreate();
    ScriptInterpreterCreate();
-   SimCreate();
    RendererCreate();
    TerrainModelCreate();
    TerrainRendererCreateForEditor();
@@ -332,13 +330,8 @@ int cEditorApp::Run()
    bool bIdle = true;
    long lIdleCount = 0;
 
-   static const double kFrameDelay = 0.1;
-
-   double timeLastFrame = TimeGetSecs();
-   double time = timeLastFrame + (2 * kFrameDelay);
-
-   UseGlobal(Sim);
-   pSim->Go();
+   UseGlobal(Scheduler);
+   pScheduler->Start();
 
    MSG lastMouseMove = {0};
 
@@ -376,22 +369,7 @@ int cEditorApp::Run()
          }
       }
 
-      double elapsed = time - timeLastFrame;
-
-      if (elapsed > kFrameDelay)
-      {
-         pSim->NextFrame();
-
-         tEditorLoopClients::iterator iter = m_loopClients.begin();
-         for (; iter != m_loopClients.end(); iter++)
-         {
-            (*iter)->OnFrame(time, elapsed);
-         }
-
-         timeLastFrame = time;
-      }
-
-      time = TimeGetSecs();
+      pScheduler->NextFrame();
    }
 
    Assert(!"Should never reach this point!"); // not reachable
@@ -465,20 +443,6 @@ void cEditorApp::ParseCommandLine(CCommandLineInfo& rCmdInfo)
          rCmdInfo.ParseParam(pszParam, bFlag, bLast);
       }
    }
-}
-
-////////////////////////////////////////
-
-tResult cEditorApp::AddLoopClient(IEditorLoopClient * pLoopClient)
-{
-   return add_interface(m_loopClients, pLoopClient) ? S_OK : E_FAIL;
-}
-
-////////////////////////////////////////
-
-tResult cEditorApp::RemoveLoopClient(IEditorLoopClient * pLoopClient)
-{
-   return remove_interface(m_loopClients, pLoopClient) ? S_OK : E_FAIL;
 }
 
 ////////////////////////////////////////

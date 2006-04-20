@@ -141,7 +141,16 @@ tResult cEditorView::OnDefaultTileSetChange(const tChar * pszTileSet)
 
 ////////////////////////////////////////
 
-void cEditorView::OnFrame(double time, double elapsed)
+tResult cEditorView::OnActiveToolChange(IEditorTool * pNewTool, IEditorTool * pFormerTool)
+{
+   UseGlobal(TerrainRenderer);
+   pTerrainRenderer->ClearHighlight();
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+void cEditorView::Execute(double time)
 {
 #ifdef HAVE_DIRECTX
    if (m_bUsingD3d)
@@ -155,15 +164,6 @@ void cEditorView::OnFrame(double time, double elapsed)
 #else
    RenderGL();
 #endif
-}
-
-////////////////////////////////////////
-
-tResult cEditorView::OnActiveToolChange(IEditorTool * pNewTool, IEditorTool * pFormerTool)
-{
-   UseGlobal(TerrainRenderer);
-   pTerrainRenderer->ClearHighlight();
-   return S_OK;
 }
 
 ////////////////////////////////////////
@@ -300,8 +300,8 @@ int cEditorView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CScrollView::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
-   UseGlobal(EditorApp);
-   Verify(pEditorApp->AddLoopClient(this) == S_OK);
+   UseGlobal(Scheduler);
+   pScheduler->AddRenderTask(this);
 
    UseGlobal(EditorToolState);
    Verify(pEditorToolState->AddToolStateListener(static_cast<IEditorToolStateListener*>(this)) == S_OK);
@@ -326,8 +326,8 @@ void cEditorView::OnDestroy()
 {
 	CScrollView::OnDestroy();
 
-   UseGlobal(EditorApp);
-   pEditorApp->RemoveLoopClient(this);
+   UseGlobal(Scheduler);
+   pScheduler->RemoveRenderTask(this);
 
    UseGlobal(EditorToolState);
    Verify(pEditorToolState->RemoveToolStateListener(static_cast<IEditorToolStateListener*>(this)) == S_OK);

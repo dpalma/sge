@@ -56,6 +56,15 @@ ENGINE_API tResult ScreenToNormalizedDeviceCoords(int sx, int sy, float * pndx, 
 // INTERFACE: ICameraControl
 //
 
+enum eCameraMove
+{
+   kCameraMoveNone = 0,
+   kCameraMoveLeft = 1,
+   kCameraMoveRight = 2,
+   kCameraMoveForward = 4,
+   kCameraMoveBack = 8,
+};
+
 interface ICameraControl : IUnknown
 {
    virtual tResult GetElevation(float * pElevation) const = 0;
@@ -67,10 +76,8 @@ interface ICameraControl : IUnknown
    // TODO: this function is only to support legacy code in game
    virtual tResult LookAtPoint(float x, float z) = 0;
 
-   virtual tResult MoveLeft() = 0;
-   virtual tResult MoveRight() = 0;
-   virtual tResult MoveForward() = 0;
-   virtual tResult MoveBack() = 0;
+   virtual void SetMovement(uint mask, uint flag) = 0;
+
    virtual tResult Raise() = 0;
    virtual tResult Lower() = 0;
 };
