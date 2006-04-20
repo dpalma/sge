@@ -46,7 +46,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\script\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,WIN32,_WINDOWS,TIXML_USE_STL,GLEW_STATIC"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -75,7 +75,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib"
+				AdditionalDependencies="winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\zlibwapi.lib"
 				OutputFile=".\..\..\Build.vc8\StaticRelease/d3dgui.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -142,8 +142,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include"
-				PreprocessorDefinitions="NDEBUG,WIN32,_WINDOWS,TIXML_USE_STL,GLEW_STATIC,D3D_DEBUG_INFO"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\script\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include"
+				PreprocessorDefinitions="NDEBUG,WIN32,_WINDOWS,HAVE_CPPUNITLITE2,TIXML_USE_STL,GLEW_STATIC,D3D_DEBUG_INFO"
 				StringPooling="true"
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="true"
@@ -172,7 +172,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib"
+				AdditionalDependencies="$(OutDir)\CppUnitLite2.lib winmm.lib $(OutDir)\tinyxml.lib"
 				OutputFile=".\..\..\Build.vc8\Opt/d3dgui.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -240,8 +240,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include"
-				PreprocessorDefinitions="_DEBUG,WIN32,HAVE_CPPUNIT,_WINDOWS,TIXML_USE_STL,GLEW_STATIC,D3D_DEBUG_INFO"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\script\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include"
+				PreprocessorDefinitions="_DEBUG,WIN32,HAVE_CPPUNITLITE2,_WINDOWS,TIXML_USE_STL,GLEW_STATIC,D3D_DEBUG_INFO"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"
@@ -269,7 +269,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\cppunit.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib"
+				AdditionalDependencies="$(OutDir)\CppUnitLite2.lib winmm.lib $(OutDir)\tinyxml.lib"
 				OutputFile=".\..\..\Build.vc8\Debug/d3dgui.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -338,8 +338,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include"
-				PreprocessorDefinitions="_DEBUG,WIN32,_WINDOWS,NO_AUTO_EXPORTS,HAVE_CPPUNIT,TIXML_USE_STL,GLEW_STATIC,D3D_DEBUG_INFO"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\script\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include"
+				PreprocessorDefinitions="_DEBUG,WIN32,_WINDOWS,NO_AUTO_EXPORTS,HAVE_CPPUNITLITE2,TIXML_USE_STL,GLEW_STATIC,D3D_DEBUG_INFO"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="2"
@@ -367,7 +367,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\cppunit.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib"
+				AdditionalDependencies="$(OutDir)\CppUnitLite2.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\zlibwapi.lib"
 				OutputFile=".\..\..\Build.vc8\StaticDebug/d3dgui.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -436,7 +436,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\cppunit\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\script\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include"
 				PreprocessorDefinitions="NDEBUG,WIN32,_WINDOWS,TIXML_USE_STL,GLEW_STATIC"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -465,7 +465,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib"
+				AdditionalDependencies="winmm.lib $(OutDir)\tinyxml.lib"
 				OutputFile=".\..\..\Build.vc8\Release/d3dgui.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"

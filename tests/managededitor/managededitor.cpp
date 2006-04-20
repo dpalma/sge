@@ -13,8 +13,8 @@
 #include "inputapi.h"
 #include "renderapi.h"
 #include "saveloadapi.h"
+#include "schedulerapi.h"
 #include "scriptapi.h"
-#include "simapi.h"
 #include "sys.h"
 #include "terrainapi.h"
 
@@ -47,7 +47,7 @@ static void RegisterGlobalObjects()
    RendererCreate();
    ResourceManagerCreate();
    SaveLoadManagerCreate();
-   SimCreate();
+   SchedulerCreate();
    ScriptInterpreterCreate();
    TerrainModelCreate();
    TerrainRendererCreateForEditor();
@@ -132,8 +132,8 @@ static bool ManagedEditorInit(array<System::String ^> ^ args)
       pGUIContext->SetRenderDeviceContext(pGuiRenderDevice);
    }
 
-   UseGlobal(Sim);
-   pSim->Go();
+   UseGlobal(Scheduler);
+   pScheduler->Start();
 
 #if 0
    if (FAILED(SysRunUnitTests()))
@@ -151,8 +151,8 @@ static bool ManagedEditorInit(array<System::String ^> ^ args)
 
 static void ManagedEditorTerm()
 {
-   UseGlobal(Sim);
-   pSim->Stop();
+   UseGlobal(Scheduler);
+   pScheduler->Stop();
 
    StopGlobalObjects();
 }

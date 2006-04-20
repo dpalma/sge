@@ -26,15 +26,7 @@
 #include "techassert.h"
 #include "techlog.h"
 
-namespace ms3dview
-{
-   class cFrameLoopClient
-   {
-   public:
-      virtual ~cFrameLoopClient() = 0;
-      virtual void OnFrame(double time, double elapsed) = 0;
-   };
-}
+#pragma warning(disable:4355) // 'this' used in base member initializer list
 
 /////////////////////////////////////////////////////////////////////////////
 

@@ -13,7 +13,7 @@
 #include "entityapi.h"
 #include "inputapi.h"
 #include "saveloadapi.h"
-#include "simapi.h"
+#include "schedulerapi.h"
 
 #include "globalobj.h"
 #include "imageapi.h"
@@ -25,13 +25,6 @@
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
-
-namespace ms3dview
-{
-   cFrameLoopClient::~cFrameLoopClient()
-   {
-   }
-}
 
 /////////////////////////////////////////////////////////////////////////////
 // cMs3dviewApp
@@ -56,33 +49,6 @@ cMs3dviewApp::cMs3dviewApp()
 	// Place all significant initialization in InitInstance
 }
 
-/////////////////////////////////////////////////////////////////////////////
-
-BOOL cMs3dviewApp::AddLoopClient(ms3dview::cFrameLoopClient * pLoopClient)
-{
-   if (pLoopClient != NULL)
-   {
-      m_loopClients.Add(pLoopClient);
-      return TRUE;
-   }
-   return FALSE;
-}
-
-BOOL cMs3dviewApp::RemoveLoopClient(ms3dview::cFrameLoopClient * pLoopClient)
-{
-   if (pLoopClient != NULL)
-   {
-      for (int i = 0; i < m_loopClients.GetSize(); i++)
-      {
-         if (m_loopClients[i] == pLoopClient)
-         {
-            m_loopClients.RemoveAt(i);
-            return TRUE;
-         }
-      }
-   }
-   return FALSE;
-}
 
 /////////////////////////////////////////////////////////////////////////////
 // The one and only cMs3dviewApp object
@@ -97,7 +63,7 @@ static void RegisterGlobalObjects()
    CameraCreate();
    InputCreate();
    SaveLoadManagerCreate();
-   SimCreate();
+   SchedulerCreate();
    ResourceManagerCreate();
    EntityManagerCreate();
    RendererCreate();
@@ -132,7 +98,7 @@ BOOL cMs3dviewApp::InitInstance()
       return FALSE;
    }
 
-   TextFormatRegister(NULL);
+   TextFormatRegister(_T("css,lua,xml"));
    EngineRegisterResourceFormats();
    ImageRegisterResourceFormats();
 
@@ -235,13 +201,8 @@ int cMs3dviewApp::Run()
    bool bIdle = true;
    long lIdleCount = 0;
 
-   static const double kFrameDelay = 0.1;
-
-   double timeLastFrame = TimeGetSecs();
-   double time = timeLastFrame + (2 * kFrameDelay);
-
-   UseGlobal(Sim);
-   pSim->Go();
+   UseGlobal(Scheduler);
+   pScheduler->Start();
 
    MSG lastMouseMove = {0};
 
@@ -279,21 +240,7 @@ int cMs3dviewApp::Run()
          }
       }
 
-      double elapsed = time - timeLastFrame;
-
-      if (elapsed > kFrameDelay)
-      {
-         pSim->NextFrame();
-
-         for (int i = 0; i < m_loopClients.GetSize(); i++)
-         {
-            m_loopClients[i]->OnFrame(time, elapsed);
-         }
-
-         timeLastFrame = time;
-      }
-
-      time = TimeGetSecs();
+      pScheduler->NextFrame();
    }
 
    Assert(!"Should never reach this point!"); // not reachable

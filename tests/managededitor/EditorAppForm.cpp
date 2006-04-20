@@ -14,7 +14,7 @@
 #include "cameraapi.h"
 #include "entityapi.h"
 #include "renderapi.h"
-#include "simapi.h"
+#include "schedulerapi.h"
 #include "sys.h"
 #include "terrainapi.h"
 
@@ -82,8 +82,8 @@ namespace ManagedEditor
 
    void EditorAppForm::OnIdle(System::Object ^ sender, System::EventArgs ^ e)
    {
-      UseGlobal(Sim);
-      pSim->NextFrame();
+      UseGlobal(Scheduler);
+      pScheduler->NextFrame();
 
       UseGlobal(Renderer);
       if (pRenderer->BeginScene() == S_OK)

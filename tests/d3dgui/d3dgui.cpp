@@ -4,11 +4,13 @@
 #include "stdhdr.h"
 
 #include "guiapi.h"
-#include "simapi.h"
-#include "inputapi.h"
+
 #include "engineapi.h"
-#include "scriptapi.h"
+#include "inputapi.h"
+#include "schedulerapi.h"
 #include "sys.h"
+
+#include "scriptapi.h"
 
 #include "resourceapi.h"
 #include "configapi.h"

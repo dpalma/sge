@@ -4,7 +4,8 @@
 #if !defined(AFX_MS3DVIEWVIEW_H__17A7D20E_9722_41CF_B129_799ABB1EC346__INCLUDED_)
 #define AFX_MS3DVIEWVIEW_H__17A7D20E_9722_41CF_B129_799ABB1EC346__INCLUDED_
 
-#include "comtools.h"
+#include "schedulerapi.h"
+
 #include "vec3.h"
 
 #if _MSC_VER > 1000
@@ -15,7 +16,7 @@ class c3dmodelDoc;
 
 /////////////////////////////////////////////////////////////////////////////
 
-class c3dmodelView : public CView, public ms3dview::cFrameLoopClient
+class c3dmodelView : public CView
 {
 protected: // create from serialization only
 	c3dmodelView();
@@ -27,7 +28,6 @@ public:
 
 // Operations
 public:
-   virtual void OnFrame(double time, double elapsed);
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -61,6 +61,19 @@ private:
    HGLRC	m_hRC;
 
    tVec3 m_center, m_eye;
+
+   class cRenderTask : public cComObject<IMPLEMENTS(ITask)>
+   {
+   public:
+      cRenderTask(c3dmodelView * pOuter);
+      virtual void DeleteThis() {}
+      virtual void Execute(double time);
+   private:
+      c3dmodelView * m_pOuter;
+      double m_lastTime;
+   };
+   friend class cRenderTask;
+   cRenderTask m_renderTask;
 };
 
 #ifndef _DEBUG  // debug version in ms3dviewView.cpp

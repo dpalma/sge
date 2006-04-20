@@ -12,8 +12,6 @@
 	#error include 'stdafx.h' before including this file for PCH
 #endif
 
-#include <afxtempl.h>
-
 #include "resource.h"       // main symbols
 
 /////////////////////////////////////////////////////////////////////////////
@@ -25,9 +23,6 @@ class cMs3dviewApp : public CWinApp
 {
 public:
 	cMs3dviewApp();
-
-   BOOL AddLoopClient(ms3dview::cFrameLoopClient * pLoopClient);
-   BOOL RemoveLoopClient(ms3dview::cFrameLoopClient * pLoopClient);
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -45,9 +40,6 @@ public:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
    virtual int Run();
-
-private:
-   CArray<ms3dview::cFrameLoopClient*, ms3dview::cFrameLoopClient*> m_loopClients;
 };
 
 

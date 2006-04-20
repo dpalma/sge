@@ -10,6 +10,7 @@
 #include "entityapi.h"
 #include "model.h"
 #include "renderapi.h"
+#include "schedulerapi.h"
 
 #include "globalobj.h"
 #include "matrix4.h"
@@ -45,7 +46,10 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // c3dmodelView construction/destruction
 
-c3dmodelView::c3dmodelView() : m_center(0,0,0), m_eye(0,0,0)
+c3dmodelView::c3dmodelView()
+ : m_center(0,0,0)
+ , m_eye(0,0,0)
+ , m_renderTask(this)
 {
 }
 
@@ -63,27 +67,6 @@ BOOL c3dmodelView::PreCreateWindow(CREATESTRUCT& cs)
 
 /////////////////////////////////////////////////////////////////////////////
 // c3dmodelView operations
-
-void c3dmodelView::OnFrame(double time, double elapsed)
-{
-   UseGlobal(Renderer);
-   Verify(pRenderer->BeginScene() == S_OK);
-
-   glMatrixMode(GL_MODELVIEW);
-   glPushMatrix();
-   glLoadIdentity();
-   gluLookAt(m_eye.x, m_eye.y, m_eye.z, m_center.x, m_center.y, m_center.z, 0, 1, 0);
-   glTranslatef(m_center.x, m_center.y, m_center.z);
-
-   glPopMatrix();
-
-   UseGlobal(EntityManager);
-   pEntityManager->RenderAll();
-
-   pRenderer->EndScene();
-   glFinish();
-   SwapBuffers(m_hDC);
-}
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -125,8 +108,8 @@ int c3dmodelView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CView::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
-   cMs3dviewApp * pApp = DYNAMIC_DOWNCAST(cMs3dviewApp, AfxGetApp());
-   pApp->AddLoopClient(static_cast<ms3dview::cFrameLoopClient*>(this));
+   UseGlobal(Scheduler);
+   pScheduler->AddRenderTask(&m_renderTask);
 	
    m_hDC = ::GetDC(m_hWnd);
    if (m_hDC == NULL)
@@ -183,8 +166,8 @@ void c3dmodelView::OnDestroy()
 {
 	CView::OnDestroy();
 
-   cMs3dviewApp * pApp = DYNAMIC_DOWNCAST(cMs3dviewApp, AfxGetApp());
-   pApp->RemoveLoopClient(static_cast<ms3dview::cFrameLoopClient*>(this));
+   UseGlobal(Scheduler);
+   pScheduler->RemoveRenderTask(&m_renderTask);
 
    wglMakeCurrent(NULL, NULL);
 
@@ -264,4 +247,33 @@ void c3dmodelView::OnInitialUpdate()
       m_center = tVec3(0,0,0);
       m_eye = tVec3(0,0,0);
    }
+}
+
+c3dmodelView::cRenderTask::cRenderTask(c3dmodelView * pOuter)
+ : m_pOuter(pOuter)
+{
+}
+
+void c3dmodelView::cRenderTask::Execute(double time)
+{
+   UseGlobal(Renderer);
+   Verify(pRenderer->BeginScene() == S_OK);
+
+   const tVec3 & eye = m_pOuter->m_eye;
+   const tVec3 & center = m_pOuter->m_center;
+
+   glMatrixMode(GL_MODELVIEW);
+   glPushMatrix();
+   glLoadIdentity();
+   gluLookAt(eye.x, eye.y, eye.z, center.x, center.y, center.z, 0, 1, 0);
+   glTranslatef(center.x, center.y, center.z);
+
+   glPopMatrix();
+
+   UseGlobal(EntityManager);
+   pEntityManager->RenderAll();
+
+   pRenderer->EndScene();
+   glFinish();
+   SwapBuffers(m_pOuter->m_hDC);
 }
