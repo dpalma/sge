@@ -16,6 +16,7 @@ includePaths = Split("""
    #gui/include
    #network/include
    #script/include
+   #sound/include
    #tech/include
 """)
 
@@ -25,6 +26,7 @@ libPaths = Split("""
    #gui
    #network
    #script
+   #sound
    #tech
 """)
 
@@ -34,6 +36,7 @@ linkLibs = Split("""
    gui
    network
    script
+   sound
    tech
 """)
 

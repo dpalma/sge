@@ -359,9 +359,6 @@
 					RelativePath="..\..\engine\src\sim.cpp">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\soundwin.cpp">
-				</File>
-				<File
 					RelativePath="..\..\engine\src\stdhdr.cpp">
 					<FileConfiguration
 						Name="Opt|Win32">
@@ -489,9 +486,6 @@
 					RelativePath="..\..\engine\src\schedulerclock.h">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\soundwin.h">
-				</File>
-				<File
 					RelativePath="..\..\engine\src\stdhdr.h">
 				</File>
 				<File
@@ -540,9 +534,6 @@
 			</File>
 			<File
 				RelativePath="..\..\engine\include\simapi.h">
-			</File>
-			<File
-				RelativePath="..\..\engine\include\soundapi.h">
 			</File>
 			<File
 				RelativePath="..\..\engine\include\sys.h">

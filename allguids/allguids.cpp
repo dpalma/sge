@@ -15,3 +15,4 @@
 #include "guiguids.h"
 #include "netguids.h"
 #include "scriptguids.h"
+#include "soundguids.h"

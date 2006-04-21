@@ -122,7 +122,6 @@ void MapUnload(void * pData)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-extern tResult SoundResourceRegister(); // soundwin.cpp
 extern tResult RendererResourceRegister(); // renderer.cpp
 extern tResult ModelMs3dResourceRegister(); // modelms3d.cpp
 
@@ -132,7 +131,6 @@ tResult EngineRegisterResourceFormats()
    if (!!pResourceManager)
    {
       if (ModelMs3dResourceRegister() == S_OK
-         && SoundResourceRegister() == S_OK
          && RendererResourceRegister() == S_OK
          && pResourceManager->RegisterFormat(kRT_TiXml, _T("xml"), TiXmlDocumentLoad, NULL, TiXmlDocumentUnload) == S_OK
          && pResourceManager->RegisterFormat(kRT_Map, kMapExt, MapLoad, MapPostload, MapUnload) == S_OK)

@@ -15,6 +15,7 @@ includePaths = Split("""
    #network/include
    #render/include
    #script/include
+   #sound/include
    #tech/include
 """)
 

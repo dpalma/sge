@@ -5,7 +5,7 @@
 #define INCLUDED_SOUNDAPI_H
 
 #include "comtools.h"
-#include "enginedll.h"
+#include "sounddll.h"
 
 #pragma once
 
@@ -32,7 +32,7 @@ interface ISoundManager : IUnknown
 
 ///////////////////////////////////////
 
-ENGINE_API tResult SoundManagerCreate();
+SOUND_API tResult SoundManagerCreate();
 
 ///////////////////////////////////////////////////////////////////////////////
 

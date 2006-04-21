@@ -46,7 +46,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include,..\..\script\include"
+				AdditionalIncludeDirectories="..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include,..\..\script\include,..\..\sound\include"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,WIN32,_WINDOWS,TIXML_USE_STL"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -142,7 +142,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include,..\..\script\include"
+				AdditionalIncludeDirectories="..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include,..\..\script\include,..\..\sound\include"
 				PreprocessorDefinitions="TIXML_USE_STL,_WINDOWS,NDEBUG,WIN32,HAVE_CPPUNITLITE2"
 				StringPooling="true"
 				RuntimeLibrary="3"
@@ -240,7 +240,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include,..\..\script\include"
+				AdditionalIncludeDirectories="..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include,..\..\script\include,..\..\sound\include"
 				PreprocessorDefinitions="_DEBUG,WIN32,_WINDOWS,TIXML_USE_STL,HAVE_CPPUNITLITE2"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -338,7 +338,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include,..\..\script\include"
+				AdditionalIncludeDirectories="..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include,..\..\script\include,..\..\sound\include"
 				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,WIN32,_WINDOWS,TIXML_USE_STL,HAVE_CPPUNITLITE2"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -436,7 +436,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include,..\..\script\include"
+				AdditionalIncludeDirectories="..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include,..\..\script\include,..\..\sound\include"
 				PreprocessorDefinitions="NDEBUG,WIN32,_WINDOWS,TIXML_USE_STL"
 				StringPooling="true"
 				RuntimeLibrary="2"

@@ -550,10 +550,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\engine\src\soundwin.cpp"
-					>
-				</File>
-				<File
 					RelativePath="..\..\engine\src\stdhdr.cpp"
 					>
 					<FileConfiguration
@@ -722,10 +718,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\engine\src\soundwin.h"
-					>
-				</File>
-				<File
 					RelativePath="..\..\engine\src\stdhdr.h"
 					>
 				</File>
@@ -793,10 +785,6 @@
 			</File>
 			<File
 				RelativePath="..\..\engine\include\simapi.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\engine\include\soundapi.h"
 				>
 			</File>
 			<File

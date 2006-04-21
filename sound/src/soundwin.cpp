@@ -436,8 +436,11 @@ bool cWinmmSoundManager::sLessWaveFormat::operator()(const WAVEFORMATEX & lhs, c
 
 ///////////////////////////////////////
 
+extern tResult SoundResourceRegister();
+
 tResult SoundManagerCreate()
 {
+   SoundResourceRegister();
    cAutoIPtr<ISoundManager> p(static_cast<ISoundManager*>(new cWinmmSoundManager));
    return RegisterGlobalObject(IID_ISoundManager, p);
 }

@@ -39,18 +39,6 @@ extern uint_ptr         g_mouseCallbackUserData;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-tResult SoundManagerCreate()
-{
-   return E_NOTIMPL;
-}
-
-tResult SoundResourceRegister()
-{
-   return E_NOTIMPL;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 bool IsExiting()
 {
    return g_bExiting;

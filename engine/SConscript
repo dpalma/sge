@@ -30,7 +30,7 @@ sourceFiles = Split("""
 """)
 
 if env['PLATFORM'] == 'win32':
-   sourceFiles += ['src/syswin.cpp', 'src/soundwin.cpp']
+   sourceFiles += ['src/syswin.cpp']
 elif env['PLATFORM'] == 'cygwin':
    sourceFiles += ['src/syslinux.cpp']
 
