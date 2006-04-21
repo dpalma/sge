@@ -348,6 +348,17 @@ int cGUIScrollBarElement::DetermineScrollPos(const tScreenPoint & mousePos) cons
 
       return m_rangeMin + FloatToInt(fracPos * (m_rangeMax - m_rangeMin));
    }
+   else if (m_scrollBarType == kGUIScrollBarVertical)
+   {
+      float threeHalfsWidth = size.width * 3 / 2;
+
+      float rangeMinScreen = pos.y + threeHalfsWidth; // assumes height of thumb rect is size.width
+      float rangeScreen = size.height - (size.width * 3); // assumes height of thumb rect is size.width
+
+      float fracPos = (mousePos.y - rangeMinScreen) / rangeScreen;
+
+      return m_rangeMin + FloatToInt(fracPos * (m_rangeMax - m_rangeMin));
+   }
 
    return -1;
 }

@@ -1,0 +1,29 @@
+<!-- $Id$ -->
+
+<page>
+
+	<script>
+	
+		function onAddItem()
+		end;
+		
+		function onRemoveItem()
+		end;
+		
+	</script>
+
+   <dialog 
+      title="ListBox Test" 
+      style="align:center;vertical-align:center;width:300;height:200;"
+      renderer="beveled">
+
+      <layout type="grid" columns="1" rows="4" />
+
+      <listbox id="lb0" rows=6 style="width:100%"></listbox>
+      
+      <button text="Add Item" onclick="onAddItem();" />
+      <button text="Remove Item" onclick="onRemoveItem();" />
+      <button id="ok" text="OK" />
+
+   </dialog>
+</page>

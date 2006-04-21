@@ -16,6 +16,38 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: cGUIListBoxItem
+//
+
+class cGUIListBoxItem
+{
+public:
+   cGUIListBoxItem(const tGUIChar * pszText, uint_ptr data, bool bSelected = false);
+   cGUIListBoxItem(const cGUIListBoxItem & other);
+
+   const cGUIListBoxItem & operator =(const cGUIListBoxItem & other);
+
+   const tGUIString & GetText() const;
+   uint_ptr GetData() const;
+   bool IsSelected() const;
+   void Select();
+   void Deselect();
+
+private:
+   tGUIString m_text;
+   uint_ptr m_data;
+   bool m_bSelected;
+};
+
+inline const tGUIString & cGUIListBoxItem::GetText() const { return m_text; }
+inline uint_ptr cGUIListBoxItem::GetData() const { return m_data; }
+inline bool cGUIListBoxItem::IsSelected() const { return m_bSelected; }
+inline void cGUIListBoxItem::Select() { m_bSelected = true; }
+inline void cGUIListBoxItem::Deselect() { m_bSelected = false; }
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cGUIListBoxElement
 //
 
@@ -63,26 +95,9 @@ public:
 
 private:
    bool IsMultiSelect() const { return false; }
+   void UpdateScrollInfo();
 
-   class cListBoxItem
-   {
-   public:
-      cListBoxItem(const tGUIChar * pszText, uint_ptr data, bool bSelected = false)
-         : m_text(pszText), m_data(data), m_bSelected(bSelected) {}
-      cListBoxItem(const cListBoxItem & other)
-         : m_text(other.m_text), m_data(other.m_data), m_bSelected(other.m_bSelected) {}
-      const tGUIString & GetText() const { return m_text; }
-      uint_ptr GetData() const { return m_data; }
-      bool IsSelected() const { return m_bSelected; }
-      void Select() { m_bSelected = true; }
-      void Deselect() { m_bSelected = false; }
-   private:
-      tGUIString m_text;
-      uint_ptr m_data;
-      bool m_bSelected;
-   };
-   typedef cListBoxItem tListBoxItem;
-   typedef std::vector<cListBoxItem> tListBoxItems;
+   typedef std::vector<cGUIListBoxItem> tListBoxItems;
    tListBoxItems m_items;
    uint m_rowCount;
    cAutoIPtr<IGUIScrollBarElement> m_pHScrollBar, m_pVScrollBar;

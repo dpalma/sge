@@ -143,12 +143,26 @@ tResult GUIParseColor(const tChar * pszColor, tGUIColor * pColor)
    int tokResult = tok.Tokenize(pszColor);
    if (tokResult == 3)
    {
-      *pColor = tGUIColor(tok.m_tokens[0], tok.m_tokens[1], tok.m_tokens[2]);
+      if ((tok.m_tokens[0] > 1) && (tok.m_tokens[1] > 1) && (tok.m_tokens[2] > 1))
+      {
+         *pColor = tGUIColor(tok.m_tokens[0]/255.0f, tok.m_tokens[1]/255.0f, tok.m_tokens[2]/255.0f);
+      }
+      else
+      {
+         *pColor = tGUIColor(tok.m_tokens[0], tok.m_tokens[1], tok.m_tokens[2]);
+      }
       return S_OK;
    }
    else if (tokResult == 4)
    {
-      *pColor = tGUIColor(tok.m_tokens[0], tok.m_tokens[1], tok.m_tokens[2], tok.m_tokens[3]);
+      if ((tok.m_tokens[0] > 1) && (tok.m_tokens[1] > 1) && (tok.m_tokens[2] > 1) && (tok.m_tokens[3] > 1))
+      {
+         *pColor = tGUIColor(tok.m_tokens[0]/255.0f, tok.m_tokens[1]/255.0f, tok.m_tokens[2]/255.0f, tok.m_tokens[3]/255.0f);
+      }
+      else
+      {
+         *pColor = tGUIColor(tok.m_tokens[0], tok.m_tokens[1], tok.m_tokens[2], tok.m_tokens[3]);
+      }
       return S_OK;
    }
    else

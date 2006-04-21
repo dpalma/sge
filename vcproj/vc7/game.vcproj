@@ -399,9 +399,6 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl">
 			<File
-				RelativePath="..\..\game\cameracontroller.h">
-			</File>
-			<File
 				RelativePath="..\..\game\entityui.h">
 			</File>
 			<File

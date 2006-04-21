@@ -30,7 +30,7 @@ public:
    cColorImpl();
    cColorImpl(T r, T g, T b);
    cColorImpl(T r, T g, T b, T a);
-   cColorImpl(const T rgba[4]);
+   explicit cColorImpl(const T rgba[4]);
    cColorImpl(const cColorImpl & other);
    const cColorImpl & operator =(const cColorImpl & other);
 
@@ -264,7 +264,8 @@ public:
    cColor() : cColorImpl<float>() {}
    cColor(float r, float g, float b) : cColorImpl<float>(r,g,b) {}
    cColor(float r, float g, float b, float a) : cColorImpl<float>(r,g,b,a) {}
-   cColor(const float rgba[4]) : cColorImpl<float>(rgba) {}
+   explicit cColor(const float rgba[4]) : cColorImpl<float>(rgba) {}
+   cColor(const cColor & other) : cColorImpl<float>(other) {}
 };
 
 ///////////////////////////////////////////////////////////////////////////////

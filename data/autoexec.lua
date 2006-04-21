@@ -12,8 +12,6 @@ bind("escape", [[QuitWithConfirm();]]);
 
 bind("F4", [[GUIContext:ToggleDebugInfo(5, 100, "font-name:Courier New;font-pointsize:8;foreground-color:yellow;");]]);
 
-bind("F7", [[GUIContext:ShowModalDialog("guitest.xml")]]);
-
 --LogChannel([[GUILayout]]);
 --LogChannel([[GUIButtonEvents]]);
 --LogChannel([[GUIDialogEvents]]);

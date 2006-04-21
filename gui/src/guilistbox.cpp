@@ -19,6 +19,7 @@
 
 
 static const uint kInsaneRowCount = 1000;
+static const uint kInsaneItemHeight = 500;
 
 extern tResult GUIScrollBarElementCreate(eGUIScrollBarType scrollBarType,
                                          IGUIScrollBarElement * * ppScrollBar);
@@ -26,6 +27,40 @@ extern tResult GUIScrollBarElementCreate(eGUIScrollBarType scrollBarType,
 typedef std::list<IGUIElement *> tGUIElementList;
 extern tResult GUIElementEnumCreate(const tGUIElementList & elements,
                                     IGUIElementEnum * * ppEnum);
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cGUIListBoxItem
+//
+
+////////////////////////////////////////
+
+cGUIListBoxItem::cGUIListBoxItem(const tGUIChar * pszText, uint_ptr data, bool bSelected)
+ : m_text(pszText)
+ , m_data(data)
+ , m_bSelected(bSelected)
+{
+}
+
+////////////////////////////////////////
+
+cGUIListBoxItem::cGUIListBoxItem(const cGUIListBoxItem & other)
+ : m_text(other.m_text)
+ , m_data(other.m_data)
+ , m_bSelected(other.m_bSelected)
+{
+}
+
+////////////////////////////////////////
+
+const cGUIListBoxItem & cGUIListBoxItem::operator =(const cGUIListBoxItem & other)
+{
+   m_text = other.m_text;
+   m_data = other.m_data;
+   m_bSelected = other.m_bSelected;
+   return *this;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -102,7 +137,9 @@ tResult cGUIListBoxElement::SetClientArea(const tGUIRect & clientArea)
       }
    }
 
-   return cGUIElementBase<IGUIListBoxElement>::SetClientArea(modifiedClientArea);
+   tResult result = cGUIElementBase<IGUIListBoxElement>::SetClientArea(modifiedClientArea);
+   UpdateScrollInfo();
+   return result;
 }
 
 ///////////////////////////////////////
@@ -152,7 +189,8 @@ tResult cGUIListBoxElement::AddItem(const tChar * pszString, uint_ptr extra)
    {
       return E_POINTER;
    }
-   m_items.push_back(tListBoxItem(pszString, extra));
+   m_items.push_back(cGUIListBoxItem(pszString, extra));
+   UpdateScrollInfo();
    return S_OK;
 }
 
@@ -165,6 +203,7 @@ tResult cGUIListBoxElement::RemoveItem(uint index)
       return E_INVALIDARG;
    }
    m_items.erase(m_items.begin() + index);
+   UpdateScrollInfo();
    return S_OK;
 }
 
@@ -219,6 +258,7 @@ tResult cGUIListBoxElement::Sort()
 tResult cGUIListBoxElement::Clear()
 {
    m_items.clear();
+   UpdateScrollInfo();
    return S_OK;
 }
 
@@ -313,7 +353,7 @@ tResult cGUIListBoxElement::SelectAll()
       iter->Select();
    }
 #else
-   std::for_each(m_items.begin(), m_items.end(), std::mem_fun_ref(&cListBoxItem::Select));
+   std::for_each(m_items.begin(), m_items.end(), std::mem_fun_ref(&cGUIListBoxItem::Select));
 #endif
 
    tGUIString onSelChange;
@@ -366,7 +406,7 @@ tResult cGUIListBoxElement::DeselectAll()
       iter->Deselect();
    }
 #else
-   std::for_each(m_items.begin(), m_items.end(), std::mem_fun_ref(&cListBoxItem::Deselect));
+   std::for_each(m_items.begin(), m_items.end(), std::mem_fun_ref(&cGUIListBoxItem::Deselect));
 #endif
 
    tGUIString onSelChange;
@@ -399,7 +439,7 @@ tResult cGUIListBoxElement::GetSelectedCount(uint * pSelectedCount) const
    }
 #else
    *pSelectedCount = std::count_if(m_items.begin(), m_items.end(),
-                                   std::mem_fun_ref(&cListBoxItem::IsSelected));
+                                   std::mem_fun_ref(&cGUIListBoxItem::IsSelected));
 #endif
    if (!IsMultiSelect())
    {
@@ -508,6 +548,11 @@ tResult cGUIListBoxElement::GetItemHeight(uint * pItemHeight) const
 
 tResult cGUIListBoxElement::SetItemHeight(uint itemHeight)
 {
+   if (itemHeight >= kInsaneItemHeight)
+   {
+      WarnMsg1("Insane item height given to listbox element: %d\n", itemHeight);
+      return E_INVALIDARG;
+   }
    m_itemHeight = itemHeight;
    return S_OK;
 }
@@ -622,6 +667,13 @@ tResult cGUIListBoxElement::Invoke(const char * pszMethodName,
    return E_FAIL;
 }
 
+////////////////////////////////////////
+
+void cGUIListBoxElement::UpdateScrollInfo()
+{
+   uint contentHeight = m_items.size() * m_itemHeight;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -677,7 +729,7 @@ tResult GUIListBoxElementCreate(const TiXmlElement * pXmlElement,
    else
    {
       *ppElement = static_cast<IGUIListBoxElement *>(new cGUIListBoxElement);
-      return (*ppElement != NULL) ? S_OK : E_FAIL;
+      return (*ppElement != NULL) ? S_OK : E_OUTOFMEMORY;
    }
 
    return E_FAIL;

@@ -244,18 +244,20 @@ tResult cGUIStyle::GetBackgroundColor(tGUIColor * pBackground)
 
 tResult cGUIStyle::SetBackgroundColor(const tGUIColor & background)
 {
-   if (m_pBackground != NULL)
-   {
-      delete m_pBackground;
-      m_pBackground = NULL;
-   }
-   m_pBackground = new tGUIColor;
    if (m_pBackground == NULL)
    {
-      return E_OUTOFMEMORY;
+      m_pBackground = new tGUIColor(background);
+      if (m_pBackground == NULL)
+      {
+         return E_OUTOFMEMORY;
+      }
+      return S_OK;
    }
-   *m_pBackground = background;
-   return S_OK;
+   else
+   {
+      *m_pBackground = background;
+      return S_OK;
+   }
 }
 
 ///////////////////////////////////////
@@ -278,18 +280,20 @@ tResult cGUIStyle::GetForegroundColor(tGUIColor * pForeground)
 
 tResult cGUIStyle::SetForegroundColor(const tGUIColor & foreground)
 {
-   if (m_pForeground != NULL)
-   {
-      delete m_pForeground;
-      m_pForeground = NULL;
-   }
-   m_pForeground = new tGUIColor;
    if (m_pForeground == NULL)
    {
-      return E_OUTOFMEMORY;
+      m_pForeground = new tGUIColor(foreground);
+      if (m_pForeground == NULL)
+      {
+         return E_OUTOFMEMORY;
+      }
+      return S_OK;
    }
-   *m_pForeground = foreground;
-   return S_OK;
+   else
+   {
+      *m_pForeground = foreground;
+      return S_OK;
+   }
 }
 
 ///////////////////////////////////////

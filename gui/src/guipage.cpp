@@ -426,20 +426,31 @@ void cGUIPage::Deactivate()
 
 bool cGUIPage::IsModalDialogPage() const
 {
-   if (CountElements() == 1)
+   if (!m_elements.empty())
    {
-      cAutoIPtr<IGUIDialogElement> pDlg;
-      if (m_elements.back()->QueryInterface(IID_IGUIDialogElement, (void**)&pDlg) == S_OK)
+      uint nDialogs = 0;
+
+      tGUIElementList::const_iterator iter = m_elements.begin();
+      for (; iter != m_elements.end(); iter++)
       {
-         cAutoIPtr<IGUIElement> pOk, pCancel;
-         if (GetElementHelper(pDlg, cIdMatch("ok"), &pOk) != S_OK
-            || GetElementHelper(pDlg, cIdMatch("cancel"), &pCancel) != S_OK)
+         cAutoIPtr<IGUIDialogElement> pDlg;
+         if ((*iter)->QueryInterface(IID_IGUIDialogElement, (void**)&pDlg) == S_OK)
          {
-            WarnMsg("Dialog box has no \"ok\" nor \"cancel\" button\n");
+            nDialogs++;
+            cAutoIPtr<IGUIElement> pOk, pCancel;
+            if (GetElementHelper(pDlg, cIdMatch("ok"), &pOk) != S_OK
+               || GetElementHelper(pDlg, cIdMatch("cancel"), &pCancel) != S_OK)
+            {
+               WarnMsg("Dialog box has no \"ok\" nor \"cancel\" button\n");
+            }
          }
-         return true;
       }
+
+      WarnMsgIf(nDialogs > 1, "Multiple dialogs defined in one XML file\n");
+
+      return (nDialogs > 0);
    }
+
    return false;
 }
 
