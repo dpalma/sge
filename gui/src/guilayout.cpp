@@ -140,30 +140,30 @@ tResult cGUIGridLayout::Create(const TiXmlElement * pXmlElement, IGUILayoutManag
 ///////////////////////////////////////
 
 cGUIGridLayout::cGUIGridLayout()
- : m_hGap(kHGapDefault), 
-   m_vGap(kVGapDefault),
-   m_columns(2), 
-   m_rows(2)
+ : m_hGap(kHGapDefault)
+ , m_vGap(kVGapDefault)
+ , m_columns(2)
+ , m_rows(2)
 {
 }
 
 ///////////////////////////////////////
 
 cGUIGridLayout::cGUIGridLayout(uint columns, uint rows)
- : m_hGap(kHGapDefault), 
-   m_vGap(kVGapDefault),
-   m_columns(columns), 
-   m_rows(rows)
+ : m_hGap(kHGapDefault)
+ , m_vGap(kVGapDefault)
+ , m_columns(columns)
+ , m_rows(rows)
 {
 }
 
 ///////////////////////////////////////
 
 cGUIGridLayout::cGUIGridLayout(uint columns, uint rows, uint hGap, uint vGap)
- : m_hGap(hGap), 
-   m_vGap(vGap),
-   m_columns(columns), 
-   m_rows(rows)
+ : m_hGap(hGap)
+ , m_vGap(vGap)
+ , m_columns(columns)
+ , m_rows(rows)
 {
 }
 
@@ -188,10 +188,22 @@ tResult cGUIGridLayout::Layout(IGUIElement * pParent)
       return E_FAIL;
    }
 
-   tGUISizeType cellWidth = clientArea.GetWidth() > 0 ? static_cast<tGUISizeType>((clientArea.GetWidth() - ((m_columns - 1) * m_hGap)) / m_columns) : 0;
-   tGUISizeType cellHeight = clientArea.GetHeight() > 0 ? static_cast<tGUISizeType>((clientArea.GetHeight() - ((m_rows - 1) * m_vGap)) / m_rows) : 0;
+   if (m_rows == 0 || m_columns == 0)
+   {
+      ErrorMsg2("Either #rows or #columns is zero (%d, %d)\n", m_rows, m_columns);
+      return E_FAIL;
+   }
 
-   const tGUISize cellSize(cellWidth, cellHeight);
+   int cellWidth = ((clientArea.GetWidth() - ((m_columns - 1) * m_hGap)) / m_columns);
+   int cellHeight = ((clientArea.GetHeight() - ((m_rows - 1) * m_vGap)) / m_rows);
+
+   if (cellWidth < 0 || cellHeight < 0)
+   {
+      ErrorMsg2("Got negative cell width or height: cell size = %d x %d\n", cellWidth, cellHeight);
+      return E_FAIL;
+   }
+
+   const tGUISize cellSize(static_cast<tGUISizeType>(cellWidth), static_cast<tGUISizeType>(cellHeight));
 
    LocalMsg2("Grid Layout (%d rows, %d columns)\n", m_rows, m_columns);
    LocalMsg2("   grid cell size = %.0f x %.0f\n", cellWidth, cellHeight);
@@ -199,45 +211,56 @@ tResult cGUIGridLayout::Layout(IGUIElement * pParent)
    cAutoIPtr<IGUIElementEnum> pEnum;
    if (pParent->EnumChildren(&pEnum) == S_OK)
    {
-      cAutoIPtr<IGUIElement> pChild;
+      IGUIElement * pChildren[32];
       ulong count = 0;
 
+      bool bGridFull = false;
       uint iRow = 0, iCol = 0;
-      while ((pEnum->Next(1, &pChild, &count) == S_OK) && (count == 1))
+      while (SUCCEEDED(pEnum->Next(_countof(pChildren), &pChildren[0], &count)) && (count > 0) && !bGridFull)
       {
-         if (pChild->IsVisible())
+         for (ulong i = 0; i < count; i++)
          {
-            int x = clientArea.left + iCol * (FloatToInt(cellWidth) + m_hGap);
-            int y = clientArea.top + iRow * (FloatToInt(cellHeight) + m_vGap);
-
-            tGUIRect cellRect(x, y, x + FloatToInt(cellWidth), y + FloatToInt(cellHeight));
-
-            GUIPlaceElement(cellRect, pChild);
-
-#ifdef _DEBUG
-            const tGUISize childSize(pChild->GetSize());
-            LocalMsg5("   grid cell[%d][%d]: %p, %.0f x %.0f\n", iRow, iCol, pChild, childSize.width, childSize.height);
-#endif
-         }
-#ifdef _DEBUG
-         else
-         {
-            LocalMsg3("   grid cell[%d][%d]: %p is invisible\n", iRow, iCol, pChild);
-         }
-#endif
-
-         // Invisible elements are allowed to occupy grid cells, so
-         // this is outside of the if(visible) block above
-         if (++iCol >= m_columns)
-         {
-            iCol = 0;
-            if (++iRow >= m_rows)
+            if (pChildren[i]->IsVisible())
             {
-               break;
+               // Child elements are shrunk to fit the grid cell if necessary
+               tGUISize childSize(pChildren[i]->GetSize());
+               if (childSize.width > cellSize.width || childSize.height > cellSize.height)
+               {
+                  childSize.width = Min(childSize.width, cellSize.width);
+                  childSize.height = Min(childSize.height, cellSize.height);
+                  pChildren[i]->SetSize(childSize);
+               }
+
+               int x = clientArea.left + iCol * (cellWidth + m_hGap);
+               int y = clientArea.top + iRow * (cellHeight + m_vGap);
+
+               tGUIRect cellRect(x, y, x + cellWidth, y + cellHeight);
+               GUIPlaceElement(cellRect, pChildren[i]);
+
+               LocalMsg5("   grid cell[%d][%d]: %p, %.0f x %.0f\n", iRow, iCol, pChildren[i], childSize.width, childSize.height);
             }
+
+            LocalMsgIf3(!pChildren[i]->IsVisible(), "   grid cell[%d][%d]: %p is invisible\n", iRow, iCol, pChildren[i]);
+
+            // Invisible elements are allowed to occupy grid cells, so
+            // this is outside of the if(visible) block above
+            if (++iCol >= m_columns)
+            {
+               iCol = 0;
+               if (++iRow >= m_rows)
+               {
+                  for (ulong j = i; j < count; j++)
+                  {
+                     SafeRelease(pChildren[j]);
+                  }
+                  bGridFull = true;
+                  break;
+               }
+            }
+
+            SafeRelease(pChildren[i]);
          }
 
-         SafeRelease(pChild);
          count = 0;
       }
    }
@@ -259,7 +282,9 @@ tResult cGUIGridLayout::GetPreferredSize(IGUIElement * pParent, tGUISize * pSize
 tResult cGUIGridLayout::GetHGap(uint * pHGap)
 {
    if (pHGap == NULL)
+   {
       return E_POINTER;
+   }
    *pHGap = m_hGap;
    return S_OK;
 }
@@ -277,7 +302,9 @@ tResult cGUIGridLayout::SetHGap(uint hGap)
 tResult cGUIGridLayout::GetVGap(uint * pVGap)
 {
    if (pVGap == NULL)
+   {
       return E_POINTER;
+   }
    *pVGap = m_vGap;
    return S_OK;
 }
@@ -295,7 +322,9 @@ tResult cGUIGridLayout::SetVGap(uint vGap)
 tResult cGUIGridLayout::GetColumns(uint * pColumns)
 {
    if (pColumns == NULL)
+   {
       return E_POINTER;
+   }
    *pColumns = m_columns;
    return S_OK;
 }
@@ -313,7 +342,9 @@ tResult cGUIGridLayout::SetColumns(uint columns)
 tResult cGUIGridLayout::GetRows(uint * pRows)
 {
    if (pRows == NULL)
+   {
       return E_POINTER;
+   }
    *pRows = m_rows;
    return S_OK;
 }
@@ -331,10 +362,14 @@ tResult cGUIGridLayout::SetRows(uint rows)
 tResult GUIGridLayoutCreate(IGUIGridLayout * * ppLayout)
 {
    if (ppLayout == NULL)
+   {
       return E_POINTER;
+   }
    cAutoIPtr<IGUIGridLayout> pLayout = new cGUIGridLayout;
    if (!pLayout)
+   {
       return E_OUTOFMEMORY;
+   }
    *ppLayout = CTAddRef(pLayout);
    return S_OK;
 }
@@ -344,10 +379,14 @@ tResult GUIGridLayoutCreate(IGUIGridLayout * * ppLayout)
 tResult GUIGridLayoutCreate(uint columns, uint rows, IGUIGridLayout * * ppLayout)
 {
    if (ppLayout == NULL)
+   {
       return E_POINTER;
+   }
    cAutoIPtr<IGUIGridLayout> pLayout = new cGUIGridLayout(columns, rows);
    if (!pLayout)
+   {
       return E_OUTOFMEMORY;
+   }
    *ppLayout = CTAddRef(pLayout);
    return S_OK;
 }
@@ -357,10 +396,14 @@ tResult GUIGridLayoutCreate(uint columns, uint rows, IGUIGridLayout * * ppLayout
 tResult GUIGridLayoutCreate(uint columns, uint rows, uint hGap, uint vGap, IGUIGridLayout * * ppLayout)
 {
    if (ppLayout == NULL)
+   {
       return E_POINTER;
+   }
    cAutoIPtr<IGUIGridLayout> pLayout = new cGUIGridLayout(columns, rows, hGap, vGap);
    if (!pLayout)
+   {
       return E_OUTOFMEMORY;
+   }
    *ppLayout = CTAddRef(pLayout);
    return S_OK;
 }
@@ -411,16 +454,16 @@ tResult cGUIFlowLayout::Create(const TiXmlElement * pXmlElement, IGUILayoutManag
 ///////////////////////////////////////
 
 cGUIFlowLayout::cGUIFlowLayout()
- : m_hGap(kHGapDefault), 
-   m_vGap(kVGapDefault)
+ : m_hGap(kHGapDefault)
+ , m_vGap(kVGapDefault)
 {
 }
 
 ///////////////////////////////////////
 
 cGUIFlowLayout::cGUIFlowLayout(uint hGap, uint vGap)
- : m_hGap(hGap), 
-   m_vGap(vGap)
+ : m_hGap(hGap)
+ , m_vGap(vGap)
 {
 }
 
