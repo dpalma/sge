@@ -10,6 +10,7 @@
 
 #include "guielementbasetem.h"
 #include "guielementenum.h"
+#include "guielementtools.h"
 
 #include "dbgalloc.h" // must be last header
 

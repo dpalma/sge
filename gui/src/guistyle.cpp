@@ -639,15 +639,15 @@ tResult cGUIStyle::Clone(IGUIStyle * * ppStyle)
 static eGUIAlignment GUIStyleParseAlignment(const char * psz)
 {
    Assert(psz != NULL);
-   if (stricmp(psz, kValueAlignLeft) == 0)
+   if (_stricmp(psz, kValueAlignLeft) == 0)
    {
       return kGUIAlignLeft;
    }
-   else if (stricmp(psz, kValueAlignRight) == 0)
+   else if (_stricmp(psz, kValueAlignRight) == 0)
    {
       return kGUIAlignRight;
    }
-   else if (stricmp(psz, kValueAlignCenter) == 0)
+   else if (_stricmp(psz, kValueAlignCenter) == 0)
    {
       return kGUIAlignCenter;
    }
@@ -660,15 +660,15 @@ static eGUIAlignment GUIStyleParseAlignment(const char * psz)
 static eGUIVerticalAlignment GUIStyleParseVertAlignment(const char * psz)
 {
    Assert(psz != NULL);
-   if (stricmp(psz, kValueVertAlignTop) == 0)
+   if (_stricmp(psz, kValueVertAlignTop) == 0)
    {
       return kGUIVertAlignTop;
    }
-   else if (stricmp(psz, kValueVertAlignBottom) == 0)
+   else if (_stricmp(psz, kValueVertAlignBottom) == 0)
    {
       return kGUIVertAlignBottom;
    }
-   else if (stricmp(psz, kValueVertAlignCenter) == 0)
+   else if (_stricmp(psz, kValueVertAlignCenter) == 0)
    {
       return kGUIVertAlignCenter;
    }
@@ -804,11 +804,11 @@ static tResult GUIStyleParseAndSetFontOutline(const char * pszValue, IGUIStyle *
 
 static tResult GUIStyleParseAndSetPlacement(const char * pszValue, IGUIStyle * pStyle)
 {
-   if (stricmp(pszValue, kValueRelative) == 0)
+   if (_stricmp(pszValue, kValueRelative) == 0)
    {
       return pStyle->SetPlacement(kGUIPlaceRelative);
    }
-   else if (stricmp(pszValue, kValueAbsolute) == 0)
+   else if (_stricmp(pszValue, kValueAbsolute) == 0)
    {
       return pStyle->SetPlacement(kGUIPlaceAbsolute);
    }

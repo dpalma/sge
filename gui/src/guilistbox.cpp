@@ -712,7 +712,7 @@ tResult GUIListBoxElementCreate(const TiXmlElement * pXmlElement,
             pXmlChild != NULL; pXmlChild = pXmlChild->NextSiblingElement())
          {
             if (pXmlChild->Type() == TiXmlNode::ELEMENT
-               && stricmp(pXmlChild->Value(), "item") == 0)
+               && _stricmp(pXmlChild->Value(), "item") == 0)
             {
                const char * pszText = pXmlChild->Attribute(kAttribText);
                if (pszText != NULL)

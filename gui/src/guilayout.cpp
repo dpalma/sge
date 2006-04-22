@@ -51,7 +51,7 @@ tResult GUILayoutManagerCreate(const TiXmlElement * pXmlElement, IGUILayoutManag
       return E_POINTER;
    }
 
-   if (stricmp(pXmlElement->Value(), kAttribLayout) != 0)
+   if (_stricmp(pXmlElement->Value(), kAttribLayout) != 0)
    {
       return E_INVALIDARG;
    }

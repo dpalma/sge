@@ -7,6 +7,7 @@
 #include "guiapi.h"
 #include "guielementapi.h"
 
+#include "hash.h"
 #include "hashtable.h"
 
 #include <queue>

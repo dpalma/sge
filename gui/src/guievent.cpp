@@ -68,7 +68,7 @@ tGUIString GUIEventName(tGUIEventCode code)
 
 static int CDECL GUIEventNameCompare(const void * elem1, const void * elem2)
 {
-   return stricmp(((sGUIEventCodeName *)elem2)->pszName, ((sGUIEventCodeName *)elem1)->pszName);
+   return _stricmp(((sGUIEventCodeName *)elem2)->pszName, ((sGUIEventCodeName *)elem1)->pszName);
 }
 
 tGUIEventCode GUIEventCode(const char * name)

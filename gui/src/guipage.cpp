@@ -191,7 +191,7 @@ void GUIElementRenderLoop(ITERATOR begin, ITERATOR end, FUNCTOR f, DATA d)
 {
    std::stack< std::pair<IGUIElement*, IGUIElementRenderer*> > s;
 
-   typename ITERATOR iter = begin;
+   ITERATOR iter = begin;
    for (; iter != end; iter++)
    {
       if ((*iter)->IsVisible())

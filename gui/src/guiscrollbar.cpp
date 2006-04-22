@@ -403,11 +403,11 @@ static tResult GetScrollBarTypeFromString(const char * psz, eGUIScrollBarType * 
    }
 
    eGUIScrollBarType scrollBarType = kGUIScrollBarVertical;
-   if (stricmp(psz, kValueVertical) == 0)
+   if (_stricmp(psz, kValueVertical) == 0)
    {
       scrollBarType = kGUIScrollBarVertical;
    }
-   else if (stricmp(psz, kValueHorizontal) == 0)
+   else if (_stricmp(psz, kValueHorizontal) == 0)
    {
       scrollBarType = kGUIScrollBarHorizontal;
    }
