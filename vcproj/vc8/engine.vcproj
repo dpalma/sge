@@ -649,6 +649,10 @@
 					RelativePath="..\..\engine\src\terrainrender.cpp"
 					>
 				</File>
+				<File
+					RelativePath="..\..\engine\src\tixml.cpp"
+					>
+				</File>
 			</Filter>
 			<Filter
 				Name="Header Files"

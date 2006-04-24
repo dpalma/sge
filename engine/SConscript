@@ -26,6 +26,7 @@ sourceFiles = Split("""
    src/syscommon.cpp
    src/terrain.cpp
    src/terrainrender.cpp
+   src/tixml.cpp
 """)
 
 if env['PLATFORM'] == 'win32':

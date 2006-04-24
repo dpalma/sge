@@ -11,73 +11,7 @@
 #include "resourceapi.h"
 #include "globalobj.h"
 
-#include <tinyxml.h>
-
 #include "dbgalloc.h" // must be last header
-
-///////////////////////////////////////////////////////////////////////////////
-
-void * TiXmlDocumentLoad(IReader * pReader)
-{
-   if (pReader == NULL)
-   {
-      return NULL;
-   }
-
-   ulong length = 0;
-   if (pReader->Seek(0, kSO_End) == S_OK
-      && pReader->Tell(&length) == S_OK
-      && pReader->Seek(0, kSO_Set) == S_OK)
-   {
-      cAutoBuffer autoBuffer;
-      char stackBuffer[256];
-      char * pBuffer = NULL;
-
-      if (length >= 32768)
-      {
-         WarnMsg1("Sanity check failure loading XML document %d bytes long\n", length);
-         return NULL;
-      }
-
-      if (length < sizeof(stackBuffer))
-      {
-         pBuffer = stackBuffer;
-      }
-      else
-      {
-         if (autoBuffer.Malloc(sizeof(char) * (length + 1), (void**)&pBuffer) != S_OK)
-         {
-            return NULL;
-         }
-      }
-
-      if (pReader->Read(pBuffer, length) == S_OK)
-      {
-         pBuffer[length] = 0;
-
-         TiXmlDocument * pDoc = new TiXmlDocument;
-         if (pDoc != NULL)
-         {
-            pDoc->Parse(pBuffer);
-            if (pDoc->Error())
-            {
-               delete pDoc;
-               return NULL;
-            }
-            return pDoc;
-         }
-      }
-   }
-
-   return NULL;
-}
-
-void TiXmlDocumentUnload(void * pData)
-{
-   TiXmlDocument * pDoc = reinterpret_cast<TiXmlDocument*>(pData);
-   delete pDoc;
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -124,6 +58,7 @@ void MapUnload(void * pData)
 
 extern tResult RendererResourceRegister(); // renderer.cpp
 extern tResult ModelMs3dResourceRegister(); // modelms3d.cpp
+extern tResult TiXmlRegisterResourceFormat(); // tixml.cpp
 
 tResult EngineRegisterResourceFormats()
 {
@@ -132,7 +67,7 @@ tResult EngineRegisterResourceFormats()
    {
       if (ModelMs3dResourceRegister() == S_OK
          && RendererResourceRegister() == S_OK
-         && pResourceManager->RegisterFormat(kRT_TiXml, _T("xml"), TiXmlDocumentLoad, NULL, TiXmlDocumentUnload) == S_OK
+         && TiXmlRegisterResourceFormat() == S_OK
          && pResourceManager->RegisterFormat(kRT_Map, kMapExt, MapLoad, MapPostload, MapUnload) == S_OK)
       {
          return S_OK;
