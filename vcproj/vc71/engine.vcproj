@@ -387,9 +387,6 @@
 					RelativePath="..\..\engine\src\schedulerclock.cpp">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\sim.cpp">
-				</File>
-				<File
 					RelativePath="..\..\engine\src\stdhdr.cpp">
 					<FileConfiguration
 						Name="Opt|Win32">
@@ -562,9 +559,6 @@
 			</File>
 			<File
 				RelativePath="..\..\engine\include\schedulerapi.h">
-			</File>
-			<File
-				RelativePath="..\..\engine\include\simapi.h">
 			</File>
 			<File
 				RelativePath="..\..\engine\include\sys.h">

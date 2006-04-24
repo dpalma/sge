@@ -100,34 +100,7 @@ SCRIPT_DEFINE_FUNCTION(SetTerrain)
    }
    else
    {
-      UseGlobal(TerrainModel);
-
-      cTerrainSettings terrainSettings;
-      terrainSettings.SetTileSize(32);
-      terrainSettings.SetTileCountX(64);
-      terrainSettings.SetTileCountZ(64);
-      terrainSettings.SetTileSet(_T("defaulttiles.xml")); // HACK TODO
-
-      if (argc == 1 && argv[0].IsString())
-      {
-         terrainSettings.SetHeightData(kTHD_HeightMap);
-         terrainSettings.SetHeightMap(argv[0]);
-         terrainSettings.SetHeightMapScale(kGroundScaleY * 255);
-         pTerrainModel->Initialize(terrainSettings);
-      }
-      else if (argc >= 2 
-         && argv[0].IsString()
-         && IsNumber(argv[1]))
-      {
-         terrainSettings.SetHeightData(kTHD_HeightMap);
-         terrainSettings.SetHeightMap(argv[0]);
-         terrainSettings.SetHeightMapScale(static_cast<float>(argv[1]) * 255);
-         pTerrainModel->Initialize(terrainSettings);
-      }
-      else
-      {
-         ErrorMsg("Invalid parameters to SetTerrain\n");
-      }
+      ErrorMsg("Invalid parameters to SetTerrain\n");
    }
    
    return 0;

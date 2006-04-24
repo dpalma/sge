@@ -546,10 +546,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\engine\src\sim.cpp"
-					>
-				</File>
-				<File
 					RelativePath="..\..\engine\src\stdhdr.cpp"
 					>
 					<FileConfiguration
@@ -781,10 +777,6 @@
 			</File>
 			<File
 				RelativePath="..\..\engine\include\schedulerapi.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\engine\include\simapi.h"
 				>
 			</File>
 			<File

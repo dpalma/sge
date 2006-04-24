@@ -23,7 +23,6 @@ sourceFiles = Split("""
    src/saveloadmanager.cpp
    src/scheduler.cpp
    src/schedulerclock.cpp
-   src/sim.cpp
    src/syscommon.cpp
    src/terrain.cpp
    src/terrainrender.cpp
