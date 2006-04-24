@@ -242,4 +242,11 @@ inline eMultiVarType cMultiVar::GetType() const
 
 ///////////////////////////////////////////////////////////////////////////////
 
+inline bool IsNumber(const cMultiVar & multiVar)
+{
+   return multiVar.IsInt() || multiVar.IsFloat() || multiVar.IsDouble();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 #endif // !INCLUDED_MULTIVAR_H

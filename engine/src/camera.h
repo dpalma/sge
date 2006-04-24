@@ -6,6 +6,7 @@
 
 #include "cameraapi.h"
 #include "inputapi.h"
+#include "saveloadapi.h"
 #include "schedulerapi.h"
 
 #include "frustum.h"
@@ -15,6 +16,8 @@
 #ifdef _MSC_VER
 #pragma once
 #endif
+
+F_DECLARE_GUID(SAVELOADID_CameraControl);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -136,7 +139,7 @@ public:
     : m_start(start)
     , m_end(end)
     , m_t(0)
-    , m_oneOverTimeSpan(fabs(static_cast<double>(rate) / (end - start)))
+    , m_oneOverTimeSpan((start != end) ? fabs(static_cast<double>(rate) / (end - start)) : 1)
    {
    }
 
@@ -166,7 +169,14 @@ public:
       m_start = start;
       m_end = end;
       m_t = 0;
-      m_oneOverTimeSpan = fabs(static_cast<double>(rate) / (end - start));
+      if (start != end)
+      {
+         m_oneOverTimeSpan = fabs(static_cast<double>(rate) / (end - start));
+      }
+      else
+      {
+         m_oneOverTimeSpan = 1;
+      }
    }
 
    T Update(double time)
@@ -195,10 +205,13 @@ private:
 // CLASS: cCameraControl
 //
 
-class cCameraControl : public cComObject3<IMPLEMENTS(ICameraControl),
+class cCameraControl : public cComObject4<IMPLEMENTS(ICameraControl),
                                           IMPLEMENTS(IInputListener),
-                                          IMPLEMENTS(IGlobalObject)>
+                                          IMPLEMENTS(IGlobalObject),
+                                          IMPLEMENTS(ISaveLoadParticipant)>
 {
+   static const int gm_currentSaveLoadVer;
+
 public:
    cCameraControl();
    ~cCameraControl();
@@ -223,6 +236,10 @@ public:
    virtual tResult Raise();
    virtual tResult Lower();
 
+   // ISaveLoadParticipant methods
+   virtual tResult Save(IWriter *);
+   virtual tResult Load(IReader *, int version);
+
 private:
    class cMoveCameraTask : public cComObject<IMPLEMENTS(ITask)>
    {
@@ -242,6 +259,7 @@ private:
    tVec3 m_eye, m_focus;
    tMatrix4 m_rotation;
    cTimedLerp<float> m_elevationLerp;
+   bool m_bPitchChanged;
 };
 
 

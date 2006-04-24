@@ -4,6 +4,7 @@
 #include "stdhdr.h"
 
 #include "camera.h"
+#include "readwriteutils.h"
 
 #include "configapi.h"
 #include "keys.h"
@@ -184,6 +185,8 @@ static const float kElevationSpeed = 15;
 static const float kDefaultPitch = 70;
 static const float kDefaultSpeed = 50;
 
+const int cCameraControl::gm_currentSaveLoadVer = 1;
+
 ///////////////////////////////////////
 
 cCameraControl::cCameraControl()
@@ -194,6 +197,7 @@ cCameraControl::cCameraControl()
  , m_elevation(kElevationDefault)
  , m_focus(0,0,0)
  , m_elevationLerp(kElevationDefault, kElevationDefault, 1)
+ , m_bPitchChanged(false)
 {
    ConfigGet(_T("view_elevation"), &m_elevation);
    ConfigGet(_T("view_pitch"), &m_pitch);
@@ -217,6 +221,10 @@ tResult cCameraControl::Init()
    UseGlobal(Input);
    pInput->AddInputListener(static_cast<IInputListener*>(this));
 
+   UseGlobal(SaveLoadManager);
+   pSaveLoadManager->RegisterSaveLoadParticipant(SAVELOADID_CameraControl,
+      gm_currentSaveLoadVer, static_cast<ISaveLoadParticipant*>(this));
+
    return S_OK;
 }
 
@@ -224,6 +232,9 @@ tResult cCameraControl::Init()
 
 tResult cCameraControl::Term()
 {
+   UseGlobal(SaveLoadManager);
+   pSaveLoadManager->RevokeSaveLoadParticipant(SAVELOADID_CameraControl, gm_currentSaveLoadVer);
+
    UseGlobal(Input);
    pInput->RemoveInputListener(static_cast<IInputListener*>(this));
 
@@ -346,6 +357,13 @@ void cCameraControl::SimFrame(double elapsedTime)
       m_focus.z += static_cast<float>(focusVelZ * elapsedTime);
    }
 
+   if (m_bPitchChanged)
+   {
+      MatrixRotateX(m_pitch, &m_rotation);
+      m_oneOverTangentPitch = 1.0f / tanf(m_pitch);
+      m_bPitchChanged = false;
+   }
+
    m_elevation = m_elevationLerp.Update(elapsedTime);
 
    float zOffset = m_elevation * m_oneOverTangentPitch;
@@ -431,6 +449,58 @@ tResult cCameraControl::Raise()
 tResult cCameraControl::Lower()
 {
    m_elevationLerp.Restart(m_elevation, m_elevation - kElevationStep, kElevationSpeed);
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cCameraControl::Save(IWriter * pWriter)
+{
+   if (pWriter == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (pWriter->Write(m_pitch) != S_OK
+      || pWriter->Write(m_elevation) != S_OK
+      || pWriter->Write(m_eye) != S_OK
+      || pWriter->Write(m_focus) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cCameraControl::Load(IReader * pReader, int version)
+{
+   if (pReader == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (version != gm_currentSaveLoadVer)
+   {
+      // Would eventually handle upgrading here
+      return E_FAIL;
+   }
+
+   if (pReader->Read(&m_pitch) != S_OK
+      || pReader->Read(&m_elevation) != S_OK
+      || pReader->Read(&m_eye) != S_OK
+      || pReader->Read(&m_focus) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   m_rotation = tMatrix4::GetIdentity();
+   m_oneOverTangentPitch = 0;
+   m_elevationLerp.Restart(m_elevation, m_elevation, 0);
+   m_cameraMove = kCameraMoveNone;
+   m_bPitchChanged = true;
+
    return S_OK;
 }
 

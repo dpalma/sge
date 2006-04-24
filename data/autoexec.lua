@@ -21,7 +21,6 @@ bind("F4", [[GUIContext:ToggleDebugInfo(5, 100, "font-name:Courier New;font-poin
 function LoadSampleLevel(map)
    GUIContext:PushPage("ingame.xml");
    SetTerrain(map);
-   ViewSetPos(0.5, 0.4);
 end;
 
 function ShowCustomGamePage()

@@ -21,11 +21,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-inline bool IsNumber(const tScriptVar & scriptVar)
-{
-   return scriptVar.IsInt() || scriptVar.IsFloat() || scriptVar.IsDouble();
-}
-
 #define ScriptArgIsString(iArg) (argv[iArg].IsString())
 #define ScriptArgIsNumber(iArg) (IsNumber(argv[iArg]))
 

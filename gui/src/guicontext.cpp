@@ -37,13 +37,6 @@ LOG_DEFINE_CHANNEL(GUIContext);
 
 ///////////////////////////////////////////////////////////////////////////////
 
-inline bool IsNumber(const tScriptVar & scriptVar)
-{
-   return scriptVar.IsInt() || scriptVar.IsFloat() || scriptVar.IsDouble();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 static bool g_bExitModalLoop = false;
 tSysFrameFn g_pfnOuterFrameHandler = NULL;
 

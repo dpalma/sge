@@ -69,39 +69,6 @@ static tResult MainFrame();
 
 ///////////////////////////////////////////////////////////////////////////////
 
-inline bool IsNumber(const tScriptVar & scriptVar)
-{
-   return scriptVar.IsInt() || scriptVar.IsFloat() || scriptVar.IsDouble();
-}
-
-SCRIPT_DEFINE_FUNCTION(ViewSetPos)
-{
-   if (argc == 2 && IsNumber(argv[0]) && IsNumber(argv[1]))
-   {
-      float x = argv[0];
-      float z = argv[1];
-
-      if (x >= 0 && x <= 1 && z >= 0 && z <= 1)
-      {
-         cTerrainSettings terrainSettings;
-         UseGlobal(TerrainModel);
-         pTerrainModel->GetTerrainSettings(&terrainSettings);
-         x *= terrainSettings.GetTileCountX() * terrainSettings.GetTileSize();
-         z *= terrainSettings.GetTileCountZ() * terrainSettings.GetTileSize();
-         UseGlobal(CameraControl);
-         pCameraControl->LookAtPoint(x, z);
-      }
-      else
-      {
-         DebugMsg2("ViewSetPos arguments %f, %f, out of range\n", x, z);
-      }
-   }
-
-   return 0;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 void ResizeHack(int width, int height, double time)
 {
    UseGlobal(Camera);
