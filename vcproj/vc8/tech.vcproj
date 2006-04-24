@@ -495,6 +495,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\tech\src\dictregstore.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\tech\src\fileenum.cpp"
 					>
 				</File>
@@ -716,6 +720,10 @@
 				</File>
 				<File
 					RelativePath="..\..\tech\src\dictionarystore.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\tech\src\dictregstore.h"
 					>
 				</File>
 				<File

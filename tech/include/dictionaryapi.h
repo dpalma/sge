@@ -20,6 +20,8 @@ class cMultiVar;
 F_DECLARE_INTERFACE(IDictionary);
 F_DECLARE_INTERFACE(IDictionaryStore);
 
+F_DECLARE_HANDLE(HKEY);
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // INTERFACE: IDictionary
@@ -82,6 +84,7 @@ interface IDictionaryStore : IUnknown
 TECH_API IDictionaryStore * DictionaryStoreCreate(const cFileSpec & file);
 TECH_API IDictionaryStore * DictionaryIniStoreCreate(const cFileSpec & file,
                                                      const tChar * pszSection);
+TECH_API tResult DictionaryStoreCreate(HKEY hKey, const tChar * pszSubKey, bool bReadOnly, IDictionaryStore * * ppStore);
 
 ///////////////////////////////////////////////////////////////////////////////
 
