@@ -456,21 +456,6 @@ bool cGUIPage::IsModalDialogPage() const
 
 ///////////////////////////////////////
 
-void cGUIPage::Clear()
-{
-   std::for_each(m_elements.begin(), m_elements.end(), CTInterfaceMethod(&IGUIElement::Release));
-   m_elements.clear();
-}
-
-///////////////////////////////////////
-
-size_t cGUIPage::CountElements() const
-{
-   return m_elements.size();
-}
-
-///////////////////////////////////////
-
 static tResult GUIGetElement(const tGUIElementList & elements, const tChar * pszId, IGUIElement * * ppElement)
 {
    if (pszId == NULL || ppElement == NULL)
@@ -589,6 +574,14 @@ tResult cGUIPage::GetHitElements(const tScreenPoint & point, tGUIElementList * p
    }
 
    return pElements->empty() ? S_FALSE : S_OK;
+}
+
+///////////////////////////////////////
+
+void cGUIPage::Clear()
+{
+   std::for_each(m_elements.begin(), m_elements.end(), CTInterfaceMethod(&IGUIElement::Release));
+   m_elements.clear();
 }
 
 ///////////////////////////////////////

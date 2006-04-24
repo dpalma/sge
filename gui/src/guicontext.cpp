@@ -507,6 +507,15 @@ tResult cGUIContext::PopPage()
    SetMouseOver(NULL);
    SetDrag(NULL);
 
+   if (!m_pages.empty())
+   {
+      cGUIPage * pNewPage = m_pages.back();
+      if (pNewPage != NULL)
+      {
+         pNewPage->Activate();
+      }
+   }
+
    return S_OK;
 }
 

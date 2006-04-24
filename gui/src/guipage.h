@@ -28,6 +28,7 @@ class TiXmlDocument;
 class cGUIPage
 {
    cGUIPage(const tGUIElementList * pElements);
+
 public:
    ~cGUIPage();
 
@@ -41,9 +42,6 @@ public:
 
    bool IsModalDialogPage() const;
 
-   void Clear();
-
-   size_t CountElements() const;
    tResult GetElement(const tChar * pszId, IGUIElement * * ppElement);
 
    void RequestLayout(IGUIElement * pRequester);
@@ -54,6 +52,8 @@ public:
    tResult GetHitElements(const tScreenPoint & point, tGUIElementList * pElements) const;
 
 private:
+   void Clear();
+
    void RunScripts();
 
    tGUIElementList::const_iterator BeginElements() const { return m_elements.begin(); }
