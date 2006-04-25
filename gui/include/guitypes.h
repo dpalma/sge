@@ -183,10 +183,10 @@ public:
 
    const tGUIChar * GetFace() const;
    int GetPointSize() const;
-   bool GetBold() const;
-   bool GetItalic() const;
-   bool GetShadow() const;
-   bool GetOutline() const;
+   bool IsBold() const;
+   bool IsItalic() const;
+   bool IsShadow() const;
+   bool IsOutline() const;
    uint GetGlyphFirst() const;
    uint GetGlyphLast() const;
 

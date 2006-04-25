@@ -119,8 +119,8 @@ tResult GUIFontCreateD3D(IDirect3DDevice9 * pD3dDevice, const cGUIFontDesc & fon
    ReleaseDC(NULL, hScreenDC), hScreenDC = NULL;
 
    cAutoIPtr<ID3DXFont> pD3DXFont;
-   if (D3DXCreateFont(pD3dDevice, height, 0, fontDesc.GetBold() ? FW_EXTRABOLD : FW_NORMAL,
-      4, fontDesc.GetItalic(), DEFAULT_CHARSET, OUT_TT_PRECIS, PROOF_QUALITY,
+   if (D3DXCreateFont(pD3dDevice, height, 0, fontDesc.IsBold() ? FW_EXTRABOLD : FW_NORMAL,
+      4, fontDesc.IsItalic(), DEFAULT_CHARSET, OUT_TT_PRECIS, PROOF_QUALITY,
       DEFAULT_PITCH | FF_DONTCARE, fontDesc.GetFace(), &pD3DXFont) == S_OK)
    {
       cAutoIPtr<cGUIFontD3D> pFont(new cGUIFontD3D(pD3DXFont));

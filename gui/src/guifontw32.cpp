@@ -158,8 +158,8 @@ bool cGUITextureFontW32::Create(const cGUIFontDesc & fontDesc)
 
          LOGFONT lf = {0};
          lf.lfHeight = -MulDiv(fontDesc.GetPointSize(), (int)(GetDeviceCaps(hMemDC, LOGPIXELSY) * scale), 72);
-         lf.lfWeight = fontDesc.GetBold() ? FW_SEMIBOLD : FW_NORMAL;
-         if (fontDesc.GetItalic())
+         lf.lfWeight = fontDesc.IsBold() ? FW_SEMIBOLD : FW_NORMAL;
+         if (fontDesc.IsItalic())
          {
             lf.lfItalic = TRUE;
          }

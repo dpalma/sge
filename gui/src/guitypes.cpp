@@ -93,11 +93,54 @@ bool cGUIFontDesc::operator ==(const cGUIFontDesc & other) const
 
 bool cGUIFontDesc::operator <(const cGUIFontDesc & other) const
 {
-   return m_typeFace.compare(other.m_typeFace) < 0
-      || m_pointSize < other.m_pointSize
-      || m_effects < other.m_effects
-      || m_glyphFirst < other.m_glyphFirst
-      || m_glyphLast < other.m_glyphLast;
+   int result = m_typeFace.compare(other.m_typeFace);
+
+   if (result > 0)
+   {
+      return false;
+   }
+   else if (result < 0)
+   {
+      return true;
+   }
+
+   if (m_pointSize > other.m_pointSize)
+   {
+      return false;
+   }
+   else if (m_pointSize < other.m_pointSize)
+   {
+      return true;
+   }
+
+   if (m_effects > other.m_effects)
+   {
+      return false;
+   }
+   else if (m_effects < other.m_effects)
+   {
+      return true;
+   }
+
+   if (m_glyphFirst > other.m_glyphFirst)
+   {
+      return false;
+   }
+   else if (m_glyphFirst < other.m_glyphFirst)
+   {
+      return true;
+   }
+
+   if (m_glyphLast > other.m_glyphLast)
+   {
+      return false;
+   }
+   else if (m_glyphLast < other.m_glyphLast)
+   {
+      return true;
+   }
+
+   return false;
 }
 
 ////////////////////////////////////////
@@ -116,28 +159,28 @@ int cGUIFontDesc::GetPointSize() const
 
 ////////////////////////////////////////
 
-bool cGUIFontDesc::GetBold() const
+bool cGUIFontDesc::IsBold() const
 {
    return (m_effects & kGFE_Bold) == kGFE_Bold;
 }
 
 ////////////////////////////////////////
 
-bool cGUIFontDesc::GetItalic() const
+bool cGUIFontDesc::IsItalic() const
 {
    return (m_effects & kGFE_Italic) == kGFE_Italic;
 }
 
 ////////////////////////////////////////
 
-bool cGUIFontDesc::GetShadow() const
+bool cGUIFontDesc::IsShadow() const
 {
    return (m_effects & kGFE_Shadow) == kGFE_Shadow;
 }
 
 ////////////////////////////////////////
 
-bool cGUIFontDesc::GetOutline() const
+bool cGUIFontDesc::IsOutline() const
 {
    return (m_effects & kGFE_Outline) == kGFE_Outline;
 }
@@ -208,6 +251,14 @@ TEST(GUIFontDescLessThan)
       cGUIFontDesc fontDesc2(_T("Arial"), 12, kGFE_Bold);
       CHECK(!(fontDesc1 < fontDesc2));
       CHECK(!(fontDesc2 < fontDesc1));
+   }
+
+   {
+      // Cover less-than operator bug discovered 4/25/2006
+      static const cGUIFontDesc noName10(_T(""), 10, kGFE_None);
+      static const cGUIFontDesc courierNew8(_T("Courier New"), 8, kGFE_None);
+      CHECK(noName10 < courierNew8);
+      CHECK(!(courierNew8 < noName10));
    }
 }
 
