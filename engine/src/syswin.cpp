@@ -45,6 +45,9 @@ bool           g_bAppActive = false;
 HWND           g_hWnd = NULL;
 HDC            g_hDC = NULL;
 HGLRC          g_hGLRC = NULL;
+HACCEL         g_hAccel = NULL; // For trapping Alt+Enter
+
+static const WORD kAltEnterCommandId = 2006;
 
 class cDLL
 {
@@ -414,6 +417,100 @@ static tResult SysIsRemoteDesktopRunning()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+static const char SysFullScreenOldStyle[] = "OldStyleBits";
+
+bool SysFullScreenBegin(HWND hWnd, int width, int height, int bpp)
+{
+   if (!IsWindow(hWnd))
+   {
+      DebugMsg("Valid window handled required to enter full-screen mode\n");
+      return false;
+   }
+
+   if (bpp == 0)
+   {
+      HDC hDC = GetDC(NULL);
+      if (hDC == NULL)
+      {
+         return false;
+      }
+      bpp = GetDeviceCaps(hDC, BITSPIXEL);
+      DebugMsg1("Using desktop display depth of %d bpp\n", bpp);
+      ReleaseDC(NULL, hDC);
+   }
+
+   DEVMODE dm;
+   dm.dmSize = sizeof(DEVMODE);
+   dm.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
+   dm.dmBitsPerPel = bpp;
+   dm.dmPelsWidth = width;
+   dm.dmPelsHeight = height;
+
+   if (ChangeDisplaySettings(&dm, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
+   {
+      DebugMsg3("Display mode %d x %d, %d bpp not available\n", width, height, bpp);
+      return false;
+   }
+
+   uint styleBits = GetWindowLong(hWnd, GWL_STYLE);
+
+   // Store the pre-full-screen style bits as a property on the window
+   Verify(SetProp(hWnd, SysFullScreenOldStyle, (HANDLE)styleBits));
+
+   styleBits &= ~(WS_CAPTION | WS_SYSMENU);
+   styleBits |= WS_POPUP;
+
+   SetWindowLong(hWnd, GWL_STYLE, styleBits);
+
+   SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, width, height, 0);
+
+   return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+bool SysFullScreenEnd(HWND hWnd)
+{
+   if (IsWindow(hWnd))
+   {
+      // The window's style bits before entering full-screen mode should have
+      // been stored as a property on the window.
+      HANDLE formerStyleBits = GetProp(hWnd, SysFullScreenOldStyle);
+
+      if (formerStyleBits != NULL)
+      {
+         RemoveProp(hWnd, SysFullScreenOldStyle);
+
+         SetWindowLong(hWnd, GWL_STYLE, (long)formerStyleBits);
+
+         SetWindowPos(hWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+
+         ChangeDisplaySettings(NULL, 0);
+
+         return true;
+      }
+   }
+
+   return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+bool SysIsFullScreen(HWND hWnd)
+{
+   if (IsWindow(hWnd))
+   {
+      if (GetProp(hWnd, SysFullScreenOldStyle) != NULL
+         && ((GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_TOPMOST) == WS_EX_TOPMOST))
+      {
+         return true;
+      }
+   }
+   return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // The characters mapped here should be handled in WM_KEYDOWN, else in WM_CHAR
 
 static const long g_keyMap[128] =
@@ -489,6 +586,12 @@ bool SysHandleWindowsMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
          SafeRelease(g_pDirect3DDevice9);
          SafeRelease(g_pDirect3D9);
 #endif
+
+         if (g_hAccel)
+         {
+            DestroyAcceleratorTable(g_hAccel);
+            g_hAccel = NULL;
+         }
 
          if (hWnd == g_hWnd)
          {
@@ -570,6 +673,28 @@ bool SysHandleWindowsMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
             (*g_pfnKeyCallback)(mapped, false, msgTime, g_keyCallbackUserData);
          }
          bHandled = true;
+         break;
+      }
+
+      case WM_COMMAND:
+      {
+         if (LOWORD(wParam) == kAltEnterCommandId)
+         {
+            // Do fullscreen toggling only with OpenGL
+            if (g_hGLRC != NULL)
+            {
+               if (SysIsFullScreen(hWnd))
+               {
+                  SysFullScreenEnd(hWnd);
+               }
+               else
+               {
+                  RECT rect;
+                  GetClientRect(hWnd, &rect);
+                  SysFullScreenBegin(hWnd, rect.right, rect.bottom, 16);
+               }
+            }
+         }
          break;
       }
 
@@ -812,6 +937,13 @@ HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI 
 
       if (g_hWnd != NULL)
       {
+         Assert(g_hAccel == NULL);
+         ACCEL accel = {0};
+         accel.fVirt = FALT | FNOINVERT | FVIRTKEY;
+         accel.cmd = kAltEnterCommandId;
+         accel.key = VK_RETURN;
+         g_hAccel = CreateAcceleratorTable(&accel, 1);
+
          if (api == kOpenGL)
          {
             int bpp = 0;
@@ -905,84 +1037,6 @@ void SysSwapBuffers()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static const char SysFullScreenOldStyle[] = "OldStyleBits";
-
-bool SysFullScreenBegin(HWND hWnd, int width, int height, int bpp)
-{
-   if (!IsWindow(hWnd))
-   {
-      DebugMsg("Valid window handled required to enter full-screen mode\n");
-      return false;
-   }
-
-   if (bpp == 0)
-   {
-      HDC hDC = GetDC(NULL);
-      if (hDC == NULL)
-         return false;
-      bpp = GetDeviceCaps(hDC, BITSPIXEL);
-      DebugMsg1("Using desktop display depth of %d bpp\n", bpp);
-      ReleaseDC(NULL, hDC);
-   }
-
-   DEVMODE dm;
-   dm.dmSize = sizeof(DEVMODE);
-   dm.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
-   dm.dmBitsPerPel = bpp;
-   dm.dmPelsWidth = width;
-   dm.dmPelsHeight = height;
-
-   if (ChangeDisplaySettings(&dm, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
-   {
-      DebugMsg3("Display mode %d x %d, %d bpp not available\n", width, height, bpp);
-      return false;
-   }
-
-   uint styleBits = GetWindowLong(hWnd, GWL_STYLE);
-
-   // Store the pre-full-screen style bits as a property on the window
-   Verify(SetProp(hWnd, SysFullScreenOldStyle, (HANDLE)styleBits));
-
-   styleBits &= ~(WS_CAPTION | WS_SYSMENU);
-   styleBits |= WS_POPUP;
-
-   SetWindowLong(hWnd, GWL_STYLE, styleBits);
-
-   SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, width, height, 0);
-
-   return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-bool SysFullScreenEnd(HWND hWnd)
-{
-   if (IsWindow(hWnd))
-   {
-      // The window's style bits before entering full-screen mode should have
-      // been stored as a property on the window.
-      HANDLE formerStyleBits = GetProp(hWnd, SysFullScreenOldStyle);
-
-      if (formerStyleBits != NULL)
-      {
-         RemoveProp(hWnd, SysFullScreenOldStyle);
-
-         SetWindowLong(hWnd, GWL_STYLE, (long)formerStyleBits);
-
-         SetWindowPos(hWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-
-         ChangeDisplaySettings(NULL, 0);
-
-         return true;
-      }
-   }
-
-   return false;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-
 // Calls to SysEventLoop may be nested to implement modal dialog loops
 // and such.  Quit messages must re-posted from nested calls for the app
 // to exit properly.
@@ -1010,8 +1064,11 @@ int SysEventLoop(tSysFrameFn pfnFrameHandler)
             goto LExit;
          }
 
-         TranslateMessage(&msg);
-         DispatchMessage(&msg);
+         if (!TranslateAccelerator(g_hWnd, g_hAccel, &msg))
+         {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+         }
       }
       else
       {
