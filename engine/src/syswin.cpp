@@ -418,14 +418,39 @@ static tResult SysIsRemoteDesktopRunning()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static const char SysFullScreenOldStyle[] = "OldStyleBits";
+bool SysIsFullScreen(HWND hWnd)
+{
+   if (IsWindow(hWnd))
+   {
+      if (GetWindowLongPtr(hWnd, 0) != NULL
+         && ((GetWindowLongPtr(hWnd, GWL_EXSTYLE) & WS_EX_TOPMOST) == WS_EX_TOPMOST))
+      {
+         return true;
+      }
+   }
+   return false;
+}
 
-bool SysFullScreenBegin(HWND hWnd, int width, int height, int bpp)
+///////////////////////////////////////////////////////////////////////////////
+
+struct sSysWindowedState
+{
+   long style;
+   RECT rect;
+};
+
+tResult SysFullScreenBegin(HWND hWnd, int width, int height, int bpp)
 {
    if (!IsWindow(hWnd))
    {
       DebugMsg("Valid window handled required to enter full-screen mode\n");
-      return false;
+      return E_INVALIDARG;
+   }
+
+   if (SysIsFullScreen(hWnd))
+   {
+      WarnMsg("Multiple calls to SysFullScreenBegin\n");
+      return S_FALSE;
    }
 
    if (bpp == 0)
@@ -433,14 +458,30 @@ bool SysFullScreenBegin(HWND hWnd, int width, int height, int bpp)
       HDC hDC = GetDC(NULL);
       if (hDC == NULL)
       {
-         return false;
+         return E_FAIL;
       }
       bpp = GetDeviceCaps(hDC, BITSPIXEL);
       DebugMsg1("Using desktop display depth of %d bpp\n", bpp);
       ReleaseDC(NULL, hDC);
    }
 
-   DEVMODE dm;
+   sSysWindowedState * pWindowedState = new sSysWindowedState;
+   if (pWindowedState == NULL)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   pWindowedState->style = GetWindowLongPtr(hWnd, GWL_STYLE);
+   if (!GetWindowRect(hWnd, &pWindowedState->rect))
+   {
+      delete pWindowedState;
+      ErrorMsg1("GetWindowRect failed (error %d)\n", GetLastError());
+      return E_FAIL;
+   }
+
+   Verify(SetWindowLongPtr(hWnd, 0, reinterpret_cast<long_ptr>(pWindowedState)) == 0);
+
+   DEVMODE dm = {0};
    dm.dmSize = sizeof(DEVMODE);
    dm.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
    dm.dmBitsPerPel = bpp;
@@ -449,65 +490,53 @@ bool SysFullScreenBegin(HWND hWnd, int width, int height, int bpp)
 
    if (ChangeDisplaySettings(&dm, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
    {
-      DebugMsg3("Display mode %d x %d, %d bpp not available\n", width, height, bpp);
-      return false;
+      delete pWindowedState;
+      ErrorMsg3("Display mode %d x %d, %d bpp not available\n", width, height, bpp);
+      return E_FAIL;
    }
 
-   uint styleBits = GetWindowLong(hWnd, GWL_STYLE);
-
-   // Store the pre-full-screen style bits as a property on the window
-   Verify(SetProp(hWnd, SysFullScreenOldStyle, (HANDLE)styleBits));
+   uint styleBits = GetWindowLongPtr(hWnd, GWL_STYLE);
 
    styleBits &= ~(WS_CAPTION | WS_SYSMENU);
    styleBits |= WS_POPUP;
 
-   SetWindowLong(hWnd, GWL_STYLE, styleBits);
+   SetWindowLongPtr(hWnd, GWL_STYLE, styleBits);
 
-   SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, width, height, 0);
+   SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, width, height, SWP_FRAMECHANGED);
 
-   return true;
+   return S_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool SysFullScreenEnd(HWND hWnd)
+tResult SysFullScreenEnd(HWND hWnd)
 {
-   if (IsWindow(hWnd))
+   if (!IsWindow(hWnd))
    {
-      // The window's style bits before entering full-screen mode should have
-      // been stored as a property on the window.
-      HANDLE formerStyleBits = GetProp(hWnd, SysFullScreenOldStyle);
-
-      if (formerStyleBits != NULL)
-      {
-         RemoveProp(hWnd, SysFullScreenOldStyle);
-
-         SetWindowLong(hWnd, GWL_STYLE, (long)formerStyleBits);
-
-         SetWindowPos(hWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-
-         ChangeDisplaySettings(NULL, 0);
-
-         return true;
-      }
+      return E_INVALIDARG;
    }
 
-   return false;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-bool SysIsFullScreen(HWND hWnd)
-{
-   if (IsWindow(hWnd))
+   sSysWindowedState * pWindowedState = reinterpret_cast<sSysWindowedState *>(SetWindowLongPtr(hWnd, 0, 0));
+   if (pWindowedState != NULL)
    {
-      if (GetProp(hWnd, SysFullScreenOldStyle) != NULL
-         && ((GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_TOPMOST) == WS_EX_TOPMOST))
-      {
-         return true;
-      }
+      ChangeDisplaySettings(NULL, 0);
+
+      SetWindowLongPtr(hWnd, GWL_STYLE, pWindowedState->style);
+
+      SetWindowPos(hWnd, HWND_NOTOPMOST,
+         pWindowedState->rect.left, pWindowedState->rect.top,
+         pWindowedState->rect.right - pWindowedState->rect.left,
+         pWindowedState->rect.bottom - pWindowedState->rect.top,
+         SWP_FRAMECHANGED);
+
+      delete pWindowedState;
+
+      return S_OK;
    }
-   return false;
+   else
+   {
+      return S_FALSE;
+   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -598,6 +627,7 @@ bool SysHandleWindowsMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
             g_hWnd = NULL;
          }
 
+         SysFullScreenEnd(hWnd);
          PostQuitMessage(0);
          bHandled = true;
          break;
@@ -916,6 +946,7 @@ HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI 
       wc.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(1));
       wc.hCursor = LoadCursor(NULL, IDC_ARROW);
       wc.lpszClassName = SysWndClass;
+      wc.cbWndExtra = sizeof(void*);
       if (!RegisterClass(&wc))
       {
          ErrorMsg("An error occurred registering the window class\n");
