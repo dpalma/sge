@@ -421,25 +421,6 @@ tResult cRenderer::SetTexture(uint textureUnit, const tChar * pszTexture)
 
 ////////////////////////////////////////
 
-tResult cRenderer::SetTexture(uint textureUnit, void * pTexture)
-{
-   if (textureUnit >= 8)
-   {
-      return E_INVALIDARG;
-   }
-   GLuint textureId = reinterpret_cast<GLuint>(pTexture);
-   if (!glIsTexture(textureId))
-   {
-      return E_INVALIDARG;
-   }
-   glActiveTextureARB(GL_TEXTURE0 + textureUnit);
-   glEnable(GL_TEXTURE_2D);
-   glBindTexture(GL_TEXTURE_2D, textureId);
-   return S_OK;
-}
-
-////////////////////////////////////////
-
 tResult cRenderer::SetBlendMatrices(const tMatrix4 * pMatrices, uint nMatrices)
 {
    if (nMatrices >= kMaxBlendMatrices)

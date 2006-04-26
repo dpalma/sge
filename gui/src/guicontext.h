@@ -34,6 +34,11 @@ class cGUIContext : public cComObject3<cGUIEventRouter<cGUIContext, IGUIContext>
                                        IMPLEMENTS(IGlobalObject),
                                        IMPLEMENTS(IScriptable)>
 {
+   enum eGUIPagePlane
+   {
+      kPages, kDialogs, kOverlays
+   };
+
 public:
    cGUIContext(const tChar * pszScriptName);
    ~cGUIContext();
@@ -66,10 +71,17 @@ public:
    // IGUIContext methods
    virtual tResult ShowModalDialog(const tGUIChar * pszDialog);
 
+   tResult PushPage(eGUIPagePlane plane, cGUIPage * pPage);
+   tResult PopPage(eGUIPagePlane plane);
+
    virtual tResult PushPage(const tGUIChar * pszPage);
    virtual tResult PopPage();
 
+   virtual tResult AddOverlayPage(const tGUIChar * pszPage);
+
    virtual tResult GetElementById(const tGUIChar * pszId, IGUIElement * * ppElement);
+
+   virtual tResult GetOverlayElement(const tGUIChar * pszId, IGUIElement * * ppElement);
 
    virtual tResult RequestLayout(IGUIElement * pRequester);
 
@@ -85,8 +97,8 @@ public:
 
    tResult GetHitElement(const tScreenPoint & point, IGUIElement * * ppElement) const;
 
-   cGUIPage * GetCurrentPage() { return m_pages.empty() ? NULL : m_pages.back(); }
-   const cGUIPage * GetCurrentPage() const { return m_pages.empty() ? NULL : m_pages.back(); }
+   cGUIPage * GetCurrentPage();
+   const cGUIPage * GetCurrentPage() const;
 
 private:
 #ifdef GUI_DEBUG
@@ -126,7 +138,8 @@ private:
 
    cAutoIPtr<IGUIFont> m_pDefaultFont;
 
-   std::list<cGUIPage *> m_pages;
+   typedef std::list<cGUIPage *> tGUIPageList;
+   tGUIPageList m_pagePlanes[3];
 };
 
 ///////////////////////////////////////////////////////////////////////////////

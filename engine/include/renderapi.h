@@ -97,8 +97,8 @@ interface IRenderer : IUnknown
    virtual tResult SubmitVertices(const void * pVertices, uint nVertices) = 0;
 
    virtual tResult SetDiffuseColor(const float diffuse[4]) = 0;
+
    virtual tResult SetTexture(uint textureUnit, const tChar * pszTexture) = 0;
-   virtual tResult SetTexture(uint textureUnit, void * pTexture) = 0;
 
    virtual tResult SetBlendMatrices(const tMatrix4 * pMatrices, uint nMatrices) = 0;
 

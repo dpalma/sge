@@ -378,7 +378,11 @@ interface IGUIContext : IGUIEventRouter
    virtual tResult PushPage(const tGUIChar * pszPage) = 0;
    virtual tResult PopPage() = 0;
 
+   virtual tResult AddOverlayPage(const tGUIChar * pszPage) = 0;
+
    virtual tResult GetElementById(const tGUIChar * pszId, IGUIElement * * ppElement) = 0;
+
+   virtual tResult GetOverlayElement(const tGUIChar * pszId, IGUIElement * * ppElement) = 0;
 
    virtual tResult RequestLayout(IGUIElement * pRequester) = 0;
 

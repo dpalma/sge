@@ -7,6 +7,7 @@
 
 #include "cameraapi.h"
 #include "guiapi.h"
+#include "guielementapi.h"
 #include "inputapi.h"
 #include "engineapi.h"
 #include "entityapi.h"
@@ -49,15 +50,12 @@ typedef char * LPSTR;
 const float kZNear = 1;
 const float kZFar = 2000;
 
-static const float kGroundScaleY = 0.25f;
+static const tChar g_szFrameStatsOverlay[] = _T("<page><label renderer=\"basic\" id=\"frameStats\" style=\"width:50%;height:25%;foreground-color:white\" /></page>");
 
-static const int kDefStatsX = 25;
-static const int kDefStatsY = 25;
-static const cColor kDefStatsColor(1,1,1,1);
 
 ///////////////////////////////////////////////////////////////////////////////
 
-cAutoIPtr<IGUIFont> g_pFont;
+cAutoIPtr<IGUILabelElement> g_pFrameStats;
 
 float g_fov;
 
@@ -250,16 +248,19 @@ static bool MainInit(int argc, tChar * argv[])
    }
 
    UseGlobal(GUIContext);
-   if (FAILED(pGUIContext->GetDefaultFont(&g_pFont)))
-   {
-      ErrorMsg("Failed to get a default font interface pointer for showing frame stats\n");
-      return false;
-   }
-
    cAutoIPtr<IGUIRenderDeviceContext> pGuiRenderDevice;
    if (GUIRenderDeviceCreateGL(&pGuiRenderDevice) == S_OK)
    {
       pGUIContext->SetRenderDeviceContext(pGuiRenderDevice);
+   }
+
+   if (pGUIContext->AddOverlayPage(g_szFrameStatsOverlay) == S_OK)
+   {
+      cAutoIPtr<IGUIElement> pElement;
+      if (pGUIContext->GetOverlayElement(_T("frameStats"), &pElement) == S_OK)
+      {
+         pElement->QueryInterface(IID_IGUILabelElement, (void**)&g_pFrameStats);
+      }
    }
 
    SysAppActivate(true);
@@ -290,7 +291,7 @@ static void MainTerm()
    UseGlobal(ThreadCaller);
    pThreadCaller->ThreadTerm();
 
-   SafeRelease(g_pFont);
+   SafeRelease(g_pFrameStats);
 
    // This will make sure the GL context is destroyed
    SysQuit();
@@ -304,6 +305,14 @@ static tResult MainFrame()
 {
    UseGlobal(Scheduler);
    pScheduler->NextFrame();
+
+   if (!!g_pFrameStats)
+   {
+      tChar szStats[100];
+      SysReportFrameStats(szStats, _countof(szStats));
+
+      g_pFrameStats->SetText(szStats);
+   }
 
    UseGlobal(Renderer);
    if (pRenderer->BeginScene() != S_OK)
@@ -325,19 +334,7 @@ static tResult MainFrame()
    if (pGUIContext->GetRenderDeviceContext(&pRenderDeviceContext) == S_OK)
    {
       pRenderDeviceContext->Begin2D();
-
       pGUIContext->RenderGUI();
-
-      if (!!g_pFont)
-      {
-         tChar szStats[100];
-         SysReportFrameStats(szStats, _countof(szStats));
-
-         tRect rect(kDefStatsX, kDefStatsY, 0, 0);
-         g_pFont->RenderText(szStats, _tcslen(szStats), &rect,
-                             kRT_NoClip | kRT_DropShadow, kDefStatsColor);
-      }
-
       pRenderDeviceContext->End2D();
    }
 

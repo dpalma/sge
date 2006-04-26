@@ -147,6 +147,42 @@ tResult cGUIModalLoopEventListener::OnEvent(IGUIEvent * pEvent)
 
 
 ///////////////////////////////////////////////////////////////////////////////
+
+static tResult LoadPage(const tChar * pszPage, cGUIPage * * ppPage)
+{
+   if (pszPage == NULL || ppPage == NULL)
+   {
+      return E_POINTER;
+   }
+
+   TiXmlBase::SetCondenseWhiteSpace(false);
+
+   TiXmlDocument doc;
+   TiXmlDocument * pTiXmlDoc = &doc;
+
+   doc.Parse(pszPage);
+   int errorId = doc.ErrorId();
+
+   if (errorId != TiXmlBase::TIXML_NO_ERROR && errorId != TiXmlBase::TIXML_ERROR_DOCUMENT_EMPTY)
+   {
+      ErrorMsg1("TiXml parse error: %s\n", doc.ErrorDesc());
+      return E_FAIL;
+   }
+   else if (errorId == TiXmlBase::TIXML_ERROR_DOCUMENT_EMPTY)
+   {
+      UseGlobal(ResourceManager);
+      if (pResourceManager->Load(pszPage, kRT_TiXml, NULL, (void**)&pTiXmlDoc) != S_OK)
+      {
+         ErrorMsg("Error loading TiXml document as a resource\n");
+         return E_FAIL;
+      }
+   }
+
+   return cGUIPage::Create(pTiXmlDoc, ppPage);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUIContext
 //
@@ -177,7 +213,10 @@ cGUIContext::cGUIContext(const tChar * pszScriptName)
 
 cGUIContext::~cGUIContext()
 {
-   Assert(m_pages.empty());
+   for (int i = 0; i < _countof(m_pagePlanes); i++)
+   {
+      Assert(m_pagePlanes[i].empty());
+   }
 }
 
 ///////////////////////////////////////
@@ -203,12 +242,15 @@ tResult cGUIContext::Term()
    UseGlobal(Input);
    pInput->RemoveInputListener(&m_inputListener);
 
-   std::list<cGUIPage*>::iterator iter = m_pages.begin();
-   for (; iter != m_pages.end(); iter++)
+   for (int i = 0; i < _countof(m_pagePlanes); i++)
    {
-      delete *iter;
+      tGUIPageList::iterator iter = m_pagePlanes[i].begin();
+      for (; iter != m_pagePlanes[i].end(); iter++)
+      {
+         delete *iter;
+      }
+      m_pagePlanes[i].clear();
    }
-   m_pages.clear();
 
    return S_OK;
 }
@@ -413,17 +455,17 @@ tResult cGUIContext::ShowModalDialog(const tChar * pszDialog)
 
    tResult result = E_FAIL;
 
-   if (PushPage(pszDialog) == S_OK)
+   cGUIPage * pPage = NULL;
+   if (LoadPage(pszDialog, &pPage) == S_OK)
    {
-      if (!GetCurrentPage()->IsModalDialogPage())
+      if (!pPage->IsModalDialogPage())
       {
-         PopPage();
          return E_FAIL;
       }
 
-      cBoolSetter boolSetter(&m_bShowingModalDialog, true);
+      PushPage(kDialogs, pPage);
 
-      GetCurrentPage()->SetOverlay(true);
+      cBoolSetter boolSetter(&m_bShowingModalDialog, true);
 
       cGUIModalLoopEventListener listener(&result);
       AddEventListener(&listener);
@@ -437,7 +479,7 @@ tResult cGUIContext::ShowModalDialog(const tChar * pszDialog)
 
       RemoveEventListener(&listener);
 
-      PopPage();
+      PopPage(kDialogs);
    }
 
    return result;
@@ -445,61 +487,31 @@ tResult cGUIContext::ShowModalDialog(const tChar * pszDialog)
 
 ///////////////////////////////////////
 
-tResult cGUIContext::PushPage(const tChar * pszPage)
+tResult cGUIContext::PushPage(eGUIPagePlane plane, cGUIPage * pPage)
 {
-   if (pszPage == NULL)
+   if (pPage == NULL)
    {
       return E_POINTER;
    }
-
-   TiXmlBase::SetCondenseWhiteSpace(false);
-
-   TiXmlDocument doc;
-   TiXmlDocument * pTiXmlDoc = &doc;
-
-   doc.Parse(pszPage);
-   int errorId = doc.ErrorId();
-
-   if (errorId != TiXmlBase::TIXML_NO_ERROR && errorId != TiXmlBase::TIXML_ERROR_DOCUMENT_EMPTY)
-   {
-      ErrorMsg1("TiXml parse error: %s\n", doc.ErrorDesc());
-      return E_FAIL;
-   }
-   else if (errorId == TiXmlBase::TIXML_ERROR_DOCUMENT_EMPTY)
-   {
-      UseGlobal(ResourceManager);
-      if (pResourceManager->Load(pszPage, kRT_TiXml, NULL, (void**)&pTiXmlDoc) != S_OK)
-      {
-         ErrorMsg("Error loading TiXml document as a resource\n");
-         return E_FAIL;
-      }
-   }
-
-   cGUIPage * pPage = NULL;
-   if (cGUIPage::Create(pTiXmlDoc, &pPage) == S_OK)
-   {
-      m_pages.push_back(pPage);
-      SetFocus(NULL);
-      SetMouseOver(NULL);
-      SetDrag(NULL);
-      pPage->Activate();
-      return S_OK;
-   }
-
-   return S_FALSE;
+   m_pagePlanes[plane].push_back(pPage);
+   SetFocus(NULL);
+   SetMouseOver(NULL);
+   SetDrag(NULL);
+   pPage->Activate();
+   return S_OK;
 }
 
 ///////////////////////////////////////
 
-tResult cGUIContext::PopPage()
+tResult cGUIContext::PopPage(eGUIPagePlane plane)
 {
-   if (m_pages.empty())
+   if (m_pagePlanes[plane].empty())
    {
       return E_FAIL;
    }
 
-   cGUIPage * pLastPage = m_pages.back();
-   m_pages.pop_back();
+   cGUIPage * pLastPage = m_pagePlanes[plane].back();
+   m_pagePlanes[plane].pop_back();
    pLastPage->Deactivate();
    delete pLastPage, pLastPage = NULL;
 
@@ -507,9 +519,9 @@ tResult cGUIContext::PopPage()
    SetMouseOver(NULL);
    SetDrag(NULL);
 
-   if (!m_pages.empty())
+   if (!m_pagePlanes[plane].empty())
    {
-      cGUIPage * pNewPage = m_pages.back();
+      cGUIPage * pNewPage = m_pagePlanes[plane].back();
       if (pNewPage != NULL)
       {
          pNewPage->Activate();
@@ -517,6 +529,37 @@ tResult cGUIContext::PopPage()
    }
 
    return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIContext::PushPage(const tChar * pszPage)
+{
+   cGUIPage * pPage = NULL;
+   if (LoadPage(pszPage, &pPage) == S_OK)
+   {
+      return PushPage(kPages, pPage);
+   }
+   return S_FALSE;
+}
+
+///////////////////////////////////////
+
+tResult cGUIContext::PopPage()
+{
+   return PopPage(kPages);
+}
+
+///////////////////////////////////////
+
+tResult cGUIContext::AddOverlayPage(const tGUIChar * pszPage)
+{
+   cGUIPage * pPage = NULL;
+   if (LoadPage(pszPage, &pPage) == S_OK)
+   {
+      return PushPage(kOverlays, pPage);
+   }
+   return S_FALSE;
 }
 
 ///////////////////////////////////////
@@ -535,6 +578,25 @@ tResult cGUIContext::GetElementById(const tChar * pszId, IGUIElement * * ppEleme
    }
 
    return E_FAIL;
+}
+
+///////////////////////////////////////
+
+tResult cGUIContext::GetOverlayElement(const tGUIChar * pszId, IGUIElement * * ppElement)
+{
+   if (pszId == NULL || ppElement == NULL)
+   {
+      return E_POINTER;
+   }
+   tGUIPageList::iterator iter = m_pagePlanes[kOverlays].begin();
+   for (; iter != m_pagePlanes[kOverlays].end(); iter++)
+   {
+      if ((*iter)->GetElement(pszId, ppElement) == S_OK)
+      {
+         return S_OK;
+      }
+   }
+   return S_FALSE;
 }
 
 ///////////////////////////////////////
@@ -566,23 +628,31 @@ tResult cGUIContext::RenderGUI()
       return E_FAIL;
    }
 
-   std::list<cGUIPage*> renderPages;
+   tGUIPageList renderPages;
 
-   std::list<cGUIPage *>::reverse_iterator iter = m_pages.rbegin();
-   for (; iter != m_pages.rend(); iter++)
+   // Add top-most page
+   if (!m_pagePlanes[kPages].empty())
    {
-      renderPages.push_back(*iter);
-      if (!(*iter)->IsOverlay())
+      renderPages.push_back(m_pagePlanes[kPages].back());
+   }
+
+   // Add all dialog and overlay pages
+   for (int i = kDialogs; i < _countof(m_pagePlanes); i++)
+   {
+      tGUIPageList::iterator iter = m_pagePlanes[i].begin();
+      for (; iter != m_pagePlanes[i].end(); iter++)
       {
-         break;
+         renderPages.push_back(*iter);
       }
    }
 
-   iter = renderPages.rbegin();
-   for (; iter != renderPages.rend(); iter++)
    {
-      (*iter)->UpdateLayout(tGUIRect(0,0,width,height));
-      (*iter)->Render(static_cast<IGUIRenderDevice*>(pRenderDeviceContext));
+      tGUIPageList::iterator iter = renderPages.begin();
+      for (; iter != renderPages.end(); iter++)
+      {
+         (*iter)->UpdateLayout(tGUIRect(0,0,width,height));
+         (*iter)->Render(static_cast<IGUIRenderDevice*>(pRenderDeviceContext));
+      }
    }
 
 #ifdef GUI_DEBUG
@@ -706,6 +776,42 @@ tResult cGUIContext::GetHitElement(const tScreenPoint & point, IGUIElement * * p
    }
 
    return S_FALSE;
+}
+
+///////////////////////////////////////
+
+cGUIPage * cGUIContext::GetCurrentPage()
+{
+   if (!m_pagePlanes[kDialogs].empty())
+   {
+      return m_pagePlanes[kDialogs].back();
+   }
+   else if (!m_pagePlanes[kPages].empty())
+   {
+      return m_pagePlanes[kPages].back();
+   }
+   else
+   {
+      return NULL;
+   }
+}
+
+///////////////////////////////////////
+
+const cGUIPage * cGUIContext::GetCurrentPage() const
+{
+   if (!m_pagePlanes[kDialogs].empty())
+   {
+      return m_pagePlanes[kDialogs].back();
+   }
+   else if (!m_pagePlanes[kPages].empty())
+   {
+      return m_pagePlanes[kPages].back();
+   }
+   else
+   {
+      return NULL;
+   }
 }
 
 ///////////////////////////////////////
