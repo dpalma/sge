@@ -89,8 +89,7 @@ namespace ManagedEditor
       if (pRenderer->BeginScene() == S_OK)
       {
          UseGlobal(Camera);
-         glMatrixMode(GL_MODELVIEW);
-         glLoadMatrixf(pCamera->GetViewMatrix().m);
+         pCamera->SetGLState();
 
          UseGlobal(TerrainRenderer);
          pTerrainRenderer->Render();
