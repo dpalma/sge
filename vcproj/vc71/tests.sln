@@ -43,6 +43,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ms3dview", "ms3dview.vcproj
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "d3dgui", "d3dgui.vcproj", "{0ECB4A0B-4C5C-4161-870D-E4C3DB2B86A3}"
 	ProjectSection(ProjectDependencies) = postProject
+		{E0D0590D-B176-41A9-9AA5-A2B766D3B8E3} = {E0D0590D-B176-41A9-9AA5-A2B766D3B8E3}
 		{F1334822-5BBB-495B-AD67-0F8D7D2A02C9} = {F1334822-5BBB-495B-AD67-0F8D7D2A02C9}
 		{7AD65279-9AD3-44EB-BC08-0C7C832A36BA} = {7AD65279-9AD3-44EB-BC08-0C7C832A36BA}
 		{54120FB9-28F7-41DD-90E8-FAC9DAC6ED75} = {54120FB9-28F7-41DD-90E8-FAC9DAC6ED75}
@@ -57,6 +58,16 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gui", "gui.vcproj", "{061FA
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "3rdpartyCppUnitLite2", "3rdpartyCppUnitLite2.vcproj", "{E6F07DED-6CDD-4448-A5D4-C9BCE20BA57B}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "script", "script.vcproj", "{E0D0590D-B176-41A9-9AA5-A2B766D3B8E3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7AD65279-9AD3-44EB-BC08-0C7C832A36BA} = {7AD65279-9AD3-44EB-BC08-0C7C832A36BA}
+		{54120FB9-28F7-41DD-90E8-FAC9DAC6ED75} = {54120FB9-28F7-41DD-90E8-FAC9DAC6ED75}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sound", "sound.vcproj", "{1111950D-AF67-4EFC-A24C-7E5E15B15C1A}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
@@ -189,6 +200,26 @@ Global
 		{E6F07DED-6CDD-4448-A5D4-C9BCE20BA57B}.StaticDebug.Build.0 = StaticDebug|Win32
 		{E6F07DED-6CDD-4448-A5D4-C9BCE20BA57B}.StaticRelease.ActiveCfg = StaticRelease|Win32
 		{E6F07DED-6CDD-4448-A5D4-C9BCE20BA57B}.StaticRelease.Build.0 = StaticRelease|Win32
+		{E0D0590D-B176-41A9-9AA5-A2B766D3B8E3}.Debug.ActiveCfg = Debug|Win32
+		{E0D0590D-B176-41A9-9AA5-A2B766D3B8E3}.Debug.Build.0 = Debug|Win32
+		{E0D0590D-B176-41A9-9AA5-A2B766D3B8E3}.Opt.ActiveCfg = Opt|Win32
+		{E0D0590D-B176-41A9-9AA5-A2B766D3B8E3}.Opt.Build.0 = Opt|Win32
+		{E0D0590D-B176-41A9-9AA5-A2B766D3B8E3}.Release.ActiveCfg = Release|Win32
+		{E0D0590D-B176-41A9-9AA5-A2B766D3B8E3}.Release.Build.0 = Release|Win32
+		{E0D0590D-B176-41A9-9AA5-A2B766D3B8E3}.StaticDebug.ActiveCfg = StaticDebug|Win32
+		{E0D0590D-B176-41A9-9AA5-A2B766D3B8E3}.StaticDebug.Build.0 = StaticDebug|Win32
+		{E0D0590D-B176-41A9-9AA5-A2B766D3B8E3}.StaticRelease.ActiveCfg = StaticRelease|Win32
+		{E0D0590D-B176-41A9-9AA5-A2B766D3B8E3}.StaticRelease.Build.0 = StaticRelease|Win32
+		{1111950D-AF67-4EFC-A24C-7E5E15B15C1A}.Debug.ActiveCfg = Debug|Win32
+		{1111950D-AF67-4EFC-A24C-7E5E15B15C1A}.Debug.Build.0 = Debug|Win32
+		{1111950D-AF67-4EFC-A24C-7E5E15B15C1A}.Opt.ActiveCfg = Opt|Win32
+		{1111950D-AF67-4EFC-A24C-7E5E15B15C1A}.Opt.Build.0 = Opt|Win32
+		{1111950D-AF67-4EFC-A24C-7E5E15B15C1A}.Release.ActiveCfg = Release|Win32
+		{1111950D-AF67-4EFC-A24C-7E5E15B15C1A}.Release.Build.0 = Release|Win32
+		{1111950D-AF67-4EFC-A24C-7E5E15B15C1A}.StaticDebug.ActiveCfg = StaticDebug|Win32
+		{1111950D-AF67-4EFC-A24C-7E5E15B15C1A}.StaticDebug.Build.0 = StaticDebug|Win32
+		{1111950D-AF67-4EFC-A24C-7E5E15B15C1A}.StaticRelease.ActiveCfg = StaticRelease|Win32
+		{1111950D-AF67-4EFC-A24C-7E5E15B15C1A}.StaticRelease.Build.0 = StaticRelease|Win32
 	EndGlobalSection
 	GlobalSection(SolutionItems) = postSolution
 	EndGlobalSection

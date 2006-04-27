@@ -4,6 +4,7 @@
 #include "stdhdr.h"
 
 #include "guiapi.h"
+#include "guielementapi.h"
 
 #include "engineapi.h"
 #include "inputapi.h"
@@ -52,13 +53,11 @@ static tResult d3dguiframe();
 #define kDefaultBpp     16
 #define kDefaultFov     70
 
-static const int kDefStatsX = 25;
-static const int kDefStatsY = 25;
-static const cColor kDefStatsColor(1,1,1,1);
+static const tChar g_szFrameStatsOverlay[] = _T("<page><label renderer=\"basic\" id=\"frameStats\" style=\"width:50%;height:25%;foreground-color:white\" /></page>");
 
 ///////////////////////////////////////////////////////////////////////////////
 
-cAutoIPtr<IGUIFont> g_pFont;
+cAutoIPtr<IGUILabelElement> g_pFrameStats;
 
 HWND g_hWnd = NULL;
 
@@ -68,7 +67,7 @@ HWND g_hWnd = NULL;
 static void RegisterGlobalObjects()
 {
    InputCreate();
-   SimCreate();
+   SchedulerCreate();
    ResourceManagerCreate();
    ScriptInterpreterCreate();
    GUIContextCreate();
@@ -174,10 +173,13 @@ static bool d3dguiinit(int argc, tChar * argv[])
    }
 
    UseGlobal(GUIContext);
-   if (FAILED(pGUIContext->GetDefaultFont(&g_pFont)))
+   if (pGUIContext->AddOverlayPage(g_szFrameStatsOverlay) == S_OK)
    {
-      WarnMsg("Failed to get a default font interface pointer for showing frame stats\n");
-      return false;
+      cAutoIPtr<IGUIElement> pElement;
+      if (pGUIContext->GetOverlayElement(_T("frameStats"), &pElement) == S_OK)
+      {
+         pElement->QueryInterface(IID_IGUILabelElement, (void**)&g_pFrameStats);
+      }
    }
 
    pGUIContext->PushPage("start.xml");
@@ -185,8 +187,8 @@ static bool d3dguiinit(int argc, tChar * argv[])
    SysSetFrameCallback(d3dguiframe);
    SysAppActivate(true);
 
-   UseGlobal(Sim);
-   pSim->Go();
+   UseGlobal(Scheduler);
+   pScheduler->Start();
 
    if (FAILED(SysRunUnitTests()))
    {
@@ -200,13 +202,11 @@ static bool d3dguiinit(int argc, tChar * argv[])
 
 static void d3dguiterm()
 {
-   UseGlobal(Sim);
-   pSim->Stop();
+   UseGlobal(Scheduler);
+   pScheduler->Stop();
 
    UseGlobal(ThreadCaller);
    pThreadCaller->ThreadTerm();
-
-   SafeRelease(g_pFont);
 
    // This will make sure the GL context is destroyed
    SysQuit();
@@ -218,8 +218,16 @@ static void d3dguiterm()
 
 static tResult d3dguiframe()
 {
-   UseGlobal(Sim);
-   pSim->NextFrame();
+   UseGlobal(Scheduler);
+   pScheduler->NextFrame();
+
+   if (!!g_pFrameStats)
+   {
+      tChar szStats[100];
+      SysReportFrameStats(szStats, _countof(szStats));
+
+      g_pFrameStats->SetText(szStats);
+   }
 
    cAutoIPtr<IDirect3DDevice9> pD3dDevice;
    if (SysGetDirect3DDevice9(&pD3dDevice) != S_OK)
@@ -237,18 +245,7 @@ static tResult d3dguiframe()
       if (pGUIContext->GetRenderDeviceContext(&pRenderDeviceContext) == S_OK)
       {
          pRenderDeviceContext->Begin2D();
-
          pGUIContext->RenderGUI();
-
-         if (!!g_pFont)
-         {
-            char szStats[100];
-            SysReportFrameStats(szStats, _countof(szStats));
-
-            tRect rect(kDefStatsX, kDefStatsY, 0, 0);
-            g_pFont->RenderText(szStats, strlen(szStats), &rect, kRT_NoClip | kRT_DropShadow, kDefStatsColor);
-         }
-
          pRenderDeviceContext->End2D();
       }
 
