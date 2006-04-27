@@ -281,6 +281,7 @@ tResult cGUIContext::Invoke(const char * pszMethodName,
       { "PopPage",            &cGUIContext::InvokePopPage },
       { "ToggleDebugInfo",    &cGUIContext::InvokeToggleDebugInfo },
       { "GetElement",         &cGUIContext::InvokeGetElement },
+      { "AddOverlay",         &cGUIContext::InvokeAddOverlay },
    };
 
    for (int i = 0; i < _countof(invokeMethods); i++)
@@ -416,6 +417,27 @@ tResult cGUIContext::InvokeGetElement(int argc, const tScriptVar * argv,
          pResults[0] = pScriptable;
          return 1;
       }
+   }
+
+   return E_FAIL;
+}
+
+///////////////////////////////////////
+
+tResult cGUIContext::InvokeAddOverlay(int argc, const tScriptVar * argv,
+                                      int nMaxResults, tScriptVar * pResults)
+{
+   if (argc == 1 && argv[0].IsString())
+   {
+      if (AddOverlayPage(argv[0]) == S_OK)
+      {
+         LocalMsg1("Adding overlay page \"%s\"\n", argv[0].ToString());
+         return S_OK;
+      }
+   }
+   else
+   {
+      return E_INVALIDARG;
    }
 
    return E_FAIL;
@@ -622,11 +644,13 @@ tResult cGUIContext::RenderGUI()
       return E_FAIL;
    }
 
-   uint width, height;
-   if (pRenderDeviceContext->GetViewportSize(&width, &height) != S_OK)
+   int width, height;
+   if (SysGetWindowSize(&width, &height) != S_OK)
    {
       return E_FAIL;
    }
+
+   pRenderDeviceContext->Begin2D(width, height);
 
    tGUIPageList renderPages;
 
@@ -658,6 +682,8 @@ tResult cGUIContext::RenderGUI()
 #ifdef GUI_DEBUG
    RenderDebugInfo();
 #endif
+
+   pRenderDeviceContext->End2D();
 
    return S_OK;
 }

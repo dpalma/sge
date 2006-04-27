@@ -27,10 +27,13 @@ function ShowCustomGamePage()
    GUIContext:PushPage("customgame.xml");
 end;
 
+frameStatsOverlay = [[<page><label renderer="basic" id="frameStats" style="width:50%;height:25%;foreground-color:white" /></page>]];
+
 -- Called automatically at start-up by the game engine
 function GameInit()
    GUIEventSounds:SetEventSound("click", "click.wav");
    GUIContext:PushPage("start.xml");
+   GUIContext:AddOverlay(frameStatsOverlay);
 end;
 
 -------------------------------------------------------------------------------

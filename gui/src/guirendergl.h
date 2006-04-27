@@ -33,10 +33,8 @@ public:
 
    virtual void FlushQueue();
 
-   virtual void Begin2D();
+   virtual void Begin2D(int width, int height);
    virtual void End2D();
-
-   virtual tResult GetViewportSize(uint * pWidth, uint * pHeight);
 
 private:
    long m_scissorRectStackDepth; // for debugging only

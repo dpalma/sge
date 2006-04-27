@@ -16,8 +16,6 @@
 #pragma once
 #endif
 
-F_DECLARE_INTERFACE(IGUIFont);
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // NAMESPACE: ManagedEditor
@@ -52,8 +50,6 @@ namespace ManagedEditor
       void CreateEditorTools();
 
    private:
-      IGUIFont * m_pFont;
-
       GlControl ^ m_glControl;
 
       ToolPalette ^ m_toolPalette;

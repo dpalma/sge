@@ -44,7 +44,6 @@ namespace ManagedEditor
    //
 
    EditorAppForm::EditorAppForm()
-    : m_pFont(NULL)
    {
       m_toolPalette = gcnew ToolPalette();
       m_toolPalette->Dock = System::Windows::Forms::DockStyle::Fill;
@@ -74,10 +73,6 @@ namespace ManagedEditor
 
    EditorAppForm::~EditorAppForm()
    {
-      if (m_pFont != NULL)
-      {
-         m_pFont->Release();
-      }
    }
 
    void EditorAppForm::OnIdle(System::Object ^ sender, System::EventArgs ^ e)
@@ -100,34 +95,7 @@ namespace ManagedEditor
          UseGlobal(GUIContext);
          if (!!pGUIContext)
          {
-            if (m_pFont == NULL)
-            {
-               IGUIFont * pFont = NULL;
-               if (pGUIContext->GetDefaultFont(&pFont) == S_OK)
-               {
-                  m_pFont = pFont;
-               }
-            }
-
-            cAutoIPtr<IGUIRenderDeviceContext> pRenderDeviceContext;
-            if (pGUIContext->GetRenderDeviceContext(&pRenderDeviceContext) == S_OK)
-            {
-               pRenderDeviceContext->Begin2D();
-
-               pGUIContext->RenderGUI();
-
-               if (m_pFont != NULL)
-               {
-                  tChar szStats[100];
-                  SysReportFrameStats(szStats, _countof(szStats));
-
-                  tRect rect(kDefStatsX, kDefStatsY, 0, 0);
-                  m_pFont->RenderText(szStats, _tcslen(szStats), &rect,
-                                      kRT_NoClip | kRT_DropShadow, kDefStatsColor);
-               }
-
-               pRenderDeviceContext->End2D();
-            }
+            pGUIContext->RenderGUI();
          }
 
          pRenderer->EndScene();

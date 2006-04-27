@@ -1058,6 +1058,27 @@ tResult SysGetDirect3DDevice9(IDirect3DDevice9 * * ppDevice)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+tResult SysGetWindowSize(int * pWidth, int * pHeight)
+{
+   if (pWidth == NULL || pHeight == NULL)
+   {
+      return E_POINTER;
+   }
+   if (IsWindow(g_hWnd))
+   {
+      RECT rect = {0};
+      if (GetClientRect(g_hWnd, &rect))
+      {
+         *pWidth = (rect.right - rect.left);
+         *pHeight = (rect.bottom - rect.top);
+         return S_OK;
+      }
+   }
+   return E_FAIL;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 void SysSwapBuffers()
 {
    if (g_hDC != NULL)

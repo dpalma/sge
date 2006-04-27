@@ -67,6 +67,8 @@ public:
                                  int nMaxResults, tScriptVar * pResults);
    tResult InvokeGetElement(int argc, const tScriptVar * argv,
                             int nMaxResults, tScriptVar * pResults);
+   tResult InvokeAddOverlay(int argc, const tScriptVar * argv,
+                            int nMaxResults, tScriptVar * pResults);
 
    // IGUIContext methods
    virtual tResult ShowModalDialog(const tGUIChar * pszDialog);

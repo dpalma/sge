@@ -50,8 +50,6 @@ typedef char * LPSTR;
 const float kZNear = 1;
 const float kZFar = 2000;
 
-static const tChar g_szFrameStatsOverlay[] = _T("<page><label renderer=\"basic\" id=\"frameStats\" style=\"width:50%;height:25%;foreground-color:white\" /></page>");
-
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -254,15 +252,6 @@ static bool MainInit(int argc, tChar * argv[])
       pGUIContext->SetRenderDeviceContext(pGuiRenderDevice);
    }
 
-   if (pGUIContext->AddOverlayPage(g_szFrameStatsOverlay) == S_OK)
-   {
-      cAutoIPtr<IGUIElement> pElement;
-      if (pGUIContext->GetOverlayElement(_T("frameStats"), &pElement) == S_OK)
-      {
-         pElement->QueryInterface(IID_IGUILabelElement, (void**)&g_pFrameStats);
-      }
-   }
-
    SysAppActivate(true);
 
    if (FAILED(SysRunUnitTests()))
@@ -275,6 +264,15 @@ static bool MainInit(int argc, tChar * argv[])
 
    UseGlobal(ScriptInterpreter);
    pScriptInterpreter->CallFunction("GameInit");
+
+   // After calling GameInit, try to find a label element for showing frame stats
+   {
+      cAutoIPtr<IGUIElement> pElement;
+      if (pGUIContext->GetOverlayElement(_T("frameStats"), &pElement) == S_OK)
+      {
+         pElement->QueryInterface(IID_IGUILabelElement, (void**)&g_pFrameStats);
+      }
+   }
 
    UseGlobal(Scheduler);
    pScheduler->Start();
@@ -330,13 +328,7 @@ static tResult MainFrame()
    pEntityManager->RenderAll();
 
    UseGlobal(GUIContext);
-   cAutoIPtr<IGUIRenderDeviceContext> pRenderDeviceContext;
-   if (pGUIContext->GetRenderDeviceContext(&pRenderDeviceContext) == S_OK)
-   {
-      pRenderDeviceContext->Begin2D();
-      pGUIContext->RenderGUI();
-      pRenderDeviceContext->End2D();
-   }
+   pGUIContext->RenderGUI();
 
    pRenderer->EndScene();
    SysSwapBuffers();

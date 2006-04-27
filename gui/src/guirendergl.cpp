@@ -53,6 +53,8 @@ void cGUIRenderDeviceGL::PushScissorRect(const tGUIRect & rect)
 {
    glPushAttrib(GL_SCISSOR_BIT);
 
+   glGetIntegerv(GL_VIEWPORT, m_viewport);
+
    glEnable(GL_SCISSOR_TEST);
    glScissor(
       rect.left,
@@ -179,7 +181,7 @@ void cGUIRenderDeviceGL::FlushQueue()
 
 ////////////////////////////////////////
 
-void cGUIRenderDeviceGL::Begin2D()
+void cGUIRenderDeviceGL::Begin2D(int width, int height)
 {
    glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
 
@@ -187,14 +189,9 @@ void cGUIRenderDeviceGL::Begin2D()
    glDisable(GL_LIGHTING);
    glDisable(GL_CULL_FACE);
 
-   glGetIntegerv(GL_VIEWPORT, m_viewport);
-
-   GLdouble width = static_cast<GLdouble>(m_viewport[2]);
-   GLdouble height = static_cast<GLdouble>(m_viewport[3]);
-
    glMatrixMode(GL_PROJECTION);
    glLoadIdentity();
-   glOrtho(0, width, height, 0, -99999, 99999);
+   glOrtho(0, static_cast<GLdouble>(width), static_cast<GLdouble>(height), 0, -99999, 99999);
 
    glMatrixMode(GL_MODELVIEW);
    glLoadIdentity();
@@ -205,28 +202,6 @@ void cGUIRenderDeviceGL::Begin2D()
 void cGUIRenderDeviceGL::End2D()
 {
    glPopAttrib();
-}
-
-////////////////////////////////////////
-
-tResult cGUIRenderDeviceGL::GetViewportSize(uint * pWidth, uint * pHeight)
-{
-   if (pWidth == NULL || pHeight == NULL)
-   {
-      return E_POINTER;
-   }
-
-   int viewport[4] = {-1,-1,-1,-1};
-   glGetIntegerv(GL_VIEWPORT, viewport);
-
-   if (viewport[2] == -1 || viewport[3] == -1)
-   {
-      return E_FAIL;
-   }
-
-   *pWidth = viewport[2];
-   *pHeight = viewport[3];
-   return S_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

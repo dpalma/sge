@@ -184,6 +184,18 @@ void SysSwapBuffers()
 
 ///////////////////////////////////////////////////////////////////////////////
 
+tResult SysGetWindowSize(int * pWidth, int * pHeight)
+{
+   if (pWidth == NULL || pHeight == NULL)
+   {
+      return E_POINTER;
+   }
+#error ("TODO: Need to implement SysGetWindowSize")
+   return E_NOTIMPL;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 #ifndef NDEBUG
 static const char * XEventName(int event)
 {

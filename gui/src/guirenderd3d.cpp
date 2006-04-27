@@ -201,7 +201,7 @@ void cGUIRenderDeviceD3D::FlushQueue()
 
 ////////////////////////////////////////
 
-void cGUIRenderDeviceD3D::Begin2D()
+void cGUIRenderDeviceD3D::Begin2D(int width, int height)
 {
    if (!m_pStateBlock)
    {
@@ -213,6 +213,8 @@ void cGUIRenderDeviceD3D::Begin2D()
 
       D3DVIEWPORT9 viewport;
       m_pD3dDevice->GetViewport(&viewport);
+
+      // TODO: Call should use the following parameters: (0, width, height, 0, -99999, 99999);
 
       D3DXMATRIX ortho;
       D3DXMatrixOrthoOffCenterLH(&ortho,
@@ -236,24 +238,6 @@ void cGUIRenderDeviceD3D::Begin2D()
 
 void cGUIRenderDeviceD3D::End2D()
 {
-}
-
-////////////////////////////////////////
-
-tResult cGUIRenderDeviceD3D::GetViewportSize(uint * pWidth, uint * pHeight)
-{
-   if (pWidth == NULL || pHeight == NULL)
-   {
-      return E_POINTER;
-   }
-
-   D3DVIEWPORT9 viewport;
-   m_pD3dDevice->GetViewport(&viewport);
-
-   *pWidth = viewport.Width;
-   *pHeight = viewport.Height;
-
-   return S_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

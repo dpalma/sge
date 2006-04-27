@@ -42,6 +42,7 @@ ENGINE_API tResult SysGetClipboardString(cStr * pStr, ulong max = 8192); // 8K m
 ENGINE_API tResult SysSetClipboardString(const tChar * psz);
 ENGINE_API HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI api = kOpenGL);
 ENGINE_API tResult SysGetDirect3DDevice9(IDirect3DDevice9 * * ppDevice);
+ENGINE_API tResult SysGetWindowSize(int * pWidth, int * pHeight);
 ENGINE_API void SysSwapBuffers();
 ENGINE_API int SysEventLoop(tSysFrameFn pfnFrameHandler);
 ENGINE_API void SysReportFrameStats(tChar * psz, ulong max);

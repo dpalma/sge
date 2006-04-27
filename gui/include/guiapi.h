@@ -346,10 +346,8 @@ interface IGUIRenderDevice : IUnknown
 
 interface IGUIRenderDeviceContext : IGUIRenderDevice
 {
-   virtual void Begin2D() = 0;
+   virtual void Begin2D(int width, int height) = 0;
    virtual void End2D() = 0;
-
-   virtual tResult GetViewportSize(uint * pWidth, uint * pHeight) = 0;
 };
 
 ///////////////////////////////////////

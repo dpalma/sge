@@ -241,13 +241,7 @@ static tResult d3dguiframe()
    if (pD3dDevice->BeginScene() == D3D_OK)
    {
       UseGlobal(GUIContext);
-      cAutoIPtr<IGUIRenderDeviceContext> pRenderDeviceContext;
-      if (pGUIContext->GetRenderDeviceContext(&pRenderDeviceContext) == S_OK)
-      {
-         pRenderDeviceContext->Begin2D();
-         pGUIContext->RenderGUI();
-         pRenderDeviceContext->End2D();
-      }
+      pGUIContext->RenderGUI();
 
       pD3dDevice->EndScene();
       pD3dDevice->Present(NULL, NULL, NULL, NULL);

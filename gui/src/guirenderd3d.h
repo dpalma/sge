@@ -42,10 +42,8 @@ public:
 
    virtual void FlushQueue();
 
-   virtual void Begin2D();
+   virtual void Begin2D(int width, int height);
    virtual void End2D();
-
-   virtual tResult GetViewportSize(uint * pWidth, uint * pHeight);
 
 private:
    cAutoIPtr<IDirect3DDevice9> m_pD3dDevice;
