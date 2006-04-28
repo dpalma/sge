@@ -67,9 +67,9 @@ cDirectoryResourceStore::~cDirectoryResourceStore()
 
 ////////////////////////////////////////
 
-tResult cDirectoryResourceStore::FillCache(cResourceCache * pCache)
+tResult cDirectoryResourceStore::GetCacheNames(std::vector<cStr> * pNames)
 {
-   if (pCache == NULL)
+   if (pNames == NULL)
    {
       return E_POINTER;
    }
@@ -81,11 +81,13 @@ tResult cDirectoryResourceStore::FillCache(cResourceCache * pCache)
 
    cFileSpec wildcard(_T("*.*"));
    wildcard.SetPath(cFilePath(m_dir.c_str()));
+
    cAutoIPtr<IEnumFiles> pEnumFiles;
    if (EnumFiles(wildcard, &pEnumFiles) == S_OK)
    {
-      cFileSpec files[10];
-      uint attribs[10];
+      static const int kThisManyAtOnce = 10;
+      cFileSpec files[kThisManyAtOnce];
+      uint attribs[kThisManyAtOnce];
       ulong nFiles = 0;
       while (SUCCEEDED(pEnumFiles->Next(_countof(files), files, attribs, &nFiles)))
       {
@@ -102,8 +104,7 @@ tResult cDirectoryResourceStore::FillCache(cResourceCache * pCache)
             else
             {
                LocalMsg1("File: %s\n", files[i].CStr());
-               pCache->AddCacheEntry(cResourceCacheEntryHeader(files[i].CStr(),
-                  static_cast<cResourceStore *>(this)));
+               pNames->push_back(files[i].CStr());
             }
          }
       }
@@ -162,9 +163,9 @@ cZipResourceStore::~cZipResourceStore()
 
 ////////////////////////////////////////
 
-tResult cZipResourceStore::FillCache(cResourceCache * pCache)
+tResult cZipResourceStore::GetCacheNames(std::vector<cStr> * pNames)
 {
-   if (pCache == NULL)
+   if (pNames == NULL)
    {
       return E_POINTER;
    }
@@ -209,8 +210,7 @@ tResult cZipResourceStore::FillCache(cResourceCache * pCache)
          cFileSpec file(szFile);
 #endif
          m_dirCache[cStr(file.CStr())] = filePos;
-         pCache->AddCacheEntry(cResourceCacheEntryHeader(file.CStr(),
-            static_cast<cResourceStore *>(this)));
+         pNames->push_back(file.CStr());
       }
    }
    while (unzGoToNextFile(m_handle) == UNZ_OK);
@@ -272,54 +272,6 @@ tResult cZipResourceStore::OpenEntry(const tChar * pszName, IReader * * ppReader
    }
 
    return result;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cResourceCache
-//
-
-////////////////////////////////////////
-
-cResourceCache::~cResourceCache()
-{
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cResourceCacheEntryHeader
-//
-////////////////////////////////////////
-
-cResourceCacheEntryHeader::cResourceCacheEntryHeader(const tChar * pszName, cResourceStore * pStore)
- : m_name(pszName)
- , m_pStore(pStore)
-{
-}
-
-////////////////////////////////////////
-
-cResourceCacheEntryHeader::cResourceCacheEntryHeader(const cResourceCacheEntryHeader & other)
- : m_name(other.m_name)
- , m_pStore(other.m_pStore)
-{
-}
-
-////////////////////////////////////////
-
-cResourceCacheEntryHeader::~cResourceCacheEntryHeader()
-{
-}
-
-////////////////////////////////////////
-
-const cResourceCacheEntryHeader & cResourceCacheEntryHeader::operator =(const cResourceCacheEntryHeader & other)
-{
-   m_name = other.m_name;
-   m_pStore = other.m_pStore;
-   return *this;
 }
 
 

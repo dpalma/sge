@@ -17,6 +17,46 @@ class cFileSpec;
 
 F_DECLARE_INTERFACE(IResourceManagerDiagnostics);
 
+class cResourceCache;
+class cResourceCacheEntryHeader;
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cResourceCache
+//
+
+class cResourceCache
+{
+public:
+   virtual ~cResourceCache() = 0;
+
+   virtual tResult AddCacheEntry(const cResourceCacheEntryHeader & entry) = 0;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cResourceCacheEntryHeader
+//
+
+class cResourceCacheEntryHeader
+{
+public:
+   cResourceCacheEntryHeader(const tChar * pszName, cResourceStore * pStore);
+   cResourceCacheEntryHeader(const cResourceCacheEntryHeader &);
+   virtual ~cResourceCacheEntryHeader();
+
+   const cResourceCacheEntryHeader & operator =(const cResourceCacheEntryHeader &);
+
+   inline const tChar * GetName() const { return m_name.c_str(); }
+   inline cResourceStore * GetStore() const { return m_pStore; }
+
+private:
+   cStr m_name;
+   cResourceStore * m_pStore;
+};
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //

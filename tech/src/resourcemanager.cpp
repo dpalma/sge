@@ -111,6 +111,54 @@ inline const tChar * ResourceTypeName(tResourceType resourceType)
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cResourceCache
+//
+
+////////////////////////////////////////
+
+cResourceCache::~cResourceCache()
+{
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cResourceCacheEntryHeader
+//
+////////////////////////////////////////
+
+cResourceCacheEntryHeader::cResourceCacheEntryHeader(const tChar * pszName, cResourceStore * pStore)
+ : m_name(pszName)
+ , m_pStore(pStore)
+{
+}
+
+////////////////////////////////////////
+
+cResourceCacheEntryHeader::cResourceCacheEntryHeader(const cResourceCacheEntryHeader & other)
+ : m_name(other.m_name)
+ , m_pStore(other.m_pStore)
+{
+}
+
+////////////////////////////////////////
+
+cResourceCacheEntryHeader::~cResourceCacheEntryHeader()
+{
+}
+
+////////////////////////////////////////
+
+const cResourceCacheEntryHeader & cResourceCacheEntryHeader::operator =(const cResourceCacheEntryHeader & other)
+{
+   m_name = other.m_name;
+   m_pStore = other.m_pStore;
+   return *this;
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cResourceManager
@@ -247,14 +295,23 @@ tResult cResourceManager::AddResourceStore(cResourceStore * pStore)
    {
       return E_POINTER;
    }
-   
-   if (FAILED(pStore->FillCache(static_cast<cResourceCache*>(this))))
+
+   std::vector<cStr> cacheNames;
+   tResult result = pStore->GetCacheNames(&cacheNames);
+   if (result == S_OK)
    {
-      return E_FAIL;
+      std::vector<cStr>::const_iterator iter = cacheNames.begin();
+      for (; iter != cacheNames.end(); iter++)
+      {
+         AddCacheEntry(cResourceCacheEntryHeader(iter->c_str(), pStore));
+      }
+   }
+   else if (FAILED(result))
+   {
+      return result;
    }
 
    m_stores.push_back(pStore);
-
    return S_OK;
 }
 
@@ -709,7 +766,7 @@ public:
    cTestResourceStore(const tStrPair * pTestData, size_t nTestData);
    virtual ~cTestResourceStore();
 
-   virtual tResult FillCache(cResourceCache * pCache);
+   virtual tResult GetCacheNames(std::vector<cStr> * pNames);
    virtual tResult OpenEntry(const tChar * pszName, IReader * * ppReader);
 
 private:
@@ -730,13 +787,12 @@ cTestResourceStore::~cTestResourceStore()
 {
 }
 
-tResult cTestResourceStore::FillCache(cResourceCache * pCache)
+tResult cTestResourceStore::GetCacheNames(std::vector<cStr> * pNames)
 {
    std::vector<std::pair<cStr, cStr> >::const_iterator iter = m_testData.begin();
    for (; iter != m_testData.end(); iter++)
    {
-      cResourceCacheEntryHeader header(iter->first.c_str(), static_cast<cResourceStore*>(this));
-      pCache->AddCacheEntry(header);
+      pNames->push_back(iter->first.c_str());
    }
    return S_OK;
 }
