@@ -17,22 +17,7 @@ class cFileSpec;
 
 F_DECLARE_INTERFACE(IResourceManagerDiagnostics);
 
-class cResourceCache;
 class cResourceCacheEntryHeader;
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cResourceCache
-//
-
-class cResourceCache
-{
-public:
-   virtual ~cResourceCache() = 0;
-
-   virtual tResult AddCacheEntry(const cResourceCacheEntryHeader & entry) = 0;
-};
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -78,8 +63,7 @@ interface IResourceManagerDiagnostics : IUnknown
 
 class cResourceManager : public cComObject3<IMPLEMENTS(IResourceManager),
                                             IMPLEMENTS(IGlobalObject),
-                                            IMPLEMENTS(IResourceManagerDiagnostics)>,
-                         public cResourceCache
+                                            IMPLEMENTS(IResourceManagerDiagnostics)>
 {
    friend class cResourceManagerTests;
 
@@ -108,8 +92,6 @@ public:
                                   tResourcePostload pfnPostload,
                                   tResourceUnload pfnUnload);
    virtual tResult ListResources(tResourceType type, std::vector<cStr> * pNames) const;
-
-   virtual tResult AddCacheEntry(const cResourceCacheEntryHeader & entry);
 
    // IResourceManagerDiagnostics
    virtual void DumpFormats() const;

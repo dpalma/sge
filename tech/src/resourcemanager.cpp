@@ -113,18 +113,6 @@ inline const tChar * ResourceTypeName(tResourceType resourceType)
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cResourceCache
-//
-
-////////////////////////////////////////
-
-cResourceCache::~cResourceCache()
-{
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
 // CLASS: cResourceCacheEntryHeader
 //
 ////////////////////////////////////////
@@ -303,7 +291,16 @@ tResult cResourceManager::AddResourceStore(cResourceStore * pStore)
       std::vector<cStr>::const_iterator iter = cacheNames.begin();
       for (; iter != cacheNames.end(); iter++)
       {
-         AddCacheEntry(cResourceCacheEntryHeader(iter->c_str(), pStore));
+         cFileSpec file(iter->c_str());
+         sResource res;
+         Verify(file.GetFileNameNoExt(&res.name));
+         const tChar * pszExt = file.GetFileExt();
+         if (pszExt != NULL && _tcslen(pszExt) > 0)
+         {
+            res.extensionId = m_formats.GetExtensionId(pszExt);
+         }
+         res.pStore = pStore;
+         m_resources.push_back(res);
       }
    }
    else if (FAILED(result))
@@ -523,23 +520,6 @@ tResult cResourceManager::ListResources(tResourceType type, std::vector<cStr> * 
    }
 
    return results.empty() ? S_FALSE : S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cResourceManager::AddCacheEntry(const cResourceCacheEntryHeader & entry)
-{
-   cFileSpec file(entry.GetName());
-   sResource res;
-   Verify(file.GetFileNameNoExt(&res.name));
-   const tChar * pszExt = file.GetFileExt();
-   if (pszExt != NULL && _tcslen(pszExt) > 0)
-   {
-      res.extensionId = m_formats.GetExtensionId(pszExt);
-   }
-   res.pStore = entry.GetStore();
-   m_resources.push_back(res);
-   return S_OK;
 }
 
 ////////////////////////////////////////
@@ -958,7 +938,7 @@ const tStrPair g_basicTestResources[] =
 
 TEST_FP(cResourceManagerTests,
         cResourceManagerTests(&g_basicTestResources[0], _countof(g_basicTestResources)),
-        ResourceManagerLoadSameNameDifferentType)
+        ResourceManagerLoadSameNameDifferentExtension)
 {
    CHECK(m_pResourceManager->RegisterFormat(kRT_Data, NULL, "dat", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
    CHECK(m_pResourceManager->RegisterFormat(kRT_Bitmap, NULL, "bmp", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
@@ -1070,6 +1050,31 @@ TEST_FP(cResourceManagerTests,
       CHECK(pFooMs3d == NULL);
    }
 }
+
+////////////////////////////////////////
+// Try loading the same resource as two different types. This should be allowed.
+// For example, loading a map file as terrain or as properties.
+
+#if 0 // TODO: this case doesn't work, but should
+const tStrPair g_fakeMapResource[] =
+{
+   std::make_pair(cStr("foo.map"), cStr("SGEAC0AD9D21E34D9ADCF83E4235A2345F\0")),
+};
+
+TEST_FP(cResourceManagerTests,
+        cResourceManagerTests(&g_fakeMapResource[0], _countof(g_fakeMapResource)),
+        ResourceManagerSameResourceTwoTypes)
+{
+   CHECK(m_pResourceManager->RegisterFormat("map",       NULL, "map", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
+   CHECK(m_pResourceManager->RegisterFormat("mapprops",  NULL, "map", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
+
+   byte * pFooMap = NULL;
+   CHECK(m_pResourceManager->Load("foo.map", "map", (void*)NULL, (void**)&pFooMap) == S_OK);
+
+   byte * pFooMapProps = NULL;
+   CHECK(m_pResourceManager->Load("foo.map", "mapprops", (void*)NULL, (void**)&pFooMapProps) == S_OK);
+}
+#endif
 
 ////////////////////////////////////////
 
