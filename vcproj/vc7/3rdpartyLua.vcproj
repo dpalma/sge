@@ -113,7 +113,7 @@
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories=".\..\..\3rdparty\lua\include"
-				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;RADIANS;LUA_API=__declspec(dllexport)"
+				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;RADIANS;LUA_BUILD_AS_DLL"
 				StringPooling="TRUE"
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="TRUE"
@@ -174,7 +174,7 @@
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories=".\..\..\3rdparty\lua\include"
-				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;RADIANS;LUA_API=__declspec(dllexport)"
+				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;RADIANS;LUA_BUILD_AS_DLL"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
@@ -233,7 +233,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories=".\..\..\3rdparty\lua\include"
-				PreprocessorDefinitions="_DEBUG;LUA_OPNAMES;WIN32;_WINDOWS;_USRDLL;RADIANS;LUA_API=__declspec(dllexport)"
+				PreprocessorDefinitions="_DEBUG;LUA_OPNAMES;WIN32;_WINDOWS;_USRDLL;RADIANS;LUA_BUILD_AS_DLL"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"
@@ -287,41 +287,112 @@
 			Name=".\Src"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 			<Filter
-				Name="lib"
-				Filter="">
-				<File
-					RelativePath="..\..\3rdparty\lua\src\lib\lauxlib.c">
-				</File>
-				<File
-					RelativePath="..\..\3rdparty\lua\src\lib\lbaselib.c">
-				</File>
-				<File
-					RelativePath="..\..\3rdparty\lua\src\lib\ldblib.c">
-				</File>
-				<File
-					RelativePath="..\..\3rdparty\lua\src\lib\liolib.c">
-				</File>
-				<File
-					RelativePath="..\..\3rdparty\lua\src\lib\lmathlib.c">
-				</File>
-				<File
-					RelativePath="..\..\3rdparty\lua\src\lib\loadlib.c">
-				</File>
-				<File
-					RelativePath="..\..\3rdparty\lua\src\lib\lstrlib.c">
-				</File>
-				<File
-					RelativePath="..\..\3rdparty\lua\src\lib\ltablib.c">
-				</File>
-			</Filter>
-			<Filter
 				Name=".\Src: Source"
 				Filter="">
 				<File
 					RelativePath="..\..\3rdparty\lua\src\lapi.c">
 				</File>
 				<File
+					RelativePath="..\..\3rdparty\lua\src\lauxlib.c">
+					<FileConfiguration
+						Name="StaticRelease|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="StaticDebug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Opt|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\..\3rdparty\lua\src\lbaselib.c">
+					<FileConfiguration
+						Name="StaticRelease|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="StaticDebug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Opt|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+				</File>
+				<File
 					RelativePath="..\..\3rdparty\lua\src\lcode.c">
+				</File>
+				<File
+					RelativePath="..\..\3rdparty\lua\src\ldblib.c">
+					<FileConfiguration
+						Name="StaticRelease|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="StaticDebug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Opt|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\..\3rdparty\lua\src\ldebug.c">
@@ -339,10 +410,109 @@
 					RelativePath="..\..\3rdparty\lua\src\lgc.c">
 				</File>
 				<File
+					RelativePath="..\..\3rdparty\lua\src\liolib.c">
+					<FileConfiguration
+						Name="StaticRelease|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="StaticDebug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Opt|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+				</File>
+				<File
 					RelativePath="..\..\3rdparty\lua\src\llex.c">
 				</File>
 				<File
+					RelativePath="..\..\3rdparty\lua\src\lmathlib.c">
+					<FileConfiguration
+						Name="StaticRelease|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="StaticDebug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Opt|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+				</File>
+				<File
 					RelativePath="..\..\3rdparty\lua\src\lmem.c">
+				</File>
+				<File
+					RelativePath="..\..\3rdparty\lua\src\loadlib.c">
+					<FileConfiguration
+						Name="StaticRelease|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="StaticDebug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Opt|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\..\3rdparty\lua\src\lobject.c">
@@ -360,10 +530,73 @@
 					RelativePath="..\..\3rdparty\lua\src\lstring.c">
 				</File>
 				<File
+					RelativePath="..\..\3rdparty\lua\src\lstrlib.c">
+					<FileConfiguration
+						Name="StaticRelease|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="StaticDebug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Opt|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+				</File>
+				<File
 					RelativePath="..\..\3rdparty\lua\src\ltable.c">
 				</File>
 				<File
-					RelativePath="..\..\3rdparty\lua\src\ltests.c">
+					RelativePath="..\..\3rdparty\lua\src\ltablib.c">
+					<FileConfiguration
+						Name="StaticRelease|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="StaticDebug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Opt|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\..\3rdparty\lua\src\ltm.c">
@@ -383,6 +616,9 @@
 				Filter="">
 				<File
 					RelativePath="..\..\3rdparty\lua\src\lapi.h">
+				</File>
+				<File
+					RelativePath="..\..\3rdparty\lua\src\lauxlib.h">
 				</File>
 				<File
 					RelativePath="..\..\3rdparty\lua\src\lcode.h">
