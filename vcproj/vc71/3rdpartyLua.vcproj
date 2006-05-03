@@ -549,6 +549,9 @@
 				RelativePath="..\..\3rdparty\lua\src\lopcodes.c">
 			</File>
 			<File
+				RelativePath="..\..\3rdparty\lua\src\loslib.c">
+			</File>
+			<File
 				RelativePath="..\..\3rdparty\lua\src\lparser.c">
 			</File>
 			<File

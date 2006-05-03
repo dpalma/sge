@@ -31,6 +31,7 @@ enum eLuaStandardLibs
    kLSL_Math      = (1 << 4),
    kLSL_Debug     = (1 << 5),
    kLSL_Loadlib   = (1 << 6),
+   kLSL_OS        = (1 << 7),
    kLSL_ALL       = ~0u
 };
 

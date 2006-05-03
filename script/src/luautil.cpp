@@ -15,6 +15,15 @@ extern "C"
 #include <lauxlib.h>
 }
 
+#ifndef lua_boxpointer
+#define lua_boxpointer(L,u) \
+	(*(void **)(lua_newuserdata(L, sizeof(void *))) = (u))
+#endif
+
+#ifndef lua_unboxpointer
+#define lua_unboxpointer(L,i)	(*(void **)(lua_touserdata(L, i)))
+#endif
+
 #include "dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////

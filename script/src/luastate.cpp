@@ -134,7 +134,8 @@ bool cLuaState::Open(uint libs)
 #ifndef NDEBUG
       { kLSL_Debug, luaopen_debug },
 #endif
-      { kLSL_Loadlib, luaopen_loadlib },
+      { kLSL_Loadlib, luaopen_package },
+      { kLSL_OS, luaopen_os },
    };
 
    for (int i = 0; i < _countof(luaLibOpenFns); i++)

@@ -8,11 +8,10 @@
 #endif
 #define INITGUID
 #include "combase.h"
-#include "techguids.h"
-#include "renderguids.h"
-#include "engineguids.h"
 #include "editorguids.h"
+#include "engineguids.h"
 #include "guiguids.h"
 #include "netguids.h"
 #include "scriptguids.h"
 #include "soundguids.h"
+#include "techguids.h"
