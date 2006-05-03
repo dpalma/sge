@@ -158,7 +158,7 @@ tResult cLuaState::DoString(const char * pszCode)
    {
       return E_FAIL;
    }
-   if (luaL_dostring(m_L, pszCode, strlen(pszCode), pszCode) == 0)
+   if (luaL_dostring(m_L, pszCode) == 0)
    {
       return S_OK;
    }
