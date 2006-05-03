@@ -62,7 +62,7 @@ class SGEEnvironment(Environment):
    def UseLua(self):
       self.m_libs += ['lua']
       self.m_libPaths += [MakeLibPath('lua')]
-      self.m_incPaths += ['#3rdparty/lua/include']
+      self.m_incPaths += ['#3rdparty/lua/src']
       
    def UseNvTriStrip(self):
       self.m_libs += ['NvTriStrip']

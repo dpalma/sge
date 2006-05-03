@@ -105,7 +105,7 @@ cLuaState::~cLuaState()
 
 ///////////////////////////////////////
 
-bool cLuaState::Open(uint libs)
+bool cLuaState::Open()
 {
    Assert(m_L == NULL);
    if (m_L != NULL)
@@ -119,33 +119,7 @@ bool cLuaState::Open(uint libs)
       return false;
    }
 
-   static const struct
-   {
-      uint luaLibFlag;
-      int (*pfnLuaLibOpen)(lua_State *);
-   }
-   luaLibOpenFns[] =
-   {
-      { kLSL_Base, luaopen_base },
-      { kLSL_Table, luaopen_table },
-      { kLSL_IO, luaopen_io },
-      { kLSL_String, luaopen_string },
-      { kLSL_Math, luaopen_math },
-#ifndef NDEBUG
-      { kLSL_Debug, luaopen_debug },
-#endif
-      { kLSL_Loadlib, luaopen_package },
-      { kLSL_OS, luaopen_os },
-   };
-
-   for (int i = 0; i < _countof(luaLibOpenFns); i++)
-   {
-      uint libFlag = luaLibOpenFns[i].luaLibFlag;
-      if ((libs & libFlag) == libFlag)
-      {
-         int result = (*luaLibOpenFns[i].pfnLuaLibOpen)(m_L);
-      }
-   }
+   luaL_openlibs(m_L);
 
    return true;
 }
@@ -169,7 +143,7 @@ tResult cLuaState::DoFile(const char * pszFile)
    {
       return E_FAIL;
    }
-   if (lua_dofile(m_L, pszFile) == 0)
+   if (luaL_dofile(m_L, pszFile) == 0)
    {
       return S_OK;
    }
@@ -180,8 +154,11 @@ tResult cLuaState::DoFile(const char * pszFile)
 
 tResult cLuaState::DoString(const char * pszCode)
 {
-   if (m_L != NULL
-      && lua_dobuffer(m_L, pszCode, strlen(pszCode), pszCode) == 0)
+   if (m_L == NULL)
+   {
+      return E_FAIL;
+   }
+   if (luaL_dostring(m_L, pszCode, strlen(pszCode), pszCode) == 0)
    {
       return S_OK;
    }

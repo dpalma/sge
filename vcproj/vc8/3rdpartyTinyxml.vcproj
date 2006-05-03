@@ -3,7 +3,8 @@
 	ProjectType="Visual C++"
 	Version="8.00"
 	Name="3rdpartyTinyxml"
-	ProjectGUID="{38F4DB86-0B20-4C29-8512-F29A6F40E1CD}"
+	ProjectGUID="{50767F60-5AB7-4135-ACB7-51E9BD20CA75}"
+	RootNamespace="3rdpartyTinyxml"
 	>
 	<Platforms>
 		<Platform
@@ -378,30 +379,40 @@
 	<References>
 	</References>
 	<Files>
-		<File
-			RelativePath="..\..\3rdparty\tinyxml\tinystr.cpp"
+		<Filter
+			Name="Source Files"
+			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
-		</File>
-		<File
-			RelativePath="..\..\3rdparty\tinyxml\tinystr.h"
+			<File
+				RelativePath="..\..\3rdparty\tinyxml\tinystr.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\3rdparty\tinyxml\tinyxml.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\3rdparty\tinyxml\tinyxmlerror.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\3rdparty\tinyxml\tinyxmlparser.cpp"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Header Files"
+			Filter="h;hpp;hxx;hm;inl"
 			>
-		</File>
-		<File
-			RelativePath="..\..\3rdparty\tinyxml\tinyxml.cpp"
-			>
-		</File>
-		<File
-			RelativePath="..\..\3rdparty\tinyxml\tinyxml.h"
-			>
-		</File>
-		<File
-			RelativePath="..\..\3rdparty\tinyxml\tinyxmlerror.cpp"
-			>
-		</File>
-		<File
-			RelativePath="..\..\3rdparty\tinyxml\tinyxmlparser.cpp"
-			>
-		</File>
+			<File
+				RelativePath="..\..\3rdparty\tinyxml\tinystr.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\3rdparty\tinyxml\tinyxml.h"
+				>
+			</File>
+		</Filter>
 	</Files>
 	<Globals>
 	</Globals>

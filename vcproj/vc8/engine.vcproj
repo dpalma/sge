@@ -3,7 +3,8 @@
 	ProjectType="Visual C++"
 	Version="8.00"
 	Name="engine"
-	ProjectGUID="{F1334822-5BBB-495B-AD67-0F8D7D2A02C9}"
+	ProjectGUID="{BD5E5BCF-8648-48EA-8B35-04CFE1541E3A}"
+	RootNamespace="engine"
 	>
 	<Platforms>
 		<Platform
@@ -76,7 +77,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\CppUnitLite2.lib winmm.lib opengl32.lib glu32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib $(OutDir)\glew.lib cg.lib cgGL.lib"
+				AdditionalDependencies="$(OutDir)\CppUnitLite2.lib winmm.lib opengl32.lib glu32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib $(OutDir)\glew.lib"
 				OutputFile=".\..\..\Build.vc8\Opt/engine.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -249,7 +250,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\CppUnitLite2.lib winmm.lib opengl32.lib glu32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib $(OutDir)\glew.lib cg.lib cgGL.lib"
+				AdditionalDependencies="$(OutDir)\CppUnitLite2.lib winmm.lib opengl32.lib glu32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib $(OutDir)\glew.lib"
 				OutputFile=".\..\..\Build.vc8\Debug/engine.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -422,7 +423,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="winmm.lib opengl32.lib glu32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib $(OutDir)\glew.lib cg.lib cgGL.lib"
+				AdditionalDependencies="winmm.lib opengl32.lib glu32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib $(OutDir)\glew.lib"
 				OutputFile=".\..\..\Build.vc8\Release/engine.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"

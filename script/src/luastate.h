@@ -20,22 +20,6 @@ typedef cMultiVar tScriptVar;
 typedef int (* tScriptFn)(int, const tScriptVar *, int, tScriptVar *);
 
 ///////////////////////////////////////////////////////////////////////////////
-
-enum eLuaStandardLibs
-{
-   kLSL_NONE      = 0,
-   kLSL_Base      = (1 << 0),
-   kLSL_Table     = (1 << 1),
-   kLSL_IO        = (1 << 2),
-   kLSL_String    = (1 << 3),
-   kLSL_Math      = (1 << 4),
-   kLSL_Debug     = (1 << 5),
-   kLSL_Loadlib   = (1 << 6),
-   kLSL_OS        = (1 << 7),
-   kLSL_ALL       = ~0u
-};
-
-///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cLuaState
 //
@@ -46,7 +30,7 @@ public:
    cLuaState();
    ~cLuaState();
 
-   bool Open(uint libs = kLSL_ALL);
+   bool Open();
    void Close();
 
    tResult DoFile(const char * pszFile);

@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="script"
 	ProjectGUID="{E0D0590D-B176-41A9-9AA5-A2B766D3B8E3}"
+	RootNamespace="script"
 	>
 	<Platforms>
 		<Platform
@@ -46,7 +47,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\script\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\script\include,..\..\tech\include,..\..\3rdparty\lua\src,..\..\3rdparty\tinyxml"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;SCRIPT_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL"
 				StringPooling="true"
 				RuntimeLibrary="3"
@@ -140,7 +141,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\script\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\script\include,..\..\tech\include,..\..\3rdparty\lua\src,..\..\3rdparty\tinyxml"
 				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,HAVE_CPPUNITLITE2,_USRDLL,SCRIPT_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -220,7 +221,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\script\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\script\include,..\..\tech\include,..\..\3rdparty\lua\src,..\..\3rdparty\tinyxml"
 				PreprocessorDefinitions="_DEBUG;HAVE_CPPUNITLITE2;_USRDLL;SCRIPT_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -313,7 +314,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\script\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\script\include,..\..\tech\include,..\..\3rdparty\lua\src,..\..\3rdparty\tinyxml"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,_USRDLL,SCRIPT_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -393,7 +394,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\script\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\script\include,..\..\tech\include,..\..\3rdparty\lua\src,..\..\3rdparty\tinyxml"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;SCRIPT_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL"
 				StringPooling="true"
 				RuntimeLibrary="2"

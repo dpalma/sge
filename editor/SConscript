@@ -55,7 +55,6 @@ linkLibs = Split("""
 
 local = env.Copy()
 local.UseGL()
-local.UseCg()
 local.UseLua()
 local.UseTinyxml()
 local.UseZLib()
