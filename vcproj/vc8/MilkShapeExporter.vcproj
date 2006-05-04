@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="MilkShapeExporter"
 	ProjectGUID="{EC7ACF02-DBE4-488D-89A4-DAE00465DA0F}"
+	RootNamespace="MilkShapeExporter"
 	Keyword="MFCProj"
 	>
 	<Platforms>
@@ -76,11 +77,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="msModelLib.lib $(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib opengl32.lib glu32.lib winmm.lib"
+				AdditionalDependencies="$(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib opengl32.lib glu32.lib winmm.lib"
 				OutputFile="..\..\Build.vc8\StaticRelease/msSGEExporter.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="..\..\3rdparty\ms3dsdk\msLib\lib"
+				AdditionalLibraryDirectories=""
 				ModuleDefinitionFile="..\..\MilkShapeExporter\msPlugIn.def"
 				GenerateMapFile="true"
 				MapFileName="..\..\Build.vc8\StaticRelease/msSGEExporter.map"
@@ -175,11 +176,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="msModelLib.lib $(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib opengl32.lib glu32.lib winmm.lib"
+				AdditionalDependencies="$(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib opengl32.lib glu32.lib winmm.lib"
 				OutputFile="..\..\Build.vc8\Opt/msSGEExporter.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="..\..\3rdparty\ms3dsdk\msLib\lib"
+				AdditionalLibraryDirectories=""
 				ModuleDefinitionFile="..\..\MilkShapeExporter\msPlugIn.def"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\..\..\Build.vc8\Opt/msSGEExporter.pdb"
@@ -274,11 +275,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="msModelLib.lib $(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib opengl32.lib glu32.lib winmm.lib"
+				AdditionalDependencies="$(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib opengl32.lib glu32.lib winmm.lib"
 				OutputFile="..\..\Build.vc8\Release/msSGEExporter.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="..\..\3rdparty\ms3dsdk\msLib\lib"
+				AdditionalLibraryDirectories=""
 				ModuleDefinitionFile="..\..\MilkShapeExporter\msPlugIn.def"
 				ProgramDatabaseFile=".\..\..\Build.vc8\Release/msSGEExporter.pdb"
 				GenerateMapFile="true"
@@ -373,11 +374,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\CppUnitLite2.lib msModelLib.lib $(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib opengl32.lib glu32.lib winmm.lib"
+				AdditionalDependencies="$(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib opengl32.lib glu32.lib winmm.lib"
 				OutputFile="..\..\Build.vc8\StaticDebug/msSGEExporter.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="..\..\3rdparty\ms3dsdk\msLib\lib"
+				AdditionalLibraryDirectories=""
 				ModuleDefinitionFile="..\..\MilkShapeExporter\msPlugIn.def"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\..\..\Build.vc8\StaticDebug/msSGEExporter.pdb"
@@ -472,11 +473,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="msModelLib.lib $(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib opengl32.lib glu32.lib winmm.lib"
+				AdditionalDependencies="$(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib opengl32.lib glu32.lib winmm.lib"
 				OutputFile="..\..\Build.vc8\Debug/msSGEExporter.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="..\..\3rdparty\ms3dsdk\msLib\lib"
+				AdditionalLibraryDirectories=""
 				ModuleDefinitionFile="..\..\MilkShapeExporter\msPlugIn.def"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\..\..\Build.vc8\Debug/msSGEExporter.pdb"
@@ -645,6 +646,22 @@
 			>
 			<File
 				RelativePath="..\..\MilkShapeExporter\res\msPlugIn.rc2"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="msLib"
+			>
+			<File
+				RelativePath="..\..\MilkShapeExporter\msLib.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\MilkShapeExporter\msModelLib.lib"
+				>
+			</File>
+			<File
+				RelativePath="..\..\MilkShapeExporter\msPlugIn.h"
 				>
 			</File>
 		</Filter>

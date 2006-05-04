@@ -10,12 +10,13 @@ sourceFiles = Split("""
 """)
 
 includePaths = Split("""
-   #3rdparty/ms3dsdk/msLib
+   #MilkShapeExporter
    #engine/include
    #tech/include
 """)
 
 libPaths = Split("""
+   #MilkShapeExporter
    #allguids
    #tech
    #engine
@@ -30,7 +31,6 @@ linkLibs = Split("""
 """)
 
 local = env.Copy()
-local.Append(LIBPATH=['#3rdparty/ms3dsdk/msLib/lib'])
 local.UseNvTriStrip()
 local.UseTinyxml()
 local.UseZLib()
