@@ -17,10 +17,21 @@
 TECH_API bool IsPrime(uint n);
 
 ///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cRand
+//
 
-TECH_API void SeedRand(uint seed);
-
-TECH_API uint Rand();
+class TECH_API cRand
+{
+   enum { b = 523786821 };
+public:
+   cRand();
+   cRand(uint seed);
+   void Seed(uint seed);
+   uint Next();
+private:
+   uint m_a;
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 

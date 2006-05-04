@@ -8,10 +8,17 @@
 #include "readwriteutils.h"
 #include "saveloadapi.h"
 
-#include "resourceapi.h"
 #include "globalobj.h"
+#include "resourceapi.h"
+#include "techmath.h"
+
+#include <ctime>
 
 #include "dbgalloc.h" // must be last header
+
+///////////////////////////////////////////////////////////////////////////////
+
+cRand g_engineRand;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -62,6 +69,8 @@ extern tResult TiXmlRegisterResourceFormat(); // tixml.cpp
 
 tResult EngineRegisterResourceFormats()
 {
+   g_engineRand.Seed(time(NULL));
+
    UseGlobal(ResourceManager);
    if (!!pResourceManager)
    {

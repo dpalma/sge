@@ -178,9 +178,6 @@ static bool MainInit(int argc, tChar * argv[])
       techlog.OpenLogFile(cFileSpec(temp.c_str()));
    }
 
-   srand(time(NULL));
-   SeedRand(time(NULL));
-
    RegisterGlobalObjects();
    if (FAILED(StartGlobalObjects()))
    {

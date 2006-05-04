@@ -105,9 +105,6 @@ static bool d3dguiinit(int argc, tChar * argv[])
       return false;
    }
 
-   srand(time(NULL));
-   SeedRand(time(NULL));
-
    RegisterGlobalObjects();
    if (FAILED(StartGlobalObjects()))
    {

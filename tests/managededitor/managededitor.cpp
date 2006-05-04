@@ -102,9 +102,6 @@ static bool ManagedEditorInit(array<System::String ^> ^ args)
       return false;
    }
 
-   srand(GetTickCount());
-   SeedRand(GetTickCount());
-
    RegisterGlobalObjects();
    if (FAILED(StartGlobalObjects()))
    {

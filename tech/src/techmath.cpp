@@ -19,21 +19,29 @@
 bool IsPrime(uint n)
 {
    if (n <= 1) // 0, 1 are NOT primes
+   {
       return false;
+   }
 
    if (n <= 3) // 2, 3 are primes
+   {
       return true;
+   }
 
-   if ((n % 2) == 0) // anything evenly divisible by 2 is NOT a prime
+   if ((n & 1) == 0) // anything evenly divisible by 2 is NOT a prime
+   {
       return false;
+   }
 
    uint sqrtn = (uint)sqrt((double)n);
 
-   // test only the odd numbers because we eliminated 2 already
-   for (uint i = 3; i <= sqrtn; i += 2)
+   // test only the odd numbers
+   for (uint i = 5; i <= sqrtn; i += 2)
    {
       if ((n % i) == 0)
+      {
          return false; // 'n' is divisible by 'i' so cannot be prime
+      }
    }
 
    return true;
@@ -41,25 +49,47 @@ bool IsPrime(uint n)
 
 
 ///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cRand
+//
 
-uint g_a;
-
-static const uint g_b = 523786821;
-
-void SeedRand(uint seed)
+cRand::cRand()
 {
-   g_a = seed;
 }
 
-uint Rand()
+cRand::cRand(uint seed)
+ : m_a(seed)
 {
-   return g_a = g_a * g_b + 1;
+}
+
+void cRand::Seed(uint seed)
+{
+   m_a = seed;
+}
+
+uint cRand::Next()
+{
+   m_a = m_a * b + 1;
+   return m_a;
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifdef HAVE_CPPUNITLITE2
+
+TEST(IsPrime)
+{
+   CHECK(!IsPrime(0));
+   CHECK(!IsPrime(1));
+   CHECK(IsPrime(2));
+   CHECK(IsPrime(3));
+   CHECK(!IsPrime(4));
+   CHECK(IsPrime(5));
+   CHECK(!IsPrime(6));
+   CHECK(IsPrime(7));
+   CHECK(!IsPrime(8));
+}
 
 ///////////////////////////////////////
 
@@ -81,7 +111,7 @@ static uint CountOneBits(uint n)
 // within a tolerance of 50% ones.
 TEST(RandBitFrequency)
 {
-   SeedRand(time(NULL));
+   cRand r(time(NULL));
 
    const uint kNumTests = 1000;
    uint nTotalBits = sizeof(uint) * kNumTests * 8;
@@ -89,7 +119,7 @@ TEST(RandBitFrequency)
 
    for (int i = 0; i < kNumTests; i++)
    {
-      nOneBits += CountOneBits(Rand());
+      nOneBits += CountOneBits(r.Next());
    }
 
    double onesFraction = (double)nOneBits / nTotalBits;

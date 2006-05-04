@@ -11,6 +11,7 @@
 
 #include "dbgalloc.h" // must be last header
 
+extern cRand g_engineRand;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -251,7 +252,7 @@ tResult cModelSkeleton::GetAnimation(eModelAnimationType type,
       {
          nAnims++;
       }
-      uint i, iAnim = Rand() % nAnims;
+      uint i, iAnim = g_engineRand.Next() % nAnims;
       for (i = 0, iter = first; iter != last; i++, iter++)
       {
          if (i == iAnim)

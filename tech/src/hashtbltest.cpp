@@ -45,9 +45,11 @@ LOG_DEFINE_CHANNEL(HashTableTest);
 
 ///////////////////////////////////////////////////////////////////////////////
 
+static cRand g_rand((uint)((ReadTSC() >> 32) & 0xFFFFFFFF));
+
 static bool coin_flip(void)
 {
-   return ((Rand() % 2) == 0) ? true : false;
+   return ((g_rand.Next() & 1) == 0) ? true : false;
 }
 
 static void random_string(char * str, int maxlen)
@@ -55,14 +57,14 @@ static void random_string(char * str, int maxlen)
    if (maxlen <= 3)
       return;
 
-   int len = 3 + (Rand() % (maxlen - 3));
+   int len = 3 + (g_rand.Next() % (maxlen - 3));
 
    for (int i = 0; i < len; i++)
    {
       if (coin_flip())
-         str[i] = 'a' + (Rand() % 26);
+         str[i] = 'a' + (g_rand.Next() % 26);
       else
-         str[i] = 'A' + (Rand() % 26);
+         str[i] = 'A' + (g_rand.Next() % 26);
    }
 
    str[len - 1] = 0;
@@ -323,7 +325,7 @@ TEST_F(cHashTableTests, TestErase)
    std::set<int> erasedIndices;
    while (erasedIndices.size() < nErasures)
    {
-      erasedIndices.insert(rand() % kNumTests);
+      erasedIndices.insert(g_rand.Next() % kNumTests);
    }
 
    std::set<int>::const_iterator iter = erasedIndices.begin();
@@ -461,12 +463,12 @@ TEST(HashTableCustomKey)
 
    for (int i = 0; i < 500; i++)
    {
-      int a = rand();
-      int b = rand();
+      int a = g_rand.Next();
+      int b = g_rand.Next();
       eMathExprOp op = g_mathExprOps[rand() % _countof(g_mathExprOps)];
       while ((op == kMEO_Div) && (b == 0))
       {
-         b = rand();
+         b = g_rand.Next();
       }
       cMathExpr<int> expr(a,b,op);
       CHECK(hashTable.insert(expr, expr.GetResult()).second);
@@ -493,12 +495,12 @@ TEST(HashTableCustomValue)
    std::map<int, cMathExpr<int> > exprs;
    while (exprs.size() < nTests)
    {
-      int a = rand();
-      int b = rand();
+      int a = g_rand.Next();
+      int b = g_rand.Next();
       eMathExprOp op = g_mathExprOps[rand() % _countof(g_mathExprOps)];
       while ((op == kMEO_Div) && (b == 0))
       {
-         b = rand();
+         b = g_rand.Next();
       }
       cMathExpr<int> expr(a,b,op);
       exprs.insert(std::make_pair(expr.GetResult(), expr));
@@ -531,12 +533,12 @@ TEST(HashTableCustomAllocator)
 
    for (int i = 0; i < 500; i++)
    {
-      int a = rand();
-      int b = rand();
+      int a = g_rand.Next();
+      int b = g_rand.Next();
       eMathExprOp op = g_mathExprOps[rand() % _countof(g_mathExprOps)];
       while ((op == kMEO_Div) && (b == 0))
       {
-         b = rand();
+         b = g_rand.Next();
       }
       cMathExpr<int> expr(a,b,op);
       CHECK(hashTable.insert(expr, expr.GetResult()).second);
