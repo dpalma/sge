@@ -35,6 +35,17 @@ static char THIS_FILE[] = __FILE__;
 static const int kToolPaletteId = IDS_TOOL_PALETTE_BAR_TITLE;
 
 
+std::vector<cStr> g_tileSets;
+
+void GetTileSets(std::vector<cStr> * pTileSets)
+{
+   if (pTileSets != NULL)
+   {
+      pTileSets->resize(g_tileSets.size());
+      std::copy(g_tileSets.begin(), g_tileSets.end(), pTileSets->begin());
+   }
+}
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // TEMPLATE: cStandardToolDef
@@ -293,7 +304,7 @@ int cToolPaletteBar::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
    CreateStandardToolGroup();
 
-   std::vector<cStr> tileSets, entities;
+   std::vector<cStr> entities;
 
    cStr data;
    if (ConfigGet(_T("data"), &data) == S_OK)
@@ -318,7 +329,7 @@ int cToolPaletteBar::OnCreate(LPCREATESTRUCT lpCreateStruct)
             if (_stricmp(pRoot->Value(), "tileset") == 0)
             {
                //TRACE1("TileSet %s\n", iter->GetFileName());
-               tileSets.push_back(iter->GetFileName());
+               g_tileSets.push_back(iter->GetFileName());
             }
             else if (_stricmp(pRoot->Value(), "entity") == 0)
             {
@@ -331,11 +342,11 @@ int cToolPaletteBar::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
    UseGlobal(ResourceManager);
    {
-      std::vector<cStr>::const_iterator iter = tileSets.begin();
-      for (; iter != tileSets.end(); iter++)
+      std::vector<cStr>::const_iterator iter = g_tileSets.begin();
+      for (; iter != g_tileSets.end(); iter++)
       {
          HTOOLGROUP hToolGroup = CreateTerrainToolGroup(&m_toolPalette, iter->c_str());
-         if ((hToolGroup != NULL) && (iter == tileSets.begin()))
+         if ((hToolGroup != NULL) && (iter == g_tileSets.begin()))
          {
             UseGlobal(EditorApp);
             pEditorApp->SetDefaultTileSet(iter->c_str());

@@ -21,6 +21,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+extern void GetTileSets(std::vector<cStr> * pTileSets);
+
 //////////////////////////////////////////////////////////////////////////////
 
 static const SIZE g_mapSizes[] =
@@ -256,28 +258,26 @@ void cMapSettingsDlg::PopulateTileSetComboBox()
 
    int iSelection = CB_ERR;
 
-   std::vector<cStr> terrainTileSets;
-   UseGlobal(ResourceManager);
-   if (pResourceManager->ListResources(kRT_TerrainTileSet, &terrainTileSets) == S_OK)
-   {
-      std::vector<cStr>::const_iterator iter = terrainTileSets.begin();
-      for (; iter != terrainTileSets.end(); iter++)
-      {
-         cStr tileSetName;
-         ITerrainTileSet * pTileSet = NULL;
-         if (pResourceManager->Load(iter->c_str(), kRT_TerrainTileSet, NULL, (void**)&pTileSet) != S_OK
-            || pTileSet->GetName(&tileSetName) != S_OK)
-         {
-            continue;
-         }
+   m_tileSets.clear();
+   GetTileSets(&m_tileSets);
 
-         m_tileSets.push_back(*iter);
-         int index = SendDlgItemMessage(IDC_MAP_TILESET, CB_ADDSTRING, 0, (LPARAM)tileSetName.c_str());
-         SendDlgItemMessage(IDC_MAP_TILESET, CB_SETITEMDATA, index, (LPARAM)(m_tileSets.size() - 1));
-         if (m_tileSet.Compare(iter->c_str()) == 0)
-         {
-            iSelection = index;
-         }
+   UseGlobal(ResourceManager);
+   std::vector<cStr>::const_iterator iter = m_tileSets.begin();
+   for (; iter != m_tileSets.end(); iter++)
+   {
+      cStr tileSetName;
+      ITerrainTileSet * pTileSet = NULL;
+      if (pResourceManager->Load(iter->c_str(), kRT_TerrainTileSet, NULL, (void**)&pTileSet) != S_OK
+         || pTileSet->GetName(&tileSetName) != S_OK)
+      {
+         continue;
+      }
+
+      int index = SendDlgItemMessage(IDC_MAP_TILESET, CB_ADDSTRING, 0, (LPARAM)tileSetName.c_str());
+      SendDlgItemMessage(IDC_MAP_TILESET, CB_SETITEMDATA, index, (LPARAM)(m_tileSets.size() - 1));
+      if (m_tileSet.Compare(iter->c_str()) == 0)
+      {
+         iSelection = index;
       }
    }
 
