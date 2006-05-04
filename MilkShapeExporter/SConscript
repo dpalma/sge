@@ -30,13 +30,16 @@ linkLibs = Split("""
    comdlg32.lib
 """)
 
-local = env.Copy()
-local.UseNvTriStrip()
-local.UseTinyxml()
-local.UseZLib()
-local.BuildSharedLibrary(target='msSGEExporter',
-                         source=sourceFiles + local.RES('msPlugIn.rc'),
-                         deffile='#MilkShapeExporter/msPlugin.def',
-                         include_path=includePaths,
-                         lib_path=libPaths,
-                         libs=linkLibs)
+if env['PLATFORM'] == 'win32':
+   conf = Configure(env)
+   if conf.CheckHeader('afxwin.h', '<>', 'c++'):
+      local = conf.Finish()
+      local.UseNvTriStrip()
+      local.UseTinyxml()
+      local.UseZLib()
+      local.BuildSharedLibrary(target='msSGEExporter',
+                               source=sourceFiles + local.RES('msPlugIn.rc'),
+                               deffile='#MilkShapeExporter/msPlugin.def',
+                               include_path=includePaths,
+                               lib_path=libPaths,
+                               libs=linkLibs)

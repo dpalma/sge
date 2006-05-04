@@ -228,18 +228,6 @@ if not os.path.isdir(buildRootDir):
 def MakeLibPath(path):
    return '#' + os.path.join(buildRootDir, path.lstrip('#'))
 
-conf = Configure(env)
-if conf.CheckHeader('afxwin.h', '<>', 'c++'):
-   haveMFC = 1
-else:
-   haveMFC = 0
-
-#conf.CheckLib('opengl32', 'glBegin')
-#conf.CheckLib('GL', 'glBegin')
-#conf.CheckLib('GLU', 'gluLookAt')
-
-env = conf.Finish()
-
 Help("Usage: scons [debug] [unicode]" + opts.GenerateHelpText(env))
 
 if env.get('unicode'):
@@ -251,20 +239,7 @@ else:
 
 SConsignFile(os.path.join(buildRootDir, '.sconsign'))
 
-def CollectTargets():
-   sconscripts = Walk(os.getcwd(), 1, 'SConscript', 0)
-   for script in sconscripts:
-      if re.search('.*MilkShapeExporter.*', script) and env['PLATFORM'] != 'win32':
-         print 'Windows-specific project %s' % script
-         sconscripts.remove(script)
-      if re.search('.*editor.*', script) and not haveMFC:
-         print 'Removing MFC-dependent project %s ' % script
-         sconscripts.remove(script)
-   return sconscripts
-
-########################################
-
-sconscripts = CollectTargets()
+sconscripts = Walk(os.getcwd(), 1, 'SConscript', 0)
 
 for script in sconscripts:
 

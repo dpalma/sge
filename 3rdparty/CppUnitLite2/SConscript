@@ -14,7 +14,7 @@ sourceFiles = Split("""
 
 if env['PLATFORM'] == 'win32':
    sourceFiles += ['src/TestResultDebugOut.cpp']
-elif env['PLATFORM'] == 'linux':
+elif env['PLATFORM'] in ['cygwin', 'posix']:
    sourceFiles += ['src/SignalHandler.cpp']
 
 includePaths = Split("""

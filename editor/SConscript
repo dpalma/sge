@@ -53,13 +53,14 @@ linkLibs = Split("""
    tech.lib
 """)
 
-local = env.Copy()
-local.UseGL()
-local.UseLua()
-local.UseTinyxml()
-local.UseZLib()
-local.BuildExecutable(target='editor',
-                      source=sourceFiles + local.RES('editor.rc'),
-                      include_path=includePaths,
-                      lib_path=libPaths,
-                      libs=linkLibs)
+if env['PLATFORM'] == 'win32':
+   local = env.Copy()
+   local.UseGL()
+   local.UseLua()
+   local.UseTinyxml()
+   local.UseZLib()
+   local.BuildExecutable(target='editor',
+                         source=sourceFiles + local.RES('editor.rc'),
+                         include_path=includePaths,
+                         lib_path=libPaths,
+                         libs=linkLibs)

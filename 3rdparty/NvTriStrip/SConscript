@@ -9,6 +9,7 @@ sourceFiles = Split("""
 """)
 
 local = env.Copy()
+local.Append(CCFLAGS=['/Zc:forScope-'])
 local.BuildStaticLibrary(target='NvTriStrip',
                          source=sourceFiles,
                          include_path=['#3rdparty/NvTriStrip/include'])
