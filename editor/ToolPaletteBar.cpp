@@ -13,6 +13,9 @@
 #include "engineapi.h"
 #include "terrainapi.h"
 
+#include "configapi.h"
+#include "fileenum.h"
+#include "filepath.h"
 #include "filespec.h"
 #include "globalobj.h"
 #include "resourceapi.h"
@@ -125,6 +128,93 @@ tResult cStandardToolDef<TOOL>::CreateTool(IEditorTool * * ppTool) const
 
 
 /////////////////////////////////////////////////////////////////////////////
+
+static HTOOLGROUP CreateTerrainToolGroup(cToolPalette * pToolPalette, const tChar * pszTerrainTileSet)
+{
+   UseGlobal(ResourceManager);
+
+   ITerrainTileSet * pTileSet = NULL;
+   if (pResourceManager->Load(pszTerrainTileSet, kRT_TerrainTileSet, NULL, (void**)&pTileSet) != S_OK)
+   {
+      return NULL;
+   }
+
+   uint nTiles = 0;
+   if ((pTileSet->GetTileCount(&nTiles) != S_OK) || (nTiles == 0))
+   {
+      return NULL;
+   }
+
+   cStr tileSetName;
+   HIMAGELIST hTileSetImages = NULL;
+   if (pTileSet->GetName(&tileSetName) == S_OK
+      && TerrainTileSetCreateImageList(pTileSet, 16, &hTileSetImages) == S_OK)
+   {
+      HTOOLGROUP hGroup = pToolPalette->AddGroup(tileSetName.c_str(), hTileSetImages);
+      if (hGroup != NULL)
+      {
+         for (uint i = 0; i < nTiles; i++)
+         {
+            cStr tileName;
+            if (pTileSet->GetTileName(i, &tileName) != S_OK)
+            {
+               continue;
+            }
+
+            cTerrainTileTool * pTerrainTool = new cTerrainTileTool(i);
+            if (pTerrainTool != NULL)
+            {
+               pToolPalette->AddTool(hGroup, tileName.c_str(), i, pTerrainTool);
+            }
+         }
+
+         return hGroup;
+      }
+   }
+
+   return NULL;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+static HTOOLGROUP CreateEntityToolGroup(cToolPalette * pToolPalette, const std::vector<cStr> & entities)
+{
+   HTOOLGROUP hUnitGroup = pToolPalette->AddGroup("Entities", NULL);
+   if (hUnitGroup != NULL)
+   {
+      UseGlobal(ResourceManager);
+
+      std::vector<cStr>::const_iterator iter = entities.begin();
+      for (; iter != entities.end(); iter++)
+      {
+         const TiXmlDocument * pXmlDoc = NULL;
+         if (pResourceManager->Load(iter->c_str(), kRT_TiXml, NULL, (void**)&pXmlDoc) != S_OK)
+         {
+            continue;
+         }
+
+         const TiXmlElement * pRoot = pXmlDoc->RootElement();
+         if ((pRoot != NULL) && (_stricmp(pRoot->Value(), "entity") == 0))
+         {
+            cPlaceEntityTool * pPlaceEntityTool = new cPlaceEntityTool(*iter);
+            if (pPlaceEntityTool != NULL)
+            {
+               const char * pszName = pRoot->Attribute("name");
+               if (pszName == NULL)
+               {
+                  pszName = iter->c_str();
+               }
+               pToolPalette->AddTool(hUnitGroup, pszName, -1, pPlaceEntityTool);
+            }
+         }
+      }
+   }
+
+   return hUnitGroup;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cToolPaletteBar
 //
@@ -154,6 +244,36 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // cToolPaletteBar message handlers
 
+static void ListFiles(const tChar * pszDir, const tChar * pszExt, std::vector<cFileSpec> * pFiles)
+{
+   Assert(pszDir && pszExt && pFiles);
+
+   cFileSpec wildcard(_T("*"));
+   wildcard.SetPath(cFilePath(pszDir));
+
+   cAutoIPtr<IEnumFiles> pEnum;
+   if (EnumFiles(wildcard, &pEnum) == S_OK)
+   {
+      cFileSpec files[10];
+      uint attribs[10];
+      ulong nFiles = 0;
+      while (SUCCEEDED(pEnum->Next(_countof(files), &files[0], &attribs[0], &nFiles)))
+      {
+         for (uint i = 0; i < nFiles; i++)
+         {
+            if (_tcsicmp(files[i].GetFileExt(), pszExt) == 0)
+            {
+               pFiles->push_back(files[i]);
+            }
+            else if ((attribs[i] & kFA_Directory) == kFA_Directory)
+            {
+               ListFiles(files[i].CStr(), pszExt, pFiles);
+            }
+         }
+      }
+   }
+}
+
 int cToolPaletteBar::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
    if (cEditorControlBar::OnCreate(lpCreateStruct) == -1)
@@ -173,25 +293,57 @@ int cToolPaletteBar::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
    CreateStandardToolGroup();
 
-   std::vector<cStr> terrainTileSets;
-   UseGlobal(ResourceManager);
-   if (pResourceManager->ListResources(kRT_TerrainTileSet, &terrainTileSets) == S_OK)
+   std::vector<cStr> tileSets, entities;
+
+   cStr data;
+   if (ConfigGet(_T("data"), &data) == S_OK)
    {
-      bool bSetDefaultTileSet = false;
-      std::vector<cStr>::const_iterator iter = terrainTileSets.begin();
-      for (; iter != terrainTileSets.end(); iter++)
+      std::vector<cFileSpec> xmlFiles;
+      ListFiles(data.c_str(), _T("xml"), &xmlFiles);
+
+      UseGlobal(ResourceManager);
+
+      std::vector<cFileSpec>::const_iterator iter = xmlFiles.begin();
+      for (; iter != xmlFiles.end(); iter++)
       {
-         HTOOLGROUP hToolGroup = CreateTerrainToolGroup(iter->c_str());
-         if (!bSetDefaultTileSet && (hToolGroup != NULL))
+         const TiXmlDocument * pXmlDoc = NULL;
+         if (pResourceManager->Load(iter->CStr(), kRT_TiXml, NULL, (void**)&pXmlDoc) != S_OK)
          {
-            UseGlobal(EditorApp);
-            pEditorApp->SetDefaultTileSet(iter->c_str());
-            bSetDefaultTileSet = true;
+            continue;
+         }
+
+         const TiXmlElement * pRoot = pXmlDoc->RootElement();
+         if (pRoot != NULL)
+         {
+            if (_stricmp(pRoot->Value(), "tileset") == 0)
+            {
+               //TRACE1("TileSet %s\n", iter->GetFileName());
+               tileSets.push_back(iter->GetFileName());
+            }
+            else if (_stricmp(pRoot->Value(), "entity") == 0)
+            {
+               //TRACE1("Entity %s\n", iter->GetFileName());
+               entities.push_back(iter->GetFileName());
+            }
          }
       }
    }
 
-   CreateEntityToolGroup();
+   UseGlobal(ResourceManager);
+   {
+      std::vector<cStr>::const_iterator iter = tileSets.begin();
+      for (; iter != tileSets.end(); iter++)
+      {
+         HTOOLGROUP hToolGroup = CreateTerrainToolGroup(&m_toolPalette, iter->c_str());
+         if ((hToolGroup != NULL) && (iter == tileSets.begin()))
+         {
+            UseGlobal(EditorApp);
+            pEditorApp->SetDefaultTileSet(iter->c_str());
+         }
+      }
+   }
+
+   CreateEntityToolGroup(&m_toolPalette, entities);
 
    return 0;
 }
@@ -313,89 +465,4 @@ HTOOLGROUP cToolPaletteBar::CreateStandardToolGroup()
    }
 
    return hStdGroup;
-}
-
-HTOOLGROUP cToolPaletteBar::CreateTerrainToolGroup(const tChar * pszTerrainTileSet)
-{
-   UseGlobal(ResourceManager);
-
-   ITerrainTileSet * pTileSet = NULL;
-   if (pResourceManager->Load(pszTerrainTileSet, kRT_TerrainTileSet, NULL, (void**)&pTileSet) != S_OK)
-   {
-      return NULL;
-   }
-
-   uint nTiles = 0;
-   if ((pTileSet->GetTileCount(&nTiles) != S_OK) || (nTiles == 0))
-   {
-      return NULL;
-   }
-
-   cStr tileSetName;
-   HIMAGELIST hTileSetImages = NULL;
-   if (pTileSet->GetName(&tileSetName) == S_OK
-      && TerrainTileSetCreateImageList(pTileSet, 16, &hTileSetImages) == S_OK)
-   {
-      HTOOLGROUP hGroup = m_toolPalette.AddGroup(tileSetName.c_str(), hTileSetImages);
-      if (hGroup != NULL)
-      {
-         for (uint i = 0; i < nTiles; i++)
-         {
-            cStr tileName;
-            if (pTileSet->GetTileName(i, &tileName) != S_OK)
-            {
-               continue;
-            }
-
-            cTerrainTileTool * pTerrainTool = new cTerrainTileTool(i);
-            if (pTerrainTool != NULL)
-            {
-               m_toolPalette.AddTool(hGroup, tileName.c_str(), i, pTerrainTool);
-            }
-         }
-
-         return hGroup;
-      }
-   }
-
-   return NULL;
-}
-
-HTOOLGROUP cToolPaletteBar::CreateEntityToolGroup()
-{
-   HTOOLGROUP hUnitGroup = m_toolPalette.AddGroup("Entities", NULL);
-   if (hUnitGroup != NULL)
-   {
-      UseGlobal(ResourceManager);
-
-      std::vector<cStr> xmlResourceNames;
-      pResourceManager->ListResources(kRT_TiXml, &xmlResourceNames);
-
-      std::vector<cStr>::const_iterator iter = xmlResourceNames.begin();
-      for (; iter != xmlResourceNames.end(); iter++)
-      {
-         const TiXmlDocument * pTiXmlDoc = NULL;
-         if (pResourceManager->Load(iter->c_str(), kRT_TiXml, NULL, (void**)&pTiXmlDoc) != S_OK)
-         {
-            continue;
-         }
-
-         const TiXmlElement * pTiXmlElement = pTiXmlDoc->FirstChildElement();
-         if ((pTiXmlElement != NULL) && (_stricmp(pTiXmlElement->Value(), "entity") == 0))
-         {
-            cPlaceEntityTool * pPlaceEntityTool = new cPlaceEntityTool(*iter);
-            if (pPlaceEntityTool != NULL)
-            {
-               const char * pszName = pTiXmlElement->Attribute("name");
-               if (pszName == NULL)
-               {
-                  pszName = iter->c_str();
-               }
-               m_toolPalette.AddTool(hUnitGroup, pszName, -1, pPlaceEntityTool);
-            }
-         }
-      }
-   }
-
-   return hUnitGroup;
 }

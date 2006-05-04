@@ -52,8 +52,6 @@ protected:
    DECLARE_MESSAGE_MAP()
 
    HTOOLGROUP CreateStandardToolGroup();
-   HTOOLGROUP CreateTerrainToolGroup(const tChar * pszTerrainTileSet);
-   HTOOLGROUP CreateEntityToolGroup();
 
 private:
    CToolTipCtrl m_tooltip;
