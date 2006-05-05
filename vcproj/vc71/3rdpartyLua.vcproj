@@ -438,6 +438,9 @@
 				RelativePath="..\..\3rdparty\lua\src\lgc.c">
 			</File>
 			<File
+				RelativePath="..\..\3rdparty\lua\src\linit.c">
+			</File>
+			<File
 				RelativePath="..\..\3rdparty\lua\src\liolib.c">
 				<FileConfiguration
 					Name="StaticRelease|Win32">

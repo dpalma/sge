@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="msModelLib.lib $(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib opengl32.lib glu32.lib winmm.lib"
+				AdditionalDependencies="$(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib opengl32.lib glu32.lib winmm.lib"
 				OutputFile="..\..\Build.vc71\StaticRelease/msSGEExporter.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -110,7 +110,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="msModelLib.lib $(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib opengl32.lib glu32.lib winmm.lib"
+				AdditionalDependencies="$(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib opengl32.lib glu32.lib winmm.lib"
 				OutputFile="..\..\Build.vc71\Opt/msSGEExporter.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -179,7 +179,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="msModelLib.lib $(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib opengl32.lib glu32.lib winmm.lib"
+				AdditionalDependencies="$(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib opengl32.lib glu32.lib winmm.lib"
 				OutputFile="..\..\Build.vc71\Release/msSGEExporter.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -248,7 +248,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\CppUnitLite2.lib msModelLib.lib $(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib opengl32.lib glu32.lib winmm.lib"
+				AdditionalDependencies="$(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib opengl32.lib glu32.lib winmm.lib"
 				OutputFile="..\..\Build.vc71\StaticDebug/msSGEExporter.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -317,7 +317,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="msModelLib.lib $(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib opengl32.lib glu32.lib winmm.lib"
+				AdditionalDependencies="$(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib opengl32.lib glu32.lib winmm.lib"
 				OutputFile="..\..\Build.vc71\Debug/msSGEExporter.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -460,6 +460,19 @@
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 			<File
 				RelativePath="..\..\MilkShapeExporter\res\msPlugIn.rc2">
+			</File>
+		</Filter>
+		<Filter
+			Name="msLib"
+			Filter="">
+			<File
+				RelativePath="..\..\MilkShapeExporter\msLib.h">
+			</File>
+			<File
+				RelativePath="..\..\MilkShapeExporter\msModelLib.lib">
+			</File>
+			<File
+				RelativePath="..\..\MilkShapeExporter\msPlugIn.h">
 			</File>
 		</Filter>
 	</Files>
