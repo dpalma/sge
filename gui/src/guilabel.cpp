@@ -73,16 +73,20 @@ tResult cGUILabelElement::Invoke(const char * pszMethodName,
 
    if (strcmp(pszMethodName, "SetText") == 0)
    {
-      if (argc == 1 && argv[0].IsString())
+      if (argc == 1)
       {
-         if (SetText(argv[0]) == S_OK)
+         if (argv[0].IsString())
          {
-            return S_OK;
+            SetText(argv[0]);
          }
-      }
-      else
-      {
-         return E_INVALIDARG;
+         else if (argv[0].IsEmpty())
+         {
+            SetText(NULL);
+         }
+         else
+         {
+            return E_INVALIDARG;
+         }
       }
    }
    else if (strcmp(pszMethodName, "GetText") == 0)
@@ -95,7 +99,7 @@ tResult cGUILabelElement::Invoke(const char * pszMethodName,
       }
    }
 
-   return E_FAIL;
+   return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

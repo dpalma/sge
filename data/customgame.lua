@@ -29,33 +29,33 @@ function OnStart()
 	end;
 end;
 
+function FillMapPropertyControls(title, author, descrip, numPlayers)
+	local titleCtrl = GUIContext:GetElement("title");
+	if titleCtrl then
+		titleCtrl:SetText(title);
+	end;
+	local authorCtrl = GUIContext:GetElement("author");
+	if authorCtrl then
+		authorCtrl:SetText(author);
+	end;
+	local descrCtrl = GUIContext:GetElement("descr");
+	if descrCtrl then
+		descrCtrl:SetText(descrip);
+	end;
+	local numPlayersCtrl = GUIContext:GetElement("numPlayers");
+	if numPlayersCtrl then
+		if numPlayers then
+			numPlayersCtrl:SetText(tostring(numPlayers));
+		else
+			numPlayersCtrl:SetText(nil);
+		end;
+	end;
+end;
+
 function OnMapsListSelChange()
 	local map = getSelectedMap();
 	if map then
 		local title, author, descrip, numPlayers = GetMapProperties(map);
-		if title then
-			local lbl = GUIContext:GetElement("title");
-			if lbl then
-				lbl:SetText(title);
-			end;
-		end;
-		if author then
-			local lbl = GUIContext:GetElement("author");
-			if lbl then
-				lbl:SetText(author);
-			end;
-		end;
-		if descrip then
-			local lbl = GUIContext:GetElement("descr");
-			if lbl then
-				lbl:SetText(descrip);
-			end;
-		end;
-		if numPlayers then
-			local lbl = GUIContext:GetElement("numPlayers");
-			if lbl then
-				lbl:SetText(tostring(numPlayers));
-			end;
-		end;
+		FillMapPropertyControls(title, author, descrip, numPlayers);
 	end;
 end;
