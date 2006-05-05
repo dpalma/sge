@@ -11,6 +11,7 @@
 #include "terrainapi.h"
 
 #include "dictionaryapi.h"
+#include "filespec.h"
 #include "globalobj.h"
 #include "keys.h"
 #include "multivar.h"
@@ -243,12 +244,6 @@ int ListResources(int argc, const tScriptVar * argv,
       return 0;
    }
 
-   bool bDontLoad = false;
-   if (argc > 1 && ScriptArgIsNumber(1))
-   {
-      bDontLoad = (argv[1].ToInt() != 0);
-   }
-
    cAutoIPtr<IDictionary> pDict(DictionaryCreate());
    if (!pDict)
    {
@@ -260,15 +255,12 @@ int ListResources(int argc, const tScriptVar * argv,
    if (pResourceManager->ListResources(argv[0], &resources) == S_OK)
    {
       std::vector<cStr>::iterator iter = resources.begin();
-      for (int index = 0; iter != resources.end(); iter++, index++)
+      for (int index = 1; iter != resources.end(); iter++, index++)
       {
-         void * pTemp = NULL;
-         if (bDontLoad || (pResourceManager->Load(iter->c_str(), argv[0], NULL, &pTemp) == S_OK))
-         {
-            cStr key;
-            Sprintf(&key, _T("%d"), index + 1);
-            pDict->Set(key.c_str(), iter->c_str());
-         }
+         cStr key;
+         Sprintf(&key, _T("%d"), index);
+         cFileSpec value(iter->c_str());
+         pDict->Set(key.c_str(), value.GetFileName());
       }
    }
 

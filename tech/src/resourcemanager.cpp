@@ -465,67 +465,24 @@ tResult cResourceManager::RegisterFormat(tResourceType type,
 
 ////////////////////////////////////////
 
-tResult cResourceManager::ListResources(tResourceType type, std::vector<cStr> * pNames) const
+tResult cResourceManager::ListResources(const tChar * pszMatch, std::vector<cStr> * pNames) const
 {
-   if (type == NULL)
-   {
-      return E_INVALIDARG;
-   }
-
-   if (pNames == NULL)
+   if (pszMatch == NULL || pNames == NULL)
    {
       return E_POINTER;
    }
 
-   std::set<cStr> formats;
-   m_formats.GetCompatibleFormats(type, &formats);
-
-   std::set<uint> formatIds;
+   std::vector<cResourceStore *>::const_iterator iter = m_stores.begin();
+   for (; iter != m_stores.end(); iter++)
    {
-      std::set<cStr>::const_iterator iter = formats.begin();
-      for (; iter != formats.end(); iter++)
+      if (FAILED((*iter)->CollectResourceNames(pszMatch, pNames)))
       {
-         formatIds.insert(m_formats.GetFormatId(iter->c_str()));
+         return E_FAIL;
       }
    }
 
-   std::set<uint> extIds;
-   {
-      std::set<cStr>::const_iterator typeIter = formats.begin();
-      for (; typeIter != formats.end(); typeIter++)
-      {
-         m_formats.GetExtensionsForType(typeIter->c_str(), &extIds);
-      }
-   }
-
-   std::set<cStr> results;
-   {
-      tResources::const_iterator iter = m_resources.begin();
-      for (; iter != m_resources.end(); iter++)
-      {
-         if (formatIds.find(iter->formatId) != formatIds.end()
-            || extIds.find(iter->extensionId) != extIds.end())
-         {
-            cFileSpec name(iter->name.c_str());
-            if (iter->extensionId != kNoIndex)
-            {
-               name.SetFileExt(m_formats.GetExtension(iter->extensionId));
-            }
-            LocalMsg2("Resource '%s' is possibly of type '%s'\n", name.CStr(), type);
-            results.insert(name.CStr());
-         }
-      }
-   }
-
-   {
-      std::set<cStr>::const_iterator iter = results.begin();
-      for (; iter != results.end(); iter++)
-      {
-         pNames->push_back(*iter);
-      }
-   }
-
-   return results.empty() ? S_FALSE : S_OK;
+   std::unique(pNames->begin(), pNames->end());
+   return pNames->empty() ? S_FALSE : S_OK;
 }
 
 ////////////////////////////////////////
@@ -753,6 +710,7 @@ public:
    virtual ~cTestResourceStore();
 
    virtual tResult GetCacheNames(std::vector<cStr> * pNames);
+   virtual tResult CollectResourceNames(const tChar * pszMatch, std::vector<cStr> * pNames);
    virtual tResult OpenEntry(const tChar * pszName, IReader * * ppReader);
 
 private:
@@ -779,6 +737,19 @@ tResult cTestResourceStore::GetCacheNames(std::vector<cStr> * pNames)
    for (; iter != m_testData.end(); iter++)
    {
       pNames->push_back(iter->first.c_str());
+   }
+   return S_OK;
+}
+
+tResult cTestResourceStore::CollectResourceNames(const tChar * pszMatch, std::vector<cStr> * pNames)
+{
+   std::vector<std::pair<cStr, cStr> >::const_iterator iter = m_testData.begin();
+   for (; iter != m_testData.end(); iter++)
+   {
+      if (WildCardMatch(pszMatch, iter->first.c_str()))
+      {
+         pNames->push_back(iter->first.c_str());
+      }
    }
    return S_OK;
 }
@@ -1004,20 +975,20 @@ TEST_FP(cResourceManagerTests,
 
    {
       std::vector<cStr> dataResNames;
-      CHECK(m_pResourceManager->ListResources(kRT_Data, &dataResNames) == S_OK);
+      CHECK(m_pResourceManager->ListResources(_T("*.dat"), &dataResNames) == S_OK);
       CHECK_EQUAL(dataResNames.size(), 2);
    }
 
    {
       std::vector<cStr> bitmapResNames;
-      CHECK(m_pResourceManager->ListResources(kRT_Bitmap, &bitmapResNames) == S_OK);
+      CHECK(m_pResourceManager->ListResources(_T("*.bmp"), &bitmapResNames) == S_OK);
       CHECK_EQUAL(bitmapResNames.size(), 1);
    }
 
    {
       std::vector<cStr> allResNames;
-      CHECK(m_pResourceManager->ListResources(kRT_Data, &allResNames) == S_OK);
-      CHECK(m_pResourceManager->ListResources(kRT_Bitmap, &allResNames) == S_OK);
+      CHECK(m_pResourceManager->ListResources(_T("*.dat"), &allResNames) == S_OK);
+      CHECK(m_pResourceManager->ListResources(_T("*.bmp"), &allResNames) == S_OK);
       CHECK_EQUAL(allResNames.size(), 3);
    }
 }

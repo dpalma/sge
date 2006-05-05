@@ -91,7 +91,7 @@ public:
                                   tResourceLoad pfnLoad,
                                   tResourcePostload pfnPostload,
                                   tResourceUnload pfnUnload);
-   virtual tResult ListResources(tResourceType type, std::vector<cStr> * pNames) const;
+   virtual tResult ListResources(const tChar * pszMatch, std::vector<cStr> * pNames) const;
 
    // IResourceManagerDiagnostics
    virtual void DumpFormats() const;

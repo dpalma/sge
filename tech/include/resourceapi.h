@@ -67,12 +67,7 @@ interface IResourceManager : IUnknown
       return RegisterFormat(type, NULL, pszExtension, pfnLoad, pfnPostload, pfnUnload);
    }
 
-   /// @brief Returns an inexact list of resources of the given type.
-   /// @remarks The list is inexact because the type of a resource is not
-   /// strictly known when it is pre-loaded because the only information 
-   /// available at start-up is the file extension. This method is very slow
-   /// and is intended for use by the editor for populating user-interface elements.
-   virtual tResult ListResources(tResourceType type, std::vector<cStr> * pNames) const = 0;
+   virtual tResult ListResources(const tChar * pszMatch, std::vector<cStr> * pNames) const = 0;
 };
 
 ////////////////////////////////////////

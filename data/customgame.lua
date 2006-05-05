@@ -3,7 +3,7 @@
 --
 -- GUI script code for customgame.xml
 
-maps = ListResources("SGE.Map", 1); -- the one tells the resource manager not to load each
+maps = ListResources("*.sgm");
 if maps and (table.getn(maps) > 0) then
 	local mapsList = GUIContext:GetElement("mapsList");
 	if mapsList then
