@@ -272,7 +272,13 @@ tResult cResourceManager::AddArchive(const tChar * pszArchive)
       return E_OUTOFMEMORY;
    }
 
-   return AddResourceStore(pStore);
+   if (AddResourceStore(pStore) != S_OK)
+   {
+      delete pStore;
+      return E_FAIL;
+   }
+
+   return S_OK;
 }
 
 ////////////////////////////////////////

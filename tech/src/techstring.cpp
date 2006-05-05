@@ -334,6 +334,63 @@ int SprintfLengthEstimate(const tChar * pszFormat, va_list args)
    return formatLenEst;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// Based on public domain code from an old C/C++ User's Journal article
+
+bool WildCardMatch(const tChar * pszPattern, const tChar * pszString)
+{
+   int i;
+   bool star;
+
+new_segment:
+   star = false;
+   if (*pszPattern == _T('*'))
+   {
+      star = true;
+      do { pszPattern = _tcsinc(pszPattern); } while (*pszPattern == _T('*'));
+   }
+
+   for (;;)
+   {
+      for (i = 0; pszPattern[i] && (pszPattern[i] != _T('*')); i++)
+      {
+         if (pszString[i] != pszPattern[i])
+         {
+            if (!pszString[i])
+               return false;
+            if ((pszPattern[i] == _T('?')) && (pszString[i] != _T('.')))
+               continue;
+            if (!star)
+               return false;
+            pszString = _tcsinc(pszString);
+         }
+      }
+      if (pszPattern[i] == _T('*'))
+      {
+         for (int j = 0; j < i; j++)
+         {
+            pszString = _tcsinc(pszString);
+            pszPattern = _tcsinc(pszPattern);
+         }
+         goto new_segment;
+      }
+      else
+      {
+         if (!pszString[i])
+            return true;
+         if (i && pszPattern[i - 1] == _T('*'))
+            return true;
+         if (!star)
+            return false;
+         pszString = _tcsinc(pszString);
+      }
+   }
+
+   return false;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 const cStr & GUIDToString(REFGUID guid, cStr * pStr)
@@ -464,6 +521,28 @@ TEST(DoSprintfLengthEst)
 }
 
 #endif // _MSC_VER >= 1300
+
+////////////////////////////////////////
+
+TEST(WildCardMatch)
+{
+   CHECK(WildCardMatch("AB", "AB"));
+   CHECK(!WildCardMatch("AB", "A"));
+   CHECK(WildCardMatch("A?", "AB"));
+   CHECK(WildCardMatch("A?", "AC"));
+   CHECK(WildCardMatch("A*", "Abcd"));
+   CHECK(WildCardMatch("A**", "Abcd"));
+   CHECK(WildCardMatch("*A", "abcdA"));
+   CHECK(WildCardMatch("**A", "abcdA"));
+   CHECK(WildCardMatch("*.xml", "foo.xml"));
+   CHECK(WildCardMatch("f*.xml", "foo.xml"));
+   CHECK(WildCardMatch("f*.xml", "fog.xml"));
+   CHECK(WildCardMatch("f*.xml", "fubar.xml"));
+   CHECK(!WildCardMatch("f*.xml", "bar.xml"));
+   CHECK(WildCardMatch("w*d.test", "wildcard.test"));
+   CHECK(WildCardMatch("w*d.test", "word.test"));
+   CHECK(WildCardMatch("w*d.t*t", "word.txt"));
+}
 
 ////////////////////////////////////////
 

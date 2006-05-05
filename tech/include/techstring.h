@@ -27,6 +27,11 @@ TECH_API int SprintfLengthEstimate(const tChar * pszFormat, va_list args);
 
 ///////////////////////////////////////////////////////////////////////////////
 
+bool WildCardMatch(const tChar * pszPattern, const tChar * pszString);
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 template <typename STRING>
 const STRING & CDECL Sprintf(STRING * pString,
                              const typename STRING::value_type * pszFormat,
