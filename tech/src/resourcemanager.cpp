@@ -87,62 +87,87 @@ static size_t ListDirs(const cFilePath & path, bool bSkipHidden, tStrings * pDir
    return pDirs->size();
 }
 
-////////////////////////////////////////////////////////////////////////////////
 
-static bool SameType(tResourceType lhs, tResourceType rhs)
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cResourceCacheKey
+//
+
+////////////////////////////////////////
+
+cResourceCacheKey::cResourceCacheKey(const tChar * pszName)
+ : m_name(pszName)
 {
-   if (lhs != NULL && rhs != NULL)
-   {
-      return _tcscmp(lhs, rhs) == 0;
-   }
-   else if (lhs == NULL && rhs == NULL)
-   {
-      return true;
-   }
-
-   return false;
 }
 
-////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////
 
-inline const tChar * ResourceTypeName(tResourceType resourceType)
+cResourceCacheKey::cResourceCacheKey(const cResourceCacheKey & other)
+ : m_name(other.m_name)
 {
-   return resourceType;
+}
+
+////////////////////////////////////////
+
+cResourceCacheKey::~cResourceCacheKey()
+{
+}
+
+////////////////////////////////////////
+
+const cResourceCacheKey & cResourceCacheKey::operator =(const cResourceCacheKey & other)
+{
+   m_name = other.m_name;
+   return *this;
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cResourceCacheEntryHeader
+// STRUCT: sResource
 //
+
 ////////////////////////////////////////
 
-cResourceCacheEntryHeader::cResourceCacheEntryHeader(const tChar * pszName, cResourceStore * pStore)
- : m_name(pszName)
- , m_pStore(pStore)
+sResource::sResource()
+ : name() 
+ , extensionId(kNoIndex)
+ , formatId(kNoIndex)
+ , pStore(NULL)
+ , pData(NULL)
+ , dataSize(0)
 {
 }
 
 ////////////////////////////////////////
 
-cResourceCacheEntryHeader::cResourceCacheEntryHeader(const cResourceCacheEntryHeader & other)
- : m_name(other.m_name)
- , m_pStore(other.m_pStore)
+sResource::sResource(const sResource & other)
+ : name(other.name)
+ , extensionId(other.extensionId)
+ , formatId(other.formatId)
+ , pStore(other.pStore)
+ , pData(other.pData)
+ , dataSize(other.dataSize)
 {
 }
 
 ////////////////////////////////////////
 
-cResourceCacheEntryHeader::~cResourceCacheEntryHeader()
+sResource::~sResource()
 {
 }
 
 ////////////////////////////////////////
 
-const cResourceCacheEntryHeader & cResourceCacheEntryHeader::operator =(const cResourceCacheEntryHeader & other)
+const sResource & sResource::operator =(const sResource & other)
 {
-   m_name = other.m_name;
-   m_pStore = other.m_pStore;
+   Assert(other.pData == NULL);
+   name = other.name;
+   extensionId = other.extensionId;
+   formatId = other.formatId;
+   pStore = other.pStore;
+   pData = NULL;
+   dataSize = 0;
    return *this;
 }
 
@@ -551,7 +576,7 @@ void DumpResourceFormats()
 
 ////////////////////////////////////////
 
-cResourceManager::sResource * cResourceManager::FindResourceWithFormat(
+sResource * cResourceManager::FindResourceWithFormat(
    const tChar * pszName, tResourceType type, uint formatId)
 {
    if (pszName == NULL || formatId == kNoIndex)
@@ -650,50 +675,6 @@ tResult ResourceManagerCreate()
       return E_OUTOFMEMORY;
    }
    return RegisterGlobalObject(IID_IResourceManager, static_cast<IResourceManager*>(p));
-}
-
-////////////////////////////////////////
-
-cResourceManager::sResource::sResource()
- : name() 
- , extensionId(kNoIndex)
- , formatId(kNoIndex)
- , pStore(NULL)
- , pData(NULL)
- , dataSize(0)
-{
-}
-
-////////////////////////////////////////
-
-cResourceManager::sResource::sResource(const sResource & other)
- : name(other.name)
- , extensionId(other.extensionId)
- , formatId(other.formatId)
- , pStore(other.pStore)
- , pData(other.pData)
- , dataSize(other.dataSize)
-{
-}
-
-////////////////////////////////////////
-
-cResourceManager::sResource::~sResource()
-{
-}
-
-////////////////////////////////////////
-
-const cResourceManager::sResource & cResourceManager::sResource::operator =(const sResource & other)
-{
-   Assert(other.pData == NULL);
-   name = other.name;
-   extensionId = other.extensionId;
-   formatId = other.formatId;
-   pStore = other.pStore;
-   pData = NULL;
-   dataSize = 0;
-   return *this;
 }
 
 

@@ -15,6 +15,14 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////
+
+inline const tChar * ResourceTypeName(tResourceType resourceType)
+{
+   return resourceType;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cResourceFormat
 //
@@ -55,9 +63,6 @@ public:
    cResourceFormat * GetFormat(uint formatId) { return &m_formats[formatId]; }
    const cResourceFormat * GetFormat(uint formatId) const { return &m_formats[formatId]; }
 
-   uint GetFormatId(tResourceType type) const;
-
-   void GetCompatibleFormats(tResourceType type, std::set<cStr> * pFormats) const;
    void GetExtensionsForType(tResourceType type, std::set<uint> * pExtensionIds) const;
 
    const tChar * GetExtension(uint extensionId) const { return m_extensions[extensionId].c_str(); }

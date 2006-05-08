@@ -17,29 +17,47 @@ class cFileSpec;
 
 F_DECLARE_INTERFACE(IResourceManagerDiagnostics);
 
-class cResourceCacheEntryHeader;
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cResourceCacheKey
+//
+
+class cResourceCacheKey
+{
+public:
+   cResourceCacheKey(const tChar * pszName);
+   cResourceCacheKey(const cResourceCacheKey &);
+   virtual ~cResourceCacheKey();
+
+   const cResourceCacheKey & operator =(const cResourceCacheKey &);
+
+   inline const tChar * GetName() const { return m_name.c_str(); }
+
+private:
+   cStr m_name;
+};
 
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cResourceCacheEntryHeader
+// STRUCT: sResource
 //
 
-class cResourceCacheEntryHeader
+struct sResource
 {
-public:
-   cResourceCacheEntryHeader(const tChar * pszName, cResourceStore * pStore);
-   cResourceCacheEntryHeader(const cResourceCacheEntryHeader &);
-   virtual ~cResourceCacheEntryHeader();
+   sResource();
+   sResource(const sResource &);
+   ~sResource();
 
-   const cResourceCacheEntryHeader & operator =(const cResourceCacheEntryHeader &);
+   const sResource & operator =(const sResource &);
 
-   inline const tChar * GetName() const { return m_name.c_str(); }
-   inline cResourceStore * GetStore() const { return m_pStore; }
-
-private:
-   cStr m_name;
-   cResourceStore * m_pStore;
+   cStr name;
+   uint extensionId;
+   uint formatId;
+   cResourceStore * pStore;
+   void * pData;
+   ulong dataSize;
 };
 
 
@@ -99,8 +117,6 @@ public:
    virtual size_t GetCacheSize() const;
 
 private:
-   struct sResource;
-
    sResource * FindResourceWithFormat(const tChar * pszName, tResourceType type, uint formatId);
    tResult DoLoadFromReader(IReader * pReader, const cResourceFormat * pFormat, ulong dataSize, void * param, void * * ppData);
 
@@ -108,21 +124,6 @@ private:
 
    cResourceFormatTable m_formats;
 
-   struct sResource
-   {
-      sResource();
-      sResource(const sResource &);
-      ~sResource();
-
-      const sResource & operator =(const sResource &);
-
-      cStr name;
-      uint extensionId;
-      uint formatId;
-      cResourceStore * pStore;
-      void * pData;
-      ulong dataSize;
-   };
    typedef std::vector<sResource> tResources;
    tResources m_resources;
 };

@@ -22,19 +22,19 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-LOG_DEFINE_CHANNEL(ResourceFormat);
+LOG_EXTERN_CHANNEL(ResourceManager);
 
-#define LocalMsg(msg)            DebugMsgEx(ResourceFormat,msg)
-#define LocalMsg1(msg,a)         DebugMsgEx1(ResourceFormat,msg,(a))
-#define LocalMsg2(msg,a,b)       DebugMsgEx2(ResourceFormat,msg,(a),(b))
-#define LocalMsg3(msg,a,b,c)     DebugMsgEx3(ResourceFormat,msg,(a),(b),(c))
-#define LocalMsg4(msg,a,b,c,d)   DebugMsgEx4(ResourceFormat,msg,(a),(b),(c),(d))
+#define LocalMsg(msg)            DebugMsgEx(ResourceManager,msg)
+#define LocalMsg1(msg,a)         DebugMsgEx1(ResourceManager,msg,(a))
+#define LocalMsg2(msg,a,b)       DebugMsgEx2(ResourceManager,msg,(a),(b))
+#define LocalMsg3(msg,a,b,c)     DebugMsgEx3(ResourceManager,msg,(a),(b),(c))
+#define LocalMsg4(msg,a,b,c,d)   DebugMsgEx4(ResourceManager,msg,(a),(b),(c),(d))
 
-#define LocalMsgIf(cond,msg)           DebugMsgIfEx(ResourceFormat,(cond),msg)
-#define LocalMsgIf1(cond,msg,a)        DebugMsgIfEx1(ResourceFormat,(cond),msg,(a))
-#define LocalMsgIf2(cond,msg,a,b)      DebugMsgIfEx2(ResourceFormat,(cond),msg,(a),(b))
-#define LocalMsgIf3(cond,msg,a,b,c)    DebugMsgIfEx3(ResourceFormat,(cond),msg,(a),(b),(c))
-#define LocalMsgIf4(cond,msg,a,b,c,d)  DebugMsgIfEx4(ResourceFormat,(cond),msg,(a),(b),(c),(d))
+#define LocalMsgIf(cond,msg)           DebugMsgIfEx(ResourceManager,(cond),msg)
+#define LocalMsgIf1(cond,msg,a)        DebugMsgIfEx1(ResourceManager,(cond),msg,(a))
+#define LocalMsgIf2(cond,msg,a,b)      DebugMsgIfEx2(ResourceManager,(cond),msg,(a),(b))
+#define LocalMsgIf3(cond,msg,a,b,c)    DebugMsgIfEx3(ResourceManager,(cond),msg,(a),(b),(c))
+#define LocalMsgIf4(cond,msg,a,b,c,d)  DebugMsgIfEx4(ResourceManager,(cond),msg,(a),(b),(c),(d))
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -57,13 +57,6 @@ static bool SameType(tResourceType lhs, tResourceType rhs)
    }
 
    return false;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-inline const tChar * ResourceTypeName(tResourceType resourceType)
-{
-   return resourceType;
 }
 
 
@@ -132,6 +125,8 @@ tResult cResourceFormatTable::RegisterFormat(tResourceType type,
          WarnMsg("Dependent resource type loader specifies a load function which will never be called\n");
       }
    }
+
+   LocalMsg1("Registering resource format \"%s\"\n", ResourceTypeName(type));
 
    // File extensions are optional only for resource formats that translate from another format
    if (!typeDepend  && (pszExtension == NULL))
@@ -257,38 +252,6 @@ uint cResourceFormatTable::DeduceFormats(const tChar * pszName, tResourceType ty
    LocalMsgIf1(iFormat == 1, "   Single compatible format: %s\n", ResourceTypeName(m_formats[pFormatIds[0]].type));
    LocalMsgIf(iFormat > 1, "   Multiple compatible formats\n");
    return iFormat;
-}
-
-////////////////////////////////////////
-
-uint cResourceFormatTable::GetFormatId(tResourceType type) const
-{
-   tResourceFormats::const_iterator iter = m_formats.begin();
-   tResourceFormats::const_iterator end = m_formats.end();
-   for (uint index = 0; iter != end; iter++, index++)
-   {
-      if (SameType(iter->type, type))
-      {
-         return index;
-      }
-   }
-   return kNoIndex;
-}
-
-////////////////////////////////////////
-
-void cResourceFormatTable::GetCompatibleFormats(tResourceType type, std::set<cStr> * pFormats) const
-{
-   pFormats->insert(type);
-
-   tResourceFormats::const_iterator iter = m_formats.begin();
-   for (; iter != m_formats.end(); iter++)
-   {
-      if ((pFormats->find(iter->type) != pFormats->end()) && iter->typeDepend)
-      {
-         pFormats->insert(iter->typeDepend);
-      }
-   }
 }
 
 ////////////////////////////////////////

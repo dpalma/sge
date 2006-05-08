@@ -136,10 +136,10 @@ TECH_API tResult TextFormatRegister(const tChar * pszExtensions)
       const tChar * pszExtension = extensions.m_tokens[i].c_str();
 
 #if _MSC_VER > 1200
-      if (pResourceManager->RegisterFormat(kRT_AnsiText, pszExtension, TextLoad<char>, NULL, TextUnload<char>) == S_OK
+      if (pResourceManager->RegisterFormat(kRT_AsciiText, pszExtension, TextLoad<char>, NULL, TextUnload<char>) == S_OK
          && pResourceManager->RegisterFormat(kRT_UnicodeText, pszExtension, TextLoad<wchar_t>, NULL, TextUnload<wchar_t>) == S_OK)
 #else
-      if (pResourceManager->RegisterFormat(kRT_AnsiText, pszExtension, AnsiTextLoad, NULL, AnsiTextUnload) == S_OK
+      if (pResourceManager->RegisterFormat(kRT_AsciiText, pszExtension, AnsiTextLoad, NULL, AnsiTextUnload) == S_OK
          && pResourceManager->RegisterFormat(kRT_UnicodeText, pszExtension, UnicodeTextLoad, NULL, UnicodeTextUnload) == S_OK)
 #endif
       {
