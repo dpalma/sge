@@ -8,70 +8,13 @@
 #include "globalobjdef.h"
 #include "resourceformat.h"
 #include "resourcestore.h"
+#include "resourceutils.h"
 
 #ifdef _MSC_VER
 #pragma once
 #endif
 
 class cFileSpec;
-
-F_DECLARE_INTERFACE(IResourceManagerDiagnostics);
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cResourceCacheKey
-//
-
-class cResourceCacheKey
-{
-public:
-   cResourceCacheKey(const tChar * pszName);
-   cResourceCacheKey(const cResourceCacheKey &);
-   virtual ~cResourceCacheKey();
-
-   const cResourceCacheKey & operator =(const cResourceCacheKey &);
-
-   inline const tChar * GetName() const { return m_name.c_str(); }
-
-private:
-   cStr m_name;
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// STRUCT: sResource
-//
-
-struct sResource
-{
-   sResource();
-   sResource(const sResource &);
-   ~sResource();
-
-   const sResource & operator =(const sResource &);
-
-   cStr name;
-   uint extensionId;
-   uint formatId;
-   cResourceStore * pStore;
-   void * pData;
-   ulong dataSize;
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// INTERFACE: IResourceManagerDiagnostics
-//
-
-interface IResourceManagerDiagnostics : IUnknown
-{
-   virtual void DumpFormats() const = 0;
-   virtual void DumpCache() const = 0;
-   virtual size_t GetCacheSize() const = 0;
-};
 
 
 ///////////////////////////////////////////////////////////////////////////////

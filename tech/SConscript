@@ -31,6 +31,7 @@ sourceFiles = Split("""
    src/resourceformat.cpp
    src/resourcemanager.cpp
    src/resourcestore.cpp
+   src/resourceutils.cpp
    src/statemachinetest.cpp
    src/techassert.cpp
    src/techlog.cpp

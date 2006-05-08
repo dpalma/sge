@@ -8,6 +8,7 @@
 #include "filepath.h"
 #include "filespec.h"
 #include "readwriteapi.h"
+#include "resourceutils.h"
 
 #ifdef HAVE_CPPUNITLITE2
 #include "CppUnitLite2.h"
@@ -39,25 +40,6 @@ LOG_EXTERN_CHANNEL(ResourceManager);
 ////////////////////////////////////////////////////////////////////////////////
 
 static const tChar kExtSep = _T('.');
-
-static const uint kNoIndex = ~0u;
-
-
-////////////////////////////////////////////////////////////////////////////////
-
-static bool SameType(tResourceType lhs, tResourceType rhs)
-{
-   if (lhs != NULL && rhs != NULL)
-   {
-      return _tcscmp(lhs, rhs) == 0;
-   }
-   else if (lhs == NULL && rhs == NULL)
-   {
-      return true;
-   }
-
-   return false;
-}
 
 
 ///////////////////////////////////////////////////////////////////////////////

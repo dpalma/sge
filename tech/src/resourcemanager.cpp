@@ -41,136 +41,6 @@ LOG_DEFINE_CHANNEL(ResourceManager);
 // REFERENCES
 // "Game Developer Magazine", February 2005, "Inner Product" column
 
-static const uint kNoIndex = ~0u;
-
-// {93BA1F78-3FF1-415b-BA5B-56FED039E838}
-const GUID IID_IResourceManagerDiagnostics = 
-{ 0x93ba1f78, 0x3ff1, 0x415b, { 0xba, 0x5b, 0x56, 0xfe, 0xd0, 0x39, 0xe8, 0x38 } };
-
-
-////////////////////////////////////////////////////////////////////////////////
-
-typedef std::vector<cStr> tStrings;
-static size_t ListDirs(const cFilePath & path, bool bSkipHidden, tStrings * pDirs)
-{
-   Assert(pDirs != NULL);
-   if (pDirs == NULL)
-      return 0;
-
-   pDirs->clear();
-
-   cFileSpec wildcard(_T("*"));
-   wildcard.SetPath(path);
-   cAutoIPtr<IEnumFiles> pEnumFiles;
-   if (EnumFiles(wildcard, &pEnumFiles) == S_OK)
-   {
-      cFileSpec files[10];
-      uint attribs[10];
-      ulong nFiles = 0;
-      while (SUCCEEDED(pEnumFiles->Next(_countof(files), files, attribs, &nFiles)))
-      {
-         for (ulong i = 0; i < nFiles; i++)
-         {
-            if ((attribs[i] & kFA_Directory) == kFA_Directory)
-            {
-               if (bSkipHidden && ((attribs[i] & kFA_Hidden) == kFA_Hidden))
-               {
-                  LocalMsg1("Skipping hidden directory \"%s\"\n", files[i].CStr());
-                  continue;
-               }
-               pDirs->push_back(files[i].CStr());
-            }
-         }
-      }
-   }
-
-   return pDirs->size();
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cResourceCacheKey
-//
-
-////////////////////////////////////////
-
-cResourceCacheKey::cResourceCacheKey(const tChar * pszName)
- : m_name(pszName)
-{
-}
-
-////////////////////////////////////////
-
-cResourceCacheKey::cResourceCacheKey(const cResourceCacheKey & other)
- : m_name(other.m_name)
-{
-}
-
-////////////////////////////////////////
-
-cResourceCacheKey::~cResourceCacheKey()
-{
-}
-
-////////////////////////////////////////
-
-const cResourceCacheKey & cResourceCacheKey::operator =(const cResourceCacheKey & other)
-{
-   m_name = other.m_name;
-   return *this;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// STRUCT: sResource
-//
-
-////////////////////////////////////////
-
-sResource::sResource()
- : name() 
- , extensionId(kNoIndex)
- , formatId(kNoIndex)
- , pStore(NULL)
- , pData(NULL)
- , dataSize(0)
-{
-}
-
-////////////////////////////////////////
-
-sResource::sResource(const sResource & other)
- : name(other.name)
- , extensionId(other.extensionId)
- , formatId(other.formatId)
- , pStore(other.pStore)
- , pData(other.pData)
- , dataSize(other.dataSize)
-{
-}
-
-////////////////////////////////////////
-
-sResource::~sResource()
-{
-}
-
-////////////////////////////////////////
-
-const sResource & sResource::operator =(const sResource & other)
-{
-   Assert(other.pData == NULL);
-   name = other.name;
-   extensionId = other.extensionId;
-   formatId = other.formatId;
-   pStore = other.pStore;
-   pData = NULL;
-   dataSize = 0;
-   return *this;
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -740,7 +610,7 @@ tResult cTestResourceStore::OpenEntry(const tChar * pszName, IReader * * ppReade
    std::vector<std::pair<cStr, cStr> >::const_iterator iter = m_testData.begin();
    for (ulong index = 0; iter != m_testData.end(); iter++, index++)
    {
-      if (stricmp(pszName, m_testData[index].first.c_str()) == 0)
+      if (_tcsicmp(pszName, m_testData[index].first.c_str()) == 0)
       {
          cStr * pDataStr = &m_testData[index].second;
          return MemReaderCreate(reinterpret_cast<const byte *>(pDataStr->c_str()), pDataStr->length(), false, ppReader);
