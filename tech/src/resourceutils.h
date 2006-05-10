@@ -74,24 +74,49 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// STRUCT: sResource
+// CLASS: cResourceData
 //
 
-struct sResource
+class cResourceData
 {
-   sResource();
-   sResource(const sResource &);
-   ~sResource();
+public:
+   cResourceData();
+   cResourceData(void * pData, ulong dataSize, uint formatId);
+   cResourceData(const cResourceData &);
+   ~cResourceData();
 
-   const sResource & operator =(const sResource &);
+   const cResourceData & operator =(const cResourceData &);
 
-   cStr name;
-   uint extensionId;
-   uint formatId;
-   cResourceStore * pStore;
-   void * pData;
-   ulong dataSize;
+   void * GetData();
+   ulong GetDataSize() const;
+   uint GetFormatId() const;
+
+private:
+   void * m_pData;
+   ulong m_dataSize;
+   uint m_formatId;
 };
+
+////////////////////////////////////////
+
+inline void * cResourceData::GetData()
+{
+   return m_pData;
+}
+
+////////////////////////////////////////
+
+inline ulong cResourceData::GetDataSize() const
+{
+   return m_dataSize;
+}
+
+////////////////////////////////////////
+
+inline uint cResourceData::GetFormatId() const
+{
+   return m_formatId;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////

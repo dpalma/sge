@@ -8,6 +8,7 @@
 #include "filepath.h"
 #include "filespec.h"
 #include "readwriteapi.h"
+#include "resourcestore.h"
 
 #ifdef HAVE_CPPUNITLITE2
 #include "CppUnitLite2.h"
@@ -70,23 +71,23 @@ tResult cResourceManager::Init()
 
 tResult cResourceManager::Term()
 {
-   tResources::iterator resIter = m_resources.begin();
-   tResources::iterator resEnd = m_resources.end();
-   for (; resIter != resEnd; resIter++)
    {
-      if (resIter->pData != NULL)
+      tResourceCache::iterator iter = m_cache.begin();
+      for (; iter != m_cache.end(); iter++)
       {
-         if (resIter->formatId != kNoIndex)
+         if (iter->second.GetData() != NULL)
          {
-            cResourceFormat * pFormat = m_formats.GetFormat(resIter->formatId);
-            LocalMsg2("Unloading \"%s\" (%s)\n", resIter->name.c_str(), ResourceTypeName(pFormat->type));
-            pFormat->Unload(resIter->pData);
-            resIter->pData = NULL;
-            resIter->dataSize = 0;
+            WarnMsgIf(iter->second.GetFormatId() == kNoIndex, "No format id for loaded resource\n");
+            if (iter->second.GetFormatId() != kNoIndex)
+            {
+               cResourceFormat * pFormat = m_formats.GetFormat(iter->second.GetFormatId());
+               LocalMsg2("Unloading \"%s\" (%s)\n", iter->first.GetName(), ResourceTypeName(pFormat->type));
+               pFormat->Unload(iter->second.GetData());
+            }
          }
       }
+      m_cache.clear();
    }
-   m_resources.clear();
 
    {
       std::vector<cResourceStore *>::iterator iter = m_stores.begin();
@@ -117,7 +118,8 @@ tResult cResourceManager::AddDirectory(const tChar * pszDir)
 
    LocalMsg1("Adding directory store for \"%s\"\n", pszDir);
    
-   return AddResourceStore(pStore);
+   m_stores.push_back(pStore);
+   return S_OK;
 }
 
 ////////////////////////////////////////
@@ -167,48 +169,6 @@ tResult cResourceManager::AddArchive(const tChar * pszArchive)
       return E_OUTOFMEMORY;
    }
 
-   if (AddResourceStore(pStore) != S_OK)
-   {
-      delete pStore;
-      return E_FAIL;
-   }
-
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cResourceManager::AddResourceStore(cResourceStore * pStore)
-{
-   if (pStore == NULL)
-   {
-      return E_POINTER;
-   }
-
-   std::vector<cStr> cacheNames;
-   tResult result = pStore->GetCacheNames(&cacheNames);
-   if (result == S_OK)
-   {
-      std::vector<cStr>::const_iterator iter = cacheNames.begin();
-      for (; iter != cacheNames.end(); iter++)
-      {
-         cFileSpec file(iter->c_str());
-         sResource res;
-         Verify(file.GetFileNameNoExt(&res.name));
-         const tChar * pszExt = file.GetFileExt();
-         if (pszExt != NULL && _tcslen(pszExt) > 0)
-         {
-            res.extensionId = m_formats.GetExtensionId(pszExt);
-         }
-         res.pStore = pStore;
-         m_resources.push_back(res);
-      }
-   }
-   else if (FAILED(result))
-   {
-      return result;
-   }
-
    m_stores.push_back(pStore);
    return S_OK;
 }
@@ -226,6 +186,21 @@ tResult cResourceManager::Load(const tChar * pszName, tResourceType type,
    if (!type)
    {
       return E_INVALIDARG;
+   }
+
+#ifdef _DEBUG
+   static bool bDumpCache = false;
+   if (bDumpCache)
+   {
+      DumpCache();
+   }
+#endif
+
+   tResourceCache::iterator f = m_cache.find(cResourceCacheKey(pszName, type));
+   if (f != m_cache.end() && (f->second.GetData() != NULL))
+   {
+      *ppData = f->second.GetData();
+      return S_OK;
    }
 
    uint formatIds[10];
@@ -253,8 +228,6 @@ tResult cResourceManager::LoadWithFormat(const tChar * pszName, tResourceType ty
 
    cResourceFormat * pFormat = m_formats.GetFormat(formatId);
 
-   sResource * pRes = FindResourceWithFormat(pszName, type, formatId);
-
 #ifdef _DEBUG
    static bool bDumpCache = false;
    if (bDumpCache)
@@ -263,79 +236,91 @@ tResult cResourceManager::LoadWithFormat(const tChar * pszName, tResourceType ty
    }
 #endif
 
-   // If no resource and format specifies a dependent type then it
-   // would not have been pre-loaded in AddDirectory or AddArchive.
-   if (pRes == NULL)
+   if (pFormat->typeDepend)
    {
-      if (pFormat->typeDepend)
-      {
-         LocalMsg3("Request for (\"%s\", %s) will be converted from type %s\n",
-            pszName, ResourceTypeName(type), ResourceTypeName(pFormat->typeDepend));
+      LocalMsg3("Request for (\"%s\", %s) will be converted from type %s\n",
+         pszName, ResourceTypeName(type), ResourceTypeName(pFormat->typeDepend));
 
-         // TODO: load the dependent data before adding a new resource
-         void * pDependData = NULL;
-         if (Load(pszName, pFormat->typeDepend, param, &pDependData) == S_OK)
+      void * pDependData = NULL;
+      if (Load(pszName, pFormat->typeDepend, param, &pDependData) == S_OK)
+      {
+         void * pData = (*pFormat->pfnPostload)(pDependData, 0, param);
+         if (pData != NULL)
          {
-            void * pData = (*pFormat->pfnPostload)(pDependData, 0, param);
-            if (pData != NULL)
+            // TODO: Store the actual size of the data instead of zero
+            m_cache[cResourceCacheKey(pszName, type)] = cResourceData(pData, 0, formatId);
+            *ppData = pData;
+            return S_OK;
+         }
+      }
+   }
+   else
+   {
+      tResult openResult = E_FAIL;
+      cAutoIPtr<IReader> pReader;
+
+      cFileSpec name(pszName);
+      if (_tcslen(name.GetFileExt()) > 0)
+      {
+         openResult = Open(name.CStr(), &pReader);
+      }
+      else
+      {
+         std::set<uint> extsPossible;
+         uint extensionId = m_formats.GetExtensionIdForName(pszName);
+         if (extensionId == kNoIndex)
+         {
+            // Deduce possible extensions using the type
+            m_formats.GetExtensionsForType(type, &extsPossible);
+         }
+
+         std::set<uint>::const_iterator iter = extsPossible.begin();
+         for (; iter != extsPossible.end(); iter++)
+         {
+            name.SetFileExt(m_formats.GetExtension(*iter));
+            openResult = Open(name.CStr(), &pReader);
+            if (openResult == S_OK)
             {
-               sResource res;
-               cFileSpec(pszName).GetFileNameNoExt(&res.name);
-               res.extensionId = m_formats.GetExtensionIdForName(pszName);
-               res.formatId = formatId;
-               res.pData = pData;
-               m_resources.push_back(res);
-               *ppData = pData;
-               return S_OK;
+               break;
             }
          }
       }
 
-      // Loading via a dependent type failed above--don't bother continuing
-      // (Or, had no dependent type to load from in the first place.)
-      return E_FAIL;
-   }
-
-   if (!pFormat->typeDepend && pRes->pData == NULL)
-   {
-      tResult result = E_FAIL;
-      ulong dataSize = 0;
-      void * pData = NULL;
-
-      if (pRes->pStore != NULL)
+      if ((openResult == S_OK) && !!pReader)
       {
-         cFileSpec file(pszName);
-         file.SetFileExt(m_formats.GetExtension(pRes->extensionId));
-
-         cAutoIPtr<IReader> pReader;
-         if (pRes->pStore->OpenEntry(file.CStr(), &pReader) == S_OK)
+         ulong dataSize = 0;
+         void * pData = NULL;
+         tResult result = E_FAIL;
+         if (pReader->Seek(0, kSO_End) == S_OK
+            && pReader->Tell(&dataSize) == S_OK
+            && pReader->Seek(0, kSO_Set) == S_OK
+            && DoLoadFromReader(pReader, pFormat, dataSize, param, &pData) == S_OK)
          {
-            if (pReader->Seek(0, kSO_End) == S_OK
-               && pReader->Tell(&dataSize) == S_OK
-               && pReader->Seek(0, kSO_Set) == S_OK
-               && DoLoadFromReader(pReader, pFormat, dataSize, param, &pData) == S_OK)
-            {
-               result = S_OK;
-            }
+            m_cache[cResourceCacheKey(pszName, type)] = cResourceData(pData, dataSize, formatId);
+            *ppData = pData;
+            result = S_OK;
          }
+         return result;
       }
-
-      if (result == S_OK)
-      {
-         // Cache the resource data
-         pRes->formatId = formatId;
-         pRes->pData = pData;
-         pRes->dataSize = dataSize;
-      }
-   }
-
-   if (pRes->pData != NULL)
-   {
-      *ppData = pRes->pData;
-      return S_OK;
    }
 
    return E_FAIL;
+}
+
+tResult cResourceManager::Open(const tChar * pszName, IReader * * ppReader)
+{
+   Assert(pszName != NULL);
+   Assert(ppReader != NULL);
+   std::vector<cResourceStore *>::iterator iter = m_stores.begin();
+   for (; iter != m_stores.end(); iter++)
+   {
+      cAutoIPtr<IReader> pReader;
+      if ((*iter)->OpenEntry(pszName, &pReader) == S_OK)
+      {
+         return pReader.GetPointer(ppReader);
+      }
+   }
+   return S_FALSE;
 }
 
 ////////////////////////////////////////
@@ -391,7 +376,7 @@ void cResourceManager::DumpFormats() const
 
 void cResourceManager::DumpCache() const
 {
-   techlog.Print(kInfo, _T("%d resource cache entries\n"), m_resources.size());
+   techlog.Print(kInfo, _T("%d resource cache entries\n"), m_cache.size());
    static const int kNameWidth = -30;
    static const int kExtWidth = -5;
    static const int kTypeWidth = -20;
@@ -401,14 +386,14 @@ void cResourceManager::DumpCache() const
                  kExtWidth, _T("Ext"),
                  kTypeWidth, _T("Type"));
    techlog.Print(kInfo, _T("----------------------------------------------------------------------\n"));
-   tResources::const_iterator iter = m_resources.begin();
-   tResources::const_iterator end = m_resources.end();
-   for (uint index = 0; iter != end; iter++, index++)
+   tResourceCache::const_iterator iter = m_cache.begin();
+   for (uint index = 0; iter != m_cache.end(); iter++, index++)
    {
-      const cResourceFormat * pFormat = (iter->formatId != kNoIndex) ? m_formats.GetFormat(iter->formatId) : NULL;
+      const cResourceFormat * pFormat = (iter->second.GetFormatId() != kNoIndex)
+         ? m_formats.GetFormat(iter->second.GetFormatId()) : NULL;
       techlog.Print(kInfo, kRowFormat,
-         kNameWidth, !iter->name.empty() ? iter->name.c_str() : _T("Empty"),
-         kExtWidth, (iter->extensionId != kNoIndex) ? m_formats.GetExtension(iter->extensionId) : _T("None"),
+         kNameWidth, iter->first.GetName(),
+         kExtWidth, _T("None"),
          kTypeWidth, pFormat ? ResourceTypeName(pFormat->type) : _T("Undetermined"));
    }
 }
@@ -417,7 +402,7 @@ void cResourceManager::DumpCache() const
 
 size_t cResourceManager::GetCacheSize() const
 {
-   return m_resources.size();
+   return m_cache.size();
 }
 
 ////////////////////////////////////////
@@ -442,71 +427,6 @@ void DumpResourceFormats()
    {
       pResMgrDiag->DumpFormats();
    }
-}
-
-////////////////////////////////////////
-
-sResource * cResourceManager::FindResourceWithFormat(
-   const tChar * pszName, tResourceType type, uint formatId)
-{
-   if (pszName == NULL || formatId == kNoIndex)
-   {
-      return NULL;
-   }
-
-   std::set<uint> extsPossible;
-   uint extensionId = m_formats.GetExtensionIdForName(pszName);
-   if (extensionId == kNoIndex)
-   {
-      // Deduce possible extensions using the type
-      m_formats.GetExtensionsForType(type, &extsPossible);
-   }
-
-   cStr name;
-   cFileSpec(pszName).GetFileNameNoExt(&name);
-
-   // Will point to an unloaded resource at the end of the loop
-   sResource * pPotentialMatch = NULL;
-   int nPotentialMatches = 0;
-
-   {
-      tResources::iterator iter = m_resources.begin();
-      tResources::iterator end = m_resources.end();
-      for (uint index = 0; iter != end; iter++, index++)
-      {
-         if (_tcsicmp(iter->name.c_str(), name.c_str()) == 0)
-         {
-            LocalMsg4("Resource %d: base name \"%s\", extension %d is a potential match for \"%s\"\n",
-               index, iter->name.c_str(), iter->extensionId, pszName);
-
-            if (extensionId == kNoIndex
-               && (extsPossible.find(iter->extensionId) != extsPossible.end()))
-            {
-               pPotentialMatch = &m_resources[index];
-               nPotentialMatches++;
-            }
-            else if (extensionId == iter->extensionId)
-            {
-               if (iter->formatId == kNoIndex
-                  && !m_formats.GetFormat(formatId)->typeDepend
-                  && iter->pStore != NULL)
-               {
-                  pPotentialMatch = &m_resources[index];
-               }
-               else if (iter->formatId == formatId)
-               {
-                  pPotentialMatch = &m_resources[index];
-                  break;
-               }
-            }
-         }
-      }
-   }
-
-   LocalMsgIf3(nPotentialMatches > 0, "%d potential matches for %s, %s\n",
-      nPotentialMatches, pszName, ResourceTypeName(type));
-
-   return pPotentialMatch;
 }
 
 ////////////////////////////////////////
@@ -560,7 +480,6 @@ public:
    cTestResourceStore(const tStrPair * pTestData, size_t nTestData);
    virtual ~cTestResourceStore();
 
-   virtual tResult GetCacheNames(std::vector<cStr> * pNames);
    virtual tResult CollectResourceNames(const tChar * pszMatch, std::vector<cStr> * pNames);
    virtual tResult OpenEntry(const tChar * pszName, IReader * * ppReader);
 
@@ -580,16 +499,6 @@ cTestResourceStore::cTestResourceStore(const tStrPair * pTestData, size_t nTestD
 
 cTestResourceStore::~cTestResourceStore()
 {
-}
-
-tResult cTestResourceStore::GetCacheNames(std::vector<cStr> * pNames)
-{
-   std::vector<std::pair<cStr, cStr> >::const_iterator iter = m_testData.begin();
-   for (; iter != m_testData.end(); iter++)
-   {
-      pNames->push_back(iter->first.c_str());
-   }
-   return S_OK;
 }
 
 tResult cTestResourceStore::CollectResourceNames(const tChar * pszMatch, std::vector<cStr> * pNames)
@@ -645,7 +554,7 @@ cResourceManagerTests::cResourceManagerTests(const tStrPair * pTestData, size_t 
    if ((pTestData != NULL) && (nTestData > 0))
    {
       cTestResourceStore * pStore = new cTestResourceStore(pTestData, nTestData);
-      m_pResourceManager->AddResourceStore(static_cast<cResourceStore*>(pStore));
+      m_pResourceManager->m_stores.push_back(static_cast<cResourceStore*>(pStore));
    }
 }
 
@@ -771,7 +680,7 @@ TEST_FP(cResourceManagerTests,
    CHECK(m_pResourceManager->RegisterFormat(kRT_Data, NULL, "dat", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
    CHECK(m_pResourceManager->RegisterFormat(kRT_Bitmap, NULL, "bmp", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
 
-   size_t cacheSizeBefore = m_pDiagnostics->GetCacheSize();
+   CHECK_EQUAL(0, m_pDiagnostics->GetCacheSize());
 
    {
       byte * pFooDat = NULL;
@@ -791,7 +700,7 @@ TEST_FP(cResourceManagerTests,
       CHECK(memcmp(pFooDat2, g_basicTestResources[0].second.c_str(), g_basicTestResources[0].second.length()) == 0);
    }
 
-   CHECK_EQUAL(cacheSizeBefore, m_pDiagnostics->GetCacheSize());
+   CHECK_EQUAL(2, m_pDiagnostics->GetCacheSize());
 }
 
 ////////////////////////////////////////

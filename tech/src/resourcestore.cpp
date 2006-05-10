@@ -68,54 +68,6 @@ cDirectoryResourceStore::~cDirectoryResourceStore()
 
 ////////////////////////////////////////
 
-tResult cDirectoryResourceStore::GetCacheNames(std::vector<cStr> * pNames)
-{
-   if (pNames == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (m_dir.empty())
-   {
-      return E_FAIL;
-   }
-
-   cFileSpec wildcard(_T("*.*"));
-   wildcard.SetPath(cFilePath(m_dir.c_str()));
-
-   cAutoIPtr<IEnumFiles> pEnumFiles;
-   if (EnumFiles(wildcard, &pEnumFiles) == S_OK)
-   {
-      static const int kThisManyAtOnce = 10;
-      cFileSpec files[kThisManyAtOnce];
-      uint attribs[kThisManyAtOnce];
-      ulong nFiles = 0;
-      while (SUCCEEDED(pEnumFiles->Next(_countof(files), files, attribs, &nFiles)))
-      {
-         for (ulong i = 0; i < nFiles; i++)
-         {
-            if ((attribs[i] & kFA_Directory) == kFA_Directory)
-            {
-               LocalMsg1("Directory: %s\n", files[i].CStr());
-            }
-            else if ((attribs[i] & kFA_Hidden) == kFA_Hidden)
-            {
-               InfoMsg1("Skipping hidden file \"%s\"\n", files[i].CStr());
-            }
-            else
-            {
-               LocalMsg1("File: %s\n", files[i].CStr());
-               pNames->push_back(files[i].CStr());
-            }
-         }
-      }
-   }
-
-   return S_OK;
-}
-
-////////////////////////////////////////
-
 tResult cDirectoryResourceStore::CollectResourceNames(const tChar * pszMatch, std::vector<cStr> * pNames)
 {
    if (pszMatch == NULL || pNames == NULL)
@@ -208,63 +160,6 @@ cZipResourceStore::~cZipResourceStore()
       unzClose(m_handle);
       m_handle = NULL;
    }
-}
-
-////////////////////////////////////////
-
-tResult cZipResourceStore::GetCacheNames(std::vector<cStr> * pNames)
-{
-   if (pNames == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (m_archive.empty())
-   {
-      return E_FAIL;
-   }
-
-   if (m_handle == NULL)
-   {
-#ifdef _UNICODE
-      size_t size = wcstombs(NULL, m_archive.c_str(), 0);
-      char * pszTemp = reinterpret_cast<char*>(alloca(size));
-      wcstombs(pszTemp, m_archive.c_str(), size);
-      m_handle = unzOpen(pszTemp);
-#else
-      m_handle = unzOpen(m_archive.c_str());
-#endif
-      if (m_handle == NULL)
-      {
-         ErrorMsg1("Failed to open zip archive \"%s\"\n", m_archive.c_str());
-         return E_FAIL;
-      }
-   }
-
-   do
-   {
-      unz_file_pos filePos;
-      unz_file_info fileInfo;
-      char szFile[kUnzMaxPath];
-      if (unzGetFilePos(m_handle, &filePos) == UNZ_OK &&
-         unzGetCurrentFileInfo(m_handle, &fileInfo, szFile, _countof(szFile), NULL, 0, NULL, 0) == UNZ_OK)
-      {
-         LocalMsg3("%s(%d): %s\n", m_archive.c_str(), filePos.num_of_file, szFile);
-#ifdef _UNICODE
-         size_t size = mbstowcs(NULL, szFile, 0);
-         wchar_t * pszTemp = reinterpret_cast<wchar_t*>(alloca(size));
-         mbstowcs(pszTemp, szFile, size);
-         cFileSpec file(pszTemp);
-#else
-         cFileSpec file(szFile);
-#endif
-         m_dirCache[cStr(file.CStr())] = filePos;
-         pNames->push_back(file.CStr());
-      }
-   }
-   while (unzGoToNextFile(m_handle) == UNZ_OK);
-
-   return S_OK;
 }
 
 ////////////////////////////////////////

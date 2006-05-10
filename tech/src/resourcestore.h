@@ -30,7 +30,6 @@ class cResourceStore
 public:
    virtual ~cResourceStore() = 0;
 
-   virtual tResult GetCacheNames(std::vector<cStr> * pNames) = 0;
    virtual tResult CollectResourceNames(const tChar * pszMatch, std::vector<cStr> * pNames) = 0;
    virtual tResult OpenEntry(const tChar * pszName, IReader * * ppReader) = 0;
 };
@@ -47,7 +46,6 @@ public:
    cDirectoryResourceStore(const tChar * pszDir);
    virtual ~cDirectoryResourceStore();
 
-   virtual tResult GetCacheNames(std::vector<cStr> * pNames);
    virtual tResult CollectResourceNames(const tChar * pszMatch, std::vector<cStr> * pNames);
    virtual tResult OpenEntry(const tChar * pszName, IReader * * ppReader);
 
@@ -67,7 +65,6 @@ public:
    cZipResourceStore(const tChar * pszArchive);
    virtual ~cZipResourceStore();
 
-   virtual tResult GetCacheNames(std::vector<cStr> * pNames);
    virtual tResult CollectResourceNames(const tChar * pszMatch, std::vector<cStr> * pNames);
    virtual tResult OpenEntry(const tChar * pszName, IReader * * ppReader);
 

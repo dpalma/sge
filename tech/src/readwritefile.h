@@ -19,7 +19,7 @@
 class cFileReader : public cComObject<IMPLEMENTS(IReader)>
 {
 public:
-   cFileReader(const cFileSpec & file);
+   cFileReader(FILE * fp);
    virtual ~cFileReader();
 
    virtual void OnFinalRelease();
@@ -42,7 +42,7 @@ private:
 class cFileWriter : public cComObject<IMPLEMENTS(IWriter)>
 {
 public:
-   cFileWriter(const cFileSpec & file);
+   cFileWriter(FILE * fp);
    virtual ~cFileWriter();
 
    virtual void OnFinalRelease();

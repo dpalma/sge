@@ -130,50 +130,49 @@ bool cResourceCacheKey::operator <(const cResourceCacheKey & other) const
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// STRUCT: sResource
+// CLASS: cResourceData
 //
 
 ////////////////////////////////////////
 
-sResource::sResource()
- : name() 
- , extensionId(kNoIndex)
- , formatId(kNoIndex)
- , pStore(NULL)
- , pData(NULL)
- , dataSize(0)
+cResourceData::cResourceData()
+ : m_pData(NULL)
+ , m_dataSize(0)
+ , m_formatId(kNoIndex)
 {
 }
 
 ////////////////////////////////////////
 
-sResource::sResource(const sResource & other)
- : name(other.name)
- , extensionId(other.extensionId)
- , formatId(other.formatId)
- , pStore(other.pStore)
- , pData(other.pData)
- , dataSize(other.dataSize)
+cResourceData::cResourceData(void * pData, ulong dataSize, uint formatId)
+ : m_pData(pData)
+ , m_dataSize(dataSize)
+ , m_formatId(formatId)
 {
 }
 
 ////////////////////////////////////////
 
-sResource::~sResource()
+cResourceData::cResourceData(const cResourceData & other)
+ : m_pData(other.m_pData)
+ , m_dataSize(other.m_dataSize)
+ , m_formatId(other.m_formatId)
 {
 }
 
 ////////////////////////////////////////
 
-const sResource & sResource::operator =(const sResource & other)
+cResourceData::~cResourceData()
 {
-   Assert(other.pData == NULL);
-   name = other.name;
-   extensionId = other.extensionId;
-   formatId = other.formatId;
-   pStore = other.pStore;
-   pData = NULL;
-   dataSize = 0;
+}
+
+////////////////////////////////////////
+
+const cResourceData & cResourceData::operator =(const cResourceData & other)
+{
+   m_pData = other.m_pData;
+   m_dataSize = other.m_dataSize;
+   m_formatId = other.m_formatId;
    return *this;
 }
 

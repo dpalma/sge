@@ -7,14 +7,13 @@
 #include "resourceapi.h"
 #include "globalobjdef.h"
 #include "resourceformat.h"
-#include "resourcestore.h"
 #include "resourceutils.h"
 
 #ifdef _MSC_VER
 #pragma once
 #endif
 
-class cFileSpec;
+class cResourceStore;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -42,7 +41,6 @@ public:
    virtual tResult AddDirectory(const tChar * pszDir);
    virtual tResult AddDirectoryTreeFlattened(const tChar * pszDir);
    virtual tResult AddArchive(const tChar * pszArchive);
-   tResult AddResourceStore(cResourceStore * pStore);
    virtual tResult Load(const tChar * pszName, tResourceType type, void * param, void * * ppData);
    tResult LoadWithFormat(const tChar * pszName, tResourceType type, uint formatId, void * param, void * * ppData);
    virtual tResult Unload(const tChar * pszName, tResourceType type);
@@ -60,15 +58,15 @@ public:
    virtual size_t GetCacheSize() const;
 
 private:
-   sResource * FindResourceWithFormat(const tChar * pszName, tResourceType type, uint formatId);
+   tResult Open(const tChar * pszName, IReader * * ppReader);
    tResult DoLoadFromReader(IReader * pReader, const cResourceFormat * pFormat, ulong dataSize, void * param, void * * ppData);
 
    std::vector<cResourceStore *> m_stores;
 
    cResourceFormatTable m_formats;
 
-   typedef std::vector<sResource> tResources;
-   tResources m_resources;
+   typedef std::map<cResourceCacheKey, cResourceData> tResourceCache;
+   tResourceCache m_cache;
 };
 
 

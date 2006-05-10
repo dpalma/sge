@@ -5,7 +5,6 @@
 
 #include "readwritefile.h"
 #include "filespec.h"
-#include "techstring.h"
 
 #include "dbgalloc.h" // must be last header
 
@@ -14,8 +13,11 @@
 // CLASS: cFileReader
 //
 
-cFileReader::cFileReader(const cFileSpec & file)
- : m_fp(_tfopen(file.CStr(), _T("rb")))
+///////////////////////////////////////
+// The cFileReader object will own the FILE* pointer
+
+cFileReader::cFileReader(FILE * fp)
+ : m_fp(fp)
 {
 }
 
@@ -165,26 +167,33 @@ tResult FileReaderCreate(const cFileSpec & file, IReader * * ppReader)
    {
       return E_POINTER;
    }
-   cAutoIPtr<IReader> pReader(static_cast<IReader*>(new cFileReader(file)));
+   
+   FILE * fp = _tfopen(file.CStr(), _T("rb"));
+   if (fp == NULL)
+   {
+      return E_FAIL;
+   }
+
+   cAutoIPtr<IReader> pReader(static_cast<IReader*>(new cFileReader(fp)));
    if (!pReader)
    {
+      fclose(fp);
       return E_OUTOFMEMORY;
    }
    return pReader.GetPointer(ppReader);
 }
 
-TECH_API IReader * FileCreateReader(const cFileSpec& file)
-{
-   return new cFileReader(file);
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cFileWriter
 //
 
-cFileWriter::cFileWriter(const cFileSpec & file)
- : m_fp(_tfopen(file.CStr(), _T("wb")))
+///////////////////////////////////////
+// The cFileWriter object will own the FILE* pointer
+
+cFileWriter::cFileWriter(FILE * fp)
+ : m_fp(fp)
 {
 }
 
@@ -276,17 +285,20 @@ tResult FileWriterCreate(const cFileSpec & file, IWriter * * ppWriter)
    {
       return E_POINTER;
    }
-   cAutoIPtr<IWriter> pWriter(static_cast<IWriter*>(new cFileWriter(file)));
+
+   FILE * fp = _tfopen(file.CStr(), _T("wb"));
+   if (fp == NULL)
+   {
+      return E_FAIL;
+   }
+
+   cAutoIPtr<IWriter> pWriter(static_cast<IWriter*>(new cFileWriter(fp)));
    if (!pWriter)
    {
+      fclose(fp);
       return E_OUTOFMEMORY;
    }
    return pWriter.GetPointer(ppWriter);
-}
-
-TECH_API IWriter * FileCreateWriter(const cFileSpec& file)
-{
-   return new cFileWriter(file);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
