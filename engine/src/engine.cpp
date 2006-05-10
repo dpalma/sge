@@ -22,35 +22,15 @@ cRand g_engineRand;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+class cHackMapToken { private: int unused; };
+
 void * MapLoad(IReader * pReader)
 {
-   // Pass the reader along to the post-load function
-   return pReader;
-}
-
-void * MapPostload(void * pData, int dataLength, void * param)
-{
-   IReader * pReader = reinterpret_cast<IReader *>(pData);
-
    UseGlobal(SaveLoadManager);
 
-   if (param != NULL)
+   if (pSaveLoadManager->Load(pReader) == S_OK)
    {
-      cAutoIPtr<IReader> pEntryReader;
-      if (pSaveLoadManager->OpenSingleEntry(pReader, SAVELOADID_MapProperties, &pEntryReader) == S_OK)
-      {
-         pEntryReader->Read((cMapProperties*)param);
-         // Return NULL to prevent the resource manager from caching
-         // the properties struct in place of the actual map
-         return NULL;
-      }
-   }
-   else
-   {
-      if (pSaveLoadManager->Load(pReader) == S_OK)
-      {
-         return reinterpret_cast<void*>(NULL + 1); // TODO: WTF? This return value is a hack
-      }
+      return new cHackMapToken;
    }
 
    return NULL;
@@ -58,32 +38,9 @@ void * MapPostload(void * pData, int dataLength, void * param)
 
 void MapUnload(void * pData)
 {
+   delete (cHackMapToken *)pData;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////
-
-extern tResult RendererResourceRegister(); // renderer.cpp
-extern tResult ModelMs3dResourceRegister(); // modelms3d.cpp
-extern tResult TiXmlRegisterResourceFormat(); // tixml.cpp
-
-tResult EngineRegisterResourceFormats()
-{
-   g_engineRand.Seed(time(NULL));
-
-   UseGlobal(ResourceManager);
-   if (!!pResourceManager)
-   {
-      if (ModelMs3dResourceRegister() == S_OK
-         && RendererResourceRegister() == S_OK
-         && TiXmlRegisterResourceFormat() == S_OK
-         && pResourceManager->RegisterFormat(kRT_Map, kMapExt, MapLoad, MapPostload, MapUnload) == S_OK)
-      {
-         return S_OK;
-      }
-   }
-   return E_FAIL;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -245,6 +202,58 @@ tResult cReadWriteOps<cMapProperties>::Write(IWriter * pWriter, const cMapProper
       return S_OK;
    }
 
+   return E_FAIL;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+void * MapPropertiesLoad(IReader * pReader)
+{
+   UseGlobal(SaveLoadManager);
+
+   cAutoIPtr<IReader> pEntryReader;
+   if (pSaveLoadManager->OpenSingleEntry(pReader, SAVELOADID_MapProperties, &pEntryReader) == S_OK)
+   {
+      cMapProperties * pMapProps = new cMapProperties;
+      if (pMapProps != NULL
+         && pEntryReader->Read(pMapProps) == S_OK)
+      {
+         return pMapProps;
+      }
+   }
+
+   return NULL;
+}
+
+void MapPropertiesUnload(void * pData)
+{
+   delete (cMapProperties *)pData;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+extern tResult RendererResourceRegister(); // renderer.cpp
+extern tResult ModelMs3dResourceRegister(); // modelms3d.cpp
+extern tResult TiXmlRegisterResourceFormat(); // tixml.cpp
+
+tResult EngineRegisterResourceFormats()
+{
+   g_engineRand.Seed(time(NULL));
+
+   UseGlobal(ResourceManager);
+   if (!!pResourceManager)
+   {
+      if (ModelMs3dResourceRegister() == S_OK
+         && RendererResourceRegister() == S_OK
+         && TiXmlRegisterResourceFormat() == S_OK
+         && pResourceManager->RegisterFormat(kRT_Map, kMapExt, MapLoad, NULL, MapUnload) == S_OK
+         && pResourceManager->RegisterFormat(kRT_MapProperties, kMapExt, MapPropertiesLoad, NULL, MapPropertiesUnload) == S_OK)
+      {
+         return S_OK;
+      }
+   }
    return E_FAIL;
 }
 

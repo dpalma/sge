@@ -22,8 +22,9 @@ ENGINE_API tResult EngineRegisterScriptFunctions();
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define kRT_Map _T("SGE.Map")
-#define kMapExt _T("sgm")
+#define kRT_Map            _T("SGE.Map")
+#define kRT_MapProperties  _T("MapProperties")
+#define kMapExt            _T("sgm")
 
 ///////////////////////////////////////////////////////////////////////////////
 //
