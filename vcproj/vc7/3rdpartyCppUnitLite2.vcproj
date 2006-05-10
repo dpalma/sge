@@ -38,7 +38,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="..\..\Build.vc7\StaticRelease\CppUnitLite2.lib"
+				OutputFile="$(OutDir)\CppUnitLite2.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -85,7 +85,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				OutputFile="..\..\Build.vc7\Debug/CppUnitLite2.dll"
+				OutputFile="$(OutDir)/CppUnitLite2.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
@@ -144,7 +144,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="..\..\Build.vc7\StaticDebug\CppUnitLite2.lib"
+				OutputFile="$(OutDir)\CppUnitLite2.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -191,7 +191,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				OutputFile="..\..\Build.vc7\Release/CppUnitLite2.dll"
+				OutputFile="$(OutDir)/CppUnitLite2.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				ProgramDatabaseFile=".\..\..\Build.vc7\Release/CppUnitLite2.pdb"
@@ -251,7 +251,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				OutputFile="..\..\Build.vc7\Opt/CppUnitLite2.dll"
+				OutputFile="$(OutDir)/CppUnitLite2.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"

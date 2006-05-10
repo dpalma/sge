@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				OutputFile="..\..\Build.vc7\Debug/zlibwapi.dll"
+				OutputFile="$(OutDir)/zlibwapi.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				ModuleDefinitionFile="..\..\3rdparty\zlib\contrib\vstudio\vc7\zlibvc.def"
@@ -101,7 +101,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				OutputFile="..\..\Build.vc7\Opt/zlibwapi.dll"
+				OutputFile="$(OutDir)/zlibwapi.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				ModuleDefinitionFile="..\..\3rdparty\zlib\contrib\vstudio\vc7\zlibvc.def"
@@ -160,7 +160,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="..\..\Build.vc7\StaticRelease\zlibwapi.lib"
+				OutputFile="$(OutDir)\zlibwapi.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -206,7 +206,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				OutputFile="..\..\Build.vc7\Release/zlibwapi.dll"
+				OutputFile="$(OutDir)/zlibwapi.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				ModuleDefinitionFile="..\..\3rdparty\zlib\contrib\vstudio\vc7\zlibvc.def"
@@ -264,7 +264,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="..\..\Build.vc7\StaticDebug\zlibwapi.lib"
+				OutputFile="$(OutDir)\zlibwapi.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
