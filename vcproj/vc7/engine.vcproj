@@ -22,7 +22,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include,..\..\script\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include,..\..\script\include,..\..\rendergl\include"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC"
 				StringPooling="TRUE"
 				RuntimeLibrary="3"
@@ -85,7 +85,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include,..\..\script\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include,..\..\script\include,..\..\rendergl\include"
 				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,HAVE_CPPUNITLITE2,_USRDLL,ENGINE_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL,GLEW_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -131,7 +131,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include,..\..\script\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include,..\..\script\include,..\..\rendergl\include"
 				PreprocessorDefinitions="_DEBUG;HAVE_CPPUNITLITE2;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -193,7 +193,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include,..\..\script\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include,..\..\script\include,..\..\rendergl\include"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,_USRDLL,ENGINE_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL,GLEW_STATIC"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -239,7 +239,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include,..\..\script\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include,..\..\script\include,..\..\rendergl\include"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -317,12 +317,6 @@
 					RelativePath="..\..\engine\src\entitymanager.cpp">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\glinterleave.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\gltexture.cpp">
-				</File>
-				<File
 					RelativePath="..\..\engine\src\input.cpp">
 				</File>
 				<File
@@ -342,9 +336,6 @@
 				</File>
 				<File
 					RelativePath="..\..\engine\src\readwriteutils.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\renderer.cpp">
 				</File>
 				<File
 					RelativePath="..\..\engine\src\saveloadmanager.cpp">
@@ -474,9 +465,6 @@
 					RelativePath="..\..\engine\src\readwriteutils.h">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\renderer.h">
-				</File>
-				<File
 					RelativePath="..\..\engine\src\saveloadmanager.h">
 				</File>
 				<File
@@ -522,9 +510,6 @@
 			</File>
 			<File
 				RelativePath="..\..\engine\include\modelapi.h">
-			</File>
-			<File
-				RelativePath="..\..\engine\include\renderapi.h">
 			</File>
 			<File
 				RelativePath="..\..\engine\include\saveloadapi.h">

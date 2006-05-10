@@ -4,7 +4,7 @@
 #ifndef INCLUDED_RENDERAPI_H
 #define INCLUDED_RENDERAPI_H
 
-#include "enginedll.h"
+#include "renderdll.h"
 #include "comtools.h"
 
 #ifdef _MSC_VER
@@ -28,6 +28,10 @@ F_DECLARE_INTERFACE(IRenderer);
 #define kRT_CgProgram   _T("CgProgram")
 #define kRT_CgEffect    _T("CgEffect")
 #define kRT_GlTexture   _T("GlTexture")
+
+///////////////////////////////////////////////////////////////////////////////
+
+RENDER_API tResult GlTextureCreateMipMapped(IImage * pImage, uint * pTexId);
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -107,11 +111,13 @@ interface IRenderer : IUnknown
 
 ///////////////////////////////////////
 
-ENGINE_API tResult RendererCreate();
+RENDER_API tResult RendererCreate();
+
+RENDER_API tResult RendererResourceRegister();
 
 ///////////////////////////////////////
 
-ENGINE_API void RenderWireFrame(const tAxisAlignedBox & box, const cColor & color);
+RENDER_API void RenderWireFrame(const tAxisAlignedBox & box, const cColor & color);
 
 ///////////////////////////////////////////////////////////////////////////////
 

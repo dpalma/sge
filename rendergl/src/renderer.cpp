@@ -4,7 +4,6 @@
 #include "stdhdr.h"
 
 #include "renderer.h"
-#include "readwriteutils.h"
 
 #include "axisalignedbox.h"
 #include "color.h"
@@ -288,7 +287,6 @@ tResult cRenderer::EndScene()
 ////////////////////////////////////////
 
 extern tResult GlTextureCreate(IImage * pImage, uint * pTexId);
-extern tResult GlTextureCreateMipMapped(IImage * pImage, uint * pTexId);
 
 tResult cRenderer::CreateTexture(IImage * pImage, bool bAutoGenMipMaps, void * * ppTexture)
 {

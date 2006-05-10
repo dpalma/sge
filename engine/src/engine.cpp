@@ -8,6 +8,8 @@
 #include "readwriteutils.h"
 #include "saveloadapi.h"
 
+#include "renderapi.h"
+
 #include "globalobj.h"
 #include "resourceapi.h"
 #include "techmath.h"
@@ -234,7 +236,6 @@ void MapPropertiesUnload(void * pData)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-extern tResult RendererResourceRegister(); // renderer.cpp
 extern tResult ModelMs3dResourceRegister(); // modelms3d.cpp
 extern tResult TiXmlRegisterResourceFormat(); // tixml.cpp
 

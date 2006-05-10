@@ -12,6 +12,7 @@
 #include "engineguids.h"
 #include "guiguids.h"
 #include "netguids.h"
+#include "renderguids.h"
 #include "scriptguids.h"
 #include "soundguids.h"
 #include "techguids.h"

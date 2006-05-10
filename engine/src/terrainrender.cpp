@@ -29,8 +29,6 @@
 
 const uint kNoIndex = ~0u;
 
-extern tResult GlTextureCreateMipMapped(IImage * pImage, uint * pTexId);
-
 /////////////////////////////////////////////////////////////////////////////
 
 const sVertexElement g_terrainVert[] =

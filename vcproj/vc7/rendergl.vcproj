@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.00"
 	Name="rendergl"
-	ProjectGUID="{2FAD7D2D-CFA5-4FD4-9029-B0FE814615B9}"
+	ProjectGUID="{D86208D4-C82F-445A-8A2D-89F24A9B46A4}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -22,7 +22,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\render\include,..\..\tech\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\rendergl\include,..\..\tech\include"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;RENDER_EXPORTS;WIN32;_WINDOWS;STRICT;GLEW_STATIC"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -42,14 +42,14 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="$(OutDir)\glew.lib winmm.lib opengl32.lib glu32.lib"
-				OutputFile=".\..\..\Build.vc7\Release/rendergl.dll"
+				OutputFile="$(OutDir)/rendergl.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
-				ProgramDatabaseFile=".\..\..\Build.vc7\Release/rendergl.pdb"
+				ProgramDatabaseFile="$(OutDir)/rendergl.pdb"
 				GenerateMapFile="TRUE"
-				MapFileName="..\..\Build.vc7\Release/rendergl.map"
+				MapFileName="$(IntDir)/rendergl.map"
 				OptimizeReferences="2"
-				ImportLibrary=".\..\..\Build.vc7\Release/rendergl.lib"/>
+				ImportLibrary="$(OutDir)/rendergl.lib"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="NDEBUG"
@@ -83,7 +83,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\render\include,..\..\tech\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\rendergl\include,..\..\tech\include"
 				PreprocessorDefinitions="_USRDLL;RENDER_EXPORTS;STRICT;_WINDOWS;NDEBUG;WIN32;GLEW_STATIC"
 				StringPooling="TRUE"
 				RuntimeLibrary="3"
@@ -104,14 +104,14 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="$(OutDir)\glew.lib winmm.lib opengl32.lib glu32.lib"
-				OutputFile=".\..\..\Build.vc7\Opt/rendergl.dll"
+				OutputFile="$(OutDir)/rendergl.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\..\..\Build.vc7\Opt/rendergl.pdb"
+				ProgramDatabaseFile="$(OutDir)/rendergl.pdb"
 				GenerateMapFile="TRUE"
-				MapFileName="..\..\Build.vc7\Opt/rendergl.map"
-				ImportLibrary=".\..\..\Build.vc7\Opt/rendergl.lib"/>
+				MapFileName="$(IntDir)/rendergl.map"
+				ImportLibrary="$(OutDir)/rendergl.lib"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="_DEBUG"
@@ -145,7 +145,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\render\include,..\..\tech\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\rendergl\include,..\..\tech\include"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,_USRDLL,RENDER_EXPORTS,WIN32,_WINDOWS,STRICT,GLEW_STATIC"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -163,7 +163,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\..\..\Build.vc7\StaticRelease\rendergl.lib"
+				OutputFile="$(OutDir)\rendergl.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -191,7 +191,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\render\include,..\..\tech\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\rendergl\include,..\..\tech\include"
 				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,_USRDLL,RENDER_EXPORTS,WIN32,_WINDOWS,STRICT,HAVE_CPPUNITLITE2,GLEW_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -209,7 +209,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\..\..\Build.vc7\StaticDebug\rendergl.lib"
+				OutputFile="$(OutDir)\rendergl.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -237,7 +237,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\render\include,..\..\tech\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\rendergl\include,..\..\tech\include"
 				PreprocessorDefinitions="_DEBUG;_USRDLL;RENDER_EXPORTS;WIN32;_WINDOWS;STRICT;HAVE_CPPUNITLITE2,GLEW_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -257,21 +257,21 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="$(OutDir)\CppUnitLite2.lib $(OutDir)\glew.lib winmm.lib opengl32.lib glu32.lib"
-				OutputFile=".\..\..\Build.vc7\Debug/rendergl.dll"
+				OutputFile="$(OutDir)/rendergl.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\..\..\Build.vc7\Debug/rendergl.pdb"
+				ProgramDatabaseFile="$(OutDir)/rendergl.pdb"
 				GenerateMapFile="TRUE"
-				MapFileName="..\..\Build.vc7\Debug/rendergl.map"
-				ImportLibrary=".\..\..\Build.vc7\Debug/rendergl.lib"/>
+				MapFileName="$(IntDir)/rendergl.map"
+				ImportLibrary="$(OutDir)/rendergl.lib"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="_DEBUG"
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc7\Debug/rendergl.tlb"/>
+				TypeLibraryName="$(OutDir)/rendergl.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -290,167 +290,77 @@
 	</Configurations>
 	<Files>
 		<Filter
-			Name="Source Files"
-			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
-			<File
-				RelativePath="..\..\render\gl\arbbufferobject.cpp">
-			</File>
-			<File
-				RelativePath="..\..\render\gl\font.cpp">
-			</File>
-			<File
-				RelativePath="..\..\render\gl\fontw32.cpp">
-			</File>
-			<File
-				RelativePath="..\..\render\gl\fontx11.cpp">
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Opt|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="StaticRelease|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="StaticDebug|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\render\gl\glext.cpp">
-			</File>
-			<File
-				RelativePath="..\..\render\gl\glutils.cpp">
-			</File>
-			<File
-				RelativePath="..\..\render\gl\indexbuffer.cpp">
-			</File>
-			<File
-				RelativePath="..\..\render\gl\indexbufferarb.cpp">
-			</File>
-			<File
-				RelativePath="..\..\render\gl\material.cpp">
-			</File>
-			<File
-				RelativePath="..\..\render\gl\materialparameter.cpp">
-			</File>
-			<File
-				RelativePath="..\..\render\gl\renderdevice.cpp">
-			</File>
-			<File
-				RelativePath="..\..\render\gl\softwarevertexblend.cpp">
-			</File>
-			<File
-				RelativePath="..\..\render\gl\stdhdr.cpp">
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Opt|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="StaticRelease|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="StaticDebug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\render\gl\vertexbuffer.cpp">
-			</File>
-			<File
-				RelativePath="..\..\render\gl\vertexbufferarb.cpp">
-			</File>
-			<File
-				RelativePath="..\..\render\gl\vertexdecl.cpp">
-			</File>
+			Name=".\src"
+			Filter="">
+			<Filter
+				Name="Header Files"
+				Filter="">
+				<File
+					RelativePath="..\..\rendergl\src\renderer.h">
+				</File>
+				<File
+					RelativePath="..\..\rendergl\src\stdhdr.h">
+				</File>
+			</Filter>
+			<Filter
+				Name="Source Files"
+				Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
+				<File
+					RelativePath="..\..\rendergl\src\glinterleave.cpp">
+				</File>
+				<File
+					RelativePath="..\..\rendergl\src\gltexture.cpp">
+				</File>
+				<File
+					RelativePath="..\..\rendergl\src\renderer.cpp">
+				</File>
+				<File
+					RelativePath="..\..\rendergl\src\stdhdr.cpp">
+					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="1"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Opt|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="1"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="StaticRelease|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="1"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="StaticDebug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="1"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="1"/>
+					</FileConfiguration>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
-			Name="Header Files"
+			Name=".\include"
 			Filter="h;hpp;hxx;hm;inl">
 			<File
-				RelativePath="..\..\render\gl\arbbufferobject.h">
+				RelativePath="..\..\rendergl\include\renderapi.h">
 			</File>
 			<File
-				RelativePath="..\..\render\gl\fontw32.h">
+				RelativePath="..\..\rendergl\include\renderdll.h">
 			</File>
 			<File
-				RelativePath="..\..\render\gl\glutils.h">
+				RelativePath="..\..\rendergl\include\renderguids.h">
 			</File>
-			<File
-				RelativePath="..\..\render\gl\materialparameter.h">
-			</File>
-			<File
-				RelativePath="..\..\render\gl\renderdevice.h">
-			</File>
-			<File
-				RelativePath="..\..\render\gl\softwarevertexblend.h">
-			</File>
-			<File
-				RelativePath="..\..\render\gl\stdhdr.h">
-			</File>
-			<File
-				RelativePath="..\..\render\gl\vertexdecl.h">
-			</File>
-		</Filter>
-		<Filter
-			Name="..\include"
-			Filter="">
-			<File
-				RelativePath="..\..\render\include\font.h">
-			</File>
-			<File
-				RelativePath="..\..\render\include\materialapi.h">
-			</File>
-			<File
-				RelativePath="..\..\render\include\renderapi.h">
-			</File>
-			<File
-				RelativePath="..\..\render\include\renderdll.h">
-			</File>
-			<File
-				RelativePath="..\..\render\include\renderguids.h">
-			</File>
-		</Filter>
-		<Filter
-			Name="Resource Files"
-			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 		</Filter>
 	</Files>
 	<Globals>
