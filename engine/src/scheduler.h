@@ -40,7 +40,10 @@ struct sTaskInfoCompare
 {
    bool operator()(const sTaskInfo * pTask1, const sTaskInfo * pTask2) const
    {
-      return pTask1->next < pTask2->next;
+      // Returning true puts the first argument toward the back of the
+      // priority queue. Use a greater than test so that tasks with sooner
+      // next run times are sorted toward the front of the priority queue.
+      return pTask1->next > pTask2->next;
    }
 };
 

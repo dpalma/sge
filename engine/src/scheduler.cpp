@@ -7,6 +7,21 @@
 
 #include "dbgalloc.h" // must be last header
 
+///////////////////////////////////////////////////////////////////////////////
+
+LOG_DEFINE_CHANNEL(Scheduler);
+
+#define LocalMsg(msg)            DebugMsgEx(Scheduler,msg)
+#define LocalMsg1(msg,a)         DebugMsgEx1(Scheduler,msg,(a))
+#define LocalMsg2(msg,a,b)       DebugMsgEx2(Scheduler,msg,(a),(b))
+#define LocalMsg3(msg,a,b,c)     DebugMsgEx3(Scheduler,msg,(a),(b),(c))
+#define LocalMsg4(msg,a,b,c,d)   DebugMsgEx4(Scheduler,msg,(a),(b),(c),(d))
+
+#define LocalMsgIf(cond,msg)           DebugMsgIfEx(Scheduler,(cond),msg)
+#define LocalMsgIf1(cond,msg,a)        DebugMsgIfEx1(Scheduler,(cond),msg,(a))
+#define LocalMsgIf2(cond,msg,a,b)      DebugMsgIfEx2(Scheduler,(cond),msg,(a),(b))
+#define LocalMsgIf3(cond,msg,a,b,c)    DebugMsgIfEx3(Scheduler,(cond),msg,(a),(b),(c))
+#define LocalMsgIf4(cond,msg,a,b,c,d)  DebugMsgIfEx4(Scheduler,(cond),msg,(a),(b),(c),(d))
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -143,6 +158,8 @@ tResult cScheduler::AddRenderTask(ITask * pTask)
       return E_POINTER;
    }
 
+   LocalMsg1("Adding render task %p\n", pTask);
+
    m_renderTaskQueue.push_back(CTAddRef(pTask));
    return S_OK;
 }
@@ -211,6 +228,7 @@ static tResult AddTask(tTaskQueue * pQueue, ITask * pTask, double start, double 
 
 tResult cScheduler::AddFrameTask(ITask * pTask, ulong start, ulong period, ulong duration)
 {
+   LocalMsg1("Adding frame-based task %p\n", pTask);
    return AddTask(&m_frameTaskQueue, pTask, static_cast<double>(start), static_cast<double>(period), static_cast<double>(duration));
 }
 
@@ -225,6 +243,7 @@ tResult cScheduler::RemoveFrameTask(ITask * pTask)
 
 tResult cScheduler::AddTimeTask(ITask * pTask, double start, double period, double duration)
 {
+   LocalMsg1("Adding time-based task %p\n", pTask);
    return AddTask(&m_timeTaskQueue, pTask, start, period, duration);
 }
 
@@ -240,6 +259,10 @@ tResult cScheduler::RemoveTimeTask(ITask * pTask)
 void cScheduler::NextFrame()
 {
    m_clock.BeginFrame();
+
+   LocalMsg4("Frame %d: %d time tasks, %d frame tasks, %d render tasks\n",
+      m_clock.GetFrameCount(), m_timeTaskQueue.size(),
+      m_frameTaskQueue.size(), m_renderTaskQueue.size());
 
    // Run time-based tasks
    while (!m_timeTaskQueue.empty())
@@ -279,6 +302,8 @@ void cScheduler::NextFrame()
       sTaskInfo * pTaskInfo = m_frameTaskQueue.top();
       if (pTaskInfo->next <= m_clock.GetFrameCount())
       {
+         LocalMsg2("Running frame task %p: time = %f\n", pTaskInfo->pTask, pTaskInfo->next);
+
          m_frameTaskQueue.pop();
 
          pTaskInfo->pTask->Execute(m_clock.GetSimTime());
