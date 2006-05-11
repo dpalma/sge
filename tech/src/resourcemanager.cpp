@@ -158,19 +158,14 @@ tResult cResourceManager::AddDirectoryTreeFlattened(const tChar * pszDir)
 
 tResult cResourceManager::AddArchive(const tChar * pszArchive)
 {
-   if (pszArchive == NULL)
+   tResult result = E_FAIL;
+   cResourceStore * pStore = NULL;
+   if ((result = ZipResourceStoreCreate(pszArchive, &pStore)) == S_OK)
    {
-      return E_POINTER;
+      m_stores.push_back(pStore);
+      return S_OK;
    }
-
-   cResourceStore * pStore = static_cast<cResourceStore *>(new cZipResourceStore(pszArchive));
-   if (pStore == NULL)
-   {
-      return E_OUTOFMEMORY;
-   }
-
-   m_stores.push_back(pStore);
-   return S_OK;
+   return result;
 }
 
 ////////////////////////////////////////

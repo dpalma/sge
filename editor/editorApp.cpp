@@ -251,9 +251,9 @@ BOOL cEditorApp::InitInstance()
    {
       UseGlobal(ResourceManager);
       // Attempt to load as archive
-      if (FAILED(pResourceManager->AddArchive(temp.c_str())))
+      if (pResourceManager->AddArchive(temp.c_str()) != S_OK)
       {
-         if (FAILED(pResourceManager->AddDirectoryTreeFlattened(temp.c_str())))
+         if (pResourceManager->AddDirectoryTreeFlattened(temp.c_str()) != S_OK)
          {
             ErrorMsg1("Unable to set up resource directory %s\n", temp.c_str());
             return FALSE;

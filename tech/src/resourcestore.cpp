@@ -278,5 +278,31 @@ tResult cZipResourceStore::OpenEntry(const tChar * pszName, IReader * * ppReader
    return result;
 }
 
+////////////////////////////////////////
+
+tResult ZipResourceStoreCreate(const tChar * pszArchive, cResourceStore * * ppStore)
+{
+   if (pszArchive == NULL || ppStore == NULL)
+   {
+      return E_POINTER;
+   }
+
+   unzFile handle = unzOpen(pszArchive);
+   if (handle == NULL)
+   {
+      return S_FALSE;
+   }
+
+   unzClose(handle);
+
+   cResourceStore * pStore = static_cast<cResourceStore *>(new cZipResourceStore(pszArchive));
+   if (pStore == NULL)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   *ppStore = pStore;
+   return S_OK;
+}
 
 ////////////////////////////////////////////////////////////////////////////////

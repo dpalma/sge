@@ -305,6 +305,16 @@ private:
 
 void cTerrainRenderer::Render()
 {
+   static bool glewInitCalled = false;
+   if (!glewInitCalled)
+   {
+      if (glewInit() != GLEW_OK)
+      {
+         ErrorMsg("GLEW failed to initialize\n");
+      }
+      glewInitCalled = true;
+   }
+
    if (m_bEnableBlending)
    {
       if (!m_chunks.empty())
