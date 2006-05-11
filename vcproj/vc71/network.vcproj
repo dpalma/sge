@@ -50,7 +50,7 @@
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\..\..\Build.vc71\Opt/network.pdb"
 				GenerateMapFile="TRUE"
-				MapFileName="..\..\Build.vc71\Opt/network.map"
+				MapFileName="$(IntDir)/network.map"
 				ImportLibrary=".\..\..\Build.vc71\Opt/network.lib"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -170,7 +170,7 @@
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\..\..\Build.vc71\Debug/network.pdb"
 				GenerateMapFile="TRUE"
-				MapFileName="..\..\Build.vc71\Debug/network.map"
+				MapFileName="$(IntDir)/network.map"
 				ImportLibrary=".\..\..\Build.vc71\Debug/network.lib"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -289,7 +289,7 @@
 				AdditionalLibraryDirectories=""
 				ProgramDatabaseFile=".\..\..\Build.vc71\Release/network.pdb"
 				GenerateMapFile="TRUE"
-				MapFileName="..\..\Build.vc71\Release/network.map"
+				MapFileName="$(IntDir)/network.map"
 				OptimizeReferences="2"
 				ImportLibrary=".\..\..\Build.vc71\Release/network.lib"/>
 			<Tool

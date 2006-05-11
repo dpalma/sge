@@ -49,7 +49,7 @@
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\..\..\Build.vc71\Opt/tech.pdb"
 				GenerateMapFile="TRUE"
-				MapFileName="..\..\Build.vc71\Opt/tech.map"
+				MapFileName="$(IntDir)/tech.map"
 				ImportLibrary=".\..\..\Build.vc71\Opt/tech.lib"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -168,7 +168,7 @@
 				ModuleDefinitionFile="..\..\tech\src\tech.def"
 				ProgramDatabaseFile=".\..\..\Build.vc71\Release/tech.pdb"
 				GenerateMapFile="TRUE"
-				MapFileName="..\..\Build.vc71\Release/tech.map"
+				MapFileName="$(IntDir)/tech.map"
 				OptimizeReferences="2"
 				ImportLibrary=".\..\..\Build.vc71\Release/tech.lib"/>
 			<Tool
@@ -289,7 +289,7 @@
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\..\..\Build.vc71\Debug/tech.pdb"
 				GenerateMapFile="TRUE"
-				MapFileName="..\..\Build.vc71\Debug/tech.map"
+				MapFileName="$(IntDir)/tech.map"
 				ImportLibrary=".\..\..\Build.vc71\Debug/tech.lib"/>
 			<Tool
 				Name="VCMIDLTool"

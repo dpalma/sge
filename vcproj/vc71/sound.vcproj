@@ -50,7 +50,7 @@
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\..\..\Build.vc71\Opt/sound.pdb"
 				GenerateMapFile="TRUE"
-				MapFileName="..\..\Build.vc71\Opt/sound.map"
+				MapFileName="$(IntDir)/sound.map"
 				ImportLibrary=".\..\..\Build.vc71\Opt/sound.lib"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -170,7 +170,7 @@
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\..\..\Build.vc71\Debug/sound.pdb"
 				GenerateMapFile="TRUE"
-				MapFileName="..\..\Build.vc71\Debug/sound.map"
+				MapFileName="$(IntDir)/sound.map"
 				ImportLibrary=".\..\..\Build.vc71\Debug/sound.lib"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -289,7 +289,7 @@
 				AdditionalLibraryDirectories=""
 				ProgramDatabaseFile=".\..\..\Build.vc71\Release/sound.pdb"
 				GenerateMapFile="TRUE"
-				MapFileName="..\..\Build.vc71\Release/sound.map"
+				MapFileName="$(IntDir)/sound.map"
 				OptimizeReferences="2"
 				ImportLibrary=".\..\..\Build.vc71\Release/sound.lib"/>
 			<Tool

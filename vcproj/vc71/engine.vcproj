@@ -21,7 +21,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\script\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\script\include,..\..\rendergl\include"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC;HAVE_DIRECTX;HAVE_CPPUNITLITE2"
 				StringPooling="TRUE"
 				RuntimeLibrary="3"
@@ -49,7 +49,7 @@
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\..\..\Build.vc71\Opt/engine.pdb"
 				GenerateMapFile="TRUE"
-				MapFileName="..\..\Build.vc71\Opt/engine.map"
+				MapFileName="$(IntDir)/engine.map"
 				ImportLibrary=".\..\..\Build.vc71\Opt/engine.lib"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -90,7 +90,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\script\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\script\include,..\..\rendergl\include"
 				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,HAVE_CPPUNITLITE2,HAVE_CPPUNITLITE2,_USRDLL,ENGINE_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL,GLEW_STATIC,HAVE_DIRECTX"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -142,7 +142,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\script\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\script\include,..\..\rendergl\include"
 				PreprocessorDefinitions="_DEBUG;HAVE_CPPUNITLITE2;HAVE_CPPUNITLITE2;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC;HAVE_DIRECTX"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -169,7 +169,7 @@
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\..\..\Build.vc71\Debug/engine.pdb"
 				GenerateMapFile="TRUE"
-				MapFileName="..\..\Build.vc71\Debug/engine.map"
+				MapFileName="$(IntDir)/engine.map"
 				ImportLibrary=".\..\..\Build.vc71\Debug/engine.lib"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -210,7 +210,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\script\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\script\include,..\..\rendergl\include"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,_USRDLL,ENGINE_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL,GLEW_STATIC,HAVE_DIRECTX"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -262,7 +262,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\script\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\tech\include,..\..\render\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\script\include,..\..\rendergl\include"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC;HAVE_DIRECTX"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -288,7 +288,7 @@
 				AdditionalLibraryDirectories=""
 				ProgramDatabaseFile=".\..\..\Build.vc71\Release/engine.pdb"
 				GenerateMapFile="TRUE"
-				MapFileName="..\..\Build.vc71\Release/engine.map"
+				MapFileName="$(IntDir)/engine.map"
 				OptimizeReferences="2"
 				ImportLibrary=".\..\..\Build.vc71\Release/engine.lib"/>
 			<Tool
@@ -348,12 +348,6 @@
 					RelativePath="..\..\engine\src\entitymanager.cpp">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\glinterleave.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\gltexture.cpp">
-				</File>
-				<File
 					RelativePath="..\..\engine\src\input.cpp">
 				</File>
 				<File
@@ -373,9 +367,6 @@
 				</File>
 				<File
 					RelativePath="..\..\engine\src\readwriteutils.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\renderer.cpp">
 				</File>
 				<File
 					RelativePath="..\..\engine\src\saveloadmanager.cpp">
@@ -505,9 +496,6 @@
 					RelativePath="..\..\engine\src\readwriteutils.h">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\renderer.h">
-				</File>
-				<File
 					RelativePath="..\..\engine\src\saveloadmanager.h">
 				</File>
 				<File
@@ -553,9 +541,6 @@
 			</File>
 			<File
 				RelativePath="..\..\engine\include\modelapi.h">
-			</File>
-			<File
-				RelativePath="..\..\engine\include\renderapi.h">
 			</File>
 			<File
 				RelativePath="..\..\engine\include\saveloadapi.h">

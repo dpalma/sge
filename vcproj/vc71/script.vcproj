@@ -50,7 +50,7 @@
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\..\..\Build.vc71\Opt/script.pdb"
 				GenerateMapFile="TRUE"
-				MapFileName="..\..\Build.vc71\Opt/script.map"
+				MapFileName="$(IntDir)/script.map"
 				ImportLibrary=".\..\..\Build.vc71\Opt/script.lib"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -170,7 +170,7 @@
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\..\..\Build.vc71\Debug/script.pdb"
 				GenerateMapFile="TRUE"
-				MapFileName="..\..\Build.vc71\Debug/script.map"
+				MapFileName="$(IntDir)/script.map"
 				ImportLibrary=".\..\..\Build.vc71\Debug/script.lib"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -289,7 +289,7 @@
 				AdditionalLibraryDirectories=""
 				ProgramDatabaseFile=".\..\..\Build.vc71\Release/script.pdb"
 				GenerateMapFile="TRUE"
-				MapFileName="..\..\Build.vc71\Release/script.map"
+				MapFileName="$(IntDir)/script.map"
 				OptimizeReferences="2"
 				ImportLibrary=".\..\..\Build.vc71\Release/script.lib"/>
 			<Tool
