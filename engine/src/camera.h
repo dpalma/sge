@@ -239,6 +239,7 @@ public:
    // ISaveLoadParticipant methods
    virtual tResult Save(IWriter *);
    virtual tResult Load(IReader *, int version);
+   virtual void Reset();
 
 private:
    class cMoveCameraTask : public cComObject<IMPLEMENTS(ITask)>

@@ -134,6 +134,7 @@ public:
    // ISaveLoadParticipant methods
    virtual tResult Save(IWriter *);
    virtual tResult Load(IReader *, int version);
+   virtual void Reset();
 
 private:
    bool RunningInEditor() const { return m_bInEditor; }

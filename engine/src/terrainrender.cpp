@@ -477,6 +477,12 @@ tResult cTerrainRenderer::Load(IReader * pReader, int version)
 
 ////////////////////////////////////////
 
+void cTerrainRenderer::Reset()
+{
+}
+
+////////////////////////////////////////
+
 cTerrainRenderer::cTerrainModelListener::cTerrainModelListener(cTerrainRenderer * pOuter)
  : m_pOuter(pOuter)
 {

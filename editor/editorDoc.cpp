@@ -226,6 +226,11 @@ tResult cEditorDoc::Load(IReader * pReader, int version)
    return S_FALSE;
 }
 
+void cEditorDoc::Reset()
+{
+   DeleteContents();
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // cEditorDoc commands
 

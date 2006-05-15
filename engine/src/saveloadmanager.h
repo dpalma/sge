@@ -68,6 +68,8 @@ public:
 
    virtual tResult OpenSingleEntry(IReader * pReader, REFGUID id, IReader * * ppEntryReader);
 
+   virtual void Reset();
+
 private:
    struct sFileEntry;
    tResult LoadEntryTable(IReader * pReader, std::vector<sFileEntry> * pEntries);

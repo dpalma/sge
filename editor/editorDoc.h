@@ -48,6 +48,7 @@ public:
    // ISaveLoadParticipant methods
    virtual tResult Save(IWriter * pWriter);
    virtual tResult Load(IReader * pReader, int version);
+   virtual void Reset();
 
 // Overrides
 	// ClassWizard generated virtual function overrides

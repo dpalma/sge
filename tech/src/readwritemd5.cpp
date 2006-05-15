@@ -32,7 +32,7 @@ cMD5Writer::~cMD5Writer()
 
 void cMD5Writer::InitializeMD5()
 {
-   MD5Init(&m_context);
+   m_md5.Initialize();
    m_bUpdateMD5 = true;
 }
 
@@ -43,7 +43,7 @@ tResult cMD5Writer::FinalizeMD5(byte digest[16])
    if (m_bUpdateMD5)
    {
       m_bUpdateMD5 = false;
-      MD5Final(digest, &m_context);
+      m_md5.Finalize(digest);
       return S_OK;
    }
    return S_FALSE;
@@ -70,7 +70,7 @@ tResult cMD5Writer::Write(const char * value)
 {
    if (m_bUpdateMD5)
    {
-      MD5Update(&m_context, const_cast<byte*>(reinterpret_cast<const byte*>(value)), strlen(value));
+      m_md5.Update(const_cast<byte*>(reinterpret_cast<const byte*>(value)), strlen(value));
    }
    return m_pWriter->Write(value);
 }
@@ -81,7 +81,7 @@ tResult cMD5Writer::Write(void * pValue, size_t cbValue, size_t * pcbWritten)
 {
    if (m_bUpdateMD5)
    {
-      MD5Update(&m_context, static_cast<byte*>(pValue), cbValue);
+      m_md5.Update(static_cast<byte*>(pValue), cbValue);
    }
    return m_pWriter->Write(pValue, cbValue, pcbWritten);
 }

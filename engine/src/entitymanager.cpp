@@ -556,6 +556,13 @@ tResult cEntityManager::Load(IReader * pReader, int version)
 
 ///////////////////////////////////////
 
+void cEntityManager::Reset()
+{
+   RemoveAll();
+}
+
+///////////////////////////////////////
+
 bool cEntityManager::IsSelected(IEntity * pEntity) const
 {
    return (m_selected.find(pEntity) != m_selected.end());

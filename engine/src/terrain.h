@@ -98,6 +98,7 @@ public:
    // ISaveLoadParticipant methods
    virtual tResult Save(IWriter *);
    virtual tResult Load(IReader *, int version);
+   virtual void Reset();
 
 private:
    void NotifyListeners(void (ITerrainModelListener::*pfnListenerMethod)());

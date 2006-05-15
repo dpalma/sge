@@ -103,6 +103,7 @@ public:
 
    virtual tResult Save(IWriter * pWriter);
    virtual tResult Load(IReader * pReader, int version);
+   virtual void Reset();
 
 private:
    bool IsSelected(IEntity * pEntity) const;

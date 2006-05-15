@@ -1113,6 +1113,13 @@ tResult cTerrainModel::Load(IReader * pReader, int version)
 
 ////////////////////////////////////////
 
+void cTerrainModel::Reset()
+{
+   Clear();
+}
+
+////////////////////////////////////////
+
 void cTerrainModel::NotifyListeners(void (ITerrainModelListener::*pfnListenerMethod)())
 {
    tListeners::iterator iter = m_listeners.begin();

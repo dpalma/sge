@@ -5,11 +5,7 @@
 #define INCLUDED_READWRITEMD5_H
 
 #include "readwriteapi.h"
-
-extern "C"
-{
-#include "md5.h"
-}
+#include "techhash.h"
 
 #ifdef _MSC_VER
 #pragma once
@@ -37,7 +33,7 @@ public:
 private:
    cAutoIPtr<IWriter> m_pWriter;
    bool m_bUpdateMD5;
-   MD5_CTX m_context;
+   cMD5 m_md5;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

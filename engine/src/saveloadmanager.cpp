@@ -710,6 +710,29 @@ tResult cSaveLoadManager::OpenSingleEntry(IReader * pReader, REFGUID id, IReader
 
 ///////////////////////////////////////
 
+void cSaveLoadManager::Reset()
+{
+   tParticipantMap::iterator iter = m_participantMap.begin();
+   for (; iter != m_participantMap.end(); iter++)
+   {
+      int version = -1;
+      if (iter->second->GetMostRecentVersion(&version) != S_OK)
+      {
+         continue;
+      }
+
+      cAutoIPtr<ISaveLoadParticipant> pParticipant;
+      if (iter->second->GetParticipant(version, &pParticipant) != S_OK)
+      {
+         continue;
+      }
+
+      pParticipant->Reset();
+   }
+}
+
+///////////////////////////////////////
+
 tResult cSaveLoadManager::LoadEntryTable(IReader * pReader, std::vector<sFileEntry> * pEntries)
 {
    if (pReader == NULL || pEntries == NULL)

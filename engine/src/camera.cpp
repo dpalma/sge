@@ -506,6 +506,23 @@ tResult cCameraControl::Load(IReader * pReader, int version)
 
 ///////////////////////////////////////
 
+void cCameraControl::Reset()
+{
+   m_cameraMove = kCameraMoveNone;
+   m_pitch = kDefaultPitch;
+   m_oneOverTangentPitch = 0;
+   m_elevation = kElevationDefault;
+   m_focus = tVec3(0,0,0);
+   m_elevationLerp.Restart(kElevationDefault, kElevationDefault, 1);
+   m_bPitchChanged = false;
+   ConfigGet(_T("view_elevation"), &m_elevation);
+   ConfigGet(_T("view_pitch"), &m_pitch);
+   MatrixRotateX(m_pitch, &m_rotation);
+   m_oneOverTangentPitch = 1.0f / tanf(m_pitch);
+}
+
+///////////////////////////////////////
+
 cCameraControl::cMoveCameraTask::cMoveCameraTask(cCameraControl * pOuter)
  : m_pOuter(pOuter)
 {
