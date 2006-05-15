@@ -178,7 +178,7 @@ public:
 	~NvStripifier();
 	
 	//the target vertex cache size, the structure to place the strips in, and the input indices
-	void Stripify(const WordVec &in_indices, const int in_cacheSize, const int in_minStripLength, 
+	void Stripify(const WordVec &in_indices, const int in_cacheSize, const NvStripInfoVec::size_type in_minStripLength, 
 				  const unsigned short maxIndex, NvStripInfoVec &allStrips, NvFaceInfoVec &allFaces);
 	void CreateStrips(const NvStripInfoVec& allStrips, IntVec& stripIndices, const bool bStitchStrips, unsigned int& numSeparateStrips, const bool bRestart, const unsigned int restartVal);
 	
@@ -193,7 +193,7 @@ protected:
 	
 	WordVec indices;
 	int cacheSize;
-	int minStripLength;
+	NvStripInfoVec::size_type minStripLength;
 	float meshJump;
 	bool bFirstTimeResetPoint;
 	
