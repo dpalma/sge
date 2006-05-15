@@ -34,6 +34,7 @@ sourceFiles = Split("""
    src/resourceutils.cpp
    src/statemachinetest.cpp
    src/techassert.cpp
+   src/techhash.cpp
    src/techlog.cpp
    src/techmath.cpp
    src/techstring.cpp

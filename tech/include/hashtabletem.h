@@ -4,7 +4,7 @@
 #ifndef INCLUDED_HASHTABLETEM_H
 #define INCLUDED_HASHTABLETEM_H
 
-#include "hash.h"
+#include "techhash.h"
 #include "techmath.h"
 
 #include <cmath>

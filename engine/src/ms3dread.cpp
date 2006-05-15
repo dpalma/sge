@@ -7,7 +7,7 @@
 
 #include "matrix4.h"
 #include "vec3.h"
-#include "hash.h"
+#include "techhash.h"
 
 #include <map>
 

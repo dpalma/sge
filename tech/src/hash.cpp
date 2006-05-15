@@ -2,7 +2,7 @@
 // $Id$
 
 #include "stdhdr.h"
-#include "hash.h"
+#include "techhash.h"
 
 #include "dbgalloc.h" // must be last header
 

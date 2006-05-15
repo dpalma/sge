@@ -6,11 +6,7 @@
 #include "saveloadmanager.h"
 #include "readwriteutils.h"
 
-extern "C"
-{
-#include "md5.h"
-}
-
+#include "techhash.h"
 #include "toposort.h"
 
 #include <vector>
@@ -786,15 +782,15 @@ tResult cSaveLoadManager::LoadEntryTable(IReader * pReader, std::vector<sFileEnt
       memset(digest, 0, sizeof(digest));
       if (pReader->Seek(0, kSO_Set) == S_OK)
       {
-         MD5_CTX context;
-         MD5Init(&context);
+         cMD5 md5;
+         md5.Initialize();
          ulong nReadTotal = 0;
          byte buffer[512];
          size_t nRead = sizeof(buffer);
          while (SUCCEEDED(pReader->Read(buffer, nRead, &nRead)))
          {
             ulong b4ftr = Min(nRead, fileSize - sizeof(sFileFooter) - nReadTotal);
-            MD5Update(&context, buffer, b4ftr);
+            md5.Update(buffer, b4ftr);
             nReadTotal += nRead;
             if (nReadTotal >= fileSize)
             {
@@ -802,7 +798,7 @@ tResult cSaveLoadManager::LoadEntryTable(IReader * pReader, std::vector<sFileEnt
             }
             nRead = sizeof(buffer);
          }
-         MD5Final(digest, &context);
+         md5.Finalize(digest);
       }
 
       if (memcmp(digest, footer.digest, sizeof(digest)) != 0)
