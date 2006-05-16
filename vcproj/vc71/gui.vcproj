@@ -22,7 +22,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\script\include,..\..\sound\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\script\include,..\..\sound\include,..\..\3rdparty\ftgl\include,..\..\3rdparty\freetype\include"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;GUI_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC;HAVE_DIRECTX;HAVE_CPPUNITLITE2"
 				StringPooling="TRUE"
 				RuntimeLibrary="3"
@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\CppUnitLite2.lib winmm.lib opengl32.lib glu32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib $(OutDir)\glew.lib"
+				AdditionalDependencies="$(OutDir)\CppUnitLite2.lib winmm.lib opengl32.lib glu32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib $(OutDir)\glew.lib $(OutDir)\ftgl.lib"
 				OutputFile=".\..\..\Build.vc71\Opt/gui.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -91,7 +91,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\script\include,..\..\sound\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\script\include,..\..\sound\include,..\..\3rdparty\ftgl\include,..\..\3rdparty\freetype\include"
 				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,HAVE_CPPUNITLITE2,_USRDLL,GUI_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL,GLEW_STATIC,HAVE_DIRECTX"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -143,7 +143,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\script\include,..\..\sound\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\script\include,..\..\sound\include,..\..\3rdparty\ftgl\include,..\..\3rdparty\freetype\include"
 				PreprocessorDefinitions="_DEBUG;HAVE_CPPUNITLITE2;_USRDLL;GUI_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC;HAVE_DIRECTX"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -162,7 +162,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\CppUnitLite2.lib winmm.lib opengl32.lib glu32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib $(OutDir)\glew.lib"
+				AdditionalDependencies="$(OutDir)\CppUnitLite2.lib winmm.lib opengl32.lib glu32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib $(OutDir)\glew.lib $(OutDir)\ftgl.lib"
 				OutputFile=".\..\..\Build.vc71\Debug/gui.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -211,7 +211,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\script\include,..\..\sound\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\script\include,..\..\sound\include,..\..\3rdparty\ftgl\include,..\..\3rdparty\freetype\include"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,_USRDLL,GUI_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL,GLEW_STATIC,HAVE_DIRECTX"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -263,7 +263,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\script\include,..\..\sound\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\script\include,..\..\sound\include,..\..\3rdparty\ftgl\include,..\..\3rdparty\freetype\include"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;GUI_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC;HAVE_DIRECTX"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -282,7 +282,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="winmm.lib opengl32.lib glu32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib $(OutDir)\glew.lib"
+				AdditionalDependencies="winmm.lib opengl32.lib glu32.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib $(OutDir)\glew.lib $(OutDir)\ftgl.lib"
 				OutputFile=".\..\..\Build.vc71\Release/gui.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -368,6 +368,9 @@
 				</File>
 				<File
 					RelativePath="..\..\gui\src\guifontfactory.cpp">
+				</File>
+				<File
+					RelativePath="..\..\gui\src\guifontfreetype.cpp">
 				</File>
 				<File
 					RelativePath="..\..\gui\src\guifontw32.cpp">
@@ -540,6 +543,9 @@
 				</File>
 				<File
 					RelativePath="..\..\gui\src\guifontfactory.h">
+				</File>
+				<File
+					RelativePath="..\..\gui\src\guifontfreetype.h">
 				</File>
 				<File
 					RelativePath="..\..\gui\src\guifontw32.h">
