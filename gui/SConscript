@@ -15,6 +15,7 @@ sourceFiles = Split("""
    src/guieventrouter.cpp
    src/guieventsounds.cpp
    src/guifontfactory.cpp
+   src/guifontfreetype.cpp
    src/guifactory.cpp
    src/guilabel.cpp
    src/guilayout.cpp

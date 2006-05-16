@@ -12,6 +12,8 @@
 #include "dbgalloc.h" // must be last header
 
 
+extern tResult GUIFontCreateFreetype(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont);
+
 // defined in guifontw32.cpp for Windows, or guifontx11.cpp for Linux
 extern tResult GUIFontCreateGL(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont);
 
@@ -29,7 +31,6 @@ extern tResult GUIFontCreateD3D(IDirect3DDevice9 * pD3dDevice, const cGUIFontDes
 
 cGUIFontFactory::cGUIFontFactory()
 {
-   RegisterGlobalObject(IID_IGUIFontFactory, static_cast<IGlobalObject*>(this));
 }
 
 ////////////////////////////////////////
@@ -77,6 +78,13 @@ tResult cGUIFontFactory::CreateFontA(const cGUIFontDesc & fontDesc, IGUIFont * *
 
    cAutoIPtr<IGUIFont> pFont;
 
+   if (GUIFontCreateFreetype(fontDesc, &pFont) == S_OK)
+   {
+      m_fontMap[fontDesc] = CTAddRef(pFont);
+      *ppFont = CTAddRef(pFont);
+      return S_OK;
+   }
+
 #if HAVE_DIRECTX
    if (m_pD3dDevice != NULL)
    {
@@ -123,9 +131,14 @@ tResult cGUIFontFactory::SetDirect3DDevice(IDirect3DDevice9 * pD3dDevice)
 
 ///////////////////////////////////////
 
-void GUIFontFactoryCreate()
+tResult GUIFontFactoryCreate()
 {
-   cAutoIPtr<IGUIFontFactory>(new cGUIFontFactory);
+   cAutoIPtr<IGUIFontFactory> p(new cGUIFontFactory);
+   if (!p)
+   {
+      return E_OUTOFMEMORY;
+   }
+   return RegisterGlobalObject(IID_IGUIFontFactory, static_cast<IGUIFontFactory*>(p));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

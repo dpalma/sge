@@ -42,12 +42,14 @@ const uint kDropShadowStencilMask = 0xff;
 ///////////////////////////////////////
 
 cGUITextureFontW32::cGUITextureFontW32()
- : m_texDim(0), 
-   m_pGlyphs(NULL),
-   m_texId(0),
-   m_widthMult(1), m_heightMult(1),
-   m_dropShadowOffsetX(1), m_dropShadowOffsetY(1),
-   m_dropShadowColor(0,0,0)
+ : m_texDim(0)
+ , m_pGlyphs(NULL)
+ , m_texId(0)
+ , m_widthMult(1)
+ , m_heightMult(1)
+ , m_dropShadowOffsetX(1)
+ , m_dropShadowOffsetY(1)
+ , m_dropShadowColor(0,0,0)
 {
 }
 
