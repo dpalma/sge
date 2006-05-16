@@ -150,7 +150,8 @@
 				AdditionalDependencies="opengl32.lib glu32.lib"
 				OutputFile="$(OutDir)/ftgl.dll"
 				LinkIncremental="2"
-				SuppressStartupBanner="TRUE"/>
+				SuppressStartupBanner="TRUE"
+				GenerateDebugInformation="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
