@@ -486,6 +486,9 @@
 					RelativePath="..\..\tech\src\techassert.cpp">
 				</File>
 				<File
+					RelativePath="..\..\tech\src\techhash.cpp">
+				</File>
+				<File
 					RelativePath="..\..\tech\src\techlog.cpp">
 				</File>
 				<File
@@ -533,6 +536,9 @@
 				</File>
 				<File
 					RelativePath="..\..\tech\src\image.h">
+				</File>
+				<File
+					RelativePath="..\..\tech\src\md5.h">
 				</File>
 				<File
 					RelativePath="..\..\tech\src\readwritefile.h">
@@ -624,9 +630,6 @@
 				RelativePath="..\..\tech\include\globalobjdef.h">
 			</File>
 			<File
-				RelativePath="..\..\tech\include\hash.h">
-			</File>
-			<File
 				RelativePath="..\..\tech\include\hashtable.h">
 			</File>
 			<File
@@ -640,9 +643,6 @@
 			</File>
 			<File
 				RelativePath="..\..\tech\include\matrix4.h">
-			</File>
-			<File
-				RelativePath="..\..\tech\include\md5.h">
 			</File>
 			<File
 				RelativePath="..\..\tech\include\multivar.h">
@@ -676,6 +676,9 @@
 			</File>
 			<File
 				RelativePath="..\..\tech\include\techguids.h">
+			</File>
+			<File
+				RelativePath="..\..\tech\include\techhash.h">
 			</File>
 			<File
 				RelativePath="..\..\tech\include\techlog.h">
