@@ -5,29 +5,29 @@
    
    <panel id="title" style="width:100%;height:60%;background-color:(41,162,241);" renderer="basic">
 	   <layout type="grid" rows="2" columns="1" />
-	   <label text="Copyright (C) 2005, Daniel Palma" style="font-pointsize:8;align:right;vertical-align:top;" />
-	   <label text=" {{TEST game}}" style="font-name:Arial;font-pointsize:36;align:left;vertical-align:bottom;" />
+	   <label text="Copyright (C) 2005, Daniel Palma" style="font-pointsize:10;align:right;vertical-align:top;" />
+	   <label text="{{TEST game}}" style="font-pointsize:36;align:left;vertical-align:bottom;" />
    </panel>
    
    <panel id="btns" style="width:100%;height:40%;background-color:black;" renderer="basic">
    
 	   <layout type="grid" rows="4" columns="5" />
 	   
-	   <label/><label/><label/>
+	   <label visible=false/><label visible=false/><label visible=false/>
 	   <button text="Custom Game" onclick="ShowCustomGamePage();" renderer="beveled"/>
-	   <label/>
+	   <label visible=false/>
 	   
-	   <label/><label/><label/>
+	   <label visible=false/><label visible=false/><label visible=false/>
 	   <button text="ListBox Test" onclick="GUIContext:ShowModalDialog([[listboxtest.xml]]);" renderer="beveled"/>
-	   <label/>
+	   <label visible=false/>
 	   
-	   <label/><label/><label/>
+	   <label visible=false/><label visible=false/><label visible=false/>
 	   <button text="GUI Test" onclick="GUIContext:ShowModalDialog([[guitest.xml]]);" renderer="beveled"/>
-	   <label/>
+	   <label visible=false/>
 	   
-	   <label/><label/><label/>
+	   <label visible=false/><label visible=false/><label visible=false/>
 	   <button text="Exit" onclick="QuitWithConfirm();" renderer="beveled" />
-	   <label/>
+	   <label visible=false/>
 	   
    </panel>
 </page>

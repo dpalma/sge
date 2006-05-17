@@ -733,7 +733,7 @@ tResult cGUIContext::ShowDebugInfo(const tGUIPoint & placement, IGUIStyle * pSty
          pStyle->GetForegroundColor(&m_debugInfoTextColor);
 
          cGUIFontDesc debugFontDesc;
-         if (pStyle->GetFontDesc(&debugFontDesc) == S_OK)
+         if (GUIStyleFontDesc(pStyle, &debugFontDesc) == S_OK)
          {
             SafeRelease(m_pDebugFont);
             GUIFontCreate(debugFontDesc, NULL, &m_pDebugFont);

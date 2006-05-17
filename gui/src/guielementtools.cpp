@@ -265,7 +265,7 @@ tResult GUIElementFont(IGUIElement * pElement, IGUIFont * * ppFont)
    if (pElement->GetStyle(&pStyle) == S_OK)
    {
       cGUIFontDesc fontDesc;
-      if (pStyle->GetFontDesc(&fontDesc) == S_OK)
+      if (GUIStyleFontDesc(pStyle, &fontDesc) == S_OK)
       {
          return GUIFontCreate(fontDesc, NULL, ppFont);
       }

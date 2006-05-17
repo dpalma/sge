@@ -485,39 +485,6 @@ tResult cGUIStyle::SetFontOutline(bool b)
 
 ///////////////////////////////////////
 
-tResult cGUIStyle::GetFontDesc(cGUIFontDesc * pFontDesc)
-{
-   if (pFontDesc == NULL)
-   {
-      return E_POINTER;
-   }
-   if (m_fontName.empty() && m_fontPointSize == 0)
-   {
-      return S_FALSE;
-   }
-   uint effects = kGFE_None;
-   if (m_bFontBold)
-   {
-      effects |= kGFE_Bold;
-   }
-   if (m_bFontItalic)
-   {
-      effects |= kGFE_Italic;
-   }
-   if (m_bFontShadow)
-   {
-      effects |= kGFE_Shadow;
-   }
-   if (m_bFontOutline)
-   {
-      effects |= kGFE_Outline;
-   }
-   *pFontDesc = cGUIFontDesc(m_fontName.c_str(), m_fontPointSize, effects);
-   return S_OK;
-}
-
-///////////////////////////////////////
-
 tResult cGUIStyle::GetPlacement(uint * pPlacement) const
 {
    if (pPlacement == NULL)
@@ -676,6 +643,66 @@ static eGUIVerticalAlignment GUIStyleParseVertAlignment(const char * psz)
    {
       return kGUIVertAlignTop;
    }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+tResult GUIStyleFontDesc(IGUIStyle * pStyle, cGUIFontDesc * pFontDesc)
+{
+   if (pStyle == NULL || pFontDesc == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tGUIString fontName;
+   if (pStyle->GetFontName(&fontName) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   uint pointSize;
+   if (pStyle->GetFontPointSize(&pointSize) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   uint effects = kGFE_None;
+
+   {
+      bool bBold = false;
+      if ((pStyle->GetFontBold(&bBold) == S_OK) && bBold)
+      {
+         effects |= kGFE_Bold;
+      }
+   }
+
+   {
+      bool bItalic = false;
+      if ((pStyle->GetFontItalic(&bItalic) == S_OK) && bItalic)
+      {
+         effects |= kGFE_Italic;
+      }
+   }
+
+   {
+      bool bShadow = false;
+      if ((pStyle->GetFontShadow(&bShadow) == S_OK) && bShadow)
+      {
+         effects |= kGFE_Shadow;
+      }
+   }
+
+   {
+      bool bOutline = false;
+      if ((pStyle->GetFontOutline(&bOutline) == S_OK) && bOutline)
+      {
+         effects |= kGFE_Outline;
+      }
+   }
+
+   *pFontDesc = cGUIFontDesc(fontName.c_str(), pointSize, effects);
+   return S_OK;
 }
 
 

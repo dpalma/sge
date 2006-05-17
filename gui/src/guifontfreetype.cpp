@@ -150,8 +150,8 @@ tResult cGUIFontFreetype::RenderText(const tChar * pszText, int /*textLength*/, 
    {
       float llx = 0, lly = 0, llz = 0, urx = 0, ury = 0, urz = 0;
       m_pFont->BBox(pszText, llx, lly, llz, urx, ury, urz);
-      pRect->right = pRect->left + Abs(FloatToInt(urx - llx));
-      pRect->bottom = pRect->top + Abs(FloatToInt(lly - ury));
+      pRect->right = pRect->left + FloatToInt(urx - llx);
+      pRect->bottom = pRect->top + FloatToInt(ury - lly);
    }
    else
    {

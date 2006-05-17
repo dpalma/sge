@@ -70,8 +70,6 @@ public:
    virtual tResult GetFontOutline(bool * pB);
    virtual tResult SetFontOutline(bool b);
 
-   virtual tResult GetFontDesc(cGUIFontDesc * pFontDesc);
-
    virtual tResult GetPlacement(uint * pPlacement) const;
    virtual tResult SetPlacement(uint placement);
 

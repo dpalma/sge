@@ -1,6 +1,9 @@
 /* $Id$ */
+
 button
 {
+	font-name:Times;
+	font-pointsize:12;
 	beveled-bevel:3;
 	beveled-shadow:(24,175,241);
 	beveled-light:(156,215,241);
@@ -8,4 +11,9 @@ button
 	beveled-text:black;
 	align:center;
 	vertical-align:center;
+}
+
+label
+{
+	font-name:Arial;
 }
