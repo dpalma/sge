@@ -42,7 +42,7 @@ static void RegisterGlobalObjects()
    EntityManagerCreate();
    GUIContextCreate();
    GUIFactoryCreate();
-   GUIFontFactoryCreate();
+   GUIFontCacheCreate();
    InputCreate();
    RendererCreate();
    ResourceManagerCreate();

@@ -294,7 +294,7 @@ bool cGUITextureFontW32::Create(const cGUIFontDesc & fontDesc)
 
 ///////////////////////////////////////
 
-tResult cGUITextureFontW32::RenderText(const char * pszText, int textLength, tRect * pRect,
+tResult cGUITextureFontW32::RenderText(const tChar * pszText, int textLength, tRect * pRect,
                                        uint flags, const cColor & color) const
 {
    if (pszText == NULL || pRect == NULL)
@@ -552,14 +552,6 @@ tResult cGUITextureFontW32::RenderText(const char * pszText, int textLength, tRe
    }
 
    return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cGUITextureFontW32::RenderText(const wchar_t * pszText, int textLength, tRect * pRect,
-                                       uint flags, const cColor & color) const
-{
-   return E_NOTIMPL;
 }
 
 ///////////////////////////////////////

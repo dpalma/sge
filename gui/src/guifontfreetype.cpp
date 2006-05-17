@@ -131,7 +131,7 @@ tResult cGUIFontFreetype::Create(const cGUIFontDesc & fontDesc)
 
 ///////////////////////////////////////
 
-tResult cGUIFontFreetype::RenderText(const char * pszText, int /*textLength*/, tRect * pRect,
+tResult cGUIFontFreetype::RenderText(const tChar * pszText, int /*textLength*/, tRect * pRect,
                                      uint flags, const cColor & color) const
 {
    if (pszText == NULL || pRect == NULL)
@@ -178,7 +178,7 @@ tResult cGUIFontFreetype::RenderText(const char * pszText, int /*textLength*/, t
       glColor4fv(color.GetPointer());
 
       glPushMatrix();
-      glTranslatef(pRect->left, pRect->top, 0);
+      glTranslatef(static_cast<GLfloat>(pRect->left), static_cast<GLfloat>(pRect->bottom), 0);
       glScalef(1, -1, 1);
       m_pFont->Render(pszText);
       glPopMatrix();
@@ -187,14 +187,6 @@ tResult cGUIFontFreetype::RenderText(const char * pszText, int /*textLength*/, t
    }
 
    return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cGUIFontFreetype::RenderText(const wchar_t * pszText, int textLength, tRect * pRect,
-                                     uint flags, const cColor & color) const
-{
-   return E_NOTIMPL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

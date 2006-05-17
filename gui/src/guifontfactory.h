@@ -16,38 +16,30 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGUIFontFactory
+// CLASS: cGUIFontCache
 //
 
-class cGUIFontFactory : public cComObject2<IMPLEMENTS(IGUIFontFactory), IMPLEMENTS(IGlobalObject)>
+class cGUIFontCache : public cComObject2<IMPLEMENTS(IGUIFontCache), IMPLEMENTS(IGlobalObject)>
 {
-   cGUIFontFactory(const cGUIFontFactory &); // un-implemented
-   void operator=(const cGUIFontFactory &); // un-implemented
+   cGUIFontCache(const cGUIFontCache &); // un-implemented
+   void operator=(const cGUIFontCache &); // un-implemented
 
 public:
-   cGUIFontFactory();
-   ~cGUIFontFactory();
+   cGUIFontCache();
+   ~cGUIFontCache();
 
-   DECLARE_NAME(GUIFontFactory)
+   DECLARE_NAME(GUIFontCache)
    DECLARE_NO_CONSTRAINTS()
 
    virtual tResult Init();
    virtual tResult Term();
 
-   virtual tResult CreateFontA(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont);
-   virtual tResult CreateFontW(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont);
-
-#if HAVE_DIRECTX
-   virtual tResult SetDirect3DDevice(IDirect3DDevice9 * pD3dDevice);
-#endif
+   virtual tResult GetFont(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont);
+   virtual tResult SetFont(const cGUIFontDesc & fontDesc, IGUIFont * pFont);
 
 private:
    typedef std::map<cGUIFontDesc, IGUIFont*, std::less<cGUIFontDesc> > tFontMap;
    tFontMap m_fontMap;
-
-#if HAVE_DIRECTX
-   cAutoIPtr<IDirect3DDevice9> m_pD3dDevice;
-#endif
 };
 
 ///////////////////////////////////////////////////////////////////////////////

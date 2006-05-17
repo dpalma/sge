@@ -20,7 +20,7 @@
 class cGUIFontFreetype : public cComObject<IMPLEMENTS(IGUIFont)>
 {
    cGUIFontFreetype(const cGUIFontFreetype &); // un-implemented
-   void operator=(const cGUIFontFreetype &); // un-implemented
+   const cGUIFontFreetype & operator=(const cGUIFontFreetype &); // un-implemented
 
 public:
    cGUIFontFreetype();
@@ -30,8 +30,7 @@ public:
 
    tResult Create(const cGUIFontDesc & fontDesc);
 
-   virtual tResult RenderText(const char * pszText, int textLength, tRect * pRect, uint flags, const cColor & color) const;
-   virtual tResult RenderText(const wchar_t * pszText, int textLength, tRect * pRect, uint flags, const cColor & color) const;
+   virtual tResult RenderText(const tChar * pszText, int textLength, tRect * pRect, uint flags, const cColor & color) const;
 
 private:
    FTGLTextureFont * m_pFont;

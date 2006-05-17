@@ -20,7 +20,7 @@
 F_DECLARE_INTERFACE(IGUIElement);
 F_DECLARE_INTERFACE(IGUIStyle);
 F_DECLARE_INTERFACE(IGUIFont);
-F_DECLARE_INTERFACE(IGUIFontFactory);
+F_DECLARE_INTERFACE(IGUIFontCache);
 F_DECLARE_INTERFACE(IGUIElementRenderer);
 F_DECLARE_INTERFACE(IGUIElementEnum);
 F_DECLARE_INTERFACE(IGUIEvent);
@@ -65,41 +65,30 @@ enum eGUIFontRenderTextFlags
 
 interface IGUIFont : IUnknown
 {
-   virtual tResult RenderText(const char * pszText, int textLength, tGUIRect * pRect,
-                              uint flags, const tGUIColor & color) const = 0;
-   virtual tResult RenderText(const wchar_t * pszText, int textLength, tGUIRect * pRect,
+   virtual tResult RenderText(const tChar * pszText, int textLength, tGUIRect * pRect,
                               uint flags, const tGUIColor & color) const = 0;
 };
+
+///////////////////////////////////////
+
+GUI_API tResult GUIFontCreate(const cGUIFontDesc & fontDesc, IUnknown * pUnk, IGUIFont * * ppFont);
+GUI_API tResult GUIFontDescDefault(cGUIFontDesc * pFontDesc);
 
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// INTERFACE: IGUIFontFactory
+// INTERFACE: IGUIFontCache
 //
 
-interface IGUIFontFactory : IUnknown
+interface IGUIFontCache : IUnknown
 {
-   virtual tResult CreateFontA(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont) = 0;
-   virtual tResult CreateFontW(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont) = 0;
-
-#if HAVE_DIRECTX
-   virtual tResult SetDirect3DDevice(IDirect3DDevice9 * pD3dDevice) = 0;
-#endif
+   virtual tResult GetFont(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont) = 0;
+   virtual tResult SetFont(const cGUIFontDesc & fontDesc, IGUIFont * pFont) = 0;
 };
 
 ///////////////////////////////////////
 
-#ifndef CreateFont
-#ifdef _UNICODE
-#define CreateFont CreateFontW
-#else
-#define CreateFont CreateFontA
-#endif
-#endif
-
-///////////////////////////////////////
-
-GUI_API tResult GUIFontFactoryCreate();
+GUI_API tResult GUIFontCacheCreate();
 
 
 ///////////////////////////////////////////////////////////////////////////////

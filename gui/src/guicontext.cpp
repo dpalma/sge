@@ -15,7 +15,6 @@
 #include "keys.h"
 #include "multivar.h"
 #include "resourceapi.h"
-#include "configapi.h"
 
 #include "guieventroutertem.h"
 
@@ -710,27 +709,11 @@ tResult cGUIContext::GetDefaultFont(IGUIFont * * ppFont)
 {
    if (!m_pDefaultFont)
    {
-      tChar szTypeFace[32];
-      memset(szTypeFace, 0, sizeof(szTypeFace));
-      if (ConfigGetString("default_font_win32", szTypeFace, _countof(szTypeFace)) != S_OK)
+      cGUIFontDesc fontDesc;
+      if (GUIFontDescDefault(&fontDesc) == S_OK)
       {
-         ConfigGetString("default_font", szTypeFace, _countof(szTypeFace));
+         GUIFontCreate(fontDesc, NULL, &m_pDefaultFont);
       }
-
-      int pointSize = 10;
-      if (ConfigGet("default_font_size_win32", &pointSize) != S_OK)
-      {
-         ConfigGet("default_font_size", &pointSize);
-      }
-
-      int effects = kGFE_None;
-      if (ConfigGet("default_font_effects_win32", &effects) != S_OK)
-      {
-         ConfigGet("default_font_effects", &effects);
-      }
-
-      UseGlobal(GUIFontFactory);
-      pGUIFontFactory->CreateFont(cGUIFontDesc(szTypeFace, pointSize, effects), &m_pDefaultFont);
    }
 
    return m_pDefaultFont.GetPointer(ppFont);
@@ -753,8 +736,7 @@ tResult cGUIContext::ShowDebugInfo(const tGUIPoint & placement, IGUIStyle * pSty
          if (pStyle->GetFontDesc(&debugFontDesc) == S_OK)
          {
             SafeRelease(m_pDebugFont);
-            UseGlobal(GUIFontFactory);
-            pGUIFontFactory->CreateFont(debugFontDesc, &m_pDebugFont);
+            GUIFontCreate(debugFontDesc, NULL, &m_pDebugFont);
          }
       }
 

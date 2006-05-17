@@ -113,7 +113,7 @@ static void RegisterGlobalObjects()
    InputCreate();
    GUIContextCreate();
    GUIFactoryCreate();
-   GUIFontFactoryCreate();
+   GUIFontCacheCreate();
    GUIEventSoundsCreate();
    NetworkCreate();
    RendererCreate();

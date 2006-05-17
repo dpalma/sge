@@ -28,8 +28,7 @@ public:
 
    virtual void OnFinalRelease();
 
-   virtual tResult RenderText(const char * pszText, int textLength, tRect * pRect, uint flags, const cColor & color) const;
-   virtual tResult RenderText(const wchar_t * pszText, int textLength, tRect * pRect, uint flags, const cColor & color) const;
+   virtual tResult RenderText(const tChar * pszText, int textLength, tRect * pRect, uint flags, const cColor & color) const;
 
    bool Create(const cGUIFontDesc & fontDesc);
 
