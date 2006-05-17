@@ -13,7 +13,7 @@ includePaths = Split("""
    #engine/include
    #gui/include
    #network/include
-   #render/include
+   #rendergl/include
    #script/include
    #sound/include
    #tech/include

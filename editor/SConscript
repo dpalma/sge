@@ -35,6 +35,7 @@ sourceFiles = Split("""
 includePaths = Split("""
    #3rdparty/wtl/include
    #engine/include
+   #rendergl/include
    #script/include
    #tech/include
 """)
@@ -42,6 +43,7 @@ includePaths = Split("""
 libPaths = Split("""
    #allguids
    #engine
+   #rendergl
    #script
    #tech
 """)
@@ -49,6 +51,7 @@ libPaths = Split("""
 linkLibs = Split("""
    allguids.lib
    engine.lib
+   rendergl.lib
    script.lib
    tech.lib
 """)

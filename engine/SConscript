@@ -10,8 +10,6 @@ sourceFiles = Split("""
    src/entity.cpp
    src/entitycomponents.cpp
    src/entitymanager.cpp
-   src/glinterleave.cpp
-   src/gltexture.cpp
    src/input.cpp
    src/model.cpp
    src/modelanim.cpp
@@ -19,7 +17,6 @@ sourceFiles = Split("""
    src/modelskeleton.cpp
    src/ms3dread.cpp
    src/readwriteutils.cpp
-   src/renderer.cpp
    src/saveloadmanager.cpp
    src/scheduler.cpp
    src/schedulerclock.cpp
@@ -36,6 +33,7 @@ elif env['PLATFORM'] == 'cygwin':
 
 includePaths = Split("""
    #engine/include
+   #rendergl/include
    #script/include
    #tech/include
 """)
