@@ -439,7 +439,7 @@ struct sSysWindowedState
    RECT rect;
 };
 
-tResult SysFullScreenBegin(HWND hWnd, int width, int height, int bpp)
+tResult SysFullScreenBegin(HWND hWnd, int width, int height, int bpp, int hz)
 {
    if (!IsWindow(hWnd))
    {
@@ -453,15 +453,26 @@ tResult SysFullScreenBegin(HWND hWnd, int width, int height, int bpp)
       return S_FALSE;
    }
 
-   if (bpp == 0)
+   if (bpp == 0 || hz == 0)
    {
       HDC hDC = GetDC(NULL);
       if (hDC == NULL)
       {
          return E_FAIL;
       }
-      bpp = GetDeviceCaps(hDC, BITSPIXEL);
-      DebugMsg1("Using desktop display depth of %d bpp\n", bpp);
+
+      if (bpp == 0)
+      {
+         bpp = GetDeviceCaps(hDC, BITSPIXEL);
+      }
+
+      if (hz == 0)
+      {
+         hz = GetDeviceCaps(hDC, VREFRESH);
+      }
+
+      DebugMsg2("Using desktop display depth of %d bpp, refresh rate %d Hz\n", bpp, hz);
+
       ReleaseDC(NULL, hDC);
    }
 
@@ -491,7 +502,7 @@ tResult SysFullScreenBegin(HWND hWnd, int width, int height, int bpp)
    if (ChangeDisplaySettings(&dm, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
    {
       delete pWindowedState;
-      ErrorMsg3("Display mode %d x %d, %d bpp not available\n", width, height, bpp);
+      ErrorMsg4("Display mode %d x %d, %d bpp, %d Hz not available\n", width, height, bpp, hz);
       return E_FAIL;
    }
 
@@ -721,7 +732,7 @@ bool SysHandleWindowsMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
                {
                   RECT rect;
                   GetClientRect(hWnd, &rect);
-                  SysFullScreenBegin(hWnd, rect.right, rect.bottom, 16);
+                  SysFullScreenBegin(hWnd, rect.right, rect.bottom, 0, 0);
                }
             }
          }
