@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="3rdpartyFtgl"
 	ProjectGUID="{364CD7D3-D768-470C-8631-0D9EC056AE6E}"
+	RootNamespace="3rdpartyFtgl"
 	>
 	<Platforms>
 		<Platform
@@ -233,6 +234,8 @@
 				OutputFile="$(OutDir)/ftgl.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile="$(TargetDir)/ftgl.pdb"
 			/>
 			<Tool
 				Name="VCALinkTool"

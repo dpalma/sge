@@ -77,7 +77,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\CppUnitLite2.lib $(OutDir)\zlibwapi.lib winmm.lib"
+				AdditionalDependencies="advapi32.lib $(OutDir)\CppUnitLite2.lib $(OutDir)\zlibwapi.lib winmm.lib"
 				OutputFile=".\..\..\Build.vc8\Opt/tech.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -250,7 +250,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\zlibwapi.lib winmm.lib"
+				AdditionalDependencies="advapi32.lib $(OutDir)\zlibwapi.lib winmm.lib"
 				OutputFile=".\..\..\Build.vc8\Release/tech.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -423,7 +423,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\CppUnitLite2.lib $(OutDir)\zlibwapi.lib winmm.lib"
+				AdditionalDependencies="advapi32.lib $(OutDir)\CppUnitLite2.lib $(OutDir)\zlibwapi.lib winmm.lib"
 				OutputFile=".\..\..\Build.vc8\Debug/tech.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -679,6 +679,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\tech\src\techhash.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\tech\src\techlog.cpp"
 					>
 				</File>
@@ -857,10 +861,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\hash.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\tech\include\hashtable.h"
 				>
 			</File>
@@ -926,6 +926,10 @@
 			</File>
 			<File
 				RelativePath="..\..\tech\include\techguids.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\include\techhash.h"
 				>
 			</File>
 			<File
