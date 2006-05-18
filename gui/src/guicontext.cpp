@@ -705,22 +705,6 @@ tResult cGUIContext::SetRenderDeviceContext(IGUIRenderDeviceContext * pRenderDev
 
 ///////////////////////////////////////
 
-tResult cGUIContext::GetDefaultFont(IGUIFont * * ppFont)
-{
-   if (!m_pDefaultFont)
-   {
-      cGUIFontDesc fontDesc;
-      if (GUIFontDescDefault(&fontDesc) == S_OK)
-      {
-         GUIFontCreate(fontDesc, NULL, &m_pDefaultFont);
-      }
-   }
-
-   return m_pDefaultFont.GetPointer(ppFont);
-}
-
-///////////////////////////////////////
-
 tResult cGUIContext::ShowDebugInfo(const tGUIPoint & placement, IGUIStyle * pStyle)
 {
 #ifdef GUI_DEBUG
@@ -732,11 +716,11 @@ tResult cGUIContext::ShowDebugInfo(const tGUIPoint & placement, IGUIStyle * pSty
       {
          pStyle->GetForegroundColor(&m_debugInfoTextColor);
 
-         cGUIFontDesc debugFontDesc;
-         if (GUIStyleFontDesc(pStyle, &debugFontDesc) == S_OK)
+         cAutoIPtr<IGUIFont> pNewDebugFont;
+         if (GUIStyleFontCreate(pStyle, NULL, &pNewDebugFont) == S_OK)
          {
             SafeRelease(m_pDebugFont);
-            GUIFontCreate(debugFontDesc, NULL, &m_pDebugFont);
+            m_pDebugFont = pNewDebugFont;
          }
       }
 
@@ -833,8 +817,13 @@ tResult cGUIContext::GetDebugFont(IGUIFont * * ppFont)
    }
    else
    {
-      return GetDefaultFont(ppFont);
+      cGUIFontDesc fontDesc;
+      if (GUIFontDescDefault(&fontDesc) == S_OK)
+      {
+         return GUIFontCreate(fontDesc, NULL, ppFont);
+      }
    }
+   return E_FAIL;
 }
 #endif
 

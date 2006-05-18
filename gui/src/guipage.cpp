@@ -319,7 +319,6 @@ private:
 
 cGUIPage::cGUIPage(const tGUIElementList * pElements)
  : m_bUpdateLayout(pElements != NULL)
- , m_bIsOverlay(false)
 {
    if (pElements != NULL)
    {

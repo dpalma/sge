@@ -37,9 +37,6 @@ public:
    void Activate();
    void Deactivate();
 
-   void SetOverlay(bool bIsOverlay) { m_bIsOverlay = bIsOverlay; }
-   bool IsOverlay() const { return m_bIsOverlay; }
-
    bool IsModalDialogPage() const;
 
    tResult GetElement(const tChar * pszId, IGUIElement * * ppElement);
@@ -61,7 +58,6 @@ private:
 
    tGUIElementList m_elements;
    bool m_bUpdateLayout;
-   bool m_bIsOverlay;
 };
 
 

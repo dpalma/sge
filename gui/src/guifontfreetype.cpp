@@ -120,7 +120,7 @@ tResult cGUIFontFreetype::Create(const cGUIFontDesc & fontDesc)
    }
 
    if (m_pFont->Error() != FT_Err_Ok
-      || !m_pFont->FaceSize(fontDesc.GetPointSize()))
+      || !m_pFont->FaceSize(fontDesc.GetSize()))
    {
       delete m_pFont, m_pFont = NULL;
       return E_FAIL;

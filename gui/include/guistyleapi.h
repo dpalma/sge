@@ -20,6 +20,8 @@
 F_DECLARE_INTERFACE(IGUIStyle);
 F_DECLARE_INTERFACE(IGUIStyleSheet);
 
+F_DECLARE_INTERFACE(IGUIFont);
+
 class cGUIFontDesc;
 
 
@@ -59,8 +61,8 @@ interface IGUIStyle : IUnknown
    virtual tResult GetFontName(tGUIString * pFontName) = 0;
    virtual tResult SetFontName(const tGUIChar * pszFontName) = 0;
 
-   virtual tResult GetFontPointSize(uint * pFontPointSize) = 0;
-   virtual tResult SetFontPointSize(uint fontPointSize) = 0;
+   virtual tResult GetFontSize(int * pSize, uint * pSizeType) = 0;
+   virtual tResult SetFontSize(int size, uint sizeType) = 0;
 
    virtual tResult GetFontBold(bool * pB) = 0;
    virtual tResult SetFontBold(bool b) = 0;
@@ -86,7 +88,7 @@ interface IGUIStyle : IUnknown
    virtual tResult Clone(IGUIStyle * * ppStyle) = 0;
 };
 
-GUI_API tResult GUIStyleFontDesc(IGUIStyle * pStyle, cGUIFontDesc * pFontDesc);
+GUI_API tResult GUIStyleFontCreate(IGUIStyle * pStyle, IUnknown * pReserved, IGUIFont * * ppFont);
 
 ///////////////////////////////////////
 /// Attempt to parse a color value from the given string. Valid strings are

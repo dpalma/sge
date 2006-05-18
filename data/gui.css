@@ -2,8 +2,8 @@
 
 button
 {
-	font-name:Times;
-	font-pointsize:12;
+	font-family:Times;
+	font-size:12pt;
 	beveled-bevel:3;
 	beveled-shadow:(24,175,241);
 	beveled-light:(156,215,241);
@@ -15,5 +15,5 @@ button
 
 label
 {
-	font-name:Arial;
+	font-family:Arial;
 }

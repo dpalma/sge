@@ -83,28 +83,49 @@ static uint ShiftFromMask(uint mask)
    return shift;
 }
 
+static int GetTextureSizeForFont(const cGUIFontDesc & fontDesc)
+{
+   if (fontDesc.GetSizeType() == kGUIFontSizePoints)
+   {
+      if (fontDesc.GetSize() > 40)
+      {
+         return 1024;
+      }
+      else if (fontDesc.GetSize() > 20)
+      {
+         return 512;
+      }
+      else
+      {
+         return 256;
+      }
+   }
+
+   return -1;
+}
+
 bool cGUITextureFontW32::Create(const cGUIFontDesc & fontDesc)
 {
-   if (fontDesc.GetPointSize() > 40)
+   if (fontDesc.GetSizeType() != kGUIFontSizePoints
+      && fontDesc.GetSizeType() != kGUIFontSizeEm)
    {
-      m_texDim = 1024;
-   }
-   else if (fontDesc.GetPointSize() > 20)
-   {
-      m_texDim = 512;
-   }
-   else
-   {
-      m_texDim = 256;
+      return false;
    }
 
    m_fontDesc = fontDesc;
+
+   m_texDim = GetTextureSizeForFont(fontDesc);
 
    int maxTexSize = -1;
    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTexSize);
    if (maxTexSize == -1)
    {
       return false;
+   }
+
+   if (m_texDim < 0)
+   {
+      m_texDim = maxTexSize;
    }
 
    bool bSucceeded = false;
@@ -159,7 +180,18 @@ bool cGUITextureFontW32::Create(const cGUIFontDesc & fontDesc)
          blueShift = ShiftFromMask(blueMask);
 
          LOGFONT lf = {0};
-         lf.lfHeight = -MulDiv(fontDesc.GetPointSize(), (int)(GetDeviceCaps(hMemDC, LOGPIXELSY) * scale), 72);
+         if (fontDesc.GetSizeType() == kGUIFontSizePoints)
+         {
+            lf.lfHeight = -MulDiv(fontDesc.GetSize(), (int)(GetDeviceCaps(hMemDC, LOGPIXELSY) * scale), 72);
+         }
+         else if (fontDesc.GetSizeType() == kGUIFontSizeEm)
+         {
+            lf.lfHeight = fontDesc.GetSize();
+         }
+         else
+         {
+            Assert(!"Shouldn't get here");
+         }
          lf.lfWeight = fontDesc.IsBold() ? FW_SEMIBOLD : FW_NORMAL;
          if (fontDesc.IsItalic())
          {

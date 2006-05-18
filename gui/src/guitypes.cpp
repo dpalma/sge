@@ -37,7 +37,8 @@ namespace GUIStandardColors
 ////////////////////////////////////////
 
 cGUIFontDesc::cGUIFontDesc()
- : m_pointSize(0)
+ : m_size(0)
+ , m_sizeType(kGUIFontSizeTypeUnspecified)
  , m_effects(0)
  , m_glyphFirst(0)
  , m_glyphLast(0)
@@ -46,9 +47,11 @@ cGUIFontDesc::cGUIFontDesc()
 
 ////////////////////////////////////////
 
-cGUIFontDesc::cGUIFontDesc(const tChar * pszFace, int pointSize, uint effects, uint glyphFirst, uint glyphLast)
+cGUIFontDesc::cGUIFontDesc(const tChar * pszFace, int size, eGUIFontSizeType sizeType,
+                           uint effects, uint glyphFirst, uint glyphLast)
  : m_typeFace(pszFace)
- , m_pointSize(pointSize)
+ , m_size(size)
+ , m_sizeType(sizeType)
  , m_effects(effects)
  , m_glyphFirst(glyphFirst)
  , m_glyphLast(glyphLast)
@@ -59,7 +62,8 @@ cGUIFontDesc::cGUIFontDesc(const tChar * pszFace, int pointSize, uint effects, u
 
 cGUIFontDesc::cGUIFontDesc(const cGUIFontDesc & other)
  : m_typeFace(other.m_typeFace)
- , m_pointSize(other.m_pointSize)
+ , m_size(other.m_size)
+ , m_sizeType(other.m_sizeType)
  , m_effects(other.m_effects)
  , m_glyphFirst(other.m_glyphFirst)
  , m_glyphLast(other.m_glyphLast)
@@ -71,7 +75,8 @@ cGUIFontDesc::cGUIFontDesc(const cGUIFontDesc & other)
 const cGUIFontDesc & cGUIFontDesc::operator =(const cGUIFontDesc & other)
 {
    m_typeFace = other.m_typeFace;
-   m_pointSize = other.m_pointSize;
+   m_size = other.m_size;
+   m_sizeType = other.m_sizeType;
    m_effects = other.m_effects;
    m_glyphFirst = other.m_glyphFirst;
    m_glyphLast = other.m_glyphLast;
@@ -83,7 +88,8 @@ const cGUIFontDesc & cGUIFontDesc::operator =(const cGUIFontDesc & other)
 bool cGUIFontDesc::operator ==(const cGUIFontDesc & other) const
 {
    return m_typeFace.compare(other.m_typeFace) == 0
-      && m_pointSize == other.m_pointSize
+      && m_size == other.m_size
+      && m_sizeType == other.m_sizeType
       && m_effects == other.m_effects
       && m_glyphFirst == other.m_glyphFirst
       && m_glyphLast == other.m_glyphLast;
@@ -104,13 +110,27 @@ bool cGUIFontDesc::operator <(const cGUIFontDesc & other) const
       return true;
    }
 
-   if (m_pointSize > other.m_pointSize)
+   if (m_sizeType == other.m_sizeType)
    {
-      return false;
+      if (m_size > other.m_size)
+      {
+         return false;
+      }
+      else if (m_size < other.m_size)
+      {
+         return true;
+      }
    }
-   else if (m_pointSize < other.m_pointSize)
+   else
    {
-      return true;
+      if (m_sizeType > other.m_sizeType)
+      {
+         return false;
+      }
+      else if (m_sizeType < other.m_sizeType)
+      {
+         return true;
+      }
    }
 
    if (m_effects > other.m_effects)
@@ -145,6 +165,20 @@ bool cGUIFontDesc::operator <(const cGUIFontDesc & other) const
 
 ////////////////////////////////////////
 
+void cGUIFontDesc::SetFace(const tGUIChar * pszFace)
+{
+   if (pszFace != NULL)
+   {
+      m_typeFace.assign(pszFace);
+   }
+   else
+   {
+      m_typeFace.erase();
+   }
+}
+
+////////////////////////////////////////
+
 const tGUIChar * cGUIFontDesc::GetFace() const
 {
    return m_typeFace.c_str();
@@ -152,9 +186,23 @@ const tGUIChar * cGUIFontDesc::GetFace() const
 
 ////////////////////////////////////////
 
-int cGUIFontDesc::GetPointSize() const
+int cGUIFontDesc::GetSize() const
 {
-   return m_pointSize;
+   return m_size;
+}
+
+////////////////////////////////////////
+
+eGUIFontSizeType cGUIFontDesc::GetSizeType() const
+{
+   return m_sizeType;
+}
+
+////////////////////////////////////////
+
+uint cGUIFontDesc::GetEffects() const
+{
+   return m_effects;
 }
 
 ////////////////////////////////////////
@@ -207,59 +255,60 @@ TEST(GUIFontDescLessThan)
 {
    {
       // 1 < 2 because of name
-      cGUIFontDesc fontDesc1(_T("Arial"), 12, kGFE_None);
-      cGUIFontDesc fontDesc2(_T("Times"), 12, kGFE_None);
+      cGUIFontDesc fontDesc1(_T("Arial"), 12, kGUIFontSizePoints, kGFE_None);
+      cGUIFontDesc fontDesc2(_T("Times"), 12, kGUIFontSizePoints, kGFE_None);
       CHECK(fontDesc1 < fontDesc2);
       CHECK(!(fontDesc2 < fontDesc1));
    }
 
    {
       // 1 < 2 because of point size
-      cGUIFontDesc fontDesc1(_T("Arial"), 12, kGFE_None);
-      cGUIFontDesc fontDesc2(_T("Arial"), 14, kGFE_None);
+      cGUIFontDesc fontDesc1(_T("Arial"), 12, kGUIFontSizePoints, kGFE_None);
+      cGUIFontDesc fontDesc2(_T("Arial"), 14, kGUIFontSizePoints, kGFE_None);
       CHECK(fontDesc1 < fontDesc2);
       CHECK(!(fontDesc2 < fontDesc1));
    }
 
    {
       // 1 < 2 because of font effects
-      cGUIFontDesc fontDesc1(_T("Arial"), 12, kGFE_None);
-      cGUIFontDesc fontDesc2(_T("Arial"), 12, kGFE_Bold);
+      cGUIFontDesc fontDesc1(_T("Arial"), 12, kGUIFontSizePoints, kGFE_None);
+      cGUIFontDesc fontDesc2(_T("Arial"), 12, kGUIFontSizePoints, kGFE_Bold);
       CHECK(fontDesc1 < fontDesc2);
       CHECK(!(fontDesc2 < fontDesc1));
    }
 
    {
       // 1 < 2 because of m_glyphFirst
-      cGUIFontDesc fontDesc1(_T("Arial"), 12, kGFE_Bold, cGUIFontDesc::kANSIGlyphFirst - 1);
-      cGUIFontDesc fontDesc2(_T("Arial"), 12, kGFE_Bold, cGUIFontDesc::kANSIGlyphFirst);
+      cGUIFontDesc fontDesc1(_T("Arial"), 12, kGUIFontSizePoints, kGFE_Bold, cGUIFontDesc::kASCIIGlyphFirst - 1);
+      cGUIFontDesc fontDesc2(_T("Arial"), 12, kGUIFontSizePoints, kGFE_Bold, cGUIFontDesc::kASCIIGlyphFirst);
       CHECK(fontDesc1 < fontDesc2);
       CHECK(!(fontDesc2 < fontDesc1));
    }
 
    {
       // 1 < 2 because of m_glyphLast
-      cGUIFontDesc fontDesc1(_T("Arial"), 12, kGFE_Bold, cGUIFontDesc::kANSIGlyphFirst, cGUIFontDesc::kANSIGlyphLast - 1);
-      cGUIFontDesc fontDesc2(_T("Arial"), 12, kGFE_Bold, cGUIFontDesc::kANSIGlyphFirst, cGUIFontDesc::kANSIGlyphLast);
+      cGUIFontDesc fontDesc1(_T("Arial"), 12, kGUIFontSizePoints, kGFE_Bold, cGUIFontDesc::kASCIIGlyphFirst, cGUIFontDesc::kASCIIGlyphLast - 1);
+      cGUIFontDesc fontDesc2(_T("Arial"), 12, kGUIFontSizePoints, kGFE_Bold, cGUIFontDesc::kASCIIGlyphFirst, cGUIFontDesc::kASCIIGlyphLast);
       CHECK(fontDesc1 < fontDesc2);
       CHECK(!(fontDesc2 < fontDesc1));
    }
 
    {
       // 1 == 2
-      cGUIFontDesc fontDesc1(_T("Arial"), 12, kGFE_Bold);
-      cGUIFontDesc fontDesc2(_T("Arial"), 12, kGFE_Bold);
+      cGUIFontDesc fontDesc1(_T("Arial"), 12, kGUIFontSizePoints, kGFE_Bold);
+      cGUIFontDesc fontDesc2(_T("Arial"), 12, kGUIFontSizePoints, kGFE_Bold);
       CHECK(!(fontDesc1 < fontDesc2));
       CHECK(!(fontDesc2 < fontDesc1));
    }
+}
 
-   {
-      // Cover less-than operator bug discovered 4/25/2006
-      static const cGUIFontDesc noName10(_T(""), 10, kGFE_None);
-      static const cGUIFontDesc courierNew8(_T("Courier New"), 8, kGFE_None);
-      CHECK(noName10 < courierNew8);
-      CHECK(!(courierNew8 < noName10));
-   }
+TEST(GUIFontDescLessThanOperatorBug20060425)
+{
+   // Cover less-than operator bug discovered 4/25/2006
+   static const cGUIFontDesc noName10(_T(""), 10, kGUIFontSizePoints, kGFE_None);
+   static const cGUIFontDesc courierNew8(_T("Courier New"), 8, kGUIFontSizePoints, kGFE_None);
+   CHECK(noName10 < courierNew8);
+   CHECK(!(courierNew8 < noName10));
 }
 
 #endif // HAVE_CPPUNITLITE2

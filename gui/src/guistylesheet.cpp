@@ -465,6 +465,17 @@ static bool StylesAreEqual(IGUIStyle * pStyle1, IGUIStyle * pStyle2)
          return false; \
    } while (0)
 
+#define STYLE_ATTRIB_EQUAL_2(Attrib, Type1, Init1, Type2, Init2) \
+   do { \
+      Type1 a1 = Init1, b1 = Init1; \
+      Type2 a2 = Init2, b2 = Init2; \
+      tResult result1 = pStyle1->Get##Attrib(&a1, &a2); \
+      tResult result2 = pStyle2->Get##Attrib(&b1, &b2); \
+      ErrorMsgIf(result1 != result2, "Mismatching results getting " #Attrib "\n"); \
+      if (a1 != b1 || a2 != b2) \
+         return false; \
+   } while (0)
+
    STYLE_ATTRIB_EQUAL(Alignment, uint, 0);
    STYLE_ATTRIB_EQUAL(VerticalAlignment, uint, 0);
    STYLE_ATTRIB_EQUAL(BackgroundColor, tGUIColor, tGUIColor(0,0,0,0));
@@ -472,7 +483,7 @@ static bool StylesAreEqual(IGUIStyle * pStyle1, IGUIStyle * pStyle2)
    STYLE_ATTRIB_EQUAL(TextAlignment, uint, 0);
    STYLE_ATTRIB_EQUAL(TextVerticalAlignment, uint, 0);
    STYLE_ATTRIB_EQUAL(FontName, tGUIString, _T(""));
-   STYLE_ATTRIB_EQUAL(FontPointSize, uint, 0);
+   STYLE_ATTRIB_EQUAL_2(FontSize, int, 0, uint, 0);
    STYLE_ATTRIB_EQUAL(FontBold, bool, false);
    STYLE_ATTRIB_EQUAL(FontItalic, bool, false);
    STYLE_ATTRIB_EQUAL(FontShadow, bool, false);
@@ -513,7 +524,7 @@ TEST(GUIStyleSelectors)
       "\n"
       "a.topText"
       "{\n"
-	   "  font-pointsize: 7pt;\n"
+	   "  font-size: 7pt;\n"
       "}\n"
       "a.doc\n"
       "{\n"
@@ -521,7 +532,7 @@ TEST(GUIStyleSelectors)
       "}\n"
       ".heading\n"
       "{\n"
-	   "  font-pointsize: 18px;\n"
+	   "  font-size: 18px;\n"
 	   "  font-weight: bold;\n"
 	   "  color: #B82619;\n"
       "}\n"
@@ -544,10 +555,12 @@ TEST(GUIStyleSelectors)
    {
       cAutoIPtr<IGUIStyle> pStyle;
       CHECK(pStyleSheet->GetStyle(_T("a"), _T("topText"), &pStyle) == S_OK);
-      uint temp;
-      CHECK(pStyle->GetFontPointSize(&temp) == S_OK);
-      CHECK_EQUAL(temp, 7);
-      CHECK(pStyle->GetAlignment(&temp) == S_FALSE);
+      int i;
+      uint u;
+      CHECK(pStyle->GetFontSize(&i, &u) == S_OK);
+      CHECK_EQUAL(i, 7);
+      CHECK_EQUAL(u, kGUIFontSizePoints);
+      CHECK(pStyle->GetAlignment(&u) == S_FALSE);
    }
 
    {

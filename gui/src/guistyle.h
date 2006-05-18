@@ -55,8 +55,8 @@ public:
    virtual tResult GetFontName(tGUIString * pFontName);
    virtual tResult SetFontName(const char * pszFontName);
 
-   virtual tResult GetFontPointSize(uint * pFontPointSize);
-   virtual tResult SetFontPointSize(uint fontPointSize);
+   virtual tResult GetFontSize(int * pSize, uint * pSizeType);
+   virtual tResult SetFontSize(int size, uint sizeType);
 
    virtual tResult GetFontBold(bool * pB);
    virtual tResult SetFontBold(bool b);
@@ -88,7 +88,8 @@ private:
    tGUIColor * m_pBackground, * m_pForeground;
    uint m_textAlignment, m_textVerticalAlignment;
    tGUIString m_fontName;
-   uint m_fontPointSize;
+   int m_fontSize;
+   uint m_fontSizeType;
    bool m_bFontBold, m_bFontItalic, m_bFontShadow, m_bFontOutline;
    uint m_placement;
    int m_width, m_height;

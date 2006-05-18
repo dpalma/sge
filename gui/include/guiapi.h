@@ -378,8 +378,6 @@ interface IGUIContext : IGUIEventRouter
    virtual tResult GetRenderDeviceContext(IGUIRenderDeviceContext * * ppRenderDeviceContext) = 0;
    virtual tResult SetRenderDeviceContext(IGUIRenderDeviceContext * pRenderDeviceContext) = 0;
 
-   virtual tResult GetDefaultFont(IGUIFont * * ppFont) = 0;
-
    virtual tResult ShowDebugInfo(const tGUIPoint & placement, IGUIStyle * pStyle) = 0;
    virtual tResult HideDebugInfo() = 0;
 };

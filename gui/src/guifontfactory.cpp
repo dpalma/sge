@@ -107,7 +107,7 @@ tResult GUIFontDescDefault(cGUIFontDesc * pFontDesc)
       ConfigGet("default_font_effects", &effects);
    }
 
-   *pFontDesc = cGUIFontDesc(szTypeFace, pointSize, effects);
+   *pFontDesc = cGUIFontDesc(szTypeFace, pointSize, kGUIFontSizePoints, effects);
    return S_OK;
 }
 

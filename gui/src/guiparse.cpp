@@ -112,6 +112,85 @@ tResult GUIParseStyleDimension(const tChar * psz, int * pDimension, eGUIDimensio
 
 ///////////////////////////////////////////////////////////////////////////////
 
+tResult GUIParseStyleFontSize(const tChar * psz, int * pSize, eGUIFontSizeType * pSizeType)
+{
+   if (psz == NULL || pSize == NULL || pSizeType == NULL)
+   {
+      return E_POINTER;
+   }
+
+   int size = 0;
+   tChar szType[32] = {0};
+
+   // The 32 must match the size of szSpec. Not using "%*s" and passing in the buffer
+   // length because then scanf won't recognize a single percent character as a valid
+   // value for the string. That is, this case will not parse as desired: "25%".
+   int nParsed = _stscanf(psz, _T("%d%32s"), &size, szType);
+   if (nParsed == 2)
+   {
+      static const struct
+      {
+         const tChar * pszType;
+         eGUIFontSizeType type;
+      }
+      sizeTypeTable[] =
+      {
+         { _T("%"),     kGUIFontSizePercent },
+         { _T("em"),    kGUIFontSizeEm },
+         { _T("ex"),    kGUIFontSizeEx },
+         { _T("px"),    kGUIFontSizePixels },
+         { _T("in"),    kGUIFontSizeInches },
+         { _T("cm"),    kGUIFontSizeCentimeters },
+         { _T("mm"),    kGUIFontSizeMillimeters },
+         { _T("pt"),    kGUIFontSizePoints },
+         { _T("pc"),    kGUIFontSizePicas },
+      };
+      for (int i = 0; i < _countof(sizeTypeTable); i++)
+      {
+         if (_tcscmp(szType, sizeTypeTable[i].pszType) == 0)
+         {
+            *pSize = size;
+            *pSizeType = sizeTypeTable[i].type;
+            return S_OK;
+         }
+      }
+   }
+   else if (nParsed == 0)
+   {
+      static const struct
+      {
+         const tChar * pszMatch;
+         int size;
+         eGUIFontSizeType type;
+      }
+      absRelTable[] =
+      {
+         { _T("xx-small"),    kGUIFontXXSmall,     kGUIFontSizeAbsolute },
+         { _T("x-small"),     kGUIFontXSmall,      kGUIFontSizeAbsolute },
+         { _T("small"),       kGUIFontSmall,       kGUIFontSizeAbsolute },
+         { _T("medium"),      kGUIFontMedium,      kGUIFontSizeAbsolute },
+         { _T("large"),       kGUIFontLarge,       kGUIFontSizeAbsolute },
+         { _T("x-large"),     kGUIFontXLarge,      kGUIFontSizeAbsolute },
+         { _T("xx-large"),    kGUIFontXXLarge,     kGUIFontSizeAbsolute },
+         { _T("larger"),      kGUIFontSizeLarger,  kGUIFontSizeRelative },
+         { _T("smaller"),     kGUIFontSizeSmaller, kGUIFontSizeRelative },
+      };
+      for (int i = 0; i < _countof(absRelTable); i++)
+      {
+         if (_tcscmp(psz, absRelTable[i].pszMatch) == 0)
+         {
+            *pSize = absRelTable[i].size;
+            *pSizeType = absRelTable[i].type;
+            return S_OK;
+         }
+      }
+   }
+
+   return E_FAIL;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 tResult GUIParseColor(const tChar * pszColor, tGUIColor * pColor)
 {
    if (pszColor == NULL || pColor == NULL)
@@ -250,6 +329,38 @@ TEST(GUIParseDimension)
 
    // only partially bogus--valid integer but invalid string after it
    CHECK(FAILED(GUIParseStyleDimension("99 units", &dim, &spec)));
+}
+
+///////////////////////////////////////
+
+TEST(GUIParseFontSize)
+{
+   int size;
+   eGUIFontSizeType type;
+
+   CHECK(GUIParseStyleFontSize(NULL, NULL, NULL) == E_POINTER);
+   CHECK(GUIParseStyleFontSize(_T("test"), NULL, NULL) == E_POINTER);
+   CHECK(GUIParseStyleFontSize(_T("test"), &size, NULL) == E_POINTER);
+
+   CHECK(GUIParseStyleFontSize("xx-small", &size, &type) == S_OK);
+   CHECK_EQUAL(size, kGUIFontXXSmall);
+   CHECK_EQUAL(type, kGUIFontSizeAbsolute);
+
+   CHECK(GUIParseStyleFontSize("larger", &size, &type) == S_OK);
+   CHECK_EQUAL(size, kGUIFontSizeLarger);
+   CHECK_EQUAL(type, kGUIFontSizeRelative);
+
+   CHECK(GUIParseStyleFontSize("78%", &size, &type) == S_OK);
+   CHECK_EQUAL(size, 78);
+   CHECK_EQUAL(type, kGUIFontSizePercent);
+
+   CHECK(GUIParseStyleFontSize("14pt", &size, &type) == S_OK);
+   CHECK_EQUAL(size, 14);
+   CHECK_EQUAL(type, kGUIFontSizePoints);
+
+   CHECK(GUIParseStyleFontSize("9mm", &size, &type) == S_OK);
+   CHECK_EQUAL(size, 9);
+   CHECK_EQUAL(type, kGUIFontSizeMillimeters);
 }
 
 ///////////////////////////////////////

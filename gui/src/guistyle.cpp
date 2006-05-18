@@ -4,6 +4,7 @@
 #include "stdhdr.h"
 
 #include "guistyle.h"
+#include "guiapi.h"
 #include "guielementtools.h"
 #include "guiparse.h"
 #include "guistrings.h"
@@ -42,7 +43,8 @@ cGUIStyle::cGUIStyle(IGUIStyle * pClassStyle, IDictionary * pDict)
  , m_textAlignment(kGUIAlignLeft)
  , m_textVerticalAlignment(kGUIVertAlignTop)
  , m_fontName("")
- , m_fontPointSize(0)
+ , m_fontSize(0)
+ , m_fontSizeType(0)
  , m_bFontBold(false)
  , m_bFontItalic(false)
  , m_bFontShadow(false)
@@ -67,7 +69,8 @@ cGUIStyle::cGUIStyle(const cGUIStyle & other)
  , m_textAlignment(other.m_textAlignment)
  , m_textVerticalAlignment(other.m_textVerticalAlignment)
  , m_fontName(other.m_fontName)
- , m_fontPointSize(other.m_fontPointSize)
+ , m_fontSize(other.m_fontSize)
+ , m_fontSizeType(other.m_fontSizeType)
  , m_bFontBold(other.m_bFontBold)
  , m_bFontItalic(other.m_bFontItalic)
  , m_bFontShadow(other.m_bFontShadow)
@@ -376,30 +379,42 @@ tResult cGUIStyle::SetFontName(const char * pszFontName)
 
 ///////////////////////////////////////
 
-tResult cGUIStyle::GetFontPointSize(uint * pFontPointSize)
+tResult cGUIStyle::GetFontSize(int * pSize, uint * pSizeType)
 {
-   if (pFontPointSize == NULL)
+   if (pSize == NULL || pSizeType == NULL)
    {
       return E_POINTER;
    }
-   if (m_fontPointSize == 0)
+   if (m_fontSize != 0 && m_fontSizeType != kGUIFontSizeTypeUnspecified)
    {
-      return !!m_pClassStyle ? m_pClassStyle->GetFontPointSize(pFontPointSize) : S_FALSE;
+      *pSize = m_fontSize;
+      *pSizeType = m_fontSizeType;
+      return S_OK;
    }
-   *pFontPointSize = m_fontPointSize;
-   return S_OK;
+   return !!m_pClassStyle ? m_pClassStyle->GetFontSize(pSize, pSizeType) : S_FALSE;
 }
 
 ///////////////////////////////////////
 
-tResult cGUIStyle::SetFontPointSize(uint fontPointSize)
+static bool ValidateFontSize(int size, uint sizeType)
 {
-   if ((fontPointSize < 6) || (fontPointSize > 48))
+   if (sizeType == kGUIFontSizePoints)
    {
-      DebugMsg1("ERROR: Odd font point size requested: %d\n", fontPointSize);
+      return ((size >= 6) && (size <= 48));
+   }
+   // TODO: validate other font size types
+   return true;
+}
+
+tResult cGUIStyle::SetFontSize(int size, uint sizeType)
+{
+   if (!ValidateFontSize(size, sizeType))
+   {
+      ErrorMsg2("Odd font size requested: %d, %d\n", size, sizeType);
       return E_INVALIDARG;
    }
-   m_fontPointSize = fontPointSize;
+   m_fontSize = size;
+   m_fontSizeType = sizeType;
    return S_OK;
 }
 
@@ -648,7 +663,7 @@ static eGUIVerticalAlignment GUIStyleParseVertAlignment(const char * psz)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-tResult GUIStyleFontDesc(IGUIStyle * pStyle, cGUIFontDesc * pFontDesc)
+static tResult GUIStyleFontDesc(IGUIStyle * pStyle, cGUIFontDesc * pFontDesc)
 {
    if (pStyle == NULL || pFontDesc == NULL)
    {
@@ -661,8 +676,9 @@ tResult GUIStyleFontDesc(IGUIStyle * pStyle, cGUIFontDesc * pFontDesc)
       return E_FAIL;
    }
 
-   uint pointSize;
-   if (pStyle->GetFontPointSize(&pointSize) != S_OK)
+   int size;
+   uint sizeType;
+   if (pStyle->GetFontSize(&size, &sizeType) != S_OK)
    {
       return E_FAIL;
    }
@@ -701,8 +717,47 @@ tResult GUIStyleFontDesc(IGUIStyle * pStyle, cGUIFontDesc * pFontDesc)
       }
    }
 
-   *pFontDesc = cGUIFontDesc(fontName.c_str(), pointSize, effects);
+   *pFontDesc = cGUIFontDesc(fontName.c_str(), size, static_cast<eGUIFontSizeType>(sizeType), effects);
    return S_OK;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+tResult GUIStyleFontCreate(IGUIStyle * pStyle, IUnknown * pReserved, IGUIFont * * ppFont)
+{
+   if (pStyle == NULL || ppFont == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tGUIString fontFamily;
+   if (pStyle->GetFontName(&fontFamily) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   cTokenizer<cStr> tok;
+   if (tok.Tokenize(fontFamily.c_str(), _T(",")) <= 0)
+   {
+      return E_FAIL;
+   }
+
+   cGUIFontDesc fontDesc;
+   if (GUIStyleFontDesc(pStyle, &fontDesc) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   for (uint i = 0; i < tok.m_tokens.size(); i++)
+   {
+      fontDesc.SetFace(tok.m_tokens[i].c_str());
+      if (GUIFontCreate(fontDesc, pReserved, ppFont) == S_OK)
+      {
+         return S_OK;
+      }
+   }
+
+   return E_FAIL;
 }
 
 
@@ -769,12 +824,13 @@ static tResult GUIStyleParseAndSetFontName(const char * pszValue, IGUIStyle * pS
 
 ///////////////////////////////////////
 
-static tResult GUIStyleParseAndSetFontPointSize(const char * pszValue, IGUIStyle * pStyle)
+static tResult GUIStyleParseAndSetFontSize(const char * pszValue, IGUIStyle * pStyle)
 {
-   int pointSize;
-   if (_stscanf(pszValue, _T("%d"), &pointSize) == 1)
+   int size = 0;
+   eGUIFontSizeType type = kGUIFontSizeTypeUnspecified;
+   if (GUIParseStyleFontSize(pszValue, &size, &type) == S_OK)
    {
-      return pStyle->SetFontPointSize(pointSize);
+      return pStyle->SetFontSize(size, type);
    }
    return S_FALSE;
 }
@@ -886,7 +942,7 @@ g_GUIStyleParseAndSetAttribTable[] =
    { kAttribTextAlign,           GUIStyleParseAndSetTextAlign },
    { kAttribTextVerticalAlign,   GUIStyleParseAndSetTextVerticalAlign },
    { kAttribFontName,            GUIStyleParseAndSetFontName },
-   { kAttribFontPointSize,       GUIStyleParseAndSetFontPointSize },
+   { kAttribFontSize,            GUIStyleParseAndSetFontSize },
    { kAttribFontBold,            GUIStyleParseAndSetFontBold },
    { kAttribFontItalic,          GUIStyleParseAndSetFontItalic },
    { kAttribFontShadow,          GUIStyleParseAndSetFontShadow },
@@ -1033,7 +1089,7 @@ cGUIStyleTests::cGUIStyleTests()
       "%s: %s;" \
       "%s: %s;" \
       "%s: %s;" \
-      "%s: %d;"),
+      "%s: %dpt;"),
       kAttribAlign, kValueAlignCenter,
       kAttribVerticalAlign, kValueVertAlignCenter,
       kAttribBackgroundColor, kValueColorWhite,
@@ -1041,7 +1097,7 @@ cGUIStyleTests::cGUIStyleTests()
       kAttribTextAlign, kValueAlignRight,
       kAttribTextVerticalAlign, kValueVertAlignBottom,
       kAttribFontName, gm_fontName,
-      kAttribFontPointSize, gm_fontPointSize
+      kAttribFontSize, gm_fontPointSize
    );
 }
 
@@ -1150,6 +1206,8 @@ bool cGUIStyleTests::StyleMatchesTest(IGUIStyle * pStyle)
       uint temp;
       tGUIColor color;
       tGUIString str;
+      int fontSize;
+      uint fontSizeType;
 
       if ((pStyle->GetAlignment(&temp) == S_OK) && (temp == kGUIAlignCenter)
          && (pStyle->GetVerticalAlignment(&temp) == S_OK) && (temp == kGUIVertAlignCenter)
@@ -1158,7 +1216,7 @@ bool cGUIStyleTests::StyleMatchesTest(IGUIStyle * pStyle)
          && (pStyle->GetTextAlignment(&temp) == S_OK) && (temp == kGUIAlignRight)
          && (pStyle->GetTextVerticalAlignment(&temp) == S_OK) && (temp == kGUIVertAlignBottom)
          && (pStyle->GetFontName(&str) == S_OK) && (strcmp(str.c_str(), gm_fontName) == 0)
-         && (pStyle->GetFontPointSize(&temp) == S_OK) && (temp == gm_fontPointSize))
+         && (pStyle->GetFontSize(&fontSize, &fontSizeType) == S_OK) && (fontSize == gm_fontPointSize) && (fontSizeType == kGUIFontSizePoints))
       {
          return true;
       }

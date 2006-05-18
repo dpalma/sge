@@ -92,8 +92,6 @@ public:
    virtual tResult GetRenderDeviceContext(IGUIRenderDeviceContext * * ppRenderDeviceContext);
    virtual tResult SetRenderDeviceContext(IGUIRenderDeviceContext * pRenderDeviceContext);
 
-   virtual tResult GetDefaultFont(IGUIFont * * ppFont);
-
    virtual tResult ShowDebugInfo(const tGUIPoint & placement, IGUIStyle * pStyle);
    virtual tResult HideDebugInfo();
 
@@ -137,8 +135,6 @@ private:
 #endif
 
    cAutoIPtr<IGUIRenderDeviceContext> m_pRenderDeviceContext;
-
-   cAutoIPtr<IGUIFont> m_pDefaultFont;
 
    typedef std::list<cGUIPage *> tGUIPageList;
    tGUIPageList m_pagePlanes[3];

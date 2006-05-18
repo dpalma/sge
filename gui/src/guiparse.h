@@ -18,6 +18,7 @@ const tChar * SkipSpaceBack(const tChar * psz);
 const tChar * SkipSingleComment(const tChar * psz);
 
 tResult GUIParseStyleDimension(const tChar * psz, int * pDimension, eGUIDimensionSpec * pSpec);
+tResult GUIParseStyleFontSize(const tChar * psz, int * pSize, eGUIFontSizeType * pSizeType);
 tResult GUIParseBool(const tChar * psz, bool * pBool);
 
 ///////////////////////////////////////////////////////////////////////////////

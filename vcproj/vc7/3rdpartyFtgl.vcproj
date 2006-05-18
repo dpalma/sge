@@ -139,7 +139,8 @@
 				OutputFile="$(OutDir)/ftgl.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
-				GenerateDebugInformation="TRUE"/>
+				GenerateDebugInformation="TRUE"
+				ProgramDatabaseFile="$(OutDir)/ftgl.pdb"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool

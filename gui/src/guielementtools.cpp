@@ -264,15 +264,19 @@ tResult GUIElementFont(IGUIElement * pElement, IGUIFont * * ppFont)
    cAutoIPtr<IGUIStyle> pStyle;
    if (pElement->GetStyle(&pStyle) == S_OK)
    {
-      cGUIFontDesc fontDesc;
-      if (GUIStyleFontDesc(pStyle, &fontDesc) == S_OK)
+      if (GUIStyleFontCreate(pStyle, NULL, ppFont) == S_OK)
       {
-         return GUIFontCreate(fontDesc, NULL, ppFont);
+         return S_OK;
       }
    }
 
-   UseGlobal(GUIContext);
-   return pGUIContext->GetDefaultFont(ppFont);
+   cGUIFontDesc fontDesc;
+   if (GUIFontDescDefault(&fontDesc) == S_OK)
+   {
+      return GUIFontCreate(fontDesc, NULL, ppFont);
+   }
+
+   return E_FAIL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

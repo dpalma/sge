@@ -61,6 +61,41 @@ enum eGUIDimensionSpec
    kGUIDimensionPercent,
 };
 
+enum eGUIFontSizeType
+{
+   kGUIFontSizeTypeUnspecified,
+   kGUIFontSizeAbsolute,
+   kGUIFontSizeRelative,
+   kGUIFontSizePercent,
+   kGUIFontSizeEm,
+   kGUIFontSizeEx,
+   kGUIFontSizePixels,
+   kGUIFontSizeInches,
+   kGUIFontSizeCentimeters,
+   kGUIFontSizeMillimeters,
+   kGUIFontSizePoints,
+   kGUIFontSizePicas,
+};
+
+enum eGUIFontSizeAbsolute
+{
+   kGUIFontSizeAbsoluteUnspecified,
+   kGUIFontXXSmall,
+   kGUIFontXSmall,
+   kGUIFontSmall,
+   kGUIFontMedium,
+   kGUIFontLarge,
+   kGUIFontXLarge,
+   kGUIFontXXLarge
+};
+
+enum eGUIFontSizeRelative
+{
+   kGUIFontSizeRelativeUnspecified,
+   kGUIFontSizeLarger,
+   kGUIFontSizeSmaller,
+};
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -167,13 +202,13 @@ class GUI_API cGUIFontDesc
 public:
    enum
    {
-      kANSIGlyphFirst = 32,
-      kANSIGlyphLast = 128,
+      kASCIIGlyphFirst = 32,
+      kASCIIGlyphLast = 128,
    };
 
    cGUIFontDesc();
-   cGUIFontDesc(const tGUIChar * pszFace, int pointSize, uint effects,
-      uint glyphFirst = kANSIGlyphFirst, uint glyphLast = kANSIGlyphLast);
+   cGUIFontDesc(const tGUIChar * pszFace, int pointSize, eGUIFontSizeType sizeType, uint effects,
+      uint glyphFirst = kASCIIGlyphFirst, uint glyphLast = kASCIIGlyphLast);
    cGUIFontDesc(const cGUIFontDesc & other);
 
    const cGUIFontDesc & operator =(const cGUIFontDesc & other);
@@ -181,8 +216,11 @@ public:
    bool operator ==(const cGUIFontDesc & other) const;
    bool operator <(const cGUIFontDesc & other) const;
 
+   void SetFace(const tGUIChar * pszFace);
    const tGUIChar * GetFace() const;
-   int GetPointSize() const;
+   int GetSize() const;
+   eGUIFontSizeType GetSizeType() const;
+   uint GetEffects() const;
    bool IsBold() const;
    bool IsItalic() const;
    bool IsShadow() const;
@@ -192,7 +230,8 @@ public:
 
 private:
    tGUIString m_typeFace;
-   int m_pointSize;
+   int m_size;
+   eGUIFontSizeType m_sizeType;
    uint m_effects;
    uint m_glyphFirst;
    uint m_glyphLast;
