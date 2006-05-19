@@ -114,7 +114,19 @@ tResult GUIFontCreateD3D(IDirect3DDevice9 * pD3dDevice, const cGUIFontDesc & fon
       return E_FAIL;
    }
 
-   int height = -MulDiv(fontDesc.GetPointSize(), GetDeviceCaps(hScreenDC, LOGPIXELSY), 72);
+   int height = 0;
+   if (fontDesc.GetSizeType() == kGUIFontSizePoints)
+   {
+      height = -MulDiv(fontDesc.GetSize(), GetDeviceCaps(hScreenDC, LOGPIXELSY), 72);
+   }
+   else if (fontDesc.GetSizeType() == kGUIFontSizeEm)
+   {
+      height = fontDesc.GetSize();
+   }
+   else
+   {
+      return E_NOTIMPL;
+   }
 
    ReleaseDC(NULL, hScreenDC), hScreenDC = NULL;
 
