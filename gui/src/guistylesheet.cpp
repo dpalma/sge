@@ -297,7 +297,6 @@ public:
    ~cGUIStyleElement();
 
    // cGUIElementBase over-rides
-   virtual tResult GetRendererClass(tGUIString * pRendererClass);
    virtual tResult GetRenderer(IGUIElementRenderer * * ppRenderer);
 
    // IGUIStyleElement methods
@@ -318,13 +317,6 @@ cGUIStyleElement::cGUIStyleElement(IGUIStyleSheet * pStyleSheet)
 
 cGUIStyleElement::~cGUIStyleElement()
 {
-}
-
-////////////////////////////////////////
-
-tResult cGUIStyleElement::GetRendererClass(tGUIString * pRendererClass)
-{
-   return S_FALSE;
 }
 
 ////////////////////////////////////////

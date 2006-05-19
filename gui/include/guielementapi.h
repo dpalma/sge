@@ -98,15 +98,6 @@ interface IGUIElement : IUnknown
 
    virtual tResult OnEvent(IGUIEvent * pEvent) = 0;
 
-   /// @brief The renderer "class" names the type of GUI element renderer object
-   /// that will be instantiated for this element by default.
-   /// @return The name of the default renderer for this type of GUI element
-   /// @remarks Override the default renderer by instantiating an alternative
-   /// one and using SetRenderer to replace the default.
-   /// @see IGUIElementRenderer
-   virtual tResult GetRendererClass(tGUIString * pRendererClass) = 0;
-   virtual tResult SetRendererClass(const tGUIChar * pszRendererClass) = 0;
-
    virtual tResult GetRenderer(IGUIElementRenderer * * ppRenderer) = 0;
    virtual tResult SetRenderer(IGUIElementRenderer * pRenderer) = 0;
 

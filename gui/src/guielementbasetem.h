@@ -258,56 +258,8 @@ tResult cGUIElementBase<INTRFC>::OnEvent(IGUIEvent * pEvent)
 ///////////////////////////////////////
 
 template <typename INTRFC>
-tResult cGUIElementBase<INTRFC>::GetRendererClass(tGUIString * pRendererClass)
-{
-   if (pRendererClass == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (!m_rendererClass.empty())
-   {
-      *pRendererClass = m_rendererClass;
-      return S_OK;
-   }
-
-   return S_FALSE;
-}
-
-///////////////////////////////////////
-
-template <typename INTRFC>
-tResult cGUIElementBase<INTRFC>::SetRendererClass(const tGUIChar * pszRendererClass)
-{
-   if (pszRendererClass == NULL && !m_rendererClass.empty())
-   {
-      SafeRelease(m_pRenderer);
-      m_rendererClass.erase();
-      return S_OK;
-   }
-   else if (m_rendererClass.compare(pszRendererClass) != 0)
-   {
-      SafeRelease(m_pRenderer);
-      m_rendererClass = pszRendererClass;
-      return S_OK;
-   }
-   return S_FALSE;
-}
-
-///////////////////////////////////////
-
-template <typename INTRFC>
 tResult cGUIElementBase<INTRFC>::GetRenderer(IGUIElementRenderer * * ppRenderer)
 {
-   if (!m_pRenderer)
-   {
-      tGUIString rendererClass;
-      if (GetRendererClass(&rendererClass) == S_OK)
-      {
-         UseGlobal(GUIFactory);
-         pGUIFactory->CreateRenderer(rendererClass.c_str(), &m_pRenderer);
-      }
-   }
    return m_pRenderer.GetPointer(ppRenderer);
 }
 

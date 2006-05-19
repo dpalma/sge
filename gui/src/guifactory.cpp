@@ -5,6 +5,8 @@
 
 #include "guifactory.h"
 #include "guielementapi.h"
+#include "guiparse.h"
+#include "guistrings.h"
 
 #include <tinyxml.h>
 
@@ -136,11 +138,31 @@ tResult cGUIFactory::CreateElement(const TiXmlElement * pXmlElement,
       return result;
    }
 
-   tGUIString rendererClass;
-   if (pElement->GetRendererClass(&rendererClass) == S_OK)
+   if (pXmlElement->Attribute(kAttribId))
+   {
+      pElement->SetId(pXmlElement->Attribute(kAttribId));
+   }
+
+   {
+      bool bVisible = true;
+      if (GUIParseBool(pXmlElement->Attribute(kAttribVisible), &bVisible) == S_OK)
+      {
+         pElement->SetVisible(bVisible);
+      }
+   }
+
+   {
+      bool bEnabled = true;
+      if (GUIParseBool(pXmlElement->Attribute(kAttribEnabled), &bEnabled) == S_OK)
+      {
+         pElement->SetEnabled(bEnabled);
+      }
+   }
+
+   if (pXmlElement->Attribute(kAttribRendererClass))
    {
       cAutoIPtr<IGUIElementRenderer> pRenderer;
-      if (CreateRenderer(rendererClass.c_str(), &pRenderer) == S_OK)
+      if (CreateRenderer(pXmlElement->Attribute(kAttribRendererClass), &pRenderer) == S_OK)
       {
          Verify(pElement->SetRenderer(pRenderer) == S_OK);
       }

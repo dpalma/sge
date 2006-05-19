@@ -7,7 +7,6 @@
 #include "guielementenum.h"
 #include "guielementtools.h"
 #include "guipagelayout.h"
-#include "guiparse.h"
 #include "guistrings.h"
 #include "guistyleapi.h"
 
@@ -116,32 +115,6 @@ void cGUIPageCreateFactoryListener::OnCreateElement(const TiXmlElement * pXmlEle
    if (pElement == NULL)
    {
       return;
-   }
-
-   if (pXmlElement->Attribute(kAttribId))
-   {
-      pElement->SetId(pXmlElement->Attribute(kAttribId));
-   }
-
-   {
-      bool bVisible = true;
-      if (GUIParseBool(pXmlElement->Attribute(kAttribVisible), &bVisible) == S_OK)
-      {
-         pElement->SetVisible(bVisible);
-      }
-   }
-
-   {
-      bool bEnabled = true;
-      if (GUIParseBool(pXmlElement->Attribute(kAttribEnabled), &bEnabled) == S_OK)
-      {
-         pElement->SetEnabled(bEnabled);
-      }
-   }
-
-   if (pXmlElement->Attribute(kAttribRendererClass))
-   {
-      pElement->SetRendererClass(pXmlElement->Attribute(kAttribRendererClass));
    }
 
    cAutoIPtr<IGUIStyleElement> pStyle;
