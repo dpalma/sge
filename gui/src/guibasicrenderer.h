@@ -24,8 +24,6 @@ public:
 
    virtual tResult Render(IGUIElement * pElement, IGUIRenderDevice * pRenderDevice);
    virtual tResult GetPreferredSize(IGUIElement * pElement, tGUISize * pSize);
-   virtual tResult ComputeClientArea(IGUIElement * pElement, tGUIRect * pClientArea);
-   virtual tResult GetFont(IGUIElement * pElement, IGUIFont * * ppFont) const;
 
 private:
    tResult LabelRender(IGUIElement * pElement, IGUIRenderDevice * pRenderDevice);

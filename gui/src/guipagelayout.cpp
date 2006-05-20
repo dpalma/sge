@@ -338,8 +338,9 @@ tResult cGUIPageLayout::operator ()(IGUIElement * pElement, IGUIElementRenderer 
 
    pElement->SetSize(elementSize);
 
-   tGUIRect clientArea;
-   if (pRenderer->ComputeClientArea(pElement, &clientArea) == S_OK)
+   tGUIRect clientArea(0, 0, FloatToInt(elementSize.width), FloatToInt(elementSize.height));
+   // TODO: Allow renderer to allocate space for borders
+   if (pElement->ComputeClientArea(pRenderer, &clientArea) == S_OK)
    {
       pElement->SetClientArea(clientArea);
    }

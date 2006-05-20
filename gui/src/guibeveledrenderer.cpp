@@ -236,64 +236,6 @@ tResult cGUIBeveledRenderer::GetPreferredSize(IGUIElement * pElement, tGUISize *
 
 ///////////////////////////////////////
 
-tResult cGUIBeveledRenderer::ComputeClientArea(IGUIElement * pElement, tGUIRect * pClientArea)
-{
-   if (pElement == NULL || pClientArea == NULL)
-   {
-      return E_POINTER;
-   }
-
-   int bevel = kDefaultBevel;
-   cAutoIPtr<IGUIStyle> pStyle;
-   if (pElement->GetStyle(&pStyle) == S_OK)
-   {
-      pStyle->GetAttribute(_T("beveled-bevel"), &bevel);
-   }
-
-   tGUISize size = pElement->GetSize();
-   tGUIRect clientArea(bevel, bevel, FloatToInt(size.width - bevel), FloatToInt(size.height - bevel));
-
-   {
-      cAutoIPtr<IGUIDialogElement> pDialogElement;
-      if (pElement->QueryInterface(IID_IGUIDialogElement, (void**)&pDialogElement) == S_OK)
-      {
-         uint captionHeight = 0;
-         if (pDialogElement->GetCaptionHeight(&captionHeight) != S_OK)
-         {
-            cAutoIPtr<IGUIFont> pFont;
-            if (GetFont(pDialogElement, &pFont) == S_OK)
-            {
-               tGUIString title;
-               if (pDialogElement->GetTitle(&title) == S_OK)
-               {
-                  tRect rect(0,0,0,0);
-                  if (pFont->RenderText(title.c_str(), title.length(), &rect, kRT_CalcRect, GUIStandardColors::White) == S_OK)
-                  {
-                     captionHeight = rect.GetHeight();
-                     pDialogElement->SetCaptionHeight(captionHeight);
-                  }
-               }
-            }
-         }
-
-         clientArea.top += captionHeight;
-      }
-   }
-
-   *pClientArea = clientArea;
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cGUIBeveledRenderer::GetFont(IGUIElement * pElement,
-                                     IGUIFont * * ppFont) const
-{
-   return GUIElementFont(pElement, ppFont);
-}
-
-///////////////////////////////////////
-
 tResult cGUIBeveledRenderer::ButtonRender(IGUIElement * pElement, int bevel,
                                           const tGUIColor colors[kBC_NumColors],
                                           IGUIRenderDevice * pRenderDevice)
@@ -320,7 +262,7 @@ tResult cGUIBeveledRenderer::ButtonRender(IGUIElement * pElement, int bevel,
    tGUIString text;
    cAutoIPtr<IGUIFont> pFont;
    if (pButtonElement->GetText(&text) == S_OK
-      && GetFont(pElement, &pFont) == S_OK)
+      && GUIElementFont(pElement, &pFont) == S_OK)
    {
       uint renderTextFlags = kRT_Center | kRT_VCenter | kRT_SingleLine;
 
@@ -357,7 +299,7 @@ tGUISize cGUIBeveledRenderer::ButtonPreferredSize(IGUIElement * pElement) const
    tGUIString text;
    cAutoIPtr<IGUIFont> pFont;
    if (((IGUIButtonElement*)pElement)->GetText(&text) == S_OK
-      && GetFont(pElement, &pFont) == S_OK)
+      && GUIElementFont(pElement, &pFont) == S_OK)
    {
       tRect rect(0,0,0,0);
       pFont->RenderText(text.c_str(), text.length(), &rect, kRT_CalcRect, GUIStandardColors::White);
@@ -396,7 +338,7 @@ tResult cGUIBeveledRenderer::ListBoxRender(IGUIElement * pElement, int bevel, co
    }
 
    cAutoIPtr<IGUIFont> pFont;
-   if (GetFont(pListBoxElement, &pFont) == S_OK)
+   if (GUIElementFont(pListBoxElement, &pFont) == S_OK)
    {
       uint itemCount = 0;
       if (pListBoxElement->GetItemCount(&itemCount) == S_OK)
@@ -451,7 +393,7 @@ tGUISize cGUIBeveledRenderer::ListBoxPreferredSize(IGUIElement * pElement) const
    IGUIListBoxElement * pListBoxElement = (IGUIListBoxElement *)pElement;
 
    cAutoIPtr<IGUIFont> pFont;
-   if (GetFont(pListBoxElement, &pFont) == S_OK)
+   if (GUIElementFont(pListBoxElement, &pFont) == S_OK)
    {
       uint rowCount;
       if (pListBoxElement->GetRowCount(&rowCount) == S_OK)
@@ -515,7 +457,7 @@ tResult cGUIBeveledRenderer::Render(IGUIDialogElement * pDialogElement,
       pRenderDevice->RenderSolidRect(captionRect, caption);
 
       cAutoIPtr<IGUIFont> pFont;
-      if (GetFont(pDialogElement, &pFont) == S_OK)
+      if (GUIElementFont(pDialogElement, &pFont) == S_OK)
       {
          tGUIString title;
          if (pDialogElement->GetTitle(&title) == S_OK)
@@ -547,7 +489,7 @@ tResult cGUIBeveledRenderer::Render(IGUILabelElement * pLabelElement,
    }
 
    cAutoIPtr<IGUIFont> pFont;
-   if (GetFont(pLabelElement, &pFont) == S_OK)
+   if (GUIElementFont(pLabelElement, &pFont) == S_OK)
    {
       tGUIString text;
       if (pLabelElement->GetText(&text) == S_OK)
@@ -608,7 +550,7 @@ tResult cGUIBeveledRenderer::Render(IGUITextEditElement * pTextEditElement,
    Verify(pTextEditElement->GetSelection(&selStart, &selEnd) == S_OK);
 
    cAutoIPtr<IGUIFont> pFont;
-   if (GetFont(pTextEditElement, &pFont) == S_OK)
+   if (GUIElementFont(pTextEditElement, &pFont) == S_OK)
    {
       tRect leftOfCursor(0,0,0,0);
 
@@ -735,7 +677,7 @@ tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIDialogElement * pDialogElemen
       if (pDialogElement->GetTitle(&title) == S_OK)
       {
          cAutoIPtr<IGUIFont> pFont;
-         if (GetFont(pDialogElement, &pFont) == S_OK)
+         if (GUIElementFont(pDialogElement, &pFont) == S_OK)
          {
             tRect rect(0,0,0,0);
             pFont->RenderText(title.c_str(), title.length(), &rect, kRT_CalcRect, GUIStandardColors::White);
@@ -756,7 +698,7 @@ tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIDialogElement * pDialogElemen
 tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUILabelElement * pLabelElement)
 {
    cAutoIPtr<IGUIFont> pFont;
-   if (GetFont(pLabelElement, &pFont) == S_OK)
+   if (GUIElementFont(pLabelElement, &pFont) == S_OK)
    {
       tGUIString text;
       if (pLabelElement->GetText(&text) == S_OK)
@@ -789,7 +731,7 @@ tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUITextEditElement * pTextEditEl
    }
 
    cAutoIPtr<IGUIFont> pFont;
-   if (GetFont(pTextEditElement, &pFont) == S_OK)
+   if (GUIElementFont(pTextEditElement, &pFont) == S_OK)
    {
       char * psz = reinterpret_cast<char *>(alloca(editSize * sizeof(char)));
       memset(psz, 'M', editSize * sizeof(char));

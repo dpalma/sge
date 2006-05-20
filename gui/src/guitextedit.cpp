@@ -521,7 +521,7 @@ bool cGUITextEditElement::HitTest(const tGUIPoint & point, int * pIndex)
    {
       tGUIString text;
       cAutoIPtr<IGUIFont> pFont;
-      if (pRenderer->GetFont(static_cast<IGUIElement*>(this), &pFont) == S_OK
+      if (GUIElementFont(static_cast<IGUIElement*>(this), &pFont) == S_OK
          && m_buffer.GetText(&text) == S_OK)
       {
          float charPos = 0;

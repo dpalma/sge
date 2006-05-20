@@ -35,8 +35,6 @@ public:
    virtual tResult Render(IGUIElement * pElement, IGUIRenderDevice * pRenderDevice);
    tGUISize GetPreferredSize(IGUIElement * pElement);
    virtual tResult GetPreferredSize(IGUIElement * pElement, tGUISize * pSize);
-   virtual tResult ComputeClientArea(IGUIElement * pElement, tGUIRect * pClientArea);
-   virtual tResult GetFont(IGUIElement * pElement, IGUIFont * * ppFont) const;
 
 private:
    tResult ButtonRender(IGUIElement * pElement, int bevel, const tGUIColor colors[kBC_NumColors], IGUIRenderDevice * pRenderDevice);

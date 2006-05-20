@@ -118,6 +118,39 @@ tResult cGUIDialogElement::OnEvent(IGUIEvent * pEvent)
 
 ///////////////////////////////////////
 
+tResult cGUIDialogElement::ComputeClientArea(IGUIElementRenderer * pRenderer, tGUIRect * pClientArea)
+{
+   if (pRenderer == NULL || pClientArea == NULL)
+   {
+      return E_NOTIMPL;
+   }
+
+   uint captionHeight = 0;
+   if (GetCaptionHeight(&captionHeight) != S_OK)
+   {
+      cAutoIPtr<IGUIFont> pFont;
+      if (GUIElementFont(static_cast<IGUIElement*>(this), &pFont) == S_OK)
+      {
+         tGUIString title;
+         if (GetTitle(&title) == S_OK)
+         {
+            tRect rect(0,0,0,0);
+            if (pFont->RenderText(title.c_str(), title.length(), &rect, kRT_CalcRect, GUIStandardColors::White) == S_OK)
+            {
+               captionHeight = rect.GetHeight();
+               SetCaptionHeight(captionHeight);
+            }
+         }
+      }
+   }
+
+   pClientArea->top += captionHeight;
+
+   return S_OK;
+}
+
+///////////////////////////////////////
+
 tResult cGUIDialogElement::GetTitle(tGUIString * pTitle)
 {
    if (pTitle == NULL)

@@ -108,6 +108,8 @@ interface IGUIElement : IUnknown
 
    virtual tResult GetClientArea(tGUIRect * pClientArea) = 0;
    virtual tResult SetClientArea(const tGUIRect & clientArea) = 0;
+
+   virtual tResult ComputeClientArea(IGUIElementRenderer * pRenderer, tGUIRect * pClientArea) = 0;
 };
 
 

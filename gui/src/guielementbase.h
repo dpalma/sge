@@ -61,6 +61,8 @@ public:
    virtual tResult GetClientArea(tGUIRect * pClientArea);
    virtual tResult SetClientArea(const tGUIRect & clientArea);
 
+   virtual tResult ComputeClientArea(IGUIElementRenderer * pRenderer, tGUIRect * pClientArea);
+
 protected:
    tGUIPoint GetAbsolutePosition() const;
 

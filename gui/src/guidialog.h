@@ -36,6 +36,7 @@ public:
    }
 
    virtual tResult OnEvent(IGUIEvent * pEvent);
+   virtual tResult ComputeClientArea(IGUIElementRenderer * pRenderer, tGUIRect * pClientArea);
 
    virtual tResult GetTitle(tGUIString * pTitle);
    virtual tResult SetTitle(const char * pszTitle);

@@ -98,55 +98,6 @@ tResult cGUIBasicRenderer::GetPreferredSize(IGUIElement * pElement, tGUISize * p
 
 ///////////////////////////////////////
 
-tResult cGUIBasicRenderer::ComputeClientArea(IGUIElement * pElement, tGUIRect * pClientArea)
-{
-   if (pElement == NULL || pClientArea == NULL)
-   {
-      return E_POINTER;
-   }
-
-   {
-      cAutoIPtr<IGUIDialogElement> pDialogElement;
-      if (pElement->QueryInterface(IID_IGUIDialogElement, (void**)&pDialogElement) == S_OK)
-      {
-         uint captionHeight = 0;
-         if (pDialogElement->GetCaptionHeight(&captionHeight) != S_OK)
-         {
-            cAutoIPtr<IGUIFont> pFont;
-            if (GetFont(pDialogElement, &pFont) == S_OK)
-            {
-               tGUIString title;
-               if (pDialogElement->GetTitle(&title) == S_OK)
-               {
-                  tRect rect(0,0,0,0);
-                  if (pFont->RenderText(title.c_str(), title.length(), &rect, kRT_CalcRect, GUIStandardColors::White) == S_OK)
-                  {
-                     captionHeight = rect.GetHeight();
-                     pDialogElement->SetCaptionHeight(captionHeight);
-                  }
-               }
-            }
-         }
-
-         tGUISize size = pElement->GetSize();
-         *pClientArea = tGUIRect(0, captionHeight, FloatToInt(size.width), FloatToInt(size.height));
-         return S_OK;
-      }
-   }
-
-   return S_FALSE;
-}
-
-///////////////////////////////////////
-
-tResult cGUIBasicRenderer::GetFont(IGUIElement * pElement,
-                                   IGUIFont * * ppFont) const
-{
-   return GUIElementFont(pElement, ppFont);
-}
-
-///////////////////////////////////////
-
 tResult cGUIBasicRenderer::LabelRender(IGUIElement * pElement, IGUIRenderDevice * pRenderDevice)
 {
    tGUIPoint pos = GUIElementAbsolutePosition(pElement);
@@ -162,7 +113,7 @@ tResult cGUIBasicRenderer::LabelRender(IGUIElement * pElement, IGUIRenderDevice 
    }
 
    cAutoIPtr<IGUIFont> pFont;
-   if (GetFont(pElement, &pFont) == S_OK)
+   if (GUIElementFont(pElement, &pFont) == S_OK)
    {
       IGUILabelElement * pLabelElement = (IGUILabelElement *)pElement;
 

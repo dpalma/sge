@@ -104,10 +104,6 @@ interface IGUIElementRenderer : IUnknown
    virtual tResult Render(IGUIElement * pElement, IGUIRenderDevice * pRenderDevice) = 0;
 
    virtual tResult GetPreferredSize(IGUIElement * pElement, tGUISize * pSize) = 0;
-
-   virtual tResult ComputeClientArea(IGUIElement * pElement, tGUIRect * pClientArea) = 0;
-
-   virtual tResult GetFont(IGUIElement * pElement, IGUIFont * * ppFont) const = 0;
 };
 
 
