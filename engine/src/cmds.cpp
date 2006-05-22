@@ -244,8 +244,8 @@ int ListResources(int argc, const tScriptVar * argv,
       return 0;
    }
 
-   cAutoIPtr<IDictionary> pDict(DictionaryCreate());
-   if (!pDict)
+   cAutoIPtr<IDictionary> pDict;
+   if (DictionaryCreate(&pDict) != S_OK)
    {
       return 0;
    }

@@ -35,7 +35,7 @@ static const tChar kStyleAttribNameValueSep = _T(':');
 
 cGUIStyle::cGUIStyle(IGUIStyle * pClassStyle, IDictionary * pDict)
  : m_pClassStyle(CTAddRef(pClassStyle))
- , m_pDict((pDict != NULL) ? CTAddRef(pDict) : DictionaryCreate(kTransitory))
+ , m_pDict(CTAddRef(pDict))
  , m_alignment(kInvalidUint)
  , m_verticalAlignment(kInvalidUint)
  , m_pBackground(NULL)
@@ -55,6 +55,10 @@ cGUIStyle::cGUIStyle(IGUIStyle * pClassStyle, IDictionary * pDict)
  , m_widthSpec(kInvalidUint)
  , m_heightSpec(kInvalidUint)
 {
+   if (!m_pDict)
+   {
+      DictionaryCreate(kTransitory, &m_pDict);
+   }
 }
 
 ///////////////////////////////////////

@@ -146,11 +146,14 @@ static bool ScriptExecResource(IScriptInterpreter * pInterpreter, const tChar * 
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static tResult InitGlobalConfig(int argc, tChar * argv[])
+static tResult LoadCfgFile(const tChar * pszArgv0, IDictionary * pDict)
 {
-   Assert(argc > 0);
+   if (pszArgv0 == NULL || pDict == NULL)
+   {
+      return E_POINTER;
+   }
 
-   cFileSpec cfgFile(argv[0]);
+   cFileSpec cfgFile(pszArgv0);
    cfgFile.SetFileExt(_T("cfg"));
 
    cAutoIPtr<IDictionaryStore> pStore = DictionaryStoreCreate(cfgFile);
@@ -158,7 +161,62 @@ static tResult InitGlobalConfig(int argc, tChar * argv[])
    {
       return E_OUTOFMEMORY;
    }
-   pStore->Load(g_pConfig);
+
+   return pStore->Load(pDict);
+}
+
+static tResult LoadIniFile(const tChar * pszArgv0, IDictionary * pDict)
+{
+   if (pszArgv0 == NULL || pDict == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cFileSpec iniFile(pszArgv0);
+   iniFile.SetFileExt(_T("ini"));
+
+   tResult result = E_FAIL;
+
+   cAutoIPtr<IDictionaryStore> pSettingsStore;
+   if (DictionaryIniStoreCreate(iniFile, _T("Settings"), &pSettingsStore) == S_OK)
+   {
+      result = pSettingsStore->Load(pDict);
+   }
+
+   cAutoIPtr<IDictionaryStore> pLogChannelsStore;
+   if (DictionaryIniStoreCreate(iniFile, _T("LogChannels"), &pLogChannelsStore) == S_OK)
+   {
+      cAutoIPtr<IDictionary> pLogChannels;
+      if (DictionaryCreate(&pLogChannels) == S_OK)
+      {
+         if (pLogChannelsStore->Load(pLogChannels) == S_OK)
+         {
+            std::list<cStr> logChannels;
+            if (pLogChannels->GetKeys(&logChannels) == S_OK)
+            {
+               std::list<cStr>::iterator iter = logChannels.begin();
+               for (; iter != logChannels.end(); iter++)
+               {
+                  int enabled = 0;
+                  if (pLogChannels->Get(iter->c_str(), &enabled) == S_OK)
+                  {
+                     techlog.EnableChannel(iter->c_str(), enabled != 0);
+                  }
+               }
+            }
+         }
+      }
+   }
+
+   return result;
+}
+
+static tResult InitGlobalConfig(int argc, tChar * argv[])
+{
+   Assert(argc > 0);
+
+   LoadCfgFile(argv[0], g_pConfig);
+   LoadIniFile(argv[0], g_pConfig);
 
    ParseCommandLine(argc, argv, g_pConfig);
 

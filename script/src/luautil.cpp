@@ -64,8 +64,8 @@ void LuaGetArg(lua_State * L, int index, tScriptVar * pArg)
 
       case LUA_TTABLE:
       {
-         cAutoIPtr<IDictionary> pDict(DictionaryCreate());
-         if (!!pDict)
+         cAutoIPtr<IDictionary> pDict;
+         if (DictionaryCreate(&pDict) == S_OK)
          {
             int nDictEntries = 0;
             lua_pushnil(L);

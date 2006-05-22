@@ -44,7 +44,7 @@ class cDictionary : public cComAggregableObject<IMPLEMENTS(IDictionary)>
    cDictionary(const cDictionary &);
    void operator =(const cDictionary &);
 
-   friend IDictionary * DictionaryCreate(tPersistence defaultPersist);
+   friend tResult DictionaryCreate(tPersistence persist, IDictionary * * ppDictionary);
    friend IUnknown * DictionaryCreate(tPersistence defaultPersist, IUnknown * pUnkOuter);
 
 protected:

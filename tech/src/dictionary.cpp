@@ -416,14 +416,32 @@ tResult cDictionary::GetPersistence(const tChar * pszKey, tPersistence * pPersis
    }
 }
 
-///////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
-IDictionary * DictionaryCreate(tPersistence defaultPersist)
+tResult DictionaryCreate(IDictionary * * ppDictionary)
 {
-   return static_cast<IDictionary *>(new cDictionary(defaultPersist));
+   return DictionaryCreate(kPermanent, ppDictionary);
 }
 
-///////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+tResult DictionaryCreate(tPersistence persist, IDictionary * * ppDictionary)
+{
+   if (ppDictionary == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cAutoIPtr<IDictionary> pDictionary(static_cast<IDictionary *>(new cDictionary(persist)));
+   if (!pDictionary)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   return pDictionary.GetPointer(ppDictionary);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 
 IUnknown * DictionaryCreate(tPersistence defaultPersist, IUnknown * pUnkOuter)
 {
@@ -443,7 +461,8 @@ IUnknown * DictionaryCreate(tPersistence defaultPersist, IUnknown * pUnkOuter)
 
 TEST(DictionaryBadArgs)
 {
-   cAutoIPtr<IDictionary> pDict(DictionaryCreate());
+   cAutoIPtr<IDictionary> pDict;
+   CHECK(DictionaryCreate(&pDict) == S_OK);
    CHECK(FAILED(pDict->Get(NULL, (tChar *)NULL, 0)));
    CHECK(FAILED(pDict->Get(NULL, (cStr *)NULL)));
    CHECK(FAILED(pDict->Get(NULL, (int *)NULL)));
@@ -466,7 +485,8 @@ TEST(DictionarySet)
 
    cStr value;
 
-   cAutoIPtr<IDictionary> pDict(DictionaryCreate());
+   cAutoIPtr<IDictionary> pDict;
+   CHECK(DictionaryCreate(&pDict) == S_OK);
 
    // set value one
    CHECK(pDict->Set(szKey, szValue1) == S_OK);
@@ -493,7 +513,8 @@ TEST(DictionaryPersistence)
    static const char szTempKeyFormat[] = "temp%d";
    static const char szTempValFormat[] = "tval%d";
 
-   cAutoIPtr<IDictionary> pSaveDict(DictionaryCreate());
+   cAutoIPtr<IDictionary> pSaveDict;
+   CHECK(DictionaryCreate(&pSaveDict) == S_OK);
 
    int i;
    cStr key, value;
@@ -537,7 +558,8 @@ TEST(DictionaryPersistence)
       SafeRelease(pSaveStore);
       SafeRelease(pSaveDict);
 
-      cAutoIPtr<IDictionary> pLoadDict(DictionaryCreate());
+      cAutoIPtr<IDictionary> pLoadDict;
+      CHECK(DictionaryCreate(&pLoadDict) == S_OK);
       cAutoIPtr<IDictionaryStore> pLoadStore(DictionaryStoreCreate(cFileSpec(szStore)));
       CHECK(pLoadStore->Load(pLoadDict) == S_OK);
 

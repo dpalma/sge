@@ -168,7 +168,8 @@ bool ConfigIsTrue(const tChar * pszName)
 
 TEST(ParseCmdLine)
 {
-   cAutoIPtr<IDictionary> pDict(DictionaryCreate());
+   cAutoIPtr<IDictionary> pDict;
+   CHECK(DictionaryCreate(&pDict) == S_OK);
    pDict->Set("test1", "val1", kTransitory);
    pDict->Set("test2", "val2", kTransitory);
    static char *argv[] =

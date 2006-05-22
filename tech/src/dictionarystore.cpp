@@ -284,10 +284,22 @@ tResult cDictionaryIniStore::MergeSave(IDictionary * pDictionary)
 
 ///////////////////////////////////////
 
-IDictionaryStore * DictionaryIniStoreCreate(const cFileSpec & file,
-                                            const tChar * pszSection)
+tResult DictionaryIniStoreCreate(const cFileSpec & file,
+                                 const tChar * pszSection,
+                                 IDictionaryStore * * ppStore)
 {
-   return static_cast<IDictionaryStore *>(new cDictionaryIniStore(file, pszSection));
+   if (pszSection == NULL || ppStore == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cAutoIPtr<IDictionaryStore> pStore(static_cast<IDictionaryStore *>(new cDictionaryIniStore(file, pszSection)));
+   if (!pStore)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   return pStore.GetPointer(ppStore);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
