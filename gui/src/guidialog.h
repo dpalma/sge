@@ -35,23 +35,11 @@ public:
       return DoQueryInterface(pairs, _countof(pairs), iid, ppvObject);
    }
 
-   virtual tResult OnEvent(IGUIEvent * pEvent);
-   virtual tResult ComputeClientArea(IGUIElementRenderer * pRenderer, tGUIRect * pClientArea);
-
    virtual tResult GetTitle(tGUIString * pTitle);
-   virtual tResult SetTitle(const char * pszTitle);
-
-   virtual tResult GetCaptionHeight(uint * pHeight);
-   virtual tResult SetCaptionHeight(uint height);
+   virtual tResult SetTitle(const tGUIChar * pszTitle);
 
 private:
-   tGUIRect GetCaptionRectAbsolute();
-
-   bool m_bDragging;
-   tScreenPoint m_dragOffset;
-
-   tGUIString m_title;
-   uint m_captionHeight;
+   cAutoIPtr<IGUITitleBarElement> m_pTitleBar;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

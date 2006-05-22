@@ -30,6 +30,7 @@ sourceFiles = Split("""
    src/guiscrollbar.cpp
    src/guistyle.cpp
    src/guistylesheet.cpp
+   src/guititlebar.cpp
    src/guitextedit.cpp
    src/guitypes.cpp
 """)

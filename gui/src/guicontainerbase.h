@@ -13,6 +13,8 @@
 #pragma once
 #endif
 
+typedef std::list<IGUIElement *> tGUIElementList;
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // TEMPLATE: cGUIContainerBase
@@ -55,7 +57,6 @@ protected:
    }
 
 private:
-   typedef std::list<IGUIElement *> tGUIElementList;
    tGUIElementList m_children;
 
    cAutoIPtr<IGUILayoutManager> m_pLayout;

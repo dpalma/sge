@@ -451,6 +451,9 @@
 					RelativePath="..\..\gui\src\guitextedit.cpp">
 				</File>
 				<File
+					RelativePath="..\..\gui\src\guititlebar.cpp">
+				</File>
+				<File
 					RelativePath="..\..\gui\src\guitypes.cpp">
 				</File>
 				<File
@@ -597,6 +600,9 @@
 				</File>
 				<File
 					RelativePath="..\..\gui\src\guitextedit.h">
+				</File>
+				<File
+					RelativePath="..\..\gui\src\guititlebar.h">
 				</File>
 				<File
 					RelativePath="..\..\gui\src\stdhdr.h">

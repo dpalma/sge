@@ -6,12 +6,9 @@
 #include "guidialog.h"
 #include "guielementbasetem.h"
 #include "guicontainerbasetem.h"
+#include "guielementenum.h"
 #include "guielementtools.h"
 #include "guistrings.h"
-#include "scriptapi.h"
-
-#include "globalobj.h"
-#include "keys.h"
 
 #include <tinyxml.h>
 
@@ -32,14 +29,9 @@ LOG_DEFINE_CHANNEL(GUIDialogEvents);
 // CLASS: cGUIDialogElement
 //
 
-static const uint kNoCaptionHeight = ~0u;
-
 ///////////////////////////////////////
 
 cGUIDialogElement::cGUIDialogElement()
- : m_bDragging(false)
- , m_dragOffset(0,0)
- , m_captionHeight(kNoCaptionHeight)
 {
 }
 
@@ -51,179 +43,44 @@ cGUIDialogElement::~cGUIDialogElement()
 
 ///////////////////////////////////////
 
-tResult cGUIDialogElement::OnEvent(IGUIEvent * pEvent)
-{
-   Assert(pEvent != NULL);
-
-   tResult result = S_OK;
-
-   tGUIEventCode eventCode;
-   Verify(pEvent->GetEventCode(&eventCode) == S_OK);
-
-   long keyCode;
-   Verify(pEvent->GetKeyCode(&keyCode) == S_OK);
-
-   tScreenPoint mousePos;
-   Verify(pEvent->GetMousePosition(&mousePos) == S_OK);
-
-   LocalMsgIf(eventCode == kGUIEventClick, "Dialog clicked\n");
-   LocalMsgIf(eventCode == kGUIEventMouseEnter, "Mouse enter dialog\n");
-   LocalMsgIf(eventCode == kGUIEventMouseLeave, "Mouse leave dialog\n");
-
-   switch (eventCode)
-   {
-      case kGUIEventDragStart:
-      {
-         LocalMsg("Dialog drag start\n");
-         tGUIRect captionRect = GetCaptionRectAbsolute();
-         if (captionRect.PtInside(mousePos.x, mousePos.y))
-         {
-            m_bDragging = true;
-            tGUIPoint absPos = GUIElementAbsolutePosition(this);
-            // TODO: ADDED_tScreenPoint
-            m_dragOffset.x = mousePos.x - FloatToInt(absPos.x);
-            m_dragOffset.y = mousePos.y - FloatToInt(absPos.y);
-            pEvent->SetCancelBubble(true);
-         }
-         break;
-      }
-
-      case kGUIEventDragMove:
-      {
-         LocalMsg("Dialog drag move\n");
-         if (m_bDragging)
-         {
-            // TODO: ADDED_tScreenPoint
-            SetPosition(tGUIPoint(static_cast<float>(mousePos.x - m_dragOffset.x),
-                                  static_cast<float>(mousePos.y - m_dragOffset.y)));
-         }
-         pEvent->SetCancelBubble(true);
-         // prevent the drag-over event since drag is being used to implement 
-         // moving the dialog box
-         result = S_FALSE;
-         break;
-      }
-
-      case kGUIEventDragEnd:
-      {
-         LocalMsg("Dialog drag end\n");
-         m_bDragging = false;
-         pEvent->SetCancelBubble(true);
-         break;
-      }
-   }
-
-   return result;
-}
-
-///////////////////////////////////////
-
-tResult cGUIDialogElement::ComputeClientArea(IGUIElementRenderer * pRenderer, tGUIRect * pClientArea)
-{
-   if (pRenderer == NULL || pClientArea == NULL)
-   {
-      return E_NOTIMPL;
-   }
-
-   uint captionHeight = 0;
-   if (GetCaptionHeight(&captionHeight) != S_OK)
-   {
-      cAutoIPtr<IGUIFont> pFont;
-      if (GUIElementFont(static_cast<IGUIElement*>(this), &pFont) == S_OK)
-      {
-         tGUIString title;
-         if (GetTitle(&title) == S_OK)
-         {
-            tRect rect(0,0,0,0);
-            if (pFont->RenderText(title.c_str(), title.length(), &rect, kRT_CalcRect, GUIStandardColors::White) == S_OK)
-            {
-               captionHeight = rect.GetHeight();
-               SetCaptionHeight(captionHeight);
-            }
-         }
-      }
-   }
-
-   pClientArea->top += captionHeight;
-
-   return S_OK;
-}
-
-///////////////////////////////////////
-
 tResult cGUIDialogElement::GetTitle(tGUIString * pTitle)
 {
-   if (pTitle == NULL)
-   {
-      return E_POINTER;
-   }
-   *pTitle = m_title;
-   return m_title.empty() ? S_FALSE : S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cGUIDialogElement::SetTitle(const char * pszTitle)
-{
-   if (pszTitle == NULL)
-   {
-      m_title.erase();
-   }
-   else
-   {
-      m_title = pszTitle;
-   }
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cGUIDialogElement::GetCaptionHeight(uint * pHeight)
-{
-   if (pHeight == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (m_captionHeight == kNoCaptionHeight)
+   if (!m_pTitleBar)
    {
       return S_FALSE;
    }
-
-   *pHeight = m_captionHeight;
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cGUIDialogElement::SetCaptionHeight(uint height)
-{
-   m_captionHeight = height;
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-const int kHackBevelValue = 2; // duplicates constant in beveled renderer
-
-tGUIRect cGUIDialogElement::GetCaptionRectAbsolute()
-{
-   uint captionHeight;
-   if ((GetCaptionHeight(&captionHeight) == S_OK) && (captionHeight > 0))
+   else
    {
-      tGUIPoint pos = GUIElementAbsolutePosition(this);
-      tGUISize size = GetSize();
-
-      tGUIRect captionRect(FloatToInt(pos.x), FloatToInt(pos.y), FloatToInt(pos.x + size.width), FloatToInt(pos.y + size.height));
-      captionRect.left += kHackBevelValue;
-      captionRect.top += kHackBevelValue;
-      captionRect.right -= kHackBevelValue;
-      captionRect.bottom = captionRect.top + captionHeight;
-
-      return captionRect;
+      return m_pTitleBar->GetTitle(pTitle);
    }
+}
 
-   return tGUIRect(0,0,0,0);
+///////////////////////////////////////
+
+tResult cGUIDialogElement::SetTitle(const tGUIChar * pszTitle)
+{
+   if (pszTitle == NULL)
+   {
+      SafeRelease(m_pTitleBar);
+      return S_OK;
+   }
+   else
+   {
+      if (!m_pTitleBar)
+      {
+         if (GUITitleBarCreate(&m_pTitleBar) == S_OK)
+         {
+            // SetParent calls AddElement which will add m_pTitleBar
+            // to the dialog's list of children
+            m_pTitleBar->SetParent(this);
+         }
+      }
+      if (!!m_pTitleBar)
+      {
+         return m_pTitleBar->SetTitle(pszTitle);
+      }
+      return E_FAIL;
+   }
 }
 
 
@@ -237,16 +94,16 @@ tResult GUIDialogElementCreate(const TiXmlElement * pXmlElement,
       return E_POINTER;
    }
 
+   cAutoIPtr<IGUIDialogElement> pDialog = static_cast<IGUIDialogElement *>(new cGUIDialogElement);
+   if (!pDialog)
+   {
+      return E_OUTOFMEMORY;
+   }
+
    if (pXmlElement != NULL)
    {
       if (strcmp(pXmlElement->Value(), kElementDialog) == 0)
       {
-         cAutoIPtr<IGUIDialogElement> pDialog = static_cast<IGUIDialogElement *>(new cGUIDialogElement);
-         if (!pDialog)
-         {
-            return E_OUTOFMEMORY;
-         }
-
          const char * pszValue = NULL;
          if ((pszValue = pXmlElement->Attribute(kAttribTitle)) != NULL)
          {
@@ -259,8 +116,8 @@ tResult GUIDialogElementCreate(const TiXmlElement * pXmlElement,
    }
    else
    {
-      *ppElement = static_cast<IGUIDialogElement *>(new cGUIDialogElement);
-      return (*ppElement != NULL) ? S_OK : E_FAIL;
+      *ppElement = CTAddRef(pDialog);
+      return S_OK;
    }
 
    return E_FAIL;

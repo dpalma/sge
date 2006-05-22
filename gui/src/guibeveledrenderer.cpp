@@ -45,7 +45,10 @@ const cGUIBeveledRenderer::sMethodTableEntry cGUIBeveledRenderer::gm_methodTable
 {
    METHOD_TABLE_ENTRY(Button),
    METHOD_TABLE_ENTRY(ListBox),
-   { &IID_IGUIContainerElement, NULL, &cGUIBeveledRenderer::ContainerPreferredSize }, // Must be at the bottom
+   METHOD_TABLE_ENTRY(TitleBar),
+
+   // Must stay at the bottom
+   { &IID_IGUIContainerElement, NULL, &cGUIBeveledRenderer::ContainerPreferredSize },
 };
 
 ///////////////////////////////////////
@@ -409,6 +412,78 @@ tGUISize cGUIBeveledRenderer::ListBoxPreferredSize(IGUIElement * pElement) const
 
 ///////////////////////////////////////
 
+tResult cGUIBeveledRenderer::TitleBarRender(IGUIElement * pElement, int bevel, const tGUIColor colors[kBC_NumColors], IGUIRenderDevice * pRenderDevice)
+{
+   IGUITitleBarElement * pTitleBarElement = (IGUITitleBarElement *)pElement;
+
+   tGUIPoint pos = GUIElementAbsolutePosition(pElement);
+   tGUISize size = pElement->GetSize();
+   tGUIRect rect(FloatToInt(pos.x), FloatToInt(pos.y), FloatToInt(pos.x + size.width), FloatToInt(pos.y + size.height));
+
+   tGUIColor captionBk(GUIStandardColors::Blue);
+   tGUIColor captionText(GUIStandardColors::White);
+
+   cAutoIPtr<IGUIStyle> pStyle;
+   if (pElement->GetStyle(&pStyle) == S_OK)
+   {
+      pStyle->GetAttribute("caption-bk-color", &captionBk);
+      pStyle->GetAttribute("caption-text-color", &captionText);
+   }
+
+   pRenderDevice->RenderSolidRect(rect, captionBk);
+
+   cAutoIPtr<IGUIFont> pFont;
+   if (GUIElementFont(pElement, &pFont) == S_OK)
+   {
+      tGUIString title;
+      if (pTitleBarElement->GetTitle(&title) == S_OK)
+      {
+         pFont->RenderText(title.c_str(), -1, &rect, 0, captionText);
+      }
+   }
+
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tGUISize cGUIBeveledRenderer::TitleBarPreferredSize(IGUIElement * pElement) const
+{
+   IGUITitleBarElement * pTitleBarElement = (IGUITitleBarElement *)pElement;
+
+   cAutoIPtr<IGUIFont> pFont;
+   if (GUIElementFont(pTitleBarElement, &pFont) == S_OK)
+   {
+      tGUIString title;
+      if (pTitleBarElement->GetTitle(&title) == S_OK)
+      {
+         tGUISize size(0,0);
+
+         tRect titleSize(0,0,0,0);
+         if (pFont->RenderText(title.c_str(), title.length(), &titleSize, kRT_CalcRect, GUIStandardColors::White) == S_OK)
+         {
+            size.height = static_cast<tGUISizeType>(titleSize.GetHeight());
+         }
+
+         cAutoIPtr<IGUIElement> pParent;
+         if (pElement->GetParent(&pParent) == S_OK)
+         {
+            tGUIRect parentClientArea;
+            if (SUCCEEDED(pParent->GetClientArea(&parentClientArea)))
+            {
+               size.width = static_cast<tGUISizeType>(parentClientArea.GetWidth());
+            }
+         }
+
+         return size;
+      }
+   }
+
+   return tGUISize(0,0);
+}
+
+///////////////////////////////////////
+
 tGUISize cGUIBeveledRenderer::ContainerPreferredSize(IGUIElement * pElement) const
 {
    cAutoIPtr<IGUILayoutManager> pLayout;
@@ -433,39 +508,7 @@ tResult cGUIBeveledRenderer::Render(IGUIDialogElement * pDialogElement,
    tGUISize size = pDialogElement->GetSize();
    tGUIRect rect(FloatToInt(pos.x), FloatToInt(pos.y), FloatToInt(pos.x + size.width), FloatToInt(pos.y + size.height));
 
-   tGUIColor caption(GUIStandardColors::Blue);
-
-   cAutoIPtr<IGUIStyle> pStyle;
-   if (pDialogElement->GetStyle(&pStyle) == S_OK)
-   {
-      pStyle->GetAttribute("caption-color", &caption);
-   }
-
    pRenderDevice->RenderBeveledRect(rect, bevel, colors[kBC_Light], colors[kBC_Shadow], colors[kBC_Face]);
-
-   uint captionHeight;
-   if ((pDialogElement->GetCaptionHeight(&captionHeight) == S_OK)
-      && (captionHeight > 0))
-   {
-      tGUIRect captionRect(rect);
-
-      captionRect.left += bevel;
-      captionRect.top += bevel;
-      captionRect.right -= bevel;
-      captionRect.bottom = captionRect.top + captionHeight;
-
-      pRenderDevice->RenderSolidRect(captionRect, caption);
-
-      cAutoIPtr<IGUIFont> pFont;
-      if (GUIElementFont(pDialogElement, &pFont) == S_OK)
-      {
-         tGUIString title;
-         if (pDialogElement->GetTitle(&title) == S_OK)
-         {
-            pFont->RenderText(title.c_str(), -1, &captionRect, 0, GUIStandardColors::White);
-         }
-      }
-   }
 
    return S_OK;
 }
@@ -664,33 +707,7 @@ tResult cGUIBeveledRenderer::Render(IGUIScrollBarElement * pScrollBarElement,
 
 tGUISize cGUIBeveledRenderer::GetPreferredSize(IGUIDialogElement * pDialogElement)
 {
-   tGUISize size(GetPreferredSize(static_cast<IGUIContainerElement*>(pDialogElement)));
-
-   uint captionHeight;
-   if (pDialogElement->GetCaptionHeight(&captionHeight) == S_OK)
-   {
-      size.height += captionHeight;
-   }
-   else
-   {
-      tGUIString title;
-      if (pDialogElement->GetTitle(&title) == S_OK)
-      {
-         cAutoIPtr<IGUIFont> pFont;
-         if (GUIElementFont(pDialogElement, &pFont) == S_OK)
-         {
-            tRect rect(0,0,0,0);
-            pFont->RenderText(title.c_str(), title.length(), &rect, kRT_CalcRect, GUIStandardColors::White);
-
-            captionHeight = rect.GetHeight();
-
-            pDialogElement->SetCaptionHeight(captionHeight);
-            size.height += captionHeight;
-         }
-      }
-   }
-
-   return size;
+   return GetPreferredSize(static_cast<IGUIContainerElement*>(pDialogElement));
 }
 
 ///////////////////////////////////////

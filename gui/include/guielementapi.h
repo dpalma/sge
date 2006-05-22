@@ -27,6 +27,7 @@ F_DECLARE_INTERFACE(IGUIEvent);
 F_DECLARE_INTERFACE(IGUIContainerElement);
 F_DECLARE_INTERFACE(IGUIPanelElement);
 F_DECLARE_INTERFACE(IGUIDialogElement);
+F_DECLARE_INTERFACE(IGUITitleBarElement);
 F_DECLARE_INTERFACE(IGUIButtonElement);
 F_DECLARE_INTERFACE(IGUILabelElement);
 F_DECLARE_INTERFACE(IGUITextEditElement);
@@ -150,6 +151,10 @@ interface IGUIPanelElement : IGUIContainerElement
 {
 };
 
+////////////////////////////////////////
+
+GUI_API tResult GUIPanelCreate(IGUIPanelElement * * ppPanelElement);
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -160,10 +165,23 @@ interface IGUIDialogElement : IGUIContainerElement
 {
    virtual tResult GetTitle(tGUIString * pTitle) = 0;
    virtual tResult SetTitle(const tGUIChar * pszTitle) = 0;
-
-   virtual tResult GetCaptionHeight(uint * pHeight) = 0;
-   virtual tResult SetCaptionHeight(uint height) = 0;
 };
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IGUITitleBarElement
+//
+
+interface IGUITitleBarElement : IGUIElement
+{
+   virtual tResult GetTitle(tGUIString * pTitle) = 0;
+   virtual tResult SetTitle(const tGUIChar * pszTitle) = 0;
+};
+
+////////////////////////////////////////
+
+GUI_API tResult GUITitleBarCreate(IGUITitleBarElement * * ppTitleBarElement);
 
 
 ///////////////////////////////////////////////////////////////////////////////

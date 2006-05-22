@@ -43,6 +43,9 @@ private:
    tResult ListBoxRender(IGUIElement * pElement, int bevel, const tGUIColor colors[kBC_NumColors], IGUIRenderDevice * pRenderDevice);
    tGUISize ListBoxPreferredSize(IGUIElement * pElement) const;
 
+   tResult TitleBarRender(IGUIElement * pElement, int bevel, const tGUIColor colors[kBC_NumColors], IGUIRenderDevice * pRenderDevice);
+   tGUISize TitleBarPreferredSize(IGUIElement * pElement) const;
+
    tGUISize ContainerPreferredSize(IGUIElement * pElement) const;
 
    tResult Render(IGUIDialogElement * pDialogElement, int bevel, const tGUIColor colors[kBC_NumColors], IGUIRenderDevice * pRenderDevice);

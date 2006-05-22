@@ -39,6 +39,21 @@ tResult cGUIPanelElement::OnEvent(IGUIEvent * pEvent)
    return S_OK;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
+tResult GUIPanelCreate(IGUIPanelElement * * ppPanelElement)
+{
+   if (ppPanelElement == NULL)
+   {
+      return E_POINTER;
+   }
+   cAutoIPtr<IGUIPanelElement> pPanel(static_cast<IGUIPanelElement*>(new cGUIPanelElement));
+   if (!pPanel)
+   {
+      return E_NOTIMPL;
+   }
+   return pPanel.GetPointer(ppPanelElement);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -67,7 +82,7 @@ tResult GUIPanelElementCreate(const TiXmlElement * pXmlElement,
    else
    {
       *ppElement = static_cast<IGUIPanelElement *>(new cGUIPanelElement);
-      return (*ppElement != NULL) ? S_OK : E_FAIL;
+      return (*ppElement != NULL) ? S_OK : E_OUTOFMEMORY;
    }
 
    return E_FAIL;
