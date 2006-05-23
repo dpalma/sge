@@ -236,13 +236,14 @@ static int LuaThunkInvoke(lua_State * L)
       lua_error(L); // this function never returns
    }
 
+   LocalMsg1("LuaThunkInvoke \"%s\"\n", pszMethodName);
+
 #if 0
    {
-      DebugMsg1("LUA: call %s\n", pszMethodName);
       for (int i = 0, index = -1; i < nArgsOnStack; i++, index--)
       {
          int type = lua_type(L, index);
-         DebugMsg2("LUA:   stack[%d] type %d\n", index, type);
+         LocalMsg2("LuaThunkInvoke stack[%d] type %d\n", index, type);
       }
    }
 #endif

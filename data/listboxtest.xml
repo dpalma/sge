@@ -4,10 +4,16 @@
 
 	<script>
 	
-		function onAddItem()
+	   itemCounter = 0;
+		function OnAddItem()
+		   local listBox = GUIContext:GetElement("lb0");
+		   if listBox then
+		      listBox:AddItem(string.format("Item %d", itemCounter));
+		      itemCounter = itemCounter + 1;
+		   end;
 		end;
 		
-		function onRemoveItem()
+		function OnRemoveItem()
 		end;
 		
 	</script>
@@ -21,8 +27,8 @@
 
       <listbox id="lb0" rows=6 style="width:100%"></listbox>
       
-      <button text="Add Item" onclick="onAddItem();" />
-      <button text="Remove Item" onclick="onRemoveItem();" />
+      <button text="Add Item" onclick="OnAddItem();" />
+      <button text="Remove Item" onclick="OnRemoveItem();" enabled="false" />
       <button id="ok" text="OK" />
 
    </dialog>
