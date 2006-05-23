@@ -206,7 +206,7 @@ tResult cGUIGridLayout::Layout(IGUIElement * pParent)
 
    const tGUISize cellSize(static_cast<tGUISizeType>(cellWidth), static_cast<tGUISizeType>(cellHeight));
 
-   LocalMsg4("Grid Layout (%d rows, %d columns), cell size %.0f x %.0f\n", m_rows, m_columns, cellWidth, cellHeight);
+   LocalMsg4("Grid Layout (%d rows, %d columns), cell size %d x %d\n", m_rows, m_columns, cellWidth, cellHeight);
 
    cAutoIPtr<IGUIElementEnum> pEnum;
    if (pParent->EnumChildren(&pEnum) == S_OK)
@@ -222,14 +222,26 @@ tResult cGUIGridLayout::Layout(IGUIElement * pParent)
          {
             if (pChildren[i]->IsVisible())
             {
-               // Child elements are shrunk to fit the grid cell if necessary
                tGUISize childSize(pChildren[i]->GetSize());
+
+               if (childSize.width == 0)
+               {
+                  childSize.width = static_cast<tGUISizeType>(cellWidth);
+               }
+
+               if (childSize.height == 0)
+               {
+                  childSize.height = static_cast<tGUISizeType>(cellHeight);
+               }
+
+               // Child elements are shrunk to fit the grid cell if necessary
                if (childSize.width > cellSize.width || childSize.height > cellSize.height)
                {
                   childSize.width = Min(childSize.width, cellSize.width);
                   childSize.height = Min(childSize.height, cellSize.height);
-                  pChildren[i]->SetSize(childSize);
                }
+
+               pChildren[i]->SetSize(childSize);
 
                int x = clientArea.left + iCol * (cellWidth + m_hGap);
                int y = clientArea.top + iRow * (cellHeight + m_vGap);
@@ -592,6 +604,9 @@ tResult GUILayoutElementCreate(const TiXmlElement * pXmlElement,
             cAutoIPtr<IGUILayoutManager> pLayout;
             if (GUILayoutManagerCreate(pXmlElement, &pLayout) == S_OK)
             {
+               LocalMsg2("Adding %s layout manager to element %s\n", 
+                  pXmlElement->Attribute(kAttribType) ? pXmlElement->Attribute(kAttribType) : "(unknown)",
+                  GUIElementType(pParent).c_str());
                if (pContainer->SetLayout(pLayout) != S_OK)
                {
                   WarnMsg("Error creating layout manager\n");

@@ -331,10 +331,10 @@ tResult cGUIPageLayout::operator ()(IGUIElement * pElement, IGUIElementRenderer 
       return S_FALSE;
    }
 
-   if (AlmostEqual(elementSize.width, 0) || AlmostEqual(elementSize.height, 0))
-   {
-      return S_FALSE;
-   }
+   //if (AlmostEqual(elementSize.width, 0) || AlmostEqual(elementSize.height, 0))
+   //{
+   //   return S_FALSE;
+   //}
 
    pElement->SetSize(elementSize);
 
@@ -366,6 +366,7 @@ tResult cGUIPageLayout::operator ()(IGUIElement * pElement, IGUIElementRenderer 
       cAutoIPtr<IGUILayoutManager> pLayout;
       if (pContainer->GetLayout(&pLayout) == S_OK)
       {
+         LocalMsg1("Element %s has a layout manager\n", GUIElementIdentify(pElement).c_str());
          m_layoutQueue.push(CTAddRef(pContainer));
       }
       else
