@@ -3,7 +3,7 @@
 <page>
    <dialog 
       title="Quit?" 
-      style="width:220;height:150;"
+      style="placement:absolute;align:center;vertical-align:center;width:220;height:150;"
       renderer="beveled">
       
       <label text="Are you sure you want to quit?" style="placement:absolute;align:center;vertical-align:center;" />

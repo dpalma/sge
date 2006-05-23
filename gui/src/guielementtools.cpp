@@ -75,6 +75,7 @@ tGUIString GUIElementType(IUnknown * pUnkElement)
       { &IID_IGUIScrollBarElement,  _T("ScrollBar") },
       { &IID_IGUIStyleElement,      _T("Style") },
       { &IID_IGUITextEditElement,   _T("TextEdit") },
+      { &IID_IGUITitleBarElement,   _T("TitleBar") },
       { &IID_IGUIContainerElement,  _T("Container") }, // Should be at the bottom
    };
 

@@ -43,7 +43,7 @@ static tGUIString GUIElementIdentify(IGUIElement * pElement)
       if (pElement->GetId(&id) == S_OK)
       {
          tGUIString temp;
-         return tGUIString(Sprintf(&temp, _T("{%s: id=%s}"), type.c_str(), id.c_str()));
+         return tGUIString(Sprintf(&temp, _T("%s (id=%s)"), type.c_str(), id.c_str()));
       }
    }
    return type;
@@ -347,17 +347,17 @@ tResult cGUIPageLayout::operator ()(IGUIElement * pElement, IGUIElementRenderer 
 
    if (!pParent)
    {
-      LocalMsg1("Top level element: %s\n", GUIElementIdentify(pElement).c_str());
       m_topLevelFlow.PlaceElement(pElement);
+      LocalMsg3("Placed top level element %s at (%.0f, %.0f)\n", GUIElementIdentify(pElement).c_str(), pElement->GetPosition().x, pElement->GetPosition().y);
    }
    else
    {
-      LocalMsg1("Child element: %s\n", GUIElementIdentify(pElement).c_str());
       tFlowTable::iterator iter = m_flowTable.find(tGUIElementKey(CTAddRef(pParent)));
       if (iter != m_flowTable.end())
       {
          iter->second->PlaceElement(pElement);
       }
+      LocalMsg3("Placed child element %s at (%.0f, %.0f)\n", GUIElementIdentify(pElement).c_str(), pElement->GetPosition().x, pElement->GetPosition().y);
    }
 
    cAutoIPtr<IGUIContainerElement> pContainer;

@@ -190,7 +190,8 @@ tResult cGUIGridLayout::Layout(IGUIElement * pParent)
 
    if (m_rows == 0 || m_columns == 0)
    {
-      ErrorMsg2("Either #rows or #columns is zero (%d, %d)\n", m_rows, m_columns);
+      ErrorMsgIf(m_rows == 0, "Number of rows is zero\n");
+      ErrorMsgIf(m_columns == 0, "Number of columns is zero\n");
       return E_FAIL;
    }
 
@@ -205,8 +206,7 @@ tResult cGUIGridLayout::Layout(IGUIElement * pParent)
 
    const tGUISize cellSize(static_cast<tGUISizeType>(cellWidth), static_cast<tGUISizeType>(cellHeight));
 
-   LocalMsg2("Grid Layout (%d rows, %d columns)\n", m_rows, m_columns);
-   LocalMsg2("   grid cell size = %.0f x %.0f\n", cellWidth, cellHeight);
+   LocalMsg4("Grid Layout (%d rows, %d columns), cell size %.0f x %.0f\n", m_rows, m_columns, cellWidth, cellHeight);
 
    cAutoIPtr<IGUIElementEnum> pEnum;
    if (pParent->EnumChildren(&pEnum) == S_OK)
@@ -237,10 +237,10 @@ tResult cGUIGridLayout::Layout(IGUIElement * pParent)
                tGUIRect cellRect(x, y, x + cellWidth, y + cellHeight);
                GUIPlaceElement(cellRect, pChildren[i]);
 
-               LocalMsg5("   grid cell[%d][%d]: %p, %.0f x %.0f\n", iRow, iCol, pChildren[i], childSize.width, childSize.height);
+               LocalMsg5("   grid cell[%d][%d]: %s, %.0f x %.0f\n", iRow, iCol, GUIElementType(pChildren[i]).c_str(), childSize.width, childSize.height);
             }
 
-            LocalMsgIf3(!pChildren[i]->IsVisible(), "   grid cell[%d][%d]: %p is invisible\n", iRow, iCol, pChildren[i]);
+            LocalMsgIf3(!pChildren[i]->IsVisible(), "   grid cell[%d][%d]: %s is invisible\n", iRow, iCol, GUIElementType(pChildren[i]).c_str());
 
             // Invisible elements are allowed to occupy grid cells, so
             // this is outside of the if(visible) block above

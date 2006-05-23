@@ -63,6 +63,7 @@ public:
    virtual tResult OnEvent(IGUIEvent * pEvent);
    virtual tResult EnumChildren(IGUIElementEnum * * ppChildren);
    virtual tResult SetClientArea(const tGUIRect & clientArea);
+   virtual tResult ComputeClientArea(IGUIElementRenderer * pRenderer, tGUIRect * pClientArea);
 
    // IGUIListBoxElement methods
    virtual tResult AddItem(const tGUIChar * pszString, uint_ptr extra);
@@ -100,7 +101,7 @@ private:
    typedef std::vector<cGUIListBoxItem> tListBoxItems;
    tListBoxItems m_items;
    uint m_rowCount;
-   cAutoIPtr<IGUIScrollBarElement> m_pHScrollBar, m_pVScrollBar;
+   cAutoIPtr<IGUIScrollBarElement> m_pVScrollBar;
    uint m_itemHeight;
    tGUIString m_onSelChange;
 };

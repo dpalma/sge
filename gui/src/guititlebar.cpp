@@ -6,6 +6,9 @@
 #include "guititlebar.h"
 #include "guielementbasetem.h"
 #include "guielementtools.h"
+#include "guistrings.h"
+
+#include <tinyxml.h>
 
 #include "dbgalloc.h" // must be last header
 
@@ -161,6 +164,44 @@ tResult GUITitleBarCreate(IGUITitleBarElement * * ppTitleBarElement)
    }
    return pTitleBar.GetPointer(ppTitleBarElement);
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+tResult GUITitleBarElementCreate(const TiXmlElement * pXmlElement,
+                                 IGUIElement * pParent, IGUIElement * * ppElement)
+{
+   if (ppElement == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (pXmlElement != NULL)
+   {
+      if (strcmp(pXmlElement->Value(), kElementTitleBar) == 0)
+      {
+         cAutoIPtr<IGUITitleBarElement> pTitleBar(static_cast<IGUITitleBarElement *>(new cGUITitleBarElement));
+         if (!pTitleBar)
+         {
+            return E_OUTOFMEMORY;
+         }
+
+         pTitleBar->SetTitle(pXmlElement->Attribute(kAttribTitle));
+
+         *ppElement = CTAddRef(pTitleBar);
+         return S_OK;
+      }
+   }
+   else
+   {
+      *ppElement = static_cast<IGUITitleBarElement *>(new cGUITitleBarElement);
+      return (*ppElement != NULL) ? S_OK : E_OUTOFMEMORY;
+   }
+
+   return E_FAIL;
+}
+
+AUTOREGISTER_GUIELEMENTFACTORYFN(titlebar, GUITitleBarElementCreate);
 
 
 ///////////////////////////////////////////////////////////////////////////////

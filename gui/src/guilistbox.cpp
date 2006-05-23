@@ -73,16 +73,6 @@ cGUIListBoxElement::cGUIListBoxElement()
  : m_rowCount(1)
  , m_itemHeight(0)
 {
-   GUIScrollBarElementCreate(kGUIScrollBarHorizontal, &m_pHScrollBar);
-   if (!!m_pHScrollBar)
-   {
-      m_pHScrollBar->SetParent(this);
-   }
-   GUIScrollBarElementCreate(kGUIScrollBarVertical, &m_pVScrollBar);
-   if (!!m_pVScrollBar)
-   {
-      m_pVScrollBar->SetParent(this);
-   }
 }
 
 ////////////////////////////////////////
@@ -93,53 +83,74 @@ cGUIListBoxElement::~cGUIListBoxElement()
 
 ///////////////////////////////////////
 
+tResult cGUIListBoxElement::EnumChildren(IGUIElementEnum * * ppChildren)
+{
+   if (ppChildren == NULL)
+   {
+      return E_POINTER;
+   }
+   if (!m_pVScrollBar)
+   {
+      return S_FALSE;
+   }
+   tGUIElementList children;
+   children.push_back(m_pVScrollBar);
+   return GUIElementEnumCreate(children, ppChildren);
+}
+
+///////////////////////////////////////
+
 tResult cGUIListBoxElement::SetClientArea(const tGUIRect & clientArea)
 {
    tGUIRect modifiedClientArea(clientArea);
 
-   cAutoIPtr<IGUIElementRenderer> pRenderer;
-   if (GetRenderer(&pRenderer) == S_OK)
-   {
-      tGUISize hScrollBarSize(0,0), vScrollBarSize(0,0);
+   //cAutoIPtr<IGUIElementRenderer> pRenderer;
+   //if (GetRenderer(&pRenderer) == S_OK)
+   //{
+   //   tGUISize vScrollBarSize(0,0);
 
-      if (!!m_pHScrollBar)
-      {
-         pRenderer->GetPreferredSize(m_pHScrollBar, &hScrollBarSize);
-      }
+   //   if (!!m_pVScrollBar)
+   //   {
+   //      pRenderer->GetPreferredSize(m_pVScrollBar, &vScrollBarSize);
+   //   }
 
-      if (!!m_pVScrollBar)
-      {
-         pRenderer->GetPreferredSize(m_pVScrollBar, &vScrollBarSize);
-      }
-
-      if (!!m_pHScrollBar)
-      {
-         hScrollBarSize.width = static_cast<tGUISizeType>(clientArea.GetWidth());
-         if (!!m_pVScrollBar)
-         {
-            hScrollBarSize.width -= vScrollBarSize.width;
-         }
-         m_pHScrollBar->SetPosition(tGUIPoint(static_cast<float>(clientArea.left), clientArea.bottom - hScrollBarSize.height));
-         m_pHScrollBar->SetSize(hScrollBarSize);
-         modifiedClientArea.bottom -= FloatToInt(hScrollBarSize.height);
-      }
-
-      if (!!m_pVScrollBar)
-      {
-         vScrollBarSize.height = static_cast<tGUISizeType>(clientArea.GetHeight());
-         if (!!m_pHScrollBar)
-         {
-            vScrollBarSize.height -= hScrollBarSize.height;
-         }
-         m_pVScrollBar->SetPosition(tGUIPoint(clientArea.right - vScrollBarSize.width, static_cast<float>(clientArea.top)));
-         m_pVScrollBar->SetSize(vScrollBarSize);
-         modifiedClientArea.right -= FloatToInt(vScrollBarSize.width);
-      }
-   }
+   //   if (!!m_pVScrollBar)
+   //   {
+   //      vScrollBarSize.height = static_cast<tGUISizeType>(clientArea.GetHeight());
+   //      m_pVScrollBar->SetPosition(tGUIPoint(clientArea.right - vScrollBarSize.width, static_cast<float>(clientArea.top)));
+   //      m_pVScrollBar->SetSize(vScrollBarSize);
+   //      modifiedClientArea.right -= FloatToInt(vScrollBarSize.width);
+   //   }
+   //}
 
    tResult result = cGUIElementBase<IGUIListBoxElement>::SetClientArea(modifiedClientArea);
    UpdateScrollInfo();
    return result;
+}
+
+///////////////////////////////////////
+
+tResult cGUIListBoxElement::ComputeClientArea(IGUIElementRenderer * pRenderer, tGUIRect * pClientArea)
+{
+   if (pRenderer == NULL || pClientArea == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (!!m_pVScrollBar && m_pVScrollBar->IsVisible())
+   {
+      tGUISize scrollBarSize(0,0);
+      if (pRenderer->GetPreferredSize(m_pVScrollBar, &scrollBarSize) == S_OK)
+      {
+         scrollBarSize.height = static_cast<tGUISizeType>(pClientArea->GetHeight());
+         m_pVScrollBar->SetPosition(tGUIPoint(pClientArea->right - scrollBarSize.width, static_cast<float>(pClientArea->top)));
+         m_pVScrollBar->SetSize(scrollBarSize);
+         pClientArea->right -= FloatToInt(scrollBarSize.width);
+         return S_OK;
+      }
+   }
+
+   return S_FALSE;
 }
 
 ///////////////////////////////////////
@@ -153,13 +164,13 @@ tResult cGUIListBoxElement::OnEvent(IGUIEvent * pEvent)
    tGUIEventCode eventCode;
    Verify(pEvent->GetEventCode(&eventCode) == S_OK);
 
-   tScreenPoint point;
-   Verify(pEvent->GetMousePosition(&point) == S_OK);
-
-   tGUIPoint pos = GetAbsolutePosition();
-
    if (eventCode == kGUIEventClick)
    {
+      tScreenPoint point;
+      Verify(pEvent->GetMousePosition(&point) == S_OK);
+
+      tGUIPoint pos = GetAbsolutePosition();
+
       if (m_itemHeight > 0)
       {
          uint index = FloatToInt(point.y - pos.y) / m_itemHeight;
@@ -169,16 +180,6 @@ tResult cGUIListBoxElement::OnEvent(IGUIEvent * pEvent)
    }
 
    return result;
-}
-
-////////////////////////////////////////
-
-tResult cGUIListBoxElement::EnumChildren(IGUIElementEnum * * ppChildren)
-{
-   tGUIElementList children;
-   children.push_back(m_pHScrollBar);
-   children.push_back(m_pVScrollBar);
-   return GUIElementEnumCreate(children, ppChildren);
 }
 
 ////////////////////////////////////////
@@ -517,11 +518,7 @@ tResult cGUIListBoxElement::GetScrollBar(eGUIScrollBarType scrollBarType,
    {
       return E_POINTER;
    }
-   if (scrollBarType == kGUIScrollBarHorizontal)
-   {
-      return m_pHScrollBar.GetPointer(ppScrollBar);
-   }
-   else if (scrollBarType == kGUIScrollBarVertical)
+   if (scrollBarType == kGUIScrollBarVertical)
    {
       return m_pVScrollBar.GetPointer(ppScrollBar);
    }
@@ -617,6 +614,34 @@ tResult cGUIListBoxElement::Invoke(const char * pszMethodName,
          return E_INVALIDARG;
       }
    }
+   else if (strcmp(pszMethodName, "RemoveItem") == 0)
+   {
+      if (argc == 1 && argv[0].IsInt())
+      {
+         if (RemoveItem(argv[0].ToInt()) == S_OK)
+         {
+            return S_OK;
+         }
+      }
+      else
+      {
+         return E_INVALIDARG;
+      }
+   }
+   else if (strcmp(pszMethodName, "Clear") == 0)
+   {
+      if (argc == 0)
+      {
+         if (Clear() == S_OK)
+         {
+            return S_OK;
+         }
+      }
+      else
+      {
+         return E_INVALIDARG;
+      }
+   }
    else if (strcmp(pszMethodName, "GetSelected") == 0)
    {
       if (argc != 0)
@@ -671,7 +696,34 @@ tResult cGUIListBoxElement::Invoke(const char * pszMethodName,
 
 void cGUIListBoxElement::UpdateScrollInfo()
 {
-   uint contentHeight = m_items.size() * m_itemHeight;
+   int contentHeight = m_items.size() * m_itemHeight;
+
+   tGUIRect clientArea;
+   if (SUCCEEDED(GetClientArea(&clientArea)))
+   {
+      if (contentHeight > clientArea.GetHeight())
+      {
+         if (!m_pVScrollBar)
+         {
+            GUIScrollBarElementCreate(kGUIScrollBarVertical, &m_pVScrollBar);
+            if (!!m_pVScrollBar)
+            {
+               m_pVScrollBar->SetParent(this);
+            }
+         }
+      }
+      else
+      {
+         if (!!m_pVScrollBar)
+         {
+            m_pVScrollBar->SetParent(NULL);
+            SafeRelease(m_pVScrollBar);
+         }
+      }
+   }
+
+   UseGlobal(GUIContext);
+   pGUIContext->RequestLayout(this);
 }
 
 
