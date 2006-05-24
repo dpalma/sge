@@ -247,7 +247,7 @@ template <typename T, typename INTRFC>
 bool cGUIEventRouter<T, INTRFC>::HandleInputEvent(const sInputEvent * pInputEvent)
 {
    DebugMsgIfEx5(GUIEventRouter, pInputEvent->key != kMouseMove,
-      "InputEvent: key %d, down %d, point(%.3f, %.3f), time %f\n",
+      "InputEvent: key %d, down %d, point(%d, %d), time %f\n",
       pInputEvent->key, static_cast<int>(pInputEvent->down),
       pInputEvent->point.x, pInputEvent->point.y,
       pInputEvent->time);
