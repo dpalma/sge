@@ -406,7 +406,7 @@ tResult cGUIBeveledRenderer::ScrollBarRender(IGUIElement * pElement, int bevel, 
    else if (scrollBarType == kGUIScrollBarVertical)
    {
       track1Rect = tGUIRect(btn1Rect.left, btn1Rect.bottom, btn1Rect.right, thumbRect.top);
-      track2Rect = tGUIRect(thumbRect.right, btn2Rect.top, btn2Rect.left, btn2Rect.bottom);
+      track2Rect = tGUIRect(btn1Rect.left, thumbRect.bottom, btn1Rect.right, btn2Rect.top);
    }
 
    pRenderDevice->RenderSolidRect(track1Rect, colors[kBC_Light]);

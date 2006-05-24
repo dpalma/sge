@@ -15,6 +15,22 @@
 #include "dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
+
+LOG_DEFINE_CHANNEL(GUIScrollBar);
+
+#define LocalMsg(msg)                  DebugMsgEx(GUIScrollBar,(msg))
+#define LocalMsg1(msg,a1)              DebugMsgEx1(GUIScrollBar,(msg),(a1))
+#define LocalMsg2(msg,a1,a2)           DebugMsgEx2(GUIScrollBar,(msg),(a1),(a2))
+#define LocalMsg3(msg,a1,a2,a3)        DebugMsgEx3(GUIScrollBar,(msg),(a1),(a2),(a3))
+#define LocalMsg4(msg,a1,a2,a3,a4)     DebugMsgEx4(GUIScrollBar,(msg),(a1),(a2),(a3),(a4))
+#define LocalMsg5(msg,a1,a2,a3,a4,a5)  DebugMsgEx5(GUIScrollBar,(msg),(a1),(a2),(a3),(a4),(a5))
+
+#define LocalMsgIf(cond,msg)           DebugMsgIfEx(GUIScrollBar,(cond),(msg))
+#define LocalMsgIf1(cond,msg,a1)       DebugMsgIfEx1(GUIScrollBar,(cond),(msg),(a1))
+#define LocalMsgIf2(cond,msg,a1,a2)    DebugMsgIfEx2(GUIScrollBar,(cond),(msg),(a1),(a2))
+#define LocalMsgIf3(cond,msg,a1,a2,a3) DebugMsgIfEx3(GUIScrollBar,(cond),(msg),(a1),(a2),(a3))
+
+///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUIScrollBarElement
 //
@@ -279,6 +295,7 @@ tResult cGUIScrollBarElement::SetScrollPos(int scrollPos)
       scrollPos = m_rangeMax;
    }
    m_scrollPos = scrollPos;
+   LocalMsg1("New scroll position %d\n", m_scrollPos);
    return S_OK;
 }
 
@@ -458,10 +475,10 @@ tResult GUIScrollBarElementCreateFromXml(const TiXmlElement * pXmlElement,
          const char * pszAttrib = NULL;
          if ((pszAttrib = pXmlElement->Attribute(kAttribRange)) != NULL)
          {
-            cTokenizer<float> tok;
+            cTokenizer<int> tok;
             if (tok.Tokenize(pszAttrib) == 2)
             {
-               pScrollBar->SetRange(FloatToInt(tok.m_tokens[0]), FloatToInt(tok.m_tokens[1]));
+               pScrollBar->SetRange(tok.m_tokens[0], tok.m_tokens[1]);
             }
          }
 
