@@ -616,9 +616,15 @@ tResult cGUIListBoxElement::Invoke(const char * pszMethodName,
    }
    else if (strcmp(pszMethodName, "RemoveItem") == 0)
    {
-      if (argc == 1 && argv[0].IsInt())
+      if (argc == 1 && IsNumber(argv[0]))
       {
-         if (RemoveItem(argv[0].ToInt()) == S_OK)
+         int index = argv[0].ToInt();
+         if (!AlmostEqual(argv[0].ToDouble(), static_cast<double>(index)))
+         {
+            ErrorMsg1("Real number with fractional component %f passed as index to ListBox::RemoveItem\n", argv[0].ToDouble());
+            return E_INVALIDARG;
+         }
+         if (RemoveItem(index) == S_OK)
          {
             return S_OK;
          }

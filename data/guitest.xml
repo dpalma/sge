@@ -1,6 +1,35 @@
 <!-- $Id$ -->
 
 <page>
+
+   <script>
+      
+      itemCounter = 0;
+      
+      function OnAddItem()
+         local listBox = GUIContext:GetElement("lb0");
+         if listBox then
+            listBox:AddItem(string.format("Item %d", itemCounter));
+            itemCounter = itemCounter + 1;
+         end;
+      end;
+
+      function OnRemoveItem()
+         local listBox = GUIContext:GetElement("lb0");
+         if listBox then
+            listBox:RemoveItem(0);
+         end;
+      end;
+
+      function OnRemoveAll()
+         local listBox = GUIContext:GetElement("lb0");
+         if listBox then
+            listBox:Clear();
+         end;
+      end;
+
+   </script>
+   
    <panel 
       style="align:center;vertical-align:center;width:100%;height:100%;"
       renderer="beveled">
@@ -16,8 +45,13 @@
       <label text="scroll bar" />
       <scrollbar range="0,100" scrollpos="50" type="horizontal" style="width:100%" />
       
-      <label text="list box" />
-      <listbox rows=6 style="width:100%">
+      <panel>
+         <layout type="grid" columns="3" rows="1" />
+         <button text="Add Item" onclick="OnAddItem();" />
+         <button text="Remove Item" onclick="OnRemoveItem();" />
+         <button text="Remove All" onclick="OnRemoveAll();" />
+      </panel>
+      <listbox id="lb0" rows="6">
       </listbox>
       
       <label />

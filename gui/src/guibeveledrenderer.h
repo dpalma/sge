@@ -33,32 +33,29 @@ public:
    ~cGUIBeveledRenderer();
 
    virtual tResult Render(IGUIElement * pElement, IGUIRenderDevice * pRenderDevice);
-   tGUISize GetPreferredSize(IGUIElement * pElement);
    virtual tResult GetPreferredSize(IGUIElement * pElement, tGUISize * pSize);
 
 private:
    tResult ButtonRender(IGUIElement * pElement, int bevel, const tGUIColor colors[kBC_NumColors], IGUIRenderDevice * pRenderDevice);
    tGUISize ButtonPreferredSize(IGUIElement * pElement) const;
 
+   tResult LabelRender(IGUIElement * pElement, int bevel, const tGUIColor colors[kBC_NumColors], IGUIRenderDevice * pRenderDevice);
+   tGUISize LabelPreferredSize(IGUIElement * pElement) const;
+
    tResult ListBoxRender(IGUIElement * pElement, int bevel, const tGUIColor colors[kBC_NumColors], IGUIRenderDevice * pRenderDevice);
    tGUISize ListBoxPreferredSize(IGUIElement * pElement) const;
+
+   tResult ScrollBarRender(IGUIElement * pElement, int bevel, const tGUIColor colors[kBC_NumColors], IGUIRenderDevice * pRenderDevice);
+   tGUISize ScrollBarPreferredSize(IGUIElement * pElement) const;
+
+   tResult TextEditRender(IGUIElement * pElement, int bevel, const tGUIColor colors[kBC_NumColors], IGUIRenderDevice * pRenderDevice);
+   tGUISize TextEditPreferredSize(IGUIElement * pElement) const;
 
    tResult TitleBarRender(IGUIElement * pElement, int bevel, const tGUIColor colors[kBC_NumColors], IGUIRenderDevice * pRenderDevice);
    tGUISize TitleBarPreferredSize(IGUIElement * pElement) const;
 
+   tResult ContainerRender(IGUIElement * pElement, int bevel, const tGUIColor colors[kBC_NumColors], IGUIRenderDevice * pRenderDevice);
    tGUISize ContainerPreferredSize(IGUIElement * pElement) const;
-
-   tResult Render(IGUIDialogElement * pDialogElement, int bevel, const tGUIColor colors[kBC_NumColors], IGUIRenderDevice * pRenderDevice);
-   tResult Render(IGUILabelElement * pLabelElement, int bevel, const tGUIColor colors[kBC_NumColors], IGUIRenderDevice * pRenderDevice);
-   tResult Render(IGUIPanelElement * pPanelElement, int bevel, const tGUIColor colors[kBC_NumColors], IGUIRenderDevice * pRenderDevice);
-   tResult Render(IGUITextEditElement * pTextEditElement, int bevel, const tGUIColor colors[kBC_NumColors], IGUIRenderDevice * pRenderDevice);
-   tResult Render(IGUIScrollBarElement * pScrollBarElement, int bevel, const tGUIColor colors[kBC_NumColors], IGUIRenderDevice * pRenderDevice);
-
-   tGUISize GetPreferredSize(IGUIDialogElement * pDialogElement);
-   tGUISize GetPreferredSize(IGUILabelElement * pLabelElement);
-   tGUISize GetPreferredSize(IGUIPanelElement * pPanelElement);
-   tGUISize GetPreferredSize(IGUITextEditElement * pTextEditElement);
-   tGUISize GetPreferredSize(IGUIScrollBarElement * pScrollBarElement);
 
    typedef tResult (cGUIBeveledRenderer::*tRenderMethod)(IGUIElement *, int, const tGUIColor colors[kBC_NumColors], IGUIRenderDevice *);
    typedef tGUISize (cGUIBeveledRenderer::*tPreferredSizeMethod)(IGUIElement *) const;
