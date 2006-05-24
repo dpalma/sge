@@ -22,7 +22,6 @@ public:
    ~cGUIScrollBarElement();
 
    // Over-rides
-   virtual void SetSize(const tGUISize & size);
    virtual tResult OnEvent(IGUIEvent * pEvent);
 
    // IGUIScrollBarElement methods

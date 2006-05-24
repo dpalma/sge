@@ -345,35 +345,6 @@ tResult cGUIElementBase<INTRFC>::ComputeClientArea(IGUIElementRenderer * pRender
    return S_FALSE;
 }
 
-///////////////////////////////////////
-
-template <typename INTRFC>
-tGUIPoint cGUIElementBase<INTRFC>::GetAbsolutePosition() const
-{
-   tGUIPoint absolutePosition = GetPosition();
-
-   cAutoIPtr<IGUIElement> pParent;
-   if (const_cast<cGUIElementBase<INTRFC> *>(this)->GetParent(&pParent) == S_OK)
-   {
-      while (!!pParent)
-      {
-         absolutePosition += pParent->GetPosition();
-
-         cAutoIPtr<IGUIElement> pNext;
-         if (pParent->GetParent(&pNext) != S_OK)
-         {
-            SafeRelease(pParent);
-         }
-         else
-         {
-            pParent = pNext;
-         }
-      }
-   }
-
-   return absolutePosition;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "undbgalloc.h"

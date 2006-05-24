@@ -169,7 +169,7 @@ tResult cGUIListBoxElement::OnEvent(IGUIEvent * pEvent)
       tScreenPoint point;
       Verify(pEvent->GetMousePosition(&point) == S_OK);
 
-      tGUIPoint pos = GetAbsolutePosition();
+      tGUIPoint pos = GUIElementAbsolutePosition(this);
 
       if (m_itemHeight > 0)
       {

@@ -63,9 +63,6 @@ public:
 
    virtual tResult ComputeClientArea(IGUIElementRenderer * pRenderer, tGUIRect * pClientArea);
 
-protected:
-   tGUIPoint GetAbsolutePosition() const;
-
 private:
    enum eGUIElementInternalFlags
    {

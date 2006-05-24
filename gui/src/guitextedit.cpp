@@ -308,7 +308,7 @@ tResult cGUITextEditElement::OnEvent(IGUIEvent * pEvent)
       tScreenPoint mouse;
       Verify(pEvent->GetMousePosition(&mouse) == S_OK);
 
-      tGUIPoint absPos = GetAbsolutePosition();
+      tGUIPoint absPos = GUIElementAbsolutePosition(this);
 
       tGUIPoint testPoint(mouse.x - absPos.x, mouse.y - absPos.y); // TODO: ADDED_tScreenPoint
 

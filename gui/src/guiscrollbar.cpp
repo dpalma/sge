@@ -69,13 +69,6 @@ cGUIScrollBarElement::~cGUIScrollBarElement()
 
 ///////////////////////////////////////
 
-void cGUIScrollBarElement::SetSize(const tGUISize & size)
-{
-   cGUIElementBase<IGUIScrollBarElement>::SetSize(size);
-}
-
-///////////////////////////////////////
-
 tResult cGUIScrollBarElement::OnEvent(IGUIEvent * pEvent)
 {
    Assert(pEvent != NULL);
@@ -352,7 +345,7 @@ tResult cGUIScrollBarElement::SetPageSize(int pageSize)
 int cGUIScrollBarElement::DetermineScrollPos(const tScreenPoint & mousePos) const
 {
    tGUISize size(GetSize());
-   tGUIPoint pos(GetAbsolutePosition());
+   tGUIPoint pos(GUIElementAbsolutePosition(const_cast<cGUIScrollBarElement*>(this)));
 
    if (m_scrollBarType == kGUIScrollBarHorizontal)
    {
@@ -367,14 +360,34 @@ int cGUIScrollBarElement::DetermineScrollPos(const tScreenPoint & mousePos) cons
    }
    else if (m_scrollBarType == kGUIScrollBarVertical)
    {
-      float threeHalfsWidth = size.width * 3 / 2;
+      tGUISizeType width3 = size.width * 3;
+
+      // Check for out-of-bounds
+      if (mousePos.x < (pos.x - width3)
+         || mousePos.x > (pos.x + (size.width * 4))
+         || mousePos.y < (pos.y - size.width)
+         || mousePos.y > (pos.y + size.height + size.width))
+      {
+         return -1;
+      }
+
+      float threeHalfsWidth = width3 / 2;
 
       float rangeMinScreen = pos.y + threeHalfsWidth; // assumes height of thumb rect is size.width
-      float rangeScreen = size.height - (size.width * 3); // assumes height of thumb rect is size.width
+      float rangeScreen = size.height - width3; // assumes height of thumb rect is size.width
 
       float fracPos = (mousePos.y - rangeMinScreen) / rangeScreen;
 
-      return m_rangeMin + FloatToInt(fracPos * (m_rangeMax - m_rangeMin));
+      int newPos = m_rangeMin + FloatToInt(fracPos * (m_rangeMax - m_rangeMin));
+      if (newPos < m_rangeMin)
+      {
+         newPos = m_rangeMin;
+      }
+      else if (newPos > m_rangeMax)
+      {
+         newPos = m_rangeMax;
+      }
+      return newPos;
    }
 
    return -1;
@@ -485,11 +498,6 @@ tResult GUIScrollBarElementCreateFromXml(const TiXmlElement * pXmlElement,
          *ppElement = CTAddRef(pScrollBar);
          return S_OK;
       }
-   }
-   else
-   {
-      *ppElement = static_cast<IGUIScrollBarElement *>(new cGUIScrollBarElement(kGUIScrollBarVertical));
-      return (*ppElement != NULL) ? S_OK : E_OUTOFMEMORY;
    }
 
    return E_FAIL;
