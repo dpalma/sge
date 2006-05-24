@@ -3,6 +3,12 @@
 
    <style src="gui.css" />
    
+   <script>
+      function ShowCustomGamePage()
+         GUIContext:PushPage("customgame.xml");
+      end;
+   </script>
+
    <panel id="title" style="width:100%;height:60%;background-color:(41,162,241);" renderer="basic">
 	   <layout type="grid" rows="2" columns="1" />
 	   <label text="Copyright (C) 2005, Daniel Palma" style="font-size:10pt;align:right;vertical-align:top;" />
@@ -22,7 +28,7 @@
 	   <label visible=false/>
 	   
 	   <label visible=false/><label visible=false/><label visible=false/>
-	   <button text="GUI Test" onclick="GUIContext:ShowModalDialog([[guitest.xml]]);" renderer="beveled"/>
+	   <button text="GUI Test" onclick="GUIContext:PushPage([[guitest.xml]]);" renderer="beveled"/>
 	   <label visible=false/>
 	   
 	   <label visible=false/><label visible=false/><label visible=false/>
