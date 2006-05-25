@@ -30,3 +30,7 @@ EXPORTS
 	?QuatFromEulerAngles@@YA?AV?$cQuat@M@@ABV?$cVec3@M@@@Z			@26		NONAME
 	?QuatSlerp@@YA?AV?$cQuat@M@@ABV1@0M@Z							@27		NONAME
 	?GetCpuFeatures@@YA_NPAUsCpuFeatures@@@Z						@28		NONAME
+   ?DictionaryIniStoreCreate@@YAJABVcFileSpec@@PBDPAPAUIDictionaryStore@@@Z   @29   NONAME
+   ?DictionaryStoreCreate@@YAJPAUHKEY__@@PBD_NPAPAUIDictionaryStore@@@Z @30   NONAME
+   ?DictionaryCreate@@YAJPAPAUIDictionary@@@Z   @31   NONAME
+   ?DictionaryCreate@@YAJW4ePersistence@@PAPAUIDictionary@@@Z  @32   NONAME

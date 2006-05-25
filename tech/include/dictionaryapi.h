@@ -64,8 +64,8 @@ interface IDictionary : IUnknown
 
 ///////////////////////////////////////
 
-TECH_API tResult DictionaryCreate(IDictionary * * ppDictionary);
-TECH_API tResult DictionaryCreate(tPersistence persist, IDictionary * * ppDictionary);
+tResult DictionaryCreate(IDictionary * * ppDictionary);
+tResult DictionaryCreate(tPersistence persist, IDictionary * * ppDictionary);
 TECH_API IUnknown * DictionaryCreate(tPersistence defaultPersist, IUnknown * pUnkOuter);
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -83,8 +83,8 @@ interface IDictionaryStore : IUnknown
 ///////////////////////////////////////
 
 TECH_API IDictionaryStore * DictionaryStoreCreate(const cFileSpec & file);
-TECH_API tResult DictionaryIniStoreCreate(const cFileSpec & file, const tChar * pszSection, IDictionaryStore * * ppStore);
-TECH_API tResult DictionaryStoreCreate(HKEY hKey, const tChar * pszSubKey, bool bReadOnly, IDictionaryStore * * ppStore);
+tResult DictionaryIniStoreCreate(const cFileSpec & file, const tChar * pszSection, IDictionaryStore * * ppStore);
+tResult DictionaryStoreCreate(HKEY hKey, const tChar * pszSubKey, bool bReadOnly, IDictionaryStore * * ppStore);
 
 ///////////////////////////////////////////////////////////////////////////////
 
