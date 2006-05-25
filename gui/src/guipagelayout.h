@@ -99,12 +99,17 @@ class cGUIPageLayout
 {
 public:
    explicit cGUIPageLayout(const tGUIRect & rect);
+   cGUIPageLayout(const tGUIRect & rect, IGUIElement * pRequester, uint options);
    cGUIPageLayout(const cGUIPageLayout &);
    ~cGUIPageLayout();
 
    tResult operator ()(IGUIElement * pElement, IGUIElementRenderer * pRenderer, void *);
 
 private:
+   IGUIElement * AccessRequester() { return m_pRequester; }
+
+   bool IsOptionSet(uint option) const { return ((m_options & option) == option); }
+
    const tGUIRect m_topLevelRect;
    const tGUISize m_topLevelSize;
    cGUIPageLayoutFlow m_topLevelFlow;
@@ -115,6 +120,10 @@ private:
    tFlowTable m_flowTable;
 
    std::queue<IGUIContainerElement*> m_layoutQueue;
+
+   cAutoIPtr<IGUIElement> m_pRequester; // element requesting layout
+
+   uint m_options;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

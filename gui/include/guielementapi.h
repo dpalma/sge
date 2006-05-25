@@ -283,6 +283,8 @@ interface IGUIScrollBarElement : IGUIElement
    virtual tResult SetPageSize(int pageSize) = 0;
 };
 
+tResult GUIScrollBarElementCreate(eGUIScrollBarType scrollBarType, IGUIScrollBarElement * * ppScrollBar);
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //

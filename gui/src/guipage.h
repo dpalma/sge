@@ -41,7 +41,7 @@ public:
 
    tResult GetElement(const tChar * pszId, IGUIElement * * ppElement);
 
-   void RequestLayout(IGUIElement * pRequester);
+   void RequestLayout(IGUIElement * pRequester, uint options);
 
    void UpdateLayout(const tGUIRect & rect);
    void Render(IGUIRenderDevice * pRenderDevice);
@@ -49,7 +49,8 @@ public:
    tResult GetHitElements(const tScreenPoint & point, tGUIElementList * pElements) const;
 
 private:
-   void Clear();
+   void ClearElements();
+   void ClearLayoutRequests();
 
    void RunScripts();
 
@@ -57,7 +58,9 @@ private:
    tGUIElementList::const_iterator EndElements() const { return m_elements.end(); }
 
    tGUIElementList m_elements;
-   bool m_bUpdateLayout;
+
+   typedef std::list<std::pair<IGUIElement*, uint> > tLayoutRequests;
+   tLayoutRequests m_layoutRequests;
 };
 
 

@@ -36,6 +36,7 @@
 
       <layout type="grid" columns="2" rows="7" />
 
+      <!--
       <label text="button" />
       <button text="Push Button" />
 
@@ -47,6 +48,7 @@
 
       <label text="Vertical Scroll Bar" />
       <scrollbar range="0,100" scrollpos="50" type="vertical" />
+      -->
 
       <panel>
          <layout type="grid" columns="3" rows="1" />

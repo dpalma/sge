@@ -62,7 +62,6 @@ public:
    // Over-rides
    virtual tResult OnEvent(IGUIEvent * pEvent);
    virtual tResult EnumChildren(IGUIElementEnum * * ppChildren);
-   virtual tResult SetClientArea(const tGUIRect & clientArea);
    virtual tResult ComputeClientArea(IGUIElementRenderer * pRenderer, tGUIRect * pClientArea);
 
    // IGUIListBoxElement methods

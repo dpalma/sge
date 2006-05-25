@@ -5,13 +5,7 @@
 
 #include "guielementtools.h"
 #include "guiapi.h"
-#include "guiparse.h"
-#include "guistrings.h"
 #include "guistyleapi.h"
-
-#include "globalobj.h"
-
-#include <tinyxml.h>
 
 #include "dbgalloc.h" // must be last header
 

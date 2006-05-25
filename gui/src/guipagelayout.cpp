@@ -272,6 +272,18 @@ cGUIPageLayout::cGUIPageLayout(const tGUIRect & rect)
  : m_topLevelRect(rect)
  , m_topLevelSize(static_cast<tGUISizeType>(rect.GetWidth()), static_cast<tGUISizeType>(rect.GetHeight()))
  , m_topLevelFlow(rect)
+ , m_options(kGUILayoutDefault)
+{
+}
+
+///////////////////////////////////////
+
+cGUIPageLayout::cGUIPageLayout(const tGUIRect & rect, IGUIElement * pRequester, uint options)
+ : m_topLevelRect(rect)
+ , m_topLevelSize(static_cast<tGUISizeType>(rect.GetWidth()), static_cast<tGUISizeType>(rect.GetHeight()))
+ , m_topLevelFlow(rect)
+ , m_pRequester(CTAddRef(pRequester))
+ , m_options(options)
 {
 }
 
@@ -281,6 +293,8 @@ cGUIPageLayout::cGUIPageLayout(const cGUIPageLayout & other)
  : m_topLevelRect(other.m_topLevelRect)
  , m_topLevelSize(other.m_topLevelSize)
  , m_topLevelFlow(other.m_topLevelFlow)
+ , m_pRequester(other.m_pRequester)
+ , m_options(other.m_options)
 {
 }
 
@@ -314,50 +328,73 @@ tResult cGUIPageLayout::operator ()(IGUIElement * pElement, IGUIElementRenderer 
    Assert(pElement != NULL);
    Assert(pRenderer != NULL);
 
-   tGUISize parentSize(0,0);
-   cAutoIPtr<IGUIElement> pParent;
-   if (pElement->GetParent(&pParent) == S_OK)
+   if (!!m_pRequester)
    {
-      parentSize = pParent->GetSize();
+      if (!CTIsSameObject(pElement, m_pRequester) && !IsDescendant(m_pRequester, pElement))
+      {
+         // Return S_OK to continue processing children
+         return S_OK;
+      }
+   }
+
+   tGUISize elementSize(0,0);
+
+   if (!IsOptionSet(kGUILayoutNoSize))
+   {
+      tGUISize parentSize(0,0);
+      cAutoIPtr<IGUIElement> pParent;
+      if (pElement->GetParent(&pParent) == S_OK)
+      {
+         parentSize = pParent->GetSize();
+      }
+      else
+      {
+         parentSize = m_topLevelSize;
+      }
+
+      if (GUIElementSize(pElement, pRenderer, parentSize, &elementSize) != S_OK)
+      {
+         return S_FALSE;
+      }
+
+      pElement->SetSize(elementSize);
    }
    else
    {
-      parentSize = m_topLevelSize;
+      elementSize = pElement->GetSize();
    }
 
-   tGUISize elementSize;
-   if (GUIElementSize(pElement, pRenderer, parentSize, &elementSize) != S_OK)
+   if (!IsOptionSet(kGUILayoutNoMove))
    {
-      return S_FALSE;
+      cAutoIPtr<IGUIElement> pParent;
+      if (pElement->GetParent(&pParent) == S_OK)
+      {
+         tFlowTable::iterator iter = m_flowTable.find(tGUIElementKey(CTAddRef(pParent)));
+         if (iter != m_flowTable.end())
+         {
+            iter->second->PlaceElement(pElement);
+         }
+         LocalMsg3("Placed child element %s at (%.0f, %.0f)\n", GUIElementIdentify(pElement).c_str(),
+            pElement->GetPosition().x, pElement->GetPosition().y);
+      }
+      else
+      {
+         m_topLevelFlow.PlaceElement(pElement);
+         LocalMsg3("Placed top level element %s at (%.0f, %.0f)\n", GUIElementIdentify(pElement).c_str(),
+            pElement->GetPosition().x, pElement->GetPosition().y);
+      }
    }
-
-   //if (AlmostEqual(elementSize.width, 0) || AlmostEqual(elementSize.height, 0))
-   //{
-   //   return S_FALSE;
-   //}
-
-   pElement->SetSize(elementSize);
 
    tGUIRect clientArea(0, 0, FloatToInt(elementSize.width), FloatToInt(elementSize.height));
    // TODO: Allow renderer to allocate space for borders
-   if (pElement->ComputeClientArea(pRenderer, &clientArea) == S_OK)
+   tResult computeClientAreaResult = pElement->ComputeClientArea(pRenderer, &clientArea);
+   if (SUCCEEDED(computeClientAreaResult))
    {
       pElement->SetClientArea(clientArea);
-   }
-
-   if (!pParent)
-   {
-      m_topLevelFlow.PlaceElement(pElement);
-      LocalMsg3("Placed top level element %s at (%.0f, %.0f)\n", GUIElementIdentify(pElement).c_str(), pElement->GetPosition().x, pElement->GetPosition().y);
-   }
-   else
-   {
-      tFlowTable::iterator iter = m_flowTable.find(tGUIElementKey(CTAddRef(pParent)));
-      if (iter != m_flowTable.end())
+      if (computeClientAreaResult == S_FALSE)
       {
-         iter->second->PlaceElement(pElement);
+         return S_FALSE;
       }
-      LocalMsg3("Placed child element %s at (%.0f, %.0f)\n", GUIElementIdentify(pElement).c_str(), pElement->GetPosition().x, pElement->GetPosition().y);
    }
 
    cAutoIPtr<IGUIContainerElement> pContainer;

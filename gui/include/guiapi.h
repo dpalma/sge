@@ -348,6 +348,13 @@ GUI_API tResult GUIRenderDeviceCreateD3D(IDirect3DDevice9 * pD3dDevice, IGUIRend
 // INTERFACE: IGUIContext
 //
 
+enum eGUILayoutOptions
+{
+   kGUILayoutDefault       = 0,
+   kGUILayoutNoMove        = (1 << 0),
+   kGUILayoutNoSize        = (1 << 1),
+};
+
 interface IGUIContext : IGUIEventRouter
 {
    /// @brief Show a modal dialog box
@@ -367,7 +374,12 @@ interface IGUIContext : IGUIEventRouter
 
    virtual tResult GetOverlayElement(const tGUIChar * pszId, IGUIElement * * ppElement) = 0;
 
-   virtual tResult RequestLayout(IGUIElement * pRequester) = 0;
+   virtual tResult RequestLayout(IGUIElement * pRequester, uint options) = 0;
+
+   inline tResult RequestLayout(IGUIElement * pRequester)
+   {
+      return RequestLayout(pRequester, kGUILayoutDefault);
+   }
 
    virtual tResult RenderGUI() = 0;
 

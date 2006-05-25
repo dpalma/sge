@@ -342,7 +342,7 @@ tResult cGUIElementBase<INTRFC>::SetClientArea(const tGUIRect & clientArea)
 template <typename INTRFC>
 tResult cGUIElementBase<INTRFC>::ComputeClientArea(IGUIElementRenderer * pRenderer, tGUIRect * pClientArea)
 {
-   return S_FALSE;
+   return E_NOTIMPL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

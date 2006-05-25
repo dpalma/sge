@@ -622,12 +622,12 @@ tResult cGUIContext::GetOverlayElement(const tGUIChar * pszId, IGUIElement * * p
 
 ///////////////////////////////////////
 
-tResult cGUIContext::RequestLayout(IGUIElement * pRequester)
+tResult cGUIContext::RequestLayout(IGUIElement * pRequester, uint options)
 {
    cGUIPage * pPage = GetCurrentPage();
    if (pPage != NULL)
    {
-      pPage->RequestLayout(pRequester);
+      pPage->RequestLayout(pRequester, options);
       return S_OK;
    }
    return S_FALSE;

@@ -5,6 +5,7 @@
 
 #include "guilistbox.h"
 #include "guielementbasetem.h"
+#include "guielementenum.h"
 #include "guielementtools.h"
 #include "guistrings.h"
 
@@ -17,16 +18,28 @@
 
 #include "dbgalloc.h" // must be last header
 
+///////////////////////////////////////////////////////////////////////////////
+
+LOG_DEFINE_CHANNEL(GUIListBox);
+
+#define LocalMsg(msg)                  DebugMsgEx(GUIListBox,(msg))
+#define LocalMsg1(msg,a1)              DebugMsgEx1(GUIListBox,(msg),(a1))
+#define LocalMsg2(msg,a1,a2)           DebugMsgEx2(GUIListBox,(msg),(a1),(a2))
+#define LocalMsg3(msg,a1,a2,a3)        DebugMsgEx3(GUIListBox,(msg),(a1),(a2),(a3))
+#define LocalMsg4(msg,a1,a2,a3,a4)     DebugMsgEx4(GUIListBox,(msg),(a1),(a2),(a3),(a4))
+#define LocalMsg5(msg,a1,a2,a3,a4,a5)  DebugMsgEx5(GUIListBox,(msg),(a1),(a2),(a3),(a4),(a5))
+
+#define LocalMsgIf(cond,msg)           DebugMsgIfEx(GUIListBox,(cond),(msg))
+#define LocalMsgIf1(cond,msg,a1)       DebugMsgIfEx1(GUIListBox,(cond),(msg),(a1))
+#define LocalMsgIf2(cond,msg,a1,a2)    DebugMsgIfEx2(GUIListBox,(cond),(msg),(a1),(a2))
+#define LocalMsgIf3(cond,msg,a1,a2,a3) DebugMsgIfEx3(GUIListBox,(cond),(msg),(a1),(a2),(a3))
+
+
+///////////////////////////////////////////////////////////////////////////////
 
 static const uint kInsaneRowCount = 1000;
 static const uint kInsaneItemHeight = 500;
 
-extern tResult GUIScrollBarElementCreate(eGUIScrollBarType scrollBarType,
-                                         IGUIScrollBarElement * * ppScrollBar);
-
-typedef std::list<IGUIElement *> tGUIElementList;
-extern tResult GUIElementEnumCreate(const tGUIElementList & elements,
-                                    IGUIElementEnum * * ppEnum);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -83,78 +96,6 @@ cGUIListBoxElement::~cGUIListBoxElement()
 
 ///////////////////////////////////////
 
-tResult cGUIListBoxElement::EnumChildren(IGUIElementEnum * * ppChildren)
-{
-   if (ppChildren == NULL)
-   {
-      return E_POINTER;
-   }
-   if (!m_pVScrollBar)
-   {
-      return S_FALSE;
-   }
-   tGUIElementList children;
-   children.push_back(m_pVScrollBar);
-   return GUIElementEnumCreate(children, ppChildren);
-}
-
-///////////////////////////////////////
-
-tResult cGUIListBoxElement::SetClientArea(const tGUIRect & clientArea)
-{
-   tGUIRect modifiedClientArea(clientArea);
-
-   //cAutoIPtr<IGUIElementRenderer> pRenderer;
-   //if (GetRenderer(&pRenderer) == S_OK)
-   //{
-   //   tGUISize vScrollBarSize(0,0);
-
-   //   if (!!m_pVScrollBar)
-   //   {
-   //      pRenderer->GetPreferredSize(m_pVScrollBar, &vScrollBarSize);
-   //   }
-
-   //   if (!!m_pVScrollBar)
-   //   {
-   //      vScrollBarSize.height = static_cast<tGUISizeType>(clientArea.GetHeight());
-   //      m_pVScrollBar->SetPosition(tGUIPoint(clientArea.right - vScrollBarSize.width, static_cast<float>(clientArea.top)));
-   //      m_pVScrollBar->SetSize(vScrollBarSize);
-   //      modifiedClientArea.right -= FloatToInt(vScrollBarSize.width);
-   //   }
-   //}
-
-   tResult result = cGUIElementBase<IGUIListBoxElement>::SetClientArea(modifiedClientArea);
-   UpdateScrollInfo();
-   return result;
-}
-
-///////////////////////////////////////
-
-tResult cGUIListBoxElement::ComputeClientArea(IGUIElementRenderer * pRenderer, tGUIRect * pClientArea)
-{
-   if (pRenderer == NULL || pClientArea == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (!!m_pVScrollBar && m_pVScrollBar->IsVisible())
-   {
-      tGUISize scrollBarSize(0,0);
-      if (pRenderer->GetPreferredSize(m_pVScrollBar, &scrollBarSize) == S_OK)
-      {
-         scrollBarSize.height = static_cast<tGUISizeType>(pClientArea->GetHeight());
-         m_pVScrollBar->SetPosition(tGUIPoint(pClientArea->right - scrollBarSize.width, static_cast<float>(pClientArea->top)));
-         m_pVScrollBar->SetSize(scrollBarSize);
-         pClientArea->right -= FloatToInt(scrollBarSize.width);
-         return S_OK;
-      }
-   }
-
-   return S_FALSE;
-}
-
-///////////////////////////////////////
-
 tResult cGUIListBoxElement::OnEvent(IGUIEvent * pEvent)
 {
    Assert(pEvent != NULL);
@@ -180,6 +121,46 @@ tResult cGUIListBoxElement::OnEvent(IGUIEvent * pEvent)
    }
 
    return result;
+}
+
+////////////////////////////////////////
+
+tResult cGUIListBoxElement::EnumChildren(IGUIElementEnum * * ppChildren)
+{
+   if (!!m_pVScrollBar)
+   {
+      tGUIElementList children;
+      children.push_back(m_pVScrollBar);
+      return GUIElementEnumCreate(children, ppChildren);
+   }
+   return S_FALSE;
+}
+
+////////////////////////////////////////
+
+tResult cGUIListBoxElement::ComputeClientArea(IGUIElementRenderer * pRenderer, tGUIRect * pClientArea)
+{
+   if (pRenderer == NULL || pClientArea == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (!!m_pVScrollBar && m_pVScrollBar->IsVisible())
+   {
+      tGUISize scrollBarSize(0,0);
+      if (pRenderer->GetPreferredSize(m_pVScrollBar, &scrollBarSize) == S_OK)
+      {
+         scrollBarSize.height = static_cast<tGUISizeType>(pClientArea->GetHeight());
+         LocalMsg2("Vertical scrollbar size %.0f x %.0f\n", scrollBarSize.width, scrollBarSize.height);
+         m_pVScrollBar->SetPosition(tGUIPoint(pClientArea->right - scrollBarSize.width, static_cast<float>(pClientArea->top)));
+         m_pVScrollBar->SetSize(scrollBarSize);
+         pClientArea->right -= FloatToInt(scrollBarSize.width);
+         // Returning S_FALSE will signal the page layout code not to size or position the scrollbar
+         return S_FALSE;
+      }
+   }
+
+   return E_FAIL;
 }
 
 ////////////////////////////////////////
@@ -702,34 +683,36 @@ tResult cGUIListBoxElement::Invoke(const char * pszMethodName,
 
 void cGUIListBoxElement::UpdateScrollInfo()
 {
-   int contentHeight = m_items.size() * m_itemHeight;
-
    tGUIRect clientArea;
    if (SUCCEEDED(GetClientArea(&clientArea)))
    {
+      int contentHeight = m_items.size() * m_itemHeight;
+
       if (contentHeight > clientArea.GetHeight())
       {
+         LocalMsg2("Content height (%d) > client area height (%d)\n", contentHeight, clientArea.GetHeight());
+
          if (!m_pVScrollBar)
          {
-            GUIScrollBarElementCreate(kGUIScrollBarVertical, &m_pVScrollBar);
-            if (!!m_pVScrollBar)
+            if (GUIScrollBarElementCreate(kGUIScrollBarVertical, &m_pVScrollBar) == S_OK)
             {
                m_pVScrollBar->SetParent(this);
+            }
+            else
+            {
+               ErrorMsg("Unable to create vertical ScrollBar for ListBox\n");
+               return;
             }
          }
       }
       else
       {
-         if (!!m_pVScrollBar)
-         {
-            m_pVScrollBar->SetParent(NULL);
-            SafeRelease(m_pVScrollBar);
-         }
+         SafeRelease(m_pVScrollBar);
       }
-   }
 
-   UseGlobal(GUIContext);
-   pGUIContext->RequestLayout(this);
+      UseGlobal(GUIContext);
+      pGUIContext->RequestLayout(this, kGUILayoutNoSize);
+   }
 }
 
 
@@ -754,7 +737,7 @@ tResult GUIListBoxElementCreate(const TiXmlElement * pXmlElement,
             return E_OUTOFMEMORY;
          }
 
-         int rows;
+         int rows = 0;
          if (pXmlElement->QueryIntAttribute(kAttribRows, &rows) == TIXML_SUCCESS)
          {
             pListBox->SetRowCount(rows);

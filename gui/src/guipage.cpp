@@ -291,13 +291,14 @@ private:
 ///////////////////////////////////////
 
 cGUIPage::cGUIPage(const tGUIElementList * pElements)
- : m_bUpdateLayout(pElements != NULL)
 {
    if (pElements != NULL)
    {
       m_elements.resize(pElements->size());
       std::copy(pElements->begin(), pElements->end(), m_elements.begin());
       std::for_each(m_elements.begin(), m_elements.end(), CTInterfaceMethod(&IGUIElement::AddRef));
+
+      RequestLayout(NULL, kGUILayoutDefault);
    }
 }
 
@@ -305,7 +306,8 @@ cGUIPage::cGUIPage(const tGUIElementList * pElements)
 
 cGUIPage::~cGUIPage()
 {
-   Clear();
+   ClearElements();
+   ClearLayoutRequests();
 }
 
 ///////////////////////////////////////
@@ -375,7 +377,7 @@ tResult cGUIPage::Create(const TiXmlDocument * pXmlDoc, cGUIPage * * ppPage)
       return E_FAIL;
    }
 
-   pPage->m_bUpdateLayout = true;
+   pPage->RequestLayout(NULL, kGUILayoutDefault);
 
    *ppPage = pPage;
    return S_OK;
@@ -452,20 +454,28 @@ tResult cGUIPage::GetElement(const tChar * pszId, IGUIElement * * ppElement)
 
 ///////////////////////////////////////
 
-void cGUIPage::RequestLayout(IGUIElement * pRequester)
+void cGUIPage::RequestLayout(IGUIElement * pRequester, uint options)
 {
-   m_bUpdateLayout = true;
+   // TODO: Eliminate redundant requests
+   m_layoutRequests.push_back(std::make_pair(CTAddRef(pRequester), options));
 }
 
 ///////////////////////////////////////
 
 void cGUIPage::UpdateLayout(const tGUIRect & rect)
 {
-   if (m_bUpdateLayout)
+   static const int kUpdateLayoutInsanity = 16;
+   int nLayoutUpdates = 0;
+   while (!m_layoutRequests.empty() && (nLayoutUpdates < kUpdateLayoutInsanity))
    {
-      cGUIPageLayout pageLayout(rect);
+      cAutoIPtr<IGUIElement> pRequester(m_layoutRequests.front().first);
+      uint options = m_layoutRequests.front().second;
+      m_layoutRequests.pop_front();
+
+      cGUIPageLayout pageLayout(rect, pRequester, options);
       GUIElementRenderLoop(m_elements.rbegin(), m_elements.rend(), pageLayout, static_cast<void*>(NULL));
-      m_bUpdateLayout = false;
+
+      ++nLayoutUpdates;
    }
 }
 
@@ -550,10 +560,22 @@ tResult cGUIPage::GetHitElements(const tScreenPoint & point, tGUIElementList * p
 
 ///////////////////////////////////////
 
-void cGUIPage::Clear()
+void cGUIPage::ClearElements()
 {
    std::for_each(m_elements.begin(), m_elements.end(), CTInterfaceMethod(&IGUIElement::Release));
    m_elements.clear();
+}
+
+///////////////////////////////////////
+
+void cGUIPage::ClearLayoutRequests()
+{
+   tLayoutRequests::iterator iter = m_layoutRequests.begin();
+   for (; iter != m_layoutRequests.end(); iter++)
+   {
+      SafeRelease(iter->first);
+   }
+   m_layoutRequests.clear();
 }
 
 ///////////////////////////////////////

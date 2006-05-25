@@ -85,7 +85,7 @@ public:
 
    virtual tResult GetOverlayElement(const tGUIChar * pszId, IGUIElement * * ppElement);
 
-   virtual tResult RequestLayout(IGUIElement * pRequester);
+   virtual tResult RequestLayout(IGUIElement * pRequester, uint options);
 
    virtual tResult RenderGUI();
 
