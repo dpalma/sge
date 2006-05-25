@@ -300,7 +300,8 @@ interface IGUIListBoxElement : IGUIElement
    virtual tResult GetItem(uint index, tGUIString * pString,
                            uint_ptr * pExtra, bool * pbIsSelected) const = 0;
 
-   virtual tResult Sort() = 0;
+   virtual const tGUIChar * GetItemText(uint index) const = 0;
+   virtual bool IsItemSelected(uint index) const = 0;
 
    virtual tResult Clear() = 0;
 
@@ -318,8 +319,7 @@ interface IGUIListBoxElement : IGUIElement
    virtual tResult GetRowCount(uint * pRowCount) const = 0;
    virtual tResult SetRowCount(uint rowCount) = 0;
 
-   virtual tResult GetScrollBar(eGUIScrollBarType scrollBarType,
-                                IGUIScrollBarElement * * ppScrollBar) = 0;
+   virtual tResult GetVerticalScrollBar(IGUIScrollBarElement * * ppScrollBar) = 0;
 
    virtual tResult GetItemHeight(uint * pItemHeight) const = 0;
    virtual tResult SetItemHeight(uint itemHeight) = 0;

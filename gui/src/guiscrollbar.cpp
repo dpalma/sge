@@ -283,13 +283,22 @@ tResult cGUIScrollBarElement::SetScrollPos(int scrollPos)
    {
       scrollPos = m_rangeMin;
    }
+
    if (scrollPos > m_rangeMax)
    {
       scrollPos = m_rangeMax;
    }
-   m_scrollPos = scrollPos;
-   LocalMsg1("New scroll position %d\n", m_scrollPos);
-   return S_OK;
+
+   if (m_scrollPos != scrollPos)
+   {
+      m_scrollPos = scrollPos;
+      LocalMsg1("New scroll position %d\n", m_scrollPos);
+      return S_OK;
+   }
+   else
+   {
+      return S_FALSE;
+   }
 }
 
 ///////////////////////////////////////

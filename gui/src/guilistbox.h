@@ -70,7 +70,8 @@ public:
    virtual tResult GetItemCount(uint * pItemCount) const;
    virtual tResult GetItem(uint index, tGUIString * pString, uint_ptr * pExtra,
                            bool * pbIsSelected) const;
-   virtual tResult Sort();
+   virtual const tGUIChar * GetItemText(uint index) const;
+   virtual bool IsItemSelected(uint index) const;
    virtual tResult Clear();
    virtual tResult FindItem(const tGUIChar * pszString, uint * pIndex) const;
    virtual tResult Select(uint startIndex, uint endIndex);
@@ -81,8 +82,7 @@ public:
    virtual tResult GetSelected(uint * pIndices, uint nMaxIndices);
    virtual tResult GetRowCount(uint * pRowCount) const;
    virtual tResult SetRowCount(uint rowCount);
-   virtual tResult GetScrollBar(eGUIScrollBarType scrollBarType,
-                                IGUIScrollBarElement * * ppScrollBar);
+   virtual tResult GetVerticalScrollBar(IGUIScrollBarElement * * ppScrollBar);
    virtual tResult GetItemHeight(uint * pItemHeight) const;
    virtual tResult SetItemHeight(uint itemHeight);
    virtual tResult GetOnSelChange(tGUIString * pOnSelChange) const;

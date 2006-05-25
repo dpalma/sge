@@ -230,9 +230,30 @@ tResult cGUIListBoxElement::GetItem(uint index, cStr * pString,
 
 ////////////////////////////////////////
 
-tResult cGUIListBoxElement::Sort()
+const tGUIChar * cGUIListBoxElement::GetItemText(uint index) const
 {
-   return E_NOTIMPL;
+   if (index < m_items.size())
+   {
+      return m_items[index].GetText().c_str();
+   }
+   else
+   {
+      return NULL;
+   }
+}
+
+////////////////////////////////////////
+
+bool cGUIListBoxElement::IsItemSelected(uint index) const
+{
+   if (index < m_items.size())
+   {
+      return m_items[index].IsSelected();
+   }
+   else
+   {
+      return false;
+   }
 }
 
 ////////////////////////////////////////
@@ -492,22 +513,9 @@ tResult cGUIListBoxElement::SetRowCount(uint rowCount)
 
 ////////////////////////////////////////
 
-tResult cGUIListBoxElement::GetScrollBar(eGUIScrollBarType scrollBarType,
-                                         IGUIScrollBarElement * * ppScrollBar)
+tResult cGUIListBoxElement::GetVerticalScrollBar(IGUIScrollBarElement * * ppScrollBar)
 {
-   if (ppScrollBar == NULL)
-   {
-      return E_POINTER;
-   }
-   if (scrollBarType == kGUIScrollBarVertical)
-   {
-      return m_pVScrollBar.GetPointer(ppScrollBar);
-   }
-   else
-   {
-      return E_INVALIDARG;
-   }
-   return E_FAIL;
+   return m_pVScrollBar.GetPointer(ppScrollBar);
 }
 
 ////////////////////////////////////////
@@ -697,6 +705,10 @@ void cGUIListBoxElement::UpdateScrollInfo()
             if (GUIScrollBarElementCreate(kGUIScrollBarVertical, &m_pVScrollBar) == S_OK)
             {
                m_pVScrollBar->SetParent(this);
+               m_pVScrollBar->SetScrollPos(0);
+               m_pVScrollBar->SetRange(0, contentHeight);
+               m_pVScrollBar->SetLineSize(m_itemHeight);
+               m_pVScrollBar->SetPageSize(m_itemHeight * 3);
             }
             else
             {

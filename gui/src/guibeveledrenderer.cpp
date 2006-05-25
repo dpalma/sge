@@ -297,20 +297,35 @@ tResult cGUIBeveledRenderer::ListBoxRender(IGUIElement * pElement, int bevel, co
    cAutoIPtr<IGUIFont> pFont;
    if (GUIElementFont(pListBoxElement, &pFont) == S_OK)
    {
+      int scrollPos = 0;
+      cAutoIPtr<IGUIScrollBarElement> pVertScrollBar;
+      if (pListBoxElement->GetVerticalScrollBar(&pVertScrollBar) == S_OK)
+      {
+         if (pVertScrollBar->GetScrollPos(&scrollPos) != S_OK)
+         {
+            scrollPos = 0;
+         }
+      }
+
       uint itemCount = 0;
       if (pListBoxElement->GetItemCount(&itemCount) == S_OK)
       {
-         uint itemHeight = 0;
-         pListBoxElement->GetItemHeight(&itemHeight);
-
          tGUIRect itemRect(rect);
+
+         uint itemHeight = 0, iTopItem = 0;
+         if (pListBoxElement->GetItemHeight(&itemHeight) == S_OK)
+         {
+            iTopItem = static_cast<uint>(scrollPos) / itemHeight;
+            uint scrollTopOffset = static_cast<uint>(scrollPos) % itemHeight;
+            itemRect.top -= scrollTopOffset;
+         }
+
          itemRect.bottom = itemRect.top + itemHeight;
 
-         for (uint i = 0; i < itemCount; i++)
+         for (uint i = iTopItem; i < itemCount; i++)
          {
-            cStr itemString;
-            bool bIsSelected = false;
-            if (FAILED(pListBoxElement->GetItem(i, &itemString, NULL, &bIsSelected)))
+            const tChar * pszText = pListBoxElement->GetItemText(i);
+            if (pszText == NULL)
             {
                continue;
             }
@@ -318,19 +333,19 @@ tResult cGUIBeveledRenderer::ListBoxRender(IGUIElement * pElement, int bevel, co
             if (itemHeight == 0)
             {
                itemRect = rect;
-               pFont->RenderText(itemString.c_str(), itemString.length(), &itemRect, kRT_CalcRect, textColor);
+               pFont->RenderText(pszText, -1, &itemRect, kRT_CalcRect, textColor);
                itemHeight = itemRect.GetHeight();
                pListBoxElement->SetItemHeight(itemHeight);
             }
 
-            if (bIsSelected)
+            if (pListBoxElement->IsItemSelected(i))
             {
                pRenderDevice->RenderSolidRect(itemRect, GUIStandardColors::Blue);
-               pFont->RenderText(itemString.c_str(), itemString.length(), &itemRect, kRT_NoClip, GUIStandardColors::White);
+               pFont->RenderText(pszText, -1, &itemRect, kRT_NoClip, GUIStandardColors::White);
             }
             else
             {
-               pFont->RenderText(itemString.c_str(), itemString.length(), &itemRect, kRT_NoClip, textColor);
+               pFont->RenderText(pszText, -1, &itemRect, kRT_NoClip, textColor);
             }
 
             itemRect.Offset(0, itemHeight);
