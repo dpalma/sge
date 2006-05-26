@@ -194,6 +194,7 @@ interface IGUIButtonElement : IGUIElement
    virtual bool IsArmed() const = 0;
    virtual void SetArmed(bool bArmed) = 0;
 
+   virtual const tGUIChar * GetText() const = 0;
    virtual tResult GetText(tGUIString * pText) const = 0;
    virtual tResult SetText(const tGUIChar * pszText) = 0;
 
@@ -213,6 +214,7 @@ GUI_API tResult GUIButtonCreate(IGUIButtonElement * * ppButtonElement);
 
 interface IGUILabelElement : IGUIElement
 {
+   virtual const tGUIChar * GetText() const = 0;
    virtual tResult GetText(tGUIString * pText) = 0;
    virtual tResult SetText(const tGUIChar * pszText) = 0;
 };
@@ -232,6 +234,7 @@ interface IGUITextEditElement : IGUIElement
    virtual tResult GetSelection(uint * pStart, uint * pEnd) = 0;
    virtual tResult SetSelection(uint start, uint end) = 0;
 
+   virtual const tGUIChar * GetText() const = 0;
    virtual tResult GetText(tGUIString * pText) = 0;
    virtual tResult SetText(const tGUIChar * pszText) = 0;
 

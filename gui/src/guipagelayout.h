@@ -103,7 +103,7 @@ public:
    cGUIPageLayout(const cGUIPageLayout &);
    ~cGUIPageLayout();
 
-   tResult operator ()(IGUIElement * pElement, IGUIElementRenderer * pRenderer, void *);
+   tResult operator ()(IGUIElement * pElement, IGUIElementRenderer * pRenderer, const tGUIPoint & position, void *);
 
 private:
    IGUIElement * AccessRequester() { return m_pRequester; }

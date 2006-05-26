@@ -5,10 +5,8 @@
 
 #include "guilabel.h"
 #include "guielementbasetem.h"
-#include "guielementtools.h"
 #include "guistrings.h"
 
-#include "globalobj.h"
 #include "multivar.h"
 
 #include <tinyxml.h>
@@ -35,6 +33,13 @@ cGUILabelElement::~cGUILabelElement()
 
 ///////////////////////////////////////
 
+const tGUIChar * cGUILabelElement::GetText() const
+{
+   return m_text.c_str();
+}
+
+///////////////////////////////////////
+
 tResult cGUILabelElement::GetText(tGUIString * pText)
 {
    if (pText == NULL)
@@ -47,7 +52,7 @@ tResult cGUILabelElement::GetText(tGUIString * pText)
 
 ///////////////////////////////////////
 
-tResult cGUILabelElement::SetText(const char * pszText)
+tResult cGUILabelElement::SetText(const tGUIChar * pszText)
 {
    if (pszText == NULL)
    {
@@ -55,7 +60,7 @@ tResult cGUILabelElement::SetText(const char * pszText)
    }
    else
    {
-      m_text = pszText;
+      m_text.assign(pszText);
    }
    return S_OK;
 }
@@ -118,22 +123,21 @@ tResult GUILabelElementCreate(const TiXmlElement * pXmlElement,
       {
          cAutoIPtr<IGUILabelElement> pLabel = static_cast<IGUILabelElement *>(
              new cGUILabelElement);
-         if (!!pLabel)
+         if (!pLabel)
          {
-            if (pXmlElement->Attribute(kAttribText))
-            {
-               pLabel->SetText(pXmlElement->Attribute(kAttribText));
-            }
-
-            *ppElement = CTAddRef(pLabel);
-            return S_OK;
+            return E_OUTOFMEMORY;
          }
+
+         pLabel->SetText(pXmlElement->Attribute(kAttribText));
+
+         *ppElement = CTAddRef(pLabel);
+         return S_OK;
       }
    }
    else
    {
       *ppElement = static_cast<IGUILabelElement *>(new cGUILabelElement);
-      return (*ppElement != NULL) ? S_OK : E_FAIL;
+      return (*ppElement != NULL) ? S_OK : E_OUTOFMEMORY;
    }
 
    return E_FAIL;

@@ -101,7 +101,7 @@ typedef tResult (* tGUIRendererFactoryFn)(void * pReserved,
 
 interface IGUIElementRenderer : IUnknown
 {
-   virtual tResult Render(IGUIElement * pElement, IGUIRenderDevice * pRenderDevice) = 0;
+   virtual tResult Render(IGUIElement * pElement, const tGUIPoint & position, IGUIRenderDevice * pRenderDevice) = 0;
 
    virtual tResult GetPreferredSize(IGUIElement * pElement, tGUISize * pSize) = 0;
 };

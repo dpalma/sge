@@ -11,10 +11,18 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+class cGUIElementEnum : public cComObject<cComEnum<IGUIElementEnum,
+                                                   &IID_IGUIElementEnum,
+                                                   IGUIElement*,
+                                                   CopyInterface<IGUIElement>,
+                                                   tGUIElementList>,
+                                          &IID_IGUIElementEnum>
+{
+};
+
 tResult GUIElementEnumCreate(const tGUIElementList & elements, IGUIElementEnum * * ppEnum)
 {
-   typedef cComObject<cComEnum<IGUIElementEnum, &IID_IGUIElementEnum, IGUIElement*, CopyInterface<IGUIElement>, tGUIElementList>, &IID_IGUIElementEnum> Class;
-   return Class::Create(elements, ppEnum);
+   return cGUIElementEnum::Create(elements, ppEnum);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

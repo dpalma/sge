@@ -21,6 +21,7 @@ public:
    cGUITextBuffer();
    ~cGUITextBuffer();
 
+   const tGUIChar * GetText() const;
    tResult GetText(tGUIString * pText);
    tResult SetText(const char * pszText);
 
@@ -58,6 +59,13 @@ private:
 
 ///////////////////////////////////////
 
+inline const tGUIChar * cGUITextBuffer::GetText() const
+{
+   return m_text.c_str();
+}
+
+///////////////////////////////////////
+
 inline tGUIString::iterator cGUITextBuffer::GetCursor()
 {
    return m_cursor;
@@ -89,6 +97,7 @@ public:
    virtual tResult GetSelection(uint * pStart, uint * pEnd);
    virtual tResult SetSelection(uint start, uint end);
 
+   virtual const tGUIChar * GetText() const;
    virtual tResult GetText(tGUIString * pText);
    virtual tResult SetText(const char * pszText);
 

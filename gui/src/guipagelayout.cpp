@@ -323,7 +323,8 @@ cGUIPageLayout::~cGUIPageLayout()
 
 ///////////////////////////////////////
 
-tResult cGUIPageLayout::operator ()(IGUIElement * pElement, IGUIElementRenderer * pRenderer, void *)
+tResult cGUIPageLayout::operator ()(IGUIElement * pElement, IGUIElementRenderer * pRenderer,
+                                    const tGUIPoint & /*position*/, void *)
 {
    Assert(pElement != NULL);
    Assert(pRenderer != NULL);

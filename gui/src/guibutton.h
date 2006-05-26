@@ -26,6 +26,7 @@ public:
    virtual bool IsArmed() const;
    virtual void SetArmed(bool bArmed);
 
+   virtual const tGUIChar * GetText() const;
    virtual tResult GetText(tGUIString * pText) const;
    virtual tResult SetText(const char * pszText);
 

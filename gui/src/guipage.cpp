@@ -159,33 +159,49 @@ void cGUIPageCreateFactoryListener::OnCreateElement(const TiXmlElement * pXmlEle
 
 ///////////////////////////////////////////////////////////////////////////////
 
+struct sRenderLoopStackElement
+{
+   sRenderLoopStackElement(IGUIElement * pElement_, IGUIElementRenderer * pRenderer_, tGUIPoint base_)
+    : pElement(pElement_)
+    , pRenderer(pRenderer_)
+    , base(base_)
+   {
+   }
+
+   IGUIElement * pElement;
+   IGUIElementRenderer * pRenderer;
+   tGUIPoint base;
+};
+
+typedef std::stack<sRenderLoopStackElement> tRenderLoopStack;
+
 template <typename ITERATOR, typename FUNCTOR, typename DATA>
 void GUIElementRenderLoop(ITERATOR begin, ITERATOR end, FUNCTOR f, DATA d)
 {
-   std::stack< std::pair<IGUIElement*, IGUIElementRenderer*> > s;
+   tRenderLoopStack s;
 
-   ITERATOR iter = begin;
-   for (; iter != end; iter++)
+   for (ITERATOR iter = begin; iter != end; iter++)
    {
-      if ((*iter)->IsVisible())
+      cAutoIPtr<IGUIElement> pElement(CTAddRef(*iter));
+      if (pElement->IsVisible())
       {
          cAutoIPtr<IGUIElementRenderer> pRenderer;
-         if ((*iter)->GetRenderer(&pRenderer) != S_OK)
+         if (pElement->GetRenderer(&pRenderer) == S_OK)
          {
-            continue;
+            s.push(sRenderLoopStackElement(CTAddRef(pElement), CTAddRef(pRenderer), tGUIPoint(0,0)));
          }
-
-         s.push(std::make_pair(CTAddRef(*iter), (IGUIElementRenderer*)CTAddRef(pRenderer)));
       }
    }
 
    while (!s.empty())
    {
-      cAutoIPtr<IGUIElement> pElement(s.top().first);
-      cAutoIPtr<IGUIElementRenderer> pRenderer(s.top().second);
+      const sRenderLoopStackElement & t = s.top();
+      cAutoIPtr<IGUIElement> pElement(t.pElement);
+      cAutoIPtr<IGUIElementRenderer> pRenderer(t.pRenderer);
+      tGUIPoint position(pElement->GetPosition() + t.base);
       s.pop();
 
-      tResult result = f(pElement, pRenderer, d);
+      tResult result = f(pElement, pRenderer, position, d);
       if (result == S_FALSE)
       {
          continue;
@@ -194,8 +210,8 @@ void GUIElementRenderLoop(ITERATOR begin, ITERATOR end, FUNCTOR f, DATA d)
       {
          while (!s.empty())
          {
-            SafeRelease(s.top().first);
-            SafeRelease(s.top().second);
+            SafeRelease(s.top().pElement);
+            SafeRelease(s.top().pRenderer);
             s.pop();
          }
          break;
@@ -217,7 +233,7 @@ void GUIElementRenderLoop(ITERATOR begin, ITERATOR end, FUNCTOR f, DATA d)
                   {
                      pChildRenderer = pRenderer; // Copying smart pointers--no AddRef
                   }
-                  s.push(std::make_pair(pChildren[i], (IGUIElementRenderer*)CTAddRef(pChildRenderer)));
+                  s.push(sRenderLoopStackElement(pChildren[i], CTAddRef(pChildRenderer), position));
                }
                else
                {
@@ -481,9 +497,14 @@ void cGUIPage::UpdateLayout(const tGUIRect & rect)
 
 ///////////////////////////////////////
 
-static tResult DoRender(IGUIElement * pElement, IGUIElementRenderer * pRenderer, IGUIRenderDevice * pRenderDevice)
+static tResult DoRender(IGUIElement * pElement, IGUIElementRenderer * pRenderer, const tGUIPoint & position, IGUIRenderDevice * pRenderDevice)
 {
-   if (FAILED(pRenderer->Render(pElement, pRenderDevice)))
+   //{
+   //   tGUIPoint ap(GUIElementAbsolutePosition(pElement, NULL));
+   //   Assert(AlmostEqual(ap.x, position.x));
+   //   Assert(AlmostEqual(ap.y, position.y));
+   //}
+   if (FAILED(pRenderer->Render(pElement, position, pRenderDevice)))
    {
       ErrorMsg1("A GUI element of type \"%s\" failed to render\n", GUIElementType(pElement).c_str());
    }

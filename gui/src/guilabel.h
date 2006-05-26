@@ -26,6 +26,7 @@ public:
    ~cGUILabelElement();
 
    // IGUILabelElement methods
+   virtual const tGUIChar * GetText() const;
    virtual tResult GetText(tGUIString * pText);
    virtual tResult SetText(const tGUIChar * pszText);
 

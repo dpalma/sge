@@ -22,7 +22,7 @@ public:
    cGUIBasicRenderer();
    ~cGUIBasicRenderer();
 
-   virtual tResult Render(IGUIElement * pElement, IGUIRenderDevice * pRenderDevice);
+   virtual tResult Render(IGUIElement * pElement, const tGUIPoint & position, IGUIRenderDevice * pRenderDevice);
    virtual tResult GetPreferredSize(IGUIElement * pElement, tGUISize * pSize);
 
 private:

@@ -409,6 +409,13 @@ tResult cGUITextEditElement::SetSelection(uint start, uint end)
 
 ///////////////////////////////////////
 
+const tGUIChar * cGUITextEditElement::GetText() const
+{
+   return m_buffer.GetText();
+}
+
+///////////////////////////////////////
+
 tResult cGUITextEditElement::GetText(tGUIString * pText)
 {
    return m_buffer.GetText(pText);
