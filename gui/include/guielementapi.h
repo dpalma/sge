@@ -95,8 +95,6 @@ interface IGUIElement : IUnknown
    virtual tGUISize GetSize() const = 0;
    virtual void SetSize(const tGUISize & size) = 0;
 
-   virtual bool Contains(const tGUIPoint & point) const = 0;
-
    virtual tResult OnEvent(IGUIEvent * pEvent) = 0;
 
    virtual tResult GetRenderer(IGUIElementRenderer * * ppRenderer) = 0;

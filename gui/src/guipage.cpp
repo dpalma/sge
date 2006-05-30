@@ -523,7 +523,27 @@ void cGUIPage::Render(IGUIRenderDevice * pRenderDevice)
 
 ///////////////////////////////////////
 
-typedef std::pair<uint, IGUIElement*> tQueueEntry;
+struct sGetElementData
+{
+   tScreenPoint point;
+   tGUIElementList * pElements;
+};
+
+static tResult GetHitElementHelper(IGUIElement * pElement, IGUIElementRenderer * pRenderer,
+                                   const tGUIPoint & position, sGetElementData * pGetElementData)
+{
+   const tGUISize & size = pElement->GetSize();
+
+   tRectf rect(position.x, position.y, position.x + size.width, position.y + size.height);
+
+   if (rect.PtInside(static_cast<float>(pGetElementData->point.x), static_cast<float>(pGetElementData->point.y)))
+   {
+      pGetElementData->pElements->push_front(CTAddRef(pElement));
+      return S_OK;
+   }
+
+   return S_FALSE;
+}
 
 tResult cGUIPage::GetHitElements(const tScreenPoint & point, tGUIElementList * pElements) const
 {
@@ -537,44 +557,10 @@ tResult cGUIPage::GetHitElements(const tScreenPoint & point, tGUIElementList * p
       return S_FALSE;
    }
 
-   std::priority_queue<tQueueEntry, std::vector<tQueueEntry>, std::greater<tQueueEntry> > q;
-
-   tGUIElementList::const_iterator iter = BeginElements();
-   for (; iter != EndElements(); iter++)
-   {
-      uint zorder = 0;
-      q.push(std::make_pair(zorder, CTAddRef(*iter)));
-   }
-
-   while (!q.empty())
-   {
-      cAutoIPtr<IGUIElement> pElement(q.top().second);
-      uint zorder = q.top().first;
-      q.pop();
-
-      tGUIPoint pos(GUIElementAbsolutePosition(pElement));
-      tGUIPoint relative(point.x - pos.x, point.y - pos.y); // TODO: ADDED_tScreenPoint
-
-      if (pElement->Contains(relative))
-      {
-         cAutoIPtr<IGUIElementEnum> pEnum;
-         if (pElement->EnumChildren(&pEnum) == S_OK)
-         {
-            IGUIElement * pChildren[32];
-            ulong count = 0;
-            while (SUCCEEDED(pEnum->Next(_countof(pChildren), &pChildren[0], &count)) && (count > 0))
-            {
-               for (ulong i = 0; i < count; i++)
-               {
-                  q.push(std::make_pair(zorder+1, pChildren[i]));
-               }
-               count = 0;
-            }
-         }
-
-         pElements->push_front(CTAddRef(pElement));
-      }
-   }
+   sGetElementData getElementData;
+   getElementData.point = point;
+   getElementData.pElements = pElements;
+   GUIElementRenderLoop(m_elements.begin(), m_elements.end(), GetHitElementHelper, &getElementData);
 
    return pElements->empty() ? S_FALSE : S_OK;
 }

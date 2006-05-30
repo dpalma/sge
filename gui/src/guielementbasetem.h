@@ -241,15 +241,6 @@ void cGUIElementBase<INTRFC>::SetSize(const tGUISize & size)
 ///////////////////////////////////////
 
 template <typename INTRFC>
-bool cGUIElementBase<INTRFC>::Contains(const tGUIPoint & point) const
-{
-   tGUISize size = GetSize();
-   return tRectf(0,0,size.width,size.height).PtInside(point.x,point.y);
-}
-
-///////////////////////////////////////
-
-template <typename INTRFC>
 tResult cGUIElementBase<INTRFC>::OnEvent(IGUIEvent * pEvent)
 {
    return S_OK;

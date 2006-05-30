@@ -46,8 +46,6 @@ public:
    virtual tGUISize GetSize() const;
    virtual void SetSize(const tGUISize & size);
 
-   virtual bool Contains(const tGUIPoint & point) const;
-
    virtual tResult OnEvent(IGUIEvent * pEvent);
 
    virtual tResult GetRenderer(IGUIElementRenderer * * ppRenderer);

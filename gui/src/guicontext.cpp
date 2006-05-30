@@ -892,7 +892,6 @@ void cGUIContext::RenderDebugInfo()
             rect.Offset(0, lineHeight);
 
             const tGUIPoint relPoint(m_lastMousePos.x - absPos.x, m_lastMousePos.y - absPos.y); // TODO: ADDED_tScreenPoint
-            Assert((*iter)->Contains(relPoint));
             Sprintf(&temp, "Mouse (relative): (%d, %d)", FloatToInt(relPoint.x), FloatToInt(relPoint.y));
             pFont->RenderText(temp.c_str(), temp.length(), &rect, kRT_NoClip, m_debugInfoTextColor);
             rect.Offset(0, lineHeight);
