@@ -8,6 +8,8 @@
 
 #include "dictionaryapi.h"
 
+#include <map>
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -94,6 +96,10 @@ private:
    uint m_placement;
    int m_width, m_height;
    uint m_widthSpec, m_heightSpec;
+
+   // Cache color attributes because IDictionary doesn't support color values
+   typedef std::map<cStr, tGUIColor> tColorMap;
+   tColorMap m_colorMap;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -149,11 +149,37 @@ tResult cGUIStyle::GetAttribute(const tChar * pszAttribute, int * pValue)
 
 tResult cGUIStyle::GetAttribute(const tChar * pszAttribute, tGUIColor * pValue)
 {
+   if (pszAttribute == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tColorMap::const_iterator f = m_colorMap.find(pszAttribute);
+   if (f != m_colorMap.end())
+   {
+      if (pValue != NULL)
+      {
+         *pValue = f->second;
+      }
+      return S_OK;
+   }
+
    cStr value;
    if (m_pDict->Get(pszAttribute, &value) == S_OK)
    {
-      return GUIParseColor(value.c_str(), pValue);
+      tGUIColor color;
+      tResult result = GUIParseColor(value.c_str(), &color);
+      if (result == S_OK)
+      {
+         m_colorMap[pszAttribute] = color;
+         if (pValue != NULL)
+         {
+            *pValue = color;
+         }
+      }
+      return result;
    }
+
    return !!m_pClassStyle ? m_pClassStyle->GetAttribute(pszAttribute, pValue) : S_FALSE;
 }
 
