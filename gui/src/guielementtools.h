@@ -52,6 +52,7 @@ tGUIPoint GUIElementAbsolutePosition(IGUIElement * pGUIElement, uint * pnParents
 
 tResult GUIElementFont(IGUIElement * pElement, IGUIFont * * ppFont);
 
+tResult GUISetText(const tGUIChar * pszText, tGUIString * pString);
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -7,6 +7,10 @@
 #include "guiapi.h"
 #include "guistyleapi.h"
 
+#ifdef HAVE_CPPUNITLITE2
+#include "CppUnitLite2.h"
+#endif
+
 #include "dbgalloc.h" // must be last header
 
 
@@ -273,5 +277,61 @@ tResult GUIElementFont(IGUIElement * pElement, IGUIFont * * ppFont)
 
    return E_FAIL;
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+tResult GUISetText(const tGUIChar * pszText, tGUIString * pString)
+{
+   if (pString == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (pszText == NULL)
+   {
+      pString->erase();
+   }
+   else
+   {
+      static const struct
+      {
+         const tGUIChar * pszFind;
+         const tGUIChar * pszReplace;
+      }
+      replacements[] =
+      {
+         { _T("&copy;"), _T("\xa9") }, // copyright symbol
+      };
+
+      pString->assign(pszText);
+
+      for (int i = 0; i < _countof(replacements); ++i)
+      {
+         tGUIString::size_type j = tGUIString::npos;
+         while ((j = pString->find(replacements[i].pszFind)) != tGUIString::npos)
+         {
+            pString->replace(j, _tcslen(replacements[i].pszFind), replacements[i].pszReplace);
+         }
+      }
+   }
+
+   return S_OK;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_CPPUNITLITE2
+
+TEST(GUISetText)
+{
+   tGUIString temp;
+   CHECK(GUISetText(_T("Simple Text"), &temp) == S_OK);
+   CHECK(temp.compare(_T("Simple Text")) == 0);
+   CHECK(GUISetText("Copyright symbol &copy; test", &temp) == S_OK);
+   CHECK(temp.compare(_T("Copyright symbol © test")) == 0);
+}
+
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -5,6 +5,7 @@
 
 #include "guilabel.h"
 #include "guielementbasetem.h"
+#include "guielementtools.h"
 #include "guistrings.h"
 
 #include "multivar.h"
@@ -21,7 +22,6 @@
 ///////////////////////////////////////
 
 cGUILabelElement::cGUILabelElement()
- : m_text("")
 {
 }
 
@@ -46,7 +46,7 @@ tResult cGUILabelElement::GetText(tGUIString * pText)
    {
       return E_POINTER;
    }
-   *pText = m_text;
+   pText->assign(m_text);
    return m_text.empty() ? S_FALSE : S_OK;
 }
 
@@ -54,15 +54,7 @@ tResult cGUILabelElement::GetText(tGUIString * pText)
 
 tResult cGUILabelElement::SetText(const tGUIChar * pszText)
 {
-   if (pszText == NULL)
-   {
-      m_text.erase();
-   }
-   else
-   {
-      m_text.assign(pszText);
-   }
-   return S_OK;
+   return GUISetText(pszText, &m_text);
 }
 
 ////////////////////////////////////////

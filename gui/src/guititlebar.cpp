@@ -114,7 +114,7 @@ tResult cGUITitleBarElement::GetTitle(tGUIString * pTitle)
    {
       return E_POINTER;
    }
-   *pTitle = m_title;
+   pTitle->assign(m_title);
    return m_title.empty() ? S_FALSE : S_OK;
 }
 
@@ -122,15 +122,7 @@ tResult cGUITitleBarElement::GetTitle(tGUIString * pTitle)
 
 tResult cGUITitleBarElement::SetTitle(const tGUIChar * pszTitle)
 {
-   if (pszTitle == NULL)
-   {
-      m_title.erase();
-   }
-   else
-   {
-      m_title.assign(pszTitle);
-   }
-   return S_OK;
+   return GUISetText(pszTitle, &m_title);
 }
 
 ///////////////////////////////////////

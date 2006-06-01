@@ -17,13 +17,13 @@
 
 LOG_DEFINE_CHANNEL(GUIButtonEvents);
 
-#define LocalMsg(msg) DebugMsgEx(GUIButtonEvents, (msg))
-#define LocalMsg1(msg,a1) DebugMsgEx1(GUIButtonEvents, (msg), (a1))
-#define LocalMsg2(msg,a1,a2) DebugMsgEx2(GUIButtonEvents, (msg), (a1), (a2))
+#define LocalMsg(msg)                  DebugMsgEx(GUIButtonEvents, (msg))
+#define LocalMsg1(msg,a1)              DebugMsgEx1(GUIButtonEvents, (msg), (a1))
+#define LocalMsg2(msg,a1,a2)           DebugMsgEx2(GUIButtonEvents, (msg), (a1), (a2))
 
-#define LocalMsgIf(cond,msg) DebugMsgIfEx(GUIButtonEvents, (cond), (msg))
-#define LocalMsgIf1(cond,msg,a1) DebugMsgIfEx1(GUIButtonEvents, (cond), (msg), (a1))
-#define LocalMsgIf2(cond,msg,a1,a2) DebugMsgIfEx2(GUIButtonEvents, (cond), (msg), (a1), (a2))
+#define LocalMsgIf(cond,msg)           DebugMsgIfEx(GUIButtonEvents, (cond), (msg))
+#define LocalMsgIf1(cond,msg,a1)       DebugMsgIfEx1(GUIButtonEvents, (cond), (msg), (a1))
+#define LocalMsgIf2(cond,msg,a1,a2)    DebugMsgIfEx2(GUIButtonEvents, (cond), (msg), (a1), (a2))
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -34,7 +34,6 @@ LOG_DEFINE_CHANNEL(GUIButtonEvents);
 
 cGUIButtonElement::cGUIButtonElement()
  : m_bArmed(false)
- , m_text("")
 {
 }
 
@@ -123,7 +122,7 @@ tResult cGUIButtonElement::GetText(tGUIString * pText) const
    {
       return E_POINTER;
    }
-   *pText = m_text;
+   pText->assign(m_text);
    return m_text.empty() ? S_FALSE : S_OK;
 }
 
@@ -131,15 +130,7 @@ tResult cGUIButtonElement::GetText(tGUIString * pText) const
 
 tResult cGUIButtonElement::SetText(const tGUIChar * pszText)
 {
-   if (pszText == NULL)
-   {
-      m_text.erase();
-   }
-   else
-   {
-      m_text.assign(pszText);
-   }
-   return S_OK;
+   return GUISetText(pszText, &m_text);
 }
 
 ///////////////////////////////////////
@@ -164,9 +155,12 @@ tResult cGUIButtonElement::SetOnClick(const char * pszOnClick)
 {
    if (pszOnClick == NULL)
    {
-      return E_POINTER;
+      m_onClick.erase();
    }
-   m_onClick = pszOnClick;
+   else
+   {
+      m_onClick.assign(pszOnClick);
+   }
    return S_OK;
 }
 
@@ -198,29 +192,22 @@ tResult GUIButtonElementCreate(const TiXmlElement * pXmlElement,
       if (strcmp(pXmlElement->Value(), kElementButton) == 0)
       {
          cAutoIPtr<IGUIButtonElement> pButton = static_cast<IGUIButtonElement *>(new cGUIButtonElement);
-         if (!!pButton)
+         if (!pButton)
          {
-            const char * pszAttribute;
-
-            if ((pszAttribute = pXmlElement->Attribute(kAttribText)) != NULL)
-            {
-               pButton->SetText(pszAttribute);
-            }
-
-            if ((pszAttribute = pXmlElement->Attribute(kAttribOnClick)) != NULL)
-            {
-               pButton->SetOnClick(pszAttribute);
-            }
-
-            *ppElement = CTAddRef(pButton);
-            return S_OK;
+            return E_OUTOFMEMORY;
          }
+
+         pButton->SetText(pXmlElement->Attribute(kAttribText));
+         pButton->SetOnClick(pXmlElement->Attribute(kAttribOnClick));
+
+         *ppElement = CTAddRef(pButton);
+         return S_OK;
       }
    }
    else
    {
       *ppElement = static_cast<IGUIButtonElement *>(new cGUIButtonElement);
-      return (*ppElement != NULL) ? S_OK : E_FAIL;
+      return (*ppElement != NULL) ? S_OK : E_OUTOFMEMORY;
    }
 
    return E_FAIL;
