@@ -19,7 +19,7 @@ F_DECLARE_INTERFACE(IEntityComponent);
 F_DECLARE_INTERFACE(IEntityPositionComponent);
 F_DECLARE_INTERFACE(IEntityRenderComponent);
 F_DECLARE_INTERFACE(IEntitySpawnComponent);
-F_DECLARE_INTERFACE(IEntityEnum);
+F_DECLARE_INTERFACE(IEnumEntities);
 F_DECLARE_INTERFACE(IEntityManager);
 F_DECLARE_INTERFACE(IEntityManagerListener);
 
@@ -30,7 +30,6 @@ F_DECLARE_INTERFACE(IDictionary);
 
 template <typename T> class cAxisAlignedBox;
 typedef class cAxisAlignedBox<float> tAxisAlignedBox;
-
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -141,15 +140,15 @@ interface IEntity : IUnknown
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// INTERFACE: IEntityEnum
+// INTERFACE: IEnumEntities
 //
 
-interface IEntityEnum : IUnknown
+interface IEnumEntities : IUnknown
 {
    virtual tResult Next(ulong count, IEntity * * ppEntities, ulong * pnEntities) = 0;
    virtual tResult Skip(ulong count) = 0;
    virtual tResult Reset() = 0;
-   virtual tResult Clone(IEntityEnum * * ppEnum) = 0;
+   virtual tResult Clone(IEnumEntities * * ppEnum) = 0;
 };
 
 
@@ -174,13 +173,13 @@ interface IEntityManager : IUnknown
    virtual void RenderAll() = 0;
 
    virtual tResult RayCast(const cRay & ray, IEntity * * ppEntity) const = 0;
-   virtual tResult BoxCast(const tAxisAlignedBox & box, IEntityEnum * * ppEnum) const = 0;
+   virtual tResult BoxCast(const tAxisAlignedBox & box, IEnumEntities * * ppEnum) const = 0;
 
    virtual tResult Select(IEntity * pEntity) = 0;
    virtual tResult SelectBoxed(const tAxisAlignedBox & box) = 0;
    virtual tResult DeselectAll() = 0;
    virtual uint GetSelectedCount() const = 0;
-   virtual tResult GetSelected(IEntityEnum * * ppEnum) const = 0;
+   virtual tResult GetSelected(IEnumEntities * * ppEnum) const = 0;
 
    virtual tResult RegisterComponentFactory(const tChar * pszComponent,
                                             tEntityComponentFactoryFn pfnFactory) = 0;

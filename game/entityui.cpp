@@ -69,6 +69,86 @@ cEntityUI::~cEntityUI()
 
 ////////////////////////////////////////
 
+typedef tResult (* tEntityCommandFn)(IEntity * pEntity, const cMultiVar * pArgs, uint nArgs);
+
+tResult EntityCommandSpawn(IEntity * pEntity, const cMultiVar * pArgs, uint nArgs)
+{
+   if (pArgs == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (nArgs != 1 || !pArgs[0].IsString())
+   {
+      return E_INVALIDARG;
+   }
+
+   UseGlobal(EntityManager);
+   pEntityManager->SpawnEntity(pArgs[0].ToString(), tVec3());
+   return S_OK;
+}
+
+tResult EntityCommandSetRallyPoint(IEntity * pEntity, const cMultiVar * pArgs, uint nArgs)
+{
+   return E_NOTIMPL;
+}
+
+class cEntityCommandManager
+{
+public:
+   tResult RegisterCommand(const tChar * pszCommand, tEntityCommandFn pfnCommand);
+   tResult RevokeCommand(const tChar * pszCommand);
+
+   tResult ExecuteCommand(const tChar * pszCommand, IEntity * pEntity, const cMultiVar * pArgs, uint nArgs);
+
+   tResult GetCommandsForType(const tChar * pszEntityType);
+
+private:
+};
+
+tResult cEntityCommandManager::RegisterCommand(const tChar * pszCommand, tEntityCommandFn pfnCommand)
+{
+   if (pszCommand == NULL || pfnCommand == NULL)
+   {
+      return E_POINTER;
+   }
+
+   return E_NOTIMPL;
+}
+
+tResult cEntityCommandManager::RevokeCommand(const tChar * pszCommand)
+{
+   if (pszCommand == NULL)
+   {
+      return E_POINTER;
+   }
+
+   return E_NOTIMPL;
+}
+
+tResult cEntityCommandManager::ExecuteCommand(const tChar * pszCommand, IEntity * pEntity,
+                                              const cMultiVar * pArgs, uint nArgs)
+{
+   if (pszCommand == NULL)
+   {
+      return E_POINTER;
+   }
+
+   return E_NOTIMPL;
+}
+
+tResult cEntityCommandManager::GetCommandsForType(const tChar * pszEntityType)
+{
+   if (pszCommand == NULL)
+   {
+      return E_POINTER;
+   }
+
+   return E_NOTIMPL;
+}
+
+cEntityCommandManager g_entityCommandManager;
+
 void cEntityUI::OnEntitySelectionChange()
 {
    ClearGUIElements();
@@ -93,7 +173,7 @@ void cEntityUI::OnEntitySelectionChange()
    UseGlobal(EntityManager);
    if (pEntityManager->GetSelectedCount() == 1)
    {
-      cAutoIPtr<IEntityEnum> pEnum;
+      cAutoIPtr<IEnumEntities> pEnum;
       if (pEntityManager->GetSelected(&pEnum) == S_OK)
       {
          cAutoIPtr<IEntity> pEntity;

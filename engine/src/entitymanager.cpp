@@ -295,7 +295,7 @@ tResult cEntityManager::RayCast(const cRay & ray, IEntity * * ppEntity) const
 
 ///////////////////////////////////////
 
-tResult cEntityManager::BoxCast(const tAxisAlignedBox & box, IEntityEnum * * ppEnum) const
+tResult cEntityManager::BoxCast(const tAxisAlignedBox & box, IEnumEntities * * ppEnum) const
 {
    return E_NOTIMPL;
 }
@@ -388,7 +388,7 @@ uint cEntityManager::GetSelectedCount() const
 
 ///////////////////////////////////////
 
-tResult cEntityManager::GetSelected(IEntityEnum * * ppEnum) const
+tResult cEntityManager::GetSelected(IEnumEntities * * ppEnum) const
 {
    if (ppEnum == NULL)
    {
