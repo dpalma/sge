@@ -20,9 +20,11 @@ F_DECLARE_INTERFACE(IEntityPositionComponent);
 F_DECLARE_INTERFACE(IEntityRenderComponent);
 F_DECLARE_INTERFACE(IEntitySpawnComponent);
 F_DECLARE_INTERFACE(IEnumEntities);
+F_DECLARE_INTERFACE(IEntityCommandManager);
 F_DECLARE_INTERFACE(IEntityManager);
 F_DECLARE_INTERFACE(IEntityManagerListener);
 
+class cMultiVar;
 class cRay;
 class TiXmlElement;
 
@@ -150,6 +152,30 @@ interface IEnumEntities : IUnknown
    virtual tResult Reset() = 0;
    virtual tResult Clone(IEnumEntities * * ppEnum) = 0;
 };
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IEntityCommandManager
+//
+
+typedef tResult (* tEntityCommandFn)(IEntity * pEntity, const cMultiVar * pArgs, uint nArgs);
+
+DECLARE_HANDLE(tEntityCmdInstance);
+
+interface IEntityCommandManager : IUnknown
+{
+   virtual tResult RegisterCommand(const tChar * pszCommand, tEntityCommandFn pfnCommand) = 0;
+   virtual tResult RevokeCommand(const tChar * pszCommand) = 0;
+
+   virtual tResult CompileCommand(const tChar * pszCommand, const cMultiVar * pArgs, uint nArgs, tEntityCmdInstance * pCmdInst) = 0;
+   virtual tResult ExecuteCommand(tEntityCmdInstance cmdInst, IEntity * pEntity) = 0;
+   virtual tResult ExecuteCommand(const tChar * pszCommand, const cMultiVar * pArgs, uint nArgs, IEntity * pEntity) = 0;
+};
+
+////////////////////////////////////////
+
+ENGINE_API tResult EntityCommandManagerCreate();
 
 
 ///////////////////////////////////////////////////////////////////////////////

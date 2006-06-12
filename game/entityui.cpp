@@ -12,6 +12,8 @@
 #include "multivar.h"
 
 #include <algorithm>
+#include <map>
+#include <vector>
 
 #include "dbgalloc.h" // must be last header
 
@@ -69,8 +71,6 @@ cEntityUI::~cEntityUI()
 
 ////////////////////////////////////////
 
-typedef tResult (* tEntityCommandFn)(IEntity * pEntity, const cMultiVar * pArgs, uint nArgs);
-
 tResult EntityCommandSpawn(IEntity * pEntity, const cMultiVar * pArgs, uint nArgs)
 {
    if (pArgs == NULL)
@@ -93,61 +93,17 @@ tResult EntityCommandSetRallyPoint(IEntity * pEntity, const cMultiVar * pArgs, u
    return E_NOTIMPL;
 }
 
-class cEntityCommandManager
+static void RegisterBuiltinEntityCommands()
 {
-public:
-   tResult RegisterCommand(const tChar * pszCommand, tEntityCommandFn pfnCommand);
-   tResult RevokeCommand(const tChar * pszCommand);
-
-   tResult ExecuteCommand(const tChar * pszCommand, IEntity * pEntity, const cMultiVar * pArgs, uint nArgs);
-
-   tResult GetCommandsForType(const tChar * pszEntityType);
-
-private:
-};
-
-tResult cEntityCommandManager::RegisterCommand(const tChar * pszCommand, tEntityCommandFn pfnCommand)
-{
-   if (pszCommand == NULL || pfnCommand == NULL)
+   static bool bCalledOnce = false;
+   if (!bCalledOnce)
    {
-      return E_POINTER;
+      UseGlobal(EntityCommandManager);
+      pEntityCommandManager->RegisterCommand(_T("Spawn"), EntityCommandSpawn);
+      pEntityCommandManager->RegisterCommand(_T("SetRallyPoint"), EntityCommandSetRallyPoint);
+      bCalledOnce = true;
    }
-
-   return E_NOTIMPL;
 }
-
-tResult cEntityCommandManager::RevokeCommand(const tChar * pszCommand)
-{
-   if (pszCommand == NULL)
-   {
-      return E_POINTER;
-   }
-
-   return E_NOTIMPL;
-}
-
-tResult cEntityCommandManager::ExecuteCommand(const tChar * pszCommand, IEntity * pEntity,
-                                              const cMultiVar * pArgs, uint nArgs)
-{
-   if (pszCommand == NULL)
-   {
-      return E_POINTER;
-   }
-
-   return E_NOTIMPL;
-}
-
-tResult cEntityCommandManager::GetCommandsForType(const tChar * pszEntityType)
-{
-   if (pszCommand == NULL)
-   {
-      return E_POINTER;
-   }
-
-   return E_NOTIMPL;
-}
-
-cEntityCommandManager g_entityCommandManager;
 
 void cEntityUI::OnEntitySelectionChange()
 {

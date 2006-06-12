@@ -110,6 +110,7 @@ static void RegisterGlobalObjects()
    CameraCreate();
    CameraControlCreate();
    EntityManagerCreate();
+   EntityCommandManagerCreate();
    InputCreate();
    GUIContextCreate();
    GUIFactoryCreate();
