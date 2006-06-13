@@ -201,7 +201,8 @@ ENGINE_API tResult EntityCommandUICreate();
 //
 
 typedef tResult (* tEntityComponentFactoryFn)(const TiXmlElement * pTiXmlElement,
-                                              IEntity * pEntity, IEntityComponent * * ppComponent);
+                                              IEntity * pEntity, void * pUser,
+                                              IEntityComponent * * ppComponent);
 
 interface IEntityManager : IUnknown
 {
@@ -225,7 +226,11 @@ interface IEntityManager : IUnknown
    virtual tResult GetSelected(IEnumEntities * * ppEnum) const = 0;
 
    virtual tResult RegisterComponentFactory(const tChar * pszComponent,
-                                            tEntityComponentFactoryFn pfnFactory) = 0;
+                                            tEntityComponentFactoryFn pfnFactory, void * pUser) = 0;
+   inline tResult RegisterComponentFactory(const tChar * pszComponent, tEntityComponentFactoryFn pfnFactory)
+   {
+      return RegisterComponentFactory(pszComponent, pfnFactory, NULL);
+   }
    virtual tResult RevokeComponentFactory(const tChar * pszComponent) = 0;
    virtual tResult CreateComponent(const TiXmlElement * pTiXmlElement, IEntity * pEntity,
                                    IEntityComponent * * ppComponent) = 0;

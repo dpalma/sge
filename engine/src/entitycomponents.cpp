@@ -83,7 +83,8 @@ const tMatrix4 & cEntityPositionComponent::GetWorldTransform() const
 ///////////////////////////////////////
 
 tResult EntityPositionComponentFactory(const TiXmlElement * pTiXmlElement,
-                                       IEntity * pEntity, IEntityComponent * * ppComponent)
+                                       IEntity * pEntity, void * pUser,
+                                       IEntityComponent * * ppComponent)
 {
    if (pTiXmlElement == NULL || pEntity == NULL || ppComponent == NULL)
    {
@@ -314,7 +315,8 @@ void cEntityRenderComponent::Render()
 ///////////////////////////////////////
 
 tResult EntityRenderComponentFactory(const TiXmlElement * pTiXmlElement,
-                                     IEntity * pEntity, IEntityComponent * * ppComponent)
+                                     IEntity * pEntity, void * pUser,
+                                     IEntityComponent * * ppComponent)
 {
    if (pTiXmlElement == NULL || pEntity == NULL || ppComponent == NULL)
    {
@@ -435,7 +437,8 @@ tResult cEntitySpawnComponent::Spawn(const tChar * pszEntity)
 ///////////////////////////////////////
 
 tResult EntitySpawnComponentFactory(const TiXmlElement * pTiXmlElement,
-                                    IEntity * pEntity, IEntityComponent * * ppComponent)
+                                    IEntity * pEntity, void * pUser,
+                                    IEntityComponent * * ppComponent)
 {
    if (pTiXmlElement == NULL || pEntity == NULL || ppComponent == NULL)
    {

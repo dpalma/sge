@@ -90,7 +90,7 @@ public:
    virtual tResult GetSelected(IEnumEntities * * ppEnum) const;
 
    virtual tResult RegisterComponentFactory(const tChar * pszComponent,
-                                            tEntityComponentFactoryFn pfnFactory);
+                                            tEntityComponentFactoryFn pfnFactory, void * pUser);
    virtual tResult RevokeComponentFactory(const tChar * pszComponent);
    virtual tResult CreateComponent(const TiXmlElement * pTiXmlElement, IEntity * pEntity,
                                    IEntityComponent * * ppComponent);
@@ -134,7 +134,7 @@ private:
    tEntityList m_entities;
    tEntitySet m_selected;
 
-   typedef std::map<cStr, tEntityComponentFactoryFn> tComponentFactoryMap;
+   typedef std::map<cStr, std::pair<tEntityComponentFactoryFn, void*> > tComponentFactoryMap;
    tComponentFactoryMap m_componentFactoryMap;
 };
 

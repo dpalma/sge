@@ -404,7 +404,8 @@ tResult cEntityManager::GetSelected(IEnumEntities * * ppEnum) const
 ///////////////////////////////////////
 
 tResult cEntityManager::RegisterComponentFactory(const tChar * pszComponent,
-                                                 tEntityComponentFactoryFn pfnFactory)
+                                                 tEntityComponentFactoryFn pfnFactory,
+                                                 void * pUser)
 {
    if (pszComponent == NULL || pfnFactory == NULL)
    {
@@ -412,7 +413,7 @@ tResult cEntityManager::RegisterComponentFactory(const tChar * pszComponent,
    }
 
    std::pair<tComponentFactoryMap::iterator, bool> result = 
-      m_componentFactoryMap.insert(std::make_pair(pszComponent, pfnFactory));
+      m_componentFactoryMap.insert(std::make_pair(pszComponent, std::make_pair(pfnFactory, pUser)));
    if (result.second)
    {
       return S_OK;
@@ -454,7 +455,8 @@ tResult cEntityManager::CreateComponent(const TiXmlElement * pTiXmlElement,
    tComponentFactoryMap::iterator f = m_componentFactoryMap.find(pszComponent);
    if (f != m_componentFactoryMap.end())
    {
-      return (*f->second)(pTiXmlElement, pEntity, ppComponent);
+      const std::pair<tEntityComponentFactoryFn, void*> & p = f->second;
+      return (*p.first)(pTiXmlElement, pEntity, p.second, ppComponent);
    }
 
    return E_FAIL;
