@@ -300,6 +300,20 @@ int GetMapProperties(int argc, const tScriptVar * argv,
 
 ///////////////////////////////////////////////////////////////////////////////
 
+int SetEntityPanel(int argc, const tScriptVar * argv, 
+                   int nMaxResults, tScriptVar * pResults)
+{
+   if (argc == 1 && argv[0].IsString())
+   {
+      UseGlobal(EntityCommandUI);
+      pEntityCommandUI->SetEntityPanelId(argv[0].ToString());
+   }
+   return 0;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 sScriptReg cmds[] =
 {
    { "bind", BindKey },
@@ -309,6 +323,7 @@ sScriptReg cmds[] =
    { "EntitySpawnTest", EntitySpawnTest },
    { "ListResources", ListResources },
    { "GetMapProperties", GetMapProperties },
+   { "SetEntityPanel", SetEntityPanel },
 };
 
 ENGINE_API tResult EngineRegisterScriptFunctions()

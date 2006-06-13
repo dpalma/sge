@@ -8,6 +8,9 @@ sourceFiles = Split("""
    src/cmds.cpp
    src/engine.cpp
    src/entity.cpp
+   src/entitycmds.cpp
+   src/entitycmdmanager.cpp
+   src/entitycmdui.cpp
    src/entitycomponents.cpp
    src/entitymanager.cpp
    src/input.cpp

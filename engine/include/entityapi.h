@@ -21,6 +21,7 @@ F_DECLARE_INTERFACE(IEntityRenderComponent);
 F_DECLARE_INTERFACE(IEntitySpawnComponent);
 F_DECLARE_INTERFACE(IEnumEntities);
 F_DECLARE_INTERFACE(IEntityCommandManager);
+F_DECLARE_INTERFACE(IEntityCommandUI);
 F_DECLARE_INTERFACE(IEntityManager);
 F_DECLARE_INTERFACE(IEntityManagerListener);
 
@@ -176,6 +177,22 @@ interface IEntityCommandManager : IUnknown
 ////////////////////////////////////////
 
 ENGINE_API tResult EntityCommandManagerCreate();
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IEntityCommandUI
+//
+
+interface IEntityCommandUI : IUnknown
+{
+   virtual tResult SetEntityPanelId(const tChar * pszId) = 0;
+   virtual tResult GetEntityPanelId(cStr * pId) = 0;
+};
+
+////////////////////////////////////////
+
+ENGINE_API tResult EntityCommandUICreate();
 
 
 ///////////////////////////////////////////////////////////////////////////////

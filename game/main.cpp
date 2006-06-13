@@ -57,8 +57,6 @@ cAutoIPtr<IGUILabelElement> g_pFrameStats;
 
 float g_fov;
 
-extern void InitEntityUI();
-
 
 static tResult MainFrame();
 
@@ -111,6 +109,7 @@ static void RegisterGlobalObjects()
    CameraControlCreate();
    EntityManagerCreate();
    EntityCommandManagerCreate();
+   EntityCommandUICreate();
    InputCreate();
    GUIContextCreate();
    GUIFactoryCreate();
@@ -332,8 +331,6 @@ static bool MainInit(int argc, tChar * argv[])
 
    UseGlobal(Scheduler);
    pScheduler->Start();
-
-   InitEntityUI();
 
    return true;
 }

@@ -17,15 +17,21 @@
 // CLASS: cEntityCmdInstance
 //
 
+////////////////////////////////////////
+
 cEntityCmdInstance::cEntityCmdInstance()
  : m_pfn(NULL)
 {
 }
 
+////////////////////////////////////////
+
 cEntityCmdInstance::cEntityCmdInstance(tEntityCommandFn pfn, const cMultiVar * pArgs, uint nArgs)
  : m_pfn(pfn)
 {
 }
+
+////////////////////////////////////////
 
 cEntityCmdInstance::cEntityCmdInstance(const cEntityCmdInstance & other)
  : m_pfn(other.m_pfn)
@@ -34,6 +40,8 @@ cEntityCmdInstance::cEntityCmdInstance(const cEntityCmdInstance & other)
    std::copy(other.m_args.begin(), other.m_args.end(), m_args.begin());
 }
 
+////////////////////////////////////////
+
 const cEntityCmdInstance cEntityCmdInstance::operator =(const cEntityCmdInstance & other)
 {
    m_pfn = other.m_pfn;
@@ -41,6 +49,8 @@ const cEntityCmdInstance cEntityCmdInstance::operator =(const cEntityCmdInstance
    std::copy(other.m_args.begin(), other.m_args.end(), m_args.begin());
    return *this;
 }
+
+////////////////////////////////////////
 
 tResult cEntityCmdInstance::Invoke(IEntity * pEntity)
 {
