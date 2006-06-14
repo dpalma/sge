@@ -1,0 +1,38 @@
+#############################################################################
+# $Id$
+
+Import('env')
+
+sourceFiles = Split("""
+   src/input.cpp
+   src/syscommon.cpp
+""")
+
+if env['PLATFORM'] == 'win32':
+   sourceFiles += ['src/syswin.cpp']
+elif env['PLATFORM'] == 'cygwin':
+   sourceFiles += ['src/syslinux.cpp']
+
+includePaths = Split("""
+   #platform/include
+   #tech/include
+""")
+
+libPaths = Split("""
+   #allguids
+   #tech
+""")
+
+linkLibs = Split("""
+   allguids
+   tech
+""")
+
+local = env.Copy()
+local.UseGL()
+local.UseTinyxml()
+local.BuildLibrary(target='platform',
+                   source=sourceFiles,
+                   include_path=includePaths,
+                   lib_path=libPaths,
+                   libs=linkLibs)

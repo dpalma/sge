@@ -10,7 +10,6 @@
 #include "guistyleapi.h"
 
 #include "sys.h"
-#include "engineapi.h"
 
 #include "keys.h"
 #include "multivar.h"
@@ -21,6 +20,11 @@
 #include <tinyxml.h>
 
 #include "dbgalloc.h" // must be last header
+
+// TODO: The xml resource format can probably move into tech
+#ifndef kRT_TiXml
+#define kRT_TiXml _T("TiXml")
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 

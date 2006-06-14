@@ -52,10 +52,6 @@ inline long KeyGetBindable(long key)
    }
 }
 
-///////////////////////////////////////////////////////////////////////////////
-
-extern const char * Key2Name(long key); // from cmds.cpp
-extern long Name2Key(const char * pszKeyName); // from cmds.cpp
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -196,17 +192,7 @@ void cInput::KeyUnbind(long key)
 
 bool cInput::DispatchInputEvent(int x, int y, long key, bool down, double time)
 {
-#ifndef NDEBUG
-   const char * pszKey = Key2Name(key);
-   if (pszKey != NULL)
-   {
-      DebugMsgEx3(InputEvents, "%s %s %f\n", pszKey, down ? "down" : "up", time);
-   }
-   else
-   {
-      DebugMsgEx3(InputEvents, "%d %s %f\n", key, down ? "down" : "up", time);
-   }
-#endif
+   DebugMsgEx3(InputEvents, "%d %s %f\n", key, down ? "down" : "up", time);
 
    Assert((key >= 0) && (key < kMaxKeys));
 

@@ -4,7 +4,7 @@
 #ifndef INCLUDED_INPUTAPI_H
 #define INCLUDED_INPUTAPI_H
 
-#include "enginedll.h"
+#include "platformdll.h"
 #include "comtools.h"
 #include "vec2.h"
 
@@ -51,7 +51,7 @@ interface IInput : IUnknown
 
 ////////////////////////////////////////
 
-ENGINE_API tResult InputCreate();
+PLATFORM_API tResult InputCreate();
 
 
 ///////////////////////////////////////////////////////////////////////////////

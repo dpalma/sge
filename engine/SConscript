@@ -13,7 +13,6 @@ sourceFiles = Split("""
    src/entitycmdui.cpp
    src/entitycomponents.cpp
    src/entitymanager.cpp
-   src/input.cpp
    src/model.cpp
    src/modelanim.cpp
    src/modelms3d.cpp
@@ -23,16 +22,10 @@ sourceFiles = Split("""
    src/saveloadmanager.cpp
    src/scheduler.cpp
    src/schedulerclock.cpp
-   src/syscommon.cpp
    src/terrain.cpp
    src/terrainrender.cpp
    src/tixml.cpp
 """)
-
-if env['PLATFORM'] == 'win32':
-   sourceFiles += ['src/syswin.cpp']
-elif env['PLATFORM'] == 'cygwin':
-   sourceFiles += ['src/syslinux.cpp']
 
 includePaths = Split("""
    #engine/include
