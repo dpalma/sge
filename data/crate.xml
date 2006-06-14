@@ -12,4 +12,15 @@
       <spawn type="tree" />
    </spawns>
    
+   <commands>
+      <command name="Spawn" tooltip="Spawn Zombie">
+	     <argument value="zombie" />
+      </command>
+      <command name="Spawn" tooltip="Spawn Tree">
+	     <argument value="tree" />
+      </command>
+      <command name="SetRallyPoint" tooltip="Set Rally Point">
+      </command>
+   </commands>
+   
 </entity>

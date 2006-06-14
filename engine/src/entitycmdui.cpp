@@ -9,7 +9,72 @@
 
 #include "multivar.h"
 
+#include <tinyxml.h>
+
+#include <vector>
+
 #include "dbgalloc.h" // must be last header
+
+///////////////////////////////////////////////////////////////////////////////
+
+LOG_DEFINE_CHANNEL(EntityCmdUI);
+
+#define LocalMsg(msg)            DebugMsgEx(EntityCmdUI,msg)
+#define LocalMsg1(msg,a)         DebugMsgEx1(EntityCmdUI,msg,(a))
+#define LocalMsg2(msg,a,b)       DebugMsgEx2(EntityCmdUI,msg,(a),(b))
+#define LocalMsg3(msg,a,b,c)     DebugMsgEx3(EntityCmdUI,msg,(a),(b),(c))
+#define LocalMsg4(msg,a,b,c,d)   DebugMsgEx4(EntityCmdUI,msg,(a),(b),(c),(d))
+
+#define LocalMsgIf(cond,msg)           DebugMsgIfEx(EntityCmdUI,(cond),msg)
+#define LocalMsgIf1(cond,msg,a)        DebugMsgIfEx1(EntityCmdUI,(cond),msg,(a))
+#define LocalMsgIf2(cond,msg,a,b)      DebugMsgIfEx2(EntityCmdUI,(cond),msg,(a),(b))
+#define LocalMsgIf3(cond,msg,a,b,c)    DebugMsgIfEx3(EntityCmdUI,(cond),msg,(a),(b),(c))
+#define LocalMsgIf4(cond,msg,a,b,c,d)  DebugMsgIfEx4(EntityCmdUI,(cond),msg,(a),(b),(c),(d))
+
+///////////////////////////////////////////////////////////////////////////////
+
+static const tChar g_szEntityCmdUIComponent[] = _T("commands");
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cEntityCmdInfo
+//
+
+////////////////////////////////////////
+
+cEntityCmdInfo::cEntityCmdInfo()
+ : m_cmdInst(NULL)
+{
+}
+
+////////////////////////////////////////
+
+cEntityCmdInfo::cEntityCmdInfo(const tChar * pszImage, const tChar * pszTooltip, tEntityCmdInstance cmdInst)
+ : m_image((pszImage != NULL) ? pszImage : _T(""))
+ , m_toolTip((pszTooltip != NULL) ? pszTooltip : _T(""))
+ , m_cmdInst(cmdInst)
+{
+}
+
+////////////////////////////////////////
+
+cEntityCmdInfo::cEntityCmdInfo(const cEntityCmdInfo & other)
+ : m_image(other.m_image)
+ , m_toolTip(other.m_toolTip)
+ , m_cmdInst(other.m_cmdInst)
+{
+}
+
+////////////////////////////////////////
+
+const cEntityCmdInfo cEntityCmdInfo::operator =(const cEntityCmdInfo & other)
+{
+   m_image.assign(other.m_image);
+   m_toolTip.assign(other.m_toolTip);
+   m_cmdInst = other.m_cmdInst;
+   return *this;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -35,6 +100,7 @@ tResult cEntityCmdUI::Init()
 {
    UseGlobal(EntityManager);
    pEntityManager->AddEntityManagerListener(static_cast<IEntityManagerListener*>(this));
+   pEntityManager->RegisterComponentFactory(g_szEntityCmdUIComponent, EntityCmdUIComponentFactory, this);
 
    UseGlobal(GUIContext);
    pGUIContext->AddEventListener(static_cast<IGUIEventListener*>(this));
@@ -51,6 +117,7 @@ tResult cEntityCmdUI::Term()
 
    UseGlobal(EntityManager);
    pEntityManager->RemoveEntityManagerListener(static_cast<IEntityManagerListener*>(this));
+   pEntityManager->RevokeComponentFactory(_T("commands"));
 
    return S_OK;
 }
@@ -88,30 +155,18 @@ void cEntityCmdUI::OnEntitySelectionChange()
          ulong nEntities = 0;
          if (pEnum->Next(1, &pEntity, &nEntities) == S_OK && nEntities == 1)
          {
-            cAutoIPtr<IEntitySpawnComponent> pSpawn;
-            if (pEntity->GetComponent(kECT_Spawn, IID_IEntitySpawnComponent, &pSpawn) == S_OK)
+            cStr typeName;
+            if (pEntity->GetTypeName(&typeName) == S_OK)
             {
-               size_t nSpawnTypes = pSpawn->GetSpawnTypeCount();
-               for (uint i = 0; i < nSpawnTypes; i++)
+               tEntityTypeCmdMap::iterator first = m_entityTypeCmdMap.lower_bound(typeName);
+               tEntityTypeCmdMap::iterator last = m_entityTypeCmdMap.upper_bound(typeName);
+               for (tEntityTypeCmdMap::iterator iter = first; iter != last; iter++)
                {
-                  cStr spawnType;
-                  if (pSpawn->GetSpawnType(i, &spawnType) != S_OK)
-                  {
-                     continue;
-                  }
-
-                  // TODO:
-                  //cAutoIPtr<IGUIButtonElement> pButton;
-                  //if (GUIButtonCreate(&pButton) == S_OK)
-                  //{
-                  //   pButton->SetText(spawnType.c_str());
-                  //   pContainer->AddElement(pButton);
-                  //   m_guiElements.insert(CTAddRef(pButton));
-                  //}
+                  const cEntityCmdInfo & cmdInfo = iter->second;
                }
-
-               pGUIContext->RequestLayout(pContainer);
             }
+
+            //pGUIContext->RequestLayout(pContainer);
          }
       }
    }
@@ -153,6 +208,102 @@ tResult cEntityCmdUI::GetEntityPanelId(cStr * pId)
    }
    pId->assign(m_entityPanelId);
    return S_OK;
+}
+
+////////////////////////////////////////
+
+static tResult EntityCmdParseArgs(const TiXmlElement * pElement, std::vector<cMultiVar> * pArgs)
+{
+   if (pElement == NULL || pArgs == NULL)
+   {
+      return E_POINTER;
+   }
+
+   uint count = 0;
+
+   for (const TiXmlElement * pChild = pElement->FirstChildElement();
+      pChild != NULL; pChild = pChild->NextSiblingElement())
+   {
+      const char * pszValue = pChild->Attribute("value");
+      if (_stricmp(pChild->Value(), "argument") == 0 && pszValue != NULL)
+      {
+         pArgs->push_back(cMultiVar(pszValue));
+         count++;
+      }
+   }
+
+   return (count > 0) ? S_OK : S_FALSE;
+}
+
+tResult cEntityCmdUI::EntityCmdUIComponentFactory(const TiXmlElement * pTiXmlElement,
+                                                  IEntity * pEntity,
+                                                  void * pUser,
+                                                  IEntityComponent * * ppComponent)
+{
+   if (pTiXmlElement == NULL || pEntity == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (_stricmp(pTiXmlElement->Value(), g_szEntityCmdUIComponent) != 0)
+   {
+      return E_INVALIDARG;
+   }
+
+   cEntityCmdUI * pEntityCmdUI = reinterpret_cast<cEntityCmdUI*>(pUser);
+   if (pEntityCmdUI == NULL)
+   {
+      return E_FAIL;
+   }
+
+#ifdef _DEBUG
+   UseGlobal(EntityCommandUI);
+   Assert(CTIsSameObject(pEntityCommandUI, static_cast<IEntityCommandUI*>(pEntityCmdUI)));
+#endif
+
+   cStr typeName;
+   if (pEntity->GetTypeName(&typeName) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   tEntityTypeCmdMap::iterator f = pEntityCmdUI->m_entityTypeCmdMap.find(typeName);
+   if (f != pEntityCmdUI->m_entityTypeCmdMap.end())
+   {
+      // Commands for this type already registered
+      return S_FALSE;
+   }
+
+   UseGlobal(EntityCommandManager);
+
+   for (const TiXmlElement * pTiXmlChild = pTiXmlElement->FirstChildElement();
+      pTiXmlChild != NULL; pTiXmlChild = pTiXmlChild->NextSiblingElement())
+   {
+      Assert(pTiXmlChild->Type() == TiXmlNode::ELEMENT);
+
+      const char * pszCmdName = pTiXmlChild->Attribute("name");
+      const char * pszCmdImage = pTiXmlChild->Attribute("image");
+      const char * pszCmdToolTip = pTiXmlChild->Attribute("tooltip");
+
+      if (_stricmp(pTiXmlChild->Value(), "command") == 0
+         && pszCmdName != NULL)
+      {
+         std::vector<cMultiVar> args;
+         if (SUCCEEDED(EntityCmdParseArgs(pTiXmlChild, &args)))
+         {
+            LocalMsg3("Entity type %s supports command %s (%d args)\n", typeName.c_str(), pszCmdName, args.size());
+
+            tEntityCmdInstance cmdInst = NULL;
+            if (pEntityCommandManager->CompileCommand(pszCmdName, &args[0], args.size(), &cmdInst) == S_OK)
+            {
+               pEntityCmdUI->m_entityTypeCmdMap.insert(std::make_pair(typeName, cEntityCmdInfo(pszCmdImage, pszCmdToolTip, cmdInst)));
+            }
+         }
+      }
+   }
+
+   // This function doesn't actually return a component
+   return S_FALSE;
 }
 
 ////////////////////////////////////////

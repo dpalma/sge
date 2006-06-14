@@ -9,9 +9,35 @@
 
 #include "globalobjdef.h"
 
+#include <map>
+
 #ifdef _MSC_VER
 #pragma once
 #endif
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cEntityCmdInfo
+//
+
+class cEntityCmdInfo
+{
+public:
+   cEntityCmdInfo();
+   cEntityCmdInfo(const tChar * pszImage, const tChar * pszTooltip, tEntityCmdInstance cmdInst);
+   cEntityCmdInfo(const cEntityCmdInfo & other);
+
+   const cEntityCmdInfo operator =(const cEntityCmdInfo & other);
+
+   inline const tChar * GetImage() const { return m_image.c_str(); }
+   inline const tChar * GetToolTip() const { return m_toolTip.c_str(); }
+   inline tEntityCmdInstance GetCmdInstance() const { return m_cmdInst; }
+
+private:
+   cStr m_image, m_toolTip;
+   tEntityCmdInstance m_cmdInst;
+};
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -42,7 +68,13 @@ public:
    virtual tResult GetEntityPanelId(cStr * pId);
 
 private:
+   static tResult EntityCmdUIComponentFactory(const TiXmlElement * pTiXmlElement,
+      IEntity * pEntity, void * pUser, IEntityComponent * * ppComponent);
+
    cStr m_entityPanelId;
+
+   typedef std::multimap<cStr, cEntityCmdInfo> tEntityTypeCmdMap;
+   tEntityTypeCmdMap m_entityTypeCmdMap;
 };
 
 
