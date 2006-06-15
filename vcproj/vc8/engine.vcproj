@@ -47,7 +47,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include,..\..\script\include,..\..\rendergl\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include,..\..\script\include,..\..\rendergl\include,..\..\platform\include"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC;HAVE_DIRECTX=0;HAVE_CPPUNITLITE2"
 				StringPooling="true"
 				RuntimeLibrary="3"
@@ -141,7 +141,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include,..\..\script\include,..\..\rendergl\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include,..\..\script\include,..\..\rendergl\include,..\..\platform\include"
 				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,HAVE_CPPUNITLITE2,_USRDLL,ENGINE_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL,GLEW_STATIC,HAVE_DIRECTX=0"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -221,7 +221,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include,..\..\script\include,..\..\rendergl\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include,..\..\script\include,..\..\rendergl\include,..\..\platform\include"
 				PreprocessorDefinitions="_DEBUG;HAVE_CPPUNITLITE2;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC;HAVE_DIRECTX=0"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -314,7 +314,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include,..\..\script\include,..\..\rendergl\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include,..\..\script\include,..\..\rendergl\include,..\..\platform\include"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,_USRDLL,ENGINE_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL,GLEW_STATIC,HAVE_DIRECTX=0"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -394,7 +394,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include,..\..\script\include,..\..\rendergl\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\engine\include,..\..\gui\include,..\..\tech\include,..\..\3rdparty\tinyxml,..\..\3rdparty\Cg\include,..\..\3rdparty\glew\include,..\..\script\include,..\..\rendergl\include,..\..\platform\include"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC;HAVE_DIRECTX=0"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -487,15 +487,23 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\engine\src\entitycmdmanager.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\engine\src\entitycmds.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\engine\src\entitycmdui.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\engine\src\entitycomponents.cpp"
 					>
 				</File>
 				<File
 					RelativePath="..\..\engine\src\entitymanager.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\engine\src\input.cpp"
 					>
 				</File>
 				<File
@@ -579,58 +587,6 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="..\..\engine\src\syscommon.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\engine\src\syslinux.cpp"
-					>
-					<FileConfiguration
-						Name="Opt|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="StaticDebug|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="StaticRelease|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="..\..\engine\src\syswin.cpp"
-					>
-				</File>
-				<File
 					RelativePath="..\..\engine\src\terrain.cpp"
 					>
 				</File>
@@ -659,15 +615,19 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\engine\src\entitycmdmanager.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\engine\src\entitycmdui.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\engine\src\entitycomponents.h"
 					>
 				</File>
 				<File
 					RelativePath="..\..\engine\src\entitymanager.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\engine\src\input.h"
 					>
 				</File>
 				<File
@@ -745,10 +705,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\engine\include\inputapi.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\engine\include\model.h"
 				>
 			</File>
@@ -762,10 +718,6 @@
 			</File>
 			<File
 				RelativePath="..\..\engine\include\schedulerapi.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\engine\include\sys.h"
 				>
 			</File>
 			<File

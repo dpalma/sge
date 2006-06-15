@@ -346,7 +346,7 @@ tResult cEntityCmdUI::EntityCmdUIComponentFactory(const TiXmlElement * pTiXmlEle
             LocalMsg3("Entity type %s supports command %s (%d args)\n", typeName.c_str(), pszCmdName, args.size());
 
             tEntityCmdInstance cmdInst = NULL;
-            if (pEntityCommandManager->CompileCommand(pszCmdName, &args[0], args.size(), &cmdInst) == S_OK)
+            if (pEntityCommandManager->CompileCommand(pszCmdName, args.empty() ? NULL : &args[0], args.size(), &cmdInst) == S_OK)
             {
                pEntityCmdUI->m_entityTypeCmdMap.insert(std::make_pair(typeName, cEntityCmdInfo(pszCmdImage, pszCmdToolTip, cmdInst)));
             }

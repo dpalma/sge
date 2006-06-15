@@ -47,7 +47,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include,..\..\script\include,..\..\sound\include,..\..\rendergl\include"
+				AdditionalIncludeDirectories="..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include,..\..\script\include,..\..\sound\include,..\..\rendergl\include,..\..\platform\include"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,WIN32,_WINDOWS,TIXML_USE_STL"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -143,7 +143,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include,..\..\script\include,..\..\sound\include,..\..\rendergl\include"
+				AdditionalIncludeDirectories="..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include,..\..\script\include,..\..\sound\include,..\..\rendergl\include,..\..\platform\include"
 				PreprocessorDefinitions="TIXML_USE_STL,_WINDOWS,NDEBUG,WIN32,HAVE_CPPUNITLITE2"
 				StringPooling="true"
 				RuntimeLibrary="3"
@@ -241,7 +241,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include,..\..\script\include,..\..\sound\include,..\..\rendergl\include"
+				AdditionalIncludeDirectories="..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include,..\..\script\include,..\..\sound\include,..\..\rendergl\include,..\..\platform\include"
 				PreprocessorDefinitions="_DEBUG,WIN32,_WINDOWS,TIXML_USE_STL,HAVE_CPPUNITLITE2"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -339,7 +339,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include,..\..\script\include,..\..\sound\include,..\..\rendergl\include"
+				AdditionalIncludeDirectories="..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include,..\..\script\include,..\..\sound\include,..\..\rendergl\include,..\..\platform\include"
 				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,WIN32,_WINDOWS,TIXML_USE_STL,HAVE_CPPUNITLITE2"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -437,7 +437,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include,..\..\script\include,..\..\sound\include,..\..\rendergl\include"
+				AdditionalIncludeDirectories="..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include,..\..\script\include,..\..\sound\include,..\..\rendergl\include,..\..\platform\include"
 				PreprocessorDefinitions="NDEBUG,WIN32,_WINDOWS,TIXML_USE_STL"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -509,10 +509,6 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
-			<File
-				RelativePath="..\..\game\entityui.cpp"
-				>
-			</File>
 			<File
 				RelativePath="..\..\game\game.rc"
 				>
@@ -610,10 +606,6 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl"
 			>
-			<File
-				RelativePath="..\..\game\entityui.h"
-				>
-			</File>
 			<File
 				RelativePath="..\..\game\script.h"
 				>
