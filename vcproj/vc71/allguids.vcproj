@@ -21,7 +21,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\rendergl\include,..\..\engine\include,..\..\game,..\..\editor,..\..\gui\include,..\..\network\include,..\..\script\include,..\..\sound\include"
+				AdditionalIncludeDirectories="..\..\tech\include,..\..\rendergl\include,..\..\engine\include,..\..\game,..\..\editor,..\..\gui\include,..\..\network\include,..\..\script\include,..\..\sound\include,..\..\platform\include"
 				PreprocessorDefinitions="_DEBUG,STRICT,WIN32,_LIB,NO_AUTO_EXPORTS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -71,7 +71,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\rendergl\include,..\..\engine\include,..\..\game,..\..\editor,..\..\gui\include,..\..\network\include,..\..\script\include,..\..\sound\include"
+				AdditionalIncludeDirectories="..\..\tech\include,..\..\rendergl\include,..\..\engine\include,..\..\game,..\..\editor,..\..\gui\include,..\..\network\include,..\..\script\include,..\..\sound\include,..\..\platform\include"
 				PreprocessorDefinitions="STRICT,_LIB,OPT,NDEBUG,WIN32"
 				StringPooling="TRUE"
 				RuntimeLibrary="3"
@@ -122,7 +122,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\rendergl\include,..\..\engine\include,..\..\game,..\..\editor,..\..\gui\include,..\..\network\include,..\..\script\include,..\..\sound\include"
+				AdditionalIncludeDirectories="..\..\tech\include,..\..\rendergl\include,..\..\engine\include,..\..\game,..\..\editor,..\..\gui\include,..\..\network\include,..\..\script\include,..\..\sound\include,..\..\platform\include"
 				PreprocessorDefinitions="NDEBUG,STRICT,WIN32,_LIB"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -172,7 +172,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\rendergl\include,..\..\engine\include,..\..\game,..\..\editor,..\..\gui\include,..\..\network\include,..\..\script\include,..\..\sound\include"
+				AdditionalIncludeDirectories="..\..\tech\include,..\..\rendergl\include,..\..\engine\include,..\..\game,..\..\editor,..\..\gui\include,..\..\network\include,..\..\script\include,..\..\sound\include,..\..\platform\include"
 				PreprocessorDefinitions="NDEBUG,STRICT,WIN32,_LIB,NO_AUTO_EXPORTS"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -222,7 +222,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\rendergl\include,..\..\engine\include,..\..\game,..\..\editor,..\..\gui\include,..\..\network\include,..\..\script\include,..\..\sound\include"
+				AdditionalIncludeDirectories="..\..\tech\include,..\..\rendergl\include,..\..\engine\include,..\..\game,..\..\editor,..\..\gui\include,..\..\network\include,..\..\script\include,..\..\sound\include,..\..\platform\include"
 				PreprocessorDefinitions="_DEBUG,STRICT,WIN32,_LIB"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
