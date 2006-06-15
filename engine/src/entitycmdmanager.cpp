@@ -12,6 +12,8 @@
 #include "dbgalloc.h" // must be last header
 
 
+extern void RegisterBuiltinEntityCommands();
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cEntityCmdInstance
@@ -29,13 +31,21 @@ cEntityCmdInstance::cEntityCmdInstance()
 cEntityCmdInstance::cEntityCmdInstance(tEntityCommandFn pfn, const cMultiVar * pArgs, uint nArgs)
  : m_pfn(pfn)
 {
+   if (pArgs != NULL && nArgs > 0)
+   {
+      m_args.resize(nArgs);
+      for (uint i = 0; i < nArgs; i++)
+      {
+         m_args[i] = pArgs[i];
+      }
+   }
 }
 
 ////////////////////////////////////////
 
 cEntityCmdInstance::cEntityCmdInstance(const cEntityCmdInstance & other)
  : m_pfn(other.m_pfn)
- , m_args(other.m_args)
+ , m_args(other.m_args.size())
 {
    std::copy(other.m_args.begin(), other.m_args.end(), m_args.begin());
 }
@@ -81,6 +91,7 @@ cEntityCmdManager::~cEntityCmdManager()
 
 tResult cEntityCmdManager::Init()
 {
+   RegisterBuiltinEntityCommands();
    return S_OK;
 }
 

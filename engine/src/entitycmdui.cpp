@@ -34,6 +34,11 @@ LOG_DEFINE_CHANNEL(EntityCmdUI);
 ///////////////////////////////////////////////////////////////////////////////
 
 static const tChar g_szEntityCmdUIComponent[] = _T("commands");
+static const char g_szElementCommand[] = "command";
+static const char g_szElementArgument[] = "argument";
+static const char g_szAttribName[] = "name";
+static const char g_szAttribImage[] = "image";
+static const char g_szAttribToolTip[] = "tooltip";
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -112,12 +117,15 @@ tResult cEntityCmdUI::Init()
 
 tResult cEntityCmdUI::Term()
 {
+   SafeRelease(m_pTargetEntity);
+   m_activeCmds.clear();
+
    UseGlobal(GUIContext);
    pGUIContext->RemoveEventListener(static_cast<IGUIEventListener*>(this));
 
    UseGlobal(EntityManager);
    pEntityManager->RemoveEntityManagerListener(static_cast<IEntityManagerListener*>(this));
-   pEntityManager->RevokeComponentFactory(_T("commands"));
+   pEntityManager->RevokeComponentFactory(g_szEntityCmdUIComponent);
 
    return S_OK;
 }
@@ -126,7 +134,8 @@ tResult cEntityCmdUI::Term()
 
 void cEntityCmdUI::OnEntitySelectionChange()
 {
-   //ClearGUIElements();
+   SafeRelease(m_pTargetEntity);
+   m_activeCmds.clear();
 
    UseGlobal(GUIContext);
    cAutoIPtr<IGUIElement> pPanelElement;
@@ -136,12 +145,12 @@ void cEntityCmdUI::OnEntitySelectionChange()
       if (pPanelElement->QueryInterface(IID_IGUIContainerElement, (void**)&pContainer) == S_OK)
       {
          pContainer->RemoveAll();
-         pGUIContext->RequestLayout(pContainer);
       }
    }
 
    if (!pContainer)
    {
+      WarnMsg1("Unable to find entity command panel element with id %s\n", m_entityPanelId.c_str());
       return;
    }
 
@@ -158,24 +167,65 @@ void cEntityCmdUI::OnEntitySelectionChange()
             cStr typeName;
             if (pEntity->GetTypeName(&typeName) == S_OK)
             {
+               m_pTargetEntity = pEntity; // No AddRef--assigning smart pointers
+
+               uint index = 0;
                tEntityTypeCmdMap::iterator first = m_entityTypeCmdMap.lower_bound(typeName);
                tEntityTypeCmdMap::iterator last = m_entityTypeCmdMap.upper_bound(typeName);
-               for (tEntityTypeCmdMap::iterator iter = first; iter != last; iter++)
+               for (tEntityTypeCmdMap::iterator iter = first; iter != last; iter++, index++)
                {
                   const cEntityCmdInfo & cmdInfo = iter->second;
+
+                  cAutoIPtr<IGUIButtonElement> pButton;
+                  if (GUIButtonCreate(&pButton) == S_OK)
+                  {
+                     cStr id;
+                     pButton->SetId(Sprintf(&id, "%sCmd%d", typeName.c_str(), index).c_str());
+                     m_activeCmds[id] = cmdInfo.GetCmdInstance();
+                     Verify(pButton->SetText(cmdInfo.GetToolTip()) == S_OK);
+                     Verify(pContainer->AddElement(pButton) == S_OK);
+                  }
                }
             }
-
-            //pGUIContext->RequestLayout(pContainer);
          }
       }
    }
+
+   pGUIContext->RequestLayout(pContainer);
 }
 
 ////////////////////////////////////////
 
 tResult cEntityCmdUI::OnEvent(IGUIEvent * pEvent)
 {
+   if (pEvent == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (!!m_pTargetEntity && !m_activeCmds.empty())
+   {
+      tGUIEventCode eventCode;
+      if (pEvent->GetEventCode(&eventCode) == S_OK
+         && eventCode == kGUIEventClick)
+      {
+         cAutoIPtr<IGUIElement> pClicked;
+         if (pEvent->GetSourceElement(&pClicked) == S_OK)
+         {
+            cStr id;
+            if (pClicked->GetId(&id) == S_OK)
+            {
+               tActiveCmdMap::iterator f = m_activeCmds.find(id);
+               if (f != m_activeCmds.end())
+               {
+                  UseGlobal(EntityCommandManager);
+                  pEntityCommandManager->ExecuteCommand(f->second, m_pTargetEntity);
+               }
+            }
+         }
+      }
+   }
+
    return S_OK;
 }
 
@@ -225,7 +275,7 @@ static tResult EntityCmdParseArgs(const TiXmlElement * pElement, std::vector<cMu
       pChild != NULL; pChild = pChild->NextSiblingElement())
    {
       const char * pszValue = pChild->Attribute("value");
-      if (_stricmp(pChild->Value(), "argument") == 0 && pszValue != NULL)
+      if (_stricmp(pChild->Value(), g_szElementArgument) == 0 && pszValue != NULL)
       {
          pArgs->push_back(cMultiVar(pszValue));
          count++;
@@ -257,8 +307,10 @@ tResult cEntityCmdUI::EntityCmdUIComponentFactory(const TiXmlElement * pTiXmlEle
    }
 
 #ifdef _DEBUG
-   UseGlobal(EntityCommandUI);
-   Assert(CTIsSameObject(pEntityCommandUI, static_cast<IEntityCommandUI*>(pEntityCmdUI)));
+   {
+      UseGlobal(EntityCommandUI);
+      Assert(CTIsSameObject(pEntityCommandUI, static_cast<IEntityCommandUI*>(pEntityCmdUI)));
+   }
 #endif
 
    cStr typeName;
@@ -281,11 +333,11 @@ tResult cEntityCmdUI::EntityCmdUIComponentFactory(const TiXmlElement * pTiXmlEle
    {
       Assert(pTiXmlChild->Type() == TiXmlNode::ELEMENT);
 
-      const char * pszCmdName = pTiXmlChild->Attribute("name");
-      const char * pszCmdImage = pTiXmlChild->Attribute("image");
-      const char * pszCmdToolTip = pTiXmlChild->Attribute("tooltip");
+      const char * pszCmdName = pTiXmlChild->Attribute(g_szAttribName);
+      const char * pszCmdImage = pTiXmlChild->Attribute(g_szAttribImage);
+      const char * pszCmdToolTip = pTiXmlChild->Attribute(g_szAttribToolTip);
 
-      if (_stricmp(pTiXmlChild->Value(), "command") == 0
+      if (_stricmp(pTiXmlChild->Value(), g_szElementCommand) == 0
          && pszCmdName != NULL)
       {
          std::vector<cMultiVar> args;

@@ -41,14 +41,9 @@ tResult EntityCommandSetRallyPoint(IEntity * pEntity, const cMultiVar * pArgs, u
 
 void RegisterBuiltinEntityCommands()
 {
-   static bool bCalledOnce = false;
-   if (!bCalledOnce)
-   {
-      UseGlobal(EntityCommandManager);
-      pEntityCommandManager->RegisterCommand(_T("Spawn"), EntityCommandSpawn);
-      pEntityCommandManager->RegisterCommand(_T("SetRallyPoint"), EntityCommandSetRallyPoint);
-      bCalledOnce = true;
-   }
+   UseGlobal(EntityCommandManager);
+   pEntityCommandManager->RegisterCommand(_T("Spawn"), EntityCommandSpawn);
+   pEntityCommandManager->RegisterCommand(_T("SetRallyPoint"), EntityCommandSetRallyPoint);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

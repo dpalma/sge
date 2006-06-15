@@ -75,6 +75,11 @@ private:
 
    typedef std::multimap<cStr, cEntityCmdInfo> tEntityTypeCmdMap;
    tEntityTypeCmdMap m_entityTypeCmdMap;
+
+   cAutoIPtr<IEntity> m_pTargetEntity;
+
+   typedef std::map<cStr, tEntityCmdInstance> tActiveCmdMap;
+   tActiveCmdMap m_activeCmds;
 };
 
 
