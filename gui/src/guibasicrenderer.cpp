@@ -69,7 +69,7 @@ tResult cGUIBasicRenderer::Render(IGUIElement * pElement, const tGUIPoint & posi
 
 ///////////////////////////////////////
 
-tResult cGUIBasicRenderer::GetPreferredSize(IGUIElement * pElement, tGUISize * pSize)
+tResult cGUIBasicRenderer::GetPreferredSize(IGUIElement * pElement, const tGUISize & parentSize, tGUISize * pSize)
 {
    if (pElement == NULL || pSize == NULL)
    {
@@ -94,6 +94,13 @@ tResult cGUIBasicRenderer::GetPreferredSize(IGUIElement * pElement, tGUISize * p
    }
 
    return E_FAIL;
+}
+
+///////////////////////////////////////
+
+tResult cGUIBasicRenderer::AllocateBorderSpace(IGUIElement * pElement, tGUIRect * pRect)
+{
+   return E_NOTIMPL;
 }
 
 ///////////////////////////////////////

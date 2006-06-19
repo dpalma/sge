@@ -175,17 +175,11 @@ cGUIGridLayout::~cGUIGridLayout()
 
 ///////////////////////////////////////
 
-tResult cGUIGridLayout::Layout(IGUIElement * pParent)
+tResult cGUIGridLayout::Layout(IGUIElement * pParent, const tGUIRect & rect)
 {
    if (pParent == NULL)
    {
       return E_POINTER;
-   }
-
-   tGUIRect clientArea;
-   if (FAILED(pParent->GetClientArea(&clientArea)))
-   {
-      return E_FAIL;
    }
 
    if (m_rows == 0 || m_columns == 0)
@@ -195,8 +189,8 @@ tResult cGUIGridLayout::Layout(IGUIElement * pParent)
       return E_FAIL;
    }
 
-   int cellWidth = ((clientArea.GetWidth() - ((m_columns - 1) * m_hGap)) / m_columns);
-   int cellHeight = ((clientArea.GetHeight() - ((m_rows - 1) * m_vGap)) / m_rows);
+   int cellWidth = ((rect.GetWidth() - ((m_columns - 1) * m_hGap)) / m_columns);
+   int cellHeight = ((rect.GetHeight() - ((m_rows - 1) * m_vGap)) / m_rows);
 
    if (cellWidth < 0 || cellHeight < 0)
    {
@@ -243,8 +237,8 @@ tResult cGUIGridLayout::Layout(IGUIElement * pParent)
 
                pChildren[i]->SetSize(childSize);
 
-               int x = clientArea.left + iCol * (cellWidth + m_hGap);
-               int y = clientArea.top + iRow * (cellHeight + m_vGap);
+               int x = rect.left + iCol * (cellWidth + m_hGap);
+               int y = rect.top + iRow * (cellHeight + m_vGap);
 
                tGUIRect cellRect(x, y, x + cellWidth, y + cellHeight);
                GUIPlaceElement(cellRect, pChildren[i]);
@@ -487,28 +481,22 @@ cGUIFlowLayout::~cGUIFlowLayout()
 
 ///////////////////////////////////////
 
-tResult cGUIFlowLayout::Layout(IGUIElement * pParent)
+tResult cGUIFlowLayout::Layout(IGUIElement * pParent, const tGUIRect & rect)
 {
    if (pParent == NULL)
    {
       return E_POINTER;
    }
 
-   tGUIRect clientArea;
-   if (FAILED(pParent->GetClientArea(&clientArea)))
-   {
-      return E_FAIL;
-   }
-
    const tGUISize clientSize(
-      static_cast<tGUISizeType>(clientArea.GetWidth()),
-      static_cast<tGUISizeType>(clientArea.GetHeight()));
+      static_cast<tGUISizeType>(rect.GetWidth()),
+      static_cast<tGUISizeType>(rect.GetHeight()));
 
    cAutoIPtr<IGUIElementEnum> pEnum;
    if (pParent->EnumChildren(&pEnum) == S_OK)
    {
-      int x = clientArea.left;
-      int y = clientArea.top;
+      int x = rect.left;
+      int y = rect.top;
 
       int nChildrenThisRow = 0;
 
@@ -524,10 +512,10 @@ tResult cGUIFlowLayout::Layout(IGUIElement * pParent)
             GUIPlaceElement(rect, pChild);
             x += FloatToInt(childSize.width + m_hGap);
             nChildrenThisRow++;
-            if (x >= clientArea.right)
+            if (x >= rect.right)
             {
                y += FloatToInt(childSize.height + m_vGap);
-               x = clientArea.left;
+               x = rect.left;
                nChildrenThisRow = 0;
             }
          }

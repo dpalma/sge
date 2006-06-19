@@ -80,6 +80,8 @@ public:
 
    void PlaceElement(IGUIElement * pElement);
 
+   const tGUIRect & GetRect() const { return m_rect; }
+
 private:
    tGUIRect m_rect;
    bool m_bLTR;
@@ -119,7 +121,7 @@ private:
                       cInterfaceHashFunction<IGUIElement> > tFlowTable;
    tFlowTable m_flowTable;
 
-   std::queue<IGUIContainerElement*> m_layoutQueue;
+   std::queue<std::pair<IGUIContainerElement*, tGUIRect> > m_layoutQueue;
 
    cAutoIPtr<IGUIElement> m_pRequester; // element requesting layout
 

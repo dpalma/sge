@@ -349,7 +349,7 @@ interface IGUIScriptElement : IGUIElement
 
 interface IGUILayoutManager : IUnknown
 {
-   virtual tResult Layout(IGUIElement * pParent) = 0;
+   virtual tResult Layout(IGUIElement * pParent, const tGUIRect & rect) = 0;
    virtual tResult GetPreferredSize(IGUIElement * pParent, tGUISize * pSize) = 0;
 
    virtual tResult GetHGap(uint * pHGap) = 0;

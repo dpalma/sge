@@ -25,7 +25,7 @@ public:
    cGUIGridLayout(uint columns, uint rows, uint hGap, uint vGap);
    ~cGUIGridLayout();
 
-   virtual tResult Layout(IGUIElement * pParent);
+   virtual tResult Layout(IGUIElement * pParent, const tGUIRect & rect);
    virtual tResult GetPreferredSize(IGUIElement * pParent, tGUISize * pSize);
 
    virtual tResult GetHGap(uint * pHGap);
@@ -59,7 +59,7 @@ public:
    cGUIFlowLayout(uint hGap, uint vGap);
    ~cGUIFlowLayout();
 
-   virtual tResult Layout(IGUIElement * pParent);
+   virtual tResult Layout(IGUIElement * pParent, const tGUIRect & rect);
    virtual tResult GetPreferredSize(IGUIElement * pParent, tGUISize * pSize);
 
    virtual tResult GetHGap(uint * pHGap);

@@ -23,7 +23,8 @@ public:
    ~cGUIBasicRenderer();
 
    virtual tResult Render(IGUIElement * pElement, const tGUIPoint & position, IGUIRenderDevice * pRenderDevice);
-   virtual tResult GetPreferredSize(IGUIElement * pElement, tGUISize * pSize);
+   virtual tResult GetPreferredSize(IGUIElement * pElement, const tGUISize & parentSize, tGUISize * pSize);
+   virtual tResult AllocateBorderSpace(IGUIElement * pElement, tGUIRect * pRect);
 
 private:
    tResult LabelRender(IGUIElement * pElement, IGUIRenderDevice * pRenderDevice);

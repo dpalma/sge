@@ -148,7 +148,7 @@ tResult cGUIListBoxElement::ComputeClientArea(IGUIElementRenderer * pRenderer, t
    if (!!m_pVScrollBar && m_pVScrollBar->IsVisible())
    {
       tGUISize scrollBarSize(0,0);
-      if (pRenderer->GetPreferredSize(m_pVScrollBar, &scrollBarSize) == S_OK)
+      if (pRenderer->GetPreferredSize(m_pVScrollBar, GetSize(), &scrollBarSize) == S_OK)
       {
          scrollBarSize.height = static_cast<tGUISizeType>(pClientArea->GetHeight());
          LocalMsg2("Vertical scrollbar size %.0f x %.0f\n", scrollBarSize.width, scrollBarSize.height);

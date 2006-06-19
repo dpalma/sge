@@ -113,7 +113,7 @@ tResult cGUIBeveledRenderer::Render(IGUIElement * pElement, const tGUIPoint & po
 
 ///////////////////////////////////////
 
-tResult cGUIBeveledRenderer::GetPreferredSize(IGUIElement * pElement, tGUISize * pSize)
+tResult cGUIBeveledRenderer::GetPreferredSize(IGUIElement * pElement, const tGUISize & parentSize, tGUISize * pSize)
 {
    if (pElement == NULL || pSize == NULL)
    {
@@ -125,12 +125,36 @@ tResult cGUIBeveledRenderer::GetPreferredSize(IGUIElement * pElement, tGUISize *
       cAutoIPtr<IGUIElement> pElement2;
       if (pElement->QueryInterface(*(gm_methodTable[i].pIID), (void**)&pElement2) == S_OK)
       {
-         *pSize = (this->*(gm_methodTable[i].pfnPreferredSize))(pElement2);
+         *pSize = (this->*(gm_methodTable[i].pfnPreferredSize))(pElement2, parentSize);
          return S_OK;
       }
    }
 
    return E_FAIL;
+}
+
+///////////////////////////////////////
+
+tResult cGUIBeveledRenderer::AllocateBorderSpace(IGUIElement * pElement, tGUIRect * pRect)
+{
+   if (pElement == NULL || pRect == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cAutoIPtr<IGUIStyle> pStyle;
+   if (pElement->GetStyle(&pStyle) == S_OK)
+   {
+      int bevel = kDefaultBevel;
+      pStyle->GetAttribute(_T("beveled-bevel"), &bevel);
+      pRect->left += bevel;
+      pRect->top += bevel;
+      pRect->right -= bevel;
+      pRect->bottom -= bevel;
+      return S_OK;
+   }
+
+   return S_FALSE;
 }
 
 ///////////////////////////////////////
@@ -193,7 +217,7 @@ tResult cGUIBeveledRenderer::ButtonRender(IGUIElement * pElement, const tGUIPoin
 
 ///////////////////////////////////////
 
-tGUISize cGUIBeveledRenderer::ButtonPreferredSize(IGUIElement * pElement) const
+tGUISize cGUIBeveledRenderer::ButtonPreferredSize(IGUIElement * pElement, const tGUISize & parentSize) const
 {
    IGUIButtonElement * pButtonElement = (IGUIButtonElement *)pElement;
 
@@ -247,7 +271,7 @@ tResult cGUIBeveledRenderer::LabelRender(IGUIElement * pElement, const tGUIPoint
 
 ///////////////////////////////////////
 
-tGUISize cGUIBeveledRenderer::LabelPreferredSize(IGUIElement * pElement) const
+tGUISize cGUIBeveledRenderer::LabelPreferredSize(IGUIElement * pElement, const tGUISize & parentSize) const
 {
    IGUILabelElement * pLabelElement = (IGUILabelElement *)pElement;
 
@@ -359,7 +383,7 @@ tResult cGUIBeveledRenderer::ListBoxRender(IGUIElement * pElement, const tGUIPoi
 
 ///////////////////////////////////////
 
-tGUISize cGUIBeveledRenderer::ListBoxPreferredSize(IGUIElement * pElement) const
+tGUISize cGUIBeveledRenderer::ListBoxPreferredSize(IGUIElement * pElement, const tGUISize & parentSize) const
 {
    IGUIListBoxElement * pListBoxElement = (IGUIListBoxElement *)pElement;
 
@@ -451,7 +475,7 @@ tResult cGUIBeveledRenderer::ScrollBarRender(IGUIElement * pElement, const tGUIP
 
 ///////////////////////////////////////
 
-tGUISize cGUIBeveledRenderer::ScrollBarPreferredSize(IGUIElement * pElement) const
+tGUISize cGUIBeveledRenderer::ScrollBarPreferredSize(IGUIElement * pElement, const tGUISize & parentSize) const
 {
    IGUIScrollBarElement * pScrollBarElement = (IGUIScrollBarElement *)pElement;
 
@@ -542,7 +566,7 @@ tResult cGUIBeveledRenderer::TextEditRender(IGUIElement * pElement, const tGUIPo
 
 ///////////////////////////////////////
 
-tGUISize cGUIBeveledRenderer::TextEditPreferredSize(IGUIElement * pElement) const
+tGUISize cGUIBeveledRenderer::TextEditPreferredSize(IGUIElement * pElement, const tGUISize & parentSize) const
 {
    IGUITextEditElement * pTextEditElement = (IGUITextEditElement *)pElement;
 
@@ -606,7 +630,7 @@ tResult cGUIBeveledRenderer::TitleBarRender(IGUIElement * pElement, const tGUIPo
 
 ///////////////////////////////////////
 
-tGUISize cGUIBeveledRenderer::TitleBarPreferredSize(IGUIElement * pElement) const
+tGUISize cGUIBeveledRenderer::TitleBarPreferredSize(IGUIElement * pElement, const tGUISize & parentSize) const
 {
    IGUITitleBarElement * pTitleBarElement = (IGUITitleBarElement *)pElement;
 
@@ -624,15 +648,7 @@ tGUISize cGUIBeveledRenderer::TitleBarPreferredSize(IGUIElement * pElement) cons
             size.height = static_cast<tGUISizeType>(titleSize.GetHeight());
          }
 
-         cAutoIPtr<IGUIElement> pParent;
-         if (pElement->GetParent(&pParent) == S_OK)
-         {
-            tGUIRect parentClientArea;
-            if (SUCCEEDED(pParent->GetClientArea(&parentClientArea)))
-            {
-               size.width = static_cast<tGUISizeType>(parentClientArea.GetWidth());
-            }
-         }
+         size.width = parentSize.width;
 
          return size;
       }
@@ -655,7 +671,7 @@ tResult cGUIBeveledRenderer::ContainerRender(IGUIElement * pElement, const tGUIP
 
 ///////////////////////////////////////
 
-tGUISize cGUIBeveledRenderer::ContainerPreferredSize(IGUIElement * pElement) const
+tGUISize cGUIBeveledRenderer::ContainerPreferredSize(IGUIElement * pElement, const tGUISize & parentSize) const
 {
    cAutoIPtr<IGUILayoutManager> pLayout;
    if (((IGUIContainerElement*)pElement)->GetLayout(&pLayout) == S_OK)

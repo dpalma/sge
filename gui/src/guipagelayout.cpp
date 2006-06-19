@@ -53,17 +53,17 @@ static tGUIString GUIElementIdentify(IGUIElement * pElement)
 ///////////////////////////////////////////////////////////////////////////////
 
 static tResult GUIElementSize(IGUIElement * pElement, IGUIElementRenderer * pRenderer,
-                              const tGUISize & baseSize, tGUISize * pSize)
+                              const tGUISize & parentSize, tGUISize * pSize)
 {
    tGUISize preferredSize;
-   bool bHavePreferredSize = (pRenderer->GetPreferredSize(pElement, &preferredSize) == S_OK);
+   bool bHavePreferredSize = (pRenderer->GetPreferredSize(pElement, parentSize, &preferredSize) == S_OK);
 
    cAutoIPtr<IGUIStyle> pStyle;
    if (pElement->GetStyle(&pStyle) == S_OK)
    {
       tGUISize styleSize(0,0);
 
-      if (GUIStyleWidth(pStyle, baseSize.width, &styleSize.width) != S_OK)
+      if (GUIStyleWidth(pStyle, parentSize.width, &styleSize.width) != S_OK)
       {
          if (bHavePreferredSize)
          {
@@ -75,7 +75,7 @@ static tResult GUIElementSize(IGUIElement * pElement, IGUIElementRenderer * pRen
          }
       }
 
-      if (GUIStyleHeight(pStyle, baseSize.height, &styleSize.height) != S_OK)
+      if (GUIStyleHeight(pStyle, parentSize.height, &styleSize.height) != S_OK)
       {
          if (bHavePreferredSize)
          {
@@ -304,13 +304,14 @@ cGUIPageLayout::~cGUIPageLayout()
 {
    while (!m_layoutQueue.empty())
    {
-      cAutoIPtr<IGUIContainerElement> pContainer(m_layoutQueue.front());
+      cAutoIPtr<IGUIContainerElement> pContainer(m_layoutQueue.front().first);
+      tGUIRect containerRect(m_layoutQueue.front().second);
       m_layoutQueue.pop();
 
       cAutoIPtr<IGUILayoutManager> pLayout;
       if (pContainer->GetLayout(&pLayout) == S_OK)
       {
-         pLayout->Layout(pContainer);
+         pLayout->Layout(pContainer, containerRect);
       }
    }
 
@@ -346,7 +347,19 @@ tResult cGUIPageLayout::operator ()(IGUIElement * pElement, IGUIElementRenderer 
       cAutoIPtr<IGUIElement> pParent;
       if (pElement->GetParent(&pParent) == S_OK)
       {
-         parentSize = pParent->GetSize();
+         tGUIRect parentRect;
+         tFlowTable::iterator f = m_flowTable.find(tGUIElementKey(CTAddRef(pParent)));
+         if (f != m_flowTable.end())
+         {
+            parentRect = f->second->GetRect();
+            parentSize = tGUISize(static_cast<tGUISizeType>(parentRect.GetWidth()),
+                                  static_cast<tGUISizeType>(parentRect.GetHeight()));
+         }
+         else if (SUCCEEDED(pParent->GetClientArea(&parentRect)))
+         {
+            parentSize = tGUISize(static_cast<tGUISizeType>(parentRect.GetWidth()),
+                                  static_cast<tGUISizeType>(parentRect.GetHeight()));
+         }
       }
       else
       {
@@ -387,7 +400,10 @@ tResult cGUIPageLayout::operator ()(IGUIElement * pElement, IGUIElementRenderer 
    }
 
    tGUIRect clientArea(0, 0, FloatToInt(elementSize.width), FloatToInt(elementSize.height));
-   // TODO: Allow renderer to allocate space for borders
+
+   // Allow renderer to allocate space for borders
+   pRenderer->AllocateBorderSpace(pElement, &clientArea);
+
    tResult computeClientAreaResult = pElement->ComputeClientArea(pRenderer, &clientArea);
    if (SUCCEEDED(computeClientAreaResult))
    {
@@ -405,7 +421,7 @@ tResult cGUIPageLayout::operator ()(IGUIElement * pElement, IGUIElementRenderer 
       if (pContainer->GetLayout(&pLayout) == S_OK)
       {
          LocalMsg1("Element %s has a layout manager\n", GUIElementIdentify(pElement).c_str());
-         m_layoutQueue.push(CTAddRef(pContainer));
+         m_layoutQueue.push(std::make_pair(static_cast<IGUIContainerElement*>(CTAddRef(pContainer)), clientArea));
       }
       else
       {
