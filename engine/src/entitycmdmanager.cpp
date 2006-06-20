@@ -64,7 +64,7 @@ const cEntityCmdInstance cEntityCmdInstance::operator =(const cEntityCmdInstance
 
 tResult cEntityCmdInstance::Invoke(IEntity * pEntity)
 {
-   return (m_pfn != NULL) ? (*m_pfn)(pEntity, &m_args[0], m_args.size()) : E_FAIL;
+   return (m_pfn != NULL) ? (*m_pfn)(pEntity, m_args.empty() ? NULL : &m_args[0], m_args.size()) : E_FAIL;
 }
 
 
