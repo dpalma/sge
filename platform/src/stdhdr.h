@@ -12,4 +12,6 @@
 #pragma once
 #endif
 
+#pragma warning(disable:4355) // 'this' used in base member initializer list
+
 #endif // !INCLUDED_STDHDR_H

@@ -61,7 +61,8 @@ inline long KeyGetBindable(long key)
 ///////////////////////////////////////
 
 cInput::cInput()
- : m_oldMouseState(0)
+ : m_modalListeners(this)
+ , m_oldMouseState(0)
 {
    memset(m_keyRepeats, 0, sizeof(m_keyRepeats));
    memset(m_keyDownBindings, 0, sizeof(m_keyDownBindings));
@@ -87,8 +88,12 @@ tResult cInput::Init()
       Assert(_CrtIsValidHeapPointer(m_keyUpBindings[i]) || m_keyUpBindings[i] == NULL);
    }
 #endif
+
    SysSetKeyEventCallback(OnSysKeyEvent, reinterpret_cast<uint_ptr>(this));
    SysSetMouseEventCallback(OnSysMouseEvent, reinterpret_cast<uint_ptr>(this));
+
+   AddInputListener(&m_modalListeners, kILP_ModalListeners);
+
    return S_OK;
 }
 
@@ -96,8 +101,11 @@ tResult cInput::Init()
 
 tResult cInput::Term()
 {
+   RemoveInputListener(&m_modalListeners);
+
    SysSetKeyEventCallback(NULL, 0);
    SysSetMouseEventCallback(NULL, 0);
+
    Assert(_countof(m_keyDownBindings) == _countof(m_keyUpBindings));
    for (int i = 0; i < _countof(m_keyDownBindings); i++)
    {
@@ -106,6 +114,7 @@ tResult cInput::Term()
       delete [] m_keyUpBindings[i];
       m_keyUpBindings[i] = NULL;
    }
+
    return S_OK;
 }
 
@@ -190,6 +199,29 @@ void cInput::KeyUnbind(long key)
 
 ///////////////////////////////////////
 
+tResult cInput::PushModalListener(IInputModalListener * pModalListener)
+{
+   return m_modalListeners.PushModalListener(pModalListener);
+}
+
+///////////////////////////////////////
+
+tResult cInput::PopModalListener()
+{
+   return m_modalListeners.PopModalListener();
+}
+
+///////////////////////////////////////
+
+tResult cInput::SetModalListenerPriority(int priority)
+{
+   RemoveInputListener(&m_modalListeners);
+   AddInputListener(&m_modalListeners, priority);
+   return S_OK;
+}
+
+///////////////////////////////////////
+
 bool cInput::DispatchInputEvent(int x, int y, long key, bool down, double time)
 {
    DebugMsgEx3(InputEvents, "%d %s %f\n", key, down ? "down" : "up", time);
@@ -211,13 +243,24 @@ bool cInput::DispatchInputEvent(int x, int y, long key, bool down, double time)
    event.point = cVec2<int>(x, y);
    event.time = time;
 
+   bool bGotToModalListeners = false;
+
    tSinksIterator iter = BeginSinks();
    tSinksIterator end = EndSinks();
    for (; iter != end; iter++)
    {
       if (iter->second->OnInputEvent(&event))
       {
+         if (!bGotToModalListeners)
+         {
+            m_modalListeners.CancelAll();
+         }
          return true; // do no further processing for this key event
+      }
+
+      if (CTIsSameObject(iter->second, &m_modalListeners))
+      {
+         bGotToModalListeners = true;
       }
    }
 
@@ -306,6 +349,67 @@ void cInput::ReportMouseEvent(int x, int y, uint mouseState, double time)
    }
 
    m_oldMouseState = mouseState;
+}
+
+///////////////////////////////////////
+
+cInput::cInputModalListeners::cInputModalListeners(cInput * pOuter)
+ : m_pOuter(pOuter)
+{
+}
+
+///////////////////////////////////////
+
+bool cInput::cInputModalListeners::OnInputEvent(const sInputEvent * pEvent)
+{
+   Assert(pEvent != NULL);
+   Assert(m_pOuter != NULL);
+
+   if (!m_modalListeners.empty())
+   {
+      cAutoIPtr<IInputModalListener> pModalListener(CTAddRef(m_modalListeners.top()));
+      Assert(!!pModalListener);
+      return pModalListener->OnInputEvent(pEvent);
+   }
+
+   return false;
+}
+
+///////////////////////////////////////
+
+tResult cInput::cInputModalListeners::PushModalListener(IInputModalListener * pModalListener)
+{
+   if (pModalListener == NULL)
+   {
+      return E_POINTER;
+   }
+   m_modalListeners.push(CTAddRef(pModalListener));
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cInput::cInputModalListeners::PopModalListener()
+{
+   if (m_modalListeners.empty())
+   {
+      return E_FAIL;
+   }
+   m_modalListeners.top()->Release();
+   m_modalListeners.pop();
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+void cInput::cInputModalListeners::CancelAll()
+{
+   while (!m_modalListeners.empty())
+   {
+      cAutoIPtr<IInputModalListener> pModalListener(m_modalListeners.top());
+      m_modalListeners.pop();
+      pModalListener->CancelMode();
+   }
 }
 
 ///////////////////////////////////////

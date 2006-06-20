@@ -10,8 +10,6 @@
 
 #include "axisalignedbox.h"
 
-#include <vector>
-
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -75,7 +73,7 @@ private:
 class cEntitySpawnComponent : public cComObject<IMPLEMENTS(IEntitySpawnComponent)>
 {
 public:
-   cEntitySpawnComponent(uint maxQueueSize, const std::vector<cStr> & spawnTypes);
+   cEntitySpawnComponent(uint maxQueueSize);
    ~cEntitySpawnComponent();
 
    virtual uint GetMaxQueueSize() const;
@@ -83,15 +81,9 @@ public:
    virtual tResult SetRallyPoint(const tVec3 & rallyPoint);
    virtual tResult GetRallyPoint(tVec3 * pRallyPoint) const;
 
-   virtual size_t GetSpawnTypeCount() const;
-   virtual tResult GetSpawnType(uint index, cStr * pType) const;
-
-   virtual tResult Spawn(const tChar * pszEntity);
-
 private:
    uint m_maxQueueSize;
    tVec3 m_rallyPoint;
-   std::vector<cStr> m_spawnTypes;
 };
 
 

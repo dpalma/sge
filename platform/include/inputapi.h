@@ -17,6 +17,7 @@ typedef class cVec2<float> tVec2;
 
 F_DECLARE_INTERFACE(IInput);
 F_DECLARE_INTERFACE(IInputListener);
+F_DECLARE_INTERFACE(IInputModalListener);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -28,7 +29,8 @@ F_DECLARE_INTERFACE(IInputListener);
 enum eInputListenerPriority
 {
    kILP_Default = 1,
-   kILP_GUI = 10, // GUI elements get first crack at messages because they overlay the game
+   kILP_ModalListeners = 50,
+   kILP_GUI = 100, // GUI elements get first crack at messages because they overlay the game
 };
 
 ////////////////////////////////////////
@@ -47,6 +49,9 @@ interface IInput : IUnknown
 
    virtual void KeyBind(long key, const char * pszDownCmd, const char * pszUpCmd) = 0;
    virtual void KeyUnbind(long key) = 0;
+
+   virtual tResult PushModalListener(IInputModalListener * pModalListener) = 0;
+   virtual tResult PopModalListener() = 0;
 };
 
 ////////////////////////////////////////
@@ -76,6 +81,18 @@ class cDefaultInputListener : public IInputListener
 {
    virtual bool OnInputEvent(const sInputEvent * pEvent) { return false; }
 };
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IInputModalListener
+//
+
+interface IInputModalListener : IInputListener
+{
+   virtual void CancelMode() = 0;
+};
+
 
 ///////////////////////////////////////////////////////////////////////////////
 

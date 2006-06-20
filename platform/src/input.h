@@ -8,6 +8,8 @@
 #include "globalobjdef.h"
 #include "connptimpl.h"
 
+#include <stack>
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -40,6 +42,10 @@ public:
    virtual void KeyBind(long key, const char * pszDownCmd, const char * pszUpCmd);
    virtual void KeyUnbind(long key);
 
+   virtual tResult PushModalListener(IInputModalListener * pModalListener);
+   virtual tResult PopModalListener();
+   tResult SetModalListenerPriority(int priority);
+
 private:
    void ReportKeyEvent(long key, bool down, double time);
    void ReportMouseEvent(int x, int y, uint mouseState, double time);
@@ -51,6 +57,22 @@ private:
 
    const char * KeyGetDownBinding(long key) const;
    const char * KeyGetUpBinding(long key) const;
+
+   class cInputModalListeners : public cComObject<IMPLEMENTS(IInputListener)>
+   {
+   public:
+      cInputModalListeners(cInput * pOuter);
+      virtual bool OnInputEvent(const sInputEvent * pEvent);
+      virtual tResult PushModalListener(IInputModalListener * pModalListener);
+      virtual tResult PopModalListener();
+      void CancelAll();
+   private:
+      cInput * m_pOuter;
+      std::stack<IInputModalListener*> m_modalListeners;
+   };
+
+   friend class cInputModalListeners;
+   cInputModalListeners m_modalListeners;
 
    enum { kMaxKeys = 256 };
    ulong m_keyRepeats[kMaxKeys];
