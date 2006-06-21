@@ -1,4 +1,4 @@
-﻿<!-- $Id$ -->
+<!-- $Id$ -->
 <?xml version="1.0" encoding="utf-8" ?> 
 <entity name="Zombie">
    
@@ -6,5 +6,14 @@
    </render>
    
    <position></position>
+   
+   <commands>
+      <command name="Move" tooltip="Move">
+      </command>
+      <command name="Attack" tooltip="Attack">
+      </command>
+      <command name="Stop" tooltip="Stop">
+      </command>
+   </commands>
    
 </entity>

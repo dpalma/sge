@@ -58,37 +58,8 @@ tResult EntityCommandSpawn(IEntity * pEntity, const cMultiVar * pArgs, uint nArg
    return S_OK;
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////
-
-class cSetRallyPointMode : public cComObject<IMPLEMENTS(IInputModalListener)>
-{
-public:
-   cSetRallyPointMode(IEntity * pEntity);
-   ~cSetRallyPointMode();
-
-   // TODO: Over-ride QI to support IInputListener too
-
-   virtual bool OnInputEvent(const sInputEvent * pEvent);
-   virtual void CancelMode();
-
-private:
-   cAutoIPtr<IEntity> m_pEntity;
-};
-
-////////////////////////////////////////
-
-cSetRallyPointMode::cSetRallyPointMode(IEntity * pEntity)
- : m_pEntity(CTAddRef(pEntity))
-{
-}
-
-////////////////////////////////////////
-
-cSetRallyPointMode::~cSetRallyPointMode()
-{
-}
-
-////////////////////////////////////////
 
 static bool GetTerrainLocation(const cRay & ray, tVec3 * pLocation)
 {
@@ -109,7 +80,51 @@ static bool GetTerrainLocation(const cRay & ray, tVec3 * pLocation)
    return false;
 }
 
-bool cSetRallyPointMode::OnInputEvent(const sInputEvent * pEvent)
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cTerrainClickInputMode
+//
+// Base class for input modes that require the player to choose
+// a point on the terrain (move, attack, set rally point, etc.)
+
+class cTerrainClickInputMode : public cComObject<IMPLEMENTS(IInputModalListener)>
+{
+public:
+   cTerrainClickInputMode(IEntity * pEntity);
+   virtual ~cTerrainClickInputMode();
+
+   // TODO: Over-ride QI to support IInputListener too
+
+   virtual bool OnInputEvent(const sInputEvent * pEvent);
+   virtual void CancelMode();
+
+protected:
+   IEntity * AccessEntity() { return m_pEntity; }
+   const IEntity * AccessEntity() const { return m_pEntity; }
+
+   virtual tResult OnTerrainClick(const tVec3 & location);
+
+private:
+   cAutoIPtr<IEntity> m_pEntity;
+};
+
+////////////////////////////////////////
+
+cTerrainClickInputMode::cTerrainClickInputMode(IEntity * pEntity)
+ : m_pEntity(CTAddRef(pEntity))
+{
+}
+
+////////////////////////////////////////
+
+cTerrainClickInputMode::~cTerrainClickInputMode()
+{
+}
+
+////////////////////////////////////////
+
+bool cTerrainClickInputMode::OnInputEvent(const sInputEvent * pEvent)
 {
    Assert(pEvent != NULL);
 
@@ -132,17 +147,7 @@ bool cSetRallyPointMode::OnInputEvent(const sInputEvent * pEvent)
 
             Assert(!!m_pEntity);
 
-            LocalMsg3("Set rally point to (%f, %f, %f)\n", location.x, location.y, location.z);
-
-            cAutoIPtr<IEntitySpawnComponent> pSpawnComponent;
-            if (m_pEntity->GetComponent(kECT_Spawn, IID_IEntitySpawnComponent, &pSpawnComponent) == S_OK)
-            {
-               pSpawnComponent->SetRallyPoint(location);
-            }
-
-            WarnMsgIf(!pSpawnComponent, "Attempting to set rally point for entity with no spawn component\n");
-
-            bResult = true;
+            bResult = (OnTerrainClick(location) == S_OK);
          }
       }
    }
@@ -152,9 +157,62 @@ bool cSetRallyPointMode::OnInputEvent(const sInputEvent * pEvent)
 
 ////////////////////////////////////////
 
-void cSetRallyPointMode::CancelMode()
+void cTerrainClickInputMode::CancelMode()
 {
-   LocalMsg("SetRallyPoint mode cancelled\n");
+}
+
+////////////////////////////////////////
+
+tResult cTerrainClickInputMode::OnTerrainClick(const tVec3 & location)
+{
+   return S_FALSE;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cSetRallyPointMode
+//
+
+class cSetRallyPointMode : public cTerrainClickInputMode
+{
+public:
+   cSetRallyPointMode(IEntity * pEntity);
+   ~cSetRallyPointMode();
+
+protected:
+   virtual tResult OnTerrainClick(const tVec3 & location);
+};
+
+////////////////////////////////////////
+
+cSetRallyPointMode::cSetRallyPointMode(IEntity * pEntity)
+ : cTerrainClickInputMode(pEntity)
+{
+}
+
+////////////////////////////////////////
+
+cSetRallyPointMode::~cSetRallyPointMode()
+{
+}
+
+////////////////////////////////////////
+
+tResult cSetRallyPointMode::OnTerrainClick(const tVec3 & location)
+{
+   LocalMsg3("Set rally point to (%f, %f, %f)\n", location.x, location.y, location.z);
+
+   cAutoIPtr<IEntitySpawnComponent> pSpawnComponent;
+   if (AccessEntity()->GetComponent(kECT_Spawn, IID_IEntitySpawnComponent, &pSpawnComponent) == S_OK)
+   {
+      pSpawnComponent->SetRallyPoint(location);
+      return S_OK;
+   }
+
+   WarnMsgIf(!pSpawnComponent, "Attempting to set rally point for entity with no spawn component\n");
+
+   return S_FALSE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -171,6 +229,68 @@ tResult EntityCommandSetRallyPoint(IEntity * pEntity, const cMultiVar * pArgs, u
    return S_OK;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cMoveMode
+//
+
+class cMoveMode : public cTerrainClickInputMode
+{
+public:
+   cMoveMode(IEntity * pEntity);
+   ~cMoveMode();
+
+protected:
+   virtual tResult OnTerrainClick(const tVec3 & location);
+};
+
+////////////////////////////////////////
+
+cMoveMode::cMoveMode(IEntity * pEntity)
+ : cTerrainClickInputMode(pEntity)
+{
+}
+
+////////////////////////////////////////
+
+cMoveMode::~cMoveMode()
+{
+}
+
+////////////////////////////////////////
+
+tResult cMoveMode::OnTerrainClick(const tVec3 & location)
+{
+   LocalMsg3("Issue move orders to (%f, %f, %f)\n", location.x, location.y, location.z);
+
+   cAutoIPtr<IEntityPositionComponent> pPositionComponent;
+   if (AccessEntity()->GetComponent(kECT_Position, IID_IEntityPositionComponent, &pPositionComponent) == S_OK)
+   {
+      Verify(pPositionComponent->SetPosition(location) == S_OK);
+      return S_OK;
+   }
+
+   WarnMsgIf(!pPositionComponent, "Attempting to move an entity with no position component\n");
+
+   return S_FALSE;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+tResult EntityCommandMove(IEntity * pEntity, const cMultiVar * pArgs, uint nArgs)
+{
+   cAutoIPtr<IInputModalListener> pMode(new cMoveMode(pEntity));
+   if (!pMode)
+   {
+      return E_OUTOFMEMORY;
+   }
+   UseGlobal(Input);
+   pInput->PushModalListener(pMode);
+   return S_OK;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 void RegisterBuiltinEntityCommands()
@@ -178,6 +298,7 @@ void RegisterBuiltinEntityCommands()
    UseGlobal(EntityCommandManager);
    pEntityCommandManager->RegisterCommand(_T("Spawn"), EntityCommandSpawn);
    pEntityCommandManager->RegisterCommand(_T("SetRallyPoint"), EntityCommandSetRallyPoint);
+   pEntityCommandManager->RegisterCommand(_T("Move"), EntityCommandMove);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
