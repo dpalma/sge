@@ -240,9 +240,11 @@ void cEntityManager::RenderAll()
       cAutoIPtr<IEntityRenderComponent> pRender;
       if (pEntity->GetComponent(kECT_Render, IID_IEntityRenderComponent, &pRender) == S_OK)
       {
-         pRender->Render();
+         bool bSelected = IsSelected(*iter);
 
-         if (IsSelected(*iter))
+         pRender->Render(0);
+
+         if (bSelected)
          {
             tAxisAlignedBox bbox;
             if (pRender->GetBoundingBox(&bbox) == S_OK)

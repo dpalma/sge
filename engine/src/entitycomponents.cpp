@@ -218,39 +218,31 @@ tResult cEntityRenderComponent::GetBoundingBox(tAxisAlignedBox * pBBox) const
 
 void cEntityRenderComponent::Update(double elapsedTime)
 {
-   // TODO: When the resource manager is fast enough, this if test should be removed
-   // to get a new cModel pointer whenever the resource changes, e.g., by re-saving
-   // from a 3D modelling program (3DS Max, or MilkShape, or something).
-#if 1
-   if (m_pModel == NULL)
-#endif
+   UseGlobal(ResourceManager);
+   cModel * pModel = NULL;
+   if (pResourceManager->Load(m_model.c_str(), kRT_Model, NULL, (void**)&pModel) != S_OK)
    {
-      UseGlobal(ResourceManager);
-      cModel * pModel = NULL;
-      if (pResourceManager->Load(m_model.c_str(), kRT_Model, NULL, (void**)&pModel) != S_OK)
+      m_pModel = NULL;
+      return;
+   }
+
+   AssertMsg(pModel != NULL, _T("Should have returned by now if ResourceManager->Load failed\n"));
+
+   if (pModel != m_pModel)
+   {
+      m_pModel = pModel;
+
+      cAutoIPtr<IModelSkeleton> pSkeleton;
+      if (m_pModel->GetSkeleton(&pSkeleton) == S_OK)
       {
-         m_pModel = NULL;
-         return;
-      }
-
-      AssertMsg(pModel != NULL, _T("Should have returned by now if ResourceManager->Load failed\n"));
-
-      if (pModel != m_pModel)
-      {
-         m_pModel = pModel;
-
-         cAutoIPtr<IModelSkeleton> pSkeleton;
-         if (m_pModel->GetSkeleton(&pSkeleton) == S_OK)
+         size_t nJoints = 0;
+         if (pSkeleton->GetJointCount(&nJoints) == S_OK && nJoints > 0)
          {
-            size_t nJoints = 0;
-            if (pSkeleton->GetJointCount(&nJoints) == S_OK && nJoints > 0)
-            {
-               ModelAnimationControllerCreate(pSkeleton, &m_pAnimController);
-            }
+            ModelAnimationControllerCreate(pSkeleton, &m_pAnimController);
          }
-
-         CalculateBBox(m_pModel->GetVertices(), &m_bbox);
       }
+
+      CalculateBBox(m_pModel->GetVertices(), &m_bbox);
    }
 
    if (!!m_pAnimController)
@@ -262,27 +254,8 @@ void cEntityRenderComponent::Update(double elapsedTime)
 
 ///////////////////////////////////////
 
-void cEntityRenderComponent::Render()
+void cEntityRenderComponent::Render(uint flags)
 {
-   // TODO: When the resource manager is fast enough, this code should be used to
-   // get a new cModel pointer in case the resource was changed, e.g., by re-saving
-   // from a 3D modelling program (3DS Max, or MilkShape, or something).
-#if 0
-   UseGlobal(ResourceManager);
-   cModel * pModel = NULL;
-   if (pResourceManager->Load(m_model.c_str(), kRT_Model, NULL, (void**)&pModel) != S_OK
-      || (pModel != m_pModel))
-   {
-      m_pModel = NULL;
-      return;
-   }
-#else
-   if (m_pModel == NULL)
-   {
-      return;
-   }
-#endif
-
    UseGlobal(Renderer);
 
    if (!m_blendedVerts.empty())

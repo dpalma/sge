@@ -82,12 +82,10 @@ interface IEntityPositionComponent : IEntityComponent
 
 interface IEntityRenderComponent : IEntityComponent
 {
-   virtual tResult GetModel(cStr * pModel) const = 0;
-
    virtual tResult GetBoundingBox(tAxisAlignedBox * pBBox) const = 0;
 
    virtual void Update(double elapsedTime) = 0;
-   virtual void Render() = 0;
+   virtual void Render(uint flags) = 0;
 };
 
 

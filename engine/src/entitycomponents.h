@@ -49,12 +49,12 @@ public:
    cEntityRenderComponent(const tChar * pszModel);
    ~cEntityRenderComponent();
 
-   virtual tResult GetModel(cStr * pModel) const;
+   tResult GetModel(cStr * pModel) const;
 
    virtual tResult GetBoundingBox(tAxisAlignedBox * pBBox) const;
 
    virtual void Update(double elapsedTime);
-   virtual void Render();
+   virtual void Render(uint flags);
 
 private:
    cStr m_model;
