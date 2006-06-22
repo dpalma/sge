@@ -169,12 +169,12 @@ static void CalculateBBox(const tModelVertices & vertices, tAxisAlignedBox * pBB
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cEntityRenderComponent
+// CLASS: cEntityModelRenderer
 //
 
 ///////////////////////////////////////
 
-cEntityRenderComponent::cEntityRenderComponent(const tChar * pszModel)
+cEntityModelRenderer::cEntityModelRenderer(const tChar * pszModel)
  : m_model(pszModel ? pszModel : _T(""))
  , m_pModel(NULL)
 {
@@ -182,29 +182,13 @@ cEntityRenderComponent::cEntityRenderComponent(const tChar * pszModel)
 
 ///////////////////////////////////////
 
-cEntityRenderComponent::~cEntityRenderComponent()
+cEntityModelRenderer::~cEntityModelRenderer()
 {
 }
 
 ///////////////////////////////////////
 
-tResult cEntityRenderComponent::GetModel(cStr * pModel) const
-{
-   if (pModel == NULL)
-   {
-      return E_POINTER;
-   }
-   if (m_model.empty())
-   {
-      return S_FALSE;
-   }
-   *pModel = m_model;
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cEntityRenderComponent::GetBoundingBox(tAxisAlignedBox * pBBox) const
+tResult cEntityModelRenderer::GetBoundingBox(tAxisAlignedBox * pBBox) const
 {
    if (pBBox == NULL)
    {
@@ -216,7 +200,7 @@ tResult cEntityRenderComponent::GetBoundingBox(tAxisAlignedBox * pBBox) const
 
 ///////////////////////////////////////
 
-void cEntityRenderComponent::Update(double elapsedTime)
+void cEntityModelRenderer::Update(double elapsedTime)
 {
    UseGlobal(ResourceManager);
    cModel * pModel = NULL;
@@ -254,7 +238,7 @@ void cEntityRenderComponent::Update(double elapsedTime)
 
 ///////////////////////////////////////
 
-void cEntityRenderComponent::Render(uint flags)
+void cEntityModelRenderer::Render()
 {
    UseGlobal(Renderer);
 
@@ -283,6 +267,46 @@ void cEntityRenderComponent::Render(uint flags)
       }
       pRenderer->Render(iter->GetPrimitiveType(), const_cast<uint16*>(iter->GetIndexData()), iter->GetIndexCount());
    }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cEntityRenderComponent
+//
+
+///////////////////////////////////////
+
+cEntityRenderComponent::cEntityRenderComponent(const tChar * pszModel)
+ : m_mainModel(pszModel)
+{
+}
+
+///////////////////////////////////////
+
+cEntityRenderComponent::~cEntityRenderComponent()
+{
+}
+
+///////////////////////////////////////
+
+tResult cEntityRenderComponent::GetBoundingBox(tAxisAlignedBox * pBBox) const
+{
+   return m_mainModel.GetBoundingBox(pBBox);
+}
+
+///////////////////////////////////////
+
+void cEntityRenderComponent::Update(double elapsedTime)
+{
+   m_mainModel.Update(elapsedTime);
+}
+
+///////////////////////////////////////
+
+void cEntityRenderComponent::Render(uint flags)
+{
+   m_mainModel.Render();
 }
 
 ///////////////////////////////////////

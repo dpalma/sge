@@ -80,6 +80,12 @@ interface IEntityPositionComponent : IEntityComponent
 // INTERFACE: IEntityRenderComponent
 //
 
+enum eEntityRenderFlags
+{
+   kERF_None         = 0,
+   kERF_Selected     = (1 << 0),
+};
+
 interface IEntityRenderComponent : IEntityComponent
 {
    virtual tResult GetBoundingBox(tAxisAlignedBox * pBBox) const = 0;

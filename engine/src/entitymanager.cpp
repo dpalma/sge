@@ -242,7 +242,7 @@ void cEntityManager::RenderAll()
       {
          bool bSelected = IsSelected(*iter);
 
-         pRender->Render(0);
+         pRender->Render(bSelected ? kERF_Selected : kERF_None);
 
          if (bSelected)
          {

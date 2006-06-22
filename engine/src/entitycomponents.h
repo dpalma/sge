@@ -40,6 +40,33 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: cEntityModelRenderer
+//
+
+class cEntityModelRenderer
+{
+   cEntityModelRenderer(const cEntityModelRenderer &);
+   const cEntityModelRenderer & operator =(const cEntityModelRenderer &);
+
+public:
+   cEntityModelRenderer(const tChar * pszModel);
+   ~cEntityModelRenderer();
+
+   tResult GetBoundingBox(tAxisAlignedBox * pBBox) const;
+   void Update(double elapsedTime);
+   void Render();
+
+private:
+   cStr m_model;
+   cModel * m_pModel;
+   tBlendedVertices m_blendedVerts;
+   cAutoIPtr<IModelAnimationController> m_pAnimController;
+   tAxisAlignedBox m_bbox;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cEntityRenderComponent
 //
 
@@ -49,19 +76,13 @@ public:
    cEntityRenderComponent(const tChar * pszModel);
    ~cEntityRenderComponent();
 
-   tResult GetModel(cStr * pModel) const;
-
    virtual tResult GetBoundingBox(tAxisAlignedBox * pBBox) const;
 
    virtual void Update(double elapsedTime);
    virtual void Render(uint flags);
 
 private:
-   cStr m_model;
-   cModel * m_pModel;
-   tBlendedVertices m_blendedVerts;
-   cAutoIPtr<IModelAnimationController> m_pAnimController;
-   tAxisAlignedBox m_bbox;
+   cEntityModelRenderer m_mainModel;
 };
 
 
