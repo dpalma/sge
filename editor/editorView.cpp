@@ -150,7 +150,7 @@ tResult cEditorView::OnActiveToolChange(IEditorTool * pNewTool, IEditorTool * pF
 
 ////////////////////////////////////////
 
-void cEditorView::Execute(double time)
+tResult cEditorView::Execute(double time)
 {
 #ifdef HAVE_DIRECTX
    if (m_bUsingD3d)
@@ -164,6 +164,7 @@ void cEditorView::Execute(double time)
 #else
    RenderGL();
 #endif
+   return S_OK;
 }
 
 ////////////////////////////////////////

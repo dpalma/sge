@@ -21,7 +21,7 @@ F_DECLARE_INTERFACE(IScheduler);
 
 interface ITask : IUnknown
 {
-   virtual void Execute(double time) = 0;
+   virtual tResult Execute(double time) = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

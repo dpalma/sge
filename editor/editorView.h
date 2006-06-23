@@ -59,7 +59,7 @@ public:
    virtual tResult OnActiveToolChange(IEditorTool * pNewTool, IEditorTool * pFormerTool);
 
    // ITask
-   virtual void Execute(double time);
+   virtual tResult Execute(double time);
 
    void RenderGL();
    void RenderD3D();

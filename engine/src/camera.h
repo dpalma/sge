@@ -247,7 +247,7 @@ private:
    public:
       cMoveCameraTask(cCameraControl * pOuter);
       virtual void DeleteThis() {}
-      virtual void Execute(double time);
+      virtual tResult Execute(double time);
    private:
       cCameraControl * m_pOuter;
       double m_lastTime;

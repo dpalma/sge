@@ -38,7 +38,7 @@ LOG_DEFINE_CHANNEL(StateMachineTest);
 // CLASS: cCppIdentifierRecognizer
 //
 
-class cCppIdentifierRecognizer : public cStateMachine<cCppIdentifierRecognizer>
+class cCppIdentifierRecognizer : public cStateMachine<cCppIdentifierRecognizer, int>
 {
 public:
    cCppIdentifierRecognizer();
@@ -51,12 +51,12 @@ public:
    bool GetIdentifier(cStr * pIdent) const;
 
    void OnEnterCharOk();
-   void OnCharOk();
+   void OnCharOk(int);
    void OnExitCharOk();
 
 private:
-   cState<cCppIdentifierRecognizer> m_charOkState;
-   cState<cCppIdentifierRecognizer> m_errorState;
+   tState m_charOkState;
+   tState m_errorState;
    cStr m_identifier;
 };
 
@@ -131,7 +131,7 @@ void cCppIdentifierRecognizer::OnEnterCharOk()
 
 ////////////////////////////////////////
 
-void cCppIdentifierRecognizer::OnCharOk()
+void cCppIdentifierRecognizer::OnCharOk(int)
 {
 }
 

@@ -274,7 +274,12 @@ void cScheduler::NextFrame()
 
          m_clock.AdvanceTo(pTaskInfo->next);
 
-         pTaskInfo->pTask->Execute(m_clock.GetSimTime());
+         if (pTaskInfo->pTask->Execute(m_clock.GetSimTime()) != S_OK)
+         {
+            delete pTaskInfo;
+            continue;
+         }
+
          pTaskInfo->next += pTaskInfo->period;
 
          if (pTaskInfo->expiration == kNoExpiration ||
@@ -306,7 +311,12 @@ void cScheduler::NextFrame()
 
          m_frameTaskQueue.pop();
 
-         pTaskInfo->pTask->Execute(m_clock.GetSimTime());
+         if (pTaskInfo->pTask->Execute(m_clock.GetSimTime()) != S_OK)
+         {
+            delete pTaskInfo;
+            continue;
+         }
+
          pTaskInfo->next += pTaskInfo->period;
 
          if (pTaskInfo->expiration == kNoExpiration ||

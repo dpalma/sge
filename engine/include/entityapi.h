@@ -19,6 +19,7 @@ F_DECLARE_INTERFACE(IEntityComponent);
 F_DECLARE_INTERFACE(IEntityPositionComponent);
 F_DECLARE_INTERFACE(IEntityRenderComponent);
 F_DECLARE_INTERFACE(IEntitySpawnComponent);
+F_DECLARE_INTERFACE(IEntityBrainComponent);
 F_DECLARE_INTERFACE(IEnumEntities);
 F_DECLARE_INTERFACE(IEntityCommandManager);
 F_DECLARE_INTERFACE(IEntityCommandUI);
@@ -45,6 +46,7 @@ enum eEntityComponentType
    kECT_Position,
    kECT_Render,
    kECT_Spawn,             // for entities that spawn others
+   kECT_Brain,
    kECT_Custom1,           // for use by application
    kECT_Custom2,           // for use by application
    kMaxEntityComponentTypes
@@ -108,6 +110,17 @@ interface IEntitySpawnComponent : IEntityComponent
    virtual tResult GetRallyPoint(tVec3 * pRallyPoint) const = 0;
 };
 
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IEntityBrainComponent
+//
+
+interface IEntityBrainComponent : IEntityComponent
+{
+   virtual tResult MoveTo(const tVec3 & point) = 0;
+   virtual tResult Stop() = 0;
+};
 
 
 ///////////////////////////////////////////////////////////////////////////////

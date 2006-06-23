@@ -7,8 +7,10 @@
 #include "entityapi.h"
 
 #include "model.h"
+#include "schedulerapi.h"
 
 #include "axisalignedbox.h"
+#include "statemachine.h"
 
 #ifdef _MSC_VER
 #pragma once
@@ -105,6 +107,71 @@ public:
 private:
    uint m_maxQueueSize;
    tVec3 m_rallyPoint;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cEntityBasicBrain
+//
+
+class cEntityBasicBrain : public cStateMachine<cEntityBasicBrain, double>
+{
+public:
+   cEntityBasicBrain();
+   ~cEntityBasicBrain();
+
+   void MoveTo(const tVec3 & point, IEntityPositionComponent * pPosition);
+   void Stop();
+
+private:
+   void OnEnterIdle();
+   void OnIdle(double elapsed);
+   void OnExitIdle();
+
+   void OnEnterMoving();
+   void OnMoving(double elapsed);
+   void OnExitMoving();
+
+   tState m_idleState;
+   tState m_movingState;
+
+   class cTask : public cComObject<IMPLEMENTS(ITask)>
+   {
+   public:
+      cTask(cEntityBasicBrain * pOuter);
+      virtual void DeleteThis() {}
+      virtual tResult Execute(double time);
+   private:
+      cEntityBasicBrain * m_pOuter;
+      double m_lastTime;
+   };
+
+   friend class cTask;
+   cTask m_task;
+
+   tVec3 m_moveGoal;
+   cAutoIPtr<IEntityPositionComponent> m_pPosition;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cEntityBrainComponent
+//
+
+class cEntityBrainComponent : public cComObject<IMPLEMENTS(IEntityBrainComponent)>
+{
+public:
+   cEntityBrainComponent(IEntity * pEntity);
+   ~cEntityBrainComponent();
+
+   virtual tResult MoveTo(const tVec3 & point);
+   virtual tResult Stop();
+
+private:
+   cEntityBasicBrain m_brain;
+   IEntity * m_pEntity; // Don't hold a reference to the entity because it owns this component
 };
 
 

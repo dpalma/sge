@@ -582,11 +582,12 @@ cEntityManager::cAnimateTask::cAnimateTask(cEntityManager * pOuter)
 
 ///////////////////////////////////////
 
-void cEntityManager::cAnimateTask::Execute(double time)
+tResult cEntityManager::cAnimateTask::Execute(double time)
 {
    double elapsed = fabs(time - m_lastTime);
    m_pOuter->SimFrame(elapsed);
    m_lastTime = time;
+   return S_OK;
 }
 
 ///////////////////////////////////////

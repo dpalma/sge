@@ -113,7 +113,7 @@ private:
    public:
       cAnimateTask(cEntityManager * pOuter);
       virtual void DeleteThis() {}
-      virtual void Execute(double time);
+      virtual tResult Execute(double time);
    private:
       cEntityManager * m_pOuter;
       double m_lastTime;

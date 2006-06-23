@@ -18,8 +18,8 @@
 
 ////////////////////////////////////////
 
-template <class T>
-cState<T>::cState()
+template <class T, typename ARG>
+cState<T, ARG>::cState()
  : m_pfnStateEnter(NULL)
  , m_pfnState(NULL)
  , m_pfnStateExit(NULL)
@@ -28,8 +28,8 @@ cState<T>::cState()
 
 ////////////////////////////////////////
 
-template <class T>
-cState<T>::cState(tStateFn pfnStateEnter, tStateFn pfnState, tStateFn pfnStateExit)
+template <class T, typename ARG>
+cState<T, ARG>::cState(tStateEnterExitFn pfnStateEnter, tStateUpdateFn pfnState, tStateEnterExitFn pfnStateExit)
  : m_pfnStateEnter(pfnStateEnter)
  , m_pfnState(pfnState)
  , m_pfnStateExit(pfnStateExit)
@@ -38,15 +38,15 @@ cState<T>::cState(tStateFn pfnStateEnter, tStateFn pfnState, tStateFn pfnStateEx
 
 ////////////////////////////////////////
 
-template <class T>
-cState<T>::~cState()
+template <class T, typename ARG>
+cState<T, ARG>::~cState()
 {
 }
 
 ////////////////////////////////////////
 
-template <class T>
-void cState<T>::ExecuteStateEnter(T * pT) const
+template <class T, typename ARG>
+void cState<T, ARG>::ExecuteStateEnter(T * pT) const
 {
 	if ((pT != NULL) && (m_pfnStateEnter != NULL))
    {
@@ -56,19 +56,19 @@ void cState<T>::ExecuteStateEnter(T * pT) const
 
 ////////////////////////////////////////
 
-template <class T>
-void cState<T>::ExecuteState(T * pT) const
+template <class T, typename ARG>
+void cState<T, ARG>::ExecuteState(T * pT, ARG arg) const
 {
 	if ((pT != NULL) && (m_pfnState != NULL))
    {
-	   (pT->*m_pfnState)();
+	   (pT->*m_pfnState)(arg);
    }
 }
 
 ////////////////////////////////////////
 
-template <class T>
-void cState<T>::ExecuteStateExit(T * pT) const
+template <class T, typename ARG>
+void cState<T, ARG>::ExecuteStateExit(T * pT) const
 {
 	if ((pT != NULL) && (m_pfnStateExit != NULL))
    {
@@ -84,45 +84,46 @@ void cState<T>::ExecuteStateExit(T * pT) const
 
 ////////////////////////////////////////
 
-template <typename T>
-cStateMachine<T>::cStateMachine()
- : m_initialState(&cStateMachine<T>::InitialStateEnter,
-                  &cStateMachine<T>::InitialState,
-                  &cStateMachine<T>::InitialStateExit)
+template <class T, typename ARG>
+cStateMachine<T, ARG>::cStateMachine()
+ : m_initialState(&cStateMachine<T, ARG>::InitialStateEnter,
+                  &cStateMachine<T, ARG>::InitialState,
+                  &cStateMachine<T, ARG>::InitialStateExit)
  , m_pCurrentState(&m_initialState)
 {
 }
 
 ////////////////////////////////////////
 
-template <typename T>
-cStateMachine<T>::~cStateMachine()
+template <class T, typename ARG>
+cStateMachine<T, ARG>::~cStateMachine()
 {
 }
 
 ////////////////////////////////////////
 
-template <typename T>
-void cStateMachine<T>::ExecuteCurrentState()
+template <class T, typename ARG>
+void cStateMachine<T, ARG>::Update(ARG arg)
 {
    if (m_pCurrentState != NULL)
    {
-      m_pCurrentState->ExecuteState(pT);
+      T * pT = static_cast<T*>(this);
+      m_pCurrentState->ExecuteState(pT, arg);
    }
 }
 
 ////////////////////////////////////////
 
-template <typename T>
-bool cStateMachine<T>::IsCurrentState(const cState<T> * pState) const
+template <class T, typename ARG>
+bool cStateMachine<T, ARG>::IsCurrentState(const cState<T, ARG> * pState) const
 {
    return (m_pCurrentState == pState);
 }
 
 ////////////////////////////////////////
 
-template <typename T>
-void cStateMachine<T>::GotoState(const cState<T> * pNewState)
+template <class T, typename ARG>
+void cStateMachine<T, ARG>::GotoState(const cState<T, ARG> * pNewState)
 {
    T * pT = static_cast<T*>(this);
    if ((pNewState != NULL) && (pNewState != m_pCurrentState))
@@ -130,30 +131,29 @@ void cStateMachine<T>::GotoState(const cState<T> * pNewState)
       m_pCurrentState->ExecuteStateExit(pT);
       m_pCurrentState = pNewState;
       m_pCurrentState->ExecuteStateEnter(pT);
-      m_pCurrentState->ExecuteState(pT);
    }
 }
 
 ////////////////////////////////////////
 
-template <typename T>
-bool cStateMachine<T>::IsCurrentInitialState() const
+template <class T, typename ARG>
+bool cStateMachine<T, ARG>::IsCurrentInitialState() const
 {
    return IsCurrentState(&m_initialState);
 }
 
 ////////////////////////////////////////
 
-template <typename T>
-void cStateMachine<T>::GotoInitialState()
+template <class T, typename ARG>
+void cStateMachine<T, ARG>::GotoInitialState()
 {
    GotoState(&m_initialState);
 }
 
 ////////////////////////////////////////
 
-template <typename T>
-void cStateMachine<T>::InitialStateEnter()
+template <class T, typename ARG>
+void cStateMachine<T, ARG>::InitialStateEnter()
 {
    T * pT = static_cast<T*>(this);
    pT->OnInitialStateEnter();
@@ -161,17 +161,17 @@ void cStateMachine<T>::InitialStateEnter()
 
 ////////////////////////////////////////
 
-template <typename T>
-void cStateMachine<T>::InitialState()
+template <class T, typename ARG>
+void cStateMachine<T, ARG>::InitialState(ARG arg)
 {
    T * pT = static_cast<T*>(this);
-   pT->OnInitialState();
+   pT->OnInitialState(arg);
 }
 
 ////////////////////////////////////////
 
-template <typename T>
-void cStateMachine<T>::InitialStateExit()
+template <class T, typename ARG>
+void cStateMachine<T, ARG>::InitialStateExit()
 {
    T * pT = static_cast<T*>(this);
    pT->OnInitialStateExit();

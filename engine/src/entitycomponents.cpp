@@ -11,6 +11,7 @@
 #include "globalobj.h"
 #include "multivar.h"
 #include "resourceapi.h"
+#include "statemachinetem.h"
 
 #include <tinyxml.h>
 
@@ -438,6 +439,200 @@ tResult EntitySpawnComponentFactory(const TiXmlElement * pTiXmlElement,
 
 
 ///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cEntityBasicBrain
+//
+
+////////////////////////////////////////
+
+cEntityBasicBrain::cEntityBasicBrain()
+ : m_idleState(&cEntityBasicBrain::OnEnterIdle, &cEntityBasicBrain::OnIdle, &cEntityBasicBrain::OnExitIdle)
+ , m_movingState(&cEntityBasicBrain::OnEnterMoving, &cEntityBasicBrain::OnMoving, &cEntityBasicBrain::OnExitMoving)
+ , m_task(this)
+{
+}
+
+////////////////////////////////////////
+
+cEntityBasicBrain::~cEntityBasicBrain()
+{
+   UseGlobal(Scheduler);
+   pScheduler->RemoveFrameTask(&m_task);
+}
+
+////////////////////////////////////////
+
+void cEntityBasicBrain::MoveTo(const tVec3 & point, IEntityPositionComponent * pPosition)
+{
+   if (pPosition == NULL)
+   {
+      return;
+   }
+   m_moveGoal = point;
+   SafeRelease(m_pPosition);
+   m_pPosition = CTAddRef(pPosition);
+   GotoState(&m_movingState);
+}
+
+////////////////////////////////////////
+
+void cEntityBasicBrain::Stop()
+{
+   SafeRelease(m_pPosition);
+   GotoState(&m_idleState);
+}
+
+////////////////////////////////////////
+
+void cEntityBasicBrain::OnEnterIdle()
+{
+}
+
+////////////////////////////////////////
+
+void cEntityBasicBrain::OnIdle(double elapsed)
+{
+}
+
+////////////////////////////////////////
+
+void cEntityBasicBrain::OnExitIdle()
+{
+}
+
+////////////////////////////////////////
+
+void cEntityBasicBrain::OnEnterMoving()
+{
+   UseGlobal(Scheduler);
+   pScheduler->AddFrameTask(&m_task, 0, 1, 0);
+}
+
+////////////////////////////////////////
+
+void cEntityBasicBrain::OnMoving(double elapsed)
+{
+   if (!!m_pPosition)
+   {
+      tVec3 curPos;
+      if (m_pPosition->GetPosition(&curPos) == S_OK)
+      {
+//         if (AlmostEqual(curPos, m_moveGoal))
+         if (AlmostEqual(curPos.x, m_moveGoal.x)
+            && AlmostEqual(curPos.z, m_moveGoal.z))
+         {
+            GotoState(&m_idleState);
+         }
+         else
+         {
+            tVec3 dir = m_moveGoal - curPos;
+            dir.Normalize();
+            curPos += (dir * 10.0f * static_cast<float>(elapsed));
+            m_pPosition->SetPosition(curPos);
+         }
+      }
+   }
+}
+
+////////////////////////////////////////
+
+void cEntityBasicBrain::OnExitMoving()
+{
+   UseGlobal(Scheduler);
+   pScheduler->RemoveFrameTask(&m_task);
+}
+
+////////////////////////////////////////
+
+cEntityBasicBrain::cTask::cTask(cEntityBasicBrain * pOuter)
+ : m_pOuter(pOuter)
+ , m_lastTime(0)
+{
+}
+
+////////////////////////////////////////
+
+tResult cEntityBasicBrain::cTask::Execute(double time)
+{
+   double elapsed = (m_lastTime > 0) ? (time - m_lastTime) : 0;
+   m_pOuter->Update(elapsed);
+   m_lastTime = time;
+   return m_pOuter->IsCurrentState(&m_pOuter->m_movingState) ? S_OK : S_FALSE;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cEntityBrainComponent
+//
+
+///////////////////////////////////////
+
+cEntityBrainComponent::cEntityBrainComponent(IEntity * pEntity)
+ : m_pEntity(pEntity)
+{
+}
+
+///////////////////////////////////////
+
+cEntityBrainComponent::~cEntityBrainComponent()
+{
+}
+
+///////////////////////////////////////
+
+tResult cEntityBrainComponent::MoveTo(const tVec3 & point)
+{
+   cAutoIPtr<IEntityPositionComponent> pPosition;
+   if ((m_pEntity != NULL) && m_pEntity->GetComponent(kECT_Position, IID_IEntityPositionComponent, &pPosition) == S_OK)
+   {
+      m_brain.MoveTo(point, pPosition);
+      return S_OK;
+   }
+   return E_FAIL;
+}
+
+///////////////////////////////////////
+
+tResult cEntityBrainComponent::Stop()
+{
+   m_brain.Stop();
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult EntityBrainComponentFactory(const TiXmlElement * pTiXmlElement,
+                                    IEntity * pEntity, void * pUser,
+                                    IEntityComponent * * ppComponent)
+{
+   if (pTiXmlElement == NULL || pEntity == NULL || ppComponent == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (_stricmp(pTiXmlElement->Value(), "brain") != 0)
+   {
+      return E_INVALIDARG;
+   }
+
+   cAutoIPtr<cEntityBrainComponent> pBrainComponent = new cEntityBrainComponent(pEntity);
+   if (!pBrainComponent)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   if (pEntity->SetComponent(kECT_Brain, static_cast<IEntityComponent*>(pBrainComponent)) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   *ppComponent = CTAddRef(static_cast<IEntityComponent*>(pBrainComponent));
+   return S_OK;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 
 void RegisterBuiltInComponents()
 {
@@ -445,6 +640,7 @@ void RegisterBuiltInComponents()
    Verify(pEntityManager->RegisterComponentFactory(_T("position"), EntityPositionComponentFactory) == S_OK);
    Verify(pEntityManager->RegisterComponentFactory(_T("render"), EntityRenderComponentFactory) == S_OK);
    Verify(pEntityManager->RegisterComponentFactory(_T("spawns"), EntitySpawnComponentFactory) == S_OK);
+   Verify(pEntityManager->RegisterComponentFactory(_T("brain"), EntityBrainComponentFactory) == S_OK);
 }
 
 

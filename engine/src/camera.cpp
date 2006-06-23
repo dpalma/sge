@@ -530,11 +530,12 @@ cCameraControl::cMoveCameraTask::cMoveCameraTask(cCameraControl * pOuter)
 
 ///////////////////////////////////////
 
-void cCameraControl::cMoveCameraTask::Execute(double time)
+tResult cCameraControl::cMoveCameraTask::Execute(double time)
 {
    double elapsed = fabs(time - m_lastTime);
    m_pOuter->SimFrame(elapsed);
    m_lastTime = time;
+   return S_OK;
 }
 
 ///////////////////////////////////////

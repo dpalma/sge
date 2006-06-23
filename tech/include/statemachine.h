@@ -16,25 +16,28 @@
 // TEMPLATE: cState
 //
 
-template <class T>
+template <class T, typename ARG>
 class cState
 {
-   typedef void (T::*tStateFn)(void);
-
    cState(const cState &);
    void operator =(const cState &);
 
+   typedef void (T::*tStateEnterExitFn)();
+   typedef void (T::*tStateUpdateFn)(ARG);
+
 public:
    cState();
-   cState(tStateFn pfnStateEnter, tStateFn pfnState, tStateFn pfnStateExit);
+   cState(tStateEnterExitFn pfnStateEnter, tStateUpdateFn pfnState, tStateEnterExitFn pfnStateExit);
    ~cState();
 
    void ExecuteStateEnter(T * pT) const;
-   void ExecuteState(T * pT) const;
+   void ExecuteState(T * pT, ARG arg) const;
    void ExecuteStateExit(T * pT) const;
 
 private:
-   tStateFn m_pfnStateEnter, m_pfnState, m_pfnStateExit;
+   tStateEnterExitFn m_pfnStateEnter;
+   tStateUpdateFn m_pfnState;
+   tStateEnterExitFn m_pfnStateExit;
 };
 
 
@@ -43,35 +46,37 @@ private:
 // CLASS: cStateMachine
 //
 
-template <typename T>
+template <class T, typename ARG>
 class cStateMachine
 {
 public:
    cStateMachine();
    ~cStateMachine();
 
-   void ExecuteCurrentState();
+   void Update(ARG arg);
 
 protected:
-   bool IsCurrentState(const cState<T> * pState) const;
-   void GotoState(const cState<T> * pNewState);
+   typedef cState<T, ARG> tState;
+
+   bool IsCurrentState(const tState * pState) const;
+   void GotoState(const tState * pNewState);
 
    bool IsCurrentInitialState() const;
    void GotoInitialState();
 
    void InitialStateEnter();
-   void InitialState();
+   void InitialState(ARG arg);
    void InitialStateExit();
 
    // Derived classes may over-ride these methods
    // to change the initial state behavior
    void OnInitialStateEnter() {}
-   void OnInitialState() {}
+   void OnInitialState(ARG) {}
    void OnInitialStateExit() {}
 
 private:
-   cState<T> m_initialState;
-   const cState<T> * m_pCurrentState;
+   tState m_initialState;
+   const tState * m_pCurrentState;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

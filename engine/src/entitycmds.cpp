@@ -264,6 +264,15 @@ tResult cMoveMode::OnTerrainClick(const tVec3 & location)
 {
    LocalMsg3("Issue move orders to (%f, %f, %f)\n", location.x, location.y, location.z);
 
+   cAutoIPtr<IEntityBrainComponent> pBrainComponent;
+   if (AccessEntity()->GetComponent(kECT_Brain, IID_IEntityBrainComponent, &pBrainComponent) == S_OK)
+   {
+      if (pBrainComponent->MoveTo(location) == S_OK)
+      {
+         return S_OK;
+      }
+   }
+
    cAutoIPtr<IEntityPositionComponent> pPositionComponent;
    if (AccessEntity()->GetComponent(kECT_Position, IID_IEntityPositionComponent, &pPositionComponent) == S_OK)
    {
