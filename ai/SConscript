@@ -1,0 +1,26 @@
+#############################################################################
+# $Id$
+
+Import('env')
+
+includePaths = Split("""
+   #ai/include
+   #tech/include
+""")
+
+libPaths = Split("""
+   #allguids
+   #tech
+""")
+
+linkLibs = Split("""
+   allguids
+   tech
+""")
+
+local = env.Copy()
+local.BuildLibrary(target='ai',
+                   source=sourceFiles,
+                   include_path=includePaths,
+                   lib_path=libPaths,
+                   libs=linkLibs)

@@ -3,6 +3,7 @@
 <entity name="Crate">
    
    <render model="crate.ms3d">
+      <model resource="crate.ms3d" />
    </render>
    
    <position></position>
@@ -12,10 +13,10 @@
    
    <commands>
       <command name="Spawn" tooltip="Spawn Zombie">
-	     <argument value="zombie" />
+        <argument value="zombie" />
       </command>
       <command name="Spawn" tooltip="Spawn Tree">
-	     <argument value="tree" />
+        <argument value="tree" />
       </command>
       <command name="SetRallyPoint" tooltip="Set Rally Point">
       </command>
