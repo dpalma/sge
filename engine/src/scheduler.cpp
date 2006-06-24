@@ -236,7 +236,39 @@ tResult cScheduler::AddFrameTask(ITask * pTask, ulong start, ulong period, ulong
 
 tResult cScheduler::RemoveFrameTask(ITask * pTask)
 {
-   return E_NOTIMPL;
+   if (pTask == NULL)
+   {
+      return E_POINTER;
+   }
+
+   bool bFound = false;
+   tTaskQueue newQueue;
+
+   while (!m_frameTaskQueue.empty())
+   {
+      sTaskInfo * pTaskInfo = m_frameTaskQueue.top();
+      m_frameTaskQueue.pop();
+
+      if (CTIsSameObject(pTask, pTaskInfo->pTask))
+      {
+         delete pTaskInfo;
+         bFound = true;
+      }
+      else
+      {
+         newQueue.push(pTaskInfo);
+      }
+   }
+
+   while (!newQueue.empty())
+   {
+      sTaskInfo * pTaskInfo = newQueue.top();
+      newQueue.pop();
+
+      m_frameTaskQueue.push(pTaskInfo);
+   }
+
+   return bFound ? S_OK : S_FALSE;
 }
 
 ////////////////////////////////////////
