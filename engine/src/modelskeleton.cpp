@@ -172,6 +172,11 @@ tResult cModelSkeleton::GetBindMatrices(size_t nMaxMatrices, tMatrix4 * pMatrice
 
 void cModelSkeleton::InterpolateMatrices(IModelAnimation * pAnim, double time, tMatrices * pMatrices) const
 {
+   if (pAnim == NULL || pMatrices == NULL)
+   {
+      return;
+   }
+
    pMatrices->resize(m_joints.size());
 
    tModelJoints::const_iterator iter = m_joints.begin();

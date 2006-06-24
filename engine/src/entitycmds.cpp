@@ -302,12 +302,30 @@ tResult EntityCommandMove(IEntity * pEntity, const cMultiVar * pArgs, uint nArgs
 
 ///////////////////////////////////////////////////////////////////////////////
 
+tResult EntityCommandStop(IEntity * pEntity, const cMultiVar * pArgs, uint nArgs)
+{
+   if (pEntity == NULL)
+   {
+      return E_POINTER;
+   }
+   cAutoIPtr<IEntityBrainComponent> pBrainComponent;
+   if (pEntity->GetComponent(kECT_Brain, IID_IEntityBrainComponent, &pBrainComponent) == S_OK)
+   {
+      pBrainComponent->Stop();
+   }
+   return S_OK;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 void RegisterBuiltinEntityCommands()
 {
    UseGlobal(EntityCommandManager);
    pEntityCommandManager->RegisterCommand(_T("Spawn"), EntityCommandSpawn);
    pEntityCommandManager->RegisterCommand(_T("SetRallyPoint"), EntityCommandSetRallyPoint);
    pEntityCommandManager->RegisterCommand(_T("Move"), EntityCommandMove);
+   pEntityCommandManager->RegisterCommand(_T("Stop"), EntityCommandStop);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

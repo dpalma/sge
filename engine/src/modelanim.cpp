@@ -267,16 +267,12 @@ tResult ModelAnimationCreate(IModelKeyFrameInterpolator * * pInterpolators,
 
 ///////////////////////////////////////
 
-cModelAnimationController::cModelAnimationController(IModelSkeleton * pSkeleton,
-                                                     IModelAnimation * pAnim)
+cModelAnimationController::cModelAnimationController(IModelSkeleton * pSkeleton)
  : m_pSkeleton(CTAddRef(pSkeleton))
- , m_pAnim(CTAddRef(pAnim))
  , m_animStart(0)
  , m_animEnd(0)
  , m_animTime(0)
 {
-   m_pAnim->GetStartEnd(&m_animStart, &m_animEnd);
-   m_animTime = m_animStart;
 }
 
 ///////////////////////////////////////
@@ -289,6 +285,11 @@ cModelAnimationController::~cModelAnimationController()
 
 tResult cModelAnimationController::Advance(double elapsedTime)
 {
+   if (!m_pAnim)
+   {
+      return S_FALSE;
+   }
+
    Assert(!(elapsedTime < 0));
 
    m_animTime += elapsedTime;
@@ -309,6 +310,22 @@ tResult cModelAnimationController::Advance(double elapsedTime)
 
 ///////////////////////////////////////
 
+tResult cModelAnimationController::SetAnimation(eModelAnimationType type)
+{
+   cAutoIPtr<IModelAnimation> pAnim;
+   if (m_pSkeleton->GetAnimation(type, &pAnim) == S_OK)
+   {
+      pAnim->GetStartEnd(&m_animStart, &m_animEnd);
+      m_animTime = m_animStart;
+      SafeRelease(m_pAnim);
+      m_pAnim = pAnim;
+      return S_OK;
+   }
+   return E_FAIL;
+}
+
+///////////////////////////////////////
+
 tResult ModelAnimationControllerCreate(IModelSkeleton * pSkeleton,
                                        IModelAnimationController * * ppAnimController)
 {
@@ -321,13 +338,7 @@ tResult ModelAnimationControllerCreate(IModelSkeleton * pSkeleton,
    {
       return S_FALSE;
    }
-   cAutoIPtr<IModelAnimation> pAnim;
-   if (pSkeleton->GetAnimation(kMAT_Walk, &pAnim) != S_OK)
-   {
-      return E_FAIL;
-   }
-   cAutoIPtr<IModelAnimationController> pAnimController;
-   pAnimController = static_cast<IModelAnimationController*>(new cModelAnimationController(pSkeleton, pAnim));
+   cAutoIPtr<IModelAnimationController> pAnimController = static_cast<IModelAnimationController*>(new cModelAnimationController(pSkeleton));
    if (!pAnimController)
    {
       return E_OUTOFMEMORY;

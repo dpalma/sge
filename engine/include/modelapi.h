@@ -145,6 +145,8 @@ interface IModelAnimationController : IUnknown
    virtual tResult Advance(double elapsedTime) = 0;
 
    virtual const tMatrices & GetBlendMatrices() const = 0;
+
+   virtual tResult SetAnimation(eModelAnimationType type) = 0;
 };
 
 ////////////////////////////////////////

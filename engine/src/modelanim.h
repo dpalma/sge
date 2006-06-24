@@ -82,12 +82,14 @@ class cModelAnimationController : public cComObject<IMPLEMENTS(IModelAnimationCo
    void operator =(const cModelAnimationController & other);
 
 public:
-   cModelAnimationController(IModelSkeleton * pSkeleton, IModelAnimation * pAnim);
+   cModelAnimationController(IModelSkeleton * pSkeleton);
    ~cModelAnimationController();
 
    tResult Advance(double elapsedTime);
 
    const tMatrices & GetBlendMatrices() const { return m_blendMatrices; }
+
+   virtual tResult SetAnimation(eModelAnimationType type);
 
 private:
    cAutoIPtr<IModelSkeleton> m_pSkeleton;

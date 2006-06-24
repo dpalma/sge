@@ -223,7 +223,10 @@ void cEntityModelRenderer::Update(double elapsedTime)
          size_t nJoints = 0;
          if (pSkeleton->GetJointCount(&nJoints) == S_OK && nJoints > 0)
          {
-            ModelAnimationControllerCreate(pSkeleton, &m_pAnimController);
+            if (ModelAnimationControllerCreate(pSkeleton, &m_pAnimController) == S_OK)
+            {
+               m_pAnimController->SetAnimation(kMAT_Idle);
+            }
          }
       }
 
@@ -232,8 +235,10 @@ void cEntityModelRenderer::Update(double elapsedTime)
 
    if (!!m_pAnimController)
    {
-      m_pAnimController->Advance(elapsedTime);
-      m_pModel->ApplyJointMatrices(m_pAnimController->GetBlendMatrices(), &m_blendedVerts);
+      if (m_pAnimController->Advance(elapsedTime) == S_OK)
+      {
+         m_pModel->ApplyJointMatrices(m_pAnimController->GetBlendMatrices(), &m_blendedVerts);
+      }
    }
 }
 
@@ -522,6 +527,7 @@ void cEntityBasicBrain::OnMoving(double elapsed)
             && AlmostEqual(curPos.z, m_moveGoal.z))
          {
             GotoState(&m_idleState);
+            Update(elapsed); // force idle immediately
          }
          else
          {
@@ -538,8 +544,7 @@ void cEntityBasicBrain::OnMoving(double elapsed)
 
 void cEntityBasicBrain::OnExitMoving()
 {
-   UseGlobal(Scheduler);
-   pScheduler->RemoveFrameTask(&m_task);
+   // Scheduler task is removed via return value--no need to do so here
 }
 
 ////////////////////////////////////////
