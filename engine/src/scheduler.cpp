@@ -224,19 +224,9 @@ static tResult AddTask(tTaskQueue * pQueue, ITask * pTask, double start, double 
    return S_OK;
 }
 
-////////////////////////////////////////
-
-tResult cScheduler::AddFrameTask(ITask * pTask, ulong start, ulong period, ulong duration)
+static tResult RemoveTask(tTaskQueue * pQueue, ITask * pTask)
 {
-   LocalMsg1("Adding frame-based task %p\n", pTask);
-   return AddTask(&m_frameTaskQueue, pTask, static_cast<double>(start), static_cast<double>(period), static_cast<double>(duration));
-}
-
-////////////////////////////////////////
-
-tResult cScheduler::RemoveFrameTask(ITask * pTask)
-{
-   if (pTask == NULL)
+   if (pTask == NULL || pQueue == NULL)
    {
       return E_POINTER;
    }
@@ -244,10 +234,10 @@ tResult cScheduler::RemoveFrameTask(ITask * pTask)
    bool bFound = false;
    tTaskQueue newQueue;
 
-   while (!m_frameTaskQueue.empty())
+   while (!pQueue->empty())
    {
-      sTaskInfo * pTaskInfo = m_frameTaskQueue.top();
-      m_frameTaskQueue.pop();
+      sTaskInfo * pTaskInfo = pQueue->top();
+      pQueue->pop();
 
       if (CTIsSameObject(pTask, pTaskInfo->pTask))
       {
@@ -265,10 +255,26 @@ tResult cScheduler::RemoveFrameTask(ITask * pTask)
       sTaskInfo * pTaskInfo = newQueue.top();
       newQueue.pop();
 
-      m_frameTaskQueue.push(pTaskInfo);
+      pQueue->push(pTaskInfo);
    }
 
    return bFound ? S_OK : S_FALSE;
+}
+
+////////////////////////////////////////
+
+tResult cScheduler::AddFrameTask(ITask * pTask, ulong start, ulong period, ulong duration)
+{
+   LocalMsg1("Adding frame-based task %p\n", pTask);
+   return AddTask(&m_frameTaskQueue, pTask, static_cast<double>(start), static_cast<double>(period), static_cast<double>(duration));
+}
+
+////////////////////////////////////////
+
+tResult cScheduler::RemoveFrameTask(ITask * pTask)
+{
+   LocalMsg1("Removing frame-based task %p\n", pTask);
+   return RemoveTask(&m_frameTaskQueue, pTask);
 }
 
 ////////////////////////////////////////
@@ -283,7 +289,8 @@ tResult cScheduler::AddTimeTask(ITask * pTask, double start, double period, doub
 
 tResult cScheduler::RemoveTimeTask(ITask * pTask)
 {
-   return E_NOTIMPL;
+   LocalMsg1("Removing time-based task %p\n", pTask);
+   return RemoveTask(&m_timeTaskQueue, pTask);
 }
 
 ////////////////////////////////////////

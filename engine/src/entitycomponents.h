@@ -30,6 +30,7 @@ public:
 
    virtual tResult SetPosition(const tVec3 & position);
    virtual tResult GetPosition(tVec3 * pPosition) const;
+
    virtual const tMatrix4 & GetWorldTransform() const;
 
 private:
@@ -57,6 +58,7 @@ public:
    tResult GetBoundingBox(tAxisAlignedBox * pBBox) const;
    void Update(double elapsedTime);
    void Render();
+   tResult SetAnimation(eModelAnimationType type);
 
 private:
    cStr m_model;
@@ -82,6 +84,7 @@ public:
 
    virtual void Update(double elapsedTime);
    virtual void Render(uint flags);
+   virtual tResult SetAnimation(eModelAnimationType type);
 
 private:
    cEntityModelRenderer m_mainModel;
@@ -121,7 +124,7 @@ public:
    cEntityBasicBrain();
    ~cEntityBasicBrain();
 
-   void MoveTo(const tVec3 & point, IEntityPositionComponent * pPosition);
+   void MoveTo(const tVec3 & point, IEntityPositionComponent * pPosition, IEntityRenderComponent * pRender);
    void Stop();
 
 private:
@@ -152,6 +155,7 @@ private:
 
    tVec3 m_moveGoal;
    cAutoIPtr<IEntityPositionComponent> m_pPosition;
+   cAutoIPtr<IEntityRenderComponent> m_pRender;
 };
 
 

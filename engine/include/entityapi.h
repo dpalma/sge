@@ -30,6 +30,8 @@ class cMultiVar;
 class cRay;
 class TiXmlElement;
 
+enum eModelAnimationType;
+
 F_DECLARE_INTERFACE(IDictionary);
 
 template <typename T> class cAxisAlignedBox;
@@ -94,6 +96,8 @@ interface IEntityRenderComponent : IEntityComponent
 
    virtual void Update(double elapsedTime) = 0;
    virtual void Render(uint flags) = 0;
+
+   virtual tResult SetAnimation(eModelAnimationType type) = 0;
 };
 
 

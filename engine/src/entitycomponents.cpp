@@ -275,6 +275,17 @@ void cEntityModelRenderer::Render()
    }
 }
 
+///////////////////////////////////////
+
+tResult cEntityModelRenderer::SetAnimation(eModelAnimationType type)
+{
+   if (!m_pAnimController)
+   {
+      return E_FAIL;
+   }
+   return m_pAnimController->SetAnimation(type);
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -313,6 +324,13 @@ void cEntityRenderComponent::Update(double elapsedTime)
 void cEntityRenderComponent::Render(uint flags)
 {
    m_mainModel.Render();
+}
+
+///////////////////////////////////////
+
+tResult cEntityRenderComponent::SetAnimation(eModelAnimationType type)
+{
+   return m_mainModel.SetAnimation(type);
 }
 
 ///////////////////////////////////////
@@ -467,15 +485,21 @@ cEntityBasicBrain::~cEntityBasicBrain()
 
 ////////////////////////////////////////
 
-void cEntityBasicBrain::MoveTo(const tVec3 & point, IEntityPositionComponent * pPosition)
+void cEntityBasicBrain::MoveTo(const tVec3 & point, IEntityPositionComponent * pPosition, IEntityRenderComponent * pRender)
 {
    if (pPosition == NULL)
    {
       return;
    }
+
    m_moveGoal = point;
+
    SafeRelease(m_pPosition);
    m_pPosition = CTAddRef(pPosition);
+
+   SafeRelease(m_pRender);
+   m_pRender = CTAddRef(pRender);
+
    GotoState(&m_movingState);
 }
 
@@ -491,6 +515,10 @@ void cEntityBasicBrain::Stop()
 
 void cEntityBasicBrain::OnEnterIdle()
 {
+   if (!!m_pRender)
+   {
+      m_pRender->SetAnimation(kMAT_Idle);
+   }
 }
 
 ////////////////////////////////////////
@@ -511,6 +539,11 @@ void cEntityBasicBrain::OnEnterMoving()
 {
    UseGlobal(Scheduler);
    pScheduler->AddFrameTask(&m_task, 0, 1, 0);
+
+   if (!!m_pRender)
+   {
+      m_pRender->SetAnimation(kMAT_Walk);
+   }
 }
 
 ////////////////////////////////////////
@@ -561,8 +594,16 @@ tResult cEntityBasicBrain::cTask::Execute(double time)
 {
    double elapsed = (m_lastTime > 0) ? (time - m_lastTime) : 0;
    m_pOuter->Update(elapsed);
-   m_lastTime = time;
-   return m_pOuter->IsCurrentState(&m_pOuter->m_movingState) ? S_OK : S_FALSE;
+   if (m_pOuter->IsCurrentState(&m_pOuter->m_movingState))
+   {
+      m_lastTime = time;
+      return S_OK;
+   }
+   else
+   {
+      m_lastTime = 0;
+      return S_FALSE;
+   }
 }
 
 
@@ -589,9 +630,12 @@ cEntityBrainComponent::~cEntityBrainComponent()
 tResult cEntityBrainComponent::MoveTo(const tVec3 & point)
 {
    cAutoIPtr<IEntityPositionComponent> pPosition;
-   if ((m_pEntity != NULL) && m_pEntity->GetComponent(kECT_Position, IID_IEntityPositionComponent, &pPosition) == S_OK)
+   cAutoIPtr<IEntityRenderComponent> pRender;
+   if ((m_pEntity != NULL)
+      && m_pEntity->GetComponent(kECT_Position, IID_IEntityPositionComponent, &pPosition) == S_OK
+      && m_pEntity->GetComponent(kECT_Render, IID_IEntityRenderComponent, &pRender) == S_OK)
    {
-      m_brain.MoveTo(point, pPosition);
+      m_brain.MoveTo(point, pPosition, pRender);
       return S_OK;
    }
    return E_FAIL;
