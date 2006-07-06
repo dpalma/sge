@@ -24,7 +24,6 @@ F_DECLARE_INTERFACE(IModelAnimation);
 F_DECLARE_INTERFACE(IModelAnimationController);
 F_DECLARE_INTERFACE(IModelSkeleton);
 
-class cModel;
 struct sModelKeyFrame;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -195,6 +194,8 @@ struct sModelMeshInfo
    uint nIndices;
    int materialIndex;
 };
+
+#define kRT_Model _T("Model") // resource type
 
 interface IModel : IUnknown
 {

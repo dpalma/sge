@@ -24,7 +24,7 @@ class cModel;
 class cModelKeyFrameInterpolator : public cComObject<IMPLEMENTS(IModelKeyFrameInterpolator)>
 {
    cModelKeyFrameInterpolator(const cModelKeyFrameInterpolator & other);
-   void operator =(const cModelKeyFrameInterpolator & other);
+   const cModelKeyFrameInterpolator & operator =(const cModelKeyFrameInterpolator & other);
 
 public:
    cModelKeyFrameInterpolator();
@@ -55,7 +55,7 @@ private:
 class cModelAnimation : public cComObject<IMPLEMENTS(IModelAnimation)>
 {
    cModelAnimation(const cModelAnimation & other);
-   void operator =(const cModelAnimation & other);
+   const cModelAnimation & operator =(const cModelAnimation & other);
 
 public:
    cModelAnimation(IModelKeyFrameInterpolator * * pInterpolators, uint nInterpolators);
@@ -79,7 +79,7 @@ private:
 class cModelAnimationController : public cComObject<IMPLEMENTS(IModelAnimationController)>
 {
    cModelAnimationController(const cModelAnimationController & other);
-   void operator =(const cModelAnimationController & other);
+   const cModelAnimationController & operator =(const cModelAnimationController & other);
 
 public:
    cModelAnimationController(IModelSkeleton * pSkeleton);

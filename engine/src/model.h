@@ -4,35 +4,18 @@
 #ifndef INCLUDED_MODEL_H
 #define INCLUDED_MODEL_H
 
-#include "enginedll.h"
 #include "comtools.h"
 #include "modelapi.h"
 #include "renderapi.h"
-
-#include "techstring.h"
 
 #ifdef _MSC_VER
 #pragma once
 #endif
 
-#if !(_MSC_VER > 1300)
-#pragma warning(push)
-#pragma warning(disable:4251)
-#endif
-
 
 F_DECLARE_INTERFACE(IReader);
 
-enum ePrimitiveType;
-
 class cModel;
-
-///////////////////////////////////////////////////////////////////////////////
-
-#if _MSC_VER > 1300
-template class ENGINE_API std::allocator<uint16>;
-template class ENGINE_API std::vector<uint16>;
-#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -54,13 +37,6 @@ struct sBlendedVertex
 };
 
 
-#if _MSC_VER > 1300
-template class ENGINE_API std::allocator<sModelVertex>;
-template class ENGINE_API std::vector<sModelVertex>;
-template class ENGINE_API std::allocator<sBlendedVertex>;
-template class ENGINE_API std::vector<sBlendedVertex>;
-#endif
-
 typedef std::vector<sModelVertex> tModelVertices;
 typedef std::vector<sBlendedVertex> tBlendedVertices;
 
@@ -70,7 +46,7 @@ typedef std::vector<sBlendedVertex> tBlendedVertices;
 // CLASS: cModelMaterial
 //
 
-class ENGINE_API cModelMaterial
+class cModelMaterial
 {
 public:
    cModelMaterial();
@@ -97,11 +73,6 @@ private:
 };
 
 
-#if _MSC_VER > 1300
-template class ENGINE_API std::allocator<cModelMaterial>;
-template class ENGINE_API std::vector<cModelMaterial>;
-#endif
-
 typedef std::vector<cModelMaterial> tModelMaterials;
 
 
@@ -110,7 +81,7 @@ typedef std::vector<cModelMaterial> tModelMaterials;
 // CLASS: cModelMesh
 //
 
-class ENGINE_API cModelMesh
+class cModelMesh
 {
 public:
    cModelMesh();
@@ -153,18 +124,7 @@ inline int8 cModelMesh::GetMaterialIndex() const
    return m_materialIndex;
 }
 
-
-#if _MSC_VER > 1300
-template class ENGINE_API std::allocator<cModelMesh>;
-template class ENGINE_API std::vector<cModelMesh>;
-#endif
-
 typedef std::vector<cModelMesh> tModelMeshes;
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-ENGINE_API bool GlValidateIndices(const uint16 * pIndices, uint nIndices, uint nVertices);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -172,9 +132,7 @@ ENGINE_API bool GlValidateIndices(const uint16 * pIndices, uint nIndices, uint n
 // CLASS: cModel
 //
 
-#define kRT_Model _T("Model") // resource type
-
-class ENGINE_API cModel
+class cModel
 {
    cModel(const cModel &);
    const cModel & operator =(const cModel &);
@@ -250,11 +208,6 @@ inline tModelMeshes::const_iterator cModel::EndMeshses() const
 {
    return m_meshes.end();
 }
-
-
-#if !(_MSC_VER > 1300)
-#pragma warning(pop)
-#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -420,6 +420,9 @@
 					RelativePath="..\..\engine\src\entitymanager.h">
 				</File>
 				<File
+					RelativePath="..\..\engine\src\model.h">
+				</File>
+				<File
 					RelativePath="..\..\engine\src\modelanim.h">
 				</File>
 				<File
@@ -471,9 +474,6 @@
 			</File>
 			<File
 				RelativePath="..\..\engine\include\entityapi.h">
-			</File>
-			<File
-				RelativePath="..\..\engine\include\model.h">
 			</File>
 			<File
 				RelativePath="..\..\engine\include\modelapi.h">
