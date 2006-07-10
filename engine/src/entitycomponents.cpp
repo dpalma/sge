@@ -225,7 +225,7 @@ void cEntityModelRenderer::Update(double elapsedTime)
          {
             if (ModelAnimationControllerCreate(pSkeleton, &m_pAnimController) == S_OK)
             {
-               m_pAnimController->SetAnimation(kMAT_Idle);
+               SetAnimation(kMAT_Idle);
             }
          }
       }
@@ -283,7 +283,12 @@ tResult cEntityModelRenderer::SetAnimation(eModelAnimationType type)
    {
       return E_FAIL;
    }
-   return m_pAnimController->SetAnimation(type);
+   cAutoIPtr<IModelAnimation> pAnim;
+   if (m_pModel->AccessSkeleton()->GetAnimation(type, &pAnim) == S_OK)
+   {
+      return m_pAnimController->SetAnimation(pAnim);
+   }
+   return E_FAIL;
 }
 
 

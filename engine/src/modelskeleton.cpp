@@ -170,51 +170,6 @@ tResult cModelSkeleton::GetBindMatrices(size_t nMaxMatrices, tMatrix4 * pMatrice
 
 ///////////////////////////////////////
 
-void cModelSkeleton::InterpolateMatrices(IModelAnimation * pAnim, double time, tMatrices * pMatrices) const
-{
-   if (pAnim == NULL || pMatrices == NULL)
-   {
-      return;
-   }
-
-   pMatrices->resize(m_joints.size());
-
-   tModelJoints::const_iterator iter = m_joints.begin();
-   tModelJoints::const_iterator end = m_joints.end();
-   for (uint i = 0; iter != end; iter++, i++)
-   {
-      tVec3 position;
-      tQuat rotation;
-      if (pAnim->Interpolate(i, time, &position, &rotation) == S_OK)
-      {
-         tMatrix4 mt, mr;
-
-         rotation.ToMatrix(&mr);
-         MatrixTranslate(position.x, position.y, position.z, &mt);
-
-         tMatrix4 temp;
-         mt.Multiply(mr, &temp);
-
-         tMatrix4 mf;
-         iter->localTransform.Multiply(temp, &mf);
-
-         int iParent = iter->parentIndex;
-         if (iParent < 0)
-         {
-            temp = mf;
-         }
-         else
-         {
-            (*pMatrices)[iParent].Multiply(mf, &temp);
-         }
-
-         (*pMatrices)[i] = temp;
-      }
-   }
-}
-
-///////////////////////////////////////
-
 tResult cModelSkeleton::AddAnimation(eModelAnimationType type,
                                      IModelAnimation * pAnim)
 {

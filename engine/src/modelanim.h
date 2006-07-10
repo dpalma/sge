@@ -89,9 +89,12 @@ public:
 
    const tMatrices & GetBlendMatrices() const { return m_blendMatrices; }
 
-   virtual tResult SetAnimation(eModelAnimationType type);
+   virtual tResult SetAnimation(IModelAnimation * pAnim);
 
 private:
+   IModelSkeleton * AccessSkeleton() { return m_pSkeleton; }
+   const IModelSkeleton * AccessSkeleton() const { return m_pSkeleton; }
+
    cAutoIPtr<IModelSkeleton> m_pSkeleton;
    cAutoIPtr<IModelAnimation> m_pAnim;
    double m_animStart, m_animEnd, m_animTime;

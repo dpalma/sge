@@ -34,8 +34,6 @@ public:
 
    tResult GetBindMatrices(size_t nMaxMatrices, tMatrix4 * pMatrices) const;
 
-   void InterpolateMatrices(IModelAnimation * pAnim, double time, tMatrices * pMatrices) const;
-
    tResult AddAnimation(eModelAnimationType type, IModelAnimation * pAnim);
    tResult GetAnimation(eModelAnimationType type, IModelAnimation * * ppAnim) const;
 

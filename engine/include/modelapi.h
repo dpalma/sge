@@ -133,7 +133,6 @@ ENGINE_API tResult ModelAnimationCreate(IModelKeyFrameInterpolator * * pInterpol
                                         uint nInterpolators, IModelAnimation * * ppAnim);
 
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // 
 // INTERFACE: IModelAnimationController
@@ -145,7 +144,7 @@ interface IModelAnimationController : IUnknown
 
    virtual const tMatrices & GetBlendMatrices() const = 0;
 
-   virtual tResult SetAnimation(eModelAnimationType type) = 0;
+   virtual tResult SetAnimation(IModelAnimation * pAnim) = 0;
 };
 
 ////////////////////////////////////////
@@ -172,8 +171,6 @@ interface IModelSkeleton : IUnknown
    virtual tResult GetJoint(size_t iJoint, sModelJoint * pJoint) const = 0;
 
    virtual tResult GetBindMatrices(size_t nMaxMatrices, tMatrix4 * pMatrices) const = 0;
-
-   virtual void InterpolateMatrices(IModelAnimation * pAnim, double time, tMatrices * pMatrices) const = 0;
 
    virtual tResult AddAnimation(eModelAnimationType type, IModelAnimation * pAnim) = 0;
    virtual tResult GetAnimation(eModelAnimationType type, IModelAnimation * * ppAnim) const = 0;

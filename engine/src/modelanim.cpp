@@ -292,36 +292,84 @@ tResult cModelAnimationController::Advance(double elapsedTime)
 
    Assert(!(elapsedTime < 0));
 
-   m_animTime += elapsedTime;
-   if (m_animTime > m_animEnd)
+   double newAnimTime = m_animTime + elapsedTime;
+   if (newAnimTime > m_animEnd)
    {
-      double pastEnd = m_animTime - m_animEnd;
+      double pastEnd = newAnimTime - m_animEnd;
       double animLength = (m_animEnd - m_animStart);
       if (pastEnd > animLength)
       {
          pastEnd = 0;
       }
-      m_animTime = m_animStart + pastEnd;
+      newAnimTime = m_animStart + pastEnd;
    }
 
-   m_pSkeleton->InterpolateMatrices(m_pAnim, m_animTime, &m_blendMatrices);
+   size_t nJoints = 0;
+   if (AccessSkeleton()->GetJointCount(&nJoints) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   m_blendMatrices.resize(nJoints);
+
+   for (uint i = 0; i < nJoints; ++i)
+   {
+      tVec3 position;
+      tQuat rotation;
+      if (m_pAnim->Interpolate(i, newAnimTime, &position, &rotation) != S_OK)
+      {
+         return E_FAIL;
+      }
+
+      sModelJoint joint;
+      if (AccessSkeleton()->GetJoint(i, &joint) != S_OK)
+      {
+         return E_FAIL;
+      }
+
+      tMatrix4 mt, mr;
+
+      rotation.ToMatrix(&mr);
+      MatrixTranslate(position.x, position.y, position.z, &mt);
+
+      tMatrix4 temp;
+      mt.Multiply(mr, &temp);
+
+      tMatrix4 mf;
+      joint.localTransform.Multiply(temp, &mf);
+
+      int iParent = joint.parentIndex;
+      if (iParent < 0)
+      {
+         temp = mf;
+      }
+      else
+      {
+         m_blendMatrices[iParent].Multiply(mf, &temp);
+      }
+
+      m_blendMatrices[i] = temp;
+   }
+
+   m_animTime = newAnimTime;
+
    return S_OK;
 }
 
 ///////////////////////////////////////
 
-tResult cModelAnimationController::SetAnimation(eModelAnimationType type)
+tResult cModelAnimationController::SetAnimation(IModelAnimation * pAnim)
 {
-   cAutoIPtr<IModelAnimation> pAnim;
-   if (m_pSkeleton->GetAnimation(type, &pAnim) == S_OK)
+   if (pAnim == NULL)
    {
-      pAnim->GetStartEnd(&m_animStart, &m_animEnd);
-      m_animTime = m_animStart;
-      SafeRelease(m_pAnim);
-      m_pAnim = pAnim;
-      return S_OK;
+      return E_POINTER;
    }
-   return E_FAIL;
+
+   pAnim->GetStartEnd(&m_animStart, &m_animEnd);
+   m_animTime = m_animStart;
+   SafeRelease(m_pAnim);
+   m_pAnim = CTAddRef(pAnim);
+   return S_OK;
 }
 
 ///////////////////////////////////////
