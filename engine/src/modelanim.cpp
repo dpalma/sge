@@ -6,6 +6,7 @@
 #include "modelanim.h"
 #include "model.h"
 
+#include "matrix3.h"
 #include "matrix4.h"
 
 #include <algorithm>
@@ -327,9 +328,16 @@ tResult cModelAnimationController::Advance(double elapsedTime)
          return E_FAIL;
       }
 
-      tMatrix4 mt, mr;
+      tMatrix3 mr3;
+      rotation.ToMatrix(&mr3);
 
-      rotation.ToMatrix(&mr);
+      tMatrix4 mr(
+         mr3.m00, mr3.m10, mr3.m20, 0,
+         mr3.m01, mr3.m11, mr3.m21, 0,
+         mr3.m02, mr3.m12, mr3.m22, 0,
+         0, 0, 0, 1);
+
+      tMatrix4 mt;
       MatrixTranslate(position.x, position.y, position.z, &mt);
 
       tMatrix4 temp;

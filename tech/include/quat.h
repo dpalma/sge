@@ -5,7 +5,7 @@
 #define INCLUDED_QUAT_H
 
 #include "techdll.h"
-#include "matrix4.h"
+#include "matrix3.h"
 #include "vec3.h"
 
 #if _MSC_VER > 1000
@@ -44,7 +44,7 @@ public:
    value_type Norm() const;
    cQuat Inverse() const;
 
-   void ToMatrix(tMatrix4 * pMatrix) const;
+   void ToMatrix(cMatrix3<T> * pMatrix) const;
 
    value_type x, y, z, w;
 };
@@ -136,8 +136,10 @@ inline cQuat<T> cQuat<T>::Inverse() const
 ///////////////////////////////////////
 
 template <typename T>
-inline void cQuat<T>::ToMatrix(tMatrix4 * pMatrix) const
+inline void cQuat<T>::ToMatrix(cMatrix3<T> * pMatrix) const
 {
+   Assert(pMatrix != NULL);
+
    tQuat::value_type s = 2.0f / Norm();
    tQuat::value_type xs = x*s;
    tQuat::value_type ys = y*s;
@@ -158,22 +160,14 @@ inline void cQuat<T>::ToMatrix(tMatrix4 * pMatrix) const
    pMatrix->m[0] = 1 - (yy + zz);
    pMatrix->m[1] = xy + wz;
    pMatrix->m[2] = xz - wy;
-   pMatrix->m[3] = 0;
 
-   pMatrix->m[4] = xy - wz;
-   pMatrix->m[5] = 1 - (xx + zz);
-   pMatrix->m[6] = yz + wx;
-   pMatrix->m[7] = 0;
+   pMatrix->m[3] = xy - wz;
+   pMatrix->m[4] = 1 - (xx + zz);
+   pMatrix->m[5] = yz + wx;
 
-   pMatrix->m[8] = xz + wy;
-   pMatrix->m[9] = yz - wx;
-   pMatrix->m[10] = 1 - (xx + yy);
-   pMatrix->m[11] = 0;
-
-   pMatrix->m[12] = 0;
-   pMatrix->m[13] = 0;
-   pMatrix->m[14] = 0;
-   pMatrix->m[15] = 1;
+   pMatrix->m[6] = xz + wy;
+   pMatrix->m[7] = yz - wx;
+   pMatrix->m[8] = 1 - (xx + yy);
 }
 
 ///////////////////////////////////////
