@@ -37,8 +37,13 @@ public:
 
    const cQuat & operator =(const cQuat & other);
 
+   static const cQuat & GetAddIdentity();
+   static const cQuat & GetMultIdentity();
+
    bool operator ==(const cQuat & other) const;
    bool operator !=(const cQuat & other) const;
+
+   const cQuat<T> & operator *=(const cQuat & other);
 
    value_type Dot(const cQuat & quat) const;
    value_type Norm() const;
@@ -76,8 +81,8 @@ inline cQuat<T>::cQuat(value_type _x, value_type _y, value_type _z, value_type _
 
 template <typename T>
 inline cQuat<T>::cQuat(const cQuat & other) 
+ : x(other.x), y(other.y), z(other.z), w(other.w)
 {
-   operator =(other);
 }
 
 ///////////////////////////////////////
@@ -95,6 +100,24 @@ inline const cQuat<T> & cQuat<T>::operator =(const cQuat & other)
 ///////////////////////////////////////
 
 template <typename T>
+const cQuat<T> & cQuat<T>::GetAddIdentity()
+{
+   static const cQuat<T> addIdentity(0,0,0,0);
+   return addIdentity;
+}
+
+///////////////////////////////////////
+
+template <typename T>
+const cQuat<T> & cQuat<T>::GetMultIdentity()
+{
+   static const cQuat<T> multIdentity(0,0,0,1);
+   return multIdentity;
+}
+
+///////////////////////////////////////
+
+template <typename T>
 inline bool cQuat<T>::operator ==(const cQuat & other) const
 {
    return w == other.w && x == other.x && y == other.y && z == other.z;
@@ -106,6 +129,23 @@ template <typename T>
 inline bool cQuat<T>::operator !=(const cQuat & other) const
 {
    return w != other.w || x != other.x || y != other.y || z != other.z;
+}
+
+///////////////////////////////////////
+
+template <typename T>
+const cQuat<T> & cQuat<T>::operator *=(const cQuat & other)
+{
+   T dot = Dot(other);
+   cVec3<T> vq0(x, y, z);
+   cVec3<T> vq1(other.x, other.y, other.z);
+   cVec3<T> vNew = ((vq1 * w) + (vq0 * other.w)) + vq0.Cross(vq1);
+   T wNew = w * other.w - dot;
+   x = vNew.x;
+   y = vNew.y;
+   z = vNew.z;
+   w = wNew;
+   return *this;
 }
 
 ///////////////////////////////////////
@@ -129,8 +169,10 @@ inline T cQuat<T>::Norm() const
 template <typename T>
 inline cQuat<T> cQuat<T>::Inverse() const
 {
-   value_type d = (value_type)1 / Norm();
-   return cQuat(-x * d, -y * d, -z * d, w);
+   T n = Norm();
+   Assert(n != 0);
+   T oneOverN = static_cast<T>(1) / n;
+   return cQuat(-x * oneOverN, -y * oneOverN, -z * oneOverN, w);
 }
 
 ///////////////////////////////////////

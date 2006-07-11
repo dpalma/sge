@@ -32,6 +32,8 @@ public:
    const cVec3 & operator *=(value_type scale);
    const cVec3 & operator /=(value_type divisor);
 
+   cVec3 operator -() const;
+
    value_type Length() const;
    value_type LengthSqr() const;
    void Normalize();
@@ -138,6 +140,14 @@ inline const cVec3<T> & cVec3<T>::operator /=(value_type divisor)
    y /= divisor;
    z /= divisor;
    return *this;
+}
+
+///////////////////////////////////////
+
+template <typename T>
+cVec3<T> cVec3<T>::operator -() const
+{
+   return cVec3<T>(-x, -y, -z);
 }
 
 ///////////////////////////////////////

@@ -201,6 +201,32 @@ tResult cEntityModelRenderer::GetBoundingBox(tAxisAlignedBox * pBBox) const
 
 ///////////////////////////////////////
 
+static void ApplyJointMatrices(const tModelVertices & vertices, const tMatrices & matrices, tBlendedVertices * pVertices)
+{
+   pVertices->resize(vertices.size());
+
+   tModelVertices::const_iterator iter = vertices.begin();
+   tModelVertices::const_iterator end = vertices.end();
+   for (uint i = 0; iter != end; iter++, i++)
+   {
+      sBlendedVertex & v = (*pVertices)[i];
+      v.u = iter->u;
+      v.v = iter->v;
+      // TODO: call them bones or joints???
+      int iJoint = FloatToInt(iter->bone);
+      if (iJoint < 0)
+      {
+         v.normal = iter->normal;
+         v.pos = iter->pos;
+      }
+      else
+      {
+         matrices[iJoint].Transform(iter->normal, &v.normal);
+         matrices[iJoint].Transform(iter->pos, &v.pos);
+      }
+   }
+}
+
 void cEntityModelRenderer::Update(double elapsedTime)
 {
    UseGlobal(ResourceManager);
@@ -237,7 +263,7 @@ void cEntityModelRenderer::Update(double elapsedTime)
    {
       if (m_pAnimController->Advance(elapsedTime) == S_OK)
       {
-         m_pModel->ApplyJointMatrices(m_pAnimController->GetBlendMatrices(), &m_blendedVerts);
+         ApplyJointMatrices(m_pModel->GetVertices(), m_pAnimController->GetBlendMatrices(), &m_blendedVerts);
       }
    }
 }

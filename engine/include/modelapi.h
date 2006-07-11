@@ -161,6 +161,8 @@ struct sModelJoint
 {
    int parentIndex;
    tMatrix4 localTransform;
+   tVec3 localTranslation;
+   tQuat localRotation;
 };
 
 typedef std::vector<sModelJoint> tModelJoints;

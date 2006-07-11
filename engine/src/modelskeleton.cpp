@@ -5,6 +5,8 @@
 
 #include "modelskeleton.h"
 
+#include "matrix3.h"
+
 #include <algorithm>
 #include <cfloat>
 #include <stack>
@@ -135,6 +137,9 @@ tResult cModelSkeleton::GetBindMatrices(size_t nMaxMatrices, tMatrix4 * pMatrice
 
    tMatrices absolutes(m_joints.size(), tMatrix4::GetIdentity());
 
+   std::vector<tQuat> absoluteRotations(m_joints.size(), tQuat::GetMultIdentity());
+   std::vector<tVec3> absoluteTranslations(m_joints.size(), tVec3(0,0,0));
+
    std::stack<int> s;
    s.push(iRootJoint);
    while (!s.empty())
@@ -146,10 +151,14 @@ tResult cModelSkeleton::GetBindMatrices(size_t nMaxMatrices, tMatrix4 * pMatrice
       if (iParent == -1)
       {
          absolutes[iJoint] = m_joints[iJoint].localTransform;
+         absoluteRotations[iJoint] = m_joints[iJoint].localRotation;
+         absoluteTranslations[iJoint] = m_joints[iJoint].localTranslation;
       }
       else
       {
          absolutes[iParent].Multiply(m_joints[iJoint].localTransform, &absolutes[iJoint]);
+         absoluteRotations[iJoint] *= m_joints[iJoint].localRotation;
+         absoluteTranslations[iJoint] += m_joints[iJoint].localTranslation;
       }
 
       std::multimap<int, int>::iterator iter = jointChildMap.lower_bound(iJoint);
@@ -162,6 +171,31 @@ tResult cModelSkeleton::GetBindMatrices(size_t nMaxMatrices, tMatrix4 * pMatrice
 
    for (i = 0; i < m_joints.size(); i++)
    {
+      /*
+      tQuat invRot = absoluteRotations[i].Inverse();
+      tVec3 invTrans = -absoluteTranslations[i];
+      tMatrix3 mr;
+      invRot.ToMatrix(&mr);
+      tMatrix4 temp;
+      temp.m00 = mr.m00;
+      temp.m10 = mr.m10;
+      temp.m20 = mr.m20;
+      temp.m30 = 0;
+      temp.m01 = mr.m01;
+      temp.m11 = mr.m11;
+      temp.m21 = mr.m21;
+      temp.m31 = 0;
+      temp.m02 = mr.m02;
+      temp.m12 = mr.m12;
+      temp.m22 = mr.m22;
+      temp.m32 = 0;
+      temp.m03 = invTrans.x;
+      temp.m13 = invTrans.y;
+      temp.m23 = invTrans.z;
+      temp.m33 = 1;
+      tMatrix4 real;
+      MatrixInvert(absolutes[i].m, real.m);
+      */
       MatrixInvert(absolutes[i].m, pMatrices[i].m);
    }
 

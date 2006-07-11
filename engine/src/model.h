@@ -165,8 +165,6 @@ public:
                          IModelSkeleton * pSkeleton,
                          cModel * * ppModel);
 
-   void ApplyJointMatrices(const tMatrices & matrices, tBlendedVertices * pVertices) const;
-
    const tModelVertices & GetVertices() const;
 
    const cModelMaterial & GetMaterial(int index);

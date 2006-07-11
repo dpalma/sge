@@ -262,34 +262,6 @@ tResult cModel::Create(const tModelVertices & verts,
 }
 
 ///////////////////////////////////////
-
-void cModel::ApplyJointMatrices(const tMatrices & matrices, tBlendedVertices * pVertices) const
-{
-   pVertices->resize(m_vertices.size());
-
-   tModelVertices::const_iterator iter = m_vertices.begin();
-   tModelVertices::const_iterator end = m_vertices.end();
-   for (uint i = 0; iter != end; iter++, i++)
-   {
-      sBlendedVertex & v = (*pVertices)[i];
-      v.u = iter->u;
-      v.v = iter->v;
-      // TODO: call them bones or joints???
-      int iJoint = FloatToInt(iter->bone);
-      if (iJoint < 0)
-      {
-         v.normal = iter->normal;
-         v.pos = iter->pos;
-      }
-      else
-      {
-         matrices[iJoint].Transform(iter->normal, &v.normal);
-         matrices[iJoint].Transform(iter->pos, &v.pos);
-      }
-   }
-}
-
-///////////////////////////////////////
 // TODO: How does this work for more than one joint per vertex with blend weights?
 // (Answer: I don't think you can pre-apply like this.)
 

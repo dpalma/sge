@@ -470,6 +470,8 @@ void * ModelMs3dLoad(IReader * pReader)
          std::copy(keyFrames.begin(), keyFrames.end(), jointKeyFrames[i].begin());
 
          joints[i].localTransform = local;
+         joints[i].localTranslation = tVec3(iter->GetPosition());
+         joints[i].localRotation = QuatFromEulerAngles(tVec3(iter->GetRotation()));
          joints[i].parentIndex = parentIndex;
       }
 

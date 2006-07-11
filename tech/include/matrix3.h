@@ -25,6 +25,8 @@ template <typename T>
 class cMatrix3
 {
 public:
+   typedef T value_type;
+
    cMatrix3();
    cMatrix3(T m00, T m10, T m20, T m01, T m11, T m21, T m02, T m12, T m22);
    cMatrix3(const cMatrix3 & other);
@@ -33,7 +35,9 @@ public:
 
    static const cMatrix3 & GetIdentity();
 
-   void Transpose(cMatrix3 * pDest);
+   T GetDeterminant() const;
+
+   void GetTranspose(cMatrix3 * pDest);
 
    void Multiply(const cMatrix3 & other, cMatrix3 * pResult) const;
 
@@ -111,7 +115,17 @@ const cMatrix3<T> & cMatrix3<T>::GetIdentity()
 ///////////////////////////////////////
 
 template <typename T>
-void cMatrix3<T>::Transpose(cMatrix3<T> * pDest)
+T cMatrix3<T>::GetDeterminant() const
+{
+   return m00 * ((m11 * m22) - (m12 * m21))
+      - m01 * ((m10 * m22) - (m12 * m20))
+      + m02 * ((m10 * m21) - (m11 * m20));
+}
+
+///////////////////////////////////////
+
+template <typename T>
+void cMatrix3<T>::GetTranspose(cMatrix3<T> * pDest)
 {
    Assert(pDest != NULL);
    pDest->m00 = m00;
@@ -131,7 +145,24 @@ template <typename T>
 void cMatrix3<T>::Multiply(const cMatrix3 & other, cMatrix3 * pResult) const
 {
    Assert(pResult != NULL);
-   MatrixMultiply(m, other.m, pResult->m);
+
+#define LHS(row,col)  ml[(col<<2)+row]
+#define RHS(row,col)  mr[(col<<2)+row]
+
+   pResult[0] = LHS(0, 0) * RHS(0, 0) + LHS(0, 1) * RHS(1, 0) + LHS(0, 2) * RHS(2, 0);
+   pResult[1] = LHS(1, 0) * RHS(0, 0) + LHS(1, 1) * RHS(1, 0) + LHS(1, 2) * RHS(2, 0);
+   pResult[2] = LHS(2, 0) * RHS(0, 0) + LHS(2, 1) * RHS(1, 0) + LHS(2, 2) * RHS(2, 0);
+
+   pResult[3] = LHS(0, 0) * RHS(0, 1) + LHS(0, 1) * RHS(1, 1) + LHS(0, 2) * RHS(2, 1);
+   pResult[4] = LHS(1, 0) * RHS(0, 1) + LHS(1, 1) * RHS(1, 1) + LHS(1, 2) * RHS(2, 1);
+   pResult[5] = LHS(2, 0) * RHS(0, 1) + LHS(2, 1) * RHS(1, 1) + LHS(2, 2) * RHS(2, 1);
+
+   pResult[6] = LHS(0, 0) * RHS(0, 2) + LHS(0, 1) * RHS(1, 2) + LHS(0, 2) * RHS(2, 2);
+   pResult[7] = LHS(1, 0) * RHS(0, 2) + LHS(1, 1) * RHS(1, 2) + LHS(1, 2) * RHS(2, 2);
+   pResult[8] = LHS(2, 0) * RHS(0, 2) + LHS(2, 1) * RHS(1, 2) + LHS(2, 2) * RHS(2, 2);
+
+#undef LHS
+#undef RHS
 }
 
 ///////////////////////////////////////
