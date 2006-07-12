@@ -328,20 +328,26 @@ tResult cModelAnimationController::Advance(double elapsedTime)
          return E_FAIL;
       }
 
-      tMatrix3 mr3;
-      rotation.ToMatrix(&mr3);
-
-      tMatrix4 mr(
-         mr3.m00, mr3.m10, mr3.m20, 0,
-         mr3.m01, mr3.m11, mr3.m21, 0,
-         mr3.m02, mr3.m12, mr3.m22, 0,
-         0, 0, 0, 1);
-
-      tMatrix4 mt;
-      MatrixTranslate(position.x, position.y, position.z, &mt);
+      tMatrix3 mr;
+      rotation.ToMatrix(&mr);
 
       tMatrix4 temp;
-      mt.Multiply(mr, &temp);
+      temp.m00 = mr.m00;
+      temp.m10 = mr.m10;
+      temp.m20 = mr.m20;
+      temp.m30 = 0;
+      temp.m01 = mr.m01;
+      temp.m11 = mr.m11;
+      temp.m21 = mr.m21;
+      temp.m31 = 0;
+      temp.m02 = mr.m02;
+      temp.m12 = mr.m12;
+      temp.m22 = mr.m22;
+      temp.m32 = 0;
+      temp.m03 = position.x;
+      temp.m13 = position.y;
+      temp.m23 = position.z;
+      temp.m33 = 1;
 
       tMatrix4 mf;
       joint.localTransform.Multiply(temp, &mf);

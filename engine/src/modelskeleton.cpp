@@ -135,8 +135,6 @@ tResult cModelSkeleton::GetBindMatrices(size_t nMaxMatrices, tMatrix4 * pMatrice
       return E_FAIL;
    }
 
-   tMatrices absolutes(m_joints.size(), tMatrix4::GetIdentity());
-
    std::vector<tQuat> absoluteRotations(m_joints.size(), tQuat::GetMultIdentity());
    std::vector<tVec3> absoluteTranslations(m_joints.size(), tVec3(0,0,0));
 
@@ -150,13 +148,11 @@ tResult cModelSkeleton::GetBindMatrices(size_t nMaxMatrices, tMatrix4 * pMatrice
       int iParent = m_joints[iJoint].parentIndex;
       if (iParent == -1)
       {
-         absolutes[iJoint] = m_joints[iJoint].localTransform;
          absoluteRotations[iJoint] = m_joints[iJoint].localRotation;
          absoluteTranslations[iJoint] = m_joints[iJoint].localTranslation;
       }
       else
       {
-         absolutes[iParent].Multiply(m_joints[iJoint].localTransform, &absolutes[iJoint]);
          absoluteRotations[iJoint] = absoluteRotations[iParent] * m_joints[iJoint].localRotation;
          absoluteTranslations[iJoint] = absoluteTranslations[iParent] + m_joints[iJoint].localTranslation;
       }

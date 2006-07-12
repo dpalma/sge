@@ -9,6 +9,7 @@
 
 #include "color.h"
 #include "globalobj.h"
+#include "matrix34.h"
 #include "multivar.h"
 #include "resourceapi.h"
 #include "statemachinetem.h"
@@ -221,8 +222,19 @@ static void ApplyJointMatrices(const tModelVertices & vertices, const tMatrices 
       }
       else
       {
+#if 0
+         const tMatrix4 & m = matrices[iJoint];
+         tMatrix34 blend(
+            m.m00, m.m10, m.m20,
+            m.m01, m.m11, m.m21,
+            m.m02, m.m12, m.m22,
+            m.m03, m.m13, m.m23);
+         blend.Transform(iter->normal, &v.normal);
+         blend.Transform(iter->pos, &v.pos);
+#else
          matrices[iJoint].Transform(iter->normal, &v.normal);
          matrices[iJoint].Transform(iter->pos, &v.pos);
+#endif
       }
    }
 }
