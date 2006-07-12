@@ -13,20 +13,6 @@
 // "Rotating Objects Using Quaternions", February, 1998 "Game Developer", pp. 34-42
 
 ///////////////////////////////////////////////////////////////////////////////
-
-tQuat operator *(const tQuat & q0, const tQuat & q1)
-{
-   tQuat temp(q0);
-   temp *= q1;
-   return tQuat(temp);
-   //tVec3 vq0(q0.x, q0.y, q0.z);
-
-   //tVec3 vq1(q1.x, q1.y, q1.z);
-
-   //return tQuat(((vq1 * q0.w) + (vq0 * q1.w)) + vq0.Cross(vq1), q0.w * q1.w - vq0.Dot(vq1));
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // Construct quaternions for the rotations about each axis, then compose them.
 
 tQuat QuatFromEulerAngles(const tVec3 & eulerAngles)

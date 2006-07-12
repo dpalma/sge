@@ -136,15 +136,14 @@ inline bool cQuat<T>::operator !=(const cQuat & other) const
 template <typename T>
 const cQuat<T> & cQuat<T>::operator *=(const cQuat & other)
 {
-   T dot = Dot(other);
-   cVec3<T> vq0(x, y, z);
-   cVec3<T> vq1(other.x, other.y, other.z);
-   cVec3<T> vNew = ((vq1 * w) + (vq0 * other.w)) + vq0.Cross(vq1);
-   T wNew = w * other.w - dot;
-   x = vNew.x;
-   y = vNew.y;
-   z = vNew.z;
+   T wNew = ((w * other.w) - (x * other.x) - (y * other.y) - (z * other.z));
+   T xNew = ((w * other.x) + (x * other.w) + (y * other.z) - (z * other.y));
+   T yNew = ((w * other.y) - (x * other.z) + (y * other.w) + (z * other.x));
+   T zNew = ((w * other.z) + (x * other.y) - (y * other.x) + (z * other.w));
    w = wNew;
+   x = xNew;
+   y = yNew;
+   z = zNew;
    return *this;
 }
 
@@ -243,7 +242,10 @@ inline tQuat operator /(const tQuat & q, tQuat::value_type scalar)
 
 ///////////////////////////////////////
 
-tQuat operator *(const tQuat & q0, const tQuat & q1);
+inline tQuat operator *(const tQuat & q0, const tQuat & q1)
+{
+   return tQuat(q0) *= q1;
+}
 
 ///////////////////////////////////////
 

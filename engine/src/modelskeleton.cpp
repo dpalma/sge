@@ -157,8 +157,8 @@ tResult cModelSkeleton::GetBindMatrices(size_t nMaxMatrices, tMatrix4 * pMatrice
       else
       {
          absolutes[iParent].Multiply(m_joints[iJoint].localTransform, &absolutes[iJoint]);
-         absoluteRotations[iJoint] *= m_joints[iJoint].localRotation;
-         absoluteTranslations[iJoint] += m_joints[iJoint].localTranslation;
+         absoluteRotations[iJoint] = absoluteRotations[iParent] * m_joints[iJoint].localRotation;
+         absoluteTranslations[iJoint] = absoluteTranslations[iParent] + m_joints[iJoint].localTranslation;
       }
 
       std::multimap<int, int>::iterator iter = jointChildMap.lower_bound(iJoint);
@@ -171,7 +171,6 @@ tResult cModelSkeleton::GetBindMatrices(size_t nMaxMatrices, tMatrix4 * pMatrice
 
    for (i = 0; i < m_joints.size(); i++)
    {
-      /*
       tQuat invRot = absoluteRotations[i].Inverse();
       tVec3 invTrans = -absoluteTranslations[i];
       tMatrix3 mr;
@@ -193,10 +192,7 @@ tResult cModelSkeleton::GetBindMatrices(size_t nMaxMatrices, tMatrix4 * pMatrice
       temp.m13 = invTrans.y;
       temp.m23 = invTrans.z;
       temp.m33 = 1;
-      tMatrix4 real;
-      MatrixInvert(absolutes[i].m, real.m);
-      */
-      MatrixInvert(absolutes[i].m, pMatrices[i].m);
+      pMatrices[i] = temp;
    }
 
    return S_OK;
