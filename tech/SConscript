@@ -20,6 +20,7 @@ sourceFiles = Split("""
    src/hash.cpp
    src/hashtbltest.cpp
    src/image.cpp
+   src/matrix3.cpp
    src/matrix4.cpp
    src/md5.c
    src/multivar.cpp

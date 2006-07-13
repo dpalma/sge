@@ -171,12 +171,12 @@ template <typename T>
 inline void cMatrix3<T>::Transform(const cVec3<T> & v, cVec3<T> * pResult) const
 {
    Assert(pResult != NULL);
-   // [ m00 m01 m02 ]   [v0]
-   // [ m10 m11 m12 ] * [v1] = [v0' v1' v2']
-   // [ m20 m21 m22 ]   [v2]
-   pResult[0] = (v[0] * m00) + (v[1] * m01) + (v[2] * m02);
-   pResult[1] = (v[0] * m10) + (v[1] * m11) + (v[2] * m12);
-   pResult[2] = (v[0] * m20) + (v[1] * m21) + (v[2] * m22);
+   // [ m00 m01 m02 ]   [vx]
+   // [ m10 m11 m12 ] * [vy] = [vx' vy' vz']
+   // [ m20 m21 m22 ]   [vz]
+   pResult->x = (v.x * m00) + (v.y * m01) + (v.z * m02);
+   pResult->y = (v.x * m10) + (v.y * m11) + (v.z * m12);
+   pResult->z = (v.x * m20) + (v.y * m21) + (v.z * m22);
 }
 
 ///////////////////////////////////////
@@ -188,6 +188,12 @@ inline void cMatrix3<T>::Transform3(const float * pV, float * pDest) const
    pDest[1] = (pV[0] * m10) + (pV[1] * m11) + (pV[2] * m12);
    pDest[2] = (pV[0] * m20) + (pV[1] * m21) + (pV[2] * m22);
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+void MatrixRotateX(float theta, tMatrix3 * pResult);
+void MatrixRotateY(float theta, tMatrix3 * pResult);
+void MatrixRotateZ(float theta, tMatrix3 * pResult);
 
 ///////////////////////////////////////////////////////////////////////////////
 

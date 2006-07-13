@@ -326,6 +326,9 @@
 					RelativePath="..\..\engine\src\entitymanager.cpp">
 				</File>
 				<File
+					RelativePath="..\..\tech\src\matrix3.cpp">
+				</File>
+				<File
 					RelativePath="..\..\engine\src\model.cpp">
 				</File>
 				<File
