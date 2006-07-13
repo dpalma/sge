@@ -642,6 +642,12 @@
 				RelativePath="..\..\tech\include\keys.h">
 			</File>
 			<File
+				RelativePath="..\..\tech\include\matrix3.h">
+			</File>
+			<File
+				RelativePath="..\..\tech\include\matrix34.h">
+			</File>
+			<File
 				RelativePath="..\..\tech\include\matrix4.h">
 			</File>
 			<File

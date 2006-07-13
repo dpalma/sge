@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8.00"
 	Name="engine"
-	ProjectGUID="{F1334822-5BBB-495B-AD67-0F8D7D2A02C9}"
+	ProjectGUID="{BD5E5BCF-8648-48EA-8B35-04CFE1541E3A}"
 	RootNamespace="engine"
 	>
 	<Platforms>
@@ -631,6 +631,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\engine\src\model.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\engine\src\modelanim.h"
 					>
 				</File>
@@ -702,10 +706,6 @@
 			</File>
 			<File
 				RelativePath="..\..\engine\include\entityapi.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\engine\include\model.h"
 				>
 			</File>
 			<File
