@@ -160,7 +160,6 @@ ENGINE_API tResult ModelAnimationControllerCreate(IModelSkeleton * pSkeleton, IM
 struct sModelJoint
 {
    int parentIndex;
-   tMatrix4 localTransform;
    tVec3 localTranslation;
    tQuat localRotation;
 };

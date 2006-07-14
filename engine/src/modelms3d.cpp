@@ -434,11 +434,6 @@ void * ModelMs3dLoad(IReader * pReader)
             }
          }
 
-         tMatrix4 mt, mr, local;
-         MatrixTranslate(iter->GetPosition()[0], iter->GetPosition()[1], iter->GetPosition()[2], &mt);
-         MatrixFromAngles(tVec3(iter->GetRotation()), &mr);
-         mt.Multiply(mr, &local);
-
          AssertMsg(iter->GetKeyFramesRot().size() == iter->GetKeyFramesTrans().size(),
             _T("Should have been rejected by cMs3dJoint reader"));
 
@@ -469,7 +464,6 @@ void * ModelMs3dLoad(IReader * pReader)
          jointKeyFrames[i].resize(keyFrames.size());
          std::copy(keyFrames.begin(), keyFrames.end(), jointKeyFrames[i].begin());
 
-         joints[i].localTransform = local;
          joints[i].localTranslation = tVec3(iter->GetPosition());
          joints[i].localRotation = QuatFromEulerAngles(tVec3(iter->GetRotation()));
          joints[i].parentIndex = parentIndex;

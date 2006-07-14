@@ -328,41 +328,42 @@ tResult cModelAnimationController::Advance(double elapsedTime)
          return E_FAIL;
       }
 
-      tMatrix3 mr;
-      rotation.ToMatrix(&mr);
+      tMatrix3 localJointRotMat;
+      joint.localRotation.ToMatrix(&localJointRotMat);
 
-      tMatrix4 temp;
-      temp.m00 = mr.m00;
-      temp.m10 = mr.m10;
-      temp.m20 = mr.m20;
-      temp.m30 = 0;
-      temp.m01 = mr.m01;
-      temp.m11 = mr.m11;
-      temp.m21 = mr.m21;
-      temp.m31 = 0;
-      temp.m02 = mr.m02;
-      temp.m12 = mr.m12;
-      temp.m22 = mr.m22;
-      temp.m32 = 0;
-      temp.m03 = position.x;
-      temp.m13 = position.y;
-      temp.m23 = position.z;
-      temp.m33 = 1;
+      tMatrix3 animRotMat;
+      rotation.ToMatrix(&animRotMat);
+
+      tMatrix3 finalRotMat;
+      localJointRotMat.Multiply(animRotMat, &finalRotMat);
 
       tMatrix4 mf;
-      joint.localTransform.Multiply(temp, &mf);
+      mf.m00 = finalRotMat.m00;
+      mf.m10 = finalRotMat.m10;
+      mf.m20 = finalRotMat.m20;
+      mf.m30 = 0;
+      mf.m01 = finalRotMat.m01;
+      mf.m11 = finalRotMat.m11;
+      mf.m21 = finalRotMat.m21;
+      mf.m31 = 0;
+      mf.m02 = finalRotMat.m02;
+      mf.m12 = finalRotMat.m12;
+      mf.m22 = finalRotMat.m22;
+      mf.m32 = 0;
+      mf.m03 = position.x + joint.localTranslation.x;
+      mf.m13 = position.y + joint.localTranslation.y;
+      mf.m23 = position.z + joint.localTranslation.z;
+      mf.m33 = 1;
 
       int iParent = joint.parentIndex;
       if (iParent < 0)
       {
-         temp = mf;
+         m_blendMatrices[i] = mf;
       }
       else
       {
-         m_blendMatrices[iParent].Multiply(mf, &temp);
+         m_blendMatrices[iParent].Multiply(mf, &m_blendMatrices[i]);
       }
-
-      m_blendMatrices[i] = temp;
    }
 
    m_animTime = newAnimTime;
