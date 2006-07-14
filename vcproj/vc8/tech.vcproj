@@ -535,6 +535,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\tech\src\matrix3.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\tech\src\matrix4.cpp"
 					>
 				</File>
