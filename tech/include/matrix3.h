@@ -146,23 +146,19 @@ void cMatrix3<T>::Multiply(const cMatrix3 & other, cMatrix3 * pResult) const
 {
    Assert(pResult != NULL);
 
-#define LHS(row,col)  ml[(col<<2)+row]
-#define RHS(row,col)  mr[(col<<2)+row]
+   // [ m00 m01 m02 ]   [ n00 n01 n02 ]   [ m00n00+m01n10+m02n20 m00n01+m01n11+m02n21 m00n02+m01n12+m02n22 ]
+   // [ m10 m11 m12 ] * [ n10 n11 n12 ] = [ m10n00+m11n10+m12n20 m10n01+m11n11+m12n21 m10n02+m11n12+m12n22 ]
+   // [ m20 m21 m22 ]   [ n20 n21 n22 ]   [ m20n00+m21n10+m22n20 m20n01+m21n11+m22n21 m20n02+m21n12+m22n22 ]
 
-   pResult[0] = LHS(0, 0) * RHS(0, 0) + LHS(0, 1) * RHS(1, 0) + LHS(0, 2) * RHS(2, 0);
-   pResult[1] = LHS(1, 0) * RHS(0, 0) + LHS(1, 1) * RHS(1, 0) + LHS(1, 2) * RHS(2, 0);
-   pResult[2] = LHS(2, 0) * RHS(0, 0) + LHS(2, 1) * RHS(1, 0) + LHS(2, 2) * RHS(2, 0);
-
-   pResult[3] = LHS(0, 0) * RHS(0, 1) + LHS(0, 1) * RHS(1, 1) + LHS(0, 2) * RHS(2, 1);
-   pResult[4] = LHS(1, 0) * RHS(0, 1) + LHS(1, 1) * RHS(1, 1) + LHS(1, 2) * RHS(2, 1);
-   pResult[5] = LHS(2, 0) * RHS(0, 1) + LHS(2, 1) * RHS(1, 1) + LHS(2, 2) * RHS(2, 1);
-
-   pResult[6] = LHS(0, 0) * RHS(0, 2) + LHS(0, 1) * RHS(1, 2) + LHS(0, 2) * RHS(2, 2);
-   pResult[7] = LHS(1, 0) * RHS(0, 2) + LHS(1, 1) * RHS(1, 2) + LHS(1, 2) * RHS(2, 2);
-   pResult[8] = LHS(2, 0) * RHS(0, 2) + LHS(2, 1) * RHS(1, 2) + LHS(2, 2) * RHS(2, 2);
-
-#undef LHS
-#undef RHS
+   pResult->m00 = m00*other.m00 + m01*other.m10 + m02*other.m20;
+   pResult->m10 = m10*other.m00 + m11*other.m10 + m12*other.m20;
+   pResult->m20 = m20*other.m00 + m21*other.m10 + m22*other.m20;
+   pResult->m01 = m00*other.m01 + m01*other.m11 + m02*other.m21;
+   pResult->m11 = m10*other.m01 + m11*other.m11 + m12*other.m21;
+   pResult->m21 = m20*other.m01 + m21*other.m11 + m22*other.m21;
+   pResult->m02 = m00*other.m02 + m01*other.m12 + m02*other.m22;
+   pResult->m12 = m10*other.m02 + m11*other.m12 + m12*other.m22;
+   pResult->m22 = m20*other.m02 + m21*other.m12 + m22*other.m22;
 }
 
 ///////////////////////////////////////
