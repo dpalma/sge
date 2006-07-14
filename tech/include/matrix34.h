@@ -133,7 +133,15 @@ void cMatrix34<T>::SetRotation(const cQuat<T> & q)
 template <typename T>
 inline void cMatrix34<T>::SetRotation(const cMatrix3<T> & r)
 {
-   memcpy(&m[0], &r.m[0], 9 * sizeof(T));
+   m00 = r.m00;
+   m10 = r.m10;
+   m20 = r.m20;
+   m01 = r.m01;
+   m11 = r.m11;
+   m21 = r.m21;
+   m02 = r.m02;
+   m12 = r.m12;
+   m22 = r.m22;
 }
 
 ///////////////////////////////////////
@@ -141,7 +149,9 @@ inline void cMatrix34<T>::SetRotation(const cMatrix3<T> & r)
 template <typename T>
 inline void cMatrix34<T>::SetTranslation(const cVec3<T> & t)
 {
-   memcpy(&m[10], &t.v[0], 3 * sizeof(T));
+   m03 = t.x;
+   m13 = t.y;
+   m23 = t.z;
 }
 
 ///////////////////////////////////////
@@ -150,28 +160,18 @@ template <typename T>
 void cMatrix34<T>::Compose(const cMatrix34 & other, cMatrix34 * pResult) const
 {
    Assert(pResult != NULL);
-
-#define LHS(row,col)  m[(col<<2)+row]
-#define RHS(row,col)  other.m[(col<<2)+row]
-
-   pResult->m[0] = LHS(0, 0) * RHS(0, 0) + LHS(0, 1) * RHS(1, 0) + LHS(0, 2) * RHS(2, 0);
-   pResult->m[1] = LHS(1, 0) * RHS(0, 0) + LHS(1, 1) * RHS(1, 0) + LHS(1, 2) * RHS(2, 0);
-   pResult->m[2] = LHS(2, 0) * RHS(0, 0) + LHS(2, 1) * RHS(1, 0) + LHS(2, 2) * RHS(2, 0);
-
-   pResult->m[3] = LHS(0, 0) * RHS(0, 1) + LHS(0, 1) * RHS(1, 1) + LHS(0, 2) * RHS(2, 1);
-   pResult->m[4] = LHS(1, 0) * RHS(0, 1) + LHS(1, 1) * RHS(1, 1) + LHS(1, 2) * RHS(2, 1);
-   pResult->m[5] = LHS(2, 0) * RHS(0, 1) + LHS(2, 1) * RHS(1, 1) + LHS(2, 2) * RHS(2, 1);
-
-   pResult->m[6] = LHS(0, 0) * RHS(0, 2) + LHS(0, 1) * RHS(1, 2) + LHS(0, 2) * RHS(2, 2);
-   pResult->m[7] = LHS(1, 0) * RHS(0, 2) + LHS(1, 1) * RHS(1, 2) + LHS(1, 2) * RHS(2, 2);
-   pResult->m[8] = LHS(2, 0) * RHS(0, 2) + LHS(2, 1) * RHS(1, 2) + LHS(2, 2) * RHS(2, 2);
-
-#undef LHS
-#undef RHS
-
-   pResult->m[9] = m[9] + other.m[9];
-   pResult->m[10] = m[10] + other.m[10];
-   pResult->m[11] = m[11] + other.m[11];
+   pResult->m00 = m00*other.m00 + m01*other.m10 + m02*other.m20;
+   pResult->m10 = m10*other.m00 + m11*other.m10 + m12*other.m20;
+   pResult->m20 = m20*other.m00 + m21*other.m10 + m22*other.m20;
+   pResult->m01 = m00*other.m01 + m01*other.m11 + m02*other.m21;
+   pResult->m11 = m10*other.m01 + m11*other.m11 + m12*other.m21;
+   pResult->m21 = m20*other.m01 + m21*other.m11 + m22*other.m21;
+   pResult->m02 = m00*other.m02 + m01*other.m12 + m02*other.m22;
+   pResult->m12 = m10*other.m02 + m11*other.m12 + m12*other.m22;
+   pResult->m22 = m20*other.m02 + m21*other.m12 + m22*other.m22;
+   pResult->m03 = m03 + other.m03;
+   pResult->m13 = m13 + other.m13;
+   pResult->m23 = m23 + other.m23;
 }
 
 ///////////////////////////////////////
