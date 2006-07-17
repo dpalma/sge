@@ -32,7 +32,7 @@ public:
    virtual tResult GetJointCount(size_t * pJointCount) const;
    virtual tResult GetJoint(size_t iJoint, sModelJoint * pJoint) const;
 
-   tResult GetBindMatrices(size_t nMaxMatrices, tMatrix4 * pMatrices) const;
+   tResult GetBindMatrices(uint nMaxMatrices, tMatrix34 * pMatrices) const;
 
    tResult AddAnimation(eModelAnimationType type, IModelAnimation * pAnim);
    tResult GetAnimation(eModelAnimationType type, IModelAnimation * * ppAnim) const;

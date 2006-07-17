@@ -63,6 +63,7 @@ public:
 private:
    cStr m_model;
    cModel * m_pModel;
+   std::vector<tMatrix34> m_blendMatrices;
    tBlendedVertices m_blendedVerts;
    cAutoIPtr<IModelAnimationController> m_pAnimController;
    tAxisAlignedBox m_bbox;

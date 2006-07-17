@@ -99,7 +99,7 @@ tResult cModelSkeleton::GetJoint(size_t iJoint, sModelJoint * pJoint) const
 
 ///////////////////////////////////////
 
-tResult cModelSkeleton::GetBindMatrices(size_t nMaxMatrices, tMatrix4 * pMatrices) const
+tResult cModelSkeleton::GetBindMatrices(uint nMaxMatrices, tMatrix34 * pMatrices) const
 {
    if (nMaxMatrices < m_joints.size())
    {
@@ -171,24 +171,8 @@ tResult cModelSkeleton::GetBindMatrices(size_t nMaxMatrices, tMatrix4 * pMatrice
       tVec3 invTrans = -absoluteTranslations[i];
       tMatrix3 mr;
       invRot.ToMatrix(&mr);
-      tMatrix4 temp;
-      temp.m00 = mr.m00;
-      temp.m10 = mr.m10;
-      temp.m20 = mr.m20;
-      temp.m30 = 0;
-      temp.m01 = mr.m01;
-      temp.m11 = mr.m11;
-      temp.m21 = mr.m21;
-      temp.m31 = 0;
-      temp.m02 = mr.m02;
-      temp.m12 = mr.m12;
-      temp.m22 = mr.m22;
-      temp.m32 = 0;
-      temp.m03 = invTrans.x;
-      temp.m13 = invTrans.y;
-      temp.m23 = invTrans.z;
-      temp.m33 = 1;
-      pMatrices[i] = temp;
+      pMatrices[i].SetRotation(mr);
+      pMatrices[i].SetTranslation(invTrans);
    }
 
    return S_OK;

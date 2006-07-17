@@ -284,14 +284,34 @@ cModelAnimationController::~cModelAnimationController()
 
 ///////////////////////////////////////
 
-tResult cModelAnimationController::Advance(double elapsedTime)
+tResult cModelAnimationController::Advance(double elapsedTime, uint nMaxMatrices, tMatrix34 * pMatrices)
 {
-   if (!m_pAnim)
+   if (elapsedTime < 0)
    {
-      return S_FALSE;
+      return E_INVALIDARG;
    }
 
-   Assert(!(elapsedTime < 0));
+   if (pMatrices == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (!m_pAnim)
+   {
+      return E_FAIL;
+   }
+
+   size_t nJoints = 0;
+   if (AccessSkeleton()->GetJointCount(&nJoints) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   if (nMaxMatrices < nJoints)
+   {
+      ErrorMsg2("Need %d blend matrices (given only %d)\n", nJoints, nMaxMatrices);
+      return E_INVALIDARG;
+   }
 
    double newAnimTime = m_animTime + elapsedTime;
    if (newAnimTime > m_animEnd)
@@ -304,14 +324,6 @@ tResult cModelAnimationController::Advance(double elapsedTime)
       }
       newAnimTime = m_animStart + pastEnd;
    }
-
-   size_t nJoints = 0;
-   if (AccessSkeleton()->GetJointCount(&nJoints) != S_OK)
-   {
-      return E_FAIL;
-   }
-
-   m_blendMatrices.resize(nJoints);
 
    for (uint i = 0; i < nJoints; ++i)
    {
@@ -337,32 +349,18 @@ tResult cModelAnimationController::Advance(double elapsedTime)
       tMatrix3 finalRotMat;
       localJointRotMat.Multiply(animRotMat, &finalRotMat);
 
-      tMatrix4 mf;
-      mf.m00 = finalRotMat.m00;
-      mf.m10 = finalRotMat.m10;
-      mf.m20 = finalRotMat.m20;
-      mf.m30 = 0;
-      mf.m01 = finalRotMat.m01;
-      mf.m11 = finalRotMat.m11;
-      mf.m21 = finalRotMat.m21;
-      mf.m31 = 0;
-      mf.m02 = finalRotMat.m02;
-      mf.m12 = finalRotMat.m12;
-      mf.m22 = finalRotMat.m22;
-      mf.m32 = 0;
-      mf.m03 = position.x + joint.localTranslation.x;
-      mf.m13 = position.y + joint.localTranslation.y;
-      mf.m23 = position.z + joint.localTranslation.z;
-      mf.m33 = 1;
+      tMatrix34 mf;
+      mf.SetRotation(finalRotMat);
+      mf.SetTranslation(position + joint.localTranslation);
 
       int iParent = joint.parentIndex;
       if (iParent < 0)
       {
-         m_blendMatrices[i] = mf;
+         pMatrices[i] = mf;
       }
       else
       {
-         m_blendMatrices[iParent].Multiply(mf, &m_blendMatrices[i]);
+         pMatrices[iParent].Compose(mf, &pMatrices[i]);
       }
    }
 

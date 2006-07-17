@@ -85,9 +85,7 @@ public:
    cModelAnimationController(IModelSkeleton * pSkeleton);
    ~cModelAnimationController();
 
-   tResult Advance(double elapsedTime);
-
-   const tMatrices & GetBlendMatrices() const { return m_blendMatrices; }
+   virtual tResult Advance(double elapsedTime, uint nMaxMatrices, tMatrix34 * pMatrices);
 
    virtual tResult SetAnimation(IModelAnimation * pAnim);
 
@@ -98,7 +96,6 @@ private:
    cAutoIPtr<IModelSkeleton> m_pSkeleton;
    cAutoIPtr<IModelAnimation> m_pAnim;
    double m_animStart, m_animEnd, m_animTime;
-   tMatrices m_blendMatrices;
 };
 
 

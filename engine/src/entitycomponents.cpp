@@ -29,6 +29,8 @@
 
 extern tResult ModelEntityCreate(tEntityId id, const tChar * pszModel, const tVec3 & position, IEntity * * ppEntity);
 
+extern "C" __declspec(dllimport) short __stdcall GetAsyncKeyState(int);
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -202,7 +204,7 @@ tResult cEntityModelRenderer::GetBoundingBox(tAxisAlignedBox * pBBox) const
 
 ///////////////////////////////////////
 
-static void ApplyJointMatrices(const tModelVertices & vertices, const tMatrices & matrices, tBlendedVertices * pVertices)
+static void ApplyJointMatrices(const tModelVertices & vertices, const std::vector<tMatrix34> & matrices, tBlendedVertices * pVertices)
 {
    pVertices->resize(vertices.size());
 
@@ -222,19 +224,9 @@ static void ApplyJointMatrices(const tModelVertices & vertices, const tMatrices 
       }
       else
       {
-#if 0
-         const tMatrix4 & m = matrices[iJoint];
-         tMatrix34 blend(
-            m.m00, m.m10, m.m20,
-            m.m01, m.m11, m.m21,
-            m.m02, m.m12, m.m22,
-            m.m03, m.m13, m.m23);
-         blend.Transform(iter->normal, &v.normal);
-         blend.Transform(iter->pos, &v.pos);
-#else
-         matrices[iJoint].Transform(iter->normal, &v.normal);
-         matrices[iJoint].Transform(iter->pos, &v.pos);
-#endif
+         const tMatrix34 & m = matrices[iJoint];
+         m.Transform(iter->normal, &v.normal);
+         m.Transform(iter->pos, &v.pos);
       }
    }
 }
@@ -261,10 +253,16 @@ void cEntityModelRenderer::Update(double elapsedTime)
          size_t nJoints = 0;
          if (pSkeleton->GetJointCount(&nJoints) == S_OK && nJoints > 0)
          {
+            m_blendMatrices.resize(nJoints);
+
             if (ModelAnimationControllerCreate(pSkeleton, &m_pAnimController) == S_OK)
             {
                SetAnimation(kMAT_Idle);
             }
+         }
+         else
+         {
+            m_blendMatrices.clear();
          }
       }
 
@@ -273,9 +271,9 @@ void cEntityModelRenderer::Update(double elapsedTime)
 
    if (!!m_pAnimController)
    {
-      if (m_pAnimController->Advance(elapsedTime) == S_OK)
+      if (m_pAnimController->Advance(elapsedTime, m_blendMatrices.size(), &m_blendMatrices[0]) == S_OK)
       {
-         ApplyJointMatrices(m_pModel->GetVertices(), m_pAnimController->GetBlendMatrices(), &m_blendedVerts);
+         ApplyJointMatrices(m_pModel->GetVertices(), m_blendMatrices, &m_blendedVerts);
       }
    }
 }

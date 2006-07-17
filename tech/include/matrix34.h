@@ -169,9 +169,9 @@ void cMatrix34<T>::Compose(const cMatrix34 & other, cMatrix34 * pResult) const
    pResult->m02 = m00*other.m02 + m01*other.m12 + m02*other.m22;
    pResult->m12 = m10*other.m02 + m11*other.m12 + m12*other.m22;
    pResult->m22 = m20*other.m02 + m21*other.m12 + m22*other.m22;
-   pResult->m03 = m03 + other.m03;
-   pResult->m13 = m13 + other.m13;
-   pResult->m23 = m23 + other.m23;
+   pResult->m03 = m00*other.m03 + m01*other.m13 + m02*other.m23 + m03;
+   pResult->m13 = m10*other.m03 + m11*other.m13 + m12*other.m23 + m13;
+   pResult->m23 = m20*other.m03 + m21*other.m13 + m22*other.m23 + m23;
 }
 
 ///////////////////////////////////////

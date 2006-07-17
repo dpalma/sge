@@ -27,6 +27,8 @@ LOG_DEFINE_CHANNEL(Model);
 #define LocalMsg2(ind,msg,a,b)      DebugMsgEx4(Model, "%*s" msg, (ind),"",(a),(b))
 #define LocalMsg3(ind,msg,a,b,c)    DebugMsgEx5(Model, "%*s" msg, (ind),"",(a),(b),(c))
 
+typedef std::vector< cMatrix4<float> > tMatrices;
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -278,8 +280,8 @@ void cModel::PreApplyJoints()
       return;
    }
 
-   tMatrices inverses(nJoints);
-   m_pSkeleton->GetBindMatrices(inverses.size(), &inverses[0]);
+   std::vector<tMatrix34> bindMatrices(nJoints);
+   m_pSkeleton->GetBindMatrices(bindMatrices.size(), &bindMatrices[0]);
 
    for (tModelVertices::iterator iter = m_vertices.begin(); iter != m_vertices.end(); iter++)
    {
@@ -290,11 +292,11 @@ void cModel::PreApplyJoints()
       }
 
       tVec3 transformedNormal;
-      inverses[index].Transform(iter->normal, &transformedNormal);
+      bindMatrices[index].Transform(iter->normal, &transformedNormal);
       iter->normal = transformedNormal;
 
       tVec3 transformedPosition;
-      inverses[index].Transform(iter->pos, &transformedPosition);
+      bindMatrices[index].Transform(iter->pos, &transformedPosition);
       iter->pos = transformedPosition;
    }
 }

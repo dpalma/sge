@@ -10,6 +10,7 @@
 #include "renderapi.h"
 
 #include "matrix4.h"
+#include "matrix34.h"
 #include "quat.h"
 #include "vec3.h"
 
@@ -33,8 +34,6 @@ template class ENGINE_API cMatrix4<float>;
 template class ENGINE_API std::allocator< cMatrix4<float> >;
 template class ENGINE_API std::vector< cMatrix4<float> >;
 #endif
-
-typedef std::vector< cMatrix4<float> > tMatrices;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -140,9 +139,7 @@ ENGINE_API tResult ModelAnimationCreate(IModelKeyFrameInterpolator * * pInterpol
 
 interface IModelAnimationController : IUnknown
 {
-   virtual tResult Advance(double elapsedTime) = 0;
-
-   virtual const tMatrices & GetBlendMatrices() const = 0;
+   virtual tResult Advance(double elapsedTime, uint nMaxMatrices, tMatrix34 * pMatrices) = 0;
 
    virtual tResult SetAnimation(IModelAnimation * pAnim) = 0;
 };
@@ -171,7 +168,7 @@ interface IModelSkeleton : IUnknown
    virtual tResult GetJointCount(size_t * pJointCount) const = 0;
    virtual tResult GetJoint(size_t iJoint, sModelJoint * pJoint) const = 0;
 
-   virtual tResult GetBindMatrices(size_t nMaxMatrices, tMatrix4 * pMatrices) const = 0;
+   virtual tResult GetBindMatrices(uint nMaxMatrices, tMatrix34 * pMatrices) const = 0;
 
    virtual tResult AddAnimation(eModelAnimationType type, IModelAnimation * pAnim) = 0;
    virtual tResult GetAnimation(eModelAnimationType type, IModelAnimation * * ppAnim) const = 0;
