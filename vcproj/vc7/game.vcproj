@@ -396,9 +396,6 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl">
 			<File
-				RelativePath="..\..\game\script.h">
-			</File>
-			<File
 				RelativePath="..\..\game\stdhdr.h">
 			</File>
 		</Filter>

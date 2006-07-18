@@ -3,8 +3,6 @@
 
 #include "stdhdr.h"
 
-#include "script.h"
-
 #include "cameraapi.h"
 #include "guiapi.h"
 #include "guielementapi.h"
@@ -15,6 +13,7 @@
 #include "renderapi.h"
 #include "saveloadapi.h"
 #include "schedulerapi.h"
+#include "scriptapi.h"
 #include "soundapi.h"
 #include "sys.h"
 #include "terrainapi.h"
@@ -75,34 +74,6 @@ void ResizeHack(int width, int height, double time)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-SCRIPT_DEFINE_FUNCTION(SetTerrain)
-{
-   if (argc < 1 || !argv[0].IsString())
-   {
-      ErrorMsg("Invalid parameters to SetTerrain\n");
-      return 0;
-   }
-
-   UseGlobal(ResourceManager);
-
-   cFileSpec terrainFile(static_cast<const tChar *>(argv[0]));
-   const tChar * pszFileExt = terrainFile.GetFileExt();
-   if (pszFileExt != NULL && _tcsicmp(pszFileExt, _T("sgm")) == 0)
-   {
-      void * pData = NULL;
-      pResourceManager->Load(argv[0], kRT_Map, NULL, &pData);
-   }
-   else
-   {
-      ErrorMsg("Invalid parameters to SetTerrain\n");
-   }
-   
-   return 0;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-
 static void RegisterGlobalObjects()
 {
    CameraCreate();
@@ -126,6 +97,7 @@ static void RegisterGlobalObjects()
    TerrainRendererCreate();
    ThreadCallerCreate();
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 

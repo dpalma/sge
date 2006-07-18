@@ -8,9 +8,8 @@
        style="width:100%;height:28"
        renderer="beveled">
        
-      <label id="resources" />
-      <label id="population" />
-
+      <button text="End Game" onclick="UnloadMap();" />
+      
       <button text="Exit" style="placement:absolute;align:right;" onclick="QuitWithConfirm();" />
 
    </panel>

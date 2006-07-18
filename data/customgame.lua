@@ -7,6 +7,7 @@ maps = ListResources("*.sgm");
 if maps and (table.getn(maps) > 0) then
 	local mapsList = GUIContext:GetElement("mapsList");
 	if mapsList then
+		mapsList:Clear();
 		table.foreachi(maps, function(i, v) mapsList:AddItem(v) end);
 	end;
 end;

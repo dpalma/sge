@@ -5,7 +5,9 @@
 
 #include "engineapi.h"
 #include "entityapi.h"
+#include "guiapi.h"
 #include "inputapi.h"
+#include "saveloadapi.h"
 #include "scriptapi.h"
 #include "sys.h"
 #include "terrainapi.h"
@@ -314,6 +316,58 @@ int SetEntityPanel(int argc, const tScriptVar * argv,
 
 ///////////////////////////////////////////////////////////////////////////////
 
+int LoadMap(int argc, const tScriptVar * argv, 
+            int nMaxResults, tScriptVar * pResults)
+{
+   if (argc < 2 || !argv[0].IsString() || !argv[1].IsString())
+   {
+      ErrorMsg("Invalid arguments to LoadMap\n");
+      return 0;
+   }
+
+   cFileSpec terrainFile(static_cast<const tChar *>(argv[0]));
+   const tChar * pszFileExt = terrainFile.GetFileExt();
+   if (pszFileExt != NULL && _tcsicmp(pszFileExt, _T("sgm")) == 0)
+   {
+      UseGlobal(GUIContext);
+      pGUIContext->PushPage(argv[1]);
+
+      void * pData = NULL;
+      UseGlobal(ResourceManager);
+      pResourceManager->Load(argv[0], kRT_Map, NULL, &pData);
+   }
+   else
+   {
+      ErrorMsg("Invalid parameters to SetTerrain\n");
+   }
+   
+   return 0;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+int UnloadMap(int argc, const tScriptVar * argv, 
+              int nMaxResults, tScriptVar * pResults)
+{
+   if (argc != 0)
+   {
+      ErrorMsg("Expected no arguments to UnloadMap\n");
+      return 0;
+   }
+
+   UseGlobal(GUIContext);
+   pGUIContext->PopPage();
+
+   UseGlobal(SaveLoadManager);
+   pSaveLoadManager->Reset();
+
+   return 0;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 sScriptReg cmds[] =
 {
    { "bind", BindKey },
@@ -324,6 +378,8 @@ sScriptReg cmds[] =
    { "ListResources", ListResources },
    { "GetMapProperties", GetMapProperties },
    { "SetEntityPanel", SetEntityPanel },
+   { "SetTerrain", LoadMap },
+   { "UnloadMap", UnloadMap },
 };
 
 ENGINE_API tResult EngineRegisterScriptFunctions()

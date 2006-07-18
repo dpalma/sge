@@ -19,8 +19,7 @@ bind("F4", [[GUIContext:ToggleDebugInfo(5, 100, "font-name:Courier New;font-poin
 --LogChannel([[ResourceManager]]);
 
 function LoadSampleLevel(map)
-   GUIContext:PushPage("ingame.xml");
-   SetTerrain(map);
+   SetTerrain(map, "ingame.xml");
 end;
 
 frameStatsOverlay = [[<page><label renderer="basic" id="frameStats" style="width:50%;height:25%;foreground-color:white" /></page>]];
