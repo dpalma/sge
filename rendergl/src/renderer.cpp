@@ -214,7 +214,6 @@ cRenderer::cRenderer()
  , m_vertexSize(0)
  , m_indexFormat(kIF_16Bit)
  , m_glIndexFormat(0)
- , m_nBlendMatrices(0)
 {
    SetIndexFormat(kIF_16Bit);
 }
@@ -415,50 +414,6 @@ tResult cRenderer::SetTexture(uint textureUnit, const tChar * pszTexture)
       return S_OK;
    }
    return E_FAIL;
-}
-
-////////////////////////////////////////
-
-tResult cRenderer::SetBlendMatrices(const tMatrix4 * pMatrices, uint nMatrices)
-{
-   if (nMatrices >= kMaxBlendMatrices)
-   {
-      return E_INVALIDARG;
-   }
-
-   if (pMatrices == NULL || nMatrices == 0)
-   {
-#ifdef _DEBUG
-      memset(m_blendMatrices, 0xBC, sizeof(m_blendMatrices));
-#endif
-      m_nBlendMatrices = 0;
-   }
-   else
-   {
-      memcpy(m_blendMatrices, pMatrices, nMatrices * sizeof(tMatrix4));
-      m_nBlendMatrices = nMatrices;
-   }
-
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cRenderer::GetBlendMatrices(tMatrix4 * pMatrices, uint nMatrices) const
-{
-   if (pMatrices == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (nMatrices == 0)
-   {
-      return E_INVALIDARG;
-   }
-
-   uint nCopy = Min(nMatrices, m_nBlendMatrices);
-   memcpy(pMatrices, m_blendMatrices, nCopy * sizeof(tMatrix4));
-   return (nCopy < m_nBlendMatrices) ? S_FALSE : S_OK;
 }
 
 ////////////////////////////////////////

@@ -16,9 +16,6 @@ typedef class cAxisAlignedBox<float> tAxisAlignedBox;
 
 class cColor;
 
-template <typename T> class cMatrix4;
-typedef class cMatrix4<float> tMatrix4;
-
 F_DECLARE_INTERFACE(IImage);
 
 F_DECLARE_INTERFACE(IRenderer);
@@ -103,8 +100,6 @@ interface IRenderer : IUnknown
    virtual tResult SetDiffuseColor(const float diffuse[4]) = 0;
 
    virtual tResult SetTexture(uint textureUnit, const tChar * pszTexture) = 0;
-
-   virtual tResult SetBlendMatrices(const tMatrix4 * pMatrices, uint nMatrices) = 0;
 
    virtual tResult Render(ePrimitiveType primitive, const void * pIndices, uint nIndices) = 0;
 };

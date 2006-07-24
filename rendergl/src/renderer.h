@@ -7,7 +7,6 @@
 #include "renderapi.h"
 
 #include "globalobjdef.h"
-#include "matrix4.h"
 
 #ifdef _MSC_VER
 #pragma once
@@ -60,9 +59,6 @@ public:
 
    virtual tResult SetTexture(uint textureUnit, const tChar * pszTexture);
 
-   virtual tResult SetBlendMatrices(const tMatrix4 * pMatrices, uint nMatrices);
-   tResult GetBlendMatrices(tMatrix4 * pMatrices, uint nMatrices) const;
-
    virtual tResult Render(ePrimitiveType primitive, const void * pIndices, uint nIndices);
 
 private:
@@ -84,9 +80,6 @@ private:
 
    eIndexFormat m_indexFormat;
    GLenum m_glIndexFormat;
-
-   tMatrix4 m_blendMatrices[kMaxBlendMatrices];
-   uint m_nBlendMatrices; // How many of the matrices above are valid?
 };
 
 ////////////////////////////////////////////////////////////////////////////////
