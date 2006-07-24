@@ -605,9 +605,6 @@
 				RelativePath="..\..\tech\include\imageapi.h">
 			</File>
 			<File
-				RelativePath="..\..\tech\include\keys.h">
-			</File>
-			<File
 				RelativePath="..\..\tech\include\matrix3.h">
 			</File>
 			<File

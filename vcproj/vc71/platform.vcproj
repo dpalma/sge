@@ -424,6 +424,9 @@
 				RelativePath="..\..\platform\include\inputapi.h">
 			</File>
 			<File
+				RelativePath="..\..\platform\include\keys.h">
+			</File>
+			<File
 				RelativePath="..\..\platform\include\platformdll.h">
 			</File>
 			<File
