@@ -5,6 +5,8 @@
 
 #include "guifontfreetype.h"
 
+#include "renderapi.h"
+
 #include "filepath.h"
 #include "filespec.h"
 
@@ -207,6 +209,10 @@ tResult GUIFontCreateFreetype(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont
    tResult result = pFont->Create(fontDesc);
    if (result == S_OK)
    {
+      // TEMP
+      cAutoIPtr<IRenderFont> pRenderFont;
+      RenderFontCreate(fontDesc.GetFace(), fontDesc.GetSize(), NULL, &pRenderFont);
+
       *ppFont = CTAddRef(pFont);
       return S_OK;
    }

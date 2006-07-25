@@ -22,7 +22,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\rendergl\include,..\..\tech\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\3rdparty\freetype\include,..\..\rendergl\include,..\..\tech\include"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;RENDER_EXPORTS;WIN32;_WINDOWS;STRICT;GLEW_STATIC"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\glew.lib winmm.lib opengl32.lib glu32.lib"
+				AdditionalDependencies="$(OutDir)\freetype.lib $(OutDir)\glew.lib winmm.lib opengl32.lib glu32.lib"
 				OutputFile="$(OutDir)/rendergl.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -83,7 +83,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\rendergl\include,..\..\tech\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\3rdparty\freetype\include,..\..\rendergl\include,..\..\tech\include"
 				PreprocessorDefinitions="_USRDLL;RENDER_EXPORTS;STRICT;_WINDOWS;NDEBUG;WIN32;GLEW_STATIC"
 				StringPooling="TRUE"
 				RuntimeLibrary="3"
@@ -103,7 +103,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\glew.lib winmm.lib opengl32.lib glu32.lib"
+				AdditionalDependencies="$(OutDir)\freetype.lib $(OutDir)\glew.lib winmm.lib opengl32.lib glu32.lib"
 				OutputFile="$(OutDir)/rendergl.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -145,7 +145,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\rendergl\include,..\..\tech\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\3rdparty\freetype\include,..\..\rendergl\include,..\..\tech\include"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,_USRDLL,RENDER_EXPORTS,WIN32,_WINDOWS,STRICT,GLEW_STATIC"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -191,7 +191,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\rendergl\include,..\..\tech\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\3rdparty\freetype\include,..\..\rendergl\include,..\..\tech\include"
 				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,_USRDLL,RENDER_EXPORTS,WIN32,_WINDOWS,STRICT,HAVE_CPPUNITLITE2,GLEW_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -237,7 +237,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\rendergl\include,..\..\tech\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\3rdparty\freetype\include,..\..\rendergl\include,..\..\tech\include"
 				PreprocessorDefinitions="_DEBUG;_USRDLL;RENDER_EXPORTS;WIN32;_WINDOWS;STRICT;HAVE_CPPUNITLITE2,GLEW_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -256,7 +256,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\CppUnitLite2.lib $(OutDir)\glew.lib winmm.lib opengl32.lib glu32.lib"
+				AdditionalDependencies="$(OutDir)\CppUnitLite2.lib $(OutDir)\freetype.lib $(OutDir)\glew.lib winmm.lib opengl32.lib glu32.lib"
 				OutputFile="$(OutDir)/rendergl.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -299,6 +299,9 @@
 					RelativePath="..\..\rendergl\src\renderer.h">
 				</File>
 				<File
+					RelativePath="..\..\rendergl\src\renderfontfreetype.h">
+				</File>
+				<File
 					RelativePath="..\..\rendergl\src\stdhdr.h">
 				</File>
 			</Filter>
@@ -313,6 +316,9 @@
 				</File>
 				<File
 					RelativePath="..\..\rendergl\src\renderer.cpp">
+				</File>
+				<File
+					RelativePath="..\..\rendergl\src\renderfontfreetype.cpp">
 				</File>
 				<File
 					RelativePath="..\..\rendergl\src\stdhdr.cpp">
