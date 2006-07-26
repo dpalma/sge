@@ -4,14 +4,11 @@
 #include "stdhdr.h"
 
 #include "renderfontfreetype.h"
+#include "freetypeutils.h"
 
 #include "color.h"
 #include "filepath.h"
 #include "filespec.h"
-
-#include <ft2build.h>
-#include <freetype/freetype.h>
-#include <freetype/ftglyph.h>
 
 #include <GL/glew.h>
 
@@ -76,213 +73,14 @@ static tResult GetFontPath(cFilePath * pFontPath)
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cFreetypeGlyph
-//
-
-class cFreetypeGlyph
-{
-   friend class cFreetypeFace;
-
-public:
-   cFreetypeGlyph();
-   ~cFreetypeGlyph();
-
-   tResult ToBitmap(FT_Render_Mode renderMode, bool bDestroy, FT_BitmapGlyph * pBitmap);
-
-private:
-   FT_Glyph m_glyph;
-};
-
-////////////////////////////////////////
-
-cFreetypeGlyph::cFreetypeGlyph()
- : m_glyph(NULL)
-{
-}
-
-////////////////////////////////////////
-
-cFreetypeGlyph::~cFreetypeGlyph()
-{
-   FT_Done_Glyph(m_glyph);
-}
-
-////////////////////////////////////////
-
-tResult cFreetypeGlyph::ToBitmap(FT_Render_Mode renderMode, bool bDestroy, FT_BitmapGlyph * pBitmap)
-{
-   if (pBitmap == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (FT_Glyph_To_Bitmap(&m_glyph, renderMode, NULL, bDestroy) != FT_Err_Ok)
-   {
-      return E_FAIL;
-   }
-
-   *pBitmap = (FT_BitmapGlyph)m_glyph;
-   return S_OK;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cFreetypeFace
-//
-
-class cFreetypeFace
-{
-   friend class cFreetypeLibrary;
-
-public:
-   cFreetypeFace();
-   ~cFreetypeFace();
-
-   tResult SetCharSize(long width, long height, uint hres, uint vres);
-
-   tResult SetPixelSize(uint width, uint height);
-
-   uint GetCharIndex(ulong c);
-
-   tResult LoadGlyph(uint index, int flags, cFreetypeGlyph * pGlyph);
-
-private:
-   FT_Face m_face;
-};
-
-////////////////////////////////////////
-
-cFreetypeFace::cFreetypeFace()
- : m_face(NULL)
-{
-}
-
-////////////////////////////////////////
-
-cFreetypeFace::~cFreetypeFace()
-{
-   FT_Done_Face(m_face);
-}
-
-////////////////////////////////////////
-
-tResult cFreetypeFace::SetCharSize(long width, long height, uint hres, uint vres)
-{
-   return (FT_Set_Char_Size(m_face, width, height, hres, vres) == FT_Err_Ok) ? S_OK : E_FAIL;
-}
-
-////////////////////////////////////////
-
-tResult cFreetypeFace::SetPixelSize(uint width, uint height)
-{
-   return (FT_Set_Pixel_Sizes(m_face, width, height) == FT_Err_Ok) ? S_OK : E_FAIL;
-}
-
-////////////////////////////////////////
-
-uint cFreetypeFace::GetCharIndex(ulong c)
-{
-   return FT_Get_Char_Index(m_face, c);
-}
-
-////////////////////////////////////////
-
-tResult cFreetypeFace::LoadGlyph(uint index, int flags, cFreetypeGlyph * pGlyph)
-{
-   if (pGlyph == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (FT_Load_Glyph(m_face, index, flags) == FT_Err_Ok
-      && FT_Get_Glyph(m_face->glyph, &pGlyph->m_glyph) == FT_Err_Ok)
-   {
-      return S_OK;
-   }
-
-   return E_FAIL;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cFreetypeLibrary
-//
-
-class cFreetypeLibrary
-{
-   cFreetypeLibrary(const cFreetypeLibrary &);
-   const cFreetypeLibrary & operator =(const cFreetypeLibrary &);
-
-public:
-   cFreetypeLibrary();
-   ~cFreetypeLibrary();
-
-   bool IsInitialized() const { return m_bInitSuccess; }
-
-   tResult NewFace(const tChar * pszFace, cFreetypeFace * pFace);
-   tResult NewFace(const tChar * pszFace, long faceIndex, cFreetypeFace * pFace);
-
-private:
-   FT_Library m_library;
-   bool m_bInitSuccess;
-};
-
-////////////////////////////////////////
-
-cFreetypeLibrary::cFreetypeLibrary()
- : m_bInitSuccess(false)
-{
-   m_bInitSuccess = (FT_Init_FreeType(&m_library) == FT_Err_Ok);
-}
-
-////////////////////////////////////////
-
-cFreetypeLibrary::~cFreetypeLibrary()
-{
-   FT_Done_FreeType(m_library);
-}
-
-////////////////////////////////////////
-
-tResult cFreetypeLibrary::NewFace(const tChar * pszFace, cFreetypeFace * pFace)
-{
-   return NewFace(pszFace, 0, pFace);
-}
-
-////////////////////////////////////////
-
-tResult cFreetypeLibrary::NewFace(const tChar * pszFace, long faceIndex, cFreetypeFace * pFace)
-{
-   if (pszFace == NULL || pFace == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (!IsInitialized())
-   {
-      return E_FAIL;
-   }
-
-   if (FT_New_Face(m_library, pszFace, faceIndex, &pFace->m_face) != FT_Err_Ok)
-   {
-      return E_FAIL;
-   }
-
-   return S_OK;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-//
 // CLASS: cRenderFontFreetype
 //
 
 ////////////////////////////////////////
 
-cRenderFontFreetype::cRenderFontFreetype(uint textureId)
+cRenderFontFreetype::cRenderFontFreetype(uint textureId, sTextureFontGlyph * pGlyphs)
  : m_textureId(textureId)
+ , m_pGlyphs(pGlyphs)
 {
 }
 
@@ -292,12 +90,35 @@ cRenderFontFreetype::~cRenderFontFreetype()
 {
    glDeleteTextures(1, &m_textureId);
    m_textureId = 0;
+
+   if (m_pGlyphs != NULL)
+   {
+      delete [] m_pGlyphs;
+      m_pGlyphs = NULL;
+   }
 }
 
 ////////////////////////////////////////
 
 tResult cRenderFontFreetype::Create(const tChar * pszFont, int fontPointSize, IRenderFont * * ppFont)
 {
+   if (pszFont == NULL || ppFont == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (fontPointSize <= 4)
+   {
+      ErrorMsg1("Insanely small point size (%d) requested\n", fontPointSize);
+      return E_INVALIDARG;
+   }
+
+   if (fontPointSize > 50)
+   {
+      ErrorMsg1("Insanely large point size (%d) requested\n", fontPointSize);
+      return E_INVALIDARG;
+   }
+
    cFreetypeLibrary freetype;
 
    cFileSpec fontName(pszFont);
@@ -350,9 +171,17 @@ tResult cRenderFontFreetype::Create(const tChar * pszFont, int fontPointSize, IR
    // Fill with black to start
    memset(pTexData, 0, 2 * texSize * texSize);
 
+   sTextureFontGlyph * pGlyphs = new sTextureFontGlyph[kRenderFontGlyphCount];
+   if (pGlyphs == NULL)
+   {
+      return E_OUTOFMEMORY;
+   }
+
    int texX = 0, texY = 0;
 
    static const int kPadHorz = 1, kPadVert = 1;
+
+   int maxHeightThisRow = 0;
 
    FT_BitmapGlyph bitmapGlyphs[kRenderFontGlyphCount];
    for (int c = kRenderFontGlyphFirst; c <= kRenderFontGlyphLast; ++c)
@@ -368,8 +197,9 @@ tResult cRenderFontFreetype::Create(const tChar * pszFont, int fontPointSize, IR
 
             if ((texX + bitmap.width + kPadHorz) > texSize)
             {
+               texY += maxHeightThisRow + kPadVert;
                texX = 0;
-               texY += bitmap.rows + kPadVert;
+               maxHeightThisRow = 0;
             }
 
             for (int j = 0; j < bitmap.rows; ++j)
@@ -380,6 +210,16 @@ tResult cRenderFontFreetype::Create(const tChar * pszFont, int fontPointSize, IR
                   uint texelIndex = texX + i + ((texY + j) * texSize);
                   pTexData[2 * texelIndex] = pTexData[2 * texelIndex + 1] = value;
                }
+            }
+
+            pGlyphs[index].texCoords[0] = static_cast<float>(texX) / texSize;
+            pGlyphs[index].texCoords[1] = static_cast<float>(texY) / texSize;
+            pGlyphs[index].texCoords[2] = static_cast<float>(texX + bitmap.width) / texSize;
+            pGlyphs[index].texCoords[3] = static_cast<float>(texY + bitmap.rows) / texSize;
+
+            if (bitmap.rows > maxHeightThisRow)
+            {
+               maxHeightThisRow = bitmap.rows;
             }
 
             texX += bitmap.width + kPadHorz;
@@ -397,6 +237,12 @@ tResult cRenderFontFreetype::Create(const tChar * pszFont, int fontPointSize, IR
 
    delete [] pTexData;
 
+   *ppFont = static_cast<IRenderFont *>(new cRenderFontFreetype(textureId, pGlyphs));
+   if (*ppFont == NULL)
+   {
+      return E_OUTOFMEMORY;
+   }
+
    return S_OK;
 }
 
@@ -404,14 +250,132 @@ tResult cRenderFontFreetype::Create(const tChar * pszFont, int fontPointSize, IR
 
 tResult cRenderFontFreetype::MeasureText(const tChar * pszText, int textLength, uint flags, int * pWidth, int * pHeight) const
 {
+   if (textLength < 0)
+   {
+      textLength = _tcslen(pszText);
+   }
+
    return E_NOTIMPL;
 }
 
 ////////////////////////////////////////
 
-tResult cRenderFontFreetype::RenderText(const tChar * pszText, int textLength, uint flags, int x, int y, int width, int height)
+tResult cRenderFontFreetype::RenderText(const tChar * pszText, int textLength, uint flags, int x, int y, int width, int height) const
 {
-   return E_NOTIMPL;
+   if (textLength < 0)
+   {
+      textLength = _tcslen(pszText);
+   }
+
+   struct sTextVertex
+   {
+      float u, v;
+      float x, y, z;
+   };
+
+   sTextVertex * vertices = reinterpret_cast<sTextVertex *>(alloca(6 * textLength * sizeof(sTextVertex)));
+   uint nVertices = 0;
+
+   int tx = x, ty = y;
+
+   for (int i = 0; i < textLength; i++)
+   {
+      tChar c = pszText[i];
+
+      uint index = c - kRenderFontGlyphFirst;
+
+      float tx1 = m_pGlyphs[index].texCoords[0];
+      float ty1 = m_pGlyphs[index].texCoords[1];
+      float tx2 = m_pGlyphs[index].texCoords[2];
+      float ty2 = m_pGlyphs[index].texCoords[3];
+
+      int tw = FloatToInt(tx2 - tx1);
+      int th = FloatToInt(ty2 - ty1);
+
+      if (c != _T(' '))
+      {
+         sTextVertex * pVertex = &vertices[nVertices];
+         float xPlusW = static_cast<float>(tx + tw);
+         float yPlusH = static_cast<float>(ty + th);
+
+         // First Triangle
+
+         // bottom left
+         pVertex->u = tx1;
+         pVertex->v = ty2;
+         pVertex->x = static_cast<float>(tx);
+         pVertex->y = yPlusH;
+         pVertex->z = 0;
+         pVertex++;
+         nVertices++;
+
+         // bottom right
+         pVertex->u = tx2;
+         pVertex->v = ty2;
+         pVertex->x = xPlusW;
+         pVertex->y = yPlusH;
+         pVertex->z = 0;
+         pVertex++;
+         nVertices++;
+
+         // top right
+         pVertex->u = tx2;
+         pVertex->v = ty1;
+         pVertex->x = xPlusW;
+         pVertex->y = static_cast<float>(ty);
+         pVertex->z = 0;
+         pVertex++;
+         nVertices++;
+
+         // Second Triangle
+
+         // top right
+         pVertex->u = tx2;
+         pVertex->v = ty1;
+         pVertex->x = xPlusW;
+         pVertex->y = static_cast<float>(ty);
+         pVertex->z = 0;
+         pVertex++;
+         nVertices++;
+
+         // top left
+         pVertex->u = tx1;
+         pVertex->v = ty1;
+         pVertex->x = static_cast<float>(tx);
+         pVertex->y = static_cast<float>(ty);
+         pVertex->z = 0;
+         pVertex++;
+         nVertices++;
+
+         // bottom left
+         pVertex->u = tx1;
+         pVertex->v = ty2;
+         pVertex->x = static_cast<float>(tx);
+         pVertex->y = yPlusH;
+         pVertex->z = 0;
+         pVertex++;
+         nVertices++;
+      }
+
+      tx += tw;
+   }
+
+   glEnable(GL_TEXTURE_2D);
+   glBindTexture(GL_TEXTURE_2D, m_textureId);
+
+   glEnable(GL_ALPHA_TEST);
+   glAlphaFunc(GL_GEQUAL, 0.0625f);
+
+   glEnable(GL_BLEND);
+   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+   glInterleavedArrays(GL_T2F_V3F, 0, vertices);
+
+//   glColor4fv(color.GetPointer());
+   glColor3f(1, 1, 1);
+   glDrawArrays(GL_TRIANGLES, 0, nVertices);
+
+   return S_OK;
 }
 
 ////////////////////////////////////////

@@ -17,9 +17,19 @@ typedef unsigned int GLenum;
 // CLASS: cRenderFontFreetype
 //
 
+struct sTextureFontGlyph
+{
+   float texCoords[4];
+   uint width;
+   int lead, trail;
+};
+
 class cRenderFontFreetype : public cComObject<IMPLEMENTS(IRenderFont)>
 {
-   cRenderFontFreetype(uint textureId);
+   cRenderFontFreetype(const cRenderFontFreetype &);
+   const cRenderFontFreetype & operator =(const cRenderFontFreetype &);
+
+   cRenderFontFreetype(uint textureId, sTextureFontGlyph * pGlyphs);
 
 public:
    virtual ~cRenderFontFreetype();
@@ -28,10 +38,11 @@ public:
 
    virtual tResult MeasureText(const tChar * pszText, int textLength, uint flags, int * pWidth, int * pHeight) const;
 
-   virtual tResult RenderText(const tChar * pszText, int textLength, uint flags, int x, int y, int width, int height);
+   virtual tResult RenderText(const tChar * pszText, int textLength, uint flags, int x, int y, int width, int height) const;
 
 private:
    uint m_textureId;
+   sTextureFontGlyph * m_pGlyphs;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

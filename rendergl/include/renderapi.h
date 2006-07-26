@@ -137,7 +137,7 @@ interface IRenderFont : IUnknown
 {
    virtual tResult MeasureText(const tChar * pszText, int textLength, uint flags, int * pWidth, int * pHeight) const = 0;
 
-   virtual tResult RenderText(const tChar * pszText, int textLength, uint flags, int x, int y, int width, int height) = 0;
+   virtual tResult RenderText(const tChar * pszText, int textLength, uint flags, int x, int y, int width, int height) const = 0;
 };
 
 ///////////////////////////////////////
