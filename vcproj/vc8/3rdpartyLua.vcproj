@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8.00"
 	Name="3rdpartyLua"
-	ProjectGUID="{B16406AE-07A3-44F9-9A7D-160B23BC3C10}"
+	ProjectGUID="{06653EC9-A3CB-453D-BAD8-7D0FD326676A}"
 	RootNamespace="3rdpartyLua"
 	>
 	<Platforms>
