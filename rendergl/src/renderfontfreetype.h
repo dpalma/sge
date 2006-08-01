@@ -20,8 +20,6 @@ typedef unsigned int GLenum;
 struct sTextureFontGlyph
 {
    float texCoords[4];
-   uint width;
-   int lead, trail;
 };
 
 class cRenderFontFreetype : public cComObject<IMPLEMENTS(IRenderFont)>
@@ -29,7 +27,7 @@ class cRenderFontFreetype : public cComObject<IMPLEMENTS(IRenderFont)>
    cRenderFontFreetype(const cRenderFontFreetype &);
    const cRenderFontFreetype & operator =(const cRenderFontFreetype &);
 
-   cRenderFontFreetype(uint textureId, sTextureFontGlyph * pGlyphs);
+   cRenderFontFreetype(uint textureId, int textureSize, sTextureFontGlyph * pGlyphs);
 
 public:
    virtual ~cRenderFontFreetype();
@@ -42,6 +40,7 @@ public:
 
 private:
    uint m_textureId;
+   int m_textureSize; // texture is square so only one dimension
    sTextureFontGlyph * m_pGlyphs;
 };
 

@@ -78,8 +78,9 @@ static tResult GetFontPath(cFilePath * pFontPath)
 
 ////////////////////////////////////////
 
-cRenderFontFreetype::cRenderFontFreetype(uint textureId, sTextureFontGlyph * pGlyphs)
+cRenderFontFreetype::cRenderFontFreetype(uint textureId, int textureSize, sTextureFontGlyph * pGlyphs)
  : m_textureId(textureId)
+ , m_textureSize(textureSize)
  , m_pGlyphs(pGlyphs)
 {
 }
@@ -237,7 +238,7 @@ tResult cRenderFontFreetype::Create(const tChar * pszFont, int fontPointSize, IR
 
    delete [] pTexData;
 
-   *ppFont = static_cast<IRenderFont *>(new cRenderFontFreetype(textureId, pGlyphs));
+   *ppFont = static_cast<IRenderFont *>(new cRenderFontFreetype(textureId, texSize, pGlyphs));
    if (*ppFont == NULL)
    {
       return E_OUTOFMEMORY;
@@ -289,8 +290,8 @@ tResult cRenderFontFreetype::RenderText(const tChar * pszText, int textLength, u
       float tx2 = m_pGlyphs[index].texCoords[2];
       float ty2 = m_pGlyphs[index].texCoords[3];
 
-      int tw = FloatToInt(tx2 - tx1);
-      int th = FloatToInt(ty2 - ty1);
+      int tw = FloatToInt((tx2 - tx1) * m_textureSize);
+      int th = FloatToInt((ty2 - ty1) * m_textureSize);
 
       if (c != _T(' '))
       {
@@ -371,8 +372,6 @@ tResult cRenderFontFreetype::RenderText(const tChar * pszText, int textLength, u
 
    glInterleavedArrays(GL_T2F_V3F, 0, vertices);
 
-//   glColor4fv(color.GetPointer());
-   glColor3f(1, 1, 1);
    glDrawArrays(GL_TRIANGLES, 0, nVertices);
 
    return S_OK;
