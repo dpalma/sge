@@ -5,6 +5,8 @@
 
 #include "freetypeutils.h"
 
+#include <freetype/ftbbox.h>
+
 #include "dbgalloc.h" // must be last header
 
 
@@ -25,6 +27,22 @@ cFreetypeGlyph::cFreetypeGlyph()
 cFreetypeGlyph::~cFreetypeGlyph()
 {
    FT_Done_Glyph(m_glyph);
+}
+
+////////////////////////////////////////
+
+tResult cFreetypeGlyph::BBox(float * pLowerX, float * pLowerY, float * pUpperX, float * pUpperY)
+{
+   if (pLowerX == NULL || pLowerY == NULL || pUpperX == NULL || pUpperY == NULL)
+   {
+      return E_POINTER;
+   }
+
+   *pLowerX = static_cast<float>(m_bbox.xMin) / 64.0f;
+   *pLowerY = static_cast<float>(m_bbox.yMin) / 64.0f;
+   *pUpperX = static_cast<float>(m_bbox.xMax) / 64.0f;
+   *pUpperY = static_cast<float>(m_bbox.yMax) / 64.0f;
+   return S_OK;
 }
 
 ////////////////////////////////////////
@@ -96,7 +114,8 @@ tResult cFreetypeFace::LoadGlyph(uint index, int flags, cFreetypeGlyph * pGlyph)
    }
 
    if (FT_Load_Glyph(m_face, index, flags) == FT_Err_Ok
-      && FT_Get_Glyph(m_face->glyph, &pGlyph->m_glyph) == FT_Err_Ok)
+      && FT_Get_Glyph(m_face->glyph, &pGlyph->m_glyph) == FT_Err_Ok
+      && FT_Outline_Get_BBox(&m_face->glyph->outline, &pGlyph->m_bbox) == FT_Err_Ok)
    {
       return S_OK;
    }

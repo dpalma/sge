@@ -28,10 +28,13 @@ public:
    cFreetypeGlyph();
    ~cFreetypeGlyph();
 
+   tResult BBox(float * pLowerX, float * pLowerY, float * pUpperX, float * pUpperY);
+
    tResult ToBitmap(FT_Render_Mode renderMode, bool bDestroy, FT_BitmapGlyph * pBitmap);
 
 private:
    FT_Glyph m_glyph;
+   FT_BBox m_bbox;
 };
 
 

@@ -121,23 +121,11 @@ RENDER_API void RenderWireFrame(const tAxisAlignedBox & box, const cColor & colo
 // INTERFACE: IRenderFont
 //
 
-enum eRenderTextFlags
-{
-   kRTF_None         = 0,
-   kRTF_Center       = (1<<0),
-   kRTF_VCenter      = (1<<1),
-   kRTF_NoClip       = (1<<2),
-   kRTF_SingleLine   = (1<<4),
-   kRTF_Bottom       = (1<<5),
-   kRTF_NoBlend      = (1<<6),
-   kRTF_DropShadow   = (1<<7),
-};
-
 interface IRenderFont : IUnknown
 {
-   virtual tResult MeasureText(const tChar * pszText, int textLength, uint flags, int * pWidth, int * pHeight) const = 0;
+   virtual tResult MeasureText(const tChar * pszText, int textLength, int * pWidth, int * pHeight) const = 0;
 
-   virtual tResult RenderText(const tChar * pszText, int textLength, uint flags, int x, int y, int width, int height) const = 0;
+   virtual tResult RenderText(const tChar * pszText, int textLength, int x, int y) const = 0;
 };
 
 ///////////////////////////////////////

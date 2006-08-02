@@ -5,6 +5,8 @@
 
 #include "guifontfactory.h"
 
+#include "renderapi.h"
+
 #include "configapi.h"
 
 #if HAVE_DIRECTX
@@ -66,6 +68,10 @@ tResult GUIFontCreate(const cGUIFontDesc & fontDesc, IUnknown * pUnk, IGUIFont *
 
    if (GUIFontCreateFreetype(fontDesc, &pFont) == S_OK)
    {
+      // TEMP
+      cAutoIPtr<IRenderFont> pRenderFont;
+      RenderFontCreate(fontDesc.GetFace(), fontDesc.GetSize(), NULL, &pRenderFont);
+
       pGUIFontCache->SetFont(fontDesc, pFont);
       return pFont.GetPointer(ppFont);
    }

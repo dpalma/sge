@@ -192,7 +192,9 @@ tResult cRenderFontFreetype::Create(const tChar * pszFont, int fontPointSize, IR
       cFreetypeGlyph glyph;
       if (face.LoadGlyph(face.GetCharIndex(c), FT_LOAD_DEFAULT, &glyph) == S_OK)
       {
-         if (glyph.ToBitmap(FT_RENDER_MODE_NORMAL, true, &bitmapGlyphs[index]) == S_OK)
+         float lowerX, lowerY, upperX, upperY;
+         if (glyph.BBox(&lowerX, &lowerY, &upperX, &upperY) == S_OK
+            && glyph.ToBitmap(FT_RENDER_MODE_NORMAL, true, &bitmapGlyphs[index]) == S_OK)
          {
             FT_Bitmap & bitmap = bitmapGlyphs[index]->bitmap;
 
@@ -207,7 +209,7 @@ tResult cRenderFontFreetype::Create(const tChar * pszFont, int fontPointSize, IR
             {
                for (int i = 0; i < bitmap.width; ++i)
                {
-                  byte value = bitmap.buffer[i + (bitmap.width * j)];
+                  byte value = bitmap.buffer[i + (bitmap.pitch * j)];
                   uint texelIndex = texX + i + ((texY + j) * texSize);
                   pTexData[2 * texelIndex] = pTexData[2 * texelIndex + 1] = value;
                }
@@ -249,7 +251,7 @@ tResult cRenderFontFreetype::Create(const tChar * pszFont, int fontPointSize, IR
 
 ////////////////////////////////////////
 
-tResult cRenderFontFreetype::MeasureText(const tChar * pszText, int textLength, uint flags, int * pWidth, int * pHeight) const
+tResult cRenderFontFreetype::MeasureText(const tChar * pszText, int textLength, int * pWidth, int * pHeight) const
 {
    if (textLength < 0)
    {
@@ -261,7 +263,7 @@ tResult cRenderFontFreetype::MeasureText(const tChar * pszText, int textLength, 
 
 ////////////////////////////////////////
 
-tResult cRenderFontFreetype::RenderText(const tChar * pszText, int textLength, uint flags, int x, int y, int width, int height) const
+tResult cRenderFontFreetype::RenderText(const tChar * pszText, int textLength, int x, int y) const
 {
    if (textLength < 0)
    {

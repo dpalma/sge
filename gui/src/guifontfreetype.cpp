@@ -161,7 +161,7 @@ tResult cGUIFontFreetype::RenderText(const tChar * pszText, int /*textLength*/, 
    {
 #if 1
       glColor4fv(color.GetPointer());
-      m_pRenderFont->RenderText(pszText, -1, 0, pRect->left, pRect->top, pRect->GetWidth(), pRect->GetHeight());
+      m_pRenderFont->RenderText(pszText, -1, pRect->left, pRect->top);
 #else
       glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
 

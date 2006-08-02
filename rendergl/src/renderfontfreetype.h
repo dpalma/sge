@@ -34,9 +34,9 @@ public:
 
    static tResult Create(const tChar * pszFont, int fontPointSize, IRenderFont * * ppFont);
 
-   virtual tResult MeasureText(const tChar * pszText, int textLength, uint flags, int * pWidth, int * pHeight) const;
+   virtual tResult MeasureText(const tChar * pszText, int textLength, int * pWidth, int * pHeight) const;
 
-   virtual tResult RenderText(const tChar * pszText, int textLength, uint flags, int x, int y, int width, int height) const;
+   virtual tResult RenderText(const tChar * pszText, int textLength, int x, int y) const;
 
 private:
    uint m_textureId;
