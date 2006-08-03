@@ -31,17 +31,17 @@ cFreetypeGlyph::~cFreetypeGlyph()
 
 ////////////////////////////////////////
 
-tResult cFreetypeGlyph::BBox(float * pLowerX, float * pLowerY, float * pUpperX, float * pUpperY)
+tResult cFreetypeGlyph::BBox(float * pMinX, float * pMinY, float * pMaxX, float * pMaxY)
 {
-   if (pLowerX == NULL || pLowerY == NULL || pUpperX == NULL || pUpperY == NULL)
+   if (pMinX == NULL || pMinY == NULL || pMaxX == NULL || pMaxY == NULL)
    {
       return E_POINTER;
    }
 
-   *pLowerX = static_cast<float>(m_bbox.xMin) / 64.0f;
-   *pLowerY = static_cast<float>(m_bbox.yMin) / 64.0f;
-   *pUpperX = static_cast<float>(m_bbox.xMax) / 64.0f;
-   *pUpperY = static_cast<float>(m_bbox.yMax) / 64.0f;
+   *pMinX = static_cast<float>(m_bbox.xMin) / 64.0f;
+   *pMinY = static_cast<float>(m_bbox.yMin) / 64.0f;
+   *pMaxX = static_cast<float>(m_bbox.xMax) / 64.0f;
+   *pMaxY = static_cast<float>(m_bbox.yMax) / 64.0f;
    return S_OK;
 }
 

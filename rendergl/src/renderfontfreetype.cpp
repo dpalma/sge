@@ -23,7 +23,7 @@
 #include "dbgalloc.h" // must be last header
 
 
-#define kRenderFontGlyphFirst 0
+#define kRenderFontGlyphFirst 32
 #define kRenderFontGlyphLast 127
 #define kRenderFontGlyphCount (kRenderFontGlyphLast - kRenderFontGlyphFirst + 1)
 
@@ -149,10 +149,15 @@ tResult cRenderFontFreetype::Create(const tChar * pszFont, int fontPointSize, IR
    HDC hMemDC = CreateCompatibleDC(NULL);
    if (hMemDC != NULL)
    {
-      int height = MulDiv(fontPointSize, GetDeviceCaps(hMemDC, LOGPIXELSY), 72);
+      float pixelsH = static_cast<float>(GetDeviceCaps(hMemDC, HORZRES));
+      int mmH = GetDeviceCaps(hMemDC, HORZSIZE);
+      int dpiH = FloatToInt((pixelsH * 25.4f) / mmH);
+      float pixelsV = static_cast<float>(GetDeviceCaps(hMemDC, VERTRES));
+      int mmV = GetDeviceCaps(hMemDC, VERTSIZE);
+      int dpiV = FloatToInt((pixelsV * 25.4f) / mmV);
 
       // FreeType measures fonts in 1/64ths of a pixel
-      face.SetCharSize(height * 64, height * 64, 96, 96);
+      face.SetCharSize(0, fontPointSize * 64, dpiH, dpiV);
 
       DeleteDC(hMemDC);
    }
@@ -192,8 +197,8 @@ tResult cRenderFontFreetype::Create(const tChar * pszFont, int fontPointSize, IR
       cFreetypeGlyph glyph;
       if (face.LoadGlyph(face.GetCharIndex(c), FT_LOAD_DEFAULT, &glyph) == S_OK)
       {
-         float lowerX, lowerY, upperX, upperY;
-         if (glyph.BBox(&lowerX, &lowerY, &upperX, &upperY) == S_OK
+         float minX, minY, maxX, maxY;
+         if (glyph.BBox(&minX, &minY, &maxX, &maxY) == S_OK
             && glyph.ToBitmap(FT_RENDER_MODE_NORMAL, true, &bitmapGlyphs[index]) == S_OK)
          {
             FT_Bitmap & bitmap = bitmapGlyphs[index]->bitmap;
@@ -219,6 +224,14 @@ tResult cRenderFontFreetype::Create(const tChar * pszFont, int fontPointSize, IR
             pGlyphs[index].texCoords[1] = static_cast<float>(texY) / texSize;
             pGlyphs[index].texCoords[2] = static_cast<float>(texX + bitmap.width) / texSize;
             pGlyphs[index].texCoords[3] = static_cast<float>(texY + bitmap.rows) / texSize;
+
+            pGlyphs[index].minX = minX;
+            pGlyphs[index].minY = minY;
+            pGlyphs[index].maxX = maxX;
+            pGlyphs[index].maxY = maxY;
+
+            pGlyphs[index].advanceX = glyph.AdvanceX();
+            pGlyphs[index].advanceY = glyph.AdvanceY();
 
             if (bitmap.rows > maxHeightThisRow)
             {
@@ -258,6 +271,15 @@ tResult cRenderFontFreetype::MeasureText(const tChar * pszText, int textLength, 
       textLength = _tcslen(pszText);
    }
 
+   for (int i = 0; i < textLength; i++)
+   {
+      tChar c = pszText[i];
+
+      uint index = c - kRenderFontGlyphFirst;
+
+      const sTextureFontGlyph & glyph = m_pGlyphs[index];
+   }
+
    return E_NOTIMPL;
 }
 
@@ -270,16 +292,10 @@ tResult cRenderFontFreetype::RenderText(const tChar * pszText, int textLength, i
       textLength = _tcslen(pszText);
    }
 
-   struct sTextVertex
-   {
-      float u, v;
-      float x, y, z;
-   };
-
    sTextVertex * vertices = reinterpret_cast<sTextVertex *>(alloca(6 * textLength * sizeof(sTextVertex)));
    uint nVertices = 0;
 
-   int tx = x, ty = y;
+   float tx = static_cast<float>(x), ty = static_cast<float>(y);
 
    for (int i = 0; i < textLength; i++)
    {
@@ -287,80 +303,85 @@ tResult cRenderFontFreetype::RenderText(const tChar * pszText, int textLength, i
 
       uint index = c - kRenderFontGlyphFirst;
 
-      float tx1 = m_pGlyphs[index].texCoords[0];
-      float ty1 = m_pGlyphs[index].texCoords[1];
-      float tx2 = m_pGlyphs[index].texCoords[2];
-      float ty2 = m_pGlyphs[index].texCoords[3];
+      const sTextureFontGlyph & glyph = m_pGlyphs[index];
 
-      int tw = FloatToInt((tx2 - tx1) * m_textureSize);
+      float tx1 = glyph.texCoords[0];
+      float ty1 = glyph.texCoords[1];
+      float tx2 = glyph.texCoords[2];
+      float ty2 = glyph.texCoords[3];
+
       int th = FloatToInt((ty2 - ty1) * m_textureSize);
 
       if (c != _T(' '))
       {
          sTextVertex * pVertex = &vertices[nVertices];
-         float xPlusW = static_cast<float>(tx + tw);
-         float yPlusH = static_cast<float>(ty + th);
+         float xPlusW = tx + glyph.maxX;
 
-         // First Triangle
+         // Triangles go in counter-clockwise order:
+         //
+         // 1  4----6
+         // |\  \   |
+         // | \  \  |
+         // |  \  \ |
+         // |   \  \|
+         // 2----3  5
 
-         // bottom left
+         // 1: top
          pVertex->u = tx1;
-         pVertex->v = ty2;
-         pVertex->x = static_cast<float>(tx);
-         pVertex->y = yPlusH;
+         pVertex->v = ty1;
+         pVertex->x = tx;
+         pVertex->y = ty - glyph.maxY;
          pVertex->z = 0;
          pVertex++;
          nVertices++;
 
-         // bottom right
+         // 2: bottom left
+         pVertex->u = tx1;
+         pVertex->v = ty2;
+         pVertex->x = tx;
+         pVertex->y = ty - glyph.minY;
+         pVertex->z = 0;
+         pVertex++;
+         nVertices++;
+
+         // 3: bottom right
          pVertex->u = tx2;
          pVertex->v = ty2;
          pVertex->x = xPlusW;
-         pVertex->y = yPlusH;
+         pVertex->y = ty - glyph.minY;
          pVertex->z = 0;
          pVertex++;
          nVertices++;
 
-         // top right
-         pVertex->u = tx2;
-         pVertex->v = ty1;
-         pVertex->x = xPlusW;
-         pVertex->y = static_cast<float>(ty);
-         pVertex->z = 0;
-         pVertex++;
-         nVertices++;
-
-         // Second Triangle
-
-         // top right
-         pVertex->u = tx2;
-         pVertex->v = ty1;
-         pVertex->x = xPlusW;
-         pVertex->y = static_cast<float>(ty);
-         pVertex->z = 0;
-         pVertex++;
-         nVertices++;
-
-         // top left
+         // 4: top left
          pVertex->u = tx1;
          pVertex->v = ty1;
-         pVertex->x = static_cast<float>(tx);
-         pVertex->y = static_cast<float>(ty);
+         pVertex->x = tx;
+         pVertex->y = ty - glyph.maxY;
          pVertex->z = 0;
          pVertex++;
          nVertices++;
 
-         // bottom left
-         pVertex->u = tx1;
+         // 5: bottom
+         pVertex->u = tx2;
          pVertex->v = ty2;
-         pVertex->x = static_cast<float>(tx);
-         pVertex->y = yPlusH;
+         pVertex->x = xPlusW;
+         pVertex->y = ty - glyph.minY;
+         pVertex->z = 0;
+         pVertex++;
+         nVertices++;
+
+         // 6: top right
+         pVertex->u = tx2;
+         pVertex->v = ty1;
+         pVertex->x = xPlusW;
+         pVertex->y = ty - glyph.maxY;
          pVertex->z = 0;
          pVertex++;
          nVertices++;
       }
 
-      tx += tw;
+      tx += glyph.advanceX;
    }
 
    glEnable(GL_TEXTURE_2D);

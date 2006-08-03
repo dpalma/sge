@@ -412,6 +412,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\3rdparty\freetype\src\base\ftbbox.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\3rdparty\freetype\src\base\ftbitmap.c"
 				>
 			</File>

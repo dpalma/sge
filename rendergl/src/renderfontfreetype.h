@@ -17,15 +17,24 @@ typedef unsigned int GLenum;
 // CLASS: cRenderFontFreetype
 //
 
-struct sTextureFontGlyph
-{
-   float texCoords[4];
-};
-
 class cRenderFontFreetype : public cComObject<IMPLEMENTS(IRenderFont)>
 {
    cRenderFontFreetype(const cRenderFontFreetype &);
    const cRenderFontFreetype & operator =(const cRenderFontFreetype &);
+
+   struct sTextureFontGlyph
+   {
+      float texCoords[4];
+      float minX, minY, maxX, maxY;
+      float advanceX, advanceY;
+   };
+
+   // GL_T2F_V3F format
+   struct sTextVertex
+   {
+      float u, v;
+      float x, y, z;
+   };
 
    cRenderFontFreetype(uint textureId, int textureSize, sTextureFontGlyph * pGlyphs);
 
