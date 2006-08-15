@@ -156,7 +156,7 @@ tResult cRenderFontFreetype::Create(const tChar * pszFont, int fontPointSize, IR
       int mmV = GetDeviceCaps(hMemDC, VERTSIZE);
       int dpiV = FloatToInt((pixelsV * 25.4f) / mmV);
 
-      // FreeType measures fonts in 1/64ths of a pixel
+      // FreeType measures fonts in 64ths of a point
       face.SetCharSize(0, fontPointSize * 64, dpiH, dpiV);
 
       DeleteDC(hMemDC);
@@ -248,8 +248,8 @@ tResult cRenderFontFreetype::Create(const tChar * pszFont, int fontPointSize, IR
    glBindTexture(GL_TEXTURE_2D, textureId);
    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, texSize, texSize, 0,
                 GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, pTexData);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
    delete [] pTexData;
 
@@ -386,9 +386,6 @@ tResult cRenderFontFreetype::RenderText(const tChar * pszText, int textLength, i
 
    glEnable(GL_TEXTURE_2D);
    glBindTexture(GL_TEXTURE_2D, m_textureId);
-
-   glEnable(GL_ALPHA_TEST);
-   glAlphaFunc(GL_GEQUAL, 0.0625f);
 
    glEnable(GL_BLEND);
    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

@@ -75,6 +75,11 @@ class SGEEnvironment(Environment):
       self.m_libPaths += [MakeLibPath('CppUnitLite2')]
       self.m_incPaths += ['#3rdparty/CppUnitLite2/include']
       
+   def UseFreetype(self):
+      self.m_libs += ['freetype']
+      self.m_libPaths += [MakeLibPath('freetype')]
+      self.m_incPaths += ['#3rdparty/freetype/include']
+      
    def SetCommon(self):
       if platform == 'win32':
          self.Append(CCFLAGS=['/EHsc'])

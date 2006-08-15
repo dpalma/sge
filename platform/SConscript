@@ -15,6 +15,7 @@ elif env['PLATFORM'] == 'cygwin':
 
 includePaths = Split("""
    #platform/include
+   #script/include
    #tech/include
 """)
 
