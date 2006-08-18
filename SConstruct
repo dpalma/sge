@@ -80,8 +80,20 @@ class SGEEnvironment(Environment):
       self.m_libPaths += [MakeLibPath('freetype')]
       self.m_incPaths += ['#3rdparty/freetype/include']
       
+   def UseFTGL(self):
+      self.UseFreetype()
+      self.UseGL()
+      self.m_libs += ['ftgl']
+      self.m_libPaths += [MakeLibPath('ftgl')]
+      self.m_incPaths += ['#3rdparty/ftgl/include']
+      if self.IsShared():
+         self.Append(CPPDEFINES=['FTGL_DLL_EXPORTS', 'FTGL_LIBRARY'])
+      else:
+         self.Append(CPPDEFINES=['FTGL_LIBRARY_STATIC'])
+      
    def SetCommon(self):
       if platform == 'win32':
+         self.Append(CPPDEFINES=['WIN32', '_WIN32'])
          self.Append(CCFLAGS=['/EHsc'])
          # HACK: turn off deprecation warnings from MSVC 2005 compiler
          if self.get('MSVS_VERSION') == '8.0':

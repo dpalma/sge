@@ -53,18 +53,20 @@ includePaths = Split("""
 libPaths = Split("""
    #allguids
    #engine
+   #rendergl
    #tech
 """)
 
 linkLibs = Split("""
    allguids
    engine
+   rendergl
    tech
 """)
 
 local = env.Copy()
-local.UseFreetype()
 local.UseGL()
+local.UseFTGL()
 local.UseTinyxml()
 local.BuildLibrary(target='gui',
                    source=sourceFiles,

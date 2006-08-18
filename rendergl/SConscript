@@ -4,9 +4,11 @@
 Import('env')
 
 sourceFiles = Split("""
+   src/freetypeutils.cpp
    src/glinterleave.cpp
    src/gltexture.cpp
    src/renderer.cpp
+   src/renderfontfreetype.cpp
 """)
 
 includePaths = Split("""
@@ -25,7 +27,7 @@ linkLibs = Split("""
 """)
 
 local = env.Copy()
-local.UseGL()
+local.UseFTGL()
 local.BuildLibrary(target='rendergl',
                    source=sourceFiles,
                    include_path=includePaths,
