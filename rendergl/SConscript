@@ -9,20 +9,24 @@ sourceFiles = Split("""
    src/gltexture.cpp
    src/renderer.cpp
    src/renderfontfreetype.cpp
+   src/renderfontftgl.cpp
 """)
 
 includePaths = Split("""
+   #platform/include
    #rendergl/include
    #tech/include
 """)
 
 libPaths = Split("""
    #allguids
+   #platform
    #tech
 """)
 
 linkLibs = Split("""
    allguids
+   platform
    tech
 """)
 

@@ -13,6 +13,8 @@
 #pragma once
 #endif
 
+class cFilePath;
+
 F_DECLARE_INTERFACE(IDirect3DDevice9);
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -40,6 +42,7 @@ PLATFORM_API void SysAppActivate(bool active);
 PLATFORM_API void SysQuit();
 PLATFORM_API tResult SysGetClipboardString(cStr * pStr, ulong max = 8192); // 8K max for sanity
 PLATFORM_API tResult SysSetClipboardString(const tChar * psz);
+PLATFORM_API tResult SysGetFontPath(cFilePath * pFontPath);
 PLATFORM_API HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI api = kOpenGL);
 PLATFORM_API tResult SysGetDirect3DDevice9(IDirect3DDevice9 * * ppDevice);
 PLATFORM_API tResult SysGetWindowSize(int * pWidth, int * pHeight);

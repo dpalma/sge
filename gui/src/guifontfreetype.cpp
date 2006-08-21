@@ -6,15 +6,10 @@
 #include "guifontfreetype.h"
 
 #include "renderapi.h"
+#include "sys.h"
 
 #include "filepath.h"
 #include "filespec.h"
-
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <shlobj.h>
-#endif
 
 #include "dbgalloc.h" // must be last header
 
@@ -22,49 +17,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #define IsFlagSet(var, bit) (((var) & (bit)) == (bit))
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-static tResult GetFontPath(cFilePath * pFontPath)
-{
-   if (pFontPath == NULL)
-   {
-      return E_POINTER;
-   }
-
-#ifdef _WIN32
-   tResult result = E_FAIL;
-
-   typedef tResult (STDCALL * tSHGetFolderPath)(HWND, int, HANDLE, DWORD, LPTSTR);
-
-   HMODULE hSHFolder = LoadLibrary(_T("SHFolder.dll"));
-   if (hSHFolder != NULL)
-   {
-      tSHGetFolderPath pfn = reinterpret_cast<tSHGetFolderPath>(GetProcAddress(hSHFolder,
-#ifdef _UNICODE
-         "SHGetFolderPathW"));
-#else
-         "SHGetFolderPathA"));
-#endif
-      if (pfn != NULL)
-      {
-         tChar szPath[MAX_PATH];
-         if ((*pfn)(NULL, CSIDL_FONTS, NULL, 0, szPath) == S_OK)
-         {
-            *pFontPath = cFilePath(szPath);
-            result = S_OK;
-         }
-      }
-
-      FreeLibrary(hSHFolder);
-   }
-
-   return result;
-#else
-   return E_NOTIMPL;
-#endif
-}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -112,7 +64,7 @@ tResult cGUIFontFreetype::Create(const cGUIFontDesc & fontDesc)
    fontName.SetFileExt(_T("ttf"));
 
    cFilePath fontPath;
-   if (GetFontPath(&fontPath) == S_OK)
+   if (SysGetFontPath(&fontPath) == S_OK)
    {
       fontName.SetPath(fontPath);
    }

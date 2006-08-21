@@ -343,6 +343,9 @@
 					RelativePath="..\..\rendergl\src\renderfontfreetype.cpp">
 				</File>
 				<File
+					RelativePath="..\..\rendergl\src\renderfontftgl.cpp">
+				</File>
+				<File
 					RelativePath="..\..\rendergl\src\stdhdr.cpp">
 					<FileConfiguration
 						Name="Release|Win32">
@@ -387,6 +390,9 @@
 				</File>
 				<File
 					RelativePath="..\..\rendergl\src\renderfontfreetype.h">
+				</File>
+				<File
+					RelativePath="..\..\rendergl\src\renderfontftgl.h">
 				</File>
 				<File
 					RelativePath="..\..\rendergl\src\stdhdr.h">

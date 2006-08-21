@@ -6,6 +6,8 @@
 #include "renderfontfreetype.h"
 #include "freetypeutils.h"
 
+#include "sys.h"
+
 #include "color.h"
 #include "filepath.h"
 #include "filespec.h"
@@ -15,7 +17,6 @@
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include <shlobj.h>
 #endif
 
 #include <cstring>
@@ -26,49 +27,6 @@
 #define kRenderFontGlyphFirst 32
 #define kRenderFontGlyphLast 127
 #define kRenderFontGlyphCount (kRenderFontGlyphLast - kRenderFontGlyphFirst + 1)
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-#ifdef _WIN32
-static tResult GetFontPath(cFilePath * pFontPath)
-{
-   if (pFontPath == NULL)
-   {
-      return E_POINTER;
-   }
-
-   tResult result = E_FAIL;
-
-   typedef tResult (STDCALL * tSHGetFolderPath)(HWND, int, HANDLE, DWORD, LPTSTR);
-
-   HMODULE hSHFolder = LoadLibrary(_T("SHFolder.dll"));
-   if (hSHFolder != NULL)
-   {
-      tSHGetFolderPath pfn = reinterpret_cast<tSHGetFolderPath>(GetProcAddress(hSHFolder,
-#ifdef _UNICODE
-         "SHGetFolderPathW"));
-#else
-         "SHGetFolderPathA"));
-#endif
-      if (pfn != NULL)
-      {
-         tChar szPath[MAX_PATH];
-         if ((*pfn)(NULL, CSIDL_FONTS, NULL, 0, szPath) == S_OK)
-         {
-            *pFontPath = cFilePath(szPath);
-            result = S_OK;
-         }
-      }
-
-      FreeLibrary(hSHFolder);
-   }
-
-   return result;
-}
-#else
-#error ("TODO: Need platform-specific font path function")
-#endif
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -126,7 +84,7 @@ tResult cRenderFontFreetype::Create(const tChar * pszFont, int fontPointSize, IR
    fontName.SetFileExt(_T("ttf"));
 
    cFilePath fontPath;
-   if (GetFontPath(&fontPath) == S_OK)
+   if (SysGetFontPath(&fontPath) == S_OK)
    {
       fontName.SetPath(fontPath);
    }
@@ -399,9 +357,9 @@ tResult cRenderFontFreetype::RenderText(const tChar * pszText, int textLength, i
 
 ////////////////////////////////////////
 
-tResult RenderFontCreate(const tChar * pszFont, int fontPointSize, IUnknown * pUnk, IRenderFont * * ppFont)
-{
-   return cRenderFontFreetype::Create(pszFont, fontPointSize, ppFont);
-}
+//tResult RenderFontCreate(const tChar * pszFont, int fontPointSize, IUnknown * pUnk, IRenderFont * * ppFont)
+//{
+//   return cRenderFontFreetype::Create(pszFont, fontPointSize, ppFont);
+//}
 
 ////////////////////////////////////////////////////////////////////////////////

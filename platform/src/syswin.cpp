@@ -6,8 +6,9 @@
 #include "sys.h"
 
 #include "configapi.h"
-#include "keys.h"
+#include "filepath.h"
 #include "globalobj.h"
+#include "keys.h"
 #include "techtime.h"
 
 #ifdef HAVE_CPPUNITLITE2
@@ -16,6 +17,7 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <shlobj.h>
 #include <zmouse.h>
 
 #include <GL/glew.h>
@@ -406,6 +408,46 @@ tResult SysSetClipboardString(const tChar * psz)
    }
 
    return S_OK;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+tResult SysGetFontPath(cFilePath * pFontPath)
+{
+   if (pFontPath == NULL)
+   {
+      return E_POINTER;
+   }
+
+   typedef tResult (STDCALL * tSHGetFolderPath)(HWND, int, HANDLE, DWORD, LPTSTR);
+
+   cDLL shfolder;
+   if (!shfolder.Load(_T("SHFolder.dll")))
+   {
+      return E_FAIL;
+   }
+
+   tSHGetFolderPath pfnGetFolderPath = reinterpret_cast<tSHGetFolderPath>(
+#ifdef _UNICODE
+      shfolder.GetProcAddress("SHGetFolderPathW"));
+#else
+      shfolder.GetProcAddress("SHGetFolderPathA"));
+#endif
+   if (pfnGetFolderPath == NULL)
+   {
+      return E_FAIL;
+   }
+
+   tChar szFontPath[MAX_PATH];
+   ZeroMemory(szFontPath, sizeof(szFontPath));
+
+   if ((*pfnGetFolderPath)(NULL, CSIDL_FONTS, NULL, 0, szFontPath) == S_OK)
+   {
+      *pFontPath = cFilePath(szFontPath);
+      return S_OK;
+   }
+
+   return E_FAIL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
