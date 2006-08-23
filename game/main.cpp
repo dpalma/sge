@@ -25,6 +25,8 @@
 #include "techstring.h"
 #include "globalobj.h"
 #include "multivar.h"
+#include "statemachine.h"
+#include "statemachinetem.h"
 #include "threadcallapi.h"
 #include "imageapi.h"
 
@@ -57,9 +59,6 @@ cAutoIPtr<IGUILabelElement> g_pFrameStats;
 float g_fov;
 
 
-static tResult MainFrame();
-
-
 ///////////////////////////////////////////////////////////////////////////////
 
 void ResizeHack(int width, int height, double time)
@@ -69,6 +68,195 @@ void ResizeHack(int width, int height, double time)
    {
       pCamera->SetPerspective(g_fov, static_cast<float>(width) / height, kZNear, kZFar);
    }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: 
+//
+
+class cMainRenderTask : public cComObject<IMPLEMENTS(ITask)>
+{
+public:
+   virtual tResult Execute(double time);
+
+private:
+};
+
+////////////////////////////////////////
+
+tResult cMainRenderTask::Execute(double time)
+{
+   if (!!g_pFrameStats)
+   {
+      tChar szStats[100];
+      SysReportFrameStats(szStats, _countof(szStats));
+
+      g_pFrameStats->SetText(szStats);
+   }
+
+   UseGlobal(Renderer);
+   if (pRenderer->BeginScene() != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   UseGlobal(Camera);
+   pCamera->SetGLState();
+
+   UseGlobal(TerrainRenderer);
+   pTerrainRenderer->Render();
+
+   UseGlobal(EntityManager);
+   pEntityManager->RenderAll();
+
+   UseGlobal(GUIContext);
+   pGUIContext->RenderGUI();
+
+   pRenderer->EndScene();
+   SysSwapBuffers();
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+static ITask * MainRenderTaskCreate()
+{
+   return static_cast<ITask *>(new cMainRenderTask);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+static bool ScriptExecResource(IScriptInterpreter * pInterpreter, const tChar * pszResource)
+{
+   bool bResult = false;
+
+   char * pszCode = NULL;
+   UseGlobal(ResourceManager);
+   if (pResourceManager->Load(pszResource, kRT_Text, NULL, (void**)&pszCode) == S_OK)
+   {
+      bResult = SUCCEEDED(pInterpreter->ExecString(pszCode));
+   }
+
+   return bResult;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: 
+//
+
+class cMainInitTask : public cComObject<IMPLEMENTS(ITask)>
+                    , public cStateMachine<cMainInitTask, double>
+{
+public:
+   cMainInitTask();
+
+   virtual tResult Execute(double time);
+
+   void OnInitialState(double);
+   void OnErrorEnter();
+   void OnRunStartupScriptEnter();
+   void OnRunUnitTests(double);
+
+private:
+   tState m_errorState;
+   tState m_runStartupScriptState;
+   tState m_runUnitTestsState;
+   tState m_finishedState;
+};
+
+////////////////////////////////////////
+
+cMainInitTask::cMainInitTask()
+ : m_errorState(&cMainInitTask::OnErrorEnter, NULL, NULL)
+ , m_runStartupScriptState(&cMainInitTask::OnRunStartupScriptEnter, NULL, NULL)
+ , m_runUnitTestsState(NULL, &cMainInitTask::OnRunUnitTests, NULL)
+ , m_finishedState(NULL, NULL, NULL)
+{
+}
+
+////////////////////////////////////////
+
+tResult cMainInitTask::Execute(double time)
+{
+   Update(time);
+
+   return IsCurrentState(&m_finishedState) ? S_FALSE : S_OK;
+}
+
+////////////////////////////////////////
+
+void cMainInitTask::OnInitialState(double time)
+{
+   GotoState(&m_runStartupScriptState);
+}
+
+////////////////////////////////////////
+
+void cMainInitTask::OnErrorEnter()
+{
+   SysQuit();
+}
+
+////////////////////////////////////////
+
+void cMainInitTask::OnRunStartupScriptEnter()
+{
+   cStr script(kAutoExecScript);
+   ConfigGet(_T("autoexec_script"), &script);
+   if (!script.empty())
+   {
+      UseGlobal(ScriptInterpreter);
+      if (pScriptInterpreter->ExecFile(script.c_str()) != S_OK)
+      {
+         if (!ScriptExecResource(pScriptInterpreter, script.c_str()))
+         {
+            ErrorMsg1("Start-up script \"%s\" failed to execute or was not found\n", script.c_str());
+            GotoState(&m_errorState);
+            return;
+         }
+      }
+   }
+
+   UseGlobal(ScriptInterpreter);
+   pScriptInterpreter->CallFunction("GameInit");
+
+   // After calling GameInit, try to find a label element for showing frame stats
+   {
+      UseGlobal(GUIContext);
+      cAutoIPtr<IGUIElement> pElement;
+      if (pGUIContext->GetOverlayElement(_T("frameStats"), &pElement) == S_OK)
+      {
+         pElement->QueryInterface(IID_IGUILabelElement, (void**)&g_pFrameStats);
+      }
+   }
+
+   GotoState(&m_runUnitTestsState);
+}
+
+////////////////////////////////////////
+
+void cMainInitTask::OnRunUnitTests(double time)
+{
+   if (FAILED(SysRunUnitTests()))
+   {
+      GotoState(&m_errorState);
+      return;
+   }
+
+   GotoState(&m_finishedState);
+}
+
+////////////////////////////////////////
+
+static ITask * MainInitTaskCreate()
+{
+   return static_cast<ITask *>(new cMainInitTask);
 }
 
 
@@ -96,23 +284,6 @@ static void RegisterGlobalObjects()
    TerrainModelCreate();
    TerrainRendererCreate();
    ThreadCallerCreate();
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-static bool ScriptExecResource(IScriptInterpreter * pInterpreter, const tChar * pszResource)
-{
-   bool bResult = false;
-
-   char * pszCode = NULL;
-   UseGlobal(ResourceManager);
-   if (pResourceManager->Load(pszResource, kRT_Text, NULL, (void**)&pszCode) == S_OK)
-   {
-      bResult = SUCCEEDED(pInterpreter->ExecString(pszCode));
-   }
-
-   return bResult;
 }
 
 
@@ -195,6 +366,18 @@ static tResult InitGlobalConfig(int argc, tChar * argv[])
    return S_OK;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
+static tResult MainFrame()
+{
+   UseGlobal(Scheduler);
+   pScheduler->NextFrame();
+
+   return S_OK;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 static bool MainInit(int argc, tChar * argv[])
 {
    if (InitGlobalConfig(argc, argv) != S_OK)
@@ -215,6 +398,20 @@ static bool MainInit(int argc, tChar * argv[])
       return false;
    }
 
+   cAutoIPtr<ITask> pMainRenderTask(MainRenderTaskCreate());
+   if (!!pMainRenderTask)
+   {
+      UseGlobal(Scheduler);
+      pScheduler->AddRenderTask(pMainRenderTask);
+   }
+
+   cAutoIPtr<ITask> pMainInitTask(MainInitTaskCreate());
+   if (!!pMainInitTask)
+   {
+      UseGlobal(Scheduler);
+      pScheduler->AddFrameTask(pMainInitTask, 0, 1, 0);
+   }
+
    TextFormatRegister(_T("css,lua,xml"));
    EngineRegisterResourceFormats();
    EngineRegisterScriptFunctions();
@@ -225,21 +422,6 @@ static bool MainInit(int argc, tChar * argv[])
    {
       UseGlobal(ResourceManager);
       pResourceManager->AddDirectoryTreeFlattened(temp.c_str());
-   }
-
-   cStr script(kAutoExecScript);
-   ConfigGet(_T("autoexec_script"), &script);
-   if (!script.empty())
-   {
-      UseGlobal(ScriptInterpreter);
-      if (pScriptInterpreter->ExecFile(script.c_str()) != S_OK)
-      {
-         if (!ScriptExecResource(pScriptInterpreter, script.c_str()))
-         {
-            ErrorMsg1("Start-up script \"%s\" failed to execute or was not found\n", script.c_str());
-            return false;
-         }
-      }
    }
 
    g_fov = kDefaultFov;
@@ -281,25 +463,8 @@ static bool MainInit(int argc, tChar * argv[])
 
    SysAppActivate(true);
 
-   if (FAILED(SysRunUnitTests()))
-   {
-      return false;
-   }
-
    UseGlobal(Camera);
    pCamera->SetPerspective(g_fov, (float)width / height, kZNear, kZFar);
-
-   UseGlobal(ScriptInterpreter);
-   pScriptInterpreter->CallFunction("GameInit");
-
-   // After calling GameInit, try to find a label element for showing frame stats
-   {
-      cAutoIPtr<IGUIElement> pElement;
-      if (pGUIContext->GetOverlayElement(_T("frameStats"), &pElement) == S_OK)
-      {
-         pElement->QueryInterface(IID_IGUILabelElement, (void**)&g_pFrameStats);
-      }
-   }
 
    UseGlobal(Scheduler);
    pScheduler->Start();
@@ -320,45 +485,6 @@ static void MainTerm()
    SysQuit();
 
    StopGlobalObjects();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-static tResult MainFrame()
-{
-   UseGlobal(Scheduler);
-   pScheduler->NextFrame();
-
-   if (!!g_pFrameStats)
-   {
-      tChar szStats[100];
-      SysReportFrameStats(szStats, _countof(szStats));
-
-      g_pFrameStats->SetText(szStats);
-   }
-
-   UseGlobal(Renderer);
-   if (pRenderer->BeginScene() != S_OK)
-   {
-      return E_FAIL;
-   }
-
-   UseGlobal(Camera);
-   pCamera->SetGLState();
-
-   UseGlobal(TerrainRenderer);
-   pTerrainRenderer->Render();
-
-   UseGlobal(EntityManager);
-   pEntityManager->RenderAll();
-
-   UseGlobal(GUIContext);
-   pGUIContext->RenderGUI();
-
-   pRenderer->EndScene();
-   SysSwapBuffers();
-
-   return S_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
