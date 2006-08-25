@@ -11,6 +11,10 @@
 #include "CppUnitLite2.h"
 #endif
 
+#ifdef HAVE_UNITTESTPP
+#include "TestRunner.h"
+#endif
+
 #ifdef HAVE_CPPUNIT
 #include <cppunit/extensions/HelperMacros.h>
 #include <cppunit/TestFailure.h>
@@ -67,6 +71,27 @@ tSysResizeFn SysSetResizeCallback(tSysResizeFn pfn)
    g_pfnResizeCallback = pfn;
    return pfnFormer;
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_UNITTESTPP
+
+static tResult SysRunUnitTestPP()
+{
+   UnitTest::RunAllTests();
+
+   return S_OK;
+}
+
+#else
+
+static tResult SysRunUnitTestPP()
+{
+   return S_OK;
+}
+
+#endif // HAVE_UNITTESTPP
 
 
 #ifdef HAVE_CPPUNITLITE2
@@ -197,6 +222,13 @@ tResult SysRunCppUnit()
 
 tResult SysRunUnitTests()
 {
+#ifdef HAVE_UNITTESTPP
+   if (FAILED(SysRunUnitTestPP()))
+   {
+      return E_FAIL;
+   }
+#endif
+
 #ifdef HAVE_CPPUNITLITE2
    if (FAILED(SysRunCppUnitLite2()))
    {

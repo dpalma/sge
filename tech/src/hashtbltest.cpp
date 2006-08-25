@@ -3,14 +3,14 @@
 
 #include "stdhdr.h"
 
-#ifdef HAVE_CPPUNITLITE2 // entire file
+#ifdef HAVE_UNITTESTPP // entire file
 
 #include "hashtable.h"
 #include "hashtabletem.h"
 
 #include "techtime.h"
 
-#include "CppUnitLite2.h"
+#include "UnitTest++.h"
 
 #if (_MSC_VER >= 1310)
 #define HASH_MAP_NS stdext
@@ -26,6 +26,7 @@
 
 #include <map>
 #include <set>
+#include <string>
 
 #include "dbgalloc.h" // must be last header
 
@@ -299,7 +300,7 @@ cHashTableTests::~cHashTableTests()
 
 ////////////////////////////////////////
 
-TEST_F(cHashTableTests, TestCopy)
+TEST_FIXTURE(cHashTableTests, TestCopy)
 {
    tTestHashTable hashTableCopy(m_hashTable);
 
@@ -319,7 +320,7 @@ TEST_F(cHashTableTests, TestCopy)
 
 ////////////////////////////////////////
 
-TEST_F(cHashTableTests, TestErase)
+TEST_FIXTURE(cHashTableTests, TestErase)
 {
    uint nErasures = (m_hashTable.size() / 2); // erase half the strings in the table
    std::set<int> erasedIndices;
@@ -353,7 +354,7 @@ TEST_F(cHashTableTests, TestErase)
 
 ////////////////////////////////////////
 
-TEST_F(cHashTableTests, TestFindSuccess)
+TEST_FIXTURE(cHashTableTests, TestFindSuccess)
 {
    int nFailures = 0;
 
@@ -376,7 +377,7 @@ TEST_F(cHashTableTests, TestFindSuccess)
 
 ////////////////////////////////////////
 
-TEST_F(cHashTableTests, TestFindFailure)
+TEST_FIXTURE(cHashTableTests, TestFindFailure)
 {
    char szNotFound[kTestStringLength + 10];
    random_string(szNotFound, _countof(szNotFound));
@@ -386,7 +387,7 @@ TEST_F(cHashTableTests, TestFindFailure)
 
 ////////////////////////////////////////
 
-TEST_F(cHashTableTests, TestIterationOfEmptyTable)
+TEST_FIXTURE(cHashTableTests, TestIterationOfEmptyTable)
 {
    cHashTable<int_ptr, void *> hashTable;
    CHECK(hashTable.empty());
@@ -402,7 +403,7 @@ TEST_F(cHashTableTests, TestIterationOfEmptyTable)
 
 ////////////////////////////////////////
 
-TEST_F(cHashTableTests, TestIterationPostIncrement)
+TEST_FIXTURE(cHashTableTests, TestIterationPostIncrement)
 {
    int nIterated = 0;
    tTestHashTable::const_iterator iter = m_hashTable.begin();
@@ -419,7 +420,7 @@ TEST_F(cHashTableTests, TestIterationPostIncrement)
 
 ////////////////////////////////////////
 
-TEST_F(cHashTableTests, TestIterationPreIncrement)
+TEST_FIXTURE(cHashTableTests, TestIterationPreIncrement)
 {
    int nIterated = 0;
    tTestHashTable::const_iterator iter = m_hashTable.begin();
@@ -436,7 +437,7 @@ TEST_F(cHashTableTests, TestIterationPreIncrement)
 
 ////////////////////////////////////////
 
-TEST_F(cHashTableTests, TestArrayIndexOperator)
+TEST_FIXTURE(cHashTableTests, TestArrayIndexOperator)
 {
    // test insertion via array index operator
    tTestHashTable hashTable;
@@ -573,9 +574,9 @@ public:
    HASH_MAP_NS::hash_map<const char *, int> m_hashMap;
 #endif
 
-   void RunInsertSpeedTest(sTiming * pHashTableResult, sTiming * pMapResult, sTiming * pHashMapResult, TestResult & result_, const char * m_name);
+   void RunInsertSpeedTest(sTiming * pHashTableResult, sTiming * pMapResult, sTiming * pHashMapResult, UnitTest::TestResults & testResults_, const char * m_name);
    void TestInsertSpeed();
-   void RunLookupSpeedTest(int nLookups, double * pHashTableResult, double * pMapResult, double * pHashMapResult, TestResult & result_, const char * m_name);
+   void RunLookupSpeedTest(int nLookups, double * pHashTableResult, double * pMapResult, double * pHashMapResult, UnitTest::TestResults & testResults_, const char * m_name);
    void TestLookupSpeed();
 };
 
@@ -609,8 +610,8 @@ cHashTableSpeedTests::~cHashTableSpeedTests()
 void cHashTableSpeedTests::RunInsertSpeedTest(sTiming * pHashTableResult,
                                               sTiming * pMapResult,
                                               sTiming * pHashMapResult,
-                                              TestResult & result_,
-                                              const char * m_name)
+                                              UnitTest::TestResults & testResults_,
+                                              const char * m_testName)
 {
    CHECK(pHashTableResult != NULL);
    CHECK(pMapResult != NULL);
@@ -668,7 +669,7 @@ void cHashTableSpeedTests::RunInsertSpeedTest(sTiming * pHashTableResult,
 
 ////////////////////////////////////////
 
-TEST_F(cHashTableSpeedTests, TestInsertSpeed)
+TEST_FIXTURE(cHashTableSpeedTests, TestInsertSpeed)
 {
    const int kNumRuns = 10;
    const double kOneOverNumRuns = 1.0 / kNumRuns;
@@ -679,7 +680,7 @@ TEST_F(cHashTableSpeedTests, TestInsertSpeed)
    LocalMsg2("Insert Speed Test; inserting %d items; %d runs\n", kNumTests, kNumRuns);
    for (int i = 0; i < kNumRuns; i++)
    {
-      RunInsertSpeedTest(&hashTableResult[i], &mapResult[i], &hashMapResult[i], result_, m_name);
+      RunInsertSpeedTest(&hashTableResult[i], &mapResult[i], &hashMapResult[i], testResults_, m_testName);
 
       LocalMsg3("   [%d] cHashTable:      %.5f seconds, %d clock ticks\n",
          i, hashTableResult[i].seconds, hashTableResult[i].clockTicks);
@@ -713,8 +714,8 @@ void cHashTableSpeedTests::RunLookupSpeedTest(int nLookups,
                                               double * pHashTableResult,
                                               double * pMapResult,
                                               double * pHashMapResult,
-                                              TestResult & result_,
-                                              const char * m_name)
+                                              UnitTest::TestResults & testResults_,
+                                              const char * m_testName)
 {
    CHECK(pHashTableResult != NULL);
    CHECK(pMapResult != NULL);
@@ -755,10 +756,10 @@ void cHashTableSpeedTests::RunLookupSpeedTest(int nLookups,
 
 ////////////////////////////////////////
 
-TEST_F(cHashTableSpeedTests, TestLookupSpeed)
+TEST_FIXTURE(cHashTableSpeedTests, TestLookupSpeed)
 {
    double hashTableResult, mapResult, hashMapResult;
-   RunLookupSpeedTest(kNumTests, &hashTableResult, &mapResult, &hashMapResult, result_, m_name);
+   RunLookupSpeedTest(kNumTests, &hashTableResult, &mapResult, &hashMapResult, testResults_, m_testName);
 
    LocalMsg1("Lookup (average over %d lookups):\n", kNumTests);
    LocalMsg1("   cHashTable:     %.2f clock ticks\n", hashTableResult);
@@ -771,4 +772,4 @@ TEST_F(cHashTableSpeedTests, TestLookupSpeed)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // HAVE_CPPUNITLITE2 (entire file)
+#endif // HAVE_UNITTESTPP (entire file)

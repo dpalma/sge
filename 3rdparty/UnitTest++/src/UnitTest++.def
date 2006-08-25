@@ -1,0 +1,10 @@
+;-------------------------------------------------------------------------------
+; $Id$
+
+EXPORTS
+   ?OnTestFailure@TestResults@UnitTest@@QAEXPBDH00@Z                       @1    NONAME
+   ??0Test@UnitTest@@QAE@PBD0H@Z                                           @2    NONAME
+   ??1Test@UnitTest@@UAE@XZ                                                @3    NONAME
+   ??0ListAdder@UnitTest@@QAE@AAVTestList@1@PAVTest@1@@Z                   @4    NONAME
+   ?GetTestList@Test@UnitTest@@SAAAVTestList@2@XZ                          @5    NONAME
+   ?RunAllTests@UnitTest@@YAHXZ                                            @6    NONAME
