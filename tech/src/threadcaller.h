@@ -43,8 +43,14 @@ private:
    typedef std::multimap<tThreadId, cFunctor *> tThreadCalls;
    tThreadCalls m_calls;
 
-   typedef std::map<tThreadId, cThreadEvent *> tReceiptEventMap;
-   tReceiptEventMap m_receiptEvents;
+   struct sThreadInfo
+   {
+      long initCount;
+      cThreadEvent callEvent;
+   };
+
+   typedef std::map<tThreadId, sThreadInfo *> tThreadInfoMap;
+   tThreadInfoMap m_threadInfoMap;
 
    cThreadMutex m_mutex;
 };

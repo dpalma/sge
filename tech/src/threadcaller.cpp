@@ -58,24 +58,29 @@ tResult cThreadCaller::Term()
    cMutexLock lock(&m_mutex);
    if (lock.Acquire())
    {
-      tThreadCalls::iterator iterCalls = m_calls.begin();
-      tThreadCalls::iterator endCalls = m_calls.end();
-      for (; iterCalls != endCalls; iterCalls++)
       {
-         delete iterCalls->second;
+         tThreadCalls::iterator iter = m_calls.begin();
+         tThreadCalls::iterator end = m_calls.end();
+         for (; iter != end; iter++)
+         {
+            delete iter->second;
+         }
+
+         m_calls.clear();
       }
 
-      m_calls.clear();
-
-      tReceiptEventMap::iterator iterReceiptEvents = m_receiptEvents.begin();
-      tReceiptEventMap::iterator endReceiptEvents = m_receiptEvents.end();
-      for (; iterReceiptEvents != endReceiptEvents; iterReceiptEvents++)
       {
-         iterReceiptEvents->second->Pulse();
-         delete iterReceiptEvents->second;
-      }
+         tThreadInfoMap::iterator iter = m_threadInfoMap.begin();
+         tThreadInfoMap::iterator end = m_threadInfoMap.end();
+         for (; iter != end; ++iter)
+         {
+            sThreadInfo * pThreadInfo = iter->second;
+            pThreadInfo->callEvent.Pulse();
+            delete pThreadInfo;
+         }
 
-      m_receiptEvents.clear();
+         m_threadInfoMap.clear();
+      }
    }
 
    return S_OK;
@@ -90,25 +95,31 @@ tResult cThreadCaller::ThreadInit()
    {
       tThreadId threadId = ThreadGetCurrentId();
 
-      if (m_receiptEvents.find(threadId) != m_receiptEvents.end())
       {
-         // Thread already initialized
-         return S_FALSE;
+         tThreadInfoMap::iterator f = m_threadInfoMap.find(threadId);
+         if (f != m_threadInfoMap.end())
+         {
+            // Thread already initialized
+            f->second->initCount += 1;
+            return S_FALSE;
+         }
       }
 
-      cThreadEvent * pEvent = new cThreadEvent;
-      if (pEvent == NULL)
+      sThreadInfo * pThreadInfo = new sThreadInfo;
+      if (pThreadInfo == NULL)
       {
          return E_OUTOFMEMORY;
       }
 
-      if (!pEvent->Create())
+      pThreadInfo->initCount = 1;
+
+      if (!pThreadInfo->callEvent.Create())
       {
-         delete pEvent;
+         delete pThreadInfo;
          return E_FAIL;
       }
 
-      m_receiptEvents.insert(std::make_pair(threadId, pEvent));
+      m_threadInfoMap.insert(std::make_pair(threadId, pThreadInfo));
 
       return S_OK;
    }
@@ -129,13 +140,20 @@ tResult cThreadCaller::ThreadTerm()
 
       LocalMsg2("Cancelled %d pending calls for thread %d\n", nCallsErased, threadId);
 
-      tReceiptEventMap::iterator iterReceiptEvent = m_receiptEvents.find(threadId);
-      if (iterReceiptEvent != m_receiptEvents.end())
       {
-         iterReceiptEvent->second->Pulse();
-         delete iterReceiptEvent->second;
-         m_receiptEvents.erase(iterReceiptEvent);
-         return S_OK;
+         tThreadInfoMap::iterator f = m_threadInfoMap.find(threadId);
+         if (f != m_threadInfoMap.end())
+         {
+            sThreadInfo * pThreadInfo = f->second;
+            pThreadInfo->callEvent.Pulse();
+            pThreadInfo->initCount -= 1;
+            if (pThreadInfo->initCount == 0)
+            {
+               delete pThreadInfo;
+               m_threadInfoMap.erase(f);
+            }
+            return S_OK;
+         }
       }
    }
 
@@ -149,8 +167,8 @@ tResult cThreadCaller::ThreadIsInitialized(tThreadId threadId)
    cMutexLock lock(&m_mutex);
    if (lock.Acquire())
    {
-      tReceiptEventMap::iterator iterReceiptEvent = m_receiptEvents.find(threadId);
-      if (iterReceiptEvent != m_receiptEvents.end())
+      tThreadInfoMap::iterator f = m_threadInfoMap.find(threadId);
+      if (f != m_threadInfoMap.end())
       {
          return S_OK;
       }
@@ -170,10 +188,14 @@ tResult cThreadCaller::ReceiveCalls(uint * pnCalls)
    {
       tThreadId threadId = ThreadGetCurrentId();
 
-      tReceiptEventMap::iterator iterReceiptEvent = m_receiptEvents.find(threadId);
-      if (iterReceiptEvent == m_receiptEvents.end())
+      sThreadInfo * pThreadInfo = NULL;
+
       {
-         return E_FAIL;
+         tThreadInfoMap::iterator f = m_threadInfoMap.find(threadId);
+         if (f != m_threadInfoMap.end())
+         {
+            pThreadInfo = f->second;
+         }
       }
 
       uint nCalls = 0;
@@ -194,7 +216,7 @@ tResult cThreadCaller::ReceiveCalls(uint * pnCalls)
 
       m_calls.erase(threadId);
 
-      iterReceiptEvent->second->Pulse();
+      pThreadInfo->callEvent.Pulse();
 
       return (nCalls > 0) ? S_OK : S_FALSE;
    }
