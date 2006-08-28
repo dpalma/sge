@@ -447,6 +447,12 @@
 					RelativePath="..\..\tech\src\resourceutils.cpp">
 				</File>
 				<File
+					RelativePath="..\..\tech\src\scheduler.cpp">
+				</File>
+				<File
+					RelativePath="..\..\tech\src\schedulerclock.cpp">
+				</File>
+				<File
 					RelativePath="..\..\tech\src\statemachinetest.cpp">
 				</File>
 				<File
@@ -565,6 +571,12 @@
 					RelativePath="..\..\tech\src\resourceutils.h">
 				</File>
 				<File
+					RelativePath="..\..\tech\src\scheduler.h">
+				</File>
+				<File
+					RelativePath="..\..\tech\src\schedulerclock.h">
+				</File>
+				<File
 					RelativePath="..\..\tech\src\stdhdr.h">
 				</File>
 				<File
@@ -667,6 +679,9 @@
 			</File>
 			<File
 				RelativePath="..\..\tech\include\resourceapi.h">
+			</File>
+			<File
+				RelativePath="..\..\tech\include\schedulerapi.h">
 			</File>
 			<File
 				RelativePath="..\..\tech\include\statemachine.h">

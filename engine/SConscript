@@ -20,8 +20,6 @@ sourceFiles = Split("""
    src/ms3dread.cpp
    src/readwriteutils.cpp
    src/saveloadmanager.cpp
-   src/scheduler.cpp
-   src/schedulerclock.cpp
    src/terrain.cpp
    src/terrainrender.cpp
    src/tixml.cpp

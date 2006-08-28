@@ -4,7 +4,7 @@
 #ifndef INCLUDED_SCHEDULERAPI_H
 #define INCLUDED_SCHEDULERAPI_H
 
-#include "enginedll.h"
+#include "techdll.h"
 #include "comtools.h"
 
 #ifdef _MSC_VER
@@ -50,7 +50,7 @@ interface IScheduler : IUnknown
 ///////////////////////////////////////
 
 #define kSchedulerName "Scheduler"
-ENGINE_API tResult SchedulerCreate();
+TECH_API tResult SchedulerCreate();
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -378,12 +378,6 @@
 					RelativePath="..\..\engine\src\saveloadmanager.cpp">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\scheduler.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\schedulerclock.cpp">
-				</File>
-				<File
 					RelativePath="..\..\engine\src\stdhdr.cpp">
 					<FileConfiguration
 						Name="Opt|Win32">
@@ -472,12 +466,6 @@
 					RelativePath="..\..\engine\src\saveloadmanager.h">
 				</File>
 				<File
-					RelativePath="..\..\engine\src\scheduler.h">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\schedulerclock.h">
-				</File>
-				<File
 					RelativePath="..\..\engine\src\stdhdr.h">
 				</File>
 				<File
@@ -511,9 +499,6 @@
 			</File>
 			<File
 				RelativePath="..\..\engine\include\saveloadapi.h">
-			</File>
-			<File
-				RelativePath="..\..\engine\include\schedulerapi.h">
 			</File>
 			<File
 				RelativePath="..\..\engine\include\terrainapi.h">

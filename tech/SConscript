@@ -33,6 +33,8 @@ sourceFiles = Split("""
    src/resourcemanager.cpp
    src/resourcestore.cpp
    src/resourceutils.cpp
+   src/scheduler.cpp
+   src/schedulerclock.cpp
    src/statemachinetest.cpp
    src/techassert.cpp
    src/techhash.cpp
