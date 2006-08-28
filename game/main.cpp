@@ -153,18 +153,19 @@ static bool ScriptExecResource(IScriptInterpreter * pInterpreter, const tChar * 
 class cUnitTestThread : public cThread
 {
 public:
-   cUnitTestThread();
+   cUnitTestThread(bool bAutoDeleteSelf = false);
    ~cUnitTestThread();
 
    virtual int Run();
 
-   tResult m_result;
+private:
+   bool m_bAutoDeleteSelf;
 };
 
 ////////////////////////////////////////
 
-cUnitTestThread::cUnitTestThread()
- : m_result(E_FAIL)
+cUnitTestThread::cUnitTestThread(bool bAutoDeleteSelf)
+ : m_bAutoDeleteSelf(bAutoDeleteSelf)
 {
 }
 
@@ -180,25 +181,16 @@ int cUnitTestThread::Run()
 {
    ThreadSetName(GetThreadId(), _T("UnitTestRunnerThread"));
 
-   UseGlobal(ThreadCaller);
-   if (pThreadCaller->ThreadInit() != S_OK)
+   tResult result = SysRunUnitTests();
+
+   if (m_bAutoDeleteSelf)
    {
-      return -1;
+      delete this;
    }
 
-   m_result = SysRunUnitTests();
-
-   //for (;;)
-   //{
-   //   if (FAILED(pThreadCaller->ReceiveCalls(NULL)))
-   //   {
-   //      break;
-   //   }
-   //}
-
-   if (pThreadCaller->ThreadTerm() != S_OK)
+   if (FAILED(result))
    {
-      return -1;
+      SysQuit();
    }
 
    return 0;
@@ -236,8 +228,6 @@ private:
    tState m_errorState;
    tState m_stagedInitState;
    tState m_finishedState;
-
-   cUnitTestThread m_unitTestThread;
 };
 
 ////////////////////////////////////////
@@ -267,23 +257,22 @@ tResult cMainInitTask::Execute(double time)
 
 void cMainInitTask::OnInitialState(double time)
 {
-   if (m_unitTestThread.Create())
+   cUnitTestThread * pUnitTestThread = new cUnitTestThread(true);
+   if (pUnitTestThread != NULL)
    {
-      GotoState(&m_stagedInitState);
+      if (!pUnitTestThread->Create())
+      {
+         delete pUnitTestThread;
+      }
    }
-   else
-   {
-      GotoState(&m_errorState);
-   }
+
+   GotoState(&m_stagedInitState);
 }
 
 ////////////////////////////////////////
 
 void cMainInitTask::OnEnterErrorState()
 {
-   // TODO: wait with a timeout then terminate if necessary
-   m_unitTestThread.Terminate();
-
    SysQuit();
 }
 
@@ -316,13 +305,6 @@ void cMainInitTask::OnRunInitStages(double time)
 
 void cMainInitTask::OnEnterFinishedState()
 {
-   // Wait for the unit test thread to finish
-   m_unitTestThread.Join();
-
-   if (FAILED(m_unitTestThread.m_result))
-   {
-      GotoState(&m_errorState);
-   }
 }
 
 ////////////////////////////////////////
@@ -625,7 +607,7 @@ int STDCALL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
       return -1;
    }
 
-   int result = SysEventLoop(NULL);
+   int result = SysEventLoop(NULL, kSELF_None);
 
    MainTerm();
 
@@ -644,7 +626,7 @@ int main(int argc, char * argv[])
       return EXIT_FAILURE;
    }
 
-   int result = SysEventLoop(NULL);
+   int result = SysEventLoop(NULL, kSELF_None);
 
    MainTerm();
 

@@ -8,7 +8,9 @@
 #include "globalobj.h"
 #include "keys.h"
 #include "matrix4.h"
+#include "schedulerapi.h"
 #include "techtime.h"
+#include "threadcallapi.h"
 
 #include <locale>
 #include <X11/Xlib.h>
@@ -334,6 +336,12 @@ int SysEventLoop(tSysFrameFn pfnFrameHandler)
       return EXIT_FAILURE;
    }
 
+   UseGlobal(Scheduler);
+   UseGlobal(ThreadCaller);
+
+   bool bRunScheduler = ((flags & kSELF_RunScheduler) == kSELF_RunScheduler);
+   bool bReceiveThreadCalls = ((flags & kSELF_ReceiveThreadCalls) == kSELF_ReceiveThreadCalls);
+
    int result = EXIT_FAILURE;
 
    while (!g_bExiting)
@@ -424,6 +432,16 @@ int SysEventLoop(tSysFrameFn pfnFrameHandler)
       }
       else
       {
+         if (bRunScheduler)
+         {
+            pScheduler->NextFrame();
+         }
+
+         if (bReceiveThreadCalls)
+         {
+            pThreadCaller->ReceiveCalls(NULL);
+         }
+
          if (pfnFrameHandler != NULL)
          {
             if ((*pfnFrameHandler)() != S_OK)

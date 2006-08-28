@@ -47,7 +47,15 @@ PLATFORM_API HANDLE SysCreateWindow(const tChar * pszTitle, int width, int heigh
 PLATFORM_API tResult SysGetDirect3DDevice9(IDirect3DDevice9 * * ppDevice);
 PLATFORM_API tResult SysGetWindowSize(int * pWidth, int * pHeight);
 PLATFORM_API void SysSwapBuffers();
-PLATFORM_API int SysEventLoop(tSysFrameFn pfnFrameHandler);
+
+enum eSysEventLoopFlags
+{
+   kSELF_None                       = 0,
+   kSELF_RunScheduler               = (1 << 0),
+   kSELF_ReceiveThreadCalls         = (1 << 1),
+};
+
+PLATFORM_API int SysEventLoop(tSysFrameFn pfnFrameHandler, uint flags);
 PLATFORM_API void SysReportFrameStats(tChar * psz, ulong max);
 
 ///////////////////////////////////////////////////////////////////////////////

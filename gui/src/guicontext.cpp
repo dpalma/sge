@@ -500,7 +500,7 @@ tResult cGUIContext::ShowModalDialog(const tChar * pszDialog)
 
       // This function won't return until the modal loop is ended by
       // some user action (Enter, Esc, OK button click, etc.)
-      SysEventLoop(GUIModalLoopFrameHandler);
+      SysEventLoop(GUIModalLoopFrameHandler, kSELF_None);
 
       RemoveEventListener(&listener);
 

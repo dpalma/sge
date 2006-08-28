@@ -9,7 +9,9 @@
 #include "filepath.h"
 #include "globalobj.h"
 #include "keys.h"
+#include "schedulerapi.h"
 #include "techtime.h"
+#include "threadcallapi.h"
 
 #ifdef HAVE_CPPUNITLITE2
 #include "CppUnitLite2.h"
@@ -1147,12 +1149,18 @@ void SysSwapBuffers()
 // to exit properly.
 static int g_eventLoopCalls = 0;
 
-int SysEventLoop(tSysFrameFn pfnFrameHandler)
+int SysEventLoop(tSysFrameFn pfnFrameHandler, uint flags)
 {
    MSG msg;
    int result = -1;
 
    g_eventLoopCalls++;
+
+   UseGlobal(Scheduler);
+   UseGlobal(ThreadCaller);
+
+   bool bRunScheduler = ((flags & kSELF_RunScheduler) == kSELF_RunScheduler);
+   bool bReceiveThreadCalls = ((flags & kSELF_ReceiveThreadCalls) == kSELF_ReceiveThreadCalls);
 
    for (;;)
    {
@@ -1181,6 +1189,16 @@ int SysEventLoop(tSysFrameFn pfnFrameHandler)
 
          if (g_bAppActive)
          {
+            if (bRunScheduler)
+            {
+               pScheduler->NextFrame();
+            }
+
+            if (bReceiveThreadCalls)
+            {
+               pThreadCaller->ReceiveCalls(NULL);
+            }
+
             if (pfnFrameHandler != NULL)
             {
                if ((*pfnFrameHandler)() != S_OK)
