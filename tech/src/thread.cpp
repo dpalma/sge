@@ -136,6 +136,8 @@ cThread::cThread()
  : m_threadId(0)
 #ifdef _WIN32
  , m_hThread(NULL)
+#else
+ , m_bJoined(false)
 #endif
 {
 }
@@ -190,6 +192,7 @@ void cThread::Join()
 #ifdef _WIN32
    WaitForSingleObject(m_hThread, INFINITE);
 #else
+   m_bJoined = true;
    pthread_join(m_thread, NULL);
 #endif
 }
@@ -231,6 +234,13 @@ void * cThread::ThreadEntry(void * param)
    Assert(pThread != NULL);
 
    int result = pThread->Run();
+
+   // If pthread_join is never called for a joinable thread,
+   // pthread_detach should be called
+   if (!m_bJoined)
+   {
+      pthread_detach(pThread->m_thread);
+   }
 }
 #endif
 

@@ -47,7 +47,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\3rdparty\freetype\include,..\..\3rdparty\ftgl\include,..\..\rendergl\include,..\..\tech\include,..\..\platform\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\Cg\include,..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\3rdparty\freetype\include,..\..\3rdparty\ftgl\include,..\..\rendergl\include,..\..\tech\include,..\..\platform\include"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;RENDER_EXPORTS;WIN32;_WINDOWS;STRICT;GLEW_STATIC"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -80,6 +80,7 @@
 				OutputFile="$(OutDir)/rendergl.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories="..\..\3rdparty\Cg\lib"
 				ProgramDatabaseFile="$(OutDir)/rendergl.pdb"
 				GenerateMapFile="true"
 				MapFileName="$(IntDir)/rendergl.map"
@@ -144,7 +145,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\3rdparty\freetype\include,..\..\3rdparty\ftgl\include,..\..\rendergl\include,..\..\tech\include,..\..\platform\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\Cg\include,..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\3rdparty\freetype\include,..\..\3rdparty\ftgl\include,..\..\rendergl\include,..\..\tech\include,..\..\platform\include"
 				PreprocessorDefinitions="_USRDLL;RENDER_EXPORTS;STRICT;_WINDOWS;NDEBUG;WIN32;GLEW_STATIC"
 				StringPooling="true"
 				RuntimeLibrary="3"
@@ -178,6 +179,7 @@
 				OutputFile="$(OutDir)/rendergl.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories="..\..\3rdparty\Cg\lib"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/rendergl.pdb"
 				GenerateMapFile="true"
@@ -237,7 +239,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\3rdparty\freetype\include,..\..\3rdparty\ftgl\include,..\..\rendergl\include,..\..\tech\include,..\..\platform\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\Cg\include,..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\3rdparty\freetype\include,..\..\3rdparty\ftgl\include,..\..\rendergl\include,..\..\tech\include,..\..\platform\include"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,_USRDLL,RENDER_EXPORTS,WIN32,_WINDOWS,STRICT,GLEW_STATIC"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -312,7 +314,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\3rdparty\freetype\include,..\..\3rdparty\ftgl\include,..\..\rendergl\include,..\..\tech\include,..\..\platform\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\Cg\include,..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\3rdparty\freetype\include,..\..\3rdparty\ftgl\include,..\..\rendergl\include,..\..\tech\include,..\..\platform\include"
 				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,_USRDLL,RENDER_EXPORTS,WIN32,_WINDOWS,STRICT,HAVE_CPPUNITLITE2,GLEW_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -392,7 +394,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\3rdparty\freetype\include,..\..\3rdparty\ftgl\include,..\..\rendergl\include,..\..\tech\include,..\..\platform\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\Cg\include,..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\3rdparty\freetype\include,..\..\3rdparty\ftgl\include,..\..\rendergl\include,..\..\tech\include,..\..\platform\include"
 				PreprocessorDefinitions="_DEBUG;_USRDLL;RENDER_EXPORTS;WIN32;_WINDOWS;STRICT;HAVE_CPPUNITLITE2;GLEW_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -425,6 +427,7 @@
 				OutputFile="$(OutDir)/rendergl.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories="..\..\3rdparty\Cg\lib"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/rendergl.pdb"
 				GenerateMapFile="true"

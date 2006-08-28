@@ -71,6 +71,7 @@ private:
 #else
    static void * ThreadEntry(void * param);
    pthread_t m_thread;
+   bool m_bJoined;
 #endif
 };
 

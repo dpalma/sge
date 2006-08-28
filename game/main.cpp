@@ -27,6 +27,7 @@
 #include "multivar.h"
 #include "statemachine.h"
 #include "statemachinetem.h"
+#include "thread.h"
 #include "threadcallapi.h"
 #include "imageapi.h"
 
@@ -144,6 +145,65 @@ static bool ScriptExecResource(IScriptInterpreter * pInterpreter, const tChar * 
    return bResult;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: 
+//
+
+class cUnitTestThread : public cThread
+{
+public:
+   cUnitTestThread();
+   ~cUnitTestThread();
+
+   virtual int Run();
+
+   tResult m_result;
+};
+
+////////////////////////////////////////
+
+cUnitTestThread::cUnitTestThread()
+ : m_result(E_FAIL)
+{
+}
+
+////////////////////////////////////////
+
+cUnitTestThread::~cUnitTestThread()
+{
+}
+
+////////////////////////////////////////
+
+int cUnitTestThread::Run()
+{
+   ThreadSetName(GetThreadId(), _T("UnitTestRunnerThread"));
+
+   UseGlobal(ThreadCaller);
+   if (pThreadCaller->ThreadInit() != S_OK)
+   {
+      return -1;
+   }
+
+   m_result = SysRunUnitTests();
+
+   //for (;;)
+   //{
+   //   if (FAILED(pThreadCaller->ReceiveCalls(NULL)))
+   //   {
+   //      break;
+   //   }
+   //}
+
+   if (pThreadCaller->ThreadTerm() != S_OK)
+   {
+      return -1;
+   }
+
+   return 0;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -159,25 +219,39 @@ public:
    virtual tResult Execute(double time);
 
    void OnInitialState(double);
-   void OnErrorEnter();
-   void OnRunStartupScriptEnter();
-   void OnRunUnitTests(double);
+   void OnEnterErrorState();
+   void OnRunInitStages(double);
+   void OnEnterFinishedState();
 
 private:
+   tResult SetupResourceManager();
+   tResult RunStartupScript();
+   tResult CreateMainWindow();
+
+   typedef tResult (cMainInitTask::*tInitStageFn)();
+
+   tInitStageFn m_stages[4];
+   int m_currentStage;
+
    tState m_errorState;
-   tState m_runStartupScriptState;
-   tState m_runUnitTestsState;
+   tState m_stagedInitState;
    tState m_finishedState;
+
+   cUnitTestThread m_unitTestThread;
 };
 
 ////////////////////////////////////////
 
 cMainInitTask::cMainInitTask()
- : m_errorState(&cMainInitTask::OnErrorEnter, NULL, NULL)
- , m_runStartupScriptState(&cMainInitTask::OnRunStartupScriptEnter, NULL, NULL)
- , m_runUnitTestsState(NULL, &cMainInitTask::OnRunUnitTests, NULL)
- , m_finishedState(NULL, NULL, NULL)
+ : m_currentStage(0)
+ , m_errorState(&cMainInitTask::OnEnterErrorState, NULL, NULL)
+ , m_stagedInitState(NULL, &cMainInitTask::OnRunInitStages, NULL)
+ , m_finishedState(&cMainInitTask::OnEnterFinishedState, NULL, NULL)
 {
+   memset(m_stages, 0, sizeof(m_stages));
+   m_stages[0] = &cMainInitTask::SetupResourceManager;
+   m_stages[1] = &cMainInitTask::RunStartupScript;
+   m_stages[2] = &cMainInitTask::CreateMainWindow;
 }
 
 ////////////////////////////////////////
@@ -193,20 +267,89 @@ tResult cMainInitTask::Execute(double time)
 
 void cMainInitTask::OnInitialState(double time)
 {
-   GotoState(&m_runStartupScriptState);
+   if (m_unitTestThread.Create())
+   {
+      GotoState(&m_stagedInitState);
+   }
+   else
+   {
+      GotoState(&m_errorState);
+   }
 }
 
 ////////////////////////////////////////
 
-void cMainInitTask::OnErrorEnter()
+void cMainInitTask::OnEnterErrorState()
 {
+   // TODO: wait with a timeout then terminate if necessary
+   m_unitTestThread.Terminate();
+
    SysQuit();
 }
 
 ////////////////////////////////////////
 
-void cMainInitTask::OnRunStartupScriptEnter()
+void cMainInitTask::OnRunInitStages(double time)
 {
+   Assert(m_currentStage >= 0);
+
+   if (m_currentStage >= _countof(m_stages))
+   {
+      GotoState(&m_finishedState);
+      return;
+   }
+
+   tInitStageFn pfnStage = m_stages[m_currentStage];
+   if (pfnStage != NULL)
+   {
+      if (FAILED((this->*pfnStage)()))
+      {
+         GotoState(&m_errorState);
+         return;
+      }
+   }
+
+   ++m_currentStage;
+}
+
+////////////////////////////////////////
+
+void cMainInitTask::OnEnterFinishedState()
+{
+   // Wait for the unit test thread to finish
+   m_unitTestThread.Join();
+
+   if (FAILED(m_unitTestThread.m_result))
+   {
+      GotoState(&m_errorState);
+   }
+}
+
+////////////////////////////////////////
+
+tResult cMainInitTask::SetupResourceManager()
+{
+   TextFormatRegister(_T("css,lua,xml"));
+   EngineRegisterResourceFormats();
+   TerrainRegisterResourceFormats();
+   ImageRegisterResourceFormats();
+
+   cStr temp;
+   if (ConfigGet(_T("data"), &temp) == S_OK)
+   {
+      UseGlobal(ResourceManager);
+      pResourceManager->AddDirectoryTreeFlattened(temp.c_str());
+   }
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cMainInitTask::RunStartupScript()
+{
+   EngineRegisterScriptFunctions();
+
    cStr script(kAutoExecScript);
    ConfigGet(_T("autoexec_script"), &script);
    if (!script.empty())
@@ -217,8 +360,7 @@ void cMainInitTask::OnRunStartupScriptEnter()
          if (!ScriptExecResource(pScriptInterpreter, script.c_str()))
          {
             ErrorMsg1("Start-up script \"%s\" failed to execute or was not found\n", script.c_str());
-            GotoState(&m_errorState);
-            return;
+            return E_FAIL;
          }
       }
    }
@@ -236,20 +378,54 @@ void cMainInitTask::OnRunStartupScriptEnter()
       }
    }
 
-   GotoState(&m_runUnitTestsState);
+   return S_OK;
 }
 
 ////////////////////////////////////////
 
-void cMainInitTask::OnRunUnitTests(double time)
+tResult cMainInitTask::CreateMainWindow()
 {
-   if (FAILED(SysRunUnitTests()))
+   g_fov = kDefaultFov;
+   ConfigGet(_T("fov"), &g_fov);
+
+   int width = kDefaultWidth;
+   int height = kDefaultHeight;
+   int bpp = kDefaultBpp;
+   ConfigGet(_T("screen_width"), &width);
+   ConfigGet(_T("screen_height"), &height);
+   ConfigGet(_T("screen_bpp"), &bpp);
+#ifdef __CYGWIN__
+// HACK
+   bool bFullScreen = ConfigIsTrue(_T("full_screen"));
+#else
+   bool bFullScreen = ConfigIsTrue(_T("full_screen")) && !IsDebuggerPresent();
+#endif
+
+   SysSetResizeCallback(ResizeHack);
+
+   if (!SysCreateWindow(_T("Game"), width, height))
    {
-      GotoState(&m_errorState);
-      return;
+      return false;
    }
 
-   GotoState(&m_finishedState);
+   UseGlobal(GUIContext);
+   cAutoIPtr<IGUIRenderDeviceContext> pGuiRenderDevice;
+   if (GUIRenderDeviceCreateGL(&pGuiRenderDevice) == S_OK)
+   {
+      pGUIContext->SetRenderDeviceContext(pGuiRenderDevice);
+   }
+
+   UseGlobal(Camera);
+   pCamera->SetPerspective(g_fov, (float)width / height, kZNear, kZFar);
+
+   cAutoIPtr<ITask> pMainRenderTask(MainRenderTaskCreate());
+   if (!!pMainRenderTask)
+   {
+      UseGlobal(Scheduler);
+      pScheduler->AddRenderTask(pMainRenderTask);
+   }
+
+   return S_OK;
 }
 
 ////////////////////////////////////////
@@ -366,6 +542,7 @@ static tResult InitGlobalConfig(int argc, tChar * argv[])
    return S_OK;
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////
 
 static tResult MainFrame()
@@ -375,6 +552,7 @@ static tResult MainFrame()
 
    return S_OK;
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -398,54 +576,11 @@ static bool MainInit(int argc, tChar * argv[])
       return false;
    }
 
-   cAutoIPtr<ITask> pMainRenderTask(MainRenderTaskCreate());
-   if (!!pMainRenderTask)
-   {
-      UseGlobal(Scheduler);
-      pScheduler->AddRenderTask(pMainRenderTask);
-   }
-
    cAutoIPtr<ITask> pMainInitTask(MainInitTaskCreate());
    if (!!pMainInitTask)
    {
       UseGlobal(Scheduler);
       pScheduler->AddFrameTask(pMainInitTask, 0, 1, 0);
-   }
-
-   TextFormatRegister(_T("css,lua,xml"));
-   EngineRegisterResourceFormats();
-   EngineRegisterScriptFunctions();
-   TerrainRegisterResourceFormats();
-   ImageRegisterResourceFormats();
-
-   if (ConfigGet(_T("data"), &temp) == S_OK)
-   {
-      UseGlobal(ResourceManager);
-      pResourceManager->AddDirectoryTreeFlattened(temp.c_str());
-   }
-
-   g_fov = kDefaultFov;
-   ConfigGet(_T("fov"), &g_fov);
-
-   int width = kDefaultWidth;
-   int height = kDefaultHeight;
-   int bpp = kDefaultBpp;
-   ConfigGet(_T("screen_width"), &width);
-   ConfigGet(_T("screen_height"), &height);
-   ConfigGet(_T("screen_bpp"), &bpp);
-#ifdef __CYGWIN__
-// HACK
-   bool bFullScreen = ConfigIsTrue(_T("full_screen"));
-#else
-   bool bFullScreen = ConfigIsTrue(_T("full_screen")) && !IsDebuggerPresent();
-#endif
-
-   SysSetResizeCallback(ResizeHack);
-   SysSetFrameCallback(MainFrame);
-
-   if (!SysCreateWindow(_T("Game"), width, height))
-   {
-      return false;
    }
 
    UseGlobal(ThreadCaller);
@@ -454,20 +589,11 @@ static bool MainInit(int argc, tChar * argv[])
       return false;
    }
 
-   UseGlobal(GUIContext);
-   cAutoIPtr<IGUIRenderDeviceContext> pGuiRenderDevice;
-   if (GUIRenderDeviceCreateGL(&pGuiRenderDevice) == S_OK)
-   {
-      pGUIContext->SetRenderDeviceContext(pGuiRenderDevice);
-   }
-
-   SysAppActivate(true);
-
-   UseGlobal(Camera);
-   pCamera->SetPerspective(g_fov, (float)width / height, kZNear, kZFar);
-
    UseGlobal(Scheduler);
    pScheduler->Start();
+
+   SysAppActivate(true);
+   SysSetFrameCallback(MainFrame);
 
    return true;
 }
