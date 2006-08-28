@@ -16,13 +16,12 @@
 			OutputDirectory=".\..\..\Build.vc71\StaticRelease"
 			IntermediateDirectory=".\..\..\Build.vc71\StaticRelease"
 			ConfigurationType="0"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			UseOfMFC="0">
 			<Tool
 				Name="VCNMakeTool"
-				BuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\copyCg.mak OUTDIR=..\..\Build.vc71\StaticRelease"
-				ReBuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\copyCg.mak OUTDIR=..\..\Build.vc71\StaticRelease /a"
-				CleanCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\copyCg.mak OUTDIR=..\..\Build.vc71\StaticRelease clean"
+				BuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc71\$(ConfigurationName)"
+				ReBuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc71\$(ConfigurationName) /a"
+				CleanCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc71\$(ConfigurationName) clean"
 				Output="3rdpartyCg.exe"/>
 		</Configuration>
 		<Configuration
@@ -30,13 +29,12 @@
 			OutputDirectory=".\..\..\Build.vc71\Debug"
 			IntermediateDirectory=".\..\..\Build.vc71\Debug"
 			ConfigurationType="0"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			UseOfMFC="0">
 			<Tool
 				Name="VCNMakeTool"
-				BuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\copyCg.mak OUTDIR=..\..\Build.vc71\Debug DEBUG=TRUE"
-				ReBuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\copyCg.mak OUTDIR=..\..\Build.vc71\Debug DEBUG=TRUE /a"
-				CleanCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\copyCg.mak OUTDIR=..\..\Build.vc71\Debug DEBUG=TRUE clean"
+				BuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc71\$(ConfigurationName) DEBUG=TRUE"
+				ReBuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc71\$(ConfigurationName) DEBUG=TRUE /a"
+				CleanCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc71\$(ConfigurationName) DEBUG=TRUE clean"
 				Output="3rdpartyCg.exe"/>
 		</Configuration>
 		<Configuration
@@ -44,13 +42,12 @@
 			OutputDirectory=".\..\..\Build.vc71\Opt"
 			IntermediateDirectory=".\..\..\Build.vc71\Opt"
 			ConfigurationType="0"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			UseOfMFC="0">
 			<Tool
 				Name="VCNMakeTool"
-				BuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\copyCg.mak OUTDIR=..\..\Build.vc71\Opt DEBUG=TRUE"
-				ReBuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\copyCg.mak OUTDIR=..\..\Build.vc71\Opt DEBUG=TRUE /a"
-				CleanCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\copyCg.mak OUTDIR=..\..\Build.vc71\Opt DEBUG=TRUE clean"
+				BuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc71\$(ConfigurationName) DEBUG=TRUE"
+				ReBuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc71\$(ConfigurationName) DEBUG=TRUE /a"
+				CleanCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc71\$(ConfigurationName) DEBUG=TRUE clean"
 				Output="3rdpartyCg.exe"/>
 		</Configuration>
 		<Configuration
@@ -58,13 +55,12 @@
 			OutputDirectory=".\..\..\Build.vc71\Release"
 			IntermediateDirectory=".\..\..\Build.vc71\Release"
 			ConfigurationType="0"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			UseOfMFC="0">
 			<Tool
 				Name="VCNMakeTool"
-				BuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\copyCg.mak OUTDIR=..\..\Build.vc71\Release"
-				ReBuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\copyCg.mak OUTDIR=..\..\Build.vc71\Release /a"
-				CleanCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\copyCg.mak OUTDIR=..\..\Build.vc71\Release clean"
+				BuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc71\$(ConfigurationName)"
+				ReBuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc71\$(ConfigurationName) /a"
+				CleanCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc71\$(ConfigurationName) clean"
 				Output="3rdpartyCg.exe"/>
 		</Configuration>
 		<Configuration
@@ -72,13 +68,12 @@
 			OutputDirectory=".\..\..\Build.vc71\StaticDebug"
 			IntermediateDirectory=".\..\..\Build.vc71\StaticDebug"
 			ConfigurationType="0"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			UseOfMFC="0">
 			<Tool
 				Name="VCNMakeTool"
-				BuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\copyCg.mak OUTDIR=..\..\Build.vc71\StaticDebug DEBUG=TRUE"
-				ReBuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\copyCg.mak OUTDIR=..\..\Build.vc71\StaticDebug DEBUG=TRUE /a"
-				CleanCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\copyCg.mak OUTDIR=..\..\Build.vc71\StaticDebug DEBUG=TRUE clean"
+				BuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc71\$(ConfigurationName) DEBUG=TRUE"
+				ReBuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc71\$(ConfigurationName) DEBUG=TRUE /a"
+				CleanCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc71\$(ConfigurationName) DEBUG=TRUE clean"
 				Output="3rdpartyCg.exe"/>
 		</Configuration>
 	</Configurations>
@@ -98,7 +93,7 @@
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 		</Filter>
 		<File
-			RelativePath=".\..\..\3rdParty\Cg\copyCg.mak">
+			RelativePath=".\..\..\3rdParty\Cg\CopyCg.mak">
 		</File>
 	</Files>
 	<Globals>

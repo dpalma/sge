@@ -20,13 +20,12 @@
 			ConfigurationType="0"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
 			<Tool
 				Name="VCNMakeTool"
-				BuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\copyCg.mak OUTDIR=..\..\Build.vc8\StaticRelease"
-				ReBuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\copyCg.mak OUTDIR=..\..\Build.vc8\StaticRelease /a"
-				CleanCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\copyCg.mak OUTDIR=..\..\Build.vc8\StaticRelease clean"
+				BuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc8\$(ConfigurationName)"
+				ReBuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc8\$(ConfigurationName) /a"
+				CleanCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc8\$(ConfigurationName) clean"
 				Output="3rdpartyCg.exe"
 				PreprocessorDefinitions=""
 				IncludeSearchPath=""
@@ -43,13 +42,12 @@
 			ConfigurationType="0"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
 			<Tool
 				Name="VCNMakeTool"
-				BuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\copyCg.mak OUTDIR=..\..\Build.vc8\Debug DEBUG=TRUE"
-				ReBuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\copyCg.mak OUTDIR=..\..\Build.vc8\Debug DEBUG=TRUE /a"
-				CleanCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\copyCg.mak OUTDIR=..\..\Build.vc8\Debug DEBUG=TRUE clean"
+				BuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc8\$(ConfigurationName) DEBUG=TRUE"
+				ReBuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc8\$(ConfigurationName) DEBUG=TRUE /a"
+				CleanCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc8\$(ConfigurationName) DEBUG=TRUE clean"
 				Output="3rdpartyCg.exe"
 				PreprocessorDefinitions=""
 				IncludeSearchPath=""
@@ -70,9 +68,9 @@
 			>
 			<Tool
 				Name="VCNMakeTool"
-				BuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\copyCg.mak OUTDIR=..\..\Build.vc8\Opt DEBUG=TRUE"
-				ReBuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\copyCg.mak OUTDIR=..\..\Build.vc8\Opt DEBUG=TRUE /a"
-				CleanCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\copyCg.mak OUTDIR=..\..\Build.vc8\Opt DEBUG=TRUE clean"
+				BuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc8\$(ConfigurationName) DEBUG=TRUE"
+				ReBuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc8\$(ConfigurationName) DEBUG=TRUE /a"
+				CleanCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc8\$(ConfigurationName) DEBUG=TRUE clean"
 				Output="3rdpartyCg.exe"
 				PreprocessorDefinitions=""
 				IncludeSearchPath=""
@@ -89,13 +87,12 @@
 			ConfigurationType="0"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
 			<Tool
 				Name="VCNMakeTool"
-				BuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\copyCg.mak OUTDIR=..\..\Build.vc8\Release"
-				ReBuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\copyCg.mak OUTDIR=..\..\Build.vc8\Release /a"
-				CleanCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\copyCg.mak OUTDIR=..\..\Build.vc8\Release clean"
+				BuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc8\$(ConfigurationName)"
+				ReBuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc8\$(ConfigurationName) /a"
+				CleanCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc8\$(ConfigurationName) clean"
 				Output="3rdpartyCg.exe"
 				PreprocessorDefinitions=""
 				IncludeSearchPath=""
@@ -112,13 +109,12 @@
 			ConfigurationType="0"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
 			<Tool
 				Name="VCNMakeTool"
-				BuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\copyCg.mak OUTDIR=..\..\Build.vc8\StaticDebug DEBUG=TRUE"
-				ReBuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\copyCg.mak OUTDIR=..\..\Build.vc8\StaticDebug DEBUG=TRUE /a"
-				CleanCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\copyCg.mak OUTDIR=..\..\Build.vc8\StaticDebug DEBUG=TRUE clean"
+				BuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc8\$(ConfigurationName) DEBUG=TRUE"
+				ReBuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc8\$(ConfigurationName) DEBUG=TRUE /a"
+				CleanCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc8\$(ConfigurationName) DEBUG=TRUE clean"
 				Output="3rdpartyCg.exe"
 				PreprocessorDefinitions=""
 				IncludeSearchPath=""
@@ -148,7 +144,7 @@
 			>
 		</Filter>
 		<File
-			RelativePath=".\..\..\3rdParty\Cg\copyCg.mak"
+			RelativePath=".\..\..\3rdParty\Cg\CopyCg.mak"
 			>
 		</File>
 	</Files>
