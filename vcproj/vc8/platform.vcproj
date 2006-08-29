@@ -574,6 +574,10 @@
 				Name="Header Files"
 				>
 				<File
+					RelativePath="..\..\platform\src\dll.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\platform\src\input.h"
 					>
 				</File>

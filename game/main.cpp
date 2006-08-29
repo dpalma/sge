@@ -12,7 +12,6 @@
 #include "netapi.h"
 #include "renderapi.h"
 #include "saveloadapi.h"
-#include "schedulerapi.h"
 #include "scriptapi.h"
 #include "soundapi.h"
 #include "sys.h"
@@ -25,8 +24,10 @@
 #include "techstring.h"
 #include "globalobj.h"
 #include "multivar.h"
+#include "schedulerapi.h"
 #include "statemachine.h"
 #include "statemachinetem.h"
+#include "techtime.h"
 #include "thread.h"
 #include "threadcallapi.h"
 #include "imageapi.h"
@@ -40,6 +41,7 @@
 // The following definitions are required for WinMain
 F_DECLARE_HANDLE(HINSTANCE);
 typedef char * LPSTR;
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -58,18 +60,6 @@ const float kZFar = 2000;
 cAutoIPtr<IGUILabelElement> g_pFrameStats;
 
 float g_fov;
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-void ResizeHack(int width, int height, double time)
-{
-   UseGlobal(Camera);
-   if (!!pCamera)
-   {
-      pCamera->SetPerspective(g_fov, static_cast<float>(width) / height, kZNear, kZFar);
-   }
-}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -282,12 +272,6 @@ void cMainInitTask::OnRunInitStages(double time)
 {
    Assert(m_currentStage >= 0);
 
-   if (m_currentStage >= _countof(m_stages))
-   {
-      GotoState(&m_finishedState);
-      return;
-   }
-
    tInitStageFn pfnStage = m_stages[m_currentStage];
    if (pfnStage != NULL)
    {
@@ -298,7 +282,10 @@ void cMainInitTask::OnRunInitStages(double time)
       }
    }
 
-   ++m_currentStage;
+   if (++m_currentStage >= _countof(m_stages))
+   {
+      GotoState(&m_finishedState);
+   }
 }
 
 ////////////////////////////////////////
@@ -382,8 +369,6 @@ tResult cMainInitTask::CreateMainWindow()
 #else
    bool bFullScreen = ConfigIsTrue(_T("full_screen")) && !IsDebuggerPresent();
 #endif
-
-   SysSetResizeCallback(ResizeHack);
 
    if (!SysCreateWindow(_T("Game"), width, height))
    {
@@ -527,17 +512,6 @@ static tResult InitGlobalConfig(int argc, tChar * argv[])
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static tResult MainFrame()
-{
-   UseGlobal(Scheduler);
-   pScheduler->NextFrame();
-
-   return S_OK;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-
 static bool MainInit(int argc, tChar * argv[])
 {
    if (InitGlobalConfig(argc, argv) != S_OK)
@@ -575,7 +549,6 @@ static bool MainInit(int argc, tChar * argv[])
    pScheduler->Start();
 
    SysAppActivate(true);
-   SysSetFrameCallback(MainFrame);
 
    return true;
 }
@@ -607,7 +580,7 @@ int STDCALL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
       return -1;
    }
 
-   int result = SysEventLoop(NULL, kSELF_None);
+   int result = SysEventLoop(NULL, kSELF_RunScheduler);
 
    MainTerm();
 
@@ -626,7 +599,7 @@ int main(int argc, char * argv[])
       return EXIT_FAILURE;
    }
 
-   int result = SysEventLoop(NULL, kSELF_None);
+   int result = SysEventLoop(NULL, kSELF_RunScheduler);
 
    MainTerm();
 

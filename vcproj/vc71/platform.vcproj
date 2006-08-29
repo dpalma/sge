@@ -410,6 +410,9 @@
 				Name="Header Files"
 				Filter="">
 				<File
+					RelativePath="..\..\platform\src\dll.h">
+				</File>
+				<File
 					RelativePath="..\..\platform\src\input.h">
 				</File>
 				<File

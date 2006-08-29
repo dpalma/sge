@@ -22,6 +22,8 @@
 #include <shlobj.h>
 #include <zmouse.h>
 
+#include "dll.h"
+
 #include <GL/glew.h>
 #include <GL/wglew.h>
 
@@ -53,58 +55,15 @@ HACCEL         g_hAccel = NULL; // For trapping Alt+Enter
 
 static const WORD kAltEnterCommandId = 2006;
 
-class cDLL
-{
-public:
-   cDLL() : m_hModule(NULL)
-   {
-   }
-
-   ~cDLL()
-   {
-      Free();
-   }
-
-   bool Load(const tChar * pszDLL)
-   {
-      if (m_hModule == NULL)
-      {
-         m_hModule = LoadLibrary(pszDLL);
-         return (m_hModule != NULL);
-      }
-      WarnMsg("Attempting to load cDLL object with non-NULL module handle\n");
-      return false;
-   }
-   
-   bool Free()
-   {
-      if (FreeLibrary(m_hModule))
-      {
-         m_hModule = NULL;
-         return true;
-      }
-      return false;
-   }
-
-   FARPROC GetProcAddress(LPCSTR lpProcName)
-   {
-      if (m_hModule != NULL)
-      {
-         return ::GetProcAddress(m_hModule, lpProcName);
-      }
-      return NULL;
-   }
-
-private:
-   HMODULE m_hModule;
-};
-
 #if HAVE_DIRECTX
 cDLL                          g_d3d9;
 cAutoIPtr<IDirect3D9>         g_pDirect3D9;
 cAutoIPtr<IDirect3DDevice9>   g_pDirect3DDevice9;
 #endif
 
+typedef tResult (STDCALL * tSHGetFolderPath)(HWND, int, HANDLE, DWORD, LPTSTR);
+tSHGetFolderPath g_pfnGetFolderPath = NULL;
+cDLL g_shFolder;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -421,32 +380,31 @@ tResult SysGetFontPath(cFilePath * pFontPath)
       return E_POINTER;
    }
 
-   typedef tResult (STDCALL * tSHGetFolderPath)(HWND, int, HANDLE, DWORD, LPTSTR);
-
-   cDLL shfolder;
-   if (!shfolder.Load(_T("SHFolder.dll")))
+   if (!g_shFolder.IsLoaded())
    {
-      return E_FAIL;
-   }
+      if (!g_shFolder.Load(_T("SHFolder.dll")))
+      {
+         return E_FAIL;
+      }
 
-   tSHGetFolderPath pfnGetFolderPath = reinterpret_cast<tSHGetFolderPath>(
+      g_pfnGetFolderPath = reinterpret_cast<tSHGetFolderPath>(
 #ifdef _UNICODE
-      shfolder.GetProcAddress("SHGetFolderPathW"));
+         g_shFolder.GetProcAddress("SHGetFolderPathW"));
 #else
-      shfolder.GetProcAddress("SHGetFolderPathA"));
+         g_shFolder.GetProcAddress("SHGetFolderPathA"));
 #endif
-   if (pfnGetFolderPath == NULL)
-   {
-      return E_FAIL;
    }
 
-   tChar szFontPath[MAX_PATH];
-   ZeroMemory(szFontPath, sizeof(szFontPath));
-
-   if ((*pfnGetFolderPath)(NULL, CSIDL_FONTS, NULL, 0, szFontPath) == S_OK)
+   if (g_pfnGetFolderPath != NULL)
    {
-      *pFontPath = cFilePath(szFontPath);
-      return S_OK;
+      tChar szFontPath[MAX_PATH];
+      ZeroMemory(szFontPath, sizeof(szFontPath));
+
+      if ((*g_pfnGetFolderPath)(NULL, CSIDL_FONTS, NULL, 0, szFontPath) == S_OK)
+      {
+         *pFontPath = cFilePath(szFontPath);
+         return S_OK;
+      }
    }
 
    return E_FAIL;
