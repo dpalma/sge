@@ -36,7 +36,7 @@ public:
 
    virtual void OnFinalRelease();
 
-   bool Create(const cGUIFontDesc & fontDesc);
+   bool Create(const tChar * pszFontName, int pointSize, bool bBold, bool bItalic);
 
    virtual tResult RenderText(const tChar * pszText, int textLength, tRect * pRect, uint flags, const cColor & color) const;
 
@@ -45,7 +45,6 @@ public:
 private:
    int m_texDim; // texture is always square
    int m_rowHeight; // height of a row of characters in the texture (all rows are same height)
-   cGUIFontDesc m_fontDesc;
    sGUITextureFontGlyph * m_pGlyphs;
    uint m_texId;
    float m_widthMult, m_heightMult;

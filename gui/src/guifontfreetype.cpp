@@ -58,8 +58,6 @@ tResult cGUIFontFreetype::Create(const cGUIFontDesc & fontDesc)
       return E_INVALIDARG;
    }
 
-   RenderFontCreate(fontDesc.GetFace(), fontDesc.GetSize(), NULL, &m_pRenderFont);
-
    cFileSpec fontName(fontDesc.GetFace());
    fontName.SetFileExt(_T("ttf"));
 
@@ -111,10 +109,6 @@ tResult cGUIFontFreetype::RenderText(const tChar * pszText, int /*textLength*/, 
    }
    else
    {
-#if 1
-      glColor4fv(color.GetPointer());
-      m_pRenderFont->RenderText(pszText, -1, pRect->left, pRect->top);
-#else
       glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
 
       glEnable(GL_TEXTURE_2D);
@@ -144,7 +138,6 @@ tResult cGUIFontFreetype::RenderText(const tChar * pszText, int /*textLength*/, 
       glPopMatrix();
 
       glPopAttrib();
-#endif
    }
 
    return S_OK;

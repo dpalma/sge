@@ -5,8 +5,6 @@
 
 #include "guifontfactory.h"
 
-#include "renderapi.h"
-
 #include "configapi.h"
 
 #if HAVE_DIRECTX
@@ -23,7 +21,7 @@
 extern tResult GUIFontCreateFreetype(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont);
 
 // defined in guifontw32.cpp for Windows, or guifontx11.cpp for Linux
-extern tResult GUIFontCreateGL(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont);
+extern tResult GUIFontCreateGL(const tChar * pszFontName, int pointSize, uint effects, IGUIFont * * ppFont);
 
 #if HAVE_DIRECTX
 extern tResult GUIFontCreateD3D(IDirect3DDevice9 * pD3dDevice, const cGUIFontDesc & fontDesc, IGUIFont * * ppFont);
@@ -68,15 +66,17 @@ tResult GUIFontCreate(const cGUIFontDesc & fontDesc, IUnknown * pUnk, IGUIFont *
 
    if (GUIFontCreateFreetype(fontDesc, &pFont) == S_OK)
    {
-      // TEMP
-      cAutoIPtr<IRenderFont> pRenderFont;
-      RenderFontCreate(fontDesc.GetFace(), fontDesc.GetSize(), NULL, &pRenderFont);
-
       pGUIFontCache->SetFont(fontDesc, pFont);
       return pFont.GetPointer(ppFont);
    }
 
-   if (GUIFontCreateGL(fontDesc, &pFont) == S_OK)
+   // TODO: convert to points
+   if (fontDesc.GetSizeType() != kGUIFontSizePoints)
+   {
+      return E_FAIL;
+   }
+
+   if (GUIFontCreateGL(fontDesc.GetFace(), fontDesc.GetSize(), fontDesc.GetEffects(), &pFont) == S_OK)
    {
       pGUIFontCache->SetFont(fontDesc, pFont);
       return pFont.GetPointer(ppFont);

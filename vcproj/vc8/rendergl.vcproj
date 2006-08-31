@@ -578,6 +578,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\rendergl\include\renderfontapi.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\rendergl\include\renderguids.h"
 				>
 			</File>

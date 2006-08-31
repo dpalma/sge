@@ -364,9 +364,6 @@
 					RelativePath="..\..\gui\src\guifactory.cpp">
 				</File>
 				<File
-					RelativePath="..\..\gui\src\guifontd3d.cpp">
-				</File>
-				<File
 					RelativePath="..\..\gui\src\guifontfactory.cpp">
 				</File>
 				<File
@@ -428,9 +425,6 @@
 				</File>
 				<File
 					RelativePath="..\..\gui\src\guiparse.cpp">
-				</File>
-				<File
-					RelativePath="..\..\gui\src\guirenderd3d.cpp">
 				</File>
 				<File
 					RelativePath="..\..\gui\src\guirendergl.cpp">

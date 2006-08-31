@@ -30,7 +30,7 @@ public:
 
    virtual tResult RenderText(const tChar * pszText, int textLength, tRect * pRect, uint flags, const cColor & color) const;
 
-   bool Create(const cGUIFontDesc & fontDesc);
+   bool Create(const tChar * pszFontName, int pointSize, bool bBold, bool bItalic);
 
 private:
    cGLXRasterFont(const cGLXRasterFont &);

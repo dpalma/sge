@@ -83,38 +83,30 @@ static uint ShiftFromMask(uint mask)
    return shift;
 }
 
-static int GetTextureSizeForFont(const cGUIFontDesc & fontDesc)
+static int GetTextureSizeForFont(int pointSize)
 {
-   if (fontDesc.GetSizeType() == kGUIFontSizePoints)
+   if (pointSize > 40)
    {
-      if (fontDesc.GetSize() > 40)
-      {
-         return 1024;
-      }
-      else if (fontDesc.GetSize() > 20)
-      {
-         return 512;
-      }
-      else
-      {
-         return 256;
-      }
+      return 1024;
    }
-
-   return -1;
+   else if (pointSize > 20)
+   {
+      return 512;
+   }
+   else
+   {
+      return 256;
+   }
 }
 
-bool cGUITextureFontW32::Create(const cGUIFontDesc & fontDesc)
+bool cGUITextureFontW32::Create(const tChar * pszFontName, int pointSize, bool bBold, bool bItalic)
 {
-   if (fontDesc.GetSizeType() != kGUIFontSizePoints
-      && fontDesc.GetSizeType() != kGUIFontSizeEm)
+   if (pszFontName == NULL || pointSize < 0)
    {
       return false;
    }
 
-   m_fontDesc = fontDesc;
-
-   m_texDim = GetTextureSizeForFont(fontDesc);
+   m_texDim = GetTextureSizeForFont(pointSize);
 
    int maxTexSize = -1;
    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTexSize);
@@ -180,25 +172,11 @@ bool cGUITextureFontW32::Create(const cGUIFontDesc & fontDesc)
          blueShift = ShiftFromMask(blueMask);
 
          LOGFONT lf = {0};
-         if (fontDesc.GetSizeType() == kGUIFontSizePoints)
-         {
-            lf.lfHeight = -MulDiv(fontDesc.GetSize(), (int)(GetDeviceCaps(hMemDC, LOGPIXELSY) * scale), 72);
-         }
-         else if (fontDesc.GetSizeType() == kGUIFontSizeEm)
-         {
-            lf.lfHeight = fontDesc.GetSize();
-         }
-         else
-         {
-            Assert(!"Shouldn't get here");
-         }
-         lf.lfWeight = fontDesc.IsBold() ? FW_SEMIBOLD : FW_NORMAL;
-         if (fontDesc.IsItalic())
-         {
-            lf.lfItalic = TRUE;
-         }
+         lf.lfHeight = -MulDiv(pointSize, (int)(GetDeviceCaps(hMemDC, LOGPIXELSY) * scale), 72);
+         lf.lfWeight = bBold ? FW_SEMIBOLD : FW_NORMAL;
+         lf.lfItalic = bItalic;
          lf.lfQuality = ANTIALIASED_QUALITY;
-         strncpy(lf.lfFaceName, fontDesc.GetFace(), _countof(lf.lfFaceName));
+         lstrcpyn(lf.lfFaceName, pszFontName, _countof(lf.lfFaceName));
          lf.lfFaceName[_countof(lf.lfFaceName) - 1] = 0;
 
          HFONT hFont = CreateFontIndirect(&lf);
@@ -224,11 +202,11 @@ bool cGUITextureFontW32::Create(const cGUIFontDesc & fontDesc)
 
             int padVert = kPadVert;
 
-            uint glyphCount = fontDesc.GetGlyphLast() - fontDesc.GetGlyphFirst() + 1;
+            uint glyphCount = kASCIIGlyphLast - kASCIIGlyphFirst + 1;
             m_pGlyphs = new sGUITextureFontGlyph[glyphCount];
 
             // draw each character into the bitmap and compute its texture coordinates
-            for (uint c = fontDesc.GetGlyphFirst(); c < fontDesc.GetGlyphLast(); c++)
+            for (uint c = kASCIIGlyphFirst; c < kASCIIGlyphLast; c++)
             {
                char szChar[2];
                szChar[0] = c;
@@ -256,7 +234,7 @@ bool cGUITextureFontW32::Create(const cGUIFontDesc & fontDesc)
                SetTextColor(hMemDC, kWhite);
                ExtTextOut(hMemDC, FloatToInt(texX), FloatToInt(texY), 0, NULL, szChar, 1, NULL);
 
-               uint index = c - fontDesc.GetGlyphFirst();
+               uint index = c - kASCIIGlyphFirst;
                m_pGlyphs[index].texCoords[0] = texX * oneOverTexDim;
                m_pGlyphs[index].texCoords[1] = texY * oneOverTexDim;
                m_pGlyphs[index].texCoords[2] = (texX + (float)extent.cx) * oneOverTexDim;
@@ -367,7 +345,7 @@ tResult cGUITextureFontW32::RenderText(const tChar * pszText, int textLength, tR
    int x = pRect->left;
    int y = pRect->top;
 
-   uint glyphFirst = m_fontDesc.GetGlyphFirst();
+   uint glyphFirst = kASCIIGlyphFirst;
 
    if (IsBitFlagSet(flags, kRT_Center))
    {
@@ -598,12 +576,17 @@ tResult cGUITextureFontW32::SetDropShadowState(float offsetX, float offsetY, con
 
 ///////////////////////////////////////////////////////////////////////////////
 
-tResult GUIFontCreateGL(const cGUIFontDesc & fontDesc,
+tResult GUIFontCreateGL(const tChar * pszFontName, int pointSize, uint effects,
                         IGUIFont * * ppFont)
 {
-   if (ppFont == NULL)
+   if (pszFontName == NULL || ppFont == NULL)
    {
       return E_POINTER;
+   }
+
+   if (pointSize < 0)
+   {
+      return E_INVALIDARG;;
    }
 
    cAutoIPtr<cGUITextureFontW32> pFont(new cGUITextureFontW32);
@@ -612,7 +595,9 @@ tResult GUIFontCreateGL(const cGUIFontDesc & fontDesc,
       return E_OUTOFMEMORY;
    }
 
-   if (pFont->Create(fontDesc))
+   if (pFont->Create(pszFontName, pointSize,
+      (effects & kGFE_Bold) == kGFE_Bold,
+      (effects & kGFE_Italic) == kGFE_Italic))
    {
       *ppFont = CTAddRef(pFont);
       return S_OK;

@@ -19,7 +19,6 @@ class cColor;
 F_DECLARE_INTERFACE(IImage);
 
 F_DECLARE_INTERFACE(IRenderer);
-F_DECLARE_INTERFACE(IRenderFont);
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -115,22 +114,6 @@ RENDER_API tResult RendererResourceRegister();
 
 RENDER_API void RenderWireFrame(const tAxisAlignedBox & box, const cColor & color);
 
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// INTERFACE: IRenderFont
-//
-
-interface IRenderFont : IUnknown
-{
-   virtual tResult MeasureText(const tChar * pszText, int textLength, int * pWidth, int * pHeight) const = 0;
-
-   virtual tResult RenderText(const tChar * pszText, int textLength, int x, int y) const = 0;
-};
-
-///////////////////////////////////////
-
-RENDER_API tResult RenderFontCreate(const tChar * pszFont, int fontPointSize, IUnknown * pUnk, IRenderFont * * ppFont);
 
 ///////////////////////////////////////////////////////////////////////////////
 

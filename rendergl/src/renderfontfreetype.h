@@ -4,7 +4,7 @@
 #ifndef INCLUDED_RENDERFONTFREETYPE_H
 #define INCLUDED_RENDERFONTFREETYPE_H
 
-#include "renderapi.h"
+#include "renderfontapi.h"
 
 #ifdef _MSC_VER
 #pragma once

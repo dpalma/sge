@@ -197,18 +197,17 @@ enum eGUIFontEffects
    kGFE_Outline   = (1<<3),
 };
 
+enum
+{
+   kASCIIGlyphFirst = 32,
+   kASCIIGlyphLast = 128,
+};
+
 class GUI_API cGUIFontDesc
 {
 public:
-   enum
-   {
-      kASCIIGlyphFirst = 32,
-      kASCIIGlyphLast = 128,
-   };
-
    cGUIFontDesc();
-   cGUIFontDesc(const tGUIChar * pszFace, int pointSize, eGUIFontSizeType sizeType, uint effects,
-      uint glyphFirst = kASCIIGlyphFirst, uint glyphLast = kASCIIGlyphLast);
+   cGUIFontDesc(const tGUIChar * pszFace, int pointSize, eGUIFontSizeType sizeType, uint effects);
    cGUIFontDesc(const cGUIFontDesc & other);
 
    const cGUIFontDesc & operator =(const cGUIFontDesc & other);
@@ -225,16 +224,12 @@ public:
    bool IsItalic() const;
    bool IsShadow() const;
    bool IsOutline() const;
-   uint GetGlyphFirst() const;
-   uint GetGlyphLast() const;
 
 private:
    tGUIString m_typeFace;
    int m_size;
    eGUIFontSizeType m_sizeType;
    uint m_effects;
-   uint m_glyphFirst;
-   uint m_glyphLast;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

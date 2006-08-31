@@ -104,7 +104,7 @@ tResult cGLXRasterFont::RenderText(const tChar * pszText, int textLength,
 
 ///////////////////////////////////////
 
-bool cGLXRasterFont::Create(const cGUIFontDesc & fontDesc)
+bool cGLXRasterFont::Create(const tChar * pszFontName, int pointSize, bool bBold, bool bItalic)
 {
    Assert(m_listBase == 0);
 
@@ -114,7 +114,7 @@ bool cGLXRasterFont::Create(const cGUIFontDesc & fontDesc)
    {
       Assert(m_pDisplay != NULL);
 
-      m_pFontInfo = XLoadQueryFont(m_pDisplay, fontDesc.GetFace());
+      m_pFontInfo = XLoadQueryFont(m_pDisplay, pszFontName);
       if (m_pFontInfo != NULL)
       {
          Font id = m_pFontInfo->fid;
@@ -150,12 +150,17 @@ bool cGLXRasterFont::Create(const cGUIFontDesc & fontDesc)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-tResult GUIFontCreateGL(const cGUIFontDesc & fontDesc,
+tResult GUIFontCreateGL(const tChar * pszFontName, int pointSize, uint effects,
                         IGUIFont * * ppFont)
 {
-   if (ppFont == NULL)
+   if (pszFontName == NULL || ppFont == NULL)
    {
       return E_POINTER;
+   }
+
+   if (pointSize < 0)
+   {
+      return E_INVALIDARG;;
    }
 
    cGLXRasterFont * pFont = new cGLXRasterFont;
@@ -165,7 +170,9 @@ tResult GUIFontCreateGL(const cGUIFontDesc & fontDesc,
       return E_OUTOFMEMORY;
    }
 
-   if (!pFont->Create(fontDesc))
+   if (!pFont->Create(pszFontName, pointSize,
+      (effects & kGFE_Bold) == kGFE_Bold,
+      (effects & kGFE_Italic) == kGFE_Italic))
    {
       SafeRelease(pFont);
       return E_FAIL;
