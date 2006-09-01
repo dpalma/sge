@@ -23,6 +23,8 @@
 #define GUI_DEBUG
 #endif
 
+F_DECLARE_INTERFACE(IRenderFont);
+
 class cGUIPage;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -102,7 +104,7 @@ public:
 
 private:
 #ifdef GUI_DEBUG
-   tResult GetDebugFont(IGUIFont * * ppFont);
+   tResult GetDebugFont(IRenderFont * * ppFont);
    void RenderDebugInfo();
 
    // Over-riding the cGUIEventRouter method even though it isn't virtual.
@@ -131,7 +133,7 @@ private:
    tGUIPoint m_debugInfoPlacement;
    tGUIColor m_debugInfoTextColor;
    tScreenPoint m_lastMousePos;
-   cAutoIPtr<IGUIFont> m_pDebugFont;
+   cAutoIPtr<IRenderFont> m_pDebugFont;
 #endif
 
    cAutoIPtr<IGUIRenderDeviceContext> m_pRenderDeviceContext;

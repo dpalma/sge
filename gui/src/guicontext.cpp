@@ -11,6 +11,8 @@
 
 #include "sys.h"
 
+#include "renderfontapi.h"
+
 #include "keys.h"
 #include "multivar.h"
 #include "resourceapi.h"
@@ -720,7 +722,7 @@ tResult cGUIContext::ShowDebugInfo(const tGUIPoint & placement, IGUIStyle * pSty
       {
          pStyle->GetForegroundColor(&m_debugInfoTextColor);
 
-         cAutoIPtr<IGUIFont> pNewDebugFont;
+         cAutoIPtr<IRenderFont> pNewDebugFont;
          if (GUIStyleFontCreate(pStyle, NULL, &pNewDebugFont) == S_OK)
          {
             SafeRelease(m_pDebugFont);
@@ -813,7 +815,7 @@ const cGUIPage * cGUIContext::GetCurrentPage() const
 ///////////////////////////////////////
 
 #ifdef GUI_DEBUG
-tResult cGUIContext::GetDebugFont(IGUIFont * * ppFont)
+tResult cGUIContext::GetDebugFont(IRenderFont * * ppFont)
 {
    if (!!m_pDebugFont)
    {
@@ -821,11 +823,7 @@ tResult cGUIContext::GetDebugFont(IGUIFont * * ppFont)
    }
    else
    {
-      cGUIFontDesc fontDesc;
-      if (GUIFontDescDefault(&fontDesc) == S_OK)
-      {
-         return GUIFontCreate(fontDesc, NULL, ppFont);
-      }
+      return GUIDefaultFont(ppFont);
    }
    return E_FAIL;
 }
@@ -847,7 +845,7 @@ void cGUIContext::RenderDebugInfo()
       return;
    }
 
-   cAutoIPtr<IGUIFont> pFont;
+   cAutoIPtr<IRenderFont> pFont;
    if (GetDebugFont(&pFont) == S_OK)
    {
       tGUIRect rect(0,0,0,0);

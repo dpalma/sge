@@ -8,6 +8,8 @@
 #include "guistrings.h"
 #include "guistyleapi.h"
 
+#include "renderfontapi.h"
+
 #include "globalobj.h"
 
 #include "dbgalloc.h" // must be last header
@@ -183,7 +185,7 @@ tResult cGUIBeveledRenderer::ButtonRender(IGUIElement * pElement, const tGUIPoin
    const tGUIChar * pszText = pButtonElement->GetText();
    if (pszText != NULL)
    {
-      cAutoIPtr<IGUIFont> pFont;
+      cAutoIPtr<IRenderFont> pFont;
       if (GUIElementFont(pElement, &pFont) == S_OK)
       {
          uint renderTextFlags = kRT_Center | kRT_VCenter | kRT_SingleLine;
@@ -224,7 +226,7 @@ tGUISize cGUIBeveledRenderer::ButtonPreferredSize(IGUIElement * pElement, const 
    const tGUIChar * pszText = pButtonElement->GetText();
    if (pszText != NULL)
    {
-      cAutoIPtr<IGUIFont> pFont;
+      cAutoIPtr<IRenderFont> pFont;
       if (GUIElementFont(pElement, &pFont) == S_OK)
       {
          tRect rect(0,0,0,0);
@@ -258,7 +260,7 @@ tResult cGUIBeveledRenderer::LabelRender(IGUIElement * pElement, const tGUIPoint
    const tGUIChar * pszText = pLabelElement->GetText();
    if (pszText != NULL)
    {
-      cAutoIPtr<IGUIFont> pFont;
+      cAutoIPtr<IRenderFont> pFont;
       if (GUIElementFont(pLabelElement, &pFont) == S_OK)
       {
          pFont->RenderText(pszText, -1, &rect, kRT_NoClip, color);
@@ -278,7 +280,7 @@ tGUISize cGUIBeveledRenderer::LabelPreferredSize(IGUIElement * pElement, const t
    const tGUIChar * pszText = pLabelElement->GetText();
    if (pszText != NULL)
    {
-      cAutoIPtr<IGUIFont> pFont;
+      cAutoIPtr<IRenderFont> pFont;
       if (GUIElementFont(pLabelElement, &pFont) == S_OK)
       {
          tRect rect(0,0,0,0);
@@ -317,7 +319,7 @@ tResult cGUIBeveledRenderer::ListBoxRender(IGUIElement * pElement, const tGUIPoi
       pStyle->GetForegroundColor(&textColor);
    }
 
-   cAutoIPtr<IGUIFont> pFont;
+   cAutoIPtr<IRenderFont> pFont;
    if (GUIElementFont(pListBoxElement, &pFont) == S_OK)
    {
       int scrollPos = 0;
@@ -387,7 +389,7 @@ tGUISize cGUIBeveledRenderer::ListBoxPreferredSize(IGUIElement * pElement, const
 {
    IGUIListBoxElement * pListBoxElement = (IGUIListBoxElement *)pElement;
 
-   cAutoIPtr<IGUIFont> pFont;
+   cAutoIPtr<IRenderFont> pFont;
    if (GUIElementFont(pListBoxElement, &pFont) == S_OK)
    {
       uint rowCount;
@@ -527,7 +529,7 @@ tResult cGUIBeveledRenderer::TextEditRender(IGUIElement * pElement, const tGUIPo
    const tGUIChar * pszText = pTextEditElement->GetText();
    if (pszText != NULL)
    {
-      cAutoIPtr<IGUIFont> pFont;
+      cAutoIPtr<IRenderFont> pFont;
       if (GUIElementFont(pTextEditElement, &pFont) == S_OK)
       {
          pFont->RenderText(pszText, -1, &rect, kRT_NoClip, textColor);
@@ -576,7 +578,7 @@ tGUISize cGUIBeveledRenderer::TextEditPreferredSize(IGUIElement * pElement, cons
       editSize = kDefaultEditSize;
    }
 
-   cAutoIPtr<IGUIFont> pFont;
+   cAutoIPtr<IRenderFont> pFont;
    if (GUIElementFont(pTextEditElement, &pFont) == S_OK)
    {
       char * psz = reinterpret_cast<char *>(alloca(editSize * sizeof(char)));
@@ -615,7 +617,7 @@ tResult cGUIBeveledRenderer::TitleBarRender(IGUIElement * pElement, const tGUIPo
 
    pRenderDevice->RenderSolidRect(rect, captionBk);
 
-   cAutoIPtr<IGUIFont> pFont;
+   cAutoIPtr<IRenderFont> pFont;
    if (GUIElementFont(pElement, &pFont) == S_OK)
    {
       tGUIString title;
@@ -634,7 +636,7 @@ tGUISize cGUIBeveledRenderer::TitleBarPreferredSize(IGUIElement * pElement, cons
 {
    IGUITitleBarElement * pTitleBarElement = (IGUITitleBarElement *)pElement;
 
-   cAutoIPtr<IGUIFont> pFont;
+   cAutoIPtr<IRenderFont> pFont;
    if (GUIElementFont(pTitleBarElement, &pFont) == S_OK)
    {
       tGUIString title;

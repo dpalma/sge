@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "guifontx11.h"
+#include "renderfontx11.h"
 
 #include "comtools.h"
 #include "techmath.h"
@@ -61,6 +61,20 @@ void cGLXRasterFont::OnFinalRelease()
 
       m_pDisplay = NULL;
    }
+}
+
+///////////////////////////////////////
+
+tResult cGLXRasterFont::MeasureText(const tChar * pszText, int textLength, int * pWidth, int * pHeight) const
+{
+   return E_NOTIMPL;
+}
+
+///////////////////////////////////////
+
+tResult cGLXRasterFont::RenderText(const tChar * pszText, int textLength, int x, int y) const
+{
+   return E_NOTIMPL;
 }
 
 ///////////////////////////////////////
@@ -150,8 +164,7 @@ bool cGLXRasterFont::Create(const tChar * pszFontName, int pointSize, bool bBold
 
 ///////////////////////////////////////////////////////////////////////////////
 
-tResult GUIFontCreateGL(const tChar * pszFontName, int pointSize, uint effects,
-                        IGUIFont * * ppFont)
+tResult RenderFontCreateGL(const tChar * pszFont, int pointSize, uint flags, IUnknown * pUnk, IRenderFont * * ppFont)
 {
    if (pszFontName == NULL || ppFont == NULL)
    {
@@ -171,14 +184,14 @@ tResult GUIFontCreateGL(const tChar * pszFontName, int pointSize, uint effects,
    }
 
    if (!pFont->Create(pszFontName, pointSize,
-      (effects & kGFE_Bold) == kGFE_Bold,
-      (effects & kGFE_Italic) == kGFE_Italic))
+      (flags & kRFF_Bold) == kRFF_Bold,
+      (flags & kRFF_Italic) == kRFF_Italic))
    {
       SafeRelease(pFont);
       return E_FAIL;
    }
 
-   *ppFont = static_cast<IGUIFont *>(pFont);
+   *ppFont = static_cast<IRenderFont *>(pFont);
    return S_OK;
 }
 

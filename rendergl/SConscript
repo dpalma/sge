@@ -12,6 +12,11 @@ sourceFiles = Split("""
    src/renderfontftgl.cpp
 """)
 
+if env['PLATFORM'] == 'win32':
+   sourceFiles += ['src/renderfontw32.cpp']
+elif env['PLATFORM'] == 'cygwin':
+   sourceFiles += ['src/renderfontx11.cpp']
+
 includePaths = Split("""
    #platform/include
    #rendergl/include

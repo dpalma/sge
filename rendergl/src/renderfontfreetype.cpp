@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////////
+
 // $Id$
 
 #include "stdhdr.h"
@@ -357,7 +357,15 @@ tResult cRenderFontFreetype::RenderText(const tChar * pszText, int textLength, i
 
 ////////////////////////////////////////
 
-//tResult RenderFontCreate(const tChar * pszFont, int fontPointSize, IUnknown * pUnk, IRenderFont * * ppFont)
+tResult cRenderFontFreetype::RenderText(const tChar * pszText, int textLength, tRect * pRect,
+                                        uint flags, const cColor & color) const
+{
+   return E_NOTIMPL;
+}
+
+////////////////////////////////////////
+
+//tResult RenderFontCreate(const tChar * pszFont, int fontPointSize, uint flags, IUnknown * pUnk, IRenderFont * * ppFont)
 //{
 //   return cRenderFontFreetype::Create(pszFont, fontPointSize, ppFont);
 //}

@@ -19,8 +19,6 @@
 
 F_DECLARE_INTERFACE(IGUIElement);
 F_DECLARE_INTERFACE(IGUIStyle);
-F_DECLARE_INTERFACE(IGUIFont);
-F_DECLARE_INTERFACE(IGUIFontCache);
 F_DECLARE_INTERFACE(IGUIElementRenderer);
 F_DECLARE_INTERFACE(IGUIElementEnum);
 F_DECLARE_INTERFACE(IGUIEvent);
@@ -38,57 +36,11 @@ F_DECLARE_INTERFACE(IDirect3DDevice9);
 #endif
 
 class TiXmlElement;
-class cGUIFontDesc;
 
 
 ///////////////////////////////////////////////////////////////////////////////
 
 GUI_API void GUILayoutRegisterBuiltInTypes();
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// INTERFACE: IGUIFont
-//
-
-enum eGUIFontRenderTextFlags
-{
-   kRT_Center        = (1<<0),
-   kRT_VCenter       = (1<<1),
-   kRT_NoClip        = (1<<2),
-   kRT_CalcRect      = (1<<3),
-   kRT_SingleLine    = (1<<4),
-   kRT_Bottom        = (1<<5),
-   kRT_NoBlend       = (1<<6),
-   kRT_DropShadow    = (1<<7),
-};
-
-interface IGUIFont : IUnknown
-{
-   virtual tResult RenderText(const tChar * pszText, int textLength, tGUIRect * pRect,
-                              uint flags, const tGUIColor & color) const = 0;
-};
-
-///////////////////////////////////////
-
-GUI_API tResult GUIFontCreate(const cGUIFontDesc & fontDesc, IUnknown * pUnk, IGUIFont * * ppFont);
-GUI_API tResult GUIFontDescDefault(cGUIFontDesc * pFontDesc);
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// INTERFACE: IGUIFontCache
-//
-
-interface IGUIFontCache : IUnknown
-{
-   virtual tResult GetFont(const cGUIFontDesc & fontDesc, IGUIFont * * ppFont) = 0;
-   virtual tResult SetFont(const cGUIFontDesc & fontDesc, IGUIFont * pFont) = 0;
-};
-
-///////////////////////////////////////
-
-GUI_API tResult GUIFontCacheCreate();
 
 
 ///////////////////////////////////////////////////////////////////////////////

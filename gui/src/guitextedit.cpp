@@ -8,6 +8,8 @@
 #include "guielementtools.h"
 #include "guistrings.h"
 
+#include "renderfontapi.h"
+
 #include "globalobj.h"
 #include "techtime.h"
 #include "keys.h"
@@ -527,7 +529,7 @@ bool cGUITextEditElement::HitTest(const tGUIPoint & point, int * pIndex)
    if (GetRenderer(&pRenderer) == S_OK)
    {
       tGUIString text;
-      cAutoIPtr<IGUIFont> pFont;
+      cAutoIPtr<IRenderFont> pFont;
       if (GUIElementFont(static_cast<IGUIElement*>(this), &pFont) == S_OK
          && m_buffer.GetText(&text) == S_OK)
       {

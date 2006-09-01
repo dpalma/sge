@@ -18,6 +18,8 @@
 
 #include "dbgalloc.h" // must be last header
 
+#define IsFlagSet(var, bit) (((var) & (bit)) == (bit))
+
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -143,7 +145,66 @@ tResult cRenderFontFtgl::RenderText(const tChar * pszText, int /*textLength*/, i
 
 ////////////////////////////////////////
 
-tResult RenderFontCreate(const tChar * pszFont, int fontPointSize, IUnknown * pUnk, IRenderFont * * ppFont)
+tResult cRenderFontFtgl::RenderText(const tChar * pszText, int textLength, tRect * pRect, uint flags, const cColor & color) const
+{
+   if (pszText == NULL || pRect == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (m_pFont == NULL)
+   {
+      return E_FAIL;
+   }
+
+   WarnMsgIf(IsFlagSet(flags, kRT_NoBlend), "NoBlend flag not supported\n");
+
+   if (IsFlagSet(flags, kRT_CalcRect))
+   {
+      float llx = 0, lly = 0, llz = 0, urx = 0, ury = 0, urz = 0;
+      m_pFont->BBox(pszText, llx, lly, llz, urx, ury, urz);
+      pRect->right = pRect->left + FloatToInt(urx - llx);
+      pRect->bottom = pRect->top + FloatToInt(ury - lly);
+   }
+   else
+   {
+      glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
+
+      glEnable(GL_TEXTURE_2D);
+
+      if (!IsFlagSet(flags, kRT_NoClip))
+      {
+         int viewport[4];
+         glGetIntegerv(GL_VIEWPORT, viewport);
+
+         glEnable(GL_SCISSOR_TEST);
+         glScissor(
+            pRect->left,
+            // HACK: the call to glOrtho made at the beginning of each UI render
+            // cycle typically makes the UPPER left corner (0,0).  glScissor seems 
+            // to assume that (0,0) is always the LOWER left corner.
+            viewport[3] - pRect->bottom,
+            pRect->GetWidth(),
+            pRect->GetHeight());
+      }
+
+      glColor4fv(color.GetPointer());
+
+      glPushMatrix();
+      glTranslatef(static_cast<GLfloat>(pRect->left), static_cast<GLfloat>(pRect->bottom), 0);
+      glScalef(1, -1, 1);
+      m_pFont->Render(pszText);
+      glPopMatrix();
+
+      glPopAttrib();
+   }
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult RenderFontCreate(const tChar * pszFont, int fontPointSize, uint flags, IUnknown * pUnk, IRenderFont * * ppFont)
 {
    return cRenderFontFtgl::Create(pszFont, fontPointSize, ppFont);
 }

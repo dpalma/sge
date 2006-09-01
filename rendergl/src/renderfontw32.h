@@ -1,13 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 // $Id$
 
-#ifndef INCLUDED_GUIFONTW32_H
-#define INCLUDED_GUIFONTW32_H
+#ifndef INCLUDED_RENDERFONTW32_H
+#define INCLUDED_RENDERFONTW32_H
 
-#include "guiapi.h"
-#include "color.h"
-
-#include "comtools.h"
+#include "renderfontapi.h"
 
 #ifdef _MSC_VER
 #pragma once
@@ -15,29 +12,31 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGUITextureFontW32
+// CLASS: cTextureRenderFontW32
 //
 
-struct sGUITextureFontGlyph
+struct sTextureFontGlyph
 {
    float texCoords[4];
    uint width;
    int lead, trail;
 };
 
-class cGUITextureFontW32 : public cComObject<IMPLEMENTS(IGUIFont)>
+class cTextureRenderFontW32 : public cComObject<IMPLEMENTS(IRenderFont)>
 {
-   cGUITextureFontW32(const cGUITextureFontW32 &); // un-implemented
-   void operator=(const cGUITextureFontW32 &); // un-implemented
+   cTextureRenderFontW32(const cTextureRenderFontW32 &); // un-implemented
+   void operator=(const cTextureRenderFontW32 &); // un-implemented
 
 public:
-   cGUITextureFontW32();
-   ~cGUITextureFontW32();
+   cTextureRenderFontW32();
+   ~cTextureRenderFontW32();
 
    virtual void OnFinalRelease();
 
    bool Create(const tChar * pszFontName, int pointSize, bool bBold, bool bItalic);
 
+   virtual tResult MeasureText(const tChar * pszText, int textLength, int * pWidth, int * pHeight) const;
+   virtual tResult RenderText(const tChar * pszText, int textLength, int x, int y) const;
    virtual tResult RenderText(const tChar * pszText, int textLength, tRect * pRect, uint flags, const cColor & color) const;
 
    tResult SetDropShadowState(float offsetX, float offsetY, const cColor & color);
@@ -45,7 +44,7 @@ public:
 private:
    int m_texDim; // texture is always square
    int m_rowHeight; // height of a row of characters in the texture (all rows are same height)
-   sGUITextureFontGlyph * m_pGlyphs;
+   sTextureFontGlyph * m_pGlyphs;
    uint m_texId;
    float m_widthMult, m_heightMult;
    float m_dropShadowOffsetX, m_dropShadowOffsetY;
@@ -54,4 +53,4 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // !INCLUDED_GUIFONTW32_H
+#endif // !INCLUDED_RENDERFONTW32_H

@@ -47,6 +47,9 @@ public:
 
    virtual tResult RenderText(const tChar * pszText, int textLength, int x, int y) const;
 
+   virtual tResult RenderText(const tChar * pszText, int textLength, tRect * pRect,
+                              uint flags, const cColor & color) const;
+
 private:
    uint m_textureId;
    int m_textureSize; // texture is square so only one dimension

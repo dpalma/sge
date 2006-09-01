@@ -364,48 +364,6 @@
 					RelativePath="..\..\gui\src\guifactory.cpp">
 				</File>
 				<File
-					RelativePath="..\..\gui\src\guifontfactory.cpp">
-				</File>
-				<File
-					RelativePath="..\..\gui\src\guifontfreetype.cpp">
-				</File>
-				<File
-					RelativePath="..\..\gui\src\guifontw32.cpp">
-				</File>
-				<File
-					RelativePath="..\..\gui\src\guifontx11.cpp">
-					<FileConfiguration
-						Name="Opt|Win32"
-						ExcludedFromBuild="TRUE">
-						<Tool
-							Name="VCCLCompilerTool"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="StaticDebug|Win32"
-						ExcludedFromBuild="TRUE">
-						<Tool
-							Name="VCCLCompilerTool"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						ExcludedFromBuild="TRUE">
-						<Tool
-							Name="VCCLCompilerTool"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="StaticRelease|Win32"
-						ExcludedFromBuild="TRUE">
-						<Tool
-							Name="VCCLCompilerTool"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
-						ExcludedFromBuild="TRUE">
-						<Tool
-							Name="VCCLCompilerTool"/>
-					</FileConfiguration>
-				</File>
-				<File
 					RelativePath="..\..\gui\src\guilabel.cpp">
 				</File>
 				<File
@@ -537,18 +495,6 @@
 				</File>
 				<File
 					RelativePath="..\..\gui\src\guifontd3d.h">
-				</File>
-				<File
-					RelativePath="..\..\gui\src\guifontfactory.h">
-				</File>
-				<File
-					RelativePath="..\..\gui\src\guifontfreetype.h">
-				</File>
-				<File
-					RelativePath="..\..\gui\src\guifontw32.h">
-				</File>
-				<File
-					RelativePath="..\..\gui\src\guifontx11.h">
 				</File>
 				<File
 					RelativePath="..\..\gui\src\guilabel.h">

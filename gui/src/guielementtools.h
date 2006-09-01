@@ -10,7 +10,8 @@
 #pragma once
 #endif
 
-F_DECLARE_INTERFACE(IGUIFont);
+F_DECLARE_INTERFACE(IRenderFont);
+
 F_DECLARE_INTERFACE(IGUIStyle);
 
 
@@ -50,7 +51,9 @@ void GUIPlaceElement(const tGUIRect & field, IGUIElement * pGUIElement);
 
 tGUIPoint GUIElementAbsolutePosition(IGUIElement * pGUIElement, uint * pnParents = NULL);
 
-tResult GUIElementFont(IGUIElement * pElement, IGUIFont * * ppFont);
+tResult GUIDefaultFont(IRenderFont * * ppFont);
+
+tResult GUIElementFont(IGUIElement * pElement, IRenderFont * * ppFont);
 
 tResult GUISetText(const tGUIChar * pszText, tGUIString * pString);
 

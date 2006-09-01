@@ -415,7 +415,6 @@ static void RegisterGlobalObjects()
    InputCreate();
    GUIContextCreate();
    GUIFactoryCreate();
-   GUIFontCacheCreate();
    GUIEventSoundsCreate();
    NetworkCreate();
    RendererCreate();

@@ -7,6 +7,8 @@
 #include "guielementtools.h"
 #include "guistyleapi.h"
 
+#include "renderfontapi.h"
+
 #include "globalobj.h"
 
 #include "dbgalloc.h" // must be last header
@@ -119,7 +121,7 @@ tResult cGUIBasicRenderer::LabelRender(IGUIElement * pElement, IGUIRenderDevice 
       pStyle->GetForegroundColor(&color);
    }
 
-   cAutoIPtr<IGUIFont> pFont;
+   cAutoIPtr<IRenderFont> pFont;
    if (GUIElementFont(pElement, &pFont) == S_OK)
    {
       IGUILabelElement * pLabelElement = (IGUILabelElement *)pElement;
@@ -143,7 +145,7 @@ tResult cGUIBasicRenderer::LabelRender(IGUIElement * pElement, IGUIRenderDevice 
 
 tGUISize cGUIBasicRenderer::LabelPreferredSize(IGUIElement * pElement) const
 {
-   cAutoIPtr<IGUIFont> pFont;
+   cAutoIPtr<IRenderFont> pFont;
    if (GUIElementFont(pElement, &pFont) == S_OK)
    {
       tGUIString text;

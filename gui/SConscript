@@ -14,8 +14,6 @@ sourceFiles = Split("""
    src/guievent.cpp
    src/guieventrouter.cpp
    src/guieventsounds.cpp
-   src/guifontfactory.cpp
-   src/guifontfreetype.cpp
    src/guifactory.cpp
    src/guilabel.cpp
    src/guilayout.cpp
@@ -34,11 +32,6 @@ sourceFiles = Split("""
    src/guitextedit.cpp
    src/guitypes.cpp
 """)
-
-if env['PLATFORM'] == 'win32':
-   sourceFiles += ['src/guifontw32.cpp']
-elif env['PLATFORM'] == 'cygwin':
-   sourceFiles += ['src/guifontx11.cpp']
 
 includePaths = Split("""
    #engine/include
@@ -66,7 +59,6 @@ linkLibs = Split("""
 
 local = env.Copy()
 local.UseGL()
-local.UseFTGL()
 local.UseTinyxml()
 local.BuildLibrary(target='gui',
                    source=sourceFiles,

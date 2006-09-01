@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "guifontw32.h"
+#include "renderfontw32.h"
 
 #include "techmath.h"
 #include "configapi.h"
@@ -36,12 +36,12 @@ const uint kDropShadowStencilMask = 0xff;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGUITextureFontW32
+// CLASS: cTextureRenderFontW32
 //
 
 ///////////////////////////////////////
 
-cGUITextureFontW32::cGUITextureFontW32()
+cTextureRenderFontW32::cTextureRenderFontW32()
  : m_texDim(0)
  , m_pGlyphs(NULL)
  , m_texId(0)
@@ -55,13 +55,13 @@ cGUITextureFontW32::cGUITextureFontW32()
 
 ///////////////////////////////////////
 
-cGUITextureFontW32::~cGUITextureFontW32()
+cTextureRenderFontW32::~cTextureRenderFontW32()
 {
 }
 
 ///////////////////////////////////////
 
-void cGUITextureFontW32::OnFinalRelease()
+void cTextureRenderFontW32::OnFinalRelease()
 {
    glDeleteTextures(1, &m_texId);
    m_texDim = 0;
@@ -99,7 +99,7 @@ static int GetTextureSizeForFont(int pointSize)
    }
 }
 
-bool cGUITextureFontW32::Create(const tChar * pszFontName, int pointSize, bool bBold, bool bItalic)
+bool cTextureRenderFontW32::Create(const tChar * pszFontName, int pointSize, bool bBold, bool bItalic)
 {
    if (pszFontName == NULL || pointSize < 0)
    {
@@ -203,7 +203,7 @@ bool cGUITextureFontW32::Create(const tChar * pszFontName, int pointSize, bool b
             int padVert = kPadVert;
 
             uint glyphCount = kASCIIGlyphLast - kASCIIGlyphFirst + 1;
-            m_pGlyphs = new sGUITextureFontGlyph[glyphCount];
+            m_pGlyphs = new sTextureFontGlyph[glyphCount];
 
             // draw each character into the bitmap and compute its texture coordinates
             for (uint c = kASCIIGlyphFirst; c < kASCIIGlyphLast; c++)
@@ -304,7 +304,21 @@ bool cGUITextureFontW32::Create(const tChar * pszFontName, int pointSize, bool b
 
 ///////////////////////////////////////
 
-tResult cGUITextureFontW32::RenderText(const tChar * pszText, int textLength, tRect * pRect,
+tResult cTextureRenderFontW32::MeasureText(const tChar * pszText, int textLength, int * pWidth, int * pHeight) const
+{
+   return E_NOTIMPL;
+}
+
+///////////////////////////////////////
+
+tResult cTextureRenderFontW32::RenderText(const tChar * pszText, int textLength, int x, int y) const
+{
+   return E_NOTIMPL;
+}
+
+///////////////////////////////////////
+
+tResult cTextureRenderFontW32::RenderText(const tChar * pszText, int textLength, tRect * pRect,
                                        uint flags, const cColor & color) const
 {
    if (pszText == NULL || pRect == NULL)
@@ -566,7 +580,7 @@ tResult cGUITextureFontW32::RenderText(const tChar * pszText, int textLength, tR
 
 ///////////////////////////////////////
 
-tResult cGUITextureFontW32::SetDropShadowState(float offsetX, float offsetY, const cColor & color)
+tResult cTextureRenderFontW32::SetDropShadowState(float offsetX, float offsetY, const cColor & color)
 {
    m_dropShadowOffsetX = offsetX;
    m_dropShadowOffsetY = offsetY;
@@ -576,10 +590,9 @@ tResult cGUITextureFontW32::SetDropShadowState(float offsetX, float offsetY, con
 
 ///////////////////////////////////////////////////////////////////////////////
 
-tResult GUIFontCreateGL(const tChar * pszFontName, int pointSize, uint effects,
-                        IGUIFont * * ppFont)
+tResult RenderFontCreateGL(const tChar * pszFont, int pointSize, uint flags, IUnknown * pUnk, IRenderFont * * ppFont)
 {
-   if (pszFontName == NULL || ppFont == NULL)
+   if (pszFont == NULL || ppFont == NULL)
    {
       return E_POINTER;
    }
@@ -589,17 +602,17 @@ tResult GUIFontCreateGL(const tChar * pszFontName, int pointSize, uint effects,
       return E_INVALIDARG;;
    }
 
-   cAutoIPtr<cGUITextureFontW32> pFont(new cGUITextureFontW32);
+   cAutoIPtr<cTextureRenderFontW32> pFont(new cTextureRenderFontW32);
    if (!pFont)
    {
       return E_OUTOFMEMORY;
    }
 
-   if (pFont->Create(pszFontName, pointSize,
-      (effects & kGFE_Bold) == kGFE_Bold,
-      (effects & kGFE_Italic) == kGFE_Italic))
+   if (pFont->Create(pszFont, pointSize,
+      (flags & kRFF_Bold) == kRFF_Bold,
+      (flags & kRFF_Italic) == kRFF_Italic))
    {
-      *ppFont = CTAddRef(pFont);
+      *ppFont = CTAddRef(static_cast<IRenderFont*>(pFont));
       return S_OK;
    }
 

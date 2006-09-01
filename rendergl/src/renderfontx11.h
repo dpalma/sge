@@ -1,13 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 // $Id$
 
-#ifndef INCLUDED_GUIFONTX11_H
-#define INCLUDED_GUIFONTX11_H
+#ifndef INCLUDED_RENDERFONTX11_H
+#define INCLUDED_RENDERFONTX11_H
 
-#include "guiapi.h"
-#include "color.h"
-
-#include "comtools.h"
+#include "renderfontapi.h"
 
 #include <X11/Xlib.h>
 
@@ -20,7 +17,7 @@
 // CLASS: cGLXRasterFont
 //
 
-class cGLXRasterFont : public cComObject<IMPLEMENTS(IGUIFont)>
+class cGLXRasterFont : public cComObject<IMPLEMENTS(IRenderFont)>
 {
 public:
    cGLXRasterFont();
@@ -28,6 +25,8 @@ public:
 
    virtual void OnFinalRelease();
 
+   virtual tResult MeasureText(const tChar * pszText, int textLength, int * pWidth, int * pHeight) const;
+   virtual tResult RenderText(const tChar * pszText, int textLength, int x, int y) const;
    virtual tResult RenderText(const tChar * pszText, int textLength, tRect * pRect, uint flags, const cColor & color) const;
 
    bool Create(const tChar * pszFontName, int pointSize, bool bBold, bool bItalic);
@@ -50,4 +49,4 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // !INCLUDED_GUIFONTX11_H
+#endif // !INCLUDED_RENDERFONTX11_H

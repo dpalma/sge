@@ -184,54 +184,5 @@ inline bool cGUISize<T>::operator ==(const cGUISize & other) const
 
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUIFontDesc
-//
-
-enum eGUIFontEffects
-{
-   kGFE_None      = (0<<0),
-   kGFE_Bold      = (1<<0),
-   kGFE_Italic    = (1<<1),
-   kGFE_Shadow    = (1<<2),
-   kGFE_Outline   = (1<<3),
-};
-
-enum
-{
-   kASCIIGlyphFirst = 32,
-   kASCIIGlyphLast = 128,
-};
-
-class GUI_API cGUIFontDesc
-{
-public:
-   cGUIFontDesc();
-   cGUIFontDesc(const tGUIChar * pszFace, int pointSize, eGUIFontSizeType sizeType, uint effects);
-   cGUIFontDesc(const cGUIFontDesc & other);
-
-   const cGUIFontDesc & operator =(const cGUIFontDesc & other);
-
-   bool operator ==(const cGUIFontDesc & other) const;
-   bool operator <(const cGUIFontDesc & other) const;
-
-   void SetFace(const tGUIChar * pszFace);
-   const tGUIChar * GetFace() const;
-   int GetSize() const;
-   eGUIFontSizeType GetSizeType() const;
-   uint GetEffects() const;
-   bool IsBold() const;
-   bool IsItalic() const;
-   bool IsShadow() const;
-   bool IsOutline() const;
-
-private:
-   tGUIString m_typeFace;
-   int m_size;
-   eGUIFontSizeType m_sizeType;
-   uint m_effects;
-};
-
-///////////////////////////////////////////////////////////////////////////////
 
 #endif // INCLUDED_GUITYPES_H

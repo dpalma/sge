@@ -20,9 +20,7 @@
 F_DECLARE_INTERFACE(IGUIStyle);
 F_DECLARE_INTERFACE(IGUIStyleSheet);
 
-F_DECLARE_INTERFACE(IGUIFont);
-
-class cGUIFontDesc;
+F_DECLARE_INTERFACE(IRenderFont);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -88,7 +86,7 @@ interface IGUIStyle : IUnknown
    virtual tResult Clone(IGUIStyle * * ppStyle) = 0;
 };
 
-GUI_API tResult GUIStyleFontCreate(IGUIStyle * pStyle, IUnknown * pReserved, IGUIFont * * ppFont);
+GUI_API tResult GUIStyleFontCreate(IGUIStyle * pStyle, IUnknown * pReserved, IRenderFont * * ppFont);
 
 ///////////////////////////////////////
 /// Attempt to parse a color value from the given string. Valid strings are

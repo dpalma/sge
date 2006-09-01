@@ -9,7 +9,7 @@
 #include "guiparse.h"
 #include "guistrings.h"
 
-#include "color.h"
+#include "renderfontapi.h"
 
 #include "globalobj.h"
 
@@ -693,15 +693,14 @@ static eGUIVerticalAlignment GUIStyleParseVertAlignment(const char * psz)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static tResult GUIStyleFontDesc(IGUIStyle * pStyle, cGUIFontDesc * pFontDesc)
+static tResult GUIStyleFontDesc(IGUIStyle * pStyle, cStr * pFontName, int * pPointSize, uint * pFlags)
 {
-   if (pStyle == NULL || pFontDesc == NULL)
+   if (pStyle == NULL || pFontName == NULL || pPointSize == NULL || pFlags == NULL)
    {
       return E_POINTER;
    }
 
-   tGUIString fontName;
-   if (pStyle->GetFontName(&fontName) != S_OK)
+   if (pStyle->GetFontName(pFontName) != S_OK)
    {
       return E_FAIL;
    }
@@ -713,13 +712,23 @@ static tResult GUIStyleFontDesc(IGUIStyle * pStyle, cGUIFontDesc * pFontDesc)
       return E_FAIL;
    }
 
-   uint effects = kGFE_None;
+   if (sizeType == kGUIFontSizePoints)
+   {
+      *pPointSize = size;
+   }
+   else
+   {
+      // TODO: convert to points
+      return E_INVALIDARG;
+   }
+
+   uint flags = kRFF_None;
 
    {
       bool bBold = false;
       if ((pStyle->GetFontBold(&bBold) == S_OK) && bBold)
       {
-         effects |= kGFE_Bold;
+         flags |= kRFF_Bold;
       }
    }
 
@@ -727,7 +736,7 @@ static tResult GUIStyleFontDesc(IGUIStyle * pStyle, cGUIFontDesc * pFontDesc)
       bool bItalic = false;
       if ((pStyle->GetFontItalic(&bItalic) == S_OK) && bItalic)
       {
-         effects |= kGFE_Italic;
+         flags |= kRFF_Italic;
       }
    }
 
@@ -735,7 +744,7 @@ static tResult GUIStyleFontDesc(IGUIStyle * pStyle, cGUIFontDesc * pFontDesc)
       bool bShadow = false;
       if ((pStyle->GetFontShadow(&bShadow) == S_OK) && bShadow)
       {
-         effects |= kGFE_Shadow;
+         flags |= kRFF_Shadow;
       }
    }
 
@@ -743,17 +752,18 @@ static tResult GUIStyleFontDesc(IGUIStyle * pStyle, cGUIFontDesc * pFontDesc)
       bool bOutline = false;
       if ((pStyle->GetFontOutline(&bOutline) == S_OK) && bOutline)
       {
-         effects |= kGFE_Outline;
+         flags |= kRFF_Outline;
       }
    }
 
-   *pFontDesc = cGUIFontDesc(fontName.c_str(), size, static_cast<eGUIFontSizeType>(sizeType), effects);
+   *pFlags = flags;
+
    return S_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-tResult GUIStyleFontCreate(IGUIStyle * pStyle, IUnknown * pReserved, IGUIFont * * ppFont)
+tResult GUIStyleFontCreate(IGUIStyle * pStyle, IUnknown * pReserved, IRenderFont * * ppFont)
 {
    if (pStyle == NULL || ppFont == NULL)
    {
@@ -772,16 +782,18 @@ tResult GUIStyleFontCreate(IGUIStyle * pStyle, IUnknown * pReserved, IGUIFont * 
       return E_FAIL;
    }
 
-   cGUIFontDesc fontDesc;
-   if (GUIStyleFontDesc(pStyle, &fontDesc) != S_OK)
+   cStr fontName;
+   int pointSize = 0;
+   uint flags = kRFF_None;
+   if (GUIStyleFontDesc(pStyle, &fontName, &pointSize, &flags) != S_OK)
    {
       return E_FAIL;
    }
 
    for (uint i = 0; i < tok.m_tokens.size(); i++)
    {
-      fontDesc.SetFace(tok.m_tokens[i].c_str());
-      if (GUIFontCreate(fontDesc, pReserved, ppFont) == S_OK)
+      fontName = tok.m_tokens[i];
+      if (RenderFontCreate(fontName.c_str(), pointSize, flags, pReserved, ppFont) == S_OK)
       {
          return S_OK;
       }
