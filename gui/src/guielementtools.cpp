@@ -10,6 +10,7 @@
 #include "renderfontapi.h"
 
 #include "configapi.h"
+#include "globalobj.h"
 
 #ifdef HAVE_CPPUNITLITE2
 #include "CppUnitLite2.h"
@@ -257,46 +258,6 @@ tGUIPoint GUIElementAbsolutePosition(IGUIElement * pGUIElement, uint * pnParents
 
 ///////////////////////////////////////////////////////////////////////////////
 
-tResult GUIDefaultFont(IRenderFont * * ppFont)
-{
-   if (ppFont == NULL)
-   {
-      return E_POINTER;
-   }
-
-   static cAutoIPtr<IRenderFont> pDefaultFont;
-
-   if (!pDefaultFont)
-   {
-      cStr fontName;
-      if (ConfigGet("default_font_name", &fontName) != S_OK)
-      {
-#ifdef _WIN32
-         fontName = _T("MS Sans Serif");
-#else
-#error ("Need a sensible default font for platform")
-#endif
-      }
-
-      int pointSize = 10;
-      ConfigGet("default_font_pointsize", &pointSize);
-
-      int flags = kRFF_None;
-      ConfigGet("default_font_flags", &flags);
-
-      if (RenderFontCreate(fontName.c_str(), pointSize, flags, NULL, &pDefaultFont) != S_OK)
-      {
-         return E_FAIL;
-      }
-   }
-
-   *ppFont = CTAddRef(pDefaultFont);
-   return S_OK;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-
 tResult GUIElementFont(IGUIElement * pElement, IRenderFont * * ppFont)
 {
    if (pElement == NULL || ppFont == NULL)
@@ -313,7 +274,8 @@ tResult GUIElementFont(IGUIElement * pElement, IRenderFont * * ppFont)
       }
    }
 
-   return GUIDefaultFont(ppFont);
+   UseGlobal(GUIContext);
+   return pGUIContext->GetDefaultFont(ppFont);
 }
 
 

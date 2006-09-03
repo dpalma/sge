@@ -23,8 +23,6 @@
 #define GUI_DEBUG
 #endif
 
-F_DECLARE_INTERFACE(IRenderFont);
-
 class cGUIPage;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -97,6 +95,8 @@ public:
    virtual tResult ShowDebugInfo(const tGUIPoint & placement, IGUIStyle * pStyle);
    virtual tResult HideDebugInfo();
 
+   virtual tResult GetDefaultFont(IRenderFont * * ppFont);
+
    tResult GetHitElement(const tScreenPoint & point, IGUIElement * * ppElement) const;
 
    cGUIPage * GetCurrentPage();
@@ -140,6 +140,8 @@ private:
 
    typedef std::list<cGUIPage *> tGUIPageList;
    tGUIPageList m_pagePlanes[3];
+
+   cAutoIPtr<IRenderFont> m_pDefaultFont;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

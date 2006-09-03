@@ -31,6 +31,8 @@ F_DECLARE_INTERFACE(IGUIRenderDevice);
 F_DECLARE_INTERFACE(IGUIRenderDeviceContext);
 F_DECLARE_INTERFACE(IGUIContext);
 
+F_DECLARE_INTERFACE(IRenderFont);
+
 #if HAVE_DIRECTX
 F_DECLARE_INTERFACE(IDirect3DDevice9);
 #endif
@@ -342,6 +344,8 @@ interface IGUIContext : IGUIEventRouter
 
    virtual tResult ShowDebugInfo(const tGUIPoint & placement, IGUIStyle * pStyle) = 0;
    virtual tResult HideDebugInfo() = 0;
+
+   virtual tResult GetDefaultFont(IRenderFont * * ppFont) = 0;
 };
 
 ///////////////////////////////////////

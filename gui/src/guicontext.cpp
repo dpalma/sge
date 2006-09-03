@@ -13,6 +13,7 @@
 
 #include "renderfontapi.h"
 
+#include "configapi.h"
 #include "keys.h"
 #include "multivar.h"
 #include "resourceapi.h"
@@ -753,6 +754,43 @@ tResult cGUIContext::HideDebugInfo()
 
 ///////////////////////////////////////
 
+tResult cGUIContext::GetDefaultFont(IRenderFont * * ppFont)
+{
+   if (ppFont == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (!m_pDefaultFont)
+   {
+      cStr fontName;
+      if (ConfigGet("default_font_name", &fontName) != S_OK)
+      {
+#ifdef _WIN32
+         fontName = _T("MS Sans Serif");
+#else
+#error ("Need a sensible default font for platform")
+#endif
+      }
+
+      int pointSize = 10;
+      ConfigGet("default_font_pointsize", &pointSize);
+
+      int flags = kRFF_None;
+      ConfigGet("default_font_flags", &flags);
+
+      if (RenderFontCreate(fontName.c_str(), pointSize, flags, NULL, &m_pDefaultFont) != S_OK)
+      {
+         return E_FAIL;
+      }
+   }
+
+   *ppFont = CTAddRef(m_pDefaultFont);
+   return S_OK;
+}
+
+///////////////////////////////////////
+
 tResult cGUIContext::GetHitElement(const tScreenPoint & point, IGUIElement * * ppElement) const
 {
    if (ppElement == NULL)
@@ -823,7 +861,7 @@ tResult cGUIContext::GetDebugFont(IRenderFont * * ppFont)
    }
    else
    {
-      return GUIDefaultFont(ppFont);
+      return GetDefaultFont(ppFont);
    }
    return E_FAIL;
 }
