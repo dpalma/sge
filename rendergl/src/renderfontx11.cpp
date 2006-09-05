@@ -164,7 +164,7 @@ bool cGLXRasterFont::Create(const tChar * pszFontName, int pointSize, bool bBold
 
 ///////////////////////////////////////////////////////////////////////////////
 
-tResult RenderFontCreateGL(const tChar * pszFont, int pointSize, uint flags, IUnknown * pUnk, IRenderFont * * ppFont)
+tResult RenderFontCreateGL(const tChar * pszFont, int pointSize, uint flags, IRenderFont * * ppFont)
 {
    if (pszFontName == NULL || ppFont == NULL)
    {

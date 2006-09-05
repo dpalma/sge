@@ -59,10 +59,6 @@ interface IRenderFont : IUnknown
                               uint flags, const cColor & color) const = 0;
 };
 
-///////////////////////////////////////
-
-RENDER_API tResult RenderFontCreate(const tChar * pszFont, int fontPointSize, uint flags, IUnknown * pUnk, IRenderFont * * ppFont);
-
 ///////////////////////////////////////////////////////////////////////////////
 
 #endif // !INCLUDED_RENDERFONTAPI_H

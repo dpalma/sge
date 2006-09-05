@@ -441,6 +441,20 @@ tResult cRenderer::Render(ePrimitiveType primitive, const void * pIndices, uint 
 
 ////////////////////////////////////////
 
+extern tResult RenderFontCreateGL(const tChar * pszFont, int pointSize, uint flags, IRenderFont * * ppFont);
+extern tResult RenderFontCreateFTGL(const tChar * pszFont, int fontPointSize, uint flags, IRenderFont * * ppFont);
+tResult cRenderer::CreateFont(const tChar * pszFont, int fontPointSize, uint flags, IRenderFont * * ppFont)
+{
+   tResult result = RenderFontCreateFTGL(pszFont, fontPointSize, flags, ppFont);
+   if (result != S_OK)
+   {
+      result = RenderFontCreateGL(pszFont, fontPointSize, flags, ppFont);
+   }
+   return result;
+}
+
+////////////////////////////////////////
+
 tResult cRenderer::Initialize()
 {
    if (m_bInitialized)

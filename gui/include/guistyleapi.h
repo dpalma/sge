@@ -86,7 +86,7 @@ interface IGUIStyle : IUnknown
    virtual tResult Clone(IGUIStyle * * ppStyle) = 0;
 };
 
-GUI_API tResult GUIStyleFontCreate(IGUIStyle * pStyle, IUnknown * pReserved, IRenderFont * * ppFont);
+GUI_API tResult GUIStyleFontCreate(IGUIStyle * pStyle, IRenderFont * * ppFont);
 
 ///////////////////////////////////////
 /// Attempt to parse a color value from the given string. Valid strings are

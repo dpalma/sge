@@ -590,7 +590,7 @@ tResult cTextureRenderFontW32::SetDropShadowState(float offsetX, float offsetY, 
 
 ///////////////////////////////////////////////////////////////////////////////
 
-tResult RenderFontCreateGL(const tChar * pszFont, int pointSize, uint flags, IUnknown * pUnk, IRenderFont * * ppFont)
+tResult RenderFontCreateGL(const tChar * pszFont, int pointSize, uint flags, IRenderFont * * ppFont)
 {
    if (pszFont == NULL || ppFont == NULL)
    {

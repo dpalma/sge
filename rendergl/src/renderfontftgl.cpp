@@ -204,7 +204,7 @@ tResult cRenderFontFtgl::RenderText(const tChar * pszText, int textLength, tRect
 
 ////////////////////////////////////////
 
-tResult RenderFontCreate(const tChar * pszFont, int fontPointSize, uint flags, IUnknown * pUnk, IRenderFont * * ppFont)
+tResult RenderFontCreateFTGL(const tChar * pszFont, int fontPointSize, uint flags, IRenderFont * * ppFont)
 {
    return cRenderFontFtgl::Create(pszFont, fontPointSize, ppFont);
 }

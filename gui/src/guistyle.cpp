@@ -9,6 +9,7 @@
 #include "guiparse.h"
 #include "guistrings.h"
 
+#include "renderapi.h"
 #include "renderfontapi.h"
 
 #include "globalobj.h"
@@ -763,7 +764,7 @@ static tResult GUIStyleFontDesc(IGUIStyle * pStyle, cStr * pFontName, int * pPoi
 
 ///////////////////////////////////////////////////////////////////////////////
 
-tResult GUIStyleFontCreate(IGUIStyle * pStyle, IUnknown * pReserved, IRenderFont * * ppFont)
+tResult GUIStyleFontCreate(IGUIStyle * pStyle, IRenderFont * * ppFont)
 {
    if (pStyle == NULL || ppFont == NULL)
    {
@@ -790,10 +791,12 @@ tResult GUIStyleFontCreate(IGUIStyle * pStyle, IUnknown * pReserved, IRenderFont
       return E_FAIL;
    }
 
+   UseGlobal(Renderer);
+
    for (uint i = 0; i < tok.m_tokens.size(); i++)
    {
       fontName = tok.m_tokens[i];
-      if (RenderFontCreate(fontName.c_str(), pointSize, flags, pReserved, ppFont) == S_OK)
+      if (pRenderer->CreateFont(fontName.c_str(), pointSize, flags, ppFont) == S_OK)
       {
          return S_OK;
       }

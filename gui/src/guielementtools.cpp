@@ -268,7 +268,7 @@ tResult GUIElementFont(IGUIElement * pElement, IRenderFont * * ppFont)
    cAutoIPtr<IGUIStyle> pStyle;
    if (pElement->GetStyle(&pStyle) == S_OK)
    {
-      if (GUIStyleFontCreate(pStyle, NULL, ppFont) == S_OK)
+      if (GUIStyleFontCreate(pStyle, ppFont) == S_OK)
       {
          return S_OK;
       }

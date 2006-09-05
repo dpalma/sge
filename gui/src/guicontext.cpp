@@ -11,6 +11,7 @@
 
 #include "sys.h"
 
+#include "renderapi.h"
 #include "renderfontapi.h"
 
 #include "configapi.h"
@@ -724,7 +725,7 @@ tResult cGUIContext::ShowDebugInfo(const tGUIPoint & placement, IGUIStyle * pSty
          pStyle->GetForegroundColor(&m_debugInfoTextColor);
 
          cAutoIPtr<IRenderFont> pNewDebugFont;
-         if (GUIStyleFontCreate(pStyle, NULL, &pNewDebugFont) == S_OK)
+         if (GUIStyleFontCreate(pStyle, &pNewDebugFont) == S_OK)
          {
             SafeRelease(m_pDebugFont);
             m_pDebugFont = pNewDebugFont;
@@ -779,7 +780,8 @@ tResult cGUIContext::GetDefaultFont(IRenderFont * * ppFont)
       int flags = kRFF_None;
       ConfigGet("default_font_flags", &flags);
 
-      if (RenderFontCreate(fontName.c_str(), pointSize, flags, NULL, &m_pDefaultFont) != S_OK)
+      UseGlobal(Renderer);
+      if (pRenderer->CreateFont(fontName.c_str(), pointSize, flags, &m_pDefaultFont) != S_OK)
       {
          return E_FAIL;
       }

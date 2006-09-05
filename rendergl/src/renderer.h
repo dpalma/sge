@@ -61,6 +61,8 @@ public:
 
    virtual tResult Render(ePrimitiveType primitive, const void * pIndices, uint nIndices);
 
+   virtual tResult CreateFont(const tChar * pszFont, int fontPointSize, uint flags, IRenderFont * * ppFont);
+
 private:
    tResult Initialize();
    static void CgErrorCallback();
