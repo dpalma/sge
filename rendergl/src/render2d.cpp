@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "guirendergl.h"
+#include "render2d.h"
 
 #include <GL/glew.h>
 
@@ -12,44 +12,60 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGUIRenderDeviceGL
+// CLASS: cRender2DGL
 //
 
 ////////////////////////////////////////
 
-tResult GUIRenderDeviceCreateGL(IGUIRenderDeviceContext * * ppRenderDevice)
+tResult Render2DCreateGL(IRender2D * * ppRender2D)
 {
-   if (ppRenderDevice == NULL)
+   if (ppRender2D == NULL)
    {
       return E_POINTER;
    }
 
-   cAutoIPtr<cGUIRenderDeviceGL> p(new cGUIRenderDeviceGL);
+   cAutoIPtr<cRender2DGL> p(new cRender2DGL);
    if (!p)
    {
       return E_OUTOFMEMORY;
    }
 
-   *ppRenderDevice = static_cast<IGUIRenderDeviceContext*>(CTAddRef(p));
+   *ppRender2D = static_cast<IRender2D*>(CTAddRef(p));
    return S_OK;
 }
 
 ////////////////////////////////////////
 
-cGUIRenderDeviceGL::cGUIRenderDeviceGL()
+cRender2DGL::cRender2DGL()
  : m_scissorRectStackDepth(0)
 {
 }
 
 ////////////////////////////////////////
 
-cGUIRenderDeviceGL::~cGUIRenderDeviceGL()
+cRender2DGL::~cRender2DGL()
 {
 }
 
 ////////////////////////////////////////
 
-void cGUIRenderDeviceGL::PushScissorRect(const tGUIRect & rect)
+tResult cRender2DGL::GetViewportSize(int * pWidth, int * pHeight) const
+{
+   if (pWidth == NULL || pHeight == NULL)
+   {
+      return E_POINTER;
+   }
+
+   glGetIntegerv(GL_VIEWPORT, m_viewport);
+
+   *pWidth = m_viewport[2] - m_viewport[0];
+   *pHeight = m_viewport[3] - m_viewport[1];
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+void cRender2DGL::PushScissorRect(const tRect & rect)
 {
    glPushAttrib(GL_SCISSOR_BIT);
 
@@ -70,7 +86,7 @@ void cGUIRenderDeviceGL::PushScissorRect(const tGUIRect & rect)
 
 ////////////////////////////////////////
 
-void cGUIRenderDeviceGL::PopScissorRect()
+void cRender2DGL::PopScissorRect()
 {
    Assert(m_scissorRectStackDepth > 0);
    m_scissorRectStackDepth--;
@@ -80,7 +96,7 @@ void cGUIRenderDeviceGL::PopScissorRect()
 
 ////////////////////////////////////////
 
-void cGUIRenderDeviceGL::RenderSolidRect(const tGUIRect & rect, const tGUIColor & color)
+void cRender2DGL::RenderSolidRect(const tRect & rect, const cColor & color)
 {
    glBegin(GL_TRIANGLES);
       glColor4fv(color.GetPointer());
@@ -97,8 +113,8 @@ void cGUIRenderDeviceGL::RenderSolidRect(const tGUIRect & rect, const tGUIColor 
 
 ////////////////////////////////////////
 
-void cGUIRenderDeviceGL::RenderBeveledRect(const tGUIRect & rect, int bevel, const tGUIColor & topLeft,
-                                           const tGUIColor & bottomRight, const tGUIColor & face)
+void cRender2DGL::RenderBeveledRect(const tRect & rect, int bevel, const cColor & topLeft,
+                                           const cColor & bottomRight, const cColor & face)
 {
    glPushAttrib(GL_ENABLE_BIT);
    glDisable(GL_TEXTURE_2D);
@@ -170,37 +186,6 @@ void cGUIRenderDeviceGL::RenderBeveledRect(const tGUIRect & rect, int bevel, con
       glEnd();
    }
 
-   glPopAttrib();
-}
-
-////////////////////////////////////////
-
-void cGUIRenderDeviceGL::FlushQueue()
-{
-}
-
-////////////////////////////////////////
-
-void cGUIRenderDeviceGL::Begin2D(int width, int height)
-{
-   glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
-
-   glDisable(GL_DEPTH_TEST);
-   glDisable(GL_LIGHTING);
-   glDisable(GL_CULL_FACE);
-
-   glMatrixMode(GL_PROJECTION);
-   glLoadIdentity();
-   glOrtho(0, static_cast<GLdouble>(width), static_cast<GLdouble>(height), 0, -99999, 99999);
-
-   glMatrixMode(GL_MODELVIEW);
-   glLoadIdentity();
-}
-
-////////////////////////////////////////
-
-void cGUIRenderDeviceGL::End2D()
-{
    glPopAttrib();
 }
 

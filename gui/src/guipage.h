@@ -14,7 +14,7 @@
 #pragma once
 #endif
 
-F_DECLARE_INTERFACE(IGUIRenderDevice);
+F_DECLARE_INTERFACE(IRender2D);
 
 typedef std::list<IGUIElement *> tGUIElementList;
 
@@ -44,7 +44,7 @@ public:
    void RequestLayout(IGUIElement * pRequester, uint options);
 
    void UpdateLayout(const tGUIRect & rect);
-   void Render(IGUIRenderDevice * pRenderDevice);
+   void Render(IRender2D * pRender2D);
 
    tResult GetHitElements(const tScreenPoint & point, tGUIElementList * pElements) const;
 

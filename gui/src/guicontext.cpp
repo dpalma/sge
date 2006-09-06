@@ -643,22 +643,8 @@ tResult cGUIContext::RequestLayout(IGUIElement * pRequester, uint options)
 
 ///////////////////////////////////////
 
-tResult cGUIContext::RenderGUI()
+tResult cGUIContext::RenderGUI(IRender2D * pRender2D)
 {
-   cAutoIPtr<IGUIRenderDeviceContext> pRenderDeviceContext;
-   if (GetRenderDeviceContext(&pRenderDeviceContext) != S_OK)
-   {
-      return E_FAIL;
-   }
-
-   int width, height;
-   if (SysGetWindowSize(&width, &height) != S_OK)
-   {
-      return E_FAIL;
-   }
-
-   pRenderDeviceContext->Begin2D(width, height);
-
    tGUIPageList renderPages;
 
    // Add top-most page
@@ -678,11 +664,14 @@ tResult cGUIContext::RenderGUI()
    }
 
    {
+      int width = 0, height = 0;
+      pRender2D->GetViewportSize(&width, &height);
+
       tGUIPageList::iterator iter = renderPages.begin();
       for (; iter != renderPages.end(); iter++)
       {
          (*iter)->UpdateLayout(tGUIRect(0,0,width,height));
-         (*iter)->Render(static_cast<IGUIRenderDevice*>(pRenderDeviceContext));
+         (*iter)->Render(pRender2D);
       }
    }
 
@@ -690,24 +679,6 @@ tResult cGUIContext::RenderGUI()
    RenderDebugInfo();
 #endif
 
-   pRenderDeviceContext->End2D();
-
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cGUIContext::GetRenderDeviceContext(IGUIRenderDeviceContext * * ppRenderDeviceContext)
-{
-   return m_pRenderDeviceContext.GetPointer(ppRenderDeviceContext);
-}
-
-///////////////////////////////////////
-
-tResult cGUIContext::SetRenderDeviceContext(IGUIRenderDeviceContext * pRenderDeviceContext)
-{
-   SafeRelease(m_pRenderDeviceContext);
-   m_pRenderDeviceContext = CTAddRef(pRenderDeviceContext);
    return S_OK;
 }
 

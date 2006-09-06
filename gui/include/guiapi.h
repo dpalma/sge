@@ -27,15 +27,10 @@ F_DECLARE_INTERFACE(IGUIEventRouter);
 F_DECLARE_INTERFACE(IGUIEventListener);
 F_DECLARE_INTERFACE(IGUIFactory);
 F_DECLARE_INTERFACE(IGUIFactoryListener);
-F_DECLARE_INTERFACE(IGUIRenderDevice);
-F_DECLARE_INTERFACE(IGUIRenderDeviceContext);
 F_DECLARE_INTERFACE(IGUIContext);
 
+F_DECLARE_INTERFACE(IRender2D);
 F_DECLARE_INTERFACE(IRenderFont);
-
-#if HAVE_DIRECTX
-F_DECLARE_INTERFACE(IDirect3DDevice9);
-#endif
 
 class TiXmlElement;
 
@@ -55,7 +50,7 @@ typedef tResult (* tGUIRendererFactoryFn)(void * pReserved,
 
 interface IGUIElementRenderer : IUnknown
 {
-   virtual tResult Render(IGUIElement * pElement, const tGUIPoint & position, IGUIRenderDevice * pRenderDevice) = 0;
+   virtual tResult Render(IGUIElement * pElement, const tGUIPoint & position, IRender2D * pRender2D) = 0;
 
    virtual tResult GetPreferredSize(IGUIElement * pElement, const tGUISize & parentSize, tGUISize * pSize) = 0;
 
@@ -252,53 +247,6 @@ interface IGUIFactoryListener : IUnknown
 };
 
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// INTERFACE: IGUIRenderDevice
-//
-/// @interface IGUIRenderDevice
-/// @brief Abstracts access to the platform 3D API (OpenGL, DirectX, etc.) for
-/// the purpose of rendering GUI widgets
-/// @see IGUIElementRenderer
-
-interface IGUIRenderDevice : IUnknown
-{
-   virtual void PushScissorRect(const tGUIRect & rect) = 0;
-   virtual void PopScissorRect() = 0;
-
-   virtual void RenderSolidRect(const tGUIRect & rect, const tGUIColor & color) = 0;
-   virtual void RenderBeveledRect(const tGUIRect & rect, int bevel,
-                                  const tGUIColor & topLeft,
-                                  const tGUIColor & bottomRight,
-                                  const tGUIColor & face) = 0;
-
-   virtual void FlushQueue() = 0;
-};
-
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// INTERFACE: IGUIRenderDeviceContext
-//
-/// @interface IGUIRenderDeviceContext
-/// @brief Provides fuller access to platform 3D API features than IGUIRenderDevice
-/// @see IGUIRenderDevice
-/// @see IGUIElementRenderer
-
-interface IGUIRenderDeviceContext : IGUIRenderDevice
-{
-   virtual void Begin2D(int width, int height) = 0;
-   virtual void End2D() = 0;
-};
-
-///////////////////////////////////////
-
-GUI_API tResult GUIRenderDeviceCreateGL(IGUIRenderDeviceContext * * ppRenderDevice);
-#if HAVE_DIRECTX
-GUI_API tResult GUIRenderDeviceCreateD3D(IDirect3DDevice9 * pD3dDevice, IGUIRenderDeviceContext * * ppRenderDevice);
-#endif
-
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // INTERFACE: IGUIContext
@@ -337,10 +285,7 @@ interface IGUIContext : IGUIEventRouter
       return RequestLayout(pRequester, kGUILayoutDefault);
    }
 
-   virtual tResult RenderGUI() = 0;
-
-   virtual tResult GetRenderDeviceContext(IGUIRenderDeviceContext * * ppRenderDeviceContext) = 0;
-   virtual tResult SetRenderDeviceContext(IGUIRenderDeviceContext * pRenderDeviceContext) = 0;
+   virtual tResult RenderGUI(IRender2D * pRender2D) = 0;
 
    virtual tResult ShowDebugInfo(const tGUIPoint & placement, IGUIStyle * pStyle) = 0;
    virtual tResult HideDebugInfo() = 0;

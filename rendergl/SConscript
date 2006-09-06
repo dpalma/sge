@@ -7,6 +7,7 @@ sourceFiles = Split("""
    src/freetypeutils.cpp
    src/glinterleave.cpp
    src/gltexture.cpp
+   src/render2d.cpp
    src/renderer.cpp
    src/renderfontfreetype.cpp
    src/renderfontftgl.cpp

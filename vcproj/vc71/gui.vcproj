@@ -385,9 +385,6 @@
 					RelativePath="..\..\gui\src\guiparse.cpp">
 				</File>
 				<File
-					RelativePath="..\..\gui\src\guirendergl.cpp">
-				</File>
-				<File
 					RelativePath="..\..\gui\src\guiscript.cpp">
 				</File>
 				<File
@@ -516,12 +513,6 @@
 				</File>
 				<File
 					RelativePath="..\..\gui\src\guiparse.h">
-				</File>
-				<File
-					RelativePath="..\..\gui\src\guirenderd3d.h">
-				</File>
-				<File
-					RelativePath="..\..\gui\src\guirendergl.h">
 				</File>
 				<File
 					RelativePath="..\..\gui\src\guiscript.h">

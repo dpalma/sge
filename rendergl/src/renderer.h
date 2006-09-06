@@ -63,6 +63,9 @@ public:
 
    virtual tResult CreateFont(const tChar * pszFont, int fontPointSize, uint flags, IRenderFont * * ppFont);
 
+   virtual tResult Begin2D(int width, int height, IRender2D * * ppRender2D);
+   virtual tResult End2D();
+
 private:
    tResult Initialize();
    static void CgErrorCallback();
@@ -82,6 +85,8 @@ private:
 
    eIndexFormat m_indexFormat;
    GLenum m_glIndexFormat;
+
+   cAutoIPtr<IRender2D> m_pRender2D;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

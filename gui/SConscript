@@ -22,8 +22,6 @@ sourceFiles = Split("""
    src/guipagelayout.cpp
    src/guipanel.cpp
    src/guiparse.cpp
-   src/guirenderd3d.cpp
-   src/guirendergl.cpp
    src/guiscript.cpp
    src/guiscrollbar.cpp
    src/guistyle.cpp

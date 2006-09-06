@@ -497,28 +497,28 @@ void cGUIPage::UpdateLayout(const tGUIRect & rect)
 
 ///////////////////////////////////////
 
-static tResult DoRender(IGUIElement * pElement, IGUIElementRenderer * pRenderer, const tGUIPoint & position, IGUIRenderDevice * pRenderDevice)
+static tResult DoRender(IGUIElement * pElement, IGUIElementRenderer * pRenderer, const tGUIPoint & position, IRender2D * pRender2D)
 {
    //{
    //   tGUIPoint ap(GUIElementAbsolutePosition(pElement, NULL));
    //   Assert(AlmostEqual(ap.x, position.x));
    //   Assert(AlmostEqual(ap.y, position.y));
    //}
-   if (FAILED(pRenderer->Render(pElement, position, pRenderDevice)))
+   if (FAILED(pRenderer->Render(pElement, position, pRender2D)))
    {
       ErrorMsg1("A GUI element of type \"%s\" failed to render\n", GUIElementType(pElement).c_str());
    }
    return S_OK;
 }
 
-void cGUIPage::Render(IGUIRenderDevice * pRenderDevice)
+void cGUIPage::Render(IRender2D * pRender2D)
 {
-   if (pRenderDevice == NULL)
+   if (pRender2D == NULL)
    {
       return;
    }
 
-   GUIElementRenderLoop(m_elements.rbegin(), m_elements.rend(), DoRender, pRenderDevice);
+   GUIElementRenderLoop(m_elements.rbegin(), m_elements.rend(), DoRender, pRender2D);
 }
 
 ///////////////////////////////////////

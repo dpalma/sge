@@ -102,8 +102,18 @@ tResult cMainRenderTask::Execute(double time)
    UseGlobal(EntityManager);
    pEntityManager->RenderAll();
 
-   UseGlobal(GUIContext);
-   pGUIContext->RenderGUI();
+   int width, height;
+   if (SysGetWindowSize(&width, &height) == S_OK)
+   {
+      cAutoIPtr<IRender2D> pRender2D;
+      if (pRenderer->Begin2D(width, height, &pRender2D) == S_OK)
+      {
+         UseGlobal(GUIContext);
+         pGUIContext->RenderGUI(pRender2D);
+
+         pRenderer->End2D();
+      }
+   }
 
    pRenderer->EndScene();
    SysSwapBuffers();
@@ -373,13 +383,6 @@ tResult cMainInitTask::CreateMainWindow()
    if (!SysCreateWindow(_T("Game"), width, height))
    {
       return false;
-   }
-
-   UseGlobal(GUIContext);
-   cAutoIPtr<IGUIRenderDeviceContext> pGuiRenderDevice;
-   if (GUIRenderDeviceCreateGL(&pGuiRenderDevice) == S_OK)
-   {
-      pGUIContext->SetRenderDeviceContext(pGuiRenderDevice);
    }
 
    UseGlobal(Camera);

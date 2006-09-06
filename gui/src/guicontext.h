@@ -87,10 +87,7 @@ public:
 
    virtual tResult RequestLayout(IGUIElement * pRequester, uint options);
 
-   virtual tResult RenderGUI();
-
-   virtual tResult GetRenderDeviceContext(IGUIRenderDeviceContext * * ppRenderDeviceContext);
-   virtual tResult SetRenderDeviceContext(IGUIRenderDeviceContext * pRenderDeviceContext);
+   virtual tResult RenderGUI(IRender2D * pRender2D);
 
    virtual tResult ShowDebugInfo(const tGUIPoint & placement, IGUIStyle * pStyle);
    virtual tResult HideDebugInfo();
@@ -135,8 +132,6 @@ private:
    tScreenPoint m_lastMousePos;
    cAutoIPtr<IRenderFont> m_pDebugFont;
 #endif
-
-   cAutoIPtr<IGUIRenderDeviceContext> m_pRenderDeviceContext;
 
    typedef std::list<cGUIPage *> tGUIPageList;
    tGUIPageList m_pagePlanes[3];

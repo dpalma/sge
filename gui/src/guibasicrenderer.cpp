@@ -7,6 +7,7 @@
 #include "guielementtools.h"
 #include "guistyleapi.h"
 
+#include "renderapi.h"
 #include "renderfontapi.h"
 
 #include "globalobj.h"
@@ -43,9 +44,9 @@ const cGUIBasicRenderer::sMethodTableEntry cGUIBasicRenderer::gm_methodTable[] =
 
 ///////////////////////////////////////
 
-tResult cGUIBasicRenderer::Render(IGUIElement * pElement, const tGUIPoint & position, IGUIRenderDevice * pRenderDevice)
+tResult cGUIBasicRenderer::Render(IGUIElement * pElement, const tGUIPoint & position, IRender2D * pRender2D)
 {
-   if (pElement == NULL || pRenderDevice == NULL)
+   if (pElement == NULL || pRender2D == NULL)
    {
       return E_POINTER;
    }
@@ -57,7 +58,7 @@ tResult cGUIBasicRenderer::Render(IGUIElement * pElement, const tGUIPoint & posi
       {
          if (gm_methodTable[i].pfnRender != NULL)
          {
-            return (this->*(gm_methodTable[i].pfnRender))(pElement2, pRenderDevice);
+            return (this->*(gm_methodTable[i].pfnRender))(pElement2, pRender2D);
          }
          else
          {
@@ -107,7 +108,7 @@ tResult cGUIBasicRenderer::AllocateBorderSpace(IGUIElement * pElement, tGUIRect 
 
 ///////////////////////////////////////
 
-tResult cGUIBasicRenderer::LabelRender(IGUIElement * pElement, IGUIRenderDevice * pRenderDevice)
+tResult cGUIBasicRenderer::LabelRender(IGUIElement * pElement, IRender2D * pRender2D)
 {
    tGUIPoint pos = GUIElementAbsolutePosition(pElement);
    tGUISize size = pElement->GetSize();
@@ -163,7 +164,7 @@ tGUISize cGUIBasicRenderer::LabelPreferredSize(IGUIElement * pElement) const
 
 ///////////////////////////////////////
 
-tResult cGUIBasicRenderer::PanelRender(IGUIElement * pElement, IGUIRenderDevice * pRenderDevice)
+tResult cGUIBasicRenderer::PanelRender(IGUIElement * pElement, IRender2D * pRender2D)
 {
    tGUIPoint pos = GUIElementAbsolutePosition(pElement);
    tGUISize size = pElement->GetSize();
@@ -175,7 +176,7 @@ tResult cGUIBasicRenderer::PanelRender(IGUIElement * pElement, IGUIRenderDevice 
       tGUIColor bkColor;
       if (pStyle->GetBackgroundColor(&bkColor) == S_OK)
       {
-         pRenderDevice->RenderSolidRect(rect, bkColor);
+         pRender2D->RenderSolidRect(rect, bkColor);
       }
    }
 

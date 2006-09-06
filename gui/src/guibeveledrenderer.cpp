@@ -8,6 +8,7 @@
 #include "guistrings.h"
 #include "guistyleapi.h"
 
+#include "renderapi.h"
 #include "renderfontapi.h"
 
 #include "globalobj.h"
@@ -58,9 +59,9 @@ const cGUIBeveledRenderer::sMethodTableEntry cGUIBeveledRenderer::gm_methodTable
 
 ///////////////////////////////////////
 
-tResult cGUIBeveledRenderer::Render(IGUIElement * pElement, const tGUIPoint & position, IGUIRenderDevice * pRenderDevice)
+tResult cGUIBeveledRenderer::Render(IGUIElement * pElement, const tGUIPoint & position, IRender2D * pRender2D)
 {
-   if (pRenderDevice == NULL || pElement == NULL)
+   if (pRender2D == NULL || pElement == NULL)
    {
       return E_POINTER;
    }
@@ -101,7 +102,7 @@ tResult cGUIBeveledRenderer::Render(IGUIElement * pElement, const tGUIPoint & po
       {
          if (gm_methodTable[i].pfnRender != NULL)
          {
-            return (this->*(gm_methodTable[i].pfnRender))(pElement2, position, bevel, colors, pRenderDevice);
+            return (this->*(gm_methodTable[i].pfnRender))(pElement2, position, bevel, colors, pRender2D);
          }
          else
          {
@@ -163,7 +164,7 @@ tResult cGUIBeveledRenderer::AllocateBorderSpace(IGUIElement * pElement, tGUIRec
 
 tResult cGUIBeveledRenderer::ButtonRender(IGUIElement * pElement, const tGUIPoint & position,
                                           int bevel, const tGUIColor colors[kBC_NumColors],
-                                          IGUIRenderDevice * pRenderDevice)
+                                          IRender2D * pRender2D)
 {
    tGUISize size = pElement->GetSize();
    tGUIRect rect(FloatToInt(position.x), FloatToInt(position.y), FloatToInt(position.x + size.width), FloatToInt(position.y + size.height));
@@ -174,12 +175,12 @@ tResult cGUIBeveledRenderer::ButtonRender(IGUIElement * pElement, const tGUIPoin
 
    if (pButtonElement->IsArmed() && pButtonElement->IsMouseOver())
    {
-      pRenderDevice->RenderBeveledRect(rect, bevel, colors[kBC_Shadow], colors[kBC_Light], colors[kBC_Face]);
+      pRender2D->RenderBeveledRect(rect, bevel, colors[kBC_Shadow], colors[kBC_Light], colors[kBC_Face]);
       bPressed = true;
    }
    else
    {
-      pRenderDevice->RenderBeveledRect(rect, bevel, colors[kBC_Light], colors[kBC_Shadow], colors[kBC_Face]);
+      pRender2D->RenderBeveledRect(rect, bevel, colors[kBC_Light], colors[kBC_Shadow], colors[kBC_Face]);
    }
 
    const tGUIChar * pszText = pButtonElement->GetText();
@@ -242,7 +243,7 @@ tGUISize cGUIBeveledRenderer::ButtonPreferredSize(IGUIElement * pElement, const 
 
 tResult cGUIBeveledRenderer::LabelRender(IGUIElement * pElement, const tGUIPoint & position,
                                          int bevel, const tGUIColor colors[kBC_NumColors],
-                                         IGUIRenderDevice * pRenderDevice)
+                                         IRender2D * pRender2D)
 {
    IGUILabelElement * pLabelElement = (IGUILabelElement *)pElement;
 
@@ -296,21 +297,21 @@ tGUISize cGUIBeveledRenderer::LabelPreferredSize(IGUIElement * pElement, const t
 
 tResult cGUIBeveledRenderer::ListBoxRender(IGUIElement * pElement, const tGUIPoint & position,
                                            int bevel, const tGUIColor colors[kBC_NumColors],
-                                           IGUIRenderDevice * pRenderDevice)
+                                           IRender2D * pRender2D)
 {
    IGUIListBoxElement * pListBoxElement = (IGUIListBoxElement *)pElement;
 
    tGUISize size = pListBoxElement->GetSize();
    tGUIRect rect(FloatToInt(position.x), FloatToInt(position.y), FloatToInt(position.x + size.width), FloatToInt(position.y + size.height));
 
-   pRenderDevice->RenderBeveledRect(rect, bevel, GUIStandardColors::DarkGray, GUIStandardColors::Gray, GUIStandardColors::White);
+   pRender2D->RenderBeveledRect(rect, bevel, GUIStandardColors::DarkGray, GUIStandardColors::Gray, GUIStandardColors::White);
 
    rect.left += bevel + kHorzInset;
    rect.top += kVertInset;
    rect.right -= bevel + kHorzInset;
    rect.bottom -= kVertInset;
 
-   pRenderDevice->PushScissorRect(rect);
+   pRender2D->PushScissorRect(rect);
 
    tGUIColor textColor(GUIStandardColors::Black);
    cAutoIPtr<IGUIStyle> pStyle;
@@ -365,7 +366,7 @@ tResult cGUIBeveledRenderer::ListBoxRender(IGUIElement * pElement, const tGUIPoi
 
             if (pListBoxElement->IsItemSelected(i))
             {
-               pRenderDevice->RenderSolidRect(itemRect, GUIStandardColors::Blue);
+               pRender2D->RenderSolidRect(itemRect, GUIStandardColors::Blue);
                pFont->RenderText(pszText, -1, &itemRect, kRT_NoClip, GUIStandardColors::White);
             }
             else
@@ -378,7 +379,7 @@ tResult cGUIBeveledRenderer::ListBoxRender(IGUIElement * pElement, const tGUIPoi
       }
    }
 
-   pRenderDevice->PopScissorRect();
+   pRender2D->PopScissorRect();
 
    return S_OK;
 }
@@ -408,7 +409,7 @@ tGUISize cGUIBeveledRenderer::ListBoxPreferredSize(IGUIElement * pElement, const
 
 tResult cGUIBeveledRenderer::ScrollBarRender(IGUIElement * pElement, const tGUIPoint & position,
                                              int bevel, const tGUIColor colors[kBC_NumColors],
-                                             IGUIRenderDevice * pRenderDevice)
+                                             IRender2D * pRender2D)
 {
    IGUIScrollBarElement * pScrollBarElement = (IGUIScrollBarElement *)pElement;
 
@@ -450,26 +451,26 @@ tResult cGUIBeveledRenderer::ScrollBarRender(IGUIElement * pElement, const tGUIP
       track2Rect = tGUIRect(btn1Rect.left, thumbRect.bottom, btn1Rect.right, btn2Rect.top);
    }
 
-   pRenderDevice->RenderSolidRect(track1Rect, colors[kBC_Light]);
-   pRenderDevice->RenderSolidRect(track2Rect, colors[kBC_Light]);
-   pRenderDevice->RenderBeveledRect(thumbRect, bevel, colors[kBC_Light], GUIStandardColors::DarkGray, colors[kBC_Face]);
+   pRender2D->RenderSolidRect(track1Rect, colors[kBC_Light]);
+   pRender2D->RenderSolidRect(track2Rect, colors[kBC_Light]);
+   pRender2D->RenderBeveledRect(thumbRect, bevel, colors[kBC_Light], GUIStandardColors::DarkGray, colors[kBC_Face]);
 
    if (armedPart == kGUIScrollBarPartButton1 && armedPart == mouseOverPart)
    {
-      pRenderDevice->RenderBeveledRect(btn1Rect, bevel, GUIStandardColors::DarkGray, colors[kBC_Light], colors[kBC_Face]);
+      pRender2D->RenderBeveledRect(btn1Rect, bevel, GUIStandardColors::DarkGray, colors[kBC_Light], colors[kBC_Face]);
    }
    else
    {
-      pRenderDevice->RenderBeveledRect(btn1Rect, bevel, colors[kBC_Light], GUIStandardColors::DarkGray, colors[kBC_Face]);
+      pRender2D->RenderBeveledRect(btn1Rect, bevel, colors[kBC_Light], GUIStandardColors::DarkGray, colors[kBC_Face]);
    }
 
    if (armedPart == kGUIScrollBarPartButton2 && armedPart == mouseOverPart)
    {
-      pRenderDevice->RenderBeveledRect(btn2Rect, bevel, colors[kBC_Shadow], colors[kBC_Light], colors[kBC_Face]);
+      pRender2D->RenderBeveledRect(btn2Rect, bevel, colors[kBC_Shadow], colors[kBC_Light], colors[kBC_Face]);
    }
    else
    {
-      pRenderDevice->RenderBeveledRect(btn2Rect, bevel, colors[kBC_Light], colors[kBC_Shadow], colors[kBC_Face]);
+      pRender2D->RenderBeveledRect(btn2Rect, bevel, colors[kBC_Light], colors[kBC_Shadow], colors[kBC_Face]);
    }
 
    return S_OK;
@@ -499,21 +500,21 @@ tGUISize cGUIBeveledRenderer::ScrollBarPreferredSize(IGUIElement * pElement, con
 
 tResult cGUIBeveledRenderer::TextEditRender(IGUIElement * pElement, const tGUIPoint & position,
                                             int bevel, const tGUIColor colors[kBC_NumColors],
-                                            IGUIRenderDevice * pRenderDevice)
+                                            IRender2D * pRender2D)
 {
    IGUITextEditElement * pTextEditElement = (IGUITextEditElement *)pElement;
 
    tGUISize size = pTextEditElement->GetSize();
    tGUIRect rect(FloatToInt(position.x), FloatToInt(position.y), FloatToInt(position.x + size.width), FloatToInt(position.y + size.height));
 
-   pRenderDevice->RenderBeveledRect(rect, bevel, colors[kBC_Shadow], colors[kBC_Face], GUIStandardColors::White);
+   pRender2D->RenderBeveledRect(rect, bevel, colors[kBC_Shadow], colors[kBC_Face], GUIStandardColors::White);
 
    rect.left += bevel + kHorzInset;
    rect.top += kVertInset;
    rect.right -= bevel + kHorzInset;
    rect.bottom -= kVertInset;
 
-   pRenderDevice->PushScissorRect(rect);
+   pRender2D->PushScissorRect(rect);
 
    tGUIColor textColor(GUIStandardColors::Black);
 
@@ -554,12 +555,12 @@ tResult cGUIBeveledRenderer::TextEditRender(IGUIElement * pElement, const tGUIPo
                rect.left + leftOfCursor.GetWidth() + kCursorWidth,
                rect.bottom - 1);
 
-            pRenderDevice->RenderSolidRect(cursorRect, GUIStandardColors::Black);
+            pRender2D->RenderSolidRect(cursorRect, GUIStandardColors::Black);
          }
       }
    }
 
-   pRenderDevice->PopScissorRect();
+   pRender2D->PopScissorRect();
 
    pTextEditElement->UpdateBlinkingCursor();
 
@@ -598,7 +599,7 @@ tGUISize cGUIBeveledRenderer::TextEditPreferredSize(IGUIElement * pElement, cons
 
 tResult cGUIBeveledRenderer::TitleBarRender(IGUIElement * pElement, const tGUIPoint & position,
                                             int bevel, const tGUIColor colors[kBC_NumColors],
-                                            IGUIRenderDevice * pRenderDevice)
+                                            IRender2D * pRender2D)
 {
    IGUITitleBarElement * pTitleBarElement = (IGUITitleBarElement *)pElement;
 
@@ -615,7 +616,7 @@ tResult cGUIBeveledRenderer::TitleBarRender(IGUIElement * pElement, const tGUIPo
       pStyle->GetAttribute("caption-text-color", &captionText);
    }
 
-   pRenderDevice->RenderSolidRect(rect, captionBk);
+   pRender2D->RenderSolidRect(rect, captionBk);
 
    cAutoIPtr<IRenderFont> pFont;
    if (GUIElementFont(pElement, &pFont) == S_OK)
@@ -663,11 +664,11 @@ tGUISize cGUIBeveledRenderer::TitleBarPreferredSize(IGUIElement * pElement, cons
 
 tResult cGUIBeveledRenderer::ContainerRender(IGUIElement * pElement, const tGUIPoint & position,
                                              int bevel, const tGUIColor colors[kBC_NumColors],
-                                             IGUIRenderDevice * pRenderDevice)
+                                             IRender2D * pRender2D)
 {
    tGUISize size = pElement->GetSize();
    tGUIRect rect(FloatToInt(position.x), FloatToInt(position.y), FloatToInt(position.x + size.width), FloatToInt(position.y + size.height));
-   pRenderDevice->RenderBeveledRect(rect, bevel, colors[kBC_Light], colors[kBC_Shadow], colors[kBC_Face]);
+   pRender2D->RenderBeveledRect(rect, bevel, colors[kBC_Light], colors[kBC_Shadow], colors[kBC_Face]);
    return S_OK;
 }
 

@@ -7,6 +7,9 @@
 #include "renderdll.h"
 #include "comtools.h"
 
+#include "color.h"
+#include "rect.h"
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -14,11 +17,10 @@
 template <typename T> class cAxisAlignedBox;
 typedef class cAxisAlignedBox<float> tAxisAlignedBox;
 
-class cColor;
-
 F_DECLARE_INTERFACE(IImage);
 
 F_DECLARE_INTERFACE(IRenderer);
+F_DECLARE_INTERFACE(IRender2D);
 F_DECLARE_INTERFACE(IRenderFont);
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -105,6 +107,9 @@ interface IRenderer : IUnknown
    virtual tResult Render(ePrimitiveType primitive, const void * pIndices, uint nIndices) = 0;
 
    virtual tResult CreateFont(const tChar * pszFont, int fontPointSize, uint flags, IRenderFont * * ppFont) = 0;
+
+   virtual tResult Begin2D(int width, int height, IRender2D * * ppRender2D) = 0;
+   virtual tResult End2D() = 0;
 };
 
 ///////////////////////////////////////
@@ -116,6 +121,26 @@ RENDER_API tResult RendererResourceRegister();
 ///////////////////////////////////////
 
 RENDER_API void RenderWireFrame(const tAxisAlignedBox & box, const cColor & color);
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IRender2D
+//
+
+interface IRender2D : IUnknown
+{
+   virtual tResult GetViewportSize(int * pWidth, int * pHeight) const = 0;
+
+   virtual void PushScissorRect(const tRect & rect) = 0;
+   virtual void PopScissorRect() = 0;
+
+   virtual void RenderSolidRect(const tRect & rect, const cColor & color) = 0;
+   virtual void RenderBeveledRect(const tRect & rect, int bevel,
+                                  const cColor & topLeft,
+                                  const cColor & bottomRight,
+                                  const cColor & face) = 0;
+};
 
 
 ///////////////////////////////////////////////////////////////////////////////

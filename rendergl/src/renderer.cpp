@@ -25,6 +25,8 @@
 #include "dbgalloc.h" // must be last header
 
 
+extern tResult Render2DCreateGL(IRender2D * * ppRender2D);
+
 ////////////////////////////////////////////////////////////////////////////////
 
 inline GLenum GetGlType(eVertexElementType type)
@@ -228,6 +230,11 @@ cRenderer::~cRenderer()
 
 tResult cRenderer::Init()
 {
+   if (Render2DCreateGL(&m_pRender2D) != S_OK)
+   {
+      return E_FAIL;
+   }
+
    return S_OK;
 }
 
@@ -451,6 +458,39 @@ tResult cRenderer::CreateFont(const tChar * pszFont, int fontPointSize, uint fla
       result = RenderFontCreateGL(pszFont, fontPointSize, flags, ppFont);
    }
    return result;
+}
+
+////////////////////////////////////////
+
+tResult cRenderer::Begin2D(int width, int height, IRender2D * * ppRender2D)
+{
+   if (ppRender2D == NULL)
+   {
+      return E_POINTER;
+   }
+
+   glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
+
+   glDisable(GL_DEPTH_TEST);
+   glDisable(GL_LIGHTING);
+   glDisable(GL_CULL_FACE);
+
+   glMatrixMode(GL_PROJECTION);
+   glLoadIdentity();
+   glOrtho(0, static_cast<GLdouble>(width), static_cast<GLdouble>(height), 0, -99999, 99999);
+
+   glMatrixMode(GL_MODELVIEW);
+   glLoadIdentity();
+
+   return m_pRender2D.GetPointer(ppRender2D);
+}
+
+////////////////////////////////////////
+
+tResult cRenderer::End2D()
+{
+   glPopAttrib();
+   return S_OK;
 }
 
 ////////////////////////////////////////

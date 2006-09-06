@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "guirenderd3d.h"
+#include "render2d.h"
 
 #if HAVE_DIRECTX
 #include <d3d9.h>
@@ -17,55 +17,55 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-struct sGUIVertexD3D
+struct sVertexD3D
 {
    float x, y, z;
    uint32 color;
 };
 
-static const uint kGUIVertexFVF = D3DFVF_XYZ | D3DFVF_DIFFUSE;
+static const uint kVertexFVF = D3DFVF_XYZ | D3DFVF_DIFFUSE;
 
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGUIRenderDeviceD3D
+// CLASS: cRender2DDX
 //
 
 ////////////////////////////////////////
 
-tResult GUIRenderDeviceCreateD3D(IDirect3DDevice9 * pD3dDevice, IGUIRenderDeviceContext * * ppRenderDevice)
+tResult Render2DCreateDX(IDirect3DDevice9 * pD3dDevice, IRender2D * * ppRender2D)
 {
-   if (pD3dDevice == NULL || ppRenderDevice == NULL)
+   if (pD3dDevice == NULL || ppRender2D == NULL)
    {
       return E_POINTER;
    }
 
-   cAutoIPtr<cGUIRenderDeviceD3D> p(new cGUIRenderDeviceD3D(pD3dDevice));
+   cAutoIPtr<cRender2DDX> p(new cRender2DDX(pD3dDevice));
    if (!p)
    {
       return E_OUTOFMEMORY;
    }
 
-   *ppRenderDevice = static_cast<IGUIRenderDeviceContext*>(CTAddRef(p));
+   *ppRender2D = static_cast<IRender2D*>(CTAddRef(p));
    return S_OK;
 }
 
 ////////////////////////////////////////
 
-cGUIRenderDeviceD3D::cGUIRenderDeviceD3D(IDirect3DDevice9 * pD3dDevice)
+cRender2DDX::cRender2DDX(IDirect3DDevice9 * pD3dDevice)
  : m_pD3dDevice(CTAddRef(pD3dDevice))
 {
 }
 
 ////////////////////////////////////////
 
-cGUIRenderDeviceD3D::~cGUIRenderDeviceD3D()
+cRender2DDX::~cRender2DDX()
 {
 }
 
 ////////////////////////////////////////
 
-void cGUIRenderDeviceD3D::PushScissorRect(const tGUIRect & rect)
+void cRender2DDX::PushScissorRect(const tRect & rect)
 {
    m_pD3dDevice->SetRenderState(D3DRS_SCISSORTESTENABLE, TRUE);
    RECT scissorRect;
@@ -79,7 +79,7 @@ void cGUIRenderDeviceD3D::PushScissorRect(const tGUIRect & rect)
 
 ////////////////////////////////////////
 
-void cGUIRenderDeviceD3D::PopScissorRect()
+void cRender2DDX::PopScissorRect()
 {
    Assert(m_scissorRectStack.size() > 0);
    m_scissorRectStack.pop();
@@ -100,12 +100,12 @@ void cGUIRenderDeviceD3D::PopScissorRect()
 
 ////////////////////////////////////////
 
-void cGUIRenderDeviceD3D::RenderSolidRect(const tGUIRect & rect, const tGUIColor & color)
+void cRender2DDX::RenderSolidRect(const tRect & rect, const cColor & color)
 {
 #define VERT(x,y) \
    { static_cast<float>(x), static_cast<float>(y), 0, color.ToARGB8888() }
 
-   sGUIVertexD3D verts[] =
+   sVertexD3D verts[] =
    {
       VERT(rect.left, rect.top),
       VERT(rect.left, rect.bottom),
@@ -122,8 +122,8 @@ void cGUIRenderDeviceD3D::RenderSolidRect(const tGUIRect & rect, const tGUIColor
 
 ////////////////////////////////////////
 
-void cGUIRenderDeviceD3D::RenderBeveledRect(const tGUIRect & rect, int bevel, const tGUIColor & topLeft,
-                                            const tGUIColor & bottomRight, const tGUIColor & face)
+void cRender2DDX::RenderBeveledRect(const tRect & rect, int bevel, const cColor & topLeft,
+                                    const cColor & bottomRight, const cColor & face)
 {
    if (bevel == 0)
    {
@@ -144,7 +144,7 @@ void cGUIRenderDeviceD3D::RenderBeveledRect(const tGUIRect & rect, int bevel, co
 #define VERT(x,y,c) \
    { static_cast<float>(x), static_cast<float>(y), 0, c.ToARGB8888() }
 
-      sGUIVertexD3D verts[] =
+      sVertexD3D verts[] =
       {
          VERT(x0, y0, topLeft),
          VERT(x0, y3, topLeft),
@@ -195,13 +195,7 @@ void cGUIRenderDeviceD3D::RenderBeveledRect(const tGUIRect & rect, int bevel, co
 
 ////////////////////////////////////////
 
-void cGUIRenderDeviceD3D::FlushQueue()
-{
-}
-
-////////////////////////////////////////
-
-void cGUIRenderDeviceD3D::Begin2D(int width, int height)
+void cRender2DDX::Begin2D(int width, int height)
 {
    if (!m_pStateBlock)
    {
@@ -223,7 +217,7 @@ void cGUIRenderDeviceD3D::Begin2D(int width, int height)
          viewport.MinZ, viewport.MaxZ);
       m_pD3dDevice->SetTransform(D3DTS_PROJECTION, &ortho);
 
-      m_pD3dDevice->SetFVF(kGUIVertexFVF);
+      m_pD3dDevice->SetFVF(kVertexFVF);
 
       m_pD3dDevice->EndStateBlock(&m_pStateBlock);
    }
@@ -236,7 +230,7 @@ void cGUIRenderDeviceD3D::Begin2D(int width, int height)
 
 ////////////////////////////////////////
 
-void cGUIRenderDeviceD3D::End2D()
+void cRender2DDX::End2D()
 {
 }
 
