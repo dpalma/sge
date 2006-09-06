@@ -5,8 +5,8 @@
 
 #include "netsocket.h"
 
-#ifdef HAVE_CPPUNITLITE2
-#include "CppUnitLite2.h"
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
 #endif
 
 #ifdef _WIN32
@@ -307,7 +307,7 @@ tResult NetSocketCreateStream(INetSocket * * ppSocket)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNITLITE2
+#ifdef HAVE_UNITTESTPP
 
 ////////////////////////////////////////
 // Simplest possible datagram send/receive test
@@ -361,6 +361,6 @@ TEST(SimpleDatagramSendRecieve)
 }
 #endif
 
-#endif // HAVE_CPPUNITLITE2
+#endif // HAVE_UNITTESTPP
 
 ///////////////////////////////////////////////////////////////////////////////

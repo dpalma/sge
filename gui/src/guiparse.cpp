@@ -7,8 +7,8 @@
 #include "guistyleapi.h"
 #include "guistrings.h"
 
-#ifdef HAVE_CPPUNITLITE2
-#include "CppUnitLite2.h"
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
 #endif
 
 #include "dbgalloc.h" // must be last header
@@ -297,7 +297,7 @@ tResult GUIParseBool(const tChar * pszBool, bool * pBool)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNITLITE2
+#ifdef HAVE_UNITTESTPP
 
 ///////////////////////////////////////
 
@@ -416,6 +416,6 @@ TEST(GUIParseParseBool)
    CHECK(GUIParseBool("arbitrary string", &b) == E_INVALIDARG);
 }
 
-#endif // HAVE_CPPUNITLITE2
+#endif // HAVE_UNITTESTPP
 
 ///////////////////////////////////////////////////////////////////////////////

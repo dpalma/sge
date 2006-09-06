@@ -8,8 +8,8 @@
 
 #include "multivar.h"
 
-#ifdef HAVE_CPPUNITLITE2
-#include "CppUnitLite2.h"
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
 #endif
 
 extern "C"
@@ -410,7 +410,7 @@ tResult cLuaState::RemoveGlobal(const char * pszName)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNITLITE2
+#ifdef HAVE_UNITTESTPP
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -467,7 +467,7 @@ int cLuaStateTests::RemoveThisFunction(int, const tScriptVar *, int, tScriptVar 
 
 ////////////////////////////////////////
 
-TEST_F(cLuaStateTests, CallFunction)
+TEST_FIXTURE(cLuaStateTests, CallFunction)
 {
    CHECK(m_luaState.SetGlobal("CallThisFunction", CallThisFunction) == S_OK);
    gm_bCalled = false;
@@ -478,7 +478,7 @@ TEST_F(cLuaStateTests, CallFunction)
 
 ////////////////////////////////////////
 
-TEST_F(cLuaStateTests, RemoveFunction)
+TEST_FIXTURE(cLuaStateTests, RemoveFunction)
 {
    CHECK(m_luaState.SetGlobal("RemoveThisFunction", RemoveThisFunction) == S_OK);
    CHECK(m_luaState.DoString("RemoveThisFunction();") == S_OK);
@@ -490,17 +490,17 @@ TEST_F(cLuaStateTests, RemoveFunction)
 
 ////////////////////////////////////////
 
-TEST_F(cLuaStateTests, GetNumber)
+TEST_FIXTURE(cLuaStateTests, GetNumber)
 {
    double value;
    m_luaState.SetGlobal("foo", 123.456);
    CHECK(m_luaState.GetGlobal("foo", &value) == S_OK);
-   CHECK_EQUAL(value, 123.456);
+   CHECK(value == 123.456);
 }
 
 ////////////////////////////////////////
 
-TEST_F(cLuaStateTests, GetString)
+TEST_FIXTURE(cLuaStateTests, GetString)
 {
    char szValue[16];
 
@@ -513,6 +513,6 @@ TEST_F(cLuaStateTests, GetString)
    CHECK(strcmp(szValue, "blah blah blah ") == 0);
 }
 
-#endif // HAVE_CPPUNITLITE2
+#endif // HAVE_UNITTESTPP
 
 ///////////////////////////////////////////////////////////////////////////////

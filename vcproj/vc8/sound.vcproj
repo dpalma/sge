@@ -46,8 +46,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\sound\include,..\..\tech\include,..\..\3rdparty\tinyxml"
-				PreprocessorDefinitions="NDEBUG;_USRDLL;SOUND_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\sound\include,..\..\tech\include,..\..\3rdparty\tinyxml"
+				PreprocessorDefinitions="NDEBUG;_USRDLL;SOUND_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;HAVE_UNITTESTPP"
 				StringPooling="true"
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="true"
@@ -76,7 +76,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\CppUnitLite2.lib winmm.lib $(OutDir)\tinyxml.lib"
+				AdditionalDependencies="winmm.lib $(OutDir)\tinyxml.lib"
 				OutputFile=".\..\..\Build.vc8\Opt/sound.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -140,8 +140,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\sound\include,..\..\tech\include,..\..\3rdparty\tinyxml"
-				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,HAVE_CPPUNITLITE2,_USRDLL,SOUND_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\sound\include,..\..\tech\include,..\..\3rdparty\tinyxml"
+				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,HAVE_UNITTESTPP,_USRDLL,SOUND_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="2"
@@ -220,8 +220,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\sound\include,..\..\tech\include,..\..\3rdparty\tinyxml"
-				PreprocessorDefinitions="_DEBUG;HAVE_CPPUNITLITE2;_USRDLL;SOUND_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\sound\include,..\..\tech\include,..\..\3rdparty\tinyxml"
+				PreprocessorDefinitions="_DEBUG;_USRDLL;SOUND_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;HAVE_UNITTESTPP"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"
@@ -249,7 +249,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\CppUnitLite2.lib winmm.lib $(OutDir)\tinyxml.lib"
+				AdditionalDependencies="winmm.lib $(OutDir)\tinyxml.lib"
 				OutputFile=".\..\..\Build.vc8\Debug/sound.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -313,7 +313,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\sound\include,..\..\tech\include,..\..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\sound\include,..\..\tech\include,..\..\3rdparty\tinyxml"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,_USRDLL,SOUND_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -393,7 +393,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\sound\include,..\..\tech\include,..\..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\sound\include,..\..\tech\include,..\..\3rdparty\tinyxml"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;SOUND_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL"
 				StringPooling="true"
 				RuntimeLibrary="2"

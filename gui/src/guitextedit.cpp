@@ -14,8 +14,8 @@
 #include "techtime.h"
 #include "keys.h"
 
-#ifdef HAVE_CPPUNITLITE2
-#include "CppUnitLite2.h"
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
 #endif
 
 #include <tinyxml.h>
@@ -605,7 +605,7 @@ AUTOREGISTER_GUIELEMENTFACTORYFN(textedit, GUITextEditElementCreate);
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNITLITE2
+#ifdef HAVE_UNITTESTPP
 
 ///////////////////////////////////////
 
@@ -810,6 +810,6 @@ TEST(GUITextBufferReplace)
    CHECK(strcmp(text.c_str(), "This was the testing string") == 0);
 }
 
-#endif // HAVE_CPPUNITLITE2
+#endif // HAVE_UNITTESTPP
 
 ///////////////////////////////////////////////////////////////////////////////

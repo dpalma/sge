@@ -9,8 +9,8 @@
 #include "vec3.h"
 #include "vec4.h"
 
-#ifdef HAVE_CPPUNITLITE2
-#include "CppUnitLite2.h"
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
 #endif
 
 #include <cmath>
@@ -534,7 +534,7 @@ void MatrixOrtho(float left, float right, float bottom, float top, float znear, 
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNITLITE2
+#ifdef HAVE_UNITTESTPP
 
 static bool MatrixIsIdentity(const tMatrix4 & m)
 {
@@ -580,6 +580,6 @@ TEST(MatrixInvert)
    CHECK(MatrixIsIdentity(result));
 }
 
-#endif // HAVE_CPPUNITLITE2
+#endif // HAVE_UNITTESTPP
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -6,8 +6,8 @@
 #include "dictionarystore.h"
 #include "readwriteapi.h"
 
-#ifdef HAVE_CPPUNITLITE2
-#include "CppUnitLite2.h"
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
 #endif
 
 #include <locale>
@@ -304,7 +304,7 @@ tResult DictionaryIniStoreCreate(const cFileSpec & file,
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNITLITE2
+#ifdef HAVE_UNITTESTPP
 
 ///////////////////////////////////////
 
@@ -378,4 +378,4 @@ TEST(ParseIniSectionLine)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // HAVE_CPPUNITLITE2
+#endif // HAVE_UNITTESTPP

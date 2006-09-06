@@ -7,8 +7,8 @@
 #include "techmath.h"
 #include "comtools.h"
 
-#ifdef HAVE_CPPUNITLITE2
-#include "CppUnitLite2.h"
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
 #endif
 
 #include <cfloat>
@@ -408,7 +408,7 @@ const cStr & GUIDToString(REFGUID guid, cStr * pStr)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNITLITE2
+#ifdef HAVE_UNITTESTPP
 
 ////////////////////////////////////////
 
@@ -441,27 +441,27 @@ TEST(TokenizerSuccessCases)
    {
       cTokenizer<double> dblTok;
       CHECK(dblTok.Tokenize("< 10 ; 32.2 ; 48.8 >") == 3);
-      CHECK_EQUAL(dblTok.m_tokens[0], 10);
-      CHECK_EQUAL(dblTok.m_tokens[1], 32.2);
-      CHECK_EQUAL(dblTok.m_tokens[2], 48.8);
+      CHECK(dblTok.m_tokens[0] == 10.0);
+      CHECK(dblTok.m_tokens[1] == 32.2);
+      CHECK(dblTok.m_tokens[2] == 48.8);
    }
 
    {
       cTokenizer<double> dblTok;
       CHECK(dblTok.Tokenize("(1,2,3,4)") == 4);
-      CHECK_EQUAL(dblTok.m_tokens[0], 1);
-      CHECK_EQUAL(dblTok.m_tokens[1], 2);
-      CHECK_EQUAL(dblTok.m_tokens[2], 3);
-      CHECK_EQUAL(dblTok.m_tokens[3], 4);
+      CHECK(dblTok.m_tokens[0] == 1);
+      CHECK(dblTok.m_tokens[1] == 2);
+      CHECK(dblTok.m_tokens[2] == 3);
+      CHECK(dblTok.m_tokens[3] == 4);
    }
 
    {
       cTokenizer<double> dblTok;
       CHECK(dblTok.Tokenize("1000,2000,3000,4000") == 4);
-      CHECK_EQUAL(dblTok.m_tokens[0], 1000);
-      CHECK_EQUAL(dblTok.m_tokens[1], 2000);
-      CHECK_EQUAL(dblTok.m_tokens[2], 3000);
-      CHECK_EQUAL(dblTok.m_tokens[3], 4000);
+      CHECK(dblTok.m_tokens[0] == 1000);
+      CHECK(dblTok.m_tokens[1] == 2000);
+      CHECK(dblTok.m_tokens[2] == 3000);
+      CHECK(dblTok.m_tokens[3] == 4000);
    }
 }
 
@@ -601,6 +601,6 @@ TEST(UTF8Encode)
 }
 #endif
 
-#endif // HAVE_CPPUNITLITE2
+#endif // HAVE_UNITTESTPP
 
 ///////////////////////////////////////////////////////////////////////////////

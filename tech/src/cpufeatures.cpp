@@ -7,8 +7,8 @@
 
 #include "techstring.h"
 
-#ifdef HAVE_CPPUNITLITE2
-#include "CppUnitLite2.h"
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
 #endif
 
 #ifdef _WIN32
@@ -158,7 +158,7 @@ bool GetCpuFeatures(sCpuFeatures * pCpuFeatures)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNITLITE2
+#ifdef HAVE_UNITTESTPP
 
 TEST(CpuFeatures)
 {
@@ -200,6 +200,6 @@ TEST(CpuFeatures)
    LocalMsg1("CPU Brand:   %s\n", brand.c_str());
 }
 
-#endif // HAVE_CPPUNITLITE2
+#endif // HAVE_UNITTESTPP
 
 ///////////////////////////////////////////////////////////////////////////////

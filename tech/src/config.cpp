@@ -7,8 +7,8 @@
 #include "techstring.h"
 #include "dictionary.h"
 
-#ifdef HAVE_CPPUNITLITE2
-#include "CppUnitLite2.h"
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
 #endif
 
 #include <cstdio>
@@ -162,7 +162,7 @@ bool ConfigIsTrue(const tChar * pszName)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNITLITE2
+#ifdef HAVE_UNITTESTPP
 
 ///////////////////////////////////////
 
@@ -204,6 +204,6 @@ TEST(StringIsTrue)
    CHECK(!StringIsTrue("0"));
 }
 
-#endif // HAVE_CPPUNITLITE2
+#endif // HAVE_UNITTESTPP
 
 ///////////////////////////////////////////////////////////////////////////////

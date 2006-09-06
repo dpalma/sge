@@ -6,8 +6,8 @@
 #include "filespec.h"
 #include "filepath.h"
 
-#ifdef HAVE_CPPUNITLITE2
-#include "CppUnitLite2.h"
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
 #endif
 
 #include <cstring>
@@ -263,7 +263,7 @@ int FilePathCompareNoCase(const cFilePath & f1, const cFilePath & f2)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNITLITE2
+#ifdef HAVE_UNITTESTPP
 
 ///////////////////////////////////////
 
@@ -407,4 +407,4 @@ TEST(AttempFileSpecSetFileExtBufferOverrunAttack)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // HAVE_CPPUNITLITE2
+#endif // HAVE_UNITTESTPP

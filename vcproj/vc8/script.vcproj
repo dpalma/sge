@@ -47,8 +47,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\script\include,..\..\tech\include,..\..\3rdparty\lua\src,..\..\3rdparty\tinyxml"
-				PreprocessorDefinitions="NDEBUG;_USRDLL;SCRIPT_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\script\include,..\..\tech\include,..\..\3rdparty\lua\src,..\..\3rdparty\tinyxml"
+				PreprocessorDefinitions="NDEBUG;_USRDLL;SCRIPT_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;HAVE_UNITTESTPP"
 				StringPooling="true"
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="true"
@@ -77,7 +77,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="winmm.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib"
+				AdditionalDependencies="winmm.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib $(OutDir)\UnitTest++.lib"
 				OutputFile=".\..\..\Build.vc8\Opt/script.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -141,8 +141,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\script\include,..\..\tech\include,..\..\3rdparty\lua\src,..\..\3rdparty\tinyxml"
-				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,HAVE_CPPUNITLITE2,_USRDLL,SCRIPT_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\script\include,..\..\tech\include,..\..\3rdparty\lua\src,..\..\3rdparty\tinyxml"
+				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,_USRDLL,SCRIPT_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL,HAVE_UNITTESTPP"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="2"
@@ -221,8 +221,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\script\include,..\..\tech\include,..\..\3rdparty\lua\src,..\..\3rdparty\tinyxml"
-				PreprocessorDefinitions="_DEBUG;HAVE_CPPUNITLITE2;_USRDLL;SCRIPT_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\script\include,..\..\tech\include,..\..\3rdparty\lua\src,..\..\3rdparty\tinyxml"
+				PreprocessorDefinitions="_DEBUG;_USRDLL;SCRIPT_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;HAVE_UNITTESTPP"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"
@@ -250,7 +250,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\CppUnitLite2.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib"
+				AdditionalDependencies="$(OutDir)\lua.lib $(OutDir)\tinyxml.lib $(OutDir)\UnitTest++.lib"
 				OutputFile=".\..\..\Build.vc8\Debug/script.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -314,7 +314,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\script\include,..\..\tech\include,..\..\3rdparty\lua\src,..\..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\script\include,..\..\tech\include,..\..\3rdparty\lua\src,..\..\3rdparty\tinyxml"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,_USRDLL,SCRIPT_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -394,7 +394,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\script\include,..\..\tech\include,..\..\3rdparty\lua\src,..\..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\script\include,..\..\tech\include,..\..\3rdparty\lua\src,..\..\3rdparty\tinyxml"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;SCRIPT_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL"
 				StringPooling="true"
 				RuntimeLibrary="2"

@@ -6,8 +6,8 @@
 #include "thread.h"
 #include "techtime.h"
 
-#ifdef HAVE_CPPUNITLITE2
-#include "CppUnitLite2.h"
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
 #endif
 
 #include <cmath>
@@ -492,7 +492,7 @@ void cMutexLock::Release()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNITLITE2
+#ifdef HAVE_UNITTESTPP
 
 TEST(ThreadSleep)
 {
@@ -536,6 +536,6 @@ TEST(ThreadSleep)
    CHECK(elapsed > (kWaitSecs - 1.0e-2));
 }
 
-#endif // HAVE_CPPUNITLITE2
+#endif // HAVE_UNITTESTPP
 
 ///////////////////////////////////////////////////////////////////////////////

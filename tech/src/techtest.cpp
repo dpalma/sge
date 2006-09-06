@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#ifdef HAVE_CPPUNITLITE2
+#ifdef HAVE_UNITTESTPP
 
 extern "C"
 {
@@ -14,7 +14,7 @@ extern "C"
 #include "techtime.h"
 #include "toposort.h"
 
-#include "CppUnitLite2.h"
+#include "UnitTest++.h"
 
 #include "dbgalloc.h" // must be last header
 
@@ -216,4 +216,4 @@ TEST(DigraphCycleDetect)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // HAVE_CPPUNITLITE2 (entire file)
+#endif // HAVE_UNITTESTPP (entire file)

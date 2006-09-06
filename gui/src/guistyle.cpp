@@ -14,8 +14,8 @@
 
 #include "globalobj.h"
 
-#ifdef HAVE_CPPUNITLITE2
-#include "CppUnitLite2.h"
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
 #endif
 
 #include <cstring>
@@ -1101,7 +1101,7 @@ tResult GUIStyleParseInline(const tChar * pszStyle, long length, IGUIStyle * pCl
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNITLITE2
+#ifdef HAVE_UNITTESTPP
 
 class cGUIStyleTests
 {
@@ -1154,7 +1154,7 @@ cGUIStyleTests::~cGUIStyleTests()
 
 ///////////////////////////////////////
 
-TEST_F(cGUIStyleTests, TestClone)
+TEST_FIXTURE(cGUIStyleTests, TestClone)
 {
    cAutoIPtr<IGUIStyle> pStyle;
    CHECK(GUIStyleParse(m_testStyle.c_str(), m_testStyle.length(), &pStyle) == S_OK);
@@ -1175,7 +1175,7 @@ TEST_F(cGUIStyleTests, TestClone)
 
 ///////////////////////////////////////
 
-TEST_F(cGUIStyleTests, TestStyleParse)
+TEST_FIXTURE(cGUIStyleTests, TestStyleParse)
 {
    cAutoIPtr<IGUIStyle> pStyle;
    CHECK(GUIStyleParse(m_testStyle.c_str(), m_testStyle.length(), &pStyle) == S_OK);
@@ -1185,7 +1185,7 @@ TEST_F(cGUIStyleTests, TestStyleParse)
 
 ///////////////////////////////////////
 
-TEST_F(cGUIStyleTests, TestCustomAttributes)
+TEST_FIXTURE(cGUIStyleTests, TestCustomAttributes)
 {
    tGUIString string;
    int number;
@@ -1269,6 +1269,6 @@ bool cGUIStyleTests::StyleMatchesTest(IGUIStyle * pStyle)
    return false;
 }
 
-#endif // HAVE_CPPUNITLITE2
+#endif // HAVE_UNITTESTPP
 
 ///////////////////////////////////////////////////////////////////////////////

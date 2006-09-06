@@ -5,8 +5,8 @@
 
 #include "renderapi.h"
 
-#ifdef HAVE_CPPUNITLITE2
-#include "CppUnitLite2.h"
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
 #endif
 
 #include <GL/glew.h>
@@ -167,7 +167,7 @@ tResult GetGlInterleaveFormat(const sVertexElement * pElements, uint nElements, 
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNITLITE2
+#ifdef HAVE_UNITTESTPP
 
 ///////////////////////////////////////
 
@@ -304,6 +304,6 @@ TEST(GlInterleaveFormatsUnrecognized)
    }
 }
 
-#endif // HAVE_CPPUNITLITE2
+#endif // HAVE_UNITTESTPP
 
 ////////////////////////////////////////////////////////////////////////////////

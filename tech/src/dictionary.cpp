@@ -6,8 +6,8 @@
 #include "dictionary.h"
 #include "filespec.h"
 
-#ifdef HAVE_CPPUNITLITE2
-#include "CppUnitLite2.h"
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
 #endif
 
 #include <cstdio>
@@ -455,7 +455,7 @@ IUnknown * DictionaryCreate(tPersistence defaultPersist, IUnknown * pUnkOuter)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNITLITE2
+#ifdef HAVE_UNITTESTPP
 
 ///////////////////////////////////////
 
@@ -589,6 +589,6 @@ TEST(DictionaryPersistence)
    }
 }
 
-#endif // HAVE_CPPUNITLITE2
+#endif // HAVE_UNITTESTPP
 
 ///////////////////////////////////////////////////////////////////////////////

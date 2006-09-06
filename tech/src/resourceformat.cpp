@@ -10,8 +10,8 @@
 #include "readwriteapi.h"
 #include "resourceutils.h"
 
-#ifdef HAVE_CPPUNITLITE2
-#include "CppUnitLite2.h"
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
 #endif
 
 #include <cstdio>
@@ -309,7 +309,7 @@ void cResourceFormatTable::DumpFormats() const
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNITLITE2
+#ifdef HAVE_UNITTESTPP
 
 static void * NopLoad(IReader * pReader)
 {
@@ -337,6 +337,6 @@ TEST(ResourceFormatTableRegister)
    CHECK(rft.RegisterFormat("bitmap", NULL, "bmp", NopLoad, NULL, NopUnload) == S_OK);
 }
 
-#endif // HAVE_CPPUNITLITE2
+#endif // HAVE_UNITTESTPP
 
 ////////////////////////////////////////////////////////////////////////////////

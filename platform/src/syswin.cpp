@@ -13,8 +13,8 @@
 #include "techtime.h"
 #include "threadcallapi.h"
 
-#ifdef HAVE_CPPUNITLITE2
-#include "CppUnitLite2.h"
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
 #endif
 
 #define WIN32_LEAN_AND_MEAN
@@ -1188,7 +1188,7 @@ LExit:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNITLITE2
+#ifdef HAVE_UNITTESTPP
 
 TEST(Clipboard)
 {
@@ -1228,6 +1228,6 @@ TEST(Clipboard)
    }
 }
 
-#endif // HAVE_CPPUNITLITE2
+#endif // HAVE_UNITTESTPP
 
 ///////////////////////////////////////////////////////////////////////////////

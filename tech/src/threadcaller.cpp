@@ -5,8 +5,8 @@
 
 #include "threadcaller.h"
 
-#ifdef HAVE_CPPUNITLITE2
-#include "CppUnitLite2.h"
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
 #endif
 
 #include "dbgalloc.h" // must be last header
@@ -257,24 +257,24 @@ tResult ThreadCallerCreate()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNITLITE2
+#ifdef HAVE_UNITTESTPP
 
 class cFooStatic
 {
 public:
-   static void SetFoo(ulong foo);
-   static ulong gm_foo;
-   static ulong gm_nSetFooCalls;
+   static void SetFoo(int foo);
+   static int gm_foo;
+   static int gm_nSetFooCalls;
    static tThreadId gm_threadIdSetFooLastCalledFrom;
 };
-void cFooStatic::SetFoo(ulong foo)
+void cFooStatic::SetFoo(int foo)
 {
    gm_foo = foo;
    gm_nSetFooCalls++;
    gm_threadIdSetFooLastCalledFrom = ThreadGetCurrentId();
 }
-ulong cFooStatic::gm_foo = 0;
-ulong cFooStatic::gm_nSetFooCalls = 0;
+int cFooStatic::gm_foo = 0;
+int cFooStatic::gm_nSetFooCalls = 0;
 tThreadId cFooStatic::gm_threadIdSetFooLastCalledFrom = 0;
 
 class cReceiveThreadCallsThread : public cThread
@@ -325,7 +325,7 @@ cThreadFixture::~cThreadFixture()
 
 ////////////////////////////////////////
 
-TEST_F(cThreadFixture, ThreadCallerPostCall)
+TEST_FIXTURE(cThreadFixture, ThreadCallerPostCall)
 {
    cThread * pThread = new cReceiveThreadCallsThread;
    CHECK(pThread->Create());
@@ -344,7 +344,7 @@ TEST_F(cThreadFixture, ThreadCallerPostCall)
    tThreadId threadId = pThread->GetThreadId();
    ThreadSetName(threadId, "ReceiveThreadCallsThread");
 
-   static const ulong kFoo = 4000;
+   static const int kFoo = 4000;
    CHECK(cFooStatic::gm_foo != kFoo);
    CHECK_EQUAL(cFooStatic::gm_nSetFooCalls, 0);
    CHECK(cFooStatic::gm_threadIdSetFooLastCalledFrom != threadId);
@@ -356,9 +356,9 @@ TEST_F(cThreadFixture, ThreadCallerPostCall)
 
    CHECK_EQUAL(cFooStatic::gm_foo, kFoo);
    CHECK_EQUAL(cFooStatic::gm_nSetFooCalls, 1);
-   CHECK_EQUAL(cFooStatic::gm_threadIdSetFooLastCalledFrom, threadId);
+   CHECK(cFooStatic::gm_threadIdSetFooLastCalledFrom == threadId);
 }
 
-#endif // HAVE_CPPUNITLITE2
+#endif // HAVE_UNITTESTPP
 
 ////////////////////////////////////////////////////////////////////////////////

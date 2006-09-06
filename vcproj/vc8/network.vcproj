@@ -46,8 +46,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\network\include,..\..\tech\include"
-				PreprocessorDefinitions="NDEBUG;_USRDLL;NET_EXPORTS;WIN32;_WINDOWS;STRICT"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\network\include,..\..\tech\include"
+				PreprocessorDefinitions="NDEBUG;_USRDLL;NET_EXPORTS;WIN32;_WINDOWS;STRICT;HAVE_UNITTESTPP"
 				StringPooling="true"
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="true"
@@ -76,7 +76,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="ws2_32.lib $(OutDir)\CppUnitLite2.lib"
+				AdditionalDependencies="$(OutDir)\UnitTest++.lib ws2_32.lib"
 				OutputFile=".\..\..\Build.vc8\Opt/network.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -140,8 +140,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\network\include,..\..\tech\include"
-				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,HAVE_CPPUNITLITE2,_USRDLL,NET_EXPORTS,WIN32,_WINDOWS,STRICT"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\network\include,..\..\tech\include"
+				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,_USRDLL,NET_EXPORTS,WIN32,_WINDOWS,STRICT,HAVE_UNITTESTPP"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="2"
@@ -220,8 +220,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\network\include,..\..\tech\include"
-				PreprocessorDefinitions="_DEBUG;HAVE_CPPUNITLITE2;_USRDLL;NET_EXPORTS;WIN32;_WINDOWS;STRICT"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\network\include,..\..\tech\include"
+				PreprocessorDefinitions="_DEBUG;_USRDLL;NET_EXPORTS;WIN32;_WINDOWS;STRICT;HAVE_UNITTESTPP"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"
@@ -249,7 +249,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="ws2_32.lib $(OutDir)\CppUnitLite2.lib"
+				AdditionalDependencies="$(OutDir)\UnitTest++.lib ws2_32.lib"
 				OutputFile=".\..\..\Build.vc8\Debug/network.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -313,7 +313,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\network\include,..\..\tech\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\network\include,..\..\tech\include"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,_USRDLL,NET_EXPORTS,WIN32,_WINDOWS,STRICT"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -393,7 +393,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\network\include,..\..\tech\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\network\include,..\..\tech\include"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;NET_EXPORTS;WIN32;_WINDOWS;STRICT"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -422,7 +422,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="ws2_32.lib $(OutDir)\CppUnitLite2.lib"
+				AdditionalDependencies="ws2_32.lib"
 				OutputFile=".\..\..\Build.vc8\Release/network.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"

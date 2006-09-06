@@ -531,7 +531,7 @@ tResult cEditorApp::GetDefaultTileSet(cStr * pTileSet) const
 
 void cEditorApp::OnToolsUnitTestRunner() 
 {
-#if defined(HAVE_CPPUNIT) || defined(HAVE_CPPUNITLITE2)
+#if defined(HAVE_CPPUNIT) || defined(HAVE_UNITTESTPP)
    SysRunUnitTests();
 #else
    AfxMessageBox(IDS_NO_UNIT_TESTS);

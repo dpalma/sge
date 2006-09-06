@@ -13,8 +13,8 @@
 #include "globalobj.h"
 #include "resourceapi.h"
 
-#ifdef HAVE_CPPUNITLITE2
-#include "CppUnitLite2.h"
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
 #endif
 
 #include <tinyxml.h>
@@ -414,7 +414,7 @@ AUTOREGISTER_GUIELEMENTFACTORYFN(style, GUIStyleElementCreate);
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNITLITE2
+#ifdef HAVE_UNITTESTPP
 
 ////////////////////////////////////////
 
@@ -575,6 +575,6 @@ TEST(GUIStyleSelectors)
    }
 }
 
-#endif // HAVE_CPPUNITLITE2
+#endif // HAVE_UNITTESTPP
 
 ////////////////////////////////////////////////////////////////////////////////

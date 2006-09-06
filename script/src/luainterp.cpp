@@ -9,8 +9,8 @@
 #include "multivar.h"
 #include "techstring.h"
 
-#ifdef HAVE_CPPUNITLITE2
-#include "CppUnitLite2.h"
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
 #endif
 
 extern "C"
@@ -487,7 +487,7 @@ cLuaInterpreter::cAutoCleanupPreRegisteredFunctions cLuaInterpreter::g_autoClean
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNITLITE2
+#ifdef HAVE_UNITTESTPP
 
 double g_foo;
 
@@ -629,17 +629,17 @@ cLuaInterpreterTests::~cLuaInterpreterTests()
 
 ////////////////////////////////////////
 
-TEST_F(cLuaInterpreterTests, CustomClass)
+TEST_FIXTURE(cLuaInterpreterTests, CustomClass)
 {
    cAutoIPtr<IScriptableFactory> pFooFactory = new cFooScriptableFactory;
 
    CHECK(m_pInterp->RegisterCustomClass("foo", pFooFactory) == S_OK);
 
    CHECK(m_pInterp->ExecString("f = foo(); f:SetFoo(1000);") == S_OK);
-   CHECK_EQUAL(g_foo, 1000);
+   CHECK(g_foo == 1000);
 
    CHECK(m_pInterp->ExecString("f = foo(); f:SetFoo(3.1415);") == S_OK);
-   CHECK_EQUAL(g_foo, 3.1415);
+   CHECK(g_foo == 3.1415);
 
    CHECK(m_pInterp->RevokeCustomClass("foo") == S_OK);
 
@@ -648,7 +648,7 @@ TEST_F(cLuaInterpreterTests, CustomClass)
 
 ////////////////////////////////////////
 
-TEST_F(cLuaInterpreterTests, CustomClass2)
+TEST_FIXTURE(cLuaInterpreterTests, CustomClass2)
 {
    cAutoIPtr<IScriptableFactory> pRNGFactory = new cRNGFactory;
 
@@ -672,7 +672,7 @@ TEST_F(cLuaInterpreterTests, CustomClass2)
 
 ////////////////////////////////////////
 
-TEST_F(cLuaInterpreterTests, PublishObject)
+TEST_FIXTURE(cLuaInterpreterTests, PublishObject)
 {
    cAutoIPtr<IScriptable> pRNG = new cRNG;
    CHECK(!!pRNG);
@@ -697,6 +697,6 @@ TEST_F(cLuaInterpreterTests, PublishObject)
    CHECK(m_pInterp->ExecString(script.c_str()) != S_OK);
 }
 
-#endif // HAVE_CPPUNITLITE2
+#endif // HAVE_UNITTESTPP
 
 ///////////////////////////////////////////////////////////////////////////////

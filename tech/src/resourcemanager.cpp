@@ -10,8 +10,8 @@
 #include "readwriteapi.h"
 #include "resourcestore.h"
 
-#ifdef HAVE_CPPUNITLITE2
-#include "CppUnitLite2.h"
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
 #endif
 
 #include <cstdio>
@@ -465,7 +465,7 @@ tResult ResourceManagerCreate()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNITLITE2
+#ifdef HAVE_UNITTESTPP
 
 typedef std::pair<cStr, cStr> tStrPair;
 
@@ -528,8 +528,10 @@ tResult cTestResourceStore::OpenEntry(const tChar * pszName, IReader * * ppReade
 class cResourceManagerTests
 {
 public:
-   cResourceManagerTests(const tStrPair * pTestData, size_t nTestData);
+   cResourceManagerTests();
    ~cResourceManagerTests();
+
+   void AddTestData(const tStrPair * pTestData, size_t nTestData);
 
    cAutoIPtr<cResourceManager> m_pResourceManager;
    cAutoIPtr<IResourceManagerDiagnostics> m_pDiagnostics;
@@ -537,7 +539,7 @@ public:
 
 ////////////////////////////////////////
 
-cResourceManagerTests::cResourceManagerTests(const tStrPair * pTestData, size_t nTestData)
+cResourceManagerTests::cResourceManagerTests()
 {
    SafeRelease(m_pResourceManager);
    m_pResourceManager = new cResourceManager;
@@ -545,12 +547,6 @@ cResourceManagerTests::cResourceManagerTests(const tStrPair * pTestData, size_t 
 
    cAutoIPtr<IResourceManagerDiagnostics> pResMgrDiag;
    Verify(m_pResourceManager->QueryInterface(IID_IResourceManagerDiagnostics, (void**)&m_pDiagnostics) == S_OK);
-
-   if ((pTestData != NULL) && (nTestData > 0))
-   {
-      cTestResourceStore * pStore = new cTestResourceStore(pTestData, nTestData);
-      m_pResourceManager->m_stores.push_back(static_cast<cResourceStore*>(pStore));
-   }
 }
 
 ////////////////////////////////////////
@@ -561,6 +557,17 @@ cResourceManagerTests::~cResourceManagerTests()
    {
       m_pResourceManager->Term();
       SafeRelease(m_pResourceManager);
+   }
+}
+
+////////////////////////////////////////
+
+void cResourceManagerTests::AddTestData(const tStrPair * pTestData, size_t nTestData)
+{
+   if ((pTestData != NULL) && (nTestData > 0))
+   {
+      cTestResourceStore * pStore = new cTestResourceStore(pTestData, nTestData);
+      m_pResourceManager->m_stores.push_back(static_cast<cResourceStore*>(pStore));
    }
 }
 
@@ -668,10 +675,10 @@ const tStrPair g_basicTestResources[] =
 
 ////////////////////////////////////////
 
-TEST_FP(cResourceManagerTests,
-        cResourceManagerTests(&g_basicTestResources[0], _countof(g_basicTestResources)),
-        ResourceManagerLoadSameNameDifferentExtension)
+TEST_FIXTURE(cResourceManagerTests, ResourceManagerLoadSameNameDifferentExtension)
 {
+   AddTestData(&g_basicTestResources[0], _countof(g_basicTestResources));
+
    CHECK(m_pResourceManager->RegisterFormat(kRT_Data, NULL, "dat", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
    CHECK(m_pResourceManager->RegisterFormat(kRT_Bitmap, NULL, "bmp", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
 
@@ -700,10 +707,10 @@ TEST_FP(cResourceManagerTests,
 
 ////////////////////////////////////////
 
-TEST_FP(cResourceManagerTests,
-        cResourceManagerTests(&g_basicTestResources[0], _countof(g_basicTestResources)),
-        ResourceManagerLoadCaseSensitivity)
+TEST_FIXTURE(cResourceManagerTests, ResourceManagerLoadCaseSensitivity)
 {
+   AddTestData(&g_basicTestResources[0], _countof(g_basicTestResources));
+
    CHECK(m_pResourceManager->RegisterFormat(kRT_Data, NULL, "dat", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
 
    {
@@ -721,10 +728,10 @@ TEST_FP(cResourceManagerTests,
 
 ////////////////////////////////////////
 
-TEST_FP(cResourceManagerTests,
-        cResourceManagerTests(&g_basicTestResources[0], _countof(g_basicTestResources)),
-        ResourceManagerListResources)
+TEST_FIXTURE(cResourceManagerTests, ResourceManagerListResources)
 {
+   AddTestData(&g_basicTestResources[0], _countof(g_basicTestResources));
+
    CHECK(m_pResourceManager->RegisterFormat(kRT_Data, NULL, "dat", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
    CHECK(m_pResourceManager->RegisterFormat(kRT_Bitmap, NULL, "bmp", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
 
@@ -756,10 +763,10 @@ const tStrPair g_multNameTestResources[] =
    std::make_pair(cStr("foo.ms3d"), cStr("MS3D0000...........\0")),
 };
 
-TEST_FP(cResourceManagerTests,
-        cResourceManagerTests(&g_multNameTestResources[0], _countof(g_multNameTestResources)),
-        ResourceManagerSameNameLoadWrongType)
+TEST_FIXTURE(cResourceManagerTests, ResourceManagerSameNameLoadWrongType)
 {
+   AddTestData(&g_multNameTestResources[0], _countof(g_multNameTestResources));
+
    CHECK(m_pResourceManager->RegisterFormat("footxt", NULL, "xml", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
    CHECK(m_pResourceManager->RegisterFormat("footxt", NULL, "txt", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
    CHECK(m_pResourceManager->RegisterFormat("fooms3d", NULL, "ms3d", PseudoMs3dLoad, NULL, RawBytesUnload) == S_OK);
@@ -793,10 +800,10 @@ const tStrPair g_fakeMapResource[] =
    std::make_pair(cStr("foo.map"), cStr("SGEAC0AD9D21E34D9ADCF83E4235A2345F\0")),
 };
 
-TEST_FP(cResourceManagerTests,
-        cResourceManagerTests(&g_fakeMapResource[0], _countof(g_fakeMapResource)),
-        ResourceManagerSameResourceTwoTypes)
+TEST_FIXTURE(cResourceManagerTests, ResourceManagerSameResourceTwoTypes)
 {
+   AddTestData(&g_fakeMapResource[0], _countof(g_fakeMapResource));
+
    CHECK(m_pResourceManager->RegisterFormat("map",       NULL, "map", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
    CHECK(m_pResourceManager->RegisterFormat("mapprops",  NULL, "map", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
 
@@ -818,10 +825,10 @@ const tStrPair g_multExtTestResources[] =
    std::make_pair(cStr("foo.ms3d.xml"), cStr("foo_ms3d_xml_foo_ms3d_xml_foo_ms3d_xml\0")),
 };
 
-TEST_FP(cResourceManagerTests,
-        cResourceManagerTests(&g_multExtTestResources[0], _countof(g_multExtTestResources)),
-        ResourceManagerMultipleExtensionConfusion)
+TEST_FIXTURE(cResourceManagerTests, ResourceManagerMultipleExtensionConfusion)
 {
+   AddTestData(&g_multExtTestResources[0], _countof(g_multExtTestResources));
+
    CHECK(m_pResourceManager->RegisterFormat("fooms3d", NULL, "ms3d", RawBytesLoad, TestDataPostload, RawBytesUnload) == S_OK);
    CHECK(m_pResourceManager->RegisterFormat("fooxml", NULL, "xml", RawBytesLoad, TestDataPostload, RawBytesUnload) == S_OK);
 
@@ -837,6 +844,6 @@ TEST_FP(cResourceManagerTests,
 }
 #endif
 
-#endif // HAVE_CPPUNITLITE2
+#endif // HAVE_UNITTESTPP
 
 ////////////////////////////////////////////////////////////////////////////////

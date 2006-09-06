@@ -5,7 +5,7 @@
 
 LOG_DEFINE_CHANNEL(GUIEventRouter);
 
-#ifdef HAVE_CPPUNITLITE2
+#ifdef HAVE_UNITTESTPP
 
 #include "guieventrouter.h"
 #include "guieventroutertem.h"
@@ -17,7 +17,7 @@ LOG_DEFINE_CHANNEL(GUIEventRouter);
 
 #include "globalobj.h"
 
-#include "CppUnitLite2.h"
+#include "UnitTest++.h"
 
 #include "dbgalloc.h" // must be last header
 
@@ -129,11 +129,4 @@ void cGUIEventRouterFixture::AddElementsForTesting()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// TODO
-//TEST_F(cGUIEventRouterFixture, ???)
-//{
-//}
-
-///////////////////////////////////////////////////////////////////////////////
-
-#endif // HAVE_CPPUNITLITE2
+#endif // HAVE_UNITTESTPP

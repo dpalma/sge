@@ -9,8 +9,8 @@ extern "C"
 #include "md5.h"
 }
 
-#ifdef HAVE_CPPUNITLITE2
-#include "CppUnitLite2.h"
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
 #endif
 
 #include "dbgalloc.h" // must be last header

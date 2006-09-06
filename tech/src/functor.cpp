@@ -5,8 +5,8 @@
 
 #include "functor.h"
 
-#ifdef HAVE_CPPUNITLITE2
-#include "CppUnitLite2.h"
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
 #endif
 
 #include "dbgalloc.h" // must be last header
@@ -24,23 +24,23 @@ cFunctor::~cFunctor()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNITLITE2
+#ifdef HAVE_UNITTESTPP
 
 ////////////////////////////////////////
 
-static ulong g_functor1Arg = 0;
-static void Functor1TestFunction(ulong arg)
+static int g_functor1Arg = 0;
+static void Functor1TestFunction(int arg)
 {
    g_functor1Arg = arg;
 }
 
 TEST(Functor1)
 {
-   cFunctor1<void, ulong> f(Functor1TestFunction, 99);
+   cFunctor1<void, int> f(Functor1TestFunction, 99);
    f();
    CHECK_EQUAL(g_functor1Arg, 99);
 }
 
-#endif // HAVE_CPPUNITLITE2
+#endif // HAVE_UNITTESTPP
 
 ///////////////////////////////////////////////////////////////////////////////

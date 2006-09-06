@@ -12,14 +12,9 @@
 #endif
 
 #ifdef HAVE_UNITTESTPP
+#include "Test.h"
 #include "TestRunner.h"
-#endif
-
-#ifdef HAVE_CPPUNIT
-#include <cppunit/extensions/HelperMacros.h>
-#include <cppunit/TestFailure.h>
-#include <cppunit/TestResultCollector.h>
-#include <cppunit/ui/text/TestRunner.h>
+#include "TestReporterStdOut.h"
 #endif
 
 #include <cstdlib>
@@ -79,8 +74,14 @@ tSysResizeFn SysSetResizeCallback(tSysResizeFn pfn)
 
 static tResult SysRunUnitTestPP()
 {
-   UnitTest::RunAllTests();
-
+   using namespace UnitTest;
+   TestReporterStdout reporter;
+   const TestList & tests = Test::GetTestList();
+   int nFailures = RunAllTests(reporter, tests);
+   if (nFailures > 0)
+   {
+      return E_FAIL;
+   }
    return S_OK;
 }
 
@@ -190,36 +191,6 @@ static tResult SysRunCppUnitLite2()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNIT
-tResult SysRunCppUnit()
-{
-   CppUnit::TextUi::TestRunner runner;
-   runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-   runner.run();
-   if (runner.result().testFailuresTotal() > 0)
-   {
-      techlog.Print(kError, "%d LEGACY UNIT TESTS FAILED!\n", runner.result().testFailuresTotal());
-      CppUnit::TestResultCollector::TestFailures::const_iterator iter;
-      for (iter = runner.result().failures().begin(); iter != runner.result().failures().end(); iter++)
-      {
-         techlog.Print(kError, "%s(%d) : %s : %s\n",
-            (*iter)->sourceLine().fileName().c_str(),
-            (*iter)->sourceLine().isValid() ? (*iter)->sourceLine().lineNumber() : -1,
-            (*iter)->failedTestName().c_str(),
-            (*iter)->thrownException()->what());
-      }
-      return E_FAIL;
-   }
-   else
-   {
-      techlog.Print(kInfo, "%d legacy unit tests succeeded\n", runner.result().tests().size());
-      return S_OK;
-   }
-}
-#endif
-
-///////////////////////////////////////////////////////////////////////////////
-
 tResult SysRunUnitTests()
 {
 #ifdef HAVE_UNITTESTPP
@@ -229,15 +200,8 @@ tResult SysRunUnitTests()
    }
 #endif
 
-#ifdef HAVE_CPPUNITLITE2
+#ifdef HAVE_UNITTESTPP
    if (FAILED(SysRunCppUnitLite2()))
-   {
-      return E_FAIL;
-   }
-#endif
-
-#ifdef HAVE_CPPUNIT
-   if (FAILED(SysRunCppUnit()))
    {
       return E_FAIL;
    }

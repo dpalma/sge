@@ -4,8 +4,8 @@
 #include "stdhdr.h"
 #include "techmath.h"
 
-#ifdef HAVE_CPPUNITLITE2
-#include "CppUnitLite2.h"
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
 #endif
 
 #include <cmath>
@@ -76,7 +76,7 @@ uint cRand::Next()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNITLITE2
+#ifdef HAVE_UNITTESTPP
 
 TEST(IsPrime)
 {
@@ -176,4 +176,4 @@ TEST(AlmostEqual)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // HAVE_CPPUNITLITE2
+#endif // HAVE_UNITTESTPP

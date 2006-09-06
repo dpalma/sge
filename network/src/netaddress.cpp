@@ -5,8 +5,8 @@
 
 #include "netaddress.h"
 
-#ifdef HAVE_CPPUNITLITE2
-#include "CppUnitLite2.h"
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
 #endif
 
 #ifdef _WIN32
@@ -181,7 +181,7 @@ tResult NetAddressCreateIPv4(const char * pszAddress, uint16 port, INetAddress *
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNITLITE2
+#ifdef HAVE_UNITTESTPP
 
 TEST(IPv4Address)
 {

@@ -5,8 +5,8 @@
 
 #include "comtools.h"
 
-#ifdef HAVE_CPPUNITLITE2
-#include "CppUnitLite2.h"
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
 #endif
 
 #include <cstdio>
@@ -80,7 +80,7 @@ bool cCTLessInterface::operator()(IUnknown * pUnk1, IUnknown * pUnk2) const
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNITLITE2
+#ifdef HAVE_UNITTESTPP
 
 ////////////////////////////////////////
 
@@ -343,6 +343,6 @@ TEST(AutoIPtrAddressOf)
    CHECK(cDummy::GetObjectCount() == 0);
 }
 
-#endif // HAVE_CPPUNITLITE2
+#endif // HAVE_UNITTESTPP
 
 ///////////////////////////////////////////////////////////////////////////////

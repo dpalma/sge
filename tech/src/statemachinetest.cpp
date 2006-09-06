@@ -3,14 +3,14 @@
 
 #include "stdhdr.h"
 
-#ifdef HAVE_CPPUNITLITE2 // entire file
+#ifdef HAVE_UNITTESTPP // entire file
 
 #include "statemachine.h"
 #include "statemachinetem.h"
 
 #include "techstring.h"
 
-#include "CppUnitLite2.h"
+#include "UnitTest++.h"
 
 #include <locale>
 
@@ -182,4 +182,4 @@ TEST(StateMachine)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // HAVE_CPPUNITLITE2 (entire file)
+#endif // HAVE_UNITTESTPP (entire file)

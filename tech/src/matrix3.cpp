@@ -6,8 +6,8 @@
 #include "matrix3.h"
 #include "vec3.h"
 
-#ifdef HAVE_CPPUNITLITE2
-#include "CppUnitLite2.h"
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
 #endif
 
 #include <cmath>
@@ -73,7 +73,7 @@ void MatrixRotateZ(float theta, tMatrix3 * pResult)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNITLITE2
+#ifdef HAVE_UNITTESTPP
 
 static bool MatrixIsIdentity(const tMatrix3 & m)
 {
@@ -117,6 +117,6 @@ TEST(MatrixRotation)
    }
 }
 
-#endif // HAVE_CPPUNITLITE2
+#endif // HAVE_UNITTESTPP
 
 ///////////////////////////////////////////////////////////////////////////////

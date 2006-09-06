@@ -7,8 +7,8 @@
 #include "techmath.h"
 #include "techstring.h"
 
-#ifdef HAVE_CPPUNITLITE2
-#include "CppUnitLite2.h"
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
 #endif
 
 #include <cstdio>
@@ -450,7 +450,7 @@ void cMultiVar::Clear()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CPPUNITLITE2
+#ifdef HAVE_UNITTESTPP
 
 ////////////////////////////////////////
 
@@ -512,7 +512,7 @@ TEST(MultiVarConstructors)
 TEST(MultiVarAssignment)
 {
    cMultiVar test;
-   CHECK_EQUAL((double)(test = 3.1415), 3.1415);
+   CHECK((double)(test = 3.1415) == 3.1415);
    CHECK(strcmp((test = "3.1415"), "3.1415") == 0);
 }
 
@@ -520,8 +520,8 @@ TEST(MultiVarAssignment)
 
 TEST(MultiVarCastDouble)
 {
-   CHECK_EQUAL((double)cMultiVar(3.1415), 3.1415);
-   CHECK_EQUAL((double)cMultiVar("3.1415"), 3.1415);
+   CHECK((double)cMultiVar(3.1415) == 3.1415);
+   CHECK((double)cMultiVar("3.1415") == 3.1415);
 }
 
 ////////////////////////////////////////
@@ -550,6 +550,6 @@ TEST(MultiVarChangeType)
    CHECK(wcscmp((const wchar_t *)cMultiVar(3.1415), L"3.141500") == 0);
 }
 
-#endif // HAVE_CPPUNITLITE2
+#endif // HAVE_UNITTESTPP
 
 ///////////////////////////////////////////////////////////////////////////////
