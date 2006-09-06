@@ -229,7 +229,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\ms3dsdk\msLib,..\..\3rdparty\NvTriStrip\include,..\..\3rdparty\wtl\include,..\..\tech\include,..\..\engine\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\ms3dsdk\msLib,..\..\3rdparty\NvTriStrip\include,..\..\3rdparty\wtl\include,..\..\tech\include,..\..\engine\include"
 				PreprocessorDefinitions="_DEBUG;NO_AUTO_EXPORTS;_USRDLL;WIN32;_WINDOWS;STRICT"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -298,7 +298,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\ms3dsdk\msLib,..\..\3rdparty\NvTriStrip\include,..\..\3rdparty\wtl\include,..\..\tech\include,..\..\engine\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\ms3dsdk\msLib,..\..\3rdparty\NvTriStrip\include,..\..\3rdparty\wtl\include,..\..\tech\include,..\..\engine\include"
 				PreprocessorDefinitions="_DEBUG;_USRDLL;WIN32;_WINDOWS;STRICT"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"

@@ -32,10 +32,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "3rdpartyGlew", "3rdpartyGle
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "3rdpartyCppUnitLite2", "3rdpartyCppUnitLite2.vcproj", "{E6F07DED-6CDD-4448-A5D4-C9BCE20BA57B}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "3rdpartyFreetype", "3rdpartyFreetype.vcproj", "{320F900E-24D1-40F0-A21D-8F0C1876396C}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
@@ -138,16 +134,6 @@ Global
 		{AD2D072A-A1DC-4ABC-BE40-0CCDF4376AC5}.StaticDebug.Build.0 = StaticDebug|Win32
 		{AD2D072A-A1DC-4ABC-BE40-0CCDF4376AC5}.StaticRelease.ActiveCfg = StaticRelease|Win32
 		{AD2D072A-A1DC-4ABC-BE40-0CCDF4376AC5}.StaticRelease.Build.0 = StaticRelease|Win32
-		{E6F07DED-6CDD-4448-A5D4-C9BCE20BA57B}.Debug.ActiveCfg = Debug|Win32
-		{E6F07DED-6CDD-4448-A5D4-C9BCE20BA57B}.Debug.Build.0 = Debug|Win32
-		{E6F07DED-6CDD-4448-A5D4-C9BCE20BA57B}.Opt.ActiveCfg = Opt|Win32
-		{E6F07DED-6CDD-4448-A5D4-C9BCE20BA57B}.Opt.Build.0 = Opt|Win32
-		{E6F07DED-6CDD-4448-A5D4-C9BCE20BA57B}.Release.ActiveCfg = Release|Win32
-		{E6F07DED-6CDD-4448-A5D4-C9BCE20BA57B}.Release.Build.0 = Release|Win32
-		{E6F07DED-6CDD-4448-A5D4-C9BCE20BA57B}.StaticDebug.ActiveCfg = StaticDebug|Win32
-		{E6F07DED-6CDD-4448-A5D4-C9BCE20BA57B}.StaticDebug.Build.0 = StaticDebug|Win32
-		{E6F07DED-6CDD-4448-A5D4-C9BCE20BA57B}.StaticRelease.ActiveCfg = StaticRelease|Win32
-		{E6F07DED-6CDD-4448-A5D4-C9BCE20BA57B}.StaticRelease.Build.0 = StaticRelease|Win32
 		{320F900E-24D1-40F0-A21D-8F0C1876396C}.Debug.ActiveCfg = Debug|Win32
 		{320F900E-24D1-40F0-A21D-8F0C1876396C}.Debug.Build.0 = Debug|Win32
 		{320F900E-24D1-40F0-A21D-8F0C1876396C}.Opt.ActiveCfg = Opt|Win32

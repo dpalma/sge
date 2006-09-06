@@ -22,7 +22,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\platform\include,..\..\script\include,..\..\tech\include,..\..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\glew\include,..\..\platform\include,..\..\script\include,..\..\tech\include,..\..\3rdparty\tinyxml"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;PLATFORM_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC"
 				StringPooling="TRUE"
 				RuntimeLibrary="3"
@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\CppUnitLite2.lib $(OutDir)\glew.lib glu32.lib opengl32.lib winmm.lib $(OutDir)\tinyxml.lib"
+				AdditionalDependencies="$(OutDir)\UnitTest++.lib $(OutDir)\glew.lib glu32.lib opengl32.lib winmm.lib $(OutDir)\tinyxml.lib"
 				OutputFile=".\..\..\Build.vc71\Opt/platform.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -91,8 +91,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\platform\include,..\..\script\include,..\..\tech\include,..\..\3rdparty\tinyxml"
-				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,HAVE_CPPUNITLITE2,_USRDLL,PLATFORM_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL,GLEW_STATIC"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\glew\include,..\..\platform\include,..\..\script\include,..\..\tech\include,..\..\3rdparty\tinyxml"
+				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,HAVE_UNITTESTPP,_USRDLL,PLATFORM_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL,GLEW_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="3"
@@ -143,8 +143,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\platform\include,..\..\script\include,..\..\tech\include,..\..\3rdparty\tinyxml"
-				PreprocessorDefinitions="_DEBUG;HAVE_CPPUNITLITE2;_USRDLL;PLATFORM_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\glew\include,..\..\platform\include,..\..\script\include,..\..\tech\include,..\..\3rdparty\tinyxml"
+				PreprocessorDefinitions="_DEBUG;HAVE_UNITTESTPP;_USRDLL;PLATFORM_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="3"
@@ -162,7 +162,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\CppUnitLite2.lib $(OutDir)\glew.lib glu32.lib opengl32.lib winmm.lib $(OutDir)\tinyxml.lib"
+				AdditionalDependencies="$(OutDir)\UnitTest++.lib $(OutDir)\glew.lib glu32.lib opengl32.lib winmm.lib $(OutDir)\tinyxml.lib"
 				OutputFile=".\..\..\Build.vc71\Debug/platform.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -211,7 +211,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\platform\include,..\..\script\include,..\..\tech\include,..\..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\glew\include,..\..\platform\include,..\..\script\include,..\..\tech\include,..\..\3rdparty\tinyxml"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,_USRDLL,PLATFORM_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL,GLEW_STATIC"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -263,7 +263,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\CppUnitLite2\include,..\..\3rdparty\glew\include,..\..\platform\include,..\..\script\include,..\..\tech\include,..\..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\glew\include,..\..\platform\include,..\..\script\include,..\..\tech\include,..\..\3rdparty\tinyxml"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;PLATFORM_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
