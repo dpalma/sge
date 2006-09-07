@@ -65,22 +65,8 @@ void cGLXRasterFont::OnFinalRelease()
 
 ///////////////////////////////////////
 
-tResult cGLXRasterFont::MeasureText(const tChar * pszText, int textLength, int * pWidth, int * pHeight) const
-{
-   return E_NOTIMPL;
-}
-
-///////////////////////////////////////
-
-tResult cGLXRasterFont::RenderText(const tChar * pszText, int textLength, int x, int y) const
-{
-   return E_NOTIMPL;
-}
-
-///////////////////////////////////////
-
 tResult cGLXRasterFont::RenderText(const tChar * pszText, int textLength,
-                                   tRect * pRect, uint flags, const cColor & color) const
+                                   tRect * pRect, uint flags, const float color[4]) const
 {
    if (pszText == NULL)
    {

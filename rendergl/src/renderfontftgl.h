@@ -29,12 +29,8 @@ public:
 
    static tResult Create(const tChar * pszFont, int fontPointSize, IRenderFont * * ppFont);
 
-   virtual tResult MeasureText(const tChar * pszText, int textLength, int * pWidth, int * pHeight) const;
-
-   virtual tResult RenderText(const tChar * pszText, int textLength, int x, int y) const;
-
    virtual tResult RenderText(const tChar * pszText, int textLength, tRect * pRect,
-                              uint flags, const cColor & color) const;
+                              uint flags, const float color[4]) const;
 
 private:
    FTGLTextureFont * m_pFont;

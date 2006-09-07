@@ -130,7 +130,7 @@ tResult cGUIBasicRenderer::LabelRender(IGUIElement * pElement, IRender2D * pRend
       tGUIString text;
       if (pLabelElement->GetText(&text) == S_OK)
       {
-         pFont->RenderText(text.c_str(), text.length(), &rect, kRT_NoClip, color);
+         pFont->RenderText(text.c_str(), text.length(), &rect, kRT_NoClip, color.GetPointer());
          return S_OK;
       }
       if (text.empty())
@@ -153,7 +153,7 @@ tGUISize cGUIBasicRenderer::LabelPreferredSize(IGUIElement * pElement) const
       if (((IGUILabelElement*)pElement)->GetText(&text) == S_OK)
       {
          tRect rect(0,0,0,0);
-         pFont->RenderText(text.c_str(), text.length(), &rect, kRT_CalcRect, GUIStandardColors::White);
+         pFont->RenderText(text.c_str(), text.length(), &rect, kRT_CalcRect, NULL);
 
          return tGUISize(static_cast<tGUISizeType>(rect.GetWidth()), static_cast<tGUISizeType>(rect.GetHeight()));
       }

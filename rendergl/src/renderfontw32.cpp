@@ -304,22 +304,8 @@ bool cTextureRenderFontW32::Create(const tChar * pszFontName, int pointSize, boo
 
 ///////////////////////////////////////
 
-tResult cTextureRenderFontW32::MeasureText(const tChar * pszText, int textLength, int * pWidth, int * pHeight) const
-{
-   return E_NOTIMPL;
-}
-
-///////////////////////////////////////
-
-tResult cTextureRenderFontW32::RenderText(const tChar * pszText, int textLength, int x, int y) const
-{
-   return E_NOTIMPL;
-}
-
-///////////////////////////////////////
-
 tResult cTextureRenderFontW32::RenderText(const tChar * pszText, int textLength, tRect * pRect,
-                                       uint flags, const cColor & color) const
+                                          uint flags, const float color[4]) const
 {
    if (pszText == NULL || pRect == NULL)
    {
@@ -542,7 +528,11 @@ tResult cTextureRenderFontW32::RenderText(const tChar * pszText, int textLength,
          glStencilFunc(GL_ALWAYS, kDropShadowStencilRef, kDropShadowStencilMask);
       }
 
-      glColor4fv(color.GetPointer());
+      if (color != NULL)
+      {
+         glColor4fv(color);
+      }
+
       glDrawArrays(GL_TRIANGLES, 0, nVertices);
 
       if (IsBitFlagSet(flags, kRT_DropShadow))

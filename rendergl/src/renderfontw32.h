@@ -6,6 +6,8 @@
 
 #include "renderfontapi.h"
 
+#include "color.h"
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -35,9 +37,7 @@ public:
 
    bool Create(const tChar * pszFontName, int pointSize, bool bBold, bool bItalic);
 
-   virtual tResult MeasureText(const tChar * pszText, int textLength, int * pWidth, int * pHeight) const;
-   virtual tResult RenderText(const tChar * pszText, int textLength, int x, int y) const;
-   virtual tResult RenderText(const tChar * pszText, int textLength, tRect * pRect, uint flags, const cColor & color) const;
+   virtual tResult RenderText(const tChar * pszText, int textLength, tRect * pRect, uint flags, const float color[4]) const;
 
    tResult SetDropShadowState(float offsetX, float offsetY, const cColor & color);
 

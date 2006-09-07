@@ -8,7 +8,6 @@
 
 #include "sys.h"
 
-#include "color.h"
 #include "filepath.h"
 #include "filespec.h"
 
@@ -222,28 +221,8 @@ tResult cRenderFontFreetype::Create(const tChar * pszFont, int fontPointSize, IR
 
 ////////////////////////////////////////
 
-tResult cRenderFontFreetype::MeasureText(const tChar * pszText, int textLength, int * pWidth, int * pHeight) const
-{
-   if (textLength < 0)
-   {
-      textLength = _tcslen(pszText);
-   }
-
-   for (int i = 0; i < textLength; i++)
-   {
-      tChar c = pszText[i];
-
-      uint index = c - kRenderFontGlyphFirst;
-
-      const sTextureFontGlyph & glyph = m_pGlyphs[index];
-   }
-
-   return E_NOTIMPL;
-}
-
-////////////////////////////////////////
-
-tResult cRenderFontFreetype::RenderText(const tChar * pszText, int textLength, int x, int y) const
+tResult cRenderFontFreetype::RenderText(const tChar * pszText, int textLength, tRect * pRect,
+                                        uint flags, const float color[4]) const
 {
    if (textLength < 0)
    {
@@ -253,7 +232,7 @@ tResult cRenderFontFreetype::RenderText(const tChar * pszText, int textLength, i
    sTextVertex * vertices = reinterpret_cast<sTextVertex *>(alloca(6 * textLength * sizeof(sTextVertex)));
    uint nVertices = 0;
 
-   float tx = static_cast<float>(x), ty = static_cast<float>(y);
+   float tx = static_cast<float>(pRect->left), ty = static_cast<float>(pRect->top);
 
    for (int i = 0; i < textLength; i++)
    {
@@ -353,14 +332,6 @@ tResult cRenderFontFreetype::RenderText(const tChar * pszText, int textLength, i
    glDrawArrays(GL_TRIANGLES, 0, nVertices);
 
    return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cRenderFontFreetype::RenderText(const tChar * pszText, int textLength, tRect * pRect,
-                                        uint flags, const cColor & color) const
-{
-   return E_NOTIMPL;
 }
 
 ////////////////////////////////////////

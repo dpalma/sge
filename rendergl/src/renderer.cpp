@@ -4,10 +4,12 @@
 #include "stdhdr.h"
 
 #include "renderer.h"
+#include "renderfontapi.h"
 
 #include "axisalignedbox.h"
 #include "color.h"
 #include "resourceapi.h"
+#include "techhash.h"
 #include "techmath.h"
 #include "vec3.h"
 
@@ -24,6 +26,8 @@
 
 #include "dbgalloc.h" // must be last header
 
+extern tResult RenderFontCreateGL(const tChar * pszFont, int pointSize, uint flags, IRenderFont * * ppFont);
+extern tResult RenderFontCreateFTGL(const tChar * pszFont, int fontPointSize, uint flags, IRenderFont * * ppFont);
 
 extern tResult Render2DCreateGL(IRender2D * * ppRender2D);
 
@@ -258,6 +262,13 @@ tResult cRenderer::Term()
    }
 #endif
 
+   tFontMap::iterator iter = m_fontMap.begin();
+   for (; iter != m_fontMap.end(); ++iter)
+   {
+      SafeRelease(iter->second);
+   }
+   m_fontMap.clear();
+
    return S_OK;
 }
 
@@ -448,15 +459,30 @@ tResult cRenderer::Render(ePrimitiveType primitive, const void * pIndices, uint 
 
 ////////////////////////////////////////
 
-extern tResult RenderFontCreateGL(const tChar * pszFont, int pointSize, uint flags, IRenderFont * * ppFont);
-extern tResult RenderFontCreateFTGL(const tChar * pszFont, int fontPointSize, uint flags, IRenderFont * * ppFont);
 tResult cRenderer::CreateFont(const tChar * pszFont, int fontPointSize, uint flags, IRenderFont * * ppFont)
 {
+   uint h = Hash(pszFont, _tcslen(pszFont) * sizeof(tChar));
+   h = hash(reinterpret_cast<byte *>(&fontPointSize), sizeof(fontPointSize), h);
+   h = hash(reinterpret_cast<byte *>(&flags), sizeof(flags), h);
+
+   tFontMap::iterator f = m_fontMap.find(h);
+   if (f != m_fontMap.end())
+   {
+      *ppFont = CTAddRef(f->second);
+      return S_OK;
+   }
+
    tResult result = RenderFontCreateFTGL(pszFont, fontPointSize, flags, ppFont);
    if (result != S_OK)
    {
       result = RenderFontCreateGL(pszFont, fontPointSize, flags, ppFont);
    }
+
+   if (result == S_OK)
+   {
+      m_fontMap[h] = CTAddRef(*ppFont);
+   }
+
    return result;
 }
 

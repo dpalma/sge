@@ -7,7 +7,6 @@
 #include "renderdll.h"
 #include "comtools.h"
 
-#include "color.h"
 #include "rect.h"
 
 #ifdef _MSC_VER
@@ -51,12 +50,8 @@ enum eRenderTextFlags
 
 interface IRenderFont : IUnknown
 {
-   virtual tResult MeasureText(const tChar * pszText, int textLength, int * pWidth, int * pHeight) const = 0;
-
-   virtual tResult RenderText(const tChar * pszText, int textLength, int x, int y) const = 0;
-
    virtual tResult RenderText(const tChar * pszText, int textLength, tRect * pRect,
-                              uint flags, const cColor & color) const = 0;
+                              uint flags, const float color[4]) const = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

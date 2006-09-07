@@ -209,7 +209,7 @@ tResult cGUIBeveledRenderer::ButtonRender(IGUIElement * pElement, const tGUIPoin
          }
 
          pFont->RenderText(pszText, -1, &rect, renderTextFlags,
-            pElement->IsEnabled() ? GUIStandardColors::White : colors[kBC_Shadow]);
+            pElement->IsEnabled() ? GUIStandardColors::White.GetPointer() : colors[kBC_Shadow].GetPointer());
 
          return S_OK;
       }
@@ -231,7 +231,7 @@ tGUISize cGUIBeveledRenderer::ButtonPreferredSize(IGUIElement * pElement, const 
       if (GUIElementFont(pElement, &pFont) == S_OK)
       {
          tRect rect(0,0,0,0);
-         pFont->RenderText(pszText, -1, &rect, kRT_CalcRect, GUIStandardColors::White);
+         pFont->RenderText(pszText, -1, &rect, kRT_CalcRect, NULL);
          return tGUISize(static_cast<tGUISizeType>(rect.GetWidth() + rect.GetHeight()), rect.GetHeight() * 1.5f);
       }
    }
@@ -264,7 +264,7 @@ tResult cGUIBeveledRenderer::LabelRender(IGUIElement * pElement, const tGUIPoint
       cAutoIPtr<IRenderFont> pFont;
       if (GUIElementFont(pLabelElement, &pFont) == S_OK)
       {
-         pFont->RenderText(pszText, -1, &rect, kRT_NoClip, color);
+         pFont->RenderText(pszText, -1, &rect, kRT_NoClip, color.GetPointer());
          return S_OK;
       }
    }
@@ -285,7 +285,7 @@ tGUISize cGUIBeveledRenderer::LabelPreferredSize(IGUIElement * pElement, const t
       if (GUIElementFont(pLabelElement, &pFont) == S_OK)
       {
          tRect rect(0,0,0,0);
-         pFont->RenderText(pszText, -1, &rect, kRT_CalcRect, GUIStandardColors::White);
+         pFont->RenderText(pszText, -1, &rect, kRT_CalcRect, NULL);
          return tGUISize(static_cast<tGUISizeType>(rect.GetWidth()), static_cast<tGUISizeType>(rect.GetHeight()));
       }
    }
@@ -359,7 +359,7 @@ tResult cGUIBeveledRenderer::ListBoxRender(IGUIElement * pElement, const tGUIPoi
             if (itemHeight == 0)
             {
                itemRect = rect;
-               pFont->RenderText(pszText, -1, &itemRect, kRT_CalcRect, textColor);
+               pFont->RenderText(pszText, -1, &itemRect, kRT_CalcRect, NULL);
                itemHeight = itemRect.GetHeight();
                pListBoxElement->SetItemHeight(itemHeight);
             }
@@ -367,11 +367,11 @@ tResult cGUIBeveledRenderer::ListBoxRender(IGUIElement * pElement, const tGUIPoi
             if (pListBoxElement->IsItemSelected(i))
             {
                pRender2D->RenderSolidRect(itemRect, GUIStandardColors::Blue);
-               pFont->RenderText(pszText, -1, &itemRect, kRT_NoClip, GUIStandardColors::White);
+               pFont->RenderText(pszText, -1, &itemRect, kRT_NoClip, GUIStandardColors::White.GetPointer());
             }
             else
             {
-               pFont->RenderText(pszText, -1, &itemRect, kRT_NoClip, textColor);
+               pFont->RenderText(pszText, -1, &itemRect, kRT_NoClip, textColor.GetPointer());
             }
 
             itemRect.Offset(0, itemHeight);
@@ -397,7 +397,7 @@ tGUISize cGUIBeveledRenderer::ListBoxPreferredSize(IGUIElement * pElement, const
       if (pListBoxElement->GetRowCount(&rowCount) == S_OK)
       {
          tRect rect(0,0,0,0);
-         pFont->RenderText("XYZxyz\0", -1, &rect, kRT_CalcRect, GUIStandardColors::White);
+         pFont->RenderText("XYZxyz\0", -1, &rect, kRT_CalcRect, NULL);
          return tGUISize(0, static_cast<tGUISizeType>(rowCount * rect.GetHeight()));
       }
    }
@@ -533,12 +533,11 @@ tResult cGUIBeveledRenderer::TextEditRender(IGUIElement * pElement, const tGUIPo
       cAutoIPtr<IRenderFont> pFont;
       if (GUIElementFont(pTextEditElement, &pFont) == S_OK)
       {
-         pFont->RenderText(pszText, -1, &rect, kRT_NoClip, textColor);
+         pFont->RenderText(pszText, -1, &rect, kRT_NoClip, textColor.GetPointer());
 
          // Determine the width of the text up to the cursor
          tRect leftOfCursor(0,0,0,0);
-         pFont->RenderText(pszText, selEnd, &leftOfCursor,
-            kRT_NoClip | kRT_CalcRect, GUIStandardColors::White);
+         pFont->RenderText(pszText, selEnd, &leftOfCursor, kRT_NoClip | kRT_CalcRect, NULL);
 
          // Offset the left edge so that the cursor is always in view.
          if (leftOfCursor.GetWidth() >= rect.GetWidth())
@@ -586,7 +585,7 @@ tGUISize cGUIBeveledRenderer::TextEditPreferredSize(IGUIElement * pElement, cons
       memset(psz, 'M', editSize * sizeof(char));
 
       tRect rect(0,0,0,0);
-      pFont->RenderText(psz, editSize, &rect, kRT_CalcRect | kRT_SingleLine, GUIStandardColors::White);
+      pFont->RenderText(psz, editSize, &rect, kRT_CalcRect | kRT_SingleLine, NULL);
 
       return tGUISize(static_cast<tGUISizeType>(rect.GetWidth() + (kHorzInset * 2)),
                       static_cast<tGUISizeType>(rect.GetHeight() + (kVertInset * 2)));
@@ -624,7 +623,7 @@ tResult cGUIBeveledRenderer::TitleBarRender(IGUIElement * pElement, const tGUIPo
       tGUIString title;
       if (pTitleBarElement->GetTitle(&title) == S_OK)
       {
-         pFont->RenderText(title.c_str(), -1, &rect, 0, captionText);
+         pFont->RenderText(title.c_str(), -1, &rect, 0, captionText.GetPointer());
       }
    }
 
@@ -646,7 +645,7 @@ tGUISize cGUIBeveledRenderer::TitleBarPreferredSize(IGUIElement * pElement, cons
          tGUISize size(0,0);
 
          tRect titleSize(0,0,0,0);
-         if (pFont->RenderText(title.c_str(), title.length(), &titleSize, kRT_CalcRect, GUIStandardColors::White) == S_OK)
+         if (pFont->RenderText(title.c_str(), title.length(), &titleSize, kRT_CalcRect, NULL) == S_OK)
          {
             size.height = static_cast<tGUISizeType>(titleSize.GetHeight());
          }

@@ -7,7 +7,6 @@
 
 #include "sys.h"
 
-#include "color.h"
 #include "filepath.h"
 #include "filespec.h"
 
@@ -99,53 +98,7 @@ tResult cRenderFontFtgl::Create(const tChar * pszFont, int fontPointSize, IRende
 
 ////////////////////////////////////////
 
-tResult cRenderFontFtgl::MeasureText(const tChar * pszText, int /*textLength*/, int * pWidth, int * pHeight) const
-{
-   if (pszText == NULL || pWidth == NULL || pHeight == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (m_pFont == NULL)
-   {
-      return E_FAIL;
-   }
-
-   float llx = 0, lly = 0, llz = 0, urx = 0, ury = 0, urz = 0;
-   m_pFont->BBox(pszText, llx, lly, llz, urx, ury, urz);
-
-   *pWidth = FloatToInt(urx - llx);
-   *pHeight = FloatToInt(ury - lly);
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cRenderFontFtgl::RenderText(const tChar * pszText, int /*textLength*/, int x, int y) const
-{
-   if (pszText == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (m_pFont == NULL)
-   {
-      return E_FAIL;
-   }
-
-   glPushMatrix();
-   glTranslatef(static_cast<GLfloat>(x), static_cast<GLfloat>(y), 0);
-   glScalef(1, -1, 1);
-   glEnable(GL_TEXTURE_2D);
-   m_pFont->Render(pszText);
-   glPopMatrix();
-
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cRenderFontFtgl::RenderText(const tChar * pszText, int textLength, tRect * pRect, uint flags, const cColor & color) const
+tResult cRenderFontFtgl::RenderText(const tChar * pszText, int textLength, tRect * pRect, uint flags, const float color[4]) const
 {
    if (pszText == NULL || pRect == NULL)
    {
@@ -188,7 +141,10 @@ tResult cRenderFontFtgl::RenderText(const tChar * pszText, int textLength, tRect
             pRect->GetHeight());
       }
 
-      glColor4fv(color.GetPointer());
+      if (color != NULL)
+      {
+         glColor4fv(color);
+      }
 
       glPushMatrix();
       glTranslatef(static_cast<GLfloat>(pRect->left), static_cast<GLfloat>(pRect->bottom), 0);

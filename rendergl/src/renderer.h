@@ -8,6 +8,8 @@
 
 #include "globalobjdef.h"
 
+#include <map>
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -85,6 +87,9 @@ private:
 
    eIndexFormat m_indexFormat;
    GLenum m_glIndexFormat;
+
+   typedef std::map<uint, IRenderFont *> tFontMap;
+   tFontMap m_fontMap;
 
    cAutoIPtr<IRender2D> m_pRender2D;
 };
