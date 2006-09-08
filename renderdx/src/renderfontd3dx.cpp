@@ -76,6 +76,8 @@ tResult cRenderFontD3DX::RenderText(const tChar * pszText, int textLength, tRect
 
       return S_OK;
    }
+
+   return E_FAIL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
