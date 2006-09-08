@@ -7,14 +7,10 @@
 
 #include "techtime.h"
 
-#ifdef HAVE_CPPUNITLITE2
-#include "CppUnitLite2.h"
-#endif
-
 #ifdef HAVE_UNITTESTPP
 #include "Test.h"
+#include "TestReporter.h"
 #include "TestRunner.h"
-#include "TestReporterStdOut.h"
 #endif
 
 #include <cstdlib>
@@ -72,10 +68,83 @@ tSysResizeFn SysSetResizeCallback(tSysResizeFn pfn)
 
 #ifdef HAVE_UNITTESTPP
 
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cSysTestReporter
+//
+
+class cSysTestReporter : public UnitTest::TestReporter
+{
+public:
+   cSysTestReporter();
+   virtual ~cSysTestReporter();
+
+   virtual void ReportTestStart(char const* testName);
+   virtual void ReportFailure(char const* file, int line, char const* testName, char const* failure);
+   virtual void ReportTestFinish(char const* testName, float secondsElapsed);
+   virtual void ReportSummary(int testCount, int failureCount, float secondsElapsed);
+};
+
+////////////////////////////////////////
+
+cSysTestReporter::cSysTestReporter()
+{
+}
+
+////////////////////////////////////////
+
+cSysTestReporter::~cSysTestReporter()
+{
+}
+
+////////////////////////////////////////
+
+void cSysTestReporter::ReportTestStart(char const* testName)
+{
+   if (LOG_IS_CHANNEL_ENABLED(VerboseUnitTests))
+   {
+      techlog.Print(kInfo, "Test \"%s\" begin\n", testName);
+   }
+}
+
+////////////////////////////////////////
+
+void cSysTestReporter::ReportFailure(char const* file, int line, char const* testName, char const* failure)
+{
+   techlog.Print(file, line, kError, "Failure int %s: %s\n", testName, failure);
+}
+
+////////////////////////////////////////
+
+void cSysTestReporter::ReportTestFinish(char const* testName, float secondsElapsed)
+{
+   if (LOG_IS_CHANNEL_ENABLED(VerboseUnitTests))
+   {
+      techlog.Print(kInfo, "Test \"%s\" end\n", testName);
+   }
+}
+
+////////////////////////////////////////
+
+void cSysTestReporter::ReportSummary(int testCount, int failureCount, float secondsElapsed)
+{
+   if (failureCount > 0)
+   {
+      techlog.Print(kInfo, "%d of %d UNIT TESTS FAILED!\n", failureCount, testCount);
+   }
+   else
+   {
+      techlog.Print(kInfo, "%d unit tests succeeded (%f seconds elapsed)\n", testCount, secondsElapsed);
+   }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 static tResult SysRunUnitTestPP()
 {
    using namespace UnitTest;
-   TestReporterStdout reporter;
+   cSysTestReporter reporter;
    const TestList & tests = Test::GetTestList();
    int nFailures = RunAllTests(reporter, tests);
    if (nFailures > 0)
@@ -95,113 +164,12 @@ static tResult SysRunUnitTestPP()
 #endif // HAVE_UNITTESTPP
 
 
-#ifdef HAVE_CPPUNITLITE2
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cSysTestResult
-//
-
-class cSysTestResult : public TestResult
-{
-public:
-   virtual void TestBegin(const char * pszTestName);
-   virtual void TestEnd(const char * pszTestName);
-   virtual void AddFailure(const Failure & failure);
-   virtual void EndTests();
-   std::list<Failure>::const_iterator BeginFailures() const { return m_failures.begin(); }
-   std::list<Failure>::const_iterator EndFailures() const { return m_failures.end(); }
-private:
-   std::list<Failure> m_failures;
-};
-
-////////////////////////////////////////
-
-void cSysTestResult::TestBegin(const char * pszTestName)
-{
-   if (LOG_IS_CHANNEL_ENABLED(VerboseUnitTests))
-   {
-      techlog.Print(kInfo, "Test \"%s\" begin\n", pszTestName);
-   }
-}
-
-////////////////////////////////////////
-
-void cSysTestResult::TestEnd(const char * pszTestName)
-{
-   if (LOG_IS_CHANNEL_ENABLED(VerboseUnitTests))
-   {
-      techlog.Print(kInfo, "Test \"%s\" end\n", pszTestName);
-   }
-}
-
-////////////////////////////////////////
-
-void cSysTestResult::AddFailure(const Failure & failure) 
-{
-   TestResult::AddFailure(failure);
-   m_failures.push_back(failure);
-}
-
-////////////////////////////////////////
-
-void cSysTestResult::EndTests() 
-{
-   TestResult::EndTests();
-
-   if (FailureCount() > 0)
-   {
-      techlog.Print(kInfo, "%d of %d UNIT TESTS FAILED!\n", FailureCount(), TestCount());
-   }
-   else
-   {
-      techlog.Print(kInfo, "%d unit tests succeeded (%f seconds elapsed)\n", TestCount(), m_secondsElapsed);
-   }
-}
-
-///////////////////////////////////////
-
-static tResult SysRunCppUnitLite2()
-{
-   cSysTestResult result;
-   TestRegistry::Instance().Run(result);
-   TestRegistry::Destroy();
-   if (result.FailureCount() > 0)
-   {
-      std::list<Failure>::const_iterator iter = result.BeginFailures();
-      std::list<Failure>::const_iterator end = result.EndFailures();
-      for (; iter != end; iter++)
-      {
-         const Failure & failure = *iter;
-         techlog.Print(kError, "%s\n", failure.Condition());
-      }
-      return E_FAIL;
-   }
-   return S_OK;
-}
-
-#else
-
-static tResult SysRunCppUnitLite2()
-{
-   return S_OK;
-}
-
-#endif // HAVE_CPPUNITLITE2
-
 ///////////////////////////////////////////////////////////////////////////////
 
 tResult SysRunUnitTests()
 {
 #ifdef HAVE_UNITTESTPP
    if (FAILED(SysRunUnitTestPP()))
-   {
-      return E_FAIL;
-   }
-#endif
-
-#ifdef HAVE_UNITTESTPP
-   if (FAILED(SysRunCppUnitLite2()))
    {
       return E_FAIL;
    }
