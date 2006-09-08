@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // $Id$
 
-#ifndef INCLUDED_RENDER2D_H
-#define INCLUDED_RENDER2D_H
+#ifndef INCLUDED_RENDER2DDX_H
+#define INCLUDED_RENDER2DDX_H
 
 #include "renderapi.h"
 
@@ -12,10 +12,19 @@
 #pragma once
 #endif
 
-#if HAVE_DIRECTX
-
 F_DECLARE_INTERFACE(IDirect3DDevice9);
 F_DECLARE_INTERFACE(IDirect3DStateBlock9);
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+struct sVertexD3D
+{
+   float x, y, z;
+   uint32 color;
+};
+
+extern const uint kVertexFVF;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -32,6 +41,8 @@ public:
    cRender2DDX(IDirect3DDevice9 * pD3dDevice);
    ~cRender2DDX();
 
+   virtual tResult GetViewportSize(int * pWidth, int * pHeight) const;
+
    virtual void PushScissorRect(const tRect & rect);
    virtual void PopScissorRect();
 
@@ -39,19 +50,13 @@ public:
    virtual void RenderBeveledRect(const tRect & rect, int bevel, const cColor & topLeft,
                                   const cColor & bottomRight, const cColor & face);
 
-   void Begin2D(int width, int height);
-   void End2D();
-
 private:
    cAutoIPtr<IDirect3DDevice9> m_pD3dDevice;
    typedef std::stack<tRect> tRectStack;
    tRectStack m_scissorRectStack;
    int m_viewport[4];
-   cAutoIPtr<IDirect3DStateBlock9> m_pStateBlock;
 };
-
-#endif // HAVE_DIRECTX
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // INCLUDED_RENDER2D_H
+#endif // INCLUDED_RENDER2DDX_H

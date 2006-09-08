@@ -3,28 +3,16 @@
 
 #include "stdhdr.h"
 
-#include "render2d.h"
+#include "render2ddx.h"
 
-#if HAVE_DIRECTX
+#define WIN32_LEAN_AND_MEAN
 #include <d3d9.h>
 #include <d3dx9.h>
-#endif
 
 #include "dbgalloc.h" // must be last header
 
 
-#if HAVE_DIRECTX
-
-////////////////////////////////////////////////////////////////////////////////
-
-struct sVertexD3D
-{
-   float x, y, z;
-   uint32 color;
-};
-
-static const uint kVertexFVF = D3DFVF_XYZ | D3DFVF_DIFFUSE;
-
+const uint kVertexFVF = D3DFVF_XYZ | D3DFVF_DIFFUSE;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -61,6 +49,24 @@ cRender2DDX::cRender2DDX(IDirect3DDevice9 * pD3dDevice)
 
 cRender2DDX::~cRender2DDX()
 {
+}
+
+////////////////////////////////////////
+
+tResult cRender2DDX::GetViewportSize(int * pWidth, int * pHeight) const
+{
+   if (pWidth == NULL || pHeight == NULL)
+   {
+      return E_POINTER;
+   }
+   D3DVIEWPORT9 viewport;
+   if (const_cast<IDirect3DDevice9 *>((const IDirect3DDevice9 *)m_pD3dDevice)->GetViewport(&viewport) == D3D_OK)
+   {
+      *pWidth = viewport.Width;
+      *pHeight = viewport.Height;
+      return S_OK;
+   }
+   return E_FAIL;
 }
 
 ////////////////////////////////////////
@@ -193,47 +199,4 @@ void cRender2DDX::RenderBeveledRect(const tRect & rect, int bevel, const cColor 
    }
 }
 
-////////////////////////////////////////
-
-void cRender2DDX::Begin2D(int width, int height)
-{
-   if (!m_pStateBlock)
-   {
-      m_pD3dDevice->BeginStateBlock();
-
-      m_pD3dDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-      m_pD3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-      m_pD3dDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
-
-      D3DVIEWPORT9 viewport;
-      m_pD3dDevice->GetViewport(&viewport);
-
-      // TODO: Call should use the following parameters: (0, width, height, 0, -99999, 99999);
-
-      D3DXMATRIX ortho;
-      D3DXMatrixOrthoOffCenterLH(&ortho,
-         0, static_cast<float>(viewport.Width),
-         static_cast<float>(viewport.Height), 0,
-         viewport.MinZ, viewport.MaxZ);
-      m_pD3dDevice->SetTransform(D3DTS_PROJECTION, &ortho);
-
-      m_pD3dDevice->SetFVF(kVertexFVF);
-
-      m_pD3dDevice->EndStateBlock(&m_pStateBlock);
-   }
-
-   if (!!m_pStateBlock)
-   {
-      m_pStateBlock->Apply();
-   }
-}
-
-////////////////////////////////////////
-
-void cRender2DDX::End2D()
-{
-}
-
 ///////////////////////////////////////////////////////////////////////////////
-
-#endif // HAVE_DIRECTX

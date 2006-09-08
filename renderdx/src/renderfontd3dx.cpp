@@ -3,57 +3,48 @@
 
 #include "stdhdr.h"
 
-#include "guifontd3d.h"
+#include "renderfontd3dx.h"
 
 #ifndef _WIN32
 #error ("This file is for Windows compilation only")
 #endif
 
 #define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
-#if HAVE_DIRECTX
 #include <d3dx9.h>
-#endif
 
 #include <cstring>
 
 #include "dbgalloc.h" // must be last header
 
-#if HAVE_DIRECTX
 #ifdef _DEBUG
 #pragma comment(lib, "d3dx9d")
 #else
 #pragma comment(lib, "d3dx9")
 #endif
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGUIFontD3D
+// CLASS: cRenderFontD3DX
 //
 
 ///////////////////////////////////////
 
-cGUIFontD3D::cGUIFontD3D(ID3DXFont * pD3dxFont)
-#if HAVE_DIRECTX
+cRenderFontD3DX::cRenderFontD3DX(ID3DXFont * pD3dxFont)
  : m_pD3dxFont(CTAddRef(pD3dxFont))
-#endif
 {
 }
 
 ///////////////////////////////////////
 
-cGUIFontD3D::~cGUIFontD3D()
+cRenderFontD3DX::~cRenderFontD3DX()
 {
 }
 
 ///////////////////////////////////////
 
-tResult cGUIFontD3D::RenderText(const char * pszText, int textLength, tRect * pRect,
-                                uint flags, const cColor & color) const
+tResult cRenderFontD3DX::RenderText(const tChar * pszText, int textLength, tRect * pRect,
+                                    uint flags, const float color[4]) const
 {
-#if HAVE_DIRECTX
    if (!!m_pD3dxFont)
    {
       RECT rect;
@@ -70,7 +61,7 @@ tResult cGUIFontD3D::RenderText(const char * pszText, int textLength, tRect * pR
       if (flags & kRT_SingleLine) format |= DT_SINGLELINE;
       if (flags & kRT_Bottom) format |= DT_BOTTOM;
 
-      if (!m_pD3dxFont->DrawText(NULL, pszText, textLength, &rect, format, color.ToARGB8888()))
+      if (!m_pD3dxFont->DrawText(NULL, pszText, textLength, &rect, format, (color != NULL) ? cColor(color).ToARGB8888() : 0))
       {
          return E_FAIL;
       }
@@ -85,23 +76,11 @@ tResult cGUIFontD3D::RenderText(const char * pszText, int textLength, tRect * pR
 
       return S_OK;
    }
-#endif // HAVE_DIRECTX
-
-   return E_FAIL;
-}
-
-///////////////////////////////////////
-
-tResult cGUIFontD3D::RenderText(const wchar_t * pszText, int textLength, tRect * pRect,
-                                uint flags, const cColor & color) const
-{
-   return E_NOTIMPL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#if HAVE_DIRECTX
-tResult GUIFontCreateD3D(IDirect3DDevice9 * pD3dDevice, const cGUIFontDesc & fontDesc, IGUIFont * * ppFont)
+tResult RenderFontCreateD3DX(const tChar * pszFont, int fontPointSize, uint flags, IDirect3DDevice9 * pD3dDevice, IRenderFont * * ppFont)
 {
    if (pD3dDevice == NULL || ppFont == NULL)
    {
@@ -114,28 +93,19 @@ tResult GUIFontCreateD3D(IDirect3DDevice9 * pD3dDevice, const cGUIFontDesc & fon
       return E_FAIL;
    }
 
-   int height = 0;
-   if (fontDesc.GetSizeType() == kGUIFontSizePoints)
-   {
-      height = -MulDiv(fontDesc.GetSize(), GetDeviceCaps(hScreenDC, LOGPIXELSY), 72);
-   }
-   else if (fontDesc.GetSizeType() == kGUIFontSizeEm)
-   {
-      height = fontDesc.GetSize();
-   }
-   else
-   {
-      return E_NOTIMPL;
-   }
+   int height = -MulDiv(fontPointSize, GetDeviceCaps(hScreenDC, LOGPIXELSY), 72);
 
    ReleaseDC(NULL, hScreenDC), hScreenDC = NULL;
 
+   bool bBold = (flags & kRFF_Bold) == kRFF_Bold;
+   bool bItalic = (flags & kRFF_Italic) == kRFF_Italic;
+
    cAutoIPtr<ID3DXFont> pD3DXFont;
-   if (D3DXCreateFont(pD3dDevice, height, 0, fontDesc.IsBold() ? FW_EXTRABOLD : FW_NORMAL,
-      4, fontDesc.IsItalic(), DEFAULT_CHARSET, OUT_TT_PRECIS, PROOF_QUALITY,
-      DEFAULT_PITCH | FF_DONTCARE, fontDesc.GetFace(), &pD3DXFont) == S_OK)
+   if (D3DXCreateFont(pD3dDevice, height, 0, bBold ? FW_EXTRABOLD : FW_NORMAL,
+      4, bItalic, DEFAULT_CHARSET, OUT_TT_PRECIS, PROOF_QUALITY,
+      DEFAULT_PITCH | FF_DONTCARE, pszFont, &pD3DXFont) == S_OK)
    {
-      cAutoIPtr<cGUIFontD3D> pFont(new cGUIFontD3D(pD3DXFont));
+      cAutoIPtr<cRenderFontD3DX> pFont(new cRenderFontD3DX(pD3DXFont));
       if (!pFont)
       {
          return E_OUTOFMEMORY;
@@ -147,6 +117,5 @@ tResult GUIFontCreateD3D(IDirect3DDevice9 * pD3dDevice, const cGUIFontDesc & fon
 
    return E_FAIL;
 }
-#endif // HAVE_DIRECTX
 
 ///////////////////////////////////////////////////////////////////////////////
