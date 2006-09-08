@@ -92,10 +92,18 @@ namespace ManagedEditor
          UseGlobal(EntityManager);
          pEntityManager->RenderAll();
 
-         UseGlobal(GUIContext);
-         if (!!pGUIContext)
+         int width, height;
+         if (SysGetWindowSize(&width, &height) == S_OK)
          {
-            pGUIContext->RenderGUI();
+            cAutoIPtr<IRender2D> pRender2D;
+            if (pRenderer->Begin2D(width, height, &pRender2D) == S_OK)
+            {
+               UseGlobal(GUIContext);
+               if (!!pGUIContext)
+                  pGUIContext->RenderGUI(pRender2D);
+
+               pRenderer->End2D();
+            }
          }
 
          pRenderer->EndScene();
@@ -112,19 +120,22 @@ namespace ManagedEditor
    {
       EditorForm::OnResize(e);
 
-      float aspect = static_cast<float>(m_glControl->Width) / m_glControl->Height;
+      if (m_glControl)
+      {
+         float aspect = static_cast<float>(m_glControl->Width) / m_glControl->Height;
 
-      const float kFov = 70;
-      const float kZNear = 1;
-      const float kZFar = 5000;
+         const float kFov = 70;
+         const float kZNear = 1;
+         const float kZFar = 5000;
 
-      UseGlobal(Camera);
-      pCamera->SetPerspective(kFov, aspect, kZNear, kZFar);
+         UseGlobal(Camera);
+         pCamera->SetPerspective(kFov, aspect, kZNear, kZFar);
 
-      glViewport(0, 0, m_glControl->Width, m_glControl->Height);
+         glViewport(0, 0, m_glControl->Width, m_glControl->Height);
 
-      glMatrixMode(GL_PROJECTION);
-      glLoadMatrixf(pCamera->GetProjectionMatrix().m);
+         glMatrixMode(GL_PROJECTION);
+         glLoadMatrixf(pCamera->GetProjectionMatrix().m);
+      }
    }
 
    void EditorAppForm::NewDocument()

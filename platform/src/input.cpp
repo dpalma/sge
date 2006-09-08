@@ -17,25 +17,8 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#if !defined(NDEBUG) && defined(_MSC_VER)
-#ifdef _DLL
-EXTERN_C DECLSPEC_DLLIMPORT int CDECL _CrtIsValidHeapPointer(const void * userData);
-#else
-EXTERN_C int CDECL _CrtIsValidHeapPointer(const void * userData);
-#endif
-#else
-#define _CrtIsValidHeapPointer(userData) ((int)1)
-#endif
-
 LOG_DEFINE_CHANNEL(InputEvents);
 
-///////////////////////////////////////////////////////////////////////////////
-
-static bool ScriptExecString(const char * pszCode)
-{
-   UseGlobal(ScriptInterpreter);
-   return (pScriptInterpreter->ExecString(pszCode) == S_OK);
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -79,15 +62,8 @@ cInput::~cInput()
 
 tResult cInput::Init()
 {
-#if !defined(NDEBUG) && defined(_WIN32)
    Assert(_countof(m_keyDownBindings) == kMaxKeys);
    Assert(_countof(m_keyDownBindings) == _countof(m_keyUpBindings));
-   for (int i = 0; i < _countof(m_keyDownBindings); i++)
-   {
-      Assert(_CrtIsValidHeapPointer(m_keyDownBindings[i]) || m_keyDownBindings[i] == NULL);
-      Assert(_CrtIsValidHeapPointer(m_keyUpBindings[i]) || m_keyUpBindings[i] == NULL);
-   }
-#endif
 
    SysSetKeyEventCallback(OnSysKeyEvent, reinterpret_cast<uint_ptr>(this));
    SysSetMouseEventCallback(OnSysMouseEvent, reinterpret_cast<uint_ptr>(this));
@@ -300,7 +276,8 @@ void cInput::ReportKeyEvent(long key, bool down, double time)
       const char * p = KeyGetDownBinding(key);
       if (p != NULL)
       {
-         ScriptExecString(p);
+         UseGlobal(ScriptInterpreter);
+         pScriptInterpreter->ExecString(p);
       }
    }
    else
@@ -308,7 +285,8 @@ void cInput::ReportKeyEvent(long key, bool down, double time)
       const char * p = KeyGetUpBinding(key);
       if (p != NULL)
       {
-         ScriptExecString(p);
+         UseGlobal(ScriptInterpreter);
+         pScriptInterpreter->ExecString(p);
       }
    }
 }

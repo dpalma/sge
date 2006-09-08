@@ -42,7 +42,6 @@ static void RegisterGlobalObjects()
    EntityManagerCreate();
    GUIContextCreate();
    GUIFactoryCreate();
-   GUIFontCacheCreate();
    InputCreate();
    RendererCreate();
    ResourceManagerCreate();
@@ -120,13 +119,6 @@ static bool ManagedEditorInit(array<System::String ^> ^ args)
    {
       UseGlobal(ResourceManager);
       pResourceManager->AddDirectoryTreeFlattened(temp.c_str());
-   }
-
-   cAutoIPtr<IGUIRenderDeviceContext> pGuiRenderDevice;
-   if (GUIRenderDeviceCreateGL(&pGuiRenderDevice) == S_OK)
-   {
-      UseGlobal(GUIContext);
-      pGUIContext->SetRenderDeviceContext(pGuiRenderDevice);
    }
 
    UseGlobal(Scheduler);

@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\UnitTest++.lib winmm.lib opengl32.lib glu32.lib $(OutDir)\tinyxml.lib"
+				AdditionalDependencies="$(OutDir)\UnitTest++.lib winmm.lib $(OutDir)\tinyxml.lib"
 				OutputFile=".\..\..\Build.vc71\Opt/gui.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -162,7 +162,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\UnitTest++.lib winmm.lib opengl32.lib glu32.lib $(OutDir)\tinyxml.lib"
+				AdditionalDependencies="$(OutDir)\UnitTest++.lib winmm.lib $(OutDir)\tinyxml.lib"
 				OutputFile=".\..\..\Build.vc71\Debug/gui.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -282,7 +282,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="winmm.lib opengl32.lib glu32.lib $(OutDir)\tinyxml.lib"
+				AdditionalDependencies="winmm.lib $(OutDir)\tinyxml.lib"
 				OutputFile=".\..\..\Build.vc71\Release/gui.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"

@@ -8,9 +8,8 @@
 
 #include "engineapi.h"
 #include "inputapi.h"
-#include "schedulerapi.h"
+#include "renderapi.h"
 #include "sys.h"
-
 #include "scriptapi.h"
 
 #include "resourceapi.h"
@@ -21,6 +20,7 @@
 #include "techstring.h"
 #include "globalobj.h"
 #include "threadcallapi.h"
+#include "schedulerapi.h"
 
 #include <ctime>
 
@@ -72,8 +72,8 @@ static void RegisterGlobalObjects()
    ScriptInterpreterCreate();
    GUIContextCreate();
    GUIFactoryCreate();
-   GUIFontCacheCreate();
    ThreadCallerCreate();
+   RendererCreate();
 }
 
 
@@ -150,17 +150,6 @@ static bool d3dguiinit(int argc, tChar * argv[])
       return false;
    }
 
-   cAutoIPtr<IDirect3DDevice9> pD3dDevice;
-   if (SysGetDirect3DDevice9(&pD3dDevice) == S_OK)
-   {
-      UseGlobal(GUIContext);
-      cAutoIPtr<IGUIRenderDeviceContext> pGuiRenderDevice;
-      if (GUIRenderDeviceCreateD3D(pD3dDevice, &pGuiRenderDevice) == S_OK)
-      {
-         pGUIContext->SetRenderDeviceContext(pGuiRenderDevice);
-      }
-   }
-
    UseGlobal(ThreadCaller);
    if (FAILED(pThreadCaller->ThreadInit()))
    {
@@ -235,12 +224,24 @@ static tResult d3dguiframe()
 
    if (pD3dDevice->BeginScene() == D3D_OK)
    {
-      UseGlobal(GUIContext);
-      pGUIContext->RenderGUI();
+      int width, height;
+      if (SysGetWindowSize(&width, &height) == S_OK)
+      {
+         UseGlobal(Renderer);
+         cAutoIPtr<IRender2D> pRender2D;
+         if (pRenderer->Begin2D(width, height, &pRender2D) == S_OK)
+         {
+            UseGlobal(GUIContext);
+            pGUIContext->RenderGUI(pRender2D);
+
+            pRenderer->End2D();
+         }
+      }
 
       pD3dDevice->EndScene();
       pD3dDevice->Present(NULL, NULL, NULL, NULL);
    }
+
 
    SysSwapBuffers();
 
@@ -259,7 +260,7 @@ int STDCALL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
       return -1;
    }
 
-   int result = SysEventLoop(d3dguiframe);
+   int result = SysEventLoop(d3dguiframe, kSELF_None);
 
    d3dguiterm();
 
@@ -278,7 +279,7 @@ int main(int argc, char * argv[])
       return EXIT_FAILURE;
    }
 
-   int result = SysEventLoop(NULL);
+   int result = SysEventLoop(NULL, kSELF_None);
 
    d3dguiterm();
 
