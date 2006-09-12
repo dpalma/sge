@@ -87,6 +87,8 @@ tResult cRenderFontFtgl::Create(const tChar * pszFont, int fontPointSize, IRende
       return E_FAIL;
    }
 
+   pFtglFont->CharMap(FT_ENCODING_UNICODE);
+
    *ppFont = new cRenderFontFtgl(pFtglFont);
    if ((*ppFont) == NULL)
    {
@@ -110,16 +112,14 @@ tResult cRenderFontFtgl::RenderText(const tChar * pszText, int textLength, tRect
       return E_FAIL;
    }
 
+   if (textLength < 0)
+   {
+      textLength = _tcslen(pszText);
+   }
+
    WarnMsgIf(IsFlagSet(flags, kRT_NoBlend), "NoBlend flag not supported\n");
 
-   if (IsFlagSet(flags, kRT_CalcRect))
-   {
-      float llx = 0, lly = 0, llz = 0, urx = 0, ury = 0, urz = 0;
-      m_pFont->BBox(pszText, llx, lly, llz, urx, ury, urz);
-      pRect->right = pRect->left + FloatToInt(urx - llx);
-      pRect->bottom = pRect->top + FloatToInt(ury - lly);
-   }
-   else
+   if (!IsFlagSet(flags, kRT_CalcRect))
    {
       glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
 
@@ -145,17 +145,86 @@ tResult cRenderFontFtgl::RenderText(const tChar * pszText, int textLength, tRect
       {
          glColor4fv(color);
       }
-
-      glPushMatrix();
-      glTranslatef(static_cast<GLfloat>(pRect->left), static_cast<GLfloat>(pRect->bottom), 0);
-      glScalef(1, -1, 1);
-      m_pFont->Render(pszText);
-      glPopMatrix();
-
-      glPopAttrib();
    }
 
-   return S_OK;
+   static const tChar szLineBreakChars[] = _T("\r\n");
+
+   static const int kStringLengthSanityCheck = 2048;
+
+   tResult result = S_OK;
+
+   float y = static_cast<float>(pRect->top);
+   float boxWidth = 0;
+   int nLines = 0;
+
+   int accumLength = 0, breakLength = _tcscspn(pszText, szLineBreakChars);
+   while (accumLength < textLength)
+   {
+      if (breakLength >= kStringLengthSanityCheck)
+      {
+         WarnMsg1("Insane string segment length: %d\n", breakLength);
+         result = E_FAIL;
+         break;
+      }
+
+      tChar * pszLine = static_cast<tChar *>(alloca(breakLength + 1));
+      memcpy(pszLine, pszText, breakLength * sizeof(tChar));
+      pszLine[breakLength] = 0;
+
+      float llx = 0, lly = 0, llz = 0, urx = 0, ury = 0, urz = 0;
+      m_pFont->BBox(pszLine, llx, lly, llz, urx, ury, urz);
+      float lineWidth = (urx - llx);
+
+      if (IsFlagSet(flags, kRT_CalcRect))
+      {
+         if (lineWidth > boxWidth)
+         {
+            boxWidth = lineWidth;
+         }
+      }
+      else
+      {
+         float x = static_cast<GLfloat>(pRect->left);
+
+         if (IsFlagSet(flags, kRT_Center))
+         {
+            x += ((pRect->right - pRect->left - lineWidth) * 0.5f);
+         }
+
+         glPushMatrix();
+         glTranslatef(x, y + m_pFont->LineHeight(), 0);
+         glScalef(1, -1, 1);
+         m_pFont->Render(pszLine);
+         glPopMatrix();
+      }
+
+      nLines += 1;
+
+      accumLength += breakLength;
+
+      pszText += breakLength;
+      if (*pszText == _T('\n'))
+      {
+         y += m_pFont->LineHeight();
+      }
+      while ((*pszText != 0) && (_tcschr(szLineBreakChars, *pszText) != NULL))
+      {
+         pszText++;
+      }
+      breakLength = _tcscspn(pszText, szLineBreakChars);
+   }
+
+   if (!IsFlagSet(flags, kRT_CalcRect))
+   {
+      glPopAttrib();
+   }
+   else
+   {
+      pRect->right = pRect->left + FloatToInt(boxWidth);
+      pRect->bottom = pRect->top + FloatToInt(m_pFont->LineHeight() * nLines);
+   }
+
+   return result;
 }
 
 ////////////////////////////////////////
