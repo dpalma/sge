@@ -16,10 +16,7 @@
 #include <GL/glew.h>
 
 #ifdef HAVE_CG
-#include <Cg/cg.h>
 #include <Cg/cgGL.h>
-#include <CgFX/ICgFX.h>
-#include <CgFX/ICgFXEffect.h>
 #endif
 
 #include <cstring>
@@ -213,7 +210,8 @@ cRenderer::cRenderer()
  , m_bInScene(false)
 #ifdef HAVE_CG
  , m_cgContext(NULL)
- , m_oldCgErrorCallback(NULL)
+ , m_oldCgErrorHandler(NULL)
+ , m_pOldCgErrHandlerData(NULL)
  , m_cgProfile(CG_PROFILE_UNKNOWN)
 #endif
  , m_nVertexElements(0)
@@ -249,10 +247,11 @@ tResult cRenderer::Term()
 #ifdef HAVE_CG
    if (m_cgContext != NULL)
    {
-      if (m_oldCgErrorCallback != NULL)
+      if (m_oldCgErrorHandler != NULL)
       {
-         cgSetErrorCallback(m_oldCgErrorCallback);
-         m_oldCgErrorCallback = NULL;
+         cgSetErrorHandler(m_oldCgErrorHandler, m_pOldCgErrHandlerData);
+         m_oldCgErrorHandler = NULL;
+         m_pOldCgErrHandlerData = NULL;
       }
 
       cgDestroyContext(m_cgContext);
@@ -459,6 +458,7 @@ tResult cRenderer::Render(ePrimitiveType primitive, const void * pIndices, uint 
 
 ////////////////////////////////////////
 
+#undef CreateFont
 tResult cRenderer::CreateFont(const tChar * pszFont, int fontPointSize, uint flags, IRenderFont * * ppFont)
 {
    uint h = Hash(pszFont, _tcslen(pszFont) * sizeof(tChar));
@@ -537,9 +537,11 @@ tResult cRenderer::Initialize()
    if (m_cgContext == NULL)
    {
       m_cgContext = cgCreateContext();
-      Assert(m_oldCgErrorCallback == NULL);
-      m_oldCgErrorCallback = cgGetErrorCallback();
-      cgSetErrorCallback(CgErrorCallback);
+
+      Assert(m_oldCgErrorHandler == NULL && m_pOldCgErrHandlerData == NULL);
+      m_oldCgErrorHandler = cgGetErrorHandler(&m_pOldCgErrHandlerData);
+      cgSetErrorHandler(CgErrorHandler, static_cast<void*>(this));
+
       Assert(m_cgProfile == CG_PROFILE_UNKNOWN);
       m_cgProfile = cgGLGetLatestProfile(CG_GL_VERTEX);
    }
@@ -556,14 +558,13 @@ tResult cRenderer::Initialize()
 
 ////////////////////////////////////////
 
-void cRenderer::CgErrorCallback()
+void cRenderer::CgErrorHandler(CGcontext cgContext, CGerror cgError, void * pData)
 {
 #ifdef HAVE_CG
-   CGerror lastError = cgGetError();
-   if (lastError)
+   if (cgError)
    {
-      ErrorMsg(cgGetErrorString(lastError));
-      const char * pszListing = cgGetLastListing(g_CgContext);
+      ErrorMsg(cgGetErrorString(cgError));
+      const char * pszListing = cgGetLastListing(cgContext);
       if (pszListing != NULL)
       {
          ErrorMsg1("   %s\n", pszListing);
@@ -618,8 +619,7 @@ void * CgProgramLoad(IReader * pReader)
       && pReader->Tell(&length) == S_OK
       && pReader->Seek(0, kSO_Set) == S_OK)
    {
-      cAutoBuffer autoBuffer;
-      char stackBuffer[256];
+      char stackBuffer[1024];
       char * pBuffer = NULL;
 
       if (length >= 32768)
@@ -631,24 +631,17 @@ void * CgProgramLoad(IReader * pReader)
       if (length < sizeof(stackBuffer))
       {
          pBuffer = stackBuffer;
-      }
-      else
-      {
-         if (autoBuffer.Malloc(sizeof(char) * (length + 1), (void**)&pBuffer) != S_OK)
-         {
-            return NULL;
-         }
-      }
 
-      if (pReader->Read(pBuffer, length) == S_OK)
-      {
-         pBuffer[length] = 0;
-
-         CGprogram program = cgCreateProgram(cgContext, CG_SOURCE, pBuffer, g_CgProfile, NULL, NULL);
-         if (program != NULL)
+         if (pReader->Read(pBuffer, length) == S_OK)
          {
-            cgGLLoadProgram(program);
-            return program;
+            pBuffer[length] = 0;
+
+            CGprogram program = cgCreateProgram(cgContext, CG_SOURCE, pBuffer, g_CgProfile, NULL, NULL);
+            if (program != NULL)
+            {
+               cgGLLoadProgram(program);
+               return program;
+            }
          }
       }
    }

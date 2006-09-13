@@ -10,19 +10,15 @@
 
 #include <map>
 
+#ifdef HAVE_CG
+#include <Cg/Cg.h>
+#endif
+
 #ifdef _MSC_VER
 #pragma once
 #endif
 
 typedef unsigned int GLenum;
-
-#ifdef HAVE_CG
-typedef enum CGprofile;
-typedef struct _CGcontext *CGcontext;
-typedef struct _CGprogram *CGprogram;
-typedef struct _CGparameter *CGparameter;
-typedef void (*CGerrorCallbackFunc)(void);
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -70,14 +66,15 @@ public:
 
 private:
    tResult Initialize();
-   static void CgErrorCallback();
+   static void CgErrorHandler(CGcontext cgContext, CGerror cgError, void * pData);
 
    bool m_bInitialized;
    bool m_bInScene;
 
 #ifdef HAVE_CG
    CGcontext m_cgContext;
-   CGerrorCallbackFunc m_oldCgErrorCallback;
+   CGerrorHandlerFunc m_oldCgErrorHandler;
+   void * m_pOldCgErrHandlerData;
    CGprofile m_cgProfile;
 #endif
 
