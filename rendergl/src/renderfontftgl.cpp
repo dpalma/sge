@@ -154,11 +154,13 @@ tResult cRenderFontFtgl::RenderText(const tChar * pszText, int textLength, tRect
    tResult result = S_OK;
 
    float y = static_cast<float>(pRect->top);
-   float boxWidth = 0;
-   int nLines = 0;
+   float boxWidth = 0, boxHeight = 0;
+
+   float lineHeight = m_pFont->LineHeight();
+   float descender = m_pFont->Descender();
 
    int accumLength = 0, breakLength = _tcscspn(pszText, szLineBreakChars);
-   while (accumLength < textLength)
+   while ((*pszText != 0) && (accumLength < textLength))
    {
       if (breakLength >= kStringLengthSanityCheck)
       {
@@ -181,6 +183,7 @@ tResult cRenderFontFtgl::RenderText(const tChar * pszText, int textLength, tRect
          {
             boxWidth = lineWidth;
          }
+         boxHeight += lineHeight;
       }
       else
       {
@@ -192,13 +195,11 @@ tResult cRenderFontFtgl::RenderText(const tChar * pszText, int textLength, tRect
          }
 
          glPushMatrix();
-         glTranslatef(x, y + m_pFont->LineHeight(), 0);
+         glTranslatef(x, y + lineHeight + descender, 0);
          glScalef(1, -1, 1);
          m_pFont->Render(pszLine);
          glPopMatrix();
       }
-
-      nLines += 1;
 
       accumLength += breakLength;
 
@@ -207,9 +208,10 @@ tResult cRenderFontFtgl::RenderText(const tChar * pszText, int textLength, tRect
       {
          y += m_pFont->LineHeight();
       }
-      while ((*pszText != 0) && (_tcschr(szLineBreakChars, *pszText) != NULL))
+      while (_tcschr(szLineBreakChars, *pszText) != NULL)
       {
          pszText++;
+         accumLength++;
       }
       breakLength = _tcscspn(pszText, szLineBreakChars);
    }
@@ -221,7 +223,7 @@ tResult cRenderFontFtgl::RenderText(const tChar * pszText, int textLength, tRect
    else
    {
       pRect->right = pRect->left + FloatToInt(boxWidth);
-      pRect->bottom = pRect->top + FloatToInt(m_pFont->LineHeight() * nLines);
+      pRect->bottom = pRect->top + FloatToInt(boxHeight);
    }
 
    return result;
