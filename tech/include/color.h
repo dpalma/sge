@@ -53,8 +53,14 @@ public:
 
    const T * GetPointer() const;
 
-private:
-   T m_rgba[4];
+   union
+   {
+      struct
+      {
+         T r, g, b, a;
+      };
+      T rgba[3];
+   };
 };
 
 ////////////////////////////////////////
@@ -69,10 +75,10 @@ inline cColorImpl<T>::cColorImpl()
 template <typename T>
 inline cColorImpl<T>::cColorImpl(T r, T g, T b)
 {
-   m_rgba[0] = r;
-   m_rgba[1] = g;
-   m_rgba[2] = b;
-   m_rgba[3] = 1;
+   rgba[0] = r;
+   rgba[1] = g;
+   rgba[2] = b;
+   rgba[3] = 1;
 }
 
 ////////////////////////////////////////
@@ -80,10 +86,10 @@ inline cColorImpl<T>::cColorImpl(T r, T g, T b)
 template <typename T>
 inline cColorImpl<T>::cColorImpl(T r, T g, T b, T a)
 {
-   m_rgba[0] = r;
-   m_rgba[1] = g;
-   m_rgba[2] = b;
-   m_rgba[3] = a;
+   rgba[0] = r;
+   rgba[1] = g;
+   rgba[2] = b;
+   rgba[3] = a;
 }
 
 ////////////////////////////////////////
@@ -91,10 +97,10 @@ inline cColorImpl<T>::cColorImpl(T r, T g, T b, T a)
 template <typename T>
 inline cColorImpl<T>::cColorImpl(const T rgba[4])
 {
-   m_rgba[0] = rgba[0];
-   m_rgba[1] = rgba[1];
-   m_rgba[2] = rgba[2];
-   m_rgba[3] = rgba[3];
+   r = rgba[0];
+   g = rgba[1];
+   b = rgba[2];
+   a = rgba[3];
 }
 
 ////////////////////////////////////////
@@ -102,10 +108,10 @@ inline cColorImpl<T>::cColorImpl(const T rgba[4])
 template <typename T>
 inline cColorImpl<T>::cColorImpl(const cColorImpl & other)
 {
-   m_rgba[0] = other.m_rgba[0];
-   m_rgba[1] = other.m_rgba[1];
-   m_rgba[2] = other.m_rgba[2];
-   m_rgba[3] = other.m_rgba[3];
+   rgba[0] = other.rgba[0];
+   rgba[1] = other.rgba[1];
+   rgba[2] = other.rgba[2];
+   rgba[3] = other.rgba[3];
 }
 
 ////////////////////////////////////////
@@ -113,10 +119,10 @@ inline cColorImpl<T>::cColorImpl(const cColorImpl & other)
 template <typename T>
 inline const cColorImpl<T> & cColorImpl<T>::operator =(const cColorImpl & other)
 {
-   m_rgba[0] = other.m_rgba[0];
-   m_rgba[1] = other.m_rgba[1];
-   m_rgba[2] = other.m_rgba[2];
-   m_rgba[3] = other.m_rgba[3];
+   rgba[0] = other.rgba[0];
+   rgba[1] = other.rgba[1];
+   rgba[2] = other.rgba[2];
+   rgba[3] = other.rgba[3];
    return *this;
 }
 
@@ -126,10 +132,10 @@ template <typename T>
 inline bool cColorImpl<T>::operator !=(const cColorImpl & other)
 {
    return
-      !AlmostEqual(m_rgba[0], other.m_rgba[0]) ||
-      !AlmostEqual(m_rgba[1], other.m_rgba[1]) ||
-      !AlmostEqual(m_rgba[2], other.m_rgba[2]) ||
-      !AlmostEqual(m_rgba[3], other.m_rgba[3]);
+      !AlmostEqual(rgba[0], other.rgba[0]) ||
+      !AlmostEqual(rgba[1], other.rgba[1]) ||
+      !AlmostEqual(rgba[2], other.rgba[2]) ||
+      !AlmostEqual(rgba[3], other.rgba[3]);
 }
 
 ////////////////////////////////////////
@@ -138,10 +144,10 @@ template <typename T>
 inline bool cColorImpl<T>::operator ==(const cColorImpl & other)
 {
    return
-      AlmostEqual(m_rgba[0], other.m_rgba[0]) &&
-      AlmostEqual(m_rgba[1], other.m_rgba[1]) &&
-      AlmostEqual(m_rgba[2], other.m_rgba[2]) &&
-      AlmostEqual(m_rgba[3], other.m_rgba[3]);
+      AlmostEqual(rgba[0], other.rgba[0]) &&
+      AlmostEqual(rgba[1], other.rgba[1]) &&
+      AlmostEqual(rgba[2], other.rgba[2]) &&
+      AlmostEqual(rgba[3], other.rgba[3]);
 }
 
 ////////////////////////////////////////
@@ -149,10 +155,10 @@ inline bool cColorImpl<T>::operator ==(const cColorImpl & other)
 template <typename T>
 const cColorImpl<T> & cColorImpl<T>::operator *=(const cColorImpl & other)
 {
-   m_rgba[0] *= other.m_rgba[0];
-   m_rgba[1] *= other.m_rgba[1];
-   m_rgba[2] *= other.m_rgba[2];
-   m_rgba[3] *= other.m_rgba[3];
+   rgba[0] *= other.rgba[0];
+   rgba[1] *= other.rgba[1];
+   rgba[2] *= other.rgba[2];
+   rgba[3] *= other.rgba[3];
    return *this;
 }
 
@@ -161,10 +167,10 @@ const cColorImpl<T> & cColorImpl<T>::operator *=(const cColorImpl & other)
 template <typename T>
 const cColorImpl<T> & cColorImpl<T>::operator /=(const cColorImpl & other)
 {
-   m_rgba[0] /= other.m_rgba[0];
-   m_rgba[1] /= other.m_rgba[1];
-   m_rgba[2] /= other.m_rgba[2];
-   m_rgba[3] /= other.m_rgba[3];
+   rgba[0] /= other.rgba[0];
+   rgba[1] /= other.rgba[1];
+   rgba[2] /= other.rgba[2];
+   rgba[3] /= other.rgba[3];
    return *this;
 }
 
@@ -173,10 +179,10 @@ const cColorImpl<T> & cColorImpl<T>::operator /=(const cColorImpl & other)
 template <typename T>
 const cColorImpl<T> & cColorImpl<T>::operator +=(const cColorImpl & other)
 {
-   m_rgba[0] += other.m_rgba[0];
-   m_rgba[1] += other.m_rgba[1];
-   m_rgba[2] += other.m_rgba[2];
-   m_rgba[3] += other.m_rgba[3];
+   rgba[0] += other.rgba[0];
+   rgba[1] += other.rgba[1];
+   rgba[2] += other.rgba[2];
+   rgba[3] += other.rgba[3];
    return *this;
 }
 
@@ -185,10 +191,10 @@ const cColorImpl<T> & cColorImpl<T>::operator +=(const cColorImpl & other)
 template <typename T>
 const cColorImpl<T> & cColorImpl<T>::operator -=(const cColorImpl & other)
 {
-   m_rgba[0] -= other.m_rgba[0];
-   m_rgba[1] -= other.m_rgba[1];
-   m_rgba[2] -= other.m_rgba[2];
-   m_rgba[3] -= other.m_rgba[3];
+   rgba[0] -= other.rgba[0];
+   rgba[1] -= other.rgba[1];
+   rgba[2] -= other.rgba[2];
+   rgba[3] -= other.rgba[3];
    return *this;
 }
 
@@ -197,7 +203,7 @@ const cColorImpl<T> & cColorImpl<T>::operator -=(const cColorImpl & other)
 template <typename T>
 inline T cColorImpl<T>::GetRed() const
 {
-   return m_rgba[0];
+   return rgba[0];
 }
 
 ////////////////////////////////////////
@@ -205,7 +211,7 @@ inline T cColorImpl<T>::GetRed() const
 template <typename T>
 inline T cColorImpl<T>::GetGreen() const
 {
-   return m_rgba[1];
+   return rgba[1];
 }
 
 ////////////////////////////////////////
@@ -213,7 +219,7 @@ inline T cColorImpl<T>::GetGreen() const
 template <typename T>
 inline T cColorImpl<T>::GetBlue() const
 {
-   return m_rgba[2];
+   return rgba[2];
 }
 
 ////////////////////////////////////////
@@ -221,7 +227,7 @@ inline T cColorImpl<T>::GetBlue() const
 template <typename T>
 inline T cColorImpl<T>::GetAlpha() const
 {
-   return m_rgba[3];
+   return rgba[3];
 }
 
 ////////////////////////////////////////
@@ -237,11 +243,40 @@ T cColorImpl<T>::GetGrayLevel() const
 template <typename T>
 inline uint32 cColorImpl<T>::ToARGB8888() const
 {
+   Assert(!"Do not use the default version of ToARGB8888");
+   return ~0;
+}
+
+////////////////////////////////////////
+
+template <>
+inline uint32 cColorImpl<float>::ToARGB8888() const
+{
    return ARGB(
-      static_cast<byte>(GetAlpha() * 255),
-      static_cast<byte>(GetRed() * 255),
-      static_cast<byte>(GetGreen() * 255),
-      static_cast<byte>(GetBlue() * 255));
+      static_cast<byte>(GetAlpha() * 255.0f),
+      static_cast<byte>(GetRed() * 255.0f),
+      static_cast<byte>(GetGreen() * 255.0f),
+      static_cast<byte>(GetBlue() * 255.0f));
+}
+
+////////////////////////////////////////
+
+template <>
+inline uint32 cColorImpl<double>::ToARGB8888() const
+{
+   return ARGB(
+      static_cast<byte>(GetAlpha() * 255.0),
+      static_cast<byte>(GetRed() * 255.0),
+      static_cast<byte>(GetGreen() * 255.0),
+      static_cast<byte>(GetBlue() * 255.0));
+}
+
+////////////////////////////////////////
+
+template <>
+inline uint32 cColorImpl<byte>::ToARGB8888() const
+{
+   return ARGB(GetAlpha(), GetRed(), GetGreen(), GetBlue());
 }
 
 ////////////////////////////////////////
@@ -249,7 +284,7 @@ inline uint32 cColorImpl<T>::ToARGB8888() const
 template <typename T>
 inline const T * cColorImpl<T>::GetPointer() const
 {
-   return m_rgba;
+   return rgba;
 }
 
 

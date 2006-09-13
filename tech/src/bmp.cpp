@@ -244,13 +244,29 @@ tResult BmpWrite(IImage * pImage, IWriter * pWriter)
    {
       if (info.biBitCount == 24)
       {
-         uint srcScanLineWidth = pImage->GetWidth() * BytesPerPixel(pixelFormat);
+         uint bytesPerPixel = BytesPerPixel(pixelFormat);
+         uint srcScanLineWidth = pImage->GetWidth() * bytesPerPixel;
          const byte * pSrcData = static_cast<const byte *>(pImage->GetData());
          for (uint i = 0; i < pImage->GetHeight(); i++)
          {
-            if (pWriter->Write(const_cast<byte*>(pSrcData), scanLineWidth) != S_OK)
+            if (pixelFormat == kPF_BGR888)
             {
-               return E_FAIL;
+               if (pWriter->Write(const_cast<byte*>(pSrcData), scanLineWidth) != S_OK)
+               {
+                  return E_FAIL;
+               }
+            }
+            else if (pixelFormat == kPF_RGB888)
+            {
+               for (uint j = 0; j < pImage->GetWidth(); j++)
+               {
+                  const byte * pPixel = pSrcData + (j * bytesPerPixel);
+                  byte bgr[3] = { pPixel[2], pPixel[1], pPixel[0] };
+                  if (pWriter->Write(bgr, sizeof(bgr)) != S_OK)
+                  {
+                     return E_FAIL;
+                  }
+               }
             }
             pSrcData += srcScanLineWidth;
          }
@@ -258,8 +274,31 @@ tResult BmpWrite(IImage * pImage, IWriter * pWriter)
       }
       else
       {
-         if (pWriter->Write(const_cast<void*>(pImage->GetData()), bitsSize) == S_OK)
+         if (pixelFormat == kPF_BGRA8888)
          {
+            if (pWriter->Write(const_cast<void*>(pImage->GetData()), bitsSize) == S_OK)
+            {
+               return S_OK;
+            }
+         }
+         else if (pixelFormat == kPF_RGBA8888)
+         {
+            uint bytesPerPixel = BytesPerPixel(pixelFormat);
+            uint srcScanLineWidth = pImage->GetWidth() * bytesPerPixel;
+            const byte * pSrcData = static_cast<const byte *>(pImage->GetData());
+            for (uint i = 0; i < pImage->GetHeight(); i++)
+            {
+               for (uint j = 0; j < pImage->GetWidth(); j++)
+               {
+                  const byte * pPixel = pSrcData + (j * bytesPerPixel);
+                  byte bgr[4] = { pPixel[2], pPixel[1], pPixel[0], pPixel[3] };
+                  if (pWriter->Write(bgr, sizeof(bgr)) != S_OK)
+                  {
+                     return E_FAIL;
+                  }
+               }
+               pSrcData += srcScanLineWidth;
+            }
             return S_OK;
          }
       }
