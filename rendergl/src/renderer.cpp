@@ -8,6 +8,7 @@
 
 #include "axisalignedbox.h"
 #include "color.h"
+#include "readwriteapi.h"
 #include "resourceapi.h"
 #include "techhash.h"
 #include "techmath.h"
@@ -198,10 +199,155 @@ static bool ValidateIndices(const uint16 * pIndices, uint nIndices, uint nVertic
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_CG
+
+void * CgProgramLoad(IReader * pReader, void * typeParam)
+{
+   if (pReader == NULL)
+   {
+      return NULL;
+   }
+
+   cRenderer * pRenderer = reinterpret_cast<cRenderer *>(typeParam);
+
+   // Must get the Cg context first
+   CGcontext cgContext = pRenderer->m_cgContext;
+   if (cgContext == NULL)
+   {
+      return NULL;
+   }
+
+   CGprofile cgProfile = cgGLGetLatestProfile(CG_GL_VERTEX);
+   if (cgProfile == CG_PROFILE_UNKNOWN)
+   {
+      return NULL;
+   }
+
+   ulong length = 0;
+   if (pReader->Seek(0, kSO_End) == S_OK
+      && pReader->Tell(&length) == S_OK
+      && pReader->Seek(0, kSO_Set) == S_OK)
+   {
+      char stackBuffer[1024];
+      char * pBuffer = NULL;
+
+      if (length >= 32768)
+      {
+         WarnMsg1("Sanity check failure loading Cg program %d bytes long\n", length);
+         return NULL;
+      }
+
+      if (length < sizeof(stackBuffer))
+      {
+         pBuffer = stackBuffer;
+
+         if (pReader->Read(pBuffer, length) == S_OK)
+         {
+            pBuffer[length] = 0;
+
+            CGprogram program = cgCreateProgram(cgContext, CG_SOURCE, pBuffer, cgProfile, NULL, NULL);
+            if (program != NULL)
+            {
+               cgGLLoadProgram(program);
+               return program;
+            }
+         }
+      }
+   }
+
+   return NULL;
+}
+
+void CgProgramUnload(void * pData)
+{
+   CGprogram program = reinterpret_cast<CGprogram>(pData);
+   if (program != NULL)
+   {
+      cgDestroyProgram(program);
+   }
+}
+
+#endif // HAVE_CG
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_CG
+
+void * CgEffectLoad(IReader * pReader, void * typeParam)
+{
+   if (pReader == NULL)
+   {
+      return NULL;
+   }
+
+   cRenderer * pRenderer = reinterpret_cast<cRenderer *>(typeParam);
+
+   // Must get the Cg context first
+   CGcontext cgContext = pRenderer->m_cgContext;
+   if (cgContext == NULL)
+   {
+      return NULL;
+   }
+
+   ulong length = 0;
+   if (pReader->Seek(0, kSO_End) == S_OK
+      && pReader->Tell(&length) == S_OK
+      && pReader->Seek(0, kSO_Set) == S_OK)
+   {
+      char stackBuffer[1024];
+      char * pBuffer = NULL;
+
+      if (length >= 32768)
+      {
+         WarnMsg1("Sanity check failure loading Cg program %d bytes long\n", length);
+         return NULL;
+      }
+
+      if (length < sizeof(stackBuffer))
+      {
+         pBuffer = stackBuffer;
+
+         if (pReader->Read(pBuffer, length) == S_OK)
+         {
+            pBuffer[length] = 0;
+
+            CGeffect effect = cgCreateEffect(cgContext, pBuffer, NULL);
+            if (effect != NULL)
+            {
+               return effect;
+            }
+         }
+      }
+   }
+
+   return NULL;
+}
+
+void CgEffectUnload(void * pData)
+{
+   CGeffect effect = reinterpret_cast<CGeffect>(pData);
+   if (effect != NULL)
+   {
+      cgDestroyEffect(effect);
+   }
+}
+
+#endif // HAVE_CG
+
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cRenderer
 //
+
+////////////////////////////////////////
+
+BEGIN_CONSTRAINTS(cRenderer)
+   AFTER_GUID(IID_IResourceManager)
+END_CONSTRAINTS()
 
 ////////////////////////////////////////
 
@@ -236,6 +382,18 @@ tResult cRenderer::Init()
    {
       return E_FAIL;
    }
+
+#ifdef HAVE_CG
+   UseGlobal(ResourceManager);
+   if (!!pResourceManager)
+   {
+      if (pResourceManager->RegisterFormat(kRT_CgProgram, _T("cg"), CgProgramLoad, NULL, CgProgramUnload, this) != S_OK
+         || pResourceManager->RegisterFormat(kRT_CgEffect, _T("fx"), CgEffectLoad, NULL, CgEffectUnload, this) != S_OK)
+      {
+         return E_FAIL;
+      }
+   }
+#endif
 
    return S_OK;
 }
@@ -558,9 +716,9 @@ tResult cRenderer::Initialize()
 
 ////////////////////////////////////////
 
+#ifdef HAVE_CG
 void cRenderer::CgErrorHandler(CGcontext cgContext, CGerror cgError, void * pData)
 {
-#ifdef HAVE_CG
    if (cgError)
    {
       ErrorMsg(cgGetErrorString(cgError));
@@ -570,8 +728,8 @@ void cRenderer::CgErrorHandler(CGcontext cgContext, CGerror cgError, void * pDat
          ErrorMsg1("   %s\n", pszListing);
       }
    }
-#endif
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -587,81 +745,6 @@ tResult RendererCreate()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CG
-
-CGprofile g_CgProfile = CG_PROFILE_UNKNOWN;
-
-void * CgProgramLoad(IReader * pReader)
-{
-   if (pReader == NULL)
-   {
-      return NULL;
-   }
-
-   // Must get the Cg context first
-   CGcontext cgContext = CgGetContext();
-   if (cgContext == NULL)
-   {
-      return NULL;
-   }
-
-   if (g_CgProfile == CG_PROFILE_UNKNOWN)
-   {
-      g_CgProfile = cgGLGetLatestProfile(CG_GL_VERTEX);
-      if (g_CgProfile == CG_PROFILE_UNKNOWN)
-      {
-         return NULL;
-      }
-   }
-
-   ulong length = 0;
-   if (pReader->Seek(0, kSO_End) == S_OK
-      && pReader->Tell(&length) == S_OK
-      && pReader->Seek(0, kSO_Set) == S_OK)
-   {
-      char stackBuffer[1024];
-      char * pBuffer = NULL;
-
-      if (length >= 32768)
-      {
-         WarnMsg1("Sanity check failure loading Cg program %d bytes long\n", length);
-         return NULL;
-      }
-
-      if (length < sizeof(stackBuffer))
-      {
-         pBuffer = stackBuffer;
-
-         if (pReader->Read(pBuffer, length) == S_OK)
-         {
-            pBuffer[length] = 0;
-
-            CGprogram program = cgCreateProgram(cgContext, CG_SOURCE, pBuffer, g_CgProfile, NULL, NULL);
-            if (program != NULL)
-            {
-               cgGLLoadProgram(program);
-               return program;
-            }
-         }
-      }
-   }
-
-   return NULL;
-}
-
-void CgProgramUnload(void * pData)
-{
-   CGprogram program = reinterpret_cast<CGprogram>(pData);
-   if (program != NULL)
-   {
-      cgDestroyProgram(program);
-   }
-}
-
-#endif // HAVE_CG
-
-///////////////////////////////////////////////////////////////////////////////
-
 extern tResult GlTextureResourceRegister(); // gltexture.cpp
 
 tResult RendererResourceRegister()
@@ -669,12 +752,7 @@ tResult RendererResourceRegister()
    UseGlobal(ResourceManager);
    if (!!pResourceManager)
    {
-      if (GlTextureResourceRegister() == S_OK
-#ifdef HAVE_CG
-         && pResourceManager->RegisterFormat(kRT_CgProgram, _T("cg"), CgProgramLoad, NULL, CgProgramUnload) == S_OK
-//         && pResourceManager->RegisterFormat(kRT_CgEffect, _T("fx"), CgEffectLoad, NULL, CgEffectUnload) == S_OK
-#endif
-         )
+      if (GlTextureResourceRegister() == S_OK)
       {
          return S_OK;
       }

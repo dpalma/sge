@@ -40,9 +40,13 @@ TECH_API tResult TextFormatRegister(const tChar * pszExtension);
 
 typedef const tChar * tResourceType;
 
-typedef void * (* tResourceLoad)(IReader * pReader);
-typedef void * (* tResourcePostload)(void * pData, int dataLength, void * param);
+typedef void * (* tResourceLoadNoParam)(IReader * pReader);
+
+typedef void * (* tResourceLoad)(IReader * pReader, void * typeParam);
+typedef void * (* tResourcePostload)(void * pData, int dataLength, void * loadParam);
 typedef void   (* tResourceUnload)(void * pData);
+
+TECH_API void * ThunkResourceLoadNoParam(IReader * pReader, void * typeParam);
 
 interface IResourceManager : IUnknown
 {
@@ -51,7 +55,7 @@ interface IResourceManager : IUnknown
    virtual tResult AddDirectoryTreeFlattened(const tChar * pszDir) = 0;
    virtual tResult AddArchive(const tChar * pszArchive) = 0;
 
-   virtual tResult Load(const tChar * pszName, tResourceType type, void * param, void * * ppData) = 0;
+   virtual tResult Load(const tChar * pszName, tResourceType type, void * loadParam, void * * ppData) = 0;
    virtual tResult Unload(const tChar * pszName, tResourceType type) = 0;
 
    virtual tResult RegisterFormat(tResourceType type,
@@ -59,12 +63,25 @@ interface IResourceManager : IUnknown
                                   const tChar * pszExtension,
                                   tResourceLoad pfnLoad,
                                   tResourcePostload pfnPostload,
-                                  tResourceUnload pfnUnload) = 0;
+                                  tResourceUnload pfnUnload,
+                                  void * typeParam) = 0;
 
-   tResult RegisterFormat(tResourceType type, const tChar * pszExtension,
-      tResourceLoad pfnLoad, tResourcePostload pfnPostload, tResourceUnload pfnUnload)
+   inline tResult RegisterFormat(tResourceType type, const tChar * pszExtension,
+      tResourceLoad pfnLoad, tResourcePostload pfnPostload, tResourceUnload pfnUnload, void * typeParam)
    {
-      return RegisterFormat(type, NULL, pszExtension, pfnLoad, pfnPostload, pfnUnload);
+      return RegisterFormat(type, NULL, pszExtension, pfnLoad, pfnPostload, pfnUnload, typeParam);
+   }
+
+   inline tResult RegisterFormat(tResourceType type, tResourceType typeDepend, const tChar * pszExtension,
+      tResourceLoadNoParam pfnLoad, tResourcePostload pfnPostload, tResourceUnload pfnUnload)
+   {
+      return RegisterFormat(type, typeDepend, pszExtension, ThunkResourceLoadNoParam, pfnPostload, pfnUnload, pfnLoad);
+   }
+
+   inline tResult RegisterFormat(tResourceType type, const tChar * pszExtension,
+      tResourceLoadNoParam pfnLoad, tResourcePostload pfnPostload, tResourceUnload pfnUnload)
+   {
+      return RegisterFormat(type, NULL, pszExtension, ThunkResourceLoadNoParam, pfnPostload, pfnUnload, pfnLoad);
    }
 
    virtual tResult ListResources(const tChar * pszMatch, std::vector<cStr> * pNames) const = 0;

@@ -23,7 +23,7 @@ class cResourceFormat
 {
 public:
    void * Load(IReader * pReader) const;
-   void * Postload(void * pData, int dataLength, void * param) const;
+   void * Postload(void * pData, int dataLength, void * loadParam) const;
    void Unload(void * pData) const;
 
    tResourceType type;
@@ -32,6 +32,7 @@ public:
    tResourceLoad pfnLoad;
    tResourcePostload pfnPostload;
    tResourceUnload pfnUnload;
+   void * typeParam;
 };
 
 
@@ -47,7 +48,13 @@ public:
    ~cResourceFormatTable();
 
    tResult RegisterFormat(tResourceType type, tResourceType typeDepend, const tChar * pszExtension,
-                          tResourceLoad pfnLoad, tResourcePostload pfnPostload, tResourceUnload pfnUnload);
+                          tResourceLoad pfnLoad, tResourcePostload pfnPostload, tResourceUnload pfnUnload,
+                          void * typeParam);
+   inline tResult RegisterFormat(tResourceType type, tResourceType typeDepend, const tChar * pszExtension,
+                          tResourceLoad pfnLoad, tResourcePostload pfnPostload, tResourceUnload pfnUnload)
+   {
+      return RegisterFormat(type, typeDepend, pszExtension, pfnLoad, pfnPostload, pfnUnload, NULL);
+   }
    tResult RevokeFormat(tResourceType type, tResourceType typeDepend, const tChar * pszExtension);
 
    uint DeduceFormats(const tChar * pszName, tResourceType type, uint * pFormatIds, uint nMaxFormats);

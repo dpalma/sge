@@ -41,7 +41,7 @@ public:
    virtual tResult AddDirectory(const tChar * pszDir);
    virtual tResult AddDirectoryTreeFlattened(const tChar * pszDir);
    virtual tResult AddArchive(const tChar * pszArchive);
-   virtual tResult Load(const tChar * pszName, tResourceType type, void * param, void * * ppData);
+   virtual tResult Load(const tChar * pszName, tResourceType type, void * loadParam, void * * ppData);
    tResult LoadWithFormat(const tChar * pszName, tResourceType type, uint formatId, void * param, void * * ppData);
    virtual tResult Unload(const tChar * pszName, tResourceType type);
    virtual tResult RegisterFormat(tResourceType type,
@@ -49,7 +49,8 @@ public:
                                   const tChar * pszExtension,
                                   tResourceLoad pfnLoad,
                                   tResourcePostload pfnPostload,
-                                  tResourceUnload pfnUnload);
+                                  tResourceUnload pfnUnload,
+                                  void * typeParam);
    virtual tResult ListResources(const tChar * pszMatch, std::vector<cStr> * pNames) const;
 
    // IResourceManagerDiagnostics

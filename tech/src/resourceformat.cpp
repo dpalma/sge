@@ -51,14 +51,14 @@ static const tChar kExtSep = _T('.');
 
 void * cResourceFormat::Load(IReader * pReader) const
 {
-   return (pfnLoad != NULL) ? (*pfnLoad)(pReader) : NULL;
+   return (pfnLoad != NULL) ? (*pfnLoad)(pReader, typeParam) : NULL;
 }
 
 ////////////////////////////////////////
 
-void * cResourceFormat::Postload(void * pData, int dataLength, void * param) const
+void * cResourceFormat::Postload(void * pData, int dataLength, void * loadParam) const
 {
-   return (pfnPostload != NULL) ? (*pfnPostload)(pData, dataLength, param) : pData;
+   return (pfnPostload != NULL) ? (*pfnPostload)(pData, dataLength, loadParam) : pData;
 }
 
 ////////////////////////////////////////
@@ -93,7 +93,8 @@ tResult cResourceFormatTable::RegisterFormat(tResourceType type,
                                              const tChar * pszExtension,
                                              tResourceLoad pfnLoad,
                                              tResourcePostload pfnPostload,
-                                             tResourceUnload pfnUnload)
+                                             tResourceUnload pfnUnload,
+                                             void * typeParam)
 {
    if (!type)
    {
@@ -157,6 +158,7 @@ tResult cResourceFormatTable::RegisterFormat(tResourceType type,
    format.pfnLoad = pfnLoad;
    format.pfnPostload = pfnPostload;
    format.pfnUnload = pfnUnload;
+   format.typeParam = typeParam;
    m_formats.push_back(format);
 
    return S_OK;
@@ -311,7 +313,7 @@ void cResourceFormatTable::DumpFormats() const
 
 #ifdef HAVE_UNITTESTPP
 
-static void * NopLoad(IReader * pReader)
+static void * NopLoad(IReader * pReader, void * typeParam)
 {
    return NULL;
 }
@@ -320,7 +322,7 @@ static void NopUnload(void * pData)
 {
 }
 
-static void * NopPostload(void * pData, int dataLength, void * param)
+static void * NopPostload(void * pData, int dataLength, void * loadParam)
 {
    return pData;
 }

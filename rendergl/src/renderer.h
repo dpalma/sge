@@ -18,6 +18,8 @@
 #pragma once
 #endif
 
+F_DECLARE_INTERFACE(IReader);
+
 typedef unsigned int GLenum;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -38,7 +40,7 @@ public:
    virtual ~cRenderer();
 
    DECLARE_NAME(Renderer)
-   DECLARE_NO_CONSTRAINTS()
+   DECLARE_CONSTRAINTS()
 
    virtual tResult Init();
    virtual tResult Term();
@@ -66,12 +68,17 @@ public:
 
 private:
    tResult Initialize();
+#ifdef HAVE_CG
    static void CgErrorHandler(CGcontext cgContext, CGerror cgError, void * pData);
+#endif
 
    bool m_bInitialized;
    bool m_bInScene;
 
 #ifdef HAVE_CG
+   friend void * CgProgramLoad(IReader * pReader, void * typeParam);
+   friend void * CgEffectLoad(IReader * pReader, void * typeParam);
+
    CGcontext m_cgContext;
    CGerrorHandlerFunc m_oldCgErrorHandler;
    void * m_pOldCgErrHandlerData;

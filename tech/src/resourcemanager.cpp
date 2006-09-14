@@ -44,6 +44,19 @@ LOG_DEFINE_CHANNEL(ResourceManager);
 
 
 ////////////////////////////////////////////////////////////////////////////////
+
+void * ThunkResourceLoadNoParam(IReader * pReader, void * typeParam)
+{
+   tResourceLoadNoParam pfn = (tResourceLoadNoParam)typeParam;
+   if (pfn != NULL)
+   {
+      return (*pfn)(pReader);
+   }
+   return NULL;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cResourceManager
 //
@@ -171,7 +184,7 @@ tResult cResourceManager::AddArchive(const tChar * pszArchive)
 ////////////////////////////////////////
 
 tResult cResourceManager::Load(const tChar * pszName, tResourceType type,
-                               void * param, void * * ppData)
+                               void * loadParam, void * * ppData)
 {
    if (pszName == NULL || ppData == NULL)
    {
@@ -202,7 +215,7 @@ tResult cResourceManager::Load(const tChar * pszName, tResourceType type,
    uint nFormats = m_formats.DeduceFormats(pszName, type, formatIds, _countof(formatIds));
    for (uint i = 0; i < nFormats; i++)
    {
-      if (LoadWithFormat(pszName, type, formatIds[i], param, ppData) == S_OK)
+      if (LoadWithFormat(pszName, type, formatIds[i], loadParam, ppData) == S_OK)
       {
          return S_OK;
       }
@@ -214,7 +227,7 @@ tResult cResourceManager::Load(const tChar * pszName, tResourceType type,
 ////////////////////////////////////////
 
 tResult cResourceManager::LoadWithFormat(const tChar * pszName, tResourceType type,
-                                         uint formatId, void * param, void * * ppData)
+                                         uint formatId, void * loadParam, void * * ppData)
 {
    Assert(pszName != NULL);
    Assert(type != NULL);
@@ -237,9 +250,9 @@ tResult cResourceManager::LoadWithFormat(const tChar * pszName, tResourceType ty
          pszName, ResourceTypeName(type), ResourceTypeName(pFormat->typeDepend));
 
       void * pDependData = NULL;
-      if (Load(pszName, pFormat->typeDepend, param, &pDependData) == S_OK)
+      if (Load(pszName, pFormat->typeDepend, loadParam, &pDependData) == S_OK)
       {
-         void * pData = (*pFormat->pfnPostload)(pDependData, 0, param);
+         void * pData = (*pFormat->pfnPostload)(pDependData, 0, loadParam);
          if (pData != NULL)
          {
             // TODO: Store the actual size of the data instead of zero
@@ -289,7 +302,7 @@ tResult cResourceManager::LoadWithFormat(const tChar * pszName, tResourceType ty
          if (pReader->Seek(0, kSO_End) == S_OK
             && pReader->Tell(&dataSize) == S_OK
             && pReader->Seek(0, kSO_Set) == S_OK
-            && DoLoadFromReader(pReader, pFormat, dataSize, param, &pData) == S_OK)
+            && DoLoadFromReader(pReader, pFormat, dataSize, loadParam, &pData) == S_OK)
          {
             m_cache[cResourceCacheKey(pszName, type)] = cResourceData(pData, dataSize, formatId);
             *ppData = pData;
@@ -333,9 +346,10 @@ tResult cResourceManager::RegisterFormat(tResourceType type,
                                          const tChar * pszExtension,
                                          tResourceLoad pfnLoad,
                                          tResourcePostload pfnPostload,
-                                         tResourceUnload pfnUnload)
+                                         tResourceUnload pfnUnload,
+                                         void * typeParam)
 {
-   return m_formats.RegisterFormat(type, typeDepend, pszExtension, pfnLoad, pfnPostload, pfnUnload);
+   return m_formats.RegisterFormat(type, typeDepend, pszExtension, pfnLoad, pfnPostload, pfnUnload, typeParam);
 }
 
 ////////////////////////////////////////
@@ -427,7 +441,7 @@ void DumpResourceFormats()
 ////////////////////////////////////////
 
 tResult cResourceManager::DoLoadFromReader(IReader * pReader, const cResourceFormat * pFormat, ulong dataSize,
-                                           void * param, void * * ppData)
+                                           void * loadParam, void * * ppData)
 {
    if (pReader == NULL || ppData == NULL)
    {
@@ -439,7 +453,7 @@ tResult cResourceManager::DoLoadFromReader(IReader * pReader, const cResourceFor
    {
       // Assume the postload function cleans up pData or passes
       // it through (or returns NULL)
-      pData = pFormat->Postload(pData, dataSize, param);
+      pData = pFormat->Postload(pData, dataSize, loadParam);
       if (pData != NULL)
       {
          *ppData = pData;
@@ -533,6 +547,9 @@ public:
 
    void AddTestData(const tStrPair * pTestData, size_t nTestData);
 
+   IResourceManager * AccessResourceManager() { return static_cast<IResourceManager *>(m_pResourceManager); }
+   const IResourceManager * AccessResourceManager() const { return static_cast<const IResourceManager *>(m_pResourceManager); }
+
    cAutoIPtr<cResourceManager> m_pResourceManager;
    cAutoIPtr<IResourceManagerDiagnostics> m_pDiagnostics;
 };
@@ -604,7 +621,7 @@ void RawBytesUnload(void * pData)
 }
 
 // Pass through only if the data starts with an XML declaration
-void * PseudoXmlPostload(void * pData, int dataLength, void * param)
+void * PseudoXmlPostload(void * pData, int dataLength, void * loadParam)
 {
    const char szXmlDecl[] = "<?xml\0";
    if (memcmp(static_cast<char*>(pData), szXmlDecl, min(static_cast<size_t>(dataLength), strlen(szXmlDecl))) == 0)
@@ -634,7 +651,7 @@ void * PseudoMs3dLoad(IReader * pReader)
    return NULL;
 }
 
-void * PassthruPostload(void * pData, int dataLength, void * param)
+void * PassthruPostload(void * pData, int dataLength, void * loadParam)
 {
    return pData;
 }
@@ -644,7 +661,7 @@ void PassthruUnload(void * pData)
    // Do nothing
 }
 
-void * ReversePostload(void * pData, int dataLength, void * param)
+void * ReversePostload(void * pData, int dataLength, void * loadParam)
 {
    if (dataLength == 0)
    {
@@ -679,8 +696,8 @@ TEST_FIXTURE(cResourceManagerTests, ResourceManagerLoadSameNameDifferentExtensio
 {
    AddTestData(&g_basicTestResources[0], _countof(g_basicTestResources));
 
-   CHECK(m_pResourceManager->RegisterFormat(kRT_Data, NULL, "dat", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
-   CHECK(m_pResourceManager->RegisterFormat(kRT_Bitmap, NULL, "bmp", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
+   CHECK(AccessResourceManager()->RegisterFormat(kRT_Data, NULL, "dat", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
+   CHECK(AccessResourceManager()->RegisterFormat(kRT_Bitmap, NULL, "bmp", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
 
    CHECK_EQUAL(0, m_pDiagnostics->GetCacheSize());
 
@@ -711,7 +728,7 @@ TEST_FIXTURE(cResourceManagerTests, ResourceManagerLoadCaseSensitivity)
 {
    AddTestData(&g_basicTestResources[0], _countof(g_basicTestResources));
 
-   CHECK(m_pResourceManager->RegisterFormat(kRT_Data, NULL, "dat", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
+   CHECK(AccessResourceManager()->RegisterFormat(kRT_Data, NULL, "dat", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
 
    {
       byte * pFooDat1 = NULL;
@@ -732,8 +749,8 @@ TEST_FIXTURE(cResourceManagerTests, ResourceManagerListResources)
 {
    AddTestData(&g_basicTestResources[0], _countof(g_basicTestResources));
 
-   CHECK(m_pResourceManager->RegisterFormat(kRT_Data, NULL, "dat", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
-   CHECK(m_pResourceManager->RegisterFormat(kRT_Bitmap, NULL, "bmp", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
+   CHECK(AccessResourceManager()->RegisterFormat(kRT_Data, NULL, "dat", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
+   CHECK(AccessResourceManager()->RegisterFormat(kRT_Bitmap, NULL, "bmp", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
 
    {
       std::vector<cStr> dataResNames;
@@ -767,10 +784,10 @@ TEST_FIXTURE(cResourceManagerTests, ResourceManagerSameNameLoadWrongType)
 {
    AddTestData(&g_multNameTestResources[0], _countof(g_multNameTestResources));
 
-   CHECK(m_pResourceManager->RegisterFormat("footxt", NULL, "xml", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
-   CHECK(m_pResourceManager->RegisterFormat("footxt", NULL, "txt", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
-   CHECK(m_pResourceManager->RegisterFormat("fooms3d", NULL, "ms3d", PseudoMs3dLoad, NULL, RawBytesUnload) == S_OK);
-   CHECK(m_pResourceManager->RegisterFormat("fooxml", "footxt", "xml", NULL, PseudoXmlPostload, PseudoXmlUnload) == S_OK);
+   CHECK(AccessResourceManager()->RegisterFormat("footxt", NULL, "xml", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
+   CHECK(AccessResourceManager()->RegisterFormat("footxt", NULL, "txt", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
+   CHECK(AccessResourceManager()->RegisterFormat("fooms3d", NULL, "ms3d", PseudoMs3dLoad, NULL, RawBytesUnload) == S_OK);
+   CHECK(AccessResourceManager()->RegisterFormat("fooxml", "footxt", "xml", NULL, PseudoXmlPostload, PseudoXmlUnload) == S_OK);
 
    {
       byte * pFooXml = NULL;
@@ -804,8 +821,8 @@ TEST_FIXTURE(cResourceManagerTests, ResourceManagerSameResourceTwoTypes)
 {
    AddTestData(&g_fakeMapResource[0], _countof(g_fakeMapResource));
 
-   CHECK(m_pResourceManager->RegisterFormat("map",       NULL, "map", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
-   CHECK(m_pResourceManager->RegisterFormat("mapprops",  NULL, "map", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
+   CHECK(AccessResourceManager()->RegisterFormat("map",       NULL, "map", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
+   CHECK(AccessResourceManager()->RegisterFormat("mapprops",  NULL, "map", RawBytesLoad, NULL, RawBytesUnload) == S_OK);
 
    byte * pFooMap = NULL;
    CHECK(m_pResourceManager->Load("foo.map", "map", (void*)NULL, (void**)&pFooMap) == S_OK);
@@ -829,8 +846,8 @@ TEST_FIXTURE(cResourceManagerTests, ResourceManagerMultipleExtensionConfusion)
 {
    AddTestData(&g_multExtTestResources[0], _countof(g_multExtTestResources));
 
-   CHECK(m_pResourceManager->RegisterFormat("fooms3d", NULL, "ms3d", RawBytesLoad, TestDataPostload, RawBytesUnload) == S_OK);
-   CHECK(m_pResourceManager->RegisterFormat("fooxml", NULL, "xml", RawBytesLoad, TestDataPostload, RawBytesUnload) == S_OK);
+   CHECK(AccessResourceManager()->RegisterFormat("fooms3d", NULL, "ms3d", RawBytesLoad, TestDataPostload, RawBytesUnload) == S_OK);
+   CHECK(AccessResourceManager()->RegisterFormat("fooxml", NULL, "xml", RawBytesLoad, TestDataPostload, RawBytesUnload) == S_OK);
 
    {
       byte * pFooXml = NULL;
