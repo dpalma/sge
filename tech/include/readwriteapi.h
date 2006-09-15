@@ -362,10 +362,6 @@ public:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-TECH_API IReader * FileCreateReader(const cFileSpec & file);
-TECH_API IWriter * FileCreateWriter(const cFileSpec & file);
-#pragma deprecated(FileCreateReader, FileCreateWriter)
-
 TECH_API tResult FileReaderCreate(const cFileSpec & file, IReader * * ppReader);
 TECH_API tResult FileWriterCreate(const cFileSpec & file, IWriter * * ppWriter);
 

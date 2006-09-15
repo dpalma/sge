@@ -4,13 +4,12 @@
 #include "stdafx.h"
 
 #include "msPlugInImpl.h"
+#include "Exporter.h"
 #include "resource.h"
 
 #include "comtools.h"
 
 #include "msLib.h"
-
-#include "NvTriStrip.h"
 
 #include <windows.h>
 
@@ -146,67 +145,12 @@ int cPlugIn::Execute(msModel * pModel)
       result = 0;
    }
 
-   msModel_Destroy (pModel);
+   cExporter exporter(pModel);
+
+   result = SUCCEEDED(exporter.ExportMesh(fileName.c_str())) ? 0 : -1;
 
    return result;
 }
-
-/*
-   tModelMaterials materials(nMaterials);
-
-   for (int i = 0; i < nMaterials; i++)
-   {
-      msMaterial * pMsMaterial = msModel_GetMaterialAt(pModel, i);
-      if (pMsMaterial != NULL)
-      {
-         char szName[MS_MAX_NAME];
-         msMaterial_GetName(pMsMaterial, szName, MS_MAX_NAME);
-
-         msVec4 ambient;
-         msMaterial_GetAmbient(pMsMaterial, ambient);
-
-         msVec4 diffuse;
-         msMaterial_GetDiffuse(pMsMaterial, diffuse);
-
-         msVec4 specular;
-         msMaterial_GetSpecular(pMsMaterial, specular);
-
-         msVec4 emissive;
-         msMaterial_GetEmissive(pMsMaterial, emissive);
-
-         float shininess = msMaterial_GetShininess(pMsMaterial);
-
-         char szTexture[MS_MAX_PATH];
-         msMaterial_GetDiffuseTexture(pMsMaterial, szTexture, MS_MAX_PATH);
-
-         materials[i] = cModelMaterial(diffuse, ambient, specular, emissive, shininess, szTexture);
-      }
-   }
-
-   for (i = 0; i < nMeshes; i++)
-   {
-      msMesh * pMesh = msModel_GetMeshAt(pModel, i);
-      if (pMesh != NULL)
-      {
-         int nVertices = msMesh_GetVertexCount(pMesh);
-         int nNormals = msMesh_GetVertexNormalCount(pMesh);
-
-         if (nVertices != nNormals)
-         {
-            AtlMessageBox(GetFocus(), "# vertices != # normals");
-            return -1;
-         }
-
-         for (int j = 0; j < nVertices; j++)
-         {
-            msVec3 normal;
-            msMesh_GetVertexNormalAt(pMesh, j, normal);
-
-            msVertex * pVertex = msMesh_GetVertexAt(pMesh, j);
-         }
-      }
-   }
-*/
 
 /////////////////////////////////////////////////////////////////////////////
 
