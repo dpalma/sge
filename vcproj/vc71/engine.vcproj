@@ -366,13 +366,13 @@
 					RelativePath="..\..\engine\src\modelms3d.cpp">
 				</File>
 				<File
+					RelativePath="..\..\engine\src\modelsgem.cpp">
+				</File>
+				<File
 					RelativePath="..\..\engine\src\modelskeleton.cpp">
 				</File>
 				<File
 					RelativePath="..\..\engine\src\ms3dread.cpp">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\readwriteutils.cpp">
 				</File>
 				<File
 					RelativePath="..\..\engine\src\saveloadmanager.cpp">
@@ -458,9 +458,6 @@
 				</File>
 				<File
 					RelativePath="..\..\engine\src\ms3dread.h">
-				</File>
-				<File
-					RelativePath="..\..\engine\src\readwriteutils.h">
 				</File>
 				<File
 					RelativePath="..\..\engine\src\saveloadmanager.h">

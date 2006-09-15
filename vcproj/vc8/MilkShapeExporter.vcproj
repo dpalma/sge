@@ -77,7 +77,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib opengl32.lib glu32.lib winmm.lib"
+				AdditionalDependencies="$(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib winmm.lib"
 				OutputFile="..\..\Build.vc8\StaticRelease/msSGEExporter.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -374,7 +374,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib opengl32.lib glu32.lib winmm.lib"
+				AdditionalDependencies="$(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib $(OutDir)/UnitTest++.lib winmm.lib"
 				OutputFile="..\..\Build.vc8\StaticDebug/msSGEExporter.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -519,6 +519,10 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
+				RelativePath="..\..\MilkShapeExporter\Exporter.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\MilkShapeExporter\msPlugIn.def"
 				>
 			</File>
@@ -623,6 +627,10 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl"
 			>
+			<File
+				RelativePath="..\..\MilkShapeExporter\Exporter.h"
+				>
+			</File>
 			<File
 				RelativePath="..\..\MilkShapeExporter\msPlugInApp.h"
 				>

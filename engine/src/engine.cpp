@@ -237,6 +237,7 @@ void MapPropertiesUnload(void * pData)
 ///////////////////////////////////////////////////////////////////////////////
 
 extern tResult ModelMs3dResourceRegister(); // modelms3d.cpp
+extern tResult ModelSgemResourceRegister(); // modelsgem.cpp
 extern tResult TiXmlRegisterResourceFormat(); // tixml.cpp
 
 tResult EngineRegisterResourceFormats()
@@ -247,6 +248,7 @@ tResult EngineRegisterResourceFormats()
    if (!!pResourceManager)
    {
       if (ModelMs3dResourceRegister() == S_OK
+         && ModelSgemResourceRegister() == S_OK
          && RendererResourceRegister() == S_OK
          && TiXmlRegisterResourceFormat() == S_OK
          && pResourceManager->RegisterFormat(kRT_Map, kMapExt, MapLoad, NULL, MapUnload) == S_OK

@@ -29,6 +29,7 @@ sourceFiles = Split("""
    src/readwritefile.cpp
    src/readwritemd5.cpp
    src/readwritemem.cpp
+   src/readwriteutils.cpp
    src/resourceformat.cpp
    src/resourcemanager.cpp
    src/resourcestore.cpp

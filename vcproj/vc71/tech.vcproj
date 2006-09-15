@@ -435,6 +435,9 @@
 					RelativePath="..\..\tech\src\readwritemem.cpp">
 				</File>
 				<File
+					RelativePath="..\..\tech\src\readwriteutils.cpp">
+				</File>
+				<File
 					RelativePath="..\..\tech\src\resourceformat.cpp">
 				</File>
 				<File
@@ -673,6 +676,9 @@
 			</File>
 			<File
 				RelativePath="..\..\tech\include\readwriteapi.h">
+			</File>
+			<File
+				RelativePath="..\..\tech\include\readwriteutils.h">
 			</File>
 			<File
 				RelativePath="..\..\tech\include\rect.h">

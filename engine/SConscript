@@ -16,9 +16,9 @@ sourceFiles = Split("""
    src/model.cpp
    src/modelanim.cpp
    src/modelms3d.cpp
+   src/modelsgem.cpp
    src/modelskeleton.cpp
    src/ms3dread.cpp
-   src/readwriteutils.cpp
    src/saveloadmanager.cpp
    src/terrain.cpp
    src/terrainrender.cpp

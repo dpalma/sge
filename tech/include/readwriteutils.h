@@ -4,8 +4,8 @@
 #ifndef INCLUDED_READWRITEUTILS_H
 #define INCLUDED_READWRITEUTILS_H
 
+#include "techdll.h"
 #include "readwriteapi.h"
-
 #include "vec3.h"
 
 #ifdef _MSC_VER
@@ -15,7 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 template <>
-class cReadWriteOps<tVec3>
+class TECH_API cReadWriteOps<tVec3>
 {
 public:
    static tResult Read(IReader * pReader, tVec3 * pV);
@@ -25,7 +25,7 @@ public:
 ////////////////////////////////////////////////////////////////////////////////
 
 template <>
-class cReadWriteOps<GUID>
+class TECH_API cReadWriteOps<GUID>
 {
 public:
    static tResult Read(IReader * pReader, GUID * pGUID);
@@ -37,7 +37,7 @@ public:
 // CLASS: cAutoBuffer
 //
 
-class cAutoBuffer
+class TECH_API cAutoBuffer
 {
    cAutoBuffer(const cAutoBuffer &);
    void operator =(const cAutoBuffer &);
