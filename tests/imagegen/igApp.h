@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Id: editorApp.h 1262 2006-04-20 05:16:37Z dpalma $
+// $Id$
 
 #if !defined(INCLUDED_IGAPP_H)
 #define INCLUDED_IGAPP_H

@@ -4,6 +4,9 @@
 #if !defined(INCLUDED_IGDOC_H)
 #define INCLUDED_IGDOC_H
 
+#include "comtools.h"
+#include "imageapi.h"
+
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
@@ -21,6 +24,8 @@ protected: // create from serialization only
 
 // Attributes
 public:
+   IImage * AccessImage();
+   const IImage * AccessImage() const;
 
 // Operations
 public:
@@ -30,8 +35,10 @@ public:
 	//{{AFX_VIRTUAL(cImageGenDoc)
 	public:
 	virtual BOOL OnNewDocument();
-	virtual void Serialize(CArchive& ar);
+//	virtual void Serialize(CArchive& ar);
 	//}}AFX_VIRTUAL
+   virtual void DeleteContents();
+   virtual BOOL OnSaveDocument(LPCTSTR lpszPathName);
 
 // Implementation
 public:
@@ -45,9 +52,13 @@ public:
 protected:
 	//{{AFX_MSG(cImageGenDoc)
 	//}}AFX_MSG
+   afx_msg void OnImageAttributes();
 	DECLARE_MESSAGE_MAP()
 
 private:
+   ePixelFormat m_pixelFormat;
+   uint m_imageWidth, m_imageHeight;
+   cAutoIPtr<IImage> m_pImage;
 };
 
 /////////////////////////////////////////////////////////////////////////////

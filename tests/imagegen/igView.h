@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Id: editorView.h 1399 2006-06-23 20:39:35Z dpalma $
+// $Id$
 
 #if !defined(INCLUDED_IGVIEW_H)
 #define INCLUDED_IGVIEW_H

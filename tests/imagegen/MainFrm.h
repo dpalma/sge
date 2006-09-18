@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Id: MainFrm.h 597 2005-04-01 16:15:43Z dpalma $
+// $Id$
 
 #if !defined(INCLUDED_MAINFRM_H)
 #define INCLUDED_MAINFRM_H
