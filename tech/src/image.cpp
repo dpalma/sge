@@ -116,7 +116,7 @@ tResult cImage::GetPixel(uint x, uint y, cColor * pPixel) const
    }
 
    uint bytesPerPixel = BytesPerPixel(GetPixelFormat());
-   byte * pImagePixel = m_pData + (y * GetWidth() * bytesPerPixel) + (x * bytesPerPixel);
+   const byte * pImagePixel = m_pData + (y * GetWidth() * bytesPerPixel) + (x * bytesPerPixel);
 
    switch (GetPixelFormat())
    {
@@ -293,6 +293,46 @@ void * WindowsDDBFromImage(void * pData, int dataLength, void * param)
 
    IImage * pImage = reinterpret_cast<IImage*>(pData);
 
+   HBITMAP hBitmap = NULL;
+   if (ImageToWindowsBitmap(pImage, &hBitmap) == S_OK)
+   {
+      return hBitmap;
+   }
+
+   return NULL;
+}
+
+///////////////////////////////////////
+
+void WindowsDDBUnload(void * pData)
+{
+   HBITMAP hBitmap = reinterpret_cast<HBITMAP>(pData);
+   if ((hBitmap != NULL) && (GetObjectType(hBitmap) == OBJ_BITMAP))
+   {
+      DeleteObject(hBitmap);
+   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+TECH_API tResult ImageToWindowsBitmap(IImage * pImage, HBITMAP * phBitmap)
+{
+   if (pImage == NULL || phBitmap == NULL)
+   {
+      return E_POINTER;
+   }
+
+   ePixelFormat pixelFormat = pImage->GetPixelFormat();
+
+   if (pixelFormat != kPF_BGR888
+      && pixelFormat != kPF_BGRA8888
+      && pixelFormat != kPF_RGB888
+      && pixelFormat != kPF_RGBA8888)
+   {
+      ErrorMsg1("Cannot convert pixel format %d to Windows bitmap\n", pixelFormat);
+      return E_INVALIDARG;
+   }
+
    static const int bitCounts[] =
    {
       0, // kPF_Grayscale
@@ -309,7 +349,9 @@ void * WindowsDDBFromImage(void * pData, int dataLength, void * param)
       32, // kPF_BGRA8888
    };
 
-   int bitCount = bitCounts[pImage->GetPixelFormat()];
+   Assert(_countof(bitCounts) == kPF_NumPixelFormats);
+
+   int bitCount = bitCounts[pixelFormat];
    if (bitCount <= 0)
    {
       return NULL;
@@ -322,66 +364,80 @@ void * WindowsDDBFromImage(void * pData, int dataLength, void * param)
    size_t imageMemSize = ((pImage->GetWidth() * bytesPerPixel) + (alignedWidth - pImage->GetWidth())) * pImage->GetHeight();
 
    byte * pImageBits = new byte[imageMemSize];
-   if (pImageBits != NULL)
+   if (pImageBits == NULL)
    {
-      size_t srcScanLineSize = pImage->GetWidth() * bytesPerPixel;
-      size_t destScanLineSize = ((pImage->GetWidth() * bytesPerPixel) + (alignedWidth - pImage->GetWidth()));
+      return E_OUTOFMEMORY;
+   }
 
-      byte * pSrc = (byte *)pImage->GetData();
-      byte * pDest = pImageBits;
+   size_t srcScanLineSize = pImage->GetWidth() * bytesPerPixel;
+   size_t destScanLineSize = ((pImage->GetWidth() * bytesPerPixel) + (alignedWidth - pImage->GetWidth()));
 
-      for (uint i = 0; i < pImage->GetHeight(); i++)
+   const byte * pSrc = (const byte *)pImage->GetData();
+   byte * pDest = pImageBits;
+
+   for (uint i = 0; i < pImage->GetHeight(); i++)
+   {
+      if (pixelFormat == kPF_BGR888 || pixelFormat == kPF_BGRA8888)
       {
          memcpy(pDest, pSrc, srcScanLineSize);
-         pDest += destScanLineSize;
-         pSrc += srcScanLineSize;
       }
-
-      HDC hWindowDC = GetWindowDC(NULL);
-      if (hWindowDC != NULL)
+      else if (pixelFormat == kPF_RGB888 || pixelFormat == kPF_RGBA8888)
       {
-         // Creating compatible with window DC makes this a device-dependent bitmap
-         hBitmap = CreateCompatibleBitmap(hWindowDC, pImage->GetWidth(), pImage->GetHeight());
-         if (hBitmap != NULL)
+         for (uint j = 0; j < pImage->GetWidth(); j++)
          {
-            BITMAPINFOHEADER bmInfo = {0};
-            bmInfo.biSize = sizeof(BITMAPINFOHEADER);
-            bmInfo.biWidth = pImage->GetWidth();
-            bmInfo.biHeight = pImage->GetHeight();
-            bmInfo.biPlanes = 1; 
-            bmInfo.biBitCount = bitCount; 
-            bmInfo.biCompression = BI_RGB;
-
-            int nScanLines = SetDIBits(hWindowDC, hBitmap, 0, pImage->GetHeight(),
-                                       pImageBits, (BITMAPINFO *)&bmInfo, DIB_RGB_COLORS);
-            if (nScanLines <= 0)
+            const byte * pSrcPixel = pSrc + (j * bytesPerPixel);
+            byte * pDestPixel = pDest + (j * bytesPerPixel);
+            if (bytesPerPixel == 3)
             {
-               DeleteObject(hBitmap);
-               hBitmap = NULL;
+               const byte bgr[3] = { pSrcPixel[2], pSrcPixel[1], pSrcPixel[0] };
+               memcpy(pDestPixel, bgr, bytesPerPixel);
+            }
+            else if (bytesPerPixel == 4)
+            {
+               const byte bgra[4] = { pSrcPixel[2], pSrcPixel[1], pSrcPixel[0], pSrcPixel[3] };
+               memcpy(pDestPixel, bgra, bytesPerPixel);
             }
          }
+      }
+      pDest += destScanLineSize;
+      pSrc += srcScanLineSize;
+   }
 
-         ReleaseDC(NULL, hWindowDC), hWindowDC = NULL;
+   HDC hWindowDC = GetWindowDC(NULL);
+   if (hWindowDC != NULL)
+   {
+      // Creating compatible with window DC makes this a device-dependent bitmap
+      hBitmap = CreateCompatibleBitmap(hWindowDC, pImage->GetWidth(), pImage->GetHeight());
+      if (hBitmap != NULL)
+      {
+         BITMAPINFOHEADER bmInfo = {0};
+         bmInfo.biSize = sizeof(BITMAPINFOHEADER);
+         bmInfo.biWidth = pImage->GetWidth();
+         bmInfo.biHeight = pImage->GetHeight();
+         bmInfo.biPlanes = 1; 
+         bmInfo.biBitCount = bitCount; 
+         bmInfo.biCompression = BI_RGB;
+
+         int nScanLines = SetDIBits(hWindowDC, hBitmap, 0, pImage->GetHeight(),
+                                    pImageBits, (BITMAPINFO *)&bmInfo, DIB_RGB_COLORS);
+         if (nScanLines <= 0)
+         {
+            DeleteObject(hBitmap);
+            hBitmap = NULL;
+         }
       }
 
-      delete [] pImageBits;
+      ReleaseDC(NULL, hWindowDC), hWindowDC = NULL;
    }
 
-   return hBitmap;
+   delete [] pImageBits;
+
+   *phBitmap = hBitmap;
+
+   return (hBitmap != NULL) ? S_OK : E_FAIL;
 }
 
-///////////////////////////////////////
-
-void WindowsDDBUnload(void * pData)
-{
-   HBITMAP hBitmap = reinterpret_cast<HBITMAP>(pData);
-   if ((hBitmap != NULL) && (GetObjectType(hBitmap) == OBJ_BITMAP))
-   {
-      DeleteObject(hBitmap);
-   }
-}
-
-#endif
+#endif // _WIN32
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -463,6 +519,7 @@ tResult ImageCreate(uint width, uint height, ePixelFormat pixelFormat, const voi
    cAutoIPtr<cImage> pImage(new cImage(width, height, pixelFormat, pImageData));
    if (!pImage)
    {
+      delete [] pImageData;
       return E_OUTOFMEMORY;
    }
 

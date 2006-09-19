@@ -13,6 +13,9 @@
 #define IDS_REDO_TEXT                   5005
 #define ID_EDIT_DELETE                  32773
 #define ID_IMAGE_ATTRIBUTES             32774
+#define ID_IMAGE_CIRCLE                 32775
+#define ID_IMAGE_RECTANGLE              32776
+#define ID_IMAGE_ROUNDRECT              32777
 #define ID_VIEW_CONTROL_BAR_FIRST       0xC100
 #define ID_VIEW_CONTROL_BAR1            0xC100
 #define ID_VIEW_CONTROL_BAR2            0xC101
@@ -38,7 +41,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        139
-#define _APS_NEXT_COMMAND_VALUE         32775
+#define _APS_NEXT_COMMAND_VALUE         32778
 #define _APS_NEXT_CONTROL_VALUE         1030
 #define _APS_NEXT_SYMED_VALUE           104
 #endif

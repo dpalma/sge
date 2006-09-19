@@ -29,6 +29,7 @@ public:
 
 // Operations
 public:
+   void Rasterize();
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -53,11 +54,25 @@ protected:
 	//{{AFX_MSG(cImageGenDoc)
 	//}}AFX_MSG
    afx_msg void OnImageAttributes();
+   afx_msg void OnImageCircle();
+   afx_msg void OnUpdateImageCircle(CCmdUI *pCmdUI);
+   afx_msg void OnImageRectangle();
+   afx_msg void OnUpdateImageRectangle(CCmdUI *pCmdUI);
+   afx_msg void OnImageRoundrect();
+   afx_msg void OnUpdateImageRoundrect(CCmdUI *pCmdUI);
 	DECLARE_MESSAGE_MAP()
 
 private:
-   ePixelFormat m_pixelFormat;
-   uint m_imageWidth, m_imageHeight;
+   enum eShape
+   {
+      kCircle, kRectangle, kRoundRect
+   };
+
+   eShape m_shape;
+
+   ePixelFormat m_defaultPixelFormat;
+   uint m_defaultImageWidth, m_defaultImageHeight;
+
    cAutoIPtr<IImage> m_pImage;
 };
 

@@ -665,5 +665,9 @@
 		</Filter>
 	</Files>
 	<Globals>
+		<Global
+			Name="RESOURCE_FILE"
+			Value="\prj\sge\tests\imagegen\imagegen.rc"
+		/>
 	</Globals>
 </VisualStudioProject>

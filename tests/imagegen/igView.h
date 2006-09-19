@@ -56,6 +56,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
+   CBitmap m_bitmap;
 };
 
 #ifndef _DEBUG  // debug version in editorView.cpp

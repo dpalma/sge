@@ -130,6 +130,10 @@ BEGIN
     END
     POPUP "&Image"
     BEGIN
+        MENUITEM "&Circle",                     ID_IMAGE_CIRCLE
+        MENUITEM "&Rectangle",                  ID_IMAGE_RECTANGLE
+        MENUITEM "R&ound Rectangle",            ID_IMAGE_ROUNDRECT
+        MENUITEM SEPARATOR
         MENUITEM "&Attributes...",              ID_IMAGE_ATTRIBUTES
     END
     POPUP "&Help"
@@ -379,6 +383,9 @@ END
 STRINGTABLE 
 BEGIN
     ID_EDIT_DELETE          "Delete the selection\nDelete"
+    ID_IMAGE_CIRCLE         "Draw a circle"
+    ID_IMAGE_RECTANGLE      "Draw a rectangle"
+    ID_IMAGE_ROUNDRECT      "Draw a rectangle with rounded corners"
 END
 
 STRINGTABLE 

@@ -58,6 +58,25 @@ void cImageGenView::OnDraw(CDC * pDC)
 {
 	cImageGenDoc * pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
+
+   if (m_bitmap.GetSafeHandle() != NULL)
+   {
+      CRect rect;
+      GetClientRect(rect);
+
+      BITMAP bm = {0};
+      m_bitmap.GetBitmap(&bm);
+
+      CDC memDC;
+      if (memDC.CreateCompatibleDC(pDC))
+      {
+         CBitmap * pOldBitmap = memDC.SelectObject(&m_bitmap);
+
+         pDC->BitBlt(rect.left, rect.top, bm.bmWidth, bm.bmHeight, &memDC, 0, 0, SRCCOPY);
+
+         memDC.SelectObject(pOldBitmap);
+      }
+   }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -121,12 +140,14 @@ void cImageGenView::OnSize(UINT nType, int cx, int cy)
 
 void cImageGenView::OnInitialUpdate() 
 {
-   CRect rect;
-   GetClientRect(rect);
-   SetScaleToFitSize(rect.Size());
-
    cImageGenDoc * pDoc = GetDocument();
    ASSERT_VALID(pDoc);
+
+   cAutoIPtr<IImage> pImage(CTAddRef(pDoc->AccessImage()));
+   if (!!pImage)
+   {
+      SetScrollSizes(MM_TEXT, CSize(pImage->GetWidth(), pImage->GetHeight()));
+   }
 
    CView::OnInitialUpdate();
 }
@@ -138,6 +159,17 @@ void cImageGenView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
    cImageGenDoc * pDoc = GetDocument();
    ASSERT_VALID(pDoc);
 
+   m_bitmap.DeleteObject();
+
+   cAutoIPtr<IImage> pImage(CTAddRef(pDoc->AccessImage()));
+   if (!!pImage)
+   {
+      HBITMAP hbm = NULL;
+      ImageToWindowsBitmap(pImage, &hbm);
+      m_bitmap.Attach(hbm);
+   }
+
+   Invalidate();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

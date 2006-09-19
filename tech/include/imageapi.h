@@ -15,10 +15,14 @@ F_DECLARE_INTERFACE(IImage);
 F_DECLARE_INTERFACE(IWriter);
 class cColor;
 
+F_DECLARE_HANDLE(HBITMAP);
+
 
 //////////////////////////////////////////////////////////////////////////////
 
 TECH_API tResult BmpWrite(IImage * pImage, IWriter * pWriter);
+
+TECH_API tResult ImageToWindowsBitmap(IImage * pImage, HBITMAP * phBitmap);
 
 
 //////////////////////////////////////////////////////////////////////////////
