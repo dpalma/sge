@@ -349,7 +349,7 @@ TECH_API tResult ImageToWindowsBitmap(IImage * pImage, HBITMAP * phBitmap)
       32, // kPF_BGRA8888
    };
 
-   Assert(_countof(bitCounts) == kPF_NumPixelFormats);
+   AssertAtCompileTime(_countof(bitCounts) == kPF_NumPixelFormats);
 
    int bitCount = bitCounts[pixelFormat];
    if (bitCount <= 0)

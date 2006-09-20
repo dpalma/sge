@@ -62,9 +62,9 @@ tResult cFileReader::Tell(ulong * pPos)
 ///////////////////////////////////////
 
 // ensure enumerated type values are good as array indices
-AssertOnce(kSO_Set == 0);
-AssertOnce(kSO_End == 1);
-AssertOnce(kSO_Cur == 2);
+AssertAtCompileTime(kSO_Set == 0);
+AssertAtCompileTime(kSO_End == 1);
+AssertAtCompileTime(kSO_Cur == 2);
 
 static const int g_stdioSeekOrigin[] =
 {

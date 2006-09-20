@@ -57,8 +57,8 @@ struct sNewTargaFooter
 };
 #pragma pack(pop)
 
-AssertOnce(sizeof(sTargaHeader) == 18);
-AssertOnce(sizeof(sNewTargaFooter) == 26);
+AssertAtCompileTime(sizeof(sTargaHeader) == 18);
+AssertAtCompileTime(sizeof(sNewTargaFooter) == 26);
 
 ///////////////////////////////////////////////////////////////////////////////
 

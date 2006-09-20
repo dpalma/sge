@@ -34,27 +34,48 @@ extern "C" DECLSPEC_DLLIMPORT int STDCALL IsDebuggerPresent();
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
+
+bool AssertFail(const tChar * pszFile, int line, const tChar * pszExpr, const tChar * pszMsg);
+
+///////////////////////////////////////////////////////////////////////////////
 // Assert & Verify macros
 
 #ifdef ASSERTIONS_ENABLED
+
+class cAssert
+{
+public:
+   cAssert(bool bResult, const tChar * pszFile, int line, const tChar * pszExpr, const tChar * pszMsg)
+   {
+      if (!bResult)
+         if (AssertFail(pszFile, line, pszExpr, pszMsg))
+            DbgBreak();
+   }
+};
+
+#define AssertMsg(expr,msg) \
+   do { if (!(expr)) { if (AssertFail(_T(__FILE__), __LINE__, _T(#expr), msg)) DbgBreak(); } } while(0)
+
+#define Assert(expr) \
+   AssertMsg(expr, NULL)
+
 #define AssertOnce(expr) \
-   static class MAKE_UNIQUE(cAssertOnce) { \
-   public: MAKE_UNIQUE(cAssertOnce)() { \
-      Assert(expr); \
-   }  } MAKE_UNIQUE(g_assertOnce);
-#define Assert(expr)          AssertMsg(expr, NULL)
-#define AssertMsg(expr,msg)   do { if (!(expr)) { if (AssertFail(_T(__FILE__), __LINE__, _T(#expr), msg)) DbgBreak(); } } while(0)
-#define Verify(expr)          Assert(expr)
+   static cAssert MAKE_UNIQUE(oneTimeAssertion)(expr, _T(__FILE__), __LINE__, #expr, NULL)
+
+#define Verify(expr) \
+   Assert(expr)
+
 #else
-#define AssertOnce(expr)
-#define Assert(expr)          ((void)0)
-#define AssertMsg(expr,msg)   ((void)0)
-#define Verify(expr)          (expr)
+#define AssertMsg(expr,msg)         ((void)0)
+#define Assert(expr)                ((void)0)
+#define AssertOnce(expr)            // AssertOnce should evaluate to nothing so it works at file scope
+#define Verify(expr)                (expr)
 #endif
 
-///////////////////////////////////////////////////////////////////////////////
-
-bool AssertFail(const tChar * pszFile, int line, const tChar * pszExpr, const tChar * pszMsg);
+// Compile-time assertions generate no runnable code, so they are
+// enabled regardless of the definition of ASSERTIONS_ENABLED
+#define AssertAtCompileTime(expr) \
+   typedef char MAKE_UNIQUE(compileTimeAssertion)[expr]
 
 ///////////////////////////////////////////////////////////////////////////////
 

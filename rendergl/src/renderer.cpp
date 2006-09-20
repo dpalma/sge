@@ -136,14 +136,14 @@ static void SubmitVertexData(const sVertexElement * elements,
 ////////////////////////////////////////////////////////////////////////////////
 
 // Ensure the vertex element types can be used as lookup table indices
-AssertOnce(kVET_Float1 == 0);
-AssertOnce(kVET_Float2 == 1);
-AssertOnce(kVET_Float3 == 2);
-AssertOnce(kVET_Float4 == 3);
-AssertOnce(kVET_Color == 4);
-AssertOnce(kVET_UnsignedByte4 == 5);
-AssertOnce(kVET_Short2 == 6);
-AssertOnce(kVET_Short4 == 7);
+AssertAtCompileTime(kVET_Float1 == 0);
+AssertAtCompileTime(kVET_Float2 == 1);
+AssertAtCompileTime(kVET_Float3 == 2);
+AssertAtCompileTime(kVET_Float4 == 3);
+AssertAtCompileTime(kVET_Color == 4);
+AssertAtCompileTime(kVET_UnsignedByte4 == 5);
+AssertAtCompileTime(kVET_Short2 == 6);
+AssertAtCompileTime(kVET_Short4 == 7);
 
 static uint GetVertexSize(const sVertexElement * pElements, uint nElements)
 {

@@ -35,7 +35,7 @@ static const GLint g_glTexComponents[] =
    4, // kPF_BGRA8888
 };
 
-AssertOnce(_countof(g_glTexComponents) == kPF_NumPixelFormats);
+AssertAtCompileTime(_countof(g_glTexComponents) == kPF_NumPixelFormats);
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -58,7 +58,7 @@ static const GLenum g_glTexFormats[] =
    GL_BGRA_EXT,   // kPF_BGRA8888
 };
 
-AssertOnce(_countof(g_glTexFormats) == kPF_NumPixelFormats);
+AssertAtCompileTime(_countof(g_glTexFormats) == kPF_NumPixelFormats);
 
 ///////////////////////////////////////////////////////////////////////////////
 

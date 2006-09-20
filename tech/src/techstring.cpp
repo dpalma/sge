@@ -187,7 +187,7 @@ static int SprintfOptionsLengthEstimate(const cStr & formatOptions, tChar type)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-AssertOnce(sizeof(int) == sizeof(uint));
+AssertAtCompileTime(sizeof(int) == sizeof(uint));
 
 int SprintfLengthEstimate(const tChar * pszFormat, va_list args)
 {

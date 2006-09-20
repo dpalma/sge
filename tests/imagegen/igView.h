@@ -60,8 +60,8 @@ private:
 };
 
 #ifndef _DEBUG  // debug version in editorView.cpp
-inline cEditorDoc* cImageGenView::GetDocument()
-   { return (cEditorDoc*)m_pDocument; }
+inline cImageGenDoc* cImageGenView::GetDocument()
+   { return (cImageGenDoc*)m_pDocument; }
 #endif
 
 /////////////////////////////////////////////////////////////////////////////

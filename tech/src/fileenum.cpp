@@ -25,14 +25,14 @@ LOG_DEFINE_CHANNEL(EnumFiles);
 
 ///////////////////////////////////////////////////////////////////////////////
 
-AssertOnce(kFA_ReadOnly == FILE_ATTRIBUTE_READONLY);
-AssertOnce(kFA_Hidden == FILE_ATTRIBUTE_HIDDEN);
-AssertOnce(kFA_System == FILE_ATTRIBUTE_SYSTEM);
-AssertOnce(kFA_Directory == FILE_ATTRIBUTE_DIRECTORY);
-AssertOnce(kFA_Archive == FILE_ATTRIBUTE_ARCHIVE);
-AssertOnce(kFA_Normal == FILE_ATTRIBUTE_NORMAL);
-AssertOnce(kFA_Temporary == FILE_ATTRIBUTE_TEMPORARY);
-AssertOnce(kFA_Compressed == FILE_ATTRIBUTE_COMPRESSED);
+AssertAtCompileTime(kFA_ReadOnly == FILE_ATTRIBUTE_READONLY);
+AssertAtCompileTime(kFA_Hidden == FILE_ATTRIBUTE_HIDDEN);
+AssertAtCompileTime(kFA_System == FILE_ATTRIBUTE_SYSTEM);
+AssertAtCompileTime(kFA_Directory == FILE_ATTRIBUTE_DIRECTORY);
+AssertAtCompileTime(kFA_Archive == FILE_ATTRIBUTE_ARCHIVE);
+AssertAtCompileTime(kFA_Normal == FILE_ATTRIBUTE_NORMAL);
+AssertAtCompileTime(kFA_Temporary == FILE_ATTRIBUTE_TEMPORARY);
+AssertAtCompileTime(kFA_Compressed == FILE_ATTRIBUTE_COMPRESSED);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
