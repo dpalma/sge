@@ -11,6 +11,7 @@
 #include "filespec.h"
 #include "filepath.h"
 #include "readwriteapi.h"
+#include "vec2.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -55,6 +56,124 @@ cImageGenDoc::~cImageGenDoc()
 
 /////////////////////////////////////////////////////////////////////////////
 
+void ImageSolidRect(IImage * pImage, uint x, uint y, uint w, uint h, const cColor & color)
+{
+   if (pImage == NULL)
+   {
+      return;
+   }
+
+   for (uint j = y; j < (y + h); ++j)
+   {
+      for (uint i = x; i < (x + w); ++i)
+      {
+         pImage->SetPixel(i, j, color);
+      }
+   }
+}
+
+void ImageSolidRect(IImage * pImage, const cColor & color)
+{
+   ImageSolidRect(pImage, 0, 0, pImage->GetWidth(), pImage->GetHeight(), color);
+}
+
+void ImageSolidCircle(IImage * pImage, uint x, uint y, uint radius, const cColor & color)
+{
+   if (pImage == NULL)
+   {
+      return;
+   }
+
+   uint imageWidth = pImage->GetWidth(), imageHeight = pImage->GetHeight();
+
+   int yStart = (y >= radius) ? y - radius : radius - y;
+   int yEnd = Min(y + radius, imageHeight);
+
+   int xStart = (x >= radius) ? x - radius : radius - x;
+   int xEnd = Min(x + radius, imageWidth);
+
+   cVec2<int> center(x, y);
+   int rSqr = radius * radius;
+
+   for (int j = yStart; j <= yEnd; ++j)
+   {
+      for (int i = xStart; i <= xEnd; ++i)
+      {
+         int dSqr = Vec2DistanceSqr(cVec2<int>(i, j), center);
+         if (dSqr < rSqr)
+         {
+            pImage->SetPixel(i, j, color);
+         }
+      }
+   }
+}
+
+void ImageSolidCircle(IImage * pImage, const cColor & color)
+{
+   ImageSolidCircle(pImage, pImage->GetWidth() / 2, pImage->GetHeight() / 2, pImage->GetWidth() / 2, color);
+}
+
+void ImageSolidRoundRect(IImage * pImage, uint x, uint y, uint w, uint h, uint cornerRadius, const cColor & color)
+{
+   if (pImage == NULL)
+   {
+      return;
+   }
+
+   int cornerRadiusSqr = cornerRadius * cornerRadius;
+
+   for (uint j = y; j < (y + h); ++j)
+   {
+      for (uint i = x; i < (x + w); ++i)
+      {
+         if (i < (x + cornerRadius) && j < (y + cornerRadius))
+         {
+            int dSqr = Vec2DistanceSqr(cVec2<int>(i, j), cVec2<int>(x + cornerRadius, y + cornerRadius));
+            if (dSqr < cornerRadiusSqr)
+            {
+               pImage->SetPixel(i, j, color);
+            }
+         }
+         else if (i >= (x + w - cornerRadius) && j < (y + cornerRadius))
+         {
+            int dSqr = Vec2DistanceSqr(cVec2<int>(i, j), cVec2<int>(x + w - cornerRadius, y + cornerRadius));
+            if (dSqr < cornerRadiusSqr)
+            {
+               pImage->SetPixel(i, j, color);
+            }
+         }
+         else if (i < (x + cornerRadius) && j >= (y + h - cornerRadius))
+         {
+            int dSqr = Vec2DistanceSqr(cVec2<int>(i, j), cVec2<int>(x + cornerRadius, y + h - cornerRadius));
+            if (dSqr < cornerRadiusSqr)
+            {
+               pImage->SetPixel(i, j, color);
+            }
+         }
+         else if (i >= (x + w - cornerRadius) && j >= (y + h - cornerRadius))
+         {
+            int dSqr = Vec2DistanceSqr(cVec2<int>(i, j), cVec2<int>(x + w - cornerRadius, y + h - cornerRadius));
+            if (dSqr < cornerRadiusSqr)
+            {
+               pImage->SetPixel(i, j, color);
+            }
+         }
+         else
+         {
+            pImage->SetPixel(i, j, color);
+         }
+      }
+   }
+}
+
+void ImageSolidRoundRect(IImage * pImage, const cColor & color)
+{
+   uint cr = 3 * Min(pImage->GetWidth(), pImage->GetHeight()) / 8;
+   ImageSolidRoundRect(pImage, 0, 0, pImage->GetWidth(), pImage->GetHeight(), cr, color);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
 void cImageGenDoc::Rasterize()
 {
    if (!m_pImage)
@@ -62,25 +181,19 @@ void cImageGenDoc::Rasterize()
       return;
    }
 
-   uint imageHeight = m_pImage->GetHeight(), imageWidth = m_pImage->GetWidth();
-
    if (m_shape == kCircle)
    {
-      // TODO
+      ImageSolidRect(m_pImage, cColor(1,1,1));
+      ImageSolidCircle(m_pImage, cColor(0,1,0));
    }
    else if (m_shape == kRectangle)
    {
-      for (uint j = 0; j < imageHeight; ++j)
-      {
-         for (uint i = 0; i < imageWidth; ++i)
-         {
-            m_pImage->SetPixel(i, j, cColor(0,0,1));
-         }
-      }
+      ImageSolidRect(m_pImage, cColor(0,0,1));
    }
    else if (m_shape == kRoundRect)
    {
-      // TODO
+      ImageSolidRect(m_pImage, cColor(1,1,1));
+      ImageSolidRoundRect(m_pImage, cColor(1,0,0));
    }
 
    UpdateAllViews(NULL);
