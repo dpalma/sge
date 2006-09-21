@@ -113,46 +113,118 @@ void ImageSolidCircle(IImage * pImage, const cColor & color)
    ImageSolidCircle(pImage, pImage->GetWidth() / 2, pImage->GetHeight() / 2, pImage->GetWidth() / 2, color);
 }
 
-void ImageSolidRoundRect(IImage * pImage, uint x, uint y, uint w, uint h, uint cornerRadius, const cColor & color)
+void ImageApplyGamma(IImage * pImage, uint x, uint y, uint w, uint h, float gamma)
 {
    if (pImage == NULL)
    {
       return;
    }
 
+   if (gamma < 0.2f || gamma > 5.0f)
+   {
+      WarnMsg1("Unusual gamma, %f\n", gamma);
+   }
+
+   float oneOverGamma = 1.0f / gamma;
+
+   float red[256], green[256], blue[256];
+   for (int i = 0; i < 256; ++i)
+   {
+      float value = (255 * pow(static_cast<float>(i) / 255, oneOverGamma)) + 0.5f;
+      value = Min(value, 255);
+      red[i] = value;
+      green[i] = value;
+      blue[i] = value;
+   }
+}
+
+template <>
+inline uint Vec2Distance(const cVec2<uint> & v1, const cVec2<uint> & v2)
+{
+   return static_cast<uint>(FloatToInt(sqrt(static_cast<float>(Vec2DistanceSqr(v1, v2)))));
+}
+
+enum eCorner
+{
+   kTopLeft,
+   kTopRight,
+   kBottomRight,
+   kBottomLeft,
+};
+
+void ImageGradientRoundRect(IImage * pImage, uint x, uint y, uint w, uint h, uint cornerRadius, uint flags, const cColor colors[4])
+{
+   if (pImage == NULL)
+   {
+      return;
+   }
+
+   if (w == 0 || h == 0)
+   {
+      return;
+   }
+
    int cornerRadiusSqr = cornerRadius * cornerRadius;
+
+   cVec2<uint> topLeftCenter(x + cornerRadius, y + cornerRadius);
+   cVec2<uint> topRightCenter(x + w - cornerRadius - 1, y + cornerRadius);
+   cVec2<uint> bottomRightCenter(x + w - cornerRadius - 1, y + h - cornerRadius - 1);
+   cVec2<uint> bottomLeftCenter(x + cornerRadius, y + h - cornerRadius - 1);
 
    for (uint j = y; j < (y + h); ++j)
    {
       for (uint i = x; i < (x + w); ++i)
       {
-         if (i < (x + cornerRadius) && j < (y + cornerRadius))
+         cVec2<uint> ij(i, j);
+
+         uint topLeftDist = Vec2Distance(ij, cVec2<uint>(x,y));
+         uint topRightDist = Vec2Distance(ij, cVec2<uint>(x+w,y));
+         uint bottomRightDist = Vec2Distance(ij, cVec2<uint>(x+w,y+h));
+         uint bottomLeftDist = Vec2Distance(ij, cVec2<uint>(x,y+h));
+
+         uint sumDist = topLeftDist + topRightDist + bottomRightDist + bottomLeftDist;
+
+         float topLeftFrac = 1.0f - (static_cast<float>(topLeftDist) / sumDist);
+         float topRightFrac = 1.0f - (static_cast<float>(topRightDist) / sumDist);
+         float bottomRightFrac = 1.0f - (static_cast<float>(bottomRightDist) / sumDist);
+         float bottomLeftFrac = 1.0f - (static_cast<float>(bottomLeftDist) / sumDist);
+
+         cColor color(
+            colors[kTopLeft].r * topLeftFrac + colors[kTopRight].r * topRightFrac + colors[kBottomRight].r * bottomRightFrac + colors[kBottomLeft].r * bottomLeftFrac,
+            colors[kTopLeft].g * topLeftFrac + colors[kTopRight].g * topRightFrac + colors[kBottomRight].g * bottomRightFrac + colors[kBottomLeft].g * bottomLeftFrac,
+            colors[kTopLeft].b * topLeftFrac + colors[kTopRight].b * topRightFrac + colors[kBottomRight].b * bottomRightFrac + colors[kBottomLeft].b * bottomLeftFrac,
+            colors[kTopLeft].a * topLeftFrac + colors[kTopRight].a * topRightFrac + colors[kBottomRight].a * bottomRightFrac + colors[kBottomLeft].a * bottomLeftFrac);
+
+         cColor pixelIJ;
+         pImage->GetPixel(i, j, &pixelIJ);
+
+         if (i < topLeftCenter.x && j < topLeftCenter.y)
          {
-            int dSqr = Vec2DistanceSqr(cVec2<int>(i, j), cVec2<int>(x + cornerRadius, y + cornerRadius));
+            int dSqr = Vec2DistanceSqr(ij, topLeftCenter);
             if (dSqr < cornerRadiusSqr)
             {
                pImage->SetPixel(i, j, color);
             }
          }
-         else if (i >= (x + w - cornerRadius) && j < (y + cornerRadius))
+         else if (i >= topRightCenter.x && j < topRightCenter.y)
          {
-            int dSqr = Vec2DistanceSqr(cVec2<int>(i, j), cVec2<int>(x + w - cornerRadius, y + cornerRadius));
+            int dSqr = Vec2DistanceSqr(ij, topRightCenter);
             if (dSqr < cornerRadiusSqr)
             {
                pImage->SetPixel(i, j, color);
             }
          }
-         else if (i < (x + cornerRadius) && j >= (y + h - cornerRadius))
+         else if (i >= bottomRightCenter.x && j >= bottomRightCenter.y)
          {
-            int dSqr = Vec2DistanceSqr(cVec2<int>(i, j), cVec2<int>(x + cornerRadius, y + h - cornerRadius));
+            int dSqr = Vec2DistanceSqr(ij, bottomRightCenter);
             if (dSqr < cornerRadiusSqr)
             {
                pImage->SetPixel(i, j, color);
             }
          }
-         else if (i >= (x + w - cornerRadius) && j >= (y + h - cornerRadius))
+         else if (i < bottomLeftCenter.x && j >= bottomLeftCenter.y)
          {
-            int dSqr = Vec2DistanceSqr(cVec2<int>(i, j), cVec2<int>(x + w - cornerRadius, y + h - cornerRadius));
+            int dSqr = Vec2DistanceSqr(ij, bottomLeftCenter);
             if (dSqr < cornerRadiusSqr)
             {
                pImage->SetPixel(i, j, color);
@@ -166,9 +238,15 @@ void ImageSolidRoundRect(IImage * pImage, uint x, uint y, uint w, uint h, uint c
    }
 }
 
+void ImageSolidRoundRect(IImage * pImage, uint x, uint y, uint w, uint h, uint cornerRadius, const cColor & color)
+{
+   cColor colors[4] = { color, color, color, color };
+   ImageGradientRoundRect(pImage, x, y, w, h, cornerRadius, 0, colors);
+}
+
 void ImageSolidRoundRect(IImage * pImage, const cColor & color)
 {
-   uint cr = 3 * Min(pImage->GetWidth(), pImage->GetHeight()) / 8;
+   uint cr = Min(pImage->GetWidth(), pImage->GetHeight()) / 4;
    ImageSolidRoundRect(pImage, 0, 0, pImage->GetWidth(), pImage->GetHeight(), cr, color);
 }
 
@@ -193,7 +271,9 @@ void cImageGenDoc::Rasterize()
    else if (m_shape == kRoundRect)
    {
       ImageSolidRect(m_pImage, cColor(1,1,1));
-      ImageSolidRoundRect(m_pImage, cColor(1,0,0));
+      cColor colors[4] = { cColor(1,0,0), cColor(0,1,0), cColor(0,0,1), cColor(1,1,1) };
+      ImageGradientRoundRect(m_pImage, 0, 0, m_pImage->GetWidth(), m_pImage->GetHeight(),
+         Min(m_pImage->GetWidth(), m_pImage->GetHeight()) / 8, 0, colors);
    }
 
    UpdateAllViews(NULL);
