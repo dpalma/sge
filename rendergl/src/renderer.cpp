@@ -431,6 +431,48 @@ tResult cRenderer::Term()
 
 ////////////////////////////////////////
 
+tResult cRenderer::SetRenderState(eRenderState state, ulong value)
+{
+   tResult result = E_FAIL;
+
+   switch (state)
+   {
+      case kRS_AlphaTestEnable:
+      {
+         glEnable(GL_ALPHA);
+         break;
+      }
+
+      case kRS_AlphaBlendEnable:
+      {
+         glEnable(GL_BLEND);
+         break;
+      }
+
+      default:
+      {
+         result = E_INVALIDARG;
+         break;
+      }
+   }
+
+   return E_NOTIMPL;
+}
+
+////////////////////////////////////////
+
+tResult cRenderer::GetRenderState(eRenderState state, ulong * pValue)
+{
+   if (pValue == NULL)
+   {
+      return E_POINTER;
+   }
+
+   return E_NOTIMPL;
+}
+
+////////////////////////////////////////
+
 tResult cRenderer::BeginScene()
 {
    if (SUCCEEDED(Initialize()))
@@ -564,6 +606,21 @@ tResult cRenderer::SetDiffuseColor(const float diffuse[4])
    glEnable(GL_COLOR_MATERIAL);
    glColorMaterial(GL_FRONT, GL_DIFFUSE);
    glColor4fv(diffuse);
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cRenderer::SetTexture(uint textureUnit, const void * texture)
+{
+   if (textureUnit >= 8)
+   {
+      return E_INVALIDARG;
+   }
+   uint textureId = reinterpret_cast<uint>(texture);
+   glActiveTextureARB(GL_TEXTURE0 + textureUnit);
+   glEnable(GL_TEXTURE_2D);
+   glBindTexture(GL_TEXTURE_2D, textureId);
    return S_OK;
 }
 

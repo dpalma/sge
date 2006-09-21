@@ -45,6 +45,9 @@ public:
    virtual tResult Init();
    virtual tResult Term();
 
+   virtual tResult SetRenderState(eRenderState state, ulong value);
+   virtual tResult GetRenderState(eRenderState state, ulong * pValue);
+
    virtual tResult BeginScene();
    virtual tResult EndScene();
 
@@ -57,6 +60,7 @@ public:
 
    virtual tResult SetDiffuseColor(const float diffuse[4]);
 
+   virtual tResult SetTexture(uint textureUnit, const void * texture);
    virtual tResult SetTexture(uint textureUnit, const tChar * pszTexture);
 
    virtual tResult Render(ePrimitiveType primitive, const void * pIndices, uint nIndices);

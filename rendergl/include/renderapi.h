@@ -71,12 +71,6 @@ struct sVertexElement
    uint offset;
 };
 
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// INTERFACE: IRenderer
-//
-
 enum ePrimitiveType
 {
    kPT_Lines,
@@ -88,8 +82,22 @@ enum ePrimitiveType
 
 typedef enum ePrimitiveType tPrimitiveType;
 
+enum eRenderState
+{
+   kRS_AlphaTestEnable,
+   kRS_AlphaBlendEnable,
+};
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IRenderer
+//
+
 interface IRenderer : IUnknown
 {
+   virtual tResult SetRenderState(eRenderState state, ulong value) = 0;
+   virtual tResult GetRenderState(eRenderState state, ulong * pValue) = 0;
+
    virtual tResult BeginScene() = 0;
    virtual tResult EndScene() = 0;
 
@@ -102,6 +110,7 @@ interface IRenderer : IUnknown
 
    virtual tResult SetDiffuseColor(const float diffuse[4]) = 0;
 
+   virtual tResult SetTexture(uint textureUnit, const void * texture) = 0;
    virtual tResult SetTexture(uint textureUnit, const tChar * pszTexture) = 0;
 
    virtual tResult Render(ePrimitiveType primitive, const void * pIndices, uint nIndices) = 0;
