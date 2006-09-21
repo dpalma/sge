@@ -315,6 +315,24 @@ void WindowsDDBUnload(void * pData)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+static const int g_pixelFormatBitCounts[] =
+{
+   0, // kPF_Grayscale
+   0, // kPF_ColorMapped
+   16, // kPF_RGB555
+   16, // kPF_BGR555
+   16, // kPF_RGB565
+   16, // kPF_BGR565
+   16, // kPF_RGBA1555
+   16, // kPF_BGRA1555
+   24, // kPF_RGB888
+   24, // kPF_BGR888
+   32, // kPF_RGBA8888
+   32, // kPF_BGRA8888
+};
+
+AssertAtCompileTime(_countof(g_pixelFormatBitCounts) == kPF_NumPixelFormats);
+
 TECH_API tResult ImageToWindowsBitmap(IImage * pImage, HBITMAP * phBitmap)
 {
    if (pImage == NULL || phBitmap == NULL)
@@ -333,25 +351,7 @@ TECH_API tResult ImageToWindowsBitmap(IImage * pImage, HBITMAP * phBitmap)
       return E_INVALIDARG;
    }
 
-   static const int bitCounts[] =
-   {
-      0, // kPF_Grayscale
-      0, // kPF_ColorMapped
-      16, // kPF_RGB555
-      16, // kPF_BGR555
-      16, // kPF_RGB565
-      16, // kPF_BGR565
-      16, // kPF_RGBA1555
-      16, // kPF_BGRA1555
-      24, // kPF_RGB888
-      24, // kPF_BGR888
-      32, // kPF_RGBA8888
-      32, // kPF_BGRA8888
-   };
-
-   AssertAtCompileTime(_countof(bitCounts) == kPF_NumPixelFormats);
-
-   int bitCount = bitCounts[pixelFormat];
+   int bitCount = g_pixelFormatBitCounts[pixelFormat];
    if (bitCount <= 0)
    {
       return NULL;
