@@ -439,13 +439,27 @@ tResult cRenderer::SetRenderState(eRenderState state, ulong value)
    {
       case kRS_AlphaTestEnable:
       {
-         glEnable(GL_ALPHA);
+         if (value)
+         {
+            glEnable(GL_ALPHA);
+         }
+         else
+         {
+            glDisable(GL_ALPHA);
+         }
          break;
       }
 
       case kRS_AlphaBlendEnable:
       {
-         glEnable(GL_BLEND);
+         if (value)
+         {
+            glEnable(GL_BLEND);
+         }
+         else
+         {
+            glDisable(GL_BLEND);
+         }
          break;
       }
 
@@ -456,7 +470,7 @@ tResult cRenderer::SetRenderState(eRenderState state, ulong value)
       }
    }
 
-   return E_NOTIMPL;
+   return result;
 }
 
 ////////////////////////////////////////

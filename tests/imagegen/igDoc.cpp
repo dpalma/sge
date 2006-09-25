@@ -86,20 +86,20 @@ void ImageSolidCircle(IImage * pImage, uint x, uint y, uint radius, const cColor
 
    uint imageWidth = pImage->GetWidth(), imageHeight = pImage->GetHeight();
 
-   int yStart = (y >= radius) ? y - radius : radius - y;
-   int yEnd = Min(y + radius, imageHeight);
+   uint yStart = (y >= radius) ? y - radius : radius - y;
+   uint yEnd = Min(y + radius, imageHeight);
 
-   int xStart = (x >= radius) ? x - radius : radius - x;
-   int xEnd = Min(x + radius, imageWidth);
+   uint xStart = (x >= radius) ? x - radius : radius - x;
+   uint xEnd = Min(x + radius, imageWidth);
 
-   cVec2<int> center(x, y);
+   cVec2<uint> center(x, y);
    int rSqr = radius * radius;
 
-   for (int j = yStart; j <= yEnd; ++j)
+   for (uint j = yStart; j <= yEnd; ++j)
    {
-      for (int i = xStart; i <= xEnd; ++i)
+      for (uint i = xStart; i <= xEnd; ++i)
       {
-         int dSqr = Vec2DistanceSqr(cVec2<int>(i, j), center);
+         int dSqr = Vec2DistanceSqr(cVec2<uint>(i, j), center);
          if (dSqr < rSqr)
          {
             pImage->SetPixel(i, j, color);
@@ -164,7 +164,7 @@ void ImageGradientRoundRect(IImage * pImage, uint x, uint y, uint w, uint h, uin
       return;
    }
 
-   int cornerRadiusSqr = cornerRadius * cornerRadius;
+   uint cornerRadiusSqr = cornerRadius * cornerRadius;
 
    cVec2<uint> topLeftCenter(x + cornerRadius, y + cornerRadius);
    cVec2<uint> topRightCenter(x + w - cornerRadius - 1, y + cornerRadius);
@@ -200,32 +200,32 @@ void ImageGradientRoundRect(IImage * pImage, uint x, uint y, uint w, uint h, uin
 
          if (i < topLeftCenter.x && j < topLeftCenter.y)
          {
-            int dSqr = Vec2DistanceSqr(ij, topLeftCenter);
-            if (dSqr < cornerRadiusSqr)
+            uint dSqr = Vec2DistanceSqr(ij, topLeftCenter);
+            if (dSqr < cornerRadiusSqr || cornerRadiusSqr == 0)
             {
                pImage->SetPixel(i, j, color);
             }
          }
          else if (i >= topRightCenter.x && j < topRightCenter.y)
          {
-            int dSqr = Vec2DistanceSqr(ij, topRightCenter);
-            if (dSqr < cornerRadiusSqr)
+            uint dSqr = Vec2DistanceSqr(ij, topRightCenter);
+            if (dSqr < cornerRadiusSqr || cornerRadiusSqr == 0)
             {
                pImage->SetPixel(i, j, color);
             }
          }
          else if (i >= bottomRightCenter.x && j >= bottomRightCenter.y)
          {
-            int dSqr = Vec2DistanceSqr(ij, bottomRightCenter);
-            if (dSqr < cornerRadiusSqr)
+            uint dSqr = Vec2DistanceSqr(ij, bottomRightCenter);
+            if (dSqr < cornerRadiusSqr || cornerRadiusSqr == 0)
             {
                pImage->SetPixel(i, j, color);
             }
          }
          else if (i < bottomLeftCenter.x && j >= bottomLeftCenter.y)
          {
-            int dSqr = Vec2DistanceSqr(ij, bottomLeftCenter);
-            if (dSqr < cornerRadiusSqr)
+            uint dSqr = Vec2DistanceSqr(ij, bottomLeftCenter);
+            if (dSqr < cornerRadiusSqr || cornerRadiusSqr == 0)
             {
                pImage->SetPixel(i, j, color);
             }

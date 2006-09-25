@@ -171,6 +171,53 @@ tResult cRendererDX::Term()
 
 ////////////////////////////////////////
 
+tResult cRendererDX::SetRenderState(eRenderState state, ulong value)
+{
+   if (!m_pD3dDevice)
+   {
+      return E_FAIL;
+   }
+
+   tResult result = E_FAIL;
+
+   switch (state)
+   {
+      case kRS_AlphaTestEnable:
+      {
+         m_pD3dDevice->SetRenderState(D3DRS_ALPHATESTENABLE, value);
+         break;
+      }
+
+      case kRS_AlphaBlendEnable:
+      {
+         m_pD3dDevice->SetRenderState(D3DRS_ALPHATESTENABLE, value);
+         break;
+      }
+
+      default:
+      {
+         result = E_INVALIDARG;
+         break;
+      }
+   }
+
+   return result;
+}
+
+////////////////////////////////////////
+
+tResult cRendererDX::GetRenderState(eRenderState state, ulong * pValue)
+{
+   if (pValue == NULL)
+   {
+      return E_POINTER;
+   }
+
+   return E_NOTIMPL;
+}
+
+////////////////////////////////////////
+
 tResult cRendererDX::BeginScene()
 {
    if (!m_pD3dDevice)
@@ -319,6 +366,13 @@ tResult cRendererDX::SetDiffuseColor(const float diffuse[4])
    }
    // TODO
    return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cRendererDX::SetTexture(uint textureUnit, const void * texture)
+{
+   return E_NOTIMPL;
 }
 
 ////////////////////////////////////////
