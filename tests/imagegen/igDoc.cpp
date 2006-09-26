@@ -6,6 +6,7 @@
 #include "igDoc.h"
 
 #include "ImageAttributesDlg.h"
+#include "ImageGammaDlg.h"
 
 #include "color.h"
 #include "filespec.h"
@@ -37,16 +38,21 @@ BEGIN_MESSAGE_MAP(cImageGenDoc, CDocument)
    ON_UPDATE_COMMAND_UI(ID_IMAGE_RECTANGLE, &cImageGenDoc::OnUpdateImageRectangle)
    ON_COMMAND(ID_IMAGE_ROUNDRECT, &cImageGenDoc::OnImageRoundrect)
    ON_UPDATE_COMMAND_UI(ID_IMAGE_ROUNDRECT, &cImageGenDoc::OnUpdateImageRoundrect)
+   ON_COMMAND(ID_IMAGE_AQUABUTTON, &cImageGenDoc::OnImageAquabutton)
+   ON_UPDATE_COMMAND_UI(ID_IMAGE_AQUABUTTON, &cImageGenDoc::OnUpdateImageAquabutton)
+   ON_COMMAND(ID_IMAGE_GAMMA, &cImageGenDoc::OnImageGamma)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // cImageGenDoc construction/destruction
 
 cImageGenDoc::cImageGenDoc()
-: m_shape(kRectangle)
+: m_shape(kAquaButton)
+, m_bApplyGamma(false)
+, m_gamma(1)
 , m_defaultPixelFormat(kPF_BGR888)
 , m_defaultImageWidth(256)
-, m_defaultImageHeight(256)
+, m_defaultImageHeight(128)
 {
 }
 
@@ -127,32 +133,46 @@ void ImageApplyGamma(IImage * pImage, uint x, uint y, uint w, uint h, float gamm
 
    float oneOverGamma = 1.0f / gamma;
 
-   float red[256], green[256], blue[256];
+   byte gammaLookUp[256];
    for (int i = 0; i < 256; ++i)
    {
       float value = (255 * pow(static_cast<float>(i) / 255, oneOverGamma)) + 0.5f;
       value = Min(value, 255);
-      red[i] = value;
-      green[i] = value;
-      blue[i] = value;
+      gammaLookUp[i] = (byte)FloatToInt(value);
+   }
+
+   for (uint j = y; j < (y + h); ++j)
+   {
+      for (uint i = x; i < (x + w); ++i)
+      {
+         byte rgba[4];
+         pImage->GetPixel(i, j, rgba);
+
+         for (int k = 0; k < _countof(rgba); ++k)
+         {
+            rgba[k] = gammaLookUp[rgba[k]];
+         }
+
+         pImage->SetPixel(i, j, rgba);
+      }
    }
 }
 
-template <>
-inline uint Vec2Distance(const cVec2<uint> & v1, const cVec2<uint> & v2)
+enum eImageDrawFlags
 {
-   return static_cast<uint>(FloatToInt(sqrt(static_cast<float>(Vec2DistanceSqr(v1, v2)))));
-}
-
-enum eCorner
-{
-   kTopLeft,
-   kTopRight,
-   kBottomRight,
-   kBottomLeft,
+   kIDF_Default         = 0,
+   kIDF_AlphaBlend      = (1<<0),
 };
 
-void ImageGradientRoundRect(IImage * pImage, uint x, uint y, uint w, uint h, uint cornerRadius, uint flags, const cColor colors[4])
+enum eImageGradientDirection
+{
+   kIGD_LeftToRight,
+   kIGD_TopToBottom,
+};
+
+void ImageGradientRoundRect(IImage * pImage, uint x, uint y, uint w, uint h, uint cornerRadius,
+                            eImageGradientDirection dir, const cColor & startColor, const cColor & endColor,
+                            uint flags)
 {
    if (pImage == NULL)
    {
@@ -173,30 +193,42 @@ void ImageGradientRoundRect(IImage * pImage, uint x, uint y, uint w, uint h, uin
 
    for (uint j = y; j < (y + h); ++j)
    {
+      float fracY = static_cast<float>(j - y) / h;
+
       for (uint i = x; i < (x + w); ++i)
       {
          cVec2<uint> ij(i, j);
 
-         uint topLeftDist = Vec2Distance(ij, cVec2<uint>(x,y));
-         uint topRightDist = Vec2Distance(ij, cVec2<uint>(x+w,y));
-         uint bottomRightDist = Vec2Distance(ij, cVec2<uint>(x+w,y+h));
-         uint bottomLeftDist = Vec2Distance(ij, cVec2<uint>(x,y+h));
+         float fracX = static_cast<float>(i - x) / w;
 
-         uint sumDist = topLeftDist + topRightDist + bottomRightDist + bottomLeftDist;
-
-         float topLeftFrac = 1.0f - (static_cast<float>(topLeftDist) / sumDist);
-         float topRightFrac = 1.0f - (static_cast<float>(topRightDist) / sumDist);
-         float bottomRightFrac = 1.0f - (static_cast<float>(bottomRightDist) / sumDist);
-         float bottomLeftFrac = 1.0f - (static_cast<float>(bottomLeftDist) / sumDist);
+         // frac is the fraction that should come from endColor
+         // (e.g, fracY starts at 0 and goes to 1; same for fracX)
+         float frac = 0;
+         if (dir == kIGD_LeftToRight)
+         {
+            frac = fracX;
+         }
+         else if (dir == kIGD_TopToBottom)
+         {
+            frac = fracY;
+         }
 
          cColor color(
-            colors[kTopLeft].r * topLeftFrac + colors[kTopRight].r * topRightFrac + colors[kBottomRight].r * bottomRightFrac + colors[kBottomLeft].r * bottomLeftFrac,
-            colors[kTopLeft].g * topLeftFrac + colors[kTopRight].g * topRightFrac + colors[kBottomRight].g * bottomRightFrac + colors[kBottomLeft].g * bottomLeftFrac,
-            colors[kTopLeft].b * topLeftFrac + colors[kTopRight].b * topRightFrac + colors[kBottomRight].b * bottomRightFrac + colors[kBottomLeft].b * bottomLeftFrac,
-            colors[kTopLeft].a * topLeftFrac + colors[kTopRight].a * topRightFrac + colors[kBottomRight].a * bottomRightFrac + colors[kBottomLeft].a * bottomLeftFrac);
+            startColor.r * (1 - frac) + endColor.r * frac,
+            startColor.g * (1 - frac) + endColor.g * frac,
+            startColor.b * (1 - frac) + endColor.b * frac,
+            startColor.a * (1 - frac) + endColor.a * frac);
 
          cColor pixelIJ;
          pImage->GetPixel(i, j, &pixelIJ);
+
+         if ((flags & kIDF_AlphaBlend) == kIDF_AlphaBlend)
+         {
+            color.r = (color.r * color.a) + (pixelIJ.r * (1 - color.a));
+            color.g = (color.g * color.a) + (pixelIJ.g * (1 - color.a));
+            color.b = (color.b * color.a) + (pixelIJ.b * (1 - color.a));
+            color.a = (color.a * color.a) + (pixelIJ.a * (1 - color.a));
+         }
 
          if (i < topLeftCenter.x && j < topLeftCenter.y)
          {
@@ -240,8 +272,7 @@ void ImageGradientRoundRect(IImage * pImage, uint x, uint y, uint w, uint h, uin
 
 void ImageSolidRoundRect(IImage * pImage, uint x, uint y, uint w, uint h, uint cornerRadius, const cColor & color)
 {
-   cColor colors[4] = { color, color, color, color };
-   ImageGradientRoundRect(pImage, x, y, w, h, cornerRadius, 0, colors);
+   ImageGradientRoundRect(pImage, x, y, w, h, cornerRadius, kIGD_LeftToRight, color, color, kIDF_Default);
 }
 
 void ImageSolidRoundRect(IImage * pImage, const cColor & color)
@@ -262,18 +293,46 @@ void cImageGenDoc::Rasterize()
    if (m_shape == kCircle)
    {
       ImageSolidRect(m_pImage, cColor(1,1,1));
-      ImageSolidCircle(m_pImage, cColor(0,1,0));
+
+      uint imageWidth = m_pImage->GetWidth(), imageHeight = m_pImage->GetHeight();
+      uint radius = Min(imageWidth, imageHeight) / 2;
+      ImageGradientRoundRect(m_pImage, 0, 0, radius * 2, radius * 2, radius,
+                            kIGD_LeftToRight, cColor(0,1,0), cColor(0,1,0),
+                            kIDF_Default);
    }
    else if (m_shape == kRectangle)
    {
-      ImageSolidRect(m_pImage, cColor(0,0,1));
+      ImageGradientRoundRect(m_pImage, 0, 0, m_pImage->GetWidth(), m_pImage->GetHeight(),
+         0, kIGD_LeftToRight, cColor(0,0,1), cColor(0,0,1), kIDF_Default);
    }
    else if (m_shape == kRoundRect)
    {
       ImageSolidRect(m_pImage, cColor(1,1,1));
-      cColor colors[4] = { cColor(1,0,0), cColor(0,1,0), cColor(0,0,1), cColor(1,1,1) };
       ImageGradientRoundRect(m_pImage, 0, 0, m_pImage->GetWidth(), m_pImage->GetHeight(),
-         Min(m_pImage->GetWidth(), m_pImage->GetHeight()) / 8, 0, colors);
+         Min(m_pImage->GetWidth(), m_pImage->GetHeight()) / 8,
+         kIGD_LeftToRight, cColor(1,0,0), cColor(0,0,1), kIDF_Default);
+   }
+   else if (m_shape == kAquaButton)
+   {
+      ImageSolidRect(m_pImage, cColor(1,1,1));
+
+      int cornerRadius = Min(m_pImage->GetWidth(), m_pImage->GetHeight()) / 8;
+
+      ImageGradientRoundRect(m_pImage, 0, 0, m_pImage->GetWidth(), m_pImage->GetHeight(),
+         cornerRadius, kIGD_TopToBottom, cColor(1,0,0,1), cColor(1,1,1,1), kIDF_Default);
+
+      int hlInset = Min(m_pImage->GetWidth(), m_pImage->GetHeight()) / 16;
+      hlInset = 0;
+
+      int hlHeight = 2 * cornerRadius;
+
+      ImageGradientRoundRect(m_pImage, hlInset, hlInset, m_pImage->GetWidth() - (2 * hlInset), hlHeight,
+         cornerRadius, kIGD_TopToBottom, cColor(1,1,1,.75f), cColor(1,1,1,0), kIDF_AlphaBlend);
+   }
+
+   if (m_bApplyGamma)
+   {
+      ImageApplyGamma(m_pImage, 0, 0, m_pImage->GetWidth(), m_pImage->GetHeight(), m_gamma);
    }
 
    UpdateAllViews(NULL);
@@ -416,4 +475,29 @@ void cImageGenDoc::OnImageRoundrect()
 void cImageGenDoc::OnUpdateImageRoundrect(CCmdUI *pCmdUI)
 {
    pCmdUI->SetRadio(m_shape == kRoundRect);
+}
+
+void cImageGenDoc::OnImageAquabutton()
+{
+   m_shape = kAquaButton;
+   Rasterize();
+}
+
+void cImageGenDoc::OnUpdateImageAquabutton(CCmdUI *pCmdUI)
+{
+   pCmdUI->SetRadio(m_shape == kAquaButton);
+}
+
+void cImageGenDoc::OnImageGamma()
+{
+   cImageGammaDlg dlg;
+   dlg.m_bApplyGamma = m_bApplyGamma;
+   dlg.m_gamma = m_gamma;
+   if (dlg.DoModal() == IDOK)
+   {
+      m_bApplyGamma = dlg.m_bApplyGamma ? true : false;
+      m_gamma = dlg.m_gamma;
+
+      Rasterize();
+   }
 }

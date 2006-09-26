@@ -517,6 +517,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\tests\imagegen\ImageGammaDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\tests\imagegen\imagegen.rc"
 				>
 				<FileConfiguration
@@ -627,6 +631,10 @@
 			</File>
 			<File
 				RelativePath="..\..\tests\imagegen\ImageAttributesDlg.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tests\imagegen\ImageGammaDlg.h"
 				>
 			</File>
 			<File

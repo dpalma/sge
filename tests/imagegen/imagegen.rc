@@ -133,6 +133,9 @@ BEGIN
         MENUITEM "&Circle",                     ID_IMAGE_CIRCLE
         MENUITEM "&Rectangle",                  ID_IMAGE_RECTANGLE
         MENUITEM "R&ound Rectangle",            ID_IMAGE_ROUNDRECT
+        MENUITEM "&Aqua Button",                ID_IMAGE_AQUABUTTON
+        MENUITEM SEPARATOR
+        MENUITEM "&Gamma...",                   32779
         MENUITEM SEPARATOR
         MENUITEM "&Attributes...",              ID_IMAGE_ATTRIBUTES
     END
@@ -151,23 +154,20 @@ END
 IDR_MAINFRAME ACCELERATORS 
 BEGIN
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
+    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL, NOINVERT
+    VK_DELETE,      ID_EDIT_DELETE,         VIRTKEY, NOINVERT
+    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT, NOINVERT
     "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
     "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
     "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
     "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
-    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
-    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT, NOINVERT
-    VK_DELETE,      ID_EDIT_DELETE,         VIRTKEY, NOINVERT
-    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
     VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
     VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
     VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
     VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
-    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
-    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT, NOINVERT
-    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL, NOINVERT
-    "Y",            ID_EDIT_REDO,           VIRTKEY, CONTROL, NOINVERT
-    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
 END
 
 
@@ -200,6 +200,18 @@ BEGIN
     EDITTEXT        IDC_WIDTH,72,62,40,14,ES_AUTOHSCROLL
     RTEXT           "Height",IDC_STATIC,7,98,57,8
     EDITTEXT        IDC_HEIGHT,72,95,40,14,ES_AUTOHSCROLL
+END
+
+IDD_IMAGE_GAMMA DIALOGEX 0, 0, 186, 90
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Gamma"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "&Apply gamma",IDC_APPLY_GAMMA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,33,18,73,10
+    LTEXT           "&Gamma:",IDC_STATIC,15,49,37,8,0,WS_EX_RIGHT
+    EDITTEXT        IDC_GAMMA_VALUE,57,46,61,14,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,129,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,129,24,50,14
 END
 
 
@@ -265,6 +277,14 @@ BEGIN
         VERTGUIDE, 72
         TOPMARGIN, 7
         BOTTOMMARGIN, 144
+    END
+
+    IDD_IMAGE_GAMMA, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 83
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -386,32 +406,7 @@ BEGIN
     ID_IMAGE_CIRCLE         "Draw a circle"
     ID_IMAGE_RECTANGLE      "Draw a rectangle"
     ID_IMAGE_ROUNDRECT      "Draw a rectangle with rounded corners"
-END
-
-STRINGTABLE 
-BEGIN
-    IDS_UNDO_TEXT           "Undo %s\tCtrl+Z"
-    IDS_REDO_TEXT           "Redo %s\tCtrl+Y"
-END
-
-STRINGTABLE 
-BEGIN
-    ID_VIEW_CONTROL_BAR1    "Show or hide this control bar"
-    ID_VIEW_CONTROL_BAR2    "Show or hide this control bar"
-    ID_VIEW_CONTROL_BAR3    "Show or hide this control bar"
-    ID_VIEW_CONTROL_BAR4    "Show or hide this control bar"
-    ID_VIEW_CONTROL_BAR5    "Show or hide this control bar"
-    ID_VIEW_CONTROL_BAR6    "Show or hide this control bar"
-    ID_VIEW_CONTROL_BAR7    "Show or hide this control bar"
-    ID_VIEW_CONTROL_BAR8    "Show or hide this control bar"
-    ID_VIEW_CONTROL_BAR9    "Show or hide this control bar"
-    ID_VIEW_CONTROL_BAR10   "Show or hide this control bar"
-    ID_VIEW_CONTROL_BAR11   "Show or hide this control bar"
-    ID_VIEW_CONTROL_BAR12   "Show or hide this control bar"
-    ID_VIEW_CONTROL_BAR13   "Show or hide this control bar"
-    ID_VIEW_CONTROL_BAR14   "Show or hide this control bar"
-    ID_VIEW_CONTROL_BAR15   "Show or hide this control bar"
-    ID_VIEW_CONTROL_BAR16   "Show or hide this control bar"
+    ID_IMAGE_AQUABUTTON     "Draw an aqua-style button image"
 END
 
 #endif    // English (U.S.) resources

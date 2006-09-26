@@ -60,15 +60,21 @@ protected:
    afx_msg void OnUpdateImageRectangle(CCmdUI *pCmdUI);
    afx_msg void OnImageRoundrect();
    afx_msg void OnUpdateImageRoundrect(CCmdUI *pCmdUI);
+   afx_msg void OnImageAquabutton();
+   afx_msg void OnUpdateImageAquabutton(CCmdUI *pCmdUI);
+   afx_msg void OnImageGamma();
 	DECLARE_MESSAGE_MAP()
 
 private:
    enum eShape
    {
-      kCircle, kRectangle, kRoundRect
+      kCircle, kRectangle, kRoundRect, kAquaButton
    };
 
    eShape m_shape;
+
+   bool m_bApplyGamma;
+   float m_gamma;
 
    ePixelFormat m_defaultPixelFormat;
    uint m_defaultImageWidth, m_defaultImageHeight;

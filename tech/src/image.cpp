@@ -221,6 +221,120 @@ tResult cImage::SetPixel(uint x, uint y, const cColor & pixel)
 
 ///////////////////////////////////////
 
+tResult cImage::GetPixel(uint x, uint y, byte rgba[4]) const
+{
+   if (x >= GetWidth() || y >= GetHeight())
+   {
+      return E_INVALIDARG;
+   }
+
+   if (rgba == NULL)
+   {
+      return E_POINTER;
+   }
+
+   uint bytesPerPixel = BytesPerPixel(GetPixelFormat());
+   const byte * pImagePixel = m_pData + (y * GetWidth() * bytesPerPixel) + (x * bytesPerPixel);
+
+   switch (GetPixelFormat())
+   {
+      case kPF_RGB888:
+      {
+         rgba[0] = pImagePixel[0];
+         rgba[1] = pImagePixel[1];
+         rgba[2] = pImagePixel[2];
+         return S_OK;
+      }
+
+      case kPF_BGR888:
+      {
+         rgba[0] = pImagePixel[2];
+         rgba[1] = pImagePixel[1];
+         rgba[2] = pImagePixel[0];
+         return S_OK;
+      }
+
+      case kPF_RGBA8888:
+      {
+         rgba[0] = pImagePixel[0];
+         rgba[1] = pImagePixel[1];
+         rgba[2] = pImagePixel[2];
+         rgba[3] = pImagePixel[3];
+         return S_OK;
+      }
+
+      case kPF_BGRA8888:
+      {
+         rgba[0] = pImagePixel[2];
+         rgba[1] = pImagePixel[1];
+         rgba[2] = pImagePixel[0];
+         rgba[3] = pImagePixel[3];
+         return S_OK;
+      }
+   }
+
+   return E_FAIL;
+}
+
+///////////////////////////////////////
+
+tResult cImage::SetPixel(uint x, uint y, const byte rgba[4])
+{
+   if (x >= GetWidth() || y >= GetHeight())
+   {
+      return E_INVALIDARG;
+   }
+
+   if (rgba == NULL)
+   {
+      return E_POINTER;
+   }
+
+   uint bytesPerPixel = BytesPerPixel(GetPixelFormat());
+   byte * pImagePixel = m_pData + ((y * GetWidth()) + x) * bytesPerPixel;
+
+   switch (GetPixelFormat())
+   {
+      case kPF_RGB888:
+      {
+         pImagePixel[0] = rgba[0];
+         pImagePixel[1] = rgba[1];
+         pImagePixel[2] = rgba[2];
+         return S_OK;
+      }
+
+      case kPF_BGR888:
+      {
+         pImagePixel[0] = rgba[2];
+         pImagePixel[1] = rgba[1];
+         pImagePixel[2] = rgba[0];
+         return S_OK;
+      }
+
+      case kPF_RGBA8888:
+      {
+         pImagePixel[0] = rgba[0];
+         pImagePixel[1] = rgba[1];
+         pImagePixel[2] = rgba[2];
+         pImagePixel[3] = rgba[3];
+         return S_OK;
+      }
+
+      case kPF_BGRA8888:
+      {
+         pImagePixel[0] = rgba[2];
+         pImagePixel[1] = rgba[1];
+         pImagePixel[2] = rgba[0];
+         pImagePixel[3] = rgba[3];
+         return S_OK;
+      }
+   }
+
+   return E_FAIL;
+}
+
+///////////////////////////////////////
+
 tResult cImage::GetSubImage(uint x, uint y, uint width, uint height, IImage * * ppSubImage) const
 {
    if (width == 0 || height == 0)
@@ -413,7 +527,9 @@ TECH_API tResult ImageToWindowsBitmap(IImage * pImage, HBITMAP * phBitmap)
          BITMAPINFOHEADER bmInfo = {0};
          bmInfo.biSize = sizeof(BITMAPINFOHEADER);
          bmInfo.biWidth = pImage->GetWidth();
-         bmInfo.biHeight = pImage->GetHeight();
+         // The height is negative because IImage objects are top-down DIBs
+         // (i.e., the origin is at the top left)
+         bmInfo.biHeight = -static_cast<int>(pImage->GetHeight());
          bmInfo.biPlanes = 1; 
          bmInfo.biBitCount = bitCount; 
          bmInfo.biCompression = BI_RGB;
