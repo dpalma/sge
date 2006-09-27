@@ -119,45 +119,6 @@ void ImageSolidCircle(IImage * pImage, const cColor & color)
    ImageSolidCircle(pImage, pImage->GetWidth() / 2, pImage->GetHeight() / 2, pImage->GetWidth() / 2, color);
 }
 
-void ImageApplyGamma(IImage * pImage, uint x, uint y, uint w, uint h, float gamma)
-{
-   if (pImage == NULL)
-   {
-      return;
-   }
-
-   if (gamma < 0.2f || gamma > 5.0f)
-   {
-      WarnMsg1("Unusual gamma, %f\n", gamma);
-   }
-
-   float oneOverGamma = 1.0f / gamma;
-
-   byte gammaLookUp[256];
-   for (int i = 0; i < 256; ++i)
-   {
-      float value = (255 * pow(static_cast<float>(i) / 255, oneOverGamma)) + 0.5f;
-      value = Min(value, 255);
-      gammaLookUp[i] = (byte)FloatToInt(value);
-   }
-
-   for (uint j = y; j < (y + h); ++j)
-   {
-      for (uint i = x; i < (x + w); ++i)
-      {
-         byte rgba[4];
-         pImage->GetPixel(i, j, rgba);
-
-         for (int k = 0; k < _countof(rgba); ++k)
-         {
-            rgba[k] = gammaLookUp[rgba[k]];
-         }
-
-         pImage->SetPixel(i, j, rgba);
-      }
-   }
-}
-
 enum eImageDrawFlags
 {
    kIDF_Default         = 0,
@@ -268,17 +229,6 @@ void ImageGradientRoundRect(IImage * pImage, uint x, uint y, uint w, uint h, uin
          }
       }
    }
-}
-
-void ImageSolidRoundRect(IImage * pImage, uint x, uint y, uint w, uint h, uint cornerRadius, const cColor & color)
-{
-   ImageGradientRoundRect(pImage, x, y, w, h, cornerRadius, kIGD_LeftToRight, color, color, kIDF_Default);
-}
-
-void ImageSolidRoundRect(IImage * pImage, const cColor & color)
-{
-   uint cr = Min(pImage->GetWidth(), pImage->GetHeight()) / 4;
-   ImageSolidRoundRect(pImage, 0, 0, pImage->GetWidth(), pImage->GetHeight(), cr, color);
 }
 
 /////////////////////////////////////////////////////////////////////////////

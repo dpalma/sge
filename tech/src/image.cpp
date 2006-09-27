@@ -20,6 +20,24 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+static const uint g_pixelFormatBytesPerPixel[] =
+{
+   1, // kPF_Grayscale
+   1, // kPF_ColorMapped
+   2, // kPF_RGB555
+   2, // kPF_BGR555
+   2, // kPF_RGB565
+   2, // kPF_BGR565
+   2, // kPF_RGBA1555
+   2, // kPF_BGRA1555
+   3, // kPF_RGB888
+   3, // kPF_BGR888
+   4, // kPF_RGBA8888
+   4, // kPF_BGRA8888
+};
+
+AssertAtCompileTime(_countof(g_pixelFormatBytesPerPixel) == kPF_NumPixelFormats);
+
 uint BytesPerPixel(ePixelFormat pixelFormat)
 {
    if (pixelFormat <= kPF_ERROR || pixelFormat >= kPF_NumPixelFormats)
@@ -27,25 +45,7 @@ uint BytesPerPixel(ePixelFormat pixelFormat)
       return 0;
    }
 
-   static const uint bytesPerPixel[] =
-   {
-      1, // kPF_Grayscale
-      1, // kPF_ColorMapped
-      2, // kPF_RGB555
-      2, // kPF_BGR555
-      2, // kPF_RGB565
-      2, // kPF_BGR565
-      2, // kPF_RGBA1555
-      2, // kPF_BGRA1555
-      3, // kPF_RGB888
-      3, // kPF_BGR888
-      4, // kPF_RGBA8888
-      4, // kPF_BGRA8888
-   };
-
-   Assert(_countof(bytesPerPixel) == kPF_NumPixelFormats);
-
-   return bytesPerPixel[pixelFormat];
+   return g_pixelFormatBytesPerPixel[pixelFormat];
 }
 
 
@@ -115,51 +115,20 @@ tResult cImage::GetPixel(uint x, uint y, cColor * pPixel) const
       return E_POINTER;
    }
 
-   uint bytesPerPixel = BytesPerPixel(GetPixelFormat());
-   const byte * pImagePixel = m_pData + (y * GetWidth() * bytesPerPixel) + (x * bytesPerPixel);
+   byte rgba[4] = {0};
 
-   switch (GetPixelFormat())
+   tResult result = GetPixel(x, y, rgba);
+
+   if (result == S_OK)
    {
-      case kPF_RGB888:
-      {
-         *pPixel = cColor(
-            static_cast<float>(pImagePixel[0]) / 255.0f,
-            static_cast<float>(pImagePixel[1]) / 255.0f,
-            static_cast<float>(pImagePixel[2]) / 255.0f);
-         return S_OK;
-      }
-
-      case kPF_BGR888:
-      {
-         *pPixel = cColor(
-            static_cast<float>(pImagePixel[2]) / 255.0f,
-            static_cast<float>(pImagePixel[1]) / 255.0f,
-            static_cast<float>(pImagePixel[0]) / 255.0f);
-         return S_OK;
-      }
-
-      case kPF_RGBA8888:
-      {
-         *pPixel = cColor(
-            static_cast<float>(pImagePixel[0]) / 255.0f,
-            static_cast<float>(pImagePixel[1]) / 255.0f,
-            static_cast<float>(pImagePixel[2]) / 255.0f,
-            static_cast<float>(pImagePixel[3]) / 255.0f);
-         return S_OK;
-      }
-
-      case kPF_BGRA8888:
-      {
-         *pPixel = cColor(
-            static_cast<float>(pImagePixel[2]) / 255.0f,
-            static_cast<float>(pImagePixel[1]) / 255.0f,
-            static_cast<float>(pImagePixel[0]) / 255.0f,
-            static_cast<float>(pImagePixel[3]) / 255.0f);
-         return S_OK;
-      }
+      *pPixel = cColor(
+         static_cast<float>(rgba[0]) / 255.0f,
+         static_cast<float>(rgba[1]) / 255.0f,
+         static_cast<float>(rgba[2]) / 255.0f,
+         static_cast<float>(rgba[3]) / 255.0f);
    }
 
-   return E_FAIL;
+   return result;
 }
 
 ///////////////////////////////////////
@@ -171,52 +140,13 @@ tResult cImage::SetPixel(uint x, uint y, const cColor & pixel)
       return E_INVALIDARG;
    }
 
-   uint bytesPerPixel = BytesPerPixel(GetPixelFormat());
-   byte * pImagePixel = m_pData + ((y * GetWidth()) + x) * bytesPerPixel;
+   byte rgba[4];
+   rgba[0] = static_cast<byte>(pixel.GetRed() * 255.0f);
+   rgba[1] = static_cast<byte>(pixel.GetGreen() * 255.0f);
+   rgba[2] = static_cast<byte>(pixel.GetBlue() * 255.0f);
+   rgba[3] = static_cast<byte>(pixel.GetAlpha() * 255.0f);
 
-   byte r = static_cast<byte>(pixel.GetRed() * 255);
-   byte g = static_cast<byte>(pixel.GetGreen() * 255);
-   byte b = static_cast<byte>(pixel.GetBlue() * 255);
-   byte a = static_cast<byte>(pixel.GetAlpha() * 255);
-
-   switch (GetPixelFormat())
-   {
-      case kPF_RGB888:
-      {
-         pImagePixel[0] = r;
-         pImagePixel[1] = g;
-         pImagePixel[2] = b;
-         return S_OK;
-      }
-
-      case kPF_BGR888:
-      {
-         pImagePixel[0] = b;
-         pImagePixel[1] = g;
-         pImagePixel[2] = r;
-         return S_OK;
-      }
-
-      case kPF_RGBA8888:
-      {
-         pImagePixel[0] = r;
-         pImagePixel[1] = g;
-         pImagePixel[2] = b;
-         pImagePixel[3] = a;
-         return S_OK;
-      }
-
-      case kPF_BGRA8888:
-      {
-         pImagePixel[0] = b;
-         pImagePixel[1] = g;
-         pImagePixel[2] = r;
-         pImagePixel[3] = a;
-         return S_OK;
-      }
-   }
-
-   return E_FAIL;
+   return SetPixel(x, y, rgba);
 }
 
 ///////////////////////////////////////
@@ -238,6 +168,15 @@ tResult cImage::GetPixel(uint x, uint y, byte rgba[4]) const
 
    switch (GetPixelFormat())
    {
+      case kPF_RGB565:
+      {
+         uint16 pixel = *(uint16 *)pImagePixel;
+         rgba[0] = ((pixel >> 11) & 31) << 3;
+         rgba[1] = ((pixel >> 5) & 63) << 2;
+         rgba[2] = (pixel & 31) << 3;
+         return S_OK;
+      }
+
       case kPF_RGB888:
       {
          rgba[0] = pImagePixel[0];
@@ -295,6 +234,13 @@ tResult cImage::SetPixel(uint x, uint y, const byte rgba[4])
 
    switch (GetPixelFormat())
    {
+      case kPF_RGB565:
+      {
+         uint16 * pPixel = (uint16 *)pImagePixel;
+         *pPixel = (((uint16)rgba[0] >> 3) << 11) | (((uint16)rgba[1] >> 2) << 5)  | ((uint16)rgba[2] >> 3);
+         return S_OK;
+      }
+
       case kPF_RGB888:
       {
          pImagePixel[0] = rgba[0];
@@ -456,7 +402,8 @@ TECH_API tResult ImageToWindowsBitmap(IImage * pImage, HBITMAP * phBitmap)
 
    ePixelFormat pixelFormat = pImage->GetPixelFormat();
 
-   if (pixelFormat != kPF_BGR888
+   if (pixelFormat != kPF_RGB565
+      && pixelFormat != kPF_BGR888
       && pixelFormat != kPF_BGRA8888
       && pixelFormat != kPF_RGB888
       && pixelFormat != kPF_RGBA8888)
@@ -491,7 +438,11 @@ TECH_API tResult ImageToWindowsBitmap(IImage * pImage, HBITMAP * phBitmap)
 
    for (uint i = 0; i < pImage->GetHeight(); i++)
    {
-      if (pixelFormat == kPF_BGR888 || pixelFormat == kPF_BGRA8888)
+      if (pixelFormat == kPF_RGB565)
+      {
+         memcpy(pDest, pSrc, srcScanLineSize);
+      }
+      else if (pixelFormat == kPF_BGR888 || pixelFormat == kPF_BGRA8888)
       {
          memcpy(pDest, pSrc, srcScanLineSize);
       }
@@ -524,18 +475,33 @@ TECH_API tResult ImageToWindowsBitmap(IImage * pImage, HBITMAP * phBitmap)
       hBitmap = CreateCompatibleBitmap(hWindowDC, pImage->GetWidth(), pImage->GetHeight());
       if (hBitmap != NULL)
       {
-         BITMAPINFOHEADER bmInfo = {0};
-         bmInfo.biSize = sizeof(BITMAPINFOHEADER);
-         bmInfo.biWidth = pImage->GetWidth();
+         byte bmInfoBytes[sizeof(BITMAPINFOHEADER) + (3 * sizeof(DWORD))];
+         memset(bmInfoBytes, 0, sizeof(bmInfoBytes));
+
+         BITMAPINFOHEADER * pBmih = reinterpret_cast<BITMAPINFOHEADER *>(bmInfoBytes);
+
+         pBmih->biSize = sizeof(BITMAPINFOHEADER);
+         pBmih->biWidth = pImage->GetWidth();
          // The height is negative because IImage objects are top-down DIBs
          // (i.e., the origin is at the top left)
-         bmInfo.biHeight = -static_cast<int>(pImage->GetHeight());
-         bmInfo.biPlanes = 1; 
-         bmInfo.biBitCount = bitCount; 
-         bmInfo.biCompression = BI_RGB;
+         pBmih->biHeight = -static_cast<int>(pImage->GetHeight());
+         pBmih->biPlanes = 1; 
+         pBmih->biBitCount = bitCount; 
+         pBmih->biCompression = BI_RGB;
+
+         if (pixelFormat == kPF_RGB565)
+         {
+            pBmih->biCompression = BI_BITFIELDS;
+
+            DWORD * pBitFields = reinterpret_cast<DWORD *>(bmInfoBytes + sizeof(BITMAPINFOHEADER));
+
+            pBitFields[0] = 0xF800;
+            pBitFields[1] = 0x07E0;
+            pBitFields[2] = 0x001F;
+         }
 
          int nScanLines = SetDIBits(hWindowDC, hBitmap, 0, pImage->GetHeight(),
-                                    pImageBits, (BITMAPINFO *)&bmInfo, DIB_RGB_COLORS);
+                                    pImageBits, reinterpret_cast<BITMAPINFO *>(pBmih), DIB_RGB_COLORS);
          if (nScanLines <= 0)
          {
             DeleteObject(hBitmap);
@@ -641,6 +607,48 @@ tResult ImageCreate(uint width, uint height, ePixelFormat pixelFormat, const voi
 
    *ppImage = CTAddRef(static_cast<IImage*>(pImage));
    return S_OK;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+void ImageApplyGamma(IImage * pImage, uint x, uint y, uint w, uint h, float gamma)
+{
+   if (pImage == NULL)
+   {
+      return;
+   }
+
+   if (gamma < 0.2f || gamma > 5.0f)
+   {
+      WarnMsg1("Unusual gamma, %f, passed to ImageApplyGamma\n", gamma);
+   }
+
+   float oneOverGamma = 1.0f / gamma;
+
+   byte gammaLookUp[256];
+   for (int i = 0; i < 256; ++i)
+   {
+      float value = (255 * pow(static_cast<float>(i) / 255, oneOverGamma)) + 0.5f;
+      value = Min(value, 255);
+      gammaLookUp[i] = (byte)FloatToInt(value);
+   }
+
+   for (uint j = y; j < (y + h); ++j)
+   {
+      for (uint i = x; i < (x + w); ++i)
+      {
+         byte rgba[4];
+         pImage->GetPixel(i, j, rgba);
+
+         rgba[0] = gammaLookUp[rgba[0]];
+         rgba[1] = gammaLookUp[rgba[1]];
+         rgba[2] = gammaLookUp[rgba[2]];
+         rgba[3] = gammaLookUp[rgba[3]];
+
+         pImage->SetPixel(i, j, rgba);
+      }
+   }
 }
 
 

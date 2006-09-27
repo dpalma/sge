@@ -83,14 +83,20 @@ interface IImage : IUnknown
 
 ////////////////////////////////////////
 
-#define kRT_Image          _T("Image")
-#define kRT_WindowsDDB     _T("WindowsDDB")
+#define kRT_Image          _T("Image")          // Resource type that returns an IImage*
+#define kRT_WindowsDDB     _T("WindowsDDB")     // Resource type that returns an HBITMAP
 
 TECH_API tResult ImageRegisterResourceFormats();
 
-////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////
 
 TECH_API tResult ImageCreate(uint width, uint height, ePixelFormat pixelFormat, const void * pData, IImage * * ppImage);
+
+
+//////////////////////////////////////////////////////////////////////////////
+
+TECH_API void ImageApplyGamma(IImage * pImage, uint x, uint y, uint w, uint h, float gamma);
 
 
 //////////////////////////////////////////////////////////////////////////////

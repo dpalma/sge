@@ -18,7 +18,7 @@
 class cImage : public cComObject<IMPLEMENTS(IImage)>
 {
    cImage(const cImage &);
-   void operator =(const cImage &);
+   const cImage & operator =(const cImage &);
 
 public:
    cImage(uint width, uint height, ePixelFormat pixelFormat, byte * pData);

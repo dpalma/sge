@@ -217,6 +217,7 @@ tResult BmpWrite(IImage * pImage, IWriter * pWriter)
    if (pixelFormat != kPF_RGB888 && pixelFormat != kPF_BGR888
       && pixelFormat != kPF_RGBA8888 && pixelFormat != kPF_BGRA8888)
    {
+      ErrorMsg1("Cannot write BMP file with pixel format %d\n", pixelFormat);
       return E_INVALIDARG;
    }
 
