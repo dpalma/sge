@@ -5,8 +5,9 @@
 
 #include "renderfontw32.h"
 
-#include "techmath.h"
+#include "colortem.h"
 #include "configapi.h"
+#include "techmath.h"
 
 #ifndef _WIN32
 #error ("This file is for Windows compilation only")

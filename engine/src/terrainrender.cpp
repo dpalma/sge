@@ -13,6 +13,7 @@
 #include "readwriteapi.h"
 #include "vec4.h"
 #include "color.h"
+#include "colortem.h"
 
 #include <algorithm>
 #include <functional>

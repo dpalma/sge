@@ -10,6 +10,7 @@
 #include "guiparse.h"
 #include "guistrings.h"
 
+#include "colortem.h"
 #include "globalobj.h"
 #include "resourceapi.h"
 

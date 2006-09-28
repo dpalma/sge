@@ -5,6 +5,8 @@
 
 #include "render2d.h"
 
+#include "colortem.h"
+
 #include <GL/glew.h>
 
 #include "dbgalloc.h" // must be last header

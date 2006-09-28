@@ -12,6 +12,7 @@
 #include "terrainapi.h"
 
 #include "color.h"
+#include "colortem.h"
 #include "keys.h"
 #include "multivar.h"
 #include "ray.h"

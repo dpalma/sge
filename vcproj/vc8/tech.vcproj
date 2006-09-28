@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8.00"
 	Name="tech"
-	ProjectGUID="{7AD65279-9AD3-44EB-BC08-0C7C832A36BA}"
+	ProjectGUID="{5B1DB8CD-0522-43C7-91B1-D558CA7520EB}"
 	RootNamespace="tech"
 	>
 	<Platforms>
@@ -818,6 +818,10 @@
 			</File>
 			<File
 				RelativePath="..\..\tech\include\color.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\include\colortem.h"
 				>
 			</File>
 			<File

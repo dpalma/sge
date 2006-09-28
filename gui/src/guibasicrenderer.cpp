@@ -10,6 +10,7 @@
 #include "renderapi.h"
 #include "renderfontapi.h"
 
+#include "colortem.h"
 #include "globalobj.h"
 
 #include "dbgalloc.h" // must be last header

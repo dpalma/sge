@@ -7,6 +7,8 @@
 #include "guistyleapi.h"
 #include "guistrings.h"
 
+#include "colortem.h"
+
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
 #endif

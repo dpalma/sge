@@ -10,6 +10,8 @@ extern "C"
 #include "md5.h"
 }
 
+#include "color.h"
+#include "colortem.h"
 #include "digraph.h"
 #include "techtime.h"
 #include "toposort.h"
@@ -212,6 +214,27 @@ TEST(DigraphCycleDetect)
    CHECK(graph.insert_edge('f', 'a', 0).second);
 
    CHECK(!graph.acyclic());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+TEST(ColorCompare)
+{
+   {
+      cColorImpl<float> c1(1.0f / 3.0f, 1.0f / 3.0f, 1.0f / 3.0f);
+      cColorImpl<float> c2(1.0f / 3.0f, 1.0f / 3.0f, 1.0f / 3.0f);
+      cColorImpl<float> c3(2.0f / 3.0f, 2.0f / 3.0f, 2.0f / 3.0f);
+      CHECK(c1 == c2);
+      CHECK(c1 != c3);
+   }
+
+   {
+      cColorImpl<byte> c1(192, 192, 192);
+      cColorImpl<byte> c2(192, 192, 192);
+      cColorImpl<byte> c3(128, 128, 128);
+      CHECK(c1 == c2);
+      CHECK(c1 != c3);
+   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

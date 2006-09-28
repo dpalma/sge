@@ -160,12 +160,14 @@ public:
 
 private:
    bool m_bAutoDeleteSelf;
+   tThreadId m_outerThreadId;
 };
 
 ////////////////////////////////////////
 
 cUnitTestThread::cUnitTestThread(bool bAutoDeleteSelf)
  : m_bAutoDeleteSelf(bAutoDeleteSelf)
+ , m_outerThreadId(ThreadGetCurrentId())
 {
 }
 
@@ -183,14 +185,15 @@ int cUnitTestThread::Run()
 
    tResult result = SysRunUnitTests();
 
+   if (FAILED(result))
+   {
+      UseGlobal(ThreadCaller);
+      pThreadCaller->PostCall(m_outerThreadId, &SysQuit);
+   }
+
    if (m_bAutoDeleteSelf)
    {
       delete this;
-   }
-
-   if (FAILED(result))
-   {
-      SysQuit();
    }
 
    return 0;
@@ -582,7 +585,7 @@ int STDCALL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
       return -1;
    }
 
-   int result = SysEventLoop(NULL, kSELF_RunScheduler);
+   int result = SysEventLoop(NULL, kSELF_RunScheduler | kSELF_ReceiveThreadCalls);
 
    MainTerm();
 
@@ -601,7 +604,7 @@ int main(int argc, char * argv[])
       return EXIT_FAILURE;
    }
 
-   int result = SysEventLoop(NULL, kSELF_RunScheduler);
+   int result = SysEventLoop(NULL, kSELF_RunScheduler | kSELF_ReceiveThreadCalls);
 
    MainTerm();
 

@@ -6,8 +6,10 @@
 #include "image.h"
 
 #include "color.h"
+#include "colortem.h"
 #include "globalobj.h"
 #include "resourceapi.h"
+#include "techmath.h"
 
 #include <cstring>
 
