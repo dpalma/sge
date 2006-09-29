@@ -22,7 +22,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\ms3dsdk\msLib,..\..\3rdparty\NvTriStrip\include,..\..\3rdparty\wtl\include,..\..\tech\include,..\..\engine\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\NvTriStrip\include,..\..\3rdparty\wtl\include,..\..\tech\include,..\..\engine\include,..\..\rendergl\include"
 				PreprocessorDefinitions="NDEBUG;NO_AUTO_EXPORTS;_USRDLL;WIN32;_WINDOWS;STRICT"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -90,7 +90,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\ms3dsdk\msLib,..\..\3rdparty\NvTriStrip\include,..\..\3rdparty\wtl\include,..\..\tech\include,..\..\engine\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\NvTriStrip\include,..\..\3rdparty\wtl\include,..\..\tech\include,..\..\engine\include,..\..\rendergl\include"
 				PreprocessorDefinitions="_USRDLL;STRICT;_WINDOWS;NDEBUG;WIN32"
 				StringPooling="TRUE"
 				RuntimeLibrary="3"
@@ -160,7 +160,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\ms3dsdk\msLib,..\..\3rdparty\NvTriStrip\include,..\..\3rdparty\wtl\include,..\..\tech\include,..\..\engine\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\NvTriStrip\include,..\..\3rdparty\wtl\include,..\..\tech\include,..\..\engine\include,..\..\rendergl\include"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;WIN32;_WINDOWS;STRICT"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -229,7 +229,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\ms3dsdk\msLib,..\..\3rdparty\NvTriStrip\include,..\..\3rdparty\wtl\include,..\..\tech\include,..\..\engine\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\NvTriStrip\include,..\..\3rdparty\wtl\include,..\..\tech\include,..\..\engine\include,..\..\rendergl\include"
 				PreprocessorDefinitions="_DEBUG;NO_AUTO_EXPORTS;_USRDLL;WIN32;_WINDOWS;STRICT"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -298,7 +298,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\ms3dsdk\msLib,..\..\3rdparty\NvTriStrip\include,..\..\3rdparty\wtl\include,..\..\tech\include,..\..\engine\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\NvTriStrip\include,..\..\3rdparty\wtl\include,..\..\tech\include,..\..\engine\include,..\..\rendergl\include"
 				PreprocessorDefinitions="_DEBUG;_USRDLL;WIN32;_WINDOWS;STRICT"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -365,6 +365,9 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 			<File
 				RelativePath="..\..\MilkShapeExporter\Exporter.cpp">
+			</File>
+			<File
+				RelativePath="..\..\MilkShapeExporter\IntermediateJoint.cpp">
 			</File>
 			<File
 				RelativePath="..\..\MilkShapeExporter\msPlugIn.def">
@@ -447,6 +450,9 @@
 			Filter="h;hpp;hxx;hm;inl">
 			<File
 				RelativePath="..\..\MilkShapeExporter\Exporter.h">
+			</File>
+			<File
+				RelativePath="..\..\MilkShapeExporter\IntermediateJoint.h">
 			</File>
 			<File
 				RelativePath="..\..\MilkShapeExporter\msPlugInApp.h">

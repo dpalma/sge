@@ -358,6 +358,9 @@
 				RelativePath="..\..\tests\imagegen\ImageAttributesDlg.cpp">
 			</File>
 			<File
+				RelativePath="..\..\tests\imagegen\ImageGammaDlg.cpp">
+			</File>
+			<File
 				RelativePath="..\..\tests\imagegen\imagegen.rc">
 				<FileConfiguration
 					Name="Release|Win32">
@@ -441,6 +444,9 @@
 			</File>
 			<File
 				RelativePath="..\..\tests\imagegen\ImageAttributesDlg.h">
+			</File>
+			<File
+				RelativePath="..\..\tests\imagegen\ImageGammaDlg.h">
 			</File>
 			<File
 				RelativePath="..\..\tests\imagegen\MainFrm.h">

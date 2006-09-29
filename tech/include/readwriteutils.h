@@ -5,12 +5,23 @@
 #define INCLUDED_READWRITEUTILS_H
 
 #include "techdll.h"
+#include "quat.h"
 #include "readwriteapi.h"
 #include "vec3.h"
 
 #ifdef _MSC_VER
 #pragma once
 #endif
+
+////////////////////////////////////////////////////////////////////////////////
+
+template <>
+class TECH_API cReadWriteOps<tQuat>
+{
+public:
+   static tResult Read(IReader * pReader, tQuat * pQ);
+   static tResult Write(IWriter * pWriter, const tQuat & q);
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 

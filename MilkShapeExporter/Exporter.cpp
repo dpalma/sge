@@ -6,9 +6,12 @@
 #include "Exporter.h"
 #include "resource.h"
 
+#include "modelapi.h"
+
 #include "comtools.h"
 #include "filespec.h"
 #include "readwriteapi.h"
+#include "readwriteutils.h"
 
 #include "msLib.h"
 
@@ -18,24 +21,6 @@
 #include <set>
 
 #include "dbgalloc.h" // must be last header
-
-
-/////////////////////////////////////////////////////////////////////////////
-
-template <>
-class cReadWriteOps<tVec3>
-{
-public:
-   static tResult Write(IWriter * pWriter, const tVec3 & v);
-};
-
-tResult cReadWriteOps<tVec3>::Write(IWriter * pWriter, const tVec3 & v)
-{
-   pWriter->Write(v.x);
-   pWriter->Write(v.y);
-   pWriter->Write(v.z);
-   return S_OK;
-}
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -120,6 +105,25 @@ tResult cExporter::ExportMesh(const tChar * pszFileName)
    if (FileWriterCreate(exportFile, &pWriter) != S_OK)
    {
       return E_FAIL;
+   }
+
+   std::vector<cIntermediateJoint> joints;
+
+   if (FAILED(ExportMesh(pWriter))
+      || FAILED(ExportSkeleton(pWriter, &joints))
+      || FAILED(ExportAnimation(pWriter, joints)))
+   {
+      return E_FAIL;
+   }
+
+   return S_OK;
+}
+
+tResult cExporter::ExportMesh(IWriter * pWriter)
+{
+   if (pWriter == NULL)
+   {
+      return E_POINTER;
    }
 
    int nMeshes = msModel_GetMeshCount(m_pModel);
@@ -249,6 +253,131 @@ tResult cExporter::ExportMesh(const tChar * pszFileName)
    for (; iter != materials.end(); ++iter)
    {
       pWriter->Write(*iter);
+   }
+
+   return S_OK;
+}
+
+tResult cExporter::ExportSkeleton(IWriter * pWriter, std::vector<cIntermediateJoint> * pJoints)
+{
+   int nBones = msModel_GetBoneCount(m_pModel);
+
+   if (nBones == 0)
+   {
+      return S_FALSE;
+   }
+
+   pJoints->resize(nBones);
+
+   std::map<cStr, int> jointNameMap; // map name to index
+
+   for (int i = 0; i < nBones; ++i)
+   {
+      msBone * pBone = msModel_GetBoneAt(m_pModel, i);
+
+      if (pBone == NULL)
+      {
+         continue;
+      }
+
+      (*pJoints)[i] = cIntermediateJoint(pBone);
+
+      jointNameMap.insert(std::make_pair(pBone->szName, i));
+   }
+
+   std::vector<cIntermediateJoint>::iterator iter = pJoints->begin();
+   for (; iter != pJoints->end(); ++iter)
+   {
+      int parentIndex = -1;
+
+      if (strlen(iter->GetParentName()) > 0)
+      {
+         std::map<cStr, int>::iterator found = jointNameMap.find(iter->GetParentName());
+         if (found != jointNameMap.end())
+         {
+            parentIndex = found->second;
+         }
+      }
+
+      if (pWriter->Write(parentIndex) != S_OK
+         || pWriter->Write(tVec3(iter->GetPosition())) != S_OK
+         || pWriter->Write(QuatFromEulerAngles(tVec3(iter->GetRotation()))) != S_OK)
+      {
+         return E_FAIL;
+      }
+   }
+
+   return S_OK;
+}
+
+tResult cExporter::ExportAnimation(IWriter * pWriter, const std::vector<cIntermediateJoint> & joints)
+{
+   std::vector<sModelAnimationDesc> animDescs;
+
+   char szComment[1024];
+   memset(szComment, 0, sizeof(szComment));
+   msModel_GetComment(m_pModel, szComment, _countof(szComment));
+
+   if (strlen(szComment) > 0)
+   {
+      cTokenizer<cStr> strTok;
+      if (strTok.Tokenize(szComment, _T("\n")) > 0)
+      {
+         std::vector<cStr>::iterator iter = strTok.m_tokens.begin(), end = strTok.m_tokens.end();
+         for (; iter != end; ++iter)
+         {
+            cStr & animString = *iter;
+
+            TrimLeadingSpace(&animString);
+            TrimTrailingSpace(&animString);
+
+            static const struct
+            {
+               eModelAnimationType type;
+               const char * pszType;
+            }
+            animTypes[] =
+            {
+               { kMAT_Walk, "walk" },
+               { kMAT_Run, "run" },
+               { kMAT_Death, "death" },
+               { kMAT_Attack, "attack" },
+               { kMAT_Damage, "damage" },
+               { kMAT_Idle, "idle" },
+            };
+
+            cTokenizer<cStr> strTok2;
+            if (strTok2.Tokenize(iter->c_str()) == 3)
+            {
+               const cStr & animType = strTok2.m_tokens[2];
+
+               for (int j = 0; j < _countof(animTypes); j++)
+               {
+                  if (animType.compare(animTypes[j].pszType) == 0)
+                  {
+                     sModelAnimationDesc animDesc;
+                     animDesc.type = animTypes[j].type;
+                     animDesc.start = _ttoi(strTok2.m_tokens[0].c_str());
+                     animDesc.end = _ttoi(strTok2.m_tokens[1].c_str());
+                     animDesc.fps = 0;
+                     if (animDesc.start > 0 || animDesc.end > 0)
+                     {
+                        animDescs.push_back(animDesc);
+                     }
+                     break;
+                  }
+               }
+            }
+         }
+      }
+   }
+
+   int nTotalFrames = msModel_GetTotalFrames(m_pModel);
+
+   std::vector<sModelAnimationDesc>::const_iterator iter, end;
+   for (iter = animDescs.begin(), end = animDescs.end(); iter != end; ++iter)
+   {
+      const sModelAnimationDesc & animDesc = *iter;
    }
 
    return S_OK;

@@ -4,8 +4,11 @@
 #ifndef INCLUDED_EXPORTER_H
 #define INCLUDED_EXPORTER_H
 
+#include "IntermediateJoint.h"
+
 #include "combase.h"
 #include "filespec.h"
+#include "quat.h"
 #include "vec3.h"
 
 #include <vector>
@@ -13,6 +16,8 @@
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
+
+F_DECLARE_INTERFACE(IWriter);
 
 typedef struct msModel msModel;
 typedef struct msMesh msMesh;
@@ -41,6 +46,13 @@ struct sExportMaterial
    char szTexture[cFileSpec::kMaxPath];
 };
 
+struct sExportJoint
+{
+   int parentIndex;
+   tVec3 localTranslation;
+   tQuat localRotation;
+};
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cExporter
@@ -53,6 +65,12 @@ public:
    ~cExporter();
 
    tResult ExportMesh(const tChar * pszFileName);
+
+   tResult ExportMesh(IWriter * pWriter);
+
+   tResult ExportSkeleton(IWriter * pWriter, std::vector<cIntermediateJoint> * pJoints);
+
+   tResult ExportAnimation(IWriter * pWriter, const std::vector<cIntermediateJoint> & joints);
 
 private:
    void CollectMeshVertices(msMesh * pMesh, std::vector<sExportVertex> * pVertices);

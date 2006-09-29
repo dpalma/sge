@@ -88,6 +88,27 @@ inline const cColorImpl<T> & cColorImpl<T>::operator =(const cColorImpl & other)
 template <typename T>
 inline bool cColorImpl<T>::operator !=(const cColorImpl & other)
 {
+   Assert(!"Do not use the default version of cColorImpl<>:operator !=");
+   return false;
+}
+
+////////////////////////////////////////
+
+template <>
+inline bool cColorImpl<float>::operator !=(const cColorImpl & other)
+{
+   return
+      !AlmostEqual(rgba[0], other.rgba[0]) ||
+      !AlmostEqual(rgba[1], other.rgba[1]) ||
+      !AlmostEqual(rgba[2], other.rgba[2]) ||
+      !AlmostEqual(rgba[3], other.rgba[3]);
+}
+
+////////////////////////////////////////
+
+template <>
+inline bool cColorImpl<double>::operator !=(const cColorImpl & other)
+{
    return
       !AlmostEqual(rgba[0], other.rgba[0]) ||
       !AlmostEqual(rgba[1], other.rgba[1]) ||
@@ -99,6 +120,27 @@ inline bool cColorImpl<T>::operator !=(const cColorImpl & other)
 
 template <typename T>
 inline bool cColorImpl<T>::operator ==(const cColorImpl & other)
+{
+   Assert(!"Do not use the default version of cColorImpl<>:operator ==");
+   return false;
+}
+
+////////////////////////////////////////
+
+template <>
+inline bool cColorImpl<float>::operator ==(const cColorImpl & other)
+{
+   return
+      AlmostEqual(rgba[0], other.rgba[0]) &&
+      AlmostEqual(rgba[1], other.rgba[1]) &&
+      AlmostEqual(rgba[2], other.rgba[2]) &&
+      AlmostEqual(rgba[3], other.rgba[3]);
+}
+
+////////////////////////////////////////
+
+template <>
+inline bool cColorImpl<double>::operator ==(const cColorImpl & other)
 {
    return
       AlmostEqual(rgba[0], other.rgba[0]) &&
