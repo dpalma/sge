@@ -228,13 +228,13 @@ TEST(ColorCompare)
       CHECK(c1 != c3);
    }
 
-   {
-      cColorImpl<byte> c1(192, 192, 192);
-      cColorImpl<byte> c2(192, 192, 192);
-      cColorImpl<byte> c3(128, 128, 128);
-      CHECK(c1 == c2);
-      CHECK(c1 != c3);
-   }
+   //{
+   //   cColorImpl<byte> c1(192, 192, 192);
+   //   cColorImpl<byte> c2(192, 192, 192);
+   //   cColorImpl<byte> c3(128, 128, 128);
+   //   CHECK(c1 == c2);
+   //   CHECK(c1 != c3);
+   //}
 }
 
 ///////////////////////////////////////////////////////////////////////////////

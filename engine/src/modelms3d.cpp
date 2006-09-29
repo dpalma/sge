@@ -437,7 +437,7 @@ void * ModelMs3dLoad(IReader * pReader)
          AssertMsg(iter->GetKeyFramesRot().size() == iter->GetKeyFramesTrans().size(),
             _T("Should have been rejected by cMs3dJoint reader"));
 
-         tModelKeyFrames keyFrames(iter->GetKeyFramesRot().size());
+         std::vector<sModelKeyFrame> keyFrames(iter->GetKeyFramesRot().size());
 
          indent += kIndent;
 
@@ -474,7 +474,7 @@ void * ModelMs3dLoad(IReader * pReader)
 
    {
       int iRootJoint = -1;
-      tModelJoints::const_iterator iter = joints.begin();
+      std::vector<sModelJoint>::const_iterator iter = joints.begin();
       for (int i = 0; iter != joints.end(); iter++, i++)
       {
          if (iter->parentIndex < 0)
@@ -490,7 +490,7 @@ void * ModelMs3dLoad(IReader * pReader)
    }
 
    cAutoIPtr<IModelSkeleton> pSkeleton;
-   if (ModelSkeletonCreate(joints, &pSkeleton) != S_OK)
+   if (ModelSkeletonCreate(&joints[0], joints.size(), &pSkeleton) != S_OK)
    {
       ErrorMsg("Failed to create skeleton for model\n");
       return NULL;

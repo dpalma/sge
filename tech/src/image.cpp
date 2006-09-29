@@ -5,8 +5,6 @@
 
 #include "image.h"
 
-#include "color.h"
-#include "colortem.h"
 #include "globalobj.h"
 #include "resourceapi.h"
 #include "techmath.h"
@@ -105,54 +103,6 @@ const void * cImage::GetData() const
 
 ///////////////////////////////////////
 
-tResult cImage::GetPixel(uint x, uint y, cColor * pPixel) const
-{
-   if (x >= GetWidth() || y >= GetHeight())
-   {
-      return E_INVALIDARG;
-   }
-
-   if (pPixel == NULL)
-   {
-      return E_POINTER;
-   }
-
-   byte rgba[4] = {0};
-
-   tResult result = GetPixel(x, y, rgba);
-
-   if (result == S_OK)
-   {
-      *pPixel = cColor(
-         static_cast<float>(rgba[0]) / 255.0f,
-         static_cast<float>(rgba[1]) / 255.0f,
-         static_cast<float>(rgba[2]) / 255.0f,
-         static_cast<float>(rgba[3]) / 255.0f);
-   }
-
-   return result;
-}
-
-///////////////////////////////////////
-
-tResult cImage::SetPixel(uint x, uint y, const cColor & pixel)
-{
-   if (x >= GetWidth() || y >= GetHeight())
-   {
-      return E_INVALIDARG;
-   }
-
-   byte rgba[4];
-   rgba[0] = static_cast<byte>(pixel.GetRed() * 255.0f);
-   rgba[1] = static_cast<byte>(pixel.GetGreen() * 255.0f);
-   rgba[2] = static_cast<byte>(pixel.GetBlue() * 255.0f);
-   rgba[3] = static_cast<byte>(pixel.GetAlpha() * 255.0f);
-
-   return SetPixel(x, y, rgba);
-}
-
-///////////////////////////////////////
-
 tResult cImage::GetPixel(uint x, uint y, byte rgba[4]) const
 {
    if (x >= GetWidth() || y >= GetHeight())
@@ -184,6 +134,7 @@ tResult cImage::GetPixel(uint x, uint y, byte rgba[4]) const
          rgba[0] = pImagePixel[0];
          rgba[1] = pImagePixel[1];
          rgba[2] = pImagePixel[2];
+         rgba[3] = 1;
          return S_OK;
       }
 
@@ -192,6 +143,7 @@ tResult cImage::GetPixel(uint x, uint y, byte rgba[4]) const
          rgba[0] = pImagePixel[2];
          rgba[1] = pImagePixel[1];
          rgba[2] = pImagePixel[0];
+         rgba[3] = 1;
          return S_OK;
       }
 

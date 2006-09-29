@@ -51,7 +51,7 @@ public:
    virtual tResult Seek(long pos, eSeekOrigin origin);
 
    virtual tResult Write(const char * value);
-   virtual tResult Write(void * pv, size_t cb, size_t * pcbWritten = NULL);
+   virtual tResult Write(const void * pv, size_t cb, size_t * pcbWritten = NULL);
 
 private:
    FILE * m_fp;

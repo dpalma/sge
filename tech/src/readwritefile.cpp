@@ -262,7 +262,7 @@ tResult cFileWriter::Write(const char * value)
 
 ///////////////////////////////////////
 
-tResult cFileWriter::Write(void * pv, size_t nBytes, size_t * pnBytesWritten)
+tResult cFileWriter::Write(const void * pv, size_t nBytes, size_t * pnBytesWritten)
 {
    if (m_fp != NULL)
    {

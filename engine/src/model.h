@@ -6,6 +6,7 @@
 
 #include "comtools.h"
 #include "modelapi.h"
+#include "modeltypes.h"
 #include "renderapi.h"
 
 #ifdef _MSC_VER
@@ -19,22 +20,6 @@ class cModel;
 
 
 ///////////////////////////////////////////////////////////////////////////////
-
-struct sModelVertex
-{
-   tVec3::value_type u, v;
-   tVec3 normal;
-   tVec3 pos;
-   float bone; // TODO: call these bones or joints?
-};
-
-// for software vertex blending: bone indices not needed after blending
-struct sBlendedVertex
-{
-   tVec3::value_type u, v;
-   tVec3 normal;
-   tVec3 pos;
-};
 
 
 typedef std::vector<sModelVertex> tModelVertices;

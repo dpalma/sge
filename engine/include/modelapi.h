@@ -25,6 +25,7 @@ F_DECLARE_INTERFACE(IModelAnimation);
 F_DECLARE_INTERFACE(IModelAnimationController);
 F_DECLARE_INTERFACE(IModelSkeleton);
 
+struct sModelJoint;
 struct sModelKeyFrame;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -53,29 +54,6 @@ struct sModelAnimationDesc
    eModelAnimationType type;
    uint start, end, fps;
 };
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// STRUCT: sModelKeyFrame
-//
-
-////////////////////////////////////////
-
-struct sModelKeyFrame
-{
-   double time;
-   tVec3 translation;
-   tQuat rotation;
-};
-
-////////////////////////////////////////
-
-#if _MSC_VER > 1300
-template class ENGINE_API std::allocator<sModelKeyFrame>;
-template class ENGINE_API std::vector<sModelKeyFrame>;
-#endif
-typedef std::vector<sModelKeyFrame> tModelKeyFrames;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -154,15 +132,6 @@ ENGINE_API tResult ModelAnimationControllerCreate(IModelSkeleton * pSkeleton, IM
 // INTERFACE: IModelSkeleton
 //
 
-struct sModelJoint
-{
-   int parentIndex;
-   tVec3 localTranslation;
-   tQuat localRotation;
-};
-
-typedef std::vector<sModelJoint> tModelJoints;
-
 interface IModelSkeleton : IUnknown
 {
    virtual tResult GetJointCount(size_t * pJointCount) const = 0;
@@ -174,7 +143,7 @@ interface IModelSkeleton : IUnknown
    virtual tResult GetAnimation(eModelAnimationType type, IModelAnimation * * ppAnim) const = 0;
 };
 
-ENGINE_API tResult ModelSkeletonCreate(const tModelJoints & joints, IModelSkeleton * * ppSkeleton);
+ENGINE_API tResult ModelSkeletonCreate(const sModelJoint * pJoints, uint nJoints, IModelSkeleton * * ppSkeleton);
 
 
 ////////////////////////////////////////////////////////////////////////////////

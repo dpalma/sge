@@ -29,9 +29,6 @@ public:
    virtual ePixelFormat GetPixelFormat() const;
    virtual const void * GetData() const;
 
-   virtual tResult GetPixel(uint x, uint y, cColor * pPixel) const;
-   virtual tResult SetPixel(uint x, uint y, const cColor & pixel);
-
    virtual tResult GetPixel(uint x, uint y, byte rgba[4]) const;
    virtual tResult SetPixel(uint x, uint y, const byte rgba[4]);
 

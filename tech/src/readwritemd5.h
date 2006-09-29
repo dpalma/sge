@@ -28,7 +28,7 @@ public:
    virtual tResult Tell(ulong * pPos);
    virtual tResult Seek(long pos, eSeekOrigin origin);
    virtual tResult Write(const char * value);
-   virtual tResult Write(void * pValue, size_t cbValue, size_t * pcbWritten);
+   virtual tResult Write(const void * pValue, size_t cbValue, size_t * pcbWritten);
 
 private:
    cAutoIPtr<IWriter> m_pWriter;

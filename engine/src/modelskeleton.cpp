@@ -35,12 +35,12 @@ cModelSkeleton::cModelSkeleton(const cModelSkeleton & other)
 
 ///////////////////////////////////////
 
-cModelSkeleton::cModelSkeleton(const tModelJoints & joints)
- : m_joints(joints.size())
+cModelSkeleton::cModelSkeleton(const sModelJoint * pJoints, uint nJoints)
+ : m_joints(nJoints)
 {
-   if (!joints.empty())
+   if (nJoints > 0)
    {
-      std::copy(joints.begin(), joints.end(), m_joints.begin());
+      std::copy(pJoints, pJoints + nJoints, m_joints.begin());
    }
 }
 
@@ -239,14 +239,19 @@ tResult cModelSkeleton::GetAnimation(eModelAnimationType type,
 
 ///////////////////////////////////////////////////////////////////////////////
 
-tResult ModelSkeletonCreate(const tModelJoints & joints, IModelSkeleton * * ppSkeleton)
+tResult ModelSkeletonCreate(const sModelJoint * pJoints, uint nJoints, IModelSkeleton * * ppSkeleton)
 {
-   if (ppSkeleton == NULL)
+   if (pJoints == NULL || ppSkeleton == NULL)
    {
       return E_POINTER;
    }
 
-   cAutoIPtr<IModelSkeleton> pSkeleton(static_cast<IModelSkeleton*>(new cModelSkeleton(joints)));
+   if (nJoints == 0)
+   {
+      return E_INVALIDARG;
+   }
+
+   cAutoIPtr<IModelSkeleton> pSkeleton(static_cast<IModelSkeleton*>(new cModelSkeleton(pJoints, nJoints)));
    if (!pSkeleton)
    {
       return E_OUTOFMEMORY;

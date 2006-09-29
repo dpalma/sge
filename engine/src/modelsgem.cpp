@@ -52,7 +52,7 @@ void * ModelSgemLoad(IReader * pReader)
 
    //////////////////////////////
 
-   int nMeshes = 0;
+   uint nMeshes = 0;
    if (pReader->Read(&nMeshes, sizeof(nMeshes)) != S_OK
       || nMeshes == 0)
    {
@@ -63,7 +63,7 @@ void * ModelSgemLoad(IReader * pReader)
 
    tModelMeshes meshes(nMeshes);
 
-   for (int i = 0; i < nMeshes; ++i)
+   for (uint i = 0; i < nMeshes; ++i)
    {
       uint nVertices = 0;
       if (pReader->Read(&nVertices, sizeof(nVertices)) != S_OK
@@ -100,6 +100,21 @@ void * ModelSgemLoad(IReader * pReader)
       }
 
       meshes[i] = cModelMesh(primTypes[primType], indices, -1);
+   }
+
+   //////////////////////////////
+
+   uint nMaterials = 0;
+   if (pReader->Read(&nMaterials, sizeof(nMaterials)) != S_OK
+      || nMaterials == 0)
+   {
+      return NULL;
+   }
+
+   LocalMsg1("%d Materials\n", nMaterials);
+
+   for (uint i = 0; i < nMaterials; ++i)
+   {
    }
 
    return NULL;

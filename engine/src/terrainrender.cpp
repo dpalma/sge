@@ -831,10 +831,21 @@ tResult BuildSplatAlphaMap(uint splatTile,
          uint iz = (z - zRange.GetStart()) * 2;
          uint ix = (x - xRange.GetStart()) * 2;
 
-         pImage->SetPixel(ix, iz, cColor(texelWeights.x,texelWeights.x,texelWeights.x,texelWeights.x));
-         pImage->SetPixel(ix+1, iz, cColor(texelWeights.y,texelWeights.y,texelWeights.y,texelWeights.y));
-         pImage->SetPixel(ix, iz+1, cColor(texelWeights.z,texelWeights.z,texelWeights.z,texelWeights.z));
-         pImage->SetPixel(ix+1, iz+1, cColor(texelWeights.w,texelWeights.w,texelWeights.w,texelWeights.w));
+         byte twx = static_cast<byte>(texelWeights.x * 255);
+         byte twy = static_cast<byte>(texelWeights.y * 255);
+         byte twz = static_cast<byte>(texelWeights.z * 255);
+         byte tww = static_cast<byte>(texelWeights.w * 255);
+
+         byte temp[4];
+
+         temp[0] = temp[1] = temp[2] = temp[3] = twx;
+         pImage->SetPixel(ix, iz, temp);
+         temp[0] = temp[1] = temp[2] = temp[3] = twy;
+         pImage->SetPixel(ix+1, iz, temp);
+         temp[0] = temp[1] = temp[2] = temp[3] = twz;
+         pImage->SetPixel(ix, iz+1, temp);
+         temp[0] = temp[1] = temp[2] = temp[3] = tww;
+         pImage->SetPixel(ix+1, iz+1, temp);
       }
    }
 

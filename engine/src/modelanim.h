@@ -42,6 +42,7 @@ public:
    virtual tResult Interpolate(double time, tVec3 * pTrans, tQuat * pRot) const;
 
 private:
+   typedef std::vector<sModelKeyFrame> tModelKeyFrames;
    std::vector<sModelKeyFrame> m_keyFrames;
    eInterpolationMode m_transInterpMode, m_rotInterpMode;
 };

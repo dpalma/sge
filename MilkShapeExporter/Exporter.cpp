@@ -24,47 +24,6 @@
 
 
 /////////////////////////////////////////////////////////////////////////////
-
-template <>
-class cReadWriteOps<sExportVertex>
-{
-public:
-   static tResult Write(IWriter * pWriter, const sExportVertex & exportVertex);
-};
-
-tResult cReadWriteOps<sExportVertex>::Write(IWriter * pWriter, const sExportVertex & exportVertex)
-{
-   pWriter->Write(exportVertex.u);
-   pWriter->Write(exportVertex.v);
-   pWriter->Write(exportVertex.normal);
-   pWriter->Write(exportVertex.pos);
-   pWriter->Write(exportVertex.bone);
-   return S_OK;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-
-template <>
-class cReadWriteOps<sExportMaterial>
-{
-public:
-   static tResult Write(IWriter * pWriter, const sExportMaterial & exportMaterial);
-};
-
-tResult cReadWriteOps<sExportMaterial>::Write(IWriter * pWriter, const sExportMaterial & exportMaterial)
-{
-   pWriter->Write((void*)&exportMaterial.diffuse[0], sizeof(exportMaterial.diffuse));
-   pWriter->Write((void*)&exportMaterial.ambient[0], sizeof(exportMaterial.ambient));
-   pWriter->Write((void*)&exportMaterial.specular[0], sizeof(exportMaterial.specular));
-   pWriter->Write((void*)&exportMaterial.emissive[0], sizeof(exportMaterial.emissive));
-   pWriter->Write(exportMaterial.shininess);
-   pWriter->Write(exportMaterial.szTexture);
-   return S_OK;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cExporter
 //
@@ -136,7 +95,7 @@ tResult cExporter::ExportMesh(IWriter * pWriter)
    sExportHeader header = { { 'M', 'e', 'G', 's' }, 1 };
 
    pWriter->Write(&header, sizeof(header));
-   pWriter->Write(nMeshes);
+   pWriter->Write(static_cast<uint>(nMeshes));
 
    for (int i = 0; i < nMeshes; ++i)
    {
@@ -145,11 +104,11 @@ tResult cExporter::ExportMesh(IWriter * pWriter)
       {
          int iMaterial = msMesh_GetMaterialIndex(pMesh);
 
-         std::vector<sExportVertex> vertices;
+         std::vector<sModelVertex> vertices;
          CollectMeshVertices(pMesh, &vertices);
 
          std::set<uint8> meshBones;
-         std::vector<sExportVertex>::iterator iter = vertices.begin();
+         std::vector<sModelVertex>::iterator iter = vertices.begin();
          for (; iter != vertices.end(); ++iter)
          {
             meshBones.insert((uint8)iter->bone);
@@ -166,7 +125,7 @@ tResult cExporter::ExportMesh(IWriter * pWriter)
          typedef std::map<std::pair<uint16, uint16>, uint16> tVertexMap;
          tVertexMap vertexMap;
 
-         std::vector<sExportVertex> mappedVertices;
+         std::vector<sModelVertex> mappedVertices;
          std::vector<uint16> mappedIndices;
 
          int nTris = msMesh_GetTriangleCount(pMesh);
@@ -191,7 +150,7 @@ tResult cExporter::ExportMesh(IWriter * pWriter)
                   }
                   else
                   {
-                     sExportVertex newVertex = vertices[vertexIndices[k]];
+                     sModelVertex newVertex = vertices[vertexIndices[k]];
                      newVertex.normal = normals[normalIndices[k]];
 
                      uint16 newIndex = mappedVertices.size();
@@ -207,7 +166,7 @@ tResult cExporter::ExportMesh(IWriter * pWriter)
 
          pWriter->Write(mappedVertices.size());
          {
-            std::vector<sExportVertex>::iterator iter = mappedVertices.begin();
+            std::vector<sModelVertex>::iterator iter = mappedVertices.begin();
             for (; iter != mappedVertices.end(); ++iter)
             {
                pWriter->Write(*iter);
@@ -247,9 +206,10 @@ tResult cExporter::ExportMesh(IWriter * pWriter)
       }
    }
 
-   std::vector<sExportMaterial> materials;
+   std::vector<sModelMaterial> materials;
    CollectModelMaterials(m_pModel, &materials);
-   std::vector<sExportMaterial>::iterator iter = materials.begin();
+   pWriter->Write(static_cast<uint>(materials.size()));
+   std::vector<sModelMaterial>::iterator iter = materials.begin();
    for (; iter != materials.end(); ++iter)
    {
       pWriter->Write(*iter);
@@ -285,23 +245,26 @@ tResult cExporter::ExportSkeleton(IWriter * pWriter, std::vector<cIntermediateJo
       jointNameMap.insert(std::make_pair(pBone->szName, i));
    }
 
+   pWriter->Write(static_cast<uint>(pJoints->size()));
+
    std::vector<cIntermediateJoint>::iterator iter = pJoints->begin();
    for (; iter != pJoints->end(); ++iter)
    {
-      int parentIndex = -1;
+      sModelJoint modelJoint;
+      modelJoint.parentIndex = -1;
+      modelJoint.localTranslation = tVec3(iter->GetPosition());
+      modelJoint.localRotation = QuatFromEulerAngles(tVec3(iter->GetRotation()));
 
       if (strlen(iter->GetParentName()) > 0)
       {
          std::map<cStr, int>::iterator found = jointNameMap.find(iter->GetParentName());
          if (found != jointNameMap.end())
          {
-            parentIndex = found->second;
+            modelJoint.parentIndex = found->second;
          }
       }
 
-      if (pWriter->Write(parentIndex) != S_OK
-         || pWriter->Write(tVec3(iter->GetPosition())) != S_OK
-         || pWriter->Write(QuatFromEulerAngles(tVec3(iter->GetRotation()))) != S_OK)
+      if (pWriter->Write(modelJoint) != S_OK)
       {
          return E_FAIL;
       }
@@ -383,7 +346,7 @@ tResult cExporter::ExportAnimation(IWriter * pWriter, const std::vector<cInterme
    return S_OK;
 }
 
-void cExporter::CollectMeshVertices(msMesh * pMesh, std::vector<sExportVertex> * pVertices)
+void cExporter::CollectMeshVertices(msMesh * pMesh, std::vector<sModelVertex> * pVertices)
 {
    int nVertices = msMesh_GetVertexCount(pMesh);
 
@@ -417,7 +380,7 @@ void cExporter::CollectMeshNormals(msMesh * pMesh, std::vector<tVec3> * pNormals
    }
 }
 
-void cExporter::CollectModelMaterials(msModel * pModel, std::vector<sExportMaterial> * pMaterials)
+void cExporter::CollectModelMaterials(msModel * pModel, std::vector<sModelMaterial> * pMaterials)
 {
    int nMaterials = msModel_GetMaterialCount(pModel);
 
@@ -431,7 +394,7 @@ void cExporter::CollectModelMaterials(msModel * pModel, std::vector<sExportMater
          char szName[MS_MAX_NAME];
          msMaterial_GetName(pMsMaterial, szName, MS_MAX_NAME);
 
-         sExportMaterial & m = (*pMaterials)[i];
+         sModelMaterial & m = (*pMaterials)[i];
 
          msMaterial_GetAmbient(pMsMaterial, m.ambient);
          msMaterial_GetDiffuse(pMsMaterial, m.diffuse);

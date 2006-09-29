@@ -13,7 +13,6 @@
 
 F_DECLARE_INTERFACE(IImage);
 F_DECLARE_INTERFACE(IWriter);
-class cColor;
 
 F_DECLARE_HANDLE(HBITMAP);
 
@@ -69,9 +68,6 @@ interface IImage : IUnknown
    virtual uint GetHeight() const = 0;
    virtual ePixelFormat GetPixelFormat() const = 0;
    virtual const void * GetData() const = 0;
-
-   virtual tResult GetPixel(uint x, uint y, cColor * pPixel) const = 0;
-   virtual tResult SetPixel(uint x, uint y, const cColor & color) = 0;
 
    virtual tResult GetPixel(uint x, uint y, byte rgba[4]) const = 0;
    virtual tResult SetPixel(uint x, uint y, const byte rgba[4]) = 0;

@@ -5,12 +5,16 @@
 #define INCLUDED_MODELSKELETON_H
 
 #include "modelapi.h"
+#include "modeltypes.h"
 
 #include <map>
+#include <vector>
 
 #ifdef _MSC_VER
 #pragma once
 #endif
+
+typedef std::vector<sModelJoint> tModelJoints;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -23,7 +27,7 @@ public:
    cModelSkeleton();
    cModelSkeleton(const cModelSkeleton & other);
 
-   cModelSkeleton(const tModelJoints & joints);
+   cModelSkeleton(const sModelJoint * pJoints, uint nJoints);
 
    ~cModelSkeleton();
 

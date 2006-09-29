@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8.00"
 	Name="3rdpartyTinyxml"
-	ProjectGUID="{38F4DB86-0B20-4C29-8512-F29A6F40E1CD}"
+	ProjectGUID="{50767F60-5AB7-4135-ACB7-51E9BD20CA75}"
 	RootNamespace="3rdpartyTinyxml"
 	>
 	<Platforms>

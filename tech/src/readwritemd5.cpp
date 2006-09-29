@@ -77,11 +77,11 @@ tResult cMD5Writer::Write(const char * value)
 
 ////////////////////////////////////////
 
-tResult cMD5Writer::Write(void * pValue, size_t cbValue, size_t * pcbWritten)
+tResult cMD5Writer::Write(const void * pValue, size_t cbValue, size_t * pcbWritten)
 {
    if (m_bUpdateMD5)
    {
-      m_md5.Update(static_cast<byte*>(pValue), cbValue);
+      m_md5.Update(const_cast<byte *>(static_cast<const byte *>(pValue)), cbValue);
    }
    return m_pWriter->Write(pValue, cbValue, pcbWritten);
 }

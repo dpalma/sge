@@ -6,6 +6,8 @@
 
 #include "IntermediateJoint.h"
 
+#include "modeltypes.h"
+
 #include "combase.h"
 #include "filespec.h"
 #include "quat.h"
@@ -32,27 +34,6 @@ struct sExportHeader
    uint32 version;
 };
 
-struct sExportVertex
-{
-   tVec3::value_type u, v;
-   tVec3 normal;
-   tVec3 pos;
-   float bone; // TODO: call these bones or joints?
-};
-
-struct sExportMaterial
-{
-   float diffuse[4], ambient[4], specular[4], emissive[4], shininess;
-   char szTexture[cFileSpec::kMaxPath];
-};
-
-struct sExportJoint
-{
-   int parentIndex;
-   tVec3 localTranslation;
-   tQuat localRotation;
-};
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cExporter
@@ -73,9 +54,9 @@ public:
    tResult ExportAnimation(IWriter * pWriter, const std::vector<cIntermediateJoint> & joints);
 
 private:
-   void CollectMeshVertices(msMesh * pMesh, std::vector<sExportVertex> * pVertices);
+   void CollectMeshVertices(msMesh * pMesh, std::vector<sModelVertex> * pVertices);
    void CollectMeshNormals(msMesh * pMesh, std::vector<tVec3> * pNormals);
-   void CollectModelMaterials(msModel * pModel, std::vector<sExportMaterial> * pMaterials);
+   void CollectModelMaterials(msModel * pModel, std::vector<sModelMaterial> * pMaterials);
 
 private:
    msModel * m_pModel;
