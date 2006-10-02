@@ -11,6 +11,7 @@
 #include "renderapi.h"
 #include "renderfontapi.h"
 
+#include "configapi.h"
 #include "globalobj.h"
 
 #include "dbgalloc.h" // must be last header
@@ -29,8 +30,13 @@ static const tGUISizeType kScrollButtonSize = 16;
 
 ///////////////////////////////////////
 
-cGUIBeveledRenderer::cGUIBeveledRenderer()
+cGUIBeveledRenderer::cGUIBeveledRenderer(uint bevel, const tGUIColor colorScheme[kBC_NumColors])
+ : m_bevel(bevel)
 {
+   if (colorScheme != NULL)
+   {
+      memcpy(&m_colorScheme[0], &colorScheme[0], sizeof(m_colorScheme));
+   }
 }
 
 ///////////////////////////////////////
@@ -69,7 +75,7 @@ tResult cGUIBeveledRenderer::Render(IGUIElement * pElement, const tGUIPoint & po
    static const tChar *colorAttribNames[kBC_NumColors] =
    {
       _T("beveled-shadow"),   // kBC_Shadow,
-      _T("beveled-light"),    // kBC_Light,
+      _T("beveled-highlight"),// kBC_Highlight,
       _T("beveled-face"),     // kBC_Face,
       _T("beveled-text"),     // kBC_Text,
    };
@@ -175,12 +181,12 @@ tResult cGUIBeveledRenderer::ButtonRender(IGUIElement * pElement, const tGUIPoin
 
    if (pButtonElement->IsArmed() && pButtonElement->IsMouseOver())
    {
-      pRender2D->RenderBeveledRect(rect, bevel, colors[kBC_Shadow], colors[kBC_Light], colors[kBC_Face]);
+      pRender2D->RenderBeveledRect(rect, bevel, colors[kBC_Shadow].GetPointer(), colors[kBC_Highlight].GetPointer(), colors[kBC_Face].GetPointer());
       bPressed = true;
    }
    else
    {
-      pRender2D->RenderBeveledRect(rect, bevel, colors[kBC_Light], colors[kBC_Shadow], colors[kBC_Face]);
+      pRender2D->RenderBeveledRect(rect, bevel, colors[kBC_Highlight].GetPointer(), colors[kBC_Shadow].GetPointer(), colors[kBC_Face].GetPointer());
    }
 
    const tGUIChar * pszText = pButtonElement->GetText();
@@ -304,7 +310,7 @@ tResult cGUIBeveledRenderer::ListBoxRender(IGUIElement * pElement, const tGUIPoi
    tGUISize size = pListBoxElement->GetSize();
    tGUIRect rect(FloatToInt(position.x), FloatToInt(position.y), FloatToInt(position.x + size.width), FloatToInt(position.y + size.height));
 
-   pRender2D->RenderBeveledRect(rect, bevel, GUIStandardColors::DarkGray, GUIStandardColors::Gray, GUIStandardColors::White);
+   pRender2D->RenderBeveledRect(rect, bevel, GUIStandardColors::DarkGray.GetPointer(), GUIStandardColors::Gray.GetPointer(), GUIStandardColors::White.GetPointer());
 
    rect.left += bevel + kHorzInset;
    rect.top += kVertInset;
@@ -366,7 +372,7 @@ tResult cGUIBeveledRenderer::ListBoxRender(IGUIElement * pElement, const tGUIPoi
 
             if (pListBoxElement->IsItemSelected(i))
             {
-               pRender2D->RenderSolidRect(itemRect, GUIStandardColors::Blue);
+               pRender2D->RenderSolidRect(itemRect, GUIStandardColors::Blue.GetPointer());
                pFont->RenderText(pszText, -1, &itemRect, kRT_NoClip, GUIStandardColors::White.GetPointer());
             }
             else
@@ -451,26 +457,26 @@ tResult cGUIBeveledRenderer::ScrollBarRender(IGUIElement * pElement, const tGUIP
       track2Rect = tGUIRect(btn1Rect.left, thumbRect.bottom, btn1Rect.right, btn2Rect.top);
    }
 
-   pRender2D->RenderSolidRect(track1Rect, colors[kBC_Light]);
-   pRender2D->RenderSolidRect(track2Rect, colors[kBC_Light]);
-   pRender2D->RenderBeveledRect(thumbRect, bevel, colors[kBC_Light], GUIStandardColors::DarkGray, colors[kBC_Face]);
+   pRender2D->RenderSolidRect(track1Rect, colors[kBC_Highlight].GetPointer());
+   pRender2D->RenderSolidRect(track2Rect, colors[kBC_Highlight].GetPointer());
+   pRender2D->RenderBeveledRect(thumbRect, bevel, colors[kBC_Highlight].GetPointer(), GUIStandardColors::DarkGray.GetPointer(), colors[kBC_Face].GetPointer());
 
    if (armedPart == kGUIScrollBarPartButton1 && armedPart == mouseOverPart)
    {
-      pRender2D->RenderBeveledRect(btn1Rect, bevel, GUIStandardColors::DarkGray, colors[kBC_Light], colors[kBC_Face]);
+      pRender2D->RenderBeveledRect(btn1Rect, bevel, GUIStandardColors::DarkGray.GetPointer(), colors[kBC_Highlight].GetPointer(), colors[kBC_Face].GetPointer());
    }
    else
    {
-      pRender2D->RenderBeveledRect(btn1Rect, bevel, colors[kBC_Light], GUIStandardColors::DarkGray, colors[kBC_Face]);
+      pRender2D->RenderBeveledRect(btn1Rect, bevel, colors[kBC_Highlight].GetPointer(), GUIStandardColors::DarkGray.GetPointer(), colors[kBC_Face].GetPointer());
    }
 
    if (armedPart == kGUIScrollBarPartButton2 && armedPart == mouseOverPart)
    {
-      pRender2D->RenderBeveledRect(btn2Rect, bevel, colors[kBC_Shadow], colors[kBC_Light], colors[kBC_Face]);
+      pRender2D->RenderBeveledRect(btn2Rect, bevel, colors[kBC_Shadow].GetPointer(), colors[kBC_Highlight].GetPointer(), colors[kBC_Face].GetPointer());
    }
    else
    {
-      pRender2D->RenderBeveledRect(btn2Rect, bevel, colors[kBC_Light], colors[kBC_Shadow], colors[kBC_Face]);
+      pRender2D->RenderBeveledRect(btn2Rect, bevel, colors[kBC_Highlight].GetPointer(), colors[kBC_Shadow].GetPointer(), colors[kBC_Face].GetPointer());
    }
 
    return S_OK;
@@ -507,7 +513,7 @@ tResult cGUIBeveledRenderer::TextEditRender(IGUIElement * pElement, const tGUIPo
    tGUISize size = pTextEditElement->GetSize();
    tGUIRect rect(FloatToInt(position.x), FloatToInt(position.y), FloatToInt(position.x + size.width), FloatToInt(position.y + size.height));
 
-   pRender2D->RenderBeveledRect(rect, bevel, colors[kBC_Shadow], colors[kBC_Face], GUIStandardColors::White);
+   pRender2D->RenderBeveledRect(rect, bevel, colors[kBC_Shadow].GetPointer(), colors[kBC_Face].GetPointer(), GUIStandardColors::White.GetPointer());
 
    rect.left += bevel + kHorzInset;
    rect.top += kVertInset;
@@ -554,7 +560,7 @@ tResult cGUIBeveledRenderer::TextEditRender(IGUIElement * pElement, const tGUIPo
                rect.left + leftOfCursor.GetWidth() + kCursorWidth,
                rect.bottom - 1);
 
-            pRender2D->RenderSolidRect(cursorRect, GUIStandardColors::Black);
+            pRender2D->RenderSolidRect(cursorRect, GUIStandardColors::Black.GetPointer());
          }
       }
    }
@@ -615,7 +621,7 @@ tResult cGUIBeveledRenderer::TitleBarRender(IGUIElement * pElement, const tGUIPo
       pStyle->GetAttribute("caption-text-color", &captionText);
    }
 
-   pRender2D->RenderSolidRect(rect, captionBk);
+   pRender2D->RenderSolidRect(rect, captionBk.GetPointer());
 
    cAutoIPtr<IRenderFont> pFont;
    if (GUIElementFont(pElement, &pFont) == S_OK)
@@ -667,7 +673,7 @@ tResult cGUIBeveledRenderer::ContainerRender(IGUIElement * pElement, const tGUIP
 {
    tGUISize size = pElement->GetSize();
    tGUIRect rect(FloatToInt(position.x), FloatToInt(position.y), FloatToInt(position.x + size.width), FloatToInt(position.y + size.height));
-   pRender2D->RenderBeveledRect(rect, bevel, colors[kBC_Light], colors[kBC_Shadow], colors[kBC_Face]);
+   pRender2D->RenderBeveledRect(rect, bevel, colors[kBC_Highlight].GetPointer(), colors[kBC_Shadow].GetPointer(), colors[kBC_Face].GetPointer());
    return S_OK;
 }
 
@@ -697,7 +703,43 @@ tResult GUIBeveledRendererCreate(void * pReserved, IGUIElementRenderer * * ppRen
    // Since the beveled renderer is stateless, a single instance can serve all GUI elements
    if (!pSingleInstance)
    {
-      pSingleInstance = static_cast<IGUIElementRenderer*>(new cGUIBeveledRenderer);
+      int bevel = kDefaultBevel;
+      ConfigGet(_T("beveled-bevel"), &bevel);
+
+      if (bevel < 0)
+      {
+         bevel = 0;
+      }
+      else if (bevel > 10)
+      {
+         bevel = 10;
+      }
+
+      tGUIColor colorScheme[kBC_NumColors];
+      colorScheme[kBC_Shadow] = GUIStandardColors::DarkGray;
+      colorScheme[kBC_Highlight] = GUIStandardColors::LightGray;
+      colorScheme[kBC_Face] = GUIStandardColors::Gray;
+      colorScheme[kBC_Text] = GUIStandardColors::Black;
+
+      cStr temp;
+      if (ConfigGet(_T("beveled-shadow"), &temp) == S_OK)
+      {
+         GUIParseColor(temp.c_str(), &colorScheme[kBC_Shadow]);
+      }
+      if (ConfigGet(_T("beveled-highlight"), &temp) == S_OK)
+      {
+         GUIParseColor(temp.c_str(), &colorScheme[kBC_Highlight]);
+      }
+      if (ConfigGet(_T("beveled-face"), &temp) == S_OK)
+      {
+         GUIParseColor(temp.c_str(), &colorScheme[kBC_Face]);
+      }
+      if (ConfigGet(_T("beveled-text"), &temp) == S_OK)
+      {
+         GUIParseColor(temp.c_str(), &colorScheme[kBC_Text]);
+      }
+
+      pSingleInstance = static_cast<IGUIElementRenderer*>(new cGUIBeveledRenderer(bevel, colorScheme));
       if (!pSingleInstance)
       {
          return E_OUTOFMEMORY;

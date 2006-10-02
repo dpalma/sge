@@ -49,6 +49,71 @@ uint BytesPerPixel(ePixelFormat pixelFormat)
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cRGBA
+//
+
+///////////////////////////////////////
+
+cRGBA::cRGBA()
+{
+}
+
+///////////////////////////////////////
+
+cRGBA::cRGBA(byte r, byte g, byte b)
+{
+   m_rgba[0] = r;
+   m_rgba[1] = g;
+   m_rgba[2] = b;
+   m_rgba[3] = 1;
+}
+
+///////////////////////////////////////
+
+cRGBA::cRGBA(byte r, byte g, byte b, byte a)
+{
+   m_rgba[0] = r;
+   m_rgba[1] = g;
+   m_rgba[2] = b;
+   m_rgba[3] = a;
+}
+
+///////////////////////////////////////
+
+cRGBA::cRGBA(const byte rgba[4])
+{
+   memcpy(&m_rgba[0], &rgba[0], sizeof(m_rgba));
+}
+
+///////////////////////////////////////
+// assumes all float values are between 0 and 1
+
+cRGBA::cRGBA(const float rgba[4])
+{
+   m_rgba[0] = static_cast<byte>(rgba[0] * 255.0f);
+   m_rgba[1] = static_cast<byte>(rgba[1] * 255.0f);
+   m_rgba[2] = static_cast<byte>(rgba[2] * 255.0f);
+   m_rgba[3] = static_cast<byte>(rgba[3] * 255.0f);
+}
+
+///////////////////////////////////////
+
+cRGBA::cRGBA(const cRGBA & other)
+{
+   memcpy(&m_rgba[0], &other.m_rgba[0], sizeof(m_rgba));
+}
+
+///////////////////////////////////////
+
+const cRGBA & cRGBA::operator =(const cRGBA & other)
+{
+   memcpy(&m_rgba[0], &other.m_rgba[0], sizeof(m_rgba));
+   return *this;
+}
+
+   
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cImage

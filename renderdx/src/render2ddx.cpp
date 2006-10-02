@@ -106,7 +106,7 @@ void cRender2DDX::PopScissorRect()
 
 ////////////////////////////////////////
 
-void cRender2DDX::RenderSolidRect(const tRect & rect, const cColor & color)
+void cRender2DDX::RenderSolidRect(const tRect & rect, const float color[4])
 {
 #define VERT(x,y) \
    { static_cast<float>(x), static_cast<float>(y), 0, color.ToARGB8888() }
@@ -128,8 +128,10 @@ void cRender2DDX::RenderSolidRect(const tRect & rect, const cColor & color)
 
 ////////////////////////////////////////
 
-void cRender2DDX::RenderBeveledRect(const tRect & rect, int bevel, const cColor & topLeft,
-                                    const cColor & bottomRight, const cColor & face)
+void cRender2DDX::RenderBeveledRect(const tRect & rect, int bevel,
+                                    const float topLeft[4],
+                                    const float bottomRight[4],
+                                    const float face[4])
 {
    if (bevel == 0)
    {

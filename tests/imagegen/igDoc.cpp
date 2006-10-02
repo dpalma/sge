@@ -9,6 +9,7 @@
 #include "ImageGammaDlg.h"
 
 #include "color.h"
+#include "colortem.h"
 #include "filespec.h"
 #include "filepath.h"
 #include "readwriteapi.h"
@@ -62,7 +63,7 @@ cImageGenDoc::~cImageGenDoc()
 
 /////////////////////////////////////////////////////////////////////////////
 
-void ImageSolidRect(IImage * pImage, uint x, uint y, uint w, uint h, const cColor & color)
+void ImageSolidRect(IImage * pImage, uint x, uint y, uint w, uint h, const byte rgba[4])
 {
    if (pImage == NULL)
    {
@@ -73,17 +74,17 @@ void ImageSolidRect(IImage * pImage, uint x, uint y, uint w, uint h, const cColo
    {
       for (uint i = x; i < (x + w); ++i)
       {
-         pImage->SetPixel(i, j, color);
+         pImage->SetPixel(i, j, rgba);
       }
    }
 }
 
-void ImageSolidRect(IImage * pImage, const cColor & color)
+void ImageSolidRect(IImage * pImage, const byte rgba[4])
 {
-   ImageSolidRect(pImage, 0, 0, pImage->GetWidth(), pImage->GetHeight(), color);
+   ImageSolidRect(pImage, 0, 0, pImage->GetWidth(), pImage->GetHeight(), rgba);
 }
 
-void ImageSolidCircle(IImage * pImage, uint x, uint y, uint radius, const cColor & color)
+void ImageSolidCircle(IImage * pImage, uint x, uint y, uint radius, const byte rgba[4])
 {
    if (pImage == NULL)
    {
@@ -108,15 +109,15 @@ void ImageSolidCircle(IImage * pImage, uint x, uint y, uint radius, const cColor
          int dSqr = Vec2DistanceSqr(cVec2<uint>(i, j), center);
          if (dSqr < rSqr)
          {
-            pImage->SetPixel(i, j, color);
+            pImage->SetPixel(i, j, rgba);
          }
       }
    }
 }
 
-void ImageSolidCircle(IImage * pImage, const cColor & color)
+void ImageSolidCircle(IImage * pImage, const byte rgba[4])
 {
-   ImageSolidCircle(pImage, pImage->GetWidth() / 2, pImage->GetHeight() / 2, pImage->GetWidth() / 2, color);
+   ImageSolidCircle(pImage, pImage->GetWidth() / 2, pImage->GetHeight() / 2, pImage->GetWidth() / 2, rgba);
 }
 
 enum eImageDrawFlags
@@ -180,8 +181,13 @@ void ImageGradientRoundRect(IImage * pImage, uint x, uint y, uint w, uint h, uin
             startColor.b * (1 - frac) + endColor.b * frac,
             startColor.a * (1 - frac) + endColor.a * frac);
 
-         cColor pixelIJ;
-         pImage->GetPixel(i, j, &pixelIJ);
+         byte rgbaIJ[4];
+         pImage->GetPixel(i, j, rgbaIJ);
+         cColor pixelIJ(
+            static_cast<float>(rgbaIJ[0]) / 255,
+            static_cast<float>(rgbaIJ[1]) / 255,
+            static_cast<float>(rgbaIJ[2]) / 255,
+            static_cast<float>(rgbaIJ[3]) / 255);
 
          if ((flags & kIDF_AlphaBlend) == kIDF_AlphaBlend)
          {
@@ -196,7 +202,7 @@ void ImageGradientRoundRect(IImage * pImage, uint x, uint y, uint w, uint h, uin
             uint dSqr = Vec2DistanceSqr(ij, topLeftCenter);
             if (dSqr < cornerRadiusSqr || cornerRadiusSqr == 0)
             {
-               pImage->SetPixel(i, j, color);
+               pImage->SetPixel(i, j, cRGBA(color.GetPointer()));
             }
          }
          else if (i >= topRightCenter.x && j < topRightCenter.y)
@@ -204,7 +210,7 @@ void ImageGradientRoundRect(IImage * pImage, uint x, uint y, uint w, uint h, uin
             uint dSqr = Vec2DistanceSqr(ij, topRightCenter);
             if (dSqr < cornerRadiusSqr || cornerRadiusSqr == 0)
             {
-               pImage->SetPixel(i, j, color);
+               pImage->SetPixel(i, j, cRGBA(color.GetPointer()));
             }
          }
          else if (i >= bottomRightCenter.x && j >= bottomRightCenter.y)
@@ -212,7 +218,7 @@ void ImageGradientRoundRect(IImage * pImage, uint x, uint y, uint w, uint h, uin
             uint dSqr = Vec2DistanceSqr(ij, bottomRightCenter);
             if (dSqr < cornerRadiusSqr || cornerRadiusSqr == 0)
             {
-               pImage->SetPixel(i, j, color);
+               pImage->SetPixel(i, j, cRGBA(color.GetPointer()));
             }
          }
          else if (i < bottomLeftCenter.x && j >= bottomLeftCenter.y)
@@ -220,12 +226,12 @@ void ImageGradientRoundRect(IImage * pImage, uint x, uint y, uint w, uint h, uin
             uint dSqr = Vec2DistanceSqr(ij, bottomLeftCenter);
             if (dSqr < cornerRadiusSqr || cornerRadiusSqr == 0)
             {
-               pImage->SetPixel(i, j, color);
+               pImage->SetPixel(i, j, cRGBA(color.GetPointer()));
             }
          }
          else
          {
-            pImage->SetPixel(i, j, color);
+            pImage->SetPixel(i, j, cRGBA(color.GetPointer()));
          }
       }
    }
@@ -242,7 +248,7 @@ void cImageGenDoc::Rasterize()
 
    if (m_shape == kCircle)
    {
-      ImageSolidRect(m_pImage, cColor(1,1,1));
+      ImageSolidRect(m_pImage, cRGBA(1,1,1));
 
       uint imageWidth = m_pImage->GetWidth(), imageHeight = m_pImage->GetHeight();
       uint radius = Min(imageWidth, imageHeight) / 2;
@@ -257,14 +263,14 @@ void cImageGenDoc::Rasterize()
    }
    else if (m_shape == kRoundRect)
    {
-      ImageSolidRect(m_pImage, cColor(1,1,1));
+      ImageSolidRect(m_pImage, cRGBA(1,1,1));
       ImageGradientRoundRect(m_pImage, 0, 0, m_pImage->GetWidth(), m_pImage->GetHeight(),
          Min(m_pImage->GetWidth(), m_pImage->GetHeight()) / 8,
          kIGD_LeftToRight, cColor(1,0,0), cColor(0,0,1), kIDF_Default);
    }
    else if (m_shape == kAquaButton)
    {
-      ImageSolidRect(m_pImage, cColor(1,1,1));
+      ImageSolidRect(m_pImage, cRGBA(1,1,1));
 
       int cornerRadius = Min(m_pImage->GetWidth(), m_pImage->GetHeight()) / 8;
 

@@ -7,7 +7,6 @@
 #include "renderdll.h"
 #include "comtools.h"
 
-#include "color.h"
 #include "rect.h"
 
 #ifdef _MSC_VER
@@ -129,7 +128,7 @@ RENDER_API tResult RendererResourceRegister();
 
 ///////////////////////////////////////
 
-RENDER_API void RenderWireFrame(const tAxisAlignedBox & box, const cColor & color);
+RENDER_API void RenderWireFrame(const tAxisAlignedBox & box, const float color[4]);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -144,11 +143,11 @@ interface IRender2D : IUnknown
    virtual void PushScissorRect(const tRect & rect) = 0;
    virtual void PopScissorRect() = 0;
 
-   virtual void RenderSolidRect(const tRect & rect, const cColor & color) = 0;
+   virtual void RenderSolidRect(const tRect & rect, const float color[4]) = 0;
    virtual void RenderBeveledRect(const tRect & rect, int bevel,
-                                  const cColor & topLeft,
-                                  const cColor & bottomRight,
-                                  const cColor & face) = 0;
+                                  const float topLeft[4],
+                                  const float bottomRight[4],
+                                  const float face[4]) = 0;
 };
 
 

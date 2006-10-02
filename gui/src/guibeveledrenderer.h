@@ -19,7 +19,7 @@
 enum eBeveledColors
 {
    kBC_Shadow,
-   kBC_Light,
+   kBC_Highlight,
    kBC_Face,
    kBC_Text,
 
@@ -29,7 +29,7 @@ enum eBeveledColors
 class cGUIBeveledRenderer : public cComObject<IMPLEMENTS(IGUIElementRenderer)>
 {
 public:
-   cGUIBeveledRenderer();
+   cGUIBeveledRenderer(uint bevel, const tGUIColor colorScheme[kBC_NumColors]);
    ~cGUIBeveledRenderer();
 
    virtual tResult Render(IGUIElement * pElement, const tGUIPoint & position, IRender2D * pRender2D);
@@ -69,6 +69,9 @@ private:
    };
 
    static const sMethodTableEntry gm_methodTable[];
+
+   uint m_bevel;
+   tGUIColor m_colorScheme[kBC_NumColors];
 };
 
 ///////////////////////////////////////////////////////////////////////////////

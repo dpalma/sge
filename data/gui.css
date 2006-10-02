@@ -6,7 +6,7 @@ button
 	font-size:12pt;
 	beveled-bevel:3;
 	beveled-shadow:(24,175,241);
-	beveled-light:(156,215,241);
+	beveled-highlight:(156,215,241);
 	beveled-face:(41,162,241);
 	beveled-text:black;
 	align:center;

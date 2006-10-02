@@ -5,8 +5,6 @@
 
 #include "render2d.h"
 
-#include "colortem.h"
-
 #include <GL/glew.h>
 
 #include "dbgalloc.h" // must be last header
@@ -98,10 +96,10 @@ void cRender2DGL::PopScissorRect()
 
 ////////////////////////////////////////
 
-void cRender2DGL::RenderSolidRect(const tRect & rect, const cColor & color)
+void cRender2DGL::RenderSolidRect(const tRect & rect, const float color[4])
 {
    glBegin(GL_TRIANGLES);
-      glColor4fv(color.GetPointer());
+      glColor4fv(color);
 
       glVertex2i(rect.left, rect.top);
       glVertex2i(rect.left, rect.bottom);
@@ -115,8 +113,10 @@ void cRender2DGL::RenderSolidRect(const tRect & rect, const cColor & color)
 
 ////////////////////////////////////////
 
-void cRender2DGL::RenderBeveledRect(const tRect & rect, int bevel, const cColor & topLeft,
-                                           const cColor & bottomRight, const cColor & face)
+void cRender2DGL::RenderBeveledRect(const tRect & rect, int bevel,
+                                    const float topLeft[4],
+                                    const float bottomRight[4],
+                                    const float face[4])
 {
    glPushAttrib(GL_ENABLE_BIT);
    glDisable(GL_TEXTURE_2D);
@@ -139,7 +139,7 @@ void cRender2DGL::RenderBeveledRect(const tRect & rect, int bevel, const cColor 
       int y2 = rect.bottom - bevel;
       int y3 = rect.bottom;
 
-      glColor4fv(topLeft.GetPointer());
+      glColor4fv(topLeft);
 
       glVertex2i(x0, y0);
       glVertex2i(x0, y3);
@@ -157,7 +157,7 @@ void cRender2DGL::RenderBeveledRect(const tRect & rect, int bevel, const cColor 
       glVertex2i(x1, y1);
       glVertex2i(x2, y1);
 
-      glColor4fv(bottomRight.GetPointer());
+      glColor4fv(bottomRight);
 
       glVertex2i(x0, y3);
       glVertex2i(x3, y3);
@@ -175,7 +175,7 @@ void cRender2DGL::RenderBeveledRect(const tRect & rect, int bevel, const cColor 
       glVertex2i(x2, y2);
       glVertex2i(x3, y3);
 
-      glColor4fv(face.GetPointer());
+      glColor4fv(face);
 
       glVertex2i(x1, y1);
       glVertex2i(x2, y2);

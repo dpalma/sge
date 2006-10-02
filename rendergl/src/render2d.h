@@ -29,9 +29,11 @@ public:
    virtual void PushScissorRect(const tRect & rect);
    virtual void PopScissorRect();
 
-   virtual void RenderSolidRect(const tRect & rect, const cColor & color);
-   virtual void RenderBeveledRect(const tRect & rect, int bevel, const cColor & topLeft,
-                                  const cColor & bottomRight, const cColor & face);
+   virtual void RenderSolidRect(const tRect & rect, const float color[4]);
+   virtual void RenderBeveledRect(const tRect & rect, int bevel,
+                                  const float topLeft[4],
+                                  const float bottomRight[4],
+                                  const float face[4]);
 
 private:
    long m_scissorRectStackDepth; // for debugging only

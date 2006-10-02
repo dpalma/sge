@@ -838,7 +838,7 @@ const sVertexElement g_wireFrameVertex[] =
    { kVEU_Position,  kVET_Float3,   0, 0 },
 };
 
-void RenderWireFrame(const tAxisAlignedBox & box, const cColor & color)
+void RenderWireFrame(const tAxisAlignedBox & box, const float color[4])
 {
    const tVec3 & mins = box.GetMins();
    const tVec3 & maxs = box.GetMaxs();
@@ -876,7 +876,7 @@ void RenderWireFrame(const tAxisAlignedBox & box, const cColor & color)
    };
 
    UseGlobal(Renderer);
-   pRenderer->SetDiffuseColor(color.GetPointer());
+   pRenderer->SetDiffuseColor(color);
    pRenderer->SetVertexFormat(g_wireFrameVertex, _countof(g_wireFrameVertex));
    pRenderer->SubmitVertices(&verts[0], _countof(verts));
    pRenderer->SetIndexFormat(kIF_16Bit);

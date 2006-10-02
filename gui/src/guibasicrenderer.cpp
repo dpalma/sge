@@ -177,7 +177,7 @@ tResult cGUIBasicRenderer::PanelRender(IGUIElement * pElement, IRender2D * pRend
       tGUIColor bkColor;
       if (pStyle->GetBackgroundColor(&bkColor) == S_OK)
       {
-         pRender2D->RenderSolidRect(rect, bkColor);
+         pRender2D->RenderSolidRect(rect, bkColor.GetPointer());
       }
    }
 

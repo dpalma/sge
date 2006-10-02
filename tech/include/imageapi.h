@@ -25,6 +25,44 @@ TECH_API tResult ImageToWindowsBitmap(IImage * pImage, HBITMAP * phBitmap);
 
 
 //////////////////////////////////////////////////////////////////////////////
+
+enum eNTSCGrayWeights
+{
+   kNTSCRedWeight = 3,
+   kNTSCGreenWeight = 6,
+   kNTSCBlueWeight = 1,
+};
+
+#define GrayLevel(r,g,b) \
+   (((kNTSCRedWeight * (r)) + (kNTSCGreenWeight * (g)) + (kNTSCBlueWeight * (b))) / 10)
+
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cRGBA
+//
+// A helper class for use with the 4-byte pixel arguments of some IImage methods
+
+class TECH_API cRGBA
+{
+public:
+   cRGBA();
+   cRGBA(byte r, byte g, byte b);
+   cRGBA(byte r, byte g, byte b, byte a);
+   explicit cRGBA(const byte rgba[4]);
+   explicit cRGBA(const float rgba[4]); // assumes all float values are between 0 and 1
+   cRGBA(const cRGBA & other);
+   const cRGBA & operator =(const cRGBA & other);
+
+   operator byte *() { return m_rgba; }
+   operator const byte *() const { return m_rgba; }
+
+private:
+   byte m_rgba[4];
+};
+
+
+//////////////////////////////////////////////////////////////////////////////
 //
 // INTERFACE: IImage
 //
