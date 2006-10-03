@@ -5,6 +5,7 @@ Import('env')
 
 sourceFiles = Split("""
    Exporter.cpp
+   IntermediateJoint.cpp
    msPlugInApp.cpp
    msPlugInImpl.cpp
    StdAfx.cpp
@@ -13,6 +14,7 @@ sourceFiles = Split("""
 includePaths = Split("""
    #MilkShapeExporter
    #engine/include
+   #rendergl/include
    #tech/include
 """)
 
@@ -32,15 +34,13 @@ linkLibs = Split("""
 """)
 
 if env['PLATFORM'] == 'win32':
-   conf = Configure(env)
-   if conf.CheckHeader('afxwin.h', '<>', 'c++'):
-      local = conf.Finish()
-      local.UseNvTriStrip()
-      local.UseTinyxml()
-      local.UseZLib()
-      local.BuildSharedLibrary(target='msSGEExporter',
-                               source=sourceFiles + local.RES('msPlugIn.rc'),
-                               deffile='#MilkShapeExporter/msPlugin.def',
-                               include_path=includePaths,
-                               lib_path=libPaths,
-                               libs=linkLibs)
+   local = env.Copy()
+   local.UseNvTriStrip()
+   local.UseTinyxml()
+   local.UseZLib()
+   local.BuildSharedLibrary(target='msSGEExporter',
+                            source=sourceFiles + local.RES('msPlugIn.rc'),
+                            deffile='#MilkShapeExporter/msPlugin.def',
+                            include_path=includePaths,
+                            lib_path=libPaths,
+                            libs=linkLibs)
