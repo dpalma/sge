@@ -5,6 +5,7 @@ Import('env')
 
 sourceFiles = Split("""
    Exporter.cpp
+   ExportPreviewDlg.cpp
    IntermediateJoint.cpp
    msPlugInApp.cpp
    msPlugInImpl.cpp

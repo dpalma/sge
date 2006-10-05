@@ -5,6 +5,7 @@ Import('env')
 
 sourceFiles = Split("""
    src/bmp.cpp
+   src/color.cpp
    src/comtools.cpp
    src/config.cpp
    src/cpufeatures.cpp

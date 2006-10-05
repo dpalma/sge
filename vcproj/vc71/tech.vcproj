@@ -333,6 +333,9 @@
 					RelativePath="..\..\tech\src\bmp.cpp">
 				</File>
 				<File
+					RelativePath="..\..\tech\src\color.cpp">
+				</File>
+				<File
 					RelativePath="..\..\tech\src\comtools.cpp">
 				</File>
 				<File

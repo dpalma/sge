@@ -475,6 +475,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\tech\src\color.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\tech\src\comtools.cpp"
 					>
 				</File>
@@ -818,10 +822,6 @@
 			</File>
 			<File
 				RelativePath="..\..\tech\include\color.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\tech\include\colortem.h"
 				>
 			</File>
 			<File

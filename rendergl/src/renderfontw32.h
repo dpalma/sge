@@ -6,8 +6,6 @@
 
 #include "renderfontapi.h"
 
-#include "color.h"
-
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -39,7 +37,7 @@ public:
 
    virtual tResult RenderText(const tChar * pszText, int textLength, tRect * pRect, uint flags, const float color[4]) const;
 
-   tResult SetDropShadowState(float offsetX, float offsetY, const cColor & color);
+   tResult SetDropShadowState(float offsetX, float offsetY, const float color[4]);
 
 private:
    int m_texDim; // texture is always square
@@ -48,7 +46,7 @@ private:
    uint m_texId;
    float m_widthMult, m_heightMult;
    float m_dropShadowOffsetX, m_dropShadowOffsetY;
-   cColor m_dropShadowColor;
+   float m_dropShadowColor[4];
 };
 
 ///////////////////////////////////////////////////////////////////////////////

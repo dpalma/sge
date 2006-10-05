@@ -4,6 +4,8 @@
 #ifndef INCLUDED_COLOR_H
 #define INCLUDED_COLOR_H
 
+#include "techdll.h"
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -11,61 +13,42 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// TEMPLATE: cColorImpl
+// CLASS: cColor
 //
 
-template <typename T>
-class cColorImpl
+class TECH_API cColor
 {
 public:
-   cColorImpl();
-   cColorImpl(T r, T g, T b);
-   cColorImpl(T r, T g, T b, T a);
-   explicit cColorImpl(const T rgba[4]);
-   cColorImpl(const cColorImpl & other);
-   const cColorImpl & operator =(const cColorImpl & other);
+   typedef float value_type;
 
-   bool operator !=(const cColorImpl & other);
-   bool operator ==(const cColorImpl & other);
+   cColor();
+   cColor(value_type r, value_type g, value_type b);
+   cColor(value_type r, value_type g, value_type b, value_type a);
+   explicit cColor(const value_type rgb[4]);
+   cColor(const cColor & other);
+   const cColor & operator =(const cColor & other);
 
-   const cColorImpl<T> & operator *=(const cColorImpl & other);
-   const cColorImpl<T> & operator /=(const cColorImpl & other);
-   const cColorImpl<T> & operator +=(const cColorImpl & other);
-   const cColorImpl<T> & operator -=(const cColorImpl & other);
+   bool operator !=(const cColor & other);
+   bool operator ==(const cColor & other);
 
-   T GetRed() const;
-   T GetGreen() const;
-   T GetBlue() const;
-   T GetAlpha() const;
+   const cColor & operator *=(const cColor & other);
+   const cColor & operator /=(const cColor & other);
+   const cColor & operator +=(const cColor & other);
+   const cColor & operator -=(const cColor & other);
 
-   T GetGrayLevel() const;
+   bool GetHSV(float hsv[3]) const;
+   bool SetHSV(const float hsv[3]);
 
-   const T * GetPointer() const;
+   inline const value_type * GetPointer() const { return rgba; }
 
    union
    {
       struct
       {
-         T r, g, b, a;
+         value_type r, g, b, a;
       };
-      T rgba[3];
+      value_type rgba[4];
    };
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cColor
-//
-
-class cColor : public cColorImpl<float>
-{
-public:
-   cColor() : cColorImpl<float>() {}
-   cColor(float r, float g, float b) : cColorImpl<float>(r,g,b) {}
-   cColor(float r, float g, float b, float a) : cColorImpl<float>(r,g,b,a) {}
-   explicit cColor(const float rgba[4]) : cColorImpl<float>(rgba) {}
-   cColor(const cColor & other) : cColorImpl<float>(other) {}
 };
 
 

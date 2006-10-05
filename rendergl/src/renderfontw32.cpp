@@ -5,7 +5,6 @@
 
 #include "renderfontw32.h"
 
-#include "colortem.h"
 #include "configapi.h"
 #include "techmath.h"
 
@@ -50,8 +49,11 @@ cTextureRenderFontW32::cTextureRenderFontW32()
  , m_heightMult(1)
  , m_dropShadowOffsetX(1)
  , m_dropShadowOffsetY(1)
- , m_dropShadowColor(0,0,0)
 {
+   m_dropShadowColor[0] = 0;
+   m_dropShadowColor[1] = 0;
+   m_dropShadowColor[2] = 0;
+   m_dropShadowColor[3] = 1;
 }
 
 ///////////////////////////////////////
@@ -551,7 +553,7 @@ tResult cTextureRenderFontW32::RenderText(const tChar * pszText, int textLength,
 
          glStencilFunc(GL_NOTEQUAL, kDropShadowStencilRef, kDropShadowStencilMask);
 
-         glColor4fv(m_dropShadowColor.GetPointer());
+         glColor4fv(m_dropShadowColor);
          glDrawArrays(GL_TRIANGLES, 0, nVertices);
 
          glPopMatrix();
@@ -571,11 +573,14 @@ tResult cTextureRenderFontW32::RenderText(const tChar * pszText, int textLength,
 
 ///////////////////////////////////////
 
-tResult cTextureRenderFontW32::SetDropShadowState(float offsetX, float offsetY, const cColor & color)
+tResult cTextureRenderFontW32::SetDropShadowState(float offsetX, float offsetY, const float color[4])
 {
    m_dropShadowOffsetX = offsetX;
    m_dropShadowOffsetY = offsetY;
-   m_dropShadowColor = color;
+   if (color != NULL)
+   {
+      memcpy(m_dropShadowColor, color, sizeof(m_dropShadowColor));
+   }
    return S_OK;
 }
 

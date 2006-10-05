@@ -7,8 +7,6 @@
 #include "guistyleapi.h"
 #include "guistrings.h"
 
-#include "colortem.h"
-
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
 #endif
@@ -86,7 +84,11 @@ tResult GUIParseStyleDimension(const tChar * psz, int * pDimension, eGUIDimensio
    // The 32 must match the size of szSpec. Not using "%*s" and passing in the buffer
    // length because then scanf won't recognize a single percent character as a valid
    // value for the string. That is, this case will not parse as desired: "25%".
+#if _MSC_VER >= 1200
+   int nParsed = _stscanf_s(psz, _T("%d%32s"), &dimension, szSpec, sizeof(szSpec));
+#else
    int nParsed = _stscanf(psz, _T("%d%32s"), &dimension, szSpec);
+#endif
    if (nParsed == 2)
    {
       if (_tcscmp(szSpec, _T("%")) == 0)
@@ -127,7 +129,11 @@ tResult GUIParseStyleFontSize(const tChar * psz, int * pSize, eGUIFontSizeType *
    // The 32 must match the size of szSpec. Not using "%*s" and passing in the buffer
    // length because then scanf won't recognize a single percent character as a valid
    // value for the string. That is, this case will not parse as desired: "25%".
+#if _MSC_VER >= 1200
+   int nParsed = _stscanf_s(psz, _T("%d%32s"), &size, szType, sizeof(szType));
+#else
    int nParsed = _stscanf(psz, _T("%d%32s"), &size, szType);
+#endif
    if (nParsed == 2)
    {
       static const struct
@@ -277,7 +283,11 @@ tResult GUIParseBool(const tChar * pszBool, bool * pBool)
    }
 
    int n = 0;
+#if _MSC_VER >= 1200
+   if (_stscanf_s(pszBool, _T("%d"), &n) == 1)
+#else
    if (_stscanf(pszBool, _T("%d"), &n) == 1)
+#endif
    {
       *pBool = (n != 0);
       return S_OK;
