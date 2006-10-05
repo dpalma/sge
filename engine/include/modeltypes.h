@@ -110,6 +110,14 @@ struct sModelKeyFrame
    tQuat rotation;
 };
 
+template <>
+class ENGINE_API cReadWriteOps<sModelKeyFrame>
+{
+public:
+   static tResult Read(IReader * pReader, sModelKeyFrame * pModelKeyFrame);
+   static tResult Write(IWriter * pWriter, const sModelKeyFrame & modelKeyFrame);
+};
+
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -131,3 +131,40 @@ tResult cReadWriteOps<sModelJoint>::Write(IWriter * pWriter, const sModelJoint &
 
 
 ///////////////////////////////////////////////////////////////////////////////
+
+tResult cReadWriteOps<sModelKeyFrame>::Read(IReader * pReader, sModelKeyFrame * pModelKeyFrame)
+{
+   if (pReader == NULL || pModelKeyFrame == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (pReader->Read(&pModelKeyFrame->time) == S_OK
+      && pReader->Read(&pModelKeyFrame->translation) == S_OK
+      && pReader->Read(&pModelKeyFrame->rotation) == S_OK)
+   {
+      return S_OK;
+   }
+
+   return E_FAIL;
+}
+
+tResult cReadWriteOps<sModelKeyFrame>::Write(IWriter * pWriter, const sModelKeyFrame & modelKeyFrame)
+{
+   if (pWriter == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (pWriter->Write(modelKeyFrame.time) == S_OK
+      && pWriter->Write(modelKeyFrame.translation) == S_OK
+      && pWriter->Write(modelKeyFrame.rotation) == S_OK)
+   {
+      return S_OK;
+   }
+
+   return E_FAIL;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////

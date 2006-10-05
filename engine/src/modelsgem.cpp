@@ -44,7 +44,7 @@ void * ModelSgemLoad(IReader * pReader)
    uint32 version;
    if (pReader->Read(id, sizeof(id)) != S_OK
       || pReader->Read(&version) != S_OK
-      || memcmp(id, g_sgemId, sizeof(g_sgemId)) != 0)
+      || memcmp(id, g_sgemId, 4) != 0)
    {
       ErrorMsg("Bad SGEM file header\n");
       return NULL;
@@ -113,8 +113,46 @@ void * ModelSgemLoad(IReader * pReader)
 
    LocalMsg1("%d Materials\n", nMaterials);
 
-   for (uint i = 0; i < nMaterials; ++i)
+   std::vector<sModelMaterial> materials(nMaterials);
+
+   if (nMaterials > 0)
    {
+      for (uint i = 0; i < nMaterials; i++)
+      {
+         if (pReader->Read(&materials[i]) != S_OK)
+         {
+            return NULL;
+         }
+      }
+   }
+
+   //////////////////////////////
+
+   uint nJoints = 0;
+   if (pReader->Read(&nJoints, sizeof(nJoints)) != S_OK
+      || nJoints == 0)
+   {
+      return NULL;
+   }
+
+   LocalMsg1("%d Joints\n", nJoints);
+
+   std::vector<sModelJoint> joints(nJoints);
+
+   if (nJoints > 0)
+   {
+      for (uint i = 0; i < nJoints; i++)
+      {
+         if (pReader->Read(&joints[i]) != S_OK)
+         {
+            return NULL;
+         }
+      }
+
+      cAutoIPtr<IModelSkeleton> pSkeleton;
+      if (ModelSkeletonCreate(&joints[0], nJoints, &pSkeleton) == S_OK)
+      {
+      }
    }
 
    return NULL;

@@ -372,6 +372,9 @@
 					RelativePath="..\..\engine\src\modelskeleton.cpp">
 				</File>
 				<File
+					RelativePath="..\..\engine\src\modeltypes.cpp">
+				</File>
+				<File
 					RelativePath="..\..\engine\src\ms3dread.cpp">
 				</File>
 				<File
@@ -493,6 +496,9 @@
 			</File>
 			<File
 				RelativePath="..\..\engine\include\modelapi.h">
+			</File>
+			<File
+				RelativePath="..\..\engine\include\modeltypes.h">
 			</File>
 			<File
 				RelativePath="..\..\engine\include\saveloadapi.h">

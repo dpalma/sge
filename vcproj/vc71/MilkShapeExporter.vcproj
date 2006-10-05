@@ -367,6 +367,9 @@
 				RelativePath="..\..\MilkShapeExporter\Exporter.cpp">
 			</File>
 			<File
+				RelativePath="..\..\MilkShapeExporter\ExportPreviewDlg.cpp">
+			</File>
+			<File
 				RelativePath="..\..\MilkShapeExporter\IntermediateJoint.cpp">
 			</File>
 			<File
@@ -450,6 +453,9 @@
 			Filter="h;hpp;hxx;hm;inl">
 			<File
 				RelativePath="..\..\MilkShapeExporter\Exporter.h">
+			</File>
+			<File
+				RelativePath="..\..\MilkShapeExporter\ExportPreviewDlg.h">
 			</File>
 			<File
 				RelativePath="..\..\MilkShapeExporter\IntermediateJoint.h">

@@ -191,6 +191,7 @@ tResult cImage::GetPixel(uint x, uint y, byte rgba[4]) const
          rgba[0] = ((pixel >> 11) & 31) << 3;
          rgba[1] = ((pixel >> 5) & 63) << 2;
          rgba[2] = (pixel & 31) << 3;
+         rgba[3] = 1;
          return S_OK;
       }
 

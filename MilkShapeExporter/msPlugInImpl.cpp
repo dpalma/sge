@@ -5,6 +5,7 @@
 
 #include "msPlugInImpl.h"
 #include "Exporter.h"
+#include "ExportPreviewDlg.h"
 #include "resource.h"
 
 #include "comtools.h"
@@ -139,15 +140,18 @@ int cPlugIn::Execute(msModel * pModel)
 
    int result = -1;
 
-   std::string fileName;
-   if (ChooseExportFileName(&fileName) == S_OK)
-   {
-      result = 0;
-   }
-
    cExporter exporter(pModel);
 
-   result = SUCCEEDED(exporter.ExportMesh(fileName.c_str())) ? 0 : -1;
+   exporter.PreProcess();
+
+   if (ShowExportPreviewDlg(&exporter))
+   {
+      std::string fileName;
+      if (ChooseExportFileName(&fileName) == S_OK)
+      {
+         result = SUCCEEDED(exporter.ExportMesh(fileName.c_str())) ? 0 : -1;
+      }
+   }
 
    return result;
 }

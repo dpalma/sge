@@ -24,14 +24,24 @@ F_DECLARE_INTERFACE(IWriter);
 typedef struct msModel msModel;
 typedef struct msMesh msMesh;
 
-struct sExportHeader
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cExportMesh
+//
+
+class cExportMesh
 {
-   union
-   {
-      byte bytes[sizeof(uint32)];
-      uint32 value;
-   } id;
-   uint32 version;
+public:
+   cExportMesh(
+      std::vector<sModelVertex>::const_iterator firstVertex,
+      std::vector<sModelVertex>::const_iterator lastVertex,
+      int primitive,
+      std::vector<uint16>::const_iterator firstIndex,
+      std::vector<uint16>::const_iterator lastIndex);
+
+   std::vector<sModelVertex> m_vertices;
+   int m_primitive;
+   std::vector<uint16> m_indices;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -45,13 +55,24 @@ public:
    cExporter(msModel * pModel, bool bAutoDeleteModel = true);
    ~cExporter();
 
+   void PreProcess();
+
+   std::vector<cExportMesh>::const_iterator BeginMeshes() const { return m_meshes.begin(); }
+   std::vector<cExportMesh>::const_iterator EndMeshes() const { return m_meshes.end(); }
+
+   std::vector<sModelMaterial>::const_iterator BeginMaterials() const { return m_materials.begin(); }
+   std::vector<sModelMaterial>::const_iterator EndMaterials() const { return m_materials.end(); }
+
+   std::vector<sModelJoint>::const_iterator BeginModelJoints() const { return m_modelJoints.begin(); }
+   std::vector<sModelJoint>::const_iterator EndModelJoints() const { return m_modelJoints.end(); }
+
    tResult ExportMesh(const tChar * pszFileName);
 
    tResult ExportMesh(IWriter * pWriter);
 
-   tResult ExportSkeleton(IWriter * pWriter, std::vector<cIntermediateJoint> * pJoints);
+   tResult ExportSkeleton(IWriter * pWriter);
 
-   tResult ExportAnimation(IWriter * pWriter, const std::vector<cIntermediateJoint> & joints);
+   tResult ExportAnimation(IWriter * pWriter);
 
 private:
    void CollectMeshVertices(msMesh * pMesh, std::vector<sModelVertex> * pVertices);
@@ -61,6 +82,11 @@ private:
 private:
    msModel * m_pModel;
    bool m_bAutoDeleteModel;
+
+   std::vector<cExportMesh> m_meshes;
+   std::vector<sModelMaterial> m_materials;
+   std::vector<cIntermediateJoint> m_tempJoints;
+   std::vector<sModelJoint> m_modelJoints;
 };
 
 /////////////////////////////////////////////////////////////////////////////
