@@ -36,6 +36,6 @@ includePaths = Split("""
 
 local = env.Copy()
 local.UseFTGL()
-local.BuildLibrary(target='ftgl',
-                   source=sourceFiles,
-                   include_path=includePaths)
+local.BuildStaticLibrary(target='ftgl',
+                         source=sourceFiles,
+                         include_path=includePaths)

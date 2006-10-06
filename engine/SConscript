@@ -37,14 +37,18 @@ includePaths = Split("""
 
 libPaths = Split("""
    #allguids
+   #gui
    #platform
+   #rendergl
    #script
    #tech
 """)
 
 linkLibs = Split("""
    allguids
+   gui
    platform
+   rendergl
    script
    tech
 """)

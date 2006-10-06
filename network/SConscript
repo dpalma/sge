@@ -29,6 +29,7 @@ if env['PLATFORM'] == 'win32':
 
 local = env.Copy()
 local.BuildLibrary(target='network',
+                   export_symbol='NET_EXPORTS',
                    source=sourceFiles,
                    include_path=includePaths,
                    lib_path=libPaths,

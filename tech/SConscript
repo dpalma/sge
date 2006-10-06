@@ -64,6 +64,8 @@ linkLibs = Split("""
 """)
 
 local = env.Copy()
+if local.IsShared() and local['PLATFORM'] == 'win32':
+   linkLibs += ['advapi32.lib']
 local.UseZLib()
 local.BuildLibrary(target='tech',
                    source=sourceFiles,

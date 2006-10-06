@@ -32,7 +32,6 @@ sourceFiles = Split("""
 """)
 
 includePaths = Split("""
-   #engine/include
    #gui/include
    #platform/include
    #rendergl/include
@@ -43,14 +42,14 @@ includePaths = Split("""
 
 libPaths = Split("""
    #allguids
-   #engine
+   #platform
    #rendergl
    #tech
 """)
 
 linkLibs = Split("""
    allguids
-   engine
+   platform
    rendergl
    tech
 """)

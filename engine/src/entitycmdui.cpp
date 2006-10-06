@@ -33,7 +33,13 @@ LOG_DEFINE_CHANNEL(EntityCmdUI);
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static const tChar g_szEntityCmdUIComponent[] = _T("commands");
+#define ENTITYCMDUICOMPONENTA "commands"
+#define ENTITYCMDUICOMPONENTW L"commands"
+#ifdef _UNICODE
+#define ENTITYCMDUICOMPONENT ENTITYCMDUICOMPONENTW
+#else
+#define ENTITYCMDUICOMPONENT ENTITYCMDUICOMPONENTA
+#endif
 static const char g_szElementCommand[] = "command";
 static const char g_szElementArgument[] = "argument";
 static const char g_szAttribName[] = "name";
@@ -105,7 +111,7 @@ tResult cEntityCmdUI::Init()
 {
    UseGlobal(EntityManager);
    pEntityManager->AddEntityManagerListener(static_cast<IEntityManagerListener*>(this));
-   pEntityManager->RegisterComponentFactory(g_szEntityCmdUIComponent, EntityCmdUIComponentFactory, this);
+   pEntityManager->RegisterComponentFactory(ENTITYCMDUICOMPONENT, EntityCmdUIComponentFactory, this);
 
    UseGlobal(GUIContext);
    pGUIContext->AddEventListener(static_cast<IGUIEventListener*>(this));
@@ -125,7 +131,7 @@ tResult cEntityCmdUI::Term()
 
    UseGlobal(EntityManager);
    pEntityManager->RemoveEntityManagerListener(static_cast<IEntityManagerListener*>(this));
-   pEntityManager->RevokeComponentFactory(g_szEntityCmdUIComponent);
+   pEntityManager->RevokeComponentFactory(ENTITYCMDUICOMPONENT);
 
    return S_OK;
 }
@@ -180,7 +186,7 @@ void cEntityCmdUI::OnEntitySelectionChange()
                   if (GUIButtonCreate(&pButton) == S_OK)
                   {
                      cStr id;
-                     pButton->SetId(Sprintf(&id, "%sCmd%d", typeName.c_str(), index).c_str());
+                     pButton->SetId(Sprintf(&id, _T("%sCmd%d"), typeName.c_str(), index).c_str());
                      m_activeCmds[id] = cmdInfo.GetCmdInstance();
                      Verify(pButton->SetText(cmdInfo.GetToolTip()) == S_OK);
                      Verify(pContainer->AddElement(pButton) == S_OK);
@@ -295,7 +301,7 @@ tResult cEntityCmdUI::EntityCmdUIComponentFactory(const TiXmlElement * pTiXmlEle
       return E_POINTER;
    }
 
-   if (_stricmp(pTiXmlElement->Value(), g_szEntityCmdUIComponent) != 0)
+   if (_stricmp(pTiXmlElement->Value(), ENTITYCMDUICOMPONENTA) != 0)
    {
       return E_INVALIDARG;
    }
@@ -333,22 +339,22 @@ tResult cEntityCmdUI::EntityCmdUIComponentFactory(const TiXmlElement * pTiXmlEle
    {
       Assert(pTiXmlChild->Type() == TiXmlNode::ELEMENT);
 
-      const char * pszCmdName = pTiXmlChild->Attribute(g_szAttribName);
-      const char * pszCmdImage = pTiXmlChild->Attribute(g_szAttribImage);
-      const char * pszCmdToolTip = pTiXmlChild->Attribute(g_szAttribToolTip);
-
-      if (_stricmp(pTiXmlChild->Value(), g_szElementCommand) == 0
-         && pszCmdName != NULL)
+      if ((_stricmp(pTiXmlChild->Value(), g_szElementCommand) == 0)
+         && (pTiXmlChild->Attribute(g_szAttribName) != NULL))
       {
+         cMultiVar cmdName(pTiXmlChild->Attribute(g_szAttribName));
+         cMultiVar cmdImage(pTiXmlChild->Attribute(g_szAttribImage));
+         cMultiVar cmdToolTip(pTiXmlChild->Attribute(g_szAttribToolTip));
+
          std::vector<cMultiVar> args;
          if (SUCCEEDED(EntityCmdParseArgs(pTiXmlChild, &args)))
          {
-            LocalMsg3("Entity type %s supports command %s (%d args)\n", typeName.c_str(), pszCmdName, args.size());
+            LocalMsg3("Entity type %s supports command %s (%d args)\n", typeName.c_str(), cmdName.ToString(), args.size());
 
             tEntityCmdInstance cmdInst = NULL;
-            if (pEntityCommandManager->CompileCommand(pszCmdName, args.empty() ? NULL : &args[0], args.size(), &cmdInst) == S_OK)
+            if (pEntityCommandManager->CompileCommand(cmdName, args.empty() ? NULL : &args[0], args.size(), &cmdInst) == S_OK)
             {
-               pEntityCmdUI->m_entityTypeCmdMap.insert(std::make_pair(typeName, cEntityCmdInfo(pszCmdImage, pszCmdToolTip, cmdInst)));
+               pEntityCmdUI->m_entityTypeCmdMap.insert(std::make_pair(typeName, cEntityCmdInfo(cmdImage, cmdToolTip, cmdInst)));
             }
          }
       }

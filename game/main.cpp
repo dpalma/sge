@@ -181,7 +181,7 @@ cUnitTestThread::~cUnitTestThread()
 
 int cUnitTestThread::Run()
 {
-   ThreadSetName(GetThreadId(), _T("UnitTestRunnerThread"));
+   ThreadSetName(GetThreadId(), "UnitTestRunnerThread");
 
    tResult result = SysRunUnitTests();
 

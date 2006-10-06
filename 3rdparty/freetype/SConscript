@@ -39,6 +39,6 @@ includePaths = Split("""
 """)
 
 local = env.Copy()
-local.BuildLibrary(target='freetype',
-                   source=sourceFiles,
-                   include_path=includePaths)
+local.BuildStaticLibrary(target='freetype',
+                         source=sourceFiles,
+                         include_path=includePaths)

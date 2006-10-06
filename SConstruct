@@ -30,6 +30,30 @@ class SGEEnvironment(Environment):
       self.m_libPaths = []
       self.m_incPaths = []
       self.m_defines = []
+      if self.get('unicode'):
+         self.Append(CPPDEFINES=['_UNICODE', 'UNICODE'])
+      else:
+         self.Append(CPPDEFINES=['_MBCS'])
+      if self.get('shared'):
+         self.SetShared()
+      else:   
+         self.SetStatic()
+
+   def GetBuildDir(self):
+      buildDir = 'build' + os.sep + str(Platform()) + os.sep
+      if self.IsDebug():
+         buildDir += 'debug-'
+      else:
+         buildDir += 'release-'
+      if self.IsShared():
+         buildDir += 'shared-'
+      else:
+         buildDir += 'static-'
+      if self.get('unicode'):
+         buildDir += 'unicode'
+      else:
+         buildDir += 'ansi'
+      return buildDir
 
    def UseTinyxml(self):
       self.m_libs += ['tinyxml']
@@ -181,7 +205,11 @@ class SGEEnvironment(Environment):
          target = kw['target']
       else:
          target = args[0]
-      self.Append(CPPDEFINES=[target.upper() + '_EXPORTS'])
+      if 'export_symbol' in kw:
+         export_symbol = kw['export_symbol']
+      else:
+         export_symbol = target.upper() + '_EXPORTS'
+      self.Append(CPPDEFINES=[export_symbol])
       self.SharedLibrary(*args, **kw)
 
    def BuildLibrary(self, *args, **kw):
@@ -217,27 +245,8 @@ if env.get('debug'):
    env.SetDebug()
 else:
    env.SetRelease()
-
-if env.get('shared'):
-   env.SetShared()
-else:   
-   env.SetStatic()
    
-if env.get('debug') and env.get('shared'):
-   mode = "Debug"
-elif not env.get('debug') and env.get('shared'):
-   mode = "Release"
-elif env.get('debug') and not env.get('shared'):
-   mode = "StaticDebug"
-elif not env.get('debug') and not env.get('shared'):
-   mode = "StaticRelease"
-   
-buildRootDir = 'build' + os.sep + str(Platform()) + os.sep + mode
-if env.get('unicode'):
-   buildRootDir += 'Unicode'
-else:
-   buildRootDir += 'Ansi'
-   
+buildRootDir = env.GetBuildDir()
 Export('buildRootDir')
 if not os.path.isdir(buildRootDir):
    os.makedirs(buildRootDir)
@@ -246,11 +255,6 @@ def MakeLibPath(path):
    return '#' + os.path.join(buildRootDir, path.lstrip('#'))
 
 Help("Usage: scons [debug] [unicode]" + opts.GenerateHelpText(env))
-
-if env.get('unicode'):
-   env.Append(CPPDEFINES=['_UNICODE', 'UNICODE'])
-else:
-   env.Append(CPPDEFINES=['_MBCS'])
 
 ########################################
 
