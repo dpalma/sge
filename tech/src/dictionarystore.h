@@ -20,6 +20,7 @@ class cDictionaryTextStore : public cComObject<IMPLEMENTS(IDictionaryStore)>
 {
 public:
    cDictionaryTextStore(const cFileSpec & file);
+   cDictionaryTextStore(IReader * pReader);
 
    virtual tResult Load(IDictionary * pDictionary);
    virtual tResult Save(IDictionary * pDictionary);
@@ -27,6 +28,7 @@ public:
 
 private:
    cFileSpec m_file;
+   cAutoIPtr<IReader> m_pReader;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

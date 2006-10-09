@@ -105,7 +105,7 @@ const tChar * cFileSpec::GetFileName() const
    }
    if (p != NULL)
    {
-      return (p + 1);
+      return _tcsinc(p);
    }
    return CStr();
 }

@@ -121,7 +121,7 @@ private:
                       cInterfaceHashFunction<IGUIElement> > tFlowTable;
    tFlowTable m_flowTable;
 
-   std::queue<std::pair<IGUIContainerElement*, tGUIRect> > m_layoutQueue;
+   std::queue<std::pair<IGUIContainerElement*, IGUIElementRenderer*> > m_layoutQueue;
 
    cAutoIPtr<IGUIElement> m_pRequester; // element requesting layout
 

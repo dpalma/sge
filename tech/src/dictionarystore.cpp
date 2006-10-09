@@ -93,6 +93,15 @@ bool ParseDictionaryLine(const tChar * psz, cStr * pKey, cStr * pValue, cStr * p
 
 cDictionaryTextStore::cDictionaryTextStore(const cFileSpec & file)
  : m_file(file)
+ , m_pReader(NULL)
+{
+}
+
+///////////////////////////////////////
+
+cDictionaryTextStore::cDictionaryTextStore(IReader * pReader)
+ : m_file(_T(""))
+ , m_pReader(CTAddRef(pReader))
 {
 }
 
@@ -102,8 +111,20 @@ tResult cDictionaryTextStore::Load(IDictionary * pDictionary)
 {
    Assert(pDictionary != NULL);
 
+   tResult result = E_FAIL;
+
    cAutoIPtr<IReader> pReader;
-   if (FileReaderCreate(m_file, &pReader) == S_OK)
+
+   if (!!m_pReader)
+   {
+      pReader = m_pReader;
+   }
+   else
+   {
+      result = FileReaderCreate(m_file, &pReader);
+   }
+
+   if (!!pReader)
    {
       cStr line;
       while (pReader->Read(&line, '\n') == S_OK)
@@ -116,16 +137,21 @@ tResult cDictionaryTextStore::Load(IDictionary * pDictionary)
             pDictionary->Set(key.c_str(), value.c_str());
          }
       }
-      return S_OK;
+      result = S_OK;
    }
 
-   return E_FAIL;
+   return result;
 }
 
 ///////////////////////////////////////
 
 tResult cDictionaryTextStore::Save(IDictionary * pDictionary)
 {
+   if (m_file.IsEmpty())
+   {
+      return E_FAIL;
+   }
+
    FILE * fp = _tfopen(m_file.CStr(), _T("w"));
    if (fp == NULL)
    {
@@ -166,12 +192,20 @@ tResult cDictionaryTextStore::MergeSave(IDictionary * pDictionary)
    return E_NOTIMPL; // TODO
 }
 
-///////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
 IDictionaryStore * DictionaryStoreCreate(const cFileSpec & file)
 {
    return static_cast<IDictionaryStore *>(new cDictionaryTextStore(file));
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+IDictionaryStore * DictionaryStoreCreate(IReader * pReader)
+{
+   return static_cast<IDictionaryStore *>(new cDictionaryTextStore(pReader));
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //

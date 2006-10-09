@@ -63,6 +63,41 @@ float g_fov;
 
 
 ///////////////////////////////////////////////////////////////////////////////
+
+#define kRT_Dictionary _T("Dictionary")
+
+void * DictionaryLoad(IReader * pReader, void * typeParam)
+{
+   if (pReader == NULL || typeParam == NULL)
+   {
+      return NULL;
+   }
+
+   cAutoIPtr<IDictionaryStore> pStore = DictionaryStoreCreate(pReader);
+   if (!pStore)
+   {
+      return NULL;
+   }
+
+   IDictionary * pDict = (IDictionary *)typeParam;
+
+   if (pStore->Load(pDict) == S_OK)
+   {
+      return pDict;
+   }
+   else
+   {
+      return NULL;
+   }
+}
+
+void DictionaryUnload(void * pData)
+{
+   // Nothing to unload
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: 
 //
@@ -209,7 +244,7 @@ class cMainInitTask : public cComObject<IMPLEMENTS(ITask)>
                     , public cStateMachine<cMainInitTask, double>
 {
 public:
-   cMainInitTask();
+   cMainInitTask(const tChar * pszArgv0);
 
    virtual tResult Execute(double time);
 
@@ -223,6 +258,8 @@ private:
    tResult RunStartupScript();
    tResult CreateMainWindow();
 
+   cStr m_argv0;
+
    typedef tResult (cMainInitTask::*tInitStageFn)();
 
    tInitStageFn m_stages[4];
@@ -235,8 +272,9 @@ private:
 
 ////////////////////////////////////////
 
-cMainInitTask::cMainInitTask()
- : m_currentStage(0)
+cMainInitTask::cMainInitTask(const tChar * pszArgv0)
+ : m_argv0((pszArgv0 != NULL) ? pszArgv0 : _T(""))
+ , m_currentStage(0)
  , m_errorState(&cMainInitTask::OnEnterErrorState, NULL, NULL)
  , m_stagedInitState(NULL, &cMainInitTask::OnRunInitStages, NULL)
  , m_finishedState(&cMainInitTask::OnEnterFinishedState, NULL, NULL)
@@ -311,17 +349,25 @@ void cMainInitTask::OnEnterFinishedState()
 
 tResult cMainInitTask::SetupResourceManager()
 {
-   TextFormatRegister(_T("css,lua,xml"));
+   TextFormatRegister(_T("cfg,css,lua,xml"));
    EngineRegisterResourceFormats();
    TerrainRegisterResourceFormats();
    ImageRegisterResourceFormats();
 
+   UseGlobal(ResourceManager);
+   pResourceManager->RegisterFormat(kRT_Dictionary, _T("cfg"),
+      DictionaryLoad, NULL, DictionaryUnload, g_pConfig);
+
    cStr temp;
    if (ConfigGet(_T("data"), &temp) == S_OK)
    {
-      UseGlobal(ResourceManager);
       pResourceManager->AddDirectoryTreeFlattened(temp.c_str());
    }
+
+   cFileSpec config(m_argv0.c_str());
+   config.SetFileExt(_T("cfg"));
+   void * pUnused = NULL;
+   pResourceManager->Load(config.GetFileName(), kRT_Dictionary, NULL, &pUnused);
 
    return S_OK;
 }
@@ -399,13 +445,6 @@ tResult cMainInitTask::CreateMainWindow()
    }
 
    return S_OK;
-}
-
-////////////////////////////////////////
-
-static ITask * MainInitTaskCreate()
-{
-   return static_cast<ITask *>(new cMainInitTask);
 }
 
 
@@ -537,7 +576,7 @@ static bool MainInit(int argc, tChar * argv[])
       return false;
    }
 
-   cAutoIPtr<ITask> pMainInitTask(MainInitTaskCreate());
+   cAutoIPtr<ITask> pMainInitTask(static_cast<ITask *>(new cMainInitTask(argv[0])));
    if (!!pMainInitTask)
    {
       UseGlobal(Scheduler);

@@ -262,6 +262,31 @@ void cGUIPageLayoutFlow::PlaceElement(IGUIElement * pElement)
 
 
 ///////////////////////////////////////////////////////////////////////////////
+
+static tResult ComputeClientArea(IGUIElement * pElement, IGUIElementRenderer * pRenderer, tGUIRect * pClientArea)
+{
+   if (pElement == NULL || pRenderer == NULL || pClientArea == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tGUISize elementSize = pElement->GetSize();
+   *pClientArea = tGUIRect(0, 0, FloatToInt(elementSize.width), FloatToInt(elementSize.height));
+
+   // Allow renderer to allocate space for borders
+   pRenderer->AllocateBorderSpace(pElement, pClientArea);
+
+   tResult result = pElement->ComputeClientArea(pRenderer, pClientArea);
+   if (SUCCEEDED(result))
+   {
+      pElement->SetClientArea(*pClientArea);
+   }
+
+   return result;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUIPageLayout
 //
@@ -305,13 +330,16 @@ cGUIPageLayout::~cGUIPageLayout()
    while (!m_layoutQueue.empty())
    {
       cAutoIPtr<IGUIContainerElement> pContainer(m_layoutQueue.front().first);
-      tGUIRect containerRect(m_layoutQueue.front().second);
+      cAutoIPtr<IGUIElementRenderer> pRenderer(m_layoutQueue.front().second);
       m_layoutQueue.pop();
+
+      tGUIRect clientArea(0,0,0,0);
+      ComputeClientArea(pContainer, pRenderer, &clientArea);
 
       cAutoIPtr<IGUILayoutManager> pLayout;
       if (pContainer->GetLayout(&pLayout) == S_OK)
       {
-         pLayout->Layout(pContainer, containerRect);
+         pLayout->Layout(pContainer, clientArea);
       }
    }
 
@@ -399,21 +427,6 @@ tResult cGUIPageLayout::operator ()(IGUIElement * pElement, IGUIElementRenderer 
       }
    }
 
-   tGUIRect clientArea(0, 0, FloatToInt(elementSize.width), FloatToInt(elementSize.height));
-
-   // Allow renderer to allocate space for borders
-   pRenderer->AllocateBorderSpace(pElement, &clientArea);
-
-   tResult computeClientAreaResult = pElement->ComputeClientArea(pRenderer, &clientArea);
-   if (SUCCEEDED(computeClientAreaResult))
-   {
-      pElement->SetClientArea(clientArea);
-      if (computeClientAreaResult == S_FALSE)
-      {
-         return S_FALSE;
-      }
-   }
-
    cAutoIPtr<IGUIContainerElement> pContainer;
    if (pElement->QueryInterface(IID_IGUIContainerElement, (void**)&pContainer) == S_OK)
    {
@@ -421,10 +434,12 @@ tResult cGUIPageLayout::operator ()(IGUIElement * pElement, IGUIElementRenderer 
       if (pContainer->GetLayout(&pLayout) == S_OK)
       {
          LocalMsg1("Element %s has a layout manager\n", GUIElementIdentify(pElement).c_str());
-         m_layoutQueue.push(std::make_pair(static_cast<IGUIContainerElement*>(CTAddRef(pContainer)), clientArea));
+         m_layoutQueue.push(std::make_pair(static_cast<IGUIContainerElement*>(CTAddRef(pContainer)), static_cast<IGUIElementRenderer*>(CTAddRef(pRenderer))));
       }
       else
       {
+         tGUIRect clientArea(0,0,0,0);
+         ComputeClientArea(pElement, pRenderer, &clientArea);
          cGUIPageLayoutFlow * pFlow = new cGUIPageLayoutFlow(clientArea);
          if (pFlow != NULL)
          {
