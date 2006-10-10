@@ -17,6 +17,7 @@
 
 #include "dbgalloc.h" // must be last header
 
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUIBeveledRenderer
@@ -99,11 +100,24 @@ tResult cGUIBeveledRenderer::Render(IGUIElement * pElement, const tGUIPoint & po
       {
          if (gm_methodTable[i].pfnRender != NULL)
          {
+            cAutoIPtr<IRenderFont> pFont;
+            cAutoIPtr<IGUIStyle> pStyle;
+            if (pElement2->GetStyle(&pStyle) == S_OK)
+            {
+               GUIStyleFontCreate(pStyle, &pFont);
+            }
+            if (!pFont)
+            {
+               UseGlobal(GUIContext);
+               pGUIContext->GetDefaultFont(&pFont);
+            }
+
             tGUISize size = pElement2->GetSize();
             tGUIRect rect(
                FloatToInt(position.x), FloatToInt(position.y),
                FloatToInt(position.x + size.width), FloatToInt(position.y + size.height));
-            return (this->*(gm_methodTable[i].pfnRender))(pElement2, rect, pRender2D);
+
+            return (this->*(gm_methodTable[i].pfnRender))(pElement2, pStyle, pFont, rect, pRender2D);
          }
          else
          {
@@ -129,8 +143,27 @@ tResult cGUIBeveledRenderer::GetPreferredSize(IGUIElement * pElement, const tGUI
       cAutoIPtr<IGUIElement> pElement2;
       if (pElement->QueryInterface(*(gm_methodTable[i].pIID), (void**)&pElement2) == S_OK)
       {
-         *pSize = (this->*(gm_methodTable[i].pfnPreferredSize))(pElement2, parentSize);
-         return S_OK;
+         if (gm_methodTable[i].pfnPreferredSize != NULL)
+         {
+            cAutoIPtr<IRenderFont> pFont;
+            cAutoIPtr<IGUIStyle> pStyle;
+            if (pElement2->GetStyle(&pStyle) == S_OK)
+            {
+               GUIStyleFontCreate(pStyle, &pFont);
+            }
+            if (!pFont)
+            {
+               UseGlobal(GUIContext);
+               pGUIContext->GetDefaultFont(&pFont);
+            }
+
+            *pSize = (this->*(gm_methodTable[i].pfnPreferredSize))(pElement2, pFont, parentSize);
+            return S_OK;
+         }
+         else
+         {
+            return S_FALSE;
+         }
       }
    }
 
@@ -154,7 +187,10 @@ tResult cGUIBeveledRenderer::AllocateBorderSpace(IGUIElement * pElement, tGUIRec
 
 ///////////////////////////////////////
 
-tResult cGUIBeveledRenderer::ButtonRender(IGUIElement * pElement, const tGUIRect & rect,
+tResult cGUIBeveledRenderer::ButtonRender(IGUIElement * pElement,
+                                          IGUIStyle * pStyle,
+                                          IRenderFont * pFont,
+                                          const tGUIRect & rect,
                                           IRender2D * pRender2D)
 {
    bool bPressed = false;
@@ -174,8 +210,7 @@ tResult cGUIBeveledRenderer::ButtonRender(IGUIElement * pElement, const tGUIRect
    const tGUIChar * pszText = pButtonElement->GetText();
    if (pszText != NULL)
    {
-      cAutoIPtr<IRenderFont> pFont;
-      if (GUIElementFont(pElement, &pFont) == S_OK)
+      if (pFont != NULL)
       {
          uint renderTextFlags = kRT_Center | kRT_VCenter | kRT_SingleLine;
 
@@ -210,15 +245,16 @@ tResult cGUIBeveledRenderer::ButtonRender(IGUIElement * pElement, const tGUIRect
 
 ///////////////////////////////////////
 
-tGUISize cGUIBeveledRenderer::ButtonPreferredSize(IGUIElement * pElement, const tGUISize & parentSize) const
+tGUISize cGUIBeveledRenderer::ButtonPreferredSize(IGUIElement * pElement,
+                                                  IRenderFont * pFont,
+                                                  const tGUISize & parentSize) const
 {
    IGUIButtonElement * pButtonElement = (IGUIButtonElement *)pElement;
 
    const tGUIChar * pszText = pButtonElement->GetText();
    if (pszText != NULL)
    {
-      cAutoIPtr<IRenderFont> pFont;
-      if (GUIElementFont(pElement, &pFont) == S_OK)
+      if (pFont != NULL)
       {
          tRect rect(0,0,0,0);
          pFont->RenderText(pszText, -1, &rect, kRT_CalcRect, NULL);
@@ -231,15 +267,17 @@ tGUISize cGUIBeveledRenderer::ButtonPreferredSize(IGUIElement * pElement, const 
 
 ///////////////////////////////////////
 
-tResult cGUIBeveledRenderer::LabelRender(IGUIElement * pElement, const tGUIRect & rect,
+tResult cGUIBeveledRenderer::LabelRender(IGUIElement * pElement,
+                                         IGUIStyle * pStyle,
+                                         IRenderFont * pFont,
+                                         const tGUIRect & rect,
                                          IRender2D * pRender2D)
 {
    IGUILabelElement * pLabelElement = (IGUILabelElement *)pElement;
 
    tGUIColor color(GUIStandardColors::Black);
 
-   cAutoIPtr<IGUIStyle> pStyle;
-   if (pLabelElement->GetStyle(&pStyle) == S_OK)
+   if (pStyle != NULL)
    {
       pStyle->GetForegroundColor(&color);
    }
@@ -247,8 +285,7 @@ tResult cGUIBeveledRenderer::LabelRender(IGUIElement * pElement, const tGUIRect 
    const tGUIChar * pszText = pLabelElement->GetText();
    if (pszText != NULL)
    {
-      cAutoIPtr<IRenderFont> pFont;
-      if (GUIElementFont(pLabelElement, &pFont) == S_OK)
+      if (pFont != NULL)
       {
          tGUIRect textRect(rect);
          pFont->RenderText(pszText, -1, &textRect, kRT_NoClip, color.GetPointer());
@@ -261,15 +298,16 @@ tResult cGUIBeveledRenderer::LabelRender(IGUIElement * pElement, const tGUIRect 
 
 ///////////////////////////////////////
 
-tGUISize cGUIBeveledRenderer::LabelPreferredSize(IGUIElement * pElement, const tGUISize & parentSize) const
+tGUISize cGUIBeveledRenderer::LabelPreferredSize(IGUIElement * pElement,
+                                                 IRenderFont * pFont,
+                                                 const tGUISize & parentSize) const
 {
    IGUILabelElement * pLabelElement = (IGUILabelElement *)pElement;
 
    const tGUIChar * pszText = pLabelElement->GetText();
    if (pszText != NULL)
    {
-      cAutoIPtr<IRenderFont> pFont;
-      if (GUIElementFont(pLabelElement, &pFont) == S_OK)
+      if (pFont != NULL)
       {
          tRect rect(0,0,0,0);
          pFont->RenderText(pszText, -1, &rect, kRT_CalcRect, NULL);
@@ -282,7 +320,10 @@ tGUISize cGUIBeveledRenderer::LabelPreferredSize(IGUIElement * pElement, const t
 
 ///////////////////////////////////////
 
-tResult cGUIBeveledRenderer::ListBoxRender(IGUIElement * pElement, const tGUIRect & rect,
+tResult cGUIBeveledRenderer::ListBoxRender(IGUIElement * pElement,
+                                           IGUIStyle * pStyle,
+                                           IRenderFont * pFont,
+                                           const tGUIRect & rect,
                                            IRender2D * pRender2D)
 {
    IGUIListBoxElement * pListBoxElement = (IGUIListBoxElement *)pElement;
@@ -298,14 +339,12 @@ tResult cGUIBeveledRenderer::ListBoxRender(IGUIElement * pElement, const tGUIRec
    pRender2D->PushScissorRect(insetRect);
 
    tGUIColor textColor(GUIStandardColors::Black);
-   cAutoIPtr<IGUIStyle> pStyle;
-   if (pListBoxElement->GetStyle(&pStyle) == S_OK)
+   if (pStyle != NULL)
    {
       pStyle->GetForegroundColor(&textColor);
    }
 
-   cAutoIPtr<IRenderFont> pFont;
-   if (GUIElementFont(pListBoxElement, &pFont) == S_OK)
+   if (pFont != NULL)
    {
       int scrollPos = 0;
       cAutoIPtr<IGUIScrollBarElement> pVertScrollBar;
@@ -370,12 +409,13 @@ tResult cGUIBeveledRenderer::ListBoxRender(IGUIElement * pElement, const tGUIRec
 
 ///////////////////////////////////////
 
-tGUISize cGUIBeveledRenderer::ListBoxPreferredSize(IGUIElement * pElement, const tGUISize & parentSize) const
+tGUISize cGUIBeveledRenderer::ListBoxPreferredSize(IGUIElement * pElement,
+                                                   IRenderFont * pFont,
+                                                   const tGUISize & parentSize) const
 {
    IGUIListBoxElement * pListBoxElement = (IGUIListBoxElement *)pElement;
 
-   cAutoIPtr<IRenderFont> pFont;
-   if (GUIElementFont(pListBoxElement, &pFont) == S_OK)
+   if (pFont != NULL)
    {
       uint rowCount;
       if (pListBoxElement->GetRowCount(&rowCount) == S_OK)
@@ -391,7 +431,10 @@ tGUISize cGUIBeveledRenderer::ListBoxPreferredSize(IGUIElement * pElement, const
 
 ///////////////////////////////////////
 
-tResult cGUIBeveledRenderer::ScrollBarRender(IGUIElement * pElement, const tGUIRect & rect,
+tResult cGUIBeveledRenderer::ScrollBarRender(IGUIElement * pElement,
+                                             IGUIStyle * pStyle,
+                                             IRenderFont * pFont,
+                                             const tGUIRect & rect,
                                              IRender2D * pRender2D)
 {
    IGUIScrollBarElement * pScrollBarElement = (IGUIScrollBarElement *)pElement;
@@ -458,7 +501,9 @@ tResult cGUIBeveledRenderer::ScrollBarRender(IGUIElement * pElement, const tGUIR
 
 ///////////////////////////////////////
 
-tGUISize cGUIBeveledRenderer::ScrollBarPreferredSize(IGUIElement * pElement, const tGUISize & parentSize) const
+tGUISize cGUIBeveledRenderer::ScrollBarPreferredSize(IGUIElement * pElement,
+                                                     IRenderFont * pFont,
+                                                     const tGUISize & parentSize) const
 {
    IGUIScrollBarElement * pScrollBarElement = (IGUIScrollBarElement *)pElement;
 
@@ -478,7 +523,10 @@ tGUISize cGUIBeveledRenderer::ScrollBarPreferredSize(IGUIElement * pElement, con
 
 ///////////////////////////////////////
 
-tResult cGUIBeveledRenderer::TextEditRender(IGUIElement * pElement, const tGUIRect & rect,
+tResult cGUIBeveledRenderer::TextEditRender(IGUIElement * pElement,
+                                            IGUIStyle * pStyle,
+                                            IRenderFont * pFont,
+                                            const tGUIRect & rect,
                                             IRender2D * pRender2D)
 {
    IGUITextEditElement * pTextEditElement = (IGUITextEditElement *)pElement;
@@ -495,8 +543,7 @@ tResult cGUIBeveledRenderer::TextEditRender(IGUIElement * pElement, const tGUIRe
 
    tGUIColor textColor(GUIStandardColors::Black);
 
-   cAutoIPtr<IGUIStyle> pStyle;
-   if (pTextEditElement->GetStyle(&pStyle) == S_OK)
+   if (pStyle != NULL)
    {
       pStyle->GetForegroundColor(&textColor);
    }
@@ -507,8 +554,7 @@ tResult cGUIBeveledRenderer::TextEditRender(IGUIElement * pElement, const tGUIRe
    const tGUIChar * pszText = pTextEditElement->GetText();
    if (pszText != NULL)
    {
-      cAutoIPtr<IRenderFont> pFont;
-      if (GUIElementFont(pTextEditElement, &pFont) == S_OK)
+      if (pFont != NULL)
       {
          pFont->RenderText(pszText, -1, &insetRect, kRT_NoClip, textColor.GetPointer());
 
@@ -545,7 +591,9 @@ tResult cGUIBeveledRenderer::TextEditRender(IGUIElement * pElement, const tGUIRe
 
 ///////////////////////////////////////
 
-tGUISize cGUIBeveledRenderer::TextEditPreferredSize(IGUIElement * pElement, const tGUISize & parentSize) const
+tGUISize cGUIBeveledRenderer::TextEditPreferredSize(IGUIElement * pElement,
+                                                    IRenderFont * pFont,
+                                                    const tGUISize & parentSize) const
 {
    IGUITextEditElement * pTextEditElement = (IGUITextEditElement *)pElement;
 
@@ -555,8 +603,7 @@ tGUISize cGUIBeveledRenderer::TextEditPreferredSize(IGUIElement * pElement, cons
       editSize = kDefaultEditSize;
    }
 
-   cAutoIPtr<IRenderFont> pFont;
-   if (GUIElementFont(pTextEditElement, &pFont) == S_OK)
+   if (pFont != NULL)
    {
       char * psz = reinterpret_cast<char *>(alloca(editSize * sizeof(char)));
       memset(psz, 'M', editSize * sizeof(char));
@@ -573,7 +620,10 @@ tGUISize cGUIBeveledRenderer::TextEditPreferredSize(IGUIElement * pElement, cons
 
 ///////////////////////////////////////
 
-tResult cGUIBeveledRenderer::TitleBarRender(IGUIElement * pElement, const tGUIRect & rect,
+tResult cGUIBeveledRenderer::TitleBarRender(IGUIElement * pElement,
+                                            IGUIStyle * pStyle,
+                                            IRenderFont * pFont,
+                                            const tGUIRect & rect,
                                             IRender2D * pRender2D)
 {
    IGUITitleBarElement * pTitleBarElement = (IGUITitleBarElement *)pElement;
@@ -581,8 +631,7 @@ tResult cGUIBeveledRenderer::TitleBarRender(IGUIElement * pElement, const tGUIRe
    tGUIColor captionBk(GUIStandardColors::Blue);
    tGUIColor captionText(GUIStandardColors::White);
 
-   cAutoIPtr<IGUIStyle> pStyle;
-   if (pElement->GetStyle(&pStyle) == S_OK)
+   if (pStyle != NULL)
    {
       pStyle->GetAttribute("caption-bk-color", &captionBk);
       pStyle->GetAttribute("caption-text-color", &captionText);
@@ -590,8 +639,7 @@ tResult cGUIBeveledRenderer::TitleBarRender(IGUIElement * pElement, const tGUIRe
 
    pRender2D->RenderSolidRect(rect, captionBk.GetPointer());
 
-   cAutoIPtr<IRenderFont> pFont;
-   if (GUIElementFont(pElement, &pFont) == S_OK)
+   if (pFont != NULL)
    {
       tGUIString title;
       if (pTitleBarElement->GetTitle(&title) == S_OK)
@@ -606,12 +654,13 @@ tResult cGUIBeveledRenderer::TitleBarRender(IGUIElement * pElement, const tGUIRe
 
 ///////////////////////////////////////
 
-tGUISize cGUIBeveledRenderer::TitleBarPreferredSize(IGUIElement * pElement, const tGUISize & parentSize) const
+tGUISize cGUIBeveledRenderer::TitleBarPreferredSize(IGUIElement * pElement,
+                                                    IRenderFont * pFont,
+                                                    const tGUISize & parentSize) const
 {
    IGUITitleBarElement * pTitleBarElement = (IGUITitleBarElement *)pElement;
 
-   cAutoIPtr<IRenderFont> pFont;
-   if (GUIElementFont(pTitleBarElement, &pFont) == S_OK)
+   if (pFont != NULL)
    {
       tGUIString title;
       if (pTitleBarElement->GetTitle(&title) == S_OK)
@@ -635,7 +684,10 @@ tGUISize cGUIBeveledRenderer::TitleBarPreferredSize(IGUIElement * pElement, cons
 
 ///////////////////////////////////////
 
-tResult cGUIBeveledRenderer::ContainerRender(IGUIElement * pElement, const tGUIRect & rect,
+tResult cGUIBeveledRenderer::ContainerRender(IGUIElement * pElement,
+                                             IGUIStyle * pStyle,
+                                             IRenderFont * pFont,
+                                             const tGUIRect & rect,
                                              IRender2D * pRender2D)
 {
    pRender2D->RenderBeveledRect(rect, GetBevel(), GetColor(kBC_Highlight).GetPointer(), GetColor(kBC_Shadow).GetPointer(), GetColor(kBC_Face).GetPointer());
@@ -644,7 +696,7 @@ tResult cGUIBeveledRenderer::ContainerRender(IGUIElement * pElement, const tGUIR
 
 ///////////////////////////////////////
 
-tGUISize cGUIBeveledRenderer::ContainerPreferredSize(IGUIElement * pElement, const tGUISize & parentSize) const
+tGUISize cGUIBeveledRenderer::ContainerPreferredSize(IGUIElement * pElement, IRenderFont * pFont, const tGUISize & parentSize) const
 {
    cAutoIPtr<IGUILayoutManager> pLayout;
    if (((IGUIContainerElement*)pElement)->GetLayout(&pLayout) == S_OK)

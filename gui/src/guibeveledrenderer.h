@@ -40,29 +40,29 @@ private:
    uint GetBevel() const { return m_bevel; }
    const tGUIColor & GetColor(eBeveledColor color) const { return m_colorScheme[color]; }
 
-   tResult ButtonRender(IGUIElement * pElement, const tGUIRect & rect, IRender2D * pRender2D);
-   tGUISize ButtonPreferredSize(IGUIElement * pElement, const tGUISize & parentSize) const;
+   tResult ButtonRender(IGUIElement * pElement, IGUIStyle * pStyle, IRenderFont * pFont, const tGUIRect & rect, IRender2D * pRender2D);
+   tGUISize ButtonPreferredSize(IGUIElement * pElement, IRenderFont * pFont, const tGUISize & parentSize) const;
 
-   tResult LabelRender(IGUIElement * pElement, const tGUIRect & rect, IRender2D * pRender2D);
-   tGUISize LabelPreferredSize(IGUIElement * pElement, const tGUISize & parentSize) const;
+   tResult LabelRender(IGUIElement * pElement, IGUIStyle * pStyle, IRenderFont * pFont, const tGUIRect & rect, IRender2D * pRender2D);
+   tGUISize LabelPreferredSize(IGUIElement * pElement, IRenderFont * pFont, const tGUISize & parentSize) const;
 
-   tResult ListBoxRender(IGUIElement * pElement, const tGUIRect & rect, IRender2D * pRender2D);
-   tGUISize ListBoxPreferredSize(IGUIElement * pElement, const tGUISize & parentSize) const;
+   tResult ListBoxRender(IGUIElement * pElement, IGUIStyle * pStyle, IRenderFont * pFont, const tGUIRect & rect, IRender2D * pRender2D);
+   tGUISize ListBoxPreferredSize(IGUIElement * pElement, IRenderFont * pFont, const tGUISize & parentSize) const;
 
-   tResult ScrollBarRender(IGUIElement * pElement, const tGUIRect & rect, IRender2D * pRender2D);
-   tGUISize ScrollBarPreferredSize(IGUIElement * pElement, const tGUISize & parentSize) const;
+   tResult ScrollBarRender(IGUIElement * pElement, IGUIStyle * pStyle, IRenderFont * pFont, const tGUIRect & rect, IRender2D * pRender2D);
+   tGUISize ScrollBarPreferredSize(IGUIElement * pElement, IRenderFont * pFont, const tGUISize & parentSize) const;
 
-   tResult TextEditRender(IGUIElement * pElement, const tGUIRect & rect, IRender2D * pRender2D);
-   tGUISize TextEditPreferredSize(IGUIElement * pElement, const tGUISize & parentSize) const;
+   tResult TextEditRender(IGUIElement * pElement, IGUIStyle * pStyle, IRenderFont * pFont, const tGUIRect & rect, IRender2D * pRender2D);
+   tGUISize TextEditPreferredSize(IGUIElement * pElement, IRenderFont * pFont, const tGUISize & parentSize) const;
 
-   tResult TitleBarRender(IGUIElement * pElement, const tGUIRect & rect, IRender2D * pRender2D);
-   tGUISize TitleBarPreferredSize(IGUIElement * pElement, const tGUISize & parentSize) const;
+   tResult TitleBarRender(IGUIElement * pElement, IGUIStyle * pStyle, IRenderFont * pFont, const tGUIRect & rect, IRender2D * pRender2D);
+   tGUISize TitleBarPreferredSize(IGUIElement * pElement, IRenderFont * pFont, const tGUISize & parentSize) const;
 
-   tResult ContainerRender(IGUIElement * pElement, const tGUIRect & rect, IRender2D * pRender2D);
-   tGUISize ContainerPreferredSize(IGUIElement * pElement, const tGUISize & parentSize) const;
+   tResult ContainerRender(IGUIElement * pElement, IGUIStyle * pStyle, IRenderFont * pFont, const tGUIRect & rect, IRender2D * pRender2D);
+   tGUISize ContainerPreferredSize(IGUIElement * pElement, IRenderFont * pFont, const tGUISize & parentSize) const;
 
-   typedef tResult (cGUIBeveledRenderer::*tRenderMethod)(IGUIElement *, const tGUIRect &, IRender2D *);
-   typedef tGUISize (cGUIBeveledRenderer::*tPreferredSizeMethod)(IGUIElement *, const tGUISize &) const;
+   typedef tResult (cGUIBeveledRenderer::*tRenderMethod)(IGUIElement *, IGUIStyle *, IRenderFont *, const tGUIRect &, IRender2D *);
+   typedef tGUISize (cGUIBeveledRenderer::*tPreferredSizeMethod)(IGUIElement *, IRenderFont *, const tGUISize &) const;
 
    struct sMethodTableEntry
    {
