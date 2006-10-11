@@ -24,6 +24,7 @@ F_DECLARE_INTERFACE(IWriter);
 typedef struct msModel msModel;
 typedef struct msMesh msMesh;
 
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cExportMesh
@@ -43,6 +44,19 @@ public:
    int m_primitive;
    std::vector<uint16> m_indices;
 };
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cExportAnimation
+//
+
+class cExportAnimation
+{
+public:
+   cExportAnimation();
+};
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -75,9 +89,11 @@ public:
    tResult ExportAnimation(IWriter * pWriter);
 
 private:
-   void CollectMeshVertices(msMesh * pMesh, std::vector<sModelVertex> * pVertices);
-   void CollectMeshNormals(msMesh * pMesh, std::vector<tVec3> * pNormals);
-   void CollectModelMaterials(msModel * pModel, std::vector<sModelMaterial> * pMaterials);
+   static void CollectMeshes(msModel * pModel, std::vector<cExportMesh> * pMeshes);
+   static void CollectMeshVertices(msMesh * pMesh, std::vector<sModelVertex> * pVertices);
+   static void CollectMeshNormals(msMesh * pMesh, std::vector<tVec3> * pNormals);
+   static void CollectModelMaterials(msModel * pModel, std::vector<sModelMaterial> * pMaterials);
+   static void CollectJoints(msModel * pModel, std::vector<cIntermediateJoint> * pTempJoints, std::vector<sModelJoint> * pModelJoints);
 
 private:
    msModel * m_pModel;

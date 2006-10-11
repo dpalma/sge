@@ -22,6 +22,67 @@
 
 #include "dbgalloc.h" // must be last header
 
+
+/////////////////////////////////////////////////////////////////////////////
+
+static void ParseAnimDescs(const char * pszString, std::vector<sModelAnimationDesc> * pAnimDescs)
+{
+   if (pszString != NULL && strlen(pszString) > 0)
+   {
+      cTokenizer<cStr> strTok;
+      if (strTok.Tokenize(pszString, _T("\n")) > 0)
+      {
+         std::vector<cStr>::iterator iter = strTok.m_tokens.begin(), end = strTok.m_tokens.end();
+         for (; iter != end; ++iter)
+         {
+            cStr & animString = *iter;
+
+            TrimLeadingSpace(&animString);
+            TrimTrailingSpace(&animString);
+
+            static const struct
+            {
+               eModelAnimationType type;
+               const char * pszType;
+            }
+            animTypes[] =
+            {
+               { kMAT_Walk, "walk" },
+               { kMAT_Run, "run" },
+               { kMAT_Death, "death" },
+               { kMAT_Attack, "attack" },
+               { kMAT_Damage, "damage" },
+               { kMAT_Idle, "idle" },
+            };
+
+            cTokenizer<cStr> strTok2;
+            if (strTok2.Tokenize(iter->c_str()) == 3)
+            {
+               const cStr & animType = strTok2.m_tokens[2];
+
+               for (int j = 0; j < _countof(animTypes); j++)
+               {
+                  if (animType.compare(animTypes[j].pszType) == 0)
+                  {
+                     sModelAnimationDesc animDesc;
+                     animDesc.type = animTypes[j].type;
+                     animDesc.start = _ttoi(strTok2.m_tokens[0].c_str());
+                     animDesc.end = _ttoi(strTok2.m_tokens[1].c_str());
+                     animDesc.fps = 0;
+                     if (animDesc.start > 0 || animDesc.end > 0)
+                     {
+                        pAnimDescs->push_back(animDesc);
+                     }
+                     break;
+                  }
+               }
+            }
+         }
+      }
+   }
+}
+
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cExportMesh
@@ -37,6 +98,17 @@ cExportMesh::cExportMesh(std::vector<sModelVertex>::const_iterator firstVertex,
  , m_indices(firstIndex, lastIndex)
 {
 }
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cExportAnimation
+//
+
+cExportAnimation::cExportAnimation()
+{
+}
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -67,152 +139,69 @@ cExporter::~cExporter()
 
 void cExporter::PreProcess()
 {
-
-   int nMeshes = msModel_GetMeshCount(m_pModel);
-
-   for (int i = 0; i < nMeshes; ++i)
-   {
-      msMesh * pMesh = msModel_GetMeshAt(m_pModel, i);
-      if (pMesh != NULL)
-      {
-         int iMaterial = msMesh_GetMaterialIndex(pMesh);
-
-         std::vector<sModelVertex> vertices;
-         CollectMeshVertices(pMesh, &vertices);
-
-         std::set<uint8> meshBones;
-         std::vector<sModelVertex>::iterator iter = vertices.begin();
-         for (; iter != vertices.end(); ++iter)
-         {
-            meshBones.insert((uint8)iter->bone);
-         }
-
-         if (meshBones.size() > 24)
-         {
-            WarnMsg1("Mesh uses %d bones\n", meshBones.size());
-         }
-
-         std::vector<tVec3> normals;
-         CollectMeshNormals(pMesh, &normals);
-
-         typedef std::map<std::pair<uint16, uint16>, uint16> tVertexMap;
-         tVertexMap vertexMap;
-
-         std::vector<sModelVertex> mappedVertices;
-         std::vector<uint16> mappedIndices;
-
-         int nTris = msMesh_GetTriangleCount(pMesh);
-
-         for (int j = 0; j < nTris; ++j)
-         {
-            msTriangle * pTri = msMesh_GetTriangleAt(pMesh, j);
-            if (pTri != NULL)
-            {
-               word vertexIndices[3], normalIndices[3];
-               msTriangle_GetVertexIndices(pTri, vertexIndices);
-               msTriangle_GetNormalIndices(pTri, normalIndices);
-
-               for (int k = 0; k < 3; ++k)
-               {
-                  std::pair<uint16, uint16> p = std::make_pair(vertexIndices[k], normalIndices[k]);
-
-                  tVertexMap::iterator f = vertexMap.find(p);
-                  if (f != vertexMap.end())
-                  {
-                     mappedIndices.push_back(f->second);
-                  }
-                  else
-                  {
-                     sModelVertex newVertex = vertices[vertexIndices[k]];
-                     newVertex.normal = normals[normalIndices[k]];
-
-                     uint16 newIndex = mappedVertices.size();
-                     mappedVertices.push_back(newVertex);
-
-                     mappedIndices.push_back(newIndex);
-
-                     vertexMap[p] = newIndex;
-                  }
-               }
-            }
-         }
-
-         // Mapped index array must be a multiple of three
-         Assert((mappedIndices.size() % 3) == 0);
-
-         PrimitiveGroup * pPrimGroups = NULL;
-         uint16 nPrimGroups = 0;
-         SetStitchStrips(true);
-         if (GenerateStrips(&mappedIndices[0], mappedIndices.size(), &pPrimGroups, &nPrimGroups, true))
-         {
-            // Should be only one strip since "stitch strips" was set to true
-            Assert(nPrimGroups == 1);
-
-            std::vector<uint16> strippedIndices(pPrimGroups->numIndices);
-            std::copy(&pPrimGroups->indices[0], &pPrimGroups->indices[pPrimGroups->numIndices], strippedIndices.begin());
-
-            //PrimitiveGroup * pPrimGroup = pPrimGroups;
-            //for (int j = 0; j < nPrimGroups; ++j, ++pPrimGroup)
-            //{
-            //}
-
-            m_meshes.push_back(cExportMesh(mappedVertices.begin(), mappedVertices.end(),
-               (int)pPrimGroups->type, strippedIndices.begin(), strippedIndices.end()));
-
-            delete [] pPrimGroups;
-         }
-         else
-         {
-            m_meshes.push_back(cExportMesh(mappedVertices.begin(), mappedVertices.end(),
-               (int)pPrimGroups->type, mappedIndices.begin(), mappedIndices.end()));
-         }
-
-         msMesh_Destroy(pMesh);
-      }
-   }
+   CollectMeshes(m_pModel, &m_meshes);
 
    CollectModelMaterials(m_pModel, &m_materials);
 
-   int nBones = msModel_GetBoneCount(m_pModel);
+   CollectJoints(m_pModel, &m_tempJoints, &m_modelJoints);
 
-   if (nBones > 0)
+   char szComment[1024];
+   memset(szComment, 0, sizeof(szComment));
+   msModel_GetComment(m_pModel, szComment, _countof(szComment));
+
+   std::vector<sModelAnimationDesc> animDescs;
+   ParseAnimDescs(szComment, &animDescs);
+
+   int nTotalFrames = msModel_GetTotalFrames(m_pModel);
+
+   std::vector<sModelAnimationDesc>::const_iterator iter = animDescs.begin(), end = animDescs.end();
+   for (; iter != end; ++iter)
    {
-      m_tempJoints.resize(nBones);
+      const sModelAnimationDesc & animDesc = *iter;
 
-      std::map<cStr, int> jointNameMap; // map name to index
+      std::vector< std::vector<sModelKeyFrame> > animKeyFrames(m_tempJoints.size());
 
-      for (int i = 0; i < nBones; ++i)
+      for (uint i = 0; i < m_tempJoints.size(); ++i)
       {
-         msBone * pBone = msModel_GetBoneAt(m_pModel, i);
+         const std::vector<msRotationKey> & rotKeys = m_tempJoints[i].GetRotationKeys();
+         const std::vector<msPositionKey> & posKeys = m_tempJoints[i].GetPositionKeys();
 
-         if (pBone == NULL)
+         if (rotKeys.size() == posKeys.size())
          {
-            continue;
-         }
+            std::vector<sModelKeyFrame> jointAnimKeyFrames;
 
-         m_tempJoints[i] = cIntermediateJoint(pBone);
-
-         jointNameMap.insert(std::make_pair(pBone->szName, i));
-      }
-
-      std::vector<cIntermediateJoint>::iterator iter = m_tempJoints.begin();
-      for (; iter != m_tempJoints.end(); ++iter)
-      {
-         sModelJoint modelJoint;
-         modelJoint.parentIndex = -1;
-         modelJoint.localTranslation = tVec3(iter->GetPosition());
-         modelJoint.localRotation = QuatFromEulerAngles(tVec3(iter->GetRotation()));
-
-         if (strlen(iter->GetParentName()) > 0)
-         {
-            std::map<cStr, int>::iterator found = jointNameMap.find(iter->GetParentName());
-            if (found != jointNameMap.end())
+            int iStart = -1, iEnd = -1;
+            for (uint j = 0; j < rotKeys.size(); ++j)
             {
-               modelJoint.parentIndex = found->second;
+               const msRotationKey & rotKey = rotKeys[j];
+               const msPositionKey & posKey = posKeys[j];
+               uint rotFrame = FloatToInt(rotKey.fTime);
+               uint posFrame = FloatToInt(posKey.fTime);
+               Assert(rotFrame == posFrame);
+               if (rotFrame == animDesc.start)
+               {
+                  iStart = j;
+               }
+               if (rotFrame >= animDesc.start)
+               {
+                  sModelKeyFrame keyFrame;
+                  keyFrame.time = rotKey.fTime;
+                  keyFrame.translation = tVec3(posKey.Position);
+                  keyFrame.rotation = QuatFromEulerAngles(tVec3(rotKey.Rotation));
+                  jointAnimKeyFrames.push_back(keyFrame);
+               }
+               if (rotFrame >= animDesc.end)
+               {
+                  iEnd = j;
+                  break;
+               }
             }
-         }
 
-         m_modelJoints.push_back(modelJoint);
+            Assert(jointAnimKeyFrames.size() == (iEnd - iStart + 1));
+
+            animKeyFrames[i].resize(jointAnimKeyFrames.size());
+            std::copy(jointAnimKeyFrames.begin(), jointAnimKeyFrames.end(), animKeyFrames[i].begin());
+         }
       }
    }
 
@@ -587,6 +576,112 @@ tResult cExporter::ExportAnimation(IWriter * pWriter)
    return S_OK;
 }
 
+void cExporter::CollectMeshes(msModel * pModel, std::vector<cExportMesh> * pMeshes)
+{
+   int nMeshes = msModel_GetMeshCount(pModel);
+
+   for (int i = 0; i < nMeshes; ++i)
+   {
+      msMesh * pMesh = msModel_GetMeshAt(pModel, i);
+      if (pMesh != NULL)
+      {
+         int iMaterial = msMesh_GetMaterialIndex(pMesh);
+
+         std::vector<sModelVertex> vertices;
+         CollectMeshVertices(pMesh, &vertices);
+
+         std::set<uint8> meshBones;
+         std::vector<sModelVertex>::iterator iter = vertices.begin();
+         for (; iter != vertices.end(); ++iter)
+         {
+            meshBones.insert((uint8)iter->bone);
+         }
+
+         if (meshBones.size() > 24)
+         {
+            WarnMsg1("Mesh uses %d bones\n", meshBones.size());
+         }
+
+         std::vector<tVec3> normals;
+         CollectMeshNormals(pMesh, &normals);
+
+         typedef std::map<std::pair<uint16, uint16>, uint16> tVertexMap;
+         tVertexMap vertexMap;
+
+         std::vector<sModelVertex> mappedVertices;
+         std::vector<uint16> mappedIndices;
+
+         int nTris = msMesh_GetTriangleCount(pMesh);
+
+         for (int j = 0; j < nTris; ++j)
+         {
+            msTriangle * pTri = msMesh_GetTriangleAt(pMesh, j);
+            if (pTri != NULL)
+            {
+               word vertexIndices[3], normalIndices[3];
+               msTriangle_GetVertexIndices(pTri, vertexIndices);
+               msTriangle_GetNormalIndices(pTri, normalIndices);
+
+               for (int k = 0; k < 3; ++k)
+               {
+                  std::pair<uint16, uint16> p = std::make_pair(vertexIndices[k], normalIndices[k]);
+
+                  tVertexMap::iterator f = vertexMap.find(p);
+                  if (f != vertexMap.end())
+                  {
+                     mappedIndices.push_back(f->second);
+                  }
+                  else
+                  {
+                     sModelVertex newVertex = vertices[vertexIndices[k]];
+                     newVertex.normal = normals[normalIndices[k]];
+
+                     uint16 newIndex = mappedVertices.size();
+                     mappedVertices.push_back(newVertex);
+
+                     mappedIndices.push_back(newIndex);
+
+                     vertexMap[p] = newIndex;
+                  }
+               }
+            }
+         }
+
+         // Mapped index array must be a multiple of three
+         Assert((mappedIndices.size() % 3) == 0);
+
+         PrimitiveGroup * pPrimGroups = NULL;
+         uint16 nPrimGroups = 0;
+         SetStitchStrips(true);
+         if (GenerateStrips(&mappedIndices[0], mappedIndices.size(), &pPrimGroups, &nPrimGroups, true))
+         {
+            // Should be only one strip since "stitch strips" was set to true
+            Assert(nPrimGroups == 1);
+
+            std::vector<uint16> strippedIndices(pPrimGroups->numIndices);
+            std::copy(&pPrimGroups->indices[0], &pPrimGroups->indices[pPrimGroups->numIndices], strippedIndices.begin());
+
+            //PrimitiveGroup * pPrimGroup = pPrimGroups;
+            //for (int j = 0; j < nPrimGroups; ++j, ++pPrimGroup)
+            //{
+            //}
+
+            pMeshes->push_back(cExportMesh(mappedVertices.begin(), mappedVertices.end(),
+               (int)pPrimGroups->type, strippedIndices.begin(), strippedIndices.end()));
+
+            delete [] pPrimGroups;
+         }
+         else
+         {
+            pMeshes->push_back(cExportMesh(mappedVertices.begin(), mappedVertices.end(),
+               (int)pPrimGroups->type, mappedIndices.begin(), mappedIndices.end()));
+         }
+
+         msMesh_Destroy(pMesh);
+      }
+   }
+}
+
 void cExporter::CollectMeshVertices(msMesh * pMesh, std::vector<sModelVertex> * pVertices)
 {
    int nVertices = msMesh_GetVertexCount(pMesh);
@@ -651,6 +746,52 @@ void cExporter::CollectModelMaterials(msModel * pModel, std::vector<sModelMateri
          cFileSpec(szTexture).GetFileNameNoExt(&texture);
          strncpy(m.szTexture, texture.c_str(), _countof(m.szTexture));
          m.szTexture[_countof(m.szTexture) - 1] = 0;
+      }
+   }
+}
+
+void cExporter::CollectJoints(msModel * pModel, std::vector<cIntermediateJoint> * pTempJoints, std::vector<sModelJoint> * pModelJoints)
+{
+   int nBones = msModel_GetBoneCount(pModel);
+
+   if (nBones > 0)
+   {
+      pTempJoints->resize(nBones);
+
+      std::map<cStr, int> jointNameMap; // map name to index
+
+      for (int i = 0; i < nBones; ++i)
+      {
+         msBone * pBone = msModel_GetBoneAt(pModel, i);
+
+         if (pBone == NULL)
+         {
+            continue;
+         }
+
+         (*pTempJoints)[i] = cIntermediateJoint(pBone);
+
+         jointNameMap.insert(std::make_pair(pBone->szName, i));
+      }
+
+      std::vector<cIntermediateJoint>::iterator iter = pTempJoints->begin();
+      for (; iter != pTempJoints->end(); ++iter)
+      {
+         sModelJoint modelJoint;
+         modelJoint.parentIndex = -1;
+         modelJoint.localTranslation = tVec3(iter->GetPosition());
+         modelJoint.localRotation = QuatFromEulerAngles(tVec3(iter->GetRotation()));
+
+         if (strlen(iter->GetParentName()) > 0)
+         {
+            std::map<cStr, int>::iterator found = jointNameMap.find(iter->GetParentName());
+            if (found != jointNameMap.end())
+            {
+               modelJoint.parentIndex = found->second;
+            }
+         }
+
+         pModelJoints->push_back(modelJoint);
       }
    }
 }
