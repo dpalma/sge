@@ -48,6 +48,13 @@ public:
    std::vector<uint16> m_indices;
 };
 
+template <>
+class cReadWriteOps<cExportMesh>
+{
+public:
+   static tResult Write(IWriter * pWriter, const cExportMesh & exportMesh);
+};
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -66,6 +73,13 @@ public:
 //private:
    eModelAnimationType m_type;
    std::vector<tModelKeyFrameVector> m_keyFrameVectors;
+};
+
+template <>
+class cReadWriteOps<cExportAnimation>
+{
+public:
+   static tResult Write(IWriter * pWriter, const cExportAnimation & exportAnim);
 };
 
 
@@ -95,12 +109,7 @@ public:
    std::vector<cExportAnimation>::const_iterator EndAnimSeqs() const { return m_animSeqs.end(); }
 
    tResult ExportMesh(const tChar * pszFileName);
-
    tResult ExportMesh(IWriter * pWriter);
-
-   tResult ExportSkeleton(IWriter * pWriter);
-
-   tResult ExportAnimation(IWriter * pWriter);
 
 private:
    static void CollectMeshes(msModel * pModel, std::vector<cExportMesh> * pMeshes);

@@ -18,7 +18,6 @@
 #include "sys.h"
 #include "terrainapi.h"
 
-#include "colortem.h"
 #include "configapi.h"
 #include "filespec.h"
 #include "filepath.h"

@@ -10,6 +10,7 @@
 #include "globalobj.h"
 #include "resourceapi.h"
 #include "readwriteapi.h"
+#include "readwriteutils.h"
 
 #include "dbgalloc.h" // must be last header
 
@@ -50,6 +51,12 @@ void * ModelSgemLoad(IReader * pReader)
       return NULL;
    }
 
+   if (version != 1)
+   {
+      ErrorMsg1("SGEM version %d not supported\n", version);
+      return NULL;
+   }
+
    //////////////////////////////
 
    uint nMeshes = 0;
@@ -65,15 +72,8 @@ void * ModelSgemLoad(IReader * pReader)
 
    for (uint i = 0; i < nMeshes; ++i)
    {
-      uint nVertices = 0;
-      if (pReader->Read(&nVertices, sizeof(nVertices)) != S_OK
-         || nVertices == 0)
-      {
-         return NULL;
-      }
-
-      std::vector<sModelVertex> verts(nVertices);
-      if (pReader->Read(&verts[0], nVertices * sizeof(sModelVertex)) != S_OK)
+      std::vector<sModelVertex> verts;
+      if (pReader->Read(&verts) != S_OK)
       {
          return NULL;
       }
@@ -87,14 +87,8 @@ void * ModelSgemLoad(IReader * pReader)
          return NULL;
       }
 
-      int nIndices = 0;
-      if (pReader->Read(&nIndices) != S_OK)
-      {
-         return NULL;
-      }
-
-      std::vector<uint16> indices(nIndices);
-      if (pReader->Read(&indices[0], nIndices * sizeof(uint16)) != S_OK)
+      std::vector<uint16> indices;
+      if (pReader->Read(&indices) != S_OK)
       {
          return NULL;
       }
@@ -104,54 +98,77 @@ void * ModelSgemLoad(IReader * pReader)
 
    //////////////////////////////
 
-   uint nMaterials = 0;
-   if (pReader->Read(&nMaterials, sizeof(nMaterials)) != S_OK
-      || nMaterials == 0)
+   std::vector<sModelMaterial> materials;
+   if (pReader->Read(&materials) != S_OK)
    {
       return NULL;
    }
 
-   LocalMsg1("%d Materials\n", nMaterials);
+   LocalMsg1("%d Materials\n", materials.size());
 
-   std::vector<sModelMaterial> materials(nMaterials);
+   //////////////////////////////
 
-   if (nMaterials > 0)
+   std::vector<sModelJoint> joints;
+   if (pReader->Read(&joints) != S_OK)
    {
-      for (uint i = 0; i < nMaterials; i++)
-      {
-         if (pReader->Read(&materials[i]) != S_OK)
-         {
-            return NULL;
-         }
-      }
+      return NULL;
+   }
+
+   LocalMsg1("%d Joints\n", joints.size());
+
+   cAutoIPtr<IModelSkeleton> pSkeleton;
+   if (ModelSkeletonCreate(&joints[0], joints.size(), &pSkeleton) == S_OK)
+   {
    }
 
    //////////////////////////////
 
-   uint nJoints = 0;
-   if (pReader->Read(&nJoints, sizeof(nJoints)) != S_OK
-      || nJoints == 0)
+   uint nAnims = 0;
+   if (pReader->Read(&nAnims, sizeof(nAnims)) != S_OK
+      || nAnims == 0)
    {
       return NULL;
    }
 
-   LocalMsg1("%d Joints\n", nJoints);
+   LocalMsg1("%d Anims\n", nAnims);
 
-   std::vector<sModelJoint> joints(nJoints);
-
-   if (nJoints > 0)
+   for (uint i = 0; i < nAnims; ++i)
    {
-      for (uint i = 0; i < nJoints; i++)
+      static const eModelAnimationType animTypes[] =
       {
-         if (pReader->Read(&joints[i]) != S_OK)
-         {
-            return NULL;
-         }
+         kMAT_Walk,
+         kMAT_Run,
+         kMAT_Death,
+         kMAT_Attack,
+         kMAT_Damage,
+         kMAT_Idle,
+      };
+
+      int intAnimType = -1;
+      if (pReader->Read(&intAnimType) != S_OK
+         || intAnimType < kMAT_Walk || intAnimType > kMAT_Idle)
+      {
+         return NULL;
       }
 
-      cAutoIPtr<IModelSkeleton> pSkeleton;
-      if (ModelSkeletonCreate(&joints[0], nJoints, &pSkeleton) == S_OK)
+      eModelAnimationType animType = animTypes[intAnimType];
+
+      std::vector< std::vector<sModelKeyFrame> > animKeyFrameVectors;
+      if (pReader->Read(&animKeyFrameVectors) != S_OK)
       {
+         return NULL;
+      }
+
+      std::vector< std::vector<sModelKeyFrame> >::const_iterator iter = animKeyFrameVectors.begin();
+      std::vector< std::vector<sModelKeyFrame> >::const_iterator end = animKeyFrameVectors.end();
+      for (; iter != end; ++iter)
+      {
+         const std::vector<sModelKeyFrame> & keyFrames = *iter;
+
+         cAutoIPtr<IModelKeyFrameInterpolator> pInterp;
+         if (ModelKeyFrameInterpolatorCreate(&keyFrames[0], keyFrames.size(), &pInterp) == S_OK)
+         {
+         }
       }
    }
 

@@ -523,6 +523,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\MilkShapeExporter\ExportPreviewDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\MilkShapeExporter\IntermediateJoint.cpp"
 				>
 			</File>

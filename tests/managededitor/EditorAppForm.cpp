@@ -19,7 +19,6 @@
 #include "terrainapi.h"
 
 // Tech Includes
-#include "colortem.h"
 #include "globalobj.h"
 
 #include <GL/glew.h>

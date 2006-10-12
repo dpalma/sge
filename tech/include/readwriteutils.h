@@ -44,6 +44,57 @@ public:
 };
 
 ////////////////////////////////////////////////////////////////////////////////
+// Read and write STL vectors
+
+template <typename T>
+class cReadWriteOps< std::vector<T> >
+{
+public:
+   static tResult Read(IReader * pReader, std::vector<T> * pValues);
+   static tResult Write(IWriter * pWriter, const std::vector<T> & values);
+};
+
+template <typename T>
+tResult cReadWriteOps< std::vector<T> >::Read(IReader * pReader, std::vector<T> * pValues)
+{
+   if (pReader == NULL || pValues == NULL)
+   {
+      return E_POINTER;
+   }
+   uint nValues = 0;
+   tResult result = pReader->Read(&nValues);
+   if ((nValues > 0) && (result == S_OK))
+   {
+      pValues->resize(nValues);
+      for (uint i = 0; (i < nValues) && (result == S_OK); ++i)
+      {
+         result = pReader->Read(&((*pValues)[i]));
+      }
+   }
+   return result;
+}
+
+template <typename T>
+tResult cReadWriteOps< std::vector<T> >::Write(IWriter * pWriter, const std::vector<T> & values)
+{
+   if (pWriter == NULL)
+   {
+      return E_POINTER;
+   }
+   tResult result = pWriter->Write(static_cast<uint>(values.size()));
+   if (result == S_OK)
+   {
+      std::vector<T>::const_iterator iter = values.begin(), end = values.end();
+      for (; (iter != end) && (result == S_OK); ++iter)
+      {
+         result = pWriter->Write(*iter);
+      }
+   }
+   return result;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cAutoBuffer
 //

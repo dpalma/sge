@@ -291,6 +291,11 @@ void cEntityModelRenderer::Render()
    }
    else
    {
+      if (m_pModel == NULL)
+      {
+         // TODO: Maybe use a generated stand-in model to indicate loading failure
+         return;
+      }
       pRenderer->SetVertexFormat(g_modelVert, _countof(g_modelVert));
       const tModelVertices & verts = m_pModel->GetVertices();
       pRenderer->SubmitVertices(const_cast<sModelVertex *>(&verts[0]), verts.size());
