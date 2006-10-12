@@ -38,6 +38,9 @@ template class ENGINE_API std::vector< cMatrix4<float> >;
 
 
 ////////////////////////////////////////////////////////////////////////////////
+//
+// ENUM: eModelAnimationType
+//
 
 enum eModelAnimationType
 {

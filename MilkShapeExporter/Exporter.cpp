@@ -105,7 +105,11 @@ cExportMesh::cExportMesh(std::vector<sModelVertex>::const_iterator firstVertex,
 // CLASS: cExportAnimation
 //
 
-cExportAnimation::cExportAnimation()
+cExportAnimation::cExportAnimation(eModelAnimationType type,
+                                   std::vector<tModelKeyFrameVector>::const_iterator firstKFV,
+                                   std::vector<tModelKeyFrameVector>::const_iterator lastKFV)
+ : m_type(type)
+ , m_keyFrameVectors(firstKFV, lastKFV)
 {
 }
 
@@ -159,7 +163,7 @@ void cExporter::PreProcess()
    {
       const sModelAnimationDesc & animDesc = *iter;
 
-      std::vector< std::vector<sModelKeyFrame> > animKeyFrames(m_tempJoints.size());
+      std::vector<tModelKeyFrameVector> animKeyFrames(m_tempJoints.size());
 
       for (uint i = 0; i < m_tempJoints.size(); ++i)
       {
@@ -203,6 +207,8 @@ void cExporter::PreProcess()
             std::copy(jointAnimKeyFrames.begin(), jointAnimKeyFrames.end(), animKeyFrames[i].begin());
          }
       }
+
+      m_animSeqs.push_back(cExportAnimation(animDesc.type, animKeyFrames.begin(), animKeyFrames.end()));
    }
 
 }

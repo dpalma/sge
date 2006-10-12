@@ -76,11 +76,16 @@ int_ptr CALLBACK ExportPreviewDlgProc(HWND hWndDlg, UINT msg, WPARAM wParam, LPA
             }
 
             {
+               HTREEITEM hMaterialsItem = TVI_ROOT;
                std::vector<sModelMaterial>::const_iterator iter = pExporter->BeginMaterials(), end = pExporter->EndMaterials();
                for (int index = 0; iter != end; ++iter, ++index)
                {
                   cStr temp;
-                  HTREEITEM hItem = InsertTreeItem(hWndTree, TVI_ROOT, Sprintf(&temp, "Material %d", index).c_str());
+                  if (index == 0)
+                  {
+                     hMaterialsItem = InsertTreeItem(hWndTree, TVI_ROOT, "Materials");
+                  }
+                  HTREEITEM hItem = InsertTreeItem(hWndTree, hMaterialsItem, Sprintf(&temp, "Material %d", index).c_str());
                   if (hItem != NULL)
                   {
                      InsertTreeItem(hWndTree, hItem, Sprintf(&temp, "Diffuse: %f, %f, %f, %f", iter->diffuse[0], iter->diffuse[1], iter->diffuse[2], iter->diffuse[3]).c_str());
@@ -94,16 +99,59 @@ int_ptr CALLBACK ExportPreviewDlgProc(HWND hWndDlg, UINT msg, WPARAM wParam, LPA
             }
 
             {
+               HTREEITEM hSkeletonItem = TVI_ROOT;
                std::vector<sModelJoint>::const_iterator iter = pExporter->BeginModelJoints(), end = pExporter->EndModelJoints();
                for (int index = 0; iter != end; ++iter, ++index)
                {
                   cStr temp;
-                  HTREEITEM hItem = InsertTreeItem(hWndTree, TVI_ROOT, Sprintf(&temp, "Joint %d", index).c_str());
+                  if (index == 0)
+                  {
+                     hSkeletonItem = InsertTreeItem(hWndTree, TVI_ROOT, "Skeleton");
+                  }
+                  HTREEITEM hItem = InsertTreeItem(hWndTree, hSkeletonItem, Sprintf(&temp, "Joint %d", index).c_str());
                   if (hItem != NULL)
                   {
                      InsertTreeItem(hWndTree, hItem, Sprintf(&temp, "Parent: %d", iter->parentIndex).c_str());
                      InsertTreeItem(hWndTree, hItem, Sprintf(&temp, "Local Translation: %f, %f, %f", iter->localTranslation.x, iter->localTranslation.y, iter->localTranslation.z).c_str());
                      InsertTreeItem(hWndTree, hItem, Sprintf(&temp, "Local Rotation: %f, %f, %f, %f", iter->localRotation.x, iter->localRotation.y, iter->localRotation.z, iter->localRotation.w).c_str());
+                  }
+               }
+            }
+
+            static const char * const animationTypes[] =
+            {
+               "Walk",
+               "Run",
+               "Death",
+               "Attack",
+               "Damage",
+               "Idle",
+            };
+
+            {
+               std::vector<cExportAnimation>::const_iterator iter = pExporter->BeginAnimSeqs(), end = pExporter->EndAnimSeqs();
+               for (int index = 0; iter != end; ++iter, ++index)
+               {
+                  cStr temp;
+                  HTREEITEM hItem = InsertTreeItem(hWndTree, TVI_ROOT, Sprintf(&temp, "Animation Sequence %d (%s)", index, animationTypes[iter->GetAnimationType()]).c_str());
+                  if (hItem != NULL)
+                  {
+                     std::vector<tModelKeyFrameVector>::const_iterator iter2 = iter->m_keyFrameVectors.begin();
+                     std::vector<tModelKeyFrameVector>::const_iterator end2 = iter->m_keyFrameVectors.end();
+                     for (int index2 = 0; iter2 != end2; ++iter2, ++index2)
+                     {
+                        HTREEITEM hItem2 = InsertTreeItem(hWndTree, hItem, Sprintf(&temp, "Joint %d KeyFrames (size = %d)", index2, iter2->size()).c_str());
+                        std::vector<sModelKeyFrame>::const_iterator iter3 = iter2->begin();
+                        std::vector<sModelKeyFrame>::const_iterator end3 = iter2->end();
+                        for (; iter3 != end3; ++iter3)
+                        {
+                           const sModelKeyFrame & kf = *iter3;
+                           InsertTreeItem(hWndTree, hItem2, Sprintf(&temp, "Time: %f, Translation <%f, %f, %f>, Rotation (%f, %f, %f, %f)",
+                              kf.time,
+                              kf.translation.x, kf.translation.y, kf.translation.z,
+                              kf.rotation.x, kf.rotation.y, kf.rotation.z, kf.rotation.w).c_str());
+                        }
+                     }
                   }
                }
             }
@@ -121,6 +169,12 @@ int_ptr CALLBACK ExportPreviewDlgProc(HWND hWndDlg, UINT msg, WPARAM wParam, LPA
                EndDialog(hWndDlg, LOWORD(wParam));
             }
          }
+         break;
+      }
+
+      case WM_SIZE:
+      {
+         // TODO
          break;
       }
    }

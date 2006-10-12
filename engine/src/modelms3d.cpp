@@ -28,17 +28,15 @@
 
 LOG_DEFINE_CHANNEL(ModelMs3d);
 
-#if 0
-#define LocalMsg(ind,msg)           DebugMsgEx2(ModelMs3d, "%*s" msg, (ind),"")
-#define LocalMsg1(ind,msg,a)        DebugMsgEx3(ModelMs3d, "%*s" msg, (ind),"",(a))
-#define LocalMsg2(ind,msg,a,b)      DebugMsgEx4(ModelMs3d, "%*s" msg, (ind),"",(a),(b))
-#define LocalMsg3(ind,msg,a,b,c)    DebugMsgEx5(ModelMs3d, "%*s" msg, (ind),"",(a),(b),(c))
-#else
-#define LocalMsg(ind,msg)           DebugMsgEx(ModelMs3d,msg)
-#define LocalMsg1(ind,msg,a)        DebugMsgEx1(ModelMs3d,msg,(a))
-#define LocalMsg2(ind,msg,a,b)      DebugMsgEx2(ModelMs3d,msg,(a),(b))
-#define LocalMsg3(ind,msg,a,b,c)    DebugMsgEx3(ModelMs3d,msg,(a),(b),(c))
-#endif
+#define LocalMsg(msg)                  DebugMsgEx(ModelMs3d,msg)
+#define LocalMsg1(msg,a)               DebugMsgEx1(ModelMs3d,msg,(a))
+#define LocalMsg2(msg,a,b)             DebugMsgEx2(ModelMs3d,msg,(a),(b))
+#define LocalMsg3(msg,a,b,c)           DebugMsgEx3(ModelMs3d,msg,(a),(b),(c))
+
+#define LocalMsgIf(cond,msg)           DebugMsgIfEx(ModelMs3d,(cond),msg)
+#define LocalMsgIf1(cond,msg,a)        DebugMsgIfEx1(ModelMs3d,(cond),msg,(a))
+#define LocalMsgIf2(cond,msg,a,b)      DebugMsgIfEx2(ModelMs3d,(cond),msg,(a),(b))
+#define LocalMsgIf3(cond,msg,a,b,c)    DebugMsgIfEx3(ModelMs3d,(cond),msg,(a),(b),(c))
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -145,12 +143,7 @@ void * ModelMs3dLoad(IReader * pReader)
       return NULL;
    }
 
-   static const int kIndent = 3;
-   uint indent = 0;
-
-   LocalMsg(indent, "Loading MS3D file...\n");
-
-   indent += kIndent;
+   LocalMsg("Loading MS3D file...\n");
 
    //////////////////////////////
    // Read the header
@@ -174,7 +167,7 @@ void * ModelMs3dLoad(IReader * pReader)
       return NULL;
    }
 
-   LocalMsg1(indent, "%d Vertices\n", nVertices);
+   LocalMsg1("%d Vertices\n", nVertices);
 
    std::vector<ms3d_vertex_t> ms3dVerts(nVertices);
    if (pReader->Read(&ms3dVerts[0], nVertices * sizeof(ms3d_vertex_t)) != S_OK)
@@ -192,7 +185,7 @@ void * ModelMs3dLoad(IReader * pReader)
       return NULL;
    }
 
-   LocalMsg1(indent, "%d Triangles\n", nTriangles);
+   LocalMsg1("%d Triangles\n", nTriangles);
 
    std::vector<ms3d_triangle_t> tris(nTriangles);
    if (pReader->Read(&tris[0], nTriangles * sizeof(ms3d_triangle_t)) != S_OK)
@@ -301,7 +294,7 @@ void * ModelMs3dLoad(IReader * pReader)
       return NULL;
    }
 
-   LocalMsg1(indent, "%d Groups\n", nGroups);
+   LocalMsg1("%d Groups\n", nGroups);
 
    uint i;
    cMs3dGroup groups[MAX_GROUPS];
@@ -346,7 +339,7 @@ void * ModelMs3dLoad(IReader * pReader)
       return NULL;
    }
 
-   LocalMsg1(indent, "%d Materials\n", nMaterials);
+   LocalMsg1("%d Materials\n", nMaterials);
 
    std::vector<cModelMaterial> materials(nMaterials);
 
@@ -382,8 +375,8 @@ void * ModelMs3dLoad(IReader * pReader)
       return NULL;
    }
 
-   LocalMsg1(indent, "%d Animation Frames\n", nTotalFrames);
-   LocalMsg1(indent, "Animation FPS = %f\n", animationFPS);
+   LocalMsg1("%d Animation Frames\n", nTotalFrames);
+   LocalMsg1("Animation FPS = %f\n", animationFPS);
 
    //////////////////////////////
    // Read the joints
@@ -394,15 +387,13 @@ void * ModelMs3dLoad(IReader * pReader)
       return NULL;
    }
 
-   LocalMsg1(indent, "%d Joints\n", nJoints);
+   LocalMsg1("%d Joints\n", nJoints);
 
    std::vector<sModelJoint> joints(nJoints);
    std::vector< std::vector<sModelKeyFrame> > jointKeyFrames(nJoints);
 
    if (nJoints > 0)
    {
-      indent += kIndent;
-
       std::vector<cMs3dJoint> ms3dJoints(nJoints);
 
       std::map<cStr, int> jointNameMap;
@@ -421,7 +412,7 @@ void * ModelMs3dLoad(IReader * pReader)
       std::vector<cMs3dJoint>::iterator end = ms3dJoints.end();
       for (i = 0; iter != end; iter++, i++)
       {
-         LocalMsg1(indent, "Joint %d\n", i);
+         LocalMsg1("Joint %d\n", i);
 
          int parentIndex = -1;
 
@@ -439,8 +430,6 @@ void * ModelMs3dLoad(IReader * pReader)
 
          std::vector<sModelKeyFrame> keyFrames(iter->GetKeyFramesRot().size());
 
-         indent += kIndent;
-
          const std::vector<ms3d_keyframe_rot_t> & keyFramesRot = iter->GetKeyFramesRot();
          const std::vector<ms3d_keyframe_pos_t> & keyFramesTrans = iter->GetKeyFramesTrans();
          for (uint j = 0; j < keyFrames.size(); j++)
@@ -456,10 +445,8 @@ void * ModelMs3dLoad(IReader * pReader)
             keyFrames[j].rotation = QuatFromEulerAngles(tVec3(keyFramesRot[j].rotation));
 
             int frame = FloatToInt(static_cast<float>(keyFrames[j].time) * animationFPS);
-            LocalMsg3(indent, "Key frame %d at %.3f is #%d\n", j, keyFrames[j].time, frame);
+            LocalMsg3("Key frame %d at %.3f is #%d\n", j, keyFrames[j].time, frame);
          }
-
-         indent -= kIndent;
 
          jointKeyFrames[i].resize(keyFrames.size());
          std::copy(keyFrames.begin(), keyFrames.end(), jointKeyFrames[i].begin());
@@ -468,8 +455,6 @@ void * ModelMs3dLoad(IReader * pReader)
          joints[i].localRotation = QuatFromEulerAngles(tVec3(iter->GetRotation()));
          joints[i].parentIndex = parentIndex;
       }
-
-      indent -= kIndent;
    }
 
    {
@@ -604,21 +589,32 @@ void * ModelMs3dLoad(IReader * pReader)
 
    if (!animDescs.empty())
    {
-      LocalMsg1(indent, "%d Animation Sequences\n", animDescs.size());
-      indent += kIndent;
+      LocalMsg1("%d Animation Sequences\n", animDescs.size());
 
       std::vector<sModelAnimationDesc>::const_iterator iter, end;
       for (iter = animDescs.begin(), end = animDescs.end(); iter != end; iter++)
       {
          const sModelAnimationDesc & animDesc = *iter;
 
-         LocalMsg3(indent, "%d: %d, %d\n", animDesc.type, animDesc.start, animDesc.end);
+         static const char * const animTypes[] =
+         {
+            "Walk",
+            "Run",
+            "Death",
+            "Attack",
+            "Damage",
+            "Idle",
+         };
+
+         LocalMsg3("%s: %d, %d\n", animTypes[animDesc.type], animDesc.start, animDesc.end);
 
          bool bError = false;
          std::vector<IModelKeyFrameInterpolator*> interpolators;
          for (uint i = 0; i < jointKeyFrames.size(); i++)
          {
             const std::vector<sModelKeyFrame> & keyFrames = jointKeyFrames[i];
+
+            LocalMsg2("Joint %d KeyFrames (size = %d)\n", i, keyFrames.size());
 
             int iStart = -1, iEnd = -1;
             std::vector<sModelKeyFrame>::const_iterator kfIter = keyFrames.begin();
@@ -629,12 +625,20 @@ void * ModelMs3dLoad(IReader * pReader)
                {
                   iStart = iKeyFrame;
                }
+               if (frame >= animDesc.start && LOG_IS_CHANNEL_ENABLED(ModelMs3d))
+               {
+                  LocalMsg1("Time: %f, ", kfIter->time);
+                  techlog.Print(kDebug, "Translation <%f, %f, %f>, ", kfIter->translation.x, kfIter->translation.y, kfIter->translation.z);
+                  techlog.Print(kDebug, "Rotation (%f, %f, %f, %f)\n", kfIter->rotation.x, kfIter->rotation.y, kfIter->rotation.z, kfIter->rotation.w);
+               }
                if (frame >= animDesc.end)
                {
                   iEnd = iKeyFrame;
                   break;
                }
             }
+
+            LocalMsg2("%d KeyFrames for joint %d\n", iEnd - iStart + 1, i);
 
             cAutoIPtr<IModelKeyFrameInterpolator> pInterp;
 
@@ -659,8 +663,6 @@ void * ModelMs3dLoad(IReader * pReader)
 
          std::for_each(interpolators.begin(), interpolators.end(), CTInterfaceMethod(&IUnknown::Release));
       }
-
-      indent -= kIndent;
    }
 
    //////////////////////////////

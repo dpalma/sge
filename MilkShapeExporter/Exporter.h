@@ -21,9 +21,12 @@
 
 F_DECLARE_INTERFACE(IWriter);
 
+enum eModelAnimationType;
+
 typedef struct msModel msModel;
 typedef struct msMesh msMesh;
 
+typedef std::vector<sModelKeyFrame> tModelKeyFrameVector;
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -54,7 +57,15 @@ public:
 class cExportAnimation
 {
 public:
-   cExportAnimation();
+   cExportAnimation(eModelAnimationType type,
+      std::vector<tModelKeyFrameVector>::const_iterator firstKFV,
+      std::vector<tModelKeyFrameVector>::const_iterator lastKFV);
+
+   eModelAnimationType GetAnimationType() const { return m_type; }
+
+//private:
+   eModelAnimationType m_type;
+   std::vector<tModelKeyFrameVector> m_keyFrameVectors;
 };
 
 
@@ -80,6 +91,9 @@ public:
    std::vector<sModelJoint>::const_iterator BeginModelJoints() const { return m_modelJoints.begin(); }
    std::vector<sModelJoint>::const_iterator EndModelJoints() const { return m_modelJoints.end(); }
 
+   std::vector<cExportAnimation>::const_iterator BeginAnimSeqs() const { return m_animSeqs.begin(); }
+   std::vector<cExportAnimation>::const_iterator EndAnimSeqs() const { return m_animSeqs.end(); }
+
    tResult ExportMesh(const tChar * pszFileName);
 
    tResult ExportMesh(IWriter * pWriter);
@@ -103,6 +117,7 @@ private:
    std::vector<sModelMaterial> m_materials;
    std::vector<cIntermediateJoint> m_tempJoints;
    std::vector<sModelJoint> m_modelJoints;
+   std::vector<cExportAnimation> m_animSeqs;
 };
 
 /////////////////////////////////////////////////////////////////////////////
