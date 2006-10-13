@@ -5,7 +5,6 @@
 
 #include "msPlugInImpl.h"
 #include "Exporter.h"
-#include "ExportPreviewDlg.h"
 #include "resource.h"
 
 #include "comtools.h"
@@ -15,6 +14,8 @@
 #include <windows.h>
 
 #include "dbgalloc.h" // must be last header
+
+extern bool ShowExportPreviewDlg(cExporter * pExporter);
 
 /////////////////////////////////////////////////////////////////////////////
 

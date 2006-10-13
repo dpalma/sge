@@ -14,6 +14,19 @@
 #include "techassert.h"
 #include "techlog.h"
 
+#define QI_TEMPLATE_METHOD_FOR_ATL
+#include "combase.h"
+
+/////////////////////////////////////////////////////////////////////////////
+
+#define _WTL_NO_AUTOMATIC_NAMESPACE
+#include <atlbase.h>
+#include <atlapp.h>
+
+extern WTL::CAppModule _Module;
+
+#include <atlwin.h>
+
 /////////////////////////////////////////////////////////////////////////////
 
 F_DECLARE_HANDLE(HINSTANCE);
