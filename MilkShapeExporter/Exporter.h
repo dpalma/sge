@@ -36,18 +36,11 @@ typedef std::vector<sModelKeyFrame> tModelKeyFrameVector;
 class cExportMesh
 {
 public:
-   cExportMesh(int primitive,
-      std::vector<uint16>::const_iterator firstIndex,
-      std::vector<uint16>::const_iterator lastIndex);
-   cExportMesh(
-      std::vector<sModelVertex>::const_iterator firstVertex,
-      std::vector<sModelVertex>::const_iterator lastVertex,
-      int primitive,
+   cExportMesh(int materialIndex, int primitive,
       std::vector<uint16>::const_iterator firstIndex,
       std::vector<uint16>::const_iterator lastIndex);
 
-   bool m_bNoVertices;
-   std::vector<sModelVertex> m_vertices;
+   int m_materialIndex;
    int m_primitive;
    std::vector<uint16> m_indices;
 };

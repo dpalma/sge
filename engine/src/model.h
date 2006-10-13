@@ -24,41 +24,7 @@ class cModel;
 
 typedef std::vector<sModelVertex> tModelVertices;
 typedef std::vector<sBlendedVertex> tBlendedVertices;
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cModelMaterial
-//
-
-class cModelMaterial
-{
-public:
-   cModelMaterial();
-   cModelMaterial(const cModelMaterial & other);
-
-   // Common case: diffuse and texture only
-   cModelMaterial(const float diffuse[4], const char * pszTexture);
-
-   // All color components
-   cModelMaterial(const float diffuse[4], const float ambient[4],
-      const float specular[4], const float emissive[4], float shininess,
-      const char * pszTexture);
-
-   ~cModelMaterial();
-
-   const cModelMaterial & operator =(const cModelMaterial & other);
-
-   // Apply diffuse color (for glEnable(GL_COLOR_MATERIAL)) and bind the texture
-   void GlDiffuseAndTexture() const;
-
-private:
-   float m_diffuse[4], m_ambient[4], m_specular[4], m_emissive[4], m_shininess;
-   std::string m_texture;
-};
-
-
-typedef std::vector<cModelMaterial> tModelMaterials;
+typedef std::vector<sModelMaterial> tModelMaterials;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -152,7 +118,7 @@ public:
 
    const tModelVertices & GetVertices() const;
 
-   const cModelMaterial & GetMaterial(int index);
+   const sModelMaterial & GetMaterial(int index);
 
    tModelMeshes::const_iterator BeginMeshses() const;
    tModelMeshes::const_iterator EndMeshses() const;
@@ -167,7 +133,7 @@ private:
 
 
    std::vector<sModelVertex> m_vertices;
-   std::vector<cModelMaterial> m_materials;
+   std::vector<sModelMaterial> m_materials;
    std::vector<cModelMesh> m_meshes;
    cAutoIPtr<IModelSkeleton> m_pSkeleton;
 };
@@ -177,7 +143,7 @@ inline const tModelVertices & cModel::GetVertices() const
    return m_vertices;
 }
 
-inline const cModelMaterial & cModel::GetMaterial(int index)
+inline const sModelMaterial & cModel::GetMaterial(int index)
 {
    return m_materials[index];
 }

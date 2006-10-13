@@ -310,7 +310,9 @@ void cEntityModelRenderer::Render()
       int iMaterial = iter->GetMaterialIndex();
       if (iMaterial >= 0)
       {
-         m_pModel->GetMaterial(iMaterial).GlDiffuseAndTexture();
+         const sModelMaterial & m = m_pModel->GetMaterial(iMaterial);
+         pRenderer->SetDiffuseColor(m.diffuse);
+         pRenderer->SetTexture(0, m.szTexture);
       }
       pRenderer->Render(iter->GetPrimitiveType(), const_cast<uint16*>(iter->GetIndexData()), iter->GetIndexCount());
    }

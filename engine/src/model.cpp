@@ -22,85 +22,12 @@
 
 LOG_DEFINE_CHANNEL(Model);
 
-#define LocalMsg(ind,msg)           DebugMsgEx2(Model, "%*s" msg, (ind),"")
-#define LocalMsg1(ind,msg,a)        DebugMsgEx3(Model, "%*s" msg, (ind),"",(a))
-#define LocalMsg2(ind,msg,a,b)      DebugMsgEx4(Model, "%*s" msg, (ind),"",(a),(b))
-#define LocalMsg3(ind,msg,a,b,c)    DebugMsgEx5(Model, "%*s" msg, (ind),"",(a),(b),(c))
+#define LocalMsg(msg)            DebugMsgEx2(Model,msg)
+#define LocalMsg1(msg,a)         DebugMsgEx3(Model,msg,(a))
+#define LocalMsg2(msg,a,b)       DebugMsgEx4(Model,msg,(a),(b))
+#define LocalMsg3(msg,a,b,c)     DebugMsgEx5(Model,msg,(a),(b),(c))
 
 typedef std::vector< cMatrix4<float> > tMatrices;
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cModelMaterial
-//
-
-///////////////////////////////////////
-
-cModelMaterial::cModelMaterial()
-{
-}
-
-///////////////////////////////////////
-
-cModelMaterial::cModelMaterial(const cModelMaterial & other)
-{
-   operator =(other);
-}
-
-///////////////////////////////////////
-// Common case: diffuse and texture only
-
-cModelMaterial::cModelMaterial(const float diffuse[4], const char * pszTexture)
- : m_texture(pszTexture != NULL ? pszTexture : "")
-{
-   memcpy(m_diffuse, diffuse, sizeof(m_diffuse));
-}
-
-///////////////////////////////////////
-// All color components
-
-cModelMaterial::cModelMaterial(const float diffuse[4], const float ambient[4],
-                               const float specular[4], const float emissive[4],
-                               float shininess, const char * pszTexture)
- : m_shininess(shininess)
- , m_texture(pszTexture != NULL ? pszTexture : "")
-{
-   memcpy(m_diffuse, diffuse, sizeof(m_diffuse));
-   memcpy(m_ambient, ambient, sizeof(m_ambient));
-   memcpy(m_specular, specular, sizeof(m_specular));
-   memcpy(m_emissive, emissive, sizeof(m_emissive));
-}
-
-///////////////////////////////////////
-
-cModelMaterial::~cModelMaterial()
-{
-}
-
-///////////////////////////////////////
-
-const cModelMaterial & cModelMaterial::operator =(const cModelMaterial & other)
-{
-   memcpy(m_diffuse, other.m_diffuse, sizeof(m_diffuse));
-   memcpy(m_ambient, other.m_ambient, sizeof(m_ambient));
-   memcpy(m_specular, other.m_specular, sizeof(m_specular));
-   memcpy(m_emissive, other.m_emissive, sizeof(m_emissive));
-   m_shininess = other.m_shininess;
-   m_texture = other.m_texture;
-   return *this;
-}
-
-///////////////////////////////////////
-// Apply diffuse color (for glEnable(GL_COLOR_MATERIAL)) and texture
-
-void cModelMaterial::GlDiffuseAndTexture() const
-{
-   UseGlobal(Renderer);
-   pRenderer->SetDiffuseColor(m_diffuse);
-   pRenderer->SetTexture(0, m_texture.c_str());
-}
-
 
 
 ///////////////////////////////////////////////////////////////////////////////

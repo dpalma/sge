@@ -341,7 +341,7 @@ void * ModelMs3dLoad(IReader * pReader)
 
    LocalMsg1("%d Materials\n", nMaterials);
 
-   std::vector<cModelMaterial> materials(nMaterials);
+   std::vector<sModelMaterial> materials(nMaterials);
 
    if (nMaterials > 0)
    {
@@ -353,12 +353,14 @@ void * ModelMs3dLoad(IReader * pReader)
             return NULL;
          }
 
+         memcpy(materials[i].diffuse, ms3dMat.diffuse, sizeof(materials[i].diffuse));
+
          // MilkShape stores texture file names as "./texture.bmp" so run
          // the texture name through cFileSpec to fix it up.
          cStr texture;
          cFileSpec(ms3dMat.texture).GetFileNameNoExt(&texture);
 
-         materials[i] = cModelMaterial(ms3dMat.diffuse, texture.c_str());
+         _tcscpy(materials[i].szTexture, texture.c_str());
       }
    }
 

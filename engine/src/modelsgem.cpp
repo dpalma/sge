@@ -83,8 +83,9 @@ void * ModelSgemLoad(IReader * pReader)
    {
       static const ePrimitiveType primTypes[] = { kPT_Triangles, kPT_TriangleStrip, kPT_TriangleFan };
 
-      int primType = -1;
-      if (pReader->Read(&primType) != S_OK
+      int materialIndex = -1, primType = -1;
+      if (pReader->Read(&materialIndex) != S_OK
+         || pReader->Read(&primType) != S_OK
          || primType < 0 || primType > 2)
       {
          return NULL;
@@ -96,7 +97,7 @@ void * ModelSgemLoad(IReader * pReader)
          return NULL;
       }
 
-      meshes[i] = cModelMesh(primTypes[primType], indices, -1);
+      meshes[i] = cModelMesh(primTypes[primType], indices, materialIndex);
    }
 
    //////////////////////////////
@@ -120,8 +121,9 @@ void * ModelSgemLoad(IReader * pReader)
    LocalMsg1("%d Joints\n", joints.size());
 
    cAutoIPtr<IModelSkeleton> pSkeleton;
-   if (ModelSkeletonCreate(&joints[0], joints.size(), &pSkeleton) == S_OK)
+   if (ModelSkeletonCreate(&joints[0], joints.size(), &pSkeleton) != S_OK)
    {
+      return NULL;
    }
 
    //////////////////////////////
@@ -191,21 +193,21 @@ void * ModelSgemLoad(IReader * pReader)
 
    //////////////////////////////
 
-   //cModel * pModel = NULL;
-   //if (!joints.empty() && !!pSkeleton)
-   //{
-   //   if (cModel::Create(vertices, materials, meshes, pSkeleton, &pModel) == S_OK)
-   //   {
-   //      return pModel;
-   //   }
-   //}
-   //else
-   //{
-   //   if (cModel::Create(vertices, materials, meshes, &pModel) == S_OK)
-   //   {
-   //      return pModel;
-   //   }
-   //}
+   cModel * pModel = NULL;
+   if (!joints.empty() && !!pSkeleton)
+   {
+      if (cModel::Create(vertices, materials, meshes, pSkeleton, &pModel) == S_OK)
+      {
+         return pModel;
+      }
+   }
+   else
+   {
+      if (cModel::Create(vertices, materials, meshes, &pModel) == S_OK)
+      {
+         return pModel;
+      }
+   }
 
    return NULL;
 }
