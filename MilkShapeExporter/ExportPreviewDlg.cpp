@@ -35,26 +35,43 @@ int_ptr CALLBACK ExportPreviewDlgProc(HWND hWndDlg, UINT msg, WPARAM wParam, LPA
          if (pExporter != NULL && hWndTree != NULL)
          {
             {
+               HTREEITEM hVerticesItem = InsertTreeItem(hWndTree, TVI_ROOT, "Vertices");
+               cStr temp;
+               std::vector<sModelVertex>::const_iterator iter = pExporter->BeginVertices(), end = pExporter->EndVertices();
+               for (int index = 0; iter != end; ++iter, ++index)
+               {
+                  const sModelVertex & v = *iter;
+                  InsertTreeItem(hWndTree, hVerticesItem,
+                     Sprintf(&temp, "UV: (%f, %f), Normal <%f, %f, %f>, Position (%f, %f, %f), Bone %f",
+                     v.u, v.v,
+                     v.normal.x, v.normal.y, v.normal.z,
+                     v.pos.x, v.pos.y, v.pos.z,
+                     v.bone).c_str());
+               }
+            }
+
+            {
+               HTREEITEM hMeshesItem = InsertTreeItem(hWndTree, TVI_ROOT, "Meshes");
                std::vector<cExportMesh>::const_iterator iter = pExporter->BeginMeshes(), end = pExporter->EndMeshes();
                for (int index = 0; iter != end; ++iter, ++index)
                {
                   cStr temp;
-                  HTREEITEM hItem = InsertTreeItem(hWndTree, TVI_ROOT, Sprintf(&temp, "Mesh %d", index).c_str());
+                  HTREEITEM hItem = InsertTreeItem(hWndTree, hMeshesItem, Sprintf(&temp, "Mesh %d", index).c_str());
                   if (hItem != NULL)
                   {
-                     HTREEITEM hVerticesItem = InsertTreeItem(hWndTree, hItem, Sprintf(&temp, "%d Vertices", iter->m_vertices.size()).c_str());
-                     if (hVerticesItem != NULL)
-                     {
-                        for (uint i = 0; i < iter->m_vertices.size(); ++i)
-                        {
-                           const sModelVertex & v = iter->m_vertices[i];
-                           InsertTreeItem(hWndTree, hVerticesItem, Sprintf(&temp, "UV: (%f, %f), Normal <%f, %f, %f>, Position (%f, %f, %f), Bone %f",
-                              v.u, v.v,
-                              v.normal.x, v.normal.y, v.normal.z,
-                              v.pos.x, v.pos.y, v.pos.z,
-                              v.bone).c_str());
-                        }
-                     }
+                     //HTREEITEM hVerticesItem = InsertTreeItem(hWndTree, hItem, Sprintf(&temp, "%d Vertices", iter->m_vertices.size()).c_str());
+                     //if (hVerticesItem != NULL)
+                     //{
+                     //   for (uint i = 0; i < iter->m_vertices.size(); ++i)
+                     //   {
+                     //      const sModelVertex & v = iter->m_vertices[i];
+                     //      InsertTreeItem(hWndTree, hVerticesItem, Sprintf(&temp, "UV: (%f, %f), Normal <%f, %f, %f>, Position (%f, %f, %f), Bone %f",
+                     //         v.u, v.v,
+                     //         v.normal.x, v.normal.y, v.normal.z,
+                     //         v.pos.x, v.pos.y, v.pos.z,
+                     //         v.bone).c_str());
+                     //   }
+                     //}
 
                      static const tChar * primitives[] =
                      {
@@ -76,15 +93,11 @@ int_ptr CALLBACK ExportPreviewDlgProc(HWND hWndDlg, UINT msg, WPARAM wParam, LPA
             }
 
             {
-               HTREEITEM hMaterialsItem = TVI_ROOT;
+               HTREEITEM hMaterialsItem = InsertTreeItem(hWndTree, TVI_ROOT, "Materials");
+               cStr temp;
                std::vector<sModelMaterial>::const_iterator iter = pExporter->BeginMaterials(), end = pExporter->EndMaterials();
                for (int index = 0; iter != end; ++iter, ++index)
                {
-                  cStr temp;
-                  if (index == 0)
-                  {
-                     hMaterialsItem = InsertTreeItem(hWndTree, TVI_ROOT, "Materials");
-                  }
                   HTREEITEM hItem = InsertTreeItem(hWndTree, hMaterialsItem, Sprintf(&temp, "Material %d", index).c_str());
                   if (hItem != NULL)
                   {
@@ -99,15 +112,11 @@ int_ptr CALLBACK ExportPreviewDlgProc(HWND hWndDlg, UINT msg, WPARAM wParam, LPA
             }
 
             {
-               HTREEITEM hSkeletonItem = TVI_ROOT;
+               HTREEITEM hSkeletonItem = InsertTreeItem(hWndTree, TVI_ROOT, "Skeleton");
+               cStr temp;
                std::vector<sModelJoint>::const_iterator iter = pExporter->BeginModelJoints(), end = pExporter->EndModelJoints();
                for (int index = 0; iter != end; ++iter, ++index)
                {
-                  cStr temp;
-                  if (index == 0)
-                  {
-                     hSkeletonItem = InsertTreeItem(hWndTree, TVI_ROOT, "Skeleton");
-                  }
                   HTREEITEM hItem = InsertTreeItem(hWndTree, hSkeletonItem, Sprintf(&temp, "Joint %d", index).c_str());
                   if (hItem != NULL)
                   {
@@ -129,11 +138,12 @@ int_ptr CALLBACK ExportPreviewDlgProc(HWND hWndDlg, UINT msg, WPARAM wParam, LPA
             };
 
             {
+               HTREEITEM hAnimsItem = InsertTreeItem(hWndTree, TVI_ROOT, "Animation Sequences");
+               cStr temp;
                std::vector<cExportAnimation>::const_iterator iter = pExporter->BeginAnimSeqs(), end = pExporter->EndAnimSeqs();
                for (int index = 0; iter != end; ++iter, ++index)
                {
-                  cStr temp;
-                  HTREEITEM hItem = InsertTreeItem(hWndTree, TVI_ROOT, Sprintf(&temp, "Animation Sequence %d (%s)", index, animationTypes[iter->GetAnimationType()]).c_str());
+                  HTREEITEM hItem = InsertTreeItem(hWndTree, hAnimsItem, Sprintf(&temp, "Animation Sequence %d (%s)", index, animationTypes[iter->GetAnimationType()]).c_str());
                   if (hItem != NULL)
                   {
                      std::vector<tModelKeyFrameVector>::const_iterator iter2 = iter->m_keyFrameVectors.begin();

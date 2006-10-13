@@ -12,6 +12,8 @@
 #include "readwriteapi.h"
 #include "readwriteutils.h"
 
+#include <algorithm>
+
 #include "dbgalloc.h" // must be last header
 
 
@@ -25,7 +27,6 @@ LOG_DEFINE_CHANNEL(ModelSgem);
 #define LocalMsg3(msg,a,b,c)     DebugMsgEx3(ModelSgem,msg,(a),(b),(c))
 
 ////////////////////////////////////////////////////////////////////////////////
-
 
 static const byte g_sgemId[] = "MeGs";
 
@@ -59,6 +60,14 @@ void * ModelSgemLoad(IReader * pReader)
 
    //////////////////////////////
 
+   std::vector<sModelVertex> vertices;
+   if (pReader->Read(&vertices) != S_OK)
+   {
+      return NULL;
+   }
+
+   //////////////////////////////
+
    uint nMeshes = 0;
    if (pReader->Read(&nMeshes, sizeof(nMeshes)) != S_OK
       || nMeshes == 0)
@@ -72,12 +81,6 @@ void * ModelSgemLoad(IReader * pReader)
 
    for (uint i = 0; i < nMeshes; ++i)
    {
-      std::vector<sModelVertex> verts;
-      if (pReader->Read(&verts) != S_OK)
-      {
-         return NULL;
-      }
-
       static const ePrimitiveType primTypes[] = { kPT_Triangles, kPT_TriangleStrip, kPT_TriangleFan };
 
       int primType = -1;
@@ -159,6 +162,8 @@ void * ModelSgemLoad(IReader * pReader)
          return NULL;
       }
 
+      std::vector<IModelKeyFrameInterpolator*> interpolators;
+
       std::vector< std::vector<sModelKeyFrame> >::const_iterator iter = animKeyFrameVectors.begin();
       std::vector< std::vector<sModelKeyFrame> >::const_iterator end = animKeyFrameVectors.end();
       for (; iter != end; ++iter)
@@ -168,9 +173,39 @@ void * ModelSgemLoad(IReader * pReader)
          cAutoIPtr<IModelKeyFrameInterpolator> pInterp;
          if (ModelKeyFrameInterpolatorCreate(&keyFrames[0], keyFrames.size(), &pInterp) == S_OK)
          {
+            interpolators.push_back(CTAddRef(pInterp));
          }
       }
+
+      if (!interpolators.empty())
+      {
+         cAutoIPtr<IModelAnimation> pAnim;
+         if (ModelAnimationCreate(&interpolators[0], interpolators.size(), &pAnim) == S_OK)
+         {
+            pSkeleton->AddAnimation(animType, pAnim);
+         }
+
+         std::for_each(interpolators.begin(), interpolators.end(), CTInterfaceMethod(&IUnknown::Release));
+      }
    }
+
+   //////////////////////////////
+
+   //cModel * pModel = NULL;
+   //if (!joints.empty() && !!pSkeleton)
+   //{
+   //   if (cModel::Create(vertices, materials, meshes, pSkeleton, &pModel) == S_OK)
+   //   {
+   //      return pModel;
+   //   }
+   //}
+   //else
+   //{
+   //   if (cModel::Create(vertices, materials, meshes, &pModel) == S_OK)
+   //   {
+   //      return pModel;
+   //   }
+   //}
 
    return NULL;
 }

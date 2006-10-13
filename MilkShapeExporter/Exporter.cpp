@@ -88,12 +88,22 @@ static void ParseAnimDescs(const char * pszString, std::vector<sModelAnimationDe
 // CLASS: cExportMesh
 //
 
+cExportMesh::cExportMesh(int primitive,
+                         std::vector<uint16>::const_iterator firstIndex,
+                         std::vector<uint16>::const_iterator lastIndex)
+ : m_bNoVertices(true)
+ , m_primitive(primitive)
+ , m_indices(firstIndex, lastIndex)
+{
+}
+
 cExportMesh::cExportMesh(std::vector<sModelVertex>::const_iterator firstVertex,
                          std::vector<sModelVertex>::const_iterator lastVertex,
                          int primitive,
                          std::vector<uint16>::const_iterator firstIndex,
                          std::vector<uint16>::const_iterator lastIndex)
- : m_vertices(firstVertex, lastVertex)
+ : m_bNoVertices(false)
+ , m_vertices(firstVertex, lastVertex)
  , m_primitive(primitive)
  , m_indices(firstIndex, lastIndex)
 {
@@ -106,8 +116,15 @@ tResult cReadWriteOps<cExportMesh>::Write(IWriter * pWriter, const cExportMesh &
       return E_POINTER;
    }
 
-   if (pWriter->Write(exportMesh.m_vertices) == S_OK
-      && pWriter->Write(static_cast<int>(exportMesh.m_primitive)) == S_OK
+   if (!exportMesh.m_bNoVertices)
+   {
+      if (pWriter->Write(exportMesh.m_vertices) != S_OK)
+      {
+         return E_FAIL;
+      }
+   }
+
+   if (pWriter->Write(static_cast<int>(exportMesh.m_primitive)) == S_OK
       && pWriter->Write(exportMesh.m_indices) == S_OK)
    {
       return S_OK;
@@ -176,7 +193,7 @@ cExporter::~cExporter()
 
 void cExporter::PreProcess()
 {
-   CollectMeshes(m_pModel, &m_meshes);
+   CollectMeshes(m_pModel, &m_vertices, &m_meshes);
 
    CollectModelMaterials(m_pModel, &m_materials);
 
@@ -301,6 +318,7 @@ tResult cExporter::ExportMesh(IWriter * pWriter)
    sExportHeader header = { { 'M', 'e', 'G', 's' }, 1 };
 
    if (pWriter->Write(&header, sizeof(header)) == S_OK
+      && pWriter->Write(m_vertices) == S_OK
       && pWriter->Write(m_meshes) == S_OK
       && pWriter->Write(m_materials) == S_OK)
    {
@@ -310,9 +328,14 @@ tResult cExporter::ExportMesh(IWriter * pWriter)
    return E_FAIL;
 }
 
-void cExporter::CollectMeshes(msModel * pModel, std::vector<cExportMesh> * pMeshes)
+void cExporter::CollectMeshes(msModel * pModel,
+                              std::vector<sModelVertex> * pVertices,
+                              std::vector<cExportMesh> * pMeshes)
 {
    int nMeshes = msModel_GetMeshCount(pModel);
+
+   typedef std::map<std::pair<uint16, uint16>, uint16> tVertexMap;
+   tVertexMap vertexMap;
 
    for (int i = 0; i < nMeshes; ++i)
    {
@@ -321,12 +344,14 @@ void cExporter::CollectMeshes(msModel * pModel, std::vector<cExportMesh> * pMesh
       {
          int iMaterial = msMesh_GetMaterialIndex(pMesh);
 
-         std::vector<sModelVertex> vertices;
-         CollectMeshVertices(pMesh, &vertices);
+//         std::vector<sModelVertex> vertices;
+//         CollectMeshVertices(pMesh, &vertices);
+         word meshVertexBase = pVertices->size();
+         CollectMeshVertices(pMesh, pVertices);
 
          std::set<uint8> meshBones;
-         std::vector<sModelVertex>::iterator iter = vertices.begin();
-         for (; iter != vertices.end(); ++iter)
+         std::vector<sModelVertex>::iterator iter = pVertices->begin() + meshVertexBase;
+         for (; iter != pVertices->end(); ++iter)
          {
             meshBones.insert((uint8)iter->bone);
          }
@@ -339,10 +364,7 @@ void cExporter::CollectMeshes(msModel * pModel, std::vector<cExportMesh> * pMesh
          std::vector<tVec3> normals;
          CollectMeshNormals(pMesh, &normals);
 
-         typedef std::map<std::pair<uint16, uint16>, uint16> tVertexMap;
-         tVertexMap vertexMap;
-
-         std::vector<sModelVertex> mappedVertices;
+//         std::vector<sModelVertex> mappedVertices;
          std::vector<uint16> mappedIndices;
 
          int nTris = msMesh_GetTriangleCount(pMesh);
@@ -358,6 +380,9 @@ void cExporter::CollectMeshes(msModel * pModel, std::vector<cExportMesh> * pMesh
 
                for (int k = 0; k < 3; ++k)
                {
+                  vertexIndices[k] += meshVertexBase;
+                  normalIndices[k] += meshVertexBase;
+
                   std::pair<uint16, uint16> p = std::make_pair(vertexIndices[k], normalIndices[k]);
 
                   tVertexMap::iterator f = vertexMap.find(p);
@@ -367,11 +392,14 @@ void cExporter::CollectMeshes(msModel * pModel, std::vector<cExportMesh> * pMesh
                   }
                   else
                   {
-                     sModelVertex newVertex = vertices[vertexIndices[k]];
+//                     sModelVertex newVertex = vertices[vertexIndices[k]];
+                     sModelVertex newVertex = (*pVertices)[vertexIndices[k]];
                      newVertex.normal = normals[normalIndices[k]];
 
-                     uint16 newIndex = mappedVertices.size();
-                     mappedVertices.push_back(newVertex);
+//                     uint16 newIndex = mappedVertices.size();
+//                     mappedVertices.push_back(newVertex);
+                     uint16 newIndex = pVertices->size();
+                     pVertices->push_back(newVertex);
 
                      mappedIndices.push_back(newIndex);
 
@@ -400,15 +428,17 @@ void cExporter::CollectMeshes(msModel * pModel, std::vector<cExportMesh> * pMesh
             //{
             //}
 
-            pMeshes->push_back(cExportMesh(mappedVertices.begin(), mappedVertices.end(),
-               (int)pPrimGroups->type, strippedIndices.begin(), strippedIndices.end()));
+//            pMeshes->push_back(cExportMesh(mappedVertices.begin(), mappedVertices.end(),
+//               (int)pPrimGroups->type, strippedIndices.begin(), strippedIndices.end()));
+            pMeshes->push_back(cExportMesh((int)pPrimGroups->type, strippedIndices.begin(), strippedIndices.end()));
 
             delete [] pPrimGroups;
          }
          else
          {
-            pMeshes->push_back(cExportMesh(mappedVertices.begin(), mappedVertices.end(),
-               (int)pPrimGroups->type, mappedIndices.begin(), mappedIndices.end()));
+//            pMeshes->push_back(cExportMesh(mappedVertices.begin(), mappedVertices.end(),
+//               (int)pPrimGroups->type, mappedIndices.begin(), mappedIndices.end()));
+            pMeshes->push_back(cExportMesh((int)pPrimGroups->type, mappedIndices.begin(), mappedIndices.end()));
          }
 
          msMesh_Destroy(pMesh);
@@ -420,18 +450,22 @@ void cExporter::CollectMeshVertices(msMesh * pMesh, std::vector<sModelVertex> * 
 {
    int nVertices = msMesh_GetVertexCount(pMesh);
 
+   int iStart = pVertices->size();
+   int iEnd = iStart + nVertices;
+
    pVertices->resize(nVertices);
 
-   for (int j = 0; j < nVertices; j++)
+   for (int j = iStart; j < iEnd; j++)
    {
       msVertex * pVertex = msMesh_GetVertexAt(pMesh, j);
       if (pVertex != NULL)
       {
-         (*pVertices)[j].u = pVertex->u;
-         (*pVertices)[j].v = 1 - pVertex->v;
-         (*pVertices)[j].pos = tVec3(pVertex->Vertex);
-         (*pVertices)[j].normal = tVec3(0,0,0);
-         (*pVertices)[j].bone = pVertex->nBoneIndex;
+         sModelVertex & v = (*pVertices)[j];
+         v.u = pVertex->u;
+         v.v = 1 - pVertex->v;
+         v.pos = tVec3(pVertex->Vertex);
+         v.normal = tVec3(0,0,0);
+         v.bone = pVertex->nBoneIndex;
       }
    }
 }

@@ -36,6 +36,9 @@ typedef std::vector<sModelKeyFrame> tModelKeyFrameVector;
 class cExportMesh
 {
 public:
+   cExportMesh(int primitive,
+      std::vector<uint16>::const_iterator firstIndex,
+      std::vector<uint16>::const_iterator lastIndex);
    cExportMesh(
       std::vector<sModelVertex>::const_iterator firstVertex,
       std::vector<sModelVertex>::const_iterator lastVertex,
@@ -43,6 +46,7 @@ public:
       std::vector<uint16>::const_iterator firstIndex,
       std::vector<uint16>::const_iterator lastIndex);
 
+   bool m_bNoVertices;
    std::vector<sModelVertex> m_vertices;
    int m_primitive;
    std::vector<uint16> m_indices;
@@ -96,6 +100,9 @@ public:
 
    void PreProcess();
 
+   std::vector<sModelVertex>::const_iterator BeginVertices() const { return m_vertices.begin(); }
+   std::vector<sModelVertex>::const_iterator EndVertices() const { return m_vertices.end(); }
+
    std::vector<cExportMesh>::const_iterator BeginMeshes() const { return m_meshes.begin(); }
    std::vector<cExportMesh>::const_iterator EndMeshes() const { return m_meshes.end(); }
 
@@ -112,7 +119,7 @@ public:
    tResult ExportMesh(IWriter * pWriter);
 
 private:
-   static void CollectMeshes(msModel * pModel, std::vector<cExportMesh> * pMeshes);
+   static void CollectMeshes(msModel * pModel, std::vector<sModelVertex> * pVertices, std::vector<cExportMesh> * pMeshes);
    static void CollectMeshVertices(msMesh * pMesh, std::vector<sModelVertex> * pVertices);
    static void CollectMeshNormals(msMesh * pMesh, std::vector<tVec3> * pNormals);
    static void CollectModelMaterials(msModel * pModel, std::vector<sModelMaterial> * pMaterials);
@@ -122,6 +129,7 @@ private:
    msModel * m_pModel;
    bool m_bAutoDeleteModel;
 
+   std::vector<sModelVertex> m_vertices;
    std::vector<cExportMesh> m_meshes;
    std::vector<sModelMaterial> m_materials;
    std::vector<cIntermediateJoint> m_tempJoints;
