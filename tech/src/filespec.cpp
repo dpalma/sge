@@ -12,6 +12,12 @@
 
 #include <cstring>
 
+#ifdef _WIN32
+// TODO: Including windows.h only for WideCharToMultiByte
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
+
 #include "dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -38,9 +44,25 @@ cFileSpec::cFileSpec()
 
 ///////////////////////////////////////
 
-cFileSpec::cFileSpec(const tChar * pszFile)
+cFileSpec::cFileSpec(const char * pszFile)
 {
+#ifdef _UNICODE
+   MultiByteToWideChar(CP_ACP, 0, pszFile, -1, m_szFile, _countof(m_szFile));
+#else
    _tcsncpy(m_szFile, pszFile, _countof(m_szFile));
+#endif
+   m_szFile[_countof(m_szFile) - 1] = 0;
+}
+
+///////////////////////////////////////
+
+cFileSpec::cFileSpec(const wchar_t * pszFile)
+{
+#ifdef _UNICODE
+   _tcsncpy(m_szFile, pszFile, _countof(m_szFile));
+#else
+   WideCharToMultiByte(CP_ACP, 0, pszFile, -1, m_szFile, _countof(m_szFile), NULL, NULL);
+#endif
    m_szFile[_countof(m_szFile) - 1] = 0;
 }
 

@@ -39,7 +39,7 @@ typedef IDirect3D9 * (WINAPI * tDirect3DCreate9Fn)(UINT);
 
 /////////////////////////////////////////////////////////////////////////////
 
-const float kFov = 70;
+const float kFov = 90;
 const float kZNear = 1;
 const float kZFar = 5000;
 

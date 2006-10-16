@@ -17,6 +17,7 @@ includePaths = Split("""
    #engine/include
    #rendergl/include
    #tech/include
+   #3rdparty/wtl/include
 """)
 
 libPaths = Split("""

@@ -24,7 +24,8 @@ public:
    enum { kMaxPath = 260 };
 
    cFileSpec();
-   explicit cFileSpec(const tChar * pszFile);
+   explicit cFileSpec(const char * pszFile);
+   explicit cFileSpec(const wchar_t * pszFile);
    cFileSpec(const cFileSpec & other);
 
    const cFileSpec & operator =(const cFileSpec & other);

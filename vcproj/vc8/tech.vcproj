@@ -766,6 +766,10 @@
 					RelativePath="..\..\tech\src\image.h"
 					>
 				</File>
+			   <File
+				   RelativePath="..\..\tech\src\md5.h"
+				   >
+			   </File>
 				<File
 					RelativePath="..\..\tech\src\readwritefile.h"
 					>
@@ -914,10 +918,6 @@
 			</File>
 			<File
 				RelativePath="..\..\tech\include\matrix4.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\tech\include\md5.h"
 				>
 			</File>
 			<File

@@ -29,13 +29,13 @@ static void ParseAnimDescs(const char * pszString, std::vector<sModelAnimationDe
 {
    if (pszString != NULL && strlen(pszString) > 0)
    {
-      cTokenizer<cStr> strTok;
-      if (strTok.Tokenize(pszString, _T("\n")) > 0)
+      cTokenizer<std::string, std::vector<std::string>, char> strTok;
+      if (strTok.Tokenize(pszString, "\n") > 0)
       {
-         std::vector<cStr>::iterator iter = strTok.m_tokens.begin(), end = strTok.m_tokens.end();
+         std::vector<std::string>::iterator iter = strTok.m_tokens.begin(), end = strTok.m_tokens.end();
          for (; iter != end; ++iter)
          {
-            cStr & animString = *iter;
+            std::string & animString = *iter;
 
             TrimLeadingSpace(&animString);
             TrimTrailingSpace(&animString);
@@ -55,10 +55,10 @@ static void ParseAnimDescs(const char * pszString, std::vector<sModelAnimationDe
                { kMAT_Idle, "idle" },
             };
 
-            cTokenizer<cStr> strTok2;
+            cTokenizer<std::string, std::vector<std::string>, char> strTok2;
             if (strTok2.Tokenize(iter->c_str()) == 3)
             {
-               const cStr & animType = strTok2.m_tokens[2];
+               const std::string & animType = strTok2.m_tokens[2];
 
                for (int j = 0; j < _countof(animTypes); j++)
                {
@@ -66,8 +66,8 @@ static void ParseAnimDescs(const char * pszString, std::vector<sModelAnimationDe
                   {
                      sModelAnimationDesc animDesc;
                      animDesc.type = animTypes[j].type;
-                     animDesc.start = _ttoi(strTok2.m_tokens[0].c_str());
-                     animDesc.end = _ttoi(strTok2.m_tokens[1].c_str());
+                     animDesc.start = atoi(strTok2.m_tokens[0].c_str());
+                     animDesc.end = atoi(strTok2.m_tokens[1].c_str());
                      animDesc.fps = 0;
                      if (animDesc.start > 0 || animDesc.end > 0)
                      {
@@ -254,7 +254,7 @@ tResult cExporter::ExportMesh(const tChar * pszFileName)
    }
 
    cFileSpec exportFile(pszFileName);
-   exportFile.SetFileExt("sgem");
+   exportFile.SetFileExt(_T("sgem"));
 
    cAutoIPtr<IWriter> pWriter;
    if (FileWriterCreate(exportFile, &pWriter) != S_OK)

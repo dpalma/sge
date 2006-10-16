@@ -11,6 +11,7 @@
 #include "resourceapi.h"
 #include "imageapi.h"
 #include "readwriteapi.h"
+#include "readwriteutils.h"
 #include "globalobj.h"
 #include "connptimpl.h"
 
@@ -292,108 +293,6 @@ tResult cReadWriteOps<cTerrainSettings>::Write(IWriter * pWriter, const cTerrain
       && pWriter->Write(static_cast<int>(terrainSettings.m_heightData)) == S_OK
       && pWriter->Write(terrainSettings.m_heightMap) == S_OK
       && pWriter->Write(terrainSettings.m_heightMapScale) == S_OK)
-   {
-      return S_OK;
-   }
-
-   return E_FAIL;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-
-template <>
-class cReadWriteOps<tUints>
-{
-public:
-   static tResult Read(IReader * pReader, tUints * pUints);
-   static tResult Write(IWriter * pWriter, const tUints & uints);
-};
-
-////////////////////////////////////////
-
-tResult cReadWriteOps<tUints>::Read(IReader * pReader, tUints * pUints)
-{
-   if (pReader == NULL || pUints == NULL)
-   {
-      return E_POINTER;
-   }
-
-   tUints::size_type nUints = 0;
-   if (pReader->Read(&nUints) == S_OK)
-   {
-      pUints->resize(nUints);
-      if (pReader->Read(&(*pUints)[0], nUints * sizeof(tUints::value_type)) == S_OK)
-      {
-         return S_OK;
-      }
-   }
-
-   return E_FAIL;
-}
-
-////////////////////////////////////////
-
-tResult cReadWriteOps<tUints>::Write(IWriter * pWriter, const tUints & uints)
-{
-   if (pWriter == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (pWriter->Write(uints.size()) == S_OK
-      && pWriter->Write((void*)&uints[0], uints.size() * sizeof(tUints::value_type)) == S_OK)
-   {
-      return S_OK;
-   }
-
-   return E_FAIL;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-
-template <>
-class cReadWriteOps<tVec3s>
-{
-public:
-   static tResult Read(IReader * pReader, tVec3s * pVec3s);
-   static tResult Write(IWriter * pWriter, const tVec3s & vec3s);
-};
-
-////////////////////////////////////////
-
-tResult cReadWriteOps<tVec3s>::Read(IReader * pReader, tVec3s * pVec3s)
-{
-   if (pReader == NULL || pVec3s == NULL)
-   {
-      return E_POINTER;
-   }
-
-   tVec3s::size_type nVec3s = 0;
-   if (pReader->Read(&nVec3s) == S_OK)
-   {
-      pVec3s->resize(nVec3s);
-      if (pReader->Read(&(*pVec3s)[0], nVec3s * sizeof(tVec3s::value_type)) == S_OK)
-      {
-         return S_OK;
-      }
-   }
-
-   return E_FAIL;
-}
-
-////////////////////////////////////////
-
-tResult cReadWriteOps<tVec3s>::Write(IWriter * pWriter, const tVec3s & vec3s)
-{
-   if (pWriter == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (pWriter->Write(vec3s.size()) == S_OK
-      && pWriter->Write((void*)&vec3s[0], vec3s.size() * sizeof(tVec3s::value_type)) == S_OK)
    {
       return S_OK;
    }
