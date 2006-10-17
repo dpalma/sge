@@ -158,34 +158,6 @@ bool cLog::EnableChannel(const tChar * pszChannel, bool bEnable)
 
 ///////////////////////////////////////
 
-void cLog::Print(eLogSeverity severity, const tChar * pszFormat, ...)
-{
-   va_list args;
-   va_start(args, pszFormat);
-   _vsntprintf(m_szBuffer, _countof(m_szBuffer), pszFormat, args);
-   va_end(args);
-
-   if (m_pLogFile != NULL)
-   {
-      _ftprintf(reinterpret_cast<FILE*>(m_pLogFile), m_szBuffer);
-   }
-
-   if (m_callback != NULL)
-   {
-      (*m_callback)(severity, m_szBuffer, _tcslen(m_szBuffer));
-   }
-
-#ifdef _WIN32
-#ifdef _UNICODE
-   OutputDebugStringW(m_szBuffer);
-#else
-   OutputDebugStringA(m_szBuffer);
-#endif
-#endif
-}
-
-///////////////////////////////////////
-
 void cLog::Print(const tChar * pszFile, int line, eLogSeverity severity, const tChar * pszFormat, ...)
 {
    size_t len = 0;

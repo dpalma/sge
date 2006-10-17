@@ -630,8 +630,8 @@ void * ModelMs3dLoad(IReader * pReader)
                if (frame >= animDesc.start && LOG_IS_CHANNEL_ENABLED(ModelMs3d))
                {
                   LocalMsg1("Time: %f, ", kfIter->time);
-                  techlog.Print(kDebug, "Translation <%f, %f, %f>, ", kfIter->translation.x, kfIter->translation.y, kfIter->translation.z);
-                  techlog.Print(kDebug, "Rotation (%f, %f, %f, %f)\n", kfIter->rotation.x, kfIter->rotation.y, kfIter->rotation.z, kfIter->rotation.w);
+                  LogMsgNoFL3(kDebug, "Translation <%f, %f, %f>, ", kfIter->translation.x, kfIter->translation.y, kfIter->translation.z);
+                  LogMsgNoFL4(kDebug, "Rotation (%f, %f, %f, %f)\n", kfIter->rotation.x, kfIter->rotation.y, kfIter->rotation.z, kfIter->rotation.w);
                }
                if (frame >= animDesc.end)
                {

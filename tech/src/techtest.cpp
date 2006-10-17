@@ -55,7 +55,7 @@ static void MDPrint(byte digest[16])
 {
    for (int i = 0; i < 16; i++)
    {
-      techlog.Print(kDebug, "%02x", digest[i]);
+      LogMsgNoFL1(kDebug, "%02x", digest[i]);
    }
 }
 
@@ -74,7 +74,7 @@ static bool MDString(char * string, byte expected[16])
    if (LOG_IS_CHANNEL_ENABLED(TechTest))
    {
       MDPrint(digest);
-      techlog.Print(kDebug, "\n");
+      LogMsgNoFL(kDebug, "\n");
    }
 
    return (memcmp(digest, expected, 16 * sizeof(byte)) == 0);
@@ -114,10 +114,10 @@ TEST(MDTimeTrial)
 
    if (LOG_IS_CHANNEL_ENABLED(TechTest))
    {
-      techlog.Print(kDebug, " done\n");
+      LogMsgNoFL(kDebug, " done\n");
       LocalMsg("Digest = ");
       MDPrint(digest);
-      techlog.Print(kDebug, "\n");
+      LogMsgNoFL(kDebug, "\n");
    }
    LocalMsg1("Time = %f seconds\n", elapsed);
    LocalMsg1("Speed = %ld bytes/second\n", (long)TEST_BLOCK_LEN * (long)TEST_BLOCK_COUNT/elapsed);

@@ -51,7 +51,6 @@ public:
    bool DefineChannel(const tChar * pszChannel, bool * pEnableFlag);
    bool EnableChannel(const tChar * pszChannel, bool bEnable);
 
-   void Print(eLogSeverity severity, const tChar * pszFormat, ...);
    void Print(const tChar * pszFile, int line, eLogSeverity severity, const tChar * pszFormat, ...);
 
    tLogCallbackFn SetCallback(tLogCallbackFn pfn);
@@ -130,6 +129,13 @@ private:
 extern TECH_API cLog techlog;
 
 ///////////////////////////////////////////////////////////////////////////////
+
+#define LogMsgNoFL(sev,fmt)                                 techlog.Print(NULL,0,(sev),_T(fmt))
+#define LogMsgNoFL1(sev,fmt,arg1)                           techlog.Print(NULL,0,(sev),_T(fmt),(arg1))
+#define LogMsgNoFL2(sev,fmt,arg1,arg2)                      techlog.Print(NULL,0,(sev),_T(fmt),(arg1),(arg2))
+#define LogMsgNoFL3(sev,fmt,arg1,arg2,arg3)                 techlog.Print(NULL,0,(sev),_T(fmt),(arg1),(arg2),(arg3))
+#define LogMsgNoFL4(sev,fmt,arg1,arg2,arg3,arg4)            techlog.Print(NULL,0,(sev),_T(fmt),(arg1),(arg2),(arg3),(arg4))
+#define LogMsgNoFL5(sev,fmt,arg1,arg2,arg3,arg4,arg5)       techlog.Print(NULL,0,(sev),_T(fmt),(arg1),(arg2),(arg3),(arg4),(arg5))
 
 #define LogMsg(sev,fmt)                                     techlog.Print(_T(__FILE__),__LINE__,(sev),_T(fmt))
 #define LogMsg1(sev,fmt,arg1)                               techlog.Print(_T(__FILE__),__LINE__,(sev),_T(fmt),(arg1))

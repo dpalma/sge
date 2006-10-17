@@ -385,22 +385,22 @@ void cResourceManager::DumpFormats() const
 
 void cResourceManager::DumpCache() const
 {
-   techlog.Print(kInfo, _T("%d resource cache entries\n"), m_cache.size());
+   LogMsgNoFL1(kInfo, _T("%d resource cache entries\n"), m_cache.size());
    static const int kNameWidth = -30;
    static const int kExtWidth = -5;
    static const int kTypeWidth = -20;
    static const tChar kRowFormat[] = _T("%*s | %*s | %*s\n");
-   techlog.Print(kInfo, kRowFormat,
+   techlog.Print(NULL, 0, kInfo, kRowFormat,
                  kNameWidth, _T("Name"),
                  kExtWidth, _T("Ext"),
                  kTypeWidth, _T("Type"));
-   techlog.Print(kInfo, _T("----------------------------------------------------------------------\n"));
+   LogMsgNoFL(kInfo, _T("----------------------------------------------------------------------\n"));
    tResourceCache::const_iterator iter = m_cache.begin();
    for (uint index = 0; iter != m_cache.end(); iter++, index++)
    {
       const cResourceFormat * pFormat = (iter->second.GetFormatId() != kNoIndex)
          ? m_formats.GetFormat(iter->second.GetFormatId()) : NULL;
-      techlog.Print(kInfo, kRowFormat,
+      techlog.Print(NULL, 0, kInfo, kRowFormat,
          kNameWidth, iter->first.GetName(),
          kExtWidth, _T("None"),
          kTypeWidth, pFormat ? ResourceTypeName(pFormat->type) : _T("Undetermined"));

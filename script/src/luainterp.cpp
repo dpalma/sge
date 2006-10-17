@@ -115,9 +115,9 @@ int LuaPrintEx(lua_State * L)
    fprintf(stdout, "%s\n", msg.c_str());
 #ifndef NDEBUG
 #ifdef _UNICODE
-   techlog.Print(kInfo, _T("%S\n"), msg.c_str());
+   LogMsgNoFL1(kInfo, _T("%S\n"), msg.c_str());
 #else
-   techlog.Print(kInfo, _T("%s\n"), msg.c_str());
+   LogMsgNoFL1(kInfo, _T("%s\n"), msg.c_str());
 #endif
 #endif
    return 0;
@@ -133,9 +133,9 @@ int LuaAlertEx(lua_State * L)
    {
       const char * psz = lua_tostring(L, -1);
 #ifdef _UNICODE
-      techlog.Print(kError, _T("LUA: %S\n"), psz);
+      LogMsgNoFL1(kError, _T("LUA: %S\n"), psz);
 #else
-      techlog.Print(kError, _T("LUA: %s\n"), psz);
+      LogMsgNoFL1(kError, _T("LUA: %s\n"), psz);
 #endif
       lua_pop(L, 1);
    }

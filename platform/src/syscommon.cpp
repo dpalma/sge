@@ -103,7 +103,7 @@ void cSysTestReporter::ReportTestStart(char const* testName)
 {
    if (LOG_IS_CHANNEL_ENABLED(VerboseUnitTests))
    {
-      techlog.Print(kInfo, "Test \"%s\" begin\n", testName);
+      LogMsgNoFL1(kInfo, "Test \"%s\" begin\n", testName);
    }
 }
 
@@ -120,7 +120,7 @@ void cSysTestReporter::ReportTestFinish(char const* testName, float secondsElaps
 {
    if (LOG_IS_CHANNEL_ENABLED(VerboseUnitTests))
    {
-      techlog.Print(kInfo, "Test \"%s\" end\n", testName);
+      LogMsgNoFL1(kInfo, "Test \"%s\" end\n", testName);
    }
 }
 
@@ -130,11 +130,11 @@ void cSysTestReporter::ReportSummary(int testCount, int failureCount, float seco
 {
    if (failureCount > 0)
    {
-      techlog.Print(kInfo, "%d of %d UNIT TESTS FAILED!\n", failureCount, testCount);
+      LogMsgNoFL2(kInfo, "%d of %d UNIT TESTS FAILED!\n", failureCount, testCount);
    }
    else
    {
-      techlog.Print(kInfo, "%d unit tests succeeded (%f seconds elapsed)\n", testCount, secondsElapsed);
+      LogMsgNoFL2(kInfo, "%d unit tests succeeded (%f seconds elapsed)\n", testCount, secondsElapsed);
    }
 }
 
