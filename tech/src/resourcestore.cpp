@@ -128,7 +128,7 @@ tResult cDirectoryResourceStore::OpenEntry(const tChar * pszName, IReader * * pp
 
    tResult result = E_FAIL;
    cAutoIPtr<IReader> pReader;
-   if ((result = FileReaderCreate(file, &pReader)) != S_OK)
+   if ((result = FileReaderCreate(file, kFileModeBinary, &pReader)) != S_OK)
    {
       return result;
    }

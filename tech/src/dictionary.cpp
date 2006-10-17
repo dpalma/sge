@@ -548,8 +548,12 @@ TEST(DictionaryPersistence)
       CHECK(persist == kTransitory);
    }
 
-   char szStore[TMP_MAX];
-   CHECK(tmpnam(szStore) != NULL);
+   tChar szStore[TMP_MAX];
+#if _MSC_VER >= 1300
+   CHECK(_ttmpnam_s(szStore, _countof(szStore)) != NULL);
+#else
+   CHECK(_ttmpnam(szStore) != NULL);
+#endif
 
    try
    {
@@ -579,12 +583,12 @@ TEST(DictionaryPersistence)
          CHECK(pLoadDict->Get(key.c_str(), &value2, &persist) == S_FALSE);
       }
 
-      CHECK(unlink(szStore) == 0);
+      CHECK(_unlink(szStore) == 0);
    }
    catch (...)
    {
       // attempt to ensure the temp file is always deleted
-      unlink(szStore);
+      _unlink(szStore);
       throw;
    }
 }

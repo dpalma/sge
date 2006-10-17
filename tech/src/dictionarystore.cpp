@@ -121,7 +121,7 @@ tResult cDictionaryTextStore::Load(IDictionary * pDictionary)
    }
    else
    {
-      result = FileReaderCreate(m_file, &pReader);
+      result = FileReaderCreate(m_file, kFileModeBinary, &pReader);
    }
 
    if (!!pReader)
@@ -152,14 +152,15 @@ tResult cDictionaryTextStore::Save(IDictionary * pDictionary)
       return E_FAIL;
    }
 
-   FILE * fp = _tfopen(m_file.CStr(), _T("w"));
-   if (fp == NULL)
+   cAutoIPtr<IWriter> pWriter;
+   if (FileWriterCreate(m_file, kFileModeText, &pWriter) != S_OK)
    {
       return E_FAIL;
    }
 
    tResult result = S_FALSE;
 
+   cStr temp;
    std::list<cStr> keys;
    if (pDictionary->GetKeys(&keys) == S_OK)
    {
@@ -172,15 +173,13 @@ tResult cDictionaryTextStore::Save(IDictionary * pDictionary)
          {
             if (persist == kPermanent)
             {
-               fprintf(fp, "%s=%s\n", iter->c_str(), value.c_str());
+               pWriter->Write(Sprintf(&temp, _T("%s=%s\n"), iter->c_str(), value.c_str()).c_str());
             }
          }
       }
 
       result = S_OK;
    }
-
-   fclose(fp);
 
    return result;
 }
@@ -252,43 +251,39 @@ static bool ParseIniSectionLine(const tChar * pszBuffer, cStr * pSection, cStr *
 cDictionaryIniStore::cDictionaryIniStore(const cFileSpec & file,
                                          const tChar * pszSection)
  : m_file(file)
+ , m_section((pszSection != NULL) ? pszSection : _T(""))
 {
-   _tcsncpy(m_szSection, pszSection, _countof(m_szSection));
-   m_szSection[_countof(m_szSection) - 1] = 0;
 }
 
 ///////////////////////////////////////
 
 tResult cDictionaryIniStore::Load(IDictionary * pDictionary)
 {
-   FILE * fp = _tfopen(m_file.CStr(), _T("r"));
-   if (fp == NULL)
+   if (pDictionary == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cAutoIPtr<IReader> pReader;
+   if (FileReaderCreate(m_file, kFileModeText, &pReader) != S_OK)
    {
       return E_FAIL;
    }
 
-   tChar buffer[1024];
-
+   cStr line;
    bool bInSection = false;
 
-   while (_fgetts(buffer, sizeof(buffer), fp))
+   while (pReader->Read(&line, _T('\n')) == S_OK)
    {
       cStr section;
-      if (ParseIniSectionLine(buffer, &section, NULL))
+      if (ParseIniSectionLine(line.c_str(), &section, NULL))
       {
-         if (_tcsicmp(section.c_str(), m_szSection) == 0)
-         {
-            bInSection = true;
-         }
-         else
-         {
-            bInSection = false;
-         }
+         bInSection = (_tcsicmp(section.c_str(), m_section.c_str()) == 0);
       }
       else if (bInSection)
       {
          cStr key, value, comment;
-         if (ParseDictionaryLine(buffer, &key, &value, &comment)
+         if (ParseDictionaryLine(line.c_str(), &key, &value, &comment)
              && !key.empty() && !value.empty())
          {
             DebugMsgEx2(DictionaryStore, "Read dictionary entry '%s' = '%s'\n", key.c_str(), value.c_str());
@@ -296,8 +291,6 @@ tResult cDictionaryIniStore::Load(IDictionary * pDictionary)
          }
       }
    }
-
-   fclose(fp);
 
    return S_OK;
 }

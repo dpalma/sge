@@ -103,7 +103,7 @@ interface IWriter : IUnknown
    tResult Write(ushort value);
    tResult Write(byte value);
 
-   virtual tResult Write(const char * value) = 0;
+   virtual tResult Write(const tChar * value) = 0;
    virtual tResult Write(const void * pValue, size_t cbValue,
                          size_t * pcbWritten = NULL) = 0;
 };
@@ -362,8 +362,13 @@ public:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-TECH_API tResult FileReaderCreate(const cFileSpec & file, IReader * * ppReader);
-TECH_API tResult FileWriterCreate(const cFileSpec & file, IWriter * * ppWriter);
+enum eFileMode
+{
+   kFileModeText, kFileModeBinary,
+};
+
+TECH_API tResult FileReaderCreate(const cFileSpec & file, eFileMode mode, IReader * * ppReader);
+TECH_API tResult FileWriterCreate(const cFileSpec & file, eFileMode mode, IWriter * * ppWriter);
 
 TECH_API tResult MemReaderCreate(const byte * pMem, size_t memSize, bool bOwn, IReader * * ppReader);
 

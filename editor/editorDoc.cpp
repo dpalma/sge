@@ -240,7 +240,7 @@ BOOL cEditorDoc::OnOpenDocument(LPCTSTR lpszPathName)
    SetModifiedFlag(); // set modified flag during load
 
    cAutoIPtr<IReader> pReader;
-   if (FileReaderCreate(cFileSpec(lpszPathName), &pReader) != S_OK)
+   if (FileReaderCreate(cFileSpec(lpszPathName), kFileModeBinary, &pReader) != S_OK)
    {
       return FALSE;
    }
@@ -260,7 +260,7 @@ BOOL cEditorDoc::OnOpenDocument(LPCTSTR lpszPathName)
 BOOL cEditorDoc::OnSaveDocument(LPCTSTR lpszPathName) 
 {
    cAutoIPtr<IWriter> pWriter;
-   if (FileWriterCreate(cFileSpec(lpszPathName), &pWriter) != S_OK)
+   if (FileWriterCreate(cFileSpec(lpszPathName), kFileModeBinary, &pWriter) != S_OK)
    {
       return FALSE;
    }

@@ -161,18 +161,35 @@ tResult cFileReader::Read(void * pv, size_t nBytes, size_t * pnBytesRead)
 
 ///////////////////////////////////////
 
-tResult FileReaderCreate(const cFileSpec & file, IReader * * ppReader)
+AssertAtCompileTime(kFileModeText == 0);
+AssertAtCompileTime(kFileModeBinary == 1);
+
+tResult FileReaderCreate(const cFileSpec & file, eFileMode mode, IReader * * ppReader)
 {
    if (ppReader == NULL)
    {
       return E_POINTER;
    }
-   
-   FILE * fp = _tfopen(file.CStr(), _T("rb"));
+
+   static const tChar * fopenModeStrings[] =
+   {
+      _T("rt"),
+      _T("rb"),
+   };
+
+#if _MSC_VER >= 1300
+   FILE * fp = NULL;
+   if (_tfopen_s(&fp, file.CStr(), fopenModeStrings[mode]) != 0)
+   {
+      return E_FAIL;
+   }
+#else
+   FILE * fp = _tfopen(file.CStr(), fopenModeStrings[mode]);
    if (fp == NULL)
    {
       return E_FAIL;
    }
+#endif
 
    cAutoIPtr<IReader> pReader(static_cast<IReader*>(new cFileReader(fp)));
    if (!pReader)
@@ -249,13 +266,15 @@ tResult cFileWriter::Seek(long pos, eSeekOrigin origin)
 
 ///////////////////////////////////////
 
-tResult cFileWriter::Write(const char * value)
+tResult cFileWriter::Write(const tChar * value)
 {
    if (m_fp != NULL)
    {
-      size_t writeLen = strlen(value) + 1;
-      if (fwrite(value, 1, writeLen, m_fp) == writeLen)
+      size_t nBytes = _tcslen(value) * sizeof(tChar);
+      if (fwrite(value, nBytes, 1, m_fp) == 1)
+      {
          return S_OK;
+      }
    }
    return E_FAIL;
 }
@@ -279,18 +298,35 @@ tResult cFileWriter::Write(const void * pv, size_t nBytes, size_t * pnBytesWritt
 
 ///////////////////////////////////////
 
-tResult FileWriterCreate(const cFileSpec & file, IWriter * * ppWriter)
+AssertAtCompileTime(kFileModeText == 0);
+AssertAtCompileTime(kFileModeBinary == 1);
+
+tResult FileWriterCreate(const cFileSpec & file, eFileMode mode, IWriter * * ppWriter)
 {
    if (ppWriter == NULL)
    {
       return E_POINTER;
    }
 
-   FILE * fp = _tfopen(file.CStr(), _T("wb"));
+   static const tChar * fopenModeStrings[] =
+   {
+      _T("wt"),
+      _T("wb"),
+   };
+
+#if _MSC_VER >= 1300
+   FILE * fp = NULL;
+   if (_tfopen_s(&fp, file.CStr(), fopenModeStrings[mode]) != 0)
+   {
+      return E_FAIL;
+   }
+#else
+   FILE * fp = _tfopen(file.CStr(), fopenModeStrings[mode]);
    if (fp == NULL)
    {
       return E_FAIL;
    }
+#endif
 
    cAutoIPtr<IWriter> pWriter(static_cast<IWriter*>(new cFileWriter(fp)));
    if (!pWriter)

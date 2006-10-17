@@ -5,7 +5,8 @@
 #define INCLUDED_READWRITEFILE_H
 
 #include "readwriteapi.h"
-#include <stdio.h>
+
+#include <cstdio>
 
 #ifdef _MSC_VER
 #pragma once
@@ -50,7 +51,7 @@ public:
    virtual tResult Tell(ulong * pPos);
    virtual tResult Seek(long pos, eSeekOrigin origin);
 
-   virtual tResult Write(const char * value);
+   virtual tResult Write(const tChar * value);
    virtual tResult Write(const void * pv, size_t cb, size_t * pcbWritten = NULL);
 
 private:

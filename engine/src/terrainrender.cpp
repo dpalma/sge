@@ -866,7 +866,7 @@ tResult BuildSplatAlphaMap(uint splatTile,
          Sprintf(&file, "SplatAlpha_%d_(%d,%d)-(%d,%d).bmp", splatTile,
             xRange.GetStart(), zRange.GetStart(), xRange.GetEnd(),zRange.GetEnd());
          cAutoIPtr<IWriter> pWriter;
-         if (FileWriterCreate(cFileSpec(file.c_str()), &pWriter) == S_OK)
+         if (FileWriterCreate(cFileSpec(file.c_str()), kFileModeBinary, &pWriter) == S_OK)
          {
             BmpWrite(pImage, pWriter);
          }

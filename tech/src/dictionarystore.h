@@ -47,7 +47,7 @@ public:
 
 private:
    cFileSpec m_file;
-   tChar m_szSection[256];
+   cStr m_section;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

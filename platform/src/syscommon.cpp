@@ -83,6 +83,24 @@ public:
    virtual void ReportFailure(char const* file, int line, char const* testName, char const* failure);
    virtual void ReportTestFinish(char const* testName, float secondsElapsed);
    virtual void ReportSummary(int testCount, int failureCount, float secondsElapsed);
+
+private:
+   class cTestFailure
+   {
+   public:
+      cTestFailure(const char * file, int line, const char * testName, const char * failure)
+       : m_file((file != NULL) ? file : "")
+       , m_line(line)
+       , m_testName((testName != NULL) ? testName : "")
+       , m_failure((failure != NULL) ? failure : "")
+      {
+      }
+
+      cStr m_file, m_testName, m_failure;
+      int m_line;
+   };
+
+   std::list<cTestFailure> m_failures;
 };
 
 ////////////////////////////////////////
@@ -111,7 +129,7 @@ void cSysTestReporter::ReportTestStart(char const* testName)
 
 void cSysTestReporter::ReportFailure(char const* file, int line, char const* testName, char const* failure)
 {
-   techlog.Print(file, line, kError, "Failure int %s: %s\n", testName, failure);
+   m_failures.push_back(cTestFailure(file, line, testName, failure));
 }
 
 ////////////////////////////////////////
@@ -120,7 +138,7 @@ void cSysTestReporter::ReportTestFinish(char const* testName, float secondsElaps
 {
    if (LOG_IS_CHANNEL_ENABLED(VerboseUnitTests))
    {
-      LogMsgNoFL1(kInfo, "Test \"%s\" end\n", testName);
+      LogMsgNoFL2(kInfo, "Test \"%s\" end (%f seconds elapsed)\n", testName, secondsElapsed);
    }
 }
 
@@ -128,9 +146,16 @@ void cSysTestReporter::ReportTestFinish(char const* testName, float secondsElaps
 
 void cSysTestReporter::ReportSummary(int testCount, int failureCount, float secondsElapsed)
 {
+   Assert(m_failures.size() == failureCount);
    if (failureCount > 0)
    {
-      LogMsgNoFL2(kInfo, "%d of %d UNIT TESTS FAILED!\n", failureCount, testCount);
+      LogMsgNoFL2(kError, "%d of %d UNIT TESTS FAILED!\n", failureCount, testCount);
+      std::list<cTestFailure>::const_iterator iter = m_failures.begin(), end = m_failures.end();
+      for (; iter != end; ++iter)
+      {
+         techlog.Print(iter->m_file.c_str(), iter->m_line, kError,
+            "Failure in %s: %s\n", iter->m_testName.c_str(), iter->m_failure.c_str());
+      }
    }
    else
    {

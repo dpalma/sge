@@ -257,7 +257,7 @@ tResult cExporter::ExportMesh(const tChar * pszFileName)
    exportFile.SetFileExt(_T("sgem"));
 
    cAutoIPtr<IWriter> pWriter;
-   if (FileWriterCreate(exportFile, &pWriter) != S_OK)
+   if (FileWriterCreate(exportFile, kFileModeBinary, &pWriter) != S_OK)
    {
       return E_FAIL;
    }
