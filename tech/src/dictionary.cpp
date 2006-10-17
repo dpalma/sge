@@ -550,7 +550,7 @@ TEST(DictionaryPersistence)
 
    tChar szStore[TMP_MAX];
 #if _MSC_VER >= 1300
-   CHECK(_ttmpnam_s(szStore, _countof(szStore)) != NULL);
+   CHECK(_ttmpnam_s(szStore, _countof(szStore)) == 0);
 #else
    CHECK(_ttmpnam(szStore) != NULL);
 #endif
