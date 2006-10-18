@@ -23,14 +23,20 @@ TECH_API bool IsPrime(uint n);
 
 class TECH_API cRand
 {
-   enum { b = 523786821 };
 public:
    cRand();
-   cRand(uint seed);
-   void Seed(uint seed);
-   uint Next();
+   cRand(ulong seed);
+
+   void Seed(ulong seed);
+   void Seed(ulong keys[], int nKeys);
+
+   ulong Next();
+   float NextFloat();
+
 private:
-   uint m_a;
+   enum { N = 624 };
+   ulong m_mt[N];
+   int m_mti;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

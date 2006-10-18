@@ -13,6 +13,8 @@
 
 #include "dbgalloc.h" // must be last header
 
+// REFERENCES
+// http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -52,25 +54,134 @@ bool IsPrime(uint n)
 //
 // CLASS: cRand
 //
+// A Mersenne-Twister pseudo-random number generator
+
+////////////////////////////////////////
+
+#define M 397
+#define MATRIX_A 0x9908b0dfUL   // constant vector a
+#define UPPER_MASK 0x80000000UL // most significant w-r bits
+#define LOWER_MASK 0x7fffffffUL // least significant r bits
+
+////////////////////////////////////////
 
 cRand::cRand()
+ : m_mti(N + 1)
 {
 }
 
-cRand::cRand(uint seed)
- : m_a(seed)
+////////////////////////////////////////
+
+cRand::cRand(ulong seed)
+ : m_mti(N + 1)
 {
+   Seed(seed);
 }
 
-void cRand::Seed(uint seed)
+////////////////////////////////////////
+
+void cRand::Seed(ulong seed)
 {
-   m_a = seed;
+   m_mt[0]= seed & 0xffffffffUL;
+   for (m_mti = 1; m_mti < N; m_mti++)
+   {
+      m_mt[m_mti] = (1812433253UL * (m_mt[m_mti-1] ^ (m_mt[m_mti-1] >> 30)) + m_mti); 
+      // See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier.
+      // In the previous versions, MSBs of the seed affect
+      // only MSBs of the array mt[].
+      m_mt[m_mti] &= 0xffffffffUL;
+      // for >32 bit machines
+   }
 }
 
-uint cRand::Next()
+////////////////////////////////////////
+
+void cRand::Seed(ulong keys[], int nKeys)
 {
-   m_a = m_a * b + 1;
-   return m_a;
+   Seed(19650218UL);
+   int i = 1, j = 0, k = (N > nKeys ? N : nKeys);
+   for (; k; k--)
+   {
+      m_mt[i] = (m_mt[i] ^ ((m_mt[i-1] ^ (m_mt[i-1] >> 30)) * 1664525UL)) + keys[j] + j; // non linear
+      m_mt[i] &= 0xffffffffUL; // for WORDSIZE > 32 machines
+      i++;
+      j++;
+      if (i >= N)
+      {
+         m_mt[0] = m_mt[N-1];
+         i=1;
+      }
+      if (j >= nKeys)
+      {
+         j=0;
+      }
+   }
+   for (k = N-1; k; k--)
+   {
+      m_mt[i] = (m_mt[i] ^ ((m_mt[i-1] ^ (m_mt[i-1] >> 30)) * 1566083941UL)) - i; // non linear
+      m_mt[i] &= 0xffffffffUL; // for WORDSIZE > 32 machines
+      i++;
+      if (i >= N)
+      {
+         m_mt[0] = m_mt[N-1];
+         i = 1;
+      }
+   }
+
+   m_mt[0] = 0x80000000UL; // MSB is 1; assuring non-zero initial array
+}
+
+////////////////////////////////////////
+
+ulong cRand::Next()
+{
+   ulong y;
+   static ulong mag01[2] = { 0x0UL, MATRIX_A };
+   // mag01[x] = x * MATRIX_A  for x=0,1
+
+   // generate N words at one time
+   if (m_mti >= N)
+   {
+      // if Seed() has not been called, use a default initial seed
+      if (m_mti == N+1)
+      {
+         Seed(5489UL);
+      }
+
+      int kk;
+      for (kk = 0; kk < N-M; kk++)
+      {
+         y = (m_mt[kk]&UPPER_MASK)|(m_mt[kk+1]&LOWER_MASK);
+         m_mt[kk] = m_mt[kk+M] ^ (y >> 1) ^ mag01[y & 0x1UL];
+      }
+      for (; kk < N-1; kk++)
+      {
+         y = (m_mt[kk]&UPPER_MASK)|(m_mt[kk+1]&LOWER_MASK);
+         m_mt[kk] = m_mt[kk+(M-N)] ^ (y >> 1) ^ mag01[y & 0x1UL];
+      }
+      y = (m_mt[N-1]&UPPER_MASK)|(m_mt[0]&LOWER_MASK);
+      m_mt[N-1] = m_mt[M-1] ^ (y >> 1) ^ mag01[y & 0x1UL];
+
+      m_mti = 0;
+   }
+
+   y = m_mt[m_mti++];
+
+   // Tempering
+   y ^= (y >> 11);
+   y ^= (y << 7) & 0x9d2c5680UL;
+   y ^= (y << 15) & 0xefc60000UL;
+   y ^= (y >> 18);
+
+   return y;
+}
+
+////////////////////////////////////////
+
+float cRand::NextFloat()
+{
+   static const float kOneOverMaxLong = 1.0f / 4294967295.0f;
+   return Next() * kOneOverMaxLong; 
 }
 
 
@@ -111,7 +222,7 @@ static uint CountOneBits(uint n)
 // within a tolerance of 50% ones.
 TEST(RandBitFrequency)
 {
-   cRand r(time(NULL));
+   cRand r(static_cast<ulong>(time(NULL)));
 
    const uint kNumTests = 1000;
    uint nTotalBits = sizeof(uint) * kNumTests * 8;

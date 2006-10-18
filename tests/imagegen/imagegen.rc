@@ -134,6 +134,7 @@ BEGIN
         MENUITEM "&Rectangle",                  ID_IMAGE_RECTANGLE
         MENUITEM "R&ound Rectangle",            ID_IMAGE_ROUNDRECT
         MENUITEM "&Aqua Button",                ID_IMAGE_AQUABUTTON
+        MENUITEM "&Static",                     ID_IMAGE_STATIC
         MENUITEM SEPARATOR
         MENUITEM "&Gamma...",                   32779
         MENUITEM SEPARATOR

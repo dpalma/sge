@@ -9,10 +9,10 @@
 #include "ImageGammaDlg.h"
 
 #include "color.h"
-#include "colortem.h"
 #include "filespec.h"
 #include "filepath.h"
 #include "readwriteapi.h"
+#include "techmath.h"
 #include "vec2.h"
 
 #ifdef _DEBUG
@@ -42,6 +42,8 @@ BEGIN_MESSAGE_MAP(cImageGenDoc, CDocument)
    ON_COMMAND(ID_IMAGE_AQUABUTTON, &cImageGenDoc::OnImageAquabutton)
    ON_UPDATE_COMMAND_UI(ID_IMAGE_AQUABUTTON, &cImageGenDoc::OnUpdateImageAquabutton)
    ON_COMMAND(ID_IMAGE_GAMMA, &cImageGenDoc::OnImageGamma)
+   ON_COMMAND(ID_IMAGE_STATIC, &cImageGenDoc::OnImageStatic)
+   ON_UPDATE_COMMAND_UI(ID_IMAGE_STATIC, &cImageGenDoc::OnUpdateImageStatic)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -285,6 +287,31 @@ void cImageGenDoc::Rasterize()
       ImageGradientRoundRect(m_pImage, hlInset, hlInset, m_pImage->GetWidth() - (2 * hlInset), hlHeight,
          cornerRadius, kIGD_TopToBottom, cColor(1,1,1,.75f), cColor(1,1,1,0), kIDF_AlphaBlend);
    }
+   else if (m_shape == kStatic)
+   {
+      uint imageWidth = m_pImage->GetWidth(), imageHeight = m_pImage->GetHeight();
+      uint x = 0, y = 0, w = imageWidth, h = imageHeight;
+
+      cRand r(GetTickCount());
+
+      static const uint kMaxSeg = 3;
+
+      byte gray = static_cast<byte>(r.Next() % 256);
+      uint index = 0, segEnd = index + (r.Next() % kMaxSeg) + 1;
+
+      for (uint j = y; j < (y + h); ++j)
+      {
+         for (uint i = x; i < (x + w); ++i, ++index)
+         {
+            if (index >= segEnd)
+            {
+               gray = static_cast<byte>(r.Next() % 256);
+               segEnd = index + (r.Next() % kMaxSeg) + 1;
+            }
+            m_pImage->SetPixel(i, j, cRGBA(gray, gray, gray));
+         }
+      }
+   }
 
    if (m_bApplyGamma)
    {
@@ -360,7 +387,7 @@ BOOL cImageGenDoc::OnSaveDocument(LPCTSTR lpszPathName)
    if (!!m_pImage)
    {
       cAutoIPtr<IWriter> pWriter;
-      if (FileWriterCreate(cFileSpec(lpszPathName), &pWriter) == S_OK)
+      if (FileWriterCreate(cFileSpec(lpszPathName), kFileModeBinary, &pWriter) == S_OK)
       {
          if (BmpWrite(m_pImage, pWriter) == S_OK)
          {
@@ -442,6 +469,17 @@ void cImageGenDoc::OnImageAquabutton()
 void cImageGenDoc::OnUpdateImageAquabutton(CCmdUI *pCmdUI)
 {
    pCmdUI->SetRadio(m_shape == kAquaButton);
+}
+
+void cImageGenDoc::OnImageStatic()
+{
+   m_shape = kStatic;
+   Rasterize();
+}
+
+void cImageGenDoc::OnUpdateImageStatic(CCmdUI *pCmdUI)
+{
+   pCmdUI->SetRadio(m_shape == kStatic);
 }
 
 void cImageGenDoc::OnImageGamma()

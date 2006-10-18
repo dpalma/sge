@@ -766,10 +766,10 @@
 					RelativePath="..\..\tech\src\image.h"
 					>
 				</File>
-			   <File
-				   RelativePath="..\..\tech\src\md5.h"
-				   >
-			   </File>
+				<File
+					RelativePath="..\..\tech\src\md5.h"
+					>
+				</File>
 				<File
 					RelativePath="..\..\tech\src\readwritefile.h"
 					>
