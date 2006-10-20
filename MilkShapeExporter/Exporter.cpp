@@ -274,16 +274,6 @@ tResult cExporter::ExportMesh(const tChar * pszFileName)
 
 ///////////////////////////////////////
 
-struct sExportHeader
-{
-   union
-   {
-      byte bytes[sizeof(uint32)];
-      uint32 value;
-   } id;
-   uint32 version;
-};
-
 tResult cExporter::ExportMesh(IWriter * pWriter)
 {
    if (pWriter == NULL)
@@ -296,17 +286,26 @@ tResult cExporter::ExportMesh(IWriter * pWriter)
       return S_FALSE;
    }
 
-   sExportHeader header = { { 'M', 'e', 'G', 's' }, 1 };
+   tResult result = E_FAIL;
 
-   if (pWriter->Write(&header, sizeof(header)) == S_OK
-      && pWriter->Write(m_vertices) == S_OK
-      && pWriter->Write(m_meshes) == S_OK
-      && pWriter->Write(m_materials) == S_OK)
+   do
    {
-      return S_OK;
-   }
+      if (pWriter->Write(cModelChunk<NoChunkData>(MODEL_FILE_ID_CHUNK)) != S_OK
+         || pWriter->Write(cModelChunk<uint>(MODEL_VERSION_CHUNK, 1)) != S_OK)
+      {
+         break;
+      }
 
-   return E_FAIL;
+      if (pWriter->Write(m_vertices) == S_OK
+         && pWriter->Write(m_meshes) == S_OK
+         && pWriter->Write(m_materials) == S_OK)
+      {
+         result = S_OK;
+      }
+
+   } while (0);
+
+   return result;
 }
 
 void cExporter::CollectMeshes(msModel * pModel,

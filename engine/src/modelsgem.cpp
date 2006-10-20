@@ -28,8 +28,6 @@ LOG_DEFINE_CHANNEL(ModelSgem);
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static const byte g_sgemId[] = "MeGs";
-
 void * ModelSgemLoad(IReader * pReader)
 {
    if (pReader == NULL)
@@ -37,24 +35,25 @@ void * ModelSgemLoad(IReader * pReader)
       return NULL;
    }
 
-   LocalMsg("Loading SGEM file...\n");
+   LocalMsg("Loading SGE model file...\n");
 
    //////////////////////////////
    // Read the header
 
-   byte id[4];
-   uint32 version;
-   if (pReader->Read(id, sizeof(id)) != S_OK
-      || pReader->Read(&version) != S_OK
-      || memcmp(id, g_sgemId, 4) != 0)
+   cModelChunk<NoChunkData> fileIdChunk;
+   if (pReader->Read(&fileIdChunk) != S_OK
+      || fileIdChunk.GetChunkId() != MODEL_FILE_ID_CHUNK)
    {
-      ErrorMsg("Bad SGEM file header\n");
+      ErrorMsg("Bad SGE model file header\n");
       return NULL;
    }
 
-   if (version != 1)
+   cModelChunk<uint> fileVersionChunk;
+   if (pReader->Read(&fileVersionChunk) != S_OK
+      || fileVersionChunk.GetChunkId() != MODEL_VERSION_CHUNK
+      || fileVersionChunk.GetChunkData() != 1)
    {
-      ErrorMsg1("SGEM version %d not supported\n", version);
+      ErrorMsg("Bad SGE model file version\n");
       return NULL;
    }
 

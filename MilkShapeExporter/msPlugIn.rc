@@ -63,7 +63,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_TITLE               "SGE Mesh..."
+    IDS_TITLE               "SGE Model..."
     IDS_MATERIALS           "Materials"
     IDS_AMBIENT             "Ambient: %f, %f, %f, %f"
     IDS_DIFFUSE             "Diffuse: %f, %f, %f, %f"
@@ -88,7 +88,7 @@ BEGIN
     IDS_VERTEX_I            "Vertex %d"
     IDS_POSITION            "Position"
     IDS_NORMAL              "Normal"
-    IDS_EXPORT_FILTER       "SGE Mesh Files (*.sgem)|*.sgem||"
+    IDS_EXPORT_FILTER       "SGE Model Files (*.sgem)|*.sgem||"
     IDS_EXPORT_DEFAULT_EXTENSION "sgem"
 END
 
