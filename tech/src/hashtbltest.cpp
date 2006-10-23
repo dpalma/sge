@@ -63,9 +63,9 @@ static void random_string(char * str, int maxlen)
    for (int i = 0; i < len; i++)
    {
       if (coin_flip())
-         str[i] = 'a' + (g_rand.Next() % 26);
+         str[i] = 'a' + static_cast<char>((g_rand.Next() % 26));
       else
-         str[i] = 'A' + (g_rand.Next() % 26);
+         str[i] = 'A' + static_cast<char>((g_rand.Next() % 26));
    }
 
    str[len - 1] = 0;

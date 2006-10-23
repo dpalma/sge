@@ -177,7 +177,7 @@ tResult FileReaderCreate(const cFileSpec & file, eFileMode mode, IReader * * ppR
       _T("rb"),
    };
 
-#if _MSC_VER >= 1300
+#if _MSC_VER >= 1400
    FILE * fp = NULL;
    if (_tfopen_s(&fp, file.CStr(), fopenModeStrings[mode]) != 0)
    {
@@ -314,7 +314,7 @@ tResult FileWriterCreate(const cFileSpec & file, eFileMode mode, IWriter * * ppW
       _T("wb"),
    };
 
-#if _MSC_VER >= 1300
+#if _MSC_VER >= 1400
    FILE * fp = NULL;
    if (_tfopen_s(&fp, file.CStr(), fopenModeStrings[mode]) != 0)
    {
