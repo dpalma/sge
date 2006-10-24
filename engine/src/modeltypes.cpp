@@ -95,6 +95,45 @@ tResult cReadWriteOps<sModelMaterial>::Write(IWriter * pWriter, const sModelMate
 
 ///////////////////////////////////////////////////////////////////////////////
 
+tResult cReadWriteOps<sModelMesh>::Read(IReader * pReader, sModelMesh * pModelMesh)
+{
+   if (pReader == NULL || pModelMesh == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (pReader->Read(&pModelMesh->primitive) == S_OK
+      && pReader->Read(&pModelMesh->materialIndex) == S_OK
+      && pReader->Read(&pModelMesh->indexStart) == S_OK
+      && pReader->Read(&pModelMesh->nIndices) == S_OK)
+   {
+      return S_OK;
+   }
+
+   return E_FAIL;
+}
+
+tResult cReadWriteOps<sModelMesh>::Write(IWriter * pWriter, const sModelMesh & modelMesh)
+{
+   if (pWriter == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (pWriter->Write(modelMesh.primitive) == S_OK
+      && pWriter->Write(modelMesh.materialIndex) == S_OK
+      && pWriter->Write(modelMesh.indexStart) == S_OK
+      && pWriter->Write(modelMesh.nIndices) == S_OK)
+   {
+      return S_OK;
+   }
+
+   return E_FAIL;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 tResult cReadWriteOps<sModelJoint>::Read(IReader * pReader, sModelJoint * pModelJoint)
 {
    if (pReader == NULL || pModelJoint == NULL)

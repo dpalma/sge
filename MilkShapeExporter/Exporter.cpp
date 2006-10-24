@@ -174,7 +174,7 @@ cExporter::~cExporter()
 
 void cExporter::PreProcess()
 {
-   CollectMeshes(m_pModel, &m_vertices, &m_meshes);
+   CollectMeshes(m_pModel, &m_vertices, &m_meshes, &m_indices, &m_modelMeshes);
 
    CollectModelMaterials(m_pModel, &m_materials);
 
@@ -262,14 +262,7 @@ tResult cExporter::ExportMesh(const tChar * pszFileName)
       return E_FAIL;
    }
 
-   if (FAILED(ExportMesh(pWriter))
-      || FAILED(pWriter->Write(m_modelJoints))
-      || FAILED(pWriter->Write(m_animSeqs)))
-   {
-      return E_FAIL;
-   }
-
-   return S_OK;
+   return ExportMesh(pWriter);
 }
 
 ///////////////////////////////////////
@@ -298,7 +291,9 @@ tResult cExporter::ExportMesh(IWriter * pWriter)
 
       if (pWriter->Write(m_vertices) == S_OK
          && pWriter->Write(m_meshes) == S_OK
-         && pWriter->Write(m_materials) == S_OK)
+         && pWriter->Write(m_materials) == S_OK
+         && pWriter->Write(m_modelJoints) == S_OK
+         && pWriter->Write(m_animSeqs) == S_OK)
       {
          result = S_OK;
       }
@@ -310,7 +305,9 @@ tResult cExporter::ExportMesh(IWriter * pWriter)
 
 void cExporter::CollectMeshes(msModel * pModel,
                               std::vector<sModelVertex> * pVertices,
-                              std::vector<cExportMesh> * pMeshes)
+                              std::vector<cExportMesh> * pMeshes,
+                              std::vector<uint16> * pIndices,
+                              std::vector<sModelMesh> * pModelMeshes)
 {
    int nMeshes = msModel_GetMeshCount(pModel);
 
@@ -402,12 +399,32 @@ void cExporter::CollectMeshes(msModel * pModel,
             //{
             //}
 
+            sModelMesh modelMesh;
+            modelMesh.primitive = (int)pPrimGroups->type;
+            modelMesh.materialIndex = iMaterial;
+            modelMesh.indexStart = pIndices->size();
+            modelMesh.nIndices = strippedIndices.size();
+
+            pIndices->insert(pIndices->end(), strippedIndices.begin(), strippedIndices.end());
+
+            pModelMeshes->push_back(modelMesh);
+
             pMeshes->push_back(cExportMesh(iMaterial, (int)pPrimGroups->type, strippedIndices.begin(), strippedIndices.end()));
 
             delete [] pPrimGroups;
          }
          else
          {
+            sModelMesh modelMesh;
+            modelMesh.primitive = (int)pPrimGroups->type;
+            modelMesh.materialIndex = iMaterial;
+            modelMesh.indexStart = pIndices->size();
+            modelMesh.nIndices = mappedIndices.size();
+
+            pIndices->insert(pIndices->end(), mappedIndices.begin(), mappedIndices.end());
+
+            pModelMeshes->push_back(modelMesh);
+
             pMeshes->push_back(cExportMesh(iMaterial, (int)pPrimGroups->type, mappedIndices.begin(), mappedIndices.end()));
          }
 

@@ -79,6 +79,28 @@ public:
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// STRUCT: sModelMesh
+//
+
+struct sModelMesh
+{
+   int primitive;
+   int materialIndex;
+   uint indexStart;
+   uint nIndices;
+};
+
+template <>
+class ENGINE_API cReadWriteOps<sModelMesh>
+{
+public:
+   static tResult Read(IReader * pReader, sModelMesh * pModelMesh);
+   static tResult Write(IWriter * pWriter, const sModelMesh & modelMesh);
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // STRUCT: sModelJoint
 //
 
@@ -130,6 +152,7 @@ public:
 #define MODEL_FILE_ID_CHUNK                  MAKEFOURCC('S','G','M','D')
 #define MODEL_VERSION_CHUNK                  MAKEFOURCC('V','R','S','N')
 #define MODEL_VERTEX_ARRAY_CHUNK             MAKEFOURCC('V','R','T','A')
+#define MODEL_INDEX16_ARRAY_CHUNK            MAKEFOURCC('I','1','6','A')
 #define MODEL_MESH_ARRAY_CHUNK               MAKEFOURCC('M','S','H','A')
 #define MODEL_MATERIAL_ARRAY_CHUNK           MAKEFOURCC('M','T','L','A')
 #define MODEL_SKELETON_CHUNK                 MAKEFOURCC('S','K','E','L')

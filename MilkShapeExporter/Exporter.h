@@ -112,7 +112,8 @@ public:
    tResult ExportMesh(IWriter * pWriter);
 
 private:
-   static void CollectMeshes(msModel * pModel, std::vector<sModelVertex> * pVertices, std::vector<cExportMesh> * pMeshes);
+   static void CollectMeshes(msModel * pModel, std::vector<sModelVertex> * pVertices, std::vector<cExportMesh> * pMeshes,
+         std::vector<uint16> * pIndices, std::vector<sModelMesh> * pModelMeshes);
    static void CollectMeshVertices(msMesh * pMesh, std::vector<sModelVertex> * pVertices);
    static void CollectMeshNormals(msMesh * pMesh, std::vector<tVec3> * pNormals);
    static void CollectModelMaterials(msModel * pModel, std::vector<sModelMaterial> * pMaterials);
@@ -123,6 +124,8 @@ private:
    bool m_bAutoDeleteModel;
 
    std::vector<sModelVertex> m_vertices;
+   std::vector<uint16> m_indices;
+   std::vector<sModelMesh> m_modelMeshes;
    std::vector<cExportMesh> m_meshes;
    std::vector<sModelMaterial> m_materials;
    std::vector<cIntermediateJoint> m_tempJoints;
