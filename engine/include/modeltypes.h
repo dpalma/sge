@@ -19,6 +19,7 @@
 //
 // STRUCT: sModelVertex
 //
+// A vertex with a single influencing bone (and no weights)
 
 struct sModelVertex
 {
@@ -156,6 +157,7 @@ public:
 #define MODEL_MESH_ARRAY_CHUNK               MAKEFOURCC('M','S','H','A')
 #define MODEL_MATERIAL_ARRAY_CHUNK           MAKEFOURCC('M','T','L','A')
 #define MODEL_SKELETON_CHUNK                 MAKEFOURCC('S','K','E','L')
+#define MODEL_JOINT_ARRAY_CHUNK              MAKEFOURCC('J','N','T','A')
 #define MODEL_ANIMATION_SEQUENCE_CHUNK       MAKEFOURCC('A','N','I','M')
 
 const uint kModelChunkHeaderSize = (2 * sizeof(uint)); // chunk type and length
@@ -165,6 +167,11 @@ const uint kModelChunkHeaderSize = (2 * sizeof(uint)); // chunk type and length
 //
 // TEMPLATE: cModelChunk
 //
+
+struct sModelChunkHeader
+{
+   uint chunkId, chunkLength;
+};
 
 typedef void * NoChunkData;
 
@@ -178,13 +185,13 @@ public:
    cModelChunk(uint chunkId);
    cModelChunk(uint chunkId, const T & chunkData);
 
-   uint GetChunkId() const { return m_chunkId; }
-   uint GetChunkLength() const { return m_chunkLength; }
+   uint GetChunkId() const { return m_chunkHeader.chunkId; }
+   uint GetChunkLength() const { return m_chunkHeader.chunkLength; }
    bool NoChunkData() const { return m_bNoChunkData; }
    const T & GetChunkData() const { return m_chunkData; }
 
 private:
-   uint m_chunkId, m_chunkLength;
+   sModelChunkHeader m_chunkHeader;
    bool m_bNoChunkData;
    T m_chunkData;
 };
@@ -193,31 +200,31 @@ private:
 
 template <typename T>
 cModelChunk<T>::cModelChunk()
- : m_chunkId(0)
- , m_bNoChunkData(true)
- , m_chunkLength(0)
+ : m_bNoChunkData(true)
 {
+   m_chunkHeader.chunkId = 0;
+   m_chunkHeader.chunkLength = 0;
 }
 
 ////////////////////////////////////////
 
 template <typename T>
 cModelChunk<T>::cModelChunk(uint chunkId)
- : m_chunkId(chunkId)
- , m_bNoChunkData(true)
- , m_chunkLength(0)
+ : m_bNoChunkData(true)
 {
+   m_chunkHeader.chunkId = chunkId;
+   m_chunkHeader.chunkLength = 0;
 }
 
 ////////////////////////////////////////
 
 template <typename T>
 cModelChunk<T>::cModelChunk(uint chunkId, const T & chunkData)
- : m_chunkId(chunkId)
- , m_chunkLength(0)
- , m_bNoChunkData(false)
+ : m_bNoChunkData(false)
  , m_chunkData(chunkData)
 {
+   m_chunkHeader.chunkId = chunkId;
+   m_chunkHeader.chunkLength = 0;
 }
 
 
@@ -246,8 +253,7 @@ tResult cReadWriteOps< cModelChunk<T> >::Read(IReader * pReader, cModelChunk<T> 
 
    tResult result = E_FAIL;
 
-   if (pReader->Read(&pModelChunk->m_chunkId) == S_OK
-      && pReader->Read(&pModelChunk->m_chunkLength) == S_OK)
+   if (pReader->Read(&pModelChunk->m_chunkHeader, sizeof(pModelChunk->m_chunkHeader)) == S_OK)
    {
       if (pModelChunk->GetChunkLength() == kModelChunkHeaderSize)
       {

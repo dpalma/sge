@@ -45,30 +45,34 @@ static void FillExportPreviewTree(HWND hWndTree, cExporter * pExporter)
       }
 
       {
-         HTREEITEM hMeshesItem = InsertTreeItem(hWndTree, TVI_ROOT, _T("Meshes"));
-         std::vector<cExportMesh>::const_iterator iter = pExporter->BeginMeshes(), end = pExporter->EndMeshes();
+         HTREEITEM hIndicesItem = InsertTreeItem(hWndTree, TVI_ROOT, _T("Indices"));
+         cStr temp;
+         std::vector<uint16>::const_iterator iter = pExporter->BeginIndices(), end = pExporter->EndIndices();
          for (int index = 0; iter != end; ++iter, ++index)
          {
-            cStr temp;
-            HTREEITEM hItem = InsertTreeItem(hWndTree, hMeshesItem, Sprintf(&temp, _T("Mesh %d"), index).c_str());
-            if (hItem != NULL)
-            {
-               static const tChar * primitives[] =
-               {
-                  _T("Triangle List"),
-                  _T("Triangle Strip"),
-                  _T("Triangle Fan"),
-               };
+            InsertTreeItem(hWndTree, hIndicesItem, Sprintf(&temp, _T("%d"), *iter).c_str());
+         }
+      }
 
-               HTREEITEM hIndicesItem = InsertTreeItem(hWndTree, hItem, Sprintf(&temp, _T("%d Indices (%s)"), iter->m_indices.size(), primitives[iter->m_primitive]).c_str());
-               if (hIndicesItem != NULL)
-               {
-                  for (uint i = 0; i < iter->m_indices.size(); ++i)
-                  {
-                     InsertTreeItem(hWndTree, hIndicesItem, Sprintf(&temp, _T("%d"), iter->m_indices[i]).c_str());
-                  }
-               }
-            }
+      {
+         static const tChar * primitives[] =
+         {
+            _T("Lines"),
+            _T("Line Strip"),
+            _T("Triangle List"),
+            _T("Triangle Strip"),
+            _T("Triangle Fan")
+         };
+
+         cStr temp;
+         HTREEITEM hMeshesItem = InsertTreeItem(hWndTree, TVI_ROOT, _T("Meshes"));
+         std::vector<sModelMesh>::const_iterator iter = pExporter->BeginModelMeshes(), end = pExporter->EndModelMeshes();
+         for (int index = 0; iter != end; ++iter, ++index)
+         {
+            const sModelMesh & m = *iter;
+            InsertTreeItem(hWndTree, hMeshesItem,
+               Sprintf(&temp, _T("Mesh %d: %s, Material %d, First Index %d, # Indices %d"),
+                  index, primitives[m.primitive], m.materialIndex, m.indexStart, m.nIndices).c_str());
          }
       }
 

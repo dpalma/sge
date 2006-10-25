@@ -85,38 +85,6 @@ static void ParseAnimDescs(const char * pszString, std::vector<sModelAnimationDe
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cExportMesh
-//
-
-cExportMesh::cExportMesh(int materialIndex, int primitive,
-                         std::vector<uint16>::const_iterator firstIndex,
-                         std::vector<uint16>::const_iterator lastIndex)
- : m_materialIndex(materialIndex)
- , m_primitive(primitive)
- , m_indices(firstIndex, lastIndex)
-{
-}
-
-tResult cReadWriteOps<cExportMesh>::Write(IWriter * pWriter, const cExportMesh & exportMesh)
-{
-   if (pWriter == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (pWriter->Write(exportMesh.m_materialIndex) == S_OK
-      && pWriter->Write(exportMesh.m_primitive) == S_OK
-      && pWriter->Write(exportMesh.m_indices) == S_OK)
-   {
-      return S_OK;
-   }
-
-   return E_FAIL;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
 // CLASS: cExportAnimation
 //
 
@@ -174,7 +142,7 @@ cExporter::~cExporter()
 
 void cExporter::PreProcess()
 {
-   CollectMeshes(m_pModel, &m_vertices, &m_meshes, &m_indices, &m_modelMeshes);
+   CollectMeshes(m_pModel, &m_vertices, &m_indices, &m_modelMeshes);
 
    CollectModelMaterials(m_pModel, &m_materials);
 
@@ -274,38 +242,39 @@ tResult cExporter::ExportMesh(IWriter * pWriter)
       return E_POINTER;
    }
 
-   if (m_meshes.empty())
+   if (m_modelMeshes.empty())
    {
       return S_FALSE;
    }
 
    tResult result = E_FAIL;
 
-   do
+   typedef cModelChunk< std::vector<sModelJoint> > tJointArrayChunk;
+   cModelChunk<tJointArrayChunk> skeletonChunk(MODEL_SKELETON_CHUNK,
+      tJointArrayChunk(MODEL_JOINT_ARRAY_CHUNK, m_modelJoints));
+
+   if (pWriter->Write(cModelChunk<NoChunkData>(MODEL_FILE_ID_CHUNK)) == S_OK
+      && pWriter->Write(cModelChunk<uint>(MODEL_VERSION_CHUNK, 1)) == S_OK
+      && pWriter->Write(cModelChunk< std::vector<sModelVertex> >(MODEL_VERTEX_ARRAY_CHUNK, m_vertices)) == S_OK
+      && pWriter->Write(cModelChunk< std::vector<uint16> >(MODEL_INDEX16_ARRAY_CHUNK, m_indices)) == S_OK
+      && pWriter->Write(cModelChunk< std::vector<sModelMesh> >(MODEL_MESH_ARRAY_CHUNK, m_modelMeshes)) == S_OK
+      && pWriter->Write(cModelChunk< std::vector<sModelMaterial> >(MODEL_MATERIAL_ARRAY_CHUNK, m_materials)) == S_OK
+      && pWriter->Write(skeletonChunk) == S_OK)
    {
-      if (pWriter->Write(cModelChunk<NoChunkData>(MODEL_FILE_ID_CHUNK)) != S_OK
-         || pWriter->Write(cModelChunk<uint>(MODEL_VERSION_CHUNK, 1)) != S_OK)
-      {
-         break;
-      }
+      result = S_OK;
 
-      if (pWriter->Write(m_vertices) == S_OK
-         && pWriter->Write(m_meshes) == S_OK
-         && pWriter->Write(m_materials) == S_OK
-         && pWriter->Write(m_modelJoints) == S_OK
-         && pWriter->Write(m_animSeqs) == S_OK)
+      std::vector<cExportAnimation>::const_iterator iter = m_animSeqs.begin(), end = m_animSeqs.end();
+      for (; iter != end; ++iter)
       {
-         result = S_OK;
+         result = pWriter->Write(cModelChunk<cExportAnimation>(MODEL_ANIMATION_SEQUENCE_CHUNK, *iter));
       }
-
-   } while (0);
+   }
 
    return result;
 }
 
 void cExporter::CollectMeshes(msModel * pModel,
                               std::vector<sModelVertex> * pVertices,
-                              std::vector<cExportMesh> * pMeshes,
                               std::vector<uint16> * pIndices,
                               std::vector<sModelMesh> * pModelMeshes)
 {
@@ -399,8 +368,10 @@ void cExporter::CollectMeshes(msModel * pModel,
             //{
             //}
 
+            static const ePrimitiveType primTypes[] = { kPT_Triangles, kPT_TriangleStrip, kPT_TriangleFan };
+
             sModelMesh modelMesh;
-            modelMesh.primitive = (int)pPrimGroups->type;
+            modelMesh.primitive = primTypes[pPrimGroups->type];
             modelMesh.materialIndex = iMaterial;
             modelMesh.indexStart = pIndices->size();
             modelMesh.nIndices = strippedIndices.size();
@@ -409,14 +380,12 @@ void cExporter::CollectMeshes(msModel * pModel,
 
             pModelMeshes->push_back(modelMesh);
 
-            pMeshes->push_back(cExportMesh(iMaterial, (int)pPrimGroups->type, strippedIndices.begin(), strippedIndices.end()));
-
             delete [] pPrimGroups;
          }
          else
          {
             sModelMesh modelMesh;
-            modelMesh.primitive = (int)pPrimGroups->type;
+            modelMesh.primitive = kPT_Triangles;
             modelMesh.materialIndex = iMaterial;
             modelMesh.indexStart = pIndices->size();
             modelMesh.nIndices = mappedIndices.size();
@@ -424,8 +393,6 @@ void cExporter::CollectMeshes(msModel * pModel,
             pIndices->insert(pIndices->end(), mappedIndices.begin(), mappedIndices.end());
 
             pModelMeshes->push_back(modelMesh);
-
-            pMeshes->push_back(cExportMesh(iMaterial, (int)pPrimGroups->type, mappedIndices.begin(), mappedIndices.end()));
          }
 
          msMesh_Destroy(pMesh);

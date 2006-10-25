@@ -124,6 +124,23 @@ cModel::cModel(const tModelVertices & verts,
 ///////////////////////////////////////
 
 cModel::cModel(const tModelVertices & verts,
+               const std::vector<uint16> & indices,
+               const std::vector<sModelMesh> & meshes2,
+               const tModelMaterials & materials,
+               IModelSkeleton * pSkeleton)
+ : m_vertices(verts.size())
+ , m_indices(indices)
+ , m_meshes2(meshes2)
+ , m_materials(materials.size())
+ , m_pSkeleton(CTAddRef(pSkeleton))
+{
+   std::copy(verts.begin(), verts.end(), m_vertices.begin());
+   std::copy(materials.begin(), materials.end(), m_materials.begin());
+}
+
+///////////////////////////////////////
+
+cModel::cModel(const tModelVertices & verts,
                const tModelMaterials & materials,
                const tModelMeshes & meshes,
                IModelSkeleton * pSkeleton)
@@ -160,6 +177,32 @@ tResult cModel::Create(const tModelVertices & verts,
    {
       return E_OUTOFMEMORY;
    }
+
+   *ppModel = pModel;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cModel::Create(const tModelVertices & verts,
+                       const std::vector<uint16> & indices,
+                       const std::vector<sModelMesh> & meshes2,
+                       const tModelMaterials & materials,
+                       IModelSkeleton * pSkeleton,
+                       cModel * * ppModel)
+{
+   if (ppModel == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cModel * pModel = new cModel(verts, indices, meshes2, materials, pSkeleton);
+   if (pModel == NULL)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   pModel->PreApplyJoints();
 
    *ppModel = pModel;
    return S_OK;

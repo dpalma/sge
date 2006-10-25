@@ -59,63 +59,59 @@ void * ModelSgemLoad(IReader * pReader)
 
    //////////////////////////////
 
-   std::vector<sModelVertex> vertices;
-   if (pReader->Read(&vertices) != S_OK)
+   cModelChunk< std::vector<sModelVertex> > verticesChunk;
+   if (pReader->Read(&verticesChunk) != S_OK
+      || verticesChunk.GetChunkId() != MODEL_VERTEX_ARRAY_CHUNK)
    {
+      ErrorMsg("Bad SGE model vertices\n");
       return NULL;
    }
 
    //////////////////////////////
 
-   uint nMeshes = 0;
-   if (pReader->Read(&nMeshes, sizeof(nMeshes)) != S_OK
-      || nMeshes == 0)
+   cModelChunk< std::vector<uint16> > indicesChunk;
+   if (pReader->Read(&indicesChunk) != S_OK
+      || indicesChunk.GetChunkId() != MODEL_INDEX16_ARRAY_CHUNK)
    {
+      ErrorMsg("Bad SGE model indices\n");
       return NULL;
-   }
-
-   LocalMsg1("%d Meshes\n", nMeshes);
-
-   tModelMeshes meshes(nMeshes);
-
-   for (uint i = 0; i < nMeshes; ++i)
-   {
-      static const ePrimitiveType primTypes[] = { kPT_Triangles, kPT_TriangleStrip, kPT_TriangleFan };
-
-      int materialIndex = -1, primType = -1;
-      if (pReader->Read(&materialIndex) != S_OK
-         || pReader->Read(&primType) != S_OK
-         || primType < 0 || primType > 2)
-      {
-         return NULL;
-      }
-
-      std::vector<uint16> indices;
-      if (pReader->Read(&indices) != S_OK)
-      {
-         return NULL;
-      }
-
-      meshes[i] = cModelMesh(primTypes[primType], indices, materialIndex);
    }
 
    //////////////////////////////
 
-   std::vector<sModelMaterial> materials;
-   if (pReader->Read(&materials) != S_OK)
+   cModelChunk< std::vector<sModelMesh> > meshesChunk;
+   if (pReader->Read(&meshesChunk) != S_OK
+      || meshesChunk.GetChunkId() != MODEL_MESH_ARRAY_CHUNK)
    {
+      ErrorMsg("Bad SGE model meshes\n");
       return NULL;
    }
-
-   LocalMsg1("%d Materials\n", materials.size());
 
    //////////////////////////////
 
-   std::vector<sModelJoint> joints;
-   if (pReader->Read(&joints) != S_OK)
+   cModelChunk< std::vector<sModelMaterial> > materialsChunk;
+   if (pReader->Read(&materialsChunk) != S_OK
+      || materialsChunk.GetChunkId() != MODEL_MATERIAL_ARRAY_CHUNK)
    {
+      ErrorMsg("Bad SGE model materials\n");
       return NULL;
    }
+
+   LocalMsg1("%d Materials\n", materialsChunk.GetChunkData().size());
+
+   //////////////////////////////
+
+   cModelChunk< cModelChunk< std::vector<sModelJoint> > > skeletonChunk;
+
+   if (pReader->Read(&skeletonChunk) != S_OK
+      || skeletonChunk.GetChunkId() != MODEL_SKELETON_CHUNK
+      || skeletonChunk.GetChunkData().GetChunkId() != MODEL_JOINT_ARRAY_CHUNK)
+   {
+      ErrorMsg("Bad SGE model skeleton\n");
+      return NULL;
+   }
+
+   const std::vector<sModelJoint> & joints = skeletonChunk.GetChunkData().GetChunkData();
 
    LocalMsg1("%d Joints\n", joints.size());
 
@@ -127,66 +123,66 @@ void * ModelSgemLoad(IReader * pReader)
 
    //////////////////////////////
 
-   uint nAnims = 0;
-   if (pReader->Read(&nAnims, sizeof(nAnims)) != S_OK
-      || nAnims == 0)
+   sModelChunkHeader chunkHeader;
+   while (pReader->Read(&chunkHeader, sizeof(chunkHeader)) == S_OK)
    {
-      return NULL;
-   }
-
-   LocalMsg1("%d Anims\n", nAnims);
-
-   for (uint i = 0; i < nAnims; ++i)
-   {
-      static const eModelAnimationType animTypes[] =
+      if (chunkHeader.chunkId == MODEL_ANIMATION_SEQUENCE_CHUNK)
       {
-         kMAT_Walk,
-         kMAT_Run,
-         kMAT_Death,
-         kMAT_Attack,
-         kMAT_Damage,
-         kMAT_Idle,
-      };
-
-      int intAnimType = -1;
-      if (pReader->Read(&intAnimType) != S_OK
-         || intAnimType < kMAT_Walk || intAnimType > kMAT_Idle)
-      {
-         return NULL;
-      }
-
-      eModelAnimationType animType = animTypes[intAnimType];
-
-      std::vector< std::vector<sModelKeyFrame> > animKeyFrameVectors;
-      if (pReader->Read(&animKeyFrameVectors) != S_OK)
-      {
-         return NULL;
-      }
-
-      std::vector<IModelKeyFrameInterpolator*> interpolators;
-
-      std::vector< std::vector<sModelKeyFrame> >::const_iterator iter = animKeyFrameVectors.begin();
-      std::vector< std::vector<sModelKeyFrame> >::const_iterator end = animKeyFrameVectors.end();
-      for (; iter != end; ++iter)
-      {
-         const std::vector<sModelKeyFrame> & keyFrames = *iter;
-
-         cAutoIPtr<IModelKeyFrameInterpolator> pInterp;
-         if (ModelKeyFrameInterpolatorCreate(&keyFrames[0], keyFrames.size(), &pInterp) == S_OK)
+         static const eModelAnimationType animTypes[] =
          {
-            interpolators.push_back(CTAddRef(pInterp));
-         }
-      }
+            kMAT_Walk,
+            kMAT_Run,
+            kMAT_Death,
+            kMAT_Attack,
+            kMAT_Damage,
+            kMAT_Idle,
+         };
 
-      if (!interpolators.empty())
-      {
-         cAutoIPtr<IModelAnimation> pAnim;
-         if (ModelAnimationCreate(&interpolators[0], interpolators.size(), &pAnim) == S_OK)
+         int intAnimType = -1;
+         if (pReader->Read(&intAnimType) != S_OK
+            || intAnimType < kMAT_Walk || intAnimType > kMAT_Idle)
          {
-            pSkeleton->AddAnimation(animType, pAnim);
+            return NULL;
          }
 
-         std::for_each(interpolators.begin(), interpolators.end(), CTInterfaceMethod(&IUnknown::Release));
+         eModelAnimationType animType = animTypes[intAnimType];
+
+         std::vector< std::vector<sModelKeyFrame> > animKeyFrameVectors;
+         if (pReader->Read(&animKeyFrameVectors) != S_OK)
+         {
+            return NULL;
+         }
+
+         std::vector<IModelKeyFrameInterpolator*> interpolators;
+
+         std::vector< std::vector<sModelKeyFrame> >::const_iterator iter = animKeyFrameVectors.begin();
+         std::vector< std::vector<sModelKeyFrame> >::const_iterator end = animKeyFrameVectors.end();
+         for (; iter != end; ++iter)
+         {
+            const std::vector<sModelKeyFrame> & keyFrames = *iter;
+
+            cAutoIPtr<IModelKeyFrameInterpolator> pInterp;
+            if (ModelKeyFrameInterpolatorCreate(&keyFrames[0], keyFrames.size(), &pInterp) == S_OK)
+            {
+               interpolators.push_back(CTAddRef(pInterp));
+            }
+         }
+
+         if (!interpolators.empty())
+         {
+            cAutoIPtr<IModelAnimation> pAnim;
+            if (ModelAnimationCreate(&interpolators[0], interpolators.size(), &pAnim) == S_OK)
+            {
+               pSkeleton->AddAnimation(animType, pAnim);
+            }
+
+            std::for_each(interpolators.begin(), interpolators.end(), CTInterfaceMethod(&IUnknown::Release));
+         }
+      }
+      else
+      {
+         WarnMsg2("Skipping unknown chunk %d, length %d\n", chunkHeader.chunkId, chunkHeader.chunkLength);
+         pReader->Seek(chunkHeader.chunkLength - sizeof(chunkHeader), kSO_Cur);
       }
    }
 
@@ -195,14 +191,16 @@ void * ModelSgemLoad(IReader * pReader)
    cModel * pModel = NULL;
    if (!joints.empty() && !!pSkeleton)
    {
-      if (cModel::Create(vertices, materials, meshes, pSkeleton, &pModel) == S_OK)
+      if (cModel::Create(verticesChunk.GetChunkData(), indicesChunk.GetChunkData(),
+         meshesChunk.GetChunkData(), materialsChunk.GetChunkData(), pSkeleton, &pModel) == S_OK)
       {
          return pModel;
       }
    }
    else
    {
-      if (cModel::Create(vertices, materials, meshes, &pModel) == S_OK)
+      if (cModel::Create(verticesChunk.GetChunkData(), indicesChunk.GetChunkData(),
+         meshesChunk.GetChunkData(), materialsChunk.GetChunkData(), NULL, &pModel) == S_OK)
       {
          return pModel;
       }

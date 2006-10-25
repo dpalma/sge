@@ -28,30 +28,6 @@ typedef struct msMesh msMesh;
 
 typedef std::vector<sModelKeyFrame> tModelKeyFrameVector;
 
-/////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cExportMesh
-//
-
-class cExportMesh
-{
-public:
-   cExportMesh(int materialIndex, int primitive,
-      std::vector<uint16>::const_iterator firstIndex,
-      std::vector<uint16>::const_iterator lastIndex);
-
-   int m_materialIndex;
-   int m_primitive;
-   std::vector<uint16> m_indices;
-};
-
-template <>
-class cReadWriteOps<cExportMesh>
-{
-public:
-   static tResult Write(IWriter * pWriter, const cExportMesh & exportMesh);
-};
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -96,8 +72,11 @@ public:
    std::vector<sModelVertex>::const_iterator BeginVertices() const { return m_vertices.begin(); }
    std::vector<sModelVertex>::const_iterator EndVertices() const { return m_vertices.end(); }
 
-   std::vector<cExportMesh>::const_iterator BeginMeshes() const { return m_meshes.begin(); }
-   std::vector<cExportMesh>::const_iterator EndMeshes() const { return m_meshes.end(); }
+   std::vector<uint16>::const_iterator BeginIndices() const { return m_indices.begin(); }
+   std::vector<uint16>::const_iterator EndIndices() const { return m_indices.end(); }
+
+   std::vector<sModelMesh>::const_iterator BeginModelMeshes() const { return m_modelMeshes.begin(); }
+   std::vector<sModelMesh>::const_iterator EndModelMeshes() const { return m_modelMeshes.end(); }
 
    std::vector<sModelMaterial>::const_iterator BeginMaterials() const { return m_materials.begin(); }
    std::vector<sModelMaterial>::const_iterator EndMaterials() const { return m_materials.end(); }
@@ -112,7 +91,7 @@ public:
    tResult ExportMesh(IWriter * pWriter);
 
 private:
-   static void CollectMeshes(msModel * pModel, std::vector<sModelVertex> * pVertices, std::vector<cExportMesh> * pMeshes,
+   static void CollectMeshes(msModel * pModel, std::vector<sModelVertex> * pVertices,
          std::vector<uint16> * pIndices, std::vector<sModelMesh> * pModelMeshes);
    static void CollectMeshVertices(msMesh * pMesh, std::vector<sModelVertex> * pVertices);
    static void CollectMeshNormals(msMesh * pMesh, std::vector<tVec3> * pNormals);
@@ -126,7 +105,6 @@ private:
    std::vector<sModelVertex> m_vertices;
    std::vector<uint16> m_indices;
    std::vector<sModelMesh> m_modelMeshes;
-   std::vector<cExportMesh> m_meshes;
    std::vector<sModelMaterial> m_materials;
    std::vector<cIntermediateJoint> m_tempJoints;
    std::vector<sModelJoint> m_modelJoints;

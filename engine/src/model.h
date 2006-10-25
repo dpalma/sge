@@ -95,12 +95,18 @@ class cModel
           const tModelMeshes & meshes);
 
    cModel(const tModelVertices & verts,
+          const std::vector<uint16> & indices,
+          const std::vector<sModelMesh> & meshes2,
+          const tModelMaterials & materials,
+          IModelSkeleton * pSkeleton);
+
+   cModel(const tModelVertices & verts,
           const tModelMaterials & materials,
           const tModelMeshes & meshes,
           IModelSkeleton * pSkeleton);
 
-   friend void * ModelMs3dLoad(IReader * pReader);
-   friend void ModelMs3dUnload(void * pData);
+   //friend void * ModelMs3dLoad(IReader * pReader);
+   //friend void ModelMs3dUnload(void * pData);
 
 public:
    virtual ~cModel();
@@ -111,6 +117,13 @@ public:
                          cModel * * ppModel);
 
    static tResult Create(const tModelVertices & verts,
+                         const std::vector<uint16> & indices,
+                         const std::vector<sModelMesh> & meshes2,
+                         const tModelMaterials & materials,
+                         IModelSkeleton * pSkeleton,
+                         cModel * * ppModel);
+
+   static tResult Create(const tModelVertices & verts,
                          const tModelMaterials & materials,
                          const tModelMeshes & meshes,
                          IModelSkeleton * pSkeleton,
@@ -118,7 +131,12 @@ public:
 
    const tModelVertices & GetVertices() const;
 
+   const uint16 * GetIndices() const;
+
    const sModelMaterial & GetMaterial(int index);
+
+   std::vector<sModelMesh>::const_iterator BeginMeshes() const;
+   std::vector<sModelMesh>::const_iterator EndMeshes() const;
 
    tModelMeshes::const_iterator BeginMeshses() const;
    tModelMeshes::const_iterator EndMeshses() const;
@@ -131,10 +149,11 @@ private:
    // joint's absolute transform
    void PreApplyJoints();
 
-
    std::vector<sModelVertex> m_vertices;
-   std::vector<sModelMaterial> m_materials;
+   std::vector<uint16> m_indices;
+   std::vector<sModelMesh> m_meshes2;
    std::vector<cModelMesh> m_meshes;
+   std::vector<sModelMaterial> m_materials;
    cAutoIPtr<IModelSkeleton> m_pSkeleton;
 };
 
@@ -143,9 +162,24 @@ inline const tModelVertices & cModel::GetVertices() const
    return m_vertices;
 }
 
+inline const uint16 * cModel::GetIndices() const
+{
+   return m_indices.empty() ? NULL : &m_indices[0];
+}
+
 inline const sModelMaterial & cModel::GetMaterial(int index)
 {
    return m_materials[index];
+}
+
+inline std::vector<sModelMesh>::const_iterator cModel::BeginMeshes() const
+{
+   return m_meshes2.begin();
+}
+
+inline std::vector<sModelMesh>::const_iterator cModel::EndMeshes() const
+{
+   return m_meshes2.end();
 }
 
 inline tModelMeshes::const_iterator cModel::BeginMeshses() const

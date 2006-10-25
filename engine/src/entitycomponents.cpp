@@ -303,18 +303,39 @@ void cEntityModelRenderer::Render()
 
    pRenderer->SetIndexFormat(kIF_16Bit);
 
-   tModelMeshes::const_iterator iter = m_pModel->BeginMeshses();
-   tModelMeshes::const_iterator end = m_pModel->EndMeshses();
-   for (; iter != end; iter++)
+   const uint16 * pIndices = m_pModel->GetIndices();
+   if (pIndices)
    {
-      int iMaterial = iter->GetMaterialIndex();
-      if (iMaterial >= 0)
+      std::vector<sModelMesh>::const_iterator iter = m_pModel->BeginMeshes();
+      std::vector<sModelMesh>::const_iterator end = m_pModel->EndMeshes();
+      for (; iter != end; iter++)
       {
-         const sModelMaterial & m = m_pModel->GetMaterial(iMaterial);
-         pRenderer->SetDiffuseColor(m.diffuse);
-         pRenderer->SetTexture(0, m.szTexture);
+         const sModelMesh & modelMesh = *iter;
+         if (modelMesh.materialIndex >= 0)
+         {
+            const sModelMaterial & m = m_pModel->GetMaterial(modelMesh.materialIndex);
+            pRenderer->SetDiffuseColor(m.diffuse);
+            pRenderer->SetTexture(0, m.szTexture);
+         }
+         pRenderer->Render(static_cast<ePrimitiveType>(modelMesh.primitive),
+            pIndices + modelMesh.indexStart, modelMesh.nIndices);
       }
-      pRenderer->Render(iter->GetPrimitiveType(), const_cast<uint16*>(iter->GetIndexData()), iter->GetIndexCount());
+   }
+   else
+   {
+      tModelMeshes::const_iterator iter = m_pModel->BeginMeshses();
+      tModelMeshes::const_iterator end = m_pModel->EndMeshses();
+      for (; iter != end; iter++)
+      {
+         int iMaterial = iter->GetMaterialIndex();
+         if (iMaterial >= 0)
+         {
+            const sModelMaterial & m = m_pModel->GetMaterial(iMaterial);
+            pRenderer->SetDiffuseColor(m.diffuse);
+            pRenderer->SetTexture(0, m.szTexture);
+         }
+         pRenderer->Render(iter->GetPrimitiveType(), const_cast<uint16*>(iter->GetIndexData()), iter->GetIndexCount());
+      }
    }
 }
 
