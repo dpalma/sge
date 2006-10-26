@@ -464,104 +464,100 @@
 	</References>
 	<Files>
 		<Filter
-			Name=".\src"
-			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+			Name="Source Files"
+		   Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
-			<Filter
-				Name="Source Files"
+			<File
+				RelativePath="..\..\script\luainterp.cpp"
 				>
-				<File
-					RelativePath="..\..\script\src\luainterp.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\script\src\luastate.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\script\src\luautil.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\script\src\stdhdr.cpp"
-					>
-					<FileConfiguration
-						Name="Opt|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="StaticDebug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="StaticRelease|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="1"
-						/>
-					</FileConfiguration>
-				</File>
-			</Filter>
-			<Filter
-				Name="Header Files"
+			</File>
+			<File
+				RelativePath="..\..\script\luastate.cpp"
 				>
-				<File
-					RelativePath="..\..\script\src\luainterp.h"
+			</File>
+			<File
+				RelativePath="..\..\script\luautil.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\script\stdhdr.cpp"
+				>
+				<FileConfiguration
+					Name="Opt|Win32"
 					>
-				</File>
-				<File
-					RelativePath="..\..\script\src\luastate.h"
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="StaticDebug|Win32"
 					>
-				</File>
-				<File
-					RelativePath="..\..\script\src\luautil.h"
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
 					>
-				</File>
-				<File
-					RelativePath="..\..\script\src\stdhdr.h"
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="StaticRelease|Win32"
 					>
-				</File>
-			</Filter>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+			</File>
 		</Filter>
 		<Filter
-			Name=".\include"
-			Filter="h;hpp;hxx;hm;inl"
+			Name="Header Files"
+		   Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
-				RelativePath="..\..\script\include\scriptapi.h"
+				RelativePath="..\..\script\luainterp.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\script\include\scriptdll.h"
+				RelativePath="..\..\script\luastate.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\script\include\scriptguids.h"
+				RelativePath="..\..\script\luautil.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\script\stdhdr.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="API"
+			>
+			<File
+				RelativePath="..\..\api\script\scriptapi.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\api\script\scriptdll.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\api\script\scriptguids.h"
 				>
 			</File>
 		</Filter>

@@ -4,14 +4,14 @@
 Import('env')
 
 sourceFiles = Split("""
-   src/input.cpp
-   src/syscommon.cpp
+   input.cpp
+   syscommon.cpp
 """)
 
 if env['PLATFORM'] == 'win32':
-   sourceFiles += ['src/syswin.cpp']
+   sourceFiles += ['syswin.cpp']
 elif env['PLATFORM'] == 'cygwin':
-   sourceFiles += ['src/syslinux.cpp']
+   sourceFiles += ['syslinux.cpp']
 
 libPaths = Split("""
    #allguids

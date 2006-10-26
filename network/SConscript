@@ -4,9 +4,9 @@
 Import('env')
 
 sourceFiles = Split("""
-   src/netaddress.cpp
-   src/netsocket.cpp
-   src/network.cpp
+   netaddress.cpp
+   netsocket.cpp
+   network.cpp
 """)
 
 libPaths = Split("""

@@ -81,7 +81,7 @@
 				OutputFile=".\..\..\Build.vc8\Opt/tech.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				ModuleDefinitionFile="..\..\tech\src\tech.def"
+				ModuleDefinitionFile="..\..\tech\tech.def"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\..\..\Build.vc8\Opt/tech.pdb"
 				GenerateMapFile="true"
@@ -254,7 +254,7 @@
 				OutputFile=".\..\..\Build.vc8\Release/tech.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				ModuleDefinitionFile="..\..\tech\src\tech.def"
+				ModuleDefinitionFile="..\..\tech\tech.def"
 				ProgramDatabaseFile=".\..\..\Build.vc8\Release/tech.pdb"
 				GenerateMapFile="true"
 				MapFileName="..\..\Build.vc8\Release/tech.map"
@@ -427,7 +427,7 @@
 				OutputFile=".\..\..\Build.vc8\Debug/tech.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				ModuleDefinitionFile="..\..\tech\src\tech.def"
+				ModuleDefinitionFile="..\..\tech\tech.def"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\..\..\Build.vc8\Debug/tech.pdb"
 				GenerateMapFile="true"
@@ -464,564 +464,560 @@
 	</References>
 	<Files>
 		<Filter
-			Name=".\src"
+			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
-			<Filter
-				Name="Source Files"
+			<File
+				RelativePath="..\..\tech\bmp.cpp"
 				>
-				<File
-					RelativePath="..\..\tech\src\bmp.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\color.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\comtools.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\config.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\cpufeatures.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\dictionary.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\dictionarystore.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\dictregstore.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\fileenum.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\filepath.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\filespec.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\frustum.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\functor.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\globalobjreg.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\hash.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\hashtbltest.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\image.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\matrix3.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\matrix4.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\md5.c"
-					>
-					<FileConfiguration
-						Name="Opt|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="StaticDebug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="StaticRelease|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\multivar.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\quat.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\ray.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\readwritefile.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\readwritemd5.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\readwritemem.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\readwriteutils.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\resourceformat.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\resourcemanager.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\resourcestore.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\resourceutils.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\scheduler.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\schedulerclock.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\statemachinetest.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\stdhdr.cpp"
-					>
-					<FileConfiguration
-						Name="Opt|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="StaticDebug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="StaticRelease|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\tech.def"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\techassert.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\techhash.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\techlog.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\techmath.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\techstring.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\techtest.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\techtime.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\text.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\tga.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\thread.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\threadcaller.cpp"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="Header Files"
+			</File>
+			<File
+				RelativePath="..\..\tech\color.cpp"
 				>
-				<File
-					RelativePath="..\..\tech\src\dictionary.h"
+			</File>
+			<File
+				RelativePath="..\..\tech\comtools.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\config.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\cpufeatures.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\dictionary.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\dictionarystore.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\dictregstore.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\fileenum.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\filepath.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\filespec.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\frustum.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\functor.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\globalobjreg.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\hash.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\hashtbltest.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\image.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\matrix3.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\matrix4.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\md5.c"
+				>
+				<FileConfiguration
+					Name="Opt|Win32"
 					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\dictionarystore.h"
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="StaticDebug|Win32"
 					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\dictregstore.h"
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
 					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\hashtbl.h"
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="StaticRelease|Win32"
 					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\hashtbltem.h"
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
 					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\image.h"
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\tech\multivar.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\quat.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\ray.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\readwritefile.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\readwritemd5.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\readwritemem.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\readwriteutils.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\resourceformat.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\resourcemanager.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\resourcestore.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\resourceutils.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\scheduler.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\schedulerclock.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\statemachinetest.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\stdhdr.cpp"
+				>
+				<FileConfiguration
+					Name="Opt|Win32"
 					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\md5.h"
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="StaticDebug|Win32"
 					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\readwritefile.h"
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
 					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\readwritemd5.h"
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="StaticRelease|Win32"
 					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\readwritemem.h"
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
 					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\resourceformat.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\resourcemanager.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\resourcestore.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\resourceutils.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\scheduler.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\schedulerclock.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\stdhdr.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\tech\src\threadcaller.h"
-					>
-				</File>
-			</Filter>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\tech\tech.def"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\techassert.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\techhash.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\techlog.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\techmath.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\techstring.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\techtest.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\techtime.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\text.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\tga.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\thread.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\threadcaller.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
-			Name=".\include"
+			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
-				RelativePath="..\..\tech\include\axisalignedbox.h"
+				RelativePath="..\..\tech\dictionary.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\color.h"
+				RelativePath="..\..\tech\dictionarystore.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\combase.h"
+				RelativePath="..\..\tech\dictregstore.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\comenum.h"
+				RelativePath="..\..\tech\hashtbl.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\comtools.h"
+				RelativePath="..\..\tech\hashtbltem.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\configapi.h"
+				RelativePath="..\..\tech\image.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\connpt.h"
+				RelativePath="..\..\tech\md5.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\connptimpl.h"
+				RelativePath="..\..\tech\readwritefile.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\cpufeatures.h"
+				RelativePath="..\..\tech\readwritemd5.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\dbgalloc.h"
+				RelativePath="..\..\tech\readwritemem.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\dictionaryapi.h"
+				RelativePath="..\..\tech\resourceformat.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\digraph.h"
+				RelativePath="..\..\tech\resourcemanager.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\fileenum.h"
+				RelativePath="..\..\tech\resourcestore.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\filepath.h"
+				RelativePath="..\..\tech\resourceutils.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\filespec.h"
+				RelativePath="..\..\tech\scheduler.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\frustum.h"
+				RelativePath="..\..\tech\schedulerclock.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\functor.h"
+				RelativePath="..\..\tech\stdhdr.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\globalobj.h"
+				RelativePath="..\..\tech\threadcaller.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="API"
+			>
+			<File
+				RelativePath="..\..\api\tech\axisalignedbox.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\globalobjdef.h"
+				RelativePath="..\..\api\tech\color.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\hashtable.h"
+				RelativePath="..\..\api\tech\combase.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\hashtabletem.h"
+				RelativePath="..\..\api\tech\comenum.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\imageapi.h"
+				RelativePath="..\..\api\tech\comtools.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\matrix3.h"
+				RelativePath="..\..\api\tech\configapi.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\matrix34.h"
+				RelativePath="..\..\api\tech\connpt.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\matrix4.h"
+				RelativePath="..\..\api\tech\connptimpl.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\multivar.h"
+				RelativePath="..\..\api\tech\cpufeatures.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\quat.h"
+				RelativePath="..\..\api\tech\dbgalloc.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\ray.h"
+				RelativePath="..\..\api\tech\dictionaryapi.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\readwriteapi.h"
+				RelativePath="..\..\api\tech\digraph.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\readwriteutils.h"
+				RelativePath="..\..\api\tech\fileenum.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\rect.h"
+				RelativePath="..\..\api\tech\filepath.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\resourceapi.h"
+				RelativePath="..\..\api\tech\filespec.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\schedulerapi.h"
+				RelativePath="..\..\api\tech\frustum.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\statemachine.h"
+				RelativePath="..\..\api\tech\functor.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\statemachinetem.h"
+				RelativePath="..\..\api\tech\globalobj.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\techassert.h"
+				RelativePath="..\..\api\tech\globalobjdef.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\techdll.h"
+				RelativePath="..\..\api\tech\hashtable.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\techguids.h"
+				RelativePath="..\..\api\tech\hashtabletem.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\techhash.h"
+				RelativePath="..\..\api\tech\imageapi.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\techlog.h"
+				RelativePath="..\..\api\tech\matrix3.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\techmath.h"
+				RelativePath="..\..\api\tech\matrix34.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\techstring.h"
+				RelativePath="..\..\api\tech\matrix4.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\techtime.h"
+				RelativePath="..\..\api\tech\multivar.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\techtypes.h"
+				RelativePath="..\..\api\tech\quat.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\thread.h"
+				RelativePath="..\..\api\tech\ray.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\threadcallapi.h"
+				RelativePath="..\..\api\tech\readwriteapi.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\toposort.h"
+				RelativePath="..\..\api\tech\readwriteutils.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\undbgalloc.h"
+				RelativePath="..\..\api\tech\rect.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\vec2.h"
+				RelativePath="..\..\api\tech\resourceapi.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\vec3.h"
+				RelativePath="..\..\api\tech\schedulerapi.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\include\vec4.h"
+				RelativePath="..\..\api\tech\statemachine.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\api\tech\statemachinetem.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\api\tech\techassert.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\api\tech\techdll.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\api\tech\techguids.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\api\tech\techhash.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\api\tech\techlog.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\api\tech\techmath.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\api\tech\techstring.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\api\tech\techtime.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\api\tech\techtypes.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\api\tech\thread.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\api\tech\threadcallapi.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\api\tech\toposort.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\api\tech\undbgalloc.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\api\tech\vec2.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\api\tech\vec3.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\api\tech\vec4.h"
 				>
 			</File>
 		</Filter>

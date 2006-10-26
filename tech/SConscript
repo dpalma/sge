@@ -4,51 +4,51 @@
 Import('env')
 
 sourceFiles = Split("""
-   src/bmp.cpp
-   src/color.cpp
-   src/comtools.cpp
-   src/config.cpp
-   src/cpufeatures.cpp
-   src/dictionary.cpp
-   src/dictionarystore.cpp
-   src/dictregstore.cpp
-   src/fileenum.cpp
-   src/filepath.cpp
-   src/filespec.cpp
-   src/frustum.cpp
-   src/functor.cpp
-   src/globalobjreg.cpp
-   src/hash.cpp
-   src/hashtbltest.cpp
-   src/image.cpp
-   src/matrix3.cpp
-   src/matrix4.cpp
-   src/md5.c
-   src/multivar.cpp
-   src/quat.cpp
-   src/ray.cpp
-   src/readwritefile.cpp
-   src/readwritemd5.cpp
-   src/readwritemem.cpp
-   src/readwriteutils.cpp
-   src/resourceformat.cpp
-   src/resourcemanager.cpp
-   src/resourcestore.cpp
-   src/resourceutils.cpp
-   src/scheduler.cpp
-   src/schedulerclock.cpp
-   src/statemachinetest.cpp
-   src/techassert.cpp
-   src/techhash.cpp
-   src/techlog.cpp
-   src/techmath.cpp
-   src/techstring.cpp
-   src/techtest.cpp
-   src/techtime.cpp
-   src/text.cpp
-   src/tga.cpp
-   src/thread.cpp
-   src/threadcaller.cpp
+   bmp.cpp
+   color.cpp
+   comtools.cpp
+   config.cpp
+   cpufeatures.cpp
+   dictionary.cpp
+   dictionarystore.cpp
+   dictregstore.cpp
+   fileenum.cpp
+   filepath.cpp
+   filespec.cpp
+   frustum.cpp
+   functor.cpp
+   globalobjreg.cpp
+   hash.cpp
+   hashtbltest.cpp
+   image.cpp
+   matrix3.cpp
+   matrix4.cpp
+   md5.c
+   multivar.cpp
+   quat.cpp
+   ray.cpp
+   readwritefile.cpp
+   readwritemd5.cpp
+   readwritemem.cpp
+   readwriteutils.cpp
+   resourceformat.cpp
+   resourcemanager.cpp
+   resourcestore.cpp
+   resourceutils.cpp
+   scheduler.cpp
+   schedulerclock.cpp
+   statemachinetest.cpp
+   techassert.cpp
+   techhash.cpp
+   techlog.cpp
+   techmath.cpp
+   techstring.cpp
+   techtest.cpp
+   techtime.cpp
+   text.cpp
+   tga.cpp
+   thread.cpp
+   threadcaller.cpp
 """)
 
 libPaths = Split("""
@@ -65,6 +65,6 @@ if local.IsShared() and local['PLATFORM'] == 'win32':
 local.UseZLib()
 local.BuildLibrary(target='tech',
                    source=sourceFiles,
-                   deffile='#tech/src/tech.def',
+                   deffile='#tech/tech.def',
                    lib_path=libPaths,
                    libs=linkLibs)

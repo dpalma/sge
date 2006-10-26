@@ -17,6 +17,7 @@
 
 #include "tech/dbgalloc.h" // must be last header
 
+#pragma warning(disable:4355) // 'this' : used in base member initializer list
 
 // REFERENCES
 // http://www.opengl.org/resources/faq/technical/viewing.htm

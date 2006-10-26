@@ -464,189 +464,184 @@
 	</References>
 	<Files>
 		<Filter
-			Name=".\src"
+			Name="Source Files"
+			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
-			<Filter
-				Name="Source Files"
-				Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+			<File
+				RelativePath="..\..\rendergl\freetypeutils.cpp"
 				>
-				<File
-					RelativePath="..\..\rendergl\src\freetypeutils.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\rendergl\src\glinterleave.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\rendergl\src\gltexture.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\rendergl\src\render2d.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\rendergl\src\renderer.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\rendergl\src\renderfontfreetype.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\rendergl\src\renderfontftgl.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\rendergl\src\renderfontw32.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\rendergl\src\renderfontx11.cpp"
-					>
-					<FileConfiguration
-						Name="Release|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Opt|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="StaticRelease|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="StaticDebug|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="..\..\rendergl\src\stdhdr.cpp"
-					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Opt|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="StaticRelease|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="StaticDebug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="1"
-						/>
-					</FileConfiguration>
-				</File>
-			</Filter>
-			<Filter
-				Name="Header Files"
-				Filter="h;hpp;hxx;hm;inl"
+			</File>
+			<File
+				RelativePath="..\..\rendergl\glinterleave.cpp"
 				>
-				<File
-					RelativePath="..\..\rendergl\src\freetypeutils.h"
+			</File>
+			<File
+				RelativePath="..\..\rendergl\gltexture.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\rendergl\render2d.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\rendergl\renderer.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\rendergl\renderfontfreetype.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\rendergl\renderfontftgl.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\rendergl\renderfontw32.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\rendergl\renderfontx11.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
 					>
-				</File>
-				<File
-					RelativePath="..\..\rendergl\src\render2d.h"
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Opt|Win32"
+					ExcludedFromBuild="true"
 					>
-				</File>
-				<File
-					RelativePath="..\..\rendergl\src\renderer.h"
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="StaticRelease|Win32"
+					ExcludedFromBuild="true"
 					>
-				</File>
-				<File
-					RelativePath="..\..\rendergl\src\renderfontfreetype.h"
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="StaticDebug|Win32"
+					ExcludedFromBuild="true"
 					>
-				</File>
-				<File
-					RelativePath="..\..\rendergl\src\renderfontftgl.h"
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
 					>
-				</File>
-				<File
-					RelativePath="..\..\rendergl\src\renderfontw32.h"
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\rendergl\stdhdr.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
 					>
-				</File>
-				<File
-					RelativePath="..\..\rendergl\src\renderfontx11.h"
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Opt|Win32"
 					>
-				</File>
-				<File
-					RelativePath="..\..\rendergl\src\stdhdr.h"
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="StaticRelease|Win32"
 					>
-				</File>
-			</Filter>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="StaticDebug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+			</File>
 		</Filter>
 		<Filter
-			Name=".\include"
+			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
-				RelativePath="..\..\rendergl\include\renderapi.h"
+				RelativePath="..\..\rendergl\freetypeutils.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\rendergl\include\renderdll.h"
+				RelativePath="..\..\rendergl\render2d.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\rendergl\include\renderfontapi.h"
+				RelativePath="..\..\rendergl\renderer.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\rendergl\include\renderguids.h"
+				RelativePath="..\..\rendergl\renderfontfreetype.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\rendergl\renderfontftgl.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\rendergl\renderfontw32.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\rendergl\renderfontx11.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\rendergl\stdhdr.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="API"
+			>
+			<File
+				RelativePath="..\..\api\render\renderapi.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\api\render\renderdll.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\api\render\renderfontapi.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\api\render\renderguids.h"
 				>
 			</File>
 		</Filter>

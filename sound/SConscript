@@ -4,9 +4,9 @@
 Import('env')
 
 if env['PLATFORM'] == 'win32':
-   sourceFiles = ['src/soundwin.cpp']
+   sourceFiles = ['soundwin.cpp']
 else:
-   sourceFiles = ['src/soundnull.cpp']
+   sourceFiles = ['soundnull.cpp']
 
 libPaths = Split("""
    #allguids

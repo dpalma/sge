@@ -4,31 +4,31 @@
 Import('env')
 
 sourceFiles = Split("""
-   src/guibasicrenderer.cpp
-   src/guibeveledrenderer.cpp
-   src/guibutton.cpp
-   src/guicontext.cpp
-   src/guidialog.cpp
-   src/guielementenum.cpp
-   src/guielementtools.cpp
-   src/guievent.cpp
-   src/guieventrouter.cpp
-   src/guieventsounds.cpp
-   src/guifactory.cpp
-   src/guilabel.cpp
-   src/guilayout.cpp
-   src/guilistbox.cpp
-   src/guipage.cpp
-   src/guipagelayout.cpp
-   src/guipanel.cpp
-   src/guiparse.cpp
-   src/guiscript.cpp
-   src/guiscrollbar.cpp
-   src/guistyle.cpp
-   src/guistylesheet.cpp
-   src/guititlebar.cpp
-   src/guitextedit.cpp
-   src/guitypes.cpp
+   guibasicrenderer.cpp
+   guibeveledrenderer.cpp
+   guibutton.cpp
+   guicontext.cpp
+   guidialog.cpp
+   guielementenum.cpp
+   guielementtools.cpp
+   guievent.cpp
+   guieventrouter.cpp
+   guieventsounds.cpp
+   guifactory.cpp
+   guilabel.cpp
+   guilayout.cpp
+   guilistbox.cpp
+   guipage.cpp
+   guipagelayout.cpp
+   guipanel.cpp
+   guiparse.cpp
+   guiscript.cpp
+   guiscrollbar.cpp
+   guistyle.cpp
+   guistylesheet.cpp
+   guititlebar.cpp
+   guitextedit.cpp
+   guitypes.cpp
 """)
 
 libPaths = Split("""

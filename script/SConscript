@@ -4,9 +4,9 @@
 Import('env')
 
 sourceFiles = Split("""
-   src/luainterp.cpp
-   src/luastate.cpp
-   src/luautil.cpp
+   luainterp.cpp
+   luastate.cpp
+   luautil.cpp
 """)
 
 libPaths = Split("""

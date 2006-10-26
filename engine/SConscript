@@ -4,26 +4,26 @@
 Import('env')
 
 sourceFiles = Split("""
-   src/camera.cpp
-   src/cmds.cpp
-   src/engine.cpp
-   src/entity.cpp
-   src/entitycmds.cpp
-   src/entitycmdmanager.cpp
-   src/entitycmdui.cpp
-   src/entitycomponents.cpp
-   src/entitymanager.cpp
-   src/model.cpp
-   src/modelanim.cpp
-   src/modelms3d.cpp
-   src/modelsgem.cpp
-   src/modelskeleton.cpp
-   src/modeltypes.cpp
-   src/ms3dread.cpp
-   src/saveloadmanager.cpp
-   src/terrain.cpp
-   src/terrainrender.cpp
-   src/tixml.cpp
+   camera.cpp
+   cmds.cpp
+   engine.cpp
+   entity.cpp
+   entitycmds.cpp
+   entitycmdmanager.cpp
+   entitycmdui.cpp
+   entitycomponents.cpp
+   entitymanager.cpp
+   model.cpp
+   modelanim.cpp
+   modelms3d.cpp
+   modelsgem.cpp
+   modelskeleton.cpp
+   modeltypes.cpp
+   ms3dread.cpp
+   saveloadmanager.cpp
+   terrain.cpp
+   terrainrender.cpp
+   tixml.cpp
 """)
 
 libPaths = Split("""

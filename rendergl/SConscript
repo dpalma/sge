@@ -4,19 +4,19 @@
 Import('env')
 
 sourceFiles = Split("""
-   src/freetypeutils.cpp
-   src/glinterleave.cpp
-   src/gltexture.cpp
-   src/render2d.cpp
-   src/renderer.cpp
-   src/renderfontfreetype.cpp
-   src/renderfontftgl.cpp
+   freetypeutils.cpp
+   glinterleave.cpp
+   gltexture.cpp
+   render2d.cpp
+   renderer.cpp
+   renderfontfreetype.cpp
+   renderfontftgl.cpp
 """)
 
 if env['PLATFORM'] == 'win32':
-   sourceFiles += ['src/renderfontw32.cpp']
+   sourceFiles += ['renderfontw32.cpp']
 elif env['PLATFORM'] == 'cygwin':
-   sourceFiles += ['src/renderfontx11.cpp']
+   sourceFiles += ['renderfontx11.cpp']
 
 libPaths = Split("""
    #allguids
