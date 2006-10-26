@@ -4,7 +4,7 @@
 #ifndef INCLUDED_READWRITEMEM_H
 #define INCLUDED_READWRITEMEM_H
 
-#include "readwriteapi.h"
+#include "tech/readwriteapi.h"
 
 #ifdef _MSC_VER
 #pragma once

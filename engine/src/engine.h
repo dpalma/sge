@@ -4,7 +4,7 @@
 #ifndef INCLUDED_ENGINE_H
 #define INCLUDED_ENGINE_H
 
-#include "engineapi.h"
+#include "engine/engineapi.h"
 
 #ifdef _MSC_VER
 #pragma once

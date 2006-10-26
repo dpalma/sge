@@ -3,18 +3,18 @@
 
 #include "stdhdr.h"
 
-#include "entityapi.h"
-#include "cameraapi.h"
-#include "terrainapi.h"
+#include "engine/entityapi.h"
+#include "engine/cameraapi.h"
+#include "engine/terrainapi.h"
 
-#include "inputapi.h"
+#include "platform/inputapi.h"
+#include "platform/keys.h"
 
-#include "globalobj.h"
-#include "keys.h"
-#include "multivar.h"
-#include "ray.h"
+#include "tech/globalobj.h"
+#include "tech/multivar.h"
+#include "tech/ray.h"
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 
 /////////////////////////////////////////////////////////////////////////////

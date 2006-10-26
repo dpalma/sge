@@ -4,9 +4,9 @@
 #ifndef INCLUDED_ENTITYCMDMANAGER_H
 #define INCLUDED_ENTITYCMDMANAGER_H
 
-#include "entityapi.h"
+#include "engine/entityapi.h"
 
-#include "globalobjdef.h"
+#include "tech/globalobjdef.h"
 
 #include <map>
 #include <vector>

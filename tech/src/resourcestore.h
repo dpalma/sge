@@ -4,7 +4,7 @@
 #ifndef INCLUDED_RESOURCESTORE_H
 #define INCLUDED_RESOURCESTORE_H
 
-#include "resourceapi.h"
+#include "tech/resourceapi.h"
 
 #define ZLIB_WINAPI
 #include <unzip.h>

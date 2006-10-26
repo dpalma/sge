@@ -6,7 +6,7 @@
 
 #include "resource.h"       // main symbols
 
-#include "techstring.h"
+#include "tech/techstring.h"
 
 #include <vector>
 

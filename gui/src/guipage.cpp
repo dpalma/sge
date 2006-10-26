@@ -8,18 +8,18 @@
 #include "guielementtools.h"
 #include "guipagelayout.h"
 #include "guistrings.h"
-#include "guistyleapi.h"
+#include "gui/guistyleapi.h"
 
-#include "scriptapi.h"
+#include "script/scriptapi.h"
 
-#include "globalobj.h"
+#include "tech/globalobj.h"
 
 #include <tinyxml.h>
 
 #include <stack>
 #include <queue>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -4,10 +4,10 @@
 #ifndef INCLUDED_EDITORAPI_H
 #define INCLUDED_EDITORAPI_H
 
-#include "comtools.h"
-#include "connpt.h"
-#include "techstring.h"
-#include "vec3.h"
+#include "tech/comtools.h"
+#include "tech/connpt.h"
+#include "tech/techstring.h"
+#include "tech/vec3.h"
 
 #if _MSC_VER > 1000
 #pragma once

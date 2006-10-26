@@ -8,11 +8,6 @@ if env['PLATFORM'] == 'win32':
 else:
    sourceFiles = ['src/soundnull.cpp']
 
-includePaths = Split("""
-   #sound/include
-   #tech/include
-""")
-
 libPaths = Split("""
    #allguids
    #tech
@@ -27,6 +22,5 @@ local = env.Copy()
 local.UseTinyxml()
 local.BuildLibrary(target='sound',
                    source=sourceFiles,
-                   include_path=includePaths,
                    lib_path=libPaths,
                    libs=linkLibs)

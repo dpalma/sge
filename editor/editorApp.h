@@ -7,7 +7,7 @@
 #include "editorapi.h"
 #include "afxcomtools.h"
 
-#include "globalobjdef.h"
+#include "tech/globalobjdef.h"
 
 #include <afxdisp.h>
 

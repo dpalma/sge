@@ -5,11 +5,11 @@
 
 #include "editorapi.h"
 
-#include "scriptapi.h"
+#include "script/scriptapi.h"
 
-#include "dictionaryapi.h"
-#include "globalobj.h"
-#include "multivar.h"
+#include "tech/dictionaryapi.h"
+#include "tech/globalobj.h"
+#include "tech/multivar.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

@@ -10,14 +10,14 @@ extern "C"
 #include "md5.h"
 }
 
-#include "color.h"
-#include "digraph.h"
-#include "techtime.h"
-#include "toposort.h"
+#include "tech/color.h"
+#include "tech/digraph.h"
+#include "tech/techtime.h"
+#include "tech/toposort.h"
 
 #include "UnitTest++.h"
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 

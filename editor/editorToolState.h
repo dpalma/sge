@@ -6,8 +6,8 @@
 
 #include "editorapi.h"
 
-#include "connptimpl.h"
-#include "globalobjdef.h"
+#include "tech/connptimpl.h"
+#include "tech/globalobjdef.h"
 
 #if _MSC_VER > 1000
 #pragma once

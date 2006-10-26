@@ -4,15 +4,15 @@
 #include "stdhdr.h"
 
 #include "renderer.h"
-#include "renderfontapi.h"
+#include "render/renderfontapi.h"
 
-#include "axisalignedbox.h"
-#include "color.h"
-#include "readwriteapi.h"
-#include "resourceapi.h"
-#include "techhash.h"
-#include "techmath.h"
-#include "vec3.h"
+#include "tech/axisalignedbox.h"
+#include "tech/color.h"
+#include "tech/readwriteapi.h"
+#include "tech/resourceapi.h"
+#include "tech/techhash.h"
+#include "tech/techmath.h"
+#include "tech/vec3.h"
 
 #include <GL/glew.h>
 
@@ -22,7 +22,7 @@
 
 #include <cstring>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 extern tResult RenderFontCreateGL(const tChar * pszFont, int pointSize, uint flags, IRenderFont * * ppFont);
 extern tResult RenderFontCreateFTGL(const tChar * pszFont, int fontPointSize, uint flags, IRenderFont * * ppFont);
@@ -792,7 +792,8 @@ void cRenderer::CgErrorHandler(CGcontext cgContext, CGerror cgError, void * pDat
 {
    if (cgError)
    {
-      ErrorMsg(cgGetErrorString(cgError));
+      const char * pszCgError = cgGetErrorString(cgError);
+      ErrorMsgIf1(pszCgError != NULL, "%s\n", pszCgError);
       const char * pszListing = cgGetLastListing(cgContext);
       if (pszListing != NULL)
       {

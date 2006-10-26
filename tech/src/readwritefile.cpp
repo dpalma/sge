@@ -4,9 +4,10 @@
 #include "stdhdr.h"
 
 #include "readwritefile.h"
-#include "filespec.h"
 
-#include "dbgalloc.h" // must be last header
+#include "tech/filespec.h"
+
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 //

@@ -3,16 +3,16 @@
 
 #include "stdhdr.h"
 
-#include "engineapi.h"
-#include "readwriteutils.h"
+#include "engine/engineapi.h"
 
-#include "globalobj.h"
-#include "readwriteapi.h"
-#include "resourceapi.h"
+#include "tech/readwriteutils.h"
+#include "tech/globalobj.h"
+#include "tech/readwriteapi.h"
+#include "tech/resourceapi.h"
 
 #include <tinyxml.h>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -4,7 +4,7 @@
 #ifndef INCLUDED_RESOURCEFORMAT_H
 #define INCLUDED_RESOURCEFORMAT_H
 
-#include "resourceapi.h"
+#include "tech/resourceapi.h"
 
 #include <map>
 #include <set>

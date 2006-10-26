@@ -3,8 +3,8 @@
 
 #include "stdhdr.h"
 
-#include "matrix3.h"
-#include "vec3.h"
+#include "tech/matrix3.h"
+#include "tech/vec3.h"
 
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
@@ -13,7 +13,7 @@
 #include <cmath>
 #include <cfloat>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 
 ///////////////////////////////////////////////////////////////////////////////

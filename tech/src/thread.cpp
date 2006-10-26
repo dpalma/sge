@@ -3,8 +3,8 @@
 
 #include "stdhdr.h"
 
-#include "thread.h"
-#include "techtime.h"
+#include "tech/thread.h"
+#include "tech/techtime.h"
 
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
@@ -23,7 +23,7 @@
 #include <unistd.h>
 #endif
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 

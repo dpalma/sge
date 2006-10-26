@@ -2,10 +2,10 @@
 // $Id$
 
 #include "stdhdr.h"
-#include "multivar.h"
+#include "tech/multivar.h"
 
-#include "techmath.h"
-#include "techstring.h"
+#include "tech/techmath.h"
+#include "tech/techstring.h"
 
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
@@ -14,7 +14,7 @@
 #include <cstdio>
 #include <cstdlib>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 //

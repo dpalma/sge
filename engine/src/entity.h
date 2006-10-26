@@ -4,9 +4,9 @@
 #ifndef INCLUDED_ENTITY_H
 #define INCLUDED_ENTITY_H
 
-#include "entityapi.h"
+#include "engine/entityapi.h"
 
-#include "techstring.h"
+#include "tech/techstring.h"
 
 #ifdef _MSC_VER
 #pragma once

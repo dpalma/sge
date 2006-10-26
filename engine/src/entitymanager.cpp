@@ -5,17 +5,17 @@
 
 #include "entitymanager.h"
 
-#include "cameraapi.h"
-#include "engineapi.h"
-#include "readwriteutils.h"
-#include "renderapi.h"
-#include "terrainapi.h"
+#include "engine/cameraapi.h"
+#include "engine/engineapi.h"
+#include "render/renderapi.h"
+#include "engine/terrainapi.h"
+#include "platform/keys.h"
 
-#include "color.h"
-#include "keys.h"
-#include "multivar.h"
-#include "ray.h"
-#include "resourceapi.h"
+#include "tech/color.h"
+#include "tech/multivar.h"
+#include "tech/ray.h"
+#include "tech/readwriteutils.h"
+#include "tech/resourceapi.h"
 
 #include <tinyxml.h>
 
@@ -23,7 +23,9 @@
 
 #include <algorithm>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
+
+#pragma warning(disable:4355) // 'this' : used in base member initializer list
 
 ///////////////////////////////////////////////////////////////////////////////
 

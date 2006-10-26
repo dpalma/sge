@@ -5,14 +5,14 @@
 
 #include "terrainrender.h"
 
-#include "imageapi.h"
-#include "resourceapi.h"
-#include "globalobj.h"
-#include "filespec.h"
-#include "configapi.h"
-#include "readwriteapi.h"
-#include "vec4.h"
-#include "color.h"
+#include "tech/imageapi.h"
+#include "tech/resourceapi.h"
+#include "tech/globalobj.h"
+#include "tech/filespec.h"
+#include "tech/configapi.h"
+#include "tech/readwriteapi.h"
+#include "tech/vec4.h"
+#include "tech/color.h"
 
 #include <algorithm>
 #include <functional>
@@ -20,12 +20,14 @@
 
 #include <GL/glew.h>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 // REFERENCES
 // http://cbloom.com/3d/techdocs/splatting.txt
 // http://oss.sgi.com/projects/ogl-sample/registry/ARB/texture_env_combine.txt
 // http://www.gamedev.net/community/forums/topic.asp?topic_id=330331
+
+#pragma warning(disable:4355) // 'this' : used in base member initializer list
 
 const uint kNoIndex = ~0u;
 

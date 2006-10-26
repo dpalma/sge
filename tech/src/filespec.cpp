@@ -3,8 +3,8 @@
 
 #include "stdhdr.h"
 
-#include "filespec.h"
-#include "filepath.h"
+#include "tech/filespec.h"
+#include "tech/filepath.h"
 
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
@@ -18,7 +18,7 @@
 #include <windows.h>
 #endif
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 

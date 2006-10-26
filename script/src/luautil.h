@@ -4,7 +4,7 @@
 #ifndef INCLUDED_LUAUTIL_H
 #define INCLUDED_LUAUTIL_H
 
-#include "comtools.h"
+#include "tech/comtools.h"
 
 #include <cstdarg>
 

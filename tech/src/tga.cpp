@@ -3,13 +3,13 @@
 
 #include "stdhdr.h"
 
-#include "imageapi.h"
-#include "readwriteapi.h"
+#include "tech/imageapi.h"
+#include "tech/readwriteapi.h"
 
 #include <cstdlib>
 #include <cstring> // required w/ gcc for memcpy
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 

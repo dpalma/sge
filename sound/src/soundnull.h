@@ -4,9 +4,9 @@
 #ifndef INCLUDED_SOUNDNULL_H
 #define INCLUDED_SOUNDNULL_H
 
-#include "soundapi.h"
+#include "sound/soundapi.h"
 
-#include "globalobjdef.h"
+#include "tech/globalobjdef.h"
 
 #ifdef _MSC_VER
 #pragma once

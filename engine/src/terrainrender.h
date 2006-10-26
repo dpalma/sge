@@ -4,15 +4,15 @@
 #if !defined(INCLUDED_TERRAINRENDER_H)
 #define INCLUDED_TERRAINRENDER_H
 
-#include "terrainapi.h"
-#include "renderapi.h"
-#include "saveloadapi.h"
+#include "engine/terrainapi.h"
+#include "engine/saveloadapi.h"
+#include "render/renderapi.h"
 
-#include "globalobjdef.h"
-#include "vec2.h"
-#include "vec3.h"
-#include "matrix4.h"
-#include "techstring.h"
+#include "tech/globalobjdef.h"
+#include "tech/vec2.h"
+#include "tech/vec3.h"
+#include "tech/matrix4.h"
+#include "tech/techstring.h"
 
 #include <map>
 #include <set>

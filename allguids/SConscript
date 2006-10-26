@@ -7,20 +7,7 @@ sourceFiles = Split("""
    allguids.cpp
 """)
 
-includePaths = Split("""
-   #editor
-   #game
-   #engine/include
-   #gui/include
-   #network/include
-   #platform/include
-   #rendergl/include
-   #script/include
-   #sound/include
-   #tech/include
-""")
-
 local = env.Copy()
+local.Append(CPPPATH=['#editor'])
 local.BuildStaticLibrary(target='allguids',
-                         source=sourceFiles,
-                         include_path=includePaths)
+                         source=sourceFiles)

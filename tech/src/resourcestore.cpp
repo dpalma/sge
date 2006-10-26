@@ -4,13 +4,14 @@
 #include "stdhdr.h"
 
 #include "resourcestore.h"
-#include "fileenum.h"
-#include "filepath.h"
-#include "filespec.h"
-#include "readwriteapi.h"
-#include "techstring.h"
 
-#include "dbgalloc.h" // must be last header
+#include "tech/fileenum.h"
+#include "tech/filepath.h"
+#include "tech/filespec.h"
+#include "tech/readwriteapi.h"
+#include "tech/techstring.h"
+
+#include "tech/dbgalloc.h" // must be last header
 
 ////////////////////////////////////////////////////////////////////////////////
 

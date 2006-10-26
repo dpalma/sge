@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "techtime.h"
+#include "tech/techtime.h"
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -15,7 +15,7 @@
 #include <unistd.h>
 #endif
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 

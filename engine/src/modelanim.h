@@ -4,8 +4,7 @@
 #ifndef INCLUDED_MODELANIM_H
 #define INCLUDED_MODELANIM_H
 
-#include "enginedll.h"
-#include "modelapi.h"
+#include "engine/modelapi.h"
 
 #include <vector>
 

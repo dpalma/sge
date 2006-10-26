@@ -4,7 +4,7 @@
 #ifndef INCLUDED_IMAGE_H
 #define INCLUDED_IMAGE_H
 
-#include "imageapi.h"
+#include "tech/imageapi.h"
 
 #ifdef _MSC_VER
 #pragma once

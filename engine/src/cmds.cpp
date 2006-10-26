@@ -3,24 +3,24 @@
 
 #include "stdhdr.h"
 
-#include "engineapi.h"
-#include "entityapi.h"
-#include "guiapi.h"
-#include "inputapi.h"
-#include "saveloadapi.h"
-#include "scriptapi.h"
-#include "sys.h"
-#include "terrainapi.h"
+#include "engine/engineapi.h"
+#include "engine/entityapi.h"
+#include "gui/guiapi.h"
+#include "platform/inputapi.h"
+#include "engine/saveloadapi.h"
+#include "script/scriptapi.h"
+#include "platform/sys.h"
+#include "platform/keys.h"
+#include "engine/terrainapi.h"
 
-#include "dictionaryapi.h"
-#include "filespec.h"
-#include "globalobj.h"
-#include "keys.h"
-#include "multivar.h"
-#include "resourceapi.h"
-#include "vec3.h"
+#include "tech/dictionaryapi.h"
+#include "tech/filespec.h"
+#include "tech/globalobj.h"
+#include "tech/multivar.h"
+#include "tech/resourceapi.h"
+#include "tech/vec3.h"
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 

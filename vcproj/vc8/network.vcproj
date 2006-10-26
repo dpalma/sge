@@ -46,7 +46,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\network\include,..\..\tech\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\api"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;NET_EXPORTS;WIN32;_WINDOWS;STRICT;HAVE_UNITTESTPP"
 				StringPooling="true"
 				RuntimeLibrary="3"
@@ -140,7 +140,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\network\include,..\..\tech\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\api"
 				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,_USRDLL,NET_EXPORTS,WIN32,_WINDOWS,STRICT,HAVE_UNITTESTPP"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -220,7 +220,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\network\include,..\..\tech\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\api"
 				PreprocessorDefinitions="_DEBUG;_USRDLL;NET_EXPORTS;WIN32;_WINDOWS;STRICT;HAVE_UNITTESTPP"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -313,7 +313,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\network\include,..\..\tech\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\api"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,_USRDLL,NET_EXPORTS,WIN32,_WINDOWS,STRICT"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -393,7 +393,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\network\include,..\..\tech\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\api"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;NET_EXPORTS;WIN32;_WINDOWS;STRICT"
 				StringPooling="true"
 				RuntimeLibrary="2"

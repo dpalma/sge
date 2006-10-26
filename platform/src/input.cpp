@@ -4,16 +4,17 @@
 #include "stdhdr.h"
 
 #include "input.h"
-#include "keys.h"
-#include "scriptapi.h"
-#include "sys.h"
+
+#include "platform/keys.h"
+#include "platform/sys.h"
+#include "script/scriptapi.h"
 
 #include <cstring>
 #include <cstdlib>
 #include <functional>
 #include <locale>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 

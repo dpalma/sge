@@ -4,10 +4,11 @@
 #ifndef INCLUDED_RESOURCEMANAGER_H
 #define INCLUDED_RESOURCEMANAGER_H
 
-#include "resourceapi.h"
-#include "globalobjdef.h"
 #include "resourceformat.h"
 #include "resourceutils.h"
+
+#include "tech/resourceapi.h"
+#include "tech/globalobjdef.h"
 
 #ifdef _MSC_VER
 #pragma once

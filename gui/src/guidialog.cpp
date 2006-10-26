@@ -12,7 +12,7 @@
 
 #include <tinyxml.h>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 LOG_DEFINE_CHANNEL(GUIDialogEvents);
 

@@ -4,7 +4,7 @@
 #ifndef INCLUDED_NETADDRESS_H
 #define INCLUDED_NETADDRESS_H
 
-#include "netapi.h"
+#include "network/netapi.h"
 
 #ifdef _WIN32
 #include <winsock2.h>

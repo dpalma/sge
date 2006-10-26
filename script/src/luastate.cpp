@@ -6,7 +6,7 @@
 #include "luastate.h"
 #include "luautil.h"
 
-#include "multivar.h"
+#include "tech/multivar.h"
 
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
@@ -20,7 +20,7 @@ extern "C"
 
 #include <cstring>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 

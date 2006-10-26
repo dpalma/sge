@@ -5,12 +5,12 @@
 
 #include "entity.h"
 
-#include "color.h"
-#include "globalobj.h"
-#include "ray.h"
-#include "resourceapi.h"
+#include "tech/color.h"
+#include "tech/globalobj.h"
+#include "tech/ray.h"
+#include "tech/resourceapi.h"
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 #define IsFlagSet(f, b) (((f)&(b))==(b))
 

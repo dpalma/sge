@@ -4,11 +4,11 @@
 #ifndef INCLUDED_GUIPAGELAYOUT_H
 #define INCLUDED_GUIPAGELAYOUT_H
 
-#include "guiapi.h"
-#include "guielementapi.h"
+#include "gui/guiapi.h"
+#include "gui/guielementapi.h"
 
-#include "techhash.h"
-#include "hashtable.h"
+#include "tech/techhash.h"
+#include "tech/hashtable.h"
 
 #include <queue>
 

@@ -3,11 +3,11 @@
 
 #include "stdhdr.h"
 
-#include "readwriteapi.h"
-#include "resourceapi.h"
-#include "globalobj.h"
+#include "tech/readwriteapi.h"
+#include "tech/resourceapi.h"
+#include "tech/globalobj.h"
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 

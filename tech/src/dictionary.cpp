@@ -4,7 +4,8 @@
 #include "stdhdr.h"
 
 #include "dictionary.h"
-#include "filespec.h"
+
+#include "tech/filespec.h"
 
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
@@ -12,7 +13,7 @@
 
 #include <cstdio>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 //

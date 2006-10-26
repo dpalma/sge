@@ -3,9 +3,9 @@
 
 #include "stdhdr.h"
 
-#include "techstring.h"
-#include "techmath.h"
-#include "comtools.h"
+#include "tech/techstring.h"
+#include "tech/techmath.h"
+#include "tech/comtools.h"
 
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
@@ -18,7 +18,7 @@
 #include <cstdarg>
 #include <locale>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 

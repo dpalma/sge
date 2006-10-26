@@ -6,10 +6,10 @@
 
 #include "guidll.h"
 
-#include "color.h"
-#include "rect.h"
-#include "techstring.h"
-#include "vec2.h"
+#include "tech/color.h"
+#include "tech/rect.h"
+#include "tech/techstring.h"
+#include "tech/vec2.h"
 
 #ifdef _MSC_VER
 #pragma once

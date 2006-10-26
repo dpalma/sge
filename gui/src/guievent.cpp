@@ -4,11 +4,11 @@
 #include "stdhdr.h"
 
 #include "guievent.h"
-#include "guielementapi.h"
+#include "gui/guielementapi.h"
 
-#include "keys.h"
+#include "platform/keys.h"
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 LOG_DEFINE_CHANNEL(GUIEvent);
 

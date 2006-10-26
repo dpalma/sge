@@ -10,17 +10,6 @@ sourceFiles = Split("""
 if env['PLATFORM'] == 'win32':
    sourceFiles += env.RES('game.rc')
 
-includePaths = Split("""
-   #engine/include
-   #gui/include
-   #network/include
-   #platform/include
-   #rendergl/include
-   #script/include
-   #sound/include
-   #tech/include
-""")
-
 libPaths = Split("""
    #allguids
    #engine
@@ -55,6 +44,5 @@ local.UseTinyxml()
 local.UseZLib()
 local.BuildExecutable(target='game',
                       source=sourceFiles,
-                      include_path=includePaths,
                       lib_path=libPaths,
                       libs=linkLibs)

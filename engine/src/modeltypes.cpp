@@ -3,10 +3,10 @@
 
 #include "stdhdr.h"
 
-#include "modeltypes.h"
-#include "readwriteutils.h"
+#include "engine/modeltypes.h"
+#include "tech/readwriteutils.h"
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 

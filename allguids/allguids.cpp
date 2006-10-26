@@ -7,13 +7,13 @@
 #pragma comment(lib, "uuid")
 #endif
 #define INITGUID
-#include "combase.h"
+#include "tech/combase.h"
 #include "editorguids.h"
-#include "engineguids.h"
-#include "guiguids.h"
-#include "netguids.h"
-#include "platformguids.h"
-#include "renderguids.h"
-#include "scriptguids.h"
-#include "soundguids.h"
-#include "techguids.h"
+#include "engine/engineguids.h"
+#include "gui/guiguids.h"
+#include "network/netguids.h"
+#include "platform/platformguids.h"
+#include "render/renderguids.h"
+#include "script/scriptguids.h"
+#include "sound/soundguids.h"
+#include "tech/techguids.h"

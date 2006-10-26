@@ -3,16 +3,16 @@
 
 #include "stdhdr.h"
 
-#include "renderapi.h"
+#include "render/renderapi.h"
 
-#include "imageapi.h"
-#include "techmath.h"
-#include "globalobj.h"
-#include "resourceapi.h"
+#include "tech/imageapi.h"
+#include "tech/techmath.h"
+#include "tech/globalobj.h"
+#include "tech/resourceapi.h"
 
 #include <GL/glew.h>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 

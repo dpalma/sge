@@ -13,7 +13,7 @@
 #include <ws2tcpip.h>
 #endif
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 
 ///////////////////////////////////////////////////////////////////////////////

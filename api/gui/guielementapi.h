@@ -9,7 +9,7 @@
 
 #include "guidll.h"
 
-#include "comtools.h"
+#include "tech/comtools.h"
 
 #include "guitypes.h"
 

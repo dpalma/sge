@@ -5,9 +5,9 @@
 #define INCLUDED_RENDERFONTAPI_H
 
 #include "renderdll.h"
-#include "comtools.h"
+#include "tech/comtools.h"
 
-#include "rect.h"
+#include "tech/rect.h"
 
 #ifdef _MSC_VER
 #pragma once

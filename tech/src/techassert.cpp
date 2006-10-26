@@ -12,7 +12,7 @@
 #include <crtdbg.h>
 #endif
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 // Shows the user an assertion failure dialog box. Returns true if

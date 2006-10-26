@@ -26,15 +26,6 @@ sourceFiles = Split("""
    src/tixml.cpp
 """)
 
-includePaths = Split("""
-   #engine/include
-   #gui/include
-   #platform/include
-   #rendergl/include
-   #script/include
-   #tech/include
-""")
-
 libPaths = Split("""
    #allguids
    #gui
@@ -58,6 +49,5 @@ local.UseGL()
 local.UseTinyxml()
 local.BuildLibrary(target='engine',
                    source=sourceFiles,
-                   include_path=includePaths,
                    lib_path=libPaths,
                    libs=linkLibs)

@@ -8,12 +8,12 @@
 #include "editorCommands.h"
 #include "resource.h"
 
-#include "cameraapi.h"
-#include "entityapi.h"
-#include "terrainapi.h"
+#include "engine/cameraapi.h"
+#include "engine/entityapi.h"
+#include "engine/terrainapi.h"
 
-#include "globalobj.h"
-#include "ray.h"
+#include "tech/globalobj.h"
+#include "tech/ray.h"
 
 #include <GL/glew.h>
 

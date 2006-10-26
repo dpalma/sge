@@ -4,8 +4,8 @@
 #ifndef INCLUDED_SOUNDAPI_H
 #define INCLUDED_SOUNDAPI_H
 
-#include "comtools.h"
 #include "sounddll.h"
+#include "tech/comtools.h"
 
 #pragma once
 

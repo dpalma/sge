@@ -3,15 +3,15 @@
 
 #include "stdhdr.h"
 
-#include "frustum.h"
+#include "tech/frustum.h"
 
-#include "axisalignedbox.h"
-#include "vec3.h"
-#include "matrix4.h"
+#include "tech/axisalignedbox.h"
+#include "tech/vec3.h"
+#include "tech/matrix4.h"
 
 #include <cmath>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 // REFERENCES
 // http://www2.ravensoft.com/users/ggribb/plane%20extraction.pdf

@@ -4,7 +4,7 @@
 #ifndef INCLUDED_FREETYPEUTILS_H
 #define INCLUDED_FREETYPEUTILS_H
 
-#include "comtools.h"
+#include "tech/comtools.h"
 
 #include <ft2build.h>
 #include <freetype/freetype.h>

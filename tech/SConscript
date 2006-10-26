@@ -51,10 +51,6 @@ sourceFiles = Split("""
    src/threadcaller.cpp
 """)
 
-includePaths = Split("""
-   #tech/include
-""")
-
 libPaths = Split("""
    #allguids
 """)
@@ -70,6 +66,5 @@ local.UseZLib()
 local.BuildLibrary(target='tech',
                    source=sourceFiles,
                    deffile='#tech/src/tech.def',
-                   include_path=includePaths,
                    lib_path=libPaths,
                    libs=linkLibs)

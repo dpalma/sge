@@ -4,13 +4,13 @@
 #include "stdhdr.h"
 
 #include "guifactory.h"
-#include "guielementapi.h"
+#include "gui/guielementapi.h"
 #include "guiparse.h"
 #include "guistrings.h"
 
 #include <tinyxml.h>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 

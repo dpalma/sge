@@ -5,14 +5,15 @@
 #define INCLUDED_MODELAPI_H
 
 #include "enginedll.h"
-#include "comtools.h"
 
-#include "renderapi.h"
+#include "tech/comtools.h"
 
-#include "matrix4.h"
-#include "matrix34.h"
-#include "quat.h"
-#include "vec3.h"
+#include "render/renderapi.h"
+
+#include "tech/matrix4.h"
+#include "tech/matrix34.h"
+#include "tech/quat.h"
+#include "tech/vec3.h"
 
 #include <vector>
 

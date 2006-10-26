@@ -4,7 +4,7 @@
 #ifndef INCLUDED_GUIELEMENTTOOLS_H
 #define INCLUDED_GUIELEMENTTOOLS_H
 
-#include "guielementapi.h"
+#include "gui/guielementapi.h"
 
 #ifdef _MSC_VER
 #pragma once

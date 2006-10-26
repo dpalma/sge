@@ -6,8 +6,8 @@
 #include "luainterp.h"
 #include "luautil.h"
 
-#include "multivar.h"
-#include "techstring.h"
+#include "tech/multivar.h"
+#include "tech/techstring.h"
 
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
@@ -22,7 +22,7 @@ extern "C"
 #include <cstdio>
 #include <ctime>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 

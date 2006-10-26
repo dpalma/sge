@@ -4,9 +4,9 @@
 #ifndef INCLUDED_DICTIONARY_H
 #define INCLUDED_DICTIONARY_H
 
-#include "dictionaryapi.h"
-#include "multivar.h"
-#include "techstring.h"
+#include "tech/dictionaryapi.h"
+#include "tech/multivar.h"
+#include "tech/techstring.h"
 
 #include <map>
 

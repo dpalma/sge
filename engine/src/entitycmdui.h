@@ -4,10 +4,10 @@
 #ifndef INCLUDED_ENTITYCMDUI_H
 #define INCLUDED_ENTITYCMDUI_H
 
-#include "entityapi.h"
-#include "guiapi.h"
+#include "engine/entityapi.h"
+#include "gui/guiapi.h"
 
-#include "globalobjdef.h"
+#include "tech/globalobjdef.h"
 
 #include <map>
 

@@ -4,8 +4,8 @@
 #ifndef INCLUDED_GUIPARSE_H
 #define INCLUDED_GUIPARSE_H
 
-#include "combase.h"
-#include "guitypes.h"
+#include "tech/combase.h"
+#include "gui/guitypes.h"
 
 #ifdef _MSC_VER
 #pragma once

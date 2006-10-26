@@ -4,10 +4,10 @@
 #include "stdhdr.h"
 
 #include "luautil.h"
-#include "scriptapi.h"
+#include "script/scriptapi.h"
 
-#include "dictionaryapi.h"
-#include "multivar.h"
+#include "tech/dictionaryapi.h"
+#include "tech/multivar.h"
 
 extern "C"
 {
@@ -24,7 +24,7 @@ extern "C"
 #define lua_unboxpointer(L,i)	(*(void **)(lua_touserdata(L, i)))
 #endif
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -3,9 +3,9 @@
 
 #include "stdhdr.h"
 
-#include "color.h"
+#include "tech/color.h"
 
-#include "techmath.h"
+#include "tech/techmath.h"
 
 #ifdef _MSC_VER
 #pragma once

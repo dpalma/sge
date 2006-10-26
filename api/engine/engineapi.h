@@ -5,9 +5,10 @@
 #define INCLUDED_ENGINEAPI_H
 
 #include "enginedll.h"
-#include "comtools.h"
-#include "readwriteapi.h"
-#include "techstring.h"
+
+#include "tech/comtools.h"
+#include "tech/readwriteapi.h"
+#include "tech/techstring.h"
 
 #ifdef _MSC_VER
 #pragma once

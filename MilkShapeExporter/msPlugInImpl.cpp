@@ -7,13 +7,13 @@
 #include "Exporter.h"
 #include "resource.h"
 
-#include "comtools.h"
+#include "tech/comtools.h"
 
 #include "msLib.h"
 
 #include <windows.h>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 extern bool ShowExportPreviewDlg(cExporter * pExporter);
 

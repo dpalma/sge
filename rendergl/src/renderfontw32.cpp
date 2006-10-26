@@ -5,8 +5,8 @@
 
 #include "renderfontw32.h"
 
-#include "configapi.h"
-#include "techmath.h"
+#include "tech/configapi.h"
+#include "tech/techmath.h"
 
 #ifndef _WIN32
 #error ("This file is for Windows compilation only")
@@ -19,7 +19,7 @@
 
 #include <cstring>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 // REFERENCES
 // http://www.opengl.org/resources/code/rendering/mjktips/TexFont/TexFont.html

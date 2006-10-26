@@ -3,15 +3,15 @@
 
 #include "stdhdr.h"
 
-#include "sys.h"
+#include "platform/sys.h"
+#include "platform/keys.h"
 
-#include "configapi.h"
-#include "filepath.h"
-#include "globalobj.h"
-#include "keys.h"
-#include "schedulerapi.h"
-#include "techtime.h"
-#include "threadcallapi.h"
+#include "tech/configapi.h"
+#include "tech/filepath.h"
+#include "tech/globalobj.h"
+#include "tech/schedulerapi.h"
+#include "tech/techtime.h"
+#include "tech/threadcallapi.h"
 
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
@@ -33,7 +33,7 @@
 
 #include <cstdlib>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 

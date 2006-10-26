@@ -15,7 +15,7 @@ tResult DictionaryStoreCreate(HKEY, const tChar *, bool, IDictionaryStore * *)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 
 ///////////////////////////////////////////////////////////////////////////////

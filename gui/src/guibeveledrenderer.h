@@ -4,8 +4,8 @@
 #ifndef INCLUDED_GUIBEVELEDRENDERER_H
 #define INCLUDED_GUIBEVELEDRENDERER_H
 
-#include "guiapi.h"
-#include "guielementapi.h"
+#include "gui/guiapi.h"
+#include "gui/guielementapi.h"
 
 #ifdef _MSC_VER
 #pragma once

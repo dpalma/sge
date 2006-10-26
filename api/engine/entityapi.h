@@ -5,10 +5,10 @@
 #define INCLUDED_ENTITYAPI_H
 
 #include "enginedll.h"
-#include "comtools.h"
-#include "matrix4.h"
-#include "techstring.h"
-#include "vec3.h"
+#include "tech/comtools.h"
+#include "tech/matrix4.h"
+#include "tech/techstring.h"
+#include "tech/vec3.h"
 
 #ifdef _MSC_VER
 #pragma once

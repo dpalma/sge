@@ -2,7 +2,8 @@
 // $Id$
 
 #include "stdhdr.h"
-#include "techhash.h"
+
+#include "tech/techhash.h"
 
 extern "C"
 {
@@ -13,7 +14,7 @@ extern "C"
 #include "UnitTest++.h"
 #endif
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 
 ///////////////////////////////////////////////////////////////////////////////

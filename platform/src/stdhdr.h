@@ -4,9 +4,9 @@
 #ifndef INCLUDED_STDHDR_H
 #define INCLUDED_STDHDR_H
 
-#include "techtypes.h"
-#include "techassert.h"
-#include "techlog.h"
+#include "tech/techtypes.h"
+#include "tech/techassert.h"
+#include "tech/techlog.h"
 
 #ifdef _MSC_VER
 #pragma once

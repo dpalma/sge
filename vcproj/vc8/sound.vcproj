@@ -46,7 +46,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\sound\include,..\..\tech\include,..\..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\tinyxml,..\..\api"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;SOUND_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;HAVE_UNITTESTPP"
 				StringPooling="true"
 				RuntimeLibrary="3"
@@ -140,7 +140,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\sound\include,..\..\tech\include,..\..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\tinyxml,..\..\api"
 				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,HAVE_UNITTESTPP,_USRDLL,SOUND_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -220,7 +220,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\sound\include,..\..\tech\include,..\..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\tinyxml,..\..\api"
 				PreprocessorDefinitions="_DEBUG;_USRDLL;SOUND_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;HAVE_UNITTESTPP"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -313,7 +313,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\sound\include,..\..\tech\include,..\..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\tinyxml,..\..\api"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,_USRDLL,SOUND_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -393,7 +393,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\sound\include,..\..\tech\include,..\..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\tinyxml,..\..\api"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;SOUND_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL"
 				StringPooling="true"
 				RuntimeLibrary="2"

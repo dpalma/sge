@@ -4,7 +4,7 @@
 #ifndef INCLUDED_NETSOCKET_H
 #define INCLUDED_NETSOCKET_H
 
-#include "netapi.h"
+#include "network/netapi.h"
 
 #ifdef _MSC_VER
 #pragma once

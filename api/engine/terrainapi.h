@@ -5,10 +5,10 @@
 #define INCLUDED_TERRAINAPI_H
 
 #include "enginedll.h"
-#include "comtools.h"
-#include "vec3.h"
-#include "techstring.h"
-#include "readwriteapi.h"
+#include "tech/comtools.h"
+#include "tech/vec3.h"
+#include "tech/techstring.h"
+#include "tech/readwriteapi.h"
 
 #include <vector>
 

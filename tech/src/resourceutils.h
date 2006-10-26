@@ -4,7 +4,7 @@
 #ifndef INCLUDED_RESOURCEUTILS_H
 #define INCLUDED_RESOURCEUTILS_H
 
-#include "resourceapi.h"
+#include "tech/resourceapi.h"
 
 #ifdef _MSC_VER
 #pragma once

@@ -4,8 +4,8 @@
 #ifndef INCLUDED_READWRITEMD5_H
 #define INCLUDED_READWRITEMD5_H
 
-#include "readwriteapi.h"
-#include "techhash.h"
+#include "tech/readwriteapi.h"
+#include "tech/techhash.h"
 
 #ifdef _MSC_VER
 #pragma once

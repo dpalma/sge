@@ -4,9 +4,10 @@
 #include "stdhdr.h"
 
 #include "readwritemem.h"
-#include "techstring.h"
 
-#include "dbgalloc.h" // must be last header
+#include "tech/techstring.h"
+
+#include "tech/dbgalloc.h" // must be last header
 
 ////////////////////////////////////////////////////////////////////////////////
 //

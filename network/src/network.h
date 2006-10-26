@@ -4,9 +4,9 @@
 #ifndef INCLUDED_NETWORK_H
 #define INCLUDED_NETWORK_H
 
-#include "netapi.h"
+#include "network/netapi.h"
 
-#include "globalobjdef.h"
+#include "tech/globalobjdef.h"
 
 #ifdef _MSC_VER
 #pragma once

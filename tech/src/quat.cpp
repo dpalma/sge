@@ -3,11 +3,11 @@
 
 #include "stdhdr.h"
 
-#include "quat.h"
+#include "tech/quat.h"
 
 #include <cmath>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 // REFERENCES
 // "Rotating Objects Using Quaternions", February, 1998 "Game Developer", pp. 34-42

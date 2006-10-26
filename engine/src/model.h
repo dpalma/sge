@@ -4,10 +4,10 @@
 #ifndef INCLUDED_MODEL_H
 #define INCLUDED_MODEL_H
 
-#include "comtools.h"
-#include "modelapi.h"
-#include "modeltypes.h"
-#include "renderapi.h"
+#include "tech/comtools.h"
+#include "engine/modelapi.h"
+#include "engine/modeltypes.h"
+#include "render/renderapi.h"
 
 #ifdef _MSC_VER
 #pragma once

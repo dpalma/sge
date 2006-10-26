@@ -4,10 +4,10 @@
 #ifndef INCLUDED_SCHEDULER_H
 #define INCLUDED_SCHEDULER_H
 
-#include "schedulerapi.h"
 #include "schedulerclock.h"
 
-#include "globalobjdef.h"
+#include "tech/globalobjdef.h"
+#include "tech/schedulerapi.h"
 
 #include <queue>
 #include <deque>

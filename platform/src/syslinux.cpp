@@ -18,7 +18,7 @@
 #include <GL/glew.h>
 #include <GL/glxew.h>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -15,7 +15,7 @@
 
 #include <cstring>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 extern tResult GetDisplay(Display * * ppDisplay);
 

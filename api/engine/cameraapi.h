@@ -5,7 +5,7 @@
 #define INCLUDED_CAMERAAPI_H
 
 #include "enginedll.h"
-#include "comtools.h"
+#include "tech/comtools.h"
 
 #ifdef _MSC_VER
 #pragma once

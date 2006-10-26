@@ -10,8 +10,8 @@
 #include "guiparse.h"
 #include "guistrings.h"
 
-#include "globalobj.h"
-#include "resourceapi.h"
+#include "tech/globalobj.h"
+#include "tech/resourceapi.h"
 
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
@@ -22,7 +22,7 @@
 #include <cstring>
 #include <locale>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 
 ////////////////////////////////////////////////////////////////////////////////

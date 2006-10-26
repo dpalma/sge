@@ -11,13 +11,13 @@
 
 #include "resource.h"
 
-#include "engineapi.h"
-#include "terrainapi.h"
+#include "engine/engineapi.h"
+#include "engine/terrainapi.h"
 
-#include "readwriteapi.h"
-#include "filespec.h"
-#include "filepath.h"
-#include "globalobj.h"
+#include "tech/readwriteapi.h"
+#include "tech/filespec.h"
+#include "tech/filepath.h"
+#include "tech/globalobj.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

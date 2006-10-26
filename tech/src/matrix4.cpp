@@ -3,11 +3,11 @@
 
 #include "stdhdr.h"
 
-#include "matrix4.h"
+#include "tech/matrix4.h"
 // cVec2 is not used but is included here to instantiate the exports
-#include "vec2.h"
-#include "vec3.h"
-#include "vec4.h"
+#include "tech/vec2.h"
+#include "tech/vec3.h"
+#include "tech/vec4.h"
 
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
@@ -17,7 +17,7 @@
 #include <cfloat>
 #include <memory.h>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 

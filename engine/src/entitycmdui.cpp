@@ -5,15 +5,15 @@
 
 #include "entitycmdui.h"
 
-#include "guielementapi.h"
+#include "gui/guielementapi.h"
 
-#include "multivar.h"
+#include "tech/multivar.h"
 
 #include <tinyxml.h>
 
 #include <vector>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 

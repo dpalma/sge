@@ -5,16 +5,16 @@
 
 #ifdef HAVE_UNITTESTPP // entire file
 
-#include "statemachine.h"
-#include "statemachinetem.h"
+#include "tech/statemachine.h"
+#include "tech/statemachinetem.h"
 
-#include "techstring.h"
+#include "tech/techstring.h"
 
 #include "UnitTest++.h"
 
 #include <locale>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 

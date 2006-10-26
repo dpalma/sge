@@ -5,9 +5,9 @@
 
 #include "image.h"
 
-#include "globalobj.h"
-#include "resourceapi.h"
-#include "techmath.h"
+#include "tech/globalobj.h"
+#include "tech/resourceapi.h"
+#include "tech/techmath.h"
 
 #include <cstring>
 
@@ -16,7 +16,7 @@
 #include <windows.h>
 #endif
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 

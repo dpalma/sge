@@ -4,10 +4,10 @@
 #ifndef INCLUDED_GUIELEMENTENUM_H
 #define INCLUDED_GUIELEMENTENUM_H
 
-#include "guiapi.h"
-#include "guielementapi.h"
+#include "gui/guiapi.h"
+#include "gui/guielementapi.h"
 
-#include "comenum.h"
+#include "tech/comenum.h"
 
 #include <list>
 

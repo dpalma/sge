@@ -48,7 +48,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\NvTriStrip\include,..\..\3rdparty\wtl\include,..\..\tech\include,..\..\engine\include,..\..\rendergl\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\NvTriStrip\include,..\..\3rdparty\wtl\include,..\..\api"
 				PreprocessorDefinitions="NDEBUG;NO_AUTO_EXPORTS;_USRDLL;WIN32;_WINDOWS;STRICT"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -146,7 +146,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\NvTriStrip\include,..\..\3rdparty\wtl\include,..\..\tech\include,..\..\engine\include,..\..\rendergl\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\NvTriStrip\include,..\..\3rdparty\wtl\include,..\..\api"
 				PreprocessorDefinitions="_USRDLL;STRICT;_WINDOWS;NDEBUG;WIN32"
 				StringPooling="true"
 				RuntimeLibrary="3"
@@ -246,7 +246,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\NvTriStrip\include,..\..\3rdparty\wtl\include,..\..\tech\include,..\..\engine\include,..\..\rendergl\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\NvTriStrip\include,..\..\3rdparty\wtl\include,..\..\api"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;WIN32;_WINDOWS;STRICT"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -345,7 +345,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\NvTriStrip\include,..\..\3rdparty\wtl\include,..\..\tech\include,..\..\engine\include,..\..\rendergl\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\NvTriStrip\include,..\..\3rdparty\wtl\include,..\..\api"
 				PreprocessorDefinitions="_DEBUG;NO_AUTO_EXPORTS;_USRDLL;WIN32;_WINDOWS;STRICT"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -444,7 +444,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\NvTriStrip\include,..\..\3rdparty\wtl\include,..\..\tech\include,..\..\engine\include,..\..\rendergl\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\NvTriStrip\include,..\..\3rdparty\wtl\include,..\..\api"
 				PreprocessorDefinitions="_DEBUG;_USRDLL;WIN32;_WINDOWS;STRICT"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -537,46 +537,6 @@
 			<File
 				RelativePath="..\..\MilkShapeExporter\msPlugIn.rc"
 				>
-				<FileConfiguration
-					Name="StaticRelease|Win32"
-					>
-					<Tool
-						Name="VCResourceCompilerTool"
-						AdditionalIncludeDirectories="\prj\sge\MilkShapeExporter;$(NoInherit)"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Opt|Win32"
-					>
-					<Tool
-						Name="VCResourceCompilerTool"
-						AdditionalIncludeDirectories="\prj\sge\MilkShapeExporter;$(NoInherit)"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCResourceCompilerTool"
-						AdditionalIncludeDirectories="\prj\sge\MilkShapeExporter;$(NoInherit)"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="StaticDebug|Win32"
-					>
-					<Tool
-						Name="VCResourceCompilerTool"
-						AdditionalIncludeDirectories="\prj\sge\MilkShapeExporter;$(NoInherit)"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCResourceCompilerTool"
-						AdditionalIncludeDirectories="\prj\sge\MilkShapeExporter;$(NoInherit)"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\MilkShapeExporter\msPlugInApp.cpp"

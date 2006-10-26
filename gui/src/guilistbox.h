@@ -6,7 +6,7 @@
 
 #include "guielementbase.h"
 
-#include "scriptapi.h"
+#include "script/scriptapi.h"
 
 #include <vector>
 

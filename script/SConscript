@@ -9,11 +9,6 @@ sourceFiles = Split("""
    src/luautil.cpp
 """)
 
-includePaths = Split("""
-   #script/include
-   #tech/include
-""")
-
 libPaths = Split("""
    #allguids
    #tech
@@ -29,6 +24,5 @@ local.UseLua()
 local.UseTinyxml()
 local.BuildLibrary(target='script',
                    source=sourceFiles,
-                   include_path=includePaths,
                    lib_path=libPaths,
                    libs=linkLibs)

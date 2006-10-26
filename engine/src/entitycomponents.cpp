@@ -5,14 +5,14 @@
 
 #include "entitycomponents.h"
 
-#include "renderapi.h"
+#include "render/renderapi.h"
 
-#include "color.h"
-#include "globalobj.h"
-#include "matrix34.h"
-#include "multivar.h"
-#include "resourceapi.h"
-#include "statemachinetem.h"
+#include "tech/color.h"
+#include "tech/globalobj.h"
+#include "tech/matrix34.h"
+#include "tech/multivar.h"
+#include "tech/resourceapi.h"
+#include "tech/statemachinetem.h"
 
 #include <tinyxml.h>
 
@@ -21,7 +21,9 @@
 #include <algorithm>
 #include <cfloat>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
+
+#pragma warning(disable:4355) // 'this' : used in base member initializer list
 
 ///////////////////////////////////////////////////////////////////////////////
 

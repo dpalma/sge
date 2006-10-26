@@ -4,10 +4,10 @@
 #if !defined(INCLUDED_TERRAIN_H)
 #define INCLUDED_TERRAIN_H
 
-#include "terrainapi.h"
-#include "saveloadapi.h"
+#include "engine/terrainapi.h"
+#include "engine/saveloadapi.h"
 
-#include "globalobjdef.h"
+#include "tech/globalobjdef.h"
 
 #include <vector>
 

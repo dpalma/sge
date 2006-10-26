@@ -5,14 +5,14 @@
 
 #include "guieventsounds.h"
 
-#include "soundapi.h"
+#include "sound/soundapi.h"
 
-#include "multivar.h"
-#include "resourceapi.h"
+#include "tech/multivar.h"
+#include "tech/resourceapi.h"
 
 #include <tinyxml.h>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 
 #undef PlaySound // TODO: tinyxml.h should not include windows.h

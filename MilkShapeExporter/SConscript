@@ -12,14 +12,6 @@ sourceFiles = Split("""
    StdAfx.cpp
 """)
 
-includePaths = Split("""
-   #MilkShapeExporter
-   #engine/include
-   #rendergl/include
-   #tech/include
-   #3rdparty/wtl/include
-""")
-
 libPaths = Split("""
    #MilkShapeExporter
    #allguids
@@ -40,9 +32,9 @@ if env['PLATFORM'] == 'win32':
    local.UseNvTriStrip()
    local.UseTinyxml()
    local.UseZLib()
+   local.Append(CPPPATH=['#MilkShapeExporter', '#3rdparty/wtl/include'])
    local.BuildSharedLibrary(target='msSGEExporter',
                             source=sourceFiles + local.RES('msPlugIn.rc'),
                             deffile='#MilkShapeExporter/msPlugin.def',
-                            include_path=includePaths,
                             lib_path=libPaths,
                             libs=linkLibs)

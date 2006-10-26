@@ -47,7 +47,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\3rdparty\UnitTest++\src,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip,..\..\api"
 				PreprocessorDefinitions="_USRDLL;TECH_EXPORTS;STRICT;_WINDOWS;NDEBUG;WIN32;HAVE_UNITTESTPP"
 				StringPooling="true"
 				RuntimeLibrary="3"
@@ -141,7 +141,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\3rdparty\UnitTest++\src,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip,..\..\api"
 				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,_USRDLL,TECH_EXPORTS,WIN32,_WINDOWS,STRICT,HAVE_UNITTESTPP"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -221,7 +221,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\3rdparty\UnitTest++\src,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip,..\..\api"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;TECH_EXPORTS;WIN32;_WINDOWS;STRICT"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -314,7 +314,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\3rdparty\UnitTest++\src,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip,..\..\api"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,_USRDLL,TECH_EXPORTS,WIN32,_WINDOWS,STRICT"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -394,7 +394,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\3rdparty\UnitTest++\src,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip,..\..\api"
 				PreprocessorDefinitions="_DEBUG;_USRDLL;TECH_EXPORTS;WIN32;_WINDOWS;STRICT;HAVE_UNITTESTPP"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"

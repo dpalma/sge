@@ -5,11 +5,11 @@
 
 #include "entitycmdmanager.h"
 
-#include "multivar.h"
+#include "tech/multivar.h"
 
 #include <tinyxml.h>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 
 extern void RegisterBuiltinEntityCommands();

@@ -3,9 +3,9 @@
 
 #include "stdhdr.h"
 
-#include "ray.h"
+#include "tech/ray.h"
 
-#include "techmath.h"
+#include "tech/techmath.h"
 
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
@@ -14,7 +14,7 @@
 #include <cfloat>
 #include <cstdlib>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ////////////////////////////////////////////////////////////////////////////////
 //

@@ -32,15 +32,6 @@ sourceFiles = Split("""
    ToolPaletteBar.cpp
 """)
 
-includePaths = Split("""
-   #3rdparty/wtl/include
-   #engine/include
-   #platform/include
-   #rendergl/include
-   #script/include
-   #tech/include
-""")
-
 libPaths = Split("""
    #allguids
    #engine
@@ -65,8 +56,8 @@ if env['PLATFORM'] == 'win32':
    local.UseLua()
    local.UseTinyxml()
    local.UseZLib()
+   local.Append(CPPPATH=['#3rdparty/wtl/include'])
    local.BuildExecutable(target='editor',
                          source=sourceFiles + local.RES('editor.rc'),
-                         include_path=includePaths,
                          lib_path=libPaths,
                          libs=linkLibs)

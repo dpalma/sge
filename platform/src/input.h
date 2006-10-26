@@ -4,9 +4,9 @@
 #ifndef INCLUDED_INPUT_H
 #define INCLUDED_INPUT_H
 
-#include "inputapi.h"
-#include "globalobjdef.h"
-#include "connptimpl.h"
+#include "platform/inputapi.h"
+#include "tech/globalobjdef.h"
+#include "tech/connptimpl.h"
 
 #include <stack>
 

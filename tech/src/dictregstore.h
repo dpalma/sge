@@ -4,7 +4,7 @@
 #ifndef INCLUDED_DICTREGSTORE_H
 #define INCLUDED_DICTREGSTORE_H
 
-#include "dictionaryapi.h"
+#include "tech/dictionaryapi.h"
 
 #ifdef _MSC_VER
 #pragma once

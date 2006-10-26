@@ -6,9 +6,9 @@
 
 #include "enginedll.h"
 
-#include "quat.h"
-#include "vec3.h"
-#include "readwriteapi.h"
+#include "tech/quat.h"
+#include "tech/vec3.h"
+#include "tech/readwriteapi.h"
 
 #ifdef _MSC_VER
 #pragma once

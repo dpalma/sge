@@ -47,7 +47,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include,..\..\script\include,..\..\sound\include,..\..\rendergl\include,..\..\platform\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include,..\..\api"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,WIN32,_WINDOWS,TIXML_USE_STL"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -143,7 +143,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include,..\..\script\include,..\..\sound\include,..\..\rendergl\include,..\..\platform\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include,..\..\api"
 				PreprocessorDefinitions="TIXML_USE_STL,_WINDOWS,NDEBUG,WIN32,HAVE_CPPUNITLITE2"
 				StringPooling="true"
 				RuntimeLibrary="3"
@@ -241,7 +241,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include,..\..\script\include,..\..\sound\include,..\..\rendergl\include,..\..\platform\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include,..\..\api"
 				PreprocessorDefinitions="_DEBUG,WIN32,_WINDOWS,TIXML_USE_STL,HAVE_CPPUNITLITE2"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -339,7 +339,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include,..\..\script\include,..\..\sound\include,..\..\rendergl\include,..\..\platform\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include,..\..\api"
 				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,WIN32,_WINDOWS,TIXML_USE_STL,HAVE_CPPUNITLITE2"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -437,7 +437,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\engine\include,..\..\gui\include,..\..\network\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include,..\..\script\include,..\..\sound\include,..\..\rendergl\include,..\..\platform\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\tinyxml, ..\..\3rdparty\glew\include,..\..\api"
 				PreprocessorDefinitions="NDEBUG,WIN32,_WINDOWS,TIXML_USE_STL"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -512,46 +512,6 @@
 			<File
 				RelativePath="..\..\game\game.rc"
 				>
-				<FileConfiguration
-					Name="StaticRelease|Win32"
-					>
-					<Tool
-						Name="VCResourceCompilerTool"
-						AdditionalIncludeDirectories="\prj\sge\game;$(NoInherit)"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Opt|Win32"
-					>
-					<Tool
-						Name="VCResourceCompilerTool"
-						AdditionalIncludeDirectories="\prj\sge\game;$(NoInherit)"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCResourceCompilerTool"
-						AdditionalIncludeDirectories="\prj\sge\game;$(NoInherit)"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="StaticDebug|Win32"
-					>
-					<Tool
-						Name="VCResourceCompilerTool"
-						AdditionalIncludeDirectories="\prj\sge\game;$(NoInherit)"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCResourceCompilerTool"
-						AdditionalIncludeDirectories="\prj\sge\game;$(NoInherit)"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\game\main.cpp"

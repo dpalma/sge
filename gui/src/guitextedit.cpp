@@ -8,11 +8,10 @@
 #include "guielementtools.h"
 #include "guistrings.h"
 
-#include "renderfontapi.h"
-
-#include "globalobj.h"
-#include "techtime.h"
-#include "keys.h"
+#include "platform/keys.h"
+#include "render/renderfontapi.h"
+#include "tech/globalobj.h"
+#include "tech/techtime.h"
 
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
@@ -21,7 +20,7 @@
 #include <tinyxml.h>
 #include <locale>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -5,11 +5,11 @@
 
 #include "BitmapUtils.h"
 
-#include "terrainapi.h"
+#include "engine/terrainapi.h"
 
-#include "resourceapi.h"
-#include "imageapi.h"
-#include "globalobj.h"
+#include "tech/resourceapi.h"
+#include "tech/imageapi.h"
+#include "tech/globalobj.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

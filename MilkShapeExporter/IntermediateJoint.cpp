@@ -5,13 +5,13 @@
 
 #include "IntermediateJoint.h"
 
-#include "matrix4.h"
-#include "techhash.h"
-#include "vec3.h"
+#include "tech/matrix4.h"
+#include "tech/techhash.h"
+#include "tech/vec3.h"
 
 #include <map>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 
 ///////////////////////////////////////////////////////////////////////////////

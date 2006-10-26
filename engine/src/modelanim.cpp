@@ -6,13 +6,13 @@
 #include "modelanim.h"
 #include "model.h"
 
-#include "matrix3.h"
-#include "matrix4.h"
+#include "tech/matrix3.h"
+#include "tech/matrix4.h"
 
 #include <algorithm>
 #include <cfloat>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 
 ///////////////////////////////////////////////////////////////////////////////

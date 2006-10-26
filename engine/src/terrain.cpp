@@ -5,22 +5,24 @@
 
 #include "terrain.h"
 
-#include "engineapi.h"
-#include "ray.h"
+#include "engine/engineapi.h"
 
-#include "resourceapi.h"
-#include "imageapi.h"
-#include "readwriteapi.h"
-#include "readwriteutils.h"
-#include "globalobj.h"
-#include "connptimpl.h"
+#include "tech/ray.h"
+#include "tech/resourceapi.h"
+#include "tech/imageapi.h"
+#include "tech/readwriteapi.h"
+#include "tech/readwriteutils.h"
+#include "tech/globalobj.h"
+#include "tech/connptimpl.h"
 
 #include <algorithm>
 #include <map>
 #include <GL/glew.h>
 #include <tinyxml.h>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
+
+#pragma warning(disable:4355) // 'this' : used in base member initializer list
 
 /////////////////////////////////////////////////////////////////////////////
 

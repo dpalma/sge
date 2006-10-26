@@ -4,18 +4,18 @@
 #include "stdhdr.h"
 
 #include "camera.h"
-#include "readwriteutils.h"
 
-#include "configapi.h"
-#include "keys.h"
-#include "ray.h"
-#include "vec4.h"
+#include "platform/keys.h"
+#include "tech/readwriteutils.h"
+#include "tech/configapi.h"
+#include "tech/ray.h"
+#include "tech/vec4.h"
 
 #include <algorithm>
 
 #include <GL/glew.h>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 
 // REFERENCES

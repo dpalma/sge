@@ -6,7 +6,7 @@
 
 #include "guielementbase.h"
 
-#include "connptimpl.h"
+#include "tech/connptimpl.h"
 
 #include <list>
 

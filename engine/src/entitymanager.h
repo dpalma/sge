@@ -4,16 +4,16 @@
 #ifndef INCLUDED_ENTITYMANAGER_H
 #define INCLUDED_ENTITYMANAGER_H
 
-#include "entityapi.h"
+#include "engine/entityapi.h"
 
-#include "inputapi.h"
-#include "saveloadapi.h"
-#include "schedulerapi.h"
+#include "platform/inputapi.h"
+#include "engine/saveloadapi.h"
 
-#include "axisalignedbox.h"
-#include "comenum.h"
-#include "connptimpl.h"
-#include "globalobjdef.h"
+#include "tech/schedulerapi.h"
+#include "tech/axisalignedbox.h"
+#include "tech/comenum.h"
+#include "tech/connptimpl.h"
+#include "tech/globalobjdef.h"
 
 #include <list>
 #include <map>

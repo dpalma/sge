@@ -4,14 +4,14 @@
 #ifndef INCLUDED_CAMERA_H
 #define INCLUDED_CAMERA_H
 
-#include "cameraapi.h"
-#include "inputapi.h"
-#include "saveloadapi.h"
-#include "schedulerapi.h"
+#include "engine/cameraapi.h"
+#include "platform/inputapi.h"
+#include "engine/saveloadapi.h"
+#include "tech/schedulerapi.h"
 
-#include "frustum.h"
-#include "globalobjdef.h"
-#include "matrix4.h"
+#include "tech/frustum.h"
+#include "tech/globalobjdef.h"
+#include "tech/matrix4.h"
 
 #ifdef _MSC_VER
 #pragma once

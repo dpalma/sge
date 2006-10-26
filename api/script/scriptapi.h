@@ -8,7 +8,7 @@
 /// Interface definitions for script language integration
 
 #include "scriptdll.h"
-#include "comtools.h"
+#include "tech/comtools.h"
 
 #ifdef _MSC_VER
 #pragma once

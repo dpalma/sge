@@ -3,15 +3,15 @@
 
 #include "stdhdr.h"
 
-#include "techlog.h"
-#include "techtypes.h"
-#include "filespec.h"
+#include "tech/techlog.h"
+#include "tech/techtypes.h"
+#include "tech/filespec.h"
 
 #include <cstring>
 #include <cstdio>
 #include <cstdarg>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 #ifdef _WIN32
 extern "C" uint STDCALL OutputDebugStringA(const char *);

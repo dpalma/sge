@@ -3,13 +3,13 @@
 
 #include "stdhdr.h"
 
-#include "functor.h"
+#include "tech/functor.h"
 
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
 #endif
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 //

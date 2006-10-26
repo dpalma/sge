@@ -4,9 +4,9 @@
 #ifndef INCLUDED_THREADCALLER_H
 #define INCLUDED_THREADCALLER_H
 
-#include "threadcallapi.h"
-#include "thread.h"
-#include "globalobjdef.h"
+#include "tech/threadcallapi.h"
+#include "tech/thread.h"
+#include "tech/globalobjdef.h"
 
 #include <map>
 

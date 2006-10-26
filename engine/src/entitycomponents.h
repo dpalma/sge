@@ -4,13 +4,13 @@
 #ifndef INCLUDED_ENTITYCOMPONENTS_H
 #define INCLUDED_ENTITYCOMPONENTS_H
 
-#include "entityapi.h"
+#include "engine/entityapi.h"
 
 #include "model.h"
-#include "schedulerapi.h"
 
-#include "axisalignedbox.h"
-#include "statemachine.h"
+#include "tech/schedulerapi.h"
+#include "tech/axisalignedbox.h"
+#include "tech/statemachine.h"
 
 #ifdef _MSC_VER
 #pragma once

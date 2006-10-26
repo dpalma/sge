@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "comtools.h"
+#include "tech/comtools.h"
 
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
@@ -12,7 +12,7 @@
 #include <cstdio>
 #include <cstring>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -4,7 +4,7 @@
 #ifndef INCLUDED_RENDERFONTFTGL_H
 #define INCLUDED_RENDERFONTFTGL_H
 
-#include "renderfontapi.h"
+#include "render/renderfontapi.h"
 
 #ifdef _MSC_VER
 #pragma once

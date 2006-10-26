@@ -4,19 +4,19 @@
 #include "stdhdr.h"
 
 #include "guielementtools.h"
-#include "guiapi.h"
-#include "guistyleapi.h"
+#include "gui/guiapi.h"
+#include "gui/guistyleapi.h"
 
-#include "renderfontapi.h"
+#include "render/renderfontapi.h"
 
-#include "configapi.h"
-#include "globalobj.h"
+#include "tech/configapi.h"
+#include "tech/globalobj.h"
 
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
 #endif
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 
 ///////////////////////////////////////////////////////////////////////////////

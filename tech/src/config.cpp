@@ -3,9 +3,10 @@
 
 #include "stdhdr.h"
 
-#include "configapi.h"
-#include "techstring.h"
 #include "dictionary.h"
+
+#include "tech/configapi.h"
+#include "tech/techstring.h"
 
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
@@ -13,7 +14,7 @@
 
 #include <cstdio>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 extern bool ParseDictionaryLine(const tChar * psz, cStr * pKey, cStr * pValue, cStr * pComment);
 

@@ -5,11 +5,11 @@
 
 #include "guipagelayout.h"
 #include "guielementtools.h"
-#include "guistyleapi.h"
+#include "gui/guistyleapi.h"
 
-#include "hashtabletem.h"
+#include "tech/hashtabletem.h"
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 // REFERENCES
 // http://www.w3.org/TR/WD-positioning-19970819

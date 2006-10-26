@@ -6,9 +6,9 @@
 #include "splashwnd.h"
 #include "BitmapUtils.h"
 
-#include "configapi.h"
-#include "techstring.h"
-#include "thread.h"
+#include "tech/configapi.h"
+#include "tech/techstring.h"
+#include "tech/thread.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

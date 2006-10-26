@@ -4,7 +4,7 @@
 #include "stdhdr.h"
 
 #include "dictionarystore.h"
-#include "readwriteapi.h"
+#include "tech/readwriteapi.h"
 
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
@@ -13,7 +13,7 @@
 #include <locale>
 #include <list>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 

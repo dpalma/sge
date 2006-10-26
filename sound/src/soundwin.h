@@ -4,9 +4,9 @@
 #ifndef INCLUDED_SOUNDWIN_H
 #define INCLUDED_SOUNDWIN_H
 
-#include "soundapi.h"
+#include "sound/soundapi.h"
 
-#include "globalobjdef.h"
+#include "tech/globalobjdef.h"
 
 #define WIN32_LEAN_AND_MEAN
 #define NOGDI

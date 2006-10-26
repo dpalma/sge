@@ -4,8 +4,8 @@
 #ifndef INCLUDED_MODELSKELETON_H
 #define INCLUDED_MODELSKELETON_H
 
-#include "modelapi.h"
-#include "modeltypes.h"
+#include "engine/modelapi.h"
+#include "engine/modeltypes.h"
 
 #include <map>
 #include <vector>

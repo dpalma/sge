@@ -47,7 +47,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\Cg\include,..\..\3rdparty\UnitTest++\src,..\..\3rdparty\glew\include,..\..\3rdparty\freetype\include,..\..\3rdparty\ftgl\include,..\..\rendergl\include,..\..\tech\include,..\..\platform\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\Cg\include,..\..\3rdparty\UnitTest++\src,..\..\3rdparty\glew\include,..\..\3rdparty\freetype\include,..\..\3rdparty\ftgl\include,..\..\api"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;RENDER_EXPORTS;WIN32;_WINDOWS;STRICT;GLEW_STATIC;HAVE_CG"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -145,7 +145,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\Cg\include,..\..\3rdparty\UnitTest++\src,..\..\3rdparty\glew\include,..\..\3rdparty\freetype\include,..\..\3rdparty\ftgl\include,..\..\rendergl\include,..\..\tech\include,..\..\platform\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\Cg\include,..\..\3rdparty\UnitTest++\src,..\..\3rdparty\glew\include,..\..\3rdparty\freetype\include,..\..\3rdparty\ftgl\include,..\..\api"
 				PreprocessorDefinitions="_USRDLL;RENDER_EXPORTS;STRICT;_WINDOWS;NDEBUG;WIN32;GLEW_STATIC;HAVE_UNITTESTPP;HAVE_CG"
 				StringPooling="true"
 				RuntimeLibrary="3"
@@ -239,7 +239,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\Cg\include,..\..\3rdparty\UnitTest++\src,..\..\3rdparty\glew\include,..\..\3rdparty\freetype\include,..\..\3rdparty\ftgl\include,..\..\rendergl\include,..\..\tech\include,..\..\platform\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\Cg\include,..\..\3rdparty\UnitTest++\src,..\..\3rdparty\glew\include,..\..\3rdparty\freetype\include,..\..\3rdparty\ftgl\include,..\..\api"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,_USRDLL,RENDER_EXPORTS,WIN32,_WINDOWS,STRICT,GLEW_STATIC,FTGL_LIBRARY_STATIC,HAVE_CG"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -314,7 +314,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\Cg\include,..\..\3rdparty\UnitTest++\src,..\..\3rdparty\glew\include,..\..\3rdparty\freetype\include,..\..\3rdparty\ftgl\include,..\..\rendergl\include,..\..\tech\include,..\..\platform\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\Cg\include,..\..\3rdparty\UnitTest++\src,..\..\3rdparty\glew\include,..\..\3rdparty\freetype\include,..\..\3rdparty\ftgl\include,..\..\api"
 				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,_USRDLL,RENDER_EXPORTS,WIN32,_WINDOWS,STRICT,HAVE_UNITTESTPP,GLEW_STATIC,FTGL_LIBRARY_STATIC,HAVE_CG"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -394,7 +394,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\Cg\include,..\..\3rdparty\UnitTest++\src,..\..\3rdparty\glew\include,..\..\3rdparty\freetype\include,..\..\3rdparty\ftgl\include,..\..\rendergl\include,..\..\tech\include,..\..\platform\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\Cg\include,..\..\3rdparty\UnitTest++\src,..\..\3rdparty\glew\include,..\..\3rdparty\freetype\include,..\..\3rdparty\ftgl\include,..\..\api"
 				PreprocessorDefinitions="_DEBUG;_USRDLL;RENDER_EXPORTS;WIN32;_WINDOWS;STRICT;HAVE_UNITTESTPP;GLEW_STATIC;HAVE_CG"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"

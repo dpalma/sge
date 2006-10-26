@@ -12,7 +12,7 @@
 #include "guielementenum.h"
 #include "guielementtools.h"
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 #ifdef _MSC_VER
 #pragma once
@@ -160,6 +160,6 @@ tResult cGUIContainerBase<INTRFC>::SetLayout(IGUILayoutManager * pLayout)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "undbgalloc.h"
+#include "tech/undbgalloc.h"
 
 #endif // !INCLUDED_GUICONTAINERBASETEM_H

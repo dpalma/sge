@@ -6,11 +6,11 @@
 #include "MapPropertiesDlg.h"
 
 #include "editorapi.h"
-#include "terrainapi.h"
+#include "engine/terrainapi.h"
 #include "BitmapUtils.h"
 
-#include "globalobj.h"
-#include "resourceapi.h"
+#include "tech/globalobj.h"
+#include "tech/resourceapi.h"
 
 #include <algorithm>
 #include <functional>

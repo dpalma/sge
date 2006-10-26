@@ -6,12 +6,12 @@
 #include "Exporter.h"
 #include "resource.h"
 
-#include "modelapi.h"
+#include "engine/modelapi.h"
 
-#include "comtools.h"
-#include "filespec.h"
-#include "readwriteapi.h"
-#include "readwriteutils.h"
+#include "tech/comtools.h"
+#include "tech/filespec.h"
+#include "tech/readwriteapi.h"
+#include "tech/readwriteutils.h"
 
 #include "msLib.h"
 
@@ -20,7 +20,7 @@
 #include <map>
 #include <set>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 
 /////////////////////////////////////////////////////////////////////////////

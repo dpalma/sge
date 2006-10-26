@@ -5,16 +5,16 @@
 
 #include "guilayout.h"
 
-#include "guiapi.h"
+#include "gui/guiapi.h"
 #include "guielementtools.h"
 #include "guistrings.h"
 
-#include "techmath.h"
+#include "tech/techmath.h"
 
 #include <tinyxml.h>
 #include <map>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 

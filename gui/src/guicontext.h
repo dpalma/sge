@@ -4,14 +4,13 @@
 #ifndef INCLUDED_GUICONTEXT_H
 #define INCLUDED_GUICONTEXT_H
 
-#include "guiapi.h"
-#include "guielementapi.h"
+#include "gui/guiapi.h"
+#include "gui/guielementapi.h"
 #include "guieventrouter.h"
 
-#include "inputapi.h"
-#include "scriptapi.h"
-
-#include "globalobjdef.h"
+#include "platform/inputapi.h"
+#include "script/scriptapi.h"
+#include "tech/globalobjdef.h"
 
 #include <list>
 

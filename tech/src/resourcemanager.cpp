@@ -4,11 +4,12 @@
 #include "stdhdr.h"
 
 #include "resourcemanager.h"
-#include "fileenum.h"
-#include "filepath.h"
-#include "filespec.h"
-#include "readwriteapi.h"
 #include "resourcestore.h"
+
+#include "tech/fileenum.h"
+#include "tech/filepath.h"
+#include "tech/filespec.h"
+#include "tech/readwriteapi.h"
 
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
@@ -19,7 +20,7 @@
 #include <algorithm>
 #include <set>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ////////////////////////////////////////////////////////////////////////////////
 

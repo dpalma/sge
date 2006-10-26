@@ -2,7 +2,8 @@
 // $Id$
 
 #include "stdhdr.h"
-#include "techmath.h"
+
+#include "tech/techmath.h"
 
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
@@ -11,7 +12,7 @@
 #include <cmath>
 #include <ctime>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 // REFERENCES
 // http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html

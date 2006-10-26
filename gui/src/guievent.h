@@ -4,8 +4,8 @@
 #ifndef INCLUDED_GUIEVENT_H
 #define INCLUDED_GUIEVENT_H
 
-#include "guiapi.h"
-#include "guitypes.h"
+#include "gui/guiapi.h"
+#include "gui/guitypes.h"
 
 #ifdef _MSC_VER
 #pragma once

@@ -6,14 +6,14 @@
 #include "guibutton.h"
 #include "guielementbasetem.h"
 #include "guielementtools.h"
-#include "scriptapi.h"
+#include "script/scriptapi.h"
 #include "guistrings.h"
 
-#include "globalobj.h"
+#include "tech/globalobj.h"
 
 #include <tinyxml.h>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 LOG_DEFINE_CHANNEL(GUIButtonEvents);
 

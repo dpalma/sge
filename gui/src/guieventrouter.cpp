@@ -13,13 +13,13 @@ LOG_DEFINE_CHANNEL(GUIEventRouter);
 #include "guicontainerbase.h"
 #include "guicontainerbasetem.h"
 
-#include "inputapi.h"
+#include "platform/inputapi.h"
 
-#include "globalobj.h"
+#include "tech/globalobj.h"
 
 #include "UnitTest++.h"
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 
 ///////////////////////////////////////////////////////////////////////////////

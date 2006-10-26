@@ -4,9 +4,9 @@
 #ifndef INCLUDED_GUISTYLE_H
 #define INCLUDED_GUISTYLE_H
 
-#include "guistyleapi.h"
+#include "gui/guistyleapi.h"
 
-#include "dictionaryapi.h"
+#include "tech/dictionaryapi.h"
 
 #include <map>
 

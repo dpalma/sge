@@ -2,9 +2,9 @@
 // $Id$
 
 #include "stdhdr.h"
-#include "techhash.h"
+#include "tech/techhash.h"
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 // See http://burtleburtle.net/bob/hash/doobs.html

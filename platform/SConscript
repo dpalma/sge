@@ -13,12 +13,6 @@ if env['PLATFORM'] == 'win32':
 elif env['PLATFORM'] == 'cygwin':
    sourceFiles += ['src/syslinux.cpp']
 
-includePaths = Split("""
-   #platform/include
-   #script/include
-   #tech/include
-""")
-
 libPaths = Split("""
    #allguids
    #tech
@@ -34,6 +28,5 @@ local.UseGL()
 local.UseTinyxml()
 local.BuildLibrary(target='platform',
                    source=sourceFiles,
-                   include_path=includePaths,
                    lib_path=libPaths,
                    libs=linkLibs)

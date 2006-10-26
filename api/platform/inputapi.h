@@ -4,9 +4,9 @@
 #ifndef INCLUDED_INPUTAPI_H
 #define INCLUDED_INPUTAPI_H
 
-#include "platformdll.h"
-#include "comtools.h"
-#include "vec2.h"
+#include "platform/platformdll.h"
+#include "tech/comtools.h"
+#include "tech/vec2.h"
 
 #ifdef _MSC_VER
 #pragma once

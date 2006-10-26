@@ -4,15 +4,15 @@
 #include "stdhdr.h"
 
 #include "guistyle.h"
-#include "guiapi.h"
+#include "gui/guiapi.h"
 #include "guielementtools.h"
 #include "guiparse.h"
 #include "guistrings.h"
 
-#include "renderapi.h"
-#include "renderfontapi.h"
+#include "render/renderapi.h"
+#include "render/renderfontapi.h"
 
-#include "globalobj.h"
+#include "tech/globalobj.h"
 
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
@@ -21,7 +21,7 @@
 #include <cstring>
 #include <locale>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 static const uint kInvalidUint = ~0u;
 

@@ -5,9 +5,9 @@
 
 #include "schedulerclock.h"
 
-#include "techtime.h"
+#include "tech/techtime.h"
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 
 ///////////////////////////////////////////////////////////////////////////////

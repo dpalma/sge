@@ -4,8 +4,8 @@
 #ifndef INCLUDED_DICTIONARYSTORE_H
 #define INCLUDED_DICTIONARYSTORE_H
 
-#include "dictionaryapi.h"
-#include "filespec.h"
+#include "tech/dictionaryapi.h"
+#include "tech/filespec.h"
 
 #ifdef _MSC_VER
 #pragma once

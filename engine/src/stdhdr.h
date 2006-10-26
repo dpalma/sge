@@ -4,11 +4,9 @@
 #ifndef INCLUDED_STDHDR_H
 #define INCLUDED_STDHDR_H
 
-#pragma warning(disable:4355) // 'this' : used in base member initializer list
-
-#include "techtypes.h"
-#include "techassert.h"
-#include "techlog.h"
+#include "tech/techtypes.h"
+#include "tech/techassert.h"
+#include "tech/techlog.h"
 
 #ifdef _MSC_VER
 #pragma once

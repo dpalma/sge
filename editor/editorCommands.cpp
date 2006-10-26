@@ -5,10 +5,10 @@
 
 #include "editorCommands.h"
 
-#include "entityapi.h"
-#include "terrainapi.h"
+#include "engine/entityapi.h"
+#include "engine/terrainapi.h"
 
-#include "globalobj.h"
+#include "tech/globalobj.h"
 
 #include "resource.h"
 

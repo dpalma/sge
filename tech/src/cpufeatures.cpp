@@ -3,9 +3,9 @@
 
 #include "stdhdr.h"
 
-#include "cpufeatures.h"
+#include "tech/cpufeatures.h"
 
-#include "techstring.h"
+#include "tech/techstring.h"
 
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
@@ -17,7 +17,7 @@
 
 #include <cstring>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 

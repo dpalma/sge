@@ -5,10 +5,10 @@
 
 #include "soundwin.h"
 
-#include "resourceapi.h"
-#include "readwriteapi.h"
+#include "tech/resourceapi.h"
+#include "tech/readwriteapi.h"
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 
 ///////////////////////////////////////////////////////////////////////////////

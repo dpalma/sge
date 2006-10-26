@@ -5,21 +5,21 @@
 
 #include "editorDoc.h"
 #include "editorView.h"
-#include "terrainapi.h"
+#include "engine/terrainapi.h"
 #include "editorapi.h"
 #include "editorTools.h"
 #include "editorTypes.h"
 #include "CameraDlg.h"
 
-#include "cameraapi.h"
-#include "entityapi.h"
-#include "ray.h"
-#include "renderapi.h"
+#include "engine/cameraapi.h"
+#include "engine/entityapi.h"
+#include "render/renderapi.h"
 
-#include "configapi.h"
-#include "globalobj.h"
-#include "techtime.h"
-#include "vec4.h"
+#include "tech/configapi.h"
+#include "tech/globalobj.h"
+#include "tech/ray.h"
+#include "tech/techtime.h"
+#include "tech/vec4.h"
 
 #include <GL/glew.h>
 

@@ -18,12 +18,6 @@ if env['PLATFORM'] == 'win32':
 elif env['PLATFORM'] == 'cygwin':
    sourceFiles += ['src/renderfontx11.cpp']
 
-includePaths = Split("""
-   #platform/include
-   #rendergl/include
-   #tech/include
-""")
-
 libPaths = Split("""
    #allguids
    #platform
@@ -40,6 +34,5 @@ local = env.Copy()
 local.UseFTGL()
 local.BuildLibrary(target='rendergl',
                    source=sourceFiles,
-                   include_path=includePaths,
                    lib_path=libPaths,
                    libs=linkLibs)

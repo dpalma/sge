@@ -4,10 +4,10 @@
 #ifndef INCLUDED_GUIFACTORY_H
 #define INCLUDED_GUIFACTORY_H
 
-#include "guiapi.h"
+#include "gui/guiapi.h"
 
-#include "connptimpl.h"
-#include "globalobjdef.h"
+#include "tech/connptimpl.h"
+#include "tech/globalobjdef.h"
 
 #include <map>
 

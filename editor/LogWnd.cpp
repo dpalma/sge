@@ -5,7 +5,7 @@
 
 #include "LogWnd.h"
 
-#include "sys.h"
+#include "platform/sys.h"
 
 #include <afxole.h>
 

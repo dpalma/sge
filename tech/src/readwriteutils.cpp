@@ -3,9 +3,9 @@
 
 #include "stdhdr.h"
 
-#include "readwriteutils.h"
+#include "tech/readwriteutils.h"
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 

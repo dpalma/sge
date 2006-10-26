@@ -4,11 +4,11 @@
 #ifndef INCLUDED_GUIEVENTSOUNDS_H
 #define INCLUDED_GUIEVENTSOUNDS_H
 
-#include "guiapi.h"
+#include "gui/guiapi.h"
 
-#include "scriptapi.h"
+#include "script/scriptapi.h"
 
-#include "globalobjdef.h"
+#include "tech/globalobjdef.h"
 
 #include <map>
 

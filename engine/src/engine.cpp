@@ -5,18 +5,18 @@
 
 #include "engine.h"
 #include "model.h"
-#include "readwriteutils.h"
-#include "saveloadapi.h"
+#include "tech/readwriteutils.h"
+#include "engine/saveloadapi.h"
 
-#include "renderapi.h"
+#include "render/renderapi.h"
 
-#include "globalobj.h"
-#include "resourceapi.h"
-#include "techmath.h"
+#include "tech/globalobj.h"
+#include "tech/resourceapi.h"
+#include "tech/techmath.h"
 
 #include <ctime>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 

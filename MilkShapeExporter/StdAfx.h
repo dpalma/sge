@@ -10,12 +10,12 @@
 
 /////////////////////////////////////////////////////////////////////////////
 
-#include "techtypes.h"
-#include "techassert.h"
-#include "techlog.h"
+#include "tech/techtypes.h"
+#include "tech/techassert.h"
+#include "tech/techlog.h"
 
 #define QI_TEMPLATE_METHOD_FOR_ATL
-#include "combase.h"
+#include "tech/combase.h"
 
 /////////////////////////////////////////////////////////////////////////////
 

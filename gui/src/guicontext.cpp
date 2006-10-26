@@ -7,28 +7,30 @@
 #include "guievent.h"
 #include "guielementenum.h"
 #include "guipage.h"
-#include "guistyleapi.h"
+#include "gui/guistyleapi.h"
 
-#include "sys.h"
+#include "platform/sys.h"
+#include "platform/keys.h"
 
-#include "renderapi.h"
-#include "renderfontapi.h"
+#include "render/renderapi.h"
+#include "render/renderfontapi.h"
 
-#include "configapi.h"
-#include "keys.h"
-#include "multivar.h"
-#include "resourceapi.h"
+#include "tech/configapi.h"
+#include "tech/multivar.h"
+#include "tech/resourceapi.h"
 
 #include "guieventroutertem.h"
 
 #include <tinyxml.h>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 // TODO: The xml resource format can probably move into tech
 #ifndef kRT_TiXml
 #define kRT_TiXml _T("TiXml")
 #endif
+
+#pragma warning(disable:4355) // 'this' : used in base member initializer list
 
 ///////////////////////////////////////////////////////////////////////////////
 

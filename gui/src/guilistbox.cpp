@@ -9,14 +9,14 @@
 #include "guielementtools.h"
 #include "guistrings.h"
 
-#include "globalobj.h"
-#include "multivar.h"
+#include "tech/globalobj.h"
+#include "tech/multivar.h"
 
 #include <algorithm>
 #include <list>
 #include <tinyxml.h>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -4,8 +4,8 @@
 #ifndef INCLUDED_NETAPI_H
 #define INCLUDED_NETAPI_H
 
-#include "netdll.h"
-#include "comtools.h"
+#include "network/netdll.h"
+#include "tech/comtools.h"
 
 #ifdef _MSC_VER
 #pragma once

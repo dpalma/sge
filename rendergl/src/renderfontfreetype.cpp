@@ -6,10 +6,10 @@
 #include "renderfontfreetype.h"
 #include "freetypeutils.h"
 
-#include "sys.h"
+#include "platform/sys.h"
 
-#include "filepath.h"
-#include "filespec.h"
+#include "tech/filepath.h"
+#include "tech/filespec.h"
 
 #include <GL/glew.h>
 
@@ -20,7 +20,7 @@
 
 #include <cstring>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 
 #define kRenderFontGlyphFirst 32

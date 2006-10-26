@@ -5,8 +5,8 @@
 #define INCLUDED_LUAINTERP_H
 
 #include "luastate.h"
-#include "scriptapi.h"
-#include "globalobjdef.h"
+#include "script/scriptapi.h"
+#include "tech/globalobjdef.h"
 
 #include <cstdarg>
 

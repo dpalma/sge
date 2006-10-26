@@ -6,22 +6,23 @@
 #include "model.h"
 #include "ms3dread.h"
 #include "ms3d.h"
-#include "renderapi.h"
 
-#include "vec4.h"
-#include "matrix4.h"
-#include "resourceapi.h"
-#include "readwriteapi.h"
-#include "globalobj.h"
-#include "filespec.h"
-#include "techmath.h"
+#include "render/renderapi.h"
+
+#include "tech/vec4.h"
+#include "tech/matrix4.h"
+#include "tech/resourceapi.h"
+#include "tech/readwriteapi.h"
+#include "tech/globalobj.h"
+#include "tech/filespec.h"
+#include "tech/techmath.h"
 
 #include <algorithm>
 #include <cfloat>
 #include <map>
 #include <stack>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 
 ////////////////////////////////////////////////////////////////////////////////

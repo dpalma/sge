@@ -5,16 +5,16 @@
 
 #include "model.h"
 
-#include "renderapi.h"
+#include "render/renderapi.h"
 
-#include "globalobj.h"
-#include "resourceapi.h"
-#include "readwriteapi.h"
-#include "readwriteutils.h"
+#include "tech/globalobj.h"
+#include "tech/resourceapi.h"
+#include "tech/readwriteapi.h"
+#include "tech/readwriteutils.h"
 
 #include <algorithm>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 
 ////////////////////////////////////////////////////////////////////////////////

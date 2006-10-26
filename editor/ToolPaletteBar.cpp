@@ -10,15 +10,15 @@
 #include "editorTools.h"
 #include "BitmapUtils.h"
 
-#include "engineapi.h"
-#include "terrainapi.h"
+#include "engine/engineapi.h"
+#include "engine/terrainapi.h"
 
-#include "configapi.h"
-#include "fileenum.h"
-#include "filepath.h"
-#include "filespec.h"
-#include "globalobj.h"
-#include "resourceapi.h"
+#include "tech/configapi.h"
+#include "tech/fileenum.h"
+#include "tech/filepath.h"
+#include "tech/filespec.h"
+#include "tech/globalobj.h"
+#include "tech/resourceapi.h"
 
 #include "resource.h"       // main symbols
 

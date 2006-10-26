@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "renderapi.h"
+#include "render/renderapi.h"
 
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
@@ -13,7 +13,7 @@
 
 #include <cstdlib>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ////////////////////////////////////////////////////////////////////////////////
 

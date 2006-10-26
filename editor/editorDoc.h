@@ -4,11 +4,11 @@
 #if !defined(INCLUDED_EDITORDOC_H)
 #define INCLUDED_EDITORDOC_H
 
-#include "comtools.h"
-#include "connptimpl.h"
+#include "tech/comtools.h"
+#include "tech/connptimpl.h"
 #include "afxcomtools.h"
 #include "editorapi.h"
-#include "saveloadapi.h"
+#include "engine/saveloadapi.h"
 
 #include <stack>
 

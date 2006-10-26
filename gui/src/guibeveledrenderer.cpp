@@ -6,16 +6,16 @@
 #include "guibeveledrenderer.h"
 #include "guielementtools.h"
 #include "guistrings.h"
-#include "guistyleapi.h"
+#include "gui/guistyleapi.h"
 
-#include "renderapi.h"
-#include "renderfontapi.h"
+#include "render/renderapi.h"
+#include "render/renderfontapi.h"
 
-#include "configapi.h"
-#include "globalobj.h"
-#include "imageapi.h"
+#include "tech/configapi.h"
+#include "tech/globalobj.h"
+#include "tech/imageapi.h"
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 
 ///////////////////////////////////////////////////////////////////////////////

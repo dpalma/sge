@@ -5,10 +5,10 @@
 
 #ifdef HAVE_UNITTESTPP // entire file
 
-#include "hashtable.h"
-#include "hashtabletem.h"
+#include "tech/hashtable.h"
+#include "tech/hashtabletem.h"
 
-#include "techtime.h"
+#include "tech/techtime.h"
 
 #include "UnitTest++.h"
 
@@ -28,7 +28,7 @@
 #include <set>
 #include <string>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -4,14 +4,14 @@
 #include "stdhdr.h"
 
 #include "saveloadmanager.h"
-#include "readwriteutils.h"
+#include "tech/readwriteutils.h"
 
-#include "techhash.h"
-#include "toposort.h"
+#include "tech/techhash.h"
+#include "tech/toposort.h"
 
 #include <vector>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 
 ////////////////////////////////////////////////////////////////////////////////

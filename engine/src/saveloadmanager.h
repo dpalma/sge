@@ -4,11 +4,11 @@
 #ifndef INCLUDED_SAVELOADMANAGER_H
 #define INCLUDED_SAVELOADMANAGER_H
 
-#include "saveloadapi.h"
+#include "engine/saveloadapi.h"
 
-#include "digraph.h"
-#include "globalobjdef.h"
-#include "readwriteapi.h"
+#include "tech/digraph.h"
+#include "tech/globalobjdef.h"
+#include "tech/readwriteapi.h"
 
 #include <map>
 

@@ -4,9 +4,9 @@
 #ifndef INCLUDED_GUIEVENTROUTER_H
 #define INCLUDED_GUIEVENTROUTER_H
 
-#include "guiapi.h"
+#include "gui/guiapi.h"
 
-#include "connptimpl.h"
+#include "tech/connptimpl.h"
 
 #ifdef _MSC_VER
 #pragma once

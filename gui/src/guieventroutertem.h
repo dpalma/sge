@@ -8,16 +8,16 @@
 /// Contains the member function implementations of the cGUIEventRouter class.
 /// This file is intended to be included only by cpp files, not other headers.
 
-#include "guiapi.h"
+#include "gui/guiapi.h"
 #include "guielementtools.h"
 
-#include "inputapi.h"
+#include "platform/inputapi.h"
 
-#include "techtime.h"
+#include "tech/techtime.h"
 
 #include <algorithm>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 #ifdef _MSC_VER
 #pragma once
@@ -515,6 +515,6 @@ void cGUIEventRouter<T, INTRFC>::DoMouseEnterExit(const sInputEvent * pInputEven
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "undbgalloc.h"
+#include "tech/undbgalloc.h"
 
 #endif // !INCLUDED_GUIEVENTROUTERTEM_H

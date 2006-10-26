@@ -6,8 +6,8 @@
 
 #include "ms3d.h"
 
-#include "readwriteapi.h"
-#include "vec3.h"
+#include "tech/readwriteapi.h"
+#include "tech/vec3.h"
 
 #include <map>
 #include <vector>

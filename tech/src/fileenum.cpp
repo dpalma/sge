@@ -3,10 +3,10 @@
 
 #include "stdhdr.h"
 
-#include "fileenum.h"
-#include "filespec.h"
-#include "filepath.h"
-#include "techstring.h"
+#include "tech/fileenum.h"
+#include "tech/filespec.h"
+#include "tech/filepath.h"
+#include "tech/techstring.h"
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -17,7 +17,7 @@
 #include <sys/stat.h>
 #endif
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 LOG_DEFINE_CHANNEL(EnumFiles);
 

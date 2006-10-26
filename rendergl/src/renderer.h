@@ -4,9 +4,9 @@
 #ifndef INCLUDED_RENDERER_H
 #define INCLUDED_RENDERER_H
 
-#include "renderapi.h"
+#include "render/renderapi.h"
 
-#include "globalobjdef.h"
+#include "tech/globalobjdef.h"
 
 #include <map>
 

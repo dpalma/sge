@@ -4,18 +4,18 @@
 #include "stdhdr.h"
 
 #include "model.h"
-#include "renderapi.h"
+#include "render/renderapi.h"
 
-#include "resourceapi.h"
-#include "readwriteapi.h"
-#include "globalobj.h"
-#include "filespec.h"
-#include "techmath.h"
+#include "tech/resourceapi.h"
+#include "tech/readwriteapi.h"
+#include "tech/globalobj.h"
+#include "tech/filespec.h"
+#include "tech/techmath.h"
 
 #include <algorithm>
 #include <cfloat>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -3,11 +3,11 @@
 
 #include "stdhdr.h"
 
-#include "globalobjdef.h"
-#include "digraph.h"
-#include "hashtable.h"
-#include "hashtabletem.h"
-#include "toposort.h"
+#include "tech/globalobjdef.h"
+#include "tech/digraph.h"
+#include "tech/hashtable.h"
+#include "tech/hashtabletem.h"
+#include "tech/toposort.h"
 
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
@@ -16,7 +16,7 @@
 #include <vector>
 #include <algorithm>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 LOG_DEFINE_CHANNEL(GlobalObjReg);
 

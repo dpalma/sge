@@ -8,12 +8,12 @@
 #include "guielementtools.h"
 #include "guistrings.h"
 
-#include "globalobj.h"
-#include "resourceapi.h"
+#include "tech/globalobj.h"
+#include "tech/resourceapi.h"
 
 #include <tinyxml.h>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 //

@@ -46,7 +46,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\engine\include,..\..\gui\include,..\..\platform\include,..\..\rendergl\include,..\..\tech\include,..\..\script\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\api"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,WIN32,_WINDOWS,TIXML_USE_STL,GLEW_STATIC"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -142,7 +142,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\engine\include,..\..\gui\include,..\..\platform\include,..\..\rendergl\include,..\..\tech\include,..\..\script\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\api"
 				PreprocessorDefinitions="NDEBUG,WIN32,_WINDOWS,HAVE_CPPUNITLITE2,TIXML_USE_STL,GLEW_STATIC,D3D_DEBUG_INFO"
 				StringPooling="true"
 				RuntimeLibrary="3"
@@ -240,7 +240,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\engine\include,..\..\gui\include,..\..\platform\include,..\..\rendergl\include,..\..\tech\include,..\..\script\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\api"
 				PreprocessorDefinitions="_DEBUG,WIN32,HAVE_CPPUNITLITE2,_WINDOWS,TIXML_USE_STL,GLEW_STATIC,D3D_DEBUG_INFO"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -338,7 +338,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\engine\include,..\..\gui\include,..\..\platform\include,..\..\rendergl\include,..\..\tech\include,..\..\script\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\api"
 				PreprocessorDefinitions="_DEBUG,WIN32,_WINDOWS,NO_AUTO_EXPORTS,HAVE_CPPUNITLITE2,TIXML_USE_STL,GLEW_STATIC,D3D_DEBUG_INFO"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -436,7 +436,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\engine\include,..\..\gui\include,..\..\platform\include,..\..\rendergl\include,..\..\tech\include,..\..\script\include,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\api"
 				PreprocessorDefinitions="NDEBUG,WIN32,_WINDOWS,TIXML_USE_STL,GLEW_STATIC"
 				StringPooling="true"
 				RuntimeLibrary="2"

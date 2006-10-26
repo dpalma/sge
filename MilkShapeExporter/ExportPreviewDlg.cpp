@@ -6,11 +6,11 @@
 
 #include "Exporter.h"
 
-#include "techstring.h"
+#include "tech/techstring.h"
 
 #include <atlctrlx.h>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 /////////////////////////////////////////////////////////////////////////////
 

@@ -4,7 +4,7 @@
 #if !defined(INCLUDED_AFXCOMTOOLS_H)
 #define INCLUDED_AFXCOMTOOLS_H
 
-#include "comtools.h"
+#include "tech/comtools.h"
 
 #if _MSC_VER > 1000
 #pragma once

@@ -5,14 +5,14 @@
 
 #include "guibasicrenderer.h"
 #include "guielementtools.h"
-#include "guistyleapi.h"
+#include "gui/guistyleapi.h"
 
-#include "renderapi.h"
-#include "renderfontapi.h"
+#include "render/renderapi.h"
+#include "render/renderfontapi.h"
 
-#include "globalobj.h"
+#include "tech/globalobj.h"
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
 //

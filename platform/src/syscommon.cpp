@@ -3,9 +3,9 @@
 
 #include "stdhdr.h"
 
-#include "sys.h"
+#include "platform/sys.h"
 
-#include "techtime.h"
+#include "tech/techtime.h"
 
 #ifdef HAVE_UNITTESTPP
 #include "Test.h"
@@ -16,7 +16,7 @@
 #include <cstdlib>
 #include <list>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 LOG_DEFINE_CHANNEL(VerboseUnitTests);
 

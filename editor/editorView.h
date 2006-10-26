@@ -8,9 +8,9 @@
 #include "afxcomtools.h"
 #include "DynamicLink.h"
 
-#include "schedulerapi.h"
+#include "tech/schedulerapi.h"
 
-#include "matrix4.h"
+#include "tech/matrix4.h"
 
 #ifdef HAVE_DIRECTX
 #include <d3d9.h>

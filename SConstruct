@@ -116,6 +116,7 @@ class SGEEnvironment(Environment):
          self.Append(CPPDEFINES=['FTGL_LIBRARY_STATIC'])
       
    def SetCommon(self):
+      self.Append(CPPPATH=['#api'])
       if platform == 'win32':
          self.Append(CPPDEFINES=['WIN32', '_WIN32'])
          self.Append(CCFLAGS=['/EHsc'])

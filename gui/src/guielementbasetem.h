@@ -8,12 +8,12 @@
 #ifndef INCLUDED_GUIELEMENTBASETEM_H
 #define INCLUDED_GUIELEMENTBASETEM_H
 
-#include "guiapi.h"
-#include "guistyleapi.h"
+#include "gui/guiapi.h"
+#include "gui/guistyleapi.h"
 
-#include "globalobj.h"
+#include "tech/globalobj.h"
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 #ifdef _MSC_VER
 #pragma once
@@ -338,6 +338,6 @@ tResult cGUIElementBase<INTRFC>::ComputeClientArea(IGUIElementRenderer * pRender
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "undbgalloc.h"
+#include "tech/undbgalloc.h"
 
 #endif // !INCLUDED_GUIELEMENTBASETEM_H
