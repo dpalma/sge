@@ -310,7 +310,8 @@ void * ModelMs3dLoad(IReader * pReader)
    //////////////////////////////
    // Prepare the groups for the model
 
-   tModelMeshes meshes(nGroups);
+   std::vector<sModelMesh> meshes2(nGroups);
+   std::vector<uint16> indices;
 
    for (i = 0; i < nGroups; i++)
    {
@@ -328,7 +329,12 @@ void * ModelMs3dLoad(IReader * pReader)
          }
       }
 
-      meshes[i] = cModelMesh(kPT_Triangles, mappedIndices, group.GetMaterialIndex());
+      meshes2[i].primitive = kPT_Triangles;
+      meshes2[i].materialIndex = group.GetMaterialIndex();
+      meshes2[i].indexStart = indices.size();
+      meshes2[i].nIndices = mappedIndices.size();
+
+      indices.insert(indices.end(), mappedIndices.begin(), mappedIndices.end());
    }
 
    //////////////////////////////
@@ -674,14 +680,14 @@ void * ModelMs3dLoad(IReader * pReader)
    cModel * pModel = NULL;
    if (nJoints > 0)
    {
-      if (cModel::Create(vertices, materials, meshes, pSkeleton, &pModel) == S_OK)
+      if (cModel::Create(vertices, indices, meshes2, materials, pSkeleton, &pModel) == S_OK)
       {
          return pModel;
       }
    }
    else
    {
-      if (cModel::Create(vertices, materials, meshes, &pModel) == S_OK)
+      if (cModel::Create(vertices, indices, meshes2, materials, NULL, &pModel) == S_OK)
       {
          return pModel;
       }

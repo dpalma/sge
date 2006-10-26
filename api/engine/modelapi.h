@@ -28,6 +28,9 @@ F_DECLARE_INTERFACE(IModelSkeleton);
 
 struct sModelJoint;
 struct sModelKeyFrame;
+struct sModelMaterial;
+struct sModelMesh;
+struct sModelVertex;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -155,24 +158,19 @@ ENGINE_API tResult ModelSkeletonCreate(const sModelJoint * pJoints, uint nJoints
 // INTERFACE: IModel
 //
 
-struct sModelMeshInfo
-{
-   ePrimitiveType primitive;
-   const uint16 * pIndices;
-   uint nIndices;
-   int materialIndex;
-};
-
 #define kRT_Model _T("Model") // resource type
 
 interface IModel : IUnknown
 {
+   virtual tResult GetVertices(uint * pnVertices, const sModelVertex * * pVertices) const = 0;
+
+   virtual tResult GetIndices(uint * pnIndices, const uint16 * * pIndices) const = 0;
+
    virtual tResult GetMeshCount(uint * pnMeshes) const = 0;
-   virtual tResult GetMeshInfo(sModelMeshInfo * pMeshInfo) const = 0;
+   virtual tResult GetMeshInfo(uint index, sModelMesh * pModelMesh) const = 0;
 
-   virtual tResult GetMaterial() const = 0;
-
-   virtual tResult GetVertices() const = 0;
+   virtual tResult GetMaterialCount(uint * pnMaterials) const = 0;
+   virtual tResult GetMaterial(uint index, sModelMaterial * pModelMaterial) const = 0;
 };
 
 

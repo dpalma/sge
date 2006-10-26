@@ -323,22 +323,6 @@ void cEntityModelRenderer::Render()
             pIndices + modelMesh.indexStart, modelMesh.nIndices);
       }
    }
-   else
-   {
-      tModelMeshes::const_iterator iter = m_pModel->BeginMeshses();
-      tModelMeshes::const_iterator end = m_pModel->EndMeshses();
-      for (; iter != end; iter++)
-      {
-         int iMaterial = iter->GetMaterialIndex();
-         if (iMaterial >= 0)
-         {
-            const sModelMaterial & m = m_pModel->GetMaterial(iMaterial);
-            pRenderer->SetDiffuseColor(m.diffuse);
-            pRenderer->SetTexture(0, m.szTexture);
-         }
-         pRenderer->Render(iter->GetPrimitiveType(), const_cast<uint16*>(iter->GetIndexData()), iter->GetIndexCount());
-      }
-   }
 }
 
 ///////////////////////////////////////
