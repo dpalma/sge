@@ -9,7 +9,7 @@
 #include <d3d9.h>
 #include <d3dx9.h>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 
 const uint kVertexFVF = D3DFVF_XYZ | D3DFVF_DIFFUSE;
@@ -108,8 +108,19 @@ void cRender2DDX::PopScissorRect()
 
 void cRender2DDX::RenderSolidRect(const tRect & rect, const float color[4])
 {
+   D3DCOLOR color2 = 0;
+
+   if (color != NULL)
+   {
+      byte r = static_cast<byte>(color[0] * 255);
+      byte g = static_cast<byte>(color[1] * 255);
+      byte b = static_cast<byte>(color[2] * 255);
+      byte a = static_cast<byte>(color[3] * 255);
+      color2 = D3DCOLOR_RGBA(r, g, b, a);
+   }
+
 #define VERT(x,y) \
-   { static_cast<float>(x), static_cast<float>(y), 0, color.ToARGB8888() }
+   { static_cast<float>(x), static_cast<float>(y), 0, color2 }
 
    sVertexD3D verts[] =
    {
@@ -133,6 +144,35 @@ void cRender2DDX::RenderBeveledRect(const tRect & rect, int bevel,
                                     const float bottomRight[4],
                                     const float face[4])
 {
+   D3DCOLOR topLeft2 = 0, bottomRight2 = 0, face2 = 0;
+
+   if (topLeft != NULL)
+   {
+      byte r = static_cast<byte>(topLeft[0] * 255);
+      byte g = static_cast<byte>(topLeft[1] * 255);
+      byte b = static_cast<byte>(topLeft[2] * 255);
+      byte a = static_cast<byte>(topLeft[3] * 255);
+      topLeft2 = D3DCOLOR_RGBA(r, g, b, a);
+   }
+
+   if (bottomRight != NULL)
+   {
+      byte r = static_cast<byte>(bottomRight[0] * 255);
+      byte g = static_cast<byte>(bottomRight[1] * 255);
+      byte b = static_cast<byte>(bottomRight[2] * 255);
+      byte a = static_cast<byte>(bottomRight[3] * 255);
+      bottomRight2 = D3DCOLOR_RGBA(r, g, b, a);
+   }
+
+   if (face != NULL)
+   {
+      byte r = static_cast<byte>(face[0] * 255);
+      byte g = static_cast<byte>(face[1] * 255);
+      byte b = static_cast<byte>(face[2] * 255);
+      byte a = static_cast<byte>(face[3] * 255);
+      face2 = D3DCOLOR_RGBA(r, g, b, a);
+   }
+
    if (bevel == 0)
    {
       RenderSolidRect(rect, face);
@@ -150,49 +190,49 @@ void cRender2DDX::RenderBeveledRect(const tRect & rect, int bevel,
       int y3 = rect.bottom;
 
 #define VERT(x,y,c) \
-   { static_cast<float>(x), static_cast<float>(y), 0, c.ToARGB8888() }
+   { static_cast<float>(x), static_cast<float>(y), 0, c }
 
       sVertexD3D verts[] =
       {
-         VERT(x0, y0, topLeft),
-         VERT(x0, y3, topLeft),
-         VERT(x1, y2, topLeft),
+         VERT(x0, y0, topLeft2),
+         VERT(x0, y3, topLeft2),
+         VERT(x1, y2, topLeft2),
 
-         VERT(x0, y0, topLeft),
-         VERT(x1, y2, topLeft),
-         VERT(x1, y1, topLeft),
+         VERT(x0, y0, topLeft2),
+         VERT(x1, y2, topLeft2),
+         VERT(x1, y1, topLeft2),
 
-         VERT(x0, y0, topLeft),
-         VERT(x2, y1, topLeft),
-         VERT(x3, y0, topLeft),
+         VERT(x0, y0, topLeft2),
+         VERT(x2, y1, topLeft2),
+         VERT(x3, y0, topLeft2),
 
-         VERT(x0, y0, topLeft),
-         VERT(x1, y1, topLeft),
-         VERT(x2, y1, topLeft),
+         VERT(x0, y0, topLeft2),
+         VERT(x1, y1, topLeft2),
+         VERT(x2, y1, topLeft2),
 
-         VERT(x0, y3, bottomRight),
-         VERT(x3, y3, bottomRight),
-         VERT(x1, y2, bottomRight),
+         VERT(x0, y3, bottomRight2),
+         VERT(x3, y3, bottomRight2),
+         VERT(x1, y2, bottomRight2),
 
-         VERT(x1, y2, bottomRight),
-         VERT(x3, y3, bottomRight),
-         VERT(x2, y2, bottomRight),
+         VERT(x1, y2, bottomRight2),
+         VERT(x3, y3, bottomRight2),
+         VERT(x2, y2, bottomRight2),
 
-         VERT(x3, y0, bottomRight),
-         VERT(x2, y1, bottomRight),
-         VERT(x3, y3, bottomRight),
+         VERT(x3, y0, bottomRight2),
+         VERT(x2, y1, bottomRight2),
+         VERT(x3, y3, bottomRight2),
 
-         VERT(x2, y1, bottomRight),
-         VERT(x2, y2, bottomRight),
-         VERT(x3, y3, bottomRight),
+         VERT(x2, y1, bottomRight2),
+         VERT(x2, y2, bottomRight2),
+         VERT(x3, y3, bottomRight2),
 
-         VERT(x1, y1, face),
-         VERT(x2, y2, face),
-         VERT(x2, y1, face),
+         VERT(x1, y1, face2),
+         VERT(x2, y2, face2),
+         VERT(x2, y1, face2),
 
-         VERT(x2, y2, face),
-         VERT(x1, y1, face),
-         VERT(x1, y2, face),
+         VERT(x2, y2, face2),
+         VERT(x1, y1, face2),
+         VERT(x1, y2, face2),
       };
 
 #undef VERT

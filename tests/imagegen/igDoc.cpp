@@ -8,12 +8,12 @@
 #include "ImageAttributesDlg.h"
 #include "ImageGammaDlg.h"
 
-#include "color.h"
-#include "filespec.h"
-#include "filepath.h"
-#include "readwriteapi.h"
-#include "techmath.h"
-#include "vec2.h"
+#include "tech/color.h"
+#include "tech/filespec.h"
+#include "tech/filepath.h"
+#include "tech/readwriteapi.h"
+#include "tech/techmath.h"
+#include "tech/vec2.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

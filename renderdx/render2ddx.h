@@ -4,7 +4,7 @@
 #ifndef INCLUDED_RENDER2DDX_H
 #define INCLUDED_RENDER2DDX_H
 
-#include "renderapi.h"
+#include "render/renderapi.h"
 
 #include <stack>
 

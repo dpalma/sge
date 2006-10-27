@@ -14,7 +14,7 @@
 
 #include <cstring>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 #ifdef _DEBUG
 #pragma comment(lib, "d3dx9d")
@@ -61,7 +61,18 @@ tResult cRenderFontD3DX::RenderText(const tChar * pszText, int textLength, tRect
       if (flags & kRT_SingleLine) format |= DT_SINGLELINE;
       if (flags & kRT_Bottom) format |= DT_BOTTOM;
 
-      if (!m_pD3dxFont->DrawText(NULL, pszText, textLength, &rect, format, (color != NULL) ? cColor(color).ToARGB8888() : 0))
+      D3DCOLOR color2 = 0;
+
+      if (color != NULL)
+      {
+         byte r = static_cast<byte>(color[0] * 255);
+         byte g = static_cast<byte>(color[1] * 255);
+         byte b = static_cast<byte>(color[2] * 255);
+         byte a = static_cast<byte>(color[3] * 255);
+         color2 = D3DCOLOR_RGBA(r, g, b, a);
+      }
+
+      if (!m_pD3dxFont->DrawText(NULL, pszText, textLength, &rect, format, color2))
       {
          return E_FAIL;
       }

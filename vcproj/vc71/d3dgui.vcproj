@@ -3,8 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="d3dgui"
-	SccProjectName=""
-	SccLocalPath="">
+	ProjectGUID="{0ECB4A0B-4C5C-4161-870D-E4C3DB2B86A3}">
 	<Platforms>
 		<Platform
 			Name="Win32"/>
@@ -21,12 +20,12 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\engine\include,..\..\gui\include,..\..\rendergl\include,..\..\platform\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\script\include"
-				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,WIN32,_WINDOWS,TIXML_USE_STL,GLEW_STATIC,HAVE_DIRECTX"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\api"
+				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,WIN32,_WINDOWS,TIXML_USE_STL,GLEW_STATIC"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="TRUE"
-				UsePrecompiledHeader="3"
+				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
 				PrecompiledHeaderFile=".\..\..\Build.vc71\StaticRelease\d3dgui/d3dgui.pch"
 				AssemblerListingLocation=".\..\..\Build.vc71\StaticRelease\d3dgui/"
@@ -40,7 +39,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib"
+				AdditionalDependencies="winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\zlibwapi.lib"
 				OutputFile=".\..\..\Build.vc71\StaticRelease/d3dgui.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -87,12 +86,12 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\engine\include,..\..\gui\include,..\..\rendergl\include,..\..\platform\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\script\include"
-				PreprocessorDefinitions="NDEBUG,WIN32,_WINDOWS,TIXML_USE_STL,GLEW_STATIC,D3D_DEBUG_INFO,HAVE_UNITTESTPP,HAVE_DIRECTX"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\api"
+				PreprocessorDefinitions="NDEBUG,WIN32,_WINDOWS,HAVE_UNITTESTPP,TIXML_USE_STL,GLEW_STATIC,D3D_DEBUG_INFO"
 				StringPooling="TRUE"
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="TRUE"
-				UsePrecompiledHeader="3"
+				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
 				PrecompiledHeaderFile=".\..\..\Build.vc71\Opt\d3dgui/d3dgui.pch"
 				AssemblerListingLocation=".\..\..\Build.vc71\Opt\d3dgui/"
@@ -107,7 +106,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\UnitTest++.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib"
+				AdditionalDependencies="$(OutDir)\UnitTest++.lib winmm.lib $(OutDir)\tinyxml.lib"
 				OutputFile=".\..\..\Build.vc71\Opt/d3dgui.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -155,11 +154,11 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\engine\include,..\..\gui\include,..\..\rendergl\include,..\..\platform\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\script\include"
-				PreprocessorDefinitions="_DEBUG,WIN32,HAVE_UNITTESTPP,_WINDOWS,TIXML_USE_STL,GLEW_STATIC,D3D_DEBUG_INFO,HAVE_DIRECTX"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\api"
+				PreprocessorDefinitions="_DEBUG,WIN32,HAVE_UNITTESTPP,_WINDOWS,TIXML_USE_STL,GLEW_STATIC,D3D_DEBUG_INFO"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				UsePrecompiledHeader="3"
+				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
 				PrecompiledHeaderFile=".\..\..\Build.vc71\Debug\d3dgui/d3dgui.pch"
 				AssemblerListingLocation=".\..\..\Build.vc71\Debug\d3dgui/"
@@ -174,7 +173,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\UnitTest++.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib"
+				AdditionalDependencies="$(OutDir)\UnitTest++.lib winmm.lib $(OutDir)\tinyxml.lib"
 				OutputFile=".\..\..\Build.vc71\Debug/d3dgui.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -223,11 +222,11 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\engine\include,..\..\gui\include,..\..\rendergl\include,..\..\platform\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\script\include"
-				PreprocessorDefinitions="_DEBUG,WIN32,_WINDOWS,NO_AUTO_EXPORTS,HAVE_UNITTESTPP,TIXML_USE_STL,GLEW_STATIC,D3D_DEBUG_INFO,HAVE_DIRECTX"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\api"
+				PreprocessorDefinitions="_DEBUG,WIN32,_WINDOWS,NO_AUTO_EXPORTS,HAVE_UNITTESTPP,TIXML_USE_STL,GLEW_STATIC,D3D_DEBUG_INFO"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
-				UsePrecompiledHeader="3"
+				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
 				PrecompiledHeaderFile=".\..\..\Build.vc71\StaticDebug\d3dgui/d3dgui.pch"
 				AssemblerListingLocation=".\..\..\Build.vc71\StaticDebug\d3dgui/"
@@ -242,7 +241,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\UnitTest++.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib"
+				AdditionalDependencies="$(OutDir)\UnitTest++.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\zlibwapi.lib"
 				OutputFile=".\..\..\Build.vc71\StaticDebug/d3dgui.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -291,12 +290,12 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\engine\include,..\..\gui\include,..\..\rendergl\include,..\..\platform\include,..\..\tech\include,..\..\3rdparty\lua\include,..\..\3rdparty\tinyxml,..\..\script\include"
-				PreprocessorDefinitions="NDEBUG,WIN32,_WINDOWS,TIXML_USE_STL,GLEW_STATIC,HAVE_DIRECTX"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\api"
+				PreprocessorDefinitions="NDEBUG,WIN32,_WINDOWS,TIXML_USE_STL,GLEW_STATIC"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
-				UsePrecompiledHeader="3"
+				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
 				PrecompiledHeaderFile=".\..\..\Build.vc71\Release\d3dgui/d3dgui.pch"
 				AssemblerListingLocation=".\..\..\Build.vc71\Release\d3dgui/"
@@ -310,7 +309,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib"
+				AdditionalDependencies="winmm.lib $(OutDir)\tinyxml.lib"
 				OutputFile=".\..\..\Build.vc71\Release/d3dgui.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"

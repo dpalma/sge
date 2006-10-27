@@ -3,24 +3,24 @@
 
 #include "stdhdr.h"
 
-#include "guiapi.h"
-#include "guielementapi.h"
+#include "gui/guiapi.h"
+#include "gui/guielementapi.h"
 
-#include "engineapi.h"
-#include "inputapi.h"
-#include "renderapi.h"
-#include "sys.h"
-#include "scriptapi.h"
+#include "engine/engineapi.h"
+#include "platform/inputapi.h"
+#include "platform/sys.h"
+#include "render/renderapi.h"
+#include "script/scriptapi.h"
 
-#include "resourceapi.h"
-#include "configapi.h"
-#include "filespec.h"
-#include "filepath.h"
-#include "imageapi.h"
-#include "techstring.h"
-#include "globalobj.h"
-#include "threadcallapi.h"
-#include "schedulerapi.h"
+#include "tech/resourceapi.h"
+#include "tech/configapi.h"
+#include "tech/filespec.h"
+#include "tech/filepath.h"
+#include "tech/imageapi.h"
+#include "tech/techstring.h"
+#include "tech/globalobj.h"
+#include "tech/threadcallapi.h"
+#include "tech/schedulerapi.h"
 
 #include <ctime>
 
@@ -29,7 +29,7 @@
 #include <d3d9.h>
 #include <d3dx9.h>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 #pragma warning(disable:4355) // 'this' used in base member initializer list
 

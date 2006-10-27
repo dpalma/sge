@@ -4,16 +4,16 @@
 #include "stdhdr.h"
 
 #include "rendererdx.h"
-#include "renderfontapi.h"
+#include "render/renderfontapi.h"
 
-#include "sys.h"
+#include "platform/sys.h"
 
-#include "axisalignedbox.h"
-#include "color.h"
-#include "resourceapi.h"
-#include "techhash.h"
-#include "techmath.h"
-#include "vec3.h"
+#include "tech/axisalignedbox.h"
+#include "tech/color.h"
+#include "tech/resourceapi.h"
+#include "tech/techhash.h"
+#include "tech/techmath.h"
+#include "tech/vec3.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -29,7 +29,7 @@
 
 #include <cstring>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 ////////////////////////////////////////////////////////////////////////////////
 

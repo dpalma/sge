@@ -5,7 +5,7 @@
 
 #include "ImageAttributesDlg.h"
 
-#include "imageapi.h"
+#include "tech/imageapi.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

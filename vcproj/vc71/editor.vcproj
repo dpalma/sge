@@ -3,345 +3,499 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="editor"
-	SccProjectName=""
-	SccLocalPath=""
-	Keyword="MFCProj">
+	ProjectGUID="{4764E397-0635-449F-99E1-9E7E759F9390}"
+	RootNamespace="editor"
+	Keyword="MFCProj"
+	>
 	<Platforms>
 		<Platform
-			Name="Win32"/>
+			Name="Win32"
+		/>
 	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory=".\..\..\Build.vc71\Release"
 			IntermediateDirectory=".\..\..\Build.vc71\Release\editor"
 			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="2"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="1"
+				TypeLibraryName=".\..\..\Build.vc71\Release/editor.tlb"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\3rdparty\tinyxml,..\..\3rdparty\UnitTest++\src,..\..\3rdparty\wtl\include,..\..\3rdparty\glew\include,..\..\script\include,..\..\rendergl\include,..\..\platform\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\tinyxml,..\..\3rdparty\wtl\include,..\..\3rdparty\glew\include,..\..\api"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;TIXML_USE_STL;GLEW_STATIC"
-				StringPooling="TRUE"
+				StringPooling="true"
 				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="TRUE"
-				UsePrecompiledHeader="3"
+				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
 				PrecompiledHeaderFile=".\..\..\Build.vc71\Release\editor/editor.pch"
 				AssemblerListingLocation=".\..\..\Build.vc71\Release\editor/"
 				ObjectFile=".\..\..\Build.vc71\Release\editor/"
 				ProgramDataBaseFileName=".\..\..\Build.vc71\Release\editor/"
 				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
-				CompileAs="0"/>
+				SuppressStartupBanner="true"
+				CompileAs="0"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_AFXDLL;NDEBUG"
+				Culture="1033"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib $(OutDir)\glew.lib"
 				OutputFile=".\..\..\Build.vc71\Release/editor.exe"
 				LinkIncremental="1"
-				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories=""
+				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories="..\..\3rdparty\Cg\lib"
 				ProgramDatabaseFile=".\..\..\Build.vc71\Release/editor.pdb"
-				SubSystem="2"/>
+				SubSystem="2"
+			/>
 			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="NDEBUG"
-				MkTypLibCompatible="TRUE"
-				SuppressStartupBanner="TRUE"
-				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc71\Release/editor.tlb"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_AFXDLL;NDEBUG"
-				Culture="1033"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCAppVerifierTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCWebDeploymentTool"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory=".\..\..\Build.vc71\Debug"
 			IntermediateDirectory=".\..\..\Build.vc71\Debug\editor"
 			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="2"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="1"
+				TypeLibraryName=".\..\..\Build.vc71\Debug/editor.tlb"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\3rdparty\tinyxml,..\..\3rdparty\UnitTest++\src,..\..\3rdparty\wtl\include,..\..\3rdparty\glew\include,..\..\script\include,..\..\rendergl\include,..\..\platform\include"
-				PreprocessorDefinitions="_DEBUG;HAVE_UNITTESTPP;WIN32;_WINDOWS;TIXML_USE_STL;GLEW_STATIC"
+				AdditionalIncludeDirectories="..\..\3rdparty\tinyxml,..\..\3rdparty\wtl\include,..\..\3rdparty\glew\include,..\..\api"
+				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;TIXML_USE_STL;GLEW_STATIC;HAVE_UNITTESTPP"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="3"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
 				PrecompiledHeaderFile=".\..\..\Build.vc71\Debug\editor/editor.pch"
 				AssemblerListingLocation=".\..\..\Build.vc71\Debug\editor/"
 				ObjectFile=".\..\..\Build.vc71\Debug\editor/"
 				ProgramDataBaseFileName=".\..\..\Build.vc71\Debug\editor/"
 				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
+				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
-				CompileAs="0"/>
+				CompileAs="0"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib $(OutDir)\glew.lib $(OutDir)\UnitTest++.lib"
-				OutputFile=".\..\..\Build.vc71\Debug/editor.exe"
-				LinkIncremental="2"
-				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories=""
-				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\..\..\Build.vc71\Debug/editor.pdb"
-				SubSystem="2"/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="_DEBUG"
-				MkTypLibCompatible="TRUE"
-				SuppressStartupBanner="TRUE"
-				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc71\Debug/editor.tlb"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_AFXDLL;_DEBUG"
-				Culture="1033"/>
+				Culture="1033"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCLinkerTool"
+				AdditionalOptions="/MACHINE:I386"
+				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib $(OutDir)\glew.lib"
+				OutputFile=".\..\..\Build.vc71\Debug/editor.exe"
+				LinkIncremental="2"
+				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories="..\..\3rdparty\Cg\lib"
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile=".\..\..\Build.vc71\Debug/editor.pdb"
+				SubSystem="2"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="StaticDebug|Win32"
 			OutputDirectory=".\..\..\Build.vc71\StaticDebug"
 			IntermediateDirectory=".\..\..\Build.vc71\StaticDebug\editor"
 			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="1"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="1"
+				TypeLibraryName=".\..\..\Build.vc71\StaticDebug/editor.tlb"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\3rdparty\tinyxml,..\..\3rdparty\UnitTest++\src,..\..\3rdparty\wtl\include,..\..\3rdparty\glew\include,..\..\script\include,..\..\rendergl\include,..\..\platform\include"
-				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,WIN32,_WINDOWS,TIXML_USE_STL,GLEW_STATIC"
+				AdditionalIncludeDirectories="..\..\3rdparty\tinyxml,..\..\3rdparty\wtl\include,..\..\3rdparty\glew\include,..\..\api"
+				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,WIN32,_WINDOWS,TIXML_USE_STL,GLEW_STATIC,HAVE_UNITTESTPP"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
-				UsePrecompiledHeader="3"
+				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
 				PrecompiledHeaderFile=".\..\..\Build.vc71\StaticDebug\editor/editor.pch"
 				AssemblerListingLocation=".\..\..\Build.vc71\StaticDebug\editor/"
 				ObjectFile=".\..\..\Build.vc71\StaticDebug\editor/"
 				ProgramDataBaseFileName=".\..\..\Build.vc71\StaticDebug\editor/"
 				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
+				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
-				CompileAs="0"/>
+				CompileAs="0"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib $(OutDir)\glew.lib $(OutDir)\UnitTest++.lib $(OutDir)\ftgl.lib $(OutDir)\freetype.lib"
-				OutputFile=".\..\..\Build.vc71\StaticDebug/editor.exe"
-				LinkIncremental="2"
-				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories=""
-				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\..\..\Build.vc71\StaticDebug/editor.pdb"
-				SubSystem="2"/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="_DEBUG"
-				MkTypLibCompatible="TRUE"
-				SuppressStartupBanner="TRUE"
-				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc71\StaticDebug/editor.tlb"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"/>
+				Culture="1033"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCLinkerTool"
+				AdditionalOptions="/MACHINE:I386"
+				AdditionalDependencies="opengl32.lib glu32.lib Cg.lib CgGL.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib $(OutDir)\glew.lib $(OutDir)\freetype.lib $(OutDir)\ftgl.lib $(OutDir)\UnitTest++.lib"
+				OutputFile=".\..\..\Build.vc71\StaticDebug/editor.exe"
+				LinkIncremental="2"
+				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories="..\..\3rdparty\Cg\lib"
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile=".\..\..\Build.vc71\StaticDebug/editor.pdb"
+				SubSystem="2"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="Opt|Win32"
 			OutputDirectory=".\..\..\Build.vc71\Opt"
 			IntermediateDirectory=".\..\..\Build.vc71\Opt\editor"
 			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="2"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="1"
+				TypeLibraryName=".\..\..\Build.vc71\Opt/editor.tlb"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\3rdparty\tinyxml,..\..\3rdparty\UnitTest++\src,..\..\3rdparty\wtl\include,..\..\3rdparty\glew\include,..\..\script\include,..\..\rendergl\include,..\..\platform\include"
-				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;TIXML_USE_STL;GLEW_STATIC"
-				StringPooling="TRUE"
+				AdditionalIncludeDirectories="..\..\3rdparty\tinyxml,..\..\3rdparty\wtl\include,..\..\3rdparty\glew\include,..\..\api"
+				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;TIXML_USE_STL;GLEW_STATIC;HAVE_UNITTESTPP"
+				StringPooling="true"
 				RuntimeLibrary="3"
-				EnableFunctionLevelLinking="TRUE"
-				UsePrecompiledHeader="3"
+				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
 				PrecompiledHeaderFile=".\..\..\Build.vc71\Opt\editor/editor.pch"
 				AssemblerListingLocation=".\..\..\Build.vc71\Opt\editor/"
 				ObjectFile=".\..\..\Build.vc71\Opt\editor/"
 				ProgramDataBaseFileName=".\..\..\Build.vc71\Opt\editor/"
 				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
+				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
-				CompileAs="0"/>
+				CompileAs="0"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_AFXDLL;NDEBUG"
+				Culture="1033"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib $(OutDir)\glew.lib"
 				OutputFile=".\..\..\Build.vc71\Opt/editor.exe"
 				LinkIncremental="1"
-				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories=""
-				GenerateDebugInformation="TRUE"
-				GenerateMapFile="TRUE"
+				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories="..\..\3rdparty\Cg\lib"
+				GenerateDebugInformation="true"
+				GenerateMapFile="true"
 				MapFileName="..\..\Build.vc71\Opt\editor.map"
-				SubSystem="2"/>
+				SubSystem="2"
+			/>
 			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="NDEBUG"
-				MkTypLibCompatible="TRUE"
-				SuppressStartupBanner="TRUE"
-				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc71\Opt/editor.tlb"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_AFXDLL;NDEBUG"
-				Culture="1033"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCAppVerifierTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCWebDeploymentTool"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="StaticRelease|Win32"
 			OutputDirectory=".\..\..\Build.vc71\StaticRelease"
 			IntermediateDirectory=".\..\..\Build.vc71\StaticRelease\editor"
 			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="1"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="1"
+				TypeLibraryName=".\..\..\Build.vc71\StaticRelease/editor.tlb"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\tech\include,..\..\engine\include,..\..\3rdparty\tinyxml,..\..\3rdparty\UnitTest++\src,..\..\3rdparty\wtl\include,..\..\3rdparty\glew\include,..\..\script\include,..\..\rendergl\include,..\..\platform\include"
+				AdditionalIncludeDirectories="..\..\3rdparty\tinyxml,..\..\3rdparty\wtl\include,..\..\3rdparty\glew\include,..\..\api"
 				PreprocessorDefinitions="NO_AUTO_EXPORTS,NDEBUG,WIN32,_WINDOWS,TIXML_USE_STL,GLEW_STATIC"
-				StringPooling="TRUE"
+				StringPooling="true"
 				RuntimeLibrary="0"
-				EnableFunctionLevelLinking="TRUE"
-				UsePrecompiledHeader="3"
+				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
 				PrecompiledHeaderFile=".\..\..\Build.vc71\StaticRelease\editor/editor.pch"
 				AssemblerListingLocation=".\..\..\Build.vc71\StaticRelease\editor/"
 				ObjectFile=".\..\..\Build.vc71\StaticRelease\editor/"
 				ProgramDataBaseFileName=".\..\..\Build.vc71\StaticRelease\editor/"
 				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
-				CompileAs="0"/>
+				SuppressStartupBanner="true"
+				CompileAs="0"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib $(OutDir)\glew.lib $(OutDir)\ftgl.lib $(OutDir)\freetype.lib"
-				OutputFile=".\..\..\Build.vc71\StaticRelease/editor.exe"
-				LinkIncremental="1"
-				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories=""
-				GenerateMapFile="TRUE"
-				MapFileName="..\..\Build.vc71\StaticRelease\editor.map"
-				SubSystem="2"/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="NDEBUG"
-				MkTypLibCompatible="TRUE"
-				SuppressStartupBanner="TRUE"
-				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc71\StaticRelease/editor.tlb"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
-				Culture="1033"/>
+				Culture="1033"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCLinkerTool"
+				AdditionalOptions="/MACHINE:I386"
+				AdditionalDependencies="opengl32.lib glu32.lib Cg.lib CgGL.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib $(OutDir)\glew.lib $(OutDir)\freetype.lib $(OutDir)\ftgl.lib"
+				OutputFile=".\..\..\Build.vc71\StaticRelease/editor.exe"
+				LinkIncremental="1"
+				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories="..\..\3rdparty\Cg\lib"
+				GenerateMapFile="true"
+				MapFileName="..\..\Build.vc71\StaticRelease\editor.map"
+				SubSystem="2"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 	</Configurations>
 	<References>
@@ -349,266 +503,352 @@
 	<Files>
 		<Filter
 			Name="Source Files"
-			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
+			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+			>
 			<File
-				RelativePath="..\..\editor\aboutdlg.cpp">
+				RelativePath="..\..\editor\aboutdlg.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\BitmapUtils.cpp">
+				RelativePath="..\..\editor\BitmapUtils.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\CameraDlg.cpp">
+				RelativePath="..\..\editor\CameraDlg.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\cmds.cpp">
+				RelativePath="..\..\editor\cmds.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\DynamicLink.cpp">
+				RelativePath="..\..\editor\DynamicLink.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\editor.rc">
+				RelativePath="..\..\editor\editor.rc"
+				>
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="Release|Win32"
+					>
 					<Tool
 						Name="VCResourceCompilerTool"
-						AdditionalIncludeDirectories=""/>
+						AdditionalIncludeDirectories=""
+					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="Debug|Win32"
+					>
 					<Tool
 						Name="VCResourceCompilerTool"
-						AdditionalIncludeDirectories=""/>
+						AdditionalIncludeDirectories=""
+					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="StaticDebug|Win32">
+					Name="StaticDebug|Win32"
+					>
 					<Tool
 						Name="VCResourceCompilerTool"
-						AdditionalIncludeDirectories=""/>
+						AdditionalIncludeDirectories=""
+					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Opt|Win32">
+					Name="Opt|Win32"
+					>
 					<Tool
 						Name="VCResourceCompilerTool"
-						AdditionalIncludeDirectories=""/>
+						AdditionalIncludeDirectories=""
+					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="StaticRelease|Win32">
+					Name="StaticRelease|Win32"
+					>
 					<Tool
 						Name="VCResourceCompilerTool"
-						AdditionalIncludeDirectories=""/>
+						AdditionalIncludeDirectories=""
+					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\editor\editorApp.cpp">
+				RelativePath="..\..\editor\editorApp.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\editorCommands.cpp">
+				RelativePath="..\..\editor\editorCommands.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\editorCtrlBars.cpp">
+				RelativePath="..\..\editor\editorCtrlBars.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\editorDoc.cpp">
+				RelativePath="..\..\editor\editorDoc.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\editorTools.cpp">
+				RelativePath="..\..\editor\editorTools.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\editorToolState.cpp">
+				RelativePath="..\..\editor\editorToolState.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\editorTypes.cpp">
+				RelativePath="..\..\editor\editorTypes.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\editorView.cpp">
+				RelativePath="..\..\editor\editorView.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\LogWnd.cpp">
+				RelativePath="..\..\editor\LogWnd.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\MainFrm.cpp">
+				RelativePath="..\..\editor\MainFrm.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\MapPropertiesDlg.cpp">
+				RelativePath="..\..\editor\MapPropertiesDlg.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\MapSettingsDlg.cpp">
+				RelativePath="..\..\editor\MapSettingsDlg.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\OutputBar.cpp">
+				RelativePath="..\..\editor\OutputBar.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\scbarcf.cpp">
+				RelativePath="..\..\editor\scbarcf.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\scbarg.cpp">
+				RelativePath="..\..\editor\scbarg.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\ScriptCmdDlg.cpp">
+				RelativePath="..\..\editor\ScriptCmdDlg.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\sizecbar.cpp">
+				RelativePath="..\..\editor\sizecbar.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\splashwnd.cpp">
+				RelativePath="..\..\editor\splashwnd.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\stdhdr.cpp">
+				RelativePath="..\..\editor\stdhdr.cpp"
+				>
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="Release|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"/>
+						UsePrecompiledHeader="1"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="Debug|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"/>
+						UsePrecompiledHeader="1"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="StaticDebug|Win32">
+					Name="StaticDebug|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"/>
+						UsePrecompiledHeader="1"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Opt|Win32">
+					Name="Opt|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"/>
+						UsePrecompiledHeader="1"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="StaticRelease|Win32">
+					Name="StaticRelease|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"/>
+						UsePrecompiledHeader="1"
+					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\editor\ToolPalette.cpp">
+				RelativePath="..\..\editor\ToolPalette.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\ToolPaletteBar.cpp">
+				RelativePath="..\..\editor\ToolPaletteBar.cpp"
+				>
 			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl">
+			Filter="h;hpp;hxx;hm;inl"
+			>
 			<File
-				RelativePath="..\..\editor\aboutdlg.h">
+				RelativePath="..\..\editor\aboutdlg.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\afxcomtools.h">
+				RelativePath="..\..\editor\afxcomtools.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\BitmapUtils.h">
+				RelativePath="..\..\editor\BitmapUtils.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\CameraDlg.h">
+				RelativePath="..\..\editor\CameraDlg.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\DynamicLink.h">
+				RelativePath="..\..\editor\DynamicLink.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\editorapi.h">
+				RelativePath="..\..\editor\editorapi.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\editorApp.h">
+				RelativePath="..\..\editor\editorApp.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\editorCommands.h">
+				RelativePath="..\..\editor\editorCommands.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\editorCtrlBars.h">
+				RelativePath="..\..\editor\editorCtrlBars.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\editorDoc.h">
+				RelativePath="..\..\editor\editorDoc.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\editorguids.h">
+				RelativePath="..\..\editor\editorguids.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\editorTools.h">
+				RelativePath="..\..\editor\editorTools.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\editorToolState.h">
+				RelativePath="..\..\editor\editorToolState.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\editorTypes.h">
+				RelativePath="..\..\editor\editorTypes.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\editorView.h">
+				RelativePath="..\..\editor\editorView.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\LogWnd.h">
+				RelativePath="..\..\editor\LogWnd.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\MainFrm.h">
+				RelativePath="..\..\editor\MainFrm.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\MapPropertiesDlg.h">
+				RelativePath="..\..\editor\MapPropertiesDlg.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\MapSettingsDlg.h">
+				RelativePath="..\..\editor\MapSettingsDlg.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\OutputBar.h">
+				RelativePath="..\..\editor\OutputBar.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\resource.h">
+				RelativePath="..\..\editor\resource.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\scbarcf.h">
+				RelativePath="..\..\editor\scbarcf.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\scbarg.h">
+				RelativePath="..\..\editor\scbarg.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\ScriptCmdDlg.h">
+				RelativePath="..\..\editor\ScriptCmdDlg.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\sizecbar.h">
+				RelativePath="..\..\editor\sizecbar.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\splashwnd.h">
+				RelativePath="..\..\editor\splashwnd.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\stdhdr.h">
+				RelativePath="..\..\editor\stdhdr.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\ToolPalette.h">
+				RelativePath="..\..\editor\ToolPalette.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\ToolPaletteBar.h">
+				RelativePath="..\..\editor\ToolPaletteBar.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\TrackMouseEvent.h">
+				RelativePath="..\..\editor\TrackMouseEvent.h"
+				>
 			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
-			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
+			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
+			>
 			<File
-				RelativePath="..\..\editor\res\editor.ico">
+				RelativePath="..\..\editor\res\editor.ico"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\res\editor.rc2">
+				RelativePath="..\..\editor\res\editor.rc2"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\res\editorDoc.ico">
+				RelativePath="..\..\editor\res\editorDoc.ico"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\res\stdtools.bmp">
+				RelativePath="..\..\editor\res\stdtools.bmp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\editor\res\toolbar.bmp">
+				RelativePath="..\..\editor\res\toolbar.bmp"
+				>
 			</File>
 		</Filter>
 	</Files>
 	<Globals>
 		<Global
 			Name="RESOURCE_FILE"
-			Value="\prj\sge\editor\editor.rc"/>
+			Value="\prj\sge\editor\editor.rc"
+		/>
 	</Globals>
 </VisualStudioProject>

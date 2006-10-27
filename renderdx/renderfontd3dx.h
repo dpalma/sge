@@ -4,10 +4,10 @@
 #ifndef INCLUDED_GUIFONTD3D_H
 #define INCLUDED_GUIFONTD3D_H
 
-#include "renderfontapi.h"
-#include "color.h"
+#include "render/renderfontapi.h"
+#include "tech/color.h"
 
-#include "comtools.h"
+#include "tech/comtools.h"
 
 #ifdef _MSC_VER
 #pragma once

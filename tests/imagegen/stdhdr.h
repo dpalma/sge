@@ -16,10 +16,10 @@
 // the MFC and CRT libraries in the correct order
 #include <afx.h>
 
-#include "techtypes.h"
-#include "techassert.h"
-#include "techlog.h"
-#include "combase.h"
+#include "tech/techtypes.h"
+#include "tech/techassert.h"
+#include "tech/techlog.h"
+#include "tech/combase.h"
 
 #define VC_EXTRALEAN		// Exclude rarely-used stuff from Windows headers
 

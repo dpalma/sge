@@ -8,13 +8,13 @@
 #include "igView.h"
 #include "MainFrm.h"
 
-#include "configapi.h"
-#include "dictionaryapi.h"
-#include "filepath.h"
-#include "filespec.h"
-#include "globalobj.h"
-#include "imageapi.h"
-#include "resourceapi.h"
+#include "tech/configapi.h"
+#include "tech/dictionaryapi.h"
+#include "tech/filepath.h"
+#include "tech/filespec.h"
+#include "tech/globalobj.h"
+#include "tech/imageapi.h"
+#include "tech/resourceapi.h"
 
 #include "resource.h"       // main symbols
 

@@ -4,8 +4,8 @@
 #if !defined(INCLUDED_IGDOC_H)
 #define INCLUDED_IGDOC_H
 
-#include "comtools.h"
-#include "imageapi.h"
+#include "tech/comtools.h"
+#include "tech/imageapi.h"
 
 #if _MSC_VER > 1000
 #pragma once

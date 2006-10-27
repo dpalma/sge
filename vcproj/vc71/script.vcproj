@@ -4,403 +4,561 @@
 	Version="7.10"
 	Name="script"
 	ProjectGUID="{E0D0590D-B176-41A9-9AA5-A2B766D3B8E3}"
-	SccProjectName=""
-	SccLocalPath="">
+	RootNamespace="script"
+	>
 	<Platforms>
 		<Platform
-			Name="Win32"/>
+			Name="Win32"
+		/>
 	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
 	<Configurations>
 		<Configuration
 			Name="Opt|Win32"
 			OutputDirectory=".\..\..\Build.vc71\Opt"
 			IntermediateDirectory=".\..\..\Build.vc71\Opt\script"
 			ConfigurationType="2"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="1"
+				TypeLibraryName=".\..\..\Build.vc71\Opt/script.tlb"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\script\include,..\..\tech\include,..\..\3rdparty\lua\src,..\..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\lua\src,..\..\3rdparty\tinyxml,..\..\api"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;SCRIPT_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;HAVE_UNITTESTPP"
-				StringPooling="TRUE"
+				StringPooling="true"
 				RuntimeLibrary="3"
-				EnableFunctionLevelLinking="TRUE"
-				UsePrecompiledHeader="3"
+				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
 				PrecompiledHeaderFile=".\..\..\Build.vc71\Opt\script/script.pch"
 				AssemblerListingLocation=".\..\..\Build.vc71\Opt\script/"
 				ObjectFile=".\..\..\Build.vc71\Opt\script/"
 				ProgramDataBaseFileName=".\..\..\Build.vc71\Opt\script/"
 				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
+				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
-				CompileAs="0"/>
+				CompileAs="0"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="winmm.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib $(OutDir)\UnitTest++.lib"
-				OutputFile=".\..\..\Build.vc71\Opt/script.dll"
-				LinkIncremental="2"
-				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories=""
-				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\..\..\Build.vc71\Opt/script.pdb"
-				GenerateMapFile="TRUE"
-				MapFileName="$(IntDir)/script.map"
-				ImportLibrary=".\..\..\Build.vc71\Opt/script.lib"/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="_DEBUG"
-				MkTypLibCompatible="TRUE"
-				SuppressStartupBanner="TRUE"
-				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc71\Opt/script.tlb"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"/>
+				Culture="1033"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCLinkerTool"
+				AdditionalOptions="/MACHINE:I386"
+				AdditionalDependencies="$(OutDir)\lua.lib $(OutDir)\tinyxml.lib $(OutDir)\UnitTest++.lib"
+				OutputFile=".\..\..\Build.vc71\Opt/script.dll"
+				LinkIncremental="2"
+				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories=""
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile=".\..\..\Build.vc71\Opt/script.pdb"
+				GenerateMapFile="true"
+				MapFileName="..\..\Build.vc71\Opt/script.map"
+				ImportLibrary=".\..\..\Build.vc71\Opt/script.lib"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="StaticDebug|Win32"
 			OutputDirectory=".\..\..\Build.vc71\StaticDebug"
 			IntermediateDirectory=".\..\..\Build.vc71\StaticDebug\script"
 			ConfigurationType="4"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\script\include,..\..\tech\include,..\..\3rdparty\lua\src,..\..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\lua\src,..\..\3rdparty\tinyxml,..\..\api"
 				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,_USRDLL,SCRIPT_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL,HAVE_UNITTESTPP"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
-				UsePrecompiledHeader="3"
+				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
 				PrecompiledHeaderFile=".\..\..\Build.vc71\StaticDebug\script/script.pch"
 				AssemblerListingLocation=".\..\..\Build.vc71\StaticDebug\script/"
 				ObjectFile=".\..\..\Build.vc71\StaticDebug\script/"
 				ProgramDataBaseFileName=".\..\..\Build.vc71\StaticDebug\script/"
 				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
+				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
-				CompileAs="0"/>
+				CompileAs="0"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLibrarianTool"
-				OutputFile=".\..\..\Build.vc71\StaticDebug\script.lib"
-				SuppressStartupBanner="TRUE"/>
-			<Tool
-				Name="VCMIDLTool"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"/>
+				Culture="1033"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCLibrarianTool"
+				OutputFile=".\..\..\Build.vc71\StaticDebug\script.lib"
+				SuppressStartupBanner="true"
+			/>
 			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory=".\..\..\Build.vc71\Debug"
 			IntermediateDirectory=".\..\..\Build.vc71\Debug\script"
 			ConfigurationType="2"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="1"
+				TypeLibraryName=".\..\..\Build.vc71\Debug/script.tlb"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\script\include,..\..\tech\include,..\..\3rdparty\lua\src,..\..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\lua\src,..\..\3rdparty\tinyxml,..\..\api"
 				PreprocessorDefinitions="_DEBUG;_USRDLL;SCRIPT_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;HAVE_UNITTESTPP"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				UsePrecompiledHeader="3"
+				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
 				PrecompiledHeaderFile=".\..\..\Build.vc71\Debug\script/script.pch"
 				AssemblerListingLocation=".\..\..\Build.vc71\Debug\script/"
 				ObjectFile=".\..\..\Build.vc71\Debug\script/"
 				ProgramDataBaseFileName=".\..\..\Build.vc71\Debug\script/"
 				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
+				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
-				CompileAs="0"/>
+				CompileAs="0"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\UnitTest++.lib $(OutDir)\lua.lib $(OutDir)\tinyxml.lib"
-				OutputFile=".\..\..\Build.vc71\Debug/script.dll"
-				LinkIncremental="2"
-				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories=""
-				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\..\..\Build.vc71\Debug/script.pdb"
-				GenerateMapFile="TRUE"
-				MapFileName="$(IntDir)/script.map"
-				ImportLibrary=".\..\..\Build.vc71\Debug/script.lib"/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="_DEBUG"
-				MkTypLibCompatible="TRUE"
-				SuppressStartupBanner="TRUE"
-				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc71\Debug/script.tlb"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"/>
+				Culture="1033"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCLinkerTool"
+				AdditionalOptions="/MACHINE:I386"
+				AdditionalDependencies="$(OutDir)\lua.lib $(OutDir)\tinyxml.lib $(OutDir)\UnitTest++.lib"
+				OutputFile=".\..\..\Build.vc71\Debug/script.dll"
+				LinkIncremental="2"
+				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories=""
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile=".\..\..\Build.vc71\Debug/script.pdb"
+				GenerateMapFile="true"
+				MapFileName="..\..\Build.vc71\Debug/script.map"
+				ImportLibrary=".\..\..\Build.vc71\Debug/script.lib"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="StaticRelease|Win32"
 			OutputDirectory=".\..\..\Build.vc71\StaticRelease"
 			IntermediateDirectory=".\..\..\Build.vc71\StaticRelease\script"
 			ConfigurationType="4"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\script\include,..\..\tech\include,..\..\3rdparty\lua\src,..\..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\lua\src,..\..\3rdparty\tinyxml,..\..\api"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,_USRDLL,SCRIPT_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL"
-				StringPooling="TRUE"
+				StringPooling="true"
 				RuntimeLibrary="0"
-				EnableFunctionLevelLinking="TRUE"
-				UsePrecompiledHeader="3"
+				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
 				PrecompiledHeaderFile=".\..\..\Build.vc71\StaticRelease\script/script.pch"
 				AssemblerListingLocation=".\..\..\Build.vc71\StaticRelease\script/"
 				ObjectFile=".\..\..\Build.vc71\StaticRelease\script/"
 				ProgramDataBaseFileName=".\..\..\Build.vc71\StaticRelease\script/"
 				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
-				CompileAs="0"/>
+				SuppressStartupBanner="true"
+				CompileAs="0"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLibrarianTool"
-				OutputFile=".\..\..\Build.vc71\StaticRelease\script.lib"
-				SuppressStartupBanner="TRUE"/>
-			<Tool
-				Name="VCMIDLTool"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
-				Culture="1033"/>
+				Culture="1033"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCLibrarianTool"
+				OutputFile=".\..\..\Build.vc71\StaticRelease\script.lib"
+				SuppressStartupBanner="true"
+			/>
 			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory=".\..\..\Build.vc71\Release"
 			IntermediateDirectory=".\..\..\Build.vc71\Release\script"
 			ConfigurationType="2"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="1"
+				TypeLibraryName=".\..\..\Build.vc71\Release/script.tlb"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\script\include,..\..\tech\include,..\..\3rdparty\lua\src,..\..\3rdparty\tinyxml"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\lua\src,..\..\3rdparty\tinyxml,..\..\api"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;SCRIPT_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL"
-				StringPooling="TRUE"
+				StringPooling="true"
 				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="TRUE"
-				UsePrecompiledHeader="3"
+				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
 				PrecompiledHeaderFile=".\..\..\Build.vc71\Release\script/script.pch"
 				AssemblerListingLocation=".\..\..\Build.vc71\Release\script/"
 				ObjectFile=".\..\..\Build.vc71\Release\script/"
 				ProgramDataBaseFileName=".\..\..\Build.vc71\Release\script/"
 				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
-				CompileAs="0"/>
+				SuppressStartupBanner="true"
+				CompileAs="0"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1033"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="$(OutDir)\lua.lib $(OutDir)\tinyxml.lib"
 				OutputFile=".\..\..\Build.vc71\Release/script.dll"
 				LinkIncremental="1"
-				SuppressStartupBanner="TRUE"
+				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories=""
 				ProgramDatabaseFile=".\..\..\Build.vc71\Release/script.pdb"
-				GenerateMapFile="TRUE"
-				MapFileName="$(IntDir)/script.map"
+				GenerateMapFile="true"
+				MapFileName="..\..\Build.vc71\Release/script.map"
 				OptimizeReferences="2"
-				ImportLibrary=".\..\..\Build.vc71\Release/script.lib"/>
+				ImportLibrary=".\..\..\Build.vc71\Release/script.lib"
+			/>
 			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="NDEBUG"
-				MkTypLibCompatible="TRUE"
-				SuppressStartupBanner="TRUE"
-				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc71\Release/script.tlb"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1033"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCAppVerifierTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCWebDeploymentTool"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 	</Configurations>
 	<References>
 	</References>
 	<Files>
 		<Filter
-			Name=".\src"
-			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
-			<Filter
-				Name="Source Files"
-				Filter="">
-				<File
-					RelativePath="..\..\script\src\luainterp.cpp">
-				</File>
-				<File
-					RelativePath="..\..\script\src\luastate.cpp">
-				</File>
-				<File
-					RelativePath="..\..\script\src\luautil.cpp">
-				</File>
-				<File
-					RelativePath="..\..\script\src\stdhdr.cpp">
-					<FileConfiguration
-						Name="Opt|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="1"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="StaticDebug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="1"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="1"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="StaticRelease|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="1"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="1"/>
-					</FileConfiguration>
-				</File>
-			</Filter>
-			<Filter
-				Name="Header Files"
-				Filter="">
-				<File
-					RelativePath="..\..\script\src\luainterp.h">
-				</File>
-				<File
-					RelativePath="..\..\script\src\luastate.h">
-				</File>
-				<File
-					RelativePath="..\..\script\src\luautil.h">
-				</File>
-				<File
-					RelativePath="..\..\script\src\stdhdr.h">
-				</File>
-			</Filter>
+			Name="Source Files"
+		   Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+			>
+			<File
+				RelativePath="..\..\script\luainterp.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\script\luastate.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\script\luautil.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\script\stdhdr.cpp"
+				>
+				<FileConfiguration
+					Name="Opt|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="StaticDebug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="StaticRelease|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+			</File>
 		</Filter>
 		<Filter
-			Name=".\include"
-			Filter="h;hpp;hxx;hm;inl">
+			Name="Header Files"
+		   Filter="h;hpp;hxx;hm;inl"
+			>
 			<File
-				RelativePath="..\..\script\include\scriptapi.h">
+				RelativePath="..\..\script\luainterp.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\script\include\scriptdll.h">
+				RelativePath="..\..\script\luastate.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\script\include\scriptguids.h">
+				RelativePath="..\..\script\luautil.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\script\stdhdr.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="API"
+			>
+			<File
+				RelativePath="..\..\api\script\scriptapi.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\api\script\scriptdll.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\api\script\scriptguids.h"
+				>
 			</File>
 		</Filter>
 	</Files>
