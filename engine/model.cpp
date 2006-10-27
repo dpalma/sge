@@ -88,6 +88,78 @@ tResult cModel::Create(const tModelVertices & verts,
 }
 
 ///////////////////////////////////////
+
+tResult cModel::GetVertices(uint * pnVertices, const sModelVertex * * ppVertices) const
+{
+   if (pnVertices != NULL)
+   {
+      *pnVertices = m_vertices.size();
+   }
+   if (ppVertices == NULL)
+   {
+      return E_POINTER;
+   }
+   if (!m_vertices.empty())
+   {
+      *ppVertices = &m_vertices[0];
+      return S_OK;
+   }
+   else
+   {
+      *ppVertices = NULL;
+      return S_FALSE;
+   }
+}
+
+///////////////////////////////////////
+
+tResult cModel::GetIndices(uint * pnIndices, const uint16 * * ppIndices) const
+{
+   if (pnIndices != NULL)
+   {
+      *pnIndices = m_indices.size();
+   }
+   if (ppIndices == NULL)
+   {
+      return E_POINTER;
+   }
+   if (!m_indices.empty())
+   {
+      *ppIndices = &m_indices[0];
+      return S_OK;
+   }
+   else
+   {
+      *ppIndices = NULL;
+      return S_FALSE;
+   }
+}
+
+///////////////////////////////////////
+
+tResult cModel::GetMeshes(uint * pnMeshes, const sModelMesh * * ppMeshes) const
+{
+   if (pnMeshes != NULL)
+   {
+      *pnMeshes = m_meshes.size();
+   }
+   if (ppMeshes == NULL)
+   {
+      return E_POINTER;
+   }
+   if (!m_meshes.empty())
+   {
+      *ppMeshes = &m_meshes[0];
+      return S_OK;
+   }
+   else
+   {
+      *ppMeshes = NULL;
+      return S_FALSE;
+   }
+}
+
+///////////////////////////////////////
 // TODO: How does this work for more than one joint per vertex with blend weights?
 // (Answer: I don't think you can pre-apply like this.)
 

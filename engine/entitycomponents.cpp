@@ -138,35 +138,35 @@ const sVertexElement g_blendedVert[] =
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static void CalculateBBox(const tModelVertices & vertices, tAxisAlignedBox * pBBox)
+static void CalculateBBox(uint nVertices, const sModelVertex * pVertices, tAxisAlignedBox * pBBox)
 {
    tVec3 mins(FLT_MAX, FLT_MAX, FLT_MAX), maxs(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-   tModelVertices::const_iterator iter = vertices.begin();
-   for (; iter != vertices.end(); iter++)
+   const sModelVertex * pVertex = pVertices;
+   for (uint i = 0; i < nVertices; ++i, ++pVertex)
    {
-      if (iter->pos.x < mins.x)
+      if (pVertex->pos.x < mins.x)
       {
-         mins.x = iter->pos.x;
+         mins.x = pVertex->pos.x;
       }
-      if (iter->pos.y < mins.y)
+      if (pVertex->pos.y < mins.y)
       {
-         mins.y = iter->pos.y;
+         mins.y = pVertex->pos.y;
       }
-      if (iter->pos.z < mins.z)
+      if (pVertex->pos.z < mins.z)
       {
-         mins.z = iter->pos.z;
+         mins.z = pVertex->pos.z;
       }
-      if (iter->pos.x > maxs.x)
+      if (pVertex->pos.x > maxs.x)
       {
-         maxs.x = iter->pos.x;
+         maxs.x = pVertex->pos.x;
       }
-      if (iter->pos.y > maxs.y)
+      if (pVertex->pos.y > maxs.y)
       {
-         maxs.y = iter->pos.y;
+         maxs.y = pVertex->pos.y;
       }
-      if (iter->pos.z > maxs.z)
+      if (pVertex->pos.z > maxs.z)
       {
-         maxs.z = iter->pos.z;
+         maxs.z = pVertex->pos.z;
       }
    }
    *pBBox = tAxisAlignedBox(mins, maxs);
@@ -206,29 +206,30 @@ tResult cEntityModelRenderer::GetBoundingBox(tAxisAlignedBox * pBBox) const
 
 ///////////////////////////////////////
 
-static void ApplyJointMatrices(const tModelVertices & vertices, const std::vector<tMatrix34> & matrices, tBlendedVertices * pVertices)
+static void ApplyJointMatrices(uint nVertices, const sModelVertex * pVertices,
+                               const std::vector<tMatrix34> & matrices,
+                               tBlendedVertices * pBlendedVertices)
 {
-   pVertices->resize(vertices.size());
+   pBlendedVertices->resize(nVertices);
 
-   tModelVertices::const_iterator iter = vertices.begin();
-   tModelVertices::const_iterator end = vertices.end();
-   for (uint i = 0; iter != end; iter++, i++)
+   const sModelVertex * pV = pVertices;
+   for (uint i = 0; i < nVertices; ++i, ++pV)
    {
-      sBlendedVertex & v = (*pVertices)[i];
-      v.u = iter->u;
-      v.v = iter->v;
+      sBlendedVertex & v = (*pBlendedVertices)[i];
+      v.u = pV->u;
+      v.v = pV->v;
       // TODO: call them bones or joints???
-      int iJoint = FloatToInt(iter->bone);
+      int iJoint = FloatToInt(pV->bone);
       if (iJoint < 0)
       {
-         v.normal = iter->normal;
-         v.pos = iter->pos;
+         v.normal = pV->normal;
+         v.pos = pV->pos;
       }
       else
       {
          const tMatrix34 & m = matrices[iJoint];
-         m.Transform(iter->normal, &v.normal);
-         m.Transform(iter->pos, &v.pos);
+         m.Transform(pV->normal, &v.normal);
+         m.Transform(pV->pos, &v.pos);
       }
    }
 }
@@ -268,14 +269,24 @@ void cEntityModelRenderer::Update(double elapsedTime)
          }
       }
 
-      CalculateBBox(m_pModel->GetVertices(), &m_bbox);
+      uint nVertices = 0;
+      const sModelVertex * pVertices = NULL;
+      if (m_pModel->GetVertices(&nVertices, &pVertices) == S_OK)
+      {
+         CalculateBBox(nVertices, pVertices, &m_bbox);
+      }
    }
 
    if (!!m_pAnimController)
    {
       if (m_pAnimController->Advance(elapsedTime, m_blendMatrices.size(), &m_blendMatrices[0]) == S_OK)
       {
-         ApplyJointMatrices(m_pModel->GetVertices(), m_blendMatrices, &m_blendedVerts);
+         uint nVertices = 0;
+         const sModelVertex * pVertices = NULL;
+         if (m_pModel->GetVertices(&nVertices, &pVertices) == S_OK)
+         {
+            ApplyJointMatrices(nVertices, pVertices, m_blendMatrices, &m_blendedVerts);
+         }
       }
    }
 }
@@ -298,29 +309,36 @@ void cEntityModelRenderer::Render()
          // TODO: Maybe use a generated stand-in model to indicate loading failure
          return;
       }
-      pRenderer->SetVertexFormat(g_modelVert, _countof(g_modelVert));
-      const tModelVertices & verts = m_pModel->GetVertices();
-      pRenderer->SubmitVertices(const_cast<sModelVertex *>(&verts[0]), verts.size());
+      uint nVertices = 0;
+      const sModelVertex * pVertices = NULL;
+      if (m_pModel->GetVertices(&nVertices, &pVertices) == S_OK)
+      {
+         pRenderer->SetVertexFormat(g_modelVert, _countof(g_modelVert));
+         pRenderer->SubmitVertices(const_cast<sModelVertex *>(pVertices), nVertices);
+      }
    }
 
    pRenderer->SetIndexFormat(kIF_16Bit);
 
-   const uint16 * pIndices = m_pModel->GetIndices();
-   if (pIndices)
+   const uint16 * pIndices = NULL;
+   if (m_pModel->GetIndices(NULL, &pIndices) == S_OK)
    {
-      std::vector<sModelMesh>::const_iterator iter = m_pModel->BeginMeshes();
-      std::vector<sModelMesh>::const_iterator end = m_pModel->EndMeshes();
-      for (; iter != end; iter++)
+      uint nMeshes = 0;
+      const sModelMesh * pMeshes = NULL;
+      if (m_pModel->GetMeshes(&nMeshes, &pMeshes) == S_OK)
       {
-         const sModelMesh & modelMesh = *iter;
-         if (modelMesh.materialIndex >= 0)
+         const sModelMesh * pMesh = pMeshes;
+         for (uint i = 0; i < nMeshes; ++i, ++pMesh)
          {
-            const sModelMaterial & m = m_pModel->GetMaterial(modelMesh.materialIndex);
-            pRenderer->SetDiffuseColor(m.diffuse);
-            pRenderer->SetTexture(0, m.szTexture);
+            if (pMesh->materialIndex >= 0)
+            {
+               const sModelMaterial & m = m_pModel->GetMaterial(pMesh->materialIndex);
+               pRenderer->SetDiffuseColor(m.diffuse);
+               pRenderer->SetTexture(0, m.szTexture);
+            }
+            pRenderer->Render(static_cast<ePrimitiveType>(pMesh->primitive),
+               pIndices + pMesh->indexStart, pMesh->nIndices);
          }
-         pRenderer->Render(static_cast<ePrimitiveType>(modelMesh.primitive),
-            pIndices + modelMesh.indexStart, modelMesh.nIndices);
       }
    }
 }

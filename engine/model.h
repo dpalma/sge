@@ -16,7 +16,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 typedef std::vector<sModelVertex> tModelVertices;
-typedef std::vector<sBlendedVertex> tBlendedVertices;
 typedef std::vector<sModelMaterial> tModelMaterials;
 
 
@@ -48,14 +47,13 @@ public:
                          IModelSkeleton * pSkeleton,
                          cModel * * ppModel);
 
-   const tModelVertices & GetVertices() const;
+   tResult GetVertices(uint * pnVertices, const sModelVertex * * ppVertices) const;
 
-   const uint16 * GetIndices() const;
+   tResult GetIndices(uint * pnIndices, const uint16 * * ppIndices) const;
 
    const sModelMaterial & GetMaterial(int index);
 
-   std::vector<sModelMesh>::const_iterator BeginMeshes() const;
-   std::vector<sModelMesh>::const_iterator EndMeshes() const;
+   tResult GetMeshes(uint * pnMeshes, const sModelMesh * * ppMeshes) const;
 
    tResult GetSkeleton(IModelSkeleton * * ppSkeleton) { return m_pSkeleton.GetPointer(ppSkeleton); }
    IModelSkeleton * AccessSkeleton() { return m_pSkeleton; }
@@ -72,29 +70,9 @@ private:
    cAutoIPtr<IModelSkeleton> m_pSkeleton;
 };
 
-inline const tModelVertices & cModel::GetVertices() const
-{
-   return m_vertices;
-}
-
-inline const uint16 * cModel::GetIndices() const
-{
-   return m_indices.empty() ? NULL : &m_indices[0];
-}
-
 inline const sModelMaterial & cModel::GetMaterial(int index)
 {
    return m_materials[index];
-}
-
-inline std::vector<sModelMesh>::const_iterator cModel::BeginMeshes() const
-{
-   return m_meshes.begin();
-}
-
-inline std::vector<sModelMesh>::const_iterator cModel::EndMeshes() const
-{
-   return m_meshes.end();
 }
 
 

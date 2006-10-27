@@ -46,6 +46,8 @@ private:
 // CLASS: cEntityModelRenderer
 //
 
+typedef std::vector<sBlendedVertex> tBlendedVertices;
+
 class cEntityModelRenderer
 {
    cEntityModelRenderer(const cEntityModelRenderer &);

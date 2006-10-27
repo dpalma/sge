@@ -162,15 +162,17 @@ ENGINE_API tResult ModelSkeletonCreate(const sModelJoint * pJoints, uint nJoints
 
 interface IModel : IUnknown
 {
-   virtual tResult GetVertices(uint * pnVertices, const sModelVertex * * pVertices) const = 0;
+   virtual tResult GetVertices(uint * pnVertices, const sModelVertex * * ppVertices) const = 0;
 
-   virtual tResult GetIndices(uint * pnIndices, const uint16 * * pIndices) const = 0;
+   virtual tResult GetIndices(uint * pnIndices, const uint16 * * ppIndices) const = 0;
 
-   virtual tResult GetMeshCount(uint * pnMeshes) const = 0;
-   virtual tResult GetMeshInfo(uint index, sModelMesh * pModelMesh) const = 0;
+   virtual tResult GetMeshes(uint * pnMeshes, const sModelMesh * * ppMeshes) const = 0;
 
    virtual tResult GetMaterialCount(uint * pnMaterials) const = 0;
    virtual tResult GetMaterial(uint index, sModelMaterial * pModelMaterial) const = 0;
+   virtual const sModelMaterial * AccessMaterial(uint index) const = 0;
+
+   virtual tResult GetSkeleton(IModelSkeleton * * ppSkeleton) = 0;
 };
 
 
