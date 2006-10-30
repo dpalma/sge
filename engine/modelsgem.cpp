@@ -188,7 +188,7 @@ void * ModelSgemLoad(IReader * pReader)
 
    //////////////////////////////
 
-   cModel * pModel = NULL;
+   IModel * pModel = NULL;
    if (!joints.empty() && !!pSkeleton)
    {
       if (cModel::Create(verticesChunk.GetChunkData(), indicesChunk.GetChunkData(),
@@ -213,8 +213,8 @@ void * ModelSgemLoad(IReader * pReader)
 
 void ModelSgemUnload(void * pData)
 {
-   cModel * pModel = reinterpret_cast<cModel*>(pData);
-   delete pModel;
+   IModel * pModel = reinterpret_cast<IModel*>(pData);
+   SafeRelease(pModel);
 }
 
 

@@ -8,6 +8,8 @@
 
 #include "engine/modelapi.h"
 
+#include "render/renderapi.h"
+
 #include "tech/comtools.h"
 #include "tech/filespec.h"
 #include "tech/readwriteapi.h"

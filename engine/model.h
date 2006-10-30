@@ -24,7 +24,7 @@ typedef std::vector<sModelMaterial> tModelMaterials;
 // CLASS: cModel
 //
 
-class cModel
+class cModel : public cComObject<IMPLEMENTS(IModel)>
 {
    cModel(const cModel &);
    const cModel & operator =(const cModel &);
@@ -33,7 +33,7 @@ class cModel
 
    cModel(const tModelVertices & verts,
           const std::vector<uint16> & indices,
-          const std::vector<sModelMesh> & meshes2,
+          const std::vector<sModelMesh> & meshes,
           const tModelMaterials & materials,
           IModelSkeleton * pSkeleton);
 
@@ -45,18 +45,19 @@ public:
                          const std::vector<sModelMesh> & meshes,
                          const tModelMaterials & materials,
                          IModelSkeleton * pSkeleton,
-                         cModel * * ppModel);
+                         IModel * * ppModel);
 
    tResult GetVertices(uint * pnVertices, const sModelVertex * * ppVertices) const;
 
    tResult GetIndices(uint * pnIndices, const uint16 * * ppIndices) const;
 
-   const sModelMaterial & GetMaterial(int index);
+   tResult GetMaterialCount(uint * pnMaterials) const;
+   tResult GetMaterial(uint index, sModelMaterial * pModelMaterial) const;
+   const sModelMaterial * AccessMaterial(uint index) const;
 
    tResult GetMeshes(uint * pnMeshes, const sModelMesh * * ppMeshes) const;
 
-   tResult GetSkeleton(IModelSkeleton * * ppSkeleton) { return m_pSkeleton.GetPointer(ppSkeleton); }
-   IModelSkeleton * AccessSkeleton() { return m_pSkeleton; }
+   tResult GetSkeleton(IModelSkeleton * * ppSkeleton);
 
 private:
    // Transform every vertex by the inverse of its affecting
@@ -69,11 +70,6 @@ private:
    std::vector<sModelMaterial> m_materials;
    cAutoIPtr<IModelSkeleton> m_pSkeleton;
 };
-
-inline const sModelMaterial & cModel::GetMaterial(int index)
-{
-   return m_materials[index];
-}
 
 
 ///////////////////////////////////////////////////////////////////////////////

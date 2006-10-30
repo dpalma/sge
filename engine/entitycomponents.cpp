@@ -237,7 +237,7 @@ static void ApplyJointMatrices(uint nVertices, const sModelVertex * pVertices,
 void cEntityModelRenderer::Update(double elapsedTime)
 {
    UseGlobal(ResourceManager);
-   cModel * pModel = NULL;
+   IModel * pModel = NULL;
    if (pResourceManager->Load(m_model.c_str(), kRT_Model, NULL, (void**)&pModel) != S_OK)
    {
       m_pModel = NULL;
@@ -248,7 +248,7 @@ void cEntityModelRenderer::Update(double elapsedTime)
 
    if (pModel != m_pModel)
    {
-      m_pModel = pModel;
+      m_pModel = CTAddRef(pModel);
 
       cAutoIPtr<IModelSkeleton> pSkeleton;
       if (m_pModel->GetSkeleton(&pSkeleton) == S_OK)
@@ -304,7 +304,7 @@ void cEntityModelRenderer::Render()
    }
    else
    {
-      if (m_pModel == NULL)
+      if (!m_pModel)
       {
          // TODO: Maybe use a generated stand-in model to indicate loading failure
          return;
@@ -332,9 +332,12 @@ void cEntityModelRenderer::Render()
          {
             if (pMesh->materialIndex >= 0)
             {
-               const sModelMaterial & m = m_pModel->GetMaterial(pMesh->materialIndex);
-               pRenderer->SetDiffuseColor(m.diffuse);
-               pRenderer->SetTexture(0, m.szTexture);
+               const sModelMaterial * pM = m_pModel->AccessMaterial(pMesh->materialIndex);
+               if (pM != NULL)
+               {
+                  pRenderer->SetDiffuseColor(pM->diffuse);
+                  pRenderer->SetTexture(0, pM->szTexture);
+               }
             }
             pRenderer->Render(static_cast<ePrimitiveType>(pMesh->primitive),
                pIndices + pMesh->indexStart, pMesh->nIndices);
@@ -351,10 +354,14 @@ tResult cEntityModelRenderer::SetAnimation(eModelAnimationType type)
    {
       return E_FAIL;
    }
-   cAutoIPtr<IModelAnimation> pAnim;
-   if (m_pModel->AccessSkeleton()->GetAnimation(type, &pAnim) == S_OK)
+   cAutoIPtr<IModelSkeleton> pSkel;
+   if (m_pModel->GetSkeleton(&pSkel) == S_OK)
    {
-      return m_pAnimController->SetAnimation(pAnim);
+      cAutoIPtr<IModelAnimation> pAnim;
+      if (pSkel->GetAnimation(type, &pAnim) == S_OK)
+      {
+         return m_pAnimController->SetAnimation(pAnim);
+      }
    }
    return E_FAIL;
 }

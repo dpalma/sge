@@ -6,7 +6,8 @@
 
 #include "engine/entityapi.h"
 
-#include "model.h"
+#include "engine/modelapi.h"
+#include "engine/modeltypes.h"
 
 #include "tech/schedulerapi.h"
 #include "tech/axisalignedbox.h"
@@ -64,7 +65,7 @@ public:
 
 private:
    cStr m_model;
-   cModel * m_pModel;
+   cAutoIPtr<IModel> m_pModel;
    std::vector<tMatrix34> m_blendMatrices;
    tBlendedVertices m_blendedVerts;
    cAutoIPtr<IModelAnimationController> m_pAnimController;

@@ -5,17 +5,6 @@
 
 #include "model.h"
 
-#include "render/renderapi.h"
-
-#include "tech/resourceapi.h"
-#include "tech/readwriteapi.h"
-#include "tech/globalobj.h"
-#include "tech/filespec.h"
-#include "tech/techmath.h"
-
-#include <algorithm>
-#include <cfloat>
-
 #include "tech/dbgalloc.h" // must be last header
 
 
@@ -68,7 +57,7 @@ tResult cModel::Create(const tModelVertices & verts,
                        const std::vector<sModelMesh> & meshes,
                        const tModelMaterials & materials,
                        IModelSkeleton * pSkeleton,
-                       cModel * * ppModel)
+                       IModel * * ppModel)
 {
    if (ppModel == NULL)
    {
@@ -83,7 +72,7 @@ tResult cModel::Create(const tModelVertices & verts,
 
    pModel->PreApplyJoints();
 
-   *ppModel = pModel;
+   *ppModel = static_cast<IModel*>(pModel);
    return S_OK;
 }
 
@@ -137,6 +126,45 @@ tResult cModel::GetIndices(uint * pnIndices, const uint16 * * ppIndices) const
 
 ///////////////////////////////////////
 
+tResult cModel::GetMaterialCount(uint * pnMaterials) const
+{
+   if (pnMaterials == NULL)
+   {
+      return E_POINTER;
+   }
+   *pnMaterials = m_materials.size();
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cModel::GetMaterial(uint index, sModelMaterial * pModelMaterial) const
+{
+   if (index >= m_materials.size())
+   {
+      return E_INVALIDARG;
+   }
+   if (pModelMaterial == NULL)
+   {
+      return E_POINTER;
+   }
+   *pModelMaterial = m_materials[index];
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+const sModelMaterial * cModel::AccessMaterial(uint index) const
+{
+   if (index < m_materials.size())
+   {
+      return &m_materials[index];
+   }
+   return NULL;
+}
+
+///////////////////////////////////////
+
 tResult cModel::GetMeshes(uint * pnMeshes, const sModelMesh * * ppMeshes) const
 {
    if (pnMeshes != NULL)
@@ -157,6 +185,13 @@ tResult cModel::GetMeshes(uint * pnMeshes, const sModelMesh * * ppMeshes) const
       *ppMeshes = NULL;
       return S_FALSE;
    }
+}
+
+///////////////////////////////////////
+
+tResult cModel::GetSkeleton(IModelSkeleton * * ppSkeleton)
+{
+   return m_pSkeleton.GetPointer(ppSkeleton);
 }
 
 ///////////////////////////////////////

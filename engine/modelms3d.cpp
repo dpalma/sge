@@ -677,7 +677,7 @@ void * ModelMs3dLoad(IReader * pReader)
    //////////////////////////////
    // Create the model
 
-   cModel * pModel = NULL;
+   IModel * pModel = NULL;
    if (nJoints > 0)
    {
       if (cModel::Create(vertices, indices, meshes2, materials, pSkeleton, &pModel) == S_OK)
@@ -700,8 +700,8 @@ void * ModelMs3dLoad(IReader * pReader)
 
 void ModelMs3dUnload(void * pData)
 {
-   cModel * pModel = reinterpret_cast<cModel*>(pData);
-   delete pModel;
+   IModel * pModel = reinterpret_cast<IModel*>(pData);
+   SafeRelease(pModel);
 }
 
 

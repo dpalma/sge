@@ -8,7 +8,7 @@
 
 #include "tech/comtools.h"
 
-#include "render/renderapi.h"
+//#include "render/renderapi.h"
 
 #include "tech/matrix4.h"
 #include "tech/matrix34.h"
@@ -25,6 +25,7 @@ F_DECLARE_INTERFACE(IModelKeyFrameInterpolator);
 F_DECLARE_INTERFACE(IModelAnimation);
 F_DECLARE_INTERFACE(IModelAnimationController);
 F_DECLARE_INTERFACE(IModelSkeleton);
+F_DECLARE_INTERFACE(IModel);
 
 struct sModelJoint;
 struct sModelKeyFrame;
