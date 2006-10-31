@@ -5,10 +5,10 @@
 
 #include "EditorMapSettings.h"
 
-#include "terrainapi.h"
+#include "engine/terrainapi.h"
 
-#include "globalobj.h"
-#include "resourceapi.h"
+#include "tech/globalobj.h"
+#include "tech/resourceapi.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 

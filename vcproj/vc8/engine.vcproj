@@ -465,7 +465,7 @@
 	<Files>
 		<Filter
 			Name="Source Files"
-		   Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
 				RelativePath="..\..\engine\camera.cpp"
@@ -594,7 +594,7 @@
 		</Filter>
 		<Filter
 			Name="Header Files"
-		   Filter="h;hpp;hxx;hm;inl"
+			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
 				RelativePath="..\..\engine\camera.h"

@@ -598,8 +598,10 @@ bool cEntityManager::cInputListener::OnInputEvent(const sInputEvent * pEvent)
 {
    if (pEvent->down && pEvent->key == kMouseLeft)
    {
+      UseGlobal(Renderer);
+
       float ndx, ndy;
-      ScreenToNormalizedDeviceCoords(pEvent->point.x, pEvent->point.y, &ndx, &ndy);
+      pRenderer->ScreenToNormalizedDeviceCoords(pEvent->point.x, pEvent->point.y, &ndx, &ndy);
 
       cRay pickRay;
       UseGlobal(Camera);

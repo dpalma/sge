@@ -10,6 +10,8 @@
 #include "platform/inputapi.h"
 #include "platform/keys.h"
 
+#include "render/renderapi.h"
+
 #include "tech/globalobj.h"
 #include "tech/multivar.h"
 #include "tech/ray.h"
@@ -132,8 +134,10 @@ bool cTerrainClickInputMode::OnInputEvent(const sInputEvent * pEvent)
 
    if (pEvent->key == kMouseLeft && pEvent->down)
    {
+      UseGlobal(Renderer);
+
       float ndx, ndy;
-      ScreenToNormalizedDeviceCoords(pEvent->point.x, pEvent->point.y, &ndx, &ndy);
+      pRenderer->ScreenToNormalizedDeviceCoords(pEvent->point.x, pEvent->point.y, &ndx, &ndy);
 
       cRay pickRay;
       UseGlobal(Camera);

@@ -118,6 +118,17 @@ interface IRenderer : IUnknown
 
    virtual tResult Begin2D(int width, int height, IRender2D * * ppRender2D) = 0;
    virtual tResult End2D() = 0;
+
+   virtual tResult GetViewMatrix(float viewMatrix[16]) const = 0;
+   virtual tResult SetViewMatrix(const float viewMatrix[16]) = 0;
+
+   virtual tResult GetProjectionMatrix(float projMatrix[16]) const = 0;
+   virtual tResult SetProjectionMatrix(const float projMatrix[16]) = 0;
+
+   virtual tResult GetViewProjectionMatrix(float viewProjMatrix[16]) const = 0;
+   virtual tResult GetViewProjectionInverseMatrix(float viewProjInvMatrix[16]) const = 0;
+
+   virtual tResult ScreenToNormalizedDeviceCoords(int sx, int sy, float * pndx, float * pndy) const = 0;
 };
 
 ///////////////////////////////////////

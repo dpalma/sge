@@ -6,6 +6,8 @@
 
 #include "techdll.h"
 
+#include "plane.h"
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -19,19 +21,6 @@ typedef class cMatrix4<float> tMatrix4;
 template <typename T> class cAxisAlignedBox;
 typedef class cAxisAlignedBox<float> tAxisAlignedBox;
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cPlane
-//
-
-class TECH_API cPlane
-{
-public:
-   void Normalize();
-
-   float a, b, c, d;
-};
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -41,6 +30,9 @@ public:
 class TECH_API cFrustum
 {
 public:
+   cFrustum();
+   ~cFrustum();
+
    void ExtractPlanes(const tMatrix4 & viewProjection);
 
    bool PointInFrustum(const tVec3 & point) const;
@@ -48,7 +40,7 @@ public:
    bool BoxInFrustum(const tAxisAlignedBox & box) const;
 
 private:
-   cPlane m_planes[6];
+   tPlane m_planes[6];
 };
 
 ///////////////////////////////////////////////////////////////////////////////

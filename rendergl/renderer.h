@@ -70,6 +70,17 @@ public:
    virtual tResult Begin2D(int width, int height, IRender2D * * ppRender2D);
    virtual tResult End2D();
 
+   virtual tResult GetViewMatrix(float viewMatrix[16]) const;
+   virtual tResult SetViewMatrix(const float viewMatrix[16]);
+
+   virtual tResult GetProjectionMatrix(float projMatrix[16]) const;
+   virtual tResult SetProjectionMatrix(const float projMatrix[16]);
+
+   virtual tResult GetViewProjectionMatrix(float viewProjMatrix[16]) const;
+   virtual tResult GetViewProjectionInverseMatrix(float viewProjInvMatrix[16]) const;
+
+   virtual tResult ScreenToNormalizedDeviceCoords(int sx, int sy, float * pndx, float * pndy) const;
+
 private:
    tResult Initialize();
 #ifdef HAVE_CG
@@ -100,6 +111,9 @@ private:
    tFontMap m_fontMap;
 
    cAutoIPtr<IRender2D> m_pRender2D;
+
+   mutable bool m_bUpdateCompositeMatrices;
+   mutable float m_viewInv[16], m_viewProj[16], m_viewProjInv[16];
 };
 
 ////////////////////////////////////////////////////////////////////////////////

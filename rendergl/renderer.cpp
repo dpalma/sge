@@ -8,6 +8,7 @@
 
 #include "tech/axisalignedbox.h"
 #include "tech/color.h"
+#include "tech/matrix4.h"
 #include "tech/readwriteapi.h"
 #include "tech/resourceapi.h"
 #include "tech/techhash.h"
@@ -364,6 +365,7 @@ cRenderer::cRenderer()
  , m_vertexSize(0)
  , m_indexFormat(kIF_16Bit)
  , m_glIndexFormat(0)
+ , m_bUpdateCompositeMatrices(true)
 {
    SetIndexFormat(kIF_16Bit);
 }
@@ -745,6 +747,132 @@ tResult cRenderer::Begin2D(int width, int height, IRender2D * * ppRender2D)
 tResult cRenderer::End2D()
 {
    glPopAttrib();
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cRenderer::GetViewMatrix(float viewMatrix[16]) const
+{
+   if (viewMatrix == NULL)
+   {
+      return E_POINTER;
+   }
+
+   glGetFloatv(GL_MODELVIEW_MATRIX, viewMatrix);
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cRenderer::SetViewMatrix(const float viewMatrix[16])
+{
+   if (viewMatrix == NULL)
+   {
+      return E_POINTER;
+   }
+
+   MatrixInvert(viewMatrix, m_viewInv);
+
+   m_bUpdateCompositeMatrices = true;
+
+   glMatrixMode(GL_MODELVIEW);
+   glLoadMatrixf(viewMatrix);
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cRenderer::GetProjectionMatrix(float projMatrix[16]) const
+{
+   if (projMatrix == NULL)
+   {
+      return E_POINTER;
+   }
+
+   glGetFloatv(GL_PROJECTION_MATRIX, projMatrix);
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cRenderer::SetProjectionMatrix(const float projMatrix[16])
+{
+   if (projMatrix == NULL)
+   {
+      return E_POINTER;
+   }
+
+   m_bUpdateCompositeMatrices = true;
+
+   glMatrixMode(GL_PROJECTION);
+   glLoadMatrixf(projMatrix);
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+#define UPDATE_COMPOSITE_MATRICES() \
+   do { if (m_bUpdateCompositeMatrices) { \
+      float projMatrix[16], viewMatrix[16]; \
+      GetProjectionMatrix(projMatrix); \
+      GetViewMatrix(viewMatrix); \
+      MatrixMultiply(projMatrix, viewMatrix, m_viewProj); \
+      MatrixInvert(m_viewProj, m_viewProjInv); \
+      m_bUpdateCompositeMatrices = false; \
+   } } while(0)
+
+////////////////////////////////////////
+
+tResult cRenderer::GetViewProjectionMatrix(float viewProjMatrix[16]) const
+{
+   if (viewProjMatrix == NULL)
+   {
+      return E_POINTER;
+   }
+
+   UPDATE_COMPOSITE_MATRICES();
+
+   memcpy(viewProjMatrix, m_viewProj, sizeof(viewProjMatrix));
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cRenderer::GetViewProjectionInverseMatrix(float viewProjInvMatrix[16]) const
+{
+   if (viewProjInvMatrix == NULL)
+   {
+      return E_POINTER;
+   }
+
+   UPDATE_COMPOSITE_MATRICES();
+
+   memcpy(viewProjInvMatrix, m_viewProjInv, sizeof(viewProjInvMatrix));
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cRenderer::ScreenToNormalizedDeviceCoords(int sx, int sy, float * pndx, float * pndy) const
+{
+   if (pndx == NULL || pndy == NULL)
+   {
+      return E_POINTER;
+   }
+
+   int viewport[4];
+   glGetIntegerv(GL_VIEWPORT, viewport);
+
+   sy = viewport[3] - sy;
+
+   // convert screen coords to normalized (origin at center, [-1..1])
+   float normx = (float)(sx - viewport[0]) * 2.f / viewport[2] - 1.f;
+   float normy = (float)(sy - viewport[1]) * 2.f / viewport[3] - 1.f;
+
+   *pndx = normx;
+   *pndy = normy;
+
    return S_OK;
 }
 

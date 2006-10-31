@@ -5,13 +5,13 @@
 
 #include "EditorDocument.h"
 
-#include "saveloadapi.h"
-#include "terrainapi.h"
+#include "engine/saveloadapi.h"
+#include "engine/terrainapi.h"
 
-#include "filespec.h"
-#include "globalobj.h"
-#include "readwriteapi.h"
-#include "techstring.h"
+#include "tech/filespec.h"
+#include "tech/globalobj.h"
+#include "tech/readwriteapi.h"
+#include "tech/techstring.h"
 
 void StringConvert(System::String ^ string, cStr * pStr);
 
@@ -63,7 +63,7 @@ bool EditorDocument::Open(System::String ^ fileName)
    StringConvert(fileName, &fileName2);
 
    cAutoIPtr<IReader> pReader;
-   if (FileReaderCreate(cFileSpec(fileName2.c_str()), &pReader) != S_OK)
+   if (FileReaderCreate(cFileSpec(fileName2.c_str()), kFileModeBinary, &pReader) != S_OK)
    {
       return false;
    }
@@ -90,7 +90,7 @@ bool EditorDocument::Save(System::String ^ fileName)
    StringConvert(fileName, &fileName2);
 
    cAutoIPtr<IWriter> pWriter;
-   if (FileWriterCreate(cFileSpec(fileName2.c_str()), &pWriter) != S_OK)
+   if (FileWriterCreate(cFileSpec(fileName2.c_str()), kFileModeBinary, &pWriter) != S_OK)
    {
       return false;
    }

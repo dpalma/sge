@@ -9,31 +9,28 @@
 #include "tech/vec3.h"
 #include "tech/matrix4.h"
 
-#include <cmath>
-
 #include "tech/dbgalloc.h" // must be last header
 
 // REFERENCES
 // http://www2.ravensoft.com/users/ggribb/plane%20extraction.pdf
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cPlane
-//
-
-void cPlane::Normalize()
-{
-   float t = 1.0f / sqrtf(a * a + b * b + c * c);
-   a *= t;
-   b *= t;
-   c *= t;
-   d *= t;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cFrustum
 //
+
+///////////////////////////////////////
+
+cFrustum::cFrustum()
+{
+}
+
+///////////////////////////////////////
+
+cFrustum::~cFrustum()
+{
+}
 
 ///////////////////////////////////////
 

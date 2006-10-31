@@ -175,9 +175,7 @@ void cEditorView::RenderGL()
    Verify(pRenderer->BeginScene() == S_OK);
 
    UseGlobal(Camera);
-
-   glMatrixMode(GL_MODELVIEW);
-   glLoadMatrixf(pCamera->GetViewMatrix().m);
+   pCamera->SetGLState();
 
    UseGlobal(TerrainRenderer);
    pTerrainRenderer->Render();
@@ -371,8 +369,11 @@ void cEditorView::OnSize(UINT nType, int cx, int cy)
    {
       float aspect = static_cast<float>(cx) / cy;
 
+      tMatrix4 proj;
+      MatrixPerspective(m_cameraFov, aspect, m_cameraZNear, m_cameraZFar, &proj);
+
       UseGlobal(Camera);
-      pCamera->SetPerspective(m_cameraFov, aspect, m_cameraZNear, m_cameraZFar);
+      pCamera->SetProjectionMatrix(proj);
 
       if (m_bUsingD3d)
       {
@@ -392,9 +393,6 @@ void cEditorView::OnSize(UINT nType, int cx, int cy)
       else
       {
          glViewport(0, 0, cx, cy);
-
-         glMatrixMode(GL_PROJECTION);
-         glLoadMatrixf(pCamera->GetProjectionMatrix().m);
       }
    }
 }
@@ -436,11 +434,11 @@ void cEditorView::OnToolsCameraSettings()
 
       float aspect = static_cast<float>(clientRect.Width()) / clientRect.Height();
 
-      UseGlobal(Camera);
-      pCamera->SetPerspective(m_cameraFov, aspect, m_cameraZNear, m_cameraZFar);
+      tMatrix4 proj;
+      MatrixPerspective(m_cameraFov, aspect, m_cameraZNear, m_cameraZFar, &proj);
 
-      glMatrixMode(GL_PROJECTION);
-      glLoadMatrixf(pCamera->GetProjectionMatrix().m);
+      UseGlobal(Camera);
+      pCamera->SetProjectionMatrix(proj);
    }
 }
 

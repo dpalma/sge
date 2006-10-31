@@ -434,8 +434,11 @@ tResult cMainInitTask::CreateMainWindow()
       return false;
    }
 
+   tMatrix4 proj;
+   MatrixPerspective(g_fov, (float)width / height, kZNear, kZFar, &proj);
+
    UseGlobal(Camera);
-   pCamera->SetPerspective(g_fov, (float)width / height, kZNear, kZFar);
+   pCamera->SetProjectionMatrix(proj);
 
    cAutoIPtr<ITask> pMainRenderTask(MainRenderTaskCreate());
    if (!!pMainRenderTask)

@@ -8,18 +8,18 @@
 #include "EditorMapSettings.h"
 
 // GUI Includes
-#include "guiapi.h"
+#include "gui/guiapi.h"
 
 // Engine Includes
-#include "cameraapi.h"
-#include "entityapi.h"
-#include "renderapi.h"
-#include "schedulerapi.h"
-#include "sys.h"
-#include "terrainapi.h"
+#include "engine/cameraapi.h"
+#include "engine/entityapi.h"
+#include "engine/terrainapi.h"
+#include "platform/sys.h"
+#include "render/renderapi.h"
 
 // Tech Includes
-#include "globalobj.h"
+#include "tech/globalobj.h"
+#include "tech/schedulerapi.h"
 
 #include <GL/glew.h>
 
@@ -128,13 +128,13 @@ namespace ManagedEditor
          const float kZNear = 1;
          const float kZFar = 5000;
 
+         tMatrix4 proj;
+         MatrixPerspective(kFov, aspect, kZNear, kZFar, &proj);
+
          UseGlobal(Camera);
-         pCamera->SetPerspective(kFov, aspect, kZNear, kZFar);
+         pCamera->SetProjectionMatrix(proj);
 
          glViewport(0, 0, m_glControl->Width, m_glControl->Height);
-
-         glMatrixMode(GL_PROJECTION);
-         glLoadMatrixf(pCamera->GetProjectionMatrix().m);
       }
    }
 

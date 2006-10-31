@@ -11,8 +11,6 @@
 #include "tech/ray.h"
 #include "tech/vec4.h"
 
-#include <algorithm>
-
 #include <GL/glew.h>
 
 #include "tech/dbgalloc.h" // must be last header
@@ -52,22 +50,6 @@ tResult cCamera::Init()
 tResult cCamera::Term()
 {
    return S_OK;
-}
-
-///////////////////////////////////////
-
-void cCamera::SetPerspective(float fov, float aspect, float znear, float zfar)
-{
-   MatrixPerspective(fov, aspect, znear, zfar, &m_proj);
-   m_bUpdateCompositeMatrices = true;
-}
-
-///////////////////////////////////////
-
-void cCamera::SetOrtho(float left, float right, float bottom, float top, float znear, float zfar)
-{
-   MatrixOrtho(left, right, bottom, top, znear, zfar, &m_proj);
-   m_bUpdateCompositeMatrices = true;
 }
 
 ///////////////////////////////////////
@@ -146,30 +128,6 @@ tResult CameraCreate()
       return E_OUTOFMEMORY;
    }
    return RegisterGlobalObject(IID_ICamera, p);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-tResult ScreenToNormalizedDeviceCoords(int sx, int sy, float * pndx, float * pndy)
-{
-   if (pndx == NULL || pndy == NULL)
-   {
-      return E_POINTER;
-   }
-
-   int viewport[4];
-   glGetIntegerv(GL_VIEWPORT, viewport);
-
-   sy = viewport[3] - sy;
-
-   // convert screen coords to normalized (origin at center, [-1..1])
-   float normx = (float)(sx - viewport[0]) * 2.f / viewport[2] - 1.f;
-   float normy = (float)(sy - viewport[1]) * 2.f / viewport[3] - 1.f;
-
-   *pndx = normx;
-   *pndy = normy;
-
-   return S_OK;
 }
 
 

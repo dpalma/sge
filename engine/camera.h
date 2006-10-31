@@ -5,8 +5,8 @@
 #define INCLUDED_CAMERA_H
 
 #include "engine/cameraapi.h"
-#include "platform/inputapi.h"
 #include "engine/saveloadapi.h"
+#include "platform/inputapi.h"
 #include "tech/schedulerapi.h"
 
 #include "tech/frustum.h"
@@ -36,17 +36,14 @@ public:
    virtual tResult Init();
    virtual tResult Term();
 
-   virtual void SetPerspective(float fov, float aspect, float znear, float zfar);
-   virtual void SetOrtho(float left, float right, float bottom, float top, float znear, float zfar);
-
-   virtual const tMatrix4 & GetViewMatrix() const;
+   const tMatrix4 & GetViewMatrix() const;
    virtual void SetViewMatrix(const tMatrix4 & view);
 
-   virtual const tMatrix4 & GetProjectionMatrix() const;
+   const tMatrix4 & GetProjectionMatrix() const;
    virtual void SetProjectionMatrix(const tMatrix4 & proj);
 
-   virtual const tMatrix4 & GetViewProjectionMatrix() const;
-   virtual const tMatrix4 & GetViewProjectionInverseMatrix() const;
+   const tMatrix4 & GetViewProjectionMatrix() const;
+   const tMatrix4 & GetViewProjectionInverseMatrix() const;
 
    virtual tResult GeneratePickRay(float ndx, float ndy, cRay * pRay) const;
 

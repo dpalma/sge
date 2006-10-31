@@ -5,32 +5,32 @@
 
 #include "EditorAppForm.h"
 
-#include "guiapi.h"
+#include "gui/guiapi.h"
 
-#include "cameraapi.h"
-#include "engineapi.h"
-#include "entityapi.h"
-#include "inputapi.h"
-#include "renderapi.h"
-#include "saveloadapi.h"
-#include "schedulerapi.h"
-#include "scriptapi.h"
-#include "sys.h"
-#include "terrainapi.h"
+#include "engine/cameraapi.h"
+#include "engine/engineapi.h"
+#include "engine/entityapi.h"
+#include "engine/saveloadapi.h"
+#include "engine/terrainapi.h"
+#include "platform/inputapi.h"
+#include "platform/sys.h"
+#include "render/renderapi.h"
+#include "script/scriptapi.h"
 
-#include "configapi.h"
-#include "filespec.h"
-#include "filepath.h"
-#include "globalobj.h"
-#include "imageapi.h"
-#include "resourceapi.h"
-#include "techstring.h"
-#include "threadcallapi.h"
+#include "tech/configapi.h"
+#include "tech/filespec.h"
+#include "tech/filepath.h"
+#include "tech/globalobj.h"
+#include "tech/imageapi.h"
+#include "tech/resourceapi.h"
+#include "tech/schedulerapi.h"
+#include "tech/techstring.h"
+#include "tech/threadcallapi.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-#include "dbgalloc.h" // must be last header
+#include "tech/dbgalloc.h" // must be last header
 
 
 ///////////////////////////////////////////////////////////////////////////////

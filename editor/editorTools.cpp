@@ -12,6 +12,8 @@
 #include "engine/entityapi.h"
 #include "engine/terrainapi.h"
 
+#include "render/renderapi.h"
+
 #include "tech/globalobj.h"
 #include "tech/ray.h"
 
@@ -189,8 +191,10 @@ tResult cSelectTool::GetRayHitEntity(const cEditorMouseEvent & mouseEvent, IEnti
       return E_POINTER;
    }
 
+   UseGlobal(Renderer);
+
    float ndx, ndy;
-   ScreenToNormalizedDeviceCoords(mouseEvent.GetPoint().x, mouseEvent.GetPoint().y, &ndx, &ndy);
+   pRenderer->ScreenToNormalizedDeviceCoords(mouseEvent.GetPoint().x, mouseEvent.GetPoint().y, &ndx, &ndy);
 
    cRay pickRay;
    UseGlobal(Camera);
@@ -333,8 +337,10 @@ static bool GetTerrainLocation(const cRay & ray, tVec3 * pLocation)
 tResult cMoveCameraTool::GetToolTip(const cEditorMouseEvent & mouseEvent,
                                     cStr * pToolTipText, uint_ptr * pToolTipId) const
 {
+   UseGlobal(Renderer);
+
    float ndx, ndy;
-   ScreenToNormalizedDeviceCoords(mouseEvent.GetPoint().x, mouseEvent.GetPoint().y, &ndx, &ndy);
+   pRenderer->ScreenToNormalizedDeviceCoords(mouseEvent.GetPoint().x, mouseEvent.GetPoint().y, &ndx, &ndy);
 
    cRay pickRay;
    UseGlobal(Camera);
@@ -411,8 +417,10 @@ tResult cPlaceEntityTool::OnDragEnd(const cEditorMouseEvent & mouseEvent)
       return S_EDITOR_TOOL_CONTINUE;
    }
 
+   UseGlobal(Renderer);
+
    float ndx, ndy;
-   ScreenToNormalizedDeviceCoords(mouseEvent.GetPoint().x, mouseEvent.GetPoint().y, &ndx, &ndy);
+   pRenderer->ScreenToNormalizedDeviceCoords(mouseEvent.GetPoint().x, mouseEvent.GetPoint().y, &ndx, &ndy);
 
    cRay pickRay;
    UseGlobal(Camera);
@@ -485,8 +493,10 @@ tResult cTerrainTool::Deactivate()
 
 bool cTerrainTool::GetHitQuad(CPoint point, HTERRAINQUAD * phQuad)
 {
+   UseGlobal(Renderer);
+
    float ndx, ndy;
-   ScreenToNormalizedDeviceCoords(point.x, point.y, &ndx, &ndy);
+   pRenderer->ScreenToNormalizedDeviceCoords(point.x, point.y, &ndx, &ndy);
 
    cRay pickRay;
    UseGlobal(Camera);
@@ -503,8 +513,10 @@ bool cTerrainTool::GetHitQuad(CPoint point, HTERRAINQUAD * phQuad)
 
 bool cTerrainTool::GetHitVertex(CPoint point, HTERRAINVERTEX * phVertex)
 {
+   UseGlobal(Renderer);
+
    float ndx, ndy;
-   ScreenToNormalizedDeviceCoords(point.x, point.y, &ndx, &ndy);
+   pRenderer->ScreenToNormalizedDeviceCoords(point.x, point.y, &ndx, &ndy);
 
    cRay pickRay;
    UseGlobal(Camera);
