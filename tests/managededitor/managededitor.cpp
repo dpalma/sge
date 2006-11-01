@@ -37,7 +37,6 @@
 
 static void RegisterGlobalObjects()
 {
-   CameraCreate();
    CameraControlCreate();
    EntityManagerCreate();
    GUIContextCreate();

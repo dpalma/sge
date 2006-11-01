@@ -201,6 +201,7 @@ void cTerrainRenderer::RegenerateChunks()
    UseGlobal(ResourceManager);
    if (pResourceManager->Load(terrainSettings.GetTileSet(), kRT_TerrainTileSet, NULL, (void**)&pTerrainTileSet) != S_OK)
    {
+      ErrorMsg1("Unable to load terrain tile set %s\n", terrainSettings.GetTileSet());
       return;
    }
 

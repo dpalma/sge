@@ -83,9 +83,6 @@ namespace ManagedEditor
       UseGlobal(Renderer);
       if (pRenderer->BeginScene() == S_OK)
       {
-         UseGlobal(Camera);
-         pCamera->SetGLState();
-
          UseGlobal(TerrainRenderer);
          pTerrainRenderer->Render();
 
@@ -131,8 +128,8 @@ namespace ManagedEditor
          tMatrix4 proj;
          MatrixPerspective(kFov, aspect, kZNear, kZFar, &proj);
 
-         UseGlobal(Camera);
-         pCamera->SetProjectionMatrix(proj);
+         UseGlobal(Renderer);
+         pRenderer->SetProjectionMatrix(proj.m);
 
          glViewport(0, 0, m_glControl->Width, m_glControl->Height);
       }
