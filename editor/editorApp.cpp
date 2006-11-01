@@ -153,7 +153,6 @@ static bool ScriptExecResource(const char * pszResource)
 
 static void RegisterGlobalObjects()
 {
-   CameraCreate();
    CameraControlCreate();
    EditorToolStateCreate();
    EntityManagerCreate();

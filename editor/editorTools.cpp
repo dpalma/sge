@@ -193,12 +193,8 @@ tResult cSelectTool::GetRayHitEntity(const cEditorMouseEvent & mouseEvent, IEnti
 
    UseGlobal(Renderer);
 
-   float ndx, ndy;
-   pRenderer->ScreenToNormalizedDeviceCoords(mouseEvent.GetPoint().x, mouseEvent.GetPoint().y, &ndx, &ndy);
-
    cRay pickRay;
-   UseGlobal(Camera);
-   if (pCamera->GeneratePickRay(ndx, ndy, &pickRay) == S_OK)
+   if (pRenderer->GenerateScreenPickRay(mouseEvent.GetPoint().x, mouseEvent.GetPoint().y, &pickRay) == S_OK)
    {
       cAutoIPtr<IEntity> pEntity;
       UseGlobal(EntityManager);
@@ -339,12 +335,8 @@ tResult cMoveCameraTool::GetToolTip(const cEditorMouseEvent & mouseEvent,
 {
    UseGlobal(Renderer);
 
-   float ndx, ndy;
-   pRenderer->ScreenToNormalizedDeviceCoords(mouseEvent.GetPoint().x, mouseEvent.GetPoint().y, &ndx, &ndy);
-
    cRay pickRay;
-   UseGlobal(Camera);
-   if (pCamera->GeneratePickRay(ndx, ndy, &pickRay) == S_OK)
+   if (pRenderer->GenerateScreenPickRay(mouseEvent.GetPoint().x, mouseEvent.GetPoint().y, &pickRay) == S_OK)
    {
       tVec3 intersect;
       if (GetTerrainLocation(pickRay, &intersect))
@@ -419,12 +411,8 @@ tResult cPlaceEntityTool::OnDragEnd(const cEditorMouseEvent & mouseEvent)
 
    UseGlobal(Renderer);
 
-   float ndx, ndy;
-   pRenderer->ScreenToNormalizedDeviceCoords(mouseEvent.GetPoint().x, mouseEvent.GetPoint().y, &ndx, &ndy);
-
    cRay pickRay;
-   UseGlobal(Camera);
-   if (pCamera->GeneratePickRay(ndx, ndy, &pickRay) == S_OK)
+   if (pRenderer->GenerateScreenPickRay(mouseEvent.GetPoint().x, mouseEvent.GetPoint().y, &pickRay) == S_OK)
    {
       tVec3 location;
       if (GetTerrainLocation(pickRay, &location))
@@ -495,12 +483,8 @@ bool cTerrainTool::GetHitQuad(CPoint point, HTERRAINQUAD * phQuad)
 {
    UseGlobal(Renderer);
 
-   float ndx, ndy;
-   pRenderer->ScreenToNormalizedDeviceCoords(point.x, point.y, &ndx, &ndy);
-
    cRay pickRay;
-   UseGlobal(Camera);
-   if (pCamera->GeneratePickRay(ndx, ndy, &pickRay) == S_OK)
+   if (pRenderer->GenerateScreenPickRay(point.x, point.y, &pickRay) == S_OK)
    {
       UseGlobal(TerrainModel);
       return (pTerrainModel->GetQuadFromHitTest(pickRay, phQuad) == S_OK);
@@ -515,12 +499,8 @@ bool cTerrainTool::GetHitVertex(CPoint point, HTERRAINVERTEX * phVertex)
 {
    UseGlobal(Renderer);
 
-   float ndx, ndy;
-   pRenderer->ScreenToNormalizedDeviceCoords(point.x, point.y, &ndx, &ndy);
-
    cRay pickRay;
-   UseGlobal(Camera);
-   if (pCamera->GeneratePickRay(ndx, ndy, &pickRay) == S_OK)
+   if (pRenderer->GenerateScreenPickRay(point.x, point.y, &pickRay) == S_OK)
    {
       UseGlobal(TerrainModel);
       return (pTerrainModel->GetVertexFromHitTest(pickRay, phVertex) == S_OK);

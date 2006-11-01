@@ -9,6 +9,7 @@
 #include "tech/axisalignedbox.h"
 #include "tech/color.h"
 #include "tech/matrix4.h"
+#include "tech/ray.h"
 #include "tech/readwriteapi.h"
 #include "tech/resourceapi.h"
 #include "tech/techhash.h"
@@ -498,9 +499,17 @@ tResult cRenderer::BeginScene()
       {
          m_bInScene = true;
          glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+         glMatrixMode(GL_PROJECTION);
+         glLoadMatrixf(m_proj);
+
+         glMatrixMode(GL_MODELVIEW);
+         glLoadMatrixf(m_view);
+
          return S_OK;
       }
    }
+
    return E_FAIL;
 }
 
@@ -759,7 +768,8 @@ tResult cRenderer::GetViewMatrix(float viewMatrix[16]) const
       return E_POINTER;
    }
 
-   glGetFloatv(GL_MODELVIEW_MATRIX, viewMatrix);
+   memcpy(viewMatrix, m_view, 16 * sizeof(float));
+   //glGetFloatv(GL_MODELVIEW_MATRIX, viewMatrix);
    return S_OK;
 }
 
@@ -776,8 +786,10 @@ tResult cRenderer::SetViewMatrix(const float viewMatrix[16])
 
    m_bUpdateCompositeMatrices = true;
 
-   glMatrixMode(GL_MODELVIEW);
-   glLoadMatrixf(viewMatrix);
+   memcpy(m_view, viewMatrix, 16 * sizeof(float));
+
+   //glMatrixMode(GL_MODELVIEW);
+   //glLoadMatrixf(viewMatrix);
    return S_OK;
 }
 
@@ -790,7 +802,8 @@ tResult cRenderer::GetProjectionMatrix(float projMatrix[16]) const
       return E_POINTER;
    }
 
-   glGetFloatv(GL_PROJECTION_MATRIX, projMatrix);
+   memcpy(projMatrix, m_proj, 16 * sizeof(float));
+   //glGetFloatv(GL_PROJECTION_MATRIX, projMatrix);
    return S_OK;
 }
 
@@ -805,22 +818,27 @@ tResult cRenderer::SetProjectionMatrix(const float projMatrix[16])
 
    m_bUpdateCompositeMatrices = true;
 
-   glMatrixMode(GL_PROJECTION);
-   glLoadMatrixf(projMatrix);
+   memcpy(m_proj, projMatrix, 16 * sizeof(float));
+
+   //glMatrixMode(GL_PROJECTION);
+   //glLoadMatrixf(projMatrix);
    return S_OK;
 }
 
 ////////////////////////////////////////
 
-#define UPDATE_COMPOSITE_MATRICES() \
-   do { if (m_bUpdateCompositeMatrices) { \
-      float projMatrix[16], viewMatrix[16]; \
-      GetProjectionMatrix(projMatrix); \
-      GetViewMatrix(viewMatrix); \
-      MatrixMultiply(projMatrix, viewMatrix, m_viewProj); \
-      MatrixInvert(m_viewProj, m_viewProjInv); \
-      m_bUpdateCompositeMatrices = false; \
-   } } while(0)
+void cRenderer::UpdateCompositeMatrices() const
+{
+   if (m_bUpdateCompositeMatrices)
+   {
+      float projMatrix[16], viewMatrix[16];
+      GetProjectionMatrix(projMatrix);
+      GetViewMatrix(viewMatrix);
+      MatrixMultiply(projMatrix, viewMatrix, m_viewProj);
+      MatrixInvert(m_viewProj, m_viewProjInv);
+      m_bUpdateCompositeMatrices = false;
+   }
+}
 
 ////////////////////////////////////////
 
@@ -831,9 +849,9 @@ tResult cRenderer::GetViewProjectionMatrix(float viewProjMatrix[16]) const
       return E_POINTER;
    }
 
-   UPDATE_COMPOSITE_MATRICES();
+   UpdateCompositeMatrices();
 
-   memcpy(viewProjMatrix, m_viewProj, sizeof(viewProjMatrix));
+   memcpy(viewProjMatrix, m_viewProj, 16 * sizeof(float));
    return S_OK;
 }
 
@@ -846,9 +864,9 @@ tResult cRenderer::GetViewProjectionInverseMatrix(float viewProjInvMatrix[16]) c
       return E_POINTER;
    }
 
-   UPDATE_COMPOSITE_MATRICES();
+   UpdateCompositeMatrices();
 
-   memcpy(viewProjInvMatrix, m_viewProjInv, sizeof(viewProjInvMatrix));
+   memcpy(viewProjInvMatrix, m_viewProjInv, 16 * sizeof(float));
    return S_OK;
 }
 
@@ -872,6 +890,52 @@ tResult cRenderer::ScreenToNormalizedDeviceCoords(int sx, int sy, float * pndx, 
 
    *pndx = normx;
    *pndy = normy;
+
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cRenderer::GeneratePickRay(float ndx, float ndy, cRay * pRay) const
+{
+   if (pRay == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tMatrix4 m;
+   if (GetViewProjectionInverseMatrix(m.m) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   tVec4 n;
+   m.Transform(tVec4(ndx, ndy, -1, 1), &n);
+   if (n.w == 0.0f)
+   {
+      return E_FAIL;
+   }
+   n.x /= n.w;
+   n.y /= n.w;
+   n.z /= n.w;
+
+   tVec4 f;
+   m.Transform(tVec4(ndx, ndy, 1, 1), &f);
+   if (f.w == 0.0f)
+   {
+      return E_FAIL;
+   }
+   f.x /= f.w;
+   f.y /= f.w;
+   f.z /= f.w;
+
+   tVec4 eye;
+   MatrixTransform4(m_viewInv, tVec4(0,0,0,1).v, eye.v);
+
+   tVec3 dir(f.x - n.x, f.y - n.y, f.z - n.z);
+   dir.Normalize();
+
+   *pRay = cRay(tVec3(eye.x,eye.y,eye.z), dir);
 
    return S_OK;
 }

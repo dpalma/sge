@@ -11,32 +11,7 @@
 #pragma once
 #endif
 
-class cRay;
-template <typename T> class cMatrix4;
-typedef cMatrix4<float> tMatrix4;
-
-F_DECLARE_INTERFACE(ICamera);
 F_DECLARE_INTERFACE(ICameraControl);
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// INTERFACE: ICamera
-//
-
-interface ICamera : IUnknown
-{
-   virtual void SetViewMatrix(const tMatrix4 & view) = 0;
-
-   virtual void SetProjectionMatrix(const tMatrix4 & proj) = 0;
-
-   virtual tResult GeneratePickRay(float ndx, float ndy, cRay * pRay) const = 0;
-
-   virtual void SetGLState() = 0;
-};
-
-////////////////////////////////////////
-
-ENGINE_API tResult CameraCreate();
 
 
 ///////////////////////////////////////////////////////////////////////////////

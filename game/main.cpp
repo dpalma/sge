@@ -4,18 +4,18 @@
 #include "stdhdr.h"
 
 #include "engine/cameraapi.h"
-#include "gui/guiapi.h"
-#include "gui/guielementapi.h"
-#include "platform/inputapi.h"
 #include "engine/engineapi.h"
 #include "engine/entityapi.h"
-#include "network/netapi.h"
-#include "render/renderapi.h"
 #include "engine/saveloadapi.h"
+#include "engine/terrainapi.h"
+#include "gui/guiapi.h"
+#include "gui/guielementapi.h"
+#include "network/netapi.h"
+#include "platform/inputapi.h"
+#include "platform/sys.h"
+#include "render/renderapi.h"
 #include "script/scriptapi.h"
 #include "sound/soundapi.h"
-#include "platform/sys.h"
-#include "engine/terrainapi.h"
 
 #include "tech/resourceapi.h"
 #include "tech/configapi.h"
@@ -99,7 +99,7 @@ void DictionaryUnload(void * pData)
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: 
+// CLASS: cMainRenderTask
 //
 
 class cMainRenderTask : public cComObject<IMPLEMENTS(ITask)>
@@ -127,9 +127,6 @@ tResult cMainRenderTask::Execute(double time)
    {
       return E_FAIL;
    }
-
-   UseGlobal(Camera);
-   pCamera->SetGLState();
 
    UseGlobal(TerrainRenderer);
    pTerrainRenderer->Render();
@@ -182,7 +179,7 @@ static bool ScriptExecResource(IScriptInterpreter * pInterpreter, const tChar * 
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: 
+// CLASS: cUnitTestThread
 //
 
 class cUnitTestThread : public cThread
@@ -237,7 +234,7 @@ int cUnitTestThread::Run()
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: 
+// CLASS: cMainInitTask
 //
 
 class cMainInitTask : public cComObject<IMPLEMENTS(ITask)>
@@ -437,8 +434,8 @@ tResult cMainInitTask::CreateMainWindow()
    tMatrix4 proj;
    MatrixPerspective(g_fov, (float)width / height, kZNear, kZFar, &proj);
 
-   UseGlobal(Camera);
-   pCamera->SetProjectionMatrix(proj);
+   UseGlobal(Renderer);
+   pRenderer->SetProjectionMatrix(proj.m);
 
    cAutoIPtr<ITask> pMainRenderTask(MainRenderTaskCreate());
    if (!!pMainRenderTask)
@@ -455,7 +452,6 @@ tResult cMainInitTask::CreateMainWindow()
 
 static void RegisterGlobalObjects()
 {
-   CameraCreate();
    CameraControlCreate();
    EntityManagerCreate();
    EntityCommandManagerCreate();

@@ -136,6 +136,91 @@ inline bool AlmostEqual(double a, double b, int maxUnitsLastPlace = kDoubleMaxUn
    return (intDiff <= maxUnitsLastPlace);
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename T, typename U>
+T Lerp(const T & a, const T & b, U t)
+{
+   return a + (t * (b - a));
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// TEMPLATE: cTimedLerp
+//
+
+template <typename T>
+class cTimedLerp
+{
+public:
+   cTimedLerp();
+   cTimedLerp(const T & start, const T & end, const T & rate);
+
+   void Restart(const T & start, const T & end, const T & rate);
+
+   T Update(T time);
+
+private:
+   T m_start, m_end, m_t, m_oneOverTimeSpan;
+};
+
+////////////////////////////////////////
+
+template <typename T>
+cTimedLerp<T>::cTimedLerp()
+{
+}
+
+////////////////////////////////////////
+
+template <typename T>
+cTimedLerp<T>::cTimedLerp(const T & start, const T & end, const T & rate)
+ : m_start(start)
+ , m_end(end)
+ , m_t(0)
+ , m_oneOverTimeSpan((start != end) ? fabs(rate / (end - start)) : 1)
+{
+}
+
+////////////////////////////////////////
+
+template <typename T>
+void cTimedLerp<T>::Restart(const T & start, const T & end, const T & rate)
+{
+   m_start = start;
+   m_end = end;
+   m_t = 0;
+   if (start != end)
+   {
+      m_oneOverTimeSpan = fabs(rate / (end - start));
+   }
+   else
+   {
+      m_oneOverTimeSpan = 1;
+   }
+}
+
+////////////////////////////////////////
+
+template <typename T>
+T cTimedLerp<T>::Update(T time)
+{
+   if (m_start == m_end)
+   {
+      return m_end;
+   }
+   m_t += (time * m_oneOverTimeSpan);
+   if (m_t >= 1)
+   {
+      m_t = 1;
+      return m_end;
+   }
+   return Lerp<T>(m_start, m_end, m_t);
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #endif // !INCLUDED_TECHMATH_H

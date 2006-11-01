@@ -174,9 +174,6 @@ void cEditorView::RenderGL()
    UseGlobal(Renderer);
    Verify(pRenderer->BeginScene() == S_OK);
 
-   UseGlobal(Camera);
-   pCamera->SetGLState();
-
    UseGlobal(TerrainRenderer);
    pTerrainRenderer->Render();
 
@@ -372,8 +369,8 @@ void cEditorView::OnSize(UINT nType, int cx, int cy)
       tMatrix4 proj;
       MatrixPerspective(m_cameraFov, aspect, m_cameraZNear, m_cameraZFar, &proj);
 
-      UseGlobal(Camera);
-      pCamera->SetProjectionMatrix(proj);
+      UseGlobal(Renderer);
+      pRenderer->SetProjectionMatrix(proj.m);
 
       if (m_bUsingD3d)
       {
@@ -437,8 +434,8 @@ void cEditorView::OnToolsCameraSettings()
       tMatrix4 proj;
       MatrixPerspective(m_cameraFov, aspect, m_cameraZNear, m_cameraZFar, &proj);
 
-      UseGlobal(Camera);
-      pCamera->SetProjectionMatrix(proj);
+      UseGlobal(Renderer);
+      pRenderer->SetProjectionMatrix(proj.m);
    }
 }
 

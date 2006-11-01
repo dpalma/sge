@@ -76,10 +76,12 @@ public:
    virtual tResult GetProjectionMatrix(float projMatrix[16]) const;
    virtual tResult SetProjectionMatrix(const float projMatrix[16]);
 
+   void UpdateCompositeMatrices() const; // const because it must be called from const methods
    virtual tResult GetViewProjectionMatrix(float viewProjMatrix[16]) const;
    virtual tResult GetViewProjectionInverseMatrix(float viewProjInvMatrix[16]) const;
 
    virtual tResult ScreenToNormalizedDeviceCoords(int sx, int sy, float * pndx, float * pndy) const;
+   virtual tResult GeneratePickRay(float ndx, float ndy, cRay * pRay) const;
 
 private:
    tResult Initialize();
@@ -111,6 +113,8 @@ private:
    tFontMap m_fontMap;
 
    cAutoIPtr<IRender2D> m_pRender2D;
+
+   float m_view[16], m_proj[16];
 
    mutable bool m_bUpdateCompositeMatrices;
    mutable float m_viewInv[16], m_viewProj[16], m_viewProjInv[16];

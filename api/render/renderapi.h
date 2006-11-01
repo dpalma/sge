@@ -13,6 +13,8 @@
 #pragma once
 #endif
 
+class cRay;
+
 template <typename T> class cAxisAlignedBox;
 typedef class cAxisAlignedBox<float> tAxisAlignedBox;
 
@@ -129,6 +131,18 @@ interface IRenderer : IUnknown
    virtual tResult GetViewProjectionInverseMatrix(float viewProjInvMatrix[16]) const = 0;
 
    virtual tResult ScreenToNormalizedDeviceCoords(int sx, int sy, float * pndx, float * pndy) const = 0;
+   virtual tResult GeneratePickRay(float ndx, float ndy, cRay * pRay) const = 0;
+
+   inline tResult GenerateScreenPickRay(int sx, int sy, cRay * pRay) const
+   {
+      float ndx, ndy;
+      if (ScreenToNormalizedDeviceCoords(sx, sy, &ndx, &ndy) == S_OK
+         && GeneratePickRay(ndx, ndy, pRay) == S_OK)
+      {
+         return S_OK;
+      }
+      return E_FAIL;
+   }
 };
 
 ///////////////////////////////////////

@@ -600,12 +600,8 @@ bool cEntityManager::cInputListener::OnInputEvent(const sInputEvent * pEvent)
    {
       UseGlobal(Renderer);
 
-      float ndx, ndy;
-      pRenderer->ScreenToNormalizedDeviceCoords(pEvent->point.x, pEvent->point.y, &ndx, &ndy);
-
       cRay pickRay;
-      UseGlobal(Camera);
-      if (pCamera->GeneratePickRay(ndx, ndy, &pickRay) == S_OK)
+      if (pRenderer->GenerateScreenPickRay(pEvent->point.x, pEvent->point.y, &pickRay) == S_OK)
       {
          cAutoIPtr<IEntity> pEntity;
          UseGlobal(EntityManager);
