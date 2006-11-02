@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
 
-#ifndef INCLUDED_RENDERER_H
-#define INCLUDED_RENDERER_H
+#ifndef INCLUDED_RENDERERGL_H
+#define INCLUDED_RENDERERGL_H
 
 #include "render/renderapi.h"
 
@@ -24,10 +24,10 @@ typedef unsigned int GLenum;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cRenderer
+// CLASS: cRendererGL
 //
 
-class cRenderer : public cComObject2<IMPLEMENTS(IRenderer), IMPLEMENTS(IGlobalObject)>
+class cRendererGL : public cComObject2<IMPLEMENTS(IRenderer), IMPLEMENTS(IGlobalObject)>
 {
    enum
    {
@@ -36,8 +36,8 @@ class cRenderer : public cComObject2<IMPLEMENTS(IRenderer), IMPLEMENTS(IGlobalOb
    };
 
 public:
-   cRenderer();
-   virtual ~cRenderer();
+   cRendererGL();
+   virtual ~cRendererGL();
 
    DECLARE_NAME(Renderer)
    DECLARE_CONSTRAINTS()
@@ -99,7 +99,7 @@ private:
    CGcontext m_cgContext;
    CGerrorHandlerFunc m_oldCgErrorHandler;
    void * m_pOldCgErrHandlerData;
-   CGprofile m_cgProfile;
+   CGprofile m_cgProfileVertex, m_cgProfileFragment;
 #endif
 
    sVertexElement m_vertexElements[kMaxVertexElements];
@@ -122,4 +122,4 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#endif // !INCLUDED_RENDERER_H
+#endif // !INCLUDED_RENDERERGL_H

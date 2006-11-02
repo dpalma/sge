@@ -484,7 +484,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\rendergl\renderer.cpp"
+				RelativePath="..\..\rendergl\renderergl.cpp"
 				>
 			</File>
 			<File
@@ -601,7 +601,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\rendergl\renderer.h"
+				RelativePath="..\..\rendergl\renderergl.h"
 				>
 			</File>
 			<File

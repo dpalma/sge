@@ -16,8 +16,6 @@
 
 #include <tinyxml.h>
 
-#include <GL/glew.h>
-
 #include <algorithm>
 #include <cfloat>
 

@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "renderer.h"
+#include "renderergl.h"
 #include "render/renderfontapi.h"
 
 #include "tech/axisalignedbox.h"
@@ -212,7 +212,7 @@ void * CgProgramLoad(IReader * pReader, void * typeParam)
       return NULL;
    }
 
-   cRenderer * pRenderer = reinterpret_cast<cRenderer *>(typeParam);
+   cRendererGL * pRenderer = reinterpret_cast<cRendererGL *>(typeParam);
 
    // Must get the Cg context first
    CGcontext cgContext = pRenderer->m_cgContext;
@@ -285,7 +285,7 @@ void * CgEffectLoad(IReader * pReader, void * typeParam)
       return NULL;
    }
 
-   cRenderer * pRenderer = reinterpret_cast<cRenderer *>(typeParam);
+   cRendererGL * pRenderer = reinterpret_cast<cRendererGL *>(typeParam);
 
    // Must get the Cg context first
    CGcontext cgContext = pRenderer->m_cgContext;
@@ -342,25 +342,26 @@ void CgEffectUnload(void * pData)
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cRenderer
+// CLASS: cRendererGL
 //
 
 ////////////////////////////////////////
 
-BEGIN_CONSTRAINTS(cRenderer)
+BEGIN_CONSTRAINTS(cRendererGL)
    AFTER_GUID(IID_IResourceManager)
 END_CONSTRAINTS()
 
 ////////////////////////////////////////
 
-cRenderer::cRenderer()
+cRendererGL::cRendererGL()
  : m_bInitialized(false)
  , m_bInScene(false)
 #ifdef HAVE_CG
  , m_cgContext(NULL)
  , m_oldCgErrorHandler(NULL)
  , m_pOldCgErrHandlerData(NULL)
- , m_cgProfile(CG_PROFILE_UNKNOWN)
+ , m_cgProfileVertex(CG_PROFILE_UNKNOWN)
+ , m_cgProfileFragment(CG_PROFILE_UNKNOWN)
 #endif
  , m_nVertexElements(0)
  , m_vertexSize(0)
@@ -373,13 +374,13 @@ cRenderer::cRenderer()
 
 ////////////////////////////////////////
 
-cRenderer::~cRenderer()
+cRendererGL::~cRendererGL()
 {
 }
 
 ////////////////////////////////////////
 
-tResult cRenderer::Init()
+tResult cRendererGL::Init()
 {
    if (Render2DCreateGL(&m_pRender2D) != S_OK)
    {
@@ -403,7 +404,7 @@ tResult cRenderer::Init()
 
 ////////////////////////////////////////
 
-tResult cRenderer::Term()
+tResult cRendererGL::Term()
 {
 #ifdef HAVE_CG
    if (m_cgContext != NULL)
@@ -418,7 +419,8 @@ tResult cRenderer::Term()
       cgDestroyContext(m_cgContext);
       m_cgContext = NULL;
 
-      m_cgProfile = CG_PROFILE_UNKNOWN;
+      m_cgProfileVertex = CG_PROFILE_UNKNOWN;
+      m_cgProfileFragment = CG_PROFILE_UNKNOWN;
    }
 #endif
 
@@ -434,7 +436,7 @@ tResult cRenderer::Term()
 
 ////////////////////////////////////////
 
-tResult cRenderer::SetRenderState(eRenderState state, ulong value)
+tResult cRendererGL::SetRenderState(eRenderState state, ulong value)
 {
    tResult result = E_FAIL;
 
@@ -478,7 +480,7 @@ tResult cRenderer::SetRenderState(eRenderState state, ulong value)
 
 ////////////////////////////////////////
 
-tResult cRenderer::GetRenderState(eRenderState state, ulong * pValue)
+tResult cRendererGL::GetRenderState(eRenderState state, ulong * pValue)
 {
    if (pValue == NULL)
    {
@@ -490,7 +492,7 @@ tResult cRenderer::GetRenderState(eRenderState state, ulong * pValue)
 
 ////////////////////////////////////////
 
-tResult cRenderer::BeginScene()
+tResult cRendererGL::BeginScene()
 {
    if (SUCCEEDED(Initialize()))
    {
@@ -515,7 +517,7 @@ tResult cRenderer::BeginScene()
 
 ////////////////////////////////////////
 
-tResult cRenderer::EndScene()
+tResult cRendererGL::EndScene()
 {
    if (m_bInScene)
    {
@@ -529,7 +531,7 @@ tResult cRenderer::EndScene()
 
 extern tResult GlTextureCreate(IImage * pImage, uint * pTexId);
 
-tResult cRenderer::CreateTexture(IImage * pImage, bool bAutoGenMipMaps, void * * ppTexture)
+tResult cRendererGL::CreateTexture(IImage * pImage, bool bAutoGenMipMaps, void * * ppTexture)
 {
    if (pImage == NULL || ppTexture == NULL)
    {
@@ -551,7 +553,7 @@ tResult cRenderer::CreateTexture(IImage * pImage, bool bAutoGenMipMaps, void * *
 
 ////////////////////////////////////////
 
-tResult cRenderer::SetVertexFormat(const sVertexElement * pVertexElements, uint nVertexElements)
+tResult cRendererGL::SetVertexFormat(const sVertexElement * pVertexElements, uint nVertexElements)
 {
    if (nVertexElements >= kMaxVertexElements)
    {
@@ -578,7 +580,7 @@ tResult cRenderer::SetVertexFormat(const sVertexElement * pVertexElements, uint 
 
 ////////////////////////////////////////
 
-tResult cRenderer::SetIndexFormat(eIndexFormat indexFormat)
+tResult cRendererGL::SetIndexFormat(eIndexFormat indexFormat)
 {
    m_indexFormat = indexFormat;
    if (indexFormat == kIF_16Bit)
@@ -598,7 +600,7 @@ tResult cRenderer::SetIndexFormat(eIndexFormat indexFormat)
 
 ////////////////////////////////////////
 
-tResult cRenderer::SubmitVertices(const void * pVertices, uint nVertices)
+tResult cRendererGL::SubmitVertices(const void * pVertices, uint nVertices)
 {
    if (pVertices == NULL)
    {
@@ -622,7 +624,7 @@ tResult cRenderer::SubmitVertices(const void * pVertices, uint nVertices)
 
 ////////////////////////////////////////
 
-tResult cRenderer::SetDiffuseColor(const float diffuse[4])
+tResult cRendererGL::SetDiffuseColor(const float diffuse[4])
 {
    if (diffuse == NULL)
    {
@@ -636,7 +638,7 @@ tResult cRenderer::SetDiffuseColor(const float diffuse[4])
 
 ////////////////////////////////////////
 
-tResult cRenderer::SetTexture(uint textureUnit, const void * texture)
+tResult cRendererGL::SetTexture(uint textureUnit, const void * texture)
 {
    if (textureUnit >= 8)
    {
@@ -651,7 +653,7 @@ tResult cRenderer::SetTexture(uint textureUnit, const void * texture)
 
 ////////////////////////////////////////
 
-tResult cRenderer::SetTexture(uint textureUnit, const tChar * pszTexture)
+tResult cRendererGL::SetTexture(uint textureUnit, const tChar * pszTexture)
 {
    if (textureUnit >= 8)
    {
@@ -675,7 +677,7 @@ tResult cRenderer::SetTexture(uint textureUnit, const tChar * pszTexture)
 
 ////////////////////////////////////////
 
-tResult cRenderer::Render(ePrimitiveType primitive, const void * pIndices, uint nIndices)
+tResult cRendererGL::Render(ePrimitiveType primitive, const void * pIndices, uint nIndices)
 {
    if (pIndices == NULL)
    {
@@ -699,7 +701,7 @@ tResult cRenderer::Render(ePrimitiveType primitive, const void * pIndices, uint 
 ////////////////////////////////////////
 
 #undef CreateFont
-tResult cRenderer::CreateFont(const tChar * pszFont, int fontPointSize, uint flags, IRenderFont * * ppFont)
+tResult cRendererGL::CreateFont(const tChar * pszFont, int fontPointSize, uint flags, IRenderFont * * ppFont)
 {
    uint h = Hash(pszFont, _tcslen(pszFont) * sizeof(tChar));
    h = hash(reinterpret_cast<byte *>(&fontPointSize), sizeof(fontPointSize), h);
@@ -728,7 +730,7 @@ tResult cRenderer::CreateFont(const tChar * pszFont, int fontPointSize, uint fla
 
 ////////////////////////////////////////
 
-tResult cRenderer::Begin2D(int width, int height, IRender2D * * ppRender2D)
+tResult cRendererGL::Begin2D(int width, int height, IRender2D * * ppRender2D)
 {
    if (ppRender2D == NULL)
    {
@@ -753,7 +755,7 @@ tResult cRenderer::Begin2D(int width, int height, IRender2D * * ppRender2D)
 
 ////////////////////////////////////////
 
-tResult cRenderer::End2D()
+tResult cRendererGL::End2D()
 {
    glPopAttrib();
    return S_OK;
@@ -761,7 +763,7 @@ tResult cRenderer::End2D()
 
 ////////////////////////////////////////
 
-tResult cRenderer::GetViewMatrix(float viewMatrix[16]) const
+tResult cRendererGL::GetViewMatrix(float viewMatrix[16]) const
 {
    if (viewMatrix == NULL)
    {
@@ -769,13 +771,12 @@ tResult cRenderer::GetViewMatrix(float viewMatrix[16]) const
    }
 
    memcpy(viewMatrix, m_view, 16 * sizeof(float));
-   //glGetFloatv(GL_MODELVIEW_MATRIX, viewMatrix);
    return S_OK;
 }
 
 ////////////////////////////////////////
 
-tResult cRenderer::SetViewMatrix(const float viewMatrix[16])
+tResult cRendererGL::SetViewMatrix(const float viewMatrix[16])
 {
    if (viewMatrix == NULL)
    {
@@ -787,15 +788,12 @@ tResult cRenderer::SetViewMatrix(const float viewMatrix[16])
    m_bUpdateCompositeMatrices = true;
 
    memcpy(m_view, viewMatrix, 16 * sizeof(float));
-
-   //glMatrixMode(GL_MODELVIEW);
-   //glLoadMatrixf(viewMatrix);
    return S_OK;
 }
 
 ////////////////////////////////////////
 
-tResult cRenderer::GetProjectionMatrix(float projMatrix[16]) const
+tResult cRendererGL::GetProjectionMatrix(float projMatrix[16]) const
 {
    if (projMatrix == NULL)
    {
@@ -803,13 +801,12 @@ tResult cRenderer::GetProjectionMatrix(float projMatrix[16]) const
    }
 
    memcpy(projMatrix, m_proj, 16 * sizeof(float));
-   //glGetFloatv(GL_PROJECTION_MATRIX, projMatrix);
    return S_OK;
 }
 
 ////////////////////////////////////////
 
-tResult cRenderer::SetProjectionMatrix(const float projMatrix[16])
+tResult cRendererGL::SetProjectionMatrix(const float projMatrix[16])
 {
    if (projMatrix == NULL)
    {
@@ -819,15 +816,12 @@ tResult cRenderer::SetProjectionMatrix(const float projMatrix[16])
    m_bUpdateCompositeMatrices = true;
 
    memcpy(m_proj, projMatrix, 16 * sizeof(float));
-
-   //glMatrixMode(GL_PROJECTION);
-   //glLoadMatrixf(projMatrix);
    return S_OK;
 }
 
 ////////////////////////////////////////
 
-void cRenderer::UpdateCompositeMatrices() const
+void cRendererGL::UpdateCompositeMatrices() const
 {
    if (m_bUpdateCompositeMatrices)
    {
@@ -842,7 +836,7 @@ void cRenderer::UpdateCompositeMatrices() const
 
 ////////////////////////////////////////
 
-tResult cRenderer::GetViewProjectionMatrix(float viewProjMatrix[16]) const
+tResult cRendererGL::GetViewProjectionMatrix(float viewProjMatrix[16]) const
 {
    if (viewProjMatrix == NULL)
    {
@@ -857,7 +851,7 @@ tResult cRenderer::GetViewProjectionMatrix(float viewProjMatrix[16]) const
 
 ////////////////////////////////////////
 
-tResult cRenderer::GetViewProjectionInverseMatrix(float viewProjInvMatrix[16]) const
+tResult cRendererGL::GetViewProjectionInverseMatrix(float viewProjInvMatrix[16]) const
 {
    if (viewProjInvMatrix == NULL)
    {
@@ -872,7 +866,7 @@ tResult cRenderer::GetViewProjectionInverseMatrix(float viewProjInvMatrix[16]) c
 
 ////////////////////////////////////////
 
-tResult cRenderer::ScreenToNormalizedDeviceCoords(int sx, int sy, float * pndx, float * pndy) const
+tResult cRendererGL::ScreenToNormalizedDeviceCoords(int sx, int sy, float * pndx, float * pndy) const
 {
    if (pndx == NULL || pndy == NULL)
    {
@@ -896,7 +890,7 @@ tResult cRenderer::ScreenToNormalizedDeviceCoords(int sx, int sy, float * pndx, 
 
 ///////////////////////////////////////
 
-tResult cRenderer::GeneratePickRay(float ndx, float ndy, cRay * pRay) const
+tResult cRendererGL::GeneratePickRay(float ndx, float ndy, cRay * pRay) const
 {
    if (pRay == NULL)
    {
@@ -942,7 +936,7 @@ tResult cRenderer::GeneratePickRay(float ndx, float ndy, cRay * pRay) const
 
 ////////////////////////////////////////
 
-tResult cRenderer::Initialize()
+tResult cRendererGL::Initialize()
 {
    if (m_bInitialized)
    {
@@ -963,8 +957,11 @@ tResult cRenderer::Initialize()
       m_oldCgErrorHandler = cgGetErrorHandler(&m_pOldCgErrHandlerData);
       cgSetErrorHandler(CgErrorHandler, static_cast<void*>(this));
 
-      Assert(m_cgProfile == CG_PROFILE_UNKNOWN);
-      m_cgProfile = cgGLGetLatestProfile(CG_GL_VERTEX);
+      Assert(m_cgProfileVertex == CG_PROFILE_UNKNOWN);
+      m_cgProfileVertex = cgGLGetLatestProfile(CG_GL_VERTEX);
+
+      Assert(m_cgProfileFragment == CG_PROFILE_UNKNOWN);
+      m_cgProfileFragment = cgGLGetLatestProfile(CG_GL_FRAGMENT);
    }
 #endif
 
@@ -980,7 +977,7 @@ tResult cRenderer::Initialize()
 ////////////////////////////////////////
 
 #ifdef HAVE_CG
-void cRenderer::CgErrorHandler(CGcontext cgContext, CGerror cgError, void * pData)
+void cRendererGL::CgErrorHandler(CGcontext cgContext, CGerror cgError, void * pData)
 {
    if (cgError)
    {
@@ -999,7 +996,7 @@ void cRenderer::CgErrorHandler(CGcontext cgContext, CGerror cgError, void * pDat
 
 tResult RendererCreate()
 {
-   cAutoIPtr<IRenderer> p(static_cast<IRenderer*>(new cRenderer));
+   cAutoIPtr<IRenderer> p(static_cast<IRenderer*>(new cRendererGL));
    if (!p)
    {
       return E_OUTOFMEMORY;
@@ -1031,7 +1028,7 @@ const sVertexElement g_wireFrameVertex[] =
    { kVEU_Position,  kVET_Float3,   0, 0 },
 };
 
-void RenderWireFrame(const tAxisAlignedBox & box, const float color[4])
+void RenderWireFrameBox(const tAxisAlignedBox & box, const float color[4])
 {
    const tVec3 & mins = box.GetMins();
    const tVec3 & maxs = box.GetMaxs();
@@ -1047,7 +1044,6 @@ void RenderWireFrame(const tAxisAlignedBox & box, const float color[4])
       tVec3(maxs.x, maxs.y, mins.z),
       tVec3(maxs.x, maxs.y, maxs.z),
       tVec3(mins.x, maxs.y, maxs.z),
-
    };
 
    const uint16 indices[] =

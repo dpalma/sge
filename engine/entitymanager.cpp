@@ -251,7 +251,7 @@ void cEntityManager::RenderAll()
             tAxisAlignedBox bbox;
             if (pRender->GetBoundingBox(&bbox) == S_OK)
             {
-               RenderWireFrame(bbox, cColor(1,1,0).GetPointer());
+               RenderWireFrameBox(bbox, cColor(1,1,0).GetPointer());
             }
          }
       }

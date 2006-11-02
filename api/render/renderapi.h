@@ -153,7 +153,7 @@ RENDER_API tResult RendererResourceRegister();
 
 ///////////////////////////////////////
 
-RENDER_API void RenderWireFrame(const tAxisAlignedBox & box, const float color[4]);
+RENDER_API void RenderWireFrameBox(const tAxisAlignedBox & box, const float color[4]);
 
 
 ///////////////////////////////////////////////////////////////////////////////
