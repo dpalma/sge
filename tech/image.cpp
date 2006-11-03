@@ -9,8 +9,6 @@
 #include "tech/resourceapi.h"
 #include "tech/techmath.h"
 
-#include <cstring>
-
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -54,13 +52,13 @@ uint BytesPerPixel(ePixelFormat pixelFormat)
 // CLASS: cRGBA
 //
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 cRGBA::cRGBA()
 {
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 cRGBA::cRGBA(byte r, byte g, byte b)
 {
@@ -70,7 +68,7 @@ cRGBA::cRGBA(byte r, byte g, byte b)
    m_rgba[3] = 1;
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 cRGBA::cRGBA(byte r, byte g, byte b, byte a)
 {
@@ -80,14 +78,14 @@ cRGBA::cRGBA(byte r, byte g, byte b, byte a)
    m_rgba[3] = a;
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 cRGBA::cRGBA(const byte rgba[4])
 {
    memcpy(&m_rgba[0], &rgba[0], sizeof(m_rgba));
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 // assumes all float values are between 0 and 1
 
 cRGBA::cRGBA(const float rgba[4])
@@ -98,14 +96,14 @@ cRGBA::cRGBA(const float rgba[4])
    m_rgba[3] = static_cast<byte>(rgba[3] * 255.0f);
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 cRGBA::cRGBA(const cRGBA & other)
 {
    memcpy(&m_rgba[0], &other.m_rgba[0], sizeof(m_rgba));
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 const cRGBA & cRGBA::operator =(const cRGBA & other)
 {
@@ -113,247 +111,278 @@ const cRGBA & cRGBA::operator =(const cRGBA & other)
    return *this;
 }
 
-   
-///////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cImage
+// CLASS: cImageBase
 //
 
-///////////////////////////////////////
+/////////////////////////////////////////
 
-cImage::cImage(uint width, uint height, ePixelFormat pixelFormat, byte * pData)
- : m_width(width)
- , m_height(height)
- , m_pixelFormat(pixelFormat)
- , m_pData(pData)
+cImageBase::cImageBase()
+ : m_width(0)
+ , m_height(0)
+ , m_pixelFormat(kPF_ERROR)
+ , m_pData(NULL)
 {
 }
 
-///////////////////////////////////////
+/////////////////////////////////////////
 
-cImage::~cImage()
+cImageBase::~cImageBase()
 {
-   // This is the memory allocated in ImageCreate() below
    delete [] m_pData;
    m_pData = NULL;
 }
 
-///////////////////////////////////////
+/////////////////////////////////////////
 
-uint cImage::GetWidth() const
+uint cImageBase::GetWidth() const
 {
    return m_width;
 }
 
-///////////////////////////////////////
+/////////////////////////////////////////
 
-uint cImage::GetHeight() const
+uint cImageBase::GetHeight() const
 {
    return m_height;
 }
 
-///////////////////////////////////////
+/////////////////////////////////////////
 
-ePixelFormat cImage::GetPixelFormat() const
+ePixelFormat cImageBase::GetPixelFormat() const
 {
    return m_pixelFormat;
 }
 
-///////////////////////////////////////
+/////////////////////////////////////////
 
-const void * cImage::GetData() const
+const void * cImageBase::GetData() const
 {
    return m_pData;
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
-tResult cImage::GetPixel(uint x, uint y, byte rgba[4]) const
-{
-   if (x >= GetWidth() || y >= GetHeight())
-   {
-      return E_INVALIDARG;
-   }
-
-   if (rgba == NULL)
-   {
-      return E_POINTER;
-   }
-
-   uint bytesPerPixel = BytesPerPixel(GetPixelFormat());
-   const byte * pImagePixel = m_pData + (y * GetWidth() * bytesPerPixel) + (x * bytesPerPixel);
-
-   switch (GetPixelFormat())
-   {
-      case kPF_RGB565:
-      {
-         uint16 pixel = *(uint16 *)pImagePixel;
-         rgba[0] = ((pixel >> 11) & 31) << 3;
-         rgba[1] = ((pixel >> 5) & 63) << 2;
-         rgba[2] = (pixel & 31) << 3;
-         rgba[3] = 1;
-         return S_OK;
-      }
-
-      case kPF_RGB888:
-      {
-         rgba[0] = pImagePixel[0];
-         rgba[1] = pImagePixel[1];
-         rgba[2] = pImagePixel[2];
-         rgba[3] = 1;
-         return S_OK;
-      }
-
-      case kPF_BGR888:
-      {
-         rgba[0] = pImagePixel[2];
-         rgba[1] = pImagePixel[1];
-         rgba[2] = pImagePixel[0];
-         rgba[3] = 1;
-         return S_OK;
-      }
-
-      case kPF_RGBA8888:
-      {
-         rgba[0] = pImagePixel[0];
-         rgba[1] = pImagePixel[1];
-         rgba[2] = pImagePixel[2];
-         rgba[3] = pImagePixel[3];
-         return S_OK;
-      }
-
-      case kPF_BGRA8888:
-      {
-         rgba[0] = pImagePixel[2];
-         rgba[1] = pImagePixel[1];
-         rgba[2] = pImagePixel[0];
-         rgba[3] = pImagePixel[3];
-         return S_OK;
-      }
-   }
-
-   return E_FAIL;
-}
-
-///////////////////////////////////////
-
-tResult cImage::SetPixel(uint x, uint y, const byte rgba[4])
-{
-   if (x >= GetWidth() || y >= GetHeight())
-   {
-      return E_INVALIDARG;
-   }
-
-   if (rgba == NULL)
-   {
-      return E_POINTER;
-   }
-
-   uint bytesPerPixel = BytesPerPixel(GetPixelFormat());
-   byte * pImagePixel = m_pData + ((y * GetWidth()) + x) * bytesPerPixel;
-
-   switch (GetPixelFormat())
-   {
-      case kPF_RGB565:
-      {
-         uint16 * pPixel = (uint16 *)pImagePixel;
-         *pPixel = (((uint16)rgba[0] >> 3) << 11) | (((uint16)rgba[1] >> 2) << 5)  | ((uint16)rgba[2] >> 3);
-         return S_OK;
-      }
-
-      case kPF_RGB888:
-      {
-         pImagePixel[0] = rgba[0];
-         pImagePixel[1] = rgba[1];
-         pImagePixel[2] = rgba[2];
-         return S_OK;
-      }
-
-      case kPF_BGR888:
-      {
-         pImagePixel[0] = rgba[2];
-         pImagePixel[1] = rgba[1];
-         pImagePixel[2] = rgba[0];
-         return S_OK;
-      }
-
-      case kPF_RGBA8888:
-      {
-         pImagePixel[0] = rgba[0];
-         pImagePixel[1] = rgba[1];
-         pImagePixel[2] = rgba[2];
-         pImagePixel[3] = rgba[3];
-         return S_OK;
-      }
-
-      case kPF_BGRA8888:
-      {
-         pImagePixel[0] = rgba[2];
-         pImagePixel[1] = rgba[1];
-         pImagePixel[2] = rgba[0];
-         pImagePixel[3] = rgba[3];
-         return S_OK;
-      }
-   }
-
-   return E_FAIL;
-}
-
-///////////////////////////////////////
-
-tResult cImage::GetSubImage(uint x, uint y, uint width, uint height, IImage * * ppSubImage) const
-{
-   if (width == 0 || height == 0)
-   {
-      return E_INVALIDARG;
-   }
-
-   if (ppSubImage == NULL)
-   {
-      return E_POINTER;
-   }
-
-   uint memSize = BytesPerPixel(GetPixelFormat()) * width * height;
-   if (memSize == 0)
-   {
-      WarnMsg1("Invalid pixel format %d\n", GetPixelFormat());
-      return E_FAIL;
-   }
-
-   byte * pImageData = new byte[memSize];
-   if (pImageData == NULL)
-   {
-      return E_OUTOFMEMORY;
-   }
-
-   uint scanLine = BytesPerPixel(GetPixelFormat()) * width;
-   uint scanLine2 = BytesPerPixel(GetPixelFormat()) * GetWidth();
-
-   byte * p = pImageData;
-   const byte * p2 = static_cast<const byte *>(GetData()) + (scanLine2 * y) + x;
-
-   for (uint i = 0; i < height; i++)
-   {
-      memcpy(p, p2, scanLine);
-      p += scanLine;
-      p2 += scanLine2;
-   }
-
-   cAutoIPtr<cImage> pSubImage(new cImage(width, height, GetPixelFormat(), pImageData));
-   if (!pSubImage)
-   {
-      return E_OUTOFMEMORY;
-   }
-
-   *ppSubImage = CTAddRef(static_cast<IImage*>(pSubImage));
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cImage::Clone(IImage * * ppImage)
+tResult cImageBase::Clone(IImage * * ppImage)
 {
    return ImageCreate(GetWidth(), GetHeight(), GetPixelFormat(), GetData(), ppImage);
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cPixelRGB565
+//
+
+class cPixelRGB565
+{
+public:
+   static uint BytesPerPixel();
+   static void GetPixel(const byte * pPixel, byte rgba[4]);
+   static void SetPixel(byte * pPixel, const byte rgba[4]);
+};
+
+////////////////////////////////////////
+
+uint cPixelRGB565::BytesPerPixel()
+{
+   return 2;
+}
+
+////////////////////////////////////////
+
+void cPixelRGB565::GetPixel(const byte * pPixel, byte rgba[4])
+{
+   Assert(pPixel != NULL && rgba != NULL); // Error-checking should have happened by now
+   uint16 pixel = *(uint16 *)pPixel;
+   rgba[0] = ((pixel >> 11) & 31) << 3;
+   rgba[1] = ((pixel >> 5) & 63) << 2;
+   rgba[2] = (pixel & 31) << 3;
+   rgba[3] = 1;
+}
+
+////////////////////////////////////////
+
+void cPixelRGB565::SetPixel(byte * pPixel, const byte rgba[4])
+{
+   Assert(pPixel != NULL && rgba != NULL); // Error-checking should have happened by now
+   uint16 * pPixel16 = (uint16 *)pPixel;
+   *pPixel16 = (((uint16)rgba[0] >> 3) << 11) | (((uint16)rgba[1] >> 2) << 5)  | ((uint16)rgba[2] >> 3);
+   // RGB565 is a 3-component pixel format so ignore alpha
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cPixelRGB888
+//
+
+class cPixelRGB888
+{
+public:
+   static uint BytesPerPixel();
+   static void GetPixel(const byte * pPixel, byte rgba[4]);
+   static void SetPixel(byte * pPixel, const byte rgba[4]);
+};
+
+////////////////////////////////////////
+
+uint cPixelRGB888::BytesPerPixel()
+{
+   return 3;
+}
+
+////////////////////////////////////////
+
+void cPixelRGB888::GetPixel(const byte * pPixel, byte rgba[4])
+{
+   Assert(pPixel != NULL && rgba != NULL); // Error-checking should have happened by now
+   rgba[0] = pPixel[0];
+   rgba[1] = pPixel[1];
+   rgba[2] = pPixel[2];
+   rgba[3] = 1;
+}
+
+////////////////////////////////////////
+
+void cPixelRGB888::SetPixel(byte * pPixel, const byte rgba[4])
+{
+   Assert(pPixel != NULL && rgba != NULL); // Error-checking should have happened by now
+   pPixel[0] = rgba[0];
+   pPixel[1] = rgba[1];
+   pPixel[2] = rgba[2];
+   // RGB888 is a 3-component pixel format so ignore alpha
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cPixelBGR888
+//
+
+class cPixelBGR888
+{
+public:
+   static uint BytesPerPixel();
+   static void GetPixel(const byte * pPixel, byte rgba[4]);
+   static void SetPixel(byte * pPixel, const byte rgba[4]);
+};
+
+////////////////////////////////////////
+
+uint cPixelBGR888::BytesPerPixel()
+{
+   return 3;
+}
+
+////////////////////////////////////////
+
+void cPixelBGR888::GetPixel(const byte * pPixel, byte rgba[4])
+{
+   Assert(pPixel != NULL && rgba != NULL); // Error-checking should have happened by now
+   rgba[0] = pPixel[2];
+   rgba[1] = pPixel[1];
+   rgba[2] = pPixel[0];
+   rgba[3] = 1;
+}
+
+////////////////////////////////////////
+
+void cPixelBGR888::SetPixel(byte * pPixel, const byte rgba[4])
+{
+   Assert(pPixel != NULL && rgba != NULL); // Error-checking should have happened by now
+   pPixel[0] = rgba[2];
+   pPixel[1] = rgba[1];
+   pPixel[2] = rgba[0];
+   // RGB888 is a 3-component pixel format so ignore alpha
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cPixelRGBA8888
+//
+
+class cPixelRGBA8888
+{
+public:
+   static uint BytesPerPixel();
+   static void GetPixel(const byte * pPixel, byte rgba[4]);
+   static void SetPixel(byte * pPixel, const byte rgba[4]);
+};
+
+////////////////////////////////////////
+
+uint cPixelRGBA8888::BytesPerPixel()
+{
+   return 4;
+}
+
+////////////////////////////////////////
+
+void cPixelRGBA8888::GetPixel(const byte * pPixel, byte rgba[4])
+{
+   Assert(pPixel != NULL && rgba != NULL); // Error-checking should have happened by now
+   rgba[0] = pPixel[0];
+   rgba[1] = pPixel[1];
+   rgba[2] = pPixel[2];
+   rgba[3] = pPixel[3];
+}
+
+////////////////////////////////////////
+
+void cPixelRGBA8888::SetPixel(byte * pPixel, const byte rgba[4])
+{
+   Assert(pPixel != NULL && rgba != NULL); // Error-checking should have happened by now
+   pPixel[0] = rgba[0];
+   pPixel[1] = rgba[1];
+   pPixel[2] = rgba[2];
+   pPixel[3] = rgba[3];
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cPixelBGRA8888
+//
+
+class cPixelBGRA8888
+{
+public:
+   static uint BytesPerPixel();
+   static void GetPixel(const byte * pPixel, byte rgba[4]);
+   static void SetPixel(byte * pPixel, const byte rgba[4]);
+};
+
+////////////////////////////////////////
+
+uint cPixelBGRA8888::BytesPerPixel()
+{
+   return 4;
+}
+
+////////////////////////////////////////
+
+void cPixelBGRA8888::GetPixel(const byte * pPixel, byte rgba[4])
+{
+   Assert(pPixel != NULL && rgba != NULL); // Error-checking should have happened by now
+   rgba[0] = pPixel[2];
+   rgba[1] = pPixel[1];
+   rgba[2] = pPixel[0];
+   rgba[3] = pPixel[3];
+}
+
+////////////////////////////////////////
+
+void cPixelBGRA8888::SetPixel(byte * pPixel, const byte rgba[4])
+{
+   Assert(pPixel != NULL && rgba != NULL); // Error-checking should have happened by now
+   pPixel[0] = rgba[2];
+   pPixel[1] = rgba[1];
+   pPixel[2] = rgba[0];
+   pPixel[3] = rgba[3];
 }
 
 
@@ -362,7 +391,7 @@ tResult cImage::Clone(IImage * * ppImage)
 
 #ifdef _WIN32
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 void * WindowsDDBFromImage(void * pData, int dataLength, void * param)
 {
@@ -382,7 +411,7 @@ void * WindowsDDBFromImage(void * pData, int dataLength, void * param)
    return NULL;
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 void WindowsDDBUnload(void * pData)
 {
@@ -547,14 +576,14 @@ TECH_API tResult ImageToWindowsBitmap(IImage * pImage, HBITMAP * phBitmap)
 extern void * TargaLoad(IReader * pReader);
 extern void * BmpLoad(IReader * pReader);
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 void ImageUnload(void * pData)
 {
    reinterpret_cast<IImage*>(pData)->Release();
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 tResult ImageRegisterResourceFormats()
 {
@@ -578,6 +607,18 @@ tResult ImageRegisterResourceFormats()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+template <typename PIXEL>
+tResult ImageCreate2(uint width, uint height, ePixelFormat pixelFormat, byte * pImageData, IImage * * ppImage)
+{
+   cAutoIPtr<IImage> pImage(static_cast<IImage*>(new cImageT<PIXEL>(width, height, pixelFormat, pImageData)));
+   if (!pImage)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   return pImage.GetPointer(ppImage);
+}
 
 tResult ImageCreate(uint width, uint height, ePixelFormat pixelFormat, const void * pData, IImage * * ppImage)
 {
@@ -618,15 +659,35 @@ tResult ImageCreate(uint width, uint height, ePixelFormat pixelFormat, const voi
       memset(pImageData, 0, memSize);
    }
 
-   cAutoIPtr<cImage> pImage(new cImage(width, height, pixelFormat, pImageData));
-   if (!pImage)
+   tResult result = E_FAIL;
+
+   if (pixelFormat == kPF_RGB565)
    {
-      delete [] pImageData;
-      return E_OUTOFMEMORY;
+      result = ImageCreate2<cPixelRGB565>(width, height, pixelFormat, pImageData, ppImage);
+   }
+   else if (pixelFormat == kPF_RGB888)
+   {
+      result = ImageCreate2<cPixelRGB888>(width, height, pixelFormat, pImageData, ppImage);
+   }
+   else if (pixelFormat == kPF_BGR888)
+   {
+      result = ImageCreate2<cPixelBGR888>(width, height, pixelFormat, pImageData, ppImage);
+   }
+   else if (pixelFormat == kPF_RGBA8888)
+   {
+      result = ImageCreate2<cPixelRGBA8888>(width, height, pixelFormat, pImageData, ppImage);
+   }
+   else if (pixelFormat == kPF_BGRA8888)
+   {
+      result = ImageCreate2<cPixelBGRA8888>(width, height, pixelFormat, pImageData, ppImage);
    }
 
-   *ppImage = CTAddRef(static_cast<IImage*>(pImage));
-   return S_OK;
+   if (result != S_OK)
+   {
+      delete [] pImageData;
+   }
+
+   return result;
 }
 
 

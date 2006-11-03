@@ -17,7 +17,6 @@
 
 #include <algorithm>
 #include <map>
-#include <GL/glew.h>
 #include <tinyxml.h>
 
 #include "tech/dbgalloc.h" // must be last header
