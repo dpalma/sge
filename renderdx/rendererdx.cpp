@@ -10,6 +10,7 @@
 
 #include "tech/axisalignedbox.h"
 #include "tech/color.h"
+#include "tech/readwriteapi.h"
 #include "tech/resourceapi.h"
 #include "tech/techhash.h"
 #include "tech/techmath.h"
@@ -21,10 +22,7 @@
 #include <d3dx9.h>
 
 #ifdef HAVE_CG
-#include <Cg/cg.h>
-#include <Cg/cgGL.h>
-#include <CgFX/ICgFX.h>
-#include <CgFX/ICgFXEffect.h>
+#include <Cg/cgD3D9.h>
 #endif
 
 #include <cstring>
@@ -105,6 +103,90 @@ static bool ValidateIndices(const uint16 * pIndices, uint nIndices, uint nVertic
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_CG
+
+// TODO: How to differentiate loading vertex vs. pixel shaders?
+void * CgProgramLoad(IReader * pReader, void * typeParam)
+{
+   if (pReader == NULL)
+   {
+      return NULL;
+   }
+
+   cRendererDX * pRenderer = reinterpret_cast<cRendererDX *>(typeParam);
+
+   // Must get the Cg context first
+   CGcontext cgContext = pRenderer->m_cgContext;
+   if (cgContext == NULL)
+   {
+      return NULL;
+   }
+
+
+   if (pRenderer->m_cgProfileVertex == CG_PROFILE_UNKNOWN)
+   {
+      pRenderer->m_cgProfileVertex = cgD3D9GetLatestVertexProfile();
+      if (pRenderer->m_cgProfileVertex == CG_PROFILE_UNKNOWN)
+      {
+         return NULL;
+      }
+   }
+
+   ulong length = 0;
+   if (pReader->Seek(0, kSO_End) == S_OK
+      && pReader->Tell(&length) == S_OK
+      && pReader->Seek(0, kSO_Set) == S_OK)
+   {
+      char stackBuffer[1024];
+      char * pBuffer = NULL;
+
+      if (length >= 32768)
+      {
+         WarnMsg1("Sanity check failure loading Cg program %d bytes long\n", length);
+         return NULL;
+      }
+
+      if (length < sizeof(stackBuffer))
+      {
+         pBuffer = stackBuffer;
+
+         if (pReader->Read(pBuffer, length) == S_OK)
+         {
+            pBuffer[length] = 0;
+
+            CGprogram program = cgCreateProgram(cgContext, CG_SOURCE, pBuffer, pRenderer->m_cgProfileVertex, NULL, NULL);
+            if (program != NULL)
+            {
+               if (cgD3D9LoadProgram(program, CG_FALSE, 0) == S_OK)
+               {
+                  return program;
+               }
+               else
+               {
+                  cgDestroyProgram(program);
+               }
+            }
+         }
+      }
+   }
+
+   return NULL;
+}
+
+void CgProgramUnload(void * pData)
+{
+   CGprogram program = reinterpret_cast<CGprogram>(pData);
+   if (program != NULL)
+   {
+      cgDestroyProgram(program);
+   }
+}
+
+#endif // HAVE_CG
+
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cRendererDX
@@ -116,8 +198,10 @@ cRendererDX::cRendererDX()
  : m_bInScene(false)
 #ifdef HAVE_CG
  , m_cgContext(NULL)
- , m_oldCgErrorCallback(NULL)
- , m_cgProfile(CG_PROFILE_UNKNOWN)
+ , m_oldCgErrorHandler(NULL)
+ , m_pOldCgErrHandlerData(NULL)
+ , m_cgProfileVertex(CG_PROFILE_UNKNOWN)
+ , m_cgProfileFragment(CG_PROFILE_UNKNOWN)
 #endif
  , m_nVertexElements(0)
  , m_vertexSize(0)
@@ -136,6 +220,19 @@ cRendererDX::~cRendererDX()
 
 tResult cRendererDX::Init()
 {
+   UseGlobal(ResourceManager);
+   if (!!pResourceManager)
+   {
+#ifdef HAVE_CG
+      if (pResourceManager->RegisterFormat(kRT_CgProgram, _T("cg"), CgProgramLoad, NULL, CgProgramUnload, this) != S_OK
+//         || pResourceManager->RegisterFormat(kRT_CgEffect, _T("fx"), CgEffectLoad, NULL, CgEffectUnload) != S_OK
+         )
+      {
+         return E_FAIL;
+      }
+#endif
+   }
+
    return S_OK;
 }
 
@@ -146,18 +243,22 @@ tResult cRendererDX::Term()
 #ifdef HAVE_CG
    if (m_cgContext != NULL)
    {
-      if (m_oldCgErrorCallback != NULL)
+      if (m_oldCgErrorHandler != NULL)
       {
-         cgSetErrorCallback(m_oldCgErrorCallback);
-         m_oldCgErrorCallback = NULL;
+         cgSetErrorHandler(m_oldCgErrorHandler, m_pOldCgErrHandlerData);
+         m_oldCgErrorHandler = NULL;
+         m_pOldCgErrHandlerData = NULL;
       }
 
       cgDestroyContext(m_cgContext);
       m_cgContext = NULL;
 
-      m_cgProfile = CG_PROFILE_UNKNOWN;
+      m_cgProfileVertex = CG_PROFILE_UNKNOWN;
+      m_cgProfileFragment = CG_PROFILE_UNKNOWN;
    }
 #endif
+
+   SafeRelease(m_pD3dDevice);
 
    tFontMap::iterator iter = m_fontMap.begin();
    for (; iter != m_fontMap.end(); ++iter)
@@ -227,15 +328,26 @@ tResult cRendererDX::BeginScene()
          return E_FAIL;
       }
 
+      if (cgD3D9SetDevice(m_pD3dDevice) != S_OK)
+      {
+         ErrorMsg("cgD3D9SetDevice failed\n");
+         return E_FAIL;
+      }
+
 #ifdef HAVE_CG
       if (m_cgContext == NULL)
       {
          m_cgContext = cgCreateContext();
-         Assert(m_oldCgErrorCallback == NULL);
-         m_oldCgErrorCallback = cgGetErrorCallback();
-         cgSetErrorCallback(CgErrorCallback);
-         Assert(m_cgProfile == CG_PROFILE_UNKNOWN);
-         m_cgProfile = cgGLGetLatestProfile(CG_GL_VERTEX);
+
+         Assert(m_oldCgErrorHandler == NULL && m_pOldCgErrHandlerData == NULL);
+         m_oldCgErrorHandler = cgGetErrorHandler(&m_pOldCgErrHandlerData);
+         cgSetErrorHandler(CgErrorHandler, static_cast<void*>(this));
+
+         Assert(m_cgProfileVertex == CG_PROFILE_UNKNOWN);
+         m_cgProfileVertex = cgD3D9GetLatestVertexProfile();
+
+         Assert(m_cgProfileFragment == CG_PROFILE_UNKNOWN);
+         m_cgProfileFragment = cgD3D9GetLatestPixelProfile();
       }
 #endif
 
@@ -250,9 +362,12 @@ tResult cRendererDX::BeginScene()
       AssertMsg(!m_bInScene, "Cannot nest BeginScene/EndScene calls");
       if (!m_bInScene)
       {
-         m_bInScene = true;
-         m_pD3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1, 0);
-         return S_OK;
+         if (m_pD3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1, 0) == D3D_OK
+            && m_pD3dDevice->BeginScene() == D3D_OK)
+         {
+            m_bInScene = true;
+            return S_OK;
+         }
       }
    }
 
@@ -506,21 +621,77 @@ tResult cRendererDX::End2D()
 
 ////////////////////////////////////////
 
-void cRendererDX::CgErrorCallback()
+tResult cRendererDX::GetViewMatrix(float viewMatrix[16]) const
 {
+   return E_NOTIMPL;
+}
+
+////////////////////////////////////////
+
+tResult cRendererDX::SetViewMatrix(const float viewMatrix[16])
+{
+   return E_NOTIMPL;
+}
+
+////////////////////////////////////////
+
+tResult cRendererDX::GetProjectionMatrix(float projMatrix[16]) const
+{
+   return E_NOTIMPL;
+}
+
+////////////////////////////////////////
+
+tResult cRendererDX::SetProjectionMatrix(const float projMatrix[16])
+{
+   return E_NOTIMPL;
+}
+
+////////////////////////////////////////
+
+tResult cRendererDX::GetViewProjectionMatrix(float viewProjMatrix[16]) const
+{
+   return E_NOTIMPL;
+}
+
+////////////////////////////////////////
+
+tResult cRendererDX::GetViewProjectionInverseMatrix(float viewProjInvMatrix[16]) const
+{
+   return E_NOTIMPL;
+}
+
+////////////////////////////////////////
+
+tResult cRendererDX::ScreenToNormalizedDeviceCoords(int sx, int sy, float * pndx, float * pndy) const
+{
+   return E_NOTIMPL;
+}
+
+////////////////////////////////////////
+
+tResult cRendererDX::GeneratePickRay(float ndx, float ndy, cRay * pRay) const
+{
+   return E_NOTIMPL;
+}
+
+////////////////////////////////////////
+
 #ifdef HAVE_CG
-   CGerror lastError = cgGetError();
-   if (lastError)
+void cRendererDX::CgErrorHandler(CGcontext cgContext, CGerror cgError, void * pData)
+{
+   if (cgError)
    {
-      ErrorMsg(cgGetErrorString(lastError));
-      const char * pszListing = cgGetLastListing(g_CgContext);
+      const char * pszCgError = cgGetErrorString(cgError);
+      ErrorMsgIf1(pszCgError != NULL, "%s\n", pszCgError);
+      const char * pszListing = cgGetLastListing(cgContext);
       if (pszListing != NULL)
       {
          ErrorMsg1("   %s\n", pszListing);
       }
    }
-#endif
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -536,104 +707,9 @@ tResult RendererCreate()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_CG
-
-CGprofile g_CgProfile = CG_PROFILE_UNKNOWN;
-
-void * CgProgramLoad(IReader * pReader)
-{
-   if (pReader == NULL)
-   {
-      return NULL;
-   }
-
-   // Must get the Cg context first
-   CGcontext cgContext = CgGetContext();
-   if (cgContext == NULL)
-   {
-      return NULL;
-   }
-
-   if (g_CgProfile == CG_PROFILE_UNKNOWN)
-   {
-      g_CgProfile = cgGLGetLatestProfile(CG_GL_VERTEX);
-      if (g_CgProfile == CG_PROFILE_UNKNOWN)
-      {
-         return NULL;
-      }
-   }
-
-   ulong length = 0;
-   if (pReader->Seek(0, kSO_End) == S_OK
-      && pReader->Tell(&length) == S_OK
-      && pReader->Seek(0, kSO_Set) == S_OK)
-   {
-      cAutoBuffer autoBuffer;
-      char stackBuffer[256];
-      char * pBuffer = NULL;
-
-      if (length >= 32768)
-      {
-         WarnMsg1("Sanity check failure loading Cg program %d bytes long\n", length);
-         return NULL;
-      }
-
-      if (length < sizeof(stackBuffer))
-      {
-         pBuffer = stackBuffer;
-      }
-      else
-      {
-         if (autoBuffer.Malloc(sizeof(char) * (length + 1), (void**)&pBuffer) != S_OK)
-         {
-            return NULL;
-         }
-      }
-
-      if (pReader->Read(pBuffer, length) == S_OK)
-      {
-         pBuffer[length] = 0;
-
-         CGprogram program = cgCreateProgram(cgContext, CG_SOURCE, pBuffer, g_CgProfile, NULL, NULL);
-         if (program != NULL)
-         {
-            cgGLLoadProgram(program);
-            return program;
-         }
-      }
-   }
-
-   return NULL;
-}
-
-void CgProgramUnload(void * pData)
-{
-   CGprogram program = reinterpret_cast<CGprogram>(pData);
-   if (program != NULL)
-   {
-      cgDestroyProgram(program);
-   }
-}
-
-#endif // HAVE_CG
-
-///////////////////////////////////////////////////////////////////////////////
-
 tResult RendererResourceRegister()
 {
-   UseGlobal(ResourceManager);
-   if (!!pResourceManager)
-   {
-#ifdef HAVE_CG
-      if (pResourceManager->RegisterFormat(kRT_CgProgram, _T("cg"), CgProgramLoad, NULL, CgProgramUnload) == S_OK
-//         && pResourceManager->RegisterFormat(kRT_CgEffect, _T("fx"), CgEffectLoad, NULL, CgEffectUnload) == S_OK
-         )
-      {
-         return S_OK;
-      }
-#endif
-   }
-   return E_FAIL;
+   return S_OK;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

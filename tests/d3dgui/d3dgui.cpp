@@ -26,12 +26,8 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include <d3d9.h>
-#include <d3dx9.h>
 
 #include "tech/dbgalloc.h" // must be last header
-
-#pragma warning(disable:4355) // 'this' used in base member initializer list
 
 #pragma comment(lib, "d3d9")
 #ifdef D3D_DEBUG_INFO
@@ -202,9 +198,6 @@ static void d3dguiterm()
 
 static tResult d3dguiframe()
 {
-   UseGlobal(Scheduler);
-   pScheduler->NextFrame();
-
    if (!!g_pFrameStats)
    {
       tChar szStats[100];
@@ -213,21 +206,12 @@ static tResult d3dguiframe()
       g_pFrameStats->SetText(szStats);
    }
 
-   cAutoIPtr<IDirect3DDevice9> pD3dDevice;
-   if (SysGetDirect3DDevice9(&pD3dDevice) != S_OK)
-   {
-      // D3D device not initialized yet?
-      return E_FAIL;
-   }
-
-   pD3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1, 0);
-
-   if (pD3dDevice->BeginScene() == D3D_OK)
+   UseGlobal(Renderer);
+   if (pRenderer->BeginScene() == S_OK)
    {
       int width, height;
       if (SysGetWindowSize(&width, &height) == S_OK)
       {
-         UseGlobal(Renderer);
          cAutoIPtr<IRender2D> pRender2D;
          if (pRenderer->Begin2D(width, height, &pRender2D) == S_OK)
          {
@@ -238,10 +222,8 @@ static tResult d3dguiframe()
          }
       }
 
-      pD3dDevice->EndScene();
-      pD3dDevice->Present(NULL, NULL, NULL, NULL);
+      pRenderer->EndScene();
    }
-
 
    SysSwapBuffers();
 
@@ -260,7 +242,7 @@ int STDCALL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
       return -1;
    }
 
-   int result = SysEventLoop(d3dguiframe, kSELF_None);
+   int result = SysEventLoop(d3dguiframe, kSELF_RunScheduler);
 
    d3dguiterm();
 
@@ -279,7 +261,7 @@ int main(int argc, char * argv[])
       return EXIT_FAILURE;
    }
 
-   int result = SysEventLoop(NULL, kSELF_None);
+   int result = SysEventLoop(NULL, kSELF_RunScheduler);
 
    d3dguiterm();
 

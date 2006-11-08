@@ -1030,28 +1030,33 @@ HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI 
                }
             }
          }
-#if HAVE_DIRECTX
          else if (api == kDirect3D9)
          {
+#if HAVE_DIRECTX
             if (InitDirect3D9(g_hWnd, &g_pDirect3D9, &g_pDirect3DDevice9) != D3D_OK)
             {
                ErrorMsg("Direct3D failed to initialize\n");
                DestroyWindow(g_hWnd);
                g_hWnd = NULL;
-               return NULL;
             }
-         }
+#else
+            ErrorMsg("DirectX not supported\n");
+            DestroyWindow(g_hWnd);
+            g_hWnd = NULL;
 #endif
+         }
          else
          {
             ErrorMsg1("Unknown 3D API %d\n", static_cast<int>(api));
             DestroyWindow(g_hWnd);
             g_hWnd = NULL;
-            return NULL;
          }
 
-         ShowWindow(g_hWnd, SW_SHOW);
-         UpdateWindow(g_hWnd);
+         if (g_hWnd != NULL)
+         {
+            ShowWindow(g_hWnd, SW_SHOW);
+            UpdateWindow(g_hWnd);
+         }
       }
    }
 

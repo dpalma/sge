@@ -14,18 +14,14 @@
 #pragma once
 #endif
 
-typedef unsigned int GLenum;
-
 #ifdef HAVE_CG
-typedef enum CGprofile;
-typedef struct _CGcontext *CGcontext;
-typedef struct _CGprogram *CGprogram;
-typedef struct _CGparameter *CGparameter;
-typedef void (*CGerrorCallbackFunc)(void);
+#include <Cg/Cg.h>
 #endif
 
 F_DECLARE_INTERFACE(IDirect3DDevice9);
 F_DECLARE_INTERFACE(IDirect3DStateBlock9);
+
+F_DECLARE_INTERFACE(IReader);
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -75,17 +71,35 @@ public:
    virtual tResult Begin2D(int width, int height, IRender2D * * ppRender2D);
    virtual tResult End2D();
 
+   virtual tResult GetViewMatrix(float viewMatrix[16]) const;
+   virtual tResult SetViewMatrix(const float viewMatrix[16]);
+
+   virtual tResult GetProjectionMatrix(float projMatrix[16]) const;
+   virtual tResult SetProjectionMatrix(const float projMatrix[16]);
+
+   virtual tResult GetViewProjectionMatrix(float viewProjMatrix[16]) const;
+   virtual tResult GetViewProjectionInverseMatrix(float viewProjInvMatrix[16]) const;
+
+   virtual tResult ScreenToNormalizedDeviceCoords(int sx, int sy, float * pndx, float * pndy) const;
+   virtual tResult GeneratePickRay(float ndx, float ndy, cRay * pRay) const;
+
 private:
-   static void CgErrorCallback();
+#ifdef HAVE_CG
+   static void CgErrorHandler(CGcontext cgContext, CGerror cgError, void * pData);
+#endif
 
    bool m_bInScene;
 
    cAutoIPtr<IDirect3DDevice9> m_pD3dDevice;
 
 #ifdef HAVE_CG
+   friend void * CgProgramLoad(IReader * pReader, void * typeParam);
+   friend void * CgEffectLoad(IReader * pReader, void * typeParam);
+
    CGcontext m_cgContext;
-   CGerrorCallbackFunc m_oldCgErrorCallback;
-   CGprofile m_cgProfile;
+   CGerrorHandlerFunc m_oldCgErrorHandler;
+   void * m_pOldCgErrHandlerData;
+   CGprofile m_cgProfileVertex, m_cgProfileFragment;
 #endif
 
    sVertexElement m_vertexElements[kMaxVertexElements];

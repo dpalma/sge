@@ -47,7 +47,7 @@
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\glew\include,..\..\3rdparty\tinyxml,..\..\api"
-				PreprocessorDefinitions="NDEBUG;_USRDLL;PLATFORM_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC;HAVE_UNITTESTPP"
+				PreprocessorDefinitions="NDEBUG;_USRDLL;PLATFORM_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC;HAVE_UNITTESTPP;HAVE_DIRECTX"
 				StringPooling="true"
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="true"
@@ -141,7 +141,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\glew\include,..\..\3rdparty\tinyxml,..\..\api"
-				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,_USRDLL,PLATFORM_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL,GLEW_STATIC,HAVE_UNITTESTPP"
+				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,_USRDLL,PLATFORM_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL,GLEW_STATIC,HAVE_UNITTESTPP,HAVE_DIRECTX,D3D_DEBUG_INFO"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="2"
@@ -221,7 +221,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\glew\include,..\..\3rdparty\tinyxml,..\..\api"
-				PreprocessorDefinitions="_DEBUG;_USRDLL;PLATFORM_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC;HAVE_UNITTESTPP"
+				PreprocessorDefinitions="_DEBUG;_USRDLL;PLATFORM_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC;HAVE_UNITTESTPP;HAVE_DIRECTX;D3D_DEBUG_INFO"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"
@@ -314,7 +314,7 @@
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\glew\include,..\..\3rdparty\tinyxml,..\..\api"
-				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,_USRDLL,PLATFORM_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL,GLEW_STATIC"
+				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,_USRDLL,PLATFORM_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL,GLEW_STATIC,HAVE_DIRECTX"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -394,7 +394,7 @@
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\glew\include,..\..\3rdparty\tinyxml,..\..\api"
-				PreprocessorDefinitions="NDEBUG;_USRDLL;PLATFORM_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC"
+				PreprocessorDefinitions="NDEBUG;_USRDLL;PLATFORM_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC;HAVE_DIRECTX"
 				StringPooling="true"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -464,7 +464,7 @@
 	<Files>
 		<Filter
 			Name="Source Files"
-		   Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
 				RelativePath="..\..\platform\input.cpp"
@@ -569,7 +569,7 @@
 		</Filter>
 		<Filter
 			Name="Header Files"
-		   Filter="h;hpp;hxx;hm;inl"
+			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
 				RelativePath="..\..\platform\dll.h"

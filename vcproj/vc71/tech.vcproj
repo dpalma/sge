@@ -4,54 +4,28 @@
 	Version="7.10"
 	Name="tech"
 	ProjectGUID="{5B1DB8CD-0522-43C7-91B1-D558CA7520EB}"
-	RootNamespace="tech"
-	>
+	RootNamespace="tech">
 	<Platforms>
 		<Platform
-			Name="Win32"
-		/>
+			Name="Win32"/>
 	</Platforms>
-	<ToolFiles>
-	</ToolFiles>
 	<Configurations>
 		<Configuration
 			Name="Opt|Win32"
 			OutputDirectory=".\..\..\Build.vc71\Opt"
 			IntermediateDirectory=".\..\..\Build.vc71\Opt\tech"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="_DEBUG"
-				MkTypLibCompatible="true"
-				SuppressStartupBanner="true"
-				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc71\Opt/tech.tlb"
-			/>
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip,..\..\api"
 				PreprocessorDefinitions="_USRDLL;TECH_EXPORTS;STRICT;_WINDOWS;NDEBUG;WIN32;HAVE_UNITTESTPP"
-				StringPooling="true"
+				StringPooling="TRUE"
 				RuntimeLibrary="3"
-				EnableFunctionLevelLinking="true"
+				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
 				PrecompiledHeaderFile=".\..\..\Build.vc71\Opt\tech/tech.pch"
@@ -59,85 +33,60 @@
 				ObjectFile=".\..\..\Build.vc71\Opt\tech/"
 				ProgramDataBaseFileName=".\..\..\Build.vc71\Opt\tech/"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
+				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"
-				CompileAs="0"
-			/>
+				CompileAs="0"/>
 			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
+				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="advapi32.lib $(OutDir)\UnitTest++.lib $(OutDir)\zlibwapi.lib winmm.lib"
 				OutputFile=".\..\..\Build.vc71\Opt/tech.dll"
 				LinkIncremental="2"
-				SuppressStartupBanner="true"
+				SuppressStartupBanner="TRUE"
 				ModuleDefinitionFile="..\..\tech\tech.def"
-				GenerateDebugInformation="true"
+				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\..\..\Build.vc71\Opt/tech.pdb"
-				GenerateMapFile="true"
+				GenerateMapFile="TRUE"
 				MapFileName="..\..\Build.vc71\Opt/tech.map"
-				ImportLibrary=".\..\..\Build.vc71\Opt/tech.lib"
-			/>
+				ImportLibrary=".\..\..\Build.vc71\Opt/tech.lib"/>
 			<Tool
-				Name="VCALinkTool"
-			/>
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="TRUE"
+				SuppressStartupBanner="TRUE"
+				TargetEnvironment="1"
+				TypeLibraryName=".\..\..\Build.vc71\Opt/tech.tlb"/>
 			<Tool
-				Name="VCManifestTool"
-			/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
-				Name="VCXDCMakeTool"
-			/>
+				Name="VCPreBuildEventTool"/>
 			<Tool
-				Name="VCBscMakeTool"
-			/>
+				Name="VCPreLinkEventTool"/>
 			<Tool
-				Name="VCFxCopTool"
-			/>
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"/>
 			<Tool
-				Name="VCAppVerifierTool"
-			/>
+				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
-				Name="VCWebDeploymentTool"
-			/>
+				Name="VCXMLDataGeneratorTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-			/>
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="StaticDebug|Win32"
 			OutputDirectory=".\..\..\Build.vc71\StaticDebug"
 			IntermediateDirectory=".\..\..\Build.vc71\StaticDebug\tech"
 			ConfigurationType="4"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-			/>
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
@@ -152,80 +101,52 @@
 				ObjectFile=".\..\..\Build.vc71\StaticDebug\tech/"
 				ProgramDataBaseFileName=".\..\..\Build.vc71\StaticDebug\tech/"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
+				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="4"
-				CompileAs="0"
-			/>
+				CompileAs="0"/>
 			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
+				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
 				OutputFile=".\..\..\Build.vc71\StaticDebug\tech.lib"
-				SuppressStartupBanner="true"
-			/>
+				SuppressStartupBanner="TRUE"/>
 			<Tool
-				Name="VCALinkTool"
-			/>
+				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCXDCMakeTool"
-			/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
-				Name="VCBscMakeTool"
-			/>
+				Name="VCPreBuildEventTool"/>
 			<Tool
-				Name="VCFxCopTool"
-			/>
+				Name="VCPreLinkEventTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-			/>
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory=".\..\..\Build.vc71\Release"
 			IntermediateDirectory=".\..\..\Build.vc71\Release\tech"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="NDEBUG"
-				MkTypLibCompatible="true"
-				SuppressStartupBanner="true"
-				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc71\Release/tech.tlb"
-			/>
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip,..\..\api"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;TECH_EXPORTS;WIN32;_WINDOWS;STRICT"
-				StringPooling="true"
+				StringPooling="TRUE"
 				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="true"
+				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
 				PrecompiledHeaderFile=".\..\..\Build.vc71\Release\tech/tech.pch"
@@ -233,92 +154,67 @@
 				ObjectFile=".\..\..\Build.vc71\Release\tech/"
 				ProgramDataBaseFileName=".\..\..\Build.vc71\Release\tech/"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
-				CompileAs="0"
-			/>
+				SuppressStartupBanner="TRUE"
+				CompileAs="0"/>
 			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1033"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
+				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="advapi32.lib $(OutDir)\zlibwapi.lib winmm.lib"
 				OutputFile=".\..\..\Build.vc71\Release/tech.dll"
 				LinkIncremental="1"
-				SuppressStartupBanner="true"
+				SuppressStartupBanner="TRUE"
 				ModuleDefinitionFile="..\..\tech\tech.def"
 				ProgramDatabaseFile=".\..\..\Build.vc71\Release/tech.pdb"
-				GenerateMapFile="true"
+				GenerateMapFile="TRUE"
 				MapFileName="..\..\Build.vc71\Release/tech.map"
 				OptimizeReferences="2"
-				ImportLibrary=".\..\..\Build.vc71\Release/tech.lib"
-			/>
+				ImportLibrary=".\..\..\Build.vc71\Release/tech.lib"/>
 			<Tool
-				Name="VCALinkTool"
-			/>
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="TRUE"
+				SuppressStartupBanner="TRUE"
+				TargetEnvironment="1"
+				TypeLibraryName=".\..\..\Build.vc71\Release/tech.tlb"/>
 			<Tool
-				Name="VCManifestTool"
-			/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
-				Name="VCXDCMakeTool"
-			/>
+				Name="VCPreBuildEventTool"/>
 			<Tool
-				Name="VCBscMakeTool"
-			/>
+				Name="VCPreLinkEventTool"/>
 			<Tool
-				Name="VCFxCopTool"
-			/>
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1033"/>
 			<Tool
-				Name="VCAppVerifierTool"
-			/>
+				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
-				Name="VCWebDeploymentTool"
-			/>
+				Name="VCXMLDataGeneratorTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-			/>
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="StaticRelease|Win32"
 			OutputDirectory=".\..\..\Build.vc71\StaticRelease"
 			IntermediateDirectory=".\..\..\Build.vc71\StaticRelease\tech"
 			ConfigurationType="4"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-			/>
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip,..\..\api"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,_USRDLL,TECH_EXPORTS,WIN32,_WINDOWS,STRICT"
-				StringPooling="true"
+				StringPooling="TRUE"
 				RuntimeLibrary="0"
-				EnableFunctionLevelLinking="true"
+				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
 				PrecompiledHeaderFile=".\..\..\Build.vc71\StaticRelease\tech/tech.pch"
@@ -326,71 +222,43 @@
 				ObjectFile=".\..\..\Build.vc71\StaticRelease\tech/"
 				ProgramDataBaseFileName=".\..\..\Build.vc71\StaticRelease\tech/"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
-				CompileAs="0"
-			/>
+				SuppressStartupBanner="TRUE"
+				CompileAs="0"/>
 			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1033"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
+				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
 				OutputFile=".\..\..\Build.vc71\StaticRelease\tech.lib"
-				SuppressStartupBanner="true"
-			/>
+				SuppressStartupBanner="TRUE"/>
 			<Tool
-				Name="VCALinkTool"
-			/>
+				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCXDCMakeTool"
-			/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
-				Name="VCBscMakeTool"
-			/>
+				Name="VCPreBuildEventTool"/>
 			<Tool
-				Name="VCFxCopTool"
-			/>
+				Name="VCPreLinkEventTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-			/>
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1033"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory=".\..\..\Build.vc71\Debug"
 			IntermediateDirectory=".\..\..\Build.vc71\Debug\tech"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="_DEBUG"
-				MkTypLibCompatible="true"
-				SuppressStartupBanner="true"
-				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc71\Debug/tech.tlb"
-			/>
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
@@ -405,59 +273,51 @@
 				ObjectFile=".\..\..\Build.vc71\Debug\tech/"
 				ProgramDataBaseFileName=".\..\..\Build.vc71\Debug\tech/"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
+				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="4"
-				CompileAs="0"
-			/>
+				CompileAs="0"/>
 			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
+				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="advapi32.lib $(OutDir)\UnitTest++.lib $(OutDir)\zlibwapi.lib winmm.lib"
 				OutputFile=".\..\..\Build.vc71\Debug/tech.dll"
 				LinkIncremental="2"
-				SuppressStartupBanner="true"
+				SuppressStartupBanner="TRUE"
 				ModuleDefinitionFile="..\..\tech\tech.def"
-				GenerateDebugInformation="true"
+				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\..\..\Build.vc71\Debug/tech.pdb"
-				GenerateMapFile="true"
+				GenerateMapFile="TRUE"
 				MapFileName="..\..\Build.vc71\Debug/tech.map"
-				ImportLibrary=".\..\..\Build.vc71\Debug/tech.lib"
-			/>
+				ImportLibrary=".\..\..\Build.vc71\Debug/tech.lib"/>
 			<Tool
-				Name="VCALinkTool"
-			/>
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="TRUE"
+				SuppressStartupBanner="TRUE"
+				TargetEnvironment="1"
+				TypeLibraryName=".\..\..\Build.vc71\Debug/tech.tlb"/>
 			<Tool
-				Name="VCManifestTool"
-			/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
-				Name="VCXDCMakeTool"
-			/>
+				Name="VCPreBuildEventTool"/>
 			<Tool
-				Name="VCBscMakeTool"
-			/>
+				Name="VCPreLinkEventTool"/>
 			<Tool
-				Name="VCFxCopTool"
-			/>
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"/>
 			<Tool
-				Name="VCAppVerifierTool"
-			/>
+				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
-				Name="VCWebDeploymentTool"
-			/>
+				Name="VCXMLDataGeneratorTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-			/>
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 	</Configurations>
 	<References>
@@ -465,560 +325,424 @@
 	<Files>
 		<Filter
 			Name="Source Files"
-			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
-			>
+			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 			<File
-				RelativePath="..\..\tech\bmp.cpp"
-				>
+				RelativePath="..\..\tech\bmp.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\color.cpp"
-				>
+				RelativePath="..\..\tech\color.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\comtools.cpp"
-				>
+				RelativePath="..\..\tech\comtools.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\config.cpp"
-				>
+				RelativePath="..\..\tech\config.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\cpufeatures.cpp"
-				>
+				RelativePath="..\..\tech\cpufeatures.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\dictionary.cpp"
-				>
+				RelativePath="..\..\tech\dictionary.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\dictionarystore.cpp"
-				>
+				RelativePath="..\..\tech\dictionarystore.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\dictregstore.cpp"
-				>
+				RelativePath="..\..\tech\dictregstore.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\fileenum.cpp"
-				>
+				RelativePath="..\..\tech\fileenum.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\filepath.cpp"
-				>
+				RelativePath="..\..\tech\filepath.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\filespec.cpp"
-				>
+				RelativePath="..\..\tech\filespec.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\frustum.cpp"
-				>
+				RelativePath="..\..\tech\frustum.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\functor.cpp"
-				>
+				RelativePath="..\..\tech\functor.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\globalobjreg.cpp"
-				>
+				RelativePath="..\..\tech\globalobjreg.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\hash.cpp"
-				>
+				RelativePath="..\..\tech\hash.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\hashtbltest.cpp"
-				>
+				RelativePath="..\..\tech\hashtbltest.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\image.cpp"
-				>
+				RelativePath="..\..\tech\image.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\matrix3.cpp"
-				>
+				RelativePath="..\..\tech\matrix3.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\matrix4.cpp"
-				>
+				RelativePath="..\..\tech\matrix4.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\md5.c"
-				>
+				RelativePath="..\..\tech\md5.c">
 				<FileConfiguration
-					Name="Opt|Win32"
-					>
+					Name="Opt|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
+						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="StaticDebug|Win32"
-					>
+					Name="StaticDebug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
+						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
-					>
+					Name="Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
+						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="StaticRelease|Win32"
-					>
+					Name="StaticRelease|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
+						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|Win32"
-					>
+					Name="Debug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
+						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\tech\multivar.cpp"
-				>
+				RelativePath="..\..\tech\multivar.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\quat.cpp"
-				>
+				RelativePath="..\..\tech\quat.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\ray.cpp"
-				>
+				RelativePath="..\..\tech\ray.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\readwritefile.cpp"
-				>
+				RelativePath="..\..\tech\readwritefile.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\readwritemd5.cpp"
-				>
+				RelativePath="..\..\tech\readwritemd5.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\readwritemem.cpp"
-				>
+				RelativePath="..\..\tech\readwritemem.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\readwriteutils.cpp"
-				>
+				RelativePath="..\..\tech\readwriteutils.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\resourceformat.cpp"
-				>
+				RelativePath="..\..\tech\resourceformat.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\resourcemanager.cpp"
-				>
+				RelativePath="..\..\tech\resourcemanager.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\resourcestore.cpp"
-				>
+				RelativePath="..\..\tech\resourcestore.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\resourceutils.cpp"
-				>
+				RelativePath="..\..\tech\resourceutils.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\scheduler.cpp"
-				>
+				RelativePath="..\..\tech\scheduler.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\schedulerclock.cpp"
-				>
+				RelativePath="..\..\tech\schedulerclock.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\statemachinetest.cpp"
-				>
+				RelativePath="..\..\tech\statemachinetest.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\stdhdr.cpp"
-				>
+				RelativePath="..\..\tech\stdhdr.cpp">
 				<FileConfiguration
-					Name="Opt|Win32"
-					>
+					Name="Opt|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"
-					/>
+						UsePrecompiledHeader="1"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="StaticDebug|Win32"
-					>
+					Name="StaticDebug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"
-					/>
+						UsePrecompiledHeader="1"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
-					>
+					Name="Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"
-					/>
+						UsePrecompiledHeader="1"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="StaticRelease|Win32"
-					>
+					Name="StaticRelease|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"
-					/>
+						UsePrecompiledHeader="1"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|Win32"
-					>
+					Name="Debug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"
-					/>
+						UsePrecompiledHeader="1"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\tech\tech.def"
-				>
+				RelativePath="..\..\tech\tech.def">
 			</File>
 			<File
-				RelativePath="..\..\tech\techassert.cpp"
-				>
+				RelativePath="..\..\tech\techassert.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\techhash.cpp"
-				>
+				RelativePath="..\..\tech\techhash.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\techlog.cpp"
-				>
+				RelativePath="..\..\tech\techlog.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\techmath.cpp"
-				>
+				RelativePath="..\..\tech\techmath.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\techstring.cpp"
-				>
+				RelativePath="..\..\tech\techstring.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\techtest.cpp"
-				>
+				RelativePath="..\..\tech\techtest.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\techtime.cpp"
-				>
+				RelativePath="..\..\tech\techtime.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\text.cpp"
-				>
+				RelativePath="..\..\tech\text.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\tga.cpp"
-				>
+				RelativePath="..\..\tech\tga.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\thread.cpp"
-				>
+				RelativePath="..\..\tech\thread.cpp">
 			</File>
 			<File
-				RelativePath="..\..\tech\threadcaller.cpp"
-				>
+				RelativePath="..\..\tech\threadcaller.cpp">
 			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl"
-			>
+			Filter="h;hpp;hxx;hm;inl">
 			<File
-				RelativePath="..\..\tech\dictionary.h"
-				>
+				RelativePath="..\..\tech\dictionary.h">
 			</File>
 			<File
-				RelativePath="..\..\tech\dictionarystore.h"
-				>
+				RelativePath="..\..\tech\dictionarystore.h">
 			</File>
 			<File
-				RelativePath="..\..\tech\dictregstore.h"
-				>
+				RelativePath="..\..\tech\dictregstore.h">
 			</File>
 			<File
-				RelativePath="..\..\tech\hashtbl.h"
-				>
+				RelativePath="..\..\tech\hashtbl.h">
 			</File>
 			<File
-				RelativePath="..\..\tech\hashtbltem.h"
-				>
+				RelativePath="..\..\tech\hashtbltem.h">
 			</File>
 			<File
-				RelativePath="..\..\tech\image.h"
-				>
+				RelativePath="..\..\tech\image.h">
 			</File>
 			<File
-				RelativePath="..\..\tech\md5.h"
-				>
+				RelativePath="..\..\tech\md5.h">
 			</File>
 			<File
-				RelativePath="..\..\tech\readwritefile.h"
-				>
+				RelativePath="..\..\tech\readwritefile.h">
 			</File>
 			<File
-				RelativePath="..\..\tech\readwritemd5.h"
-				>
+				RelativePath="..\..\tech\readwritemd5.h">
 			</File>
 			<File
-				RelativePath="..\..\tech\readwritemem.h"
-				>
+				RelativePath="..\..\tech\readwritemem.h">
 			</File>
 			<File
-				RelativePath="..\..\tech\resourceformat.h"
-				>
+				RelativePath="..\..\tech\resourceformat.h">
 			</File>
 			<File
-				RelativePath="..\..\tech\resourcemanager.h"
-				>
+				RelativePath="..\..\tech\resourcemanager.h">
 			</File>
 			<File
-				RelativePath="..\..\tech\resourcestore.h"
-				>
+				RelativePath="..\..\tech\resourcestore.h">
 			</File>
 			<File
-				RelativePath="..\..\tech\resourceutils.h"
-				>
+				RelativePath="..\..\tech\resourceutils.h">
 			</File>
 			<File
-				RelativePath="..\..\tech\scheduler.h"
-				>
+				RelativePath="..\..\tech\scheduler.h">
 			</File>
 			<File
-				RelativePath="..\..\tech\schedulerclock.h"
-				>
+				RelativePath="..\..\tech\schedulerclock.h">
 			</File>
 			<File
-				RelativePath="..\..\tech\stdhdr.h"
-				>
+				RelativePath="..\..\tech\stdhdr.h">
 			</File>
 			<File
-				RelativePath="..\..\tech\threadcaller.h"
-				>
+				RelativePath="..\..\tech\threadcaller.h">
 			</File>
 		</Filter>
 		<Filter
-			Name="API"
-			>
+			Name="API">
 			<File
-				RelativePath="..\..\api\tech\axisalignedbox.h"
-				>
+				RelativePath="..\..\api\tech\axisalignedbox.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\color.h"
-				>
+				RelativePath="..\..\api\tech\color.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\combase.h"
-				>
+				RelativePath="..\..\api\tech\combase.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\comenum.h"
-				>
+				RelativePath="..\..\api\tech\comenum.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\comtools.h"
-				>
+				RelativePath="..\..\api\tech\comtools.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\configapi.h"
-				>
+				RelativePath="..\..\api\tech\configapi.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\connpt.h"
-				>
+				RelativePath="..\..\api\tech\connpt.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\connptimpl.h"
-				>
+				RelativePath="..\..\api\tech\connptimpl.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\cpufeatures.h"
-				>
+				RelativePath="..\..\api\tech\cpufeatures.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\dbgalloc.h"
-				>
+				RelativePath="..\..\api\tech\dbgalloc.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\dictionaryapi.h"
-				>
+				RelativePath="..\..\api\tech\dictionaryapi.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\digraph.h"
-				>
+				RelativePath="..\..\api\tech\digraph.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\fileenum.h"
-				>
+				RelativePath="..\..\api\tech\fileenum.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\filepath.h"
-				>
+				RelativePath="..\..\api\tech\filepath.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\filespec.h"
-				>
+				RelativePath="..\..\api\tech\filespec.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\frustum.h"
-				>
+				RelativePath="..\..\api\tech\frustum.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\functor.h"
-				>
+				RelativePath="..\..\api\tech\functor.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\globalobj.h"
-				>
+				RelativePath="..\..\api\tech\globalobj.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\globalobjdef.h"
-				>
+				RelativePath="..\..\api\tech\globalobjdef.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\hashtable.h"
-				>
+				RelativePath="..\..\api\tech\hashtable.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\hashtabletem.h"
-				>
+				RelativePath="..\..\api\tech\hashtabletem.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\imageapi.h"
-				>
+				RelativePath="..\..\api\tech\imageapi.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\matrix3.h"
-				>
+				RelativePath="..\..\api\tech\matrix3.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\matrix34.h"
-				>
+				RelativePath="..\..\api\tech\matrix34.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\matrix4.h"
-				>
+				RelativePath="..\..\api\tech\matrix4.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\multivar.h"
-				>
+				RelativePath="..\..\api\tech\multivar.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\quat.h"
-				>
+				RelativePath="..\..\api\tech\plane.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\ray.h"
-				>
+				RelativePath="..\..\api\tech\quat.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\readwriteapi.h"
-				>
+				RelativePath="..\..\api\tech\ray.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\readwriteutils.h"
-				>
+				RelativePath="..\..\api\tech\readwriteapi.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\rect.h"
-				>
+				RelativePath="..\..\api\tech\readwriteutils.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\resourceapi.h"
-				>
+				RelativePath="..\..\api\tech\rect.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\schedulerapi.h"
-				>
+				RelativePath="..\..\api\tech\resourceapi.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\statemachine.h"
-				>
+				RelativePath="..\..\api\tech\schedulerapi.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\statemachinetem.h"
-				>
+				RelativePath="..\..\api\tech\statemachine.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\techassert.h"
-				>
+				RelativePath="..\..\api\tech\statemachinetem.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\techdll.h"
-				>
+				RelativePath="..\..\api\tech\techassert.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\techguids.h"
-				>
+				RelativePath="..\..\api\tech\techdll.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\techhash.h"
-				>
+				RelativePath="..\..\api\tech\techguids.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\techlog.h"
-				>
+				RelativePath="..\..\api\tech\techhash.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\techmath.h"
-				>
+				RelativePath="..\..\api\tech\techlog.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\techstring.h"
-				>
+				RelativePath="..\..\api\tech\techmath.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\techtime.h"
-				>
+				RelativePath="..\..\api\tech\techstring.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\techtypes.h"
-				>
+				RelativePath="..\..\api\tech\techtime.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\thread.h"
-				>
+				RelativePath="..\..\api\tech\techtypes.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\threadcallapi.h"
-				>
+				RelativePath="..\..\api\tech\thread.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\toposort.h"
-				>
+				RelativePath="..\..\api\tech\threadcallapi.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\undbgalloc.h"
-				>
+				RelativePath="..\..\api\tech\toposort.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\vec2.h"
-				>
+				RelativePath="..\..\api\tech\undbgalloc.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\vec3.h"
-				>
+				RelativePath="..\..\api\tech\vec2.h">
 			</File>
 			<File
-				RelativePath="..\..\api\tech\vec4.h"
-				>
+				RelativePath="..\..\api\tech\vec3.h">
+			</File>
+			<File
+				RelativePath="..\..\api\tech\vec4.h">
 			</File>
 		</Filter>
 	</Files>
