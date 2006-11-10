@@ -100,6 +100,8 @@ interface IEntityRenderComponent : IEntityComponent
    virtual tResult SetAnimation(eModelAnimationType type) = 0;
 };
 
+ENGINE_API tResult EntityCreateRenderComponent(const tChar * pszModel, IEntityRenderComponent * * ppRenderComponent);
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //

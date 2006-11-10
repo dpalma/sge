@@ -411,7 +411,26 @@ tResult cEntityRenderComponent::SetAnimation(eModelAnimationType type)
    return m_mainModel.SetAnimation(type);
 }
 
-///////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+tResult EntityCreateRenderComponent(const tChar * pszModel, IEntityRenderComponent * * ppRenderComponent)
+{
+   if (pszModel == NULL || ppRenderComponent == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cAutoIPtr<IEntityRenderComponent> pRenderComponent(
+      static_cast<IEntityRenderComponent*>(new cEntityRenderComponent(pszModel)));
+   if (!pRenderComponent)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   return pRenderComponent.GetPointer(ppRenderComponent);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 
 tResult EntityRenderComponentFactory(const TiXmlElement * pTiXmlElement,
                                      IEntity * pEntity, void * pUser,

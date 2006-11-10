@@ -35,6 +35,8 @@ public:
 
    T GetVolume() const;
 
+   T GetBiggestDimension() const;
+
    bool IsEmpty() const; // Zero length in at least one dimension? (In other words, volume is zero)
 
    bool Intersects(const cAxisAlignedBox & other, cAxisAlignedBox * pIntersection = NULL) const;
@@ -124,6 +126,15 @@ T cAxisAlignedBox<T>::GetVolume() const
    return (m_maxs.x - m_mins.x)
       * (m_maxs.y - m_mins.y)
       * (m_maxs.z - m_mins.z);
+}
+
+////////////////////////////////////////
+
+template <typename T>
+T cAxisAlignedBox<T>::GetBiggestDimension() const
+{
+   float dimX = (m_maxs.x - m_mins.x), dimY = (m_maxs.y - m_mins.y), dimZ = (m_maxs.z - m_mins.z);
+   return Max(dimX, Max(dimY, dimZ));
 }
 
 ////////////////////////////////////////

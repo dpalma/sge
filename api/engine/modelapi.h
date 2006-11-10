@@ -8,8 +8,6 @@
 
 #include "tech/comtools.h"
 
-//#include "render/renderapi.h"
-
 #include "tech/matrix4.h"
 #include "tech/matrix34.h"
 #include "tech/quat.h"
