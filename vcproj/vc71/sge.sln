@@ -87,6 +87,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "platform", "platform.vcproj
 		{5B1DB8CD-0522-43C7-91B1-D558CA7520EB} = {5B1DB8CD-0522-43C7-91B1-D558CA7520EB}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "server", "server.vcproj", "{D1B49CFE-7998-42D9-A1EB-5E2714328FDC}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7C83A916-1E79-4880-BA04-0BBCA531129C} = {7C83A916-1E79-4880-BA04-0BBCA531129C}
+		{F1334822-5BBB-495B-AD67-0F8D7D2A02C9} = {F1334822-5BBB-495B-AD67-0F8D7D2A02C9}
+		{5B1DB8CD-0522-43C7-91B1-D558CA7520EB} = {5B1DB8CD-0522-43C7-91B1-D558CA7520EB}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -216,6 +223,16 @@ Global
 		{161217D6-49DF-4F64-A55F-1C7D9E0ACEBD}.StaticDebug.Build.0 = StaticDebug|Win32
 		{161217D6-49DF-4F64-A55F-1C7D9E0ACEBD}.StaticRelease.ActiveCfg = StaticRelease|Win32
 		{161217D6-49DF-4F64-A55F-1C7D9E0ACEBD}.StaticRelease.Build.0 = StaticRelease|Win32
+		{D1B49CFE-7998-42D9-A1EB-5E2714328FDC}.Debug.ActiveCfg = Debug|Win32
+		{D1B49CFE-7998-42D9-A1EB-5E2714328FDC}.Debug.Build.0 = Debug|Win32
+		{D1B49CFE-7998-42D9-A1EB-5E2714328FDC}.Opt.ActiveCfg = Opt|Win32
+		{D1B49CFE-7998-42D9-A1EB-5E2714328FDC}.Opt.Build.0 = Opt|Win32
+		{D1B49CFE-7998-42D9-A1EB-5E2714328FDC}.Release.ActiveCfg = Release|Win32
+		{D1B49CFE-7998-42D9-A1EB-5E2714328FDC}.Release.Build.0 = Release|Win32
+		{D1B49CFE-7998-42D9-A1EB-5E2714328FDC}.StaticDebug.ActiveCfg = StaticDebug|Win32
+		{D1B49CFE-7998-42D9-A1EB-5E2714328FDC}.StaticDebug.Build.0 = StaticDebug|Win32
+		{D1B49CFE-7998-42D9-A1EB-5E2714328FDC}.StaticRelease.ActiveCfg = StaticRelease|Win32
+		{D1B49CFE-7998-42D9-A1EB-5E2714328FDC}.StaticRelease.Build.0 = StaticRelease|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection
