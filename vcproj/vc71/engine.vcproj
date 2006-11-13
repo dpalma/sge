@@ -504,6 +504,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\engine\heightmap.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\engine\model.cpp"
 				>
 			</File>
