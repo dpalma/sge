@@ -8,8 +8,6 @@
 #include "comtools.h"
 #include "globalobj.h"
 
-#include <vector>
-
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -52,8 +50,6 @@ private:
    eBeforeAfter m_beforeAfter;
 };
 
-typedef std::vector<cBeforeAfterConstraint> tBeforeAfterConstraints;
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -66,7 +62,7 @@ interface IGlobalObject : IUnknown
    virtual tResult Term() = 0;
 
    virtual const tChar * GetName() const = 0;
-   virtual size_t GetConstraints(tBeforeAfterConstraints * pConstraints) const = 0;
+   virtual tResult GetConstraints(const cBeforeAfterConstraint * * ppConstraints, size_t * pnConstraints) const = 0;
 };
 
 ///////////////////////////////////////
@@ -88,20 +84,20 @@ interface IGlobalObject : IUnknown
 ///////////////////////////////////////
 
 #define DECLARE_NO_CONSTRAINTS() \
-   virtual size_t GetConstraints(tBeforeAfterConstraints *) const \
+   virtual tResult GetConstraints(const cBeforeAfterConstraint * * ppConstraints, size_t * pnConstraints) const \
    { \
-      return 0; \
+      return E_NOTIMPL; \
    }
 
 ///////////////////////////////////////
 
 #define DECLARE_CONSTRAINTS() \
-   virtual size_t GetConstraints(tBeforeAfterConstraints * pConstraints) const;
+   virtual tResult GetConstraints(const cBeforeAfterConstraint * * ppConstraints, size_t * pnConstraints) const;
 
 ///////////////////////////////////////
 
 #define BEGIN_CONSTRAINTS(GlobalObjectClass) \
-   size_t GlobalObjectClass::GetConstraints(tBeforeAfterConstraints * pConstraints) const \
+   tResult GlobalObjectClass::GetConstraints(const cBeforeAfterConstraint * * ppConstraints, size_t * pnConstraints) const \
    { \
       static cBeforeAfterConstraint constraints[] = { \
 
@@ -123,10 +119,11 @@ interface IGlobalObject : IUnknown
 
 #define END_CONSTRAINTS() \
       }; \
-      if (pConstraints != NULL) \
-         for (int i = 0; i < _countof(constraints); i++) \
-            pConstraints->push_back(constraints[i]); \
-      return _countof(constraints); \
+      if (ppConstraints == NULL || pnConstraints == NULL) \
+         return E_POINTER; \
+      *ppConstraints = &constraints[0]; \
+      *pnConstraints = _countof(constraints); \
+      return S_OK; \
    }
 
 ///////////////////////////////////////////////////////////////////////////////

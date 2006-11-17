@@ -332,30 +332,31 @@ void cGlobalObjectRegistry::BuildConstraintGraph(tConstraintGraph * pGraph)
       cAutoIPtr<IGlobalObject> pGlobalObj;
       Verify(SUCCEEDED(iter->second->QueryInterface(IID_IGlobalObject, (void**)&pGlobalObj)));
 
-      tBeforeAfterConstraints constraints;
-      if (pGlobalObj->GetConstraints(&constraints) > 0)
+      const cBeforeAfterConstraint * pConstraints = NULL;
+      size_t nConstraints = 0;
+      if (pGlobalObj->GetConstraints(&pConstraints, &nConstraints) == S_OK && nConstraints > 0)
       {
-         tBeforeAfterConstraints::iterator citer;
-         for (citer = constraints.begin(); citer != constraints.end(); citer++)
+         const cBeforeAfterConstraint * pConstraint = pConstraints;
+         for (uint i = 0; i < nConstraints; ++i, ++pConstraint)
          {
             const GUID * pTargetGuid = NULL;
 
-            if (citer->GetGuid() != NULL)
+            if (pConstraint->GetGuid() != NULL)
             {
-               cAutoIPtr<IUnknown> pTargetUnk(Lookup(*(citer->GetGuid())));
+               cAutoIPtr<IUnknown> pTargetUnk(Lookup(*(pConstraint->GetGuid())));
                if (!!pTargetUnk)
                {
-                  pTargetGuid = citer->GetGuid();
+                  pTargetGuid = pConstraint->GetGuid();
                }
             }
-            else if (citer->GetName() != NULL)
+            else if (pConstraint->GetName() != NULL)
             {
-               LookupByName(citer->GetName(), NULL, &pTargetGuid);
+               LookupByName(pConstraint->GetName(), NULL, &pTargetGuid);
             }
 
             if (pTargetGuid != NULL)
             {
-               if (citer->Before())
+               if (pConstraint->Before())
                {
                   pGraph->insert_edge(iter->first, pTargetGuid, 0);
                }
