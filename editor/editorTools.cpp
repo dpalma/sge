@@ -17,8 +17,6 @@
 #include "tech/globalobj.h"
 #include "tech/ray.h"
 
-#include <GL/glew.h>
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE

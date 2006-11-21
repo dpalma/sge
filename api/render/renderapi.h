@@ -130,6 +130,9 @@ interface IRenderer : IUnknown
    virtual tResult GetViewProjectionMatrix(float viewProjMatrix[16]) const = 0;
    virtual tResult GetViewProjectionInverseMatrix(float viewProjInvMatrix[16]) const = 0;
 
+   virtual tResult PushMatrix(const float matrix[16]) = 0;
+   virtual tResult PopMatrix() = 0;
+
    virtual tResult ScreenToNormalizedDeviceCoords(int sx, int sy, float * pndx, float * pndy) const = 0;
    virtual tResult GeneratePickRay(float ndx, float ndy, cRay * pRay) const = 0;
 

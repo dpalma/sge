@@ -80,6 +80,9 @@ public:
    virtual tResult GetViewProjectionMatrix(float viewProjMatrix[16]) const;
    virtual tResult GetViewProjectionInverseMatrix(float viewProjInvMatrix[16]) const;
 
+   virtual tResult PushMatrix(const float matrix[16]);
+   virtual tResult PopMatrix();
+
    virtual tResult ScreenToNormalizedDeviceCoords(int sx, int sy, float * pndx, float * pndy) const;
    virtual tResult GeneratePickRay(float ndx, float ndy, cRay * pRay) const;
 

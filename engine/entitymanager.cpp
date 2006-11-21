@@ -19,8 +19,6 @@
 
 #include <tinyxml.h>
 
-#include <GL/glew.h>
-
 #include <algorithm>
 
 #include "tech/dbgalloc.h" // must be last header
@@ -226,17 +224,19 @@ void cEntityManager::RemoveAll()
 
 void cEntityManager::RenderAll()
 {
-   tEntityList::iterator iter = m_entities.begin();
-   for (; iter != m_entities.end(); iter++)
+   UseGlobal(Renderer);
+
+   tEntityList::iterator iter = m_entities.begin(), end = m_entities.end();
+   for (; iter != end; ++iter)
    {
       cAutoIPtr<IEntity> pEntity(CTAddRef(*iter));
 
-      glPushMatrix();
-
+      bool bPopMatrix = false;
       cAutoIPtr<IEntityPositionComponent> pPosition;
       if (pEntity->GetComponent(kECT_Position, IID_IEntityPositionComponent, &pPosition) == S_OK)
       {
-         glMultMatrixf(pPosition->GetWorldTransform().m);
+         pRenderer->PushMatrix(pPosition->GetWorldTransform().m);
+         bPopMatrix = true;
       }
 
       cAutoIPtr<IEntityRenderComponent> pRender;
@@ -256,7 +256,10 @@ void cEntityManager::RenderAll()
          }
       }
 
-      glPopMatrix();
+      if (bPopMatrix)
+      {
+         pRenderer->PopMatrix();
+      }
    }
 }
 

@@ -866,6 +866,32 @@ tResult cRendererGL::GetViewProjectionInverseMatrix(float viewProjInvMatrix[16])
 
 ////////////////////////////////////////
 
+tResult cRendererGL::PushMatrix(const float matrix[16])
+{
+   if (matrix == NULL)
+   {
+      return E_POINTER;
+   }
+
+   glPushMatrix();
+   glMultMatrixf(matrix);
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cRendererGL::PopMatrix()
+{
+   glPopMatrix();
+#ifdef _DEBUG
+   return (glGetError() == GL_NO_ERROR) ? S_OK : E_FAIL;
+#else
+   return S_OK;
+#endif
+}
+
+////////////////////////////////////////
+
 tResult cRendererGL::ScreenToNormalizedDeviceCoords(int sx, int sy, float * pndx, float * pndy) const
 {
    if (pndx == NULL || pndy == NULL)

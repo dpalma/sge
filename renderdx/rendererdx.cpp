@@ -663,6 +663,20 @@ tResult cRendererDX::GetViewProjectionInverseMatrix(float viewProjInvMatrix[16])
 
 ////////////////////////////////////////
 
+tResult cRendererDX::PushMatrix(const float matrix[16])
+{
+   return E_NOTIMPL;
+}
+
+////////////////////////////////////////
+
+tResult cRendererDX::PopMatrix()
+{
+   return E_NOTIMPL;
+}
+
+////////////////////////////////////////
+
 tResult cRendererDX::ScreenToNormalizedDeviceCoords(int sx, int sy, float * pndx, float * pndy) const
 {
    return E_NOTIMPL;
