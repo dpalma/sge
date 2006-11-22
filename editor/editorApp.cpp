@@ -10,16 +10,15 @@
 #include "MainFrm.h"
 #include "aboutdlg.h"
 #include "BitmapUtils.h"
-#include "engine/terrainapi.h"
 #include "ScriptCmdDlg.h"
 
 #include "engine/cameraapi.h"
 #include "engine/engineapi.h"
 #include "engine/entityapi.h"
+#include "engine/saveloadapi.h"
+#include "engine/terrainapi.h"
 #include "platform/inputapi.h"
 #include "render/renderapi.h"
-#include "engine/saveloadapi.h"
-#include "tech/schedulerapi.h"
 #include "script/scriptapi.h"
 #include "platform/sys.h"
 
@@ -32,6 +31,7 @@
 #include "tech/filepath.h"
 #include "tech/threadcallapi.h"
 #include "tech/imageapi.h"
+#include "tech/schedulerapi.h"
 
 #include <algorithm>
 
@@ -162,8 +162,15 @@ static void RegisterGlobalObjects()
    SchedulerCreate();
    ScriptInterpreterCreate();
    RendererCreate();
-   TerrainModelCreate();
-   TerrainRendererCreateForEditor();
+   if (ConfigIsTrue("use_geomipmap_terrain"))
+   {
+      GMMTerrainCreate();
+   }
+   else
+   {
+      TerrainModelCreate();
+      TerrainRendererCreateForEditor();
+   }
    ThreadCallerCreate();
 }
 
@@ -196,6 +203,8 @@ BOOL cEditorApp::InitInstance()
 	SetRegistryKey(g_szRegistryKey);
 
 	LoadStdProfileSettings();  // Load standard INI file options (including MRU)
+
+   ::ParseCommandLine(__argc, __targv, g_pConfig);
 
    RegisterGlobalObject(IID_IEditorApp, static_cast<IGlobalObject*>(this));
    RegisterGlobalObjects();
@@ -408,26 +417,9 @@ void cEditorApp::ParseCommandLine(CCommandLineInfo& rCmdInfo)
    for (int i = 1; i < __argc; i++)
    {
       const tChar * pszParam = __targv[i];
-      if (pszParam[0] == '-')
+      if (pszParam[0] == '-' || pszParam[0] == '+')
       {
-         g_pConfig->Delete(++pszParam);
-      }
-      else if (pszParam[0] == '+')
-      {
-         ++pszParam;
-         const tChar * pszEq = _tcschr(pszParam, _T('='));
-         if (pszEq != NULL)
-         {
-            CString key(pszParam, pszEq - pszParam);
-            key.Trim();
-            CString value(++pszEq);
-            value.Trim();
-            g_pConfig->Set(key, value);
-         }
-         else
-         {
-            g_pConfig->Set(pszParam, "1");
-         }
+         continue;
       }
       else
       {

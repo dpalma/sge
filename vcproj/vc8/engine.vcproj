@@ -504,6 +504,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\engine\geomipmap.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\engine\heightmap.cpp"
 				>
 			</File>
@@ -626,6 +630,10 @@
 			</File>
 			<File
 				RelativePath="..\..\engine\entitymanager.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\engine\geomipmap.h"
 				>
 			</File>
 			<File

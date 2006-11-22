@@ -484,10 +484,13 @@ void * ModelMs3dLoad(IReader * pReader)
    }
 
    cAutoIPtr<IModelSkeleton> pSkeleton;
-   if (ModelSkeletonCreate(&joints[0], joints.size(), &pSkeleton) != S_OK)
+   if (!joints.empty())
    {
-      ErrorMsg("Failed to create skeleton for model\n");
-      return NULL;
+      if (ModelSkeletonCreate(&joints[0], joints.size(), &pSkeleton) != S_OK)
+      {
+         ErrorMsg("Failed to create skeleton for model\n");
+         return NULL;
+      }
    }
 
    //////////////////////////////

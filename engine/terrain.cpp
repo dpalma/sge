@@ -231,14 +231,9 @@ float cTerrainSettings::GetHeightMapScale() const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-template <>
-class cReadWriteOps<cTerrainSettings>
-{
-public:
-   static tResult Read(IReader * pReader, cTerrainSettings * pTerrainSettings);
-   static tResult Write(IWriter * pWriter, const cTerrainSettings & terrainSettings);
-};
+//
+// CLASS: cReadWriteOps<cTerrainSettings>
+//
 
 ////////////////////////////////////////
 

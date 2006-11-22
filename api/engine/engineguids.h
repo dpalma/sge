@@ -122,6 +122,10 @@ DEFINE_GUID(SAVELOADID_TerrainModel,
 DEFINE_GUID(SAVELOADID_CameraControl, 
 0x9a3c6683, 0x95d7, 0x45e6, 0xbb, 0x31, 0xe0, 0xf5, 0xcd, 0x2e, 0x25, 0xa9);
 
+// {477843CF-D71F-450f-806C-38C3EC1852BA}
+DEFINE_GUID(SAVELOADID_GMMTerrain, 
+0x477843cf, 0xd71f, 0x450f, 0x80, 0x6c, 0x38, 0xc3, 0xec, 0x18, 0x52, 0xba);
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #endif // !INCLUDED_ENGINEGUIDS_H

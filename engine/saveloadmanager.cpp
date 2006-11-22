@@ -361,7 +361,12 @@ tResult cSaveLoadManager::RegisterSaveLoadParticipant(REFGUID id,
 
    // All participants are put into the constraint graph. Only those with
    // constraints will have edges, though.
-   Verify(m_saveOrderConstraintGraph.insert(&id).second);
+   if (!m_saveOrderConstraintGraph.insert(&id).second)
+   {
+      cStr strId;
+      WarnMsg1("Save/Load participant with GUID %s already registered\n", GUIDToString(id, &strId).c_str());
+      return S_FALSE;
+   }
 
    if (pConstraints != NULL && nConstraints > 0)
    {

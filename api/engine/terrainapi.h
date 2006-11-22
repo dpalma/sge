@@ -32,6 +32,11 @@ class cRay;
 
 
 /////////////////////////////////////////////////////////////////////////////
+
+ENGINE_API tResult GMMTerrainCreate();
+
+
+/////////////////////////////////////////////////////////////////////////////
 //
 // INTERFACE: ITerrainRenderer
 //
@@ -135,6 +140,16 @@ private:
    eTerrainHeightData m_heightData;
    cStr m_heightMap;
    float m_heightMapScale;
+};
+
+////////////////////////////////////////
+
+template <>
+class ENGINE_API cReadWriteOps<cTerrainSettings>
+{
+public:
+   static tResult Read(IReader * pReader, cTerrainSettings * pTerrainSettings);
+   static tResult Write(IWriter * pWriter, const cTerrainSettings & terrainSettings);
 };
 
 
