@@ -110,7 +110,7 @@ public:
    virtual IUnknown * Lookup(REFGUID iid);
 
    virtual tResult InitAll();
-   virtual tResult TermAll();
+   virtual void TermAll();
 
 private:
    bool LookupByName(const tChar * pszName, IUnknown * * ppUnk, const GUID * * ppGuid) const;
@@ -201,56 +201,105 @@ tResult cGlobalObjectRegistry::InitAll()
    cTopoSorter<tConstraintGraph::node_type> sorter(&m_initOrder);
    constraintGraph.topological_sort(sorter);
 
+   // A global object may register itself more than once to provide separate
+   // interfaces. Such objects will show up more than once in m_initOrder.
+   // This set keeps track of the identity IUnknown* pointers of the objects
+   // whose Init() method has been called to avoid call Init() more than once
+   // on the same object.
+   std::set<IUnknown*> initialized;
+
+   tResult result = S_OK;
+
    tInitOrder::iterator iter;
-   for (iter = m_initOrder.begin(); iter != m_initOrder.end(); iter++)
+   for (iter = m_initOrder.begin(); iter != m_initOrder.end(); ++iter)
    {
       cAutoIPtr<IUnknown> pUnk(Lookup(*(*iter)));
-      if (!!pUnk)
+      if (!pUnk)
       {
-         cAutoIPtr<IGlobalObject> pGO;
-         if (pUnk->QueryInterface(IID_IGlobalObject, (void**)&pGO) == S_OK)
-         {
-            LocalMsg1("Initializing global object %s\n", pGO->GetName());
+         continue;
+      }
 
-            tResult initResult = pGO->Init();
-            if (initResult == S_FALSE)
-            {
-               m_objMap.erase(*iter);
-            }
-            else if (FAILED(initResult))
-            {
-               ErrorMsg1("%s failed to initialize\n", pGO->GetName());
-               return initResult;
-            }
+      cAutoIPtr<IUnknown> pIdentityUnknown;
+      if (pUnk->QueryInterface(IID_IUnknown, (void**)&pIdentityUnknown) != S_OK)
+      {
+         ErrorMsg1("Interface pointer %p doesn't support IUnknown\n", static_cast<IUnknown*>(pUnk));
+         continue;
+      }
+
+      if (initialized.find(static_cast<IUnknown*>(pIdentityUnknown)) != initialized.end())
+      {
+         // Already initialized
+         continue;
+      }
+
+      initialized.insert(CTAddRef(pIdentityUnknown));
+
+      cAutoIPtr<IGlobalObject> pGO;
+      if (pUnk->QueryInterface(IID_IGlobalObject, (void**)&pGO) == S_OK)
+      {
+         LocalMsg1("Initializing global object %s\n", pGO->GetName());
+
+         tResult initResult = pGO->Init();
+         if (initResult == S_FALSE)
+         {
+            m_objMap.erase(*iter);
+         }
+         else if (FAILED(initResult))
+         {
+            ErrorMsg1("%s failed to initialize\n", pGO->GetName());
+            result = initResult;
+            break;
          }
       }
    }
 
-   return S_OK;
+   std::for_each(initialized.begin(), initialized.end(), CTInterfaceMethod(&IUnknown::Release));
+
+   return result;
 }
 
 ///////////////////////////////////////
 
-tResult cGlobalObjectRegistry::TermAll()
+void cGlobalObjectRegistry::TermAll()
 {
    Assert(m_objMap.size() == m_initOrder.size());
+
+   std::set<IUnknown*> termed;
 
    // Terminate in reverse order
    tInitOrder::reverse_iterator iter;
    for (iter = m_initOrder.rbegin(); iter != m_initOrder.rend(); iter++)
    {
       cAutoIPtr<IUnknown> pUnk(Lookup(*(*iter)));
-      if (!!pUnk)
+      if (!pUnk)
       {
-         cAutoIPtr<IGlobalObject> pGO;
-         if (pUnk->QueryInterface(IID_IGlobalObject, (void**)&pGO) == S_OK)
-         {
-            LocalMsg1("Terminating global object %s\n", pGO->GetName());
+         continue;
+      }
 
-            pGO->Term();
-         }
+      cAutoIPtr<IUnknown> pIdentityUnknown;
+      if (pUnk->QueryInterface(IID_IUnknown, (void**)&pIdentityUnknown) != S_OK)
+      {
+         ErrorMsg1("Interface pointer %p doesn't support IUnknown\n", static_cast<IUnknown*>(pUnk));
+         continue;
+      }
+
+      if (termed.find(static_cast<IUnknown*>(pIdentityUnknown)) != termed.end())
+      {
+         // Already terminated
+         continue;
+      }
+
+      termed.insert(CTAddRef(pIdentityUnknown));
+
+      cAutoIPtr<IGlobalObject> pGO;
+      if (pUnk->QueryInterface(IID_IGlobalObject, (void**)&pGO) == S_OK)
+      {
+         LocalMsg1("Terminating global object %s\n", pGO->GetName());
+         pGO->Term();
       }
    }
+
+   std::for_each(termed.begin(), termed.end(), CTInterfaceMethod(&IUnknown::Release));
 
    // Release references in m_objMap (order doesn't matter here)
    tObjMap::iterator oiter;
@@ -261,8 +310,6 @@ tResult cGlobalObjectRegistry::TermAll()
 
    m_initOrder.clear();
    m_objMap.clear();
-
-   return S_OK;
 }
 
 ///////////////////////////////////////
@@ -330,7 +377,10 @@ void cGlobalObjectRegistry::BuildConstraintGraph(tConstraintGraph * pGraph)
    for (iter = m_objMap.begin(); iter != m_objMap.end(); iter++)
    {
       cAutoIPtr<IGlobalObject> pGlobalObj;
-      Verify(SUCCEEDED(iter->second->QueryInterface(IID_IGlobalObject, (void**)&pGlobalObj)));
+      if (iter->second->QueryInterface(IID_IGlobalObject, (void**)&pGlobalObj) != S_OK)
+      {
+         continue;
+      }
 
       const cBeforeAfterConstraint * pConstraints = NULL;
       size_t nConstraints = 0;
@@ -445,9 +495,9 @@ tResult StartGlobalObjects()
 
 ////////////////////////////////////////
 
-tResult StopGlobalObjects()
+void StopGlobalObjects()
 {
-   return AccessGlobalObjectRegistry()->TermAll();
+   AccessGlobalObjectRegistry()->TermAll();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -641,11 +691,94 @@ TEST(GlobalObjectRegistry)
    // "Bar" should be inititalized after "Foo"
    CHECK(cBarGlobalObj::gm_initCount > cFooGlobalObj::gm_initCount);
 
-   CHECK(pRegistry->TermAll() == S_OK);
+   pRegistry->TermAll();
 
    // After "TermAll", nothing should work
    CHECK(pRegistry->Lookup(IID_IFooGlobalObj) == NULL);
    CHECK(pRegistry->Lookup(IID_IBarGlobalObj) == NULL);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+class cMultiInterfaceGlobalObj : public cComObject3<IMPLEMENTS(IFooGlobalObj),
+                                                    IMPLEMENTS(IBarGlobalObj),
+                                                    IMPLEMENTS(IGlobalObject)>
+{
+public:
+   cMultiInterfaceGlobalObj(IGlobalObjectRegistry * pRegistry);
+   ~cMultiInterfaceGlobalObj();
+
+   DECLARE_NAME(MultiInterfaceGlobalObj)
+   DECLARE_NO_CONSTRAINTS()
+
+   virtual tResult Init();
+   virtual tResult Term();
+
+   virtual void Foo();
+   virtual void Bar();
+
+   uint m_initCount, m_termCount;
+};
+
+cMultiInterfaceGlobalObj::cMultiInterfaceGlobalObj(IGlobalObjectRegistry * pRegistry)
+ : m_initCount(0), m_termCount(0)
+{
+   LocalMsg("cMultiInterfaceGlobalObj::cMultiInterfaceGlobalObj()\n");
+   Verify(pRegistry->Register(IID_IFooGlobalObj, static_cast<IFooGlobalObj*>(this)) == S_OK);
+   Verify(pRegistry->Register(IID_IBarGlobalObj, static_cast<IBarGlobalObj*>(this)) == S_OK);
+}
+
+cMultiInterfaceGlobalObj::~cMultiInterfaceGlobalObj()
+{
+   LocalMsg("cMultiInterfaceGlobalObj::~cMultiInterfaceGlobalObj()\n");
+}
+
+tResult cMultiInterfaceGlobalObj::Init()
+{
+   LocalMsg("cMultiInterfaceGlobalObj::Init()\n");
+   ++m_initCount;
+   return S_OK;
+}
+
+tResult cMultiInterfaceGlobalObj::Term()
+{
+   LocalMsg("cMultiInterfaceGlobalObj::Term()\n");
+   ++m_termCount;
+   return S_OK;
+}
+
+void cMultiInterfaceGlobalObj::Foo()
+{
+   LocalMsg("cMultiInterfaceGlobalObj::Foo()\n");
+}
+
+void cMultiInterfaceGlobalObj::Bar()
+{
+   LocalMsg("cMultiInterfaceGlobalObj::Bar()\n");
+}
+
+TEST(MultiInterface)
+{
+   cAutoIPtr<IGlobalObjectRegistry> pRegistry(
+      static_cast<IGlobalObjectRegistry *>(new cGlobalObjectRegistry));
+
+   cAutoIPtr<cMultiInterfaceGlobalObj> pObj(new cMultiInterfaceGlobalObj(pRegistry));
+
+   CHECK(pRegistry->InitAll() == S_OK);
+
+   CHECK_EQUAL(1, pObj->m_initCount);
+
+   cAutoIPtr<IFooGlobalObj> pFoo(static_cast<IFooGlobalObj *>(pRegistry->Lookup(IID_IFooGlobalObj)));
+   CHECK(!!pFoo);
+
+   cAutoIPtr<IBarGlobalObj> pBar(static_cast<IBarGlobalObj *>(pRegistry->Lookup(IID_IBarGlobalObj)));
+   CHECK(!!pBar);
+
+   CHECK(CTIsSameObject(pFoo, pBar));
+
+   pRegistry->TermAll();
+
+   CHECK_EQUAL(1, pObj->m_termCount);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
