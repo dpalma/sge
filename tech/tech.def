@@ -19,7 +19,7 @@ EXPORTS
 	?WildCardMatch@@YA_NPBD0@Z										@15		NONAME
 	?RegisterGlobalObject@@YAJABU_GUID@@PAUIUnknown@@@Z				@16		NONAME
 	?StartGlobalObjects@@YAJXZ										@17		NONAME
-	?StopGlobalObjects@@YAJXZ										@18		NONAME
+	?StopGlobalObjects@@YAXXZ										@18		NONAME
 ;	REMOVED
 ;	REMOVED
 ;	?g_pConfig@@3PAUIDictionary@@A									@21		NONAME

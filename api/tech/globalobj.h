@@ -22,13 +22,13 @@ interface IGlobalObjectRegistry : IUnknown
    virtual IUnknown * Lookup(REFGUID iid) = 0;
 
    virtual tResult InitAll() = 0;
-   virtual tResult TermAll() = 0;
+   virtual void TermAll() = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
 tResult StartGlobalObjects();
-tResult StopGlobalObjects();
+void StopGlobalObjects();
 
 extern TECH_API IGlobalObjectRegistry * g_pGlobalObjectRegistry;
 

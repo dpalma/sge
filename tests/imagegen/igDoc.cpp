@@ -11,7 +11,9 @@
 #include "tech/color.h"
 #include "tech/filespec.h"
 #include "tech/filepath.h"
+#include "tech/globalobj.h"
 #include "tech/readwriteapi.h"
+#include "tech/resourceapi.h"
 #include "tech/techmath.h"
 #include "tech/vec2.h"
 
@@ -382,6 +384,32 @@ void cImageGenDoc::DeleteContents()
    CDocument::DeleteContents();
 }
 
+BOOL cImageGenDoc::OnOpenDocument(LPCTSTR lpszPathName)
+{
+   cFileSpec file(lpszPathName);
+
+   cFilePath dir;
+   if (file.GetPath(&dir))
+   {
+      UseGlobal(ResourceManager);
+      if (pResourceManager->AddDirectory(dir.CStr()) == S_OK)
+      {
+         IImage * pImage = NULL;
+         if (pResourceManager->Load(file.GetFileName(), kRT_Image, NULL, (void**)&pImage) == S_OK)
+         {
+            SafeRelease(m_pImage);
+            // Resource manager doesn't AddRef and neither does cAutoIPtr when
+            // assigning a raw interface pointer, so do an AddRef here.
+            m_pImage = CTAddRef(pImage);
+            m_shape = kNone;
+            return TRUE;
+         }
+      }
+   }
+
+   return FALSE;
+}
+
 BOOL cImageGenDoc::OnSaveDocument(LPCTSTR lpszPathName)
 {
    if (!!m_pImage)
@@ -406,22 +434,17 @@ void cImageGenDoc::OnImageAttributes()
       return;
    }
 
-   ePixelFormat pixelFormat = m_pImage->GetPixelFormat();
-   uint imageWidth = m_pImage->GetWidth(), imageHeight = m_pImage->GetHeight();
-
    cImageAttributesDlg dlg;
-   dlg.m_pixelFormat = pixelFormat;
-   dlg.m_width = imageWidth;
-   dlg.m_height = imageHeight;
+   dlg.m_pixelFormat = m_pImage->GetPixelFormat();
+   dlg.m_width = m_pImage->GetWidth();
+   dlg.m_height = m_pImage->GetHeight();
    if (dlg.DoModal() == IDOK)
    {
-      pixelFormat = (ePixelFormat)dlg.m_pixelFormat;
-      imageWidth = dlg.m_width;
-      imageHeight = dlg.m_height;
-
-      SafeRelease(m_pImage);
-      if (ImageCreate(imageWidth, imageHeight, pixelFormat, NULL, &m_pImage) == S_OK)
+      cAutoIPtr<IImage> pNewImage;
+      if (ImageCreate(dlg.m_width, dlg.m_height, (ePixelFormat)dlg.m_pixelFormat, NULL, &pNewImage) == S_OK)
       {
+         SafeRelease(m_pImage);
+         m_pImage = pNewImage;
          Rasterize();
       }
    }

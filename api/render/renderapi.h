@@ -78,15 +78,23 @@ enum ePrimitiveType
    kPT_LineStrip,
    kPT_Triangles,
    kPT_TriangleStrip,
-   kPT_TriangleFan
+   kPT_TriangleFan,
 };
 
 typedef enum ePrimitiveType tPrimitiveType;
+
+enum eFillMode
+{
+   kFM_Point,
+   kFM_Wireframe,
+   kFM_Solid,
+};
 
 enum eRenderState
 {
    kRS_AlphaTestEnable,
    kRS_AlphaBlendEnable,
+   kRS_FillMode,
 };
 
 ///////////////////////////////////////////////////////////////////////////////

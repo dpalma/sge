@@ -39,6 +39,7 @@ public:
 //	virtual void Serialize(CArchive& ar);
 	//}}AFX_VIRTUAL
    virtual void DeleteContents();
+   virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
    virtual BOOL OnSaveDocument(LPCTSTR lpszPathName);
 
 // Implementation
@@ -70,7 +71,7 @@ protected:
 private:
    enum eShape
    {
-      kCircle, kRectangle, kRoundRect, kAquaButton, kStatic
+      kNone, kCircle, kRectangle, kRoundRect, kAquaButton, kStatic
    };
 
    eShape m_shape;

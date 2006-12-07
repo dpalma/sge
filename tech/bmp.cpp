@@ -12,6 +12,8 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#define ALIGN4BYTE(w) (((w) + 3) & ~3)
+
 static const uint16 kBmpFileId = 0x4D42; // bfType member of file header must be this value
 
 struct sBmpPaletteEntry
@@ -140,20 +142,30 @@ static IImage * LoadBmp8BitAs24(IReader * pReader,
       {
          if (pReader->Read(pPalIndexData, palIndexDataSize, &nRead) == S_OK)
          {
-            size_t imageSize24 = info.biWidth * info.biHeight * 3;
+            uint srcScanLineWidth = palIndexDataSize / info.biHeight;
+            Assert(srcScanLineWidth == ALIGN4BYTE(info.biWidth));
+            uint destScanLineWidth = info.biWidth * 3;
+
+            size_t imageSize24 = destScanLineWidth * info.biHeight;
 
             byte * pImageBits24 = new byte[imageSize24];
             if (pImageBits24 != NULL)
             {
-               byte * pPixel24 = pImageBits24;
+               byte * pSrcScanLine = pPalIndexData;
+               byte * pDestScanLine = pImageBits24;
 
-               for (uint i = 0; i < palIndexDataSize; i++, pPixel24 += 3)
+               for (int j = 0; j < info.biHeight; ++j)
                {
-                  byte palIndex = pPalIndexData[i];
+                  for (int i = 0; i < info.biWidth; ++i)
+                  {
+                     byte palIndex = pSrcScanLine[i];
+                     pDestScanLine[(3 * i) + 0] = pPaletteEntries[palIndex].peBlue;
+                     pDestScanLine[(3 * i) + 1] = pPaletteEntries[palIndex].peGreen;
+                     pDestScanLine[(3 * i) + 2] = pPaletteEntries[palIndex].peRed;
+                  }
 
-                  pPixel24[0] = pPaletteEntries[palIndex].peBlue;
-                  pPixel24[1] = pPaletteEntries[palIndex].peGreen;
-                  pPixel24[2] = pPaletteEntries[palIndex].peRed;
+                  pSrcScanLine += srcScanLineWidth;
+                  pDestScanLine += destScanLineWidth;
                }
 
                ImageCreate(info.biWidth, info.biHeight, kPF_BGR888, pImageBits24, &pImage);

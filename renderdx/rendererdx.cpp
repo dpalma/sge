@@ -272,6 +272,13 @@ tResult cRendererDX::Term()
 
 ////////////////////////////////////////
 
+static const long g_d3dFillModes[] =
+{
+   D3DFILL_POINT,       // kFM_Point
+   D3DFILL_WIREFRAME,   // kFM_Wireframe
+   D3DFILL_SOLID,       // kFM_Solid
+};
+
 tResult cRendererDX::SetRenderState(eRenderState state, ulong value)
 {
    if (!m_pD3dDevice)
@@ -285,13 +292,23 @@ tResult cRendererDX::SetRenderState(eRenderState state, ulong value)
    {
       case kRS_AlphaTestEnable:
       {
-         m_pD3dDevice->SetRenderState(D3DRS_ALPHATESTENABLE, value);
+         result = m_pD3dDevice->SetRenderState(D3DRS_ALPHATESTENABLE, value);
          break;
       }
 
       case kRS_AlphaBlendEnable:
       {
-         m_pD3dDevice->SetRenderState(D3DRS_ALPHATESTENABLE, value);
+         result = m_pD3dDevice->SetRenderState(D3DRS_ALPHATESTENABLE, value);
+         break;
+      }
+
+      case kRS_FillMode:
+      {
+         if (value != kFM_Point && value != kFM_Wireframe && value != kFM_Solid)
+         {
+            return E_INVALIDARG;
+         }
+         result = m_pD3dDevice->SetRenderState(D3DRS_FILLMODE, g_d3dFillModes[value]);
          break;
       }
 
@@ -328,13 +345,13 @@ tResult cRendererDX::BeginScene()
          return E_FAIL;
       }
 
+#ifdef HAVE_CG
       if (cgD3D9SetDevice(m_pD3dDevice) != S_OK)
       {
          ErrorMsg("cgD3D9SetDevice failed\n");
          return E_FAIL;
       }
 
-#ifdef HAVE_CG
       if (m_cgContext == NULL)
       {
          m_cgContext = cgCreateContext();

@@ -7,6 +7,8 @@
 
 #include "engine/engineapi.h"
 
+#include "render/renderapi.h"
+
 #include "tech/connptimpl.h"
 #include "tech/imageapi.h"
 #include "tech/ray.h"
@@ -53,6 +55,15 @@ inline void DecomposeHandle(HTYPE handle, uint16 * ph, uint16 * pl)
    *ph = static_cast<uint16>((u >> 16) & 0xFFFF);
    *pl = static_cast<uint16>(u & 0xFFFF);
 }
+
+
+/////////////////////////////////////////////////////////////////////////////
+
+const sVertexElement g_gmmTerrainVertex[] =
+{
+   { kVEU_Normal,    kVET_Float3,   0, 0 },
+   { kVEU_Position,  kVET_Float3,   0, 3 * sizeof(float) },
+};
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -127,6 +138,8 @@ tResult cGMMTerrain::Initialize(const cTerrainSettings & terrainSettings)
       return E_FAIL;
    }
 
+   int w = 0, h = 0;
+
    if (terrainSettings.GetHeightData() == kTHD_HeightMap)
    {
       IImage * pHeightMap = NULL;
@@ -136,7 +149,8 @@ tResult cGMMTerrain::Initialize(const cTerrainSettings & terrainSettings)
          return E_FAIL;
       }
 
-      uint w = pHeightMap->GetWidth(), h = pHeightMap->GetHeight();
+      w = pHeightMap->GetWidth();
+      h = pHeightMap->GetHeight();
 
       if (!IsPowerOfTwo(w - 1) || !IsPowerOfTwo(h - 1))
       {
@@ -146,11 +160,13 @@ tResult cGMMTerrain::Initialize(const cTerrainSettings & terrainSettings)
 
       m_vertices.resize(w * h);
 
+#define Toroidal(n, nmin, nmax) (((n) < (nmin)) ? (nmin) : (((n) > (nmax)) ? (nmax) : (n)))
+
       float z = 0;
-      for (uint iz = 0; iz < h; ++iz, z += terrainSettings.GetTileSize())
+      for (int iz = 0; iz < h; ++iz, z += terrainSettings.GetTileSize())
       {
          float x = 0;
-         for (uint ix = 0; ix < w; ++ix, x += terrainSettings.GetTileSize())
+         for (int ix = 0; ix < w; ++ix, x += terrainSettings.GetTileSize())
          {
             uint index = h * iz + ix;
 
@@ -159,25 +175,80 @@ tResult cGMMTerrain::Initialize(const cTerrainSettings & terrainSettings)
 
             float normalizedHeight = static_cast<float>(heightSample[0]) / 255.0f;
 
-            m_vertices[index] = tVec3(x, normalizedHeight * terrainSettings.GetHeightMapScale(), z);
+            m_vertices[index].position = tVec3(x, normalizedHeight * terrainSettings.GetHeightMapScale(), z);
+
+            byte h0[4], h1[4], h2[4], h3[4];
+            Verify(pHeightMap->GetPixel(Toroidal(ix, 0, w-1), Toroidal(iz-1, 0, h-1), h0) == S_OK);
+            Verify(pHeightMap->GetPixel(Toroidal(ix+1, 0, w-1), Toroidal(iz, 0, h-1), h1) == S_OK);
+            Verify(pHeightMap->GetPixel(Toroidal(ix, 0, w-1), Toroidal(iz+1, 0, h-1), h2) == S_OK);
+            Verify(pHeightMap->GetPixel(Toroidal(ix-1, 0, w-1), Toroidal(iz, 0, h-1), h3) == S_OK);
+
+            tVec3 n(static_cast<float>(h3[0] - h1[0]), 2, static_cast<float>(h2[0] - h0[0]));
+            n.Normalize();
+            m_vertices[index].normal = n;
          }
       }
    }
    else if (terrainSettings.GetHeightData() == kTHD_Fixed)
    {
-      uint w = terrainSettings.GetTileCountX() + 1, h = terrainSettings.GetTileCountZ() + 1;
+      w = terrainSettings.GetTileCountX() + 1;
+      h = terrainSettings.GetTileCountZ() + 1;
 
       m_vertices.resize(w * h);
 
       float z = 0;
-      for (uint iz = 0; iz < h; ++iz, z += terrainSettings.GetTileSize())
+      for (int iz = 0; iz < h; ++iz, z += terrainSettings.GetTileSize())
       {
          float x = 0;
-         for (uint ix = 0; ix < w; ++ix, x += terrainSettings.GetTileSize())
+         for (int ix = 0; ix < w; ++ix, x += terrainSettings.GetTileSize())
          {
             uint index = h * iz + ix;
-            m_vertices[index] = tVec3(x, 0, z);
+            m_vertices[index].normal = tVec3(0, 1, 0);
+            m_vertices[index].position = tVec3(x, 0, z);
          }
+      }
+   }
+
+   uint nBlocksX = (w - 1) / (kTerrainBlockSize - 1);
+   uint nBlocksZ = (h - 1) / (kTerrainBlockSize - 1);
+
+   m_indices.clear();
+   for (int j = 0; j < (h - 1); ++j)
+   {
+      for (int i = 0; i < (w - 1); ++i)
+      {
+         // This loop iterates over the quadrilaterals in a grid
+         // like the one shown below. Could also think of it as
+         // iterating over the top-left-corner vertices.
+         //
+         // +------------ w ------------+
+         //
+         // A------B------+------+------+   +
+         // | \    | \    | \    | \    |   |
+         // |   \  |   \  |   \  |   \  |   |
+         // |     \|     \|     \|     \|   |
+         // C------D------+------+------+   |
+         // | \    | \    | \    | \    |
+         // |   \  |   \  |   \  |   \  |   h
+         // |     \|     \|     \|     \|
+         // +------+------+------+------+   |
+         // | \    | \    | \    | \    |   |
+         // |   \  |   \  |   \  |   \  |   |
+         // |     \|     \|     \|     \|   |
+         // +------+------+------+------+   +
+
+         uint topLeftCornerIndex = (h * j) + i; // See A in the diagram above
+         uint topRightCornerIndex = (h * j) + i + 1; // See B in the diagram above
+         uint botmLeftCornerIndex = (h * (j + 1)) + i; // See C in the diagram above
+         uint botmRightCornerIndex = (h * (j + 1)) + i + 1; // See D in the diagram above
+
+         m_indices.push_back(topLeftCornerIndex);
+         m_indices.push_back(botmRightCornerIndex);
+         m_indices.push_back(topRightCornerIndex);
+
+         m_indices.push_back(botmLeftCornerIndex);
+         m_indices.push_back(botmRightCornerIndex);
+         m_indices.push_back(topLeftCornerIndex);
       }
    }
 
@@ -191,6 +262,7 @@ tResult cGMMTerrain::Initialize(const cTerrainSettings & terrainSettings)
 tResult cGMMTerrain::Clear()
 {
    m_vertices.clear();
+   m_indices.clear();
    return S_OK;
 }
 
@@ -285,7 +357,7 @@ tResult cGMMTerrain::GetVertexPosition(HTERRAINVERTEX hVertex, tVec3 * pPosition
 
    uint index = z * (m_terrainSettings.GetTileCountZ() + 1) + x;
 
-   *pPosition = m_vertices[index];
+   *pPosition = m_vertices[index].position;
 
    return S_OK;
 }
@@ -309,7 +381,7 @@ tResult cGMMTerrain::ChangeVertexElevation(HTERRAINVERTEX hVertex, float elevDel
 
    uint index = z * (m_terrainSettings.GetTileCountZ() + 1) + x;
 
-   m_vertices[index].y += elevDelta;
+   m_vertices[index].position.y += elevDelta;
 
    return S_OK;
 }
@@ -333,12 +405,12 @@ tResult cGMMTerrain::SetVertexElevation(HTERRAINVERTEX hVertex, float elevation)
 
    uint index = z * (m_terrainSettings.GetTileCountZ() + 1) + x;
 
-   if (AlmostEqual(m_vertices[index].y, elevation))
+   if (AlmostEqual(m_vertices[index].position.y, elevation))
    {
       return S_FALSE;
    }
 
-   m_vertices[index].y = elevation;
+   m_vertices[index].position.y = elevation;
 
    return S_OK;
 }
@@ -511,6 +583,29 @@ tResult cGMMTerrain::EnableBlending(bool bEnable)
 
 void cGMMTerrain::Render()
 {
+   if (!m_vertices.empty() && !m_indices.empty())
+   {
+      static const float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+      UseGlobal(Renderer);
+      pRenderer->SetDiffuseColor(color);
+//      pRenderer->SetRenderState(kRS_FillMode, kFM_Wireframe);
+      pRenderer->SetVertexFormat(g_gmmTerrainVertex, _countof(g_gmmTerrainVertex));
+      pRenderer->SubmitVertices(&m_vertices[0], m_vertices.size());
+      pRenderer->SetIndexFormat(kIF_16Bit);
+      pRenderer->Render(kPT_Triangles, &m_indices[0], m_indices.size());
+   }
+
+   //std::vector<sGMMTerrainVertex>::iterator iter = m_vertices.begin();
+   //glBegin(GL_LINES);
+   //for (; iter != m_vertices.end(); ++iter)
+   //{
+   //   glColor4f(0.0f, .80f, 0.0f, 1.0f);
+   //   glVertex3fv(iter->position.v);
+   //   tVec3 endPt = iter->position + (iter->normal * 20);
+   //   glColor4f(0.0f, 0.0f, .80f, 1.0f);
+   //   glVertex3fv(endPt.v);
+   //}
+   //glEnd();
 }
 
 ////////////////////////////////////////
@@ -565,10 +660,10 @@ tResult cGMMTerrain::GetQuadCorners(uint quadx, uint quadz, tVec3 corners[4]) co
    }
 
 #define Index(qx, qz) (((qz) * (m_terrainSettings.GetTileCountZ() + 1)) + qx)
-   corners[0] = m_vertices[Index(quadx,   quadz)];
-   corners[1] = m_vertices[Index(quadx+1, quadz)];
-   corners[2] = m_vertices[Index(quadx+1, quadz+1)];
-   corners[3] = m_vertices[Index(quadx,   quadz+1)];
+   corners[0] = m_vertices[Index(quadx,   quadz)].position;
+   corners[1] = m_vertices[Index(quadx+1, quadz)].position;
+   corners[2] = m_vertices[Index(quadx+1, quadz+1)].position;
+   corners[3] = m_vertices[Index(quadx,   quadz+1)].position;
 #undef Index
 
    return S_OK;

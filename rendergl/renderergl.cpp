@@ -436,9 +436,16 @@ tResult cRendererGL::Term()
 
 ////////////////////////////////////////
 
+static const GLuint g_glPolygonModes[] =
+{
+   GL_POINT,   // kFM_Point
+   GL_LINE,    // kFM_Wireframe
+   GL_FILL,    // kFM_Solid
+};
+
 tResult cRendererGL::SetRenderState(eRenderState state, ulong value)
 {
-   tResult result = E_FAIL;
+   bool bFoundRenderState = true;
 
    switch (state)
    {
@@ -468,14 +475,31 @@ tResult cRendererGL::SetRenderState(eRenderState state, ulong value)
          break;
       }
 
+      case kRS_FillMode:
+      {
+         if (value != kFM_Point && value != kFM_Wireframe && value != kFM_Solid)
+         {
+            return E_INVALIDARG;
+         }
+         glPolygonMode(GL_FRONT_AND_BACK, g_glPolygonModes[value]);
+         break;
+      }
+
       default:
       {
-         result = E_INVALIDARG;
+         bFoundRenderState = false;
          break;
       }
    }
 
-   return result;
+   if (bFoundRenderState)
+   {
+      return (glGetError() == GL_NO_ERROR) ? S_OK : E_FAIL;
+   }
+   else
+   {
+      return E_INVALIDARG;
+   }
 }
 
 ////////////////////////////////////////

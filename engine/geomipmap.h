@@ -18,6 +18,18 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// STRUCT: sGMMTerrainVertex
+//
+
+struct sGMMTerrainVertex
+{
+   tVec3 normal;
+   tVec3 position;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cGMMTerrainGrid
 //
 
@@ -113,8 +125,8 @@ private:
 
    cTerrainSettings m_terrainSettings;
 
-   std::vector<tVec3> m_vertices;
-   //tUints m_quadTiles;
+   std::vector<sGMMTerrainVertex> m_vertices;
+   std::vector<uint16> m_indices;
 };
 
 

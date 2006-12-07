@@ -298,7 +298,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDR_MAINFRAME           "ImageGen\n\nxxx\nImageGen Files (*.ig)\n.ig\nImageGen.File\nImageGen File"
+    IDR_MAINFRAME           "ImageGen\n\nxxx\nImage Files (*.bmp, *.tga)\n.bmp\nImageGen.File\nImageGen File"
 END
 
 STRINGTABLE 
