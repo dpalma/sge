@@ -3,21 +3,16 @@
 
 #include "stdhdr.h"
 
-// Local Includes
 #include "EditorAppForm.h"
 #include "EditorMapSettings.h"
 
-// GUI Includes
-#include "gui/guiapi.h"
-
-// Engine Includes
 #include "engine/cameraapi.h"
 #include "engine/entityapi.h"
 #include "engine/terrainapi.h"
+#include "gui/guiapi.h"
 #include "platform/sys.h"
 #include "render/renderapi.h"
 
-// Tech Includes
 #include "tech/globalobj.h"
 #include "tech/schedulerapi.h"
 
@@ -47,13 +42,20 @@ namespace ManagedEditor
    {
       m_toolPalette = gcnew ToolPalette();
       m_toolPalette->Dock = System::Windows::Forms::DockStyle::Fill;
-      ToolPanel->Controls->Add(m_toolPalette);
+      ToolSplitContainer->Panel1->Controls->Add(m_toolPalette);
 
       m_toolPalette->ToolSelect += gcnew ToolPalette::ToolSelectHandler(this, &EditorAppForm::OnToolSelect);
+
+      m_propertyGrid = gcnew PropertyGrid();
+      m_propertyGrid->Dock = System::Windows::Forms::DockStyle::Fill;
+      ToolSplitContainer->Panel2->Controls->Add(m_propertyGrid);
 
       m_glControl = gcnew GlControl();
 	   m_glControl->Dock = System::Windows::Forms::DockStyle::Fill;
       MainPanel->Controls->Add(m_glControl);
+
+      m_glControl->MouseHover += gcnew System::EventHandler(this, &EditorAppForm::glControl_OnMouseHover);
+      m_glControl->MouseClick += gcnew System::Windows::Forms::MouseEventHandler(this, &EditorAppForm::glControl_OnMouseClick);
 
       m_document = gcnew EditorDocument();
       cTerrainSettings terrainSettings;
@@ -117,7 +119,7 @@ namespace ManagedEditor
    {
       EditorForm::OnResize(e);
 
-      if (m_glControl)
+      if (m_glControl && (m_glControl->Height > 0))
       {
          float aspect = static_cast<float>(m_glControl->Width) / m_glControl->Height;
 
@@ -132,6 +134,24 @@ namespace ManagedEditor
          pRenderer->SetProjectionMatrix(proj.m);
 
          glViewport(0, 0, m_glControl->Width, m_glControl->Height);
+      }
+   }
+
+   void EditorAppForm::glControl_OnMouseHover(System::Object ^ sender, System::EventArgs ^ e)
+   {
+      System::Drawing::Point m = m_glControl->PointToClient(m_glControl->MousePosition);
+
+      EditorTool ^ tool = dynamic_cast<EditorTool ^>(m_toolPalette->CurrentTool);
+      if (tool)
+      {
+         tool->OnMouseHover(m);
+      }
+   }
+
+   void EditorAppForm::glControl_OnMouseClick(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e)
+   {
+      if (e->Button == ::MouseButtons::Left)
+      {
       }
    }
 
@@ -223,6 +243,8 @@ namespace ManagedEditor
       {
          if (type->IsSubclassOf(EditorTool::typeid))
          {
+            EditorTool ^ tool = dynamic_cast<EditorTool ^>(System::Activator::CreateInstance(type));
+
             System::String ^ groupName = nullptr;
             cli::array<System::Object ^> ^ attribs = type->GetCustomAttributes(false);
             for each(System::Object ^ attrib in attribs)
@@ -233,7 +255,10 @@ namespace ManagedEditor
                   groupName = toolGroup->Group;
                }
             }
-            m_toolPalette->AddTool(m_toolPalette->AddGroup(groupName, nullptr), type->FullName, -1);
+
+            ToolPaletteGroup ^ group = m_toolPalette->AddGroup(groupName, nullptr);
+
+            m_toolPalette->AddTool(group, tool, type->FullName, -1);
          }
       }
    }

@@ -16,8 +16,8 @@ namespace ManagedEditor
 
 ////////////////////////////////////////
 
-ToolPaletteItem::ToolPaletteItem(ToolPaletteGroup ^ group, System::String ^ name, int iImage)
- : m_group(group)
+ToolPaletteItem::ToolPaletteItem(System::Object ^ tool, System::String ^ name, int iImage)
+ : m_tool(tool)
  , m_name(name)
  , m_iImage(iImage)
  , m_bEnabled(true)
@@ -41,7 +41,7 @@ bool ToolPaletteItem::Equals(System::Object ^ obj)
 
    ToolPaletteItem ^ other = dynamic_cast<ToolPaletteItem ^>(obj);
 
-   return m_group == other->m_group
+   return m_tool == other->m_tool
       && m_name == other->m_name
       && m_iImage == other->m_iImage
       && m_bEnabled == other->m_bEnabled;
@@ -58,7 +58,7 @@ bool ToolPaletteItem::Equals(System::Object ^ obj)
 ToolPaletteGroup::ToolPaletteGroup(System::String ^ name, System::Windows::Forms::ImageList ^ imageList)
  : m_name(name)
  , m_imageList(imageList)
- , m_tools(gcnew System::Collections::ArrayList())
+ , m_items(gcnew System::Collections::ArrayList())
  , m_bCollapsed(false)
 {
 }
@@ -71,15 +71,15 @@ ToolPaletteGroup::~ToolPaletteGroup()
 
 ////////////////////////////////////////
 
-ToolPaletteItem ^ ToolPaletteGroup::FindTool(const System::String ^ toolName)
+ToolPaletteItem ^ ToolPaletteGroup::FindItem(const System::String ^ toolName)
 {
-   System::Collections::IEnumerator ^ toolEnum = m_tools->GetEnumerator();
-   while (toolEnum->MoveNext())
+   System::Collections::IEnumerator ^ itemEnum = m_items->GetEnumerator();
+   while (itemEnum->MoveNext())
    {
-      ToolPaletteItem ^ tool = dynamic_cast<ToolPaletteItem ^>(toolEnum->Current);
-      if (tool->Name->CompareTo(const_cast<System::String ^>(toolName)) == 0)
+      ToolPaletteItem ^ item = dynamic_cast<ToolPaletteItem ^>(itemEnum->Current);
+      if (item->Name->CompareTo(const_cast<System::String ^>(toolName)) == 0)
       {
-         return tool;
+         return item;
       }
    }
    return nullptr;
@@ -93,9 +93,9 @@ ToolPaletteItem ^ ToolPaletteGroup::FindTool(const System::String ^ toolName)
 
 ////////////////////////////////////////
 
-ToolSelectEventArgs::ToolSelectEventArgs(ToolPaletteItem ^ oldTool, ToolPaletteItem ^ newTool)
- : m_oldTool(oldTool)
- , m_newTool(newTool)
+ToolSelectEventArgs::ToolSelectEventArgs(ToolPaletteItem ^ oldItem, ToolPaletteItem ^ newItem)
+ : m_oldItem(oldItem)
+ , m_newItem(newItem)
 {
 }
 
@@ -109,7 +109,7 @@ ToolSelectEventArgs::ToolSelectEventArgs(ToolPaletteItem ^ oldTool, ToolPaletteI
 
 ToolPalette::ToolPalette()
  : m_groups(gcnew System::Collections::ArrayList())
- , m_currentTool(nullptr)
+ , m_currentItem(nullptr)
  , m_itemHeight(0)
  , m_mouseOverItem(nullptr)
  , m_clickCandidateItem(nullptr)
@@ -177,10 +177,10 @@ ToolPaletteGroup ^ ToolPalette::FindGroup(System::String ^ groupName)
 
 ////////////////////////////////////////
 
-ToolPaletteItem ^ ToolPalette::AddTool(ToolPaletteGroup ^ group, System::String ^ toolName, int iImage)
+ToolPaletteItem ^ ToolPalette::AddTool(ToolPaletteGroup ^ group, System::Object ^ tool, System::String ^ toolName, int iImage)
 {
-   ToolPaletteItem ^ newTool = gcnew ToolPaletteItem(group, toolName, iImage);
-   group->Tools->Add(newTool);
+   ToolPaletteItem ^ newTool = gcnew ToolPaletteItem(tool, toolName, iImage);
+   group->Items->Add(newTool);
    Invalidate();
    return newTool;
 }
@@ -225,17 +225,17 @@ void ToolPalette::OnMouseUp(System::Windows::Forms::MouseEventArgs ^ e)
          }
 
          {
-            ToolPaletteItem ^ tool = dynamic_cast<ToolPaletteItem ^>(m_clickCandidateItem);
-            if (tool != nullptr && tool->Enabled)
+            ToolPaletteItem ^ item = dynamic_cast<ToolPaletteItem ^>(m_clickCandidateItem);
+            if (item != nullptr && item->Enabled)
             {
-               if (tool != m_currentTool)
+               if (item != m_currentItem)
                {
                   if (&ToolPalette::ToolSelect != nullptr)
                   {
-                     ToolSelect(this, gcnew ToolSelectEventArgs(m_currentTool, tool));
+                     ToolSelect(this, gcnew ToolSelectEventArgs(m_currentItem, item));
                   }
 
-                  m_currentTool = tool;
+                  m_currentItem = item;
 
                   Invalidate();
                }
@@ -267,17 +267,17 @@ void ToolPalette::OnPaint(System::Windows::Forms::PaintEventArgs ^ e)
 
       if (!group->Collapsed)
       {
-         System::Collections::IEnumerator ^ toolEnum = group->Tools->GetEnumerator();
-         while (toolEnum->MoveNext())
+         System::Collections::IEnumerator ^ itemEnum = group->Items->GetEnumerator();
+         while (itemEnum->MoveNext())
          {
-            ToolPaletteItem ^ tool = dynamic_cast<ToolPaletteItem ^>(toolEnum->Current);
-            if (tool == CurrentTool)
+            ToolPaletteItem ^ item = dynamic_cast<ToolPaletteItem ^>(itemEnum->Current);
+            if (item == CurrentItem)
             {
-               PaintSelectedTool(tool, e->Graphics, itemRect);
+               PaintSelectedItem(item, e->Graphics, itemRect);
             }
             else
             {
-               PaintToolItem(tool, e->Graphics, itemRect);
+               PaintToolItem(item, e->Graphics, itemRect);
             }
             itemRect.Offset(0, ItemHeight);
          }
@@ -299,23 +299,23 @@ void ToolPalette::PaintGroupHeading(ToolPaletteGroup ^ group,
 
 ////////////////////////////////////////
 
-void ToolPalette::PaintToolItem(ToolPaletteItem ^ tool,
+void ToolPalette::PaintToolItem(ToolPaletteItem ^ item,
                                 System::Drawing::Graphics ^ graphics,
                                 System::Drawing::Rectangle ^ itemRect)
 {
    using namespace System::Drawing;
    graphics->FillRectangle(Brushes::LightGray, *itemRect);
-   graphics->DrawString(tool->Name, SystemFonts::DefaultFont, Brushes::Black,
+   graphics->DrawString(item->Name, SystemFonts::DefaultFont, Brushes::Black,
       PointF(static_cast<float>(itemRect->Left), static_cast<float>(itemRect->Top)));
 }
 
 ////////////////////////////////////////
 
-void ToolPalette::PaintSelectedTool(ToolPaletteItem ^ tool,
+void ToolPalette::PaintSelectedItem(ToolPaletteItem ^ item,
                                     System::Drawing::Graphics ^ graphics,
                                     System::Drawing::Rectangle ^ itemRect)
 {
-   PaintToolItem(tool, graphics, itemRect);
+   PaintToolItem(item, graphics, itemRect);
 }
 
 ////////////////////////////////////////
@@ -353,7 +353,7 @@ System::Object ^ ToolPalette::GetHitItem(System::Windows::Forms::MouseEventArgs 
 
       if (!group->Collapsed)
       {
-         System::Collections::IEnumerator ^ toolEnum = group->Tools->GetEnumerator();
+         System::Collections::IEnumerator ^ toolEnum = group->Items->GetEnumerator();
          while (toolEnum->MoveNext())
          {
             ToolPaletteItem ^ tool = dynamic_cast<ToolPaletteItem ^>(toolEnum->Current);

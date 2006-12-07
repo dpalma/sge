@@ -41,6 +41,9 @@ namespace ManagedEditor
 
       virtual void OnResize(System::EventArgs ^ e) override;
 
+      void glControl_OnMouseHover(System::Object ^ sender, System::EventArgs ^ e);
+      void glControl_OnMouseClick(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e);
+
    protected:
       virtual void NewDocument() override;
       virtual void OpenDocument() override;
@@ -51,8 +54,8 @@ namespace ManagedEditor
 
    private:
       GlControl ^ m_glControl;
-
       ToolPalette ^ m_toolPalette;
+      System::Windows::Forms::PropertyGrid ^ m_propertyGrid;
 
       EditorDocument ^ m_document;
    };

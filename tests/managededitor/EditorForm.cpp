@@ -35,6 +35,11 @@ namespace ManagedEditor
       }
    }
 
+   System::Windows::Forms::SplitContainer ^ EditorForm::ToolSplitContainer::get()
+   {
+      return splitContainer2;
+   }
+
    System::Windows::Forms::SplitterPanel ^ EditorForm::ToolPanel::get()
    {
       return splitContainer2->Panel1;

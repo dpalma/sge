@@ -44,6 +44,7 @@ namespace ManagedEditor
    ref class EditorTool abstract
    {
    public:
+      virtual void OnMouseHover(System::Drawing::Point location) = 0;
    };
 
    ///////////////////////////////////////////////////////////////////////////////
@@ -55,6 +56,7 @@ namespace ManagedEditor
    ref class EditorSelectTool : public EditorTool
    {
    public:
+      virtual void OnMouseHover(System::Drawing::Point location) override;
    };
 
 } // namespace ManagedEditor

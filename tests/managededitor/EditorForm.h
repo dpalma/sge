@@ -30,6 +30,11 @@ public:
    ~EditorForm();
 
 protected:
+   property System::Windows::Forms::SplitContainer ^ ToolSplitContainer
+   {
+      System::Windows::Forms::SplitContainer ^ get();
+   }
+
    property System::Windows::Forms::SplitterPanel ^ ToolPanel
    {
       System::Windows::Forms::SplitterPanel ^ get();
