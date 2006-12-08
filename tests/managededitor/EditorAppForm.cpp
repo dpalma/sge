@@ -54,8 +54,12 @@ namespace ManagedEditor
 	   m_glControl->Dock = System::Windows::Forms::DockStyle::Fill;
       MainPanel->Controls->Add(m_glControl);
 
-      m_glControl->MouseHover += gcnew System::EventHandler(this, &EditorAppForm::glControl_OnMouseHover);
+      m_glControl->MouseDown += gcnew System::Windows::Forms::MouseEventHandler(this, &EditorAppForm::glControl_OnMouseDown);
+      m_glControl->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &EditorAppForm::glControl_OnMouseUp);
       m_glControl->MouseClick += gcnew System::Windows::Forms::MouseEventHandler(this, &EditorAppForm::glControl_OnMouseClick);
+      m_glControl->MouseMove += gcnew System::Windows::Forms::MouseEventHandler(this, &EditorAppForm::glControl_OnMouseMove);
+      m_glControl->MouseHover += gcnew System::EventHandler(this, &EditorAppForm::glControl_OnMouseHover);
+      m_glControl->MouseWheel += gcnew System::Windows::Forms::MouseEventHandler(this, &EditorAppForm::glControl_OnMouseWheel);
 
       m_document = gcnew EditorDocument();
       cTerrainSettings terrainSettings;
@@ -137,6 +141,42 @@ namespace ManagedEditor
       }
    }
 
+   void EditorAppForm::glControl_OnMouseDown(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e)
+   {
+      EditorTool ^ tool = dynamic_cast<EditorTool ^>(m_toolPalette->CurrentTool);
+      if (tool)
+      {
+         //tool->OnMouseDown(e);
+      }
+   }
+
+   void EditorAppForm::glControl_OnMouseUp(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e)
+   {
+      EditorTool ^ tool = dynamic_cast<EditorTool ^>(m_toolPalette->CurrentTool);
+      if (tool)
+      {
+         //tool->OnMouseUp(e);
+      }
+   }
+
+   void EditorAppForm::glControl_OnMouseClick(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e)
+   {
+      EditorTool ^ tool = dynamic_cast<EditorTool ^>(m_toolPalette->CurrentTool);
+      if (tool)
+      {
+         tool->OnMouseClick(e);
+      }
+   }
+
+   void EditorAppForm::glControl_OnMouseMove(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e)
+   {
+      EditorTool ^ tool = dynamic_cast<EditorTool ^>(m_toolPalette->CurrentTool);
+      if (tool)
+      {
+         //tool->OnMouseMove(e);
+      }
+   }
+
    void EditorAppForm::glControl_OnMouseHover(System::Object ^ sender, System::EventArgs ^ e)
    {
       System::Drawing::Point m = m_glControl->PointToClient(m_glControl->MousePosition);
@@ -148,11 +188,8 @@ namespace ManagedEditor
       }
    }
 
-   void EditorAppForm::glControl_OnMouseClick(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e)
+   void EditorAppForm::glControl_OnMouseWheel(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e)
    {
-      if (e->Button == ::MouseButtons::Left)
-      {
-      }
    }
 
    void EditorAppForm::NewDocument()

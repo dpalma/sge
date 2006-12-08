@@ -41,8 +41,12 @@ namespace ManagedEditor
 
       virtual void OnResize(System::EventArgs ^ e) override;
 
-      void glControl_OnMouseHover(System::Object ^ sender, System::EventArgs ^ e);
+      void glControl_OnMouseDown(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e);
+      void glControl_OnMouseUp(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e);
       void glControl_OnMouseClick(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e);
+      void glControl_OnMouseMove(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e);
+      void glControl_OnMouseHover(System::Object ^ sender, System::EventArgs ^ e);
+      void glControl_OnMouseWheel(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e);
 
    protected:
       virtual void NewDocument() override;

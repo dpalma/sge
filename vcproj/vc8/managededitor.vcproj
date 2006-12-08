@@ -704,6 +704,10 @@
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
 			<File
+				RelativePath="..\..\tests\managededitor\placeentity.bmp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\tests\managededitor\select.bmp"
 				>
 			</File>

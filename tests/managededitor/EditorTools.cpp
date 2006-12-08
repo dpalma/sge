@@ -5,6 +5,7 @@
 
 #include "EditorTools.h"
 
+#include "engine/entityapi.h"
 #include "engine/terrainapi.h"
 #include "render/renderapi.h"
 #include "tech/globalobj.h"
@@ -43,6 +44,33 @@ namespace ManagedEditor
    // CLASS: EditorSelectTool
    //
 
+   void EditorSelectTool::OnMouseClick(System::Windows::Forms::MouseEventArgs ^ e)
+   {
+      UseGlobal(Renderer);
+      UseGlobal(EntityManager);
+
+      cRay pickRay;
+      if (pRenderer->GenerateScreenPickRay(e->X, e->Y, &pickRay) == S_OK)
+      {
+         if (e->Button == System::Windows::Forms::MouseButtons::Left)
+         {
+            cAutoIPtr<IEntity> pEntity;
+            if (pEntityManager->RayCast(pickRay, &pEntity) == S_OK)
+            {
+            }
+            //else
+            //{
+            //   tVec3 location;
+            //   if (GetTerrainLocation(pickRay, &location))
+            //   {
+            //      UseGlobal(EntityManager);
+            //      pEntityManager->SpawnEntity(m_entity.c_str(), m_position);
+            //   }
+            //}
+         }
+      }
+   }
+
    void EditorSelectTool::OnMouseHover(System::Drawing::Point location)
    {
       UseGlobal(Renderer);
@@ -50,13 +78,51 @@ namespace ManagedEditor
       cRay pickRay;
       if (pRenderer->GenerateScreenPickRay(location.X, location.Y, &pickRay) == S_OK)
       {
-         tVec3 intersect;
-         if (GetTerrainLocation(pickRay, &intersect))
+         tVec3 location;
+         if (GetTerrainLocation(pickRay, &location))
          {
             cStr temp;
-            Sprintf(&temp, _T("Hit <%.2f, %.2f, %.2f>"), intersect.x, intersect.y, intersect.z);
+            Sprintf(&temp, _T("Hit <%.2f, %.2f, %.2f>"), location.x, location.y, location.z);
          }
       }
+   }
+
+
+   ///////////////////////////////////////////////////////////////////////////////
+   //
+   // CLASS: EditorPlaceEntityTool
+   //
+
+   void EditorPlaceEntityTool::OnMouseClick(System::Windows::Forms::MouseEventArgs ^ e)
+   {
+      UseGlobal(Renderer);
+      UseGlobal(EntityManager);
+
+      cRay pickRay;
+      if (pRenderer->GenerateScreenPickRay(e->X, e->Y, &pickRay) == S_OK)
+      {
+         if (e->Button == System::Windows::Forms::MouseButtons::Left)
+         {
+            cAutoIPtr<IEntity> pEntity;
+            if (pEntityManager->RayCast(pickRay, &pEntity) == S_OK)
+            {
+               // TODO: select hit entity
+            }
+            else
+            {
+               tVec3 location;
+               if (GetTerrainLocation(pickRay, &location))
+               {
+                  UseGlobal(EntityManager);
+                  pEntityManager->SpawnEntity("zombie", location);
+               }
+            }
+         }
+      }
+   }
+
+   void EditorPlaceEntityTool::OnMouseHover(System::Drawing::Point location)
+   {
    }
 
 } // namespace ManagedEditor
