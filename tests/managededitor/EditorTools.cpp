@@ -37,26 +37,6 @@ namespace ManagedEditor
       return false;
    }
 
-   ///////////////////////////////////////////////////////////////////////////////
-   //
-   // CLASS: EditorToolGroup
-   //
-
-   EditorToolGroup::EditorToolGroup()
-    : m_group(nullptr)
-   {
-   }
-
-   System::String ^ EditorToolGroup::Group::get()
-   {
-      return m_group;
-   }
-
-   void EditorToolGroup::Group::set(System::String ^ group)
-   {
-      m_group = group;
-   }
-
 
    ///////////////////////////////////////////////////////////////////////////////
    //

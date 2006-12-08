@@ -246,22 +246,7 @@ namespace ManagedEditor
       {
          if (type->IsSubclassOf(EditorTool::typeid))
          {
-            EditorTool ^ tool = dynamic_cast<EditorTool ^>(System::Activator::CreateInstance(type));
-
-            System::String ^ groupName = nullptr;
-            cli::array<System::Object ^> ^ attribs = type->GetCustomAttributes(false);
-            for each(System::Object ^ attrib in attribs)
-            {
-               if (attrib->GetType() == EditorToolGroup::typeid)
-               {
-                  EditorToolGroup ^ toolGroup = dynamic_cast<EditorToolGroup ^>(attrib);
-                  groupName = resMgr->GetString(toolGroup->Group);
-               }
-            }
-
-            ToolPaletteGroup ^ group = m_toolPalette->AddGroup(groupName, nullptr);
-
-            m_toolPalette->AddTool(group, tool, type->FullName, -1);
+            m_toolPalette->AddTool(type, resMgr);
          }
       }
    }

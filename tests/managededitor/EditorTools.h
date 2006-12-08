@@ -4,6 +4,8 @@
 #ifndef INCLUDED_EDITORTOOLS_H
 #define INCLUDED_EDITORTOOLS_H
 
+#include "ToolPalette.h"
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -15,27 +17,6 @@
 
 namespace ManagedEditor
 {
-
-   ///////////////////////////////////////////////////////////////////////////////
-   //
-   // CLASS: EditorToolGroup
-   //
-
-   [System::AttributeUsage(System::AttributeTargets::Class, AllowMultiple=false)]
-   ref class EditorToolGroup : public System::Attribute
-   {
-   public:
-      EditorToolGroup();
-
-      property System::String ^ Group
-      {
-         System::String ^ get();
-         void set(System::String ^);
-      }
-
-   private:
-      System::String ^ m_group;
-   };
 
    ///////////////////////////////////////////////////////////////////////////////
    //
@@ -53,7 +34,7 @@ namespace ManagedEditor
    // CLASS: EditorSelectTool
    //
 
-   [EditorToolGroup(Group = "standardGroupName")]
+   [ToolPaletteItem(Label="selectToolName", Image="select", Group="standardGroupName")]
    ref class EditorSelectTool : public EditorTool
    {
    public:

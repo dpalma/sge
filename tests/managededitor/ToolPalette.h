@@ -11,235 +11,272 @@
 namespace ManagedEditor
 {
 
-ref class ToolPaletteGroup;
+   ///////////////////////////////////////////////////////////////////////////////
+   //
+   // CLASS: ToolPaletteItemAttribute
+   //
 
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: ToolPaletteItem
-//
-
-ref class ToolPaletteItem : public System::Object
-{
-public:
-   ToolPaletteItem(System::Object ^ tool, System::String ^ name, int iImage);
-   ~ToolPaletteItem();
-
-   virtual bool Equals(System::Object ^ obj) override;
-
-   property System::Object ^ Tool
+   [System::AttributeUsage(System::AttributeTargets::Class, AllowMultiple=false)]
+   ref class ToolPaletteItemAttribute : public System::Attribute
    {
-      System::Object ^ get()
-      {
-         return m_tool;
-      }
-   }
+   public:
+      ToolPaletteItemAttribute();
 
-   property System::String ^ Name
+      property System::String ^ Label
+      {
+         System::String ^ get();
+         void set(System::String ^);
+      }
+
+      property System::String ^ Image
+      {
+         System::String ^ get();
+         void set(System::String ^);
+      }
+
+      property System::String ^ Group
+      {
+         System::String ^ get();
+         void set(System::String ^);
+      }
+
+   private:
+      System::String ^ m_label;
+      System::String ^ m_image;
+      System::String ^ m_group;
+   };
+
+   ///////////////////////////////////////////////////////////////////////////////
+   //
+   // CLASS: ToolPaletteItem
+   //
+
+   ref class ToolPaletteItem : public System::Object
    {
-      System::String ^ get()
-      {
-         return m_name;
-      }
-   }
+   public:
+      ToolPaletteItem(System::Object ^ tool, System::String ^ name);
+      ~ToolPaletteItem();
 
-   property int ImageIndex
+      virtual bool Equals(System::Object ^ obj) override;
+
+      property System::Object ^ Tool
+      {
+         System::Object ^ get()
+         {
+            return m_tool;
+         }
+      }
+
+      property System::String ^ Name
+      {
+         System::String ^ get()
+         {
+            return m_name;
+         }
+      }
+
+      property int ImageIndex
+      {
+         int get()
+         {
+            return m_imageIndex;
+         }
+
+         void set(int imageIndex)
+         {
+            m_imageIndex = imageIndex;
+         }
+      }
+
+      property bool Enabled
+      {
+         bool get()
+         {
+            return m_bEnabled;
+         }
+
+         void set(bool bEnabled)
+         {
+            m_bEnabled = bEnabled;
+         }
+      }
+
+   private:
+      System::Object ^ m_tool;
+      System::String ^ m_name;
+      int m_imageIndex;
+      bool m_bEnabled;
+   };
+
+
+   ///////////////////////////////////////////////////////////////////////////////
+   //
+   // CLASS: ToolPaletteGroup
+   //
+
+   ref class ToolPaletteGroup sealed : public System::Object
    {
-      int get()
-      {
-         return m_iImage;
-      }
-   }
+   public:
+      ToolPaletteGroup(System::String ^ name);
+      ~ToolPaletteGroup();
 
-   property bool Enabled
+      property System::String ^ Name
+      {
+         System::String ^ get()
+         {
+            return m_name;
+         }
+      }
+
+      property bool Collapsed
+      {
+         bool get()
+         {
+            return m_bCollapsed;
+         }
+
+         void set(bool bCollapsed)
+         {
+            m_bCollapsed = bCollapsed;
+         }
+      }
+
+      property System::Collections::IList ^ Items
+      {
+         System::Collections::IList ^ get()
+         {
+            return m_items;
+         }
+      }
+
+      property System::Windows::Forms::ImageList ^ Images
+      {
+         System::Windows::Forms::ImageList ^ get()
+         {
+            return m_images;
+         }
+      }
+
+      ToolPaletteItem ^ FindItem(const System::String ^ toolName);
+
+   private:
+      System::String ^ m_name;
+      System::Collections::ArrayList ^ m_items;
+      System::Windows::Forms::ImageList ^ m_images;
+      bool m_bCollapsed;
+   };
+
+
+   ///////////////////////////////////////////////////////////////////////////////
+   //
+   // CLASS: ToolSelectEventArgs
+   //
+
+   ref class ToolSelectEventArgs : public System::EventArgs
    {
-      bool get()
+   public:
+      ToolSelectEventArgs(ToolPaletteItem ^ oldTool, ToolPaletteItem ^ newTool);
+
+      property ToolPaletteItem ^ OldItem
       {
-         return m_bEnabled;
+         ToolPaletteItem ^ get()
+         {
+            return m_oldItem;
+         }
       }
 
-      void set(bool bEnabled)
+      property ToolPaletteItem ^ NewItem
       {
-         m_bEnabled = bEnabled;
+         ToolPaletteItem ^ get()
+         {
+            return m_newItem;
+         }
       }
-   }
 
-private:
-   System::Object ^ m_tool;
-   System::String ^ m_name;
-   int m_iImage;
-   bool m_bEnabled;
-};
+   private:
+      ToolPaletteItem ^ m_oldItem;
+      ToolPaletteItem ^ m_newItem;
+   };
 
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: ToolPaletteGroup
-//
+   ///////////////////////////////////////////////////////////////////////////////
+   //
+   // CLASS: ToolPalette
+   //
 
-ref class ToolPaletteGroup sealed : public System::Object
-{
-public:
-   ToolPaletteGroup(System::String ^ name, System::Windows::Forms::ImageList ^ imageList);
-   ~ToolPaletteGroup();
-
-   property System::String ^ Name
+   ref class ToolPalette : System::Windows::Forms::Control
    {
-      System::String ^ get()
-      {
-         return m_name;
-      }
-   }
+   public:
+      ToolPalette();
+      ~ToolPalette();
 
-   property System::Windows::Forms::ImageList ^ ImageList
-   {
-      System::Windows::Forms::ImageList ^ get()
+      property System::Collections::IList ^ Groups
       {
-         return m_imageList;
-      }
-   }
-
-   property bool Collapsed
-   {
-      bool get()
-      {
-         return m_bCollapsed;
+         System::Collections::IList ^ get()
+         {
+            return m_groups;
+         }
       }
 
-      void set(bool bCollapsed)
+      property ToolPaletteItem ^ CurrentItem
       {
-         m_bCollapsed = bCollapsed;
+         ToolPaletteItem ^ get()
+         {
+            return m_currentItem;
+         }
       }
-   }
 
-   property System::Collections::IList ^ Items
-   {
-      System::Collections::IList ^ get()
+      property System::Object ^ CurrentTool
       {
-         return m_items;
+         System::Object ^ get()
+         {
+            return m_currentItem ? m_currentItem->Tool : nullptr;
+         }
       }
-   }
 
-   ToolPaletteItem ^ FindItem(const System::String ^ toolName);
-
-private:
-   System::String ^ m_name;
-   System::Windows::Forms::ImageList ^ m_imageList;
-   System::Collections::ArrayList ^ m_items;
-   bool m_bCollapsed;
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: ToolSelectEventArgs
-//
-
-ref class ToolSelectEventArgs : public System::EventArgs
-{
-public:
-   ToolSelectEventArgs(ToolPaletteItem ^ oldTool, ToolPaletteItem ^ newTool);
-
-   property ToolPaletteItem ^ OldItem
-   {
-      ToolPaletteItem ^ get()
+      property int ItemHeight
       {
-         return m_oldItem;
+         int get();
+
+         void set(int itemHeight)
+         {
+            m_itemHeight = itemHeight;
+         }
       }
-   }
 
-   property ToolPaletteItem ^ NewItem
-   {
-      ToolPaletteItem ^ get()
-      {
-         return m_newItem;
-      }
-   }
+      delegate void ToolSelectHandler(System::Object ^ sender, ToolSelectEventArgs ^ e);
+      event ToolSelectHandler ^ ToolSelect;
 
-private:
-   ToolPaletteItem ^ m_oldItem;
-   ToolPaletteItem ^ m_newItem;
-};
+      ToolPaletteGroup ^ AddGroup(System::String ^ groupName);
+      ToolPaletteGroup ^ FindGroup(System::String ^ groupName);
 
+      ToolPaletteItem ^ AddTool(System::Type ^ type, System::Resources::ResourceManager ^ resMgr);
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: ToolPalette
-//
+   protected:
+      virtual void OnMouseDown(System::Windows::Forms::MouseEventArgs ^ e) override;
+      virtual void OnMouseLeave(System::EventArgs ^ e) override;
+      virtual void OnMouseMove(System::Windows::Forms::MouseEventArgs ^ e) override;
+      virtual void OnMouseUp(System::Windows::Forms::MouseEventArgs ^ e) override;
+      virtual void OnPaint(System::Windows::Forms::PaintEventArgs ^ e) override;
 
-ref class ToolPalette : System::Windows::Forms::Control
-{
-public:
-   ToolPalette();
-   ~ToolPalette();
+   private:
+      void DrawGroupHeading(System::Drawing::Graphics ^ graphics, ToolPaletteGroup ^ group, System::Drawing::Rectangle bounds);
+      void DrawToolItem(System::Drawing::Graphics ^ graphics, System::Windows::Forms::ImageList ^ imageList, ToolPaletteItem ^ item, System::Drawing::Rectangle bounds);
+      void DrawSelectedItem(System::Drawing::Graphics ^ graphics, System::Windows::Forms::ImageList ^ imageList, ToolPaletteItem ^ item, System::Drawing::Rectangle bounds);
 
-   property System::Collections::IList ^ Groups
-   {
-      System::Collections::IList ^ get()
-      {
-         return m_groups;
-      }
-   }
+      System::Object ^ GetHitItem(System::Windows::Forms::MouseEventArgs ^ e);
 
-   property ToolPaletteItem ^ CurrentItem
-   {
-      ToolPaletteItem ^ get()
-      {
-         return m_currentItem;
-      }
-   }
+      void SetMouseOverItem(System::Object ^ item);
 
-   property System::Object ^ CurrentTool
-   {
-      System::Object ^ get()
-      {
-         return m_currentItem ? m_currentItem->Tool : nullptr;
-      }
-   }
+      System::Collections::ArrayList ^ m_groups;
 
-   property int ItemHeight
-   {
-      int get();
+      ToolPaletteItem ^ m_currentItem;
 
-      void set(int itemHeight)
-      {
-         m_itemHeight = itemHeight;
-      }
-   }
+      int m_itemHeight;
 
-   delegate void ToolSelectHandler(System::Object ^ sender, ToolSelectEventArgs ^ e);
-   event ToolSelectHandler ^ ToolSelect;
-
-   ToolPaletteGroup ^ AddGroup(System::String ^ groupName, System::Windows::Forms::ImageList ^ imageList);
-   ToolPaletteGroup ^ FindGroup(System::String ^ groupName);
-
-   ToolPaletteItem ^ AddTool(ToolPaletteGroup ^ group, System::Object ^ tool, System::String ^ toolName, int iImage);
-
-protected:
-   virtual void OnMouseDown(System::Windows::Forms::MouseEventArgs ^ e) override;
-   virtual void OnMouseLeave(System::EventArgs ^ e) override;
-   virtual void OnMouseMove(System::Windows::Forms::MouseEventArgs ^ e) override;
-   virtual void OnMouseUp(System::Windows::Forms::MouseEventArgs ^ e) override;
-   virtual void OnPaint(System::Windows::Forms::PaintEventArgs ^ e) override;
-
-private:
-   void PaintGroupHeading(ToolPaletteGroup ^ group, System::Drawing::Graphics ^ graphics, System::Drawing::Rectangle ^ itemRect);
-   void PaintToolItem(ToolPaletteItem ^ item, System::Drawing::Graphics ^ graphics, System::Drawing::Rectangle ^ itemRect);
-   void PaintSelectedItem(ToolPaletteItem ^ item, System::Drawing::Graphics ^ graphics, System::Drawing::Rectangle ^ itemRect);
-
-   System::Object ^ GetHitItem(System::Windows::Forms::MouseEventArgs ^ e);
-
-   void SetMouseOverItem(System::Object ^ item);
-
-   System::Collections::ArrayList ^ m_groups;
-
-   ToolPaletteItem ^ m_currentItem;
-
-   int m_itemHeight;
-
-   System::Object ^ m_mouseOverItem;
-   System::Object ^ m_clickCandidateItem;
-};
+      System::Object ^ m_mouseOverItem;
+      System::Object ^ m_clickCandidateItem;
+   };
 
 
 } // namespace ManagedEditor
