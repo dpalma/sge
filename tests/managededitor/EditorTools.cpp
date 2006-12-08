@@ -42,15 +42,21 @@ namespace ManagedEditor
    // CLASS: EditorToolGroup
    //
 
-   EditorToolGroup::EditorToolGroup(System::String ^ groupName)
-    : m_groupName(groupName)
+   EditorToolGroup::EditorToolGroup()
+    : m_group(nullptr)
    {
    }
 
    System::String ^ EditorToolGroup::Group::get()
    {
-      return m_groupName;
+      return m_group;
    }
+
+   void EditorToolGroup::Group::set(System::String ^ group)
+   {
+      m_group = group;
+   }
+
 
    ///////////////////////////////////////////////////////////////////////////////
    //

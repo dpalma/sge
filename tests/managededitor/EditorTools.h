@@ -25,15 +25,16 @@ namespace ManagedEditor
    ref class EditorToolGroup : public System::Attribute
    {
    public:
-      EditorToolGroup(System::String ^ groupName);
+      EditorToolGroup();
 
       property System::String ^ Group
       {
          System::String ^ get();
+         void set(System::String ^);
       }
 
    private:
-      System::String ^ m_groupName;
+      System::String ^ m_group;
    };
 
    ///////////////////////////////////////////////////////////////////////////////
@@ -52,7 +53,7 @@ namespace ManagedEditor
    // CLASS: EditorSelectTool
    //
 
-   [EditorToolGroup("standardGroupName")]
+   [EditorToolGroup(Group = "standardGroupName")]
    ref class EditorSelectTool : public EditorTool
    {
    public:
