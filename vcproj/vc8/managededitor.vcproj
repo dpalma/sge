@@ -556,6 +556,11 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\tests\managededitor\Editor.resx"
+				SubType="Designer"
+				>
+			</File>
+			<File
 				RelativePath="..\..\tests\managededitor\EditorAbout.cpp"
 				>
 			</File>
@@ -585,10 +590,6 @@
 			</File>
 			<File
 				RelativePath="..\..\tests\managededitor\managededitor.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\tests\managededitor\managededitor.rc"
 				>
 			</File>
 			<File
@@ -702,6 +703,10 @@
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
+			<File
+				RelativePath="..\..\tests\managededitor\select.bmp"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>

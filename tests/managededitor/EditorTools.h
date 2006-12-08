@@ -52,7 +52,7 @@ namespace ManagedEditor
    // CLASS: EditorSelectTool
    //
 
-   [EditorToolGroup("Standard")]
+   [EditorToolGroup("standardGroupName")]
    ref class EditorSelectTool : public EditorTool
    {
    public:

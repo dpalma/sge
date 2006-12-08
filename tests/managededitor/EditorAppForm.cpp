@@ -238,6 +238,9 @@ namespace ManagedEditor
    void EditorAppForm::CreateEditorTools()
    {
       System::Reflection::Assembly ^ a = System::Reflection::Assembly::GetExecutingAssembly();
+
+      System::Resources::ResourceManager ^ resMgr = gcnew System::Resources::ResourceManager("ManagedEditor.Editor", a);
+
       cli::array<System::Type ^> ^ types = a->GetTypes();
       for each(System::Type ^ type in types)
       {
@@ -252,7 +255,7 @@ namespace ManagedEditor
                if (attrib->GetType() == EditorToolGroup::typeid)
                {
                   EditorToolGroup ^ toolGroup = dynamic_cast<EditorToolGroup ^>(attrib);
-                  groupName = toolGroup->Group;
+                  groupName = resMgr->GetString(toolGroup->Group);
                }
             }
 
