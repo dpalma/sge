@@ -4,6 +4,7 @@
 #include "stdhdr.h"
 
 #include "EditorTools.h"
+#include "EditorDocCmds.h"
 
 #include "engine/entityapi.h"
 #include "engine/terrainapi.h"

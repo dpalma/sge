@@ -569,6 +569,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\tests\managededitor\EditorDocCmds.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\tests\managededitor\EditorDocument.cpp"
 				>
 			</File>
@@ -656,6 +660,10 @@
 			</File>
 			<File
 				RelativePath="..\..\tests\managededitor\EditorAppForm.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tests\managededitor\EditorDocCmds.h"
 				>
 			</File>
 			<File

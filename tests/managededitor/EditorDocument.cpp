@@ -18,99 +18,167 @@ void StringConvert(System::String ^ string, cStr * pStr);
 namespace ManagedEditor
 {
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: EditorDocument
-//
+   ///////////////////////////////////////////////////////////////////////////////
+   //
+   // CLASS: EditorDocument
+   //
 
-EditorDocument::EditorDocument()
-{
-   Modified = false;
-}
-
-EditorDocument::~EditorDocument()
-{
-}
-
-// Return the document to its original state
-void EditorDocument::Reset()
-{
-   FileName = "";
-   Modified = false;
-   UseGlobal(TerrainModel);
-   pTerrainModel->Clear();
-}
-
-bool EditorDocument::New(const cTerrainSettings & ts)
-{
-   Reset();
-   Modified = true;
-
-   bool bResult = false;
-
-   UseGlobal(TerrainModel);
-   if (pTerrainModel->Initialize(ts) == S_OK)
+   EditorDocument::EditorDocument()
+    : m_undoStack(gcnew System::Collections::Stack())
+    , m_redoStack(gcnew System::Collections::Stack())
    {
-      bResult = true;
+      Modified = false;
    }
 
-   return bResult;
-}
-
-bool EditorDocument::Open(System::String ^ fileName)
-{
-   cStr fileName2;
-   StringConvert(fileName, &fileName2);
-
-   cAutoIPtr<IReader> pReader;
-   if (FileReaderCreate(cFileSpec(fileName2.c_str()), kFileModeBinary, &pReader) != S_OK)
+   EditorDocument::~EditorDocument()
    {
-      return false;
    }
 
-   Reset();
-   Modified = true; // Set modified flag during load
-
-   UseGlobal(SaveLoadManager);
-   if (FAILED(pSaveLoadManager->Load(pReader)))
+   // Return the document to its original state
+   void EditorDocument::Reset()
    {
-      ErrorMsg("An error occured during load\n");
-      return false;
+      FileName = "";
+      Modified = false;
+      UseGlobal(TerrainModel);
+      pTerrainModel->Clear();
    }
 
-   FileName = fileName;
-   Modified = false; // Start off as unmodified
-
-   return true;
-}
-
-bool EditorDocument::Save(System::String ^ fileName)
-{
-   cStr fileName2;
-   StringConvert(fileName, &fileName2);
-
-   cAutoIPtr<IWriter> pWriter;
-   if (FileWriterCreate(cFileSpec(fileName2.c_str()), kFileModeBinary, &pWriter) != S_OK)
+   bool EditorDocument::New(const cTerrainSettings & ts)
    {
-      return false;
+      Reset();
+      Modified = true;
+
+      bool bResult = false;
+
+      UseGlobal(TerrainModel);
+      if (pTerrainModel->Initialize(ts) == S_OK)
+      {
+         bResult = true;
+      }
+
+      return bResult;
    }
 
-   UseGlobal(SaveLoadManager);
-   if (FAILED(pSaveLoadManager->Save(pWriter)))
+   bool EditorDocument::Open(System::String ^ fileName)
    {
-      ErrorMsg("An error occured during save\n");
-      return false;
+      cStr fileName2;
+      StringConvert(fileName, &fileName2);
+
+      cAutoIPtr<IReader> pReader;
+      if (FileReaderCreate(cFileSpec(fileName2.c_str()), kFileModeBinary, &pReader) != S_OK)
+      {
+         return false;
+      }
+
+      Reset();
+      Modified = true; // Set modified flag during load
+
+      UseGlobal(SaveLoadManager);
+      if (FAILED(pSaveLoadManager->Load(pReader)))
+      {
+         ErrorMsg("An error occured during load\n");
+         return false;
+      }
+
+      FileName = fileName;
+      Modified = false; // Start off as unmodified
+
+      return true;
    }
 
-   //ClearCommandStack(&m_undoStack);
-   //ClearCommandStack(&m_redoStack);
+   bool EditorDocument::Save(System::String ^ fileName)
+   {
+      cStr fileName2;
+      StringConvert(fileName, &fileName2);
 
-   FileName = fileName;
-   Modified = false; // Not modified anymore
+      cAutoIPtr<IWriter> pWriter;
+      if (FileWriterCreate(cFileSpec(fileName2.c_str()), kFileModeBinary, &pWriter) != S_OK)
+      {
+         return false;
+      }
 
-   return true;
-}
+      UseGlobal(SaveLoadManager);
+      if (FAILED(pSaveLoadManager->Save(pWriter)))
+      {
+         ErrorMsg("An error occured during save\n");
+         return false;
+      }
 
+      m_undoStack->Clear();
+      m_redoStack->Clear();
+
+      FileName = fileName;
+      Modified = false; // Not modified anymore
+
+      return true;
+   }
+
+   void EditorDocument::AddDocumentCommand(EditorDocumentCommand ^ command, bool bDo)
+   {
+      if (command == nullptr)
+      {
+         return;
+      }
+
+      // TODO: try-catch here?
+      if (bDo)
+      {
+         command->Do();
+      }
+
+      if (command->CanUndo() == S_OK)
+      {
+         m_undoStack->Push(command);
+      }
+      else
+      {
+         m_undoStack->Clear();
+      }
+
+      m_redoStack->Clear();
+   }
+
+   void EditorDocument::Undo()
+   {
+      if (m_undoStack->Count == 0)
+      {
+         return;
+      }
+
+      EditorDocumentCommand ^ command = dynamic_cast<EditorDocumentCommand ^>(m_undoStack->Peek());
+      if (command)
+      {
+         command->Undo();
+         m_undoStack->Pop();
+      }
+   }
+
+   bool EditorDocument::CanUndo()
+   {
+      return ((m_undoStack->Count > 0)
+         && (dynamic_cast<EditorDocumentCommand ^>(m_undoStack->Peek()) != nullptr));
+   }
+
+   void EditorDocument::Redo()
+   {
+      if (m_redoStack->Count == 0)
+      {
+         return;
+      }
+
+      EditorDocumentCommand ^ command = dynamic_cast<EditorDocumentCommand ^>(m_redoStack->Peek());
+      if (command)
+      {
+         command->Do();
+         m_redoStack->Pop();
+      }
+   }
+
+   bool EditorDocument::CanRedo()
+   {
+      return ((m_redoStack->Count > 0)
+         && (dynamic_cast<EditorDocumentCommand ^>(m_redoStack->Peek()) != nullptr));
+   }
 
 } // namespace ManagedEditor
 

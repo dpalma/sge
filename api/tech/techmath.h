@@ -75,7 +75,9 @@ inline bool IsPowerOfTwo(long n)
 inline int FloatToInt(float f)
 {
    int i;
-#if defined(_MSC_VER)
+#if defined(_MANAGED)
+   i = (int)f; // TODO: better way for managed code w/o generating a compile warning?
+#elif defined(_MSC_VER)
    __asm
    {
       fld   f

@@ -45,6 +45,22 @@ protected:
       System::Windows::Forms::SplitterPanel ^ get();
    }
 
+   property System::Windows::Forms::ToolStripMenuItem ^ UndoMenuItem
+   {
+      System::Windows::Forms::ToolStripMenuItem ^ get()
+      {
+         return undoToolStripMenuItem;
+      }
+   }
+
+   property System::Windows::Forms::ToolStripMenuItem ^ RedoMenuItem
+   {
+      System::Windows::Forms::ToolStripMenuItem ^ get()
+      {
+         return redoToolStripMenuItem;
+      }
+   }
+
    virtual void NewDocument() {}
    virtual void OpenDocument() {}
    virtual void SaveDocument() {}
