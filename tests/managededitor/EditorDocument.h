@@ -4,6 +4,8 @@
 #ifndef INCLUDED_EDITORDOCUMENT_H
 #define INCLUDED_EDITORDOCUMENT_H
 
+#include "engine/entityapi.h"
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -24,7 +26,38 @@ namespace ManagedEditor
       virtual void Do() = 0;
       virtual bool CanUndo() = 0;
       virtual void Undo() = 0;
-      virtual System::String ^ GetLabel() = 0;
+      property System::String ^ Label
+      {
+         virtual System::String ^ get() = 0;
+      }
+   };
+
+   typedef array<EditorDocumentCommand ^> EditorDocumentCommandArray;
+
+   typedef System::Collections::Generic::Stack<EditorDocumentCommand ^> EditorDocumentCommandStack;
+
+
+   ///////////////////////////////////////////////////////////////////////////////
+   //
+   // CLASS: DocumentChangeEventArgs
+   //
+
+   ref class DocumentChangeEventArgs : public System::EventArgs
+   {
+   public:
+      DocumentChangeEventArgs(EditorDocumentCommandArray ^ commands)
+       : m_commands(commands) {}
+
+      property EditorDocumentCommandArray ^ Commands
+      {
+         EditorDocumentCommandArray ^ get()
+         {
+            return m_commands;
+         }
+      }
+
+   private:
+      EditorDocumentCommandArray ^ m_commands;
    };
 
 
@@ -39,12 +72,16 @@ namespace ManagedEditor
       EditorDocument();
       ~EditorDocument();
 
+      delegate void DocumentChangeHandler(System::Object ^ sender, DocumentChangeEventArgs ^ e);
+      event DocumentChangeHandler ^ DocumentChange;
+
       void Reset();
       bool New(const cTerrainSettings & ts);
       bool Open(System::String ^ fileName);
       bool Save(System::String ^ fileName);
 
       void AddDocumentCommand(EditorDocumentCommand ^ command, bool bDo);
+      void AddDocumentCommands(EditorDocumentCommandArray ^ commands, bool bDo);
       void Undo();
       bool CanUndo();
       void Redo();
@@ -53,9 +90,27 @@ namespace ManagedEditor
       property bool Modified;
       property System::String ^ FileName;
 
+      property EditorDocumentCommandStack ^ UndoStack
+      {
+         EditorDocumentCommandStack ^ get()
+         {
+            return m_undoStack;
+         }
+      }
+
+      property EditorDocumentCommandStack ^ RedoStack
+      {
+         EditorDocumentCommandStack ^ get()
+         {
+            return m_redoStack;
+         }
+      }
+
    private:
-      System::Collections::Stack ^ m_undoStack;
-      System::Collections::Stack ^ m_redoStack;
+      void PushCommand(EditorDocumentCommand ^ command, bool bDo);
+
+      EditorDocumentCommandStack ^ m_undoStack;
+      EditorDocumentCommandStack ^ m_redoStack;
    };
 
 

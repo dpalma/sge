@@ -39,12 +39,13 @@ namespace ManagedEditor
    //
 
    EditorAppForm::EditorAppForm()
+    : m_resMgr(gcnew System::Resources::ResourceManager("ManagedEditor.Editor", System::Reflection::Assembly::GetExecutingAssembly()))
    {
       m_toolPalette = gcnew ToolPalette();
       m_toolPalette->Dock = System::Windows::Forms::DockStyle::Fill;
       ToolSplitContainer->Panel1->Controls->Add(m_toolPalette);
 
-      m_toolPalette->ToolSelect += gcnew ToolPalette::ToolSelectHandler(this, &EditorAppForm::OnToolSelect);
+      m_toolPalette->ToolSelect += gcnew ToolPalette::ToolSelectHandler(this, &EditorAppForm::toolPalette_OnToolSelect);
 
       m_propertyGrid = gcnew PropertyGrid();
       m_propertyGrid->Dock = System::Windows::Forms::DockStyle::Fill;
@@ -65,6 +66,11 @@ namespace ManagedEditor
       cTerrainSettings terrainSettings;
       terrainSettings.SetTileSet(_T("defaulttiles.xml")); // TODO: fix hard coded
       m_document->New(terrainSettings);
+
+      m_document->DocumentChange += gcnew EditorDocument::DocumentChangeHandler(this, &EditorAppForm::OnDocumentChange);
+
+      m_originalUndoText = UndoMenuItem->Text;
+      m_originalRedoText = RedoMenuItem->Text;
 
       float centerX = static_cast<float>(terrainSettings.GetTileCountX() * terrainSettings.GetTileSize()) / 2;
       float centerZ = static_cast<float>(terrainSettings.GetTileCountZ() * terrainSettings.GetTileSize()) / 2;
@@ -115,10 +121,6 @@ namespace ManagedEditor
       }
    }
 
-   void EditorAppForm::OnToolSelect(System::Object ^ sender, ToolSelectEventArgs ^ e)
-   {
-   }
-
    void EditorAppForm::OnResize(System::EventArgs ^ e)
    {
       EditorForm::OnResize(e);
@@ -138,6 +140,24 @@ namespace ManagedEditor
          pRenderer->SetProjectionMatrix(proj.m);
 
          glViewport(0, 0, m_glControl->Width, m_glControl->Height);
+      }
+   }
+
+   void EditorAppForm::OnDocumentChange(System::Object ^ sender, DocumentChangeEventArgs ^ e)
+   {
+      UndoMenuItem->Text = m_originalUndoText;
+      EditorDocument ^ doc = dynamic_cast<EditorDocument ^>(sender);
+      if (doc && (doc->UndoStack->Count > 0))
+      {
+         EditorDocumentCommand ^ command = doc->UndoStack->Peek();
+         if (command)
+         {
+            System::String ^ commandLabel = command->Label;
+            if (commandLabel)
+            {
+               UndoMenuItem->Text = System::String::Format("Undo %s", commandLabel);
+            }
+         }
       }
    }
 
@@ -164,7 +184,11 @@ namespace ManagedEditor
       EditorTool ^ tool = dynamic_cast<EditorTool ^>(m_toolPalette->CurrentTool);
       if (tool)
       {
-         tool->OnMouseClick(e);
+         EditorDocumentCommandArray ^ result = tool->OnMouseClick(e);
+         if (result && m_document)
+         {
+            m_document->AddDocumentCommands(result, true);
+         }
       }
    }
 
@@ -190,6 +214,17 @@ namespace ManagedEditor
 
    void EditorAppForm::glControl_OnMouseWheel(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e)
    {
+   }
+
+   void EditorAppForm::toolPalette_OnToolSelect(System::Object ^ sender, ToolSelectEventArgs ^ e)
+   {
+      if (e->NewItem)
+      {
+         EditorTool ^ tool = dynamic_cast<EditorTool ^>(e->NewItem->Tool);
+         if (tool)
+         {
+         }
+      }
    }
 
    void EditorAppForm::NewDocument()
@@ -220,12 +255,12 @@ namespace ManagedEditor
    void EditorAppForm::OpenDocument()
    {
       OpenFileDialog ^ openDlg = gcnew OpenFileDialog();
-      openDlg->Filter = "SGE Map Files (*.sgm)|*.sgm|All Files (*.*)|*.*";
+      openDlg->Filter = m_resMgr->GetString("editorFileFilter");
       openDlg->FileName = "";
-      openDlg->DefaultExt = ".sgm";
+      openDlg->DefaultExt = m_resMgr->GetString("editorDefaultFileExtension");
       openDlg->CheckFileExists = true;
       openDlg->CheckPathExists = true;
-      if (openDlg->ShowDialog() == System::Windows::Forms::DialogResult::OK)
+      if (openDlg->ShowDialog() == ::DialogResult::OK)
       {
          EditorDocument ^ newDoc = gcnew EditorDocument();
          if (newDoc->Open(openDlg->FileName))
@@ -262,10 +297,10 @@ namespace ManagedEditor
       if (m_document)
       {
          SaveFileDialog ^ saveDlg = gcnew SaveFileDialog;
-         saveDlg->Filter = "SGE Map Files (*.sgm)|*.sgm|All Files (*.*)|*.*";
-         saveDlg->FileName = "Untitled1.sgm";
-         saveDlg->DefaultExt = ".sgm";
-         if (saveDlg->ShowDialog() == System::Windows::Forms::DialogResult::OK)
+         saveDlg->Filter = m_resMgr->GetString("editorFileFilter");
+         saveDlg->FileName = System::String::Format(m_resMgr->GetString("editorUntitledFileTemplate"), 1);
+         saveDlg->DefaultExt = m_resMgr->GetString("editorDefaultFileExtension");
+         if (saveDlg->ShowDialog() == ::DialogResult::OK)
          {
             m_document->Save(saveDlg->FileName);
          }
@@ -275,15 +310,12 @@ namespace ManagedEditor
    void EditorAppForm::CreateEditorTools()
    {
       System::Reflection::Assembly ^ a = System::Reflection::Assembly::GetExecutingAssembly();
-
-      System::Resources::ResourceManager ^ resMgr = gcnew System::Resources::ResourceManager("ManagedEditor.Editor", a);
-
-      cli::array<System::Type ^> ^ types = a->GetTypes();
+      array<System::Type ^> ^ types = a->GetTypes();
       for each(System::Type ^ type in types)
       {
          if (type->IsSubclassOf(EditorTool::typeid))
          {
-            m_toolPalette->AddTool(type, resMgr);
+            m_toolPalette->AddTool(type, m_resMgr);
          }
       }
    }

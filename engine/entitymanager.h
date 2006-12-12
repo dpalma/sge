@@ -36,7 +36,7 @@ typedef cComObject<cComEnum<IEnumEntities, &IID_IEnumEntities, IEntity*, CopyInt
 
 template <>
 void cComEnum<IEnumEntities, &IID_IEnumEntities, IEntity*, CopyInterface<IEntity>, tEntitySet>::Initialize(tEntitySet::const_iterator first,
-                                                                                                       tEntitySet::const_iterator last)
+                                                                                                           tEntitySet::const_iterator last)
 {
    tEntitySet::const_iterator iter = first;
    for (; iter != last; iter++)
@@ -73,7 +73,7 @@ public:
    virtual tResult AddEntityManagerListener(IEntityManagerListener * pListener);
    virtual tResult RemoveEntityManagerListener(IEntityManagerListener * pListener);
 
-   virtual tResult SpawnEntity(const tChar * pszEntity, const tVec3 & position);
+   virtual tResult SpawnEntity(const tChar * pszEntity, const tVec3 & position, tEntityId * pEntityId);
 
    virtual tResult RemoveEntity(IEntity * pEntity);
    virtual void RemoveAll();

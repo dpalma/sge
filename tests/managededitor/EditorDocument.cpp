@@ -24,8 +24,8 @@ namespace ManagedEditor
    //
 
    EditorDocument::EditorDocument()
-    : m_undoStack(gcnew System::Collections::Stack())
-    , m_redoStack(gcnew System::Collections::Stack())
+    : m_undoStack(gcnew EditorDocumentCommandStack())
+    , m_redoStack(gcnew EditorDocumentCommandStack())
    {
       Modified = false;
    }
@@ -120,22 +120,35 @@ namespace ManagedEditor
          return;
       }
 
-      // TODO: try-catch here?
-      if (bDo)
+      PushCommand(command, bDo);
+
+      Modified = true;
+
+      DocumentChange(this, gcnew DocumentChangeEventArgs(gcnew EditorDocumentCommandArray{command}));
+   }
+
+   void EditorDocument::AddDocumentCommands(EditorDocumentCommandArray ^ commands, bool bDo)
+   {
+      if (commands == nullptr)
       {
-         command->Do();
+         return;
       }
 
-      if (command->CanUndo() == S_OK)
+      System::Collections::IEnumerator ^ e = commands->GetEnumerator();
+      while (e->MoveNext())
       {
-         m_undoStack->Push(command);
-      }
-      else
-      {
-         m_undoStack->Clear();
+         EditorDocumentCommand ^ command = dynamic_cast<EditorDocumentCommand ^>(e->Current);
+         if (command == nullptr)
+         {
+            continue;
+         }
+
+         PushCommand(command, bDo);
       }
 
-      m_redoStack->Clear();
+      Modified = true;
+
+      DocumentChange(this, gcnew DocumentChangeEventArgs(commands));
    }
 
    void EditorDocument::Undo()
@@ -150,6 +163,10 @@ namespace ManagedEditor
       {
          command->Undo();
          m_undoStack->Pop();
+
+         Modified = true;
+
+         DocumentChange(this, gcnew DocumentChangeEventArgs(gcnew EditorDocumentCommandArray{command}));
       }
    }
 
@@ -171,6 +188,10 @@ namespace ManagedEditor
       {
          command->Do();
          m_redoStack->Pop();
+
+         Modified = true;
+
+         DocumentChange(this, gcnew DocumentChangeEventArgs(gcnew EditorDocumentCommandArray{command}));
       }
    }
 
@@ -178,6 +199,31 @@ namespace ManagedEditor
    {
       return ((m_redoStack->Count > 0)
          && (dynamic_cast<EditorDocumentCommand ^>(m_redoStack->Peek()) != nullptr));
+   }
+
+   void EditorDocument::PushCommand(EditorDocumentCommand ^ command, bool bDo)
+   {
+      if (command == nullptr)
+      {
+         return;
+      }
+
+      // TODO: try-catch here?
+      if (bDo)
+      {
+         command->Do();
+      }
+
+      if (command->CanUndo())
+      {
+         m_undoStack->Push(command);
+      }
+      else
+      {
+         m_undoStack->Clear();
+      }
+
+      m_redoStack->Clear();
    }
 
 } // namespace ManagedEditor

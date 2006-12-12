@@ -45,7 +45,7 @@ namespace ManagedEditor
    // CLASS: EditorSelectTool
    //
 
-   void EditorSelectTool::OnMouseClick(System::Windows::Forms::MouseEventArgs ^ e)
+   EditorDocumentCommandArray ^ EditorSelectTool::OnMouseClick(System::Windows::Forms::MouseEventArgs ^ e)
    {
       UseGlobal(Renderer);
       UseGlobal(EntityManager);
@@ -58,34 +58,16 @@ namespace ManagedEditor
             cAutoIPtr<IEntity> pEntity;
             if (pEntityManager->RayCast(pickRay, &pEntity) == S_OK)
             {
+               return gcnew EditorDocumentCommandArray{gcnew SelectEntityCommand(pEntity)};
             }
-            //else
-            //{
-            //   tVec3 location;
-            //   if (GetTerrainLocation(pickRay, &location))
-            //   {
-            //      UseGlobal(EntityManager);
-            //      pEntityManager->SpawnEntity(m_entity.c_str(), m_position);
-            //   }
-            //}
          }
       }
+
+      return nullptr;
    }
 
    void EditorSelectTool::OnMouseHover(System::Drawing::Point location)
    {
-      UseGlobal(Renderer);
-
-      cRay pickRay;
-      if (pRenderer->GenerateScreenPickRay(location.X, location.Y, &pickRay) == S_OK)
-      {
-         tVec3 location;
-         if (GetTerrainLocation(pickRay, &location))
-         {
-            cStr temp;
-            Sprintf(&temp, _T("Hit <%.2f, %.2f, %.2f>"), location.x, location.y, location.z);
-         }
-      }
    }
 
 
@@ -94,10 +76,11 @@ namespace ManagedEditor
    // CLASS: EditorPlaceEntityTool
    //
 
-   void EditorPlaceEntityTool::OnMouseClick(System::Windows::Forms::MouseEventArgs ^ e)
+   EditorDocumentCommandArray ^ EditorPlaceEntityTool::OnMouseClick(System::Windows::Forms::MouseEventArgs ^ e)
    {
       UseGlobal(Renderer);
       UseGlobal(EntityManager);
+      UseGlobal(TerrainModel);
 
       cRay pickRay;
       if (pRenderer->GenerateScreenPickRay(e->X, e->Y, &pickRay) == S_OK)
@@ -107,19 +90,26 @@ namespace ManagedEditor
             cAutoIPtr<IEntity> pEntity;
             if (pEntityManager->RayCast(pickRay, &pEntity) == S_OK)
             {
-               // TODO: select hit entity
+               return gcnew EditorDocumentCommandArray{gcnew SelectEntityCommand(pEntity)};
             }
             else
             {
                tVec3 location;
                if (GetTerrainLocation(pickRay, &location))
                {
-                  UseGlobal(EntityManager);
-                  pEntityManager->SpawnEntity("zombie", location);
+                  cTerrainSettings terrainSettings;
+                  Verify(pTerrainModel->GetTerrainSettings(&terrainSettings) == S_OK);
+
+                  float nx = location.x / (terrainSettings.GetTileCountX() * terrainSettings.GetTileSize());
+                  float nz = location.z / (terrainSettings.GetTileCountZ() * terrainSettings.GetTileSize());
+
+                  return gcnew EditorDocumentCommandArray{gcnew PlaceEntityCommand("zombie", nx, nz)};
                }
             }
          }
       }
+
+      return nullptr;
    }
 
    void EditorPlaceEntityTool::OnMouseHover(System::Drawing::Point location)

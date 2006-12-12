@@ -227,7 +227,11 @@ interface IEntityManager : IUnknown
    virtual tResult AddEntityManagerListener(IEntityManagerListener * pListener) = 0;
    virtual tResult RemoveEntityManagerListener(IEntityManagerListener * pListener) = 0;
 
-   virtual tResult SpawnEntity(const tChar * pszEntity, const tVec3 & position) = 0;
+   virtual tResult SpawnEntity(const tChar * pszEntity, const tVec3 & position, tEntityId * pEntityId) = 0;
+   inline tResult SpawnEntity(const tChar * pszEntity, const tVec3 & position)
+   {
+      return SpawnEntity(pszEntity, position, NULL);
+   }
 
    virtual tResult RemoveEntity(IEntity * pEntity) = 0;
    virtual void RemoveAll() = 0;

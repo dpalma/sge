@@ -304,10 +304,7 @@ namespace ManagedEditor
                {
                   if (item != m_currentItem)
                   {
-                     if (&ToolPalette::ToolSelect != nullptr)
-                     {
-                        ToolSelect(this, gcnew ToolSelectEventArgs(m_currentItem, item));
-                     }
+                     ToolSelect(this, gcnew ToolSelectEventArgs(m_currentItem, item));
 
                      m_currentItem = item;
 

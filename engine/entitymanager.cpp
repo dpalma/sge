@@ -120,7 +120,7 @@ tResult cEntityManager::RemoveEntityManagerListener(IEntityManagerListener * pLi
 
 ///////////////////////////////////////
 
-tResult cEntityManager::SpawnEntity(const tChar * pszEntity, const tVec3 & position)
+tResult cEntityManager::SpawnEntity(const tChar * pszEntity, const tVec3 & position, tEntityId * pEntityId)
 {
    if (pszEntity == NULL)
    {
@@ -169,6 +169,10 @@ tResult cEntityManager::SpawnEntity(const tChar * pszEntity, const tVec3 & posit
          }
 
          m_entities.push_back(CTAddRef(pEntity));
+         if (pEntityId != NULL)
+         {
+            *pEntityId = entityId;
+         }
          return S_OK;
       }
    }
@@ -556,7 +560,7 @@ tResult cEntityManager::Load(IReader * pReader, int version)
          {
             return E_FAIL;
          }
-         SpawnEntity(typeName.c_str(), position);
+         SpawnEntity(typeName.c_str(), position, NULL);
       }
    }
 
