@@ -7,7 +7,6 @@
 #include "EditorDocument.h"
 
 #include "tech/comtools.h"
-#include "tech/vec3.h"
 
 #ifdef _MSC_VER
 #pragma once
@@ -18,18 +17,33 @@ F_DECLARE_INTERFACE(IEntity);
 
 namespace ManagedEditor
 {
+   generic <typename T>
+   ref class XYZ sealed
+   {
+   public:
+      XYZ(T x, T y, T z)
+      {
+         X = x;
+         Y = y;
+         Z = z;
+      }
+
+      property T X;
+      property T Y;
+      property T Z;
+   };
 
    /////////////////////////////////////////////////////////////////////////////
    //
-   // CLASS: SelectEntityCommand
+   // CLASS: SelectCommand
    //
 
-   ref class SelectEntityCommand sealed : public EditorDocumentCommand
+   ref class SelectCommand sealed : public EditorDocumentCommand
    {
    public:
-      SelectEntityCommand(IEntity * pEntity);
-      ~SelectEntityCommand();
-      !SelectEntityCommand();
+      SelectCommand(XYZ<float> ^ rayOrigin, XYZ<float> ^ rayDirection);
+      ~SelectCommand();
+      !SelectCommand();
 
       virtual void Do() override;
       virtual bool CanUndo() override;
@@ -40,7 +54,9 @@ namespace ManagedEditor
       }
 
    private:
-      IEntity * m_pEntity;
+      XYZ<float> ^ m_rayOrigin;
+      XYZ<float> ^ m_rayDirection;
+      IEnumEntities * m_pOldSelection;
    };
 
 

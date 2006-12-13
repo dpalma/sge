@@ -163,6 +163,7 @@ namespace ManagedEditor
       {
          command->Undo();
          m_undoStack->Pop();
+         m_redoStack->Push(command);
 
          Modified = true;
 
@@ -188,6 +189,7 @@ namespace ManagedEditor
       {
          command->Do();
          m_redoStack->Pop();
+         m_undoStack->Push(command);
 
          Modified = true;
 

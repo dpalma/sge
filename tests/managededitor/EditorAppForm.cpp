@@ -72,6 +72,9 @@ namespace ManagedEditor
       m_originalUndoText = UndoMenuItem->Text;
       m_originalRedoText = RedoMenuItem->Text;
 
+      UndoMenuItem->Click += gcnew System::EventHandler(this, &EditorAppForm::OnUndo);
+      RedoMenuItem->Click += gcnew System::EventHandler(this, &EditorAppForm::OnRedo);
+
       float centerX = static_cast<float>(terrainSettings.GetTileCountX() * terrainSettings.GetTileSize()) / 2;
       float centerZ = static_cast<float>(terrainSettings.GetTileCountZ() * terrainSettings.GetTileSize()) / 2;
 
@@ -145,9 +148,14 @@ namespace ManagedEditor
 
    void EditorAppForm::OnDocumentChange(System::Object ^ sender, DocumentChangeEventArgs ^ e)
    {
-      UndoMenuItem->Text = m_originalUndoText;
       EditorDocument ^ doc = dynamic_cast<EditorDocument ^>(sender);
-      if (doc && (doc->UndoStack->Count > 0))
+      if (!doc)
+      {
+         return;
+      }
+
+      UndoMenuItem->Text = m_originalUndoText;
+      if (doc->UndoStack->Count > 0)
       {
          EditorDocumentCommand ^ command = doc->UndoStack->Peek();
          if (command)
@@ -155,9 +163,39 @@ namespace ManagedEditor
             System::String ^ commandLabel = command->Label;
             if (commandLabel)
             {
-               UndoMenuItem->Text = System::String::Format("Undo %s", commandLabel);
+               UndoMenuItem->Text = System::String::Format("Undo {0}", commandLabel);
             }
          }
+      }
+
+      RedoMenuItem->Text = m_originalRedoText;
+      if (doc->RedoStack->Count > 0)
+      {
+         EditorDocumentCommand ^ command = doc->RedoStack->Peek();
+         if (command)
+         {
+            System::String ^ commandLabel = command->Label;
+            if (commandLabel)
+            {
+               RedoMenuItem->Text = System::String::Format("Redo {0}", commandLabel);
+            }
+         }
+      }
+   }
+
+   void EditorAppForm::OnUndo(System::Object ^ sender, System::EventArgs ^ e)
+   {
+      if (m_document)
+      {
+         m_document->Undo();
+      }
+   }
+
+   void EditorAppForm::OnRedo(System::Object ^ sender, System::EventArgs ^ e)
+   {
+      if (m_document)
+      {
+         m_document->Redo();
       }
    }
 

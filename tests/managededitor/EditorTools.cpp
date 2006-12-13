@@ -40,6 +40,20 @@ namespace ManagedEditor
    }
 
 
+   static EditorDocumentCommand ^ MakeSelectCommand(const cRay & pickRay)
+   {
+      XYZ<float> ^ rayOrigin = gcnew XYZ<float>(
+         pickRay.GetOrigin().x,
+         pickRay.GetOrigin().y,
+         pickRay.GetOrigin().z);
+      XYZ<float> ^ rayDirection = gcnew XYZ<float>(
+         pickRay.GetDirection().x,
+         pickRay.GetDirection().y,
+         pickRay.GetDirection().z);
+      return gcnew SelectCommand(rayOrigin, rayDirection);
+   }
+
+
    ///////////////////////////////////////////////////////////////////////////////
    //
    // CLASS: EditorSelectTool
@@ -58,7 +72,7 @@ namespace ManagedEditor
             cAutoIPtr<IEntity> pEntity;
             if (pEntityManager->RayCast(pickRay, &pEntity) == S_OK)
             {
-               return gcnew EditorDocumentCommandArray{gcnew SelectEntityCommand(pEntity)};
+               return gcnew EditorDocumentCommandArray{MakeSelectCommand(pickRay)};
             }
          }
       }
@@ -90,7 +104,7 @@ namespace ManagedEditor
             cAutoIPtr<IEntity> pEntity;
             if (pEntityManager->RayCast(pickRay, &pEntity) == S_OK)
             {
-               return gcnew EditorDocumentCommandArray{gcnew SelectEntityCommand(pEntity)};
+               return gcnew EditorDocumentCommandArray{MakeSelectCommand(pickRay)};
             }
             else
             {

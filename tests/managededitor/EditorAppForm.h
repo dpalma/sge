@@ -42,6 +42,9 @@ namespace ManagedEditor
    protected:
       void OnDocumentChange(System::Object ^ sender, DocumentChangeEventArgs ^ e);
 
+      void OnUndo(System::Object ^ sender, System::EventArgs ^ e);
+      void OnRedo(System::Object ^ sender, System::EventArgs ^ e);
+
       void glControl_OnMouseDown(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e);
       void glControl_OnMouseUp(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e);
       void glControl_OnMouseClick(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e);

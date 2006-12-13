@@ -6,13 +6,11 @@
 #include "EditorDocCmds.h"
 
 #include "engine/entityapi.h"
-#include "engine/saveloadapi.h"
 #include "engine/terrainapi.h"
 
-#include "tech/filespec.h"
 #include "tech/globalobj.h"
-#include "tech/readwriteapi.h"
-#include "tech/techstring.h"
+#include "tech/ray.h"
+#include "tech/vec3.h"
 
 
 namespace ManagedEditor
@@ -20,43 +18,78 @@ namespace ManagedEditor
 
    /////////////////////////////////////////////////////////////////////////////
    //
-   // CLASS: SelectEntityCommand
+   // CLASS: SelectCommand
    //
 
-   SelectEntityCommand::SelectEntityCommand(IEntity * pEntity)
-    : m_pEntity(CTAddRef(pEntity))
+   SelectCommand::SelectCommand(XYZ<float> ^ rayOrigin, XYZ<float> ^ rayDirection)
+    : m_rayOrigin(rayOrigin)
+    , m_rayDirection(rayDirection)
+    , m_pOldSelection(NULL)
    {
    }
 
-   SelectEntityCommand::~SelectEntityCommand()
+   SelectCommand::~SelectCommand()
    {
    }
 
-   SelectEntityCommand::!SelectEntityCommand()
+   SelectCommand::!SelectCommand()
    {
-      if (m_pEntity != NULL)
+      if (m_pOldSelection != NULL)
       {
-         m_pEntity->Release();
-         m_pEntity = NULL;
+         m_pOldSelection->Release();
+         m_pOldSelection = NULL;
       }
    }
 
-   void SelectEntityCommand::Do()
+   void SelectCommand::Do()
    {
+      if (!m_rayOrigin || !m_rayDirection)
+      {
+         return;
+      }
+
+      UseGlobal(EntityManager);
+
+      Assert(m_pOldSelection == NULL);
+      pin_ptr<IEnumEntities*> ppOldSelection = &m_pOldSelection;
+      pEntityManager->GetSelected(ppOldSelection);
+      pEntityManager->DeselectAll();
+
+      cRay pickRay(
+         tVec3(m_rayOrigin->X, m_rayOrigin->Y, m_rayOrigin->Z),
+         tVec3(m_rayDirection->X, m_rayDirection->Y, m_rayDirection->Z));
+
+      cAutoIPtr<IEntity> pEntity;
+      if (pEntityManager->RayCast(pickRay, &pEntity) == S_OK)
+      {
+         pEntityManager->Select(pEntity);
+      }
    }
 
-   bool SelectEntityCommand::CanUndo()
+   bool SelectCommand::CanUndo()
    {
-      return false;
+      return true;
    }
 
-   void SelectEntityCommand::Undo()
+   void SelectCommand::Undo()
    {
+      UseGlobal(EntityManager);
+
+      if (m_pOldSelection != NULL)
+      {
+         pEntityManager->SetSelected(m_pOldSelection);
+         m_pOldSelection->Release();
+         m_pOldSelection = NULL;
+      }
+      else
+      {
+         pEntityManager->DeselectAll();
+      }
    }
 
-   System::String ^ SelectEntityCommand::Label::get()
+   System::String ^ SelectCommand::Label::get()
    {
-      return "Select Entity";
+      return "Select";
    }
 
 
@@ -69,13 +102,13 @@ namespace ManagedEditor
     : m_entity(entity)
     , m_nx(nx)
     , m_nz(nz)
-    , m_placedEntityId(0)
+    , m_placedEntityId(kInvalidEntityId)
    {
    }
 
    void PlaceEntityCommand::Do()
    {
-      if (m_placedEntityId != 0)
+      if (m_placedEntityId != kInvalidEntityId)
       {
          return;
       }
@@ -93,18 +126,19 @@ namespace ManagedEditor
 
    bool PlaceEntityCommand::CanUndo()
    {
-      return (m_placedEntityId != 0);
+      return (m_placedEntityId != kInvalidEntityId);
    }
 
    void PlaceEntityCommand::Undo()
    {
-      if (m_placedEntityId == 0)
+      if (m_placedEntityId == kInvalidEntityId)
       {
          return;
       }
 
       UseGlobal(EntityManager);
-//      pEntityManager->RemoveEntity(m_placedEntityId);
+      pEntityManager->RemoveEntity(m_placedEntityId);
+      m_placedEntityId = kInvalidEntityId; // When the entity is removed, the id is no longer valid
    }
 
    System::String ^ PlaceEntityCommand::Label::get()
