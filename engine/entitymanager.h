@@ -75,6 +75,7 @@ public:
 
    virtual tResult SpawnEntity(const tChar * pszEntity, const tVec3 & position, tEntityId * pEntityId);
 
+   virtual tResult RemoveEntity(tEntityId entityId);
    virtual tResult RemoveEntity(IEntity * pEntity);
    virtual void RemoveAll();
 
@@ -87,6 +88,7 @@ public:
    virtual tResult SelectBoxed(const tAxisAlignedBox & box);
    virtual tResult DeselectAll();
    virtual uint GetSelectedCount() const;
+   virtual tResult SetSelected(IEnumEntities * pEnum);
    virtual tResult GetSelected(IEnumEntities * * ppEnum) const;
 
    virtual tResult RegisterComponentFactory(const tChar * pszComponent,

@@ -137,7 +137,7 @@ typedef GUID IID;
 //
 
 #ifndef interface
-#if _MSC_VER >= 1400
+#if (_MSC_VER >= 1400)
 // Define in the same convoluted way that Visual C++ 2005
 // does to avoid the macro redefinition warning
 #define __STRUCT__ struct
@@ -150,6 +150,16 @@ typedef GUID IID;
 #define F_DECLARE_INTERFACE(iface) \
    F_DECLARE_GUID(IID_##iface); \
    interface iface
+
+#if (_MSC_VER >= 1200)
+#define DECLSPEC_UUID(x) __declspec(uuid(x))
+#else
+#define DECLSPEC_UUID(x)
+#endif
+
+#define F_DECLARE_INTERFACE_GUID(iface, guid) \
+   F_DECLARE_GUID(IID_##iface); \
+   interface DECLSPEC_UUID(guid) iface
 
 #if defined(_MSC_VER)
    #define STDMETHODCALLTYPE       __stdcall
@@ -170,8 +180,8 @@ typedef unsigned long ulong;
 #ifndef __IUnknown_INTERFACE_DEFINED__
 #define __IUnknown_INTERFACE_DEFINED__
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-interface __declspec(uuid("{00000000-0000-0000-0C00-000000000046}")) IUnknown
+#if (_MSC_VER >= 1200)
+interface DECLSPEC_UUID("{00000000-0000-0000-0C00-000000000046}") IUnknown
 #else
 interface IUnknown
 #endif

@@ -14,17 +14,17 @@
 #pragma once
 #endif
 
-F_DECLARE_INTERFACE(IEntity);
-F_DECLARE_INTERFACE(IEntityComponent);
-F_DECLARE_INTERFACE(IEntityPositionComponent);
-F_DECLARE_INTERFACE(IEntityRenderComponent);
-F_DECLARE_INTERFACE(IEntitySpawnComponent);
-F_DECLARE_INTERFACE(IEntityBrainComponent);
-F_DECLARE_INTERFACE(IEnumEntities);
-F_DECLARE_INTERFACE(IEntityCommandManager);
-F_DECLARE_INTERFACE(IEntityCommandUI);
-F_DECLARE_INTERFACE(IEntityManager);
-F_DECLARE_INTERFACE(IEntityManagerListener);
+F_DECLARE_INTERFACE_GUID(IEntity, "85E6F9DB-639F-411d-B365-86A8FBD1ACBF");
+F_DECLARE_INTERFACE_GUID(IEntityComponent, "D1A48ABA-7DB7-4fb7-96E3-72F79DFABA99");
+F_DECLARE_INTERFACE_GUID(IEntityPositionComponent, "BA4B742C-8D6F-494a-827B-25F8A3B4801F");
+F_DECLARE_INTERFACE_GUID(IEntityRenderComponent, "AF68F8F0-EFA5-49c6-AA91-C4E21BAF6D14");
+F_DECLARE_INTERFACE_GUID(IEntitySpawnComponent, "612C76A2-151D-4322-9687-3374463BF7BA");
+F_DECLARE_INTERFACE_GUID(IEntityBrainComponent, "4E16D11A-08F2-4321-AA91-B670D068B505");
+F_DECLARE_INTERFACE_GUID(IEnumEntities, "FC22B764-3FBA-43da-97B0-56857D0A77E9");
+F_DECLARE_INTERFACE_GUID(IEntityCommandManager, "4A55B143-2588-4fad-828A-E0C6C6539284");
+F_DECLARE_INTERFACE_GUID(IEntityCommandUI, "06188D53-13DA-4e67-975B-A653460F8967");
+F_DECLARE_INTERFACE_GUID(IEntityManager, "92DB7247-E01C-4935-B35C-EB233295A4BE");
+F_DECLARE_INTERFACE_GUID(IEntityManagerListener, "1EC6DB1A-C833-4b68-8705-D1A9FB5CC8D3");
 
 class cMultiVar;
 class cRay;
@@ -135,6 +135,7 @@ interface IEntityBrainComponent : IEntityComponent
 //
 
 typedef ulong tEntityId;
+const ulong kInvalidEntityId = 0;
 
 interface IEntity : IUnknown
 {
@@ -233,6 +234,7 @@ interface IEntityManager : IUnknown
       return SpawnEntity(pszEntity, position, NULL);
    }
 
+   virtual tResult RemoveEntity(tEntityId entityId) = 0;
    virtual tResult RemoveEntity(IEntity * pEntity) = 0;
    virtual void RemoveAll() = 0;
 
@@ -245,6 +247,8 @@ interface IEntityManager : IUnknown
    virtual tResult SelectBoxed(const tAxisAlignedBox & box) = 0;
    virtual tResult DeselectAll() = 0;
    virtual uint GetSelectedCount() const = 0;
+
+   virtual tResult SetSelected(IEnumEntities * pEnum) = 0;
    virtual tResult GetSelected(IEnumEntities * * ppEnum) const = 0;
 
    virtual tResult RegisterComponentFactory(const tChar * pszComponent,

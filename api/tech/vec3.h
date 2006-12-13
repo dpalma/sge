@@ -20,25 +20,26 @@ class cVec3
 {
 public:
    typedef T value_type;
+   typedef const cVec3<T> & const_reference;
 
    cVec3();
    cVec3(value_type xx, value_type yy, value_type zz);
    cVec3(const value_type v[3]);
-   cVec3(const cVec3 & other);
+   cVec3(const_reference other);
 
-   const cVec3 & operator =(const cVec3 & other);
-   const cVec3 & operator +=(const cVec3 & other);
-   const cVec3 & operator -=(const cVec3 & other);
-   const cVec3 & operator *=(value_type scale);
-   const cVec3 & operator /=(value_type divisor);
+   const_reference operator =(const_reference other);
+   const_reference operator +=(const_reference other);
+   const_reference operator -=(const_reference other);
+   const_reference operator *=(value_type scale);
+   const_reference operator /=(value_type divisor);
 
    cVec3 operator -() const;
 
    value_type Length() const;
    value_type LengthSqr() const;
    void Normalize();
-   value_type Dot(const cVec3 & other) const;
-   cVec3 Cross(const cVec3 & other) const;
+   value_type Dot(const_reference other) const;
+   cVec3 Cross(const_reference other) const;
 
    union
    {
@@ -80,7 +81,7 @@ inline cVec3<T>::cVec3(const value_type v[3])
 ///////////////////////////////////////
 
 template <typename T>
-inline cVec3<T>::cVec3(const cVec3 & other)
+inline cVec3<T>::cVec3(const_reference other)
 {
    x = other.x;
    y = other.y;
@@ -90,7 +91,7 @@ inline cVec3<T>::cVec3(const cVec3 & other)
 ///////////////////////////////////////
 
 template <typename T>
-inline const cVec3<T> & cVec3<T>::operator =(const cVec3 & other)
+inline typename cVec3<T>::const_reference cVec3<T>::operator =(const_reference other)
 {
    x = other.x;
    y = other.y;
@@ -101,7 +102,7 @@ inline const cVec3<T> & cVec3<T>::operator =(const cVec3 & other)
 ///////////////////////////////////////
 
 template <typename T>
-inline const cVec3<T> & cVec3<T>::operator +=(const cVec3 & other)
+inline typename cVec3<T>::const_reference cVec3<T>::operator +=(const_reference other)
 {
    x += other.x;
    y += other.y;
@@ -112,7 +113,7 @@ inline const cVec3<T> & cVec3<T>::operator +=(const cVec3 & other)
 ///////////////////////////////////////
 
 template <typename T>
-inline const cVec3<T> & cVec3<T>::operator -=(const cVec3 & other)
+inline typename cVec3<T>::const_reference cVec3<T>::operator -=(const_reference other)
 {
    x -= other.x;
    y -= other.y;
@@ -123,7 +124,7 @@ inline const cVec3<T> & cVec3<T>::operator -=(const cVec3 & other)
 ///////////////////////////////////////
 
 template <typename T>
-inline const cVec3<T> & cVec3<T>::operator *=(value_type scale)
+inline typename cVec3<T>::const_reference cVec3<T>::operator *=(value_type scale)
 {
    x *= scale;
    y *= scale;
@@ -134,7 +135,7 @@ inline const cVec3<T> & cVec3<T>::operator *=(value_type scale)
 ///////////////////////////////////////
 
 template <typename T>
-inline const cVec3<T> & cVec3<T>::operator /=(value_type divisor)
+inline typename cVec3<T>::const_reference cVec3<T>::operator /=(value_type divisor)
 {
    x /= divisor;
    y /= divisor;
@@ -188,7 +189,7 @@ inline void cVec3<T>::Normalize()
 ///////////////////////////////////////
 
 template <typename T>
-inline typename cVec3<T>::value_type cVec3<T>::Dot(const cVec3 & other) const
+inline typename cVec3<T>::value_type cVec3<T>::Dot(const_reference other) const
 {
    return x * other.x + y * other.y + z * other.z;
 }
@@ -196,7 +197,7 @@ inline typename cVec3<T>::value_type cVec3<T>::Dot(const cVec3 & other) const
 ///////////////////////////////////////
 
 template <typename T>
-inline cVec3<T> cVec3<T>::Cross(const cVec3 & other) const
+inline cVec3<T> cVec3<T>::Cross(const_reference other) const
 {
    return cVec3(y * other.z - z * other.y,
                 z * other.x - x * other.z,

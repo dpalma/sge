@@ -138,7 +138,7 @@ tResult cEntityManager::SpawnEntity(const tChar * pszEntity, const tVec3 & posit
             "There should be only one entity definition per file (%s)\n", pszEntity);
 
          uint oldNextId = m_nextId;
-         uint entityId = m_nextId++;
+         uint entityId = ++m_nextId;
 
          tResult result = E_FAIL;
          cAutoIPtr<IEntity> pEntity;
@@ -178,6 +178,38 @@ tResult cEntityManager::SpawnEntity(const tChar * pszEntity, const tVec3 & posit
    }
 
    return E_FAIL;
+}
+
+///////////////////////////////////////
+
+tResult cEntityManager::RemoveEntity(tEntityId entityId)
+{
+   bool bFound = false;
+   tEntityList::iterator iter = m_entities.begin();
+   for (; iter != m_entities.end(); iter++)
+   {
+      cAutoIPtr<IEntity> pEntity(CTAddRef(*iter));
+
+      if (pEntity->GetId() == entityId)
+      {
+         bFound = true;
+
+         size_t nErasedFromSelected = m_selected.erase(pEntity);
+         while (nErasedFromSelected-- > 0)
+         {
+            pEntity->Release();
+         }
+
+         pEntity->Release();
+         m_entities.erase(iter);
+
+         // TODO: return entity's id to a pool?
+
+         break;
+      }
+   }
+
+   return bFound ? S_OK : S_FALSE;
 }
 
 ///////////////////////////////////////
@@ -395,6 +427,42 @@ tResult cEntityManager::DeselectAll()
 uint cEntityManager::GetSelectedCount() const
 {
    return m_selected.size();
+}
+
+///////////////////////////////////////
+
+tResult cEntityManager::SetSelected(IEnumEntities * pEnum)
+{
+   if (pEnum == NULL)
+   {
+      return E_POINTER;
+   }
+
+   std::for_each(m_selected.begin(), m_selected.end(), CTInterfaceMethod(&IEntity::Release));
+   m_selected.clear();
+
+   IEntity * pEntities[32];
+   ulong count = 0;
+
+   while (SUCCEEDED(pEnum->Next(_countof(pEntities), &pEntities[0], &count)) && (count > 0))
+   {
+      for (ulong i = 0; i < count; i++)
+      {
+         std::pair<tEntitySet::iterator, bool> result = m_selected.insert(pEntities[i]);
+         if (result.second)
+         {
+            pEntities[i]->AddRef();
+         }
+
+         SafeRelease(pEntities[i]);
+      }
+
+      count = 0;
+   }
+
+   ForEachConnection(&IEntityManagerListener::OnEntitySelectionChange);
+
+   return S_OK;
 }
 
 ///////////////////////////////////////
