@@ -124,7 +124,7 @@
     <value>SGE Map Files (*.sgm)|*.sgm|All Files (*.*)|*.*</value>
   </data>
   <data name="editorUntitledFileTemplate" xml:space="preserve">
-    <value>Untitled%d</value>
+    <value>Untitled{0}</value>
   </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="placeentity" type="System.Resources.ResXFileRef, System.Windows.Forms">
@@ -132,6 +132,9 @@
   </data>
   <data name="placeEntityToolName" xml:space="preserve">
     <value>Place Entity</value>
+  </data>
+  <data name="redoMenuItemTemplate" xml:space="preserve">
+    <value>Redo {0}</value>
   </data>
   <data name="select" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>select.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -141,5 +144,8 @@
   </data>
   <data name="standardGroupName" xml:space="preserve">
     <value>Standard</value>
+  </data>
+  <data name="undoMenuItemTemplate" xml:space="preserve">
+    <value>Undo {0}</value>
   </data>
 </root>

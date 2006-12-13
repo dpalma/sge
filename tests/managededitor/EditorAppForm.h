@@ -10,8 +10,6 @@
 #include "GlControl.h"
 #include "ToolPalette.h"
 
-#include "tech/comtools.h"
-
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -37,14 +35,15 @@ namespace ManagedEditor
 
       void OnIdle(System::Object ^ sender, System::EventArgs ^ e);
 
-      virtual void OnResize(System::EventArgs ^ e) override;
-
    protected:
       void OnDocumentChange(System::Object ^ sender, DocumentChangeEventArgs ^ e);
 
       void OnUndo(System::Object ^ sender, System::EventArgs ^ e);
       void OnRedo(System::Object ^ sender, System::EventArgs ^ e);
 
+      void InvokeToolMethod(System::String ^ methodName, array<System::Type ^> ^ paramTypes, array<System::Object ^> ^ params);
+
+      void glControl_OnResize(System::Object ^ sender, System::EventArgs ^ e);
       void glControl_OnMouseDown(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e);
       void glControl_OnMouseUp(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e);
       void glControl_OnMouseClick(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e);

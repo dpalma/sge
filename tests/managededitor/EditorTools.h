@@ -27,9 +27,6 @@ namespace ManagedEditor
 
    ref class EditorTool abstract
    {
-   public:
-      virtual EditorDocumentCommandArray ^ OnMouseClick(System::Windows::Forms::MouseEventArgs ^ e) = 0;
-      virtual void OnMouseHover(System::Drawing::Point location) = 0;
    };
 
    ///////////////////////////////////////////////////////////////////////////////
@@ -41,8 +38,7 @@ namespace ManagedEditor
    ref class EditorSelectTool : public EditorTool
    {
    public:
-      virtual EditorDocumentCommandArray ^ OnMouseClick(System::Windows::Forms::MouseEventArgs ^ e) override;
-      virtual void OnMouseHover(System::Drawing::Point location) override;
+      EditorDocumentCommandArray ^ OnMouseClick(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e);
    };
 
    ///////////////////////////////////////////////////////////////////////////////
@@ -54,8 +50,7 @@ namespace ManagedEditor
    ref class EditorPlaceEntityTool : public EditorTool
    {
    public:
-      virtual EditorDocumentCommandArray ^ OnMouseClick(System::Windows::Forms::MouseEventArgs ^ e) override;
-      virtual void OnMouseHover(System::Drawing::Point location) override;
+      EditorDocumentCommandArray ^ OnMouseClick(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e);
    };
 
 } // namespace ManagedEditor

@@ -59,7 +59,8 @@ namespace ManagedEditor
    // CLASS: EditorSelectTool
    //
 
-   EditorDocumentCommandArray ^ EditorSelectTool::OnMouseClick(System::Windows::Forms::MouseEventArgs ^ e)
+   EditorDocumentCommandArray ^ EditorSelectTool::OnMouseClick(System::Object ^ sender,
+                                                               System::Windows::Forms::MouseEventArgs ^ e)
    {
       UseGlobal(Renderer);
       UseGlobal(EntityManager);
@@ -80,17 +81,14 @@ namespace ManagedEditor
       return nullptr;
    }
 
-   void EditorSelectTool::OnMouseHover(System::Drawing::Point location)
-   {
-   }
-
 
    ///////////////////////////////////////////////////////////////////////////////
    //
    // CLASS: EditorPlaceEntityTool
    //
 
-   EditorDocumentCommandArray ^ EditorPlaceEntityTool::OnMouseClick(System::Windows::Forms::MouseEventArgs ^ e)
+   EditorDocumentCommandArray ^ EditorPlaceEntityTool::OnMouseClick(System::Object ^ sender,
+                                                                    System::Windows::Forms::MouseEventArgs ^ e)
    {
       UseGlobal(Renderer);
       UseGlobal(EntityManager);
@@ -124,10 +122,6 @@ namespace ManagedEditor
       }
 
       return nullptr;
-   }
-
-   void EditorPlaceEntityTool::OnMouseHover(System::Drawing::Point location)
-   {
    }
 
 } // namespace ManagedEditor

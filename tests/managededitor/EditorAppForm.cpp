@@ -27,10 +27,6 @@ extern void StringConvert(System::String ^ string, cStr * pStr);
 
 namespace ManagedEditor
 {
-   static const int kDefStatsX = 25;
-   static const int kDefStatsY = 25;
-   static const cColor kDefStatsColor(1,1,1,1);
-
    using namespace System::Windows::Forms;
 
    ///////////////////////////////////////////////////////////////////////////////
@@ -55,6 +51,7 @@ namespace ManagedEditor
 	   m_glControl->Dock = System::Windows::Forms::DockStyle::Fill;
       MainPanel->Controls->Add(m_glControl);
 
+      m_glControl->Resize += gcnew System::EventHandler(this, &EditorAppForm::glControl_OnResize);
       m_glControl->MouseDown += gcnew System::Windows::Forms::MouseEventHandler(this, &EditorAppForm::glControl_OnMouseDown);
       m_glControl->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &EditorAppForm::glControl_OnMouseUp);
       m_glControl->MouseClick += gcnew System::Windows::Forms::MouseEventHandler(this, &EditorAppForm::glControl_OnMouseClick);
@@ -81,7 +78,7 @@ namespace ManagedEditor
       UseGlobal(CameraControl);
       pCameraControl->LookAtPoint(centerX, centerZ);
 
-      System::Windows::Forms::Application::Idle += gcnew System::EventHandler(this, &EditorAppForm::OnIdle);
+      Application::Idle += gcnew System::EventHandler(this, &EditorAppForm::OnIdle);
 
       CreateEditorTools();
    }
@@ -124,28 +121,6 @@ namespace ManagedEditor
       }
    }
 
-   void EditorAppForm::OnResize(System::EventArgs ^ e)
-   {
-      EditorForm::OnResize(e);
-
-      if (m_glControl && (m_glControl->Height > 0))
-      {
-         float aspect = static_cast<float>(m_glControl->Width) / m_glControl->Height;
-
-         const float kFov = 70;
-         const float kZNear = 1;
-         const float kZFar = 5000;
-
-         tMatrix4 proj;
-         MatrixPerspective(kFov, aspect, kZNear, kZFar, &proj);
-
-         UseGlobal(Renderer);
-         pRenderer->SetProjectionMatrix(proj.m);
-
-         glViewport(0, 0, m_glControl->Width, m_glControl->Height);
-      }
-   }
-
    void EditorAppForm::OnDocumentChange(System::Object ^ sender, DocumentChangeEventArgs ^ e)
    {
       EditorDocument ^ doc = dynamic_cast<EditorDocument ^>(sender);
@@ -163,7 +138,7 @@ namespace ManagedEditor
             System::String ^ commandLabel = command->Label;
             if (commandLabel)
             {
-               UndoMenuItem->Text = System::String::Format("Undo {0}", commandLabel);
+               UndoMenuItem->Text = System::String::Format(m_resMgr->GetString("undoMenuItemTemplate"), commandLabel);
             }
          }
       }
@@ -177,7 +152,7 @@ namespace ManagedEditor
             System::String ^ commandLabel = command->Label;
             if (commandLabel)
             {
-               RedoMenuItem->Text = System::String::Format("Redo {0}", commandLabel);
+               RedoMenuItem->Text = System::String::Format(m_resMgr->GetString("redoMenuItemTemplate"), commandLabel);
             }
          }
       }
@@ -199,59 +174,95 @@ namespace ManagedEditor
       }
    }
 
-   void EditorAppForm::glControl_OnMouseDown(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e)
+   void EditorAppForm::glControl_OnResize(System::Object ^ sender, System::EventArgs ^ e)
    {
-      EditorTool ^ tool = dynamic_cast<EditorTool ^>(m_toolPalette->CurrentTool);
-      if (tool)
+      if (m_glControl && (m_glControl->Height > 0))
       {
-         //tool->OnMouseDown(e);
+         float aspect = static_cast<float>(m_glControl->Width) / m_glControl->Height;
+
+         const float kFov = 70;
+         const float kZNear = 1;
+         const float kZFar = 5000;
+
+         tMatrix4 proj;
+         MatrixPerspective(kFov, aspect, kZNear, kZFar, &proj);
+
+         UseGlobal(Renderer);
+         pRenderer->SetProjectionMatrix(proj.m);
+
+         glViewport(0, 0, m_glControl->Width, m_glControl->Height);
       }
    }
 
-   void EditorAppForm::glControl_OnMouseUp(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e)
+   void EditorAppForm::InvokeToolMethod(System::String ^ methodName,
+                                        array<System::Type ^> ^ paramTypes,
+                                        array<System::Object ^> ^ params)
    {
       EditorTool ^ tool = dynamic_cast<EditorTool ^>(m_toolPalette->CurrentTool);
-      if (tool)
+      if (!tool)
       {
-         //tool->OnMouseUp(e);
+         return;
+      }
+
+      System::Reflection::MethodInfo ^ methodInfo = tool->GetType()->GetMethod(methodName, paramTypes);
+      if (!methodInfo)
+      {
+         return;
+      }
+
+      EditorDocumentCommandArray ^ commands = dynamic_cast<EditorDocumentCommandArray ^>(methodInfo->Invoke(tool, params));
+      if (commands && m_document)
+      {
+         m_document->AddDocumentCommands(commands, true);
       }
    }
 
-   void EditorAppForm::glControl_OnMouseClick(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e)
+   void EditorAppForm::glControl_OnMouseDown(System::Object ^ sender, MouseEventArgs ^ e)
    {
-      EditorTool ^ tool = dynamic_cast<EditorTool ^>(m_toolPalette->CurrentTool);
-      if (tool)
-      {
-         EditorDocumentCommandArray ^ result = tool->OnMouseClick(e);
-         if (result && m_document)
-         {
-            m_document->AddDocumentCommands(result, true);
-         }
-      }
+      InvokeToolMethod(
+         "OnMouseDown",
+         gcnew array<System::Type ^>{System::Object::typeid, MouseEventArgs::typeid},
+         gcnew array<System::Object ^>{sender, e});
    }
 
-   void EditorAppForm::glControl_OnMouseMove(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e)
+   void EditorAppForm::glControl_OnMouseUp(System::Object ^ sender, MouseEventArgs ^ e)
    {
-      EditorTool ^ tool = dynamic_cast<EditorTool ^>(m_toolPalette->CurrentTool);
-      if (tool)
-      {
-         //tool->OnMouseMove(e);
-      }
+      InvokeToolMethod(
+         "OnMouseUp",
+         gcnew array<System::Type ^>{System::Object::typeid, MouseEventArgs::typeid},
+         gcnew array<System::Object ^>{sender, e});
+   }
+
+   void EditorAppForm::glControl_OnMouseClick(System::Object ^ sender, MouseEventArgs ^ e)
+   {
+      InvokeToolMethod(
+         "OnMouseClick",
+         gcnew array<System::Type ^>{System::Object::typeid, MouseEventArgs::typeid},
+         gcnew array<System::Object ^>{sender, e});
+   }
+
+   void EditorAppForm::glControl_OnMouseMove(System::Object ^ sender, MouseEventArgs ^ e)
+   {
+      InvokeToolMethod(
+         "OnMouseMove",
+         gcnew array<System::Type ^>{System::Object::typeid, MouseEventArgs::typeid},
+         gcnew array<System::Object ^>{sender, e});
    }
 
    void EditorAppForm::glControl_OnMouseHover(System::Object ^ sender, System::EventArgs ^ e)
    {
-      System::Drawing::Point m = m_glControl->PointToClient(m_glControl->MousePosition);
-
-      EditorTool ^ tool = dynamic_cast<EditorTool ^>(m_toolPalette->CurrentTool);
-      if (tool)
-      {
-         tool->OnMouseHover(m);
-      }
+      InvokeToolMethod(
+         "OnMouseHover",
+         gcnew array<System::Type ^>{System::Object::typeid, System::EventArgs::typeid},
+         gcnew array<System::Object ^>{sender, e});
    }
 
-   void EditorAppForm::glControl_OnMouseWheel(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e)
+   void EditorAppForm::glControl_OnMouseWheel(System::Object ^ sender, MouseEventArgs ^ e)
    {
+      InvokeToolMethod(
+         "OnMouseWheel",
+         gcnew array<System::Type ^>{System::Object::typeid, MouseEventArgs::typeid},
+         gcnew array<System::Object ^>{sender, e});
    }
 
    void EditorAppForm::toolPalette_OnToolSelect(System::Object ^ sender, ToolSelectEventArgs ^ e)
