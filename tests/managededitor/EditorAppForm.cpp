@@ -5,6 +5,7 @@
 
 #include "EditorAppForm.h"
 #include "EditorMapSettings.h"
+#include "EntityWrapper.h"
 
 #include "engine/cameraapi.h"
 #include "engine/entityapi.h"
@@ -20,11 +21,6 @@
 
 extern void StringConvert(System::String ^ string, cStr * pStr);
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// NAMESPACE: ManagedEditor
-//
-
 namespace ManagedEditor
 {
    using namespace System::Windows::Forms;
@@ -36,6 +32,7 @@ namespace ManagedEditor
 
    EditorAppForm::EditorAppForm()
     : m_resMgr(gcnew System::Resources::ResourceManager("ManagedEditor.Editor", System::Reflection::Assembly::GetExecutingAssembly()))
+    , m_pEntityManagerListener(NULL)
    {
       m_toolPalette = gcnew ToolPalette();
       m_toolPalette->Dock = System::Windows::Forms::DockStyle::Fill;
@@ -79,8 +76,17 @@ namespace ManagedEditor
       pCameraControl->LookAtPoint(centerX, centerZ);
 
       Application::Idle += gcnew System::EventHandler(this, &EditorAppForm::OnIdle);
+      Application::ApplicationExit += gcnew System::EventHandler(this, &EditorAppForm::OnExit);
 
       CreateEditorTools();
+
+      m_pEntityManagerListener = new EditorAppFormEntityManagerListener();
+      if (m_pEntityManagerListener)
+      {
+         m_pEntityManagerListener->SetEditorAppForm(this);
+         UseGlobal(EntityManager);
+         pEntityManager->AddEntityManagerListener(m_pEntityManagerListener);
+      }
    }
 
    EditorAppForm::~EditorAppForm()
@@ -119,6 +125,47 @@ namespace ManagedEditor
 
          m_glControl->SwapBuffers();
       }
+   }
+
+   void EditorAppForm::OnExit(System::Object ^ sender, System::EventArgs ^ e)
+   {
+      if (m_pEntityManagerListener)
+      {
+         m_pEntityManagerListener->SetEditorAppForm(nullptr);
+         UseGlobal(EntityManager);
+         pEntityManager->RemoveEntityManagerListener(m_pEntityManagerListener);
+         delete m_pEntityManagerListener;
+         m_pEntityManagerListener = NULL;
+      }
+   }
+
+   void EditorAppForm::OnEntitySelectionChange()
+   {
+      System::Object ^ newSelectedObject = nullptr;
+
+      UseGlobal(EntityManager);
+      uint nSelected = pEntityManager->GetSelectedCount();
+      if (nSelected > 0)
+      {
+         cAutoIPtr<IEnumEntities> pEntities;
+         if (pEntityManager->GetSelected(&pEntities) == S_OK)
+         {
+            if (nSelected == 1)
+            {
+               ulong count = 1;
+               cAutoIPtr<IEntity> pEntity;
+               if (pEntities->Next(1, &pEntity, &count) == S_OK)
+               {
+                  newSelectedObject = gcnew EntityWrapper(pEntity);
+               }
+            }
+            else // multiple entities selected
+            {
+            }
+         }
+      }
+
+      m_propertyGrid->SelectedObject = newSelectedObject;
    }
 
    void EditorAppForm::OnDocumentChange(System::Object ^ sender, DocumentChangeEventArgs ^ e)
@@ -366,6 +413,29 @@ namespace ManagedEditor
          {
             m_toolPalette->AddTool(type, m_resMgr);
          }
+      }
+   }
+
+   ///////////////////////////////////////////////////////////////////////////////
+   //
+   // CLASS: EditorAppFormEntityManagerListener
+   //
+
+   EditorAppFormEntityManagerListener::EditorAppFormEntityManagerListener()
+    : m_editorAppForm(nullptr)
+   {
+   }
+
+   void EditorAppFormEntityManagerListener::SetEditorAppForm(EditorAppForm ^ editorAppForm)
+   {
+      m_editorAppForm = editorAppForm;
+   }
+
+   void EditorAppFormEntityManagerListener::OnEntitySelectionChange()
+   {
+      if (m_editorAppForm)
+      {
+         m_editorAppForm->OnEntitySelectionChange();
       }
    }
 

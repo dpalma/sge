@@ -10,17 +10,17 @@
 #include "GlControl.h"
 #include "ToolPalette.h"
 
+#include "tech/comtools.h"
+
+#include <vcclr.h>
+
 #ifdef _MSC_VER
 #pragma once
 #endif
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// NAMESPACE: ManagedEditor
-//
-
 namespace ManagedEditor
 {
+   class EditorAppFormEntityManagerListener;
 
    ///////////////////////////////////////////////////////////////////////////////
    //
@@ -34,6 +34,9 @@ namespace ManagedEditor
       ~EditorAppForm();
 
       void OnIdle(System::Object ^ sender, System::EventArgs ^ e);
+      void OnExit(System::Object ^ sender, System::EventArgs ^ e);
+
+      void OnEntitySelectionChange();
 
    protected:
       void OnDocumentChange(System::Object ^ sender, DocumentChangeEventArgs ^ e);
@@ -71,6 +74,26 @@ namespace ManagedEditor
 
       System::String ^ m_originalUndoText;
       System::String ^ m_originalRedoText;
+
+      EditorAppFormEntityManagerListener * m_pEntityManagerListener;
+   };
+
+   ///////////////////////////////////////////////////////////////////////////////
+   //
+   // CLASS: EditorAppFormEntityManagerListener
+   //
+
+   class EditorAppFormEntityManagerListener : public cComObject<IMPLEMENTS(IEntityManagerListener)>
+   {
+   public:
+      EditorAppFormEntityManagerListener();
+
+      void SetEditorAppForm(EditorAppForm ^ editorAppForm);
+
+      virtual void OnEntitySelectionChange();
+
+   private:
+      gcroot<EditorAppForm ^> m_editorAppForm;
    };
 
 } // namespace ManagedEditor
