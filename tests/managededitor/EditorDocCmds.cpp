@@ -21,6 +21,13 @@ namespace ManagedEditor
    // CLASS: SelectCommand
    //
 
+   SelectCommand::SelectCommand()
+    : m_rayOrigin(nullptr)
+    , m_rayDirection(nullptr)
+    , m_pOldSelection(NULL)
+   {
+   }
+
    SelectCommand::SelectCommand(XYZ<float> ^ rayOrigin, XYZ<float> ^ rayDirection)
     : m_rayOrigin(rayOrigin)
     , m_rayDirection(rayDirection)
@@ -43,11 +50,6 @@ namespace ManagedEditor
 
    void SelectCommand::Do()
    {
-      if (!m_rayOrigin || !m_rayDirection)
-      {
-         return;
-      }
-
       UseGlobal(EntityManager);
 
       Assert(m_pOldSelection == NULL);
@@ -55,14 +57,17 @@ namespace ManagedEditor
       pEntityManager->GetSelected(ppOldSelection);
       pEntityManager->DeselectAll();
 
-      cRay pickRay(
-         tVec3(m_rayOrigin->X, m_rayOrigin->Y, m_rayOrigin->Z),
-         tVec3(m_rayDirection->X, m_rayDirection->Y, m_rayDirection->Z));
-
-      cAutoIPtr<IEntity> pEntity;
-      if (pEntityManager->RayCast(pickRay, &pEntity) == S_OK)
+      if (m_rayOrigin && m_rayDirection)
       {
-         pEntityManager->Select(pEntity);
+         cRay pickRay(
+            tVec3(m_rayOrigin->X, m_rayOrigin->Y, m_rayOrigin->Z),
+            tVec3(m_rayDirection->X, m_rayDirection->Y, m_rayDirection->Z));
+
+         cAutoIPtr<IEntity> pEntity;
+         if (pEntityManager->RayCast(pickRay, &pEntity) == S_OK)
+         {
+            pEntityManager->Select(pEntity);
+         }
       }
    }
 

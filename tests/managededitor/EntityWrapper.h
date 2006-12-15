@@ -27,6 +27,8 @@ namespace ManagedEditor
       ~EntityWrapper();
       !EntityWrapper();
 
+      IEntity * AccessEntity() { return m_pEntity; }
+
       virtual System::ComponentModel::AttributeCollection ^ GetAttributes();
       virtual System::String ^ GetClassName();
       virtual System::String ^ GetComponentName();
@@ -42,6 +44,7 @@ namespace ManagedEditor
 
    private:
       IEntity * m_pEntity;
+      System::ComponentModel::PropertyDescriptorCollection ^ m_properties;
    };
 
    ///////////////////////////////////////////////////////////////////////////////

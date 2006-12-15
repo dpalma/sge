@@ -20,6 +20,11 @@ namespace ManagedEditor
    EntityWrapper::EntityWrapper(IEntity * pEntity)
     : m_pEntity(CTAddRef(pEntity))
    {
+      m_properties = gcnew PropertyDescriptorCollection(gcnew array<PropertyDescriptor ^>
+      {
+         gcnew EntityPropertyDescriptor("Type", nullptr, EntityWrapper::typeid, true, System::String::typeid),
+         gcnew EntityPropertyDescriptor("ID", nullptr, EntityWrapper::typeid, true, System::Int32::typeid),
+      });
    }
 
    EntityWrapper::~EntityWrapper()
@@ -87,11 +92,7 @@ namespace ManagedEditor
 
    PropertyDescriptorCollection ^ EntityWrapper::GetProperties()
    {
-      return gcnew PropertyDescriptorCollection(gcnew array<PropertyDescriptor ^>
-      {
-         gcnew EntityPropertyDescriptor("Type", nullptr, EntityWrapper::typeid, true, System::String::typeid),
-         gcnew EntityPropertyDescriptor("ID", nullptr, EntityWrapper::typeid, true, System::Int32::typeid),
-      });
+      return m_properties;
    }
 
    PropertyDescriptorCollection ^ EntityWrapper::GetProperties(array<System::Attribute ^> ^ attributes)
@@ -101,6 +102,10 @@ namespace ManagedEditor
 
    System::Object ^ EntityWrapper::GetPropertyOwner(PropertyDescriptor ^ pd)
    {
+      if (m_properties->Contains(pd))
+      {
+         return this;
+      }
       return nullptr;
    }
 
@@ -143,8 +148,21 @@ namespace ManagedEditor
 
    System::Object ^ EntityPropertyDescriptor::GetValue(System::Object ^ component)
    {
-      if (component)
+      EntityWrapper ^ entity = dynamic_cast<EntityWrapper ^>(component);
+      if (entity && entity->AccessEntity())
       {
+         if (Name == "ID")
+         {
+            return gcnew System::Int32(entity->AccessEntity()->GetId());
+         }
+         else if (Name == "Type")
+         {
+            cStr type;
+            if (entity->AccessEntity()->GetTypeName(&type) == S_OK)
+            {
+               return gcnew System::String(type.c_str());
+            }
+         }
       }
       return nullptr;
    }

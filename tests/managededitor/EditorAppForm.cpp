@@ -93,6 +93,11 @@ namespace ManagedEditor
    {
    }
 
+   EditorAppForm::!EditorAppForm()
+   {
+      StopGlobalObjects();
+   }
+
    void EditorAppForm::OnIdle(System::Object ^ sender, System::EventArgs ^ e)
    {
       UseGlobal(Scheduler);
@@ -132,9 +137,11 @@ namespace ManagedEditor
       if (m_pEntityManagerListener)
       {
          m_pEntityManagerListener->SetEditorAppForm(nullptr);
+
          UseGlobal(EntityManager);
          pEntityManager->RemoveEntityManagerListener(m_pEntityManagerListener);
-         delete m_pEntityManagerListener;
+
+         m_pEntityManagerListener->Release();
          m_pEntityManagerListener = NULL;
       }
    }

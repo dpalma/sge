@@ -32,6 +32,7 @@ namespace ManagedEditor
    public:
       EditorAppForm();
       ~EditorAppForm();
+      !EditorAppForm();
 
       void OnIdle(System::Object ^ sender, System::EventArgs ^ e);
       void OnExit(System::Object ^ sender, System::EventArgs ^ e);

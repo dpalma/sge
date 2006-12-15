@@ -27,9 +27,6 @@
 #include "tech/techstring.h"
 #include "tech/threadcallapi.h"
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
 #include "tech/dbgalloc.h" // must be last header
 
 
@@ -137,27 +134,15 @@ static bool ManagedEditorInit(array<System::String ^> ^ args)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static void ManagedEditorTerm()
-{
-   UseGlobal(Scheduler);
-   pScheduler->Stop();
-
-   StopGlobalObjects();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 int main(array<System::String ^> ^ args)
 {
    if (!ManagedEditorInit(args))
    {
-      ManagedEditorTerm();
+      StopGlobalObjects();
       return -1;
    }
 
    System::Windows::Forms::Application::Run(gcnew ManagedEditor::EditorAppForm());
-
-   ManagedEditorTerm();
 
    return 0;
 }

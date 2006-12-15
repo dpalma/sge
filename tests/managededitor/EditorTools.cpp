@@ -75,6 +75,10 @@ namespace ManagedEditor
             {
                return gcnew EditorDocumentCommandArray{MakeSelectCommand(pickRay)};
             }
+            else
+            {
+               return gcnew EditorDocumentCommandArray{gcnew SelectCommand};
+            }
          }
       }
 

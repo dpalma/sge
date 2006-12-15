@@ -41,6 +41,7 @@ namespace ManagedEditor
    ref class SelectCommand sealed : public EditorDocumentCommand
    {
    public:
+      SelectCommand();
       SelectCommand(XYZ<float> ^ rayOrigin, XYZ<float> ^ rayDirection);
       ~SelectCommand();
       !SelectCommand();
