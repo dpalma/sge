@@ -87,7 +87,7 @@ def getLastBuild(dir = None):
 	if dir == None:
 		dir = '.'
 	for f in os.listdir(dir):
-		if os.path.isdir(f) and fnmatch(f, 'sge-*-*'):
+		if os.path.isdir(f) and fnmatch(f, 'SGE-*-*'):
 			t = os.stat(f)[stat.ST_CTIME]
 			if dt == None or t > dt:
 				bld = f
@@ -104,9 +104,7 @@ def getLatestRevision(repos):
 		print >> sys.stderr, "Warning: unable to remove %s" % tmpdir
 	return rev
 
-def main(argv = None):
-	if argv is None:
-		argv = sys.argv
+def main(argv):
 		
 	reposUrl = 'svn://dpcvs.no-ip.org'
 	
@@ -130,8 +128,6 @@ def main(argv = None):
 	now = datetime.now()
 	bldlabel = "SGE-%04d%02d%02d-%d" % (now.year, now.month, now.day, rev)
 	
-	print bldlabel
-	
 	os.system("svn export -r %d %s/trunk/sge %s" % (rev, reposUrl, bldlabel))
 
 	buildVC71(bldlabel)
@@ -140,5 +136,5 @@ def main(argv = None):
 	return 0
 	
 if __name__ == "__main__":
-	sys.exit(main())
+	sys.exit(main(sys.argv[1:]))
 	
