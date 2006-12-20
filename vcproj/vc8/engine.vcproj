@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8.00"
 	Name="engine"
-	ProjectGUID="{BD5E5BCF-8648-48EA-8B35-04CFE1541E3A}"
+	ProjectGUID="{F1334822-5BBB-495B-AD67-0F8D7D2A02C9}"
 	RootNamespace="engine"
 	>
 	<Platforms>
