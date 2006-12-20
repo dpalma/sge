@@ -1,10 +1,13 @@
-// Windows Template Library - WTL version 7.1
-// Copyright (C) 1997-2003 Microsoft Corporation
-// All rights reserved.
+// Windows Template Library - WTL version 7.5
+// Copyright (C) Microsoft Corporation. All rights reserved.
 //
 // This file is a part of the Windows Template Library.
-// The code and information is provided "as-is" without
-// warranty of any kind, either expressed or implied.
+// The use and distribution terms for this software are covered by the
+// Common Public License 1.0 (http://opensource.org/licenses/cpl.php)
+// which can be found in the file CPL.TXT at the root of this distribution.
+// By using this software in any fashion, you are agreeing to be bound by
+// the terms of this license. You must not remove this notice, or
+// any other, from this software.
 
 #ifndef __ATLSPLIT_H__
 #define __ATLSPLIT_H__
@@ -13,10 +16,6 @@
 
 #ifndef __cplusplus
 	#error ATL requires C++ compilation (use a .cpp suffix)
-#endif
-
-#ifdef _WIN32_WCE
-	#error atlsplit.h is not supported on Windows CE
 #endif
 
 #ifndef __ATLAPP_H__
@@ -232,8 +231,8 @@ public:
 			m_dwExtendedStyle = (m_dwExtendedStyle & ~dwMask) | (dwExtendedStyle & dwMask);
 #ifdef _DEBUG
 		if(IsProportional() && IsRightAligned())
-			ATLTRACE2(atlTraceUI, 0, "CSplitterImpl::SetSplitterExtendedStyle - SPLIT_PROPORTIONAL and SPLIT_RIGHTALIGNED are mutually exclusive, defaulting to SPLIT_PROPORTIONAL.\n");
-#endif //_DEBUG
+			ATLTRACE2(atlTraceUI, 0, _T("CSplitterImpl::SetSplitterExtendedStyle - SPLIT_PROPORTIONAL and SPLIT_RIGHTALIGNED are mutually exclusive, defaulting to SPLIT_PROPORTIONAL.\n"));
+#endif // _DEBUG
 		return dwPrevStyle;
 	}
 
@@ -404,7 +403,9 @@ public:
 	BEGIN_MSG_MAP(CSplitterImpl)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_PAINT, OnPaint)
+#ifndef _WIN32_WCE
 		MESSAGE_HANDLER(WM_PRINTCLIENT, OnPaint)
+#endif // !_WIN32_WCE
 		if(IsInteractive())
 		{
 			MESSAGE_HANDLER(WM_SETCURSOR, OnSetCursor)
@@ -415,7 +416,9 @@ public:
 			MESSAGE_HANDLER(WM_CAPTURECHANGED, OnCaptureChanged)
 		}
 		MESSAGE_HANDLER(WM_SETFOCUS, OnSetFocus)
+#ifndef _WIN32_WCE
 		MESSAGE_HANDLER(WM_MOUSEACTIVATE, OnMouseActivate)
+#endif // !_WIN32_WCE
 		MESSAGE_HANDLER(WM_SETTINGCHANGE, OnSettingChange)
 	END_MSG_MAP()
 
@@ -556,6 +559,7 @@ public:
 		return 1;
 	}
 
+#ifndef _WIN32_WCE
 	LRESULT OnMouseActivate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/)
 	{
 		T* pT = static_cast<T*>(this);
@@ -577,6 +581,7 @@ public:
 		}
 		return lRet;
 	}
+#endif // !_WIN32_WCE
 
 	LRESULT OnSettingChange(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 	{
@@ -735,7 +740,11 @@ public:
 
 	void GetSystemSettings(bool bUpdate)
 	{
+#ifndef _WIN32_WCE
 		m_cxySplitBar = ::GetSystemMetrics(t_bVertical ? SM_CXSIZEFRAME : SM_CYSIZEFRAME);
+#else // CE specific
+		m_cxySplitBar = 2 * ::GetSystemMetrics(t_bVertical ? SM_CXEDGE : SM_CYEDGE);
+#endif // _WIN32_WCE
 
 		T* pT = static_cast<T*>(this);
 		if((pT->GetExStyle() & WS_EX_CLIENTEDGE))
@@ -749,7 +758,9 @@ public:
 			m_cxyMin = 2 * ::GetSystemMetrics(t_bVertical ? SM_CXEDGE : SM_CYEDGE);
 		}
 
+#ifndef _WIN32_WCE
 		::SystemParametersInfo(SPI_GETDRAGFULLWINDOWS, 0, &m_bFullDrag, 0);
+#endif // !_WIN32_WCE
 
 		if(bUpdate)
 			UpdateSplitterLayout();
@@ -767,7 +778,7 @@ public:
 			m_nProportionalPos = ::MulDiv(m_xySplitterPos, m_nPropMax, cxyTotal);
 		else
 			m_nProportionalPos = 0;
-		ATLTRACE2(atlTraceUI, 0, "CSplitterImpl::StoreProportionalPos - %i\n", m_nProportionalPos);
+		ATLTRACE2(atlTraceUI, 0, _T("CSplitterImpl::StoreProportionalPos - %i\n"), m_nProportionalPos);
 	}
 
 	void UpdateProportionalPos()
@@ -794,7 +805,7 @@ public:
 			m_nProportionalPos = cxyTotal - m_xySplitterPos;
 		else
 			m_nProportionalPos = 0;
-		ATLTRACE2(atlTraceUI, 0, "CSplitterImpl::StoreRightAlignPos - %i\n", m_nProportionalPos);
+		ATLTRACE2(atlTraceUI, 0, _T("CSplitterImpl::StoreRightAlignPos - %i\n"), m_nProportionalPos);
 	}
 
 	void UpdateRightAlignPos()
@@ -865,6 +876,6 @@ public:
 typedef CSplitterWindowT<true>    CSplitterWindow;
 typedef CSplitterWindowT<false>   CHorSplitterWindow;
 
-}; //namespace WTL
+}; // namespace WTL
 
 #endif // __ATLSPLIT_H__

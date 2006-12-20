@@ -1,10 +1,13 @@
-// Windows Template Library - WTL version 7.1
-// Copyright (C) 1997-2003 Microsoft Corporation
-// All rights reserved.
+// Windows Template Library - WTL version 7.5
+// Copyright (C) Microsoft Corporation. All rights reserved.
 //
 // This file is a part of the Windows Template Library.
-// The code and information is provided "as-is" without
-// warranty of any kind, either expressed or implied.
+// The use and distribution terms for this software are covered by the
+// Common Public License 1.0 (http://opensource.org/licenses/cpl.php)
+// which can be found in the file CPL.TXT at the root of this distribution.
+// By using this software in any fashion, you are agreeing to be bound by
+// the terms of this license. You must not remove this notice, or
+// any other, from this software.
 
 #ifndef __ATLCRACK_H__
 #define __ATLCRACK_H__
@@ -1404,8 +1407,7 @@ public: \
 	if (uMsg == WM_APPCOMMAND) \
 	{ \
 		SetMsgHandled(TRUE); \
-		func((HWND)wParam, GET_APPCOMMAND_LPARAM(lParam), GET_DEVICE_LPARAM(lParam), GET_KEYSTATE_LPARAM(lParam)); \
-		lResult = 0; \
+		lResult = (LRESULT)func((HWND)wParam, GET_APPCOMMAND_LPARAM(lParam), GET_DEVICE_LPARAM(lParam), GET_KEYSTATE_LPARAM(lParam)); \
 		if(IsMsgHandled()) \
 			return TRUE; \
 	}
@@ -1499,7 +1501,7 @@ public: \
 			return TRUE; \
 	}
 
-#endif //(_WIN32_WINNT >= 0x0500)
+#endif // (_WIN32_WINNT >= 0x0500)
 
 #if(_WIN32_WINNT >= 0x0501)
 
@@ -1984,4 +1986,4 @@ public: \
 			return TRUE; \
 	}
 
-#endif //__ATLCRACK_H__
+#endif // __ATLCRACK_H__

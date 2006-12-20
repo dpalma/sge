@@ -1,10 +1,13 @@
-// Windows Template Library - WTL version 7.1
-// Copyright (C) 1997-2003 Microsoft Corporation
-// All rights reserved.
+// Windows Template Library - WTL version 7.5
+// Copyright (C) Microsoft Corporation. All rights reserved.
 //
 // This file is a part of the Windows Template Library.
-// The code and information is provided "as-is" without
-// warranty of any kind, either expressed or implied.
+// The use and distribution terms for this software are covered by the
+// Common Public License 1.0 (http://opensource.org/licenses/cpl.php)
+// which can be found in the file CPL.TXT at the root of this distribution.
+// By using this software in any fashion, you are agreeing to be bound by
+// the terms of this license. You must not remove this notice, or
+// any other, from this software.
 
 #ifndef __ATLTHEME_H__
 #define __ATLTHEME_H__
@@ -29,7 +32,7 @@
 
 #if (_WIN32_WINNT < 0x0501)
 	#error atltheme.h requires _WIN32_WINNT >= 0x0501
-#endif //(_WIN32_WINNT < 0x0501)
+#endif // (_WIN32_WINNT < 0x0501)
 
 #include <tmschema.h>
 #include <uxtheme.h>
@@ -56,7 +59,7 @@
 #if (_MSC_VER < 1300) && !defined(_WTL_NO_THEME_DELAYLOAD)
   #pragma comment(lib, "delayimp.lib")
   #pragma comment(linker, "/delayload:uxtheme.dll")
-#endif //(_MSC_VER < 1300) && !defined(_WTL_NO_THEME_DELAYLOAD)
+#endif // (_MSC_VER < 1300) && !defined(_WTL_NO_THEME_DELAYLOAD)
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -204,10 +207,11 @@ public:
 		return ::GetThemeTextExtent(m_hTheme, hDC, nPartID, nStateID, pszText, nCharCount, dwTextFlags, pBoundingRect, pExtentRect);
 	}
 
-	HRESULT GetThemeTextMetrics(HDC hDC, int nPartID, int nStateID, PTEXTMETRIC pTextMetric) const
+	HRESULT GetThemeTextMetrics(HDC hDC, int nPartID, int nStateID, PTEXTMETRICW pTextMetric) const
 	{
 		ATLASSERT(m_hTheme != NULL);
-		return ::GetThemeTextMetrics(m_hTheme, hDC, nPartID, nStateID, pTextMetric);
+		// Note: The cast to PTEXTMETRIC is because uxtheme.h incorrectly uses it instead of PTEXTMETRICW
+		return ::GetThemeTextMetrics(m_hTheme, hDC, nPartID, nStateID, (PTEXTMETRIC)pTextMetric);
 	}
 
 	HRESULT GetThemeBackgroundRegion(HDC hDC, int nPartID, int nStateID, LPCRECT pRect, HRGN* pRegion) const
@@ -288,10 +292,19 @@ public:
 		return ::GetThemePosition(m_hTheme, nPartID, nStateID, nPropID, pPoint);
 	}
 
-	HRESULT GetThemeFont(int nPartID, HDC hDC, int nStateID, int nPropID, LOGFONT* pFont) const
+	// deprecated
+	HRESULT GetThemeFont(int nPartID, HDC hDC, int nStateID, int nPropID, LOGFONTW* pFont) const
 	{
 		ATLASSERT(m_hTheme != NULL);
-		return ::GetThemeFont(m_hTheme, hDC, nPartID, nStateID, nPropID, pFont);
+		// Note: The cast to LOGFONT* is because uxtheme.h incorrectly uses it instead of LOGFONTW*
+		return ::GetThemeFont(m_hTheme, hDC, nPartID, nStateID, nPropID, (LOGFONT*)pFont);
+	}
+
+	HRESULT GetThemeFont(HDC hDC, int nPartID, int nStateID, int nPropID, LOGFONTW* pFont) const
+	{
+		ATLASSERT(m_hTheme != NULL);
+		// Note: The cast to LOGFONT* is because uxtheme.h incorrectly uses it instead of LOGFONTW*
+		return ::GetThemeFont(m_hTheme, hDC, nPartID, nStateID, nPropID, (LOGFONT*)pFont);
 	}
 
 	HRESULT GetThemeRect(int nPartID, int nStateID, int nPropID, LPRECT pRect) const
@@ -348,10 +361,11 @@ public:
 		return ::GetThemeSysBool(m_hTheme, nBoolID);
 	}
 
-	HRESULT GetThemeSysFont(int nFontID, LOGFONT* plf) const
+	HRESULT GetThemeSysFont(int nFontID, LOGFONTW* plf) const
 	{
 		ATLASSERT(m_hTheme != NULL);
-		return ::GetThemeSysFont(m_hTheme, nFontID, plf);
+		// Note: The cast to LOGFONT* is because uxtheme.h incorrectly uses it instead of LOGFONTW*
+		return ::GetThemeSysFont(m_hTheme, nFontID, (LOGFONT*)plf);
 	}
 
 	HRESULT GetThemeSysString(int nStringID, LPWSTR pszStringBuff, int cchMaxStringChars) const
@@ -658,6 +672,6 @@ public:
 	}
 };
 
-}; //namespace WTL
+}; // namespace WTL
 
 #endif // __ATLTHEME_H__

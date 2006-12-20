@@ -1,10 +1,13 @@
-// Windows Template Library - WTL version 7.1
-// Copyright (C) 1997-2003 Microsoft Corporation
-// All rights reserved.
+// Windows Template Library - WTL version 7.5
+// Copyright (C) Microsoft Corporation. All rights reserved.
 //
 // This file is a part of the Windows Template Library.
-// The code and information is provided "as-is" without
-// warranty of any kind, either expressed or implied.
+// The use and distribution terms for this software are covered by the
+// Common Public License 1.0 (http://opensource.org/licenses/cpl.php)
+// which can be found in the file CPL.TXT at the root of this distribution.
+// By using this software in any fashion, you are agreeing to be bound by
+// the terms of this license. You must not remove this notice, or
+// any other, from this software.
 
 #ifndef __ATLPRINT_H__
 #define __ATLPRINT_H__
@@ -40,7 +43,8 @@
 // CPrintPreview
 // CPrintPreviewWindowImpl<T, TBase, TWinTraits>
 // CPrintPreviewWindow
-
+// CZoomPrintPreviewWindowImpl<T, TBase, TWinTraits>
+// CZoomPrintPreviewWindow
 
 namespace WTL
 {
@@ -67,7 +71,7 @@ template <> class _printer_info<7> { public: typedef PRINTER_INFO_7 infotype; };
 #ifdef _ATL_USE_NEW_PRINTER_INFO
 template <> class _printer_info<8> { public: typedef PRINTER_INFO_8 infotype; };
 template <> class _printer_info<9> { public: typedef PRINTER_INFO_9 infotype; };
-#endif //_ATL_USE_NEW_PRINTER_INFO
+#endif // _ATL_USE_NEW_PRINTER_INFO
 
 
 template <unsigned int t_nInfo>
@@ -205,7 +209,7 @@ public:
 			LPTSTR lpsz = buffer;
 			while (*lpsz)
 			{
-				if (*lpsz == ',')
+				if (*lpsz == _T(','))
 				{
 					*lpsz = 0;
 					break;
@@ -241,7 +245,7 @@ public:
 		CPrinterInfo<5> pinfon5;
 		CPrinterInfo<2> pinfon2;
 		LPTSTR lpszPrinterName = NULL;
-		//Some printers fail for PRINTER_INFO_5 in some situations
+		// Some printers fail for PRINTER_INFO_5 in some situations
 		if (pinfon5.GetPrinterInfo(m_hPrinter))
 			lpszPrinterName = pinfon5.m_pi->pPrinterName;
 		else if (pinfon2.GetPrinterInfo(m_hPrinter))
@@ -256,7 +260,7 @@ public:
 			{
 				memset(pv, 0, nLen);
 				pdev->wDeviceOffset = sizeof(DEVNAMES) / sizeof(TCHAR);
-				pv = pv + sizeof(DEVNAMES); //now points to end
+				pv = pv + sizeof(DEVNAMES); // now points to end
 				lstrcpy((LPTSTR)pv, lpszPrinterName);
 				::GlobalUnlock(h);
 			}
@@ -264,13 +268,13 @@ public:
 		return h;
 	}
 
-	HDC CreatePrinterDC(const DEVMODE* pdm = NULL)
+	HDC CreatePrinterDC(const DEVMODE* pdm = NULL) const
 	{
 		CPrinterInfo<5> pinfo5;
 		CPrinterInfo<2> pinfo2;
 		HDC hDC = NULL;
 		LPTSTR lpszPrinterName = NULL;
-		//Some printers fail for PRINTER_INFO_5 in some situations
+		// Some printers fail for PRINTER_INFO_5 in some situations
 		if (pinfo5.GetPrinterInfo(m_hPrinter))
 			lpszPrinterName = pinfo5.m_pi->pPrinterName;
 		else if (pinfo2.GetPrinterInfo(m_hPrinter))
@@ -280,13 +284,13 @@ public:
 		return hDC;
 	}
 
-	HDC CreatePrinterIC(const DEVMODE* pdm = NULL)
+	HDC CreatePrinterIC(const DEVMODE* pdm = NULL) const
 	{
 		CPrinterInfo<5> pinfo5;
 		CPrinterInfo<2> pinfo2;
 		HDC hDC = NULL;
 		LPTSTR lpszPrinterName = NULL;
-		//Some printers fail for PRINTER_INFO_5 in some situations
+		// Some printers fail for PRINTER_INFO_5 in some situations
 		if (pinfo5.GetPrinterInfo(m_hPrinter))
 			lpszPrinterName = pinfo5.m_pi->pPrinterName;
 		else if (pinfo2.GetPrinterInfo(m_hPrinter))
@@ -393,9 +397,9 @@ public:
 		bool b = false;
 		if (hdm != NULL)
 		{
-			DEVMODE* pdm = (DEVMODE*)GlobalLock(hdm);
+			DEVMODE* pdm = (DEVMODE*)::GlobalLock(hdm);
 			b = CopyFromDEVMODE(pdm);
-			GlobalUnlock(hdm);
+			::GlobalUnlock(hdm);
 		}
 		return b;
 	}
@@ -405,11 +409,12 @@ public:
 		if ((m_hDevMode == NULL) || (m_pDevMode == NULL))
 			return NULL;
 		int nSize = m_pDevMode->dmSize + m_pDevMode->dmDriverExtra;
-		HANDLE h = GlobalAlloc(GMEM_MOVEABLE, nSize);
+		HANDLE h = ::GlobalAlloc(GMEM_MOVEABLE, nSize);
 		if (h != NULL)
 		{
-			void* p = GlobalLock(h);
+			void* p = ::GlobalLock(h);
 			memcpy(p, m_pDevMode, nSize);
+			::GlobalUnlock(h);
 		}
 		return h;
 	}
@@ -454,9 +459,9 @@ public:
 	{
 		if (m_hDevMode != NULL)
 		{
-			GlobalUnlock(m_hDevMode);
+			::GlobalUnlock(m_hDevMode);
 			if(t_bManaged)
-				GlobalFree(m_hDevMode);
+				::GlobalFree(m_hDevMode);
 			m_hDevMode = NULL;
 		}
 	}
@@ -500,7 +505,7 @@ public:
 // CPrintJob - Wraps a set of tasks for a specific printer (StartDoc/EndDoc)
 //             Handles aborting, background printing
 
-//Defines callbacks used by CPrintJob (not a COM interface)
+// Defines callbacks used by CPrintJob (not a COM interface)
 class ATL_NO_VTABLE IPrintJobInfo
 {
 public:
@@ -524,7 +529,7 @@ public:
 class ATL_NO_VTABLE CPrintJobInfo : public IPrintJobInfo
 {
 public:
-	virtual void BeginPrintJob(HDC /*hDC*/)   //allocate handles needed, etc
+	virtual void BeginPrintJob(HDC /*hDC*/)   // allocate handles needed, etc
 	{
 	}
 
@@ -579,7 +584,7 @@ public:
 
 	~CPrintJob()
 	{
-		ATLASSERT(IsJobComplete()); //premature destruction?
+		ATLASSERT(IsJobComplete()); // premature destruction?
 	}
 
 // Operations
@@ -593,7 +598,7 @@ public:
 			unsigned long nStartPage, unsigned long nEndPage,
 			bool bPrintToFile = false, LPCTSTR lpstrOutputFile = NULL)
 	{
-		ATLASSERT(m_bComplete); //previous job not done yet?
+		ATLASSERT(m_bComplete); // previous job not done yet?
 		if (pInfo == NULL)
 			return false;
 
@@ -616,7 +621,7 @@ public:
 			return StartHelper();
 		}
 
-		//Create a thread and return
+		// Create a thread and return
 		DWORD dwThreadID = 0;
 		HANDLE hThread = ::CreateThread(NULL, 0, StartProc, (void*)this, 0, &dwThreadID);
 		::CloseHandle(hThread);
@@ -646,7 +651,7 @@ public:
 
 		m_pInfo->BeginPrintJob(dcPrinter);
 
-		//print all the pages now
+		// print all the pages now
 		unsigned long nLastPage = 0;
 		for (unsigned long nPage = m_nStartPage; nPage <= m_nEndPage; nPage++)
 		{
@@ -756,15 +761,15 @@ public:
 		CEnhMetaFileInfo emfinfo(m_meta);
 		ENHMETAHEADER* pmh = emfinfo.GetEnhMetaFileHeader();
 
-		//Compute whether we are OK vertically or horizontally
+		// Compute whether we are OK vertically or horizontally
 		int x2 = pmh->szlDevice.cx;
 		int y2 = pmh->szlDevice.cy;
 		int y1p = MulDiv(x1, y2, x2);
 		int x1p = MulDiv(y1, x2, y2);
-		ATLASSERT( (x1p <= x1) || (y1p <= y1));
+		ATLASSERT((x1p <= x1) || (y1p <= y1));
 		if (x1p <= x1)
 		{
-			prc->left = rc.left + (x1 - x1p)/2;
+			prc->left = rc.left + (x1 - x1p) / 2;
 			prc->right = prc->left + x1p;
 			prc->top = rc.top;
 			prc->bottom = rc.bottom;
@@ -773,12 +778,17 @@ public:
 		{
 			prc->left = rc.left;
 			prc->right = rc.right;
-			prc->top = rc.top + (y1 - y1p)/2;
+			prc->top = rc.top + (y1 - y1p) / 2;
 			prc->bottom = prc->top + y1p;
 		}
 	}
 
-// Painting helper
+// Painting helpers
+	void DoPaint(CDCHandle dc)
+	{
+		// this one is not used
+	}
+
 	void DoPaint(CDCHandle dc, RECT& rc)
 	{
 		CEnhMetaFileInfo emfinfo(m_meta);
@@ -843,6 +853,7 @@ public:
 	BEGIN_MSG_MAP(CPrintPreviewWindowImpl)
 		MESSAGE_HANDLER(WM_ERASEBKGND, OnEraseBkgnd)
 		MESSAGE_HANDLER(WM_PAINT, OnPaint)
+		MESSAGE_HANDLER(WM_PRINTCLIENT, OnPaint)
 	END_MSG_MAP()
 
 	LRESULT OnEraseBkgnd(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
@@ -850,19 +861,39 @@ public:
 		return 1;   // no need for the background
 	}
 
-	LRESULT OnPaint(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+	LRESULT OnPaint(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 	{
 		T* pT = static_cast<T*>(this);
-		CPaintDC dc(m_hWnd);
-		RECT rcClient;
+		RECT rc = { 0 };
+
+		if(wParam != NULL)
+		{
+			pT->DoPrePaint((HDC)wParam, rc);
+			pT->DoPaint((HDC)wParam, rc);
+		}
+		else
+		{
+			CPaintDC dc(m_hWnd);
+			pT->DoPrePaint(dc.m_hDC, rc);
+			pT->DoPaint(dc.m_hDC, rc);
+		}
+
+		return 0;
+	}
+
+// Painting helper
+	void DoPrePaint(CDCHandle dc, RECT& rc)
+	{
+		RECT rcClient = { 0 };
 		GetClientRect(&rcClient);
 		RECT rcArea = rcClient;
+		T* pT = static_cast<T*>(this);
+		pT;   // avoid level 4 warning
 		::InflateRect(&rcArea, -pT->m_cxOffset, -pT->m_cyOffset);
 		if (rcArea.left > rcArea.right)
 			rcArea.right = rcArea.left;
 		if (rcArea.top > rcArea.bottom)
 			rcArea.bottom = rcArea.top;
-		RECT rc;
 		GetPageRect(rcArea, &rc);
 		CRgn rgn1, rgn2;
 		rgn1.CreateRectRgnIndirect(&rc);
@@ -872,8 +903,6 @@ public:
 		dc.FillRect(&rcClient, COLOR_BTNSHADOW);
 		dc.SelectClipRgn(NULL);
 		dc.FillRect(&rc, (HBRUSH)::GetStockObject(WHITE_BRUSH));
-		pT->DoPaint(dc.m_hDC, rc);
-		return 0;
 	}
 
 // Implementation - data
@@ -888,6 +917,165 @@ public:
 	DECLARE_WND_CLASS_EX(_T("WTL_PrintPreview"), CS_VREDRAW | CS_HREDRAW, -1)
 };
 
-}; //namespace WTL
+
+///////////////////////////////////////////////////////////////////////////////
+// CZoomPrintPreviewWindowImpl - Implements print preview window with zooming
+
+#ifdef __ATLSCRL_H__
+
+template <class T, class TBase = ATL::CWindow, class TWinTraits = ATL::CControlWinTraits>
+class ATL_NO_VTABLE CZoomPrintPreviewWindowImpl : public CPrintPreviewWindowImpl< T, TBase, TWinTraits >, public CZoomScrollImpl< T >
+{
+public:
+	bool m_bSized;
+
+	CZoomPrintPreviewWindowImpl()  
+	{
+		SetScrollExtendedStyle(SCRL_DISABLENOSCROLL);
+		InitZoom();
+	}
+
+	// should be called to reset data members before recreating window 
+	void InitZoom()
+	{
+		m_bSized = false;	
+		m_nZoomMode = ZOOMMODE_OFF;
+		m_fZoomScaleMin = 1.0;
+		m_fZoomScale = 1.0;
+	}
+
+	BEGIN_MSG_MAP(CZoomPrintPreviewWindowImpl)
+		MESSAGE_HANDLER(WM_SETCURSOR, CZoomScrollImpl< T >::OnSetCursor)
+		MESSAGE_HANDLER(WM_VSCROLL, CScrollImpl< T >::OnVScroll)
+		MESSAGE_HANDLER(WM_HSCROLL, CScrollImpl< T >::OnHScroll)
+		MESSAGE_HANDLER(WM_MOUSEWHEEL, CScrollImpl< T >::OnMouseWheel)
+#if !((_WIN32_WINNT >= 0x0400) || (_WIN32_WINDOWS > 0x0400))
+		MESSAGE_HANDLER(m_uMsgMouseWheel, CScrollImpl< T >::OnMouseWheel)
+#endif // !((_WIN32_WINNT >= 0x0400) || (_WIN32_WINDOWS > 0x0400))
+		MESSAGE_HANDLER(WM_SETTINGCHANGE, CScrollImpl< T >::OnSettingChange)
+		MESSAGE_HANDLER(WM_LBUTTONDOWN, CZoomScrollImpl< T >::OnLButtonDown)
+		MESSAGE_HANDLER(WM_MOUSEMOVE, CZoomScrollImpl< T >::OnMouseMove)
+		MESSAGE_HANDLER(WM_LBUTTONUP, CZoomScrollImpl< T >::OnLButtonUp)
+		MESSAGE_HANDLER(WM_CAPTURECHANGED, CZoomScrollImpl< T >::OnCaptureChanged)
+		MESSAGE_HANDLER(WM_SIZE, OnSize)
+		MESSAGE_HANDLER(WM_ERASEBKGND, OnEraseBkgnd)
+		MESSAGE_HANDLER(WM_PAINT, OnPaint)
+		MESSAGE_HANDLER(WM_PRINTCLIENT, OnPaint)
+	ALT_MSG_MAP(1)
+		COMMAND_ID_HANDLER(ID_SCROLL_UP, CScrollImpl< T >::OnScrollUp)
+		COMMAND_ID_HANDLER(ID_SCROLL_DOWN, CScrollImpl< T >::OnScrollDown)
+		COMMAND_ID_HANDLER(ID_SCROLL_PAGE_UP, CScrollImpl< T >::OnScrollPageUp)
+		COMMAND_ID_HANDLER(ID_SCROLL_PAGE_DOWN, CScrollImpl< T >::OnScrollPageDown)
+		COMMAND_ID_HANDLER(ID_SCROLL_TOP, CScrollImpl< T >::OnScrollTop)
+		COMMAND_ID_HANDLER(ID_SCROLL_BOTTOM, CScrollImpl< T >::OnScrollBottom)
+		COMMAND_ID_HANDLER(ID_SCROLL_LEFT, CScrollImpl< T >::OnScrollLeft)
+		COMMAND_ID_HANDLER(ID_SCROLL_RIGHT, CScrollImpl< T >::OnScrollRight)
+		COMMAND_ID_HANDLER(ID_SCROLL_PAGE_LEFT, CScrollImpl< T >::OnScrollPageLeft)
+		COMMAND_ID_HANDLER(ID_SCROLL_PAGE_RIGHT, CScrollImpl< T >::OnScrollPageRight)
+		COMMAND_ID_HANDLER(ID_SCROLL_ALL_LEFT, CScrollImpl< T >::OnScrollAllLeft)
+		COMMAND_ID_HANDLER(ID_SCROLL_ALL_RIGHT, CScrollImpl< T >::OnScrollAllRight)
+	END_MSG_MAP()
+	
+	LRESULT OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+	{
+		SIZE sizeClient = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
+		POINT ptOffset = m_ptOffset;
+		SIZE sizeAll = m_sizeAll;
+		SetScrollSize(sizeClient);
+		if(sizeAll.cx > 0)
+			ptOffset.x = ::MulDiv(ptOffset.x, m_sizeAll.cx, sizeAll.cx);
+		if(sizeAll.cy > 0)
+			ptOffset.y = ::MulDiv(ptOffset.y, m_sizeAll.cy, sizeAll.cy);
+		SetScrollOffset(ptOffset);
+		CScrollImpl< T >::OnSize(uMsg, wParam, lParam, bHandled);
+		if(!m_bSized)
+		{
+			m_bSized = true;
+			T* pT = static_cast<T*>(this);
+			pT->ShowScrollBar(SB_HORZ, TRUE);
+			pT->ShowScrollBar(SB_VERT, TRUE);
+		}
+		return 0;
+	}
+
+	LRESULT OnEraseBkgnd(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+	{
+		return 1;
+	}
+
+	LRESULT OnPaint(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+	{
+		T* pT = static_cast<T*>(this);
+		RECT rc = { 0 };
+
+		if(wParam != NULL)
+		{
+			pT->DoPrePaint((HDC)wParam, rc);
+			pT->DoPaint((HDC)wParam, rc);
+		}
+		else
+		{
+			CPaintDC dc(pT->m_hWnd);
+			pT->DoPrePaint(dc.m_hDC, rc);
+			pT->DoPaint(dc.m_hDC, rc);
+		}
+
+		return 0;
+	}
+
+	// Painting helpers
+	void DoPaint(CDCHandle dc)
+	{
+		// this one is not used
+	}
+
+	void DoPrePaint(CDCHandle dc, RECT& rc)
+	{
+		PrepareDC(dc.m_hDC);
+		RECT rcClient;
+		GetClientRect(&rcClient);
+		RECT rcArea = rcClient;
+		T* pT = static_cast<T*>(this);
+		pT;   // avoid level 4 warning
+		::InflateRect(&rcArea, -pT->m_cxOffset, -pT->m_cyOffset);
+		if (rcArea.left > rcArea.right)
+			rcArea.right = rcArea.left;
+		if (rcArea.top > rcArea.bottom)
+			rcArea.bottom = rcArea.top;
+		GetPageRect(rcArea, &rc);
+		HBRUSH hbrOld = dc.SelectBrush(::GetSysColorBrush(COLOR_BTNSHADOW));
+		dc.PatBlt(rcClient.left, rcClient.top, rc.left - rcClient.left, rcClient.bottom - rcClient.top, PATCOPY);
+		dc.PatBlt(rc.left, rcClient.top, rc.right - rc.left, rc.top - rcClient.top, PATCOPY);
+		dc.PatBlt(rc.right, rcClient.top, rcClient.right - rc.right, rcClient.bottom - rcClient.top, PATCOPY);
+		dc.PatBlt(rc.left, rc.bottom, rc.right - rc.left, rcClient.bottom - rc.bottom, PATCOPY);
+		dc.SelectBrush((HBRUSH)::GetStockObject(WHITE_BRUSH));
+		dc.PatBlt(rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, PATCOPY);
+		dc.SelectBrush(::GetSysColorBrush(COLOR_3DDKSHADOW));
+		dc.PatBlt(rc.right, rc.top + 4, 4, rc.bottom - rc.top, PATCOPY);
+		dc.PatBlt(rc.left + 4, rc.bottom, rc.right - rc.left, 4, PATCOPY);
+		dc.SelectBrush(hbrOld);
+	}
+
+	void DoPaint(CDCHandle dc, RECT& rc)
+	{
+		CEnhMetaFileInfo emfinfo(m_meta);
+		ENHMETAHEADER* pmh = emfinfo.GetEnhMetaFileHeader();
+		int nOffsetX = MulDiv(m_sizeCurPhysOffset.cx, rc.right-rc.left, pmh->szlDevice.cx);
+		int nOffsetY = MulDiv(m_sizeCurPhysOffset.cy, rc.bottom-rc.top, pmh->szlDevice.cy);
+
+		dc.OffsetWindowOrg(-nOffsetX, -nOffsetY);
+		dc.PlayMetaFile(m_meta, &rc);
+	}
+};
+
+class CZoomPrintPreviewWindow : public CZoomPrintPreviewWindowImpl<CZoomPrintPreviewWindow>
+{
+public:
+	DECLARE_WND_CLASS_EX(_T("WTL_ZoomPrintPreview"), CS_VREDRAW | CS_HREDRAW, -1)
+};
+
+#endif // __ATLSCRL_H__
+
+}; // namespace WTL
 
 #endif // __ATLPRINT_H__

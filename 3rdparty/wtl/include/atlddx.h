@@ -1,10 +1,13 @@
-// Windows Template Library - WTL version 7.1
-// Copyright (C) 1997-2003 Microsoft Corporation
-// All rights reserved.
+// Windows Template Library - WTL version 7.5
+// Copyright (C) Microsoft Corporation. All rights reserved.
 //
 // This file is a part of the Windows Template Library.
-// The code and information is provided "as-is" without
-// warranty of any kind, either expressed or implied.
+// The use and distribution terms for this software are covered by the
+// Common Public License 1.0 (http://opensource.org/licenses/cpl.php)
+// which can be found in the file CPL.TXT at the root of this distribution.
+// By using this software in any fashion, you are agreeing to be bound by
+// the terms of this license. You must not remove this notice, or
+// any other, from this software.
 
 #ifndef __ATLDDX_H__
 #define __ATLDDX_H__
@@ -21,14 +24,14 @@
 
 #if defined(_ATL_USE_DDX_FLOAT) && defined(_ATL_MIN_CRT)
 	#error Cannot use floating point DDX with _ATL_MIN_CRT defined
-#endif //defined(_ATL_USE_DDX_FLOAT) && defined(_ATL_MIN_CRT)
+#endif // defined(_ATL_USE_DDX_FLOAT) && defined(_ATL_MIN_CRT)
 
 #ifdef _ATL_USE_DDX_FLOAT
   #include <float.h>
   #ifndef _DEBUG
     #include <stdio.h>
-  #endif //!_DEBUG
-#endif //_ATL_USE_DDX_FLOAT
+  #endif // !_DEBUG
+#endif // _ATL_USE_DDX_FLOAT
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -120,7 +123,7 @@ namespace WTL
 			if(!DDX_Float(nID, var, bSaveAndValidate, TRUE, min, max, precision)) \
 				return FALSE; \
 		}
-#endif //_ATL_USE_DDX_FLOAT
+#endif // _ATL_USE_DDX_FLOAT
 
 #define DDX_CONTROL(nID, obj) \
 		if(nCtlID == (UINT)-1 || nCtlID == nID) \
@@ -353,7 +356,7 @@ public:
 		}
 		return bSuccess;
 	}
-#endif //defined(_WTL_USE_CSTRING) || defined(__ATLSTR_H__)
+#endif // defined(_WTL_USE_CSTRING) || defined(__ATLSTR_H__)
 
 // Numeric exchange
 	template <class Type>
@@ -397,17 +400,17 @@ public:
 	static BOOL _AtlSimpleFloatParse(LPCTSTR lpszText, double& d)
 	{
 		ATLASSERT(lpszText != NULL);
-		while (*lpszText == ' ' || *lpszText == '\t')
+		while (*lpszText == _T(' ') || *lpszText == _T('\t'))
 			lpszText++;
 
 		TCHAR chFirst = lpszText[0];
 		d = _tcstod(lpszText, (LPTSTR*)&lpszText);
-		if (d == 0.0 && chFirst != '0')
+		if (d == 0.0 && chFirst != _T('0'))
 			return FALSE;   // could not convert
-		while (*lpszText == ' ' || *lpszText == '\t')
+		while (*lpszText == _T(' ') || *lpszText == _T('\t'))
 			lpszText++;
 
-		if (*lpszText != '\0')
+		if (*lpszText != _T('\0'))
 			return FALSE;   // not terminated properly
 
 		return TRUE;
@@ -498,7 +501,7 @@ public:
 		}
 		return bSuccess;
 	}
-#endif //_ATL_USE_DDX_FLOAT
+#endif // _ATL_USE_DDX_FLOAT
 
 // Full control subclassing (for CWindowImpl derived controls)
 	template <class TControl>
@@ -536,7 +539,7 @@ public:
 		{
 			if(nValue < 0 || nValue > 2)
 			{
-				ATLTRACE2(atlTraceUI, 0, "ATL: Warning - dialog data checkbox value (%d) out of range.\n", nValue);
+				ATLTRACE2(atlTraceUI, 0, _T("ATL: Warning - dialog data checkbox value (%d) out of range.\n"), nValue);
 				nValue = 0;  // default to off
 			}
 			::SendMessage(hWndCtrl, BM_SETCHECK, nValue, 0L);
@@ -552,7 +555,7 @@ public:
 		if(bSave)
 		{
 			if(nValue == 2)
-				ATLTRACE2(atlTraceUI, 0, "ATL: Warning - checkbox state (%d) out of supported range.\n", nValue);
+				ATLTRACE2(atlTraceUI, 0, _T("ATL: Warning - checkbox state (%d) out of supported range.\n"), nValue);
 			bCheck = (nValue == 1);
 		}
 	}
@@ -594,7 +597,7 @@ public:
 			}
 			else
 			{
-				ATLTRACE2(atlTraceUI, 0, "ATL: Warning - skipping non-radio button in group.\n");
+				ATLTRACE2(atlTraceUI, 0, _T("ATL: Warning - skipping non-radio button in group.\n"));
 			}
 			hWndCtrl = ::GetWindow(hWndCtrl, GW_HWNDNEXT);
 		}
@@ -619,6 +622,6 @@ public:
 	}
 };
 
-}; //namespace WTL
+}; // namespace WTL
 
-#endif //__ATLDDX_H__
+#endif // __ATLDDX_H__

@@ -1,10 +1,13 @@
-// Windows Template Library - WTL version 7.1
-// Copyright (C) 1997-2003 Microsoft Corporation
-// All rights reserved.
+// Windows Template Library - WTL version 7.5
+// Copyright (C) Microsoft Corporation. All rights reserved.
 //
 // This file is a part of the Windows Template Library.
-// The code and information is provided "as-is" without
-// warranty of any kind, either expressed or implied.
+// The use and distribution terms for this software are covered by the
+// Common Public License 1.0 (http://opensource.org/licenses/cpl.php)
+// which can be found in the file CPL.TXT at the root of this distribution.
+// By using this software in any fashion, you are agreeing to be bound by
+// the terms of this license. You must not remove this notice, or
+// any other, from this software.
 
 #ifndef __ATLCTRLX_H__
 #define __ATLCTRLX_H__
@@ -25,7 +28,7 @@
 
 #ifndef WM_UPDATEUISTATE
   #define WM_UPDATEUISTATE                0x0128
-#endif //!WM_UPDATEUISTATE
+#endif // !WM_UPDATEUISTATE
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -43,7 +46,9 @@
 // CMultiPaneStatusBarCtrl
 // CPaneContainerImpl<T, TBase, TWinTraits>
 // CPaneContainer
-
+// CSortListViewImpl<T>
+// CSortListViewCtrlImpl<T, TBase, TWinTraits>
+// CSortListViewCtrl
 
 namespace WTL
 {
@@ -122,10 +127,10 @@ public:
 	{
 #if (_MSC_VER >= 1300)
 		BOOL bRet = ATL::CWindowImpl< T, TBase, TWinTraits>::SubclassWindow(hWnd);
-#else //!(_MSC_VER >= 1300)
+#else // !(_MSC_VER >= 1300)
 		typedef ATL::CWindowImpl< T, TBase, TWinTraits>   _baseClass;
 		BOOL bRet = _baseClass::SubclassWindow(hWnd);
-#endif //!(_MSC_VER >= 1300)
+#endif // !(_MSC_VER >= 1300)
 		if(bRet)
 			Init();
 		return bRet;
@@ -268,6 +273,7 @@ public:
 // Message map and handlers
 	BEGIN_MSG_MAP(CBitmapButtonImpl)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
+		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		MESSAGE_RANGE_HANDLER(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseMessage)
 		MESSAGE_HANDLER(WM_ERASEBKGND, OnEraseBackground)
 		MESSAGE_HANDLER(WM_PAINT, OnPaint)
@@ -290,6 +296,17 @@ public:
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 	{
 		Init();
+		bHandled = FALSE;
+		return 1;
+	}
+
+	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
+	{
+		if(m_tip.IsWindow())
+		{
+			m_tip.DestroyWindow();
+			m_tip.m_hWnd = NULL;
+		}
 		bHandled = FALSE;
 		return 1;
 	}
@@ -554,7 +571,7 @@ public:
 	{ }
 };
 
-#endif //!_WIN32_WCE
+#endif // !_WIN32_WCE
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -599,10 +616,10 @@ public:
 	{
 #if (_MSC_VER >= 1300)
 		BOOL bRet = ATL::CWindowImplBaseT< TBase, TWinTraits>::SubclassWindow(hWnd);
-#else //!(_MSC_VER >= 1300)
+#else // !(_MSC_VER >= 1300)
 		typedef ATL::CWindowImplBaseT< TBase, TWinTraits>   _baseClass;
 		BOOL bRet = _baseClass::SubclassWindow(hWnd);
-#endif //!(_MSC_VER >= 1300)
+#endif // !(_MSC_VER >= 1300)
 		if(bRet)
 		{
 			T* pT = static_cast<T*>(this);
@@ -662,7 +679,10 @@ public:
 		LVHITTESTINFO lvh = { 0 };
 		lvh.pt = ptMsg;
 		if(HitTest(&lvh) != -1 && lvh.flags == LVHT_ONITEMSTATEICON && ::GetKeyState(VK_CONTROL) >= 0)
-			CheckSelectedItems(lvh.iItem);
+		{
+			T* pT = static_cast<T*>(this);
+			pT->CheckSelectedItems(lvh.iItem);
+		}
 		bHandled = FALSE;
 		return 1;
 	}
@@ -673,7 +693,10 @@ public:
 		{
 			int nCurrItem = GetNextItem(-1, LVNI_FOCUSED);
 			if(nCurrItem != -1  && ::GetKeyState(VK_CONTROL) >= 0)
-				CheckSelectedItems(nCurrItem);
+			{
+				T* pT = static_cast<T*>(this);
+				pT->CheckSelectedItems(nCurrItem);
+			}
 		}
 		bHandled = FALSE;
 		return 1;
@@ -722,7 +745,7 @@ __declspec(selectany) struct
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 	}
 };
-#endif //(WINVER < 0x0500) && !defined(_WIN32_WCE)
+#endif // (WINVER < 0x0500) && !defined(_WIN32_WCE)
 
 #define HLINK_UNDERLINED      0x00000000
 #define HLINK_NOTUNDERLINED   0x00000001
@@ -751,7 +774,7 @@ public:
 	RECT m_rcLink;
 #ifndef _WIN32_WCE
 	CToolTipCtrl m_tip;
-#endif //!_WIN32_WCE
+#endif // !_WIN32_WCE
 
 	COLORREF m_clrLink;
 	COLORREF m_clrVisited;
@@ -786,7 +809,7 @@ public:
 		// It was created, not loaded, so we have to destroy it
 		if(m_hCursor != NULL)
 			::DestroyCursor(m_hCursor);
-#endif //(WINVER < 0x0500) && !defined(_WIN32_WCE)
+#endif // (WINVER < 0x0500) && !defined(_WIN32_WCE)
 	}
 
 // Attributes
@@ -867,7 +890,7 @@ public:
 			m_tip.Activate(TRUE);
 			m_tip.AddTool(m_hWnd, m_lpstrHyperLink, &m_rcLink, 1);
 		}
-#endif //!_WIN32_WCE
+#endif // !_WIN32_WCE
 		return true;
 	}
 
@@ -1016,10 +1039,10 @@ public:
 		ATLASSERT(::IsWindow(hWnd));
 #if (_MSC_VER >= 1300)
 		BOOL bRet = ATL::CWindowImpl< T, TBase, TWinTraits>::SubclassWindow(hWnd);
-#else //!(_MSC_VER >= 1300)
+#else // !(_MSC_VER >= 1300)
 		typedef ATL::CWindowImpl< T, TBase, TWinTraits>   _baseClass;
 		BOOL bRet = _baseClass::SubclassWindow(hWnd);
-#endif //!(_MSC_VER >= 1300)
+#endif // !(_MSC_VER >= 1300)
 		if(bRet)
 		{
 			T* pT = static_cast<T*>(this);
@@ -1050,7 +1073,7 @@ public:
 			SHELLEXECUTEINFO shExeInfo = { sizeof(SHELLEXECUTEINFO), 0, 0, L"open", m_lpstrHyperLink, 0, 0, SW_SHOWNORMAL, 0, 0, 0, 0, 0, 0, 0 };
 			::ShellExecuteEx(&shExeInfo);
 			DWORD_PTR dwRet = (DWORD_PTR)shExeInfo.hInstApp;
-#endif //_WIN32_WCE
+#endif // _WIN32_WCE
 			bRet = (dwRet > 32);
 			ATLASSERT(bRet);
 			if(bRet)
@@ -1066,19 +1089,20 @@ public:
 	BEGIN_MSG_MAP(CHyperLinkImpl)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 #ifndef _WIN32_WCE
+		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		MESSAGE_RANGE_HANDLER(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseMessage)
-#endif //!_WIN32_WCE
+#endif // !_WIN32_WCE
 		MESSAGE_HANDLER(WM_ERASEBKGND, OnEraseBackground)
 		MESSAGE_HANDLER(WM_PAINT, OnPaint)
 #ifndef _WIN32_WCE
 		MESSAGE_HANDLER(WM_PRINTCLIENT, OnPaint)
-#endif //!_WIN32_WCE
+#endif // !_WIN32_WCE
 		MESSAGE_HANDLER(WM_SETFOCUS, OnFocus)
 		MESSAGE_HANDLER(WM_KILLFOCUS, OnFocus)
 		MESSAGE_HANDLER(WM_MOUSEMOVE, OnMouseMove)
 #ifndef _WIN32_WCE
 		MESSAGE_HANDLER(WM_MOUSELEAVE, OnMouseLeave)
-#endif //!_WIN32_WCE
+#endif // !_WIN32_WCE
 		MESSAGE_HANDLER(WM_LBUTTONDOWN, OnLButtonDown)
 		MESSAGE_HANDLER(WM_LBUTTONUP, OnLButtonUp)
 		MESSAGE_HANDLER(WM_CHAR, OnChar)
@@ -1098,6 +1122,17 @@ public:
 	}
 
 #ifndef _WIN32_WCE
+	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
+	{
+		if(m_tip.IsWindow())
+		{
+			m_tip.DestroyWindow();
+			m_tip.m_hWnd = NULL;
+		}
+		bHandled = FALSE;
+		return 1;
+	}
+
 	LRESULT OnMouseMessage(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 	{
 		MSG msg = { m_hWnd, uMsg, wParam, lParam };
@@ -1106,7 +1141,7 @@ public:
 		bHandled = FALSE;
 		return 1;
 	}
-#endif //!_WIN32_WCE
+#endif // !_WIN32_WCE
 
 	LRESULT OnEraseBackground(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 	{
@@ -1161,7 +1196,7 @@ public:
 					UpdateWindow();
 #ifndef _WIN32_WCE
 					StartTrackMouseLeave();
-#endif //!_WIN32_WCE
+#endif // !_WIN32_WCE
 				}
 			}
 		}
@@ -1192,7 +1227,7 @@ public:
 		}
 		return 0;
 	}
-#endif //!_WIN32_WCE
+#endif // !_WIN32_WCE
 
 	LRESULT OnLButtonDown(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
 	{
@@ -1299,7 +1334,7 @@ public:
 						dwStyle == SS_BITMAP || dwStyle == SS_ENHMETAFILE)
 #else // CE specific
 				if(dwStyle == SS_ICON || dwStyle == SS_BITMAP)
-#endif //_WIN32_WCE
+#endif // _WIN32_WCE
 					m_bPaintLabel = false;
 			}
 		}
@@ -1310,9 +1345,9 @@ public:
 #else
   #if (_ATL_VER >= 0x0700)
 		m_hCursor = ::CreateCursor(ATL::_AtlBaseModule.GetModuleInstance(), _AtlHyperLink_CursorData.xHotSpot, _AtlHyperLink_CursorData.yHotSpot, _AtlHyperLink_CursorData.cxWidth, _AtlHyperLink_CursorData.cyHeight, _AtlHyperLink_CursorData.arrANDPlane, _AtlHyperLink_CursorData.arrXORPlane);
-  #else //!(_ATL_VER >= 0x0700)
+  #else // !(_ATL_VER >= 0x0700)
 		m_hCursor = ::CreateCursor(_Module.GetModuleInstance(), _AtlHyperLink_CursorData.xHotSpot, _AtlHyperLink_CursorData.yHotSpot, _AtlHyperLink_CursorData.cxWidth, _AtlHyperLink_CursorData.cyHeight, _AtlHyperLink_CursorData.arrANDPlane, _AtlHyperLink_CursorData.arrXORPlane);
-  #endif //!(_ATL_VER >= 0x0700)
+  #endif // !(_ATL_VER >= 0x0700)
 #endif
 		ATLASSERT(m_hCursor != NULL);
 
@@ -1342,7 +1377,7 @@ public:
 		// create a tool tip
 		m_tip.Create(m_hWnd);
 		ATLASSERT(m_tip.IsWindow());
-#endif //!_WIN32_WCE
+#endif // !_WIN32_WCE
 
 		// set label (defaults to window text)
 		if(m_lpstrLabel == NULL)
@@ -1371,7 +1406,7 @@ public:
 			m_tip.Activate(TRUE);
 			m_tip.AddTool(m_hWnd, m_lpstrHyperLink, &m_rcLink, 1);
 		}
-#endif //!_WIN32_WCE
+#endif // !_WIN32_WCE
 
 		// set link colors
 		if(m_bPaintLabel)
@@ -1418,7 +1453,7 @@ public:
 	static COLORREF _ParseColorString(LPTSTR lpstr)
 	{
 		int c[3] = { -1, -1, -1 };
-		LPTSTR p;
+		LPTSTR p = NULL;
 		for(int i = 0; i < 2; i++)
 		{
 			for(p = lpstr; *p != _T('\0'); p = ::CharNext(p))
@@ -1426,7 +1461,7 @@ public:
 				if(*p == _T(','))
 				{
 					*p = _T('\0');
-					c[i] = _ttoi(lpstr);
+					c[i] = T::_xttoi(lpstr);
 					lpstr = &p[1];
 					break;
 				}
@@ -1436,7 +1471,7 @@ public:
 		}
 		if(*lpstr == _T('\0'))
 			return CLR_INVALID;
-		c[2] = _ttoi(lpstr);
+		c[2] = T::_xttoi(lpstr);
 
 		return RGB(c[0], c[1], c[2]);
 	}
@@ -1660,7 +1695,7 @@ public:
 		tme.hwndTrack = m_hWnd;
 		return _TrackMouseEvent(&tme);
 	}
-#endif //!_WIN32_WCE
+#endif // !_WIN32_WCE
 
 // Implementation helpers
 	bool IsUnderlined() const
@@ -1702,6 +1737,31 @@ public:
 	{
 		return ((m_dwExtendedStyle & HLINK_NOTOOLTIP) == 0);
 	}
+
+	static int _xttoi(const TCHAR* nptr)
+	{
+#ifndef _ATL_MIN_CRT
+		return _ttoi(nptr);
+#else // _ATL_MIN_CRT
+		while(*nptr == _T(' '))   // skip spaces
+			++nptr;
+
+		int c = (int)(_TUCHAR)*nptr++;
+		int sign = c;   // save sign indication
+		if (c == _T('-') || c == _T('+'))
+			c = (int)(_TUCHAR)*nptr++;   // skip sign
+
+		int total = 0;
+		while((TCHAR)c >= _T('0') && (TCHAR)c <= _T('9'))
+		{
+			total = 10 * total + ((TCHAR)c - _T('0'));   // accumulate digit
+			c = (int)(_TUCHAR)*nptr++;        // get next char
+		}
+
+		// return result, negated if necessary
+		return ((TCHAR)sign != _T('-')) ? total : -total;
+#endif // _ATL_MIN_CRT
+	}
 };
 
 
@@ -1728,9 +1788,9 @@ public:
 	{
 #if (_ATL_VER >= 0x0700)
 		HINSTANCE hInstance = bSys ? NULL : ATL::_AtlBaseModule.GetResourceInstance();
-#else //!(_ATL_VER >= 0x0700)
+#else // !(_ATL_VER >= 0x0700)
 		HINSTANCE hInstance = bSys ? NULL : _Module.GetResourceInstance();
-#endif //!(_ATL_VER >= 0x0700)
+#endif // !(_ATL_VER >= 0x0700)
 		m_hWaitCursor = ::LoadCursor(hInstance, lpstrCursor);
 		ATLASSERT(m_hWaitCursor != NULL);
 
@@ -1778,9 +1838,9 @@ public:
 		{
 #if (_ATL_VER >= 0x0700)
 			hInstance = ATL::_AtlBaseModule.GetResourceInstance();
-#else //!(_ATL_VER >= 0x0700)
+#else // !(_ATL_VER >= 0x0700)
 			hInstance = _Module.GetResourceInstance();
-#endif //!(_ATL_VER >= 0x0700)
+#endif // !(_ATL_VER >= 0x0700)
 		}
 		m_hWaitCursor = (HCURSOR)::LoadImage(hInstance, cursor.m_lpstr, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE);
 
@@ -1793,7 +1853,7 @@ public:
 		Restore();
 #if !defined(_WIN32_WCE) || ((_WIN32_WCE >= 0x400) && !(defined(WIN32_PLATFORM_PSPC) || defined(WIN32_PLATFORM_WFSP)))
 		::DestroyCursor(m_hWaitCursor);
-#endif //!defined(_WIN32_WCE) || ((_WIN32_WCE >= 0x400) && !(defined(WIN32_PLATFORM_PSPC) || defined(WIN32_PLATFORM_WFSP)))
+#endif // !defined(_WIN32_WCE) || ((_WIN32_WCE >= 0x400) && !(defined(WIN32_PLATFORM_PSPC) || defined(WIN32_PLATFORM_WFSP)))
 	}
 };
 
@@ -1827,10 +1887,10 @@ public:
 	{
 #if (_MSC_VER >= 1300)
 		return ATL::CWindowImpl< T, TBase >::Create(hWndParent, rcDefault, lpstrText, dwStyle, 0, nID);
-#else //!(_MSC_VER >= 1300)
+#else // !(_MSC_VER >= 1300)
 		typedef ATL::CWindowImpl< T, TBase >   _baseClass;
 		return _baseClass::Create(hWndParent, rcDefault, lpstrText, dwStyle, 0, nID);
-#endif //!(_MSC_VER >= 1300)
+#endif // !(_MSC_VER >= 1300)
 	}
 
 	HWND Create(HWND hWndParent, UINT nTextID = ATL_IDS_IDLEMESSAGE, DWORD dwStyle = WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | SBARS_SIZEGRIP, UINT nID = ATL_IDW_STATUS_BAR)
@@ -1840,9 +1900,9 @@ public:
 		szText[0] = 0;
 #if (_ATL_VER >= 0x0700)
 		::LoadString(ATL::_AtlBaseModule.GetResourceInstance(), nTextID, szText, cchMax);
-#else //!(_ATL_VER >= 0x0700)
+#else // !(_ATL_VER >= 0x0700)
 		::LoadString(_Module.GetResourceInstance(), nTextID, szText, cchMax);
-#endif //!(_ATL_VER >= 0x0700)
+#endif // !(_ATL_VER >= 0x0700)
 		return Create(hWndParent, szText, dwStyle, nID);
 	}
 
@@ -1861,9 +1921,7 @@ public:
 			return FALSE;
 		memcpy(m_pPane, pPanes, nPanes * sizeof(int));
 
-		int* pPanesPos = NULL;
-		ATLTRY(pPanesPos = (int*)_alloca(nPanes * sizeof(int)));
-		ATLASSERT(pPanesPos != NULL);
+		int* pPanesPos = (int*)_alloca(nPanes * sizeof(int));
 
 		// get status bar DC and set font
 		CClientDC dc(m_hWnd);
@@ -1883,16 +1941,16 @@ public:
 		{
 			if(pPanes[i] == ID_DEFAULT_PANE)
 			{
-				// will be resized later
-				pPanesPos[i] = 100 + cxLeft + arrBorders[2];
+				// make very large, will be resized later
+				pPanesPos[i] = INT_MAX / 2;
 			}
 			else
 			{
 #if (_ATL_VER >= 0x0700)
 				::LoadString(ATL::_AtlBaseModule.GetResourceInstance(), pPanes[i], szBuff, cchBuff);
-#else //!(_ATL_VER >= 0x0700)
+#else // !(_ATL_VER >= 0x0700)
 				::LoadString(_Module.GetResourceInstance(), pPanes[i], szBuff, cchBuff);
-#endif //!(_ATL_VER >= 0x0700)
+#endif // !(_ATL_VER >= 0x0700)
 				dc.GetTextExtent(szBuff, lstrlen(szBuff), &size);
 				T* pT = static_cast<T*>(this);
 				pT;
@@ -1911,9 +1969,9 @@ public:
 				{
 #if (_ATL_VER >= 0x0700)
 					::LoadString(ATL::_AtlBaseModule.GetResourceInstance(), pPanes[i], szBuff, cchBuff);
-#else //!(_ATL_VER >= 0x0700)
+#else // !(_ATL_VER >= 0x0700)
 					::LoadString(_Module.GetResourceInstance(), pPanes[i], szBuff, cchBuff);
-#endif //!(_ATL_VER >= 0x0700)
+#endif // !(_ATL_VER >= 0x0700)
 					SetPaneText(m_pPane[i], szBuff);
 				}
 			}
@@ -1980,8 +2038,7 @@ public:
 			return FALSE;
 
 		// get pane positions
-		int* pPanesPos = NULL;
-		ATLTRY(pPanesPos = (int*)_alloca(m_nPanes * sizeof(int)));
+		int* pPanesPos = (int*)_alloca(m_nPanes * sizeof(int));
 		GetParts(m_nPanes, pPanesPos);
 		// calculate offset
 		int cxPaneWidth = pPanesPos[nIndex] - ((nIndex == 0) ? 0 : pPanesPos[nIndex - 1]);
@@ -2055,7 +2112,7 @@ public:
 
 		return SetIcon(nIndex, hIcon);
 	}
-#endif //(_WIN32_IE >= 0x0400) && !defined(_WIN32_WCE)
+#endif // (_WIN32_IE >= 0x0400) && !defined(_WIN32_WCE)
 
 // Message map and handlers
 	BEGIN_MSG_MAP(CMultiPaneStatusBarCtrlImpl< T >)
@@ -2077,11 +2134,7 @@ public:
 	BOOL UpdatePanesLayout()
 	{
 		// get pane positions
-		int* pPanesPos = NULL;
-		ATLTRY(pPanesPos = (int*)_alloca(m_nPanes * sizeof(int)));
-		ATLASSERT(pPanesPos != NULL);
-		if(pPanesPos == NULL)
-			return FALSE;
+		int* pPanesPos = pPanesPos = (int*)_alloca(m_nPanes * sizeof(int));
 		int nRet = GetParts(m_nPanes, pPanesPos);
 		ATLASSERT(nRet == m_nPanes);
 		if(nRet != m_nPanes)
@@ -2094,7 +2147,7 @@ public:
 		// Move panes left if size grip box is present
 		if((GetStyle() & SBARS_SIZEGRIP) != 0)
 			cxOff -= ::GetSystemMetrics(SM_CXVSCROLL) + ::GetSystemMetrics(SM_CXEDGE);
-#endif //!_WIN32_WCE
+#endif // !_WIN32_WCE
 		// find variable width pane
 		int i;
 		for(i = 0; i < m_nPanes; i++)
@@ -2199,20 +2252,20 @@ public:
 			T* pT = static_cast<T*>(this);
 			bool bUpdate = false;
 
-			if(((dwPrevStyle & PANECNT_NOCLOSEBUTTON) != 0) && ((dwExtendedStyle & PANECNT_NOCLOSEBUTTON) == 0))   // add close button
+			if(((dwPrevStyle & PANECNT_NOCLOSEBUTTON) != 0) && ((m_dwExtendedStyle & PANECNT_NOCLOSEBUTTON) == 0))   // add close button
 			{
 				pT->CreateCloseButton();
 				bUpdate = true;
 			}
-			else if(((dwPrevStyle & PANECNT_NOCLOSEBUTTON) == 0) && ((dwExtendedStyle & PANECNT_NOCLOSEBUTTON) != 0))   // remove close button
+			else if(((dwPrevStyle & PANECNT_NOCLOSEBUTTON) == 0) && ((m_dwExtendedStyle & PANECNT_NOCLOSEBUTTON) != 0))   // remove close button
 			{
 				pT->DestroyCloseButton();
 				bUpdate = true;
 			}
 
-			if((dwPrevStyle & PANECNT_VERTICAL) != (dwExtendedStyle & PANECNT_VERTICAL))   // change orientation
+			if((dwPrevStyle & PANECNT_VERTICAL) != (m_dwExtendedStyle & PANECNT_VERTICAL))   // change orientation
 			{
-				CalcSize();
+				pT->CalcSize();
 				bUpdate = true;
 			}
 
@@ -2270,10 +2323,10 @@ public:
 			lstrcpyn(m_szTitle, lpstrTitle, m_cchTitle);
 #if (_MSC_VER >= 1300)
 		return ATL::CWindowImpl< T, TBase, TWinTraits >::Create(hWndParent, rcDefault, NULL, dwStyle, dwExStyle, nID, lpCreateParam);
-#else //!(_MSC_VER >= 1300)
+#else // !(_MSC_VER >= 1300)
 		typedef ATL::CWindowImpl< T, TBase, TWinTraits >   _baseClass;
 		return _baseClass::Create(hWndParent, rcDefault, NULL, dwStyle, dwExStyle, nID, lpCreateParam);
-#endif //!(_MSC_VER >= 1300)
+#endif // !(_MSC_VER >= 1300)
 	}
 
 	HWND Create(HWND hWndParent, UINT uTitleID, DWORD dwStyle = WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
@@ -2282,15 +2335,15 @@ public:
 		if(uTitleID != 0U)
 #if (_ATL_VER >= 0x0700)
 			::LoadString(ATL::_AtlBaseModule.GetResourceInstance(), uTitleID, m_szTitle, m_cchTitle);
-#else //!(_ATL_VER >= 0x0700)
+#else // !(_ATL_VER >= 0x0700)
 			::LoadString(_Module.GetResourceInstance(), uTitleID, m_szTitle, m_cchTitle);
-#endif //!(_ATL_VER >= 0x0700)
+#endif // !(_ATL_VER >= 0x0700)
 #if (_MSC_VER >= 1300)
 		return ATL::CWindowImpl< T, TBase, TWinTraits >::Create(hWndParent, rcDefault, NULL, dwStyle, dwExStyle, nID, lpCreateParam);
-#else //!(_MSC_VER >= 1300)
+#else // !(_MSC_VER >= 1300)
 		typedef ATL::CWindowImpl< T, TBase, TWinTraits >   _baseClass;
 		return _baseClass::Create(hWndParent, rcDefault, NULL, dwStyle, dwExStyle, nID, lpCreateParam);
-#endif //!(_MSC_VER >= 1300)
+#endif // !(_MSC_VER >= 1300)
 	}
 
 	BOOL EnableCloseButton(BOOL bEnable)
@@ -2316,6 +2369,9 @@ public:
 		MESSAGE_HANDLER(WM_SETFOCUS, OnSetFocus)
 		MESSAGE_HANDLER(WM_ERASEBKGND, OnEraseBackground)
 		MESSAGE_HANDLER(WM_PAINT, OnPaint)
+#ifndef _WIN32_WCE
+		MESSAGE_HANDLER(WM_PRINTCLIENT, OnPaint)
+#endif // !_WIN32_WCE
 		MESSAGE_HANDLER(WM_NOTIFY, OnNotify)
 		MESSAGE_HANDLER(WM_COMMAND, OnCommand)
 		FORWARD_NOTIFICATIONS()
@@ -2351,15 +2407,24 @@ public:
 		return 1;   // no background needed
 	}
 
-	LRESULT OnPaint(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+	LRESULT OnPaint(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 	{
-		CPaintDC dc(m_hWnd);
-
 		T* pT = static_cast<T*>(this);
-		pT->DrawPaneTitle(dc.m_hDC);
+		if(wParam != NULL)
+		{
+			pT->DrawPaneTitle((HDC)wParam);
 
-		if(m_wndClient.m_hWnd == NULL)   // no client window
-			pT->DrawPane(dc.m_hDC);
+			if(m_wndClient.m_hWnd == NULL)   // no client window
+				pT->DrawPane((HDC)wParam);
+		}
+		else
+		{
+			CPaintDC dc(m_hWnd);
+			pT->DrawPaneTitle(dc.m_hDC);
+
+			if(m_wndClient.m_hWnd == NULL)   // no client window
+				pT->DrawPane(dc.m_hDC);
+		}
 
 		return 0;
 	}
@@ -2385,7 +2450,7 @@ public:
 		// pass them to the parent if we don't handle them
 		else if(lpnmh->code == TTN_GETDISPINFO && lpnmh->idFrom == pT->m_nCloseBtnID)
 			bHandled = pT->GetToolTipText(lpnmh);
-#endif //!_WIN32_WCE
+#endif // !_WIN32_WCE
 		// only let notifications not from the toolbar go to the parent
 		else if(lpnmh->hwndFrom != m_tb.m_hWnd && lpnmh->idFrom != pT->m_nCloseBtnID)
 			bHandled = FALSE;
@@ -2414,10 +2479,10 @@ public:
 		CDCHandle dc = lpNMCustomDraw->hdc;
 #if (_WIN32_IE >= 0x0400)
 		RECT& rc = lpNMCustomDraw->rc;
-#else //!(_WIN32_IE >= 0x0400)
+#else // !(_WIN32_IE >= 0x0400)
 		RECT rc;
 		m_tb.GetItemRect(0, &rc);
-#endif //!(_WIN32_IE >= 0x0400)
+#endif // !(_WIN32_IE >= 0x0400)
 
 		dc.FillRect(&rc, COLOR_3DFACE);
 
@@ -2429,10 +2494,10 @@ public:
 		CDCHandle dc = lpNMCustomDraw->hdc;
 #if (_WIN32_IE >= 0x0400)
 		RECT& rc = lpNMCustomDraw->rc;
-#else //!(_WIN32_IE >= 0x0400)
+#else // !(_WIN32_IE >= 0x0400)
 		RECT rc = { 0 };
 		m_tb.GetItemRect(0, &rc);
-#endif //!(_WIN32_IE >= 0x0400)
+#endif // !(_WIN32_IE >= 0x0400)
 
 		RECT rcImage = { m_xBtnImageLeft, m_yBtnImageTop, m_xBtnImageRight + 1, m_yBtnImageBottom + 1 };
 		::OffsetRect(&rcImage, rc.left, rc.top);
@@ -2557,7 +2622,7 @@ public:
 	{
 		return FALSE;
 	}
-#endif //!_WIN32_WCE
+#endif // !_WIN32_WCE
 
 	void DrawPaneTitle(CDCHandle dc)
 	{
@@ -2588,7 +2653,7 @@ public:
 			dc.DrawText(m_szTitle, -1, &rect, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS);
 #else // CE specific
 			dc.DrawText(m_szTitle, -1, &rect, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
-#endif //_WIN32_WCE
+#endif // _WIN32_WCE
 			dc.SelectFont(hFontOld);
 		}
 	}
@@ -2624,11 +2689,11 @@ public:
 		dc.LineTo(rcImage.right + 1, rcImage.top - 1);
 
 		dc.SelectPen(hPenOld);
-#else //(_WIN32_WCE < 400)
+#else // (_WIN32_WCE < 400)
 		rcImage;
 		hPen;
 		// no support for the "x" button image
-#endif //(_WIN32_WCE < 400)
+#endif // (_WIN32_WCE < 400)
 	}
 
 	bool IsVertical() const
@@ -2643,6 +2708,874 @@ public:
 	DECLARE_WND_CLASS_EX(_T("WTL_PaneContainer"), 0, -1)
 };
 
-}; //namespace WTL
+
+///////////////////////////////////////////////////////////////////////////////
+// CSortListViewCtrl - implements sorting for a listview control
+
+// sort listview extended styles
+#define SORTLV_USESHELLBITMAPS	0x00000001
+
+// Notification sent to parent when sort column is changed by user clicking header.  
+#define SLVN_SORTCHANGED	(LVN_FIRST-201)
+
+// A LPNMSORTLISTVIEW is sent with the SLVN_SORTCHANGED notification
+typedef struct tagNMSORTLISTVIEW
+{
+    NMHDR hdr;
+    int iNewSortColumn;
+    int iOldSortColumn;
+} NMSORTLISTVIEW, *LPNMSORTLISTVIEW;
+
+// Column sort types. Can be set on a per-column basis with the SetColumnSortType method.
+enum
+{
+	LVCOLSORT_NONE,
+	LVCOLSORT_TEXT,   // default
+	LVCOLSORT_TEXTNOCASE,
+	LVCOLSORT_LONG,
+	LVCOLSORT_DOUBLE,
+	LVCOLSORT_DECIMAL,
+	LVCOLSORT_DATETIME,
+	LVCOLSORT_DATE,
+	LVCOLSORT_TIME,
+	LVCOLSORT_CUSTOM,
+	LVCOLSORT_LAST = LVCOLSORT_CUSTOM
+};
+
+
+template <class T>
+class CSortListViewImpl
+{
+public:
+	enum
+	{
+		m_cchCmpTextMax = 32, // overrideable
+		m_cxSortImage = 16,
+		m_cySortImage = 15,
+		m_cxSortArrow = 11,
+		m_cySortArrow = 6,
+		m_iSortUp = 0,        // index of sort bitmaps
+		m_iSortDown = 1,
+		m_nShellSortUpID = 133
+	};
+
+	// passed to LVCompare functions as lParam1 and lParam2 
+	struct LVCompareParam
+	{
+		int iItem;
+		DWORD_PTR dwItemData;
+		union
+		{
+			long lValue;
+			double dblValue;
+			DECIMAL decValue;
+			LPCTSTR pszValue;
+		};
+	};
+	
+	// passed to LVCompare functions as the lParamSort parameter
+	struct LVSortInfo
+	{
+		T* pT;
+		int iSortCol;
+		bool bDescending;
+	};
+
+	bool m_bSortDescending;
+	bool m_bCommCtrl6;
+	int m_iSortColumn;
+	CBitmap m_bmSort[2];
+	int m_fmtOldSortCol;
+	HBITMAP m_hbmOldSortCol;
+	DWORD m_dwSortLVExtendedStyle;
+	ATL::CSimpleArray<WORD> m_arrColSortType;
+	bool m_bUseWaitCursor;
+	
+	CSortListViewImpl() :
+			m_bSortDescending(false),
+			m_bCommCtrl6(false),
+			m_iSortColumn(-1), 
+			m_fmtOldSortCol(0),
+			m_hbmOldSortCol(NULL),
+			m_dwSortLVExtendedStyle(SORTLV_USESHELLBITMAPS),
+			m_bUseWaitCursor(true)
+	{
+#ifndef _WIN32_WCE
+		DWORD dwMajor = 0;
+		DWORD dwMinor = 0;
+		HRESULT hRet = ATL::AtlGetCommCtrlVersion(&dwMajor, &dwMinor);
+		m_bCommCtrl6 = SUCCEEDED(hRet) && dwMajor >= 6;
+#endif // !_WIN32_WCE
+	}
+	
+// Attributes
+	void SetSortColumn(int iCol)
+	{
+		T* pT = static_cast<T*>(this);
+		ATLASSERT(::IsWindow(pT->m_hWnd));
+		CHeaderCtrl header = pT->GetHeader();
+		ATLASSERT(header.m_hWnd != NULL);
+		ATLASSERT(iCol >= -1 && iCol < m_arrColSortType.GetSize());
+
+		int iOldSortCol = m_iSortColumn;
+		m_iSortColumn = iCol;
+		if(m_bCommCtrl6)
+		{
+#ifndef HDF_SORTUP
+			const int HDF_SORTUP = 0x0400;	
+#endif // HDF_SORTUP
+#ifndef HDF_SORTDOWN
+			const int HDF_SORTDOWN = 0x0200;	
+#endif // HDF_SORTDOWN
+			const int nMask = HDF_SORTUP | HDF_SORTDOWN;
+			HDITEM hditem = { HDI_FORMAT };
+			if(iOldSortCol != iCol && iOldSortCol >= 0 && header.GetItem(iOldSortCol, &hditem))
+			{
+				hditem.fmt &= ~nMask;
+				header.SetItem(iOldSortCol, &hditem);
+			}
+			if(iCol >= 0 && header.GetItem(iCol, &hditem))
+			{
+				hditem.fmt &= ~nMask;
+				hditem.fmt |= m_bSortDescending ? HDF_SORTDOWN : HDF_SORTUP;
+				header.SetItem(iCol, &hditem);
+			}
+			return;
+		}
+
+		if(m_bmSort[m_iSortUp].IsNull())
+			pT->CreateSortBitmaps();
+
+		// restore previous sort column's bitmap, if any, and format
+		HDITEM hditem = { HDI_BITMAP | HDI_FORMAT };
+		if(iOldSortCol != iCol && iOldSortCol >= 0)
+		{
+			hditem.hbm = m_hbmOldSortCol;
+			hditem.fmt = m_fmtOldSortCol;
+			header.SetItem(iOldSortCol, &hditem);
+		}
+
+		// save new sort column's bitmap and format, and add our sort bitmap
+		if(iCol >= 0 && header.GetItem(iCol, &hditem))
+		{
+			if(iOldSortCol != iCol)
+			{
+				m_fmtOldSortCol = hditem.fmt;
+				m_hbmOldSortCol = hditem.hbm;
+			}
+			hditem.fmt &= ~HDF_IMAGE;
+			hditem.fmt |= HDF_BITMAP | HDF_BITMAP_ON_RIGHT;
+			int i = m_bSortDescending ? m_iSortDown : m_iSortUp;
+			hditem.hbm = m_bmSort[i];
+			header.SetItem(iCol, &hditem);
+		}
+	}
+
+	int GetSortColumn() const
+	{
+		return m_iSortColumn;
+	}
+
+	void SetColumnSortType(int iCol, WORD wType)
+	{
+		ATLASSERT(iCol >= 0 && iCol < m_arrColSortType.GetSize());
+		ATLASSERT(wType >= LVCOLSORT_NONE && wType <= LVCOLSORT_LAST);
+		m_arrColSortType[iCol] = wType;
+	}
+
+	WORD GetColumnSortType(int iCol) const
+	{
+		ATLASSERT((iCol >= 0) && iCol < m_arrColSortType.GetSize());
+		return m_arrColSortType[iCol];
+	}
+
+	int GetColumnCount() const
+	{
+		const T* pT = static_cast<const T*>(this);
+		ATLASSERT(::IsWindow(pT->m_hWnd));
+		CHeaderCtrl header = pT->GetHeader();
+		return header.m_hWnd != NULL ? header.GetItemCount() : 0;
+	}
+
+	bool IsSortDescending() const
+	{
+		return m_bSortDescending;
+	}
+
+	DWORD GetSortListViewExtendedStyle() const
+	{
+		return m_dwSortLVExtendedStyle;
+	}
+
+	DWORD SetSortListViewExtendedStyle(DWORD dwExtendedStyle, DWORD dwMask = 0)
+	{
+		DWORD dwPrevStyle = m_dwSortLVExtendedStyle;
+		if(dwMask == 0)
+			m_dwSortLVExtendedStyle = dwExtendedStyle;
+		else
+			m_dwSortLVExtendedStyle = (m_dwSortLVExtendedStyle & ~dwMask) | (dwExtendedStyle & dwMask);
+		return dwPrevStyle;
+	}
+
+// Operations
+	bool DoSortItems(int iCol, bool bDescending = false)
+	{
+		T* pT = static_cast<T*>(this);
+		ATLASSERT(::IsWindow(pT->m_hWnd));
+		ATLASSERT(iCol >= 0 && iCol < m_arrColSortType.GetSize());
+
+		WORD wType = m_arrColSortType[iCol];
+		if(wType == LVCOLSORT_NONE)
+			return false;
+
+		int nCount = pT->GetItemCount();
+		if(nCount < 2)
+		{
+			m_bSortDescending = bDescending;
+			SetSortColumn(iCol);
+			return true;
+		}
+
+		CWaitCursor waitCursor(false);
+		if(m_bUseWaitCursor)
+			waitCursor.Set();
+
+		LVCompareParam* pParam = NULL;
+		ATLTRY(pParam = new LVCompareParam[nCount]);
+		PFNLVCOMPARE pFunc = NULL;
+		TCHAR pszTemp[pT->m_cchCmpTextMax];
+		bool bStrValue = false;
+
+		switch(wType)
+		{
+		case LVCOLSORT_TEXT:
+			pFunc = (PFNLVCOMPARE)pT->LVCompareText;
+		case LVCOLSORT_TEXTNOCASE:
+			if(pFunc == NULL)
+				pFunc = (PFNLVCOMPARE)pT->LVCompareTextNoCase;
+		case LVCOLSORT_CUSTOM:
+			{
+				if(pFunc == NULL)
+					pFunc = (PFNLVCOMPARE)pT->LVCompareCustom;
+
+				for(int i = 0; i < nCount; i++)
+				{
+					pParam[i].iItem = i;
+					pParam[i].dwItemData = pT->GetItemData(i);
+					pParam[i].pszValue = new TCHAR[pT->m_cchCmpTextMax];
+					pT->GetItemText(i, iCol, (LPTSTR)pParam[i].pszValue, pT->m_cchCmpTextMax);
+					pT->SetItemData(i, (DWORD_PTR)&pParam[i]);
+				}
+				bStrValue = true;
+			}
+			break;
+		case LVCOLSORT_LONG:
+			{
+				pFunc = (PFNLVCOMPARE)pT->LVCompareLong;
+				for(int i = 0; i < nCount; i++)
+				{
+					pParam[i].iItem = i;
+					pParam[i].dwItemData = pT->GetItemData(i);
+					pT->GetItemText(i, iCol, pszTemp, pT->m_cchCmpTextMax);
+					pParam[i].lValue = pT->StrToLong(pszTemp);
+					pT->SetItemData(i, (DWORD_PTR)&pParam[i]);
+				}
+			}
+			break;
+		case LVCOLSORT_DOUBLE:
+			{
+				pFunc = (PFNLVCOMPARE)pT->LVCompareDouble;
+				for(int i = 0; i < nCount; i++)
+				{
+					pParam[i].iItem = i;
+					pParam[i].dwItemData = pT->GetItemData(i);
+					pT->GetItemText(i, iCol, pszTemp, pT->m_cchCmpTextMax);
+					pParam[i].dblValue = pT->StrToDouble(pszTemp);
+					pT->SetItemData(i, (DWORD_PTR)&pParam[i]);
+				}
+			}
+			break;
+		case LVCOLSORT_DECIMAL:
+			{
+				pFunc = (PFNLVCOMPARE)pT->LVCompareDecimal;
+				for(int i = 0; i < nCount; i++)
+				{
+					pParam[i].iItem = i;
+					pParam[i].dwItemData = pT->GetItemData(i);
+					pT->GetItemText(i, iCol, pszTemp, pT->m_cchCmpTextMax);
+					pT->StrToDecimal(pszTemp, &pParam[i].decValue);
+					pT->SetItemData(i, (DWORD_PTR)&pParam[i]);
+				}
+			}
+			break;
+		case LVCOLSORT_DATETIME:
+		case LVCOLSORT_DATE:
+		case LVCOLSORT_TIME:
+			{
+				pFunc = (PFNLVCOMPARE)pT->LVCompareDouble;
+				DWORD dwFlags = LOCALE_NOUSEROVERRIDE;
+				if(wType == LVCOLSORT_DATE)
+					dwFlags |= VAR_DATEVALUEONLY;
+				else if(wType == LVCOLSORT_TIME)
+					dwFlags |= VAR_TIMEVALUEONLY;
+				for(int i = 0; i < nCount; i++)
+				{
+					pParam[i].iItem = i;
+					pParam[i].dwItemData = pT->GetItemData(i);
+					pT->GetItemText(i, iCol, pszTemp, pT->m_cchCmpTextMax);
+					pParam[i].dblValue = pT->DateStrToDouble(pszTemp, dwFlags);
+					pT->SetItemData(i, (DWORD_PTR)&pParam[i]);
+				}
+			}
+			break;
+		default:
+			ATLTRACE2(atlTraceUI, 0, _T("Unknown value for sort type in CSortListViewImpl::DoSortItems()\n"));
+			break;
+		} // switch(wType)
+
+		ATLASSERT(pFunc != NULL);
+		LVSortInfo lvsi = { pT, iCol, bDescending };
+		bool bRet = ((BOOL)pT->DefWindowProc(LVM_SORTITEMS, (WPARAM)&lvsi, (LPARAM)pFunc) != FALSE);
+		for(int i = 0; i < nCount; i++)
+		{
+			DWORD_PTR dwItemData = pT->GetItemData(i);
+			LVCompareParam* p = (LVCompareParam*)dwItemData;
+			ATLASSERT(p != NULL);
+			if(bStrValue)
+				delete [] (TCHAR*)p->pszValue;
+			pT->SetItemData(i, p->dwItemData);
+		}
+		delete [] pParam;
+
+		if(bRet)
+		{
+			m_bSortDescending = bDescending;
+			SetSortColumn(iCol);
+		}
+
+		if(m_bUseWaitCursor)
+			waitCursor.Restore();
+
+		return bRet;
+	}
+
+	void CreateSortBitmaps()
+	{
+		if((m_dwSortLVExtendedStyle & SORTLV_USESHELLBITMAPS) != 0)
+		{
+			bool bFree = false;
+			LPCTSTR pszModule = _T("shell32.dll"); 
+			HINSTANCE hShell = ::GetModuleHandle(pszModule);
+
+			if (hShell == NULL)		
+			{
+				hShell = ::LoadLibrary(pszModule);
+				bFree = true;
+			}
+ 
+			if (hShell != NULL)
+			{
+				bool bSuccess = true;
+				for(int i = m_iSortUp; i <= m_iSortDown; i++)
+				{
+					if(!m_bmSort[i].IsNull())
+						m_bmSort[i].DeleteObject();
+					m_bmSort[i] = (HBITMAP)::LoadImage(hShell, MAKEINTRESOURCE(m_nShellSortUpID + i), 
+#ifndef _WIN32_WCE
+						IMAGE_BITMAP, 0, 0, LR_LOADMAP3DCOLORS);
+#else // CE specific
+						IMAGE_BITMAP, 0, 0, 0);
+#endif // _WIN32_WCE
+					if(m_bmSort[i].IsNull())
+					{
+						bSuccess = false;
+						break;
+					}
+				}
+				if(bFree)
+					::FreeLibrary(hShell);
+				if(bSuccess)
+					return;
+			}
+		}
+
+		T* pT = static_cast<T*>(this);
+		for(int i = m_iSortUp; i <= m_iSortDown; i++)
+		{
+			if(!m_bmSort[i].IsNull())
+				m_bmSort[i].DeleteObject();
+
+			CDC dcMem;
+			CClientDC dc(::GetDesktopWindow());
+			dcMem.CreateCompatibleDC(dc.m_hDC);
+			m_bmSort[i].CreateCompatibleBitmap(dc.m_hDC, m_cxSortImage, m_cySortImage);
+			HBITMAP hbmOld = dcMem.SelectBitmap(m_bmSort[i]);
+			RECT rc = {0,0,m_cxSortImage, m_cySortImage};
+			pT->DrawSortBitmap(dcMem.m_hDC, i, &rc);
+			dcMem.SelectBitmap(hbmOld);
+			dcMem.DeleteDC();
+		}
+	}
+
+	void NotifyParentSortChanged(int iNewSortCol, int iOldSortCol)
+	{
+		T* pT = static_cast<T*>(this);
+		int nID = pT->GetDlgCtrlID();
+		NMSORTLISTVIEW nm = { { pT->m_hWnd, nID, SLVN_SORTCHANGED }, iNewSortCol, iOldSortCol };
+		::SendMessage(pT->GetParent(), WM_NOTIFY, (WPARAM)nID, (LPARAM)&nm);
+	}
+
+// Overrideables
+	int CompareItemsCustom(LVCompareParam* /*pItem1*/, LVCompareParam* /*pItem2*/, int /*iSortCol*/)
+	{
+		// pItem1 and pItem2 contain valid iItem, dwItemData, and pszValue members.
+		// If item1 > item2 return 1, if item1 < item2 return -1, else return 0.
+		return 0;
+	}
+
+	void DrawSortBitmap(CDCHandle dc, int iBitmap, LPRECT prc)
+	{
+		dc.FillRect(prc, ::GetSysColorBrush(COLOR_BTNFACE));	
+		HBRUSH hbrOld = dc.SelectBrush(::GetSysColorBrush(COLOR_BTNSHADOW));
+		CPen pen;
+		pen.CreatePen(PS_SOLID, 0, ::GetSysColor(COLOR_BTNSHADOW));
+		HPEN hpenOld = dc.SelectPen(pen);
+		POINT ptOrg = { (m_cxSortImage - m_cxSortArrow) / 2, (m_cySortImage - m_cySortArrow) / 2 };
+		if(iBitmap == m_iSortUp)
+		{
+			POINT pts[3] = 
+			{
+				{ ptOrg.x + m_cxSortArrow / 2, ptOrg.y },
+				{ ptOrg.x, ptOrg.y + m_cySortArrow - 1 }, 
+				{ ptOrg.x + m_cxSortArrow - 1, ptOrg.y + m_cySortArrow - 1 }
+			};
+			dc.Polygon(pts, 3);
+		}
+		else
+		{
+			POINT pts[3] = 
+			{
+				{ ptOrg.x, ptOrg.y },
+				{ ptOrg.x + m_cxSortArrow / 2, ptOrg.y + m_cySortArrow - 1 },
+				{ ptOrg.x + m_cxSortArrow - 1, ptOrg.y }
+			};
+			dc.Polygon(pts, 3);
+		}
+		dc.SelectBrush(hbrOld);
+		dc.SelectPen(hpenOld);
+	}
+
+	double DateStrToDouble(LPCTSTR lpstr, DWORD dwFlags)
+	{
+		ATLASSERT(lpstr != NULL);
+		if(lpstr == NULL || lpstr[0] == _T('\0'))
+			return 0;
+
+		USES_CONVERSION;
+		HRESULT hRet = E_FAIL;
+		DATE dRet = 0;
+		if (FAILED(hRet = ::VarDateFromStr((LPOLESTR)T2COLE(lpstr), LANG_USER_DEFAULT, dwFlags, &dRet)))
+		{
+			ATLTRACE2(atlTraceUI, 0, _T("VarDateFromStr failed with result of 0x%8.8X\n"), hRet);
+			dRet = 0;
+		}
+		return dRet;
+	}
+
+	long StrToLong(LPCTSTR lpstr)
+	{
+		ATLASSERT(lpstr != NULL);
+		if(lpstr == NULL || lpstr[0] == _T('\0'))
+			return 0;
+		
+		USES_CONVERSION;
+		HRESULT hRet = E_FAIL;
+		long lRet = 0;
+		if (FAILED(hRet = ::VarI4FromStr((LPOLESTR)T2COLE(lpstr), LANG_USER_DEFAULT, LOCALE_NOUSEROVERRIDE, &lRet)))
+		{
+			ATLTRACE2(atlTraceUI, 0, _T("VarI4FromStr failed with result of 0x%8.8X\n"), hRet);
+			lRet = 0;
+		}
+		return lRet;
+	}
+
+	double StrToDouble(LPCTSTR lpstr)
+	{
+		ATLASSERT(lpstr != NULL);
+		if(lpstr == NULL || lpstr[0] == _T('\0'))
+			return 0;
+
+		USES_CONVERSION;
+		HRESULT hRet = E_FAIL;
+		double dblRet = 0;
+		if (FAILED(hRet = ::VarR8FromStr((LPOLESTR)T2COLE(lpstr), LANG_USER_DEFAULT, LOCALE_NOUSEROVERRIDE, &dblRet)))
+		{
+			ATLTRACE2(atlTraceUI, 0, _T("VarR8FromStr failed with result of 0x%8.8X\n"), hRet);
+			dblRet = 0;
+		}
+		return dblRet;
+	}
+
+	bool StrToDecimal(LPCTSTR lpstr, DECIMAL* pDecimal)
+	{
+		ATLASSERT(lpstr != NULL);
+		ATLASSERT(pDecimal != NULL);
+		if(lpstr == NULL || pDecimal == NULL)
+			return false;
+
+		USES_CONVERSION;
+		HRESULT hRet = E_FAIL;
+		if (FAILED(hRet = ::VarDecFromStr((LPOLESTR)T2COLE(lpstr), LANG_USER_DEFAULT, LOCALE_NOUSEROVERRIDE, pDecimal)))
+		{
+			ATLTRACE2(atlTraceUI, 0, _T("VarDecFromStr failed with result of 0x%8.8X\n"), hRet);
+			pDecimal->Lo64 = 0;
+			pDecimal->Hi32 = 0;
+			pDecimal->signscale = 0;
+			return false;
+		}
+		return true;
+	}
+
+// Overrideable PFNLVCOMPARE functions
+	static int CALLBACK LVCompareText(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
+	{
+		ATLASSERT(lParam1 != NULL && lParam2 != NULL && lParamSort != NULL);
+
+		LVCompareParam* pParam1 = (LVCompareParam*)lParam1;
+		LVCompareParam* pParam2 = (LVCompareParam*)lParam2;
+		LVSortInfo* pInfo = (LVSortInfo*)lParamSort;
+		
+		int nRet = lstrcmp(pParam1->pszValue, pParam2->pszValue);
+		return pInfo->bDescending ? -nRet : nRet;
+	}
+
+	static int CALLBACK LVCompareTextNoCase(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
+	{
+		ATLASSERT(lParam1 != NULL && lParam2 != NULL && lParamSort != NULL);
+
+		LVCompareParam* pParam1 = (LVCompareParam*)lParam1;
+		LVCompareParam* pParam2 = (LVCompareParam*)lParam2;
+		LVSortInfo* pInfo = (LVSortInfo*)lParamSort;
+		
+		int nRet = lstrcmpi(pParam1->pszValue, pParam2->pszValue);
+		return pInfo->bDescending ? -nRet : nRet;
+	}
+
+	static int CALLBACK LVCompareLong(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
+	{
+		ATLASSERT(lParam1 != NULL && lParam2 != NULL && lParamSort != NULL);
+
+		LVCompareParam* pParam1 = (LVCompareParam*)lParam1;
+		LVCompareParam* pParam2 = (LVCompareParam*)lParam2;
+		LVSortInfo* pInfo = (LVSortInfo*)lParamSort;
+		
+		int nRet = 0;
+		if(pParam1->lValue > pParam2->lValue)
+			nRet = 1;
+		else if(pParam1->lValue < pParam2->lValue)
+			nRet = -1;
+		return pInfo->bDescending ? -nRet : nRet;
+	}
+
+	static int CALLBACK LVCompareDouble(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
+	{
+		ATLASSERT(lParam1 != NULL && lParam2 != NULL && lParamSort != NULL);
+
+		LVCompareParam* pParam1 = (LVCompareParam*)lParam1;
+		LVCompareParam* pParam2 = (LVCompareParam*)lParam2;
+		LVSortInfo* pInfo = (LVSortInfo*)lParamSort;
+		
+		int nRet = 0;
+		if(pParam1->dblValue > pParam2->dblValue)
+			nRet = 1;
+		else if(pParam1->dblValue < pParam2->dblValue)
+			nRet = -1;
+		return pInfo->bDescending ? -nRet : nRet;
+	}
+
+	static int CALLBACK LVCompareCustom(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
+	{
+		ATLASSERT(lParam1 != NULL && lParam2 != NULL && lParamSort != NULL);
+
+		LVCompareParam* pParam1 = (LVCompareParam*)lParam1;
+		LVCompareParam* pParam2 = (LVCompareParam*)lParam2;
+		LVSortInfo* pInfo = (LVSortInfo*)lParamSort;
+		
+		int nRet = pInfo->pT->CompareItemsCustom(pParam1, pParam2, pInfo->iSortCol);
+		return pInfo->bDescending ? -nRet : nRet;
+	}
+
+#ifndef _WIN32_WCE
+	static int CALLBACK LVCompareDecimal(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
+	{
+		ATLASSERT(lParam1 != NULL && lParam2 != NULL && lParamSort != NULL);
+
+		LVCompareParam* pParam1 = (LVCompareParam*)lParam1;
+		LVCompareParam* pParam2 = (LVCompareParam*)lParam2;
+		LVSortInfo* pInfo = (LVSortInfo*)lParamSort;
+		
+		int nRet = (int)::VarDecCmp(&pParam1->decValue, &pParam2->decValue);
+		nRet--;
+		return pInfo->bDescending ? -nRet : nRet;
+	}
+#else
+	// Compare mantissas, ignore sign and scale
+	static int CompareMantissas(const DECIMAL& decLeft, const DECIMAL& decRight)
+	{
+		if (decLeft.Hi32 < decRight.Hi32)
+		{
+			return -1;
+		}
+		if (decLeft.Hi32 > decRight.Hi32)
+		{
+			return 1;
+		}
+		// Here, decLeft.Hi32 == decRight.Hi32
+		if (decLeft.Lo64 < decRight.Lo64)
+		{
+			return -1;
+		}
+		if (decLeft.Lo64 > decRight.Lo64)
+		{
+			return 1;
+		}
+		return 0;
+	}
+
+	// return values: VARCMP_LT, VARCMP_EQ, VARCMP_GT, VARCMP_NULL
+	static HRESULT VarDecCmp(const DECIMAL* pdecLeft, const DECIMAL* pdecRight)
+	{
+		static const ULONG powersOfTen[] =
+		{
+			10ul,
+			100ul,
+			1000ul,
+			10000ul,
+			100000ul,
+			1000000ul,
+			10000000ul,
+			100000000ul,
+			1000000000ul
+		};
+		static const int largestPower = sizeof(powersOfTen) / sizeof(powersOfTen[0]);
+		if (!pdecLeft || !pdecRight)
+		{
+			return VARCMP_NULL;
+		}
+		
+		// Degenerate case - at least one comparand is of the form
+		// [+-]0*10^N (denormalized zero)
+		bool bLeftZero = (!pdecLeft->Lo64 && !pdecLeft->Hi32);
+		bool bRightZero = (!pdecRight->Lo64 && !pdecRight->Hi32);
+		if (bLeftZero && bRightZero)
+		{
+			return VARCMP_EQ;
+		}
+		bool bLeftNeg = ((pdecLeft->sign & DECIMAL_NEG) != 0);
+		bool bRightNeg = ((pdecRight->sign & DECIMAL_NEG) != 0);
+		if (bLeftZero)
+		{
+			return (bRightNeg ? VARCMP_GT : VARCMP_LT);
+		}
+		// This also covers the case where the comparands have different signs
+		if (bRightZero || bLeftNeg != bRightNeg)
+		{
+			return (bLeftNeg ? VARCMP_LT : VARCMP_GT);
+		}
+
+		// Here both comparands have the same sign and need to be compared
+		// on mantissa and scale. The result is obvious when
+		// 1. Scales are equal (then compare mantissas)
+		// 2. A number with smaller scale is also the one with larger mantissa
+		//    (then this number is obviously larger)
+		// In the remaining case, we would multiply the number with smaller
+		// scale by 10 and simultaneously increment its scale (which amounts to
+		// adding trailing zeros after decimal point), until the numbers fall under
+		// one of the two cases above
+		DECIMAL temp;
+		bool bInvert = bLeftNeg; // the final result needs to be inverted
+		if (pdecLeft->scale < pdecRight->scale)
+		{
+			temp = *pdecLeft;
+		}
+		else
+		{
+			temp = *pdecRight;
+			pdecRight = pdecLeft;
+			bInvert = !bInvert;
+		}
+
+		// Now temp is the number with smaller (or equal) scale, and
+		// we can modify it freely without touching original parameters
+		int comp;
+		while ((comp = CompareMantissas(temp, *pdecRight)) < 0 &&
+			temp.scale < pdecRight->scale)
+		{
+			// Multiply by an appropriate power of 10
+			int scaleDiff = pdecRight->scale - temp.scale;
+			if (scaleDiff > largestPower)
+			{
+				// Keep the multiplier representable in 32bit
+				scaleDiff = largestPower;
+			}
+			DWORDLONG power = powersOfTen[scaleDiff - 1];
+			// Multiply temp's mantissa by power
+			DWORDLONG product = temp.Lo32 * power;
+			ULONG carry = static_cast<ULONG>(product >> 32);
+			temp.Lo32  = static_cast<ULONG>(product);
+			product = temp.Mid32 * power + carry;
+			carry = static_cast<ULONG>(product >> 32);
+			temp.Mid32 = static_cast<ULONG>(product);
+			product = temp.Hi32 * power + carry;
+			if (static_cast<ULONG>(product >> 32))
+			{
+				// Multiplication overflowed - pdecLeft is clearly larger
+				break;
+			}
+			temp.Hi32 = static_cast<ULONG>(product);
+			temp.scale = (BYTE)(temp.scale + scaleDiff);
+		}
+		if (temp.scale < pdecRight->scale)
+		{
+			comp = 1;
+		}
+		if (bInvert)
+		{
+			comp = -comp;
+		}
+		return (comp > 0 ? VARCMP_GT : comp < 0 ? VARCMP_LT : VARCMP_EQ);
+	}
+
+	static int CALLBACK LVCompareDecimal(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
+	{
+		ATLASSERT(lParam1 != NULL && lParam2 != NULL && lParamSort != NULL);
+
+		LVCompareParam* pParam1 = (LVCompareParam*)lParam1;
+		LVCompareParam* pParam2 = (LVCompareParam*)lParam2;
+		LVSortInfo* pInfo = (LVSortInfo*)lParamSort;
+		
+		int nRet = (int)VarDecCmp(&pParam1->decValue, &pParam2->decValue);
+		nRet--;
+		return pInfo->bDescending ? -nRet : nRet;
+	}
+#endif // !_WIN32_WCE
+
+	BEGIN_MSG_MAP(CSortListViewImpl)
+		MESSAGE_HANDLER(LVM_INSERTCOLUMN, OnInsertColumn)
+		MESSAGE_HANDLER(LVM_DELETECOLUMN, OnDeleteColumn)
+		NOTIFY_CODE_HANDLER(HDN_ITEMCLICKA, OnHeaderItemClick)
+		NOTIFY_CODE_HANDLER(HDN_ITEMCLICKW, OnHeaderItemClick)
+		MESSAGE_HANDLER(WM_SETTINGCHANGE, OnSettingChange)
+	END_MSG_MAP()
+
+	LRESULT OnInsertColumn(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/)	
+	{
+		T* pT = static_cast<T*>(this);
+		LRESULT lRet = pT->DefWindowProc(uMsg, wParam, lParam);
+		if(lRet == -1)
+			return -1;
+
+		WORD wType = 0;
+		m_arrColSortType.Add(wType);
+		int nCount = m_arrColSortType.GetSize();
+		ATLASSERT(nCount == GetColumnCount());
+
+		for(int i = nCount - 1; i > lRet; i--)
+			m_arrColSortType[i] = m_arrColSortType[i - 1];
+		m_arrColSortType[(int)lRet] = LVCOLSORT_TEXT;
+
+		if(lRet <= m_iSortColumn)
+			m_iSortColumn++;
+
+		return lRet;
+	}
+
+	LRESULT OnDeleteColumn(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/)	
+	{
+		T* pT = static_cast<T*>(this);
+		LRESULT lRet = pT->DefWindowProc(uMsg, wParam, lParam);
+		if(lRet == 0)
+			return 0;
+
+		int iCol = (int)wParam; 
+		if(m_iSortColumn == iCol)
+			m_iSortColumn = -1;
+		else if(m_iSortColumn > iCol)
+			m_iSortColumn--;
+		m_arrColSortType.RemoveAt(iCol);
+
+		return lRet;
+	}
+
+	LRESULT OnHeaderItemClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled)
+	{
+		LPNMHEADER p = (LPNMHEADER)pnmh;
+		if(p->iButton == 0)
+		{
+			int iOld = m_iSortColumn;
+			bool bDescending = (m_iSortColumn == p->iItem) ? !m_bSortDescending : false;
+			if(DoSortItems(p->iItem, bDescending))
+				NotifyParentSortChanged(p->iItem, iOld);				
+		}
+		bHandled = FALSE;
+		return 0;
+	}
+
+	LRESULT OnSettingChange(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled)
+	{
+#ifndef _WIN32_WCE
+		if(wParam == SPI_SETNONCLIENTMETRICS)
+			GetSystemSettings();
+#else  // CE specific
+		wParam; // avoid level 4 warning
+		GetSystemSettings();
+#endif // _WIN32_WCE
+		bHandled = FALSE;
+		return 0;
+	}
+
+	void GetSystemSettings()
+	{
+		if(!m_bCommCtrl6 && !m_bmSort[m_iSortUp].IsNull())
+		{
+			T* pT = static_cast<T*>(this);
+			pT->CreateSortBitmaps();
+			if(m_iSortColumn != -1)
+				SetSortColumn(m_iSortColumn);
+		}
+	}
+
+};
+
+
+typedef ATL::CWinTraits<WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | LVS_REPORT | LVS_SHOWSELALWAYS , WS_EX_CLIENTEDGE>   CSortListViewCtrlTraits;
+
+template <class T, class TBase = CListViewCtrl, class TWinTraits = CSortListViewCtrlTraits>
+class ATL_NO_VTABLE CSortListViewCtrlImpl: public ATL::CWindowImpl<T, TBase, TWinTraits>, public CSortListViewImpl<T>
+{
+public:
+	DECLARE_WND_SUPERCLASS(NULL, TBase::GetWndClassName())
+
+	bool SortItems(int iCol, bool bDescending = false)
+	{
+		return DoSortItems(iCol, bDescending);
+	}
+		
+	BEGIN_MSG_MAP(CSortListViewCtrlImpl)
+		MESSAGE_HANDLER(LVM_INSERTCOLUMN, CSortListViewImpl<T>::OnInsertColumn)
+		MESSAGE_HANDLER(LVM_DELETECOLUMN, CSortListViewImpl<T>::OnDeleteColumn)
+		NOTIFY_CODE_HANDLER(HDN_ITEMCLICKA, CSortListViewImpl<T>::OnHeaderItemClick)
+		NOTIFY_CODE_HANDLER(HDN_ITEMCLICKW, CSortListViewImpl<T>::OnHeaderItemClick)
+		MESSAGE_HANDLER(WM_SETTINGCHANGE, CSortListViewImpl<T>::OnSettingChange)
+	END_MSG_MAP()
+};
+
+class CSortListViewCtrl : public CSortListViewCtrlImpl<CSortListViewCtrl>
+{
+public:
+	DECLARE_WND_SUPERCLASS(_T("WTL_SortListViewCtrl"), GetWndClassName())
+};
+
+}; // namespace WTL
 
 #endif // __ATLCTRLX_H__

@@ -1,10 +1,13 @@
-// Windows Template Library - WTL version 7.1
-// Copyright (C) 1997-2003 Microsoft Corporation
-// All rights reserved.
+// Windows Template Library - WTL version 7.5
+// Copyright (C) Microsoft Corporation. All rights reserved.
 //
 // This file is a part of the Windows Template Library.
-// The code and information is provided "as-is" without
-// warranty of any kind, either expressed or implied.
+// The use and distribution terms for this software are covered by the
+// Common Public License 1.0 (http://opensource.org/licenses/cpl.php)
+// which can be found in the file CPL.TXT at the root of this distribution.
+// By using this software in any fashion, you are agreeing to be bound by
+// the terms of this license. You must not remove this notice, or
+// any other, from this software.
 
 #ifndef __ATLCTRLW_H__
 #define __ATLCTRLW_H__
@@ -87,7 +90,7 @@ public:
 	BOOL Push(T t)
 	{
 #ifdef _CMDBAR_EXTRA_TRACE
-		ATLTRACE2(atlTraceUI, 0, "CmdBar - STACK-PUSH (%8.8X) size = %i\n", t, GetSize());
+		ATLTRACE2(atlTraceUI, 0, _T("CmdBar - STACK-PUSH (%8.8X) size = %i\n"), t, GetSize());
 #endif
 		return Add(t);
 	}
@@ -99,7 +102,7 @@ public:
 			return NULL;   // must be able to convert to NULL
 		T t = m_aT[nLast];
 #ifdef _CMDBAR_EXTRA_TRACE
-		ATLTRACE2(atlTraceUI, 0, "CmdBar - STACK-POP (%8.8X) size = %i\n", t, GetSize());
+		ATLTRACE2(atlTraceUI, 0, _T("CmdBar - STACK-POP (%8.8X) size = %i\n"), t, GetSize());
 #endif
 		if(!RemoveAt(nLast))
 			return NULL;
@@ -234,7 +237,7 @@ public:
 
 #ifndef DT_HIDEPREFIX
 	enum { DT_HIDEPREFIX = 0x00100000 };
-#endif //!DT_HIDEPREFIX
+#endif // !DT_HIDEPREFIX
 
 // Data members
 	HMENU m_hMenu;
@@ -442,10 +445,10 @@ public:
 		dwStyle |= TBSTYLE_LIST | TBSTYLE_FLAT;
 #if (_MSC_VER >= 1300)
 		return ATL::CWindowImpl< T, TBase, TWinTraits >::Create(hWndParent, rcPos, szWindowName, dwStyle, dwExStyle, nID, lpCreateParam);
-#else //!(_MSC_VER >= 1300)
+#else // !(_MSC_VER >= 1300)
 		typedef ATL::CWindowImpl< T, TBase, TWinTraits >   _baseClass;
 		return _baseClass::Create(hWndParent, rcPos, szWindowName, dwStyle, dwExStyle, nID, lpCreateParam);
-#endif //!(_MSC_VER >= 1300)
+#endif // !(_MSC_VER >= 1300)
 	}
 
 	BOOL AttachToWindow(HWND hWnd)
@@ -473,9 +476,9 @@ public:
 
 #if (_ATL_VER >= 0x0700)
 		HMENU hMenu = ::LoadMenu(ATL::_AtlBaseModule.GetResourceInstance(), menu.m_lpstr);
-#else //!(_ATL_VER >= 0x0700)
+#else // !(_ATL_VER >= 0x0700)
 		HMENU hMenu = ::LoadMenu(_Module.GetResourceInstance(), menu.m_lpstr);
-#endif //!(_ATL_VER >= 0x0700)
+#endif // !(_ATL_VER >= 0x0700)
 		if(hMenu == NULL)
 			return FALSE;
 
@@ -581,9 +584,9 @@ public:
 		ATLASSERT(::IsWindow(m_hWnd));
 #if (_ATL_VER >= 0x0700)
 		HINSTANCE hInstance = ATL::_AtlBaseModule.GetResourceInstance();
-#else //!(_ATL_VER >= 0x0700)
+#else // !(_ATL_VER >= 0x0700)
 		HINSTANCE hInstance = _Module.GetResourceInstance();
-#endif //!(_ATL_VER >= 0x0700)
+#endif // !(_ATL_VER >= 0x0700)
 
 		HRSRC hRsrc = ::FindResource(hInstance, image.m_lpstr, (LPTSTR)RT_TOOLBAR);
 		if(hRsrc == NULL)
@@ -628,9 +631,9 @@ public:
 			if(m_bAlphaImages)
 #if (_ATL_VER >= 0x0700)
 				bmp = (HBITMAP)::LoadImage(ATL::_AtlBaseModule.GetResourceInstance(), image.m_lpstr, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION | LR_DEFAULTSIZE);
-#else //!(_ATL_VER >= 0x0700)
+#else // !(_ATL_VER >= 0x0700)
 				bmp = (HBITMAP)::LoadImage(_Module.GetResourceInstance(), image.m_lpstr, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION | LR_DEFAULTSIZE);
-#endif //!(_ATL_VER >= 0x0700)
+#endif // !(_ATL_VER >= 0x0700)
 			else
 				bmp.LoadBitmap(image.m_lpstr);
 		}
@@ -697,9 +700,9 @@ public:
 		ATLASSERT(::IsWindow(m_hWnd));
 #if (_ATL_VER >= 0x0700)
 		HICON hIcon = ::LoadIcon(ATL::_AtlBaseModule.GetResourceInstance(), icon.m_lpstr);
-#else //!(_ATL_VER >= 0x0700)
+#else // !(_ATL_VER >= 0x0700)
 		HICON hIcon = ::LoadIcon(_Module.GetResourceInstance(), icon.m_lpstr);
-#endif //!(_ATL_VER >= 0x0700)
+#endif // !(_ATL_VER >= 0x0700)
 		if(hIcon == NULL)
 			return FALSE;
 		return AddIcon(hIcon, nCommandID);
@@ -758,9 +761,9 @@ public:
 		ATLASSERT(::IsWindow(m_hWnd));
 #if (_ATL_VER >= 0x0700)
 		HICON hIcon = ::LoadIcon(ATL::_AtlBaseModule.GetResourceInstance(), icon.m_lpstr);
-#else //!(_ATL_VER >= 0x0700)
+#else // !(_ATL_VER >= 0x0700)
 		HICON hIcon = ::LoadIcon(_Module.GetResourceInstance(), icon.m_lpstr);
-#endif //!(_ATL_VER >= 0x0700)
+#endif // !(_ATL_VER >= 0x0700)
 		if(hIcon == NULL)
 			return FALSE;
 		return ReplaceIcon(hIcon, nCommandID);
@@ -803,7 +806,7 @@ public:
 	{
 		ATLASSERT(::IsWindow(m_hWnd));
 
-		ATLTRACE2(atlTraceUI, 0, "CmdBar - Removing all images\n");
+		ATLTRACE2(atlTraceUI, 0, _T("CmdBar - Removing all images\n"));
 		BOOL bRet = ::ImageList_RemoveAll(m_hImageList);
 		if(bRet)
 			m_arrCommand.RemoveAll();
@@ -868,6 +871,7 @@ public:
 		MESSAGE_HANDLER(WM_MENUCHAR, OnParentMenuChar)
 		MESSAGE_HANDLER(CBRM_TRACKPOPUPMENU, OnParentAPITrackPopupMenu)
 		MESSAGE_HANDLER(CBRM_GETCMDBAR, OnParentAPIGetCmdBar)
+		MESSAGE_HANDLER(WM_SETTINGCHANGE, OnParentSettingChange)
 
 		MESSAGE_HANDLER(WM_DRAWITEM, OnParentDrawItem)
 		MESSAGE_HANDLER(WM_MEASUREITEM, OnParentMeasureItem)
@@ -938,9 +942,9 @@ public:
 				ATLASSERT(pData != NULL);
 #if (_ATL_VER >= 0x0700)
 				HHOOK hMsgHook = ::SetWindowsHookEx(WH_GETMESSAGE, MessageHookProc, ATL::_AtlBaseModule.GetModuleInstance(), dwThreadID);
-#else //!(_ATL_VER >= 0x0700)
+#else // !(_ATL_VER >= 0x0700)
 				HHOOK hMsgHook = ::SetWindowsHookEx(WH_GETMESSAGE, MessageHookProc, _Module.GetModuleInstance(), dwThreadID);
-#endif //!(_ATL_VER >= 0x0700)
+#endif // !(_ATL_VER >= 0x0700)
 				ATLASSERT(hMsgHook != NULL);
 				if(pData != NULL && hMsgHook != NULL)
 				{
@@ -961,7 +965,7 @@ public:
 		// Get layout
 #if (WINVER >= 0x0500)
 		m_bLayoutRTL = ((GetExStyle() & WS_EX_LAYOUTRTL) != 0);
-#endif //(WINVER >= 0x0500)
+#endif // (WINVER >= 0x0500)
 
 		return lRet;
 	}
@@ -969,6 +973,10 @@ public:
 	LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/)
 	{
 		LRESULT lRet = DefWindowProc(uMsg, wParam, lParam);
+
+		if(m_bAttachedMenu)   // nothing to do in this mode
+			return lRet;
+
 		CWindowCreateCriticalSectionLock lock;
 		if(FAILED(lock.Lock()))
 		{
@@ -1010,7 +1018,7 @@ public:
 	LRESULT OnKeyDown(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 	{
 #ifdef _CMDBAR_EXTRA_TRACE
-		ATLTRACE2(atlTraceUI, 0, "CmdBar - OnKeyDown\n");
+		ATLTRACE2(atlTraceUI, 0, _T("CmdBar - OnKeyDown\n"));
 #endif
 		bHandled = FALSE;
 		// Simulate Alt+Space for the parent
@@ -1037,14 +1045,14 @@ public:
 				}
 			}
 		}
-#endif //(_WIN32_IE >= 0x0500)
+#endif // (_WIN32_IE >= 0x0500)
 		return 0;
 	}
 
 	LRESULT OnKeyUp(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled)
 	{
 #ifdef _CMDBAR_EXTRA_TRACE
-		ATLTRACE2(atlTraceUI, 0, "CmdBar - OnKeyUp\n");
+		ATLTRACE2(atlTraceUI, 0, _T("CmdBar - OnKeyUp\n"));
 #endif
 		if(wParam != VK_SPACE)
 			bHandled = FALSE;
@@ -1054,7 +1062,7 @@ public:
 	LRESULT OnChar(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled)
 	{
 #ifdef _CMDBAR_EXTRA_TRACE
-		ATLTRACE2(atlTraceUI, 0, "CmdBar - OnChar\n");
+		ATLTRACE2(atlTraceUI, 0, _T("CmdBar - OnChar\n"));
 #endif
 		if(wParam != VK_SPACE)
 			bHandled = FALSE;
@@ -1070,7 +1078,7 @@ public:
 		{
 #if (_WIN32_IE >= 0x0500)
 			if((TCHAR)LOWORD(wParam) != _chChevronShortcut)
-#endif //(_WIN32_IE >= 0x0500)
+#endif // (_WIN32_IE >= 0x0500)
 				::MessageBeep(0);
 		}
 		else
@@ -1084,7 +1092,7 @@ public:
 			GetButton(nBtn, &tbb);
 			if((tbb.fsState & TBSTATE_ENABLED) != 0 && (tbb.fsState & TBSTATE_HIDDEN) == 0 && rcBtn.right <= rcClient.right)
 			{
-#endif //(_WIN32_IE >= 0x0500)
+#endif // (_WIN32_IE >= 0x0500)
 				PostMessage(WM_KEYDOWN, VK_DOWN, 0L);
 				if(wParam != VK_RETURN)
 					SetHotItem(nBtn);
@@ -1095,7 +1103,7 @@ public:
 				::MessageBeep(0);
 				bHandled = TRUE;
 			}
-#endif //(_WIN32_IE >= 0x0500)
+#endif // (_WIN32_IE >= 0x0500)
 		}
 		return 0;
 	}
@@ -1103,7 +1111,7 @@ public:
 	LRESULT OnSysKeyDown(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 	{
 #ifdef _CMDBAR_EXTRA_TRACE
-		ATLTRACE2(atlTraceUI, 0, "CmdBar - OnSysKeyDown\n");
+		ATLTRACE2(atlTraceUI, 0, _T("CmdBar - OnSysKeyDown\n"));
 #endif
 		bHandled = FALSE;
 		return 0;
@@ -1112,7 +1120,7 @@ public:
 	LRESULT OnSysKeyUp(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 	{
 #ifdef _CMDBAR_EXTRA_TRACE
-		ATLTRACE2(atlTraceUI, 0, "CmdBar - OnSysKeyUp\n");
+		ATLTRACE2(atlTraceUI, 0, _T("CmdBar - OnSysKeyUp\n"));
 #endif
 		bHandled = FALSE;
 		return 0;
@@ -1121,7 +1129,7 @@ public:
 	LRESULT OnSysChar(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 	{
 #ifdef _CMDBAR_EXTRA_TRACE
-		ATLTRACE2(atlTraceUI, 0, "CmdBar - OnSysChar\n");
+		ATLTRACE2(atlTraceUI, 0, _T("CmdBar - OnSysChar\n"));
 #endif
 		bHandled = FALSE;
 		return 0;
@@ -1166,7 +1174,7 @@ public:
 		}
 
 #ifdef _CMDBAR_EXTRA_TRACE
-		ATLTRACE2(atlTraceUI, 0, "CmdBar - OnInitMenuPopup\n");
+		ATLTRACE2(atlTraceUI, 0, _T("CmdBar - OnInitMenuPopup\n"));
 #endif
 		// forward to the parent or subclassed window, so it can handle update UI
 		LRESULT lRet = 0;
@@ -1248,7 +1256,7 @@ public:
 		if(HIWORD(wParam) == 0xFFFF && lParam == NULL)   // Menu closing
 		{
 #ifdef _CMDBAR_EXTRA_TRACE
-			ATLTRACE2(atlTraceUI, 0, "CmdBar - OnMenuSelect - CLOSING!!!!\n");
+			ATLTRACE2(atlTraceUI, 0, _T("CmdBar - OnMenuSelect - CLOSING!!!!\n"));
 #endif
 			ATLASSERT(m_stackMenuWnd.GetSize() == 0);
 			// Restore the menu items to the previous state for all menus that were converted
@@ -1312,10 +1320,21 @@ public:
 			return NULL;
 	}
 
-	LRESULT OnSettingChange(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+	LRESULT OnSettingChange(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+	{
+#ifndef SPI_GETKEYBOARDCUES
+		const UINT SPI_SETKEYBOARDCUES = 0x100B;
+#endif // !SPI_GETKEYBOARDCUES
+#ifndef SPI_GETFLATMENU
+		const UINT SPI_SETFLATMENU = 0x1023;
+#endif // !SPI_GETFLATMENU
+
+		if(wParam == SPI_SETNONCLIENTMETRICS || wParam == SPI_SETKEYBOARDCUES || wParam == SPI_SETFLATMENU)
 	{
 		T* pT = static_cast<T*>(this);
 		pT->GetSystemSettings();
+		}
+
 		return 0;
 	}
 
@@ -1334,7 +1353,7 @@ public:
 	LRESULT OnMenuChar(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 	{
 #ifdef _CMDBAR_EXTRA_TRACE
-		ATLTRACE2(atlTraceUI, 0, "CmdBar - OnMenuChar\n");
+		ATLTRACE2(atlTraceUI, 0, _T("CmdBar - OnMenuChar\n"));
 #endif
 		bHandled = TRUE;
 		T* pT = static_cast<T*>(this);
@@ -1422,7 +1441,7 @@ public:
 					if(pT->DisplayChevronMenu())
 						bHandled = TRUE;
 				}
-#endif //(_WIN32_IE >= 0x0500)
+#endif // (_WIN32_IE >= 0x0500)
 			}
 			else if(m_wndParent.IsWindowEnabled())
 			{
@@ -1435,7 +1454,7 @@ public:
 				GetButton(nBtn, &tbb);
 				if((tbb.fsState & TBSTATE_ENABLED) != 0 && (tbb.fsState & TBSTATE_HIDDEN) == 0 && rcBtn.right <= rcClient.right)
 				{
-#endif //(_WIN32_IE >= 0x0500)
+#endif // (_WIN32_IE >= 0x0500)
 					if(m_bUseKeyboardCues && !m_bShowKeyboardCues)
 					{
 						m_bAllowKeyboardCues = true;
@@ -1450,7 +1469,7 @@ public:
 				{
 					::MessageBeep(0);
 				}
-#endif //(_WIN32_IE >= 0x0500)
+#endif // (_WIN32_IE >= 0x0500)
 			}
 		}
 
@@ -1640,6 +1659,13 @@ public:
 		return OnAPIGetCmdBar(uMsg, wParam, lParam, bHandled);
 	}
 
+	LRESULT OnParentSettingChange(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+	{
+		OnSettingChange(uMsg, wParam, lParam, bHandled);
+		bHandled = FALSE;
+		return 1;
+	}
+
 	LRESULT OnParentDrawItem(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 	{
 		return OnDrawItem(uMsg, wParam, lParam, bHandled);
@@ -1684,7 +1710,7 @@ public:
 				{
 #ifndef COLOR_MENUHILIGHT
 					const int COLOR_MENUHILIGHT = 29;
-#endif //!COLOR_MENUHILIGHT
+#endif // !COLOR_MENUHILIGHT
 					bool bDisabled = ((lpTBCustomDraw->nmcd.uItemState & CDIS_DISABLED) == CDIS_DISABLED);
 					if(!bDisabled && ((lpTBCustomDraw->nmcd.uItemState & CDIS_HOT) == CDIS_HOT || 
 						(lpTBCustomDraw->nmcd.uItemState & CDIS_SELECTED) == CDIS_SELECTED))
@@ -1776,7 +1802,7 @@ public:
 	{
 		bHandled = FALSE;
 #ifdef _CMDBAR_EXTRA_TRACE
-		ATLTRACE2(atlTraceUI, 0, "CmdBar - Hook WM_SYSKEYDOWN (0x%2.2X)\n", wParam);
+		ATLTRACE2(atlTraceUI, 0, _T("CmdBar - Hook WM_SYSKEYDOWN (0x%2.2X)\n"), wParam);
 #endif
 
 		if(wParam == VK_MENU && m_bUseKeyboardCues && !m_bShowKeyboardCues && m_bAllowKeyboardCues)
@@ -1809,7 +1835,7 @@ public:
 		bHandled = FALSE;
 		wParam;
 #ifdef _CMDBAR_EXTRA_TRACE
-		ATLTRACE2(atlTraceUI, 0, "CmdBar - Hook WM_SYSKEYUP (0x%2.2X)\n", wParam);
+		ATLTRACE2(atlTraceUI, 0, _T("CmdBar - Hook WM_SYSKEYUP (0x%2.2X)\n"), wParam);
 #endif
 		return 0;
 	}
@@ -1818,7 +1844,7 @@ public:
 	{
 		bHandled = FALSE;
 #ifdef _CMDBAR_EXTRA_TRACE
-		ATLTRACE2(atlTraceUI, 0, "CmdBar - Hook WM_SYSCHAR (0x%2.2X)\n", wParam);
+		ATLTRACE2(atlTraceUI, 0, _T("CmdBar - Hook WM_SYSCHAR (0x%2.2X)\n"), wParam);
 #endif
 
 		if(!m_bMenuActive && m_hWndHook != m_hWnd && wParam != VK_SPACE)
@@ -1829,12 +1855,12 @@ public:
 	LRESULT OnHookKeyDown(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled)
 	{
 #ifdef _CMDBAR_EXTRA_TRACE
-		ATLTRACE2(atlTraceUI, 0, "CmdBar - Hook WM_KEYDOWN (0x%2.2X)\n", wParam);
+		ATLTRACE2(atlTraceUI, 0, _T("CmdBar - Hook WM_KEYDOWN (0x%2.2X)\n"), wParam);
 #endif
 		bHandled = FALSE;
 		T* pT = static_cast<T*>(this);
 
-		if(wParam == VK_ESCAPE)
+		if(wParam == VK_ESCAPE && m_stackMenuWnd.GetSize() <= 1)
 		{
 			if(m_bMenuActive && !m_bContextMenu)
 			{
@@ -1877,20 +1903,20 @@ public:
 								GetItemRect(nHot, &rect);
 								PostMessage(WM_LBUTTONDOWN, MK_LBUTTON, MAKELPARAM(rect.left, rect.top));
 							}
-#endif //(_WIN32_IE < 0x0500)
+#endif // (_WIN32_IE < 0x0500)
 							PostMessage(WM_KEYDOWN, VK_DOWN, 0L);
 							m_bSkipPostDown = true;
 						}
 						else
 						{
-							ATLTRACE2(atlTraceUI, 0, "CmdBar - skipping posting another VK_DOWN\n");
+							ATLTRACE2(atlTraceUI, 0, _T("CmdBar - skipping posting another VK_DOWN\n"));
 							m_bSkipPostDown = false;
 						}
 					}
 				}
 				else
 				{
-					ATLTRACE2(atlTraceUI, 0, "CmdBar - Can't find hot button\n");
+					ATLTRACE2(atlTraceUI, 0, _T("CmdBar - Can't find hot button\n"));
 				}
 			}
 			if(wParam == VK_RETURN && m_bMenuActive)
@@ -1944,7 +1970,7 @@ public:
 						m_nNextPopBtn = -1;
 						pT->DisplayChevronMenu();
 					}
-#endif //(_WIN32_IE >= 0x0500)
+#endif // (_WIN32_IE >= 0x0500)
 					bHandled = TRUE;
 				}
 			}
@@ -1955,7 +1981,7 @@ public:
 	LRESULT OnHookNextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 	{
 #ifdef _CMDBAR_EXTRA_TRACE
-		ATLTRACE2(atlTraceUI, 0, "CmdBar - Hook WM_NEXTMENU\n");
+		ATLTRACE2(atlTraceUI, 0, _T("CmdBar - Hook WM_NEXTMENU\n"));
 #endif
 		bHandled = FALSE;
 		return 1;
@@ -1964,7 +1990,7 @@ public:
  	LRESULT OnHookChar(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled)
 	{
 #ifdef _CMDBAR_EXTRA_TRACE
-		ATLTRACE2(atlTraceUI, 0, "CmdBar - Hook WM_CHAR (0x%2.2X)\n", wParam);
+		ATLTRACE2(atlTraceUI, 0, _T("CmdBar - Hook WM_CHAR (0x%2.2X)\n"), wParam);
 #endif
 		bHandled = (wParam == VK_ESCAPE);
 		return 0;
@@ -2107,7 +2133,7 @@ public:
 
 #ifndef COLOR_MENUHILIGHT
 		const int COLOR_MENUHILIGHT = 29;
-#endif //!COLOR_MENUHILIGHT
+#endif // !COLOR_MENUHILIGHT
 
 		BOOL bDisabled = lpDrawItemStruct->itemState & ODS_GRAYED;
 		BOOL bSelected = lpDrawItemStruct->itemState & ODS_SELECTED;
@@ -2203,7 +2229,7 @@ public:
 		int nTab = -1;
 		for(int i = 0; i < lstrlen(lpstrText); i++)
 		{
-			if(lpstrText[i] == '\t')
+			if(lpstrText[i] == _T('\t'))
 			{
 				nTab = i;
 				break;
@@ -2236,11 +2262,11 @@ public:
 			ildp.yBitmap = 0;
 			ildp.fStyle = ILD_TRANSPARENT;
 			ildp.fState = ILS_SATURATE;
-			ildp.Frame = (DWORD)-100;
+			ildp.Frame = 0;
 			::ImageList_DrawIndirect(&ildp);
 		}
 		else
-#endif //(_WIN32_WINNT >= 0x0501) && (_WIN32_IE >= 0x0501)
+#endif // (_WIN32_WINNT >= 0x0501) && (_WIN32_IE >= 0x0501)
 		{
 			// create memory DC
 			CDC dcMem;
@@ -2486,7 +2512,6 @@ public:
 // Implementation - Hook procs
 	static LRESULT CALLBACK CreateHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 	{
-		LRESULT lRet = 0;
 		const int cchClassName = 7;
 		TCHAR szClassName[cchClassName] = { 0 };
 
@@ -2494,7 +2519,7 @@ public:
 		{
 			HWND hWndMenu = (HWND)wParam;
 #ifdef _CMDBAR_EXTRA_TRACE
-			ATLTRACE2(atlTraceUI, 0, "CmdBar - HCBT_CREATEWND (HWND = %8.8X)\n", hWndMenu);
+			ATLTRACE2(atlTraceUI, 0, _T("CmdBar - HCBT_CREATEWND (HWND = %8.8X)\n"), hWndMenu);
 #endif
 
 			::GetClassName(hWndMenu, szClassName, cchClassName);
@@ -2505,7 +2530,7 @@ public:
 		{
 			HWND hWndMenu = (HWND)wParam;
 #ifdef _CMDBAR_EXTRA_TRACE
-			ATLTRACE2(atlTraceUI, 0, "CmdBar - HCBT_DESTROYWND (HWND = %8.8X)\n", hWndMenu);
+			ATLTRACE2(atlTraceUI, 0, _T("CmdBar - HCBT_DESTROYWND (HWND = %8.8X)\n"), hWndMenu);
 #endif
 
 			::GetClassName(hWndMenu, szClassName, cchClassName);
@@ -2515,11 +2540,8 @@ public:
 				s_pCurrentBar->m_stackMenuWnd.Pop();
 			}
 		}
-		else if(nCode < 0)
-		{
-			lRet = ::CallNextHookEx(s_hCreateHook, nCode, wParam, lParam);
-		}
-		return lRet;
+
+		return ::CallNextHookEx(s_hCreateHook, nCode, wParam, lParam);
 	}
 
 	static LRESULT CALLBACK MessageHookProc(int nCode, WPARAM wParam, LPARAM lParam)
@@ -2545,7 +2567,7 @@ public:
 				if(::IsWindow(pCmdBar->m_hWnd))
 					pCmdBar->SendMessage(WM_FORWARDMSG, 0, (LPARAM)pMsg);
 				else
-					ATLTRACE2(atlTraceUI, 0, "CmdBar - Hook skipping message, can't find command bar!\n");
+					ATLTRACE2(atlTraceUI, 0, _T("CmdBar - Hook skipping message, can't find command bar!\n"));
 			}
 		}
 
@@ -2567,7 +2589,7 @@ public:
 	void DoPopupMenu(int nIndex, bool bAnimate)
 	{
 #ifdef _CMDBAR_EXTRA_TRACE
-		ATLTRACE2(atlTraceUI, 0, "CmdBar - DoPopupMenu, bAnimate = %s\n", bAnimate ? "true" : "false");
+		ATLTRACE2(atlTraceUI, 0, _T("CmdBar - DoPopupMenu, bAnimate = %s\n"), bAnimate ? "true" : "false");
 #endif
 
 		// Menu animation flags
@@ -2658,9 +2680,9 @@ public:
 
 #if (_ATL_VER >= 0x0700)
 		s_hCreateHook = ::SetWindowsHookEx(WH_CBT, CreateHookProc, ATL::_AtlBaseModule.GetModuleInstance(), GetCurrentThreadId());
-#else //!(_ATL_VER >= 0x0700)
+#else // !(_ATL_VER >= 0x0700)
 		s_hCreateHook = ::SetWindowsHookEx(WH_CBT, CreateHookProc, _Module.GetModuleInstance(), GetCurrentThreadId());
-#endif //!(_ATL_VER >= 0x0700)
+#endif // !(_ATL_VER >= 0x0700)
 		ATLASSERT(s_hCreateHook != NULL);
 
 		m_bPopupItem = false;
@@ -2678,7 +2700,7 @@ public:
 
 		// cleanup - convert menus back to original state
 #ifdef _CMDBAR_EXTRA_TRACE
-		ATLTRACE2(atlTraceUI, 0, "CmdBar - TrackPopupMenu - cleanup\n");
+		ATLTRACE2(atlTraceUI, 0, _T("CmdBar - TrackPopupMenu - cleanup\n"));
 #endif
 
 		ATLASSERT(m_stackMenuWnd.GetSize() == 0);
@@ -2734,7 +2756,7 @@ public:
 #if (_WIN32_IE >= 0x0500)
 		RECT rcClient;
 		GetClientRect(&rcClient);
-#endif //(_WIN32_IE >= 0x0500)
+#endif // (_WIN32_IE >= 0x0500)
 		int nNextBtn;
 		for(nNextBtn = nBtn - 1; nNextBtn != nBtn; nNextBtn--)
 		{
@@ -2750,7 +2772,7 @@ public:
 				nNextBtn = -2;   // chevron
 				break;
 			}
-#endif //(_WIN32_IE >= 0x0500)
+#endif // (_WIN32_IE >= 0x0500)
 			if((tbb.fsState & TBSTATE_ENABLED) != 0 && (tbb.fsState & TBSTATE_HIDDEN) == 0)
 				break;
 		}
@@ -2764,7 +2786,7 @@ public:
 #if (_WIN32_IE >= 0x0500)
 		RECT rcClient = { 0 };
 		GetClientRect(&rcClient);
-#endif //(_WIN32_IE >= 0x0500)
+#endif // (_WIN32_IE >= 0x0500)
 		int nNextBtn = 0;
 		int nCount = ::GetMenuItemCount(m_hMenu);
 		for(nNextBtn = nBtn + 1; nNextBtn != nBtn; nNextBtn++)
@@ -2781,7 +2803,7 @@ public:
 				nNextBtn = -2;   // chevron
 				break;
 			}
-#endif //(_WIN32_IE >= 0x0500)
+#endif // (_WIN32_IE >= 0x0500)
 			if((tbb.fsState & TBSTATE_ENABLED) != 0 && (tbb.fsState & TBSTATE_HIDDEN) == 0)
 				break;
 		}
@@ -2812,7 +2834,7 @@ public:
 		}
 		return bRet;
 	}
-#endif //(_WIN32_IE >= 0x0500)
+#endif // (_WIN32_IE >= 0x0500)
 
 	void GetSystemSettings()
 	{
@@ -2881,7 +2903,7 @@ public:
 		{
 #ifndef SPI_GETKEYBOARDCUES
 			const UINT SPI_GETKEYBOARDCUES = 0x100A;
-#endif //!SPI_GETKEYBOARDCUES
+#endif // !SPI_GETKEYBOARDCUES
 			BOOL bRetVal = TRUE;
 			bRet = ::SystemParametersInfo(SPI_GETKEYBOARDCUES, 0, &bRetVal, 0);
 			m_bUseKeyboardCues = (bRet && !bRetVal);
@@ -2894,14 +2916,14 @@ public:
 		{
 #ifndef SPI_GETFLATMENU
 			const UINT SPI_GETFLATMENU = 0x1022;
-#endif //!SPI_GETFLATMENU
+#endif // !SPI_GETFLATMENU
 			BOOL bRetVal = FALSE;
 			bRet = ::SystemParametersInfo(SPI_GETFLATMENU, 0, &bRetVal, 0);
 			m_bFlatMenus = (bRet && bRetVal);
 		}
 
 #ifdef _CMDBAR_EXTRA_TRACE
-		ATLTRACE2(atlTraceUI, 0, "CmdBar - GetSystemSettings:\n     m_bFlatMenus = %s\n     m_bUseKeyboardCues = %s\n",
+		ATLTRACE2(atlTraceUI, 0, _T("CmdBar - GetSystemSettings:\n     m_bFlatMenus = %s\n     m_bUseKeyboardCues = %s\n"),
 			m_bFlatMenus ? "true" : "false", m_bUseKeyboardCues ? "true" : "false");
 #endif
 	}
@@ -2986,7 +3008,7 @@ public:
 // Implementation
 	bool CreateInternalImageList(int cImages)
 	{
-		UINT uFlags = (m_bAlphaImages ? ILC_COLOR32 : ILC_COLOR) | ILC_MASK;
+		UINT uFlags = (m_bAlphaImages ? ILC_COLOR32 : ILC_COLOR24) | ILC_MASK;
 		m_hImageList = ::ImageList_Create(m_szBitmap.cx, m_szBitmap.cy, uFlags, cImages, 1);
 		ATLASSERT(m_hImageList != NULL);
 		return (m_hImageList != NULL);
@@ -3028,15 +3050,17 @@ public:
 #ifndef _WTL_NO_AUTO_THEME
 #ifndef _UXTHEME_H_
 	typedef HANDLE HTHEME;
-#endif //!_UXTHEME_H_
+#endif // !_UXTHEME_H_
 	typedef HTHEME (STDAPICALLTYPE *PFN_OpenThemeData)(HWND hwnd, LPCWSTR pszClassList);
 	typedef HRESULT (STDAPICALLTYPE *PFN_CloseThemeData)(HTHEME hTheme);
 	typedef HRESULT (STDAPICALLTYPE *PFN_DrawThemeBackground)(HTHEME hTheme, HDC hdc, int iPartId, int iStateId, const RECT *pRect, OPTIONAL const RECT *pClipRect);
+	typedef HRESULT (STDAPICALLTYPE *PFN_DrawThemeParentBackground)(HWND hwnd, HDC hdc, OPTIONAL RECT* prc);
 
 	HMODULE m_hThemeDLL;
 	HTHEME m_hTheme;
 	PFN_DrawThemeBackground m_pfnDrawThemeBackground;
-#endif //!_WTL_NO_AUTO_THEME
+	PFN_DrawThemeParentBackground m_pfnDrawThemeParentBackground;
+#endif // !_WTL_NO_AUTO_THEME
 
 // Constructor/destructor
 	CMDICommandBarCtrlImpl() : 
@@ -3044,8 +3068,8 @@ public:
 			m_hWndChildMaximized(NULL), m_hIconChildMaximized(NULL), 
 			m_nBtnPressed(-1), m_nBtnWasPressed(-1),
 #ifndef _WTL_NO_AUTO_THEME
-			m_hThemeDLL(NULL), m_hTheme(NULL), m_pfnDrawThemeBackground(NULL),
-#endif //!_WTL_NO_AUTO_THEME
+			m_hThemeDLL(NULL), m_hTheme(NULL), m_pfnDrawThemeBackground(NULL), m_pfnDrawThemeParentBackground(NULL), 
+#endif // !_WTL_NO_AUTO_THEME
 			m_cxyOffset(2),
 			m_cxIconWidth(16), m_cyIconHeight(16),
 			m_cxBtnWidth(16), m_cyBtnHeight(14),
@@ -3073,7 +3097,7 @@ public:
 		ATLASSERT(lstrcmpi(lpstrClassName, lpszMDIClientClass) == 0);
 		if(lstrcmpi(lpstrClassName, lpszMDIClientClass) != 0)
 			return FALSE;   // not an "MDIClient" window
-#endif //_DEBUG
+#endif // _DEBUG
 		if(m_wndMDIClient.IsWindow())
 /*scary!*/		m_wndMDIClient.UnsubclassWindow();
 
@@ -3087,7 +3111,7 @@ public:
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 #ifndef _WTL_NO_AUTO_THEME
 		MESSAGE_HANDLER(_GetThemeChangedMsg(), OnThemeChanged)
-#endif //!_WTL_NO_AUTO_THEME
+#endif // !_WTL_NO_AUTO_THEME
 		MESSAGE_HANDLER(WM_SIZE, OnSize)
 		MESSAGE_HANDLER(WM_NCCALCSIZE, OnNcCalcSize)
 		MESSAGE_HANDLER(WM_NCPAINT, OnNcPaint)
@@ -3099,6 +3123,7 @@ public:
 		MESSAGE_HANDLER(WM_CAPTURECHANGED, OnCaptureChanged)
 		CHAIN_MSG_MAP(_baseClass)
 	ALT_MSG_MAP(1)   // Parent window messages
+		MESSAGE_HANDLER(WM_ACTIVATE, OnParentActivate)
 		CHAIN_MSG_MAP_ALT(_baseClass, 1)
 	ALT_MSG_MAP(2)   // MDI client window messages
 		MESSAGE_HANDLER(WM_MDISETMENU, OnMDISetMenu)
@@ -3132,8 +3157,10 @@ public:
 				::FreeLibrary(m_hThemeDLL);
 				m_hThemeDLL = NULL;
 			}
+			m_pfnDrawThemeParentBackground = (PFN_DrawThemeParentBackground)::GetProcAddress(m_hThemeDLL, "DrawThemeParentBackground");
+			ATLASSERT(m_pfnDrawThemeParentBackground != NULL);
 		}
-#endif //!_WTL_NO_AUTO_THEME
+#endif // !_WTL_NO_AUTO_THEME
 
 		return lRet;
 	}
@@ -3150,7 +3177,7 @@ public:
 			::FreeLibrary(m_hThemeDLL);
 			m_hThemeDLL = NULL;
 		}
-#endif //!_WTL_NO_AUTO_THEME
+#endif // !_WTL_NO_AUTO_THEME
 
 		return lRet;
 	}
@@ -3166,7 +3193,7 @@ public:
 		}
 		return 0;
 	}
-#endif //!_WTL_NO_AUTO_THEME
+#endif // !_WTL_NO_AUTO_THEME
 
 	LRESULT OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/)
 	{
@@ -3219,10 +3246,13 @@ public:
 #ifndef _WTL_NO_AUTO_THEME
 		if(m_hTheme != NULL)
 		{
-			dc.FillRect(&rect, COLOR_WINDOW);
+			if(m_pfnDrawThemeParentBackground != NULL)
+				m_pfnDrawThemeParentBackground(m_hWnd, dc, &rect);
+			else
+				dc.FillRect(&rect, COLOR_WINDOW);
 		}
 		else
-#endif //!_WTL_NO_AUTO_THEME
+#endif // !_WTL_NO_AUTO_THEME
 		{
 			if((m_dwExtendedStyle & CBR_EX_TRANSPARENT) != 0)
 				dc.FillRect(&rect, COLOR_3DFACE);
@@ -3240,10 +3270,27 @@ public:
 #ifndef _WTL_NO_AUTO_THEME
 		if(m_hTheme != NULL)
 		{
-			dc.FillRect(&rect, COLOR_WINDOW);
+			if(m_pfnDrawThemeParentBackground != NULL)
+			{
+				// this is to account for the left non-client area
+				POINT ptOrg = { 0, 0 };
+				dc.GetViewportOrg(&ptOrg);
+				dc.SetViewportOrg(ptOrg.x + m_cxLeft, ptOrg.y);
+				::OffsetRect(&rect, -m_cxLeft, 0);
+
+				m_pfnDrawThemeParentBackground(m_hWnd, dc, &rect);
+
+				// restore
+				dc.SetViewportOrg(ptOrg);
+				::OffsetRect(&rect, m_cxLeft, 0);
+			}
+			else
+			{
+				dc.FillRect(&rect, COLOR_3DFACE);
+			}
 		}
 		else
-#endif //!_WTL_NO_AUTO_THEME
+#endif // !_WTL_NO_AUTO_THEME
 		{
 			if((m_dwExtendedStyle & CBR_EX_TRANSPARENT) != 0)
 				dc.FillRect(&rect, COLOR_3DFACE);
@@ -3306,7 +3353,7 @@ public:
 		if(::PtInRect(&rcIcon, pt))
 		{
 #ifdef _CMDBAR_EXTRA_TRACE
-			ATLTRACE2(atlTraceUI, 0, "MDI CmdBar - LButtonDown: icon\n");
+			ATLTRACE2(atlTraceUI, 0, _T("MDI CmdBar - LButtonDown: icon\n"));
 #endif
 #ifndef TPM_VERPOSANIMATION
 			const UINT TPM_VERPOSANIMATION = 0x1000L;   // Menu animation flag
@@ -3327,21 +3374,21 @@ public:
 		else if(::PtInRect(&arrRect[0], pt))
 		{
 #ifdef _CMDBAR_EXTRA_TRACE
-			ATLTRACE2(atlTraceUI, 0, "MDI CmdBar - LButtonDown: close button\n");
+			ATLTRACE2(atlTraceUI, 0, _T("MDI CmdBar - LButtonDown: close button\n"));
 #endif
 			m_nBtnWasPressed = m_nBtnPressed = 0;
 		}
 		else if(::PtInRect(&arrRect[1], pt))
 		{
 #ifdef _CMDBAR_EXTRA_TRACE
-			ATLTRACE2(atlTraceUI, 0, "MDI CmdBar - LButtonDown: restore button\n");
+			ATLTRACE2(atlTraceUI, 0, _T("MDI CmdBar - LButtonDown: restore button\n"));
 #endif
 			m_nBtnWasPressed = m_nBtnPressed = 1;
 		}
 		else if(::PtInRect(&arrRect[2], pt))
 		{
 #ifdef _CMDBAR_EXTRA_TRACE
-			ATLTRACE2(atlTraceUI, 0, "MDI CmdBar - LButtonDown: minimize button\n");
+			ATLTRACE2(atlTraceUI, 0, _T("MDI CmdBar - LButtonDown: minimize button\n"));
 #endif
 			m_nBtnWasPressed = m_nBtnPressed = 2;
 		}
@@ -3420,19 +3467,19 @@ public:
 			{
 			case 0:		// close
 #ifdef _CMDBAR_EXTRA_TRACE
-				ATLTRACE2(atlTraceUI, 0, "MDI CmdBar - LButtonUp: close button\n");
+				ATLTRACE2(atlTraceUI, 0, _T("MDI CmdBar - LButtonUp: close button\n"));
 #endif
 				::SendMessage(m_hWndChildMaximized, WM_SYSCOMMAND, SC_CLOSE, 0L);
 				break;
 			case 1:		// restore
 #ifdef _CMDBAR_EXTRA_TRACE
-				ATLTRACE2(atlTraceUI, 0, "MDI CmdBar - LButtonUp: restore button\n");
+				ATLTRACE2(atlTraceUI, 0, _T("MDI CmdBar - LButtonUp: restore button\n"));
 #endif
 				::SendMessage(m_hWndChildMaximized, WM_SYSCOMMAND, SC_RESTORE, 0L);
 				break;
 			case 2:		// minimize
 #ifdef _CMDBAR_EXTRA_TRACE
-				ATLTRACE2(atlTraceUI, 0, "MDI CmdBar - LButtonUp: minimize button\n");
+				ATLTRACE2(atlTraceUI, 0, _T("MDI CmdBar - LButtonUp: minimize button\n"));
 #endif
 				::SendMessage(m_hWndChildMaximized, WM_SYSCOMMAND, SC_MINIMIZE, 0L);
 				break;
@@ -3500,6 +3547,15 @@ public:
 		return 0;
 	}
 
+// Parent window message handlers
+	LRESULT OnParentActivate(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled)
+	{
+		m_bParentActive = (LOWORD(wParam) != WA_INACTIVE);
+		RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_UPDATENOW);
+		bHandled = FALSE;
+		return 1;
+	}
+
 // MDI client window message handlers
 	LRESULT OnMDISetMenu(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/)
 	{
@@ -3512,11 +3568,22 @@ public:
 #if (_WIN32_IE >= 0x0400)
 		T* pT = static_cast<T*>(this);
 		pT->UpdateRebarBandIdealSize();
-#endif //(_WIN32_IE >= 0x0400)
+#endif // (_WIN32_IE >= 0x0400)
 
 		return (LRESULT)hOldMenu;
 	}
 
+// All messages from the message hook
+	LRESULT OnAllHookMessages(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+	{
+		T* pT = static_cast<T*>(this);
+		pT->_ProcessAllHookMessages(uMsg, wParam, lParam);
+
+		bHandled = FALSE;
+		return 1;
+	}
+
+// Overrideables
 	// override this to provide different ideal size
 	void UpdateRebarBandIdealSize()
 	{
@@ -3524,7 +3591,7 @@ public:
 		// we hope that if we are not in a rebar, nCount will be 0
 		int nCount = (int)::SendMessage(GetParent(), RB_GETBANDCOUNT, 0, 0L);
 		for(int i = 0; i < nCount; i++)
-		{ 
+		{
 			REBARBANDINFO rbi = { sizeof(REBARBANDINFO), RBBIM_CHILD | RBBIM_CHILDSIZE | RBBIM_IDEALSIZE };
 			::SendMessage(GetParent(), RB_GETBANDINFO, i, (LPARAM)&rbi);
 			if(rbi.hwndChild == m_hWnd)
@@ -3544,12 +3611,11 @@ public:
 		}
 	}
 
-// All messages from the message hook - check for the maximized MDI child window change
-	LRESULT OnAllHookMessages(UINT uMsg, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
+	// all hook messages - check for the maximized MDI child window change
+	void _ProcessAllHookMessages(UINT uMsg, WPARAM /*wParam*/, LPARAM /*lParam*/)
 	{
-		bHandled = FALSE;
 		if(uMsg == WM_MDIGETACTIVE || uMsg == WM_MDISETMENU)
-			return 1;
+			return;
 
 		BOOL bMaximized = FALSE;
 		HWND hWndChild = (HWND)::SendMessage(m_wndMDIClient, WM_MDIGETACTIVE, 0, (LPARAM)&bMaximized);
@@ -3585,17 +3651,17 @@ public:
 			m_hIconChildMaximized = NULL;
 		}
 
-		if(bMaxOld != m_bChildMaximized || hIconOld != m_hIconChildMaximized)
+		if(bMaxOld != m_bChildMaximized)
 		{
 #ifdef _CMDBAR_EXTRA_TRACE
-			ATLTRACE2(atlTraceUI, 0, "MDI CmdBar - All messages hook change: m_bChildMaximized = %s\n", m_bChildMaximized ? "true" : "false");
+			ATLTRACE2(atlTraceUI, 0, _T("MDI CmdBar - All messages hook change: m_bChildMaximized = %s\n"), m_bChildMaximized ? "true" : "false");
 #endif
 			// assuming we are in a rebar, change our size to accomodate new state
 			// we hope that if we are not in a rebar, nCount will be 0
 			int nCount = (int)::SendMessage(GetParent(), RB_GETBANDCOUNT, 0, 0L);
 			int cxDiff = (m_bChildMaximized ? 1 : -1) * (m_cxLeft + m_cxRight);
 			for(int i = 0; i < nCount; i++)
-			{ 
+			{
 #if (_WIN32_IE >= 0x0500)
 				REBARBANDINFO rbi = { sizeof(REBARBANDINFO), RBBIM_CHILD | RBBIM_CHILDSIZE | RBBIM_IDEALSIZE | RBBIM_STYLE };
 				::SendMessage(GetParent(), RB_GETBANDINFO, i, (LPARAM)&rbi);
@@ -3621,7 +3687,7 @@ public:
 					::SendMessage(GetParent(), RB_SETBANDINFO, i, (LPARAM)&rbi);
 					break;
 				}
-#else //(_WIN32_IE < 0x0400)
+#else // (_WIN32_IE < 0x0400)
 				REBARBANDINFO rbi = { sizeof(REBARBANDINFO), RBBIM_CHILD | RBBIM_CHILDSIZE };
 				::SendMessage(GetParent(), RB_GETBANDINFO, i, (LPARAM)&rbi);
 				if(rbi.hwndChild == m_hWnd)
@@ -3631,9 +3697,12 @@ public:
 					::SendMessage(GetParent(), RB_SETBANDINFO, i, (LPARAM)&rbi);
 					break;
 				}
-#endif //(_WIN32_IE < 0x0400)
+#endif // (_WIN32_IE < 0x0400)
 			}
+		}
 
+		if(bMaxOld != m_bChildMaximized || hIconOld != m_hIconChildMaximized)
+		{
 			// force size change and redraw everything
 			RECT rect = { 0 };
 			GetWindowRect(&rect);
@@ -3644,15 +3713,13 @@ public:
 			SetRedraw(TRUE);
 			RedrawWindow(NULL, NULL, RDW_FRAME | RDW_INVALIDATE | RDW_UPDATENOW);
 		}
-
-		return 1;
 	}
 
 // Implementation
 	void GetSystemSettings()
 	{
 #ifdef _CMDBAR_EXTRA_TRACE
-		ATLTRACE2(atlTraceUI, 0, "MDI CmdBar - GetSystemSettings\n");
+		ATLTRACE2(atlTraceUI, 0, _T("MDI CmdBar - GetSystemSettings\n"));
 #endif
 		_baseClass::GetSystemSettings();
 
@@ -3673,7 +3740,7 @@ public:
 				m_cxRight = 3 * m_cxBtnWidth;
 			}
 			else
-#endif //!_WTL_NO_AUTO_THEME
+#endif // !_WTL_NO_AUTO_THEME
 			{
 				m_cxBtnWidth = info.iCaptionWidth - m_cxyOffset;
 				m_cyBtnHeight = info.iCaptionHeight - 2 * m_cxyOffset;
@@ -3699,7 +3766,7 @@ public:
 				m_cxRight = 3 * m_cxBtnWidth;
 			}
 			else
-#endif //!_WTL_NO_AUTO_THEME
+#endif // !_WTL_NO_AUTO_THEME
 			{
 				m_cyBtnHeight = cyHeight;
 				m_cxBtnWidth = cyHeight + m_cxyOffset;
@@ -3742,7 +3809,7 @@ public:
 		if(m_hTheme != NULL)
 			::OffsetRect(&rcBtn, nDirection * m_cxBtnWidth, 0);
 		else
-#endif //!_WTL_NO_AUTO_THEME
+#endif // !_WTL_NO_AUTO_THEME
 			::OffsetRect(&rcBtn, nDirection * (m_cxBtnWidth + m_cxyOffset), 0);
 		arrRect[1] = rcBtn;
 		::OffsetRect(&rcBtn, nDirection * m_cxBtnWidth, 0);
@@ -3758,22 +3825,25 @@ public:
 			const int WP_MDICLOSEBUTTON = 20;
 			const int CBS_NORMAL = 1;
 			const int CBS_PUSHED = 3;
+			const int CBS_DISABLED = 4;
 			const int WP_MDIRESTOREBUTTON = 22;
 			const int RBS_NORMAL = 1;
 			const int RBS_PUSHED = 3;
+			const int RBS_DISABLED = 4;
 			const int WP_MDIMINBUTTON = 16;
 			const int MINBS_NORMAL = 1;
 			const int MINBS_PUSHED = 3;
-#endif //TMSCHEMA_H
+			const int MINBS_DISABLED = 4;
+#endif // TMSCHEMA_H
 			if(nBtn == -1 || nBtn == 0)
-				m_pfnDrawThemeBackground(m_hTheme, dc, WP_MDICLOSEBUTTON, (m_nBtnPressed == 0) ? CBS_PUSHED : CBS_NORMAL, &pRects[0], NULL);
+				m_pfnDrawThemeBackground(m_hTheme, dc, WP_MDICLOSEBUTTON, m_bParentActive ? ((m_nBtnPressed == 0) ? CBS_PUSHED : CBS_NORMAL) : CBS_DISABLED, &pRects[0], NULL);
 			if(nBtn == -1 || nBtn == 1)
-				m_pfnDrawThemeBackground(m_hTheme, dc, WP_MDIRESTOREBUTTON, (m_nBtnPressed == 1) ? RBS_PUSHED : RBS_NORMAL, &pRects[1], NULL);
+				m_pfnDrawThemeBackground(m_hTheme, dc, WP_MDIRESTOREBUTTON, m_bParentActive ? ((m_nBtnPressed == 1) ? RBS_PUSHED : RBS_NORMAL) : RBS_DISABLED, &pRects[1], NULL);
 			if(nBtn == -1 || nBtn == 2)
-				m_pfnDrawThemeBackground(m_hTheme, dc, WP_MDIMINBUTTON, (m_nBtnPressed == 2) ? MINBS_PUSHED : MINBS_NORMAL, &pRects[2], NULL);
+				m_pfnDrawThemeBackground(m_hTheme, dc, WP_MDIMINBUTTON, m_bParentActive ? ((m_nBtnPressed == 2) ? MINBS_PUSHED : MINBS_NORMAL) : MINBS_DISABLED, &pRects[2], NULL);
 		}
 		else
-#endif //!_WTL_NO_AUTO_THEME
+#endif // !_WTL_NO_AUTO_THEME
 		{
 			if(nBtn == -1 || nBtn == 0)
 				dc.DrawFrameControl(&pRects[0], DFC_CAPTION, DFCS_CAPTIONCLOSE | ((m_nBtnPressed == 0) ? DFCS_PUSHED : 0));
@@ -3789,7 +3859,7 @@ public:
 	{
 #ifndef WM_THEMECHANGED
 		static const UINT WM_THEMECHANGED = 0x031A;
-#endif //!WM_THEMECHANGED
+#endif // !WM_THEMECHANGED
 		return WM_THEMECHANGED;
 	}
 
@@ -3818,7 +3888,7 @@ public:
 			m_hTheme = NULL;
 		}
 	}
-#endif //!_WTL_NO_AUTO_THEME
+#endif // !_WTL_NO_AUTO_THEME
 
 	bool _DebugCheckChild()
 	{
@@ -3826,9 +3896,9 @@ public:
 		BOOL bMaximized = FALSE;
 		HWND hWndChild = (HWND)::SendMessage(m_wndMDIClient, WM_MDIGETACTIVE, 0, (LPARAM)&bMaximized);
 		return (bMaximized && hWndChild == m_hWndChildMaximized);
-#else //!_DEBUG
+#else // !_DEBUG
 		return true;
-#endif //!_DEBUG
+#endif // !_DEBUG
 	}
 };
 
@@ -3838,6 +3908,6 @@ public:
 	DECLARE_WND_SUPERCLASS(_T("WTL_MDICommandBar"), GetWndClassName())
 };
 
-}; //namespace WTL
+}; // namespace WTL
 
 #endif // __ATLCTRLW_H__

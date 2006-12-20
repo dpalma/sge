@@ -1,10 +1,13 @@
-// Windows Template Library - WTL version 7.1
-// Copyright (C) 1997-2003 Microsoft Corporation
-// All rights reserved.
+// Windows Template Library - WTL version 7.5
+// Copyright (C) Microsoft Corporation. All rights reserved.
 //
 // This file is a part of the Windows Template Library.
-// The code and information is provided "as-is" without
-// warranty of any kind, either expressed or implied.
+// The use and distribution terms for this software are covered by the
+// Common Public License 1.0 (http://opensource.org/licenses/cpl.php)
+// which can be found in the file CPL.TXT at the root of this distribution.
+// By using this software in any fashion, you are agreeing to be bound by
+// the terms of this license. You must not remove this notice, or
+// any other, from this software.
 
 #ifndef __ATLDLGS_H__
 #define __ATLDLGS_H__
@@ -57,6 +60,14 @@
 // CPropertyPage<t_wDlgTemplateID>
 // CAxPropertyPageImpl<T, TBase>
 // CAxPropertyPage<t_wDlgTemplateID>
+//
+// CWizard97SheetWindow
+// CWizard97SheetImpl<T, TBase>
+// CWizard97Sheet
+// CWizard97PageWindow
+// CWizard97PageImpl<T, TBase>
+// CWizard97ExteriorPageImpl<T, TBase>
+// CWizard97InteriorPageImpl<T, TBase>
 
 
 namespace WTL
@@ -96,8 +107,8 @@ public:
 			HWND hWndParent = NULL)
 	{
 		memset(&m_ofn, 0, sizeof(m_ofn)); // initialize structure to 0/NULL
-		m_szFileName[0] = '\0';
-		m_szFileTitle[0] = '\0';
+		m_szFileName[0] = _T('\0');
+		m_szFileTitle[0] = _T('\0');
 
 		m_bOpenFileDialog = bOpenFileDialog;
 
@@ -109,7 +120,7 @@ public:
 			ATLASSERT(sizeof(m_ofn) > OPENFILENAME_SIZE_VERSION_400);   // must be
 			m_ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
 		}
-#endif //(_WIN32_WINNT >= 0x0500)
+#endif // (_WIN32_WINNT >= 0x0500)
 		m_ofn.lpstrFile = m_szFileName;
 		m_ofn.nMaxFile = _MAX_PATH;
 		m_ofn.lpstrDefExt = lpszDefExt;
@@ -119,13 +130,13 @@ public:
 		m_ofn.Flags = dwFlags | OFN_EXPLORER | OFN_ENABLEHOOK | OFN_ENABLESIZING;
 #else // CE specific
 		m_ofn.Flags = dwFlags | OFN_EXPLORER | OFN_ENABLEHOOK;
-#endif //!_WIN32_WCE
+#endif // !_WIN32_WCE
 		m_ofn.lpstrFilter = lpszFilter;
 #if (_ATL_VER >= 0x0700)
 		m_ofn.hInstance = ATL::_AtlBaseModule.GetResourceInstance();
-#else //!(_ATL_VER >= 0x0700)
+#else // !(_ATL_VER >= 0x0700)
 		m_ofn.hInstance = _Module.GetResourceInstance();
-#endif //!(_ATL_VER >= 0x0700)
+#endif // !(_ATL_VER >= 0x0700)
 		m_ofn.lpfnHook = (LPOFNHOOKPROC)T::StartDialogProc;
 		m_ofn.hwndOwner = hWndParent;
 
@@ -147,9 +158,9 @@ public:
 		ATLASSERT(m_hWnd == NULL);
 #if (_ATL_VER >= 0x0700)
 		ATL::_AtlWinModule.AddCreateWndData(&m_thunk.cd, (ATL::CDialogImplBase*)this);
-#else //!(_ATL_VER >= 0x0700)
+#else // !(_ATL_VER >= 0x0700)
 		_Module.AddCreateWndData(&m_thunk.cd, (ATL::CDialogImplBase*)this);
-#endif //!(_ATL_VER >= 0x0700)
+#endif // !(_ATL_VER >= 0x0700)
 
 		BOOL bRet;
 		if(m_bOpenFileDialog)
@@ -364,12 +375,14 @@ class ATL_NO_VTABLE CFolderDialogImpl
 {
 public:
 	BROWSEINFO m_bi;
+	LPCTSTR m_lpstrInitialFolder;
 	TCHAR m_szFolderDisplayName[MAX_PATH];
 	TCHAR m_szFolderPath[MAX_PATH];
 	HWND m_hWnd;   // used only in the callback function
 
 // Constructor
-	CFolderDialogImpl(HWND hWndParent = NULL, LPCTSTR lpstrTitle = NULL, UINT uFlags = BIF_RETURNONLYFSDIRS)
+	CFolderDialogImpl(HWND hWndParent = NULL, LPCTSTR lpstrTitle = NULL, UINT uFlags = BIF_RETURNONLYFSDIRS) : 
+			m_lpstrInitialFolder(NULL), m_hWnd(NULL)
 	{
 		memset(&m_bi, 0, sizeof(m_bi)); // initialize structure to 0/NULL
 
@@ -383,8 +396,6 @@ public:
 
 		m_szFolderPath[0] = 0;
 		m_szFolderDisplayName[0] = 0;
-
-		m_hWnd = NULL;
 	}
 
 // Operations
@@ -416,6 +427,11 @@ public:
 		return nRet;
 	}
 
+	void SetInitialFolder(LPCTSTR lpstrInitialFolder)
+	{
+		m_lpstrInitialFolder = lpstrInitialFolder;
+	}
+
 	// filled after a call to DoModal
 	LPCTSTR GetFolderPath() const
 	{
@@ -436,12 +452,19 @@ public:
 	static int CALLBACK BrowseCallbackProc(HWND hWnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
 	{
 #ifndef BFFM_VALIDATEFAILED
-#ifdef UNICODE
+  #ifdef UNICODE
 		const int BFFM_VALIDATEFAILED = 4;
-#else
+  #else
 		const int BFFM_VALIDATEFAILED = 3;
-#endif
-#endif //!BFFM_VALIDATEFAILED
+  #endif
+#endif // !BFFM_VALIDATEFAILED
+#ifndef BFFM_IUNKNOWN
+		const int BFFM_IUNKNOWN = 5;
+#endif // !BFFM_IUNKNOWN
+#ifndef BIF_NEWDIALOGSTYLE
+		const UINT BIF_NEWDIALOGSTYLE = 0x0040;
+#endif // !BIF_NEWDIALOGSTYLE
+
 		int nRet = 0;
 		T* pT = (T*)lpData;
 		bool bClear = false;
@@ -458,6 +481,13 @@ public:
 		switch(uMsg)
 		{
 		case BFFM_INITIALIZED:
+			if(pT->m_lpstrInitialFolder != NULL)
+			{
+				if((pT->m_bi.ulFlags & BIF_NEWDIALOGSTYLE) != 0)
+					pT->SetExpanded(pT->m_lpstrInitialFolder);
+				else
+					pT->SetSelection(pT->m_lpstrInitialFolder);
+			}
 			pT->OnInitialized();
 			break;
 		case BFFM_SELCHANGED:
@@ -465,6 +495,9 @@ public:
 			break;
 		case BFFM_VALIDATEFAILED:
 			nRet = pT->OnValidateFailed((LPCTSTR)lParam);
+			break;
+		case BFFM_IUNKNOWN:
+			pT->OnIUnknown((IUnknown*)lParam);
 			break;
 		default:
 			ATLTRACE2(atlTraceUI, 0, _T("Unknown message received in CFolderDialogImpl::BrowseCallbackProc\n"));
@@ -487,6 +520,10 @@ public:
 	int OnValidateFailed(LPCTSTR /*lpstrFolderPath*/)
 	{
 		return 1;   // 1=continue, 0=EndDialog
+	}
+
+	void OnIUnknown(IUnknown* /*pUnknown*/)
+	{
 	}
 
 	// Commands - valid to call only from handlers
@@ -513,6 +550,37 @@ public:
 		ATLASSERT(m_hWnd != NULL);
 		::SendMessage(m_hWnd, BFFM_SETSTATUSTEXT, 0, (LPARAM)lpstrText);
 	}
+
+	void SetOKText(LPCTSTR lpstrOKText)
+	{
+#ifndef BFFM_SETOKTEXT
+		const UINT BFFM_SETOKTEXT = WM_USER + 105;
+#endif
+		ATLASSERT(m_hWnd != NULL);
+		USES_CONVERSION;
+		LPCWSTR lpstr = T2CW(lpstrOKText);
+		::SendMessage(m_hWnd, BFFM_SETOKTEXT, (WPARAM)lpstr, 0L);
+	}
+
+	void SetExpanded(LPITEMIDLIST pItemIDList)
+	{
+#ifndef BFFM_SETEXPANDED
+		const UINT BFFM_SETEXPANDED = WM_USER + 106;
+#endif
+		ATLASSERT(m_hWnd != NULL);
+		::SendMessage(m_hWnd, BFFM_SETEXPANDED, FALSE, (LPARAM)pItemIDList);
+	}
+
+	void SetExpanded(LPCTSTR lpstrFolderPath)
+	{
+#ifndef BFFM_SETEXPANDED
+		const UINT BFFM_SETEXPANDED = WM_USER + 106;
+#endif
+		ATLASSERT(m_hWnd != NULL);
+		USES_CONVERSION;
+		LPCWSTR lpstr = T2CW(lpstrFolderPath);
+		::SendMessage(m_hWnd, BFFM_SETEXPANDED, TRUE, (LPARAM)lpstr);
+	}
 };
 
 class CFolderDialog : public CFolderDialogImpl<CFolderDialog>
@@ -520,12 +588,10 @@ class CFolderDialog : public CFolderDialogImpl<CFolderDialog>
 public:
 	CFolderDialog(HWND hWndParent = NULL, LPCTSTR lpstrTitle = NULL, UINT uFlags = BIF_RETURNONLYFSDIRS)
 		: CFolderDialogImpl<CFolderDialog>(hWndParent, lpstrTitle, uFlags)
-	{
-		m_bi.lpfn = NULL;
-	}
+	{ }
 };
 
-#endif //!_WIN32_WCE
+#endif // !_WIN32_WCE
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -540,9 +606,9 @@ public:
 			return 0;
 #if (_ATL_VER >= 0x0700)
 		CCommonDialogImplBase* pT = (CCommonDialogImplBase*)ATL::_AtlWinModule.ExtractCreateWndData();
-#else //!(_ATL_VER >= 0x0700)
+#else // !(_ATL_VER >= 0x0700)
 		CCommonDialogImplBase* pT = (CCommonDialogImplBase*)_Module.ExtractCreateWndData();
-#endif //!(_ATL_VER >= 0x0700)
+#endif // !(_ATL_VER >= 0x0700)
 		ATLASSERT(pT != NULL);
 		ATLASSERT(pT->m_hWnd == NULL);
 		ATLASSERT(::IsWindow(hWnd));
@@ -644,9 +710,9 @@ public:
 		ATLASSERT(m_hWnd == NULL);
 #if (_ATL_VER >= 0x0700)
 		ATL::_AtlWinModule.AddCreateWndData(&m_thunk.cd, (CCommonDialogImplBase*)this);
-#else //!(_ATL_VER >= 0x0700)
+#else // !(_ATL_VER >= 0x0700)
 		_Module.AddCreateWndData(&m_thunk.cd, (CCommonDialogImplBase*)this);
-#endif //!(_ATL_VER >= 0x0700)
+#endif // !(_ATL_VER >= 0x0700)
 
 		BOOL bRet = ::ChooseFont(&m_cf);
 
@@ -769,7 +835,7 @@ public:
 		if((m_cf.Flags & CF_NOSIZESEL) == 0)
 		{
 			cf.dwMask |= CFM_SIZE;
-			//GetSize() returns in tenths of points so mulitply by 2 to get twips
+			// GetSize() returns in tenths of points so mulitply by 2 to get twips
 			cf.yHeight = GetSize() * 2;
 		}
 
@@ -781,7 +847,7 @@ public:
 			lstrcpy(cf.szFaceName, GetFaceName());
 #else
 			lstrcpyA(cf.szFaceName, T2A((LPTSTR)(LPCTSTR)GetFaceName()));
-#endif //(_RICHEDIT_VER >= 0x0200)
+#endif // (_RICHEDIT_VER >= 0x0200)
 		}
 
 		if((m_cf.Flags & CF_EFFECTS) != 0)
@@ -854,7 +920,7 @@ public:
 			lstrcpy(m_lf.lfFaceName, cf.szFaceName);
 #else
 			lstrcpy(m_lf.lfFaceName, A2T((LPSTR)cf.szFaceName));
-#endif //(_RICHEDIT_VER >= 0x0200)
+#endif // (_RICHEDIT_VER >= 0x0200)
 		}
 		else
 		{
@@ -878,7 +944,7 @@ public:
 	DECLARE_EMPTY_MSG_MAP()
 };
 
-#endif //defined(_RICHEDIT_) && !defined(_WIN32_WCE)
+#endif // defined(_RICHEDIT_) && !defined(_WIN32_WCE)
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -922,9 +988,9 @@ public:
 		ATLASSERT(m_hWnd == NULL);
 #if (_ATL_VER >= 0x0700)
 		ATL::_AtlWinModule.AddCreateWndData(&m_thunk.cd, (CCommonDialogImplBase*)this);
-#else //!(_ATL_VER >= 0x0700)
+#else // !(_ATL_VER >= 0x0700)
 		_Module.AddCreateWndData(&m_thunk.cd, (CCommonDialogImplBase*)this);
-#endif //!(_ATL_VER >= 0x0700)
+#endif // !(_ATL_VER >= 0x0700)
 
 		BOOL bRet = ::ChooseColor(&m_cc);
 
@@ -959,9 +1025,9 @@ public:
 		{
 #if (_ATL_VER >= 0x0700)
 			pT = (CCommonDialogImplBase*)ATL::_AtlWinModule.ExtractCreateWndData();
-#else //!(_ATL_VER >= 0x0700)
+#else // !(_ATL_VER >= 0x0700)
 			pT = (CCommonDialogImplBase*)_Module.ExtractCreateWndData();
-#endif //!(_ATL_VER >= 0x0700)
+#endif // !(_ATL_VER >= 0x0700)
 			lpCC->lCustData = (LPARAM)pT;
 			ATLASSERT(pT != NULL);
 			ATLASSERT(pT->m_hWnd == NULL);
@@ -1153,9 +1219,9 @@ public:
 		ATLASSERT(m_hWnd == NULL);
 #if (_ATL_VER >= 0x0700)
 		ATL::_AtlWinModule.AddCreateWndData(&m_thunk.cd, (CCommonDialogImplBase*)this);
-#else //!(_ATL_VER >= 0x0700)
+#else // !(_ATL_VER >= 0x0700)
 		_Module.AddCreateWndData(&m_thunk.cd, (CCommonDialogImplBase*)this);
-#endif //!(_ATL_VER >= 0x0700)
+#endif // !(_ATL_VER >= 0x0700)
 
 		BOOL bRet = ::PrintDlg(&m_pd);
 
@@ -1292,9 +1358,9 @@ public:
 	BEGIN_MSG_MAP(CPrintDialogImpl)
 #ifdef psh1
 		COMMAND_ID_HANDLER(psh1, OnPrintSetup) // print setup button when print is displayed
-#else //!psh1
+#else // !psh1
 		COMMAND_ID_HANDLER(0x0400, OnPrintSetup) // value from dlgs.h
-#endif //!psh1
+#endif // !psh1
 	END_MSG_MAP()
 
 	LRESULT OnPrintSetup(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& /*bHandled*/)
@@ -1302,9 +1368,9 @@ public:
 		T dlgSetup(m_pd);
 #if (_ATL_VER >= 0x0700)
 		ATL::_AtlWinModule.AddCreateWndData(&dlgSetup.m_thunk.cd, (CCommonDialogImplBase*)&dlgSetup);
-#else //!(_ATL_VER >= 0x0700)
+#else // !(_ATL_VER >= 0x0700)
 		_Module.AddCreateWndData(&dlgSetup.m_thunk.cd, (CCommonDialogImplBase*)&dlgSetup);
-#endif //!(_ATL_VER >= 0x0700)
+#endif // !(_ATL_VER >= 0x0700)
 		return DefWindowProc(WM_COMMAND, MAKEWPARAM(wID, wNotifyCode), (LPARAM)hWndCtl);
 	}
 };
@@ -1330,7 +1396,7 @@ public:
 
 #if (WINVER >= 0x0500) && !defined(_WIN32_WCE)
 
-}; //namespace WTL
+}; // namespace WTL
 
 #include <atlcom.h>
 
@@ -1575,7 +1641,7 @@ public:
 	DECLARE_EMPTY_MSG_MAP()
 };
 
-#endif //(WINVER >= 0x0500) && !defined(_WIN32_WCE)
+#endif // (WINVER >= 0x0500) && !defined(_WIN32_WCE)
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1680,9 +1746,9 @@ public:
 		ATLASSERT(m_hWnd == NULL);
 #if (_ATL_VER >= 0x0700)
 		ATL::_AtlWinModule.AddCreateWndData(&m_thunk.cd, (CCommonDialogImplBase*)this);
-#else //!(_ATL_VER >= 0x0700)
+#else // !(_ATL_VER >= 0x0700)
 		_Module.AddCreateWndData(&m_thunk.cd, (CCommonDialogImplBase*)this);
-#endif //!(_ATL_VER >= 0x0700)
+#endif // !(_ATL_VER >= 0x0700)
 
 		BOOL bRet = ::PageSetupDlg(&m_psd);
 
@@ -1765,8 +1831,8 @@ public:
 	CFindReplaceDialogImpl()
 	{
 		memset(&m_fr, 0, sizeof(m_fr));
-		m_szFindWhat[0] = '\0';
-		m_szReplaceWith[0] = '\0';
+		m_szFindWhat[0] = _T('\0');
+		m_szReplaceWith[0] = _T('\0');
 
 		m_fr.lStructSize = sizeof(m_fr);
 		m_fr.Flags = FR_ENABLEHOOK;
@@ -1810,9 +1876,9 @@ public:
 		ATLASSERT(m_hWnd == NULL);
 #if (_ATL_VER >= 0x0700)
 		ATL::_AtlWinModule.AddCreateWndData(&m_thunk.cd, (CCommonDialogImplBase*)this);
-#else //!(_ATL_VER >= 0x0700)
+#else // !(_ATL_VER >= 0x0700)
 		_Module.AddCreateWndData(&m_thunk.cd, (CCommonDialogImplBase*)this);
-#endif //!(_ATL_VER >= 0x0700)
+#endif // !(_ATL_VER >= 0x0700)
 		HWND hWnd;
 
 		if(bFindDialogOnly)
@@ -1892,7 +1958,7 @@ public:
 	DECLARE_EMPTY_MSG_MAP()
 };
 
-#endif //!_WIN32_WCE
+#endif // !_WIN32_WCE
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2031,7 +2097,7 @@ public:
 			return FALSE;
 		return (BOOL)::SendMessage(m_hWnd, PSM_INSERTPAGE, (WPARAM)hPageInsertAfter, (LPARAM)hPage);
 	}
-#endif //!_WIN32_WCE
+#endif // !_WIN32_WCE
 
 	void RemovePage(int nPageIndex)
 	{
@@ -2156,7 +2222,7 @@ public:
 		ATLASSERT(::IsWindow(m_hWnd));
 		::SendMessage(m_hWnd, PSM_SETHEADERSUBTITLE, nIndex, (LPARAM)lpstrHeaderSubTitle);
 	}
-#endif //(_WIN32_IE >= 0x0500) && !defined(_WIN32_WCE)
+#endif // (_WIN32_IE >= 0x0500) && !defined(_WIN32_WCE)
 
 // Implementation - override to prevent usage
 	HWND Create(LPCTSTR, HWND, ATL::_U_RECT = NULL, LPCTSTR = NULL, DWORD = 0, DWORD = 0, ATL::_U_MENUorID = 0U, LPVOID = NULL)
@@ -2169,20 +2235,21 @@ public:
 ///////////////////////////////////////////////////////////////////////////////
 // CPropertySheetImpl - implements a property sheet
 
-#if (_MSC_VER >= 1200)
-typedef HPROPSHEETPAGE   _HPROPSHEETPAGE_TYPE;
-#else
-// we use void* here instead of HPROPSHEETPAGE becuase HPROPSHEETPAGE
-// is a _PSP*, but _PSP is not defined properly
-typedef void*   _HPROPSHEETPAGE_TYPE;
-#endif
-
 template <class T, class TBase = CPropertySheetWindow>
 class ATL_NO_VTABLE CPropertySheetImpl : public ATL::CWindowImplBaseT< TBase >
 {
 public:
 	PROPSHEETHEADER m_psh;
-	ATL::CSimpleArray<_HPROPSHEETPAGE_TYPE> m_arrPages;
+	ATL::CSimpleArray<HPROPSHEETPAGE> m_arrPages;
+
+#if defined(_AYGSHELL_H_) || defined(__AYGSHELL_H__) // PPC specific
+  #ifndef PROPSHEET_LINK_SIZE
+	#define PROPSHEET_LINK_SIZE 128
+  #endif // PROPSHEET_LINK_SIZE
+	TCHAR m_szLink[PROPSHEET_LINK_SIZE];
+	static LPCTSTR m_pszTitle;
+	static LPCTSTR m_pszLink;
+#endif // defined(_AYGSHELL_H_) || defined(__AYGSHELL_H__) 
 
 // Construction/Destruction
 	CPropertySheetImpl(ATL::_U_STRINGorID title = (LPCTSTR)NULL, UINT uStartPage = 0, HWND hWndParent = NULL)
@@ -2192,15 +2259,20 @@ public:
 		m_psh.dwFlags = PSH_USECALLBACK;
 #if (_ATL_VER >= 0x0700)
 		m_psh.hInstance = ATL::_AtlBaseModule.GetResourceInstance();
-#else //!(_ATL_VER >= 0x0700)
+#else // !(_ATL_VER >= 0x0700)
 		m_psh.hInstance = _Module.GetResourceInstance();
-#endif //!(_ATL_VER >= 0x0700)
+#endif // !(_ATL_VER >= 0x0700)
 		m_psh.phpage = NULL;   // will be set later
 		m_psh.nPages = 0;      // will be set later
 		m_psh.pszCaption = title.m_lpstr;
 		m_psh.nStartPage = uStartPage;
 		m_psh.hwndParent = hWndParent;   // if NULL, will be set in DoModal/Create
 		m_psh.pfnCallback = T::PropSheetCallback;
+
+#if defined(_AYGSHELL_H_) || defined(__AYGSHELL_H__) // PPC specific 
+		m_psh.dwFlags |= PSH_MAXIMIZE;
+		m_szLink[0] = 0;
+#endif // defined(_AYGSHELL_H_) || defined(__AYGSHELL_H__)
 	}
 
 	~CPropertySheetImpl()
@@ -2212,25 +2284,69 @@ public:
 		}
 	}
 
-	static int CALLBACK PropSheetCallback(HWND hWnd, UINT uMsg, LPARAM)
+// Callback function and overrideables
+	static int CALLBACK PropSheetCallback(HWND hWnd, UINT uMsg, LPARAM lParam)
 	{
+		lParam;   // avoid level 4 warning
+		int nRet = 0;
+
 		if(uMsg == PSCB_INITIALIZED)
 		{
 			ATLASSERT(hWnd != NULL);
 #if (_ATL_VER >= 0x0700)
 			T* pT = (T*)ATL::_AtlWinModule.ExtractCreateWndData();
-#else //!(_ATL_VER >= 0x0700)
+#else // !(_ATL_VER >= 0x0700)
 			T* pT = (T*)_Module.ExtractCreateWndData();
-#endif //!(_ATL_VER >= 0x0700)
+#endif // !(_ATL_VER >= 0x0700)
 			// subclass the sheet window
 			pT->SubclassWindow(hWnd);
 			// remove page handles array
 			pT->_CleanUpPages();
-		}
 
-		return 0;
+#if defined(_AYGSHELL_H_) || defined(__AYGSHELL_H__) // PPC specific
+			m_pszTitle = pT->m_psh.pszCaption;
+			if(*pT->m_szLink != 0)
+				m_pszLink = pT->m_szLink;
+#endif  // defined(_AYGSHELL_H_) || defined(__AYGSHELL_H__) // PPC specific
+
+			pT->OnSheetInitialized();
+		}
+#if defined(_AYGSHELL_H_) || defined(__AYGSHELL_H__) // PPC specific uMsg
+		else
+		{
+			switch(uMsg)
+			{
+			case PSCB_GETVERSION :
+				nRet = COMCTL32_VERSION;
+				break;
+			case PSCB_GETTITLE :
+				if(m_pszTitle != NULL)
+				{
+					lstrcpy((LPTSTR)lParam, m_pszTitle);
+					m_pszTitle = NULL;
+				}
+				break;
+			case PSCB_GETLINKTEXT:
+				if(m_pszLink != NULL)
+				{
+					lstrcpy((LPTSTR)lParam, m_pszLink);
+					m_pszLink = NULL;
+				}
+				break;
+			default:
+				break;
+			}
+		}
+#endif // defined(_AYGSHELL_H_) || defined(__AYGSHELL_H__) 
+
+		return nRet;
 	}
 
+	void OnSheetInitialized()
+	{
+	}
+
+// Create method
 	HWND Create(HWND hWndParent = NULL)
 	{
 		ATLASSERT(m_hWnd == NULL);
@@ -2244,9 +2360,9 @@ public:
 		T* pT = static_cast<T*>(this);
 #if (_ATL_VER >= 0x0700)
 		ATL::_AtlWinModule.AddCreateWndData(&pT->m_thunk.cd, pT);
-#else //!(_ATL_VER >= 0x0700)
+#else // !(_ATL_VER >= 0x0700)
 		_Module.AddCreateWndData(&pT->m_thunk.cd, pT);
-#endif //!(_ATL_VER >= 0x0700)
+#endif // !(_ATL_VER >= 0x0700)
 
 		HWND hWnd = (HWND)::PropertySheet(&m_psh);
 		_CleanUpPages();   // ensure clean-up, required if call failed
@@ -2269,9 +2385,9 @@ public:
 		T* pT = static_cast<T*>(this);
 #if (_ATL_VER >= 0x0700)
 		ATL::_AtlWinModule.AddCreateWndData(&pT->m_thunk.cd, pT);
-#else //!(_ATL_VER >= 0x0700)
+#else // !(_ATL_VER >= 0x0700)
 		_Module.AddCreateWndData(&pT->m_thunk.cd, pT);
-#endif //!(_ATL_VER >= 0x0700)
+#endif // !(_ATL_VER >= 0x0700)
 
 		INT_PTR nRet = ::PropertySheet(&m_psh);
 		_CleanUpPages();   // ensure clean-up, required if call failed
@@ -2313,7 +2429,7 @@ public:
 	int GetPageIndex(HPROPSHEETPAGE hPage) const
 	{
 		ATLASSERT(m_hWnd == NULL);   // can't do this after it's created
-		return m_arrPages.Find((_HPROPSHEETPAGE_TYPE&)hPage);
+		return m_arrPages.Find((HPROPSHEETPAGE&)hPage);
 	}
 
 	BOOL SetActivePage(int nPageIndex)
@@ -2361,6 +2477,15 @@ public:
 		}
 	}
 
+#if defined(_AYGSHELL_H_) || defined(__AYGSHELL_H__) // PPC specific Link field	
+	void SetLinkText(LPCTSTR lpszText)
+	{
+		ATLASSERT(lpszText != NULL);
+		ATLASSERT(lstrlen(lpszText) < PROPSHEET_LINK_SIZE);
+		lstrcpy(m_szLink, lpszText);
+	}
+#endif // defined(_AYGSHELL_H_) || defined(__AYGSHELL_H__) 
+
 	void SetWizardMode()
 	{
 		m_psh.dwFlags |= PSH_WIZARD;
@@ -2379,7 +2504,7 @@ public:
 		if(m_hWnd != NULL)
 			bRet = TBase::AddPage(hPage);
 		else	// sheet not created yet, use internal data
-			bRet = m_arrPages.Add((_HPROPSHEETPAGE_TYPE&)hPage);
+			bRet = m_arrPages.Add((HPROPSHEETPAGE&)hPage);
 		return bRet;
 	}
 
@@ -2477,7 +2602,7 @@ public:
 		else
 			m_psh.dwFlags &= ~PSH_STRETCHWATERMARK;
 	}
-#endif //(_WIN32_IE >= 0x0400) && !defined(_WIN32_WCE)
+#endif // (_WIN32_IE >= 0x0400) && !defined(_WIN32_WCE)
 
 // Message map and handlers
 	BEGIN_MSG_MAP(CPropertySheetImpl)
@@ -2503,6 +2628,13 @@ public:
 		return 0;
 	}
 };
+
+#if defined(_AYGSHELL_H_) || defined(__AYGSHELL_H__) // PPC static pointers
+template < class T, class TBase >
+LPCWSTR CPropertySheetImpl<T,TBase>::m_pszTitle = NULL;
+template < class T, class TBase>
+LPCWSTR CPropertySheetImpl<T,TBase>::m_pszLink = NULL;
+#endif // defined(_AYGSHELL_H_) || defined(__AYGSHELL_H__)
 
 // for non-customized sheets
 class CPropertySheet : public CPropertySheetImpl<CPropertySheet>
@@ -2619,9 +2751,9 @@ public:
 		m_psp.dwFlags = PSP_USECALLBACK;
 #if (_ATL_VER >= 0x0700)
 		m_psp.hInstance = ATL::_AtlBaseModule.GetResourceInstance();
-#else //!(_ATL_VER >= 0x0700)
+#else // !(_ATL_VER >= 0x0700)
 		m_psp.hInstance = _Module.GetResourceInstance();
-#endif //!(_ATL_VER >= 0x0700)
+#endif // !(_ATL_VER >= 0x0700)
 		T* pT = static_cast<T*>(this);
 		m_psp.pszTemplate = MAKEINTRESOURCE(pT->IDD);
 		m_psp.pfnDlgProc = (DLGPROC)T::StartDialogProc;
@@ -2632,23 +2764,58 @@ public:
 			SetTitle(title);
 	}
 
+// Callback function and overrideables
 	static UINT CALLBACK PropPageCallback(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp)
 	{
 		hWnd;   // avoid level 4 warning
-		if(uMsg == PSPCB_CREATE)
+		ATLASSERT(hWnd == NULL);
+		T* pT = (T*)ppsp->lParam;
+		UINT uRet = 0;
+
+		switch(uMsg)
 		{
-			ATLASSERT(hWnd == NULL);
-			ATL::CDialogImplBaseT< TBase >* pPage = (ATL::CDialogImplBaseT< TBase >*)(T*)ppsp->lParam;
+		case PSPCB_CREATE:
+			{
+				ATL::CDialogImplBaseT< TBase >* pPage = (ATL::CDialogImplBaseT< TBase >*)pT;
 #if (_ATL_VER >= 0x0700)
-			ATL::_AtlWinModule.AddCreateWndData(&pPage->m_thunk.cd, pPage);
-#else //!(_ATL_VER >= 0x0700)
-			_Module.AddCreateWndData(&pPage->m_thunk.cd, pPage);
-#endif //!(_ATL_VER >= 0x0700)
+				ATL::_AtlWinModule.AddCreateWndData(&pPage->m_thunk.cd, pPage);
+#else // !(_ATL_VER >= 0x0700)
+				_Module.AddCreateWndData(&pPage->m_thunk.cd, pPage);
+#endif // !(_ATL_VER >= 0x0700)
+				uRet = pT->OnPageCreate() ? 1 : 0;
+			}
+			break;
+#if (_WIN32_IE >= 0x0500)
+		case PSPCB_ADDREF:
+			pT->OnPageAddRef();
+			break;
+#endif // (_WIN32_IE >= 0x0500)
+		case PSPCB_RELEASE:
+			pT->OnPageRelease();
+			break;
+		default:
+			break;
 		}
 
-		return 1;
+		return uRet;
 	}
 
+	bool OnPageCreate()
+	{
+		return true;   // true - allow page to be created, false - prevent creation
+	}
+
+#if (_WIN32_IE >= 0x0500)
+	void OnPageAddRef()
+	{
+	}
+#endif // (_WIN32_IE >= 0x0500)
+
+	void OnPageRelease()
+	{
+	}
+
+// Create method
 	HPROPSHEETPAGE Create()
 	{
 		return ::CreatePropertySheetPage(&m_psp);
@@ -2675,7 +2842,7 @@ public:
 		m_psp.dwFlags |= PSP_USEHEADERSUBTITLE;
 		m_psp.pszHeaderSubTitle = lpstrHeaderSubTitle;
 	}
-#endif //(_WIN32_IE >= 0x0500) && !defined(_WIN32_WCE)
+#endif // (_WIN32_IE >= 0x0500) && !defined(_WIN32_WCE)
 
 // Operations
 	void EnableHelp()
@@ -2740,7 +2907,7 @@ public:
 			if(!pT->OnGetObject((LPNMOBJECTNOTIFY)lParam))
 				bHandled = FALSE;
 			break;
-#endif //(_WIN32_IE >= 0x0400)
+#endif // (_WIN32_IE >= 0x0400)
 #if (_WIN32_IE >= 0x0500)
 		case PSN_TRANSLATEACCELERATOR:
 			{
@@ -2754,10 +2921,10 @@ public:
 				lResult = (LRESULT)pT->OnQueryInitialFocus((HWND)lpPSHNotify->lParam);
 			}
 			break;
-#endif //(_WIN32_IE >= 0x0500)
-#endif //!_WIN32_WCE
+#endif // (_WIN32_IE >= 0x0500)
+#endif // !_WIN32_WCE
 
-#else //!_WTL_NEW_PAGE_NOTIFY_HANDLERS
+#else // !_WTL_NEW_PAGE_NOTIFY_HANDLERS
 		case PSN_SETACTIVE:
 			lResult = pT->OnSetActive() ? 0 : -1;
 			break;
@@ -2791,7 +2958,7 @@ public:
 			if(!pT->OnGetObject((LPNMOBJECTNOTIFY)lParam))
 				bHandled = FALSE;
 			break;
-#endif //(_WIN32_IE >= 0x0400)
+#endif // (_WIN32_IE >= 0x0400)
 #if (_WIN32_IE >= 0x0500)
 		case PSN_TRANSLATEACCELERATOR:
 			{
@@ -2805,10 +2972,10 @@ public:
 				lResult = (LRESULT)pT->OnQueryInitialFocus((HWND)lpPSHNotify->lParam);
 			}
 			break;
-#endif //(_WIN32_IE >= 0x0500)
-#endif //!_WIN32_WCE
+#endif // (_WIN32_IE >= 0x0500)
+#endif // !_WIN32_WCE
 
-#endif //!_WTL_NEW_PAGE_NOTIFY_HANDLERS
+#endif // !_WTL_NEW_PAGE_NOTIFY_HANDLERS
 		default:
 			bHandled = FALSE;   // not handled
 		}
@@ -2888,7 +3055,7 @@ public:
 	{
 		return FALSE;   // not processed
 	}
-#endif //(_WIN32_IE >= 0x0400)
+#endif // (_WIN32_IE >= 0x0400)
 
 #if (_WIN32_IE >= 0x0500)
 	int OnTranslateAccelerator(LPMSG /*lpMsg*/)
@@ -2904,10 +3071,10 @@ public:
 		// HWND = set focus to HWND
 		return NULL;
 	}
-#endif //(_WIN32_IE >= 0x0500)
-#endif //!_WIN32_WCE
+#endif // (_WIN32_IE >= 0x0500)
+#endif // !_WIN32_WCE
 
-#else //!_WTL_NEW_PAGE_NOTIFY_HANDLERS
+#else // !_WTL_NEW_PAGE_NOTIFY_HANDLERS
 	BOOL OnSetActive()
 	{
 		return TRUE;
@@ -2963,7 +3130,7 @@ public:
 	{
 		return FALSE;   // not processed
 	}
-#endif //(_WIN32_IE >= 0x0400)
+#endif // (_WIN32_IE >= 0x0400)
 
 #if (_WIN32_IE >= 0x0500)
 	BOOL OnTranslateAccelerator(LPMSG /*lpMsg*/)
@@ -2975,10 +3142,10 @@ public:
 	{
 		return NULL;   // default
 	}
-#endif //(_WIN32_IE >= 0x0500)
-#endif //!_WIN32_WCE
+#endif // (_WIN32_IE >= 0x0500)
+#endif // !_WIN32_WCE
 
-#endif //!_WTL_NEW_PAGE_NOTIFY_HANDLERS
+#endif // !_WTL_NEW_PAGE_NOTIFY_HANDLERS
 };
 
 // for non-customized pages
@@ -3023,9 +3190,9 @@ public:
 
 #if (_ATL_VER >= 0x0700)
 		HINSTANCE hInstance = ATL::_AtlBaseModule.GetResourceInstance();
-#else //!(_ATL_VER >= 0x0700)
+#else // !(_ATL_VER >= 0x0700)
 		HINSTANCE hInstance = _Module.GetResourceInstance();
-#endif //!(_ATL_VER >= 0x0700)
+#endif // !(_ATL_VER >= 0x0700)
 		LPCTSTR lpTemplateName = MAKEINTRESOURCE(pT->IDD);
 		HRSRC hDlg = ::FindResource(hInstance, lpTemplateName, (LPTSTR)RT_DIALOG);
 		if(hDlg != NULL)
@@ -3043,11 +3210,7 @@ public:
 			DLGTEMPLATE* pDlg = (DLGTEMPLATE*)::LockResource(m_hDlgRes);
 			LPCDLGTEMPLATE lpDialogTemplate = ATL::_DialogSplitHelper::SplitDialogTemplate(pDlg, pInitData);
 			if(lpDialogTemplate != pDlg)
-#ifndef _WIN32_WCE
-				m_hDlgResSplit = ::GlobalHandle(lpDialogTemplate);
-#else // CE specific
 				m_hDlgResSplit = GlobalHandle(lpDialogTemplate);
-#endif //_WIN32_WCE
 
 			// set up property page to use in-memory dialog template
 			if(lpDialogTemplate != NULL)
@@ -3071,20 +3234,12 @@ public:
 		if(m_hInitData != NULL)
 		{
 			UnlockResource(m_hInitData);
-#ifndef _WIN32_WCE
-			::FreeResource(m_hInitData);
-#else // CE specific
 			FreeResource(m_hInitData);
-#endif //_WIN32_WCE
 		}
 		if(m_hDlgRes != NULL)
 		{
 			UnlockResource(m_hDlgRes);
-#ifndef _WIN32_WCE
-			::FreeResource(m_hDlgRes);
-#else // CE specific
 			FreeResource(m_hDlgRes);
-#endif //_WIN32_WCE
 		}
 		if(m_hDlgResSplit != NULL)
 		{
@@ -3121,7 +3276,7 @@ public:
 		T* pT = static_cast<T*>(this);
 		return pT->PreTranslateMessage(lpMsg);
 	}
-#endif //(_WIN32_IE >= 0x0500)
+#endif // (_WIN32_IE >= 0x0500)
 
 // Support for new stuff in ATL7
 #if (_ATL_VER >= 0x0700)
@@ -3259,9 +3414,11 @@ public:
 
 								if (wnd != NULL)
 								{
+#ifndef _WIN32_WCE
 									// Set the Help ID
 									if (bDialogEx && ((ATL::_DialogSplitHelper::DLGITEMTEMPLATEEX*)pItem)->helpID != 0)
 										wnd.SetWindowContextHelpId(((ATL::_DialogSplitHelper::DLGITEMTEMPLATEEX*)pItem)->helpID);
+#endif // !_WIN32_WCE
 									// Try to create the ActiveX control.
 									hr = wnd.CreateControlLic(pszClassName, spStream, NULL, bstrLicKey);
 									if (FAILED(hr))
@@ -3336,7 +3493,7 @@ public:
 		bHandled = FALSE;
 		return 1;
 	}
-#endif //(_ATL_VER >= 0x0700)
+#endif // (_ATL_VER >= 0x0700)
 };
 
 // for non-customized pages
@@ -3354,13 +3511,419 @@ public:
 	BEGIN_MSG_MAP(CAxPropertyPage)
 		CHAIN_MSG_MAP(CAxPropertyPageImpl<CAxPropertyPage<t_wDlgTemplateID> >)
 	END_MSG_MAP()
-#else //!((_WIN32_IE >= 0x0500) || (_ATL_VER >= 0x0700))
+#else // !((_WIN32_IE >= 0x0500) || (_ATL_VER >= 0x0700))
 	DECLARE_EMPTY_MSG_MAP()
-#endif //!((_WIN32_IE >= 0x0500) || (_ATL_VER >= 0x0700))
+#endif // !((_WIN32_IE >= 0x0500) || (_ATL_VER >= 0x0700))
 };
 
-#endif //_ATL_NO_HOSTING
+#endif // _ATL_NO_HOSTING
 
-}; //namespace WTL
+
+///////////////////////////////////////////////////////////////////////////////
+// Wizard97 Support
+
+#if (_WIN32_IE >= 0x0500) && !defined(_WIN32_WCE)
+
+// Sample wizard dialog resources:
+//
+// IDD_WIZ97_INTERIOR_BLANK DIALOG  0, 0, 317, 143
+// STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
+// CAPTION "Wizard97 Property Page - Interior"
+// FONT 8, "MS Shell Dlg"
+// BEGIN
+// END
+//
+// IDD_WIZ97_EXTERIOR_BLANK DIALOGEX 0, 0, 317, 193
+// STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+// CAPTION "Wizard97 Property Page - Welcome/Complete"
+// FONT 8, "MS Shell Dlg", 0, 0, 0x0
+// BEGIN
+//    LTEXT           "Welcome to the X Wizard",IDC_WIZ97_EXTERIOR_TITLE,115,8,
+//                    195,24
+//    LTEXT           "Wizard Explanation\r\n(The height of the static text should be in multiples of 8 dlus)",
+//                    IDC_STATIC,115,40,195,16
+//    LTEXT           "h",IDC_WIZ97_BULLET1,118,64,8,8
+//    LTEXT           "List Item 1 (the h is turned into a bullet)",IDC_STATIC,
+//                    127,63,122,8
+//    LTEXT           "h",IDC_WIZ97_BULLET2,118,79,8,8
+//    LTEXT           "List Item 2. Keep 7 dlus between paragraphs",IDC_STATIC,
+//                    127,78,33,8
+//    CONTROL         "&Do not show this Welcome page again",
+//                    IDC_WIZ97_WELCOME_NOTAGAIN,"Button",BS_AUTOCHECKBOX | 
+//                    WS_TABSTOP,115,169,138,10
+// END
+//
+// GUIDELINES DESIGNINFO 
+// BEGIN
+//    IDD_WIZ97_INTERIOR_BLANK, DIALOG
+//    BEGIN
+//        LEFTMARGIN, 7
+//        RIGHTMARGIN, 310
+//        VERTGUIDE, 21
+//        VERTGUIDE, 31
+//        VERTGUIDE, 286
+//        VERTGUIDE, 296
+//        TOPMARGIN, 7
+//        BOTTOMMARGIN, 136
+//        HORZGUIDE, 8
+//    END
+//
+//    IDD_WIZ97_EXTERIOR_BLANK, DIALOG
+//    BEGIN
+//        RIGHTMARGIN, 310
+//        VERTGUIDE, 115
+//        VERTGUIDE, 118
+//        VERTGUIDE, 127
+//        TOPMARGIN, 7
+//        BOTTOMMARGIN, 186
+//        HORZGUIDE, 8
+//        HORZGUIDE, 32
+//        HORZGUIDE, 40
+//        HORZGUIDE, 169
+//    END
+// END
+
+///////////////////////////////////////////////////////////////////////////////
+// CWizard97SheetWindow - client side for a Wizard 97 style wizard sheet
+
+class CWizard97SheetWindow : public CPropertySheetWindow
+{
+public:
+// Constructors
+	CWizard97SheetWindow(HWND hWnd = NULL) : CPropertySheetWindow(hWnd)
+	{ }
+
+	CWizard97SheetWindow& operator =(HWND hWnd)
+	{
+		m_hWnd = hWnd;
+		return *this;
+	}
+
+// Operations
+	HFONT GetExteriorPageTitleFont(void)
+	{
+		ATLASSERT(::IsWindow(m_hWnd));
+		return (HFONT)::SendMessage(m_hWnd, GetMessage_GetExteriorPageTitleFont(), 0, 0L);
+	}
+
+	HFONT GetBulletFont(void)
+	{
+		ATLASSERT(::IsWindow(m_hWnd));
+		return (HFONT)::SendMessage(m_hWnd, GetMessage_GetBulletFont(), 0, 0L);
+	}
+
+// Helpers
+	static UINT GetMessage_GetExteriorPageTitleFont()
+	{
+		static UINT uGetExteriorPageTitleFont = 0;
+		if(uGetExteriorPageTitleFont == 0)
+		{
+			CStaticDataInitCriticalSectionLock lock;
+			if(FAILED(lock.Lock()))
+			{
+				ATLTRACE2(atlTraceUI, 0, _T("ERROR : Unable to lock critical section in CWizard97SheetWindow::GetMessage_GetExteriorPageTitleFont().\n"));
+				ATLASSERT(FALSE);
+				return 0;
+			}
+
+			if(uGetExteriorPageTitleFont == 0)
+				uGetExteriorPageTitleFont = ::RegisterWindowMessage(_T("GetExteriorPageTitleFont_531AF056-B8BE-4c4c-B786-AC608DF0DF12"));
+
+			lock.Unlock();
+		}
+		ATLASSERT(uGetExteriorPageTitleFont != 0);
+		return uGetExteriorPageTitleFont;
+	}
+
+	static UINT GetMessage_GetBulletFont()
+	{
+		static UINT uGetBulletFont = 0;
+		if(uGetBulletFont == 0)
+		{
+			CStaticDataInitCriticalSectionLock lock;
+			if(FAILED(lock.Lock()))
+			{
+				ATLTRACE2(atlTraceUI, 0, _T("ERROR : Unable to lock critical section in CWizard97SheetWindow::GetMessage_GetBulletFont().\n"));
+				ATLASSERT(FALSE);
+				return 0;
+			}
+
+			if(uGetBulletFont == 0)
+				uGetBulletFont = ::RegisterWindowMessage(_T("GetBulletFont_AD347D08-8F65-45ef-982E-6352E8218AD5"));
+
+			lock.Unlock();
+		}
+		ATLASSERT(uGetBulletFont != 0);
+		return uGetBulletFont;
+	}
+
+// Implementation - override to prevent usage
+	HWND Create(LPCTSTR, HWND, ATL::_U_RECT = NULL, LPCTSTR = NULL, DWORD = 0, DWORD = 0, ATL::_U_MENUorID = 0U, LPVOID = NULL)
+	{
+		ATLASSERT(FALSE);
+		return NULL;
+	}
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// CWizard97SheetImpl - implements a Wizard 97 style wizard sheet
+
+template <class T, class TBase = CWizard97SheetWindow>
+class ATL_NO_VTABLE CWizard97SheetImpl : public CPropertySheetImpl< T, TBase >
+{
+protected:
+// Typedefs
+	typedef CWizard97SheetImpl< T, TBase > thisClass;
+	typedef CPropertySheetImpl< T, TBase > baseClass;
+
+// Member variables
+	CFont m_fontExteriorPageTitle;   // Welcome and Completion page title font
+	CFont m_fontBullet;              // Bullet font (used on static text 'h' to produce a small bullet)
+	bool m_bReceivedFirstSizeMessage;   
+
+public:
+	CWizard97SheetImpl(ATL::_U_STRINGorID title, ATL::_U_STRINGorID headerBitmap, ATL::_U_STRINGorID watermarkBitmap, UINT uStartPage = 0, HWND hWndParent = NULL) :
+			baseClass(title, uStartPage, hWndParent),
+			m_bReceivedFirstSizeMessage(false)
+	{
+		m_psh.dwFlags &= ~(PSH_NOCONTEXTHELP);
+		m_psh.dwFlags &= ~(PSH_WIZARD | PSH_WIZARD_LITE);
+
+		m_psh.dwFlags |= (PSH_HASHELP | PSH_WIZARDCONTEXTHELP);
+		m_psh.dwFlags |= PSH_WIZARD97;
+
+		baseClass::SetHeader(headerBitmap.m_lpstr);
+		baseClass::SetWatermark(watermarkBitmap.m_lpstr);
+	}
+
+// Overrides from base class
+	void OnSheetInitialized()
+	{
+		T* pT = static_cast<T*>(this);
+		pT->_InitializeFonts();
+
+		// We'd like to center the wizard here, but its too early.
+		// Instead, we'll do CenterWindow upon our first WM_SIZE message
+	}
+
+// Initialization
+	void _InitializeFonts()
+	{
+		// Setup the Title and Bullet Font
+		// (Property pages can send the "get external page title font" and "get bullet font" messages)
+		// The derived class needs to do the actual SetFont for the dialog items)
+
+		CFontHandle fontThisDialog = this->GetFont();
+		CClientDC dcScreen(NULL);
+
+		LOGFONT titleLogFont = {0};
+		LOGFONT bulletLogFont = {0};
+		fontThisDialog.GetLogFont(&titleLogFont);
+		fontThisDialog.GetLogFont(&bulletLogFont);
+
+		// The Wizard 97 Spec recommends to do the Title Font
+		// as Verdana Bold, 12pt.
+		titleLogFont.lfCharSet = DEFAULT_CHARSET;
+		titleLogFont.lfWeight = FW_BOLD;
+		lstrcpy(titleLogFont.lfFaceName, _T("Verdana Bold"));
+		INT titleFontPointSize = 12;
+		titleLogFont.lfHeight = -::MulDiv(titleFontPointSize, dcScreen.GetDeviceCaps(LOGPIXELSY), 72);
+		m_fontExteriorPageTitle.CreateFontIndirect(&titleLogFont);
+
+		// The Wizard 97 Spec recommends to do Bullets by having
+		// static text of "h" in the Marlett font.
+		bulletLogFont.lfCharSet = DEFAULT_CHARSET;
+		bulletLogFont.lfWeight = FW_NORMAL;
+		lstrcpy(bulletLogFont.lfFaceName, _T("Marlett"));
+		INT bulletFontSize = 8;
+		bulletLogFont.lfHeight = -::MulDiv(bulletFontSize, dcScreen.GetDeviceCaps(LOGPIXELSY), 72);
+		m_fontBullet.CreateFontIndirect(&bulletLogFont);
+	}
+
+// Message Handling
+	BEGIN_MSG_MAP(thisClass)
+		MESSAGE_HANDLER(CWizard97SheetWindow::GetMessage_GetExteriorPageTitleFont(), OnGetExteriorPageTitleFont)
+		MESSAGE_HANDLER(CWizard97SheetWindow::GetMessage_GetBulletFont(), OnGetBulletFont)
+		MESSAGE_HANDLER(WM_SIZE, OnSize)
+		CHAIN_MSG_MAP(baseClass)
+	END_MSG_MAP()
+
+	LRESULT OnGetExteriorPageTitleFont(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+	{
+		return (LRESULT)(HFONT)m_fontExteriorPageTitle;
+	}
+
+	LRESULT OnGetBulletFont(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+	{
+		return (LRESULT)(HFONT)m_fontBullet;
+	}
+
+	LRESULT OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
+	{
+		if(!m_bReceivedFirstSizeMessage)
+		{
+			m_bReceivedFirstSizeMessage = true;
+			this->CenterWindow();
+		}
+
+		bHandled = FALSE;
+		return 0;
+	}
+};
+
+// for non-customized sheets
+class CWizard97Sheet : public CWizard97SheetImpl<CWizard97Sheet>
+{
+protected:
+// Typedefs
+	typedef CWizard97Sheet thisClass;
+	typedef CWizard97SheetImpl<CWizard97Sheet> baseClass;
+
+public:
+	CWizard97Sheet(ATL::_U_STRINGorID title, ATL::_U_STRINGorID headerBitmap, ATL::_U_STRINGorID watermarkBitmap, UINT uStartPage = 0, HWND hWndParent = NULL) :
+		baseClass(title, headerBitmap, watermarkBitmap, uStartPage, hWndParent)
+	{ }
+
+	BEGIN_MSG_MAP(thisClass)
+		CHAIN_MSG_MAP(baseClass)
+	END_MSG_MAP()
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// CWizard97PageWindow - client side for a Wizard 97 style wizard page
+
+#define WIZARD97_EXTERIOR_CXDLG 317
+#define WIZARD97_EXTERIOR_CYDLG 193
+
+#define WIZARD97_INTERIOR_CXDLG 317
+#define WIZARD97_INTERIOR_CYDLG 143
+
+class CWizard97PageWindow : public CPropertyPageWindow
+{
+public:
+// Constructors
+	CWizard97PageWindow(HWND hWnd = NULL) : CPropertyPageWindow(hWnd)
+	{ }
+
+	CWizard97PageWindow& operator =(HWND hWnd)
+	{
+		m_hWnd = hWnd;
+		return *this;
+	}
+
+// Attributes
+	CWizard97SheetWindow GetPropertySheet() const
+	{
+		ATLASSERT(::IsWindow(m_hWnd));
+		return CWizard97SheetWindow(GetParent());
+	}
+
+// Operations
+	HFONT GetExteriorPageTitleFont(void)
+	{
+		ATLASSERT(::IsWindow(m_hWnd));
+		return GetPropertySheet().GetExteriorPageTitleFont();
+	}
+
+	HFONT GetBulletFont(void)
+	{
+		ATLASSERT(::IsWindow(m_hWnd));
+		return GetPropertySheet().GetBulletFont();
+	}
+
+// Implementation - overrides to prevent usage
+	HWND Create(LPCTSTR, HWND, ATL::_U_RECT = NULL, LPCTSTR = NULL, DWORD = 0, DWORD = 0, ATL::_U_MENUorID = 0U, LPVOID = NULL)
+	{
+		ATLASSERT(FALSE);
+		return NULL;
+	}
+
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// CWizard97PageImpl - implements a Wizard 97 style wizard page
+
+template <class T, class TBase = CWizard97PageWindow>
+class ATL_NO_VTABLE CWizard97PageImpl : public CPropertyPageImpl< T, TBase >
+{
+protected:
+// Typedefs
+	typedef CWizard97PageImpl< T, TBase > thisClass;
+	typedef CPropertyPageImpl< T, TBase > baseClass;
+
+public:
+	CWizard97PageImpl(ATL::_U_STRINGorID title = (LPCTSTR)NULL) : baseClass(title)
+	{ }
+
+// Message Handling
+	BEGIN_MSG_MAP(thisClass)
+		CHAIN_MSG_MAP(baseClass)
+	END_MSG_MAP()
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// CWizard97ExteriorPageImpl - implements a Wizard 97 style exterior wizard page
+
+template <class T, class TBase = CWizard97PageWindow>
+class ATL_NO_VTABLE CWizard97ExteriorPageImpl : public CPropertyPageImpl< T, TBase >
+{
+protected:
+// Typedefs
+	typedef CWizard97ExteriorPageImpl< T, TBase > thisClass;
+	typedef CPropertyPageImpl< T, TBase > baseClass;
+
+public:
+// Constructors
+	CWizard97ExteriorPageImpl(ATL::_U_STRINGorID title = (LPCTSTR)NULL) : baseClass(title)
+	{
+		m_psp.dwFlags |= PSP_HASHELP;
+		m_psp.dwFlags |= PSP_HIDEHEADER;
+	}
+
+// Message Handling
+	BEGIN_MSG_MAP(thisClass)
+		CHAIN_MSG_MAP(baseClass)
+	END_MSG_MAP()
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// CWizard97InteriorPageImpl - implements a Wizard 97 style interior wizard page
+
+template <class T, class TBase = CWizard97PageWindow>
+class ATL_NO_VTABLE CWizard97InteriorPageImpl : public CPropertyPageImpl< T, TBase >
+{
+protected:
+// Typedefs
+	typedef CWizard97InteriorPageImpl< T, TBase > thisClass;
+	typedef CPropertyPageImpl< T, TBase > baseClass;
+
+public:
+// Constructors
+	CWizard97InteriorPageImpl(ATL::_U_STRINGorID title = (LPCTSTR)NULL) : baseClass(title)
+	{
+		m_psp.dwFlags |= PSP_HASHELP;
+		m_psp.dwFlags &= ~PSP_HIDEHEADER;
+		m_psp.dwFlags |= PSP_USEHEADERTITLE | PSP_USEHEADERSUBTITLE;
+
+		// Be sure to have the derived class define this in the constructor.
+		// We'll default it to something obvious in case its forgotten.
+		baseClass::SetHeaderTitle(_T("Call SetHeaderTitle in Derived Class"));
+		baseClass::SetHeaderSubTitle(_T("Call SetHeaderSubTitle in the constructor of the Derived Class."));
+	}
+
+// Message Handling
+	BEGIN_MSG_MAP(thisClass)
+		CHAIN_MSG_MAP(baseClass)
+	END_MSG_MAP()
+};
+
+#endif // (_WIN32_IE >= 0x0500) && !defined(_WIN32_WCE)
+
+}; // namespace WTL
 
 #endif // __ATLDLGS_H__
