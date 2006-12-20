@@ -7,12 +7,6 @@
 
 #include "tech/imageapi.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -21,41 +15,21 @@ static char THIS_FILE[] = __FILE__;
 
 ////////////////////////////////////////
 
-cImageAttributesDlg::cImageAttributesDlg(CWnd* pParent /*=NULL*/)
- : CDialog(cImageAttributesDlg::IDD, pParent)
+cImageAttributesDlg::cImageAttributesDlg()
+ : m_pixelFormat(kPF_RGBA8888)
+ , m_width(256)
+ , m_height(256)
 {
-	//{{AFX_DATA_INIT(cImageAttributesDlg)
-   m_pixelFormat = kPF_RGBA8888;
-   m_width = 256;
-   m_height = 256;
-	//}}AFX_DATA_INIT
 }
-
-void cImageAttributesDlg::DoDataExchange(CDataExchange* pDX)
-{
-	CDialog::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(cImageAttributesDlg)
-   DDX_CBIndex(pDX, IDC_PIXEL_FORMAT, m_pixelFormat);
-	DDX_Text(pDX, IDC_WIDTH, m_width);
-	DDX_Text(pDX, IDC_HEIGHT, m_height);
-	DDV_MinMaxInt(pDX, m_width, 1, 1024);
-	DDV_MinMaxInt(pDX, m_height, 1, 1024);
-	//}}AFX_DATA_MAP
-}
-
-////////////////////////////////////////
-
-BEGIN_MESSAGE_MAP(cImageAttributesDlg, CDialog)
-	//{{AFX_MSG_MAP(cImageAttributesDlg)
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // cImageAttributesDlg message handlers
 
-BOOL cImageAttributesDlg::OnInitDialog() 
+LRESULT cImageAttributesDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
-	CDialog::OnInitDialog();
+   CenterWindow(GetParent());
+
+   DoDataExchange(FALSE);
 
    static const struct
    {
@@ -78,17 +52,35 @@ BOOL cImageAttributesDlg::OnInitDialog()
       { kPF_BGRA8888,      _T("BGRA8888")    },
    };
 
+   int iSel = -1;
    for (int i = 0; i < _countof(pixelFormatDescriptions); ++i)
    {
       ePixelFormat pf = pixelFormatDescriptions[i].pixelFormat;
       LPCTSTR psz = pixelFormatDescriptions[i].pszDescription;
-      SendDlgItemMessage(IDC_PIXEL_FORMAT, CB_ADDSTRING, 0, (LPARAM)psz);
+      int iItem = m_pixelFormatComboBox.AddString(psz);
+      if (iItem != CB_ERR)
+         m_pixelFormatComboBox.SetItemData(iItem, pf);
+      if (pf == m_pixelFormat)
+         iSel = i;
    }
+   m_pixelFormatComboBox.SetCurSel(iSel);
 
-   UpdateData(FALSE);
+   return TRUE;
+}
 
-	return TRUE;  // return TRUE unless you set the focus to a control
-	              // EXCEPTION: OCX Property Pages should return FALSE
+LRESULT cImageAttributesDlg::OnOK(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+   if (DoDataExchange(TRUE))
+   {
+      EndDialog(wID);
+   }
+   return 0;
+}
+
+LRESULT cImageAttributesDlg::OnCancel(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+   EndDialog(wID);
+   return 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////

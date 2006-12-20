@@ -7,12 +7,9 @@
 
 // cImageGammaDlg dialog
 
-IMPLEMENT_DYNAMIC(cImageGammaDlg, CDialog)
-
-cImageGammaDlg::cImageGammaDlg(CWnd* pParent /*=NULL*/)
-	: CDialog(cImageGammaDlg::IDD, pParent)
-   , m_bApplyGamma(FALSE)
-   , m_gamma(0)
+cImageGammaDlg::cImageGammaDlg()
+ : m_bApplyGamma(FALSE)
+ , m_gamma(0)
 {
 
 }
@@ -21,17 +18,27 @@ cImageGammaDlg::~cImageGammaDlg()
 {
 }
 
-void cImageGammaDlg::DoDataExchange(CDataExchange* pDX)
-{
-   CDialog::DoDataExchange(pDX);
-   DDX_Check(pDX, IDC_APPLY_GAMMA, m_bApplyGamma);
-   DDX_Text(pDX, IDC_GAMMA_VALUE, m_gamma);
-	DDV_MinMaxFloat(pDX, m_gamma, .2, 5);
-}
-
-
-BEGIN_MESSAGE_MAP(cImageGammaDlg, CDialog)
-END_MESSAGE_MAP()
-
 
 // cImageGammaDlg message handlers
+
+LRESULT cImageGammaDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+{
+   CenterWindow(GetParent());
+   DoDataExchange(FALSE);
+   return TRUE;
+}
+
+LRESULT cImageGammaDlg::OnOK(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+   if (DoDataExchange(TRUE))
+   {
+      EndDialog(wID);
+   }
+   return 0;
+}
+
+LRESULT cImageGammaDlg::OnCancel(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+   EndDialog(wID);
+   return 0;
+}

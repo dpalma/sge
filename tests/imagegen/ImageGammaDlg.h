@@ -4,34 +4,47 @@
 #if !defined(INCLUDED_IMAGEGAMMADLG_H)
 #define INCLUDED_IMAGEGAMMADLG_H
 
+#include <atlddx.h>
+
 #include "resource.h"       // main symbols
 
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
 
-class cImageGammaDlg : public CDialog
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cImageGammaDlg
+//
+
+class cImageGammaDlg : public CDialogImpl<cImageGammaDlg>
+                     , public WTL::CWinDataExchange<cImageGammaDlg>
 {
-	DECLARE_DYNAMIC(cImageGammaDlg)
-
 public:
-	cImageGammaDlg(CWnd* pParent = NULL);   // standard constructor
-	virtual ~cImageGammaDlg();
+   enum { IDD = IDD_IMAGE_GAMMA };
 
-// Dialog Data
-	enum { IDD = IDD_IMAGE_GAMMA };
+   BEGIN_MSG_MAP(cImageGammaDlg)
+      MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
+      COMMAND_ID_HANDLER(IDOK, OnOK)
+      COMMAND_ID_HANDLER(IDCANCEL, OnCancel)
+   END_MSG_MAP()
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+   cImageGammaDlg();
+   ~cImageGammaDlg();
 
-	DECLARE_MESSAGE_MAP()
+   LRESULT OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL & bHandled);
+   LRESULT OnOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL & bHandled);
+   LRESULT OnCancel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL & bHandled);
 
-public:
+   BEGIN_DDX_MAP(cImageGammaDlg)
+      DDX_CHECK(IDC_APPLY_GAMMA, m_bApplyGamma)
+	   DDX_FLOAT_RANGE(IDC_GAMMA_VALUE, m_gamma, .2, 5)
+   END_DDX_MAP()
+
    BOOL m_bApplyGamma;
    float m_gamma;
 };
 
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
+/////////////////////////////////////////////////////////////////////////////
 
 #endif // !defined(INCLUDED_IMAGEGAMMADLG_H)

@@ -5,9 +5,6 @@
 
 #include "igDoc.h"
 
-#include "ImageAttributesDlg.h"
-#include "ImageGammaDlg.h"
-
 #include "tech/color.h"
 #include "tech/filespec.h"
 #include "tech/filepath.h"
@@ -17,42 +14,14 @@
 #include "tech/techmath.h"
 #include "tech/vec2.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cImageGenDoc
 //
 
-IMPLEMENT_DYNCREATE(cImageGenDoc, CDocument)
-
-BEGIN_MESSAGE_MAP(cImageGenDoc, CDocument)
-	//{{AFX_MSG_MAP(cImageGenDoc)
-	//}}AFX_MSG_MAP
-   ON_COMMAND(ID_IMAGE_ATTRIBUTES, &cImageGenDoc::OnImageAttributes)
-   ON_COMMAND(ID_IMAGE_CIRCLE, &cImageGenDoc::OnImageCircle)
-   ON_UPDATE_COMMAND_UI(ID_IMAGE_CIRCLE, &cImageGenDoc::OnUpdateImageCircle)
-   ON_COMMAND(ID_IMAGE_RECTANGLE, &cImageGenDoc::OnImageRectangle)
-   ON_UPDATE_COMMAND_UI(ID_IMAGE_RECTANGLE, &cImageGenDoc::OnUpdateImageRectangle)
-   ON_COMMAND(ID_IMAGE_ROUNDRECT, &cImageGenDoc::OnImageRoundrect)
-   ON_UPDATE_COMMAND_UI(ID_IMAGE_ROUNDRECT, &cImageGenDoc::OnUpdateImageRoundrect)
-   ON_COMMAND(ID_IMAGE_AQUABUTTON, &cImageGenDoc::OnImageAquabutton)
-   ON_UPDATE_COMMAND_UI(ID_IMAGE_AQUABUTTON, &cImageGenDoc::OnUpdateImageAquabutton)
-   ON_COMMAND(ID_IMAGE_GAMMA, &cImageGenDoc::OnImageGamma)
-   ON_COMMAND(ID_IMAGE_STATIC, &cImageGenDoc::OnImageStatic)
-   ON_UPDATE_COMMAND_UI(ID_IMAGE_STATIC, &cImageGenDoc::OnUpdateImageStatic)
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// cImageGenDoc construction/destruction
-
 cImageGenDoc::cImageGenDoc()
-: m_shape(kAquaButton)
+: m_shape(AquaButton)
 , m_bApplyGamma(false)
 , m_gamma(1)
 , m_defaultPixelFormat(kPF_BGR888)
@@ -243,6 +212,41 @@ void ImageGradientRoundRect(IImage * pImage, uint x, uint y, uint w, uint h, uin
 
 /////////////////////////////////////////////////////////////////////////////
 
+void cImageGenDoc::SetImage(IImage * pImage)
+{
+   SafeRelease(m_pImage);
+   m_pImage = CTAddRef(pImage);
+   Rasterize();
+}
+
+void cImageGenDoc::SetShape(eShape shape)
+{
+   if (m_shape != shape)
+   {
+      m_shape = shape;
+      Rasterize();
+   }
+}
+
+void cImageGenDoc::SetGamma(float gamma)
+{
+   if (m_gamma != gamma)
+   {
+      m_gamma = gamma;
+      if (IsGammaEnabled())
+         Rasterize();
+   }
+}
+
+void cImageGenDoc::EnableGamma(bool bEnable)
+{
+   if (m_bApplyGamma != bEnable)
+   {
+      m_bApplyGamma = bEnable;
+      Rasterize();
+   }
+}
+
 void cImageGenDoc::Rasterize()
 {
    if (!m_pImage)
@@ -250,7 +254,7 @@ void cImageGenDoc::Rasterize()
       return;
    }
 
-   if (m_shape == kCircle)
+   if (m_shape == Circle)
    {
       ImageSolidRect(m_pImage, cRGBA(1,1,1));
 
@@ -260,19 +264,19 @@ void cImageGenDoc::Rasterize()
                             kIGD_LeftToRight, cColor(0,1,0), cColor(0,1,0),
                             kIDF_Default);
    }
-   else if (m_shape == kRectangle)
+   else if (m_shape == Rectangle)
    {
       ImageGradientRoundRect(m_pImage, 0, 0, m_pImage->GetWidth(), m_pImage->GetHeight(),
          0, kIGD_LeftToRight, cColor(0,0,1), cColor(0,0,1), kIDF_Default);
    }
-   else if (m_shape == kRoundRect)
+   else if (m_shape == RoundRect)
    {
       ImageSolidRect(m_pImage, cRGBA(1,1,1));
       ImageGradientRoundRect(m_pImage, 0, 0, m_pImage->GetWidth(), m_pImage->GetHeight(),
          Min(m_pImage->GetWidth(), m_pImage->GetHeight()) / 8,
          kIGD_LeftToRight, cColor(1,0,0), cColor(0,0,1), kIDF_Default);
    }
-   else if (m_shape == kAquaButton)
+   else if (m_shape == AquaButton)
    {
       ImageSolidRect(m_pImage, cRGBA(1,1,1));
 
@@ -289,7 +293,7 @@ void cImageGenDoc::Rasterize()
       ImageGradientRoundRect(m_pImage, hlInset, hlInset, m_pImage->GetWidth() - (2 * hlInset), hlHeight,
          cornerRadius, kIGD_TopToBottom, cColor(1,1,1,.75f), cColor(1,1,1,0), kIDF_AlphaBlend);
    }
-   else if (m_shape == kStatic)
+   else if (m_shape == Static)
    {
       uint imageWidth = m_pImage->GetWidth(), imageHeight = m_pImage->GetHeight();
       uint x = 0, y = 0, w = imageWidth, h = imageHeight;
@@ -319,50 +323,7 @@ void cImageGenDoc::Rasterize()
    {
       ImageApplyGamma(m_pImage, 0, 0, m_pImage->GetWidth(), m_pImage->GetHeight(), m_gamma);
    }
-
-   UpdateAllViews(NULL);
 }
-
-/////////////////////////////////////////////////////////////////////////////
-
-BOOL cImageGenDoc::OnNewDocument()
-{
-	if (!CDocument::OnNewDocument())
-		return FALSE;
-
-	// Add reinitialization code here (SDI documents will reuse this document)
-
-   BOOL bResult = FALSE;
-
-   Assert(!m_pImage);
-
-   if (ImageCreate(m_defaultImageWidth, m_defaultImageHeight, m_defaultPixelFormat, NULL, &m_pImage) == S_OK)
-   {
-      bResult = TRUE;
-
-      Rasterize();
-   }
-
-	return bResult;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// cImageGenDoc diagnostics
-
-#ifdef _DEBUG
-void cImageGenDoc::AssertValid() const
-{
-	CDocument::AssertValid();
-}
-
-void cImageGenDoc::Dump(CDumpContext& dc) const
-{
-	CDocument::Dump(dc);
-}
-#endif //_DEBUG
-
-/////////////////////////////////////////////////////////////////////////////
-// cImageGenDoc operations
 
 IImage * cImageGenDoc::AccessImage()
 {
@@ -374,17 +335,26 @@ const IImage * cImageGenDoc::AccessImage() const
    return m_pImage;
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// cImageGenDoc commands
+bool cImageGenDoc::NewDocument()
+{
+   Assert(!m_pImage);
+   SafeRelease(m_pImage);
+
+   if (ImageCreate(m_defaultImageWidth, m_defaultImageHeight, m_defaultPixelFormat, NULL, &m_pImage) == S_OK)
+   {
+      Rasterize();
+      return true;
+   }
+
+	return false;
+}
 
 void cImageGenDoc::DeleteContents()
 {
    SafeRelease(m_pImage);
-
-   CDocument::DeleteContents();
 }
 
-BOOL cImageGenDoc::OnOpenDocument(LPCTSTR lpszPathName)
+bool cImageGenDoc::OpenDocument(LPCTSTR lpszPathName)
 {
    cFileSpec file(lpszPathName);
 
@@ -401,120 +371,31 @@ BOOL cImageGenDoc::OnOpenDocument(LPCTSTR lpszPathName)
             // Resource manager doesn't AddRef and neither does cAutoIPtr when
             // assigning a raw interface pointer, so do an AddRef here.
             m_pImage = CTAddRef(pImage);
-            m_shape = kNone;
-            return TRUE;
+            m_fileName = file;
+            m_shape = None;
+            return true;
          }
       }
    }
 
-   return FALSE;
+   return false;
 }
 
-BOOL cImageGenDoc::OnSaveDocument(LPCTSTR lpszPathName)
+bool cImageGenDoc::SaveDocument(LPCTSTR lpszPathName)
 {
    if (!!m_pImage)
    {
+      cFileSpec file(lpszPathName);
       cAutoIPtr<IWriter> pWriter;
-      if (FileWriterCreate(cFileSpec(lpszPathName), kFileModeBinary, &pWriter) == S_OK)
+      if (FileWriterCreate(file, kFileModeBinary, &pWriter) == S_OK)
       {
          if (BmpWrite(m_pImage, pWriter) == S_OK)
          {
-            return TRUE;
+            m_fileName = file;
+            return true;
          }
       }
    }
 
-   return CDocument::OnSaveDocument(lpszPathName);
-}
-
-void cImageGenDoc::OnImageAttributes()
-{
-   if (!m_pImage)
-   {
-      return;
-   }
-
-   cImageAttributesDlg dlg;
-   dlg.m_pixelFormat = m_pImage->GetPixelFormat();
-   dlg.m_width = m_pImage->GetWidth();
-   dlg.m_height = m_pImage->GetHeight();
-   if (dlg.DoModal() == IDOK)
-   {
-      cAutoIPtr<IImage> pNewImage;
-      if (ImageCreate(dlg.m_width, dlg.m_height, (ePixelFormat)dlg.m_pixelFormat, NULL, &pNewImage) == S_OK)
-      {
-         SafeRelease(m_pImage);
-         m_pImage = pNewImage;
-         Rasterize();
-      }
-   }
-}
-
-void cImageGenDoc::OnImageCircle()
-{
-   m_shape = kCircle;
-   Rasterize();
-}
-
-void cImageGenDoc::OnUpdateImageCircle(CCmdUI *pCmdUI)
-{
-   pCmdUI->SetRadio(m_shape == kCircle);
-}
-
-void cImageGenDoc::OnImageRectangle()
-{
-   m_shape = kRectangle;
-   Rasterize();
-}
-
-void cImageGenDoc::OnUpdateImageRectangle(CCmdUI *pCmdUI)
-{
-   pCmdUI->SetRadio(m_shape == kRectangle);
-}
-
-void cImageGenDoc::OnImageRoundrect()
-{
-   m_shape = kRoundRect;
-   Rasterize();
-}
-
-void cImageGenDoc::OnUpdateImageRoundrect(CCmdUI *pCmdUI)
-{
-   pCmdUI->SetRadio(m_shape == kRoundRect);
-}
-
-void cImageGenDoc::OnImageAquabutton()
-{
-   m_shape = kAquaButton;
-   Rasterize();
-}
-
-void cImageGenDoc::OnUpdateImageAquabutton(CCmdUI *pCmdUI)
-{
-   pCmdUI->SetRadio(m_shape == kAquaButton);
-}
-
-void cImageGenDoc::OnImageStatic()
-{
-   m_shape = kStatic;
-   Rasterize();
-}
-
-void cImageGenDoc::OnUpdateImageStatic(CCmdUI *pCmdUI)
-{
-   pCmdUI->SetRadio(m_shape == kStatic);
-}
-
-void cImageGenDoc::OnImageGamma()
-{
-   cImageGammaDlg dlg;
-   dlg.m_bApplyGamma = m_bApplyGamma;
-   dlg.m_gamma = m_gamma;
-   if (dlg.DoModal() == IDOK)
-   {
-      m_bApplyGamma = dlg.m_bApplyGamma ? true : false;
-      m_gamma = dlg.m_gamma;
-
-      Rasterize();
-   }
+   return false;
 }

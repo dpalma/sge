@@ -3,14 +3,8 @@
 
 #include "stdhdr.h"
 
-#include "igDoc.h"
 #include "igView.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include "igDoc.h"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -20,24 +14,8 @@ static char THIS_FILE[] = __FILE__;
 
 ////////////////////////////////////////
 
-IMPLEMENT_DYNCREATE(cImageGenView, CScrollView)
-
-////////////////////////////////////////
-
-BEGIN_MESSAGE_MAP(cImageGenView, CScrollView)
-	//{{AFX_MSG_MAP(cImageGenView)
-	ON_WM_CREATE()
-	ON_WM_DESTROY()
-	ON_WM_SIZE()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// cImageGenView construction/destruction
-
-////////////////////////////////////////
-
-cImageGenView::cImageGenView()
+cImageGenView::cImageGenView(const cImageGenDoc * pDoc)
+ : m_pDoc(pDoc)
 {
 }
 
@@ -47,126 +25,46 @@ cImageGenView::~cImageGenView()
 {
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// cImageGenView operations
+////////////////////////////////////////
 
-
-/////////////////////////////////////////////////////////////////////////////
-// cImageGenView drawing
-
-void cImageGenView::OnDraw(CDC * pDC)
+void cImageGenView::DoPaint(WTL::CDCHandle dc)
 {
-	cImageGenDoc * pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-
-   if (m_bitmap.GetSafeHandle() != NULL)
+   if (!m_bitmap.IsNull())
    {
-      CRect rect;
+      WTL::CRect rect;
       GetClientRect(rect);
 
       BITMAP bm = {0};
       m_bitmap.GetBitmap(&bm);
 
-      CDC memDC;
-      if (memDC.CreateCompatibleDC(pDC))
+      WTL::CDC memDC;
+      if (memDC.CreateCompatibleDC(dc))
       {
-         CBitmap * pOldBitmap = memDC.SelectObject(&m_bitmap);
+         WTL::CBitmapHandle oldBitmap = memDC.SelectBitmap(m_bitmap);
 
-         pDC->BitBlt(rect.left, rect.top, bm.bmWidth, bm.bmHeight, &memDC, 0, 0, SRCCOPY);
+         dc.BitBlt(rect.left, rect.top, bm.bmWidth, bm.bmHeight, memDC, 0, 0, SRCCOPY);
 
-         memDC.SelectObject(pOldBitmap);
+         memDC.SelectBitmap(oldBitmap);
       }
    }
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// cImageGenView diagnostics
-
-#ifdef _DEBUG
 ////////////////////////////////////////
 
-void cImageGenView::AssertValid() const
+void cImageGenView::Update() 
 {
-	CScrollView::AssertValid();
-}
+   if (!m_bitmap.IsNull())
+      m_bitmap.DeleteObject();
 
-////////////////////////////////////////
-
-void cImageGenView::Dump(CDumpContext& dc) const
-{
-	CScrollView::Dump(dc);
-}
-
-////////////////////////////////////////
-
-cImageGenDoc* cImageGenView::GetDocument() // non-debug version is inline
-{
-	ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(cImageGenDoc)));
-	return (cImageGenDoc*)m_pDocument;
-}
-#endif //_DEBUG
-
-
-/////////////////////////////////////////////////////////////////////////////
-// cImageGenView message handlers
-
-////////////////////////////////////////
-
-int cImageGenView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
-{
-	if (CScrollView::OnCreate(lpCreateStruct) == -1)
-		return -1;
-
-	return 0;
-}
-
-////////////////////////////////////////
-
-void cImageGenView::OnDestroy() 
-{
-	CScrollView::OnDestroy();
-
-}
-
-////////////////////////////////////////
-
-void cImageGenView::OnSize(UINT nType, int cx, int cy) 
-{
-	CScrollView::OnSize(nType, cx, cy);
-
-}
-
-////////////////////////////////////////
-
-void cImageGenView::OnInitialUpdate() 
-{
-   cImageGenDoc * pDoc = GetDocument();
-   ASSERT_VALID(pDoc);
-
-   cAutoIPtr<IImage> pImage(CTAddRef(pDoc->AccessImage()));
-   if (!!pImage)
-   {
-      SetScrollSizes(MM_TEXT, CSize(pImage->GetWidth(), pImage->GetHeight()));
-   }
-
-   CView::OnInitialUpdate();
-}
-
-////////////////////////////////////////
-
-void cImageGenView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
-{
-   cImageGenDoc * pDoc = GetDocument();
-   ASSERT_VALID(pDoc);
-
-   m_bitmap.DeleteObject();
-
-   cAutoIPtr<IImage> pImage(CTAddRef(pDoc->AccessImage()));
-   if (!!pImage)
+   const IImage * pImage = GetDocument()->AccessImage();
+   if (pImage != NULL)
    {
       HBITMAP hbm = NULL;
-      ImageToWindowsBitmap(pImage, &hbm);
+      ImageToWindowsBitmap(const_cast<IImage*>(pImage), &hbm);
       m_bitmap.Attach(hbm);
+
+	   SetScrollOffset(0, 0, FALSE);
+      SetScrollSize(WTL::CSize(pImage->GetWidth(), pImage->GetHeight()));
    }
 
    Invalidate();

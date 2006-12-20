@@ -21,7 +21,7 @@
 			IntermediateDirectory=".\..\..\Build.vc8\Release\imagegen"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
-			UseOfMFC="2"
+			UseOfMFC="0"
 			CharacterSet="2"
 			>
 			<Tool
@@ -47,7 +47,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\tinyxml,..\..\api"
+				AdditionalIncludeDirectories="..\..\3rdparty\tinyxml,..\..\3rdparty\wtl\include,..\..\api"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;TIXML_USE_STL"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -115,7 +115,7 @@
 			IntermediateDirectory=".\..\..\Build.vc8\Debug\imagegen"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
-			UseOfMFC="2"
+			UseOfMFC="0"
 			CharacterSet="2"
 			>
 			<Tool
@@ -141,7 +141,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\tinyxml,..\..\api"
+				AdditionalIncludeDirectories="..\..\3rdparty\tinyxml,..\..\3rdparty\wtl\include,..\..\api"
 				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;TIXML_USE_STL;HAVE_UNITTESTPP"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -211,7 +211,7 @@
 			IntermediateDirectory=".\..\..\Build.vc8\StaticDebug\imagegen"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
-			UseOfMFC="1"
+			UseOfMFC="0"
 			CharacterSet="2"
 			>
 			<Tool
@@ -237,7 +237,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\tinyxml,..\..\api"
+				AdditionalIncludeDirectories="..\..\3rdparty\tinyxml,..\..\3rdparty\wtl\include,..\..\api"
 				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,WIN32,_WINDOWS,TIXML_USE_STL,GLEW_STATIC,HAVE_UNITTESTPP"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -306,7 +306,7 @@
 			IntermediateDirectory=".\..\..\Build.vc8\Opt\imagegen"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
-			UseOfMFC="2"
+			UseOfMFC="0"
 			CharacterSet="2"
 			>
 			<Tool
@@ -332,7 +332,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\tinyxml,..\..\api"
+				AdditionalIncludeDirectories="..\..\3rdparty\tinyxml,..\..\3rdparty\wtl\include,..\..\api"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;TIXML_USE_STL;HAVE_UNITTESTPP"
 				StringPooling="true"
 				RuntimeLibrary="3"
@@ -403,7 +403,7 @@
 			IntermediateDirectory=".\..\..\Build.vc8\StaticRelease\imagegen"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
-			UseOfMFC="1"
+			UseOfMFC="0"
 			CharacterSet="2"
 			>
 			<Tool
@@ -429,7 +429,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\tinyxml,..\..\api"
+				AdditionalIncludeDirectories="..\..\3rdparty\tinyxml,..\..\3rdparty\wtl\include,..\..\api"
 				PreprocessorDefinitions="NO_AUTO_EXPORTS,NDEBUG,WIN32,_WINDOWS,TIXML_USE_STL"
 				StringPooling="true"
 				RuntimeLibrary="0"

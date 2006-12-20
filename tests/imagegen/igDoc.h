@@ -4,8 +4,8 @@
 #if !defined(INCLUDED_IGDOC_H)
 #define INCLUDED_IGDOC_H
 
-#include "tech/comtools.h"
 #include "tech/imageapi.h"
+#include "tech/filespec.h"
 
 #if _MSC_VER > 1000
 #pragma once
@@ -16,63 +16,37 @@
 // CLASS: cImageGenDoc
 //
 
-class cImageGenDoc : public CDocument
+class cImageGenDoc
 {
-protected: // create from serialization only
-	cImageGenDoc();
-	DECLARE_DYNCREATE(cImageGenDoc)
-
-// Attributes
 public:
+	cImageGenDoc();
+	~cImageGenDoc();
+
+   void SetImage(IImage * pImage);
    IImage * AccessImage();
    const IImage * AccessImage() const;
 
-// Operations
-public:
-   void Rasterize();
-
-// Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(cImageGenDoc)
-	public:
-	virtual BOOL OnNewDocument();
-//	virtual void Serialize(CArchive& ar);
-	//}}AFX_VIRTUAL
-   virtual void DeleteContents();
-   virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
-   virtual BOOL OnSaveDocument(LPCTSTR lpszPathName);
-
-// Implementation
-public:
-	virtual ~cImageGenDoc();
-#ifdef _DEBUG
-	virtual void AssertValid() const;
-	virtual void Dump(CDumpContext& dc) const;
-#endif
-
-// Generated message map functions
-protected:
-	//{{AFX_MSG(cImageGenDoc)
-	//}}AFX_MSG
-   afx_msg void OnImageAttributes();
-   afx_msg void OnImageCircle();
-   afx_msg void OnUpdateImageCircle(CCmdUI *pCmdUI);
-   afx_msg void OnImageRectangle();
-   afx_msg void OnUpdateImageRectangle(CCmdUI *pCmdUI);
-   afx_msg void OnImageRoundrect();
-   afx_msg void OnUpdateImageRoundrect(CCmdUI *pCmdUI);
-   afx_msg void OnImageAquabutton();
-   afx_msg void OnUpdateImageAquabutton(CCmdUI *pCmdUI);
-   afx_msg void OnImageStatic();
-   afx_msg void OnUpdateImageStatic(CCmdUI *pCmdUI);
-   afx_msg void OnImageGamma();
-	DECLARE_MESSAGE_MAP()
-
-private:
    enum eShape
    {
-      kNone, kCircle, kRectangle, kRoundRect, kAquaButton, kStatic
+      None, Circle, Rectangle, RoundRect, AquaButton, Static
    };
+   void SetShape(eShape shape);
+   eShape GetShape() const { return m_shape; }
+   void SetGamma(float gamma);
+   float GetGamma() const { return m_gamma; }
+   void EnableGamma(bool bEnable);
+   bool IsGammaEnabled() const { return m_bApplyGamma; }
+   void Rasterize();
+
+   const cFileSpec & GetFileName() const { return m_fileName; }
+
+	bool NewDocument();
+   void DeleteContents();
+   bool OpenDocument(LPCTSTR lpszPathName);
+   bool SaveDocument(LPCTSTR lpszPathName);
+
+private:
+   cFileSpec m_fileName;
 
    eShape m_shape;
 
@@ -86,8 +60,5 @@ private:
 };
 
 /////////////////////////////////////////////////////////////////////////////
-
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
 #endif // !defined(INCLUDED_IGDOC_H)
