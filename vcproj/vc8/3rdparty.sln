@@ -28,6 +28,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "3rdpartyFtgl", "3rdpartyFtg
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "3rdpartyUnitTest++", "3rdpartyUnitTest++.vcproj", "{FB6B440F-2457-4526-A399-5B17A7A8BC9D}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "3rdpartyJpeg", "3rdpartyJpeg.vcproj", "{68D891C5-36B2-4758-AE9C-6552440E1E13}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -147,6 +149,16 @@ Global
 		{FB6B440F-2457-4526-A399-5B17A7A8BC9D}.StaticDebug|Win32.Build.0 = StaticDebug|Win32
 		{FB6B440F-2457-4526-A399-5B17A7A8BC9D}.StaticRelease|Win32.ActiveCfg = StaticRelease|Win32
 		{FB6B440F-2457-4526-A399-5B17A7A8BC9D}.StaticRelease|Win32.Build.0 = StaticRelease|Win32
+		{68D891C5-36B2-4758-AE9C-6552440E1E13}.Debug|Win32.ActiveCfg = Debug|Win32
+		{68D891C5-36B2-4758-AE9C-6552440E1E13}.Debug|Win32.Build.0 = Debug|Win32
+		{68D891C5-36B2-4758-AE9C-6552440E1E13}.Opt|Win32.ActiveCfg = Opt|Win32
+		{68D891C5-36B2-4758-AE9C-6552440E1E13}.Opt|Win32.Build.0 = Opt|Win32
+		{68D891C5-36B2-4758-AE9C-6552440E1E13}.Release|Win32.ActiveCfg = Release|Win32
+		{68D891C5-36B2-4758-AE9C-6552440E1E13}.Release|Win32.Build.0 = Release|Win32
+		{68D891C5-36B2-4758-AE9C-6552440E1E13}.StaticDebug|Win32.ActiveCfg = StaticDebug|Win32
+		{68D891C5-36B2-4758-AE9C-6552440E1E13}.StaticDebug|Win32.Build.0 = StaticDebug|Win32
+		{68D891C5-36B2-4758-AE9C-6552440E1E13}.StaticRelease|Win32.ActiveCfg = StaticRelease|Win32
+		{68D891C5-36B2-4758-AE9C-6552440E1E13}.StaticRelease|Win32.Build.0 = StaticRelease|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
