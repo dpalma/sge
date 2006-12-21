@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8.00"
 	Name="tech"
-	ProjectGUID="{7AD65279-9AD3-44EB-BC08-0C7C832A36BA}"
+	ProjectGUID="{5B1DB8CD-0522-43C7-91B1-D558CA7520EB}"
 	RootNamespace="tech"
 	>
 	<Platforms>
@@ -47,7 +47,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip,..\..\api"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\jpeg,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip,..\..\api"
 				PreprocessorDefinitions="_USRDLL;TECH_EXPORTS;STRICT;_WINDOWS;NDEBUG;WIN32;HAVE_UNITTESTPP"
 				StringPooling="true"
 				RuntimeLibrary="3"
@@ -77,7 +77,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="advapi32.lib $(OutDir)\UnitTest++.lib $(OutDir)\zlibwapi.lib winmm.lib"
+				AdditionalDependencies="advapi32.lib $(OutDir)\UnitTest++.lib $(OutDir)\jpeg.lib $(OutDir)\zlibwapi.lib winmm.lib"
 				OutputFile=".\..\..\Build.vc8\Opt/tech.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -141,7 +141,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip,..\..\api"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\jpeg,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip,..\..\api"
 				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,_USRDLL,TECH_EXPORTS,WIN32,_WINDOWS,STRICT,HAVE_UNITTESTPP"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -221,7 +221,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip,..\..\api"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\jpeg,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip,..\..\api"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;TECH_EXPORTS;WIN32;_WINDOWS;STRICT"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -250,7 +250,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="advapi32.lib $(OutDir)\zlibwapi.lib winmm.lib"
+				AdditionalDependencies="advapi32.lib $(OutDir)\jpeg.lib $(OutDir)\zlibwapi.lib winmm.lib"
 				OutputFile=".\..\..\Build.vc8\Release/tech.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -314,7 +314,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip,..\..\api"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\jpeg,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip,..\..\api"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,_USRDLL,TECH_EXPORTS,WIN32,_WINDOWS,STRICT"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -394,7 +394,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip,..\..\api"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\jpeg,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip,..\..\api"
 				PreprocessorDefinitions="_DEBUG;_USRDLL;TECH_EXPORTS;WIN32;_WINDOWS;STRICT;HAVE_UNITTESTPP"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -423,7 +423,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="advapi32.lib $(OutDir)\UnitTest++.lib $(OutDir)\zlibwapi.lib winmm.lib"
+				AdditionalDependencies="advapi32.lib $(OutDir)\UnitTest++.lib $(OutDir)\jpeg.lib $(OutDir)\zlibwapi.lib winmm.lib"
 				OutputFile=".\..\..\Build.vc8\Debug/tech.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -533,6 +533,10 @@
 			</File>
 			<File
 				RelativePath="..\..\tech\image.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tech\jpg.cpp"
 				>
 			</File>
 			<File

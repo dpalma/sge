@@ -269,7 +269,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="opengl32.lib glu32.lib Cg.lib CgGL.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib $(OutDir)\glew.lib $(OutDir)\freetype.lib $(OutDir)\ftgl.lib $(OutDir)\UnitTest++.lib"
+				AdditionalDependencies="opengl32.lib glu32.lib Cg.lib CgGL.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\jpeg.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib $(OutDir)\glew.lib $(OutDir)\freetype.lib $(OutDir)\ftgl.lib $(OutDir)\UnitTest++.lib"
 				OutputFile=".\..\..\Build.vc8\StaticDebug/editor.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -463,7 +463,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="opengl32.lib glu32.lib Cg.lib CgGL.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib $(OutDir)\glew.lib $(OutDir)\freetype.lib $(OutDir)\ftgl.lib"
+				AdditionalDependencies="opengl32.lib glu32.lib Cg.lib CgGL.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\jpeg.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib $(OutDir)\glew.lib $(OutDir)\freetype.lib $(OutDir)\ftgl.lib"
 				OutputFile=".\..\..\Build.vc8\StaticRelease/editor.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"

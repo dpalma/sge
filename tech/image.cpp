@@ -575,6 +575,7 @@ TECH_API tResult ImageToWindowsBitmap(IImage * pImage, HBITMAP * phBitmap)
 
 extern void * TargaLoad(IReader * pReader);
 extern void * BmpLoad(IReader * pReader);
+extern void * JpgLoad(IReader * pReader);
 
 ////////////////////////////////////////
 
@@ -590,8 +591,10 @@ tResult ImageRegisterResourceFormats()
    UseGlobal(ResourceManager);
    if (!!pResourceManager)
    {
-      if (pResourceManager->RegisterFormat(kRT_Image, _T("tga"), TargaLoad, NULL, ImageUnload) == S_OK
-         && pResourceManager->RegisterFormat(kRT_Image, _T("bmp"), BmpLoad, NULL, ImageUnload) == S_OK)
+      if (pResourceManager->RegisterFormat(kRT_Image, _T("bmp"), BmpLoad, NULL, ImageUnload) == S_OK
+         && pResourceManager->RegisterFormat(kRT_Image, _T("jpeg"), JpgLoad, NULL, ImageUnload) == S_OK
+         && pResourceManager->RegisterFormat(kRT_Image, _T("jpg"), JpgLoad, NULL, ImageUnload) == S_OK
+         && pResourceManager->RegisterFormat(kRT_Image, _T("tga"), TargaLoad, NULL, ImageUnload) == S_OK)
       {
 #ifdef _WIN32
          if (pResourceManager->RegisterFormat(kRT_WindowsDDB, kRT_Image, NULL, NULL, WindowsDDBFromImage, WindowsDDBUnload) != S_OK)
