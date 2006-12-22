@@ -43,6 +43,7 @@ public:
 	BEGIN_MSG_MAP_EX(CMainFrame)
 		MSG_WM_CREATE(OnCreate)
 		COMMAND_ID_HANDLER_EX(ID_FILE_OPEN, OnFileOpen)
+		COMMAND_ID_HANDLER_EX(ID_FILE_NEW, OnFileNew)
 		COMMAND_RANGE_HANDLER_EX(ID_FILE_MRU_FIRST, ID_FILE_MRU_LAST, OnFileRecent)
 		COMMAND_ID_HANDLER_EX(ID_APP_EXIT, OnFileExit)
 		COMMAND_ID_HANDLER_EX(ID_VIEW_TOOLBAR, OnViewToolBar)
@@ -72,6 +73,7 @@ public:
 
 	int OnCreate(LPCREATESTRUCT lpCreateStruct);
    void OnFileExit(UINT uNotifyCode, int nID, CWindow wnd);
+   void OnFileNew(UINT uNotifyCode, int nID, CWindow wnd);
    void OnFileOpen(UINT uNotifyCode, int nID, CWindow wnd);
    void OnFileRecent(UINT uNotifyCode, int nID, CWindow wnd);
 	void OnViewToolBar(UINT uNotifyCode, int nID, CWindow wnd);

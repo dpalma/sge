@@ -97,8 +97,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT /*lpCreateStruct*/)
 	pLoop->AddMessageFilter(this);
 	pLoop->AddIdleHandler(this);
 
-   UpdateTitleBar(NULL);
    m_doc.NewDocument();
+   UpdateTitleBar(NULL);
    m_view.Update();
 
 	return 0;
@@ -111,7 +111,20 @@ void CMainFrame::OnFileExit(UINT /*uNotifyCode*/, int /*nID*/, CWindow /*wnd*/)
 
 void CMainFrame::OnFileOpen(UINT /*uNotifyCode*/, int /*nID*/, CWindow /*wnd*/)
 {
-   WTL::CFileDialog dlg(TRUE, _T("bmp"), NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("Bitmap Files (*.bmp)\0*.bmp\0All Files (*.*)\0*.*\0"), m_hWnd);
+   WTL::CString imageFileFilter;
+	if (imageFileFilter.LoadString(IDS_IMAGE_FILE_FILTER))
+   {
+      int len = imageFileFilter.GetLength();
+      tChar * psz = imageFileFilter.GetBuffer(1);
+      for (int i = 0; i < len; ++i)
+      {
+         if (_T('|') == psz[i])
+            psz[i] = _T('\0');
+      }
+	   imageFileFilter.ReleaseBuffer();
+   }
+
+   WTL::CFileDialog dlg(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, imageFileFilter, m_hWnd);
 	if (dlg.DoModal() == IDOK)
 	{
       if (m_doc.OpenDocument(dlg.m_szFileName))
@@ -121,6 +134,13 @@ void CMainFrame::OnFileOpen(UINT /*uNotifyCode*/, int /*nID*/, CWindow /*wnd*/)
 			UpdateTitleBar(dlg.m_szFileTitle);
       }
 	}
+}
+
+void CMainFrame::OnFileNew(UINT /*uNotifyCode*/, int /*nID*/, CWindow /*wnd*/)
+{
+   m_doc.NewDocument();
+   UpdateTitleBar(NULL);
+   m_view.Update();
 }
 
 void CMainFrame::OnFileRecent(UINT /*uNotifyCode*/, int nID, CWindow /*wnd*/)

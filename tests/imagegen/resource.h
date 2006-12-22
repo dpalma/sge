@@ -5,6 +5,7 @@
 #define IDD_ABOUTBOX                    100
 #define IDR_MAINFRAME                   128
 #define IDR_IMGDOCTYPE                  129
+#define IDS_IMAGE_FILE_FILTER           129
 #define IDD_IMAGE_ATTRIBUTES            138
 #define IDD_IMAGE_GAMMA                 139
 #define IDC_PIXEL_FORMAT                1027
