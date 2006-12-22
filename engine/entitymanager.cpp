@@ -42,7 +42,6 @@ extern void RegisterBuiltInComponents();
 
 cEntityManager::cEntityManager()
  : m_nextId(0)
- , m_animateTask(this)
 {
 }
 
@@ -75,7 +74,7 @@ tResult cEntityManager::Init()
       g_entityManagerVer, static_cast<ISaveLoadParticipant*>(this));
 
    UseGlobal(Scheduler);
-   pScheduler->AddFrameTask(&m_animateTask, 0, 1, 0);
+   pScheduler->AddFrameTask(&m_updateTask, 0, 1, 0);
 
    UseGlobal(Input);
    pInput->AddInputListener(&m_inputListener);
@@ -89,8 +88,10 @@ tResult cEntityManager::Init()
 
 tResult cEntityManager::Term()
 {
+   m_updateTask.RemoveAll();
+
    UseGlobal(Scheduler);
-   pScheduler->RemoveFrameTask(&m_animateTask);
+   pScheduler->RemoveFrameTask(&m_updateTask);
 
    UseGlobal(Input);
    pInput->RemoveInputListener(&m_inputListener);
@@ -173,6 +174,9 @@ tResult cEntityManager::SpawnEntity(const tChar * pszEntity, const tVec3 & posit
          {
             *pEntityId = entityId;
          }
+
+         RegisterEntityUpdatables(pEntity);
+
          return S_OK;
       }
    }
@@ -193,6 +197,8 @@ tResult cEntityManager::RemoveEntity(tEntityId entityId)
       if (pEntity->GetId() == entityId)
       {
          bFound = true;
+
+         RevokeEntityUpdatables(pEntity);
 
          size_t nErasedFromSelected = m_selected.erase(pEntity);
          while (nErasedFromSelected-- > 0)
@@ -228,9 +234,14 @@ tResult cEntityManager::RemoveEntity(IEntity * pEntity)
       if (CTIsSameObject(pEntity, *iter))
       {
          bFound = true;
+
+         RevokeEntityUpdatables(*iter);
+
          (*iter)->Release();
          m_entities.erase(iter);
+
          // TODO: return entity's id to a pool?
+
          break;
       }
    }
@@ -251,6 +262,7 @@ void cEntityManager::RemoveAll()
    tEntityList::iterator iter = m_entities.begin();
    for (; iter != m_entities.end(); iter++)
    {
+      RevokeEntityUpdatables(*iter);
       (*iter)->Release();
    }
    m_entities.clear();
@@ -543,15 +555,40 @@ tResult cEntityManager::CreateComponent(const TiXmlElement * pTiXmlElement,
 
 ///////////////////////////////////////
 
-void cEntityManager::SimFrame(double elapsedTime)
+void cEntityManager::RegisterEntityUpdatables(IEntity * pEntity)
 {
-   tEntityList::iterator iter = m_entities.begin();
-   for (; iter != m_entities.end(); iter++)
+   if (pEntity == NULL)
    {
-      cAutoIPtr<IEntityRenderComponent> pRender;
-      if ((*iter)->GetComponent(kECT_Render, IID_IEntityRenderComponent, &pRender) == S_OK)
+      return;
+   }
+
+   for (int i = 0; i < kMaxEntityComponentTypes; ++i)
+   {
+      cAutoIPtr<IUpdatable> pUpdatableComponent;
+      if (pEntity->GetComponent(static_cast<eEntityComponentType>(i),
+         IID_IUpdatable, &pUpdatableComponent) == S_OK)
       {
-         pRender->Update(elapsedTime);
+         m_updateTask.AddUpdatable(pUpdatableComponent);
+      }
+   }
+}
+
+///////////////////////////////////////
+
+void cEntityManager::RevokeEntityUpdatables(IEntity * pEntity)
+{
+   if (pEntity == NULL)
+   {
+      return;
+   }
+
+   for (int i = 0; i < kMaxEntityComponentTypes; ++i)
+   {
+      cAutoIPtr<IUpdatable> pUpdatableComponent;
+      if (pEntity->GetComponent(static_cast<eEntityComponentType>(i),
+         IID_IUpdatable, &pUpdatableComponent) == S_OK)
+      {
+         m_updateTask.RemoveUpdatable(pUpdatableComponent);
       }
    }
 }
@@ -651,20 +688,49 @@ bool cEntityManager::IsSelected(IEntity * pEntity) const
 
 ///////////////////////////////////////
 
-cEntityManager::cAnimateTask::cAnimateTask(cEntityManager * pOuter)
- : m_pOuter(pOuter)
- , m_lastTime(0)
+cEntityManager::cUpdateTask::cUpdateTask()
+ : m_lastTime(0)
 {
 }
 
 ///////////////////////////////////////
 
-tResult cEntityManager::cAnimateTask::Execute(double time)
+tResult cEntityManager::cUpdateTask::Execute(double time)
 {
    double elapsed = fabs(time - m_lastTime);
-   m_pOuter->SimFrame(elapsed);
+   tUpdatableList::iterator iter = m_updatables.begin(), end = m_updatables.end();
+   for (; iter != end; ++iter)
+   {
+      (*iter)->Update(elapsed);
+   }
    m_lastTime = time;
    return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cEntityManager::cUpdateTask::AddUpdatable(IUpdatable * pUpdatable)
+{
+   return add_interface(m_updatables, pUpdatable) ? S_OK : E_FAIL;
+}
+
+///////////////////////////////////////
+
+tResult cEntityManager::cUpdateTask::RemoveUpdatable(IUpdatable * pUpdatable)
+{
+   return remove_interface(m_updatables, pUpdatable) ? S_OK : E_FAIL;
+}
+
+///////////////////////////////////////
+
+void cEntityManager::cUpdateTask::RemoveAll()
+{
+   tUpdatableList::iterator iter = m_updatables.begin(), end = m_updatables.end();
+   for (; iter != end; ++iter)
+   {
+      (*iter)->Release();
+   }
+   m_updatables.clear();
 }
 
 ///////////////////////////////////////

@@ -25,6 +25,11 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
+typedef std::set<IUpdatable *, cCTLessInterface> tUpdatableSet;
+typedef std::list<IUpdatable *> tUpdatableList;
+
+////////////////////////////////////////////////////////////////////////////////
+
 typedef std::list<IEntity *> tEntityList;
 typedef cComObject<cComEnum<IEnumEntities, &IID_IEnumEntities, IEntity*, CopyInterface<IEntity>, tEntityList>, &IID_IEnumEntities> tEntityListEnum;
 
@@ -99,7 +104,8 @@ public:
 
    ///////////////////////////////////
 
-   void SimFrame(double elapsedTime);
+   void RegisterEntityUpdatables(IEntity * pEntity);
+   void RevokeEntityUpdatables(IEntity * pEntity);
 
    ///////////////////////////////////
 
@@ -110,18 +116,21 @@ public:
 private:
    bool IsSelected(IEntity * pEntity) const;
 
-   class cAnimateTask : public cComObject<IMPLEMENTS(ITask)>
+   class cUpdateTask : public cComObject<IMPLEMENTS(ITask)>
    {
    public:
-      cAnimateTask(cEntityManager * pOuter);
+      cUpdateTask();
       virtual void DeleteThis() {}
       virtual tResult Execute(double time);
+      tResult AddUpdatable(IUpdatable * pUpdatable);
+      tResult RemoveUpdatable(IUpdatable * pUpdatable);
+      void RemoveAll();
    private:
-      cEntityManager * m_pOuter;
       double m_lastTime;
+      tUpdatableList m_updatables;
    };
-   friend class cAnimateTask;
-   cAnimateTask m_animateTask;
+   friend class cUpdateTask;
+   cUpdateTask m_updateTask;
 
    class cInputListener : public cComObject<IMPLEMENTS(IInputListener)>
    {

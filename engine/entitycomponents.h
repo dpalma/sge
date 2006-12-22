@@ -78,7 +78,7 @@ private:
 // CLASS: cEntityRenderComponent
 //
 
-class cEntityRenderComponent : public cComObject<IMPLEMENTS(IEntityRenderComponent)>
+class cEntityRenderComponent : public cComObject2<IMPLEMENTS(IEntityRenderComponent), IMPLEMENTS(IUpdatable)>
 {
 public:
    cEntityRenderComponent(const tChar * pszModel);
@@ -86,9 +86,10 @@ public:
 
    virtual tResult GetBoundingBox(tAxisAlignedBox * pBBox) const;
 
-   virtual void Update(double elapsedTime);
    virtual void Render(uint flags);
    virtual tResult SetAnimation(eModelAnimationType type);
+
+   virtual void Update(double elapsedTime);
 
 private:
    cEntityModelRenderer m_mainModel;

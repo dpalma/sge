@@ -15,6 +15,7 @@
 #endif
 
 F_DECLARE_INTERFACE_GUID(IEntity, "85E6F9DB-639F-411d-B365-86A8FBD1ACBF");
+F_DECLARE_INTERFACE_GUID(IUpdatable, "0A85E22A-F905-458c-B96B-E0EBB4FECE0B");
 F_DECLARE_INTERFACE_GUID(IEntityComponent, "D1A48ABA-7DB7-4fb7-96E3-72F79DFABA99");
 F_DECLARE_INTERFACE_GUID(IEntityPositionComponent, "BA4B742C-8D6F-494a-827B-25F8A3B4801F");
 F_DECLARE_INTERFACE_GUID(IEntityRenderComponent, "AF68F8F0-EFA5-49c6-AA91-C4E21BAF6D14");
@@ -94,7 +95,6 @@ interface IEntityRenderComponent : IEntityComponent
 {
    virtual tResult GetBoundingBox(tAxisAlignedBox * pBBox) const = 0;
 
-   virtual void Update(double elapsedTime) = 0;
    virtual void Render(uint flags) = 0;
 
    virtual tResult SetAnimation(eModelAnimationType type) = 0;
@@ -157,6 +157,17 @@ interface IEntity : IUnknown
       }
       return result;
    }
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IUpdatable
+//
+
+interface IUpdatable : IUnknown
+{
+   virtual void Update(double elapsedTime) = 0;
 };
 
 

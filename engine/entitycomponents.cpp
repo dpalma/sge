@@ -392,13 +392,6 @@ tResult cEntityRenderComponent::GetBoundingBox(tAxisAlignedBox * pBBox) const
 
 ///////////////////////////////////////
 
-void cEntityRenderComponent::Update(double elapsedTime)
-{
-   m_mainModel.Update(elapsedTime);
-}
-
-///////////////////////////////////////
-
 void cEntityRenderComponent::Render(uint flags)
 {
    m_mainModel.Render();
@@ -409,6 +402,13 @@ void cEntityRenderComponent::Render(uint flags)
 tResult cEntityRenderComponent::SetAnimation(eModelAnimationType type)
 {
    return m_mainModel.SetAnimation(type);
+}
+
+///////////////////////////////////////
+
+void cEntityRenderComponent::Update(double elapsedTime)
+{
+   m_mainModel.Update(elapsedTime);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
