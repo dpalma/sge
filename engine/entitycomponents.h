@@ -9,7 +9,6 @@
 #include "engine/modelapi.h"
 #include "engine/modeltypes.h"
 
-#include "tech/schedulerapi.h"
 #include "tech/axisalignedbox.h"
 #include "tech/statemachine.h"
 
@@ -144,20 +143,6 @@ private:
    tState m_idleState;
    tState m_movingState;
 
-   class cTask : public cComObject<IMPLEMENTS(ITask)>
-   {
-   public:
-      cTask(cEntityBasicBrain * pOuter);
-      virtual void DeleteThis() {}
-      virtual tResult Execute(double time);
-   private:
-      cEntityBasicBrain * m_pOuter;
-      double m_lastTime;
-   };
-
-   friend class cTask;
-   cTask m_task;
-
    tVec3 m_moveGoal;
    cAutoIPtr<IEntityPositionComponent> m_pPosition;
    cAutoIPtr<IEntityRenderComponent> m_pRender;
@@ -169,7 +154,7 @@ private:
 // CLASS: cEntityBrainComponent
 //
 
-class cEntityBrainComponent : public cComObject<IMPLEMENTS(IEntityBrainComponent)>
+class cEntityBrainComponent : public cComObject2<IMPLEMENTS(IEntityBrainComponent), IMPLEMENTS(IUpdatable)>
 {
 public:
    cEntityBrainComponent(IEntity * pEntity);
@@ -177,6 +162,8 @@ public:
 
    virtual tResult MoveTo(const tVec3 & point);
    virtual tResult Stop();
+
+   virtual void Update(double elapsedTime);
 
 private:
    cEntityBasicBrain m_brain;

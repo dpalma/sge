@@ -568,7 +568,6 @@ tResult EntitySpawnComponentFactory(const TiXmlElement * pTiXmlElement,
 cEntityBasicBrain::cEntityBasicBrain()
  : m_idleState(&cEntityBasicBrain::OnEnterIdle, &cEntityBasicBrain::OnIdle, &cEntityBasicBrain::OnExitIdle)
  , m_movingState(&cEntityBasicBrain::OnEnterMoving, &cEntityBasicBrain::OnMoving, &cEntityBasicBrain::OnExitMoving)
- , m_task(this)
 {
 }
 
@@ -576,8 +575,6 @@ cEntityBasicBrain::cEntityBasicBrain()
 
 cEntityBasicBrain::~cEntityBasicBrain()
 {
-   UseGlobal(Scheduler);
-   pScheduler->RemoveFrameTask(&m_task);
 }
 
 ////////////////////////////////////////
@@ -634,9 +631,6 @@ void cEntityBasicBrain::OnExitIdle()
 
 void cEntityBasicBrain::OnEnterMoving()
 {
-   UseGlobal(Scheduler);
-   pScheduler->AddFrameTask(&m_task, 0, 1, 0);
-
    if (!!m_pRender)
    {
       m_pRender->SetAnimation(kMAT_Walk);
@@ -652,7 +646,6 @@ void cEntityBasicBrain::OnMoving(double elapsed)
       tVec3 curPos;
       if (m_pPosition->GetPosition(&curPos) == S_OK)
       {
-//         if (AlmostEqual(curPos, m_moveGoal))
          if (AlmostEqual(curPos.x, m_moveGoal.x)
             && AlmostEqual(curPos.z, m_moveGoal.z))
          {
@@ -675,32 +668,6 @@ void cEntityBasicBrain::OnMoving(double elapsed)
 void cEntityBasicBrain::OnExitMoving()
 {
    // Scheduler task is removed via return value--no need to do so here
-}
-
-////////////////////////////////////////
-
-cEntityBasicBrain::cTask::cTask(cEntityBasicBrain * pOuter)
- : m_pOuter(pOuter)
- , m_lastTime(0)
-{
-}
-
-////////////////////////////////////////
-
-tResult cEntityBasicBrain::cTask::Execute(double time)
-{
-   double elapsed = (m_lastTime > 0) ? (time - m_lastTime) : 0;
-   m_pOuter->Update(elapsed);
-   if (m_pOuter->IsCurrentState(&m_pOuter->m_movingState))
-   {
-      m_lastTime = time;
-      return S_OK;
-   }
-   else
-   {
-      m_lastTime = 0;
-      return S_FALSE;
-   }
 }
 
 
@@ -744,6 +711,13 @@ tResult cEntityBrainComponent::Stop()
 {
    m_brain.Stop();
    return S_OK;
+}
+
+///////////////////////////////////////
+
+void cEntityBrainComponent::Update(double elapsedTime)
+{
+   m_brain.Update(elapsedTime);
 }
 
 ///////////////////////////////////////
