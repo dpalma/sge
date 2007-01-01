@@ -45,6 +45,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "3rdpartyUnitTest++", "3rdpa
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "3rdpartyJpeg", "3rdpartyJpeg.vcproj", "{68D891C5-36B2-4758-AE9C-6552440E1E13}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -164,6 +168,16 @@ Global
 		{FB6B440F-2457-4526-A399-5B17A7A8BC9D}.StaticDebug.Build.0 = StaticDebug|Win32
 		{FB6B440F-2457-4526-A399-5B17A7A8BC9D}.StaticRelease.ActiveCfg = StaticRelease|Win32
 		{FB6B440F-2457-4526-A399-5B17A7A8BC9D}.StaticRelease.Build.0 = StaticRelease|Win32
+		{68D891C5-36B2-4758-AE9C-6552440E1E13}.Debug.ActiveCfg = Debug|Win32
+		{68D891C5-36B2-4758-AE9C-6552440E1E13}.Debug.Build.0 = Debug|Win32
+		{68D891C5-36B2-4758-AE9C-6552440E1E13}.Opt.ActiveCfg = Opt|Win32
+		{68D891C5-36B2-4758-AE9C-6552440E1E13}.Opt.Build.0 = Opt|Win32
+		{68D891C5-36B2-4758-AE9C-6552440E1E13}.Release.ActiveCfg = Release|Win32
+		{68D891C5-36B2-4758-AE9C-6552440E1E13}.Release.Build.0 = Release|Win32
+		{68D891C5-36B2-4758-AE9C-6552440E1E13}.StaticDebug.ActiveCfg = StaticDebug|Win32
+		{68D891C5-36B2-4758-AE9C-6552440E1E13}.StaticDebug.Build.0 = StaticDebug|Win32
+		{68D891C5-36B2-4758-AE9C-6552440E1E13}.StaticRelease.ActiveCfg = StaticRelease|Win32
+		{68D891C5-36B2-4758-AE9C-6552440E1E13}.StaticRelease.Build.0 = StaticRelease|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

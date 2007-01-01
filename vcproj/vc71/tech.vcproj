@@ -21,7 +21,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip,..\..\api"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\jpeg,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip,..\..\api"
 				PreprocessorDefinitions="_USRDLL;TECH_EXPORTS;STRICT;_WINDOWS;NDEBUG;WIN32;HAVE_UNITTESTPP"
 				StringPooling="TRUE"
 				RuntimeLibrary="3"
@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="advapi32.lib $(OutDir)\UnitTest++.lib $(OutDir)\zlibwapi.lib winmm.lib"
+				AdditionalDependencies="$(OutDir)\jpeg.lib $(OutDir)\zlibwapi.lib $(OutDir)\UnitTest++.lib winmm.lib"
 				OutputFile=".\..\..\Build.vc71\Opt/tech.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -90,7 +90,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip,..\..\api"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\jpeg,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip,..\..\api"
 				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,_USRDLL,TECH_EXPORTS,WIN32,_WINDOWS,STRICT,HAVE_UNITTESTPP"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -142,7 +142,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip,..\..\api"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\jpeg,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip,..\..\api"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;TECH_EXPORTS;WIN32;_WINDOWS;STRICT"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -161,7 +161,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="advapi32.lib $(OutDir)\zlibwapi.lib winmm.lib"
+				AdditionalDependencies="$(OutDir)\jpeg.lib $(OutDir)\zlibwapi.lib winmm.lib"
 				OutputFile=".\..\..\Build.vc71\Release/tech.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -210,7 +210,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip,..\..\api"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\jpeg,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip,..\..\api"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,_USRDLL,TECH_EXPORTS,WIN32,_WINDOWS,STRICT"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -262,7 +262,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip,..\..\api"
+				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\jpeg,..\..\3rdparty\zlib,..\..\3rdparty\zlib\contrib\minizip,..\..\api"
 				PreprocessorDefinitions="_DEBUG;_USRDLL;TECH_EXPORTS;WIN32;_WINDOWS;STRICT;HAVE_UNITTESTPP"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -281,7 +281,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="advapi32.lib $(OutDir)\UnitTest++.lib $(OutDir)\zlibwapi.lib winmm.lib"
+				AdditionalDependencies="$(OutDir)\jpeg.lib $(OutDir)\zlibwapi.lib $(OutDir)\UnitTest++.lib winmm.lib"
 				OutputFile=".\..\..\Build.vc71\Debug/tech.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -376,6 +376,9 @@
 			</File>
 			<File
 				RelativePath="..\..\tech\image.cpp">
+			</File>
+			<File
+				RelativePath="..\..\tech\jpg.cpp">
 			</File>
 			<File
 				RelativePath="..\..\tech\matrix3.cpp">
