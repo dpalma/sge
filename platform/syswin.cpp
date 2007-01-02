@@ -80,6 +80,10 @@ void SysQuit()
    {
       Verify(DestroyWindow(g_hWnd));
    }
+   else
+   {
+      PostQuitMessage(0);
+   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
