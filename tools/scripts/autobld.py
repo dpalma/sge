@@ -3,21 +3,23 @@
 
 from datetime import datetime
 from getopt import getopt
-import os, pysvn, stat, sys, tempfile, _winreg
+import os, pysvn, sys
 
 def build(dir):
 	vc8dir = dir + os.sep + 'vcproj' + os.sep + 'vc8'
-	os.system("pushd %s && VCBuild /useenv 3rdparty.sln $ALL && popd" % vc8dir)
+	olddir = os.getcwd()
+	os.chdir(vc8dir)
+	os.system('VCBuild /useenv 3rdparty.sln $ALL')
 	for i in ['Debug', 'Release', 'Opt']:
-		os.system("MSBuild %s /p:Configuration=%s" % (os.path.join(vc8dir, 'sge.sln'), i))
+		os.system("VCBuild /useenv sge.sln \"%s|Win32\"" % i)
 	for i in ['StaticDebug', 'StaticRelease']:
-		os.system("MSBuild %s /p:Configuration=%s" % (os.path.join(vc8dir, 'sgestatic.sln'), i))
+		os.system("VCBuild /useenv sgestatic.sln \"%s|Win32\"" % i)
+	os.chdir(olddir)
 	
 def usage():
 	print "autobld.py [--help] [--label (Build Label)] [--repository (SVN Repository URL)] [--nobuild] [--nosvnexport]"
 
 def main(argv):
-
 	try:
 		opts, args = getopt(argv, "hl:r:", ["help", "label=", "repository=", "nobuild", "nosvnexport"])
 	except GetoptError:
@@ -54,12 +56,12 @@ def main(argv):
 		
 	print "\nLatest revision of repository %s is %d\n" % (repos, info.rev.number)
 	
-	now = datetime.now()
-	bldlabel = "SGE-%04d%02d%02d-%d" % (now.year, now.month, now.day, info.rev.number)
-	
-	print "\nBuild label is %s\n" % bldlabel
+	if bldlabel is None:
+		now = datetime.now()
+		bldlabel = "SGE-%04d%02d%02d-%d" % (now.year, now.month, now.day, info.rev.number)
 	
 	if not os.path.exists(bldlabel) and not nosvnexport:
+		print "\nBuild label is %s\n" % bldlabel
 		client.export(repos + '/trunk/sge', bldlabel, revision=info.rev)
 #	else:
 #		print >> sys.stderr, "Error: a directory named %s already exists" % bldlabel
