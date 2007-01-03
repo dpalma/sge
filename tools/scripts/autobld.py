@@ -6,15 +6,12 @@ from getopt import getopt
 import os, pysvn, stat, sys, tempfile, _winreg
 
 def build(dir):
-	vc8dir = dir + os.sep + 'vcproj' + os.sep + 'vc8' + os.sep
-	for i in ['Debug', 'Release', 'Opt', 'StaticDebug', 'StaticRelease']:
-		os.system("MSBuild %s3rdparty.sln /p:Configuration=%s" % (vc8dir, i))
-		sln = None
-		if 'Static' in i:
-			sln='sgestatic'
-		else:
-			sln='sge'
-		os.system("MSBuild %s%s.sln /p:Configuration=%s" % (vc8dir, sln, i))
+	vc8dir = dir + os.sep + 'vcproj' + os.sep + 'vc8'
+	os.system("pushd %s && VCBuild /useenv 3rdparty.sln $ALL && popd" % vc8dir)
+	for i in ['Debug', 'Release', 'Opt']:
+		os.system("MSBuild %s /p:Configuration=%s" % (os.path.join(vc8dir, 'sge.sln'), i))
+	for i in ['StaticDebug', 'StaticRelease']:
+		os.system("MSBuild %s /p:Configuration=%s" % (os.path.join(vc8dir, 'sgestatic.sln'), i))
 	
 def usage():
 	print "autobld.py [--help] [--label (Build Label)] [--repository (SVN Repository URL)] [--nobuild] [--nosvnexport]"
