@@ -31,6 +31,10 @@ extern tResult RenderFontCreateFTGL(const tChar * pszFont, int fontPointSize, ui
 
 extern tResult Render2DCreateGL(IRender2D * * ppRender2D);
 
+extern tResult GlTextureResourceRegister(); // gltexture.cpp
+extern tResult GlTextureCreate(IImage * pImage, uint * pTexId);
+extern tResult GlTextureCreateMipMapped(IImage * pImage, uint * pTexId);
+
 ////////////////////////////////////////////////////////////////////////////////
 
 inline GLenum GetGlType(eVertexElementType type)
@@ -387,17 +391,22 @@ tResult cRendererGL::Init()
       return E_FAIL;
    }
 
-#ifdef HAVE_CG
    UseGlobal(ResourceManager);
    if (!!pResourceManager)
    {
+      if (GlTextureResourceRegister() != S_OK)
+      {
+         return E_FAIL;
+      }
+
+#ifdef HAVE_CG
       if (pResourceManager->RegisterFormat(kRT_CgProgram, _T("cg"), CgProgramLoad, NULL, CgProgramUnload, this) != S_OK
          || pResourceManager->RegisterFormat(kRT_CgEffect, _T("fx"), CgEffectLoad, NULL, CgEffectUnload, this) != S_OK)
       {
          return E_FAIL;
       }
-   }
 #endif
+   }
 
    return S_OK;
 }
@@ -552,8 +561,6 @@ tResult cRendererGL::EndScene()
 }
 
 ////////////////////////////////////////
-
-extern tResult GlTextureCreate(IImage * pImage, uint * pTexId);
 
 tResult cRendererGL::CreateTexture(IImage * pImage, bool bAutoGenMipMaps, void * * ppTexture)
 {
@@ -1054,22 +1061,6 @@ tResult RendererCreate()
    return RegisterGlobalObject(IID_IRenderer, p);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-
-extern tResult GlTextureResourceRegister(); // gltexture.cpp
-
-tResult RendererResourceRegister()
-{
-   UseGlobal(ResourceManager);
-   if (!!pResourceManager)
-   {
-      if (GlTextureResourceRegister() == S_OK)
-      {
-         return S_OK;
-      }
-   }
-   return E_FAIL;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 

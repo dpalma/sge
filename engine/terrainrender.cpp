@@ -875,8 +875,8 @@ tResult BuildSplatAlphaMap(uint splatTile,
          }
       }
 
-      GlTextureCreateMipMapped(pImage, pAlphaMapId);
-      return S_OK;
+      UseGlobal(Renderer);
+      return pRenderer->CreateTexture(pImage, true, (void**)pAlphaMapId);
    }
 
    return E_FAIL;

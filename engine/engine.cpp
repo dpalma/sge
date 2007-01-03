@@ -249,7 +249,6 @@ tResult EngineRegisterResourceFormats()
    {
       if (ModelMs3dResourceRegister() == S_OK
          && ModelSgemResourceRegister() == S_OK
-         && RendererResourceRegister() == S_OK
          && TiXmlRegisterResourceFormat() == S_OK
          && pResourceManager->RegisterFormat(kRT_Map, kMapExt, MapLoad, NULL, MapUnload) == S_OK
          && pResourceManager->RegisterFormat(kRT_MapProperties, kMapExt, MapPropertiesLoad, NULL, MapPropertiesUnload) == S_OK)
