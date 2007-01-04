@@ -84,12 +84,12 @@ static int SysHandleXError(Display * display, XErrorEvent * event)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI api /*=kOpenGL*/)
+tResult SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI api /*=kOpenGL*/)
 {
    if (api != kOpenGL)
    {
       WarnMsg("OpenGL is the only 3D API supported for Linux\n");
-      return NULL;
+      return E_INVALIDARG;
    }
 
    if (g_window == 0)
@@ -100,7 +100,7 @@ HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI 
          if (g_display == NULL)
          {
             ErrorMsg("Unable to open X display connection\n");
-            return NULL;
+            return E_FAIL;
          }
 
          Assert(g_nextErrorHandler == NULL);
@@ -110,7 +110,7 @@ HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI 
       if (!glXQueryExtension(g_display, NULL, NULL))
       {
          ErrorMsg("X display doesn't support glx\n");
-         return NULL;
+         return E_FAIL;
       }
 
       int attributes[] = { GLX_RGBA, GLX_DOUBLEBUFFER, None };
@@ -118,7 +118,7 @@ HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI 
       if (pVi == NULL)
       {
          ErrorMsg("Could not get glX visual\n");
-         return NULL;
+         return E_FAIL;
       }
 
       int screenWidth = DisplayWidth(g_display, pVi->screen);
@@ -166,15 +166,19 @@ HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI 
       if (g_context == NULL)
       {
          ErrorMsg("Could not create glX context\n");
-         return NULL;
+         return E_FAIL;
       }
 
       glXMakeCurrent(g_display, g_window, g_context);
 
       XMapRaised(g_display, g_window);
-   }
 
-   return reinterpret_cast<HANDLE>(g_window);
+      return S_OK;
+   }
+   else
+   {
+      return S_FALSE;
+   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

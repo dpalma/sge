@@ -426,7 +426,7 @@ tResult cMainInitTask::CreateMainWindow()
    bool bFullScreen = ConfigIsTrue(_T("full_screen")) && !IsDebuggerPresent();
 #endif
 
-   if (!SysCreateWindow(_T("Game"), width, height))
+   if (SysCreateWindow(_T("Game"), width, height) != S_OK)
    {
       return false;
    }

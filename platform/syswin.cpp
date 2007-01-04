@@ -939,7 +939,7 @@ static tResult InitDirect3D9(HWND hWnd, IDirect3D9 * * ppD3d, IDirect3DDevice9 *
 
 ///////////////////////////////////////////////////////////////////////////////
 
-HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI api)
+tResult SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI api)
 {
    AssertMsg(api == kOpenGL || api == kDirect3D9, "New 3D API added to enumerated type?");
 
@@ -953,7 +953,7 @@ HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI 
 	   if (GetClassInfo(hInst, SysWndClass, &wc))
       {
          ErrorMsg("Window not created but window class is registered\n");
-         return NULL;
+         return E_FAIL;
       }
 
       ZeroMemory(&wc, sizeof(wc));
@@ -967,7 +967,7 @@ HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI 
       if (!RegisterClass(&wc))
       {
          ErrorMsg("An error occurred registering the window class\n");
-         return NULL;
+         return E_FAIL;
       }
 
       // WS_CLIPCHILDREN and WS_CLIPSIBLINGS required by GL
@@ -1000,7 +1000,7 @@ HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI 
                ErrorMsg("An error occurred creating the GL context\n");
                DestroyWindow(g_hWnd);
                g_hWnd = NULL;
-               return NULL;
+               return E_FAIL;
             }
 
             if (!wglMakeCurrent(g_hDC, g_hGLRC))
@@ -1009,7 +1009,7 @@ HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI 
                ErrorMsg1("wglMakeCurrent failed with error 0x%04x\n", glError);
                DestroyWindow(g_hWnd);
                g_hWnd = NULL;
-               return NULL;
+               return E_FAIL;
             }
 
             if (glewInit() != GLEW_OK)
@@ -1017,7 +1017,7 @@ HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI 
                ErrorMsg("GLEW library failed to initialize\n");
                DestroyWindow(g_hWnd);
                g_hWnd = NULL;
-               return NULL;
+               return E_FAIL;
             }
 
             if (ConfigIsTrue(_T("disable_vsync")))
@@ -1060,10 +1060,22 @@ HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI 
          {
             ShowWindow(g_hWnd, SW_SHOW);
             UpdateWindow(g_hWnd);
+            return S_OK;
          }
       }
    }
+   else
+   {
+      return S_FALSE;
+   }
 
+   return E_FAIL;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+HWND SysGetWindowHandle()
+{
    return g_hWnd;
 }
 

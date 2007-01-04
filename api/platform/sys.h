@@ -17,6 +17,15 @@ class cFilePath;
 
 F_DECLARE_INTERFACE(IDirect3DDevice9);
 
+#ifdef _WIN32
+F_DECLARE_HANDLE(HWND);
+#else
+struct _XDisplay;
+typedef struct _XDisplay Display;
+typedef unsigned long XID;
+typedef XID Window;
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 // implemented in syswin.cpp, syslinux.cpp, or other OS-specific implementation file
 
@@ -43,7 +52,12 @@ PLATFORM_API void SysQuit();
 PLATFORM_API tResult SysGetClipboardString(cStr * pStr, ulong max = 8192); // 8K max for sanity
 PLATFORM_API tResult SysSetClipboardString(const tChar * psz);
 PLATFORM_API tResult SysGetFontPath(cFilePath * pFontPath);
-PLATFORM_API HANDLE SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI api = kOpenGL);
+PLATFORM_API tResult SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI api = kOpenGL);
+#ifdef _WIN32
+PLATFORM_API HWND SysGetWindowHandle();
+#else
+// TODO
+#endif
 PLATFORM_API tResult SysGetDirect3DDevice9(IDirect3DDevice9 * * ppDevice);
 PLATFORM_API tResult SysGetWindowSize(int * pWidth, int * pHeight);
 PLATFORM_API void SysSwapBuffers();
