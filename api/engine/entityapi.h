@@ -5,6 +5,9 @@
 #define INCLUDED_ENTITYAPI_H
 
 #include "enginedll.h"
+
+#include "engine/modelapi.h"
+
 #include "tech/comtools.h"
 #include "tech/matrix4.h"
 #include "tech/techstring.h"
@@ -30,8 +33,6 @@ F_DECLARE_INTERFACE_GUID(IEntityManagerListener, "1EC6DB1A-C833-4b68-8705-D1A9FB
 class cMultiVar;
 class cRay;
 class TiXmlElement;
-
-enum eModelAnimationType;
 
 F_DECLARE_INTERFACE(IDictionary);
 

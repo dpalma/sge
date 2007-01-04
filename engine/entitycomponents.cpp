@@ -29,7 +29,7 @@
 
 extern tResult ModelEntityCreate(tEntityId id, const tChar * pszModel, const tVec3 & position, IEntity * * ppEntity);
 
-extern "C" __declspec(dllimport) short __stdcall GetAsyncKeyState(int);
+extern "C" DECLSPEC_DLLIMPORT short STDCALL GetAsyncKeyState(int);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -238,7 +238,7 @@ void cEntityModelRenderer::Update(double elapsedTime)
    IModel * pModel = NULL;
    if (pResourceManager->Load(m_model.c_str(), kRT_Model, NULL, (void**)&pModel) != S_OK)
    {
-      m_pModel = NULL;
+      m_pModel = static_cast<IModel*>(NULL);
       return;
    }
 

@@ -84,10 +84,13 @@ tResult cReadWriteOps< std::vector<T> >::Write(IWriter * pWriter, const std::vec
    tResult result = pWriter->Write(static_cast<uint>(values.size()));
    if (result == S_OK)
    {
-      std::vector<T>::const_iterator iter = values.begin(), end = values.end();
-      for (; (iter != end) && (result == S_OK); ++iter)
+      for (uint i = 0; i < values.size(); ++i)
       {
-         result = pWriter->Write(*iter);
+         result = pWriter->Write(values[i]);
+	 if (result != S_OK)
+	 {
+	    break;
+	 }
       }
    }
    return result;
@@ -102,7 +105,7 @@ tResult cReadWriteOps< std::vector<T> >::Write(IWriter * pWriter, const std::vec
 class TECH_API cAutoBuffer
 {
    cAutoBuffer(const cAutoBuffer &);
-   void operator =(const cAutoBuffer &);
+   const cAutoBuffer & operator =(const cAutoBuffer &);
 
 public:
    cAutoBuffer();
