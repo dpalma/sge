@@ -183,6 +183,10 @@ void cLog::Print(const tChar * pszFile, int line, eLogSeverity severity, const t
    OutputDebugStringA(m_szBuffer);
 #endif
 #endif
+
+#ifdef __GNUC__
+   printf(m_szBuffer);
+#endif
 }
 
 ///////////////////////////////////////

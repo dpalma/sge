@@ -322,7 +322,10 @@ void HASHTABLE_TEMPLATE_CLASS::reserve(size_type capacity)
 
    Assert(m_size == oldSize);
 
-   m_allocator.deallocate(oldElts, oldMaxSize);
+   if (oldElts != NULL)
+   {
+      m_allocator.deallocate(oldElts, oldMaxSize);
+   }
 }
 
 ////////////////////////////////////////

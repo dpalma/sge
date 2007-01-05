@@ -633,7 +633,7 @@ int STDCALL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#if defined(__CYGWIN__)
+#if defined(__GNUC__)
 int main(int argc, char * argv[])
 {
    if (!MainInit(argc, argv))
