@@ -4,6 +4,9 @@
 #include "stdhdr.h"
 
 #ifndef _WIN32
+#include "tech/combase.h"
+F_DECLARE_HANDLE(HKEY);
+F_DECLARE_INTERFACE(IDictionaryStore);
 tResult DictionaryStoreCreate(HKEY, const tChar *, bool, IDictionaryStore * *)
 {
    return E_NOTIMPL;

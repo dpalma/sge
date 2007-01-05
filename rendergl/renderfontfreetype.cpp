@@ -119,7 +119,8 @@ tResult cRenderFontFreetype::Create(const tChar * pszFont, int fontPointSize, IR
       DeleteDC(hMemDC);
    }
 #else
-#error ("TODO: platform-specific part of font creation")
+   //#error ("TODO: platform-specific part of font creation")
+   return E_NOTIMPL;
 #endif
 
    int texSize = Min(512, maxTexSize);

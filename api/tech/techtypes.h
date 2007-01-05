@@ -184,6 +184,7 @@ typedef void * HANDLE;
 #ifdef __GNUC__
 #define _stricmp strcasecmp
 #define _snprintf snprintf
+#define _snwprintf swprintf
 #ifdef _UNICODE
 #define _fgettc      fgetwc
 #define _fgetts      fgetws

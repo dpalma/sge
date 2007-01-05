@@ -18,10 +18,12 @@ sourceFiles = Split("""
    uncompr.c
    zutil.c
    contrib/minizip/ioapi.c
-   contrib/minizip/iowin32.c
    contrib/minizip/unzip.c
    contrib/minizip/zip.c
 """)
+
+if env['PLATFORM'] == 'win32':
+   sourceFiles += ['contrib/minizip/iowin32.c']
 
 includePaths = Split("""
    #3rdparty/zlib

@@ -6,6 +6,8 @@
 
 #include "tech/imageapi.h"
 
+#include <cstring> // for memcpy in gcc
+
 #ifdef _MSC_VER
 #pragma once
 #endif

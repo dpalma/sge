@@ -11,6 +11,10 @@
 
 #ifdef _WIN32
 #include <ws2tcpip.h>
+#else
+#include <cstring>
+#include <malloc.h>
+#include <netdb.h>
 #endif
 
 #include "tech/dbgalloc.h" // must be last header

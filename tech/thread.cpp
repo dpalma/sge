@@ -20,6 +20,7 @@
 #else
 #include <sys/types.h>
 #include <sched.h>
+#include <signal.h>
 #include <unistd.h>
 #endif
 
@@ -237,7 +238,7 @@ void * cThread::ThreadEntry(void * param)
 
    // If pthread_join is never called for a joinable thread,
    // pthread_detach should be called
-   if (!m_bJoined)
+   if (!pThread->m_bJoined)
    {
       pthread_detach(pThread->m_thread);
    }

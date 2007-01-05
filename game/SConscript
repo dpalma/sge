@@ -36,6 +36,8 @@ linkLibs = Split("""
 
 if env['PLATFORM'] == 'win32':
    linkLibs += ['ws2_32.lib']
+else:
+   linkLibs += ['pthread']
 
 local = env.Copy()
 local.UseFTGL()

@@ -21,6 +21,7 @@ sourceFiles = Split("""
    hash.cpp
    hashtbltest.cpp
    image.cpp
+   jpg.cpp
    matrix3.cpp
    matrix4.cpp
    md5.c

@@ -16,6 +16,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <unistd.h>
 #endif
 
 #include <ctime>
@@ -227,7 +228,7 @@ tResult cNetSocket::ReceiveFrom(void * pBuffer, int nBufferBytes, int * pnBytesR
    }
 
    struct sockaddr addr = {0};
-   int addrLength = sizeof(addr);
+   socklen_t addrLength = sizeof(addr);
 
    int result = recvfrom(m_socket, static_cast<char *>(pBuffer), nBufferBytes, 0, &addr, &addrLength);
 
@@ -258,7 +259,11 @@ tResult cNetSocket::Close()
       return E_FAIL;
    }
 
+#ifdef _WIN32
    if (closesocket(m_socket) == SOCKET_ERROR)
+#else
+   if (close(m_socket) == SOCKET_ERROR)
+#endif
    {
       return E_FAIL;
    }

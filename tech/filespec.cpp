@@ -61,7 +61,11 @@ cFileSpec::cFileSpec(const wchar_t * pszFile)
 #ifdef _UNICODE
    _tcsncpy(m_szFile, pszFile, _countof(m_szFile));
 #else
+#ifdef _WIN32
    WideCharToMultiByte(CP_ACP, 0, pszFile, -1, m_szFile, _countof(m_szFile), NULL, NULL);
+#else
+   wcstombs(m_szFile, pszFile, _countof(m_szFile));
+#endif
 #endif
    m_szFile[_countof(m_szFile) - 1] = 0;
 }

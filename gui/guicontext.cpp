@@ -743,7 +743,7 @@ tResult cGUIContext::GetDefaultFont(IRenderFont * * ppFont)
 #ifdef _WIN32
          fontName = _T("MS Sans Serif");
 #else
-#error ("Need a sensible default font for platform")
+	 fontName = _T("sans-serif");
 #endif
       }
 
