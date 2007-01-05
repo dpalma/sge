@@ -14,6 +14,10 @@
 typedef uint SOCKET;
 #endif
 
+#ifdef _WIN32
+typedef int socklen_t;
+#endif
+
 #ifndef INVALID_SOCKET
 #define INVALID_SOCKET (SOCKET)(~0)
 #endif

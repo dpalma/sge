@@ -55,6 +55,11 @@ class SGEEnvironment(Environment):
          buildDir += 'ansi'
       return buildDir
 
+   def UseJpeg(self):
+      self.m_libs += ['jpeg']
+      self.m_libPaths += [MakeLibPath('jpeg')]
+      self.m_incPaths += ['#3rdparty/jpeg']
+      
    def UseTinyxml(self):
       self.m_libs += ['tinyxml']
       self.m_libPaths += [MakeLibPath('tinyxml')]
