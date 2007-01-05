@@ -83,57 +83,38 @@ public:
 ///////////////////////////////////////
 
 template <>
-std::string cToken<std::string, tChar>::Token(const tChar * pszToken)
+class TECH_API cToken<std::string, tChar>
 {
-#ifdef _UNICODE
-   size_t s = wcstombs(NULL, pszToken, 0);
-   if (s == 0)
-   {
-      return std::string();
-   }
-   char * pszTemp = reinterpret_cast<char*>(alloca(s * sizeof(char)));
-   wcstombs(pszTemp, pszToken, s);
-   return std::string(pszTemp);
-#else
-   return std::string(pszToken);
-#endif
-}
+public:
+   static std::string Token(const tChar * pszToken);
+};
 
 ///////////////////////////////////////
 
 template <>
-double cToken<double, tChar>::Token(const tChar * pszToken)
+class TECH_API cToken<double, tChar>
 {
-#ifdef _UNICODE
-   return _wtof(pszToken);
-#else
-   return atof(pszToken);
-#endif
-}
+public:
+   static double Token(const tChar * pszToken);
+};
 
 ///////////////////////////////////////
 
 template <>
-float cToken<float, tChar>::Token(const tChar * pszToken)
+class TECH_API cToken<float, tChar>
 {
-#ifdef _UNICODE
-   return static_cast<float>(_wtof(pszToken));
-#else
-   return static_cast<float>(atof(pszToken));
-#endif
-}
+public:
+   static float Token(const tChar * pszToken);
+};
 
 ///////////////////////////////////////
 
 template <>
-int cToken<int, tChar>::Token(const tChar * pszToken)
+class TECH_API cToken<int, tChar>
 {
-#ifdef __GNUC__
-   return strtol(pszToken, NULL, 10);
-#else
-   return _ttoi(pszToken);
-#endif
-}
+public:
+   static int Token(const tChar * pszToken);
+};
 
 
 ///////////////////////////////////////////////////////////////////////////////

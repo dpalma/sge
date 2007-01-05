@@ -393,6 +393,61 @@ new_segment:
 
 ///////////////////////////////////////////////////////////////////////////////
 
+std::string cToken<std::string, tChar>::Token(const tChar * pszToken)
+{
+#ifdef _UNICODE
+   size_t s = wcstombs(NULL, pszToken, 0);
+   if (s == 0)
+   {
+      return std::string();
+   }
+   char * pszTemp = reinterpret_cast<char*>(alloca(s * sizeof(char)));
+   wcstombs(pszTemp, pszToken, s);
+   return std::string(pszTemp);
+#else
+   return std::string(pszToken);
+#endif
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+double cToken<double, tChar>::Token(const tChar * pszToken)
+{
+#ifdef _UNICODE
+   return _wtof(pszToken);
+#else
+   return atof(pszToken);
+#endif
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+float cToken<float, tChar>::Token(const tChar * pszToken)
+{
+#ifdef _UNICODE
+   return _wtof(pszToken);
+#else
+   return atof(pszToken);
+#endif
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+int cToken<int, tChar>::Token(const tChar * pszToken)
+{
+#ifdef __GNUC__
+   return strtol(pszToken, NULL, 10);
+#else
+   return _ttoi(pszToken);
+#endif
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 const cStr & GUIDToString(REFGUID guid, cStr * pStr)
 {
    if (pStr != NULL)
@@ -405,6 +460,7 @@ const cStr & GUIDToString(REFGUID guid, cStr * pStr)
    static const cStr empty;
    return empty;
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
