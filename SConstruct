@@ -77,11 +77,11 @@ class SGEEnvironment(Environment):
       elif platform in ['cygwin', 'posix']:
          self.Append(CPPPATH = ['/usr/include', '/usr/X11R6/include'])
          self.Append(LIBPATH = ['/usr/lib', '/usr/X11R6/lib'])
-         self.Append(LIBS    = ['GL', 'GLU', 'Xext', 'X11', 'm'])
-      self.Append(LIBS = ['glew'])
-      self.Append(LIBPATH = [MakeLibPath('glew')])
-      self.Append(CPPDEFINES = ['GLEW_STATIC'])
-      self.Append(CPPPATH = ['#3rdparty/glew/include'])
+         self.Append(LIBS    = ['Xi', 'GLU', 'GL', 'Xext', 'X11'])
+      self.m_libs += ['glew']
+      self.m_libPaths += [MakeLibPath('glew')]
+      self.m_incPaths += ['#3rdparty/glew/include']
+      self.m_defines += ['GLEW_STATIC']
          
    def UseZLib(self):
       self.m_libs += ['zlibwapi']
