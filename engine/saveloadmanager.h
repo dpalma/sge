@@ -43,6 +43,30 @@ private:
 
 
 ////////////////////////////////////////////////////////////////////////////////
+
+struct sFileHeader
+{
+   GUID id;
+   int version;
+};
+
+struct sFileFooter
+{
+   ulong offset;
+   ulong length;
+   byte digest[16];
+};
+
+struct sFileEntry
+{
+   GUID id;
+   int version;
+   ulong offset;
+   ulong length;
+};
+
+
+////////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cSaveLoadManager
 //
@@ -71,7 +95,6 @@ public:
    virtual void Reset();
 
 private:
-   struct sFileEntry;
    tResult LoadEntryTable(IReader * pReader, std::vector<sFileEntry> * pEntries);
 
    struct sLessGuid
@@ -87,31 +110,6 @@ private:
 
    typedef cDigraph<const GUID *, int, sLessGuid> tConstraintGraph;
    tConstraintGraph m_saveOrderConstraintGraph;
-
-   struct sFileHeader
-   {
-      GUID id;
-      int version;
-   };
-
-   struct sFileFooter
-   {
-      ulong offset;
-      ulong length;
-      byte digest[16];
-   };
-
-   struct sFileEntry
-   {
-      GUID id;
-      int version;
-      ulong offset;
-      ulong length;
-   };
-
-   friend class cReadWriteOps<sFileHeader>;
-   friend class cReadWriteOps<sFileFooter>;
-   friend class cReadWriteOps<sFileEntry>;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

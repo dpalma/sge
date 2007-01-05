@@ -67,7 +67,7 @@ tResult cNullSoundManager::Play(tSoundId soundId)
 
 ///////////////////////////////////////
 
-tResult NullSoundManagerCreate()
+tResult SoundManagerCreate()
 {
    cAutoIPtr<ISoundManager> p(static_cast<ISoundManager*>(new cNullSoundManager));
    if (!p)

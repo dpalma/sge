@@ -4,8 +4,8 @@
 #include "stdhdr.h"
 
 #include "saveloadmanager.h"
-#include "tech/readwriteutils.h"
 
+#include "tech/readwriteutils.h"
 #include "tech/techhash.h"
 #include "tech/toposort.h"
 
@@ -145,15 +145,15 @@ tResult cVersionedParticipant::GetParticipant(int version, ISaveLoadParticipant 
 ////////////////////////////////////////////////////////////////////////////////
 
 template <>
-class cReadWriteOps<cSaveLoadManager::sFileHeader>
+class cReadWriteOps<sFileHeader>
 {
 public:
-   static tResult Read(IReader * pReader, cSaveLoadManager::sFileHeader *);
-   static tResult Write(IWriter * pWriter, const cSaveLoadManager::sFileHeader &);
+   static tResult Read(IReader * pReader, sFileHeader *);
+   static tResult Write(IWriter * pWriter, const sFileHeader &);
 };
 
-tResult cReadWriteOps<cSaveLoadManager::sFileHeader>::Read(IReader * pReader,
-                                                           cSaveLoadManager::sFileHeader * pFileHeader)
+tResult cReadWriteOps<sFileHeader>::Read(IReader * pReader,
+                                         sFileHeader * pFileHeader)
 {
    if (pReader == NULL || pFileHeader == NULL)
    {
@@ -169,8 +169,8 @@ tResult cReadWriteOps<cSaveLoadManager::sFileHeader>::Read(IReader * pReader,
    return E_FAIL;
 }
 
-tResult cReadWriteOps<cSaveLoadManager::sFileHeader>::Write(IWriter * pWriter,
-                                                            const cSaveLoadManager::sFileHeader & fileHeader)
+tResult cReadWriteOps<sFileHeader>::Write(IWriter * pWriter,
+                                          const sFileHeader & fileHeader)
 {
    if (pWriter == NULL)
    {
@@ -190,15 +190,15 @@ tResult cReadWriteOps<cSaveLoadManager::sFileHeader>::Write(IWriter * pWriter,
 ////////////////////////////////////////////////////////////////////////////////
 
 template <>
-class cReadWriteOps<cSaveLoadManager::sFileFooter>
+class cReadWriteOps<sFileFooter>
 {
 public:
-   static tResult Read(IReader * pReader, cSaveLoadManager::sFileFooter *);
-   static tResult Write(IWriter * pWriter, const cSaveLoadManager::sFileFooter &);
+   static tResult Read(IReader * pReader, sFileFooter *);
+   static tResult Write(IWriter * pWriter, const sFileFooter &);
 };
 
-tResult cReadWriteOps<cSaveLoadManager::sFileFooter>::Read(IReader * pReader,
-                                                           cSaveLoadManager::sFileFooter * pFileFooter)
+tResult cReadWriteOps<sFileFooter>::Read(IReader * pReader,
+                                         sFileFooter * pFileFooter)
 {
    if (pReader == NULL || pFileFooter == NULL)
    {
@@ -215,8 +215,8 @@ tResult cReadWriteOps<cSaveLoadManager::sFileFooter>::Read(IReader * pReader,
    return E_FAIL;
 }
 
-tResult cReadWriteOps<cSaveLoadManager::sFileFooter>::Write(IWriter * pWriter,
-                                                            const cSaveLoadManager::sFileFooter & fileFooter)
+tResult cReadWriteOps<sFileFooter>::Write(IWriter * pWriter,
+                                          const sFileFooter & fileFooter)
 {
    if (pWriter == NULL)
    {
@@ -238,15 +238,15 @@ tResult cReadWriteOps<cSaveLoadManager::sFileFooter>::Write(IWriter * pWriter,
 ////////////////////////////////////////////////////////////////////////////////
 
 template <>
-class cReadWriteOps<cSaveLoadManager::sFileEntry>
+class cReadWriteOps<sFileEntry>
 {
 public:
-   static tResult Read(IReader * pReader, cSaveLoadManager::sFileEntry *);
-   static tResult Write(IWriter * pWriter, const cSaveLoadManager::sFileEntry &);
+   static tResult Read(IReader * pReader, sFileEntry *);
+   static tResult Write(IWriter * pWriter, const sFileEntry &);
 };
 
-tResult cReadWriteOps<cSaveLoadManager::sFileEntry>::Read(IReader * pReader,
-                                                          cSaveLoadManager::sFileEntry * pFileEntry)
+tResult cReadWriteOps<sFileEntry>::Read(IReader * pReader,
+                                        sFileEntry * pFileEntry)
 {
    if (pReader == NULL || pFileEntry == NULL)
    {
@@ -264,8 +264,8 @@ tResult cReadWriteOps<cSaveLoadManager::sFileEntry>::Read(IReader * pReader,
    return E_FAIL;
 }
 
-tResult cReadWriteOps<cSaveLoadManager::sFileEntry>::Write(IWriter * pWriter,
-                                                           const cSaveLoadManager::sFileEntry & fileEntry)
+tResult cReadWriteOps<sFileEntry>::Write(IWriter * pWriter,
+                                         const sFileEntry & fileEntry)
 {
    if (pWriter == NULL)
    {

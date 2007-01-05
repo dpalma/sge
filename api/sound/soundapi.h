@@ -7,7 +7,9 @@
 #include "sounddll.h"
 #include "tech/comtools.h"
 
+#ifdef _MSC_VER
 #pragma once
+#endif
 
 F_DECLARE_INTERFACE(ISoundManager);
 

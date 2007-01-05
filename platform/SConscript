@@ -10,7 +10,7 @@ sourceFiles = Split("""
 
 if env['PLATFORM'] == 'win32':
    sourceFiles += ['syswin.cpp']
-elif env['PLATFORM'] == 'cygwin':
+elif env['PLATFORM'] in ['cygwin', 'posix']:
    sourceFiles += ['syslinux.cpp']
 
 libPaths = Split("""

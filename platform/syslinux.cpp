@@ -3,14 +3,15 @@
 
 #include "stdhdr.h"
 
-#include "sys.h"
+#include "platform/sys.h"
+#include "platform/keys.h"
 
-#include "globalobj.h"
-#include "keys.h"
-#include "matrix4.h"
-#include "schedulerapi.h"
-#include "techtime.h"
-#include "threadcallapi.h"
+#include "tech/filepath.h"
+#include "tech/globalobj.h"
+#include "tech/matrix4.h"
+#include "tech/schedulerapi.h"
+#include "tech/techtime.h"
+#include "tech/threadcallapi.h"
 
 #include <locale>
 #include <X11/Xlib.h>
@@ -38,6 +39,13 @@ extern tSysFrameFn      g_pfnFrameCallback;
 extern tSysResizeFn     g_pfnResizeCallback;
 extern uint_ptr         g_keyCallbackUserData;
 extern uint_ptr         g_mouseCallbackUserData;
+
+tResult GetDisplay(Display * * ppDisplay)
+{
+  if (ppDisplay == NULL) return E_POINTER;
+  *ppDisplay = g_display;
+  return S_OK;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -71,6 +79,18 @@ tResult SysGetClipboardString(cStr * pStr, ulong max)
 tResult SysSetClipboardString(const tChar * psz)
 {
    return E_NOTIMPL;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+tResult SysGetFontPath(cFilePath * pFontPath)
+{
+   if (pFontPath == NULL)
+   {
+      return E_POINTER;
+   }
+   *pFontPath = cFilePath("/usr/share/fonts");
+   return S_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -196,8 +216,11 @@ tResult SysGetWindowSize(int * pWidth, int * pHeight)
    {
       return E_POINTER;
    }
-#error ("TODO: Need to implement SysGetWindowSize")
-   return E_NOTIMPL;
+   XWindowAttributes attr;
+   XGetWindowAttributes(g_display, g_window, &attr);
+   *pWidth = attr.width;
+   *pHeight = attr.height;
+   return S_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -332,7 +355,7 @@ static bool SysMapXKeysym(KeySym keysym, long * pKeyCode)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int SysEventLoop(tSysFrameFn pfnFrameHandler)
+int SysEventLoop(tSysFrameFn pfnFrameHandler, uint flags)
 {
    if (!g_display || !g_window)
    {

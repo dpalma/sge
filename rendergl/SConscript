@@ -15,7 +15,7 @@ sourceFiles = Split("""
 
 if env['PLATFORM'] == 'win32':
    sourceFiles += ['renderfontw32.cpp']
-elif env['PLATFORM'] == 'cygwin':
+elif env['PLATFORM'] in ['cygwin', 'posix']:
    sourceFiles += ['renderfontx11.cpp']
 
 libPaths = Split("""

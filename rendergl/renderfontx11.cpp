@@ -5,8 +5,8 @@
 
 #include "renderfontx11.h"
 
-#include "comtools.h"
-#include "techmath.h"
+#include "tech/comtools.h"
+#include "tech/techmath.h"
 
 #include <GL/glew.h>
 #include <GL/glxew.h>
@@ -88,7 +88,7 @@ tResult cGLXRasterFont::RenderText(const tChar * pszText, int textLength,
       //*pHeight = ascent + descent;
 
       pRect->right = pRect->left + XTextWidth(m_pFontInfo, pszText, textLength);
-      pRect->bottom = Round(pRect->top + GetHeight());
+      pRect->bottom = FloatToInt(pRect->top + GetHeight());
    }
    else
    {
@@ -150,7 +150,7 @@ bool cGLXRasterFont::Create(const tChar * pszFontName, int pointSize, bool bBold
 
 ///////////////////////////////////////////////////////////////////////////////
 
-tResult RenderFontCreateGL(const tChar * pszFont, int pointSize, uint flags, IRenderFont * * ppFont)
+tResult RenderFontCreateGL(const tChar * pszFontName, int pointSize, uint flags, IRenderFont * * ppFont)
 {
    if (pszFontName == NULL || ppFont == NULL)
    {

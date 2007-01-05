@@ -4,7 +4,7 @@
 #ifndef INCLUDED_RENDERFONTX11_H
 #define INCLUDED_RENDERFONTX11_H
 
-#include "renderfontapi.h"
+#include "render/renderfontapi.h"
 
 #include <X11/Xlib.h>
 

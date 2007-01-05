@@ -77,7 +77,7 @@ class SGEEnvironment(Environment):
       elif platform in ['cygwin', 'posix']:
          self.Append(CPPPATH = ['/usr/include', '/usr/X11R6/include'])
          self.Append(LIBPATH = ['/usr/lib', '/usr/X11R6/lib'])
-         self.Append(LIBS    = ['GL', 'GLU', 'Xext', 'Xt', 'SM', 'ICE', 'X11', 'm'])
+         self.Append(LIBS    = ['GL', 'GLU', 'Xext', 'X11', 'm'])
       self.Append(LIBS = ['glew'])
       self.Append(LIBPATH = [MakeLibPath('glew')])
       self.Append(CPPDEFINES = ['GLEW_STATIC'])

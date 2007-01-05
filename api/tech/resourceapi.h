@@ -75,13 +75,13 @@ interface IResourceManager : IUnknown
    inline tResult RegisterFormat(tResourceType type, tResourceType typeDepend, const tChar * pszExtension,
       tResourceLoadNoParam pfnLoad, tResourcePostload pfnPostload, tResourceUnload pfnUnload)
    {
-      return RegisterFormat(type, typeDepend, pszExtension, ThunkResourceLoadNoParam, pfnPostload, pfnUnload, reinterpret_cast<void*>(pfnLoad));
+      return RegisterFormat(type, typeDepend, pszExtension, ThunkResourceLoadNoParam, pfnPostload, pfnUnload, (void*)pfnLoad);
    }
 
    inline tResult RegisterFormat(tResourceType type, const tChar * pszExtension,
       tResourceLoadNoParam pfnLoad, tResourcePostload pfnPostload, tResourceUnload pfnUnload)
    {
-      return RegisterFormat(type, NULL, pszExtension, ThunkResourceLoadNoParam, pfnPostload, pfnUnload, reinterpret_cast<void*>(pfnLoad));
+      return RegisterFormat(type, NULL, pszExtension, ThunkResourceLoadNoParam, pfnPostload, pfnUnload, (void*)pfnLoad);
    }
 
    virtual tResult ListResources(const tChar * pszMatch, std::vector<cStr> * pNames) const = 0;
