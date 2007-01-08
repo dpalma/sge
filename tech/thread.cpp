@@ -18,6 +18,8 @@
 #include <windows.h>
 #include <process.h>
 #else
+#include <sys/timeb.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #include <sched.h>
 #include <signal.h>
@@ -256,6 +258,8 @@ void * cThread::ThreadEntry(void * param)
 cThreadEvent::cThreadEvent()
 #ifdef _WIN32
  : m_hEvent(NULL)
+#else
+ : m_bInitialized(false)
 #endif
 {
 }
@@ -270,6 +274,9 @@ cThreadEvent::~cThreadEvent()
       CloseHandle(m_hEvent);
       m_hEvent = NULL;
    }
+#else
+   pthread_cond_destroy(&m_cond);
+   pthread_mutex_destroy(&m_mutex);
 #endif
 }
 
@@ -287,11 +294,43 @@ bool cThreadEvent::Create()
 
    return (m_hEvent != NULL);
 #else
-#pragma message("Need platform-specific event create function")
+   if (m_bInitialized)
+   {
+      return false;
+   }
+   pthread_mutex_init(&m_mutex, NULL);
+   pthread_cond_init(&m_cond, NULL);
+   m_bInitialized = true;
+   return true;
 #endif
 }
 
 ////////////////////////////////////////
+
+#ifdef __GNUC__
+static struct timespec * MillisecsFromNow(uint millisecs, struct timespec * ts)
+{
+   struct timeb curTime;
+   int64 nanosecs, secs;
+   const int64 kNanosecsPerMillisec = 1000000;
+   const int64 kNanosecsPerSec = 1000000000;
+   ftime(&curTime);
+   nanosecs = ((int64)(millisecs + curTime.millitm)) * kNanosecsPerMillisec;
+   if (nanosecs >= kNanosecsPerSec)
+   {
+      secs = curTime.time + 1;
+      nanosecs %= kNanosecsPerSec;
+   }
+   else
+   {
+      secs = curTime.time;
+   }
+
+   ts->tv_nsec = nanosecs;
+   ts->tv_sec = secs;
+   return ts;
+}
+#endif
 
 bool cThreadEvent::Wait(uint timeout)
 {
@@ -304,7 +343,15 @@ bool cThreadEvent::Wait(uint timeout)
       }
    }
 #else
-#pragma message("Need platform-specific event wait function")
+   if (m_bInitialized)
+   {
+      struct timespec timeoutSpec;
+      pthread_mutex_lock(&m_mutex);
+      if (pthread_cond_timedwait(&m_cond, &m_mutex, MillisecsFromNow(timeout, &timeoutSpec)) == 0)
+      {
+         return true;
+      }
+   }
 #endif
    return false;
 }
@@ -319,7 +366,10 @@ bool cThreadEvent::Set()
       return true;
    }
 #else
-#pragma message("Need platform-specific event reset function")
+   if (m_bInitialized)
+   {
+      return true;
+   }
 #endif
    return false;
 }
@@ -334,7 +384,10 @@ bool cThreadEvent::Reset()
       return true;
    }
 #else
-#pragma message("Need platform-specific event reset function")
+   if (m_bInitialized)
+   {
+      return true;
+   }
 #endif
    return false;
 }
@@ -349,7 +402,11 @@ bool cThreadEvent::Pulse()
       return true;
    }
 #else
-#pragma message("Need platform-specific event pulse function")
+   if (m_bInitialized)
+   {
+      pthread_cond_signal(&m_cond);
+      return true;
+   }
 #endif
    return false;
 }
@@ -453,8 +510,8 @@ bool cThreadMutex::Release()
 ////////////////////////////////////////
 
 cMutexLock::cMutexLock(cThreadMutex * pMutex)
- : m_pMutex(pMutex),
-   m_bLocked(false)
+ : m_pMutex(pMutex)
+ , m_bLocked(false)
 {
    Assert(pMutex != NULL);
 }

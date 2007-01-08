@@ -357,12 +357,6 @@ static bool SysMapXKeysym(KeySym keysym, long * pKeyCode)
 
 int SysEventLoop(tSysFrameFn pfnFrameHandler, uint flags)
 {
-   if (!g_display || !g_window)
-   {
-      // Window should have been created during MainInit().
-      return EXIT_FAILURE;
-   }
-
    UseGlobal(Scheduler);
    UseGlobal(ThreadCaller);
 
@@ -373,8 +367,11 @@ int SysEventLoop(tSysFrameFn pfnFrameHandler, uint flags)
 
    while (!g_bExiting)
    {
-      XFlush(g_display);
-      if (XPending(g_display))
+      if (g_display)
+      {
+         XFlush(g_display);
+      }
+      if (g_display && XPending(g_display))
       {
          XEvent event;
          XNextEvent(g_display, &event);

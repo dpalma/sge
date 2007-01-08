@@ -105,6 +105,9 @@ private:
 #ifdef _WIN32
    HANDLE m_hEvent;
 #else
+   pthread_cond_t m_cond;
+   pthread_mutex_t m_mutex;
+   bool m_bInitialized;
 #endif
 };
 

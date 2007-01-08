@@ -163,8 +163,8 @@ class SGEEnvironment(Environment):
             self.Append(CCFLAGS=['/RTC1'])
          else:
             self.Append(CCFLAGS=['/GZ'])
-      elif platform == 'cygwin':
-         self.Append(CCFLAGS=['-g'])
+      elif platform in ['cygwin', 'posix']:
+         self.Append(CCFLAGS=['-ggdb'])
          
    def SetRelease(self):
       self.debug = 0
@@ -173,7 +173,7 @@ class SGEEnvironment(Environment):
          self.Append(CCFLAGS=['/O2'],
                      CPPDEFINES=['NDEBUG'],
                      LINKFLAGS=['/OPT:REF'])
-      elif platform == 'cygwin':
+      elif platform in ['cygwin', 'posix']:
          self.Append(CCFLAGS=['-o3'])
          
    def __PreBuild(self, *args, **kw):
