@@ -75,7 +75,7 @@ tResult cThreadCaller::Term()
          for (; iter != end; ++iter)
          {
             sThreadInfo * pThreadInfo = iter->second;
-            pThreadInfo->callEvent.Pulse();
+            pThreadInfo->callEvent.Signal();
             delete pThreadInfo;
          }
 
@@ -145,7 +145,7 @@ tResult cThreadCaller::ThreadTerm()
          if (f != m_threadInfoMap.end())
          {
             sThreadInfo * pThreadInfo = f->second;
-            pThreadInfo->callEvent.Pulse();
+            pThreadInfo->callEvent.Signal();
             pThreadInfo->initCount -= 1;
             if (pThreadInfo->initCount == 0)
             {
@@ -216,7 +216,7 @@ tResult cThreadCaller::ReceiveCalls(uint * pnCalls)
 
       m_calls.erase(threadId);
 
-      pThreadInfo->callEvent.Pulse();
+      pThreadInfo->callEvent.Signal();
 
       return (nCalls > 0) ? S_OK : S_FALSE;
    }

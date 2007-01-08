@@ -28,6 +28,19 @@
 
 #include "tech/dbgalloc.h" // must be last header
 
+
+////////////////////////////////////////////////////////////////////////////////
+
+LOG_DEFINE_CHANNEL(Thread);
+#define LocalMsg(msg)                  DebugMsgEx(Thread,(msg))
+#define LocalMsg1(msg,a1)              DebugMsgEx1(Thread,(msg),(a1))
+#define LocalMsg2(msg,a1,a2)           DebugMsgEx2(Thread,(msg),(a1),(a2))
+
+#define LocalMsgIf(cond,msg)           DebugMsgIfEx(Thread,(cond),(msg))
+#define LocalMsgIf1(cond,msg,a1)       DebugMsgIfEx1(Thread,(cond),(msg),(a1))
+#define LocalMsgIf2(cond,msg,a1,a2)    DebugMsgIfEx2(Thread,(cond),(msg),(a1),(a2))
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 void ThreadSleep(uint milliseconds)
@@ -180,7 +193,7 @@ bool cThread::Create(int priority, uint stackSize)
    }
    struct sched_param schedParam;
    schedParam.sched_priority = MapThreadPriority(priority);
-   DebugMsg2("Thread priority %d mapped to %d\n", priority, schedParam.sched_priority);
+   LocalMsg2("Thread priority %d mapped to %d\n", priority, schedParam.sched_priority);
    pthread_attr_setschedparam(&attr, &schedParam);
    int result = pthread_create(&m_thread, &attr, ThreadEntry, this); 
    pthread_attr_destroy(&attr);
@@ -290,7 +303,9 @@ bool cThreadEvent::Create()
       return false;
    }
 
-   m_hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+   // Create an auto-reset event because it's behavior matches
+   // pthreads condition variables more closely.
+   m_hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 
    return (m_hEvent != NULL);
 #else
@@ -303,6 +318,33 @@ bool cThreadEvent::Create()
    m_bInitialized = true;
    return true;
 #endif
+}
+
+////////////////////////////////////////
+
+bool cThreadEvent::Wait()
+{
+   bool bResult = false;
+#ifdef _WIN32
+   if (m_hEvent != NULL)
+   {
+      if (WaitForSingleObject(m_hEvent, INFINITE) == WAIT_OBJECT_0)
+      {
+         bResult = true;
+      }
+   }
+#else
+   if (m_bInitialized)
+   {
+      pthread_mutex_lock(&m_mutex);
+      if (pthread_cond_wait(&m_cond, &m_mutex) == 0)
+      {
+         bResult = true;
+      }
+      pthread_mutex_unlock(&m_mutex);
+   }
+#endif
+   return bResult;
 }
 
 ////////////////////////////////////////
@@ -334,12 +376,13 @@ static struct timespec * MillisecsFromNow(uint millisecs, struct timespec * ts)
 
 bool cThreadEvent::Wait(uint timeout)
 {
+   bool bResult = false;
 #ifdef _WIN32
    if (m_hEvent != NULL)
    {
       if (WaitForSingleObject(m_hEvent, timeout) == WAIT_OBJECT_0)
       {
-         return true;
+         bResult = true;
       }
    }
 #else
@@ -349,54 +392,21 @@ bool cThreadEvent::Wait(uint timeout)
       pthread_mutex_lock(&m_mutex);
       if (pthread_cond_timedwait(&m_cond, &m_mutex, MillisecsFromNow(timeout, &timeoutSpec)) == 0)
       {
-         return true;
+         bResult = true;
       }
+      pthread_mutex_unlock(&m_mutex);
    }
 #endif
-   return false;
+   return bResult;
 }
 
 ////////////////////////////////////////
 
-bool cThreadEvent::Set()
+bool cThreadEvent::Signal()
 {
 #ifdef _WIN32
-   if ((m_hEvent != NULL) && SetEvent(m_hEvent))
-   {
-      return true;
-   }
-#else
-   if (m_bInitialized)
-   {
-      return true;
-   }
-#endif
-   return false;
-}
-
-////////////////////////////////////////
-
-bool cThreadEvent::Reset()
-{
-#ifdef _WIN32
-   if ((m_hEvent != NULL) && ResetEvent(m_hEvent))
-   {
-      return true;
-   }
-#else
-   if (m_bInitialized)
-   {
-      return true;
-   }
-#endif
-   return false;
-}
-
-////////////////////////////////////////
-
-bool cThreadEvent::Pulse()
-{
-#ifdef _WIN32
+   // Release a single thread waiting on the event.  See
+   // documentation of PulseEvent for auto-reset events.
    if ((m_hEvent != NULL) && PulseEvent(m_hEvent))
    {
       return true;
@@ -404,8 +414,10 @@ bool cThreadEvent::Pulse()
 #else
    if (m_bInitialized)
    {
-      pthread_cond_signal(&m_cond);
-      return true;
+      if (pthread_cond_signal(&m_cond) == 0)
+      {
+         return true;
+      }
    }
 #endif
    return false;

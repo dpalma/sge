@@ -96,10 +96,11 @@ public:
 
    bool Create();
 
-   bool Wait(uint timeout = kInfiniteTimeout);
-   bool Set();
-   bool Reset();
-   bool Pulse();
+   bool Wait();
+   bool Wait(uint timeout);
+
+   // Unblock a single thread waiting on the event
+   bool Signal();
 
 private:
 #ifdef _WIN32
