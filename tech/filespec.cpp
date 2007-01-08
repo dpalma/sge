@@ -162,13 +162,31 @@ bool cFileSpec::GetFileNameNoExt(cStr * pFileName) const
 }
 
 ///////////////////////////////////////
+// result points to the separator
+
+template <typename T>
+static T * GetFileExtPointer(T * pszFile)
+{
+   T * pSlash = _tcsrchr(pszFile, _T('/'));
+   T * pBackSlash = _tcsrchr(pszFile, _T('\\'));
+   T * pExt = _tcsrchr(pszFile, kExtensionSep);
+   T * p = Max(pSlash, Max(pBackSlash, pExt));
+   if ((p != NULL) && (p == pExt))
+   {
+      return p;
+   }
+   else
+   {
+      return NULL;
+   }
+}
 
 const tChar * cFileSpec::GetFileExt() const
 {
-   const tChar * pszExt = _tcsrchr(CStr(), kExtensionSep);
-   if (pszExt)
+   const tChar * p = GetFileExtPointer(m_szFile);
+   if (p != NULL)
    {
-      return _tcsinc(pszExt);
+      return _tcsinc(p);
    }
    else
    {
@@ -182,7 +200,7 @@ bool cFileSpec::SetFileExt(const tChar * pszExt)
 {
    if ((pszExt != NULL) && !IsEmpty())
    {
-      tChar * p = _tcsrchr(m_szFile, kExtensionSep);
+      tChar * p = GetFileExtPointer(m_szFile);
       if (p == NULL)
       {
          p = m_szFile + GetLength();
@@ -290,6 +308,18 @@ int FilePathCompareNoCase(const cFilePath & f1, const cFilePath & f2)
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifdef HAVE_UNITTESTPP
+
+///////////////////////////////////////
+
+TEST(FileExtensionAndRelativePaths)
+{
+   {
+      cFileSpec fs("./foo");
+      CHECK(strcmp(fs.GetFileExt(), "") == 0);
+      fs.SetFileExt("txt");
+      CHECK(strcmp(fs.GetFileExt(), "txt") == 0);
+   }
+}
 
 ///////////////////////////////////////
 

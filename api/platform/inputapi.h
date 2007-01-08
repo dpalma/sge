@@ -4,7 +4,7 @@
 #ifndef INCLUDED_INPUTAPI_H
 #define INCLUDED_INPUTAPI_H
 
-#include "platform/platformdll.h"
+#include "platformdll.h"
 #include "tech/comtools.h"
 #include "tech/vec2.h"
 

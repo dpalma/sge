@@ -4,7 +4,7 @@
 #ifndef INCLUDED_SYS_H
 #define INCLUDED_SYS_H
 
-#include "platform/platformdll.h"
+#include "platformdll.h"
 
 #include "tech/comtools.h"
 #include "tech/techstring.h"
