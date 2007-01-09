@@ -22,6 +22,7 @@ LOG_DEFINE_CHANNEL(VerboseUnitTests);
 
 ///////////////////////////////////////////////////////////////////////////////
 
+tSysDestroyFn        g_pfnDestroyCallback = NULL;
 tSysKeyEventFn       g_pfnKeyCallback = NULL;
 tSysMouseEventFn     g_pfnMouseCallback = NULL;
 tSysFrameFn          g_pfnFrameCallback = NULL;
@@ -31,6 +32,13 @@ uint_ptr             g_keyCallbackUserData = 0;
 uint_ptr             g_mouseCallbackUserData = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
+
+tSysDestroyFn SysSetDestroyCallback(tSysDestroyFn pfn)
+{
+   tSysDestroyFn pfnFormer = g_pfnDestroyCallback;
+   g_pfnDestroyCallback = pfn;
+   return pfnFormer;
+}
 
 void SysSetKeyEventCallback(tSysKeyEventFn pfn, uint_ptr userData)
 {

@@ -6,8 +6,11 @@
 #include "renderergl.h"
 #include "render/renderfontapi.h"
 
+#include "platform/sys.h"
+
 #include "tech/axisalignedbox.h"
 #include "tech/color.h"
+#include "tech/configapi.h"
 #include "tech/matrix4.h"
 #include "tech/ray.h"
 #include "tech/readwriteapi.h"
@@ -17,6 +20,12 @@
 #include "tech/vec3.h"
 
 #include <GL/glew.h>
+
+#ifdef _WIN32
+#include <GL/wglew.h>
+#else
+#include <GL/glxew.h>
+#endif
 
 #ifdef HAVE_CG
 #include <Cg/cgGL.h>
@@ -345,6 +354,86 @@ void CgEffectUnload(void * pData)
 
 
 ////////////////////////////////////////////////////////////////////////////////
+
+void MainWindowDestroyCallback()
+{
+   UseGlobal(Renderer);
+   if (!!pRenderer)
+   {
+      pRenderer->DestroyContext();
+   }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Create a default OpenGL context using the Win32 function ChoosePixelFormat
+
+static int CreateDefaultContext(HWND hWnd, int * pBpp, HDC * phDC, HGLRC * phGLRC)
+{
+   Assert(IsWindow(hWnd));
+
+   *phDC = GetDC(hWnd);
+   if (!*phDC)
+   {
+      return 0;
+   }
+
+   if (*pBpp == 0)
+   {
+      *pBpp = GetDeviceCaps(*phDC, BITSPIXEL);
+   }
+
+   PIXELFORMATDESCRIPTOR pfd;
+   memset(&pfd, 0, sizeof(pfd));
+   pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
+   pfd.nVersion = 1;
+   pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+   pfd.iPixelType = PFD_TYPE_RGBA;
+   pfd.cColorBits = *pBpp;
+   pfd.cDepthBits = *pBpp;
+   pfd.cStencilBits = *pBpp;
+   pfd.dwLayerMask = PFD_MAIN_PLANE;
+
+   int pixelFormat = ChoosePixelFormat(*phDC, &pfd);
+   while ((pixelFormat == 0) && (pfd.cStencilBits > 0))
+   {
+      pfd.cStencilBits /= 2;
+      pixelFormat = ChoosePixelFormat(*phDC, &pfd);
+   }
+
+   if (pixelFormat == 0)
+   {
+      ErrorMsg("Unable to find a suitable pixel format\n");
+      ReleaseDC(hWnd, *phDC);
+      *phDC = NULL;
+      *phGLRC = NULL;
+      return 0;
+   }
+
+   if (!SetPixelFormat(*phDC, pixelFormat, &pfd))
+   {
+      ErrorMsg1("SetPixelFormat failed with error %d\n", GetLastError());
+      ReleaseDC(hWnd, *phDC);
+      *phDC = NULL;
+      *phGLRC = NULL;
+      return 0;
+   }
+
+   *phGLRC = wglCreateContext(*phDC);
+   if ((*phGLRC) == NULL)
+   {
+      ErrorMsg1("wglCreateContext failed with error 0x%04x\n", glGetError());
+      ReleaseDC(hWnd, *phDC);
+      *phDC = NULL;
+      *phGLRC = NULL;
+      return 0;
+   }
+
+   return pixelFormat;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cRendererGL
 //
@@ -358,7 +447,14 @@ END_CONSTRAINTS()
 ////////////////////////////////////////
 
 cRendererGL::cRendererGL()
- : m_bInitialized(false)
+#ifdef _WIN32
+ : m_hWnd(NULL)
+ , m_hDC(NULL)
+ , m_hGLRC(NULL)
+#else
+ : m_context(NULL)
+#endif
+ , m_bInitialized(false)
  , m_bInScene(false)
 #ifdef HAVE_CG
  , m_cgContext(NULL)
@@ -386,6 +482,8 @@ cRendererGL::~cRendererGL()
 
 tResult cRendererGL::Init()
 {
+   SysSetDestroyCallback(MainWindowDestroyCallback);
+
    if (Render2DCreateGL(&m_pRender2D) != S_OK)
    {
       return E_FAIL;
@@ -415,6 +513,122 @@ tResult cRendererGL::Init()
 
 tResult cRendererGL::Term()
 {
+   tFontMap::iterator iter = m_fontMap.begin();
+   for (; iter != m_fontMap.end(); ++iter)
+   {
+      SafeRelease(iter->second);
+   }
+   m_fontMap.clear();
+
+   DestroyContext();
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cRendererGL::CreateContext()
+{
+#ifdef _WIN32
+   return CreateContext(SysGetMainWindow());
+#else
+   return CreateContext(SysGetDisplay(), SysGetMainWindow());
+#endif
+}
+
+////////////////////////////////////////
+
+tResult cRendererGL::CreateContext(HWND hWnd)
+{
+#ifdef _WIN32
+   if (!IsWindow(hWnd))
+   {
+      return E_INVALIDARG;
+   }
+
+   if ((m_hWnd != NULL) || (m_hDC != NULL) || (m_hGLRC != NULL))
+   {
+      WarnMsg("OpenGL renderer context already created\n");
+      return S_FALSE;
+   }
+
+   int bpp = 0;
+   if (CreateDefaultContext(hWnd, &bpp, &m_hDC, &m_hGLRC) == 0)
+   {
+      ErrorMsg("An error occurred creating the GL context\n");
+      return E_FAIL;
+   }
+
+   m_hWnd = hWnd;
+
+   if (!wglMakeCurrent(m_hDC, m_hGLRC))
+   {
+      GLenum glError = glGetError();
+      ErrorMsg1("wglMakeCurrent failed with error 0x%04x\n", glError);
+      DestroyContext();
+      return E_FAIL;
+   }
+
+   if (glewInit() != GLEW_OK)
+   {
+      ErrorMsg("GLEW library failed to initialize\n");
+      DestroyContext();
+      return E_FAIL;
+   }
+
+#ifdef HAVE_CG
+   if (m_cgContext == NULL)
+   {
+      m_cgContext = cgCreateContext();
+
+      Assert(m_oldCgErrorHandler == NULL && m_pOldCgErrHandlerData == NULL);
+      m_oldCgErrorHandler = cgGetErrorHandler(&m_pOldCgErrHandlerData);
+      cgSetErrorHandler(CgErrorHandler, static_cast<void*>(this));
+
+      Assert(m_cgProfileVertex == CG_PROFILE_UNKNOWN);
+      m_cgProfileVertex = cgGLGetLatestProfile(CG_GL_VERTEX);
+
+      Assert(m_cgProfileFragment == CG_PROFILE_UNKNOWN);
+      m_cgProfileFragment = cgGLGetLatestProfile(CG_GL_FRAGMENT);
+   }
+#endif
+
+   if (ConfigIsTrue(_T("disable_vsync")))
+   {
+      if (wglewIsSupported("WGL_EXT_swap_control"))
+      {
+         int swapInterval = wglGetSwapIntervalEXT();
+         wglSwapIntervalEXT(0);
+         InfoMsg1("Changed swap interval from %d to 0\n", swapInterval);
+      }
+      else
+      {
+         WarnMsg("WGL_EXT_swap_control extension not supported\n");
+      }
+   }
+
+   return S_OK;
+#else
+   return E_NOTIMPL;
+#endif
+}
+
+////////////////////////////////////////
+
+tResult cRendererGL::CreateContext(Display * display, Window window)
+{
+#ifdef _WIN32
+   return E_NOTIMPL;
+#else
+   // TODO
+   return E_NOTIMPL;
+#endif
+}
+
+////////////////////////////////////////
+
+tResult cRendererGL::DestroyContext()
+{
 #ifdef HAVE_CG
    if (m_cgContext != NULL)
    {
@@ -433,12 +647,20 @@ tResult cRendererGL::Term()
    }
 #endif
 
-   tFontMap::iterator iter = m_fontMap.begin();
-   for (; iter != m_fontMap.end(); ++iter)
+   if (m_hDC != NULL)
    {
-      SafeRelease(iter->second);
+      wglMakeCurrent(m_hDC, NULL);
+      ReleaseDC(m_hWnd, m_hDC);
+      m_hDC = NULL;
    }
-   m_fontMap.clear();
+
+   if (m_hGLRC != NULL)
+   {
+      wglDeleteContext(m_hGLRC);
+      m_hGLRC = NULL;
+   }
+
+   m_hWnd = NULL;
 
    return S_OK;
 }
@@ -555,6 +777,14 @@ tResult cRendererGL::EndScene()
    if (m_bInScene)
    {
       m_bInScene = false;
+#ifdef _WIN32
+      if (m_hDC != NULL)
+      {
+         Verify(SwapBuffers(m_hDC));
+      }
+#else
+      glXSwapBuffers(SysGetDisplay(), SysGetMainWindow());
+#endif
       return S_OK;
    }
    return E_FAIL;
@@ -999,28 +1229,6 @@ tResult cRendererGL::Initialize()
    {
       return S_FALSE;
    }
-
-   if (glewInit() != GLEW_OK)
-   {
-      return E_FAIL;
-   }
-
-#ifdef HAVE_CG
-   if (m_cgContext == NULL)
-   {
-      m_cgContext = cgCreateContext();
-
-      Assert(m_oldCgErrorHandler == NULL && m_pOldCgErrHandlerData == NULL);
-      m_oldCgErrorHandler = cgGetErrorHandler(&m_pOldCgErrHandlerData);
-      cgSetErrorHandler(CgErrorHandler, static_cast<void*>(this));
-
-      Assert(m_cgProfileVertex == CG_PROFILE_UNKNOWN);
-      m_cgProfileVertex = cgGLGetLatestProfile(CG_GL_VERTEX);
-
-      Assert(m_cgProfileFragment == CG_PROFILE_UNKNOWN);
-      m_cgProfileFragment = cgGLGetLatestProfile(CG_GL_FRAGMENT);
-   }
-#endif
 
    glDisable(GL_DITHER);
    glEnable(GL_DEPTH_TEST);

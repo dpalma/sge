@@ -27,10 +27,6 @@
 #include <GL/glew.h>
 #include <GL/wglew.h>
 
-#if HAVE_DIRECTX
-#include <d3d9.h>
-#endif
-
 #include <cstdlib>
 
 #include "tech/dbgalloc.h" // must be last header
@@ -38,6 +34,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // from syscommon.cpp
+extern tSysDestroyFn    g_pfnDestroyCallback;
 extern tSysKeyEventFn   g_pfnKeyCallback;
 extern tSysMouseEventFn g_pfnMouseCallback;
 extern tSysFrameFn      g_pfnFrameCallback;
@@ -49,17 +46,9 @@ extern void SysUpdateFrameStats();
 bool           g_bAppActive = false;
 
 HWND           g_hWnd = NULL;
-HDC            g_hDC = NULL;
-HGLRC          g_hGLRC = NULL;
 HACCEL         g_hAccel = NULL; // For trapping Alt+Enter
 
 static const WORD kAltEnterCommandId = 2006;
-
-#if HAVE_DIRECTX
-cDLL                          g_d3d9;
-cAutoIPtr<IDirect3D9>         g_pDirect3D9;
-cAutoIPtr<IDirect3DDevice9>   g_pDirect3DDevice9;
-#endif
 
 typedef tResult (STDCALL * tSHGetFolderPath)(HWND, int, HANDLE, DWORD, LPTSTR);
 tSHGetFolderPath g_pfnGetFolderPath = NULL;
@@ -615,23 +604,10 @@ bool SysHandleWindowsMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
    {
       case WM_DESTROY:
       {
-         if (g_hDC != NULL)
+         if (g_pfnDestroyCallback != NULL)
          {
-            wglMakeCurrent(g_hDC, NULL);
-            ReleaseDC(g_hWnd, g_hDC);
-            g_hDC = NULL;
+            (*g_pfnDestroyCallback)();
          }
-
-         if (g_hGLRC != NULL)
-         {
-            wglDeleteContext(g_hGLRC);
-            g_hGLRC = NULL;
-         }
-
-#if HAVE_DIRECTX
-         SafeRelease(g_pDirect3DDevice9);
-         SafeRelease(g_pDirect3D9);
-#endif
 
          if (g_hAccel)
          {
@@ -727,19 +703,15 @@ bool SysHandleWindowsMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
       {
          if (LOWORD(wParam) == kAltEnterCommandId)
          {
-            // Do fullscreen toggling only with OpenGL
-            if (g_hGLRC != NULL)
+            if (SysIsFullScreen(hWnd))
             {
-               if (SysIsFullScreen(hWnd))
-               {
-                  SysFullScreenEnd(hWnd);
-               }
-               else
-               {
-                  RECT rect;
-                  GetClientRect(hWnd, &rect);
-                  SysFullScreenBegin(hWnd, rect.right, rect.bottom, 0, 0);
-               }
+               SysFullScreenEnd(hWnd);
+            }
+            else
+            {
+               RECT rect;
+               GetClientRect(hWnd, &rect);
+               SysFullScreenBegin(hWnd, rect.right, rect.bottom, 0, 0);
             }
          }
          break;
@@ -796,153 +768,9 @@ LRESULT CALLBACK SysWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Create a default OpenGL context using the Win32 function ChoosePixelFormat
 
-static int CreateDefaultContext(HWND hWnd, int * pBpp, HDC * phDC, HGLRC * phGLRC)
+tResult SysCreateWindow(const tChar * pszTitle, int width, int height)
 {
-   Assert(IsWindow(hWnd));
-
-   *phDC = GetDC(hWnd);
-   if (!*phDC)
-   {
-      return 0;
-   }
-
-   if (*pBpp == 0)
-   {
-      *pBpp = GetDeviceCaps(*phDC, BITSPIXEL);
-   }
-
-   PIXELFORMATDESCRIPTOR pfd;
-   memset(&pfd, 0, sizeof(pfd));
-   pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-   pfd.nVersion = 1;
-   pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
-   pfd.iPixelType = PFD_TYPE_RGBA;
-   pfd.cColorBits = *pBpp;
-   pfd.cDepthBits = *pBpp;
-   pfd.cStencilBits = *pBpp;
-   pfd.dwLayerMask = PFD_MAIN_PLANE;
-
-   int pixelFormat = ChoosePixelFormat(*phDC, &pfd);
-   while ((pixelFormat == 0) && (pfd.cStencilBits > 0))
-   {
-      pfd.cStencilBits /= 2;
-      pixelFormat = ChoosePixelFormat(*phDC, &pfd);
-   }
-
-   if (pixelFormat == 0)
-   {
-      ErrorMsg("Unable to find a suitable pixel format\n");
-      ReleaseDC(hWnd, *phDC);
-      *phDC = NULL;
-      *phGLRC = NULL;
-      return 0;
-   }
-
-   if (!SetPixelFormat(*phDC, pixelFormat, &pfd))
-   {
-      ErrorMsg1("SetPixelFormat failed with error %d\n", GetLastError());
-      ReleaseDC(hWnd, *phDC);
-      *phDC = NULL;
-      *phGLRC = NULL;
-      return 0;
-   }
-
-   *phGLRC = wglCreateContext(*phDC);
-   if ((*phGLRC) == NULL)
-   {
-      ErrorMsg1("wglCreateContext failed with error 0x%04x\n", glGetError());
-      ReleaseDC(hWnd, *phDC);
-      *phDC = NULL;
-      *phGLRC = NULL;
-      return 0;
-   }
-
-   return pixelFormat;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-#if HAVE_DIRECTX
-static tResult InitDirect3D9(HWND hWnd, IDirect3D9 * * ppD3d, IDirect3DDevice9 * * ppDevice)
-{
-   if (!IsWindow(hWnd))
-   {
-      return E_INVALIDARG;
-   }
-
-   if (ppD3d == NULL || ppDevice == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (!g_d3d9.Load(_T("d3d9.dll")))
-   {
-      return E_FAIL;
-   }
-
-   typedef IDirect3D9 * (WINAPI * tDirect3DCreate9Fn)(UINT);
-   tDirect3DCreate9Fn pfnDirect3DCreate9 = reinterpret_cast<tDirect3DCreate9Fn>(
-      g_d3d9.GetProcAddress("Direct3DCreate9"));
-   if (pfnDirect3DCreate9 == NULL)
-   {
-      return E_FAIL;
-   }
-
-   cAutoIPtr<IDirect3D9> pD3d((*pfnDirect3DCreate9)(D3D_SDK_VERSION));
-   if (!pD3d)
-   {
-      return E_FAIL;
-   }
-
-   tResult result = E_FAIL;
-   cAutoIPtr<IDirect3DDevice9> pD3dDevice;
-
-   D3DDISPLAYMODE displayMode;
-   if (pD3d->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &displayMode) == D3D_OK)
-   {
-      D3DPRESENT_PARAMETERS presentParams;
-      memset(&presentParams, 0, sizeof(presentParams));
-      presentParams.BackBufferCount = 1;
-      presentParams.BackBufferFormat = displayMode.Format;
-      presentParams.SwapEffect = D3DSWAPEFFECT_DISCARD;
-      presentParams.Windowed = TRUE;
-      presentParams.EnableAutoDepthStencil = TRUE;
-      presentParams.AutoDepthStencilFormat = D3DFMT_D16;
-      presentParams.hDeviceWindow = hWnd;
-      presentParams.Flags = D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL | D3DPRESENTFLAG_DEVICECLIP;
-
-      result = pD3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd,
-         D3DCREATE_SOFTWARE_VERTEXPROCESSING, &presentParams, &pD3dDevice);
-      if (FAILED(result))
-      {
-         // Try reference device if failed to create hardware device
-         result = pD3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_REF, hWnd,
-            D3DCREATE_SOFTWARE_VERTEXPROCESSING, &presentParams, &pD3dDevice);
-      }
-   }
-
-   if (FAILED(result))
-   {
-      ErrorMsg1("D3D error %x\n", result);
-   }
-   else
-   {
-      *ppD3d = CTAddRef(pD3d);
-      *ppDevice = CTAddRef(pD3dDevice);
-   }
-
-   return result;
-}
-#endif // HAVE_DIRECTX
-
-///////////////////////////////////////////////////////////////////////////////
-
-tResult SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI api)
-{
-   AssertMsg(api == kOpenGL || api == kDirect3D9, "New 3D API added to enumerated type?");
-
    if (g_hWnd == NULL)
    {
       HINSTANCE hInst = GetModuleHandle(NULL);
@@ -992,76 +820,9 @@ tResult SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI
          accel.key = VK_RETURN;
          g_hAccel = CreateAcceleratorTable(&accel, 1);
 
-         if (api == kOpenGL)
-         {
-            int bpp = 0;
-            if (CreateDefaultContext(g_hWnd, &bpp, &g_hDC, &g_hGLRC) == 0)
-            {
-               ErrorMsg("An error occurred creating the GL context\n");
-               DestroyWindow(g_hWnd);
-               g_hWnd = NULL;
-               return E_FAIL;
-            }
-
-            if (!wglMakeCurrent(g_hDC, g_hGLRC))
-            {
-               GLenum glError = glGetError();
-               ErrorMsg1("wglMakeCurrent failed with error 0x%04x\n", glError);
-               DestroyWindow(g_hWnd);
-               g_hWnd = NULL;
-               return E_FAIL;
-            }
-
-            if (glewInit() != GLEW_OK)
-            {
-               ErrorMsg("GLEW library failed to initialize\n");
-               DestroyWindow(g_hWnd);
-               g_hWnd = NULL;
-               return E_FAIL;
-            }
-
-            if (ConfigIsTrue(_T("disable_vsync")))
-            {
-               if (wglewIsSupported("WGL_EXT_swap_control"))
-               {
-                  int swapInterval = wglGetSwapIntervalEXT();
-                  wglSwapIntervalEXT(0);
-                  InfoMsg1("Changed swap interval from %d to 0\n", swapInterval);
-               }
-               else
-               {
-                  WarnMsg("WGL_EXT_swap_control extension not supported\n");
-               }
-            }
-         }
-         else if (api == kDirect3D9)
-         {
-#if HAVE_DIRECTX
-            if (InitDirect3D9(g_hWnd, &g_pDirect3D9, &g_pDirect3DDevice9) != D3D_OK)
-            {
-               ErrorMsg("Direct3D failed to initialize\n");
-               DestroyWindow(g_hWnd);
-               g_hWnd = NULL;
-            }
-#else
-            ErrorMsg("DirectX not supported\n");
-            DestroyWindow(g_hWnd);
-            g_hWnd = NULL;
-#endif
-         }
-         else
-         {
-            ErrorMsg1("Unknown 3D API %d\n", static_cast<int>(api));
-            DestroyWindow(g_hWnd);
-            g_hWnd = NULL;
-         }
-
-         if (g_hWnd != NULL)
-         {
-            ShowWindow(g_hWnd, SW_SHOW);
-            UpdateWindow(g_hWnd);
-            return S_OK;
-         }
+         ShowWindow(g_hWnd, SW_SHOW);
+         UpdateWindow(g_hWnd);
+         return S_OK;
       }
    }
    else
@@ -1074,20 +835,9 @@ tResult SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI
 
 ///////////////////////////////////////////////////////////////////////////////
 
-HWND SysGetWindowHandle()
+HWND SysGetMainWindow()
 {
    return g_hWnd;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-tResult SysGetDirect3DDevice9(IDirect3DDevice9 * * ppDevice)
-{
-#if HAVE_DIRECTX
-   return g_pDirect3DDevice9.GetPointer(ppDevice);
-#else
-   return E_FAIL;
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1109,16 +859,6 @@ tResult SysGetWindowSize(int * pWidth, int * pHeight)
       }
    }
    return E_FAIL;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void SysSwapBuffers()
-{
-   if (g_hDC != NULL)
-   {
-      Verify(SwapBuffers(g_hDC));
-   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

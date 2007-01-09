@@ -188,6 +188,97 @@ void CgProgramUnload(void * pData)
 
 
 ////////////////////////////////////////////////////////////////////////////////
+
+void MainWindowDestroyCallback()
+{
+   UseGlobal(Renderer);
+   if (!!pRenderer)
+   {
+      pRenderer->DestroyContext();
+   }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+static tResult InitDirect3D9(HWND hWnd, HINSTANCE * phD3dLib, IDirect3D9 * * ppD3d, IDirect3DDevice9 * * ppDevice)
+{
+   if (!IsWindow(hWnd))
+   {
+      return E_INVALIDARG;
+   }
+
+   if (phD3dLib == NULL || ppD3d == NULL || ppDevice == NULL)
+   {
+      return E_POINTER;
+   }
+
+   HINSTANCE hD3dLib = LoadLibrary(_T("d3d9.dll"));
+   if (hD3dLib == NULL)
+   {
+      return E_FAIL;
+   }
+
+   typedef IDirect3D9 * (WINAPI * tDirect3DCreate9Fn)(UINT);
+   tDirect3DCreate9Fn pfnDirect3DCreate9 = reinterpret_cast<tDirect3DCreate9Fn>(
+      GetProcAddress(hD3dLib, "Direct3DCreate9"));
+   if (pfnDirect3DCreate9 == NULL)
+   {
+      FreeLibrary(hD3dLib);
+      return E_FAIL;
+   }
+
+   cAutoIPtr<IDirect3D9> pD3d((*pfnDirect3DCreate9)(D3D_SDK_VERSION));
+   if (!pD3d)
+   {
+      FreeLibrary(hD3dLib);
+      return E_FAIL;
+   }
+
+   tResult result = E_FAIL;
+   cAutoIPtr<IDirect3DDevice9> pD3dDevice;
+
+   D3DDISPLAYMODE displayMode;
+   if (pD3d->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &displayMode) == D3D_OK)
+   {
+      D3DPRESENT_PARAMETERS presentParams;
+      memset(&presentParams, 0, sizeof(presentParams));
+      presentParams.BackBufferCount = 1;
+      presentParams.BackBufferFormat = displayMode.Format;
+      presentParams.SwapEffect = D3DSWAPEFFECT_DISCARD;
+      presentParams.Windowed = TRUE;
+      presentParams.EnableAutoDepthStencil = TRUE;
+      presentParams.AutoDepthStencilFormat = D3DFMT_D16;
+      presentParams.hDeviceWindow = hWnd;
+      presentParams.Flags = D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL | D3DPRESENTFLAG_DEVICECLIP;
+
+      result = pD3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd,
+         D3DCREATE_SOFTWARE_VERTEXPROCESSING, &presentParams, &pD3dDevice);
+      if (FAILED(result))
+      {
+         // Try reference device if failed to create hardware device
+         result = pD3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_REF, hWnd,
+            D3DCREATE_SOFTWARE_VERTEXPROCESSING, &presentParams, &pD3dDevice);
+      }
+   }
+
+   if (FAILED(result))
+   {
+      FreeLibrary(hD3dLib);
+      ErrorMsg1("D3D error %x\n", result);
+   }
+   else
+   {
+      *phD3dLib = hD3dLib;
+      *ppD3d = CTAddRef(pD3d);
+      *ppDevice = CTAddRef(pD3dDevice);
+   }
+
+   return result;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cRendererDX
 //
@@ -196,6 +287,8 @@ void CgProgramUnload(void * pData)
 
 cRendererDX::cRendererDX()
  : m_bInScene(false)
+ , m_hWnd(NULL)
+ , m_hD3dLib(NULL)
 #ifdef HAVE_CG
  , m_cgContext(NULL)
  , m_oldCgErrorHandler(NULL)
@@ -214,12 +307,18 @@ cRendererDX::cRendererDX()
 
 cRendererDX::~cRendererDX()
 {
+   if (m_hD3dLib != NULL)
+   {
+      FreeLibrary(m_hD3dLib);
+   }
 }
 
 ////////////////////////////////////////
 
 tResult cRendererDX::Init()
 {
+   SysSetDestroyCallback(MainWindowDestroyCallback);
+
    UseGlobal(ResourceManager);
    if (!!pResourceManager)
    {
@@ -240,6 +339,94 @@ tResult cRendererDX::Init()
 
 tResult cRendererDX::Term()
 {
+   tFontMap::iterator iter = m_fontMap.begin();
+   for (; iter != m_fontMap.end(); ++iter)
+   {
+      SafeRelease(iter->second);
+   }
+   m_fontMap.clear();
+
+   DestroyContext();
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cRendererDX::CreateContext()
+{
+#ifdef _WIN32
+   return CreateContext(SysGetMainWindow());
+#else
+   return E_NOTIMPL;
+#endif
+}
+
+////////////////////////////////////////
+
+tResult cRendererDX::CreateContext(HWND hWnd)
+{
+   if (!IsWindow(hWnd))
+   {
+      return E_INVALIDARG;
+   }
+
+   if ((m_hWnd != NULL) || (m_hD3dLib != NULL) || !!m_pD3d || !!m_pD3dDevice)
+   {
+      WarnMsg("Direct3D renderer context already created\n");
+      return S_FALSE;
+   }
+
+   if (InitDirect3D9(hWnd, &m_hD3dLib, &m_pD3d, &m_pD3dDevice) == D3D_OK)
+   {
+      m_hWnd = hWnd;
+
+#ifdef HAVE_CG
+      if (cgD3D9SetDevice(m_pD3dDevice) != S_OK)
+      {
+         ErrorMsg("cgD3D9SetDevice failed\n");
+         return E_FAIL;
+      }
+
+      if (m_cgContext == NULL)
+      {
+         m_cgContext = cgCreateContext();
+
+         Assert(m_oldCgErrorHandler == NULL && m_pOldCgErrHandlerData == NULL);
+         m_oldCgErrorHandler = cgGetErrorHandler(&m_pOldCgErrHandlerData);
+         cgSetErrorHandler(CgErrorHandler, static_cast<void*>(this));
+
+         Assert(m_cgProfileVertex == CG_PROFILE_UNKNOWN);
+         m_cgProfileVertex = cgD3D9GetLatestVertexProfile();
+
+         Assert(m_cgProfileFragment == CG_PROFILE_UNKNOWN);
+         m_cgProfileFragment = cgD3D9GetLatestPixelProfile();
+      }
+#endif
+
+      if (Render2DCreateDX(m_pD3dDevice, &m_pRender2D) != S_OK)
+      {
+         return E_FAIL;
+      }
+
+      return S_OK;
+   }
+
+   return E_FAIL;
+}
+
+////////////////////////////////////////
+
+tResult cRendererDX::CreateContext(Display * display, Window window)
+{
+   ErrorMsg("POSIX overload of IRenderer::CreateContext not supported\n");
+   return E_NOTIMPL;
+}
+
+////////////////////////////////////////
+
+tResult cRendererDX::DestroyContext()
+{
 #ifdef HAVE_CG
    if (m_cgContext != NULL)
    {
@@ -259,13 +446,9 @@ tResult cRendererDX::Term()
 #endif
 
    SafeRelease(m_pD3dDevice);
+   SafeRelease(m_pD3d);
 
-   tFontMap::iterator iter = m_fontMap.begin();
-   for (; iter != m_fontMap.end(); ++iter)
-   {
-      SafeRelease(iter->second);
-   }
-   m_fontMap.clear();
+   m_hWnd = NULL;
 
    return S_OK;
 }
@@ -338,42 +521,6 @@ tResult cRendererDX::GetRenderState(eRenderState state, ulong * pValue)
 
 tResult cRendererDX::BeginScene()
 {
-   if (!m_pD3dDevice)
-   {
-      if (SysGetDirect3DDevice9(&m_pD3dDevice) != S_OK)
-      {
-         return E_FAIL;
-      }
-
-#ifdef HAVE_CG
-      if (cgD3D9SetDevice(m_pD3dDevice) != S_OK)
-      {
-         ErrorMsg("cgD3D9SetDevice failed\n");
-         return E_FAIL;
-      }
-
-      if (m_cgContext == NULL)
-      {
-         m_cgContext = cgCreateContext();
-
-         Assert(m_oldCgErrorHandler == NULL && m_pOldCgErrHandlerData == NULL);
-         m_oldCgErrorHandler = cgGetErrorHandler(&m_pOldCgErrHandlerData);
-         cgSetErrorHandler(CgErrorHandler, static_cast<void*>(this));
-
-         Assert(m_cgProfileVertex == CG_PROFILE_UNKNOWN);
-         m_cgProfileVertex = cgD3D9GetLatestVertexProfile();
-
-         Assert(m_cgProfileFragment == CG_PROFILE_UNKNOWN);
-         m_cgProfileFragment = cgD3D9GetLatestPixelProfile();
-      }
-#endif
-
-      if (Render2DCreateDX(m_pD3dDevice, &m_pRender2D) != S_OK)
-      {
-         return E_FAIL;
-      }
-   }
-
    if (!!m_pD3dDevice)
    {
       AssertMsg(!m_bInScene, "Cannot nest BeginScene/EndScene calls");

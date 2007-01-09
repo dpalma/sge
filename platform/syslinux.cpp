@@ -33,19 +33,13 @@ GLXContext        g_context = NULL;
 XErrorHandler     g_nextErrorHandler = NULL;
 
 // from syscommon.cpp
+extern tSysDestroyFn    g_pfnDestroyCallback;
 extern tSysKeyEventFn   g_pfnKeyCallback;
 extern tSysMouseEventFn g_pfnMouseCallback;
 extern tSysFrameFn      g_pfnFrameCallback;
 extern tSysResizeFn     g_pfnResizeCallback;
 extern uint_ptr         g_keyCallbackUserData;
 extern uint_ptr         g_mouseCallbackUserData;
-
-tResult GetDisplay(Display * * ppDisplay)
-{
-  if (ppDisplay == NULL) return E_POINTER;
-  *ppDisplay = g_display;
-  return S_OK;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -203,9 +197,16 @@ tResult SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void SysSwapBuffers()
+Display * SysGetDisplay()
 {
-   glXSwapBuffers(g_display, g_window);
+  return g_display;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+Window SysGetMainWindow()
+{
+   return g_window;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -384,13 +385,17 @@ int SysEventLoop(tSysFrameFn pfnFrameHandler, uint flags)
          {
             case DestroyNotify:
             {
-               DebugMsg1("Window destroyed at %.3f\n", eventTime);
+               DebugMsgEx1(XEvents, "Window destroyed at %.3f\n", eventTime);
+               if (g_pfnDestroyCallback != NULL)
+               {
+                  (*g_pfnDestroyCallback)();
+               }
                break;
             }
 
             case ConfigureNotify:
             {
-               DebugMsg1("Window configured at %.3f\n", eventTime);
+               DebugMsgEx1(XEvents, "Window configured at %.3f\n", eventTime);
                if (g_pfnResizeCallback != NULL)
                {
                   (*g_pfnResizeCallback)(event.xconfigure.width, event.xconfigure.height, eventTime);

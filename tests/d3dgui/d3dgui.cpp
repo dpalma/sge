@@ -140,7 +140,7 @@ static bool d3dguiinit(int argc, tChar * argv[])
    ConfigGet(_T("screen_height"), &height);
    ConfigGet(_T("screen_bpp"), &bpp);
 
-   g_hWnd = reinterpret_cast<HWND>(SysCreateWindow(_T("D3D GUI Test"), width, height, kDirect3D9));
+   g_hWnd = reinterpret_cast<HWND>(SysCreateWindow(_T("D3D GUI Test"), width, height));
    if (g_hWnd == NULL)
    {
       return false;
@@ -224,8 +224,6 @@ static tResult d3dguiframe()
 
       pRenderer->EndScene();
    }
-
-   SysSwapBuffers();
 
    return S_OK;
 }

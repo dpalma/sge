@@ -18,6 +18,9 @@
 #pragma once
 #endif
 
+F_DECLARE_HANDLE(HDC);
+F_DECLARE_HANDLE(HGLRC);
+
 F_DECLARE_INTERFACE(IReader);
 
 typedef unsigned int GLenum;
@@ -44,6 +47,11 @@ public:
 
    virtual tResult Init();
    virtual tResult Term();
+
+   virtual tResult CreateContext();
+   virtual tResult CreateContext(HWND hWnd);
+   virtual tResult CreateContext(Display * display, Window window);
+   virtual tResult DestroyContext();
 
    virtual tResult SetRenderState(eRenderState state, ulong value);
    virtual tResult GetRenderState(eRenderState state, ulong * pValue);
@@ -90,6 +98,14 @@ private:
    tResult Initialize();
 #ifdef HAVE_CG
    static void CgErrorHandler(CGcontext cgContext, CGerror cgError, void * pData);
+#endif
+
+#ifdef _WIN32
+   HWND m_hWnd;
+   HDC m_hDC;
+   HGLRC m_hGLRC;
+#else
+   GLXContext m_context;
 #endif
 
    bool m_bInitialized;

@@ -18,6 +18,13 @@ class cRay;
 template <typename T> class cAxisAlignedBox;
 typedef class cAxisAlignedBox<float> tAxisAlignedBox;
 
+F_DECLARE_HANDLE(HWND);
+
+struct _XDisplay;
+typedef struct _XDisplay Display;
+typedef unsigned long XID;
+typedef XID Window;
+
 F_DECLARE_INTERFACE(IImage);
 
 F_DECLARE_INTERFACE(IRenderer);
@@ -100,6 +107,11 @@ enum eRenderState
 
 interface IRenderer : IUnknown
 {
+   virtual tResult CreateContext() = 0; // Use the functions in platform/sys.h to get the main window
+   virtual tResult CreateContext(HWND hWnd) = 0;
+   virtual tResult CreateContext(Display * display, Window window) = 0;
+   virtual tResult DestroyContext() = 0;
+
    virtual tResult SetRenderState(eRenderState state, ulong value) = 0;
    virtual tResult GetRenderState(eRenderState state, ulong * pValue) = 0;
 

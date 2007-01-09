@@ -583,7 +583,7 @@ TEST(ThreadSleep)
       virtual int Run()
       {
          ThreadSleep(m_sleepMs);
-         m_pEvent->Set();
+         m_pEvent->Signal();
          return 0;
       }
 

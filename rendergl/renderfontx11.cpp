@@ -5,6 +5,8 @@
 
 #include "renderfontx11.h"
 
+#include "platform/sys.h"
+
 #include "tech/comtools.h"
 #include "tech/techmath.h"
 
@@ -17,7 +19,6 @@
 
 #include "tech/dbgalloc.h" // must be last header
 
-extern tResult GetDisplay(Display * * ppDisplay);
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -110,10 +111,10 @@ bool cGLXRasterFont::Create(const tChar * pszFontName, int pointSize, bool bBold
 
    bool bSucceeded = false;
 
-   if (GetDisplay(&m_pDisplay) == S_OK)
-   {
-      Assert(m_pDisplay != NULL);
+   m_pDisplay = SysGetDisplay();
 
+   if (m_pDisplay != NULL)
+   {
       m_pFontInfo = XLoadQueryFont(m_pDisplay, pszFontName);
       if (m_pFontInfo != NULL)
       {

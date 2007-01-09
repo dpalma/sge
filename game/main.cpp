@@ -148,7 +148,6 @@ tResult cMainRenderTask::Execute(double time)
    }
 
    pRenderer->EndScene();
-   SysSwapBuffers();
 
    return S_OK;
 }
@@ -428,13 +427,17 @@ tResult cMainInitTask::CreateMainWindow()
 
    if (SysCreateWindow(_T("Game"), width, height) != S_OK)
    {
-      return false;
+      return E_FAIL;
+   }
+
+   UseGlobal(Renderer);
+   if (pRenderer->CreateContext() != S_OK)
+   {
+      return E_FAIL;
    }
 
    tMatrix4 proj;
    MatrixPerspective(g_fov, (float)width / height, kZNear, kZFar, &proj);
-
-   UseGlobal(Renderer);
    pRenderer->SetProjectionMatrix(proj.m);
 
    cAutoIPtr<ITask> pMainRenderTask(MainRenderTaskCreate());
