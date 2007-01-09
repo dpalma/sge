@@ -12,14 +12,26 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #else
-#include <unistd.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #endif
 
 #include "tech/dbgalloc.h" // must be last header
 
 LOG_DEFINE_CHANNEL(EnumFiles);
+
+#define LocalMsg(msg)            DebugMsgEx(EnumFiles,msg)
+#define LocalMsg1(msg,a)         DebugMsgEx1(EnumFiles,msg,(a))
+#define LocalMsg2(msg,a,b)       DebugMsgEx2(EnumFiles,msg,(a),(b))
+#define LocalMsg3(msg,a,b,c)     DebugMsgEx3(EnumFiles,msg,(a),(b),(c))
+#define LocalMsg4(msg,a,b,c,d)   DebugMsgEx4(EnumFiles,msg,(a),(b),(c),(d))
+
+#define LocalMsgIf(cond,msg)           DebugMsgIfEx(EnumFiles,(cond),msg)
+#define LocalMsgIf1(cond,msg,a)        DebugMsgIfEx1(EnumFiles,(cond),msg,(a))
+#define LocalMsgIf2(cond,msg,a,b)      DebugMsgIfEx2(EnumFiles,(cond),msg,(a),(b))
+#define LocalMsgIf3(cond,msg,a,b,c)    DebugMsgIfEx3(EnumFiles,(cond),msg,(a),(b),(c))
+#define LocalMsgIf4(cond,msg,a,b,c,d)  DebugMsgIfEx4(EnumFiles,(cond),msg,(a),(b),(c),(d))
 
 #ifdef _WIN32
 
@@ -42,14 +54,17 @@ AssertAtCompileTime(kFA_Compressed == FILE_ATTRIBUTE_COMPRESSED);
 class cEnumFilesWin32 : public cComObject<IMPLEMENTS(IEnumFiles)>
 {
    cEnumFilesWin32(const cEnumFilesWin32 &);
-   void operator =(const cEnumFilesWin32 &);
+   const cEnumFilesWin32 & operator =(const cEnumFilesWin32 &);
+
 public:
    cEnumFilesWin32(const cFileSpec & spec);
    ~cEnumFilesWin32();
+
    virtual tResult Next(ulong count, cFileSpec * pFileSpecs, uint * pAttribs, ulong * pnElements);
    virtual tResult Skip(ulong count);
    virtual tResult Reset();
    virtual tResult Clone(IEnumFiles * * ppEnum);
+
 private:
    // Internal function with more lenient arg checking for use by both Skip and Next
    tResult GetNext(ulong count, cFileSpec * pFileSpecs, uint * pAttribs, ulong * pnElements);
@@ -168,7 +183,7 @@ tResult cEnumFilesWin32::GetNext(ulong count, cFileSpec * pFileSpecs, uint * pAt
 
       if (bFound)
       {
-         DebugMsgEx1(EnumFiles, "Found file %s\n", findData.cFileName);
+         LocalMsg1("Found file %s\n", findData.cFileName);
 
          if ((findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY)
          {
@@ -228,14 +243,17 @@ tResult EnumFiles(const cFileSpec & spec, IEnumFiles * * ppEnumFiles)
 class cEnumFilesPosix : public cComObject<IMPLEMENTS(IEnumFiles)>
 {
    cEnumFilesPosix(const cEnumFilesPosix &);
-   void operator =(const cEnumFilesPosix &);
+   const cEnumFilesPosix & operator =(const cEnumFilesPosix &);
+
 public:
    cEnumFilesPosix(const cFileSpec & spec);
    ~cEnumFilesPosix();
+
    virtual tResult Next(ulong count, cFileSpec * pFileSpecs, uint * pAttribs, ulong * pnElements);
    virtual tResult Skip(ulong count);
    virtual tResult Reset();
    virtual tResult Clone(IEnumFiles * * ppEnum);
+
 private:
    // Internal function with more lenient arg checking for use by both Skip and Next
    tResult GetNext(ulong count, cFileSpec * pFileSpecs, uint * pAttribs, ulong * pnElements);
@@ -268,16 +286,6 @@ cEnumFilesPosix::~cEnumFilesPosix()
 
 tResult cEnumFilesPosix::Next(ulong count, cFileSpec * pFileSpecs, uint * pAttribs, ulong * pnElements)
 {
-   if (count == 0)
-   {
-      return E_INVALIDARG;
-   }
-
-   if (pFileSpecs == NULL || pAttribs == NULL)
-   {
-      return E_POINTER;
-   }
-
    return GetNext(count, pFileSpecs, pAttribs, pnElements);
 }
 
@@ -285,11 +293,6 @@ tResult cEnumFilesPosix::Next(ulong count, cFileSpec * pFileSpecs, uint * pAttri
 
 tResult cEnumFilesPosix::Skip(ulong count)
 {
-   if (count == 0)
-   {
-      return E_INVALIDARG;
-   }
-
    return GetNext(count, NULL, NULL, NULL);
 }
 
@@ -300,8 +303,12 @@ tResult cEnumFilesPosix::Reset()
    if (m_pDir != NULL)
    {
       rewinddir(m_pDir);
+      return S_OK;
    }
-   return S_OK;
+   else
+   {
+      return S_FALSE;
+   }
 }
 
 ////////////////////////////////////////
@@ -313,22 +320,17 @@ tResult cEnumFilesPosix::Clone(IEnumFiles * * ppEnum)
 
 ////////////////////////////////////////
 
-static bool WildcardMatch(const tChar * pszWildcard, const tChar * pszEntry)
-{
-   if (strlen(pszWildcard) == 1 && *pszWildcard == '*')
-      return true;
-   // TODO: implement actual wildcard matching
-   return strcmp(pszWildcard, pszEntry);
-}
-
-////////////////////////////////////////
-
 // TODO: THIS CODE IS UNTESTED.
 tResult cEnumFilesPosix::GetNext(ulong count, cFileSpec * pFileSpecs, uint * pAttribs, ulong * pnElements)
 {
    if (count == 0)
    {
       return E_INVALIDARG;
+   }
+
+   if (pFileSpecs == NULL || pAttribs == NULL)
+   {
+      return E_POINTER;
    }
 
    if (m_pDir == NULL)
@@ -346,8 +348,9 @@ tResult cEnumFilesPosix::GetNext(ulong count, cFileSpec * pFileSpecs, uint * pAt
    struct dirent * pEnt = readdir(m_pDir);
    while ((pEnt != NULL) && (nFound < count))
    {
+      LocalMsg1("Found entry \"%s\"\n", pEnt->d_name);
       if (strcmp(pEnt->d_name, ".") != 0 && strcmp(pEnt->d_name, "..") != 0
-         && WildcardMatch(m_fileName.c_str(), pEnt->d_name))
+         && WildCardMatch(m_fileName.c_str(), pEnt->d_name))
       {
          cFileSpec entry(pEnt->d_name);
          entry.SetPath(GetPath());
@@ -379,6 +382,8 @@ tResult cEnumFilesPosix::GetNext(ulong count, cFileSpec * pFileSpecs, uint * pAt
       pEnt = readdir(m_pDir);
    }
 
+   LocalMsg1("Found %d entries\n", nFound);
+
    if (pnElements != NULL)
    {
       *pnElements = nFound;
@@ -392,11 +397,15 @@ tResult cEnumFilesPosix::GetNext(ulong count, cFileSpec * pFileSpecs, uint * pAt
 tResult EnumFiles(const cFileSpec & spec, IEnumFiles * * ppEnumFiles)
 {
    if (ppEnumFiles == NULL)
+   {
       return E_POINTER;
+   }
 
    cAutoIPtr<cEnumFilesPosix> pEnumFiles(new cEnumFilesPosix(spec));
    if (!pEnumFiles)
+   {
       return E_OUTOFMEMORY;
+   }
 
    *ppEnumFiles = static_cast<IEnumFiles*>(CTAddRef(pEnumFiles));
    return S_OK;
