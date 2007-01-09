@@ -21,6 +21,8 @@
 F_DECLARE_HANDLE(HDC);
 F_DECLARE_HANDLE(HGLRC);
 
+typedef struct __GLXcontextRec * GLXContext;
+
 F_DECLARE_INTERFACE(IReader);
 
 typedef unsigned int GLenum;

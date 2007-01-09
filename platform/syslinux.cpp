@@ -98,14 +98,8 @@ static int SysHandleXError(Display * display, XErrorEvent * event)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-tResult SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI api /*=kOpenGL*/)
+tResult SysCreateWindow(const tChar * pszTitle, int width, int height)
 {
-   if (api != kOpenGL)
-   {
-      WarnMsg("OpenGL is the only 3D API supported for Linux\n");
-      return E_INVALIDARG;
-   }
-
    if (g_window == 0)
    {
       if (g_display == NULL)
@@ -123,12 +117,14 @@ tResult SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI
 
       if (!glXQueryExtension(g_display, NULL, NULL))
       {
-         ErrorMsg("X display doesn't support glx\n");
+         ErrorMsg("X display doesn't support glX\n");
          return E_FAIL;
       }
 
+      int defaultScreen = DefaultScreen(g_display);
+
       int attributes[] = { GLX_RGBA, GLX_DOUBLEBUFFER, None };
-      XVisualInfo * pVi = glXChooseVisual(g_display, DefaultScreen(g_display), attributes);
+      XVisualInfo * pVi = glXChooseVisual(g_display, defaultScreen, attributes);
       if (pVi == NULL)
       {
          ErrorMsg("Could not get glX visual\n");
@@ -137,11 +133,12 @@ tResult SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI
 
       int screenWidth = DisplayWidth(g_display, pVi->screen);
       int screenHeight = DisplayHeight(g_display, pVi->screen);
+      Window rootWindow = RootWindow(g_display, pVi->screen);
 
       DebugMsg3("Screen %d is %d x %d\n", pVi->screen, screenWidth, screenHeight);
       DebugMsg3("Using visual %x, depth %d, class %d\n", pVi->visualid, pVi->depth, pVi->c_class);
 
-      Colormap colorMap = XCreateColormap(g_display, RootWindow(g_display, pVi->screen),
+      Colormap colorMap = XCreateColormap(g_display, rootWindow,
          pVi->visual, AllocNone);
 
       XSetWindowAttributes swa;
@@ -154,8 +151,7 @@ tResult SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI
       int x = (screenWidth - width) / 2;
       int y = (screenHeight - height) / 2;
 
-      g_window = XCreateWindow(
-         g_display, RootWindow(g_display, pVi->screen),
+      g_window = XCreateWindow(g_display, rootWindow,
          x, y, width, height, 0, pVi->depth, InputOutput,
          pVi->visual, CWBorderPixel | CWColormap | CWEventMask, &swa);
 
@@ -172,18 +168,8 @@ tResult SysCreateWindow(const tChar * pszTitle, int width, int height, eSys3DAPI
       sizeHints.height = height;
       XSetNormalHints(g_display, g_window, &sizeHints);
 
-      g_context = glXCreateContext(g_display, pVi, None, GL_TRUE);
-
       XFree(pVi);
       pVi = NULL;
-
-      if (g_context == NULL)
-      {
-         ErrorMsg("Could not create glX context\n");
-         return E_FAIL;
-      }
-
-      glXMakeCurrent(g_display, g_window, g_context);
 
       XMapRaised(g_display, g_window);
 

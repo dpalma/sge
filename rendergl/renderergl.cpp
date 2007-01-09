@@ -368,6 +368,7 @@ void MainWindowDestroyCallback()
 ///////////////////////////////////////////////////////////////////////////////
 // Create a default OpenGL context using the Win32 function ChoosePixelFormat
 
+#ifdef _WIN32
 static int CreateDefaultContext(HWND hWnd, int * pBpp, HDC * phDC, HGLRC * phGLRC)
 {
    Assert(IsWindow(hWnd));
@@ -431,6 +432,7 @@ static int CreateDefaultContext(HWND hWnd, int * pBpp, HDC * phDC, HGLRC * phGLR
 
    return pixelFormat;
 }
+#endif // _WIN32
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -620,8 +622,56 @@ tResult cRendererGL::CreateContext(Display * display, Window window)
 #ifdef _WIN32
    return E_NOTIMPL;
 #else
-   // TODO
-   return E_NOTIMPL;
+   if (display == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (window == 0)
+   {
+      return E_INVALIDARG;
+   }
+
+   if (m_context != NULL)
+   {
+      WarnMsg("GL renderer context already created\n");
+      return S_FALSE;
+   }
+
+   XWindowAttributes attr = {0};
+   XGetWindowAttributes(display, window, &attr);
+
+   if (attr.visual == NULL)
+   {
+      ErrorMsg("Unable to determine visual for window\n");
+      return E_FAIL;
+   }
+
+   XVisualInfo vinfoTemplate = {0};
+   vinfoTemplate.visual = attr.visual;
+   vinfoTemplate.visualid = XVisualIDFromVisual(attr.visual);
+
+   int nVisualInfos = 0;
+   XVisualInfo * pVisualInfo = XGetVisualInfo(display, VisualIDMask, &vinfoTemplate, &nVisualInfos);
+
+   if (pVisualInfo == NULL)
+   {
+      return E_FAIL;
+   }
+
+   m_context = glXCreateContext(display, pVisualInfo, None, GL_TRUE);
+
+   XFree(pVisualInfo);
+
+   if (m_context == NULL)
+   {
+      ErrorMsg("Could not create glX context\n");
+      return E_FAIL;
+   }
+
+   glXMakeCurrent(display, window, m_context);
+
+   return S_OK;
 #endif
 }
 
@@ -647,6 +697,7 @@ tResult cRendererGL::DestroyContext()
    }
 #endif
 
+#ifdef _WIN32
    if (m_hDC != NULL)
    {
       wglMakeCurrent(m_hDC, NULL);
@@ -661,6 +712,7 @@ tResult cRendererGL::DestroyContext()
    }
 
    m_hWnd = NULL;
+#endif
 
    return S_OK;
 }
