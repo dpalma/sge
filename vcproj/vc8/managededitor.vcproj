@@ -593,10 +593,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\tests\managededitor\GlControl.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\tests\managededitor\managededitor.cpp"
 				>
 			</File>
@@ -700,10 +696,6 @@
 			</File>
 			<File
 				RelativePath="..\..\tests\managededitor\EntityWrapper.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\..\tests\managededitor\GlControl.h"
 				>
 			</File>
 			<File

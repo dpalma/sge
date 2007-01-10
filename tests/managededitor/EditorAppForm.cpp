@@ -27,6 +27,41 @@ namespace ManagedEditor
 
    ///////////////////////////////////////////////////////////////////////////////
    //
+   // CLASS: EditorRenderControl
+   //
+
+   EditorRenderControl::EditorRenderControl()
+   {
+      HandleCreated += gcnew System::EventHandler(this, &EditorRenderControl::OnHandleCreated);
+      HandleDestroyed += gcnew System::EventHandler(this, &EditorRenderControl::OnHandleDestroyed);
+   }
+
+   EditorRenderControl::~EditorRenderControl()
+   {
+   }
+
+   void EditorRenderControl::OnHandleCreated(System::Object ^ sender, System::EventArgs ^ e)
+   {
+      UseGlobal(Renderer);
+      if (!!pRenderer)
+      {
+         pRenderer->DestroyContext();
+         HWND hWnd = reinterpret_cast<HWND>(Handle.ToPointer());
+         pRenderer->CreateContext(hWnd);
+      }
+   }
+
+   void EditorRenderControl::OnHandleDestroyed(System::Object ^ sender, System::EventArgs ^ e)
+   {
+      UseGlobal(Renderer);
+      if (!!pRenderer)
+      {
+         pRenderer->DestroyContext();
+      }
+   }
+
+   ///////////////////////////////////////////////////////////////////////////////
+   //
    // CLASS: EditorAppForm
    //
 
@@ -44,17 +79,17 @@ namespace ManagedEditor
       m_propertyGrid->Dock = System::Windows::Forms::DockStyle::Fill;
       ToolSplitContainer->Panel2->Controls->Add(m_propertyGrid);
 
-      m_glControl = gcnew GlControl();
-	   m_glControl->Dock = System::Windows::Forms::DockStyle::Fill;
-      MainPanel->Controls->Add(m_glControl);
+      m_renderControl = gcnew EditorRenderControl();
+	   m_renderControl->Dock = System::Windows::Forms::DockStyle::Fill;
+      MainPanel->Controls->Add(m_renderControl);
 
-      m_glControl->Resize += gcnew System::EventHandler(this, &EditorAppForm::glControl_OnResize);
-      m_glControl->MouseDown += gcnew System::Windows::Forms::MouseEventHandler(this, &EditorAppForm::glControl_OnMouseDown);
-      m_glControl->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &EditorAppForm::glControl_OnMouseUp);
-      m_glControl->MouseClick += gcnew System::Windows::Forms::MouseEventHandler(this, &EditorAppForm::glControl_OnMouseClick);
-      m_glControl->MouseMove += gcnew System::Windows::Forms::MouseEventHandler(this, &EditorAppForm::glControl_OnMouseMove);
-      m_glControl->MouseHover += gcnew System::EventHandler(this, &EditorAppForm::glControl_OnMouseHover);
-      m_glControl->MouseWheel += gcnew System::Windows::Forms::MouseEventHandler(this, &EditorAppForm::glControl_OnMouseWheel);
+      m_renderControl->Resize += gcnew System::EventHandler(this, &EditorAppForm::renderControl_OnResize);
+      m_renderControl->MouseDown += gcnew System::Windows::Forms::MouseEventHandler(this, &EditorAppForm::renderControl_OnMouseDown);
+      m_renderControl->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &EditorAppForm::renderControl_OnMouseUp);
+      m_renderControl->MouseClick += gcnew System::Windows::Forms::MouseEventHandler(this, &EditorAppForm::renderControl_OnMouseClick);
+      m_renderControl->MouseMove += gcnew System::Windows::Forms::MouseEventHandler(this, &EditorAppForm::renderControl_OnMouseMove);
+      m_renderControl->MouseHover += gcnew System::EventHandler(this, &EditorAppForm::renderControl_OnMouseHover);
+      m_renderControl->MouseWheel += gcnew System::Windows::Forms::MouseEventHandler(this, &EditorAppForm::renderControl_OnMouseWheel);
 
       m_document = gcnew EditorDocument();
       cTerrainSettings terrainSettings;
@@ -127,8 +162,6 @@ namespace ManagedEditor
          }
 
          pRenderer->EndScene();
-
-         m_glControl->SwapBuffers();
       }
    }
 
@@ -228,11 +261,11 @@ namespace ManagedEditor
       }
    }
 
-   void EditorAppForm::glControl_OnResize(System::Object ^ sender, System::EventArgs ^ e)
+   void EditorAppForm::renderControl_OnResize(System::Object ^ sender, System::EventArgs ^ e)
    {
-      if (m_glControl && (m_glControl->Height > 0))
+      if (m_renderControl && (m_renderControl->Height > 0))
       {
-         float aspect = static_cast<float>(m_glControl->Width) / m_glControl->Height;
+         float aspect = static_cast<float>(m_renderControl->Width) / m_renderControl->Height;
 
          const float kFov = 70;
          const float kZNear = 1;
@@ -244,7 +277,7 @@ namespace ManagedEditor
          UseGlobal(Renderer);
          pRenderer->SetProjectionMatrix(proj.m);
 
-         glViewport(0, 0, m_glControl->Width, m_glControl->Height);
+         glViewport(0, 0, m_renderControl->Width, m_renderControl->Height);
       }
    }
 
@@ -271,7 +304,7 @@ namespace ManagedEditor
       }
    }
 
-   void EditorAppForm::glControl_OnMouseDown(System::Object ^ sender, MouseEventArgs ^ e)
+   void EditorAppForm::renderControl_OnMouseDown(System::Object ^ sender, MouseEventArgs ^ e)
    {
       InvokeToolMethod(
          "OnMouseDown",
@@ -279,7 +312,7 @@ namespace ManagedEditor
          gcnew array<System::Object ^>{sender, e});
    }
 
-   void EditorAppForm::glControl_OnMouseUp(System::Object ^ sender, MouseEventArgs ^ e)
+   void EditorAppForm::renderControl_OnMouseUp(System::Object ^ sender, MouseEventArgs ^ e)
    {
       InvokeToolMethod(
          "OnMouseUp",
@@ -287,7 +320,7 @@ namespace ManagedEditor
          gcnew array<System::Object ^>{sender, e});
    }
 
-   void EditorAppForm::glControl_OnMouseClick(System::Object ^ sender, MouseEventArgs ^ e)
+   void EditorAppForm::renderControl_OnMouseClick(System::Object ^ sender, MouseEventArgs ^ e)
    {
       InvokeToolMethod(
          "OnMouseClick",
@@ -295,7 +328,7 @@ namespace ManagedEditor
          gcnew array<System::Object ^>{sender, e});
    }
 
-   void EditorAppForm::glControl_OnMouseMove(System::Object ^ sender, MouseEventArgs ^ e)
+   void EditorAppForm::renderControl_OnMouseMove(System::Object ^ sender, MouseEventArgs ^ e)
    {
       InvokeToolMethod(
          "OnMouseMove",
@@ -303,7 +336,7 @@ namespace ManagedEditor
          gcnew array<System::Object ^>{sender, e});
    }
 
-   void EditorAppForm::glControl_OnMouseHover(System::Object ^ sender, System::EventArgs ^ e)
+   void EditorAppForm::renderControl_OnMouseHover(System::Object ^ sender, System::EventArgs ^ e)
    {
       InvokeToolMethod(
          "OnMouseHover",
@@ -311,7 +344,7 @@ namespace ManagedEditor
          gcnew array<System::Object ^>{sender, e});
    }
 
-   void EditorAppForm::glControl_OnMouseWheel(System::Object ^ sender, MouseEventArgs ^ e)
+   void EditorAppForm::renderControl_OnMouseWheel(System::Object ^ sender, MouseEventArgs ^ e)
    {
       InvokeToolMethod(
          "OnMouseWheel",

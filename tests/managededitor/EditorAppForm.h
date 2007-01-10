@@ -7,7 +7,6 @@
 #include "EditorDocument.h"
 #include "EditorForm.h"
 #include "EditorTools.h"
-#include "GlControl.h"
 #include "ToolPalette.h"
 
 #include "tech/comtools.h"
@@ -21,6 +20,33 @@
 namespace ManagedEditor
 {
    class EditorAppFormEntityManagerListener;
+
+   ///////////////////////////////////////////////////////////////////////////////
+   //
+   // CLASS: EditorRenderControl
+   //
+
+   ref class EditorRenderControl sealed : public System::Windows::Forms::Control
+   {
+   public:
+      EditorRenderControl();
+      ~EditorRenderControl();
+
+   protected:
+      virtual property System::Windows::Forms::CreateParams ^ CreateParams
+      {
+         System::Windows::Forms::CreateParams ^ get() override
+         {
+            System::Windows::Forms::CreateParams ^ cp = System::Windows::Forms::Control::CreateParams;
+            // Add style bits required by OpenGL
+            cp->Style |= 0x06000000L; // WS_CLIPCHILDREN | WS_CLIPSIBLINGS
+            return cp;
+         }
+      }
+
+      void OnHandleCreated(System::Object ^ sender, System::EventArgs ^ e);
+      void OnHandleDestroyed(System::Object ^ sender, System::EventArgs ^ e);
+   };
 
    ///////////////////////////////////////////////////////////////////////////////
    //
@@ -47,13 +73,13 @@ namespace ManagedEditor
 
       void InvokeToolMethod(System::String ^ methodName, array<System::Type ^> ^ paramTypes, array<System::Object ^> ^ params);
 
-      void glControl_OnResize(System::Object ^ sender, System::EventArgs ^ e);
-      void glControl_OnMouseDown(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e);
-      void glControl_OnMouseUp(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e);
-      void glControl_OnMouseClick(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e);
-      void glControl_OnMouseMove(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e);
-      void glControl_OnMouseHover(System::Object ^ sender, System::EventArgs ^ e);
-      void glControl_OnMouseWheel(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e);
+      void renderControl_OnResize(System::Object ^ sender, System::EventArgs ^ e);
+      void renderControl_OnMouseDown(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e);
+      void renderControl_OnMouseUp(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e);
+      void renderControl_OnMouseClick(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e);
+      void renderControl_OnMouseMove(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e);
+      void renderControl_OnMouseHover(System::Object ^ sender, System::EventArgs ^ e);
+      void renderControl_OnMouseWheel(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e);
 
       void toolPalette_OnToolSelect(System::Object ^ sender, ToolSelectEventArgs ^ e);
 
@@ -67,7 +93,7 @@ namespace ManagedEditor
    private:
       System::Resources::ResourceManager ^ m_resMgr;
 
-      GlControl ^ m_glControl;
+      EditorRenderControl ^ m_renderControl;
       ToolPalette ^ m_toolPalette;
       System::Windows::Forms::PropertyGrid ^ m_propertyGrid;
 
