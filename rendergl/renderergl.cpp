@@ -11,6 +11,7 @@
 #include "tech/axisalignedbox.h"
 #include "tech/color.h"
 #include "tech/configapi.h"
+#include "tech/imageapi.h"
 #include "tech/matrix4.h"
 #include "tech/ray.h"
 #include "tech/readwriteapi.h"
@@ -35,14 +36,19 @@
 
 #include "tech/dbgalloc.h" // must be last header
 
+////////////////////////////////////////////////////////////////////////////////
+
 extern tResult RenderFontCreateGL(const tChar * pszFont, int pointSize, uint flags, IRenderFont * * ppFont);
 extern tResult RenderFontCreateFTGL(const tChar * pszFont, int fontPointSize, uint flags, IRenderFont * * ppFont);
 
 extern tResult Render2DCreateGL(IRender2D * * ppRender2D);
 
-extern tResult GlTextureResourceRegister(); // gltexture.cpp
 extern tResult GlTextureCreate(IImage * pImage, uint * pTexId);
 extern tResult GlTextureCreateMipMapped(IImage * pImage, uint * pTexId);
+
+////////////////////////////////////////////////////////////////////////////////
+
+static bool g_bHaveValidGlContext = false; // HACK: This variable's very existence is a hack
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -353,6 +359,34 @@ void CgEffectUnload(void * pData)
 #endif // HAVE_CG
 
 
+///////////////////////////////////////////////////////////////////////////////
+
+void * GlTextureFromImage(void * pData, int dataLength, void * param)
+{
+   IImage * pImage = reinterpret_cast<IImage*>(pData);
+
+   uint texId;
+   if (GlTextureCreateMipMapped(pImage, &texId) == S_OK)
+   {
+      return reinterpret_cast<void*>(texId);
+   }
+
+   return NULL;
+}
+
+void GlTextureUnload(void * pData)
+{
+   if (g_bHaveValidGlContext)
+   {
+      uint tex = reinterpret_cast<uint>(pData);
+      if (glIsTexture(tex))
+      {
+         glDeleteTextures(1, &tex);
+      }
+   }
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 
 void MainWindowDestroyCallback()
@@ -494,7 +528,7 @@ tResult cRendererGL::Init()
    UseGlobal(ResourceManager);
    if (!!pResourceManager)
    {
-      if (GlTextureResourceRegister() != S_OK)
+      if (pResourceManager->RegisterFormat(kRT_GlTexture, kRT_Image, NULL, NULL, GlTextureFromImage, GlTextureUnload) != S_OK)
       {
          return E_FAIL;
       }
@@ -609,6 +643,8 @@ tResult cRendererGL::CreateContext(HWND hWnd)
       }
    }
 
+   g_bHaveValidGlContext = true;
+
    return S_OK;
 #else
    return E_NOTIMPL;
@@ -671,6 +707,8 @@ tResult cRendererGL::CreateContext(Display * display, Window window)
 
    glXMakeCurrent(display, window, m_context);
 
+   g_bHaveValidGlContext = true;
+
    return S_OK;
 #endif
 }
@@ -713,6 +751,8 @@ tResult cRendererGL::DestroyContext()
 
    m_hWnd = NULL;
 #endif
+
+   g_bHaveValidGlContext = false;
 
    return S_OK;
 }

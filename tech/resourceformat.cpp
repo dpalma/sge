@@ -331,13 +331,13 @@ static void * NopPostload(void * pData, int dataLength, void * loadParam)
 TEST(ResourceFormatTableRegister)
 {
    cResourceFormatTable rft;
-   CHECK(rft.RegisterFormat(NULL, NULL, "dat", NopLoad, NULL, NopUnload) == E_INVALIDARG);
-   CHECK(rft.RegisterFormat("data", NULL, NULL, NopLoad, NULL, NopUnload) == E_INVALIDARG);
-   CHECK(rft.RegisterFormat("data", "data2", NULL, NopLoad, NULL, NopUnload) == S_OK);
-   CHECK(rft.RegisterFormat("data", NULL, "dat", NULL, NULL, NopUnload) == E_POINTER);
-   CHECK(rft.RegisterFormat("data", NULL, "dat", NopLoad, NULL, NopUnload) == S_OK);
-   CHECK(rft.RegisterFormat("data", NULL, "dat", NopLoad, NULL, NopUnload) == E_FAIL);
-   CHECK(rft.RegisterFormat("bitmap", NULL, "bmp", NopLoad, NULL, NopUnload) == S_OK);
+   CHECK(rft.RegisterFormat(NULL, NULL, "dat", NopLoad, NULL, NopUnload, NULL) == E_INVALIDARG);
+   CHECK(rft.RegisterFormat("data", NULL, NULL, NopLoad, NULL, NopUnload, NULL) == E_INVALIDARG);
+   CHECK(rft.RegisterFormat("data", "data2", NULL, NopLoad, NULL, NopUnload, NULL) == S_OK);
+   CHECK(rft.RegisterFormat("data", NULL, "dat", NULL, NULL, NopUnload, NULL) == E_POINTER);
+   CHECK(rft.RegisterFormat("data", NULL, "dat", NopLoad, NULL, NopUnload, NULL) == S_OK);
+   CHECK(rft.RegisterFormat("data", NULL, "dat", NopLoad, NULL, NopUnload, NULL) == E_FAIL);
+   CHECK(rft.RegisterFormat("bitmap", NULL, "bmp", NopLoad, NULL, NopUnload, NULL) == S_OK);
 }
 
 #endif // HAVE_UNITTESTPP

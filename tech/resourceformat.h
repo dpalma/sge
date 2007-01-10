@@ -50,11 +50,6 @@ public:
    tResult RegisterFormat(tResourceType type, tResourceType typeDepend, const tChar * pszExtension,
                           tResourceLoad pfnLoad, tResourcePostload pfnPostload, tResourceUnload pfnUnload,
                           void * typeParam);
-   inline tResult RegisterFormat(tResourceType type, tResourceType typeDepend, const tChar * pszExtension,
-                          tResourceLoad pfnLoad, tResourcePostload pfnPostload, tResourceUnload pfnUnload)
-   {
-      return RegisterFormat(type, typeDepend, pszExtension, pfnLoad, pfnPostload, pfnUnload, NULL);
-   }
    tResult RevokeFormat(tResourceType type, tResourceType typeDepend, const tChar * pszExtension);
 
    uint DeduceFormats(const tChar * pszName, tResourceType type, uint * pFormatIds, uint nMaxFormats);

@@ -183,9 +183,12 @@ tResult cEnumFilesWin32::GetNext(ulong count, cFileSpec * pFileSpecs, uint * pAt
 
       if (bFound)
       {
-         LocalMsg1("Found file %s\n", findData.cFileName);
+         bool bIsDir = (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY;
 
-         if ((findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY)
+         LocalMsgIf1(bIsDir, "Found directory %s\n", findData.cFileName);
+         LocalMsgIf1(!bIsDir, "Found file %s\n", findData.cFileName);
+
+         if (bIsDir)
          {
             if (_tcscmp(findData.cFileName, _T(".")) == 0 ||
                 _tcscmp(findData.cFileName, _T("..")) == 0)
@@ -218,21 +221,6 @@ tResult cEnumFilesWin32::GetNext(ulong count, cFileSpec * pFileSpecs, uint * pAt
    return (nFound == count) ? S_OK : S_FALSE;
 }
 
-////////////////////////////////////////
-
-tResult EnumFiles(const cFileSpec & spec, IEnumFiles * * ppEnumFiles)
-{
-   if (ppEnumFiles == NULL)
-      return E_POINTER;
-
-   cAutoIPtr<cEnumFilesWin32> pEnumFiles(new cEnumFilesWin32(spec));
-   if (!pEnumFiles)
-      return E_OUTOFMEMORY;
-
-   *ppEnumFiles = static_cast<IEnumFiles*>(CTAddRef(pEnumFiles));
-   return S_OK;
-}
-
 #else
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -263,6 +251,7 @@ private:
    cFilePath m_path;
    const cStr m_fileName;
    DIR * m_pDir;
+   tResult m_lastResult;
 };
 
 ////////////////////////////////////////
@@ -271,6 +260,7 @@ cEnumFilesPosix::cEnumFilesPosix(const cFileSpec & spec)
  : m_spec(spec)
  , m_fileName(spec.GetFileName())
  , m_pDir(NULL)
+ , m_lastResult(E_FAIL)
 {
    spec.GetPath(&m_path);
 }
@@ -320,7 +310,6 @@ tResult cEnumFilesPosix::Clone(IEnumFiles * * ppEnum)
 
 ////////////////////////////////////////
 
-// TODO: THIS CODE IS UNTESTED.
 tResult cEnumFilesPosix::GetNext(ulong count, cFileSpec * pFileSpecs, uint * pAttribs, ulong * pnElements)
 {
    if (count == 0)
@@ -389,10 +378,21 @@ tResult cEnumFilesPosix::GetNext(ulong count, cFileSpec * pFileSpecs, uint * pAt
       *pnElements = nFound;
    }
 
-   return (nFound == count) ? S_OK : S_FALSE;
+   tResult result = (nFound == count) ? S_OK : S_FALSE;
+
+   if ((result == S_FALSE) && (m_lastResult == S_FALSE))
+   {
+      result = E_FAIL;
+   }
+
+   m_lastResult = result;
+
+   return result;
 }
 
-////////////////////////////////////////
+#endif
+
+///////////////////////////////////////////////////////////////////////////////
 
 tResult EnumFiles(const cFileSpec & spec, IEnumFiles * * ppEnumFiles)
 {
@@ -401,16 +401,18 @@ tResult EnumFiles(const cFileSpec & spec, IEnumFiles * * ppEnumFiles)
       return E_POINTER;
    }
 
-   cAutoIPtr<cEnumFilesPosix> pEnumFiles(new cEnumFilesPosix(spec));
+#ifdef _WIN32
+   cAutoIPtr<IEnumFiles> pEnumFiles(static_cast<IEnumFiles*>(new cEnumFilesWin32(spec)));
+#else
+   cAutoIPtr<IEnumFiles> pEnumFiles(static_cast<IEnumFiles*>(new cEnumFilesPosix(spec)));
+#endif
+
    if (!pEnumFiles)
    {
       return E_OUTOFMEMORY;
    }
 
-   *ppEnumFiles = static_cast<IEnumFiles*>(CTAddRef(pEnumFiles));
-   return S_OK;
+   return pEnumFiles.GetPointer(ppEnumFiles);
 }
-
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////

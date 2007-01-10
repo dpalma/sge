@@ -44,7 +44,9 @@ tStrings::size_type ListDirs(const cFilePath & path, bool bSkipHidden, tStrings 
 {
    Assert(pDirs != NULL);
    if (pDirs == NULL)
+   {
       return 0;
+   }
 
    pDirs->clear();
 
@@ -56,7 +58,7 @@ tStrings::size_type ListDirs(const cFilePath & path, bool bSkipHidden, tStrings 
       cFileSpec files[10];
       uint attribs[10];
       ulong nFiles = 0;
-      while (pEnumFiles->Next(_countof(files), files, attribs, &nFiles) == S_OK)
+      while (SUCCEEDED(pEnumFiles->Next(_countof(files), files, attribs, &nFiles)))
       {
          for (ulong i = 0; i < nFiles; i++)
          {
